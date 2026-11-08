@@ -1,6 +1,6 @@
 // THE LOOSE THINGS: GPH lets the light furniture and goods be pushed, kicked, picked up and carried.
 import {SHARED, THREE} from './003-shx.js';
-import {DRESS, ED, GPH, keys, MOTION, PB, PERFX, PHYS, pos, RIDE, ROOMS, SFX, st, UI, USE, VIT, W3, WX} from './003b-systems.js';
+import {DRESS, ED, GPH, keys, MOTION, NPCS, ONLINE, PB, PERFX, PHYS, pos, RIDE, ROOMS, SFX, st, UI, USE, VIT, W3, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FIX, MODS, QS, SOL, SYS, TILE} from './006-map-pre.js';
 import {OBJS} from './008-batch.js';
@@ -152,9 +152,9 @@ import {BVH} from './137-bvh.js';
     if((zt-=dt)<=0){ zt=.25; zone(); } strike(); if(want&&want.rb){ grab(want); want=null; }
     if(held){ const h=holdAt(held); held.rb.setNextKinematicTranslation(h); held.rb.setNextKinematicRotation({x:0,y:Math.sin(SHARED.heading/2),z:0,w:Math.cos(SHARED.heading/2)}); }
     const I=intent(), mv=I[0]||I[1]||Math.abs(pos.x-lx)+Math.abs(pos.z-lz)+Math.abs(SHARED.py-ly)>1e-4; lx=pos.x; lz=pos.z; ly=SHARED.py;
-    gust(dt); ctl(dt);
+    gust(dt); ctl(dt); crowd();
     const ext=GPH.ext.some(f=>f());
-    if(mv||held||live||ext){ acc=Math.min(acc+dt,3*DT); while(acc>=DT){ drive(I,DT); for(const f of GPH.pre)f(DT); world.step(eq,hooks||undefined); for(const f of GPH.post)f(DT); acc-=DT; } } else acc=0;
+    if(mv||held||live||ext||cbMove){ acc=Math.min(acc+dt,3*DT); while(acc>=DT){ drive(I,DT); for(const f of GPH.pre)f(DT); world.step(eq,hooks||undefined); for(const f of GPH.post)f(DT); acc-=DT; } } else acc=0;
     events();
     live=0; for(const it of act){ if(it!==held&&it.rb.isSleeping())continue; draw(it); if(it===held)continue; live++;
       const p=it.rb.translation(); if(p.y<SHARED.py-8*T){ it.rb.setTranslation({x:it.c[0],y:it.c[1],z:it.c[2]},true); it.rb.setRotation({x:0,y:0,z:0,w:1},true); it.rb.setLinvel({x:0,y:0,z:0},true); it.rb.setAngvel({x:0,y:0,z:0},true); draw(it); it.rb.sleep(); continue; }
@@ -190,6 +190,21 @@ import {BVH} from './137-bvh.js';
     if(onIt&&Math.hypot(n.x-pos.x,n.z-pos.z)>.005*T){ pos.x=n.x; pos.z=n.z; } else { n.x=pos.x; n.z=pos.z; }
     kb.setTranslation(n,true); const f=n.y-HH; kfoot=f>g+.03*T&&f<g+1.3*T?f:null; };
   GPH.floor=g=>kfoot!=null&&kfoot>g?kfoot:g;
+  // the characters near you in the physics (8 Nov 2026): each a moving body its own size (a capsule, a long animal a box along its heading), so loose things are shoved by and stop at people, animals and the other players
+  const CB=new Map(), CBN=24; let cbMove=false;
+  const crowd=()=>{ '@later'; const L=[], lv=SHARED.LVL, R2=RS*RS, put=(k,x,y,z,r,l,lz,h)=>{ const dx=x-pos.x, dz=z-pos.z, d=dx*dx+dz*dz; if(d<R2&&isFinite(y))L.push({k,x,y,z,r,l,lz,h,d}); };
+    for(const N of NPCS){ const s=N.st; if(!s||N.far||N.fly||N.tiny||N.lv!==lv||N.mode==='hidden'||s.inT!=null||!N.g||!N.g.visible&&!N._cv)continue; put(N,s.x,N.g.position.y,s.z,s.R,s.L||0,s.LZ||0,s.h||0); }
+    for(const X of NPCS.extra||[]){ const s=X.st; if(!s||X.on===false||X.mode==='hidden'||X.rag||!X.g||!X.g.visible&&!X._cv||(X.lv||'up')!==lv)continue; put(X,s.x,SHARED.groundY(s.x,s.z),s.z,s.R||.3,0,0,0); }
+    if(ONLINE.others)for(const o of ONLINE.others.values()){ if(o.why!=='near you'||!o.p||o.dead)continue; put(o,o.p.x,SHARED.groundY(o.p.x,o.p.z),o.p.z,.3,0,0,0); }
+    L.sort((a,b)=>a.d-b.d); if(L.length>CBN)L.length=CBN; const keep=new Set(); cbMove=false;
+    for(const c of L){ keep.add(c.k); const tall=Math.max(.4*T,Math.min(4*T,c.k.tall||1.7*M1)), hh=tall/2, r=Math.max(.05*T,Math.min(2*T,c.r)); let B=CB.get(c.k);
+      const q={x:0,y:Math.sin(c.h/2),z:0,w:Math.cos(c.h/2)}, at={x:c.x,y:c.y+hh,z:c.z};
+      if(!B){ const rb=world.createRigidBody(R.RigidBodyDesc.kinematicPositionBased().setTranslation(at.x,at.y,at.z).setRotation(q)); const cd=c.l?R.ColliderDesc.cuboid(r,hh,r+c.l).setTranslation(0,0,c.lz):R.ColliderDesc.capsule(Math.max(.01,hh-r),r);
+        world.createCollider(cd.setFriction(.4).setCollisionGroups(GY),rb); CB.set(c.k,B={rb,x:c.x,z:c.z}); continue; }
+      const mvd=Math.hypot(c.x-B.x,c.z-B.z); if(mvd>T){ B.rb.setTranslation(at,true); B.rb.setRotation(q,true); } else if(mvd>1e-4){ B.rb.setNextKinematicTranslation(at); B.rb.setNextKinematicRotation(q);
+        if(!cbMove)for(const it of act){ const p=it.rb.translation(); if(Math.hypot(p.x-c.x,p.z-c.z)<r+c.l+Math.max(it.h[0],it.h[2])+.3*T){ cbMove=true; break; } } } B.x=c.x; B.z=c.z; }
+    for(const [k,B] of CB)if(!keep.has(k)){ world.removeRigidBody(B.rb); CB.delete(k); } };
+  GPH.crowd=()=>[...CB.keys()].map(k=>k.key||k.name||'player');
   const at=it=>it.rb?it.rb.translation():it.t;
   const itemOf=(h,A=act)=>{ '@later'; const m=h.object; if(m===gm){ const v=h.face.a; return items.find(q=>q.k==='v'&&v>=q.v0&&v<q.v1); } if(m.userData.loose)return m.userData.loose;
     if(h.instanceId!=null)return [...A].find(q=>q.k==='i'&&q.inst.some(z=>z[0]===m&&z[1]===h.instanceId));

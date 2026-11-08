@@ -26,7 +26,7 @@ const TREES={h:null,want:null}; window.TREES=TREES;
   STORE.stackGround=(x,z)=>{ if(C.it&&TREES.h!=null&&Math.hypot(x-pos.x,z-pos.z)<.6*T)return TREES.h; const it=TREES.stand; if(it){ const y=limbTop(it,x,z,SHARED.py); if(y!=null)return y; } return sg0?sg0(x,z):null; };
   const grabAt=(it,x,z,py,far)=>{ let best=null; for(const l of limbs(it)){ const u=near(l,x,z), p=at(l,u), d=Math.hypot(p.x-x,p.z-z); if(d>far||!outside(it,p))continue; const h=p.y+p.r-py; if(h<1.6*T||h>REACH())continue; if(!best||d<best.d)best={l,u,d}; } return best; };   // the branch a jump from here catches
   // hands and feet hold the tree's own bark: a ray from the body finds each hold; a hold stays put while the body climbs past it, then reaches for the next
-  const PER=12, RC=new THREE.Raycaster(), O3=new THREE.Vector3(), D3=new THREE.Vector3(), LIMB={hL:[4,'h',0],hR:[-4,'h',1],fR:[-4.2,'f',2],fL:[4.2,'f',2]}, AT={h:[26,HOLD],f:[10,22]};   // as climbers do: a hand, the other hand, then both feet hop up, knees wide
+  const PER=12, RC=new THREE.Raycaster(), O3=new THREE.Vector3(), D3=new THREE.Vector3(), HTS=Object.values(RIG.CLIMB.at).flatMap(a=>[a.lo,a.hi]);   // PER: a reach's worth of climbing works the skill once; HTS: the heights the limbs hold at
   const bark=it=>{ '@later'; if(it.bark!==undefined)return it.bark; if(!it.P)return it.bark=null; const A=[], F=it.LF||[];
     for(let v=it.v0;v+2<it.v1;v+=3){ if(F[v]||F[v+1]||F[v+2])continue; for(let k=0;k<9;k++)A.push(it.P[v*3+k]); }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(A,3)); g.computeBoundingSphere(); return it.bark=new THREE.Mesh(g,new THREE.MeshBasicMaterial({side:THREE.DoubleSide})); };
@@ -35,21 +35,14 @@ const TREES={h:null,want:null}; window.TREES=TREES;
     const n=h.face.normal; let nx=n.x, ny=n.y, nz=n.z; if(nx*ux+nz*uz<0){ nx=-nx; ny=-ny; nz=-nz; } return {x:h.point.x,y:h.point.y,z:h.point.z,nx,ny,nz}; };
   const hold=(it,lx,ly)=>{ const c=Math.cos(SHARED.heading), s=Math.sin(SHARED.heading), x=pos.x+lx*c/kx(), z=pos.z-lx*s/kx(), dx=x-it.x, dz=z-it.z, l=Math.hypot(dx,dz)||1, y=SHARED.py+ly/ky();
     return cast(it,dx/l,dz/l,y)||{x:it.x+dx/l*rT(it),y,z:it.z+dz/l*rT(it),nx:dx/l,ny:0,nz:dz/l}; };
-  const grip=(it,dt,dir)=>{ '@later'; const f=((st.climb.ph/PER)%1+1)%1, w=Math.floor(f*4), G=C.g||(C.g={w,L:{}}), first=!C.g.L.hL;
-    for(const k in LIMB){ const [lx,kind,ph]=LIMB[k], R=AT[kind], S=G.L[k]||(G.L[k]={});
-      if(first)S.p=hold(it,lx,R[0]+(R[1]-R[0])*(k==='hL'||k==='fL'?.75:.3));
-      const go=dir&&w!==G.w&&w===ph;
-      if(go){ S.from=S.p; S.to=hold(it,lx,dir>0?R[1]:R[0]); S.e=0; }
-      if(S.to){ S.e=Math.min(1,S.e+dt/(kind==='h'?.22:.2)); const e=S.e*S.e*(3-2*S.e), a=Math.sin(Math.PI*S.e)*(kind==='h'?.1:.07)*T, q=(u,v)=>u+(v-u)*e, F=S.from, Tt=S.to;
-        S.p={x:q(F.x,Tt.x)+Tt.nx*a,y:q(F.y,Tt.y)+(kind==='h'?.05*T*Math.sin(Math.PI*S.e):0),z:q(F.z,Tt.z)+Tt.nz*a,nx:Tt.nx,ny:Tt.ny,nz:Tt.nz}; if(S.e>=1){ S.p=Tt; S.to=null; } } }
-    G.w=w; st.climb.grip={L:{h:G.L.hL.p,f:G.L.fL.p},R:{h:G.L.hR.p,f:G.L.fR.p}}; };
+  const grip=(it,dt)=>{ '@later'; RIG.climbHolds(st,dt,(lx,ly)=>hold(it,lx,ly)); };   // when each limb reaches and how high: the recorded climb's (RIG.CLIMB)
   // an elm or the cherry is climbed only to where its trunk forks, into the open middle of its crown; any other tree to just under its top
   const forkCap=it=>Math.min(it.top-it.y-.8*T,/^G[EK]/.test(it.k)&&it.fork?Math.max(2*T,it.fork-.6*T):1e9);
   const tell=()=>{ if(C.told)return; C.told=1; say('YOU CANNOT CLIMB ANY HIGHER YET. YOUR CLIMBING SKILL IS '+SKL().toFixed(1)+'.','#c8a090'); };
-  const drop=()=>{ st.fk=null; st.climb=null; st.hang=null; C.g=null; C.leap=null; TREES.h=null; C.it=null; C.mode=null; };
+  const drop=()=>{ st.fk=null; st.climb=null; st.hang=null; C.leap=null; TREES.h=null; C.it=null; C.mode=null; };
   const onTrunk=(it,h)=>{ C.it=it; C.mode='trunk'; C.h=Math.max(0,Math.min(HMAX(it),h)); C.d=null; C.cyc=Math.floor(C.h/(PER*ZU)); C.told=0; st.hang=null; st.move=null; st.fk=null; st.climb={z:0,ph:C.h/ZU}; TREES.stand=null; };
   const onLimb=(it,g)=>{ '@later'; const l=g.l, p=at(l,g.u), bx=(l[3]-l[0])/(llen(l)||1), bz=(l[5]-l[2])/(llen(l)||1); let nx=-bz, nz=bx; if((pos.x-p.x)*nx+(pos.z-p.z)*nz<0){ nx=-nx; nz=-nz; }
-    C.it=it; C.mode='hang'; C.l=l; C.u=g.u; C.n=[nx,nz]; C.b=[bx,bz]; C.t=0; st.climb=null; st.move=null; st.fk=null; C.g=null; st.hang={z:0,t:0,side:0}; TREES.stand=null; roll(); };
+    C.it=it; C.mode='hang'; C.l=l; C.u=g.u; C.n=[nx,nz]; C.b=[bx,bz]; C.t=0; st.climb=null; st.move=null; st.fk=null; st.hang={z:0,t:0,side:0}; TREES.stand=null; roll(); };
   const hang=(dt,lf,rt)=>{ '@later'; const it=C.it, l=C.l, [nx,nz]=C.n, [bx,bz]=C.b, L=llen(l)||1, rs=nz*bx-nx*bz>0?1:-1;   // rs: which way along the branch is your right
     if(lf||rt){ const u=Math.max(0,Math.min(1,C.u+(rt?1:-1)*rs*SPD()*.5*dt/L)), p=at(l,u); if(p.r>=RH&&outside(it,p))C.u=u; }
     const p=at(l,C.u); pos.x=p.x+nx*.2*T; pos.z=p.z+nz*.2*T; SHARED.heading=Math.atan2(-nx,-nz); TREES.h=p.y+p.r-HANG/ky(); C.t+=dt;
@@ -69,7 +62,7 @@ const TREES={h:null,want:null}; window.TREES=TREES;
       if(dn||jump||off){ TREES.stand=it; drop(); return false; } return true; }
     let dx=pos.x-it.x, dz=pos.z-it.z, l=Math.hypot(dx,dz)||1;
     if(lf||rt){ const s=(rt?1:-1)*SPD()*dt, ox=dx; dx+=dz/l*s; dz+=-ox/l*s; l=Math.hypot(dx,dz)||1; }   // round the trunk, your right is to the right
-    const gap=8/kx(); let d=0; for(const ly of [AT.f[0],AT.f[1],AT.h[0],AT.h[1]]){ const h=cast(it,dx/l,dz/l,SHARED.py+ly/ky()); d=Math.max(d,h?Math.hypot(h.x-it.x,h.z-it.z):0); } if(!d)d=rT(it); C.d=C.d==null?d:C.d+(d-C.d)*Math.min(1,dt*4); d=C.d;   // the body hangs back an arm's length from the widest bark between its feet and hands, eased so one bulge doesn't jerk it out
+    const gap=RIG.CLIMB.gap/kx(); let d=0; for(const ly of HTS){ const h=cast(it,dx/l,dz/l,SHARED.py+ly/ky()); d=Math.max(d,h?Math.hypot(h.x-it.x,h.z-it.z):0); } if(!d)d=rT(it); C.d=C.d==null?d:C.d+(d-C.d)*Math.min(1,dt*4); d=C.d;   // the body hangs back an arm's length from the widest bark between its feet and hands, eased so one bulge doesn't jerk it out
     pos.x=it.x+dx/l*(d+gap); pos.z=it.z+dz/l*(d+gap); SHARED.heading=Math.atan2(-dx,-dz);
     const cap=Math.min(HMAX(it),forkCap(it)); let dir=up?1:dn?-1:0;
     if(jump&&!C.leap){ const g=grabAt(it,pos.x,pos.z,SHARED.py,.8*T); if(g){ onLimb(it,g); return true; }
@@ -77,7 +70,7 @@ const TREES={h:null,want:null}; window.TREES=TREES;
     if(C.leap){ const L=C.leap; L.t+=dt; const e=Math.min(1,L.t/L.T); C.h=L.h0+(L.h1-L.h0)*e*(2-e); dir=1; if(e>=1)C.leap=null; }
     else { C.h=Math.max(0,Math.min(cap,C.h+dir*dt*SPD())); if(up&&C.h>=cap-1e-6)tell(); }
     const cyc=Math.floor(C.h/(PER*ZU)); if(cyc!==C.cyc){ C.cyc=cyc; roll(); }   // each reach up or down works the skill
-    st.climb.ph=C.h/ZU; st.climb.per=PER; TREES.h=it.y+C.h; grip(it,dt,dir);
+    st.climb.ph=C.h/ZU; TREES.h=it.y+C.h; grip(it,dt);
     if(off||(dn&&C.h<=0)){ drop(); pos.x=it.x+dx/l*(rT(it)+.6*T); pos.z=it.z+dz/l*(rT(it)+.6*T); } return true; });
   PARK.later(()=>{ '@park'; const IT=PARK.climbable, g=MAPG.park||scene, SP=[]; let n=0;
     for(const it of IT){ const i=n++; if(it.top-it.y<=3*T)continue; const f=/^Oak/.test(it.k)?BL:FR[Math.floor(hs(i,1)*FR.length)];   // blossoms on the oaks, fruit on the tall trees

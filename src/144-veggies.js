@@ -24,8 +24,8 @@ const VEG={}; window.VEG=VEG;
     recipes:[['f_corn','ROAST CORN','cooking',[0,40],{v_corn:1},'fills a fifth'],['f_vstew','VEGETABLE STEW','cooking',[15,60],{v_potato:1,v_carrot:1,v_onion:1},'fills two fifths, some health'],
       ['f_stuffpep','STUFFED PEPPER','cooking',[25,70],{v_pepper:1,m_button:2},'fills two fifths, mends you a minute'],['f_psoup','PUMPKIN SOUP','cooking',[40,85],{v_pumpkin:1,v_onion:1},'fills more than half, strong 2 min']],
     does:{f_corn:()=>FORAGE.feed(.2),f_vstew:()=>{ FORAGE.feed(.4); VIT.heal(.2); },f_stuffpep:()=>{ FORAGE.feed(.4); FORAGE.buff('regen',60); },f_psoup:()=>{ FORAGE.feed(.6); FORAGE.buff('str',120); }}});
-  const STAND=()=>{ const P=PARK, X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0)), g1=P.gate[1];
-    VEG.stand=STALL.build({X,Z,x0:g1+3,x1:g1+7.8,y:P.y0,veg:true,seed:11,gate:-1});
+  const STAND=()=>{ const P=PARK, X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0)), A=STALL.at('tomato');
+    VEG.stand=STALL.build({X,Z,x0:A.x0,x1:A.x1,y:P.y0,veg:true,seed:11,gate:A.gate,name:A.name});
     const N=TOONS.tomato; if(!N)return; N.life=null; N.roam=false; if(!N.sheet&&!HOMES.keeper(N))STALL.work(N,VEG.stand,{jobs:['look'],wait:()=>2+Math.random()*3});
     TALK.shops.set(N,()=>SHOP.open()); for(const th of UI.things)if(th.npc&&th.npc===N){ th.act=()=>TALK.open(N); th.reach=2.2*T; th.near=3*T; }
   };

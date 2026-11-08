@@ -73,7 +73,8 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
     if(kind==='garage')building({...box,h:112,e:row===5,k:400+n*11,tint:TINTS[n%TINTS.length],lit:0,garage:true,row});
     else lot({...box,kind,row,side}); };
   // (the Drive's buildings on the rows, data/world.json block.pf, keep their spans)
-  for(const [a,b] of holes(MAINROW.concat(B.pf[1]||[]),B.x0,Math.min(B.x1,LEVEL.streets.west.x0)))fill(a,b,(x0,x1,i)=>spot(1,0,i,{x0,x1,y0:B.back,y1:SHARED.BOD.OY}));
+  const PASS=LEVEL.places.filter(p=>p.kind==='passage').map(p=>[p.x0,p.x1]), ON1=LEVEL.places.filter(p=>p.y1!=null&&p.y0===B.back&&p.y1===B.front&&p.row!==2).map(p=>[p.x0,p.x1]), ON2=LEVEL.places.filter(p=>p.row===2).map(p=>[p.x0,p.x1]);   // garages fill every gap along both rows, flush to the buildings (owner, 8 Nov 2026: "no gaps in between buildings, garages")
+  for(const [a,b] of holes(MAINROW.concat(B.pf[1]||[],ON1,PASS),B.x0,B.x1))fill(a,b,(x0,x1,i)=>spot(1,0,i,{x0,x1,y0:B.back,y1:SHARED.BOD.OY}));
   for(const p of LEVEL.places)if(p.kind==='lot'&&p.y1==null)lot({x0:p.x0,x1:p.x1,y0:B.back,y1:SHARED.BOD.OY,kind:'empty',row:1,side:'s'});   // a lot the level file keeps open (the flea market's)
   for(const p of LEVEL.places)if(p.kind==='lot'&&p.row===2)lot({x0:p.x0,x1:p.x1,y0:B.row2[0],y1:B.row2[1],kind:'empty',row:2,side:'s'});   // the Hudson row's open lots (the fish market's tables, the flea market's), 6 Nov 2026
   // a tall barbed-wire fence on an open lot's alley side (the fish market's, owner 6 Nov 2026: "a tall barbed wire gate to the alley"): posts, mesh, and a coil along the top; solid
@@ -86,7 +87,7 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
     { const c=new THREE.Mesh(new THREE.TorusGeometry(.22*T,.018*T,4,10),wire), L=Math.abs(xb-xa), k=Math.round(L/(.3*T)), C=new THREE.InstancedMesh(c.geometry,wire,k), M4=new THREE.Matrix4(), q=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),Math.PI/2);
       for(let i=0;i<k;i++)C.setMatrixAt(i,M4.compose(new THREE.Vector3(Math.min(xa,xb)+(i+.5)*L/k,Hf+.2*T,z),q,new THREE.Vector3(1,1,1))); FG.add(C); }
     G.add(FG); solid(p.x0,y-.1,p.x1,y+.1,70); }
-  for(const [a0,b0] of [[B.x0,Math.min(-62.4,LEVEL.streets.west.x0)]])for(const [a,b] of holes(B.pf[2]||[],a0,b0))fill(a,b,(x0,x1,i)=>spot(2,1,i,{x0,x1,y0:B.row2[0],y1:B.row2[1]}));
+  for(const [a0,b0] of [[B.x0,B.x1]])for(const [a,b] of holes((B.pf[2]||[]).concat(ON2,PASS),a0,b0))fill(a,b,(x0,x1,i)=>spot(2,1,i,{x0,x1,y0:B.row2[0],y1:B.row2[1]}));
   { const F=RING.wx0, WH=LEVEL.places.filter(p=>p.y1!=null&&Math.abs(p.x1-F)<.6); for(const [a,b] of holes(WH.map(p=>[p.y0,p.y1]),Math.min(...WH.map(p=>p.y0)),Math.max(...WH.map(p=>p.y1))))fill(a,b,(y0,y1,i)=>spot(5,2,i,{x0:F-13,x1:F,y0,y1})); }   // (only between the apartment houses: none before the first or past the last)
   { const zr=a=>[Math.min(ZS(a[0]),ZS(a[1])),Math.max(ZS(a[0]),ZS(a[1]))], AL=zr(B.alley), PR=zr(B.prom), mx0=XS(SHARED.BOD.MAP.x0), mx1=XS(SHARED.BOD.MAP.x1);
     BLK.band=(x,z)=>x<mx0||x>mx1?null:z>AL[0]&&z<AL[1]?{z0:AL[0],z1:AL[1]}:z>PR[0]&&z<PR[1]?{z0:PR[0],z1:PR[1]}:null; }

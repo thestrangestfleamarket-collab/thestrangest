@@ -113,7 +113,7 @@ await grab('dungeon',async()=>{});
     if(LK)Ls.filter(l=>!l.c).forEach((l,i)=>LK.dress(l,{own:o=>scene.add(LEVELS.own(o,'dungeon')),light,PL,lavaR,more:i>0}));
     if(TR)for(const l of Ls)TR.dress(l,{own:o=>scene.add(LEVELS.own(o,'dungeon')),PL,sol});
     for(const o of scene.children.slice(s0)){ G.add(o); M.objs.push(o); }
-    mine=M; cur=0; spikes(true); LITE.t=0; return Ls; };
+    mine=M; cur=0; spikes(true); LITE.t=0; if(MODS.dungeon)MODS.dungeon.v=(MODS.dungeon.v||0)+1; return Ls; };   // (v: the map redraws its plan)
   let CT=null, WT=null; const can=(w,h,f)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; f(c.getContext('2d')); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.magFilter=THREE.NearestFilter; return t; };
   const CEIL=()=>CT||(CT=can(24,24,g=>{ g.fillStyle='#1c1a19'; g.fillRect(0,0,24,24); for(let j=0;j<4;j++)for(let i=0;i<2;i++){ const v=34+((i*7+j*13)%5)*4; g.fillStyle=`rgb(${v},${v-3},${v-6})`; g.fillRect(i*12+(j&1)*6+1,j*6+1,10,4); } }),CT.wrapS=CT.wrapT=THREE.RepeatWrapping,CT);
   const WEB=()=>new THREE.MeshLambertMaterial({map:WT||(WT=can(128,128,g=>{ g.strokeStyle='rgba(225,225,215,.85)'; g.lineWidth=1.5; const c=64; for(let k=0;k<12;k++){ const a=k/12*6.283+.1*Math.sin(k*3); g.beginPath(); g.moveTo(c,c); g.lineTo(c+Math.cos(a)*62,c+Math.sin(a)*62); g.stroke(); }

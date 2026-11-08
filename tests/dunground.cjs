@@ -30,4 +30,7 @@ const {chromium}=require('playwright');
   if(L){ const r=await pg.evaluate(([a,b])=>{ const C=window.CITY, E=(C.extra&&C.extra.down)||[], R=C.route('down',{x:a[0],z:a[1]},{x:b[0],z:b[1]}); if(!R)return {none:true,cliffs:E.length};
       let bad=0; for(let i=1;i<R.pts.length;i++){ const p=R.pts[i-1], q=R.pts[i]; for(let t=0;t<=1;t+=.1){ const x=p.x+(q.x-p.x)*t, z=p.z+(q.z-p.z)*t; if(E.some(e=>x>e[0]&&x<e[2]&&z>e[1]&&z<e[3]))bad++; } } return {n:R.pts.length,bad,cliffs:E.length}; },[await at(L,L.ramp+Math.PI,1.8),await at(L,0,0)]);
     ok(r.cliffs>0&&!r.none&&r.bad<=2,'a route up onto the ledge goes round its cliff, by the ramp '+JSON.stringify(r)); }
+  const mp=await pg.evaluate(()=>({on:!document.getElementById('hmap').hidden,label:document.getElementById('hmz').textContent,d:DUNMAPDBG()}));
+  ok(mp.on&&mp.d&&mp.d.names>=10&&/^THE /.test(mp.label),'the corner map shows the dungeon below ground, the room you are in under it: '+JSON.stringify(mp));
+  await pg.click('#hmap canvas'); await W(800); ok(await pg.evaluate(()=>!!document.getElementById('dmapw')&&!document.getElementById('dmapw').hidden),'clicking it opens the whole dungeon');
   ok(!Object.keys(errs).length,'no page errors '+Object.keys(errs).join(' | ')); await b.close(); process.exit(bad?1:0); })();

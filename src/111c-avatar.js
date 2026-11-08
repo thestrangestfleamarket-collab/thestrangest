@@ -105,7 +105,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
     const strap=(pts,w,h)=>{ for(let i=0;i<pts.length-1;i++){ const [p,t]=pts[i], [q,u]=pts[i+1], dx=q[0]-p[0], dy=q[1]-p[1], dz=q[2]-p[2];
         const side=(P,tt)=>{ const nx=Math.sin(tt), nzz=S*Math.cos(tt), cx=dy*nzz, cy=dz*nx-dx*nzz, cz=-dy*nx, l=Math.hypot(cx,cy,cz)||1; return [[P[0]+cx/l*w,P[1]+cy/l*w,P[2]+cz/l*w],[P[0]-cx/l*w,P[1]-cy/l*w,P[2]-cz/l*w]]; };
         const [a,b]=side(p,t), [c,d]=side(q,u); quad(a,b,d,c,h); } };
-    const yN=O[2][1]+.03, yC=O[3][1]-.09, tN=.62, ST='e8c200';
+    const yN=O[2][1]+.03, yC=O[3][1]-.09, tN=.62, ST='181818';
     const loop=[]; for(let i=0;i<=20;i++){ const t=tN+(2*Math.PI-2*tN)*i/20, k=Math.sin(Math.PI*i/20); loop.push([at(yN+.03*k,t,.006),t]); } strap(loop,.008,ST);
     for(const sd of [1,-1]){ const pts=[]; for(let i=0;i<=8;i++){ const u=i/8, y=yN+(yC-yN)*u, t=sd*(tN+(.1-tN)*u); pts.push([at(y,t,.006),t]); } strap(pts,.008,ST); }
     let zf=0; for(let y=yC-.16;y<=yC;y+=.02)for(let t=-.35;t<=.35;t+=.07)zf=Math.max(zf,rad(y,t)*Math.cos(t)); zf+=.012;

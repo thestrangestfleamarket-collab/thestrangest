@@ -139,9 +139,9 @@ const AVATAR={}; window.AVATAR=AVATAR;
     R4(-.022,py-.042,.022,py-.049,.0008,'111111'); R4(-.016,py-.054,.016,py-.058,.0008,'e53935'); R4(-.026,py-.064,-.004,py-.067,.0008,'666666'); R4(.004,py-.064,.026,py-.067,.0008,'666666');
     T.spec={L:str(1),R:str(-1),H:.012+H,badge,S,rad,col:0x181818}; return T; };
   // the head's top corners rounded (owner, 8 Nov 2026: "round off the head of the avatar with true curves", "we arent round hair just the head shape", "just add rounded corners to
-  // the 4 top corners of head"): the body's own head (not what is worn on it) keeps its box below RR from its top; above, its edges to the top bend round on circles of RR; its faces
-  // there cut finer first (cutFace) and shaded smooth (sm)
-  const RR=.05, RE=.02, HB=2;
+  // the 4 top corners of head"): the body's own head (not what is worn on it) keeps its box below RR from its top; above, its edges to the top bend round on circles of RR; the head's
+  // faces over that cut away (clipBelow) for a lid (roundOf's cap), shaded smooth (sm)
+  const RR=.05, RN=3, HB=2;
   const hwOf=(d,q)=>(d.bone[q*2]===HB?d.w[q]/255:0)+(d.bone[q*2+1]===HB?1-d.w[q]/255:0);
   const roundOf=(X,d)=>{ const n=X.length/3, hb=q=>d.w[q]>=128?d.bone[q*2]:d.bone[q*2+1]; let top=-1e9;
     for(let q=0;q<n;q++)if(hb(q)===HB)top=Math.max(top,X[q*3+1]); if(!(top>-1e9))return null;
@@ -153,17 +153,22 @@ const AVATAR={}; window.AVATAR=AVATAR;
         if(az>0){ const l=Math.hypot(az,dy); nz=cz+Math.sign(z-cz)*(hz-r+az/l*r); yy=Math.min(yy,ty+dy/l*r); }
         nx=x+(nx-x)*hw; nz=z+(nz-z)*hw; ny=y+(yy-y)*hw; }
       o[i]=nx; o[i+1]=ny; o[i+2]=nz; };
-    return {at,ty:ty-RE,hb:(d_,q)=>d_.w[q]>=128?d_.bone[q*2]:d_.bone[q*2+1]}; };
-  // a head face cut where it bends: an edge over RE with part of it on the rounded strip halved; a point cut on the head's rim (f: an edge it shares with a face the head does not carry) stays where it is (pin), so it meets that face
-  const cutFace=(A,B,C,f,out,at)=>{ const o=[0,0,0], moves=(x,y,z)=>{ at(x,y,z,1,o,0); return Math.abs(o[0]-x)+Math.abs(o[1]-y)+Math.abs(o[2]-z)>1e-7; },
-      bent=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2])>RE&&[0,.25,.5,.75,1].some(t=>moves(a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t));
-    const go=(V,F)=>{ const s=[0,1,2].map(i=>bent(V[i].p,V[(i+1)%3].p)), n=s[0]+s[1]+s[2];
-      if(!n){ out.push(V); return; }
-      const mid=i=>{ const a=V[i], b=V[(i+1)%3]; return {b:[(a.b[0]+b.b[0])/2,(a.b[1]+b.b[1])/2,(a.b[2]+b.b[2])/2],p:[(a.p[0]+b.p[0])/2,(a.p[1]+b.p[1])/2,(a.p[2]+b.p[2])/2],pin:F[i]}; };
-      if(n===3){ const m0=mid(0), m1=mid(1), m2=mid(2); go([V[0],m0,m2],[F[0],0,F[2]]); go([m0,V[1],m1],[F[0],F[1],0]); go([m2,m1,V[2]],[0,F[1],F[2]]); go([m0,m1,m2],[0,0,0]); return; }
-      if(n===1){ const i=s.indexOf(true), m=mid(i); go([V[i],m,V[(i+2)%3]],[F[i],0,F[(i+2)%3]]); go([m,V[(i+1)%3],V[(i+2)%3]],[F[i],F[(i+1)%3],0]); return; }
-      const j=s.indexOf(false), k=(j+1)%3, l=(j+2)%3, a=V[j], b=V[k], c=V[l], mb=mid(k), mc=mid(l); go([mc,mb,c],[0,F[k],F[l]]); go([a,b,mb],[F[j],F[k],0]); go([a,mb,mc],[0,0,F[l]]); };
-    go([A,B,C],f); };
+    // the lid: the box from ty up as a lattice (finer across the bends) bent by at, each point's normal the mean of its faces that turn less than 60 degrees from each other
+    const brk=h=>{ const a=[-h]; for(let i=1;i<RN;i++)a.push(-h+r*i/RN); a.push(-h+r,h-r); for(let i=1;i<RN;i++)a.push(h-r+r*i/RN); a.push(h); return a; }, BX=brk(hx), BZ=brk(hz), BY=[];
+    for(let i=0;i<=RN;i++)BY.push(ty+r*i/RN);
+    const Q=[], quad=(a,b,c,d)=>{ Q.push([a,b,c],[a,c,d]); }, m=(x,y,z)=>{ const o=[0,0,0]; at(x,y,z,1,o,0); return o; };
+    for(let i=0;i<BX.length-1;i++)for(let j=0;j<BZ.length-1;j++)quad(m(cx+BX[i],top,cz+BZ[j]),m(cx+BX[i+1],top,cz+BZ[j]),m(cx+BX[i+1],top,cz+BZ[j+1]),m(cx+BX[i],top,cz+BZ[j+1]));
+    for(let k=0;k<RN;k++){ for(const sx of [-1,1])for(let j=0;j<BZ.length-1;j++)quad(m(cx+sx*hx,BY[k],cz+BZ[j]),m(cx+sx*hx,BY[k],cz+BZ[j+1]),m(cx+sx*hx,BY[k+1],cz+BZ[j+1]),m(cx+sx*hx,BY[k+1],cz+BZ[j]));
+      for(const sz of [-1,1])for(let i=0;i<BX.length-1;i++)quad(m(cx+BX[i],BY[k],cz+sz*hz),m(cx+BX[i+1],BY[k],cz+sz*hz),m(cx+BX[i+1],BY[k+1],cz+sz*hz),m(cx+BX[i],BY[k+1],cz+sz*hz)); }
+    const K=p=>Math.round(p[0]*1e5)+','+Math.round(p[1]*1e5)+','+Math.round(p[2]*1e5), AC=new Map(), V=new THREE.Vector3(), W=new THREE.Vector3();
+    const cap=Q.map(t=>{ V.fromArray(t[1]).sub(W.fromArray(t[0])); const e=new THREE.Vector3().fromArray(t[2]).sub(W), n=V.cross(e), ar=n.length(), F={p:t,fn:ar?[n.x/ar,n.y/ar,n.z/ar]:[0,1,0],ar};
+      for(const q of t){ const k=K(q); let a=AC.get(k); if(!a)AC.set(k,a=[]); a.push(F); } return F; });
+    for(const F of cap)F.nn=F.p.map(q=>{ let x=0, y=0, z=0; for(const G of AC.get(K(q)))if(G.fn[0]*F.fn[0]+G.fn[1]*F.fn[1]+G.fn[2]*F.fn[2]>.5){ x+=G.fn[0]*G.ar; y+=G.fn[1]*G.ar; z+=G.fn[2]*G.ar; } const l=Math.hypot(x,y,z); return l?[x/l,y/l,z/l]:F.fn; });
+    return {at,ty,cap}; };
+  // a head face below ty (the part over it is the lid's): each point its place in the face (b) and where it is (p), in triangles
+  const clipBelow=(V,ty)=>{ const P=[]; for(let i=0;i<3;i++){ const a=V[i], b=V[(i+1)%3], ia=a.p[1]<=ty, ib=b.p[1]<=ty; if(ia)P.push(a);
+      if(ia!==ib){ const t=(ty-a.p[1])/(b.p[1]-a.p[1]); P.push({b:a.b.map((x,k)=>x+(b.b[k]-x)*t),p:[a.p[0]+(b.p[0]-a.p[0])*t,ty,a.p[2]+(b.p[2]-a.p[2])*t]}); } }
+    const T=[]; for(let i=1;i<P.length-1;i++)T.push([P[0],P[i],P[i+1]]); return T; };
   // the face you pick (owner, 8 Nov 2026: "add all the options and let player select which one they want and the size of each on face"; the eight of mockups/faces.html): eyes and a mouth
   // drawn flat on the face over where the body's own were (style 0: the body's own), each its size; shapes in the mockup's pixels about the eye's or the mouth's middle (y down), in layers
   // R rect, E ellipse, P polygon, S stroke; a colour W white, I iris (your eye colour, or the style's), K pupil, H shine, D the skin's shade, or its own
@@ -230,11 +235,9 @@ const AVATAR={}; window.AVATAR=AVATAR;
     const XM=[], CUT=[];
     parts.forEach((P,pi)=>{ const d=D_[pi], X=XS[pi], M=new Float32Array(X), cut=new Map(); XM.push(M); CUT.push(cut);
       if(!RH||P.slot!=='body'){ for(let t=0;t<d.tri.length/3;t++)if(kept(d,t,pi))nf++; return; }
-      for(let q=0;q<X.length/3;q++){ const hw=hwOf(d,q); if(hw>0)RH.at(X[q*3],X[q*3+1],X[q*3+2],hw,M,q*3); }
-      const K=q=>Math.round(X[q*3]*1e5)+','+Math.round(X[q*3+1]*1e5)+','+Math.round(X[q*3+2]*1e5), E=(a,b)=>{ const ka=K(a), kb=K(b); return ka<kb?ka+'|'+kb:kb+'|'+ka; }, isH=t=>[0,1,2].every(j=>RH.hb(d,d.tri[t*3+j])===HB);
-      const other=new Set(); for(let t=0;t<d.tri.length/3;t++)if(kept(d,t,pi)&&!isH(t))for(let j=0;j<3;j++)other.add(E(d.tri[t*3+j],d.tri[t*3+(j+1)%3]));
-      for(let t=0;t<d.tri.length/3;t++){ if(!kept(d,t,pi))continue; if(!isH(t)){ nf++; continue; } const ix=[d.tri[t*3],d.tri[t*3+1],d.tri[t*3+2]], out=[];
-        cutFace(...ix.map((q,j)=>({b:[j===0?1:0,j===1?1:0,j===2?1:0],p:[X[q*3],X[q*3+1],X[q*3+2]]})),[0,1,2].map(j=>other.has(E(ix[j],ix[(j+1)%3]))),out,RH.at); cut.set(t,out); nf+=out.length; } });
+      for(let t=0;t<d.tri.length/3;t++){ if(!kept(d,t,pi))continue; const ix=[d.tri[t*3],d.tri[t*3+1],d.tri[t*3+2]]; if(ix.every(q=>X[q*3+1]<=RH.ty)){ nf++; continue; }
+        const out=clipBelow(ix.map((q,j)=>({b:[j===0?1:0,j===1?1:0,j===2?1:0],p:[X[q*3],X[q*3+1],X[q*3+2]]})),RH.ty); cut.set(t,out); nf+=out.length; } });
+    if(RH)nf+=RH.cap.length;
     const pos=new Float32Array(nf*9), nor=new Float32Array(nf*9), col=new Float32Array(nf*9), bi=new Float32Array(nf*6), bw=new Float32Array(nf*3), fl=new Float32Array(nf*3), hh=new Float32Array(nf*3), fd=new Float32Array(nf*9), sm=new Float32Array(nf*3), va=new THREE.Vector3(), vb=new THREE.Vector3(), vc=new THREE.Vector3(), n=new THREE.Vector3(), e=new THREE.Vector3();
     let f=0;
     parts.forEach((P,pi)=>{ const d=D_[pi], v=P.v, X=XS[pi], XR=XM[pi], cut=CUT[pi];
@@ -262,6 +265,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
         va.fromArray(XR,ix[0]*3); vb.fromArray(XR,ix[1]*3); vc.fromArray(XR,ix[2]*3); n.subVectors(vb,va).cross(e.subVectors(vc,va)).normalize();
         ix.forEach((q,j)=>{ const o=f*3+j, c=C[d.zone[q]]||C[0]; pos.set([XR[q*3],XR[q*3+1],XR[q*3+2]],o*3); nor.set([n.x,n.y,n.z],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([d.bone[q*2],d.bone[q*2+1]],o*2); bw[o]=d.w[q]/255; hh[o]=ish; if(P.cape){ const u=Math.max(0,(y1-X[q*3+1])/Math.max(1e-3,y1-y0)), x=X[q*3], z=X[q*3+2], l=Math.hypot(x,z)||1; fl[o]=u*u; fd.set([x/l*.2,0,back],o*3); } }); f++; } });
     if(SZ){ const T=new THREE.Vector3(), sh=a=>T.fromArray(a).sub(SZ.O[1]).applyMatrix3(SZ.A[1]).add(SZ.O1[1]).toArray(); for(const t of LAN)for(let j=0;j<3;j++)t[j]=sh(t[j]); if(LSP){ LSP.L=LSP.L.map(sh); LSP.R=LSP.R.map(sh); LSP.shape={O:SZ.O[1],A:SZ.A[1],O1:SZ.O1[1]}; } }   // (the lanyard on the chest as shaped)
+    if(RH){ const c=lin(L.skin); for(const F of RH.cap){ F.p.forEach((P,j)=>{ const o=f*3+j; pos.set(P,o*3); nor.set(F.nn[j],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([HB,HB],o*2); bw[o]=1; hh[o]=0; sm[o]=1; }); f++; } }
     for(const [A,B,C3,h] of FX){ const c=lin(h); [A,B,C3].forEach((P,j)=>{ const o=f*3+j; pos.set(P,o*3); nor.set([0,0,1],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([HB,HB],o*2); bw[o]=1; hh[o]=0; }); f++; }
     for(const [A,B,C3,h] of LAN){ const c=lin(h); va.fromArray(A); vb.fromArray(B); vc.fromArray(C3); n.subVectors(vb,va).cross(e.subVectors(vc,va)).normalize();
       [A,B,C3].forEach((P,j)=>{ const o=f*3+j; pos.set(P,o*3); nor.set([n.x,n.y,n.z],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([1,1],o*2); bw[o]=1; hh[o]=0; }); f++; }

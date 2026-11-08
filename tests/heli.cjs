@@ -1,4 +1,4 @@
-// THE HELIPAD CHECK: node tests/heli.cjs dist/market.html. The deck on the hotel's roof; the two helicopters take turns on the tour from the shared clock (one on the pad, one flying); a seat carries a passenger round the tour; you take the controls, SPACE lifts you, W flies you, and you land and get out; someone else flying one (the section's server says) is not yours to take.
+// THE HELIPAD CHECK: node tests/heli.cjs dist/market.html. The deck on the bank's roof; the news helicopter flies its round every five minutes from the shared clock and rests on the pad, its rotor still; a seat carries a passenger round the tour; you take the controls, SPACE lifts you, W flies you, and you land and get out; someone else flying one (the section's server says) is not yours to take.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=heli::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -8,17 +8,17 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   await pg.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=13&at=-50,-38', { waitUntil: 'commit' });
   await pg.waitForFunction(() => window.__started && window.HELI && HELI.dbg().built, null, { timeout: 400000, polling: 500 });
   const until = async (f, n = 60, a) => { for (let i = 0; i < n; i++) { if (await pg.evaluate(f, a)) return true; await pg.waitForTimeout(500); } return false; };   // (the test machine's frames are slow: wait on the game, not the clock)
-  const at = async u => { const n = await pg.evaluate(u => { const H = HELI.list[0]; HELI.skew += ((u - HELI.phase(H)) % 240 + 240) % 240; return HELI.n; }, u); await until(n => HELI.n >= n + 2, 120, n); };   // the utility's own clock to u seconds, once two of its updates have run (a place loading holds the frames)
+  const at = async u => { const n = await pg.evaluate(u => { const H = HELI.list[0]; HELI.skew += ((u - HELI.phase(H)) % 300 + 300) % 300; return HELI.n; }, u); await until(n => HELI.n >= n + 2, 120, n); };   // its own clock to u seconds, once two of its updates have run (a place loading holds the frames)
   const d0 = await pg.evaluate(() => HELI.dbg());
-  ok(d0.pad && d0.pad.top > 10 && d0.list.length === 2, 'the deck stands on the hotel roof, two helicopters: ' + JSON.stringify(d0.pad));
-  const modes = d0.list.map(h => h.mode).sort().join();
-  ok(/rest/.test(modes) && d0.list.every(h => ['rest', 'tour'].includes(h.mode)), 'the two take turns: one rests on the pad, the other flies or is about to: ' + JSON.stringify(d0.list.map(h => [h.id, h.mode, h.u])));
+  ok(d0.pad && d0.pad.top > 10 && d0.list.length === 1 && d0.list[0].id === 'news', 'the deck stands on the bank roof, one news helicopter: ' + JSON.stringify(d0.pad));
+  await at(200); const still = await pg.evaluate(() => HELI.dbg().list[0]);
+  ok(still.mode === 'rest' && still.rot === 0, 'resting on the pad its rotor is off: ' + JSON.stringify(still));
   // the tour: a helicopter flying it is high over the section, well away from the pad
   await at(60); const fly = await pg.evaluate(() => { const d = HELI.dbg(); return { d: d.list[0], pad: d.pad }; });
   ok(fly.d.mode === 'tour' && fly.d.y > fly.pad.top + 20 && Math.hypot(fly.d.x - fly.pad.x, fly.d.z - fly.pad.z) > 40, 'a minute into its flight it is up over the section: ' + JSON.stringify(fly.d));
   // ride along: back to its rest, take a seat, then its flight carries you
   await at(190); const rest = await pg.evaluate(() => { const ok = HELI.rideAlong(HELI.list[0]); return { ok, ride: RIDE.on, d: HELI.dbg().list[0] }; });
-  ok(rest.d.mode === 'rest' && rest.ok && /^heliseat:utility:/.test(rest.ride || ''), 'at rest on the pad you ride along in a seat: ' + JSON.stringify(rest));
+  ok(rest.d.mode === 'rest' && rest.ok && /^heliseat:news:/.test(rest.ride || ''), 'at rest on the pad you ride along in a seat: ' + JSON.stringify(rest));
   await at(50); await pg.waitForTimeout(800); const carried = await pg.evaluate(() => { const p = __dbg.pos(), d = HELI.dbg().list[0]; return { p, py: SHARED.py, d, ride: RIDE.on }; });
   ok(carried.d.mode === 'tour' && Math.hypot(carried.p[0] - carried.d.x, carried.p[2] - carried.d.z) < 5 && carried.py > 20, 'its tour carries you in your seat: ' + JSON.stringify({ p: carried.p, py: carried.py, heli: [carried.d.x, carried.d.y, carried.d.z] }));
   const noOut = await pg.evaluate(() => { HELI.out(); return RIDE.on; });
@@ -27,7 +27,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ok(!off.ride && off.py < 3, 'back on the pad you get out and come down to the street: ' + JSON.stringify(off));
   // fly it yourself
   await at(150); const took = await pg.evaluate(() => { HELI.fly(HELI.list[0]); return { ride: RIDE.on, hud: document.getElementById('helihud').style.display }; });
-  ok(took.ride === 'heli:utility' && took.hud === 'flex', 'you take the controls: ' + JSON.stringify(took));
+  ok(took.ride === 'heli:news' && took.hud === 'flex', 'you take the controls: ' + JSON.stringify(took));
   await until(() => HELI.dbg().fly && HELI.dbg().fly.rot >= 1); await pg.keyboard.down(' '); await until(() => { const d = HELI.dbg(); return d.fly && d.fly.y > d.pad.top + 6; }); await pg.keyboard.up(' ');
   const up = await pg.evaluate(() => HELI.dbg());
   ok(up.fly && up.fly.y > up.pad.top + 4, 'SPACE lifts it off the pad: ' + JSON.stringify(up.fly && { y: up.fly.y, top: up.pad.top }));
@@ -39,7 +39,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ok(landed.f && landed.f.down && !landed.ride && landed.d.mode === 'parked', 'SHIFT sets it down; you get out and it stays parked where it landed: ' + JSON.stringify({ down: landed.f && landed.f.down, ride: landed.ride, mode: landed.d.mode }));
   await at(136); const a = await pg.evaluate(() => HELI.dbg().list[0]); await at(225); const home = { a, b: await pg.evaluate(() => HELI.dbg().list[0]) };
   ok(home.a.mode === 'home' && home.b.mode === 'rest', 'at its next rest its pilot flies it home to the pad: ' + JSON.stringify(home));
-  const theirs = await pg.evaluate(() => { ONLINE.feed({ t: 'car', k: 'heli-amb', by: 'a' }); const H = HELI.list[1]; HELI.fly(H); return { by: H.by, ride: RIDE.on }; });
+  const theirs = await pg.evaluate(() => { ONLINE.feed({ t: 'car', k: 'heli-news', by: 'a' }); const H = HELI.list[0]; HELI.fly(H); return { by: H.by, ride: RIDE.on }; });
   ok(theirs.by === 'a' && !theirs.ride, 'one someone else flies is not yours to take: ' + JSON.stringify(theirs));
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close(); console.log(fails.length ? fails.length + ' failed' : 'all helipad checks passed'); process.exit(fails.length ? 1 : 0);

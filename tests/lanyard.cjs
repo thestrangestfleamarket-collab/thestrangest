@@ -1,4 +1,4 @@
-// THE LANYARD STRING: node tests/lanyard.cjs dist/market.html [shot-prefix]. The passport's strands and badge hang as a string (LANYARD, 111bb): they fall under gravity from the neck, swing when you move and settle when you stop, and stay outside what you wear.
+// THE LANYARD STRING: node tests/lanyard.cjs dist/market.html [shot-prefix]. The passport's strands and badge hang from the neck (LANYARD, 111bb): they barely swing when you move and settle when you stop; the badge's frame and the string's kind and colour change from YOU.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=lanyard::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -25,7 +25,9 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     let ws = [1, 1]; for (let i = 0; i < 20 && ws[0] > .005; i++)ws = await wspread();   // (till you stand still)
     await pg.waitForFunction(n => LANYARD.live()[0].n > n + 300, await pg.evaluate(() => LANYARD.live()[0].n), { timeout: 300000, polling: 500 }).catch(() => {});
     const r = await spread(150); ws = await wspread(); console.log('     standing, the pin moves', ws[0].toFixed(4), 'and the badge', ws[1].toFixed(4));
-    ok(m > .05 && r < .02 && r < m / 10, 'it swings when you turn and jump, and hangs still when you stand (the badge moves ' + m.toFixed(4) + ' on the chest, then ' + r.toFixed(4) + ')');
+    ok(m > .002 && m < .06 && r < .005, 'it barely swings when you turn and jump, and hangs still when you stand (owner, 8 Nov 2026) (the badge moves ' + m.toFixed(4) + ' on the chest, then ' + r.toFixed(4) + ')');
+    const lk = await pg.evaluate(async () => { await AVATAR.set({ ly: '3_c0392b_2_c9a227' }); await new Promise(r => setTimeout(r, 2500)); const s = LANYARD.live().slice(-1)[0]; return { code: AVATAR.L().ly, col: s && s.sm.material.color.getHexString(), live: LANYARD.live().length }; });
+    ok(lk.code === '3_c0392b_2_c9a227' && lk.col === 'c9a227' && lk.live > 0, 'the frame, the string\'s kind and its colour change from YOU (' + JSON.stringify(lk) + ')');
     const fin = await pg.evaluate(() => { const s = LANYARD.live()[0]; return [...s.X].every(Number.isFinite); });
     ok(fin, 'every point of it is a real place (no NaN)');
     if (process.argv[3]) {

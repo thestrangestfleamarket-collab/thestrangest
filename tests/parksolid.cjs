@@ -3,7 +3,7 @@ const {chromium}=require('playwright'), page=process.argv[2]||'dist/market.html'
 (async()=>{ const b=await chromium.launch({...(process.env.PWEXE?{executablePath:process.env.PWEXE}:{}),args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:1000,height:640}}); const errs=[];
   pg.on('pageerror',e=>{ errs.push(e.message); console.log('pageerror:',e.message); });
   await pg.goto('file://'+require('path').resolve(page)+'?hour=12&fresh=1&at=100,40',{waitUntil:'commit',timeout:180000});
-  for(let i=0;i<480;i++){ await pg.waitForTimeout(1000); if(await pg.evaluate(()=>!!window.__started&&!!window.PARKPFDBG&&PARKPFDBG().done).catch(()=>false))break; } await pg.waitForTimeout(3000);
+  for(let i=0;i<480;i++){ await pg.waitForTimeout(1000); if(await pg.evaluate(()=>!!window.__started&&!!window.PARKPFDBG&&PARKPFDBG().done&&!!(window.FOUNT&&FOUNT.bedAt)).catch(()=>false))break; } await pg.waitForTimeout(3000);
   const D=await pg.evaluate(()=>PARKPFDBG()); console.log('park',JSON.stringify({things:D.things,solids:D.solids,seats:D.seats,skipped:D.skipped.length}));
   if(!(D.solids>600))errs.push('too few solids: '+D.solids); if(!(D.seats>=60))errs.push('too few seats: '+D.seats);   // 72 park benches since the owner's cut (7 Nov 2026)
   const C=await pg.evaluate(()=>PARKPFCHK()); console.log('check',JSON.stringify(C)); if(C.mallBlocked)errs.push('the mall is blocked');

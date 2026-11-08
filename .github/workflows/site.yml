@@ -72,6 +72,7 @@ jobs:
           k spiders 'src/146b|src/087-npc-creatures|data/creatures|spiders\.cjs'
           k dunshare 'src/062a|src/146b|src/111d|worker/door|worker/dunmobs|dunshare\.cjs'
           k dunsrv 'worker/door|worker/dunmobs|dunmobs-server\.cjs'
+          k phone 'src/146-drone|src/146zeb|src/146ze-|phone\.cjs'
           k dm 'src/062a|src/146b|src/087|src/088|worker/dunmobs|dm\.cjs'
           k animals 'src/087|src/111db|worker/folk|animals\.cjs'
           k parksolid 'src/111fe|src/100-use|data/world|parksolid\.cjs'
@@ -254,6 +255,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' dunshare')
         run: node tests/dunshare.cjs dist/market.html
+      - name: The brick phone (every player has one, an order paid, the drone brings it to you)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' phone')
+        run: node tests/phone.cjs dist/market.html
       - name: The dungeon master (an empty dungeon, creatures put in and set up, a room laid out)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' dm')

@@ -1656,5 +1656,10 @@
  },
  "x_can": {
   "value": 1
+ },
+ "brickphone": {
+  "slot": "hand",
+  "value": 150,
+  "weight": 0.9
  }
 }

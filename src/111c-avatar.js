@@ -136,7 +136,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
     R4(-.022,py-.042,.022,py-.049,.0008,'111111'); R4(-.016,py-.054,.016,py-.058,.0008,'e53935'); R4(-.026,py-.064,-.004,py-.067,.0008,'666666'); R4(.004,py-.064,.026,py-.067,.0008,'666666');
     T.spec={L:str(1),R:str(-1),H:.012+H,badge,S,rad,col:0x181818}; return T; };
   // the head round (owner, 8 Nov 2026: "round off the head of the avatar with true curves", "we arent round hair just the head shape"): the body's own head (not what is worn on it)
-  // drawn from the skull's box toward its round along each line out from its middle; its faces cut finer first (no edge over RE, none where they meet a face the head does not carry)
+  // drawn from the skull's box toward its round along each line out from its middle, less toward the jaw; its faces cut finer first (no edge over RE, none where they meet a face the head does not carry)
   // and shaded smooth (sm); nothing where the head meets the neck
   const RK=1, RE=.03, HB=2;
   const hwOf=(d,q)=>(d.bone[q*2]===HB?d.w[q]/255:0)+(d.bone[q*2+1]===HB?1-d.w[q]/255:0);
@@ -146,7 +146,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
     const C=[(x0+x1)/2,(top+bot)/2,(z0+z1)/2], H=[(x1-x0)/2,(top-bot)/2,(z1-z0)/2], F=.4*Math.min(H[0],H[2]), T=d.tri, N=[];
     for(let t=0;t<T.length/3;t++){ const v=[T[t*3],T[t*3+1],T[t*3+2]]; if(v.every(q=>hb(q)===HB))continue; for(const q of v)if(hb(q)===HB)N.push(X[q*3],X[q*3+1],X[q*3+2]); }
     const at=(x,y,z,hw,o,i)=>{ const qx=(x-C[0])/H[0], qy=(y-C[1])/H[1], qz=(z-C[2])/H[2], ri=Math.max(Math.abs(qx),Math.abs(qy),Math.abs(qz)), r2=Math.hypot(qx,qy,qz);
-      let k=RK*hw*Math.max(0,Math.min(1,(1.8-ri)/.5));
+      const v=Math.max(0,Math.min(1,(qy+.9)/.7)); let k=RK*hw*Math.max(0,Math.min(1,(1.8-ri)/.5))*v*v*(3-2*v);
       if(k>0&&r2>1e-6){ let dm=1e9; for(let j=0;j<N.length;j+=3)dm=Math.min(dm,Math.hypot(x-N[j],y-N[j+1],z-N[j+2])); const u=Math.min(1,dm/F); k*=u*u*(3-2*u); }
       const s=k>0?1+k*(ri/r2-1):1; o[i]=C[0]+qx*s*H[0]; o[i+1]=C[1]+qy*s*H[1]; o[i+2]=C[2]+qz*s*H[2]; };
     return {at,hb:(d_,q)=>d_.w[q]>=128?d_.bone[q*2]:d_.bone[q*2+1]}; };

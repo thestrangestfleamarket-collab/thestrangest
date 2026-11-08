@@ -40,7 +40,7 @@ PARK.climbable=[];
     const IM=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,1),new THREE.MeshLambertMaterial({color:0xffffff}),puffs.length), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), v=new THREE.Vector3(), s=new THREE.Vector3(), c=new THREE.Color();
     puffs.forEach(([x,y,z,r,k],i)=>{ IM.setMatrixAt(i,m4.compose(v.set(x,y,z),q,s.setScalar(r))); const G=GREEN[k]; IM.setColorAt(i,c.setRGB(G[0],G[1],G[2],THREE.SRGBColorSpace)); });
     IM.castShadow=IM.receiveShadow=true; IM.computeBoundingSphere(); g.add(IM); PARK.bigLeaves=IM;
-    PEEK.mark(IM.geometry,new Uint8Array(IM.geometry.attributes.position.count).fill(4));   // seen through round you like the park's other big trees (PEEK)
-    for(const it of items){ PEEK.mark(it.mesh.geometry,new Uint8Array(it.P.length/3).fill(4)); const B=new THREE.Box3(); it.mesh.geometry.computeBoundingBox(); B.copy(it.mesh.geometry.boundingBox);
+    PEEK.mark(IM.geometry,new Uint8Array(IM.geometry.attributes.position.count).fill(5));   // seen through round you like the park's other big trees (PEEK)
+    for(const it of items){ PEEK.mark(it.mesh.geometry,new Uint8Array(it.P.length/3).fill(5)); const B=new THREE.Box3(); it.mesh.geometry.computeBoundingBox(); B.copy(it.mesh.geometry.boundingBox);
       for(let i=it.p0;i<it.p1;i++){ const [x,y,z,r]=puffs[i]; B.expandByPoint(v.set(x-r,y-r,z-r)); B.expandByPoint(v.set(x+r,y+r,z+r)); } PEEK.box(IM,B.min.x,B.min.y,B.min.z,B.max.x,B.max.y,B.max.z); } },'144d-bigtrees');
   window.BIGTREESDBG=()=>({trees:(PARK.big||[]).length,climbable:PARK.climbable.length,puffs:PARK.bigLeaves?PARK.bigLeaves.count:0,branches:(PARK.big||[]).map(t=>t.lb.length),tris:(PARK.big||[]).reduce((a,t)=>a+t.v1/3,0)}); }

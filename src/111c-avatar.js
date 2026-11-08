@@ -48,7 +48,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
     Chop:['Chopping wood',0,.97,1],Fix:['Fixing',0,5.2,1],Push:['Pushing',0,2.67,1],Torch:['Holding torch',0,1.27,1],Lantern:['Holding lantern',0,2.5,1],Drink:['Drinking',2.1,5.7],Open:['Opening',0,1.37],Use:['Interact',0,2],Land:['Hard landing',0,1.6]};
   // what the avatar plays for what the rig is doing (owner, 7 Nov 2026): the rig's move or state, and Polyfork's clip in its place: n the clip, t seconds into it (or u, the move's
   // share done, played over [a,b]), seat: the hips where the rig has them (a seat, the water); loco: walked by the ground covered like the walk
-  const MV={mc_eat:'Eating',mc_plant:'Planting',mc_harvest:'Harvesting',mc_water:'Watering',mc_craft:'Fixing',mc_sitDown:['Sit down',0,1.3,1],pick:'Pick up'};   // (the punches and the slap: the rig's own; the kicks and the hook drawn from Mesh2Motion's recordings, RIG.LOOK)
+  const MV={mc_eat:['Drinking',2.1,5.7],mc_plant:'Planting',mc_harvest:'Harvesting',mc_water:'Watering',mc_craft:'Fixing',mc_sitDown:['Sit down',0,1.3,1],pick:'Pick up'};   // (the punches and the slap: the rig's own; the kicks and the hook drawn from Mesh2Motion's recordings, RIG.LOOK)
   const one=(m,e)=>{ const u=m.def&&m.def.dur?Math.min(1,m.t/m.def.dur):0; return typeof e==='string'?{n:e,u,a:0,b:null}:{n:e[0],u,a:e[1],b:e[2],seat:!!e[3]}; };
   AVATAR.act=S=>{ const m=S.move, up=S.up, W=S.water, now=performance.now();
     if(S.sit)S._pfSat=1; else if(S._pfSat){ S._pfSat=0; S._pfUp=now; }   // (up from a seat: Polyfork's stand-up, unless you walk off)
@@ -91,17 +91,17 @@ const AVATAR={}; window.AVATAR=AVATAR;
       q.copy(p).sub(w.E).addScaledVector(w.a,-w.len); const x=q.dot(w.u1), y=q.dot(w.u2);
       const nx=w.R[0]+(x-w.R[0])*(1+(w.kx-1)*s)+(w.H[0]-w.R[0])*s, ny=w.R[1]+(y-w.R[1])*(1+(w.ky-1)*s)+(w.H[1]-w.R[1])*s;
       p.addScaledVector(w.u1,nx-x).addScaledVector(w.u2,ny-y); X[i*3]=p.x; X[i*3+1]=p.y; X[i*3+2]=p.z; } };
-  function geoFor(J,L,bare){ const worn=[]; for(const [s] of SLOTS){ const w=L.w[s], p=w&&J.byN.get(w[0]); if(p&&!(bare&&s==='feet'))worn.push([s,p,w[1]]); }   // (barefoot: your shoes off, LOOKS.shoes)
+  function geoFor(J,L,bare,nob){ const worn=[]; for(const [s] of SLOTS){ const w=L.w[s], p=w&&J.byN.get(w[0]); if(p&&!(bare&&s==='feet'))worn.push([s,p,w[1]]); }   // (barefoot: your shoes off, LOOKS.shoes)
     const cov=new Set(); for(const [,p] of worn)for(const c of p.covers)cov.add(c); const hide=culled(c=>cov.has(c));
     const pfh=!cov.has('hands'), hb=(d,q)=>{ const b=d.w[q]>=128?d.bone[q*2]:d.bone[q*2+1]; return b===5||b===8; }, isHand=(P,d,t)=>pfh&&P.slot==='body'&&hb(d,d.tri[t*3])&&hb(d,d.tri[t*3+1])&&hb(d,d.tri[t*3+2]);   // (bare hands: its own simple ones marked hh, folded away while Polyfork's jointed ones are drawn, near the camera: 111b)
     const hat=worn.find(x=>x[0]==='hat'), coat=worn.find(x=>x[0]==='coat');
-    const parts=[{v:J.body.v[L.b],zones:J.body.zones,pal:J.body.pal,main:null,col:null,slot:'body'}];
+    const parts=nob?[]:[{v:J.body.v[L.b],zones:J.body.zones,pal:J.body.pal,main:null,col:null,slot:'body'}];
     for(const [s,p,c] of worn){ if(s==='hair'&&cov.has('hair'))continue;
       const alt=(s==='hair'&&hat||s==='top'&&coat&&coat[1].covers.includes('sleeves'))&&p.alt&&p.alt[L.b], v=alt||p.v[L.b]; if(v)parts.push({v,zones:p.zones,pal:p.pal,main:p.main,col:c,slot:s,cape:/CAPE/.test(p.k||p.label)}); }
     let nf=0; const D_=parts.map(P=>{ const d=dec(P.v); let k=0; for(let t=0;t<d.tri.length/3;t++)if(!(d.reg&&d.reg[t]<255&&hide[d.reg[t]]))k++; nf+=k; return d; });
     const pos=new Float32Array(nf*9), nor=new Float32Array(nf*9), col=new Float32Array(nf*9), bi=new Float32Array(nf*6), bw=new Float32Array(nf*3), fl=new Float32Array(nf*3), hh=new Float32Array(nf*3), fd=new Float32Array(nf*9), va=new THREE.Vector3(), vb=new THREE.Vector3(), vc=new THREE.Vector3(), n=new THREE.Vector3(), e=new THREE.Vector3();
     let f=0;
-    const unq=(d,v)=>{ const Q=d.pos, X=new Float32Array(Q.length); for(let i=0;i<Q.length;i++)X[i]=(Q[i]+32500)*v.sc+v.lo[i%3]; return X; }, WF=pfh?wristFit(unq(D_[0],parts[0].v),D_[0],L):null;
+    const unq=(d,v)=>{ const Q=d.pos, X=new Float32Array(Q.length); for(let i=0;i<Q.length;i++)X[i]=(Q[i]+32500)*v.sc+v.lo[i%3]; return X; }, WF=pfh&&!nob?wristFit(unq(D_[0],parts[0].v),D_[0],L):null;
     parts.forEach((P,pi)=>{ const d=D_[pi], v=P.v, X=unq(d,v); if(WF&&WF.length)fitWrist(X,d,WF); else taper(X,d,L.f);
       let y0=1e9, y1=-1e9; if(P.cape)for(let i=1;i<X.length;i+=3){ y0=Math.min(y0,X[i]); y1=Math.max(y1,X[i]); }   // a cape: how far down it each point is, and which way is out from the body
       const cz=P.col&&P.col.includes('_')?P.col.split('_'):null;
@@ -190,6 +190,8 @@ const AVATAR={}; window.AVATAR=AVATAR;
   // a WEAR line's kinds, each with its versions (who wears it), for your figure; the one-each piece first
   const esc=t=>String(t).replace(/[&<>"]/g,c=>'&#'+c.charCodeAt(0)+';'), KC={};
   const kinds=s=>KC[L.f+s]||(KC[L.f+s]=(()=>{ const M=new Map(); for(const p of I.pieces.filter(p=>p.slot===s&&p.figs.includes(L.f)).sort((a,b)=>a.k.localeCompare(b.k)||(a.label===a.k?-1:b.label===b.k?1:a.v.localeCompare(b.v)))){ if(!M.has(p.k))M.set(p.k,[]); M.get(p.k).push(p); } return M; })());
+  // a still figure (or just the pieces, body false) in your build and colours, wearing w: the ITEM editor's pictures (140ba)
+  AVATAR.statue=(w,{body=true,f}={})=>{ const M={...L,f:f||L.f,w,bare:false}; return need(M.f,M.w).then(J=>geoFor(J,M,false,!body)); };
   AVATAR.pieces=I.pieces; AVATAR.outfits=I.outfits||[];
   AVATAR.outfit=i=>{ const o=AVATAR.outfits[i]; if(!o)return refresh(); L.w={}; for(const [s,[n,c]] of Object.entries(o.w)){ const p=byN.get(n); if(p&&p.figs.includes(L.f)&&SLOTS.some(x=>x[0]===s))L.w[s]=[n,c||'']; } return AVATAR.set(o.hair?{hair:o.hair}:{}); };
   AVATAR.draw=draw; LOOKS.onChange=()=>refresh();

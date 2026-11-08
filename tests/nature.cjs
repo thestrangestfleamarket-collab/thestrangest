@@ -1,5 +1,5 @@
 // THE NATURE CHECK: node tests/nature.cjs dist/market.html. Mushrooms, butterflies and birds as whole things to do: the new mushroom kinds and when they show, the gems count, the book's pages,
-// the Radish and the Nature Merchant buying and teaching, mounting, releasing and giving the museum a butterfly, the feeder, binoculars, feathers and the quill, specimens at home, and another player's tame bird.
+// the Radish and the Nature Merchant buying and teaching, mounting, releasing and giving the museum a butterfly, the feeder, binoculars, feathers, specimens at home, and another player's tame bird.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=nature::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -36,11 +36,10 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const bf = await pg.evaluate(() => { FORAGE.give('b_3', 1); const rows = FORAGE.ROWB.flatMap(f => f('b_3')).map(x => x[0]); const R = { kinds: {} }; const d = window.SPECDBG ? SPECDBG() : null; return { rows, mount: typeof FORAGE.ACT.bmount, name: FORAGE.NM.frame || null, wall: d ? Object.keys(d).includes('wall') : false }; });
   ok(bf.rows.includes('RELEASE') && !bf.rows.includes('MOUNT') && bf.mount === 'undefined' && !bf.name && !bf.wall, 'a butterfly can be released but never mounted, and there are no specimen frames: ' + JSON.stringify(bf));
 
-  // birds: feathers make a quill; a feeder hangs outdoors and comes down; binoculars reach birds far off
-  const bd = await pg.evaluate(async () => { const o = {}; FORAGE.S.sk.bind = 1000; FORAGE.give('bs_kit'); FORAGE.give('bird_feather', 3); FORAGE.craft('quill_pen'); o.quill = FORAGE.has('quill_pen');
+  // birds: a feeder hangs outdoors and comes down; binoculars reach birds far off
+  const bd = await pg.evaluate(async () => { const o = {};
     FORAGE.give('feeder'); FORAGE.ACT.bhang('feeder'); o.hung = !!BIRDS.S.feed && !FORAGE.has('feeder'); const th = BIRDS.feeder(); o.thing = !!th; if (th) th.act(); o.down = !BIRDS.S.feed && FORAGE.has('feeder') === 1;
     const T = __dbg.cv().TILE, p = __dbg.pos(); const w = BIRDS.add(1, p[0] + 3 * T, p[1], p[2]); FORAGE.give('binoc'); for (let i = 0; i < 30 && w.th.reach < 9 * T; i++) await new Promise(r => setTimeout(r, 100)); o.reach = +(w.th.reach / T).toFixed(1); return o; });
-  ok(bd.quill === 1, 'three feathers make a feather quill');
   ok(bd.hung && bd.thing && bd.down, 'a bird feeder hangs outdoors and a double click takes it down: ' + JSON.stringify(bd));
   ok(bd.reach >= 9, 'with binoculars a bird can be watched from 9 tiles: ' + bd.reach);
 

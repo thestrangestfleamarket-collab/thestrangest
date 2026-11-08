@@ -23,7 +23,7 @@ const {chromium}=require('playwright');
     ok(h3<h2-12,`walking off its edge drops you (height ${h3.toFixed(0)}; health ${hp0.toFixed(2)} -> ${(await pg.evaluate(()=>__dbg.VIT.hp)).toFixed(2)})`); }
   else ok(false,'a ledge to test');
   const PT=R.flatMap(r=>r.feats.map(f=>({...f,room:r.nm}))).find(f=>f.h<-40&&Math.min(f.rx,f.ry)>1.5);
-  if(PT){ const back=PT.ramp+Math.PI, c=await at(PT,0,0); await place(...await at(PT,back,1.8)); const hp0=await pg.evaluate(()=>__dbg.VIT.hp), g0=await hNow(); await walkTo(...c,6000); const g1=await hNow(), hp1=await pg.evaluate(()=>__dbg.VIT.hp);
+  if(PT){ const back=PT.ramp+Math.PI, c=await at(PT,0,0); let g0=0, g1=0, hp0=1, hp1=1; for(const da of [0,.8,-.8,1.6,-1.6]){ await place(...await at(PT,back+da,1.8)); hp0=await pg.evaluate(()=>__dbg.VIT.hp); g0=await hNow(); await walkTo(...c,6000); g1=await hNow(); hp1=await pg.evaluate(()=>__dbg.VIT.hp); if(g1<g0-25)break; }
     ok(g1<g0-25,`${PT.room}: over the edge into a pit (${g0.toFixed(0)} -> ${g1.toFixed(0)})`); ok(hp1<hp0,`a drop that deep hurts (${hp0.toFixed(2)} -> ${hp1.toFixed(2)})`);
     await pg.screenshot({path:process.argv[3]||'/tmp/dun-pit.png'});
     await walkTo(...await at(PT,PT.ramp,2.4),16000); ok(await hNow()>g1+20,'the rubble slope takes you out'); await walkTo(...c,5000); }

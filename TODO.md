@@ -50,6 +50,7 @@ One pull request each, in this order; the game stays playable after every one.
 ## For the owner
 
 **To try on the live site** (one sitting; each line is in its area below):
+phones and tablets: the touch pad, its layout, a controller on a phone (8 Nov) ·
 the Mesh2Motion moves · the cars, their insides and the radio · the menus, the start spot, the map and GO TO (#563, #571, #576) ·
 the HUD margin on his screen · the fair's fence · a ghost's revival in the bath · the egg poacher · the fluffy grass · the castle at night ·
 VR on the Quest 3 (and the painter in it) · the Polyfork avatar, the only body now, and the new YOU window (5 Nov).

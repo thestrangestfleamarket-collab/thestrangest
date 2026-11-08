@@ -29,7 +29,8 @@ PARK.climbable=[];
       for(let q=0;q<=4;q++){ const u=q/4; pts.push([...at(h+L*up*u*(.6+.4*u),a,L*u*M),Math.max(.12,r*(1-.75*u))*M]); } branch(pts,false); }
     for(let k=0;k<6;k++){ const a=k/6*6.28+.4+face; tube([[x,y+2.5*M,z,1.6*M],[...at(.3,a,4*M),.9*M],[...at(-.3,a,6.5*M),.25*M]],P); }   // roots flaring at the foot
     for(let h=S.h*.66;h<S.h+2;h+=3.2){ const n=3+Math.floor(hs(i,h)*2); for(let k=0;k<n;k++){ const a=hs(i,h+k)*6.28; puff(...at(h,a,(rAt(h)+2+2*hs(h,k))*M),(1.6+1.2*hs(k,h))*M); } }   // the crown up the top of the trunk
-    const tr=rAt(1.5)*M, sol=[x-tr*.8,z-tr*.8,x+tr*.8,z+tr*.8], fix=[x-tr*.8,z-tr*.8,0,x+tr*.8,z+tr*.8,S.h*M]; SOL.up.push(sol); FIX.up.push(fix);
+    const tr=rAt(1.5)*M, rb=S.r0*M, sol=[x-tr*.8,z-tr*.8,x+tr*.8,z+tr*.8], fix=[x-tr*.8,z-tr*.8,0,x+tr*.8,z+tr*.8,S.h*M]; FIX.up.push(fix);
+    for(const [a,b] of [[.72,.72],[1,.42],[.42,1]])SOL.up.push([x-rb*a,z-rb*b,x+rb*a,z+rb*b]);   // the foot is solid as wide as it flares (an octagon of three boxes), not just the trunk higher up
     return {k:'BIG'+(o.kind||'A'),x,y,z,top:y+S.h*M,r:30*M,tr,fork:0,v0:0,v1:P.length/3,P:new Float32Array(P),LF:[],lb,sol,fix,climb:!!o.climb}; };
   PARK.later(()=>{ '@park'; const L=(LEVEL.bigTrees||[]).filter(o=>o.kind); if(!L.length)return; const g=MAPG.park||scene, puffs=[], bark=new THREE.MeshLambertMaterial({color:0x6a5040,flatShading:true});
     const items=L.map((o,i)=>make(o,i,puffs)); PARK.big=items;

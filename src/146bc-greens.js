@@ -60,7 +60,7 @@ import {PAD} from './075-main-13.js';
   const holed=()=>{ if(!D)return; const n=D.strokes, w=n===1?'A HOLE IN ONE!':n===PAR-1?'A BIRDIE.':n===PAR?'PAR.':n===PAR+1?'A BOGEY.':n+' STROKES.'; SFX.play('clunk',{vol:.6,pitch:3.2}); setTimeout(()=>SFX.play('blip',{vol:.4,pitch:1.4}),160);
     say('IN. '+w,n<=PAR?'#7dffa4':'#e8e2cc'); finishHole(n); };
   const finishHole=n=>{ '@later'; if(!D)return; D.done=true; D.rounds++; const K=OWNED.get('greens'); let S={}; try{ S=JSON.parse(K||'{}')||{}; }catch(e){} S.best=S.best||{}; const b=S.best.zen; if(b==null||n<b){ S.best.zen=n; if(b!=null)say('A NEW BEST ON THE HOLE: '+n+'.','#f2c14e'); } S.rounds=(S.rounds||0)+1; OWNED.set('greens',JSON.stringify(S)); D.best=S.best.zen;
-    if(n<=PAR){ FORAGE.use('golf',-10,610); if(n<PAR){ FORAGE.use('golf',-10,610); INV.cash+=5; say('THE HOLODECK PAYS $5 FOR GOING UNDER PAR.','#f2c14e'); } }
+    if(n<=PAR){ FORAGE.use('golf',-10,610); if(n<PAR){ FORAGE.use('golf',-10,610); const pay=Math.round((PAR-n)*(5+FORAGE.sk('golf')/4)); INV.cash+=pay; say('THE HOLODECK PAYS $'+pay+' FOR GOING UNDER PAR.','#f2c14e'); } }
     card(); setTimeout(()=>{ if(!D)return; place(TEE.x,TEE.z); D.strokes=0; D.done=false; say('THE BALL IS BACK ON THE TEE.','#9b9584'); card(); },2600); };
 
   /* ---------- addressing the ball on screen: F or the ball itself walks you behind it; the mouse aims, the held button draws back ---------- */

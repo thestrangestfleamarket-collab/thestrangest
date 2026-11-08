@@ -18,11 +18,31 @@ const AVATAR={}; window.AVATAR=AVATAR;
 
   /* ---------- a look as a short code for the other players: figure.build.height.skin.hair, then each slot (piece number in base 36, ~colour) ---------- */
   const enc=([s],L)=>{ const w=L.w[s]; return w&&w[0]!=null?w[0].toString(36)+(w[1]?'~'+w[1]:''):''; }, at=i=>i<OLD?5+i:6+i;
-  const code=L=>[L.f,L.b,L.h,L.skin,L.hair,...SLOTS.slice(0,OLD).map(x=>enc(x,L)),L.bare?'1':'',...SLOTS.slice(OLD).map(x=>enc(x,L)),L.eye&&L.eye!==EYE0?L.eye:'',L.lan?'1':''].join('.').replace(/\.+$/,'');   // (then barefoot, then the later slots, then the eyes)
+  // the designer's shape (8 Nov 2026): each part's SIZE, LENGTH, WIDTH and DEPTH in percent (50–150), a part being one or both sides' bones; in the look code as two base-36 digits a value
+  const SHP=AVATAR.SHAPE=[['head','HEAD',[2]],['chest','CHEST',[1]],['hips','HIPS',[0]],['uarm','UPPER ARM',[3,6]],['farm','FOREARM',[4,7]],['hand','HAND',[5,8]],['thigh','THIGH',[9,12]],['shin','SHIN',[10,13]],['foot','FOOT',[11,14]]], SHD=['SIZE','LENGTH','WIDTH','DEPTH'];
+  AVATAR.DIMS=SHD;
+  const shPlain=sh=>!sh||SHP.every(([k])=>!sh[k]||sh[k].every(v=>v===100));
+  const shEnc=sh=>shPlain(sh)?'':SHP.map(([k])=>(sh[k]||[100,100,100,100]).map(v=>Math.max(0,Math.min(100,Math.round(v)-50)).toString(36).padStart(2,'0')).join('')).join('');
+  const shDec=c=>{ if(!c||!/^[0-9a-z]+$/.test(c)||c.length!==SHP.length*8)return null; const o={}; SHP.forEach(([k],i)=>{ const v=[0,1,2,3].map(j=>50+(parseInt(c.substr(i*8+j*2,2),36)||0)); if(v.some(x=>x!==100))o[k]=v; }); return Object.keys(o).length?o:null; };
+  // a shape on a figure's skeleton: each bone's stretch (along it, across it, front to back) about its own joint, and every joint moved by its parent's; the soles kept on the ground
+  const SHC=new Map(), CH={hips:'torso',torso:'head',upperArmL:'forearmL',forearmL:'handL',upperArmR:'forearmR',forearmR:'handR',thighL:'shinL',shinL:'shoeL',thighR:'shinR',shinR:'shoeR'};
+  const shapeOf=(f,sh)=>{ if(shPlain(sh))return null; const k=f+shEnc(sh); if(SHC.has(k))return SHC.get(k); const B=BODIES.BONES, P=BODIES.PARENT, S=I.skel[f], O=S.origin.map(o=>new THREE.Vector3(...o)), A=[], V=new THREE.Vector3();
+    const part={}; for(const [pk,,ix] of SHP)for(const i of ix)part[i]=sh[pk]||[100,100,100,100];
+    B.forEach((n,i)=>{ const v=(part[i]||[100,100,100,100]).map(x=>x/100), sz=v[0]; let u, sd, fr;
+      if(/^shoe/.test(n)){ u=new THREE.Vector3(0,0,1); sd=new THREE.Vector3(1,0,0); fr=new THREE.Vector3(0,1,0); }
+      else { const c=CH[n]||(/^hand/.test(n)?P[n]:null); u=CH[n]?O[B.indexOf(CH[n])].clone().sub(O[i]):c?O[i].clone().sub(O[B.indexOf(c)]):new THREE.Vector3(0,1,0); u.normalize(); sd=new THREE.Vector3(1,0,0).addScaledVector(u,-u.x).normalize(); fr=new THREE.Vector3().crossVectors(u,sd).normalize(); }
+      const M=new THREE.Matrix3(), add=(a,k)=>{ const e=M.elements; for(let r=0;r<3;r++)for(let q=0;q<3;q++)e[q*3+r]+=k*a.getComponent(r)*a.getComponent(q); }; M.elements.fill(0); add(u,sz*v[1]); add(sd,sz*v[2]); add(fr,sz*v[3]); A[i]=M; });
+    const O1=O.map(o=>o.clone()); B.forEach((n,i)=>{ if(!P[n])return; const p=B.indexOf(P[n]); O1[i].copy(O1[p]).add(V.copy(O[i]).sub(O[p]).applyMatrix3(A[p])); });
+    const sole=i=>V.set(O[i].x,0,O[i].z).sub(O[i]).applyMatrix3(A[i]).add(O1[i]).y, dy=-Math.min(sole(11),sole(14)); for(const o of O1)o.y+=dy;
+    const r={O,O1,A}; SHC.set(k,r); return r; };
+  // a part's points (rest, metres) moved by the shape: each by its two bones, as they weigh it
+  const reshape=(X,d,Z)=>{ const T=new THREE.Vector3(), U=new THREE.Vector3(); for(let q=0;q<X.length/3;q++){ const b1=d.bone[q*2], b2=d.bone[q*2+1], w=d.w[q]/255, x=X[q*3], y=X[q*3+1], z=X[q*3+2];
+      T.set(x,y,z).sub(Z.O[b1]).applyMatrix3(Z.A[b1]).add(Z.O1[b1]); U.set(x,y,z).sub(Z.O[b2]).applyMatrix3(Z.A[b2]).add(Z.O1[b2]); X[q*3]=T.x*w+U.x*(1-w); X[q*3+1]=T.y*w+U.y*(1-w); X[q*3+2]=T.z*w+U.z*(1-w); } };
+  const code=L=>[L.f,L.b,L.h,L.skin,L.hair,...SLOTS.slice(0,OLD).map(x=>enc(x,L)),L.bare?'1':'',...SLOTS.slice(OLD).map(x=>enc(x,L)),L.eye&&L.eye!==EYE0?L.eye:'',L.lan?'1':'',shEnc(L.sh)].join('.').replace(/\.+$/,'');   // (then barefoot, then the later slots, then the eyes)
   const hex=s=>/^[0-9a-f]{6}$/.test(s||'')?s:null, cols=s=>/^[0-9a-f]{6}$|^(?:[0-9a-f]{6})?(?:_(?:[0-9a-f]{6})?)+$/.test(s||'')?s:null;   // one colour (the piece's main part), or one a part in the piece's zone order, _ between (an empty part keeps its own)
   const decode=c=>{ '@later'; const a=String(c||'').split('.'), L=DEF(); if(a.length<5)return L;
     L.f=a[0]==='f'?'f':'m'; L.b=Math.min(2,Math.max(0,parseInt(a[1])||0)); L.h=Math.min(110,Math.max(90,parseInt(a[2])||100)); L.skin=hex(a[3])||L.skin; L.hair=hex(a[4])||L.hair; L.w={};
-    if(a[5+OLD]==='1')L.bare=true; { const e=hex(a[6+SLOTS.length]); if(e)L.eye=e; } if(a[7+SLOTS.length]==='1')L.lan=1;
+    if(a[5+OLD]==='1')L.bare=true; { const e=hex(a[6+SLOTS.length]); if(e)L.eye=e; } if(a[7+SLOTS.length]==='1')L.lan=1; { const sh=shDec(a[8+SLOTS.length]); if(sh)L.sh=sh; }
     SLOTS.forEach(([s],i)=>{ const v=a[at(i)]; if(!v)return; const [n,col]=v.split('~'), p=byN.get(parseInt(n,36)); if(p&&p.slot===s&&p.figs.includes(L.f))L.w[s]=[p.n,cols(col)||'']; });
     return L; };
 
@@ -126,7 +146,8 @@ const AVATAR={}; window.AVATAR=AVATAR;
     const pos=new Float32Array(nf*9), nor=new Float32Array(nf*9), col=new Float32Array(nf*9), bi=new Float32Array(nf*6), bw=new Float32Array(nf*3), fl=new Float32Array(nf*3), hh=new Float32Array(nf*3), fd=new Float32Array(nf*9), va=new THREE.Vector3(), vb=new THREE.Vector3(), vc=new THREE.Vector3(), n=new THREE.Vector3(), e=new THREE.Vector3();
     let f=0;
     const unq=(d,v)=>{ const Q=d.pos, X=new Float32Array(Q.length); for(let i=0;i<Q.length;i++)X[i]=(Q[i]+32500)*v.sc+v.lo[i%3]; return X; }, WF=pfh&&!nob?wristFit(unq(D_[0],parts[0].v),D_[0],L):null;
-    parts.forEach((P,pi)=>{ const d=D_[pi], v=P.v, X=unq(d,v); if(WF&&WF.length)fitWrist(X,d,WF); else taper(X,d,L.f);
+    const SZ=shapeOf(L.f,L.sh);
+    parts.forEach((P,pi)=>{ const d=D_[pi], v=P.v, X=unq(d,v); if(WF&&WF.length)fitWrist(X,d,WF); else taper(X,d,L.f); if(SZ)reshape(X,d,SZ);
       let y0=1e9, y1=-1e9; if(P.cape)for(let i=1;i<X.length;i+=3){ y0=Math.min(y0,X[i]); y1=Math.max(y1,X[i]); }   // a cape: how far down it each point is, and which way is out from the body
       const cz=P.col&&P.col.includes('_')?P.col.split('_'):null;
       const C=P.zones.map((z,i)=>{ if(z==='skin')return lin(L.skin); if(P.slot==='body'&&z==='brow')return lin(L.hair); if(P.slot==='body'&&z==='eye'&&L.eye)return lin(L.eye);
@@ -134,6 +155,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
       for(let t=0;t<d.tri.length/3;t++){ if(d.reg&&d.reg[t]<255&&hide[d.reg[t]])continue; const ix=[d.tri[t*3],d.tri[t*3+1],d.tri[t*3+2]], ish=isHand(P,d,t)?1:0;
         va.fromArray(X,ix[0]*3); vb.fromArray(X,ix[1]*3); vc.fromArray(X,ix[2]*3); n.subVectors(vb,va).cross(e.subVectors(vc,va)).normalize();
         ix.forEach((q,j)=>{ const o=f*3+j, c=C[d.zone[q]]||C[0]; pos.set([X[q*3],X[q*3+1],X[q*3+2]],o*3); nor.set([n.x,n.y,n.z],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([d.bone[q*2],d.bone[q*2+1]],o*2); bw[o]=d.w[q]/255; hh[o]=ish; if(P.cape){ const u=Math.max(0,(y1-X[q*3+1])/Math.max(1e-3,y1-y0)), x=X[q*3], z=X[q*3+2], l=Math.hypot(x,z)||1; fl[o]=u*u; fd.set([x/l*.2,0,back],o*3); } }); f++; } });
+    if(SZ){ const T=new THREE.Vector3(); for(const t of LAN)for(let j=0;j<3;j++){ T.fromArray(t[j]).sub(SZ.O[1]).applyMatrix3(SZ.A[1]).add(SZ.O1[1]); t[j]=T.toArray(); } }   // (the lanyard on the chest as shaped)
     for(const [A,B,C3,h] of LAN){ const c=lin(h); va.fromArray(A); vb.fromArray(B); vc.fromArray(C3); n.subVectors(vb,va).cross(e.subVectors(vc,va)).normalize();
       [A,B,C3].forEach((P,j)=>{ const o=f*3+j; pos.set(P,o*3); nor.set([n.x,n.y,n.z],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([1,1],o*2); bw[o]=1; hh[o]=0; }); f++; }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('normal',new THREE.BufferAttribute(nor,3)); g.setAttribute('color',new THREE.BufferAttribute(col,3));
@@ -141,7 +163,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
     g.userData.hands=pfh?{skin:L.skin,b:L.b,grip:{L:!!L.w.lefthand,R:!!L.w.righthand}}:null; return g; }
   const empty=()=>{ const g=new THREE.BufferGeometry(); for(const [k,s] of [['position',3],['normal',3],['color',3],['bi',2],['bw',1],['fl',1],['fd',3],['hh',1]])g.setAttribute(k,new THREE.BufferAttribute(new Float32Array(0),s)); return g; };
   // a body's skeleton for a figure and a height (taller: the same body drawn bigger on the rig)
-  const fitTo=(body,L)=>{ const S=I.skel[L.f], {off,binv}=BODIES.skeleton(S.origin,S.rest); Object.assign(body,{height:S.height*100/L.h,hipY:S.hipY,off,binv,contact:true,dq:true}); delete body._calG; return BODIES.fit(body); };   // (contact: rests on what the rig rests on, 111a)
+  const fitTo=(body,L)=>{ const S=I.skel[L.f], Z=shapeOf(L.f,L.sh), {off,binv}=BODIES.skeleton(Z?Z.O1.map(o=>o.toArray()):S.origin,S.rest); Object.assign(body,{height:S.height*100/L.h,hipY:Z?Z.O1[0].y:S.hipY,off,binv,contact:true,dq:true,O0:Z?Z.O:null,O1:Z?Z.O1:null}); delete body._calG; delete body._bind; return BODIES.fit(body); };   // (contact: rests on what the rig rests on, 111a)
 
   /* ---------- you ---------- */
   let L=DEF(); try{ const c=OWNED.get('pfav'); if(c)L=decode(c); }catch(e){}

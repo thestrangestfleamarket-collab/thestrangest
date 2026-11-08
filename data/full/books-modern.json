@@ -798,11 +798,12 @@
    "a": "USDA Science and Education Administration (S. E. McGregor et al.)",
    "y": 1980,
    "pages": 193,
-   "url": "https://archive.org/download/Beekeeping.in.the.United.StatesD7/Beekeeping.in_.the_.United.States%20D7.pdf",
+   "url": "https://archive.org/download/Beekeeping.in.the.United.StatesD7/Beekeeping.in_.the_.United.States%20D7_djvu.txt",
    "page": "https://archive.org/details/Beekeeping.in.the.United.StatesD7",
-   "format": "pdf",
+   "format": "txt",
    "licence": "US government work (USDA)",
-   "evidence": "USDA Agriculture Handbook 335 (1967, rev. 1980), scanned from the USDA National Agricultural Library copy; 8.9 MB. The 1967 edition is also at scientificbeekeeping.com"
+   "evidence": "USDA Agriculture Handbook 335 (1967, rev. 1980), scanned from the USDA National Agricultural Library copy; 8.9 MB. The 1967 edition is also at scientificbeekeeping.com",
+   "cover_url": "https://archive.org/download/Beekeeping.in.the.United.StatesD7/page/cover_w800.jpg"
   },
   {
    "t": "Insect Pollination of Cultivated Crop Plants (Agriculture Handbook 496)",
@@ -890,11 +891,12 @@
    "a": "Department of the Army",
    "y": 1971,
    "pages": 157,
-   "url": "https://archive.org/download/milmanual-fm-21-150-hand-to-hand-combat-1971-deal-the-first-deadly-blo/fm_21-150_hand_to_hand_combat_1971_deal_the_first_deadly_blow.pdf",
+   "url": "https://archive.org/download/milmanual-fm-21-150-hand-to-hand-combat-1971-deal-the-first-deadly-blo/fm_21-150_hand_to_hand_combat_1971_deal_the_first_deadly_blow_djvu.txt",
    "page": "https://archive.org/details/milmanual-fm-21-150-hand-to-hand-combat-1971-deal-the-first-deadly-blo",
-   "format": "pdf",
+   "format": "txt",
    "licence": "US government work (public domain)",
-   "evidence": "Army field manual; scan has no text layer, so the distribution statement could not be read (needs OCR)."
+   "evidence": "Army field manual; scan has no text layer, so the distribution statement could not be read (needs OCR).",
+   "cover_url": "https://archive.org/download/milmanual-fm-21-150-hand-to-hand-combat-1971-deal-the-first-deadly-blo/page/cover_w800.jpg"
   },
   {
    "t": "Hand to Hand Combat for Amphibious Scouts",

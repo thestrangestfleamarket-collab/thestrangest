@@ -105,7 +105,7 @@ const VEH={};   // what you drive on Rapier's raycast vehicle (VEH.make below); 
   const s0=M1*.84, KR=VEH.make({half:[.31*s0,.1*s0,.62*s0],lift:.35*s0,mass:140,wheels:[[WX,WZ],[-WX,WZ],[WX,-WZ],[-WX,-WZ]].map(([x,z])=>[x*s0,-.02*s0,z*s0]),r:WH*s0,rest:.14*s0,travel:.1*s0,
     engine:260*M1,reverse:150*M1,vmax:8*M1,vback:2.5*M1,brake:6*M1,idle:.6*M1,steer:.5,steerFade:4*M1,knockR:.55*M1,down:.31*T,wy:WH,unit:T});
   // a kart as a RIDE kind on its vehicle V: the item you carry (KR), or one boarded where it stands (the fair's rentals, VEH.kartKind)
-  const kartKind=(V,o={})=>({name:'GO-KART',hint:'A CLICK SETS IT DOWN AND YOU GET IN. W GOES, S BRAKES AND BACKS, A AND D STEER, A CLICK GETS OUT.',onSay:'YOU SET THE KART DOWN AND SQUEEZE IN.',held:.3,
+  const kartKind=(V,o={})=>({name:'GO-KART',hint:'E SETS IT DOWN AND YOU GET IN. W GOES, S BRAKES AND BACKS, A AND D STEER, E GETS OUT.',onSay:'YOU SET THE KART DOWN AND SQUEEZE IN.',held:.3,
     make, lift:.001, acc:3.4, turn:2.2, drag:.8, knock:99, hop:false, V,
     on:()=>{ if(!PB.R)PB.load(); }, off:()=>V.drop(),
     pose:R=>{ POSE.steer=V.on?V.steer*2:Math.max(-1,Math.min(1,R.lean*2)); return POSE; },

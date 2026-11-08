@@ -3,7 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {BLK, CLOCK, CULL, FAR3, PARK, pos, SKY, VIS, WX} from './003b-systems.js';
 import {renderer, RH, RW, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
-import {LEVEL, MAPG, MISTB, MISTE, MISTF, MODS, OUT, PFAR, QS, RING, SECTION, SECTIONS, STORE, SYS, TILE, ZU} from './006-map-pre.js';
+import {AWAY, LEVEL, MAPG, MISTB, MISTE, MISTF, MODS, OUT, PFAR, QS, RING, SECTION, SECTIONS, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {RINGX} from './065-ring.js';
 import {TPANE} from './087dz-tpane.js';
 
@@ -51,7 +51,7 @@ import {TPANE} from './087dz-tpane.js';
       B.push([(ax==='x'?c:mid)-SHARED.BOD.OX,(ax==='x'?mid:c)-SHARED.BOD.OY,ax==='x'?w:d,ax==='x'?d:w,h,null,[0,1,4,6,2,5][Math.floor(hs(k,95+a1)*6)]]); p+=w+.8+hs(k,96)*3; k++; } }
   // stand-ins past the draw distance (owner, 7 Nov 2026: "you shouldnt see gaps like no buildings, gap between buildings ... the further away the more faded"): every building on the rows and up West St and every near backdrop block has a hazed box a little inside it, seen once the real one is past the draw distance
   { const ZT=ZU/TILE, HPX={apts:480,bank:196,art:196,hotel:240,theatre:200,play:200}, IN=.6, sb=(x0,y0,x1,y1,h,v)=>{ const w=x1-x0-2*IN, d=y1-y0-2*IN; if(w>1&&d>1)B.push([(x0+x1)/2-SHARED.BOD.OX,(y0+y1)/2-SHARED.BOD.OY,w,d,h,null,v]); };
-    for(const p of LEVEL.places){ if(p.kind!=='front')continue; const y0=p.y1!=null?p.y0:LEVEL.block.back, y1=p.y1!=null?p.y1:LEVEL.block.front, px=HPX[p.id]||(p.row===2?110:150); sb(p.x0,y0,p.x1,y1,px*ZT*.92,p.row===2?[1,2,5,6][Math.floor(hs(p.x0,97)*4)]:[0,4][Math.floor(hs(p.x0,98)*2)]); }
+    for(const p of LEVEL.places){ if(p.kind!=='front'||AWAY.has(p.id==='play'?'playhouse':p.id))continue; const y0=p.y1!=null?p.y0:LEVEL.block.back, y1=p.y1!=null?p.y1:LEVEL.block.front, px=HPX[p.id]||(p.row===2?110:150); sb(p.x0,y0,p.x1,y1,px*ZT*.92,p.row===2?[1,2,5,6][Math.floor(hs(p.x0,97)*4)]:[0,4][Math.floor(hs(p.x0,98)*2)]); }
     for(const o of BLK.back||[])if(o.h)sb(o.x0,o.y0,o.x1,o.y1,o.h*ZT*.95,[0,4,1,6][o.k%4]); }
   const FW=16, FH=10, NV=8, atlas=new Uint8Array(FW*FH*NV*4), hp=(a,b)=>{ const v=Math.sin(a*91.7+b*47.3)*43758.5453; return v-Math.floor(v); };
   const WALL=[[128,60,48],[96,66,52],[118,118,114],[176,162,134],[122,56,44],[150,155,162],[168,132,96],[196,184,156]];

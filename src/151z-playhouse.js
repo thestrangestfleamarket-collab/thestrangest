@@ -2,13 +2,13 @@
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, pos, ROOMS, SFX, UI, USE} from './003b-systems.js';
 import {Reflector, renderer, scene} from './004-main.js';
-import {grab, SECTIONS, SOL, STORE, SYS, TILE, TURN, WP, ZU} from './006-map-pre.js';
+import {AWAY, grab, SECTIONS, SOL, STORE, SYS, TILE, TURN, WP, ZU} from './006-map-pre.js';
 import {HEMI} from './064-map-post.js';
 import {PHT} from './151a-ph-tex.js';
 import {PHK, PHX} from './151b-ph-kit.js';
 import {PHA} from './151c-ph-house.js';
 import {PHS} from './151d-ph-stage.js';
-await grab('playhouse',async()=>{ const MS=STORE.main, {X,Z}=SHARED.BOD, MH=TILE/.84, MV=ZU*24/.84, PI=Math.PI;
+await grab('playhouse',async()=>{ if(AWAY.has('playhouse'))return; const MS=STORE.main, {X,Z}=SHARED.BOD, MH=TILE/.84, MV=ZU*24/.84, PI=Math.PI;
   const LW=MS.lot('play',190), TP=TURN(LW,WP.play.face), L=TP.L, m=(L.x0+L.x1)/2, at=(u,v)=>{ const p=TP.pt(u,v); return [X(p[0]),Z(p[1])]; };
   const OX=SHARED.BOD.XS(-2400), OZ=SHARED.BOD.ZS(0), W=(x,y,z)=>[OX+x*MH,y*MV,OZ+z*MH], lx=x=>(x-OX)/MH, lz=z=>(z-OZ)/MH;
   const PD=PHA.D, B={x0:-PD.W-.6,x1:PD.W+.6,z0:PD.STG-.6,z1:PD.ZF+.6};

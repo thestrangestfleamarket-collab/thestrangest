@@ -41,6 +41,12 @@ def reshape(B,E,sh):
             q=q.copy(); m=q[...,2]>zs; f=(q[...,2]-zs)
             q[...,2]=np.where(m,zs+f*sn,q[...,2]); q[...,0]=np.where(m,q[...,0]*(1+(snw-1)*np.clip(f/(zmax-zs),0,1)),q[...,0]); q[...,1]=np.where(m,cy+(q[...,1]-cy)*(1+(snw-1)*.6*np.clip(f/(zmax-zs),0,1)),q[...,1]); return q
         P[head&(ew<.5)]=snf(P[head&(ew<.5)]); p[jw]=snf(p[jw][None])[0]
+    # the chest's ruff (the base dog is a rough collie): pulled back toward the front legs, the lower neck with it, unless the breed keeps its ruff
+    rf=sh.get('ruff',.35 if B.sp=='dog' else 1)
+    if rf!=1:
+        ft=np.isin(B.lead,[i for i,n in enumerate(E['names']) if 'Front' in n]); zl=np.percentile(P[ft,2],92); yn=p[bi['Neck'],1]+.35*(p[hd,1]-p[bi['Neck'],1])
+        m=np.isin(B.lead,[bi['Chest'],bi['Neck'],bi['Spine']])&(P[:,2]>zl)&(P[:,1]<yn); f=np.clip((yn-P[:,1])/(.15*(yn-P[:,1].min())),0,1)*m
+        P[:,2]=np.where(m,P[:,2]-(P[:,2]-zl)*(1-rf)*f,P[:,2])
     # the ears (mostly the head's own corners above the ear's root): scaled, then dropped outward and forward about the root
     ea=sh.get('ear',1); dr=sh.get('drop',0); ew_=sh.get('earw',1)
     if ea!=1 or dr or ew_!=1 or sh.get('dropf'):
@@ -56,7 +62,7 @@ def reshape(B,E,sh):
     d=np.zeros((nb,3))
     for k in range(nb):
         v=(np.mean([p[c] for c in ch[k]],0)-p[k]) if ch[k] else (p[k]-p[par[k]] if par[k]>=0 else np.array([0,0,1.]))
-        if k==hd: v=np.array([0,0,1.])
+        if k==hd or E['names'][k] in('Hips','Spine','Chest'): v=np.array([0,0,1.])   # (the trunk widens about the spine's line, never pushing the chest out)
         d[k]=v/max(1e-9,np.linalg.norm(v))
     L=np.ones(nb); g=np.ones(nb); u=np.ones(nb); Rk=[np.eye(3) for _ in range(nb)]
     def bones(sel): return [i for i,n in enumerate(E['names']) if sel(n)]
@@ -72,6 +78,7 @@ def reshape(B,E,sh):
     for k in range(nb):
         C[k]=(C[par[k]] if par[k]>=0 else np.eye(3))@Rk[k]
         S=(g[k]*(np.eye(3)-np.outer(d[k],d[k]))+L[k]*np.outer(d[k],d[k]))*u[k]
+        if E['names'][k] in('Hips','Spine','Chest'): S=np.diag([g[k],1+(g[k]-1)*.45,L[k]])*u[k]   # (a wider trunk, not a deeper chest)
         if k in(hd,jw) and sh.get('headw',1)!=1: S=S@np.diag([sh['headw'],1,1])
         M[k]=C[k]@S
         if par[k]>=0: pn[k]=pn[par[k]]+M[par[k]]@(p[k]-p[par[k]])

@@ -38,15 +38,17 @@ import {MSHOP} from './059i-mshops.js';
     box(cu1-.42,c0+.12,cu1-.12,c0+.4,1.0,1.2,0x2c2c2e); use(SVN[A.id]||('THE COUNTER ('+(goods.length||[...(TALK.shops||new Map()).keys()].some(N=>N&&N.key===A.who)?'BUY':'TALK')+')'),W/2,(c0+c1)/2,cu1-cu0,1.2,shop,1.8);
     pic(W/2,.03,HT-.75,Math.min(W*.6,3.2),.5,0,1,words(128,20,'#1e1a18',[[A.name||'THE SHOP',64,5,'#f2c14e',10,'center']]),true);
     // the shelves: the back wall either side of the keeper, then both side walls; each thing on them is what the keeper sells
-    const runs=[[.25,.0,W*.36,.42,0,1],[W*.64,.0,W-.25,.42,0,1],[.0,D*.42,.42,D-1.1,1,0],[W-.42,D*.42,W,D-1.1,-1,0]], spots=[];
+    const runs=A.bare?[]:[[.25,.0,W*.36,.42,0,1],[W*.64,.0,W-.25,.42,0,1],[.0,D*.42,.42,D-1.1,1,0],[W-.42,D*.42,W,D-1.1,-1,0]], spots=[];   // (a shop with its own walls of things (A.bare): no shelves)
     for(const [u0,v0,u1,v1,du,dv] of runs){ for(const h of [0,.55,1.1,1.65])box(u0,v0,u1,v1,h,h+.04,WOOD); box(u0,v0,u1,v1,2.2,2.24,WOOD); sol(u0,v0,u1,v1);
       const L=dv?u1-u0:v1-v0, n=Math.max(1,Math.floor(L/.42)); for(const h of [.04,.59,1.14,1.69])for(let i=0;i<n;i++){ const f=(i+.5)/n; spots.push(dv?[u0+f*L,(v0+v1)/2,h,du,dv]:[(u0+u1)/2,v0+f*L,h,du,dv]); } }
-    if(goods.length){ spots.forEach((s,i)=>{ const id=goods[i%goods.length], m=good(id,.36*MW,F.pw(s[0],s[1]),(s[2]+.04)*MW,F.hd(s[3],s[4])); if(m)A.add(m); });
+    if(A.bare){}
+    else if(goods.length){ spots.forEach((s,i)=>{ const id=goods[i%goods.length], m=good(id,.36*MW,F.pw(s[0],s[1]),(s[2]+.04)*MW,F.hd(s[3],s[4])); if(m)A.add(m); });
       for(const [u0,v0,u1,v1] of runs)use('THE SHELVES (BUY)',(u0+u1)/2,(v0+v1)/2,Math.max(u1-u0,v1-v0),2.2,shop,1.6); }
     else for(const s of spots)if(A.hs(Math.round(s[0]*10),Math.round(s[1]*10+s[2]*7),9)>.4)box(s[0]-.12,s[1]-.12,s[0]+.12,s[1]+.12,s[2],s[2]+.18+.2*A.hs(s[0]*9,s[2],3),[0x8a6a4a,0x6a7a8a,0x9a8a6a][Math.floor(s[2]*2)%3]);   // folded cloth, towels, tins
     // what the shop has beyond its shelves, in the middle of the floor
     const mu=W/2, mv=(c1+D-.8)/2;
-    if(EX==='booths'||EX==='lobby'){ for(const sg of [-1,1]){ const u=mu+sg*W*.24; seat(EX==='lobby'?'A SOFA':'A BOOTH',own(()=>{ box(u-.6,mv-.3,u+.6,mv+.3,0,.45,WS[0]>150?0xa02830:0x6a2a2a); box(u-.6,mv-.3+(sg<0?0:.45),u+.6,mv-.3+(sg<0?.15:.6),.45,.95,0x5a2020); }),[[u,mv,.45,0,sg<0?-1:1]],1.0); sol(u-.6,mv-.3,u+.6,mv+.3); }
+    if(A.bare){}
+    else if(EX==='booths'||EX==='lobby'){ for(const sg of [-1,1]){ const u=mu+sg*W*.24; seat(EX==='lobby'?'A SOFA':'A BOOTH',own(()=>{ box(u-.6,mv-.3,u+.6,mv+.3,0,.45,WS[0]>150?0xa02830:0x6a2a2a); box(u-.6,mv-.3+(sg<0?0:.45),u+.6,mv-.3+(sg<0?.15:.6),.45,.95,0x5a2020); }),[[u,mv,.45,0,sg<0?-1:1]],1.0); sol(u-.6,mv-.3,u+.6,mv+.3); }
       if(EX==='booths')box(mu-.4,mv-.3,mu+.4,mv+.3,.72,.76,0xd8d8dc),cyl(mu,mv,.05,0,.72,0x8a8c90); }
     else if(EX==='chair'){ seat('THE BARBER CHAIR',own(()=>{ cyl(mu,mv,.28,0,.08,0x8a8c90); cyl(mu,mv,.06,.08,.42,0x8a8c90); box(mu-.3,mv-.3,mu+.3,mv+.3,.42,.55,0x9a2020); box(mu-.3,mv-.32,mu+.3,mv-.2,.55,1.25,0x9a2020); }),[[mu,mv,.55,0,1]],1.0); sol(mu-.3,mv-.3,mu+.3,mv+.3);
       box(mu-.5,.02,mu+.5,.05,1.0,2.0,0xb8c8d0); cyl(W*.15,D-.6,.06,0,1.6,0xf0f0f0); }

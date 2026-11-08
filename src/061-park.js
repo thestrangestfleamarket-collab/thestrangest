@@ -394,7 +394,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     IT.forEach((it,i)=>{ const h=Math.max(1,(it.top||it.y+4*TILE)-it.y), r=Math.max(.6*TILE,it.r||2*TILE), g=GR[Math.floor(hash(Math.round(it.x*3),Math.round(it.z*3),77)*4)];
       shape[i]=[M4.compose(V.set(it.x,it.y+h*.62,it.z),Q,S3.set(r*.95,h*.42,r*.95)).clone(),M4.compose(V.set(it.x,it.y-.2*TILE,it.z),Q,S3.set(Math.max(.18*TILE,(it.tr||r*.08)),h*.5,Math.max(.18*TILE,(it.tr||r*.08)))).clone()];
       crown.setColorAt(i,c.setRGB(g[0],g[1],g[2],THREE.SRGBColorSpace)); crown.setMatrixAt(i,Z); trunk.setMatrixAt(i,Z); });
-    for(const m of [crown,trunk]){ m.castShadow=true; m.receiveShadow=true; m.frustumCulled=false; (R.parent||scene).add(m); } PARK.ringFar=crown;
+    for(const m of [crown,trunk]){ m.userData.noSmallCull=1; m.castShadow=true; m.receiveShadow=true; m.frustumCulled=false; (R.parent||scene).add(m); } PARK.ringFar=crown;
     const NEAR=30*TILE, near=new Uint8Array(n).fill(2); let lx=1e9, lz=1e9;
     PARK.ringLod=()=>{ if(Math.hypot(pos.x-lx,pos.z-lz)<TILE)return; lx=pos.x; lz=pos.z; const ed=R.userData.edited, gone=R.userData.gone; let ch=false;
       for(let i=0;i<n;i++){ const id=ID[i]; if(id==null||id<0)continue; const it=IT[i], nr=(ed&&ed.has(id))||Math.hypot(it.x-pos.x,it.z-pos.z)-(it.r||0)<NEAR?1:0; if(nr===near[i])continue; near[i]=nr; ch=true;
@@ -415,6 +415,18 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       for(const M of [R,P.standFar])if(M&&M.isBatchedMesh)M.userData.items.forEach((it,i)=>set(M,M.userData.ids[i],Math.hypot(it.x-pos.x,it.z-pos.z)-it.r<=far));
       for(const G of [PARK.trunks,PARK.ringTrunks])if(G&&G.userData.cull)G.userData.cull(far,pos.x,pos.z); };
     PARK.lodReset=()=>{ lx=1e9; }; SYS.add('life',()=>PARK.lod(),'061-treelod'); }
+  // the park's small things only near (owner, 8 Nov 2026: "yes drop the small props past 70 tiles"): every repeated small thing in the park (tufts, flowers, mushrooms, posts, lamps: each under 1.5 tiles) drawn only within 70 tiles of you; the trees and the big pieces always
+  { const R=70*TILE, Z=new THREE.Matrix4().makeScale(0,0,0), M=new THREE.Matrix4(), V=new THREE.Vector3(), Q=new THREE.Quaternion(), SC=new THREE.Vector3(), L=[], seen=new WeakSet(); let lx=1e9, lz=1e9, scanT=0;
+    const take=im=>{ if(seen.has(im))return; seen.add(im); if(im.userData.noSmallCull||im.count<20)return; const g=im.geometry; if(!g.boundingSphere)g.computeBoundingSphere(); let big=0; const n=im.count, cx=new Float32Array(n), cz=new Float32Array(n), m0=new Float32Array(n*16);
+      for(let i=0;i<n;i++){ im.getMatrixAt(i,M); M.premultiply(im.matrixWorld); M.decompose(V,Q,SC); cx[i]=V.x; cz[i]=V.z; if(g.boundingSphere.radius*Math.max(SC.x,SC.y,SC.z)>1.5*TILE)big++; im.getMatrixAt(i,M); M.toArray(m0,i*16); }
+      if(big>n*.1)return; L.push({im,n,cx,cz,m0,vis:new Uint8Array(n).fill(1),ver:im.instanceMatrix.version}); };
+    PARK.smallCull=()=>{ if((scanT-=1)<=0){ scanT=15; for(const G of new Set([MAPG.parkwall,MAPG.park,...scene.children.filter(c=>/^park(wall)?$/.test(c.name))]))if(G)G.traverse(o=>{ if(o.isInstancedMesh)take(o); }); }
+      if(Math.hypot(pos.x-lx,pos.z-lz)<2*TILE)return; lx=pos.x; lz=pos.z;
+      for(const e of L){ const im=e.im; if(im.instanceMatrix.version!==e.ver){ for(let i=0;i<e.n&&i<im.count;i++)if(e.vis[i]){ im.getMatrixAt(i,M); M.toArray(e.m0,i*16); } }   // (someone else moved them: their places kept)
+        let ch=false; for(let i=0;i<e.n&&i<im.count;i++){ const on=Math.hypot(e.cx[i]-pos.x,e.cz[i]-pos.z)<R?1:0; if(on===e.vis[i])continue; e.vis[i]=on; ch=true; im.setMatrixAt(i,on?M.fromArray(e.m0,i*16):Z); }
+        if(ch)im.instanceMatrix.needsUpdate=true; e.ver=im.instanceMatrix.version; } };
+    SYS.every(()=>PARK.smallCull(),300,'061-park the small things only near');
+    window.SMALLCULLDBG=()=>({meshes:L.length,all:L.reduce((a,e)=>a+e.n,0),shown:L.reduce((a,e)=>a+e.vis.reduce((x,v)=>x+v,0),0)}); }
   window.PARKDBG=()=>({oaks:PARK.oaks,trees:TREES,back:TREES.back,TL,progs:renderer.info.programs.length});
   PARK.later(()=>{ '@park'; PARK.rocks=mesh([['BigRock3',87.5,-37,2.6,1.8],['BigRock5',126,-41,2.4,.2],['Rock_12',55.5,-41,1,1],['Rock1',111,-41,.6,2],['BigRock1',66,-35,2,1.1]].map(([k,x,y,...r])=>[k,RX(x),RY(y),...r]),false);
   { const UG=[['bush1',1.1],['bush2',1.2],['bush3',1.3],['bush4',1.5],['bush5',1.1],['flower1',.5],['flower2',.7],['flower3',.3],['flower4',.7],['flower5',.35],['flower6',.8],['grass1',.5],['grass2',.6],['grass1',.45],['grass2',.55],['mushroom1',.3],['mushroom2',.35],['mushroom3',.3],['mushroom4',.25],['stone2',.5],['stone3',.2],['stones1',.25]];

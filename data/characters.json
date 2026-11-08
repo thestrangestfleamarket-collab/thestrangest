@@ -4175,7 +4175,8 @@
   "trade": {
    "sells": [
     "gem_wheel",
-    "headlight"
+    "headlight",
+    "g_fishfood"
    ],
    "line": "The wheel and a good light. Cut your stones on the wheel; I buy every one you bring me, cut or rough.",
    "buys": [

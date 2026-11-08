@@ -1374,7 +1374,7 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
     {id:'wstKE',x0:RG.wr1,y0:MAP.y1,x1:RG.wr1+.16,y1:WEND,z:0,col:kerbCol('y'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
     {id:'wstE',x0:RG.wr1+.16,y0:MAP.y1,x1:RG.wx1,y1:WEND,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
     {id:'wstEnd',x0:RG.wx0,y0:WEND,x1:RG.wx1,y1:WEND+3,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
-    {id:'ghostst',bld:true,x0:SHARED.BOD.GDK.ground.x0,y0:SHARED.BOD.GDK.Y0-1.2,x1:SHARED.BOD.GDK.ground.x1,y1:SHARED.BOD.GDK.y1e,z:.1,col:SHARED.BOD.GDK.court,tex:null,rep:2},
+    (G=>({id:'ghostst',bld:true,x0:G.u(G.ground.x0),y0:G.v(G.Y0-1.2),x1:G.u(G.ground.x1),y1:G.y1e,z:.1,col:(x,y)=>G.court(G.iu(x),y>G.y1e-.25?y:G.iv(y)),tex:null,rep:2}))(SHARED.BOD.GDK),
     {id:'grassW',x0:MAP.x0,y0:B00.y0,x1:B0.x0,y1:W,z:0,col:holed((x,y)=>x>MAPSTAIR.x0-8&&x<MAPSTAIR.x1+8?slabCol(x,y):lawnCol(x,y)),tex:null,rep:2},
     {id:'hudson',x0:BLOCK.hudson[0],y0:BLOCK.alley[1],x1:BLOCK.hudson[1],y1:CURB-.16,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},...PATCH].map(g=>g.id==='corner'||g.bld||g.id==='alley'||g.id==='prom'||g.id==='grassW'||g.col===RW?g:{...g,col:SW(g.col)});
   // a ground leaves out what a later one at its height covers: two painted in one place fight for the same pixels (the way through to the Hudson over the lawn and the walk)
@@ -1780,6 +1780,7 @@ const PROPS=__DATA__("data/props.json");
 function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3.2*s, W=6.8*s*SC, D=3*s*SC, X0=cx-W/2, X1=cx+W/2, Y0=Y1-D, dx=(W-6.8*s)/2;
   for(let i=GS.length-1;i>=0;i--){ const p=GS[i]; for(let j=LAMPS.length-1;j>=0;j--)if(LAMPS[j].prop===p)LAMPS.splice(j,1); GS.splice(i,1); }
   const G=SHARED.BOD.GDK={o,s,SC,X0,X1,Y0,Y1,W,D,cx,y1e:o[1]+8.3*s};
+  G.S=1.5; G.u=x=>cx+(x-cx)*G.S; G.v=y=>Y1+(y-Y1)*G.S; G.iu=x=>cx+(x-cx)/G.S; G.iv=y=>Y1+(y-Y1)/G.S;   // the whole bath house 1.5x about the middle of its front (owner, 8 Nov 2026); its court still ends at the street
   G.ground={x0:X0-1.6,x1:X1+1.6};
   G.pool=[X0+.22,Y0+.22,X1-.22,(Y0+Y1)/2+.15];
   G.court=(x,y)=>{ const {hash,grain}=SHARED.BOD.g, sh=SHARED.BOD.K.sh, px=Math.floor(x*24), py=Math.floor(y*24);

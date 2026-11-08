@@ -650,13 +650,14 @@
    "id": "hotel",
    "name": "THE HOTEL",
    "kind": "front",
-   "x0": 116.37,
-   "x1": 147.75,
-   "y0": -92.4,
-   "y1": -77,
-   "face": "n",
    "merchant": "front_desk_clerk",
-   "pf": "hotel"
+   "pf": "hotel",
+   "x0": 56.41,
+   "x1": 70.98,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
   },
   {
    "id": "bar",
@@ -722,13 +723,8 @@
    "id": "bath",
    "name": "THE BATH HOUSE",
    "kind": "front",
-   "x0": 56.41,
-   "x1": 70.98,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2,
-   "pf": "bath"
+   "x0": 116.37,
+   "x1": 147.75
   },
   {
    "id": "fishtables",

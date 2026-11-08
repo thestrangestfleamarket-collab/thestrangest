@@ -402,10 +402,6 @@
      35.18
     ],
     [
-     36.68,
-     54.91
-    ],
-    [
      56.41,
      70.98
     ],
@@ -600,6 +596,20 @@
    "row": 2,
    "name": "ANTIQUES & PAWN",
    "pf": "antiques"
+  },
+  {
+   "id": "aquarium",
+   "kind": "front",
+   "x0": 36.68,
+   "x1": 54.91,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2,
+   "name": "THE AQUARIUM",
+   "merchant": "scuba_diver",
+   "pf": "florist",
+   "bare": true
   },
   {
    "id": "fishtables",
@@ -3820,11 +3830,6 @@
    "k": "p:pigeon",
    "x": 117,
    "y": 56
-  },
-  {
-   "k": "p:horse",
-   "x": 98,
-   "y": -30
   },
   {
    "k": "p:trashcan",

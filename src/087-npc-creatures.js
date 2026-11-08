@@ -43,8 +43,7 @@ const CREATS=[]; window.CREATS=CREATS;
         const dep=(.68+.32*Math.min(1,q[1]*1.6))*(N.y>.5?1.06:N.y<-.3?.78:1);
         for(let k=0;k<3;k++)for(let j=0;j<3;j++){ const v=Math.max(0,Math.min(255,o[j]*dep)); c[i+k*3+j]=c instanceof Uint8Array?Math.round(v):v/255; } }
       g.attributes.color.needsUpdate=true; return g; }; })();
-  const CH=[['Rat','RAT',.08,[60,-73.5],.9,0],['Rat','RAT',.08,[95,-39.5],.9,0],['Rat','RAT',.08,[110,-27],.9,0],['Slime','SLIME',.45,[62,-17],.25,0],['Snake','SNAKE',.05,[90,-24],.3,0]];
-  for(let i=0;i<5;i++)CH.push(['Frog','FROG',.045+i%3*.005,[70+i*2,-21-i],.35,0]);
+  const CH=[['Slime','SLIME',.45,[62,-17],.25,0],['Snake','SNAKE',.05,[90,-24],.3,0]];
   for(let i=0;i<10;i++)CH.push(['Spider','SPIDER',.012+i%3*.003,[57+i*5,-29+i%4*3],.45,0]);
   for(let i=0;i<5;i++)CH.push(['Bat','BAT',.09+i%2*.02,[60+i*8,-22+i%3*3],1.1,0]);
   for(let i=0;i<7;i++)CH.push(['Wasp','WASP',.022+i%2*.004,[64+i*4,-32+i%3*2],.8,0]);
@@ -143,8 +142,9 @@ const CREATS=[]; window.CREATS=CREATS;
       ['Raptor','VELOCIRAPTOR',.9,3,1.4],['Stego','STEGOSAURUS',3.5,2,.5],['Brachio','BRACHIOSAURUS',11,1,.4],['Ptera','PTERANODON',1.6,2,1.4],
       ['AntQueen','ANT QUEEN',.015,2,.05],['WoodAnt','WOOD ANT',.008,6,.06],['Aphid','APHID',.004,6,.005],['Ladybird','LADYBIRD',.008,4,.03],['Hopper','GRASSHOPPER',.02,4,.2],['Beetle','STAG BEETLE',.03,2,.05],['Mantis','PRAYING MANTIS',.04,2,.03],
       ['Caterpillar','CATERPILLAR',.01,3,.01],['Slug','LEOPARD SLUG',.02,3,.01],['Snail','SNAIL',.025,3,.01],['Crab','HERMIT CRAB',.04,3,.1],['Bee','HONEYBEE',.015,6,.8],['Bumblebee','BUMBLEBEE',.02,3,.7],['Firefly','FIREFLY',.012,5,.4]];
+    const PARKKEEP=new Set(['Crow','Owl','Duck','Penguin','Bee','Bumblebee','Firefly']);   // the rest are pets at the pet store
     CREATS.FA=FA; const FL=__LAZY__("data/fauna.json"), hs=(a,b)=>{ const v=Math.sin(a*127.1+b*311.7)*43758.5453; return v-Math.floor(v); }, inv=(L,x,z)=>[(x-X(0))/(X(1)-X(0)),(z-Z(0))/(Z(1)-Z(0))];
-    CREATURESREADY.then(()=>FL()).then(J=>{ Object.assign(C,J); FA.forEach(([key,name,m,n,sp],i)=>{ if(!C[key])return; const L=KIND[key].lane; for(let j=0;j<n;j++){ const x=L.x0+hs(i,j)*(L.x1-L.x0), z=L.z0+hs(j,i+7)*(L.z1-L.z0); spawn([key,name,m,inv(L,x,z),sp,0]); } }); }).catch(e=>console.warn('FAUNA',e)); }
+    CREATURESREADY.then(()=>FL()).then(J=>{ Object.assign(C,J); FA.forEach(([key,name,m,n,sp],i)=>{ if(!C[key]||!PARKKEEP.has(key))return; const L=KIND[key].lane; for(let j=0;j<n;j++){ const x=L.x0+hs(i,j)*(L.x1-L.x0), z=L.z0+hs(j,i+7)*(L.z1-L.z0); spawn([key,name,m,inv(L,x,z),sp,0]); } }); }).catch(e=>console.warn('FAUNA',e)); }
   window.CREATNEW=(key,id,metres,X={})=>{ '@later'; const D=C[key], K=KIND[key], rig=rigOf(D.rig), CL=clipsOf(D), mixer=new THREE.AnimationMixer(rig.bones[0]), A={}, act=n=>A[n]||(A[n]=mixer.clipAction(CL[n])); let cur=null, cn;
     const N=makeNPC(null,{key:id,name:id.toUpperCase(),names:D.mesh.parts,lv:'up',group:'bodega',geo:X.paint?X.paint(geomOf(D.mesh)):PAINT(key,geomOf(D.mesh)),skin:rig,tall:D.tall,rank:D.mesh.parts.map(()=>0),metres,x:0,z:0,lane:K.lane,free:()=>true,radius:.12,speed:1,stride:0,rock:0,bob:0,...X.npc,
       anim:(dt)=>{ const want=N.clip||K.idle; if(want!==cur||N.clipN!==cn){ const a=act(want), one=!!(K.once&&K.once.includes(want)); a.reset().setLoop(one?THREE.LoopOnce:THREE.LoopRepeat,Infinity).fadeIn(.15).play(); a.clampWhenFinished=one; if(cur&&cur!==want)act(cur).fadeOut(.15); cur=want; cn=N.clipN; } act(cur).timeScale=N.clipK||1; mixer.update(dt); }});

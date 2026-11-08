@@ -12,7 +12,7 @@ Object.assign(WALKS,{on:QS.get('folk')==='1',remote:false,by:new Map(),S:null,si
   const gate=()=>{ if(gateSet||!ROAM.gate)return; gateSet=true; S.gate={z:ROAM.wallZ,x0:ROAM.gate[0],x1:ROAM.gate[1]}; };
   const send=(k,m)=>{ FOLKSIM.set(S,k,m); if(WALKS.remote)batch.push([k,m]); };
   const flush=()=>{ if(batch.length&&WALKS.remote&&ONLINE.on){ ONLINE.send({t:'folk',set:batch}); WALKS.sent+=batch.length; } batch=[]; };
-  WALKS.key=N=>(N.st&&N.st.home&&N.st.home.id)||N.key;
+  WALKS.key=N=>N.wkey||(N.st&&N.st.home&&N.st.home.id)||N.key;
   // a walker joins the walks: where it stands now, its pace, its mode (worker/folk.js: a home range, an area, free roaming, a shop door, standing)
   WALKS.reg=(N,m)=>{ '@later'; const k=WALKS.key(N); let r=WALKS.by.get(k); if(r){ if(m.mode)WALKS.mode(N,m.mode); return r; } const st=N.st;
     r={k,N,E:null,t:0,v:m.v||.3*T,auto:m.auto?1:0,mode:JSON.stringify(m.mode||null),goal:null,then:null,gid:'',t0:0,hid:false}; WALKS.by.set(k,r); st.folk=r;

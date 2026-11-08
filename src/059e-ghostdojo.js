@@ -6,8 +6,10 @@ import {BLDK, cutWalls, FIX, grab, LOTX, LOTY, SEEN, SOL, STORE, TILE, WP} from 
 import {FLAME} from './007-fire.js';
 import {BATCH, OBJ} from './008-batch.js';
 
-await grab('ghostdojo',async()=>{ const {X,Y,Z,gbox,faceTex,bq,C}=SHARED.BOD, J=SHARED.BOD.GDJ, GK=SHARED.BOD.GDK, {hash,grain}=SHARED.BOD.g, sh=SHARED.BOD.K.sh;
-  if(GK){ const {X0,X1,Y0,Y1,W,D}=GK, T=.22, H=168, H2=300, DH=118, hs=hash;
+await grab('ghostdojo',async()=>{ const {X:BX,Y:BY,Z:BZ,gbox:GB,faceTex,bq,C}=SHARED.BOD, J=SHARED.BOD.GDJ, GK=SHARED.BOD.GDK, {hash,grain}=SHARED.BOD.g, sh=SHARED.BOD.K.sh;
+  if(GK){ const S=GK.S||1, {u,v,iu,iv}=GK, X=x=>BX(u(x)), Z=y=>BZ(v(y)), Y=z=>BY(z*S);   // drawn 1.5x about the middle of its front (owner, 8 Nov 2026): built and painted at its old size, every point scaled
+    const gbox=(b,k)=>{ const o={...b,x0:u(b.x0),x1:u(b.x1),y0:v(b.y0),y1:v(b.y1),z0:b.z0*S,z1:b.z1*S}; if(b.fs)o.fs=(nx,ny,P,Q,z,f)=>b.fs(nx,ny,iu(P),iv(Q),z/S,f); if(b.fi)o.fi=(Q,z)=>b.fi(iv(Q),z/S); if(b.fj)o.fj=(P,z)=>b.fj(iu(P),z/S); if(b.top)o.top=(x,y)=>b.top(iu(x),iv(y)); return GB(o,k); };
+    const {X0,X1,Y0,Y1,W,D}=GK, T=.22, H=168, H2=300, DH=118, hs=hash;
     const xi0=X0+T, xi1=X1-T, yi0=Y0+T, yi1=Y1-T, cx=(xi0+xi1)/2, cy=(yi0+yi1)/2, WD=J.DJWOOD;
     const lit=c=>Object.assign([Math.min(255,c[0]),Math.min(255,c[1]),Math.min(255,c[2])],{e:1});
     J.setDJ({H:160});
@@ -192,7 +194,7 @@ await grab('ghostdojo',async()=>{ const {X,Y,Z,gbox,faceTex,bq,C}=SHARED.BOD, J=
     for(const p of ITEMS){ const bs=p.boxes.filter(b=>b.z0<30&&b.z1-b.z0>3); if(!bs.length||/incense/.test(p.name))continue;
       sol(Math.min(...bs.map(b=>b.x0)),Math.min(...bs.map(b=>b.y0)),Math.max(...bs.map(b=>b.x1)),Math.max(...bs.map(b=>b.y1)),Math.max(...bs.map(b=>b.z1))); }
     const NEARB=30*TILE, LT=[], STEAM={k:.05,c:new THREE.Color(),day:new THREE.Color(.86,.85,.82),fog:new THREE.Fog(0xdcdad2,0,9*TILE),was:null};
-    const light=(x,y,z,c,r,fl)=>{ const cm=Math.max(...c), L=new THREE.PointLight(new THREE.Color(c[0]/cm,c[1]/cm,c[2]/cm),0,r*TILE*1.25,1.6); L.position.set(X(x),Y(z),Z(y)); scene.add(L); LT.push({L,i:7*cm*Math.min(1.2,r/5),fl,s:Math.round(x*7+y*13)}); return LT[LT.length-1]; };
+    const light=(x,y,z,c,r,fl)=>{ const cm=Math.max(...c), L=new THREE.PointLight(new THREE.Color(c[0]/cm,c[1]/cm,c[2]/cm),0,r*TILE*1.25*S,1.6); L.position.set(X(x),Y(z),Z(y)); scene.add(L); LT.push({L,i:7*cm*Math.min(1.2,r/5),fl,s:Math.round(x*7+y*13)}); return LT[LT.length-1]; };
     let built=false, BG=null, P=null, busy=false; const build=()=>{ '@bath'; built=true; LT.length=0;   // the dojo hall, empty but for its steam, built where it stands (owner, 4 Nov 2026)
       const RW={front:[],back:[cx-xi0-5.6,cx-xi0+5.6],west:[(yi1-yi0)/2],east:[(yi1-yi0)/2]};
       const OPEN=[[DOOR.a0-T,DOOR.a1-T,0,DH]];
@@ -209,7 +211,7 @@ await grab('ghostdojo',async()=>{ const {X,Y,Z,gbox,faceTex,bq,C}=SHARED.BOD, J=
       if(STORE.furnish&&STORE.furnish.bath)STORE.furnish.bath({r:[xi0,yi0,xi1,yi1]});
       was=null; };
     const OUTL=[[X0+(BAY.a0+BAY.a1)/2,Y1+1.4,70,[1,.74,.5],7],[X0+(EW.a0+EW.a1)/2,Y1+1.3,74,[1,.74,.5],7],[X0+W/2,Y1+1.2,90,[1,.66,.4],6],[X0+W/2,Y1+.9,H+60,[1,.72,.44],6],[X0-1.1,Y0+D/2,80,[1,.76,.5],5]];
-    for(const [x,y,z,c,r] of OUTL){ const cm=Math.max(...c), L=new THREE.PointLight(new THREE.Color(c[0]/cm,c[1]/cm,c[2]/cm),9*cm*Math.min(1.3,r/5),r*TILE*1.25,1.6); L.position.set(X(x),Y(z),Z(y)); L.userData.i0=L.intensity; scene.add(L); }
+    for(const [x,y,z,c,r] of OUTL){ const cm=Math.max(...c), L=new THREE.PointLight(new THREE.Color(c[0]/cm,c[1]/cm,c[2]/cm),9*cm*Math.min(1.3,r/5),r*TILE*1.25*S,1.6); L.position.set(X(x),Y(z),Z(y)); L.userData.i0=L.intensity; scene.add(L); }
     const SH=[]; { const V=THREE.Vector3, g0=Y(.6);
       const add=(P,col,gaps,a0w,a1w,z0,z1,yf)=>{ for(const [u0,u1] of gaps){ const Q=[[u0,z0],[u1,z0],[u1,z1],[u0,z1]].map(([a,z])=>new V(X(X0+a),Y(z),Z(yf)));
           const G=Q.map(q=>{ const f=(q.y-g0)/(Y(122)-g0); return new V(q.x,g0,q.z+(Z(Y1+1)-Z(Y1))*P*f); });
@@ -228,9 +230,9 @@ await grab('ghostdojo',async()=>{ const {X,Y,Z,gbox,faceTex,bq,C}=SHARED.BOD, J=
       const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.computeBoundingSphere();
       const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:0xffc890,transparent:true,opacity:.2,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,fog:false})); m.renderOrder=3; m.userData.k=2.4; scene.add(m); SHX.push(m); }
     let was=null, hid=null, step=-1, wIn=false;
-    const PW={uT:{value:0},uP:{value:new THREE.Vector4()},me:null}, KT=TILE*BLDK, tx=x=>x/KT+SHARED.BOD.OX, ty=z=>z/KT+SHARED.BOD.OY, inPool=(x,z)=>{ const a=tx(x), b=ty(z); return a>xi0&&a<xi1&&b>yi0&&b<yR-.1; };
+    const PW={uT:{value:0},uP:{value:new THREE.Vector4()},me:null}, KT=TILE*BLDK, tx=x=>iu(x/KT+SHARED.BOD.OX), ty=z=>iv(z/KT+SHARED.BOD.OY), inPool=(x,z)=>{ const a=tx(x), b=ty(z); return a>xi0&&a<xi1&&b>yi0&&b<yR-.1; };
     const poke=(x,z,k=1)=>{ PW.uP.value.set(x,z,Math.max(PW.uP.value.z,k),0); };
-    SHARED.BOD.GD={r:[xi0,yi0,xi1,yi1],floor:[xi0,yi0+.3,xi1,yi1],door:[X0+W/2,Y1],dw:DOOR.a1-DOOR.a0,H:H+2,eave:H,inside:inBox,built:()=>built,here:true,   // here: a ghost comes back where it stands, in the steam
+    SHARED.BOD.GD={r:[u(xi0),v(yi0),u(xi1),v(yi1)],floor:[u(xi0),v(yi0+.3),u(xi1),v(yi1)],door:[u(X0+W/2),Y1],dw:(DOOR.a1-DOOR.a0)*S,H:(H+2)*S,eave:H*S,inside:inBox,built:()=>built,here:true,   // here: a ghost comes back where it stands, in the steam
       tick(){ const t=performance.now()/1000, inn=inside(); if(inn){ PW.uT.value+=Math.min(.1,t-(PW.t||t)); } PW.t=t;
       near();
       SHARED.steam=built&&(inn||Math.hypot(pos.x-X(X0+W/2),pos.z-Z(Y1))<12*TILE)?STEAM.v||(STEAM.v={b:[Math.min(ix0,ix1),0,Math.min(iz0,iz1),Math.max(ix0,ix1),Y(H+2),Math.max(iz0,iz1)],k:STEAM.k,c:STEAM.c}):null;   // half the steam it had (owner, 4 Nov 2026), drawn by the fog pass; seen through the open door too

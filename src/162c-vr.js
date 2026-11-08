@@ -168,7 +168,7 @@ import {AVATAR} from './111c-avatar.js';
     VR.pass.shadow=opt.shadow==='full'||(opt.shadow==='light'&&(VR.fn&3)===0); VR.pass.water=opt.water;
     const B=VP.buttons, rx=VP.axes[2], ref=renderer.xr.getReferenceSpace();
     if(UI.gamewin||!turns()){ VR.sn=0; } else if(opt.turn==='smooth'){ if(Math.abs(rx)>.3)turn(-rx*dt*2.2); } else if(Math.abs(rx)<.3)VR.sn=0; else if(!VR.sn&&Math.abs(rx)>.65){ VR.sn=1; turn(rx>0?-snap():snap()); }
-    if(edge('q',keys.has('q'))&&turns())turn(snap()); if(edge('e',keys.has('e'))&&turns())turn(-snap());
+    if(edge('q',keys.has('q'))&&turns())turn(snap()); if(edge('e',!!UI.rotHeld)&&turns())turn(-snap());
     if(edge('rc',VR.r3)){ VR.cal=false; if(SHARED.drive&&SHARED.drive.recentre)SHARED.drive.recentre(); } if(edge('lc',VR.l3))tap('Escape');
     if(B[1].value>.5){ const n=performance.now(); if(!VR.bt)VR.bt=n; else if(n-VR.bt>1500){ VR.bt=Infinity; return VR.leave(); } } else VR.bt=0;
     if(vw()==='first'){ head(EV); let dx=EV.x-pos.x, dz=EV.z-pos.z, d=Math.hypot(dx,dz); const L=LEASH*FEEL.MH;

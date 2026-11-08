@@ -1,14 +1,14 @@
-// THE DEATH: what happens when you die: the YOU ARE DEAD note, the fall, your body left holding what you carried, and the ghost's walk to the Herbalist at the keep to come back (or RESURRECT in the menu).
+// THE DEATH: what happens when you die: the YOU ARE DEAD note, the fall, your body left holding what you carried, and the ghost's walk to the bath house, whose steam wakes you alive at your body (or RESURRECT in the menu).
 import {SHARED, THREE} from './003-shx.js';
-import {GHOSTS, GUARD, INV, keys, LEVELS, PH, pos, RAG, st, UI, VIT, W3} from './003b-systems.js';
+import {GHOSTS, INV, keys, LEVELS, PH, pos, RAG, st, UI, VIT, W3} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OWNED, SAVE} from './005-save.js';
-import {CASTLE, FADE, QS, STORE, SYS, TILE, wait} from './006-map-pre.js';
+import {FADE, QS, STORE, SYS, TILE, wait} from './006-map-pre.js';
 { const T=TILE, el=document.createElement('div'), css=document.createElement('style'); el.id='dead'; el.hidden=true;
   css.textContent='#dead{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top,0px));transform:translateX(-50%);font:12px var(--pixel);color:var(--key);background:var(--panel);border:2px solid var(--line);padding:6px 10px;z-index:15;pointer-events:none;zoom:var(--uiz,1)} #dead[hidden]{display:none}';
   document.head.appendChild(css); document.body.appendChild(el);
-  const DEAD='YOU ARE DEAD. GO TO THE HERBALIST AT THE KEEP.', note=(t,s)=>{ el.textContent=t; el.hidden=false; clearTimeout(note.t); if(s)note.t=setTimeout(()=>{ if(VIT.dead)note(DEAD); else el.hidden=true; },s*1000); };
-  const MH=T/.84, WAIT=3, HOUR=36e5; let S=null, gh=0, rise=-1, busy=false, dp=null, wt=0, wn=0;
+  const DEAD='YOU ARE DEAD. GO TO THE BATH HOUSE.', note=(t,s)=>{ el.textContent=t; el.hidden=false; clearTimeout(note.t); if(s)note.t=setTimeout(()=>{ if(VIT.dead)note(DEAD); else el.hidden=true; },s*1000); };
+  const MH=T/.84, WAIT=10, HOUR=36e5; let S=null, gh=0, rise=-1, busy=false, dp=null, wt=0, wt0=0, wn=0;
   const sheet=()=>{ '@later'; if(S||!window.GHOSTS||!GHOSTS.cloth)return S; const MV=SHARED.BOD.YS(24)/.84, mat=new THREE.MeshToonMaterial({color:0xf2f0ea,emissive:0x2a3040,gradientMap:W3.GP,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false}), em=new THREE.MeshBasicMaterial({color:0x0c0c10,transparent:true,opacity:0}), eg=new THREE.CircleGeometry(1,10);
     S=GHOSTS.cloth(1.15,true,17,.24,mat,pos.x/MH,SHARED.py/MV+1.5,pos.z/MH); S.MV=MV; S.mat=mat; S.em=em; S.eyes=[-1,1].map(()=>{ const e=new THREE.Mesh(eg,em); e.scale.set(.05*MH,.075*MV,1); e.renderOrder=4; scene.add(LEVELS.own(e,'*')); return e; }); return S; };
   const look=on=>{ W3.mesh.visible=!on; W3.ghost=on; if(S){ S.me.visible=on; for(const e of S.eyes)e.visible=on; } };
@@ -21,9 +21,10 @@ import {CASTLE, FADE, QS, STORE, SYS, TILE, wait} from './006-map-pre.js';
     me.position.set(c.x,c.py+.16*T,c.z); me.rotation.y=c.h||0; me.castShadow=true; scene.add(LEVELS.own(me,c.lv||'*'));
     const th={name:'YOUR BODY',obj:me,reach:1.6*T,near:2.4*T,tall:.5*T,act:()=>takeBody()}; UI.thing(th); body={c,me,th}; };
   const takeBody=()=>{ if(!body||VIT.dead)return; const c=body.c; for(const k in c.items)INV.items[k]=(INV.items[k]||0)+c.items[k]; Object.assign(INV.inside,c.inside||{}); INV.cash+=c.cash||0; INV.save(); hideBody(); keepBody(null); note('YOU TAKE BACK WHAT YOUR BODY HELD.',4); };
-  const herb=()=>{ const N=window.GUARD&&GUARD.list&&GUARD.list.find(n=>n.key==='gd_toucan'); if(N&&N.st)return {x:N.st.x,z:N.st.z}; const S=CASTLE.stair; return {x:SHARED.BOD.X((S.x0+S.x1)/2),z:SHARED.BOD.Z(S.y1+3)}; };   // THE HERBALIST's post in the keep, past the stair
+  const inBath=()=>{ const G=SHARED.BOD&&SHARED.BOD.GD; return !!(G&&G.inside&&SHARED.LVL==='up'&&G.inside()); };
   VIT.die=()=>{ if(VIT.dead)return; VIT.dead=true; VIT.fainted=false; VIT.hp=0; VIT.out=2.4; SHARED.trip=true; gh=0; rise=-1; wt=0; wn=0; want=false; try{ SAVE.set('dead','1'); }catch(e){} note(DEAD);
-    const old=body&&body.c, c={x:pos.x,z:pos.z,py:SHARED.py,h:SHARED.heading,lv:SHARED.LVL==='down'&&LEVELS.cur||'*',t:Date.now(),items:{...INV.items},inside:{...(INV.inside||{})},cash:INV.cash};
+    const old=body&&body.c, c={x:pos.x,z:pos.z,py:SHARED.py,h:SHARED.heading,lv:SHARED.LVL==='down'&&LEVELS.cur||'*',dn:SHARED.LVL==='down',t:Date.now(),items:{...INV.items},inside:{...(INV.inside||{})},cash:INV.cash};
+    try{ SAVE.set('deadat',JSON.stringify({x:c.x,z:c.z,h:c.h,dn:c.dn})); }catch(e){}
     if(old){ for(const k in old.items)c.items[k]=(c.items[k]||0)+old.items[k]; Object.assign(c.inside,old.inside||{}); c.cash+=old.cash||0; }   // a body already lying somewhere: what it held comes to the new one
     if(Object.keys(c.items).length||c.cash){ INV.items={}; INV.inside={}; INV.cash=0; INV.save(); keepBody(c); showBody(c); } };
   const back=async here=>{ '@later'; busy=true; await FADE.run('REFRESHED',async()=>{ await wait(1500);
@@ -31,6 +32,11 @@ import {CASTLE, FADE, QS, STORE, SYS, TILE, wait} from './006-map-pre.js';
     if(!here&&!G.here){ STORE.goTo(SHARED.BOD.X(dx),SHARED.BOD.Z(oy),'up'); SHARED.heading=SHARED.BOD.Z(oy+1)>SHARED.BOD.Z(oy)?0:Math.PI; PH.hd=SHARED.heading; } keys.clear(); SHARED.target=null;
     VIT.dead=false; VIT.hp=1; VIT.sta=1; VIT.out=0; gh=0; rise=-1; wt=0; wn=0; look(false); try{ SAVE.del('dead'); }catch(e){}
     },{hold:200}); note('You feel refreshed.',5); busy=false; };
+  const wake=async()=>{ '@later'; busy=true; await FADE.run('REFRESHED',async()=>{ await wait(1500);
+    let at=body&&body.c; if(!at)try{ at=JSON.parse(SAVE.get('deadat')||'null'); }catch(e){}
+    if(at){ STORE.goTo(at.x,at.z,at.dn?'down':'up',at.h); PH.hd=SHARED.heading; } keys.clear(); SHARED.target=null;
+    VIT.dead=false; VIT.hp=1; VIT.sta=1; VIT.out=0; gh=0; rise=-1; wt=0; wt0=0; wn=0; look(false); try{ SAVE.del('dead'); SAVE.del('deadat'); }catch(e){}
+    },{hold:200}); if(body)takeBody(); note('YOU WAKE AT YOUR BODY, ALIVE.',5); busy=false; };
   // RESURRECT in the menu (owner, 4 Nov 2026, every player): back to life where you stand (a ragdoll still falling settles first)
   let want=false; VIT.revive=()=>{ if(!VIT.dead||busy)return false; want=true; return true; };
   SYS.add('vitals',(dt)=>{ if(body&&Date.now()-body.c.t>HOUR){ hideBody(); keepBody(null); note('YOUR BODY HAS CRUMBLED TO DUST, AND WHAT IT HELD WITH IT.',6); }
@@ -39,9 +45,9 @@ import {CASTLE, FADE, QS, STORE, SYS, TILE, wait} from './006-map-pre.js';
     if(gh>=1&&!RAG.on&&st.move&&st.move.name==='fall'&&st.move.held)RIG.release(st,'F');
     if(VIT.out>0||!sheet())return;
     if(!gh){ look(true); S.ball={x:pos.x/MH,y:SHARED.py/S.MV+1.5,z:pos.z/MH}; S.drop(); }
-    if(rise<0){ gh=Math.min(1,gh+dt);   // by THE HERBALIST at the keep a few seconds and you are alive again, free (owner, 7 Nov 2026); walking off starts it over
-      const hb=herb(); if(gh>=1&&SHARED.LVL==='up'&&Math.hypot(pos.x-hb.x,pos.z-hb.z)<2.5*T){ wt+=dt; const n=Math.max(1,Math.ceil(WAIT-wt)); if(n!==wn){ wn=n; note('THE HERBALIST RAISES YOU \u00b7 '+n); } if(wt>=WAIT){ rise=0; back(true); } }
-      else if(wt>0){ wt=0; wn=0; note(DEAD); } }
+    if(rise<0){ gh=Math.min(1,gh+dt);   // ten seconds in the bath house's steam and you wake alive at your body (owner, 8 Nov 2026); walking out starts it over
+      if(gh>=1&&inBath()){ const nw=performance.now()/1000; if(!wt0)wt0=nw; wt=nw-wt0; const n=Math.max(1,Math.ceil(WAIT-wt)); if(n!==wn){ wn=n; note('THE STEAM REFRESHES YOU \u00b7 '+n); } if(wt>=WAIT){ rise=0; wake(); } }
+      else if(wt>0||wt0){ wt=0; wt0=0; wn=0; note(DEAD); } }
     const dn=SHARED.BOD.GD&&SHARED.BOD.GD.deep!=null?SHARED.BOD.GD.deep/S.MV+.45:SHARED.py/S.MV, y0=SHARED.py/S.MV+1.5, e=rise>0?Math.min(1,rise/2.6):0, b=S.ball, s3=e*e*(3-2*e), q=rise>0&&dp?Math.min(1,s3*1.6):0, to={x:(pos.x+((dp?dp[0]:pos.x)-pos.x)*q)/MH,y:y0+.05*Math.sin(performance.now()/1000*1.6)*(1-e)+(dn-y0)*s3,z:(pos.z+((dp?dp[1]:pos.z)-pos.z)*q)/MH}; S.gnd=rise>0?dn-.5:SHARED.py/S.MV;
     if(Math.hypot(to.x-b.x,to.z-b.z)>1||Math.abs(to.y-b.y)>1)GHOSTS.move(S,to);
     if(gh>=1&&rise<0&&!GHOSTS.on(S)){ S.ball={...to}; S.drop(); GHOSTS.settle(S,240); }

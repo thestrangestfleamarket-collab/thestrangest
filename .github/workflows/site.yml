@@ -73,7 +73,7 @@ jobs:
           k dm 'src/062a|src/146b|src/087|src/088|worker/dunmobs|dm\.cjs'
           k animals 'src/087|src/111db|worker/folk|animals\.cjs'
           k parksolid 'src/111fe|src/100-use|data/world|parksolid\.cjs'
-          k guardians 'src/146ja|src/146k|src/146b|worker/dunmobs|src/103a|data/guardians|guardians\.cjs'
+          k guardians 'src/146ja|src/146k|src/146b|worker/dunmobs|src/103a|src/059e|data/guardians|guardians\.cjs|body\.cjs'
           k faunarest 'src/087-npc-creatures|data/fauna|fauna-rest\.cjs'
           k space   'src/075-main|src/076-npc|src/087-npc-creatures|src/139-clip|src/150-loose|worker/folk|space\.cjs'
           k motion  'src/001-rig|src/111d|src/100-use|data/moves2|tools/m2m-moves|motion\.cjs'
@@ -257,7 +257,7 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' guardians')
         run: node tests/guardians.cjs dist/market.html
-      - name: Your body (dying leaves it; the Herbalist raises you; you take it all back)
+      - name: Your body (dying leaves it; the bath house's steam wakes you at it, all back)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' guardians')
         run: node tests/body.cjs dist/market.html

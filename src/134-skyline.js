@@ -3,7 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {BLK, CLOCK, CULL, FAR3, PARK, pos, SKY, VIS, WX} from './003b-systems.js';
 import {renderer, RH, RW, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
-import {LEVEL, MAPG, MISTB, MISTE, MISTF, MODS, OUT, PFAR, QS, RING, SECTION, SECTIONS, STORE, SYS, TILE, ZU} from './006-map-pre.js';
+import {AWAY, LEVEL, MAPG, MISTB, MISTE, MISTF, MODS, OUT, PFAR, QS, RING, SECTION, SECTIONS, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {RINGX} from './065-ring.js';
 import {TPANE} from './087dz-tpane.js';
 
@@ -14,7 +14,7 @@ import {TPANE} from './087dz-tpane.js';
   const mq=QS.get('mist'), mv=(mq||'').split(',').map(Number); let mist=mq!=null&&mq!=='0';
   const MIST0=mv.length===2&&mv.every(isFinite)?mv[0]:40, MIST1=mv.length===2&&mv.every(isFinite)?mv[1]:20, MD=new THREE.Color(0x3a6e68), MN=new THREE.Color(0x152d2c), MH=new THREE.Color(0x4a7f79);
   FAR3.mist=mist;
-  const FL0={corner:3,m0:MIST0,m1:MIST1,md:.5,hn:.3,hf:.55,hd:170,hs:8,dt:.45,wn:.12,wd:.02,bl:.6,br:1,cov:.47,cl:1.16,zk:.62,hk:.5}, FL={...FL0}; try{ const s=JSON.parse(SAVE.get('farlook')||'{}'); if(s.corner!==3){ if(s.corner!==2){ delete s.m0; delete s.m1; } delete s.hn; delete s.hf; s.corner=3; } Object.assign(FL,s); }catch(e){} FAR3.FL=FL; FAR3.FL0=FL0;
+  const FL0={corner:4,m0:MIST0,m1:MIST1,md:.5,hn:.3,hf:.55,hd:170,hs:8,dt:.45,wn:.12,wd:.02,bl:0,br:1,cov:.47,cl:1.16,zk:.62,hk:.5}, FL={...FL0}; try{ const s=JSON.parse(SAVE.get('farlook')||'{}'); if(s.corner!==3){ if(s.corner!==2){ delete s.m0; delete s.m1; } delete s.hn; delete s.hf; s.corner=3; } if(s.corner!==4){ delete s.bl; s.corner=4; } Object.assign(FL,s); }catch(e){} FAR3.FL=FL; FAR3.FL0=FL0;
   FAR3.frameTris=()=>new Promise(res=>{ const I=renderer.info; I.autoReset=false; requestAnimationFrame(()=>{ I.reset(); requestAnimationFrame(()=>{ const r={tris:I.render.triangles,calls:I.render.calls,culled:0}; I.autoReset=true; res(r); }); }); });
   const LR=MODS.landR, SA=SECTIONS.live; FAR3.land=[Math.min(LR.x0*TILE,(SA.x0-72)*TILE),Math.min(LR.z0*TILE,(SA.y0+77)*TILE),Math.max(LR.x1*TILE,(SA.x1-72)*TILE),Math.max(LR.z1*TILE,(SA.y1+77)*TILE)]; const hs=(i,j)=>{ const v=Math.sin(i*12.9898+j*78.233)*43758.5453; return v-Math.floor(v); }, B=[];
   const row=(inset,hmin,hmax,wmin,wmax,tower,k)=>{ const x0=LR.x0+inset, x1=LR.x1-inset, z0=LR.z0+inset, z1=LR.z1-inset; let n=0;
@@ -51,7 +51,7 @@ import {TPANE} from './087dz-tpane.js';
       B.push([(ax==='x'?c:mid)-SHARED.BOD.OX,(ax==='x'?mid:c)-SHARED.BOD.OY,ax==='x'?w:d,ax==='x'?d:w,h,null,[0,1,4,6,2,5][Math.floor(hs(k,95+a1)*6)]]); p+=w+.8+hs(k,96)*3; k++; } }
   // stand-ins past the draw distance (owner, 7 Nov 2026: "you shouldnt see gaps like no buildings, gap between buildings ... the further away the more faded"): every building on the rows and up West St and every near backdrop block has a hazed box a little inside it, seen once the real one is past the draw distance
   { const ZT=ZU/TILE, HPX={apts:480,bank:196,art:196,hotel:240,theatre:200,play:200}, IN=.6, sb=(x0,y0,x1,y1,h,v)=>{ const w=x1-x0-2*IN, d=y1-y0-2*IN; if(w>1&&d>1)B.push([(x0+x1)/2-SHARED.BOD.OX,(y0+y1)/2-SHARED.BOD.OY,w,d,h,null,v]); };
-    for(const p of LEVEL.places){ if(p.kind!=='front')continue; const y0=p.y1!=null?p.y0:LEVEL.block.back, y1=p.y1!=null?p.y1:LEVEL.block.front, px=HPX[p.id]||(p.row===2?110:150); sb(p.x0,y0,p.x1,y1,px*ZT*.92,p.row===2?[1,2,5,6][Math.floor(hs(p.x0,97)*4)]:[0,4][Math.floor(hs(p.x0,98)*2)]); }
+    for(const p of LEVEL.places){ if(p.kind!=='front'||(p.id==='bath'&&!p.pf)||AWAY.has(p.id==='play'?'playhouse':p.id))continue; const y0=p.y1!=null?p.y0:LEVEL.block.back, y1=p.y1!=null?p.y1:LEVEL.block.front, px=HPX[p.id]||(p.row===2?110:150); sb(p.x0,y0,p.x1,y1,px*ZT*.92,p.row===2?[1,2,5,6][Math.floor(hs(p.x0,97)*4)]:[0,4][Math.floor(hs(p.x0,98)*2)]); }
     for(const o of BLK.back||[])if(o.h)sb(o.x0,o.y0,o.x1,o.y1,o.h*ZT*.95,[0,4,1,6][o.k%4]); }
   const FW=16, FH=10, NV=8, atlas=new Uint8Array(FW*FH*NV*4), hp=(a,b)=>{ const v=Math.sin(a*91.7+b*47.3)*43758.5453; return v-Math.floor(v); };
   const WALL=[[128,60,48],[96,66,52],[118,118,114],[176,162,134],[122,56,44],[150,155,162],[168,132,96],[196,184,156]];
@@ -87,7 +87,7 @@ import {TPANE} from './087dz-tpane.js';
 `).replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=fLit*vec3(1.,.82,.5)*.9+diffuseColor.rgb*uAmb;').replace('#include <dithering_fragment>','#include <dithering_fragment>\n if(uBake>.5) gl_FragColor=vec4(pastK(),0.,0.,1.);'); };
   mat.customProgramCacheKey=()=>'skylinefronts';
   const FSP=BN.map(([x,z,sx,sz,h])=>new THREE.Sphere(new THREE.Vector3(x*TILE,y0+h*TILE/2,z*TILE),Math.hypot(sx,sz,h)*TILE/2));
-  me.frustumCulled=false; me.visible=on; (MAPG.bodega||scene).add(me); FAR3.mesh=me; FAR3.n=BN.length; FAR3.tris=BN.length*12; FAR3.FU=FU;
+  me.frustumCulled=false; me.visible=on; me.userData.noMirror=1; (MAPG.bodega||scene).add(me); FAR3.mesh=me; FAR3.n=BN.length; FAR3.tris=BN.length*12; FAR3.FU=FU;
   const CX=(LR.x0+LR.x1)/2*TILE, CZ=(LR.z0+LR.z1)/2*TILE, EYE=1.9, V0=Math.tan(-2*Math.PI/180), V1=Math.tan(30*Math.PI/180), DIRS=[[0,1],[1,0],[0,-1],[-1,0]];
   if(BAKE){ const fm=mk(BF); fm.frustumCulled=false; FAR3.farMesh=fm;
     FAR3.bake=(dens,pk)=>{ '@later'; const N=Math.round(90*dens), rt=new THREE.WebGLRenderTarget(N,N,{type:THREE.FloatType}), camB=new THREE.PerspectiveCamera(90,1,1,20000), r0=Math.floor((V0+1)/2*N), r1=Math.ceil((V1+1)/2*N), H=r1-r0, out=new Float32Array(N*4*H*4), buf=new Float32Array(N*N*4);
@@ -108,7 +108,7 @@ import {TPANE} from './087dz-tpane.js';
     pm.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,PU,{uMC:FU.uMC,uMK:FU.uMK,uHN:FU.uHN,uHF:FU.uHF});
       sh.fragmentShader='uniform sampler2D uN; uniform float uNK,uMK,uHN,uHF; uniform vec3 uMC;\n'+sh.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\n diffuseColor.rgb=mix(diffuseColor.rgb,texture2D(uN,vMapUv).rgb,uNK);')
         .replace('#include <fog_fragment>','if(uMK<=0.){\n#include <fog_fragment>\n} else gl_FragColor.rgb=mix(gl_FragColor.rgb,uMC,mix(uHN,uHF,texture2D(uN,vMapUv).a));\n#ifdef USE_FOG\n gl_FragColor.rgb=mix(gl_FragColor.rgb,uMK>0.?uMC:fogColor,1.-smoothstep(.04,.45,vMapUv.y));\n#endif'); };   // whole haze at the panels' foot: the city rises out of the haze
-    pm.customProgramCacheKey=()=>'farpanels'; pan=new THREE.Mesh(g,pm); pan.frustumCulled=false; pan.renderOrder=-1; pan.visible=on; (MAPG.bodega||scene).add(pan); FAR3.panels=pan; FAR3.PU=PU;
+    pm.customProgramCacheKey=()=>'farpanels'; pan=new THREE.Mesh(g,pm); pan.userData.noMirror=1; pan.frustumCulled=false; pan.renderOrder=-1; pan.visible=on; (MAPG.bodega||scene).add(pan); FAR3.panels=pan; FAR3.PU=PU;
     { const home=SECTION.id; SYS.add('places',()=>VIS.hide(pan,'section',SHARED.LVL==='up'&&SECTIONS.at(SHARED.BOD.MX(pos.x),SHARED.BOD.MY(pos.z))!==home),'134-panels'); } }
   // the near backdrop past the edges takes the same haze, so nothing jumps where the draw distance hands it to the stand-ins (owner, 7 Nov 2026: "the change in fade shouldnt be so sudden ... more gradual")
   { const HZ=m=>{ if(m.userData.hz)return; m.userData.hz=1; m.onBeforeCompile=sh=>{ for(const k of ['uMC','uMK','uHN','uHF','uHD','uBX','uTL','uNR'])sh.uniforms[k]=FU[k];

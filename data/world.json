@@ -650,13 +650,14 @@
    "id": "hotel",
    "name": "THE HOTEL",
    "kind": "front",
-   "x0": 116.37,
-   "x1": 147.75,
-   "y0": -92.4,
-   "y1": -77,
-   "face": "n",
    "merchant": "front_desk_clerk",
-   "pf": "hotel"
+   "pf": "hotel",
+   "x0": 56.41,
+   "x1": 70.98,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
   },
   {
    "id": "bar",
@@ -722,13 +723,8 @@
    "id": "bath",
    "name": "THE BATH HOUSE",
    "kind": "front",
-   "x0": 56.41,
-   "x1": 70.98,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2,
-   "pf": "bath"
+   "x0": 116.37,
+   "x1": 147.75
   },
   {
    "id": "fishtables",
@@ -6480,14 +6476,14 @@
   "runs": [
    [
     "x",
-    -50,
+    -204.5,
     -330,
     -92.4,
     -77
    ],
    [
     "x",
-    -72,
+    -204.5,
     -330,
     -37,
     -22
@@ -6501,7 +6497,7 @@
    ],
    [
     "x",
-    254,
+    404,
     520,
     -92.4,
     -77
@@ -6639,6 +6635,13 @@
     [
      -330,
      -77,
+     -202.5,
+     -70,
+     "walk"
+    ],
+    [
+     -202.5,
+     -77,
      -50,
      -70,
      "walk"
@@ -6646,12 +6649,26 @@
     [
      -330,
      -70,
+     -202.5,
+     -50,
+     "road"
+    ],
+    [
+     -202.5,
+     -70,
      -50,
      -50,
      "road"
     ],
     [
      -330,
+     -50,
+     -202.5,
+     -38,
+     "walk"
+    ],
+    [
+     -202.5,
      -50,
      -50,
      -38,
@@ -6674,6 +6691,13 @@
     [
      250,
      -77,
+     402,
+     -70,
+     "walk"
+    ],
+    [
+     402,
+     -77,
      520,
      -70,
      "walk"
@@ -6681,12 +6705,26 @@
     [
      250,
      -70,
+     402,
+     -50,
+     "road"
+    ],
+    [
+     402,
+     -70,
      520,
      -50,
      "road"
     ],
     [
      250,
+     -50,
+     402,
+     -38,
+     "walk"
+    ],
+    [
+     402,
      -50,
      520,
      -38,
@@ -6820,6 +6858,37 @@
      14,
      50
     ]
+   ]
+  },
+  "mirror": {
+   "note": "Market St past its ends (owner, 8 Nov 2026: \"lets make the street look the same all the way down\"): the street's band (y0, y1 in tiles) drawn again mirrored at the forcefields (x: west, east), reach tiles out, from these builders' groups; each side drawn while you are within show tiles of it; the lawn and the far grass leave the street's ground (y0, y1) to it",
+   "x": [
+    -52.5,
+    252
+   ],
+   "band": [
+    -92.4,
+    -22
+   ],
+   "reach": 150,
+   "show": 220,
+   "ground": [
+    -77,
+    -38
+   ],
+   "groups": [
+    "bodega",
+    "mainstreet",
+    "mshops",
+    "bank",
+    "art",
+    "apts",
+    "block",
+    "parkwall",
+    "park",
+    "pole",
+    "rail",
+    "store"
    ]
   }
  }

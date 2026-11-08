@@ -7,7 +7,7 @@ import {LOOP} from './009b-loop.js';
   for(const [k,d] of Object.entries({'bro.title1':'THE STRANGEST','bro.title2':'FLEA MARKET','bro.sub':"VISITOR'S MAP & GUIDE · NEW YORK",'bro.sec':'SECTION {id} · {a} · {b}','bro.poi':'POINTS OF INTEREST',
     'bro.here':'YOU ARE HERE','bro.hours':'THE HOURS','bro.hours2':'the sky keeps real Central time, one clock for everyone','bro.foot':'FREE · TAKE ONE · PRINTED AT THE BODEGA · 1986','bro.loop':'THE SUBWAY','bro.loop2':'THE SUBWAY UNDER THE RING STREETS · {n} STATIONS · TWO TRAINS','bro.loop3':'one station a section: its letter is the section it serves',
     'bro.train':'TRAIN {n} · TO {next}','bro.track1':'TRAIN 1 · the outer track','bro.track2':'TRAIN 2 · the inner track','bro.stop':'A STOP AT EVERY STATION · a click on one rides there','bro.quiet':'the grey stations are sections not built yet','bro.back':'F FLIPS BACK TO THE MAP','bro.hint':'CLICK A PLACE TO GO THERE · WHEEL ZOOMS · F FLIPS IT · ESC PUTS IT AWAY',
-    'bro.cover3':"VISITOR'S MAP\n& GUIDE",'bro.cover4':'THE MAP ON ONE SIDE\nTHE SUBWAY ON THE OTHER','bro.free':'FREE · TAKE ONE','bro.ny':'NEW YORK','bro.ed':'1986 EDITION','bro.under':'underground','bro.water':'THE HUDSON','bro.goto':'GO TO','bro.choose':'CHOOSE A PLACE...','bro.lake':'THE LAKE','bro.alley':'THE ALLEY','bro.prom':'THE PROMENADE','bro.ff':'FORCEFIELD · THE EDGE OF THE SECTION','bro.g.outside':'OUTSIDE','bro.g.inside':'INSIDE','bro.g.underground':'UNDERGROUND','bro.g.else':'ELSEWHERE'}))TEXT.t(k,d);
+    'bro.cover3':"VISITOR'S MAP\n& GUIDE",'bro.cover4':'THE MAP ON ONE SIDE\nTHE SUBWAY ON THE OTHER','bro.free':'FREE · TAKE ONE','bro.ny':'NEW YORK','bro.ed':'1986 EDITION','bro.under':'underground','bro.water':'THE HUDSON','bro.goto':'GO TO','bro.choose':'CHOOSE A PLACE...','bro.lake':'THE LAKE','bro.alley':'THE ALLEY','bro.prom':'THE PROMENADE','bro.ff':'FORCEFIELD · THE EDGE OF THE SECTION','bro.g.outside':'OUTSIDE','bro.g.inside':'INSIDE','bro.g.underground':'UNDERGROUND','bro.g.else':'ELSEWHERE','bro.find':'TYPE A NAME...','bro.neighbours':'NEIGHBOURS ONLINE','bro.online':'online'}))TEXT.t(k,d);
   const css=document.createElement('style'); css.textContent=`#bro{position:fixed;inset:0;z-index:30;perspective:1600px;background:rgba(6,8,14,.55);overflow:hidden;user-select:none;touch-action:none} #bro[hidden]{display:none}
     #bro .sh{position:absolute;left:0;top:0;width:320px;height:720px;transform-style:preserve-3d;transform-origin:0 0;will-change:transform}
     #bro .pn{position:absolute;left:0;top:0;width:320px;height:720px;transform-style:preserve-3d;transform-origin:0 50%} #bro .pn .pn{left:100%}
@@ -15,7 +15,12 @@ import {LOOP} from './009b-loop.js';
     #bro .fc i{position:absolute;top:0;bottom:0;width:22px;pointer-events:none} #bro .fc i.l{left:0;background:linear-gradient(90deg,rgba(0,0,0,.16),rgba(0,0,0,0))} #bro .fc i.r{right:0;background:linear-gradient(270deg,rgba(0,0,0,.1),rgba(0,0,0,0))}
     #bro .fc u{position:absolute;left:0;right:0;top:50%;height:14px;margin-top:-7px;background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.09) 50%,rgba(255,255,255,.12) 60%,rgba(0,0,0,0));pointer-events:none}
     #bro svg{fill:#111} #bro svg text{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-weight:900;letter-spacing:.4px} #bro svg [data-go],#bro svg [data-st]{cursor:pointer} #bro svg [data-go]:hover,#bro svg [data-st]:hover{opacity:.75}
-    #bro select.go{position:absolute;transform:translateZ(2px);backface-visibility:hidden;font:900 9px 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.4px;color:#111;background:#f6f4ec;border:1.5px solid #111;border-radius:0;padding:0 4px;cursor:pointer} #bro select.go[hidden]{display:none}
+    #bro .gob{position:absolute;transform:translateZ(2px);backface-visibility:hidden;font:900 9px 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.6px;color:#111} #bro .gob[hidden]{display:none}
+    #bro .gob>button{all:unset;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;width:100%;height:100%;padding:0 7px;background:#111;color:#f6f4ec;cursor:pointer;letter-spacing:2px} #bro .gob>button:hover{background:#e21b1b}
+    #bro .gol{position:absolute;left:0;right:0;top:100%;margin-top:3px;max-height:470px;overflow:auto;background:#f6f4ec;border:2px solid #111;box-shadow:3px 3px 0 rgba(0,0,0,.25)} #bro .gol[hidden]{display:none}
+    #bro .gol input{all:unset;box-sizing:border-box;display:block;width:100%;padding:4px 7px;border-bottom:1.5px solid #111;background:#ece9df;color:#111;font:inherit;letter-spacing:1px} #bro .gol input::placeholder{color:#777}
+    #bro .gor{display:flex;align-items:center;gap:7px;padding:2px 7px;cursor:pointer;white-space:nowrap} #bro .gor:hover,#bro .gor.on{background:#111;color:#f6f4ec} #bro .gor i{flex:none;width:13px;height:13px;border-radius:50%;border:1.3px solid #111;font:900 7px 'Helvetica Neue',Arial,sans-serif;font-style:normal;display:flex;align-items:center;justify-content:center;color:#fff} #bro .gor span{opacity:.6;font-weight:600;margin-left:auto}
+    #bro .gol h6{margin:0;padding:3px 7px 1px;font:inherit;letter-spacing:2px;opacity:.55}
     #bro .hint{position:absolute;z-index:2;left:50%;bottom:10px;transform:translateX(-50%) translateZ(2px);font:9px Silkscreen,monospace;letter-spacing:1px;color:#f2c14e;text-shadow:1px 1px 0 #000;white-space:nowrap;pointer-events:none}`;
   document.head.appendChild(css);
   const W=document.createElement('div'); W.id='bro'; W.hidden=true; W.setAttribute('role','dialog'); W.setAttribute('aria-label','Map'); document.body.appendChild(W);
@@ -36,8 +41,9 @@ import {LOOP} from './009b-loop.js';
     for(let i=0,n=Q.W*Q.H;i<n;i++){ const c=RGB[Q.K[i]]; im.data[i*4]=c[0]; im.data[i*4+1]=c[1]; im.data[i*4+2]=c[2]; im.data[i*4+3]=255; } g.putImageData(im,0,0);
     const S=[]; S.push(`<rect width="1280" height="720" fill="${PAPER}"/><image href="${cv.toDataURL()}" x="${TX(F.x0).toFixed(1)}" y="${TY(F.y1).toFixed(1)}" width="${(Q.W/Q.S*f).toFixed(1)}" height="${(Q.H/Q.S*f).toFixed(1)}" style="image-rendering:pixelated" preserveAspectRatio="none"/>`);
     // past the forcefields: washed out (seen, never walked)
-    const ring=E.length?E.map((l,i)=>(i?'L':'M')+TX(l[0]).toFixed(1)+' '+TY(l[1]).toFixed(1)+' L'+TX(l[2]).toFixed(1)+' '+TY(l[3]).toFixed(1)).join(' '):'';
-    if(ring)S.push(`<path d="M0 0H${mw.toFixed(1)}V720H0Z ${ring} L${TX(E[0][0]).toFixed(1)} ${TY(vy0).toFixed(1)}Z" fill="${PAPER}" fill-opacity=".62" fill-rule="evenodd"/>`);
+    const CH=[]; if(E.length){ CH.push(E[0]); for(let k=1;k<E.length;k++){ const q=CH[CH.length-1], n=E.find(l=>!CH.includes(l)&&Math.abs(l[0]-q[2])<.01&&Math.abs(l[1]-q[3])<.01); if(!n)break; CH.push(n); } }   // the outer loop of the edges (lines that join end to end from the first); any others stand inside it
+    const ring=CH.length?CH.map((l,i)=>(i?'L':'M')+TX(l[0]).toFixed(1)+' '+TY(l[1]).toFixed(1)+' L'+TX(l[2]).toFixed(1)+' '+TY(l[3]).toFixed(1)).join(' '):'', lines=E.map(l=>'M'+TX(l[0]).toFixed(1)+' '+TY(l[1]).toFixed(1)+' L'+TX(l[2]).toFixed(1)+' '+TY(l[3]).toFixed(1)).join(' ');
+    if(ring)S.push(`<path d="M0 0H${mw.toFixed(1)}V720H0Z ${ring} L${TX(CH[0][0]).toFixed(1)} ${TY(CH[0][1]).toFixed(1)}Z" fill="${PAPER}" fill-opacity=".62" fill-rule="evenodd"/>`);
     const SM=MODS.sections; if(SM&&SM.road&&SM.inner)for(const r of [SM.road,SM.inner])S.push(`<rect x="${TX(r.x0)}" y="${TY(r.y1)}" width="${TX(r.x1)-TX(r.x0)}" height="${TY(r.y0)-TY(r.y1)}" fill="none" stroke="${INK}" stroke-width="1.5" opacity=".5"/>`);
     // the buildings: the level file's places, then the plan's other boxes where none stands
     const B=LEVEL.places.filter(p=>p.kind!=='passage').map(p=>({x0:p.x0,y0:p.y1!=null?p.y0:LEVEL.block.back,x1:p.x1,y1:p.y1!=null?p.y1:LEVEL.block.front,n:p.name||'',k:p.kind==='fair'||p.kind==='lot'?'lot':p.kind==='stairs'?'stairs':'bld',place:null}));
@@ -69,7 +75,7 @@ import {LOOP} from './009b-loop.js';
     for(const [n,x,y] of Q.L2)lab(n,x,y,11,{ls:3,r:-90});
     if(SM&&SM.road&&SM.inner){ const ST=SECTIONS.streets||{}, rd=SM.road, inn=SM.inner, cx=(Math.max(vx0,inn.x0)+Math.min(vx1,inn.x1))/2, cy=(Math.max(vy0,inn.y0)+Math.min(vy1,inn.y1))/2;   // the ring streets' names where their bands cross this section
       for(const [n,x,y,r] of [[ST.south,cx,(rd.y0+inn.y0)/2,0],[ST.north,cx,(rd.y1+inn.y1)/2,0],[ST.west,(rd.x0+inn.x0)/2,cy,-90],[ST.east,(rd.x1+inn.x1)/2,cy,-90]])if(!Q.L2.some(l=>l[0]===n))lab(n,x,y,12,{ls:3,r}); }
-    if(ring)S.push(`<path d="${ring}" fill="none" stroke="#12b5cf" stroke-width="2.5" stroke-dasharray="7 4"/>`);
+    if(lines)S.push(`<path d="${lines}" fill="none" stroke="#12b5cf" stroke-width="2.5" stroke-dasharray="7 4"/>`);
     for(const o of (ONLINE.others?[...ONLINE.others.values()]:[])){ if(!o.p)continue; S.push(`<circle cx="${WX(o.p.x).toFixed(1)}" cy="${WY(o.p.z).toFixed(1)}" r="4" fill="${BLUE}" stroke="${PAPER}" stroke-width="1.2"/>${txt(o.name||'',WX(o.p.x),WY(o.p.z)-7,7,{a:'middle'})}`); }
     for(const p of PL){ if(p.lv==='down')continue; const b=B.find(q=>q.place===p), x=b?(TX(b.x0)+TX(b.x1))/2:WX(p.x), y=b?(TY(b.y0)+TY(b.y1))/2:WY(p.z), r=b?Math.max(4.5,Math.min(8.5,(TX(b.x1)-TX(b.x0))/2-.5,(TY(b.y0)-TY(b.y1))/2-.5)):8.5; if(x<0||x>mw||y<0||y>720)continue; S.push(bullet(p.n,x.toFixed(1),y.toFixed(1),r.toFixed(1),p.col,r*(p.n>9?1.05:1.2),` data-go="${esc(p.name)}"`)); }   // a narrow shop's number shrinks to fit it
     { const C=ROOMS.cur, R=C&&ROOMS.off[C.off||C.lz||C.id], o=R&&R.out, at=o?((o[2]||'up')==='up'?[o[0],o[1]]:null):SHARED.LVL==='up'&&!(C&&C.off)?[pos.x,pos.z]:null;
@@ -124,13 +130,24 @@ import {LOOP} from './009b-loop.js';
     SH.querySelectorAll('.pn').forEach((p,i)=>{ if(i)p.style.transform=`rotateY(${(i%2?-1:1)*th}deg)`; }); };
   const build=()=>{ '@later'; const F=front(), K=back(); SH=document.createElement('div'); SH.className='sh'; let parent=SH;
     for(let i=0;i<4;i++){ const p=document.createElement('div'); p.className='pn'; p.innerHTML=`<div class="fc"><svg viewBox="${i*320} 0 320 720">${F}</svg><u></u>${i?'<i class="l"></i>':''}${i<3?'<i class="r"></i>':''}</div><div class="fc bk"><svg viewBox="${(3-i)*320} 0 320 720">${K}</svg>${i<3?'<u></u><i class="l"></i>':''}</div>`; parent.appendChild(p); parent=p; }
-    if(G&&G.sel){ const q=G.sel, sel=document.createElement('select'); sel.className='go'; sel.setAttribute('aria-label',TEXT.t('bro.goto')); Object.assign(sel.style,{left:q.x+'px',top:q.y+'px',width:q.w+'px',height:q.h+'px'});   // GO TO: every place on the guide, in its groups and with its number
-      sel.innerHTML=`<option value="">${esc(TEXT.t('bro.choose'))}</option>`+LG.map(([k,L])=>`<optgroup label="${esc(k)}">${L.map(o=>`<option value="${esc(o.name)}">${o.s?o.s.n+' · ':''}${esc(o.name)}</option>`).join('')}</optgroup>`).join('');
-      sel.onchange=()=>{ const n=sel.value; if(n)go(()=>UI.goName(n)); }; SH.appendChild(sel); }
+    if(G&&G.sel){ const q=G.sel, box=document.createElement('div'); box.className='gob'; Object.assign(box.style,{left:q.x+'px',top:q.y+'px',width:q.w+'px',height:q.h+'px'});   // GO TO: every place the game registers, A to Z, with its number on the map, and your neighbours' apartments (owner, 8 Nov 2026)
+      const key=n=>n.replace(/^THE /,''), items=LG.flatMap(([,L])=>L.map(o=>({name:o.name,n:o.s?o.s.n:null,col:o.s?o.s.col:null}))).sort((a,b)=>key(a.name).localeCompare(key(b.name)));
+      const apts=(ONLINE.others&&ONLINE.visit?[...ONLINE.others.values()]:[]).filter(o=>o&&o.id&&o.name).map(o=>({name:o.name.toUpperCase()+"'S APARTMENT",visit:o})).sort((a,b)=>a.name.localeCompare(b.name));
+      const row=(o,i)=>`<div class="gor" data-goto="${esc(o.name)}" data-i="${i}">${o.n!=null?`<i style="background:${o.col};${DARK[o.col]?'color:#111':''}">${o.n}</i>`:'<i style="background:#fff"></i>'}${esc(o.name)}${o.visit?'<span>'+esc(TEXT.t('bro.online'))+'</span>':''}</div>`;
+      const ALL=[...items,...apts];
+      box.innerHTML=`<button type="button" aria-haspopup="listbox"><b>${esc(TEXT.t('bro.choose'))}</b><b>▾</b></button><div class="gol" hidden role="listbox"><input type="text" placeholder="${esc(TEXT.t('bro.find'))}" aria-label="${esc(TEXT.t('bro.find'))}"><div class="gox"></div></div>`;
+      const L=box.querySelector('.gol'), F=box.querySelector('input'), X=box.querySelector('.gox');
+      const fill=()=>{ const f=F.value.trim().toUpperCase(), pick=o=>!f||o.name.includes(f); X.innerHTML=items.map((o,i)=>[o,i]).filter(([o])=>pick(o)).map(([o,i])=>row(o,i)).join('')+(apts.some(pick)?`<h6>${esc(TEXT.t('bro.neighbours'))}</h6>`+apts.map((o,i)=>[o,items.length+i]).filter(([o])=>pick(o)).map(([o,i])=>row(o,i)).join(''):''); };
+      const toggle=()=>{ L.hidden=!L.hidden; if(!L.hidden){ F.value=''; fill(); F.focus(); } };
+      box.querySelector('button').onclick=e=>{ e.stopPropagation(); toggle(); };
+      F.oninput=fill;
+      X.onclick=e=>{ e.stopPropagation(); const r=e.target.closest('.gor'); if(!r)return; const o=ALL[+r.dataset.i]; if(!o)return; go(()=>o.visit?ONLINE.visit(o.visit.id,o.visit.name):UI.goName(o.name)); };
+      for(const ev of ['pointerdown','click','wheel'])box.addEventListener(ev,e=>e.stopPropagation(),{passive:true});
+      SH.appendChild(box); }
     W.innerHTML=''; W.appendChild(SH); W.insertAdjacentHTML('beforeend',`<div class="hint">${esc(TEXT.t('bro.hint'))}</div>`); };
   const open=()=>{ if(up)return close(); up=true; flipped=false; z=1; px=py=0; keys.clear(); fit(); build(); W.hidden=false; pose(1,0); };
   const close=()=>{ if(!up)return; W.hidden=true; W.innerHTML=''; SH=null; up=false; };
-  const flip=()=>{ if(!up)return; flipped=!flipped; pose(1,flipped?180:0); const sel=SH&&SH.querySelector('select.go'); if(sel)sel.hidden=flipped; };
+  const flip=()=>{ if(!up)return; flipped=!flipped; pose(1,flipped?180:0); const sel=SH&&SH.querySelector('.gob'); if(sel){ sel.hidden=flipped; const l=sel.querySelector('.gol'); if(l)l.hidden=true; } };
   const go=f=>{ close(); f(); };
   { let dr=null, moved=false; W.addEventListener('pointerdown',e=>{ dr={x:e.clientX,y:e.clientY,px,py}; moved=false; });
     W.addEventListener('pointermove',e=>{ if(!dr)return; if(Math.abs(e.clientX-dr.x)+Math.abs(e.clientY-dr.y)>5)moved=true; if(moved&&z>1){ px=dr.px+e.clientX-dr.x; py=dr.py+e.clientY-dr.y; pose(1,flipped?180:0); } });
@@ -145,10 +162,10 @@ import {LOOP} from './009b-loop.js';
       const [x,zz]=G.toWorld(sx,sy); go(()=>UI.goTo(x,zz,'up')); }); }
   addEventListener('keydown',e=>{ const key=(e.key||'').toLowerCase(), sm=e.shiftKey&&key==='m'&&!e.ctrlKey&&!e.metaKey&&!e.altKey;
     if(sm){ if(e.repeat||(e.target&&e.target.closest&&e.target.closest('input,textarea,select,[contenteditable="true"]')))return; e.preventDefault(); e.stopImmediatePropagation(); if(up)return close(); if(UI.menuOpen)UI.toggleMenu(); return open(); }
-    if(!up)return; e.stopImmediatePropagation(); if(e.target&&e.target.matches&&e.target.matches('#bro select')&&key!=='escape')return; e.preventDefault(); if(e.repeat)return;   // the drop-down keeps its own keys
+    if(!up)return; e.stopImmediatePropagation(); if(e.target&&e.target.matches&&e.target.matches('#bro input')&&key!=='escape'){ if(key==='enter'){ const r=W.querySelector('.gor'); if(r)r.click(); } return; } e.preventDefault(); if(e.repeat)return;   // the drop-down keeps its own keys
     if(key==='escape'){ close(); } else if(key==='f')flip(); },true);
   addEventListener('keyup',e=>{ if(up)e.stopImmediatePropagation(); },true);
   addEventListener('resize',()=>{ if(up){ fit(); pose(1,flipped?180:0); } });
   UI.mapWindow=()=>{ if(!up)open(); };
   UI.brochure={open,close,flip,up:()=>up,flipped:()=>flipped,places:()=>LN.slice()};
-  window.BRODBG=()=>({up,flipped,places:LN.length,spots:PL.length,sel:document.querySelectorAll('#bro select.go option[value]:not([value=""])').length,go:document.querySelectorAll('#bro [data-go]').length,st:document.querySelectorAll('#bro [data-st]').length}); }
+  window.BRODBG=()=>({up,flipped,places:LN.length,spots:PL.length,sel:(()=>{ const b=document.querySelector('#bro .gob'); if(!b)return 0; const l=b.querySelector('.gol'), h=l.hidden; l.hidden=false; b.querySelector('input').dispatchEvent(new Event('input')); const n=b.querySelectorAll('.gor').length; l.hidden=h; return n; })(),go:document.querySelectorAll('#bro [data-go]').length,st:document.querySelectorAll('#bro [data-st]').length}); }

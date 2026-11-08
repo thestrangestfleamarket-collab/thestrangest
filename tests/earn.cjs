@@ -18,7 +18,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       return { tot, k0, lad, ask: ask && ask.item, handed, paid, left, bounty, anti: FORAGE.BUYK.antiquities, gems: FORAGE.BUYK.gems.includes('raw_geode'), cabs: STORE.cabs && [...STORE.cabs.list ? STORE.cabs.list : []].map(c => c.skill) }; });
     ok(r.tot, 'lessons in unknown skills no longer break the skill total');
     ok(r.k0 >= 10, 'a known kind sells at its worth or more (' + r.k0 + ' for 10)');
-    ok(['forage', 'bind', 'sword', 'fight', 'climb', 'photo', 'bird'].every(k => r.lad.includes(k)), 'the new trainer ladders are there (' + r.lad.join(',') + ')');
+    ok(['forage', 'sword', 'fight', 'climb', 'photo', 'bird'].every(k => r.lad.includes(k)), 'the new trainer ladders are there (' + r.lad.join(',') + ')');
     ok(r.ask === 'photo:b_' && r.handed && r.paid > 0 && r.left === 0, 'prints of butterflies hand in to the Forest Ranger ($' + r.paid + ')');
     ok(r.bounty, 'the Squirrel offers the bounties');
     ok(r.anti.includes('doubloon') && r.anti.includes('va_') && r.gems, 'the Hudson salvage, the vault finds and raw geodes have a buyer');

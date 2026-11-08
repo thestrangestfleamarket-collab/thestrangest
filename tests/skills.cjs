@@ -1,5 +1,5 @@
 // THE SKILLS CHECK: node tests/skills.cjs dist/market.html. The other skills as things to do: ranks, the recipe and flower and finds pages, today's asks handed in for pay, gifts to the museum,
-// cutting stones on a gem wheel, the Fixer buying ore, the weekly rare seed, bookcloth from flowers, and the sparring dummy teaching the basics.
+// cutting stones on a gem wheel, the Fixer buying ore, the weekly rare seed, and the sparring dummy teaching the basics.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=skills::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -22,20 +22,20 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const ask = await pg.evaluate(() => { const A = FORAGE.asks(), a = A[0]; FORAGE.give(a.id, a.n); const c0 = INV.cash; FORAGE.hand(0); return { n: A.length, who: A.map(x => x.who), paid: INV.cash - c0, done: FORAGE.asks()[0].done, rows: FORAGE.askRows(a.who).includes('DONE') }; });
   ok(ask.n === 3 && new Set(ask.who).size === 3 && ask.paid > 0 && ask.done && ask.rows, "today's asks: three merchants, one handed in for pay and marked done in their shop: " + JSON.stringify(ask));
 
-  // the museum takes the first of each find, specimen or restored book; cut stones on a gem wheel
+  // the museum takes the first of each find, specimen; cut stones on a gem wheel
   const mu = await pg.evaluate(() => { const here = STORE.here; STORE.here = id => id === 'museum'; const o = {}; FORAGE.give('jade', 2); const c0 = INV.cash; FORAGE.ACT.gift('jade'); o.paid = INV.cash - c0; o.again = FORAGE.ROWB.flatMap(f => f('jade')).map(x => x[0]).includes('DONATE');
-    FORAGE.give('br_novel'); const c1 = INV.cash; FORAGE.ACT.gift('br_novel'); o.book = INV.cash - c1; STORE.here = here;
+    STORE.here = here;
     FORAGE.S.sk.prosp = 1000; FORAGE.craft('cut_jade'); o.noWheel = FORAGE.has('cut_jade'); FORAGE.give('gem_wheel'); FORAGE.craft('cut_jade'); o.cut = FORAGE.has('cut_jade'); o.worth = FORAGE.PRICE.cut_jade;
     o.page = FORAGE.BOOK.find(p => p.id === 'finds').rows().length; return o; });
-  ok(mu.paid > 0 && !mu.again && mu.book > 0, 'the museum pays for its first jade and its first restored novel, and only the first: ' + JSON.stringify(mu));
+  ok(mu.paid > 0 && !mu.again, 'the museum pays for its first jade, and only the first: ' + JSON.stringify(mu));
   ok(!mu.noWheel && mu.cut === 1 && mu.worth > 26 * 2 && mu.page === 22, 'a gem wheel cuts jade into a stone worth twice and more; the finds page lists 22: ' + JSON.stringify(mu));
 
   const tr = await pg.evaluate(() => ({ fixer: (CHARS.trade({ key: 'fixer' }) || {}).buys, ore: FORAGE.BUYK.ore, shark: (CHARS.trade({ key: 'shark' }) || {}).sells }));
   ok((tr.fixer || []).includes('ore') && (tr.ore || []).includes('goldnug') && (tr.shark || []).includes('gem_wheel'), 'the Fixer buys ore; the Shark sells a gem wheel: ' + JSON.stringify(tr));
 
-  // gardening: a rarer seed each week; bookcloth from flowers
-  const gd = await pg.evaluate(() => { const wk = GARDEN.week(), on = FORAGE.SELLS.filter(s => s[0].startsWith('sd_') && s[2]()).map(s => s[0]); FORAGE.S.sk.bind = 1000; FORAGE.give('bs_kit'); FORAGE.give('fl_daisy', 2); FORAGE.give('fl_bluebell', 2); const c0 = FORAGE.has('bs_cloth'); FORAGE.craft('bs_cloth'); return { wk, on, cloth: FORAGE.has('bs_cloth') - c0 }; });
-  ok(gd.on.length === 1 && gd.on[0] === 'sd_' + gd.wk && gd.cloth === 1, 'one rarer seed is sold this week; daisies and bluebells make bookcloth: ' + JSON.stringify(gd));
+  // gardening: a rarer seed each week
+  const gd = await pg.evaluate(() => { const wk = GARDEN.week(), on = FORAGE.SELLS.filter(s => s[0].startsWith('sd_') && s[2]()).map(s => s[0]); return { wk, on }; });
+  ok(gd.on.length === 1 && gd.on[0] === 'sd_' + gd.wk, 'one rarer seed is sold this week: ' + JSON.stringify(gd));
 
   // the sparring dummy: it teaches the basics only, and tires you
   const dm = await pg.evaluate(async () => { for (let i = 0; i < 40 && !(window.DUMMY && DUMMY.g); i++) await new Promise(r => setTimeout(r, 500)); const o = { there: !!(window.DUMMY && DUMMY.g) }, V = __dbg.VIT || {}; FORAGE.S.sk.fight = 100; FORAGE.S.lock.fight = 'up';

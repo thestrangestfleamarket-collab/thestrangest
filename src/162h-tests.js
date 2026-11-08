@@ -10,8 +10,7 @@ window.TESTS=TESTS;
   const placeN=()=>{ try{ return [...new Set(['YOUR APARTMENT',...UI.places().map(p=>p[0])])]; }catch(e){ return []; } };
   // a skill by doing it: where, what to buy first, what to use there (the mushrooms and the fishing are the bot's own jobs)
   const HOW={forage:{job:'mushrooms'},myco:{job:'mushrooms'},fish:{job:'fish'},ento:{at:'CENTRAL PARK',need:['net'],re:/BUTTERFL|MOTH/},bird:{at:'CENTRAL PARK',need:['binoc'],re:/BIRD|PIGEON|SPARROW|ROBIN|CROW|JAY|DUCK|GOOSE|FINCH|OWL/},
-    climb:{at:'CENTRAL PARK',re:/TREE|LADDER|ROPE|CLIMB/},garden:{at:'CENTRAL PARK',re:/FLOWER|ROSE|TULIP|DAISY|LILY|BED$/},bee:{at:'CENTRAL PARK',need:['bee_smoker','jar_honey'],re:/HIVE/},
-    golf:{need:['putter'],re:/GOLF|PUTT|HOLE|TEE/},sword:{need:['sword_wood'],re:/DUMMY|TRAINING|SPAR/},fight:{re:/DUMMY|PUNCH|BAG|SPAR/},bind:{at:'THE BOOKSTORE',need:['bs_kit'],re:/BIND|PRESS|BOOK ?BENCH/},gem:{at:'THE GEM SHOP',need:['gem_wheel'],re:/WHEEL|GRIND|CUT/}};
+    climb:{at:'CENTRAL PARK',re:/TREE|LADDER|ROPE|CLIMB/},garden:{at:'CENTRAL PARK',re:/FLOWER|ROSE|TULIP|DAISY|LILY|BED$/},bee:{at:'CENTRAL PARK',need:['bee_smoker','jar_honey'],re:/HIVE/},sword:{need:['sword_wood'],re:/DUMMY|TRAINING|SPAR/},fight:{re:/DUMMY|PUNCH|BAG|SPAR/},gem:{at:'THE GEM SHOP',need:['gem_wheel'],re:/WHEEL|GRIND|CUT/}};
   // every test, made fresh from the game's data: [{id, cat, name, ...what it needs}]
   TESTS.all=async()=>{ const L=[], add=(cat,id,name,o)=>L.push({id:cat+':'+id,cat,name,...o});
     const shopOf={}; for(const p of LEVEL.places||[])if(p.merchant&&p.name)shopOf[p.merchant]=p.name;

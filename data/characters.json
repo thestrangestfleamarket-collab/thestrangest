@@ -2754,17 +2754,15 @@
     "stack_key"
    ],
    "buys": [
-    "books",
     "paintings",
     "antiquities",
     "photos",
     "slime"
    ],
    "teaches": [
-    "bind",
     "guitar"
    ],
-   "line": "Old books, mending things, canvases. I buy the mended ones and good paintings."
+   "line": "Canvases and paper. I buy good paintings and old things."
   }
  },
  "tour_guide": {
@@ -2939,16 +2937,7 @@
     24
    ]
   },
-  "name": "THE GAME MASTER",
-  "trade": {
-   "sells": [
-    "putter"
-   ],
-   "teaches": [
-    "golf"
-   ],
-   "line": "Putters by the holodeck. Mind the koi."
-  }
+  "name": "THE GAME MASTER"
  },
  "teen_player": {
   "pf": "teen-player-37865e",

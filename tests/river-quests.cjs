@@ -31,7 +31,7 @@ const SHOTS = process.argv[3];
     await shot('heron-island');
     const f0 = await pg.evaluate(() => { HUDSON.isle.HR[0].th.act(); return FORAGE.has('bird_feather'); });
     ok(await wait(() => !INV.ready('heron'), 90000), 'watched quietly for a while, the herons give Birding and feathers');
-    ok(await pg.evaluate(f0 => FORAGE.has('bird_feather') > f0, f0), 'feathers in your pack (quills for bookbinding)');
+    ok(await pg.evaluate(f0 => FORAGE.has('bird_feather') > f0, f0), 'feathers in your pack');
     // the Long Swim
     await pg.evaluate(() => { const I = HUDSON.isle; STORE.goTo(I.sx, I.sz, 'up'); }); await wait(() => RIVER.swim, 60000);
     const r0 = await pg.evaluate(() => { const t = __dbg.UI.things.find(t => t.name === 'THE LONG SWIM (START)'); t.act(); return { on: HUDSON.race.on, x: __dbg.you().x }; });
@@ -44,10 +44,9 @@ const SHOTS = process.argv[3];
     // the wreck's things
     await pg.evaluate(() => { const [x, z] = WRECK.at; STORE.goTo(x, z, 'up'); });
     ok(await wait(() => HUDSONDBG().wreck, 90000), 'at the wreck: the bell, the logbook, the safe and the silt are built');
-    const lb = await pg.evaluate(() => { const W = HUDSON.wreck; W.book.act(); const a = { rotted: FORAGE.has('bk_captlog') };
-      for (const [id, n] of [['bs_kit', 1], ['bs_glue', 1], ['bs_thread', 2], ['bs_leather', 1]]) FORAGE.give(id, n); FORAGE.S.sk.bind = 1000; FORAGE.craft('logbook_capt'); a.mended = FORAGE.has('logbook_capt');
+    const lb = await pg.evaluate(() => { const W = HUDSON.wreck; W.book.act(); const a = { book: FORAGE.has('logbook_capt') };
       FORAGE.ST.int = 60; FORAGE.ACT.capread(); a.read = HUDSON.S.read; FORAGE.S.sk.forage = 1000; const c0 = INV.cash; HUDSON.isle.dig.act(); a.dug = HUDSON.S.dug; a.cash = INV.cash - c0; const c1 = INV.cash; HUDSON.isle.dig.act(); a.again = INV.cash - c1; return a; });
-    ok(lb.rotted === 1 && lb.mended === 1 && lb.read === 1, 'the logbook from the stern cabin, mended by bookbinding, read with intelligence: ' + JSON.stringify(lb));
+    ok(lb.book === 1 && lb.read === 1, 'the logbook from the stern cabin, read with intelligence: ' + JSON.stringify(lb));
     ok(lb.dug === 1 && lb.cash >= 500 && lb.again === 0, 'its clue: the captain\'s box dug up on Heron Island, once: ' + JSON.stringify(lb));
     const sf = await pg.evaluate(() => { const W = HUDSON.wreck, n = () => HUDSON.S.safe.n, a = {}; FORAGE.ST.str = 30; W.parts[2].th.act(); a.pinned = n(); W.parts[0].th.act(); W.parts[1].th.act(); a.two = n(); W.parts[2].th.act(); a.weak = n();
       FORAGE.ST.str = 60; W.parts[2].th.act(); a.three = n(); const c0 = INV.cash, d0 = FORAGE.has('doubloon'); W.safe.act(); a.cash = INV.cash - c0; a.coins = FORAGE.has('doubloon') - d0; const c1 = INV.cash; W.safe.act(); a.again = INV.cash - c1; return a; });

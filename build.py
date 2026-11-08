@@ -29,8 +29,7 @@ imp = subprocess.run(['node', '--stack-size=8000', 'tools/imports.cjs'], capture
 if imp.returncode: sys.exit(imp.stderr or imp.stdout)
 # code the page shares with the worker (the dish's simulation): __CODE__("worker/x.js") puts the file in, its export line dropped
 code = lambda t: re.sub(r'__CODE__\("([^"]+)"\)', lambda m: re.sub(r'^export \{[^}]*\};[ \t]*$', '', read(m.group(1)), flags=re.M), t)
-clog = json.dumps([[m.group(1), m.group(2).strip()] for m in reversed(list(re.finditer(r'^## (\d[^:]*): (.+)$', read('docs/HISTORY.md'), re.M)))])
-page = code(subprocess.run(['node', 'tools/imports.cjs', '--join'] + src, check=True, capture_output=True, text=True).stdout).replace('__BUILDV__', bv).replace('__CHANGELOG__', clog)
+page = code(subprocess.run(['node', 'tools/imports.cjs', '--join'] + src, check=True, capture_output=True, text=True).stdout).replace('__BUILDV__', bv)
 i = page.index('<script type="module">') + len('<script type="module">')
 j = page.rindex('</script>')
 os.makedirs('dist', exist_ok=True)

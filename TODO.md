@@ -335,6 +335,7 @@ One pass, one pull request.
 - [x] **Things take room** (owner, 8 Nov 2026: "do all three go"; done 8 Nov) · P1 · M · code. Characters their body's size, waiting for each other, solids from step height, characters in the loose things' physics; `tests/space.cjs`.
 
 - [x] **The hotel's helipad** · P2 · M · code + look. 7 Nov 2026 (owner: "add heliped on top of building. helicopter. have it fly around and land. pilot"): the deck, two helicopters on the sky tour, ride along, fly it yourself (`150pa-heli`, `tests/heli.cjs`). [taking: claude/sharp-gates-thwxtx, 7 Nov 2026]
+- [x] **The news helicopter on the bank** · P2 · S · code + look. 8 Nov 2026 (owner: "add just one helicopter for the news"): one, 25% smaller, a round every 5 minutes, rotor off on the pad (`150pa-heli`, `tests/heli.cjs`).
 - [ ] **The physics extras (#512) never tried in a real game** · P3 · M · look + check. The bar's dartboard scoring a throw (the bar now also
   has a darts 301 game, 8999ffd2: two ways to score, ask whether the physics one stays), an upright trash can taking small things, hanging
   plants, lanterns and bulbs swaying, glass breaking. `src/150-loose.js`, `src/150o-physmore.js`; add cases to `tests/physx.cjs`.
@@ -465,6 +466,7 @@ One session on the owner's Quest 3 settles most of these.
   controls in game match the quest 3 controllers, also add hand tracking in game so i can use my hands to use the menus". Only tested on an
   emulated Quest 3 (`tests/vr.cjs`). Waiting on him: the 30° snap turn, the button layout, the menu panel's size and distance, how the
   hands look. Collect his picks for the lines below in the same session.
+- [x] **Your real moves in the headset** (owner, 8 Nov 2026: "if im waving in VR with my hand can my realtime movments show up instead of preset animatinos?", then "C"; done 8 Nov) · P2 · M · code. `src/162cb-vrbody.js`, `tests/vrbody.cjs`: head, arms and fingers follow you, the others see them. Left: tried on the Quest 3 (the line above).
 - [ ] **No walking with hands only** (after the beta: owner, 7 Nov) · P3 · M · pick + code. Hands point and pinch at menus; walking needs the sticks (teleport is
   controller-only, `src/162c-vr.js:136`). He picks: point-and-pinch to teleport, pinch-and-pull, or a wrist button.
 - [ ] **The menu panel's picture can lag behind the window** · P3 · S-M · code. `html-to-image`, a few hundred ms; a press goes to what the

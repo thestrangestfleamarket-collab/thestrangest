@@ -20,7 +20,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(!(await pg.evaluate(() => !!document.getElementById('hh'))), 'the pager is gone');
     await pg.keyboard.press('Escape');
     ok(await until(() => __UI.menuOpen && __UI.menuNow()[0] === 'you'), 'ESC opens the menu at PROFILE');
-    ok(await texts('#mnav [data-sec]') === 'PROFILE,SETTINGS,INVENTORY', 'the sections down the left: PROFILE, SETTINGS, INVENTORY (no ADMIN for a player; no MAP, PEOPLE, BBS or GUIDE)');
+    ok(await texts('#mnav [data-sec]') === 'PROFILE,SETTINGS,PETS,INVENTORY', 'the sections down the left: PROFILE, SETTINGS, PETS, INVENTORY (no ADMIN for a player; no MAP, PEOPLE, BBS or GUIDE)');
     ok(await texts('#msub [data-sub]') === 'LOOK,WEAR,WORDS', 'PROFILE has LOOK, WEAR and WORDS');
     ok(await until(() => document.querySelector('#dlooks #looks') && !document.querySelector('#looks').hidden), 'your look sits beside your avatar');
     ok(await pg.evaluate(() => [...document.querySelectorAll('#cpbtns button')].map(x => x.firstChild.textContent).join() === 'PASSPORT,RESURRECT,LOG OUT'), 'PROFILE keeps PASSPORT, RESURRECT and LOG OUT');
@@ -31,22 +31,22 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await shot('pack');
     await sub('book'); ok(await pg.evaluate(() => FORAGE.PACK.tab === 'book'), 'BOOK');
     await sec('set'); ok((await shown()) === 'display', 'SETTINGS opens at VIEW');
-    ok(await texts('#msub [data-sub]') === 'VIEW,PICTURE,CONTROLS,REPORT A BUG', 'SETTINGS: VIEW, PICTURE, CONTROLS, REPORT A BUG');
+    ok(await texts('#msub [data-sub]') === 'VIEW,CAMERA,SCREEN,CHAT,RESOLUTION,PS2 FILTER,TIME,WEATHER,LIGHT,SOUND,KEYS,CONTROLLER,VR,REPORT A BUG', 'SETTINGS: every setting its own tab (8 Nov 2026)');
     await shot('set-view');
-    await sub('picture'); ok((await shown()) === 'atmo,graphics' || (await shown()) === 'graphics,atmo', 'PICTURE: graphics and atmosphere');
-    await shot('set-picture');
-    await sub('controls'); ok(/^keys,(sound,)?vr$/.test(await shown()), 'CONTROLS: keys, sound and VR');
+    { const one = []; for (const [k, p] of [['camera', 'camera'], ['screen', 'screen'], ['chat', 'chat'], ['res', 'graphics'], ['ps2', 'ps2'], ['time', 'atmo'], ['weather', 'weather'], ['light', 'light'], ['keys', 'keys'], ['vr', 'vr']]) { await sub(k); if ((await shown()) !== p) one.push(k + ':' + (await shown())); } ok(!one.length, 'each tab shows its own one pane' + (one.length ? ': ' + one : '')); }
+    await sub('ps2'); await shot('set-ps2');
+    { const r = await pg.evaluate(() => { const b = document.getElementById('dps2'), on0 = PS2.on; b.click(); const off = PS2.on; b.click(); const g = document.querySelector('#dps2p [data-k="grain"]'), g0 = PS2.parts.grain; g.click(); const g1 = PS2.parts.grain; g.click(); return { on0, off, back: PS2.on, g0, g1, gb: PS2.parts.grain }; }); ok(r.on0 && !r.off && r.back && r.g0 !== r.g1 && r.gb === r.g0, 'PS2 FILTER: on and off, and each part on its own (8 Nov 2026) ' + JSON.stringify(r)); }
     await sub('bug'); ok((await shown()) === 'bug', 'REPORT A BUG');
     await pg.keyboard.press('Escape'); ok(await until(() => !__UI.menuOpen), 'ESC shuts it');
     await pg.keyboard.press('Escape'); ok(await until(() => __UI.menuOpen && __UI.menuNow()[0] === 'set'), 'and opens it again where you were');
     await pg.keyboard.press('Escape'); await until(() => !__UI.menuOpen);
-    await pg.evaluate(() => __UI.menuTab('graphics')); ok((await now()).join() === 'set,picture', 'the old tab names still land in the right place');
+    await pg.evaluate(() => __UI.menuTab('graphics')); ok((await now()).join() === 'set,res', 'the old tab names still land in the right place');
     await pg.evaluate(() => __UI.menuTab('bug')); ok((await now()).join() === 'set,bug', 'F8 lands on REPORT A BUG');
     await pg.evaluate(() => __UI.toggleMenu());
     await pg.evaluate(() => { CINEMA.isAdmin = async () => true; });   // an owner
     await pg.keyboard.press('Escape'); ok(await until(() => !!document.querySelector('#mnav [data-sec="admin"]')), 'an owner sees ADMIN');
-    await sec('admin'); ok(await texts('#msub [data-sub]') === 'BUG QUEUE,TENANTS,TEXT,TESTS,TOOLS', 'ADMIN: BUG QUEUE, TENANTS, TEXT, TESTS, TOOLS');
-    await sub('tools'); ok(await until(() => document.querySelectorAll('#dtools ul li').length > 10 && !!document.querySelector('#dtools #cpstat')), 'TOOLS: stats, the render inspector and the game log');
+    await sec('admin'); ok(await texts('#msub [data-sub]') === 'BUG QUEUE,TEXT,EDITORS,TOOLS', 'ADMIN: BUG QUEUE, TEXT, EDITORS, TOOLS (8 Nov 2026)');
+    await sub('tools'); ok(await until(() => !!document.querySelector('#dtools #cpstat')), 'TOOLS: stats and the render inspector (no game log, 8 Nov 2026)');
     await shot('admin');
     await pg.keyboard.press('Escape'); await until(() => !__UI.menuOpen);
   }

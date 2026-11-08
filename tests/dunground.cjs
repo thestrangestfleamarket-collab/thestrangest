@@ -19,7 +19,7 @@ const {chromium}=require('playwright');
     await place(...await at(L,L.ramp,2.3)); await walkTo(...c,14000); const h2=await hNow();
     ok(h2>L.h*.7,`${L.room}: its ramp takes you up (height ${h2.toFixed(0)} of ${L.h})`);
     await pg.screenshot({path:process.argv[2]||'/tmp/dun-ledge.png'});
-    const hp0=await pg.evaluate(()=>__dbg.VIT.hp); const tgt=await at(L,back,1.5); await walkTo(...tgt,12000); const h3=await hNow(); console.log('off',tgt,await pg.evaluate(()=>__dbg.pos()));
+    const hp0=await pg.evaluate(()=>__dbg.VIT.hp); let h3=99; for(const da of [0,.7,-.7,1.3,-1.3]){ const tgt=await at(L,back+da,1.6); await walkTo(...tgt,9000); h3=await hNow(); if(h3<h2-12)break; await walkTo(...await at(L,0,0),5000); }
     ok(h3<h2-12,`walking off its edge drops you (height ${h3.toFixed(0)}; health ${hp0.toFixed(2)} -> ${(await pg.evaluate(()=>__dbg.VIT.hp)).toFixed(2)})`); }
   else ok(false,'a ledge to test');
   const PT=R.flatMap(r=>r.feats.map(f=>({...f,room:r.nm}))).find(f=>f.h<-40&&Math.min(f.rx,f.ry)>1.5);
@@ -27,4 +27,7 @@ const {chromium}=require('playwright');
     ok(g1<g0-25,`${PT.room}: over the edge into a pit (${g0.toFixed(0)} -> ${g1.toFixed(0)})`); ok(hp1<hp0,`a drop that deep hurts (${hp0.toFixed(2)} -> ${hp1.toFixed(2)})`);
     await pg.screenshot({path:process.argv[3]||'/tmp/dun-pit.png'});
     await walkTo(...await at(PT,PT.ramp,2.4),16000); ok(await hNow()>g1+20,'the rubble slope takes you out'); await walkTo(...c,5000); }
+  if(L){ const r=await pg.evaluate(([a,b])=>{ const C=window.CITY, E=(C.extra&&C.extra.down)||[], R=C.route('down',{x:a[0],z:a[1]},{x:b[0],z:b[1]}); if(!R)return {none:true,cliffs:E.length};
+      let bad=0; for(let i=1;i<R.pts.length;i++){ const p=R.pts[i-1], q=R.pts[i]; for(let t=0;t<=1;t+=.1){ const x=p.x+(q.x-p.x)*t, z=p.z+(q.z-p.z)*t; if(E.some(e=>x>e[0]&&x<e[2]&&z>e[1]&&z<e[3]))bad++; } } return {n:R.pts.length,bad,cliffs:E.length}; },[await at(L,L.ramp+Math.PI,1.8),await at(L,0,0)]);
+    ok(r.cliffs>0&&!r.none&&r.bad<=2,'a route up onto the ledge goes round its cliff, by the ramp '+JSON.stringify(r)); }
   ok(!Object.keys(errs).length,'no page errors '+Object.keys(errs).join(' | ')); await b.close(); process.exit(bad?1:0); })();

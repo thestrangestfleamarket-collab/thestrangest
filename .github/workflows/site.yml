@@ -67,6 +67,7 @@ jobs:
           k brawl   'src/146h|src/146a|src/103|brawl'
           k physx   'src/090|src/150-loose|src/150o|physx'
           k vr      'src/162[a-c]|vr\.cjs'
+          k vrbody  'src/162c|src/111a|src/111b|src/111d|worker/door|vrbody\.cjs'
           k riders  'src/117a|src/009c|riders\.cjs'
           k loopmap 'src/159c|src/009b|loopmap\.cjs'
           k spiders 'src/146b|src/087-npc-creatures|data/creatures|spiders\.cjs'
@@ -105,7 +106,7 @@ jobs:
           k roofq 'src/148c-roofquests|src/144a-garden|roof-quests\.cjs'
           k riverq 'src/066-river|src/066b-pier|src/066ba-wreck|src/142-fishing|src/146d-gear|src/146gb-hudson|src/150q-hudtrophies|river-quests\.cjs'
           k libquests 'src/144c|src/146zh|lib-quests\.cjs'
-          k skillshops 'src/059i|src/162fa|src/159b|src/111fb|data/characters|data/world|skillshops\.cjs'
+          k skillshops 'src/059i|src/159b|src/111fb|data/characters|data/world|skillshops\.cjs'
           k stow 'src/130-rooms|src/130a|src/130b|src/008-batch|stow\.cjs'
           k playhouse 'src/151[a-z]|src/059-street|playhouse'
           k menus 'src/146-drone|src/094|src/102-looks|src/136a-bugs|src/141-forage|src/162b|menus\.cjs'
@@ -215,6 +216,10 @@ jobs:
         timeout-minutes: 45
         if: contains(steps.f.outputs.run, ' vr')
         run: node tests/vr.cjs dist/market.html
+      - name: Your real moves in the headset (head, arms and fingers, seen by the others)
+        timeout-minutes: 30
+        if: contains(steps.f.outputs.run, ' vrbody')
+        run: node tests/vrbody.cjs dist/market.html
       - name: THE CATACOMB RUN (the start, the lessons, every control on the keyboard and in the headset)
         timeout-minutes: 45
         if: contains(steps.f.outputs.run, ' catrun')

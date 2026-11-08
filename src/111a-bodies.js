@@ -207,7 +207,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
         if(S._pfSeat||S._seatOut){ jointAt(PM,body,0,O); jointAt(PMX,body,0,O2); O.sub(O2); O.multiplyScalar(1); for(let i=0;i<NB;i++){ const e=PMX.value[i].elements; e[12]+=O.x; e[13]+=O.y; e[14]+=O.z; } }   // (seated or swimming: the hips where the rig has them)
         if(S.aim&&S.aim.w>.3){ for(let i=0;i<NB;i++)PMR.value[i].copy(PM.value[i]); keepArms(PMX,PMR,body); }   // (a held tool: the arms where the rig aims them)
         if(S._mw>=1)for(let i=0;i<NB;i++)PM.value[i].copy(PMX.value[i]); else blend(PM,PMX,S._mw,body); } }
-    if(PM.post)PM.post(PM,body,B); }   // (a step after the pose: holding the guitar, 146zoa)
+    if(PM.post)PM.post(PM,body,B); else if(PM.vr&&BODIES.track)BODIES.track(PM,body,PM.vr); }   // (a step after the pose: holding the guitar, 146zoa; or a headset player's own head, arms and fingers, 162cb)
   BODIES.pose=pose; BODIES.mesh=mesh;
   // a body's own hand (your avatar's, or another player's), where what it holds goes: shoulder, elbow, wrist and palm in its group's space; null for a body without bones of its own
   const HJ={shoulder:new V3(),elbow:new V3(),wrist:new V3(),palm:new V3()}, ARMI={L:[3,4,5],R:[6,7,8]};
@@ -220,6 +220,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   let pick='avatar'; if(QS.get('avatar')&&QS.get('avatar')!=='walker')pick=QS.get('avatar');
   const curKey=()=>playable(BODIES.by[pick])?pick:'avatar';
   let ME=null, MEK=null;
+  const MINE={me:null,PM:null,body:null}; BODIES.mine=()=>{ if(!ME)return null; MINE.me=ME.me; MINE.PM=ME.PM; MINE.body=BODIES.by[MEK]; return MINE; };   // your avatar's mesh, bones and body
   W3.body={on:false,place:B=>{ const key=curKey(), body=BODIES.by[key]; W3.body.on=!!body;   // (on: a body is worn this frame, so the Walker's physics body stands down: 090-physbody)
     for(const m of W3.meshes)m.visible=false;   // (the Walker is never drawn, not even while your avatar loads)
     if(!body){ if(ME)ME.me.visible=false; return; }

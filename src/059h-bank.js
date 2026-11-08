@@ -29,7 +29,7 @@ await grab('bank',async()=>{ const K=STORE.kit, {room,rec,STEPS}=K, SK=SHARED.BO
   const mp=(k,x,y,rot=0)=>{ const f=CATALOG[k]; SHARED.BOD.K.STUDIO.face(FW[rot]); let p; try{ p=f(+x.toFixed(3),+y.toFixed(3)); }finally{ SHARED.BOD.K.STUDIO.face(null); } if(!p)return null; p.kind=k; const cx=(p.x0+p.x1)/2, cy=(p.y0+p.y1)/2; SHARED.BOD.placeAt(p,2,cx,cy,SX-cx+dx,SY-cy+dy,true); return p; };
   const at=(x,y)=>[SX-x+dx,SY-y+dy];   // a spot in the bank, written in the museum's frame for mp
   rec('bank','THE BANK',B,D,true); STORE.bank={B};
-  FACADES.make({id:'bank',L:{x0:B.x0-.08,x1:B.x1+.08,y0:B.y0-.08,y1:B.y1+.08},z1:B.h+10,wall:stone,trim:[240,234,220],frame:[48,44,40],seed:23,ground:150,door:{u:D.a,w:DW/2,h:DH},glass:true});   // modelled over the painted stone (owner, 8 Nov 2026)
+  STORE.bank.out=FACADES.make({id:'bank',L:{x0:B.x0-.08,x1:B.x1+.08,y0:B.y0-.08,y1:B.y1+.08},z1:B.h+10,wall:stone,trim:[240,234,220],frame:[48,44,40],seed:23,ground:150,door:{u:D.a,w:DW/2,h:DH},glass:true});   // modelled over the painted stone (owner, 8 Nov 2026)
   STEPS.push(()=>{ '@later'; room('bank','THE BANK',B,look,D,()=>{ const py=MB.y0-3;
     mp('museum portico steps',M.mid,(py+MB.y0)/2); for(const d of [-4,-2.8,2.8,4])mp('museum column',M.mid+d,py+.7); mp('bank entablature',M.mid,py+.7,2);
     for(const [x,y,k] of [[mx-5.4,B.y0+3.2,'bone pile'],[mx+6.2,B.y0+5,'skull'],[mx-7,B.y1-4,'bones'],[mx+7,B.y1-3,'bones'],[mx+3.4,B.y0+2.4,'skull']])mp(k,...at(x,y));

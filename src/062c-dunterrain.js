@@ -26,7 +26,7 @@ import {MODS, STN, SYS, TILE} from './006-map-pre.js';
     const x0=R.x0, y0=R.y0, nx=Math.ceil(W/RS)+1, ny=Math.ceil(H/RS)+1, g=new Float32Array(nx*ny), s=L.seed;
     const at=(x,y)=>{ const m=M(x,y); if(m<=0)return 0; let v=8*(vn(x*.33,y*.33,s)-.5)*2+3*(vn(x*1.1,y*1.1,s+9)-.5);
       for(const f of F){ const u=(x-f.cx)/f.rx, w=(y-f.cy)/f.ry, a=Math.atan2(w*f.ry,u*f.rx), d=Math.hypot(u,w)+.1*(vn(Math.cos(a)*3+f.cx,Math.sin(a)*3+f.cy,s+3)-.5), e=(d-1)*Math.min(f.rx,f.ry);
-        const ramp=sm((Math.cos(a-f.ramp)-.72)/.22), wd=.35+ramp*2.8; v+=e<=0?f.h:f.h*(1-sm(e/wd)); } return v*m; };
+        const ramp=sm((Math.cos(a-f.ramp)-.45)/.3), wd=.35+ramp*3.4; v+=e<=0?f.h:f.h*(1-sm(e/wd)); } return v*m; };
     for(let j=0;j<ny;j++)for(let i=0;i<nx;i++)g[j*nx+i]=at(x0+i*RS,y0+j*RS);
     L.T={x0,y0,nx,ny,g,F,theme:theme(L)}; return L.T; };
   const h=(L,gx,gy)=>{ const T=L&&L.T; if(!T)return 0; const fx=Math.max(0,Math.min(T.nx-1.001,(gx-T.x0)/RS)), fy=Math.max(0,Math.min(T.ny-1.001,(gy-T.y0)/RS)), i=Math.floor(fx), j=Math.floor(fy), u=fx-i, v=fy-j, G=T.g, N=T.nx;
@@ -80,7 +80,11 @@ import {MODS, STN, SYS, TILE} from './006-map-pre.js';
     for(const k in SD){ const [P,C]=SD[k]; if(!P.length)continue; const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C,3)); g.computeVertexNormals();
       const m=MODS.castleStairMat.clone(); m.clippingPlanes=[PL[k]]; const me=new THREE.Mesh(g,m); me.castShadow=me.receiveShadow=true; own(me); }   // cut with their wall where it opens toward you
     if(FP.length){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(FP,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(FC,3)); g.computeVertexNormals(); const me=new THREE.Mesh(g,MODS.castleStairMat); me.castShadow=me.receiveShadow=true; own(me); } };
-  MODS.dunTerr={make,h,mesh,dress,theme,STEP,DROP};
+  // where the ground is a cliff: boxes (world x0,z0,x1,z1), one run of steep cells to a row, that routes and the monsters keep out of
+  const cliffs=L=>{ const T=L.T; if(!T)return []; if(T.cl)return T.cl; const {x0,y0,nx,ny,g}=T, out=[], st=(i,j)=>{ const v=g[j*nx+i]; return (i+1<nx&&Math.abs(g[j*nx+i+1]-v)>11)||(j+1<ny&&Math.abs(g[(j+1)*nx+i]-v)>11); };
+    for(let j=0;j<ny;j++){ let a=-1; for(let i=0;i<=nx;i++){ const s=i<nx&&st(i,j); if(s&&a<0)a=i; if(!s&&a>=0){ const gx0=x0+a*RS-RS*.5, gx1=x0+(i-1)*RS+RS*.5, gy0=y0+j*RS-RS*.5, gy1=y0+j*RS+RS*.5, xa=X(gx0), xb=X(gx1), za=Z(gy0), zb=Z(gy1); out.push([Math.min(xa,xb),Math.min(za,zb),Math.max(xa,xb),Math.max(za,zb)]); a=-1; } } }
+    return T.cl=out; };
+  MODS.dunTerr={make,h,mesh,dress,theme,cliffs,STEP,DROP};
   window.DUNTERRDBG=()=>{ const D=MODS.dungeon; return {here:D&&D.ground?+(D.ground(pos.x,pos.z)-dy).toFixed(3):null,step:Y(STEP),drop:Y(DROP)}; };
   // a drop off a ledge or into a pit: a big one hurts
   let lastG=null, lx=0, lz=0, fall=0; SYS.add('life',()=>{ const D=MODS.dungeon; if(SHARED.LVL!=='down'||!D||!D.inside||!D.inside(pos.x,pos.z)){ lastG=null; fall=0; return; } const g=D.ground(pos.x,pos.z), mv=Math.hypot(pos.x-lx,pos.z-lz)/TILE; lx=pos.x; lz=pos.z;

@@ -6,7 +6,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const pg = await b.newPage({ viewport: { width: 1000, height: 700 } }), errs = [];
   pg.on('pageerror', e => errs.push(e.message.slice(0, 300)));
   await pg.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=12&at=32,25', { waitUntil: 'commit' });
-  await pg.waitForFunction(() => window.__started, null, { timeout: 400000 }); await pg.waitForFunction(() => !document.getElementById('loading'), null, { timeout: 120000 }); await pg.waitForTimeout(1500);   // (the loading screen stays over the game for its first frames, slow here)
+  await pg.waitForFunction(() => window.__started, null, { timeout: 400000 }); await pg.waitForFunction(() => { const L = document.getElementById('loading'); return !L || L.style.pointerEvents === 'none'; }, null, { timeout: 60000 }); await pg.waitForTimeout(1500);
   if (process.env.SHOT) await pg.evaluate(() => __dbg.UI.setView('third'));
   const at = sel => pg.evaluate(sel => { const r = document.querySelector(sel).getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }, sel);
   const ahead = d => pg.evaluate(d => { const T = TILE_(), cv = [...document.querySelectorAll('canvas')].sort((a, b) => b.clientWidth * b.clientHeight - a.clientWidth * a.clientHeight)[0], r = cv.getBoundingClientRect(), P = __dbg.you(), V = SHARED.cam.position.constructor;   // the first way round you, from your heading, whose point d tiles off lies on the bare game view

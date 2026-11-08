@@ -6,6 +6,7 @@ import {renderer, scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
 import {GEMS} from './101-gems.js';
+import {PFI} from './150cyb-pfitems.js';
 import {SWAP} from './159i-trade.js';
 window.BAG=BAG;
 { const T=TILE, esc=TEXT.esc, say=SAY, kindOf=id=>String(id).split('~')[0], prop=(id,k)=>ITEMS.prop(kindOf(id),k), name=id=>FORAGE.name(kindOf(id));
@@ -56,6 +57,7 @@ window.BAG=BAG;
     if(SIMG&&SI.has(id)){ const i=SI.get(id), n=SH.s; c=document.createElement('canvas'); c.width=c.height=n; c.getContext('2d').drawImage(SIMG,(i%SH.cols)*n,Math.floor(i/SH.cols)*n,n,n,0,0,n,n); CV.set(id,c); return c; }
     const k=BAG.kind(id), A=colour(id,k), a=shade(A), B=k==='fruit'?'#3f8a3a':k==='cube'?'#f4efe4':a;
     c=document.createElement('canvas'); c.width=c.height=10; const g=c.getContext('2d'); ART[k].forEach((row,y)=>{ for(let x=0;x<10;x++){ const ch=row[x]; if(!ch||ch==='.')continue; g.fillStyle=ch==='A'?A:ch==='a'?a:ch==='B'?B:PAL[ch]||'#f0f'; g.fillRect(x,y,1,1); } }); CV.set(id,c); return c; };
+  BAG.pic=paint;
   const URL=new Map(); BAG.icon=id0=>{ const id=kindOf(id0); let u=URL.get(id); if(!u){ u=paint(id).toDataURL(); URL.set(id,u); } return u; }; if(HUD.qdraw)HUD.qdraw();
   if(SH){ const im=new Image(); im.onload=()=>{ SIMG=im; CV.clear(); URL.clear(); if(HUD.qdraw)HUD.qdraw(); if(window.__started&&BAG.draw)try{ BAG.draw(); }catch(e){} }; im.src=SH.png; }
 
@@ -136,17 +138,25 @@ window.BAG=BAG;
   const online=()=>!!(ONLINE.on&&ONLINE.me), uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
   const saveG=()=>{ try{ OWNED.set('ground',JSON.stringify(GRD.filter(g=>!g.key.startsWith('drop:')).map(g=>({key:g.key,id:g.id,n:g.n,x:+g.x.toFixed(2),y:+g.y.toFixed(2),z:+g.z.toFixed(2),lv:g.lv,t:g.t,until:g.until,rm:g.rm,in:g.in,subs:g.subs})))); }catch(e){} };
   const rec=g=>{ const r={id:g.id,n:g.n,x:+g.x.toFixed(2),y:+g.y.toFixed(2),z:+g.z.toFixed(2),lv:g.lv,t:g.t}; if(g.rm)r.rm=g.rm; if(g.in)r.in=g.in; if(g.subs)r.subs=g.subs; return JSON.stringify(r); };
-  // a thing's look on the ground: its own model (INSPECT.model), made once a kind and copied, about a third of a tile across, its glass made plain
-  const LOOK=new Map(), PLAIN=new Map(), V3=new THREE.Vector3();
+  // a thing's look on the ground (owner, 8 Nov 2026: "they should have their own icons and be realistic relative size"): its own model (INSPECT.model) at its real size (ITEMS size: its longest side in metres, else the model's own metres), its glass made plain; a thing with no model stands as its own picture at its real size; made once a kind and copied
+  const LOOK=new Map(), PLAIN=new Map(), V3=new THREE.Vector3(), MTR=T/.84;
   const plain=q=>{ let r=PLAIN.get(q); if(!r){ r=new THREE.MeshStandardMaterial({color:q.color,roughness:.15,transparent:true,opacity:.5,depthWrite:false}); PLAIN.set(q,r); } return r; };
-  const look=id=>{ '@later'; let P=LOOK.get(id); if(P)return P; let m=null; try{ m=INSPECT.model(id); }catch(e){} if(!m)m=INSPECT.shape('sack');
+  const realM=id=>{ const s=+prop(kindOf(id),'size'); return s>0?s:0; };
+  const look=id=>{ '@later'; let P=LOOK.get(id); if(P)return P; P=new THREE.Group();
+    if(!INSPECT.has(id)){ const tex=new THREE.CanvasTexture(paint(id)); tex.magFilter=tex.minFilter=THREE.NearestFilter; tex.colorSpace=THREE.SRGBColorSpace; tex.generateMipmaps=false;
+      const c=paint(id), W=c.width, H=c.height, D=c.getContext('2d').getImageData(0,0,W,H).data; let x0=W, x1=-1, y1=-1;   // (the drawn part of the picture, not its empty edge, is the thing's size; it stands on its lowest drawn row)
+      for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(D[(y*W+x)*4+3]>127){ if(x<x0)x0=x; if(x>x1)x1=x; if(y>y1)y1=y; } let y0=H; for(let y=0;y<H&&y0===H;y++)for(let x=0;x<W;x++)if(D[(y*W+x)*4+3]>127){ y0=y; break; }
+      const ext=x1<0?W:Math.max(x1-x0+1,y1-y0+1), h=(realM(id)||.3)*MTR*W/ext, sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,alphaTest:.5})); sp.scale.set(h,h,1); sp.position.y=h/2-(x1<0?0:(H-1-y1)/H*h); P.add(sp); P.userData.tall=x1<0?h:(y1-y0+1)/H*h; LOOK.set(id,P); return P; }
+    let m=null; try{ m=INSPECT.model(id); }catch(e){} if(!m)m=INSPECT.shape('sack');
     m.traverse(c=>{ if(c.material&&!Array.isArray(c.material)&&c.material.transmission>0)c.material=plain(c.material); });
-    const b=new THREE.Box3().setFromObject(m), S=b.isEmpty()?1:Math.max(.5,Math.min(4,.36*T/Math.max(.001,...b.getSize(V3).toArray()))), I=new THREE.Group(); I.add(m); I.scale.setScalar(S); if(!b.isEmpty())I.position.set(-(b.min.x+b.max.x)/2*S,-b.min.y*S,-(b.min.z+b.max.z)/2*S);
-    P=new THREE.Group(); P.add(I); LOOK.set(id,P); return P; };
+    { const b0=new THREE.Box3().setFromObject(m), z=b0.getSize(V3); if(!b0.isEmpty()&&!m.userData.pf&&z.y>1.8*Math.max(z.x,z.z)&&!/^(fl_|bnet$|net$|balloon$)/.test(kindOf(id))){ const W=new THREE.Group(); W.add(m); W.rotation.x=-Math.PI/2; m=W; } }   // (a long thin thing, a sword, lies on its side; a flower or a net on its stand stays up, and Polyfork's stand as made)
+    const b=new THREE.Box3().setFromObject(m), L=b.isEmpty()?1:Math.max(.001,...b.getSize(V3).toArray()), want=realM(id), S=b.isEmpty()?MTR:want?want*MTR/L:L>5||L<.01?.3*MTR/L:MTR, I=new THREE.Group(); I.add(m); I.scale.setScalar(S); if(!b.isEmpty())I.position.set(-(b.min.x+b.max.x)/2*S,-b.min.y*S,-(b.min.z+b.max.z)/2*S);
+    P.add(I); P.userData.tall=b.isEmpty()?.3*MTR:(b.max.y-b.min.y)*S; LOOK.set(id,P); return P; };
+  PFI.on.push(()=>{ LOOK.clear(); for(const g of GRD)if(g.m){ g.m.removeFromParent(); g.m=null; } near(); });   // Polyfork's models came: what lies about takes them
   const room=()=>{ const c=ROOMS.cur; return c?String(c.off||c.id||''):''; };
   const unthing=th=>{ const i=UI.things.indexOf(th); if(i>=0)UI.things.splice(i,1); };
   const place=g=>{ '@later'; const sp=new THREE.Group(); sp.name='loose-'+g.id; sp.position.set(g.x,g.y,g.z); sp.rotation.y=(parseInt(g.key.slice(-4),36)||0)%628/100; sp.userData.level=g.lv||'street'; sp.visible=false; scene.add(sp); g.sp=sp;
-    const full=g.in&&Object.keys(g.in).length; g.th={name:'A LOOSE '+name(g.id)+(g.n>1?' ×'+g.n:'')+(full?' (THINGS INSIDE)':''),pick:true,obj:sp,reach:.9*T,near:1.6*T,tall:.35*T,act:()=>BAG.pickUp(g)}; UI.thing(g.th); GRD.push(g); near(); };
+    const full=g.in&&Object.keys(g.in).length; g.th={name:'A LOOSE '+name(g.id)+(g.n>1?' ×'+g.n:'')+(full?' (THINGS INSIDE)':''),pick:true,obj:sp,reach:.9*T,near:1.6*T,tall:Math.max(.2*T,Math.min(2*T,look(g.id).userData.tall||.35*T)),act:()=>BAG.pickUp(g)}; UI.thing(g.th); GRD.push(g); near(); };
   const lose=g=>{ const i=GRD.indexOf(g); if(i>=0)GRD.splice(i,1); if(g.th)unthing(g.th); if(g.sp)g.sp.removeFromParent(); g.m=null; };
   // drawn only near you: the nearest 24 within 20 tiles on your level and in your room, kept until 26
   const near=()=>{ const rm=room(), now=Date.now(); let ex=false; for(const g of GRD.slice())if(g.until&&now>g.until&&!g.taking){ lose(g); ex=ex||!g.key.startsWith('drop:'); } if(ex)saveG();
@@ -155,7 +165,7 @@ window.BAG=BAG;
   // a container leaves with what is in it (and what is in those), as a record; back in a bag it is a fresh one of its kind
   const pack=c=>{ const I=INV.inside[c]||{}, out={in:{},subs:{}}; for(const id in I){ const n=I[id]; if(n<1)continue; if(isCont(id)){ const k=kindOf(id)+'#'+id; out.subs[k]=pack(id); out.in[k]=1; delete INV.items[id]; } else { FORAGE.take(id,n); out.in[id]=n; } } delete INV.inside[c]; return out; };
   const unpack=(k,r)=>{ const inst=fresh(kindOf(k)); INV.items[inst]=1; INV.inside[inst]={}; for(const id in r.in||{}){ const n=r.in[id]; if(id.includes('#')){ const sub=unpack(id,(r.subs||{})[id]||{}); INV.inside[inst][sub]=1; } else { FORAGE.give(id,n); INV.inside[inst][id]=n; } } return inst; };
-  const finish=(g,r)=>{ if(isCont(r.id))unpack(r.id,r); else FORAGE.give(r.id,r.n||1); if(INV.save)INV.save(); say('YOU PICK UP THE '+name(r.id)+(r.n>1?' ×'+r.n:'')+'.','#f2c14e'); SFX.play('clunk',{vol:.4,pitch:1.6}); lose(g); saveG(); redraw(); };
+  const finish=(g,r)=>{ if(isCont(r.id))unpack(r.id,r); else FORAGE.give(r.id,r.n||1); if(INV.save)INV.save(); say('YOU PICK UP '+(/^(A|AN|THE) /.test(name(r.id))?'':'THE ')+name(r.id)+(r.n>1?' ×'+r.n:'')+'.','#f2c14e'); SFX.play('clunk',{vol:.4,pitch:1.6}); lose(g); saveG(); redraw(); };
   BAG.pickUp=g=>{ if(!GRD.includes(g)||g.taking)return; if(g.key.startsWith('drop:')){ if(!online()){ say('YOU CANNOT REACH IT OFFLINE.','#c8a090'); return; } g.taking=true; ONLINE.send({t:'take',k:g.key}); return; } finish(g,{id:g.id,n:g.n,in:g.in,subs:g.subs}); };
   BAG.drop=(id,n=1,at,from='bag')=>{ '@later'; if(id==='passport')return say('YOUR PASSPORT STAYS WITH YOU.','#c8a090'),false; if(isCont(id))n=1; n=Math.min(n,have(id,from)); if(n<1)return false;
     if(VIT.dead)return say('A GHOST HOLDS NOTHING.','#c8a090'),false; const rm=room(); if(ROOMS.cur&&(!rm||/^apt/i.test(rm)))return say('NOT IN HERE. DROP IT OUTSIDE.','#c8a090'),false; if(st.water&&st.water.in)return say('NOT IN THE WATER.','#c8a090'),false;
@@ -164,7 +174,7 @@ window.BAG=BAG;
     FORAGE.take(id,n); if(INV.save)INV.save(); const h=SHARED.heading||0, a=(Math.random()-.5)*.6, p=at||{x:pos.x+Math.sin(h+a)*.6*T,z:pos.z+Math.cos(h+a)*.6*T};
     const g={key:(online()?'drop:':'local:')+uid(),id:kindOf(id),n,x:p.x,y:at&&isFinite(at.y)?at.y:SHARED.py,z:p.z,lv:LEVELS.cur||'street',t:Date.now(),until:Date.now()+LIFE()}; if(rm)g.rm=rm; if(inside){ g.in=inside.in; g.subs=inside.subs; }
     place(g); if(online())ONLINE.put(g.key,rec(g)); else { while(GRD.filter(q=>q.key.startsWith('local:')).length>MAXG)lose(GRD.find(q=>q.key.startsWith('local:'))); saveG(); }
-    say('YOU DROP THE '+name(id)+(n>1?' ×'+n:'')+'.','#e8e2cc'); SFX.play('clunk',{vol:.35}); if(sel===id&&!have(id,from))sel=null; redraw(); return true; };
+    say('YOU DROP '+(/^(A|AN|THE) /.test(name(id))?'':'THE ')+name(id)+(n>1?' ×'+n:'')+'.','#e8e2cc'); SFX.play('clunk',{vol:.35}); if(sel===id&&!have(id,from))sel=null; redraw(); return true; };
   const restore=()=>{ loaded=true; let L=[]; try{ L=JSON.parse(OWNED.get('ground')||'[]')||[]; }catch(e){ L=[]; } for(const o of L)if(o&&o.id&&o.n>0&&!GRD.some(g=>g.key===o.key))place({key:o.key||'local:'+uid(),id:o.id,n:o.n,x:+o.x,y:+o.y,z:+o.z,lv:o.lv||'street',t:o.t||0,until:+o.until||(+o.t||0)+LIFE(),rm:o.rm||'',in:o.in,subs:o.subs}); };
   let nt=0; SYS.add('life',()=>{ if(!loaded&&window.__started)restore(); const t=performance.now(); if(GRD.length&&t>nt){ nt=t+250; near(); } },'162e-bag');
   SYS.add('hi',m=>{ const W=m&&m.world||{}; for(const g of GRD.slice())if(g.key.startsWith('drop:')&&!g.taking&&!(g.key in W))lose(g); },'162e-bag');   // a drop gone while you were away

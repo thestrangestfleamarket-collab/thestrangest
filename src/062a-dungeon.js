@@ -1,6 +1,6 @@
 // THE DUNGEON: the dungeon under the castle, its rooms, stairs, torches and walls (closes its own builder).
 import {SHARED, THREE} from './003-shx.js';
-import {LEVELS, LITE, PH, pos, RAG, UI, VIT} from './003b-systems.js';
+import {CITY, LEVELS, LITE, PH, pos, RAG, UI, VIT} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {CASTLE, cutWalls, FADE, FIX, grab, MAPG, MODS, OFFDX, SOL, STN, SYS, TILE} from './006-map-pre.js';
@@ -55,8 +55,8 @@ await grab('dungeon',async()=>{});
   const clear=()=>{ '@later'; if(!mine)return; const M=mine; mine=null; cur=0;
     for(const o of M.objs){ G.remove(o); o.traverse(c=>{ if(c.geometry)c.geometry.dispose(); if(c.material&&c.material!==MODS.castleStairMat)for(const q of [].concat(c.material)){ if(q.map)q.map.dispose(); if(q.emissiveMap)q.emissiveMap.dispose(); q.dispose(); } }); }
     const out=(A,L)=>{ for(const a of L){ const i=A.indexOf(a); if(i>=0)A.splice(i,1); } };
-    out(SOL.down,M.sol); out(FIX.down,M.fix); out(LITE.recs,M.lights); out(FLAME.src,M.fl); out(cutWalls,M.cuts); LITE.t=0; for(const f of HK)f(0); };
-  const build=()=>{ '@dungeon'; clear(); const Ls=RM.map(r=>lay(r.k)), E=Ls[0], up=E.up, s0=scene.children.length, n0=KP.length, l0=K.LAMPS.length, f0=FLAME.src.length, keep=BATCH.items.splice(0), M={objs:[],sol:[],fix:[],lights:[],fl:[],cuts:[]};
+    out(SOL.down,M.sol); out(FIX.down,M.fix); if(CITY.extra&&CITY.extra.down)out(CITY.extra.down,M.route||[]); out(LITE.recs,M.lights); out(FLAME.src,M.fl); out(cutWalls,M.cuts); LITE.t=0; for(const f of HK)f(0); };
+  const build=()=>{ '@dungeon'; clear(); const Ls=RM.map(r=>lay(r.k)), E=Ls[0], up=E.up, s0=scene.children.length, n0=KP.length, l0=K.LAMPS.length, f0=FLAME.src.length, keep=BATCH.items.splice(0), M={objs:[],sol:[],fix:[],lights:[],fl:[],cuts:[],route:[]};
     const arch=(nx,ny,Xp,Yp,z)=>{ if(ny<=0||Math.abs(Yp-E.R.y0)>.06||Xp<up.x0-.2||Xp>up.x1+.2)return null; const hw=(up.x1-up.x0)*12, d=Math.abs(Xp-(up.x0+up.x1)/2)*24, sp=up.n*up.rise+30, r=Math.hypot(d,Math.max(0,z-sp));
       return r<hw-3?P0.dark:r<hw+2?sh(P0.hi,.8):null; };
     const wall=(R,x0,y0,x1,y1)=>({x0,y0,x1,y1,z0:0,z1:R.H+4,c:P0.st[1],top:()=>P0.lo,fs:(nx,ny,Xp,Yp,z,k)=>(R===E.R&&arch(nx,ny,Xp,Yp,z))||K.dungeonWall(null,nx,ny,Xp,Yp,z,k,R)});
@@ -102,6 +102,7 @@ await grab('dungeon',async()=>{});
       for(const h of WE){ const me=new THREE.Mesh(new THREE.PlaneGeometry(2*h.r*TILE,2*h.r*TILE).rotateX(-Math.PI/2),WEB()); me.position.set(X(h.cx),fy+.02*TILE,Z(h.cy)); me.rotation.y=h.cx*7%6.28; me.renderOrder=2; own(me); H.webs.push(h); }
       M.hz=H; }
     if(TR)for(const l of Ls)if(l.T)TR.mesh(l,quad,K.dungeonFloorCol);
+    if(TR){ const E=CITY.extra||(CITY.extra={}), D=E.down||(E.down=[]); for(const l of Ls)if(l.T)for(const b of TR.cliffs(l)){ D.push(b); M.route.push(b); } }   // routes (and the monsters) go round a cliff, by the ramp
     const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('color',new THREE.Float32BufferAttribute(Cc,3)); geo.computeVertexNormals();
     const sm=new THREE.Mesh(geo,MODS.castleStairMat); sm.receiveShadow=true; sm.castShadow=true; scene.add(LEVELS.own(sm,'dungeon'));
     for(const [,b] of WB)sol(b.x0,b.y0,b.x1,b.y1,b.z1-4); for(const b of solid)sol(...b);

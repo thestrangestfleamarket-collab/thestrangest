@@ -28,7 +28,7 @@ const SURF=(()=>{ const T=TILE, MPU=.84/T, NW=8, GLN=`float rh(vec2 p){ p=fract(
       ${GLN}
       float vz(float d){ return isOrthographic?orthographicDepthToViewZ(d,uNear,uFar):perspectiveDepthToViewZ(d,uNear,uFar); }
       vec3 sky(float y){ return mix(uSkyH,uSkyZ,pow(clamp(y,0.,1.),.7)); }
-      void main(){ vec2 p=vP0; float fe=uAmp;   // the waves' look (normals, glints, foam) everywhere the water is, near or far; only the near strip's surface rises and falls (owner, 7 Nov 2026: "the water looks the same as far as you can see it")
+      void main(){ vec2 p=vP0; float fe=uAmp*(.3+1.4*rf(p*${(.03/T).toFixed(5)}+vec2(uT*.011,-uT*.008)));   // the swell comes and goes across the water, so the waves never read as one pattern (owner, 8 Nov 2026: "the water is just one big pattern repeated")   // the waves' look (normals, glints, foam) everywhere the water is, near or far; only the near strip's surface rises and falls (owner, 7 Nov 2026: "the water looks the same as far as you can see it")
         if(uMode>1.5){ vec2 q=(p-uRect.xy)/uRect.zw; fe*=1.-.7*clamp(min(min(q.x,1.-q.x),min(q.y,1.-q.y))*uRect.z/${(4*T).toFixed(3)},0.,1.); }
         vec3 n=vec3(0.,1.,0.); float jxx=1.,jzz=1.,jxz=0.;
         // the water moves only near you (owner, 8 Nov 2026: "the water should not be nonstop moving from this far. only do motion of water near you"): moving within 30 tiles, still past 60, both worked out between and blended
@@ -38,6 +38,7 @@ const SURF=(()=>{ const T=TILE, MPU=.84/T, NW=8, GLN=`float rh(vec2 p){ p=fract(
           n.x-=a.x*wa*c; n.z-=a.y*wa*c; n.y-=b.y*wa*s; jxx-=b.y*wa*a.x*a.x*s; jzz-=b.y*wa*a.y*a.y*s; jxz-=b.y*wa*a.x*a.y*s; } }
         float rip=0.; vec2 ru=(p-uRect.xy)/uRect.zw; if(uRipOn>0.&&ru.x>0.&&ru.y>0.&&ru.x<1.&&ru.y<1.){ rip=texture2D(uRip,ru).r; float e=uRect.z*uRT;
           n.x-=(texture2D(uRip,ru+vec2(uRT,0.)).r-texture2D(uRip,ru-vec2(uRT,0.)).r)/(2.*e); n.z-=(texture2D(uRip,ru+vec2(0.,uRT)).r-texture2D(uRip,ru-vec2(0.,uRT)).r)/(2.*e); }
+        if(uAmp>0.)n.xz+=(vec2(rn(p*${(.9/T).toFixed(4)}+vec2(uT*.35,0.)),rn(p*${(1.3/T).toFixed(4)}+vec2(7.,-uT*.3)))-.5)*.16;
         n=normalize(n); bool up=gl_FrontFacing; if(!up)n=-n;
         vec3 V=isOrthographic?-uCamD:normalize(cameraPosition-vW); float vd=max(dot(n,V),0.);
         vec3 inC=uScat*(uAmb*.8+uSunC*max(uSunD.y,0.)*.6);

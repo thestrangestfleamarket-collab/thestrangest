@@ -22,11 +22,11 @@ const DFOG={};
       void main(){ float d=texture2D(tDepth,vUv).x, f=0., m=0., dd=0., land=0.; vec4 c=texture2D(tDiffuse,vUv);
         if(uO>.5){
         if(d<.99999){ vec4 v=uPInv*vec4(vUv*2.-1.,d*2.-1.,1.); v/=v.w; vec3 w=(uCamW*v).xyz, cp=(uCamW*vec4(0.,0.,0.,1.)).xyz; dd=mix(max(0.,distance(w,cp)-distance(uP,cp)),length(w.xz-uP.xz),uV); float g=smoothstep(uS,uE,dd), g2=smoothstep(uS*.4,uE,dd), ge=g2*g2, gw=smoothstep(uS,uE*2.,dd), wet=step(w.y,uW); land=step(uK.x,w.x)*step(w.x,uK.z)*step(uK.y,w.z)*step(w.z,uK.w);
-          f=g*land; m=land>.5?mix(uF>0.?ge:g*uH,gw,wet):uH>0.?mix(mix(mix(min(.85,g),g,uF),gw,wet),min(.85,g),smoothstep(uY.x,uY.y,vUv.y)):0.; }
+          f=g; m=land>.5?mix(uF>0.?ge:g*uH,gw,wet):uH>0.?mix(mix(mix(min(.85,g),g,uF),gw,wet),min(.85,g),smoothstep(uY.x,uY.y,vUv.y)):0.; }
         else if(uH>0.&&uV>0.){ vec4 v=uPInv*vec4(vUv*2.-1.,1.,1.); v/=v.w; vec3 w=(uCamW*v).xyz, cp=(uCamW*vec4(0.,0.,0.,1.)).xyz; m=smoothstep(0.,-.03,(w.y-cp.y)/length(w-cp)); }
         if(f>.001&&uB>0.){ vec2 o=uB*f/uR; vec4 s=c*2.+texture2D(tDiffuse,vUv+vec2(o.x,0.))+texture2D(tDiffuse,vUv-vec2(o.x,0.))+texture2D(tDiffuse,vUv+vec2(0.,o.y))+texture2D(tDiffuse,vUv-vec2(0.,o.y))
           +texture2D(tDiffuse,vUv+o)+texture2D(tDiffuse,vUv-o)+texture2D(tDiffuse,vUv+vec2(o.x,-o.y))+texture2D(tDiffuse,vUv+vec2(-o.x,o.y)); c=s/10.; }
-        vec3 to=uC; if(uD>0.){ m=0.; if(d<.99999){ c.rgb*=1.-uH*(land>.5?smoothstep(uS,uE,dd):1.);
+        vec3 to=uC; if(uD>0.){ m=0.; if(d<.99999){ c.rgb*=1.-uH*smoothstep(uS,uE,dd);
             vec4 v=uPInv*vec4(vUv*2.-1.,d*2.-1.,1.); v/=v.w; vec3 w=(uCamW*v).xyz, cp=(uCamW*vec4(0.,0.,0.,1.)).xyz, seg=w-cp, ins=uC; float L=length(seg), a=0., rf=0.; vec3 ray=seg/max(.001,L);
             if(uA.x+uA.y>0.){ float lo=max(0.,min(cp.y,w.y)-uG)*uA.z, dh=abs(seg.y)*uA.z, avg=(dh<.001?1.-dh*.5+dh*dh/6.:(1.-exp(-dh))/dh)*exp(-lo);
               a=min(uAM,1.-exp(-L*smoothstep(uS*.5,uS,L)*(uA.x+uA.y*avg))); if(uSt>0.)a=min(1.,floor(a*uSt+by(gl_FragCoord.xy))/uSt);

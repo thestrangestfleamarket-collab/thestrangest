@@ -3,6 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {PARK} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FIX, LEVEL, SOL, SYS, TILE} from './006-map-pre.js';
+import {PEEK} from './008-batch.js';
 PARK.climbable=[];
 { const T=TILE, M=T/.84, hs=(a,b)=>{ const s=Math.sin(a*127.1+b*311.7)*43758.5453; return s-Math.floor(s); };
   const KIND={ A:{h:62,r0:3.2,r1:.5,br:[[13,0,1.9],[14,7,1.5],[15,14,1.1],[15.5,20,.8],[16.5,26,.5]]},
@@ -34,9 +35,12 @@ PARK.climbable=[];
     return {k:'BIG'+(o.kind||'A'),x,y,z,top:y+S.h*M,r:30*M,tr,fork:0,v0:0,v1:P.length/3,P:new Float32Array(P),LF:[],lb,sol,fix,climb:!!o.climb}; };
   SYS.onStart(()=>{ const L=(LEVEL.bigTrees||[]).filter(o=>o.kind); if(!L.length)return; const g=new THREE.Group(), puffs=[];   // seen from the whole map, not only once the park is up (owner, 8 Nov 2026: "render entire map")
     scene.add(g); SYS.every(()=>{ g.visible=SHARED.LVL==='up'; },500,'144d-bigtrees shown on the street level'); const bark=new THREE.MeshLambertMaterial({color:0x6a5040,flatShading:true});
-    const items=L.map((o,i)=>make(o,i,puffs)); PARK.big=items;
+    const items=L.map((o,i)=>{ const n=puffs.length, it=make(o,i,puffs); it.p0=n; it.p1=puffs.length; return it; }); PARK.big=items;
     for(const it of items){ const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(it.P,3)); geo.computeVertexNormals(); const me=new THREE.Mesh(geo,bark); me.castShadow=me.receiveShadow=true; g.add(me); it.mesh=me; if(it.climb)PARK.climbable.push(it); }
     const IM=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,1),new THREE.MeshLambertMaterial({color:0xffffff}),puffs.length), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), v=new THREE.Vector3(), s=new THREE.Vector3(), c=new THREE.Color();
     puffs.forEach(([x,y,z,r,k],i)=>{ IM.setMatrixAt(i,m4.compose(v.set(x,y,z),q,s.setScalar(r))); const G=GREEN[k]; IM.setColorAt(i,c.setRGB(G[0],G[1],G[2],THREE.SRGBColorSpace)); });
-    IM.castShadow=IM.receiveShadow=true; IM.computeBoundingSphere(); g.add(IM); PARK.bigLeaves=IM; },'144d-bigtrees');
+    IM.castShadow=IM.receiveShadow=true; IM.computeBoundingSphere(); g.add(IM); PARK.bigLeaves=IM;
+    PEEK.mark(IM.geometry,new Uint8Array(IM.geometry.attributes.position.count).fill(4));   // seen through round you like the park's other big trees (PEEK)
+    for(const it of items){ PEEK.mark(it.mesh.geometry,new Uint8Array(it.P.length/3).fill(4)); const B=new THREE.Box3(); it.mesh.geometry.computeBoundingBox(); B.copy(it.mesh.geometry.boundingBox);
+      for(let i=it.p0;i<it.p1;i++){ const [x,y,z,r]=puffs[i]; B.expandByPoint(v.set(x-r,y-r,z-r)); B.expandByPoint(v.set(x+r,y+r,z+r)); } PEEK.box(IM,B.min.x,B.min.y,B.min.z,B.max.x,B.max.y,B.max.z); } },'144d-bigtrees');
   window.BIGTREESDBG=()=>({trees:(PARK.big||[]).length,climbable:PARK.climbable.length,puffs:PARK.bigLeaves?PARK.bigLeaves.count:0,branches:(PARK.big||[]).map(t=>t.lb.length),tris:(PARK.big||[]).reduce((a,t)=>a+t.v1/3,0)}); }

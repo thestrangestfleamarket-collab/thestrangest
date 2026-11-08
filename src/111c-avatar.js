@@ -135,23 +135,24 @@ const AVATAR={}; window.AVATAR=AVATAR;
     const py=yt-.024; R4(-.018,py,.018,py-.036,.0008,'d6e2e8'); R4(-.008,py-.008,.008,py-.026,.0016,L.skin); R4(-.009,py-.004,.009,py-.009,.0018,L.hair); R4(-.015,py-.028,.015,py-.036,.0016,'8aa6b4');
     R4(-.022,py-.042,.022,py-.049,.0008,'111111'); R4(-.016,py-.054,.016,py-.058,.0008,'e53935'); R4(-.026,py-.064,-.004,py-.067,.0008,'666666'); R4(.004,py-.064,.026,py-.067,.0008,'666666');
     T.spec={L:str(1),R:str(-1),H:.012+H,badge,S,rad,col:0x181818}; return T; };
-  // the head round (owner, 8 Nov 2026: "round off the head of the avatar with true curves", "we arent round hair just the head shape"): the body's own head (not what is worn on it)
-  // drawn from the skull's box toward its round along each line out from its middle, less toward the jaw; its faces cut finer first (no edge over RE, none where they meet a face the head does not carry)
-  // and shaded smooth (sm); nothing where the head meets the neck
-  const RK=1, RE=.03, HB=2;
+  // the head's top corners rounded (owner, 8 Nov 2026: "round off the head of the avatar with true curves", "we arent round hair just the head shape", "just add rounded corners to
+  // the 4 top corners of head"): the body's own head (not what is worn on it) keeps its box below RR from its top; above, its edges to the top bend round on circles of RR; its faces
+  // there cut finer first (no edge over RE) and shaded smooth (sm)
+  const RR=.05, RE=.012, HB=2;
   const hwOf=(d,q)=>(d.bone[q*2]===HB?d.w[q]/255:0)+(d.bone[q*2+1]===HB?1-d.w[q]/255:0);
-  const roundOf=(X,d)=>{ const n=X.length/3, hb=q=>d.w[q]>=128?d.bone[q*2]:d.bone[q*2+1]; let top=-1e9, bot=1e9;
-    for(let q=0;q<n;q++)if(hb(q)===HB){ top=Math.max(top,X[q*3+1]); bot=Math.min(bot,X[q*3+1]); } if(!(top>bot))return null;
+  const roundOf=(X,d)=>{ const n=X.length/3, hb=q=>d.w[q]>=128?d.bone[q*2]:d.bone[q*2+1]; let top=-1e9;
+    for(let q=0;q<n;q++)if(hb(q)===HB)top=Math.max(top,X[q*3+1]); if(!(top>-1e9))return null;
     let x0=1e9, x1=-1e9, z0=1e9, z1=-1e9; for(let q=0;q<n;q++)if(hb(q)===HB&&X[q*3+1]>top-.002){ x0=Math.min(x0,X[q*3]); x1=Math.max(x1,X[q*3]); z0=Math.min(z0,X[q*3+2]); z1=Math.max(z1,X[q*3+2]); }
-    const C=[(x0+x1)/2,(top+bot)/2,(z0+z1)/2], H=[(x1-x0)/2,(top-bot)/2,(z1-z0)/2], F=.4*Math.min(H[0],H[2]), T=d.tri, N=[];
-    for(let t=0;t<T.length/3;t++){ const v=[T[t*3],T[t*3+1],T[t*3+2]]; if(v.every(q=>hb(q)===HB))continue; for(const q of v)if(hb(q)===HB)N.push(X[q*3],X[q*3+1],X[q*3+2]); }
-    const at=(x,y,z,hw,o,i)=>{ const qx=(x-C[0])/H[0], qy=(y-C[1])/H[1], qz=(z-C[2])/H[2], ri=Math.max(Math.abs(qx),Math.abs(qy),Math.abs(qz)), r2=Math.hypot(qx,qy,qz);
-      const v=Math.max(0,Math.min(1,(qy+.9)/.7)); let k=RK*hw*Math.max(0,Math.min(1,(1.8-ri)/.5))*v*v*(3-2*v);
-      if(k>0&&r2>1e-6){ let dm=1e9; for(let j=0;j<N.length;j+=3)dm=Math.min(dm,Math.hypot(x-N[j],y-N[j+1],z-N[j+2])); const u=Math.min(1,dm/F); k*=u*u*(3-2*u); }
-      const s=k>0?1+k*(ri/r2-1):1; o[i]=C[0]+qx*s*H[0]; o[i+1]=C[1]+qy*s*H[1]; o[i+2]=C[2]+qz*s*H[2]; };
-    return {at,hb:(d_,q)=>d_.w[q]>=128?d_.bone[q*2]:d_.bone[q*2+1]}; };
-  // a head face cut until no edge is over RE; a point cut on the head's rim (f: an edge it shares with a face the head does not carry) stays where it is (pin), so it meets that face
-  const cutFace=(A,B,C,f,out)=>{ const go=(V,F)=>{ const s=[0,1,2].map(i=>Math.hypot(V[i].p[0]-V[(i+1)%3].p[0],V[i].p[1]-V[(i+1)%3].p[1],V[i].p[2]-V[(i+1)%3].p[2])>RE), n=s[0]+s[1]+s[2];
+    const cx=(x0+x1)/2, cz=(z0+z1)/2, hx=(x1-x0)/2, hz=(z1-z0)/2, r=Math.min(RR,hx*.9,hz*.9), ty=top-r;
+    const at=(x,y,z,hw,o,i)=>{ let nx=x, ny=y, nz=z; const dy=y-ty;
+      if(dy>0&&hw>0){ const ax=Math.abs(x-cx)-(hx-r), az=Math.abs(z-cz)-(hz-r); let yy=y;
+        if(ax>0){ const l=Math.hypot(ax,dy); nx=cx+Math.sign(x-cx)*(hx-r+ax/l*r); yy=Math.min(yy,ty+dy/l*r); }
+        if(az>0){ const l=Math.hypot(az,dy); nz=cz+Math.sign(z-cz)*(hz-r+az/l*r); yy=Math.min(yy,ty+dy/l*r); }
+        nx=x+(nx-x)*hw; nz=z+(nz-z)*hw; ny=y+(yy-y)*hw; }
+      o[i]=nx; o[i+1]=ny; o[i+2]=nz; };
+    return {at,ty:ty-RE,hb:(d_,q)=>d_.w[q]>=128?d_.bone[q*2]:d_.bone[q*2+1]}; };
+  // a head face cut until no edge near the top is over RE; a point cut on the head's rim (f: an edge it shares with a face the head does not carry) stays where it is (pin), so it meets that face
+  const cutFace=(A,B,C,f,out,ty)=>{ const go=(V,F)=>{ const s=[0,1,2].map(i=>Math.max(V[i].p[1],V[(i+1)%3].p[1])>ty&&Math.hypot(V[i].p[0]-V[(i+1)%3].p[0],V[i].p[1]-V[(i+1)%3].p[1],V[i].p[2]-V[(i+1)%3].p[2])>RE), n=s[0]+s[1]+s[2];
       if(!n){ out.push(V); return; }
       const mid=i=>{ const a=V[i], b=V[(i+1)%3]; return {b:[(a.b[0]+b.b[0])/2,(a.b[1]+b.b[1])/2,(a.b[2]+b.b[2])/2],p:[(a.p[0]+b.p[0])/2,(a.p[1]+b.p[1])/2,(a.p[2]+b.p[2])/2],pin:F[i]}; };
       if(n===3){ const m0=mid(0), m1=mid(1), m2=mid(2); go([V[0],m0,m2],[F[0],0,F[2]]); go([m0,V[1],m1],[F[0],F[1],0]); go([m2,m1,V[2]],[0,F[1],F[2]]); go([m0,m1,m2],[0,0,0]); return; }
@@ -170,7 +171,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
     const unq=(d,v)=>{ const Q=d.pos, X=new Float32Array(Q.length); for(let i=0;i<Q.length;i++)X[i]=(Q[i]+32500)*v.sc+v.lo[i%3]; return X; }, WF=pfh&&!nob?wristFit(unq(D_[0],parts[0].v),D_[0],L):null;
     const SZ=shapeOf(L.f,L.sh);
     const XS=parts.map((P,pi)=>{ const d=D_[pi], X=unq(d,P.v); if(WF&&WF.length)fitWrist(X,d,WF); else taper(X,d,L.f); if(SZ)reshape(X,d,SZ); return X; });
-    // the head round: the skull's box from the body as shaped; the body's points moved (XM), its head faces cut (CUT)
+    // the head's top rounded: its box from the body as shaped; the body's points moved (XM), its head faces cut (CUT)
     const RH=nob?null:roundOf(XS[0],D_[0]);
     const XM=[], CUT=[];
     parts.forEach((P,pi)=>{ const d=D_[pi], X=XS[pi], M=new Float32Array(X), cut=new Map(); XM.push(M); CUT.push(cut);
@@ -179,7 +180,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
       const K=q=>Math.round(X[q*3]*1e5)+','+Math.round(X[q*3+1]*1e5)+','+Math.round(X[q*3+2]*1e5), E=(a,b)=>{ const ka=K(a), kb=K(b); return ka<kb?ka+'|'+kb:kb+'|'+ka; }, isH=t=>[0,1,2].every(j=>RH.hb(d,d.tri[t*3+j])===HB);
       const other=new Set(); for(let t=0;t<d.tri.length/3;t++)if(kept(d,t)&&!isH(t))for(let j=0;j<3;j++)other.add(E(d.tri[t*3+j],d.tri[t*3+(j+1)%3]));
       for(let t=0;t<d.tri.length/3;t++){ if(!kept(d,t))continue; if(!isH(t)){ nf++; continue; } const ix=[d.tri[t*3],d.tri[t*3+1],d.tri[t*3+2]], out=[];
-        cutFace(...ix.map((q,j)=>({b:[j===0?1:0,j===1?1:0,j===2?1:0],p:[X[q*3],X[q*3+1],X[q*3+2]]})),[0,1,2].map(j=>other.has(E(ix[j],ix[(j+1)%3]))),out); cut.set(t,out); nf+=out.length; } });
+        cutFace(...ix.map((q,j)=>({b:[j===0?1:0,j===1?1:0,j===2?1:0],p:[X[q*3],X[q*3+1],X[q*3+2]]})),[0,1,2].map(j=>other.has(E(ix[j],ix[(j+1)%3]))),out,RH.ty); cut.set(t,out); nf+=out.length; } });
     const pos=new Float32Array(nf*9), nor=new Float32Array(nf*9), col=new Float32Array(nf*9), bi=new Float32Array(nf*6), bw=new Float32Array(nf*3), fl=new Float32Array(nf*3), hh=new Float32Array(nf*3), fd=new Float32Array(nf*9), sm=new Float32Array(nf*3), va=new THREE.Vector3(), vb=new THREE.Vector3(), vc=new THREE.Vector3(), n=new THREE.Vector3(), e=new THREE.Vector3();
     let f=0;
     parts.forEach((P,pi)=>{ const d=D_[pi], v=P.v, X=XS[pi], XR=XM[pi], cut=CUT[pi];
@@ -187,7 +188,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
       const cz=P.col&&P.col.includes('_')?P.col.split('_'):null;
       const C=P.zones.map((z,i)=>{ if(z==='skin')return lin(L.skin); if(P.slot==='body'&&z==='brow')return lin(L.hair); if(P.slot==='body'&&z==='eye'&&L.eye)return lin(L.eye);
         if((P.slot==='hair'||P.slot==='face')&&P.main&&i===P.main[0])return lin(L.hair); if(cz){ if(cz[i])return lin(cz[i]); } else if(P.col&&P.main&&i===P.main[0])return lin(P.col); return lin(String(P.pal[i]).slice(1)); });
-      // the head's cut faces as moved, each point's normal the mean of the faces round it that turn less than 60 degrees from its own (a nose or a brim keeps its edge)
+      // the head's cut faces as moved, each point's normal the mean of the faces round it that turn less than 60 degrees from its own (the box's other edges stay sharp)
       const CF=new Map(); if(cut.size){ const K=p=>Math.round(p[0]*1e5)+','+Math.round(p[1]*1e5)+','+Math.round(p[2]*1e5), AC=new Map(), all=[];
         for(const [t,list] of cut){ const ix=[d.tri[t*3],d.tri[t*3+1],d.tri[t*3+2]], hw=ix.map(q=>hwOf(d,q)), R=[];
           for(const V of list){ const p=V.map(u=>{ const o=[0,0,0]; RH.at(u.p[0],u.p[1],u.p[2],u.pin?0:u.b[0]*hw[0]+u.b[1]*hw[1]+u.b[2]*hw[2],o,0); return o; });

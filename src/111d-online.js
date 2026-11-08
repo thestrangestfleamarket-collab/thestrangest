@@ -13,7 +13,7 @@ import {BODIES} from './111a-bodies.js';
 Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{},puts:{}}); window.ONLINE=ONLINE;
 // things players set down (hives, crab pots...): each kind registers {set(id,name,list), clear(), share()}; the section sends them all on joining, then each change
 ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.puts[k]; H.clear(); for(const r of m.all)if(r&&r.k===k)H.set(r.id,r.name,r.list); H.share(); } return; } const H=ONLINE.puts[m.k]; if(H)H.set(m.id,m.name,m.list); };
-{ const R=RIG, PI4=Math.PI/4, LAG=160, SEND=1/6, FAR=60*TILE, MAXN=20, FADE_S=15000;
+{ const R=RIG, PI4=Math.PI/4, LAG=160, SEND=1/6, FAR=1e9, MAXN=20, FADE_S=15000;
   // your words over heads: FONTS and COLS to pick from, SIZES in canvas px; SP is your own style (sent with each say), ONLINE.sayFor how long anyone's words stay (your setting)
   const FONTS=[['Silkscreen, monospace','PIXEL'],["'Press Start 2P', monospace",'ARCADE'],["'Share Tech Mono', monospace",'MONO'],['sans-serif','PLAIN'],['serif','SERIF'],['cursive','SCRIPT']], COLS=['#f4f2ea','#ffd27a','#7dffa8','#8fd0ff','#ff8ad8','#ff8a1f','#ff5a5a','#c8b0ff'], SIZES=[22,28,36];
   const SP={f:0,c:COLS[0],s:1}; try{ Object.assign(SP,style(JSON.parse(SAVE.get('speech')||'{}'))); }catch(e){}

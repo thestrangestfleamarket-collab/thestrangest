@@ -86,6 +86,7 @@ import {SYS} from './006-map-pre.js';
   const parcel=()=>INSPECT.shape('parcel',0xb08a5a,0x6a4a2a);
   // a pack item: the first kind that knows its id makes it (each family registers in its own file); one that none knows is shown as a wrapped parcel
   INSPECT.model=id=>{ for(const k of INSPECT.kinds){ if(!k.is(id))continue; try{ const o=k.make(id); if(o)return o; }catch(e){ console.warn('INSPECT '+id,e); } } return parcel(); };
+  INSPECT.has=id=>INSPECT.kinds.some(k=>{ try{ return !!k.is(id); }catch(e){ return false; } });   // a model of its own (not the parcel)
   INSPECT.item=id=>INSPECT.open(INSPECT.model(id),{id,mine:true});
   const ray=new THREE.Raycaster(), NDC=new THREE.Vector2(); let mx=-1, my=-1; addEventListener('pointermove',e=>{ mx=e.clientX; my=e.clientY; },{passive:true});
   INSPECT.key=()=>{ '@later'; if(INSPECT.on)return INSPECT.close(); let r=null; if(mx>=0&&SHARED.cam){ const b=renderer.domElement.getBoundingClientRect(); NDC.set((mx-b.left)/b.width*2-1,-((my-b.top)/b.height*2-1)); ray.setFromCamera(NDC,SHARED.cam); r=ray; }

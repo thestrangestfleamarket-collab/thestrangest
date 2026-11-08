@@ -77,6 +77,7 @@ jobs:
           k parksolid 'src/111fe|src/100-use|data/world|parksolid\.cjs'
           k guardians 'src/146ja|src/146k|src/146b|worker/dunmobs|src/103a|src/059e|data/guardians|guardians\.cjs|body\.cjs'
           k faunarest 'src/087-npc-creatures|data/fauna|fauna-rest\.cjs'
+          k ground  'src/162e-bag|src/150cy-inspect|src/140b-items|data/items|grounditems\.cjs'
           k avdesign 'src/111a-bodies|src/111c-avatar|src/111cb-designer|src/102b-designer|avdesigner\.cjs'
           k space   'src/075-main|src/076-npc|src/087-npc-creatures|src/139-clip|src/150-loose|worker/folk|space\.cjs'
           k motion  'src/001-rig|src/111d|src/100-use|data/moves2|tools/m2m-moves|motion\.cjs'
@@ -238,6 +239,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' avdesign')
         run: node tests/avdesigner.cjs dist/market.html
+      - name: things on the ground
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' ground')
+        run: node tests/grounditems.cjs dist/market.html
       - name: fauna rests
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' faunarest')

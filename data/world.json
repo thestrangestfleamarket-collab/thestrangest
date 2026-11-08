@@ -483,6 +483,19 @@
    "face": "e"
   },
   {
+   "id": "gym",
+   "name": "KNUCKLE & IRON",
+   "kind": "front",
+   "x0": -70.925,
+   "x1": -52.5,
+   "y0": 111.3,
+   "y1": 141.3,
+   "face": "e",
+   "inW": 22,
+   "inD": 17,
+   "inH": 130
+  },
+  {
    "id": "bank",
    "name": "THE BANK",
    "kind": "front",

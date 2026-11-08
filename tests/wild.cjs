@@ -36,6 +36,6 @@ const {chromium}=require('playwright');
     function T0(){ return __dbg.cv().TILE; } });
   console.log('fireflies',JSON.stringify(ff));
   const fz=await E(async()=>{ const th=__dbg.UI.things.find(t=>t.name==='FIREFLIES'), T=__dbg.cv().TILE, at=(y)=>{ STORE.goTo(th.obj.position.x+2*T,th.obj.position.z,y); }; at('up'); await new Promise(r=>setTimeout(r,2500)); const iso=FFLYDBG().size; __dbg.UI.setView('third'); await new Promise(r=>setTimeout(r,4000)); const close=FFLYDBG().size; __dbg.UI.setView('iso'); return {iso,close}; });
-  ok(fz.close>fz.iso&&fz.iso<4,'from the overhead view the fireflies are small specks, bigger only close up (owner, 8 Nov 2026): '+JSON.stringify(fz)); ok(ff.d.built&&ff.d.shown&&ff.jar===1&&ff.seen>0&&ff.lamp&&ff.after===0&&ff.back>=1,'fireflies blink at night; a jar of them glows while you carry it and lets them go at dawn');
+  ok(fz.iso<4&&fz.close<=5&&fz.close>=1,'fireflies are specks a few centimetres across, not big fixed dots from the overhead view (owner, 8 Nov 2026): '+JSON.stringify(fz)); ok(ff.d.built&&ff.d.shown&&ff.jar===1&&ff.seen>0&&ff.lamp&&ff.after===0&&ff.back>=1,'fireflies blink at night; a jar of them glows while you carry it and lets them go at dawn');
   ok(!Object.keys(errs).length,'no page errors '+JSON.stringify(errs));
   await b.close(); process.exit(bad?1:0); })();

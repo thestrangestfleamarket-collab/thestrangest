@@ -1,6 +1,6 @@
 // THE POLYFORK FRONTS (owner, 5 Nov 2026): whole Polyfork buildings on Market St's new shops and up West St as a line of 10-storey apartment houses (a small gap between each), from data/street.json fetched after the start, with their fire escapes, railings, plants and trees; the lots' solids stand from the start.
 import {SHARED, THREE} from './003-shx.js';
-import {UI, WE} from './003b-systems.js';
+import {SHOPS, TALK, UI, WE} from './003b-systems.js';
 import {KITD, scene} from './004-main.js';
 import {FIX, LEVEL, MAPG, MODS, SOL, SYS, TILE, ZU} from './006-map-pre.js';
 import {FACADES} from './038zc-facades.js';
@@ -25,7 +25,7 @@ const PFROW={fronts:[],houses:[],things:[]};
     const ZT=Math.abs(SHARED.BOD.Y(1)-SHARED.BOD.Y(0));
     const BRICK={antiques:[124,70,54],fishing:[112,82,66],armor:[96,62,56],skate:[150,84,62],books:[132,76,58]};
     for(const f of MSHOP.fronts){ const h=size(f.pf)[1]*M, L=f.L, cx=(L.x0+L.x1)/2, LL=L, P=LEVEL.places.find(p=>p.id===f.id)||{};
-      if(P.row===2){ PFROW.fronts.push({id:f.id,obj:HUDSHOP.make({L,pt:f.pt,brick:BRICK[f.id],du:f.du??cx,seed:f.id.length*17,parent:MAPG.bodega||scene})}); continue; }   // the Hudson row's shops: the florist's kind of building, the merchant's flat upstairs (owner, 8 Nov 2026)
+      if(P.row===2){ PFROW.fronts.push({id:f.id,obj:HUDSHOP.make({L,pt:f.pt,closed:!MSHOP.at[f.id]||!MSHOP.at[f.id].open,brick:BRICK[f.id],du:f.du??cx,seed:f.id.length*17,parent:MAPG.bodega||scene})}); continue; }   // the Hudson row's shops: the florist's kind of building, the merchant's flat upstairs (owner, 8 Nov 2026)
       if(f.id==='bodega'){ PFROW.fronts.push({id:f.id,obj:put('bodega',f.x,f.zf+f.zi*size('bodega')[2]*1.25*M/2,{rot:f.rot,m:size('bodega')[1]*1.25,mat:BODMAT()})}); continue; }   // Polyfork's #12, bigger, its walls bricked (owner, 8 Nov 2026)
       const g=FACADES.make({id:f.id,L:LL,pt:f.pt,z1:Math.max(150,h/ZT),wall:PFC[f.id]||[132,74,58],trim:[204,196,182],frame:[40,38,42],seed:f.id.length*17,glass:true,ground:118,door:{u:f.du??cx,w:.8},parent:MAPG.bodega||scene}); PFROW.fronts.push({id:f.id,obj:g}); } tris+=FACADES.tris;
     // the Hudson row's shops dressed (owner, 7 Nov 2026: "busier"): a lit name board over the door, planters and baskets by it, a lamp at every other shop, a small tree and shrubs on the ground either side of the building
@@ -48,7 +48,12 @@ const PFROW={fronts:[],houses:[],things:[]};
     PFROW.tris=tris; PFROW.done=true; if(WE.late)WE.late(); };
   SYS.onStart(()=>Promise.all([LOAD('later'),STREET()]).then(([_,J])=>{ Object.assign(KITD,J); place(); }).catch(e=>console.warn('pfrow',e)),'068a-pfrow');
   // the houses' doors: a thing at each (the lobby is shut until the flats are built; your own apartment's door is on the first house, 059a)
-  let made=false; SYS.add('places',()=>{ if(made||!UI.thing||!PFROW.done)return; made=true; for(const h of PFROW.houses){ const m=new THREE.Mesh(new THREE.BoxGeometry(.5*TILE,2.4*TILE,1.3*TILE),new THREE.MeshBasicMaterial({visible:false})); m.position.set(h.door[0]+.25*TILE,G(h.door[0],h.door[1])+1.2*TILE,h.door[1]); scene.add(m);
+  let made=false; SYS.add('places',()=>{ if(made||!UI.thing||!PFROW.done)return; made=true;
+    // an open Hudson shop's counter sells as its keeper does
+    for(const f of PFROW.fronts){ const at=MSHOP.at[f.id], c=f.obj&&f.obj.userData.counter; if(!at||!at.open||!c)continue; const P=LEVEL.places.find(p=>p.id===f.id)||{}, who=P.merchant, name=MSHOP.defs[f.id]&&MSHOP.defs[f.id].name||P.name;
+      const m=new THREE.Mesh(new THREE.BoxGeometry(3.6*TILE,1.2*TILE,1*TILE),new THREE.MeshBasicMaterial({visible:false})); m.position.set(c[0],c[1]+.6*TILE,c[2]); scene.add(m); PFROW.things.push(m);
+      UI.thing({name:'THE COUNTER (BUY)',ghost:1,obj:m,reach:1.6*TILE,near:2.8*TILE,tall:1.2*TILE,act:()=>{ for(const [N,fn] of TALK.shops||[])if(N&&N.key===who)return fn(); if(who&&SHOPS.open)SHOPS.open({key:who,name}); }}); }
+    for(const h of PFROW.houses){ const m=new THREE.Mesh(new THREE.BoxGeometry(.5*TILE,2.4*TILE,1.3*TILE),new THREE.MeshBasicMaterial({visible:false})); m.position.set(h.door[0]+.25*TILE,G(h.door[0],h.door[1])+1.2*TILE,h.door[1]); scene.add(m);
       UI.thing({name:LEVEL.places.find(p=>p.id===h.id).name,ghost:1,obj:m,reach:1.4*TILE,near:2.6*TILE,tall:2.4*TILE,act:()=>UI.log('THE LOBBY IS SHUT: THE FLATS ARE NOT BUILT YET. YOUR APARTMENT IS IN THE FIRST HOUSE.','#c8a090')}); PFROW.things.push(m); } },'068a-pfrow');
   window.PFROWDBG=()=>({done:!!PFROW.done,fronts:PFROW.fronts.map(f=>f.id),houses:PFROW.houses.length,things:PFROW.things.length,tris:PFROW.tris||0,solids:HOUSES.length,blocked:PFROW.houses.every(h=>{ const x=h.obj.position.x-.5*TILE, z=h.obj.position.z; return SOL.up.some(r=>x>r[0]&&x<r[2]&&z>r[1]&&z<r[3]); })}); }
 window.PFROW=PFROW;

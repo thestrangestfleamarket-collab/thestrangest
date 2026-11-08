@@ -59,6 +59,12 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
     else { const dw=D.dw||.85, du=D.door*W, sh0=D.both?[[lcx-D.half+.08,lcx-dw-.28,19,89],[lcx+dw+.28,lcx+D.half-.08,19,89],[lcx-dw+.12,lcx+dw-.12,12,86]]:[[L.x0+(du>W/2?.35:du+dw+.15),L.x0+(du>W/2?du-dw-.15:W-.35),16,92]];
       FACADES.make({id,L,pt:TA.pt,z1:D.h,wall:(D.wall&&D.wall.c)||[128,64,52],trim:D.trim,frame:D.frame,seed:id.length*31+n,ground:118,door:D.both?null:{u:lcx,w:dw},shop:sh0.map(([u0,u1,z0,z1])=>({u0,u1,z0,z1})),sign:{text:D.sign,color:D.signC,bg:D.signBg,u:(L.x0+L.x1)/2}}); }   // modelled, not painted (owner, 8 Nov 2026)
     if(!D.pf){ BATCH.build(MKA); for(const me of Object.values(BATCH.meshes)){ me.castShadow=true; me.receiveShadow=true; } BATCH.meshes={}; }
+    // a Hudson shop is open at the front (owner, 8 Nov 2026: "they should be open area you walk in no door"): its walls, shelves and counter are solid, the shop is walked into, its merchant behind the counter; the bookstore keeps its door (its library and stacks are inside)
+    if(p.row===2&&D.pf&&id!=='books'){ const m=1/.84, w=L.x1-L.x0, c=(L.x0+L.x1)/2, sb=(u0,v0,u1,v1,h)=>{ const a=TA.pt(u0,v0), b=TA.pt(u1,v1), r=box4(a[0],a[1],b[0],b[1]); SOL.up.push(r); FIX.up.push([r[0],r[1],0,r[2],r[3],Y(h)]); };
+      sb(L.x0,L.y0,L.x0+.4,L.y1,D.h); sb(L.x1-.4,L.y0,L.x1,L.y1,D.h); sb(L.x0,L.y0,L.x1,L.y0+.4,D.h); for(const u of [L.x0,L.x1-.55*m])sb(u,L.y1-.6*m,u+.55*m,L.y1,D.h);
+      for(const u of [L.x0+.3*m,L.x1-.8*m])sb(u,L.y0+1.2*m,u+.5*m,L.y1-2*m,80); sb(c-1.5*m,L.y0+2*m,c+1.5*m,L.y0+2.8*m,32);
+      const q=TA.pt(c,L.y0+1.3*m), B=SHARED.BOD, who=p.merchant; if(who&&LEVEL.homes&&!LEVEL.homes[who])LEVEL.homes[who]=[+((X(q[0])-B.XS(0))/(B.XS(1)-B.XS(0))).toFixed(2),+((Z(q[1])-B.ZS(0))/(B.ZS(1)-B.ZS(0))).toFixed(2),0,null];
+      const e=TA.pt(c,L.y1-1.5*m); STORE.places.push([D.name,X(e[0]),Z(e[1]),'up']); MSHOP.at[id]={open:true,door:at(c,L.y1)}; return; }
     { const r=box4(LW.x0,LW.y0,LW.x1,LW.y1); SOL.up.push(r); FIX.up.push([r[0],r[1],0,r[2],r[3],Y(D.h)]); }
 
     /* ---------- the inside, off the map: R in tiles, the door in the middle of its front wall ---------- */

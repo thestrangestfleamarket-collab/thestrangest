@@ -22,9 +22,7 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
   const sword=([bl,gd,gr])=>{ const g=new THREE.Group(), gold=lam(gd); g.add(bx(.035,.2,.035,lam(gr),-.02),bx(.22,.03,.05,gold,.09),bx(.075,.72,.014,lam(bl),.46),bx(.05,.05,.05,gold,-.14)); g.head=new V3(0,.8,0); return g; };
   const MK={net:()=>net(.2,0xc8c2b0,0xf4f0e4), bnet:()=>net(.3,0x5a4a3a,0xb8b4a8)}, MESH={}, mk=id=>KIND[id]?KIND[id].make():MK[id]?MK[id]():sword(SWC[id]||SWC.sword); WIELD.mk=mk;
   INSPECT.kinds.push({is:id=>!!(KIND[id]||MK[id]||SWC[id]),make:id=>{ const g=mk(id); g.traverse(c=>{ c.userData.ownMat=true; }); return g; }});
-  const N=8, TP=new Float32Array(N*2*3), TG=new THREE.BufferGeometry(), TI=[]; for(let i=0;i<N-1;i++){ const a=i*2; TI.push(a,a+1,a+2,a+1,a+3,a+2); }
-  TG.setAttribute('position',new THREE.BufferAttribute(TP,3)); TG.setIndex(TI);
-  const trail=new THREE.Mesh(TG,new THREE.MeshBasicMaterial({color:0xf4f0e4,transparent:true,opacity:.55,side:THREE.DoubleSide,depthWrite:false})); trail.frustumCulled=false; trail.visible=false; scene.add(LEVELS.own(trail,'*'));
+  const N=8;
   const pts=[], M=new THREE.Matrix4(), IM=new THREE.Matrix4(), UP=new V3(0,1,0), rc=new THREE.Raycaster(), ms={x:-1,y:-1};
   const ph=new V3(), seg=new V3(), sd=new V3(), sq=new V3(), cur=new V3(0,-.3,1).normalize(), aim=new V3(), aim0=new V3(0,-.3,1).normalize(), sh=new V3(), hip=new V3(), head=new V3(), tip=new V3(), base=new V3(), ax=new V3(), bx2=new V3(), bz=new V3(), cx=new V3(), cy=new V3(), cz=new V3(), sax=new V3();
   const J_=(J,n)=>J[n+WIELD.hand];
@@ -61,7 +59,7 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
       const was=cur.clone(); cur.lerp(aim,1-Math.exp(-dt*(sw||own?40:20))).normalize(); spd=dt>0?was.angleTo(cur)/dt:0; }
     const w0=st.aim?st.aim.w:0, w=w0+((on&&!(st.move&&st.move.name==='pick')?1:0)-w0)*Math.min(1,dt*10);
     if(!on&&w<.02){ st.aim=null; return; } IM.copy(W3.group.matrixWorld).invert(); const v=cur.clone().transformDirection(IM); st.aim={v:RIG.V(v.x,v.y,v.z),w}; };
-  WIELD.post=B=>{ const m=MESH[WIELD.on], on=!!(m&&free()&&st.aim&&st.aim.w>.3); for(const k in MESH)MESH[k].visible=on&&MESH[k]===m; if(!on){ trail.visible=false; pts.length=0; phOk=false; return; }
+  WIELD.post=B=>{ const m=MESH[WIELD.on], on=!!(m&&free()&&st.aim&&st.aim.w>.3); for(const k in MESH)MESH[k].visible=on&&MESH[k]===m; if(!on){ pts.length=0; phOk=false; return; }
     const G=W3.group.matrixWorld, J=B.J, P=(p,o)=>o.set(p.x,p.y,p.z).applyMatrix4(G);
     const AH=BODIES.hand(WIELD.hand);   // (in your avatar's own hand)
     P(AH?AH.shoulder:J_(J,'shoulder'),sh); P(J.pelvis,hip); P(AH?AH.elbow:J_(J,'elbow'),ax); P(AH?AH.palm:J_(J,'palm'),base); ax.subVectors(P(AH?AH.wrist:J_(J,'wrist'),tip),ax).normalize();
@@ -70,7 +68,6 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
     M.makeBasis(bx2,ax,bz).setPosition(base); m.matrix.copy(M); m.matrixWorld.copy(M); if(m.tipL){ WIELD.tip.copy(m.tipL).applyMatrix4(M); if(m.bend)m.bend(); } head.copy(m.head).applyMatrix4(M); tip.copy(base).addScaledVector(ax,m.head.y+(m.r||0)*2);
     const fast=(spd>7||sw)&&!KIND[WIELD.on], now=performance.now(); if(!WIELD.mv){ WIELD.mv=1; SYS.add('weedsMove',()=>{ if(performance.now()<cutT)WEEDS.movers[7].set(tip.x,tip.z,.6*T,1); },'146a-wield'); } if(fast){ pts.unshift([base.clone().addScaledVector(ax,.25),tip.clone(),now]); if(WIELD.sword&&tip.y<SHARED.py+.6*T)cutT=now+400; }
     while(pts.length&&(pts.length>N||now-pts[pts.length-1][2]>120))pts.pop();
-    trail.visible=pts.length>2; if(trail.visible){ for(let i=0;i<N;i++){ const q=pts[Math.min(i,pts.length-1)]; q[0].toArray(TP,i*6); q[1].toArray(TP,i*6+3); } TG.attributes.position.needsUpdate=true; }
     const was=phOk; ph.copy(seg); seg.copy(head); phOk=true; if(!(spd>4||sw)||WIELD.sword||KIND[WIELD.on])return;
     // the hoop's sweep since last frame, so a fast swing cannot skip over a butterfly; on the ground or mid-jump
     if(WIELD.on==='net'&&BFLY.out){ const a=was?ph:head, air=!!(st.move&&st.move.def.air); for(const b of [...BF.list]){ if(!b.g.parent||!b.th||(b.nt||0)>now)continue; const q=b.g.position, d=sd.subVectors(head,a), L=d.lengthSq(), u=L>1e-9?Math.max(0,Math.min(1,sq.copy(q).sub(a).dot(d)/L)):0;

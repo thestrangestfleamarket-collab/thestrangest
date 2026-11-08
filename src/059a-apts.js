@@ -101,7 +101,7 @@ async function house(HP,mine,FL,HI){ const APTS0=APTS; { const APTS=mine?APTS0:{
 
   const SY=APTS.SY=Y(S)-Y(0), TOL=Y(24)-Y(0);
   const box4=(x0,y0,x1,y1)=>{ const a=X(x0), b=X(x1), c=Z(y0), d=Z(y1); return [Math.min(a,b),Math.min(c,d),Math.max(a,b),Math.max(c,d)]; };
-  const BLK=tbox4(A.x0,A.y0,A.x1,A.y1); SOL.up.push(BLK); FIX.up.push([BLK[0],BLK[1],0,BLK[2],BLK[3],Yr(TOP)]);
+  const BLK=tbox4(A.x0,A.y0,A.x1,A.y1); SOL.up.push(BLK); (APTS0.blocks||(APTS0.blocks=[])).push({id:HP.id,box:BLK,top:Yr(TOP),mine}); FIX.up.push([BLK[0],BLK[1],0,BLK[2],BLK[3],Yr(TOP)]);
   const BHR=tbox4(APTS.BH.x0,APTS.BH.y0,APTS.BH.x1,APTS.BH.y1); FIX.up.push([BHR[0],BHR[1],Yr(TOP),BHR[2],BHR[3],Yr(TOP+72)]);
   for(const [c0,c1] of [[ST0.x0-.22,ST0.x0],[ST0.x1,ST0.x1+.22]]){ const r=tbox4(c0,ST0.y0,c1,ST0.y1); SOL.up.push(r); FIX.up.push([r[0],r[1],0,r[2],r[3],.05]); }
   const EDGE=[tbox4(A.x0,A.y1-T,A.x1,A.y1),tbox4(A.x0,A.y0,A.x1,A.y0+T),tbox4(A.x0,A.y0,A.x0+T,A.y1),tbox4(A.x1-T,A.y0,A.x1,A.y1)];

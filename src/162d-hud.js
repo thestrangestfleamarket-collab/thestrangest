@@ -8,7 +8,7 @@ import {QUESTS} from './160a-quests.js';
 { const T=TILE, MW=150, esc=TEXT.esc; let N=Math.max(1,Math.min(40,+OWNED.get('quickn')||10));   // (how many quick slots: the player's choice, 1 to 40, owner 7 Nov 2026; the first ten on keys 1 to 0)
   const css=document.createElement('style'); css.textContent=`#hmap{position:fixed;right:calc((24px + var(--fx,0px) + env(safe-area-inset-right,0px)) / var(--uiz,1));top:calc((24px + var(--fy,0px) + env(safe-area-inset-top,0px)) / var(--uiz,1));width:${MW}px;z-index:5;font:9px Silkscreen,monospace;letter-spacing:1px;color:#fff;text-shadow:1px 1px 0 #000,0 0 3px #000;zoom:var(--uiz,1)}
     #hmap[hidden]{display:none} #hmap canvas{display:block;width:${MW}px;height:${MW}px;border-radius:50%;image-rendering:pixelated;cursor:pointer} #hmap canvas[hidden]{display:none} #hmap .f{padding-top:5px;text-align:center} #hmap .f span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    #hlog{position:fixed;left:calc((24px + var(--fx,0px) + env(safe-area-inset-left,0px)) / var(--uiz,1));bottom:calc((24px + var(--fy,0px) + env(safe-area-inset-bottom,0px)) / var(--uiz,1));width:min(320px,40vw);z-index:6;font:11px Silkscreen,monospace;letter-spacing:.3px;color:#fff;text-shadow:1px 1px 0 #000,0 0 3px #000;pointer-events:none;zoom:var(--uiz,1)}
+    #hlog{position:fixed;left:calc((24px + var(--fx,0px) + env(safe-area-inset-left,0px)) / var(--uiz,1));bottom:calc((24px + var(--fy,0px) + var(--logup,0px) + env(safe-area-inset-bottom,0px)) / var(--uiz,1));width:min(320px,40vw);z-index:6;font:11px Silkscreen,monospace;letter-spacing:.3px;color:#fff;text-shadow:1px 1px 0 #000,0 0 3px #000;pointer-events:none;zoom:var(--uiz,1)}
     #hlines{display:flex;flex-direction:column;justify-content:flex-end;max-height:150px;overflow:hidden} #hlines div{padding:1px 0;word-wrap:break-word} #hlines div.old{opacity:.5} #hlines b{color:#ffd27a;font-weight:400}
     #hlog:has(#onl.open) #hlines{max-height:60vh;overflow:auto;pointer-events:auto} #hlog:has(#onl.open) #hlines div.old{opacity:.8}
     #hlog #onl{position:static;width:auto;margin-top:4px;zoom:1} #hlog #onllog{display:none}
@@ -19,7 +19,8 @@ import {QUESTS} from './160a-quests.js';
 
   /* ---------- the log ---------- */
   const LG=document.createElement('div'); LG.id='hlog'; LG.innerHTML='<div id="hlines" aria-live="polite"></div><div id="hchat"></div>'; document.body.appendChild(LG); const LN=LG.firstChild;
-  UI.log=(text,color,who)=>{ const d=document.createElement('div'); d.dataset.t=String(performance.now()); d.innerHTML=(who?'<b>'+esc(who)+'</b> ':'')+esc(text); if(color&&!who)d.style.color=color; LN.appendChild(d); while(LN.children.length>40)LN.firstChild.remove(); };
+  UI.log=(text,color,who)=>{ const L=LN.lastChild, key=(who||'')+'\u0001'+text; if(L&&L.dataset.k===key){ L.dataset.n=String(+L.dataset.n+1); L.dataset.t=String(performance.now()); L.lastChild.textContent=' ×'+L.dataset.n; L.classList.remove('old'); LN.appendChild(L); return; }   // the same line again counts up, never repeats
+    const d=document.createElement('div'); d.dataset.k=key; d.dataset.n='1'; d.dataset.t=String(performance.now()); d.innerHTML=(who?'<b>'+esc(who)+'</b> ':'')+esc(text); if(color&&!who)d.style.color=color; d.appendChild(document.createElement('span')); LN.appendChild(d); while(LN.children.length>40)LN.firstChild.remove(); };
   HUD.lines=()=>[...LN.children].map(d=>d.textContent);
 
   /* ---------- the minimap ---------- */
@@ -59,7 +60,7 @@ import {QUESTS} from './160a-quests.js';
     draw(); return true; };
   QB.addEventListener('click',e=>{ const s=e.target.closest('.qs'); if(s)HUD.use(+s.dataset.i); });
   QB.addEventListener('contextmenu',e=>{ const s=e.target.closest('.qs'); if(!s)return; e.preventDefault(); HUD.set(+s.dataset.i,null); });
-  QB.addEventListener('dragstart',e=>{ const s=e.target.closest('.qs'); if(!s||!S[+s.dataset.i])return e.preventDefault(); e.dataTransfer.setData('text/plain','slot:'+s.dataset.i); e.dataTransfer.effectAllowed='move'; });
+  QB.addEventListener('dragstart',e=>{ const s=e.target.closest('.qs'); if(!s||!S[+s.dataset.i])return e.preventDefault(); e.dataTransfer.setData('text/plain','slot:'+s.dataset.i); e.dataTransfer.setData('application/x-slot',s.dataset.i); e.dataTransfer.effectAllowed='move'; });
   QB.addEventListener('dragover',e=>{ const s=e.target.closest('.qs'); if(!s)return; e.preventDefault(); QB.querySelectorAll('.over').forEach(x=>x.classList.remove('over')); s.classList.add('over'); });
   QB.addEventListener('dragleave',e=>{ const s=e.target.closest('.qs'); if(s)s.classList.remove('over'); });
   QB.addEventListener('drop',e=>{ '@later'; const s=e.target.closest('.qs'); if(!s)return; e.preventDefault(); const i=+s.dataset.i, d=e.dataTransfer.getData('text/plain')||'';
@@ -83,6 +84,9 @@ import {QUESTS} from './160a-quests.js';
   draw();
 
   const nmN=document.getElementById('vnm'); let named=0;
-  SYS.add('vitals',dt=>{ tickMap(dt); tickBar(dt); if(window.__started&&nmN&&(named-=dt)<=0){ named=1; const n=ONLINE.myName?ONLINE.myName():''; if(nmN.textContent!==n)nmN.textContent=n; } },'162d-hud');   // the name as it is now, looked at once a second
+  let liftT=0; const lift=dt=>{ if((liftT-=dt)>0)return; liftT=.5; const L=document.getElementById('hlog'), Q=document.getElementById('hqb'); if(!L||!Q)return;   // the log never under the quick bar: on a narrow window it sits just above it (unless you moved either)
+    let up=0; if(!L.style.top&&!Q.style.top&&!Q.hidden){ const a=L.getBoundingClientRect(), b=Q.getBoundingClientRect(); if(b.height>0&&a.right>b.left+2&&a.left<b.right-2)up=Math.round(b.height+8); }
+    if(L.style.getPropertyValue('--logup')!==up+'px')L.style.setProperty('--logup',up+'px'); };
+  SYS.add('vitals',dt=>{ tickMap(dt); tickBar(dt); lift(dt); if(window.__started&&nmN&&(named-=dt)<=0){ named=1; const n=ONLINE.myName?ONLINE.myName():''; if(nmN.textContent!==n)nmN.textContent=n; } },'162d-hud');   // the name as it is now, looked at once a second
   window.HUDDBG=()=>({map:!MP.hidden,plan:!!Q,slots:[...S],lines:LN.children.length});
 }

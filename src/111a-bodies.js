@@ -37,17 +37,19 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     float x=q.x,y=q.y,z=q.z,c=q.w, s=sa*w+sb*(1.-w); vec3 t=2.*(c*d.xyz-d.w*q.xyz+cross(q.xyz,d.xyz));
     return mat4(vec4(1.-2.*(y*y+z*z),2.*(x*y+c*z),2.*(x*z-c*y),0.)*s,vec4(2.*(x*y-c*z),1.-2.*(x*x+z*z),2.*(y*z+c*x),0.)*s,vec4(2.*(x*z+c*y),2.*(y*z-c*x),1.-2.*(x*x+y*y),0.)*s,vec4(t,1.)); }`;
   function mesh(body){ const PM={value:Array.from({length:NB},()=>new THREE.Matrix4())};
-    const MOVE=`attribute vec2 bi; attribute float bw; uniform mat4 uPM[${NB}];`+(body.dq?DQ:''), AT_=body.dq?`mat4 PM=dqm(uPM[int(bi.x+.5)],uPM[int(bi.y+.5)],bw);`:`mat4 PM=uPM[int(bi.x+.5)]*bw+uPM[int(bi.y+.5)]*(1.-bw);`, CK=body.dq?'d':'';
+    const MOVE=`attribute vec2 bi; attribute float bw; attribute float hh; uniform float uHH; uniform mat4 uPM[${NB}];`+(body.dq?DQ:''), AT_=body.dq?`mat4 PM=dqm(uPM[int(bi.x+.5)],uPM[int(bi.y+.5)],bw);`:`mat4 PM=uPM[int(bi.x+.5)]*bw+uPM[int(bi.y+.5)]*(1.-bw);`, CK=body.dq?'d':'';
     if(body.smooth)return smooth(body,PM,MOVE,AT_);
+    // the body's own simple hands (hh) folded away while Polyfork's jointed ones are drawn in their place (PM.hh, 111b: only near the camera)
+    PM.hh={value:0}; const HH=' if(hh*uHH>.5)transformed=vec3(0.);';
     // a cape flaps in flight (body.flap: its points' fl, 0 at the tie to 1 at the hem, and fd, out from the body): lifted off the back and rippling, by PM.fk (pose)
     const FL=body.flap?(PM.fk={value:0},PM.ft={value:0},'attribute float fl; attribute vec3 fd; uniform float uFK,uFT;'):'', P0=body.flap?'position+fd*fl*uFK*(.04+.16*fl+.07*sin(uFT*12.-fl*8.+fd.x*2.))':'position';
     const mat=new THREE.MeshToonMaterial({vertexColors:true,gradientMap:W3.GP,side:THREE.DoubleSide});
-    mat.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; if(FL){ sh.uniforms.uFK=PM.fk; sh.uniforms.uFT=PM.ft; } sh.fragmentShader='#define BODYB .0015\n'+sh.fragmentShader; sh.vertexShader=MOVE+FL+'\n'+sh.vertexShader.replace('#include <beginnormal_vertex>',AT_+' vec3 objectNormal=mat3(PM)*normal;').replace('#include <begin_vertex>','vec3 transformed=(PM*vec4('+P0+',1.)).xyz;');
+    mat.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.uniforms.uHH=PM.hh; if(FL){ sh.uniforms.uFK=PM.fk; sh.uniforms.uFT=PM.ft; } sh.fragmentShader='#define BODYB .0015\n'+sh.fragmentShader; sh.vertexShader=MOVE+FL+'\n'+sh.vertexShader.replace('#include <beginnormal_vertex>',AT_+' vec3 objectNormal=mat3(PM)*normal;').replace('#include <begin_vertex>','vec3 transformed=(PM*vec4('+P0+',1.)).xyz;'+HH);
       // a body's own layers (cloth over its lining, over the skin) a few millimetres apart: its shadow test leans that much more toward the light, or they shadow each other in specks (owner, 6 Nov 2026: "seems like its shadows")
       sh.fragmentShader=sh.fragmentShader.replace('#include <lights_fragment_begin>',THREE.ShaderChunk.lights_fragment_begin.replace(/((?:directional|spot|point)LightShadows?(?:\[ *\w+ *\])?)\.shadowBias/g,'($1.shadowBias-BODYB)')).replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(cross(dFdx(vViewPosition),dFdy(vViewPosition))); vec3 nonPerturbedNormal=normal;').replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*0.16;'); };
     mat.customProgramCacheKey=()=>'body'+NB+CK+'b'+(FL?'f':'');
-    const dist=new THREE.MeshDistanceMaterial({side:THREE.DoubleSide}); dist.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; dist.customProgramCacheKey=()=>'bodydist'+NB+CK;
-    const depth=new THREE.MeshDepthMaterial({side:THREE.DoubleSide,depthPacking:THREE.RGBADepthPacking}); depth.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; depth.customProgramCacheKey=()=>'bodydepth'+NB+CK;
+    const dist=new THREE.MeshDistanceMaterial({side:THREE.DoubleSide}); dist.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.uniforms.uHH=PM.hh; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'+HH); }; dist.customProgramCacheKey=()=>'bodydist'+NB+CK;
+    const depth=new THREE.MeshDepthMaterial({side:THREE.DoubleSide,depthPacking:THREE.RGBADepthPacking}); depth.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.uniforms.uHH=PM.hh; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'+HH); }; depth.customProgramCacheKey=()=>'bodydepth'+NB+CK;
     const me=new THREE.Mesh(body.GEO||(body.GEO=body.geo()),mat); me.customDistanceMaterial=dist; me.customDepthMaterial=depth; me.castShadow=me.receiveShadow=true; cull(me,PM,body);
     if(body.onMesh)body.onMesh(me,PM);   // (your avatar's hands, 111b)
     return {me,PM}; }
@@ -146,7 +148,8 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   const IKV=[new V3(),new V3(),new V3(),new V3(),new V3(),new V3(),new V3()], IKQ=new THREE.Quaternion(), IKM=new THREE.Matrix4(), IKT=new THREE.Matrix4(), LEG={L:[9,10,11],R:[12,13,14]};
   // in the water (treading, swimming): the head's base set over the surface, by A.head rig units (owner, 7 Nov 2026: "your head is almost entirely underwater"), bobbing with the rig
   const HUV=new V3(), headUp=(PM,body,S,G,me)=>{ const W=S.water; G.updateMatrixWorld(true); me.updateMatrixWorld(true); jointAt(PM,body,2,HUV).applyMatrix4(me.matrixWorld); const sy=G.scale.y||1, my=me.matrixWorld.elements[5]||sy;
-    const want=G.position.y+(W.level+S._pfHead+Math.max(-2,Math.min(2,(W.y-(W.level+S._pfRest))*.4)))*sy, d=(want-HUV.y)/my*(S._aw||0); if(!isFinite(d))return; for(let i=0;i<NB;i++)PM.value[i].elements[13]+=d; };
+    const want=G.position.y+(W.level+S._pfHead+Math.max(-2,Math.min(2,(W.y-(W.level+S._pfRest))*.4)))*sy, d=(want-HUV.y)/my*(S._aw||0)*Math.max(0,1-2*(W.under||0)); if(!isFinite(d))return; for(let i=0;i<NB;i++)PM.value[i].elements[13]+=d; };
+  BODIES.headUp=headUp;
   const jointAt=(PM,body,i,out)=>out.setFromMatrixPosition(IKM.copy(body.binv[i]).invert()).applyMatrix4(PM.value[i]);
   const turnAbout=(Mx,pv,q)=>{ IKT.makeTranslation(-pv.x,-pv.y,-pv.z); Mx.premultiply(IKT); IKT.makeRotationFromQuaternion(q); Mx.premultiply(IKT); IKT.makeTranslation(pv.x,pv.y,pv.z); Mx.premultiply(IKT); };
   function feetOnGround(PM,body,G,ground){ if(!ground||!G)return; G.updateMatrixWorld(true); const Mw=G.matrixWorld, sy=G.scale.y||1, gy=ground(G.position.x,G.position.z), h={};   // (each foot against the ground where you stand: on a crate or a roof the ground under it is not yours)
@@ -192,9 +195,9 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       const lo=B.seat?null:body._cal==null?null:lowOf(PM,body), dy=B.seat?B.J.pelvis.y-POS.hips.y:lo!=null?rigLow(B)+body._cal-lo:0; if(dy)for(let i=0;i<NB;i++)PM.value[i].elements[13]+=dy; }
     if(body.anim&&S){ const now=performance.now(), dt=Math.min(.1,S._mt?(now-S._mt)/1000:0); S._mt=now;
       const A=body.act&&!S.dead?body.act(S):null, AC=A&&body.clip?body.clip(A.n):null, want=loco(S)||AC?1:0;   // (a clip not fetched yet: the rig, until it comes)
-      S._mw=(S._mw??want)+(want-(S._mw??want))*Math.min(1,dt*10); if(Math.abs(S._mw-want)<.01)S._mw=want; S._pfSeat=!!(AC&&A.seat); S._pfHead=AC&&A.head||0; S._pfRest=AC&&A.rest||0;
+      S._mw=(S._mw??want)+(want-(S._mw??want))*Math.min(1,dt*10); if(Math.abs(S._mw-want)<.01)S._mw=want; S._pfSeat=!!(AC&&A.seat); S._seatOut=S._pfSeat?1:S._mw>0?S._seatOut||0:0; S._pfHead=AC&&A.head||0; S._pfRest=AC&&A.rest||0;
       if(want||S._mw>0){ mocap(PMX,body,S,dt,AC?A:null,AC);
-        if(S._pfSeat){ jointAt(PM,body,0,O); jointAt(PMX,body,0,O2); O.sub(O2); O.multiplyScalar(S._aw||0); for(let i=0;i<NB;i++){ const e=PMX.value[i].elements; e[12]+=O.x; e[13]+=O.y; e[14]+=O.z; } }   // (seated or swimming: the hips where the rig has them)
+        if(S._pfSeat||S._seatOut){ jointAt(PM,body,0,O); jointAt(PMX,body,0,O2); O.sub(O2); O.multiplyScalar(1); for(let i=0;i<NB;i++){ const e=PMX.value[i].elements; e[12]+=O.x; e[13]+=O.y; e[14]+=O.z; } }   // (seated or swimming: the hips where the rig has them)
         if(S.aim&&S.aim.w>.3){ for(let i=0;i<NB;i++)PMR.value[i].copy(PM.value[i]); keepArms(PMX,PMR,body); }   // (a held tool: the arms where the rig aims them)
         if(S._mw>=1)for(let i=0;i<NB;i++)PM.value[i].copy(PMX.value[i]); else blend(PM,PMX,S._mw,body); } }
     if(PM.post)PM.post(PM,body,B); }   // (a step after the pose: holding the guitar, 146zoa)

@@ -53,14 +53,11 @@ the Mesh2Motion moves · the cars, their insides and the radio · the menus, the
 the HUD margin on his screen · the fair's fence · a ghost's revival in the bath · the egg poacher · the fluffy grass · the castle at night ·
 VR on the Quest 3 (and the painter in it) · the Polyfork avatar, the only body now, and the new YOU window (5 Nov).
 
-**To pick** (one batch; each line is in its area below):
-draw distance (one control or two, and the default) · tree shadows (option 1, 2 or 3, after the re-measure) · tree crowns (A–F) and trees
-by distance · the park's edge ring as elms · the iso view under the canopy · the bath ghosts in or out · the shoes key · the egg poacher's tint (confirm he said "tintable") · who stands on Market St (fix it or not; visitors take turns) · the referee's
-habits · the arcade games and the civic tower in GO TO · THE GREENS' five questions · the castle's torches · the fountain and the Mall gate
-(back or dropped) · the freeze fix (his go) · money on the server and the `Home` split (which objects, the live migration) · clearing the
-parked cars · photos in trade · the bow · birds, dragons' clips and more human clips · VR hand-walking, hand models, filters in the headset ·
-the physics extras (darts now twice at the bar) · NPC voices (lifts the
-19 Oct "no sound" rule) · the easel mockup (update or leave).
+**To pick** (one batch; each line is in its area below; the rest picked 7 Nov, "go with your recommendations"):
+tree crowns (A–F) and trees by distance · the park's edge ring as elms · the egg poacher's tint (confirm he said "tintable") · THE GREENS'
+five questions · the castle's torches · money on the server and the `Home` split (next before the beta grows: which objects, the live migration).
+After the beta: photos in trade · the bow · birds, dragons' clips and more human clips · VR hand-walking, hand models, filters in the headset ·
+NPC voices (lifts the 19 Oct "no sound" rule).
 
 ## CI, checks and tools
 
@@ -122,7 +119,7 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
 - [ ] **Two more stalls at the start, not the windows** · P1 · M · find. Measured 4 Nov in the test browser (`?fresh=1`, the window pictures off):
   about 8 s as the start ends and 3.7–4.5 s about 10 s later. Find what runs then (shader compiles, `BATCH` painting, the first lights?) before
   the tree-shadow work; the comparison line above measures them on a real card.
-- [ ] **Tree shadows: the lag in the owner's render-inspector shot** · P1 · M · pick + code · risk med. Owner, 2 Nov: "extremely laggy.",
+- [x] **Tree shadows: the lag in the owner's render-inspector shot** (done 4 Nov: his pick "fix 1", shadows from the lite cards) · P1 · M · pick + code · risk med. Owner, 2 Nov: "extremely laggy.",
   Market St near 32,25 at night, 10 FPS. Measured then: the park's leaf-card trees (about 148k triangles) and the street oaks (about 23k)
   cast shadows, and every shadow refresh (the street lamp's point cube 512x6, the sun and moon maps) draws them again: about 1,000 calls and
   750k triangles that frame. A quarter of the trees use the fine-leaf look (1.8× the cards, `TREEGEN.cards` in `src/060b-trees.js`). The
@@ -134,7 +131,7 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
 - [ ] **Does the wind bring the lag back?** · P2 · S · check. Wind on again for trees, plants and grass by the owner's 2 Nov pick ("Both,
   with wind"; he had turned it off on 30 Oct for lag). Not measured: `TUFTS.wind` (`src/140a-tufts.js:65`), `PARK.windK` (`src/061-park.js:262`).
   Measure in the same run as the comparison; if it costs, a WIND row in GRAPHICS (like the PHYSICS rows), with the owner's yes.
-- [ ] **Two draw-distance controls: keep both or make one?** · P2 · S · pick. Left from #549 (owner, 4 Nov: "add a draw distance for far
+- [x] **Two draw-distance controls: keep both or make one?** (picked 7 Nov: keep both) · P2 · S · pick. Left from #549 (owner, 4 Nov: "add a draw distance for far
   buildings"). DRAW DISTANCE in GRAPHICS (each player's own, `src/161a-cull.js:56`) and DRAW TO RANGE / DRAW ALL on the fog in ATMOSPHERE
   (the owner's global look, `src/134e-distfog.js:65`) both limit what's drawn; the nearer wins. Ask with the default below; keep both
   editors in sync.
@@ -196,7 +193,7 @@ In order (each step builds on the one before): RLS SQL → login cookie with the
 - [ ] **Live windows not yet checked in a picture** · P3 · S · check. The bar's glass from inside must still show the street and its people
   (after #577's "no one outside drawn inside a shop"); the Boardwright's, Fix-It's and Diner's glass never pictured. Third- or first-person
   view. Same visit as the shop insides.
-- [ ] **The bath room: ghosts, steam and the dark bar** · P3 · M · pick + code. One room, one pull request, one look:
+- [ ] **The bath room: steam and the dark bar** (the ghosts: out, 7 Nov) · P3 · M · pick + code. One room, one pull request, one look:
   - the ghosts: THE HAND TOWEL and THE NAPKIN still wander inside (`src/149-ghosts.js`, `spot(g%2===0)`); owner, 4 Nov: "empty except the
     fog"; 2 Nov: "the bath ghosts that lived inside stay inside". Ask whether they go. Mind `docs/INTERIORS.md` §2 (a ghost's front desk) and
     the bath staff in `data/lives.json` (lifeguard, room attendant);
@@ -242,7 +239,7 @@ One pass, one pull request.
 ## Characters and the street
 
 - [x] **The guitar and real hands** (owner, 7 Nov 2026: "add the guitar back into game. use the polyfork assets ... hand 3d model, physics, real string acoustics, sounds, closeup, fingers"; "lets add real hands at all times"; done 7 Nov) · P2 · L · code. `src/111b-hands.js`, `src/146zo-guitar-sound.js`, `146zoa-guitar-hold.js`, `146zob-guitar.js`, `tools/pfhand-bake.py`, `tools/pfguitar-bake.py`, `tests/guitar.cjs`. Waits for his look and yes.
-- [ ] **The guitar, next** · P3 · M · pick. A bandstand to stand the park's guitar on (job 6); the guitar on your back while you walk; VR hands driving the jointed hands; more songs. His pick of which, if any.
+- [x] **The guitar, next** (owner, 7 Nov 2026: "guitar playing is skill you can increase ... download real tab and my player is 100 skill level and can play all the songs"; done 7 Nov) · P3 · M · code. GUITAR skill, 183 Mutopia pieces as tab ranked 1–100, playing animation, slung on the back, VR hands. Left: a bandstand for the park guitar (job 6); a recorded guitar clip if he downloads one.
 
 - [x] **Pets** (owner, 7 Nov 2026: "use polyfork cats and dogs and birds, let people choose one as pet (choose color, style) use the base models"; done 7 Nov) · P2 · L · code. `src/146zj-pets.js`, `tools/pets-bake.py`, `tests/pets.cjs`. Waits for his look and yes.
 
@@ -311,12 +308,12 @@ One pass, one pull request.
   - The bodega: every other archived seller's goods on its shelves as the item itself, not a package (add racks if they don't fit); no
     staff, pay at the register yourself; every grocery comes off (the items archive below).
 
-- [ ] **Who stands on Market St, and why** · P2 · M · pick + code · risk med. Owner, 4 Nov: "list all the characters and why im seeing each
+- [x] **Who stands on Market St, and why** (settled 7 Nov: after the re-lay and the archive, 5 on Market St at 2 pm, no one stacked anywhere) · P2 · M · pick + code · risk med. Owner, 4 Nov: "list all the characters and why im seeing each
   one on the street"; he has not said yes to fixing these. The Hudson crew (6–7) stand stacked on one spot at about (45.4, 1.1) while "at
   work" (`CREW.spot`, `src/111fb-fleamarket.js:30,49`). The park crew (22) and the depot crew (8) have no JOBS records (`src/159-jobs.js`),
   so they walk main street. All seven visitor groups (43) come every day: should they take turns? JOBS also run on the server
   (`worker/lives.js`). With: the cast check, the referee, the fair's staff (4 Nov: "keep them as fair workers for now").
-- [ ] **The referee's habits** · P3 · S · pick. The merge of #567 and #570: `data/lives.json` `referee` is the fair's kart-track marshal with
+- [x] **The referee's habits** (done 7 Nov: drink, fish, gamble) · P3 · S · pick. The merge of #567 and #570: `data/lives.json` `referee` is the fair's kart-track marshal with
   habits `drink, fish, movies` (the fair's `gamble` lost to the interiors' `movies`). Ask the owner.
 - [ ] **The egg poacher** · P3 · S · look + code. Never looked at on the live site since #511 (2 Nov). His colours aren't tintable: HISTORY
   records only "Keep its colours"; "tintable" is only here, so confirm the pick. If yes, an opt-in jitter field on `BODIES.rebaked`
@@ -340,7 +337,7 @@ One pass, one pull request.
 - [ ] **The cars, in game, for the owner** · P2 · S · look. Only seen in test pictures: the insides (too dark or bright? seats, belts, dash),
   the cars 40% bigger next to the buildings, the driver a little smaller in the muscle car and wedge coupe, the radio by ear (loudness, the
   muffle outside, the four stations). Then the parked-cars line.
-- [ ] **Cars parked before they got bigger** · P2 · S · pick + code. A parked car keeps its spot in the block's world (`car:<id>`,
+- [x] **Cars parked before they got bigger** (done 7 Nov: the old spots cleared once by the server) · P2 · S · pick + code. A parked car keeps its spot in the block's world (`car:<id>`,
   `worker/door.js:244`, applied at `src/150p-cars.js:89`); at the new size it may touch the kerb or another car, and Rapier shoves it onto the
   pavement. Fix: clear the saved `car:*` spots once on the server (owner first), after his look at the cars. Run `tests/cars-server.cjs`.
 - [ ] **The radio on the live site** · P2 · S · look. The stations (`/g/<station>.<hash>.mp3`, with Range) were only streamed by the checks:
@@ -353,6 +350,7 @@ One pass, one pull request.
   cars get shoved onto the pavement.
 
 ## Trees, grass and the park
+- [x] **The big climbing trees** · done 7 Nov (`src/144d-bigtrees.js`, `bigTrees` in data/world.json, `tests/bigtrees.cjs`). Six giants in the middle of the park, all marked climbable; SPACE · CLIMB next to one; no other tree climbs.
 - [x] **The park's benches can't be sat on** (done 7 Nov, e961c25: benches sittable) · P3 · S · pick. Found 7 Nov by the bots' SIT job: the green benches round the fountain and paths are neither a thing to use nor a seat (`USE`), so double-clicking one does nothing; only the street's two benches and chairs inside work. Ask whether park benches should seat you.
 
 One tree pass after the tree-shadow pick (more leaves mean more shadow triangles).
@@ -367,13 +365,13 @@ One tree pass after the tree-shadow pick (more leaves mean more shadow triangles
   `TREES.back` (061-park.js:375) kept the pack's oaks, elders, giant, spruce and willow. Ask whether "shaped exactly the same" includes them
   (his 27 Oct rule: trees outside "barely bigger than other trees, and need to be same new tree style"); the elms are 26–31 m, so check
   from Market St that the wall still hides. Check `tests/parktrees.cjs`, `tests/treeshot.cjs`.
-- [ ] **Isometric view under the entrance canopy** · P3 · S-M · pick + code. You see the ground only in the peek disc; beyond it the
+- [x] **Isometric view under the entrance canopy** (done 7 Nov: the see-through disc wider in the overhead view) · P3 · S-M · pick + code. You see the ground only in the peek disc; beyond it the
   underside of the leaves (`PEEK` in `src/008-batch.js`). Options: leave it, or hide every crown over you in the iso and map views (through
   the cull's BatchedMesh since 4 Nov; the trunk goes too unless cards and limbs are split, the same split as shadow option 1). Keep the 2
   Nov rule: the leaves over you open fully round you.
 - [ ] **Look at the fluffy grass in game** · P3 · S · look. #508: the tufts' dark root, light tip and tip patches never seen; the standing
   grass didn't show in the test browser. With the chunk bug on the lawn.
-- [ ] **The fountain terrace and the Mall gate** · P4 · M (gate) / L (all) · pick. See "A fountain terrace and a big lake" below: the
+- [x] **The fountain terrace and the Mall gate** (dropped 7 Nov: "remove the fountain") · P4 · M (gate) / L (all) · pick. See "A fountain terrace and a big lake" below: the
   fountain was removed on 22 Oct (owner: "lets remove the fountain for now", `FOUNT.on:false`, `src/060a-fount.js:6`), so the walkway has
   nothing to lead to; the Mall gate was never built. Ask: drop it, or bring the fountain back with the gate.
 
@@ -381,7 +379,7 @@ One tree pass after the tree-shadow pick (more leaves mean more shadow triangles
 
 One clothes review for the owner, then one pull request; portraits with `node tests/clothes.cjs dist/market.html <dir>`.
 - [x] **The jeans in play** (dropped 5 Nov: the Walker is removed, the avatar is the only body) · P2 · S · look. #495 and its walking fix #523: live, waiting for his look and yes. The tee waits on it.
-- [ ] **The shoes key M sits next to the map (Shift+M)** · P2 · S · pick. 2 Nov: his feet went bare, likely from pressing M for the map
+- [x] **The shoes key M sits next to the map (Shift+M)** (done 7 Nov: shoes on ;) · P2 · S · pick. 2 Nov: his feet went bare, likely from pressing M for the map
   (barefoot matters for foraging). `shoes:'m'` in `src/094-ui.js:25`, `LOOKS.shoes` in `src/102-looks.js`. Offered to move it; he picks the
   key. Update the keys list with it.
 - [x] **Clothes leftovers** (dropped 5 Nov: the Walker is removed) · P3 · M · code · risk med. Crouching, seen from the side, a patch of her grey briefs at the back of the thigh (the
@@ -408,18 +406,18 @@ One clothes review for the owner, then one pull request; portraits with `node te
 - [ ] **More park animals rest** · P3 · M · code. His "Yes, idle variety" (4 Nov); done: dog, fox, wolf, horse, wild horse, mule. The cat,
   black cat, deer, cow, pig, lion, zebra and others share the fox's 26-bone rig (`fox` in `tools/m2m-bake.cjs`, `rest:` in
   `src/087-npc-creatures.js`). One bake pass with the two below.
-- [ ] **Birds glide** · P4 · M-L · pick + code. Mesh2Motion's `bird` rig (flap, glide) onto the crows and owls (`data/fauna.json`, 46 / 21
+- [ ] **Birds glide** (after the beta: owner, 7 Nov) · P4 · M-L · pick + code. Mesh2Motion's `bird` rig (flap, glide) onto the crows and owls (`data/fauna.json`, 46 / 21
   bones with feathers) needs its own map. Check the 28 Oct "always flapping" rule (it was about the dragons) doesn't cover birds.
-- [ ] **The dragons' unused clips** · P4 · S-M · pick. In `data/full/dragon.json`: Land (in place of the hover at a perch), Roar, Walk. Glide
+- [ ] **The dragons' unused clips** (after the beta: owner, 7 Nov) · P4 · S-M · pick. In `data/full/dragon.json`: Land (in place of the hover at a perch), Roar, Walk. Glide
   stays unused (owner, 28 Oct: always flapping).
 - [ ] **Standing up from a seat** · P3 · M · code · risk med. `stand()` in `src/100-use.js:30` puts you off the seat at once, so
   `sitting-exit` would start in the air: play the stand-up first, then move you off, without blocking movement. With the INTERIORS seats.
 - [ ] **Fishing from the rowboat has no body move** · P3 · M · code. The rod and arm are hidden while seated (`free()`, `src/146a-wield.js:45`),
   so no cast or pull. With the fishing check's flaky steps and the stand-up (both seated poses).
-- [ ] **Bow draw and shoot** · P4 · M (moves) / L (a bow) · pick. Mesh2Motion's `bow-pull`, `bow-pull-hold`, `bow-release` (his fight-moves
+- [ ] **Bow draw and shoot** (after the beta: owner, 7 Nov) · P4 · M (moves) / L (a bow) · pick. Mesh2Motion's `bow-pull`, `bow-pull-hold`, `bow-release` (his fight-moves
   pick, 4 Nov). There is no bow in the game: the owner decides on one first (a ranged weapon in WIELD and the brawl). Fit with
   `tools/m2m-moves.cjs`, play through `MOTION`.
-- [ ] **More of the 222 human clips** · P4 · L · pick. Ladder and wall climbing in place of `climbPose` (`src/001-rig.js:462`; other players and
+- [ ] **More of the 222 human clips** (after the beta: owner, 7 Nov) · P4 · L · pick. Ladder and wall climbing in place of `climbPose` (`src/001-rig.js:462`; other players and
   collision depend on it), crouch-walk, sword combos (with the brawl), ground pound, death falls (with the ragdolls). Wood chopping, digging
   and lying in bed have no action in the game yet.
 
@@ -429,12 +427,12 @@ One clothes review for the owner, then one pull request; portraits with `node te
   sets them all, `ITEMS.cls`, `src/140b-items.js:15-16,31`). Hide `pt_`/`wip_` ids from its list. Same pull request as the next.
 - [ ] **A painting sold to THE TRADER leaves its title and thumbnail in your save** · P3 · S · code. `OWNED 'paint'`, a few KB each; only
   trade calls `PAINTINGS.gave` (159i:43). Drop them when the pack no longer has it and it isn't hung.
-- [ ] **Trade: photos can't be traded** · P4 · M · pick. A photo's picture lives in its owner's own save (`OWNED 'photos'`), so they're kept
+- [ ] **Trade: photos can't be traded** (after the beta: owner, 7 Nov) · P4 · M · pick. A photo's picture lives in its owner's own save (`OWNED 'photos'`), so they're kept
   out (`SWAP.no`, `src/159i-trade.js:5`). The owner's rule (4 Nov, trade): "photos and the passport stay yours", so this is his call. If yes,
   after the `Home` split, into the art store.
 - [ ] **The painter, not yet tried for real** · P3 · S · look. Pinch to zoom and pen pressure (code at `src/159g-paint.js:140,169`; never on a
   phone, tablet or pen), in VR (never; with the Quest session), and the easel showing your latest unfinished painting (never pictured).
-- [ ] **The easel mockup is out of date** · P4 · S · pick. `mockups/easel.html` (https://claude.ai/artifact/MzbB331ZcnwQf6P2H6b92P) shows
+- [x] **The easel mockup is out of date** (picked 7 Nov: leave it) · P4 · S · pick. `mockups/easel.html` (https://claude.ai/artifact/MzbB331ZcnwQf6P2H6b92P) shows
   the skills and dealers he turned down ("not an easel subgame"). Update to the painter as built, or leave it.
 
 ## Menus, map and HUD
@@ -444,8 +442,8 @@ One clothes review for the owner, then one pull request; portraits with `node te
   the hour, else the platform; gone for everyone at once on log out) and the map and GO TO (#576, merged on local checks only).
 - [ ] **The HUD's 24px margin on the owner's own screen** · P3 · S · look. His pick A (4 Nov); checked locally only; his live shot sat tighter
   than the local layout predicted (`--fx`/`--fy`, `src/004-main.js:28`). Same sitting as "Try live".
-- [ ] **The arcade's games in GO TO** · P4 · S · pick. #576: the Catacomb Run, the Greens and Roam are left out (reached through the arcade).
-- [ ] **The civic tower in GO TO** · P4 · S · pick. Listed only when it stands on the map; today it's away, stacked behind the bodega.
+- [x] **The arcade's games in GO TO** (picked 7 Nov: no, through the arcade) · P4 · S · pick. #576: the Catacomb Run, the Greens and Roam are left out (reached through the arcade).
+- [x] **The civic tower in GO TO** (picked 7 Nov: no) · P4 · S · pick. Listed only when it stands on the map; today it's away, stacked behind the bodega.
   Nothing to do unless the owner wants it back on the street.
 
 ## VR
@@ -457,15 +455,15 @@ One session on the owner's Quest 3 settles most of these.
   controls in game match the quest 3 controllers, also add hand tracking in game so i can use my hands to use the menus". Only tested on an
   emulated Quest 3 (`tests/vr.cjs`). Waiting on him: the 30° snap turn, the button layout, the menu panel's size and distance, how the
   hands look. Collect his picks for the lines below in the same session.
-- [ ] **No walking with hands only** · P3 · M · pick + code. Hands point and pinch at menus; walking needs the sticks (teleport is
+- [ ] **No walking with hands only** (after the beta: owner, 7 Nov) · P3 · M · pick + code. Hands point and pinch at menus; walking needs the sticks (teleport is
   controller-only, `src/162c-vr.js:136`). He picks: point-and-pinch to teleport, pinch-and-pull, or a wrist button.
 - [ ] **The menu panel's picture can lag behind the window** · P3 · S-M · code. `html-to-image`, a few hundred ms; a press goes to what the
   picture showed (`PN.hits`, 162c:73-83): hit-test live, or hold presses until the picture is fresh. Before typing in chat.
 - [ ] **No typing in chat in the headset** · P3 · L · code (mockup first). No keyboard in an immersive session: a keyboard drawn on the panel.
   Needs the panel lag fixed.
-- [ ] **The hands are plain joint dots** · P4 · M · pick + code. `JM` in `src/162c-vr.js:62`. A real hand model (three's
+- [ ] **The hands are plain joint dots** (after the beta: owner, 7 Nov) · P4 · M · pick + code. `JM` in `src/162c-vr.js:62`. A real hand model (three's
   XRHandModelFactory, models from `@webxr-input-profiles`) is a reuse: ask first; self-host the models (the site asks nothing of a CDN).
-- [ ] **The PS2 filter, distance fog and colour grade aren't drawn in the headset** · P4 · L-XL · find, then pick · risk high. Screen
+- [ ] **The PS2 filter, distance fog and colour grade aren't drawn in the headset** (after the beta: owner, 7 Nov) · P4 · L-XL · find, then pick · risk high. Screen
   passes; `VR.draw` renders the scene straight to the headset (the cel outline and LOOK passes too). Per-eye passes would cost on the
   Quest: measure first. Below CLAUDE.md's "cel is the quality floor" in the headset meanwhile.
 

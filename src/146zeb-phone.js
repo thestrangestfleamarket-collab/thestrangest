@@ -1,12 +1,13 @@
 // THE BRICK PHONE (owner, 8 Nov 2026: "give all players a 1980s style cellular phone they can use to order things. a drone can deliver things to them anywhere they are"): every player has one; use it and its green screen lists what the bodega sells, SEND orders one (its price and $2 delivery), and the drone flies it to you wherever you stand outdoors.
 import {SHARED} from './003-shx.js';
-import {DRONE, FORAGE, INV, pos, ROOMS} from './003b-systems.js';
+import {DRONE, FORAGE, INSPECT, INV, pos, ROOMS} from './003b-systems.js';
 import {SYS, TILE} from './006-map-pre.js';
 import {MINI} from './038zd-mini.js';
 import {BODEGA} from './146ze-bodega.js';
 const PHONE={fee:2}; window.PHONE=PHONE;
 { const ID='brickphone', W=260, H=500, LINES=7, LY=78, LH=24;
   FORAGE.add({names:{[ID]:'BRICK PHONE'},prices:{[ID]:0}});
+  INSPECT.kinds.push({is:id=>id===ID,make:()=>INSPECT.shape('brickphone',0x2c2d31)});
   // given once to everyone, new and old, kept with the account
   SYS.onStart(()=>{ const S=FORAGE.S; if(!S||S.phone1)return; INV.items[ID]=Math.max(INV.items[ID]||0,1); S.phone1=1; if(INV.save)INV.save(); if(FORAGE.save)FORAGE.save(); },'146zeb-phone');
   const lines=()=>{ const A=BODEGA.all?BODEGA.all():{supplies:[],shelves:[],goods:[]}, L=[], seen=new Set(); for(const r of [...A.supplies,...A.shelves,...A.goods])if(r&&r.id&&!seen.has(r.id)){ seen.add(r.id); L.push(r); } return L; };

@@ -143,7 +143,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
         return { ok: true, street, bound, borrowed, back }; } catch (e) { return { ok: false, err: String(e).slice(0, 200) }; } })();
       o.charp = await (async () => { try { const U = window.__UI; if (!U || typeof U.toggleMenu !== 'function') return { ok: false };
         U.toggleMenu(); const home = document.querySelector('#dhome'), secs = [...document.querySelectorAll('#mnav [data-sec]')].map(b => b.dataset.sec).join();
-        const built = !!(home && home.querySelector('#cpav') && home.querySelector('#cpbtns button')), tabsHidden = /^you,set,pack(,admin)?$/.test(secs) && U.menuNow()[0] === 'you', open = U.menuOpen === true;
+        const built = !!(home && home.querySelector('#cpav') && home.querySelector('#cpbtns button')), tabsHidden = /^you,set,pets,pack(,admin)?$/.test(secs) && U.menuNow()[0] === 'you', open = U.menuOpen === true;
         const pick = !home.querySelector('#cpslots') && !home.querySelector('#cphp');   // the paperdoll and the bars left the page (2 Nov 2026)
         U.toggleMenu();
         let log = 0; if (window.CHARP && typeof CHARP.tools === 'function') { await LOAD('log'); const ap = document.createElement('div'); CHARP.tools(ap); log = ap.querySelectorAll('ul li').length; }

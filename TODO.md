@@ -243,6 +243,7 @@ One pass, one pull request.
 - [x] **The guitar, next** (owner, 7 Nov 2026: "guitar playing is skill you can increase ... download real tab and my player is 100 skill level and can play all the songs"; done 7 Nov) · P3 · M · code. GUITAR skill, 183 Mutopia pieces as tab ranked 1–100, playing animation, slung on the back, VR hands. Left: a bandstand for the park guitar (job 6); a recorded guitar clip if he downloads one.
 
 - [x] **Pets** (owner, 7 Nov 2026: "use polyfork cats and dogs and birds, let people choose one as pet (choose color, style) use the base models"; done 7 Nov) · P2 · L · code. `src/146zj-pets.js`, `tools/pets-bake.py`, `tests/pets.cjs`. Waits for his look and yes.
+- [x] **Every breed, the permapet, PETS in the menu** (owner, 8 Nov 2026: "try to add every breed possible"; "player can pick their main pet when they start"; "add PETS menu in esc menu"; done 8 Nov) · P2 · L · code. `tools/breeds-bake.py`, `tools/breeds_list.py`, `src/146zj-pets.js`, `src/162g-firstday.js`, `tests/pets.cjs`. Waits for his look and yes.
 
 - [x] **One menu, the pager gone** (done 5 Nov) · P2 · L · code. Owner, 5 Nov: "B"; "leave the map and bag as is. BBs changes. do the rest. go".
 - [ ] **After the archive (5 Nov)** · P1 · code. Left: the playhouse as an empty hall; the rest of the archived cast's bodies still ship in the cast data (hidden by ARCH). Dropped (owner, 5 Nov): the map

@@ -524,11 +524,11 @@
    "name": "THE ARCADE",
    "kind": "front",
    "x0": 116.37,
-   "x1": 134.37,
+   "x1": 129.5,
    "y0": -92.4,
    "y1": -77,
    "face": "n",
-   "pf": "arcade"
+   "pf": "bodega"
   },
   {
    "id": "theatre",

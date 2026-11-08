@@ -56,16 +56,9 @@ const FACADES={night:{value:0},made:0,tris:0};
     for(let z=GF+16;z<TOP-40;z+=FH)box(x0,x1,y1-.02,y1+.07,z,z+5,trim,.92);
     box(x0-.05,x1+.05,y1-.02,y1+.12,TOP,TOP+14,trim,.85); box(x0-.15,x1+.15,y1-.02,y1+.32,TOP+14,TOP+24,trim,1.05); box(x0,x1,y1-.02,y1+.05,0,8,trim,.7);
     for(const a of [x0,x1-.35])box(a,a+.35,y1-.02,y1+.1,0,TOP,wall,.94);
-    if(o.sign){ const s=o.sign, w=Math.min(x1-x0-.6,Math.max(2.2,s.text.length*.42+.8)), u=s.u??(x0+x1)/2, z0=GF-4; box(u-w/2,u+w/2,y1,y1+.14,z0,z0+30,s.bg||[24,22,26]); }
     const g=new THREE.Group(), geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('color',new THREE.Float32BufferAttribute(C,3)); geo.setAttribute('aGlow',new THREE.Float32BufferAttribute(G,1)); geo.computeVertexNormals();
     const me=new THREE.Mesh(geo,MS); me.castShadow=me.receiveShadow=true; g.add(me);
     if(GP.length){ const gg=new THREE.BufferGeometry(); gg.setAttribute('position',new THREE.Float32BufferAttribute(GP,3)); gg.computeVertexNormals(); const gm=new THREE.Mesh(gg,MG); gm.renderOrder=2; gm.raycast=()=>{}; g.add(gm); }
-    if(o.sign){ const s=o.sign, cv=document.createElement('canvas'), n=s.text; cv.width=Math.max(96,n.length*14+16); cv.height=22; const c2=cv.getContext('2d'), col=s.color||[255,230,170], bg=s.bg||[24,22,26];
-      c2.fillStyle=`rgb(${bg})`; c2.fillRect(0,0,cv.width,cv.height); c2.fillStyle=`rgb(${col})`; c2.font='bold 15px monospace'; c2.textBaseline='middle'; c2.textAlign='center'; c2.fillText(n,cv.width/2,cv.height/2+1);
-      const t=new THREE.CanvasTexture(cv); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace;
-      const w=Math.min(x1-x0-.6,Math.max(2.2,n.length*.42+.8))-.2, u=s.u??(x0+x1)/2, z0=GF-4, a=W(u-w/2,y1+.15,z0+3), b=W(u+w/2,y1+.15,z0+3), c=W(u+w/2,y1+.15,z0+27), d=W(u-w/2,y1+.15,z0+27);
-      const sg=new THREE.BufferGeometry(); sg.setAttribute('position',new THREE.Float32BufferAttribute([...a,...b,...c,...a,...c,...d],3)); sg.setAttribute('uv',new THREE.Float32BufferAttribute([0,0,1,0,1,1,0,0,1,1,0,1],2));
-      const sm=new THREE.Mesh(sg,new THREE.MeshBasicMaterial({map:t,toneMapped:false,side:THREE.DoubleSide})); sm.raycast=()=>{}; g.add(sm); }
     g.userData.facade=o.id||1; (o.parent||scene).add(g); FACADES.made++; FACADES.tris+=P.length/9+GP.length/9; return g; };
 }
 window.FACADES=FACADES;

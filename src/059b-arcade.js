@@ -43,7 +43,8 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
     if(z>=110&&z<170&&c>=c0-8&&c<c0+35*k6+8)return MS.neon(on,c,z,k6,[255,80,200],f)||sh([24,16,32],f);
     return null; };
   const wall=BLOCKS.brick([96,58,80]);
-  FACADES.make({id:'arcade',L,pt:TA.pt,z1:L.h,wall:[96,58,80],trim:[150,120,170],frame:[58,40,70],seed:53,ground:118,door:{u:lcx,w:.9},glass:true,sign:{text:'ARCADE',color:[255,80,200],bg:[24,16,32]}});
+  if(WP.arcade.pf==='bodega'){ const fy=LW.y1, X=SHARED.BOD.X, Z=SHARED.BOD.Z; (SHARED.PFCORNER=SHARED.PFCORNER||[]).push({id:'arcade',x:X((LW.x0+LW.x1)/2),zf:Z(fy),zi:Math.sign(Z(fy-1)-Z(fy)),rot:TA.hd(0),flip:true}); }   // the Hudson entrance's east corner in the bodega's building, mirrored (owner, 8 Nov 2026)
+  else FACADES.make({id:'arcade',L,pt:TA.pt,z1:L.h,wall:[96,58,80],trim:[150,120,170],frame:[58,40,70],seed:53,ground:118,door:{u:lcx,w:.9},glass:true,sign:{text:'ARCADE',color:[255,80,200],bg:[24,16,32]}});
   if(0)BLOCKS.make({x0:LW.x0,x1:LW.x1,y0:LW.y0,y1:LW.y1,z0:0,z1:L.h,kind:'A',turn:TA,roof:(x,y)=>sh([40,36,44],.92+.12*hs(Math.floor(x*4),Math.floor(y*4),61)),
     paint:(side,u,z,f)=>(side==='f'&&front(u-L.x0,z,f))||(z>L.h-10?sh([60,44,70],f):wall(u,z,f))});
   BATCH.build(MKA); for(const me of Object.values(BATCH.meshes)){ me.castShadow=true; me.receiveShadow=true; } BATCH.meshes={};

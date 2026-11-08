@@ -46,6 +46,7 @@ One pull request each, in this order; the game stays playable after every one.
 - [x] **The skyline across the Hudson** · P2 · M · look. Owner's pick 6 Nov: in-game pictures (the far picture re-baked for each option: low shore, denser shore, and the city along our bank).
 
 - [x] **The tower 10 storeys, the lake's water, E to use** (8 Nov, claude/magical-newton-3zklx6). Still open: what "X Z Y indexes lined up" means (asked).
+- [x] **The new layout** (owner, 8 Nov 2026: "go, but no gaps in between buildings, garages, show on map"; 8 Nov, claude/magical-newton-3zklx6): Market St and the Hudson row re-laid, garages flush, the Bath House in the park, the Hudson shops' new building, the Polyfork bodega, six stalls at the park wall. Waits for his look and yes. Left: a second fishing shop west of the west flea lot (asked for both sides; only Fishing & Scuba stands).
 
 - [x] **The bath house and the bodega still open on Market St** (done 7 Nov: both back on Market St's row with the map moved again) · P1 · M · pick + code. After "only Market St" (7 Nov) their lots are on the Hudson row, but GO TO THE BATH HOUSE lands on an apartment house's fire escape (the baths are built in place inside the APARTMENTS block), and the bodega's door and the old bodega front stand on Market St over APARTMENTS 4. Move both insides off the map with their doors on their Hudson lots (the owner's pick).
 

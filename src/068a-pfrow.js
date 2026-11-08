@@ -4,6 +4,7 @@ import {UI, WE} from './003b-systems.js';
 import {KITD, scene} from './004-main.js';
 import {FIX, LEVEL, MAPG, MODS, SOL, SYS, TILE, ZU} from './006-map-pre.js';
 import {FACADES} from './038zc-facades.js';
+import {HUDSHOP} from './038zcc-hudshop.js';
 import {MSHOP} from './059i-mshops.js';
 import {KIT} from './068-kit.js';
 const PFROW={fronts:[],houses:[],things:[]};
@@ -12,10 +13,20 @@ const PFROW={fronts:[],houses:[],things:[]};
   for(const p of HOUSES){ const x0=XS(p.x0), x1=XS(p.x1), z0=Math.min(ZS(p.y0),ZS(p.y1)), z1=Math.max(ZS(p.y0),ZS(p.y1)); p.sol=[x0,z0,x1,z1]; p.fix=[x0,z0,0,x1,z1,35/.84*ZU*24]; SOL.up.push(p.sol); FIX.up.push(p.fix); }   // solid from the start (the house is 35 m tall)
   const size=k=>(KITD[k]||{size:[1,1,1]}).size;
   const PFC={hotel:[168,150,128],theatre:[120,52,48],play:[148,92,70],bar:[72,46,48],bodega:[150,62,48],bath:[188,180,164],books:[96,70,58],fishing:[90,96,104],tailor:[120,72,60],barber:[116,66,58],antiques:[110,84,64],outfitter:[96,92,80]};
+  let BM=null; const BODMAT=()=>{ if(BM)return BM; BM=KIT.mat.clone(); const T=HUDSHOP.brick();
+    BM.onBeforeCompile=sh=>{ sh.uniforms.uB={value:T}; sh.vertexShader='varying vec3 vBW; varying vec3 vBN;\n'+sh.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\n vBW=(modelMatrix*vec4(transformed,1.)).xyz; vBN=normalize(mat3(modelMatrix)*objectNormal);');
+      sh.fragmentShader='uniform sampler2D uB; varying vec3 vBW; varying vec3 vBN;\n'+sh.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
+      { vec3 c=diffuseColor.rgb; float red=c.r-max(c.g,c.b); vec3 an=abs(vBN); vec2 uv=an.x>an.z?vBW.zy:vBW.xy;
+        if(an.y<.5&&red>.06&&c.r>.12){ float l=dot(texture2D(uB,uv*.5).rgb,vec3(.33)); diffuseColor.rgb=c*(.55+.9*l)*1.1; }
+        else if(an.y<.5&&c.b>c.r&&c.r<.1){ diffuseColor.rgb=mix(c,vec3(.16,.2,.24),.4)+vec3(.05,.04,.02)*step(.5,fract(vBW.y*.9)); } }`); };
+    BM.customProgramCacheKey=()=>'bodbrick'; return BM; };
   const place=()=>{ let tris=0; const put=(k,x,z,o)=>{ const g=KIT.put(k,x,z,o); if(g){ tris+=(KITD[k]||{}).tris||0; } return g; };
     // modelled in the Polyfork building's own footprint and height, not the model itself (owner, 8 Nov 2026: no painted windows)
     const ZT=Math.abs(SHARED.BOD.Y(1)-SHARED.BOD.Y(0));
-    for(const f of MSHOP.fronts){ const h=size(f.pf)[1]*M, L=f.L, cx=(L.x0+L.x1)/2, LL=L;   // the whole lot, as the painted blocks were
+    const BRICK={antiques:[124,70,54],fishing:[112,82,66],armor:[96,62,56],skate:[150,84,62],books:[132,76,58]};
+    for(const f of MSHOP.fronts){ const h=size(f.pf)[1]*M, L=f.L, cx=(L.x0+L.x1)/2, LL=L, P=LEVEL.places.find(p=>p.id===f.id)||{};
+      if(P.row===2){ PFROW.fronts.push({id:f.id,obj:HUDSHOP.make({L,pt:f.pt,brick:BRICK[f.id],du:f.du??cx,seed:f.id.length*17,parent:MAPG.bodega||scene})}); continue; }   // the Hudson row's shops: the florist's kind of building, the merchant's flat upstairs (owner, 8 Nov 2026)
+      if(f.id==='bodega'){ PFROW.fronts.push({id:f.id,obj:put('bodega',f.x,f.zf+f.zi*size('bodega')[2]*1.25*M/2,{rot:f.rot,m:size('bodega')[1]*1.25,mat:BODMAT()})}); continue; }   // Polyfork's #12, bigger, its walls bricked (owner, 8 Nov 2026)
       const g=FACADES.make({id:f.id,L:LL,pt:f.pt,z1:Math.max(150,h/ZT),wall:PFC[f.id]||[132,74,58],trim:[204,196,182],frame:[40,38,42],seed:f.id.length*17,glass:true,ground:118,door:{u:f.du??cx,w:.8},parent:MAPG.bodega||scene}); PFROW.fronts.push({id:f.id,obj:g}); } tris+=FACADES.tris;
     // the Hudson row's shops dressed (owner, 7 Nov 2026: "busier"): a lit name board over the door, planters and baskets by it, a lamp at every other shop, a small tree and shrubs on the ground either side of the building
     MSHOP.fronts.forEach((f,i)=>{ const zi=f.zi||-1, out=-zi, mw=f.w, z0=f.zf, gap=(f.w-mw)/2, P=LEVEL.places.find(p=>p.id===f.id);

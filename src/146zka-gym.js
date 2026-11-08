@@ -1,7 +1,8 @@
 // THE GYM, KNUCKLE & IRON (owner, 8 Nov 2026): its inside off the map behind its West St door (059i): treadmills (STAMINA), heavy bags and the speed bag (STRENGTH, MARTIAL ARTS), the bench, the squat rack, the dumbbells and the rope mats (one timing game, GYM.reps), and the ring, where a fight is never to the death (VIT.bouts) and your body goes loose as you get hurt.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, keys, PB, pos, RAG, ROOMS, SFX, st, USE, VIT} from './003b-systems.js';
+import {FORAGE, keys, PB, pos, RAG, ROOMS, SFX, st, USE, VIT, W3} from './003b-systems.js';
 import {SAY} from './003d-say.js';
+import {Reflector} from './004-main.js';
 import {SYS, TILE} from './006-map-pre.js';
 import {IKIT} from './038zc-ikit.js';
 import {MSHOP} from './059i-mshops.js';
@@ -64,7 +65,10 @@ const GYM={}; window.GYM=GYM;
     { const u=17.95, v0=8, v1=11.6; box(u-.3,v0,u+.3,v1,.5,.55,0x3a3d43); box(u-.2,v0,u+.35,v1,.9,.95,0x3a3d43); box(u-.3,v0,u+.35,v0+.05,0,.95,0x3a3d43); box(u-.3,v1-.05,u+.35,v1,0,.95,0x3a3d43); sol(u-.3,v0,u+.35,v1);
       for(let r=0;r<2;r++)for(let i=0;i<8;i++){ const vv=v0+.25+i*.44, h=r?.99:.6, rr=.045+i*.006; box(u-.1+r*.1,vv-.12,u+r*.1,vv+.12,h,h+.03,STEEL); for(const s of [-1,1])cyl(u-.05+r*.1,vv+s*.12,rr,h,h+rr*2,DARK); }
       use('THE DUMBBELLS (CURL)',u,(v0+v1)/2,.8,1.1,()=>GYM.reps('curl'),1.5);
-      box(W-.04,3,W,7.5,.4,2.6,0x8fa8b6); }
+      box(W-.06,2.9,W,7.6,.3,2.7,DARK);   // the mirror's frame, and the mirror: a real reflection of the room and of you, moving as you move, in the headset too (owner, 8 Nov 2026)
+      { const mw=4.5, mh=2.2, p=F.pw(W-.07,5.25), r=new Reflector(new THREE.PlaneGeometry(mw*MW,mh*MW),{textureWidth:1536,textureHeight:768,color:0xe8ecef,clipBias:.003});
+        r.position.set(p[0],1.5*MW,p[1]); r.rotation.y=Math.atan2(-F.eu[0],-F.eu[1]); r.name='gym mirror'; A.add(r); K.mirror=r;
+        const draw=r.onBeforeRender; r.onBeforeRender=function(...a){ const G=W3.group, gv=G&&G.visible, nh=W3.noHead&&W3.dress; if(G)G.visible=true; if(nh){ W3.noHead=false; W3.dress(); } try{ draw.apply(this,a); } finally{ if(G)G.visible=gv; if(nh){ W3.noHead=true; W3.dress(); } } }; } }   // (through your own eyes, and in the headset, your body and head are hidden from you: the mirror shows them)
     // the lockers and a bench on the back wall, a water cooler, the rope mats by the door
     for(let i=0;i<7;i++){ box(9.6+i*.52,0,10.1+i*.52,.48,0,2.0,0x56636e); box(9.75+i*.52,.48,9.95+i*.52,.5,1.4,1.45,DARK); } sol(9.6,0,13.3,.5);
     seat('A BENCH',own(()=>box(9.8,.8,13,1.2,.4,.44,0x6b4a2b)),[[10.4,1,.44,0,1],[11.4,1,.44,0,1],[12.4,1,.44,0,1]],1.2); sol(9.8,.8,13,1.2);
@@ -72,7 +76,7 @@ const GYM={}; window.GYM=GYM;
     for(let i=0;i<3;i++){ const u=1.4+i*1.7, v=12.3; box(u-.7,v-.9,u+.7,v+.9,0,.025,[0x2f6fd0,0x3a8c5c,0x8e3a8a][i]); cyl(u+.4,v+.5,.16,.025,.05,0xe8b13a,.16);
       use('A ROPE MAT (SKIP ROPE)',u,v,1.4,.6,()=>GYM.reps('rope',[u,v]),1.4); }
     Km.flush(); };
-  MSHOP.kit.gym.drop=()=>{ GYM.stop(true); K=null; };
+  MSHOP.kit.gym.drop=()=>{ GYM.stop(true); if(K&&K.mirror)K.mirror.dispose(); K=null; };
 
   /* ---------- THE TREADMILL: you run in place (RUNNER), the belt at its pace; W faster, S slower, A or D steps off; empty and you are thrown off the back ---------- */
   let TM=null, paceT=0;
@@ -150,6 +154,6 @@ const GYM={}; window.GYM=GYM;
     if(on&&VIT.fight>0)FORAGE.stats.work('sta',dt/900); };
 
   SYS.add('life',dt=>{ if(!K)return; treadStep(dt); bagStep(dt); repStep(dt); ringStep(dt); },'146zka-gym');
-  window.GYMDBG=()=>({built:!!K,inside:inGym(),ring:inRing(),tread:TM?{i:TM.t.i,pace:TM.t.pace}:null,reps:REPS?{kind:REPS.kind,kg:REPS.kg,n:REPS.n,pinned:REPS.pinned}:null,bags:K?K.bags.map(b=>+b.a.toFixed(3)):null,st:{...FORAGE.ST},toward:{str:FORAGE.stats.toward('str'),sta:FORAGE.stats.toward('sta')},pb:PB.on,loose:PB.loose,uv:K?uv(pos.x,pos.z).map(v=>+v.toFixed(2)):null});
+  window.GYMDBG=()=>({built:!!K,inside:inGym(),mirror:!!(K&&K.mirror&&K.mirror.isReflector&&K.mirror.parent),ring:inRing(),tread:TM?{i:TM.t.i,pace:TM.t.pace}:null,reps:REPS?{kind:REPS.kind,kg:REPS.kg,n:REPS.n,pinned:REPS.pinned}:null,bags:K?K.bags.map(b=>+b.a.toFixed(3)):null,st:{...FORAGE.ST},toward:{str:FORAGE.stats.toward('str'),sta:FORAGE.stats.toward('sta')},pb:PB.on,loose:PB.loose,uv:K?uv(pos.x,pos.z).map(v=>+v.toFixed(2)):null});
   GYM.press=press; GYM.zone=()=>REPS?zone():0; GYM.K=()=>K; GYM.R=()=>REPS;   // (for the check)
 }

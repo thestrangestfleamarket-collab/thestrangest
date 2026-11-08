@@ -121,15 +121,26 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
         d[q]=b[0]*n; d[q+1]=b[1]*n; d[q+2]=b[2]*n; d[q+3]=MR&&y>MR.ground[0]&&y<MR.ground[1]&&(x>MR.x[1]&&x<MR.x[1]+MR.reach||x<MR.x[0]&&x>MR.x[0]-MR.reach)?0:255; }
       g.putImageData(im,0,0); const t=tex(c), m=new THREE.MeshLambertMaterial({map:t,alphaTest:.5});
       const xs=Ls.flatMap(l=>[l[0],l[2]]), ys=Ls.flatMap(l=>[l[1],l[3]]), X0=Math.min(...xs), X1=Math.max(...xs), Y1=Math.max(...ys), step=Ls.find(l=>l[1]===l[3]&&l[1]<Y1), XB=step?Math.min(step[0],step[2]):X1, YS=step?step[1]:by0;
-      const rects=[[bx0,by0,X0,by1],[X0,Y1,bx1,by1],[X1,YS,bx1,Y1],[XB,by0,bx1,YS]];
+      const rects=[[Math.max(bx0,X0),by0,X0,by1],[Math.max(bx0,X0),Y1,bx1,by1],[X1,YS,bx1,Y1],[XB,by0,bx1,YS]];
       for(const [x0,y0,x1,y1] of rects){ if(x1-x0<=0||y1-y0<=0)continue; const ge=new THREE.PlaneGeometry((x1-x0)*T,(y1-y0)*T), uv=ge.attributes.uv, u0=(x0-bx0)/(bx1-bx0), u1=(x1-bx0)/(bx1-bx0), v0=1-(y0-by0)/(by1-by0), v1=1-(y1-by0)/(by1-by0);
         for(let q=0;q<uv.count;q++)uv.setXY(q,uv.getX(q)?u1:u0,uv.getY(q)?v0:v1);
         const me=new THREE.Mesh(ge,m); me.rotation.x=-Math.PI/2; me.position.set((XS(x0)+XS(x1))/2,.004,(ZS(y0)+ZS(y1))/2); me.receiveShadow=true; me.raycast=()=>{}; me.userData.cullOf=1; G.add(me); } } }
+    // the city's paved ground out to the far plane (owner, 8 Nov 2026: "the city should go on forever on exterior of map"): its street grid painted on, anchored as the blocks are (edge.city), never under another ground
+    { const CY=E.city, GD=E.ground; if(CY&&GD){ const RG=LEVEL.sections.ring, O=RG.outer, R=CY.reach, [GX,AV,GY,STW]=CY.grid, sh=CY.shore, SH=sh-(CY.walk||0), A=CY.home, cc=GD.city||[74,74,80];
+      const c=cv(GX,GY), g=c.getContext('2d'), P2=PAL; for(let y=0;y<GY;y++)for(let x=0;x<GX;x++){ const rd=x>=GX-AV||y>=GY-STW, wk=!rd&&(x<1||x>=GX-AV-1||y<1||y>=GY-STW-1), b=rd?P2.road:wk?P2.walk:cc, n=.92+rnd()*.12; g.fillStyle=`rgb(${b.map(v=>Math.round(v*n)).join(',')})`; g.fillRect(x,GY-1-y,1,1); }
+      const t=tex(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.generateMipmaps=true; t.minFilter=THREE.NearestMipmapNearestFilter; const gm=new THREE.MeshLambertMaterial({map:t}), fm=new THREE.MeshLambertMaterial({color:new THREE.Color().setRGB(...cc.map(v=>v/255),THREE.SRGBColorSpace)}), wm=new THREE.MeshLambertMaterial({color:new THREE.Color().setRGB(...P2.prom.map(v=>v/255),THREE.SRGBColorSpace)});
+      const gq=(x0,y0,x1,y1,m,xa,sx,ya,sy)=>{ if(x1-x0<=0||y1-y0<=0)return; const u=x=>(x-xa-(sx<0?AV:0))/GX, v=y=>(y-ya-(sy<0?STW:0))/GY, P=[], U=[], I=[], yy=.004;
+        quad(P,U,I,[XS(x0),yy,ZS(y0)],[XS(x1),yy,ZS(y0)],[XS(x1),yy,ZS(y1)],[XS(x0),yy,ZS(y1)],[u(x0),v(y0)],[u(x1),v(y0)],[u(x1),v(y1)],[u(x0),v(y1)]);
+        const me=mesh(P,U,I,m); me.material.side=THREE.DoubleSide; me.raycast=()=>{}; me.userData.cullOf=1; };
+      gq(-R,CY.south,O.x0,R,gm,O.x0,-1,CY.south,1); gq(O.x1,CY.south,R,R,gm,O.x1,1,CY.south,1); gq(O.x0,O.y1,O.x1,R,gm,O.x0,1,O.y1,1);
+      gq(-R,-R,O.x0,SH,gm,O.x0,-1,SH,-1); gq(O.x0,-R,R,SH,gm,O.x0,1,SH,-1); gq(-R,SH,R,sh,wm,0,1,0,1);
+      for(const [y0,y1] of CY.rows){ gq(-R,y0,A[0],y1,fm,0,1,0,1); gq(A[2]-10,y0,R,y1,fm,0,1,0,1); } } }
     const P=E.park; if(P){ const [a0,b0,a1,b1]=P.wall, wl=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(XS(a1)-XS(a0)),YP(90),Math.abs(ZS(b1)-ZS(b0))),new THREE.MeshLambertMaterial({color:0x5c5a55}));
       wl.position.set((XS(a0)+XS(a1))/2,YP(45),(ZS(b0)+ZS(b1))/2); wl.raycast=()=>{}; wl.userData.cullOf=1; wl.userData.haze=1; G.add(wl);
       const BANDS=P.bands||[P.trees], N=P.n||400, crown=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshLambertMaterial({color:0x3f6d2e,flatShading:true}),N), trunk=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshLambertMaterial({color:0x4a3a2c}),N), M4=new THREE.Matrix4(), Q=new THREE.Quaternion(), V=new THREE.Vector3(), S=new THREE.Vector3();
+      const FS=window.FOUNT&&FOUNT.S, FL=FS&&FS.L, pox=(window.PARK&&PARK.ox)||0, poy=(window.PARK&&PARK.oy)||0, WET=(x,y)=>!!FL&&Math.abs(x-pox-FL.x)<FL.rx+16&&Math.abs(y-poy-FL.y)<FL.ry+16&&FOUNT.lake(x-pox,y-poy)<6;   // none in the big lake (owner, 8 Nov 2026: "the lake has a chunk of green in it")
       const AR=BANDS.map(q=>(q[2]-q[0])*(q[3]-q[1])), AT=AR.reduce((a,b)=>a+b,0);
-      for(let i=0;i<N;i++){ let r0=rnd()*AT, bi=0; while(bi<BANDS.length-1&&r0>AR[bi]){ r0-=AR[bi]; bi++; } const [t0,u0,t1,u1]=BANDS[bi], x=t0+rnd()*(t1-t0), y=u0+rnd()*(u1-u0), r=(2.2+rnd()*2.4)*T, h=(2+rnd()*2)*T, wx=XS(x), wz=ZS(y);
+      for(let i=0;i<N;i++){ let r0=rnd()*AT, bi=0; while(bi<BANDS.length-1&&r0>AR[bi]){ r0-=AR[bi]; bi++; } const [t0,u0,t1,u1]=BANDS[bi]; let x=t0+rnd()*(t1-t0), y=u0+rnd()*(u1-u0); for(let k=0;k<8&&WET(x,y);k++){ x=t0+rnd()*(t1-t0); y=u0+rnd()*(u1-u0); } const r=(2.2+rnd()*2.4)*T, h=(2+rnd()*2)*T, wx=XS(x), wz=ZS(y);
         Q.setFromAxisAngle(V.set(0,1,0),rnd()*6.28); crown.setMatrixAt(i,M4.compose(V.set(wx,h+r*.7,wz),Q,S.set(r,r*(.8+rnd()*.3),r))); trunk.setMatrixAt(i,M4.compose(V.set(wx,h/2,wz),Q,S.set(.35*T,h,.35*T))); }
       for(const im of [crown,trunk]){ im.raycast=()=>{}; im.castShadow=false; im.receiveShadow=true; im.userData.cullOf=1; G.add(im); } BLK.back.push({park:true,n:N}); } }
   window.BLOCKDBG=()=>({blds:BLK.blds.map(q=>[q.row,q.x0,q.x1,q.h]),lots:BLK.lots.map(q=>[q.row,q.kind,q.x0,q.x1,q.y0,q.y1]),band:BLK.band(pos.x,pos.z)});

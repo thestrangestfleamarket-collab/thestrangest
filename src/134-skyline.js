@@ -17,38 +17,32 @@ import {TPANE} from './087dz-tpane.js';
   const FL0={corner:4,m0:MIST0,m1:MIST1,md:.5,hn:.3,hf:.55,hd:170,hs:8,dt:.45,wn:.12,wd:.02,bl:0,br:1,cov:.47,cl:1.16,zk:.62,hk:.5}, FL={...FL0}; try{ const s=JSON.parse(SAVE.get('farlook')||'{}'); if(s.corner!==3){ if(s.corner!==2){ delete s.m0; delete s.m1; } delete s.hn; delete s.hf; s.corner=3; } if(s.corner!==4){ delete s.bl; s.corner=4; } Object.assign(FL,s); }catch(e){} FAR3.FL=FL; FAR3.FL0=FL0;
   FAR3.frameTris=()=>new Promise(res=>{ const I=renderer.info; I.autoReset=false; requestAnimationFrame(()=>{ I.reset(); requestAnimationFrame(()=>{ const r={tris:I.render.triangles,calls:I.render.calls,culled:0}; I.autoReset=true; res(r); }); }); });
   const LR=MODS.landR, SA=SECTIONS.live; FAR3.land=[Math.min(LR.x0*TILE,(SA.x0-72)*TILE),Math.min(LR.z0*TILE,(SA.y0+77)*TILE),Math.max(LR.x1*TILE,(SA.x1-72)*TILE),Math.max(LR.z1*TILE,(SA.y1+77)*TILE)]; const hs=(i,j)=>{ const v=Math.sin(i*12.9898+j*78.233)*43758.5453; return v-Math.floor(v); }, B=[];
-  const row=(inset,hmin,hmax,wmin,wmax,tower,k)=>{ const x0=LR.x0+inset, x1=LR.x1-inset, z0=LR.z0+inset, z1=LR.z1-inset; let n=0;
-    for(const [ax,fixed,lo,hi] of [['x',z0,x0,x1],['x',z1,x0,x1],['z',x0,z0,z1],['z',x1,z0,z1]]){ let p=lo+hs(n++,k)*6;
-      while(p<hi){ const w=wmin+hs(n,k)*(wmax-wmin), d=wmin*.8+hs(n+1,k)*(wmax-wmin)*.6, t=hs(n+2,k)<tower, h=t?hmax*(1.2+hs(n+3,k)*.6):hmin+hs(n+3,k)*(hmax-hmin), g=hs(n+5,k);
-        if(p+w>hi)break; const c=p+w/2, x=ax==='x'?c:fixed, z=ax==='x'?fixed:c, sx=ax==='x'?w:d, sz=ax==='x'?d:w, L=.26+g*.16, col=[L*.92,L*.95,L*1.04];
-        B.push([x,z,sx,sz,h,col]); if(hs(n+4,k)<.3)B.push([x,z,sx*.6,sz*.6,h*1.25,col]);
-        p+=w+1.5+hs(n+6,k)*5; n+=7; } } };
-  row(4,12,30,7,16,0,1); row(16,8,18,6,13,0,2);
-  row(-22,20,45,9,20,0,3); row(-50,30,62,10,24,.03,4); row(-90,40,90,12,28,.1,5); row(-140,50,120,14,32,.2,6);
-  { const T=TILE, zf=RINGX.town.w/T+3, xa=RINGX.town.x/T+4, xb=RINGX.town.z/T-4; let x=xa, k=0;
-    while(x<xb){ const w=9+hs(k,61)*8, d=9+hs(k,62)*5, h=40+hs(k,63)*36, v=[3,6,7,6,3,7][Math.floor(hs(k,64)*6)], z=zf+d/2+hs(k,65)*1.5, cx=x+w/2;
-      B.push([cx,z,w,d,h,null,v]);
-      const top=hs(k,66); if(top<.55)B.push([cx,z,w*.7,d*.7,h+4+hs(k,67)*5,null,v]); if(top<.2)B.push([cx,z,w*.42,d*.42,h+10+hs(k,68)*6,null,v]);
-      if(top>.86&&w>13){ for(const s2 of [-1,1])B.push([cx+s2*w*.28,z,w*.24,d*.3,h+16+hs(k,69)*6,null,v]); }
-      if(top>.55&&top<.86&&hs(k,70)<.6)B.push([cx+(hs(k,71)-.5)*w*.5,z,1.8,1.8,h+3.4,null,1]);
-      x+=w+.3; k++; } }
-  { const zN=LR.z1+75, zD=LR.z1+170, xs=t=>LR.x0+(LR.x1-LR.x0)*t, L=[.5,.52,.56], ST=[.56,.58,.62], LM=[.66,.62,.54], put=(x,z,w,d,h,c,v)=>B.push([x,z,w,d,h,c,v]);
-    for(const dx of [0,19])put(xs(.3)+dx,zD,14,14,170,ST,5); put(xs(.3),zD,1.4,1.4,205,ST,5);
-    put(xs(.38),zD-14,15,9,72,LM,3); put(xs(.38),zD-14,8,8,92,LM,3); put(xs(.38),zD-14,4,4,104,LM,3); put(xs(.38),zD-14,.9,.9,118,ST,5);
-    { const x=xs(.5); [[30,20,42],[22,16,86],[16,12,128],[10,8,146],[6,6,154]].forEach(([w,d,h])=>put(x,zN,w,d,h,LM,3)); put(x,zN,1.6,1.6,190,ST,5); }
-    { const x=xs(.58); [[18,18,96],[13,13,112],[9,9,122],[6,6,130],[3.4,3.4,137]].forEach(([w,d,h],k)=>put(x,zN-4,w,d,h,k>1?ST:LM,k>1?5:3)); put(x,zN-4,.8,.8,162,ST,5); }
-    put(xs(.63),zN+6,15,15,126,ST,5);
-    for(const t of [.42,.46,.53,.55,.61,.66,.69])put(xs(t),zN+(hs(t*5,2)-.5)*24,10+hs(t*9,3)*8,9,80+hs(t*7,4)*40,ST,5);
-    for(let k=0;k<60;k++){ const t=k/60+hs(k,21)*.01, x=xs(t), w=5+hs(k,22)*7, h=10+hs(k,23)*10, z=LR.z1-26-hs(k,24)*5; put(x,z,w,6,h,null,null); if(hs(k,25)<.45)put(x+(hs(k,26)-.5)*w*.5,z,1.6,1.6,h+3.2,[.34,.27,.22],1); } }
   for(let i=B.length-1;i>=0;i--){ const b=B[i]; if(RINGX.inPocket(b[0]*TILE,b[1]*TILE,(Math.max(b[2],b[3])/2+10)*TILE))B.splice(i,1); }
-  { const S=SECTIONS, H=S.of(SECTION.id), inn=(b,r)=>{ const x=b[0]+SHARED.BOD.OX, y=b[1]+SHARED.BOD.OY, e=Math.max(b[2],b[3])/2; return x+e>r.x0&&x-e<r.x1&&y+e>r.y0&&y-e<r.y1; }; for(let i=B.length-1;i>=0;i--)if(inn(B[i],S.all)&&!inn(B[i],{x0:H.x0+40,x1:H.x1-40,y0:H.y0+40,y1:H.y1-40}))B.splice(i,1); }
   // the new map's backdrop (owner, 6 Nov 2026: "they see more apt buildings until it fades out"): past the edges, apartment blocks carry on the streets (data/world.json edge.runs: axis, from, to, across from, across to, in map tiles), drawn and hazed as the far city is
   for(const [ax,a0,a1,b0,b1] of (LEVEL.edge&&LEVEL.edge.runs)||[]){ const dir=Math.sign(a1-a0), d=b1-b0; let p=a0+dir*((LEVEL.edge.near||60)+1.2), k=0;   // (the first stretch past the edge is the street's own blocks, 069a)
     while((a1-p)*dir>0){ const w=14+hs(k,81+a0)*8, h=14+hs(k,82+a0)*16, c=p+dir*w/2, mx=ax==='x'?c:(b0+b1)/2, my=ax==='x'?(b0+b1)/2:c;
       B.push([mx-SHARED.BOD.OX,my-SHARED.BOD.OY,ax==='x'?w:d,ax==='x'?d:w,h,null,[0,1,4,6][Math.floor(hs(k,83+a0)*4)]]); p+=dir*(w+1.2); k++; } }
-  // the far city past the backdrop (owner, 7 Nov 2026: "like real nyc"): the far shore across the Hudson and the city past the park, hazed rows of blocks (data/world.json edge.far: axis, from, to, across from, across to, lowest, highest in tiles)
-  for(const [ax,a0,a1,b0,b1,h0,h1] of (LEVEL.edge&&LEVEL.edge.far&&LEVEL.edge.far.list)||[]){ let p=a0, k=0; while(p<a1){ const w=8+hs(k,91+a0+b0)*16, d=(b1-b0)*(.5+hs(k,92+b0)*.5), h=h0+Math.pow(hs(k,93+a0),2)*(h1-h0), c=p+w/2, mid=(b0+b1)/2+(hs(k,94+b0)-.5)*(b1-b0-d);
-      B.push([(ax==='x'?c:mid)-SHARED.BOD.OX,(ax==='x'?mid:c)-SHARED.BOD.OY,ax==='x'?w:d,ax==='x'?d:w,h,null,[0,1,4,6,2,5][Math.floor(hs(k,95+a1)*6)]]); p+=w+.8+hs(k,96)*3; k++; } }
+  // the city past the map (owner, 8 Nov 2026: "the city should go on forever on exterior of map"; "other side should be endless buildings"): blocks on a street grid round the park's ring and across the Hudson out to the far plane, the rows along the river both ways; further out one box stands for half a block, a block, then two by two and four by four (data/world.json edge.city)
+  const CY=LEVEL.edge&&LEVEL.edge.city; if(CY){ const OX=SHARED.BOD.OX, OY=SHARED.BOD.OY, RG=LEVEL.sections.ring, O=RG.outer, R=CY.reach, [GX,AV,GY,STW]=CY.grid, A=CY.home, SH=CY.shore-(CY.walk||0), [D0,D1,D2,D3]=CY.lod;
+    const keep=(LEVEL.edge.runs||[]).map(([ax,a0,a1,b0,b1])=>ax==='x'?[Math.min(a0,a1),b0,Math.max(a0,a1),b1]:[b0,Math.min(a0,a1),b1,Math.max(a0,a1)]).concat(CY.keep||[]);
+    const hit=(x0,y0,x1,y1)=>keep.some(r=>x0<r[2]&&x1>r[0]&&y0<r[3]&&y1>r[1]), dA=(x0,y0,x1,y1)=>Math.max(A[0]-x1,x0-A[2],A[1]-y1,y0-A[3],0);
+    const put=(x0,y0,x1,y1,h,v)=>B.push([(x0+x1)/2-OX,(y0+y1)/2-OY,x1-x0,y1-y0,h,null,v]);
+    const bld=(x0,y0,x1,y1,k,tw,lo,hi,far)=>{ const r=hs(x0*.37+y1,k), v=[0,1,4,6,2,5,3,7][Math.floor(hs(y0,x1+k)*8)];
+      if(r<tw){ const h=90+hs(x1,k+3)*150, w=x1-x0, d=y1-y0, cx=(x0+x1)/2, cy=(y0+y1)/2; put(x0,y0,x1,y1,h*.45,v); (far?[[.5,1]]:[[.8,.75],[.6,.92],[.42,1]]).forEach(([s,f])=>put(cx-w*s/2,cy-d*s/2,cx+w*s/2,cy+d*s/2,h*f,v)); if(!far&&hs(cx,k+5)<.5)put(cx-.8,cy-.8,cx+.8,cy+.8,h*1.18,5); return; }
+      put(x0,y0,x1,y1,lo+Math.pow(hs(x0,y0+k),1.6)*(hi-lo),v); };
+    const block=(x0,y0,x1,y1,d,k)=>{ if(d<D0){ const along=x1-x0>=y1-y0; let p=along?x0:y0; const e=along?x1:y1, md=along?(y0+y1)/2:(x0+x1)/2; let n=0;
+        while(e-p>1){ const w=Math.min(e-p,8+hs(p,k+n)*8), q=e-(p+w)<5?e:p+w; for(const [a,b] of along?[[y0,md],[md,y1]]:[[x0,md],[md,x1]])along?bld(p,a,q,b,k+n,.04,14,52):bld(a,p,b,q,k+n,.04,14,52); p=q; n++; } return; }
+      if(d<D1){ const mx=(x0+x1)/2; bld(x0,y0,mx,y1,k,.06,16,56); bld(mx,y0,x1,y1,k+1,.06,16,56); return; }
+      bld(x0+.5,y0+.5,x1-.5,y1-.5,k,.06,18,60,1); };
+    const region=(xa,sx,ya,sy,cl,k0)=>{ for(let i=0;;i++){ const ax=xa+sx*i*GX, bx=xa+sx*((i+1)*GX-AV), x0=Math.max(cl[0],Math.min(ax,bx)), x1=Math.min(cl[2],Math.max(ax,bx)); if(x1<=x0)break; if(dA(x0,cl[1],x1,cl[3])>R)break;
+        for(let j=0;;j++){ const ay=ya+sy*j*GY, by=ya+sy*((j+1)*GY-STW), y0=Math.max(cl[1],Math.min(ay,by)), y1=Math.min(cl[3],Math.max(ay,by)); if(y1<=y0)break; const d=dA(x0,y0,x1,y1); if(d>R)break;
+          const m=d<D2?1:d<D3?2:d<D3*2?4:8; if(m>1){ if(i%m||j%m)continue; const fx=xa+sx*((i+m)*GX-AV), fy=ya+sy*((j+m)*GY-STW), X0=Math.max(cl[0],Math.min(ax,fx)), X1=Math.min(cl[2],Math.max(ax,fx)), Y0=Math.max(cl[1],Math.min(ay,fy)), Y1=Math.min(cl[3],Math.max(ay,fy)); if(!hit(X0,Y0,X1,Y1))bld(X0+1,Y0+1,X1-1,Y1-1,k0+i*7+j,.06,22,70,1); continue; }
+          if(!hit(x0,y0,x1,y1))block(x0,y0,x1,y1,d,k0+i*131+j*17); } } };
+    region(O.x0,-1,CY.south,1,[-R*2,CY.south,O.x0,R*2],1); region(O.x1,1,CY.south,1,[O.x1,CY.south,R*2,R*2],2); region(O.x0,1,O.y1,1,[O.x0,O.y1,O.x1,R*2],3);
+    region(O.x0,-1,SH,-1,[-R*2,-R*2,O.x0,SH],4); region(O.x0,1,SH,-1,[O.x0,-R*2,R*2,SH],5);
+    for(const [y0,y1,lo,hi,k] of CY.rows)for(const s of [-1,1]){ let p=s<0?A[0]:A[2], n=0; while(true){ const d=Math.abs(p-(s<0?A[0]:A[2])); if(d>R)break; const w=(d<D1?10:d<D2?30:90)+hs(p,k+n)*(d<D1?8:20), x0=s<0?p-w:p, x1=s<0?p:p+w;
+        if(!hit(x0,y0,x1,y1))bld(x0,y0,x1,y1,k+n,d<D1?0:.03,lo,hi); p+=s*(w+.3); n++; } }
+    FAR3.city=B.length; }
   // stand-ins past the draw distance (owner, 7 Nov 2026: "you shouldnt see gaps like no buildings, gap between buildings ... the further away the more faded"): every building on the rows and up West St and every near backdrop block has a hazed box a little inside it, seen once the real one is past the draw distance
   { const ZT=ZU/TILE, HPX={apts:480,bank:196,art:196,hotel:240,theatre:200,play:200}, IN=.6, sb=(x0,y0,x1,y1,h,v)=>{ const w=x1-x0-2*IN, d=y1-y0-2*IN; if(w>1&&d>1)B.push([(x0+x1)/2-SHARED.BOD.OX,(y0+y1)/2-SHARED.BOD.OY,w,d,h,null,v]); };
     for(const p of LEVEL.places){ if(p.kind!=='front')continue; const y0=p.y1!=null?p.y0:LEVEL.block.back, y1=p.y1!=null?p.y1:LEVEL.block.front, px=HPX[p.id]||(p.row===2?110:150); sb(p.x0,y0,p.x1,y1,px*ZT*.92,p.row===2?[1,2,5,6][Math.floor(hs(p.x0,97)*4)]:[0,4][Math.floor(hs(p.x0,98)*2)]); }
@@ -65,11 +59,11 @@ import {TPANE} from './087dz-tpane.js';
   const AVG=[],WIN=[]; for(let v=0;v<NV;v++){ let r=0,g=0,b=0,w=0; for(let i=0;i<FW*FH;i++){ const k=(v*FW*FH+i)*4; r+=atlas[k]; g+=atlas[k+1]; b+=atlas[k+2]; w+=atlas[k+3]>127?1:0; } const n=FW*FH; AVG.push(new THREE.Color().setRGB(r/n/255,g/n/255,b/n/255,THREE.SRGBColorSpace)); WIN.push(w/n); }
   const ftex=new THREE.DataTexture(atlas,FW,FH*NV); ftex.magFilter=ftex.minFilter=THREE.NearestFilter; ftex.colorSpace=THREE.SRGBColorSpace; ftex.flipY=false; ftex.needsUpdate=true;
   const FU={uBake:{value:0},uAvg:{value:AVG},uWin:{value:WIN},uMC:{value:new THREE.Color()},uMK:{value:0},uMP:{value:new THREE.Vector3()},uFT:{value:ftex},uLit:{value:0},uAmb:{value:0},uBay:{value:3*TILE},uStorey:{value:3.2*TILE},uY0:{value:-.5*ZU},uTW:{value:0},uBX:{value:MISTB},uTL:{value:TILE},uHN:{value:.2},uHF:{value:.82},uHD:{value:170},uNR:{value:150*TILE},uHS:{value:8},uDT:{value:.45}};
-  const FARIMG={"day": __B64__("data/far-day.png"), "night": __B64__("data/far-night.png"), "meta": {"CX": 33.62, "CZ": -15.82, "EYE": 1.9, "V0": -0.03492, "V1": 0.57735, "N": 450, "dens": 5, "W": 900, "H": 138, "faces": 2}}, BAKE=QS.get('farbake')==='1', FARON=!!FARIMG&&!BAKE&&QS.get('farbaked')!=='0';
+  const FARIMG=null, BAKE=QS.get('farbake')==='1', FARON=!!FARIMG&&!BAKE&&QS.get('farbaked')!=='0';
   const outPast=([x,z])=>Math.max(LR.x0-x,x-LR.x1,LR.z0-z,z-LR.z1), south=([x,z])=>z<LR.z0+20&&LR.z0+20-z>LR.x0-x&&LR.z0+20-z>x-LR.x1, BN=B.filter(b=>!(FARON&&outPast(b)>=40)&&!(FARON&&south(b))&&!(mist&&outPast(b)<10&&((b[0]*TILE>PFAR.x&&b[1]*TILE>MISTB.w)||(b[1]*TILE>PFAR.y&&b[0]*TILE>MISTB.z)))), BF=B.filter(b=>outPast(b)>=40);
   const geo=new THREE.BoxGeometry(1,1,1).translate(0,.5,0), mat=new THREE.MeshLambertMaterial({color:0xffffff}), m4=new THREE.Matrix4(), c=new THREE.Color(), y0=-.5*ZU;
   const mk=L=>{ const g=geo.clone(), m=new THREE.InstancedMesh(g,mat,L.length), aV=new Float32Array(L.length), aS=new Float32Array(L.length);
-    L.forEach(([x,z,sx,sz,h,col,fv],i)=>{ const j=B.indexOf(L[i]); m.setMatrixAt(i,m4.makeScale(sx*TILE,h*TILE,sz*TILE).setPosition(x*TILE,y0,z*TILE)); m.setColorAt(i,c.setRGB(1,1,1)); aV[i]=fv!=null?fv:Math.floor(hs(j,9)*NV); aS[i]=hs(j,11)*97; });
+    L.forEach(([x,z,sx,sz,h,col,fv],i)=>{ const j=i; m.setMatrixAt(i,m4.makeScale(sx*TILE,h*TILE,sz*TILE).setPosition(x*TILE,y0,z*TILE)); m.setColorAt(i,c.setRGB(1,1,1)); aV[i]=fv!=null?fv:Math.floor(hs(j,9)*NV); aS[i]=hs(j,11)*97; });
     g.setAttribute('aV',new THREE.InstancedBufferAttribute(aV,1)); g.setAttribute('aS',new THREE.InstancedBufferAttribute(aS,1)); return m; };
   const me=mk(BN);
   mat.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,FU);
@@ -129,6 +123,7 @@ import {TPANE} from './087dz-tpane.js';
     FU.uHD.value=FL.hd; FU.uHS.value=Math.round(FL.hs); FU.uDT.value=FL.dt; if(SKY.U.uCov){ SKY.U.uZk.value=FL.zk; SKY.U.uHk.value=FL.hk; }
     FU.uLit.value=FL.wd+(FL.wn-FL.wd)*Math.max(0,Math.min(1,(1-CLOCK.elev())/6)); FU.uTW.value=performance.now()/1000/23;
     FU.uAmb.value=.55*Math.max(0,Math.min(1,(CLOCK.elev()+3)/12));
+    if(SKY.U.uBelow){ const dk=Math.max(0,Math.min(1,(CLOCK.elev()+4)/14)); SKY.U.uBelow.value.setRGB(.03+.17*dk,.034+.166*dk,.045+.165*dk); SKY.U.uBelowK.value=FAR3.on&&up?1:0; }
     FU.uMK.value=0; MISTE.x=0; if(SKY.U.uMistK)SKY.U.uMistK.value=0; if(!FAR3.on||inside||!up||(scene.fog&&scene.fog!==FOG)){ if(scene.fog===FOG)scene.fog=null; return; }
     const day=Math.max(0,Math.min(1,(CLOCK.elev()+4)/14)), d=-V.copy(pos).applyMatrix4(SHARED.cam.matrixWorldInverse).z;
     if(FAR3.mist){ const k=Math.max(0,Math.min(1,(CLOCK.elev()+6)/12)); FOG.color.copy(MN).lerp(MD,k).lerp(MH,Math.max(0,Math.min(1,(CLOCK.elev()-6)/40))); { const Wn=WX.now||{cloud:.2}, dk=Math.max(0,Math.min(1,(CLOCK.elev()-3)/10))*(1-Math.max(0,Math.min(1,(Wn.cloud-.4)/.5))); FOG.color.lerp(SKY.U.uH.value,Math.max(SKY.SC&&SKY.SC.sky?SKY.SC.sky*.45:0,dk*.6)); } if(SKY.SC&&SKY.SC.blood)FOG.color.lerp(SKY.MB,.4*SKY.SC.blood*(1-k)); FU.uMC.value.copy(FOG.color).multiplyScalar(.62); FU.uMK.value=.8; FU.uMP.value.copy(pos); FOG.near=1e6; FOG.far=2e6; MISTE.x=1; MISTE.y=FL.m0; MISTE.z=FL.m1; MISTF.x=FL.md; scene.fog=FOG; SKY.dome.visible=true; SKY.U.uMistK.value=1; SKY.U.uMistC.value.copy(FOG.color); scene.background.copy(FOG.color).multiplyScalar(.5); if(WX.cloudMist)WX.cloudMist(FOG.color); return; }

@@ -6511,111 +6511,20 @@
    ],
    [
     "y",
-    181.5,
-    520,
-    -66.8,
-    -52.5
-   ],
-   [
-    "y",
     -37,
     181,
     -66.8,
     -52.5
-   ],
-   [
-    "y",
-    -37,
-    23,
-    -90,
-    -74
-   ],
-   [
-    "y",
-    25,
-    85,
-    -90,
-    -74
-   ],
-   [
-    "y",
-    87,
-    147,
-    -90,
-    -74
-   ],
-   [
-    "y",
-    149,
-    209,
-    -90,
-    -74
-   ],
-   [
-    "y",
-    -37,
-    23,
-    -114,
-    -98
-   ],
-   [
-    "y",
-    25,
-    85,
-    -114,
-    -98
-   ],
-   [
-    "y",
-    87,
-    147,
-    -114,
-    -98
-   ],
-   [
-    "y",
-    149,
-    209,
-    -114,
-    -98
-   ],
-   [
-    "y",
-    -37,
-    23,
-    -138,
-    -122
-   ],
-   [
-    "y",
-    25,
-    85,
-    -138,
-    -122
-   ],
-   [
-    "y",
-    87,
-    147,
-    -138,
-    -122
-   ],
-   [
-    "y",
-    149,
-    209,
-    -138,
-    -122
    ]
   ],
   "near": 60,
   "ground": {
-   "note": "the land past the edges (owner, 7 Nov 2026: \"set a base color for far off distance things like grass\"): one low-res grass ground under everything outside the section, the big lake's whole shore in it (box x0, y0, x1, y1 in tiles; tiles a pixel; grass and water colours)",
+   "note": "the park past the edges (owner, 7 Nov 2026: \"set a base color for far off distance things like grass\"; 8 Nov 2026: \"the rest of the map needs to keep going (streets, buildings, central park)\"): one low-res grass ground on the park's whole ring outside the section, the big lake whole in it (box x0, y0, x1, y1 in tiles; tiles a pixel; grass and water colours); the city's paved ground round it out to reach (city: colour)",
    "box": [
-    -600,
-    -130.1,
-    900,
-    800
+    -24,
+    -38,
+    1332,
+    456
    ],
    "px": 2,
    "grass": [
@@ -6627,13 +6536,18 @@
     164,
     198,
     236
+   ],
+   "city": [
+    74,
+    74,
+    80
    ]
   },
   "strips": {
    "note": "the streets carried on past the edges, low-res ground (x0, y0, x1, y1, kind)",
    "list": [
     [
-     -330,
+     -5300,
      -77,
      -202.5,
      -70,
@@ -6647,7 +6561,7 @@
      "walk"
     ],
     [
-     -330,
+     -5300,
      -70,
      -202.5,
      -50,
@@ -6661,7 +6575,7 @@
      "road"
     ],
     [
-     -330,
+     -5300,
      -50,
      -202.5,
      -38,
@@ -6675,14 +6589,14 @@
      "walk"
     ],
     [
-     -330,
+     -5300,
      -95.9,
      -52.5,
      -92.4,
      "alley"
     ],
     [
-     -330,
+     -5300,
      -130.1,
      -52.5,
      -107.9,
@@ -6698,7 +6612,7 @@
     [
      402,
      -77,
-     520,
+     5300,
      -70,
      "walk"
     ],
@@ -6712,7 +6626,7 @@
     [
      402,
      -70,
-     520,
+     5300,
      -50,
      "road"
     ],
@@ -6726,61 +6640,96 @@
     [
      402,
      -50,
-     520,
+     5300,
      -38,
      "walk"
     ],
     [
      250,
      -95.9,
-     520,
+     5300,
      -92.4,
      "alley"
     ],
     [
      250,
      -130.1,
-     520,
+     5300,
      -107.9,
      "prom"
     ],
     [
      -52.5,
-     212,
+     181,
      -49.3,
-     520,
+     456,
      "walk"
     ],
     [
      -49.3,
-     212,
+     181,
      -27.2,
-     520,
+     456,
      "road"
     ],
     [
      -27.2,
-     212,
+     181,
      -24,
-     520,
+     456,
      "walk"
     ],
     [
-     -330,
-     -37,
      -52.5,
-     212,
+     456,
+     1360.5,
+     459,
+     "walk"
+    ],
+    [
+     -52.5,
+     459,
+     1360.5,
+     492,
+     "road"
+    ],
+    [
+     -52.5,
+     492,
+     1360.5,
+     495,
+     "walk"
+    ],
+    [
+     1332,
+     -38,
+     1335,
+     456,
+     "walk"
+    ],
+    [
+     1335,
+     -38,
+     1357.5,
+     456,
+     "road"
+    ],
+    [
+     1357.5,
+     -38,
+     1360.5,
+     456,
      "walk"
     ]
    ]
   },
   "park": {
-   "note": "Central Park's edge along West St drawn the whole way, past the draw distance and past the map's edge: a wall just inside the real one and bands of plain low trees (x0, y0, x1, y1 in tiles; north of the map the park goes on to the horizon, no city on its side); east of the map too, beside Market St (owner, 8 Nov 2026)",
+   "note": "Central Park's edge along West St and the rest of the park past the map's edge (to the ring's park edge, sections.ring.park): a wall just inside the real one and plain low trees (x0, y0, x1, y1 in tiles; none in the big lake)",
    "wall": [
     -23.9,
     -38,
     -23.3,
-    760
+    456
    ],
    "bands": [
     [
@@ -6793,72 +6742,16 @@
      -20,
      185,
      262,
-     420
-    ],
-    [
-     -20,
-     420,
-     600,
-     760
+     452
     ],
     [
      266,
-     -30,
-     520,
-     176
+     -34,
+     1328,
+     452
     ]
    ],
-   "n": 1500
-  },
-  "far": {
-   "note": "the far city past the backdrop, hazed: (axis, from, to, across from, across to, lowest, highest storeys in tiles)",
-   "list": [
-    [
-     "x",
-     -520,
-     820,
-     -372,
-     -352,
-     8,
-     34
-    ],
-    [
-     "x",
-     -520,
-     820,
-     -340,
-     -332,
-     5,
-     14
-    ],
-    [
-     "x",
-     -420,
-     -56,
-     600,
-     640,
-     18,
-     60
-    ],
-    [
-     "y",
-     -520,
-     600,
-     -420,
-     -380,
-     14,
-     44
-    ],
-    [
-     "y",
-     -520,
-     600,
-     600,
-     640,
-     14,
-     50
-    ]
-   ]
+   "n": 2600
   },
   "mirror": {
    "note": "Market St past its ends (owner, 8 Nov 2026: \"lets make the street look the same all the way down\"): the street's band (y0, y1 in tiles) drawn again mirrored at the forcefields (x: west, east), reach tiles out, from these builders' groups; each side drawn while you are within show tiles of it; the lawn and the far grass leave the street's ground (y0, y1) to it",
@@ -6889,6 +6782,61 @@
     "pole",
     "rail",
     "store"
+   ]
+  },
+  "city": {
+   "note": "the city past the map (owner, 8 Nov 2026: \"the city should go on forever on exterior of map\"; \"across the hudson should be 3x wider. other side should be endless buildings\"): blocks on a street grid (grid: block period along x, avenue width, period along y, street width, in map tiles) outside the park's ring (sections.ring.outer) north of south, and past the far shore (shore, its walk); rows along the river (y0, y1, lowest, highest); one box stands for more blocks past each lod distance from home (section A); reach is as far as the camera sees; keep: spans the near backdrop holds",
+   "home": [
+    -52.5,
+    -231.5,
+    262,
+    181
+   ],
+   "south": -38,
+   "shore": -796,
+   "walk": 10,
+   "grid": [
+    64,
+    8,
+    26,
+    8
+   ],
+   "lod": [
+    250,
+    700,
+    1200,
+    2400
+   ],
+   "reach": 5300,
+   "rows": [
+    [
+     -92.4,
+     -77,
+     20,
+     48,
+     11
+    ],
+    [
+     -107.9,
+     -95.9,
+     8,
+     18,
+     23
+    ]
+   ],
+   "keep": [
+    [
+     -202.5,
+     -231.5,
+     -52.5,
+     -22
+    ],
+    [
+     252,
+     -231.5,
+     402,
+     -22
+    ]
    ]
   }
  }

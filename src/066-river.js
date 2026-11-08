@@ -3,7 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, FLOW, LITE, pos, ROOMS, SFX, SKY, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {SAVE} from './005-save.js';
-import {BLOCK, FADE, FIX, MODS, OUT, RING, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
+import {BLOCK, FADE, FIX, LEVEL, MODS, OUT, RING, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 const RIVER={way:'fluid',wi:0,step:true,t:0,on:false};
 Object.assign(RIVER,{onBuild:[],pickers:[],feed:()=>false,over:()=>false,clamp:()=>{},tick:()=>{},pre:()=>{},post:()=>{},hud:()=>{},pick:()=>false,swim:false,shown:false}); window.RIVER=RIVER;
 const RIVERG=new THREE.Group(); RIVERG.name='river'; RIVERG.visible=false; scene.add(RIVERG);
@@ -164,8 +164,11 @@ RIVER.build=()=>{ if(RIVER.on)return; const n0=scene.children.length; const R=RI
         vec3 deep=uDeep*(.35+.65*uDay), c=mix(deep,uSky*.55,uSkyK)+band*.025; c+=g*(.28+.4*uDay)*vec3(.85,.95,1.); if(uUW>0.)c=mix(c,uUWC,clamp(length(vW-cameraPosition)/uUWF,0.,1.)); gl_FragColor=vec4(c,1.); }`});
   const sheet=()=>{ const m=new THREE.Mesh(new THREE.PlaneGeometry(1,DZ).rotateX(-Math.PI/2),farMat); m.position.set(0,LV,(rz0+rz1)/2); scene.add(m); return m; };
   const flatAll=sheet(), flatL=sheet(), flatR=sheet();
-  const sea=new THREE.Mesh(new THREE.PlaneGeometry(lx1-lx0+400,900).rotateX(-Math.PI/2),farMat); sea.position.set((lx0+lx1)/2,LV-0.05,rz0-450); sea.renderOrder=-1; sea.visible=false; scene.add(sea); RIVER.sea=sea;
-  for(const [a,b] of [[lx0-200,lx0+2*T],[lx1-2*T,lx1+200]]){ const m=new THREE.Mesh(new THREE.PlaneGeometry(b-a,rz1-rz0).rotateX(-Math.PI/2),farMat); m.position.set((a+b)/2-sea.position.x,0,(rz0+rz1)/2-sea.position.z); m.renderOrder=-1; sea.add(m); }   // past both ends of the river too: open water, not a hole
+  // the open water past the river: across to the far shore three times as far as it was, and on along the city both ways out to the far plane (owner, 8 Nov 2026: "acrsoss the hudson should be 3x wider"; data/world.json edge.city)
+  const CYw=LEVEL.edge&&LEVEL.edge.city, Rw=(CYw?CYw.reach:400)*T, szS=CYw?ZS(CYw.shore):rz0-900, sxa=-Rw, sxb=Rw;
+  const sea=new THREE.Mesh(new THREE.PlaneGeometry(sxb-sxa,rz0-szS).rotateX(-Math.PI/2),farMat); sea.position.set((sxa+sxb)/2,LV-0.05,(rz0+szS)/2); sea.renderOrder=-1; sea.visible=false; scene.add(sea); RIVER.sea=sea;
+  for(const [a,b] of [[sxa,lx0+2*T],[lx1-2*T,sxb]]){ const m=new THREE.Mesh(new THREE.PlaneGeometry(b-a,rz1-rz0).rotateX(-Math.PI/2),farMat); m.position.set((a+b)/2-sea.position.x,0,(rz0+rz1)/2-sea.position.z); m.renderOrder=-1; sea.add(m); }   // past both ends of the river too: open water, not a hole
+  { const m=new THREE.Mesh(new THREE.PlaneGeometry(sxb-sxa,.05-LV+.04),new THREE.MeshLambertMaterial({color:0x5c5a55})); m.position.set(0,(.05-LV)/2-.02,szS-sea.position.z); m.raycast=()=>{}; sea.add(m); }   // the far shore's bank
   const setFlats=()=>{ flatAll.scale.x=lx1-lx0; flatAll.position.x=(lx0+lx1)/2; const a=RIVER.cx-WIN/2, b=RIVER.cx+WIN/2;
     flatL.scale.x=Math.max(.01,a-lx0); flatL.position.x=(lx0+a)/2; flatR.scale.x=Math.max(.01,lx1-b); flatR.position.x=(b+lx1)/2; };
 

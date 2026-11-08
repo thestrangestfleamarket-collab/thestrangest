@@ -10,7 +10,11 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
     await pg.route(/\/@dimforge\/rapier3d-compat@[^/]+\/(.+)$/,r=>{ const f=path.join(DIR,new URL(r.request().url()).pathname.split(/rapier3d-compat@[^/]+\//)[1]||''); if(!fs.existsSync(f))return r.continue(); r.fulfill({path:f,contentType:/\.wasm$/.test(f)?'application/wasm':'text/javascript'}); }); }
   const rec=(n,ok,i)=>{ if(!ok)bad++; console.log((ok?'PASS ':'FAIL ')+n+(i?'  · '+i:'')); };
   const wait=ms=>new Promise(r=>setTimeout(r,ms));
-  await pg.goto('file://'+PAGE+'?fresh=1&hour=12&at=80,95',{timeout:240000}); await pg.waitForFunction(()=>window.__started,null,{timeout:300000});
+  // (served over http, as the website is: the recorded sounds are files beside the page, which a page opened from a file may not fetch)
+  const http=require('http'), fs=require('fs'), ROOT=path.resolve(path.dirname(PAGE),'..'), TYPES={'.html':'text/html','.js':'text/javascript','.json':'application/json','.mp3':'audio/mpeg','.wasm':'application/wasm','.png':'image/png','.jpg':'image/jpeg'};
+  const srv=http.createServer((q,r)=>{ const f=path.join(ROOT,decodeURIComponent(new URL(q.url,'http://x').pathname)); if(!f.startsWith(ROOT)||!fs.existsSync(f)||fs.statSync(f).isDirectory()){ r.writeHead(404); return r.end(); } r.writeHead(200,{'content-type':TYPES[path.extname(f)]||'application/octet-stream'}); fs.createReadStream(f).pipe(r); });
+  await new Promise(r=>srv.listen(0,'127.0.0.1',r)); const URL0='http://127.0.0.1:'+srv.address().port+'/'+path.relative(ROOT,PAGE);
+  await pg.goto(URL0+'?fresh=1&hour=12&at=80,95',{timeout:240000}); await pg.waitForFunction(()=>window.__started,null,{timeout:300000});
   await pg.waitForFunction(()=>window.AVATAR&&AVATAR.ready(),null,{timeout:120000}); await wait(1200);
   // the skills: MUSIC the first kind, with the four instruments
   const sk=await pg.evaluate(async()=>{ __dbg.UI.menuTab('pack','skills'); await new Promise(r=>setTimeout(r,500)); const t=(document.getElementById('packp')||{}).innerText||''; __dbg.UI.toggleMenu&&__dbg.UI.toggleMenu();
@@ -60,6 +64,17 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
   rec('each sounds through the instruments\' own audio (piano, drums, harp)',a.ok&&Object.values(a.peak).every(p=>p>.01),JSON.stringify(a.peak));
   rec('each sounds at its real pitch (piano A3 A4, harp C4 C5, and C4 with its pedal sharp: within 3%)',a.ok&&Object.values(a.hz).every(([h,w])=>Math.abs(h-w)/w<.03),JSON.stringify(a.hz));
   rec('the kick, the snare and the hi-hat each strike loud (rendered offline)',a.ok&&Object.values(a.dr).every(p=>p>.05),JSON.stringify(a.dr));
+  // the recordings: each instrument's fetched and decoded, every sound's start found, and played back at the note's pitch
+  const rs=await pg.evaluate(async()=>{ const out={}; for(const id of ['piano','drums','harp']){ const K=INSTR.KINDS[id]; let S=INSTR.loadSounds(K); for(let i=0;i<120&&!S.ok;i++){ await new Promise(r=>setTimeout(r,250)); S=INSTR.loadSounds(K); } out[id]={ok:S.ok,n:S.ok?Object.keys(S.at).length:0,want:K.samples.s.length,secs:S.ok?+S.buf.duration.toFixed(1):0}; }
+    const SR=44100, pitch=(x,lo,hi)=>{ const i0=Math.floor(.12*SR), n=Math.floor(.1*SR), y=x.subarray(i0,i0+n); let best=0, lag=0; for(let L=Math.floor(SR/hi);L<Math.floor(SR/lo);L++){ let c=0; for(let i=0;i<n-L;i++)c+=y[i]*y[i+L]; if(c>best){ best=c; lag=L; } } return lag?+(SR/lag).toFixed(1):0; };
+    const play=async(id,e,P)=>{ const K=INSTR.KINDS[id], S=INSTR.SMP[id], h=K.sample(e,P||{st:{}})[0], A=S.at[h.k], oc=new OfflineAudioContext(1,Math.floor(SR*.4),SR), src=oc.createBufferSource(); src.buffer=S.buf; src.playbackRate.value=h.rate||1; src.connect(oc.destination); src.start(0,A.t,A.L); const x=(await oc.startRendering()).getChannelData(0); let pk=0; for(const v of x)pk=Math.max(pk,Math.abs(v)); return {x,pk}; };
+    const hz={}; if(out.piano.ok)for(const [m,w] of [[69,440],[74,587.33],[50,146.83]]){ const r=await play('piano',{n:m,v:.8}); hz['piano '+m]=[pitch(r.x,w/1.5,w*1.5),w]; }
+    if(out.harp.ok)for(const [s,w] of [[16,329.63],[14,261.63]]){ const r=await play('harp',{n:s,f:0,v:.8}); hz['harp '+s]=[pitch(r.x,w/1.5,w*1.5),w]; }
+    const dk={}; if(out.drums.ok)for(const [n,o] of [[0,0],[1,0],[5,0],[5,1],[6,0],[7,0]]){ const r=await play('drums',{n,v:.9,o,h:'R'}); dk[n+(o?'o':'')]=+r.pk.toFixed(3); }
+    return {out,hz,dk}; });
+  rec('the recorded sounds come and decode (the Salamander piano, the VSCO harp, the MuldjordKit drums), every sound\'s start found',Object.values(rs.out).every(o=>o.ok&&o.n===o.want),JSON.stringify(rs.out));
+  rec('a recorded note plays at its own pitch (piano A4, D5 and D3 from their nearest recordings, harp E4 and C4: within 2%)',Object.keys(rs.hz).length===5&&Object.values(rs.hz).every(([h,w])=>Math.abs(h-w)/w<.02),JSON.stringify(rs.hz));
+  rec('every drum and cymbal has its recorded hit',Object.keys(rs.dk).length===6&&Object.values(rs.dk).every(p=>p>.05),JSON.stringify(rs.dk));
   rec('a released piano key is stopped by its damper (far quieter than one held)',a.ok&&a.damped<a.ring*.1,JSON.stringify({ring:a.ring,damped:a.damped}));
   // another player at a piano: drawn on them, their note in their live score and their fingers, heard from where they sit; gone when they put it away
   const o=await pg.evaluate(async()=>{ __dbg.UI.dist*=.3; const P=__dbg.you(), at=[P.x+1.8,P.z+.4,SHARED.py,0,SHARED.LVL,''];
@@ -71,4 +86,4 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
   const e=await pg.evaluate(async()=>{ FORAGE.ACT.harp('harp'); await new Promise(r=>setTimeout(r,500)); document.dispatchEvent(new KeyboardEvent('keydown',{code:'Escape',key:'Escape',bubbles:true})); await new Promise(r=>setTimeout(r,500)); return {on:INSTR.on(),panel:!document.getElementById('inp').hidden,held:!!INSTR.ME.H}; });
   rec('ESC puts it away (no instrument, no panel)',!e.on&&!e.panel&&!e.held,JSON.stringify(e));
   const E=Object.entries(errs); rec('no page errors',!E.length,E.map(([k,n])=>n+'× '+k).join(' | '));
-  console.log(bad?bad+' FAILED':'ALL PASS'); await b.close(); process.exit(bad?1:0); })();
+  console.log(bad?bad+' FAILED':'ALL PASS'); srv.close(); await b.close(); process.exit(bad?1:0); })();

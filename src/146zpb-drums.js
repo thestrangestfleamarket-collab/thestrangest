@@ -13,6 +13,11 @@ import {INSTR} from './146zp-instruments.js';
   // a hit's sound: a head struck nearer its middle or edge, a cymbal on its bow or bell, the hi-hat open when the left foot is up
   K.sound=(e,P)=>e.h==='P'?imAct('drum kit',{k:'hit',i:5,v:.35,r:.3}):imAct('drum kit',{k:'hit',i:e.n,v:Math.max(.1,Math.min(1,e.v)),r:e.b?.1:e.n>=5?.6:.25+.1*Math.random(),open:e.n===5&&e.o});
   K.hush=()=>[];
+  // the recordings: a real kit, each piece at three loudnesses with two takes each (taken in turn); the hi-hat's foot or a closed hit cuts an open one short
+  K.samples={...__DATA__("data/drums-samples.json"),file:__FILE__("data/drums-samples.mp3")};
+  const KEY=['k','s','t1','t2','ft','hc','','cr','rd'], RR={};
+  K.sample=e=>{ const v=Math.max(.05,Math.min(1,e.v)); let k=e.h==='P'?'hc':e.n===5?(e.o?'ho':'hc'):e.n===7&&e.b?'rb':e.n===6?'cr':KEY[e.n]; const L=e.h==='P'?0:v<.4?0:v<.85?1:2, r=RR[k]=(RR[k]||0)^1;
+    return [{k:k+'.'+L+'.'+r,gain:(e.h==='P'?.45:.55+.45*v)*1.1,id:e.n,ch:e.n===5?'hh':null}]; };
 
   /* ---------- where a stick strikes each piece: a head a little nearer the drummer than its middle, a cymbal on its edge (crash) or bow (ride) or bell ---------- */
   const HIT=PART.map(p=>{ const c=new V3(...p.c), toMe=new V3(-c.x,0,-c.z).normalize(); if(p.kick)return c; if(p.cym)return c.clone().addScaledVector(toMe,p.r*(p.n==='CRASH'?.8:p.n==='RIDE'?.55:.6)).add(new V3(0,.012,0)); return c.clone().addScaledVector(toMe,p.r*.3).add(new V3(0,p.r*.3*Math.sin(p.tilt||0)+.004,0)); });

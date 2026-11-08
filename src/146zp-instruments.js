@@ -26,17 +26,36 @@ const INSTR={KINDS:{}}; window.INSTR=INSTR;
   const voice=P=>{ if(!GSND.imx){ GSND.wake(); return null; } return P.V||(P.V=GSND.inst((P.id==='me'?'me':P.id)+'|'+P.K.id,P.K.dsp())); };
   const trim=P=>{ const L=P.live.ev, t=now()-12; while(L.length>200||L.length&&L[0].t+(L[0].d>1e6?0:L[0].d)<t&&L[0].d<1e6)L.shift(); };
   // a note played now: into the live score (the hands follow it) and to the voice
-  INSTR.note=(P,e)=>{ e.t=e.t??now(); P.live.ev.push(e); trim(P); const V=voice(P); if(V)GSND.send(V,P.K.sound(e,P),GSND.now()+.01); if(P===ME&&++freeN%25===0)FORAGE.use(P.K.skill,-10,45); return e; };
-  INSTR.off=(P,e,t)=>{ if(!e||e.d<1e6)return; e.d=Math.max(.03,(t??now())-e.t); const V=P.V; if(V&&P.K.release)GSND.send(V,P.K.release(e,P),GSND.now()+.005); };
-  INSTR.raw=(P,evs)=>{ const V=voice(P); if(V)GSND.send(V,evs,GSND.now()+.01); };
+  /* ---------- the recorded sounds (owner, 8 Nov 2026: "real sounds"; data/<id>-samples.mp3 and .json, tools/instrument-samples-bake.py): fetched and decoded the first time someone near plays; till they come, the music engine's model plays ---------- */
+  const SMP={}; INSTR.SMP=SMP;
+  const smp=K=>{ const S=SMP[K.id]||(SMP[K.id]={ok:false,busy:false,retry:0}); if(S.ok||S.busy||!K.samples||!GSND.ctx||performance.now()<S.retry)return S; S.busy=true;
+    fetch(K.samples.file).then(r=>{ if(!r.ok)throw new Error(r.status); return r.arrayBuffer(); }).then(b=>GSND.ctx.decodeAudioData(b)).then(buf=>{ const x=buf.getChannelData(0), sr=buf.sampleRate; S.at={};
+      // (each sound from where it really begins: an mp3 shifts its contents a little)
+      for(const [k,t,L] of K.samples.s){ const i0=Math.max(0,Math.floor((t-.08)*sr)), i1=Math.min(x.length,Math.floor((t+.1)*sr)); let pk=0; for(let i=i0;i<i1;i++)pk=Math.max(pk,Math.abs(x[i])); let i=i0; while(i<i1&&Math.abs(x[i])<pk*.06)i++; S.at[k]={t:Math.max(0,(i-24)/sr),L}; }
+      S.buf=buf; S.ok=true; }).catch(e=>{ console.warn(K.id+' sounds',e); S.retry=performance.now()+15000; }).finally(()=>{ S.busy=false; });
+    return S; };
+  INSTR.loadSounds=K=>smp(K);
+  const fade=(o,when,T)=>{ if(o.end<=when)return; o.g.gain.setTargetAtTime(0,when,T/3); try{ o.src.stop(when+T*2); }catch(_){} o.end=when; };
+  // a note out: its recordings (K.sample: which sound, how fast, how loud, how bright; a note that cuts off its own last one, or its group's), else the model's events
+  const emit=(P,e,when)=>{ const V=voice(P); if(!V)return; const K=P.K, S=smp(K); if(!(S.ok&&K.sample))return GSND.send(V,K.sound(e,P),when); const c=GSND.ctx, L=V.on||(V.on=[]);
+    for(const h of K.sample(e,P)){ const A=S.at[h.k]; if(!A)continue; for(const o of L)if((h.re&&o.id===h.id)||(h.ch!=null&&o.ch===h.ch))fade(o,when,.04);
+      const src=c.createBufferSource(); src.buffer=S.buf; src.playbackRate.value=h.rate||1; let n=src; if(h.lp){ const f=c.createBiquadFilter(); f.type='lowpass'; f.frequency.value=h.lp; f.Q.value=.4; src.connect(f); n=f; }
+      const g=c.createGain(); g.gain.value=h.gain; n.connect(g); g.connect(V.g); src.start(when,A.t,A.L); const o={src,g,id:h.id,ch:h.ch,end:when+A.L/(h.rate||1)}; L.push(o);
+      src.onended=()=>{ const i=L.indexOf(o); if(i>=0)L.splice(i,1); try{ g.disconnect(); }catch(_){} }; } };
+  // stopping notes (a damper, a hand on a string): the recordings fade, or the model takes the same events
+  const rel=(P,evs,when)=>{ const V=P.V; if(!V||!evs||!evs.length)return; const S=SMP[P.K.id]; if(!(S&&S.ok&&P.K.sample))return GSND.send(V,evs,when);
+    for(const q of evs){ const id=q.k==='mute'?q.s:q.id; for(const o of V.on||[])if(o.id===id)fade(o,when,q.k==='mute'?.12:(q.T||.15)); } };
+  INSTR.note=(P,e)=>{ e.t=e.t??now(); P.live.ev.push(e); trim(P); emit(P,e,GSND.now()+.01); if(P===ME&&++freeN%25===0)FORAGE.use(P.K.skill,-10,45); return e; };
+  INSTR.off=(P,e,t)=>{ if(!e||e.d<1e6)return; e.d=Math.max(.03,(t??now())-e.t); if(P.K.release)rel(P,P.K.release(e,P),GSND.now()+.005); };
+  INSTR.raw=(P,evs)=>{ voice(P); rel(P,evs,GSND.now()+.01); };
   let freeN=0;
   const learnt=(K,T)=>{ const n=1+Math.floor((T.secs||40)/30), l=T.lvl||10; for(let i=0;i<n;i++)FORAGE.use(K.skill,l-30,l+20); };
   const songGo=(P,i)=>{ const T=P.K.BOOK[i]; if(!T)return; if(!T.c)P.K.compile(T); P.song=i; P.s0=now()+.6; P.cur=0; };
-  const songStop=P=>{ if(P.song<0)return; P.song=-1; if(P.V&&P.K.hush)GSND.send(P.V,P.K.hush(P),GSND.now()+.01); };
+  const songStop=P=>{ if(P.song<0)return; P.song=-1; if(P.V&&P.K.hush)rel(P,P.K.hush(P),GSND.now()+.01); };
   // a song's notes go to the voice a little ahead of the clock
   const songTick=P=>{ if(P.song<0)return; const T=P.K.BOOK[P.song], c=T&&T.c; if(!c)return songStop(P); const t=time(P); if(t>c.len+1){ if(P===ME){ learnt(P.K,T); drawPanel(); } songStop(P); return; } const V=voice(P); if(!V)return;
-    while(P.cur<c.ev.length&&c.ev[P.cur].t<=t+.12){ const e=c.ev[P.cur++]; if(e.t<t-.05)continue; const when=GSND.now()+Math.max(0,e.t-t)+.02; GSND.send(V,P.K.sound(e,P),when);
-      if(P.K.release&&e.d<60)GSND.send(V,P.K.release(e,P),when+e.d); } };
+    while(P.cur<c.ev.length&&c.ev[P.cur].t<=t+.12){ const e=c.ev[P.cur++]; if(e.t<t-.05)continue; const when=GSND.now()+Math.max(0,e.t-t)+.02; emit(P,e,when);
+      if(P.K.release&&e.d<60)rel(P,P.K.release(e,P),when+e.d); } };
 
   /* ---------- the body seated at it: lowered onto the seat, leaning in, the legs to the floor or the pedals, the arms to where the hands play, each finger on its key or string ---------- */
   const QA=new Q4(), VA=new V3(), VB=new V3(), MA=new M4(), MB=new M4(), F=new M4();
@@ -89,10 +108,10 @@ const INSTR={KINDS:{}}; window.INSTR=INSTR;
   INSTR.tell=tell;
   INSTR.start=id=>{ const K=INSTR.KINDS[id]; if(!K)return; if(on){ if(ME.K===K)return; INSTR.stop(); }
     if(st.water&&st.water.in||st.ride||st.climb||st.hang||st.sit)return say('NOT HERE: STAND SOMEWHERE STEADY AND OPEN TO SET IT DOWN.','#c8a090');
-    if(window.GUITAR&&GUITAR.on())GUITAR.stop(); GSND.wake(); on=true; ME.K=K; ME.song=-1; ME.live={ev:[]}; ME.st={}; ME.cur=0;
+    if(window.GUITAR&&GUITAR.on())GUITAR.stop(); GSND.wake(); on=true; ME.K=K; setTimeout(()=>smp(K),400); ME.song=-1; ME.live={ev:[]}; ME.st={}; ME.cur=0;
     prevView=UI.view; if(CU.on&&!UI.persp)UI.setView('third'); panel(true); tell('on'); K.loadBook&&K.loadBook();
     say('YOU SET DOWN '+K.name+' AND SIT AT IT. '+K.help+' · TAB THE CLOSE-UP · ESC TO PUT IT AWAY.'); };
-  INSTR.stop=()=>{ if(!on)return; on=false; songStop(ME); if(ME.K&&ME.K.hush&&ME.V)GSND.send(ME.V,ME.K.hush(ME),GSND.now()+.01); unhold(ME); panel(false); tell('off'); if(prevView&&prevView!==UI.view&&!/third/.test(prevView))UI.setView(prevView); prevView=''; };
+  INSTR.stop=()=>{ if(!on)return; on=false; songStop(ME); if(ME.K&&ME.K.hush&&ME.V)rel(ME,ME.K.hush(ME),GSND.now()+.01); unhold(ME); panel(false); tell('off'); if(prevView&&prevView!==UI.view&&!/third/.test(prevView))UI.setView(prevView); prevView=''; };
   INSTR.play=(k,v)=>{ if(!on)return; const K=ME.K; if(k==='song'&&v===ME.song)k='stop';
     if(k==='song'){ const T=K.BOOK[v]; if(!T||(T.lvl||1)>skill(K)+1e-6)return say(T?`${T.name.toUpperCase()} NEEDS ${K.skill.toUpperCase()} ${T.lvl}; YOURS IS ${skill(K).toFixed(1)}. PLAY EASIER PIECES OR PLAY FREELY TO GET BETTER.`:'THAT PIECE IS NOT IN THE BOOK.','#c8a090'); songGo(ME,v); tell('song',v); }
     else if(k==='stop'){ songStop(ME); tell('stop'); }
@@ -127,7 +146,7 @@ const INSTR={KINDS:{}}; window.INSTR=INSTR;
       PN.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||!on)return; GSND.wake(); if(b.dataset.n!=null||b.dataset.pad!=null)return;
         if(b.id==='inplay')INSTR.play(ME.song>=0?'stop':'song',ME.song>=0?null:+PN.querySelector('#insong').value); else if(b.id==='incu')closeUp(!CU.on); else if(b.id==='inoff')INSTR.stop(); else ME.K.click(b,true); b.blur(); }); }
     PN.innerHTML=`<div class="r"><span class="h" id="insk"></span><span id="innow"></span></div><div id="inown"></div>
-      <div class="r"><select id="insong" aria-label="song"></select><button id="inplay" title="\`">PLAY</button><button id="incu" title="tab">CLOSE-UP</button><span class="d">VOL</span><input type="range" id="invol" min="0" max="1" step=".05" aria-label="volume"><button id="inoff" title="esc">PUT AWAY</button></div>`;
+      <div class="r"><select id="insong" aria-label="song"></select><button id="inplay" title="\`">PLAY</button><button id="incu" title="tab">CLOSE-UP</button><span class="d">VOL</span><input type="range" id="invol" min="0" max="1" step=".05" aria-label="volume"><button id="inoff" title="esc">PUT AWAY</button></div>${ME.K.samples?`<div class="r" style="opacity:.45">SOUND: ${esc(ME.K.samples.credit)}</div>`:''}`;
     PN.querySelector('#inown').innerHTML=ME.K.panel(); for(const el of PN.querySelectorAll('select,input'))el.addEventListener('keydown',e=>e.stopPropagation());
     PN.querySelector('#invol').oninput=e=>GSND.setVol(+e.target.value);
     PN.hidden=false; fillSongs(); drawPanel(); };

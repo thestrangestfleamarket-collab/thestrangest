@@ -17,6 +17,9 @@ import {INSTR} from './146zp-instruments.js';
   K.dsp=()=>IMK.harp.dsp;
   const ped=(P)=>P.st.ped||(P.st.ped=[0,0,0,0,0,0,0]);
   K.sound=(e,P)=>imAct('harp',{k:'pluck',s:e.n,f:e.f??ped(P)[letter(e.n)],v:Math.max(.1,Math.min(1,e.v)),p:.4+.06*Math.random(),b:.45+.25*e.v});
+  // the recordings: a real concert harp, every few strings, each played at the nearest one's speed; a string plucked again stops its last ring
+  K.samples={...__DATA__("data/harp-samples.json"),file:__FILE__("data/harp-samples.mp3")}; const HS=K.samples.s.map(r=>r[0]);
+  K.sample=(e,P)=>{ const m=IMK.harp.notes[e.n]+(e.f??ped(P)[letter(e.n)]), v=Math.max(.05,Math.min(1,e.v)); let m0=HS[0]; for(const k of HS)if(Math.abs(k-m)<Math.abs(m0-m))m0=k; return [{k:m0,rate:Math.pow(2,(m-m0)/12),gain:1.15*Math.pow(v,1.2),lp:2500+12000*v,id:e.n,re:true}]; };
   K.hush=()=>{ const o=[]; for(let s=0;s<N;s++)o.push({k:'mute',s,v:.2}); return o; };
 
   /* ---------- the book: each piece's notes as [dt, string, pedal+1, length, hand] (centiseconds) ---------- */

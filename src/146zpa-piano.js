@@ -17,6 +17,9 @@ import {INSTR} from './146zp-instruments.js';
       if(n<=5){ const dc=.00045*(1+((m*7)%5)*.25); modes.push([f*(1-dc),t*1.15,a*.55],[f*(1+dc),t*.55,a*.5]); } else modes.push([f,t,a]); }
     return {k:'hit',modes,tau:.0008,id:m,ch:200+m,noise:[.035*v,.012,70,1800]}; };
   K.dsp=()=>({fam:'hit',poly:40,body:[],dry:0,wet:0,gain:.72});
+  // the recordings: the Salamander grand, every third note, each played at the nearest one's speed; played soft, darker, as a real hammer's felt is
+  K.samples={...__DATA__("data/piano-samples.json"),file:__FILE__("data/piano-samples.mp3")}; const PS=K.samples.s.map(r=>r[0]);
+  K.sample=e=>{ const m=e.n, v=Math.max(.05,Math.min(1,e.v)); let m0=PS[0]; for(const k of PS)if(Math.abs(k-m)<Math.abs(m0-m))m0=k; return [{k:m0,rate:Math.pow(2,(m-m0)/12),gain:1.1*Math.pow(v,1.5),lp:900+15000*v*v,id:m,re:true}]; };
   K.sound=e=>[hit(e.n,Math.max(.08,Math.min(1,e.v)))];
   K.release=(e,P)=>{ if(e.n>88)return []; if(P&&P.st.ped){ (P.st.held||(P.st.held=new Set())).add(e.n); return []; } return [{k:'damp',id:e.n,T:.1+(88-e.n)*.004}]; };
   K.hush=P=>{ const o=[]; for(let m=LO;m<=HI;m++)o.push({k:'damp',id:m,T:.25}); if(P.st.held)P.st.held.clear(); return o; };

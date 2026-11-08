@@ -14,7 +14,7 @@ const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
   // the round: it leaves the pad every CYC seconds, flies F seconds and rests the rest, the rotor still
   const H2=0, CYC=300, F=130, UP0=5, UP1=11, DN0=F-14, DN1=F-4, LIFT=12, CRUISE=55, DECK={s:.8,v:.6};
   // the helicopter: [id, model, scale over Polyfork's size, the pilot (a Polyfork character), its seats in the model's metres: the pilot's first]
-  const DEFS=[{id:'news',model:'utility',name:'THE NEWS HELICOPTER',s:.615,pilot:'aircrew_pilot',label:'THE NEWS PILOT',seats:[[-.38,.62,2.45],[.38,.62,2.45],[-.42,.62,1.0],[.42,.62,1.0]]}];
+  const DEFS=[{id:'news',model:'utility',name:'THE NEWS HELICOPTER',s:.615,mark:'NEWS',pilot:'aircrew_pilot',label:'THE NEWS PILOT',seats:[[-.38,.62,2.45],[.38,.62,2.45],[-.42,.62,1.0],[.42,.62,1.0]]}];
   // the sky tour's way, in map tiles: out over the Hudson, east along the river, down the park's east side to the big lake, back west over the park and up West St
   const WAY=[[24.7,-101.9],[34,-130],[110,-150],[210,-142],[245,-92],[242,0],[228,118],[165,166],[60,152],[2,92],[-36,22],[-40,-62],[-12,-122],[24.7,-101.9]];
   let D=null, built=false, curve=null, LEN=0, restHd=0, mineH=null, want=null, ui=null;
@@ -73,7 +73,12 @@ const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
   const mk=(def,i)=>{ const H={...def,i,by:null,park:null,mode:'rest',s0:{},rot:0,spin:0,seatO:[],taken:[],sol:null};
     H.root=new THREE.Group(); H.root.rotation.order='YXZ'; H.root.userData.anyRoom=false; H.body=model(def.model,def.s*M0,def.s*MV); H.root.add(H.body); scene.add(H.root);
     H.seatO=def.seats.map(s=>{ const o=new THREE.Object3D(); o.position.set(s[0]*def.s*M0,s[1]*def.s*MV,s[2]*def.s*M0); H.root.add(o); return o; });
-    H.parts=H.body.userData.parts; return H; };
+    H.parts=H.body.userData.parts; if(def.mark)H.parts.body.add(...markSides(def.mark)); return H; };
+  // its name along both sides of the cabin, over the doors: white letters on a red panel, in the model's metres
+  const markSides=t=>{ const c=document.createElement('canvas'); c.width=96; c.height=20; const x=c.getContext('2d'); x.fillStyle='#b8202a'; x.fillRect(0,0,96,20); x.fillStyle='#f4efe4'; x.fillRect(0,1,96,1); x.fillRect(0,18,96,1);
+    x.font='bold 17px sans-serif'; x.textAlign='center'; x.textBaseline='middle'; x.fillText(t.split('').join(String.fromCharCode(8202)),48,11); const tx=new THREE.CanvasTexture(c); tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.colorSpace=THREE.SRGBColorSpace;
+    const m=new THREE.MeshLambertMaterial({map:tx,polygonOffset:true,polygonOffsetFactor:-2}), g=new THREE.PlaneGeometry(2.6,.54);
+    return [1,-1].map(sd=>{ const me=new THREE.Mesh(g,m); me.position.set(sd*.875,.95,.72); me.rotation.y=sd*Math.PI/2; return me; }); };
   const phase=H=>((now()+H.i*H2)%CYC+CYC)%CYC;   // its own clock: 0..F flying, F..CYC resting
   HELI.phase=phase;
   const fetchAt=H=>{ const t0=H.park.t+5, p=((t0+H.i*H2)%CYC+CYC)%CYC; return t0+((F-p)%CYC+CYC)%CYC; };

@@ -1630,6 +1630,11 @@
   "weight": 2.5,
   "sellable": true
  },
+ "bass": {
+  "value": 800,
+  "weight": 2.5,
+  "sellable": true
+ },
  "bmx": {
   "slot": "hand",
   "grants": "bmx",

@@ -15,6 +15,7 @@ Object.assign(INV,{items:{},picked:{}}); window.INV=INV; GEMS.TIER=GTIER; window
   INV.count=()=>Object.values(INV.items).reduce((a,b)=>a+b,0);
   INV.random=()=>{ let r=Math.random()*W; for(const g of GEMS){ if((r-=g[3])<0)return g[0]; } return GEMS[0][0]; };
   INV.ready=k=>INV.picked[k]==null||INV.picked[k]<day();
+  INV.mark=k=>{ INV.picked[k]=day(); save(); };   // a find taken today (INV.pick also gives a stone)
   INV.pick=k=>{ '@later'; if(!INV.ready(k)){ TRADE.note('NOTHING HERE TODAY. BACK TOMORROW'); return false; } const id=INV.random(), g=byId(id); INV.picked[k]=day(); INV.add(id);
     TRADE.note('YOU FOUND '+(/^[AEIOU]/.test(g[1])?'AN ':'A ')+g[1]+' · THE GEM SHOP PAYS $'+g[2]); SFX.play('chirp',{vol:.4}); return true; };
   INV.sell=(id,n=1)=>{ '@later'; const g=byId(id), have=INV.items[id]||0; n=Math.min(n,have); if(!g||n<1)return 0; INV.items[id]=have-n; if(!INV.items[id])delete INV.items[id]; INV.cash+=g[2]*n; save();
@@ -32,7 +33,7 @@ Object.assign(INV,{items:{},picked:{}}); window.INV=INV; GEMS.TIER=GTIER; window
       <div style="margin-bottom:8px">YOU HAVE <b style="color:#f2c14e">$${Math.round(INV.cash)}</b> · ${INV.count()} STONE${INV.count()===1?'':'S'}</div><table style="border-collapse:collapse;width:100%">`;
     for(const [id,name,price] of GEMS){ const n=INV.items[id]||0;
       o+=`<tr style="border-bottom:1px solid #22252f;${n?'':'color:#7d7a70'}"><td style="padding:4px 2px">${esc(name)}</td><td style="text-align:right;padding:4px 6px">$${price}</td><td style="text-align:right;padding:4px 6px">${n?'x'+n:'-'}</td><td style="text-align:right;white-space:nowrap">${n?`<button ${btn} data-s="${id}">SELL</button>${n>1?`<button ${btn} data-s="${id}" data-n="all">ALL $${price*n}</button>`:''}`:''}</td></tr>`; }
-    o+=(window.FORAGE&&FORAGE.trainRows?FORAGE.trainRows(['prosp']):'')+`</table><div style="color:#9b9584;margin-top:10px">Find them: the glints on the cave's floor (back each day).</div>`;
+    o+=(window.FORAGE&&FORAGE.trainRows?FORAGE.trainRows(['gem']):'')+`</table><div style="color:#9b9584;margin-top:10px">Find them: the glints on the cave's floor (back each day).</div>`;
     const x=P.querySelector(':scope>.pX'); P.innerHTML=o; if(x)P.appendChild(x); };
   TRADE.open=N=>{ const P=panel(); P.hidden=false; TRADE.draw();
     if(N&&N.walker&&N.walker.state==='stay'){ N.walker.t=Math.max(N.walker.t,14); N.st.face={x:pos.x,z:pos.z}; }

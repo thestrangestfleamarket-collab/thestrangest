@@ -1,9 +1,10 @@
 // THE HANDS: HANDS, Polyfork's jointed hands (25 joints each, data/pfhand.json) on your avatar's wrists at all times (owner, 7 Nov 2026: "lets add real hands at all times"); the fingers follow the rig's grip, or a pose something sets (HANDS.set, the guitar).
-import {THREE} from './003-shx.js';
+import {SHARED, THREE} from './003-shx.js';
 import {B64, I16, U16} from './003a-skin.js';
 import {W3} from './003b-systems.js';
 import {renderer} from './004-main.js';
-const HANDS={};
+import {SYS, TILE} from './006-map-pre.js';
+const HANDS={}; window.HANDS=HANDS;
 { const H=__DATA__("data/pfhand.json"), NJ=25, V3=THREE.Vector3, M4=THREE.Matrix4;
   const Q=I16(H.pos), JI=B64(H.j), ZN=B64(H.z), TR=U16(H.tri), N=JI.length;
   const X=new Float32Array(N*3); for(let i=0;i<Q.length;i++)X[i]=(Q[i]+32500)*H.sc+H.lo[i%3];
@@ -31,6 +32,8 @@ const HANDS={};
   const AT='vec3 transformed=hjAt(position);';
   const mats=U=>{ const mat=new THREE.MeshToonMaterial({vertexColors:true,gradientMap:W3.GP,side:THREE.DoubleSide});
     mat.onBeforeCompile=sh=>{ sh.uniforms.uHJ=U; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT);
+      // (the body's shadow lean, 111a: or the hand shadows itself darker than the arm)
+      sh.fragmentShader='#define BODYB .0015\n'+sh.fragmentShader.replace('#include <lights_fragment_begin>',THREE.ShaderChunk.lights_fragment_begin.replace(/((?:directional|spot|point)LightShadows?(?:\[ *\w+ *\])?)\.shadowBias/g,'($1.shadowBias-BODYB)'));
       sh.fragmentShader=sh.fragmentShader.replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(cross(dFdx(vViewPosition),dFdy(vViewPosition))); vec3 nonPerturbedNormal=normal;').replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*0.16;'); };
     mat.customProgramCacheKey=()=>'hands';
     const dist=new THREE.MeshDistanceMaterial({side:THREE.DoubleSide}); dist.onBeforeCompile=sh=>{ sh.uniforms.uHJ=U; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT); }; dist.customProgramCacheKey=()=>'handsdist';
@@ -51,13 +54,21 @@ const HANDS={};
   const LOCL=new M4().makeBasis(new V3(0,0,-1),new V3(1,0,0),new V3(0,-1,0)), LOCR=new M4().makeBasis(new V3(0,0,1),new V3(-1,0,0),new V3(0,-1,0));
   const WR=new V3(0,.026,-.004);   // (the hand's wrist point: halfway through it, at the joint)
   const LIVE=new Set();
+  // drawn only near the camera (owner, 7 Nov 2026: "dont draw hands unless zoomed in"; both hands are twice the rest of the body's triangles): past NEAR the body's own simple hands show instead
+  HANDS.NEAR=3;   // metres from the camera
+  const CP=new V3();
+  SYS.add('cam',()=>{ const cam=SHARED.cam; if(!cam)return; const far=HANDS.NEAR*TILE/.84;
+    for(const st of LIVE){ st.me.getWorldPosition(CP); const near=CP.distanceTo(cam.position)<far; if(st.near!==near){ st.near=near; st.hm.visible=near; if(st.PM.hh)st.PM.hh.value=near?1:0; } } },'111b-hands');
+  // a body's hands in its rest space (the avatar fits its wrists to them, 111c)
+  HANDS.base=(binv,o={})=>{ const k=(o.scale||1)*(1+.05*((o.b??1)-1)), S=new M4().makeScale(k,k,k).multiply(new M4().makeTranslation(-WR.x,-WR.y,-WR.z));
+    return {L:binv[5].clone().invert().multiply(LOCL).multiply(S),R:binv[8].clone().invert().multiply(LOCR).multiply(S).multiply(MX)}; };
+  HANDS.X=X;
   HANDS.add=(me,PM,body,o={})=>{ if(!body.binv)return null; const U={value:Array.from({length:NJ*6},()=>new THREE.Vector4())}, M=mats(U), g=geo(o.skin||'d9a984');
-    const k=(o.scale||.95)*(1+.05*((o.b??1)-1)), S=new M4().makeScale(k,k,k).multiply(new M4().makeTranslation(-WR.x,-WR.y,-WR.z));
-    const base={L:body.binv[5].clone().invert().multiply(LOCL).multiply(S),R:body.binv[8].clone().invert().multiply(LOCR).multiply(S).multiply(MX)};
+    const base=HANDS.base(body.binv,o);
     const hm=new THREE.Mesh(g,M.mat); hm.customDistanceMaterial=M.dist; hm.customDepthMaterial=M.depth; hm.castShadow=hm.receiveShadow=true; hm.name='hands';
     Object.defineProperty(hm,'boundingSphere',{configurable:true,get(){ return me.boundingSphere; },set(){}});   // (seen when the body is)
     const J={L:REST.map(()=>new M4()),R:REST.map(()=>new M4())}, W=new M4(); let fr=-1;
-    const st={me,PM,fg:null};
+    const st={me,PM,fg:null,hm,near:null};
     hm.onBeforeRender=()=>{ const f=renderer.info.render.frame; if(f===fr)return; fr=f; const B=PM.B, m=B&&B.m;
       for(const [s,bi,oj] of [['L',5,0],['R',8,NJ]]){ const fg=st.fg&&st.fg[s]||(m?RIG.fgOf({fist:Math.max(m.fist&&m.fist[s]||0,o.grip&&o.grip[s]?1:0),fg:m.fg&&m.fg[s]}):R0); fk(fg,J[s]); W.multiplyMatrices(PM.value[bi],base[s]);
         for(let j=0;j<NJ;j++){ T1.multiplyMatrices(W,J[s][j]); const e=T1.elements, a=U.value, q=(oj+j)*3; a[q].set(e[0],e[4],e[8],e[12]); a[q+1].set(e[1],e[5],e[9],e[13]); a[q+2].set(e[2],e[6],e[10],e[14]); } } };
@@ -82,5 +93,12 @@ const HANDS={};
       const k=Math.min(1,.25/Math.max(1e-6,Math.hypot(...dx))); set(f,x[0]+dx[0]*k,x[1]+dx[1]*k,i?x[2]+dx[2]*k:f[3]); }
     return f; };
   HANDS.set=(st,fg)=>{ if(st)st.fg=fg; };
+  // the headset's tracked hands as these hands (VR, 162c): WebXR's 25 joints are this hand's, frame for frame, so each joint's pose drives its bone; the right hand the left one mirrored
+  let XG=null;
+  const xrGeo=skin=>{ const g=geo(skin).clone(), p=g.attributes.position.array.slice(); for(let i=N*3;i<N*6;i+=3)p[i]=-p[i]; g.setAttribute('position',new THREE.BufferAttribute(p,3)); return g; };
+  HANDS.vr=(skin='d9a984')=>{ const U={value:Array.from({length:NJ*6},()=>new THREE.Vector4())}, M=mats(U), g=xrGeo(skin), hm=new THREE.Mesh(g,M.mat); hm.frustumCulled=false; hm.castShadow=false; hm.name='vrhands'; hm.userData.ownMat=true;
+    const seen={L:0,R:0};
+    return {mesh:hm,set:(side,name,m)=>{ const j=NAME[name]; if(j==null)return; const e=m.elements, a=U.value, q=((side==='R'?NJ:0)+j)*3; a[q].set(e[0],e[4],e[8],e[12]); a[q+1].set(e[1],e[5],e[9],e[13]); a[q+2].set(e[2],e[6],e[10],e[14]); seen[side]=1; },
+      hide:(side)=>{ const a=U.value; for(let j=0;j<NJ;j++){ const q=((side==='R'?NJ:0)+j)*3; a[q].set(0,0,0,0); a[q+1].set(0,0,0,0); a[q+2].set(0,0,0,0); } },U}; };
   HANDS.credit=H.credit; }
 export {HANDS};

@@ -37,17 +37,19 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     float x=q.x,y=q.y,z=q.z,c=q.w, s=sa*w+sb*(1.-w); vec3 t=2.*(c*d.xyz-d.w*q.xyz+cross(q.xyz,d.xyz));
     return mat4(vec4(1.-2.*(y*y+z*z),2.*(x*y+c*z),2.*(x*z-c*y),0.)*s,vec4(2.*(x*y-c*z),1.-2.*(x*x+z*z),2.*(y*z+c*x),0.)*s,vec4(2.*(x*z+c*y),2.*(y*z-c*x),1.-2.*(x*x+y*y),0.)*s,vec4(t,1.)); }`;
   function mesh(body){ const PM={value:Array.from({length:NB},()=>new THREE.Matrix4())};
-    const MOVE=`attribute vec2 bi; attribute float bw; uniform mat4 uPM[${NB}];`+(body.dq?DQ:''), AT_=body.dq?`mat4 PM=dqm(uPM[int(bi.x+.5)],uPM[int(bi.y+.5)],bw);`:`mat4 PM=uPM[int(bi.x+.5)]*bw+uPM[int(bi.y+.5)]*(1.-bw);`, CK=body.dq?'d':'';
+    const MOVE=`attribute vec2 bi; attribute float bw; attribute float hh; uniform float uHH; uniform mat4 uPM[${NB}];`+(body.dq?DQ:''), AT_=body.dq?`mat4 PM=dqm(uPM[int(bi.x+.5)],uPM[int(bi.y+.5)],bw);`:`mat4 PM=uPM[int(bi.x+.5)]*bw+uPM[int(bi.y+.5)]*(1.-bw);`, CK=body.dq?'d':'';
     if(body.smooth)return smooth(body,PM,MOVE,AT_);
+    // the body's own simple hands (hh) folded away while Polyfork's jointed ones are drawn in their place (PM.hh, 111b: only near the camera)
+    PM.hh={value:0}; const HH=' if(hh*uHH>.5)transformed=vec3(0.);';
     // a cape flaps in flight (body.flap: its points' fl, 0 at the tie to 1 at the hem, and fd, out from the body): lifted off the back and rippling, by PM.fk (pose)
     const FL=body.flap?(PM.fk={value:0},PM.ft={value:0},'attribute float fl; attribute vec3 fd; uniform float uFK,uFT;'):'', P0=body.flap?'position+fd*fl*uFK*(.04+.16*fl+.07*sin(uFT*12.-fl*8.+fd.x*2.))':'position';
     const mat=new THREE.MeshToonMaterial({vertexColors:true,gradientMap:W3.GP,side:THREE.DoubleSide});
-    mat.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; if(FL){ sh.uniforms.uFK=PM.fk; sh.uniforms.uFT=PM.ft; } sh.fragmentShader='#define BODYB .0015\n'+sh.fragmentShader; sh.vertexShader=MOVE+FL+'\n'+sh.vertexShader.replace('#include <beginnormal_vertex>',AT_+' vec3 objectNormal=mat3(PM)*normal;').replace('#include <begin_vertex>','vec3 transformed=(PM*vec4('+P0+',1.)).xyz;');
+    mat.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.uniforms.uHH=PM.hh; if(FL){ sh.uniforms.uFK=PM.fk; sh.uniforms.uFT=PM.ft; } sh.fragmentShader='#define BODYB .0015\n'+sh.fragmentShader; sh.vertexShader=MOVE+FL+'\n'+sh.vertexShader.replace('#include <beginnormal_vertex>',AT_+' vec3 objectNormal=mat3(PM)*normal;').replace('#include <begin_vertex>','vec3 transformed=(PM*vec4('+P0+',1.)).xyz;'+HH);
       // a body's own layers (cloth over its lining, over the skin) a few millimetres apart: its shadow test leans that much more toward the light, or they shadow each other in specks (owner, 6 Nov 2026: "seems like its shadows")
       sh.fragmentShader=sh.fragmentShader.replace('#include <lights_fragment_begin>',THREE.ShaderChunk.lights_fragment_begin.replace(/((?:directional|spot|point)LightShadows?(?:\[ *\w+ *\])?)\.shadowBias/g,'($1.shadowBias-BODYB)')).replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(cross(dFdx(vViewPosition),dFdy(vViewPosition))); vec3 nonPerturbedNormal=normal;').replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*0.16;'); };
     mat.customProgramCacheKey=()=>'body'+NB+CK+'b'+(FL?'f':'');
-    const dist=new THREE.MeshDistanceMaterial({side:THREE.DoubleSide}); dist.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; dist.customProgramCacheKey=()=>'bodydist'+NB+CK;
-    const depth=new THREE.MeshDepthMaterial({side:THREE.DoubleSide,depthPacking:THREE.RGBADepthPacking}); depth.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'); }; depth.customProgramCacheKey=()=>'bodydepth'+NB+CK;
+    const dist=new THREE.MeshDistanceMaterial({side:THREE.DoubleSide}); dist.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.uniforms.uHH=PM.hh; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'+HH); }; dist.customProgramCacheKey=()=>'bodydist'+NB+CK;
+    const depth=new THREE.MeshDepthMaterial({side:THREE.DoubleSide,depthPacking:THREE.RGBADepthPacking}); depth.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.uniforms.uHH=PM.hh; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'+HH); }; depth.customProgramCacheKey=()=>'bodydepth'+NB+CK;
     const me=new THREE.Mesh(body.GEO||(body.GEO=body.geo()),mat); me.customDistanceMaterial=dist; me.customDepthMaterial=depth; me.castShadow=me.receiveShadow=true; cull(me,PM,body);
     if(body.onMesh)body.onMesh(me,PM);   // (your avatar's hands, 111b)
     return {me,PM}; }
@@ -147,6 +149,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   // in the water (treading, swimming): the head's base set over the surface, by A.head rig units (owner, 7 Nov 2026: "your head is almost entirely underwater"), bobbing with the rig
   const HUV=new V3(), headUp=(PM,body,S,G,me)=>{ const W=S.water; G.updateMatrixWorld(true); me.updateMatrixWorld(true); jointAt(PM,body,2,HUV).applyMatrix4(me.matrixWorld); const sy=G.scale.y||1, my=me.matrixWorld.elements[5]||sy;
     const want=G.position.y+(W.level+S._pfHead+Math.max(-2,Math.min(2,(W.y-(W.level+S._pfRest))*.4)))*sy, d=(want-HUV.y)/my*(S._aw||0)*Math.max(0,1-2*(W.under||0)); if(!isFinite(d))return; for(let i=0;i<NB;i++)PM.value[i].elements[13]+=d; };
+  BODIES.headUp=headUp;
   const jointAt=(PM,body,i,out)=>out.setFromMatrixPosition(IKM.copy(body.binv[i]).invert()).applyMatrix4(PM.value[i]);
   const turnAbout=(Mx,pv,q)=>{ IKT.makeTranslation(-pv.x,-pv.y,-pv.z); Mx.premultiply(IKT); IKT.makeRotationFromQuaternion(q); Mx.premultiply(IKT); IKT.makeTranslation(pv.x,pv.y,pv.z); Mx.premultiply(IKT); };
   function feetOnGround(PM,body,G,ground){ if(!ground||!G)return; G.updateMatrixWorld(true); const Mw=G.matrixWorld, sy=G.scale.y||1, gy=ground(G.position.x,G.position.z), h={};   // (each foot against the ground where you stand: on a crate or a roof the ground under it is not yours)
@@ -176,7 +179,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     spin(PM,ALL,MP,XA,MO.pit*m); spin(PM,ALL,MP,ZA,MO.rol*m);
     if(ks){ const W=jointAt(PM,body,1,IKV[2]); spin(PM,UPPER,W,XA,.3*ks*m); } }
   BODIES.momentum=momentum;
-  // never under the ground: your avatar's lowest point is raised onto the ground under it, if the rig's pose left it below (after some moves the rig sinks; owner, 5 Nov 2026: "they touch the ground when they are supposed to"); never lowered (on a crate or a roof the ground is further down)
+  // never under the ground: your avatar's lowest point is raised onto the ground under it, if the rig's pose left it below (after some moves the rig sinks; owner, 5 Nov 2026: "they touch the ground when they are supposed to"); never lowered (on a crate or a roof the ground is further down); not in a pull-up from below a ledge (a move with `below`: the mantle), which starts under it
   const LOWV=new V3();
   function aboveGround(PM,body,G,ground){ const g=body.GEO; if(!ground||!G||!g||!g.attributes.position.count)return; const A=g.attributes, p=A.position.array, bi=A.bi.array, bw=A.bw.array, P=PM.value, n=A.position.count, step=n>3000?3:1; let lo=Infinity, li=-1;
     for(let i=0;i<n;i+=step){ const a=P[bi[i*2]|0].elements, c=P[bi[i*2+1]|0].elements, w=bw[i], x=p[i*3], y=p[i*3+1], z=p[i*3+2];
@@ -214,7 +217,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     for(const m of W3.meshes)m.visible=false;   // (the Walker is never drawn, not even while your avatar loads)
     if(!body){ if(ME)ME.me.visible=false; return; }
     if(MEK!==key||ME.me.geometry!==body.GEO){ if(ME){ W3.group.remove(ME.me); ME.me.material.dispose(); } ME=mesh(body); MEK=key; W3.group.add(ME.me); }
-    ME.me.visible=!W3.hideMe&&!W3.ghost; pose(B,ME.PM,body,RAG.on||VIT.dead?null:st); if(st._pfHead&&st.water&&st.water.in&&st.water.level!=null&&body.binv)headUp(ME.PM,body,st,W3.group,ME.me); if(body.anim&&st._mw>0&&!RAG.on&&!st._pfSeat){ const now=performance.now(), dt=MO.t?Math.min(.1,(now-MO.t)/1000):0; MO.t=now; momentum(ME.PM,body,st,W3.group,dt); feetOnGround(ME.PM,body,W3.group,SHARED.groundY); } else MO.t=0; if(!RAG.on&&!B.seat&&!st.climb&&!st.hang&&!(st.water&&st.water.in))aboveGround(ME.PM,body,W3.group,SHARED.groundY); },   // (your rig state: your avatar walks by its clips)
+    ME.me.visible=!W3.hideMe&&!W3.ghost; pose(B,ME.PM,body,RAG.on||VIT.dead?null:st); if(st._pfHead&&st.water&&st.water.in&&st.water.level!=null&&body.binv)headUp(ME.PM,body,st,W3.group,ME.me); if(body.anim&&st._mw>0&&!RAG.on&&!st._pfSeat){ const now=performance.now(), dt=MO.t?Math.min(.1,(now-MO.t)/1000):0; MO.t=now; momentum(ME.PM,body,st,W3.group,dt); feetOnGround(ME.PM,body,W3.group,SHARED.groundY); } else MO.t=0; if(!RAG.on&&!B.seat&&!st.climb&&!st.hang&&!(st.water&&st.water.in)&&!(st.move&&st.move.def.below!=null))aboveGround(ME.PM,body,W3.group,SHARED.groundY); },   // (your rig state: your avatar walks by its clips)
     // the physics body (090-physbody: the rig's 15 parts in Rapier, loose and limp when you're down) moved its parts: D[i] is part i's move off the rig, T the rig's place in that world
     phys:(D,T)=>{ if(!ME)return; W3.body.physN=(W3.body.physN||0)+1; const P=ME.PM.value; for(let i=0;i<NB;i++)P[i].premultiply(T).premultiply(D[i]); }};   // (dead, you're the ghost sheet: 103a-death)
   for(const m of W3.meshes)m.visible=false;

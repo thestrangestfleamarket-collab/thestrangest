@@ -48,7 +48,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
     Chop:['Chopping wood',0,.97,1],Fix:['Fixing',0,5.2,1],Push:['Pushing',0,2.67,1],Torch:['Holding torch',0,1.27,1],Lantern:['Holding lantern',0,2.5,1],Drink:['Drinking',2.1,5.7],Open:['Opening',0,1.37],Use:['Interact',0,2],Land:['Hard landing',0,1.6]};
   // what the avatar plays for what the rig is doing (owner, 7 Nov 2026): the rig's move or state, and Polyfork's clip in its place: n the clip, t seconds into it (or u, the move's
   // share done, played over [a,b]), seat: the hips where the rig has them (a seat, the water); loco: walked by the ground covered like the walk
-  const MV={mc_eat:'Eating',mc_plant:'Planting',mc_harvest:'Harvesting',mc_water:'Watering',mc_craft:'Fixing',mc_sitDown:['Sit down',0,1.3,1],pick:'Pick up'};   // (the punches and the slap: the rig's own; the kicks and the hook drawn from Mesh2Motion's recordings, RIG.LOOK)
+  const MV={mc_eat:['Drinking',2.1,5.7],mc_plant:'Planting',mc_harvest:'Harvesting',mc_water:'Watering',mc_craft:'Fixing',mc_sitDown:['Sit down',0,1.3,1],pick:'Pick up'};   // (the punches and the slap: the rig's own; the kicks and the hook drawn from Mesh2Motion's recordings, RIG.LOOK)
   const one=(m,e)=>{ const u=m.def&&m.def.dur?Math.min(1,m.t/m.def.dur):0; return typeof e==='string'?{n:e,u,a:0,b:null}:{n:e[0],u,a:e[1],b:e[2],seat:!!e[3]}; };
   AVATAR.act=S=>{ const m=S.move, up=S.up, W=S.water, now=performance.now();
     if(S.sit)S._pfSat=1; else if(S._pfSat){ S._pfSat=0; S._pfUp=now; }   // (up from a seat: Polyfork's stand-up, unless you walk off)
@@ -67,11 +67,30 @@ const AVATAR={}; window.AVATAR=AVATAR;
     has('upperArms')&&has('hands')&&!A,has('upperArms')&&has('armCut')&&!has('hands')&&!has('arms'),has('ears'),has('eyes')]; };
   const lin=h=>new THREE.Color('#'+h);
   // the forearms narrower toward the hand (owner, 7 Nov 2026: "lets make the forearms a little more narrow towards the hand"): every point the forearm moves (skin and the sleeve over it, so layers stay in order)
-  // drawn in toward the forearm's line, nothing at the elbow, TAPER less wide at the wrist
-  const TAPER=.25, TV=new THREE.Vector3(), TA=new THREE.Vector3(), TB=new THREE.Vector3();
+  // drawn in toward the forearm's line, nothing at the elbow, TAPER less wide at the wrist; with the jointed hands (111b) the wrist is drawn to the hand's own width and thickness instead (owner, 7 Nov 2026: "a and b go")
+  const TAPER=.25, TV=new THREE.Vector3(), TA=new THREE.Vector3(), TB=new THREE.Vector3(), CUFF=1.06;
   const taper=(X,d,f)=>{ const O=I.skel[f].origin; for(const [fb,e,w] of [[4,O[4],O[5]],[7,O[7],O[8]]]){ TA.fromArray(e); TB.fromArray(w).sub(TA); const L2=TB.lengthSq();
       for(let q=0;q<X.length/3;q++){ const b0=d.bone[q*2], b1=d.bone[q*2+1], wt=(b0===fb?d.w[q]/255:0)+(b1===fb?1-d.w[q]/255:0); if(wt<=0)continue;
         TV.fromArray(X,q*3).sub(TA); const u=Math.max(0,Math.min(1,TV.dot(TB)/L2)), k=1-TAPER*u*wt; TV.sub(TB.clone().multiplyScalar(u)).multiplyScalar(k).add(TB.clone().multiplyScalar(u)).add(TA); X[q*3]=TV.x; X[q*3+1]=TV.y; X[q*3+2]=TV.z; } } };
+  // the wrist across the jointed hand's palm (u1) and through it (u2): the body's own wrist ring and the hand where it meets it, each a centre and half sizes
+  const V3=THREE.Vector3, FITS=new Map();
+  const wristFit=(Xb,db,L)=>{ const key=L.f+L.b; if(FITS.has(key))return FITS.get(key); const S=I.skel[L.f], O=S.origin, base=HANDS.base(BODIES.skeleton(O,S.rest).binv,{b:L.b}), out=[];
+    for(const [fb,hb,sd] of [[4,5,'L'],[7,8,'R']]){ const E=new V3(...O[fb]), W=new V3(...O[hb]), A=W.clone().sub(E), len=A.length(), a=A.clone().divideScalar(len), M=base[sd];
+      const u1=new V3().setFromMatrixColumn(M,0); u1.sub(a.clone().multiplyScalar(u1.dot(a))).normalize(); const u2=new V3().crossVectors(a,u1), p=new V3();
+      const ext=()=>({x0:1e9,x1:-1e9,y0:1e9,y1:-1e9}), add=(r,v)=>{ v.sub(W); const x=v.dot(u1), y=v.dot(u2); r.x0=Math.min(r.x0,x); r.x1=Math.max(r.x1,x); r.y0=Math.min(r.y0,y); r.y1=Math.max(r.y1,y); };
+      const ring=ext(), hand=ext();
+      for(let q=0;q<Xb.length/3;q++){ const bn=db.w[q]>=128?db.bone[q*2]:db.bone[q*2+1]; if(bn!==fb&&bn!==hb)continue; p.fromArray(Xb,q*3); if(Math.abs(p.clone().sub(W).dot(a))<.02)add(ring,p); }
+      for(let q=0;q<HANDS.X.length/3;q++){ p.fromArray(HANDS.X,q*3).applyMatrix4(M); const t=p.clone().sub(W).dot(a); if(t>-.005&&t<.03)add(hand,p); }
+      if(ring.x1<ring.x0||hand.x1<hand.x0)continue;
+      const c=r=>[(r.x0+r.x1)/2,(r.y0+r.y1)/2,(r.x1-r.x0)/2,(r.y1-r.y0)/2], R=c(ring), H=c(hand);
+      out.push({fb,hb,E,a,len,u1,u2,R,H,kx:Math.min(1,H[2]*CUFF/R[2]),ky:Math.min(1,H[3]*CUFF/R[3])}); }
+    FITS.set(key,out); return out; };
+  const fitWrist=(X,d,F)=>{ const p=new V3(), q=new V3();
+    for(const w of F)for(let i=0;i<X.length/3;i++){ const b0=d.bone[i*2], b1=d.bone[i*2+1], wt=(b0===w.fb||b0===w.hb?d.w[i]/255:0)+(b1===w.fb||b1===w.hb?1-d.w[i]/255:0); if(wt<=0)continue;
+      p.fromArray(X,i*3); const t=p.clone().sub(w.E).dot(w.a), s=Math.max(0,Math.min(1,t/w.len))*Math.min(1,wt); if(s<=0)continue;
+      q.copy(p).sub(w.E).addScaledVector(w.a,-w.len); const x=q.dot(w.u1), y=q.dot(w.u2);
+      const nx=w.R[0]+(x-w.R[0])*(1+(w.kx-1)*s)+(w.H[0]-w.R[0])*s, ny=w.R[1]+(y-w.R[1])*(1+(w.ky-1)*s)+(w.H[1]-w.R[1])*s;
+      p.addScaledVector(w.u1,nx-x).addScaledVector(w.u2,ny-y); X[i*3]=p.x; X[i*3+1]=p.y; X[i*3+2]=p.z; } };
   // the passport on its lanyard (owner, 8 Nov 2026: "put it on a lanyard around neck that you wear"): a strap round the neck and down the chest to the badge, laid on what you wear at the
   // torso and neck (their outline round the body, band by band), all on the torso; the badge the passport's tall card
   const lanyard=(parts,D_,L)=>{ const O=I.skel[L.f].origin, NB=24, NA=32, Y0=O[3][1]-.3, BH=.02, R=new Float32Array(NB*NA); let sz=0, nz=0;
@@ -95,31 +114,32 @@ const AVATAR={}; window.AVATAR=AVATAR;
     const py=yt-.024; R4(-.018,py,.018,py-.036,.0008,'d6e2e8'); R4(-.008,py-.008,.008,py-.026,.0016,L.skin); R4(-.009,py-.004,.009,py-.009,.0018,L.hair); R4(-.015,py-.028,.015,py-.036,.0016,'8aa6b4');
     R4(-.022,py-.042,.022,py-.049,.0008,'111111'); R4(-.016,py-.054,.016,py-.058,.0008,'e53935'); R4(-.026,py-.064,-.004,py-.067,.0008,'666666'); R4(.004,py-.064,.026,py-.067,.0008,'666666');
     return T; };
-  function geoFor(J,L,bare){ const worn=[]; for(const [s] of SLOTS){ const w=L.w[s], p=w&&J.byN.get(w[0]); if(p&&!(bare&&s==='feet'))worn.push([s,p,w[1]]); }   // (barefoot: your shoes off, LOOKS.shoes)
+  function geoFor(J,L,bare,nob){ const worn=[]; for(const [s] of SLOTS){ const w=L.w[s], p=w&&J.byN.get(w[0]); if(p&&!(bare&&s==='feet'))worn.push([s,p,w[1]]); }   // (barefoot: your shoes off, LOOKS.shoes)
     const cov=new Set(); for(const [,p] of worn)for(const c of p.covers)cov.add(c); const hide=culled(c=>cov.has(c));
-    const pfh=!cov.has('hands'), hb=(d,q)=>{ const b=d.w[q]>=128?d.bone[q*2]:d.bone[q*2+1]; return b===5||b===8; }, cut=(P,d,t)=>pfh&&P.slot==='body'&&hb(d,d.tri[t*3])&&hb(d,d.tri[t*3+1])&&hb(d,d.tri[t*3+2]);   // (bare hands: Polyfork's jointed ones in place of the body's, 111b)
+    const pfh=!cov.has('hands'), hb=(d,q)=>{ const b=d.w[q]>=128?d.bone[q*2]:d.bone[q*2+1]; return b===5||b===8; }, isHand=(P,d,t)=>pfh&&P.slot==='body'&&hb(d,d.tri[t*3])&&hb(d,d.tri[t*3+1])&&hb(d,d.tri[t*3+2]);   // (bare hands: its own simple ones marked hh, folded away while Polyfork's jointed ones are drawn, near the camera: 111b)
     const hat=worn.find(x=>x[0]==='hat'), coat=worn.find(x=>x[0]==='coat');
-    const parts=[{v:J.body.v[L.b],zones:J.body.zones,pal:J.body.pal,main:null,col:null,slot:'body'}];
+    const parts=nob?[]:[{v:J.body.v[L.b],zones:J.body.zones,pal:J.body.pal,main:null,col:null,slot:'body'}];
     for(const [s,p,c] of worn){ if(s==='hair'&&cov.has('hair'))continue;
       const alt=(s==='hair'&&hat||s==='top'&&coat&&coat[1].covers.includes('sleeves'))&&p.alt&&p.alt[L.b], v=alt||p.v[L.b]; if(v)parts.push({v,zones:p.zones,pal:p.pal,main:p.main,col:c,slot:s,cape:/CAPE/.test(p.k||p.label)}); }
-    let nf=0; const D_=parts.map(P=>{ const d=dec(P.v); let k=0; for(let t=0;t<d.tri.length/3;t++)if(!(d.reg&&d.reg[t]<255&&hide[d.reg[t]])&&!cut(P,d,t))k++; nf+=k; return d; });
+    let nf=0; const D_=parts.map(P=>{ const d=dec(P.v); let k=0; for(let t=0;t<d.tri.length/3;t++)if(!(d.reg&&d.reg[t]<255&&hide[d.reg[t]]))k++; nf+=k; return d; });
     const LAN=L.lan?lanyard(parts,D_,L):[]; nf+=LAN.length;
-    const pos=new Float32Array(nf*9), nor=new Float32Array(nf*9), col=new Float32Array(nf*9), bi=new Float32Array(nf*6), bw=new Float32Array(nf*3), fl=new Float32Array(nf*3), fd=new Float32Array(nf*9), va=new THREE.Vector3(), vb=new THREE.Vector3(), vc=new THREE.Vector3(), n=new THREE.Vector3(), e=new THREE.Vector3();
+    const pos=new Float32Array(nf*9), nor=new Float32Array(nf*9), col=new Float32Array(nf*9), bi=new Float32Array(nf*6), bw=new Float32Array(nf*3), fl=new Float32Array(nf*3), hh=new Float32Array(nf*3), fd=new Float32Array(nf*9), va=new THREE.Vector3(), vb=new THREE.Vector3(), vc=new THREE.Vector3(), n=new THREE.Vector3(), e=new THREE.Vector3();
     let f=0;
-    parts.forEach((P,pi)=>{ const d=D_[pi], v=P.v, Q=d.pos, X=new Float32Array(Q.length); for(let i=0;i<Q.length;i++)X[i]=(Q[i]+32500)*v.sc+v.lo[i%3]; taper(X,d,L.f);
+    const unq=(d,v)=>{ const Q=d.pos, X=new Float32Array(Q.length); for(let i=0;i<Q.length;i++)X[i]=(Q[i]+32500)*v.sc+v.lo[i%3]; return X; }, WF=pfh&&!nob?wristFit(unq(D_[0],parts[0].v),D_[0],L):null;
+    parts.forEach((P,pi)=>{ const d=D_[pi], v=P.v, X=unq(d,v); if(WF&&WF.length)fitWrist(X,d,WF); else taper(X,d,L.f);
       let y0=1e9, y1=-1e9; if(P.cape)for(let i=1;i<X.length;i+=3){ y0=Math.min(y0,X[i]); y1=Math.max(y1,X[i]); }   // a cape: how far down it each point is, and which way is out from the body
       const cz=P.col&&P.col.includes('_')?P.col.split('_'):null;
       const C=P.zones.map((z,i)=>{ if(z==='skin')return lin(L.skin); if(P.slot==='body'&&z==='brow')return lin(L.hair); if(P.slot==='body'&&z==='eye'&&L.eye)return lin(L.eye);
         if((P.slot==='hair'||P.slot==='face')&&P.main&&i===P.main[0])return lin(L.hair); if(cz){ if(cz[i])return lin(cz[i]); } else if(P.col&&P.main&&i===P.main[0])return lin(P.col); return lin(String(P.pal[i]).slice(1)); });
-      for(let t=0;t<d.tri.length/3;t++){ if(d.reg&&d.reg[t]<255&&hide[d.reg[t]]||cut(P,d,t))continue; const ix=[d.tri[t*3],d.tri[t*3+1],d.tri[t*3+2]];
+      for(let t=0;t<d.tri.length/3;t++){ if(d.reg&&d.reg[t]<255&&hide[d.reg[t]])continue; const ix=[d.tri[t*3],d.tri[t*3+1],d.tri[t*3+2]], ish=isHand(P,d,t)?1:0;
         va.fromArray(X,ix[0]*3); vb.fromArray(X,ix[1]*3); vc.fromArray(X,ix[2]*3); n.subVectors(vb,va).cross(e.subVectors(vc,va)).normalize();
-        ix.forEach((q,j)=>{ const o=f*3+j, c=C[d.zone[q]]||C[0]; pos.set([X[q*3],X[q*3+1],X[q*3+2]],o*3); nor.set([n.x,n.y,n.z],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([d.bone[q*2],d.bone[q*2+1]],o*2); bw[o]=d.w[q]/255; if(P.cape){ const u=Math.max(0,(y1-X[q*3+1])/Math.max(1e-3,y1-y0)), x=X[q*3], z=X[q*3+2], l=Math.hypot(x,z)||1; fl[o]=u*u; fd.set([x/l*.2,0,back],o*3); } }); f++; } });
+        ix.forEach((q,j)=>{ const o=f*3+j, c=C[d.zone[q]]||C[0]; pos.set([X[q*3],X[q*3+1],X[q*3+2]],o*3); nor.set([n.x,n.y,n.z],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([d.bone[q*2],d.bone[q*2+1]],o*2); bw[o]=d.w[q]/255; hh[o]=ish; if(P.cape){ const u=Math.max(0,(y1-X[q*3+1])/Math.max(1e-3,y1-y0)), x=X[q*3], z=X[q*3+2], l=Math.hypot(x,z)||1; fl[o]=u*u; fd.set([x/l*.2,0,back],o*3); } }); f++; } });
     for(const [A,B,C3,h] of LAN){ const c=lin(h); va.fromArray(A); vb.fromArray(B); vc.fromArray(C3); n.subVectors(vb,va).cross(e.subVectors(vc,va)).normalize();
-      [A,B,C3].forEach((P,j)=>{ const o=f*3+j; pos.set(P,o*3); nor.set([n.x,n.y,n.z],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([1,1],o*2); bw[o]=1; }); f++; }
+      [A,B,C3].forEach((P,j)=>{ const o=f*3+j; pos.set(P,o*3); nor.set([n.x,n.y,n.z],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([1,1],o*2); bw[o]=1; hh[o]=0; }); f++; }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('normal',new THREE.BufferAttribute(nor,3)); g.setAttribute('color',new THREE.BufferAttribute(col,3));
-    g.setAttribute('bi',new THREE.BufferAttribute(bi,2)); g.setAttribute('bw',new THREE.BufferAttribute(bw,1)); g.setAttribute('fl',new THREE.BufferAttribute(fl,1)); g.setAttribute('fd',new THREE.BufferAttribute(fd,3)); g.computeBoundingSphere();
+    g.setAttribute('bi',new THREE.BufferAttribute(bi,2)); g.setAttribute('bw',new THREE.BufferAttribute(bw,1)); g.setAttribute('fl',new THREE.BufferAttribute(fl,1)); g.setAttribute('fd',new THREE.BufferAttribute(fd,3)); g.setAttribute('hh',new THREE.BufferAttribute(hh,1)); g.computeBoundingSphere();
     g.userData.hands=pfh?{skin:L.skin,b:L.b,grip:{L:!!L.w.lefthand,R:!!L.w.righthand}}:null; return g; }
-  const empty=()=>{ const g=new THREE.BufferGeometry(); for(const [k,s] of [['position',3],['normal',3],['color',3],['bi',2],['bw',1],['fl',1],['fd',3]])g.setAttribute(k,new THREE.BufferAttribute(new Float32Array(0),s)); return g; };
+  const empty=()=>{ const g=new THREE.BufferGeometry(); for(const [k,s] of [['position',3],['normal',3],['color',3],['bi',2],['bw',1],['fl',1],['fd',3],['hh',1]])g.setAttribute(k,new THREE.BufferAttribute(new Float32Array(0),s)); return g; };
   // a body's skeleton for a figure and a height (taller: the same body drawn bigger on the rig)
   const fitTo=(body,L)=>{ const S=I.skel[L.f], {off,binv}=BODIES.skeleton(S.origin,S.rest); Object.assign(body,{height:S.height*100/L.h,hipY:S.hipY,off,binv,contact:true,dq:true}); delete body._calG; return BODIES.fit(body); };   // (contact: rests on what the rig rests on, 111a)
 
@@ -196,6 +216,8 @@ const AVATAR={}; window.AVATAR=AVATAR;
   // a WEAR line's kinds, each with its versions (who wears it), for your figure; the one-each piece first
   const esc=t=>String(t).replace(/[&<>"]/g,c=>'&#'+c.charCodeAt(0)+';'), KC={};
   const kinds=s=>KC[L.f+s]||(KC[L.f+s]=(()=>{ const M=new Map(); for(const p of I.pieces.filter(p=>p.slot===s&&p.figs.includes(L.f)).sort((a,b)=>a.k.localeCompare(b.k)||(a.label===a.k?-1:b.label===b.k?1:a.v.localeCompare(b.v)))){ if(!M.has(p.k))M.set(p.k,[]); M.get(p.k).push(p); } return M; })());
+  // a still figure (or just the pieces, body false) in your build and colours, wearing w: the ITEM editor's pictures (140ba)
+  AVATAR.statue=(w,{body=true,f}={})=>{ const M={...L,f:f||L.f,w,bare:false}; return need(M.f,M.w).then(J=>geoFor(J,M,false,!body)); };
   AVATAR.pieces=I.pieces; AVATAR.outfits=I.outfits||[];
   AVATAR.outfit=i=>{ const o=AVATAR.outfits[i]; if(!o)return refresh(); L.w={}; for(const [s,[n,c]] of Object.entries(o.w)){ const p=byN.get(n); if(p&&p.figs.includes(L.f)&&SLOTS.some(x=>x[0]===s))L.w[s]=[n,c||'']; } return AVATAR.set(o.hair?{hair:o.hair}:{}); };
   AVATAR.draw=draw; LOOKS.onChange=()=>refresh();

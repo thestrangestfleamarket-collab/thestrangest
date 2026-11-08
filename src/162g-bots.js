@@ -1,7 +1,7 @@
 // A BOT'S MIND (?bot=1, a page tools/bots.cjs runs): plays the game as a player does, by the job the owner set in TENANTS > BOTS (walks by the click-to-walk, uses things, buys and sells at the shops' own buttons).
 import {SHARED, THREE} from './003-shx.js';
 import {CITY, FORAGE, INV, LOOKS, ONLINE, pos, ROOMS, SHOPS, st, UI, USE, VIT, WEEDS} from './003b-systems.js';
-import {MODS, QS, SYS, TILE} from './006-map-pre.js';
+import {FADE, MODS, QS, SYS, TILE} from './006-map-pre.js';
 import {OBJS} from './008-batch.js';
 import {AVATAR} from './111c-avatar.js';
 import {FISHING} from './142-fishing.js';
@@ -27,11 +27,12 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
   const close=()=>{ for(const b of document.querySelectorAll('.pX'))if(b.offsetParent)b.click(); };
   const cash=()=>Math.round(INV.cash||0);
   // into a shop by the map's GO TO, up to its counter, then press its buttons (fn); true once done, false while on the way, null if it can't be reached
-  const counter=(shop,dt,fn)=>{ const th=nearest(UI.things,t=>/^THE COUNTER/.test(t.name||'')), p=th&&thAt(th);
-    if(!th||d2(p.x,p.z)>30*T){ task.at=task.at||{}; if(!task.at[shop]){ task.at[shop]=1; task.wt=12; UI.goName(shop); return false; } if((task.wt-=dt)>0)return false; return null; }
+  const counter=(shop,dt,fn,s=task,re=/^THE COUNTER/)=>{ s.at=s.at||{}; if(!s.at[shop]){ s.at[shop]=1; s.wt=12; UI.goName(shop); return false; }   // always by GO TO first: a counter nearby may be another shop's
+    if(FADE.busy)return false; const th=nearest(UI.things,t=>re.test(t.name||'')), p=th&&thAt(th);
+    if(!th||d2(p.x,p.z)>30*T){ if((s.wt-=dt)>0)return false; return null; }
     if(!use(th,dt))return false; fn(); close(); SHOPS.close&&SHOPS.close(); return true; };
   const sellAll=()=>{ let n=0; while((click('[data-sold][data-n="all"]')||click('[data-sell][data-n="all"]'))&&n++<30); };
-  const goal=()=>C.goal>0&&cash()>=C.goal;
+  let cash0=null; const earned=()=>cash()-(cash0??cash()), goal=()=>C.goal>0&&earned()>=C.goal;   // a goal is what it earns on this job, not what it had
   // walk about a centre (home, or where a job brought it), its own pauses
   let rw=0; const roam=(dt,c,far,ok)=>{ if(walking(dt))return; if((rw-=dt)>0){ doing='looking round'; return; } const h=c||{x:pos.x,z:pos.z};
     for(let k=0;k<12;k++){ const a=R()*6.283, r=(far?6+R()*20:2+R()*8)*T, x=h.x+Math.sin(a)*r, z=h.z+Math.cos(a)*r; if((!ok||ok(x,z))&&!(CITY.blocked&&CITY.blocked(lv(),x,z))){ walk(x,z); break; } }
@@ -51,7 +52,7 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
         const kt=nearest(UI.things,t=>!task.skip.has(t)&&/^(BENCH|SEAT|SITTING LOG|A? ?(VELVET )?BENCH|CHAIR|SOFA|STOOL)/i.test(t.name||'')), kd=kt?d2(thAt(kt).x,thAt(kt).z):1e9;
         if(kt&&kd<bd){ task.o=kt; task.th=kt; task.t=0; } else if(b){ task.o=b; task.th=USE.test.goal(b,'sit'); task.t=0; if(!task.th)task.skip.add(b); } if(!task.th){ roam(dt,here(task),true); doing='looking for a seat'; return; } }
       doing='going to sit on a '+task.th.name.toLowerCase(); if(use(task.th,dt)||(task.t+=dt)>40){ if(!st.sit&&task.t>2){ task.skip.add(task.o); task.th=null; } } },
-    mushrooms:dt=>{ if(goal()){ doing='made $'+cash()+' (goal reached)'; return; } task=task||{s:'find'};
+    mushrooms:dt=>{ if(goal()){ doing='made $'+earned()+' on this job (goal reached)'; return; } task=task||{s:'find'};
       const F=FORAGE, have=Object.keys(INV.items).filter(id=>/^[mu]_/.test(id)&&INV.items[id]>0).reduce((a,id)=>a+INV.items[id],0);
       if(task.s==='find'){ if(task.go>0){ task.go-=dt; return; } if(LOOKS.L&&!LOOKS.L.bare)LOOKS.L.bare=true;
         const th=F.things?nearest(F.things()):null;
@@ -60,7 +61,7 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
       if(task.s==='sell'){ doing='taking '+have+' mushrooms to THE MUSHROOM SHOP'; const r=counter('THE MUSHROOM SHOP',dt,sellAll); if(r===false)return;
         if(r===null){ task={s:'find',hold:60,keep:task.keep}; doing='can\'t sell mushrooms now, picking more'; return; }
         task={s:'find',keep:Object.keys(INV.items).filter(id=>/^[mu]_/.test(id)&&INV.items[id]>0).reduce((a,id)=>a+INV.items[id],0)}; say(lines()[0]||''); doing='sold, now $'+cash(); } },
-    fish:dt=>{ if(goal()){ doing='made $'+cash()+' (goal reached)'; return; } task=task||{s:'gear'}; if(task.hold>0&&task.s==='gear'){ task.hold-=dt; return; } const F=FORAGE, fish=FISHING.held?FISHING.held():0, bait=['bait','bait_cut'].some(id=>F.has(id));
+    fish:dt=>{ if(goal()){ doing='made $'+earned()+' on this job (goal reached)'; return; } task=task||{s:'gear'}; if(task.hold>0&&task.s==='gear'){ task.hold-=dt; return; } const F=FORAGE, fish=FISHING.held?FISHING.held():0, bait=['bait','bait_cut'].some(id=>F.has(id));
       const BAIT=['bait','bait_cut'], stand=nearest(UI.things,th=>/BOATS/.test(th.name||''));
       if(task.s==='gear'){ if(F.has('rod')&&bait){ task={s:'cast',go:3}; UI.goName('TO THE HUDSON (THE PIER)'); return; } doing=F.has('rod')?'buying bait':'buying a rod';
         const r=counter('FISHING & SCUBA',dt,()=>{ if(!F.has('rod'))click('[data-buy="rod"]'); for(let i=0;i<5;i++)click('[data-buy="bait"]'); }); if(r===false)return;
@@ -72,7 +73,7 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
         if(walking(dt))return; let best=null; for(let r=2;r<=12&&!best;r+=1.5)for(let k=0;k<16;k++){ const a=k*Math.PI/8, x=pos.x+Math.sin(a)*r*T, z=pos.z+Math.cos(a)*r*T; if(FISHING.at(x,z)){ best=[x,z]; break; } }
         if(!best){ if(stand&&!task.pier){ task.pier=1; const p=thAt(stand); walk(p.x,p.z); } else roam(dt,here(task)); doing='looking for water'; return; }
         if(!FISHING.mode&&FISHING.enter)FISHING.enter(); FISHING.cast(best[0],best[1]); doing='casting'; } },
-    decorate:dt=>{ const E=window.ROOMED; task=task||{s:'in',n:0,t:0};
+    decorate:dt=>{ if(!C.apt){ doing='has no apartment (OWN APARTMENT is off)'; return; } const E=window.ROOMED; task=task||{s:'in',n:0,t:0};
       if(task.s==='in'){ if(MODS.apts&&MODS.apts.inReal){ task.s='buy'; return; } if(!task.go){ task.go=1; UI.goName('YOUR APARTMENT'); } doing='going home'; return; }
       if(!MODS.apts.inReal){ task={s:'in',n:0,t:0}; return; } if(!E){ doing='no decorating here'; return; }
       if(task.s==='buy'){ if(walking(dt))return; if((task.t-=dt)>0)return; task.t=2+R()*2; if(!E.on)E.toggle();
@@ -88,16 +89,18 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
     if(d>.9*T){ if(!path||(task&&task.fx!=null&&Math.hypot(task.fx-o.p.x,task.fz-o.p.z)>.5*T)){ walk(o.p.x,o.p.z); task=Object.assign(task||{},{fx:o.p.x,fz:o.p.z}); } walking(dt); return true; }
     path=null; SHARED.target=null; SHARED.heading=Math.atan2(o.p.x-pos.x,o.p.z-pos.z);
     fightOn.t=(fightOn.t||0)-dt; if(fightOn.t<=0){ fightOn.t=.7+R()*.6; const k=R()<.6?'J':'K'; RIG.act(st,k); SYS.run('act',k,1); setTimeout(()=>{ RIG.release&&RIG.release(st,k); SYS.run('act',k,0); },120); } return true; };
-  const status=()=>({doing,cash:cash(),hp:Math.round((VIT.hp||0)*100)/100,job:C.job,at:[+pos.x.toFixed(1),+pos.z.toFixed(1)],...(path&&path.length?{to:[+path[path.length-1].x.toFixed(1),+path[path.length-1].z.toFixed(1)]}:{})});
+  const status=()=>({doing,...(BOT.tally&&BOT.tally()?{tests:BOT.tally()}:{}),cash:cash(),hp:Math.round((VIT.hp||0)*100)/100,job:C.job,at:[+pos.x.toFixed(1),+pos.z.toFixed(1)],...(path&&path.length?{to:[+path[path.length-1].x.toFixed(1),+path[path.length-1].z.toFixed(1)]}:{})});
   const place=()=>{ if(C.place){ UI.goName(C.place); setTimeout(()=>{ home={x:pos.x,z:pos.z}; },1500); }
     else if(C.at){ const [x,z,dn]=C.at, id=!dn&&ROOMS.boxAt?ROOMS.boxAt(x,z):null; if(id&&ROOMS.enterAt)ROOMS.enterAt(id,[x,z,0,0]); else UI.goTo(x,z,dn?'down':'up'); home={x,z}; } else home={x:pos.x,z:pos.z}; };   // a spot in an inside off the map goes in, as GO TO does
   const look=()=>{ if(C.look===looked)return; looked=C.look||''; try{ if(C.look)AVATAR.set(AVATAR.decode(C.look)); else if(AVATAR.outfits&&AVATAR.outfits.length)AVATAR.outfit(Math.floor(R()*AVATAR.outfits.length)); }catch(e){} };
   BOT.set=c=>{ const was=C; C=Object.assign({job:'stand'},c||{}); if(LOOKS.L)LOOKS.L.name=C.name||LOOKS.L.name; look();
     if(!placed||was.place!==C.place||String(was.at)!==String(C.at)||(C.call&&was.call!==C.call)){ placed=true; path=null; place(); }
-    if(was.job!==C.job||was.who!==C.who){ doing='starting: '+C.job; task=null; path=null; SHARED.target=null; mad=null; if(FISHING.mode&&C.job!=='fish')FISHING.leave(); }
+    if(cash0==null||was.job!==C.job||was.goal!==C.goal)cash0=cash(); if(was.job!==C.job||was.who!==C.who){ doing='starting: '+C.job; task=null; path=null; SHARED.target=null; mad=null; if(FISHING.mode&&C.job!=='fish')FISHING.leave(); }
     if(VIT.hp>C.hp)VIT.hp=C.hp??1; };
+  BOT.kit={JOB,walk,walking,use,click,close,cash,counter,sellAll,nearest,thAt,d2,roam,say,cfg:()=>C,doing:t=>{ doing=t; },stop:()=>{ path=null; SHARED.target=null; },reset:()=>{ task=null; path=null; SHARED.target=null; }};   // for the tests (162h)
+  ONLINE.mine.noapt=()=>C.apt?null:1;   // a bot has no apartment unless the owner gave it one
   BOT.status=status; BOT.bye=()=>{ try{ ONLINE.send({t:'bye'}); }catch(e){} };
-  SYS.add('life',dt=>{ if(!BOT.ready)return; dt=Math.min(dt||.016,.25);
+  let drawn=0; SYS.add('life',dt=>{ if(!BOT.ready)return; dt=Math.min(dt||.016,.25); SHARED.covered=(++drawn%20)!==0;   // nobody watches a bot's screen: a picture now and then, so its game runs at full speed
     // health: never over what the owner set; can't be knocked down keeps it full
     const cap=C.hp??1; if(C.god)VIT.hp=cap; else if(VIT.hp>cap)VIT.hp=cap;
     // hit back: whoever is close when health drops
@@ -108,3 +111,4 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
     const L=lines(); if(L.length&&(sayT-=dt)<0){ sayT=(C.job==='chat'?12:30)+R()*30; say(L[Math.floor(R()*L.length)]); } },'162g-bots');
   SYS.onStart(()=>{ setTimeout(()=>{ BOT.ready=true; doing='ready'; },1500); },'162g-bots');
 }
+export {BOT};

@@ -5,6 +5,8 @@ import {PCAM, renderer, resize, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {FADE, SYS, TILE} from './006-map-pre.js';
 import {collide, frame, PAD} from './075-main-13.js';
+import {HANDS} from './111b-hands.js';
+import {AVATAR} from './111c-avatar.js';
 {
   const xr=navigator.xr, V3=THREE.Vector3, LEASH=.3;
   const DEF={move:'stick',turn:'snap30',view:'first',hand:'right',vig:true,height:0,body:true,hands:true,ctl:true,scale:.75,rate:72,shadow:'light',water:false,far:300,panw:1.5,pand:1.1,panel:'normal'};
@@ -122,15 +124,19 @@ import {collide, frame, PAD} from './075-main-13.js';
     hl.visible=false; if(top){ const el=PN.fresh&&at(top.x,top.y), c0=el&&el.closest(CLK), w=c0?null:inPic(top.x,top.y), c=c0||(w&&w[0]);
       if(c){ const r=c0?c0.getBoundingClientRect():w[1], a=hl.geometry.attributes.position, U=x=>x/PN.W-.5, V=y=>.5-y/PN.H; a.setXYZ(0,U(r.left),V(r.top),.001); a.setXYZ(1,U(r.right),V(r.top),.001); a.setXYZ(2,U(r.right),V(r.bottom),.001); a.setXYZ(3,U(r.left),V(r.bottom),.001); a.needsUpdate=true; hl.visible=true; } } };
 
-  const hands=(xf,ref)=>{ '@later'; let n=0, nh=0, tip=false; wrist.visible=false; VR.joints.L=VR.joints.R=null;
+  // the tracked hands drawn as Polyfork's jointed hands in your skin (owner, 7 Nov 2026: the guitar's hands for VR too), the joint dots kept for VR.opt.dots
+  const realHands=()=>{ if(VR.rh||!HANDS.vr)return VR.rh; VR.rh=HANDS.vr(AVATAR.L?AVATAR.L().skin:undefined); JM.parent.add(VR.rh.mesh); return VR.rh; };
+  const hands=(xf,ref)=>{ '@later'; let n=0, nh=0, tip=false; wrist.visible=false; VR.joints.L=VR.joints.R=null; const RH=realHands(), got={L:0,R:0};
     for(const s of xf.session.inputSources){ if(!s.hand)continue; nh++; const J={wrist:null,index:null,thumb:null,q:null,pinch:false}; VR.joints[s.handedness==='left'?'L':'R']=J;
       for(const [name,js] of s.hand.entries()){ const p=n<50&&xf.getJointPose(js,ref); if(!p)continue; const T=p.transform; P4.set(T.position.x,T.position.y,T.position.z); Q4.set(T.orientation.x,T.orientation.y,T.orientation.z,T.orientation.w);
         if(name==='wrist'){ J.wrist=P4.clone().applyMatrix4(DOLLY.matrixWorld); J.q=DOLLY.getWorldQuaternion(new THREE.Quaternion()).multiply(Q4); } else if(name==='index-finger-tip')J.index=P4.clone().applyMatrix4(DOLLY.matrixWorld); else if(name==='thumb-tip')J.thumb=P4.clone().applyMatrix4(DOLLY.matrixWorld);
+        if(RH){ const sd=s.handedness==='left'?'L':'R'; RH.set(sd,name,M4.compose(P4,Q4,S4.setScalar(1))); got[sd]=1; }
         JM.setMatrixAt(n++,M4.compose(P4,Q4,S4.setScalar(p.radius||.008)));
         if(name==='wrist'&&s.handedness==='left'){ wrist.visible=true; wrist.position.copy(P4).add(EV.set(0,.04,.03).applyQuaternion(Q4)); wrist.quaternion.copy(Q4).multiply(QX); }
         if(name==='index-finger-tip'&&s.handedness==='right'){ TIPR.copy(P4); tip=true; } } }
     for(const k of 'LR'){ const J=VR.joints[k]; if(J&&J.index&&J.thumb)J.pinch=J.index.distanceTo(J.thumb)<.03*FEEL.MH; }
-    JM.count=n; JM.instanceMatrix.needsUpdate=true; JM.visible=opt.hands; VR.hands=nh;
+    if(RH){ for(const k of 'LR')if(!got[k])RH.hide(k); RH.mesh.visible=opt.hands&&nh>0; }
+    JM.count=n; JM.instanceMatrix.needsUpdate=true; JM.visible=opt.hands&&(!RH||!!opt.dots); VR.hands=nh;
     if(wrist.visible&&tip){ const d=TIPR.distanceTo(wrist.position); if(d<.03&&!VR.wt){ VR.wt=1; tap('Escape'); } else if(d>.06)VR.wt=0; } };
 
   const teleport=()=>{ '@later'; if(VR.tpWas&&!VR.tpa&&VR.tp&&VR.tp.ok&&free()){ const dx=VR.tp.x-pos.x, dz=VR.tp.z-pos.z; pos.x+=dx; pos.z+=dz; O.x+=dx; O.z+=dz; collide(pos); VR.px=pos.x; VR.pz=pos.z; if(FEEL.take())FEEL.sync(); VR.blink=1; }
@@ -162,7 +168,7 @@ import {collide, frame, PAD} from './075-main-13.js';
     VR.pass.shadow=opt.shadow==='full'||(opt.shadow==='light'&&(VR.fn&3)===0); VR.pass.water=opt.water;
     const B=VP.buttons, rx=VP.axes[2], ref=renderer.xr.getReferenceSpace();
     if(UI.gamewin||!turns()){ VR.sn=0; } else if(opt.turn==='smooth'){ if(Math.abs(rx)>.3)turn(-rx*dt*2.2); } else if(Math.abs(rx)<.3)VR.sn=0; else if(!VR.sn&&Math.abs(rx)>.65){ VR.sn=1; turn(rx>0?-snap():snap()); }
-    if(edge('q',keys.has('q'))&&turns())turn(snap()); if(edge('e',keys.has('e'))&&turns())turn(-snap());
+    if(edge('q',keys.has('q'))&&turns())turn(snap()); if(edge('e',!!UI.rotHeld)&&turns())turn(-snap());
     if(edge('rc',VR.r3)){ VR.cal=false; if(SHARED.drive&&SHARED.drive.recentre)SHARED.drive.recentre(); } if(edge('lc',VR.l3))tap('Escape');
     if(B[1].value>.5){ const n=performance.now(); if(!VR.bt)VR.bt=n; else if(n-VR.bt>1500){ VR.bt=Infinity; return VR.leave(); } } else VR.bt=0;
     if(vw()==='first'){ head(EV); let dx=EV.x-pos.x, dz=EV.z-pos.z, d=Math.hypot(dx,dz); const L=LEASH*FEEL.MH;

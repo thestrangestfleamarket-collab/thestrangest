@@ -8,7 +8,7 @@ import {BATCH} from './008-batch.js';
 import {RIVER} from './066-river.js';
 import {TPANE} from './087dz-tpane.js';
 const DFOG={};
-{ const D0={on:false,cut:false,start:12,end:60,blur:0,haze:0,air:.1,mist:.35,most:.3,mistH:4,sun:.5,tint:.3,steps:0,rim:6}; let C; try{ C=Object.assign({},D0); }catch(e){ C=Object.assign({},D0); }
+{ const D0={on:true,cut:false,start:30,end:220,blur:3,haze:.4,air:0,mist:0,most:.3,mistH:4,sun:.5,tint:.3,steps:0,rim:0}; let C; try{ C=Object.assign({},D0); }catch(e){ C=Object.assign({},D0); }   // far things darker and blurrier, never hazed or cut (owner, 7 Nov 2026: "as something like the helicopter gets further away its less clear and gets darker and blurrier")
   const comp=SHARED.composer;
   for(const rt of [comp.renderTarget1,comp.renderTarget2])if(!rt.depthTexture){ rt.depthTexture=new THREE.DepthTexture(rt.width,rt.height); rt.depthTexture.type=THREE.UnsignedIntType; rt.dispose(); }
   const pass=new ShaderPass({uniforms:{tDiffuse:{value:null},uAM:{value:1},tDepth:{value:null},uPInv:{value:new THREE.Matrix4()},uCamW:{value:new THREE.Matrix4()},uP:{value:new THREE.Vector3()},uC:{value:new THREE.Color()},
@@ -61,7 +61,7 @@ const DFOG={};
   Object.assign(DFOG,{pass,get:()=>Object.assign({},C),set:o=>{ Object.assign(C,o); save(); },
     cut:()=>C.on&&C.cut&&UI.persp&&!UI.freeCam&&!ED.on&&!MAPED.on&&!renderer.xr.isPresenting?Math.max(C.start+1,C.end)*TILE:0,
     range:end=>{ const band=Math.max(1,C.end-C.start); C.end=Math.max(8,Math.min(120,Math.round(end))); C.start=Math.max(4,C.end-band); save(); for(const f of DFOG.onchange)f(); }}); DFOG.onchange=[]; window.DFOG=DFOG;
-  BATCH.reach=()=>{ if(UI.view==='iso')return [48*TILE,64*TILE]; const c=DFOG.cut(); return c?[c+4*TILE,c+20*TILE]:[Infinity,Infinity]; };   // painted ground follows the HAZE RANGE: up to just past the haze, everything when nothing is cut; the isometric view (30 tiles across at most) keeps the near ring
+  BATCH.reach=()=>{ if(UI.view==='iso')return [48*TILE,64*TILE]; const c=DFOG.cut(), K=c?[c+4*TILE,c+20*TILE]:[Infinity,Infinity]; return ROOMS.offIn()?[Math.min(K[0],48*TILE),Math.min(K[1],64*TILE)]:K; };   // painted ground follows the HAZE RANGE: up to just past the haze, everything when nothing is cut (in a room off the map never past 64 tiles, so the stow lets go of what its windows cannot show); the isometric view (30 tiles across at most) keeps the near ring
   // the player's HAZE RANGE in GRAPHICS: where the haze takes everything (the fog's END; the band before it keeps its width)
   const gfx=()=>{ const P=document.querySelector('#menu [data-p="graphics"]'); if(!P)return setTimeout(gfx,1000); if(P.querySelector('#dhaze'))return;
     const B=document.createElement('div'); B.innerHTML='<h3>HAZE RANGE</h3><div class="row"><span>NEAR</span><input type="range" id="dhaze" min="20" max="120" step="5"><span>FAR</span><span id="dhazev"></span></div><div class="dim">how far you see before the haze takes everything; further draws more and costs more</div>';

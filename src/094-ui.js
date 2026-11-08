@@ -152,7 +152,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     SHARED.cam.lookAt(T); SHARED.cam.updateMatrixWorld(); };
   UI.setView(new URLSearchParams(location.search).get('view')||'iso');
   // the views by place (owner, 7 Nov 2026): in town only the overhead view, turned and zoomed in from the start's distance (never further out); third and first person inside an inside or Central Park; out of those you are put back overhead. Whatever takes the view for itself (fishing, a spyglass, the tower's glass, VR, a holodeck program) keeps it
-  UI.ZL=[1,2,5,10].map(k=>PPU*.75*k); UI.ZOUT=UI.ZL[0];   // the overhead wheel steps between set zoom levels (owner, 7 Nov 2026); 2× is the start's
+  UI.ZL=[1,2,5,10,20,40].map(k=>PPU*.75*k); UI.ZOUT=UI.ZL[0];   // the overhead wheel steps between set zoom levels (owner, 7 Nov 2026); 2× is the start's
   UI.FZ=[1,2,5,10]; UI.fz=1; UI.FOV0=PCAM.fov;   // first person's wheel steps the eye's zoom the same way
   UI.DL=[1,2,5,10,20].map(k=>22*TILE/k);   // the behind view's wheel steps the same way: its distance 1×, 2×, 5×, 10×, 20× in from 22 tiles, never nearer than 1.2 or past the place's own limit
   { let acc=0, last=0; UI.zoomLv=e=>{ const t=performance.now(); if(t-last<180){ acc=0; return; } acc+=e.deltaY; if(Math.abs(acc)<40)return; const d=Math.sign(acc); acc=0;
@@ -165,7 +165,8 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     SYS.add('cam',()=>{ if(!window.__started||own())return; { const V=UI.viewsHere(); if(!V.includes(UI.view))UI.setView(V[0]); } if(!UI.persp&&SHARED.ppuTo<UI.ZOUT)SHARED.ppuTo=UI.ZOUT; if(UI.view==='iso'&&!UI.hold)SHARED.pitchTo=SHARED.pitch=VIEW0.pitch; if(!UI.persp)UI.keepOn(); },'094-views'); }
   UI.keepOn=()=>{ const c=SHARED.cam; if(!c||!c.isOrthographicCamera)return; const z=c.zoom||1, R=tv.setFromMatrixColumn(c.matrixWorld,0), hw=(c.right-c.left)/2/z*.85, hh=(c.top-c.bottom)/2/z*.8;   // the view drags only as far as keeps you on screen (owner, 7 Nov 2026)
     if(!Number.isFinite(UI.off.x+UI.off.y+UI.off.z))UI.off.set(0,0,0); if(!(hw>0&&hh>0&&Number.isFinite(R.x+R.y+R.z)))return;   // a bad frame never sticks: the view comes back to you
-    let u=UI.off.dot(R), k=Math.max(-hw,Math.min(hw,u)); if(k!==u)UI.off.addScaledVector(R,k-u); const U=tv.setFromMatrixColumn(c.matrixWorld,1); u=UI.off.dot(U); k=Math.max(-hh,Math.min(hh,u)); if(k!==u)UI.off.addScaledVector(U,k-u); };
+    const bw=.4*TILE, bh=UI.mid(); let u=UI.off.dot(R), k=Math.max(-hw-bw,Math.min(hw+bw,u)); if(k!==u)UI.off.addScaledVector(R,k-u); const U=tv.setFromMatrixColumn(c.matrixWorld,1), ph=hh+bh*Math.abs(U.y); u=UI.off.dot(U); k=Math.max(-ph,Math.min(ph,u)); if(k!==u)UI.off.addScaledVector(U,k-u); };   // any part of you, feet to head (owner, 8 Nov 2026)
+  UI.mid=()=>.9/.84*TILE*((window.W3&&W3.SZ)||1);   // the overhead view looks at your middle, so a zoom with the view undragged goes into you, not your feet
   { const p0=UI.pan; UI.pan=(dx,dy)=>{ p0(dx,dy); if(!UI.freeCam)UI.keepOn(); }; }
   UI.home=()=>{ UI.off.set(0,0,0); zAt=null; if(UI.freeCam)setFree(false); };
   let fx=null, fz=null; const fv=new THREE.Vector3();

@@ -1,4 +1,4 @@
-// THE PET STORE'S CAGES AND THE AQUARIUM (src/146zj-pets.js, src/146zjb-aquarium.js): node tests/petstore.cjs [out folder]. The park keeps only its birds, bees and fireflies;
+// THE PET STORE'S CAGES AND THE AQUARIUM (src/146zj-pets.js, src/146zjb-aquarium.js): node tests/petstore.cjs [out folder]. The park keeps only its birds, bees and fireflies (the subway its rats);
 // every kind stands in a cage in THE PET STORE and a cage opens the adoption book on its kind; every new kind (the snake, bat, slime, songbirds, cave creatures) builds a pet;
 // THE AQUARIUM on the Hudson has a tank of every fish and sea animal, buying one keeps it with your account and puts it in your apartment's tank. With an out folder, shots.
 const {chromium}=require('playwright'); const OUT=process.argv[2];
@@ -15,7 +15,7 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
   // the park: only birds, bees and fireflies walk or fly there now
   await U(()=>CREATS.length>0,60000); await wait(4000);
   const park=await pg.evaluate(()=>{ const K=new Set(); for(const N of CREATS)K.add(String(N.key).replace(/#\d+$/,'').replace(/\d+$/,'').toLowerCase()); return [...K]; });
-  const ANIMALS=['fox','deer','wolf','bear','cat','blackcat','dog','cow','pig','horse','wildhorse','mule','ibex','lion','elephant','giraffe','zebra','camel','raptor','stego','brachio','ptera','frog','ant','beetle','mantis','snail','slug','crab'];
+  const ANIMALS=['snake','spider','bat','wasp','slime','fox','deer','wolf','bear','cat','blackcat','dog','cow','pig','horse','wildhorse','mule','ibex','lion','elephant','giraffe','zebra','camel','raptor','stego','brachio','ptera','frog','ant','beetle','mantis','snail','slug','crab'];
   rec('the park keeps no animals but its birds, bees and fireflies',!park.some(k=>ANIMALS.some(a=>k===a||k.startsWith(a+' ')||k===a.toUpperCase())),park.join(','));
   // every new kind builds a pet body no bigger than a pet
   const NEW=['snake','bat','slime','pitsnake','cavebat','greenslime','robin','bluejay','cardinal','oriole','starling','sparrow','mockingbird','redwing','redtail','heron','squirrel','giantrat','cavefrog','radspider','giantwasp'];

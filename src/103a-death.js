@@ -1,7 +1,7 @@
 // THE DEATH: what happens when you die: the YOU ARE DEAD note, the fall, your body left holding what you carried, and the ghost's walk to the bath house, whose steam wakes you alive at your body (or RESURRECT in the menu).
 import {SHARED, THREE} from './003-shx.js';
 import {GHOSTS, INV, keys, LEVELS, PH, pos, RAG, st, UI, VIT, W3} from './003b-systems.js';
-import {scene} from './004-main.js';
+import {renderer, scene} from './004-main.js';
 import {OWNED, SAVE} from './005-save.js';
 import {FADE, QS, STORE, SYS, TILE, wait} from './006-map-pre.js';
 { const T=TILE, el=document.createElement('div'), css=document.createElement('style'); el.id='dead'; el.hidden=true;
@@ -13,6 +13,9 @@ import {FADE, QS, STORE, SYS, TILE, wait} from './006-map-pre.js';
     S=GHOSTS.cloth(1.15,true,17,.24,mat,pos.x/MH,SHARED.py/MV+1.5,pos.z/MH); S.MV=MV; S.mat=mat; S.em=em; S.eyes=[-1,1].map(()=>{ const e=new THREE.Mesh(eg,em); e.scale.set(.05*MH,.075*MV,1); e.renderOrder=4; scene.add(LEVELS.own(e,'*')); return e; }); return S; };
   const look=on=>{ W3.mesh.visible=!on; W3.ghost=on; if(S){ S.me.visible=on; for(const e of S.eyes)e.visible=on; } };
   const V=new THREE.Vector3();
+  // a ghost sees the world in black and white (owner, 8 Nov 2026: "when you're a ghost the game is black and white")
+  const grey=()=>{ const c=renderer.domElement, on=!!VIT.dead; if(c.dataset.ghost===(on?'1':''))return; c.dataset.ghost=on?'1':''; c.style.filter=on?'grayscale(1)':''; };
+  SYS.every(grey,300,'103a-death grey');
   // your body (owner, 7 Nov 2026): it stays where you fell with all you carried for an hour; alive again, a double-click takes it all back
   let body=null;
   const keepBody=c=>{ try{ if(c)OWNED.set('corpse',JSON.stringify(c)); else OWNED.del('corpse'); }catch(e){} };

@@ -14,7 +14,7 @@ function pluck(S,pos,amp,bright){ const N=Math.min(4095,Math.round(S.len)); let 
 function mkRes(f,t60,w,sr){ const r=Math.pow(10,-3/(t60*sr)), o=TAU*f/sr; return {c:2*r*Math.cos(o),r2:r*r,k:(1-r)*Math.hypot(1-r*Math.cos(2*o),r*Math.sin(2*o)),w,y1:0,y2:0}; }
 function J(m,x){ let s=0, t=Math.pow(x/2,m); for(let k=1;k<=m;k++)t/=k; for(let k=0;k<30;k++){ s+=t; t*=-(x*x/4)/((k+1)*(k+1+m)); if(Math.abs(t)<1e-9)break; } return s; }
 class Imx extends AudioWorkletProcessor{
-  constructor(o){ super(); const p=this.p=o.processorOptions||{}; const sr=sampleRate; this.fam=p.fam; this.ev=[]; this.quiet=0; this.post=0; this.noise=12345;
+  constructor(o){ super(); const p=this.p=o.processorOptions||{}; const sr=sampleRate; this.fam=p.fam; this.ev=(p.ev||[]).slice().sort((a,b)=>a.t-b.t); this.quiet=0; this.post=0; this.noise=12345;
     this.S=[]; const n=p.n||6; for(let i=0;i<n*(p.pair?2:1);i++)this.S.push(mkStr());
     this.body=(p.body||[]).map(([f,t,w])=>mkRes(f,t,w,sr)); this.fb=0;
     this.hp=0; this.hpx=0; this.lp1=0; this.lp2=0;
@@ -35,7 +35,8 @@ class Imx extends AudioWorkletProcessor{
     else if(q.k==='hit'){ if(q.ch!=null)for(const v of this.V)if(v.ch===q.ch)v.choke=true;
       const v={ch:q.ch,choke:false,m:q.modes.map(([f,t,a])=>{ if(f>=sr*.45)return null; const r=Math.pow(10,-3/(t*sr)), o=TAU*f/sr; return {c:2*r*Math.cos(o),r2:r*r,y1:a*Math.sin(o),y2:0,a}; }).filter(Boolean),
         n:q.noise?{a:q.noise[0],r:Math.pow(10,-3/(q.noise[1]*sr)),e:1,lo:Math.exp(-TAU*q.noise[2]/sr),hi:Math.exp(-TAU*q.noise[3]/sr),l1:0,l2:0}:null,id:q.id,age:0};
-      this.V.push(v); if(this.V.length>(p.poly||24))this.V.shift(); } }
+      this.V.push(v); if(this.V.length>(p.poly||24))this.V.shift(); }
+    else if(q.k==='damp'){ const r=Math.pow(10,-3/(Math.max(.02,q.T||.15)*sr)); for(const v of this.V)if(v.id===q.id&&!v.choke){ v.choke=true; v.ck=r; } } }
   process(ins,outs){ const o=outs[0][0], n=o.length, sr=sampleRate, p=this.p; let ev=this.ev;
     const busy=this.S.some(S=>S.on)||this.V.length||this.bow.some(B=>B.on||B.pz.on)||(this.pipe&&this.pipe.on);
     if(!busy&&(!ev.length||ev[0].t>currentTime+n/sr)){ this.post=0; return true; }
@@ -61,9 +62,9 @@ class Imx extends AudioWorkletProcessor{
         const nz=this.rnd()*P.pr*(p.nz||.12), G=.55+P.pr*.8*(1+.004*Math.sin(P.vib)), b=.25, v=(Math.tanh(G*hz2*2+nz+b)-Math.tanh(b))*.5;
         d[S.i&4095]=v; S.i++; P.lp2+=(nz-P.lp2)*.3; out+=hz2*.5+P.lp2*.25;
         if(P.tp===0&&P.pr<1e-3&&Math.abs(S.lp)<1e-5){ P.on=false; S.d.fill(0); S.lp=0; S.fd=0; } }
-      for(let k=this.V.length-1;k>=0;k--){ const v=this.V[k]; let s=0; const ck=v.choke?.995:1;
+      for(let k=this.V.length-1;k>=0;k--){ const v=this.V[k]; let s=0; const ck=v.choke?(v.ck||.995):1;
         for(const m of v.m){ const y=m.c*m.y1-m.r2*m.y2; m.y2=m.y1*ck; m.y1=y*ck; s+=y; }
-        if(v.n){ const N=v.n; N.e*=N.r*(v.choke?.995:1); const w=this.rnd()*N.e*N.a; N.l1=N.l1*N.lo+w*(1-N.lo); N.l2=N.l2*N.hi+w*(1-N.hi); s+=N.l2-N.l1; }
+        if(v.n){ const N=v.n; N.e*=N.r*ck; const w=this.rnd()*N.e*N.a; N.l1=N.l1*N.lo+w*(1-N.lo); N.l2=N.l2*N.hi+w*(1-N.hi); s+=N.l2-N.l1; }
         out+=s; v.age++; if((v.age&511)===0){ let e=v.n?v.n.e*v.n.a:0; for(const m of v.m)e+=Math.abs(m.y1)+Math.abs(m.y2); if(e<1e-5||v.age>sr*14)this.V.splice(k,1); } }
       let b=0; for(const m of this.body){ const yy=m.c*m.y1-m.r2*m.y2+bridge*m.k; m.y2=m.y1; m.y1=yy; b+=yy*m.w; } this.fb=b;
       let y=bridge*(p.dry??.22)+b*(p.wet??.5)+out;

@@ -4,6 +4,7 @@ import {pos} from './003b-systems.js';
 import {SAVE} from './005-save.js';
 import {TILE} from './006-map-pre.js';
 import {gtHz} from './106-game-play-3-guitar-1-body.js';
+import {IMX} from './119-game-music-1-engine.js';
 const GSND={ctx:null,ok:false,busy:false,vol:.7,voices:new Map()};
 { try{ const v=SAVE.get('gtvol'); if(v!=null)GSND.vol=Math.max(0,Math.min(1,+v)); }catch(e){}
   // each string a travelling wave in a delay line its sounding length long (tuned to a fraction of a sample), losing its highs at the bridge, the wound basses a hair stiff; a pluck a triangle
@@ -43,10 +44,15 @@ registerProcessor('guitar',Guitar);`;
     const len=Math.floor(c.sampleRate*.6), ir=c.createBuffer(2,len,c.sampleRate); for(let ch=0;ch<2;ch++){ const q=ir.getChannelData(ch); for(let i=0;i<len;i++){ const t=i/c.sampleRate; q[i]=(Math.random()*2-1)*Math.exp(-t*13.8/.45)*(t<.004?0:1); } for(const ms of [9,14,21,28])q[Math.floor(c.sampleRate*ms/1000)+ch*13]+=.5; }
     const cv=c.createConvolver(), wet=c.createGain(); cv.buffer=ir; wet.gain.value=.16; cv.connect(wet); wet.connect(GSND.out); room=cv;
     c.audioWorklet.addModule('data:application/javascript,'+encodeURIComponent(SRC)).then(()=>{ GSND.ok=true; }).catch(e=>console.warn('guitar strings',e)).finally(()=>{ GSND.busy=false; });
+    c.audioWorklet.addModule('data:application/javascript,'+encodeURIComponent(IMX.src)).then(()=>{ GSND.imx=true; }).catch(e=>console.warn('instruments',e));   // (the music engine's strings, heads and hammers: the piano, the drums, the harp, 146zp)
     return false; };
   // a player's voice: its own six strings, its loudness and side from where you hear it
   GSND.voice=who=>{ if(!GSND.ok)return null; let V=GSND.voices.get(who); if(V)return V; const c=GSND.ctx, node=new AudioWorkletNode(c,'guitar',{outputChannelCount:[1]}), g=c.createGain(), pan=c.createStereoPanner();
     g.gain.value=who==='me'?1:0; node.connect(g); g.connect(pan); pan.connect(GSND.out); pan.connect(room); V={who,node,g,pan,at:performance.now()}; GSND.voices.set(who,V); return V; };
+  // an instrument's voice (146zp): the music engine (119) with that instrument's make-up, placed and dropped as a guitar's is (its key: the player and the instrument)
+  GSND.inst=(who,dsp)=>{ if(!GSND.imx)return null; let V=GSND.voices.get(who); if(V)return V; const c=GSND.ctx, node=new AudioWorkletNode(c,'imx',{outputChannelCount:[1],processorOptions:dsp}), g=c.createGain(), pan=c.createStereoPanner();
+    g.gain.value=/^me\b/.test(who)?1:0; node.connect(g); g.connect(pan); pan.connect(GSND.out); pan.connect(room); V={who,node,g,pan,at:performance.now()}; GSND.voices.set(who,V); return V; };
+  GSND.send=(V,evs,when)=>{ if(!V||!evs.length)return; V.at=performance.now(); V.node.port.postMessage({ev:evs.map(e=>({...e,t:when+(e.dt||0)}))}); };
   GSND.drop=who=>{ const V=GSND.voices.get(who); if(!V)return; try{ V.node.disconnect(); V.g.disconnect(); V.pan.disconnect(); }catch(e){} GSND.voices.delete(who); };
   GSND.SRC=SRC; GSND.PM=PM;   // (for the check: each string's pitch rendered offline and measured)
   GSND.now=()=>GSND.ctx?GSND.ctx.currentTime:0;
@@ -55,7 +61,7 @@ registerProcessor('guitar',Guitar);`;
   GSND.mute=(V,s,when,v=.25)=>{ if(V)V.node.port.postMessage({ev:[{t:when,k:'mute',s:s-1,v}]}); };
   GSND.setVol=v=>{ GSND.vol=Math.max(0,Math.min(1,v)); try{ SAVE.set('gtvol',String(GSND.vol)); }catch(e){} if(GSND.out)GSND.out.gain.setTargetAtTime(GSND.vol,GSND.ctx.currentTime,.05); };
   // where a voice is heard from: its player's place against yours and the way the view looks (louder near, gone past about 18 m)
-  GSND.place=(V,x,z)=>{ if(!V||!GSND.ctx)return; const c=GSND.ctx, d=Math.hypot(x-pos.x,z-pos.z)/TILE*.84, k=V.who==='me'?1:Math.max(0,1-d/18)**2;
-    const cam=SHARED.cam, a=cam?Math.atan2(x-cam.position.x,z-cam.position.z):0, f=cam?Math.atan2(-cam.matrixWorld.elements[8],-cam.matrixWorld.elements[10]):0, s=V.who==='me'?0:Math.sin(a-f);
+  GSND.place=(V,x,z)=>{ if(!V||!GSND.ctx)return; const c=GSND.ctx, d=Math.hypot(x-pos.x,z-pos.z)/TILE*.84, k=/^me\b/.test(V.who)?1:Math.max(0,1-d/18)**2;
+    const cam=SHARED.cam, a=cam?Math.atan2(x-cam.position.x,z-cam.position.z):0, f=cam?Math.atan2(-cam.matrixWorld.elements[8],-cam.matrixWorld.elements[10]):0, s=/^me\b/.test(V.who)?0:Math.sin(a-f);
     V.g.gain.setTargetAtTime(k,c.currentTime,.08); V.pan.pan.setTargetAtTime(Math.max(-.8,Math.min(.8,-s*.8)),c.currentTime,.1); }; }
 export {GSND};

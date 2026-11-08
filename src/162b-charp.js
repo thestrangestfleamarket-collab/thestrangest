@@ -1,6 +1,6 @@
 // THE CHARACTER PAGE: the menu's YOU (your live avatar beside your look; PASSPORT, RESURRECT, LOG OUT) and ADMIN's TOOLS (STATS, the render inspector, the game log).
 import {THREE} from './003-shx.js';
-import {BUGS, CHARP, PASSPORT, PS2, RINSP, TEXT, UI, VIT, W3} from './003b-systems.js';
+import {BUGS, CHARP, ITEMED, PASSPORT, PS2, RINSP, TEXT, UI, VIT, W3} from './003b-systems.js';
 import {pxS, renderer} from './004-main.js';
 import {SYS} from './006-map-pre.js';
 import {DESIGN} from './102b-designer.js';
@@ -26,10 +26,11 @@ import {DESIGN} from './102b-designer.js';
     el.querySelector('#cpbtns').innerHTML=B.map((b,i)=>`<button class="cp-btn${b[3]?' cp-adm':''}" data-i="${i}"${b[4]?' disabled title="only when you are dead"':''}>${b[0]}<span class="cp-tag">${b[1]}</span></button>`).join(''); el._btns=B; };
   const logout=()=>{ if(!confirm('Log out of The Strangest Flea Market?'))return; BUGS.logout(); };
   const tools=host=>{ if(!LOADED('log')){ host.innerHTML='<div class="dim">...</div>'; LOAD('log').then(()=>tools(host)); return; } const L=CLOG(), st=document.getElementById('stat');
-    host.innerHTML=`<h3>TOOLS</h3><div class="row onoff"><button class="btn" id="cpstat" aria-pressed="${!!st&&!st.hidden}">STATS</button></div><div class="row onoff"><button class="btn" id="cprin" aria-pressed="${!!RINSP.on}">RENDER INSPECTOR</button></div>
+    host.innerHTML=`<h3>TOOLS</h3><div class="row onoff"><button class="btn" id="cpstat" aria-pressed="${!!st&&!st.hidden}">STATS</button></div><div class="row onoff"><button class="btn" id="cprin" aria-pressed="${!!RINSP.on}">RENDER INSPECTOR</button></div><div class="row onoff"><button class="btn" id="cpitem">ITEM EDITOR · SHIFT+7</button></div>
       <h3>GAME LOG · ${L.length}</h3><div class="dim" style="margin-bottom:8px">every update, newest first</div>
       <ul style="margin:0;padding-left:18px;line-height:1.55">${L.map(([d,t])=>`<li style="margin-bottom:5px"><b style="color:var(--mo);font-weight:normal">${esc(d)}</b> — ${esc(t)}</li>`).join('')}</ul>`;
     host.querySelector('#cpstat').onclick=()=>{ const s=document.getElementById('stat'); if(s)s.hidden=!s.hidden; tools(host); };
+    host.querySelector('#cpitem').onclick=()=>{ if(UI.menuOpen)UI.toggleMenu(); if(ITEMED.key)ITEMED.key(); };
     host.querySelector('#cprin').onclick=()=>{ if(RINSP.toggle)RINSP.toggle(); if(RINSP.on&&UI.menuOpen)UI.toggleMenu(); else tools(host); }; };
 
   const build=host=>{ el=host; if(el._cp)return; el._cp=1;

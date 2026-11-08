@@ -100,6 +100,8 @@ window.MAPDBG=()=>({LVL:SHARED.LVL,cut:MODS.stairCut.constant,vis:Object.fromEnt
   hole(tt(XS(MAPSTAIR.x0)),tt(ZS(MAPSTAIR.y0)),tt(XS(MAPSTAIR.x1)),tt(ZS(MAPSTAIR.y1)));
   for(const S of RING.stairs)hole(tt(XS(S.x0)),tt(ZS(S.y0)),tt(XS(S.x1)),tt(ZS(S.y1)));
   { const S=CASTLE.stair; hole(tt(XS(S.x0)),tt(ZS(S.y0)),tt(XS(S.x1)),tt(ZS(S.y1))); }
+  { const BL=LEVEL.parkPlaces.bigLake, SA=LEVEL.edge&&LEVEL.edge.city&&LEVEL.edge.city.home; if(BL&&SA){ const cut=(x0,y0,x1,y1)=>{ const a=Math.max(tt(XS(x0)),LR.x0+1), b=Math.max(tt(ZS(y0)),LZ0+1), c=Math.min(tt(XS(x1)),LR.x1-1), d=Math.min(tt(ZS(y1)),LR.z1-1); if(c>a&&d>b)hole(a,b,c,d); };   // the big lake past the section line shows its own water (owner, 8 Nov 2026: "fix glitchse in water"); the park's ground past the line covers the rest
+    cut(BL.x-BL.rx-4,SA[3],BL.x+BL.rx+4,BL.y+BL.ry+4); cut(SA[2],BL.y-BL.ry-4,BL.x+BL.rx+4,SA[3]); } }
   const mk=()=>{ const geo=new THREE.ShapeGeometry(sh); geo.rotateX(-Math.PI/2); geo.scale(TILE,1,TILE); geo.translate(0,-.5*ZU,0); return geo; }, geo=mk(); let geoH=null;
   MODS.landHoles=on=>{ if(on&&!geoH&&window.PARK&&PARK.brook&&FOUNT.S){ for(const H of PARK.wetHole())sh.holes.push(new THREE.Path(H.map(([x,y])=>new THREE.Vector2(tt(XS(x+(PARK.ox||0))),-tt(ZS(y+(PARK.oy||0))))))); geoH=mk(); } m.geometry=on&&geoH?geoH:geo; };
   const MR=LEVEL.edge&&LEVEL.edge.mirror, MB=[0,1].map(i=>{ if(!MR)return new THREE.Vector4(1e9,1e9,1e9,1e9); const a=i?MR.x[1]:MR.x[0]-MR.reach, b=i?MR.x[1]+MR.reach:MR.x[0], za=tt(ZS(MR.ground[0])), zb=tt(ZS(MR.ground[1])); return new THREE.Vector4(tt(XS(a)),Math.min(za,zb),tt(XS(b)),Math.max(za,zb)); });   // the street's mirror past its ends (161d) brings its own lawn

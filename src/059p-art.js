@@ -235,6 +235,7 @@ await grab('art',async()=>{ if(AWAY.has('art')||!WP.art)return;
   const tkey=t=>t?t.t+'|'+t.a:'';
   A_.view=view; A_.viewer=()=>V&&{open:!V.el.hidden,full:!!V.got,w:V.w,h:V.h,s:+V.s.toFixed(3),fit:+V.fit.toFixed(3),max:+V.max.toFixed(3),t:V.t&&V.t.t,wall:!!V.look,tour:V.tour?{i:V.tour.i,n:V.tour.steps.length,title:V.tour.steps[V.tour.i].title}:null,hasTour:!!TOURS[tkey(V.t)]}; A_.tourOn=()=>V&&V.tourOn(); A_.tourNext=()=>V&&V.q('next').onclick(); A_.tourOff=()=>V&&V.tourOff();
   const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  A_.viewOne=async t=>{ await LOAD('art'); if(!Object.keys(TOURS).length){ try{ TOURS=await ARTTOURS()||{}; }catch(e){ TOURS={}; } } view(t,null); };   // a painting hung elsewhere (the bookstore café) opens in this viewer with its tour
   STORE.pre.art=async()=>{ await LOAD('art'); if(!DATA){ DATA=await ART(); try{ TOURS=await ARTTOURS()||{}; }catch(e){ TOURS={}; } try{ TEX=await ARTTEX(); }catch(e){ TEX=null; } layout(); } };
   rec('art','THE ART MUSEUM',B,D,true);
   STORE.artFrame={B,VD,FZ,cx,EX,EY,ES,DOORY,data:()=>DATA};   // the inside's corner, its void and floor height, the paintings' list, for what furnishes it

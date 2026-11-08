@@ -39,11 +39,14 @@ const AVATAR={}; window.AVATAR=AVATAR;
   // a part's points (rest, metres) moved by the shape: each by its two bones, as they weigh it
   const reshape=(X,d,Z)=>{ const T=new THREE.Vector3(), U=new THREE.Vector3(); for(let q=0;q<X.length/3;q++){ const b1=d.bone[q*2], b2=d.bone[q*2+1], w=d.w[q]/255, x=X[q*3], y=X[q*3+1], z=X[q*3+2];
       T.set(x,y,z).sub(Z.O[b1]).applyMatrix3(Z.A[b1]).add(Z.O1[b1]); U.set(x,y,z).sub(Z.O[b2]).applyMatrix3(Z.A[b2]).add(Z.O1[b2]); X[q*3]=T.x*w+U.x*(1-w); X[q*3+1]=T.y*w+U.y*(1-w); X[q*3+2]=T.z*w+U.z*(1-w); } };
-  const code=L=>[L.f,L.b,L.h,L.skin,L.hair,...SLOTS.slice(0,OLD).map(x=>enc(x,L)),L.bare?'1':'',...SLOTS.slice(OLD).map(x=>enc(x,L)),L.eye&&L.eye!==EYE0?L.eye:'',L.lan?'1':'',shEnc(L.sh)].join('.').replace(/\.+$/,'');   // (then barefoot, then the later slots, then the eyes)
+  // the face you picked: eyes-mouth-eye size-mouth size ('' as it came)
+  const fxEnc=L=>{ const F=fxOf(L); return F.e||F.m||F.es!==100||F.ms!==100?[F.e,F.m,F.es,F.ms].join('-'):''; };
+  const fxDec=v=>{ const m=/^(\d)-(\d)-(\d{2,3})-(\d{2,3})$/.exec(v||''); if(!m)return null; const c=(x,a,b)=>Math.max(a,Math.min(b,+x)); return {e:c(m[1],0,FE.length-1),m:c(m[2],0,FM.length-1),es:c(m[3],50,150),ms:c(m[4],50,150)}; };
+  const code=L=>[L.f,L.b,L.h,L.skin,L.hair,...SLOTS.slice(0,OLD).map(x=>enc(x,L)),L.bare?'1':'',...SLOTS.slice(OLD).map(x=>enc(x,L)),L.eye&&L.eye!==EYE0?L.eye:'',L.lan?'1':'',shEnc(L.sh),fxEnc(L)].join('.').replace(/\.+$/,'');   // (then barefoot, then the later slots, then the eyes)
   const hex=s=>/^[0-9a-f]{6}$/.test(s||'')?s:null, cols=s=>/^[0-9a-f]{6}$|^(?:[0-9a-f]{6})?(?:_(?:[0-9a-f]{6})?)+$/.test(s||'')?s:null;   // one colour (the piece's main part), or one a part in the piece's zone order, _ between (an empty part keeps its own)
   const decode=c=>{ '@later'; const a=String(c||'').split('.'), L=DEF(); if(a.length<5)return L;
     L.f=a[0]==='f'?'f':'m'; L.b=Math.min(2,Math.max(0,parseInt(a[1])||0)); L.h=Math.min(110,Math.max(90,parseInt(a[2])||100)); L.skin=hex(a[3])||L.skin; L.hair=hex(a[4])||L.hair; L.w={};
-    if(a[5+OLD]==='1')L.bare=true; { const e=hex(a[6+SLOTS.length]); if(e)L.eye=e; } if(a[7+SLOTS.length]==='1')L.lan=1; { const sh=shDec(a[8+SLOTS.length]); if(sh)L.sh=sh; }
+    if(a[5+OLD]==='1')L.bare=true; { const e=hex(a[6+SLOTS.length]); if(e)L.eye=e; } if(a[7+SLOTS.length]==='1')L.lan=1; { const sh=shDec(a[8+SLOTS.length]); if(sh)L.sh=sh; } { const x=fxDec(a[9+SLOTS.length]); if(x)L.fx=x; }
     SLOTS.forEach(([s],i)=>{ const v=a[at(i)]; if(!v)return; const [n,col]=v.split('~'), p=byN.get(parseInt(n,36)); if(p&&p.slot===s&&p.figs.includes(L.f))L.w[s]=[p.n,cols(col)||'']; });
     return L; };
 
@@ -159,6 +162,53 @@ const AVATAR={}; window.AVATAR=AVATAR;
       if(n===1){ const i=s.indexOf(true), m=mid(i); go([V[i],m,V[(i+2)%3]],[F[i],0,F[(i+2)%3]]); go([m,V[(i+1)%3],V[(i+2)%3]],[F[i],F[(i+1)%3],0]); return; }
       const j=s.indexOf(false), k=(j+1)%3, l=(j+2)%3, a=V[j], b=V[k], c=V[l], mb=mid(k), mc=mid(l); go([mc,mb,c],[0,F[k],F[l]]); go([a,b,mb],[F[j],F[k],0]); go([a,mb,mc],[0,0,F[l]]); };
     go([A,B,C],f); };
+  // the face you pick (owner, 8 Nov 2026: "add all the options and let player select which one they want and the size of each on face"; the eight of mockups/faces.html): eyes and a mouth
+  // drawn flat on the face over where the body's own were (style 0: the body's own), each its size; shapes in the mockup's pixels about the eye's or the mouth's middle (y down), in layers
+  // R rect, E ellipse, P polygon, S stroke; a colour W white, I iris (your eye colour, or the style's), K pupil, H shine, D the skin's shade, or its own
+  const FEYES=['PLAIN','BLOCK','ALMOND','ROUND','SLEEPY','LASHES','DEEP-SET','BIG','NARROW'], FMOUTHS=['PLAIN','BLOCK','LIPS','SMILE','SMALL','FULL LIPS','THIN','GRIN','SMIRK'];
+  const qc=(x0,y0,cx,cy,x1,y1,n=8)=>{ const o=[]; for(let i=0;i<=n;i++){ const t=i/n, u=1-t; o.push([u*u*x0+2*u*t*cx+t*t*x1,u*u*y0+2*u*t*cy+t*t*y1]); } return o; };
+  const lens=(x0,y0,x1,y1,ct,cb)=>qc(x0,y0,(x0+x1)/2,ct,x1,y1).concat(qc(x1,y1,(x0+x1)/2,cb,x0,y0).slice(1,-1));
+  const FE=[null,
+    [['R',-20,-7,40,16,'W'],['R',-6,-7,14,16,'I','4f7a3c'],['R',-2,-3,7,9,'K'],['R',3,-5,3,3,'H']],
+    [['P',lens(-22,1,22,1,-15,13),'W'],['E',1,0,8,8,'I','4f7a3c'],['E',1,0,4,4,'K'],['E',4,-3,2,2,'H'],['S',qc(-22,1,0,-15,22,1),3,'3a2420']],
+    [['E',0,-1,14,14,'W'],['E',2,0,8,8,'I','5a7fb0'],['E',2,0,4,4,'K'],['E',5,-4,2.5,2.5,'H'],['S',qc(-14,-5,0,-19,14,-5),4,'D']],
+    [['P',lens(-20,1,20,1,-11,11),'W'],['E',0,2,7,7,'I','6b4a2e'],['E',0,2,3.5,3.5,'K'],['P',qc(-21,1,0,-13,21,1).concat(qc(21,-3,0,-15,-21,-3)),'D'],['R',-21,-5,42,5,'D']],
+    [['P',lens(-20,1,20,1,-13,13),'W'],['E',0,0,8,8,'I','7a5a34'],['E',0,0,4,4,'K'],['E',3,-3,2,2,'H'],['S',qc(-22,-1,0,-17,24,-3),4,'1d1414'],['S',qc(-16,-11,0,-19,16,-11),2,'D']],
+    [['R',-26,-17,52,12,'D'],['R',-18,-5,36,12,'e6e0d2'],['R',-5,-5,11,12,'I','5d6a72'],['R',-2,-3,5,8,'K'],['R',-18,7,36,4,'D']],
+    [['E',0,1,17,14,'W'],['E',1,2,11,11,'I','3f8a7a'],['E',1,2,5,5,'K'],['E',5,-3,3.5,3.5,'H'],['E',-3,6,1.5,1.5,'H'],['S',qc(-17,-1,0,-19,17,-1),3,'2a1a16']],
+    [['P',lens(-20,0,20,0,-7,7),'efe9dc'],['E',3,0,5,5,'I','4b5d3a'],['E',3,0,2.5,2.5,'K'],['S',qc(-20,5,0,10,20,5),3,'D']]];
+  const FM=[null,
+    [['R',-28,-3,56,7,'7e4234'],['R',-24,4,48,6,'a8604e']],
+    [['P',qc(-30,-1,-16,-9,0,-3).concat(qc(0,-3,16,-9,30,-1).slice(1),qc(30,-1,0,5,-30,-1).slice(1,-1)),'7e4234'],['P',qc(-30,-1,0,17,30,-1).concat(qc(30,-1,0,5,-30,-1).slice(1,-1)),'a8604e']],
+    [['P',qc(-32,-7,0,23,32,-7).concat(qc(32,-7,0,7,-32,-7).slice(1,-1)),'7e4234']],
+    [['R',-22,0,44,6,'a8604e']],
+    [['R',-4,-21,8,10,'D'],['P',qc(-28,-1,-14,-11,0,-5).concat(qc(0,-5,14,-11,28,-1).slice(1),qc(28,-1,0,3,-28,-1).slice(1,-1)),'b5545a'],['P',qc(-28,-1,0,19,28,-1).concat(qc(28,-1,0,3,-28,-1).slice(1,-1)),'c8676c']],
+    [['R',-26,1,52,4,'7e4234'],['R',-28,-1,4,4,'D'],['R',24,-1,4,4,'D']],
+    [['P',qc(-30,-9,0,31,30,-9),'5c2424'],['P',[[-27,-7],[27,-7]].concat(qc(27,-7,24,1,0,1).slice(1),qc(0,1,-24,1,-27,-7).slice(1,-1)),'f4efe4']],
+    [['S',qc(-24,3,2,5,26,-7),6,'7e4234']]];
+  // a simple polygon in triangles (cut ears)
+  const ears=P=>{ const n=P.length, I=[...Array(n).keys()], T=[]; let a=0; for(let i=0;i<n;i++){ const p=P[i], q=P[(i+1)%n]; a+=p[0]*q[1]-q[0]*p[1]; } const s=a>0?1:-1;
+    const cr=(o,p,q)=>((p[0]-o[0])*(q[1]-o[1])-(p[1]-o[1])*(q[0]-o[0]))*s, inT=(p,a,b,c)=>cr(a,b,p)>=0&&cr(b,c,p)>=0&&cr(c,a,p)>=0;
+    for(let g=0;I.length>3&&g<n*n;g++){ const k=g%I.length, ia=I[(k+I.length-1)%I.length], ib=I[k], ic=I[(k+1)%I.length], A=P[ia], B=P[ib], C=P[ic];
+      if(cr(A,B,C)<=0)continue; if(I.some(j=>j!==ia&&j!==ib&&j!==ic&&inT(P[j],A,B,C)))continue; T.push([A,B,C]); I.splice(k,1); }
+    if(I.length===3)T.push(I.map(i=>P[i])); return T; };
+  const shape=(s,o)=>{ const k=s[0]; if(k==='R'){ const [,x,y,w,h]=s; return [[[x,y],[x+w,y],[x+w,y+h]],[[x,y],[x+w,y+h],[x,y+h]]]; }
+    if(k==='E'){ const [,cx,cy,rx,ry]=s, T=[], n=16; for(let i=0;i<n;i++){ const a=i/n*2*Math.PI, b=(i+1)/n*2*Math.PI; T.push([[cx,cy],[cx+Math.cos(a)*rx,cy+Math.sin(a)*ry],[cx+Math.cos(b)*rx,cy+Math.sin(b)*ry]]); } return T; }
+    if(k==='P')return ears(s[1]);
+    const [,pts,w]=s, T=[]; for(let i=0;i<pts.length-1;i++){ const [x0,y0]=pts[i], [x1,y1]=pts[i+1], l=Math.hypot(x1-x0,y1-y0)||1, nx=-(y1-y0)/l*w/2, ny=(x1-x0)/l*w/2;
+      T.push([[x0+nx,y0+ny],[x1+nx,y1+ny],[x1-nx,y1-ny]],[[x0+nx,y0+ny],[x1-nx,y1-ny],[x0-nx,y0-ny]]); } return T; };
+  const fxOf=L=>Object.assign({e:0,m:0,es:100,ms:100},L.fx||{});
+  // the face's triangles [A,B,C,hex] on the body as shaped (X, d): placed on the body's own eyes and mouth, a hair in front of the face
+  const faceOf=(X,d,zones,L)=>{ const F=fxOf(L), T=[]; if(!F.e&&!F.m)return T; const n=X.length/3, zi=zones.indexOf('eye'), zm=zones.indexOf('mouth'), zs=zones.indexOf('skin');
+    const box=f=>{ let a=[1e9,1e9,1e9], b=[-1e9,-1e9,-1e9], k=0; for(let q=0;q<n;q++)if(f(q)){ k++; for(let j=0;j<3;j++){ a[j]=Math.min(a[j],X[q*3+j]); b[j]=Math.max(b[j],X[q*3+j]); } } return k?[a,b]:null; };
+    const sh=lin(L.skin).multiplyScalar(.82).getHexString(), col=(c,s)=>c==='W'?'f2efe6':c==='K'?'151515':c==='H'?'ffffff':c==='D'?sh:c==='I'?(L.eye||s[s.length-1]):c;
+    const put=(S,cx,cy,sc,zf,mir)=>S.forEach((s,li)=>{ const z=zf+.0005*(li+1), h=col(s[s[0]==='S'?3:s[0]==='P'?2:5],s); for(const t of shape(s)){ const p=t.map(([x,y])=>[cx+(mir?-x:x)*sc,cy-y*sc,z]); T.push([p[0],p[1],p[2],h]); } });
+    const head=q=>(d.w[q]>=128?d.bone[q*2]:d.bone[q*2+1])===HB&&d.zone[q]===zs;
+    const front=(x0,x1,y0,y1)=>{ const b=box(q=>head(q)&&Math.abs(X[q*3])>x0&&Math.abs(X[q*3])<x1&&X[q*3+1]>y0&&X[q*3+1]<y1); return b?b[1][2]:null; };
+    if(F.e&&zi>=0)for(const sd of [-1,1]){ const b=box(q=>d.zone[q]===zi&&X[q*3]*sd>0); if(!b)continue; const cx=(b[0][0]+b[1][0])/2, cy=(b[0][1]+b[1][1])/2, sc=(b[1][0]-b[0][0])/40*F.es/100;
+      put(FE[F.e],cx,cy,sc,(front(.02,.12,cy-.08,cy+.08)??b[0][2])+.0008,sd<0); }
+    if(F.m&&zm>=0){ const b=box(q=>d.zone[q]===zm); if(b){ const cx=(b[0][0]+b[1][0])/2, cy=(b[0][1]+b[1][1])/2, sc=(b[1][0]-b[0][0])/56*F.ms/100; put(FM[F.m],cx,cy,sc,(front(.015,.12,cy-.08,cy+.08)??b[0][2])+.0008,false); } }
+    return T; };
   function geoFor(J,L,bare,nob){ const worn=[]; for(const [s] of SLOTS){ const w=L.w[s], p=w&&J.byN.get(w[0]); if(p&&!(bare&&s==='feet'))worn.push([s,p,w[1]]); }   // (barefoot: your shoes off, LOOKS.shoes)
     const cov=new Set(); for(const [,p] of worn)for(const c of p.covers)cov.add(c); const hide=culled(c=>cov.has(c));
     const pfh=!cov.has('hands'), hb=(d,q)=>{ const b=d.w[q]>=128?d.bone[q*2]:d.bone[q*2+1]; return b===5||b===8; }, isHand=(P,d,t)=>pfh&&P.slot==='body'&&hb(d,d.tri[t*3])&&hb(d,d.tri[t*3+1])&&hb(d,d.tri[t*3+2]);   // (bare hands: its own simple ones marked hh, folded away while Polyfork's jointed ones are drawn, near the camera: 111b)
@@ -166,20 +216,22 @@ const AVATAR={}; window.AVATAR=AVATAR;
     const parts=nob?[]:[{v:J.body.v[L.b],zones:J.body.zones,pal:J.body.pal,main:null,col:null,slot:'body'}];
     for(const [s,p,c] of worn){ if(s==='hair'&&cov.has('hair'))continue;
       const alt=(s==='hair'&&hat||s==='top'&&coat&&coat[1].covers.includes('sleeves'))&&p.alt&&p.alt[L.b], v=alt||p.v[L.b]; if(v)parts.push({v,zones:p.zones,pal:p.pal,main:p.main,col:c,slot:s,cape:/CAPE/.test(p.k||p.label)}); }
-    let nf=0; const D_=parts.map(P=>dec(P.v)), kept=(d,t)=>!(d.reg&&d.reg[t]<255&&hide[d.reg[t]]);
+    let nf=0; const D_=parts.map(P=>dec(P.v)), FX0=fxOf(L), HZ=nob?[]:[FX0.e?J.body.zones.indexOf('eye'):-1,FX0.m?J.body.zones.indexOf('mouth'):-1].filter(z=>z>=0);
+    const kept=(d,t,pi)=>!(d.reg&&d.reg[t]<255&&hide[d.reg[t]])&&!(pi===0&&HZ.length&&HZ.includes(d.zone[d.tri[t*3]]));   // (the body's own eyes or mouth off where you picked others)
     const LAN=L.lan?lanyard(parts,D_,L):[], LSP=LAN.spec||null; nf+=LAN.length;
     const unq=(d,v)=>{ const Q=d.pos, X=new Float32Array(Q.length); for(let i=0;i<Q.length;i++)X[i]=(Q[i]+32500)*v.sc+v.lo[i%3]; return X; }, WF=pfh&&!nob?wristFit(unq(D_[0],parts[0].v),D_[0],L):null;
     const SZ=shapeOf(L.f,L.sh);
     const XS=parts.map((P,pi)=>{ const d=D_[pi], X=unq(d,P.v); if(WF&&WF.length)fitWrist(X,d,WF); else taper(X,d,L.f); if(SZ)reshape(X,d,SZ); return X; });
     // the head's top rounded: its box from the body as shaped; the body's points moved (XM), its head faces cut (CUT)
     const RH=nob?null:roundOf(XS[0],D_[0]);
+    const FX=nob?[]:faceOf(XS[0],D_[0],J.body.zones,L); nf+=FX.length;
     const XM=[], CUT=[];
     parts.forEach((P,pi)=>{ const d=D_[pi], X=XS[pi], M=new Float32Array(X), cut=new Map(); XM.push(M); CUT.push(cut);
-      if(!RH||P.slot!=='body'){ for(let t=0;t<d.tri.length/3;t++)if(kept(d,t))nf++; return; }
+      if(!RH||P.slot!=='body'){ for(let t=0;t<d.tri.length/3;t++)if(kept(d,t,pi))nf++; return; }
       for(let q=0;q<X.length/3;q++){ const hw=hwOf(d,q); if(hw>0)RH.at(X[q*3],X[q*3+1],X[q*3+2],hw,M,q*3); }
       const K=q=>Math.round(X[q*3]*1e5)+','+Math.round(X[q*3+1]*1e5)+','+Math.round(X[q*3+2]*1e5), E=(a,b)=>{ const ka=K(a), kb=K(b); return ka<kb?ka+'|'+kb:kb+'|'+ka; }, isH=t=>[0,1,2].every(j=>RH.hb(d,d.tri[t*3+j])===HB);
-      const other=new Set(); for(let t=0;t<d.tri.length/3;t++)if(kept(d,t)&&!isH(t))for(let j=0;j<3;j++)other.add(E(d.tri[t*3+j],d.tri[t*3+(j+1)%3]));
-      for(let t=0;t<d.tri.length/3;t++){ if(!kept(d,t))continue; if(!isH(t)){ nf++; continue; } const ix=[d.tri[t*3],d.tri[t*3+1],d.tri[t*3+2]], out=[];
+      const other=new Set(); for(let t=0;t<d.tri.length/3;t++)if(kept(d,t,pi)&&!isH(t))for(let j=0;j<3;j++)other.add(E(d.tri[t*3+j],d.tri[t*3+(j+1)%3]));
+      for(let t=0;t<d.tri.length/3;t++){ if(!kept(d,t,pi))continue; if(!isH(t)){ nf++; continue; } const ix=[d.tri[t*3],d.tri[t*3+1],d.tri[t*3+2]], out=[];
         cutFace(...ix.map((q,j)=>({b:[j===0?1:0,j===1?1:0,j===2?1:0],p:[X[q*3],X[q*3+1],X[q*3+2]]})),[0,1,2].map(j=>other.has(E(ix[j],ix[(j+1)%3]))),out,RH.ty); cut.set(t,out); nf+=out.length; } });
     const pos=new Float32Array(nf*9), nor=new Float32Array(nf*9), col=new Float32Array(nf*9), bi=new Float32Array(nf*6), bw=new Float32Array(nf*3), fl=new Float32Array(nf*3), hh=new Float32Array(nf*3), fd=new Float32Array(nf*9), sm=new Float32Array(nf*3), va=new THREE.Vector3(), vb=new THREE.Vector3(), vc=new THREE.Vector3(), n=new THREE.Vector3(), e=new THREE.Vector3();
     let f=0;
@@ -200,7 +252,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
       const two=(u,ix)=>{ const j=u.b.indexOf(1); if(j>=0){ const q=ix[j]; return [d.bone[q*2],d.bone[q*2+1],d.w[q]/255]; } const m=new Map();
         ix.forEach((q,j)=>{ if(!u.b[j])return; const w=d.w[q]/255; m.set(d.bone[q*2],(m.get(d.bone[q*2])||0)+u.b[j]*w); m.set(d.bone[q*2+1],(m.get(d.bone[q*2+1])||0)+u.b[j]*(1-w)); });
         const s=[...m].sort((a,b)=>b[1]-a[1]||a[0]-b[0]), a=s[0], b=s[1]||[a[0],0]; return [a[0],b[0],a[1]/(a[1]+b[1])]; };
-      for(let t=0;t<d.tri.length/3;t++){ if(!kept(d,t))continue; const ix=[d.tri[t*3],d.tri[t*3+1],d.tri[t*3+2]], ish=isHand(P,d,t)?1:0;
+      for(let t=0;t<d.tri.length/3;t++){ if(!kept(d,t,pi))continue; const ix=[d.tri[t*3],d.tri[t*3+1],d.tri[t*3+2]], ish=isHand(P,d,t)?1:0;
         if(CF.has(t)){ const cs=ix.map(q=>C[d.zone[q]]||C[0]);
           for(const F of CF.get(t)){ F.V.forEach((u,j)=>{ const o=f*3+j, b=u.b, [b0,b1,w]=two(u,ix); pos.set(F.p[j],o*3); nor.set(F.nn[j],o*3);
               col.set([b[0]*cs[0].r+b[1]*cs[1].r+b[2]*cs[2].r,b[0]*cs[0].g+b[1]*cs[1].g+b[2]*cs[2].g,b[0]*cs[0].b+b[1]*cs[1].b+b[2]*cs[2].b],o*3); bi.set([b0,b1],o*2); bw[o]=w; hh[o]=ish; sm[o]=1; }); f++; }
@@ -208,6 +260,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
         va.fromArray(XR,ix[0]*3); vb.fromArray(XR,ix[1]*3); vc.fromArray(XR,ix[2]*3); n.subVectors(vb,va).cross(e.subVectors(vc,va)).normalize();
         ix.forEach((q,j)=>{ const o=f*3+j, c=C[d.zone[q]]||C[0]; pos.set([XR[q*3],XR[q*3+1],XR[q*3+2]],o*3); nor.set([n.x,n.y,n.z],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([d.bone[q*2],d.bone[q*2+1]],o*2); bw[o]=d.w[q]/255; hh[o]=ish; if(P.cape){ const u=Math.max(0,(y1-X[q*3+1])/Math.max(1e-3,y1-y0)), x=X[q*3], z=X[q*3+2], l=Math.hypot(x,z)||1; fl[o]=u*u; fd.set([x/l*.2,0,back],o*3); } }); f++; } });
     if(SZ){ const T=new THREE.Vector3(), sh=a=>T.fromArray(a).sub(SZ.O[1]).applyMatrix3(SZ.A[1]).add(SZ.O1[1]).toArray(); for(const t of LAN)for(let j=0;j<3;j++)t[j]=sh(t[j]); if(LSP){ LSP.L=LSP.L.map(sh); LSP.R=LSP.R.map(sh); LSP.shape={O:SZ.O[1],A:SZ.A[1],O1:SZ.O1[1]}; } }   // (the lanyard on the chest as shaped)
+    for(const [A,B,C3,h] of FX){ const c=lin(h); [A,B,C3].forEach((P,j)=>{ const o=f*3+j; pos.set(P,o*3); nor.set([0,0,1],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([HB,HB],o*2); bw[o]=1; hh[o]=0; }); f++; }
     for(const [A,B,C3,h] of LAN){ const c=lin(h); va.fromArray(A); vb.fromArray(B); vc.fromArray(C3); n.subVectors(vb,va).cross(e.subVectors(vc,va)).normalize();
       [A,B,C3].forEach((P,j)=>{ const o=f*3+j; pos.set(P,o*3); nor.set([n.x,n.y,n.z],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([1,1],o*2); bw[o]=1; hh[o]=0; }); f++; }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('normal',new THREE.BufferAttribute(nor,3)); g.setAttribute('color',new THREE.BufferAttribute(col,3));
@@ -251,10 +304,13 @@ const AVATAR={}; window.AVATAR=AVATAR;
     LOOKS.add('avh','HEIGHT',el(null,'<input type="range" id="lavh" min="90" max="110" step="1" aria-label="height"><span id="lavhv" class="dim"></span>'),{...A,order:3});
     LOOKS.add('avs','SKIN',el('lavs',SKINS.map(h=>`<button class="sw" data-c="${h}" aria-label="skin #${h}"><i style="background:#${h}"></i></button>`).join('')+'<input type="color" id="lavsc" aria-label="any skin colour">'),{...A,order:4});
     LOOKS.add('avc','HAIR COLOUR',el('lavc',HAIRC.map(h=>`<button class="sw" data-c="${h}" aria-label="hair #${h}"><i style="background:#${h}"></i></button>`).join('')+'<input type="color" id="lavcc" aria-label="any hair colour">'),{...A,order:5});
+    for(const [k,t,N,o] of [['e','EYES',FEYES,5.1],['m','MOUTH',FMOUTHS,5.2]])LOOKS.add('avx'+k,t,el(null,`<select id="lavx${k}" aria-label="${t.toLowerCase()} style">${N.map((n,i)=>`<option value="${i}">${n}</option>`).join('')}</select><input type="range" id="lavx${k}s" min="50" max="150" step="5" aria-label="${t.toLowerCase()} size"><span id="lavx${k}v" class="dim"></span>`),{...A,order:o});
     LOOKS.add('avwear','OUTFIT',el(null,'<button id="lavgo">CHOOSE WHAT YOU WEAR</button><span id="lavw" class="dim"></span>'),{...A,order:6});
     LOOKS.add('w-outfit','OUTFIT',el(null,'<select id="lavog" aria-label="outfit theme"></select><select id="lavo" aria-label="outfit"></select><span></span>','avw'),{...A,tab:'wear',order:-1});
     SLOTS.forEach(([s,t],i)=>LOOKS.add('w-'+s,t,el(null,`<select id="lavt-${s}" aria-label="${t} kind"></select><select id="lav-${s}" aria-label="${t} version"></select><span id="lavk-${s}" class="avk"></span>`,'avw'),{...A,tab:'wear',order:i}));
     $('#lavgo').onclick=()=>LOOKS.tab('wear');
+    for(const k of 'em'){ const sel=$('#lavx'+k), r=$('#lavx'+k+'s'); stop(sel); stop(r); sel.onchange=()=>AVATAR.set({fx:{...fxOf(L),[k]:+sel.value}});
+      r.oninput=()=>{ $('#lavx'+k+'v').textContent=' '+r.value+'%'; }; r.onchange=()=>AVATAR.set({fx:{...fxOf(L),[k+'s']:+r.value}}); }
     $('#lavf').onclick=e=>{ const b=e.target.closest('button'); if(b)AVATAR.set({f:b.dataset.f}); };
     $('#lavb').onclick=e=>{ const b=e.target.closest('button'); if(b)AVATAR.set({b:+b.dataset.b}); };
     const h=$('#lavh'); stop(h); h.oninput=()=>{ $('#lavhv').textContent=' '+h.value+'%'; }; h.onchange=()=>AVATAR.set({h:+h.value});
@@ -275,7 +331,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
   const partCols=(p,c)=>{ const a=p.zones.map(()=>''); if(!c)return a; if(c.includes('_'))c.split('_').forEach((h,i)=>{ if(i<a.length)a[i]=h; }); else if(p.main)a[p.main[0]]=c; return a; };
   function draw(){ if(!panel())return; if(BODIES.pick()!=='avatar')return LOOKS.layout();
     for(const b of $('#lavf').children)on(b,b.dataset.f===L.f); for(const b of $('#lavb').children)on(b,+b.dataset.b===L.b);
-    $('#lavh').value=L.h; $('#lavhv').textContent=' '+L.h+'%'; $('#lavsc').value='#'+L.skin; $('#lavcc').value='#'+L.hair;
+    $('#lavh').value=L.h; $('#lavhv').textContent=' '+L.h+'%'; { const F=fxOf(L); for(const k of 'em'){ $('#lavx'+k).value=String(F[k]); $('#lavx'+k+'s').value=F[k+'s']; $('#lavx'+k+'v').textContent=' '+F[k+'s']+'%'; } } $('#lavsc').value='#'+L.skin; $('#lavcc').value='#'+L.hair;
     for(const b of $('#lavs').children)if(b.dataset.c)on(b,b.dataset.c===L.skin); for(const b of $('#lavc').children)if(b.dataset.c)on(b,b.dataset.c===L.hair);
     $('#lavw').textContent=D[L.f]?'':' LOADING…';
     for(const [s] of SLOTS){ const K=kinds(s), sel=$('#lav-'+s), k=$('#lavk-'+s), kd=$('#lavt-'+s), w=L.w[s], J=D[L.f], cur=w&&byN.get(w[0]);

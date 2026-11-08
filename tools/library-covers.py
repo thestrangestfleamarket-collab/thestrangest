@@ -26,7 +26,7 @@ def find(b):
     docs = json.loads(get(u))['response']['docs']; out = []
     for d in docs:
         col = d.get('collection', []); col = col if isinstance(col, list) else [col]
-        if any(c in SKIPC for c in col) or not d.get('imagecount'): continue
+        if any(c in SKIPC for c in col) or not d.get('imagecount') or re.match(r'(bwb_|isbn_)', d['identifier']) or '0000' in d['identifier']: continue   # (modern lending copies: a modern printing's cover)
         at = words(d.get('title', '') if isinstance(d.get('title'), str) else d.get('title', [''])[0])
         if at[:len(tw)] != tw: continue   # the same title, word for word at its start
         cr = ' '.join(d.get('creator', [])) if isinstance(d.get('creator'), list) else d.get('creator', '')

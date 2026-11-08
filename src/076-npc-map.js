@@ -1,12 +1,12 @@
 // NPCs: makeNPC builds a body with self-shading and its cel material; the NPC list, culling and the street lane.
 import {SHARED, THREE} from './003-shx.js';
 import {B64} from './003a-skin.js';
-import {ARCH, CHARS, CLIP, CULL, LEVELS, NPCS, PARK, PONDS, pos, ROOMS, SELFSH, UI, VIT, W3, WALKS, WINDOWS} from './003b-systems.js';
+import {ARCH, CHARS, CLIP, CULL, LEVELS, NPCS, ONLINE, PARK, PONDS, pos, ROOMS, SELFSH, UI, VIT, W3, WALKS, WINDOWS} from './003b-systems.js';
 import {PPU, renderer} from './004-main.js';
 import {ASTEP, CASTLE, LEVEL, MAPG, MAPSTAIR, MODS, RING, SOL, STN, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
 import {RINGX} from './065-ring.js';
-const NOYOU={x:1e6,y:0,z:1e6};
+const NOYOU={x:1e6,y:0,z:1e6}, FOOT=new WeakMap();
 const DENIM_GLSL=`vec3 denim(vec3 c,vec3 p){ float u=(p.x+p.z)*0.7071+p.y*0.5, v=(p.x-p.z)*0.7071-p.y*0.5;
   float rib=step(0.5,fract(u*170.)), weft=step(0.55,fract(v*240.)), slub=step(0.93,fract(sin(dot(floor(vec2(u,v)*300.),vec2(12.9898,78.233)))*43758.5));
   vec3 warp=c*vec3(1.22,1.18,1.1), weftc=c*0.78; vec3 o=mix(weftc,warp,rib*0.55+weft*0.25); return mix(o,c*1.3,slub*0.5); }
@@ -85,6 +85,10 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
   const H=o.metres/.84*TILE, s=H/tall, body=new THREE.Group(), g=new THREE.Group(); body.add(me); body.scale.set(s,s*ZU*24/TILE,s); g.add(body); MAPG[o.group||'down'].add(g);
   const TX=x=>(x+27)*TILE+STN.DX, TZ=y=>(y+73)*TILE+STN.DZ, LN=o.lane||{x0:TX(-29.5),x1:TX(-28.6),z0:TZ(-84.2),z1:TZ(-61.9)}, LX0=LN.x0, LX1=LN.x1, LZ0=LN.z0, LZ1=LN.z1, QS=new URLSearchParams(location.search), ground=o.ground||MODS.station.ground, longX=LX1-LX0>LZ1-LZ0;
   const st={x:o.x??TX(-29),z:o.z??TZ(o.at),h:Math.PI/2,to:null,wait:+(QS.get('npcwait')||2),ph:Math.random()*6,R:o.radius*TILE,v:o.speed*TILE};
+  // the room a body takes (8 Nov 2026): its own width and length low on the body (never less than the radius it was given), a long one a capsule along its heading; a flyer or a body too small to trip over takes none
+  { const F=FOOT.get(geo)||(()=>{ const A=geo.attributes.position; let y0=1e9,y1=-1e9; for(let i=0;i<A.count;i++){ const y=A.getY(i); if(y<y0)y0=y; if(y>y1)y1=y; } let x0=1e9,x1=-1e9,z0=1e9,z1=-1e9;
+      for(let i=0;i<A.count;i++){ const f=(A.getY(i)-y0)/(y1-y0||1); if(f<.1||f>.6)continue; const x=A.getX(i), z=A.getZ(i); if(x<x0)x0=x; if(x>x1)x1=x; if(z<z0)z0=z; if(z>z1)z1=z; } const r={w:x1-x0,l:z1-z0,c:(z0+z1)/2,h:y1-y0}; FOOT.set(geo,r); return r; })();
+    if(F.w>0&&F.l>0){ const w=F.w*s, l=F.l*s; st.R=Math.max(st.R,.45*Math.min(w,l)); st.L=Math.max(0,.45*l-st.R); st.LZ=F.c*s; } N.tall=F.h*s*ZU*24/TILE; N.fly=!!o.fly; N.tiny=N.tall<.2; }
   { const SH=QS.get('sheet'), NA=QS.get('npcat')||(SH&&SH+',field'); if(NA){ const [k,x,z]=NA.split(','); if(k===N.key){ if(x==='field'){ st.x=SH?SHARED.BOUND.x1-.5*TILE:SHARED.BOD.XS(SHARED.BOD.MAP.x1+14); st.z=SHARED.BOD.ZS((SHARED.BOD.MAP.y0+SHARED.BOD.MAP.y1)/2); } else{ st.x=+x; st.z=+z; } st.hold=true;
     if(SH===N.key){ N.sheet=true; st.face={x:st.x+1,z:st.z+1}; st.h=Math.PI/4; } } } }
   const free=N.free=o.free||((x,z,R)=>!CLIP.hit(SOL[N.lv]||SOL.up,x,z,R)); N.ground=ground;
@@ -92,7 +96,10 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
   N.pick=()=>pick();
   const pick=()=>{ if(o.pick){ o.pick(st); return; } if(!o.roam&&HOMES.pick(st,free,LN))return; if(o.roam){ if(!ROAM.pick(st,free)){ st.to=null; st.wait=1; } return; } for(let k=0;k<12;k++){
     const r=(Math.random()<.5?-1:1)*(2+Math.random()*7)*TILE; st.to=longX?{x:Math.max(LX0,Math.min(LX1,st.x+r)),z:LZ0+Math.random()*(LZ1-LZ0)}:{x:LX0+Math.random()*(LX1-LX0),z:Math.max(LZ0,Math.min(LZ1,st.z+r))}; if(free(st.to.x,st.to.z,st.R))return; } st.to=null; st.wait=1; };
-  const block=(x,z,R)=>Math.hypot(x-st.x,z-st.z)<st.R+R;
+  // the nearest point of the body's spine to x,z (its middle, or along its length for a long one), from where it stands or from cx,cz
+  const SP={x:0,z:0}, spine=(x,z,cx=st.x,cz=st.z)=>{ const L=st.L||0, c=st.LZ||0, sx=Math.sin(st.h), sz=Math.cos(st.h); cx+=sx*c; cz+=sz*c; const t=L?Math.max(-L,Math.min(L,(x-cx)*sx+(z-cz)*sz)):0; SP.x=cx+sx*t; SP.z=cz+sz*t; return SP; };
+  const gap=(x,z,cx,cz)=>{ const p=spine(x,z,cx,cz); return Math.hypot(x-p.x,z-p.z); }, block=(x,z,R)=>gap(x,z)<st.R+R;
+  N.nose=(cx,cz)=>{ const k=(st.LZ||0)+(st.L||0); return {x:cx+Math.sin(st.h)*k,z:cz+Math.cos(st.h)*k}; };
   N.tick=(dt,you)=>{ if(N.sheet&&!N.sheetOn){ N.sheetOn=true; UI.setFree(true); UI.camT.set(st.x,g.position.y+tall*s*ZU*24/TILE*.5,st.z); SHARED.ppu=SHARED.ppuTo=PPU*4; window.SHEETTURN=d=>{ SHARED.yaw=SHARED.yawTo=d*Math.PI/180; };
       for(const G of Object.values(MAPG))for(const c of G.children)if(c!==g)c.visible=false; const r0=renderer.render.bind(renderer); renderer.render=(s,c)=>{ if(s.background&&s.background.isColor)s.background.set(0); r0(s,c); }; }
     if(o.brain)o.brain(dt,VIT.dead?NOYOU:you,st,N);
@@ -100,13 +107,13 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
     if(N.mode==='hidden'&&!g.visible)return;
     const goIn=()=>{ st.goIn=null; st.to=null; st.inT=20+Math.random()*40; body.visible=false; };
     if(st.goIn&&st.to&&Math.hypot(st.to.x-st.x,st.to.z-st.z)<st.R+.6*TILE){ goIn(); return; }
-    if(st.sx||st.sz){ const nx=st.x+st.sx*dt, nz=st.z+st.sz*dt; if(N.free(nx,nz,st.R)){ st.x=nx; st.z=nz; } const k=Math.max(0,1-dt*6); st.sx*=k; st.sz*=k; if(Math.abs(st.sx)+Math.abs(st.sz)<.01)st.sx=st.sz=0; }
+    if(st.sx||st.sz){ const nx=st.x+st.sx*dt, nz=st.z+st.sz*dt; if(N.free(nx,nz,st.R)&&!NPCS.inway(N,nx,nz)){ st.x=nx; st.z=nz; } const k=Math.max(0,1-dt*6); st.sx*=k; st.sz*=k; if(Math.abs(st.sx)+Math.abs(st.sz)<.01)st.sx=st.sz=0; }
     let want=st.h, moving=false;
     if(st.to){ const ex=st.to.x-st.x, ez=st.to.z-st.z, d=Math.hypot(ex,ez); if(d<.05){ st.to=st.next||null; st.next=null; st.wait=st.to?0:1.5+Math.random()*4; }
       else{ want=Math.atan2(ex,ez); const turn=Math.abs(((want-st.h+Math.PI*3)%(Math.PI*2))-Math.PI);
         if(turn<.5){ const step=Math.min(d,st.v*dt), nx=st.x+ex/d*step, nz=st.z+ez/d*step;
-          if(!N.free(nx,nz,st.R)){ if(st.goIn&&d<st.R+1.6*TILE){ goIn(); return; } st.to=null; st.wait=.5; }
-          else if(!VIT.dead&&Math.hypot(you.x-nx,you.z-nz)<st.R+.35&&Math.abs(SHARED.py-g.position.y)<2||NPCS.some(q=>q!==N&&!q.far&&q.lv===N.lv&&q.key!=='dragon'&&q.mode!=='hidden'&&q.blocks(nx,nz,st.R)&&q.gap(nx,nz)<q.gap(st.x,st.z))){ if((st.held=(st.held||0)+dt)>2){ st.to=null; st.held=0; st.wait=1; } }
+          const ns=st.L?N.nose(nx,nz):null; if(!N.free(nx,nz,st.R)||ns&&!N.free(ns.x,ns.z,st.R)){ if(st.goIn&&d<st.R+1.6*TILE){ goIn(); return; } st.to=null; st.wait=.5; }
+          else if(!N.fly&&!N.tiny&&(!VIT.dead&&gap(you.x,you.z,nx,nz)<st.R+.35&&gap(you.x,you.z,nx,nz)<gap(you.x,you.z)&&Math.abs(SHARED.py-g.position.y)<2||NPCS.inway(N,nx,nz))){ if((st.held=(st.held||0)+dt)>2){ st.to=null; st.held=0; st.wait=1; } }
           else{ st.x=nx; st.z=nz; moving=true; st.held=0; } } } }
     else{ if(st.face)want=Math.atan2(st.face.x-st.x,st.face.z-st.z); if(!st.hold&&(st.wait-=dt)<=0)pick(); }
     let dh=((want-st.h+Math.PI*3)%(Math.PI*2))-Math.PI; st.h+=dh*Math.min(1,dt*5);
@@ -115,11 +122,12 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
     if(ad){ N._rk=o.skin?0:moving?Math.sin(st.ph)*o.rock:0; N._bb=o.skin?0:moving?Math.abs(Math.sin(st.ph))*o.bob:0; }
     const gy=N.ground(st.x,st.z)+(N._bb||0); g.position.set(st.x,gy,st.z); g.rotation.set(0,st.h,0); body.rotation.set(0,0,N._rk||0); if(!o.skin)body.scale.y=s*ZU*24/TILE;
     if(ad){ if(o.anim)o.anim(ad,moving,st,s); N._ao=g.position.y-gy; } else if(N._ao)g.position.y+=N._ao; };
-  N.blocks=(x,z,R)=>st.inT==null&&block(x,z,R); N.gap=(x,z)=>Math.hypot(x-st.x,z-st.z);
+  N.blocks=(x,z,R)=>st.inT==null&&block(x,z,R); N.gap=(x,z)=>gap(x,z);
   N.push=p=>{ if(st.inT!=null)return; { const J=N.rig&&N.rig.job; if(J&&(J.tray||J.broom||J.item)){ const hx=st.x+Math.sin(st.h)*.42*TILE, hz=st.z+Math.cos(st.h)*.42*TILE, dx=p.x-hx, dz=p.z-hz, d=Math.hypot(dx,dz), R=.3*TILE+.3; if(d<R&&d>1e-4){ p.x=hx+dx/d*R; p.z=hz+dz/d*R; } } }
-    const dx=p.x-st.x, dz=p.z-st.z, d=Math.hypot(dx,dz), R=st.R+.3; if(!(d<R&&d>1e-4))return;
-    const ux=dx/d, uz=dz/d, sp=Math.hypot(p.x-pos.x,p.z-pos.z), k=Math.min(.75,.4+sp*3/TILE), nx=st.x-ux*(R-d)*k, nz=st.z-uz*(R-d)*k;
-    if(N.free(nx,nz,st.R)){ st.x=nx; st.z=nz; } if(sp>.05*TILE&&!(st.sx||st.sz)){ const v=Math.min(sp,.12*TILE)*28; st.sx=-ux*v; st.sz=-uz*v; } p.x=st.x+ux*R; p.z=st.z+uz*R; };
+    if(N.fly||N.tiny||Math.abs(g.position.y-SHARED.py)>2*TILE)return;
+    const q=spine(p.x,p.z), qx=q.x, qz=q.z, dx=p.x-qx, dz=p.z-qz, d=Math.hypot(dx,dz), R=st.R+.3; if(!(d<R&&d>1e-4))return;
+    const ux=dx/d, uz=dz/d, sp=Math.hypot(p.x-pos.x,p.z-pos.z), k=st.R>.45?0:Math.min(.75,.4+sp*3/TILE), nx=st.x-ux*(R-d)*k, nz=st.z-uz*(R-d)*k;
+    if(k&&N.free(nx,nz,st.R)&&!NPCS.inway(N,nx,nz)){ st.x=nx; st.z=nz; } if(k&&sp>.05*TILE&&!(st.sx||st.sz)){ const v=Math.min(sp,.12*TILE)*28; st.sx=-ux*v; st.sz=-uz*v; } const e=spine(p.x,p.z); p.x=e.x+ux*R; p.z=e.z+uz*R; };
   N.shadowPass=renderer=>{ if(W3.lv.value<1.5||N.far||st.inT!=null||!g.visible||!g.parent.visible)return; if(!SELFSH.use(N)){ N.LVP.value.copy(SELFSH.off); return; } const mid=NPCMID.set(g.position.x,g.position.y+H*.45,g.position.z); N.smCam.position.copy(mid).addScaledVector(W3.Lw,7); N.smCam.up.set(0,Math.abs(W3.Lw.y)>.6?0:1,Math.abs(W3.Lw.y)>.6?1:0); N.smCam.lookAt(mid); N.smCam.updateMatrixWorld();
     N.LVP.value.multiplyMatrices(N.smCam.projectionMatrix,N.smCam.matrixWorldInverse); const ms=[]; g.traverse(o=>{ if(o.isMesh){ ms.push([o,o.material]); o.material=N.depthMat; } });
     renderer.setRenderTarget(smOf()); renderer.clear(); renderer.render(g,N.smCam); renderer.setRenderTarget(null); for(const [o,m] of ms)o.material=m; };
@@ -182,9 +190,18 @@ SYS.add('near',(x,z)=>NPCS.near(x,z),'npc shading');
   NPCS.tick=(dt,you)=>{ let shadeN=0; M4.multiplyMatrices(SHARED.cam.projectionMatrix,SHARED.cam.matrixWorldInverse); FR.setFromProjectionMatrix(M4); const R=25*TILE;
     for(const N of NPCS){ const p=N.st?V.set(N.st.x,N.g.position.y,N.st.z):N.g.position, d=Math.hypot(p.x-you.x,p.z-you.z), seen=FR.intersectsSphere(SP.set(p,Math.max(2*TILE,N.cullR||0)));
       const far=N.park&&!PARK.in||!('mode' in N)&&!N.sheet&&(!N.g.parent.visible||!LEVELS.drawn(N.g)||d>R&&!seen&&!WINDOWS.near(p.x,p.z));
-      N.far=far; N.hid=!N.sheet&&(far||!seen||d>NPCS.DRAW||CULL.past(p.x,p.z,Math.max(TILE,N.cullR||0))); if(!N.shaded&&(!far||d<NPCS.SHADE)&&shadeN<2){ N.shade(); shadeN++; }
+      N.far=far; N.hid=!N.sheet&&(!seen||far&&!N.shaded||CULL.past(p.x,p.z,Math.max(TILE,N.cullR||0))); if(!N.shaded&&(!far||d<NPCS.SHADE)&&shadeN<2){ N.shade(); shadeN++; }
       if(!far)N.tick(dt,you); else{ if(N.farMove)N.farMove(dt); if(N.st){ N.g.position.x=N.st.x; N.g.position.z=N.st.z; } } }   // a body not ticked still stands where its character is
     for(const X of NPCS.extra){ const a=X.at; X.hid=!!a&&(!FR.intersectsSphere(SP.set(V.set(a.x,(a.y||0)+1,a.z),2*TILE))||CULL.past(a.x,a.z,2*TILE)); } };
+  // someone in the way (8 Nov 2026): would N standing at x,z overlap another character, a standing body or a player near you, and closer than it is now (so two who overlap can always part)
+  const live=X=>X.on!==false&&X.st&&X.g&&(X.g.visible||X._cv)&&X.mode!=='hidden'&&!X.rag&&!X.far&&!X.fly&&!X.tiny&&X.st.inT==null;
+  NPCS.inway=(N,x,z)=>{ const st=N.st, lv=N.lv||'up', R=st.R, ns=N.nose?N.nose(x,z):null;
+    for(const q of NPCS){ if(q===N||q.far||q.lv!==lv||q.key==='dragon'||q.fly||q.tiny||q.mode==='hidden'||!q.blocks)continue; if((q.blocks(x,z,R)||ns&&q.blocks(ns.x,ns.z,R))&&q.gap(x,z)<q.gap(st.x,st.z))return true; }
+    for(const X of NPCS.extra){ if(X===N||!live(X)||(X.lv||'up')!==lv)continue; const s=X.st, r=(s.R||.3)+R, d=Math.hypot(s.x-x,s.z-z); if(d<r&&d<Math.hypot(s.x-st.x,s.z-st.z))return true; }
+    if(ONLINE.others&&lv===SHARED.LVL)for(const o of ONLINE.others.values()){ if(o.why!=='near you'||!o.p||o.dead)continue; const d=Math.hypot(o.p.x-x,o.p.z-z); if(d<R+.3&&d<Math.hypot(o.p.x-st.x,o.p.z-st.z))return true; }
+    return false; };
+  // you are kept out of the standing bodies (the cast's, NPCS.extra) as out of every other character
+  NPCS.pushX=p=>{ for(const X of NPCS.extra){ if(!live(X)||(X.lv||'up')!==SHARED.LVL)continue; const s=X.st, dx=p.x-s.x, dz=p.z-s.z, d=Math.hypot(dx,dz), R=(s.R||.3)+.3; if(d<R&&d>1e-4){ p.x=s.x+dx/d*R; p.z=s.z+dz/d*R; } } };
   NPCS.R=25*TILE; NPCS.DRAW=30*TILE; NPCS.seen=(x,y,z,r)=>FR.intersectsSphere(SP.set(V.set(x,y,z),r||2*TILE)); NPCS.live=(x,y,z,r)=>Math.hypot(x-pos.x,z-pos.z)<NPCS.R&&NPCS.seen(x,y,z,r);
   NPCS.cull=on=>{ const one=(o,g)=>{ if(on){ if(o.hid&&g.visible){ g.visible=false; o._cv=true; } } else if(o._cv){ g.visible=true; o._cv=false; } };
     for(const N of NPCS)one(N,N.g); for(const X of NPCS.extra)if(X.g)one(X,X.g); }; }

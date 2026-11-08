@@ -173,6 +173,7 @@ W=json.load(open('data/world.json'))
 W['things']=[t for t in W['things'] if not str(t['k']).startswith('p:')]
 FL=FLOAT
 for k,x,y,r in P:
+    if k in ('globelamp','colonial','campuslamp','sealamp'): k='jlamp'   # the park's lamps are J lamps (owner, 7 Nov 2026: "fix 3": the park lit at night as before)
     if k not in KEEP: continue
     o={'k':'p:'+k,'x':round(x,2),'y':round(y,2)}
     if abs(r)>1e-4: o['rot']=round(r,3)

@@ -5,8 +5,8 @@ import {imAct} from './120-game-music-2-instruments.js';
 import {INSTR} from './146zp-instruments.js';
 { const {box,cyl,mat,sm}=INSTR, V3=THREE.Vector3;
   // the strings' plane (metres, the harpist at the origin facing +z, +x their left): along the soundboard from its foot (the bass) to its top at the shoulder (the treble)
-  const N=34, PX=-.07, SB0=new V3(PX,.13,.46), SB1=new V3(PX,.9,.15);
-  const root=s=>SB0.clone().lerp(SB1,s/(N-1)), topY=s=>{ const u=s/(N-1); return 1.19+(.99-1.19)*u+.045*Math.sin(Math.PI*u); };
+  const N=34, PX=-.07, SB0=new V3(PX,.13,.46), SB1=new V3(PX,.84,.25);
+  const root=s=>SB0.clone().lerp(SB1,s/(N-1)), topY=s=>{ const u=s/(N-1); return 1.19+(.93-1.19)*u+.045*Math.sin(Math.PI*u); };
   const pluckY=s=>{ const r=root(s).y, t=topY(s); return Math.max(r+.05,Math.min(t-.05,.8)); };
   const at=s=>{ const r=root(s); return new V3(PX,pluckY(s),r.z); };
   const LET=['C','D','E','F','G','A','B'], letter=s=>s%7, NAT=[0,2,4,5,7,9,11];
@@ -46,7 +46,7 @@ import {INSTR} from './146zp-instruments.js';
   const window_=(P,H,t)=>{ const sc=INSTR.score(P), ev=sc.ev; if(H.sc!==sc){ H.sc=sc; H.lo=0; H.c={L:9,R:22}; } if(H.lo>ev.length)H.lo=0; while(H.lo<ev.length&&ev[H.lo].t<t-1)H.lo++;
     const out=[]; for(let i=H.lo;i<ev.length&&ev[i].t<=t+.3;i++)if(ev[i].t>=t-.25)out.push(ev[i]); return out; };
   K.hands=(P,t,H)=>{ const near=window_(P,H,t), out={}, S=H.c;
-    for(const sd of ['L','R']){ const sg=sd==='L'?1:-1, mine=near.filter(e=>e.h===sd), want=mine.filter(e=>e.t>=t-.05);
+    for(const sd of ['L','R']){ const sg=sd==='L'?1:-1, mine=near.filter(e=>e.h===sd), want=mine;
       if(want.length){ const mid=(Math.min(...want.map(e=>e.n))+Math.max(...want.map(e=>e.n)))/2; S[sd]+=(mid-S[sd])*Math.min(1,(Math.abs(mid-S[sd])>3?.4:.15)*(H.dt||1)); }
       const used=new Set(); for(const e of mine.sort((a,b)=>b.n-a.n))if(e.fh==null){ let f=Math.max(0,Math.min(3,Math.round(S[sd]+1.5-e.n))); for(let d=0;d<4&&used.has(f);d++){ const a=f+d, b=f-d; f=a<=3&&!used.has(a)?a:b>=0&&!used.has(b)?b:f; } e.fh=f; used.add(f); }
       const tips=[], w=[];
@@ -56,8 +56,9 @@ import {INSTR} from './146zp-instruments.js';
           if(best.t>t){ const u=1-sm((best.t-t)/.2); q=hov.clone().lerp(on,u); } else { const u=t-best.t; q=u<.06?on.clone().lerp(thru,sm(u/.06)):thru.clone().lerp(hov,sm((u-.06)/.2)); }
           tips[f]=q; w[f]=1.3; }
         else { tips[f]=hov; w[f]=.6; } }
-      const c=at(Math.round(Math.max(0,Math.min(N-1,S[sd]))));
-      out[sd]={wr:c.clone().add(new V3(sg*.1,.07,-.07)),Fd:new V3(-sg*.75,-.5,.35),Dd:new V3(sg*.8,.5,-.2),pole:new V3(sg,-.6,-.5),tips,w,rest:[[.2,.3,.2,0],[.3,.4,.3,0],[.3,.4,.3,0],[.3,.4,.3,0],[1.4,1.6,1,.2]]}; }
+      // (the wrist behind the four fingertips, along the way the fingers point)
+      const Fd=new V3(-sg*.75,-.5,.35), Dd=new V3(sg*.8,.5,-.2), cen=new V3(); for(let f=0;f<4;f++)cen.add(tips[f]); cen.multiplyScalar(.25);
+      out[sd]={wr:cen.addScaledVector(Fd.clone().normalize(),-.13).addScaledVector(Dd.clone().normalize(),.02),Fd,Dd,pole:new V3(sg,-.6,-.5),tips,w,rest:[[.2,.3,.2,0],[.3,.4,.3,0],[.3,.4,.3,0],[.3,.4,.3,0],[1.4,1.6,1,.2]]}; }
     return out; };
   // the feet on the pedals: a foot goes to the pedal about to change and moves it; at rest they wait by their pedals
   K.feet=(P,t,H)=>{ const pl=ped(P), want=H.pw||(H.pw=pl.slice()); for(const e of window_(P,H,t))if(e.f!=null&&e.t<=t+.25&&e.t>=t-.05)want[letter(e.n)]=e.f;

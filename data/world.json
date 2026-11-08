@@ -23,9 +23,9 @@
    "cols": 4,
    "rows": 2,
    "x0": -130,
-   "y0": -186.5,
+   "y0": -231.5,
    "w": 392,
-   "h": 395.5
+   "h": 440.5
   },
   "ids": [
    [
@@ -451,7 +451,7 @@
    -130.1,
    -107.9
   ],
-  "river": -185,
+  "river": -230,
   "origin": [
    72,
    -77
@@ -757,7 +757,7 @@
     -2.4,
     9.62
    ],
-   "inW": 8,
+   "inW": 16,
    "inD": 10,
    "inH": 100,
    "y0": -107.9,
@@ -4050,6 +4050,220 @@
    "k": "p:trashcan",
    "x": 105,
    "y": 165
+  },
+  {
+   "k": "p:jlamp",
+   "x": 103.41,
+   "y": -22.2,
+   "rot": 1.505
+  },
+  {
+   "k": "p:jlamp",
+   "x": 116.14,
+   "y": -7.76,
+   "rot": -1.344
+  },
+  {
+   "k": "p:jlamp",
+   "x": 108.57,
+   "y": 9.56,
+   "rot": 1.746
+  },
+  {
+   "k": "p:jlamp",
+   "x": 105.51,
+   "y": 37.68,
+   "rot": 1.329
+  },
+  {
+   "k": "p:jlamp",
+   "x": 108.25,
+   "y": 98.93,
+   "rot": 1.367
+  },
+  {
+   "k": "p:jlamp",
+   "x": 115.77,
+   "y": 116.28,
+   "rot": -1.776
+  },
+  {
+   "k": "p:jlamp",
+   "x": 103.58,
+   "y": 131.11,
+   "rot": 1.677
+  },
+  {
+   "k": "p:jlamp",
+   "x": 117.98,
+   "y": 144.2,
+   "rot": -1.319
+  },
+  {
+   "k": "p:jlamp",
+   "x": 109.29,
+   "y": 160.99,
+   "rot": 1.594
+  },
+  {
+   "k": "p:jlamp",
+   "x": -8.18,
+   "y": 68.11,
+   "rot": 3.081
+  },
+  {
+   "k": "p:jlamp",
+   "x": 6.17,
+   "y": 55.24,
+   "rot": 0.234
+  },
+  {
+   "k": "p:jlamp",
+   "x": 23.47,
+   "y": 62.79,
+   "rot": -2.977
+  },
+  {
+   "k": "p:jlamp",
+   "x": 38.87,
+   "y": 51.55,
+   "rot": -0.164
+  },
+  {
+   "k": "p:jlamp",
+   "x": 51.65,
+   "y": 66.32,
+   "rot": 2.905
+  },
+  {
+   "k": "p:jlamp",
+   "x": 67.96,
+   "y": 56.73,
+   "rot": 0.061
+  },
+  {
+   "k": "p:jlamp",
+   "x": 84.94,
+   "y": 65.01,
+   "rot": -2.882
+  },
+  {
+   "k": "p:jlamp",
+   "x": 98.3,
+   "y": 50.89,
+   "rot": 0.061
+  },
+  {
+   "k": "p:jlamp",
+   "x": 129.95,
+   "y": 56.2,
+   "rot": -0.164
+  },
+  {
+   "k": "p:jlamp",
+   "x": 145.35,
+   "y": 67.46,
+   "rot": -2.977
+  },
+  {
+   "k": "p:jlamp",
+   "x": 158.13,
+   "y": 52.68,
+   "rot": 0.237
+  },
+  {
+   "k": "p:jlamp",
+   "x": 219.14,
+   "y": 55.25,
+   "rot": 0.234
+  },
+  {
+   "k": "p:jlamp",
+   "x": 251.84,
+   "y": 51.54,
+   "rot": -0.164
+  },
+  {
+   "k": "p:jlamp",
+   "x": 109.63,
+   "y": 19.81,
+   "rot": 0.428
+  },
+  {
+   "k": "p:jlamp",
+   "x": 125.63,
+   "y": 25.05,
+   "rot": -2.714
+  },
+  {
+   "k": "p:jlamp",
+   "x": 132.16,
+   "y": 9.54,
+   "rot": 0.428
+  },
+  {
+   "k": "p:jlamp",
+   "x": 48.35,
+   "y": 61.47,
+   "rot": -1.924
+  },
+  {
+   "k": "p:jlamp",
+   "x": 34.32,
+   "y": 71.23,
+   "rot": 1.531
+  },
+  {
+   "k": "p:jlamp",
+   "x": 47.8,
+   "y": 81.58,
+   "rot": -1.224
+  },
+  {
+   "k": "p:jlamp",
+   "x": 40.2,
+   "y": 95.98,
+   "rot": 1.677
+  },
+  {
+   "k": "p:jlamp",
+   "x": 145.78,
+   "y": 174.62
+  },
+  {
+   "k": "p:jlamp",
+   "x": 151.2,
+   "y": 152.72
+  },
+  {
+   "k": "p:jlamp",
+   "x": 163.2,
+   "y": 132.51
+  },
+  {
+   "k": "p:jlamp",
+   "x": 190.28,
+   "y": 108.9
+  },
+  {
+   "k": "p:jlamp",
+   "x": 214.62,
+   "y": 97.41
+  },
+  {
+   "k": "p:jlamp",
+   "x": 245.79,
+   "y": 90.39
+  },
+  {
+   "k": "p:jlamp",
+   "x": 142.19,
+   "y": 2.61
+  },
+  {
+   "k": "p:jlamp",
+   "x": 162.5,
+   "y": 10
   }
  ],
  "pathWidth": 7.2,
@@ -6138,13 +6352,51 @@
   ]
  },
  "bigTrees": [
-  {"note": "THE BIG TREES (owner, 7 Nov 2026): giants in the middle of the park, map tiles; kind A level branch, B rising, C low and sagging; face: where the big branch reaches, degrees; climb: SPACE next to it climbs it"},
-  {"kind": "A", "x": 176.7, "y": 85.7, "face": 166, "climb": true},
-  {"kind": "B", "x": 136.2, "y": 129.3, "face": 226, "climb": true},
-  {"kind": "C", "x": 76.2, "y": 104.1, "face": 286, "climb": true},
-  {"kind": "A", "x": 49.3, "y": 54.3, "face": 346, "climb": true},
-  {"kind": "B", "x": 106.4, "y": 25.3, "face": 46, "climb": true},
-  {"kind": "C", "x": 173.8, "y": 31.4, "face": 106, "climb": true}
+  {
+   "note": "THE BIG TREES (owner, 7 Nov 2026): giants in the middle of the park, map tiles; kind A level branch, B rising, C low and sagging; face: where the big branch reaches, degrees; climb: SPACE next to it climbs it"
+  },
+  {
+   "kind": "A",
+   "x": 176.7,
+   "y": 85.7,
+   "face": 166,
+   "climb": true
+  },
+  {
+   "kind": "B",
+   "x": 136.2,
+   "y": 129.3,
+   "face": 226,
+   "climb": true
+  },
+  {
+   "kind": "C",
+   "x": 76.2,
+   "y": 104.1,
+   "face": 286,
+   "climb": true
+  },
+  {
+   "kind": "A",
+   "x": 49.3,
+   "y": 54.3,
+   "face": 346,
+   "climb": true
+  },
+  {
+   "kind": "B",
+   "x": 106.4,
+   "y": 25.3,
+   "face": 46,
+   "climb": true
+  },
+  {
+   "kind": "C",
+   "x": 173.8,
+   "y": 31.4,
+   "face": 106,
+   "climb": true
+  }
  ],
  "cloudTrees": [],
  "edge": {
@@ -6152,7 +6404,7 @@
   "lines": [
    [
     -52.5,
-    -186.5,
+    -231.5,
     -52.5,
     181
    ],
@@ -6178,7 +6430,7 @@
     252,
     -38,
     252,
-    -186.5
+    -231.5
    ]
   ],
   "runs": [
@@ -6235,10 +6487,23 @@
   "near": 60,
   "ground": {
    "note": "the land past the edges (owner, 7 Nov 2026: \"set a base color for far off distance things like grass\"): one low-res grass ground under everything outside the section, the big lake's whole shore in it (box x0, y0, x1, y1 in tiles; tiles a pixel; grass and water colours)",
-   "box": [-600, -130.1, 900, 800],
+   "box": [
+    -600,
+    -130.1,
+    900,
+    800
+   ],
    "px": 2,
-   "grass": [62, 96, 46],
-   "water": [164, 198, 236]
+   "grass": [
+    62,
+    96,
+    46
+   ],
+   "water": [
+    164,
+    198,
+    236
+   ]
   },
   "strips": {
    "note": "the streets carried on past the edges, low-res ground (x0, y0, x1, y1, kind)",

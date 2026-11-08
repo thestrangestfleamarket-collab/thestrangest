@@ -31,7 +31,7 @@ import {WILD} from './144f-wild.js';
   FORAGE.ROWB.push(id=>id==='jar_fly'?[['LET THEM GO','fflyfree']]:[]); FORAGE.ACT.fflyfree=()=>free();
   let lamp=null; const L0=new THREE.Vector3(), DB=new THREE.Vector2();
   // a glow d metres across seen from the camera, in screen pixels (never more than mx, never under one): small from far off or high up
-  const px=(d,x,y,z,mx)=>{ const c=SHARED.cam; if(!c)return mx; renderer.getDrawingBufferSize(DB); const ppu=c.isOrthographicCamera?DB.y*c.zoom/(c.top-c.bottom):DB.y/(2*Math.tan(c.fov*Math.PI/360)*Math.max(.01,Math.hypot(c.position.x-x,c.position.y-y,c.position.z-z))); return Math.max(1,Math.min(mx,d*WU*ppu)); };
+  const px=(d,x,y,z,mx)=>{ const c=SHARED.cam; if(!c)return mx; renderer.getDrawingBufferSize(DB); const ppu=c.isOrthographicCamera?DB.y*c.zoom/(c.top-c.bottom):DB.y/(2*Math.tan(c.fov*Math.PI/360)*Math.max(.01,Math.hypot(c.position.x-x,c.position.y-y,c.position.z-z))); px.last=[DB.y,+ppu.toFixed(1)]; return Math.max(1,Math.min(mx,d*WU*ppu)); };
   let fa=0, t=0; SYS.add('life',dt=>{ if(!dt)return; t+=dt; const has=FORAGE.has('jar_fly')>0, dark=CLOCK.dark();
     if(has&&!dark){ free(true); say('THE SUN COMES UP. YOUR FIREFLIES SLIP OUT OF THE JAR.','#e8f08a'); }
     if(has&&dark){ if(!lamp){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute([0,0,0],3)); g.setAttribute('color',new THREE.Float32BufferAttribute([1,1,.5],3)); lamp=new THREE.Points(g,glowMat()); lamp.material.size=9; lamp.frustumCulled=false; lamp.raycast=()=>{}; scene.add(lamp); }
@@ -42,5 +42,5 @@ import {WILD} from './144f-wild.js';
     for(const sw of SW)for(const f of sw.f){ f.a+=k*f.s; f.b+=k*f.s*.7; const x=sw.x+Math.cos(f.a)*f.r, z=sw.z+Math.sin(f.b)*f.r, y=sw.y+f.h+Math.sin(f.a*1.3+f.ph)*.25*WU;
       if((f.next-=k)<=0){ f.on=.45; f.next=rnd(2.5,6); } const v=f.on>0?Math.sin((f.on-=k)/.45*Math.PI)*.95+.05:.04; P.setXYZ(i,x,y,z); C.setXYZ(i,.85*v,1*v,.35*v); i++; }
     P.needsUpdate=true; C.needsUpdate=true; },'144g-fireflies');
-  window.FFLYDBG=()=>({built:!!SW,swarms:SW?SW.length:0,shown:!!(pts&&pts.visible),jar:FORAGE.has('jar_fly'),lamp:!!(lamp&&lamp.visible),size:pts&&+pts.material.size.toFixed(2)});
+  window.FFLYDBG=()=>({built:!!SW,swarms:SW?SW.length:0,shown:!!(pts&&pts.visible),jar:FORAGE.has('jar_fly'),lamp:!!(lamp&&lamp.visible),size:pts&&+pts.material.size.toFixed(2),ppu:px.last});
   FORAGE.HELP.push('FIREFLIES: by the park pond and its plants at night. Double click to cup one and let it go; with an empty butterfly jar you carry a glowing jar that you open, or that opens itself at dawn.'); }

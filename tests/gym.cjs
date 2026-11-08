@@ -16,6 +16,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.evaluate(() => { window.FORAGE.stats.set({ str: 30, int: 30, sta: 30 }); });
     await pg.evaluate(() => ROOMS.enter('gym'));
     ok(await until(() => GYMDBG().built && GYMDBG().inside, null, 90000), 'going in builds it');
+    ok(await pg.evaluate(() => GYMDBG().mirror), 'the mirror is a real reflection (a Reflector on its wall)');
     await pg.waitForTimeout(1500);
     // the treadmill
     const t0 = await pg.evaluate(() => { const K = GYM.K(), t = K.tread[0]; GYM.tread(t); t.pace = 12; return window.FORAGE.stats.toward('sta'); });

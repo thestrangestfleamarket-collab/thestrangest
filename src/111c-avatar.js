@@ -39,11 +39,13 @@ const AVATAR={}; window.AVATAR=AVATAR;
   // a part's points (rest, metres) moved by the shape: each by its two bones, as they weigh it
   const reshape=(X,d,Z)=>{ const T=new THREE.Vector3(), U=new THREE.Vector3(); for(let q=0;q<X.length/3;q++){ const b1=d.bone[q*2], b2=d.bone[q*2+1], w=d.w[q]/255, x=X[q*3], y=X[q*3+1], z=X[q*3+2];
       T.set(x,y,z).sub(Z.O[b1]).applyMatrix3(Z.A[b1]).add(Z.O1[b1]); U.set(x,y,z).sub(Z.O[b2]).applyMatrix3(Z.A[b2]).add(Z.O1[b2]); X[q*3]=T.x*w+U.x*(1-w); X[q*3+1]=T.y*w+U.y*(1-w); X[q*3+2]=T.z*w+U.z*(1-w); } };
-  const code=L=>[L.f,L.b,L.h,L.skin,L.hair,...SLOTS.slice(0,OLD).map(x=>enc(x,L)),L.bare?'1':'',...SLOTS.slice(OLD).map(x=>enc(x,L)),L.eye&&L.eye!==EYE0?L.eye:'',L.lan?'1':'',shEnc(L.sh)].join('.').replace(/\.+$/,'');   // (then barefoot, then the later slots, then the eyes)
+  const code=L=>[L.f,L.b,L.h,L.skin,L.hair,...SLOTS.slice(0,OLD).map(x=>enc(x,L)),L.bare?'1':'',...SLOTS.slice(OLD).map(x=>enc(x,L)),L.eye&&L.eye!==EYE0?L.eye:'',L.lan?'1':'',shEnc(L.sh),LYOK(L.ly)?L.ly:''].join('.').replace(/\.+$/,'');   // (then barefoot, then the later slots, then the eyes)
+  // the lanyard's look (owner, 8 Nov 2026): frame_frameColour_string_stringColour: the badge's frame (0 none, 1 clear, 2 metal, 3 coloured), the string (0 cord, 1 flat strap, 2 bead chain)
+  const LYOK=s=>/^[0-3]_[0-9a-f]{6}_[0-2]_[0-9a-f]{6}$/.test(s||''), LY0='0_c0392b_0_181818', lyOf=L=>{ const a=(LYOK(L.ly)?L.ly:LY0).split('_'); return {fr:+a[0],fc:a[1],st:+a[2],sc:a[3]}; };
   const hex=s=>/^[0-9a-f]{6}$/.test(s||'')?s:null, cols=s=>/^[0-9a-f]{6}$|^(?:[0-9a-f]{6})?(?:_(?:[0-9a-f]{6})?)+$/.test(s||'')?s:null;   // one colour (the piece's main part), or one a part in the piece's zone order, _ between (an empty part keeps its own)
   const decode=c=>{ '@later'; const a=String(c||'').split('.'), L=DEF(); if(a.length<5)return L;
     L.f=a[0]==='f'?'f':'m'; L.b=Math.min(2,Math.max(0,parseInt(a[1])||0)); L.h=Math.min(110,Math.max(90,parseInt(a[2])||100)); L.skin=hex(a[3])||L.skin; L.hair=hex(a[4])||L.hair; L.w={};
-    if(a[5+OLD]==='1')L.bare=true; { const e=hex(a[6+SLOTS.length]); if(e)L.eye=e; } if(a[7+SLOTS.length]==='1')L.lan=1; { const sh=shDec(a[8+SLOTS.length]); if(sh)L.sh=sh; }
+    if(a[5+OLD]==='1')L.bare=true; { const e=hex(a[6+SLOTS.length]); if(e)L.eye=e; } if(a[7+SLOTS.length]==='1')L.lan=1; { const sh=shDec(a[8+SLOTS.length]); if(sh)L.sh=sh; } if(LYOK(a[9+SLOTS.length]))L.ly=a[9+SLOTS.length];
     SLOTS.forEach(([s],i)=>{ const v=a[at(i)]; if(!v)return; const [n,col]=v.split('~'), p=byN.get(parseInt(n,36)); if(p&&p.slot===s&&p.figs.includes(L.f))L.w[s]=[p.n,cols(col)||'']; });
     return L; };
 
@@ -126,15 +128,17 @@ const AVATAR={}; window.AVATAR=AVATAR;
     const strap=(pts,w,h)=>{ for(let i=0;i<pts.length-1;i++){ const [p,t]=pts[i], [q,u]=pts[i+1], dx=q[0]-p[0], dy=q[1]-p[1], dz=q[2]-p[2];
         const side=(P,tt)=>{ const nx=Math.sin(tt), nzz=S*Math.cos(tt), cx=dy*nzz, cy=dz*nx-dx*nzz, cz=-dy*nx, l=Math.hypot(cx,cy,cz)||1; return [[P[0]+cx/l*w,P[1]+cy/l*w,P[2]+cz/l*w],[P[0]-cx/l*w,P[1]-cy/l*w,P[2]-cz/l*w]]; };
         const [a,b]=side(p,t), [c,d]=side(q,u); quad(a,b,d,c,h); } };
-    const yN=O[2][1]+.03, yC=O[3][1]-.09, tN=.62, ST='181818';
-    const loop=[]; for(let i=0;i<=20;i++){ const t=tN+(2*Math.PI-2*tN)*i/20, k=Math.sin(Math.PI*i/20); loop.push([at(yN+.03*k,t,.014),t]); } strap(loop,.0012,ST);
+    const LY=lyOf(L), yN=O[2][1]+.03, yC=yN-.8*(yN-(O[3][1]-.09)), tN=.62, ST=LY.sc, HW=[.0024,.0045,.003][LY.st];   // (the strands 20% shorter, twice as thick, owner, 8 Nov 2026)
+    const loop=[]; for(let i=0;i<=20;i++){ const t=tN+(2*Math.PI-2*tN)*i/20, k=Math.sin(Math.PI*i/20); loop.push([at(yN+.03*k,t,.014),t]); } strap(loop,HW,ST);
     let zf=0; for(let y=yC-.16;y<=yC;y+=.02)for(let t=-.35;t<=.35;t+=.07)zf=Math.max(zf,rad(y,t)*Math.cos(t)); zf+=.012;
-    const clip=[0,yC,S*zf], str=sd=>{ const pts=[]; for(let i=0;i<14;i++){ const u=i/14, y=yN+(yC-yN)*u, t=sd*(tN+(.1-tN)*u); pts.push(at(y,t,.014)); } pts.push(clip); return pts; };
+    const clip=[0,yC,S*zf], str=sd=>{ const Y=[], Tt=[], R=[]; for(let i=0;i<14;i++){ const u=i/14; Y.push(yN+(yC-yN)*u); Tt.push(sd*(tN+(.1-tN)*u)); R.push(rad(Y[i],Tt[i])+.014); }   // (its path smoothed: clear of the highest of what is worn nearby, no bumps)
+      const Rm=R.map((r,i)=>Math.max(...R.slice(Math.max(0,i-2),i+3))), Rs=Rm.map((r,i)=>{ const w=Rm.slice(Math.max(0,i-2),i+3); return w.reduce((a,b)=>a+b,0)/w.length; });
+      const pts=Y.map((y,i)=>[Math.sin(Tt[i])*Rs[i],y,S*Math.cos(Tt[i])*Rs[i]]); pts.push(clip); return pts; };
     const W=.07, H=.1, yt=yC-.012, badge=[], R4=(x0,y0,x1,y1,o,h)=>badge.push([x0,y0-yC,x1,y1-yC,o,h]);
-    R4(-.008,yC+.004,.008,yt,0,'9a9a9a'); R4(-W/2,yt,W/2,yt-H,0,'f6f4ec'); R4(-W/2,yt,W/2,yt-H,-.002,'1a1a1a'); R4(-W/2,yt,W/2,yt-.018,.0008,'ffd400');
+    R4(-.008,yC+.004,.008,yt,0,'9a9a9a'); if(LY.fr){ const fc=['','d8eef4','a9aeb4',LY.fc][LY.fr], e=.0045; R4(-W/2-e,yt+e,W/2+e,yt-H-e,-.0012,fc); R4(-.012,yt+e+.003,.012,yt+e,-.0012,fc); } R4(-W/2,yt,W/2,yt-H,0,'f6f4ec'); R4(-W/2,yt,W/2,yt-H,-.002,'1a1a1a'); R4(-W/2,yt,W/2,yt-.018,.0008,'ffd400');
     const py=yt-.024; R4(-.018,py,.018,py-.036,.0008,'d6e2e8'); R4(-.008,py-.008,.008,py-.026,.0016,L.skin); R4(-.009,py-.004,.009,py-.009,.0018,L.hair); R4(-.015,py-.028,.015,py-.036,.0016,'8aa6b4');
     R4(-.022,py-.042,.022,py-.049,.0008,'111111'); R4(-.016,py-.054,.016,py-.058,.0008,'e53935'); R4(-.026,py-.064,-.004,py-.067,.0008,'666666'); R4(.004,py-.064,.026,py-.067,.0008,'666666');
-    T.spec={L:str(1),R:str(-1),H:.012+H,badge,S,rad,col:0x181818}; return T; };
+    T.spec={L:str(1),R:str(-1),H:.012+H,badge,S,rad,col:parseInt(ST,16),hw:HW,st:LY.st}; return T; };
   function geoFor(J,L,bare,nob){ const worn=[]; for(const [s] of SLOTS){ const w=L.w[s], p=w&&J.byN.get(w[0]); if(p&&!(bare&&s==='feet'))worn.push([s,p,w[1]]); }   // (barefoot: your shoes off, LOOKS.shoes)
     const cov=new Set(); for(const [,p] of worn)for(const c of p.covers)cov.add(c); const hide=culled(c=>cov.has(c));
     const pfh=!cov.has('hands'), hb=(d,q)=>{ const b=d.w[q]>=128?d.bone[q*2]:d.bone[q*2+1]; return b===5||b===8; }, isHand=(P,d,t)=>pfh&&P.slot==='body'&&hb(d,d.tri[t*3])&&hb(d,d.tri[t*3+1])&&hb(d,d.tri[t*3+2]);   // (bare hands: its own simple ones marked hh, folded away while Polyfork's jointed ones are drawn, near the camera: 111b)
@@ -200,10 +204,12 @@ const AVATAR={}; window.AVATAR=AVATAR;
     LOOKS.add('avh','HEIGHT',el(null,'<input type="range" id="lavh" min="90" max="110" step="1" aria-label="height"><span id="lavhv" class="dim"></span>'),{...A,order:3});
     LOOKS.add('avs','SKIN',el('lavs',SKINS.map(h=>`<button class="sw" data-c="${h}" aria-label="skin #${h}"><i style="background:#${h}"></i></button>`).join('')+'<input type="color" id="lavsc" aria-label="any skin colour">'),{...A,order:4});
     LOOKS.add('avc','HAIR COLOUR',el('lavc',HAIRC.map(h=>`<button class="sw" data-c="${h}" aria-label="hair #${h}"><i style="background:#${h}"></i></button>`).join('')+'<input type="color" id="lavcc" aria-label="any hair colour">'),{...A,order:5});
+    LOOKS.add('avly','LANYARD',el('lavly','<select id="lavlf" aria-label="badge frame"><option value="0">NO FRAME</option><option value="1">CLEAR FRAME</option><option value="2">METAL FRAME</option><option value="3">COLOURED FRAME</option></select><input type="color" id="lavlfc" aria-label="frame colour"><select id="lavls" aria-label="string"><option value="0">CORD</option><option value="1">FLAT STRAP</option><option value="2">BEAD CHAIN</option></select><input type="color" id="lavlsc" aria-label="string colour">'),{...A,order:5.5});
     LOOKS.add('avwear','OUTFIT',el(null,'<button id="lavgo">CHOOSE WHAT YOU WEAR</button><span id="lavw" class="dim"></span>'),{...A,order:6});
     LOOKS.add('w-outfit','OUTFIT',el(null,'<select id="lavog" aria-label="outfit theme"></select><select id="lavo" aria-label="outfit"></select><span></span>','avw'),{...A,tab:'wear',order:-1});
     SLOTS.forEach(([s,t],i)=>LOOKS.add('w-'+s,t,el(null,`<select id="lavt-${s}" aria-label="${t} kind"></select><select id="lav-${s}" aria-label="${t} version"></select><span id="lavk-${s}" class="avk"></span>`,'avw'),{...A,tab:'wear',order:i}));
     $('#lavgo').onclick=()=>LOOKS.tab('wear');
+    { const ly=()=>{ const v=k=>$('#'+k).value; AVATAR.set({ly:[v('lavlf'),v('lavlfc').slice(1),v('lavls'),v('lavlsc').slice(1)].join('_')}); }; for(const k of ['lavlf','lavlfc','lavls','lavlsc']){ stop($('#'+k)); $('#'+k).onchange=ly; } }
     $('#lavf').onclick=e=>{ const b=e.target.closest('button'); if(b)AVATAR.set({f:b.dataset.f}); };
     $('#lavb').onclick=e=>{ const b=e.target.closest('button'); if(b)AVATAR.set({b:+b.dataset.b}); };
     const h=$('#lavh'); stop(h); h.oninput=()=>{ $('#lavhv').textContent=' '+h.value+'%'; }; h.onchange=()=>AVATAR.set({h:+h.value});
@@ -227,6 +233,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
     $('#lavh').value=L.h; $('#lavhv').textContent=' '+L.h+'%'; $('#lavsc').value='#'+L.skin; $('#lavcc').value='#'+L.hair;
     for(const b of $('#lavs').children)if(b.dataset.c)on(b,b.dataset.c===L.skin); for(const b of $('#lavc').children)if(b.dataset.c)on(b,b.dataset.c===L.hair);
     $('#lavw').textContent=D[L.f]?'':' LOADING…';
+    { const y=lyOf(L); $('#lavlf').value=String(y.fr); $('#lavlfc').value='#'+y.fc; $('#lavlfc').style.visibility=y.fr===3?'':'hidden'; $('#lavls').value=String(y.st); $('#lavlsc').value='#'+y.sc; }
     for(const [s] of SLOTS){ const K=kinds(s), sel=$('#lav-'+s), k=$('#lavk-'+s), kd=$('#lavt-'+s), w=L.w[s], J=D[L.f], cur=w&&byN.get(w[0]);
       sel.closest('.lr').dataset.off=K.size?'':'1';
       kd.innerHTML='<option value="">NONE</option>'+[...K].map(([t,v])=>`<option value="${esc(t)}">${esc(t)}${v.length>1?' ('+v.length+')':''}</option>`).join(''); kd.value=cur?cur.k:'';

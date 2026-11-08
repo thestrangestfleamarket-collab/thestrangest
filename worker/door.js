@@ -217,7 +217,8 @@ export class Block extends Server {
   // the block's shared world: small values every player here sees the same (a bin's fill), kept for good
   async world() { if (!this.W) { this.W = (await this.ctx.storage.get("world")) || {};
       // the cars grew 40% (3 Nov 2026): their spots saved before then are cleared once so they park in their own places again (owner, 7 Nov 2026)
-      if ((await this.ctx.storage.get("carsv")) !== 1) { for (const k of Object.keys(this.W)) if (k.startsWith("car:")) delete this.W[k]; await this.ctx.storage.put("world", this.W); await this.ctx.storage.put("carsv", 1); } }
+      if ((await this.ctx.storage.get("carsv")) !== 2) {   // 2: moved past the forcefield (owner, 8 Nov 2026)
+        for (const k of Object.keys(this.W)) if (k.startsWith("car:")) delete this.W[k]; await this.ctx.storage.put("world", this.W); await this.ctx.storage.put("carsv", 2); } }
     return this.W; }
   // the folk's walks (worker/folk.js): every walker on the street, stepped here every second while anyone is in, every ten seconds when nobody is, kept for good; the page sends the walk grid (its build's free ground) and each walker's mode
   async folk() { if (!this.F) { this.F = FOLKSIM.load(await this.ctx.storage.get("folk")); this.F.cast = (await this.ctx.storage.get("folkcast")) || null; const a = await this.ctx.storage.getAlarm(); if (a == null || a < Date.now()) await this.ctx.storage.setAlarm(Date.now() + 1000); } return this.F; }   // (an alarm left in the past, a stale record on disk, is set afresh)

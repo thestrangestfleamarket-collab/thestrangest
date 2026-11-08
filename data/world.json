@@ -810,42 +810,42 @@
   {
    "id": "c1",
    "model": "muscle-car-60s",
-   "x": 78.2,
+   "x": 270,
    "y": -67,
    "hd": 90
   },
   {
    "id": "c2",
    "model": "convertible-60s",
-   "x": 87.3,
+   "x": 279.1,
    "y": -67,
    "hd": 90
   },
   {
    "id": "c3",
    "model": "station-wagon-70s",
-   "x": 96.8,
+   "x": 288.6,
    "y": -67,
    "hd": 90
   },
   {
    "id": "c4",
    "model": "pickup-truck-70s",
-   "x": 105.9,
+   "x": 297.7,
    "y": -67,
    "hd": 90
   },
   {
    "id": "c5",
    "model": "wedge-coupe-80s",
-   "x": 123,
+   "x": 306.8,
    "y": -67,
    "hd": 90
   },
   {
    "id": "c6",
    "model": "camper-van",
-   "x": 131.8,
+   "x": 315.6,
    "y": -67,
    "hd": 90
   }
@@ -6138,13 +6138,51 @@
   ]
  },
  "bigTrees": [
-  {"note": "THE BIG TREES (owner, 7 Nov 2026): giants in the middle of the park, map tiles; kind A level branch, B rising, C low and sagging; face: where the big branch reaches, degrees; climb: SPACE next to it climbs it"},
-  {"kind": "A", "x": 176.7, "y": 85.7, "face": 166, "climb": true},
-  {"kind": "B", "x": 136.2, "y": 129.3, "face": 226, "climb": true},
-  {"kind": "C", "x": 76.2, "y": 104.1, "face": 286, "climb": true},
-  {"kind": "A", "x": 49.3, "y": 54.3, "face": 346, "climb": true},
-  {"kind": "B", "x": 106.4, "y": 25.3, "face": 46, "climb": true},
-  {"kind": "C", "x": 173.8, "y": 31.4, "face": 106, "climb": true}
+  {
+   "note": "THE BIG TREES (owner, 7 Nov 2026): giants in the middle of the park, map tiles; kind A level branch, B rising, C low and sagging; face: where the big branch reaches, degrees; climb: SPACE next to it climbs it"
+  },
+  {
+   "kind": "A",
+   "x": 176.7,
+   "y": 85.7,
+   "face": 166,
+   "climb": true
+  },
+  {
+   "kind": "B",
+   "x": 136.2,
+   "y": 129.3,
+   "face": 226,
+   "climb": true
+  },
+  {
+   "kind": "C",
+   "x": 76.2,
+   "y": 104.1,
+   "face": 286,
+   "climb": true
+  },
+  {
+   "kind": "A",
+   "x": 49.3,
+   "y": 54.3,
+   "face": 346,
+   "climb": true
+  },
+  {
+   "kind": "B",
+   "x": 106.4,
+   "y": 25.3,
+   "face": 46,
+   "climb": true
+  },
+  {
+   "kind": "C",
+   "x": 173.8,
+   "y": 31.4,
+   "face": 106,
+   "climb": true
+  }
  ],
  "cloudTrees": [],
  "edge": {
@@ -6235,10 +6273,23 @@
   "near": 60,
   "ground": {
    "note": "the land past the edges (owner, 7 Nov 2026: \"set a base color for far off distance things like grass\"): one low-res grass ground under everything outside the section, the big lake's whole shore in it (box x0, y0, x1, y1 in tiles; tiles a pixel; grass and water colours)",
-   "box": [-600, -130.1, 900, 800],
+   "box": [
+    -600,
+    -130.1,
+    900,
+    800
+   ],
    "px": 2,
-   "grass": [62, 96, 46],
-   "water": [164, 198, 236]
+   "grass": [
+    62,
+    96,
+    46
+   ],
+   "water": [
+    164,
+    198,
+    236
+   ]
   },
   "strips": {
    "note": "the streets carried on past the edges, low-res ground (x0, y0, x1, y1, kind)",
@@ -6337,12 +6388,12 @@
    ]
   },
   "park": {
-   "note": "Central Park's edge along West St drawn the whole way, past the draw distance and past the map's edge: a wall just inside the real one and bands of plain low trees (x0, y0, x1, y1 in tiles)",
+   "note": "Central Park's edge along West St drawn the whole way, past the draw distance and past the map's edge: a wall just inside the real one and bands of plain low trees (x0, y0, x1, y1 in tiles; north of the map the park goes on to the horizon, no city on its side)",
    "wall": [
     -23.9,
     -38,
     -23.3,
-    520
+    760
    ],
    "bands": [
     [
@@ -6356,9 +6407,15 @@
      185,
      262,
      420
+    ],
+    [
+     -20,
+     420,
+     600,
+     760
     ]
    ],
-   "n": 620
+   "n": 1400
   },
   "far": {
    "note": "the far city past the backdrop, hazed: (axis, from, to, across from, across to, lowest, highest storeys in tiles)",
@@ -6384,7 +6441,7 @@
     [
      "x",
      -420,
-     820,
+     -56,
      600,
      640,
      18,

@@ -26,10 +26,9 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
     ['RED-TAILED HAWK','Buteo jamaicensis',.55,85,0,0,'walk',{body:0x6a4a30,breast:0xe8dcc8,head:0x5a4028,wing:0x5a3e28,bar:0xd8c8b0,tail:0xb8562a,beak:0x2a2622,leg:0xe8c040}]];
   const NK=K.length, HAWK=12, BOUNTY={10:40,11:60,12:80}, DIFF=k=>K[k][3], RARE=k=>k>=10;
   const NM={bseed:'BIRDSEED (A HANDFUL)',bnet:'BIRD NET',cage:'EMPTY BIRD CAGE',feeder:'BIRD FEEDER',binoc:'BINOCULARS',bird_feather:'A FEATHER',quill_pen:'A FEATHER QUILL'}, PR={bird_feather:2,quill_pen:9}; for(let k=0;k<NK;k++){ NM['bd_'+k]=K[k][0]+' (IN A CAGE)'; NM['pet_'+k]='YOUR TAME '+K[k][0]; PR['bd_'+k]=K[k][4]; }
-  FORAGE.add({names:NM,prices:PR}); FORAGE.sell(...Object.keys(NM).filter(k=>/^bd_/.test(k)),'bird_feather','quill_pen'); FORAGE.BUYK.birds=['bd_']; const IV=(id,v)=>+ITEMS.prop(id,'value')||v; FORAGE.BUYK.birds.push('bird_feather','quill_pen');
+  FORAGE.add({names:NM,prices:PR}); FORAGE.sell(...Object.keys(NM).filter(k=>/^bd_/.test(k)),'bird_feather'); FORAGE.BUYK.birds=['bd_']; const IV=(id,v)=>+ITEMS.prop(id,'value')||v; FORAGE.BUYK.birds.push('bird_feather','quill_pen');
   FORAGE.SELLS.push(['bseed',IV('bseed',1),()=>true],['bnet',IV('bnet',12),()=>!FORAGE.has('bnet')],['cage',IV('cage',5),()=>true]);
   // a quill from feathers: mending books goes better while you carry one
-  FORAGE.add({recipes:[['quill_pen','A FEATHER QUILL','bind',[0,40],{bird_feather:3},'mending books goes better while you carry it']]});
   FORAGE.HELP.push('BIRDING: double click a bird to watch it (your book), tame it with birdseed, or catch it (a bird net and a cage). Binoculars watch from afar; a feeder you hang brings them in; caught birds sometimes leave a feather.');
   const S={v:1,seen:{},feed:null}; try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1)Object.assign(S,D); }catch(e){} const save=()=>OWNED.set(KEY,JSON.stringify(S));
   const PART=[['body',[shape(blob(.2,.19,.4,8,5),[1,1,1],[0,.36,-.02])]],['breast',[shape(blob(.17,.17,.24,6,4),[1,1,1],[0,.31,.12])]],['head',[shape(blob(.15,.15,.16,6,4),[1,1,1],[0,.55,.3])]],

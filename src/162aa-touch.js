@@ -46,7 +46,7 @@ body.touch #hqb:not([style*="top:"]){zoom:var(--tq,1)!important;left:calc(var(--
   const turn=document.createElement('div'); turn.id='tturn'; turn.textContent='TURN YOUR DEVICE SIDEWAYS TO PLAY';
   document.body.append(el,turn);
   const $=s=>el.querySelector(s), stk=$('.tstk'), knob=$('.tknob'), useB=$('.tuse'), cv=renderer.domElement;
-  const press=(a,v)=>{ const i=PAD.B[a==='punch'?'use':a]; if(i>=0)TP.buttons[i].value=v; };
+  const press=(a,v)=>{ const i=PAD.B[a]; if(i==null||i<0)return; if(i>=100){ const m=PAD.B.mod; if(m>=0)TP.buttons[m].value=v; TP.buttons[i-100].value=v; } else TP.buttons[i].value=v; };   // the button its action has in your layout (with the hold-for-more button, both)
   let stick=null; const look=new Map(); let pinch=0, lastTap=0, lastXY=[0,0];
   const rest=()=>{ stk.style.left=stk.style.top=''; knob.style.transform=''; el.classList.add('idle'); };
   const clear=()=>{ for(const b of TP.buttons)b.value=0; TP.axes.fill(0); for(const b of el.querySelectorAll('.tb.on'))b.classList.remove('on'); stick=null; rest(); look.clear(); };

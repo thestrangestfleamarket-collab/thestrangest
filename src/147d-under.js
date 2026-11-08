@@ -183,7 +183,7 @@ const UNDER={}; window.UNDER=UNDER;
     const ch=bx(G,m,o(1641),-75.6,o(1642.4),-74.6,0,.8,L(0x3a2a1a)); bx(G,m,o(1641),-75.6,o(1642.4),-74.6,.8,.9,L(0x6a6a6a));
     thing(m,"THE SMUGGLERS' CACHE",ch,()=>{ const k='smugcache'; if(!INV.ready(k))return say('NOTHING LEFT TONIGHT. THE SMUGGLERS RESTOCK IT BY TOMORROW.','#c8a090'); INV.mark(k);
       const c=30+Math.floor(Math.random()*41); INV.cash+=c; let t='YOU PRY THE CACHE OPEN: $'+c+' IN OLD COINS';
-      if(FORAGE.use('prosp',0,80)){ const n=1+(Math.random()<.3?1:0); FORAGE.give('gold_nugget',n); t+=', AND '+(n>1?'TWO GOLD NUGGETS':'A GOLD NUGGET')+' YOUR EYE PICKS OUT OF THE GRIT'; }
+      if(FORAGE.use('gem',0,80)){ const n=1+(Math.random()<.3?1:0); FORAGE.give('gold_nugget',n); t+=', AND '+(n>1?'TWO GOLD NUGGETS':'A GOLD NUGGET')+' YOUR EYE PICKS OUT OF THE GRIT'; }
       if(!U.ext){ U.ext=1; keep(); FORAGE.give('extractor',1); t+='. UNDER IT ALL, AN OLD SONIC EXTRACTOR'; } say(t+'.','#f2c14e'); SFX.play('clunk',{vol:.5}); FORAGE.draw(); },1.4,1); });
   // the grate on the bed: built once the wreck is, beside it
   const grate=()=>{ const MWr=T/.84, [wx,wz]=WRECK.at; let at=null; const RB=RIVER.box, inB=(x,z)=>x>Math.min(RB.x0,RB.x1)+4*T&&x<Math.max(RB.x0,RB.x1)-4*T&&z>Math.min(RB.z0,RB.z1)+4*T&&z<Math.max(RB.z0,RB.z1)-4*T;

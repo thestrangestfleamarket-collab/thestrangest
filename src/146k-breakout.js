@@ -42,3 +42,4 @@ if(!GUARD.shelved)PARK.later(()=>{ '@park'; const T=TILE, PI=Math.PI, X=SHARED.B
     for(let i=bolts.length-1;i>=0;i--)if(bolts[i].t>3){ bolts[i].m.removeFromParent(); bolts[i].m.material.dispose(); bolts.splice(i,1); }
     if(BREAK.on&&BREAK.seen&&!BREAK.list.some(c=>!c.dead)&&PARK.in){ BREAK.on=false; BREAK.seen=false; if(Math.hypot(pos.x-TOP.x,pos.z-TOP.z)<30*T){ say('THE STAIR IS QUIET AGAIN.','#b8f0a0'); const best=GUARD.list.find(N=>N.key==='gd_captain'); if(best&&!best.far)LINES.say(best,'Well fought. Back to your posts.'); } } },'146k-breakout');
   window.BREAKDBG=()=>BREAK.list.map(c=>({kind:c.kind,hp:+c.hp.toFixed(1),dead:c.dead,x:+c.x.toFixed(1),z:+c.z.toFixed(1)})); });
+export {BREAK};

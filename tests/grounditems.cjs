@@ -6,14 +6,12 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
 (async () => {
   const b = await chromium.launch({ executablePath: process.env.PW_CHROMIUM || undefined, args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader'] }), pg = await b.newPage({ viewport: { width: 1000, height: 700 } });
   const errs = {}; pg.on('pageerror', e => { errs[e.message] = (errs[e.message] || 0) + 1; });
-  await pg.goto('file://' + PAGE + '?hour=13&fresh=1', { waitUntil: 'commit', timeout: 300000 });
+  await pg.goto('file://' + PAGE + '?hour=13&fresh=1&at=32,25', { waitUntil: 'commit', timeout: 300000 });
   let up = false; for (let i = 0; i < 400 && !(up = await pg.evaluate(() => !!window.__started).catch(() => false)); i++) await pg.waitForTimeout(1000);
   if (!up) { ok(false, 'the page started'); await b.close(); process.exit(1); }
-  await pg.evaluate(() => LOAD('later')); await pg.waitForTimeout(5000); await pg.evaluate(() => PFI.load());
+  await pg.waitForFunction(() => { const L = document.getElementById('loading'); return !L || L.style.pointerEvents === 'none'; }, null, { timeout: 60000 }); await pg.evaluate(() => LOAD('later')); await pg.waitForTimeout(5000); await pg.evaluate(() => PFI.load());
   const ITEMS_ = [['guitar', 1.0, 'model'], ['bmx', 1.7, 'model'], ['sword', .99, 'model'], ['drums', 1.5, 'model'], ['cooler_m', .55, 'model'], ['plush_bear', .4, 'model'], ['coat_red', .9, 'model'], ['harp', 1.7, 'model'], ['ruby', .04, 'model'], ['g_soda', .12, 'model']];
-  // an open lawn in the park (where a deer grazes), the things laid out in a row in front of you
-  // (on dry ground: nothing drops in the water)
-  for (let k = 0; k < 8; k++) { const dry = await pg.evaluate(async k => { const D = __dbg.NPCS.filter(n => /^(deer|horse|cow|dog)$/.test(n.key)), d = D[k % D.length]; if (!d) return true; __dbg.ui().goTo(d.st.x, d.st.z); await new Promise(r => setTimeout(r, 1500)); return !(__dbg.ST.water && __dbg.ST.water.in); }, k); if (dry) break; } for (let i = 0; i < 90 && await pg.evaluate(() => !!document.querySelector('#fade') && getComputedStyle(document.querySelector('#fade')).opacity > .05).catch(() => false); i++) await pg.waitForTimeout(1000); await pg.waitForTimeout(25000);
+  // (on dry, open ground: Market St, where the drops check stands; nothing drops in the water)
   const r = await pg.evaluate(async L => { const T = __dbg.cv().TILE, M = T / .84, P = __dbg.pos(), h = __dbg.cv().heading, fx = Math.sin(h), fz = Math.cos(h), out = {};
     L.forEach(([id], i) => { FORAGE.give(id, 1); BAG.drop(id, 1, { x: P[0] + fx * 3.2 * M + fz * (i - 4) * 1.4 * M, y: P[1], z: P[2] + fz * 3.2 * M - fx * (i - 4) * 1.4 * M }); });
     for (let t = 0; t < 60 && !L.every(([id]) => { const g = BAG.ground.find(q => q.id === id); return g && g.m; }); t++) await new Promise(r => setTimeout(r, 500));

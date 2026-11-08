@@ -326,6 +326,7 @@ One pass, one pull request.
   where they fell (`N.rag=null` without moving `N.st`). Seen only on your screen (see shared physics).
 
 ## Physics and vehicles
+- [x] **Things take room** (owner, 8 Nov 2026: "do all three go"; done 8 Nov) · P1 · M · code. Characters their body's size, waiting for each other, solids from step height, characters in the loose things' physics; `tests/space.cjs`.
 
 - [x] **The hotel's helipad** · P2 · M · code + look. 7 Nov 2026 (owner: "add heliped on top of building. helicopter. have it fly around and land. pilot"): the deck, two helicopters on the sky tour, ride along, fly it yourself (`150pa-heli`, `tests/heli.cjs`). [taking: claude/sharp-gates-thwxtx, 7 Nov 2026]
 - [ ] **The physics extras (#512) never tried in a real game** · P3 · M · look + check. The bar's dartboard scoring a throw (the bar now also

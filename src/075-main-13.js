@@ -42,7 +42,7 @@ addEventListener('blur',()=>{ keys.clear(); st.runTarget=0; FEEL.IN.press=0; });
 const ray=new THREE.Raycaster(), gplane=new THREE.Plane(new THREE.Vector3(0,1,0),0), hit=new THREE.Vector3();
 const marker=new THREE.Mesh(new THREE.PlaneGeometry(0.5,0.5).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xf2c14e,transparent:true,opacity:0.8})); marker.visible=false; scene.add(LEVELS.own(marker,'*'));
 
-function collide(p){ if(!VIT.dead){ for(const N of NPCS)if(N.lv===SHARED.LVL&&!N.far)N.push(p); if(ONLINE.push)ONLINE.push(p); } const r=0.36; p.x=Math.max(SHARED.BOUND.x0,Math.min(SHARED.BOUND.x1,p.x)); p.z=Math.max(SHARED.BOUND.z0,Math.min(SHARED.BOUND.z1,p.z));
+function collide(p){ if(!VIT.dead){ for(const N of NPCS)if(N.lv===SHARED.LVL&&!N.far)N.push(p); NPCS.pushX(p); if(ONLINE.push)ONLINE.push(p); } const r=0.36; p.x=Math.max(SHARED.BOUND.x0,Math.min(SHARED.BOUND.x1,p.x)); p.z=Math.max(SHARED.BOUND.z0,Math.min(SHARED.BOUND.z1,p.z));
   for(const [x0,z0,x1,z1] of SHARED.solids){ const cx=Math.max(x0,Math.min(x1,p.x)), cz=Math.max(z0,Math.min(z1,p.z)), dx=p.x-cx, dz=p.z-cz, d2=dx*dx+dz*dz;
     if(d2>=r*r)continue; if(d2>1e-8){ const d=Math.sqrt(d2); p.x=cx+dx/d*r; p.z=cz+dz/d*r; }
     else { const o=[p.x-x0+r,x1-p.x+r,p.z-z0+r,z1-p.z+r], m=Math.min(...o); if(m===o[0])p.x=x0-r; else if(m===o[1])p.x=x1+r; else if(m===o[2])p.z=z0-r; else p.z=z1+r; } } }

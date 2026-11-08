@@ -1,4 +1,4 @@
-// THE BIG TREES (144d-bigtrees.js, 144e-trees.js): the six giants in the middle of the park stand with their branches and leaves, every one climbable and no other tree; next to a trunk the prompt says SPACE · CLIMB and SPACE starts the climb. node tests/bigtrees.cjs [shotdir] (slow: software rendering)
+// THE BIG TREES (144d-bigtrees.js, 144e-trees.js) and the park's woods (061-park.js): the six giants in the middle of the park stand with their branches and leaves, every one climbable and no other tree; next to a trunk the prompt says SPACE · CLIMB and SPACE starts the climb. node tests/bigtrees.cjs [shotdir] (slow: software rendering)
 const {chromium}=require('playwright'), out=process.argv[2];
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:1000,height:620}}), errs=[]; let bad=0; pg.on('pageerror',e=>errs.push(e.message));
   const ok=(c,m)=>{ console.log((c?'ok  ':'FAIL')+' '+m); if(!c)bad++; };
@@ -11,6 +11,8 @@ const {chromium}=require('playwright'), out=process.argv[2];
   ok(d.puffs>200,'leaves on them ('+d.puffs+' puffs)');
   ok(d.others===0,'no other tree is climbable');
   ok(d.tris<200000,'cheap: '+d.tris+' bark triangles in all');
+  const w=await pg.evaluate(()=>{ const B=SHARED.BOD, ax=B.XS(0), bx=B.XS(1)-ax, az=B.ZS(0), bz=B.ZS(1)-az, L=PARK.treeItems().map(o=>[(o.x-ax)/bx-PARK.ox,(o.z-az)/bz-PARK.oy]); return {n:L.length,onPath:L.filter(([x,y])=>PARK.pd(x,y)<0).length,tris:PARK.ring.userData.P.length/9}; });
+  ok(w.n>=300,'the park as thick with trees as Central Park ('+w.n+' trees, 8 Nov 2026)'); ok(!w.onPath,'no trunk on a path ('+w.onPath+')'); ok(w.tris<150000,'cheap: '+w.tris+' tree triangles, one draw');
   const shot=async n=>{ if(!out)return; await pg.waitForFunction(k=>TREESDBG().fr>=k,(await pg.evaluate(()=>TREESDBG().fr))+12,{timeout:120000}).catch(()=>{}); await pg.screenshot({path:`${out}/${n}.png`}); };
   const look=(x,z,tx,tz,view,pitch)=>pg.evaluate(([x,z,tx,tz,view,pitch])=>{ if(x!=null)STORE.goTo(x,z,'up'); __dbg.UI.setView(view); const q=__dbg.pos(), h=Math.atan2(tx-q[0],tz-q[2]); SHARED.heading=h; SHARED.yaw=SHARED.yawTo=h+Math.PI; SHARED.pitch=SHARED.pitchTo=pitch; },[x,z,tx,tz,view,pitch]);
   const T=await pg.evaluate(()=>PARK.climbable.map(t=>({x:t.x,z:t.z,tr:t.tr,k:t.k})));

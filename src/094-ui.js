@@ -45,7 +45,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     UI.moves=()=>{ const p=document.getElementById('dmoves'); if(UI.menuOpen&&p&&!p.hidden)UI.toggleMenu(); else UI.menuTab('set','controls'); };
     UI.movesHTML=()=>{ '@later';
       const row=(k,t)=>'<div class="row"><span style="flex:0 0 170px;color:var(--mo)">'+k+'</span><span style="flex:1;white-space:normal">'+t+'</span></div>', h=t=>'<h3>'+t+'</h3>';
-      let o=h('KEYS (CHANGE THEM IN SET, CONTROLS)');
+      let o=h('KEYS (CHANGE THEM IN SETTINGS, CONTROLS)');
       for(const [a,what] of ACTS)o+=row(NAME(keyOf(a)),what.toUpperCase());
       o+=row('ARROWS','MOVE (SAME AS W A S D)')+row('SHIFT + M','THE MAP')+row('SHIFT + N','THE NEXT LOOK')+row('SHIFT + G','THE GUIDE: HOW TO DO EVERYTHING')+row('I','YOUR BAG')+row('1 TO 0','THE QUICK BAR')+row('ESC','THE MENU')+row('?','THIS LIST')+row('F8','REPORT A BUG');
       const M=RIG.MOVES||{}, fights=Object.keys(M).filter(n=>M[n]&&M[n].combo);
@@ -226,7 +226,8 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   #menu #dhome .cp-live,#menu #dhome .cp-btn .cp-tag{font-size:13px;line-height:1.5} #menu #dhome .cp-btn{font-size:20px}
   #menu #dhome .cp-btn{border-color:transparent;background:transparent;box-shadow:none;padding:8px 10px} #menu #dhome .cp-btn:hover{color:var(--mk);background:var(--mf)} #menu #dhome .cp-btn:hover .cp-tag{color:var(--mk)} #menu #dhome .cp-stage{background:var(--mb)}
   #menu canvas{display:block;margin:0 auto;max-width:100%;image-rendering:pixelated;border:2px solid var(--mi);cursor:crosshair;background:var(--mk)}
-  #menu table{border-collapse:collapse;width:100%} #menu td{padding:6px;border-bottom:2px solid var(--me)} #menu td:last-child{text-align:right}
+  #menu table{border-collapse:collapse;width:100%} #menu td{padding:2px 6px;border-bottom:1px solid var(--me);font-size:15px;line-height:1.3} #menu td:last-child{text-align:right} #menu td .btn{padding:1px 6px}
+  #keytab{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));column-gap:20px} #keytab tbody{display:contents} #keytab tr{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid var(--me);min-width:0} #keytab td{border:0;padding:2px 4px;font-size:13px;letter-spacing:1px} #keytab td:first-child{flex:1;min-width:0} #keytab td:last-child{white-space:nowrap} #keytab tr:has(td[colspan]){grid-column:1/-1;border:0} #keytab tr:has(td[colspan]) td{flex:1;text-align:left}
   #menu.solo .tabs{display:none} #menu.solo .box{grid-template-columns:minmax(0,1fr)} #menu.solo .pane{grid-column:1/-1} #menu.solo #mapcv{display:block;margin:0 auto;max-width:100%;max-height:calc(92vh - 300px);width:auto!important;image-rendering:pixelated}
   #menu .box{grid-template-columns:200px minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr);height:min(760px,92vh);overflow:hidden}
   #menu .tabs{grid-column:1;grid-row:2/4;align-self:stretch} #menu .tabs button{display:flex;justify-content:space-between;gap:10px} #menu .tabs button u{text-decoration:none;color:var(--md);font-size:13px} #menu .tabs button[aria-selected="true"] u{color:var(--mk)}
@@ -275,6 +276,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     <div class="pane" data-p="sound"><h3>SOUND</h3><div class="row"><button class="btn" id="dsfx">EFFECTS</button><button class="btn" id="damb">AMBIENCE</button><span>VOLUME</span><input type="range" id="dvol" min="0" max="1" step="0.01"></div><div id="dsndin"></div></div>
     <div class="pane" data-p="keys"><div class="dim" style="margin-bottom:8px">click a key, then press the one you want (Escape to keep it)</div><table id="keytab"></table>
       <div class="row" style="margin-top:10px"><button class="btn" id="kreset">ALL BACK AS THEY WERE</button></div><div id="credits" class="dim" style="margin-top:14px;font-size:9px"></div></div>
+    <div class="pane" data-p="padset" id="dpad"></div>
     <div class="pane" data-p="vr" id="dvr"></div>
     <div class="pane" data-p="guide" id="dguide"></div>
     <div class="pane" data-p="moves" id="dmoves"></div>
@@ -292,7 +294,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   const shut=()=>{ if(UI.menuOpen)toggleMenu(); };
   const SEC=[   // PROFILE, SETTINGS, INVENTORY for every player, ADMIN for the owners (owner, 7 Nov 2026); the map stays on Shift+M
   ['you','PROFILE','ESC',[['look','LOOK',['home']],['wear','WEAR',['home']],['words','WORDS',['home']]]],
-    ['set','SETTINGS','',[['view','VIEW',['display']],['picture','PICTURE',['graphics','atmo']],['controls','CONTROLS',['keys','sound','vr']],['bug','REPORT A BUG',['bug']]]],   // no PEOPLE, BBS or GUIDE (owner, 7 Nov 2026); the chat stays in the corner
+    ['set','SETTINGS','',[['view','VIEW',['display']],['picture','PICTURE',['graphics','atmo']],['controls','CONTROLS',['keys','sound','vr']],['pad','CONTROLLER',['padset']],['bug','REPORT A BUG',['bug']]]],   // no PEOPLE, BBS or GUIDE (owner, 7 Nov 2026); the chat stays in the corner
     ['pets','PETS','',[['mine','YOUR PETS',['pets']],['pet','THEIR LOOK',['home']]]],   // every player's pets (owner, 8 Nov 2026)
     ['pack','INVENTORY','I',[['bag','BAG',()=>{ shut(); if(BAG.toggle)BAG.toggle(true); }],['skills','SKILLS',['pack']],['book','BOOK',['pack']],['fishing','FISHING',['pack']],['journal','JOURNAL',['pack']]]],
     ['bbs','BBS','',[['shop','THE BODEGA',['bbs']],['furn','FURNITURE',['bbs']],['games','THE ARCADE',['bbs']],['orders','YOUR ORDERS',['bbs']]]],   // only from your computer, never in the menu's list
@@ -319,7 +321,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     if(on.has('guide')&&GUIDE.open)GUIDE.open($('#dguide'));
     if(on.has('moves'))$('#dmoves').innerHTML=UI.movesHTML();
     if(on.has('bug'))BUGS.open($('#dbug')); if(on.has('queue'))BUGS.open($('#dqueue'),'queue');
-    if(on.has('display')||on.has('graphics')||on.has('sound')||on.has('atmo'))drawDisplay(); if(on.has('sound'))SNDED.into($('#dsndin')); if(on.has('keys'))drawKeys(); if(on.has('vr')&&VR.open)VR.open($('#dvr'));
+    if(on.has('display')||on.has('graphics')||on.has('sound')||on.has('atmo'))drawDisplay(); if(on.has('sound'))SNDED.into($('#dsndin')); if(on.has('keys'))drawKeys(); if(on.has('vr')&&VR.open)VR.open($('#dvr')); if(on.has('padset')&&UI.padPage)UI.padPage($('#dpad'));
     if(on.has('atmo'))window.DN&&DN.draw(); if(on.has('tenants')&&TENANTS.open)TENANTS.open($('#dten')); if(on.has('text')&&TENANTS.text)TENANTS.text($('#dtext')); if(on.has('bots')&&TENANTS.bots)TENANTS.bots($('#dbots')); if(on.has('tools')&&CHARP.tools)CHARP.tools($('#dtools')); if(on.has('editors')&&CHARP.editors)CHARP.editors($('#deditors'));
     bars(); };
   $('#mnav').addEventListener('click',e=>{ const b=e.target.closest('[data-sec]'); if(b)show(b.dataset.sec); });

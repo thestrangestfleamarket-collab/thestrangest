@@ -181,6 +181,7 @@ In order (each step builds on the one before): RLS SQL → login cookie with the
   with the trade line.
 
 ## Places and insides
+- [ ] **The bookstore café: twice as wide, a coffee bar, five game tables** · P2 · L · code. [taking: claude/clever-galileo-0fj20f, 7 Nov] Owner, 7 Nov 2026: layout A, inside only, players and the computer, for fun, all the games.
 
 - [ ] **Shop insides: can you walk in and out?** · P2 · S (check) · find, then pick. Owner, 3 Nov (his shot of the bath house): "when
   entering buildings like the bathhouse you dont go all the way in, you get sent to a middle area where you cant walk in or out, and you can
@@ -438,6 +439,7 @@ One clothes review for the owner, then one pull request; portraits with `node te
 ## Menus, map and HUD
 
 - [x] **Every item its own picture; the item audit's broken items** · P2 · L · code. Owner, 7 Nov: "go with A, fix all the broken ones". [taking: claude/dreamy-shannon-8nfieq, 7 Nov]
+- [x] **The ITEM editor with pictures and 360** (owner, 7 Nov: "A, every item, yes on body. go"; done 7 Nov) · P2 · L · code. `src/140ba-itembench.js`, `tests/itemed.cjs`. Waits for his look and yes.
 - [ ] **Try live, once deployed** · P2 · S · look. The menus (#563: one ADMIN window), where you start (#571: back where you left off within
   the hour, else the platform; gone for everyone at once on log out) and the map and GO TO (#576, merged on local checks only).
 - [ ] **The HUD's 24px margin on the owner's own screen** · P3 · S · look. His pick A (4 Nov); checked locally only; his live shot sat tighter

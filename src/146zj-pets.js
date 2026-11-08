@@ -154,3 +154,4 @@ const PETS={}; window.PETS=PETS;
     A.sol(R.x0+u0/tm,R.y0+v0/tm,R.x0+u1/tm,R.y0+v1/tm); K.use('THE ADOPTION BOOK (ADOPT A PET)',(u0+u1)/2,(v0+v1)/2,.8,1.2,()=>PETS.shop(),1.8); K.flush(); };
   MSHOP.kit.pets.drop=()=>{ const d=MSHOP.kit._&&MSHOP.kit._.drop; if(d)d(); };
 }
+export {PETS};

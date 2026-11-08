@@ -10,3 +10,4 @@ mod.mjs
 docs/MAP.md
 data/full/covers-progress.jsonl
 .cache/
+data/full/samples/

@@ -10,7 +10,7 @@ Object.assign(TRICKS,{best:0,session:0,combo:null}); window.TRICKS=TRICKS;
 { const T=TILE, MH=TILE/.84, MV=ZU*24/.84, PI=Math.PI, wrap=a=>Math.atan2(Math.sin(a),Math.cos(a)), say=(t,c)=>SAY(t,c||'#e8e2cc');
   const ON=()=>!!(RIDE.on&&RIDE.cur&&RIDE.cur===SKATE.board);
   // the trick keys (J flip, K grab, L grind, I manual; the gamepad's X, Y, RB, LB): taken from the walk while you ride, so they never punch, kick or open your pack
-  const DOWN=new Set(), ACT=k=>k==='j'?'flip':k==='k'?'grab':k==='l'||k==='e'?'grind':k==='i'||k==='q'?'manual':null, keyOf=e=>(UI.key?UI.key(e):null)||(e.key||'').toLowerCase();
+  const DOWN=new Set(), ACT=k=>k==='j'?'flip':k==='k'?'grab':k==='l'?'grind':k==='i'||k==='q'?'manual':null, keyOf=e=>(UI.key?UI.key(e):null)||(e.key||'').toLowerCase();
   addEventListener('keydown',e=>{ if(!ON())return; const a=ACT(keyOf(e)); if(!a)return; DOWN.add(a); e.stopImmediatePropagation(); e.preventDefault(); },true);
   addEventListener('keyup',e=>{ const a=ACT(keyOf(e)); if(!a)return; DOWN.delete(a); if(ON())e.stopImmediatePropagation(); },true);
   addEventListener('blur',()=>DOWN.clear());

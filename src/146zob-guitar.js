@@ -1,6 +1,6 @@
 // THE GUITAR (owner, 7 Nov 2026: "i want to add the guitar back into game. use the polyfork assets ... hand 3d model, physics, real string acoustics, sounds, closeup, fingers"; his picks: own one and play it anywhere, and the park's is anyone's; play it yourself or a song from the book; the strings' physics): GUITAR, the item (the bodega sells it), the park's guitar on its stand, playing (keys and the panel), the close-up, and everyone near hearing and seeing it.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, ONLINE, PARK, pos, st, UI, W3} from './003b-systems.js';
+import {FORAGE, INV, NPCS, ONLINE, PARK, pos, st, UI, W3} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {LEVEL, MAPG, SYS, TILE} from './006-map-pre.js';
 import {GTBOOK, GTCHORD, gtCompile} from './108-game-play-3-guitar-2-tunes.js';
@@ -30,7 +30,9 @@ const GUITAR={}; window.GUITAR=GUITAR;
   const fretOf=(P,s)=>{ const c=P.chord&&GTCHORD[P.chord]; const q=c&&c.find(x=>x.s===s); return q?q.k:0; };
   const note=(P,n)=>{ const V=voice(P); if(!V)return; GSND.pluck(V,n.s,n.at,GSND.now()+Math.max(0,n.t-now())+.01,n.amp,BRIGHT[n.r]||1,GHOLD.plFrac(n.r)); };
   // GUITAR rises by playing: a song played through (a try every half minute of it, nearer its level the likelier), and playing freely (a try every 25 notes, worth less past 40)
-  const learnt=T=>{ const n=1+Math.floor((T.secs||40)/30), l=T.lvl||10; for(let i=0;i<n;i++)FORAGE.use('guitar',l-30,l+20); };
+  const learnt=T=>{ const n=1+Math.floor((T.secs||40)/30), l=T.lvl||10; for(let i=0;i<n;i++)FORAGE.use('guitar',l-30,l+20); busk(T); };
+  // busking: a song played through near townsfolk earns tips, more for a harder song, a better player and a bigger crowd (at most six count)
+  const busk=T=>{ let k=0; for(const N of NPCS.all())if(N.g&&N.g.visible&&N.st&&Math.hypot(N.st.x-pos.x,N.st.z-pos.z)<12*TILE)k++; k=Math.min(6,k); if(!k)return; const tip=Math.max(1,Math.round(k*(.5+(T.lvl||10)/40)*(.5+FORAGE.sk('guitar')/50)*(.7+Math.random()*.6))); INV.cash+=tip; SAY(`${k} ${k>1?'PEOPLE':'PERSON'} LISTENED. YOU MAKE $${tip} IN TIPS.`,'#f2c14e'); };
   let freeN=0; const practise=()=>{ if(++freeN%25===0)FORAGE.use('guitar',-10,45); };
   const ACT={
     chord:(P,nm)=>{ if(nm&&!GTCHORD[nm])return; const t=now(), L=P.live, old=P.chord&&GTCHORD[P.chord]||[], nw=nm?GTCHORD[nm]:[], V=P.V;
@@ -58,7 +60,7 @@ const GUITAR={}; window.GUITAR=GUITAR;
   const myMesh=()=>W3.group.children.find(m=>m.userData&&m.userData.hands&&m.userData.PM&&m.visible!==undefined);
   const tell=(k,v)=>{ if(ONLINE.send)ONLINE.send({t:'gtr',k,v:v==null?'':v}); };
   GUITAR.start=(src='own')=>{ if(on)return; if(st.water&&st.water.in||st.ride||st.climb||st.hang)return say('NOT HERE: STAND SOMEWHERE STEADY TO PLAY.','#c8a090');
-    GSND.wake(); on=true; from=src; GUITAR.stow(); ME.song=-1; ME.chord=''; ME.live={tune:[],strum:[],lh:[],pos:[{t:0,p:1}]}; ACT.chord(ME,'');
+    if(window.INSTR&&window.INSTR.on())window.INSTR.stop(); GSND.wake(); on=true; from=src; GUITAR.stow(); ME.song=-1; ME.chord=''; ME.live={tune:[],strum:[],lh:[],pos:[{t:0,p:1}]}; ACT.chord(ME,'');
     prevView=UI.view; if(CU.on&&!UI.persp)UI.setView('third'); panel(true); tell('on',src==='park'?'k':'f'); if(src==='park'&&STAND.g)STAND.gm.visible=false;
     say('YOU TAKE UP THE GUITAR. 1-0 CHORDS · SPACE STRUM DOWN, B UP · A S D F G H THE STRINGS · TAB THE CLOSE-UP · ESC TO STOP.'); };
   // put down, your own guitar goes on your back (others see it) till you stow it in the bag
@@ -154,3 +156,4 @@ const GUITAR={}; window.GUITAR=GUITAR;
       songTick(P); if(P.V&&o.p)GSND.place(P.V,o.p.x,o.p.z); }
     // someone already playing when you came: their guitar, open strings till they play
     for(const o of ONLINE.others.values())if(o.x&&o.x.gtr&&!THEM.has(o.id)&&o.id){ THEM.set(o.id,mk(o.id)); } },'146zob-guitar'); }
+export {GUITAR};

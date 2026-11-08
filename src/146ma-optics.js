@@ -118,8 +118,8 @@ import {PHOTOS} from './146m-prints.js';
       if(blurM>.8){ const n=Math.min(12,Math.ceil(blurM)), c2=document.createElement('canvas'); c2.width=W; c2.height=H; const g2=c2.getContext('2d'), a=Math.atan2(SH.vy,SH.vx+OPTIC.turn*.001);
         for(let i=0;i<n;i++){ g2.globalAlpha=1/(i+1); g2.drawImage(cv,Math.cos(a)*i*blurM/n,Math.sin(a)*i*blurM/n); } g.drawImage(c2,0,0); } };
     let p=null; try{ p=PHOTOS.take(cam.position.x,cam.position.y,cam.position.z,0,0,null,{from:cam,fov:fov/D2R,W,H,gain:cl(Math.pow(2,dEV/2.2),.02,12),fx}); }catch(e){ console.warn('camera',e); return; }
-    C.left--; saveCam(); PHOTOS.own(p); if(SFX)SFX.play('click',{vol:.8,vary:.1}); if(made.camera)made.camera.flash();
-    OPTIC.last={dEV,blurM,blurD,id:p.id}; say('CLICK. '+(Math.abs(dEV)>1.5?(dEV>0?'IT WILL COME OUT WASHED OUT. ':'IT WILL COME OUT DARK. '):'')+C.left+' LEFT ON THE ROLL. THE PRINT IS IN YOUR PACK.','#e8e2cc'); };
+    C.left--; saveCam(); if(PHOTOS.rate)PHOTOS.rate(p,{dEV,blurM,blurD,fov,cam}); PHOTOS.own(p); if(SFX)SFX.play('click',{vol:.8,vary:.1}); if(made.camera)made.camera.flash();
+    OPTIC.last={dEV,blurM,blurD,id:p.id}; say('CLICK. '+(Math.abs(dEV)>1.5?(dEV>0?'IT WILL COME OUT WASHED OUT. ':'IT WILL COME OUT DARK. '):'')+C.left+' LEFT ON THE ROLL. THE PRINT IS IN YOUR PACK'+(p.v>1?', WORTH $'+p.v:'')+'.','#e8e2cc'); };
   let rT=0; addEventListener('keydown',e=>{ if(OPTIC.up==='camera'&&(e.key==='r'||e.key==='R')&&!e.repeat){ rT=performance.now(); e.stopPropagation(); } },true);
   addEventListener('keyup',e=>{ if(OPTIC.up==='camera'&&(e.key==='r'||e.key==='R')&&rT&&performance.now()-rT>800){ OPTIC.cam.left=24; saveCam(); say('YOU WIND IN A FRESH ROLL: 24 FRAMES.','#e8e2cc'); } rT=0; },true);
   const cameraView=()=>{ '@camera'; const C=OPTIC.cam, cv=document.createElement('canvas'); cv.style.cssText='position:fixed;inset:0;width:100%;height:100%;z-index:19;pointer-events:none;display:none'; document.body.appendChild(cv);

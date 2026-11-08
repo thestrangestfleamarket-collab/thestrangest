@@ -3,6 +3,7 @@ import {SHARED} from './003-shx.js';
 import {FORAGE, keys, ONLINE, PARK, pos, ROOMS, TEXT, UI} from './003b-systems.js';
 import {LEVEL, MODS, SECTION, SECTIONS, SYS, TILE} from './006-map-pre.js';
 import {LOOP} from './009b-loop.js';
+import {STALL} from './081-stalls.js';
 { SYS.onStart(async()=>{ await LOAD('later'); if(FORAGE.has('map'))FORAGE.take('map',FORAGE.has('map')); },'141e-map');
   for(const [k,d] of Object.entries({'bro.title1':'THE STRANGEST','bro.title2':'FLEA MARKET','bro.sub':"VISITOR'S MAP & GUIDE · NEW YORK",'bro.sec':'SECTION {id} · {a} · {b}','bro.poi':'POINTS OF INTEREST',
     'bro.here':'YOU ARE HERE','bro.hours':'THE HOURS','bro.hours2':'the sky keeps real Central time, one clock for everyone','bro.foot':'FREE · TAKE ONE · PRINTED AT THE BODEGA · 1986','bro.loop':'THE SUBWAY','bro.loop2':'THE SUBWAY UNDER THE RING STREETS · {n} STATIONS · TWO TRAINS','bro.loop3':'one station a section: its letter is the section it serves',
@@ -47,6 +48,7 @@ import {LOOP} from './009b-loop.js';
     const SM=MODS.sections; if(SM&&SM.road&&SM.inner)for(const r of [SM.road,SM.inner])S.push(`<rect x="${TX(r.x0)}" y="${TY(r.y1)}" width="${TX(r.x1)-TX(r.x0)}" height="${TY(r.y0)-TY(r.y1)}" fill="none" stroke="${INK}" stroke-width="1.5" opacity=".5"/>`);
     // the buildings: the level file's places, then the plan's other boxes where none stands
     const B=LEVEL.places.filter(p=>p.kind!=='passage').map(p=>({x0:p.x0,y0:p.y1!=null?p.y0:LEVEL.block.back,x1:p.x1,y1:p.y1!=null?p.y1:LEVEL.block.front,n:p.name||'',k:p.kind==='fair'||p.kind==='lot'?'lot':p.kind==='stairs'?'stairs':'bld',place:null}));
+    for(const s of STALL.made)if(s.name){ const a=OX+s.bx[0]/T, b=OX+s.bx[2]/T, c=OY+s.bx[1]/T, d=OY+s.bx[3]/T; B.push({x0:Math.min(a,b),x1:Math.max(a,b),y0:Math.min(c,d)-.6,y1:Math.max(c,d)+.6,n:s.name,k:'bld',place:null}); }   // the park wall's stalls
     for(const b of Q.B){ if(b.k==='bld'&&!B.some(q=>q.x0<b.x1-.5&&b.x0<q.x1-.5&&q.y0<b.y1-.5&&b.y0<q.y1-.5))B.push({...b,place:null}); }
     // the places: every one GO TO lists; an inside stands at its door on the street; places in one building (or at one door) share its number, which sits on the building
     const AP=MODS.apts&&MODS.apts.doorW, P=PARK, BL=LEVEL.block||{}, ST=SECTIONS.streets||{};

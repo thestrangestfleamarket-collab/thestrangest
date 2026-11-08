@@ -1,5 +1,5 @@
 // THE GROUND'S THINGS CHECK (owner, 8 Nov 2026: "when you drop items on ground they should have their own icons and be realistic relative size"): node tests/grounditems.cjs [dist/market.html] [shot.png].
-// A dropped thing with a model of its own lies at its real size (a BMX about 1.7 m, a sword about 1 m); one without stands as its own picture at its real size (a guitar about 1 m, a ruby a few cm); none is the parcel.
+// Every dropped thing lies as its own 3D model ("do that for all items") at its real size (a BMX about 1.7 m, a guitar about 1 m, a ruby a few cm); none is the parcel or a picture.
 const { chromium } = require('playwright'), path = require('path');
 const ROOT = path.resolve(__dirname, '..'), PAGE = path.resolve(process.argv[2] || ROOT + '/dist/market.html'), SHOT = process.argv[3] || null;
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=grounditems::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
@@ -10,11 +10,11 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   let up = false; for (let i = 0; i < 400 && !(up = await pg.evaluate(() => !!window.__started).catch(() => false)); i++) await pg.waitForTimeout(1000);
   if (!up) { ok(false, 'the page started'); await b.close(); process.exit(1); }
   await pg.evaluate(() => LOAD('later')); await pg.waitForTimeout(5000);
-  const ITEMS_ = [['guitar', 1.0, 'picture'], ['bmx', 1.7, 'model'], ['sword', .99, 'model'], ['ruby', .04, 'picture'], ['g_soda', .12, 'picture']];
+  const ITEMS_ = [['guitar', 1.0, 'model'], ['bmx', 1.7, 'model'], ['sword', .99, 'model'], ['drums', 1.5, 'model'], ['cooler_m', .55, 'model'], ['plush_bear', .4, 'model'], ['coat_red', .9, 'model'], ['harp', 1.7, 'model'], ['ruby', .04, 'model'], ['g_soda', .12, 'model']];
   // an open lawn in the park (where a deer grazes), the things laid out in a row in front of you
   await pg.evaluate(() => { const d = __dbg.NPCS.find(n => n.key === 'deer'); if (d) __dbg.ui().goTo(d.st.x + 6, d.st.z + 6); }); for (let i = 0; i < 90 && await pg.evaluate(() => !!document.querySelector('#fade') && getComputedStyle(document.querySelector('#fade')).opacity > .05).catch(() => false); i++) await pg.waitForTimeout(1000); await pg.waitForTimeout(25000);
   const r = await pg.evaluate(async L => { const T = __dbg.cv().TILE, M = T / .84, P = __dbg.pos(), h = __dbg.cv().heading, fx = Math.sin(h), fz = Math.cos(h), out = {};
-    L.forEach(([id], i) => { FORAGE.give(id, 1); BAG.drop(id, 1, { x: P[0] + fx * 2.2 * M + fz * (i - 2) * 1.1 * M, y: P[1], z: P[2] + fz * 2.2 * M - fx * (i - 2) * 1.1 * M }); });
+    L.forEach(([id], i) => { FORAGE.give(id, 1); BAG.drop(id, 1, { x: P[0] + fx * 3.2 * M + fz * (i - 4) * 1.4 * M, y: P[1], z: P[2] + fz * 3.2 * M - fx * (i - 4) * 1.4 * M }); });
     for (let t = 0; t < 60 && !L.every(([id]) => { const g = BAG.ground.find(q => q.id === id); return g && g.m; }); t++) await new Promise(r => setTimeout(r, 500));
     for (const [id] of L) { const g = BAG.ground.find(q => q.id === id); if (!g || !g.m) { out[id] = null; continue; } g.sp.updateMatrixWorld(true); let sprite = false; g.m.traverse(o => { if (o.isSprite) sprite = true; });
       const B = { min: [1e9, 1e9, 1e9], max: [-1e9, -1e9, -1e9] }; g.m.traverse(o => { if (!o.isMesh && !o.isSprite) return; if (o.isSprite) { const s = o.getWorldScale(new o.position.constructor()), p = o.getWorldPosition(new o.position.constructor()); for (const [k, v] of [[0, p.x], [1, p.y], [2, p.z]]) { const h = k === 1 ? s.y / 2 : s.x / 2; B.min[k] = Math.min(B.min[k], v - h); B.max[k] = Math.max(B.max[k], v + h); } return; }
@@ -23,6 +23,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     return out; }, ITEMS_);
   for (const [id, want, kind] of ITEMS_) { const x = r[id]; ok(x && Math.abs(x.m - want) / want < .25 && x.sprite === (kind === 'picture'), id + ' lies as its ' + kind + ' at about ' + want + ' m (' + (x ? x.m.toFixed(2) + ' m' + (x.sprite ? ', picture' : ', model') : 'not drawn') + ')'); }
   if (SHOT) { await pg.evaluate(() => { __dbg.ui().setView && __dbg.ui().setView('third'); }); await pg.waitForTimeout(1500); await pg.mouse.move(500, 350); for (let i = 0; i < 6; i++) { await pg.mouse.wheel(0, -300); await pg.waitForTimeout(150); } await pg.waitForTimeout(2500); await pg.screenshot({ path: SHOT }); }
+  const none = await pg.evaluate(() => ITEMS.ids().filter(id => !INSPECT.has(id))); ok(!none.length, 'every item has a 3D model of its own (' + none.length + ' without' + (none.length ? ': ' + none.slice(0, 10).join(', ') : '') + ')');
   ok(!Object.keys(errs).length, 'no page errors' + (Object.keys(errs).length ? ': ' + JSON.stringify(errs).slice(0, 300) : ''));
   await b.close(); console.log(fails.length ? fails.length + ' failed' : 'all passed'); process.exit(fails.length ? 1 : 0);
 })();

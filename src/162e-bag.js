@@ -56,6 +56,7 @@ window.BAG=BAG;
     if(SIMG&&SI.has(id)){ const i=SI.get(id), n=SH.s; c=document.createElement('canvas'); c.width=c.height=n; c.getContext('2d').drawImage(SIMG,(i%SH.cols)*n,Math.floor(i/SH.cols)*n,n,n,0,0,n,n); CV.set(id,c); return c; }
     const k=BAG.kind(id), A=colour(id,k), a=shade(A), B=k==='fruit'?'#3f8a3a':k==='cube'?'#f4efe4':a;
     c=document.createElement('canvas'); c.width=c.height=10; const g=c.getContext('2d'); ART[k].forEach((row,y)=>{ for(let x=0;x<10;x++){ const ch=row[x]; if(!ch||ch==='.')continue; g.fillStyle=ch==='A'?A:ch==='a'?a:ch==='B'?B:PAL[ch]||'#f0f'; g.fillRect(x,y,1,1); } }); CV.set(id,c); return c; };
+  BAG.pic=paint;
   const URL=new Map(); BAG.icon=id0=>{ const id=kindOf(id0); let u=URL.get(id); if(!u){ u=paint(id).toDataURL(); URL.set(id,u); } return u; }; if(HUD.qdraw)HUD.qdraw();
   if(SH){ const im=new Image(); im.onload=()=>{ SIMG=im; CV.clear(); URL.clear(); if(HUD.qdraw)HUD.qdraw(); if(window.__started&&BAG.draw)try{ BAG.draw(); }catch(e){} }; im.src=SH.png; }
 
@@ -148,6 +149,7 @@ window.BAG=BAG;
       const ext=x1<0?W:Math.max(x1-x0+1,y1-y0+1), h=(realM(id)||.3)*MTR*W/ext, sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,alphaTest:.5})); sp.scale.set(h,h,1); sp.position.y=h/2-(x1<0?0:(H-1-y1)/H*h); P.add(sp); P.userData.tall=x1<0?h:(y1-y0+1)/H*h; LOOK.set(id,P); return P; }
     let m=null; try{ m=INSPECT.model(id); }catch(e){} if(!m)m=INSPECT.shape('sack');
     m.traverse(c=>{ if(c.material&&!Array.isArray(c.material)&&c.material.transmission>0)c.material=plain(c.material); });
+    { const b0=new THREE.Box3().setFromObject(m), z=b0.getSize(V3); if(!b0.isEmpty()&&z.y>1.8*Math.max(z.x,z.z)&&!/^(fl_|bnet$|net$|balloon$)/.test(kindOf(id))){ const W=new THREE.Group(); W.add(m); W.rotation.x=-Math.PI/2; m=W; } }   // (a long thin thing, a guitar or a sword, lies on its side; a flower or a net on its stand stays up)
     const b=new THREE.Box3().setFromObject(m), L=b.isEmpty()?1:Math.max(.001,...b.getSize(V3).toArray()), want=realM(id), S=b.isEmpty()?MTR:want?want*MTR/L:L>5||L<.01?.3*MTR/L:MTR, I=new THREE.Group(); I.add(m); I.scale.setScalar(S); if(!b.isEmpty())I.position.set(-(b.min.x+b.max.x)/2*S,-b.min.y*S,-(b.min.z+b.max.z)/2*S);
     P.add(I); P.userData.tall=b.isEmpty()?.3*MTR:(b.max.y-b.min.y)*S; LOOK.set(id,P); return P; };
   const room=()=>{ const c=ROOMS.cur; return c?String(c.off||c.id||''):''; };

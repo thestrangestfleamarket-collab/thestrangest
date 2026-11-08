@@ -179,7 +179,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     spin(PM,ALL,MP,XA,MO.pit*m); spin(PM,ALL,MP,ZA,MO.rol*m);
     if(ks){ const W=jointAt(PM,body,1,IKV[2]); spin(PM,UPPER,W,XA,.3*ks*m); } }
   BODIES.momentum=momentum;
-  // never under the ground: your avatar's lowest point is raised onto the ground under it, if the rig's pose left it below (after some moves the rig sinks; owner, 5 Nov 2026: "they touch the ground when they are supposed to"); never lowered (on a crate or a roof the ground is further down)
+  // never under the ground: your avatar's lowest point is raised onto the ground under it, if the rig's pose left it below (after some moves the rig sinks; owner, 5 Nov 2026: "they touch the ground when they are supposed to"); never lowered (on a crate or a roof the ground is further down); not in a pull-up from below a ledge (a move with `below`: the mantle), which starts under it
   const LOWV=new V3();
   function aboveGround(PM,body,G,ground){ const g=body.GEO; if(!ground||!G||!g||!g.attributes.position.count)return; const A=g.attributes, p=A.position.array, bi=A.bi.array, bw=A.bw.array, P=PM.value, n=A.position.count, step=n>3000?3:1; let lo=Infinity, li=-1;
     for(let i=0;i<n;i+=step){ const a=P[bi[i*2]|0].elements, c=P[bi[i*2+1]|0].elements, w=bw[i], x=p[i*3], y=p[i*3+1], z=p[i*3+2];
@@ -217,7 +217,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     for(const m of W3.meshes)m.visible=false;   // (the Walker is never drawn, not even while your avatar loads)
     if(!body){ if(ME)ME.me.visible=false; return; }
     if(MEK!==key||ME.me.geometry!==body.GEO){ if(ME){ W3.group.remove(ME.me); ME.me.material.dispose(); } ME=mesh(body); MEK=key; W3.group.add(ME.me); }
-    ME.me.visible=!W3.hideMe&&!W3.ghost; pose(B,ME.PM,body,RAG.on||VIT.dead?null:st); if(st._pfHead&&st.water&&st.water.in&&st.water.level!=null&&body.binv)headUp(ME.PM,body,st,W3.group,ME.me); if(body.anim&&st._mw>0&&!RAG.on&&!st._pfSeat){ const now=performance.now(), dt=MO.t?Math.min(.1,(now-MO.t)/1000):0; MO.t=now; momentum(ME.PM,body,st,W3.group,dt); feetOnGround(ME.PM,body,W3.group,SHARED.groundY); } else MO.t=0; if(!RAG.on&&!B.seat&&!st.climb&&!st.hang&&!(st.water&&st.water.in))aboveGround(ME.PM,body,W3.group,SHARED.groundY); },   // (your rig state: your avatar walks by its clips)
+    ME.me.visible=!W3.hideMe&&!W3.ghost; pose(B,ME.PM,body,RAG.on||VIT.dead?null:st); if(st._pfHead&&st.water&&st.water.in&&st.water.level!=null&&body.binv)headUp(ME.PM,body,st,W3.group,ME.me); if(body.anim&&st._mw>0&&!RAG.on&&!st._pfSeat){ const now=performance.now(), dt=MO.t?Math.min(.1,(now-MO.t)/1000):0; MO.t=now; momentum(ME.PM,body,st,W3.group,dt); feetOnGround(ME.PM,body,W3.group,SHARED.groundY); } else MO.t=0; if(!RAG.on&&!B.seat&&!st.climb&&!st.hang&&!(st.water&&st.water.in)&&!(st.move&&st.move.def.below!=null))aboveGround(ME.PM,body,W3.group,SHARED.groundY); },   // (your rig state: your avatar walks by its clips)
     // the physics body (090-physbody: the rig's 15 parts in Rapier, loose and limp when you're down) moved its parts: D[i] is part i's move off the rig, T the rig's place in that world
     phys:(D,T)=>{ if(!ME)return; W3.body.physN=(W3.body.physN||0)+1; const P=ME.PM.value; for(let i=0;i<NB;i++)P[i].premultiply(T).premultiply(D[i]); }};   // (dead, you're the ghost sheet: 103a-death)
   for(const m of W3.meshes)m.visible=false;

@@ -36,18 +36,17 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
     const g=BODIES.by.avatar.GEO, me=W3.group.children.find(m=>m.geometry===g); return {ready:!!(PB&&PB.ready),steps:(W3.body.physN||0)-n0,shown:!!(me&&me.visible)}; });
   rec('the physics body moves the avatar as it moved the Walker',ph.ready&&ph.steps>=5&&ph.shown,JSON.stringify(ph));
   // every garment the cast wears (owner, 5 Nov 2026), and the back and both hands: each slot offers them, a pack or a held thing adds to you, a tool in that hand puts it down
-  const cnt=await pg.evaluate(()=>Object.fromEntries(['hat','neck','back','righthand','lefthand','bottom'].map(s=>[s,document.querySelectorAll('#lavt-'+s+' option').length-1])));
-  rec('the whole cast\'s wardrobe is offered by kind: hats, neck, back, right and left hand',cnt.hat>=35&&cnt.neck>=20&&cnt.back>=10&&cnt.righthand>=50&&cnt.lefthand>=20,JSON.stringify(cnt));
+  const cnt=await pg.evaluate(()=>({...Object.fromEntries(['hat','neck','back','bottom'].map(s=>[s,document.querySelectorAll('#lavt-'+s+' option').length-1])),hands:!!document.getElementById('lavt-righthand')||!!document.getElementById('lavt-lefthand')}));
+  rec('the whole cast\'s wardrobe is offered by kind: hats, neck, back; no right or left hand (owner, 8 Nov 2026: "you cant just put them in your hand as props")',cnt.hat>=35&&cnt.neck>=20&&cnt.back>=10&&!cnt.hands,JSON.stringify(cnt));
   // every version too (owner, 5 Nov 2026), under its kind: TROUSERS lists each one who wears trousers, grouped by theme
   const tv=await pg.evaluate(async()=>{ const p=AVATAR.pieces.find(x=>x.slot==='bottom'&&x.label==='TROUSERS'); await AVATAR.wear('bottom',p.n); AVATAR.draw(); const s=document.getElementById('lav-bottom');
     return {kind:document.getElementById('lavt-bottom').value,versions:s.options.length,groups:s.querySelectorAll('optgroup').length,all:AVATAR.pieces.length}; });
   rec('every version of a garment: TROUSERS offers dozens, grouped by theme',tv.kind==='TROUSERS'&&tv.versions>=40&&tv.groups>=10&&tv.all>=900,JSON.stringify(tv));
-  const pk=await id('back','BACKPACK'), fr=await id('righthand','FISHING ROD'), bk=await id('lefthand','BOOK');
+  const pk=await id('back','BACKPACK'), fr=await pg.evaluate(()=>(AVATAR.pieces.find(p=>p.slot==='righthand')||{}).n), bk=await pg.evaluate(()=>(AVATAR.pieces.find(p=>p.slot==='lefthand')||{}).n);
   const hd=await pg.evaluate(async([pk,fr,bk])=>{ const t=()=>BODIES.by.avatar.GEO.attributes.position.count/3, a=t(); await AVATAR.wear('back',pk); const b=t(); await AVATAR.wear('righthand',fr); await AVATAR.wear('lefthand',bk); const c=t(), code=AVATAR.code();
     const was=WIELD.on; WIELD.on='net'; await AVATAR.set({}); const d=t(), seen=BODIES.by.avatar.look(); WIELD.on=was; await AVATAR.set({});
-    return {a,b,c,d,code,seen,rt:JSON.stringify(AVATAR.decode(code))===JSON.stringify(AVATAR.L())}; },[pk,fr,bk]);
-  rec('a backpack and things in both hands are worn, and the look round-trips',hd.b>hd.a&&hd.c>hd.b&&hd.rt,JSON.stringify({a:hd.a,b:hd.b,c:hd.c,code:hd.code}));
-  rec('a tool in your hand puts down what that hand held, for you and the others',hd.d<hd.c&&hd.d>hd.b&&!hd.seen.endsWith('.'+bk.toString(36)+'.'+fr.toString(36)),JSON.stringify({d:hd.d,seen:hd.seen}));
+    return {a,b,c,d,code,seen,w:JSON.stringify(AVATAR.decode(code).w),rt:JSON.stringify(AVATAR.decode(code))===JSON.stringify(AVATAR.L())}; },[pk,fr,bk]);
+  rec('a backpack is worn, a thing put in either hand from the wardrobe is not, and the look round-trips',hd.b>hd.a&&hd.c===hd.b&&hd.rt&&!/hand/.test(hd.w),JSON.stringify({a:hd.a,b:hd.b,c:hd.c,code:hd.code}));
   const oldc=await pg.evaluate(()=>{ const a=AVATAR.code().split('.').slice(0,17); return JSON.stringify(AVATAR.decode(a.join('.')).w); });
   rec('a look saved before the new slots still reads the same',!/back|hand"/.test(oldc)&&/top/.test(oldc),oldc);
   const mc=await pg.evaluate(async pk=>{ await AVATAR.wear('back',pk); AVATAR.draw(); const k=document.getElementById('lavk-back'), ins=[...k.querySelectorAll('input')], pack=ins.find(i=>/pack colour$/.test(i.getAttribute('aria-label')));

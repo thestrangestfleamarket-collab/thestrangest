@@ -191,7 +191,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     // running track, the whole shore inside the park; open where the brook leaves the lake, where a path reaches the water, and at three gates for swimmers
     { const S=FOUNT.S, RO=FOUNT.TRACK[0]-FOUNT.TRACK[1]-.55, L=[]; let acc=0, prev=null;
       for(let i=0;i<S.shore.length;i++){ const [sx,sy]=S.shore[i], n=S.nrm(sx,sy), x=sx+n[0]*RO, y=sy+n[1]*RO; if(x>S.wx1+2.5||y>S.wy1+2.5)continue; if(prev)acc+=Math.hypot(x-prev[0],y-prev[1]); prev=[x,y]; L.push([x,y,acc]); }
-      const TOT=acc, GATES=[.25,.5,.75].map(f=>f*TOT), open_=(x,y,s)=>BK.wet(x,y,1.4)||segD(x,y)<4.6||GATES.some(g=>Math.abs(s-g)<1.6), at_=s=>{ let j=0; while(j<L.length-1&&L[j+1][2]<s)j++; const a=L[j], b=L[Math.min(L.length-1,j+1)], t=b[2]>a[2]?(s-a[2])/(b[2]-a[2]):0; return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]; };
+      const TOT=acc, GATES=[.25,.5,.75].map(f=>f*TOT), open_=(x,y,s)=>BK.wet(x,y,1.4)||segD(x,y)<4.6||GATES.some(g=>Math.abs(s-g)<1.6)||FOUNT.bridgeD(x,y)<1.2, at_=s=>{ let j=0; while(j<L.length-1&&L[j+1][2]<s)j++; const a=L[j], b=L[Math.min(L.length-1,j+1)], t=b[2]>a[2]?(s-a[2])/(b[2]-a[2]):0; return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]; };
       const H=mv(1.2), Pk=[], Bx=[], POST=2.4, RB=.055*M; let posts=0;
       for(let s0=0;s0+POST<=TOT+.01;s0+=POST){ const s1=s0+POST, [ax,ay]=at_(s0), [bx,by]=at_(s1), [mx,my]=at_((s0+s1)/2); if(open_(mx,my,(s0+s1)/2)){ if(!open_(...at_(s0-.1),s0-.1))Bx.push([X(ax),H*.52,Z(ay),.1*M,H*1.06,.1*M,IR[1]],[X(ax),H*1.08,Z(ay),.14*M,.14*M*VS*1.3,.14*M,IR[1]]); continue; }
         const wx0=X(ax), wz0=Z(ay), wx1=X(bx), wz1=Z(by), yaw=-Math.atan2(wz1-wz0,wx1-wx0), len=Math.hypot(wx1-wx0,wz1-wz0);
@@ -394,7 +394,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     IT.forEach((it,i)=>{ const h=Math.max(1,(it.top||it.y+4*TILE)-it.y), r=Math.max(.6*TILE,it.r||2*TILE), g=GR[Math.floor(hash(Math.round(it.x*3),Math.round(it.z*3),77)*4)];
       shape[i]=[M4.compose(V.set(it.x,it.y+h*.62,it.z),Q,S3.set(r*.95,h*.42,r*.95)).clone(),M4.compose(V.set(it.x,it.y-.2*TILE,it.z),Q,S3.set(Math.max(.18*TILE,(it.tr||r*.08)),h*.5,Math.max(.18*TILE,(it.tr||r*.08)))).clone()];
       crown.setColorAt(i,c.setRGB(g[0],g[1],g[2],THREE.SRGBColorSpace)); crown.setMatrixAt(i,Z); trunk.setMatrixAt(i,Z); });
-    for(const m of [crown,trunk]){ m.castShadow=true; m.receiveShadow=true; m.frustumCulled=false; (R.parent||scene).add(m); } PARK.ringFar=crown;
+    for(const m of [crown,trunk]){ m.userData.noSmallCull=1; m.castShadow=true; m.receiveShadow=true; m.frustumCulled=false; (R.parent||scene).add(m); } PARK.ringFar=crown;
     const NEAR=30*TILE, near=new Uint8Array(n).fill(2); let lx=1e9, lz=1e9;
     PARK.ringLod=()=>{ if(Math.hypot(pos.x-lx,pos.z-lz)<TILE)return; lx=pos.x; lz=pos.z; const ed=R.userData.edited, gone=R.userData.gone; let ch=false;
       for(let i=0;i<n;i++){ const id=ID[i]; if(id==null||id<0)continue; const it=IT[i], nr=(ed&&ed.has(id))||Math.hypot(it.x-pos.x,it.z-pos.z)-(it.r||0)<NEAR?1:0; if(nr===near[i])continue; near[i]=nr; ch=true;
@@ -415,6 +415,18 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       for(const M of [R,P.standFar])if(M&&M.isBatchedMesh)M.userData.items.forEach((it,i)=>set(M,M.userData.ids[i],Math.hypot(it.x-pos.x,it.z-pos.z)-it.r<=far));
       for(const G of [PARK.trunks,PARK.ringTrunks])if(G&&G.userData.cull)G.userData.cull(far,pos.x,pos.z); };
     PARK.lodReset=()=>{ lx=1e9; }; SYS.add('life',()=>PARK.lod(),'061-treelod'); }
+  // the park's small things only near (owner, 8 Nov 2026: "yes drop the small props past 70 tiles"): every repeated small thing in the park (tufts, flowers, mushrooms, posts, lamps: each under 1.5 tiles) drawn only within 70 tiles of you; the trees and the big pieces always
+  { const R=70*TILE, Z=new THREE.Matrix4().makeScale(0,0,0), M=new THREE.Matrix4(), V=new THREE.Vector3(), Q=new THREE.Quaternion(), SC=new THREE.Vector3(), L=[], seen=new WeakSet(); let lx=1e9, lz=1e9, scanT=0;
+    const take=im=>{ if(seen.has(im))return; seen.add(im); if(im.userData.noSmallCull||im.count<20)return; const g=im.geometry; if(!g.boundingSphere)g.computeBoundingSphere(); let big=0; const n=im.count, cx=new Float32Array(n), cz=new Float32Array(n), m0=new Float32Array(n*16);
+      for(let i=0;i<n;i++){ im.getMatrixAt(i,M); M.premultiply(im.matrixWorld); M.decompose(V,Q,SC); cx[i]=V.x; cz[i]=V.z; if(g.boundingSphere.radius*Math.max(SC.x,SC.y,SC.z)>1.5*TILE)big++; im.getMatrixAt(i,M); M.toArray(m0,i*16); }
+      if(big>n*.1)return; L.push({im,n,cx,cz,m0,vis:new Uint8Array(n).fill(1),ver:im.instanceMatrix.version}); };
+    PARK.smallCull=()=>{ if((scanT-=1)<=0){ scanT=15; for(const G of new Set([MAPG.parkwall,MAPG.park,...scene.children.filter(c=>/^park(wall)?$/.test(c.name))]))if(G)G.traverse(o=>{ if(o.isInstancedMesh)take(o); }); }
+      if(Math.hypot(pos.x-lx,pos.z-lz)<2*TILE)return; lx=pos.x; lz=pos.z;
+      for(const e of L){ const im=e.im; if(im.instanceMatrix.version!==e.ver){ for(let i=0;i<e.n&&i<im.count;i++)if(e.vis[i]){ im.getMatrixAt(i,M); M.toArray(e.m0,i*16); } }   // (someone else moved them: their places kept)
+        let ch=false; for(let i=0;i<e.n&&i<im.count;i++){ const on=Math.hypot(e.cx[i]-pos.x,e.cz[i]-pos.z)<R?1:0; if(on===e.vis[i])continue; e.vis[i]=on; ch=true; im.setMatrixAt(i,on?M.fromArray(e.m0,i*16):Z); }
+        if(ch)im.instanceMatrix.needsUpdate=true; e.ver=im.instanceMatrix.version; } };
+    SYS.every(()=>PARK.smallCull(),300,'061-park the small things only near');
+    window.SMALLCULLDBG=()=>({meshes:L.length,all:L.reduce((a,e)=>a+e.n,0),shown:L.reduce((a,e)=>a+e.vis.reduce((x,v)=>x+v,0),0)}); }
   window.PARKDBG=()=>({oaks:PARK.oaks,trees:TREES,back:TREES.back,TL,progs:renderer.info.programs.length});
   PARK.later(()=>{ '@park'; PARK.rocks=mesh([['BigRock3',87.5,-37,2.6,1.8],['BigRock5',126,-41,2.4,.2],['Rock_12',55.5,-41,1,1],['Rock1',111,-41,.6,2],['BigRock1',66,-35,2,1.1]].map(([k,x,y,...r])=>[k,RX(x),RY(y),...r]),false);
   { const UG=[['bush1',1.1],['bush2',1.2],['bush3',1.3],['bush4',1.5],['bush5',1.1],['flower1',.5],['flower2',.7],['flower3',.3],['flower4',.7],['flower5',.35],['flower6',.8],['grass1',.5],['grass2',.6],['grass1',.45],['grass2',.55],['mushroom1',.3],['mushroom2',.35],['mushroom3',.3],['mushroom4',.25],['stone2',.5],['stone3',.2],['stones1',.25]];

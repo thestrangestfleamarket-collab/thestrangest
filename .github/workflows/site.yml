@@ -73,11 +73,13 @@ jobs:
           k spiders 'src/146b|src/087-npc-creatures|data/creatures|spiders\.cjs'
           k dunshare 'src/062a|src/146b|src/111d|worker/door|worker/dunmobs|dunshare\.cjs'
           k dunsrv 'worker/door|worker/dunmobs|dunmobs-server\.cjs'
+          k phone 'src/146-drone|src/146zeb|src/146ze-|phone\.cjs'
           k dm 'src/062a|src/146b|src/087|src/088|worker/dunmobs|dm\.cjs'
           k animals 'src/087|src/111db|worker/folk|animals\.cjs'
           k parksolid 'src/111fe|src/100-use|data/world|parksolid\.cjs'
           k guardians 'src/146ja|src/146k|src/146b|worker/dunmobs|src/103a|src/059e|data/guardians|guardians\.cjs|body\.cjs'
           k faunarest 'src/087-npc-creatures|data/fauna|fauna-rest\.cjs'
+          k itempics 'src/162e-bag|src/162d-hud|src/162fa-shopinsides|src/150cy|itempics\.cjs'
           k ground  'src/162e-bag|src/150cy-inspect|src/140b-items|data/items|grounditems\.cjs'
           k avdesign 'src/111a-bodies|src/111c-avatar|src/111cb-designer|src/102b-designer|avdesigner\.cjs'
           k space   'src/075-main|src/076-npc|src/087-npc-creatures|src/139-clip|src/150-loose|worker/folk|space\.cjs'
@@ -248,6 +250,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' ground')
         run: node tests/grounditems.cjs dist/market.html
+      - name: the things' pictures
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' itempics')
+        run: node tests/itempics.cjs dist/market.html
       - name: fauna rests
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' faunarest')
@@ -264,6 +270,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' dunshare')
         run: node tests/dunshare.cjs dist/market.html
+      - name: The brick phone (every player has one, an order paid, the drone brings it to you)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' phone')
+        run: node tests/phone.cjs dist/market.html
       - name: The dungeon master (an empty dungeon, creatures put in and set up, a room laid out)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' dm')

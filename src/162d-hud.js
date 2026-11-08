@@ -1,6 +1,6 @@
 // THE HUD: HUD draws the round minimap top right (from the MAP's plan), the message log bottom left (the game's lines and the chat, UI.log) and the quick bar (ten slots on keys 1 to 0, filled by dragging from the pack).
 import {SHARED} from './003-shx.js';
-import {BAG, ED, FORAGE, HUD, INV, MOTION, ONLINE, PASSPORT, pos, ROOMS, TEXT, UI, WE, WIELD, WX, ZONES} from './003b-systems.js';
+import {BAG, ED, FORAGE, HUD, INV, LEVELS, MOTION, ONLINE, PASSPORT, pos, ROOMS, TEXT, UI, WE, WIELD, WX, ZONES} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {MODS, SECTION, SYS, TILE} from './006-map-pre.js';
@@ -26,18 +26,19 @@ import {QUESTS} from './160a-quests.js';
   /* ---------- the minimap ---------- */
   const MP=document.createElement('div'); MP.id='hmap'; MP.hidden=true; MP.innerHTML=`<canvas width="${MW}" height="${MW}"></canvas><div class="f"><span id="hmz"></span><span id="hmxy"></span><span id="hmwx"></span></div>`; document.body.appendChild(MP);
   const cv=MP.firstChild, g=cv.getContext('2d'), zN=MP.querySelector('#hmz'), xyN=MP.querySelector('#hmxy'), wxN=MP.querySelector('#hmwx'); let Q=null, qTried=0;
-  cv.onclick=()=>{ if(UI.mapWindow)UI.mapWindow(); };
+  cv.onclick=()=>{ if(dun()&&MODS.dunMap){ MODS.dunMap.open(); return; } if(UI.mapWindow)UI.mapWindow(); };
+  const dun=()=>SHARED.LVL==='down'&&MODS.dungeon&&MODS.dungeon.inside&&MODS.dungeon.inside(pos.x,pos.z);   // below ground in the dungeon the corner map is the dungeon's (owner, 8 Nov 2026)
   const plan=()=>{ if(Q||qTried)return Q; qTried=1; try{ Q=UI.mapPlan&&UI.mapPlan(); }catch(e){ console.warn('HUD map',e); } return Q; };
-  const paint=()=>{ const K=4, Q=plan(); if(!Q){ cv.hidden=true; return; } cv.hidden=false; const B=SHARED.BOD, mx=Q.sx(B.OX+pos.x/T), my=Q.sy(B.OY+pos.z/T), r=MW/2, w=MW/K*Q.S;
+  const paint=()=>{ const K=4, D=dun()&&MODS.dunMap?MODS.dunMap.plan():null, Q=D||plan(); if(!Q){ cv.hidden=true; return; } cv.hidden=false; const B=SHARED.BOD, mx=D?D.wx(pos.x):Q.sx(B.OX+pos.x/T), my=D?D.wz(pos.z):Q.sy(B.OY+pos.z/T), r=MW/2, w=MW/K*Q.S;
     g.imageSmoothingEnabled=false; g.clearRect(0,0,MW,MW); g.save(); g.beginPath(); g.arc(r,r,r,0,Math.PI*2); g.clip(); g.fillStyle='#0b0d12'; g.fillRect(0,0,MW,MW); g.drawImage(Q.cv,mx-w/2,my-w/2,w,w,0,0,MW,MW);
     const sx=x=>r+(x-mx)*K/Q.S, sy=y=>r+(y-my)*K/Q.S;
-    for(const o of ONLINE.others.values()){ if(!o.p)continue; const a=sx(Q.sx(B.OX+o.p.x/T)), b=sy(Q.sy(B.OY+o.p.z/T)); if(Math.hypot(a-r,b-r)>r-3)continue; g.fillStyle='#000'; g.fillRect(a-3,b-3,6,6); g.fillStyle='#ffd27a'; g.fillRect(a-2,b-2,4,4); }
-    { const A=window.QUESTS&&QUESTS.anchor&&QUESTS.anchor(); if(A){ const a=sx(Q.sx(B.OX+A.x/T)), b=sy(Q.sy(B.OY+A.z/T)), d=Math.hypot(a-r,b-r), k=d>r-6?(r-6)/d:1, x=r+(a-r)*k, y=r+(b-r)*k; g.save(); g.translate(x,y); g.rotate(Math.PI/4); g.fillStyle='#000'; g.fillRect(-4,-4,8,8); g.fillStyle='#7ad3ff'; g.fillRect(-3,-3,6,6); g.restore(); } }   // the quest's step: a blue diamond, held at the rim when it is off the map
+    for(const o of ONLINE.others.values()){ if(!o.p)continue; if(D&&!MODS.dungeon.inside(o.p.x,o.p.z))continue; const a=sx(D?D.wx(o.p.x):Q.sx(B.OX+o.p.x/T)), b=sy(D?D.wz(o.p.z):Q.sy(B.OY+o.p.z/T)); if(Math.hypot(a-r,b-r)>r-3)continue; g.fillStyle='#000'; g.fillRect(a-3,b-3,6,6); g.fillStyle='#ffd27a'; g.fillRect(a-2,b-2,4,4); }
+    { const A=!D&&window.QUESTS&&QUESTS.anchor&&QUESTS.anchor(); if(A){ const a=sx(Q.sx(B.OX+A.x/T)), b=sy(Q.sy(B.OY+A.z/T)), d=Math.hypot(a-r,b-r), k=d>r-6?(r-6)/d:1, x=r+(a-r)*k, y=r+(b-r)*k; g.save(); g.translate(x,y); g.rotate(Math.PI/4); g.fillStyle='#000'; g.fillRect(-4,-4,8,8); g.fillStyle='#7ad3ff'; g.fillRect(-3,-3,6,6); g.restore(); } }   // the quest's step: a blue diamond, held at the rim when it is off the map
     const h=SHARED.heading||0, dx=Math.sin(h), dy=-Math.cos(h); g.translate(r,r); g.rotate(Math.atan2(dy,dx)+Math.PI/2); g.beginPath(); g.moveTo(0,-7); g.lineTo(5,6); g.lineTo(0,3); g.lineTo(-5,6); g.closePath(); g.fillStyle='#fff'; g.fill(); g.lineWidth=1; g.strokeStyle='#000'; g.stroke(); g.restore();
     g.fillStyle='#fff'; g.strokeStyle='#000'; g.lineWidth=2; g.font='8px Silkscreen,monospace'; g.textAlign='center'; g.strokeText('N',r,10); g.fillText('N',r,10); };
   let mt=0, ot=0;
-  const tickMap=dt=>{ if(!window.__started)return; const on=SHARED.LVL==='up'&&!ROOMS.cur&&!(ROOMS.offIn&&ROOMS.offIn())&&!(MODS.apts&&MODS.apts.in); if(MP.hidden===on)MP.hidden=!on; if(!on)return;
-    if((mt+=dt)<.2)return; mt=0; paint(); const z=ZONES.cur, sec=SECTION.id; zN.textContent=(sec?sec+' · ':'')+(z&&z.name?String(z.name).toUpperCase():''); xyN.textContent='x '+Math.round(pos.x/T)+' z '+Math.round(pos.z/T); if(WX.forecast){ const F=WX.forecast(); wxN.textContent=F.now.kind+' '+F.now.temp+'°'+(F.next?' · '+F.next.kind+' IN '+(F.next.inMin>=60?Math.round(F.next.inMin/60)+'H':F.next.inMin+'M'):''); } };   // the forecast (4 Nov 2026): the weather now, the temperature, and the next change when the weather runs free
+  const tickMap=dt=>{ if(!window.__started)return; const dn=dun(), on=dn||SHARED.LVL==='up'&&!ROOMS.cur&&!(ROOMS.offIn&&ROOMS.offIn())&&!(MODS.apts&&MODS.apts.in); if(MP.hidden===on)MP.hidden=!on; if(!on)return;
+    if((mt+=dt)<.2)return; mt=0; paint(); const z=ZONES.cur, sec=SECTION.id; zN.textContent=dn?String(LEVELS.of.dungeon.label()).toUpperCase().replace(/^THE DUNGEON — /,''):(sec?sec+' · ':'')+(z&&z.name?String(z.name).toUpperCase():''); xyN.textContent=dn?'':'x '+Math.round(pos.x/T)+' z '+Math.round(pos.z/T); if(dn)wxN.textContent=''; else if(WX.forecast){ const F=WX.forecast(); wxN.textContent=F.now.kind+' '+F.now.temp+'°'+(F.next?' · '+F.next.kind+' IN '+(F.next.inMin>=60?Math.round(F.next.inMin/60)+'H':F.next.inMin+'M'):''); } };   // the forecast (4 Nov 2026): the weather now, the temperature, and the next change when the weather runs free
 
   /* ---------- the quick bar ---------- */
   const QB=document.createElement('div'); QB.id='hqb'; document.body.appendChild(QB); let S=[]; try{ S=JSON.parse(OWNED.get('quick')||'[]')||[]; }catch(e){ S=[]; } S.length=N; HUD.slots=S;

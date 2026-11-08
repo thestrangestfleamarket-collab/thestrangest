@@ -402,10 +402,6 @@
      35.18
     ],
     [
-     36.68,
-     54.91
-    ],
-    [
      56.41,
      70.98
     ],
@@ -469,8 +465,11 @@
    "id": "subway",
    "name": "SUBWAY STAIRS",
    "kind": "stairs",
-   "x0": -51.9,
-   "x1": -47.9
+   "x0": 219.75,
+   "x1": 223.75,
+   "y0": -116.5,
+   "y1": -110.5,
+   "note": "on the Hudson promenade in front of the garage by the Bookstore (owner, 8 Nov 2026)"
   },
   {
    "id": "apts",
@@ -599,6 +598,20 @@
    "pf": "antiques"
   },
   {
+   "id": "aquarium",
+   "kind": "front",
+   "x0": 36.68,
+   "x1": 54.91,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2,
+   "name": "THE AQUARIUM",
+   "merchant": "scuba_diver",
+   "pf": "florist",
+   "bare": true
+  },
+  {
    "id": "fishtables",
    "kind": "lot",
    "x0": 57.01,
@@ -697,10 +710,10 @@
    "id": "bath",
    "name": "THE BATH HOUSE",
    "kind": "front",
-   "x0": 25,
-   "x1": 48.53,
-   "y0": -34,
-   "y1": -22.45,
+   "x0": 203.24,
+   "x1": 226.76,
+   "y0": 152.2,
+   "y1": 163.76,
    "face": "s",
    "park": true
   }
@@ -910,11 +923,19 @@
   "sites": [
    {
     "id": "bath",
-    "x": 36.77,
-    "y": -28.23,
+    "x": 215,
+    "y": 152,
     "w": 27.53,
     "d": 17.55,
-    "note": "the bath house in the park: no trees or paths here"
+    "note": "the bath house on its island in the lake: no trees or paths here"
+   },
+   {
+    "id": "bridge",
+    "x": 215,
+    "y": 102,
+    "w": 6,
+    "d": 8,
+    "note": "where the island's footbridge lands: no trees here"
    }
   ],
   "stalls": [
@@ -983,7 +1004,26 @@
     "slot": 2
    }
   ],
-  "stallsNote": "the park wall's stalls (owner, 8 Nov 2026): side w or e of the park gate, slot 0 nearest it; merchant the character who keeps it, goods what its table shows (STALL.GOODS)"
+  "stallsNote": "the park wall's stalls (owner, 8 Nov 2026): side w or e of the park gate, slot 0 nearest it; merchant the character who keeps it, goods what its table shows (STALL.GOODS)",
+  "islands": [
+   {
+    "x": 215,
+    "y": 152,
+    "rx": 19,
+    "ry": 14,
+    "note": "the bath house's island in the middle of the lake (owner, 8 Nov 2026): ghosts float out to it"
+   }
+  ],
+  "bridges": [
+   {
+    "x0": 215,
+    "y0": 140,
+    "x1": 215,
+    "y1": 102,
+    "w": 3,
+    "note": "the bath house island's footbridge to the shore, walked off once you are alive again (owner, 8 Nov 2026)"
+   }
+  ]
  },
  "paths": [
   {
@@ -3792,11 +3832,6 @@
    "y": 56
   },
   {
-   "k": "p:horse",
-   "x": 98,
-   "y": -30
-  },
-  {
    "k": "p:trashcan",
    "x": 101.5,
    "y": -26
@@ -6550,7 +6585,7 @@
   ],
   "near": 60,
   "ground": {
-   "note": "the land past the edges (owner, 7 Nov 2026: \"set a base color for far off distance things like grass\"): one low-res grass ground under everything outside the section, the big lake's whole shore in it (box x0, y0, x1, y1 in tiles; tiles a pixel; grass and water colours)",
+   "note": "the land past the edges (owner, 7 Nov 2026: \"set a base color for far off distance things like grass\"; 8 Nov 2026: the whole of Central Park, the city round it): one low-res picture under everything outside the section: grass in sections.ring.park, the ring streets road, the city past them in blocks (city, its streets every block tiles); the park's waters and lawns (x, y, rx, ry, turn in degrees) and paths ([x,y] points, the drive and the cross roads); the big lake's whole shore in it (box x0, y0, x1, y1 in tiles; tiles a pixel; colours)",
    "box": [
     -1200,
     -130.1,
@@ -6567,6 +6602,211 @@
     164,
     198,
     236
+   ],
+   "city": [
+    88,
+    86,
+    84
+   ],
+   "street": [
+    50,
+    51,
+    56
+   ],
+   "block": [
+    64,
+    28
+   ],
+   "lawn": [
+    96,
+    138,
+    58
+   ],
+   "path": [
+    178,
+    170,
+    148
+   ],
+   "waters": [
+    [
+     1060,
+     250,
+     170,
+     120,
+     0
+    ],
+    [
+     470,
+     90,
+     60,
+     25,
+     8
+    ],
+    [
+     1260,
+     80,
+     60,
+     45,
+     0
+    ]
+   ],
+   "lawns": [
+    [
+     760,
+     230,
+     130,
+     85,
+     0
+    ],
+    [
+     470,
+     260,
+     90,
+     55,
+     0
+    ]
+   ],
+   "paths": [
+    [
+     [
+      1242,
+      -8
+     ],
+     [
+      1265,
+      -3
+     ],
+     [
+      1284,
+      10
+     ],
+     [
+      1297,
+      29
+     ],
+     [
+      1302,
+      52
+     ],
+     [
+      1302,
+      366
+     ],
+     [
+      1297,
+      389
+     ],
+     [
+      1284,
+      408
+     ],
+     [
+      1265,
+      421
+     ],
+     [
+      1242,
+      426
+     ],
+     [
+      66,
+      426
+     ],
+     [
+      43,
+      421
+     ],
+     [
+      24,
+      408
+     ],
+     [
+      11,
+      389
+     ],
+     [
+      6,
+      366
+     ],
+     [
+      6,
+      52
+     ],
+     [
+      11,
+      29
+     ],
+     [
+      24,
+      10
+     ],
+     [
+      43,
+      -3
+     ],
+     [
+      66,
+      -8
+     ],
+     [
+      1242,
+      -8
+     ]
+    ],
+    [
+     [
+      330,
+      -38
+     ],
+     [
+      350,
+      100
+     ],
+     [
+      310,
+      300
+     ],
+     [
+      330,
+      456
+     ]
+    ],
+    [
+     [
+      640,
+      -38
+     ],
+     [
+      660,
+      100
+     ],
+     [
+      620,
+      300
+     ],
+     [
+      640,
+      456
+     ]
+    ],
+    [
+     [
+      960,
+      -38
+     ],
+     [
+      980,
+      100
+     ],
+     [
+      940,
+      300
+     ],
+     [
+      960,
+      456
+     ]
+    ]
    ]
   },
   "strips": {
@@ -6708,12 +6948,12 @@
    ]
   },
   "park": {
-   "note": "Central Park's edge along West St drawn the whole way, past the draw distance and past the map's edge: a wall just inside the real one and bands of plain low trees (x0, y0, x1, y1 in tiles; north of the map the park goes on to the horizon, no city on its side); east of the map too, beside Market St (owner, 8 Nov 2026)",
+   "note": "Central Park past the forcefield, the whole of it (owner, 8 Nov 2026: Manhattan): a wall just inside West St and plain low trees in bands (x0, y0, x1, y1 in tiles) inside sections.ring.park, none in the clearings (x, y, rx, ry: the reservoir, the lawns, the ponds) or on the paths (edge.ground.paths)",
    "wall": [
     -23.9,
     -38,
     -23.3,
-    760
+    456
    ],
    "bands": [
     [
@@ -6726,43 +6966,51 @@
      -20,
      185,
      262,
-     420
-    ],
-    [
-     -20,
-     420,
-     600,
-     760
+     452
     ],
     [
      266,
-     -30,
-     520,
-     176
-    ],
-    [
-     -1200,
      -34,
-     -26,
-     1400
-    ],
-    [
-     -20,
-     760,
-     1500,
-     1400
-    ],
-    [
-     520,
-     -30,
-     1500,
-     760
+     1328,
+     452
     ]
    ],
-   "n": 4000
+   "n": 4000,
+   "clear": [
+    [
+     1060,
+     250,
+     180,
+     130
+    ],
+    [
+     760,
+     230,
+     135,
+     90
+    ],
+    [
+     470,
+     260,
+     95,
+     60
+    ],
+    [
+     470,
+     90,
+     66,
+     32
+    ],
+    [
+     1260,
+     80,
+     66,
+     50
+    ]
+   ]
   },
   "city": {
-   "note": "the far city (owner, 8 Nov 2026): past the backdrop to the end of the view, plain shapes; past that a painted ring. In tiles: center, R (how far the shapes go), near (x0,y0,x1,y1: the map and its backdrop, left alone), water (y bands with none), lowY/lowK (past this y the city is lower, the far shore), base (lowest, highest), clusters (x, y, peak, radius: the tall towers), block (x, y), fade (from, to: into the horizon's colour), ring (the painted layers' distances), panorama (the ring's radius), lands (y bands, what the ring's ground is that way: water, street or park)",
+   "note": "the far city (owner, 8 Nov 2026: Manhattan, the whole island): past the backdrop to the end of the view, plain shapes; past that a painted ring. In tiles: center, R (how far the shapes go), near (x0,y0,x1,y1: the street's band, left alone; the park inside sections.ring.outer has none), water (the Hudson, a y band), lowY/lowK (past this y the far shore, lower), east (the East River: its near bank as [x,y] points along the island, its width; past the island's ends all water; across it the far shore, lowK), base (lowest, highest), clusters (x, y, peak, radius: downtown, midtown, uptown, the far shore's), block (x, y), fade (from, to), ring (the painted outline's layers, the first just past what the view reaches; the island's city is only this outline, no shapes (owner, 8 Nov 2026: \"only build what is needed for the outline\") distances), panorama (the ring's radius)",
    "center": [
     105,
     -25
@@ -6772,16 +7020,12 @@
     -345,
     -125,
     535,
-    215
+    -22
    ],
    "water": [
     [
      -725.8,
      -122
-    ],
-    [
-     -122,
-     100000
     ]
    ],
    "lowY": -725.8,
@@ -6792,16 +7036,22 @@
    ],
    "clusters": [
     [
-     -420,
+     -2950,
+     300,
      260,
-     230,
-     140
+     500
     ],
     [
-     620,
-     330,
-     280,
-     220
+     -900,
+     500,
+     300,
+     700
+    ],
+    [
+     700,
+     900,
+     120,
+     900
     ],
     [
      -330,
@@ -6819,29 +7069,290 @@
     1000
    ],
    "ring": [
+    560,
     1000,
-    1400,
-    2000
+    1700,
+    2900
    ],
    "panorama": 1200,
    "seed": 7,
-   "lands": [
-    [
-     -725.8,
-     -122,
-     "water"
+   "east": {
+    "bank": [
+     [
+      -3400,
+      19
+     ],
+     [
+      -3300,
+      128
+     ],
+     [
+      -3200,
+      225
+     ],
+     [
+      -3100,
+      319
+     ],
+     [
+      -3000,
+      412
+     ],
+     [
+      -2900,
+      507
+     ],
+     [
+      -2800,
+      602
+     ],
+     [
+      -2700,
+      699
+     ],
+     [
+      -2600,
+      795
+     ],
+     [
+      -2500,
+      892
+     ],
+     [
+      -2400,
+      988
+     ],
+     [
+      -2300,
+      1022
+     ],
+     [
+      -2200,
+      1053
+     ],
+     [
+      -2100,
+      1081
+     ],
+     [
+      -2000,
+      1105
+     ],
+     [
+      -1900,
+      1125
+     ],
+     [
+      -1800,
+      1140
+     ],
+     [
+      -1700,
+      1151
+     ],
+     [
+      -1600,
+      1159
+     ],
+     [
+      -1500,
+      1163
+     ],
+     [
+      -1400,
+      1165
+     ],
+     [
+      -1300,
+      1164
+     ],
+     [
+      -1200,
+      1163
+     ],
+     [
+      -1100,
+      1161
+     ],
+     [
+      -1000,
+      1160
+     ],
+     [
+      -900,
+      1160
+     ],
+     [
+      -800,
+      1162
+     ],
+     [
+      -700,
+      1166
+     ],
+     [
+      -600,
+      1173
+     ],
+     [
+      -500,
+      1182
+     ],
+     [
+      -400,
+      1193
+     ],
+     [
+      -300,
+      1206
+     ],
+     [
+      -200,
+      1221
+     ],
+     [
+      -100,
+      1235
+     ],
+     [
+      0,
+      1250
+     ],
+     [
+      100,
+      1263
+     ],
+     [
+      200,
+      1275
+     ],
+     [
+      300,
+      1283
+     ],
+     [
+      400,
+      1288
+     ],
+     [
+      500,
+      1289
+     ],
+     [
+      600,
+      1285
+     ],
+     [
+      700,
+      1277
+     ],
+     [
+      800,
+      1265
+     ],
+     [
+      900,
+      1248
+     ],
+     [
+      1000,
+      1226
+     ],
+     [
+      1100,
+      1202
+     ],
+     [
+      1200,
+      1175
+     ],
+     [
+      1300,
+      1147
+     ],
+     [
+      1400,
+      1117
+     ],
+     [
+      1500,
+      1088
+     ],
+     [
+      1600,
+      1059
+     ],
+     [
+      1700,
+      1032
+     ],
+     [
+      1800,
+      1008
+     ],
+     [
+      1900,
+      986
+     ],
+     [
+      2000,
+      967
+     ],
+     [
+      2100,
+      950
+     ],
+     [
+      2200,
+      937
+     ],
+     [
+      2300,
+      925
+     ],
+     [
+      2400,
+      915
+     ],
+     [
+      2500,
+      907
+     ],
+     [
+      2600,
+      898
+     ],
+     [
+      2700,
+      889
+     ],
+     [
+      2800,
+      792
+     ],
+     [
+      2900,
+      692
+     ],
+     [
+      3000,
+      586
+     ],
+     [
+      3100,
+      472
+     ],
+     [
+      3200,
+      345
+     ],
+     [
+      3300,
+      195
+     ]
     ],
-    [
-     -122,
-     -38,
-     "street"
-    ],
-    [
-     -38,
-     100000,
-     "park"
-    ]
-   ]
+    "w": 180
+   }
   },
   "far": {
    "note": "the far city past the backdrop: (axis, from, to, across from, across to, lowest, highest storeys in tiles); shore: where the water past the river ends (the far bank, a map y); ends: how far the far water and its shore run (map x)",

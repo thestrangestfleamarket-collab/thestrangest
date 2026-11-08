@@ -61,7 +61,7 @@ const WIRES=window.WIRES={perch:[],poles:[],tick:()=>{}};
     SOL.up.push([x-.15*M,zp-.15*M,x+.15*M,zp+.15*M]); FIX.up.push([x-.15*M,zp-.15*M,y0,x+.15*M,zp+.15*M,y0+HP]); });
   if(XS.length>1){ const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(Pp,3)); geo.setAttribute('uv',new THREE.Float32BufferAttribute(Uu,2)); geo.setAttribute('pf',new THREE.Float32BufferAttribute(Ff,1)); geo.computeVertexNormals();
     const uF={value:new THREE.Vector4(1,1,1,1)}; WIRES.fade=uF.value; const mat=new THREE.MeshLambertMaterial({map,flatShading:true});
-    mat.onBeforeCompile=sh=>{ sh.uniforms.uF=uF; sh.vertexShader='attribute float pf; varying float vPf;\n'+sh.vertexShader.replace('void main() {','void main() { vPf=pf;');
+    mat.onBeforeCompile=sh=>{ sh.uniforms.uF=uF; sh.vertexShader='attribute float pf; varying float vPf;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vPf=pf;');
       sh.fragmentShader='uniform vec4 uF; varying float vPf;\n'+sh.fragmentShader.replace('void main() {','void main() { if(vPf>-.5){ float o=uF[int(vPf+.5)]; if(o<.999&&fract(sin(dot(floor(gl_FragCoord.xy),vec2(12.9898,78.233)))*43758.5453)>o)discard; }'); };
     mat.customProgramCacheKey=()=>'poles';
     const me=new THREE.Mesh(geo,mat); me.castShadow=me.receiveShadow=true; me.userData.cull=1; scene.add(me); OUT.add(me,'world');

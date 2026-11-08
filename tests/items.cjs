@@ -14,7 +14,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     for (let i = 0; i < 20 && !(await pg.evaluate(() => BAG.icon('fl_rose').length > 0 && new Promise(r => { const im = new Image(); im.onload = () => r(im.width === 16); im.src = BAG.icon('fl_rose'); }))); i++) await pg.waitForTimeout(500);
     const r = await pg.evaluate(async () => { const sz = u => new Promise(r => { const im = new Image(); im.onload = () => r(im.width); im.src = u; });
       const live = ITEMS.ids().filter(id => !ARCHI(id)), small = [], noname = [];
-      for (const id of live) { if (await sz(BAG.icon(id)) !== 16) small.push(id); const n = FORAGE.name(id); if (!n || n === id) noname.push(id); }
+      const W = await Promise.all(live.map(id => sz(BAG.icon(id)))); live.forEach((id, i) => { if (W[i] !== 16) small.push(id); const n = FORAGE.name(id); if (!n || n === id) noname.push(id); });
       return { n: live.length, small, noname, arch: ['scanner', 'extractor', 'cutter', 'art_print', 'art_postcard'].filter(id => !ARCHI(id)) }; });
     ok(r.n > 300 && !r.small.length, 'every live item (' + r.n + ') has its own 16-pixel picture' + (r.small.length ? ': not ' + r.small.slice(0, 12) : ''));
     ok(!r.noname.length, 'every live item has a name' + (r.noname.length ? ': not ' + r.noname : ''));

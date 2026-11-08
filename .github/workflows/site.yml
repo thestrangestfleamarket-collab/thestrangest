@@ -72,6 +72,7 @@ jobs:
           k parksolid 'src/111fe|src/100-use|data/world|parksolid\.cjs'
           k guardians 'src/146ja|src/146k|src/103a|data/guardians|guardians\.cjs'
           k faunarest 'src/087-npc-creatures|data/fauna|fauna-rest\.cjs'
+          k space   'src/075-main|src/076-npc|src/087-npc-creatures|src/139-clip|src/150-loose|worker/folk|space\.cjs'
           k motion  'src/001-rig|src/111d|src/100-use|data/moves2|tools/m2m-moves|motion\.cjs'
           k passport 'src/159d|passport\.cjs'
           k scanner 'src/159e|src/146-|scanner\.cjs'
@@ -209,6 +210,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' loopmap')
         run: node tests/loopmap.cjs dist/market.html
+      - name: things take room
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' space')
+        run: node tests/space.cjs dist/market.html
       - name: fauna rests
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' faunarest')

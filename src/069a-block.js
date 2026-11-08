@@ -109,7 +109,7 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
       if(kind==='road'){ g.fillStyle='#c9a227'; const m=Math.floor(H/2); g.fillRect(0,m-1,W,1); g.fillRect(0,m+1,W,1); g.fillStyle='#bdbab0'; for(let x=0;x<W;x+=4){ g.fillRect(x,1,2,1); g.fillRect(x,H-2,2,1); } }
       if(kind==='walk'||kind==='prom'){ g.fillStyle='rgba(0,0,0,.18)'; g.fillRect(0,0,1,H); g.fillRect(W/2,0,1,H); }
       const t=tex(c); t.wrapS=THREE.RepeatWrapping; return mats[k]=new THREE.MeshLambertMaterial({map:t}); };
-    const M0=E.mirror, MRin=(x0,x1,y0,y1)=>M0&&y0>=M0.band[0]&&y1<=M0.band[1]&&(x0>=M0.x[1]&&x1<=M0.x[1]+M0.reach||x1<=M0.x[0]&&x0>=M0.x[0]-M0.reach);
+    const M0=E.mirror, MRin=(x0,x1,y0,y1)=>M0&&y0>=M0.band[0]&&y1<=M0.band[1]&&(x0>=M0.x[1]-3&&x1<=M0.x[1]+M0.reach||x1<=M0.x[0]+3&&x0>=M0.x[0]-M0.reach);
     for(const [x0,y0,x1,y1,kind] of (E.strips&&E.strips.list)||[]){ const wx=x1-x0, wy=y1-y0, alongX=wx>=wy, along=alongX?wx:wy, across=alongX?wy:wx, m=groundM(kind,alongX?'x':'y',across).clone();
       m.map=m.map.clone(); m.map.needsUpdate=true; m.map.repeat.set(along/2,1);
       const me=new THREE.Mesh(new THREE.PlaneGeometry(alongX?wx*T:wy*T,alongX?wy*T:wx*T),m); me.rotation.x=-Math.PI/2; if(!alongX)me.rotation.z=Math.PI/2; me.position.set((XS(x0)+XS(x1))/2,MRin(x0,x1,y0,y1)?(kind==='road'?YP(SHARED.BOD.RD):0)-.004:.012,(ZS(y0)+ZS(y1))/2);   // (under the street's mirror, 161d: its painted ground drawn over them)

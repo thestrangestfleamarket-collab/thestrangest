@@ -1,4 +1,4 @@
-// THE LIBRARY AND MUSEUM CHECK: node tests/lib-quests.cjs dist/market.html [shots dir]. The Sealed Stacks: the Professor sells the key, the bookstore's hatch opens to it, a rotted book a shelf a day, running brings the librarian's ghost who puts you out, the stair back up. The museum's vault: four clues round the city (each gives INTELLIGENCE), the dials and the star open it, a case of antiquities a day, the ladder back into the art museum, a donation pays and goes in the case, midnight's time lock clears the dials.
+// THE LIBRARY AND MUSEUM CHECK: node tests/lib-quests.cjs dist/market.html [shots dir]. The museum's vault: four clues round the city (each gives INTELLIGENCE), the dials and the star open it, a case of antiquities a day, the ladder back into the art museum, a donation pays and goes in the case, midnight's time lock clears the dials.
 const { chromium } = require('playwright'), path = require('path'), fs = require('fs');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=lib-quests::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 const SHOTS = process.argv[3];
@@ -17,37 +17,17 @@ const SHOTS = process.argv[3];
   const calm = () => wait(() => !FADE.busy && !ROOMS.iv.busy, 120000);
   const PART = process.env.PART || '';   // stacks or vault: one half only
   if (st && PART !== 'vault') {
-    await wait(() => STACKSDBG().reg && MVAULTDBG().reg, 60000);
-    const s0 = await pg.evaluate(() => ({ s: STACKSDBG(), v: MVAULTDBG(), tr: CHARS.trade({ key: 'professor' }), price: ITEMS.prop('stack_key', 'value') }));
-    ok(s0.s.reg && !s0.s.built && s0.v.reg && !s0.v.inside, 'the stacks and the vault are registered off the map and nothing of them is built at the start: ' + JSON.stringify({ s: s0.s, v: s0.v.reg }));
-    ok(s0.tr && s0.tr.sells.includes('stack_key') && s0.price === 30 && s0.tr.buys.includes('antiquities'), 'the Professor sells the stacks\' key ($' + s0.price + ') and buys antiquities');
-    // the bookstore: the hatch and the note
-    await pg.evaluate(() => ROOMS.enter('books')); await wait(() => __dbg.UI.things.some(t => /SEALED STACKS/.test(t.name)), 90000); await calm();
-    ok(await has('A LOCKED HATCH (THE SEALED STACKS)') === 1 && await has('A FOLDED NOTE') === 1, 'in the bookstore: the locked hatch by the lectern and a folded note on it');
+    await wait(() => MVAULTDBG().reg, 60000);
+    const s0 = await pg.evaluate(() => ({ v: MVAULTDBG(), tr: CHARS.trade({ key: 'professor' }), bind: CHARS.trade({ key: 'professor' }).sells.filter(id => /^(bk_|bs_)|stack_key/.test(id) && !ARCHI(id)) }));
+    ok(s0.v.reg && !s0.v.inside, 'the vault is registered off the map and nothing of it is built at the start: ' + JSON.stringify(s0.v.reg));
+    ok(s0.tr && s0.tr.buys.includes('antiquities') && !s0.bind.length, 'the Professor buys antiquities and sells no bookbinding (archived 8 Nov 2026)');
+    // the bookstore: the note (the Sealed Stacks' hatch archived with bookbinding)
+    await pg.evaluate(() => ROOMS.enter('books')); await wait(() => __dbg.UI.things.some(t => /FOLDED NOTE/.test(t.name)), 90000); await calm();
+    ok(await has('A FOLDED NOTE') === 1 && await has('A LOCKED HATCH') === 0, 'in the bookstore: a folded note on the lectern, and no hatch');
     const i0 = await pg.evaluate(() => FORAGE.ST.int);
     await act('A FOLDED NOTE*'); await pg.waitForTimeout(500); await pg.evaluate(() => MINI.close());
     const i1 = await pg.evaluate(() => ({ int: FORAGE.ST.int, read: MVAULTDBG().read }));
     ok(i1.int === i0 + 1 && i1.read.includes('note'), 'reading the note (a clue) gives a point of INTELLIGENCE: ' + i0 + ' -> ' + i1.int);
-    await act('A LOCKED HATCH*'); await pg.waitForTimeout(3000);
-    ok(!(await pg.evaluate(() => STACKSDBG().inside)), 'without the key the hatch stays shut');
-    await pg.evaluate(() => INV.add('stack_key', 1)); await act('A LOCKED HATCH*');
-    ok(await wait(() => STACKSDBG().inside && STACKSDBG().built && !FADE.busy, 90000), 'with the Professor\'s key: down into the Sealed Stacks, built on the way in');
-    await calm(); await pg.waitForTimeout(1500);
-    ok(await has('A ROTTED BOOK') === 4 && await has('THE STAIR UP') === 1, 'four rotted books on the shelves and the stair up');
-    await shot('stacks');
-    const bk = await pg.evaluate(() => { const n = () => Object.keys(INV.items).filter(k => /^bk_/.test(k)).reduce((a, k) => a + INV.items[k], 0), n0 = n(), t = __dbg.UI.things.find(t => t.name === 'A ROTTED BOOK'); t.act(t); const n1 = n(); t.act(t); return { got: n1 - n0, again: n() - n1, name: t.name, ready: STACKSDBG().ready }; });
-    ok(bk.got === 1 && bk.again === 0 && /EMPTY/.test(bk.name), 'a rotted book is an old book to mend, one a shelf a day: ' + JSON.stringify(bk));
-    // run, and the ghost puts you out
-    await pg.evaluate(() => __dbg.UI.setView('third')); await pg.mouse.click(480, 300); await pg.waitForTimeout(500);
-    for (let i = 0; i < 2; i++) { await pg.keyboard.press('Shift'); await pg.waitForTimeout(200); } await pg.keyboard.down('w');   // two Shift taps: walk, jog, run (owner, 7 Nov 2026)
-    const gh = await wait(() => STACKSDBG().ghost || STACKSDBG().outs > 0, 20000); await pg.keyboard.up('w'); await pg.evaluate(() => { SHARED.gait = 0; });
-    ok(gh, 'running in the stacks: the librarian\'s ghost rises and shushes');
-    await shot('ghost');
-    ok(await wait(() => STACKSDBG().outs > 0 && !STACKSDBG().inside && !FADE.busy, 60000), 'and she puts you out (on the street by the bookstore): ' + JSON.stringify(await pg.evaluate(() => ({ ...STACKSDBG(), off: ROOMS.offIn() }))));
-    await calm();
-    // in again and up the stair
-    await pg.evaluate(() => ROOMS.enter('stacks')); await wait(() => STACKSDBG().inside && !FADE.busy, 90000); await calm(); await pg.waitForTimeout(1000);
-    await act('THE STAIR UP*'); ok(await wait(() => ROOMS.offIn() === 'books' && !FADE.busy && !STACKSDBG().built, 90000), 'the stair up goes back into the bookstore, the stacks dropped');
     await calm();
     // the clues by the art museum and the theatre
     await pg.evaluate(() => { const D = STORE.streetDoor.art; ROOMS.exit('books'); setTimeout(() => STORE.goTo(SHARED.BOD.X(D.out[0]), SHARED.BOD.Z(D.out[1]), 'up'), 1500); });

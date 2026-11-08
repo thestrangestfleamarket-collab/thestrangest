@@ -191,7 +191,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     // running track, the whole shore inside the park; open where the brook leaves the lake, where a path reaches the water, and at three gates for swimmers
     { const S=FOUNT.S, RO=FOUNT.TRACK[0]-FOUNT.TRACK[1]-.55, L=[]; let acc=0, prev=null;
       for(let i=0;i<S.shore.length;i++){ const [sx,sy]=S.shore[i], n=S.nrm(sx,sy), x=sx+n[0]*RO, y=sy+n[1]*RO; if(x>S.wx1+2.5||y>S.wy1+2.5)continue; if(prev)acc+=Math.hypot(x-prev[0],y-prev[1]); prev=[x,y]; L.push([x,y,acc]); }
-      const TOT=acc, GATES=[.25,.5,.75].map(f=>f*TOT), open_=(x,y,s)=>BK.wet(x,y,1.4)||segD(x,y)<4.6||GATES.some(g=>Math.abs(s-g)<1.6), at_=s=>{ let j=0; while(j<L.length-1&&L[j+1][2]<s)j++; const a=L[j], b=L[Math.min(L.length-1,j+1)], t=b[2]>a[2]?(s-a[2])/(b[2]-a[2]):0; return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]; };
+      const TOT=acc, GATES=[.25,.5,.75].map(f=>f*TOT), open_=(x,y,s)=>BK.wet(x,y,1.4)||segD(x,y)<4.6||GATES.some(g=>Math.abs(s-g)<1.6)||FOUNT.bridgeD(x,y)<1.2, at_=s=>{ let j=0; while(j<L.length-1&&L[j+1][2]<s)j++; const a=L[j], b=L[Math.min(L.length-1,j+1)], t=b[2]>a[2]?(s-a[2])/(b[2]-a[2]):0; return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]; };
       const H=mv(1.2), Pk=[], Bx=[], POST=2.4, RB=.055*M; let posts=0;
       for(let s0=0;s0+POST<=TOT+.01;s0+=POST){ const s1=s0+POST, [ax,ay]=at_(s0), [bx,by]=at_(s1), [mx,my]=at_((s0+s1)/2); if(open_(mx,my,(s0+s1)/2)){ if(!open_(...at_(s0-.1),s0-.1))Bx.push([X(ax),H*.52,Z(ay),.1*M,H*1.06,.1*M,IR[1]],[X(ax),H*1.08,Z(ay),.14*M,.14*M*VS*1.3,.14*M,IR[1]]); continue; }
         const wx0=X(ax), wz0=Z(ay), wx1=X(bx), wz1=Z(by), yaw=-Math.atan2(wz1-wz0,wx1-wx0), len=Math.hypot(wx1-wx0,wz1-wz0);
@@ -387,6 +387,20 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
   const NI=TREES.length-PARK.ringN, INO=[], INC=[]; PARK.later(()=>{ PARK.trees=NOTREES||!INO.length?null:mesh(INO,true,true,true,{lod:'near'}); PARK.cards=NOTREES||!INC.length?null:mesh(INC,true,true,true,{noTrunk:1,cards:1}); PARK.trunks=INC.length?trunks(INC):null; PARK.feet=INO.length+INC.length?feet(INO.concat(INC)):null;   // only the ring along the wall, no trees inside (owner, 7 Nov 2026)
     if(PARK.trees&&window.WEEDS){ const F=WEEDS.feet=WEEDS.feet||[]; for(const it of PARK.trees.userData.items||[])if(it.sol)F.push([it.x,it.z,(it.sol[2]-it.sol[0])/2]); } if(window.WEEDS&&WEEDS.lawnDrop)WEEDS.lawnDrop(P.rect()); });
   PARK.ring=NOTREES?null:mesh(TREES,true,true,false,{}); PARK.ringTrunks=null;   // the old trees in their own leaves, the ring and the park's woods in one mesh
+  // the ring cheap from far off (owner, 8 Nov 2026: "simplify the other park trees too"): each tree whole within 30 tiles of you; further off its plain shape, a round crown (twenty triangles) on a six-sided trunk, all of them one draw; a tree moved in the world editor stays whole
+  if(PARK.ring&&PARK.ring.isBatchedMesh){ const R=PARK.ring, IT=R.userData.items||[], ID=R.userData.ids||[], n=IT.length, GR=[[.29,.47,.24],[.35,.53,.28],[.25,.42,.22],[.4,.58,.3]];
+    const crown=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshLambertMaterial({color:0xffffff,flatShading:true}),n), trunk=new THREE.InstancedMesh(new THREE.CylinderGeometry(.7,1,1,6,1,true).translate(0,.5,0),new THREE.MeshLambertMaterial({color:0x5b4636}),n);
+    const M4=new THREE.Matrix4(), Q=new THREE.Quaternion(), V=new THREE.Vector3(), S3=new THREE.Vector3(), Z=new THREE.Matrix4().makeScale(0,0,0), c=new THREE.Color(), shape=[];
+    IT.forEach((it,i)=>{ const h=Math.max(1,(it.top||it.y+4*TILE)-it.y), r=Math.max(.6*TILE,it.r||2*TILE), g=GR[Math.floor(hash(Math.round(it.x*3),Math.round(it.z*3),77)*4)];
+      shape[i]=[M4.compose(V.set(it.x,it.y+h*.62,it.z),Q,S3.set(r*.95,h*.42,r*.95)).clone(),M4.compose(V.set(it.x,it.y-.2*TILE,it.z),Q,S3.set(Math.max(.18*TILE,(it.tr||r*.08)),h*.5,Math.max(.18*TILE,(it.tr||r*.08)))).clone()];
+      crown.setColorAt(i,c.setRGB(g[0],g[1],g[2],THREE.SRGBColorSpace)); crown.setMatrixAt(i,Z); trunk.setMatrixAt(i,Z); });
+    for(const m of [crown,trunk]){ m.castShadow=true; m.receiveShadow=true; m.frustumCulled=false; (R.parent||scene).add(m); } PARK.ringFar=crown;
+    const NEAR=30*TILE, near=new Uint8Array(n).fill(2); let lx=1e9, lz=1e9;
+    PARK.ringLod=()=>{ if(Math.hypot(pos.x-lx,pos.z-lz)<TILE)return; lx=pos.x; lz=pos.z; const ed=R.userData.edited, gone=R.userData.gone; let ch=false;
+      for(let i=0;i<n;i++){ const id=ID[i]; if(id==null||id<0)continue; const it=IT[i], nr=(ed&&ed.has(id))||Math.hypot(it.x-pos.x,it.z-pos.z)-(it.r||0)<NEAR?1:0; if(nr===near[i])continue; near[i]=nr; ch=true;
+        if(!(gone&&gone.has(id)))R.setVisibleAt(id,!!nr); crown.setMatrixAt(i,nr||(gone&&gone.has(id))?Z:shape[i][0]); trunk.setMatrixAt(i,nr||(gone&&gone.has(id))?Z:shape[i][1]); }
+      if(ch){ crown.instanceMatrix.needsUpdate=trunk.instanceMatrix.needsUpdate=true; } };
+    SYS.every(()=>PARK.ringLod(),300,'061-park the ring near or far'); }
   { let c0={}, L=[]; PARK.treeItems=()=>{ if(c0!==PARK.trees){ c0=PARK.trees; L=[PARK.trees,PARK.ring,PARK.cards].filter(Boolean).flatMap(m=>m.userData.items||[]); } return L; }; }
   PARK.oaks=NOTREES?[]:TREES.slice(NI).map(([k,x,y,m])=>[X(x),Z(y),m]);
   // seen from outside the park, and the rows past its north wall: the same leaf-card trees, the fewer bigger cards, still

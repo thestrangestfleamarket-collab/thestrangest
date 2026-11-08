@@ -1,4 +1,4 @@
-// THE BAG: BAG is your inventory (I): a leather backpack that is its own window with no box round it, dragged about by its leather and made any size by its corner; its mouth holds a list of your things, each with its picture, in the order you drag them to; dragged out of the bag a thing drops at your feet, onto another player it starts a trade, onto a shopkeeper it opens the shop; a pixel picture for every item family (the item model's PICTURE); what you wear (EQUIP) or hold (WIELD) stays in it, tagged. Containers (the item model's HOLDS THINGS: a pouch, a chest) open as bags of their own and carry what is in them. Things dragged out onto the ground (or off the quick bar onto the world) are loose things everyone in the section sees (the Block keeps them, each 60 to 120 minutes), in their own 3D look near you, picked up by a double click; a stack asks how many.
+// THE BAG: BAG is your inventory (I): a leather backpack that is its own window with no box round it, one size, moved by its top; its mouth holds a list of your things, each with its picture, in the order you drag them to; dragged out of the bag a thing drops at your feet, onto another player it starts a trade, onto a shopkeeper it opens the shop; a pixel picture for every item family (the item model's PICTURE); what you wear (EQUIP) or hold (WIELD) stays in it, tagged. Containers (the item model's HOLDS THINGS: a pouch, a chest) open as bags of their own and carry what is in them. Things dragged out onto the ground (or off the quick bar onto the world) are loose things everyone in the section sees (the Block keeps them, each 60 to 120 minutes), in their own 3D look near you, picked up by a double click; a stack asks how many.
 import {SHARED, THREE} from './003-shx.js';
 import {ARCHI, BAG, CHARS, EQUIP, FORAGE, HUD, INSPECT, INV, ITEMS, LEVELS, ONLINE, pos, ROOMS, SFX, SHOPS, st, TALK, TEXT, UI, VIT, WE, WIELD} from './003b-systems.js';
 import {SAY} from './003d-say.js';
@@ -6,6 +6,7 @@ import {renderer, scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
 import {GEMS} from './101-gems.js';
+import {PFI} from './150cyb-pfitems.js';
 import {SWAP} from './159i-trade.js';
 window.BAG=BAG;
 { const T=TILE, esc=TEXT.esc, say=SAY, kindOf=id=>String(id).split('~')[0], prop=(id,k)=>ITEMS.prop(kindOf(id),k), name=id=>FORAGE.name(kindOf(id));
@@ -56,6 +57,7 @@ window.BAG=BAG;
     if(SIMG&&SI.has(id)){ const i=SI.get(id), n=SH.s; c=document.createElement('canvas'); c.width=c.height=n; c.getContext('2d').drawImage(SIMG,(i%SH.cols)*n,Math.floor(i/SH.cols)*n,n,n,0,0,n,n); CV.set(id,c); return c; }
     const k=BAG.kind(id), A=colour(id,k), a=shade(A), B=k==='fruit'?'#3f8a3a':k==='cube'?'#f4efe4':a;
     c=document.createElement('canvas'); c.width=c.height=10; const g=c.getContext('2d'); ART[k].forEach((row,y)=>{ for(let x=0;x<10;x++){ const ch=row[x]; if(!ch||ch==='.')continue; g.fillStyle=ch==='A'?A:ch==='a'?a:ch==='B'?B:PAL[ch]||'#f0f'; g.fillRect(x,y,1,1); } }); CV.set(id,c); return c; };
+  BAG.pic=paint;
   const URL=new Map(); BAG.icon=id0=>{ const id=kindOf(id0); let u=URL.get(id); if(!u){ u=paint(id).toDataURL(); URL.set(id,u); } return u; }; if(HUD.qdraw)HUD.qdraw();
   if(SH){ const im=new Image(); im.onload=()=>{ SIMG=im; CV.clear(); URL.clear(); if(HUD.qdraw)HUD.qdraw(); if(window.__started&&BAG.draw)try{ BAG.draw(); }catch(e){} }; im.src=SH.png; }
 
@@ -78,11 +80,11 @@ window.BAG=BAG;
   FORAGE.ROWB.push(id=>isCont(id)?[['OPEN','open']]:[]); FORAGE.ACT.open=id=>BAG.open(id);
 
   /* ---------- the windows: the bag, and one for each open container ---------- */
-  const MW=280, MH=300, IC=44, BW=304, BH=346; let POS={}, ORD={}, SZ={}, TILED=false, LIST=true;
+  const MW=280, MH=400, IC=44, BW=304, BH=446; let POS={}, ORD={}, SZ={}, TILED=false, LIST=true;
   try{ const p=JSON.parse(OWNED.get('bagpos')||'{}')||{}; POS=p&&p.bag&&typeof p.bag==='object'?p:{bag:p}; const o=JSON.parse(OWNED.get('bagorder')||'{}'); ORD=Array.isArray(o)?{bag:o}:o||{}; const z=OWNED.get('bagsize'); let s=null; try{ s=JSON.parse(z); }catch(e){ s=+z||null; } SZ=s&&typeof s==='object'?s:{bag:Math.max(.5,Math.min(3,+s||1))}; TILED=false; LIST=true; }catch(e){ POS={}; ORD={}; SZ={}; }
   const saveSet=()=>{ try{ OWNED.set('bagsize',JSON.stringify(SZ)); OWNED.set('bagorder',JSON.stringify(ORD)); }catch(e){} };
   const savePos=()=>{ try{ OWNED.set('bagpos',JSON.stringify(POS)); }catch(e){} };
-  const sizeOf=key=>SZ[key]||(key==='bag'?1:.7);
+  const sizeOf=key=>key==='bag'?1:.7;
   const cell=n=>Math.max(22,Math.min(IC+6,Math.floor(Math.sqrt(MW*MH/Math.max(1,n)))));
   const tiles=(key,ids)=>{ const c=cell(ids.length), cols=Math.max(1,Math.floor(MW/c)); let O=ORD[key]||(ORD[key]=[]); O=ORD[key]=O.filter(id=>ids.includes(id)); for(const id of ids)if(!O.includes(id))O.push(id); return {c,cols,at:id=>{ const i=O.indexOf(id); return [(i%cols)*c,Math.floor(i/cols)*c]; }}; };
   const listed=(key,ids)=>{ let O=ORD[key]||(ORD[key]=[]); O=ORD[key]=O.filter(id=>ids.includes(id)); for(const id of ids.filter(id=>!O.includes(id)).sort((a,b)=>name(a).localeCompare(name(b))))O.push(id); return O.slice(); };
@@ -90,15 +92,14 @@ window.BAG=BAG;
   let sel=null, selWin='bag';
   const wornAs=id=>WIELD.on===id?'HELD':Object.values(EQUIP.by).includes(id)?'WORN':'';
   const icon=(key,id,n,x,y,sz=IC)=>{ const w=wornAs(id); return `<div class="bgi${sel===id&&selWin===key?' sel':''}${isCont(id)?' cont':''}" data-id="${esc(id)}" title="${esc(name(id))}" style="left:${x}px;top:${y}px;width:${sz}px;height:${sz}px"><img alt="" draggable="false" src="${BAG.icon(id)}">${n>1?`<span>x${n}</span>`:''}${w?`<i>${w}</i>`:''}</div>`; };
-  const row=(key,id,n)=>{ const w=wornAs(id); return `<div class="bgr${sel===id&&selWin===key?' sel':''}${isCont(id)?' cont':''}" data-id="${esc(id)}" title="${esc(name(id))}"><img alt="" draggable="false" src="${BAG.icon(id)}"><b style="${id.startsWith('u_')?'color:#c8b0ff':''}">${esc(name(id))}</b>${w?`<u>${w}</u>`:''}${n>1?`<i>x${n}</i>`:''}<button class="bge" type="button" data-eye="${esc(id)}" title="look it over"><svg width="16" height="10" viewBox="0 0 8 5" shape-rendering="crispEdges"><path d="M2 0h4v1h1v1h1v1h-1v1h-1v1H2V4H1V3H0V2h1V1h1z" fill="currentColor"/><path d="M3 1h2v3H3z" fill="#020a06"/><path d="M3.5 1.5h1v2h-1z" fill="currentColor"/></svg></button></div>`; };
-  const strip=key=>`<div class="bgf">${contents(key).length?'DOUBLE CLICK USES OR HOLDS IT · DRAG IT ONTO THE QUICK BAR, INTO A POUCH, ONTO SOMEONE TO TRADE, OR OUT OF THE BAG TO DROP IT AT YOUR FEET · THE EYE LOOKS IT OVER':key==='bag'?'NOTHING. FIND MUSHROOMS ON THE LAWNS: A DOUBLE CLICK PICKS ONE.':'EMPTY. DRAG THINGS IN FROM YOUR BAG.'}</div>`;
-  const css=document.createElement('style'); css.textContent=`.bagw{position:fixed;z-index:21;padding:0;font-family:'Share Tech Mono',ui-monospace,monospace;font-size:13px;letter-spacing:.4px;color:#7dffa8;background:none;border:0;zoom:var(--uiz,1)} .bagw[hidden]{display:none} .bagw>.pX,.bagw .bgx{position:absolute;right:8px;top:6px}
+  const row=(key,id,n)=>{ const w=wornAs(id); return `<div class="bgr${sel===id&&selWin===key?' sel':''}${isCont(id)?' cont':''}" data-id="${esc(id)}" title="${esc(name(id))}"><img alt="" draggable="false" src="${BAG.icon(id)}"><b style="${id.startsWith('u_')?'color:#c8b0ff':''}">${esc(name(id))}</b>${w?`<u>${w}</u>`:''}${n>1?`<i>x${n}</i>`:''}</div>`; };
+  const strip=key=>`<div class="bgf">${contents(key).length?'DOUBLE CLICK TO USE · DRAG OUT TO DROP':key==='bag'?'NOTHING. FIND MUSHROOMS ON THE LAWNS: A DOUBLE CLICK PICKS ONE.':'EMPTY. DRAG THINGS IN FROM YOUR BAG.'}</div>`;
+  const css=document.createElement('style'); css.textContent=`.bagw{position:fixed;z-index:21;resize:none!important;overflow:visible!important;padding:0;font-family:'Share Tech Mono',ui-monospace,monospace;font-size:13px;letter-spacing:.4px;color:#7dffa8;background:none;border:0;zoom:var(--uiz,1)} .bagw[hidden]{display:none} .bagw>.pX,.bagw .bgx{position:absolute;right:8px;top:6px}
     .bagw .bgx,.bagw>.pX{font:inherit;color:#7dffa8!important;background:#020a06!important;border:0!important;box-shadow:inset 0 0 0 1px #3aa866!important;padding:1px 6px;cursor:pointer} .bagw .bgx:hover,.bagw>.pX:hover{color:#020a06!important;background:#7dffa8!important} .bagw .bgo{position:relative} .bagw .bgk{position:absolute;left:0;top:0;width:${BW}px;height:${BH}px;transform-origin:0 0} .bagw .bgpan{position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(125,255,168,.05) 0 1px,transparent 1px 3px),rgba(2,10,6,.82);box-shadow:0 0 0 1px #2d5a40}
     .bagw .bgt{position:absolute;left:12px;right:44px;top:9px;color:#3aa866;font-size:12px;letter-spacing:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
-    .bagw .bggrip{position:absolute;right:0;bottom:0;width:20px;height:20px;background:none;border:0;padding:0;cursor:nwse-resize;touch-action:none} .bagw .bggrip::before{content:'';position:absolute;right:4px;bottom:4px;width:9px;height:9px;border-right:2px solid #3aa866;border-bottom:2px solid #3aa866} .bagw .bggrip:hover::before{border-color:#7dffa8}
     .bagw .bgm{position:absolute;left:12px;top:32px;width:${MW}px;height:${MH}px} .bagw .bgi{position:absolute;width:${IC}px;height:${IC}px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none} .bagw .bgi img{width:32px;height:32px;margin:6px;image-rendering:pixelated;display:block;pointer-events:none} .bagw .held{opacity:.3} .bagw .over{outline:1px dashed #7dffa8}
     .bagw .bgi span,.bagw .bgi i{position:absolute;font-size:9px;font-style:normal;pointer-events:none} .bagw .bgi span{right:-3px;bottom:-4px;color:#3aa866} .bagw .bgi i{left:-2px;top:-5px;color:#3aa866}
-    .bagw .bgm.list{overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;gap:3px;padding:1px;box-sizing:border-box;scrollbar-color:#3aa866 #020a06;scrollbar-width:thin} .bagw .bgr{display:flex;align-items:center;gap:8px;flex:none;height:30px;padding:0 8px;background:repeating-linear-gradient(0deg,rgba(125,255,168,.05) 0 1px,transparent 1px 3px),rgba(2,10,6,.82);box-shadow:0 0 0 1px #2d5a40;text-shadow:0 0 5px #4aff9055;white-space:nowrap;cursor:grab;touch-action:pan-y;user-select:none;-webkit-user-select:none} .bagw .bgr:hover{background:#0d3a1f} .bagw .bgr img{width:16px;height:16px;image-rendering:pixelated;flex:none;pointer-events:none} .bagw .bgr b{font-weight:400;flex:1;overflow:hidden;text-overflow:ellipsis;color:#7dffa8} .bagw .bgr i{font-style:normal;color:#3aa866;font-size:11px} .bagw .bgr u{text-decoration:none;color:#3aa866;font-size:10px} .bagw .bge{flex:none;display:flex;align-items:center;padding:3px 4px;margin-right:-4px;color:#3aa866;background:none;border:0;cursor:pointer} .bagw .bge:hover{color:#7dffa8} .bagw .bgr.sel{box-shadow:0 0 0 1px #7dffa8,0 0 8px #4aff9066}
+    .bagw .bgm.list{overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;gap:3px;padding:1px;box-sizing:border-box;scrollbar-color:#3aa866 #020a06;scrollbar-width:thin} .bagw .bgr{display:flex;align-items:center;gap:8px;flex:none;height:30px;padding:0 8px;background:repeating-linear-gradient(0deg,rgba(125,255,168,.05) 0 1px,transparent 1px 3px),rgba(2,10,6,.82);box-shadow:0 0 0 1px #2d5a40;text-shadow:0 0 5px #4aff9055;white-space:nowrap;cursor:grab;touch-action:pan-y;user-select:none;-webkit-user-select:none} .bagw .bgr:hover{background:#0d3a1f} .bagw .bgr img{width:16px;height:16px;image-rendering:pixelated;flex:none;pointer-events:none} .bagw .bgr b{font-weight:400;flex:1;overflow:hidden;text-overflow:ellipsis;color:#7dffa8} .bagw .bgr i{font-style:normal;color:#3aa866;font-size:11px} .bagw .bgr u{text-decoration:none;color:#3aa866;font-size:10px} .bagw .bgr.sel{box-shadow:0 0 0 1px #7dffa8,0 0 8px #4aff9066}
     .bagw .bgf{margin-top:6px;padding:3px 8px;line-height:1.7;color:#3aa866;font-size:11px;background:repeating-linear-gradient(0deg,rgba(125,255,168,.05) 0 1px,transparent 1px 3px),rgba(2,10,6,.82);box-shadow:0 0 0 1px #2d5a40;text-shadow:0 0 5px #4aff9055} .bagw .bgb{margin-left:2px} .bgghost{position:fixed;pointer-events:none;z-index:60;image-rendering:pixelated;filter:drop-shadow(2px 4px 0 #0008)}
     #bagask{position:fixed;z-index:62;padding:8px 10px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #f2c14e;display:flex;gap:6px;align-items:center;zoom:var(--uiz,1)} #bagask[hidden]{display:none} #bagask input[type=number]{width:52px;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 4px} #bagask input[type=range]{width:110px} #bagask button{font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 7px;cursor:pointer}`; document.head.appendChild(css);
   const uz=()=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--uiz'))||1;
@@ -108,7 +109,7 @@ window.BAG=BAG;
   const draw=W=>{ const {key,el}=W; if(el.hidden)return; instances(); if(key!=='bag'&&!INV.items[key]){ el.hidden=true; return; } const ids=contents(key), tl=TILED&&!LIST?tiles(key,ids):null, x=el.querySelector(':scope>.pX');
     const title=key==='bag'?'BAG':`${esc(name(key))} · ${ids.length} OF ${holdsOf(key)}`;
     const sc0=(el.querySelector('.bgm')||{}).scrollTop||0;   // the list keeps its place when it is drawn again, so a second click lands on the same thing (owner, 7 Nov 2026)
-    el.innerHTML=`<div class="bgo"><div class="bgk"><div class="bgpan"></div><div class="bgt">${title}</div>${key==='bag'?'':'<button class="bgx" type="button" title="close">X</button>'}<div class="bgm${LIST?' list':''}">${LIST?listed(key,ids).map(id=>row(key,id,have(id,key))).join(''):ids.map(id=>{ const [x,y]=tl?tl.at(id):spot(key,id,ids); return icon(key,id,have(id,key),x,y,tl?Math.min(IC,tl.c-2):IC); }).join('')}</div><button class="bggrip" type="button" title="drag to make the bag bigger or smaller"></button></div></div>${strip(key)}`; if(x)el.appendChild(x); sized(W); if(sc0){ const m=el.querySelector('.bgm'); if(m)m.scrollTop=sc0; } };
+    el.innerHTML=`<div class="bgo"><div class="bgk"><div class="bgpan"></div><div class="bgt">${title}</div>${key==='bag'?'':'<button class="bgx" type="button" title="close">X</button>'}<div class="bgm${LIST?' list':''}">${LIST?listed(key,ids).map(id=>row(key,id,have(id,key))).join(''):ids.map(id=>{ const [x,y]=tl?tl.at(id):spot(key,id,ids); return icon(key,id,have(id,key),x,y,tl?Math.min(IC,tl.c-2):IC); }).join('')}</div></div></div>${strip(key)}`; if(x)el.appendChild(x); sized(W); if(sc0){ const m=el.querySelector('.bgm'); if(m)m.scrollTop=sc0; } };
   const sized=W=>{ const S=sizeOf(W.key), o=W.el.querySelector('.bgo'), k=W.el.querySelector('.bgk'); if(!o||!k)return; W.el.style.width=o.style.width=Math.round(BW*S)+'px'; o.style.height=Math.round(BH*S)+'px'; k.style.transform='scale('+S+')'; const x=W.el.querySelector(':scope>.pX'); if(x){ x.style.right=Math.round(8*S)+'px'; x.style.top=Math.round(6*S)+'px'; } };
   BAG.draw=()=>{ for(const W of WINS.values())if(!W.el.hidden)draw(W); };   // a shut window waits: its drawing is later code
   const pk=win('bag').el;
@@ -137,17 +138,25 @@ window.BAG=BAG;
   const online=()=>!!(ONLINE.on&&ONLINE.me), uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
   const saveG=()=>{ try{ OWNED.set('ground',JSON.stringify(GRD.filter(g=>!g.key.startsWith('drop:')).map(g=>({key:g.key,id:g.id,n:g.n,x:+g.x.toFixed(2),y:+g.y.toFixed(2),z:+g.z.toFixed(2),lv:g.lv,t:g.t,until:g.until,rm:g.rm,in:g.in,subs:g.subs})))); }catch(e){} };
   const rec=g=>{ const r={id:g.id,n:g.n,x:+g.x.toFixed(2),y:+g.y.toFixed(2),z:+g.z.toFixed(2),lv:g.lv,t:g.t}; if(g.rm)r.rm=g.rm; if(g.in)r.in=g.in; if(g.subs)r.subs=g.subs; return JSON.stringify(r); };
-  // a thing's look on the ground: its own model (INSPECT.model), made once a kind and copied, about a third of a tile across, its glass made plain
-  const LOOK=new Map(), PLAIN=new Map(), V3=new THREE.Vector3();
+  // a thing's look on the ground (owner, 8 Nov 2026: "they should have their own icons and be realistic relative size"): its own model (INSPECT.model) at its real size (ITEMS size: its longest side in metres, else the model's own metres), its glass made plain; a thing with no model stands as its own picture at its real size; made once a kind and copied
+  const LOOK=new Map(), PLAIN=new Map(), V3=new THREE.Vector3(), MTR=T/.84;
   const plain=q=>{ let r=PLAIN.get(q); if(!r){ r=new THREE.MeshStandardMaterial({color:q.color,roughness:.15,transparent:true,opacity:.5,depthWrite:false}); PLAIN.set(q,r); } return r; };
-  const look=id=>{ '@later'; let P=LOOK.get(id); if(P)return P; let m=null; try{ m=INSPECT.model(id); }catch(e){} if(!m)m=INSPECT.shape('sack');
+  const realM=id=>{ const s=+prop(kindOf(id),'size'); return s>0?s:0; };
+  const look=id=>{ '@later'; let P=LOOK.get(id); if(P)return P; P=new THREE.Group();
+    if(!INSPECT.has(id)){ const tex=new THREE.CanvasTexture(paint(id)); tex.magFilter=tex.minFilter=THREE.NearestFilter; tex.colorSpace=THREE.SRGBColorSpace; tex.generateMipmaps=false;
+      const c=paint(id), W=c.width, H=c.height, D=c.getContext('2d').getImageData(0,0,W,H).data; let x0=W, x1=-1, y1=-1;   // (the drawn part of the picture, not its empty edge, is the thing's size; it stands on its lowest drawn row)
+      for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(D[(y*W+x)*4+3]>127){ if(x<x0)x0=x; if(x>x1)x1=x; if(y>y1)y1=y; } let y0=H; for(let y=0;y<H&&y0===H;y++)for(let x=0;x<W;x++)if(D[(y*W+x)*4+3]>127){ y0=y; break; }
+      const ext=x1<0?W:Math.max(x1-x0+1,y1-y0+1), h=(realM(id)||.3)*MTR*W/ext, sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,alphaTest:.5})); sp.scale.set(h,h,1); sp.position.y=h/2-(x1<0?0:(H-1-y1)/H*h); P.add(sp); P.userData.tall=x1<0?h:(y1-y0+1)/H*h; LOOK.set(id,P); return P; }
+    let m=null; try{ m=INSPECT.model(id); }catch(e){} if(!m)m=INSPECT.shape('sack');
     m.traverse(c=>{ if(c.material&&!Array.isArray(c.material)&&c.material.transmission>0)c.material=plain(c.material); });
-    const b=new THREE.Box3().setFromObject(m), S=b.isEmpty()?1:Math.max(.5,Math.min(4,.36*T/Math.max(.001,...b.getSize(V3).toArray()))), I=new THREE.Group(); I.add(m); I.scale.setScalar(S); if(!b.isEmpty())I.position.set(-(b.min.x+b.max.x)/2*S,-b.min.y*S,-(b.min.z+b.max.z)/2*S);
-    P=new THREE.Group(); P.add(I); LOOK.set(id,P); return P; };
+    { const b0=new THREE.Box3().setFromObject(m), z=b0.getSize(V3); if(!b0.isEmpty()&&!m.userData.pf&&z.y>1.8*Math.max(z.x,z.z)&&!/^(fl_|bnet$|net$|balloon$)/.test(kindOf(id))){ const W=new THREE.Group(); W.add(m); W.rotation.x=-Math.PI/2; m=W; } }   // (a long thin thing, a sword, lies on its side; a flower or a net on its stand stays up, and Polyfork's stand as made)
+    const b=new THREE.Box3().setFromObject(m), L=b.isEmpty()?1:Math.max(.001,...b.getSize(V3).toArray()), want=realM(id), S=b.isEmpty()?MTR:want?want*MTR/L:L>5||L<.01?.3*MTR/L:MTR, I=new THREE.Group(); I.add(m); I.scale.setScalar(S); if(!b.isEmpty())I.position.set(-(b.min.x+b.max.x)/2*S,-b.min.y*S,-(b.min.z+b.max.z)/2*S);
+    P.add(I); P.userData.tall=b.isEmpty()?.3*MTR:(b.max.y-b.min.y)*S; LOOK.set(id,P); return P; };
+  PFI.on.push(()=>{ LOOK.clear(); for(const g of GRD)if(g.m){ g.m.removeFromParent(); g.m=null; } near(); });   // Polyfork's models came: what lies about takes them
   const room=()=>{ const c=ROOMS.cur; return c?String(c.off||c.id||''):''; };
   const unthing=th=>{ const i=UI.things.indexOf(th); if(i>=0)UI.things.splice(i,1); };
   const place=g=>{ '@later'; const sp=new THREE.Group(); sp.name='loose-'+g.id; sp.position.set(g.x,g.y,g.z); sp.rotation.y=(parseInt(g.key.slice(-4),36)||0)%628/100; sp.userData.level=g.lv||'street'; sp.visible=false; scene.add(sp); g.sp=sp;
-    const full=g.in&&Object.keys(g.in).length; g.th={name:'A LOOSE '+name(g.id)+(g.n>1?' ×'+g.n:'')+(full?' (THINGS INSIDE)':''),pick:true,obj:sp,reach:.9*T,near:1.6*T,tall:.35*T,act:()=>BAG.pickUp(g)}; UI.thing(g.th); GRD.push(g); near(); };
+    const full=g.in&&Object.keys(g.in).length; g.th={name:'A LOOSE '+name(g.id)+(g.n>1?' ×'+g.n:'')+(full?' (THINGS INSIDE)':''),pick:true,obj:sp,reach:.9*T,near:1.6*T,tall:Math.max(.2*T,Math.min(2*T,look(g.id).userData.tall||.35*T)),act:()=>BAG.pickUp(g)}; UI.thing(g.th); GRD.push(g); near(); };
   const lose=g=>{ const i=GRD.indexOf(g); if(i>=0)GRD.splice(i,1); if(g.th)unthing(g.th); if(g.sp)g.sp.removeFromParent(); g.m=null; };
   // drawn only near you: the nearest 24 within 20 tiles on your level and in your room, kept until 26
   const near=()=>{ const rm=room(), now=Date.now(); let ex=false; for(const g of GRD.slice())if(g.until&&now>g.until&&!g.taking){ lose(g); ex=ex||!g.key.startsWith('drop:'); } if(ex)saveG();
@@ -156,7 +165,7 @@ window.BAG=BAG;
   // a container leaves with what is in it (and what is in those), as a record; back in a bag it is a fresh one of its kind
   const pack=c=>{ const I=INV.inside[c]||{}, out={in:{},subs:{}}; for(const id in I){ const n=I[id]; if(n<1)continue; if(isCont(id)){ const k=kindOf(id)+'#'+id; out.subs[k]=pack(id); out.in[k]=1; delete INV.items[id]; } else { FORAGE.take(id,n); out.in[id]=n; } } delete INV.inside[c]; return out; };
   const unpack=(k,r)=>{ const inst=fresh(kindOf(k)); INV.items[inst]=1; INV.inside[inst]={}; for(const id in r.in||{}){ const n=r.in[id]; if(id.includes('#')){ const sub=unpack(id,(r.subs||{})[id]||{}); INV.inside[inst][sub]=1; } else { FORAGE.give(id,n); INV.inside[inst][id]=n; } } return inst; };
-  const finish=(g,r)=>{ if(isCont(r.id))unpack(r.id,r); else FORAGE.give(r.id,r.n||1); if(INV.save)INV.save(); say('YOU PICK UP THE '+name(r.id)+(r.n>1?' ×'+r.n:'')+'.','#f2c14e'); SFX.play('clunk',{vol:.4,pitch:1.6}); lose(g); saveG(); redraw(); };
+  const finish=(g,r)=>{ if(isCont(r.id))unpack(r.id,r); else FORAGE.give(r.id,r.n||1); if(INV.save)INV.save(); say('YOU PICK UP '+(/^(A|AN|THE) /.test(name(r.id))?'':'THE ')+name(r.id)+(r.n>1?' ×'+r.n:'')+'.','#f2c14e'); SFX.play('clunk',{vol:.4,pitch:1.6}); lose(g); saveG(); redraw(); };
   BAG.pickUp=g=>{ if(!GRD.includes(g)||g.taking)return; if(g.key.startsWith('drop:')){ if(!online()){ say('YOU CANNOT REACH IT OFFLINE.','#c8a090'); return; } g.taking=true; ONLINE.send({t:'take',k:g.key}); return; } finish(g,{id:g.id,n:g.n,in:g.in,subs:g.subs}); };
   BAG.drop=(id,n=1,at,from='bag')=>{ '@later'; if(id==='passport')return say('YOUR PASSPORT STAYS WITH YOU.','#c8a090'),false; if(isCont(id))n=1; n=Math.min(n,have(id,from)); if(n<1)return false;
     if(VIT.dead)return say('A GHOST HOLDS NOTHING.','#c8a090'),false; const rm=room(); if(ROOMS.cur&&(!rm||/^apt/i.test(rm)))return say('NOT IN HERE. DROP IT OUTSIDE.','#c8a090'),false; if(st.water&&st.water.in)return say('NOT IN THE WATER.','#c8a090'),false;
@@ -165,7 +174,7 @@ window.BAG=BAG;
     FORAGE.take(id,n); if(INV.save)INV.save(); const h=SHARED.heading||0, a=(Math.random()-.5)*.6, p=at||{x:pos.x+Math.sin(h+a)*.6*T,z:pos.z+Math.cos(h+a)*.6*T};
     const g={key:(online()?'drop:':'local:')+uid(),id:kindOf(id),n,x:p.x,y:at&&isFinite(at.y)?at.y:SHARED.py,z:p.z,lv:LEVELS.cur||'street',t:Date.now(),until:Date.now()+LIFE()}; if(rm)g.rm=rm; if(inside){ g.in=inside.in; g.subs=inside.subs; }
     place(g); if(online())ONLINE.put(g.key,rec(g)); else { while(GRD.filter(q=>q.key.startsWith('local:')).length>MAXG)lose(GRD.find(q=>q.key.startsWith('local:'))); saveG(); }
-    say('YOU DROP THE '+name(id)+(n>1?' ×'+n:'')+'.','#e8e2cc'); SFX.play('clunk',{vol:.35}); if(sel===id&&!have(id,from))sel=null; redraw(); return true; };
+    say('YOU DROP '+(/^(A|AN|THE) /.test(name(id))?'':'THE ')+name(id)+(n>1?' ×'+n:'')+'.','#e8e2cc'); SFX.play('clunk',{vol:.35}); if(sel===id&&!have(id,from))sel=null; redraw(); return true; };
   const restore=()=>{ loaded=true; let L=[]; try{ L=JSON.parse(OWNED.get('ground')||'[]')||[]; }catch(e){ L=[]; } for(const o of L)if(o&&o.id&&o.n>0&&!GRD.some(g=>g.key===o.key))place({key:o.key||'local:'+uid(),id:o.id,n:o.n,x:+o.x,y:+o.y,z:+o.z,lv:o.lv||'street',t:o.t||0,until:+o.until||(+o.t||0)+LIFE(),rm:o.rm||'',in:o.in,subs:o.subs}); };
   let nt=0; SYS.add('life',()=>{ if(!loaded&&window.__started)restore(); const t=performance.now(); if(GRD.length&&t>nt){ nt=t+250; near(); } },'162e-bag');
   SYS.add('hi',m=>{ const W=m&&m.world||{}; for(const g of GRD.slice())if(g.key.startsWith('drop:')&&!g.taking&&!(g.key in W))lose(g); },'162e-bag');   // a drop gone while you were away
@@ -184,17 +193,22 @@ window.BAG=BAG;
     const q=WE.ground?WE.ground(e):null, at=q&&Math.hypot(q[0]-pos.x,q[2]-pos.z)<=3*T&&Math.abs(q[1]-SHARED.py)<T?{x:q[0],y:q[1],z:q[2]}:null;
     BAG.drop(id,e.shiftKey?have(id,'bag'):1,at,'bag'); if(have(id,'bag')<1)HUD.set(i,null); else HUD.qdraw(); });
   let drag=null, lastTap={id:null,t:0};
-  const endDrag=()=>{ if(!drag)return; if(drag.ghost)drag.ghost.remove(); drag.el.classList.remove('held'); document.querySelectorAll('.bagw .over').forEach(x=>x.classList.remove('over')); drag=null; };
+  // a held thing near a list's top or bottom edge scrolls that list, faster the nearer (owner, 8 Nov 2026)
+  let scT=0, scL=0; const edgeScroll=t=>{ scT=0; if(!drag||!drag.moved)return; const dt=Math.min(.1,scL?(t-scL)/1000:0); scL=t; for(const m of document.querySelectorAll('.bagw:not([hidden]) .bgm.list')){ const r=m.getBoundingClientRect(), E=36*uz(); if(drag.cx<r.left||drag.cx>r.right||drag.cy<r.top-E||drag.cy>r.bottom+E)continue;
+      const d=drag.cy<r.top+E?-(r.top+E-drag.cy):drag.cy>r.bottom-E?drag.cy-(r.bottom-E):0; if(d)m.scrollTop+=Math.sign(d)*Math.min(900,120+Math.abs(d)*20)*dt; }
+    scT=requestAnimationFrame(edgeScroll); };
+  const endDrag=()=>{ if(scT){ cancelAnimationFrame(scT); scT=0; } scL=0;  if(!drag)return; if(drag.ghost)drag.ghost.remove(); drag.el.classList.remove('held'); document.querySelectorAll('.bagw .over').forEach(x=>x.classList.remove('over')); drag=null; };
   const howMany=async(id,from,x,y)=>{ const n=have(id,from); if(n<=1||isCont(id))return n>=1?1:0; return (await BAG.ask(n,x,y))||0; };
   function bind(W){ const {el,key}=W, S=()=>sizeOf(key);
-    el.addEventListener('pointerdown',e=>{ '@later'; const g=e.target.closest('.bggrip'); if(g&&!e.button){ e.preventDefault(); e.stopPropagation(); const r=el.getBoundingClientRect(); W.grip={x0:r.left,y0:r.top,z:uz()}; try{ g.setPointerCapture(e.pointerId); }catch(x){} return; }
-      if(e.target.closest('.bge'))return; const it=e.target.closest('.bgi,.bgr'); if(it&&!e.button){ e.preventDefault(); e.stopPropagation(); const r=it.getBoundingClientRect(), isRow=it.classList.contains('bgr'), gsz=IC*uz()*S(); drag={id:it.dataset.id,from:key,el:it,sx:e.clientX,sy:e.clientY,ox:isRow?gsz/2:e.clientX-r.left,oy:isRow?gsz/2:e.clientY-r.top,w:isRow?gsz:r.width,h:isRow?gsz:r.height,moved:false,ghost:null}; try{ it.setPointerCapture(e.pointerId); }catch(x){} return; }
-      if(key!=='bag'&&!e.button&&!e.target.closest('button,input,.bgm')){ e.preventDefault(); const r=el.getBoundingClientRect(), z=uz(); W.mv={dx:e.clientX-r.left,dy:e.clientY-r.top,z}; try{ el.setPointerCapture(e.pointerId); }catch(x){} } },true);
-    el.addEventListener('pointermove',e=>{ '@later'; if(W.grip){ SZ[key]=Math.max(.5,Math.min(3,Math.max((e.clientX-W.grip.x0)/W.grip.z/BW,(e.clientY-W.grip.y0)/W.grip.z/BH))); sized(W); return; }
+    el.addEventListener('pointerdown',e=>{ '@later'; 
+      const it=e.target.closest('.bgi,.bgr'); if(it&&!e.button){ e.preventDefault(); e.stopPropagation(); const r=it.getBoundingClientRect(), isRow=it.classList.contains('bgr'), gsz=IC*uz()*S(); drag={id:it.dataset.id,from:key,el:it,sx:e.clientX,sy:e.clientY,ox:isRow?gsz/2:e.clientX-r.left,oy:isRow?gsz/2:e.clientY-r.top,w:isRow?gsz:r.width,h:isRow?gsz:r.height,moved:false,ghost:null}; try{ it.setPointerCapture(e.pointerId); }catch(x){} return; }
+      if(key!=='bag'&&!e.button&&!e.target.closest('button,input,.bgm,.bgf')){ e.preventDefault(); const r=el.getBoundingClientRect(), z=uz(); W.mv={dx:e.clientX-r.left,dy:e.clientY-r.top,z}; try{ el.setPointerCapture(e.pointerId); }catch(x){} } },true);
+    el.addEventListener('pointermove',e=>{ '@later'; 
       if(W.mv){ el.style.left=Math.round((e.clientX-W.mv.dx)/W.mv.z)+'px'; el.style.top=Math.round((e.clientY-W.mv.dy)/W.mv.z)+'px'; return; }
       if(!drag||drag.from!==key)return; if(!drag.moved){ if(Math.hypot(e.clientX-drag.sx,e.clientY-drag.sy)<4)return; drag.moved=true; drag.el.classList.add('held'); const g=document.createElement('img'); g.className='bgghost'; g.src=BAG.icon(drag.id); g.style.width=drag.w+'px'; g.style.height=drag.h+'px'; document.body.appendChild(g); drag.ghost=g; }
+      drag.cx=e.clientX; drag.cy=e.clientY; if(!scT)scT=requestAnimationFrame(edgeScroll);
       drag.ghost.style.left=(e.clientX-drag.ox)+'px'; drag.ghost.style.top=(e.clientY-drag.oy)+'px'; document.querySelectorAll('.bagw .over').forEach(x=>x.classList.remove('over')); const u=document.elementFromPoint(e.clientX,e.clientY), c=u&&u.closest('.cont'); if(c&&c.dataset.id!==drag.id)c.classList.add('over'); });
-    const up=e=>{ '@later'; if(W.grip){ W.grip=null; saveSet(); return; } if(W.mv){ W.mv=null; return; } if(!drag||drag.from!==key)return; const D=drag; endDrag(); const id=D.id, from=D.from;
+    const up=e=>{ '@later'; if(W.mv){ W.mv=null; return; } if(!drag||drag.from!==key)return; const D=drag; endDrag(); const id=D.id, from=D.from;
       if(!D.moved){ const now=performance.now(); if(lastTap.id===id&&now-lastTap.t<400){ lastTap={id:null,t:0}; if(isCont(id))BAG.open(id); else if(HUD.useItem)HUD.useItem(id); } else { lastTap={id,t:now}; sel=id; selWin=from; } redraw(); return; }
       const u=document.elementFromPoint(e.clientX,e.clientY); if(!u||have(id,from)<1)return;
       const onto=u.closest('.cont'); if(onto&&onto.dataset.id!==id){ const to=onto.dataset.id; howMany(id,from,e.clientX,e.clientY).then(n=>{ if(n&&BAG.move(id,n,from,to))say('YOU PUT THE '+name(id)+(n>1?' ×'+n:'')+' IN THE '+name(to)+'.'); redraw(); }); return; }
@@ -209,16 +223,16 @@ window.BAG=BAG;
       const th=who(e.clientX,e.clientY); if(th){ if(th.player){ if(from!=='bag')return say('TAKE IT OUT OF THE '+name(from)+' FIRST.','#c8a090'); howMany(id,from,e.clientX,e.clientY).then(n=>{ if(n&&window.SWAP)SWAP.ask(th.player,{id,n}); }); return; }
         const N=th.npc; if(TALK.shops.has(N))return TALK.shops.get(N)(); if(CHARS.trade&&CHARS.trade(N)&&window.SHOPS)return SHOPS.open(N); return say((N.name||'THEY')+" DOESN'T TRADE.",'#c8a090'); }
       howMany(id,from,e.clientX,e.clientY).then(n=>{ if(n)BAG.drop(id,n,null,from); }); };
-    el.addEventListener('pointerup',up); el.addEventListener('pointercancel',()=>{ W.grip=null; W.mv=null; endDrag(); }); el.addEventListener('lostpointercapture',()=>{ if(W.grip){ W.grip=null; saveSet(); } W.mv=null; });
+    el.addEventListener('pointerup',up); el.addEventListener('pointercancel',()=>{ W.mv=null; endDrag(); }); el.addEventListener('lostpointercapture',()=>{ W.mv=null; });
     el.addEventListener('click',e=>{ '@later'; const b=e.target.closest('button'); if(!b||b.classList.contains('pX'))return; const d=b.dataset;
-      if(b.classList.contains('bggrip'))return; if(b.classList.contains('bgx')){ el.hidden=true; return; } if(d.eye){ if(window.INSPECT&&INSPECT.item)INSPECT.item(d.eye); return; }
+      if(b.classList.contains('bgx')){ el.hidden=true; return; }
       const from=d.win||key;
       if(d.bagdrop){ const n=d.n==='all'?have(d.bagdrop,from):1; if(d.n==='all'&&n>1)BAG.ask(n,e.clientX,e.clientY).then(k=>{ if(k)BAG.drop(d.bagdrop,k,null,from); }); else BAG.drop(d.bagdrop,n,null,from); }
       else if(d.out){ const n=have(d.out,from); BAG.ask(n,e.clientX,e.clientY).then(k=>{ if(k&&BAG.move(d.out,k,from,'bag'))say('YOU TAKE THE '+name(d.out)+(k>1?' ×'+k:'')+' OUT OF THE '+name(from)+'.'); redraw(); }); return; }
       else if(d.eat){ if(from!=='bag'){ const I=INV.inside[from]; if(I&&I[d.eat]){ I[d.eat]--; if(I[d.eat]<=0)delete I[d.eat]; } } FORAGE.eat(d.eat); }
       else if(d.id)FORAGE.ident(d.id); else if(d.hold){ if(WIELD.on===d.hold)BAG.off('hand'); else BAG.wear(d.hold,'hand'); } else if(d.act&&FORAGE.ACT[d.act])FORAGE.ACT[d.act](d.aid);
       redraw(); }); }
-  BAG.size=(v,key='bag')=>{ if(v!=null){ SZ[key]=Math.max(.5,Math.min(3,+v||1)); saveSet(); BAG.draw(); } return sizeOf(key); };
+  BAG.size=(v,key='bag')=>sizeOf(key);
   BAG.tiled=v=>{ if(v!=null){ TILED=!!v; saveSet(); BAG.draw(); } return TILED; };
   BAG.list=v=>{ if(v!=null){ LIST=!!v; saveSet(); BAG.draw(); } return LIST; };
   BAG.sel=()=>sel; BAG.select=(id,key='bag')=>{ sel=id; selWin=key; redraw(); }; BAG.have=have; BAG.contents=contents;

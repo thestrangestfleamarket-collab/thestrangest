@@ -2044,5 +2044,10 @@
  },
  "u_woodear": {
   "size": 0.12
+ },
+ "brickphone": {
+  "slot": "hand",
+  "value": 150,
+  "weight": 0.9
  }
 }

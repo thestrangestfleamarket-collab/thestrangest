@@ -103,7 +103,7 @@ const SECTIONS=(()=>{ const S=LEVEL.sections, G=S.grid, box=(c,r)=>({id:S.ids[c]
 try{ LEVEL.homes=Object.assign(LEVEL.homes||{},__DATA__("data/behaviour.json")); }catch(e){}
 try{ LEVEL.chars=__DATA__("data/characters.json")||{}; }catch(e){ LEVEL.chars={}; }
 for(const id in LEVEL.chars){ const r=LEVEL.chars[id]; if(r&&r.home)LEVEL.homes[id]=r.home; }
-const LAYOUT0={bodega:{x:WP.bodega.x1-76.4},diner:{x:-24.75},ghost:{x:WP.bath.row===2?(1240-2000/BLDK-131)*BLDK:WP.bath.x0-133.55},house:{x:WP.apts.x0-48.24},subway:{x:WP.subway.x0-60.01},apartments:{x:59},park:{e:[0,0,0,0]},castle:{x:WPP.castle.x0-46,y:WPP.castle.y0+21}};
+const LAYOUT0={bodega:{x:WP.bodega.x1-76.4},diner:{x:-24.75},ghost:{x:WP.bath.row===2?(1240-2000/BLDK-131)*BLDK:(LOTX((WP.bath.x0+WP.bath.x1)/2)-4*4/3-131)*BLDK},house:{x:WP.apts.x0-48.24},subway:{x:WP.subway.x0-60.01},apartments:{x:59},park:{e:[0,0,0,0]},castle:{x:WPP.castle.x0-46,y:WPP.castle.y0+21}};
 const AWAY0=['diner','aquarium','garden','avenue','keep','civic','power','museum'], AWAYLOT=1000, OFFDX=-2000;
 const AWAY=(()=>{ const s=new Set(AWAY0), q=QS.get('bring'); if(q==='all')s.clear(); else if(q)for(const k of q.split(','))s.delete(k.trim()); return s; })(); window.AWAY=AWAY;
 const LAY=(()=>{ const L=LAYOUT0; return {L, o:k=>({x:(+(L[k]&&L[k].x)||0)+(k==='apartments'?AWAYLOT:0),y:+(L[k]&&L[k].y)||0}), e:k=>(L[k]&&L[k].e||[0,0,0,0]).map(v=>+v||0), h:k=>+(L[k]&&L[k].h)||0, s:k=>+(L[k]&&L[k].s)||1}; })();

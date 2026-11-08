@@ -135,6 +135,29 @@ const AVATAR={}; window.AVATAR=AVATAR;
     const py=yt-.024; R4(-.018,py,.018,py-.036,.0008,'d6e2e8'); R4(-.008,py-.008,.008,py-.026,.0016,L.skin); R4(-.009,py-.004,.009,py-.009,.0018,L.hair); R4(-.015,py-.028,.015,py-.036,.0016,'8aa6b4');
     R4(-.022,py-.042,.022,py-.049,.0008,'111111'); R4(-.016,py-.054,.016,py-.058,.0008,'e53935'); R4(-.026,py-.064,-.004,py-.067,.0008,'666666'); R4(.004,py-.064,.026,py-.067,.0008,'666666');
     T.spec={L:str(1),R:str(-1),H:.012+H,badge,S,rad,col:0x181818}; return T; };
+  // the head round (owner, 8 Nov 2026: "round off the head of the avatar with true curves", "we arent round hair just the head shape"): the body's own head (not what is worn on it)
+  // drawn from the skull's box toward its round along each line out from its middle; its faces cut finer first (no edge over RE, none where they meet a face the head does not carry)
+  // and shaded smooth (sm); nothing where the head meets the neck
+  const RK=1, RE=.03, HB=2;
+  const hwOf=(d,q)=>(d.bone[q*2]===HB?d.w[q]/255:0)+(d.bone[q*2+1]===HB?1-d.w[q]/255:0);
+  const roundOf=(X,d)=>{ const n=X.length/3, hb=q=>d.w[q]>=128?d.bone[q*2]:d.bone[q*2+1]; let top=-1e9, bot=1e9;
+    for(let q=0;q<n;q++)if(hb(q)===HB){ top=Math.max(top,X[q*3+1]); bot=Math.min(bot,X[q*3+1]); } if(!(top>bot))return null;
+    let x0=1e9, x1=-1e9, z0=1e9, z1=-1e9; for(let q=0;q<n;q++)if(hb(q)===HB&&X[q*3+1]>top-.002){ x0=Math.min(x0,X[q*3]); x1=Math.max(x1,X[q*3]); z0=Math.min(z0,X[q*3+2]); z1=Math.max(z1,X[q*3+2]); }
+    const C=[(x0+x1)/2,(top+bot)/2,(z0+z1)/2], H=[(x1-x0)/2,(top-bot)/2,(z1-z0)/2], F=.4*Math.min(H[0],H[2]), T=d.tri, N=[];
+    for(let t=0;t<T.length/3;t++){ const v=[T[t*3],T[t*3+1],T[t*3+2]]; if(v.every(q=>hb(q)===HB))continue; for(const q of v)if(hb(q)===HB)N.push(X[q*3],X[q*3+1],X[q*3+2]); }
+    const at=(x,y,z,hw,o,i)=>{ const qx=(x-C[0])/H[0], qy=(y-C[1])/H[1], qz=(z-C[2])/H[2], ri=Math.max(Math.abs(qx),Math.abs(qy),Math.abs(qz)), r2=Math.hypot(qx,qy,qz);
+      let k=RK*hw*Math.max(0,Math.min(1,(1.8-ri)/.5));
+      if(k>0&&r2>1e-6){ let dm=1e9; for(let j=0;j<N.length;j+=3)dm=Math.min(dm,Math.hypot(x-N[j],y-N[j+1],z-N[j+2])); const u=Math.min(1,dm/F); k*=u*u*(3-2*u); }
+      const s=k>0?1+k*(ri/r2-1):1; o[i]=C[0]+qx*s*H[0]; o[i+1]=C[1]+qy*s*H[1]; o[i+2]=C[2]+qz*s*H[2]; };
+    return {at,hb:(d_,q)=>d_.w[q]>=128?d_.bone[q*2]:d_.bone[q*2+1]}; };
+  // a head face cut until no edge is over RE; a point cut on the head's rim (f: an edge it shares with a face the head does not carry) stays where it is (pin), so it meets that face
+  const cutFace=(A,B,C,f,out)=>{ const go=(V,F)=>{ const s=[0,1,2].map(i=>Math.hypot(V[i].p[0]-V[(i+1)%3].p[0],V[i].p[1]-V[(i+1)%3].p[1],V[i].p[2]-V[(i+1)%3].p[2])>RE), n=s[0]+s[1]+s[2];
+      if(!n){ out.push(V); return; }
+      const mid=i=>{ const a=V[i], b=V[(i+1)%3]; return {b:[(a.b[0]+b.b[0])/2,(a.b[1]+b.b[1])/2,(a.b[2]+b.b[2])/2],p:[(a.p[0]+b.p[0])/2,(a.p[1]+b.p[1])/2,(a.p[2]+b.p[2])/2],pin:F[i]}; };
+      if(n===3){ const m0=mid(0), m1=mid(1), m2=mid(2); go([V[0],m0,m2],[F[0],0,F[2]]); go([m0,V[1],m1],[F[0],F[1],0]); go([m2,m1,V[2]],[0,F[1],F[2]]); go([m0,m1,m2],[0,0,0]); return; }
+      if(n===1){ const i=s.indexOf(true), m=mid(i); go([V[i],m,V[(i+2)%3]],[F[i],0,F[(i+2)%3]]); go([m,V[(i+1)%3],V[(i+2)%3]],[F[i],F[(i+1)%3],0]); return; }
+      const j=s.indexOf(false), k=(j+1)%3, l=(j+2)%3, a=V[j], b=V[k], c=V[l], mb=mid(k), mc=mid(l); go([mc,mb,c],[0,F[k],F[l]]); go([a,b,mb],[F[j],F[k],0]); go([a,mb,mc],[0,0,F[l]]); };
+    go([A,B,C],f); };
   function geoFor(J,L,bare,nob){ const worn=[]; for(const [s] of SLOTS){ const w=L.w[s], p=w&&J.byN.get(w[0]); if(p&&!(bare&&s==='feet'))worn.push([s,p,w[1]]); }   // (barefoot: your shoes off, LOOKS.shoes)
     const cov=new Set(); for(const [,p] of worn)for(const c of p.covers)cov.add(c); const hide=culled(c=>cov.has(c));
     const pfh=!cov.has('hands'), hb=(d,q)=>{ const b=d.w[q]>=128?d.bone[q*2]:d.bone[q*2+1]; return b===5||b===8; }, isHand=(P,d,t)=>pfh&&P.slot==='body'&&hb(d,d.tri[t*3])&&hb(d,d.tri[t*3+1])&&hb(d,d.tri[t*3+2]);   // (bare hands: its own simple ones marked hh, folded away while Polyfork's jointed ones are drawn, near the camera: 111b)
@@ -142,29 +165,56 @@ const AVATAR={}; window.AVATAR=AVATAR;
     const parts=nob?[]:[{v:J.body.v[L.b],zones:J.body.zones,pal:J.body.pal,main:null,col:null,slot:'body'}];
     for(const [s,p,c] of worn){ if(s==='hair'&&cov.has('hair'))continue;
       const alt=(s==='hair'&&hat||s==='top'&&coat&&coat[1].covers.includes('sleeves'))&&p.alt&&p.alt[L.b], v=alt||p.v[L.b]; if(v)parts.push({v,zones:p.zones,pal:p.pal,main:p.main,col:c,slot:s,cape:/CAPE/.test(p.k||p.label)}); }
-    let nf=0; const D_=parts.map(P=>{ const d=dec(P.v); let k=0; for(let t=0;t<d.tri.length/3;t++)if(!(d.reg&&d.reg[t]<255&&hide[d.reg[t]]))k++; nf+=k; return d; });
+    let nf=0; const D_=parts.map(P=>dec(P.v)), kept=(d,t)=>!(d.reg&&d.reg[t]<255&&hide[d.reg[t]]);
     const LAN=L.lan?lanyard(parts,D_,L):[], LSP=LAN.spec||null; nf+=LAN.length;
-    const pos=new Float32Array(nf*9), nor=new Float32Array(nf*9), col=new Float32Array(nf*9), bi=new Float32Array(nf*6), bw=new Float32Array(nf*3), fl=new Float32Array(nf*3), hh=new Float32Array(nf*3), fd=new Float32Array(nf*9), va=new THREE.Vector3(), vb=new THREE.Vector3(), vc=new THREE.Vector3(), n=new THREE.Vector3(), e=new THREE.Vector3();
-    let f=0;
     const unq=(d,v)=>{ const Q=d.pos, X=new Float32Array(Q.length); for(let i=0;i<Q.length;i++)X[i]=(Q[i]+32500)*v.sc+v.lo[i%3]; return X; }, WF=pfh&&!nob?wristFit(unq(D_[0],parts[0].v),D_[0],L):null;
     const SZ=shapeOf(L.f,L.sh);
-    parts.forEach((P,pi)=>{ const d=D_[pi], v=P.v, X=unq(d,v); if(WF&&WF.length)fitWrist(X,d,WF); else taper(X,d,L.f); if(SZ)reshape(X,d,SZ);
+    const XS=parts.map((P,pi)=>{ const d=D_[pi], X=unq(d,P.v); if(WF&&WF.length)fitWrist(X,d,WF); else taper(X,d,L.f); if(SZ)reshape(X,d,SZ); return X; });
+    // the head round: the skull's box from the body as shaped; the body's points moved (XM), its head faces cut (CUT)
+    const RH=nob?null:roundOf(XS[0],D_[0]);
+    const XM=[], CUT=[];
+    parts.forEach((P,pi)=>{ const d=D_[pi], X=XS[pi], M=new Float32Array(X), cut=new Map(); XM.push(M); CUT.push(cut);
+      if(!RH||P.slot!=='body'){ for(let t=0;t<d.tri.length/3;t++)if(kept(d,t))nf++; return; }
+      for(let q=0;q<X.length/3;q++){ const hw=hwOf(d,q); if(hw>0)RH.at(X[q*3],X[q*3+1],X[q*3+2],hw,M,q*3); }
+      const K=q=>Math.round(X[q*3]*1e5)+','+Math.round(X[q*3+1]*1e5)+','+Math.round(X[q*3+2]*1e5), E=(a,b)=>{ const ka=K(a), kb=K(b); return ka<kb?ka+'|'+kb:kb+'|'+ka; }, isH=t=>[0,1,2].every(j=>RH.hb(d,d.tri[t*3+j])===HB);
+      const other=new Set(); for(let t=0;t<d.tri.length/3;t++)if(kept(d,t)&&!isH(t))for(let j=0;j<3;j++)other.add(E(d.tri[t*3+j],d.tri[t*3+(j+1)%3]));
+      for(let t=0;t<d.tri.length/3;t++){ if(!kept(d,t))continue; if(!isH(t)){ nf++; continue; } const ix=[d.tri[t*3],d.tri[t*3+1],d.tri[t*3+2]], out=[];
+        cutFace(...ix.map((q,j)=>({b:[j===0?1:0,j===1?1:0,j===2?1:0],p:[X[q*3],X[q*3+1],X[q*3+2]]})),[0,1,2].map(j=>other.has(E(ix[j],ix[(j+1)%3]))),out); cut.set(t,out); nf+=out.length; } });
+    const pos=new Float32Array(nf*9), nor=new Float32Array(nf*9), col=new Float32Array(nf*9), bi=new Float32Array(nf*6), bw=new Float32Array(nf*3), fl=new Float32Array(nf*3), hh=new Float32Array(nf*3), fd=new Float32Array(nf*9), sm=new Float32Array(nf*3), va=new THREE.Vector3(), vb=new THREE.Vector3(), vc=new THREE.Vector3(), n=new THREE.Vector3(), e=new THREE.Vector3();
+    let f=0;
+    parts.forEach((P,pi)=>{ const d=D_[pi], v=P.v, X=XS[pi], XR=XM[pi], cut=CUT[pi];
       let y0=1e9, y1=-1e9; if(P.cape)for(let i=1;i<X.length;i+=3){ y0=Math.min(y0,X[i]); y1=Math.max(y1,X[i]); }   // a cape: how far down it each point is, and which way is out from the body
       const cz=P.col&&P.col.includes('_')?P.col.split('_'):null;
       const C=P.zones.map((z,i)=>{ if(z==='skin')return lin(L.skin); if(P.slot==='body'&&z==='brow')return lin(L.hair); if(P.slot==='body'&&z==='eye'&&L.eye)return lin(L.eye);
         if((P.slot==='hair'||P.slot==='face')&&P.main&&i===P.main[0])return lin(L.hair); if(cz){ if(cz[i])return lin(cz[i]); } else if(P.col&&P.main&&i===P.main[0])return lin(P.col); return lin(String(P.pal[i]).slice(1)); });
-      for(let t=0;t<d.tri.length/3;t++){ if(d.reg&&d.reg[t]<255&&hide[d.reg[t]])continue; const ix=[d.tri[t*3],d.tri[t*3+1],d.tri[t*3+2]], ish=isHand(P,d,t)?1:0;
-        va.fromArray(X,ix[0]*3); vb.fromArray(X,ix[1]*3); vc.fromArray(X,ix[2]*3); n.subVectors(vb,va).cross(e.subVectors(vc,va)).normalize();
-        ix.forEach((q,j)=>{ const o=f*3+j, c=C[d.zone[q]]||C[0]; pos.set([X[q*3],X[q*3+1],X[q*3+2]],o*3); nor.set([n.x,n.y,n.z],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([d.bone[q*2],d.bone[q*2+1]],o*2); bw[o]=d.w[q]/255; hh[o]=ish; if(P.cape){ const u=Math.max(0,(y1-X[q*3+1])/Math.max(1e-3,y1-y0)), x=X[q*3], z=X[q*3+2], l=Math.hypot(x,z)||1; fl[o]=u*u; fd.set([x/l*.2,0,back],o*3); } }); f++; } });
+      // the head's cut faces as moved, each point's normal the mean of the faces round it that turn less than 60 degrees from its own (a nose or a brim keeps its edge)
+      const CF=new Map(); if(cut.size){ const K=p=>Math.round(p[0]*1e5)+','+Math.round(p[1]*1e5)+','+Math.round(p[2]*1e5), AC=new Map(), all=[];
+        for(const [t,list] of cut){ const ix=[d.tri[t*3],d.tri[t*3+1],d.tri[t*3+2]], hw=ix.map(q=>hwOf(d,q)), R=[];
+          for(const V of list){ const p=V.map(u=>{ const o=[0,0,0]; RH.at(u.p[0],u.p[1],u.p[2],u.pin?0:u.b[0]*hw[0]+u.b[1]*hw[1]+u.b[2]*hw[2],o,0); return o; });
+            va.fromArray(p[0]); vb.fromArray(p[1]); vc.fromArray(p[2]); n.subVectors(vb,va).cross(e.subVectors(vc,va)); const ar=n.length(), fn=ar>0?[n.x/ar,n.y/ar,n.z/ar]:[0,1,0], F={V,p,fn,ar,k:p.map(K)};
+            F.k.forEach(k=>{ let a=AC.get(k); if(!a)AC.set(k,a=[]); a.push(F); }); R.push(F); all.push(F); }
+          CF.set(t,R); }
+        for(const F of all)F.nn=F.k.map(k=>{ let x=0, y=0, z=0; for(const G of AC.get(k))if(G.fn[0]*F.fn[0]+G.fn[1]*F.fn[1]+G.fn[2]*F.fn[2]>.5){ x+=G.fn[0]*G.ar; y+=G.fn[1]*G.ar; z+=G.fn[2]*G.ar; } const l=Math.hypot(x,y,z); return l>0?[x/l,y/l,z/l]:F.fn; }); }
+      // a cut point's two bones: the most of its face's corners' bones by its place in the face
+      const two=(u,ix)=>{ const j=u.b.indexOf(1); if(j>=0){ const q=ix[j]; return [d.bone[q*2],d.bone[q*2+1],d.w[q]/255]; } const m=new Map();
+        ix.forEach((q,j)=>{ if(!u.b[j])return; const w=d.w[q]/255; m.set(d.bone[q*2],(m.get(d.bone[q*2])||0)+u.b[j]*w); m.set(d.bone[q*2+1],(m.get(d.bone[q*2+1])||0)+u.b[j]*(1-w)); });
+        const s=[...m].sort((a,b)=>b[1]-a[1]||a[0]-b[0]), a=s[0], b=s[1]||[a[0],0]; return [a[0],b[0],a[1]/(a[1]+b[1])]; };
+      for(let t=0;t<d.tri.length/3;t++){ if(!kept(d,t))continue; const ix=[d.tri[t*3],d.tri[t*3+1],d.tri[t*3+2]], ish=isHand(P,d,t)?1:0;
+        if(CF.has(t)){ const cs=ix.map(q=>C[d.zone[q]]||C[0]);
+          for(const F of CF.get(t)){ F.V.forEach((u,j)=>{ const o=f*3+j, b=u.b, [b0,b1,w]=two(u,ix); pos.set(F.p[j],o*3); nor.set(F.nn[j],o*3);
+              col.set([b[0]*cs[0].r+b[1]*cs[1].r+b[2]*cs[2].r,b[0]*cs[0].g+b[1]*cs[1].g+b[2]*cs[2].g,b[0]*cs[0].b+b[1]*cs[1].b+b[2]*cs[2].b],o*3); bi.set([b0,b1],o*2); bw[o]=w; hh[o]=ish; sm[o]=1; }); f++; }
+          continue; }
+        va.fromArray(XR,ix[0]*3); vb.fromArray(XR,ix[1]*3); vc.fromArray(XR,ix[2]*3); n.subVectors(vb,va).cross(e.subVectors(vc,va)).normalize();
+        ix.forEach((q,j)=>{ const o=f*3+j, c=C[d.zone[q]]||C[0]; pos.set([XR[q*3],XR[q*3+1],XR[q*3+2]],o*3); nor.set([n.x,n.y,n.z],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([d.bone[q*2],d.bone[q*2+1]],o*2); bw[o]=d.w[q]/255; hh[o]=ish; if(P.cape){ const u=Math.max(0,(y1-X[q*3+1])/Math.max(1e-3,y1-y0)), x=X[q*3], z=X[q*3+2], l=Math.hypot(x,z)||1; fl[o]=u*u; fd.set([x/l*.2,0,back],o*3); } }); f++; } });
     if(SZ){ const T=new THREE.Vector3(), sh=a=>T.fromArray(a).sub(SZ.O[1]).applyMatrix3(SZ.A[1]).add(SZ.O1[1]).toArray(); for(const t of LAN)for(let j=0;j<3;j++)t[j]=sh(t[j]); if(LSP){ LSP.L=LSP.L.map(sh); LSP.R=LSP.R.map(sh); LSP.shape={O:SZ.O[1],A:SZ.A[1],O1:SZ.O1[1]}; } }   // (the lanyard on the chest as shaped)
     for(const [A,B,C3,h] of LAN){ const c=lin(h); va.fromArray(A); vb.fromArray(B); vc.fromArray(C3); n.subVectors(vb,va).cross(e.subVectors(vc,va)).normalize();
       [A,B,C3].forEach((P,j)=>{ const o=f*3+j; pos.set(P,o*3); nor.set([n.x,n.y,n.z],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([1,1],o*2); bw[o]=1; hh[o]=0; }); f++; }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('normal',new THREE.BufferAttribute(nor,3)); g.setAttribute('color',new THREE.BufferAttribute(col,3));
-    g.setAttribute('bi',new THREE.BufferAttribute(bi,2)); g.setAttribute('bw',new THREE.BufferAttribute(bw,1)); g.setAttribute('fl',new THREE.BufferAttribute(fl,1)); g.setAttribute('fd',new THREE.BufferAttribute(fd,3)); g.setAttribute('hh',new THREE.BufferAttribute(hh,1)); g.computeBoundingSphere();
+    g.setAttribute('bi',new THREE.BufferAttribute(bi,2)); g.setAttribute('bw',new THREE.BufferAttribute(bw,1)); g.setAttribute('fl',new THREE.BufferAttribute(fl,1)); g.setAttribute('fd',new THREE.BufferAttribute(fd,3)); g.setAttribute('hh',new THREE.BufferAttribute(hh,1)); g.setAttribute('sm',new THREE.BufferAttribute(sm,1)); g.computeBoundingSphere();
     g.userData.hands=pfh?{skin:L.skin,b:L.b,grip:{L:!!L.w.lefthand,R:!!L.w.righthand}}:null; g.userData.lan=LSP; return g; }
-  const empty=()=>{ const g=new THREE.BufferGeometry(); for(const [k,s] of [['position',3],['normal',3],['color',3],['bi',2],['bw',1],['fl',1],['fd',3],['hh',1]])g.setAttribute(k,new THREE.BufferAttribute(new Float32Array(0),s)); return g; };
+  const empty=()=>{ const g=new THREE.BufferGeometry(); for(const [k,s] of [['position',3],['normal',3],['color',3],['bi',2],['bw',1],['fl',1],['fd',3],['hh',1],['sm',1]])g.setAttribute(k,new THREE.BufferAttribute(new Float32Array(0),s)); return g; };
   // a body's skeleton for a figure and a height (taller: the same body drawn bigger on the rig)
-  const fitTo=(body,L)=>{ const S=I.skel[L.f], Z=shapeOf(L.f,L.sh), {off,binv}=BODIES.skeleton(Z?Z.O1.map(o=>o.toArray()):S.origin,S.rest); Object.assign(body,{height:S.height*100/L.h,hipY:Z?Z.O1[0].y:S.hipY,off,binv,contact:true,dq:true,O0:Z?Z.O:null,O1:Z?Z.O1:null}); delete body._calG; delete body._bind; return BODIES.fit(body); };   // (contact: rests on what the rig rests on, 111a)
+  const fitTo=(body,L)=>{ const S=I.skel[L.f], Z=shapeOf(L.f,L.sh), {off,binv}=BODIES.skeleton(Z?Z.O1.map(o=>o.toArray()):S.origin,S.rest); Object.assign(body,{height:S.height*100/L.h,hipY:Z?Z.O1[0].y:S.hipY,off,binv,contact:true,dq:true,rnd:true,O0:Z?Z.O:null,O1:Z?Z.O1:null}); delete body._calG; delete body._bind; return BODIES.fit(body); };   // (contact: rests on what the rig rests on, 111a)
 
   /* ---------- you ---------- */
   let L=DEF(); try{ const c=OWNED.get('pfav'); if(c)L=decode(c); }catch(e){}

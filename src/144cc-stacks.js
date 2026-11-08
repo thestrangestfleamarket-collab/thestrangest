@@ -18,14 +18,14 @@ const STACKS={}; window.STACKS=STACKS;
   const BOOKS_IN=[['atlas',2],['hymnal',2],['ledger',3],['herbal',3],['first',2]], SPOTS=[[1.6,3.2],[4,5.6],[6.4,4.2],[4,8.4]];
   STACKS.ready=i=>INV.ready('stacks'+i);
   const take=i=>{ const k='stacks'+i; if(!INV.ready(k))return say('ONLY DUST WHERE IT LAY. ANOTHER WORKS LOOSE BY TOMORROW.','#c8c2b0'); INV.picked[k]=day(); INV.save(); BOOKS.find(BOOKS_IN,'YOU EASE IT OFF THE SEALED SHELF'); if(SFX.play)SFX.play('clunk',{vol:.2}); };
-  // in the bookstore: the hatch by the lectern
-  LIB.inside.push(({K,W,D})=>{ '@later'; const u=W-1.6, v=D-1.75, {box,cyl,use}=K;
+  // in the bookstore: the hatch in the floor of the books' front corner, clear of the Professor's desk
+  LIB.inside.push(({K,W,D})=>{ '@later'; const u=2.6, v=D-1.65, {box,cyl,use}=K;
     box(u-.48,v-.48,u+.48,v+.48,0,.03,0x3a2414); box(u-.44,v-.44,u+.44,v+.44,.03,.045,0x5a3a22); for(const s of [-.2,.2])box(u-.44,v+s-.02,u+.44,v+s+.02,.045,.05,0x2a1a10);
     cyl(u,v+.3,.06,.045,.06,0xb8923a); box(u+.3,v-.06,u+.36,v+.06,.045,.07,0x8a7a3a);
     use('A LOCKED HATCH (THE SEALED STACKS)',u,v,1,.6,()=>STACKS.down(),1.4); });
   STACKS.down=()=>{ if(!FORAGE.has('stack_key'))return say("LOCKED. THE PROFESSOR KEEPS THE KEY TO THE SEALED STACKS (HE SELLS IT).",'#c8a090'); say('THE KEY TURNS. A STAIR GOES DOWN INTO DUST. (WALK. DO NOT RUN.)'); ROOMS.enter('stacks'); };
   STACKS.up=()=>{ if(!(MSHOP.at&&MSHOP.at.books&&ROOMS.off.books))return ROOMS.exit('stacks'); const R=MSHOP.at.books.R, X=SHARED.BOD.X, Z=SHARED.BOD.Z;
-    ROOMS.enterAt('books',[X(R.x1-(1.6+.9)/.924),Z(R.y1-1.75/.924),0,Math.PI]); };
+    ROOMS.enterAt('books',[X(R.x0+2.6/.924),Z(R.y1-2.65/.924),0,Math.PI]); };
   // the librarian's ghost: comes for you if you run, shushes, and walks you out
   let G=null, GH=null, lx=null, lz=null, calm=0, shh=0, dir=[0,1]; const ghost=()=>{ const g=new THREE.Group(), m=new THREE.MeshBasicMaterial({color:0xdfe8f0,transparent:true,opacity:.55,depthWrite:false});
     const robe=new THREE.Mesh(new THREE.ConeGeometry(.32*MW,1.3*MW,12,1,true),m); robe.position.y=.75*MW; const head=new THREE.Mesh(new THREE.SphereGeometry(.17*MW,12,8),m); head.position.y=1.55*MW;

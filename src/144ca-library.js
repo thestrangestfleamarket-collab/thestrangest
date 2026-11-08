@@ -340,7 +340,7 @@ const LIB={data:null,max:5,inside:[]}; window.LIB=LIB;   // inside: what else fu
     { const N=90, P=new Float32Array(N*3), Vv=[]; for(let i=0;i<N;i++){ const p=F.pw(W*.2+Math.random()*W*.6,D*.2+Math.random()*D*.6); P[i*3]=p[0]; P[i*3+1]=(.3+Math.random()*(HT-.6))*MW; P[i*3+2]=p[1]; Vv.push([(Math.random()-.5)*.02,(Math.random()-.4)*.01,(Math.random()-.5)*.02]); }
       const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); const m=new THREE.PointsMaterial({color:0xffe2b0,size:.022*MW,transparent:true,opacity:.5,depthWrite:false});
       const pts=new THREE.Points(g,m); A.add(pts); DUST={pts,P,V:Vv,y0:.2*MW,y1:(HT-.3)*MW,t:0}; }
-    for(const f of LIB.inside)f({A,F,K,W,D});
+    for(const f of LIB.inside)f({A,F,K,W:Wb,D});   // (the books' half: what furnishes it reads its width)
     K.flush(); };
   MSHOP.kit.books.drop=()=>{ DUST=null; KEEP=null; PLANTS.length=0; };
   // a hanging plant between the camera and you steps aside (it is hidden), so its vines never fill the view

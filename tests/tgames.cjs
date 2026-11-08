@@ -6,7 +6,7 @@ const noop = () => {};
 const ctx = { console, Math, JSON, Date, Object, Array, String, Number, Set, Map, Promise, setTimeout: noop, performance: { now: () => Date.now() },
   SYS: { add: noop }, ONLINE: {}, TABLES: {}, MINI: {}, THREE: {}, ROOMS: {}, st: {}, SAY: noop };
 ctx.window = ctx; vm.createContext(ctx);
-const files = fs.readdirSync(SRC).filter(f => /^144c[c-z]-.*\.js$/.test(f) && (f.startsWith('144cc') || !process.env.TGF || f.startsWith(process.env.TGF))).sort();
+const files = fs.readdirSync(SRC).filter(f => (f === '144cc-tables.js' || /^144c[d-z]-tg-.*\.js$/.test(f)) && (f.startsWith('144cc') || !process.env.TGF || f.startsWith(process.env.TGF))).sort();
 for (const f of files) vm.runInContext(strip(fs.readFileSync(path.join(SRC, f), 'utf8')) + (f.startsWith('144cc') ? '\nglobalThis.TG=TG;' : ''), ctx, { filename: f });
 const TG = ctx.TG, G = TG.games();
 // a canvas that draws nothing

@@ -58,7 +58,7 @@ const ROOMS={lazy:{},off:{},grounds:[]},
   GUIDE={},
   VR={on:false},
   BINS={},
-  MOTION={}, PASSPORT={}, FIRSTDAY={}, SUMMON={}, SCANNER={}, SPRAY={},
+  MOTION={}, PASSPORT={}, FIRSTDAY={}, PETS={}, SUMMON={}, SCANNER={}, SPRAY={},
   FEEL={},
   WIELD={},
   WINDOWS={panes:[],held:new Set(),pane(me,off,look,dark,only){ this.panes.push({me,off,look,dark,only}); if(only)me.visible=false; if(dark&&this.dark)this.dark(me); }},   // glass panes that show a picture of the real view through them (130a)
@@ -120,4 +120,4 @@ const ROOMS={lazy:{},off:{},grounds:[]},
   Object.assign(LAND,{down:nf,move:no,up:no},LAND); Object.assign(SNDED,{close:no,into:no},SNDED); Object.assign(RINSP,{toggle:no},RINSP);
   Object.assign(EDITORS,{menu:no,key:no},EDITORS); Object.assign(SUMMON,{id:()=>'',here:()=>[],list:()=>[],go:no,back:no},SUMMON);
   Object.assign(NEWS,{init:no},NEWS); Object.assign(BINS,{station:no},BINS); Object.assign(PNM,{tick:no},PNM); Object.assign(SGM,{tick:no},SGM); }
-export {AMB, ARCH, ARCHI, BAG, BINS, BLAZE, BLK, BOAT, BOOKS, BROOK, BUGS, CHARP, CHARS, CINEMA, CITY, CIVIC, CLIP, CLOCK, CULL, DN, DRESS, DRM, DRONE, ED, EQUIP, FAR3, FEEL, FIGFX, FIRSTDAY, FLOW, FORAGE, GAMEED, GHOSTS, GPH, GPUT, GTRH, GTSAMP, GUARD, GUIDE, HUD, IMK, INSPECT, INTERIORS, INV, ITEMED, ITEMS, keys, LAND, LEVELS, LINES, LITE, LOOK, LOOKS, MAIL, MAPED, MOTION, MUS, NEWS, NPCS, ONLINE, PARK, PASSPORT, PB, PERFX, PH, PHYS, PNM, POND, PONDS, pos, PS2, RADIO, RAG, RIDE, RINSP, ROOMS, SCANNER, SELFSH, SFX, SGM, SHAD, SHOPS, SIGNS, SKY, SND, SNDED, SPRAY, st, STAGE, SWIM, TALK, TENANTS, TEXT, TRADE, TRAINERS, TRICKS, UI, USE, VAULT, VIS, VIT, VR, vwV, W3, WALKS, WE, WED, WEEDS, WHERE, WIELD, WINDOWS, WORKERS, wvV, WX, ZONES};
+export {AMB, ARCH, ARCHI, BAG, BINS, BLAZE, BLK, BOAT, BOOKS, BROOK, BUGS, CHARP, CHARS, CINEMA, CITY, CIVIC, CLIP, CLOCK, CULL, DN, DRESS, DRM, DRONE, ED, EQUIP, FAR3, FEEL, FIGFX, FIRSTDAY, FLOW, FORAGE, GAMEED, GHOSTS, GPH, GPUT, GTRH, GTSAMP, GUARD, GUIDE, HUD, IMK, INSPECT, INTERIORS, INV, ITEMED, ITEMS, keys, LAND, LEVELS, LINES, LITE, LOOK, LOOKS, MAIL, MAPED, MOTION, MUS, NEWS, NPCS, ONLINE, PARK, PASSPORT, PB, PERFX, PETS, PH, PHYS, PNM, POND, PONDS, pos, PS2, RADIO, RAG, RIDE, RINSP, ROOMS, SCANNER, SELFSH, SFX, SGM, SHAD, SHOPS, SIGNS, SKY, SND, SNDED, SPRAY, st, STAGE, SWIM, TALK, TENANTS, TEXT, TRADE, TRAINERS, TRICKS, UI, USE, VAULT, VIS, VIT, VR, vwV, W3, WALKS, WE, WED, WEEDS, WHERE, WIELD, WINDOWS, WORKERS, wvV, WX, ZONES};

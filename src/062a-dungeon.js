@@ -39,7 +39,9 @@ await grab('dungeon',async()=>{});
     const up=k===1?{x0:R.x0+2.2,x1:R.x0+4.2,y0:R.y0,y1:R.y0+3,n:6,rise:8,up:1}:null;
     const hz=bare||!r.d?[]:traps(n,R,null,k).filter(h=>h.t==='web'?!nearDoor(h.cx-h.r,h.cy-h.r,h.cx+h.r,h.cy+h.r,2.5):!nearDoor(h.x0,h.y0,h.x1,h.y1,2.5));   // no trap in a doorway
     const fall=(w,u)=>hz.some(h=>h.src==='wall'&&(h.cx<R.cx)===(w==='l')&&Math.abs(h.cy+h.fo*h.ry*.6-(R.y0+u))<1.4), gap=(w,u)=>(w==='l'?ds.w:ds.e).some(([a,b])=>R.y0+u>a-1&&R.y0+u<b+1);
-    if(!bare)for(let u=3.4;u<B.y1-B.y0-2;u+=6.5)for(const t of [{w:'l',u},{w:'r',u:u+3.25>B.y1-B.y0-2?u:u+3.25}])if(!fall(t.w,t.u)&&!gap(t.w,t.u))R.torches.push(t);
+    const gapX=(w,u)=>(w==='b'?ds.b:ds.f).some(([a,b])=>R.x0+u>a-1&&R.x0+u<b+1), lng=Math.max(B.x1-B.x0,B.y1-B.y0), tsp=bare?6:5;   // torches on every wall, closer together, and down the corridors (owner, 8 Nov 2026: "enough torches around to make everything visible enough")
+    if(!bare||B.y1-B.y0>=B.x1-B.x0)for(let u=2.6;u<B.y1-B.y0-1.6;u+=tsp)for(const t of [{w:'l',u},{w:'r',u:u+tsp/2>B.y1-B.y0-1.6?u:u+tsp/2}])if(!fall(t.w,t.u)&&!gap(t.w,t.u))R.torches.push(t);
+    if(!bare||B.x1-B.x0>B.y1-B.y0)for(let u=2.6;u<B.x1-B.x0-1.6;u+=tsp+1)for(const t of [{w:'b',u},{w:'f',u:u+(tsp+1)/2>B.x1-B.x0-1.6?u:u+(tsp+1)/2}])if(!gapX(t.w,t.u)&&!(up&&t.w==='b'&&R.x0+t.u>up.x0-1.4&&R.x0+t.u<up.x1+1.4)&&lng>0)R.torches.push(t);
     const clear=(x,y)=>!hz.some(h=>h.t==='web'?Math.hypot(x-h.cx,y-h.cy)<h.r+.8:x>h.x0-.8&&x<h.x1+.8&&y>h.y0-.8&&y<h.y1+.8);
     let sp=null, bd=1e9; for(let x=R.x0+1;x<R.x1-1;x+=.5)for(let y=R.y0+1;y<R.y1-1;y+=.5)if(clear(x,y)){ const d=Math.hypot(x-R.cx,y-R.cy); if(d<bd){ bd=d; sp={x,y}; } }   // where you arrive: the clear point nearest the middle
     if(!sp)sp={x:R.cx,y:R.cy};
@@ -47,7 +49,7 @@ await grab('dungeon',async()=>{});
   const pick=n=>{ const r=RM.find(r=>!r.c&&r.n===n)||RM.filter(r=>!r.c).reduce((a,r)=>Math.abs(r.n-n)<Math.abs(a.n-n)?r:a); return r.k; };
   const lavaR=(h,a)=>1+.16*Math.sin(3*a+h.ph[0])+.09*Math.sin(5*a+h.ph[1])+.05*Math.sin(8*a+h.ph[2]);   // a pool's edge: its radius at each angle
   const tread=(S,gx,gy)=>S&&gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1?Math.min(S.n,Math.floor((S.up?S.y1-gy:gy-S.y0)/((S.y1-S.y0)/S.n))+1):0;
-  const ground=(x,z)=>{ if(!lotAt(x,z))return dy; const u=tread(lay(1).up,iX(x),iZ(z)); return dy+Y(u?u*lay(1).up.rise:0); };
+  const ground=(x,z)=>{ if(!lotAt(x,z))return dy; const gx=iX(x), gy=iZ(z), u=tread(lay(1).up,gx,gy); if(u)return dy+Y(u*lay(1).up.rise); const r=mine&&MODS.dunTerr?roomAt(gx,gy):null, l=r&&LC[r.k]; return dy+Y(l&&l.T?MODS.dunTerr.h(l,gx,gy):0); };
   const PL={}, SIDE={b:[0,1],f:[0,-1],w:[1,0],e:[-1,0]}; for(const k in SIDE)PL['K'+k]=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6);
   let cur=0, busy=false, mine=null; const HK=[], band=()=>cur?RM[cur-1].n:1;
   const clear=()=>{ '@later'; if(!mine)return; const M=mine; mine=null; cur=0;
@@ -65,9 +67,10 @@ await grab('dungeon',async()=>{});
       for(const [a,b] of seg(B.y0,B.y1,ds.w))WB.push(['Kw',wall(R,B.x0-T,a===B.y0?a+T:a,B.x0+T,b===B.y1?b-T:b)]);
       for(const [a,b] of seg(B.y0,B.y1,ds.e))WB.push(['Ke',wall(R,B.x1-T,a===B.y0?a+T:a,B.x1+T,b===B.y1?b-T:b)]); }
     const floor=(x0,y0,x1,y1,R)=>{ if(x1-x0<.01||y1-y0<.01)return; bq([X(x0),Y(.3)+dy,Z(y1)],[X(x1),Y(.3)+dy,Z(y1)],[X(x1),Y(.3)+dy,Z(y0)],[X(x0),Y(.3)+dy,Z(y0)],faceTex(Math.round((x1-x0)*24),Math.round((y1-y0)*24),(i,j)=>C(K.dungeonFloorCol(x0+(i+.5)/24,y0+(j+.5)/24,R))),'L'); };
-    for(const {B,R} of Ls)floor(B.x0,B.y0,B.x1,B.y1,R);
-    for(const {R} of Ls)for(const t of R.torches){ const [x,y]=t.w==='l'?[R.x0+.16,R.y0+t.u]:[R.x1-.16,R.y0+t.u]; Kc['wall torch'](x,y,t.w); }
-    const LK=MODS.dunLook, solid=LK?Ls.filter(l=>!l.c).flatMap(l=>LK.props(l,Kc)):[];
+    for(const {R} of Ls)for(const t of R.torches){ const [x,y]=t.w==='l'?[R.x0+.16,R.y0+t.u]:t.w==='r'?[R.x1-.16,R.y0+t.u]:t.w==='b'?[R.x0+t.u,R.y0+.16]:[R.x0+t.u,R.y1-.16]; Kc['wall torch'](x,y,t.w); }
+    const LK=MODS.dunLook, solid=LK?Ls.filter(l=>!l.c).flatMap(l=>LK.props(l,Kc)):[], TR=MODS.dunTerr;
+    if(TR)for(const l of Ls)if(!l.c&&!l.T)TR.make(l);   // the uneven ground, after the props so it keeps them on the flat
+    for(const l of Ls)if(!l.T)floor(l.B.x0,l.B.y0,l.B.x1,l.B.y1,l.R);
     const made=KP.slice(n0); KP.length=n0; BATCH.meshes={}; BATCH.cast=true; for(const [k,b] of WB)gboxS(b,k,dy); for(const p of made)for(const b of p.boxes)gboxS(b,'L',dy);
     BATCH.build((k,map,emap)=>castleMat(k,map,emap,PL[k])); BATCH.cast=false;
     for(const k in PL)for(const me of BATCH.all(BATCH.meshes,k)){ const s=SIDE[k[1]], w={pl:PL[k],nx:s[0],nz:s[1],foot:dy+Y(6),me,when:()=>SHARED.LVL==='down'&&!!mine}; cutWalls.push(w); M.cuts.push(w); } BATCH.meshes={}; BATCH.items=keep;
@@ -98,14 +101,16 @@ await grab('dungeon',async()=>{});
         SP.forEach((h,k)=>{ H.sp.push({...h,i0:i,c:cells[k],up:null,hit:false,IM}); i+=cells[k].length; }); H.spIM=IM; }
       for(const h of WE){ const me=new THREE.Mesh(new THREE.PlaneGeometry(2*h.r*TILE,2*h.r*TILE).rotateX(-Math.PI/2),WEB()); me.position.set(X(h.cx),fy+.02*TILE,Z(h.cy)); me.rotation.y=h.cx*7%6.28; me.renderOrder=2; own(me); H.webs.push(h); }
       M.hz=H; }
+    if(TR)for(const l of Ls)if(l.T)TR.mesh(l,quad,K.dungeonFloorCol);
     const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('color',new THREE.Float32BufferAttribute(Cc,3)); geo.computeVertexNormals();
     const sm=new THREE.Mesh(geo,MODS.castleStairMat); sm.receiveShadow=true; sm.castShadow=true; scene.add(LEVELS.own(sm,'dungeon'));
     for(const [,b] of WB)sol(b.x0,b.y0,b.x1,b.y1,b.z1-4); for(const b of solid)sol(...b);
-    const LF=[], light=l=>{ const cm=Math.max(...l.c), Lt=new THREE.PointLight(new THREE.Color(l.c[0]/cm,l.c[1]/cm,l.c[2]/cm),22*cm*Math.min(1.2,l.r/5),l.r*TILE*1.4,1.6);
+    const LF=[], light=l=>{ const cm=Math.max(...l.c), Lt=new THREE.PointLight(new THREE.Color(l.c[0]/cm,l.c[1]/cm,l.c[2]/cm),30*cm*Math.min(1.2,l.r/5),l.r*TILE*2,1.4);
       Lt.position.set(X(l.x),Y(l.z)+dy,Z(l.y)); Lt.userData.i0=Lt.intensity; Lt.userData.grp=G; LITE.recs.push(Lt); M.lights.push(Lt); return Lt; };
     for(const l of K.LAMPS.slice(l0)){ const Lt=light(l); if(l.flick)LF.push(Lt); } K.LAMPS.length=l0;
     FLAME.props(made,X,z=>Y(z)+dy,Z,LF); M.fl=FLAME.src.slice(f0);
     if(LK)Ls.filter(l=>!l.c).forEach((l,i)=>LK.dress(l,{own:o=>scene.add(LEVELS.own(o,'dungeon')),light,PL,lavaR,more:i>0}));
+    if(TR)for(const l of Ls)TR.dress(l,{own:o=>scene.add(LEVELS.own(o,'dungeon')),PL,sol});
     for(const o of scene.children.slice(s0)){ G.add(o); M.objs.push(o); }
     mine=M; cur=0; spikes(true); LITE.t=0; return Ls; };
   let CT=null, WT=null; const can=(w,h,f)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; f(c.getContext('2d')); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.magFilter=THREE.NearestFilter; return t; };
@@ -135,11 +140,13 @@ await grab('dungeon',async()=>{});
     if(!m){ if(mine&&!busy)clear(); if(SHARED.LVL!=='down'){ const gx=SHARED.BOD.MX(p.x), gy=SHARED.BOD.MY(p.z); if(gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1)go(1,'top'); } return; }
     if(!mine)return go(1,'load');
     const gx=iX(p.x), gy=iZ(p.z), r=roomAt(gx,gy); if(r&&!r.c)enter(r.k); if(tread(lay(1).up,gx,gy))go(0); };
-  LEVELS.of.dungeon={name:'THE DUNGEON',amb:0,label:()=>'THE DUNGEON'+(cur&&RM[cur-1].nm?' — '+RM[cur-1].nm:''),floor:'down',groups:['dungeon'],has:(x,z)=>lotAt(x,z)>0,ground,bound:()=>bnd()};
+  window.DUNROOMS=()=>RM.filter(r=>!r.c).map(r=>{ const l=LC[r.k]; return {k:r.k,nm:r.nm,theme:l&&l.T?l.T.theme:null,feats:l&&l.T?l.T.F.map(f=>({h:Math.round(f.h),x:+X(f.cx).toFixed(1),z:+Z(f.cy).toFixed(1),cx:f.cx,cy:f.cy,rx:f.rx,ry:f.ry,ramp:f.ramp})):[],torches:l?l.R.torches.length:0}; });
+  window.DUNRB=k=>{ const l=LC[k]; return l?{x0:l.R.x0,y0:l.R.y0,x1:l.R.x1,y1:l.R.y1}:null; }; window.DUNAT=(gx,gy)=>[X(gx),Z(gy)]; window.DUNG=(x,z)=>(ground(x,z)-dy)/Y(1);
+  LEVELS.of.dungeon={name:'THE DUNGEON',amb:1.1,label:()=>'THE DUNGEON'+(cur&&RM[cur-1].nm?' — '+RM[cur-1].nm:''),floor:'down',groups:['dungeon'],has:(x,z)=>lotAt(x,z)>0,ground,bound:()=>bnd()};
   const setMap=L=>{ '@later'; const W=Array.isArray(L)&&L.length?L:MAP0; if(JSON.stringify(W)===JSON.stringify(MAP))return false;
     MAP.splice(0,MAP.length,...W.map(r=>r.slice())); RM.splice(0,RM.length,...rmOf()); Object.assign(BB,bbOf()); for(const k in LC)delete LC[k];
     if(mine){ clear(); build(); SHARED.BOUND=bnd(); const r=roomAt(iX(pos.x),iZ(pos.z)); if(!r){ const a=lay(1).atUp; UI.goTo(a.x,a.z,'down'); } cur=0; enter(r&&!r.c?r.k:1); } return true; };
-  MODS.dungeon={get B(){ return lay(cur||1).B; },get level(){ return mine?band():0; },get room(){ return cur; },traps:()=>mine?RM.flatMap(r=>lay(r.k).hz):[],lavaR,inLava,ground,inside:(x,z)=>lotAt(x,z)>0,bound:()=>bnd(),arrive:n=>lay(pick(n)).atUp,lay,rooms:RM,roomOf:(x,z)=>{ const r=roomAt(iX(x),iZ(z)); return r&&!r.c?r.k:0; },hook:f=>HK.push(f),tick(){},setMap,map:()=>MAP.map(r=>r.slice()),map0:()=>MAP0.map(r=>r.slice()),OX,OY};
+  MODS.dungeon={tooHigh:(x,z,py)=>!!mine&&lotAt(x,z)>0&&ground(x,z)-py>Y(MODS.dunTerr?MODS.dunTerr.STEP:14),get B(){ return lay(cur||1).B; },get level(){ return mine?band():0; },get room(){ return cur; },traps:()=>mine?RM.flatMap(r=>lay(r.k).hz):[],lavaR,inLava,ground,inside:(x,z)=>lotAt(x,z)>0,bound:()=>bnd(),arrive:n=>lay(pick(n)).atUp,lay,rooms:RM,roomOf:(x,z)=>{ const r=roomAt(iX(x),iZ(z)); return r&&!r.c?r.k:0; },hook:f=>HK.push(f),tick(){},setMap,map:()=>MAP.map(r=>r.slice()),map0:()=>MAP0.map(r=>r.slice()),OX,OY};
   window.DUNGEON={get level(){ return mine?band():0; },get room(){ return cur&&RM[cur-1].nm; },at:(gx,gy)=>UI.goTo(X(gx),Z(gy),'down'),to:(f,gx)=>{ const R=lay(cur||1).R; UI.goTo(X(gx??(R.x0+R.x1)/2),Z(R.y0+f*(R.y1-R.y0)),'down'); },traps:()=>MODS.dungeon.traps(),go:n=>go(Math.max(0,Math.min(NL,n|0)),'top'),spawn:async n=>{ if(n&&(!mine||band()!==n))await go(n,'top'); return MODS.skel(); },levels:NL};
   window.DUNDBG=()=>({level:mine?band():0,room:cur,hp:+VIT.hp.toFixed(3),drag:SHARED.drag,lv:SHARED.LVL,busy,lot:typeof pos!=='undefined'?lotAt(pos.x,pos.z):0,objs:mine?mine.objs.length:0,lights:mine?mine.lights.length:0,sol:mine?mine.sol.length:0,
     tris:mine?mine.objs.reduce((a,o)=>{ let t=0; o.traverse(c=>{ if(c.geometry&&c.geometry.attributes.position)t+=(c.geometry.index?c.geometry.index.count:c.geometry.attributes.position.count)/3; }); return a+t; },0):0,skel:!!(MODS.skel&&MODS.skel.p)}); }

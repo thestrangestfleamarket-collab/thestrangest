@@ -1,7 +1,6 @@
 // THE BOT TESTS: what a player can do, listed by the game from its own data (every place, the things in each, every shop's goods, what each buyer buys and each teacher teaches, the skills, the pets, the arcade's games, the people to talk to), each a test a bot (?bot=1, job TESTS) plays like a player: PASS, FAIL and why, or SKIP and why.
-import {ARCH, ARCHI, CHARS, FORAGE, INV, ITEMS, NPCS, pos, ROOMS, SHOPS, st, TALK, TESTS, UI} from './003b-systems.js';
+import {ARCH, ARCHI, CHARS, FORAGE, INV, ITEMS, NPCS, PETS, pos, ROOMS, SHOPS, st, TALK, TESTS, UI} from './003b-systems.js';
 import {FADE, LEVEL, MODS, QS, STORE, TILE} from './006-map-pre.js';
-import {PETS} from './146zj-pets.js';
 import {BOT} from './162g-bots.js';
 window.TESTS=TESTS;
 { const T=TILE;

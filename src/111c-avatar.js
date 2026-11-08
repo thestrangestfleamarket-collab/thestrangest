@@ -43,7 +43,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
   // the lanyard's look (owner, 8 Nov 2026): frame_frameColour_string_stringColour: the badge's frame (0 none, 1 clear, 2 metal, 3 coloured), the string (0 cord, 1 flat strap, 2 bead chain)
   const LYOK=s=>/^[0-3]_[0-9a-f]{6}_[0-2]_[0-9a-f]{6}$/.test(s||''), LY0='0_c0392b_0_181818', lyOf=L=>{ const a=(LYOK(L.ly)?L.ly:LY0).split('_'); return {fr:+a[0],fc:a[1],st:+a[2],sc:a[3]}; };
   const hex=s=>/^[0-9a-f]{6}$/.test(s||'')?s:null, cols=s=>/^[0-9a-f]{6}$|^(?:[0-9a-f]{6})?(?:_(?:[0-9a-f]{6})?)+$/.test(s||'')?s:null;   // one colour (the piece's main part), or one a part in the piece's zone order, _ between (an empty part keeps its own)
-  const decode=c=>{ '@later'; const a=String(c||'').split('.'), L=DEF(); if(a.length<5)return L;
+  const decode=c=>{ const a=String(c||'').split('.'), L=DEF(); if(a.length<5)return L;
     L.f=a[0]==='f'?'f':'m'; L.b=Math.min(2,Math.max(0,parseInt(a[1])||0)); L.h=Math.min(110,Math.max(90,parseInt(a[2])||100)); L.skin=hex(a[3])||L.skin; L.hair=hex(a[4])||L.hair; L.w={};
     if(a[5+OLD]==='1')L.bare=true; { const e=hex(a[6+SLOTS.length]); if(e)L.eye=e; } if(a[7+SLOTS.length]==='1')L.lan=1; { const sh=shDec(a[8+SLOTS.length]); if(sh)L.sh=sh; } if(LYOK(a[9+SLOTS.length]))L.ly=a[9+SLOTS.length];
     SLOTS.forEach(([s],i)=>{ const v=a[at(i)]; if(!v)return; const [n,col]=v.split('~'), p=byN.get(parseInt(n,36)); if(p&&p.slot===s&&p.figs.includes(L.f))L.w[s]=[p.n,cols(col)||'']; });

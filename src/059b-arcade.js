@@ -7,6 +7,7 @@ import {BLDK, FADE, FIX, grab, LEVEL, OFFDX, SOL, STORE, SYS, TILE, TURN, WP} fr
 import {BATCH} from './008-batch.js';
 import {LAMPS} from './014-gamekit.js';
 import {BLOCKS} from './038zb-blocks.js';
+import {FACADES} from './038zc-facades.js';
 await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD.Y, {hash:hs}=SHARED.BOD.g, sh=SHARED.BOD.K.sh, MS=STORE.main;
   const HOLO=STORE.holo={programs:[],run:null,hall:null}, say=(t,c)=>SAY(t,c);
   const SKN=k=>{ const s=(FORAGE.SK||[]).find(s=>s[0]===k); return s?s[1]:String(k||'').toUpperCase(); }, esc=TEXT.esc;
@@ -42,7 +43,8 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
     if(z>=110&&z<170&&c>=c0-8&&c<c0+35*k6+8)return MS.neon(on,c,z,k6,[255,80,200],f)||sh([24,16,32],f);
     return null; };
   const wall=BLOCKS.brick([96,58,80]);
-  BLOCKS.make({x0:LW.x0,x1:LW.x1,y0:LW.y0,y1:LW.y1,z0:0,z1:L.h,kind:'A',turn:TA,roof:(x,y)=>sh([40,36,44],.92+.12*hs(Math.floor(x*4),Math.floor(y*4),61)),
+  FACADES.make({id:'arcade',L,pt:TA.pt,z1:L.h,wall:[96,58,80],trim:[150,120,170],frame:[58,40,70],seed:53,ground:118,door:{u:lcx,w:.9},glass:true,sign:{text:'ARCADE',color:[255,80,200],bg:[24,16,32]}});
+  if(0)BLOCKS.make({x0:LW.x0,x1:LW.x1,y0:LW.y0,y1:LW.y1,z0:0,z1:L.h,kind:'A',turn:TA,roof:(x,y)=>sh([40,36,44],.92+.12*hs(Math.floor(x*4),Math.floor(y*4),61)),
     paint:(side,u,z,f)=>(side==='f'&&front(u-L.x0,z,f))||(z>L.h-10?sh([60,44,70],f):wall(u,z,f))});
   BATCH.build(MKA); for(const me of Object.values(BATCH.meshes)){ me.castShadow=true; me.receiveShadow=true; } BATCH.meshes={};
   { const r=box4(LW.x0,LW.y0,LW.x1,LW.y1); SOL.up.push(r); FIX.up.push([r[0],r[1],0,r[2],r[3],Y(L.h)]); }

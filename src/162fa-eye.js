@@ -38,7 +38,8 @@ const EYE={on:false,last:null};
   const vis=o=>{ for(let q=o;q;q=q.parent)if(!q.visible)return false; return true; };
   // a hit you would see: not a clear pane, nor a see-through pixel of a cut-out picture (a plant card, a sign)
   const PX=document.createElement('canvas'); PX.width=PX.height=1; const PXC=PX.getContext('2d',{willReadFrequently:true}), UV=new THREE.Vector2();
-  const seen=h=>{ const o=h.object; if(!o.isMesh||!vis(o))return false; let m=o.material; if(Array.isArray(m))m=m[h.face&&h.face.materialIndex||0]; if(!m||m.visible===false||m.colorWrite===false)return false;
+  const seen=h=>{ const o=h.object; if(!o.isMesh||!vis(o)||LEVELS.drawn&&!LEVELS.drawn(o))return false;   // (another level's things, the tunnels under the street, stay in the scene but are not drawn here)
+    let m=o.material; if(Array.isArray(m))m=m[h.face&&h.face.materialIndex||0]; if(!m||m.visible===false||m.colorWrite===false)return false;
     if(m.transparent&&m.opacity<.15)return false; const T=m.map, I=T&&T.image;
     if(T&&h.uv&&(m.alphaTest>0||m.transparent)&&I&&I.width){ try{ UV.copy(h.uv); T.transformUv(UV); PXC.clearRect(0,0,1,1); PXC.drawImage(I,Math.floor(UV.x*I.width),Math.floor(UV.y*I.height),1,1,0,0,1,1); if(PXC.getImageData(0,0,1,1).data[3]/255<Math.max(.1,m.alphaTest||0))return false; }catch(e){} }
     return true; };
@@ -51,6 +52,17 @@ const EYE={on:false,last:null};
     { const g=W3.group; g.updateMatrixWorld(true); const F=NV.setFromMatrixPosition(g.matrixWorld), d=F.distanceTo(RC.ray.origin), f=F.clone().project(SHARED.cam), h=F.clone().setY(F.y+1.75*TILE/1.13).project(SHARED.cam), rw=r.width/2, rh=r.height/2;
       const fx=(f.x+1)*rw+r.left, fy=(1-f.y)*rh+r.top, hx=(h.x+1)*rw+r.left, hy=(1-h.y)*rh+r.top, half=Math.abs(fy-hy)*.2;
       if(g.visible&&!W3.hideMe&&y<=Math.max(fy,hy)&&y>=Math.min(fy,hy)&&Math.abs(x-(fx+(hx-fx)*(y-fy)/((hy-fy)||1)))<half&&(!hit||hit.distance>d-.6*TILE))return {name:'YOU',kind:ONLINE.myName&&ONLINE.myName()||''}; }
+    // a person or a creature: posed on the GPU as you are, so each body's outline on the screen, feet to head, the nearest one in front of what the ray met (owner, 8 Nov 2026: "the eye icon just says wall even when i clicked on the person")
+    { let best=null; const cam=RC.ray.origin, B3=new THREE.Box3(), C=new THREE.Vector3();
+      const body=(g,o)=>{ if(!g||!vis(g))return; B3.setFromObject(g); if(B3.isEmpty())return; B3.getCenter(C); const d=C.distanceTo(cam); if(hit&&hit.distance<d-.8*TILE||best&&best.d<d)return;
+        const f=C.clone().setY(B3.min.y).project(SHARED.cam), h=C.clone().setY(B3.max.y).project(SHARED.cam), rw=r.width/2, rh=r.height/2, fx=(f.x+1)*rw+r.left, fy=(1-f.y)*rh+r.top, hx=(h.x+1)*rw+r.left, hy=(1-h.y)*rh+r.top;
+        const wd=Math.max(4,Math.max(B3.max.x-B3.min.x,B3.max.z-B3.min.z)/Math.max(1e-3,B3.max.y-B3.min.y)*Math.abs(fy-hy)*.45, Math.abs(fy-hy)*.18);
+        if(y>Math.max(fy,hy)+2||y<Math.min(fy,hy)-2||Math.abs(x-(fx+(hx-fx)*(y-fy)/((hy-fy)||1)))>wd)return; best={d,...o}; };
+      for(const N of (NPCS.all?NPCS.all():[]))if(N&&N.g){ const t=UI.things.find(t=>t.obj&&(under(t.obj,N.g)||under(N.g,t.obj))); body(N.g,{name:t?up(t.name):up(N.name||'SOMEONE').replace(/[ _]\d+$/,'').replace(/ [MF]$/,''),kind:'',info:t?'DOUBLE-CLICK IT TO USE IT':''}); }   // (a name as its tag shows it: no number, no M or F)
+      for(const o of ONLINE.others?ONLINE.others.values():[])if(o.fig&&o.fig.g)body(o.fig.g,{name:up(o.name||'A TENANT'),kind:'ANOTHER PLAYER'});
+      if(best)return {name:best.name,kind:best.kind,info:best.info}; }
+    // what the ray met belongs to something you can use (a helicopter, a car, a shop's door): that, whatever floor it counts as on
+    { const own=hit&&UI.things.find(t=>t.obj&&vis(t.obj)&&under(hit.object,t.obj)); if(own&&own.name!=='YOU'){ const why=own.can&&own.can(); return {name:up(own.name),kind:own.player?'ANOTHER PLAYER':'',info:why&&why!==true?up(why):'DOUBLE-CLICK IT'+(own.key?' OR PRESS '+up(own.key):'')+' TO USE IT'}; } }
     if(T&&(!hit||th.distance<=hit.distance+1.5*TILE)){ const why=T.can&&T.can();
       if(T.name==='YOU')return {name:'YOU',kind:ONLINE.myName&&ONLINE.myName()||''};
       return {name:up(T.name),kind:T.player?'ANOTHER PLAYER':'',info:why&&why!==true?up(why):'DOUBLE-CLICK IT'+(T.key?' OR PRESS '+up(T.key):'')+' TO USE IT'}; }

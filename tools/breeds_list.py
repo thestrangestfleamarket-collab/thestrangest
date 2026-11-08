@@ -19,23 +19,28 @@ A={  # dog body archetypes
  'docked':dict(tail=.15),
  'short':dict(leg=.5,legw=1.1,body=1.25),
 }
+XOLO=set('chihuahua minpin italiangrey chinesecrested bullterrier staffy pitbull amstaff bostonterrier ratterrier greyhound whippet pharaoh ibizan basenji rhodesian pointer gsp weimaraner vizsla rottweiler doberman boxer greatdane mastiff bullmastiff neapolitan canecorso dogue dalmatian frenchie pug sharpei xoloitzcuintli streetdog swissmountain coonhound redbone foxhound beagle basset bloodhound harrier bluetick dachshund jackrussell carolina'.split())
+WOLF=set('husky malamute gsd malinois akita dingo norwegianelk belgiantervuren belgiansheepdog samoyed americaneskimo keeshond tibetanmastiff kuvasz leonberger czechwolfdog saarloos'.split())
+FOX=set('shiba finnishspitz papillon schipperke'.split())
 def D(key,name,m,arch,pat,cols,pf=None,**sh):
     S={}
     for a in arch.split():
         for k,v in A[a].items(): S[k]=S.get(k,1)*v if k in('leg','body','head','snout','legw','bodyw','neckw','tail','ear','earw','fluff','headw','snoutw','neck') else v
     S.update(sh)
-    return dict(key=key,name=name,grp='dogs',m=m,sh=S,pat=pat,cols=cols,pf=pf or {})
+    base=S.pop('base',None) or ('xolo' if key in XOLO else 'wolf' if key in WOLF else 'fox' if key in FOX else 'dog')
+    if base!='dog': S.pop('ruff',None)
+    return dict(key=key,name=name,grp='dogs',type='DOG',base=base,m=m,sh=S,pat=pat,cols=cols,pf=pf or {})
 def C(c,w=None,t=None,**o):
     d=dict(coat=c,white=w or WHT,tan=t or TAN); d.update(o); return d
 SOL='solid'
 DOGS=[
  # toy
  D('chihuahua','CHIHUAHUA',.3,'toy',SOL,[('fawn',C(FAWN)),('black and tan',C(BLK,t=TAN)),('cream',C(CRM)),('chocolate',C(CHOC))],ear=1.5,head=1.4,snout=.5),
- D('pomeranian','POMERANIAN',.3,'toy spitz',SOL,[('orange',C(APR)),('cream',C(CRM)),('black',C(BLK)),('white',C(WHT))],fluff=1.6,ruff=0.8),
+ D('pomeranian','POMERANIAN',.3,'toy spitz',SOL,[('orange',C(APR)),('cream',C(CRM)),('black',C(BLK)),('white',C(WHT))],fluff=1.6,ruff=0.8,tail=1),
  D('yorkie','YORKSHIRE TERRIER',.3,'toy terrier','saddle',[('blue and tan',C(BLU,t=GOLD))],fluff=1.2,tail=.5),
  D('maltese','MALTESE',.3,'toy shaggy','white',[('white',C(WHT))],fluff=1.45),
  D('shihtzu','SHIH TZU',.35,'toy shaggy','bicolor',[('gold and white',C(GOLD)),('black and white',C(BLK))],fluff=1.45,snout=.35,curl=170),
- D('pug','PUG',.4,'toy bull','solid+mask',[('fawn',C(FAWN,mark=BLK)),('black',C(BLK,mark=BLK))],curl=230,tail=.7,leg=.9),
+ D('pug','PUG',.4,'toy bull','solid+mask',[('fawn',C(FAWN,mark=BLK)),('black',C(BLK,mark=BLK))],curl=230,tail=.7,bodyw=1.6,legw=1.3,deep=1.3,leg=.8),
  D('papillon','PAPILLON',.3,'toy','patches',[('white and red',C(RED)),('white and black',C(BLK))],ear=1.7,earw=1.5,fluff=1.15,curl=150),
  D('pekingese','PEKINGESE',.3,'toy shaggy','solid',[('red',C(RUST)),('cream',C(CRM))],leg=.55,snout=.3,fluff=1.55,curl=160),
  D('minpin','MINIATURE PINSCHER',.3,'toy smooth','tanpoints',[('black and tan',C(BLK,t=RUST)),('red',C(RED,t=RED))],ear=1.3,leg=.95,tail=.2),
@@ -46,7 +51,7 @@ DOGS=[
  D('toypoodle','TOY POODLE',.35,'toy',SOL,[('apricot',C(APR)),('black',C(BLK)),('white',C(WHT)),('red',C(RED))],fluff=1.3,drop=150,ear=1.2,tailup=60,tail=.4,snout=1),
  D('japchin','JAPANESE CHIN',.3,'toy shaggy','patches',[('black and white',C(BLK))],snout=.35,curl=170),
  D('brusselsgriffon','BRUSSELS GRIFFON',.3,'toy terrier',SOL,[('red',C(RUST)),('black',C(BLK))],snout=.35,fluff=1.15),
- D('chinesecrested','CHINESE CRESTED',.35,'toy sight','patches',[('pink and grey',C(GRY,'#e8c0b0'))],ear=1.5,fluff=.9),
+ D('chinesecrested','CHINESE CRESTED',.35,'toy sight','patches',[('pink and grey',C(GRY,'#e8c0b0'))],ear=1.5,fluff=.9,tuft=1),
  # terriers
  D('jackrussell','JACK RUSSELL TERRIER',.45,'terrier','white+patches',[('white and tan',C(TAN,t=TAN)),('tricolour',C(BLK))],seed=3),
  D('westie','WEST HIGHLAND TERRIER',.4,'terrier shaggy','white',[('white',C(WHT))],drop=0,ear=.8,leg=.7,fluff=1.25),
@@ -54,10 +59,10 @@ DOGS=[
  D('cairn','CAIRN TERRIER',.4,'terrier shaggy',SOL,[('wheaten',C(WHEAT)),('grey',C(GRY)),('red',C(RUST))],drop=0,ear=.75,leg=.75),
  D('airedale','AIREDALE TERRIER',.8,'terrier','saddle',[('black and tan',C(BLK,t=TAN))],leg=1.1,snout=1.25,fluff=1.08),
  D('bullterrier','BULL TERRIER',.7,'terrier smooth','white',[('white',C(WHT)),('brindle',C(BRN,BRN,BRN))],snout=1.3,headw=1.2,legw=1.25,bodyw=1.25,ear=1.1,drop=0,tail=.7,tailup=0),
- D('staffy','STAFFORDSHIRE BULL TERRIER',.5,'terrier smooth',SOL,[('brindle',C(BRN)),('red',C(RED)),('black',C(BLK)),('blue',C(BLU))],legw=1.3,bodyw=1.35,headw=1.3,snout=.65,drop=90,tail=.6,tailup=0),
- D('pitbull','PIT BULL TERRIER',.7,'terrier smooth','solid+whitechest',[('blue',C(BLU)),('red',C(RED)),('brindle',C(BRN)),('black',C(BLK))],legw=1.3,bodyw=1.3,headw=1.3,snout=.7,drop=100,tail=.8,tailup=0),
- D('amstaff','AMERICAN STAFFORDSHIRE',.7,'terrier smooth','solid+whitechest',[('blue fawn',C('#8a7f74')),('black',C(BLK))],legw=1.3,bodyw=1.3,headw=1.3,snout=.7,drop=90,tail=.8,tailup=0),
- D('bostonterrier','BOSTON TERRIER',.45,'terrier','bicolor+whitechest+blaze+whitefeet',[('black and white',C(BLK))],snout=.35,headw=1.2,ear=1.3,drop=0,tail=.2),
+ D('staffy','STAFFORDSHIRE BULL TERRIER',.5,'terrier smooth',SOL,[('brindle',C(BRN)),('red',C(RED)),('black',C(BLK)),('blue',C(BLU))],legw=1.3,bodyw=1.35,headw=1.3,snout=.65,drop=90,tail=.6,tailup=0,deep=1.2),
+ D('pitbull','PIT BULL TERRIER',.7,'terrier smooth','solid+whitechest',[('blue',C(BLU)),('red',C(RED)),('brindle',C(BRN)),('black',C(BLK))],legw=1.3,bodyw=1.3,headw=1.3,snout=.7,drop=100,tail=.8,tailup=0,deep=1.2),
+ D('amstaff','AMERICAN STAFFORDSHIRE',.7,'terrier smooth','solid+whitechest',[('blue fawn',C('#8a7f74')),('black',C(BLK))],legw=1.3,bodyw=1.3,headw=1.3,snout=.7,drop=90,tail=.8,tailup=0,deep=1.2),
+ D('bostonterrier','BOSTON TERRIER',.45,'terrier','bicolor+whitechest+blaze+whitefeet',[('black and white',C(BLK))],snout=.35,headw=1.2,ear=1.3,drop=0,tail=.2,bodyw=1.3,legw=1.15),
  D('foxterrier','WIRE FOX TERRIER',.6,'terrier','white+patches+tanface',[('tricolour',C(BLK,t=TAN))],snout=1.3,drop=110,ear=.7),
  D('bedlington','BEDLINGTON TERRIER',.6,'terrier sight','white',[('blue',C('#c8c8cc',WHT)),('liver',C('#c0a088',WHT))],fluff=1.25,drop=150,tail=1),
  D('schnauzer','MINIATURE SCHNAUZER',.45,'terrier','solid',[('salt and pepper',C(GRY)),('black',C(BLK)),('black and silver',C(BLK))],snout=1.15,drop=100,ear=.8),
@@ -90,7 +95,7 @@ DOGS=[
  D('basenji','BASENJI',.6,'smooth','bicolor',[('red and white',C(RED)),('black and white',C(BLK)),('tricolour',C(BLK,t=TAN))],curl=230,ear=1.1),
  D('pharaoh','PHARAOH HOUND',.9,'sight',SOL,[('tan',C(RUST))],ear=1.5,drop=0),
  D('ibizan','IBIZAN HOUND',1.0,'sight','patches',[('red and white',C(RED))],ear=1.7,drop=0),
- D('rhodesian','RHODESIAN RIDGEBACK',1.0,'retriever smooth',SOL,[('wheaten',C(WHEAT)),('red wheaten',C(RUST))],leg=1.1,tail=1.1),
+ D('rhodesian','RHODESIAN RIDGEBACK',1.0,'retriever smooth',SOL,[('wheaten',C(WHEAT)),('red wheaten',C(RUST))],leg=1.1,tail=1.1,bodyw=1.3,deep=1.2,legw=1.2,neckw=1.15),
  # retrievers, spaniels, pointers, setters
  D('labrador','LABRADOR RETRIEVER',1.0,'retriever smooth',SOL,[('yellow',C(YEL)),('black',C(BLK)),('chocolate',C(CHOC))],tail=1.05,tailw=1.3),
  D('golden','GOLDEN RETRIEVER',1.0,'retriever',SOL,[('golden',C(GOLD)),('cream',C(CRM)),('red',C(RUST))],fluff=1.18),
@@ -111,14 +116,14 @@ DOGS=[
  D('englishsetter','ENGLISH SETTER',1.1,'spaniel','white+ticked',[('blue belton',C(BLK)),('orange belton',C(APR))],leg=1.15,snout=1.3,tail=1.1),
  D('gordonsetter','GORDON SETTER',1.1,'spaniel','tanpoints',[('black and tan',C(BLK,t=RUST))],leg=1.15,snout=1.3,tail=1.1),
  # working
- D('rottweiler','ROTTWEILER',1.0,'molosser','tanpoints',[('black and tan',C(BLK,t=RUST))],tail=.25),
+ D('rottweiler','ROTTWEILER',1.0,'molosser','tanpoints',[('black and tan',C(BLK,t=RUST))],tail=.25,deep=1.2),
  D('doberman','DOBERMAN PINSCHER',1.1,'smooth','tanpoints',[('black and tan',C(BLK,t=RUST)),('red',C(LIV,t=RUST)),('blue',C(BLU,t=TAN))],leg=1.2,snout=1.25,ear=1.5,tail=.2),
- D('boxer','BOXER',1.0,'smooth','solid+whitechest+mask',[('fawn',C(FAWN,mark=BLK)),('brindle',C(BRN,mark=BLK))],snout=.45,headw=1.2,drop=80,tail=.2,legw=1.15),
+ D('boxer','BOXER',1.0,'smooth','solid+whitechest+mask',[('fawn',C(FAWN,mark=BLK)),('brindle',C(BRN,mark=BLK))],snout=.45,headw=1.2,drop=80,tail=.2,legw=1.15,deep=1.2),
  D('greatdane','GREAT DANE',1.2,'smooth','white+spots',[('harlequin',C(WHT,mark=BLK)),('fawn',C(FAWN)),('black',C(BLK)),('blue',C(BLU))],leg=1.5,neck=1.25,drop=70,snout=1.2,headw=1.1),
- D('mastiff','ENGLISH MASTIFF',1.2,'molosser','solid+mask',[('fawn',C(FAWN,mark=BLK)),('apricot',C(APR,mark=BLK))],bodyw=1.5,legw=1.45,snout=.45),
- D('bullmastiff','BULLMASTIFF',1.1,'molosser','solid+mask',[('red',C(RED,mark=BLK)),('fawn',C(FAWN,mark=BLK))],snout=.45),
- D('neapolitan','NEAPOLITAN MASTIFF',1.2,'molosser',SOL,[('grey',C(BLU)),('mahogany',C(LIV))],bodyw=1.45,head=1.3,snout=.5),
- D('canecorso','CANE CORSO',1.1,'molosser',SOL,[('black',C(BLK)),('grey',C(BLU)),('fawn',C(FAWN))],tail=.3,ear=.9),
+ D('mastiff','ENGLISH MASTIFF',1.2,'molosser','solid+mask',[('fawn',C(FAWN,mark=BLK)),('apricot',C(APR,mark=BLK))],bodyw=1.5,legw=1.45,snout=.45,deep=1.2),
+ D('bullmastiff','BULLMASTIFF',1.1,'molosser','solid+mask',[('red',C(RED,mark=BLK)),('fawn',C(FAWN,mark=BLK))],snout=.45,deep=1.2),
+ D('neapolitan','NEAPOLITAN MASTIFF',1.2,'molosser',SOL,[('grey',C(BLU)),('mahogany',C(LIV))],bodyw=1.45,head=1.3,snout=.5,deep=1.2),
+ D('canecorso','CANE CORSO',1.1,'molosser',SOL,[('black',C(BLK)),('grey',C(BLU)),('fawn',C(FAWN))],tail=.3,ear=.9,deep=1.2),
  D('saintbernard','SAINT BERNARD',1.2,'molosser','patches+whitefeet+blaze+mask',[('red and white',C(RUST,mark=BLK))],fluff=1.2),
  D('newfoundland','NEWFOUNDLAND',1.2,'molosser shaggy',SOL,[('black',C(BLK)),('brown',C(CHOC)),('landseer',C(BLK,mark=WHT))],fluff=1.35,ruff=0.6),
  D('bernese','BERNESE MOUNTAIN DOG',1.1,'molosser','base',[('tricolour',C(BLK,WHT,RUST))],fluff=1.2,snout=.9,ruff=0.6),
@@ -129,7 +134,7 @@ DOGS=[
  D('malamute','ALASKAN MALAMUTE',1.1,'spitz','base',[('grey and white',C(GRY,WHT,WHT)),('seal',C(BLK,WHT,GRY))],fluff=1.3,bodyw=1.2,ruff=0.7),
  D('samoyed','SAMOYED',1.0,'spitz','white',[('white',C(WHT)),('cream',C(CRM,CRM,CRM))],fluff=1.5,ruff=0.8),
  D('portuguesewater','PORTUGUESE WATER DOG',.9,'shaggy','solid',[('black',C(BLK)),('brown',C(CHOC))],tailup=40),
- D('dogue','DOGUE DE BORDEAUX',1.0,'molosser',SOL,[('red',C('#9a4a26'))],head=1.35,headw=1.35,snout=.4),
+ D('dogue','DOGUE DE BORDEAUX',1.0,'molosser',SOL,[('red',C('#9a4a26'))],head=1.35,headw=1.35,snout=.4,deep=1.2),
  D('leonberger','LEONBERGER',1.2,'molosser shaggy','solid+mask',[('red sand',C(GOLD,mark=BLK))],fluff=1.35,ruff=0.7),
  D('komondor','KOMONDOR',1.1,'shaggy','white',[('white',C(WHT))],fluff=1.7,drop=150),
  D('kuvasz','KUVASZ',1.1,'retriever','white',[('white',C(WHT))],fluff=1.2),
@@ -141,8 +146,8 @@ DOGS=[
  D('gsd','GERMAN SHEPHERD',1.0,'smooth','saddle',[('black and tan',C(BLK,t=TAN)),('sable',C(SAB,t=TAN)),('black',C(BLK,BLK,BLK)),('white',C(WHT,WHT,WHT))],ear=1.3,snout=1.15,tail=1.1),
  D('malinois','BELGIAN MALINOIS',.95,'smooth','solid+mask',[('fawn',C(FAWN,mark=BLK))],ear=1.3,snout=1.15,leg=1.05),
  D('sheltie','SHETLAND SHEEPDOG',.55,'retriever','base',[('sable',C(SAB,WHT,TAN)),('tricolour',C(BLK,WHT,TAN)),('blue merle',C(GRY,WHT,TAN,mark=BLK))],drop=40,fluff=1.25,snout=1.1,ruff=1),
- D('corgi','PEMBROKE WELSH CORGI',.55,'smooth short','bicolor',[('red and white',C(APR)),('sable',C(SAB)),('tricolour',C(BLK,t=TAN))],leg=.48,ear=1.35,tail=.1,head=1.1),
- D('cardigan','CARDIGAN WELSH CORGI',.6,'smooth short','bicolor+merle',[('blue merle',C(GRY,mark=BLK)),('red and white',C(RUST))],leg=.48,ear=1.35,head=1.1),
+ D('corgi','PEMBROKE WELSH CORGI',.55,'smooth short','bicolor',[('red and white',C(APR)),('sable',C(SAB)),('tricolour',C(BLK,t=TAN))],leg=.48,tail=.1,head=1.1,ear=1.35),
+ D('cardigan','CARDIGAN WELSH CORGI',.6,'smooth short','bicolor+merle',[('blue merle',C(GRY,mark=BLK)),('red and white',C(RUST))],leg=.48,head=1.1,ear=1.35),
  D('oldenglish','OLD ENGLISH SHEEPDOG',1.0,'shaggy docked','patches',[('grey and white',C(GRY))],fluff=1.55,snout=.85),
  D('cattledog','AUSTRALIAN CATTLE DOG',.8,'smooth','tanpoints+roan',[('blue heeler',C(BLU,t=RUST)),('red heeler',C(RED,t=RED))]),
  D('puli','PULI',.7,'shaggy',SOL,[('black',C(BLK)),('white',C(WHT))],fluff=1.65,curl=170),
@@ -151,8 +156,8 @@ DOGS=[
  D('belgiansheepdog','BELGIAN SHEEPDOG',1.0,'retriever',SOL,[('black',C(BLK))],drop=0,ear=1.25,fluff=1.25,ruff=0.8),
  D('briard','BRIARD',1.0,'shaggy',SOL,[('fawn',C(FAWN)),('black',C(BLK)),('grey',C(GRY))],fluff=1.4),
  # non-sporting
- D('bulldog','BULLDOG',.6,'bull','patches',[('red and white',C(RUST)),('fawn',C(FAWN)),('brindle',C(BRN))],seed=2),
- D('frenchie','FRENCH BULLDOG',.45,'bull',SOL,[('fawn',C(FAWN)),('brindle',C(BRN)),('cream',C(CRM)),('blue',C(BLU))],ear=1.6,earw=1.4,drop=0,leg=.85),
+ D('bulldog','BULLDOG',.6,'bull','patches',[('red and white',C(RUST)),('fawn',C(FAWN)),('brindle',C(BRN))],seed=2,bodyw=1.5,legw=1.4,leg=.7),
+ D('frenchie','FRENCH BULLDOG',.45,'bull',SOL,[('fawn',C(FAWN)),('brindle',C(BRN)),('cream',C(CRM)),('blue',C(BLU))],earw=1.4,drop=0,bodyw=1.6,legw=1.45,ear=1.2,deep=1.35,leg=.75),
  D('dalmatian','DALMATIAN',1.0,'smooth','white+spots',[('black spotted',C(WHT,mark=BLK)),('liver spotted',C(WHT,mark=LIV))],drop=130,tail=1.1,seed=4),
  D('poodle','STANDARD POODLE',1.0,'retriever',SOL,[('white',C(WHT)),('black',C(BLK)),('apricot',C(APR)),('silver',C(SLV)),('red',C(RED))],fluff=1.3,leg=1.15,snout=1.15,drop=160,ear=1.2,tailup=60,tail=.45),
  D('minipoodle','MINIATURE POODLE',.5,'retriever',SOL,[('white',C(WHT)),('black',C(BLK)),('apricot',C(APR))],fluff=1.3,leg=1.1,drop=160,ear=1.2,tailup=60,tail=.45),
@@ -162,7 +167,7 @@ DOGS=[
  D('keeshond','KEESHOND',.7,'spitz','base',[('grey',C(GRY,SLV,BLK))],fluff=1.55,ruff=1),
  D('lhasa','LHASA APSO',.4,'toy shaggy',SOL,[('gold',C(GOLD)),('cream',C(CRM)),('black',C(BLK))],fluff=1.5,leg=.7,curl=170),
  D('schipperke','SCHIPPERKE',.45,'spitz',SOL,[('black',C(BLK))],tail=.1,ear=1),
- D('xoloitzcuintli','XOLOITZCUINTLI (STANDARD)',.8,'sight',SOL,[('grey',C('#5a5654')),('liver',C(LIV))],ear=1.6,drop=0,fluff=.9,leg=1.05),
+ D('xoloitzcuintli','XOLOITZCUINTLI (STANDARD)',.8,'sight',SOL,[('grey',C('#5a5654')),('liver',C(LIV))],ear=1.6,drop=0,fluff=.9,leg=1.05,tuft=1),
  D('lowchen','LOWCHEN',.4,'toy shaggy',SOL,[('cream',C(CRM))],fluff=1.35,curl=160),
  D('finnishspitz','FINNISH SPITZ',.7,'spitz',SOL,[('red gold',C('#c06a2a'))],fluff=1.2),
  D('americaneskimo','AMERICAN ESKIMO DOG',.6,'spitz','white',[('white',C(WHT))],fluff=1.4,ruff=0.7),
@@ -176,6 +181,8 @@ DOGS=[
  D('cockapoo','COCKAPOO',.5,'spaniel shaggy',SOL,[('apricot',C(APR)),('black',C(BLK))],fluff=1.35),
  D('dingo','DINGO',.95,'smooth','solid+whitefeet+whitechest',[('ginger',C('#c88a48'))],ear=1.05),
  D('carolina','CAROLINA DOG',.85,'smooth',SOL,[('ginger',C('#c88a48'))],ear=1.25),
+ D('czechwolfdog','CZECHOSLOVAKIAN WOLFDOG',1.1,'smooth','base',[('wolf grey',C(GRY,CRM,'#b8aa98'))],leg=1.05),
+ D('saarloos','SAARLOOS WOLFDOG',1.1,'smooth','base',[('wolf grey',C(GRY,CRM,'#b8aa98')),('forest brown',C(BRN,CRM,TAN))],leg=1.1),
 ]
 
 CA={  # cat body archetypes
@@ -190,7 +197,7 @@ def K(key,name,m,arch,pat,cols,**sh):
     for a in arch.split():
         for k,v in CA[a].items(): S[k]=S.get(k,1)*v if k not in('drop','dropf','curl','tailup') else v
     S.update(sh)
-    return dict(key=key,name=name,grp='cats',m=m,sh=S,pat=pat,cols=cols)
+    return dict(key=key,name=name,grp='cats',type='CAT',base='cat',m=m,sh=S,pat=pat,cols=cols)
 def Q(c,b=None,mk=None,eye=None,**o):
     d=dict(coat=c,belly=b or c);
     if mk: d['mark']=mk
@@ -259,3 +266,156 @@ CATS=[
  K('khaomanee','KHAO MANEE',.6,'','white',[('white',Q(CWH,CWH,eye=BEY))]),
  K('alleycat','ALLEY CAT',.7,'foreign','tabby',[('grey',Q(CGR,'#b8b8b4',CBK)),('brown',Q('#7a6048',mk=CBK))],bodyw=.9,ear=1.15),
 ]
+
+# every other animal's breeds (owner, 8 Nov 2026: "1-6"): on its own base; colours by the base's own zones (mark, mark2 for patterns); patterns: solid, spots, rumpspots,
+# blanket, patches, pinto, speckled, laced, barred, points, socks, blaze, face, belly, belted, front, dutch, mane
+def G(key,name,m,base,grp,typ,pat,cols,pf=None,**sh): return dict(key=key,name=name,grp=grp,type=typ,base=base,m=m,sh=sh,pat=pat,cols=cols,pf=pf or {})
+def H(key,name,m,pat,cols,**sh): return G(key,name,m,'horse','horses','HORSE',pat,cols,**sh)
+def hc(coat,points=None,hair=None,**o): return dict(coat=coat,points=points or coat,hair=hair or points or coat,**o)
+BAY,CHES,BLKH,GREYH,PALO,BUCK,DUN,SORR,WHH='#7a4526','#a0522d','#1e1a18','#c8c4bc','#d8b066','#c8a46a','#b89870','#b4622e','#ece8e0'
+HORSES=[
+ H('arabian','ARABIAN',1.2,'solid',[('grey',hc(GREYH,'#9a948c',WHH)),('bay',hc(BAY,BLKH,BLKH)),('chestnut',hc(CHES)),('black',hc(BLKH))],legw=.85,neck=1.1,head=.9,tailup=25),
+ H('thoroughbred','THOROUGHBRED',1.2,'solid',[('bay',hc(BAY,BLKH,BLKH)),('chestnut',hc(CHES)),('black',hc(BLKH))],leg=1.08,legw=.9),
+ H('quarterhorse','QUARTER HORSE',1.2,'solid',[('sorrel',hc(SORR)),('buckskin',hc(BUCK,BLKH,BLKH)),('palomino',hc(PALO,PALO,WHH))],bodyw=1.12,legw=1.05),
+ H('clydesdale','CLYDESDALE',1.2,'solid+socks+blaze',[('bay',hc(BAY,BLKH,BLKH,mark=WHH))],bodyw=1.2,legw=1.35),
+ H('shire','SHIRE',1.2,'solid+socks',[('black',hc(BLKH,mark=WHH)),('bay',hc(BAY,BLKH,BLKH,mark=WHH))],bodyw=1.25,legw=1.4,leg=1.05),
+ H('percheron','PERCHERON',1.2,'solid',[('grey',hc('#9a9894','#6a6866','#d0ccc6')),('black',hc(BLKH))],bodyw=1.25,legw=1.3),
+ H('friesian','FRIESIAN',1.2,'solid',[('black',hc(BLKH))],legw=1.1,neck=1.1),
+ H('appaloosa','APPALOOSA',1.2,'blanket+rumpspots',[('blanket',hc(BAY,BLKH,BLKH,mark=WHH)),('leopard',hc(WHH,'#4a3a2a','#4a3a2a',mark='#3a2a1a'))]),
+ H('painthorse','PAINT HORSE',1.2,'pinto',[('bay and white',hc(BAY,BLKH,BLKH,mark=WHH)),('black and white',hc(BLKH,mark=WHH)),('sorrel and white',hc(SORR,mark=WHH))]),
+ H('mustang','MUSTANG',1.2,'solid',[('dun',hc(DUN,BLKH,BLKH)),('bay',hc(BAY,BLKH,BLKH)),('grullo',hc('#8a8478',BLKH,BLKH))]),
+ H('shetland','SHETLAND PONY',.9,'solid',[('chestnut',hc(CHES,CHES,'#e8d8b0')),('black',hc(BLKH)),('piebald',hc(BLKH,mark=WHH))],leg=.72,bodyw=1.15,head=1.12,fluff=1.18),
+ H('minihorse','MINIATURE HORSE',.8,'solid',[('palomino',hc(PALO,PALO,WHH)),('pinto',hc(BAY,BLKH,BLKH,mark=WHH))],leg=.78,head=1.1),
+ H('falabella','FALABELLA',.7,'pinto',[('black and white',hc(BLKH,mark=WHH))],leg=.8,head=1.08),
+ H('haflinger','HAFLINGER',1.1,'solid',[('chestnut',hc('#b8702e','#b8702e','#ece0c0'))],bodyw=1.1,leg=.9),
+ H('fjord','NORWEGIAN FJORD',1.0,'solid+mane',[('brown dun',hc('#d0b890','#5a4a3a','#ece6d8',mark='#3a2e24'))],bodyw=1.12,leg=.88),
+ H('akhalteke','AKHAL-TEKE',1.2,'solid',[('golden',hc('#d8a848','#a87830','#a87830'))],legw=.82,bodyw=.85,neck=1.15),
+ H('andalusian','ANDALUSIAN',1.2,'solid',[('grey',hc('#d0ccc4','#a8a49c',WHH))],neck=1.08,fluff=1.05),
+ H('lipizzaner','LIPIZZANER',1.2,'solid',[('white',hc(WHH,'#c8c4bc',WHH))]),
+ H('tennesseewalker','TENNESSEE WALKER',1.2,'solid',[('black',hc(BLKH)),('chestnut',hc(CHES))],neck=1.08),
+ H('mustangpinto','MORGAN',1.2,'solid',[('bay',hc(BAY,BLKH,BLKH)),('black',hc(BLKH))],bodyw=1.08),
+ G('minidonkey','MINIATURE DONKEY',.75,'donkey','horses','DONKEY','base',[('grey dun',{})],leg=.85),
+ G('poitou','POITOU DONKEY',1.1,'donkey','horses','DONKEY','solid',[('dark bay',dict(coat='#3a2a20'))],fluff=1.55),
+ G('mammothjack','MAMMOTH JACKSTOCK',1.2,'donkey','horses','DONKEY','base',[('black',dict(coat='#2a2420',belly='#3a322c',points='#2a2420'))],leg=1.1),
+ G('spottedass','SPOTTED DONKEY',1.0,'donkey','horses','DONKEY','pinto',[('spotted',dict(mark='#f0ece4'))]),
+]
+def R_(key,name,m,pat,cols,**sh): return G(key,name,m,'rabbit','rabbits','RABBIT',pat,cols,**sh)
+def rc(coat,pale=None,ring=None,**o): return dict(coat=coat,pale=pale or '#ece8e0',ring=ring or coat,**o)
+RWH,RBK,RBR,RGR,ROR,RCH='#f2efe8','#2a2624','#8a6a4a','#8a8884','#d0884a','#6a4a3a'
+RABBITS=[
+ R_('hollandlop','HOLLAND LOP',.3,'solid',[('orange',rc(ROR)),('black',rc(RBK)),('broken',rc(RWH,mark=ROR))],drop=150,head=1.15,body=.9),
+ R_('frenchlop','FRENCH LOP',.5,'solid',[('fawn',rc('#c8a070')),('grey',rc(RGR))],drop=160,ear=1.15,bodyw=1.15),
+ R_('englishlop','ENGLISH LOP',.5,'solid',[('fawn',rc('#c8a070')),('sooty',rc('#5a4a3e'))],drop=170,ear=1.6),
+ R_('netherland','NETHERLAND DWARF',.22,'solid',[('chestnut',rc(RCH)),('white',rc(RWH)),('black',rc(RBK))],head=1.2,ear=.75,body=.88),
+ R_('lionhead','LIONHEAD',.3,'solid',[('tortoise',rc('#8a5a3a')),('white',rc(RWH))],fluff=1.3,ear=.8),
+ R_('angora','ANGORA',.45,'solid',[('white',rc(RWH)),('fawn',rc('#d8b888'))],fluff=1.65,ear=.85),
+ R_('rex','REX',.45,'solid',[('castor',rc('#7a5236')),('black',rc(RBK)),('blue',rc('#7a8290'))]),
+ R_('flemish','FLEMISH GIANT',.8,'solid',[('steel grey',rc('#6a6a6a')),('sandy',rc('#c8a878')),('black',rc(RBK))],bodyw=1.15,head=1.05),
+ R_('dutchrabbit','DUTCH',.35,'dutch',[('black',rc(RBK,mark=RWH)),('chocolate',rc(RCH,mark=RWH)),('blue',rc('#6a7280',mark=RWH))]),
+ R_('himalayanrabbit','HIMALAYAN',.35,'solid+points',[('black points',rc(RWH,mark=RBK))],body=1.08),
+ R_('californian','CALIFORNIAN',.5,'solid+points',[('white and sepia',rc(RWH,mark='#4a3a32'))]),
+ R_('newzealand','NEW ZEALAND WHITE',.5,'solid',[('white',rc(RWH,eye='#c84858'))]),
+ R_('englishspot','ENGLISH SPOT',.4,'solid+spots',[('black spotted',rc(RWH,mark=RBK))],leg=1.1),
+ R_('harlequinrabbit','HARLEQUIN',.45,'patches',[('japanese',rc(ROR,mark=RBK))]),
+ R_('jerseywooly','JERSEY WOOLY',.25,'solid',[('white',rc(RWH)),('chinchilla',rc('#9a9890'))],fluff=1.45,ear=.75),
+ R_('checkered','CHECKERED GIANT',.7,'solid+spots',[('black on white',rc(RWH,mark=RBK))],bodyw=1.08,leg=1.08),
+ R_('belgianhare','BELGIAN HARE',.6,'solid',[('rufous',rc('#a85a2a'))],leg=1.25,bodyw=.85,ear=1.2),
+ R_('minirex','MINI REX',.3,'solid',[('red',rc('#b4582a')),('blue',rc('#7a8290'))],head=1.08),
+]
+def CH(key,name,m,pat,cols,pf=None,**sh): return G(key,name,m,'chicken','poultry','CHICKEN',pat,cols,pf,**sh)
+def cc(c,w=None,t=None,**o): return dict(plumage=c,wing=w or c,tail=t or c,**o)
+def DK(key,name,m,pat,cols,**sh): return G(key,name,m,'duck','poultry','DUCK',pat,cols,**sh)
+def PG(key,name,m,pat,cols,**sh): return G(key,name,m,'pigeon','poultry','PIGEON',pat,cols,**sh)
+def pc(c,**o): return dict(plumage=c,head=c,green=c,sheen=c,wine=c,breast=c,belly=c,wing=c,bar=c,flight=c,rump=c,**o)
+POULTRY=[
+ CH('rhodeisland','RHODE ISLAND RED',.5,'solid',[('red',cc('#8a3a1a','#7a3218','#2a1a14'))]),
+ CH('leghorn','LEGHORN',.5,'solid',[('white',cc('#f4f2ec'))],pf=dict(combSize=1.3)),
+ CH('australorp','AUSTRALORP',.55,'solid',[('black',cc('#1e2420'))]),
+ CH('barredrock','BARRED ROCK',.55,'solid+barred',[('barred',cc('#e8e6e0',mark='#2a2a2a'))]),
+ CH('orpington','BUFF ORPINGTON',.55,'solid',[('buff',cc('#e0b070'))],fluff=1.25),
+ CH('silkie','SILKIE',.3,'solid',[('white',cc('#f6f4ee',red='#3a2a3a')),('black',cc('#1e1c20'))],fluff=1.6),
+ CH('sussex','SPECKLED SUSSEX',.55,'solid+speckled',[('speckled',cc('#7a3a1a',mark='#f2efe8'))]),
+ CH('wyandotte','SILVER LACED WYANDOTTE',.55,'solid+laced',[('silver laced',cc('#f0eee8',mark='#1e1e1e'))],fluff=1.1),
+ CH('brahma','BRAHMA',.6,'solid+speckled',[('light',cc('#eeeae2',mark='#2a2a2a'))],fluff=1.2),
+ CH('cochin','COCHIN',.55,'solid',[('buff',cc('#e0b070')),('black',cc('#1e1c20'))],fluff=1.45),
+ CH('bantam','BANTAM',.3,'solid',[('red',cc('#9a4a1a','#7a3a18','#1e1a14')),('white',cc('#f4f2ec'))]),
+ CH('marans','CUCKOO MARANS',.55,'solid+barred',[('cuckoo',cc('#8a8a86',mark='#3a3a38'))]),
+ CH('eastereggers','EASTER EGGER',.5,'solid+speckled',[('mixed',cc('#9a6a3a',mark='#e8dcc0'))]),
+ DK('pekin','PEKIN',.55,'solid',[('white',dict(plumage='#f6f2e6',wing='#f6f2e6',featherTips='#f0ece0'))]),
+ DK('mallard','MALLARD',.55,'solid+face',[('drake',dict(plumage='#8a7a6a',wing='#7a6a5a',featherTips='#3a4a8a',mark='#1e5a2e')),('hen',dict(plumage='#9a7a54',wing='#8a6a4a',featherTips='#3a4a8a',mark='#9a7a54'))]),
+ DK('callduck','CALL DUCK',.3,'solid',[('white',dict(plumage='#f6f2e6',wing='#f6f2e6')),('grey',dict(plumage='#8a7a6a',wing='#7a6a5a'))],head=1.2),
+ DK('khaki','KHAKI CAMPBELL',.5,'solid',[('khaki',dict(plumage='#a08a62',wing='#8a7a58',featherTips='#6a5a40'))]),
+ DK('runner','INDIAN RUNNER',.6,'solid',[('fawn and white',dict(plumage='#f0ece0',wing='#c8a878')),('black',dict(plumage='#1e2420',wing='#1e2420'))],neck=1.4,leg=1.2),
+ DK('muscovy','MUSCOVY',.6,'solid+patches',[('black and white',dict(plumage='#1e2020',wing='#1e2020',mark='#f2efe8'))],bodyw=1.1),
+ DK('cayuga','CAYUGA',.55,'solid',[('black',dict(plumage='#141a16',wing='#141a16',featherTips='#1e3a2a'))]),
+ DK('swedishblue','SWEDISH BLUE',.55,'solid',[('blue',dict(plumage='#5a6878',wing='#4a5868'))]),
+ PG('rockpigeon','ROCK PIGEON',.3,'base',[('blue bar',{})]),
+ PG('whitedove','WHITE DOVE',.3,'solid',[('white',pc('#f4f2ee'))]),
+ PG('fantail','FANTAIL',.3,'solid',[('white',pc('#f4f2ee')),('black',pc('#2a2a2c'))],tail=1.35,tailup=55),
+ PG('homer','RACING HOMER',.32,'base+speckled',[('checker',dict(mark='#4a4440'))]),
+ PG('tumbler','TUMBLER',.28,'solid',[('red',pc('#8a3a2a')),('almond',pc('#c89a5a'))],head=1.1),
+ PG('pouter','POUTER',.35,'solid',[('white',pc('#f4f2ee')),('blue',pc('#7a8494'))],bodyw=1.25,neck=1.2),
+ PG('mourningdove','MOURNING DOVE',.3,'solid',[('fawn',pc('#b8a088'))],tail=1.2),
+]
+def PA(key,name,m,cols,**sh): return G(key,name,m,'parrot','parrots','PARROT','base',cols,**sh)
+def ac(p,b=None,r=None,y=None,c=None,**o): return dict(plumage=p,blue=b or p,red=r or p,yellow=y or p,cheek=c or '#e7e3d2',**o)
+PARROTS=[
+ PA('scarletmacaw','SCARLET MACAW',.85,[('scarlet',ac('#d4231a','#2465b0','#d4231a','#f2c41a'))],tail=1.3),
+ PA('blueandgold','BLUE-AND-GOLD MACAW',.85,[('blue and gold',ac('#2a7ad0','#1e5aa8','#f0b51c','#f0c020'))],tail=1.3),
+ PA('greenwing','GREEN-WINGED MACAW',.9,[('red and green',ac('#b8241a','#2465b0','#b8241a','#3aa040'))],tail=1.3),
+ PA('hyacinth','HYACINTH MACAW',1.0,[('cobalt',ac('#2a35a0','#202a88','#2a35a0','#f0d020'))],tail=1.35),
+ PA('militarymacaw','MILITARY MACAW',.8,[('green',ac('#4a9a3a','#2465b0','#c8241a','#4a9a3a'))],tail=1.3),
+ PA('africangrey','AFRICAN GREY',.33,[('grey',ac('#8a8c90','#6a6c70','#c8201a','#8a8c90','#d8d8d4'))],tail=.75),
+ PA('cockatoo','SULPHUR-CRESTED COCKATOO',.45,[('white',ac('#f4f2ec','#f4f2ec','#f4f2ec','#f2d020','#f4f2ec'))]),
+ PA('cockatiel','COCKATIEL',.32,[('grey',ac('#8a8a88','#6a6a68','#e8803a','#f0d850','#f0d850')),('lutino',ac('#f4ecc8','#f0e8c0','#e8803a','#f0d850','#f0d850'))],tail=1.2),
+ PA('budgie','BUDGIE',.18,[('green',ac('#5ab83a','#2a6ab0','#5ab83a','#f0e040','#f0e040')),('blue',ac('#4a8ad8','#2a5ab0','#4a8ad8','#f2f2ee','#f2f2ee'))],tail=1.15),
+ PA('lovebird','LOVEBIRD',.15,[('peach-faced',ac('#4ab84a','#3a7ad0','#f08a6a','#4ab84a','#f08a6a'))],tail=.7),
+ PA('amazon','AMAZON PARROT',.4,[('yellow-headed',ac('#3a9a3a','#2a6ab0','#c8301a','#f0d020'))],tail=.85),
+ PA('eclectus','ECLECTUS',.42,[('male',ac('#3ab83a','#2a6ab0','#c8301a','#3ab83a')),('female',ac('#c0201a','#5a2a9a','#c0201a','#c0201a'))],tail=.8),
+ PA('sunconure','SUN CONURE',.3,[('sun',ac('#f0a020','#3a8a3a','#f06020','#f0d020'))]),
+ PA('quaker','QUAKER PARROT',.3,[('green',ac('#6ab04a','#3a7ad0','#6ab04a','#d8dcd0','#d8dcd0'))]),
+ PA('lorikeet','RAINBOW LORIKEET',.3,[('rainbow',ac('#3a9a3a','#2a3aa8','#e0401a','#f0c020','#2a3aa8'))]),
+]
+def LV(key,name,m,base,typ,pat,cols,**sh): return G(key,name,m,base,'livestock',typ,pat,cols,**sh)
+LIVESTOCK=[
+ LV('holstein','HOLSTEIN',1.2,'cow','COW','base',[('black and white',dict(coat='#f2efe8',patch='#1e1c1a'))]),
+ LV('jersey','JERSEY COW',1.1,'cow','COW','solid',[('fawn',dict(coat='#b0804a',muzzle='#2a2420'))],leg=.95,head=.95),
+ LV('angus','ANGUS',1.2,'cow','COW','solid',[('black',dict(coat='#1a1816')),('red',dict(coat='#7a2e1a'))],bodyw=1.12),
+ LV('hereford','HEREFORD',1.2,'cow','COW','solid+face+belly+socks',[('red and white',dict(coat='#8a3a1e',mark='#f2efe8'))],bodyw=1.12),
+ LV('highland','HIGHLAND',1.1,'cow','COW','solid',[('ginger',dict(coat='#b0602a')),('black',dict(coat='#1e1a18')),('dun',dict(coat='#c8a878'))],fluff=1.6,leg=.85),
+ LV('beltedgalloway','BELTED GALLOWAY',1.1,'cow','COW','solid+belted',[('black and white',dict(coat='#1a1816',mark='#f2efe8'))],fluff=1.2,leg=.9),
+ LV('brownswiss','BROWN SWISS',1.2,'cow','COW','solid',[('brown',dict(coat='#7a6a5a'))]),
+ LV('longhorn','TEXAS LONGHORN',1.2,'cow','COW','patches',[('red and white',dict(coat='#f2efe8',mark='#9a4a24'))]),
+ LV('dexter','DEXTER',.9,'cow','COW','solid',[('black',dict(coat='#1a1816')),('dun',dict(coat='#8a6a4a'))],leg=.72),
+ LV('zebu','MINIATURE ZEBU',.9,'cow','COW','solid',[('grey',dict(coat='#9a9894')),('red',dict(coat='#8a4a2a'))],leg=.85,drop=120),
+ LV('yorkshire','YORKSHIRE PIG',1.0,'pig','PIG','solid',[('pink',dict(coat='#efb1aa'))]),
+ LV('berkshire','BERKSHIRE',.9,'pig','PIG','solid+socks+blaze',[('black',dict(coat='#1e1a1a',mark='#f2efe8'))]),
+ LV('hampshire','HAMPSHIRE PIG',1.0,'pig','PIG','solid+belted',[('black, belted',dict(coat='#1e1a1a',mark='#f2efe8'))]),
+ LV('duroc','DUROC',1.0,'pig','PIG','solid',[('red',dict(coat='#9a4a2a'))],drop=100),
+ LV('kunekune','KUNEKUNE',.7,'pig','PIG','solid+patches',[('ginger and black',dict(coat='#c8823a',mark='#2a2220'))],fluff=1.2,leg=.8,snout=.75),
+ LV('potbelly','POT-BELLIED PIG',.7,'pig','PIG','solid',[('black',dict(coat='#2a2424')),('pink spotted',dict(coat='#efb1aa',patch='#2a2424'))],bodyw=1.3,leg=.72,snout=.7),
+ LV('oldspot','GLOUCESTER OLD SPOT',1.0,'pig','PIG','solid+spots',[('spotted',dict(coat='#efc4b8',mark='#2a2424'))],drop=140),
+ LV('tamworth','TAMWORTH',1.0,'pig','PIG','solid',[('ginger',dict(coat='#c0682a'))],snout=1.2),
+ LV('mangalica','MANGALICA',.9,'pig','PIG','solid',[('blonde',dict(coat='#ece0c0')),('swallow-bellied',dict(coat='#2a2424'))],fluff=1.7),
+ LV('juliana','JULIANA PIG',.55,'pig','PIG','solid+spots',[('spotted',dict(coat='#e8c8b8',mark='#2a2424'))],leg=.85),
+ LV('merino','MERINO',1.0,'sheep','SHEEP','base',[('white',dict(coat='#ece6d6',face='#e8dcc8'))],fluff=1.35),
+ LV('suffolk','SUFFOLK',1.0,'sheep','SHEEP','base+socks',[('black faced',dict(coat='#ece6d6',face='#1e1a18',mark='#1e1a18'))]),
+ LV('dorper','DORPER',1.0,'sheep','SHEEP','base+front',[('black headed',dict(coat='#f2efe8',face='#1e1a18',mark='#1e1a18'))],fluff=.8),
+ LV('jacob','JACOB',1.0,'sheep','SHEEP','base+patches',[('spotted',dict(coat='#f0ece4',face='#1e1a18',mark='#2a2420'))]),
+ LV('valais','VALAIS BLACKNOSE',1.0,'sheep','SHEEP','base+socks',[('white',dict(coat='#f2efe8',face='#1e1a18',mark='#1e1a18'))],fluff=1.5),
+ LV('shetlandsheep','SHETLAND SHEEP',.8,'sheep','SHEEP','solid',[('moorit',dict(coat='#7a5236',face='#5a3a26')),('black',dict(coat='#2a2420',face='#1e1a18'))],leg=.85),
+ LV('lincoln','LINCOLN LONGWOOL',1.1,'sheep','SHEEP','base',[('white',dict(coat='#ece6d2',face='#e8dcc8'))],fluff=1.7),
+ LV('babydoll','BABYDOLL SOUTHDOWN',.7,'sheep','SHEEP','base',[('white',dict(coat='#ece6d6',face='#c8b8a0'))],fluff=1.3,leg=.72,head=1.1),
+ LV('nubian','NUBIAN GOAT',1.0,'goat','GOAT','solid+patches',[('red and white',dict(coat='#8a4a2a',mark='#f2efe8')),('black',dict(coat='#2a2420'))],drop=155,ear=1.45),
+ LV('pygmy','PYGMY GOAT',.6,'goat','GOAT','solid+socks',[('caramel',dict(coat='#b8884a',mark='#2a2420')),('agouti',dict(coat='#7a7068',mark='#2a2420'))],leg=.7,bodyw=1.15),
+ LV('nigerian','NIGERIAN DWARF',.6,'goat','GOAT','solid+patches',[('chocolate and white',dict(coat='#5a3a2a',mark='#f2efe8'))],leg=.78),
+ LV('boer','BOER GOAT',1.0,'goat','GOAT','solid+face',[('white, red head',dict(coat='#f2efe8',mark='#8a3a1e'))],drop=150,ear=1.25,bodyw=1.12),
+ LV('alpine','ALPINE GOAT',1.0,'goat','GOAT','solid+front',[('cou blanc',dict(coat='#3a2e26',mark='#f0ece4'))]),
+ LV('saanen','SAANEN',1.0,'goat','GOAT','solid',[('white',dict(coat='#f4f2ec',stocking='#f4f2ec'))]),
+ LV('lamancha','LAMANCHA',1.0,'goat','GOAT','solid',[('tan',dict(coat='#b8885a')),('black',dict(coat='#2a2420'))],ear=.35),
+ LV('angoragoat','ANGORA GOAT',1.0,'goat','GOAT','solid',[('white',dict(coat='#f2efe6',stocking='#f2efe6'))],fluff=1.6,drop=120),
+ LV('toggenburg','TOGGENBURG',1.0,'goat','GOAT','solid+socks+blaze',[('brown',dict(coat='#8a6a4a',mark='#f0ece4'))]),
+ LV('oberhasli','OBERHASLI',1.0,'goat','GOAT','solid+socks+belly',[('chamoisee',dict(coat='#9a4a24',mark='#1e1a18'))]),
+ LV('faintinggoat','FAINTING GOAT',.8,'goat','GOAT','solid+patches',[('black and white',dict(coat='#1e1a18',mark='#f2efe8'))],leg=.85),
+]
+LISTS=[DOGS,CATS,HORSES,RABBITS,POULTRY,PARROTS,LIVESTOCK]

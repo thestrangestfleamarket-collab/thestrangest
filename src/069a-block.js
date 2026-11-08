@@ -139,6 +139,12 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
       for(const [y0,y1] of CY.rows){ gq(-R,y0,A[0],y1,fm,0,1,0,1); gq(A[2]-10,y0,R,y1,fm,0,1,0,1); } } }
     const P=E.park; if(P){ const [a0,b0,a1,b1]=P.wall, wl=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(XS(a1)-XS(a0)),YP(90),Math.abs(ZS(b1)-ZS(b0))),new THREE.MeshLambertMaterial({color:0x5c5a55}));
       wl.position.set((XS(a0)+XS(a1))/2,YP(45),(ZS(b0)+ZS(b1))/2); wl.raycast=()=>{}; wl.userData.cullOf=1; wl.userData.haze=1; G.add(wl);
+      // Market St's park wall past the mirror's reach (161d): plain stone and a railing of bars, to the end of the strips
+      if(PARK.wallOn){ const [,w0,w1]=PARK.wallOn, wa=E.mirror?E.mirror.x[1]+E.mirror.reach:PARK.wallOn[0], we=Math.max(...((E.strips&&E.strips.list)||[]).map(q=>q[2]),wa), L=XS(we)-XS(wa); if(L>0){ const cx=(XS(wa)+XS(we))/2, cz=(ZS(w0)+ZS(w1))/2, d=Math.abs(ZS(w1)-ZS(w0));
+        const sw=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(L),YP(96),d),new THREE.MeshLambertMaterial({color:0x6a6862})); sw.position.set(cx,YP(48),cz);
+        const rc=cv(4,16), rg=rc.getContext('2d'); rg.fillStyle='#24282b'; rg.fillRect(0,0,1,16); rg.fillRect(0,0,4,1); rg.fillRect(0,10,4,1); const rt=tex(rc); rt.wrapS=THREE.RepeatWrapping; rt.repeat.set(Math.abs(L)/(.19*T*2),1);
+        const rl=new THREE.Mesh(new THREE.PlaneGeometry(Math.abs(L),YP(43)),new THREE.MeshLambertMaterial({map:rt,transparent:true,alphaTest:.5,side:THREE.DoubleSide})); rl.position.set(cx,YP(96+21.5),cz);
+        for(const m of [sw,rl]){ m.raycast=()=>{}; m.userData.cullOf=1; m.userData.haze=1; G.add(m); } BLK.back.push({parkwall:true,x0:wa,x1:we}); } }
       const BANDS=P.bands||[P.trees], N=P.n||400, crown=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshLambertMaterial({color:0x3f6d2e,flatShading:true}),N), trunk=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshLambertMaterial({color:0x4a3a2c}),N), M4=new THREE.Matrix4(), Q=new THREE.Quaternion(), V=new THREE.Vector3(), S=new THREE.Vector3();
       const FS=window.FOUNT&&FOUNT.S, FL=FS&&FS.L, pox=(window.PARK&&PARK.ox)||0, poy=(window.PARK&&PARK.oy)||0, WET=(x,y)=>!!FL&&Math.abs(x-pox-FL.x)<FL.rx+16&&Math.abs(y-poy-FL.y)<FL.ry+16&&FOUNT.lake(x-pox,y-poy)<6;   // none in the big lake (owner, 8 Nov 2026: "the lake has a chunk of green in it")
       const AR=BANDS.map(q=>(q[2]-q[0])*(q[3]-q[1])), AT=AR.reduce((a,b)=>a+b,0);

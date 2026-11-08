@@ -59,6 +59,7 @@ jobs:
           R=""; k(){ if [ "$FULL" = "true" ] || [ "$C" = "ALL" ] || echo "$C" | grep -Eq "$2"; then R="$R $1"; fi; }
           k grass   'src/014a|src/14[0-4]|src/064|grasskinds'
           k online  'src/111d|worker/|online'
+          k drops   'src/162[de]|src/150cy|worker/door|drops'
           k brawl   'src/146h|src/146a|src/103|brawl'
           k physx   'src/090|src/150-loose|src/150o|physx'
           k vr      'src/162[a-c]|vr\.cjs'
@@ -74,6 +75,7 @@ jobs:
           k motion  'src/001-rig|src/111d|src/100-use|data/moves2|tools/m2m-moves|motion\.cjs'
           k passport 'src/159d|passport\.cjs'
           k scanner 'src/159e|src/146-|scanner\.cjs'
+          k cafe    'src/144c[a-z]|src/038zd|data/bookstore|worker/door|cafe\.cjs|tgames\.cjs'
           k spray   'src/159f|src/146-|spray\.cjs'
           k paint   'src/159[g-i]|src/150a|src/150d|src/140b|src/146h|data/characters|worker/|paint\.cjs|trade-server\.cjs'
           k bodega80 'src/039-bodega|src/016-street-kit|bodega80s\.cjs'
@@ -93,6 +95,10 @@ jobs:
           k layout 'src/094-ui|src/162d-hud|src/103-vitals|layout\.cjs'
           k insides 'src/059-store|src/059-street|src/059h|src/059p|src/008-batch|insides\.cjs'
           k underway 'src/066-river|src/066a-caverns|src/066ba-wreck|src/065a-flow|src/146ga-swim|src/094-ui|src/102-looks|src/009-down|underway\.cjs'
+          k roofq 'src/148c-roofquests|src/144a-garden|roof-quests\.cjs'
+          k riverq 'src/066-river|src/066b-pier|src/066ba-wreck|src/142-fishing|src/146d-gear|src/146gb-hudson|src/150q-hudtrophies|river-quests\.cjs'
+          k libquests 'src/144c|src/146zh|lib-quests\.cjs'
+          k underquests 'src/066a-caverns|src/062a-dungeon|src/147d-under|src/146zca-lounge|under-quests\.cjs'
           k skillshops 'src/059i|src/162fa|src/159b|src/111fb|data/characters|data/world|skillshops\.cjs'
           k stow 'src/130-rooms|src/130a|src/130b|src/008-batch|stow\.cjs'
           k playhouse 'src/151[a-z]|src/059-street|playhouse'
@@ -112,6 +118,7 @@ jobs:
           k parkpf  'src/111fe|src/060a|src/061-park|data/parkpf|data/world|tools/park-pf|parkpf'
           k zones   'src/129a|src/066-river|src/065a|src/065-ring|zones\.cjs'
           k bees    'src/147a|bees\.cjs'
+          k parkq   'src/147b|src/060a-fount|src/142-fishing|src/144a-garden|park-quests\.cjs'
           k interiors 'src/038z[cd]|src/059p-art|src/059i|src/146j-board|src/146l-fixer|src/146n-scanner|src/039-bodega|src/059-street|src/058-store|src/146z[5b-z]|src/059b-arcade|src/150p-cars|src/059-store|src/027-rooms-kits|src/111fb|src/159-jobs|data/characters|data/items|interiors\.cjs'
           k lounge 'src/146zca|src/127-drummer|src/128-bandstand|src/059i|src/146zb-workers|data/bar\.json|lounge\.cjs'
           k interiors2 'src/038z[cd]|src/146z5|src/146z[j-n]|src/151z|src/151c-ph-house|src/060-cave|src/146e-golems|src/059e-ghostdojo|src/059h-bank|src/150n-hall|src/063-tower|src/136c-tenants|interiors2\.cjs'
@@ -163,6 +170,14 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' online')
         run: node tests/online.cjs dist/market.html
+      - name: The ground drops (off the quick bar onto the world, their 3D look, picked up, gone in time)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' drops')
+        run: node tests/drops.cjs dist/market.html
+      - name: The ground drops' server (kept, told, first to take, expiry, the cap)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' drops')
+        run: node tests/drops-server.cjs
       - name: The folk's walks (the walks alone, the page following them, the walk grid)
         if: contains(steps.f.outputs.run, ' folk')
         run: node tests/folk.cjs dist/market.html
@@ -261,6 +276,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' scanner')
         run: node tests/scanner.cjs dist/market.html
+      - name: The bookstore café (its tables, every game played out by the computer)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' cafe')
+        run: node tests/tgames.cjs && node tests/cafe.cjs dist/market.html
       - name: spray
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' spray')
@@ -285,6 +304,26 @@ jobs:
         timeout-minutes: 30
         if: contains(steps.f.outputs.run, ' underway')
         run: node tests/underway.cjs dist/market.html
+      - name: The rooftops (the greenhouse, the water tower, the night run and its master)
+        timeout-minutes: 30
+        if: contains(steps.f.outputs.run, ' roofq')
+        run: node tests/roof-quests.cjs dist/market.html
+      - name: The park's finds (ice fishing, the ball pond and green, the orchard, the wild hive, the moth lamp)
+        timeout-minutes: 30
+        if: contains(steps.f.outputs.run, ' parkq')
+        run: node tests/park-quests.cjs dist/market.html
+      - name: The Hudson's set pieces (the Old Catfish, Heron Island, the Long Swim, the safe, the bell, the logbook, gold in the silt)
+        timeout-minutes: 30
+        if: contains(steps.f.outputs.run, ' riverq')
+        run: node tests/river-quests.cjs dist/market.html
+      - name: The sealed stacks and the museum's vault (the key and the hatch, the quiet rule, the clues, the dials, the donations)
+        timeout-minutes: 30
+        if: contains(steps.f.outputs.run, ' libquests')
+        run: node tests/lib-quests.cjs dist/market.html
+      - name: The underground set pieces (the Fairy Ring, the Crystal Grotto, the Drowned Apothecary, the Knight's Tomb, the Smugglers' Tunnel)
+        timeout-minutes: 40
+        if: contains(steps.f.outputs.run, ' underquests')
+        run: node tests/under-quests.cjs dist/market.html
       - name: The merchants' shops (every one furnished, its keeper inside, the counter opens the shop)
         timeout-minutes: 30
         if: contains(steps.f.outputs.run, ' skillshops')

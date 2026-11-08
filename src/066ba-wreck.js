@@ -41,7 +41,7 @@ float agF(vec3 p){ return agN(p)*.55+agN(p*2.3)*.3+agN(p*5.1)*.15; }
     m.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,AU); sh.vertexShader='varying vec3 vAgP; varying vec3 vAgN;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vAgP=(modelMatrix*vec4(transformed,1.)).xyz; vAgN=normalize(mat3(modelMatrix)*objectNormal);');
       sh.fragmentShader=AGF+sh.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n'+AGM); };
     m.customProgramCacheKey=()=>'aged-'+kind; return m; };
-  const WOOD=aged('wood',{vertexColors:true}), IRON=aged('iron'), BRONZE=aged('bronze');
+  const WOOD=aged('wood',{vertexColors:true}), IRON=aged('iron'); WRECK.aged=aged;
   // loose pieces in the world (rotated): a bag of triangles made one mesh
   const bag=()=>({p:[],n:[],c:[]}), COL=new THREE.Color(), M4=new THREE.Matrix4(), QQ=new THREE.Quaternion(), EU=new THREE.Euler(), V=new THREE.Vector3(), ONE=new THREE.Vector3(1,1,1);
   const put=(b,g,c,x,y,z,rx=0,ry=0,rz=0)=>{ COL.set(c); M4.compose(V.set(x,y,z),QQ.setFromEuler(EU.set(rx,ry,rz)),ONE); g.applyMatrix4(M4); const q=g.index?g.toNonIndexed():g, P=q.attributes.position.array, N=q.attributes.normal.array;
@@ -92,14 +92,13 @@ float agF(vec3 p){ return agN(p)*.55+agN(p*2.3)*.3+agN(p*5.1)*.15; }
       for(let y=0;y<h;y++)for(let x=0;x<w;x++){ const r=hs(x*3+y*97,11), edge=Math.max(x/w,Math.abs(y-h/2)/(h/2)); if(r<edge*edge*.9-.08||(x>w*.55&&r<.12))g.clearRect(x,y,1,1); else if(r>.82){ g.fillStyle=r>.93?'#2c3a22':'#3a3a2c'; g.fillRect(x,y,1,1); } } });   // a century has eaten it to rags and stained what is left
     flag.colorSpace=THREE.SRGBColorSpace; { const m=pic(4.6,mid+.2,3.0,2.0,1.5,0,1,flag); m.material.side=THREE.DoubleSide; m.material.alphaTest=.5; m.material.transparent=false; }
     { const [M0]=K.flush(); if(M0)M0.material=WOOD; } const y=bedY(cx,cz)+(.6*S-.4)*MW; G.position.y=y; scene.add(G); AU.uAgC.value.set(cx,y-.4*S*MW,cz);   // the keel a little into the bed
-    // strewn round it on the bed: its fallen timbers, a stock anchor by the bow, the bell where the back broke, cannonballs
-    { const D=bag(), I=bag(), Bz=bag(), at=(u,v)=>F.pw(u*S,v*S), M=MW;
+    // strewn round it on the bed: its fallen timbers, a stock anchor by the bow, cannonballs (the bell where the back broke is the Hudson's: 146gb)
+    { const D=bag(), I=bag(), at=(u,v)=>F.pw(u*S,v*S), M=MW;
       for(let i=0;i<14;i++){ const u=-2+hs(i,81)*(LEN+4), v=mid+(hs(i,82)>.5?1:-1)*(half(Math.min(LEN,Math.max(0,u)))+1+hs(i,83)*3.5), p=at(u,v), l=(1.5+hs(i,84)*4)*M; put(D,new THREE.BoxGeometry(.28*M,.16*M,l),hs(i,85)>.5?W1:W2,p[0],bedY(p[0],p[1])+.04*M,p[1],(hs(i,86)-.5)*.2,hs(i,87)*6.28,(hs(i,88)-.5)*.3); }
       { const p=at(-1.6,mid-2.4), y0=bedY(p[0],p[1])+.2*M, ry=.7; put(I,new THREE.CylinderGeometry(.11*M,.13*M,3.4*M,8),0,p[0],y0,p[1],Math.PI/2,ry,0); const e=Math.sin(ry), f=Math.cos(ry), k=1.6*M;
         put(I,new THREE.TorusGeometry(.95*M,.12*M,6,10,Math.PI),0,p[0]-e*k,y0+.05*M,p[1]-f*k,-Math.PI/2,0,ry+Math.PI/2); put(D,new THREE.BoxGeometry(2.6*M,.3*M,.3*M),W2,p[0]+e*k,y0+.15*M,p[1]+f*k,0,ry,.3); }
-      { const p=at(8.1,mid+.4*half(8)); put(Bz,new THREE.CylinderGeometry(.18*M,.32*M,.5*M,10,1,true),0,p[0],bedY(p[0],p[1])+.2*M,p[1],1.2,.8,0); put(Bz,new THREE.CylinderGeometry(.06*M,.06*M,.12*M,6),0,p[0],bedY(p[0],p[1])+.3*M,p[1],1.2,.8,0); }
       for(let i=0;i<9;i++){ const p=at(2+hs(i,91)*9,mid+(hs(i,92)>.5?1:-1)*(half(4)+.6+hs(i,93))); put(I,new THREE.SphereGeometry(.12*M,8,6),0,p[0],bedY(p[0],p[1])+.08*M,p[1]); }
-      meshB(D,WOOD); meshB(I,IRON); const b=meshB(Bz,BRONZE); b.material.side=THREE.DoubleSide; }
+      meshB(D,WOOD); meshB(I,IRON); }
     // weed: brown-green streamers standing up off its edges and the bed round it, swaying in the slack current
     { const P=[], N=[], UV=[], Q=[]; for(let i=0;i<150;i++){ const u=-1+hs(i,101)*(LEN+2), out=hs(i,102), w0=half(Math.min(LEN,Math.max(0,u))), s=hs(i,103)>.5?1:-1;
         const v=out<.45?mid+s*w0:mid+s*(w0+.3+hs(i,104)*3), p=F.pw(u*S,v*S), top=2.4+(u>11.5?(u-11.5)*.18:0)-(LOW(u)?.6:0), h0=out<.45&&!BRK(u)&&u>0&&u<LEN?y+top*S*MW:bedY(p[0],p[1]);
@@ -119,7 +118,7 @@ float agF(vec3 p){ return agN(p)*.55+agN(p*2.3)*.3+agN(p*5.1)*.15; }
     WR(C0,mid-1.75,C1,mid-1.6); WR(C0,mid+1.6,C1,mid+1.75); WR(C1-.12,mid-1.7,C1,mid+1.7); WR(C0,mid-1.7,C0+.1,mid-.5); WR(C0,mid+.5,C0+.1,mid+1.7);
     for(const [u,v] of cargo)WR(u-.25,v-.25,u+.25,v+.25);
     WRECK.walls=W; WRECK.topY=y+2.2*S*MW; WRECK.solid=false; return F; };
-  WRECK.parts=[];
+  WRECK.parts=[]; WRECK.S=S; WRECK.mid=mid;
   // its guards: sharks circling the wreck; one comes for a diver who gets close, bites, and turns away
   const SHK=[], shark=()=>{ const G=new THREE.Group(), grey=new THREE.MeshLambertMaterial({color:0x5a6670}), pale=new THREE.MeshLambertMaterial({color:0xc8ccd0}), M=MW;
     const body=new THREE.Mesh(new THREE.SphereGeometry(.5*M,12,8),grey); body.scale.set(.55,.5,3.2); G.add(body); const belly=new THREE.Mesh(new THREE.SphereGeometry(.48*M,12,8),pale); belly.scale.set(.5,.38,3.0); belly.position.y=-.08*M; G.add(belly);
@@ -146,3 +145,4 @@ float agF(vec3 p){ return agN(p)*.55+agN(p*2.3)*.3+agN(p*5.1)*.15; }
       if(on!==WRECK.solid&&WRECK.walls){ WRECK.solid=on; for(const r of WRECK.walls){ const i=SOL.up.indexOf(r); if(on&&i<0)SOL.up.push(r); else if(!on&&i>=0)SOL.up.splice(i,1); } } } for(const C of WRECK.chests){ const n=Math.hypot(pos.x-C.G.position.x,pos.z-C.G.position.z)<140*T, full=INV.ready(C.k); C.G.visible=n; C.gold.visible=full; C.lid.rotation.x=full?-1.1:0; C.th.name=full?'A SUNKEN CHEST':'A SUNKEN CHEST (EMPTY)'; } },'066ba-wreck');
   window.WRECKDBG=()=>({built:!!WRECK.built,at:WRECK.at&&WRECK.at.map(v=>+(v/T).toFixed(1)),depth:WRECK.at&&+RIVER.depthAt(...WRECK.at).toFixed(1),chests:WRECK.chests.map(C=>({k:C.k,depth:+RIVER.depthAt(C.G.position.x,C.G.position.z).toFixed(1),full:INV.ready(C.k)}))});
 }
+export {WRECK};

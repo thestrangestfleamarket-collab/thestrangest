@@ -51,7 +51,7 @@ LOOKS.over={};
     #looks .ltab{display:grid;grid-template-columns:150px minmax(0,1fr);gap:6px 12px;align-items:center} #looks .ltab[hidden]{display:none}
     #looks .lr{display:contents} #looks .lr[hidden]{display:none} #looks .lk{color:var(--dim,#8a8f9c);letter-spacing:1px;white-space:nowrap} #looks .lr.full>.lv{grid-column:1/-1}
     #looks .lv{min-width:0} #looks .lv>.row{gap:2px 4px}
-    #looks .ltab[data-t=wear]{grid-template-columns:110px minmax(0,1fr) 110px minmax(0,1fr)}
+    #looks .ltab[data-t=wear]{grid-template-columns:120px minmax(0,1fr)}
     @media (max-width:640px){ #looks .ltab,#looks .ltab[data-t=wear]{grid-template-columns:110px minmax(0,1fr)} #looks .ltabs{margin-left:0} }
 `;
   document.head.appendChild(css);

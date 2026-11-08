@@ -6,6 +6,7 @@ import {renderer, scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
 import {GEMS} from './101-gems.js';
+import {PFI} from './150cyb-pfitems.js';
 import {SWAP} from './159i-trade.js';
 window.BAG=BAG;
 { const T=TILE, esc=TEXT.esc, say=SAY, kindOf=id=>String(id).split('~')[0], prop=(id,k)=>ITEMS.prop(kindOf(id),k), name=id=>FORAGE.name(kindOf(id));
@@ -149,9 +150,10 @@ window.BAG=BAG;
       const ext=x1<0?W:Math.max(x1-x0+1,y1-y0+1), h=(realM(id)||.3)*MTR*W/ext, sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,alphaTest:.5})); sp.scale.set(h,h,1); sp.position.y=h/2-(x1<0?0:(H-1-y1)/H*h); P.add(sp); P.userData.tall=x1<0?h:(y1-y0+1)/H*h; LOOK.set(id,P); return P; }
     let m=null; try{ m=INSPECT.model(id); }catch(e){} if(!m)m=INSPECT.shape('sack');
     m.traverse(c=>{ if(c.material&&!Array.isArray(c.material)&&c.material.transmission>0)c.material=plain(c.material); });
-    { const b0=new THREE.Box3().setFromObject(m), z=b0.getSize(V3); if(!b0.isEmpty()&&z.y>1.8*Math.max(z.x,z.z)&&!/^(fl_|bnet$|net$|balloon$)/.test(kindOf(id))){ const W=new THREE.Group(); W.add(m); W.rotation.x=-Math.PI/2; m=W; } }   // (a long thin thing, a guitar or a sword, lies on its side; a flower or a net on its stand stays up)
+    { const b0=new THREE.Box3().setFromObject(m), z=b0.getSize(V3); if(!b0.isEmpty()&&!m.userData.pf&&z.y>1.8*Math.max(z.x,z.z)&&!/^(fl_|bnet$|net$|balloon$)/.test(kindOf(id))){ const W=new THREE.Group(); W.add(m); W.rotation.x=-Math.PI/2; m=W; } }   // (a long thin thing, a sword, lies on its side; a flower or a net on its stand stays up, and Polyfork's stand as made)
     const b=new THREE.Box3().setFromObject(m), L=b.isEmpty()?1:Math.max(.001,...b.getSize(V3).toArray()), want=realM(id), S=b.isEmpty()?MTR:want?want*MTR/L:L>5||L<.01?.3*MTR/L:MTR, I=new THREE.Group(); I.add(m); I.scale.setScalar(S); if(!b.isEmpty())I.position.set(-(b.min.x+b.max.x)/2*S,-b.min.y*S,-(b.min.z+b.max.z)/2*S);
     P.add(I); P.userData.tall=b.isEmpty()?.3*MTR:(b.max.y-b.min.y)*S; LOOK.set(id,P); return P; };
+  PFI.on.push(()=>{ LOOK.clear(); for(const g of GRD)if(g.m){ g.m.removeFromParent(); g.m=null; } near(); });   // Polyfork's models came: what lies about takes them
   const room=()=>{ const c=ROOMS.cur; return c?String(c.off||c.id||''):''; };
   const unthing=th=>{ const i=UI.things.indexOf(th); if(i>=0)UI.things.splice(i,1); };
   const place=g=>{ '@later'; const sp=new THREE.Group(); sp.name='loose-'+g.id; sp.position.set(g.x,g.y,g.z); sp.rotation.y=(parseInt(g.key.slice(-4),36)||0)%628/100; sp.userData.level=g.lv||'street'; sp.visible=false; scene.add(sp); g.sp=sp;

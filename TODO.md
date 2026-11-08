@@ -335,6 +335,7 @@ One pass, one pull request.
 - [x] **Things take room** (owner, 8 Nov 2026: "do all three go"; done 8 Nov) · P1 · M · code. Characters their body's size, waiting for each other, solids from step height, characters in the loose things' physics; `tests/space.cjs`.
 
 - [x] **The hotel's helipad** · P2 · M · code + look. 7 Nov 2026 (owner: "add heliped on top of building. helicopter. have it fly around and land. pilot"): the deck, two helicopters on the sky tour, ride along, fly it yourself (`150pa-heli`, `tests/heli.cjs`). [taking: claude/sharp-gates-thwxtx, 7 Nov 2026]
+- [x] **The news helicopter on the bank** · P2 · S · code + look. 8 Nov 2026 (owner: "add just one helicopter for the news"): one, 25% smaller, a round every 5 minutes, rotor off on the pad (`150pa-heli`, `tests/heli.cjs`).
 - [ ] **The physics extras (#512) never tried in a real game** · P3 · M · look + check. The bar's dartboard scoring a throw (the bar now also
   has a darts 301 game, 8999ffd2: two ways to score, ask whether the physics one stays), an upright trash can taking small things, hanging
   plants, lanterns and bulbs swaying, glass breaking. `src/150-loose.js`, `src/150o-physmore.js`; add cases to `tests/physx.cjs`.

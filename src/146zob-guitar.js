@@ -19,7 +19,6 @@ const GUITAR={}; window.GUITAR=GUITAR;
   const skill=()=>FORAGE.sk?FORAGE.sk('guitar')||0:0, canPlay=i=>!!GTBOOK[i]&&(GTBOOK[i].lvl||1)<=skill()+1e-6;
   GUITAR.loadSongs=loadSongs; GUITAR.canPlay=canPlay; GUITAR.BOOK=GTBOOK;
   // the chords on the number keys (more on the panel)
-  const KEYCH=['C','G','D','A','E','Am','Em','Dm','F','G7'], MORE=['C7','D7','A7','E7','B7'];
   const BRIGHT={p:.5,i:1,m:1,a:1,s:.85};
 
   /* ---------- a player: their live score (what they play, the same shape as a song's), or a song from the book; their voice; the guitar on their body ---------- */
@@ -62,13 +61,13 @@ const GUITAR={}; window.GUITAR=GUITAR;
   GUITAR.start=(src='own')=>{ if(on)return; if(st.water&&st.water.in||st.ride||st.climb||st.hang)return say('NOT HERE: STAND SOMEWHERE STEADY TO PLAY.','#c8a090');
     if(window.INSTR&&window.INSTR.on())window.INSTR.stop(); GSND.wake(); on=true; from=src; GUITAR.stow(); ME.song=-1; ME.chord=''; ME.live={tune:[],strum:[],lh:[],pos:[{t:0,p:1}]}; ACT.chord(ME,'');
     prevView=UI.view; if(CU.on&&!UI.persp)UI.setView('third'); panel(true); tell('on',src==='park'?'k':'f'); if(src==='park'&&STAND.g)STAND.gm.visible=false;
-    say('YOU TAKE UP THE GUITAR. 1-0 CHORDS · SPACE STRUM DOWN, B UP · A S D F G H THE STRINGS · TAB THE CLOSE-UP · ESC TO STOP.'); };
+    say('YOU TAKE UP THE GUITAR. PICK A PIECE FROM THE BOOK · P PLAYS IT · TAB THE CLOSE-UP · ESC TO STOP.'); };
   // put down, your own guitar goes on your back (others see it) till you stow it in the bag
   let slung=false; GUITAR.slung=()=>slung; GUITAR.stow=()=>{ slung=false; unsling(ME); };
   GUITAR.stop=()=>{ if(!on)return; on=false; unhold(ME); if(from==='own'&&FORAGE.has('guitar'))slung=true; panel(false); tell('off'); if(STAND.gm)STAND.gm.visible=true; if(prevView&&prevView!==UI.view&&!/third/.test(prevView))UI.setView(prevView); prevView=''; };
   GUITAR.on=()=>on; GUITAR.ME=ME; GUITAR.ACT=ACT;
   GUITAR.play=(k,v)=>{ if(!on)return; if(k==='song'&&v===ME.song)k='stop';
-    if(k==='song'&&!canPlay(v)){ const T=GTBOOK[v]; return say(T?`${T.name.toUpperCase()} NEEDS GUITAR ${T.lvl}; YOURS IS ${skill().toFixed(1)}. PLAY EASIER PIECES OR PLAY FREELY TO GET BETTER.`:'THAT PIECE IS NOT IN THE BOOK.','#c8a090'); }
+    if(k==='song'&&!canPlay(v)){ const T=GTBOOK[v]; return say(T?`${T.name.toUpperCase()} NEEDS GUITAR ${T.lvl}; YOURS IS ${skill().toFixed(1)}. PLAY EASIER PIECES TO GET BETTER.`:'THAT PIECE IS NOT IN THE BOOK.','#c8a090'); }
     if(k==='strum'||k==='pluck')practise(); ACT[k](ME,v); tell(k,v); drawPanel(); };
   FORAGE.ACT.guitar=()=>{ if(on)GUITAR.stop(); else GUITAR.start('own'); };
   FORAGE.ACT.gplay=FORAGE.ACT.guitar;
@@ -76,18 +75,12 @@ const GUITAR={}; window.GUITAR=GUITAR;
   FORAGE.ROWB.push(id=>id==='guitar'?[[on?'PUT IT AWAY':'PLAY','gplay'],...(slung&&!on?[['STOW IT','gstow']]:[])]:[]);
 
   /* ---------- keys while you play (they are the guitar's, not your feet's) ---------- */
-  const STR={KeyA:6,KeyS:5,KeyD:4,KeyF:3,KeyG:2,KeyH:1};
   addEventListener('keydown',e=>{ if(!on||e.ctrlKey||e.metaKey||e.altKey)return; if(e.target&&e.target.closest&&e.target.closest('input,textarea,select,[contenteditable="true"]'))return; if(UI.menuOpen)return;
     const c=e.code; let used=true;
     if(c==='Escape')GUITAR.stop();
-    else if(/^Digit[0-9]$/.test(c)){ if(!e.repeat){ const nm=KEYCH[(+c.slice(5)+9)%10]; GUITAR.play('chord',ME.chord===nm?'':nm); } }
-    else if(c==='Space'||c==='KeyJ'){ if(!e.repeat)GUITAR.play('strum',e.shiftKey?'d':'D'); }
-    else if(c==='KeyB'||c==='KeyK'){ if(!e.repeat)GUITAR.play('strum','u'); }
-    else if(STR[c]){ if(!e.repeat)GUITAR.play('pluck',STR[c]); }
-    else if(c==='BracketLeft'||c==='BracketRight'){ if(!e.repeat)GUITAR.play('capo',ME.capo+(c==='BracketRight'?1:-1)); }
     else if(c==='KeyP'){ if(!e.repeat)GUITAR.play(ME.song>=0?'stop':'song',ME.song>=0?null:+(PN&&PN.querySelector('#gtsong').value||0)); }
     else if(c==='Tab'){ if(!e.repeat)closeUp(!CU.on); }
-    else if(/^(Key[WQERTYUIOLMNZXCV]|Arrow\w+|ShiftLeft|ShiftRight)$/.test(c)){}   // (your feet stay put while you play)
+    else if(/^(Key[A-Z]|Digit\d|Arrow\w+|Space|Shift\w*|Bracket\w+)$/.test(c)){}   // (your feet stay put while you play)
     else used=false;
     if(used){ e.preventDefault(); e.stopImmediatePropagation(); } },true);
 
@@ -99,12 +92,9 @@ const GUITAR={}; window.GUITAR=GUITAR;
   document.head.appendChild(css);
   const panel=show=>{ if(!show){ if(PN)PN.hidden=true; return; } if(!PN){ PN=document.createElement('div'); PN.id='gtp'; document.body.appendChild(PN);
       PN.innerHTML=`<div class="r"><span class="h" id="gtsk">GUITAR</span><span id="gtnow"></span></div>
-        <div class="r" id="gtch">${[...KEYCH,...MORE].map((n,i)=>`<button data-c="${n}" title="${i<10?'key '+(i+1)%10:''}">${n}</button>`).join('')}</div>
-        <div class="r"><button data-a="D" title="space">STRUM ↓</button><button data-a="u" title="B">↑</button><span class="d">STRINGS</span>${[6,5,4,3,2,1].map(s=>`<button data-s="${s}" title="key ${'ASDFGH'[6-s]}">${s}</button>`).join('')}<span class="d">CAPO</span><button data-k="-1" title="[">−</button><span id="gtcapo"></span><button data-k="1" title="]">+</button></div>
         <div class="r"><select id="gtsong" aria-label="song"></select><button id="gtplay" title="P">PLAY</button><button id="gtcu" title="tab">CLOSE-UP</button><span class="d">VOL</span><input type="range" id="gtvol" min="0" max="1" step=".05" aria-label="volume"><button id="gtoff" title="esc">PUT AWAY</button></div>`;
       PN.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; GSND.wake();
-        if(b.dataset.c)GUITAR.play('chord',ME.chord===b.dataset.c?'':b.dataset.c); else if(b.dataset.a)GUITAR.play('strum',b.dataset.a); else if(b.dataset.s)GUITAR.play('pluck',+b.dataset.s);
-        else if(b.dataset.k)GUITAR.play('capo',ME.capo+(+b.dataset.k)); else if(b.id==='gtplay')GUITAR.play(ME.song>=0?'stop':'song',ME.song>=0?null:+PN.querySelector('#gtsong').value); else if(b.id==='gtcu')closeUp(!CU.on); else if(b.id==='gtoff')GUITAR.stop(); b.blur(); });
+        if(b.id==='gtplay')GUITAR.play(ME.song>=0?'stop':'song',ME.song>=0?null:+PN.querySelector('#gtsong').value); else if(b.id==='gtcu')closeUp(!CU.on); else if(b.id==='gtoff')GUITAR.stop(); b.blur(); });
       for(const el of PN.querySelectorAll('select,input'))el.addEventListener('keydown',e=>e.stopPropagation());
       PN.querySelector('#gtvol').oninput=e=>GSND.setVol(+e.target.value); }
     PN.hidden=false; fillSongs(); loadSongs(); drawPanel(); };
@@ -112,9 +102,9 @@ const GUITAR={}; window.GUITAR=GUITAR;
   const fillSongs=()=>{ const el=PN&&PN.querySelector('#gtsong'); if(!el)return; const v=el.value, k=skill(), B=[[1,20,'EASY'],[21,50,'MEDIUM'],[51,80,'HARD'],[81,100,'MASTER']];
     el.innerHTML=B.map(([a,b,nm])=>{ const L=SONGS().filter(([,T])=>T.lvl>=a&&T.lvl<=b).sort((x,y)=>x[1].lvl-y[1].lvl); return L.length?`<optgroup label="${nm} (${a}-${b})">`+L.map(([i,T])=>`<option value="${i}">${T.lvl>k?'× ':''}${esc(T.name.toUpperCase())}${T.by?' · '+esc(T.by.toUpperCase()):''} · ${T.lvl}</option>`).join('')+'</optgroup>':''; }).join('');
     if(v)el.value=v; };
-  const drawPanel=()=>{ if(!PN||PN.hidden)return; const sel=(b,v)=>{ b.setAttribute('aria-pressed',String(v)); b.setAttribute('aria-selected',String(v)); }; for(const b of PN.querySelectorAll('#gtch button'))sel(b,b.dataset.c===ME.chord);
-    PN.querySelector('#gtcapo').textContent=ME.capo?'CAPO '+ME.capo:'NO CAPO'; PN.querySelector('#gtplay').textContent=ME.song>=0?'STOP':'PLAY'; sel(PN.querySelector('#gtcu'),CU.on); sel(PN.querySelector('#gtplay'),ME.song>=0); PN.querySelector('#gtvol').value=GSND.vol;
-    PN.querySelector('#gtsk').textContent='GUITAR '+skill().toFixed(1); PN.querySelector('#gtnow').textContent=ME.song>=0?'PLAYING '+GTBOOK[ME.song].name.toUpperCase()+(GTBOOK[ME.song].credit?' · '+GTBOOK[ME.song].credit.split(': ').pop().split(', http')[0]:''):ME.chord?'CHORD '+ME.chord+(ME.capo?' (CAPO '+ME.capo+')':''):'OPEN STRINGS'; };
+  const drawPanel=()=>{ if(!PN||PN.hidden)return; const sel=(b,v)=>{ b.setAttribute('aria-pressed',String(v)); b.setAttribute('aria-selected',String(v)); }; 
+    PN.querySelector('#gtplay').textContent=ME.song>=0?'STOP':'PLAY'; sel(PN.querySelector('#gtcu'),CU.on); sel(PN.querySelector('#gtplay'),ME.song>=0); PN.querySelector('#gtvol').value=GSND.vol;
+    PN.querySelector('#gtsk').textContent='GUITAR '+skill().toFixed(1); PN.querySelector('#gtnow').textContent=ME.song>=0?'PLAYING '+GTBOOK[ME.song].name.toUpperCase()+(GTBOOK[ME.song].credit?' · '+GTBOOK[ME.song].credit.split(': ').pop().split(', http')[0]:''):'PICK A PIECE'; };
 
   /* ---------- the close-up: the view cut in close on the guitar and both hands (TAB) ---------- */
   const CU={on:true}, CV=new THREE.Vector3(), CT=new THREE.Vector3();

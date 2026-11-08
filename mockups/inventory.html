@@ -1,0 +1,75 @@
+<title>Bag Options</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--g:#7dffa8;--d:#3aa866;--e:#2d5a40;--bg:#020a06;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:#141821;color:var(--g);font:13px 'Share Tech Mono',ui-monospace,monospace;letter-spacing:.4px;padding:14px 16px}
+h1{font-size:14px;margin:0 0 4px;letter-spacing:2px}
+.note{color:var(--d);line-height:1.6;margin:0 0 16px;max-width:80ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.card{position:relative;height:620px;overflow:hidden;background:linear-gradient(160deg,#2a3140,#1a2029 55%,#262b22);border:1px solid #333a48}
+.lab{position:relative;padding:8px 10px;height:92px;background:#0b0d13;border-bottom:1px solid #333a48;color:#f2c14e;font-size:13px;letter-spacing:1px;z-index:2}
+.lab small{display:block;color:#c9c2ad;font-size:11px;letter-spacing:.3px;margin-top:3px;max-width:270px;line-height:1.5}
+.pan{position:absolute;background:repeating-linear-gradient(0deg,rgba(125,255,168,.05) 0 1px,transparent 1px 3px),rgba(2,10,6,.9);box-shadow:0 0 0 1px var(--e);text-shadow:0 0 5px #4aff9055}
+.bar{display:flex;align-items:center;height:28px;padding:0 6px 0 10px;color:var(--d);letter-spacing:2px;font-size:12px;cursor:move;border-bottom:1px solid var(--e)}
+.bar span{flex:1}
+.x{color:var(--g);background:var(--bg);box-shadow:inset 0 0 0 1px var(--d);padding:1px 6px;font-size:12px}
+.list{padding:4px;display:flex;flex-direction:column;gap:3px;overflow:hidden}
+.r{display:flex;align-items:center;gap:8px;height:28px;padding:0 8px;box-shadow:0 0 0 1px var(--e);white-space:nowrap}
+.r.sel{box-shadow:0 0 0 1px var(--g),0 0 8px #4aff9066}
+.r b{font-weight:400;flex:1;overflow:hidden;text-overflow:ellipsis}
+.r i{font-style:normal;color:var(--d);font-size:11px}
+.r u{text-decoration:none;color:var(--d);font-size:10px}
+.ic{width:16px;height:16px;flex:none;image-rendering:pixelated}
+.eye{color:var(--d);font-size:11px}
+.foot{border-top:1px solid var(--e);padding:5px 10px;color:var(--d);font-size:10px;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hd{color:var(--d);font-size:10px;letter-spacing:2px;padding:6px 4px 1px}
+.slots{display:grid;grid-template-columns:repeat(6,40px);gap:4px;padding:8px}
+.s{position:relative;width:40px;height:40px;box-shadow:0 0 0 1px var(--e);background:rgba(2,10,6,.6);display:grid;place-items:center}
+.s .ic{width:28px;height:28px}
+.s em{position:absolute;right:2px;bottom:0;font-style:normal;font-size:10px;color:var(--g)}
+.s.sel{box-shadow:0 0 0 1px var(--g),0 0 8px #4aff9066}
+.tip{position:absolute;padding:3px 7px;font-size:11px;color:var(--g);background:var(--bg);box-shadow:0 0 0 1px var(--d);white-space:nowrap}
+.info{display:flex;align-items:center;gap:8px;padding:6px 10px;border-top:1px solid var(--e)}
+.info b{font-weight:400;flex:1}
+.tabs{display:flex;gap:3px;padding:6px 4px 2px}
+.tabs span{font-size:10px;padding:2px 6px;color:var(--d);box-shadow:inset 0 0 0 1px var(--e)}
+.tabs span.on{color:var(--bg);background:var(--g)}
+.edge{position:absolute;right:0;top:93px;bottom:0;width:4px;background:var(--e)}
+</style>
+<h1>THE BAG · THREE WAYS</h1>
+<p class="note">All three drop the size-dragging corners (today it has two: its own grip and every window's, which is what makes the scrollbars). Double click uses, drag out drops at your feet, drag onto the quick bar or someone, the eye looks it over: those stay in all three.</p>
+<div class="grid">
+
+<div class="card"><div class="lab">A · ONE SIZE LIST<small>A fixed tall window; drag it by its title bar only; the list scrolls inside; the long help is one short line at the bottom.</small></div>
+<div class="pan" style="left:30px;top:110px;width:250px;height:490px;display:flex;flex-direction:column">
+<div class="bar"><span>BAG</span><span style="flex:none;margin-right:8px;letter-spacing:.5px;font-size:10px">14 THINGS</span><b class="x">X</b></div>
+<div class="list" id="la" style="flex:1"></div>
+<div class="foot">2× CLICK USE · DRAG OUT TO DROP</div></div></div>
+
+<div class="card"><div class="lab">B · SLOTS LIKE THE QUICK BAR<small>A fixed grid of squares, pictures with counts; hover shows the name; the picked one's name and eye sit along the bottom.</small></div>
+<div class="pan" style="left:14px;top:110px;width:282px">
+<div class="bar"><span>BAG</span><b class="x">X</b></div>
+<div class="slots" id="sb"></div>
+<div class="info"><svg class="ic" id="bi"></svg><b>A GUITAR</b><span class="eye">◉</span></div>
+<div class="foot">2× CLICK USE · DRAG OUT TO DROP</div></div>
+<div class="tip" style="left:172px;top:222px">APPLE x6</div></div>
+
+<div class="card"><div class="lab">C · PINNED TO THE SIDE<small>Docked to the right edge of the screen, full height; never moves or resizes; with tabs by kind.</small></div>
+<div class="edge"></div>
+<div class="pan" style="right:0;top:93px;bottom:0;width:240px;display:flex;flex-direction:column">
+<div class="bar"><span>BAG</span><b class="x">X</b></div>
+<div class="tabs"><span class="on">ALL</span><span>WEAR</span><span>FOOD</span><span>MUSIC</span><span>MISC</span></div>
+<div class="list" id="lc" style="flex:1"></div>
+<div class="foot">2× CLICK USE · DRAG OUT TO DROP</div></div></div>
+
+</div>
+<script>
+const IT=[['VEILCAP MUSHROOM',99,'#e8e8f0','#9aa'],['ROCK PIGEON (IN A CAGE)',1,'#c8a040','#765'],['A BMX',1,'#e03030','#333'],['A DRUM KIT',1,'#b07040','#743'],['A GLASS OF COLA',1,'#eee','#622'],['A GUITAR',1,'#e0a040','#842'],['A HARP',1,'#b07040','#743'],['A PIANO',1,'#b07040','#743'],['APPLE',6,'#e02828','#2a2'],['A LEATHER JACKET',1,'#5a3a2a','#321','WORN'],['A FLASHLIGHT',1,'#ddd','#555','HELD'],['RIVER STONE',3,'#889','#556'],['A KITE',1,'#e05090','#fd4'],['FISH FOOD',4,'#d9a050','#963']];
+const pic=(a,b)=>`<svg class="ic" viewBox="0 0 8 8" shape-rendering="crispEdges"><rect x="2" y="1" width="4" height="5" fill="${a}"/><rect x="1" y="3" width="6" height="3" fill="${a}"/><rect x="2" y="6" width="4" height="1" fill="${b}"/><rect x="3" y="0" width="2" height="1" fill="${b}"/></svg>`;
+const row=(t,i)=>`<div class="r${i===5?' sel':''}">${pic(t[2],t[3])}<b>${t[0]}</b>${t[4]?`<u>${t[4]}</u>`:''}${t[1]>1?`<i>x${t[1]}</i>`:''}<span class="eye">◉</span></div>`;
+la.innerHTML=IT.map(row).join('');
+lc.innerHTML=IT.map(row).join('');
+sb.innerHTML=Array.from({length:36},(_,i)=>{const t=IT[i];return `<div class="s${i===5?' sel':''}">${t?pic(t[2],t[3])+(t[1]>1?`<em>${t[1]}</em>`:''):''}</div>`}).join('');
+bi.outerHTML=pic('#e0a040','#842');
+</script>

@@ -35,7 +35,7 @@ import {SYS, TILE} from './006-map-pre.js';
   tabs.onclick=e=>{ const b=e.target.closest('[data-wt]'); if(b)tab(b.dataset.wt); };
   const fill=async()=>{ '@later'; const j=await list().catch(()=>null), sel=$('#wpcat'); if(!j){ $('#wplist').textContent='the things did not load'; return; }
     if(!sel.options.length)sel.innerHTML=j.cats.map((c,i)=>`<option value="${i}">${c} (${j.list.filter(r=>r[0]===i).length})</option>`).join('');
-    const ci=+sel.value, q=$('#wpq').value.trim().toLowerCase(), rows=j.list.filter(r=>q?r[2].includes(q):r[0]===ci);
+    const ci=+sel.value, q=$('#wpq').value.trim().toLowerCase(), rows=j.list.filter(r=>q?r[2].toLowerCase().includes(q):r[0]===ci);
     $('#wplist').innerHTML=rows.map(r=>`<button class="btn" data-pk="${r[1]}" aria-pressed="${!!armed&&armed.k===r[1]}" aria-selected="${!!armed&&armed.k===r[1]}">${TEXT.esc(r[2])} <span class="dim">${r[3]}m</span></button>`).join('')||'<div class="dim">nothing</div>'; };
   $('#wpcat').onchange=()=>{ $('#wpq').value=''; fill(); }; $('#wpq').oninput=()=>fill();
   const unghost=()=>{ if(ghost){ scene.remove(ghost); ghost.material.dispose(); ghost=null; } };

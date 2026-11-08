@@ -16,6 +16,7 @@ import {SYS, TILE} from './006-map-pre.js';
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C,3)); g.computeVertexNormals(); g.computeBoundingSphere(); return g; };
   WE.pfGeo=k=>GEO[k]||(RAW[k]?(GEO[k]=geo(k)):null);
   WE.pfTree=k=>CI[k]===0;   // the TREES category
+  WE.pfList=()=>list();   // every thing and its category (the ITEM editor's PLACE list)
   WE.pfFoot=k=>{ const f=RAW[k]&&RAW[k].f; return f?f.map(v=>v*M):null; };
   WE.pfLoad=k=>list().then(j=>{ const e=j.by[k]; if(!e)throw new Error('no '+k); return cat(e.ci); });
   // the tab: a category, a search, the things in it; one armed follows the mouse until you click the ground
@@ -35,7 +36,7 @@ import {SYS, TILE} from './006-map-pre.js';
   tabs.onclick=e=>{ const b=e.target.closest('[data-wt]'); if(b)tab(b.dataset.wt); };
   const fill=async()=>{ '@later'; const j=await list().catch(()=>null), sel=$('#wpcat'); if(!j){ $('#wplist').textContent='the things did not load'; return; }
     if(!sel.options.length)sel.innerHTML=j.cats.map((c,i)=>`<option value="${i}">${c} (${j.list.filter(r=>r[0]===i).length})</option>`).join('');
-    const ci=+sel.value, q=$('#wpq').value.trim().toLowerCase(), rows=j.list.filter(r=>q?r[2].includes(q):r[0]===ci);
+    const ci=+sel.value, q=$('#wpq').value.trim().toLowerCase(), rows=j.list.filter(r=>q?r[2].toLowerCase().includes(q):r[0]===ci);
     $('#wplist').innerHTML=rows.map(r=>`<button class="btn" data-pk="${r[1]}" aria-pressed="${!!armed&&armed.k===r[1]}" aria-selected="${!!armed&&armed.k===r[1]}">${TEXT.esc(r[2])} <span class="dim">${r[3]}m</span></button>`).join('')||'<div class="dim">nothing</div>'; };
   $('#wpcat').onchange=()=>{ $('#wpq').value=''; fill(); }; $('#wpq').oninput=()=>fill();
   const unghost=()=>{ if(ghost){ scene.remove(ghost); ghost.material.dispose(); ghost=null; } };

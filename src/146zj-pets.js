@@ -229,7 +229,7 @@ window.PETS=PETS;
   const spin=()=>{ cancelAnimationFrame(praf); if(!MEL||!MEL.isConnected||MEL.closest('[hidden]')||!pcv||!pcv.isConnected)return; praf=requestAnimationFrame(spin); try{ PETS.portrait(pcv,choosing?choosing.get():MY,pa+=.008); }catch(e){ console.warn('PET',e); } };
   const menuDraw=()=>{ const el=MEL; if(!el)return; if(!I){ idx().then(menuDraw); return; } tickAll(false);
     const perma=LIST.find(r=>r.perma); let o='<h3>YOUR PETS</h3>';
-    if(!perma&&!choosing)o+='<div class="row"><span>CHOOSE YOUR PERMAPET: ANY ANIMAL, FREE, AND IT CAN NEVER BE LOST.</span><button class="btn" data-pa="perma">CHOOSE</button></div>';
+    if(!perma&&!choosing)o+='<div style="white-space:normal;line-height:1.5;margin:6px 0">CHOOSE YOUR PERMAPET: ANY ANIMAL, FREE, AND IT CAN NEVER BE LOST.</div><div class="row"><button class="btn" data-pa="perma">CHOOSE</button></div>';
     if(choosing)o+='<div class="row" style="align-items:flex-start;gap:14px"><canvas width="220" height="190" style="width:220px;height:190px;flex:none"></canvas><div id="dpetpick" style="flex:1;min-width:0"></div></div><div class="row"><button class="btn" data-pa="keep">KEEP THIS ONE AS MY PERMAPET</button><button class="btn" data-pa="cancel">NOT NOW</button></div>';
     else if(LIST.length)o+='<div class="row"><canvas width="220" height="170" style="width:220px;height:170px"></canvas></div>';
     if(!LIST.length&&!choosing)o+='<div class="dim">NO PETS YET. ADOPT ONE AT THE PET STORE ON MARKET ST.</div>';

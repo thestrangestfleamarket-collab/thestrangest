@@ -32,7 +32,7 @@ await grab('dungeon',async()=>{});
       else y+=2.4; }
     const LV=H.filter(h=>h.t==='lava'); if(LV.length&&!LV.some(h=>h.src==='ceil'))LV.reduce((a,h)=>(h.src!=='wall')-(a.src!=='wall')||h.rx-a.rx>0?h:a).src='ceil';   // every level has lava pouring from its ceiling
     return H; };
-  const LC={}; const lay=k=>{ if(LC[k])return LC[k]; const r=RM[k-1]; if(!r)return null; const B=r.B, n=r.n, bare=r.c, R={...D0,b:B,x0:B.x0+T,x1:B.x1-T,y0:B.y0+T,y1:B.y1-T,cx:(B.x0+B.x1)/2,cy:(B.y0+B.y1)/2,in:[B.x0-T,B.y0-T,B.x1+T,B.y1+T],
+  const LC={}; const lay=k=>{ if(LC[k])return LC[k]; const r=RM[k-1]; if(!r)return null; const B=r.B, n=r.n, bare=r.c, R={...D0,H:D0.H*3,b:B,x0:B.x0+T,x1:B.x1-T,y0:B.y0+T,y1:B.y1-T,cx:(B.x0+B.x1)/2,cy:(B.y0+B.y1)/2,in:[B.x0-T,B.y0-T,B.x1+T,B.y1+T],
       door:{w:'-'},slit:{w:'-'},tally:{w:'-'},banners:[],holes:bare?[]:D0.holes.filter(h=>k>1||h.w!=='b'),chains:bare?[]:D0.chains,ivy:bare?[]:D0.ivy,cracks:bare?[]:D0.cracks,torches:[]};
     const ds={}; for(const s of 'bfwe')ds[s]=opens(r,s);
     const nearDoor=(x0,y0,x1,y1,m)=>ds.b.some(([a,b])=>x1>a-m&&x0<b+m&&y0<B.y0+m)||ds.f.some(([a,b])=>x1>a-m&&x0<b+m&&y1>B.y1-m)||ds.w.some(([a,b])=>y1>a-m&&y0<b+m&&x0<B.x0+m)||ds.e.some(([a,b])=>y1>a-m&&y0<b+m&&x1>B.x1-m);
@@ -59,14 +59,14 @@ await grab('dungeon',async()=>{});
   const build=()=>{ '@dungeon'; clear(); const Ls=RM.map(r=>lay(r.k)), E=Ls[0], up=E.up, s0=scene.children.length, n0=KP.length, l0=K.LAMPS.length, f0=FLAME.src.length, keep=BATCH.items.splice(0), M={objs:[],sol:[],fix:[],lights:[],fl:[],cuts:[],route:[]};
     const arch=(nx,ny,Xp,Yp,z)=>{ if(ny<=0||Math.abs(Yp-E.R.y0)>.06||Xp<up.x0-.2||Xp>up.x1+.2)return null; const hw=(up.x1-up.x0)*12, d=Math.abs(Xp-(up.x0+up.x1)/2)*24, sp=up.n*up.rise+30, r=Math.hypot(d,Math.max(0,z-sp));
       return r<hw-3?P0.dark:r<hw+2?sh(P0.hi,.8):null; };
-    const wall=(R,x0,y0,x1,y1)=>({x0,y0,x1,y1,z0:0,z1:R.H+4,c:P0.st[1],top:()=>P0.lo,fs:(nx,ny,Xp,Yp,z,k)=>(R===E.R&&arch(nx,ny,Xp,Yp,z))||K.dungeonWall(null,nx,ny,Xp,Yp,z,k,R)});
+    const RW=MODS.dunTerr&&MODS.dunTerr.wall, wall=(R,x0,y0,x1,y1)=>({x0,y0,x1,y1,z0:0,z1:R.H+4,tk:1/3,c:P0.st[1],top:()=>P0.lo,fs:(nx,ny,Xp,Yp,z,k)=>(R===E.R&&arch(nx,ny,Xp,Yp,z))||(RW?RW(nx,ny,Xp,Yp,z,R):K.dungeonWall(null,nx,ny,Xp,Yp,z,k,R))});   // rock, three times the old height (owner, 8 Nov 2026: "ceilings 3x higher ... dont use bricks on the wall, its all rocks")
     const seg=(lo,hi,O)=>{ const out=[]; let a=lo; for(const [p,q] of O){ if(p>a)out.push([a,p]); a=Math.max(a,q); } if(hi>a)out.push([a,hi]); return out; }, WB=[];
     for(const {B,R,ds} of Ls){   // each side's wall, broken where it opens into the next room
       for(const [a,b] of seg(B.x0,B.x1,ds.b))WB.push(['Kb',wall(R,a===B.x0?a-T:a,B.y0-T,b===B.x1?b+T:b,B.y0+T)]);
       for(const [a,b] of seg(B.x0,B.x1,ds.f))WB.push(['Kf',wall(R,a===B.x0?a-T:a,B.y1-T,b===B.x1?b+T:b,B.y1+T)]);
       for(const [a,b] of seg(B.y0,B.y1,ds.w))WB.push(['Kw',wall(R,B.x0-T,a===B.y0?a+T:a,B.x0+T,b===B.y1?b-T:b)]);
       for(const [a,b] of seg(B.y0,B.y1,ds.e))WB.push(['Ke',wall(R,B.x1-T,a===B.y0?a+T:a,B.x1+T,b===B.y1?b-T:b)]); }
-    const floor=(x0,y0,x1,y1,R)=>{ if(x1-x0<.01||y1-y0<.01)return; bq([X(x0),Y(.3)+dy,Z(y1)],[X(x1),Y(.3)+dy,Z(y1)],[X(x1),Y(.3)+dy,Z(y0)],[X(x0),Y(.3)+dy,Z(y0)],faceTex(Math.round((x1-x0)*24),Math.round((y1-y0)*24),(i,j)=>C(K.dungeonFloorCol(x0+(i+.5)/24,y0+(j+.5)/24,R))),'L'); };
+    const floor=(x0,y0,x1,y1,R)=>{ if(x1-x0<.01||y1-y0<.01)return; bq([X(x0),Y(.3)+dy,Z(y1)],[X(x1),Y(.3)+dy,Z(y1)],[X(x1),Y(.3)+dy,Z(y0)],[X(x0),Y(.3)+dy,Z(y0)],faceTex(Math.round((x1-x0)*24),Math.round((y1-y0)*24),(i,j)=>C(MODS.dunTerr?MODS.dunTerr.floorCol(x0+(i+.5)/24,y0+(j+.5)/24,R,'cave'):K.dungeonFloorCol(x0+(i+.5)/24,y0+(j+.5)/24,R))),'L'); };
     for(const {R} of Ls)for(const t of R.torches){ const [x,y]=t.w==='l'?[R.x0+.16,R.y0+t.u]:t.w==='r'?[R.x1-.16,R.y0+t.u]:t.w==='b'?[R.x0+t.u,R.y0+.16]:[R.x0+t.u,R.y1-.16]; Kc['wall torch'](x,y,t.w); }
     const LK=MODS.dunLook, solid=LK?Ls.filter(l=>!l.c).flatMap(l=>LK.props(l,Kc)):[], TR=MODS.dunTerr;
     if(TR)for(const l of Ls)if(!l.c&&!l.T)TR.make(l);   // the uneven ground, after the props so it keeps them on the flat
@@ -111,9 +111,9 @@ await grab('dungeon',async()=>{});
     for(const l of K.LAMPS.slice(l0)){ const Lt=light(l); if(l.flick)LF.push(Lt); } K.LAMPS.length=l0;
     FLAME.props(made,X,z=>Y(z)+dy,Z,LF); M.fl=FLAME.src.slice(f0);
     if(LK)Ls.filter(l=>!l.c).forEach((l,i)=>LK.dress(l,{own:o=>scene.add(LEVELS.own(o,'dungeon')),light,PL,lavaR,more:i>0}));
-    if(TR)for(const l of Ls)TR.dress(l,{own:o=>scene.add(LEVELS.own(o,'dungeon')),PL,sol});
+    if(TR)for(const l of Ls)TR.dress(l,{own:o=>scene.add(LEVELS.own(o,'dungeon')),PL,sol,light});
     for(const o of scene.children.slice(s0)){ G.add(o); M.objs.push(o); }
-    mine=M; cur=0; spikes(true); LITE.t=0; return Ls; };
+    mine=M; cur=0; spikes(true); LITE.t=0; if(MODS.dungeon)MODS.dungeon.v=(MODS.dungeon.v||0)+1; return Ls; };   // (v: the map redraws its plan)
   let CT=null, WT=null; const can=(w,h,f)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; f(c.getContext('2d')); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.magFilter=THREE.NearestFilter; return t; };
   const CEIL=()=>CT||(CT=can(24,24,g=>{ g.fillStyle='#1c1a19'; g.fillRect(0,0,24,24); for(let j=0;j<4;j++)for(let i=0;i<2;i++){ const v=34+((i*7+j*13)%5)*4; g.fillStyle=`rgb(${v},${v-3},${v-6})`; g.fillRect(i*12+(j&1)*6+1,j*6+1,10,4); } }),CT.wrapS=CT.wrapT=THREE.RepeatWrapping,CT);
   const WEB=()=>new THREE.MeshLambertMaterial({map:WT||(WT=can(128,128,g=>{ g.strokeStyle='rgba(225,225,215,.85)'; g.lineWidth=1.5; const c=64; for(let k=0;k<12;k++){ const a=k/12*6.283+.1*Math.sin(k*3); g.beginPath(); g.moveTo(c,c); g.lineTo(c+Math.cos(a)*62,c+Math.sin(a)*62); g.stroke(); }
@@ -134,7 +134,7 @@ await grab('dungeon',async()=>{});
   const bnd=()=>({x0:X(BB.x0),x1:X(BB.x1),z0:Z(BB.y0),z1:Z(BB.y1)});
   let named=0; const enter=k=>{ if(k===cur)return; cur=k; const r=RM[k-1]; if(r&&r.nm&&named!==k){ named=k; SAY(r.nm,'#d8c8a8'); } for(const f of HK)f(k); };   // a room's monsters wake as you come into it
   const go=async(n,how)=>{ if(busy)return; busy=true; await FADE.run(n?(how==='load'?'':'ENTERING THE DUNGEON'):'LEAVING THE DUNGEON',async()=>{
-    if(n){ await LOAD('dungeon'); if(!mine)build(); const r=how==='load'?roomAt(iX(pos.x),iZ(pos.z)):null, k=r&&!r.c?r.k:how==='load'||n===1?1:pick(n), a=lay(k).atUp; if(how!=='load'||!r){ UI.goTo(a.x,a.z,'down'); SHARED.heading=a.h; } SHARED.BOUND=bnd(); cur=0; enter(k); }
+    if(n){ await LOAD('dungeon'); if(MODS.dunTerr&&MODS.dunTerr.ready)await MODS.dunTerr.ready(); if(!mine)build(); const r=how==='load'?roomAt(iX(pos.x),iZ(pos.z)):null, k=r&&!r.c?r.k:how==='load'||n===1?1:pick(n), a=lay(k).atUp; if(how!=='load'||!r){ UI.goTo(a.x,a.z,'down'); SHARED.heading=a.h; } SHARED.BOUND=bnd(); cur=0; enter(k); }
     else{ clear(); UI.goTo(top.x,top.z,'up'); SHARED.heading=Math.PI; }
     PH.hd=SHARED.heading; },{hold:140}); busy=false; };
   MODS.dunDoor=(py,p)=>{ if(busy||UI.freeCam||SHARED.METRO.doorBusy()||(RAG.on))return; const m=SHARED.LVL==='down'?lotAt(p.x,p.z):0;

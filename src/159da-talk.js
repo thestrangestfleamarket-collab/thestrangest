@@ -1,4 +1,4 @@
-// THE TALK WINDOW: TALK — double-click a character to talk: its line types out in a window with your replies under it (W/S or 1-4, Enter or a click picks, Esc leaves). A character's script is `talk` in characters.json (the character editor's TALK tab); one without gets a short chat from the line pools. A reply can lead on, open the shop, give or take items, and set what the character remembers (saved with your things).
+// THE TALK WINDOW: TALK — a merchant's double click opens their wares (8 Nov 2026: no talk boxes); TALK.talk still opens the window for a script: its line types out in a window with your replies under it (W/S or 1-4, Enter or a click picks, Esc leaves). A character's script is `talk` in characters.json (the character editor's TALK tab); one without gets a short chat from the line pools. A reply can lead on, open the shop, give or take items, and set what the character remembers (saved with your things).
 import {THREE} from './003-shx.js';
 import {CHARS, FORAGE, INV, keys, LINES, LOOKS, NPCS, pos, SFX, SHOPS, TALK, TEXT, UI, VIT} from './003b-systems.js';
 import {SAY} from './003d-say.js';
@@ -50,7 +50,11 @@ import {SYS, TILE} from './006-map-pre.js';
   const loop=t=>{ if(!N)return; const dt=Math.min(.1,(t-(last||t))/1000); last=t;
     if(shown<text.length){ acc+=dt*CPS; const n=Math.min(text.length,Math.floor(acc)); if(n>shown){ if((n&1)===0||n===text.length)SFX.blip(voice(),{at:{x:N.st.x,z:N.st.z},far:14*T}); shown=n; tEl.textContent=text.slice(0,n); if(n===text.length)drawOpts(); } }
     if(Math.hypot(N.st.x-pos.x,N.st.z-pos.z)>5*T||VIT.dead)TALK.close(); }; SYS.add('win',loop,'159da-talk');
-  TALK.open=n=>{ '@later'; if(!n||!n.st||VIT.dead)return; if(N)TALK.close(); N=n; S=TALK.script(N); const m=mem(CHARS.id(N)); m._n=(+m._n||0)+1; save();
+  // no talk boxes (owner, 8 Nov 2026: "remove dialogue boxes from characters in game, when you double click a merchant yu just see their wares"): a merchant's double click opens their wares, anyone else's does nothing; the window below stays for a script that asks for it (TALK.talk)
+  const shopOf=n=>TALK.shops.get(n)||(CHARS.trade&&CHARS.trade(n)?()=>SHOPS.open(n):null);
+  TALK.sells=n=>!!(n&&shopOf(n));
+  TALK.open=n=>{ if(!n||!n.st||VIT.dead)return; const f=shopOf(n); if(f)f(); };
+  TALK.talk=n=>{ '@later'; if(!n||!n.st||VIT.dead)return; if(N)TALK.close(); N=n; S=TALK.script(N); const m=mem(CHARS.id(N)); m._n=(+m._n||0)+1; save();
     const st=N.st; keep={to:st.to,next:st.next,face:st.face,hold:st.hold}; st.to=null; st.next=null; st.face={x:pos.x,z:pos.z}; st.hold=true;
     P.querySelector('#talkn').textContent=(N.name||'SOMEONE').toUpperCase(); P.hidden=false; TALK.on=true; if(keys.clear)keys.clear(); show(S.start); last=0; };
   TALK.close=()=>{ if(N&&N.st&&keep){ const st=N.st; st.face=keep.face; st.hold=keep.hold; st.to=keep.to; st.next=keep.next; if(!st.hold)st.wait=.5; } N=null; S=null; keep=null; P.hidden=true; TALK.on=false; };
@@ -62,9 +66,9 @@ import {SYS, TILE} from './006-map-pre.js';
     else if(k==='enter'||k===' '||k==='e')pick(opts.length?at:-1); else if(/^[1-9]$/.test(k))pick(opts.length?+k-1:-1); else if(!/^(a|d|arrowleft|arrowright|shift)$/.test(k))return;
     e.preventDefault(); e.stopImmediatePropagation(); },true);
   addEventListener('keyup',e=>{ if(TALK.on)e.stopImmediatePropagation(); },true);
-  // every character you can talk to is a thing to double-click (a shopkeeper's too: talking leads to its shop)
+  // every merchant is a thing to double-click: their wares (8 Nov 2026)
   const bound=new Set();
-  const bind=n=>{ if(!n||!n.g||!n.st||!n.key||bound.has(n)||NOTALK.test(n.key))return; bound.add(n);
+  const bind=n=>{ if(!n||!n.g||!n.st||!n.key||bound.has(n)||NOTALK.test(n.key)||!TALK.sells(n))return; bound.add(n);
     for(const th of UI.things)if(th.npc===n){ th.act=()=>TALK.open(n); return; }
     const sc=n.g.scale.y||1, H=(n.H||1.8*T)/sc, hb=new THREE.Mesh(new THREE.BoxGeometry(1.2*T/sc,H,1.2*T/sc),new THREE.MeshBasicMaterial({visible:false})); hb.position.y=H/2; n.g.add(hb);
     UI.thing({name:n.name||'SOMEONE',npc:n,obj:hb,reach:1.6*T,near:3*T,tall:(n.H||1.8*T)+.3*T,act:()=>TALK.open(n)}); };

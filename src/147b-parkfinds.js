@@ -49,7 +49,7 @@ const PQ={}; window.PQ=PQ;
   const cold=()=>CLOCK.season()==='winter'||!!(WX.now&&(WX.now.cold||WX.now.snow>.15));
   const lk=(x,z)=>FOUNT.lake?-FOUNT.lake(x/T+SHARED.BOD.OX-(PARK.ox||0),z/T+SHARED.BOD.OY-(PARK.oy||0)):-1;   // tiles in from the shore
   const iceY=()=>FOUNT.LV+.05*WU, iced=(x,z)=>ICE.on&&lk(x,z)>.6, hole=(x,z,r)=>ICE.holes.find(h=>Math.hypot(h.x-x,h.z-z)<r)||null;
-  FOUNT.held=(x,z)=>iced(x,z)&&(!FOUNT.swim||ICE.climb)&&!ICE.cracks.some(c=>Math.hypot(c.x-x,c.z-z)<1.6*T);
+  FOUNT.holds.push((x,z)=>iced(x,z)&&(!FOUNT.swim||ICE.climb)&&!ICE.cracks.some(c=>Math.hypot(c.x-x,c.z-z)<1.6*T));
   FISHING.waters.push((x,z)=>{ if(!ICE.on||lk(x,z)<=.6)return undefined; return hole(x,z,.7*T)?{kind:'ice',lv:FOUNT.LV,depth:4}:null; });
   const buildIce=()=>{ '@later'; const S=FOUNT.S, Lk=S.L, ox=PARK.ox||0, oy=PARK.oy||0, W=(px,py)=>[SHARED.BOD.XS(px+ox),SHARED.BOD.ZS(py+oy)], N=96;
     const ring=inset=>{ const P=[]; for(let i=0;i<N;i++){ const a=i/N*6.283, ca=Math.cos(a), sa=Math.sin(a); let r=0; for(let q=0;q<Math.max(Lk.rx,Lk.ry)+30;q+=.5){ if(FOUNT.lake(Lk.x+ca*q,Lk.y+sa*q)>-inset)break; r=q; } const [x,z]=W(Lk.x+ca*r,Lk.y+sa*r); P.push(new THREE.Vector2(x,-z)); } return P; };

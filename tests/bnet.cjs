@@ -43,8 +43,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
 
   const r5 = await pg.evaluate(async () => { INV.cash = 100; const N = __dbg.NPCS.find(n => CHARS.id(n) === 'origamifox'), F = __dbg.NPCS.find(n => CHARS.id(n) === 'fox'), o = {};
     o.fox = !!(F && CHARS.trade(F) && CHARS.trade(F).sells.includes('jar_m'));
-    SHOPS.open(N); const q = s => document.querySelector('#shopg ' + s); q('[data-buy="jar_m"]').click(); o.jar = FORAGE.has('jar_m'); o.room = BFLY.room(); o.cash = INV.cash;
-    FORAGE.give('b_3', 2); SHOPS.draw(); const sb = q('[data-sold="b_3"][data-n="all"]'); o.sellRow = !!sb; if (sb) sb.click(); o.left = FORAGE.has('b_3'); o.paid = INV.cash - o.cash; SHOPS.close(); return o; });
+    SHOPS.open(N); const q = s => document.querySelector('#shopg ' + s); o.buyRow = !!q('[data-buy="jar_m"]'); SHOPS.buy('jar_m'); o.jar = FORAGE.has('jar_m'); o.room = BFLY.room(); o.cash = INV.cash;
+    FORAGE.give('b_3', 2); SHOPS.draw(); const sb = q('[data-sold="b_3"]'); o.sellRow = !!sb; if (sb) SHOPS.sell('b_3', INV.items.b_3); o.left = FORAGE.has('b_3'); o.paid = INV.cash - o.cash; SHOPS.close(); return o; });
   ok(r5.fox && r5.jar === 1 && r5.room === 50 && r5.cash === 86 && r5.sellRow && r5.left === 0 && r5.paid > 0, 'the Fox sells jars; the Nature Merchant sells a medium jar ($14, room 50) and buys butterflies: ' + JSON.stringify(r5));
 
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.join(' | ') : ''));

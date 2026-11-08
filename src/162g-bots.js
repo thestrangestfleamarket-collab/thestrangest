@@ -35,6 +35,9 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
   let cash0=null; const earned=()=>cash()-(cash0??cash()), goal=()=>C.goal>0&&earned()>=C.goal;   // a goal is what it earns on this job, not what it had
   // walk about a centre (home, or where a job brought it), its own pauses
   let rw=0; const roam=(dt,c,far,ok)=>{ if(walking(dt))return; if((rw-=dt)>0){ doing='looking round'; return; } const h=c||{x:pos.x,z:pos.z};
+    const D=MODS.dungeon; if(SHARED.LVL==='down'&&D&&D.inside&&D.inside(pos.x,pos.z)&&D.rooms){   // in the dungeon, wandering is exploring: off to a spot in another room, a short look round, on again
+      const rs=D.rooms.filter(r=>!r.c); for(let k=0;k<12;k++){ const r=rs[(R()*rs.length)|0], L=D.lay(r.k), B=L&&L.R; if(!B)continue; const x=SHARED.BOD.XS(B.x0+1.5+R()*(B.x1-B.x0-3)), z=SHARED.BOD.ZS(B.y0+1.5+R()*(B.y1-B.y0-3));
+        if(!(CITY.blocked&&CITY.blocked(lv(),x,z))&&d2(x,z)>4*T){ walk(x,z); doing='exploring '+(r.nm||'the dungeon').toLowerCase(); break; } } rw=1+R()*2; return; }
     for(let k=0;k<12;k++){ const a=R()*6.283, r=(far?6+R()*20:2+R()*8)*T, x=h.x+Math.sin(a)*r, z=h.z+Math.cos(a)*r; if((!ok||ok(x,z))&&!(CITY.blocked&&CITY.blocked(lv(),x,z))){ walk(x,z); break; } }
     rw=far?.5+R():2+R()*6; doing='wandering'; };
   const here=t=>t.c||(t.c={x:pos.x,z:pos.z});

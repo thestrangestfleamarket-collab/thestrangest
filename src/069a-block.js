@@ -124,7 +124,13 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
       const rects=[[Math.max(bx0,X0),by0,X0,by1],[Math.max(bx0,X0),Y1,bx1,by1],[X1,YS,bx1,Y1],[XB,by0,bx1,YS]];
       for(const [x0,y0,x1,y1] of rects){ if(x1-x0<=0||y1-y0<=0)continue; const ge=new THREE.PlaneGeometry((x1-x0)*T,(y1-y0)*T), uv=ge.attributes.uv, u0=(x0-bx0)/(bx1-bx0), u1=(x1-bx0)/(bx1-bx0), v0=1-(y0-by0)/(by1-by0), v1=1-(y1-by0)/(by1-by0);
         for(let q=0;q<uv.count;q++)uv.setXY(q,uv.getX(q)?u1:u0,uv.getY(q)?v0:v1);
-        const me=new THREE.Mesh(ge,m); me.rotation.x=-Math.PI/2; me.position.set((XS(x0)+XS(x1))/2,.004,(ZS(y0)+ZS(y1))/2); me.receiveShadow=true; me.raycast=()=>{}; me.userData.cullOf=1; G.add(me); } } }
+        const me=new THREE.Mesh(ge,m); me.rotation.x=-Math.PI/2; me.position.set((XS(x0)+XS(x1))/2,.004,(ZS(y0)+ZS(y1))/2); me.receiveShadow=true; me.raycast=()=>{}; me.userData.cullOf=1; G.add(me); }
+      // the big lake's water between where the park's own lake stops and the forcefield (owner, 8 Nov 2026: "the lake has a chunk ff green in it"): the same picture, only its water, over the section's lawn
+      if(S&&L){ const im2=g.createImageData(W,H), c2=cv(W,H), g2=c2.getContext('2d'); for(let q=0;q<d.length;q+=4){ const wet=d[q+2]>d[q+1]+10; im2.data[q]=d[q]; im2.data[q+1]=d[q+1]; im2.data[q+2]=d[q+2]; im2.data[q+3]=wet?255:0; } g2.putImageData(im2,0,0);
+        const m2=new THREE.MeshLambertMaterial({map:tex(c2),alphaTest:.5}), xw=ox+S.wx1-1, yw=oy+S.wy1-1;
+        for(const [x0,y0,x1,y1] of [[xw,by0,X1,yw],[bx0,yw,X1,Y1]]){ if(x1-x0<=0||y1-y0<=0)continue; const ge=new THREE.PlaneGeometry((x1-x0)*T,(y1-y0)*T), uv=ge.attributes.uv, u0=(x0-bx0)/(bx1-bx0), u1=(x1-bx0)/(bx1-bx0), v0=1-(y0-by0)/(by1-by0), v1=1-(y1-by0)/(by1-by0);
+          for(let q=0;q<uv.count;q++)uv.setXY(q,uv.getX(q)?u1:u0,uv.getY(q)?v0:v1);
+          const me=new THREE.Mesh(ge,m2); me.rotation.x=-Math.PI/2; me.position.set((XS(x0)+XS(x1))/2,.004,(ZS(y0)+ZS(y1))/2); me.raycast=()=>{}; me.userData.cullOf=1; G.add(me); } } } }
     // the city's paved ground out to the far plane (owner, 8 Nov 2026: "the city should go on forever on exterior of map"): its street grid painted on, anchored as the blocks are (edge.city), never under another ground
     { const CY=E.city, GD=E.ground; if(CY&&GD){ const RG=LEVEL.sections.ring, O=RG.outer, R=CY.reach, [GX,AV,GY,STW]=CY.grid, sh=CY.shore, SH=sh-(CY.walk||0), A=CY.home, cc=GD.city||[74,74,80];
       const c=cv(GX,GY), g=c.getContext('2d'), P2=PAL; for(let y=0;y<GY;y++)for(let x=0;x<GX;x++){ const rd=x>=GX-AV||y>=GY-STW, wk=!rd&&(x<1||x>=GX-AV-1||y<1||y>=GY-STW-1), b=rd?P2.road:wk?P2.walk:cc, n=.92+rnd()*.12; g.fillStyle=`rgb(${b.map(v=>Math.round(v*n)).join(',')})`; g.fillRect(x,GY-1-y,1,1); }

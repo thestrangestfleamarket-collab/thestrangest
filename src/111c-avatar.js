@@ -140,8 +140,8 @@ const AVATAR={}; window.AVATAR=AVATAR;
     T.spec={L:str(1),R:str(-1),H:.012+H,badge,S,rad,col:0x181818}; return T; };
   // the head's top corners rounded (owner, 8 Nov 2026: "round off the head of the avatar with true curves", "we arent round hair just the head shape", "just add rounded corners to
   // the 4 top corners of head"): the body's own head (not what is worn on it) keeps its box below RR from its top; above, its edges to the top bend round on circles of RR; its faces
-  // there cut finer first (no edge over RE) and shaded smooth (sm)
-  const RR=.05, RE=.02, HB=2;
+  // there cut finer first (cutFace) and shaded smooth (sm)
+  const RR=.05, RE=.006, SAG=.0012, HB=2;
   const hwOf=(d,q)=>(d.bone[q*2]===HB?d.w[q]/255:0)+(d.bone[q*2+1]===HB?1-d.w[q]/255:0);
   const roundOf=(X,d)=>{ const n=X.length/3, hb=q=>d.w[q]>=128?d.bone[q*2]:d.bone[q*2+1]; let top=-1e9;
     for(let q=0;q<n;q++)if(hb(q)===HB)top=Math.max(top,X[q*3+1]); if(!(top>-1e9))return null;
@@ -154,8 +154,9 @@ const AVATAR={}; window.AVATAR=AVATAR;
         nx=x+(nx-x)*hw; nz=z+(nz-z)*hw; ny=y+(yy-y)*hw; }
       o[i]=nx; o[i+1]=ny; o[i+2]=nz; };
     return {at,ty:ty-RE,hb:(d_,q)=>d_.w[q]>=128?d_.bone[q*2]:d_.bone[q*2+1]}; };
-  // a head face cut until no edge near the top is over RE; a point cut on the head's rim (f: an edge it shares with a face the head does not carry) stays where it is (pin), so it meets that face
-  const cutFace=(A,B,C,f,out,ty)=>{ const go=(V,F)=>{ const s=[0,1,2].map(i=>Math.max(V[i].p[1],V[(i+1)%3].p[1])>ty&&Math.hypot(V[i].p[0]-V[(i+1)%3].p[0],V[i].p[1]-V[(i+1)%3].p[1],V[i].p[2]-V[(i+1)%3].p[2])>RE), n=s[0]+s[1]+s[2];
+  // a head face cut where it bends: an edge halved while its middle would sit over SAG off the line between its ends (none under RE); a point cut on the head's rim (f: an edge it shares with a face the head does not carry) stays where it is (pin), so it meets that face
+  const cutFace=(A,B,C,f,out,at)=>{ const o=[0,0,0,0,0,0,0,0,0], bent=(a,b)=>{ if(Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2])<RE)return false; at(a[0],a[1],a[2],1,o,0); at(b[0],b[1],b[2],1,o,3); at((a[0]+b[0])/2,(a[1]+b[1])/2,(a[2]+b[2])/2,1,o,6); return Math.hypot(o[6]-(o[0]+o[3])/2,o[7]-(o[1]+o[4])/2,o[8]-(o[2]+o[5])/2)>SAG; };
+    const go=(V,F)=>{ const s=[0,1,2].map(i=>bent(V[i].p,V[(i+1)%3].p)), n=s[0]+s[1]+s[2];
       if(!n){ out.push(V); return; }
       const mid=i=>{ const a=V[i], b=V[(i+1)%3]; return {b:[(a.b[0]+b.b[0])/2,(a.b[1]+b.b[1])/2,(a.b[2]+b.b[2])/2],p:[(a.p[0]+b.p[0])/2,(a.p[1]+b.p[1])/2,(a.p[2]+b.p[2])/2],pin:F[i]}; };
       if(n===3){ const m0=mid(0), m1=mid(1), m2=mid(2); go([V[0],m0,m2],[F[0],0,F[2]]); go([m0,V[1],m1],[F[0],F[1],0]); go([m2,m1,V[2]],[0,F[1],F[2]]); go([m0,m1,m2],[0,0,0]); return; }
@@ -232,7 +233,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
       const K=q=>Math.round(X[q*3]*1e5)+','+Math.round(X[q*3+1]*1e5)+','+Math.round(X[q*3+2]*1e5), E=(a,b)=>{ const ka=K(a), kb=K(b); return ka<kb?ka+'|'+kb:kb+'|'+ka; }, isH=t=>[0,1,2].every(j=>RH.hb(d,d.tri[t*3+j])===HB);
       const other=new Set(); for(let t=0;t<d.tri.length/3;t++)if(kept(d,t,pi)&&!isH(t))for(let j=0;j<3;j++)other.add(E(d.tri[t*3+j],d.tri[t*3+(j+1)%3]));
       for(let t=0;t<d.tri.length/3;t++){ if(!kept(d,t,pi))continue; if(!isH(t)){ nf++; continue; } const ix=[d.tri[t*3],d.tri[t*3+1],d.tri[t*3+2]], out=[];
-        cutFace(...ix.map((q,j)=>({b:[j===0?1:0,j===1?1:0,j===2?1:0],p:[X[q*3],X[q*3+1],X[q*3+2]]})),[0,1,2].map(j=>other.has(E(ix[j],ix[(j+1)%3]))),out,RH.ty); cut.set(t,out); nf+=out.length; } });
+        cutFace(...ix.map((q,j)=>({b:[j===0?1:0,j===1?1:0,j===2?1:0],p:[X[q*3],X[q*3+1],X[q*3+2]]})),[0,1,2].map(j=>other.has(E(ix[j],ix[(j+1)%3]))),out,RH.at); cut.set(t,out); nf+=out.length; } });
     const pos=new Float32Array(nf*9), nor=new Float32Array(nf*9), col=new Float32Array(nf*9), bi=new Float32Array(nf*6), bw=new Float32Array(nf*3), fl=new Float32Array(nf*3), hh=new Float32Array(nf*3), fd=new Float32Array(nf*9), sm=new Float32Array(nf*3), va=new THREE.Vector3(), vb=new THREE.Vector3(), vc=new THREE.Vector3(), n=new THREE.Vector3(), e=new THREE.Vector3();
     let f=0;
     parts.forEach((P,pi)=>{ const d=D_[pi], v=P.v, X=XS[pi], XR=XM[pi], cut=CUT[pi];

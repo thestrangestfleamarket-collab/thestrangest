@@ -90,7 +90,7 @@ function gripIK(st,P,G=st.climb.grip){ const W=st.world,c=Math.cos(W.hd),s=Math.
   const toL=p=>{ const dx=(p.x-W.x)*W.kx,dz=(p.z-W.z)*W.kx; return V(dx*c-dz*s,(p.y-W.y)*W.ky,dx*s+dz*c); }, nL=p=>nrm(V(p.nx*c-p.nz*s,p.ny,p.nx*s+p.nz*c));
   for(const n of 'LR'){ const g=G[n],sd=n=='L'?1:-1; if(!g) continue;
     if(g.f){ const A=add(add(toL(g.f),mul(nL(g.f),2.6)),V(0,1.2,0)); P[n].ik=A; P[n].kp=V(sd*.8,.3,1); legIK(P,n,sd,A,P[n].kp); P[n].foot=-35*D; }   // knees out round the trunk, soles flat on the bark
-    if(g.h){ armIK(P,n,sd,add(add(toL(g.h),mul(nL(g.h),1.3)),V(0,-1.6,0))); P[n].fist=1; } } }
+    if(g.h){ armIK(P,n,sd,add(add(toL(g.h),mul(nL(g.h),1.3)),V(0,-1.6,0))); P[n].fist=g.hf??1; } } }
 function footLock(st,P,AK,LK,w){ const W=st.world,c=Math.cos(W.hd),s=Math.sin(W.hd),
     toW=b=>({x:W.x+(b.x*c+b.z*s)/W.kx,z:W.z+(-b.x*s+b.z*c)/W.kx}), toL=p=>{ const dx=(p.x-W.x)*W.kx,dz=(p.z-W.z)*W.kx; return V(dx*c-dz*s,0,dx*s+dz*c); },
     up=p=>Math.max(-8,((p.y??W.gnd(p.x,p.z))-W.y)*W.ky), at=b=>{ const p=toW(b); p.y=Math.max(...[-1.1,0,3].map(dz=>{ const q=toW(add(b,V(0,0,dz))); return W.gnd(q.x,q.z); })); p.hd=W.hd; return p; },
@@ -460,11 +460,29 @@ const grabMove=n=>{ const s=n=='R'?1:-1; return move({keys:[[0,{}],[0.24,{bend:5
 MOVES.grab=grabMove('R'); MOVES.grabL=grabMove('L');
 MOVES.carry=move({hold:0.24,keys:[[0,{}],[0.24,{R:{ua:[104,6],fa:[108,2],fist:1}},'out'],[0.5,{R:{ua:[9,8],fa:[19,8],fist:0}}]]});
 MOVES.mantle=(()=>{ const m=climbOut(); m.deck=false; return m; })();
-function climbPose(st){ const z=st.climb.z,u=st.climb.slide?0.5:0.5-0.5*Math.cos(2*Math.PI*(st.climb.ph??z)/(st.climb.per||28)),P=neutral(),Q=neutral();
-  for(const [A,hi,lo] of [[P,'L','R'],[Q,'R','L']]){ A.root=V(0,z+STAND-1,-1.5); A.bend=8*D; A.nod=-18*D;
-    A[hi].ua=[168*D,12*D]; A[hi].fa=[176*D,8*D]; A[lo].ua=[118*D,16*D]; A[lo].fa=[158*D,10*D]; A.L.fist=A.R.fist=1;
-    A[lo].th=[64*D,8*D]; A[lo].sh=[-14*D,8*D]; A[hi].th=[8*D,6*D]; A[hi].sh=[-4*D,6*D]; A.L.foot=A.R.foot=0; }
-  const M=mix(P,Q,u), k=st.climb.slide?0:Math.sin(Math.PI*u); M.root=V(M.root.x+1.2*(u-.5),M.root.y-2.2*k,M.root.z-.8*k); M.bend=(8+6*k)*D; if(st.climb.grip&&st.world){ M.bend=-3*D; M.nod=-34*D; M.root=V(M.root.x,M.root.y,M.root.z-1.5); gripIK(st,M); } return M; }   // on bark: hang back from it, looking up the trunk   // each pull: sag on the arms, then heave up close to the trunk
+// THE CLIMB FROM MOTION CAPTURE (owner, 8 Nov 2026: "lets redo the climbing animation, based it on real climbing animations"; his pick CMU: data/moves.json climb):
+// a ladder climber's cycle, one cycle a rise of height climbed (up or down), its second half the first mirrored; on bark each hand and foot holds where climbHolds put it
+const CLIMB=MOCAP&&MOCAP.climb?(()=>{ const C=MOCAP.climb, mir=c=>{ const m={...c,root:[-c.root[0],c.root[1],c.root[2]],L:c.R,R:c.L}; for(const k of ['yaw','roll','side','cyaw']) m[k]=-c[k]; return m; };
+  const P=[...C.keys,...C.keys.map(mir)].map(c=>apply(neutral(),c)), up=Math.max(0,...P.map(p=>{ const J=build(p,null).J; return Math.max(...FLOOR.map(([k,r])=>J[k]?r-J[k].y:0)); }));   // (raised so no foot dips under his floor)
+  for(const p of P) p.root=V(p.root.x,p.root.y+up,p.root.z); const at={}; for(const k in C.at) at[k]={...C.at[k],lo:C.at[k].lo+up,hi:C.at[k].hi+up};
+  return {...C,at,P,gap:(at.hL.z+1.3+at.fL.z+2.6)/2}; })():null;   // gap: how far ahead the bark is, between where his hands and his feet hold (gripIK's offsets)
+const reaching=(a,f)=>((f-a.t0)%1+1)%1<((a.t1-a.t0)%1+1)%1;
+function climbPose(st){ const C=st.climb,per=C.per||CLIMB.rise,f=(((C.ph??C.z)/per)%1+1)%1,n=CLIMB.P.length,x=f*n,i=Math.floor(x),M=mix(CLIMB.P[i],CLIMB.P[(i+1)%n],x-i);
+  M.root=V(M.root.x,M.root.y+C.z,M.root.z); M.L.fist=reaching(CLIMB.at.hL,f)?.2:1; M.R.fist=reaching(CLIMB.at.hR,f)?.2:1;
+  if(C.grip&&st.world) gripIK(st,M); return M; }
+// the holds on bark, from the height climbed: a limb's n-th hold is where the recording has it as its n-th reach ends (hold(x, y): the page finds the bark
+// there, x out and y up from the body); between its reach's t0 and t1 it goes from one hold to the next, arcing out from the bark, the hand open. Kept
+// still part way, it finishes the reach (or goes back), and takes it up again as the climb goes on
+function climbHolds(st,dt,hold){ const C=st.climb,A=CLIMB.at,per=C.per||CLIMB.rise,P=C.ph/per,G=C.gs||(C.gs={P,L:{},ov:0}),ov0=G.ov;
+  G.ov=clamp(G.ov+(P!==G.P?-dt/.15:dt/.3),0,1); G.P=P;
+  for(const k in A){ const a=A[k],S=G.L[k]||(G.L[k]={H:{}}),h=k[0]=='h',w=((a.t1-a.t0)%1+1)%1,u=P-a.t1,m=Math.floor(u),q=u-m;
+    const at=j=>S.H[j]||(S.H[j]=hold(a.x,(j+a.t1)*per+a.hi+(h?1.6:-1.2)-C.ph));
+    let e=q>1-w?(q-1+w)/w:0; if(!ov0) S.end=Math.round(e); e+=(S.end-e)*G.ov; const F=at(m); let p=F;
+    if(e>0){ const T=at(m+1),s=e*e*(3-2*e),r=Math.sin(Math.PI*e)*Math.min(1.5,.15*Math.hypot(T.x-F.x,T.y-F.y,T.z-F.z)),l=(x,y)=>x+(y-x)*s;
+      p=e>=1?T:{x:l(F.x,T.x)+T.nx*r,y:l(F.y,T.y),z:l(F.z,T.z)+T.nz*r,nx:T.nx,ny:T.ny,nz:T.nz}; }
+    for(const j in S.H) if(+j!==m&&+j!==m+1) delete S.H[j];
+    S.p=p; S.e=e; S.hf=h?1-.8*Math.sin(Math.PI*e):1; }
+  C.grip={L:{h:G.L.hL.p,f:G.L.fL.p,hf:G.L.hL.hf},R:{h:G.L.hR.p,f:G.L.fR.p,hf:G.L.hR.hf}}; return C.grip; }
 const PICKS={};
 function pickMove(h,z){ const k=clamp(Math.round(h/2)*2,0,50),q=clamp(Math.round(z/2)*2,4,16),key=k+','+q; if(PICKS[key]) return PICKS[key];
   const G=(d,a)=>({root:[0,STAND-7*d,-1.5*d],bend:44*d,nod:12*d,L:{ik:[FOOTX,ANKLE,2.5*d],ua:[9+30*d,14],fa:[19+60*d,10]},R:{ik:[-FOOTX,ANKLE,-2.5*d],ua:[a,-6],fa:[a+8,-8],fist:0}});
@@ -974,7 +992,7 @@ function tune(o){ G=o.g;
 return {rbox,ell,rcone,box,OVL,LOOK,begin,beginUp,legIK,START,mkMove:move,ARMMOVES,fine:v=>{ FINEHAND=!!v; },farOnly:v=>{ FAR=!!v; },restOf,IDF,viewPitch:v=>{ VPITCH=v; },far:v=>{ FAR=!!v; DIGC.clear(); },create,step,pose,act,release,beginUp,tune,WPX,V8,wpal,wpxGet,wpxPack,studioAnims,studioBase,RIGT,WALK,RUN,G:()=>G,water,travel,handed,bake,baker,draw,depth:N=>BUF[N]&&BUF[N].dep,pid:N=>BUF[N]&&BUF[N].id,tint,ramp32,project,overlaps,build,walkPose,shell,MOVES,GAITV,KEYMOVE,gaitOf,BONES,PIECES,RAMP,SPEED,CYCLE,PX,V,D,
   apply,STANDK,RIDEG,mix,clearPose,settle,rcone,ell,box,rbox,add,sub,mul,nrm,cross,dot,len,STAND,ANKLE,FOOTX,frameOf,MATS,
   DIG,digitBase,digitFK,fgOf,hand,yaw,get THIGH(){ return THIGH; },get SHIN(){ return SHIN; },get UPPER(){ return UPPER; },get FORE(){ return FORE; },get HIPX(){ return HIPX; },
-  get RIGP(){ return RIGP; },get RIGGEN(){ return RIGGEN; },rigSet,rigGet,rigDefault,refit,fitPts,frameAt,rawBake:v=>{ RAWBAKE=!!v; },cam,K,shade:n=>{ if(n!=null)SHADE=n; return SHADE; },style:s=>{ const o=STY; if(s!==undefined)STY=s||{}; return o; },soft:v=>{ if(v!==undefined)SOFT=v; return SOFT; },outline:o=>{ if(o){ Object.assign(OUTS,o); OUTL=OUTS.w>0; try{ localStorage.setItem('isowalk-outline2',JSON.stringify(OUTS)); }catch(e){} } return OUTS; }};
+  get RIGP(){ return RIGP; },get RIGGEN(){ return RIGGEN; },rigSet,rigGet,rigDefault,refit,CLIMB,climbHolds,fitPts,frameAt,rawBake:v=>{ RAWBAKE=!!v; },cam,K,shade:n=>{ if(n!=null)SHADE=n; return SHADE; },style:s=>{ const o=STY; if(s!==undefined)STY=s||{}; return o; },soft:v=>{ if(v!==undefined)SOFT=v; return SOFT; },outline:o=>{ if(o){ Object.assign(OUTS,o); OUTL=OUTS.w>0; try{ localStorage.setItem('isowalk-outline2',JSON.stringify(OUTS)); }catch(e){} } return OUTS; }};
 })();
 if(typeof module!=='undefined') module.exports=RIG;
 

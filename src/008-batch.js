@@ -1,6 +1,6 @@
 // THE BATCH: BATCH packs painted pictures into atlases and merges them into few meshes; BATCH.queue paints far things later, near ones first; OBJ and OBJS name the objects made.
 import {SHARED, THREE} from './003-shx.js';
-import {ED, LEVELS, pos, UI} from './003b-systems.js';
+import {ED, LEVELS, PARK, pos, UI} from './003b-systems.js';
 import {renderer, RH, RW, scene} from './004-main.js';
 import {QS, SYS, TILE} from './006-map-pre.js';
 const BATCH=window.BATCH={items:[],tag:null};
@@ -44,8 +44,9 @@ BATCH.tintable=m=>{ const prev=m.onBeforeCompile; m.onBeforeCompile=(sh,r)=>{ if
   const k0=m.customProgramCacheKey?m.customProgramCacheKey.bind(m):()=>''; m.customProgramCacheKey=()=>k0()+'|tint'; };
 const PEEK=window.PEEK={uDP:{x:0,y:0,z:-2,w:.1},uDK:{x:0,y:1,z:1e9,w:0},boxes:[],k:0,on:QS.get('dither')!=='0',ray:new THREE.Ray(),V:new THREE.Vector3(),W:new THREE.Vector3(),H:new THREE.Vector3()};
 if(PEEK.on)for(const k of ['lambert','basic']){ const S=THREE.ShaderLib[k]; S.uniforms.uDP={value:PEEK.uDP}; S.uniforms.uDK={value:PEEK.uDK};
-  S.vertexShader='attribute float aWl; varying vec4 vDc; varying float vWl, vWy;\n'+S.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vDc=gl_Position; vWl=aWl; vWy=(modelMatrix*vec4(transformed,1.)).y;');
+  S.vertexShader='attribute float aWl; varying vec4 vDc; varying float vWl, vWy;\n'+S.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vDc=gl_Position; vWl=aWl; vec4 wq=vec4(transformed,1.);\n#ifdef USE_INSTANCING\n wq=instanceMatrix*wq;\n#endif\n vWy=(modelMatrix*wq).y;');
   S.fragmentShader='uniform vec4 uDP, uDK; varying vec4 vDc; varying float vWl, vWy;\nfloat dB2(vec2 a){ a=floor(a); return fract(dot(a,vec2(.5,a.y*.75))); }\n'+S.fragmentShader.replace('#include <clipping_planes_fragment>',`#include <clipping_planes_fragment>
+  if(uDK.w>0.&&vWl>4.5&&vWy>uDK.z){ vec3 dn=vDc.xyz/vDc.w; if(dn.z<uDP.z&&dB2(gl_FragCoord.xy*.5)*.25+dB2(gl_FragCoord.xy)<uDK.w*1.5)discard; }
   if(uDK.x>0.&&vWl>1.5&&(vWl<2.5||vWy>uDK.z)){ vec3 dn=vDc.xyz/vDc.w; vec2 dq=dn.xy-uDP.xy; dq.x*=uDK.y; float dr=length(dq)/uDP.w, th=uDK.x*(dr<.7?.8:.4); if(vWl>3.5&&dr<.8)th=uDK.x*1.5; if(dr<1.&&dn.z<uDP.z&&dB2(gl_FragCoord.xy*.5)*.25+dB2(gl_FragCoord.xy)<th)discard; }`); }
 PEEK.box=(me,x0,y0,z0,x1,y1,z1)=>{ const e=.7*TILE/.84; PEEK.boxes.push({me,b:new THREE.Box3(new THREE.Vector3(Math.min(x0,x1)-e,Math.min(y0,y1)-e,Math.min(z0,z1)-e),new THREE.Vector3(Math.max(x0,x1)+e,Math.max(y0,y1)+e,Math.max(z0,z1)+e))}); };
 // aWl: 2 a wall (dithered open round you), 3 a roof, 4 leaves (open fully round you: many layers of cards never dither through, 2 Nov 2026)
@@ -63,10 +64,12 @@ PEEK.batch=(me,L)=>{ const M=TILE/.84, q=.05*TILE, C=6*M, G={}, K=[], V=PEEK.V, 
 PEEK.tick=dt=>{ const on=PEEK.on&&!PEEK.off&&UI.view!=='first'&&!UI.freeCam&&!ED.on&&PEEK.boxes.length, M=TILE/.84, c=PEEK.V.set(pos.x,SHARED.py+1.1*TILE,pos.z), R=PEEK.ray, W=PEEK.W, H=PEEK.H, P=PEEK.uDP, K=PEEK.uDK;
   R.origin.copy(c); if(UI.persp)R.direction.copy(SHARED.cam.position).sub(c).normalize(); else R.direction.set(0,0,1).applyQuaternion(SHARED.cam.quaternion);
   let cov=false; if(on){ const far=UI.persp?c.distanceTo(SHARED.cam.position):1e5; W.copy(c).project(SHARED.cam); if(far>1.5*M&&Math.abs(W.x)<1.1&&Math.abs(W.y)<1.1&&W.z<1)for(const o of PEEK.boxes){ const me=o.me; if(!me.visible||(me.parent&&!me.parent.visible)||!LEVELS.drawn(me))continue; if(R.intersectBox(o.b,H)&&H.distanceTo(c)<far){ cov=true; break; } } }
-  PEEK.k=Math.max(0,Math.min(1,PEEK.k+(cov?dt:-dt)/.25)); PEEK.cov=cov; K.x=PEEK.k; K.y=RW/RH; K.z=SHARED.py+2.6*TILE; if(!PEEK.k)return;
+  PEEK.k=Math.max(0,Math.min(1,PEEK.k+(cov?dt:-dt)/.25)); PEEK.cov=cov; K.x=PEEK.k; K.y=RW/RH; K.z=SHARED.py+2.6*TILE;
+  const out=PEEK.on&&!PEEK.off&&UI.view!=='first'&&!UI.freeCam&&!ED.on&&!(PARK.within&&PARK.within(pos.x,pos.z,0));   // outside the park its trees never stand between the camera and you (owner, 8 Nov 2026)
+  PEEK.w=Math.max(0,Math.min(1,(PEEK.w||0)+(out?dt:-dt)/.25)); K.w=PEEK.w; if(K.w){ H.copy(c).addScaledVector(R.direction,.5*M).project(SHARED.cam); P.z=H.z; } if(!PEEK.k)return;
   W.copy(c).project(SHARED.cam); H.set(1,0,0).applyQuaternion(SHARED.cam.quaternion).multiplyScalar((UI.persp?1.6:2.6)*M).add(c).project(SHARED.cam); P.w=Math.max(1e-4,Math.min(.6,Math.hypot((H.x-W.x)*RW/RH,H.y-W.y))); P.x=W.x; P.y=W.y;
   H.copy(c).addScaledVector(R.direction,.5*M).project(SHARED.cam); P.z=H.z; };
-PEEK.stat=()=>({boxes:PEEK.boxes.length,k:PEEK.k,cov:!!PEEK.cov,progs:renderer.info.programs.length});
+PEEK.stat=()=>({boxes:PEEK.boxes.length,k:PEEK.k,w:PEEK.w||0,cov:!!PEEK.cov,progs:renderer.info.programs.length});
 BATCH.queues=[]; BATCH.VIEW=20*TILE; BATCH.reach=()=>[48*TILE,64*TILE]; BATCH.at=()=>pos;   // painted within reach()[0] of BATCH.at() (you; in a room off the map where its windows look out, 130), dropped past reach()[1] (the haze range sets them, 134e), all dropped while it is null (a room with no window out)
 BATCH.queue=({make,cast=false,group,post,R,done,tile})=>{ const q={jobs:[],R:R||BATCH.VIEW,hold:[],hn:0,gt:0,dt:0,pend:[],groups:[],settled:false}, gd=(j,x,z)=>Math.hypot(Math.max(j.x0-x,0,x-j.x1),Math.max(j.z0-z,0,z-j.z1));
   const paint=L=>{ const keep=BATCH.items.splice(0), tg=BATCH.tag; BATCH.tag=null; for(const j of L){ q.jobs.splice(q.jobs.indexOf(j),1); j.go(); q.pend.push(j); q.hn++; } q.hold.push(...BATCH.items.splice(0)); BATCH.items=keep; BATCH.tag=tg; q.settled=false; };

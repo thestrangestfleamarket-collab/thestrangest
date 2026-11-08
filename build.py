@@ -29,8 +29,7 @@ imp = subprocess.run(['node', '--stack-size=8000', 'tools/imports.cjs'], capture
 if imp.returncode: sys.exit(imp.stderr or imp.stdout)
 # code the page shares with the worker (the dish's simulation): __CODE__("worker/x.js") puts the file in, its export line dropped
 code = lambda t: re.sub(r'__CODE__\("([^"]+)"\)', lambda m: re.sub(r'^export \{[^}]*\};[ \t]*$', '', read(m.group(1)), flags=re.M), t)
-clog = json.dumps([[m.group(1), m.group(2).strip()] for m in reversed(list(re.finditer(r'^## (\d[^:]*): (.+)$', read('docs/HISTORY.md'), re.M)))])
-page = code(subprocess.run(['node', 'tools/imports.cjs', '--join'] + src, check=True, capture_output=True, text=True).stdout).replace('__BUILDV__', bv).replace('__CHANGELOG__', clog)
+page = code(subprocess.run(['node', 'tools/imports.cjs', '--join'] + src, check=True, capture_output=True, text=True).stdout).replace('__BUILDV__', bv)
 i = page.index('<script type="module">') + len('<script type="module">')
 j = page.rindex('</script>')
 os.makedirs('dist', exist_ok=True)
@@ -128,7 +127,7 @@ for n, c in CH['code'].items(): open('dist/g/x-' + n + '.js', 'w').write('"use s
 m = subprocess.run(['node', 'tools/bundle.cjs', 'dist/g/game.js', 'dist/g'] + ['dist/g/x-' + n + '.js' for n in CH['code']], check=True, capture_output=True, text=True).stdout.strip()
 for f in os.listdir('dist/g'):
     if f.endswith('.js') and 'https://cdn.jsdelivr.net/npm/' in read('dist/g/' + f): sys.exit('dist/g/' + f + ' still asks cdn.jsdelivr.net for a package: the website bundles them')
-open('dist/g/market.html', 'w').write('<!doctype html><meta name="market-build" content="' + bv + '"><title>The Market</title><body bgcolor=#0e1016><script type=module src=/g/' + m + '></script>')
+open('dist/g/market.html', 'w').write('<!doctype html><meta name="market-build" content="' + bv + '"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><title>The Market</title><body bgcolor=#0e1016><script type=module src=/g/' + m + '></script>')
 pages = pages[:2] + ['dist/g/market.html'] + (['dist/editor.html'] if EDITOR else [])
 for f in pages:
     t = read(f)

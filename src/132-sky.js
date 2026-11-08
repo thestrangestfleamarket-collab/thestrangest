@@ -21,7 +21,7 @@ import {HEMI} from './064-map-post.js';
   const U={uH:{value:new THREE.Color()},uM:{value:new THREE.Color()},uZ:{value:new THREE.Color()},uS:{value:new THREE.Color()},uA:{value:new THREE.Color()},
     uSunDir:{value:new THREE.Vector3(0,1,0)},uSunCol:{value:new THREE.Color()},uSunK:{value:0},uSunR:{value:.04},uSideK:{value:1},
     uMoonDir:{value:new THREE.Vector3(0,1,0)},uMoonK:{value:0},uMoonR:{value:.03},uMoonPh:{value:.5},uMoonCol:{value:new THREE.Color(.86,.89,.95)},uBlood:{value:0},uGap:{value:0},uSkyK:{value:0},uStar:{value:0},uFogC:{value:new THREE.Color()},uFogK:{value:0},uGrey:{value:new THREE.Color()},uGreyK:{value:0},
-    uBands:{value:CEL?8:SMOOTH?0:24},uBelow:{value:new THREE.Color()},uBelowK:{value:0},uMistK:{value:0},uMistC:{value:new THREE.Color()},uT:{value:0},uCov:{value:.2},uCL:{value:1.16},uZk:{value:.62},uHk:{value:.5},uCldC:{value:new THREE.Color(.5,.49,.47)},uCldK:{value:.9},uCD:{value:1},uCumA:{value:0},uGr:{value:new THREE.Color(1,1,1)},uLift:{value:new THREE.Color()},uCool:{value:0},uLiftK:{value:0}};
+    uBands:{value:CEL?8:SMOOTH?0:24},uMistK:{value:0},uMistC:{value:new THREE.Color()},uT:{value:0},uCov:{value:.2},uCL:{value:1.16},uZk:{value:.62},uHk:{value:.5},uCldC:{value:new THREE.Color(.5,.49,.47)},uCldK:{value:.9},uCD:{value:1},uCumA:{value:0},uGr:{value:new THREE.Color(1,1,1)},uLift:{value:new THREE.Color()},uCool:{value:0},uLiftK:{value:0}};
   // THE CUMULUS: a field of lumpy 3D clouds (puffs heaped on a flat base) baked once into a cube the dome reads (each pixel its normal, its height in the cloud, its cover), lit live by the sun in cel steps; the field turns very slowly. SKY.cumulus makes the same clouds as meshes (the clouds below your landing, 141c).
   const CUMD='uniform vec3 uSunDir,uSunCol,uCldC,uZ,uGrey,uGr,uLift; uniform float uSunK,uCldK,uCL,uCD,uGreyK,uCool,uLiftK;';
   const CUMG=`vec3 cumShade(vec3 n,float h,vec3 v){ float r=1.-clamp(dot(n,v),0.,1.), k=clamp((dot(n,uSunDir)*.5+.5)*.8+h*.5-.2-r*r*.75,0.,1.);   // each puff's rim turned from you a step darker, so the heap reads round k=floor(k*3.+.5)/3.;
@@ -56,7 +56,7 @@ import {HEMI} from './064-map-post.js';
   U.uCum={value:CU.rt.texture}; SKY.CU=CU;
   const mat=new THREE.ShaderMaterial({uniforms:U,side:THREE.BackSide,depthWrite:false,depthTest:true,
     vertexShader:'varying vec3 vD; void main(){ vD=position; vec4 p=projectionMatrix*modelViewMatrix*vec4(position,1.); gl_Position=p.xyww; }',
-    fragmentShader:`uniform vec3 uH,uM,uS,uA,uMoonDir,uFogC,uBelow; uniform float uBelowK; uniform float uSunR,uSideK,uMoonK,uMoonR,uMoonPh,uStar,uFogK,uBands,uMistK,uZk,uHk,uCumA,uT; uniform vec3 uMistC,uMoonCol; uniform float uBlood,uSkyK; uniform samplerCube uCum; varying vec3 vD;
+    fragmentShader:`uniform vec3 uH,uM,uS,uA,uMoonDir,uFogC; uniform float uSunR,uSideK,uMoonK,uMoonR,uMoonPh,uStar,uFogK,uBands,uMistK,uZk,uHk,uCumA,uT; uniform vec3 uMistC,uMoonCol; uniform float uBlood,uSkyK; uniform samplerCube uCum; varying vec3 vD;
       ${CUMD}
       float hs(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
       float vn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); vec2 m=mod(i,256.); return mix(mix(hs(m),hs(mod(m+vec2(1,0),256.)),f.x),mix(hs(mod(m+vec2(0,1),256.)),hs(mod(m+vec2(1,1),256.)),f.x),f.y); }
@@ -67,7 +67,7 @@ import {HEMI} from './064-map-post.js';
       void main(){ vec3 d=normalize(vD); float el=max(d.y,0.); vec2 hz=normalize(d.xz+vec2(1e-4,0.)), sh=normalize(uSunDir.xz+vec2(1e-4,0.)); float cs=dot(hz,sh);
         vec3 c=mix(uH,uM,smoothstep(0.,.3,el)); c=mix(c,uZ,smoothstep(.2,.85,el));
         c=mix(c,uS,pow(max(cs,0.),3.)*exp(-el*5.)*uSideK); c=mix(c,uA,pow(max(-cs,0.),2.)*exp(-el*6.)*uSideK*.7);
-        c*=1.-clamp(-d.y*2.,0.,1.)*.5; c=mix(c,uBelow,uBelowK*smoothstep(0.,.012,-d.y)); vec3 mwc=vec3(0.), st=vec3(0.);
+        c*=1.-clamp(-d.y*2.,0.,1.)*.5; vec3 mwc=vec3(0.), st=vec3(0.);
         if(uStar>0.){ vec3 a=abs(d); vec2 uv; float f; if(a.x>=a.y&&a.x>=a.z){ uv=d.yz/a.x; f=d.x>0.?0.:1.; } else if(a.y>=a.z){ uv=d.xz/a.y; f=d.y>0.?2.:3.; } else { uv=d.xy/a.z; f=d.z>0.?4.:5.; }
           float gb=dot(d,normalize(vec3(.42,.55,-.72))), nw=.5*vn(d.xy*4.+3.)+.5*vn(d.zx*4.+11.), nc=.5*vn(d.yz*2.6+5.)+.5*vn(d.xy*2.6+17.);
           float w=exp(-gb*gb/(.008+.008*nw)), mw=w*(.55+.9*nw)*(1.-.8*step(.62,nc)*step(abs(gb),.06));

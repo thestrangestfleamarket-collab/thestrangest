@@ -8,7 +8,7 @@ import {SYS} from './006-map-pre.js';
   const room=()=>ONLINE.room;
   let el=null, D=null, open=null, say='';
   // each part folds; which are folded is kept in this browser
-  const SECS=['codes','bots','players'], SEC=(()=>{ try{ return JSON.parse(localStorage.getItem('tenants-folds')||'{}')||{}; }catch(e){ return {}; } })();
+  const SECS=['codes','players'], SEC=(()=>{ try{ return JSON.parse(localStorage.getItem('tenants-folds')||'{}')||{}; }catch(e){ return {}; } })();
   const keep=()=>{ try{ localStorage.setItem('tenants-folds',JSON.stringify(SEC)); }catch(e){} };
   const sec=(k,t,body)=>`<details data-sec="${k}"${SEC[k]?'':' open'}><summary style="cursor:pointer;list-style:none"><h3 style="display:inline">${SEC[k]?'▸':'▾'} ${t}</h3></summary>${body}</details>`;
 
@@ -19,7 +19,6 @@ import {SYS} from './006-map-pre.js';
     el.innerHTML=`<h3>TENANTS</h3><div class="row"><span class="dim">${U.length} players · ${on} online now${say?' · '+esc(say):''}</span><button class="btn" id="tfold">${Object.keys(SEC).length&&SECS.every(k=>SEC[k])?'OPEN ALL':'COLLAPSE ALL'}</button></div>
       ${sec('codes','INVITE CODES',`<div class="row"><span>USES</span><input id="tuses" type="number" min="1" max="1000" value="1" style="width:60px;font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;padding:4px"><button class="btn" id="tcode">NEW CODE</button></div>
       ${live.slice().reverse().map(c=>`<div class="row"><code>${esc(c.code)}</code><span class="dim">${esc(c.uses)}/${esc(c.max_uses)}</span><button class="btn" data-off="${esc(c.code)}">TURN OFF</button></div>`).join('')||'<div class="dim">no codes open</div>'}${done?`<div class="dim">${done} used up</div>`:''}`)}
-      ${sec('bots','BOTS','<div id="tbots"></div>')}
       ${sec('players','PLAYERS',U.map(u=>{ const p=u.player||{}; return `<div data-u="${esc(u.id)}" style="border:2px solid var(--line);padding:6px 8px;margin:6px 0">
         <div class="row"><b>${esc(p.apt||'—')}</b><span>${esc(u.email)}</span>${u.online?'<span style="color:#7fdc8a">ONLINE</span>':''}${u.admin?'<span style="color:#ffd27a">OWNER</span>':''}${u.banned?'<span style="color:#e06a5a">BANNED</span>':''}<span class="dim">joined ${esc(day(u.joined))} · last in ${esc(day(u.last))}</span><button class="btn" data-a="more">${open===u.id?'LESS':'MORE'}</button></div>
         ${open===u.id?`<div class="dim" style="white-space:pre-wrap;margin:4px 0">${esc(Object.entries({id:u.id,phone:u.phone,confirmed:u.confirmed,provider:u.provider,...p}).filter(([,v])=>v!==''&&v!=null).map(([k,v])=>k+': '+(typeof v==='object'?JSON.stringify(v):v)).join('\n'))}</div>
@@ -27,7 +26,6 @@ import {SYS} from './006-map-pre.js';
           <div class="row"><button class="btn" data-a="admin">${u.admin?'NOT AN OWNER':'MAKE AN OWNER'}</button><button class="btn" data-a="ban">${u.banned?'UNBAN':'BAN'}</button><button class="btn" data-a="delete">DELETE</button></div>`:''}</div>`; }).join(''))}`;
     el.querySelectorAll('details[data-sec]').forEach(d=>d.ontoggle=()=>{ SEC[d.dataset.sec]=!d.open; keep(); const h=d.querySelector('summary h3'); if(h)h.textContent=(d.open?'▾':'▸')+h.textContent.slice(1); });
     el.querySelector('#tfold').onclick=()=>{ const all=SECS.every(k=>SEC[k]); for(const k of SECS)SEC[k]=!all; keep(); draw(); };
-    if(TENANTS.bots)TENANTS.bots(el.querySelector('#tbots'));
     art(el.querySelector('#tart'),U);
     const $=s=>el.querySelector(s); for(const f of el.querySelectorAll('input,textarea,select'))for(const ev of ['keydown','keyup'])f.addEventListener(ev,e=>e.stopPropagation());
     const act=async(b,body,ok)=>{ if(b)b.disabled=true; const r=await api('/admin',{room:room(),...body}); say=r.why?'not done: '+r.why:ok(r); await load(); };

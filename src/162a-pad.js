@@ -23,6 +23,7 @@ import {PAD} from './075-main-13.js';
     ['roll','roll'],['cartwheel','cartwheel'],['run','run (held) · with d-pad up / down: zoom'],['moves','what you can do'],['menu','the menu'],['view','change the view'],['reset','reset the view'],['pack','your pack'],['wave','wave'],['fall','fall']];
   const B0={jump:0,back:1,use:2,punch:2,kick:3,turnL:4,turnR:5,roll:6,run:7,moves:8,menu:9,view:10,reset:11,pack:15,wave:-1,fall:-1,cartwheel:-1};
   const BIND=Object.assign({},B0); try{ const o=JSON.parse(SAVE.get('padkeys')||'{}'); for(const a in o)if(a in BIND&&Number.isInteger(o[a]))BIND[a]=o[a]; }catch(e){}
+  PAD.B=BIND;
   const save=()=>{ try{ SAVE.set('padkeys',JSON.stringify(BIND)); }catch(e){} };
   const SHARE={use:'punch',punch:'use'};
   const bind=(a,b)=>{ const was=BIND[a]; for(const o of Object.keys(BIND))if(o!==a&&SHARE[a]!==o&&BIND[o]===b)BIND[o]=was; BIND[a]=b; save(); };
@@ -34,7 +35,7 @@ import {PAD} from './075-main-13.js';
   const cv=renderer.domElement;
   const zoom=d=>{ const r=cv.getBoundingClientRect(); cv.dispatchEvent(new WheelEvent('wheel',{deltaY:d*-240,clientX:r.left+r.width/2,clientY:r.top+r.height/2,bubbles:true,cancelable:true})); };
   const C='button:not([disabled]),input:not([type=hidden]):not([disabled]),select:not([disabled]),textarea,a[href],[tabindex]:not([tabindex="-1"])';
-  const panels=PAD.panels=()=>[...document.body.children].filter(e=>e!==cv&&!/^(stage|newver|shbar|subfade|onl|vrbtn|hlog|hmap|hqb|vit|hud)$/.test(e.id)&&!e.hidden&&e.getClientRects().length&&getComputedStyle(e).display!=='none'&&e.querySelector(C));
+  const panels=PAD.panels=()=>[...document.body.children].filter(e=>e!==cv&&!/^(stage|newver|shbar|subfade|onl|vrbtn|tpad|tturn|hlog|hmap|hqb|vit|hud)$/.test(e.id)&&!e.hidden&&e.getClientRects().length&&getComputedStyle(e).display!=='none'&&e.querySelector(C));
   const ctls=()=>panels().flatMap(p=>[...p.querySelectorAll(C)]).filter(e=>{ if(e.closest('[inert],[hidden]'))return false; const r=e.getBoundingClientRect(); return r.width>0&&r.height>0&&r.bottom>0&&r.top<innerHeight&&getComputedStyle(e).visibility!=='hidden'; });
   const grab=el=>{ if(PAD.grab)PAD.grab.classList.remove('padgrab'); PAD.grab=el; if(el)el.classList.add('padgrab'); };
   const mark=el=>{ grab(null); if(PAD.ui)PAD.ui.classList.remove('padon'); PAD.ui=el; if(el){ el.classList.add('padon'); el.focus({preventScroll:true}); el.scrollIntoView({block:'nearest'}); const r=el.getBoundingClientRect(); PAD.at=[r.left+r.width/2,r.top+r.height/2]; } };
@@ -57,7 +58,7 @@ import {PAD} from './075-main-13.js';
     if(hit(4))tab(-1); if(hit(5))tab(1);
     if(hit(0)&&PAD.ui){ if(PAD.ui.type==='range')grab(PAD.grab?null:PAD.ui); else if(PAD.ui.tagName!=='SELECT')PAD.ui.click(); } };
   let capUp=false, capT=0;
-  const pick=()=>{ const gs=[...navigator.getGamepads()].filter(g=>g&&g.connected), st=gs.filter(g=>g.mapping==='standard'), pool=st.length?st:gs; return pool.reduce((a,g)=>!a||g.timestamp>a.timestamp?g:a,null); };
+  const pick=()=>{ if(PAD.tp&&PAD.tp.live)return PAD.tp; const gs=[...navigator.getGamepads()].filter(g=>g&&g.connected), st=gs.filter(g=>g.mapping==='standard'), pool=st.length?st:gs; return pool.reduce((a,g)=>!a||g.timestamp>a.timestamp?g:a,null); };
   const zr={};
   const rep=(k,on)=>{ const now=performance.now(); if(!on){ zr[k]=0; return false; } if(!zr[k]){ zr[k]=now+350; return true; } if(now>=zr[k]){ zr[k]=now+120; return true; } return false; };
   const pump=PAD.step=(now,gp)=>{ '@later'; const dt=Math.min(.05,(now-(PAD.t||now))/1000); PAD.t=now; if(!gp){ if(PAD.held.size)letGo(); return; }
@@ -83,16 +84,16 @@ import {PAD} from './075-main-13.js';
     if(hit(b('view')))tap(K('view')); if(hit(b('reset')))tap(K('0')); if(hit(b('moves')))tap('?'); if(hit(b('pack')))tap('i');
     if(run){ if(rep('zu',on(12)))zoom(1); if(rep('zd',on(13)))zoom(-1); } else { rep('zu',false); rep('zd',false); }
     if(hit(b('back'))&&(FORAGE.PACK.open||document.getElementById('movesp')?.style.display==='block'))back(); if(hit(b('menu')))tap('Escape'); };
-  const tick=now=>{ if(!VR.on)pump(now,pick()); }; SYS.add('win',now=>{ if(PAD.n)tick(now); },'162a-pad');
+  const tick=now=>{ if(!VR.on)pump(now,pick()); }; SYS.add('win',now=>{ if(PAD.n||PAD.tp)tick(now); },'162a-pad');
   addEventListener('gamepadconnected',()=>{ if(!PAD.n++)PAD.t=0; if(UI.menuOpen)UI.padKeys(); });
   addEventListener('gamepaddisconnected',()=>{ PAD.n=Math.max(0,PAD.n-1); if(!PAD.n){ letGo(); mark(null); } });
   addEventListener('pointerdown',e=>{ if(e.isTrusted&&PAD.n){ mark(null); PAD.mouse=true; } },true);
   addEventListener('pointermove',e=>{ if(PAD.cur&&e.isTrusted&&(e.movementX||e.movementY)){ PAD.cur=false; document.body.classList.remove('padcur'); } },true);
   addEventListener('blur',()=>letGo());
-  UI.padMoves=(row,h)=>{ '@later'; if(!PAD.n)return ''; if(VR.on){ let o=h('THE QUEST CONTROLLERS (CHANGE THEIR BUTTONS IN THE MENU\'S KEYS)')+row('LEFT STICK','WALK WHERE YOU LOOK')+row('RIGHT STICK','TURN, 30° A PUSH')+row('LEFT STICK PRESS','THE MENU')+row('RIGHT STICK PRESS','STAND HERE AGAIN (RECENTRE)');
+  UI.padMoves=(row,h)=>{ '@later'; const tch=PAD.tp&&PAD.tp.on?h('THE SCREEN')+row('LEFT THUMB','WALK, ANY WAY')+row('RIGHT THUMB','DRAG TO LOOK ROUND · TWO FINGERS ZOOM · DOUBLE TAP USES WHAT YOU TAP')+row('RUN','TAP TO RUN, TAP AGAIN TO WALK'):''; if(!PAD.n)return tch; if(VR.on){ let o=h('THE QUEST CONTROLLERS (CHANGE THEIR BUTTONS IN THE MENU\'S KEYS)')+row('LEFT STICK','WALK WHERE YOU LOOK')+row('RIGHT STICK','TURN, 30° A PUSH')+row('LEFT STICK PRESS','THE MENU')+row('RIGHT STICK PRESS','STAND HERE AGAIN (RECENTRE)');
       for(const [a,w] of ACTS)if(BIND[a]>=0&&BIND[a]<8)o+=row(bhtml(BIND[a]),w.toUpperCase()); return o+row('HOLD '+bn(1),'LEAVE VR')+row('IN A WINDOW','POINT AND PULL THE TRIGGER · THE RIGHT STICK SCROLLS · '+bn(1)+' BACK')+h('YOUR HANDS')+row('POINT AND PINCH','PRESS · PINCH AND DRAG SCROLLS')+row('YOUR LEFT WRIST','THE MENU BUTTON (TOUCH IT)'); }
     let o=h('THE CONTROLLER (CHANGE ITS BUTTONS IN THE MENU\'S KEYS)')+row('LEFT STICK','WALK, ANY WAY')+row('RIGHT STICK','LOOK ROUND (BEHIND, FIRST) · SPIN THE VIEW (ISOMETRIC)');
-    for(const [a,w] of ACTS)if(BIND[a]>=0)o+=row(bhtml(BIND[a]),w.toUpperCase()); return o+row('IN A MENU OR A BOX','STICK OR D-PAD MOVES, '+bn(0)+' PRESSES, '+bn(4)+' / '+bn(5)+' THE TABS, '+bn(1)+' BACK'); };
+    for(const [a,w] of ACTS)if(BIND[a]>=0)o+=row(bhtml(BIND[a]),w.toUpperCase()); return tch+o+row('IN A MENU OR A BOX','STICK OR D-PAD MOVES, '+bn(0)+' PRESSES, '+bn(4)+' / '+bn(5)+' THE TABS, '+bn(1)+' BACK'); };
   let waiting=null;
   UI.padKeys=t=>{ '@later'; t=t||document.getElementById('keytab'); if(!t||!PAD.n)return; [...t.querySelectorAll('.padrow')].forEach(r=>r.remove());
     const hd=document.createElement('tr'); hd.className='padrow'; hd.innerHTML='<td colspan="2" style="padding-top:14px;color:var(--key)">THE CONTROLLER</td>'; t.appendChild(hd);

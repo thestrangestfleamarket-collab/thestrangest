@@ -128,7 +128,7 @@ m = subprocess.run(['node', 'tools/bundle.cjs', 'dist/g/game.js', 'dist/g'] + ['
 for f in os.listdir('dist/g'):
     if f.endswith('.js') and 'https://cdn.jsdelivr.net/npm/' in read('dist/g/' + f): sys.exit('dist/g/' + f + ' still asks cdn.jsdelivr.net for a package: the website bundles them')
 # what the start always fetches is asked for with the page, beside the game's own file, not after that file has come and been read
-pre = ''.join('<link rel=modulepreload href=/g/' + f + '>' for f in sorted(os.listdir('dist/g')) if re.match(r'c-.*\.js$', f)) \
+pre = ''.join('<link rel=modulepreload href=/g/' + f + '>' for f in sorted(set(re.findall(r'(?:from|import)\s*"\./(c\.[0-9a-f]+\.js)"', read('dist/g/' + m))))) \
     + ''.join('<link rel=preload as=script href=/g/' + f + '>' for f in sorted(os.listdir('dist/g')) if re.match(r'rig\..*\.js$', f)) \
     + ''.join('<link rel=preload as=fetch crossorigin href=/g/' + json.loads(n) + '>' for f in used for n in [names[f], bins.get(f)] if n) \
     + ''.join('<link rel=preload as=fetch crossorigin href=/g/' + f + '>' for f in sorted(os.listdir('dist/g')) if re.match(r'x-later\..*\.js$', f))

@@ -1,4 +1,4 @@
-// THE PACE, THE LANDING, THE QUICK BAR: node tests/pace.cjs [out folder]. A tap of Shift steps walk, jog (Polyfork's jog), run; Shift+M leaves it; a drop of about a storey plays the hard landing, a small step none;
+// THE PACE, THE LANDING, THE QUICK BAR: node tests/pace.cjs [out folder]. A tap of Shift switches walk and run (no jog); Shift+M leaves it; a drop of about a storey plays the hard landing, a small step none;
 // the quick bar holds MAP, BAG, PASSPORT and EMOTES, its slots set 1 to 40.
 const {chromium}=require('playwright'); const OUT=process.argv[2]; let bad=0;
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const errs=[];
@@ -11,12 +11,10 @@ const {chromium}=require('playwright'); const OUT=process.argv[2]; let bad=0;
   let pg=await open('');
   const tap=async(...ks)=>{ for(const k of ks)await pg.keyboard.down(k); await wait(80); for(const k of ks.reverse())await pg.keyboard.up(k); await wait(400); };
   const g0=await pg.evaluate(()=>SHARED.gait||0); await tap('Shift'); const j=await pg.evaluate(()=>({g:SHARED.gait,rt:__dbg.ST.runTarget,jog:__dbg.ST.jog,act:AVATAR.act(__dbg.ST)}));
-  rec('a tap of Shift: jog',g0===0&&j.g===1&&j.rt===.5&&j.jog&&j.act&&j.act.n==='Jog',JSON.stringify(j));
-  await tap('Shift','w'); const r=await pg.evaluate(()=>({g:SHARED.gait,rt:__dbg.ST.runTarget,jog:__dbg.ST.jog}));
-  rec('Shift with W again: run',r.g===2&&r.rt===1&&!r.jog,JSON.stringify(r));
+  rec('a tap of Shift: run, never a jog',g0===0&&j.g===2&&j.rt===1&&!j.jog&&!(j.act&&j.act.n==='Jog'),JSON.stringify(j));
   await tap('Shift','m'); const m=await pg.evaluate(()=>SHARED.gait); await pg.keyboard.press('Escape'); rec('Shift+M leaves the pace',m===2,m);
-  await tap('Shift'); rec('again: walk',await pg.evaluate(()=>SHARED.gait===0&&__dbg.ST.runTarget===0));
-  await tap('Shift'); await third(pg); await pg.keyboard.down('w'); await wait(1800); if(OUT)require('fs').mkdirSync(OUT,{recursive:true}),await pg.screenshot({path:OUT+'/jog.png'}); await pg.keyboard.up('w'); await tap('Shift'); await tap('Shift');
+  await tap('Shift','w'); rec('Shift with W again: walk',await pg.evaluate(()=>SHARED.gait===0&&__dbg.ST.runTarget===0));
+  await tap('Shift'); await third(pg); await pg.keyboard.down('w'); await wait(1800); if(OUT)require('fs').mkdirSync(OUT,{recursive:true}),await pg.screenshot({path:OUT+'/run.png'}); await pg.keyboard.up('w'); await tap('Shift');
   const q=await pg.evaluate(()=>{ const s=HUDDBG().slots; HUD.count(25); const n=document.querySelectorAll('#hud .slot, #hud [data-i]').length; return {s,n,N:HUD.n()}; });
   rec('the quick bar: the common things, and 25 slots',q.N===25&&['act:map','act:bag','act:passport','act:emotes'].every(a=>q.s.includes(a)),JSON.stringify(q));
   if(OUT)require('fs').mkdirSync(OUT,{recursive:true}),await pg.screenshot({path:OUT+'/bar25.png'}); await pg.evaluate(()=>{ HUD.count(99); }); rec('clamped to 40',await pg.evaluate(()=>HUD.n()===40)); await pg.evaluate(()=>HUD.count(10));

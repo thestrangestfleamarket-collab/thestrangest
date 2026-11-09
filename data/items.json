@@ -2049,5 +2049,17 @@
   "slot": "hand",
   "value": 150,
   "weight": 0.9
+ },
+ "saddle": {
+  "slot": "hand",
+  "grants": "horse",
+  "value": 120,
+  "weight": 9
+ },
+ "cowboyhat": {
+  "slot": "head",
+  "look": "hat:BRIM HAT · SHERIFF",
+  "value": 25,
+  "weight": 0.15
  }
 }

@@ -10,21 +10,25 @@ const STARSKY={on:0};
     return L(L(L(h3(i,j,k),h3(i+1,j,k),u),L(h3(i,j+1,k),h3(i+1,j+1,k),u),v),L(L(h3(i,j,k+1),h3(i+1,j,k+1),u),L(h3(i,j+1,k+1),h3(i+1,j+1,k+1),u),v),w); };
   const fbm=(x,y,z,o)=>{ let a=.5, s=0, t=0; for(let i=0;i<o;i++){ s+=a*n3(x,y,z); t+=a; a*=.5; x=x*2.03+11.3; y=y*2.03+5.7; z=z*2.03+3.1; } return s/t; };
   // the Milky Way's light toward a point of the sky: the disc brighter and wider toward the centre in Sagittarius, the bulge, the star clouds (Cygnus, Scutum, Carina), the Great Rift's dust down its middle, warm at the core and cool along the arms; the Andromeda galaxy's smudge
-  const mw=(ex,ey,ez,o)=>{ const gx=G[0][0]*ex+G[0][1]*ey+G[0][2]*ez, gy=G[1][0]*ex+G[1][1]*ey+G[1][2]*ez, gz=G[2][0]*ex+G[2][1]*ey+G[2][2]*ez, l=Math.atan2(gy,gx)/R, b=Math.asin(cl(gz,-1,1))/R, dl=a=>{ const d=l-a; return d-360*Math.round(d/360); };
-    const A=.2+.8*gs(l,68)+.2*gs(dl(78),17)+.16*gs(dl(-75),19)+.16*gs(dl(27),9)-.07*gs(dl(180),50), w=5.5+5.5*gs(l,42), b0=1.2*Math.sin((l+20)*R*2), bb=b-b0;
-    const disc=.7*gs(bb,w)+.3*Math.exp(-Math.abs(bb)/(2.6*w)), bulge=gs(l,16)*gs(b+1,9.5), mott=fbm(gx*5.5+3,gy*5.5+1,gz*5.5+7,4), fine=fbm(gx*22,gy*22,gz*22,3);
-    let I=A*disc*(.3+1.3*mott)*(.75+.5*fine)+.95*bulge*(.65+.7*mott);
-    const Rf=.3+.7*gs(dl(22),58), bl=b0+1.2+2.6*Math.sin(l*R*2.3+1), dn=fbm(gx*4+7,gy*4+3,gz*15+1,4), d2=fbm(gx*13+2,gy*13+9,gz*30+4,3), lane=gs(b-bl,1.8+3.4*dn)*(.5+1.1*dn), patch=cl((dn*.6+d2*.4+.3*gs(b,9)*Rf-.52)/.16)*gs(b,13);
-    const dust=cl(Rf*lane+.75*patch*(.4+.6*Rf)); I*=1-.9*dust; I=I/(1+.25*I);
-    const k=cl(1.3*bulge+.35*gs(l,55)*gs(b,12)+.3*dust); o[0]=I*(.74+.26*k); o[1]=I*(.8+.07*k); o[2]=I*(1-.36*k);
-    const m=gs(Math.acos(cl(ex*.7386+ey*.1393+ez*.6596,-1,1))/R,1.1)*.16; o[0]+=m; o[1]+=m*.96; o[2]+=m*.9; return o; };
+  const K={w:1,core:1,dust:1,det:1}, mix1=(v,k)=>1+(v-1)*k;   // THE HOURS' numbers the picture is painted with (NIGHT's: width, core glow, dust lanes, cloud detail)
+  const mw=(ex,ey,ez,o)=>{ const gx=G[0][0]*ex+G[0][1]*ey+G[0][2]*ez, gy=G[1][0]*ex+G[1][1]*ey+G[1][2]*ez, gz=G[2][0]*ex+G[2][1]*ey+G[2][2]*ez, l=Math.atan2(gy,gx)/R, b=Math.asin(cl(gz,-1,1))/R, dl=a=>{ const d=l-a; return d-360*Math.round(d/360); }, W=K.w;
+    const A=.2+.8*gs(l,68)*(.5+.5*K.core)+.2*gs(dl(78),17)+.16*gs(dl(-75),19)+.16*gs(dl(27),9)-.07*gs(dl(180),50), w=(5.5+5.5*gs(l,42))*W, b0=1.2*Math.sin((l+20)*R*2), bb=b-b0;
+    const disc=.7*gs(bb,w)+.3*Math.exp(-Math.abs(bb)/(2.6*w)), bulge=K.core*gs(l,16*Math.sqrt(W))*gs(b+1,9.5*W), mott=fbm(gx*5.5+3,gy*5.5+1,gz*5.5+7,4), fine=fbm(gx*22,gy*22,gz*22,3);
+    let I=A*disc*mix1(.3+1.3*mott,K.det)*mix1(.75+.5*fine,K.det)+.95*bulge*mix1(.65+.7*mott,K.det);
+    const Rf=.3+.7*gs(dl(22),58), bl=b0+(1.2+2.6*Math.sin(l*R*2.3+1))*W, dn=fbm(gx*4+7,gy*4+3,gz*15+1,4), d2=fbm(gx*13+2,gy*13+9,gz*30+4,3), lane=gs(b-bl,(1.8+3.4*dn)*W)*(.5+1.1*dn), patch=cl((dn*.6+d2*.4+.3*gs(b,9*W)*Rf-.52)/.16)*gs(b,13*W);
+    const dust=cl(K.dust*(Rf*lane+.75*patch*(.4+.6*Rf))); I*=1-.9*dust; I=I/(1+.25*I);
+    const m=gs(Math.acos(cl(ex*.7386+ey*.1393+ez*.6596,-1,1))/R,1.1)*.16; o[0]=I+m; o[1]=cl(1.3*bulge/Math.max(K.core,.01)+.35*gs(l,55)*gs(b,12*W)+.3*dust); return o; };   // its light, and how warm (0 the arms' colour, 1 the core's)
   // a cube's faces as WebGL lays them out: a texel to its direction, and a direction to its face and texel
   const dir=(f,sc,tc,o)=>{ const d=f===0?[1,-tc,-sc]:f===1?[-1,-tc,sc]:f===2?[sc,1,tc]:f===3?[sc,-1,-tc]:f===4?[sc,-tc,1]:[-sc,-tc,-1], n=Math.hypot(d[0],d[1],d[2]); o[0]=d[0]/n; o[1]=d[1]/n; o[2]=d[2]/n; return o; };
   const face=(x,y,z,o)=>{ const ax=Math.abs(x), ay=Math.abs(y), az=Math.abs(z); if(ax>=ay&&ax>=az){ o[0]=x>0?0:1; o[1]=(x>0?-z:z)/ax; o[2]=-y/ax; } else if(ay>=az){ o[0]=y>0?2:3; o[1]=x/ay; o[2]=(y>0?z:-z)/ay; } else { o[0]=z>0?4:5; o[1]=(z>0?x:-x)/az; o[2]=-y/az; } return o; };
   const cube=(F,n)=>{ const t=new THREE.CubeTexture(F.map(d=>new THREE.DataTexture(d,n,n,THREE.RGBAFormat))); t.magFilter=t.minFilter=THREE.LinearFilter; t.generateMipmaps=false; t.needsUpdate=true; return t; };
   const wait=()=>new Promise(r=>setTimeout(r,0));
-  const bake=async()=>{ const S=(await CAT()).s, o=[0,0,0], d=[0,0,0], MW=[], ST=[];
-    for(let f=0;f<6;f++){ const D=new Uint8Array(NM*NM*4); for(let y=0;y<NM;y++)for(let x=0;x<NM;x++){ dir(f,(x+.5)/NM*2-1,(y+.5)/NM*2-1,d); mw(d[0],d[1],d[2],o); const i=(y*NM+x)*4; D[i]=255*Math.sqrt(cl(o[0]*.62)); D[i+1]=255*Math.sqrt(cl(o[1]*.62)); D[i+2]=255*Math.sqrt(cl(o[2]*.62)); D[i+3]=255; } MW.push(D); await wait(); }
+  const MW=[]; let mwT=null, kb='', painting=false;
+  const key=()=>{ const P=DN.S&&DN.S.night||{}; return [P.mww??1,P.mwcore??1,P.mwdust??1,P.mwdet??1].join(); };
+  const paint=async()=>{ const o=[0,0], d=[0,0,0], k=key(), P=k.split(',').map(Number); K.w=Math.max(.05,P[0]); K.core=P[1]; K.dust=P[2]; K.det=P[3];
+    for(let f=0;f<6;f++){ const D=MW[f]||(MW[f]=new Uint8Array(NM*NM*4)); for(let y=0;y<NM;y++)for(let x=0;x<NM;x++){ dir(f,(x+.5)/NM*2-1,(y+.5)/NM*2-1,d); mw(d[0],d[1],d[2],o); const i=(y*NM+x)*4; D[i]=255*Math.sqrt(cl(o[0]*.62)); D[i+1]=255*o[1]; D[i+2]=0; D[i+3]=255; } await wait(); }
+    kb=k; if(mwT)mwT.needsUpdate=true; };
+  const bake=async()=>{ const S=(await CAT()).s, o=[0,0,0], d=[0,0,0], ST=[]; await paint();
     for(let f=0;f<6;f++){ const D=new Uint8Array(N*N*4); for(let i=3;i<D.length;i+=4)D[i]=255; ST.push(D); }
     // a star onto its face: a soft dot, wider the brighter (what is stored is the square root of its light)
     const dot=(x,y,z,L,sig,r,g,b)=>{ face(x,y,z,o); const D=ST[o[0]], px=(o[1]+1)/2*N-.5, py=(o[2]+1)/2*N-.5, rr=Math.ceil(sig*2.5), x0=Math.round(px), y0=Math.round(py);
@@ -35,10 +39,12 @@ const STARSKY={on:0};
       dot(Math.cos(de*R)*Math.cos(ra*R),Math.cos(de*R)*Math.sin(ra*R),Math.sin(de*R),.035+1.1*v,.62+1.25*v,r,g,b); }
     await wait();
     // the stars too faint to tell apart, thick where the Milky Way is: its grain
-    { let sd=7; const rnd=()=>{ sd=(sd*1664525+1013904223)>>>0; return sd/4294967296; }; for(let n=0,tries=0;n<60000&&tries<2e6;tries++){ const f=Math.floor(rnd()*6), sc=rnd()*2-1, tc=rnd()*2-1, i=(Math.min(NM-1,Math.floor((tc+1)/2*NM))*NM+Math.min(NM-1,Math.floor((sc+1)/2*NM)))*4, D=MW[f], p=D[i+1]/255;
+    { let sd=7; const rnd=()=>{ sd=(sd*1664525+1013904223)>>>0; return sd/4294967296; }; for(let n=0,tries=0;n<60000&&tries<2e6;tries++){ const f=Math.floor(rnd()*6), sc=rnd()*2-1, tc=rnd()*2-1, i=(Math.min(NM-1,Math.floor((tc+1)/2*NM))*NM+Math.min(NM-1,Math.floor((sc+1)/2*NM)))*4, D=MW[f], p=D[i]/255;
         if(rnd()>(.035+p*p*1.6)*Math.pow(1+sc*sc+tc*tc,-1.5))continue; dir(f,sc,tc,d); const q=rnd(); dot(d[0],d[1],d[2],.012+.05*q*q*q,.6,.85,.9,1); n++; } }
-    U.uStC.value=cube(ST,N); U.uMwC.value=cube(MW,NM); U.uStOn.value=1; STARSKY.on=1; };
+    U.uStC.value=cube(ST,N); U.uMwC.value=mwT=cube(MW,NM); U.uStOn.value=1; STARSKY.on=1; };
   SYS.add('sky',()=>{ if(!SKY.on())return; if(!STARSKY.on&&!busy&&U.uStar.value>0){ busy=true; bake().catch(e=>{ console.warn('stars',e); setTimeout(()=>{ busy=false; },60000); }); }
+    if(STARSKY.on&&!painting&&key()!==kb){ painting=true; setTimeout(()=>paint().finally(()=>{ painting=false; }),300); }   // THE HOURS changed what it is painted with
+    { const P=DN.P?DN.P():{}; U.uSt.value.set((1-(P.stf??1))*.7,P.stw??1,P.stc??1); U.uMw.value.set(P.mw??1,P.mwgr??1); if(P.mwc1)U.uMw1.value.set(P.mwc1); if(P.mwc2)U.uMw2.value.set(P.mwc2); }
     const L=CLK.lst(Date.now(),DN.clk)*R, p=CLK.LAT*R, sL=Math.sin(L), cL=Math.cos(L), sp=Math.sin(p), cp=Math.cos(p); STARSKY.lst=L/R;
     U.uEq.value.set(sL,cp*cL,-sp*cL, -cL,cp*sL,-sp*sL, 0,sp,cp); },'134ba-stars');   // a direction of the world (+x west, +y up, +z north) to its place among the stars
   window.STARSKY=STARSKY; }

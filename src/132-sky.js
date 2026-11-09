@@ -20,7 +20,7 @@ import {HEMI} from './064-map-post.js';
   const SUN=[[-2,0xff4a20],[0,0xff6428],[3,0xff8c3a],[8,0xffc070],[20,0xfff0d0],[90,0xfff8ee]];
   const U={uH:{value:new THREE.Color()},uM:{value:new THREE.Color()},uZ:{value:new THREE.Color()},uS:{value:new THREE.Color()},uA:{value:new THREE.Color()},
     uSunDir:{value:new THREE.Vector3(0,1,0)},uSunCol:{value:new THREE.Color()},uSunK:{value:0},uSunR:{value:.04},uSideK:{value:1},
-    uMoonDir:{value:new THREE.Vector3(0,1,0)},uMoonK:{value:0},uMoonR:{value:.03},uMoonPh:{value:.5},uMoonCol:{value:new THREE.Color(.86,.89,.95)},uBlood:{value:0},uGap:{value:0},uSkyK:{value:0},uStar:{value:0},uStOn:{value:0},uStC:{value:null},uMwC:{value:null},uEq:{value:new THREE.Matrix3()},uFogC:{value:new THREE.Color()},uFogK:{value:0},uGrey:{value:new THREE.Color()},uGreyK:{value:0},
+    uMoonDir:{value:new THREE.Vector3(0,1,0)},uMoonK:{value:0},uMoonR:{value:.03},uMoonPh:{value:.5},uMoonCol:{value:new THREE.Color(.86,.89,.95)},uBlood:{value:0},uGap:{value:0},uSkyK:{value:0},uStar:{value:0},uStOn:{value:0},uStC:{value:null},uMwC:{value:null},uEq:{value:new THREE.Matrix3()},uSt:{value:new THREE.Vector3(0,1,1)},uMw:{value:new THREE.Vector2(1,1)},uMw1:{value:new THREE.Color(.74,.8,1)},uMw2:{value:new THREE.Color(1,.87,.64)},uFogC:{value:new THREE.Color()},uFogK:{value:0},uGrey:{value:new THREE.Color()},uGreyK:{value:0},
     uBands:{value:CEL?8:SMOOTH?0:24},uMistK:{value:0},uMistC:{value:new THREE.Color()},uT:{value:0},uCov:{value:.2},uCL:{value:1.16},uZk:{value:.62},uHk:{value:.5},uCldC:{value:new THREE.Color(.5,.49,.47)},uCldK:{value:.9},uCD:{value:1},uCumA:{value:0},uGr:{value:new THREE.Color(1,1,1)},uLift:{value:new THREE.Color()},uCool:{value:0},uLiftK:{value:0}};
   // THE CUMULUS: a field of lumpy 3D clouds (puffs heaped on a flat base) baked once into a cube the dome reads (each pixel its normal, its height in the cloud, its cover), lit live by the sun in cel steps; the field turns very slowly. SKY.cumulus makes the same clouds as meshes (the clouds below your landing, 141c).
   const CUMD='uniform vec3 uSunDir,uSunCol,uCldC,uZ,uGrey,uGr,uLift; uniform float uSunK,uCldK,uCL,uCD,uGreyK,uCool,uLiftK;';
@@ -58,7 +58,7 @@ import {HEMI} from './064-map-post.js';
   U.uCum={value:CU.rt.texture}; SKY.CU=CU;
   const mat=new THREE.ShaderMaterial({uniforms:U,side:THREE.BackSide,depthWrite:false,depthTest:true,
     vertexShader:'varying vec3 vD; void main(){ vD=position; vec4 p=projectionMatrix*modelViewMatrix*vec4(position,1.); gl_Position=p.xyww; }',
-    fragmentShader:`uniform vec3 uH,uM,uS,uA,uMoonDir,uFogC; uniform float uSunR,uSideK,uMoonK,uMoonR,uMoonPh,uStar,uFogK,uBands,uMistK,uZk,uHk,uCumA,uT; uniform vec3 uMistC,uMoonCol; uniform float uBlood,uSkyK,uStOn; uniform mat3 uEq; uniform samplerCube uCum,uStC,uMwC; varying vec3 vD;
+    fragmentShader:`uniform vec3 uH,uM,uS,uA,uMoonDir,uFogC; uniform float uSunR,uSideK,uMoonK,uMoonR,uMoonPh,uStar,uFogK,uBands,uMistK,uZk,uHk,uCumA,uT; uniform vec3 uMistC,uMoonCol; uniform float uBlood,uSkyK,uStOn; uniform vec3 uSt,uMw1,uMw2; uniform vec2 uMw; uniform mat3 uEq; uniform samplerCube uCum,uStC,uMwC; varying vec3 vD;
       ${CUMD}
       float hs(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
       float vn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); vec2 m=mod(i,256.); return mix(mix(hs(m),hs(mod(m+vec2(1,0),256.)),f.x),mix(hs(mod(m+vec2(0,1),256.)),hs(mod(m+vec2(1,1),256.)),f.x),f.y); }
@@ -70,8 +70,9 @@ import {HEMI} from './064-map-post.js';
         vec3 c=mix(uH,uM,smoothstep(0.,.3,el)); c=mix(c,uZ,smoothstep(.2,.85,el));
         c=mix(c,uS,pow(max(cs,0.),3.)*exp(-el*5.)*uSideK); c=mix(c,uA,pow(max(-cs,0.),2.)*exp(-el*6.)*uSideK*.7);
         c*=1.-clamp(-d.y*2.,0.,1.)*.5; vec3 mwc=vec3(0.), st=vec3(0.);
-        if(uStar>0.&&uStOn>.5){ vec3 q=uEq*d; float ex=smoothstep(-.01,.3,d.y), tw=1.+(vn(q.xy*140.+uT*5.)+vn(q.zx*140.-uT*4.)-1.)*.5*(1.-.7*el);   // the real sky (134ba): dimmer low down through more air, where it twinkles more
-          vec3 s=textureCube(uStC,q).rgb, m=textureCube(uMwC,q).rgb; st=s*s*2.2*uStar*(.25+.75*ex)*tw; mwc=m*m*.5*min(uStar,1.2)*ex*(.35+1.3*hs(floor(q.xy*420.)+floor(q.z*420.)*37.)); }   // grained like the countless faint stars it is, so the picture's 15-bit colour never steps it into flat patches
+        if(uStar>0.&&uStOn>.5){ vec3 q=uEq*d; float ex=smoothstep(-.01,.3,d.y), tw=1.+(vn(q.xy*140.+uT*5.)+vn(q.zx*140.-uT*4.)-1.)*.5*uSt.y*(1.-.7*el);   // the real sky (134ba): dimmer low down through more air, where it twinkles more
+          vec3 s=textureCube(uStC,q).rgb; vec4 m=textureCube(uMwC,q); s*=smoothstep(uSt.x-.06,uSt.x,max(s.r,max(s.g,s.b))); s*=s; s=max(mix(vec3(dot(s,vec3(.3333))),s,uSt.z),0.); st=s*2.2*uStar*(.25+.75*ex)*max(tw,0.);
+          mwc=mix(uMw1,uMw2,m.g)*m.r*m.r*.5*uMw.x*min(uStar,1.2)*ex*mix(1.,.35+1.3*hs(floor(q.xy*420.)+floor(q.z*420.)*37.),uMw.y); }   // grained like the countless faint stars it is, so the picture's 15-bit colour never steps it into flat patches
         c=moon(c,d,uMoonK);
         { float ang=acos(clamp(dot(d,uSunDir),-1.,1.)); float disc=1.-step(uSunR,ang); float halo=(1.-smoothstep(uSunR,uSunR*4.,ang))*.45; if(uBands>0.)halo=floor(halo*3.)/3.*.45;
           c=mix(c,mix(uSunCol,vec3(1.,.96,.9),.45),halo*uSunK); c=mix(c,uSunCol,disc*uSunK); }

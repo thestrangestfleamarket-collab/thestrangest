@@ -143,10 +143,10 @@ const WINDR={wins:[],cur:null}; window.WINDR=WINDR;
     for(const W of WINDR.wins){ const u=W.ru; if(!u)continue; u.uT.value=t;
       // the light's way into the room, in the window's own frame (+z the room side)
       if(I>0){ W.g.updateWorldMatrix(true,false); IM.copy(W.g.matrixWorld).invert(); TV.copy(dir).negate().transformDirection(IM); }
-      const ok=I>0&&TV.z>.04&&TV.y<-.04; u.uI.value=ok?.075*I*Math.min(1,TV.z*3):0; if(ok)u.uD.value.copy(TV);
+      const ok=I>0&&TV.z>.04&&TV.y<-.04; u.uI.value=ok?.04*I*Math.min(1,TV.z*3):0; if(ok)u.uD.value.copy(TV);
       for(const m of W.rm)m.visible=ok;
       if(W.cloth&&W.cloth.length&&h){ TP.set(pos.x,SHARED.py+.9*((ROOMK.api&&ROOMK.api.R.M)||1),pos.z); W.g.worldToLocal(TP); const near=Math.hypot(TP.x,TP.z-.1)<1.4;
         for(const c of W.cloth){ if(W.br<.01&&!near&&c.still>30)continue; clothStep(c,h,W.br||0,t,near?TP:null); } } } },'150ab-windress');
   window.WINDRDBG=()=>({n:WINDR.wins.length,open:!P.hidden,d:WINDR.wins.map(W=>({...W.d})),lit:WINDR.wins.filter(W=>W.ru&&W.ru.uI.value>0).length,cloth:WINDR.wins.reduce((a,W)=>a+(W.cloth?W.cloth.length:0),0),
-    pick:i=>WINDR.open(WINDR.wins[i]),set:(i,o)=>{ const W=WINDR.wins[i]; Object.assign(W.d,o); dress(W); },click:(k,v)=>{ const b=P.querySelector(`button[data-k="${k}"]${v!=null?`[data-v="${v}"]`:''}`); if(b)b.click(); return !!b; }});
+    pick:i=>WINDR.open(WINDR.wins[i]),saved:()=>{ const L=ED.snapshot&&ED.snapshot(); return L&&L.win; },set:(i,o)=>{ const W=WINDR.wins[i]; Object.assign(W.d,o); dress(W); },click:(k,v)=>{ const b=P.querySelector(`button[data-k="${k}"]${v!=null?`[data-v="${v}"]`:''}`); if(b)b.click(); return !!b; }});
 }

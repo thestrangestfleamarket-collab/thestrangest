@@ -3,7 +3,7 @@ const _S = require('../data/guitar-songs.json'), SONGS = Array.isArray(_S) ? _S 
 let seed = +process.argv[2] || 7; const rnd = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
 const pick = a => a[Math.floor(rnd() * a.length)], gauss = () => (rnd() + rnd() + rnd() - 1.5) / 1.5;
 const ECON = { cash: 2500, cashMin: 40, units: 600, unitsMin: 30 };
-const KIT_UNITS = 99 * 14 + 12;
+const KIT_UNITS = Object.values(Function('return ' + require('fs').readFileSync(__dirname + '/../src/141-forage.js', 'utf8').match(/FORAGE\.KIT=(\{[^}]*\})/)[1])()).reduce((a, b) => a + b, 0) + 6;   // the kit as the game gives it, and the mortar, bottles and apples
 // skill gain: the game's FORAGE.use (tenths; under 30.0 a gain is 1-2 tenths), int 30
 const use = (P, k, min, max) => { const v = P.sk[k] / 10, c = Math.max(0, Math.min(1, (v - min) / (max - min))), ok = rnd() < c;
   if (c > 0 && c < 1 && P.sk[k] < 1000 && P.tot() < 6000) { let g = (1000 - P.sk[k]) / 1000 * .5 * (.4 + 2.4 * c * (1 - c)) * (ok ? 1.2 : 1) + (P.sk[k] < 300 ? .3 : 0);

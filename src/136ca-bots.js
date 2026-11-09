@@ -1,4 +1,4 @@
-// THE BOTS PANEL: the owner's test players in the menu's BOTS: a fleet bar (spawn, call, all on/off, fold), a line a bot that opens to what it does, its test results (run again, the failed, to the bug queue), who it is and its health; worker/door.js bots, run on Cloudflare or by tools/bots.cjs.
+// THE BOTS PANEL: the owner's test players in the menu's BOTS: BOTS (each bot's state in plain words, call, go to it, on/off, restart, edit one at a time) and TESTING (pick tests one by one or by kind, which bots, start, results with go there, again, to the bug queue); worker/door.js bots, run on Cloudflare or by tools/bots.cjs.
 import {SHARED} from './003-shx.js';
 import {BUGS, CINEMA, ONLINE, pos, TENANTS, TESTS, TEXT, UI} from './003b-systems.js';
 import {SYS} from './006-map-pre.js';
@@ -9,89 +9,133 @@ import {AVATAR} from './111c-avatar.js';
   const api=async body=>{ '@later'; try{ if(BUGS.tok)await BUGS.tok(); }catch(e){}
     let r; try{ r=await fetch('/admin',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({room:ONLINE.room,...body})}); }catch(e){ return {why:'the server did not answer'}; } let j={}; try{ j=await r.json(); }catch(e){} if(!r.ok&&!j.why)j.why='the server said '+r.status; return j; };
   const ago=t=>{ const s=Math.round((Date.now()-t)/1000); return s<90?s+' s ago':Math.round(s/60)+' min ago'; };
-  let el=null, D=null, say='', open=null;
   const people=()=>{ const o=[['me','ME ('+(ONLINE.myName?ONLINE.myName():'you')+')']]; for(const [id,p] of ONLINE.others||[])o.push([id,(p.name||id).slice(0,24)]); return o; };
   const places=()=>{ try{ return [...new Set(['YOUR APARTMENT',...UI.places().map(p=>p[0])])].map(n=>[n,n]); }catch(e){ return []; } };
   const sel=(f,list,v)=>`<select data-f="${f}" style="${IN}">${list.map(([k,n])=>`<option value="${esc(k)}"${k===v?' selected':''}>${esc(n)}</option>`).join('')}</select>`;
-  // the menu's BOTS (owner, 9 Nov 2026: "allow to minimize each bots view ... redesign it for everything i need to do to beta test this with bots"): a fleet bar, then a line a bot that opens to its groups
-  const CSS='<style>.bots .bk{border:1px solid var(--line,#2f8a55);margin:8px 0}.bots .bh{display:flex;align-items:center;gap:10px;padding:6px 8px;flex-wrap:wrap;cursor:pointer}.bots .dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none}.bots .nm{color:#ffe08a;min-width:90px}.bots .now{flex:1;min-width:160px;opacity:.8;font-size:.9em}.bots .sec{border-top:1px dashed #2a5a40;padding:6px 8px}.bots .sec h4{margin:0 0 4px;font-size:.8em;letter-spacing:2px;opacity:.8}.bots .row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:5px 0}.bots .pass{color:#7fe89a}.bots .fail{color:#f0907a}.bots .skip{color:#d8c070}.bots .bar{height:8px;width:200px;border:1px solid #2f8a55;display:inline-block}.bots .bar i{display:block;height:100%;background:#5cf08a}.bots .btn.red{border-color:#a05040;color:#f0a090}</style>';
-  const SHORT={go:'PLACES',use:'THINGS',talk:'PEOPLE',buy:'BUY',sell:'SELL',learn:'LEARN',skill:'SKILLS',pet:'PETS',arcade:'ARCADE',job:'SIT, DECORATE'};
-  const keep=(k,v)=>{ try{ localStorage.setItem(k,JSON.stringify([...v])); }catch(e){} }, kept=k=>{ try{ return new Set(JSON.parse(localStorage.getItem(k)||'[]')); }catch(e){ return new Set(); } };
-  const OPEN=kept('bots-open'), ALL=new Set(), FILED=kept('bots-filed');
-  let RES=[];   // every test's last result {id,r,why,bot,at}
-  const live=b=>b.status&&Date.now()-b.status.seen<60000;
+  // the menu's BOTS (owner, 9 Nov 2026: "that menu is confusing"; "the tests should have a drop down of all the test involved and you should be able to select which ones"): two tabs, BOTS (each bot's state in plain words, EDIT one at a time) and TESTING (1 what to test, 2 which bots, start, 3 results)
+  const CSS='<style>.bots .card{border:1px solid var(--line,#2f8a55);padding:6px 8px;margin:6px 0}.bots .l1{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.bots .nm{color:#ffe08a;flex:1}.bots .st{margin:4px 0 2px;padding:2px 8px;border-left:4px solid}.bots .play{border-color:#5cf08a}.bots .start{border-color:#e8c860}.bots .stuck{border-color:#f0907a}.bots .off{border-color:#4a5a50;opacity:.7}.bots .row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:5px 0}.bots .col label{display:block;margin:2px 0}.bots h4{margin:10px 0 4px;font-size:.85em;letter-spacing:1px;opacity:.85}.bots .pass{color:#7fe89a}.bots .fail{color:#f0907a}.bots .skip{color:#d8c070}.bots .bar{height:8px;border:1px solid #2f8a55;margin:4px 0}.bots .bar i{display:block;height:100%;background:#5cf08a}.bots .tabs{display:flex;gap:6px;margin-bottom:6px}.bots .tabs .btn[aria-pressed=true]{background:#8ff5a9;color:#04140b}.bots .kind{border:1px solid #23603d;margin:4px 0}.bots .kh{display:flex;align-items:center;gap:6px;padding:3px 6px;cursor:pointer;flex-wrap:wrap}.bots .kl{max-height:260px;overflow:auto;padding:2px 8px 6px 26px}.bots .kl label{display:block;font-size:.9em;margin:1px 0}.bots .why{opacity:.75;font-size:.85em}.bots .go{cursor:pointer;text-decoration:underline;margin-left:6px}</style>';
+  const KIND={go:'places',use:'things to use',talk:'people to talk to',buy:'buying',sell:'selling',learn:'lessons',skill:'skills',pet:'pets',arcade:'arcade games',job:'sit, decorate'};
+  const save=(k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }, load_=(k,d)=>{ try{ const v=JSON.parse(localStorage.getItem(k)); return v??d; }catch(e){ return d; } };
+  let el=null, D=null, say='', TAB=load_('bots-tab','bots'), EDIT=null, how=false, find='';
+  let RES=[]; const RBY=()=>{ const m=new Map(); for(const r of RES)m.set(r.id,r); return m; };   // each test's last result {id,r,why,bot,at}
+  const PICK=new Set(load_('bots-pick',[])), OPENK=new Set(load_('bots-openk',[])), FILED=new Set(load_('bots-filed',[]));
+  let RUNAT=load_('bots-runat',0), USE=null;   // when the last START was pressed; the bots ticked for it (null: the ones that are on)
+  let LIST=null; const list=()=>{ if(!LIST&&TESTS.all){ LIST=[]; TESTS.all().then(L=>{ LIST=L; draw(); }).catch(()=>{}); } return LIST||[]; };
   const tname=id=>{ const t=list().find(x=>x.id===id); return t?t.name:id; };
-  const mine=b=>RES.filter(r=>r.bot===b.id).sort((a,c)=>({fail:0,skip:1,pass:2}[a.r]-{fail:0,skip:1,pass:2}[c.r])||c.at-a.at);
-  const head=(b,op)=>{ const s=b.status, L=live(b), col=b.on?(L?'#5cf08a':'#e8c860'):'#4a5a50';
-    const now=!b.on?'off':!s?'starting':(s.doing||'')+(s.cash!=null?' · $'+s.cash:'')+(s.hp!=null?' · '+Math.round(s.hp*100)+'%':'')+(L?'':' · '+ago(s.seen));
-    return `<div class="bh" data-a="fold"><span>${op?'▾':'▸'}</span><span class="dot" style="background:${col}" title="${b.on?(L?'running':'starting'):'off'}"></span><b class="nm">${esc(b.name)}</b><span>${esc((JOBS.find(j=>j[0]===b.job)||['',b.job])[1])}</span><span class="now">${esc(now)}</span><button class="btn" data-a="call">CALL</button><button class="btn${b.on?' red':''}" data-a="on">${b.on?'OFF':'ON'}</button></div>`; };
-  const results=b=>{ const R=mine(b), t=b.status&&b.status.tests, n=k=>R.filter(r=>r.r===k).length, done=t?t.pass+t.fail+t.skip:R.length, all=t?done+t.left:R.length;
-    if(b.job!=='tests'&&!R.length)return '';
-    const show=ALL.has(b.id)?R:R.filter(r=>r.r!=='pass').slice(0,8).concat(R.filter(r=>r.r==='pass').slice(0,2)), more=R.length-show.length;
-    return `<div class="sec"><h4>RESULTS</h4><div class="row"><span class="bar"><i style="width:${all?Math.round(done/all*100):0}%"></i></span><span class="dim">${done} of ${all} · <span class="pass">${n('pass')} passed</span> · <span class="fail">${n('fail')} failed</span> · <span class="skip">${n('skip')} skipped</span></span>
-      <button class="btn" data-a="again">RUN AGAIN</button>${n('fail')?`<button class="btn" data-a="refail">RUN THE FAILED</button><button class="btn" data-a="file">FAILS TO BUG QUEUE</button>`:''}</div>
-      ${show.map(r=>`<div class="${r.r}">${r.r==='pass'?'✓':r.r==='fail'?'✗':'–'} ${esc(tname(r.id))} — ${esc(r.why)}</div>`).join('')}${more>0?`<div class="dim" data-a="all" style="cursor:pointer">+ ${more} more (show)</div>`:R.length>10&&ALL.has(b.id)?'<div class="dim" data-a="all" style="cursor:pointer">(show fewer)</div>':''}</div>`; };
-  const card=(b,op)=>`<div class="bk" data-b="${esc(b.id)}">${head(b,op)}${op?`
-      <div class="sec"><h4>WHAT IT DOES</h4><div class="row"><span>JOB</span>${sel('job',JOBS,b.job)}<span>WHERE</span>${sel('place',[['','WHERE IT IS'],...places()],b.place)}<span>GOAL $</span><input data-f="goal" type="number" min="0" value="${esc(b.goal||'')}" placeholder="none" style="width:80px;${IN}"></div>${testRow(b)}</div>
-      ${results(b)}
-      <div class="sec"><h4>WHO IT IS</h4><div class="row"><span>NAME</span><input data-f="name" type="text" maxlength="24" value="${esc(b.name)}" style="width:160px;${IN}"><span>LOOK</span>${sel('look',[['','RANDOM'],['me','LIKE ME NOW'],...(b.look&&b.look!=='me'?[[b.look,'AS SET']]:[])],b.look)}<label><input data-f="apt" type="checkbox"${b.apt?' checked':''}> OWN APARTMENT</label></div>
-        <div class="row"><span>SAYS</span><input data-f="say" type="text" maxlength="400" value="${esc(b.say||'')}" placeholder="lines it says now and then, split by |" style="flex:1;min-width:220px;${IN}"></div></div>
-      <div class="sec"><h4>HEALTH AND FIGHTING</h4><div class="row"><span>HEALTH</span><input data-f="hp" type="range" min="5" max="100" value="${esc(Math.round((b.hp??1)*100))}"><label><input data-f="fight" type="checkbox"${b.fight?' checked':''}> FIGHTS BACK</label><label><input data-f="god" type="checkbox"${b.god?' checked':''}> CAN'T BE KNOCKED DOWN</label><span>FIGHT / FOLLOW</span>${sel('who',[['','NOBODY'],...people()],b.who&&b.who===ONLINE.me?'me':b.who)}</div></div>
-      <div class="sec"><div class="row"><button class="btn" data-a="save">SAVE</button><button class="btn red" data-a="del">DELETE BOT</button><span class="dim">${esc(b.email||'')}</span></div></div>`:''}</div>`;
-  // the tests the game lists (162h), counted by kind
-  let LIST=null; const list=()=>{ if(!LIST&&TESTS.all){ LIST=[]; TESTS.all().then(L=>{ LIST=L; if(el)draw(); if(W)win(W.dataset.bot); }).catch(()=>{}); } return LIST||[]; };
-  const testRow=b=>{ const L=list(), T=b.tests||[], ids=T.filter(t=>!/:$/.test(t)).length;
-    return `<div class="row" data-tr style="display:${b.job==='tests'?'flex':'none'}"><span class="dim">TESTS</span>${(TESTS.cats||[]).map(([k,n])=>`<label title="${esc(n)}"><input type="checkbox" data-cat="${k}"${T.includes(k+':')?' checked':''}> ${esc(SHORT[k]||n)} ${L.filter(t=>t.cat===k).length}</label>`).join('')}${ids?`<label><input type="checkbox" data-f="keep" checked> ${ids} PICKED ONE BY ONE</label>`:''}</div>`; };
-  // a call: the bot comes to where you stand (in an inside, below ground), its job kept
-  const callSet=()=>({at:[+pos.x.toFixed(2),+pos.z.toFixed(2),SHARED.LVL==='down'?1:0],place:'',call:Date.now()});
-  const act=async(b,body,ok)=>{ if(b)b.disabled=true; const r=await api(body); say=r.why?'not done: '+r.why:ok(r); await load(); };
-  const fileFails=async(btn,x)=>{ if(!BUGS.file){ say='the bug queue is not reachable here'; return draw(); } btn.disabled=true; let n=0;
-    for(const r of mine(x).filter(r=>r.r==='fail')){ const k=x.id+'|'+r.id+'|'+r.at; if(FILED.has(k))continue; try{ await BUGS.file('BOT TEST FAILED · '+tname(r.id)+': '+r.why,{bot:x.name,test:r.id,why:r.why,at:r.at}); FILED.add(k); n++; }catch(e){ say='not sent: '+(e.message||e); break; } }
-    keep('bots-filed',FILED); if(n||!say.startsWith('not sent'))say=n?n+' sent to the bug queue (approve them there)':'those are in the queue already'; await load(); };
-  const bind=(root,redraw)=>root.querySelectorAll('[data-b]').forEach(box=>{ const js=box.querySelector('[data-f="job"]'), tr=box.querySelector('[data-tr]'); if(js&&tr)js.onchange=()=>{ tr.style.display=js.value==='tests'?'flex':'none'; }; box.onclick=e=>{ const b=e.target.closest('[data-a]'); if(!b||!box.contains(b))return; const id=box.dataset.b, x=D.bots.find(q=>q.id===id), a=b.dataset.a, f=n=>box.querySelector(`[data-f="${n}"]`);
-      if(a==='fold'){ if(e.target.closest('button'))return; if(OPEN.has(id))OPEN.delete(id); else OPEN.add(id); keep('bots-open',OPEN); redraw(); return; }
-      if(a==='all'){ if(ALL.has(id))ALL.delete(id); else ALL.add(id); redraw(); return; }
-      if(a==='on'){ e.stopPropagation(); act(b,{do:'botset',id,set:{on:!x.on}},()=>x.on?x.name+' turned off':x.name+' turned on'); return; }
-      if(a==='again'){ act(b,{do:'botset',id,set:{job:'tests',run:Date.now()}},()=>x.name+' starts its tests again'); return; }
-      if(a==='refail'){ const ids=mine(x).filter(r=>r.r==='fail').map(r=>r.id); act(b,{do:'botset',id,set:{job:'tests',tests:ids,run:Date.now()}},()=>x.name+' runs its '+ids.length+' failed tests again'); return; }
-      if(a==='file'){ fileFails(b,x); return; }
-      if(a==='call'){ e.stopPropagation(); act(b,{do:'botset',id,set:callSet()},()=>x.name+' is coming'); return; }
-      if(a==='del'){ if(!confirm('Delete '+x.name+' and its account for good?'))return; act(b,{do:'botdel',id},()=>'deleted'); return; }
-      if(a==='save'){ const look=f('look').value, set={name:f('name').value.trim(),look:look==='me'?AVATAR.code():look,job:f('job').value,who:f('who').value==='me'?ONLINE.me:f('who').value,
-          goal:+f('goal').value||0,say:f('say').value.trim(),hp:(+f('hp').value||100)/100,fight:f('fight').checked,god:f('god').checked,apt:f('apt').checked};
-        const pl=f('place').value; if(pl!==(x.place||'')){ set.place=pl; if(pl)set.at=null; }
-        const cs=[...box.querySelectorAll('[data-cat]')]; if(cs.length){ set.tests=[...cs.filter(c=>c.checked).map(c=>c.dataset.cat+':'),...(box.querySelector('[data-f="keep"]')?.checked?(x.tests||[]).filter(t=>!/:$/.test(t)):[])]; }
-        if(set.job==='tests'&&(x.job!=='tests'||JSON.stringify(set.tests||x.tests)!==JSON.stringify(x.tests)))set.run=Date.now();
-        act(b,{do:'botset',id,set},()=>'saved'); } }; });
-  const draw=()=>{ '@later'; if(!el)return; if(!D){ el.innerHTML='<div class="dim">...</div>'; return; } if(D.why){ el.innerHTML='<div class="dim">'+esc(D.why)+'</div>'; return; }
-    const B=D.bots, n=B.filter(live).length, cf=D.cloud===null?'<span class="fail">Cloudflare is not running bots on this server</span>':D.cloud&&D.cloud.err?'<span class="fail">Cloudflare: '+esc(D.cloud.err)+'</span>':'Cloudflare OK';
-    el.innerHTML=`${CSS}<div class="bots"><div class="bk" style="padding:6px 8px"><div class="row"><b>BOTS</b><span class="dim">${B.length} bot${B.length===1?'':'s'} · <span class="pass">${n} running</span> · ${cf} · about 9¢ an hour after 10 free hours a month${say?' · '+esc(say):''}</span></div>
-      <div class="row"><button class="btn" id="bnew">+ SPAWN A BOT</button><label><input type="checkbox" id="bapt"> WITH ITS OWN APARTMENT</label><button class="btn" id="ball">CALL ALL</button><button class="btn" id="bon">ALL ON</button><button class="btn red" id="boff">ALL OFF</button><button class="btn" id="bfold">${B.some(b=>OPEN.has(b.id))?'FOLD ALL':'OPEN ALL'}</button><span class="dim" id="bhow" style="cursor:pointer;text-decoration:underline">${open==='how'?'hide':'run them on a PC instead'}</span></div>
-      ${open==='how'?`<div class="dim" style="white-space:pre-wrap;margin:4px 0">Turn them off here first. Once: install Node (nodejs.org), save tools/bots.cjs in a folder, and in that folder run
+  // a bot's state in plain words
+  const state=b=>{ const s=b.status; if(!b.on)return ['off','○ OFF',''];
+    if(!s||Date.now()-s.seen>90000)return s&&Date.now()-s.seen>90000?['stuck','⚠ STUCK','no word from it for '+ago(s.seen).replace(' ago','')+'. RESTART turns it off and on.']:['start','◐ STARTING','waiting for Cloudflare to open its game (1 to 3 minutes)'];
+    if(/^(loading|opening|starting|making)/.test(s.doing||''))return ['start','◐ STARTING',s.doing+' (1 to 3 minutes)'];
+    return ['play','● PLAYING',(s.doing||'')+(s.cash!=null?' · $'+s.cash:'')+(s.hp!=null?' · health '+Math.round(s.hp*100)+'%':'')]; };
+  const jobName=j=>(JOBS.find(x=>x[0]===j)||['',j])[1];
+  const card=b=>{ const [k,w,d]=state(b), at=b.status&&b.status.at;
+    return `<div class="card" data-b="${esc(b.id)}"><div class="l1"><span class="nm">${esc(b.name)}</span>${b.on?`<button class="btn" data-a="call" title="bring it to where you stand">CALL</button>${at?'<button class="btn" data-a="goto" title="go to where it is, to watch it">GO TO IT</button>':''}`:''}${k==='stuck'?'<button class="btn" data-a="restart">RESTART</button>':''}<button class="btn" data-a="on">${b.on?'OFF':'ON'}</button><button class="btn" data-a="edit">EDIT</button></div>
+      <div class="st ${k}">${w} · ${esc(jobName(b.job))}${d?'<br><span class="why">'+esc(d)+'</span>':''}</div></div>`; };
+  const botsTab=()=>{ const B=[...D.bots].sort((a,c)=>{ const o={stuck:0,start:1,play:2,off:3}; return o[state(a)[0]]-o[state(c)[0]]; }), n=k=>D.bots.filter(b=>state(b)[0]===k).length;
+    const cf=D.cloud===null?'<div class="fail">Cloudflare is not running bots on this server.</div>':D.cloud&&D.cloud.err?'<div class="fail">CLOUDFLARE: '+esc(D.cloud.err)+'</div>':'';
+    return `<div class="card"><div><span class="pass">${n('play')} playing</span> · <span class="skip">${n('start')} starting</span> · <span class="fail">${n('stuck')} stuck</span> · ${n('off')} off${say?' · '+esc(say):''}</div>${cf}
+      <div class="row"><button class="btn" id="bnew">+ NEW BOT</button><button class="btn" id="ball">CALL ALL TO ME</button><button class="btn" id="boff">ALL OFF</button></div>
+      <div class="why">Bots run on Cloudflare: about 9¢ an hour after 10 free hours a month. Turn them off when you are done. <span class="go" id="bhow">${how?'hide':'run them on a PC instead'}</span></div>
+      ${how?`<div class="why" style="white-space:pre-wrap;margin:4px 0">Turn them off here first. Once: install Node (nodejs.org), save tools/bots.cjs in a folder, and in that folder run
   npm install playwright
   npx playwright install chromium
 Then, while you want bots in the game:
   node bots.cjs ${esc(D.key)}
 Leave that window open; Ctrl+C stops every bot.</div><div class="row"><code>${esc(D.key)}</code><button class="btn" id="bcopy">COPY KEY</button><button class="btn" id="bkey">NEW KEY</button></div>`:''}</div>
-      ${B.map(b=>card(b,OPEN.has(b.id))).join('')}</div>`;
-    const $=s=>el.querySelector(s); for(const f of el.querySelectorAll('input,select'))for(const ev of ['keydown','keyup'])f.addEventListener(ev,e=>e.stopPropagation());
-    $('#bnew').onclick=e=>act(e.target,{do:'botnew',set:{at:[pos.x,pos.z],apt:$('#bapt').checked}},r=>{ if(r.id){ OPEN.add(r.id); keep('bots-open',OPEN); } return 'a new bot, where you stand'; });
-    $('#ball').onclick=async e=>{ e.target.disabled=true; const on=D.bots.filter(b=>b.on), c=callSet(); for(const b of on)await api({do:'botset',id:b.id,set:c}); say=on.length?on.length+' coming':'no bot is on'; await load(); };
-    const every=async(btn,v)=>{ btn.disabled=true; const L=D.bots.filter(b=>!!b.on!==v); for(const b of L)await api({do:'botset',id:b.id,set:{on:v}}); say=L.length?L.length+' turned '+(v?'on':'off'):'all '+(v?'on':'off')+' already'; await load(); };
-    $('#bon').onclick=e=>every(e.target,true); $('#boff').onclick=e=>every(e.target,false);
-    $('#bfold').onclick=()=>{ if(B.some(b=>OPEN.has(b.id)))OPEN.clear(); else for(const b of B)OPEN.add(b.id); keep('bots-open',OPEN); draw(); };
-    $('#bhow').onclick=()=>{ open=open==='how'?null:'how'; draw(); };
-    if($('#bcopy'))$('#bcopy').onclick=()=>{ try{ navigator.clipboard.writeText(D.key); say='key copied'; }catch(e){ say='copy it by hand'; } draw(); };
-    if($('#bkey'))$('#bkey').onclick=e=>{ if(confirm('A new key stops the old one: restart the runner with the new key.'))act(e.target,{do:'botkey'},()=>'new key made'); };
-    bind(el,()=>draw()); el.oninput=el.onchange=e=>{ if(e.target.matches('input,select'))el.dataset.dirty='1'; }; el.dataset.dirty='';
-  };
-  const IDS=new Set(); const load=async()=>{ const [d,t]=await Promise.all([api({do:'bots'}),api({do:'tests'})]); D=d; if(t&&t.tests)RES=t.tests; if(D&&D.bots){ IDS.clear(); for(const b of D.bots)IDS.add(b.id); } draw(); if(W&&!W.dataset.dirty&&!W.contains(document.activeElement))win(W.dataset.bot); };
+      ${B.length?B.map(card).join(''):'<div class="why">No bots yet: + NEW BOT makes one where you stand.</div>'}`; };
+  // one bot's settings, one column
+  const editView=b=>`<div data-b="${esc(b.id)}" class="col"><div class="row"><button class="btn" data-a="back">◀ BACK</button><b>EDIT ${esc(b.name)}</b></div>
+      <h4>NAME</h4><input data-f="name" type="text" maxlength="24" value="${esc(b.name)}" style="width:220px;${IN}">
+      <h4>JOB</h4>${b.job==='tests'?'<div class="why">It is testing (set in TESTING). Pick another job to stop.</div>':''}${sel('job',JOBS,b.job)}
+      <label style="margin-top:4px">GOAL $ <input data-f="goal" type="number" min="0" value="${esc(b.goal||'')}" placeholder="none" style="width:90px;${IN}"> <span class="why">stop the money jobs once it has earned this</span></label>
+      <h4>WHERE IT STARTS</h4>${sel('place',[['','WHERE IT IS NOW'],...places()],b.place)}
+      <h4>LOOKS</h4>${sel('look',[['','RANDOM'],['me','LIKE ME NOW'],...(b.look&&b.look!=='me'?[[b.look,'AS SET']]:[])],b.look)}<label><input data-f="apt" type="checkbox"${b.apt?' checked':''}> its own apartment</label>
+      <h4>FIGHTING</h4><label><input data-f="fight" type="checkbox"${b.fight?' checked':''}> fights back</label><label><input data-f="god" type="checkbox"${b.god?' checked':''}> can't be knocked down</label>
+      <label>health <input data-f="hp" type="range" min="5" max="100" value="${esc(Math.round((b.hp??1)*100))}"></label><label>follow / fight ${sel('who',[['','NOBODY'],...people()],b.who&&b.who===ONLINE.me?'me':b.who)}</label>
+      <h4>SAYS</h4><input data-f="say" type="text" maxlength="400" value="${esc(b.say||'')}" placeholder="lines it says now and then, split by |" style="width:100%;box-sizing:border-box;${IN}">
+      <div class="row" style="margin-top:10px"><button class="btn" data-a="save">SAVE</button><button class="btn" data-a="back">CANCEL</button><span style="flex:1"></span><button class="btn" data-a="del">DELETE</button></div><div class="why">${esc(b.email||'')}</div></div>`;
+  // TESTING: 1 what (each kind opens to its tests), 2 which bots, start, 3 results
+  const mark=r=>!r?'<span class="why">·</span>':r.r==='pass'?'<span class="pass">✓</span>':r.r==='fail'?'<span class="fail">✗</span>':'<span class="skip">–</span>';
+  const testTab=()=>{ const L=list(), R=RBY(), cats=TESTS.cats||[], q=find.trim().toLowerCase(), hit=t=>!q||t.name.toLowerCase().includes(q);
+    const kinds=cats.map(([k])=>{ const T=L.filter(t=>t.cat===k), V=T.filter(hit), np=T.filter(t=>PICK.has(t.id)).length, pf=T.filter(t=>R.get(t.id)&&R.get(t.id).r==='fail').length, pp=T.filter(t=>R.get(t.id)&&R.get(t.id).r==='pass').length, op=OPENK.has(k)||!!q;
+      if(q&&!V.length)return '';
+      return `<div class="kind"><div class="kh" data-k="${k}"><span>${op?'▾':'▸'}</span><input type="checkbox" data-kall="${k}"${np&&np===T.length?' checked':''}> <b>${esc(KIND[k]||k)}</b><span class="why">${np} of ${T.length} picked${pp?' · <span class="pass">'+pp+' ✓</span>':''}${pf?' · <span class="fail">'+pf+' ✗</span>':''}</span></div>
+        ${op?`<div class="kl"><div class="row"><button class="btn" data-q="${k}:all">ALL</button><button class="btn" data-q="${k}:none">NONE</button><button class="btn" data-q="${k}:fail">FAILED</button><button class="btn" data-q="${k}:new">NOT RUN</button></div>${V.map(t=>{ const r=R.get(t.id); return `<label title="${esc(r?r.why:'not run yet')}"><input type="checkbox" data-t="${esc(t.id)}"${PICK.has(t.id)?' checked':''}> ${mark(r)} ${esc(t.name)}</label>`; }).join('')}</div>`:''}</div>`; }).join('');
+    const B=D.bots, use=USE||new Set(B.filter(b=>b.on&&state(b)[0]!=='stuck').map(b=>b.id)), nb=B.filter(b=>use.has(b.id)).length;
+    const runs=B.filter(b=>b.on&&b.job==='tests'), t=runs.reduce((a,b)=>{ const x=b.status&&b.status.tests; if(x){ a.d+=x.pass+x.fail+x.skip; a.l+=x.left; } return a; },{d:0,l:0});
+    const mine=RES.filter(r=>r.at>=RUNAT).sort((a,c)=>({fail:0,skip:1,pass:2}[a.r]-{fail:0,skip:1,pass:2}[c.r])), n=k=>mine.filter(r=>r.r===k).length, all=Math.max(t.d+t.l,mine.length);
+    const fails=mine.filter(r=>r.r!=='pass');
+    return `<h4>1. WHAT TO TEST</h4><div class="row"><input id="tfind" type="text" placeholder="find a test (e.g. skate, fishing rod, cat)" value="${esc(find)}" style="flex:1;min-width:200px;${IN}"><button class="btn" id="tnone">PICK NONE</button></div>${L.length?kinds:'<div class="why">making the list…</div>'}
+      <div class="why">${PICK.size} test${PICK.size===1?'':'s'} picked${PICK.size&&nb?' · about '+Math.max(1,Math.round(PICK.size*1.5/nb))+' minute'+(Math.round(PICK.size*1.5/nb)>1?'s':'')+' with '+nb+' bot'+(nb===1?'':'s'):''}</div>
+      <h4>2. WHICH BOTS</h4>${B.length?`<div class="row">${B.map(b=>`<label><input type="checkbox" data-u="${esc(b.id)}"${use.has(b.id)?' checked':''}> ${esc(b.name)} <span class="why">(${state(b)[1].slice(2).toLowerCase()})</span></label>`).join('')}</div><div class="why">The picked tests are split between them; START turns them on.</div>`:'<div class="why">No bots yet: make one in BOTS.</div>'}
+      <div class="row" style="margin-top:8px"><button class="btn" id="tgo"${PICK.size&&nb?'':' disabled'}>▶ START TESTING</button>${runs.length?'<button class="btn" id="tstop">STOP</button>':''}</div>
+      <h4>3. RESULTS${RUNAT?' <span class="why">since '+new Date(RUNAT).toLocaleTimeString()+'</span>':''}</h4>
+      ${all?`<div class="bar"><i style="width:${Math.round((mine.length/all)*100)}%"></i></div>`:''}<div class="why">${mine.length} of ${all||PICK.size} done · <span class="pass">${n('pass')} passed</span> · <span class="fail">${n('fail')} failed</span> · <span class="skip">${n('skip')} skipped</span>${runs.length?' · '+runs.length+' bot'+(runs.length===1?'':'s')+' testing':''}</div>
+      ${fails.map(r=>`<div class="${r.r}">${r.r==='fail'?'✗':'–'} ${esc(tname(r.id))} <span class="why">— ${esc(r.why)}</span>${goWhere(r.id)?`<span class="go" data-go="${esc(r.id)}">GO THERE</span>`:''}</div>`).join('')}
+      ${n('pass')?`<div class="why" style="cursor:pointer" id="tpass">${how==='pass'?mine.filter(r=>r.r==='pass').map(r=>'✓ '+esc(tname(r.id))+' — '+esc(r.why)).join('<br>'):'+ '+n('pass')+' passed (show)'}</div>`:''}
+      ${fails.length?`<div class="row" style="margin-top:6px"><button class="btn" id="tre">TEST THE FAILED AGAIN</button><button class="btn" id="tbug">SEND FAILED TO BUG QUEUE</button></div>`:''}${RES.length?'<div class="row"><button class="btn" id="tclr">CLEAR ALL RESULTS</button></div>':''}`; };
+  // where a test happens, to see it for yourself
+  const goWhere=id=>{ const t=list().find(x=>x.id===id); if(!t)return null; return t.at||t.shop||(t.cat==='pet'?'THE PET STORE':t.cat==='arcade'?'THE ARCADE':null); };
+  const callSet=()=>({at:[+pos.x.toFixed(2),+pos.z.toFixed(2),SHARED.LVL==='down'?1:0],place:'',call:Date.now()});
+  const act=async(b,body,ok)=>{ if(b)b.disabled=true; const r=await api(body); say=r.why?'not done: '+r.why:ok(r); await load(); };
+  const keepPick=()=>save('bots-pick',[...PICK]);
+  const start=async btn=>{ const B=D.bots.filter(b=>(USE||new Set(D.bots.filter(x=>x.on&&state(x)[0]!=='stuck').map(x=>x.id))).has(b.id)), ids=list().filter(t=>PICK.has(t.id)).map(t=>t.id); if(!B.length||!ids.length)return;
+    btn.disabled=true; RUNAT=Date.now(); save('bots-runat',RUNAT); const share=B.map(()=>[]); ids.forEach((id,i)=>share[i%B.length].push(id));
+    for(let i=0;i<B.length;i++)await api({do:'botset',id:B[i].id,set:{on:true,job:'tests',tests:share[i].slice(0,800),run:RUNAT}});
+    say=ids.length+' tests started on '+B.length+' bot'+(B.length===1?'':'s'); await load(); };
+  const fileFails=async btn=>{ if(!BUGS.file){ say='the bug queue is only on the website'; return draw(); } btn.disabled=true; let n=0;
+    for(const r of RES.filter(r=>r.r==='fail'&&r.at>=RUNAT)){ const k=r.id+'|'+r.at; if(FILED.has(k))continue; const b=D.bots.find(x=>x.id===r.bot);
+      try{ await BUGS.file('BOT TEST FAILED · '+tname(r.id)+': '+r.why,{bot:b?b.name:r.bot,test:r.id,why:r.why,at:r.at}); FILED.add(k); n++; }catch(e){ say='not sent: '+(e.message||e); break; } }
+    save('bots-filed',[...FILED]); if(!say.startsWith('not sent'))say=n?n+' sent to the bug queue (approve them there)':'those are in the queue already'; draw(); };
+  const draw=()=>{ '@later'; if(!el)return; if(!D){ el.innerHTML='<div class="why">...</div>'; return; } if(D.why){ el.innerHTML='<div>'+esc(D.why)+'</div>'; return; }
+    const b=EDIT&&D.bots.find(x=>x.id===EDIT); if(EDIT&&!b)EDIT=null;
+    el.innerHTML=`${CSS}<div class="bots"><div class="tabs"><button class="btn" data-tab="bots" aria-pressed="${TAB==='bots'}">BOTS</button><button class="btn" data-tab="test" aria-pressed="${TAB==='test'}">TESTING</button></div>${TAB==='test'?testTab():b?editView(b):botsTab()}</div>`;
+    wire(el,()=>draw()); el.dataset.dirty=''; };
+  const wire=(root,redraw)=>{ const $=s=>root.querySelector(s);
+    for(const f of root.querySelectorAll('input,select'))for(const ev of ['keydown','keyup'])f.addEventListener(ev,e=>e.stopPropagation());
+    root.oninput=e=>{ if(e.target.id==='tfind'){ find=e.target.value; const c=e.target.selectionStart; redraw(); const t=root.querySelector('#tfind'); if(t){ t.focus(); t.setSelectionRange(c,c); } return; } if(e.target.matches('[data-f]'))root.dataset.dirty='1'; };
+    root.onchange=e=>{ const x=e.target;
+      if(x.dataset.t){ if(x.checked)PICK.add(x.dataset.t); else PICK.delete(x.dataset.t); keepPick(); redraw(); return; }
+      if(x.dataset.kall){ for(const t of list())if(t.cat===x.dataset.kall){ if(x.checked)PICK.add(t.id); else PICK.delete(t.id); } keepPick(); redraw(); return; }
+      if(x.dataset.u){ USE=USE||new Set(D.bots.filter(b=>b.on&&state(b)[0]!=='stuck').map(b=>b.id)); if(x.checked)USE.add(x.dataset.u); else USE.delete(x.dataset.u); redraw(); return; }
+      if(x.matches('[data-f]'))root.dataset.dirty='1'; };
+    root.onclick=e=>{ const t=e.target;
+      const tab=t.closest('[data-tab]'); if(tab){ TAB=tab.dataset.tab; save('bots-tab',TAB); EDIT=null; redraw(); return; }
+      const kh=t.closest('[data-k]'); if(kh&&!t.matches('input')){ const k=kh.dataset.k; if(OPENK.has(k))OPENK.delete(k); else OPENK.add(k); save('bots-openk',[...OPENK]); redraw(); return; }
+      const qb=t.closest('[data-q]'); if(qb){ const [k,w]=qb.dataset.q.split(':'), R=RBY(), q=find.trim().toLowerCase(); for(const x of list())if(x.cat===k&&(!q||x.name.toLowerCase().includes(q))){ const r=R.get(x.id), on=w==='all'||(w==='fail'&&r&&r.r==='fail')||(w==='new'&&!r); if(w==='none'||!on)PICK.delete(x.id); else PICK.add(x.id); } keepPick(); redraw(); return; }   // while searching, only the tests shown
+      const g=t.closest('[data-go]'); if(g){ const w=goWhere(g.dataset.go); if(w)UI.goName(w); return; }
+      if(t.id==='tnone'){ PICK.clear(); keepPick(); redraw(); return; }
+      if(t.id==='tgo'){ start(t); return; }
+      if(t.id==='tstop'){ t.disabled=true; (async()=>{ for(const b of D.bots.filter(b=>b.on&&b.job==='tests'))await api({do:'botset',id:b.id,set:{job:'stand'}}); say='testing stopped: they stand still'; await load(); })(); return; }
+      if(t.id==='tre'){ PICK.clear(); for(const r of RES)if(r.r==='fail'&&r.at>=RUNAT)PICK.add(r.id); keepPick(); start(t); return; }
+      if(t.id==='tbug'){ fileFails(t); return; }
+      if(t.id==='tclr'){ if(!confirm('Clear every test result?'))return; act(t,{do:'testclear'},()=>'results cleared'); return; }
+      if(t.id==='tpass'){ how=how==='pass'?false:'pass'; redraw(); return; }
+      if(t.id==='bnew'){ act(t,{do:'botnew',set:{at:[pos.x,pos.z]}},r=>{ if(r.id)EDIT=r.id; return 'a new bot where you stand: set it up below'; }); return; }
+      if(t.id==='ball'){ t.disabled=true; (async()=>{ const on=D.bots.filter(b=>b.on), c=callSet(); for(const b of on)await api({do:'botset',id:b.id,set:c}); say=on.length?on.length+' coming':'no bot is on'; await load(); })(); return; }
+      if(t.id==='boff'){ t.disabled=true; (async()=>{ const L=D.bots.filter(b=>b.on); for(const b of L)await api({do:'botset',id:b.id,set:{on:false}}); say=L.length?L.length+' turned off':'all off already'; await load(); })(); return; }
+      if(t.id==='bhow'){ how=!how; redraw(); return; }
+      if(t.id==='bcopy'){ try{ navigator.clipboard.writeText(D.key); say='key copied'; }catch(err){ say='copy it by hand'; } redraw(); return; }
+      if(t.id==='bkey'){ if(confirm('A new key stops the old one: restart the runner with the new key.'))act(t,{do:'botkey'},()=>'new key made'); return; }
+      const a=t.closest('[data-a]'), box=t.closest('[data-b]'); if(!a||!box)return; const id=box.dataset.b, x=D.bots.find(q=>q.id===id), f=n=>box.querySelector(`[data-f="${n}"]`), A=a.dataset.a;
+      if(A==='edit'){ EDIT=id; TAB='bots'; redraw(); return; }
+      if(A==='back'){ EDIT=null; if(root===W)shut(); else redraw(); return; }
+      if(A==='on'){ act(a,{do:'botset',id,set:{on:!x.on}},()=>x.name+(x.on?' turned off':' turned on')); return; }
+      if(A==='restart'){ a.disabled=true; (async()=>{ await api({do:'botset',id,set:{on:false}}); await api({do:'botset',id,set:{on:true}}); say=x.name+' restarting'; await load(); })(); return; }
+      if(A==='call'){ act(a,{do:'botset',id,set:callSet()},()=>x.name+' is coming'); return; }
+      if(A==='goto'){ const p=x.status.at; UI.goTo(p[0],p[1],'up'); return; }
+      if(A==='del'){ if(!confirm('Delete '+x.name+' and its account for good?'))return; EDIT=null; act(a,{do:'botdel',id},()=>'deleted'); return; }
+      if(A==='save'){ const look=f('look').value, set={name:f('name').value.trim(),look:look==='me'?AVATAR.code():look,job:f('job').value,who:f('who').value==='me'?ONLINE.me:f('who').value,
+          goal:+f('goal').value||0,say:f('say').value.trim(),hp:(+f('hp').value||100)/100,fight:f('fight').checked,god:f('god').checked,apt:f('apt').checked};
+        const pl=f('place').value; if(pl!==(x.place||'')){ set.place=pl; if(pl)set.at=null; }
+        EDIT=null; act(a,{do:'botset',id,set},()=>x.name+' saved'); if(root===W)shut(); } }; };
+
+  const IDS=new Set(); const load=async()=>{ const [d,t]=await Promise.all([api({do:'bots'}),api({do:'tests'})]); D=d; if(t&&t.tests)RES=t.tests; if(D&&D.bots){ IDS.clear(); for(const b of D.bots)IDS.add(b.id); } if(!el||!el.dataset.dirty)draw(); if(W&&!W.dataset.dirty&&!W.contains(document.activeElement))win(W.dataset.bot); };
   // a bot's own window: double-click it in the world (owners only)
   let W=null; const win=id=>{ '@later'; const b=D&&D.bots&&D.bots.find(q=>q.id===id); if(!b){ shut(); return; }
-    if(!W){ W=document.createElement('div'); W.id='botwin'; W.style.cssText='position:fixed;left:50%;top:10%;transform:translateX(-50%);width:min(620px,calc(100vw - 32px));max-height:80vh;overflow:auto;z-index:40;background:#0e1016;color:#e8ecf4;border:2px solid #3a3f4e;padding:12px 14px;font:14px/1.6 Silkscreen,monospace;letter-spacing:.5px'; document.body.appendChild(W); }
-    W.dataset.bot=id; W.classList.add('bots'); W.innerHTML=`${CSS}<style>#botwin .row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:8px 0}#botwin .dim{color:#9aa3b5}#botwin b{color:#ffd27a}#botwin .btn{font:inherit;padding:4px 10px;background:#2a2f3c;color:#e8ecf4;border:2px solid #4a5163;cursor:pointer}#botwin .btn:hover{background:#3a4152}#botwin input,#botwin select{font:inherit}</style><div class="row" style="display:flex;justify-content:space-between"><b>BOT</b><button class="btn" id="bwx">X</button></div>${card(b,true).replace('data-a="fold"','')}${say?`<div class="dim">${esc(say)}</div>`:''}`;
-    for(const f of W.querySelectorAll('input,select'))for(const ev of ['keydown','keyup'])f.addEventListener(ev,e=>e.stopPropagation());
-    W.querySelector('#bwx').onclick=shut; bind(W,()=>win(id)); W.dataset.dirty=''; W.oninput=W.onchange=e=>{ if(e.target.matches('input,select'))W.dataset.dirty='1'; }; };
+    if(!W){ W=document.createElement('div'); W.id='botwin'; W.style.cssText='position:fixed;left:50%;top:8%;transform:translateX(-50%);width:min(560px,calc(100vw - 32px));max-height:84vh;overflow:auto;z-index:40;background:#04140b;color:#bdf7c9;border:2px solid #2f8a55;padding:10px 14px;font:14px/1.6 "Share Tech Mono",Silkscreen,monospace;letter-spacing:.5px'; document.body.appendChild(W); }
+    W.dataset.bot=id; W.innerHTML=`${CSS}<style>#botwin .btn{font:inherit;padding:2px 10px;background:#082016;color:#d8ffe2;border:1px solid #2f8a55;cursor:pointer}</style><div class="bots">${card(b)}${editView(b)}</div>${say?`<div class="why">${esc(say)}</div>`:''}`;
+    wire(W,()=>win(id)); W.dataset.dirty=''; };
   const shut=()=>{ if(W){ W.remove(); W=null; } };
   ONLINE.botUse=o=>{ if(!o||!IDS.has(o.id))return false; (window.LOAD?LOAD('later'):Promise.resolve()).then(async()=>{ if(!D)await load(); win(o.id); }); return true; };
   // an owner learns which players are bots once the start is done

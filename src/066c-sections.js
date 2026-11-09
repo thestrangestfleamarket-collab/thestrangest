@@ -5,6 +5,7 @@ import {scene} from './004-main.js';
 import {BLDK, FIX, grab, LOTX, LOTY, MAPG, MODS, SECTION, SECTIONS, SOL, TILE, ZU} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
 import {LOOP} from './009b-loop.js';
+import {slabCol} from './014-gamekit.js';
 import {BLOCKS} from './038zb-blocks.js';
 for(const [k,d] of Object.entries({'loop.entrance':'SUBWAY · THE LOOP · TO {a} & {b}','loop.entrance0':'SUBWAY · THE LOOP'}))TEXT.t(k,d);
 await grab('sections',async()=>{ const T=TILE, S=SECTIONS, G=S.ring, home=SECTION.id, W=G.walk, XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS;
@@ -40,7 +41,7 @@ await grab('sections',async()=>{ const T=TILE, S=SECTIONS, G=S.ring, home=SECTIO
     lot:{rep:4,t:pic(96,(i,j)=>sh([70,66,60],.86+.22*hash(i>>1,j>>1,3)))},
     water:{rep:6,t:pic(96,(i,j)=>sh([38,70,88],.9+.16*Math.sin((i+j*.3)/5)+.06*hash(i>>2,j,5)))},
     shore:{rep:2,t:pic(48,(i,j)=>(i%24<1||j%24<1)?[96,92,86]:sh([150,144,132],.9+.14*hash(i>>2,j>>2,7)))},
-    walk:{rep:2,t:pic(48,(i,j)=>(i%24<1||j%24<1)?[104,104,100]:sh([156,154,148],.88+.14*hash(i>>1,j>>1,9)))},
+    walk:{rep:4.8,t:pic(116,(i,j)=>slabCol((i+.5)/116*4.8+302.4,(j+.5)/116*4.8+302.4))},
     road:{rep:4,t:pic(96,(i,j)=>sh([52,52,56],.84+.24*hash(i,j,11)))},
     grass:{rep:8,t:pic(192,(i,j)=>GC((i+.5)/24+300,(j+.5)/24+300))},
     line:{rep:1,c:0xd8b23a}, dash:{rep:1,c:0xe8e8e0}};

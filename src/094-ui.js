@@ -180,7 +180,8 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   let goal=null; const said=document.createElement('div'); said.id='said'; said.hidden=true; document.body.appendChild(said);
   const say=(txt,at)=>{ '@later'; const r=cv.getBoundingClientRect(), v=at.clone().project(SHARED.cam); said.textContent=txt; said.style.left=Math.round(r.left+(v.x+1)/2*r.width)+'px'; said.style.top=Math.round(r.top+(1-v.y)/2*r.height)+'px'; said.hidden=false; clearTimeout(say.t); say.t=setTimeout(()=>said.hidden=true,2500); };
   const thAt=th=>th.obj.getWorldPosition(new THREE.Vector3());
-  cv.addEventListener('dblclick',e=>{ '@later'; if(MAPED.on||LAND.on)return; if(window.WIELD&&WIELD.on&&!WE.on)return; if(WE.on){ WE.pick(e); return; } if(ED.on||UI.freeCam)return; const r=cv.getBoundingClientRect(); ray.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1)),SHARED.cam);
+  cv.addEventListener('dblclick',e=>{ '@later'; if(MAPED.on||LAND.on)return; if(WE.on){ WE.pick(e); return; } if(ED.on||UI.freeCam)return; const r=cv.getBoundingClientRect(); ray.setFromCamera(new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1)),SHARED.cam);
+    if(window.WIELD&&WIELD.on){ const me=THINGS.find(th=>th.name==='YOU'); if(me&&me.obj.visible&&ray.intersectObject(me.obj,true).length)me.act(); return; }   // holding something, a double-click on yourself still opens your avatar (owner, 9 Nov 2026)
     const live=THINGS.filter(th=>th.obj.visible&&(!th.obj.parent||th.obj.parent.visible)&&LEVELS.drawn(th.obj)); const hits=ray.intersectObjects(live.map(th=>th.obj),true);
     let best=null, bd=1e9; if(hits.length){ let o=hits[0].object; const th=live.find(th=>{ let q=o; while(q){ if(q===th.obj)return true; q=q.parent; } return false; }); if(th){ best=th; bd=hits[0].distance; } }
     const u=USE.pick(ray); if(u&&u.d<bd)best=u.th;

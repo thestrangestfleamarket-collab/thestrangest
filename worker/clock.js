@@ -19,10 +19,11 @@ const CLK={TZ:'America/Chicago'};
     const ha=Math.acos(Math.max(-1,Math.min(1,Math.cos(90.833*R)/(Math.cos(CLK.LAT*R)*Math.cos(de))-Math.tan(CLK.LAT*R)*Math.tan(de))))/R, z=(L-CLK.at(t,c))/3600000;
     return {rise:(720-4*(CLK.LON+ha)-eq)/60+z,set:(720-4*(CLK.LON-ha)-eq)/60+z}; };
   // the real Moon over Chicago at the game's moment (suncalc's sums): alt and az in radians (az from the south, west positive), phase 0 new to .5 full to 1, kept ten seconds
+  CLK.lst=(t,c)=>(((280.16+360.9856235*(CLK.at(t,c)/86400000-10957.5)+CLK.LON)%360)+360)%360;   // the sidereal time there (degrees): which stars are overhead
   { let mk=null, mv=null; CLK.moon=(t,c)=>{ const g=CLK.at(t,c), k=Math.floor(g/10000); if(k===mk)return mv; mk=k;
     const R=Math.PI/180, d=g/86400000-10957.5, e=23.4397*R, ra=(l,b)=>Math.atan2(Math.sin(l)*Math.cos(e)-Math.tan(b)*Math.sin(e),Math.cos(l)), dec=(l,b)=>Math.asin(Math.sin(b)*Math.cos(e)+Math.cos(b)*Math.sin(e)*Math.sin(l));
     const L=R*(218.316+13.176396*d), M=R*(134.963+13.064993*d), F=R*(93.272+13.22935*d), l=L+R*6.289*Math.sin(M), b=R*5.128*Math.sin(F), dist=385001-20905*Math.cos(M), mra=ra(l,b), mde=dec(l,b);
-    const H=R*(280.16+360.9856235*d)+CLK.LON*R-mra, ph=CLK.LAT*R, alt=Math.asin(Math.sin(ph)*Math.sin(mde)+Math.cos(ph)*Math.cos(mde)*Math.cos(H)), az=Math.atan2(Math.sin(H),Math.cos(H)*Math.sin(ph)-Math.tan(mde)*Math.cos(ph));
+    const H=R*CLK.lst(t,c)-mra, ph=CLK.LAT*R, alt=Math.asin(Math.sin(ph)*Math.sin(mde)+Math.cos(ph)*Math.cos(mde)*Math.cos(H)), az=Math.atan2(Math.sin(H),Math.cos(H)*Math.sin(ph)-Math.tan(mde)*Math.cos(ph));
     const sM=R*(357.5291+.98560028*d), sL=sM+R*(1.9148*Math.sin(sM)+.02*Math.sin(2*sM)+.0003*Math.sin(3*sM))+R*102.9372+Math.PI, sra=ra(sL,0), sde=dec(sL,0), SD=149598000;
     const phi=Math.acos(Math.sin(sde)*Math.sin(mde)+Math.cos(sde)*Math.cos(mde)*Math.cos(sra-mra)), inc=Math.atan2(SD*Math.sin(phi),dist-SD*Math.cos(phi)), ang=Math.atan2(Math.cos(sde)*Math.sin(sra-mra),Math.sin(sde)*Math.cos(mde)-Math.cos(sde)*Math.sin(mde)*Math.cos(sra-mra));
     mv={alt,az,phase:.5+.5*inc*(ang<0?-1:1)/Math.PI}; return mv; }; }

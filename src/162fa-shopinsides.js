@@ -30,14 +30,22 @@ import {MSHOP} from './059i-mshops.js';
     const shop=()=>{ if(SERVE[A.id])return SERVE[A.id](); for(const [N,f] of TALK.shops||[])if(N&&N.key===A.who)return f();   // a keeper with a shop of their own (the Tomato, the Mushroom Seller)
       if(tr&&SHOPS.open)return SHOPS.open({key:A.who,name:A.name}); say('NOBODY IS SERVING.','#c8a090'); };
     // the floor's boards, the walls' plaster over a wainscot, a picture rail
-    A.floor((x,y)=>{ const u=x-R.x0, v=y-R.y0, row=Math.floor(u*5), s=.84+.16*A.hs(row,Math.floor(v*1.4+row*.37),5), e=(u*5%1)<.06?.7:1; return FL.map(c=>c*s*e); });
-    for(const sd of ['b','w','e','f'])A.wall(sd,(a,z)=>{ if(z<4)return WS.map(c=>c*.55); if(z<24)return (Math.floor(a*3)%2&&z>7&&z<21)?WS.map(c=>c*.85):WS; if(z<26)return WS.map(c=>c*1.3);
-      if(z>A.WH-5)return WA.map(c=>Math.min(255,c*1.08)); if(z>A.WH-18&&z<A.WH-16)return WS; const n=.95+.05*A.hs(Math.floor(a*30),Math.floor(z/3),2); return WA.map(c=>c*n); });
+    // (owner, 9 Nov 2026: "interior detail intricate textures"): each board its own shade and grain with a knot now and then, worn paler down the middle where people walk, dust darker at the walls;
+    // the walls' plaster mottled, a wainscot of panels with rails and stiles, a dark baseboard scuffed by shoes, a picture rail
+    const W0=R.x1-R.x0, D0=R.y1-R.y0, sm=(x,y,c)=>{ const i=Math.floor(x/c), j=Math.floor(y/c), fx=x/c-i, fy=y/c-j, a=A.hs(i,j,41), b=A.hs(i+1,j,41), d=A.hs(i,j+1,41), e=A.hs(i+1,j+1,41), sx=fx*fx*(3-2*fx), sy=fy*fy*(3-2*fy); return a+(b-a)*sx+(d-a)*sy+(a-b-d+e)*sx*sy; };
+    A.floor((x,y)=>{ const u=x-R.x0, v=y-R.y0, row=Math.floor(u*5), fu=u*5%1, pl=Math.floor(v*1.1+A.hs(row,3,7)*3), base=.82+.18*A.hs(row,pl,5), grain=1+.05*Math.sin(v*36+row*3.1+Math.sin(v*7+row)*2), seam=fu<.07||((v*1.1+A.hs(row,3,7)*3)%1)<.03?.66:1;
+      const knot=A.hs(row,pl,9)<.12&&Math.hypot((fu-.5)*.2,(v*1.1+A.hs(row,3,7)*3)%1-.5)<.06?.72:1, walk=1+.07*Math.max(0,1-Math.abs(u/W0-.5)*3)*Math.max(0,1-v/D0*.3), dust=Math.min(1,.82+Math.min(u,W0-u,v,D0-v)*.6), scuff=sm(u*3,v*3,1)>.78?.9:1;
+      return FL.map(c=>Math.min(255,c*base*grain*seam*knot*walk*dust*scuff)); });
+    for(const sd of ['b','w','e','f'])A.wall(sd,(a,z)=>{ const pn=a*1.6%1;
+      if(z<4)return WS.map(c=>c*(.5+.06*A.hs(Math.floor(a*20),1,3))*(sm(a*8,1,1)>.7?.8:1)); if(z<5)return WS.map(c=>c*.38);
+      if(z<24){ const rail=z<8||z>20, stile=pn<.08||pn>.92; if(rail||stile)return WS.map(c=>c*(.95+.05*A.hs(Math.floor(a*12),Math.floor(z),8))); const bev=pn<.12||pn>.88||z<10||z>18; return WS.map(c=>c*(bev?.82:.9)*(1-.04*sm(a*6,z/6,1))); }
+      if(z<26)return WS.map(c=>c*1.3); if(z>A.WH-5)return WA.map(c=>Math.min(255,c*1.08)); if(z>A.WH-18&&z<A.WH-16)return WS;
+      const n=(.93+.07*sm(a*4,z/14,1))*(.97+.03*A.hs(Math.floor(a*40),Math.floor(z/2),2))*(z<40?1-.08*Math.max(0,1-(z-26)/14)*sm(a*9,2,1):1); return WA.map(c=>c*n); });
     // the counter, its keeper behind it (059i stands them 2.2 tiles from the back wall)
     const kv=2.2*tm, c0=kv+.5, c1=kv+1.05, cu0=W*.28, cu1=W*.72;
     box(cu0,c0,cu1,c1,0,.95,WOOD); box(cu0-.04,c0-.04,cu1+.04,c1+.04,.95,1.0,0x2a2420); sol(cu0,c0,cu1,c1);
     box(cu1-.42,c0+.12,cu1-.12,c0+.4,1.0,1.2,0x2c2c2e); use(SVN[A.id]||('THE COUNTER ('+(goods.length||[...(TALK.shops||new Map()).keys()].some(N=>N&&N.key===A.who)?'BUY':'TALK')+')'),W/2,(c0+c1)/2,cu1-cu0,1.2,shop,1.8);
-    pic(W/2,.03,HT-.75,Math.min(W*.6,3.2),.5,0,1,words(128,20,'#1e1a18',[[A.name||'THE SHOP',64,5,'#f2c14e',10,'center']]),true);
+    if(!A.bare)pic(W/2,.03,HT-.75,Math.min(W*.6,3.2),.5,0,1,words(128,20,'#1e1a18',[[A.name||'THE SHOP',64,5,'#f2c14e',10,'center']]),true);   // (the pet shops: no name board inside; their signs are outside)
     // the shelves: the back wall either side of the keeper, then both side walls; each thing on them is what the keeper sells
     const runs=A.bare?[]:[[.25,.0,W*.36,.42,0,1],[W*.64,.0,W-.25,.42,0,1],[.0,D*.42,.42,D-1.1,1,0],[W-.42,D*.42,W,D-1.1,-1,0]], spots=[];   // (a shop with its own walls of things (A.bare): no shelves)
     for(const [u0,v0,u1,v1,du,dv] of runs){ for(const h of [0,.55,1.1,1.65])box(u0,v0,u1,v1,h,h+.04,WOOD); box(u0,v0,u1,v1,2.2,2.24,WOOD); sol(u0,v0,u1,v1);

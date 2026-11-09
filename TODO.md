@@ -388,6 +388,7 @@ One pass, one pull request.
   where they fell (`N.rag=null` without moving `N.st`). Seen only on your screen (see shared physics).
 
 ## Physics and vehicles
+- [ ] **The VEHICLE editor in ADMIN** (owner, 9 Nov 2026: "add a VEHICLE editor into game in admin that shows you every vehicle in game and you can change their look. duplicate them, etc."; his picks: colours, size and parts; duplicate a drivable car parked where you stand, a traffic vehicle one more on the road or in the air) · P2 · L · code. Every look saved for everyone (like /shared/vehicles.json). Parts: the traffic's Polyfork models are baked as one painted piece (`tools/traffic-bake.py`): re-bake them with their parts first; their colours can be changed by the colours they are painted in.
 - [x] **Vehicle speeds in ADMIN, the fliers' light** (owner, 9 Nov 2026; done 9 Nov) · P2 · M · code. `136cb-vehicles` (SPEED, /shared/vehicles.json), `tests/traffic.cjs`. Not seen by the owner in game yet: the fliers' light on the pole. [taking: claude/jolly-planck-oi9pe2]
 - [x] **The flamethrower and the freeze ray** (owner, 9 Nov 2026; done 9 Nov) · P2 · M · code. `146hb-jets`, `tests/jets.cjs`. [taking: claude/practical-cerf-gt0vnr]
 - [ ] **Jets follow-ups** · P3 · S · pick. Fires and ice are worked out on each player's page (where a stream lands matches, how a fire spreads may not); characters burn and freeze but do not run from the fire.

@@ -75,7 +75,7 @@ const SKINCULL=me=>{ const g=me.geometry; if(!g.boundingSphere)g.computeBounding
   SYS.yield=signal=>{ if(signal&&signal.aborted)return Promise.reject(stop(signal)); return new Promise((res,rej)=>{ const on=()=>rej(stop(signal)); if(signal)signal.addEventListener('abort',on,{once:true}); post(()=>{ if(signal)signal.removeEventListener('abort',on); t0=performance.now(); if(signal&&signal.aborted)return; res(); }); }); };
   SYS.breath=(signal,ms=8)=>signal&&signal.aborted?Promise.reject(stop(signal)):performance.now()-t0>ms?SYS.yield(signal):null;
   SYS.add('every',()=>{ t0=performance.now(); },'006-breath'); };
-const FADE={busy:0,run:async(t,w)=>{ if(w)await w(); }}; window.FADE=FADE;
+const FADE={busy:0,arrive:[],run:async(t,w)=>{ if(w)await w(); }}; window.FADE=FADE;
 const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=n=>new Promise(r=>{ const f=()=>--n<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
 const MAPG={}, MODS={};  const OVERHEAD=[]; SHARED.RPASS=null; SHARED.FIRE=null;
 // the start's loading screen (#loading): each place's builder named as it is built, a bar by how many of the last start's builders are done

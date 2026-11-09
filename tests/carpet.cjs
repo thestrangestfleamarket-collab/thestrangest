@@ -1,0 +1,27 @@
+// THE MAGIC CARPET (src/146id-carpet.js): node tests/carpet.cjs [dist/market.html] [shots dir]. Every player has one; held, E sits you on it cross-legged; it floats, W flies it on, SPACE climbs;
+// its cloth stays whole and moves (the free edges ripple and lift with the air); E brings it down and you step off. Superhero flight (G) tops out at a quarter of its old speed.
+const {chromium}=require('playwright'), path=require('path'), fs=require('fs');
+const PAGE=path.resolve(process.argv[2]||'dist/market.html'), SHOTS=process.argv[3];
+(async()=>{ const b=await chromium.launch({executablePath:process.env.PW_CHROMIUM||undefined,args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:960,height:640}}); const errs={}; let bad=0;
+  pg.on('pageerror',e=>{ const k=e.message.slice(0,160); errs[k]=(errs[k]||0)+1; });
+  const rec=(n,ok,i)=>{ if(!ok)bad++; console.log((ok?'PASS ':'FAIL ')+n+(i?'  · '+i:'')); };
+  const shot=async n=>{ if(SHOTS){ fs.mkdirSync(SHOTS,{recursive:true}); await pg.screenshot({path:path.join(SHOTS,n+'.png')}); } };
+  await pg.goto('file://'+PAGE+'?fresh=1&hour=13&at=40,150&res=0',{waitUntil:'commit'}); await pg.waitForFunction(()=>window.__started,null,{timeout:300000}); await pg.waitForFunction(()=>!FADE.busy&&OUT.open&&!document.getElementById('loading'),null,{timeout:240000,polling:250});
+  const g=await pg.evaluate(()=>({has:INV.items.magic_carpet||0,once:FORAGE.S.carpet1===1,kind:!!RIDE.kinds.carpet,arch:ARCHI('magic_carpet'),fly:__UI.FLY.max}));
+  rec('every player is given a magic carpet, once; it is a ride kind, not archived',g.has>=1&&g.once&&g.kind&&!g.arch,JSON.stringify(g));
+  rec('superhero flight is a quarter of its old top speed (42 to 10.5 m/s)',g.fly===10.5,JSON.stringify(g));
+  await pg.evaluate(()=>{ const U=__dbg.UI; U.setView('third'); U.dist*=.5; WX.hold='CLOUDY'; });
+  const key=(k,c,down)=>pg.evaluate(([k,c,d])=>document.body.dispatchEvent(new KeyboardEvent(d?'keydown':'keyup',{key:k,code:c,bubbles:true})),[k,c,down]);
+  const cloth=()=>pg.evaluate(()=>CARPET.dbg());
+  const r=await pg.evaluate(async()=>{ WIELD.set('magic_carpet'); await new Promise(r=>setTimeout(r,400)); const ok=RIDE.mount('magic_carpet'); await new Promise(r=>setTimeout(r,8000)); return {ok,on:RIDE.on,pose:__dbg.ST.ride&&__dbg.ST.ride.k,h:CARPET.dbg().lift}; });
+  rec('E sits you on it cross-legged and it floats off the ground',r.ok&&r.on==='magic_carpet'&&r.pose==='carpet'&&r.h>.2,JSON.stringify(r));
+  const c0=await cloth(); rec('at rest its cloth is whole and nearly flat, a rug\'s width',c0&&c0.fin&&c0.span>1.1&&c0.span<1.45&&c0.rough<.4,JSON.stringify(c0)); await shot('carpet-rest');
+    await key(' ','Space',true); await pg.waitForTimeout(8000); await key(' ','Space',false);
+  const up=(await cloth()).lift; rec('SPACE climbs',up>r.h+.4,'lift '+up);
+  await key('w','KeyW',true); await pg.waitForTimeout(12000); const c1=await cloth(); await shot('carpet-flying');
+  const m={v:c1.v}; await key('w','KeyW',false);
+  rec('W flies it on, and its free edges move with the air',m.v>2&&c1&&c1.fin&&c1.rough>c0.rough,JSON.stringify({m,c1}));
+  const off=await pg.evaluate(async()=>{ RIDE.cur.leave(RIDE); for(let i=0;i<120&&RIDE.on;i++)await new Promise(r=>setTimeout(r,250)); return {off:!RIDE.on,ride:__dbg.ST.ride}; });
+  rec('E brings it down and you step off',off.off&&!off.ride,JSON.stringify(off));
+  const E=Object.entries(errs); rec('no page errors',!E.length,E.map(([k,n])=>n+'× '+k).join(' | '));
+  await b.close(); console.log(bad?bad+' FAILED':'all passed'); process.exit(bad?1:0); })();

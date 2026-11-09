@@ -2049,5 +2049,13 @@
   "slot": "hand",
   "value": 150,
   "weight": 0.9
+ },
+ "magic_carpet": {
+  "slot": "hand",
+  "grants": "carpet",
+  "offworld": true,
+  "value": 300,
+  "speed": 9,
+  "weight": 6
  }
 }

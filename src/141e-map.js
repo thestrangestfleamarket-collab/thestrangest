@@ -135,13 +135,15 @@ import {STALL} from './081-stalls.js';
     for(let i=0;i<4;i++){ const p=document.createElement('div'); p.className='pn'; p.innerHTML=`<div class="fc"><svg viewBox="${i*320} 0 320 720">${F}</svg><u></u>${i?'<i class="l"></i>':''}${i<3?'<i class="r"></i>':''}</div><div class="fc bk"><svg viewBox="${(3-i)*320} 0 320 720">${K}</svg>${i<3?'<u></u><i class="l"></i>':''}</div>`; parent.appendChild(p); parent=p; }
     if(G&&G.sel){ const q=G.sel, box=document.createElement('div'); box.className='gob'; Object.assign(box.style,{left:q.x+'px',top:q.y+'px',width:q.w+'px',height:q.h+'px'});   // GO TO: every place the game registers, A to Z, with its number on the map, and your neighbours' apartments (owner, 8 Nov 2026)
       const key=n=>n.replace(/^THE /,''), items=LG.flatMap(([,L])=>L.map(o=>({name:o.name,n:o.s?o.s.n:null,col:o.s?o.s.col:null}))).sort((a,b)=>key(a.name).localeCompare(key(b.name)));
-      const apts=(ONLINE.others&&ONLINE.visit?[...ONLINE.others.values()]:[]).filter(o=>o&&o.id&&o.name).map(o=>({name:o.name.toUpperCase()+"'S APARTMENT",visit:o})).sort((a,b)=>a.name.localeCompare(b.name));
-      const row=(o,i)=>`<div class="gor" data-goto="${esc(o.name)}" data-i="${i}">${o.n!=null?`<i style="background:${o.col};${DARK[o.col]?'color:#111':''}">${o.n}</i>`:'<i style="background:#fff"></i>'}${esc(o.name)}${o.visit?'<span>'+esc(TEXT.t('bro.online'))+'</span>':''}</div>`;
-      const ALL=[...items,...apts];
+      // every tenant's apartment: those online now (marked) and the rest from the server's list
+      let TL=[]; const apts=[], ALL=[...items], mkApts=()=>{ if(!ONLINE.visit)return; const on=ONLINE.others?[...ONLINE.others.values()].filter(o=>o&&o.id&&o.name):[], seen=new Set(on.map(o=>o.id));
+        apts.length=0; for(const o of on)apts.push({name:o.name.toUpperCase()+"'S APARTMENT",visit:o,on:1}); for(const t of TL)if(!seen.has(t.id)){ seen.add(t.id); apts.push({name:String(t.name).toUpperCase()+"'S APARTMENT",visit:t}); }
+        apts.sort((a,b)=>a.name.localeCompare(b.name)); ALL.length=items.length; ALL.push(...apts); }; mkApts();
+      const row=(o,i)=>`<div class="gor" data-goto="${esc(o.name)}" data-i="${i}">${o.n!=null?`<i style="background:${o.col};${DARK[o.col]?'color:#111':''}">${o.n}</i>`:'<i style="background:#fff"></i>'}${esc(o.name)}${o.on?'<span>'+esc(TEXT.t('bro.online'))+'</span>':''}</div>`;
       box.innerHTML=`<button type="button" aria-haspopup="listbox"><b>${esc(TEXT.t('bro.choose'))}</b><b>▾</b></button><div class="gol" hidden role="listbox"><input type="text" placeholder="${esc(TEXT.t('bro.find'))}" aria-label="${esc(TEXT.t('bro.find'))}"><div class="gox"></div></div>`;
       const L=box.querySelector('.gol'), F=box.querySelector('input'), X=box.querySelector('.gox');
-      const fill=()=>{ const f=F.value.trim().toUpperCase(), pick=o=>!f||o.name.includes(f); X.innerHTML=items.map((o,i)=>[o,i]).filter(([o])=>pick(o)).map(([o,i])=>row(o,i)).join('')+(apts.some(pick)?`<h6>${esc(TEXT.t('bro.neighbours'))}</h6>`+apts.map((o,i)=>[o,items.length+i]).filter(([o])=>pick(o)).map(([o,i])=>row(o,i)).join(''):''); };
-      const toggle=()=>{ L.hidden=!L.hidden; if(!L.hidden){ F.value=''; fill(); F.focus(); } };
+      const fill=()=>{ mkApts(); const f=F.value.trim().toUpperCase(), pick=o=>!f||o.name.includes(f); X.innerHTML=items.map((o,i)=>[o,i]).filter(([o])=>pick(o)).map(([o,i])=>row(o,i)).join('')+(apts.some(pick)?`<h6>${esc(TEXT.t('bro.neighbours'))}</h6>`+apts.map((o,i)=>[o,items.length+i]).filter(([o])=>pick(o)).map(([o,i])=>row(o,i)).join(''):''); };
+      const toggle=()=>{ L.hidden=!L.hidden; if(!L.hidden){ F.value=''; fill(); F.focus(); if(ONLINE.tenants)ONLINE.tenants().then(l=>{ TL=l||[]; if(!L.hidden)fill(); }); } };
       box.querySelector('button').onclick=e=>{ e.stopPropagation(); toggle(); };
       F.oninput=fill;
       X.onclick=e=>{ e.stopPropagation(); const r=e.target.closest('.gor'); if(!r)return; const o=ALL[+r.dataset.i]; if(!o)return; go(()=>o.visit?ONLINE.visit(o.visit.id,o.visit.name):UI.goName(o.name)); };

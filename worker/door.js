@@ -86,7 +86,8 @@ export default {
       if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401);
       let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
-      if (p === "/home") { if (body.who !== undefined) return json({ home: await homeOf(env).get(word(body.who, 64)) });   // a visit: another player's apartment, to look at
+      if (p === "/home") { if (body.list !== undefined) return json({ list: (await homeOf(env).tenants()).filter(t => t.who !== id) });   // every tenant's apartment, for the map's quick jumps
+        if (body.who !== undefined) return json({ home: await homeOf(env).get(word(body.who, 64)) });   // a visit: another player's apartment, to look at
         if (body.put === undefined) return json({ home: await homeOf(env).get(id) });
         const t = JSON.stringify(body.put); if (!body.put || typeof body.put !== "object" || Array.isArray(body.put) || t.length > 65536) return json({ why: "bad room" }, 400);
         if (tooMany("home:" + id, 120)) return json({ why: "too many saves, wait a minute" }, 429);
@@ -684,6 +685,7 @@ export class Post extends DurableObject {
 export class Home extends DurableObject {
   constructor(ctx, env) { super(ctx, env); this.sql = ctx.storage.sql; this.sql.exec("create table if not exists homes(who text primary key, room text, at integer)"); }
   get(id) { const r = this.sql.exec("select room from homes where who = ?", id).toArray()[0]; try { return r ? JSON.parse(r.room) : null; } catch (e) { return null; } }
+  tenants() { this.nameT(); return this.sql.exec("select n.who as who, n.name as name from names n union select h.who, null from homes h where h.who not in (select who from names) limit 2000").toArray().map(r => ({ who: r.who, name: r.name || null })); }
   put(id, room) { this.sql.exec("insert into homes(who, room, at) values(?, ?, ?) on conflict(who) do update set room = excluded.room, at = excluded.at", id, room, Date.now()); return true; }
   // each player's owned things, a row a key (at most 2 MB a player)
   ownedT() { this.sql.exec("create table if not exists owned(who text, k text, v text, at integer, primary key(who, k))"); }

@@ -1,0 +1,51 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Window frames</title>
+<style>body{margin:0;background:#15171c;font:13px monospace;color:#e8dcc0}#c{display:block}#lab{position:absolute;inset:0;pointer-events:none}#lab div{position:absolute;transform:translateX(-50%);text-align:center;letter-spacing:1px}#lab b{display:block;color:#f0c060;font-size:14px}</style>
+<script type="importmap">{"imports":{"three":"../node_modules/three/build/three.module.js"}}</script></head>
+<body><canvas id="c"></canvas><div id="lab"></div>
+<script type="module">
+import * as THREE from 'three';
+const W=1500,H=960, r=new THREE.WebGLRenderer({canvas:c,antialias:true}); r.setSize(W,H); r.shadowMap.enabled=true; r.toneMapping=THREE.ACESFilmicToneMapping;
+const S=new THREE.Scene(); S.background=new THREE.Color(0x15171c);
+const cam=new THREE.PerspectiveCamera(30,W/H,.1,100); cam.position.set(0,0,18.6); cam.lookAt(0,0,0);
+S.add(new THREE.HemisphereLight(0xfff4e0,0x3a2a20,1.1)); const sun=new THREE.DirectionalLight(0xffe8c8,2.2); sun.position.set(-4,6,8); sun.castShadow=true; sun.shadow.mapSize.set(2048,2048); Object.assign(sun.shadow.camera,{left:-12,right:12,top:8,bottom:-8}); S.add(sun);
+const mat=(c,o={})=>new THREE.MeshStandardMaterial({color:c,roughness:.6,...o});
+const sky=(()=>{ const cv=document.createElement('canvas'); cv.width=4; cv.height=64; const g=cv.getContext('2d'), gr=g.createLinearGradient(0,0,0,64); gr.addColorStop(0,'#6fa3d8'); gr.addColorStop(1,'#d8e8f0'); g.fillStyle=gr; g.fillRect(0,0,4,64); const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; return new THREE.MeshBasicMaterial({map:t}); })();
+const glassM=new THREE.MeshPhysicalMaterial({color:0xcfe6f0,transparent:true,opacity:.18,roughness:.05,metalness:0});
+const wallM=mat(0x7a7f86,{roughness:.9});
+const box=(g,w,h,d,m,x,y,z)=>{ const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m); b.position.set(x,y,z); b.castShadow=b.receiveShadow=true; g.add(b); return b; };
+// a wall panel with a hole, sky behind the hole
+const wall=(g,shape)=>{ const outer=new THREE.Shape(); outer.moveTo(-1.55,-2); outer.lineTo(1.55,-2); outer.lineTo(1.55,2); outer.lineTo(-1.55,2); outer.closePath(); outer.holes.push(shape);
+  const m=new THREE.Mesh(new THREE.ExtrudeGeometry(outer,{depth:.3,bevelEnabled:false}),wallM); m.position.z=-.3; m.receiveShadow=true; g.add(m);
+  const sh=new THREE.Shape(shape.getPoints(48)), s=new THREE.Mesh(new THREE.ShapeGeometry(sh),sky); s.position.z=-.5; g.add(s); };
+const rect=(w,h,y=0)=>{ const p=new THREE.Path(); p.moveTo(-w/2,y-h/2); p.lineTo(-w/2,y+h/2); p.lineTo(w/2,y+h/2); p.lineTo(w/2,y-h/2); p.closePath(); return p; };
+const arch=(w,h,y=0)=>{ const p=new THREE.Path(), r=w/2, top=y+h/2-r; p.moveTo(-r,y-h/2); p.lineTo(-r,top); p.absarc(0,top,r,Math.PI,0,true); p.lineTo(r,y-h/2); p.closePath(); return p; };
+const glass=(g,w,h,x=0,y=0,z=-.12)=>{ const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),glassM); m.position.set(x,y,z); g.add(m); };
+const frame=(g,w,h,t,d,m,y=0,z=0)=>{ box(g,t,h,d,m,-w/2+t/2,y,z); box(g,t,h,d,m,w/2-t/2,y,z); box(g,w,t,d,m,0,y+h/2-t/2,z); box(g,w,t,d,m,0,y-h/2+t/2,z); };
+const bars=(g,w,h,nx,ny,t,d,m,y=0,z=-.06)=>{ for(let i=1;i<nx;i++)box(g,t,h,d,m,-w/2+w*i/nx,y,z); for(let j=1;j<ny;j++)box(g,w,t,d,m,0,y-h/2+h*j/ny,z); };
+const sill=(g,w,y,m)=>box(g,w+.3,.1,.32,m,0,y,.08);
+const styles=[
+ ['NOW','black 2x2 sash',g=>{ const w=2,h=2.6,m=mat(0x18181a); wall(g,rect(w,h)); frame(g,w,h,.1,.16,m); box(g,w,.07,.1,m,0,0,-.04); bars(g,w,h/2,2,1,.04,.05,m,h/4); bars(g,w,h/2,2,1,.04,.05,m,-h/4); glass(g,w,h); sill(g,w,-h/2-.03,m); }],
+ ['COLONIAL','white 6-over-6 sash',g=>{ const w=2,h=2.8,m=mat(0xeeeae0); wall(g,rect(w,h)); frame(g,w,h,.12,.16,m); box(g,w,.08,.1,m,0,0,-.04); bars(g,w,h/2,3,2,.035,.05,m,h/4); bars(g,w,h/2,3,2,.035,.05,m,-h/4); glass(g,w,h); sill(g,w,-h/2-.03,m); box(g,w+.4,.14,.2,m,0,h/2+.07,.05); }],
+ ['VICTORIAN','arched top, oak, fanlight',g=>{ const w=2,h=3,m=mat(0x8a4f26); wall(g,arch(w,h)); const t=.11; box(g,t,h-1,.16,m,-w/2+t/2,-.5,0); box(g,t,h-1,.16,m,w/2-t/2,-.5,0); box(g,w,t,.16,m,0,-h/2+t/2,0);
+   const a=new THREE.Mesh(new THREE.TorusGeometry(w/2-t/2,t/2,8,32,Math.PI),m); a.position.set(0,h/2-w/2,0); a.scale.z=1.4; g.add(a); box(g,w,.08,.1,m,0,h/2-w/2,-.04);
+   for(const k of [-1,0,1]){ const s=box(g,.035,w/2,.05,m,0,h/2-w/2+w/4,-.06); s.geometry.translate(0,0,0); s.position.set(Math.sin(k*.75)*w/4,h/2-w/2+Math.cos(k*.75)*w/4,-.06); s.rotation.z=-k*.75; }
+   bars(g,w,h-w/2,2,2,.04,.05,m,-w/4); glass(g,w,h); sill(g,w,-h/2-.03,mat(0xb8b0a0)); }],
+ ['FACTORY','steel grid, 4x5 lights',g=>{ const w=2.4,h=2.8,m=mat(0x2a2e33,{metalness:.6,roughness:.4}); wall(g,rect(w,h)); frame(g,w,h,.08,.12,m); bars(g,w,h,4,5,.03,.04,m); box(g,w/4,h/5,.04,mat(0x2a2e33,{metalness:.6}),-w/2+w/8+0.0,0,-.02).visible=false; glass(g,w,h); sill(g,w,-h/2-.03,mat(0x9a9590)); }],
+ ['CASEMENT','green pair, swung open',g=>{ const w=2,h=2.4,m=mat(0x2f5a44); wall(g,rect(w,h)); frame(g,w,h,.1,.16,m);
+   for(const s of [-1,1]){ const p=new THREE.Group(); p.position.set(s*(w/2-.1),0,.05); p.rotation.y=s*-.9; g.add(p); const q=new THREE.Group(); q.position.x=-s*(w/4-.05); p.add(q); frame(q,w/2-.1,h-.2,.07,.06,m); bars(q,w/2-.1,h-.2,1,3,.03,.03,m,0,0); glass(q,w/2-.1,h-.2,0,0,0); }
+   sill(g,w,-h/2-.03,mat(0xb8b0a0)); }],
+ ['CHICAGO','big pane, side sashes, transom',g=>{ const w=2.8,h=2.6,m=mat(0x5a3b26); wall(g,rect(w,h)); frame(g,w,h,.11,.16,m); box(g,w,.08,.12,m,0,h/2-.55,-.02); for(const x of [-w/2+.62,w/2-.62])box(g,.08,h,.12,m,x,0,-.02); bars(g,w,.55,6,1,.03,.04,m,h/2-.28); glass(g,w,h); sill(g,w,-h/2-.03,m); }],
+ ['LEADED','diamond lattice, round head',g=>{ const w=1.8,h=2.8,m=mat(0x3a2a1c); wall(g,arch(w,h)); const t=.1, lm=mat(0x55585c,{metalness:.7,roughness:.35});
+   box(g,t,h-.9,.16,m,-w/2+t/2,-.45,0); box(g,t,h-.9,.16,m,w/2-t/2,-.45,0); box(g,w,t,.16,m,0,-h/2+t/2,0); const a=new THREE.Mesh(new THREE.TorusGeometry(w/2-t/2,t/2,8,32,Math.PI),m); a.position.set(0,h/2-w/2,0); a.scale.z=1.4; g.add(a);
+   const cv=document.createElement('canvas'); cv.width=180; cv.height=280; const x=cv.getContext('2d'); x.strokeStyle='#4a4d52'; x.lineWidth=3; for(let i=-20;i<20;i++){ x.beginPath(); x.moveTo(i*30,0); x.lineTo(i*30+280*.6,280); x.stroke(); x.beginPath(); x.moveTo(i*30,0); x.lineTo(i*30-280*.6,280); x.stroke(); }
+   const tx=new THREE.CanvasTexture(cv); tx.colorSpace=THREE.SRGBColorSpace; const sh=new THREE.Shape(arch(w-2*t,h-t,t/2).getPoints(48)), lg=new THREE.ShapeGeometry(sh), P=lg.attributes.position, uv=lg.attributes.uv; for(let i=0;i<P.count;i++)uv.setXY(i,P.getX(i)/w+.5,P.getY(i)/h+.5);
+   const L=new THREE.Mesh(lg,new THREE.MeshBasicMaterial({map:tx,transparent:true,opacity:.95,alphaTest:.1})); L.position.z=-.1; g.add(L); x.globalCompositeOperation='destination-over'; x.fillStyle='rgba(200,225,235,0)'; tx.needsUpdate=true;
+   glass(g,w,h); sill(g,w,-h/2-.03,mat(0xb8b0a0)); }],
+ ['PORTHOLE','round brass, deco',g=>{ const R=1,m=mat(0xb88a3a,{metalness:.8,roughness:.3}); const p=new THREE.Path(); p.absarc(0,.2,R,0,Math.PI*2,false); wall(g,p); const t=new THREE.Mesh(new THREE.TorusGeometry(R-.04,.1,12,48),m); t.position.set(0,.2,0); g.add(t);
+   for(let k=0;k<8;k++){ const a=k*Math.PI/4, b=new THREE.Mesh(new THREE.SphereGeometry(.035,8,6),m); b.position.set(Math.cos(a)*(R+.1),.2+Math.sin(a)*(R+.1),.06); g.add(b); } glass(g,2*R,2*R,0,.2); }],
+];
+const lab=document.getElementById('lab'), cols=4;
+styles.forEach(([n,d,f],i)=>{ const g=new THREE.Group(), cx=(i%cols-1.5)*3.6, cy=i<cols?2.35:-2.2; g.position.set(cx,cy,0); g.scale.setScalar(.95); f(g); S.add(g);
+  const v=new THREE.Vector3(cx,cy-2.05,0).project(cam), el=document.createElement('div'); el.style.left=((v.x+1)/2*W)+'px'; el.style.top=((1-v.y)/2*H)+'px'; el.innerHTML='<b>'+(i+1)+'. '+n+'</b>'+d; lab.appendChild(el); });
+r.render(S,cam); window.__done=true;
+</script></body></html>

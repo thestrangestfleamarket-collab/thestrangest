@@ -1,6 +1,6 @@
 // THE ROOM EDITOR: DECORATE your apartment like the Sims (owner, 25 and 27 Oct 2026): T in your apartment (the view as it is); a click picks a thing up and a drag moves it on a grid (green fits, red doesn't), small things onto tables and shelves, pictures and wall lights onto the wall you point at; Q/E turn, Shift+wheel resizes, DEL puts it away; a buy bar of pictured things at prices; walls, floor and every light; saved to your account.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INV, ONLINE, pos, UI} from './003b-systems.js';
+import {FORAGE, INV, ONLINE, PETS, pos, UI} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
@@ -38,6 +38,10 @@ import {ROOMK} from './150a-bedroom.js';
   // every tenant's apartment (not only who is online), for the map's quick jumps; asked at most once a minute
   let TN=null, TT=0; ONLINE.tenants=async()=>{ if(!web)return []; if(TN&&Date.now()-TT<60000)return TN; try{ TN=((await ask({list:1})).list||[]).map(t=>({id:t.who,name:t.name||'A NEIGHBOUR'})); TT=Date.now(); }catch(e){ TN=TN||[]; } return TN; };
   SYS.add('places',()=>{ if(HOME.guest&&HOME.guest.in&&MODS.apts&&!MODS.apts.inReal){ HOME.guest=null; MODS.apts.host=null; swap(HOME.layout); } },'150d-visit');
+  // your pets at home go with your layout, so a visitor finds them in your rooms (146zj); a change to who is at home is saved the next time you are in
+  ROOMK.keep.push({out:L=>{ if(PETS.atHome)L.pets=PETS.atHome(); },in:()=>{}});
+  PETS.guestOf=()=>HOME.guest&&{name:HOME.guest.name,pets:(HOME.guest.layout&&HOME.guest.layout.pets)||[]};
+  SYS.every(()=>{ const A=ROOMK.api; if(!A||!HOME.loaded||HOME.guest||!(MODS.apts&&MODS.apts.inReal)||!PETS.atHome)return; const p=JSON.stringify(PETS.atHome()); if(p!==JSON.stringify((HOME.layout&&HOME.layout.pets)||[]))HOME.save(snapshot(A)); },5000,'150d-pets');
   HOME.load();
 
   /* ---------- the catalog: what each kind is, its department and its price ---------- */

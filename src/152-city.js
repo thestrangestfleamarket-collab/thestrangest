@@ -4,7 +4,7 @@ import {CITY, CLIP, CLOCK, MAPED, NPCS, PARK} from './003b-systems.js';
 import {CASTLE, MAPSTAIR, MODS, QS, SOL, STORE, TILE} from './006-map-pre.js';
 import {STHOLE} from './076-npc-map.js';
 Object.assign(CITY,{on:QS.get('city')==='1',jobs:[],sched:[],day:0,nj:0,extra:[]}); window.CITY=CITY;
-{ const T=TILE, R0=.3*T, C=T/2;
+{ const T=TILE, R0=.3*T, C0=T/2;
   CITY.places=()=>{ const P=[], add=(id,name,x,z,dz,lv='up',o={})=>P.push(Object.assign({id,name,lv,at:{x,z},door:{x,z:z+dz}},o));
     { const B=SHARED.BOD.B0; add('bodega','THE BODEGA',SHARED.BOD.X((B.x0+B.x1)/2),SHARED.BOD.Z(B.y1),T); }
     
@@ -23,8 +23,8 @@ Object.assign(CITY,{on:QS.get('city')==='1',jobs:[],sched:[],day:0,nj:0,extra:[]
     let x0=1e9,z0=1e9,x1=-1e9,z1=-1e9; for(const k of ['bodega','house','apartments','ghost','park','castle','subway']){ const b=MAPED.box&&MAPED.box(k); if(!b)continue; x0=Math.min(x0,b[0]); z0=Math.min(z0,b[1]); x1=Math.max(x1,b[2]); z1=Math.max(z1,b[3]); }
     for(const e of CITY.extra)if(e.box){ x0=Math.min(x0,e.box[0]); z0=Math.min(z0,e.box[1]); x1=Math.max(x1,e.box[2]); z1=Math.max(z1,e.box[3]); }
     return [x0-4*T,z0-4*T,x1+4*T,z1+4*T]; };
-  const grid=(lv,free,part)=>{ '@later'; const L=SOL[lv], NL=L.length+((CITY.extra&&CITY.extra[lv])||[]).length, gk=lv+':'+(free?free.name||'f':''), GK=part?(free?free.name||'f':'')+lv+':'+part:free||lv; let g=GRID.get(GK); if(g&&g.n===NL)return g; const b=part==='dun'?dunB():bounds(lv), w=Math.ceil((b[2]-b[0])/C), h=Math.ceil((b[3]-b[1])/C);
-    g={n:NL,lv,free,x0:b[0],z0:b[1],w,h,m:new Uint8Array(w*h),cell:(x,z)=>[Math.floor((x-b[0])/C),Math.floor((z-b[1])/C)],at:(i,j)=>({x:b[0]+(i+.5)*C,z:b[1]+(j+.5)*C})};
+  const grid=(lv,free,part)=>{ '@later'; const L=SOL[lv], NL=L.length+((CITY.extra&&CITY.extra[lv])||[]).length, FB=free&&free.box, gk=lv+':'+(free?free.name||'f':''), GK=FB?'box:'+lv:part?(free?free.name||'f':'')+lv+':'+part:free||lv; let g=GRID.get(GK); if(g&&g.n===NL&&(!FB||g.fn===free))return g; const b=FB||(part==='dun'?dunB():bounds(lv)), C=FB&&free.cell||C0, w=Math.ceil((b[2]-b[0])/C), h=Math.ceil((b[3]-b[1])/C);   // free.box: a grid over that box alone, free.cell its cells (a room off the map)
+    g={n:NL,lv,free,fn:free,x0:b[0],z0:b[1],w,h,m:new Uint8Array(w*h),cell:(x,z)=>[Math.floor((x-b[0])/C),Math.floor((z-b[1])/C)],at:(i,j)=>({x:b[0]+(i+.5)*C,z:b[1]+(j+.5)*C})};
     g.free=(i,j)=>{ if(i<0||j<0||i>=w||j>=h)return false; const k=j*w+i; let v=g.m[k]; if(!v){ const p=g.at(i,j); v=g.m[k]=CITY.blocked(lv,p.x,p.z,free)?2:1; } return v===1; }; g.mark=(x,z)=>{ const [i,j]=g.cell(x,z); if(i>=0&&j>=0&&i<w&&j<h)g.m[j*w+i]=2; }; GRID.set(GK,g); return g; };
   const dunB=()=>{ const q=MODS.dungeon.bound(), x0=Math.min(q.x0,q.x1), x1=Math.max(q.x0,q.x1), z0=Math.min(q.z0,q.z1), z1=Math.max(q.z0,q.z1); return [x0-2*T,z0-2*T,x1+2*T,z1+2*T]; };   // the dungeon's own grid, not one over the whole of the underground
   CITY.blocked=(lv,x,z,free)=>{ if(free)return !free(x,z,R0); if(lv==='up'&&typeof STHOLE!=='undefined'){ const H=STHOLE, R=R0; if(x>H[0]-R&&x<H[2]+R&&z>H[1]-R&&z<H[3]+R)return true; } return !!CLIP.hit(SOL[lv],x,z,R0)||!!(CITY.extra&&CITY.extra[lv]&&CITY.extra[lv].length&&CLIP.hit(CITY.extra[lv],x,z,R0)); };   // CITY.extra: places a route keeps out of but you can still walk (a dungeon's cliff edges)

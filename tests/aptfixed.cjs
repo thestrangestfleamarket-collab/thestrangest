@@ -1,4 +1,4 @@
-// THE APARTMENT'S OWN PIECES (owner, 7 Nov 2026): a fresh apartment, not furnished, still has the CRT TV, the typewriter's writing desk, the telescope, the globes, the microscope's desk and stool and the fish tank, with koi in it; in it third and first person, as in any inside. node tests/aptfixed.cjs [dist/market.html]
+// THE APARTMENT'S OWN PIECES (owner, 7 Nov 2026): a fresh apartment, not furnished, still has the CRT TV, the typewriter's writing desk, the telescope, the globes, the microscope's desk and stool, the fish tank, with koi in it, and the table radio; in it third and first person, as in any inside. node tests/aptfixed.cjs [dist/market.html]
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=aptfixed::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -9,7 +9,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   let st = false; for (let i = 0; i < 60 && !st; i++) { await pg.waitForTimeout(3000); st = await pg.evaluate(() => !!window.__started).catch(() => false); }
   ok(st, 'the page starts');
   if (st) {
-    const want = ['CRT TV', 'WRITING DESK', 'TELESCOPE', 'EARTH GLOBE', 'GLOBE TABLE', 'LAB DESK', 'LAB STOOL', 'FISH TANK'];
+    const want = ['CRT TV', 'WRITING DESK', 'TELESCOPE', 'EARTH GLOBE', 'GLOBE TABLE', 'LAB DESK', 'LAB STOOL', 'FISH TANK', 'TABLE RADIO'];
     let d = null; for (let i = 0; i < 40; i++) { d = await pg.evaluate(() => window.BEDROOMDBG && BEDROOMDBG()); if (d && d.built && want.every(k => d.kinds.includes(k))) break; await pg.waitForTimeout(1000); }
     ok(d && want.every(k => d.kinds.includes(k)), 'a fresh apartment has its own pieces: ' + JSON.stringify(d && d.kinds));
     ok(d && d.kinds.every(k => want.includes(k)), 'and nothing else until you buy it');

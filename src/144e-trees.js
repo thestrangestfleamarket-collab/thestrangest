@@ -79,7 +79,7 @@ const TREES={h:null,want:null}; window.TREES=TREES;
     const cyc=Math.floor(C.h/(PER*ZU)); if(cyc!==C.cyc){ C.cyc=cyc; roll(); }   // each reach up or down works the skill
     st.climb.ph=C.h/ZU; TREES.h=it.y+C.h; grip(it,dt);
     if(off||(dn&&C.h<=0)){ drop(); pos.x=it.x+dx/l*(rF(it)+.6*T); pos.z=it.z+dz/l*(rF(it)+.6*T); } return true; });
-  PARK.later(()=>{ '@park'; const IT=PARK.climbable, g=MAPG.park||scene, SP=[]; let n=0;
+  PARK.later(()=>SYS.onStart(()=>{ '@park'; const IT=PARK.climbable, g=MAPG.park||scene, SP=[]; let n=0;   // (after the start: the big trees are made then, and the park can load before it)
     for(const it of IT){ const i=n++; if(it.top-it.y<=3*T)continue; const f=/^Oak/.test(it.k)?BL:FR[Math.floor(hs(i,1)*FR.length)];   // blossoms on the oaks, fruit on the tall trees
       const tb=new THREE.Mesh(new THREE.BoxGeometry(2*rF(it),1.6*T,2*rF(it)),new THREE.MeshBasicMaterial({visible:false})); tb.position.set(it.x,it.y+.8*T,it.z); g.add(tb); UI.thing({name:'CLIMB',key:'SPACE',obj:tb,r:rF(it),reach:.9*T,near:.9*T,tall:2*T,act:()=>{ TREES.want=it; }});
       const lo=/^G[EK]/.test(it.k);   // in an elm the fruit hangs in its open middle, just over where the climb stops
@@ -90,6 +90,6 @@ const TREES={h:null,want:null}; window.TREES=TREES;
     for(const s of SP){ s.hb=new THREE.Mesh(new THREE.BoxGeometry(.7*T,.7*T,.7*T),new THREE.MeshBasicMaterial({visible:false})); s.hb.position.set(s.x,s.y,s.z); g.add(s.hb); show(s,INV.ready(s.key));
       UI.thing({name:s.f[1],obj:s.hb,reach:1.4*T,near:2.4*T,tall:.7*T,act:()=>{ if(!INV.ready(s.key))return; if(SHARED.py<s.y-1.6*T)return say('TOO HIGH TO REACH. CLIMB THE TREE.','#c8a090');
         const fl=s.f===BL, ok=FORAGE.use?FORAGE.use(fl?'garden':'forage',0,45):true; INV.picked[s.key]=day(); INV.add('x',0); delete INV.items.x; show(s,false); if(!ok)return say('IT DROPS AND IS LOST IN THE LEAVES.','#c8a090'); FORAGE.give(s.f[0],1); say(fl?'YOU PICK OAK BLOSSOMS.':'YOU PICK A '+s.f[1]+'.'); }}); }
-    SYS.add('life',()=>{ const dd=day(); if(dd===TREES.d)return; TREES.d=dd; for(const s of SP)show(s,INV.ready(s.key)); },'144e-trees'); TREES.spots=SP.length; });
+    SYS.add('life',()=>{ const dd=day(); if(dd===TREES.d)return; TREES.d=dd; for(const s of SP)show(s,INV.ready(s.key)); },'144e-trees'); TREES.spots=SP.length; },'144e-trees climb and fruit spots'));
   window.TREESDBG=()=>({climbing:!!C.it,mode:C.mode||null,h:TREES.h,ch:C.h,u:C.u,stand:!!TREES.stand,skill:SKL(),limbs:C.it?limbs(C.it).length:0,spots:TREES.spots||0,climbs:(MODS.climbs||[]).length,fr:C.fr||0,x:pos.x,z:pos.z,py:SHARED.py,hd:SHARED.heading,move:st.move?st.move.name:null,hang:!!st.hang,climb:!!st.climb,gy:SHARED.groundY(pos.x,pos.z)}); TREES.go=(x,z,hd)=>{ pos.x=x; pos.z=z; if(hd!=null)SHARED.heading=hd; SHARED.target=null; TREES.stand=null; }; TREES.T=T; TREES.outside=outside; TREES.limbs=limbs; TREES.at=at; TREES.near=near; TREES.rT=rT; TREES.RS=RS; }
 export {TREES};

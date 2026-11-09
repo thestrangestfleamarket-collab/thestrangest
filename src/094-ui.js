@@ -64,7 +64,11 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
         +row('LEFT DRAG','MOVE THE VIEW (ISOMETRIC, MAP) · LOOK ROUND (THIRD PERSON, BEHIND, FIRST)')+row('RIGHT DRAG, SHIFT + DRAG','TURN AND TILT THE VIEW')+row('WHEEL','ZOOM');
       return o; }; }
   const badge=document.createElement('div'); badge.id='mode'; document.body.appendChild(badge);
-  const drawBadge=()=>{ const m=[UI.freeCam&&'FREE CAMERA: '+NAME(keyOf('c'))+' to go back',UI.fly&&(UI.landing?'LANDING':'FLY: SPACE UP · SHIFT DOWN · '+NAME(keyOf('g'))+' to land')].filter(Boolean); badge.textContent=m.join(' · '); badge.hidden=!m.length; };
+  // riding anything, its controls stay up until you close them (owner, 9 Nov 2026: "anytime youre on a device the control should stay on screen unless you close them"); a car has its own bar
+  let rideShut=null; const rideHint=()=>RIDE.on&&!/^car:/.test(RIDE.on)&&rideShut!==RIDE.on&&RIDE.cur&&RIDE.cur.hint?String(RIDE.cur.hint):'';
+  const drawBadge=()=>{ const m=[UI.freeCam&&'FREE CAMERA: '+NAME(keyOf('c'))+' to go back',UI.fly&&(UI.landing?'LANDING':'FLY: SPACE UP · SHIFT DOWN · '+NAME(keyOf('g'))+' to land')].filter(Boolean), rh=rideHint();
+    badge.textContent=[...m,rh].filter(Boolean).join(' · '); if(rh){ const x=document.createElement('button'); x.type='button'; x.textContent='×'; x.title='close'; x.style.cssText='margin-left:10px;font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0 2px'; x.onclick=()=>{ rideShut=RIDE.on; drawBadge(); }; badge.appendChild(x); } badge.hidden=!(m.length||rh); };
+  let lastRH=''; SYS.add('life',()=>{ if(!RIDE.on)rideShut=null; const rh=rideHint(); if(rh!==lastRH){ lastRH=rh; drawBadge(); } },'094-ridehint');
   function setFree(on){ UI.freeCam=on; if(on)UI.camT.copy(disp); drawBadge(); }
   // flying like a superhero (G): a cape on, Space up and Shift down, faster the longer you fly one way, up through the clouds (132b) to FLY.top; G again comes down where you are and lands
   const WM=TILE/.84, FLY=UI.FLY={top:300*WM,sp:0,vy:0,max:10.5,min:1.75};

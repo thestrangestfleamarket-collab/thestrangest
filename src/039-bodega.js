@@ -1357,7 +1357,7 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
   { let q=0; for(const k of SHARED.BOD.kerbs){ if(k.at===MAP.x0||k.at===MAP.x1)continue; for(let a=k.a0+6;a<k.a1-4;a+=24){ if(inX(k.ax,k.at,a,2)||inJ(k.ax==='x'?a:k.at,k.ax==='x'?k.at:a,2))continue;
       const kind=q++%3===2?'speed':'nopark', p=k.at-k.n*.8; if(kind!=='speed')SG.push({kind,x:k.ax==='x'?a:p,y:k.ax==='x'?p:a,n:k.ax==='x'?[1,0]:[0,1]}); } } }
   SHARED.BOD.signs=[];
-  SHARED.BOD.road={KR,CORN,RR,at:ROADAT,MH,DR,LN}; window.STREETQ=()=>({...SHARED.BOD.road,XS:SHARED.BOD.XS,ZS:SHARED.BOD.ZS,CURB,FAR,MAP,RG,corner:DRESS.corner});
+  SHARED.BOD.road={KR,CORN,RR,at:ROADAT,MH,DR,LN,xw:XW.map(([a0,a1,ax,l0,h0],i)=>({a0,a1,ax,l0,h0,lit:i===0}))}; window.STREETQ=()=>({...SHARED.BOD.road,XS:SHARED.BOD.XS,ZS:SHARED.BOD.ZS,CURB,FAR,MAP,RG,corner:DRESS.corner});
   SHARED.BOD.grounds=[
     {id:'shop',bld:true,x0:SB.x0,y0:SB.y0,x1:SB.x1,y1:SB.y1,z:.15,col:(x,y)=>bodegaFloorCol(x,y),tex:'concrete_floor_worn_001',tint:[112,116,124],rep:3},
     {id:'walk',x0:MAP.x0,y0:W,x1:MAP.x1,y1:CURB-KB,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},

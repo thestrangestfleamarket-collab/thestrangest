@@ -1,4 +1,4 @@
-// THE TRAFFIC (150pb-traffic, the crossing in 069-dress): node tests/traffic.cjs [out]: the vehicles load and drive; on red no car is on the park gate's crosswalk and the waiting cars are behind their line; a car stops for someone standing in its lane; the button starts the walk; <out>.png the crossing
+// THE TRAFFIC (150pb-traffic, the crossing in 069-dress): node tests/traffic.cjs [out]: the vehicles load and drive; on red no car is on the park gate's crosswalk and the waiting cars are behind their line; a car stops for someone standing in its lane; the button starts the walk; a walker's way crosses only on a crosswalk; <out>.png the crossing
 const {chromium}=require('playwright');
 (async()=>{ const out=process.argv[2]; const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:1000,height:700}});
   const errs=[]; pg.on('pageerror',e=>errs.push(e.message)); let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
@@ -23,6 +23,11 @@ const {chromium}=require('playwright');
   ok(G.every(L=>L.cars.every(c=>{ if(!c.on)return true; const before=L.dir<0?c.x>x1&&c.x<L.stop+25:c.x<x0&&c.x>L.stop-25; return !before||(L.dir<0?c.x-c.len>=L.stop-1:c.x+c.len<=L.stop+1); })),'the waiting cars are behind their line')
   await pg.evaluate(()=>{ const t=Date.now()/1000, r=((t%90)+90)%90; TRAFFIC.skew=(20-r); TRAFFIC.press(); }); await pg.waitForTimeout(6000); d=await T();
   ok(d.light.m==='r'&&d.light.x==='w','the button brings the walk: '+JSON.stringify(d.light));
+  // the rules of the street (076 pedfree): a walker's way across Market St keeps to the crosswalk; the road is no place to stand, the crosswalk is
+  const ru=await pg.evaluate(()=>{ const B=SHARED.BOD, X=B.XS, Z=B.ZS, a={x:X(60),z:Z(-75)}, b={x:X(60),z:Z(-44)}, r=CITY.route('up',a,b,PEDFREE); let bad=0;
+    if(r)for(let i=1;i<r.pts.length;i++){ const p=r.pts[i-1], q=r.pts[i]; for(let k=0;k<=20;k++)if(STROAD(p.x+(q.x-p.x)*k/20,p.z+(q.z-p.z)*k/20))bad++; } const w=B.road.xw.find(q=>q.lit);
+    return {r:!!r,bad,road:STROAD(X(60),Z(-60)),xing:!!w&&!STROAD(X((w.a0+w.a1)/2),Z(-60))}; });
+  ok(ru.r&&!ru.bad&&ru.road&&ru.xing,'a walker crosses Market St only on a crosswalk: '+JSON.stringify(ru));
   if(out){ await pg.evaluate(()=>{ STORE.pos.set(52,0,4); SHARED.py=SHARED.groundY(52,4); }); await pg.waitForTimeout(4000); await pg.screenshot({path:out+'.png'}); }
   // the car lamps (150pc): off by day; after dark the cars on the road show head and tail lights and the nearest light the road for real
   ok(await pg.evaluate(()=>!CARLAMPS.dbg().on),'no car lamps by day');

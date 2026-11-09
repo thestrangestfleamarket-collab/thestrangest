@@ -160,11 +160,12 @@ const SCOPE={alt:35,az:270,va:0,vz:0,mag:25,focus:.18,track:true,lines:true,filt
         const im=soft(T.id); if(!im||sz<4)continue; g.globalAlpha=(1-day)*(1-cover*.9)*(T.kind==='cluster'?.35:.7); g.globalCompositeOperation='lighter'; put(im,p[0]-sz/2,p[1]-sz/2,sz,sz,jx,jy); g.globalCompositeOperation='source-over'; g.globalAlpha=1; }
       const C={g,jd,lst,cx,cy,R,w,h,fov,pxd,lim,day,cover,sunH,sun,t,r,u,proj,eqv,hv,near,dt}; for(const x of SCOPE.ext)if(x.draw)x.draw(C);
       g.filter='none';
+      // the weather in the way, behind the rooftops
+      if(cover>0||wet){ const off=(performance.now()/1000)*(Wx.wind||.2)*30; g.globalAlpha=cl(cover+wet,0,1)*(.4+.6*day+.25); const pat=g.createPattern(cloudC,'repeat'); g.translate(-off%256,0); g.fillStyle=pat; g.fillRect(cx-R+off%256-256,cy-R-256,2*R+512,2*R+512); g.setTransform(dpr,0,0,dpr,0,0); g.globalAlpha=1; }
       // the ground: the city's roofline below the horizon, its windows lit at night
       { const pts=[]; for(let i=-40;i<=40;i++){ const az=SCOPE.az+i*fov/40*1.6, hh=1.2+2.6*Math.abs(Math.sin(az*.37)*Math.sin(az*.11+1)), p=proj([cs(hh)*sn(az),sn(hh),cs(hh)*cs(az)]); if(p)pts.push(p); }
         if(pts.length>1&&pts.some(p=>p[1]<cy+R)){ g.fillStyle=`rgb(${Math.round(14+60*day)},${Math.round(14+58*day)},${Math.round(18+60*day)})`; g.beginPath(); g.moveTo(pts[0][0],h+R); for(const p of pts)g.lineTo(p[0],p[1]); g.lineTo(pts[pts.length-1][0],h+R); g.fill(); } }
-      // the weather in the way, the Sun burning in, the rim of the eyepiece
-      if(cover>0||wet){ const off=(performance.now()/1000)*(Wx.wind||.2)*30; g.globalAlpha=cl(cover+wet,0,1)*(.4+.6*day+.25); const pat=g.createPattern(cloudC,'repeat'); g.translate(-off%256,0); g.fillStyle=pat; g.fillRect(cx-R+off%256-256,cy-R-256,2*R+512,2*R+512); g.setTransform(dpr,0,0,dpr,0,0); g.globalAlpha=1; }
+      // the Sun burning in, the rim of the eyepiece
       const glare=SCOPE.filter?0:cl(1-(sunOff-fov/2)/6,0,1)*cl((sunH.alt+1)/2,0,1);
       if(glare>0){ g.fillStyle=`rgba(255,253,240,${glare})`; g.fillRect(0,0,w,h); }
       if(SCOPE.filter&&sunOff>fov){ g.fillStyle='rgba(0,0,0,1)'; g.fillRect(cx-R,cy-R,2*R,2*R); }

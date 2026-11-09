@@ -35,6 +35,7 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
       ['skate','THE SKATE SHOP','SKATE',[104,64,52],[255,170,60]],['fishing','FISHING & SCUBA','TACKLE',[90,84,82],[130,210,255]],['tailor','THE TAILOR','TAILOR',[120,72,60],[240,220,190]],
       ['barber','THE BARBER','BARBER',[116,66,58],[255,120,120]],['aquarium','THE AQUARIUM','AQUARIUM',[70,92,104],[120,220,255]],['hotel','THE HOTEL','HOTEL',[110,78,62],[255,230,170]],['antiques','ANTIQUES & PAWN','PAWN',[110,84,64],[255,200,120]],['outfitter','THE OUTFITTER','GEAR',[90,92,80],[180,255,140]]].map(([id,name,sign,w,c])=>[id,{name,sign,signC:c,neon:true,signBg:[30,26,28],wall:BLOCKS.brick(w),trim:[200,190,170],frame:[44,40,42],door:.5,h:id==='hotel'?300:170}])),
     barn:{name:'THE BARN',sign:'BARN',signC:[240,230,200],neon:false,signBg:[120,30,26],wall:BLOCKS.brick([150,40,34]),trim:[230,220,200],frame:[60,40,30],door:.5,h:200,none:true}};   // (none: its outside is a modelled thing of its own, the park's Polyfork red barn)
+  for(const id of ['pets','reptiles','birdshop','butterflies'])Object.assign(DEF[id],{both:true,glass:true,dw:1.0,wz:[8,96]});   // the pet shops' giant windows either side of a glass door, nearly floor to sign (owner, 9 Nov 2026), the pets on show behind them
 
   /* ---------- the outside: a shopfront painted on the block's street face ---------- */
   const front=(D,W)=>{ const H0=100, sz=4, sc=Math.floor((W*24-(D.sign.length*6-1)*sz)/2), on=MS.word(D.sign,sc,H0+8,sz), du=D.door*W;
@@ -57,7 +58,7 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
   const make=(id,D,n)=>{ const p=WP[id], LW=MS.lot(id,D.h), TA=TURN(LW,p.face||'n'), L=TA.L, W=L.x1-L.x0, lcx=L.x0+D.door*W, at=(u,v)=>{ const q=TA.pt(u,v); return [X(q[0]),Z(q[1])]; };
     if(D.both)D.half=(p.inW||11)/2-.3; const fr=D.pf?null:front(D,W), wall=D.wall, top=D.h;
     if(D.pf){ const S=p.face==='s', fy=S?LW.y0:LW.y1, zi=Math.sign(Z(fy+(S?1:-1))-Z(fy)); MSHOP.fronts.push({id,pf:D.pf,x:X((LW.x0+LW.x1)/2),zf:Z(fy),zi,w:Math.abs(X(LW.x1)-X(LW.x0)),rot:TA.hd(0),L,pt:TA.pt,du:lcx}); }   // the Polyfork building stands on the lot (068a-pfrow); the lot's solid below is its footprint
-    else if(!D.none){ const dw=D.dw||.85, du=D.door*W, sh0=D.both?[[lcx-D.half+.08,lcx-dw-.28,19,89],[lcx+dw+.28,lcx+D.half-.08,19,89],[lcx-dw+.12,lcx+dw-.12,12,86]]:[[L.x0+(du>W/2?.35:du+dw+.15),L.x0+(du>W/2?du-dw-.15:W-.35),16,92]];
+    else if(!D.none){ const dw=D.dw||.85, du=D.door*W, wz=D.wz||[19,89], sh0=D.both?[[lcx-D.half+.08,lcx-dw-.28,wz[0],wz[1]],[lcx+dw+.28,lcx+D.half-.08,wz[0],wz[1]],[lcx-dw+.12,lcx+dw-.12,12,86]]:[[L.x0+(du>W/2?.35:du+dw+.15),L.x0+(du>W/2?du-dw-.15:W-.35),16,92]];
       FACADES.make({id,L,pt:TA.pt,z1:D.h,wall:(D.wall&&D.wall.c)||[128,64,52],trim:D.trim,frame:D.frame,seed:id.length*31+n,ground:118,door:D.both?null:{u:lcx,w:dw},shop:sh0.map(([u0,u1,z0,z1])=>({u0,u1,z0,z1})),sign:{text:D.sign,color:D.signC,bg:D.signBg,u:(L.x0+L.x1)/2}}); }   // modelled, not painted (owner, 8 Nov 2026)
     if(!D.pf&&!D.none){ BATCH.build(MKA); for(const me of Object.values(BATCH.meshes)){ me.castShadow=true; me.receiveShadow=true; } BATCH.meshes={}; }
     // a Hudson shop is open at the front (owner, 8 Nov 2026: "they should be open area you walk in no door"): its walls, shelves and counter are solid, the shop is walked into, its merchant behind the counter; the bookstore keeps its door (its library and stacks are inside)
@@ -97,7 +98,7 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
       const pane=(o0,o1,z0,z1)=>{ o0=Math.max(o0,R.x0+.3-cx); o1=Math.min(o1,R.x1-.3-cx); z1=Math.min(z1,WH-6); if(o1-o0<.5)return; const h=Y(z1)-Y(z0), yc=(Y(z0)+Y(z1))/2, mid=(o0+o1)/2, w=(o1-o0)*tl;
         const pin=new THREE.Mesh(new THREE.PlaneGeometry(w,h)); pin.position.copy(P2(at(lcx+mid,L.y1+.04),yc)); pin.rotation.y=ry; scene.add(pin); WINDOWS.pane(pin,id,'in',false,true);
         const pout=new THREE.Mesh(new THREE.PlaneGeometry(w,h)); pout.position.copy(new V3(X(cx+mid),yc,Z(R.y1-.04))); pout.rotation.y=Math.atan2(ni.x,ni.z); scene.add(pout); WINDOWS.pane(pout,id,'out',false,true); };
-      if(D.pf||D.none){} else if(D.both){ const hf=D.half; pane(-hf+.08,-dw-.28,19,89); pane(dw+.28,hf-.08,19,89); pane(-dw+.12,-.06,12,86); pane(.06,dw-.12,12,86); }   // both windows and the two glass doors, real through
+      if(D.pf||D.none){} else if(D.both){ const hf=D.half, wz=D.wz||[19,89]; pane(-hf+.08,-dw-.28,wz[0],wz[1]); pane(dw+.28,hf-.08,wz[0],wz[1]); pane(-dw+.12,-.06,12,86); pane(.06,dw-.12,12,86); }   // both windows and the two glass doors, real through
       else pane((du>W/2?.35:du+dw+.15)-du,(du>W/2?du-dw-.15:W-.35)-du,16,92); }
     MSHOP.at[id]={R,cx,door:at(lcx,L.y1+.25)};
     STORE.places.push([D.name,X(cx),Z(R.y1-1.3),'up','off',Math.PI]);

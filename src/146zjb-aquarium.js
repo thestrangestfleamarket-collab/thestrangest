@@ -59,12 +59,10 @@ const AQUA={tanks:[]}; window.AQUA=AQUA;
     // the crabs' tank on a low table beside the round tank: they walk with you, so they are adopted like any pet (the adoption book on the crabs)
     { const tu=cu+2.6*m, tv=cv, tw=1.8*m, td=.7*m, z0=.75*zm, z1=z0+.5*zm; box(OP,tu-tw/2,tu+tw/2,tv-td/2,tv+td/2,0,z0,WOOD); box(OP,tu-tw/2+.03*m,tu+tw/2-.03*m,tv-td/2+.03*m,tv+td/2-.03*m,z0,z0+.06*zm,SAND);
       box(GL,tu-tw/2,tu+tw/2,tv-td/2,tv+td/2,z1,z1+.01*zm,0xe8f8ff); at.sb(tu-tw/2,tv-td/2,tu+tw/2,tv+td/2,z1);
-      if(PETS.cages&&PETS.cages.aquarium)Promise.all([PETS.cages.aquarium(),PETS.idx()]).then(([C,I])=>{ const B=SHARED.BOD; C.kinds.forEach((k,i)=>{ const K=I.by[k.k]; if(!K)return; const c=W(tu-tw/2+(i+.5)*tw/C.kinds.length,tv,z0+.06*zm);
-        const b=s=>Uint8Array.from(atob(s),ch=>ch.charCodeAt(0)), p=new Int16Array(b(k.p).buffer), cc=b(k.c), ix=new Uint16Array(b(k.i).buffer), P=new Float32Array(p.length), sc=1.6*WU;
-        for(let j=0;j<p.length;j++)P[j]=((p[j]+32500)*k.sc+k.lo[j%3])*sc; const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); g.setAttribute('color',new THREE.BufferAttribute(cc,3,true)); g.setIndex(new THREE.BufferAttribute(ix,1)); g.computeVertexNormals();
-        const me=new THREE.Mesh(g,new THREE.MeshLambertMaterial({vertexColors:true})); me.position.copy(c); me.rotation.y=i*1.3; G.add(me);
+      if(PETS.show)PETS.idx().then(I=>{ const C=I.kinds.filter(k=>k.shop===ID); C.forEach((K,i)=>{ const c=W(tu-tw/2+(i+.5)*tw/C.length,tv,z0+.06*zm);
+        PETS.show(K.key,{w:tw/m/C.length*.84,h:.45,d:td/m*.84},{shop:ID}).then(B=>{ if(!B||!G)return; B.fitH=.45; B.base=c.clone(); B.along=W(1,0,0).sub(W(0,0,0)).normalize(); B.slide=B.g; B.g.position.copy(c); B.g.rotation.y=i*1.3; G.add(B.g); if(PETS.liveAdd)PETS.liveAdd(B); }).catch(()=>{});
         const hb=new THREE.Mesh(new THREE.BoxGeometry(.5*WU,.4*WU,.5*WU),new THREE.MeshBasicMaterial({visible:false})); hb.position.copy(c); G.add(hb);
-        UI.thing({name:'A '+K.name+' (ADOPT)',obj:hb,reach:1.8*TILE,near:3*TILE,tall:.4*WU,act:()=>{ PETS.shop('aquarium'); PETS.idx().then(()=>setTimeout(()=>PETS.choose(k.k),0)); }}); }); }).catch(e=>console.warn('AQUA CRABS',e)); }
+        UI.thing({name:'A '+K.name+' (ADOPT)',obj:hb,reach:1.8*TILE,near:3*TILE,tall:.4*WU,act:()=>{ PETS.shop(ID); PETS.idx().then(()=>setTimeout(()=>PETS.choose(K.key),0)); }}); }); }).catch(e=>console.warn('AQUA CRABS',e)); }
     const mesh=(T,mat)=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(T.p,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(T.c,3)); g.computeVertexNormals(); const me=new THREE.Mesh(g,mat); G.add(me); return me; };
     mesh(OP,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide})).receiveShadow=true;   // (two-sided: the lot's frame may be a mirror's)
     mesh(WA,new THREE.MeshLambertMaterial({vertexColors:true,transparent:true,opacity:.5,depthWrite:false,emissive:0x1a4a60,side:THREE.DoubleSide})).renderOrder=2;

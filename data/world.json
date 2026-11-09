@@ -504,7 +504,10 @@
    "lot": true,
    "y0": -92.4,
    "y1": -77,
-   "face": "n"
+   "face": "n",
+   "inW": 18.0,
+   "inD": 9,
+   "inH": 112
   },
   {
    "id": "pets",
@@ -516,7 +519,10 @@
    "lot": true,
    "y0": -92.4,
    "y1": -77,
-   "face": "n"
+   "face": "n",
+   "inW": 18.8,
+   "inD": 9,
+   "inH": 112
   },
   {
    "id": "reptiles",
@@ -527,7 +533,10 @@
    "lot": true,
    "y0": -92.4,
    "y1": -77,
-   "face": "n"
+   "face": "n",
+   "inW": 14.8,
+   "inD": 9,
+   "inH": 112
   },
   {
    "id": "birdshop",
@@ -538,7 +547,10 @@
    "lot": true,
    "y0": -92.4,
    "y1": -77,
-   "face": "n"
+   "face": "n",
+   "inW": 14.4,
+   "inD": 9,
+   "inH": 112
   },
   {
    "id": "bodega",
@@ -760,9 +772,9 @@
    "y1": -18.4,
    "face": "e",
    "park": true,
-   "inW": 19,
-   "inD": 16,
-   "inH": 130
+   "inW": 26,
+   "inD": 22,
+   "inH": 173
   }
  ],
  "shells": [],

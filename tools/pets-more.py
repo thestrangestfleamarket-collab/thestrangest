@@ -136,6 +136,14 @@ def shop(K):
     if g=='shore': return 'aquarium'
     return 'reptiles'
 for K in KINDS['kinds']: K['shop']=shop(K)
+# which breeds stand in the shops' cages beside every base animal (the rest are in the adoption books)
+CAGE=set('''chihuahua pomeranian pug jackrussell beagle dachshund corgi frenchie bulldog husky shiba poodle dalmatian bordercollie labrador golden boxer greatdane domestic siamese persian mainecoon ragdoll bengal sphynx blackcat calico tuxedo ginger russianblue scottishfold hollandlop lionhead netherland angora
+ robin bluejay cardinal oriole starling sparrow mockingbird redwing redtail heron mourningdove whitedove fantail scarletmacaw blueandgold hyacinth africangrey cockatoo cockatiel budgie lovebird sunconure eclectus
+ gecko iguana monitor chameleon beardie bigliz cavefrog pitsnake cavebat greenslime blueslime redslime purpleslime giantrat radspider giantwasp
+ clydesdale shetland minidonkey highland holstein potbelly merino pygmy silkie'''.split())
+for K in KINDS['kinds']:
+    K.pop('cage',None)
+    if not K.get('of') or K['key'] in CAGE: K['cage']=1
 import collections; print(collections.Counter(K['shop'] for K in KINDS['kinds']))
 json.dump(KINDS,open('data/pets.json','w'),separators=(',',':')); print('data/pets.json',len(KINDS['kinds']),'kinds')
 # the page's list of pet files, one lazy load a file

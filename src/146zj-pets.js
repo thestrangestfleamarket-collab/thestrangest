@@ -1,7 +1,7 @@
 // THE PETS: Polyfork's base animals (data/pets/<kind>.json, tools/pets-bake.py) as a pet that follows you: adopt one at THE PET STORE, its colours, shape and size yours to choose; YOU's PET tab changes its look; other players see it.
 import {SHARED, THREE} from './003-shx.js';
-import {B64, F32, I16, SKIN, U16} from './003a-skin.js';
-import {FORAGE, INV, LEVELS, LOOKS, NPCS, ONLINE, PETS, pos, ROOMS, st, UI, VIT} from './003b-systems.js';
+import {B64, F32, I16, SKIN} from './003a-skin.js';
+import {FORAGE, INV, LEVELS, LOOKS, NPCS, ONLINE, PETS, pos, ROOMS, SFX, st, UI, VIT, WINDOWS} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {OWNED} from './005-save.js';
@@ -272,40 +272,114 @@ window.PETS=PETS;
   SYS.every(homePets,700,'pets at home');
   SYS.onStart(()=>{ idx().then(()=>tickAll(true)).catch(()=>{}); },'146zj-pets hours');
   // THE PET SHOPS (owner, 8 Nov 2026): DOGS & CATS, LIZARDS & DRAGONS, THE BIRD SHOP, THE BUTTERFLY SHOP on Market St and THE BARN at the park's farm. Each is the shops' shared inside
-  // (162fa: the keeper's counter) with cages floor to ceiling down the left, back and right walls (the barn: wooden stalls, two high), its kinds in them (data/petcages-<shop>.json,
-  // tools/petcages-bake.py: each as it stands at rest, pet-sized), and by the door its adoption book (its kinds only); a cage opens the book on its kind
-  const CAGES={pets:__LAZY__("data/petcages-pets.json"),birdshop:__LAZY__("data/petcages-birdshop.json"),reptiles:__LAZY__("data/petcages-reptiles.json"),butterflies:__LAZY__("data/petcages-butterflies.json"),barn:__LAZY__("data/petcages-barn.json"),aquarium:__LAZY__("data/petcages-aquarium.json")};
+  // (162fa: the keeper's counter) with cages floor to ceiling down the left, back and right walls (the barn: wooden stalls), each furnished for what lives in it, every caged kind
+  // (K.cage in data/pets.json) alive in its own (awake, looking round, pacing, asleep, hovering), more of them in the shop windows; the adoption book by the counter has the shop's kinds only
   const CORDER=['pets','dogs','cats','rabbits','farm','horses','livestock','poultry','zoo','wild','reptiles','dino','dragons','creatures','birds','parrots','bugs','shore'];
-  PETS.cages=CAGES;
-  const cageKit=(id,ST)=>{ const kit=A=>{ A.bare=1; (MSHOP.kit._||(()=>{}))(A); const R=A.R, F=IKIT.frame(R), K=IKIT.room(F,o=>A.add(o),()=>{}), D=F.D, W=F.W, MW=IKIT.MW, tm=D/(R.y1-R.y0), u0=.75, u1=1.35, v0=D-1.0, v1=D-.55;
-    K.box(u0,v0,u1,v1,0,.95,0x5a3a26); K.box(u0-.03,v0-.03,u1+.03,v1+.03,.95,1.0,0x3a2418); K.box(u0+.12,v0+.08,u1-.12,v1-.08,1.0,1.06,0xe8dcc0); K.box(u0+.16,v0+.1,u0+.3,v1-.1,1.0,1.07,0x7a2a2a);
-    A.sol(R.x0+u0/tm,R.y0+v0/tm,R.x0+u1/tm,R.y0+v1/tm); K.use('THE ADOPTION BOOK (ADOPT A PET)',(u0+u1)/2,(v0+v1)/2,.8,1.2,()=>PETS.shop(id),1.8);
+  /* ---------- an animal on show: its pet body in its first colours, fitted to a box (w along, h up, d across, metres), doing what its kind does at rest ---------- */
+  const LIVE=new Set(), MWm=IKIT.MW;
+  const show=async(key,fit,o={})=>{ const I0=await idx(), K=I0.by[key]; if(!K)return null; const P=fresh(K), D=await kind(key), {P:Pp,T}=shape(D,P), R=rig(D,T), CL=clips(D,T), geo=SKIN.geom(D.mesh);
+    geo.attributes.position.array.set(Pp); geo.attributes.position.needsUpdate=true; paint(D,P,geo); geo.computeVertexNormals();
+    const me=new THREE.SkinnedMesh(geo,new THREE.MeshLambertMaterial({vertexColors:true})); me.add(R.bones[0]); me.bind(R.skeleton); me.frustumCulled=false;
+    const lo=[1e9,1e9,1e9], hi=[-1e9,-1e9,-1e9]; for(let k=0;k<Pp.length;k++){ const c=k%3; if(Pp[k]<lo[c])lo[c]=Pp[k]; if(Pp[k]>hi[c])hi[c]=Pp[k]; }
+    const ex=hi.map((v,c)=>Math.max(1e-4,v-lo[c])), m=Math.min(K.long/Math.max(...ex),fit.w*.8/ex[2],fit.h*.8/ex[1],fit.d*.85/ex[0]), sc=m*MWm;   // (metres for a model unit; it faces along its box)
+    const g=new THREE.Group(), body=new THREE.Group(); body.add(me); g.add(body); me.scale.setScalar(sc); me.position.set(-(lo[0]+hi[0])/2*sc,-lo[1]*sc,-(lo[2]+hi[2])/2*sc);
+    const mix=new THREE.AnimationMixer(R.bones[0]), N=Object.keys(CL), f=re=>N.find(n=>re.test(n)), FC=pickClip(CL,'fly'), WC=pickClip(CL,'walk'), IC=pickClip(CL,'idle');
+    const flies=!!FC&&(o.fly||WC===FC||/^(bee|bumblebee|wasp|butterfly|firefly|bat|ptera|giantwasp|cavebat)$/.test(key)||/^(bee|bumblebee|wasp|butterfly|firefly|bat)$/.test(K.of||''));
+    const A={key,K,g,body,me,mix,CL,FC,WC,IC,curl:f(/curl/i),flies,fitw:fit.w,h:ex[1]*m,len:ex[2]*m,st:'',t:0,x:0,y:0,yaw:0,want:0,ph:Math.random()*6.28,cur:null,shop:o.shop,pace:o.pace!==false};
+    A.play=(n,ts=1)=>{ if(!n||!CL[n])return; if(A.cur!==n){ const a=mix.clipAction(CL[n]); a.reset().fadeIn(.4).play(); if(A.cur)mix.clipAction(CL[A.cur]).fadeOut(.4); A.cur=n; } mix.clipAction(CL[n]).timeScale=ts; };
+    A.time=Math.random()*3; return A; };   // (it lives (LIVE) once its keeper has placed it)
+  // what it does now: hovering if it flies (now and then landing), else looking round, pacing its box, or asleep; a few seconds of each
+  const next=A=>{ const r=Math.random(); A.t=4+Math.random()*7; A.want=0; A.x0=A.x;
+    if(A.flies){ A.st=(A.WC===A.FC||r<.75)?'float':'rest'; return; }
+    A.st=r<.42?'look':r<.7&&A.pace&&A.WC?'pace':'sleep'; if(A.st==='sleep')A.t+=6; };
+  const tickA=(A,dt)=>{ A.t-=dt; if(A.t<=0)next(A); const tt=(A.time+=dt), b=A.body;
+    if(A.st==='float'){ A.play(A.FC,1); const y=A.fitH*.45+Math.sin(tt*1.3+A.ph)*A.fitH*.12; A.y+=(y-A.y)*Math.min(1,dt*2); const tx=Math.sin(tt*.35+A.ph)*Math.max(0,A.fitw*.35-A.len/2); A.x+=(tx-A.x)*Math.min(1,dt*.8); A.want=Math.cos(tt*.35+A.ph)>0?.3:-.3+Math.PI; }
+    else if(A.st==='pace'){ A.play(A.WC,.8); A.y+=(0-A.y)*Math.min(1,dt*3); const r=Math.max(0,A.fitw/2-A.len/2-.02), v=.18, d=A.dir||(A.dir=1); A.x+=d*v*dt; if(A.x>r){ A.x=r; A.dir=-1; } if(A.x<-r){ A.x=-r; A.dir=1; } A.want=A.dir>0?0:Math.PI; }
+    else if(A.st==='sleep'){ if(A.curl){ A.play(A.curl,1); } else A.play(A.IC,.06); A.y+=(0-A.y)*Math.min(1,dt*3); }
+    else { A.play(A.IC,1); A.y+=(0-A.y)*Math.min(1,dt*3); if(A.st==='look'&&(A.lt=(A.lt||0)-dt)<=0){ A.lt=1.2+Math.random()*2.2; A.want=(Math.random()-.5)*1.6; } }
+    A.yaw+=(A.want-A.yaw)*Math.min(1,dt*1.6); b.rotation.y=A.yaw; b.position.set(0,A.y*MWm,0);
+    const sl=A.st==='sleep'&&!A.curl; b.scale.set(1,sl?.86+.02*Math.sin(tt*1.6):1,1); A.slide.position.copy(A.base).addScaledVector(A.along,A.x*MWm);
+    A.mix.update(dt); };
+  // sounds of the shop you are in, now and then (the dogs, the birds, the crickets, the drip of the terrariums, the barn's boards)
+  const SND={pets:['bark',.06],birdshop:['chirp',.35],butterflies:['cricket',.25],reptiles:['drip',.18],barn:['creak',.08]};
+  SYS.add('life',dt=>{ if(!LIVE.size||!dt)return; dt=Math.min(dt,.1); let near=null, nd=1e9, dt2=dt;
+    for(const A of LIVE){ let o=A.g; while(o&&o.parent)o=o.parent; if(o!==scene){ LIVE.delete(A); A.mix.stopAllAction(); A.me.geometry.dispose(); continue; }
+      const d=Math.min(Math.hypot(A.base.x-pos.x,A.base.z-pos.z),A.street?Math.hypot(A.street.x-pos.x,A.street.z-pos.z):1e9); if(d>18*TILE)continue;
+      if(d>7*TILE&&((A.skip=(A.skip||0)+1)%3)){ A.acc=(A.acc||0)+dt; continue; } dt2=dt+(A.acc||0); A.acc=0; if(d<nd){ nd=d; near=A.shop; } tickA(A,dt2); }
+    const S=near&&SND[near]; if(S&&nd<9*TILE&&SFX&&Math.random()<S[1]*dt)SFX.play(S[0],{vol:.18,vary:.3}); },'146zj-pets shops');
+  PETS.show=show; PETS.live=()=>LIVE.size; PETS.liveAdd=A=>LIVE.add(A);
+  // what each lives in: a dog's bed and bowls, a cat's post, a small pet's shavings and hide, a reptile's terrarium (sand, a branch on a trunk, rocks, a plant, a heat lamp), a slime's moss and mushrooms,
+  // a bat's roost, a bird's perches and seed, the flying bugs' flowers behind fine mesh, the crawling bugs' soil and log, the barn's hay, bale and trough
+  const habOf=K=>{ const b=K.of||K.key; if(K.shop==='birdshop')return 'bird'; if(K.shop==='barn')return 'barn'; if(K.shop==='aquarium')return 'crab';
+    if(K.shop==='butterflies')return /^(bee|bumblebee|wasp|butterfly|firefly|giantwasp)$/.test(K.key)||/^(wasp)$/.test(b)?'flying':'bugs';
+    if(b==='cat')return 'cat'; if(b==='dog'||b==='xolo')return 'dog'; if(K.shop==='pets')return 'small'; if(b==='slime')return 'slime'; if(b==='bat')return 'bat'; return 'reptile'; };
+  const FRONT={dog:'bars',cat:'bars',small:'bars',bird:'bars',reptile:'glass',slime:'glass',bat:'glass',bugs:'glass',flying:'mesh',crab:'glass',barn:'stall'};
+  const FLOORC={dog:0xc8b48a,cat:0xc8b48a,small:0xd8c08a,bird:0xe8e0d0,reptile:0xb89a68,slime:0x4a7a3a,bat:0x3a3430,bugs:0x5a4030,flying:0x7a9a5a,crab:0xe0d0a0,barn:0xd8c070};
+  const furnish=(K,box,cyl,ball,glow,CH,CW,CD)=>{ const h=K, W2=CW/2-.06;   // (a: along the cage from its middle, b: from its back toward its front, z: up from its floor; metres)
+    if(h==='dog'||h==='cat'){ box(.15,W2-.05,.05,CD-.15,0,.07,h==='dog'?0x8a2a2a:0x2a4a8a); box(.18,W2-.08,.08,CD-.18,.07,.1,h==='dog'?0xb04040:0x4a6aaa);
+      for(const a of [-W2+.12,-W2+.3])cyl(a,CD-.12,.07,0,.05,0xb8bcc0); ball(-.1,CD-.14,.05,.045,0xd03a2a);
+      if(h==='cat'){ cyl(-W2+.12,.14,.05,0,.5,0xd8c09a); box(-W2+.02,-W2+.24,.04,.26,.5,.54,0x8a6a4a); } }
+    else if(h==='small'){ box(W2-.32,W2,.04,.32,0,.18,0x8a6a4a); box(W2-.24,W2-.08,.3,.33,0,.1,0x2a2018); ball(-W2+.2,.2,.03,.13,0xe0c860,.4); cyl(-.1,.04,.025,.2,.4,0xa8d8f0); }
+    else if(h==='reptile'){ cyl(-W2+.25,.2,.035,0,CH*.75,0x6a4a2a); box(-W2+.25,.15,.17,.23,CH*.55,CH*.58,0x6a4a2a); box(-W2+.05,-W2+.25,.2,.24,CH*.4,CH*.43,0x6a4a2a);
+      ball(W2-.25,.2,.03,.11,0x8a8680,.6); ball(W2-.1,CD-.2,.02,.07,0x9a948a,.7); ball(-.1,.12,.12,.11,0x4a8a3a); cyl(-.1,.12,.015,0,.12,0x3a6a2a);
+      glow(()=>box(W2-.4,W2-.15,.12,.32,CH-.07,CH-.04,0xffa040)); }
+    else if(h==='slime'){ for(const [a,r] of [[-W2+.2,.05],[W2-.25,.04]]){ cyl(a,.18,.015,0,.1,0xe8e0d0); ball(a,.18,.11,r,0xc8402a,.55); } ball(.1,.12,.03,.09,0x7a7670,.6); }
+    else if(h==='bat'){ box(-W2,W2,.08,.12,CH-.14,CH-.11,0x4a3828); }
+    else if(h==='bird'){ for(const z of [.22,.44])box(-W2+.04,W2-.04,.28,.31,z,z+.025,0x9a7a52); box(W2-.18,W2-.06,CD-.16,CD-.06,.08,.14,0xe0c050); cyl(-W2+.1,.05,.02,.15,.32,0xa8d8f0); }
+    else if(h==='flying'){ for(const [a,c] of [[-W2+.15,0xe05a8a],[-W2+.32,0xf0d040],[W2-.2,0xa060e0],[W2-.38,0xf08a30]]){ cyl(a,.18,.008,0,.32,0x3a7a2a); ball(a,.18,.33,.04,c,.6); } ball(0,.12,.1,.13,0x4a8a3a,.8); }
+    else if(h==='bugs'){ box(-W2+.1,.15,.12,.3,0,.09,0x6a4a2a); for(const a of [.1,.3,-.4])box(a,a+.12,CD-.3,CD-.16,0,.01,0x5a8a3a); ball(W2-.15,.2,.02,.06,0x8a8680,.6); }
+    else if(h==='barn'){ box(W2-.5,W2-.05,.05,.45,0,.35,0xe0c060); box(-W2+.05,-W2+.65,CD-.35,CD-.08,0,.3,0x6a4a2a); box(-W2+.08,-W2+.62,CD-.32,CD-.11,.25,.27,0x4a8ab8); ball(0,.2,.02,.2,0xe8d070,.25); } };
+  const cageKit=(id,ST)=>{ const kit=A=>{ A.bare=1; (MSHOP.kit._||(()=>{}))(A); const R=A.R, F=IKIT.frame(R), K=IKIT.room(F,o=>A.add(o),()=>{}), D=F.D, W=F.W, MW=IKIT.MW, tm=D/(R.y1-R.y0), HT=A.WH/24*tm;
+    // the adoption book on its stand in front of the counter
+    const kv=2.2*tm, c1=kv+1.05, bu0=W/2-.3, bu1=W/2+.3, bv0=c1+.55, bv1=c1+.95;
+    K.box(bu0,bv0,bu1,bv1,0,.95,0x5a3a26); K.box(bu0-.03,bv0-.03,bu1+.03,bv1+.03,.95,1.0,0x3a2418); K.box(bu0+.08,bv0+.06,bu1-.08,bv1-.06,1.0,1.06,0xe8dcc0); K.box(bu0+.1,bv0+.08,bu0+.22,bv1-.08,1.0,1.07,0x7a2a2a);
+    A.sol(R.x0+bu0/tm,R.y0+bv0/tm,R.x0+bu1/tm,R.y0+bv1/tm); K.use('THE ADOPTION BOOK (ADOPT A PET)',W/2,(bv0+bv1)/2,.8,1.2,()=>PETS.shop(id),1.8); K.flush();
     // the cages: [middle across, middle along, which way it opens], the left wall from the back, then the back wall, then the right wall
-    const {CW,CH,CD,ROWS,stall}=ST, H0=stall?0:.12, SP=[], WOOD=stall?0x6a4a2a:0x4a3828, BAR=0xa8a296, FLOOR=stall?0xc8b060:0xc8b48a;
-    const nb=Math.floor((W-.4)/CW), ns=Math.floor((D-1.6-CD)/CW);
+    const {CW,CH,CD,ROWS,stall}=ST, G=new THREE.Group(), K2=IKIT.room(F,o=>G.add(o),()=>{}), H0=stall?0:.12, SP=[], WOOD=stall?0x6a4a2a:0x4a3828, BAR=0xa8a296, GL={p:[]};
+    const nb=Math.floor((W-.4)/CW), ns=Math.floor((D-1.7-CD)/CW);
     for(let i=0;i<ns;i++)SP.push([CD/2,CD+.05+(i+.5)*CW,1,0]); for(let i=0;i<nb;i++)SP.push([.2+(i+.5)*(W-.4)/nb,CD/2,0,1]); for(let i=ns-1;i>=0;i--)SP.push([W-CD/2,CD+.05+(i+.5)*CW,-1,0]);
-    const cage=(u,v,du,dv,h)=>{ const a=du?CD/2:CW/2-.01, b=du?CW/2-.01:CD/2, x0=u-a, x1=u+a, y0=v-b, y1=v+b;
-      K.box(x0,y0,x1,y1,h,h+.03,WOOD); K.box(x0+.02,y0+.02,x1-.02,y1-.02,h+.03,h+.035,FLOOR); if(!stall)K.box(x0,y0,x1,y1,h+CH-.03,h+CH,WOOD);
-      for(const [p,q] of [[x0,y0],[x1,y0],[x0,y1],[x1,y1]])K.box(p-.02,q-.02,p+.02,q+.02,h,h+CH,WOOD);
-      const fu=u+du*(CD/2), fv=v+dv*(CD/2);
-      if(stall){ for(const z of [.35,.6,.85])if(du)K.box(fu-.02,y0,fu+.02,y1,h+z*CH-.04,h+z*CH,WOOD); else K.box(x0,fv-.02,x1,fv+.02,h+z*CH-.04,h+z*CH,WOOD);   // a stall's rails, and its boards between it and the next
-        if(du)K.box(x0,y0-.01,x1,y0+.01,h,h+CH*.85,WOOD); else K.box(x0-.01,y0,x0+.01,y1,h,h+CH*.85,WOOD); return; }
-      for(let k=1;k<9;k++){ const t=k/9-.5; if(du)K.box(fu-.006,y0+(t+.5)*(y1-y0)-.006,fu+.006,y0+(t+.5)*(y1-y0)+.006,h+.03,h+CH-.03,BAR); else K.box(x0+(t+.5)*(x1-x0)-.006,fv-.006,x0+(t+.5)*(x1-x0)+.006,fv+.006,h+.03,h+CH-.03,BAR); } };   // the bars across its open front
-    const all=[]; for(const s of SP)for(let r=0;r<ROWS;r++){ const h=H0+r*CH; cage(s[0],s[1],s[2],s[3],h); all.push([...s,h]); }
-    for(const s of SP){ const a=s[2]?CD/2:CW/2, b=s[2]?CW/2:CD/2; A.sol(R.x0+(s[0]-a)/tm,R.y0+(s[1]-b)/tm,R.x0+(s[0]+a)/tm,R.y0+(s[1]+b)/tm); }
-    K.flush();
-    // the animals: one mesh for them all, each in its cage turned a little toward the room; a cage you use opens the adoption book on its kind
+    const all=[]; for(const s of SP)for(let r=0;r<ROWS;r++)all.push([...s,H0+r*CH]);
+    // each cage in its own frame: a along the wall, b from the wall out, z up from the cage's floor
+    const frame=(s)=>{ const [u,v,du,dv,h]=s, at=(a,b)=>du?[du>0?b:W-b,v+a]:[u+a,b];
+      const bx=(a0,a1,b0,b1,z0,z1,c)=>{ const p=at(a0,b0), q=at(a1,b1); K2.box(Math.min(p[0],q[0]),Math.min(p[1],q[1]),Math.max(p[0],q[0]),Math.max(p[1],q[1]),h+z0,h+z1,c); };
+      const cy=(a,b,r,z0,z1,c)=>{ const p=at(a,b); K2.cyl(p[0],p[1],r,h+z0,h+z1,c); }, bl=(a,b,z,r,c,sy=1)=>{ const p=at(a,b); K2.ball(p[0],p[1],h+z,r,c,sy); };
+      const glass=(a0,a1,b,z0,z1)=>{ const p=F.pw(...at(a0,b)), q=F.pw(...at(a1,b)); GL.p.push(p[0],(h+z0)*MW,p[1],q[0],(h+z0)*MW,q[1],q[0],(h+z1)*MW,q[1],p[0],(h+z0)*MW,p[1],q[0],(h+z1)*MW,q[1],p[0],(h+z1)*MW,p[1]); };
+      return {at,bx,cy,bl,glass}; };
+    const cage=(s,hab)=>{ const {bx,cy,bl,glass}=frame(s), W2=CW/2-.01, fr=FRONT[hab]||'bars';
+      bx(-W2,W2,0,CD,0,.03,WOOD); bx(-W2+.02,W2-.02,.02,CD-.02,.03,.035,FLOORC[hab]||0xc8b48a); if(!stall)bx(-W2,W2,0,CD,CH-.03,CH,WOOD);
+      if(!stall)bx(-W2,W2,0,.02,.03,CH-.03,hab==='bat'?0x1e1a1a:hab==='reptile'?0x6a8a6a:hab==='flying'?0xa8c8a0:0xd8d0c0);   // its back
+      for(const a of [-W2,W2])for(const b of [0,CD])bx(a-.02,a+.02,b-.02,b+.02,0,CH,WOOD);
+      if(fr==='stall'){ for(const z of [.35,.6,.85])bx(-W2,W2,CD-.03,CD+.01,z*CH-.04,z*CH,WOOD); bx(-W2-.01,-W2+.01,0,CD,0,CH*.85,WOOD); }
+      else if(fr==='glass'){ glass(-W2,W2,CD,.035,CH-.03); bx(-W2,W2,CD-.03,CD,.03,.07,WOOD); }
+      else { const n=fr==='mesh'?40:16, c=fr==='mesh'?0x4a5a48:BAR; for(let k=1;k<n;k++){ const a=-W2+k*2*W2/n; bx(a-.005,a+.005,CD-.01,CD,.03,CH-.03,c); } if(fr==='mesh')for(let k=1;k<10;k++)bx(-W2,W2,CD-.01,CD,k*CH/10-.004,k*CH/10+.004,c); }
+      furnish(hab,bx,cy,bl,f=>K2.glow(f),CH,CW,CD); };
     const gen=A.gen=(A.gen||0)+1;
-    Promise.all([CAGES[id](),idx()]).then(([C,I])=>{ if(A.gen!==gen||!A.live())return; const G=new THREE.Group(), TH=[], L=C.kinds.filter(k=>I.by[k.k]).sort((a,b)=>CORDER.indexOf(I.by[a.k].group)-CORDER.indexOf(I.by[b.k].group)), P=[], Cc=[], X=[];
-      L.forEach((k,i)=>{ const s=all[i]; if(!s)return; const p=I16(k.p), c=B64(k.c), ix=U16(k.i), n=c.length/3, b0=P.length/3, w=F.pw(s[0]-s[2]*.03,s[1]-s[3]*.03), a=F.hd(s[2],s[3])+((i*.618)%1-.5)*1.1, cs=Math.cos(a), sn=Math.sin(a), sz=stall?1.6:1;
-        for(let j=0;j<n;j++){ const x=((p[j*3]+32500)*k.sc+k.lo[0])*sz, y=((p[j*3+1]+32500)*k.sc+k.lo[1])*sz, z=((p[j*3+2]+32500)*k.sc+k.lo[2])*sz; P.push(w[0]+(x*cs+z*sn)*MW,(s[4]+.035+y)*MW,w[1]+(-x*sn+z*cs)*MW); Cc.push(c[j*3],c[j*3+1],c[j*3+2]); }
-        for(let j=0;j<ix.length;j++)X.push(ix[j]+b0);
-        const K2=I.by[k.k], hb=new THREE.Mesh(new THREE.BoxGeometry((s[2]?CD:CW)*MW*.9,CH*MW*.9,(s[2]?CW:CD)*MW*.9),new THREE.MeshBasicMaterial({visible:false})), q=F.pw(s[0],s[1]); hb.position.set(q[0],(s[4]+CH/2)*MW,q[1]); G.add(hb);
-        TH.push({name:'A '+K2.name+' ($'+(PRICE[K2.group]||30)+')',obj:hb,reach:1.6*TILE,near:2.8*TILE,tall:CH*MW,act:()=>{ PETS.shop(id); idx().then(()=>setTimeout(()=>choose(k.k),0)); }}); });
-      for(const t of TH)UI.thing(t);
-      const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('color',new THREE.Uint8BufferAttribute(Cc,3,true)); g.setIndex(X); g.computeVertexNormals();
-      const me=new THREE.Mesh(g,new THREE.MeshLambertMaterial({vertexColors:true})); me.castShadow=false; me.receiveShadow=true; G.add(me); if(!A.late(G,TH)){ for(const t of TH){ const j=UI.things.indexOf(t); if(j>=0)UI.things.splice(j,1); } return; } (PETS.caged||(PETS.caged={}))[id]=L.length; }).catch(e=>console.warn('PET CAGES',e)); };
+    const pic=!!(WINDOWS.taking&&WINDOWS.taking.has(id));   // (built only for the street's first picture of its windows: the cages without their animals, nothing fetched)
+    idx().then(I=>{ if(A.gen!==gen||!A.live())return;
+      const L=I.kinds.filter(k=>k.shop===id&&k.cage).sort((a,b)=>CORDER.indexOf(a.group)-CORDER.indexOf(b.group));
+      for(const s of SP){ const a=s[2]?CD/2:CW/2, b=s[2]?CW/2:CD/2; A.sol(R.x0+(s[0]-a)/tm,R.y0+(s[1]-b)/tm,R.x0+(s[0]+a)/tm,R.y0+(s[1]+b)/tm); }
+      const H0B={pets:'dog',reptiles:'reptile',birdshop:'bird',butterflies:'flying',barn:'barn'}; all.forEach((s,i)=>cage(s,L[i]?habOf(L[i]):H0B[id]||'dog'));
+      // the shop windows: a low stage behind each giant pane either side of the door, more of them on show to the street
+      const SH=[]; for(const [u0,u1] of [[.3,W/2-1.05],[W/2+1.05,W-.3]]){ K2.box(u0,D-.9,u1,D-.08,0,.45,0x5a4030); K2.box(u0+.04,D-.86,u1-.04,D-.12,.45,.47,FLOORC[habOf(L[SH.length]||L[0]||{})]||0x7a9a5a);
+        for(let k=0;k<2;k++)SH.push([u0+(u1-u0)*(k+.5)/2,D-.5,(u1-u0)/2]); }
+      K2.flush(); const XF=ROOMS.off[id]&&ROOMS.off[id].xf, XI=XF&&XF.clone().invert();
+      if(GL.p.length){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(GL.p,3)); g.computeVertexNormals(); const me=new THREE.Mesh(g,new THREE.MeshLambertMaterial({color:0xd8f0f4,transparent:true,opacity:.16,depthWrite:false,side:THREE.DoubleSide})); me.renderOrder=2; G.add(me); }
+      // the animals, one a cage, alive (not for the street's first picture: then once you are in, or watching through the glass)
+      const fill=()=>{ const G2=new THREE.Group(), TH=[]; G2.userData.street=XI;
+      L.forEach((k,i)=>{ const s=all[i]; if(!s)return; const hab=habOf(k), bird=hab==='bird', fit={w:CW-.12,h:bird?CH-.5:stall?CH*.9:CH-.1,d:CD-.1}, c=F.pw(s[0]-s[2]*.0,s[1]-s[3]*.0);
+        const hb=new THREE.Mesh(new THREE.BoxGeometry((s[2]?CD:CW)*MW*.9,CH*MW*.9,(s[2]?CW:CD)*MW*.9),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(c[0],(s[4]+CH/2)*MW,c[1]); G2.add(hb);
+        TH.push({name:'A '+k.name+' ($'+(PRICE[k.group]||30)+')',obj:hb,reach:1.6*TILE,near:2.8*TILE,tall:CH*MW,act:()=>{ PETS.shop(id); idx().then(()=>setTimeout(()=>choose(k.key),0)); }});
+        show(k.key,fit,{shop:id,fly:hab==='flying'||hab==='bat'}).then(B=>{ if(!B)return; if(A.gen!==gen||!G2.parent)return; const al=s[2]?F.ev:F.eu, fw=s[2]?[F.eu[0]*s[2],F.eu[1]*s[2]]:[F.ev[0]*s[3],F.ev[1]*s[3]];
+          B.fitH=fit.h; B.base=new THREE.Vector3(c[0],(s[4]+.035+(bird?.46:0))*MW,c[1]); B.along=new THREE.Vector3(al[0],0,al[1]); B.slide=B.g; B.g.position.copy(B.base); if(G2.userData.street)B.street=B.base.clone().applyMatrix4(G2.userData.street);
+          B.g.rotation.y=Math.atan2(al[0],al[1])+(Math.random()<.5?0:Math.PI)*(B.flies?0:1)+.25*Math.sign(Math.random()-.5); G2.add(B.g); LIVE.add(B); }).catch(e=>console.warn('PET SHOW',e)); });
+      // the window's own, facing the street
+      SH.forEach((q,i)=>{ const k=L[(i*7+3)%Math.max(1,L.length)]; if(!k)return; const c=F.pw(q[0],q[1]), fit={w:Math.min(1.1,q[2]*.9),h:1.0,d:.7};
+        show(k.key,fit,{shop:id,pace:false,fly:habOf(k)==='flying'}).then(B=>{ if(!B)return; if(A.gen!==gen||!G2.parent)return; B.fitH=fit.h; B.base=new THREE.Vector3(c[0],.47*MW,c[1]); B.along=new THREE.Vector3(F.eu[0],0,F.eu[1]); B.slide=B.g;
+          B.g.position.copy(B.base); if(G2.userData.street)B.street=B.base.clone().applyMatrix4(G2.userData.street); B.g.rotation.y=F.hd(0,1); G2.add(B.g); LIVE.add(B); }).catch(()=>{}); });
+      for(const t of TH)UI.thing(t); if(!A.late(G2,TH)){ for(const t of TH){ const j=UI.things.indexOf(t); if(j>=0)UI.things.splice(j,1); } return; } (PETS.caged||(PETS.caged={}))[id]=Math.min(L.length,all.length); };
+      if(!A.late(G,[]))return; if(pic)PEND.set(id,{A,gen,fill}); else fill(); }).catch(e=>console.warn('PET CAGES',e)); };
     kit.drop=()=>{ const d=MSHOP.kit._&&MSHOP.kit._.drop; if(d)d(); }; return kit; };
-  const CAGE={CW:.7,CH:.62,CD:.55,ROWS:4}, STALL={CW:.85,CH:1.0,CD:.85,ROWS:1,stall:true};
+  const PEND=new Map(); SYS.every(()=>{ for(const [id,q] of PEND){ if(q.A.gen!==q.gen||!q.A.live()){ PEND.delete(id); continue; } if((ROOMS.offIn&&ROOMS.offIn()===id)||WINDOWS.held.has(id)){ PEND.delete(id); q.fill(); } } },300,'pet shops filled');
+  const CAGE={CW:1.4,CH:.72,CD:.6,ROWS:4}, STALL={CW:1.7,CH:1.4,CD:1.0,ROWS:1,stall:true};
   for(const id of ['pets','birdshop','reptiles','butterflies'])MSHOP.kit[id]=cageKit(id,CAGE); MSHOP.kit.barn=cageKit('barn',STALL);
 }

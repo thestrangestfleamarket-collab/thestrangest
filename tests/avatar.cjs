@@ -70,6 +70,14 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
   const fc=await pg.evaluate(()=>{ const g=BODIES.by.avatar.GEO; return g.attributes.position.count/3; }); rec('she is dressed too',fc>2000,'tris '+fc);
   await pg.evaluate(()=>AVATAR.set({b:2,h:108})); const tall=await pg.evaluate(()=>BODIES.by.avatar.S); await pg.evaluate(()=>AVATAR.set({h:92})); const short=await pg.evaluate(()=>BODIES.by.avatar.S);
   rec('height: taller is drawn bigger',tall>short*1.1,tall.toFixed(3)+' vs '+short.toFixed(3));
+  // the eyes and mouth you pick lie on the face (owner, 9 Nov 2026: "eyes float off face"): each point no more than 5 mm in front of the head's surface under it
+  const gap=await pg.evaluate(async()=>{ const keep=AVATAR.L().fx; let worst=0; for(const e of [1,2,3,7]){ await AVATAR.set({fx:{e,m:e,es:150,ms:100}}); const g=BODIES.by.avatar.GEO, P=g.attributes.position.array, N=g.attributes.normal.array, SM=g.attributes.sm.array, BI=g.attributes.bi.array, BW=g.attributes.bw.array, n=P.length/9;
+      let S0=n; while(S0>0&&SM[(S0-1)*3]===0&&N[(S0-1)*9+2]===1)S0--; const hd=[]; for(let t=0;t<S0;t++)if([0,1,2].every(j=>BI[(t*3+j)*2]===2&&BW[t*3+j]>.99))hd.push(t);
+      const zAt=(x,y)=>{ let z=-1e9; for(const t of hd){ const o=t*9, a=[P[o],P[o+1],P[o+2]], b=[P[o+3],P[o+4],P[o+5]], c=[P[o+6],P[o+7],P[o+8]], D=(b[1]-c[1])*(a[0]-c[0])+(c[0]-b[0])*(a[1]-c[1]); if(Math.abs(D)<1e-12)continue;
+        const l1=((b[1]-c[1])*(x-c[0])+(c[0]-b[0])*(y-c[1]))/D, l2=((c[1]-a[1])*(x-c[0])+(a[0]-c[0])*(y-c[1]))/D, l3=1-l1-l2; if(l1<-1e-6||l2<-1e-6||l3<-1e-6)continue; z=Math.max(z,l1*a[2]+l2*b[2]+l3*c[2]); } return z; };
+      if(S0===n)return 'none drawn'; for(let t=S0;t<n;t++)for(let j=0;j<3;j++){ const o=t*9+j*3; worst=Math.max(worst,P[o+2]-zAt(P[o],P[o+1])); } }
+    await AVATAR.set({fx:keep||{}}); return worst; });
+  rec('the picked eyes and mouth lie on the face, not in front of it',typeof gap==='number'&&gap<.005,typeof gap==='number'?'furthest '+(gap*1000).toFixed(1)+' mm':gap);
   if(OUT){   // in third person, the camera in front of you, in the park's open meadow (the shots' rule: an open field, third or first person)
     const look=async(nm,set,wear)=>{ await pg.evaluate(async([set,wear])=>{ document.getElementById('looks').hidden=true; const L=AVATAR.L(); L.w={}; await AVATAR.set(set);
         for(const [s,l,c] of wear){ const o=AVATAR.pieces.find(x=>x.slot===s&&x.label===l); await AVATAR.wear(s,o?o.n:null,c); }

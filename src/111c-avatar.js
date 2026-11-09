@@ -189,12 +189,17 @@ const AVATAR={}; window.AVATAR=AVATAR;
   const faceOf=(X,d,zones,L)=>{ const F=fxOf(L), T=[]; if(!F.e&&!F.m)return T; const n=X.length/3, zi=zones.indexOf('eye'), zm=zones.indexOf('mouth'), zs=zones.indexOf('skin');
     const box=f=>{ let a=[1e9,1e9,1e9], b=[-1e9,-1e9,-1e9], k=0; for(let q=0;q<n;q++)if(f(q)){ k++; for(let j=0;j<3;j++){ a[j]=Math.min(a[j],X[q*3+j]); b[j]=Math.max(b[j],X[q*3+j]); } } return k?[a,b]:null; };
     const sh=lin(L.skin).multiplyScalar(.82).getHexString(), col=(c,s)=>c==='W'?'f2efe6':c==='K'?'151515':c==='H'?'ffffff':c==='D'?sh:c==='I'?(L.eye||s[s.length-1]):c;
-    const put=(S,cx,cy,sc,zf,mir)=>S.forEach((s,li)=>{ const z=zf+.0005*(li+1), h=col(s[s[0]==='S'?3:s[0]==='P'?2:5],s); for(const t of shape(s)){ const p=t.map(([x,y])=>[cx+(mir?-x:x)*sc,cy-y*sc,z]); T.push([p[0],p[1],p[2],h]); } });
-    const head=q=>(d.w[q]>=128?d.bone[q*2]:d.bone[q*2+1])===HB&&d.zone[q]===zs;
+    const head=q=>(d.w[q]>=128?d.bone[q*2]:d.bone[q*2+1])===HB&&d.zone[q]===zs, hbq=q=>(d.w[q]>=128?d.bone[q*2]:d.bone[q*2+1])===HB;
+    // the face's own surface under a point (its frontmost head face there), so what is drawn on it lies on it
+    const HT=[]; for(let t=0;t<d.tri.length/3;t++){ const ix=[d.tri[t*3],d.tri[t*3+1],d.tri[t*3+2]]; if(!ix.every(hbq)||ix.some(q=>(F.e&&d.zone[q]===zi)||(F.m&&d.zone[q]===zm)))continue; const P=ix.map(q=>[X[q*3],X[q*3+1],X[q*3+2]]);
+      const nz=(P[1][0]-P[0][0])*(P[2][1]-P[0][1])-(P[1][1]-P[0][1])*(P[2][0]-P[0][0]); if(Math.abs(nz)>1e-9)HT.push(P); }
+    const zOn=(x,y)=>{ let z=null; for(const [a,b,c] of HT){ const D=(b[1]-c[1])*(a[0]-c[0])+(c[0]-b[0])*(a[1]-c[1]), l1=((b[1]-c[1])*(x-c[0])+(c[0]-b[0])*(y-c[1]))/D, l2=((c[1]-a[1])*(x-c[0])+(a[0]-c[0])*(y-c[1]))/D, l3=1-l1-l2;
+      if(l1<-1e-6||l2<-1e-6||l3<-1e-6)continue; const w=l1*a[2]+l2*b[2]+l3*c[2]; if(z===null||w>z)z=w; } return z; };
+    const put=(S,cx,cy,sc,zf,mir)=>S.forEach((s,li)=>{ const dz=.0008+.0005*(li+1), h=col(s[s[0]==='S'?3:s[0]==='P'?2:5],s); for(const t of shape(s)){ const p=t.map(([x,y])=>{ const px=cx+(mir?-x:x)*sc, py=cy-y*sc; return [px,py,(zOn(px,py)??zf)+dz]; }); T.push([p[0],p[1],p[2],h]); } });
     const front=(x0,x1,y0,y1)=>{ const b=box(q=>head(q)&&Math.abs(X[q*3])>x0&&Math.abs(X[q*3])<x1&&X[q*3+1]>y0&&X[q*3+1]<y1); return b?b[1][2]:null; };
     if(F.e&&zi>=0)for(const sd of [-1,1]){ const b=box(q=>d.zone[q]===zi&&X[q*3]*sd>0); if(!b)continue; const cx=(b[0][0]+b[1][0])/2, cy=(b[0][1]+b[1][1])/2, sc=(b[1][0]-b[0][0])/40*F.es/100;
-      put(FE[F.e],cx,cy,sc,(front(.02,.12,cy-.08,cy+.08)??b[0][2])+.0008,sd<0); }
-    if(F.m&&zm>=0){ const b=box(q=>d.zone[q]===zm); if(b){ const cx=(b[0][0]+b[1][0])/2, cy=(b[0][1]+b[1][1])/2, sc=(b[1][0]-b[0][0])/56*F.ms/100; put(FM[F.m],cx,cy,sc,(front(.015,.12,cy-.08,cy+.08)??b[0][2])+.0008,false); } }
+      put(FE[F.e],cx,cy,sc,front(.02,.12,cy-.08,cy+.08)??b[0][2],sd<0); }
+    if(F.m&&zm>=0){ const b=box(q=>d.zone[q]===zm); if(b){ const cx=(b[0][0]+b[1][0])/2, cy=(b[0][1]+b[1][1])/2, sc=(b[1][0]-b[0][0])/56*F.ms/100; put(FM[F.m],cx,cy,sc,front(.015,.12,cy-.08,cy+.08)??b[0][2],false); } }
     return T; };
   function geoFor(J,L,bare,nob){ const worn=[]; for(const [s] of SLOTS){ if(NOPROP.has(s))continue; const w=L.w[s], p=w&&!GN.has(w[0])&&J.byN.get(w[0]); if(p&&!(bare&&s==='feet'))worn.push([s,p,w[1]]); }   // (barefoot: your shoes off, LOOKS.shoes)
     const cov=new Set(); for(const [,p] of worn)for(const c of p.covers)cov.add(c); const hide=culled(c=>cov.has(c));

@@ -3,7 +3,7 @@ import {THREE} from './003-shx.js';
 import {CLOCK, SFX, WX} from './003b-systems.js';
 import {MODS, SYS} from './006-map-pre.js';
 import {ROOMK} from './150a-bedroom.js';
-const SCOPE={alt:35,az:270,va:0,vz:0,mag:25,focus:0,track:true,lines:true,filter:false,goto:null,open:null,data:null,stars:null,view:null}; window.SCOPE=SCOPE;
+const SCOPE={alt:35,az:270,va:0,vz:0,mag:25,focus:.18,track:true,lines:true,filter:false,goto:null,open:null,data:null,stars:null,view:null}; window.SCOPE=SCOPE;
 { const STARS=__LAZY__("data/stars.json"), SCOPEJ=__LAZY__("data/scope.json");
   SCOPE.files={sun:__FILE__("data/scope/sky/sun.jpg"),moon:__FILE__("data/scope/sky/moon.jpg"),mercury:__FILE__("data/scope/sky/mercury.jpg"),venus:__FILE__("data/scope/sky/venus.jpg"),mars:__FILE__("data/scope/sky/mars.jpg"),jupiter:__FILE__("data/scope/sky/jupiter.jpg"),saturn:__FILE__("data/scope/sky/saturn.jpg"),uranus:__FILE__("data/scope/sky/uranus.jpg"),neptune:__FILE__("data/scope/sky/neptune.jpg"),m42:__FILE__("data/scope/sky/m42.jpg"),m31:__FILE__("data/scope/sky/m31.jpg"),m1:__FILE__("data/scope/sky/m1.jpg"),m57:__FILE__("data/scope/sky/m57.jpg"),m51:__FILE__("data/scope/sky/m51.jpg"),m104:__FILE__("data/scope/sky/m104.jpg"),m16:__FILE__("data/scope/sky/m16.jpg"),m8:__FILE__("data/scope/sky/m8.jpg"),m13:__FILE__("data/scope/sky/m13.jpg"),m33:__FILE__("data/scope/sky/m33.jpg")};   // the sky's pictures (NASA's, data/full/scope-sources.json), each fetched the first time it comes into the field
 
@@ -76,7 +76,7 @@ const SCOPE={alt:35,az:270,va:0,vz:0,mag:25,focus:0,track:true,lines:true,filter
     const radec=id=>{ if(BODY[id]){ const q=where(id,SCOPE.jd()); return {ra:q.ra,dec:q.dec,name:BODY[id].name,body:q}; }
       if(id.startsWith('star:')){ const n=SCOPE.stars.named[+id.slice(5)]; return n&&{ra:n[0],dec:n[1],name:n[2]}; }
       const t=(SCOPE.data.sky||[]).find(t=>t.id===id); return t&&t.ra!=null&&{ra:t.ra,dec:t.dec,name:t.name,t}; };
-    SCOPE.goTo=id=>{ const q=radec(id); if(q)SCOPE.goto={id,...q}; };
+    SCOPE.goTo=id=>{ const q=radec(id); if(!q)return; const h=eq2hor(q.ra,q.dec,SCOPE.astro.lst(SCOPE.jd())); SCOPE.note=null; if(h.alt<0){ SCOPE.goto=null; SCOPE.note={s:q.name+' IS BELOW THE HORIZON NOW',t:performance.now()+5000}; return; } SCOPE.goto={id,...q}; };
     SCOPE.radec=()=>hor2eq(SCOPE.alt,SCOPE.az,SCOPE.astro.lst(SCOPE.jd()));
     SCOPE.altOf=id=>{ const q=radec(id); return q&&eq2hor(q.ra,q.dec,SCOPE.astro.lst(SCOPE.jd())); };
 
@@ -114,6 +114,7 @@ const SCOPE={alt:35,az:270,va:0,vz:0,mag:25,focus:0,track:true,lines:true,filter
     const draw=dt=>{ const dpr=Math.min(2,devicePixelRatio||1), w=cv.clientWidth, h=cv.clientHeight; if(w!==W||h!==H){ W=w; H=h; cv.width=w*dpr; cv.height=h*dpr; } g.setTransform(dpr,0,0,dpr,0,0);
       const R=Math.min(w,h)*.46, cx=w/2, cy=h/2, fov=FOV(SCOPE.mag), pxd=R/(Math.tan(fov/2*D2R)*R2D);   // pixels a degree near the centre
       const {jd,lst}=mount(dt,pxd);
+      const put=(im,x,y,w,h,ox=0,oy=0)=>{ const m=40, x0=Math.max(x,cx-R-m-ox), y0=Math.max(y,cy-R-m-oy), x1=Math.min(x+w,cx+R+m-ox), y1=Math.min(y+h,cy+R+m-oy); if(x1<=x0||y1<=y0)return; const sw=(im.naturalWidth||im.width)/w, sh=(im.naturalHeight||im.height)/h; g.drawImage(im,(x0-x)*sw,(y0-y)*sh,(x1-x0)*sw,(y1-y0)*sh,x0,y0,x1-x0,y1-y0); };   // only the part in the eyepiece: a picture blown up to thousands of pixels freezes the page
       // the tube's frame: forward t, right r (towards the east when facing north), up u; horizon vectors are (east, up, north)
       const t=[cs(SCOPE.alt)*sn(SCOPE.az),sn(SCOPE.alt),cs(SCOPE.alt)*cs(SCOPE.az)], r0=[t[2],0,-t[0]], rl=Math.hypot(r0[0],r0[2])||1, r=[r0[0]/rl,0,r0[2]/rl], u=[t[1]*r[2]-t[2]*r[1],t[2]*r[0]-t[0]*r[2],t[0]*r[1]-t[1]*r[0]];
       const cT=cs(lst), sT=sn(lst), cP=cs(LAT), sP=sn(LAT), sc=R/Math.tan(fov/2*D2R);
@@ -147,7 +148,7 @@ const SCOPE={alt:35,az:270,va:0,vz:0,mag:25,focus:0,track:true,lines:true,filter
         const vis=k==='sun'?1:(1-cover*.9)*cl((lim+2-q.mag)/3,0,1); g.globalAlpha=vis;
         if(q.deg*pxd<3){ g.fillStyle=BODY[k].col; g.beginPath(); g.arc(p[0],p[1],Math.max(1.2,(lim+1.5-q.mag)*.35),0,7); g.fill(); g.globalAlpha=1; continue; }
         const im=img(BODY[k].id), rr=sz/2; g.save(); g.translate(p[0],p[1]);
-        if(im){ if(k==='sa'){ g.globalCompositeOperation='lighter'; g.drawImage(im,-rr,-rr,sz,sz); g.globalCompositeOperation='source-over'; } else { g.save(); g.beginPath(); g.arc(0,0,q.deg*pxd/2,0,7); g.clip(); g.drawImage(im,-rr,-rr,sz,sz); g.restore(); } }   // the photo's black sky never covers ours else { g.fillStyle=BODY[k].col; g.beginPath(); g.arc(0,0,q.deg*pxd/2,0,7); g.fill(); }
+        if(im){ if(k==='sa'){ g.globalCompositeOperation='lighter'; put(im,-rr,-rr,sz,sz,p[0]+jx,p[1]+jy); g.globalCompositeOperation='source-over'; } else { g.save(); g.beginPath(); g.arc(0,0,q.deg*pxd/2,0,7); g.clip(); put(im,-rr,-rr,sz,sz,p[0]+jx,p[1]+jy); g.restore(); } }   // the photo's black sky never covers ours else { g.fillStyle=BODY[k].col; g.beginPath(); g.arc(0,0,q.deg*pxd/2,0,7); g.fill(); }
         if(k!=='sun'&&q.i>2){ const sp=proj(sv), ang=sp?Math.atan2(sp[1]-p[1],sp[0]-p[0]):Math.atan2(sv[1]-v[1],0), dr=q.deg*pxd/2, ci=Math.cos(q.i*D2R); g.rotate(ang); g.fillStyle='rgba(0,0,0,.9)'; g.beginPath();
           for(let a=-90;a<=90;a+=6){ const y=dr*sn(a); g.lineTo(-dr*cs(a)*1.01,y); } for(let a=90;a>=-90;a-=6){ const y=dr*sn(a); g.lineTo(-ci*dr*cs(a),y); } g.fill(); }   // the dark side: the limb away from the Sun to the terminator
         g.restore(); g.globalAlpha=1;
@@ -155,11 +156,11 @@ const SCOPE={alt:35,az:270,va:0,vz:0,mag:25,focus:0,track:true,lines:true,filter
           g.fillStyle='#f4ecd8'; g.font='9px Silkscreen,monospace'; g.textAlign='center'; for(const m of galilean(jd)){ if(Math.abs(m.x)<1&&!m.front)continue; const x=p[0]+ux*m.x*rj, y=p[1]+uy*m.x*rj; g.globalAlpha=vis; g.beginPath(); g.arc(x,y,Math.max(1,q.deg*pxd*.025),0,7); g.fill(); if(SCOPE.mag>=100)g.fillText(m.n,x,y+12); } g.globalAlpha=1; } }
       // the deep sky's pictures, at their size, faint as they really are under a city sky
       if(SCOPE.data&&!SCOPE.filter)for(const T of SCOPE.data.sky||[]){ if(T.ra==null)continue; const v=eqv(T.ra,T.dec), p=proj(v); if(!p||v[1]<-.02)continue; const sz=(T.fov_deg||.5)*pxd, d=Math.hypot(p[0]-cx,p[1]-cy); if(d>R+sz)continue; near.push([T.id,T,d]);
-        const im=soft(T.id); if(!im||sz<4)continue; g.globalAlpha=(1-day)*(1-cover*.9)*(T.kind==='cluster'?.35:.7); g.globalCompositeOperation='lighter'; g.drawImage(im,p[0]-sz/2,p[1]-sz/2,sz,sz); g.globalCompositeOperation='source-over'; g.globalAlpha=1; }
+        const im=soft(T.id); if(!im||sz<4)continue; g.globalAlpha=(1-day)*(1-cover*.9)*(T.kind==='cluster'?.35:.7); g.globalCompositeOperation='lighter'; put(im,p[0]-sz/2,p[1]-sz/2,sz,sz,jx,jy); g.globalCompositeOperation='source-over'; g.globalAlpha=1; }
       g.filter='none';
       // the ground: the city's roofline below the horizon, its windows lit at night
       { const pts=[]; for(let i=-40;i<=40;i++){ const az=SCOPE.az+i*fov/40*1.6, hh=1.2+2.6*Math.abs(Math.sin(az*.37)*Math.sin(az*.11+1)), p=proj([cs(hh)*sn(az),sn(hh),cs(hh)*cs(az)]); if(p)pts.push(p); }
-        if(pts.length>1&&pts.some(p=>p[1]>cy-R)){ g.fillStyle=`rgb(${Math.round(14+60*day)},${Math.round(14+58*day)},${Math.round(18+60*day)})`; g.beginPath(); g.moveTo(pts[0][0],h+R); for(const p of pts)g.lineTo(p[0],p[1]); g.lineTo(pts[pts.length-1][0],h+R); g.fill(); } }
+        if(pts.length>1&&pts.some(p=>p[1]<cy+R)){ g.fillStyle=`rgb(${Math.round(14+60*day)},${Math.round(14+58*day)},${Math.round(18+60*day)})`; g.beginPath(); g.moveTo(pts[0][0],h+R); for(const p of pts)g.lineTo(p[0],p[1]); g.lineTo(pts[pts.length-1][0],h+R); g.fill(); } }
       // the weather in the way, the Sun burning in, the rim of the eyepiece
       if(cover>0||wet){ const off=(performance.now()/1000)*(Wx.wind||.2)*30; g.globalAlpha=cl(cover+wet,0,1)*(.4+.6*day+.25); const pat=g.createPattern(cloudC,'repeat'); g.translate(-off%256,0); g.fillStyle=pat; g.fillRect(cx-R+off%256-256,cy-R-256,2*R+512,2*R+512); g.setTransform(dpr,0,0,dpr,0,0); g.globalAlpha=1; }
       const glare=SCOPE.filter?0:cl(1-(sunOff-fov/2)/6,0,1)*cl((sunH.alt+1)/2,0,1);
@@ -168,7 +169,7 @@ const SCOPE={alt:35,az:270,va:0,vz:0,mag:25,focus:0,track:true,lines:true,filter
       g.restore(); const vg=g.createRadialGradient(cx,cy,R*.82,cx,cy,R); vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,.85)'); g.fillStyle=vg; g.beginPath(); g.arc(cx,cy,R,0,7); g.fill();
       if(SCOPE.mag===6){ g.strokeStyle='rgba(255,90,60,.6)'; g.lineWidth=1; g.beginPath(); g.moveTo(cx-R,cy); g.lineTo(cx+R,cy); g.moveTo(cx,cy-R); g.lineTo(cx,cy+R); g.stroke(); }
       g.fillStyle='#d8c8a8'; g.font='12px Silkscreen,monospace'; g.textAlign='center';
-      if(glare>.6)g.fillText('THE SUN! NEVER WITHOUT A SOLAR FILTER.',cx,cy+R+16>h-6?h-10:cy+R+16); else if(wet>.15)g.fillText(Wx.snow>Wx.rain?'SNOW ON THE GLASS':'RAIN ON THE GLASS',cx,Math.min(h-10,cy+R+16)); else if(cover>.6)g.fillText('CLOUDED OVER',cx,Math.min(h-10,cy+R+16));
+      const nt=SCOPE.note&&SCOPE.note.t>performance.now()?SCOPE.note.s:''; if(nt)g.fillText(nt,cx,Math.min(h-10,cy+R+16)); else if(glare>.6)g.fillText('THE SUN! NEVER WITHOUT A SOLAR FILTER.',cx,cy+R+16>h-6?h-10:cy+R+16); else if(wet>.15)g.fillText(Wx.snow>Wx.rain?'SNOW ON THE GLASS':'RAIN ON THE GLASS',cx,Math.min(h-10,cy+R+16)); else if(cover>.6)g.fillText('CLOUDED OVER',cx,Math.min(h-10,cy+R+16));
       // what is in the middle, and where the tube points
       near.sort((a,b)=>a[2]-b[2]); const c0=near[0]&&near[0][2]<R*.35?near[0]:null; SCOPE.centre=c0?c0[0]:null; SCOPE.glare=glare; SCOPE.lim=lim;
       const el=O.querySelector('#scoper'); if(el&&(SCOPE._rt=(SCOPE._rt||0)-dt)<=0){ SCOPE._rt=.25; const q=hor2eq(SCOPE.alt,SCOPE.az,lst), lt=nrm(((jd-2440587.5)*864e5-tz(new Date())*36e5)/36e5*15)/15, f2=n=>String(Math.floor(n)).padStart(2,'0');

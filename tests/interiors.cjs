@@ -55,7 +55,7 @@ const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv
     const a=await pg.evaluate(()=>{ const th=n=>__dbg.UI.things.find(t=>t.name.startsWith(n));
       th('THE INFORMATION DESK (THE FLOOR PLAN)').act(); const plan=MINI.on&&MINI.on.title==='THE FLOOR PLAN'; MINI.close();
       const casts=__dbg.UI.things.filter(t=>/\(A (CAST|COPY)\)/.test(t.name)).length;
-      const shops=__dbg.UI.things.filter(t=>/ESPRESSO|PASTRY|POSTCARD|PRINTS|CAFÉ/.test(t.name)).length;
+      const AR=STORE.rooms.find(r=>r.id==='art'), V=new (SHARED.cam.position.constructor)(), inArt=t=>{ t.obj.getWorldPosition(V); return AR.inside(V.x,V.z); }, shops=__dbg.UI.things.filter(t=>/ESPRESSO|PASTRY|POSTCARD|PRINTS|CAFÉ/.test(t.name)&&inArt(t)).length;   // (the bookstore's coffee bar, built at the start since 9 Nov, is not the museum's)
       INV.cash=5; th('A GUIDED TOUR WITH ROSIE').act(); const paid=INV.cash===2&&!!GALLERY.touring;
       return {plan,casts,shops,paid}; });
     rec('art museum: the floor plan; no casts, no café, no gift shop',a.plan&&a.casts===0&&a.shops===0,JSON.stringify(a));

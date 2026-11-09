@@ -306,7 +306,7 @@ const fishInit=()=>{ if(FISHING.at)return; const T=TILE, RB={get lv(){ return RI
     addEventListener('pointerup',()=>{ if(FISHING.mode){ up(); if(pside){ FISHING.side=0; pside=false; } } });
     const typing=e=>e.target&&e.target.closest&&e.target.closest('input,textarea,[contenteditable="true"]');
     const LOCK=new Set(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','1','j','k','n','r','u','i','2','3','4','p','f','v','b',' ','escape']), LEFT=new Set(['a','arrowleft']), RIGHT=new Set(['d','arrowright']);
-    addEventListener('keydown',e=>{ if(typing(e))return; const k=(e.key||'').toLowerCase();
+    addEventListener('keydown',e=>{ const k=(e.key||'').toLowerCase(); if(k==='escape'&&FISHING.mode&&typing(e)){ e.target.blur(); e.preventDefault(); e.stopImmediatePropagation(); FISHING.leave(); return; } if(typing(e))return;
       if(!FISHING.mode){ if(k==='f'&&!GO.hidden&&!e.repeat){ FISHING.enter(); e.preventDefault(); e.stopImmediatePropagation(); } return; }
       if(!LOCK.has(k))return; e.preventDefault(); e.stopImmediatePropagation(); if(e.repeat)return;
       if(k===' ')down(); else if(k==='escape'||k==='f')FISHING.leave(); else if(k==='v')view(); else if(k==='b')baitNext(); else if(LEFT.has(k))FISHING.side=-1; else if(RIGHT.has(k))FISHING.side=1;

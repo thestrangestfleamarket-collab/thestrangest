@@ -109,6 +109,11 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const f = FISHING.theirs.get('a'), L = f && f.line.geometry.attributes.position, tp = WIELD.theirTip('a'); ONLINE.on = on;
     return { line: !!(f && f.line.visible), tip: !!tp, gap: L && tp ? +Math.hypot(L.getX(0) - tp.x, L.getY(0) - tp.y, L.getZ(0) - tp.z).toFixed(3) : null }; });
   ok(rf.line && rf.tip && rf.gap < .05, "another player's fishing line starts at the tip of the rod in her hand: " + JSON.stringify(rf));
+  // fishing's bar is a window: its X leaves fishing as LEAVE does, even with a fish on the hook (owner, 9 Nov 2026: "i cant leaev fishing mode esc/x dose nothing")
+  const lx = await pg.evaluate(async () => { const T = __dbg.cv().TILE; FORAGE.give('rod', 1); WIELD.set('rod'); STORE.pos.set(PIER.x, 0, PIER.zE + 1.5 * T); SHARED.heading = Math.PI; FISHING.enter(); const t0 = performance.now();
+    while (!document.querySelector('#fishmode>.pX') && performance.now() - t0 < 5000) await new Promise(r => setTimeout(r, 100)); const x = document.querySelector('#fishmode>.pX'); if (!x) return { x: false };
+    x.click(); await new Promise(r => setTimeout(r, 300)); return { x: true, mode: FISHING.mode, bar: getComputedStyle(document.getElementById('fishmode')).display }; });
+  ok(lx.x && lx.mode === false && lx.bar === 'none', "the fishing bar's X leaves fishing: " + JSON.stringify(lx));
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close(); console.log(fails.length ? fails.length + ' failed' : 'all fishing checks passed'); process.exit(fails.length ? 1 : 0);
 })();

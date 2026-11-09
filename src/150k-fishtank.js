@@ -52,12 +52,12 @@ import {ROOMK} from './150a-bedroom.js';
       P(sg,sand,0,SH+.03,0);
       // the water: its body bends the light like real water, its open top a live surface (a wave sim: ripples from fish, food and bubbles)
       const wg=new THREE.BoxGeometry(SW,WY-SH-.02,SD), gi=wg.index.array, gr=wg.groups[2], keep=[]; for(let i=0;i<gi.length;i++)if(i<gr.start||i>=gr.start+gr.count)keep.push(gi[i]); wg.setIndex(keep); wg.clearGroups();
-      const water=new THREE.MeshPhysicalMaterial({color:new THREE.Color(...WATER.fresh.c),transmission:1,ior:1.333,thickness:TD,roughness:.03,metalness:0,attenuationColor:new THREE.Color(...WATER.fresh.at),attenuationDistance:2.2,transparent:true});
+      const water=new THREE.MeshStandardMaterial({color:new THREE.Color(...WATER.fresh.at),roughness:.1,metalness:0,transparent:true,opacity:.12,depthWrite:false});   // a clear tint, not a blurred copy of the room (owner, 9 Nov 2026)
       const wm=P(wg,water,0,SH+.02+(WY-SH-.02)/2,0,0,false); wm.renderOrder=2; wm.userData.soft=true;
       const fg=new THREE.PlaneGeometry(SW,SD,NX-1,NZ-1); fg.rotateX(-Math.PI/2); fg.attributes.position.setUsage(THREE.DynamicDrawUsage); fg.attributes.normal.setUsage(THREE.DynamicDrawUsage);
       const surfM=new THREE.MeshStandardMaterial({color:WATER.fresh.s,roughness:.06,metalness:.05,transparent:true,opacity:.42,side:THREE.DoubleSide,depthWrite:false});
       const surf=P(fg,surfM,0,WY,0,0,false); surf.renderOrder=3; surf.userData.soft=true;
-      const glass=new THREE.MeshPhysicalMaterial({color:0xffffff,transmission:1,ior:1.5,thickness:GL,roughness:.01,metalness:0,transparent:true});
+      const glass=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.03,metalness:.2,transparent:true,opacity:.05,depthWrite:false});
       { const gg=merge([[B(TW,TH,GL),[255,255,255],0,SH+TH/2,-TD/2+GL/2],[B(TW,TH,GL),[255,255,255],0,SH+TH/2,TD/2-GL/2],[B(GL,TH,TD),[255,255,255],-TW/2+GL/2,SH+TH/2,0],[B(GL,TH,TD),[255,255,255],TW/2-GL/2,SH+TH/2,0]]); gg.deleteAttribute('color');
         const m=P(gg,glass,0,0,0,0,false); m.renderOrder=4; m.userData.soft=true; }
       // the decor, each its own mesh to show or hide
@@ -97,7 +97,7 @@ import {ROOMK} from './150a-bedroom.js';
 
   /* ---------- the settings: water, decor, fish, light ---------- */
   const apply=(T,s)=>{ T.s=clean(s); const W=WATER[T.s.w], L=new THREE.Color(LIGHTC[T.s.l.c]), on=T.s.l.on;
-    T.water.color.setRGB(...W.c); T.water.attenuationColor.setRGB(...W.at); T.water.attenuationDistance=W.ad*(on?1:.6); T.surfM.color.setHex(W.s);
+    T.water.color.setRGB(...W.at); T.water.opacity=Math.min(.6,.25/W.ad)*(on?1:1.3); T.surfM.color.setHex(W.s);
     T.sand.color.setRGB(...(T.s.d.includes('sand')?W.sand:[.14,.14,.16])); T.U.uL.value.copy(L); T.U.uK.value=on?(W.glow?1.6:1):0;
     T.bar.color.copy(on?L:new THREE.Color(.05,.05,.06)); T.leaf.emissive.setHex(W.glow&&on?0x146a34:0);
     for(const [k] of DECOR)if(T.D[k])T.D[k].visible=T.s.d.includes(k); if(T.ready)school(T); };

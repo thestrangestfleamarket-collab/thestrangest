@@ -242,6 +242,7 @@ RIVER.build=()=>{ if(RIVER.on)return; const n0=scene.children.length; const R=RI
     seedJunk(); RIVER.cx=1e9; };
   RIVER.load=async()=>{ if(RIVER.deep||dbusy)return; dbusy=true; await FADE.run('LOADING...',()=>deepGo(),{keep:true}); dbusy=false; };
   RIVER.over=(x,z)=>SHARED.LVL==='up'&&x>lx0&&x<lx1&&z>rz0&&z<rz1;
+  RIVER.level=(x,z)=>RIVER.over(x,z)?LV+hAt(x,z):null;   // the water's surface here, or null off the river
   RIVER.dep=0; RIVER.bot=0; let wasIn=false, wake=0, wasUnder=false;
   RIVER.feed=(st,pos,dt,go,keys)=>{ if(!RIVER.over(pos.x,pos.z)||!RIVER.swim&&onPier(pos.x,pos.z)){ RIVER.swim=false; if(wasIn)wasIn=false; return false; }
     const h=hAt(pos.x,pos.z)+(RIVER.swim?FLOW.carry(pos,dt):0), lvl=(LV+h)/ZU, floor=(LV-depthAt(pos.x,pos.z)*WU)/ZU;

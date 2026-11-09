@@ -15,7 +15,7 @@ Object.assign(SFX,{on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}});
   let woke=false; const mk=()=>{ if(!SOUND)return null; if(!SFX.ac)try{ SFX.ac=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } return SFX.ac; };
   SFX.ctx=()=>SFX.ac||(woke||(navigator.userActivation&&navigator.userActivation.hasBeenActive)?mk():null);
   SFX.wake=()=>{ const c=mk(); if(c&&c.state!=='running')c.resume().catch(()=>{}); return c; };
-  { const w=()=>{ woke=true; SFX.wake(); }; addEventListener('pointerdown',w,true); addEventListener('keydown',w,true); }
+  { const w=e=>{ if(!e.isTrusted)return; woke=true; SFX.wake(); }; addEventListener('pointerdown',w,true); addEventListener('keydown',w,true); }
   SFX.live=()=>{ const c=SFX.ctx(); return c&&c.state==='running'?c:null; };
   SFX.out=c=>{ if(!SFX.m||SFX.m.context!==c){ SFX.m=c.createGain(); SFX.m.gain.value=SFX.vol; SFX.m.connect(c.destination); } return SFX.m; };
   const bus=c=>{ if(!SFX.g||SFX.g.context!==c){ SFX.g=c.createGain(); SFX.g.connect(SFX.out(c)); } SFX.g.gain.value=SFX.on?1:0; return SFX.g; };

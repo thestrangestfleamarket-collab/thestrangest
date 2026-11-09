@@ -9,7 +9,7 @@ const asked = new Set(); for (const f of fs.readdirSync('src')) if (f.endsWith('
   await pg.addInitScript(() => { window.__acs = 0; for (const k of ['AudioContext', 'webkitAudioContext']) { const A = window[k]; if (A) window[k] = class extends A { constructor(...a) { super(...a); window.__acs++; } }; } });
   await pg.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=13&at=25,10', { waitUntil: 'commit' });
   await pg.waitForFunction(() => window.__started, null, { timeout: 400000, polling: 500 });
-  const r0 = await pg.evaluate(() => ({ n: window.__acs, ctx: !!__dbg.SFX.ctx() }));
+  const r0 = await pg.evaluate(() => ({ n: window.__acs, ctx: !!__dbg.SFX.ac }));
   ok(r0.n === 0 && !r0.ctx, 'no audio context before the first click or key: ' + JSON.stringify(r0));
   await pg.mouse.click(480, 80); await pg.waitForFunction(() => __dbg.SFX.live(), null, { timeout: 15000 }).catch(() => {});
   const r1 = await pg.evaluate(names => { const S = __dbg.SFX, c = S.live(); return { live: !!c, missing: names.filter(k => !S.recipe(k)), dead: S.names().filter(k => { const B = c && S.buffer(k, c); if (!B) return true; const D = B.getChannelData(0); let mx = 0; for (let i = 0; i < D.length; i++) { const v = Math.abs(D[i]); if (!isFinite(v)) return true; if (v > mx) mx = v; } return mx < .01 || !S.play(k, { vol: .01 }); }), n: S.names().length }; }, [...asked]);

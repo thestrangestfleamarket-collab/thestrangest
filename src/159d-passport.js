@@ -18,7 +18,7 @@ import {AVATAR} from './111c-avatar.js';
   PASSPORT.P=P; const save=()=>OWNED.set('passport',JSON.stringify(P));
   st.hand=OWNED.get('hand')==='L'?'L':'R'; Object.defineProperty(PASSPORT,'hand',{get:()=>st.hand==='L'?'L':'R'}); PASSPORT.setHand=h=>{ h=h==='L'?'L':'R'; if(st.hand===h)return; st.hand=h; OWNED.set('hand',h); if(!sp.hidden)draw(); };
   const day=t=>{ const d=new Date(t); return isNaN(d)?'':d.toISOString().slice(0,10); };
-  SYS.onStart(()=>{ if(!FORAGE.has('passport'))FORAGE.give('passport',1); if(OWNED.get('lanyard')==null){ OWNED.set('lanyard','1'); PASSPORT.wear(true); } },'159d-passport');
+  SYS.onStart(()=>{ if(!FORAGE.has('passport'))FORAGE.give('passport',1); },'159d-passport');
   PASSPORT.stamp=id=>{ if(!id||P.stamps[id])return; P.stamps[id]=new Date().toISOString().slice(0,10); save(); say('YOUR PASSPORT IS STAMPED: SECTION '+id+'.','#7dffa8'); };
   const sp=document.createElement('div'); sp.id='passportw'; sp.hidden=true;
   sp.style.cssText='position:fixed;inset:0;z-index:22;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);zoom:var(--uiz,1)';
@@ -71,9 +71,8 @@ import {AVATAR} from './111c-avatar.js';
     snap(); };   // (the photo of you as you are now: the designer's portrait, shoulders and up)
   PASSPORT.set=o=>{ Object.assign(P,o); save(); if(!sp.hidden)draw(); };
   PASSPORT.open=()=>{ sp.hidden=false; sp.style.display='flex'; draw(); }; PASSPORT.close=()=>{ sp.hidden=true; sp.style.display='none'; };
-  // worn on its lanyard round your neck (owner, 8 Nov 2026), or off in the pack; it never leaves you (no dropping, no trading)
-  Object.defineProperty(PASSPORT,'worn',{get:()=>!!(AVATAR.L&&AVATAR.L().lan)}); PASSPORT.wear=on=>{ if(!!on===PASSPORT.worn||!AVATAR.set)return; AVATAR.set({lan:on?1:0}); say(on?'YOU PUT YOUR PASSPORT ON ITS LANYARD.':'YOU TAKE YOUR PASSPORT OFF AND PUT IT IN YOUR PACK.'); };
-  FORAGE.ACT.passport=()=>PASSPORT.open(); FORAGE.ACT.lanyard=()=>PASSPORT.wear(!PASSPORT.worn); FORAGE.ROWB.push(id=>id==='passport'?[['SHOW','passport'],[PASSPORT.worn?'TAKE OFF':'WEAR','lanyard']]:[]);
+  // kept in the pack; it never leaves you (no dropping, no trading)
+  FORAGE.ACT.passport=()=>PASSPORT.open(); FORAGE.ROWB.push(id=>id==='passport'?[['SHOW','passport']]:[]);
   // the gates: a hex forcefield across each station's exit, solid while closed; a machine beside it
   const [fcv,ftex]=(()=>{ const c=document.createElement('canvas'); c.width=c.height=512; const g=c.getContext('2d'); g.clearRect(0,0,512,512); g.strokeStyle='rgba(110,210,255,.85)'; g.lineWidth=2; const r=22;
     for(let j=0;j<16;j++)for(let i=0;i<16;i++){ const x=i*r*1.73+(j%2?r*.866:0), y=j*r*1.5; g.beginPath(); for(let k=0;k<6;k++){ const an=Math.PI/6+k*Math.PI/3; g.lineTo(x+r*Math.cos(an),y+r*Math.sin(an)); } g.closePath(); g.stroke(); }

@@ -7,12 +7,16 @@ import {LEVEL, QS, SYS, TILE, ZU} from './006-map-pre.js';
   let sd=C.seed||7; const rnd=()=>{ sd=(sd*16807)%2147483647; return sd/2147483647; };
   const [cx,cy]=C.center, near=C.near, wet=C.water||[], cl=C.clusters||[];
   const inBox=(x,y,b)=>x>b[0]&&x<b[2]&&y>b[1]&&y<b[3], isWet=y=>wet.some(([a,b])=>y>a&&y<b);
+  // the island (owner, 8 Nov 2026: Manhattan): the Hudson's y band, the East River past its near bank (C.east), all water past the island's ends; across either the far shore, lower; Central Park inside the ring (LEVEL.sections.ring)
+  const RG=LEVEL.sections&&LEVEL.sections.ring, PK=RG&&RG.park, inR=(x,y,r)=>!!r&&x>r.x0&&x<r.x1&&y>r.y0&&y<r.y1, EB=C.east, BK=EB&&EB.bank;
+  const bankY=x=>{ if(!BK)return 1e9; if(x<BK[0][0]||x>BK[BK.length-1][0])return null; let i=1; while(i<BK.length-1&&BK[i][0]<x)i++; const [ax,ay]=BK[i-1], [bx,by]=BK[i]; return ay+(by-ay)*(x-ax)/(bx-ax||1); };
+  const where=(x,y)=>{ if(isWet(y))return 'water'; if(C.lowY!=null&&y<C.lowY)return 'low'; const b=bankY(x); if(b==null)return 'water'; if(y>b)return y<b+EB.w?'water':'low'; if(inR(x,y,PK))return 'park'; return 'city'; };
   // how tall the city stands at a spot: its own ground height, raised near its clusters of towers (map tiles)
   const tall=(x,y)=>{ let h=C.base[0]+rnd()*(C.base[1]-C.base[0]); for(const [qx,qy,peak,r] of cl){ const d2=((x-qx)**2+(y-qy)**2)/(r*r); h=Math.max(h,peak*Math.exp(-d2)*(.45+.55*rnd())); } return h; };
   /* ---------- the plain shapes: a block every so many tiles, two to four buildings on it ---------- */
   const B=[]; const [BX,BY]=C.block;
-  for(let gx=cx-C.R;gx<cx+C.R;gx+=BX)for(let gy=cy-C.R;gy<cy+C.R;gy+=BY){ const mx=gx+BX/2, my=gy+BY/2; if(Math.hypot(mx-cx,my-cy)>C.R||inBox(mx,my,near)||isWet(my))continue;
-    const low=C.lowY!=null&&my<C.lowY; let x=gx+3; while(x<gx+BX-6){ const w=Math.min(gx+BX-3-x,8+rnd()*18), d=(BY-6)*(.55+.45*rnd()); let h=tall(x+w/2,my); if(low)h*=C.lowK; if(rnd()<.12)h*=.4; const room=gx+BX-3-x, ww=Math.min(room,Math.max(w,h*.3)), dd=Math.max(d,Math.min(BY-6,h*.3)); h=Math.min(h,3.2*Math.max(ww,dd));
+  for(let gx=cx-C.R;gx<cx+C.R;gx+=BX)for(let gy=cy-C.R;gy<cy+C.R;gy+=BY){ const mx=gx+BX/2, my=gy+BY/2; const wh=where(mx,my); if(Math.hypot(mx-cx,my-cy)>C.R||inBox(mx,my,near)||wh!=='low')continue;   // (shapes only on the far shore; the island's city is the painted outline past the view, owner, 8 Nov 2026: "only build what is needed for the outline")
+    const low=wh==='low'; let x=gx+3; while(x<gx+BX-6){ const w=Math.min(gx+BX-3-x,8+rnd()*18), d=(BY-6)*(.55+.45*rnd()); let h=tall(x+w/2,my); if(low)h*=C.lowK; if(rnd()<.12)h*=.4; const room=gx+BX-3-x, ww=Math.min(room,Math.max(w,h*.3)), dd=Math.max(d,Math.min(BY-6,h*.3)); h=Math.min(h,3.2*Math.max(ww,dd));
       B.push([x+ww/2,gy+3+dd/2,ww,dd,Math.max(3,h),rnd()]); x+=ww+1+rnd()*2; } }
   // one box without its floor: five faces, ten triangles
   const geo=new THREE.BoxGeometry(1,1,1).translate(0,.5,0); { const ix=geo.index.array, keep=[]; for(let i=0;i<ix.length;i+=3){ const f=Math.floor(i/6); if(f!==3)keep.push(ix[i],ix[i+1],ix[i+2]); } geo.setIndex(keep); }
@@ -36,12 +40,12 @@ import {LEVEL, QS, SYS, TILE, ZU} from './006-map-pre.js';
   const t0=Math.tan(E0), t1=Math.tan(E1), yOf=e=>Math.round((1-(Math.tan(e)-t0)/(t1-t0))*H);   // (the ring is straight up and down: its height goes with the angle's tangent)
   // R: how far (0 near .. 1 farthest), G: a window, B: the building's tone, A: there
   const sx=Math.sign(XS(1)-XS(0))||1, sz=Math.sign(ZS(1)-ZS(0))||1, at=(u,D)=>{ const a=u*2*Math.PI; return [cx+sx*Math.sin(a)*D/T,cy+sz*Math.cos(a)*D/T]; };   // (a direction round the ring, as the cylinder lays it: from +z toward +x; back to map tiles)
-  // the ground to the horizon by what lies that way (C.lands: y bands of water, street, park; else haze), a line of trees over the park (owner, 8 Nov 2026: "the hudson should look at least blue from any angle ... the park should look like it goes on forever")
-  const LK={water:0,park:1,street:2,trees:3}, land=y=>{ for(const [a,b,k] of C.lands||[])if(y>a&&y<b)return k; return null; };
-  for(let x=0;x<W;x++){ const [,ty]=at((x+.5)/W,RADT()), k=land(ty); g.fillStyle=k?`rgb(0,0,${LK[k]*64+32})`:'rgb(255,0,90)'; g.fillRect(x,yOf(0)-1,1,H);
-    if(k==='park'){ const [,t2]=at((x+.5)/W,C.ring[0]*T); if(land(t2)==='park'){ const top=yOf(Math.atan2((3+rnd()*5)*T,C.ring[0]*T)); g.fillStyle=`rgb(0,0,${LK.trees*64+32})`; g.fillRect(x,top,1,yOf(0)-top); } } }
-  for(const [L,D,k] of [[1,C.ring[2],.95],[.7,C.ring[1],.8],[.4,C.ring[0],.65]]){ let x=0;
-    while(x<W){ let w=3+Math.floor(rnd()*9*k); const [tx,ty]=at((x+w/2)/W,D*T); let hh=tall(tx,ty)*(isWet(ty)?0:1)*(C.lowY!=null&&ty<C.lowY?C.lowK:1); if(rnd()<.15)hh*=.3; w=Math.max(w,Math.ceil(hh*.3/(2*Math.PI*D/W)));
+  // the ground to the horizon by what lies that way (where(): water, the park, else the city's streets), a line of trees over the park (owner, 8 Nov 2026: "the hudson should look at least blue from any angle ... the park should look like it goes on forever")
+  const LK={water:0,park:1,street:2,trees:3}, land=(x,y)=>{ const w=where(x,y); return w==='water'?'water':w==='park'?'park':'street'; };
+  for(let x=0;x<W;x++){ const [tx0,ty]=at((x+.5)/W,RADT()), k=land(tx0,ty); g.fillStyle=k?`rgb(0,0,${LK[k]*64+32})`:'rgb(255,0,90)'; g.fillRect(x,yOf(0)-1,1,H);
+    if(k==='park'){ const [tx2,t2]=at((x+.5)/W,C.ring[0]*T); if(land(tx2,t2)==='park'){ const top=yOf(Math.atan2((3+rnd()*5)*T,C.ring[0]*T)); g.fillStyle=`rgb(0,0,${LK.trees*64+32})`; g.fillRect(x,top,1,yOf(0)-top); } } }
+  for(const [L,D,k] of C.ring.map((D,i,A)=>[.4+.6*i/Math.max(1,A.length-1),D,.65+.3*i/Math.max(1,A.length-1)]).reverse()){ let x=0;
+    while(x<W){ let w=3+Math.floor(rnd()*9*k); const [tx,ty]=at((x+w/2)/W,D*T); const wh=where(tx,ty); let hh=wh==='water'||wh==='park'?0:tall(tx,ty)*(wh==='low'?C.lowK:1); if(rnd()<.15)hh*=.3; w=Math.max(w,Math.ceil(hh*.3/(2*Math.PI*D/W)));
       if(hh>0){ const top=yOf(Math.atan2(hh*T,D*T)), bot=yOf(0), tone=Math.floor(rnd()*255); g.fillStyle=`rgb(${Math.round(L*255)},0,${tone})`; g.fillRect(x,top,w,bot-top);
         if(hh>C.base[1]*1.6&&rnd()<.5){ const t2=yOf(Math.atan2(hh*1.08*T,D*T)); g.fillRect(x+Math.floor(w*.2),t2,Math.max(2,Math.floor(w*.6)),top-t2); }
         for(let yy=top+2;yy<bot-1;yy+=3)for(let xx=x+1;xx<x+w-1;xx+=2)if(rnd()<.5){ g.fillStyle=`rgb(${Math.round(L*255)},255,${tone})`; g.fillRect(xx,yy,1,1); } }

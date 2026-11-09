@@ -12,6 +12,8 @@ const AVATAR={}; window.AVATAR=AVATAR;
   // the pieces in files of about a megabyte, a kind's versions together, each fetched once something in it is worn (a figure's body and walk come first; c: a piece's file)
   const LZ={m:[__LAZY__("data/pfavatar-m-00.json"),__LAZY__("data/pfavatar-m-01.json"),__LAZY__("data/pfavatar-m-02.json"),__LAZY__("data/pfavatar-m-03.json"),__LAZY__("data/pfavatar-m-04.json"),__LAZY__("data/pfavatar-m-05.json"),__LAZY__("data/pfavatar-m-06.json"),__LAZY__("data/pfavatar-m-07.json"),__LAZY__("data/pfavatar-m-08.json"),__LAZY__("data/pfavatar-m-09.json"),__LAZY__("data/pfavatar-m-10.json"),__LAZY__("data/pfavatar-m-11.json"),__LAZY__("data/pfavatar-m-12.json"),__LAZY__("data/pfavatar-m-13.json"),__LAZY__("data/pfavatar-m-14.json"),__LAZY__("data/pfavatar-m-15.json"),__LAZY__("data/pfavatar-m-16.json"),__LAZY__("data/pfavatar-m-17.json"),__LAZY__("data/pfavatar-m-18.json"),__LAZY__("data/pfavatar-m-19.json"),__LAZY__("data/pfavatar-m-20.json"),__LAZY__("data/pfavatar-m-21.json"),__LAZY__("data/pfavatar-m-22.json"),__LAZY__("data/pfavatar-m-23.json"),__LAZY__("data/pfavatar-m-24.json"),__LAZY__("data/pfavatar-m-25.json"),__LAZY__("data/pfavatar-m-26.json"),__LAZY__("data/pfavatar-m-27.json"),__LAZY__("data/pfavatar-m-28.json"),__LAZY__("data/pfavatar-m-29.json"),__LAZY__("data/pfavatar-m-30.json"),__LAZY__("data/pfavatar-m-31.json")],f:[__LAZY__("data/pfavatar-f-00.json"),__LAZY__("data/pfavatar-f-01.json"),__LAZY__("data/pfavatar-f-02.json"),__LAZY__("data/pfavatar-f-03.json"),__LAZY__("data/pfavatar-f-04.json"),__LAZY__("data/pfavatar-f-05.json"),__LAZY__("data/pfavatar-f-06.json"),__LAZY__("data/pfavatar-f-07.json"),__LAZY__("data/pfavatar-f-08.json"),__LAZY__("data/pfavatar-f-09.json"),__LAZY__("data/pfavatar-f-10.json"),__LAZY__("data/pfavatar-f-11.json"),__LAZY__("data/pfavatar-f-12.json"),__LAZY__("data/pfavatar-f-13.json"),__LAZY__("data/pfavatar-f-14.json"),__LAZY__("data/pfavatar-f-15.json"),__LAZY__("data/pfavatar-f-16.json"),__LAZY__("data/pfavatar-f-17.json"),__LAZY__("data/pfavatar-f-18.json"),__LAZY__("data/pfavatar-f-19.json"),__LAZY__("data/pfavatar-f-20.json"),__LAZY__("data/pfavatar-f-21.json"),__LAZY__("data/pfavatar-f-22.json"),__LAZY__("data/pfavatar-f-23.json"),__LAZY__("data/pfavatar-f-24.json"),__LAZY__("data/pfavatar-f-25.json"),__LAZY__("data/pfavatar-f-26.json"),__LAZY__("data/pfavatar-f-27.json"),__LAZY__("data/pfavatar-f-28.json"),__LAZY__("data/pfavatar-f-29.json"),__LAZY__("data/pfavatar-f-30.json"),__LAZY__("data/pfavatar-f-31.json")]};
   const SLOTS=[['hair','HAIR'],['face','FACE'],['eyes','GLASSES'],['hat','HAT'],['top','TOP'],['coat','JACKET'],['bottom','BOTTOMS'],['feet','SHOES'],['belt','BELT'],['neck','NECK'],['hands','HANDS'],['back','BACK'],['righthand','RIGHT HAND'],['lefthand','LEFT HAND']], OLD=11;   // (the slots after OLD came later: their codes go after the barefoot mark)
+  // no props held in the hands from the wardrobe (owner, 8 Nov 2026: "remove the ability to add something to your left or right hand in the character menu ... you cant just put them in your hand as props"): the slots stay in the list (the look codes keep their places) but are never offered, worn or drawn
+  const NOPROP=new Set(['righthand','lefthand']);
   const SKINS=['f3d5bd','e6b892','d9a984','c08a64','a26a45','7e4c2f','5c3622','3e2416'], HAIRC=['1d1712','3b2a1e','5a3a24','8a5a32','b98a4e','d8c28a','8c8c8c','e8e4dc'];
   const EYES=[['2a2019','BRN'],['4a2c17','BRN'],['6b5a2a','HAZ'],['3f6b3a','GRN'],['3b6ea8','BLU'],['6f7b85','GRY'],['8a5a1a','AMB'],['111111','BLK']], EYE0='2a2019';   // (the eye colours to pick, owner 7 Nov 2026, each with the passport's code)
   const BUILDN=['SLIM','MEDIUM','BROAD'], byN=new Map(I.pieces.map(p=>[p.n,p])), nOf=(slot,label)=>{ const p=I.pieces.find(q=>q.slot===slot&&q.label===label); return p?p.n:null; };
@@ -39,14 +41,17 @@ const AVATAR={}; window.AVATAR=AVATAR;
   // a part's points (rest, metres) moved by the shape: each by its two bones, as they weigh it
   const reshape=(X,d,Z)=>{ const T=new THREE.Vector3(), U=new THREE.Vector3(); for(let q=0;q<X.length/3;q++){ const b1=d.bone[q*2], b2=d.bone[q*2+1], w=d.w[q]/255, x=X[q*3], y=X[q*3+1], z=X[q*3+2];
       T.set(x,y,z).sub(Z.O[b1]).applyMatrix3(Z.A[b1]).add(Z.O1[b1]); U.set(x,y,z).sub(Z.O[b2]).applyMatrix3(Z.A[b2]).add(Z.O1[b2]); X[q*3]=T.x*w+U.x*(1-w); X[q*3+1]=T.y*w+U.y*(1-w); X[q*3+2]=T.z*w+U.z*(1-w); } };
-  const code=L=>[L.f,L.b,L.h,L.skin,L.hair,...SLOTS.slice(0,OLD).map(x=>enc(x,L)),L.bare?'1':'',...SLOTS.slice(OLD).map(x=>enc(x,L)),L.eye&&L.eye!==EYE0?L.eye:'',L.lan?'1':'',shEnc(L.sh),LYOK(L.ly)?L.ly:''].join('.').replace(/\.+$/,'');   // (then barefoot, then the later slots, then the eyes)
+  // the face you picked: eyes-mouth-eye size-mouth size ('' as it came)
+  const fxEnc=L=>{ const F=fxOf(L); return F.e||F.m||F.es!==100||F.ms!==100?[F.e,F.m,F.es,F.ms].join('-'):''; };
+  const fxDec=v=>{ const m=/^(\d)-(\d)-(\d{2,3})-(\d{2,3})$/.exec(v||''); if(!m)return null; const c=(x,a,b)=>Math.max(a,Math.min(b,+x)); return {e:c(m[1],0,FE.length-1),m:c(m[2],0,FM.length-1),es:c(m[3],50,150),ms:c(m[4],50,150)}; };
+  const code=L=>[L.f,L.b,L.h,L.skin,L.hair,...SLOTS.slice(0,OLD).map(x=>enc(x,L)),L.bare?'1':'',...SLOTS.slice(OLD).map(x=>enc(x,L)),L.eye&&L.eye!==EYE0?L.eye:'',L.lan?'1':'',shEnc(L.sh),LYOK(L.ly)?L.ly:'',fxEnc(L)].join('.').replace(/\.+$/,'');   // (then barefoot, then the later slots, then the eyes)
   // the lanyard's look (owner, 8 Nov 2026): frame_frameColour_string_stringColour: the badge's frame (0 none, 1 clear, 2 metal, 3 coloured), the string (0 cord, 1 flat strap, 2 bead chain)
   const LYOK=s=>/^[0-3]_[0-9a-f]{6}_[0-2]_[0-9a-f]{6}$/.test(s||''), LY0='0_c0392b_0_181818', lyOf=L=>{ const a=(LYOK(L.ly)?L.ly:LY0).split('_'); return {fr:+a[0],fc:a[1],st:+a[2],sc:a[3]}; };
   const hex=s=>/^[0-9a-f]{6}$/.test(s||'')?s:null, cols=s=>/^[0-9a-f]{6}$|^(?:[0-9a-f]{6})?(?:_(?:[0-9a-f]{6})?)+$/.test(s||'')?s:null;   // one colour (the piece's main part), or one a part in the piece's zone order, _ between (an empty part keeps its own)
   const decode=c=>{ '@later'; const a=String(c||'').split('.'), L=DEF(); if(a.length<5)return L;
     L.f=a[0]==='f'?'f':'m'; L.b=Math.min(2,Math.max(0,parseInt(a[1])||0)); L.h=Math.min(110,Math.max(90,parseInt(a[2])||100)); L.skin=hex(a[3])||L.skin; L.hair=hex(a[4])||L.hair; L.w={};
-    if(a[5+OLD]==='1')L.bare=true; { const e=hex(a[6+SLOTS.length]); if(e)L.eye=e; } if(a[7+SLOTS.length]==='1')L.lan=1; { const sh=shDec(a[8+SLOTS.length]); if(sh)L.sh=sh; } if(LYOK(a[9+SLOTS.length]))L.ly=a[9+SLOTS.length];
-    SLOTS.forEach(([s],i)=>{ const v=a[at(i)]; if(!v)return; const [n,col]=v.split('~'), p=byN.get(parseInt(n,36)); if(p&&p.slot===s&&p.figs.includes(L.f))L.w[s]=[p.n,cols(col)||'']; });
+    if(a[5+OLD]==='1')L.bare=true; { const e=hex(a[6+SLOTS.length]); if(e)L.eye=e; } if(a[7+SLOTS.length]==='1')L.lan=1; { const sh=shDec(a[8+SLOTS.length]); if(sh)L.sh=sh; } if(LYOK(a[9+SLOTS.length]))L.ly=a[9+SLOTS.length]; { const x=fxDec(a[10+SLOTS.length]); if(x)L.fx=x; }
+    SLOTS.forEach(([s],i)=>{ const v=a[at(i)]; if(!v||NOPROP.has(s))return; const [n,col]=v.split('~'), p=byN.get(parseInt(n,36)); if(p&&p.slot===s&&p.figs.includes(L.f))L.w[s]=[p.n,cols(col)||'']; });
     return L; };
 
   /* ---------- the figure's data, fetched once someone wears it ---------- */
@@ -139,36 +144,143 @@ const AVATAR={}; window.AVATAR=AVATAR;
     const py=yt-.024; R4(-.018,py,.018,py-.036,.0008,'d6e2e8'); R4(-.008,py-.008,.008,py-.026,.0016,L.skin); R4(-.009,py-.004,.009,py-.009,.0018,L.hair); R4(-.015,py-.028,.015,py-.036,.0016,'8aa6b4');
     R4(-.022,py-.042,.022,py-.049,.0008,'111111'); R4(-.016,py-.054,.016,py-.058,.0008,'e53935'); R4(-.026,py-.064,-.004,py-.067,.0008,'666666'); R4(.004,py-.064,.026,py-.067,.0008,'666666');
     T.spec={L:str(1),R:str(-1),H:.012+H,badge,S,rad,col:parseInt(ST,16),hw:HW,st:LY.st}; return T; };
-  function geoFor(J,L,bare,nob){ const worn=[]; for(const [s] of SLOTS){ const w=L.w[s], p=w&&J.byN.get(w[0]); if(p&&!(bare&&s==='feet'))worn.push([s,p,w[1]]); }   // (barefoot: your shoes off, LOOKS.shoes)
+  // the head's top corners rounded (owner, 8 Nov 2026: "round off the head of the avatar with true curves", "we arent round hair just the head shape", "just add rounded corners to
+  // the 4 top corners of head"): the body's own head (not what is worn on it) keeps its box below RR from its top; above, its edges to the top bend round on circles of RR; the head's
+  // faces over that cut away (clipBelow) for a lid (roundOf's cap), shaded smooth (sm)
+  const RR=.05, RN=2, HB=2;
+  const hwOf=(d,q)=>(d.bone[q*2]===HB?d.w[q]/255:0)+(d.bone[q*2+1]===HB?1-d.w[q]/255:0);
+  const roundOf=(X,d)=>{ const n=X.length/3, hb=q=>d.w[q]>=128?d.bone[q*2]:d.bone[q*2+1]; let top=-1e9;
+    for(let q=0;q<n;q++)if(hb(q)===HB)top=Math.max(top,X[q*3+1]); if(!(top>-1e9))return null;
+    let x0=1e9, x1=-1e9, z0=1e9, z1=-1e9; for(let q=0;q<n;q++)if(hb(q)===HB&&X[q*3+1]>top-.002){ x0=Math.min(x0,X[q*3]); x1=Math.max(x1,X[q*3]); z0=Math.min(z0,X[q*3+2]); z1=Math.max(z1,X[q*3+2]); }
+    const cx=(x0+x1)/2, cz=(z0+z1)/2, hx=(x1-x0)/2, hz=(z1-z0)/2, r=Math.min(RR,hx*.9,hz*.9), ty=top-r;
+    const at=(x,y,z,hw,o,i)=>{ let nx=x, ny=y, nz=z; const dy=y-ty;
+      if(dy>0&&hw>0){ const ax=Math.abs(x-cx)-(hx-r), az=Math.abs(z-cz)-(hz-r); let yy=y;
+        if(ax>0){ const l=Math.hypot(ax,dy); nx=cx+Math.sign(x-cx)*(hx-r+ax/l*r); yy=Math.min(yy,ty+dy/l*r); }
+        if(az>0){ const l=Math.hypot(az,dy); nz=cz+Math.sign(z-cz)*(hz-r+az/l*r); yy=Math.min(yy,ty+dy/l*r); }
+        nx=x+(nx-x)*hw; nz=z+(nz-z)*hw; ny=y+(yy-y)*hw; }
+      o[i]=nx; o[i+1]=ny; o[i+2]=nz; };
+    // the lid: the box from ty up as a lattice (finer across the bends) bent by at, each point's normal the mean of its faces that turn less than 60 degrees from each other
+    const brk=h=>{ const a=[-h]; for(let i=1;i<RN;i++)a.push(-h+r*i/RN); a.push(-h+r,h-r); for(let i=1;i<RN;i++)a.push(h-r+r*i/RN); a.push(h); return a; }, BX=brk(hx), BZ=brk(hz), BY=[];
+    for(let i=0;i<=RN;i++)BY.push(ty+r*i/RN);
+    const Q=[], quad=(a,b,c,d)=>{ Q.push([a,b,c],[a,c,d]); }, m=(x,y,z)=>{ const o=[0,0,0]; at(x,y,z,1,o,0); return o; };
+    for(let i=0;i<BX.length-1;i++)for(let j=0;j<BZ.length-1;j++)quad(m(cx+BX[i],top,cz+BZ[j]),m(cx+BX[i+1],top,cz+BZ[j]),m(cx+BX[i+1],top,cz+BZ[j+1]),m(cx+BX[i],top,cz+BZ[j+1]));
+    for(let k=0;k<RN;k++){ for(const sx of [-1,1])for(let j=0;j<BZ.length-1;j++)quad(m(cx+sx*hx,BY[k],cz+BZ[j]),m(cx+sx*hx,BY[k],cz+BZ[j+1]),m(cx+sx*hx,BY[k+1],cz+BZ[j+1]),m(cx+sx*hx,BY[k+1],cz+BZ[j]));
+      for(const sz of [-1,1])for(let i=0;i<BX.length-1;i++)quad(m(cx+BX[i],BY[k],cz+sz*hz),m(cx+BX[i+1],BY[k],cz+sz*hz),m(cx+BX[i+1],BY[k+1],cz+sz*hz),m(cx+BX[i],BY[k+1],cz+sz*hz)); }
+    const K=p=>Math.round(p[0]*1e5)+','+Math.round(p[1]*1e5)+','+Math.round(p[2]*1e5), AC=new Map(), V=new THREE.Vector3(), W=new THREE.Vector3();
+    const cap=Q.map(t=>{ V.fromArray(t[1]).sub(W.fromArray(t[0])); const e=new THREE.Vector3().fromArray(t[2]).sub(W), n=V.cross(e), ar=n.length(), F={p:t,fn:ar?[n.x/ar,n.y/ar,n.z/ar]:[0,1,0],ar};
+      for(const q of t){ const k=K(q); let a=AC.get(k); if(!a)AC.set(k,a=[]); a.push(F); } return F; });
+    for(const F of cap)F.nn=F.p.map(q=>{ let x=0, y=0, z=0; for(const G of AC.get(K(q)))if(G.fn[0]*F.fn[0]+G.fn[1]*F.fn[1]+G.fn[2]*F.fn[2]>.5){ x+=G.fn[0]*G.ar; y+=G.fn[1]*G.ar; z+=G.fn[2]*G.ar; } const l=Math.hypot(x,y,z); return l?[x/l,y/l,z/l]:F.fn; });
+    return {at,ty,cap}; };
+  // a head face below ty (the part over it is the lid's): each point its place in the face (b) and where it is (p), in triangles
+  const clipBelow=(V,ty)=>{ const P=[]; for(let i=0;i<3;i++){ const a=V[i], b=V[(i+1)%3], ia=a.p[1]<=ty, ib=b.p[1]<=ty; if(ia)P.push(a);
+      if(ia!==ib){ const t=(ty-a.p[1])/(b.p[1]-a.p[1]); P.push({b:a.b.map((x,k)=>x+(b.b[k]-x)*t),p:[a.p[0]+(b.p[0]-a.p[0])*t,ty,a.p[2]+(b.p[2]-a.p[2])*t]}); } }
+    const T=[]; for(let i=1;i<P.length-1;i++)T.push([P[0],P[i],P[i+1]]); return T; };
+  // the face you pick (owner, 8 Nov 2026: "add all the options and let player select which one they want and the size of each on face"; the eight of mockups/faces.html): eyes and a mouth
+  // drawn flat on the face over where the body's own were (style 0: the body's own), each its size; shapes in the mockup's pixels about the eye's or the mouth's middle (y down), in layers
+  // R rect, E ellipse, P polygon, S stroke; a colour W white, I iris (your eye colour, or the style's), K pupil, H shine, D the skin's shade, or its own
+  const FEYES=['PLAIN','BLOCK','ALMOND','ROUND','SLEEPY','LASHES','DEEP-SET','BIG','NARROW'], FMOUTHS=['PLAIN','BLOCK','LIPS','SMILE','SMALL','FULL LIPS','THIN','GRIN','SMIRK'];
+  const qc=(x0,y0,cx,cy,x1,y1,n=8)=>{ const o=[]; for(let i=0;i<=n;i++){ const t=i/n, u=1-t; o.push([u*u*x0+2*u*t*cx+t*t*x1,u*u*y0+2*u*t*cy+t*t*y1]); } return o; };
+  const lens=(x0,y0,x1,y1,ct,cb)=>qc(x0,y0,(x0+x1)/2,ct,x1,y1).concat(qc(x1,y1,(x0+x1)/2,cb,x0,y0).slice(1,-1));
+  const FE=[null,
+    [['R',-20,-7,40,16,'W'],['R',-6,-7,14,16,'I','4f7a3c'],['R',-2,-3,7,9,'K'],['R',3,-5,3,3,'H']],
+    [['P',lens(-22,1,22,1,-15,13),'W'],['E',1,0,8,8,'I','4f7a3c'],['E',1,0,4,4,'K'],['E',4,-3,2,2,'H'],['S',qc(-22,1,0,-15,22,1),3,'3a2420']],
+    [['E',0,-1,14,14,'W'],['E',2,0,8,8,'I','5a7fb0'],['E',2,0,4,4,'K'],['E',5,-4,2.5,2.5,'H'],['S',qc(-14,-5,0,-19,14,-5),4,'D']],
+    [['P',lens(-20,1,20,1,-11,11),'W'],['E',0,2,7,7,'I','6b4a2e'],['E',0,2,3.5,3.5,'K'],['P',qc(-21,1,0,-13,21,1).concat(qc(21,-3,0,-15,-21,-3)),'D'],['R',-21,-5,42,5,'D']],
+    [['P',lens(-20,1,20,1,-13,13),'W'],['E',0,0,8,8,'I','7a5a34'],['E',0,0,4,4,'K'],['E',3,-3,2,2,'H'],['S',qc(-22,-1,0,-17,24,-3),4,'1d1414'],['S',qc(-16,-11,0,-19,16,-11),2,'D']],
+    [['R',-26,-17,52,12,'D'],['R',-18,-5,36,12,'e6e0d2'],['R',-5,-5,11,12,'I','5d6a72'],['R',-2,-3,5,8,'K'],['R',-18,7,36,4,'D']],
+    [['E',0,1,17,14,'W'],['E',1,2,11,11,'I','3f8a7a'],['E',1,2,5,5,'K'],['E',5,-3,3.5,3.5,'H'],['E',-3,6,1.5,1.5,'H'],['S',qc(-17,-1,0,-19,17,-1),3,'2a1a16']],
+    [['P',lens(-20,0,20,0,-7,7),'efe9dc'],['E',3,0,5,5,'I','4b5d3a'],['E',3,0,2.5,2.5,'K'],['S',qc(-20,5,0,10,20,5),3,'D']]];
+  const FM=[null,
+    [['R',-28,-3,56,7,'7e4234'],['R',-24,4,48,6,'a8604e']],
+    [['P',qc(-30,-1,-16,-9,0,-3).concat(qc(0,-3,16,-9,30,-1).slice(1),qc(30,-1,0,5,-30,-1).slice(1,-1)),'7e4234'],['P',qc(-30,-1,0,17,30,-1).concat(qc(30,-1,0,5,-30,-1).slice(1,-1)),'a8604e']],
+    [['P',qc(-32,-7,0,23,32,-7).concat(qc(32,-7,0,7,-32,-7).slice(1,-1)),'7e4234']],
+    [['R',-22,0,44,6,'a8604e']],
+    [['R',-4,-21,8,10,'D'],['P',qc(-28,-1,-14,-11,0,-5).concat(qc(0,-5,14,-11,28,-1).slice(1),qc(28,-1,0,3,-28,-1).slice(1,-1)),'b5545a'],['P',qc(-28,-1,0,19,28,-1).concat(qc(28,-1,0,3,-28,-1).slice(1,-1)),'c8676c']],
+    [['R',-26,1,52,4,'7e4234'],['R',-28,-1,4,4,'D'],['R',24,-1,4,4,'D']],
+    [['P',qc(-30,-9,0,31,30,-9),'5c2424'],['P',[[-27,-7],[27,-7]].concat(qc(27,-7,24,1,0,1).slice(1),qc(0,1,-24,1,-27,-7).slice(1,-1)),'f4efe4']],
+    [['S',qc(-24,3,2,5,26,-7),6,'7e4234']]];
+  // a simple polygon in triangles (cut ears)
+  const ears=P=>{ const n=P.length, I=[...Array(n).keys()], T=[]; let a=0; for(let i=0;i<n;i++){ const p=P[i], q=P[(i+1)%n]; a+=p[0]*q[1]-q[0]*p[1]; } const s=a>0?1:-1;
+    const cr=(o,p,q)=>((p[0]-o[0])*(q[1]-o[1])-(p[1]-o[1])*(q[0]-o[0]))*s, inT=(p,a,b,c)=>cr(a,b,p)>=0&&cr(b,c,p)>=0&&cr(c,a,p)>=0;
+    for(let g=0;I.length>3&&g<n*n;g++){ const k=g%I.length, ia=I[(k+I.length-1)%I.length], ib=I[k], ic=I[(k+1)%I.length], A=P[ia], B=P[ib], C=P[ic];
+      if(cr(A,B,C)<=0)continue; if(I.some(j=>j!==ia&&j!==ib&&j!==ic&&inT(P[j],A,B,C)))continue; T.push([A,B,C]); I.splice(k,1); }
+    if(I.length===3)T.push(I.map(i=>P[i])); return T; };
+  const shape=(s,o)=>{ const k=s[0]; if(k==='R'){ const [,x,y,w,h]=s; return [[[x,y],[x+w,y],[x+w,y+h]],[[x,y],[x+w,y+h],[x,y+h]]]; }
+    if(k==='E'){ const [,cx,cy,rx,ry]=s, T=[], n=16; for(let i=0;i<n;i++){ const a=i/n*2*Math.PI, b=(i+1)/n*2*Math.PI; T.push([[cx,cy],[cx+Math.cos(a)*rx,cy+Math.sin(a)*ry],[cx+Math.cos(b)*rx,cy+Math.sin(b)*ry]]); } return T; }
+    if(k==='P')return ears(s[1]);
+    const [,pts,w]=s, T=[]; for(let i=0;i<pts.length-1;i++){ const [x0,y0]=pts[i], [x1,y1]=pts[i+1], l=Math.hypot(x1-x0,y1-y0)||1, nx=-(y1-y0)/l*w/2, ny=(x1-x0)/l*w/2;
+      T.push([[x0+nx,y0+ny],[x1+nx,y1+ny],[x1-nx,y1-ny]],[[x0+nx,y0+ny],[x1-nx,y1-ny],[x0-nx,y0-ny]]); } return T; };
+  const fxOf=L=>Object.assign({e:0,m:0,es:100,ms:100},L.fx||{});
+  // the face's triangles [A,B,C,hex] on the body as shaped (X, d): placed on the body's own eyes and mouth, a hair in front of the face
+  const faceOf=(X,d,zones,L)=>{ const F=fxOf(L), T=[]; if(!F.e&&!F.m)return T; const n=X.length/3, zi=zones.indexOf('eye'), zm=zones.indexOf('mouth'), zs=zones.indexOf('skin');
+    const box=f=>{ let a=[1e9,1e9,1e9], b=[-1e9,-1e9,-1e9], k=0; for(let q=0;q<n;q++)if(f(q)){ k++; for(let j=0;j<3;j++){ a[j]=Math.min(a[j],X[q*3+j]); b[j]=Math.max(b[j],X[q*3+j]); } } return k?[a,b]:null; };
+    const sh=lin(L.skin).multiplyScalar(.82).getHexString(), col=(c,s)=>c==='W'?'f2efe6':c==='K'?'151515':c==='H'?'ffffff':c==='D'?sh:c==='I'?(L.eye||s[s.length-1]):c;
+    const put=(S,cx,cy,sc,zf,mir)=>S.forEach((s,li)=>{ const z=zf+.0005*(li+1), h=col(s[s[0]==='S'?3:s[0]==='P'?2:5],s); for(const t of shape(s)){ const p=t.map(([x,y])=>[cx+(mir?-x:x)*sc,cy-y*sc,z]); T.push([p[0],p[1],p[2],h]); } });
+    const head=q=>(d.w[q]>=128?d.bone[q*2]:d.bone[q*2+1])===HB&&d.zone[q]===zs;
+    const front=(x0,x1,y0,y1)=>{ const b=box(q=>head(q)&&Math.abs(X[q*3])>x0&&Math.abs(X[q*3])<x1&&X[q*3+1]>y0&&X[q*3+1]<y1); return b?b[1][2]:null; };
+    if(F.e&&zi>=0)for(const sd of [-1,1]){ const b=box(q=>d.zone[q]===zi&&X[q*3]*sd>0); if(!b)continue; const cx=(b[0][0]+b[1][0])/2, cy=(b[0][1]+b[1][1])/2, sc=(b[1][0]-b[0][0])/40*F.es/100;
+      put(FE[F.e],cx,cy,sc,(front(.02,.12,cy-.08,cy+.08)??b[0][2])+.0008,sd<0); }
+    if(F.m&&zm>=0){ const b=box(q=>d.zone[q]===zm); if(b){ const cx=(b[0][0]+b[1][0])/2, cy=(b[0][1]+b[1][1])/2, sc=(b[1][0]-b[0][0])/56*F.ms/100; put(FM[F.m],cx,cy,sc,(front(.015,.12,cy-.08,cy+.08)??b[0][2])+.0008,false); } }
+    return T; };
+  function geoFor(J,L,bare,nob){ const worn=[]; for(const [s] of SLOTS){ if(NOPROP.has(s))continue; const w=L.w[s], p=w&&J.byN.get(w[0]); if(p&&!(bare&&s==='feet'))worn.push([s,p,w[1]]); }   // (barefoot: your shoes off, LOOKS.shoes)
     const cov=new Set(); for(const [,p] of worn)for(const c of p.covers)cov.add(c); const hide=culled(c=>cov.has(c));
     const pfh=!cov.has('hands'), hb=(d,q)=>{ const b=d.w[q]>=128?d.bone[q*2]:d.bone[q*2+1]; return b===5||b===8; }, isHand=(P,d,t)=>pfh&&P.slot==='body'&&hb(d,d.tri[t*3])&&hb(d,d.tri[t*3+1])&&hb(d,d.tri[t*3+2]);   // (bare hands: its own simple ones marked hh, folded away while Polyfork's jointed ones are drawn, near the camera: 111b)
     const hat=worn.find(x=>x[0]==='hat'), coat=worn.find(x=>x[0]==='coat');
     const parts=nob?[]:[{v:J.body.v[L.b],zones:J.body.zones,pal:J.body.pal,main:null,col:null,slot:'body'}];
     for(const [s,p,c] of worn){ if(s==='hair'&&cov.has('hair'))continue;
       const alt=(s==='hair'&&hat||s==='top'&&coat&&coat[1].covers.includes('sleeves'))&&p.alt&&p.alt[L.b], v=alt||p.v[L.b]; if(v)parts.push({v,zones:p.zones,pal:p.pal,main:p.main,col:c,slot:s,cape:/CAPE/.test(p.k||p.label)}); }
-    let nf=0; const D_=parts.map(P=>{ const d=dec(P.v); let k=0; for(let t=0;t<d.tri.length/3;t++)if(!(d.reg&&d.reg[t]<255&&hide[d.reg[t]]))k++; nf+=k; return d; });
+    let nf=0; const D_=parts.map(P=>dec(P.v)), FX0=fxOf(L), HZ=nob?[]:[FX0.e?J.body.zones.indexOf('eye'):-1,FX0.m?J.body.zones.indexOf('mouth'):-1].filter(z=>z>=0);
+    const kept=(d,t,pi)=>!(d.reg&&d.reg[t]<255&&hide[d.reg[t]])&&!(pi===0&&HZ.length&&HZ.includes(d.zone[d.tri[t*3]]));   // (the body's own eyes or mouth off where you picked others)
     const LAN=L.lan?lanyard(parts,D_,L):[], LSP=LAN.spec||null; nf+=LAN.length;
-    const pos=new Float32Array(nf*9), nor=new Float32Array(nf*9), col=new Float32Array(nf*9), bi=new Float32Array(nf*6), bw=new Float32Array(nf*3), fl=new Float32Array(nf*3), hh=new Float32Array(nf*3), fd=new Float32Array(nf*9), va=new THREE.Vector3(), vb=new THREE.Vector3(), vc=new THREE.Vector3(), n=new THREE.Vector3(), e=new THREE.Vector3();
-    let f=0;
     const unq=(d,v)=>{ const Q=d.pos, X=new Float32Array(Q.length); for(let i=0;i<Q.length;i++)X[i]=(Q[i]+32500)*v.sc+v.lo[i%3]; return X; }, WF=pfh&&!nob?wristFit(unq(D_[0],parts[0].v),D_[0],L):null;
     const SZ=shapeOf(L.f,L.sh);
-    parts.forEach((P,pi)=>{ const d=D_[pi], v=P.v, X=unq(d,v); if(WF&&WF.length)fitWrist(X,d,WF); else taper(X,d,L.f); if(SZ)reshape(X,d,SZ);
+    const XS=parts.map((P,pi)=>{ const d=D_[pi], X=unq(d,P.v); if(WF&&WF.length)fitWrist(X,d,WF); else taper(X,d,L.f); if(SZ)reshape(X,d,SZ); return X; });
+    // the head's top rounded: its box from the body as shaped; the body's points moved (XM), its head faces cut (CUT)
+    const RH=nob?null:roundOf(XS[0],D_[0]);
+    const FX=nob?[]:faceOf(XS[0],D_[0],J.body.zones,L); nf+=FX.length;
+    const XM=[], CUT=[];
+    parts.forEach((P,pi)=>{ const d=D_[pi], X=XS[pi], M=new Float32Array(X), cut=new Map(); XM.push(M); CUT.push(cut);
+      if(!RH||P.slot!=='body'){ for(let t=0;t<d.tri.length/3;t++)if(kept(d,t,pi))nf++; return; }
+      for(let t=0;t<d.tri.length/3;t++){ if(!kept(d,t,pi))continue; const ix=[d.tri[t*3],d.tri[t*3+1],d.tri[t*3+2]]; if(ix.every(q=>X[q*3+1]<=RH.ty)){ nf++; continue; }
+        const out=clipBelow(ix.map((q,j)=>({b:[j===0?1:0,j===1?1:0,j===2?1:0],p:[X[q*3],X[q*3+1],X[q*3+2]]})),RH.ty); cut.set(t,out); nf+=out.length; } });
+    if(RH)nf+=RH.cap.length;
+    const pos=new Float32Array(nf*9), nor=new Float32Array(nf*9), col=new Float32Array(nf*9), bi=new Float32Array(nf*6), bw=new Float32Array(nf*3), fl=new Float32Array(nf*3), hh=new Float32Array(nf*3), fd=new Float32Array(nf*9), sm=new Float32Array(nf*3), va=new THREE.Vector3(), vb=new THREE.Vector3(), vc=new THREE.Vector3(), n=new THREE.Vector3(), e=new THREE.Vector3();
+    let f=0;
+    parts.forEach((P,pi)=>{ const d=D_[pi], v=P.v, X=XS[pi], XR=XM[pi], cut=CUT[pi];
       let y0=1e9, y1=-1e9; if(P.cape)for(let i=1;i<X.length;i+=3){ y0=Math.min(y0,X[i]); y1=Math.max(y1,X[i]); }   // a cape: how far down it each point is, and which way is out from the body
       const cz=P.col&&P.col.includes('_')?P.col.split('_'):null;
       const C=P.zones.map((z,i)=>{ if(z==='skin')return lin(L.skin); if(P.slot==='body'&&z==='brow')return lin(L.hair); if(P.slot==='body'&&z==='eye'&&L.eye)return lin(L.eye);
         if((P.slot==='hair'||P.slot==='face')&&P.main&&i===P.main[0])return lin(L.hair); if(cz){ if(cz[i])return lin(cz[i]); } else if(P.col&&P.main&&i===P.main[0])return lin(P.col); return lin(String(P.pal[i]).slice(1)); });
-      for(let t=0;t<d.tri.length/3;t++){ if(d.reg&&d.reg[t]<255&&hide[d.reg[t]])continue; const ix=[d.tri[t*3],d.tri[t*3+1],d.tri[t*3+2]], ish=isHand(P,d,t)?1:0;
-        va.fromArray(X,ix[0]*3); vb.fromArray(X,ix[1]*3); vc.fromArray(X,ix[2]*3); n.subVectors(vb,va).cross(e.subVectors(vc,va)).normalize();
-        ix.forEach((q,j)=>{ const o=f*3+j, c=C[d.zone[q]]||C[0]; pos.set([X[q*3],X[q*3+1],X[q*3+2]],o*3); nor.set([n.x,n.y,n.z],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([d.bone[q*2],d.bone[q*2+1]],o*2); bw[o]=d.w[q]/255; hh[o]=ish; if(P.cape){ const u=Math.max(0,(y1-X[q*3+1])/Math.max(1e-3,y1-y0)), x=X[q*3], z=X[q*3+2], l=Math.hypot(x,z)||1; fl[o]=u*u; fd.set([x/l*.2,0,back],o*3); } }); f++; } });
+      // the head's cut faces as moved, each point's normal the mean of the faces round it that turn less than 60 degrees from its own (the box's other edges stay sharp)
+      const CF=new Map(); if(cut.size){ const K=p=>Math.round(p[0]*1e5)+','+Math.round(p[1]*1e5)+','+Math.round(p[2]*1e5), AC=new Map(), all=[];
+        for(const [t,list] of cut){ const ix=[d.tri[t*3],d.tri[t*3+1],d.tri[t*3+2]], hw=ix.map(q=>hwOf(d,q)), R=[];
+          for(const V of list){ const p=V.map(u=>{ const o=[0,0,0]; RH.at(u.p[0],u.p[1],u.p[2],u.pin?0:u.b[0]*hw[0]+u.b[1]*hw[1]+u.b[2]*hw[2],o,0); return o; });
+            va.fromArray(p[0]); vb.fromArray(p[1]); vc.fromArray(p[2]); n.subVectors(vb,va).cross(e.subVectors(vc,va)); const ar=n.length(), fn=ar>0?[n.x/ar,n.y/ar,n.z/ar]:[0,1,0], F={V,p,fn,ar,k:p.map(K)};
+            F.k.forEach(k=>{ let a=AC.get(k); if(!a)AC.set(k,a=[]); a.push(F); }); R.push(F); all.push(F); }
+          CF.set(t,R); }
+        for(const F of all)F.nn=F.k.map(k=>{ let x=0, y=0, z=0; for(const G of AC.get(k))if(G.fn[0]*F.fn[0]+G.fn[1]*F.fn[1]+G.fn[2]*F.fn[2]>.5){ x+=G.fn[0]*G.ar; y+=G.fn[1]*G.ar; z+=G.fn[2]*G.ar; } const l=Math.hypot(x,y,z); return l>0?[x/l,y/l,z/l]:F.fn; }); }
+      // a cut point's two bones: the most of its face's corners' bones by its place in the face
+      const two=(u,ix)=>{ const j=u.b.indexOf(1); if(j>=0){ const q=ix[j]; return [d.bone[q*2],d.bone[q*2+1],d.w[q]/255]; } const m=new Map();
+        ix.forEach((q,j)=>{ if(!u.b[j])return; const w=d.w[q]/255; m.set(d.bone[q*2],(m.get(d.bone[q*2])||0)+u.b[j]*w); m.set(d.bone[q*2+1],(m.get(d.bone[q*2+1])||0)+u.b[j]*(1-w)); });
+        const s=[...m].sort((a,b)=>b[1]-a[1]||a[0]-b[0]), a=s[0], b=s[1]||[a[0],0]; return [a[0],b[0],a[1]/(a[1]+b[1])]; };
+      for(let t=0;t<d.tri.length/3;t++){ if(!kept(d,t,pi))continue; const ix=[d.tri[t*3],d.tri[t*3+1],d.tri[t*3+2]], ish=isHand(P,d,t)?1:0;
+        if(CF.has(t)){ const cs=ix.map(q=>C[d.zone[q]]||C[0]);
+          for(const F of CF.get(t)){ F.V.forEach((u,j)=>{ const o=f*3+j, b=u.b, [b0,b1,w]=two(u,ix); pos.set(F.p[j],o*3); nor.set(F.nn[j],o*3);
+              col.set([b[0]*cs[0].r+b[1]*cs[1].r+b[2]*cs[2].r,b[0]*cs[0].g+b[1]*cs[1].g+b[2]*cs[2].g,b[0]*cs[0].b+b[1]*cs[1].b+b[2]*cs[2].b],o*3); bi.set([b0,b1],o*2); bw[o]=w; hh[o]=ish; sm[o]=1; }); f++; }
+          continue; }
+        va.fromArray(XR,ix[0]*3); vb.fromArray(XR,ix[1]*3); vc.fromArray(XR,ix[2]*3); n.subVectors(vb,va).cross(e.subVectors(vc,va)).normalize();
+        ix.forEach((q,j)=>{ const o=f*3+j, c=C[d.zone[q]]||C[0]; pos.set([XR[q*3],XR[q*3+1],XR[q*3+2]],o*3); nor.set([n.x,n.y,n.z],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([d.bone[q*2],d.bone[q*2+1]],o*2); bw[o]=d.w[q]/255; hh[o]=ish; if(P.cape){ const u=Math.max(0,(y1-X[q*3+1])/Math.max(1e-3,y1-y0)), x=X[q*3], z=X[q*3+2], l=Math.hypot(x,z)||1; fl[o]=u*u; fd.set([x/l*.2,0,back],o*3); } }); f++; } });
     if(SZ){ const T=new THREE.Vector3(), sh=a=>T.fromArray(a).sub(SZ.O[1]).applyMatrix3(SZ.A[1]).add(SZ.O1[1]).toArray(); for(const t of LAN)for(let j=0;j<3;j++)t[j]=sh(t[j]); if(LSP){ LSP.L=LSP.L.map(sh); LSP.R=LSP.R.map(sh); LSP.shape={O:SZ.O[1],A:SZ.A[1],O1:SZ.O1[1]}; } }   // (the lanyard on the chest as shaped)
+    if(RH){ const c=lin(L.skin); for(const F of RH.cap){ F.p.forEach((P,j)=>{ const o=f*3+j; pos.set(P,o*3); nor.set(F.nn[j],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([HB,HB],o*2); bw[o]=1; hh[o]=0; sm[o]=1; }); f++; } }
+    for(const [A,B,C3,h] of FX){ const c=lin(h); [A,B,C3].forEach((P,j)=>{ const o=f*3+j; pos.set(P,o*3); nor.set([0,0,1],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([HB,HB],o*2); bw[o]=1; hh[o]=0; }); f++; }
     for(const [A,B,C3,h] of LAN){ const c=lin(h); va.fromArray(A); vb.fromArray(B); vc.fromArray(C3); n.subVectors(vb,va).cross(e.subVectors(vc,va)).normalize();
       [A,B,C3].forEach((P,j)=>{ const o=f*3+j; pos.set(P,o*3); nor.set([n.x,n.y,n.z],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([1,1],o*2); bw[o]=1; hh[o]=0; }); f++; }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('normal',new THREE.BufferAttribute(nor,3)); g.setAttribute('color',new THREE.BufferAttribute(col,3));
-    g.setAttribute('bi',new THREE.BufferAttribute(bi,2)); g.setAttribute('bw',new THREE.BufferAttribute(bw,1)); g.setAttribute('fl',new THREE.BufferAttribute(fl,1)); g.setAttribute('fd',new THREE.BufferAttribute(fd,3)); g.setAttribute('hh',new THREE.BufferAttribute(hh,1)); g.computeBoundingSphere();
-    g.userData.hands=pfh?{skin:L.skin,b:L.b,grip:{L:!!L.w.lefthand,R:!!L.w.righthand}}:null; g.userData.lan=LSP; return g; }
-  const empty=()=>{ const g=new THREE.BufferGeometry(); for(const [k,s] of [['position',3],['normal',3],['color',3],['bi',2],['bw',1],['fl',1],['fd',3],['hh',1]])g.setAttribute(k,new THREE.BufferAttribute(new Float32Array(0),s)); return g; };
+    g.setAttribute('bi',new THREE.BufferAttribute(bi,2)); g.setAttribute('bw',new THREE.BufferAttribute(bw,1)); g.setAttribute('fl',new THREE.BufferAttribute(fl,1)); g.setAttribute('fd',new THREE.BufferAttribute(fd,3)); g.setAttribute('hh',new THREE.BufferAttribute(hh,1)); g.setAttribute('sm',new THREE.BufferAttribute(sm,1)); g.computeBoundingSphere();
+    g.userData.hands=pfh?{skin:L.skin,b:L.b,grip:{L:false,R:false}}:null; g.userData.lan=LSP; return g; }
+  const empty=()=>{ const g=new THREE.BufferGeometry(); for(const [k,s] of [['position',3],['normal',3],['color',3],['bi',2],['bw',1],['fl',1],['fd',3],['hh',1],['sm',1]])g.setAttribute(k,new THREE.BufferAttribute(new Float32Array(0),s)); return g; };
   // a body's skeleton for a figure and a height (taller: the same body drawn bigger on the rig)
-  const fitTo=(body,L)=>{ const S=I.skel[L.f], Z=shapeOf(L.f,L.sh), {off,binv}=BODIES.skeleton(Z?Z.O1.map(o=>o.toArray()):S.origin,S.rest); Object.assign(body,{height:S.height*100/L.h,hipY:Z?Z.O1[0].y:S.hipY,off,binv,contact:true,dq:true,O0:Z?Z.O:null,O1:Z?Z.O1:null}); delete body._calG; delete body._bind; return BODIES.fit(body); };   // (contact: rests on what the rig rests on, 111a)
+  const fitTo=(body,L)=>{ const S=I.skel[L.f], Z=shapeOf(L.f,L.sh), {off,binv}=BODIES.skeleton(Z?Z.O1.map(o=>o.toArray()):S.origin,S.rest); Object.assign(body,{height:S.height*100/L.h,hipY:Z?Z.O1[0].y:S.hipY,off,binv,contact:true,dq:true,rnd:true,O0:Z?Z.O:null,O1:Z?Z.O1:null}); delete body._calG; delete body._bind; return BODIES.fit(body); };   // (contact: rests on what the rig rests on, 111a)
 
   /* ---------- you ---------- */
   let L=DEF(); try{ const c=OWNED.get('pfav'); if(c)L=decode(c); }catch(e){}
@@ -187,7 +299,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
   let gen=0;
   const refresh=()=>{ const my=++gen, M0=mine(); return need(L.f,M0.w).then(J=>{ if(my!==gen)return; fitTo(body,L); const M=mine(); body.GEO=geoFor(J,M,M.bare); body.anim=J.anim||null; draw(); }).catch(e=>console.warn('AVATAR',e)); };
   AVATAR.set=o=>{ L=Object.assign(L,o); if(o.f){ for(const s in L.w)if(L.w[s]&&!byN.get(L.w[s][0]).figs.includes(L.f))delete L.w[s]; } save(); return refresh(); };
-  AVATAR.wear=(slot,n,c)=>{ if(n==null)delete L.w[slot]; else L.w[slot]=[n,c||(L.w[slot]&&L.w[slot][0]===n?L.w[slot][1]:'')]; save(); return refresh(); };
+  AVATAR.wear=(slot,n,c)=>{ if(NOPROP.has(slot)&&n!=null)return refresh(); if(n==null)delete L.w[slot]; else L.w[slot]=[n,c||(L.w[slot]&&L.w[slot][0]===n?L.w[slot][1]:'')]; save(); return refresh(); };
 
   /* ---------- YOU: the avatar's lines (LOOKS.add) — figure, build, height, skin and hair colour on LOOK; a piece and its colour for each slot on WEAR ---------- */
   const $=s=>document.querySelector(s);
@@ -204,11 +316,14 @@ const AVATAR={}; window.AVATAR=AVATAR;
     LOOKS.add('avh','HEIGHT',el(null,'<input type="range" id="lavh" min="90" max="110" step="1" aria-label="height"><span id="lavhv" class="dim"></span>'),{...A,order:3});
     LOOKS.add('avs','SKIN',el('lavs',SKINS.map(h=>`<button class="sw" data-c="${h}" aria-label="skin #${h}"><i style="background:#${h}"></i></button>`).join('')+'<input type="color" id="lavsc" aria-label="any skin colour">'),{...A,order:4});
     LOOKS.add('avc','HAIR COLOUR',el('lavc',HAIRC.map(h=>`<button class="sw" data-c="${h}" aria-label="hair #${h}"><i style="background:#${h}"></i></button>`).join('')+'<input type="color" id="lavcc" aria-label="any hair colour">'),{...A,order:5});
+    for(const [k,t,N,o] of [['e','EYES',FEYES,5.1],['m','MOUTH',FMOUTHS,5.2]])LOOKS.add('avx'+k,t,el(null,`<select id="lavx${k}" aria-label="${t.toLowerCase()} style">${N.map((n,i)=>`<option value="${i}">${n}</option>`).join('')}</select><input type="range" id="lavx${k}s" min="50" max="150" step="5" aria-label="${t.toLowerCase()} size"><span id="lavx${k}v" class="dim"></span>`),{...A,order:o});
     LOOKS.add('avly','LANYARD',el('lavly','<select id="lavlf" aria-label="badge frame"><option value="0">NO FRAME</option><option value="1">CLEAR FRAME</option><option value="2">METAL FRAME</option><option value="3">COLOURED FRAME</option></select><input type="color" id="lavlfc" aria-label="frame colour"><select id="lavls" aria-label="string"><option value="0">CORD</option><option value="1">FLAT STRAP</option><option value="2">BEAD CHAIN</option></select><input type="color" id="lavlsc" aria-label="string colour">'),{...A,order:5.5});
     LOOKS.add('avwear','OUTFIT',el(null,'<button id="lavgo">CHOOSE WHAT YOU WEAR</button><span id="lavw" class="dim"></span>'),{...A,order:6});
     LOOKS.add('w-outfit','OUTFIT',el(null,'<select id="lavog" aria-label="outfit theme"></select><select id="lavo" aria-label="outfit"></select><span></span>','avw'),{...A,tab:'wear',order:-1});
-    SLOTS.forEach(([s,t],i)=>LOOKS.add('w-'+s,t,el(null,`<select id="lavt-${s}" aria-label="${t} kind"></select><select id="lav-${s}" aria-label="${t} version"></select><span id="lavk-${s}" class="avk"></span>`,'avw'),{...A,tab:'wear',order:i}));
+    SLOTS.forEach(([s,t],i)=>!NOPROP.has(s)&&LOOKS.add('w-'+s,t,el(null,`<select id="lavt-${s}" aria-label="${t} kind"></select><select id="lav-${s}" aria-label="${t} version"></select><span id="lavk-${s}" class="avk"></span>`,'avw'),{...A,tab:'wear',order:i}));
     $('#lavgo').onclick=()=>LOOKS.tab('wear');
+    for(const k of 'em'){ const sel=$('#lavx'+k), r=$('#lavx'+k+'s'); stop(sel); stop(r); sel.onchange=()=>AVATAR.set({fx:{...fxOf(L),[k]:+sel.value}});
+      r.oninput=()=>{ $('#lavx'+k+'v').textContent=' '+r.value+'%'; }; r.onchange=()=>AVATAR.set({fx:{...fxOf(L),[k+'s']:+r.value}}); }
     { const ly=()=>{ const v=k=>$('#'+k).value; AVATAR.set({ly:[v('lavlf'),v('lavlfc').slice(1),v('lavls'),v('lavlsc').slice(1)].join('_')}); }; for(const k of ['lavlf','lavlfc','lavls','lavlsc']){ stop($('#'+k)); $('#'+k).onchange=ly; } }
     $('#lavf').onclick=e=>{ const b=e.target.closest('button'); if(b)AVATAR.set({f:b.dataset.f}); };
     $('#lavb').onclick=e=>{ const b=e.target.closest('button'); if(b)AVATAR.set({b:+b.dataset.b}); };
@@ -220,7 +335,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
     og.innerHTML='<option value="">THEME…</option>'+OG.map(g=>`<option>${esc(g)}</option>`).join('');
     og.onchange=()=>{ ol.innerHTML='<option value="">WHO…</option>'+(I.outfits||[]).map((o,i)=>[o,i]).filter(([o])=>o.g===og.value).sort((a,b)=>a[0].t.localeCompare(b[0].t)).map(([o,i])=>`<option value="${i}">${esc(o.t)}</option>`).join(''); ol.style.display=og.value?'':'none'; };
     ol.onchange=()=>{ if(ol.value!=='')AVATAR.outfit(+ol.value); }; ol.style.display='none';
-    for(const [s] of SLOTS){ const sel=$('#lav-'+s), k=$('#lavk-'+s), kd=$('#lavt-'+s); stop(sel); stop(kd);
+    for(const [s] of SLOTS){ if(NOPROP.has(s))continue; const sel=$('#lav-'+s), k=$('#lavk-'+s), kd=$('#lavt-'+s); stop(sel); stop(kd);
       kd.onchange=()=>{ const v=kinds(s).get(kd.value); AVATAR.wear(s,v?v[0].n:null); };   // (a kind: its first version, the one-each piece when there is one)
       sel.onchange=()=>AVATAR.wear(s,sel.value===''?null:+sel.value); k.onchange=e=>{ const w=L.w[s], J=D[L.f], p=w&&J&&J.byN.get(w[0]), z=+e.target.dataset.z; if(!p||!(z>=0))return; const a=partCols(p,w[1]); a[z]=e.target.value.slice(1); AVATAR.wear(s,w[0],a.join('_')); }; }
     return true; }
@@ -230,11 +345,11 @@ const AVATAR={}; window.AVATAR=AVATAR;
   const partCols=(p,c)=>{ const a=p.zones.map(()=>''); if(!c)return a; if(c.includes('_'))c.split('_').forEach((h,i)=>{ if(i<a.length)a[i]=h; }); else if(p.main)a[p.main[0]]=c; return a; };
   function draw(){ if(!panel())return; if(BODIES.pick()!=='avatar')return LOOKS.layout();
     for(const b of $('#lavf').children)on(b,b.dataset.f===L.f); for(const b of $('#lavb').children)on(b,+b.dataset.b===L.b);
-    $('#lavh').value=L.h; $('#lavhv').textContent=' '+L.h+'%'; $('#lavsc').value='#'+L.skin; $('#lavcc').value='#'+L.hair;
+    $('#lavh').value=L.h; $('#lavhv').textContent=' '+L.h+'%'; { const F=fxOf(L); for(const k of 'em'){ $('#lavx'+k).value=String(F[k]); $('#lavx'+k+'s').value=F[k+'s']; $('#lavx'+k+'v').textContent=' '+F[k+'s']+'%'; } } $('#lavsc').value='#'+L.skin; $('#lavcc').value='#'+L.hair;
     for(const b of $('#lavs').children)if(b.dataset.c)on(b,b.dataset.c===L.skin); for(const b of $('#lavc').children)if(b.dataset.c)on(b,b.dataset.c===L.hair);
     $('#lavw').textContent=D[L.f]?'':' LOADING…';
     { const y=lyOf(L); $('#lavlf').value=String(y.fr); $('#lavlfc').value='#'+y.fc; $('#lavlfc').style.visibility=y.fr===3?'':'hidden'; $('#lavls').value=String(y.st); $('#lavlsc').value='#'+y.sc; }
-    for(const [s] of SLOTS){ const K=kinds(s), sel=$('#lav-'+s), k=$('#lavk-'+s), kd=$('#lavt-'+s), w=L.w[s], J=D[L.f], cur=w&&byN.get(w[0]);
+    for(const [s] of SLOTS){ if(NOPROP.has(s))continue; const K=kinds(s), sel=$('#lav-'+s), k=$('#lavk-'+s), kd=$('#lavt-'+s), w=L.w[s], J=D[L.f], cur=w&&byN.get(w[0]);
       sel.closest('.lr').dataset.off=K.size?'':'1';
       kd.innerHTML='<option value="">NONE</option>'+[...K].map(([t,v])=>`<option value="${esc(t)}">${esc(t)}${v.length>1?' ('+v.length+')':''}</option>`).join(''); kd.value=cur?cur.k:'';
       const V=cur?K.get(cur.k)||[]:[], G=new Map(); for(const p of V){ if(!G.has(p.g))G.set(p.g,[]); G.get(p.g).push(p); }
@@ -249,7 +364,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
   // a still figure (or just the pieces, body false) in your build and colours, wearing w: the ITEM editor's pictures (140ba)
   AVATAR.statue=(w,{body=true,f}={})=>{ const M={...L,f:f||L.f,w,bare:false}; return need(M.f,M.w).then(J=>geoFor(J,M,false,!body)); };
   AVATAR.pieces=I.pieces; AVATAR.outfits=I.outfits||[];
-  AVATAR.outfit=i=>{ const o=AVATAR.outfits[i]; if(!o)return refresh(); L.w={}; for(const [s,[n,c]] of Object.entries(o.w)){ const p=byN.get(n); if(p&&p.figs.includes(L.f)&&SLOTS.some(x=>x[0]===s))L.w[s]=[n,c||'']; } return AVATAR.set(o.hair?{hair:o.hair}:{}); };
+  AVATAR.outfit=i=>{ const o=AVATAR.outfits[i]; if(!o)return refresh(); L.w={}; for(const [s,[n,c]] of Object.entries(o.w)){ if(NOPROP.has(s))continue; const p=byN.get(n); if(p&&p.figs.includes(L.f)&&SLOTS.some(x=>x[0]===s))L.w[s]=[n,c||'']; } return AVATAR.set(o.hair?{hair:o.hair}:{}); };
   AVATAR.draw=draw; LOOKS.onChange=()=>refresh();
   need(L.f,L.w).catch(()=>{});   // (your figure and what you wear start coming with the page: you are only ever the avatar)
   SYS.onStart(()=>{ LOOKS.who=()=>BODIES.pick()==='avatar'?'avatar':'walker'; fitTo(body,L); BODIES.add(body); BODIES.onPick.push(k=>{ if(k==='avatar')refresh(); draw(); }); if(BODIES.pick()==='avatar')refresh(); draw();

@@ -4,8 +4,7 @@ import {CLOCK, FORAGE, PARK, pos, UI, WX} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {MAPG, SYS, TILE} from './006-map-pre.js';
 import {WILD} from './144f-wild.js';
-{ const T=TILE, WU=T/.84, say=(t,c)=>SAY(t,c||'#e8e2cc'), rnd=(a,b)=>a+Math.random()*(b-a), NS=6, MAXC=6;
-  WILD.add('squirrel',['EASTERN GREY SQUIRREL','Sciurus carolinensis','forage',15,0]);
+{ const T=TILE, WU=T/.84, say=(t,c)=>SAY(t,c||'#e8e2cc'), rnd=(a,b)=>a+Math.random()*(b-a), NS=0, MAXC=6;   // (none: squirrels are pets at the pet store)
   FORAGE.add({names:{nut_acorn:'ACORNS (A HANDFUL)'},prices:{nut_acorn:2}}); FORAGE.sell('nut_acorn');
   const geo=(()=>{ let G=null; return ()=>{ '@later'; if(G)return G; const P=[], C=[], put=(g,m,c)=>{ g=g.toNonIndexed(); g.applyMatrix4(m); const a=g.attributes.position.array; for(let i=0;i<a.length;i++)P.push(a[i]); for(let i=0;i<a.length/3;i++)C.push(...c); };
     const M=(x,y,z,sx=1,sy=1,sz=1,rx=0)=>new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,0,0)),new THREE.Vector3(sx,sy,sz)), g1=[.52,.5,.48], g2=[.66,.63,.6], b=[.86,.82,.76], e=[.08,.07,.07];

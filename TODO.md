@@ -81,9 +81,9 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
 - [ ] **The park shop animals**: all 179 download at the start; measure the start on a real connection · P2 · S · check.
 - [ ] **The start-up and frame-time comparison** · P1 · M · check. Never finished (2 Nov, `tests/startprof.cjs`). Redo it on today's main
   with `tests/budget.cjs` (CI "measure" check). Feeds every line in this area.
-- [ ] **Two more stalls at the start** · P1 · M · find. Measured 4 Nov in the test browser (`?fresh=1`): about 8 s as the start ends and (9 Nov: the first is the shader warm-up, behind the loading screen; it now waits without blocking where the browser can. The shops are no longer built at the start.)
+- [ ] **Two more stalls at the start** · P1 · M · find. Measured 4 Nov in the test browser (`?fresh=1`): about 8 s as the start ends and
   3.7–4.5 s about 10 s later (shader compiles, `BATCH` painting, the first lights?). Re-measure: the shops' insides are built at the start
-  since 9 Nov.
+  since 9 Nov. (9 Nov: the first is the shader warm-up, behind the loading screen; it now waits without blocking where the browser can. The shops are no longer built at the start.)
 - [ ] **Does the wind bring the lag back?** · P2 · S · check. Wind on for trees, plants and grass (owner, 2 Nov: "Both, with wind"); not
   measured (`TUFTS.wind`, `PARK.windK`). Measure with the comparison; if it costs, a WIND row in GRAPHICS, with the owner's yes.
 

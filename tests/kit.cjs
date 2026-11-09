@@ -1,4 +1,4 @@
-// THE STARTER KIT AND THE BMX (src/141-forage.js FORAGE.KIT, src/111fd-skatepark.js BMXP): node tests/kit.cjs [dist/market.html]. A new player starts with the whole kit (99 of each power
+// THE STARTER KIT AND THE BMX (src/141-forage.js FORAGE.KIT, src/111fd-skatepark.js BMXP): node tests/kit.cjs [dist/market.html]. A new player starts with the whole kit (20 of each power
 // mushroom, the fastest hoverboard, the BMX, the nets, skateboard, go-kart, balloon, kite, guitar, rod, camera, binoculars), none of it archived; it is given once; the BMX rides.
 const {chromium}=require('playwright'), path=require('path');
 const PAGE=path.resolve(process.argv[2]||'dist/market.html');
@@ -10,6 +10,7 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html');
   await pg.goto('file://'+PAGE+'?fresh=1&hour=12&at=80,95',{timeout:240000}); await pg.waitForFunction(()=>window.__started,null,{timeout:300000});
   const k=await pg.evaluate(()=>{ const K=FORAGE.KIT, miss=Object.entries(K).filter(([id,n])=>(INV.items[id]||0)<n).map(([id])=>id), arch=Object.keys(K).filter(id=>ARCHI(id)); return {n:Object.keys(K).length,miss,arch,given:!!FORAGE.S.kit1}; });
   rec('a new player starts with the whole kit, none of it archived',k.n>=18&&!k.miss.length&&!k.arch.length&&k.given,JSON.stringify(k));
+  const u=await pg.evaluate(()=>Object.values(INV.items).reduce((a,b)=>a+(+b||0),0)); rec('a new player\'s whole pack fits the server\'s 600-unit bucket (worker/door.js ECON), so the first save keeps it',u<=600,u+' units');
   const o=await pg.evaluate(()=>{ INV.items.airshroom=3; const S=FORAGE.S; return {once:S.kit1===1}; });
   rec('the kit is marked given, so it is not given again',o.once,JSON.stringify(o));
   await pg.waitForFunction(()=>window.RIDE&&RIDE.kinds.bmx,null,{timeout:120000}).catch(()=>{});

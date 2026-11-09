@@ -331,16 +331,29 @@ export class Block extends Server {
     if (op === "rent") { const d = Math.max(1, Math.min(STALL.days, Math.floor(+m.days || 1)));
       if (o && !mine) return say({ op: "no", why: "someone else rents it" }); if (!o && Object.values(this.stallMineAll(s.id)).length) return say({ op: "no", why: "you already rent a stall" });
       const left = o ? Math.ceil((o.until - now) / 864e5) : 0; if (left + d > STALL.days) return say({ op: "no", why: "a stall is rented " + STALL.days + " days ahead at most" });
-      o = o || { who: s.id, name: word(s.name, 24) || "A TENANT", until: now, till: 0, goods: [] }; o.until += d * 864e5; this.stallSet(id, o); return say({ op: "rented", id, cost: d * STALL.rent, days: d }); }
-    if (op === "buy") { if (!o || mine) return; const g = o.goods.find(q => q.id === item); if (!g || n < 1) return say({ op: "no", why: "it is gone" }); const k = Math.min(n, g.n), cost = g.p * k;
-      g.n -= k; if (!g.n) o.goods = o.goods.filter(q => q !== g); o.till += cost * (1 - STALL.cut); o.sold = (o.sold || 0) + k; this.stallSet(id, o);
-      homeOf(this.env).econAllow(s.id, 0, k, "bought at a stall").catch(() => {});
-      const w = [...this.getConnections()].find(x => x.state && x.state.id === o.who); if (w) w.send(JSON.stringify({ t: "st", op: "sold", id, item, n: k, cost }));
-      return say({ op: "bought", id, item, n: k, cost }); }
-    if (!mine) return say({ op: "no", why: "not your stall" });
+      const H = homeOf(this.env), cost = d * STALL.rent;
+      H.econPay(s.id, cost, {}, "stall rent").then(r => { if (!r.ok) return say({ op: "no", why: r.why });
+        let q = this.stallGet(id); if (q && q.until < Date.now()) q = null;
+        if ((q && q.who !== s.id) || (!q && Object.values(this.stallMineAll(s.id)).length) || (q ? Math.ceil((q.until - Date.now()) / 864e5) : 0) + d > STALL.days) { H.econGive(s.id, cost, {}, "stall rent").catch(() => {}); return say({ op: "no", why: "someone else rents it" }); }
+        q = q || { who: s.id, name: word(s.name, 24) || "A TENANT", until: Date.now(), till: 0, goods: [] }; q.until += d * 864e5; this.stallSet(id, q); say({ op: "rented", id, cost, days: d }); }).catch(() => say({ op: "no", why: "try again" })); return; }
+    if (op === "buy") { if (!o || mine) return; const g = o.goods.find(q => q.id === item); if (!g || n < 1) return say({ op: "no", why: "it is gone" }); const k = Math.min(n, g.n), p = g.p, cost = p * k;
+      if (Math.floor(+m.p || 0) !== p) return say({ op: "no", why: "the price changed" });
+      const H = homeOf(this.env);
+      H.econPay(s.id, cost, {}, "bought at a stall").then(r => { if (!r.ok) return say({ op: "no", why: r.why });
+        const q = this.stallGet(id), h = q && q.until >= Date.now() && q.goods.find(x => x.id === item);
+        if (!h || h.n < k || h.p !== p) { H.econGive(s.id, cost, {}, "stall sale lost").catch(() => {}); return say({ op: "no", why: "it is gone" }); }
+        h.n -= k; if (!h.n) q.goods = q.goods.filter(x => x !== h); q.till += cost * (1 - STALL.cut); q.sold = (q.sold || 0) + k; this.stallSet(id, q);
+        H.econAllow(s.id, 0, k, "bought at a stall").catch(() => {});
+        const w = [...this.getConnections()].find(x => x.state && x.state.id === q.who); if (w) w.send(JSON.stringify({ t: "st", op: "sold", id, item, n: k, cost }));
+        say({ op: "bought", id, item, n: k, cost }); }).catch(() => say({ op: "no", why: "try again" })); return; }
+    if (!mine) return op === "put" && n > 0 && /^[a-z0-9_]{1,48}$/.test(item) ? say({ op: "back", why: "the stall is not yours", items: { [item]: Math.min(n, 9999) }, cash: 0 }) : say({ op: "no", why: "not your stall" });
     if (op === "put") { const p = Math.max(1, Math.min(1e6, Math.floor(+m.p || 0))); const g = o.goods.find(q => q.id === item);
       if (!/^[a-z0-9_]{1,48}$/.test(item) || n < 0 || n > 9999 || (!g && o.goods.length >= STALL.kinds)) { if (n > 0) say({ op: "back", why: "the stall is full", items: { [item]: n }, cash: 0 }); return; }
-      if (g) { g.n += n; g.p = p; } else if (n > 0) o.goods.push({ id: item, n, p }); this.stallSet(id, o); return; }
+      if (n < 1) { if (g && g.p !== p) { g.p = p; this.stallSet(id, o); } return; }
+      homeOf(this.env).econPay(s.id, 0, { [item]: n }, "set out at a stall").then(r => { if (!r.ok) return say({ op: "back", why: r.why, items: { [item]: n }, cash: 0 });
+        const q = this.stallGet(id), h = q && q.who === s.id && q.until >= Date.now() && q.goods.find(x => x.id === item);
+        if (!q || q.who !== s.id || q.until < Date.now() || (!h && q.goods.length >= STALL.kinds)) { homeOf(this.env).econGive(s.id, 0, { [item]: n }, "stall put").catch(() => {}); return say({ op: "back", why: "the stall is not yours", items: { [item]: n }, cash: 0 }); }
+        if (h) { h.n += n; h.p = p; } else q.goods.push({ id: item, n, p }); this.stallSet(id, q); }).catch(() => say({ op: "back", why: "try again", items: { [item]: n }, cash: 0 })); return; }
     if (op === "take") { const g = o.goods.find(q => q.id === item); if (!g) return; o.goods = o.goods.filter(q => q !== g); this.stallSet(id, o);
       homeOf(this.env).econAllow(s.id, 0, g.n, "stall take back").catch(() => {}); return say({ op: "back", why: "", items: { [g.id]: g.n }, cash: 0 }); }
     if (op === "collect") { const v = Math.floor(o.till); if (!v) return; o.till -= v; this.stallSet(id, o); homeOf(this.env).econAllow(s.id, v, 0, "stall till").catch(() => {}); return say({ op: "back", why: "", items: {}, cash: v }); }
@@ -538,14 +551,16 @@ export class Block extends Server {
       if (mine.ok[mine.a] && mine.ok[mine.b]) { mine.pay = {}; say(c, { op: "pay", give: mine.o[s.id] || tradeNone() }); say(oc, { op: "pay", give: mine.o[other] || tradeNone() });
         mine.timer = setTimeout(() => this.tradeEnd(mine, "the other side did not answer"), 10000); return; }
       return st(); }
-    if (op === "paid") { if (!mine.pay || mine.pay[s.id]) return; mine.pay[s.id] = tradeAtMost(tradeClean(m.o), mine.o[s.id] || tradeNone());
-      if (mine.pay[mine.a] && mine.pay[mine.b]) this.tradeEnd(mine); }
+    if (op === "paid") { if (!mine.pay || mine.pay[s.id] || mine.paying === s.id) return; const g = tradeAtMost(tradeClean(m.o), mine.o[s.id] || tradeNone()); mine.paying = s.id;
+      homeOf(this.env).econPay(s.id, g.cash, g.items, "trade").then(r => { if (mine.paying === s.id) mine.paying = null; if (this.trades.get(s.id) !== mine) { if (r.ok) { homeOf(this.env).econGive(s.id, g.cash, g.items, "trade ended").catch(() => {}); c.send(JSON.stringify({ t: "tr", op: "x", why: "the trade ended", back: g })); } return; }
+        if (!r.ok) { (mine.unpaid || (mine.unpaid = {}))[s.id] = g; return this.tradeEnd(mine, "they could not pay"); }
+        mine.pay[s.id] = g; if (mine.pay[mine.a] && mine.pay[mine.b]) this.tradeEnd(mine); }).catch(() => { if (mine.paying === s.id) mine.paying = null; }); }
   }
   // a trade's end once paying began: both paid, each gets the other's; otherwise what was paid goes back; a player who left gets it at the next start (OWNED 'tradein')
   tradeEnd(t, why, gone) { clearTimeout(t.timer); const T = this.trades; if (T.get(t.a) !== t) return; T.delete(t.a); T.delete(t.b);
     const conn = id => [...this.getConnections()].find(x => x.state && x.state.id === id);
     for (const [me, them] of [[t.a, t.b], [t.b, t.a]]) { const mine = t.pay[me], theirs = t.pay[them];
-      const x = why ? (mine ? { op: "x", why, back: mine } : { op: "x", why }) : { op: "done", with: them, give: mine, get: theirs };
+      const un = t.unpaid && t.unpaid[me], x = why ? (mine ? { op: "x", why, back: mine } : un ? { op: "x", why: "you do not have what you put in", back: un } : { op: "x", why }) : { op: "done", with: them, give: mine, get: theirs };
       const got = why ? mine : theirs, o = me === gone ? null : conn(me);
       const H = homeOf(this.env); if (got && (got.cash || Object.keys(got.items).length)) H.econAllow(me, got.cash, Object.values(got.items).reduce((a, b) => a + b, 0), why ? "trade back" : "trade").catch(() => {});
       if (o) o.send(JSON.stringify({ t: "tr", ...x })); else if (got && (got.cash || Object.keys(got.items).length)) H.ownedAdd(me, "tradein", got).catch(() => {}); } }
@@ -843,6 +858,19 @@ export class Home extends DurableObject {
   econSet(id, e) { this.sql.exec("insert into econ(who, cb, ib, at) values(?, ?, ?, ?) on conflict(who) do update set cb = excluded.cb, ib = excluded.ib, at = excluded.at", id, Math.min(1e9, e.cb), Math.min(1e9, e.ib), Date.now()); }
   econNote(id, dc, du, cut, note) { this.sql.exec("insert into ledger(who, at, dc, du, cut, note) values(?, ?, ?, ?, ?, ?)", id, Date.now(), dc, du, cut, note || ""); this.sql.exec("delete from ledger where at < ?", Date.now() - 14 * 864e5); }
   econAllow(id, cash, units, note) { const e = this.econGet(id); e.cb += Math.max(0, +cash || 0); e.ib += Math.max(0, +units || 0); this.econSet(id, e); this.econNote(id, 0, 0, 0, "allow " + (note || "") + " $" + Math.floor(+cash || 0) + " +" + Math.floor(+units || 0)); return true; }
+  // paying from the server's own copy of the pack (a stall's rent, goods set out or bought, a trade's side): what isn't there isn't taken, and nothing changes hands
+  econPay(id, cash, items, note) { const c = Math.max(0, Math.floor(+cash || 0)), it = {}; for (const k in items || {}) { const n = Math.floor(+items[k] || 0); if (n > 0) it[k] = n; }
+    const had = this.ownedGet(id); let inv = null; try { inv = JSON.parse(had.inv || "null"); } catch (e) {} if (!inv || typeof inv !== "object") inv = { v: 1, items: {}, cash: ECON.start }; inv.items = inv.items || {};
+    if (Math.floor(+inv.cash || 0) < c) return { ok: false, why: "not enough money" };
+    for (const k in it) if (Math.floor(+inv.items[k] || 0) < it[k]) return { ok: false, why: "you do not have that" };
+    if (!c && !Object.keys(it).length) return { ok: true };
+    inv.cash = Math.floor(+inv.cash || 0) - c; for (const k in it) { inv.items[k] -= it[k]; if (inv.items[k] <= 0) delete inv.items[k]; }
+    if (!this.ownedPut(id, { inv: JSON.stringify(inv) })) return { ok: false, why: "the save is full" };
+    this.econNote(id, -c, 0, 0, "paid " + (note || "") + " $" + c + " " + JSON.stringify(it).slice(0, 160)); return { ok: true }; }
+  // a payment handed back (it lost a race): straight into the server's copy of the pack
+  econGive(id, cash, items, note) { const had = this.ownedGet(id); let inv = null; try { inv = JSON.parse(had.inv || "null"); } catch (e) {} if (!inv || typeof inv !== "object") inv = { v: 1, items: {}, cash: ECON.start }; inv.items = inv.items || {};
+    inv.cash = Math.floor(+inv.cash || 0) + Math.max(0, Math.floor(+cash || 0)); for (const k in items || {}) { const n = Math.floor(+items[k] || 0); if (n > 0) inv.items[k] = (Math.floor(+inv.items[k] || 0)) + n; }
+    this.ownedPut(id, { inv: JSON.stringify(inv) }); this.econNote(id, 0, 0, 0, "refund " + (note || "")); return true; }
   ledger(id) { this.econT(); return this.sql.exec("select at, dc, du, cut, note from ledger where who = ? order by at desc limit 200", id).toArray(); }
   ownedSave(id, put) { if (!ECON.keys.some(k => k in put)) return { ok: this.ownedPut(id, put) };
     const had = this.ownedGet(id), after = { ...had }; for (const k in put) { if (put[k] === null) delete after[k]; else after[k] = put[k]; }

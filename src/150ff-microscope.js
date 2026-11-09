@@ -3,7 +3,7 @@ import {THREE} from './003-shx.js';
 import {SFX, UI} from './003b-systems.js';
 import {MODS, SYS} from './006-map-pre.js';
 import {ROOMK} from './150a-bedroom.js';
-const MIC={open:false,data:null}; window.MIC=MIC;
+const MIC={open:false,data:null,ext:[]}; window.MIC=MIC;   // ext: what later files add ({slides, panel, click, over, tap, open, close}, 150fi on)
 { const SCJ=__LAZY__("data/scope.json");
   const SLF={"flea":__FILE__("data/scope/slides/flea.jpg"),"flea-sem":__FILE__("data/scope/slides/flea-sem.jpg"),"cork":__FILE__("data/scope/slides/cork.jpg"),"snowflake":__FILE__("data/scope/slides/snowflake.jpg"),"snow-sem":__FILE__("data/scope/slides/snow-sem.jpg"),"radiolaria":__FILE__("data/scope/slides/radiolaria.jpg"),"diatoms":__FILE__("data/scope/slides/diatoms.jpg"),"diatom":__FILE__("data/scope/slides/diatom.jpg"),"pollen":__FILE__("data/scope/slides/pollen.jpg"),"spores":__FILE__("data/scope/slides/spores.jpg"),"stomata":__FILE__("data/scope/slides/stomata.jpg"),"aphid":__FILE__("data/scope/slides/aphid.jpg"),"grasshopper":__FILE__("data/scope/slides/grasshopper.jpg"),"weevil":__FILE__("data/scope/slides/weevil.jpg"),"firefly":__FILE__("data/scope/slides/firefly.jpg"),"flyeye":__FILE__("data/scope/slides/flyeye.jpg"),"bedbug":__FILE__("data/scope/slides/bedbug.jpg"),"mite":__FILE__("data/scope/slides/mite.jpg"),"varroa":__FILE__("data/scope/slides/varroa.jpg"),"butterfly":__FILE__("data/scope/slides/butterfly.jpg"),"tardigrade":__FILE__("data/scope/slides/tardigrade.jpg"),"amoeba":__FILE__("data/scope/slides/amoeba.jpg"),"volvox":__FILE__("data/scope/slides/volvox.jpg"),"onion":__FILE__("data/scope/slides/onion.jpg"),"cheek":__FILE__("data/scope/slides/cheek.jpg"),"blood":__FILE__("data/scope/slides/blood.jpg"),"ecoli":__FILE__("data/scope/slides/ecoli.jpg"),"penicillium":__FILE__("data/scope/slides/penicillium.jpg"),"yeast":__FILE__("data/scope/slides/yeast.jpg"),"sand":__FILE__("data/scope/slides/sand.jpg"),"hair":__FILE__("data/scope/slides/hair.jpg"),"fishscale":__FILE__("data/scope/slides/fishscale.jpg")};   // each photo a file of its own, fetched when it goes on the stage
   MIC.files=SLF;
@@ -63,36 +63,37 @@ const MIC={open:false,data:null}; window.MIC=MIC;
       V.draw=()=>{ const s=V.slide, O=OBJ[V.obj];
         pan.innerHTML=`<div><b>THE MICROSCOPE</b> <button class="btn" style="float:right" data-a="x">DONE</button></div>
           <div class="ab" style="margin:4px 0 6px">SLIDE BOX</div><div class="box">${MIC.slides().map(x=>`<div class="sl ${s&&s.id===x.id?'on':''}" data-s="${x.id}">${esc(x.name)}${x.mag?' · '+esc(x.mag):''}</div>`).join('')}</div>
-          <div class="row"><span>OBJECTIVE</span>${OBJ.map((o,i)=>`<button class="btn ${i===V.obj?'on':''}" data-o="${i}">${o.m}X</button>`).join('')}</div>
+          ${MIC.ext.map(x=>x.panel?x.panel()||'':'').join('')}<div class="row"><span>OBJECTIVE</span>${OBJ.map((o,i)=>`<button class="btn ${i===V.obj?'on':''}" data-o="${i}">${o.m}X</button>`).join('')}</div>
           <div class="row"><span>COARSE</span><button class="btn" data-f="-50">-</button><button class="btn" data-f="50">+</button><span style="width:auto">FINE</span><button class="btn" data-f="-1">-</button><button class="btn" data-f="1">+</button></div>
           <div class="row"><span>LIGHT</span><input type="range" min="0" max="100" value="${Math.round(V.light*100)}" data-k="light"></div>
           <div class="row"><span>DIAPHRAGM</span><input type="range" min="0" max="100" value="${Math.round(V.diaph*100)}" data-k="diaph"></div>
           <div class="row"><span>STAGE</span><button class="btn" data-m="-1,0">&lt;</button><button class="btn" data-m="0,-1">^</button><button class="btn" data-m="0,1">v</button><button class="btn" data-m="1,0">&gt;</button></div>
           <div class="ab">${O.m*10}X · FIELD ${fov()>=1000?(fov()/1000).toFixed(2)+' MM':Math.round(fov())+' µM'} · NA ${O.na}<br>${s?`<b>${esc(s.name)}</b><br>${esc(s.about||'')}${s.credit?'<br><span style="color:#8a7a62">'+esc(s.credit)+'</span>':''}`:'PICK A SLIDE FROM THE BOX.'}</div>
           <div class="ab" style="color:#8a7a62">DRAG OR WASD: STAGE · WHEEL: FINE FOCUS (SHIFT: COARSE) · 1-4: OBJECTIVE · ESC: DONE</div>`; };
-      pan.addEventListener('click',e=>{ const b=e.target.closest('[data-a],[data-o],[data-f],[data-m],[data-s]'); if(!b)return; const d=b.dataset;
+      pan.addEventListener('click',e=>{ const x0=e.target.closest('[data-x]'); if(x0){ for(const x of MIC.ext)if(x.click&&x.click(x0))break; V.draw(); return; } const b=e.target.closest('[data-a],[data-o],[data-f],[data-m],[data-s]'); if(!b)return; const d=b.dataset;
         if(d.a==='x')return MIC.close(); if(d.o!=null)MIC.objective(+d.o); if(d.f!=null)MIC.focus(+d.f); if(d.m!=null){ const [x,y]=d.m.split(',').map(Number); V.vx+=x*fov()*.8; V.vy+=y*fov()*.8; } if(d.s!=null)MIC.place(d.s); });
-      pan.addEventListener('input',e=>{ const k=e.target.dataset.k; if(k)V[k]=+e.target.value/100; });
+      pan.addEventListener('input',e=>{ const k=e.target.dataset.k; if(k)V[k]=+e.target.value/100; for(const x of MIC.ext)if(x.input)x.input(e.target); });
       cv.addEventListener('wheel',e=>{ e.preventDefault(); MIC.focus((e.deltaY>0?-1:1)*(e.shiftKey?50:1)); },{passive:false});
-      cv.addEventListener('pointerdown',e=>{ cv.setPointerCapture(e.pointerId); V.drag=[e.clientX,e.clientY,performance.now()]; cv.style.cursor='grabbing'; });
+      cv.addEventListener('pointerdown',e=>{ cv.setPointerCapture(e.pointerId); V.drag=[e.clientX,e.clientY,performance.now()]; V.tap=[e.clientX,e.clientY]; cv.style.cursor='grabbing'; });
       cv.addEventListener('pointermove',e=>{ if(!V.drag)return; const k=fov()/cv.clientWidth, dx=e.clientX-V.drag[0], dy=e.clientY-V.drag[1], t=performance.now(), dt=Math.max(1,t-V.drag[2])/1000;
         // the image in a microscope moves opposite to the slide: dragging the picture right pushes the slide left
         V.sx-=dx*k; V.sy-=dy*k; V.vx=-dx*k/dt*.5; V.vy=-dy*k/dt*.5; V.drag=[e.clientX,e.clientY,t]; edge(); });
-      const up=()=>{ V.drag=null; cv.style.cursor='grab'; }; cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
+      const up=e=>{ V.drag=null; cv.style.cursor='grab'; const t=V.tap; V.tap=null; if(t&&e&&e.type==='pointerup'&&Math.hypot(e.clientX-t[0],e.clientY-t[1])<5){ const r=cv.getBoundingClientRect(), k=cv.width/fov()*r.width/cv.width, ux=V.sx+(e.clientX-r.left-r.width/2)/k, uy=V.sy+(e.clientY-r.top-r.height/2)/k; for(const x of MIC.ext)if(x.tap)x.tap(ux,uy); } }; cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
       addEventListener('keydown',e=>{ if(el.hidden)return; if(e.target&&e.target.closest&&e.target.closest('input'))return; e.stopImmediatePropagation(); const k=e.key.toLowerCase();
         if(k==='escape')return MIC.close(); if('1234'.includes(k)&&k)MIC.objective(+k-1); V.keys.add(k); },true);
       addEventListener('keyup',e=>{ if(el.hidden)return; e.stopImmediatePropagation(); V.keys.delete(e.key.toLowerCase()); },true);
       addEventListener('resize',()=>{ if(!el.hidden)size(); }); }
-    V.el.hidden=false; MIC.open=true; if(!UI.gamewin)UI.gamewin='micro'; size(); if(!V.slide)MIC.place('pond'); V.draw(); };
+    V.el.hidden=false; MIC.open=true; if(!UI.gamewin)UI.gamewin='micro'; size(); if(!V.slide)MIC.place('pond'); V.draw(); for(const x of MIC.ext)if(x.open)x.open(); };
   const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const size=()=>{ const s=Math.round(Math.min(innerHeight*.9,innerWidth*.94,720)); V.cv.width=V.cv.height=s; V.cv.style.width=V.cv.style.height=s+'px'; };
   const fov=()=>FN/OBJ[V.obj].m;   // the real field of view at the specimen, in µm
-  MIC.close=()=>{ if(!V.el)return; V.el.hidden=true; MIC.open=false; if(UI.gamewin==='micro')UI.gamewin=null; V.keys.clear(); V.org=null; };
-  MIC.slides=()=>[{id:'pond',name:'POND WATER (LIVE)',mag:'',about:'A fresh drop from the park pond under a cover slip, about 100 µm deep. Everything in it is alive.',credit:''}].concat(((MIC.data&&MIC.data.slides)||[]).filter(s=>SLF[s.id]));
+  MIC.close=()=>{ if(!V.el)return; V.el.hidden=true; MIC.open=false; if(UI.gamewin==='micro')UI.gamewin=null; V.keys.clear(); V.org=null; for(const x of MIC.ext)if(x.close)x.close(); };
+  MIC.redraw=()=>{ if(V.draw)V.draw(); };
+  MIC.slides=()=>[{id:'pond',name:'POND WATER (LIVE)',mag:'',about:'A fresh drop from the park pond under a cover slip, about 100 µm deep. Everything in it is alive.',credit:''}].concat(((MIC.data&&MIC.data.slides)||[]).filter(s=>SLF[s.id]),MIC.ext.flatMap(x=>x.slides?x.slides():[]));
   // a slide's real width in µm: its own figure if it has one, else its picture read as a 100 mm print at the magnification given
-  const widthOf=s=>{ if(s.um)return +s.um; const m=parseFloat(String(s.mag||'').replace(/[^0-9.]/g,''))||100; return 1e5/m; };
+  const widthOf=s=>{ if(s.um)return +s.um; if(s.src)return widthOf(MIC.slides().find(x=>x.id===s.src)||{}); const m=parseFloat(String(s.mag||'').replace(/[^0-9.]/g,''))||100; return 1e5/m; };
   MIC.place=id=>{ '@later'; const s=MIC.slides().find(x=>x.id===id); if(!s)return; V.slide=s; V.sx=V.sy=V.vx=V.vy=0; V.zf=(Math.random()<.5?-1:1)*(10+Math.random()*25); V.blurT=.5; V.img=null; V.org=null;
-    if(id==='pond')pond(); else { V.W=widthOf(s); const im=new Image(); im.decoding='async'; im.onload=()=>{ if(V.slide===s){ V.img=im; V.H=V.W*im.naturalHeight/im.naturalWidth; } }; im.src=SLF[id]; V.loads[id]=(V.loads[id]||0)+1; }
+    if(id==='pond'||s.live)pond(s.live); else if(s.draw){ V.W=V.H=+s.um||4000; } else { V.W=widthOf(s); const im=new Image(); im.decoding='async'; im.onload=()=>{ if(V.slide===s){ V.img=im; V.H=V.W*im.naturalHeight/im.naturalWidth; } }; im.src=SLF[s.src||id]; V.loads[id]=(V.loads[id]||0)+1; }
     V.draw(); if(SFX)SFX.play('click',{vol:.4,vary:.3}); };
   MIC.objective=i=>{ if(!V.el||i===V.obj||!OBJ[i])return; V.obj=i; V.blurT=.45; V.zf+=(Math.random()-.5)*OBJ[i].dof*3; V.draw(); if(SFX)SFX.play('click',{vol:.5,vary:.2}); };   // parfocal, nearly: a touch of fine focus after each turn
   MIC.focus=d=>{ if(!V.el)return; V.zf+=d*(Math.abs(d)>=10?1:Math.min(1,OBJ[V.obj].dof*.4+.1)); };
@@ -107,16 +108,16 @@ const MIC={open:false,data:null}; window.MIC=MIC;
     rotifer:{len:280,wid:90,spd:0,n:[1,3],z:[85,99]}, volvox:{len:420,wid:420,spd:90,n:[1,3],z:[20,80]}, diatom:{len:70,wid:14,spd:12,n:[6,14],z:[94,99]},
     daphnia:{len:1500,wid:900,spd:0,n:[0,1],z:[30,70]}, tardigrade:{len:350,wid:110,spd:25,n:[0,1],z:[93,99]}};
   const rnd=s=>()=>{ s=(s*16807)%2147483647; return (s-1)/2147483646; };
-  const pond=()=>{ '@later'; const r=rnd((Date.now()%2147483646)+1), PW=V.PW=2400, O=[], pick=(a,b)=>a+Math.floor(r()*(b-a+1)), at=()=>[(r()-.5)*PW,(r()-.5)*PW];
-    for(const k in KINDS){ const K=KINDS[k], n=pick(...K.n); for(let i=0;i<n;i++){ const [x,y]=at(); O.push({k,x,y,z:K.z[0]+r()*(K.z[1]-K.z[0]),a:r()*6.28,len:K.len*(.8+r()*.4),ph:r()*6.28,t:0,rev:0,hop:0,vx:0,vy:0,seed:r()}); } }
-    if(r()<.12){ const [x,y]=at(); O.push({k:'tardigrade',x,y,z:96,a:r()*6.28,len:350,ph:0,t:0}); }
+  const pond=live=>{ '@later'; const r=rnd((Date.now()%2147483646)+1), PW=V.PW=2400, O=[], pick=(a,b)=>a+Math.floor(r()*(b-a+1)), at=()=>[(r()-.5)*PW,(r()-.5)*PW];   // live: how many of each kind (a jar's drop, 150fi), else a drop from the park pond
+    for(const k in KINDS){ const K=KINDS[k], n=live?Math.round(live[k]||0):pick(...K.n); for(let i=0;i<n;i++){ const [x,y]=at(); O.push({k,x,y,z:K.z[0]+r()*(K.z[1]-K.z[0]),a:r()*6.28,len:K.len*(.8+r()*.4),ph:r()*6.28,t:0,rev:0,hop:0,vx:0,vy:0,seed:r()}); } }
+    if(!live&&r()<.12){ const [x,y]=at(); O.push({k:'tardigrade',x,y,z:96,a:r()*6.28,len:350,ph:0,t:0}); }
     // bacteria, yeast and silt, 0.5 to 6 µm: no motion of their own, only Brownian
-    const P=[]; for(let i=0;i<2400;i++){ const d=.5+Math.pow(r(),2)*5.5; P.push({x:(r()-.5)*PW,y:(r()-.5)*PW,z:r()*100,d,c:r()<.7?0:1}); }
+    const P=[]; for(let i=0;i<(live&&live.silt||2400);i++){ const d=.5+Math.pow(r(),2)*5.5; P.push({x:(r()-.5)*PW,y:(r()-.5)*PW,z:r()*100,d,c:r()<.7?0:1}); }
     V.org=O; V.part=P; V.rand=r; };
   const brown=(d,dt,g)=>Math.sqrt(2*KT/(6*Math.PI*ETA*d/2*1e-6)*dt)*1e6*g;   // rms step per axis in µm: √(2·D·dt), D = kT/(6πηr)
   const gauss=r=>{ let u=0; for(let i=0;i<6;i++)u+=r(); return (u-3)/Math.SQRT2; };
   const swim=dt=>{ '@later'; const O=V.org, r=V.rand, PW=V.PW, H=PW/2;
-    for(const o of O){ const K=KINDS[o.k]; o.t+=dt; o.ph+=dt;
+    for(const o of O){ const K=KINDS[o.k]; o.t+=dt; if(V.still)continue; o.ph+=dt;   // still: stained and dead (150fi); only the water's molecules move them now
       if(o.k==='paramecium'){ if(o.rev>0){ o.rev-=dt; o.x-=Math.cos(o.a)*K.spd*.4*dt; o.y-=Math.sin(o.a)*K.spd*.4*dt; if(o.rev<=0)o.a+=1+r()*1.5; } else { o.a+=Math.sin(o.ph*2.2)*.9*dt+(r()-.5)*.3*dt; o.x+=Math.cos(o.a)*K.spd*dt; o.y+=Math.sin(o.a)*K.spd*dt; } o.z+=Math.sin(o.ph*1.3)*8*dt; }
       else if(o.k==='euglena'){ o.a+=(r()-.5)*1.4*dt; o.x+=Math.cos(o.a)*K.spd*dt; o.y+=Math.sin(o.a)*K.spd*dt; }
       else if(o.k==='amoeba'){ o.a+=(r()-.5)*.4*dt; o.x+=Math.cos(o.a)*K.spd*dt; o.y+=Math.sin(o.a)*K.spd*dt; }
@@ -128,13 +129,13 @@ const MIC={open:false,data:null}; window.MIC=MIC;
       if(Math.abs(o.x)>H||Math.abs(o.y)>H){ o.x=Math.max(-H,Math.min(H,o.x)); o.y=Math.max(-H,Math.min(H,o.y)); if(o.k==='paramecium'&&!(o.rev>0))o.rev=.5; else o.a+=Math.PI*(.6+r()*.4); }
       o.z=Math.max(1,Math.min(99,o.z)); }
     // two paramecia bumping: both reverse
-    for(let i=0;i<O.length;i++){ const a=O[i]; if(a.k!=='paramecium'||a.rev>0)continue; for(const b of O){ if(b===a)continue; const d=Math.hypot(a.x-b.x,a.y-b.y); if(d<(a.len+b.len)*.35){ a.rev=.4; break; } } }
+    for(let i=0;i<O.length;i++){ const a=O[i]; if(V.still||a.k!=='paramecium'||a.rev>0)continue; for(const b of O){ if(b===a)continue; const d=Math.hypot(a.x-b.x,a.y-b.y); if(d<(a.len+b.len)*.35){ a.rev=.4; break; } } }
     for(const p of V.part){ const s=brown(p.d,dt,1); p.x+=gauss(r)*s; p.y+=gauss(r)*s; p.z+=gauss(r)*s; }
     // the rotifers' crowns draw the nearby silt toward their mouths
     for(const o of O){ if(o.k!=='rotifer')continue; const mx=o.x+Math.cos(o.a)*o.len*.5, my=o.y+Math.sin(o.a)*o.len*.5; for(const p of V.part){ const dx=mx-p.x, dy=my-p.y, d=Math.hypot(dx,dy); if(d<120&&d>4){ p.x+=dx/d*40*dt; p.y+=dy/d*40*dt; } } } };
 
   /* ---------- what you see: the bright field, the specimen at its scale, blurred by its distance from the focal plane ---------- */
-  const blurOf=dz=>{ const O=OBJ[V.obj], e=Math.max(0,Math.abs(dz)-O.dof/2)/O.dof; return Math.min(14,e*1.6)*(1+V.diaph*.3)/(1+V.diaph*.6); };
+  const blurOf=dz=>{ const O=OBJ[V.obj], e=Math.max(0,Math.abs(dz)-O.dof/2)/O.dof; return Math.min(14,e*1.6)*(1+V.diaph*.3)/(1+V.diaph*.6)+(MIC.haze?MIC.haze(O,V):0); };
   const frame=dt=>{ '@later'; if(!V.el||V.el.hidden)return; const g=V.g, S=V.cv.width, F=fov(), k=S/F, O=OBJ[V.obj]; V.t+=dt;
     // the stage: knobs (WASD/arrows) push it, it coasts a moment and stops at its ends
     const KY=V.keys, ax=(KY.has('d')||KY.has('arrowright')?1:0)-(KY.has('a')||KY.has('arrowleft')?1:0), ay=(KY.has('s')||KY.has('arrowdown')?1:0)-(KY.has('w')||KY.has('arrowup')?1:0);
@@ -152,14 +153,16 @@ const MIC={open:false,data:null}; window.MIC=MIC;
       g.filter='none'; }
     else if(V.img){ const im=V.img, w=V.W*k, h=V.H*k, ppx=w/im.naturalWidth, soft=Math.max(0,Math.log2(ppx)-1)*1.2;   // past about 2 screen pixels to a photo pixel the picture has no more to give: it softens (empty magnification)
       g.filter=filt(blurOf(-V.zf)+soft); g.imageSmoothingEnabled=true; g.drawImage(im,-V.sx*k-w/2,-V.sy*k-h/2,w,h); g.filter='none'; }
+    else if(V.slide&&V.slide.draw){ g.filter=filt(blurOf(-V.zf)); V.slide.draw(g,{k,S,F,sx:V.sx,sy:V.sy,t:V.t,V}); g.filter='none'; }
     else if(V.slide){ g.fillStyle='rgba(60,50,40,.5)'; g.font='14px monospace'; g.textAlign='center'; g.fillText('PUTTING THE SLIDE ON THE STAGE…',0,0); }
+    for(const x of MIC.ext)if(x.over)x.over(g,{S,k,F,V});
     g.restore();
     // the eyepiece's edge, dust on the lens, and the scale bar (a reticle in µm)
     const vg=g.createRadialGradient(S/2,S/2,S*.36,S/2,S/2,S*.5); vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,.85)'); g.fillStyle=vg; g.beginPath(); g.arc(S/2,S/2,S/2,0,7); g.fill();
     const bar=scaleBar(F), bw=bar*k; g.fillStyle='rgba(20,20,20,.85)'; g.fillRect(S/2-bw/2,S*.86,bw,3); g.font='bold 11px monospace'; g.textAlign='center'; g.fillText(bar>=1000?(bar/1000)+' mm':bar+' µm',S/2,S*.86-5);
     V.bar=bar; V.barPx=bw; };
   const scaleBar=F=>{ const t=F/4, p=Math.pow(10,Math.floor(Math.log10(t))); for(const m of [5,2,1])if(m*p<=t)return m*p; return p; };
-  MIC.frame=frame;
+  MIC.frame=frame; MIC.K={OBJ,KINDS,V,fov:()=>fov(),blurOf:z=>blurOf(z),DRAW:null};
 
   // the microbes, drawn at their size L (px) along their long axis, facing +x
   const ell=(g,a,b)=>{ g.beginPath(); g.ellipse(0,0,a,b,0,0,7); };
@@ -188,7 +191,7 @@ const MIC={open:false,data:null}; window.MIC=MIC;
       g.fillStyle='rgba(40,30,30,.8)'; for(const s of [-1,1]){ g.beginPath(); g.arc(L*.42,s*L*.05,Math.max(.5,L*.015),0,7); g.fill(); } }};
   MIC.dbg=()=>V.el?{open:MIC.open,obj:V.obj,mag:OBJ[V.obj].m*10,fov:fov(),bar:V.bar,barPx:V.barPx,S:V.cv.width,slide:V.slide&&V.slide.id,img:!!V.img,W:V.W,H:V.H,sx:V.sx,sy:V.sy,zf:V.zf,blur:+blurOf(-V.zf).toFixed(2),loads:V.loads,
     org:V.org?V.org.map(o=>({k:o.k,x:+o.x.toFixed(1),y:+o.y.toFixed(1),len:o.len})):null,pxPerUm:V.cv.width/fov()}:{open:false};
-  MIC.blurAt=dz=>V.el?blurOf(dz):null; MIC.setFocus=z=>{ if(V.el)V.zf=z; };
+  MIC.K.DRAW=DRAW; MIC.blurAt=dz=>V.el?blurOf(dz):null; MIC.setFocus=z=>{ if(V.el)V.zf=z; };
   SYS.add('places',dt=>{ if(MIC.open&&MIC.frame)MIC.frame(dt||0); if(MIC.open&&!(MODS.apts&&MODS.apts.inReal))MIC.close(); },'150ff-microscope');
   window.MICDBG=()=>MIC.dbg();
 }

@@ -27,9 +27,10 @@ import {DM} from './146bb-dm.js';
     el.querySelector('#cpbtns').innerHTML=B.map((b,i)=>`<button class="cp-btn${b[3]?' cp-adm':''}" data-i="${i}"${b[4]?' disabled title="only when you are dead"':''}>${b[0]}<span class="cp-tag">${b[1]}</span></button>`).join(''); el._btns=B; };
   const logout=()=>{ if(!confirm('Log out of The Strangest Flea Market?'))return; BUGS.logout(); };
   const tools=host=>{ const st=document.getElementById('stat');
-    host.innerHTML=`<h3>TOOLS</h3><div class="row onoff"><button class="btn" id="cpstat" aria-pressed="${!!st&&!st.hidden}">STATS</button></div><div class="row onoff"><button class="btn" id="cprin" aria-pressed="${!!RINSP.on}">RENDER INSPECTOR</button></div>
+    host.innerHTML=`<h3>TOOLS</h3><div class="row onoff"><button class="btn" id="cpstat" aria-pressed="${!!st&&!st.hidden}">STATS</button></div><div class="row onoff"><button class="btn" id="cprin" aria-pressed="${!!RINSP.on}">RENDER INSPECTOR</button></div><div class="row onoff"><button class="btn" id="cpmax" aria-pressed="${!!FORAGE.maxed()}">ALL SKILLS 100</button></div>
 `;
     host.querySelector('#cpstat').onclick=()=>{ const s=document.getElementById('stat'); if(s)s.hidden=!s.hidden; tools(host); };
+    host.querySelector('#cpmax').onclick=()=>{ FORAGE.maxed(!FORAGE.maxed()); tools(host); };
     host.querySelector('#cprin').onclick=()=>{ if(RINSP.toggle)RINSP.toggle(); if(RINSP.on&&UI.menuOpen)UI.toggleMenu(); else tools(host); }; };
 
   // ADMIN's EDITORS (owner, 8 Nov 2026: "add all the editors into the admin menu - except the paint"): each opens its editor; the painter stays with paper and canvases

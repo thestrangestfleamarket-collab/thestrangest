@@ -65,7 +65,7 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
     FORAGE.ACT.gstow('guitar'); await new Promise(r=>setTimeout(r,300)); r.stowed=!GUITAR.slung()&&!me().children.some(c=>c.name==='guitar')&&ONLINE.mine.gtr()==null; return r; });
   rec('ESC puts it down onto your back (your fingers the rig\'s again, the panel gone, others see it slung); STOW IT puts it in the bag',!e.on&&e.slung&&e.onBody&&!e.fg&&!e.panel&&e.seen==='b'&&e.stowed,JSON.stringify(e));
   // the songs: the book's five and the downloaded pieces, each needing its GUITAR level; practice raises it
-  const sg=await pg.evaluate(async()=>{ const B=GUITAR.BOOK; FORAGE.S.sk.guitar=100; GUITAR.start('own'); await GUITAR.loadSongs(); const lv=FORAGE.sk('guitar'), hard=B.findIndex(b=>b.lvl>50&&b.notes);
+  const sg=await pg.evaluate(async()=>{ const B=GUITAR.BOOK; FORAGE.S.sk.guitar=100; GUITAR.start('own'); await GUITAR.loadSongs(); const lv=FORAGE.sk('guitar'), hard=B.findIndex(b=>b.lvl>50&&b.lvl<=60&&b.notes&&b.lvl===Math.min(...B.filter(q=>q.lvl>50&&!q.kept).map(q=>q.lvl)));
     GUITAR.play('song',hard); const refused=GUITAR.ME.song!==hard; FORAGE.S.sk.guitar=1000; GUITAR.play('song',hard); await new Promise(r=>setTimeout(r,2500)); const playing=GUITAR.ME.song===hard, notes=GUITAR.ME.cur; GUITAR.play('stop');
     FORAGE.S.sk.guitar=100; for(let i=0;i<600;i++)GUITAR.play('pluck',1+i%6); const after=FORAGE.sk('guitar'); GUITAR.stop(); GUITAR.stow();
     return {book:B.length,downloaded:B.filter(b=>b.notes).length,skill:lv,inSkills:FORAGE.SK.some(s=>s[0]==='guitar'),refused,playing,notes,after}; });

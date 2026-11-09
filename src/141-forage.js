@@ -86,8 +86,8 @@ import {WORTH} from './140c-worth.js';
     say(g.thanks?g.thanks(id,pay):`THE ${g.place.toUpperCase()} THANKS YOU FOR ITS FIRST ${NAME(id)} AND PAYS $${pay}.`,'#f2c14e'); };
   FORAGE.feed=f=>feed(f); FORAGE.buff=(k,s)=>buff(k,s);
   const sk=k=>S.sk[k]/10, tot=()=>Object.values(S.sk).reduce((a,b)=>a+(+b||0),0);
-  const use=(k,min,max,bonus=0)=>{ '@later'; const v=sk(k)+bonus, c=Math.max(0,Math.min(1,(v-min)/(max-min))), ok=Math.random()<c;
-    if(c>0&&c<1&&SK.some(s=>s[0]===k)&&S.lock[k]==='up'&&S.sk[k]<1000){ let g=(1000-S.sk[k])/1000*.5*(.4+2.4*c*(1-c))*(ok?1.2:1)+(S.sk[k]<300?.3:0); g*=1+(S.st.int-30)/60;
+  const use=(k,min,max,bonus=0,o)=>{ '@later'; const v=sk(k)+bonus, c=Math.max(0,Math.min(1,(v-min)/(max-min))), ok=o&&o.ok!=null?!!o.ok:Math.random()<c;
+    if(c>0&&c<1&&SK.some(s=>s[0]===k)&&S.lock[k]==='up'&&S.sk[k]<1000){ let g=(1000-S.sk[k])/1000*.5*(.4+2.4*c*(1-c))*(ok?o&&o.win||1.2:1)+(S.sk[k]<300?.3:0); g*=1+(S.st.int-30)/60;
       if(Math.random()<g){ let n=S.sk[k]<300?1+Math.floor(Math.random()*2):1;
         while(n>0&&tot()>=CAP){ const dn=SK.map(s=>s[0]).find(o=>o!==k&&S.lock[o]==='down'&&S.sk[o]>0); if(!dn){ n=0; break; } S.sk[dn]--; n--; S.sk[k]++; }
         if(n>0)S.sk[k]=Math.min(1000,S.sk[k]+n); say(`YOUR SKILL IN ${SK.find(s=>s[0]===k)[1]} HAS INCREASED. IT IS NOW ${(S.sk[k]/10).toFixed(1)}.`,'#7fd0ff'); saveSoon(); PACK.draw(); if(k==='forage')FORAGE.sync(); } }

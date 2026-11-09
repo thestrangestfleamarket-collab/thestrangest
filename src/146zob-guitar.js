@@ -6,6 +6,7 @@ import {LEVEL, MAPG, SYS, TILE} from './006-map-pre.js';
 import {GTBOOK, GTCHORD, gtCompile} from './108-game-play-3-guitar-2-tunes.js';
 import {BODIES} from './111a-bodies.js';
 import {BODEGA} from './146ze-bodega.js';
+import {SONGBK} from './146znz-songbook.js';
 import {GSND} from './146zo-guitar-sound.js';
 import {GHOLD} from './146zoa-guitar-hold.js';
 const GUITAR={}; window.GUITAR=GUITAR;
@@ -16,7 +17,7 @@ const GUITAR={}; window.GUITAR=GUITAR;
   const SONGF=__LAZY__("data/guitar-songs.json"); let songsP=null;
   const loadSongs=()=>songsP||(songsP=SONGF().then(J=>{ for(const g of J.songs)GTBOOK.push({name:g.name,by:g.by,lvl:g.lvl,secs:g.secs,credit:g.credit,notes:g.n}); fillSongs(); }).catch(e=>{ songsP=null; console.warn('guitar songs',e); }));
   const SONGS=()=>GTBOOK.map((b,i)=>[i,b]).filter(([,b])=>!b.kept);
-  const skill=()=>FORAGE.sk?FORAGE.sk('guitar')||0:0, canPlay=i=>!!GTBOOK[i]&&(GTBOOK[i].lvl||1)<=skill()+1e-6;
+  const skill=()=>FORAGE.sk?FORAGE.sk('guitar')||0:0, canPlay=i=>!!GTBOOK[i]&&SONGBK.can('guitar',GTBOOK,GTBOOK[i]);
   GUITAR.loadSongs=loadSongs; GUITAR.canPlay=canPlay; GUITAR.BOOK=GTBOOK;
   // the chords on the number keys (more on the panel)
   const BRIGHT={p:.5,i:1,m:1,a:1,s:.85};
@@ -29,7 +30,6 @@ const GUITAR={}; window.GUITAR=GUITAR;
   const fretOf=(P,s)=>{ const c=P.chord&&GTCHORD[P.chord]; const q=c&&c.find(x=>x.s===s); return q?q.k:0; };
   const note=(P,n)=>{ const V=voice(P); if(!V)return; GSND.pluck(V,n.s,n.at,GSND.now()+Math.max(0,n.t-now())+.01,n.amp,BRIGHT[n.r]||1,GHOLD.plFrac(n.r)); };
   // GUITAR rises by playing: a song played through (a try every half minute of it, nearer its level the likelier), and playing freely (a try every 25 notes, worth less past 40)
-  const learnt=T=>{ const n=1+Math.floor((T.secs||40)/30), l=T.lvl||10; for(let i=0;i<n;i++)FORAGE.use('guitar',l-30,l+20); busk(T); };
   // busking: a song played through near townsfolk earns tips, more for a harder song, a better player and a bigger crowd (at most six count)
   const busk=T=>{ let k=0; for(const N of NPCS.all())if(N.g&&N.g.visible&&N.st&&Math.hypot(N.st.x-pos.x,N.st.z-pos.z)<12*TILE)k++; k=Math.min(6,k); if(!k)return; const tip=Math.max(1,Math.round(k*(.5+(T.lvl||10)/40)*(.5+FORAGE.sk('guitar')/50)*(.7+Math.random()*.6))); INV.cash+=tip; SAY(`${k} ${k>1?'PEOPLE':'PERSON'} LISTENED. YOU MAKE $${tip} IN TIPS.`,'#f2c14e'); };
   let freeN=0; const practise=()=>{ if(++freeN%25===0)FORAGE.use('guitar',-10,45); };
@@ -44,12 +44,13 @@ const GUITAR={}; window.GUITAR=GUITAR;
       ss.forEach((s,i)=>{ const n={t:t+T*i/Math.max(1,ss.length-1),s,k:fretOf(P,s),r:'s',amp:(dn?.42:.32)*(full&&s>4?1.12:1)}; n.at=n.k+P.capo; L.tune.push(n); note(P,n); }); trim(P); },
     pluck:(P,s)=>{ const t=now(), r=s>=4?'p':s===3?'i':s===2?'m':'a', n={t,s,k:fretOf(P,s),r,amp:r==='p'?.6:.5}; n.at=n.k+P.capo; P.live.tune.push(n); note(P,n); trim(P); },
     capo:(P,c)=>{ P.capo=Math.max(0,Math.min(7,c|0)); ACT.chord(P,P.chord); },
-    song:(P,i)=>{ const T=GTBOOK[i]; if(!T)return; if(!T.c)gtCompile(T); P.song=i; P.s0=now(); P.cur=0; P.done=0; },
+    song:(P,v)=>{ const i=parseInt(v), T=GTBOOK[i]; if(!T)return; if(!T.c)gtCompile(T); P.song=i; P.s0=now(); P.cur=0; P.done=0; P.fail=+String(v).split(':')[1]||0; },
     stop:P=>{ if(P.song<0)return; P.song=-1; if(P.V)for(let s=1;s<=6;s++)GSND.mute(P.V,s,GSND.now()+.01,.05); ACT.chord(P,P.chord); }};
   // a song's notes go to the strings a little ahead of the clock, and the left hand's lifts mute them
-  const songTick=P=>{ if(P.song<0)return; const c=GTBOOK[P.song].c, t=time(P); if(t>c.len){ if(P===ME)learnt(GTBOOK[P.song]); ACT.stop(P); if(P===ME)drawPanel(); return; } const V=voice(P); if(!V)return;
-    while(P.cur<c.ev.length&&c.ev[P.cur].t<=t+.12){ const e=c.ev[P.cur++]; if(e.t<t-.05)continue; const when=GSND.now()+Math.max(0,e.t-t)+.02;
-      if(e.n)GSND.pluck(V,e.n.s,e.n.at,when,e.n.amp,e.n.tone>=4000?1:e.n.tone>=3500?.8:.5,GHOLD.plFrac(e.n.r)); else GSND.mute(V,e.s,when); } };
+  const songTick=P=>{ if(P.song<0)return; const T=GTBOOK[P.song], c=T.c, t=time(P); if(P.fail&&t>P.fail){ ACT.stop(P); if(P===ME){ tell('stop'); SONGBK.done('guitar',T,false,P.fail/c.len); fillSongs(); drawPanel(); } return; }
+    if(t>c.len){ ACT.stop(P); if(P===ME){ SONGBK.done('guitar',T,true); busk(T); fillSongs(); drawPanel(); } return; } const V=voice(P); if(!V)return;
+    while(P.cur<c.ev.length&&c.ev[P.cur].t<=t+.12){ const e=c.ev[P.cur++]; if(e.t<t-.05)continue; const when=GSND.now()+Math.max(0,e.t-t)+.02; let d=0; if(e.n&&P.fail&&e.t>P.fail-SONGBK.LEAD){ d=SONGBK.slip(); if(d===0)continue; d=d||0; }
+      if(e.n)GSND.pluck(V,e.n.s,Math.max(0,e.n.at+d),when,e.n.amp,e.n.tone>=4000?1:e.n.tone>=3500?.8:.5,GHOLD.plFrac(e.n.r)); else GSND.mute(V,e.s,when); } };
   const hold=(P,me,PM,body)=>{ if(P.H&&P.H.me===me)return; if(P.H)GHOLD.detach(P.H); P.H=me&&PM?GHOLD.attach(me,PM,body,{score:()=>score(P),time:()=>time(P)}):null; };
   const unhold=P=>{ if(P.H)GHOLD.detach(P.H); P.H=null; if(P.V){ GSND.drop(P.id); P.V=null; } };
   const unsling=P=>{ if(P.B)GHOLD.unsling(P.B); P.B=null; }, sling=(P,me,PM)=>{ if(P.B&&P.B.me===me)return P.B.upd(); unsling(P); if(me&&PM)P.B=GHOLD.sling(me,PM); };
@@ -67,7 +68,8 @@ const GUITAR={}; window.GUITAR=GUITAR;
   GUITAR.stop=()=>{ if(!on)return; on=false; unhold(ME); if(from==='own'&&FORAGE.has('guitar'))slung=true; panel(false); tell('off'); if(STAND.gm)STAND.gm.visible=true; if(prevView&&prevView!==UI.view&&!/third/.test(prevView))UI.setView(prevView); prevView=''; };
   GUITAR.on=()=>on; GUITAR.ME=ME; GUITAR.ACT=ACT;
   GUITAR.play=(k,v)=>{ if(!on)return; if(k==='song'&&v===ME.song)k='stop';
-    if(k==='song'&&!canPlay(v)){ const T=GTBOOK[v]; return say(T?`${T.name.toUpperCase()} NEEDS GUITAR ${T.lvl}; YOURS IS ${skill().toFixed(1)}. PLAY EASIER PIECES TO GET BETTER.`:'THAT PIECE IS NOT IN THE BOOK.','#c8a090'); }
+    if(k==='song'&&!canPlay(v)){ const T=GTBOOK[v]; return say(T?`${T.name.toUpperCase()} IS NOT OPEN TO YOU YET (GUITAR ${T.lvl}; YOURS IS ${skill().toFixed(1)}). LEARN THE PIECES YOU HAVE.`:'THAT PIECE IS NOT IN THE BOOK.','#c8a090'); }
+    if(k==='song'){ const T=GTBOOK[v]; if(!T.c)gtCompile(T); const r=SONGBK.start('guitar',T); if(!r.ok)v=v+':'+(T.c.len*r.at).toFixed(1); }
     if(k==='strum'||k==='pluck')practise(); ACT[k](ME,v); tell(k,v); drawPanel(); };
   FORAGE.ACT.guitar=()=>{ if(on)GUITAR.stop(); else GUITAR.start('own'); };
   FORAGE.ACT.gplay=FORAGE.ACT.guitar;
@@ -99,8 +101,8 @@ const GUITAR={}; window.GUITAR=GUITAR;
       PN.querySelector('#gtvol').oninput=e=>GSND.setVol(+e.target.value); }
     PN.hidden=false; fillSongs(); loadSongs(); drawPanel(); };
   const esc=t=>String(t).replace(/[&<>"]/g,c=>'&#'+c.charCodeAt(0)+';');
-  const fillSongs=()=>{ const el=PN&&PN.querySelector('#gtsong'); if(!el)return; const v=el.value, k=skill(), B=[[1,20,'EASY'],[21,50,'MEDIUM'],[51,80,'HARD'],[81,100,'MASTER']];
-    el.innerHTML=B.map(([a,b,nm])=>{ const L=SONGS().filter(([,T])=>T.lvl>=a&&T.lvl<=b).sort((x,y)=>x[1].lvl-y[1].lvl); return L.length?`<optgroup label="${nm} (${a}-${b})">`+L.map(([i,T])=>`<option value="${i}">${T.lvl>k?'× ':''}${esc(T.name.toUpperCase())}${T.by?' · '+esc(T.by.toUpperCase()):''} · ${T.lvl}</option>`).join('')+'</optgroup>':''; }).join('');
+  const fillSongs=()=>{ const el=PN&&PN.querySelector('#gtsong'); if(!el)return; const v=el.value;
+    el.innerHTML=SONGBK.options('guitar',GTBOOK);
     if(v)el.value=v; };
   const drawPanel=()=>{ if(!PN||PN.hidden)return; const sel=(b,v)=>{ b.setAttribute('aria-pressed',String(v)); b.setAttribute('aria-selected',String(v)); }; 
     PN.querySelector('#gtplay').textContent=ME.song>=0?'STOP':'PLAY'; sel(PN.querySelector('#gtcu'),CU.on); sel(PN.querySelector('#gtplay'),ME.song>=0); PN.querySelector('#gtvol').value=GSND.vol;
@@ -133,7 +135,7 @@ const GUITAR={}; window.GUITAR=GUITAR;
   ONLINE.hear.gtr=m=>{ if(!m.id)return; let P=THEM.get(m.id); if(!P){ P=mk(m.id); THEM.set(m.id,P); } const k=m.k, v=m.v;
     if(k==='on'||k==='off'){ if(k==='off'){ unhold(P); } return; }
     if(k==='chord'&&(v===''||GTCHORD[v]))ACT.chord(P,v); else if(k==='strum'&&/^[Ddu]$/.test(v))ACT.strum(P,v); else if(k==='pluck'&&+v>=1&&+v<=6)ACT.pluck(P,+v); else if(k==='capo')ACT.capo(P,+v||0);
-    else if(k==='song'&&+v>=0)(GTBOOK[+v]?Promise.resolve():loadSongs()).then(()=>{ if(GTBOOK[+v])ACT.song(P,+v); }); else if(k==='stop')ACT.stop(P); };
+    else if(k==='song'&&parseInt(v)>=0)(GTBOOK[parseInt(v)]?Promise.resolve():loadSongs()).then(()=>{ if(GTBOOK[parseInt(v)])ACT.song(P,String(v)); }); else if(k==='stop')ACT.stop(P); };
 
   /* ---------- each frame: your guitar on your body, the songs' notes, the others' guitars on theirs ---------- */
   SYS.add('dress',()=>{

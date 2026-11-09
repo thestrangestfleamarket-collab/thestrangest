@@ -12,7 +12,7 @@ import {INSTR} from './146zp-instruments.js';
   const LET=['C','D','E','F','G','A','B'], letter=s=>s%7, NAT=[0,2,4,5,7,9,11];
   // the pedals left to right as a harpist's feet find them: D C B under the left, E F G A under the right
   const PORD=[1,0,6,2,3,4,5], PX0=[PX+.15,PX+.11,PX+.07,PX-.07,PX-.11,PX-.15,PX-.19];
-  const K={id:'harp',name:'A HARP',skill:'harp',seat:{y:.46,z:-.04},lean:.06,look:.2,BOOK:[],cam:{p:[-1.4,1.05,.35],t:[PX,.8,.2]},
+  const K={id:'harp',name:'A HARP',skill:'harp',seat:{y:.46,z:-.04},lean:.06,look:.2,BOOK:[],slip:[0,N-1],cam:{p:[-1.4,1.05,.35],t:[PX,.8,.2]},
     help:'Z X C… A S D… Q W E… EACH KEY A STRING, LOW TO HIGH · 1-7 THE PEDALS D C B E F G A · ↑ ↓ A GLISSANDO · ` A SONG'};
   K.dsp=()=>IMK.harp.dsp;
   const ped=(P)=>P.st.ped||(P.st.ped=[0,0,0,0,0,0,0]);

@@ -50,6 +50,52 @@ One pull request each, in this order; the game stays playable after every one.
 
 - [x] **The bath house and the bodega still open on Market St** (done 7 Nov: both back on Market St's row with the map moved again) · P1 · M · pick + code. After "only Market St" (7 Nov) their lots are on the Hudson row, but GO TO THE BATH HOUSE lands on an apartment house's fire escape (the baths are built in place inside the APARTMENTS block), and the bodega's door and the old bodega front stand on Market St over APARTMENTS 4. Move both insides off the map with their doors on their Hudson lots (the owner's pick).
 
+## Open from the chats of 7–9 Nov (gathered 9 Nov, before the usage break until Thursday)
+
+Each line names the chat it came from; check HISTORY before starting, a newer decision wins.
+
+**Checks**
+- [ ] Core's stale lines: 3 expect shop insides to wait (they're built at the start since 9 Nov), 2 garage checks (now empty lots), the 12 vs 14 wear slots, the real-time clock (ignores a test's `?hour`), the overhead view (flaky). Fail on `main` and every pull request · P1 · S · check
+- [ ] Bodega register test: clicking dog food doesn't add it to the basket (live game) · P2 · S · find (Avatar screen redesign)
+- [ ] `tests/skills.cjs` waits for archived daily asks and can't pass; `tests/loop.cjs` and `tests/riders.cjs` fail on `main` (the trains never stand at A with doors open) · P2 · S · check
+- [ ] The full GitHub run doesn't finish inside 75 minutes · P2 · S · check
+- [ ] Merged without a green check or re-run, look at them live: skate pit #877, floating eyes #869, haze #858, shop freeze #868, magic carpet #884, telescope #882, phone door #896, empty theatre #895, instruments #893, park perf #898 · P2 · look
+
+**Map and park**
+- [ ] Hudson row: its buildings, corner grass, sparse trees, townsfolk routes; a second fishing shop; stall keepers · P2 · L · pick + code (Hudson river, Game items list)
+- [ ] Whole-map layouts A–F mocked up (A Ring + F Stack recommended), waiting on the owner's pick · pick (Map implementation approaches)
+- [ ] One set piece broken after the lanyard/shop removals: bring its two items back, or archive it too? · pick (Interior spaces)
+- [ ] Large trees from Market St: fix 1 ready as #778, fixes 2 onward not seen · look
+- [ ] The Hudson row's lost shrubs and small trees; the world editor picking the modelled buildings; the lighting tint on them; the Tower's sign behind its stoop · P3 · S · code (Tree density)
+- [ ] Not seen in game: the bath house outside, the moon, the 12 new giants, the 10-storey Tower, the concrete behind the rows · look
+
+**Performance (render inspector chat, 9 Nov)**
+- [ ] "undefined ×16" in the render inspector, about 129k triangles in the park: find what it is · P1 · S · find
+- [ ] The subway station is built and painted at the start (15 MB): build it on the way down · P2 · M · code
+- [ ] The park shop animals: all 179 download at the start; measure the start on a real connection · P2 · S · check
+
+**Characters and avatar**
+- [ ] Companion drone NPC: mockup done, waiting on "go" · pick
+- [ ] Flight with the cape: its moves check times out, the cape isn't cloth, clouds hide you; DRIFTCAP lasts 5 min · P2 · M · look + code
+- [ ] Not seen: the floating-eyes fix side on, the paper doll live, clothing layers at night under lamps (#654), the delivery drone with two real players · look
+- [ ] The bench is cut off at the sides in the editor's 360 view · P3 · S · code
+- [ ] Winged creatures' flapping and the character styling options: chats still running at the break, check where they stopped · find
+
+**Apartments**
+- [ ] #891 (start in your apartment after logout, faster load): ready, not merged; the whole street still builds before you appear · P1 · M · code
+- [ ] The cloud see-through circle not seen; the car radio unconfirmed (cars parked past the map edge) · look
+
+**Economy and server**
+- [ ] Owner's picks from the week's simulation: money sinks (93% earned is never spent), the busking/fairy ring/dungeon loops (92% of income), safe zones, more stalls · pick
+- [ ] A modified client can still add to its own save (up to $2,400 and 1,800 items an hour): catches decided on the server · P1 · L · code
+- [ ] The login cookie is readable by page scripts; the money log has no TENANTS button; stall goods not shown on tables; try stall renting and a two-player trade live · P2 · M · code + look
+- [ ] Branch `claude/game-sim-week-30-players-whmgrg` pushed with no pull request · S · check
+- [ ] Draft #834 (Double Bass) waits for review. From its 7-day test: sword resale profit, the day count resets on reload, mushrooms never spawn, skills cap in 2 days, the fishing bot can't fish, no hunger · P2 · M · code
+
+**Phones and telescope**
+- [ ] Phones: login on a phone never tried; menus fitted to phone screens, home-screen install, lighter graphics · P2 · L · look + code (Mobile compatibility)
+- [ ] Telescope: the firsts board on no wall; satellite passes follow the game hour, not the real one; GO TO Betelgeuse failed once · P3 · S · code
+
 ## For the owner
 - [x] **Market St traffic** (owner, 9 Nov 2026; done 9 Nov, claude/inspiring-maxwell-ynwbpy): poles to the kerb with lights on top, lamp posts gone, cars and fliers driving, the park gate's stop light and button. `src/150pb-traffic.js`, `tools/traffic-bake.py`, `tests/traffic.cjs`. Waits for his look and yes.
 

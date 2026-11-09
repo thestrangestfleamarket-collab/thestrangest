@@ -340,7 +340,9 @@ RIVER.build=()=>{ if(RIVER.on)return; const n0=scene.children.length; const R=RI
   RIVER.inZone=(x,z)=>SHARED.LVL==='up'&&z<Math.min(zA(),SHARED.BOD.ZS(BLOCK.row2[0]))&&!offMap(x,z);
   // seen from near too (owner, 4 Nov 2026: "why isnt the hudson showing"): within NEAR of its side it is built quietly and drawn
   RIVER.zLine=()=>Math.min(zA(),SHARED.BOD.ZS(BLOCK.row2[0])); const NEAR=60*TILE;
-  SYS.add('places',()=>{ if(!window.__started||busy||ROOMS.cur)return; const p=pos, inz=RIVER.inZone(p.x,p.z), near=SHARED.LVL==='up'&&p.z-RIVER.zLine()<NEAR;
+  // and from the air whenever it is in view (owner, 9 Nov 2026, flying over Market St: "entire hudson vanishes"): a camera over the roofs that sees anything south of the river's line
+  const SF=new THREE.Frustum(), SM=new THREE.Matrix4(), SB=new THREE.Box3(), seen=()=>{ const c=SHARED.cam; if(!c||!UI.persp||c.position.y<20*TILE||MODS.apts&&MODS.apts.inReal)return false; SM.multiplyMatrices(c.projectionMatrix,c.matrixWorldInverse); SF.setFromProjectionMatrix(SM); SB.min.set(-1e5,-10*TILE,-1e5); SB.max.set(1e5,0,RIVER.zLine()); return SF.intersectsBox(SB); };
+  SYS.add('places',()=>{ if(!window.__started||busy||ROOMS.cur)return; const p=pos, inz=RIVER.inZone(p.x,p.z), near=SHARED.LVL==='up'&&(p.z-RIVER.zLine()<NEAR||seen());
     if(inz&&!RIVER.on){ busy=true; FADE.run('ENTERING THE HUDSON',()=>RIVER.build()).then(()=>{ busy=false; }); return; }
     if(near&&!RIVER.on){ busy=true; LOAD('later').then(()=>{ RIVER.build(); }).finally(()=>{ busy=false; }); return; }
     const show=RIVER.on&&(inz||p.z<zN()||near); if(show!==RIVER.shown){ RIVER.shown=show; RIVERG.visible=show; } },'066-river'); }

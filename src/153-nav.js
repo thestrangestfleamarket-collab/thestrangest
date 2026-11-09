@@ -9,14 +9,18 @@ const NAV=window.NAV={on:QS.get('nav')!=='0', ready:false, lib:null, M:{}, n:{na
   const T=TILE, CORE='https://cdn.jsdelivr.net/npm/@recast-navigation/core@0.43.1/+esm', GEN='https://cdn.jsdelivr.net/npm/@recast-navigation/generators@0.43.1/+esm';
   const CS=CITY.R0/2, CH=.1*T, BH=2*T;
   const inB=(lv,R)=>{ const B=CITY.bounds(lv), o=[]; for(const r of R){ const x0=Math.max(B[0],Math.min(r[0],r[2])), z0=Math.max(B[1],Math.min(r[1],r[3])), x1=Math.min(B[2],Math.max(r[0],r[2])), z1=Math.min(B[3],Math.max(r[1],r[3])); if(x1>x0&&z1>z0)o.push([x0,z0,x1,z1]); } return o; };   // only what lies in the mesh's own bounds: the insides off the map would stretch recast's grid until it runs out of memory
-  const rects=(lv,street)=>inB(lv,rects0(lv,street));
+  const rects=(lv,street)=>inB(lv,rects0(lv,street).concat(street==='ped'?road():[]));
+  // a walker's mesh (076 pedfree) leaves out Market St's roadway but for its crosswalks
+  const road=()=>{ const R=SHARED.BOD.road, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, o=[]; if(!R||!R.xw)return o;
+    R.RR.forEach((b,i)=>{ const ax=i?'y':'x', lo=ax==='x'?b[0]:b[1], hi=ax==='x'?b[2]:b[3], cut=R.xw.filter(w=>w.ax===ax).map(w=>[w.a0,w.a1]).sort((p,q)=>p[0]-q[0]); let u=lo;
+      for(const [a0,a1] of cut.concat([[hi,hi]])){ const e=Math.min(a0,hi); if(e>u){ const r=ax==='x'?[u,b[1],e,b[3]]:[b[0],u,b[2],e]; o.push([X(r[0]),Z(r[1]),X(r[2]),Z(r[3])]); } u=Math.max(u,a1); } }); return o; };
   const rects0=(lv,street)=>{ const R=(SOL[lv]||[]).concat((CITY.extra&&CITY.extra[lv])||[]).map(b=>[b[0],b[1],b[2],b[3]]); if(lv!=='up')return R;
     R.push(STHOLE.slice(0,4)); if(FOUNT.S)R.push(...FOUNT.S.strips); R.push(...PONDS.strips); if(!street)return R;
     R.push(CSHOLE.slice(0,4)); R.push(CSB.slice(0,4));
     for(const b of ROOMS.boxes())if(b.y0<1)R.push([b.x0,b.z0,b.x1,b.z1]);
     if(MODS.apts&&MODS.apts.A){ const A=MODS.apts.A; R.push([SHARED.BOD.X(A.x0),SHARED.BOD.Z(A.y0),SHARED.BOD.X(A.x1),SHARED.BOD.Z(A.y1)]); }
     return R; };
-  const sig=(lv,street)=>(SOL[lv]||[]).length+'+'+((CITY.extra&&CITY.extra[lv])||[]).length+':'+(street?ROOMS.boxes().length:0)+':'+CITY.bounds(lv).map(v=>Math.round(v)).join(',');
+  const sig=(lv,street)=>(street==='ped'?'p':'')+(SOL[lv]||[]).length+'+'+((CITY.extra&&CITY.extra[lv])||[]).length+':'+(street?ROOMS.boxes().length:0)+':'+CITY.bounds(lv).map(v=>Math.round(v)).join(',');
   const WORKER=`let L=null; const ok=Promise.all([import('${CORE}'),import('${GEN}')]).then(async([c,g])=>{ await c.init(); L={exportNavMesh:c.exportNavMesh,generateTiledNavMesh:g.generateTiledNavMesh}; });
 onmessage=async e=>{ const {id,R,B,cfg,bh}=e.data, P=[], I=[]; try{ await ok; }catch(err){ postMessage({id,err:'recast did not load: '+err}); return; } const {exportNavMesh,generateTiledNavMesh}=L;
   const v=(x,y,z)=>{ P.push(x,y,z); return P.length/3-1; }, q=(a,b,c,d)=>I.push(a,c,b,a,d,c);
@@ -31,7 +35,7 @@ onmessage=async e=>{ const {id,R,B,cfg,bh}=e.data, P=[], I=[]; try{ await ok; }c
   const worker=()=>{ if(W!==null)return W; try{ W=new Worker(URL.createObjectURL(new Blob([WORKER],{type:'text/javascript'})));
       W.onmessage=e=>{ const f=pend.get(e.data.id); pend.delete(e.data.id); f&&f(e.data); }; W.onerror=e=>{ console.warn('NAV: the worker failed, routes stay the A*',e.message||e); NAV.on=false; }; }
     catch(e){ console.warn('NAV: no worker, routes stay the A*',e); W=false; NAV.on=false; } return W; };
-  const build=(lv,street)=>{ const k=lv+(street?':st':''), s=sig(lv,street), M=NAV.M[k]; if(M&&(M.sig===s||M.busy===s||M.failed===s))return; const w=worker(); if(!w)return;
+  const build=(lv,street)=>{ const k=lv+(street?':st':'')+(street==='ped'?':ped':''), s=sig(lv,street), M=NAV.M[k]; if(M&&(M.sig===s||M.busy===s||M.failed===s))return; const w=worker(); if(!w)return;
     const id=++wid, B=CITY.bounds(lv); (NAV.M[k]=M||{}).busy=s; pend.set(id,d=>{ const m=NAV.M[k]; m.busy=null;
       if(d.err){ console.warn('NAV: the mesh for',k,'failed:',d.err); m.failed=s; return; }
       let r=null; try{ r=NAV.lib.importNavMesh(d.bin); }catch(e){} if(!r||!r.navMesh){ console.warn('NAV: the mesh for',k,'did not load'); m.failed=s; return; }
@@ -41,7 +45,7 @@ onmessage=async e=>{ const {id,R,B,cfg,bh}=e.data, P=[], I=[]; try{ await ok; }c
     import(CORE).then(async m=>{ await m.init(); NAV.lib=m; NAV.ready=true; build('up',false); build('up',true); build('down',false); })
       .catch(e=>{ console.warn('NAV: recast did not load, routes stay the A*',e); NAV.lib=null; NAV.on=false; }); };
   const HE={x:2*CS*4,y:T,z:2*CS*4};
-  NAV.route=(lv,a,b,free)=>{ '@later'; if(!NAV.ready)return null; const street=lv==='up'&&typeof STFREE!=='undefined'&&free===STFREE, k=lv+(street?':st':''), M=NAV.M[k];
+  NAV.route=(lv,a,b,free)=>{ '@later'; if(!NAV.ready)return null; const street=lv==='up'&&(typeof STFREE!=='undefined'&&free===STFREE?true:typeof PEDFREE!=='undefined'&&free===PEDFREE?'ped':false), k=lv+(street?':st':'')+(street==='ped'?':ped':''), M=NAV.M[k];
     build(lv,street); if(!M||!M.q||M.sig!==sig(lv,street))return null;
     const t0=performance.now(), r=M.q.computePath({x:a.x,y:0,z:a.z},{x:b.x,y:0,z:b.z},{halfExtents:HE,maxPathPolys:4096,maxStraightPathPoints:1024});
     if(!r.success||!r.path||r.path.length<2)return null;

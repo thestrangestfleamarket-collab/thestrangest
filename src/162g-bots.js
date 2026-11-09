@@ -4,6 +4,7 @@ import {CITY, FORAGE, INV, keys, LOOKS, ONLINE, pos, ROOMS, SHOPS, st, UI, USE, 
 import {FADE, MODS, QS, SYS, TILE} from './006-map-pre.js';
 import {OBJS} from './008-batch.js';
 import {RIVER} from './066-river.js';
+import {inRoad, offRoad, pedfree, pedHold, stroad} from './076-npc-map.js';
 import {AVATAR} from './111c-avatar.js';
 import {FISHING} from './142-fishing.js';
 const BOT=window.BOT={ready:false}, BOTV=new THREE.Vector3();
@@ -14,11 +15,19 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
   const d2=(x,z)=>Math.hypot(x-pos.x,z-pos.z);
   const lv=()=>SHARED.LVL==='down'?'down':'up';
   /* ---------- walking: the game's own route, each corner a click-to-walk target ---------- */
-  const walk=(x,z)=>{ let r=null; try{ r=CITY.route(lv(),{x:pos.x,z:pos.z},{x,z}); }catch(e){} path=r&&r.pts.length?r.pts.slice(1):[{x,z}]; pi=0; stuck=0; last={x:pos.x,z:pos.z,t:0}; step(); };
+  // the rules of the street (owner, 9 Nov 2026): off the road (a spot in it moves to the nearer sidewalk), across it only on a crosswalk (076 pedfree), at the park gate's on WALK
+  const street=()=>lv()==='up';
+  const walk=(x,z)=>{ let r=null; if(street()){ const q=offRoad(x,z); x=q.x; z=q.z; } const a=street()&&stroad(pos.x,pos.z)?offRoad(pos.x,pos.z):{x:pos.x,z:pos.z};
+    try{ if(street())r=CITY.route('up',a,{x,z},pedfree); if(!r)r=CITY.route(lv(),a,{x,z}); }catch(e){} path=r&&r.pts.length?r.pts.slice(1):[{x,z}]; if(a.x!==pos.x||a.z!==pos.z)path.unshift(a); pi=0; stuck=0; last={x:pos.x,z:pos.z,t:0}; step(); };
   const step=()=>{ const p=path&&path[pi]; if(!p){ path=null; SHARED.target=null; return; } SHARED.target=new THREE.Vector3(p.x,SHARED.py,p.z); UI.go(d2(p.x,p.z)); };
-  const walking=dt=>{ if(!path)return false; const p=path[pi]; if(!p){ path=null; return false; }
-    if(d2(p.x,p.z)<.3*T||!SHARED.target){ pi++; if(pi>=path.length){ path=null; SHARED.target=null; return false; } step(); return true; }
-    last.t+=dt; if(last.t>3){ if(Math.hypot(pos.x-last.x,pos.z-last.z)<.2*T&&++stuck>3){ path=null; SHARED.target=null; return false; } last={x:pos.x,z:pos.z,t:0}; } return true; };
+  let kerb=0, again=null, retry=0; const walking=dt=>{ if(!path){ if(again){ const g=again; again=null; walk(g.x,g.z); return true; } return false; } const p=path[pi]; if(!p){ path=null; return false; }
+    if(street()){ const d=d2(p.x,p.z), k=Math.min(d,.8*T)/(d||1), nx=pos.x+(p.x-pos.x)*k, nz=pos.z+(p.z-pos.z)*k;   // at the kerb of the lit crossing: wait for WALK, the button pressed as a player does
+      if(pedHold(pos.x,pos.z,nx,nz)){ if(SHARED.target){ SHARED.target=null; } doing='waiting for the walk light'; last.t=0; if((kerb-=dt)<=0){ kerb=20; const b=nearest(UI.things,th=>th.name==='CROSSING BUTTON'); if(b&&d2(thAt(b).x,thAt(b).z)<(b.reach||T)*1.5)b.act(); } return true; }
+      if(!SHARED.target)step(); }
+    if(d2(p.x,p.z)<.3*T||!SHARED.target){ pi++; if(pi>=path.length){ path=null; SHARED.target=null; if(!again)retry=0; return walking(dt); } step(); return true; }
+    last.t+=dt; if(last.t>3){ if(Math.hypot(pos.x-last.x,pos.z-last.z)<.2*T&&++stuck>3){ const g=path[path.length-1]; path=null; SHARED.target=null;
+      if(street()&&inRoad(pos.x,pos.z)&&retry++<3){ const q=offRoad(pos.x,pos.z,true); walk(q.x,q.z); again={x:g.x,z:g.z}; doing='back to the kerb'; return true; }   // held up in the road (a car on the crosswalk): back to the kerb, then try again
+      return false; } last={x:pos.x,z:pos.z,t:0}; } return true; };
   const thAt=th=>th.obj.getWorldPosition(new THREE.Vector3());
   const nearest=(list,ok=()=>true)=>{ let b=null, bd=1e18; for(const th of list){ if(!th||!th.obj||!ok(th))continue; const p=thAt(th), d=d2(p.x,p.z); if(d<bd){ bd=d; b=th; } } return b; };
   // go to a thing and use it as a double click does: true once used
@@ -44,14 +53,18 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
     const D=MODS.dungeon; if(SHARED.LVL==='down'&&D&&D.inside&&D.inside(pos.x,pos.z)&&D.rooms){   // in the dungeon, wandering is exploring: off to a spot in another room, a short look round, on again
       const rs=D.rooms.filter(r=>!r.c); for(let k=0;k<12;k++){ const r=rs[(R()*rs.length)|0], L=D.lay(r.k), B=L&&L.R; if(!B)continue; const x=SHARED.BOD.XS(B.x0+1.5+R()*(B.x1-B.x0-3)), z=SHARED.BOD.ZS(B.y0+1.5+R()*(B.y1-B.y0-3));
         if(!(CITY.blocked&&CITY.blocked(lv(),x,z))&&d2(x,z)>4*T){ walk(x,z); doing='exploring '+(r.nm||'the dungeon').toLowerCase(); break; } } rw=1+R()*2; return; }
-    for(let k=0;k<12;k++){ const a=R()*6.283, r=(far?6+R()*20:2+R()*8)*T, x=h.x+Math.sin(a)*r, z=h.z+Math.cos(a)*r; if((!ok||ok(x,z))&&!(CITY.blocked&&CITY.blocked(lv(),x,z))){ walk(x,z); break; } }
+    for(let k=0;k<12;k++){ const a=R()*6.283, r=(far?6+R()*20:2+R()*8)*T, x=h.x+Math.sin(a)*r, z=h.z+Math.cos(a)*r; if((!ok||ok(x,z))&&!(CITY.blocked&&CITY.blocked(lv(),x,z))&&!(street()&&stroad(x,z))){ walk(x,z); break; } }
     rw=far?.5+R():2+R()*6; doing='wandering'; };
   const here=t=>t.c||(t.c={x:pos.x,z:pos.z});
   /* ---------- the jobs: each a step a frame, its state in task ---------- */
   const JOB={
-    stand:()=>{ doing='standing'; },
-    wander:dt=>roam(dt,home),
-    goto:dt=>{ if(walking(dt)){ doing='walking there'; return; } doing='there'; },
+    stand:dt=>{ if(walking(dt))return; if(street()&&inRoad(pos.x,pos.z)){ const q=offRoad(pos.x,pos.z,true); walk(q.x,q.z); doing='stepping off the road'; return; } doing='standing'; },
+    // out and about (owner, 9 Nov 2026: "shouldnt be random wanderers"): to a real thing near home (a bench, a stall, a shop's door, the paddock), a while there looking at it, then the next
+    wander:dt=>{ if(walking(dt))return; task=task||{seen:[]}; if(task.th&&(task.stay-=dt)>0){ const p=thAt(task.th); SHARED.heading=Math.atan2(p.x-pos.x,p.z-pos.z); doing='looking at '+task.th.name.toLowerCase(); return; }
+      const c=home||{x:pos.x,z:pos.z}, L=UI.things.filter(th=>th&&th.obj&&th.name&&!/BUTTON|^YOU|EXIT|STAIRS/.test(th.name)&&!task.seen.includes(th.name)&&(()=>{ const p=thAt(th); return Math.hypot(p.x-c.x,p.z-c.z)<40*T&&!stroad(p.x,p.z); })());
+      const th=L.length?L[Math.floor(R()*L.length)]:null; if(!th){ task.seen=[]; roam(dt,home); return; } task.th=th; task.stay=8+R()*20; task.seen.push(th.name); if(task.seen.length>6)task.seen.shift();
+      const p=thAt(th), a=Math.atan2(pos.x-p.x,pos.z-p.z), r=Math.max(th.reach||T,1.2*T); walk(p.x+Math.sin(a)*r,p.z+Math.cos(a)*r); doing='walking to '+th.name.toLowerCase(); },
+    goto:dt=>{ if(walking(dt)){ if(!/^(waiting|back)/.test(doing))doing='walking there'; return; } if(street()&&inRoad(pos.x,pos.z)){ const q=offRoad(pos.x,pos.z,true); walk(q.x,q.z); return; } doing='there'; },
     follow:dt=>{ const o=C.who&&ONLINE.others.get(C.who); if(!o||!o.p||o.why!=='near you'){ doing=o?'can\'t see '+o.name+' ('+o.why+')':'waiting for who to follow'; return; }
       const d=d2(o.p.x,o.p.z); if(d>2.2*T){ if(!path||(task&&Math.hypot(task.x-o.p.x,task.z-o.p.z)>T)){ task={x:o.p.x,z:o.p.z}; walk(o.p.x,o.p.z); } walking(dt); doing='following '+o.name; } else { path=null; SHARED.target=null; doing='with '+o.name; } },
     fight:dt=>{ const o=C.who&&ONLINE.others.get(C.who); if(!o){ doing='waiting for who to fight'; return; } fightOn(o,dt); },

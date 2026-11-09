@@ -273,7 +273,7 @@ export class Block extends Server {
     try { this.dropSweep(now); } catch (e) { console.error("drops", e); }
     try { await this.bodySweep(now); } catch (e) { console.error("bodies", e); }
     try { await this.stallSweep(now); } catch (e) { console.error("stalls", e); }
-    try { await this.clock(now); const F = await this.folk(); FOLKSIM.step(F, Math.min(600, Math.max(0, (now - (F.at || now)) / 1000))); F.at = now;
+    try { await this.clock(now); const F = await this.folk(); F.now = now / 1000; F.p0 = +((await this.world())["xing:gate"]) || 0; FOLKSIM.step(F, Math.min(600, Math.max(0, (now - (F.at || now)) / 1000))); F.at = now;
       { const H = lvH(now, this.clk); if (F.cast && F.H !== H) { const jump = F.H == null || Math.abs(H - F.H) > 1; F.H = H; this.castHour(F, H, jump); this.folkDirty = true; } }
       if (n) this.broadcast(JSON.stringify({ t: "folk", ...FOLKSIM.snap(F) }));
       if (this.folkDirty || !this.folkSaved || now - this.folkSaved > 30000) { this.folkDirty = false; this.folkSaved = now; await this.ctx.storage.put("folk", FOLKSIM.save(F)); } }

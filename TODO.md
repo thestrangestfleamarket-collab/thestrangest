@@ -186,6 +186,7 @@ In order (each step builds on the one before): RLS SQL → login cookie with the
   with the trade line.
 
 ## Places and insides
+- [x] **The telescope and microscope from real data (the 14 mockups)** · P2 · XL · code · done 9 Nov [claude/confident-mccarthy-kk7wgw]. Owner, 9 Nov 2026: "lets add all to game". Next: the aurora in the street's own sky, the firsts board on a wall.
 - [x] **Invitations: the café's board games first** · P2 · M · code · done 9 Nov [claude/stoic-dijkstra-smffz6]. Next kinds register in `INVITES.kinds`.
 - [ ] **The bookstore café: twice as wide, a coffee bar, five game tables** · P2 · L · code. [taking: claude/clever-galileo-0fj20f, 7 Nov] Owner, 7 Nov 2026: layout A, inside only, players and the computer, for fun, all the games.
 

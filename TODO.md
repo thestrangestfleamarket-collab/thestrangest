@@ -230,6 +230,7 @@ In order (each step builds on the one before): RLS SQL → login cookie with the
 ## Skate park (Section B)
 
 One pass, one pull request.
+- [x] **The skate plaza** (owner, 9 Nov 2026: his night plaza picture; "2, tube lamps"; done 9 Nov) · P2 · M · code. `src/111fda-skateplaza.js`, `tests/skateplaza.cjs`. Waits for his look and yes.
 - [ ] **The map editor and its ground picture for Section B** · P3 · L · code · risk med. Placed by `sections.places` in `data/world.json`
   (owner, 4 Nov: "option 1, open air, remove the gate in A"). The owners' editor (`src/editor/editor.html:54`) still reads the old
   `parkPlaces.skatepark`; nothing in it or in `src/096-mapedit.js` reads `sections.places`; it edits one section (`SID`, editor.html:116);

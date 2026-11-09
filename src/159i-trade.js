@@ -46,7 +46,8 @@ const SWAP={no:[id=>ARCHI(id)||id==='passport'||id.startsWith('photo_')||id.star
   const flush=()=>{ clearTimeout(sendT); if(!T||!pend)return false; pend=false; ONLINE.send({t:'tr',op:'offer',o:payload()}); return true; };
   const offer=()=>{ pend=true; clearTimeout(sendT); sendT=setTimeout(flush,150); };   // the server takes one trade message each 100 ms
   // both accepted: what this game put in leaves the pack now, and the server is told what really left; only that changes hands
-  const pay=g=>{ '@later'; const items={}, art={};
+  const pay=g=>{ '@later'; if(INV.save)INV.save(); OWNED.sync().catch(()=>{}).then(()=>payNow(g)); };   // the server takes it from its own copy of your pack: bring it up to date first
+  const payNow=g=>{ '@later'; const items={}, art={};
     for(const id in g.items||{}){ const n=Math.min(Math.floor(+g.items[id]||0),INV.items[id]||0); if(n>0){ FORAGE.take(id,n); items[id]=n; if(id.startsWith('pt_')&&window.PAINTINGS){ const k=id.slice(3); if(g.art&&g.art[k])art[k]=g.art[k]; PAINTINGS.gave(k); } } }
     const c=Math.min(Math.max(0,Math.floor(+g.cash||0)),cash()); INV.cash=cash()-c; if(INV.save)INV.save(); if(FORAGE.draw)FORAGE.draw();
     ONLINE.send({t:'tr',op:'paid',o:{items,cash:c,art}}); if(T){ T.paying=true; draw(); } };

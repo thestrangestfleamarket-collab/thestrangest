@@ -3,6 +3,7 @@ import {THREE} from './003-shx.js';
 import {ARCHI, FORAGE, INV, ITEMS, ONLINE, TEXT, UI} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
+import {OWNED} from './005-save.js';
 import {MAPG, SYS, TILE} from './006-map-pre.js';
 const STALLS={all:{},mine:null,RENT:15,DAYS:7,CUT:.05}; window.STALLS=STALLS;
 {
@@ -15,6 +16,7 @@ const STALLS={all:{},mine:null,RENT:15,DAYS:7,CUT:.05}; window.STALLS=STALLS;
   document.body.appendChild(P); for(const t of ['keydown','keyup','keypress'])P.addEventListener(t,e=>{ if(e.key==='Escape'&&t==='keydown')STALLS.close(); e.stopPropagation(); });
   let cur=null; const things=[];
   const send=o=>ONLINE.send({t:'st',...o});
+  const saved=()=>{ if(INV.save)INV.save(); return OWNED.sync().catch(()=>{}); };   // the server pays from its own copy of your pack: bring it up to date first
   const take=r=>{ INV.cash=cash()+Math.max(0,Math.floor(+r.cash||0)); for(const id in r.items||{}){ const n=Math.max(0,Math.floor(+r.items[id]||0)); if(n&&/^[a-z0-9_]{1,48}$/.test(id))FORAGE.give(id,n); } if(INV.save)INV.save(); if(FORAGE.draw)FORAGE.draw(); };
   const label=(id,i)=>{ const o=STALLS.all[id]; return o?(o.who===me()?'YOUR STALL':esc(o.name||'A TENANT')+'\'S STALL'):'STALL '+(i+1)+' (FOR RENT)'; };
   const relabel=()=>things.forEach((th,i)=>{ th.name=label(th.sid,i).replace(/&#39;|&apos;/g,"'"); });
@@ -31,14 +33,14 @@ const STALLS={all:{},mine:null,RENT:15,DAYS:7,CUT:.05}; window.STALLS=STALLS;
     h+=`<div style="margin-top:12px;display:flex;justify-content:flex-end"><button data-x="1" style="${B}">CLOSE</button></div>`; P.innerHTML=h; };
   P.addEventListener('click',e=>{ '@later'; const b=e.target.closest('button'); if(!b||!cur)return; const d=b.dataset, o=STALLS.all[cur];
     if(d.x)return STALLS.close();
-    if(d.rent){ const c=+d.rent*STALLS.RENT; if(cash()<c)return say('THAT IS $'+c+'. YOU HAVE $'+cash()+'.','#c8a090'); send({op:'rent',id:cur,days:+d.rent}); return; }
-    if(d.buy){ const g=o&&o.goods.find(q=>q.id===d.buy); if(!g)return; if(cash()<g.p)return say('THAT IS $'+g.p+'. YOU HAVE $'+cash()+'.','#c8a090'); send({op:'buy',id:cur,item:g.id,n:1}); return; }
+    if(d.rent){ const c=+d.rent*STALLS.RENT; if(cash()<c)return say('THAT IS $'+c+'. YOU HAVE $'+cash()+'.','#c8a090'); const id=cur; saved().then(()=>send({op:'rent',id,days:+d.rent})); return; }
+    if(d.buy){ const g=o&&o.goods.find(q=>q.id===d.buy); if(!g)return; if(cash()<g.p)return say('THAT IS $'+g.p+'. YOU HAVE $'+cash()+'.','#c8a090'); const id=cur; saved().then(()=>send({op:'buy',id,item:g.id,n:1,p:g.p})); return; }
     if(d.collect){ send({op:'collect',id:cur}); return; }
     if(d.leave){ send({op:'leave',id:cur}); return; }
     if(d.back){ send({op:'take',id:cur,item:d.back}); return; }
     if(d.put){ const id=d.put, n=d.n==='all'?INV.items[id]:1, inp=P.querySelector(`input[data-p="${CSS.escape(id)}"]`), p=Math.max(1,Math.floor(+(inp&&inp.value)||worth(id)));
       if(!can(id)||n<1)return; if(o&&!o.goods.some(q=>q.id===id)&&o.goods.length>=12)return say('THE TABLE HOLDS TWELVE KINDS OF THINGS.','#c8a090');
-      FORAGE.take(id,n); if(INV.save)INV.save(); if(FORAGE.draw)FORAGE.draw(); send({op:'put',id:cur,item:id,n,p}); } });
+      const sid=cur; saved().then(()=>{ const k=Math.min(n,INV.items[id]||0); if(k<1)return; FORAGE.take(id,k); if(INV.save)INV.save(); if(FORAGE.draw)FORAGE.draw(); send({op:'put',id:sid,item:id,n:k,p}); }); } });
   STALLS.open=sid=>{ '@later'; if(!ONLINE.on)return say('THE STALLS NEED THE BLOCK: YOU ARE NOT ONLINE.','#c8a090'); cur=sid; send({op:'list'}); P.hidden=false; draw(); };
   STALLS.close=()=>{ cur=null; P.hidden=true; P.innerHTML=''; };
   // what the server says

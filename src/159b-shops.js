@@ -38,7 +38,7 @@ Object.assign(SHOPS,{bound:new Set(),cur:null});
     const sc=(sp.querySelector('.shm')||{}).scrollTop||0, have=cash();
     let o=`<div class="sht"><b>${esc(N.name||'A MERCHANT')}</b><i>$${Math.round(have)}</i><button class="shx" type="button" title="close">X</button></div><div class="shm">`;
     o+=tr.sells.filter(id=>!ARCHI(id)).map(id=>{ const p=price(id), rent=ITEMS.prop&&ITEMS.prop(id,'rental'); return row(id,`${rent?`<u>${window.FORAGE&&FORAGE.has(id)?'REFILL':'RENT'}</u>`:''}<i>$${p}</i>`,`data-buy="${esc(id)}"${rent?' data-rent="1"':''}`,p>have?' no':''); }).join('');
-    const bid=buying(tr); if(bid.length)o+=`<div class="shh">THEY BUY</div>`+bid.map(id=>row(id,`<u>x${INV.items[id]}</u><i>$${worth(id)}</i>`,`data-sold="${esc(id)}"`)).join('');
+    const bid=buying(tr); if(bid.length)o+=`<div class="shh">THEY BUY</div>`+bid.map(id=>row(id,`<u>x${INV.items[id]}</u><i>$${WORTH.sell(id,1,worth(id))}</i>`,`data-sold="${esc(id)}"`)).join('');
     const F=window.FORAGE; let extra=''; if(tr.teaches&&tr.teaches.length&&F&&F.trainRows)extra+=F.trainRows(tr.teaches); if(F&&F.askRows)extra+=F.askRows(CHARS.id(N)); if(extra)o+=`<div class="shx2"><table style="border-collapse:collapse;width:100%">${extra}</table></div>`;
     o+=`</div><div class="shf">DOUBLE CLICK TO ${bid.length?'BUY OR SELL':'BUY'}</div><div class="shq" hidden><div><p></p><button type="button" data-q="y">YES</button><button type="button" data-q="n">NO</button></div></div>`;
     sp.innerHTML=o; if(sc)sp.querySelector('.shm').scrollTop=sc; };
@@ -47,7 +47,7 @@ Object.assign(SHOPS,{bound:new Set(),cur:null});
   SHOPS.buy=(id,n=1,rent=false)=>{ const c=price(id)*n; if(cash()<c){ say('YOU CANNOT AFFORD THAT.'); return false; } INV.cash-=c;
     if(rent){ if(!(window.FORAGE&&FORAGE.has(id)))give(id,1); SYS.run('rent',id); } else { give(id,n); say(`YOU BUY ${n} ${name(id)} FOR $${c}.`); }   // a rental: one at a time, paid each time it is filled
     if(window.SFX)SFX.play('clunk',{vol:.5}); draw(); return true; };
-  SHOPS.sell=(id,n)=>{ const F=window.FORAGE; n=Math.min(n,INV.items[id]||0); if(!n)return false; const v=WORTH.of(id,n,worth(id)); if(F&&F.take)F.take(id,n); INV.cash+=v; INV.add('x',0); delete INV.items.x; say(`YOU SELL ${n} ${name(id)} FOR $${v}.`); for(const f of (F&&F.SOLD)||[])f(id,n,v); if(window.SFX)SFX.play('clunk',{vol:.5}); if(F&&F.draw)F.draw(); draw(); return true; };
+  SHOPS.sell=(id,n)=>{ const F=window.FORAGE; n=Math.min(n,INV.items[id]||0); if(!n)return false; const v=WORTH.sell(id,n,worth(id)); if(F&&F.take)F.take(id,n); INV.cash+=v; INV.add('x',0); delete INV.items.x; say(`YOU SELL ${n} ${name(id)} FOR $${v}.`); for(const f of (F&&F.SOLD)||[])f(id,n,v); if(window.SFX)SFX.play('clunk',{vol:.5}); if(F&&F.draw)F.draw(); draw(); return true; };
   sp.addEventListener('click',e=>{ '@later'; const b=e.target.closest('button'); if(!b||!SHOPS.cur)return;
     if(b.classList.contains('shx'))return SHOPS.close(); if(b.dataset.q)return ask(b.dataset.q==='y');
     if(b.dataset.train){ window.FORAGE.train(b.dataset.train,+b.dataset.cap); draw(); return; } if(b.dataset.ask){ if(FORAGE.hand)FORAGE.hand(+b.dataset.ask); draw(); } });
@@ -55,7 +55,7 @@ Object.assign(SHOPS,{bound:new Set(),cur:null});
     if(r.dataset.buy){ const id=r.dataset.buy, rent=!!r.dataset.rent, p=price(id); if(cash()<p){ say('YOU CANNOT AFFORD THAT.'); return; }
       if(await confirm(`${rent?(window.FORAGE&&FORAGE.has(id)?'REFILL':'RENT'):'BUY'} ${name(id)} FOR $${p}?`))SHOPS.buy(id,1,rent); return; }
     if(r.dataset.sold){ const id=r.dataset.sold, have=INV.items[id]||0, n=have>1&&window.BAG&&BAG.ask?await BAG.ask(have,e.clientX,e.clientY):Math.min(1,have); if(!n)return;
-      if(await confirm(`SELL ${n>1?n+' ':''}${name(id)} FOR $${WORTH.of(id,n,worth(id))}?`))SHOPS.sell(id,n); } });
+      if(await confirm(`SELL ${n>1?n+' ':''}${name(id)} FOR $${WORTH.sell(id,n,worth(id))}?`))SHOPS.sell(id,n); } });
 
   SHOPS.open=N=>{ if(!N||!(CHARS.trade&&CHARS.trade(N)))return; { const tr=CHARS.trade(N); if(!(tr.sells||[]).some(id=>!ARCHI(id))&&!(tr.buys||[]).length&&!(tr.teaches||[]).length){ say('CLOSED.'); return; } } SHOPS.cur=N; sp.hidden=false; draw(); if(window.LINES&&N.g)LINES.say(N,'greet'); };
   SHOPS.close=()=>{ if(Q)ask(null); sp.hidden=true; SHOPS.cur=null; };

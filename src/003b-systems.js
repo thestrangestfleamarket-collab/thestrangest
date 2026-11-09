@@ -82,6 +82,7 @@ const ROOMS={lazy:{},off:{},grounds:[]},
   ZONES={},
   SELFSH={},
   BLAZE=window.BLAZE={F:[],D:[]},
+  ICE={},
   POND={},
   SND={},
   LOOKS={},
@@ -115,7 +116,7 @@ const ROOMS={lazy:{},off:{},grounds:[]},
   TABLES=window.TABLES={sit:()=>{},top:()=>null,leave:()=>{},chairs:[]},   // the bookstore café's game tables (144cc-tables fills it); the bookstore's room (144ca) sets them
   TALK=window.TALK={on:false,shops:new Map(),ops:{},tests:{},vars:{}},   // the talk window (159da-talk); the shops and the clicks hand characters to it; a character with its own shop panel sets TALK.shops
   INSPECT=window.INSPECT={kinds:[],on:false},   // the inspect window (150cy-inspect); each item family pushes {is:id=>bool, make:id=>Object3D} in its own file
-  RADIO=window.RADIO={src:new Map(),next:()=>0,now:()=>null},   // the radio's stations (150p-cars) heard from more than cars: a room's source (a jukebox) is RADIO.src.set(id,{id,room}); RADIO.next(id) tunes it on (shared, like a car's)
+  RADIO=window.RADIO={src:new Map(),next:()=>0,now:()=>null},   // the radio's stations (150p-cars) heard from more than cars: a room's source (a jukebox) is RADIO.src.set(id,{id,room}); RADIO.next(id) tunes it on (shared, like a car's); one with its own set gives st/vol/here/at/R (an apartment's radio, 150fb)
   WORKERS=window.WORKERS={idle:{},made:{},models:{},make:()=>Promise.resolve()};   // the insides' non-human workers (146zb-workers): WORKERS.make(place) the first time you go in; idle[key] how one moves at its spot; models[key] a body made by code (MERCH's way) for one with no folk recipe
 // the archived editors and town life (owner, 5 Nov 2026) leave these calls answered by nothing
 { const no=()=>{}, nf=()=>false;
@@ -123,4 +124,4 @@ const ROOMS={lazy:{},off:{},grounds:[]},
   Object.assign(LAND,{down:nf,move:no,up:no},LAND); Object.assign(SNDED,{close:no,into:no},SNDED); Object.assign(RINSP,{toggle:no},RINSP);
   Object.assign(EDITORS,{menu:no,key:no},EDITORS); Object.assign(SUMMON,{id:()=>'',here:()=>[],list:()=>[],go:no,back:no},SUMMON);
   Object.assign(NEWS,{init:no},NEWS); Object.assign(BINS,{station:no},BINS); Object.assign(PNM,{tick:no},PNM); Object.assign(SGM,{tick:no},SGM); }
-export {AMB, ARCH, ARCHI, BAG, BINS, BLAZE, BLK, BOAT, BOOKS, BROOK, BUGS, CHARP, CHARS, CINEMA, CITY, CIVIC, CLIP, CLOCK, CULL, DN, DRESS, DRM, DRONE, ED, EQUIP, FAR3, FEEL, FIGFX, FIRSTDAY, FLOW, FORAGE, GAMEED, GHOSTS, GPH, GPUT, GTRH, GTSAMP, GUARD, GUIDE, HUD, IMK, INSPECT, INTERIORS, INV, INVITES, ITEMED, ITEMS, keys, LAND, LEVELS, LINES, LITE, LOOK, LOOKS, MAIL, MAPED, MARKS, MOTION, MUS, NEWS, NPCS, ONLINE, PARK, PASSPORT, PB, PERFX, PETS, PH, PHYS, PNM, POND, PONDS, pos, PS2, RADIO, RAG, RIDE, RINSP, ROOMS, SCANNER, SELFSH, SFX, SGM, SHAD, SHOPS, SIGNS, SKY, SND, SNDED, SPRAY, st, STAGE, SWIM, TABLES, TALK, TENANTS, TESTS, TEXT, TRADE, TRAINERS, TRICKS, UI, USE, VAULT, VIS, VIT, VR, vwV, W3, WALKS, WE, WED, WEEDS, WHERE, WIELD, WINDOWS, WORKERS, wvV, WX, ZONES};
+export {AMB, ARCH, ARCHI, BAG, BINS, BLAZE, BLK, BOAT, BOOKS, BROOK, BUGS, CHARP, CHARS, CINEMA, CITY, CIVIC, CLIP, CLOCK, CULL, DN, DRESS, DRM, DRONE, ED, EQUIP, FAR3, FEEL, FIGFX, FIRSTDAY, FLOW, FORAGE, GAMEED, GHOSTS, GPH, GPUT, GTRH, GTSAMP, GUARD, GUIDE, HUD, ICE, IMK, INSPECT, INTERIORS, INV, INVITES, ITEMED, ITEMS, keys, LAND, LEVELS, LINES, LITE, LOOK, LOOKS, MAIL, MAPED, MARKS, MOTION, MUS, NEWS, NPCS, ONLINE, PARK, PASSPORT, PB, PERFX, PETS, PH, PHYS, PNM, POND, PONDS, pos, PS2, RADIO, RAG, RIDE, RINSP, ROOMS, SCANNER, SELFSH, SFX, SGM, SHAD, SHOPS, SIGNS, SKY, SND, SNDED, SPRAY, st, STAGE, SWIM, TABLES, TALK, TENANTS, TESTS, TEXT, TRADE, TRAINERS, TRICKS, UI, USE, VAULT, VIS, VIT, VR, vwV, W3, WALKS, WE, WED, WEEDS, WHERE, WIELD, WINDOWS, WORKERS, wvV, WX, ZONES};

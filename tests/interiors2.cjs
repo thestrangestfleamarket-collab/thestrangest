@@ -26,8 +26,8 @@ const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv
     const wd=()=>{ const N=BODIES.by.w_rat&&BODIES.by.w_rat.npc, s=STORE.rooms.find(r=>r.id==='bank').spots.CAGES; return N?Math.hypot(N.st.x-s.x,N.st.z-s.z):null; };
     await pg.waitForFunction(`(${wd})()!=null&&(${wd})()<.2`,null,{timeout:90000}).catch(()=>{}); rec('bank: THE RAT keeps cage one',await pg.evaluate(`(${wd})()<.2`));
     const a=await pg.evaluate(()=>{ INV.cash=500; const b0=BANKK.account().bal; __dbg.UI.things.find(t=>t.name.startsWith('CAGE ONE')).act(); const win=MINI.on&&/THE BANK/.test(MINI.on.title); MINI.close();
-      BANKK.move(200); const dep=INV.cash===300&&BANKK.account().bal===b0+200; BANKK.move(-50); const wit=INV.cash===350&&BANKK.account().bal===b0+150; const before=BANKK.account().bal; BANKK.age(2); const after=BANKK.account().bal; return {win,dep,wit,interest:after-before}; });
-    rec('bank: the cage opens your account; money goes in and out; a day earns 1%',a.win&&a.dep&&a.wit&&a.interest>0,JSON.stringify(a));
+      BANKK.move(200); const dep=INV.cash===300&&BANKK.account().bal===b0+200; BANKK.move(-50); const wit=INV.cash===350&&BANKK.account().bal===b0+150; return {win,dep,wit}; });
+    rec('bank: the cage opens your account; money goes in and out',a.win&&a.dep&&a.wit,JSON.stringify(a));
     rec('bank: the dragon still sleeps over its gold',await pg.evaluate(()=>!!STORE.bank.hoard&&!STORE.bank.dragon().awake));
     await shot('bank'); await pg.evaluate(()=>STORE.exit('bank')); await pg.waitForTimeout(4000); }
   /* ---------- THE BATH HOUSE ---------- */

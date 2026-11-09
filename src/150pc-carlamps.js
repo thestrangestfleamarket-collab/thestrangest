@@ -31,5 +31,5 @@ import {OUT, SYS, TILE} from './006-map-pre.js';
       beam.setMatrixAt(v.b,m4.makeScale(0,0,0)); });
     lens.count=n; beam.count=nb; beamM.opacity=.55*k; CARLAMPS.lit=near.length;
     if(n){ lens.instanceMatrix.needsUpdate=true; if(lens.instanceColor)lens.instanceColor.needsUpdate=true; } if(nb)beam.instanceMatrix.needsUpdate=true; },'150pc-carlamps');
-  CARLAMPS.dbg=()=>({on:CARLAMPS.on,cars:list.length,lit:CARLAMPS.lit,lens:lens.count,beams:beam.count,spots:SP.map(L=>+L.intensity.toFixed(1))});
+  CARLAMPS.dbg=()=>({on:CARLAMPS.on,cars:list.length,own:list.filter(v=>v.own).length,lit:CARLAMPS.lit,lens:lens.count,beams:beam.count,spots:SP.map(L=>+L.intensity.toFixed(1))});
 }

@@ -51,7 +51,10 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
   const tpl=k=>{ if(TPL[k])return TPL[k]; let g=null; if(D[k]){ g=new THREE.Group(); const me=new THREE.Mesh(geo(D[k].parts.body),MAT); me.name='BODY'; me.castShadow=true; g.add(me); g.scale.setScalar(M1); VLOOK.dress('tr:'+k,g); } else if(window.CARS&&CARS.build)g=CARS.build(k); if(g)g.traverse(o=>{ o.userData.anyRoom=false; }); return TPL[k]=g; };
   const take=k=>{ const P=POOL[k]||(POOL[k]=[]); if(P.length)return P.pop(); const t=tpl(k); if(!t)return null; const m=t.clone(); GRP.add(m); return m; };
   const give=C=>{ if(!C.m)return; C.m.visible=false; (POOL[C.model]||(POOL[C.model]=[])).push(C.m); C.m=null; };
-  const pick=(L,C,lap)=>{ if(C.fixed)return C.fixed; const list=L.fly?L.FL:L.GR; return list[(C.i*7+lap*3+L.seed*5)%list.length]; };
+  // the patrol (owner, 9 Nov 2026: "one that drives by every 60 seconds"): the first car to set out after each minute's mark is the police cruiser, one way one minute, the other the next
+  const PAT='police-cruiser-80s', patrol=(li,i,lap)=>{ const L=LANES[li], t0=(lap*LC-i*LC/L.n)/L.v, m=Math.floor(t0/60); return m>Math.floor((t0-LC/L.v/L.n)/60)&&(((m%2)+2)%2)===li; };
+  TRAFFIC.patrol=patrol;
+  const pick=(L,C,lap)=>{ if(C.fixed)return C.fixed; if(L.pat&&patrol(LANES.indexOf(L),C.i,lap))return PAT; const list=L.fly?L.FL:L.GR; return list[(C.i*7+lap*3+L.seed*5)%list.length]; };
 
   /* ---------- driving: each car keeps to its place on the clock, slowing for the light, the car ahead and anyone in the road, then catching up ---------- */
   const xOf=(L,s)=>L.dir>0?xW+s:xE-s;
@@ -72,13 +75,17 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
         if(near&&!C.m){ C.m=take(C.model); } if(!near&&C.m)give(C);
         if(C.m){ const y=L.fly?SHARED.groundY(x,L.z)+L.fly+Math.sin(t*1.3+C.i*2)*.25*M0:SHARED.groundY(x,L.z); C.m.visible=true; C.m.position.set(x,y,L.z); C.m.rotation.set(0,L.dir>0?Math.PI/2:-Math.PI/2,L.fly?Math.sin(t*.9+C.i)*.04:0); }
         if(!L.fly){ if(!C.sol){ C.sol=[-1e7,-1e7,-1e7,-1e7]; SOL.up.push(C.sol); } const w=size(C.model)[0]*M1/2; if(C.m){ C.sol[0]=x-len; C.sol[2]=x+len; C.sol[1]=L.z-w; C.sol[3]=L.z+w; } else C.sol[0]=C.sol[1]=C.sol[2]=C.sol[3]=-1e7; } }); } };
+  // the airship (owner, 9 Nov 2026: "make the blimp 7x bigger and floating around the city high up"): one, seven times the size, on a slow round over the section from the shared clock
+  const BLIMP={k:'sky-tender',m:null,T:300,h:75*M0,at:t=>{ const a=t/BLIMP.T*Math.PI*2, cx=(xW+xE)/2, cz=zm+110*T; return {x:cx+Math.cos(a)*150*T,z:cz+Math.sin(a)*120*T,r:Math.atan2(-Math.sin(a)*150,Math.cos(a)*120)}; }}; TRAFFIC.blimp=BLIMP;
+  SYS.add('life',()=>{ if(!D||!D[BLIMP.k])return; if(!BLIMP.m){ const g=new THREE.Group(), me=new THREE.Mesh(geo(D[BLIMP.k].parts.body),MAT); me.name='BODY'; g.add(me); g.scale.setScalar(M1*7); g.traverse(o=>{ o.userData.anyRoom=false; o.frustumCulled=false; }); VLOOK.dress('tr:'+BLIMP.k,g); if(VLOOK.scaleOf('tr:'+BLIMP.k)===1)g.scale.setScalar(M1*7); GRP.add(g); BLIMP.m=g; }
+    const t=now(), p=BLIMP.at(t), m=BLIMP.m; m.visible=!!OUT.open&&SHARED.LVL==='up'; m.position.set(p.x,BLIMP.h+Math.sin(t*.25)*1.5*M0,p.z); m.rotation.set(0,p.r,Math.sin(t*.2)*.03); },'150pb-traffic');
   let tP=null; SYS.add('life',()=>{ if(!D)return; const t=now(); let d=tP==null?0:t-tP; tP=t; if(d<0||d>30){ for(const L of LANES)for(const C of L.cars)if(!C.m)C.u=null; d=0; }
     const n=Math.min(120,Math.max(1,Math.ceil(d/.06))); for(let k=0;k<n;k++)step(d/n); },'150pb-traffic');
 
   /* ---------- the kit fetched after the start, the game's cars once theirs are in ---------- */
   const carsIn=()=>!!(window.CARS&&CARS.dbg&&CARS.build&&CARS.dbg().loaded);
   let asked=false; SYS.add('life',()=>{ if(asked||!window.__started)return; asked=true; TD().then(d=>{ D=d; const ks=Object.keys(d).filter(k=>d[k]&&d[k].parts);
-      const fl=ks.filter(k=>d[k].fly), gr=ks.filter(k=>!d[k].fly), ready=()=>{ const g=carsIn()?gr.concat(GAME):gr; for(const L of LANES){ L.FL=fl; L.GR=g; } };
+      const fl=ks.filter(k=>d[k].fly&&k!==BLIMP.k), gr=ks.filter(k=>!d[k].fly), ready=()=>{ const g=carsIn()?gr.concat(GAME.filter(k=>k!==PAT)):gr; LANES.forEach((L,i)=>{ L.FL=fl; L.GR=g; L.pat=!L.fly&&i<2&&carsIn(); }); };
       for(const k of ks)VLOOK.kind('tr:'+k,{name:d[k].name,grp:d[k].fly?'FLYING TRAFFIC':'ROAD TRAFFIC',make:()=>{ const g=new THREE.Group(), me=new THREE.Mesh(geo(d[k].parts.body),MAT); me.name='BODY'; g.add(me); g.scale.setScalar(M1); return VLOOK.dress('tr:'+k,g); },traffic:k});
       ready(); fleet(); let n=0; const again=()=>{ if(carsIn()){ for(const L of LANES)for(const C of L.cars){ give(C); C.lap=-1; C.model=null; } ready(); } else if(++n<30)setTimeout(again,2000); }; setTimeout(again,2000);
     }).catch(e=>console.warn('TRAFFIC: the vehicles did not load',e)); },'150pb-traffic');

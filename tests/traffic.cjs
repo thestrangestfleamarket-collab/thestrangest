@@ -35,5 +35,10 @@ const {chromium}=require('playwright');
   // the car lamps (150pc): off by day; after dark the cars on the road show head and tail lights and the nearest light the road for real
   ok(await pg.evaluate(()=>!CARLAMPS.dbg().on),'no car lamps by day');
   const cl=await pg.evaluate(async()=>{ const e0=CLOCK.dayElev; CLOCK.dayElev=()=>-30; await new Promise(r=>setTimeout(r,1500)); const d=CARLAMPS.dbg(); CLOCK.dayElev=e0; return d; });
-  ok(cl.on&&cl.lens===cl.cars*4&&cl.lit>0&&cl.spots.some(v=>v>0),'after dark the cars show their lamps and the nearest light the road: '+JSON.stringify(cl));
+  ok(cl.on&&cl.lens===(cl.cars-cl.own)*4&&cl.lit>0&&cl.spots.some(v=>v>0),'after dark the cars show their lamps and the nearest light the road: '+JSON.stringify(cl));
+  // the patrol: a police cruiser sets out once a minute, one way then the other; the airship rides high, seven times its size
+  const pt=await pg.evaluate(()=>{ const L=TRAFFIC.lanes, out=[];
+    for(let li=0;li<2;li++)for(let i=0;i<L[li].n;i++)for(let lap=1000;lap<1100;lap++)if(TRAFFIC.patrol(li,i,lap))out.push([li,i,lap]); const b=TRAFFIC.blimp; return {n:out.length,ways:[out.filter(o=>o[0]===0).length,out.filter(o=>o[0]===1).length],pat:L.slice(0,2).map(l=>!!l.pat),random:L[0].GR.includes('police-cruiser-80s'),fl:L[2].FL.includes('sky-tender'),blimp:!!b.m&&{s:+(b.m.scale.x/(__dbg.cv().TILE/.84*1.4)).toFixed(1),y:+(b.m.position.y/(__dbg.cv().TILE/.84)).toFixed(0)}}; });
+  ok(pt.n>20&&Math.abs(pt.ways[0]-pt.ways[1])<=2&&pt.pat.every(Boolean)&&!pt.random,'the police cruiser is the patrol only: once a minute, the two ways in turn: '+JSON.stringify(pt));
+  ok(!pt.fl&&pt.blimp&&pt.blimp.s===7&&pt.blimp.y>60,'the airship is out of the lanes, seven times its size, high over the section: '+JSON.stringify(pt.blimp));
   ok(!errs.length,'no page errors '+errs.slice(0,3).join(' | ')); await b.close(); process.exit(bad?1:0); })();

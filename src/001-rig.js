@@ -570,6 +570,9 @@ function ridePose(st){ const R=st.ride,P=neutral(),z=R.z||0;
   else if(R.k==='car'){
     P.root=V(0,RIDEG.sit,0); P.bend=-30*D; P.nod=4*D;
     for(const [n,k] of [['L',1],['R',-1]]){ P[n].th=[84*D,6*D]; P[n].sh=[22*D,2*D]; P[n].foot=-8*D; P[n].ua=[58*D,14*D]; P[n].fa=[50*D,(6+(R.steer||0)*26*k)*D]; P[n].fist=1; } }
+  else if(R.k==='carpet'){   // a magic carpet: sitting cross-legged, the hands on the knees, leaning into the way it flies
+    const f=R.fwd||0; P.root=V(0,RIDEG.deck+2.4+z,0); P.bend=(6+f*12+Math.abs(R.lean||0)*4)*D; P.nod=-(4+f*6)*D; P.cyaw=-(R.lean||0)*6*D;
+    for(const [n,k] of [['L',1],['R',-1]]){ P[n].th=[84*D,52*D]; P[n].sh=[84*D,-64*D]; P[n].foot=-30*D; P[n].ua=[34*D,18*D]; P[n].fa=[58*D,10*D]; P[n].fist=0; } }
   else if(R.k==='horse'){   // astride a saddle: thighs round the barrel, heels down in the stirrups, the reins in both hands over the horn; forward with the pace (lean), a hand up to stop (R.lean <0: leaning back)
     const L=R.lean||0; P.root=V(0,RIDEG.sit,0); P.bend=(4+L*16)*D; P.nod=(-4-L*6)*D;
     for(const [n,k] of [['L',1],['R',-1]]){ P[n].th=[R.th0*D,R.th1*D]; P[n].sh=[R.sh0*D,R.sh1*D]; P[n].foot=R.ft*D; P[n].ua=[(R.ua0+L*12)*D,R.ua1*D]; P[n].fa=[(R.fa0+L*10)*D,(R.fa1+(R.steer||0)*14*k)*D]; P[n].fist=1; } }
@@ -781,7 +784,7 @@ function pose(st,inPlace){ const busy=st.move||st.out,P=JSON.parse(JSON.stringif
   if(!busy&&!swimming&&!st.up&&!st.sit) B.walkF=st.w>0.05&&st.target>0?Math.floor((st.wd||0)/WSTEP)%8:-1;
   const m=st.move; B.anim=swimming||st.sit?null:m?(!m.variant&&STUDIO.includes(m.name)?m.name+'/'+Math.floor(m.t*10):null):st.up&&!st.out?(st.w<0.05&&STUDIO.includes(st.up.name)?st.up.name+'/'+Math.floor(st.up.t*10):null):B.walkF!=null?(B.walkF<0?'stand/0':'walk/'+B.walkF):null;
   if(st.sign)B.anim=null; st.B=B;
-  B.seat=!!(st.sit||st.ride&&/^(kart|car|bike|horse)$/.test(st.ride.k));   // seated: a body of other proportions sits where the rig sits (111a)
+  B.seat=!!(st.sit||st.ride&&/^(kart|car|bike|horse|carpet)$/.test(st.ride.k));   // seated: a body of other proportions sits where the rig sits (111a)
   return B; }
 
 const PIECES=['head','hair','beard','neck','torso','hips'].concat(...['L','R'].map(n=>['sleeve','upperArm','forearm','hand','thigh','shin','shoe'].map(k=>k+n)),

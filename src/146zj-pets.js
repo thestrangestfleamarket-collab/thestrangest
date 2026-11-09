@@ -277,7 +277,9 @@ window.PETS=PETS;
   const CORDER=['pets','dogs','cats','rabbits','farm','horses','livestock','poultry','zoo','wild','reptiles','dino','dragons','creatures','birds','parrots','bugs','shore'];
   /* ---------- an animal on show: its pet body in its first colours, fitted to a box (w along, h up, d across, metres), doing what its kind does at rest ---------- */
   const LIVE=new Set(), MWm=IKIT.MW;
-  const show=async(key,fit,o={})=>{ const I0=await idx(), K=I0.by[key]; if(!K)return null; const P=fresh(K), D=await kind(key), {P:Pp,T}=shape(D,P), R=rig(D,T), CL=clips(D,T), geo=SKIN.geom(D.mesh);
+  let LOADN=0; PETS.loading=()=>LOADN;   // (the start waits for every shop's animals: none comes in later)
+  const show=async(key,fit,o={})=>{ LOADN++; try{ return await show0(key,fit,o); } finally{ LOADN--; } };
+  const show0=async(key,fit,o={})=>{ const I0=await idx(), K=I0.by[key]; if(!K)return null; const P=fresh(K), D=await kind(key), {P:Pp,T}=shape(D,P), R=rig(D,T), CL=clips(D,T), geo=SKIN.geom(D.mesh);
     geo.attributes.position.array.set(Pp); geo.attributes.position.needsUpdate=true; paint(D,P,geo); geo.computeVertexNormals();
     const me=new THREE.SkinnedMesh(geo,new THREE.MeshLambertMaterial({vertexColors:true})); me.add(R.bones[0]); me.bind(R.skeleton); me.frustumCulled=false;
     const lo=[1e9,1e9,1e9], hi=[-1e9,-1e9,-1e9]; for(let k=0;k<Pp.length;k++){ const c=k%3; if(Pp[k]<lo[c])lo[c]=Pp[k]; if(Pp[k]>hi[c])hi[c]=Pp[k]; }
@@ -353,7 +355,7 @@ window.PETS=PETS;
       else if(fr==='glass'){ glass(-W2,W2,CD,.035,CH-.03); bx(-W2,W2,CD-.03,CD,.03,.07,WOOD); }
       else { const n=fr==='mesh'?40:16, c=fr==='mesh'?0x4a5a48:BAR; for(let k=1;k<n;k++){ const a=-W2+k*2*W2/n; bx(a-.005,a+.005,CD-.01,CD,.03,CH-.03,c); } if(fr==='mesh')for(let k=1;k<10;k++)bx(-W2,W2,CD-.01,CD,k*CH/10-.004,k*CH/10+.004,c); }
       furnish(hab,bx,cy,bl,f=>K2.glow(f),CH,CW,CD); };
-    const gen=A.gen=(A.gen||0)+1;
+    const gen=A.gen=(A.gen||0)+1; LOADN++;
     const pic=!!(WINDOWS.taking&&WINDOWS.taking.has(id));   // (built only for the street's first picture of its windows: the cages without their animals, nothing fetched)
     idx().then(I=>{ if(A.gen!==gen||!A.live())return;
       const L=I.kinds.filter(k=>k.shop===id&&k.cage).sort((a,b)=>CORDER.indexOf(a.group)-CORDER.indexOf(b.group));
@@ -377,7 +379,7 @@ window.PETS=PETS;
         show(k.key,fit,{shop:id,pace:false,fly:habOf(k)==='flying'}).then(B=>{ if(!B)return; if(A.gen!==gen||!G2.parent)return; B.fitH=fit.h; B.base=new THREE.Vector3(c[0],.47*MW,c[1]); B.along=new THREE.Vector3(F.eu[0],0,F.eu[1]); B.slide=B.g;
           B.g.position.copy(B.base); if(G2.userData.street)B.street=B.base.clone().applyMatrix4(G2.userData.street); B.g.rotation.y=F.hd(0,1); G2.add(B.g); LIVE.add(B); }).catch(()=>{}); });
       for(const t of TH)UI.thing(t); if(!A.late(G2,TH)){ for(const t of TH){ const j=UI.things.indexOf(t); if(j>=0)UI.things.splice(j,1); } return; } (PETS.caged||(PETS.caged={}))[id]=Math.min(L.length,all.length); };
-      if(!A.late(G,[]))return; if(pic)PEND.set(id,{A,gen,fill}); else fill(); }).catch(e=>console.warn('PET CAGES',e)); };
+      LOADN--; if(!A.late(G,[]))return; if(pic)PEND.set(id,{A,gen,fill}); else fill(); }).catch(e=>{ LOADN--; console.warn('PET CAGES',e); }).catch(e=>console.warn('PET CAGES',e)); };
     kit.drop=()=>{ const d=MSHOP.kit._&&MSHOP.kit._.drop; if(d)d(); }; return kit; };
   const PEND=new Map(); SYS.every(()=>{ for(const [id,q] of PEND){ if(q.A.gen!==q.gen||!q.A.live()){ PEND.delete(id); continue; } if((ROOMS.offIn&&ROOMS.offIn()===id)||WINDOWS.held.has(id)){ PEND.delete(id); q.fill(); } } },300,'pet shops filled');
   const CAGE={CW:1.4,CH:.72,CD:.6,ROWS:4}, STALL={CW:1.7,CH:1.4,CD:1.0,ROWS:1,stall:true};

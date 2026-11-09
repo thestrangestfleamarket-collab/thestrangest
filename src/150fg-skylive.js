@@ -56,8 +56,8 @@ const SKYL={on:false,data:{},err:{}}; window.SKYL=SKYL;
             if(ok){ if(!on)on={s,jd,top:q.alt,mag:q.mag}; else { on.top=Math.max(on.top,q.alt); on.mag=Math.min(on.mag,q.mag); } } else if(on){ out.push(on); on=null; } }
           if(on)out.push(on); setTimeout(step,0); }; step(); }};
     const OBS={latitude:A.LAT*D2R,longitude:A.LON*D2R,height:.01};
-    let satT=0, satNow=[], follow=null, lastGo=null;
-    const satTick=(jd,C)=>{ if(!sats.ready)return; if((satT-=C.dt)<=0){ satT=.5; satNow=[]; for(const s of sats.list){ const q=sats.look(s,jd); if(q&&q.alt>-1){ s.v=hz(q.alt,q.az); satNow.push(s); } } }   // the ones up, every half second; those near the field exactly, every frame
+    let satT=0, satJD=0, satNow=[], follow=null, lastGo=null;
+    const satTick=(jd,C)=>{ if(!sats.ready)return; if((satT-=C.dt)<=0||Math.abs(jd-satJD)>1/1440){ satT=.5; satJD=jd; satNow=[]; for(const s of sats.list){ const q=sats.look(s,jd); if(q&&q.alt>-1){ s.v=hz(q.alt,q.az); satNow.push(s); } } }   // the ones up, every half second; those near the field exactly, every frame
       const t=C.t, cR=Math.cos(Math.min(89,C.fov)*D2R), cW=Math.cos(Math.min(89,C.fov/2+4)*D2R), sunDown=C.sunH.alt<-4;
       for(const s of satNow){ if(s.v[0]*t[0]+s.v[1]*t[1]+s.v[2]*t[2]<cW)continue; const q=sats.look(s,jd); if(!q||q.alt<0)continue; const v=hz(q.alt,q.az); if(v[0]*t[0]+v[1]*t[1]+v[2]*t[2]<cR)continue; const p=C.proj(v); if(!p)continue;
         const d=Math.hypot(p[0]-C.cx,p[1]-C.cy); if(d>C.R)continue; const seen=q.lit&&sunDown&&q.mag<C.lim+1;

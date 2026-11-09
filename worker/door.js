@@ -15,6 +15,25 @@ const loopback = ip => !ip || ip === "::1" || ip === "localhost" || /^127\./.tes
 const SECROOMS = WORLD.sections.ids.flat().map(i => "s-" + String(i).toLowerCase().replace(/[^a-z0-9-]/g, "")), ROOM = /^[a-z0-9-]{1,32}$/, GUESS_MAX = 20, guesses = new Map(), passed = new Map(), FILE = /^\/g\/[a-z0-9-]+\.[0-9a-f]{10}\.(js|json|bin|mp3|jpg|png|webp)$/;
 const EDMAP = /^\/edmap\/t\d{1,2}_\d{1,2}\.jpg$/;
 const BOOK = /^\/book\/(\d{1,6})\.txt$/, FILM = /^\/film\/([A-Za-z0-9_.-]{1,80})\/([A-Za-z0-9_.-]{1,120}\.mp4)$/, IA = /^\/ia\/([A-Za-z0-9_.-]{1,80})\.jpg$/, YT = /^\/yt\/([A-Za-z0-9_-]{11})\.jpg$/, BLANK = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYGD4DwABBAEAHnOcQAAAAABJRU5ErkJggg==";
+const SKYJD = () => Date.now() / 864e5 + 2440587.5, SBDB = "https://ssd-api.jpl.nasa.gov/sbdb_query.api?", SWPC = "https://services.swpc.noaa.gov/";
+const SKYFEEDS = {
+  weather: { ttl: 1800, u: () => "https://api.open-meteo.com/v1/forecast?latitude=40.7128&longitude=-74.006&hourly=cloud_cover,visibility,precipitation,snowfall&past_days=1&forecast_days=2&timezone=UTC" },
+  sats: { ttl: 21600, text: 1, u: () => ["https://celestrak.org/NORAD/elements/gp.php?GROUP=stations&FORMAT=tle", "https://celestrak.org/NORAD/elements/gp.php?GROUP=visual&FORMAT=tle"] },
+  comets: { ttl: 86400, u: () => { const j = Math.round(SKYJD()); return SBDB + new URLSearchParams({ fields: "full_name,e,q,i,om,w,tp,M1,K1", "sb-kind": "c", "sb-cdata": JSON.stringify({ AND: ["tp|RG|" + (j - 400) + "|" + (j + 400), "M1|LT|11", "q|LT|3.5"] }) }); } },
+  rocks: { ttl: 86400, u: () => SBDB + new URLSearchParams({ fields: "full_name,a,e,i,om,w,ma,epoch,H,G", "sb-kind": "a", "sb-cdata": JSON.stringify({ AND: ["H|LT|6.5"] }) }) },
+  sun: { ttl: 900, jpg: 1, u: () => "https://sdo.gsfc.nasa.gov/assets/img/latest/latest_1024_HMIIC.jpg" },
+  spots: { ttl: 3600, u: () => SWPC + "json/solar_regions.json" },
+  flares: { ttl: 1800, u: () => SWPC + "json/goes/primary/xray-flares-7-day.json" },
+  kp: { ttl: 1800, u: () => [SWPC + "products/noaa-planetary-k-index.json", SWPC + "products/noaa-planetary-k-index-forecast.json"] } };
+async function skyFeed(k, request) {
+  const F = SKYFEEDS[k], key = new Request(new URL(request.url).origin + "/sky-cache/" + k + (F.jpg ? ".jpg" : "")), cache = caches.default;
+  const hit = await cache.match(key).catch(() => null); if (hit) return hit;
+  const urls = [].concat(F.u()); let body = null, ok = true;
+  try { const rs = await Promise.all(urls.map(u => fetch(u, { headers: { "user-agent": "thestrangestfleamarket.com telescope" } })));
+    ok = rs.every(r => r.ok); if (ok) body = F.jpg ? await rs[0].arrayBuffer() : F.text ? (await Promise.all(rs.map(r => r.text()))).join("\n") : urls.length > 1 ? JSON.stringify(await Promise.all(rs.map(r => r.json()))) : await rs[0].text(); } catch (e) { ok = false; }
+  if (!ok || body == null) return new Response("not now", { status: 503, headers: { "cache-control": "no-store" } });
+  const out = new Response(body, { headers: { "content-type": F.jpg ? "image/jpeg" : F.text ? "text/plain; charset=utf-8" : "application/json", "cache-control": "public, max-age=" + F.ttl, "x-robots-tag": "noindex" } });
+  await cache.put(key, out.clone()).catch(() => {}); return out; }
 function tooMany(ip, max = GUESS_MAX) { const min = Math.floor(Date.now() / 60000), g = guesses.get(ip);
   if (!g || g.min !== min) { if (guesses.size > 5000) for (const [k, v] of guesses) if (v.min !== min) guesses.delete(k); guesses.set(ip, { n: 1, min }); return false; }
   return ++g.n > max; }
@@ -59,6 +78,11 @@ export default {
       const miss = !r || !r.ok, out = miss ? new Response(Uint8Array.from(atob(BLANK), c => c.charCodeAt(0)), { status: 200 }) : new Response(r.body, { status: r.status });
       out.headers.set("content-type", miss ? "image/png" : "image/jpeg"); out.headers.set("access-control-allow-origin", "*");
       out.headers.set("cache-control", "public, max-age=86400"); out.headers.set("x-robots-tag", "noindex"); return out; } }
+    // the telescope's live sky (src/150fg): the real weather, satellites, comets, asteroids, today's Sun and space weather, fetched here once for everyone and kept a while
+    const sky = /^\/sky\/([a-z]{2,12})(\.jpg)?$/.exec(p);
+    if (sky && request.method === "GET" && SKYFEEDS[sky[1]] && !!sky[2] === !!SKYFEEDS[sky[1]].jpg) {
+      if (!(await inside(env, request, dev))) return new Response("not found", { status: 404 });
+      return skyFeed(sky[1], request); }
     if (p.startsWith("/parties/")) return (await routePartykitRequest(request, env, {
       onBeforeConnect: async (req, { party, name }) => {
         const room = party === "block" ? ROOM.test(name) : party === "dish" && name === "petri";   // the dish: one for the whole market, the arcade's PETRI
@@ -341,7 +365,7 @@ export class Block extends Server {
   onMessage(c, raw) {
     const s = c.state; if (!s || typeof raw !== "string" || raw.length > (raw.startsWith('{"t":"folk"') ? 400000 : raw.startsWith('{"t":"mobgrid"') || raw.startsWith('{"t":"dmset"') ? 200000 : 2500)) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
     const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0, at: {} }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 60) return;
-    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, ride: 300, car: 300, curse: 1500, puff: 800, drone: 3000, ps: 150, fish: 200, world: 120, puts: 1000, lives: 3000, met: 1000, tr: 100, gtr: 25, ins: 20, mobgrid: 3000, dmset: 3000, breakout: 5000, mobhit: 60, mobpar: 200, vr: 60, body: 1000, st: 150 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
+    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, sky: 200, skyw: 100, ride: 300, car: 300, curse: 1500, puff: 800, drone: 3000, ps: 150, fish: 200, world: 120, puts: 1000, lives: 3000, met: 1000, tr: 100, gtr: 25, ins: 20, mobgrid: 3000, dmset: 3000, breakout: 5000, mobhit: 60, mobpar: 200, vr: 60, body: 1000, st: 150, jet: 150, zap: 120 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
     if (m.t === "bye") { this.onClose(c); c.setState({ ...s, id: "" }); try { c.close(1000, "bye"); } catch (e) {} return; }   // leaving: out for everyone now, not when the socket times out
     if (m.t === "mv" && Array.isArray(m.at)) {
       const a = m.at, at = [num(a[0], -1e5, 1e5), num(a[1], -1e5, 1e5), num(a[2], -1e4, 1e4), num(a[3], -10, 10), word(a[4], 8), word(a[5], 60)];
@@ -371,6 +395,12 @@ export class Block extends Server {
       const o = m.t === "grab" ? this.near(s, to, 6) : [...this.getConnections()].find(x => x.state && x.state.id === to); if (!o) return;
       if (m.t === "free") { if (H.get(s.id) === to) H.delete(s.id); } else if (m.t === "grab") H.set(to, s.id); else { if (H.get(to) !== s.id) return; H.delete(to); }
       const v = Array.isArray(m.v) ? [num(m.v[0], -2, 2), num(m.v[1], -2, 2)] : null; o.send(JSON.stringify(m.t === "toss" ? { t: "toss", id: s.id, v } : { t: m.t, id: s.id }));
+    } else if (m.t === "jet") {   // a flamethrower or freeze ray firing (146hb), or stopping
+      const k = m.k === "f" || m.k === "i" ? m.k : "", v = k && Array.isArray(m.v) ? [num(m.v[0], -1, 1), num(m.v[1], -1, 1), num(m.v[2], -1, 1)] : null;
+      this.broadcast(JSON.stringify(v ? { t: "jet", id: s.id, k, v } : { t: "jet", id: s.id, k }), [c.id]);
+    } else if (m.t === "zap") {   // its stream on a player near the shooter: they burn or freeze
+      const to = String(m.to || ""); if (!to || to === s.id) return; const o = this.near(s, to, 12); if (!o) return;
+      o.send(JSON.stringify({ t: "zap", id: s.id, k: m.k === "i" ? "i" : "f", from: [s.at[0], s.at[1]] }));
     } else if (m.t === "hit" || m.t === "parried") {
       const to = String(m.to || ""); if (!to || to === s.id) return; const o = this.near(s, to, 6); if (!o) return;
       o.send(JSON.stringify(m.t === "hit" ? { t: "hit", id: s.id, d: num(m.d, 0, .5), kb: num(m.kb, 0, 3), heavy: !!m.heavy, k: word(m.k, 6), from: [s.at[0], s.at[1]] } : { t: "parried", id: s.id }));
@@ -464,10 +494,17 @@ export class Block extends Server {
       const k = word(m.k, 40); if (!k || !k.startsWith("drop:")) return; this.dropT(); const r = this.ctx.storage.sql.exec("select rec, until from drops where k = ?", k).toArray()[0], v = r && r.until >= now ? r.rec : "";
       if (r) this.dropGone(k); c.send(JSON.stringify({ t: "took", k, v }));
       if (v) { try { const o = JSON.parse(v); if (String(o.by || "").startsWith("body:")) homeOf(this.env).econAllow(s.id, o.id === "cash" ? o.n : 0, o.id === "cash" ? 0 : o.n, "a body's drop").catch(() => {}); } catch (e) {} }
+    } else if (m.t === "sky") {   // a telescope shared at a star party (src/150fh): where it points, to everyone in the section
+      this.broadcast(JSON.stringify({ t: "sky", id: s.id, name: word(s.name, 24), on: m.on ? 1 : 0, alt: num(m.alt, -90, 90), az: num(m.az, 0, 360), mag: num(m.mag, 1, 400), f: num(m.f, -1, 1), fl: m.fl ? 1 : 0, jd: num(m.jd, 2.4e6, 2.6e6), ctl: word(m.ctl, 60) }), [c.id]);
+    } else if (m.t === "skyw") {   // a watcher joining, leaving or (handed the tube) steering someone's telescope: to that one player
+      const to = String(m.to || ""), op = /^(join|leave|steer)$/.test(m.op) ? m.op : ""; if (!to || to === s.id || !op) return;
+      for (const o of this.getConnections()) if (o.state && o.state.id === to) { o.send(JSON.stringify({ t: "skyw", id: s.id, name: word(s.name, 24), op, alt: num(m.alt, -90, 90), az: num(m.az, 0, 360) })); break; }
     } else if (m.t === "world") {
       const k = word(m.k, 40); if (!k) return; if (k === "time") this.clkAt = 0;
       if (k.startsWith("drop:")) { if (!/^drop:[a-z0-9]{4,24}$/.test(k)) return; const life = this.dev && this.dev.has(c.id) && m.life ? num(m.life, 500, 7200000) : 0; this.world().then(W => { this.drops(W); const rec = this.dropAdd(k, m.v, s.id, life); if (rec) this.broadcast(JSON.stringify({ t: "world", k, v: rec })); }); return; }   // a drop is set once, never changed or cleared by a player (a test's server may give it a short life)   // (the owner changed the clock: read it at the next step)
       if (k.startsWith("sum:")) { owner(this.env, s.id, !!(this.dev && this.dev.has(c.id))).then(o => { if (o === true) this.put(k, typeof m.v === "string" ? word(m.v, 120) : ""); }); return; }   // a summoned character: only an owner moves one
+      if (k.startsWith("first:")) { const v = word(m.v, 80), night = v.split("|")[0]; if (!/^first:[a-z0-9_]{2,30}$/.test(k) || !/^\d{8}$/.test(night)) return;   // tonight's firsts (src/150fcz): the first to find it keeps it until the next night
+        this.world().then(W => { if (String(W[k] || "").split("|")[0] === night) return; W[k] = v; this.ctx.storage.put("world", W); this.broadcast(JSON.stringify({ t: "world", k, v })); }); return; }
       const kind = WORLD_KEYS.find(r => r.re.test(k)); if (!kind || (m.add != null) !== !!kind.add) return;   // only the kinds of shared things the game has; counters only where it counts
       if (kind.owner) { owner(this.env, s.id, !!(this.dev && this.dev.has(c.id))).then(o => { if (o === true) this.put(k, typeof m.v === "number" ? num(m.v, 0, 1e13) : word(m.v, 40)); }); return; }
       if (kind.add) m.add = num(m.add, -1, 1);

@@ -7,13 +7,13 @@ import {SYS, TILE} from './006-map-pre.js';
 import {collide} from './075-main-13.js';
 Object.assign(RIDE,{on:null,kind:null,v:0,hd:0,lift:0,z:0,vz:0,dry:false,ease:20,kinds:{},mesh:null,lean:0,knock:0}); window.RIDE=RIDE;
 { const T=TILE, say=(t,c)=>SAY(t,c||'#e8e2cc'), prop=(id,k)=>ITEMS.prop?ITEMS.prop(id,k):undefined, V3=THREE.Vector3, wrap=a=>Math.atan2(Math.sin(a),Math.cos(a));
-  // a kind: {name, hint, make(id) -> Object3D in metres, place(mesh, R, t) each frame, pose(R) -> the rig's st.ride, floor(g, R) -> how high you are, step(R, dt, input) -> true when it moves you itself, dry: over water too}
+  // a kind: {name, hint, make(id) -> Object3D in metres, place(mesh, R, t) each frame, pose(R) -> the rig's st.ride, floor(g, R) -> how high you are, step(R, dt, input) -> true when it moves you itself, dry: over water too, hand(id) -> what you carry when it is not what you ride (a saddle)}
   RIDE.kind=(grant,k)=>{ RIDE.kinds[grant]=k; for(const id of ITEMS.ids?ITEMS.ids():[])if(prop(id,'grants')===grant)hold(id,k); };
   // a kind you board where it stands instead of carrying it (a parked car): registered under its own id with world:true; hide:true draws no rider (you are inside it); seat(m) gives where the rider sits in the mesh and fit(m) how much smaller to draw them there
   const kindOf=id=>RIDE.kinds[prop(id,'grants')]||(RIDE.kinds[id]&&RIDE.kinds[id].world?RIDE.kinds[id]:null); RIDE.kindOf=kindOf;
   const M=new Map(), mesh=id=>{ let m=M.get(id); if(!m){ const k=kindOf(id); m=k.make(id); m.userData.anyRoom=true; m.traverse(c=>{ if(c.isMesh){ c.castShadow=true; c.userData.ownMat=true; } }); scene.add(LEVELS.own(m,'*')); M.set(id,m); } return m; };
   // held, it is a WIELD tool: a click gets on; on it, a click (or the same key) gets off
-  const hold=(id,k)=>{ const w={name:(FORAGE.NM&&FORAGE.NM[id])||id.toUpperCase(),hint:k.hint||'E GETS ON; E GETS OFF.',make:()=>{ const g=k.make(id); g.scale.multiplyScalar(k.held||.6); g.head=new V3(0,.4,0); return g; },ekey:1,use:()=>{ RIDE.on?(RIDE.cur&&RIDE.cur.leave?RIDE.cur.leave(RIDE):RIDE.off()):RIDE.mount(id); },aim:(dt,aim)=>{ aim.set(Math.sin(SHARED.heading)*.25,-.95,Math.cos(SHARED.heading)*.25).normalize(); return true; }};
+  const hold=(id,k)=>{ const w={name:(FORAGE.NM&&FORAGE.NM[id])||id.toUpperCase(),hint:k.hint||'E GETS ON; E GETS OFF.',make:()=>{ const g=(k.hand||k.make)(id); g.scale.multiplyScalar(k.held||.6); g.head=new V3(0,.4,0); return g; },ekey:1,use:()=>{ RIDE.on?(RIDE.cur&&RIDE.cur.leave?RIDE.cur.leave(RIDE):RIDE.off()):RIDE.mount(id); },aim:(dt,aim)=>{ aim.set(Math.sin(SHARED.heading)*.25,-.95,Math.cos(SHARED.heading)*.25).normalize(); return true; }};
     (WIELD.pend=WIELD.pend||[]).push([id,w]); if(WIELD.kind)WIELD.kind(id,w); };
   const indoors=()=>{ const c=ROOMS.cur, o=c&&c.off&&ROOMS.off[c.off]; return !!c&&!(o&&o.outdoor); };   // an off-map place can be outdoors (ROOMS.off[id].outdoor): ride there
   const free=()=>!(RAG.on||st.water&&st.water.in||st.climb||st.hang||st.sit||VIT.dead||VIT.out>0);
@@ -41,7 +41,7 @@ Object.assign(RIDE,{on:null,kind:null,v:0,hd:0,lift:0,z:0,vz:0,dry:false,ease:20
   const share=()=>{ if(ONLINE.on&&ONLINE.send)ONLINE.send({t:'ride',b:RIDE.on||null}); shT=4; };
   ONLINE.hear.ride=msg=>{ '@later'; const o=ONLINE.others&&ONLINE.others.get(msg.id), id=typeof msg.b==='string'&&kindOf(msg.b)?msg.b:null, was=theirs.get(msg.id);
     if(was&&(!id||was.id!==id)){ was.m.removeFromParent(); theirs.delete(msg.id); if(o&&o.S)o.S.ride=null; }
-    if(id&&o&&!theirs.has(msg.id)){ const k=kindOf(id), m=k.make(id); m.userData.anyRoom=true; scene.add(LEVELS.own(m,'*')); theirs.set(msg.id,{id,k,m,R:{v:0,z:0,lean:0,hd:0,lift:(k.lift||.3)*T}}); } };
+    if(id&&o&&!theirs.has(msg.id)){ const k=kindOf(id), m=k.make(id); m.userData.anyRoom=true; scene.add(LEVELS.own(m,'*')); theirs.set(msg.id,{id,k,m,R:{v:0,z:0,lean:0,hd:0,lift:(k.lift||.3)*T,pid:msg.id}}); } };
   RIDE.their=id=>{ const o=theirs.get(id); return o&&o.R; };   // another rider's board state (their tricks land on it, 146ib)
   const deck=()=>RIG.RIDEG.deck*(W3.group.scale.y||.046);
   SYS.add('life',dt=>{ const t=performance.now()/1000;

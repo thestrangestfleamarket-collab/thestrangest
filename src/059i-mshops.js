@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {ROOMS, WINDOWS} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {AWAY, FIX, grab, LEVEL, SOL, STORE, TILE, TURN, WP} from './006-map-pre.js';
+import {AWAY, FIX, grab, LEVEL, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
 import {BATCH} from './008-batch.js';
 import {BLOCKS} from './038zb-blocks.js';
 import {FACADES} from './038zc-facades.js';
@@ -15,6 +15,8 @@ const SHOPSIGN=(()=>{ const C={}, mk=(k,w,h,f)=>C[k]||(C[k]=(()=>{ const cv=docu
     blade:(t,c)=>mk('b'+t,512,160,(g,w,h)=>{ g.fillStyle='rgba(0,0,0,0)'; g.clearRect(0,0,w,h); g.strokeStyle='#d8b060'; g.lineWidth=6; g.strokeRect(10,10,w-20,h-20); fit(g,t,w-60,h*.6,'bold S Georgia, serif'); g.textAlign='center'; g.textBaseline='middle'; g.fillStyle=`rgb(${(c||[240,220,180]).join(',')})`; g.fillText(t,w/2,h/2+3); }),
     open:()=>mk('open',256,96,(g,w,h)=>{ g.font='bold 64px Arial, sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.lineWidth=5; g.strokeStyle='#ff3040'; g.shadowColor='#ff2030'; g.shadowBlur=18; g.strokeText('OPEN',w/2,h/2+2); g.shadowBlur=6; g.strokeStyle='#ffd0d8'; g.lineWidth=2; g.strokeText('OPEN',w/2,h/2+2); g.strokeStyle='#40a0ff'; g.lineWidth=4; g.shadowColor='#3080ff'; g.shadowBlur=12; g.strokeRect(10,8,w-20,h-16); })}; })();
 await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED.BOD.g.hash, sh=SHARED.BOD.K.sh, MS=STORE.main, T=TILE;
+  const FILL=new THREE.HemisphereLight(0,0,0); scene.add(FILL); SHARED.roomFill=FILL;
+  SYS.add('places',()=>{ const k=ROOMS.offIn&&ROOMS.offIn(), f=k&&ROOMS.off[k]&&ROOMS.off[k].fill; if(f){ FILL.color.copy(f.color); FILL.groundColor.copy(f.groundColor); FILL.intensity=f.intensity; } else FILL.intensity=0; },'059i-mshops fill');
   const lit=c=>Object.assign([c[0],c[1],c[2]],{e:1});
   const box4=(x0,y0,x1,y1)=>{ const a=X(x0), b=X(x1), c=Z(y0), d=Z(y1); return [Math.min(a,b),Math.min(c,d),Math.max(a,b),Math.max(c,d)]; };
   const MKA=(k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.2}:{})});
@@ -103,7 +105,7 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
       wall:(side,paint)=>{ '@later'; const {faceTex,bq,C}=SHARED.BOD, h=WH, P=side==='b'?(a,z)=>[X(a),Y(z),Z(R.y0)]:side==='f'?(a,z)=>[X(a),Y(z),Z(R.y1)]:side==='w'?(a,z)=>[X(R.x0),Y(z),Z(a)]:(a,z)=>[X(R.x1),Y(z),Z(a)];
         const a0=side==='b'||side==='f'?R.x0:R.y0, a1=side==='b'||side==='f'?R.x1:R.y1, w=Math.round((a1-a0)*24); bq(P(a0,0),P(a1,0),P(a1,h),P(a0,h),faceTex(w,h,(i,j)=>C(paint(a0+(i+.5)/24,h-j-.5))),'A'); },
       lamp:(x,y,h,c,i=4,r=8)=>{ const Lt=new THREE.PointLight(c,i,r*T,1.6); Lt.position.set(X(x),Y(h*24),Z(y)); scene.add(Lt); return Lt; },
-      add:o=>{ scene.add(o); return o; },
+      add:o=>{ if(o.isHemisphereLight){ ROOMS.off[id].fill=o; return o; } scene.add(o); return o; },   // an inside's soft fill is the shared one (FILL), lit only while you are in: a light added to the scene would recompile every material
       live:()=>!!G, late:(o,things=[])=>{ if(!G)return false; G.add(o); if(PA)PA.things.push(...things); return true; }};   // (what a kit adds after the build, its data come: kept with the inside and dropped with it)
     const build=()=>{ '@later'; G=new THREE.Group(); G.name=id+'-in'; scene.add(G); S=[];
       PA=ROOMS.part(G,()=>{ (MSHOP.kit[id]||MSHOP.kit._||(()=>{}))(api); },MKA);
@@ -118,7 +120,7 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
       const du=D.door*W, dw=D.dw||.85, tl=Math.abs(X(1)-X(0)), ry=Math.atan2(ns.x,ns.z);
       // one pane: o0..o1 across from the door's middle (tiles), z0..z1 up (the street's pixels); seen from the street it shows the inside, from inside the street
       const pane=(o0,o1,z0,z1)=>{ o0=Math.max(o0,R.x0+.3-cx); o1=Math.min(o1,R.x1-.3-cx); z1=Math.min(z1,WH-6); if(o1-o0<.5)return; const h=Y(z1)-Y(z0), yc=(Y(z0)+Y(z1))/2, mid=(o0+o1)/2, w=(o1-o0)*tl;
-        const pin=new THREE.Mesh(new THREE.PlaneGeometry(w,h)); pin.position.copy(P2(at(lcx+mid,L.y1+.04),yc)); pin.rotation.y=ry; scene.add(pin); WINDOWS.pane(pin,id,'in',false,true);
+        const pin=new THREE.Mesh(new THREE.PlaneGeometry(w,h)); pin.position.copy(P2(at(lcx+mid,L.y1+.04),yc)); pin.rotation.y=ry; scene.add(pin); WINDOWS.pane(pin,id,'in',true,true);
         const pout=new THREE.Mesh(new THREE.PlaneGeometry(w,h)); pout.position.copy(new V3(X(cx+mid),yc,Z(R.y1-.04))); pout.rotation.y=Math.atan2(ni.x,ni.z); scene.add(pout); WINDOWS.pane(pout,id,'out',false,true); };
       if(D.pf||D.none){} else if(D.both){ const hf=D.half, wz=D.wz||[19,89]; pane(-hf+.08,-dw-.28,wz[0],wz[1]); pane(dw+.28,hf-.08,wz[0],wz[1]); pane(-dw+.12,-.06,12,86); pane(.06,dw-.12,12,86); }   // both windows and the two glass doors, real through
       else pane((du>W/2?.35:du+dw+.15)-du,(du>W/2?du-dw-.15:W-.35)-du,16,92); }

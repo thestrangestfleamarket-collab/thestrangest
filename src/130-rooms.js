@@ -60,17 +60,24 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
     for(const b of o.bs){ if(!(b.y1<1e5))continue; const m=new THREE.Mesh(new THREE.PlaneGeometry(b.x1-b.x0,b.z1-b.z0),M); m.rotation.x=Math.PI/2; m.position.set((b.x0+b.x1)/2,b.y1-.03,(b.z0+b.z1)/2); m.receiveShadow=true; o.ceilG.add(m); }
     scene.add(o.ceilG); };
   ROOMS.ceilOf=id=>{ if(!RL)build(); ceil(ROOMS.off[id]); };   // an inside's ceiling made without going in (seen through its windows from the street)
-  ROOMS.goIn=async(id,at)=>{ const o=ROOMS.off[id], L=offL(id); if(!RL)build(); if(!L.done){ await L.need(); if(!L.done)L.go(); } const s=at||o.spawn; UI.goTo(s[0],s[1],s[2],s[3]); ceil(o);
+  const offMake=async id=>{ const o=ROOMS.off[id], L=offL(id); if(!RL)build(); if(!L.done){ await L.need(); if(o.pre)await o.pre(); if(!L.done)L.go(); } };
+  const offPlace=(id,at)=>{ const o=ROOMS.off[id]; if(!RL)build(); const s=at||o.spawn; UI.goTo(s[0],s[1],s[2],s[3]); ceil(o);
     scene.updateMatrixWorld(); const bb=o.bs.find(b=>within(b,s[0],s[1]))||o.b, w={key:kOf(bb),b:bb}; ROOMS.cur=bb; IV.want=w; apply(w); if(!at&&UI.inIso)UI.inIso(); };
+  ROOMS.goIn=async(id,at)=>{ await offMake(id); offPlace(id,at); };
   ROOMS.goOut=id=>{ const o=ROOMS.off[id]; UI.goTo(o.out[0],o.out[1],o.out[2],o.out[3]); ROOMS.cur=null; IV.want=null; apply(null); return ROOMS.unstow&&ROOMS.unstow(); };
-  const offRun=(id,txt,fn)=>{ if(!ROOMS.off[id]||FADE.busy||IV.busy)return; IV.busy=true; return FADE.run(txt,fn,{cut:true}).finally(()=>{ IV.busy=false; }); };
-  ROOMS.enter=id=>offRun(id,ROOMS.lazy[id]&&ROOMS.lazy[id].done?'':'ENTERING '+ROOMS.off[id].name,()=>ROOMS.goIn(id));
-  ROOMS.enterAt=(id,at)=>offRun(id,ROOMS.lazy[id]&&ROOMS.lazy[id].done?'':'ENTERING '+ROOMS.off[id].name,()=>ROOMS.goIn(id,at));   // enter and spawn at a chosen spot inside (the GO TO menu, a saved spot)
+  // ONE WAY IN AND OUT OF AN INSIDE (ROOMS.run): a record says what differs. busy (its own lock), gate(on) (may it go now), built(), need() (its code), pre() (what it fetches first), make() (the build), arrive(opt) and depart(opt) (where you stand), text(on,built,opt) and fade(on,built,opt) (the fade's words and way; 'ENTERING name' on the way into one not yet built, a cut). Nothing is returned when it does not go.
+  ROOMS.run=(o,on,opt={})=>{ if(!o||o.busy||(o.gate&&!o.gate(on)))return; o.busy=true; const built=o.built();
+    return FADE.run(o.text?o.text(on,built,opt):on&&!built?'ENTERING '+o.name:'',async()=>{ if(on){ if(!o.built()){ await o.need(); if(o.pre)await o.pre(); o.make(); } await o.arrive(opt); } else await o.depart(opt); },{cut:true,...(o.fade?o.fade(on,built,opt):null)}).finally(()=>{ o.busy=false; }); };
+  // an inside off the map as such a record: its own gate, words and fade from ROOMS.off[id] when it has them
+  const REC={}, offRec=id=>{ const o=ROOMS.off[id]; if(!o)return null; return REC[id]||(REC[id]={get name(){ return o.name; },get busy(){ return IV.busy; },set busy(v){ IV.busy=v; },gate:on=>!FADE.busy&&(!on||!o.gate||o.gate()),built:()=>!!(ROOMS.lazy[id]&&ROOMS.lazy[id].done),
+    need:()=>{},make:()=>{},arrive:opt=>ROOMS.goIn(id,opt.at),depart:()=>ROOMS.goOut(id),text:o.text,fade:o.fade}); };
+  ROOMS.enter=(id,opt)=>ROOMS.run(offRec(id),true,opt);   // opt.at: a chosen spot inside (the GO TO menu, a saved spot)
+  ROOMS.enterAt=(id,at)=>ROOMS.enter(id,{at});
   ROOMS.boxAt=(x,z)=>{ for(const id in ROOMS.off){ const b=ROOMS.off[id].box; if(b&&x>=b.x0&&x<=b.x1&&z>=b.z0&&z<=b.z1)return id; } return null; };   // which off-map inside, if any, holds this point
-  ROOMS.exit=id=>ROOMS.off[id]&&IV.b&&IV.b.off===id?offRun(id,'',()=>ROOMS.goOut(id)):null;
+  ROOMS.exit=id=>ROOMS.off[id]&&IV.b&&IV.b.off===id?ROOMS.run(offRec(id),false):null; ROOMS.leave=ROOMS.exit;
   ROOMS.offIn=()=>IV.b&&IV.b.off||IV.reOff||null;
   { let t0=0; SYS.add('places',()=>{ if(SHARED.LVL!=='up'||FADE.busy||IV.busy||ROOMS.offIn()||!SYS.started){ t0=0; return; } let id=null; for(const k in ROOMS.off){ const o=ROOMS.off[k]; if(o.out&&o.box&&within(o.box,pos.x,pos.z,6)&&!within(o.box,o.out[0],o.out[1],6)){ id=k; break; } }
-    if(!id){ t0=0; return; } const now=performance.now(); if(!t0)t0=now; if(now-t0<1000)return; t0=0; const o=ROOMS.off[id]; offRun(id,'',()=>{ UI.goTo(o.out[0],o.out[1],o.out[2],o.out[3]); }); },'130-rooms stray'); }   // on an inside's spot off the map without being in it (a reset, an old saved spot): out at its door, never left on the bare ground out there   // (between a reset and the room put back you are still in it)
+    if(!id){ t0=0; return; } const now=performance.now(); if(!t0)t0=now; if(now-t0<1000)return; t0=0; const o=ROOMS.off[id]; IV.busy=true; FADE.run('',()=>{ UI.goTo(o.out[0],o.out[1],o.out[2],o.out[3]); },{cut:true}).finally(()=>{ IV.busy=false; }); },'130-rooms stray'); }   // on an inside's spot off the map without being in it (a reset, an old saved spot): out at its door, never left on the bare ground out there   // (between a reset and the room put back you are still in it)
   ROOMS.real=()=>{ const id=ROOMS.offIn(); return id?(WINDOWS.from&&WINDOWS.from(id)):pos; };   // where you are on the street: in a room off the map, where it stands if its windows look out at the street live, else null
   BATCH.at=ROOMS.real;   // in a room off the map with no window out the street's painted ground and walls are dropped, painted again on the way out
   ROOMS.offBuild=async id=>{ const L=offL(id); if(!L.done){ await L.need(); if(!L.done)L.go(); } return L; };   // an inside built without going in (for its windows' first picture)

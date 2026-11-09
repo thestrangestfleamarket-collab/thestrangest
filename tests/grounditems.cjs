@@ -9,7 +9,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   await pg.goto('file://' + PAGE + '?hour=13&fresh=1&at=32,25', { waitUntil: 'commit', timeout: 300000 });
   let up = false; for (let i = 0; i < 400 && !(up = await pg.evaluate(() => !!window.__started).catch(() => false)); i++) await pg.waitForTimeout(1000);
   if (!up) { ok(false, 'the page started'); await b.close(); process.exit(1); }
-  await pg.waitForFunction(() => { const L = document.getElementById('loading'); return !L || L.style.pointerEvents === 'none'; }, null, { timeout: 60000 }); await pg.evaluate(() => LOAD('later')); await pg.waitForTimeout(5000); await pg.evaluate(() => PFI.load());
+  await pg.waitForFunction(() => { const L = document.getElementById('loading'); return !L || L.style.pointerEvents === 'none'; }, null, { timeout: 240000 });   // the start opens every shop first (9 Nov 2026): a slow runner needs longer await pg.evaluate(() => LOAD('later')); await pg.waitForTimeout(5000); await pg.evaluate(() => PFI.load());
   const ITEMS_ = [['guitar', 1.0, 'model'], ['bmx', 1.7, 'model'], ['sword', .99, 'model'], ['drums', 1.5, 'model'], ['cooler_m', .55, 'model'], ['plush_bear', .4, 'model'], ['coat_red', .9, 'model'], ['harp', 1.7, 'model'], ['ruby', .04, 'model'], ['g_soda', .12, 'model']];
   // (on dry, open ground: Market St, where the drops check stands; nothing drops in the water)
   const r = await pg.evaluate(async L => { const T = __dbg.cv().TILE, M = T / .84, P = __dbg.pos(), h = __dbg.cv().heading, fx = Math.sin(h), fz = Math.cos(h), out = {};

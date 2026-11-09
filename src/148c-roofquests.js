@@ -159,7 +159,7 @@ const ROOFQ={built:false}; window.ROOFQ=ROOFQ;
     else say(why||'OLD MIDNIGHT STEPS BACK. "ENOUGH FOR TONIGHT." COME BACK TOMORROW NIGHT.','#c8a090'); };
   const bout=dt=>{ const N=B.N, s=N.st, d=Math.hypot(pos.x-C.mat.x,pos.z-C.mat.z);
     if(VIT.dead||VIT.out>0||VIT.hp<.2)return boutEnd(false); if(d>3*MH)return boutEnd(false,'YOU STEP OFF THE MAT. THE BOUT IS FORFEIT. COME BACK TOMORROW NIGHT.'); if(!night())return boutEnd(false,'DAWN BREAKS. OLD MIDNIGHT IS GONE WITH THE DARK.');
-    const ST=window.STRIKES; if(ST)for(const k of ST.strikes())if(ST.inCone(k,s.x,s.z,N.g.position.y,.3*T)){ B.hp-=k.d*ST.strength(k); ST.landed(k); const dx=s.x-pos.x, dz=s.z-pos.z, l=Math.hypot(dx,dz)||1; s.sx=dx/l*.8*T; s.sz=dz/l*.8*T; SFX.play('thud',{vol:.5,pitch:1.1,vary:.2}); }
+    const ST=MODS.strikes; if(ST)for(const k of ST.strikes())if(ST.inCone(k,s.x,s.z,N.g.position.y,.3*T)){ B.hp-=k.d*ST.strength(k); ST.landed(k); const dx=s.x-pos.x, dz=s.z-pos.z, l=Math.hypot(dx,dz)||1; s.sx=dx/l*.8*T; s.sz=dz/l*.8*T; SFX.play('thud',{vol:.5,pitch:1.1,vary:.2}); }
     if(B.hp<=0)return boutEnd(true);
     if((B.cd-=dt)<=0&&Math.hypot(pos.x-s.x,pos.z-s.z)<1.3*T){ B.cd=Math.max(.9,2-.15*S.belt); B.A.hit=.3; const r=VIT.hurt?VIT.hurt(.04+.012*S.belt,s):1; if(r!==2)SFX.play('thud',{vol:.6,pitch:.8}); } };
 

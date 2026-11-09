@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {BROOK, CLOCK, FLOW, PARK, ROOMS, SKY, VIT, WED} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {FIX, LEVEL, MAPG, SOL, STORE, TILE, ZU} from './006-map-pre.js';
+import {FIX, LEVEL, MAPG, MODS, SOL, STORE, TILE, ZU} from './006-map-pre.js';
 const FOUNT={ready:false,swim:false,on:false,holds:[]}; window.FOUNT=FOUNT;   // holds: what holds you up over the lake (the ice, the footbridges), each (x,z)=>bool
 FOUNT.held=(x,z)=>FOUNT.holds.some(f=>f(x,z));
 { const ss=(a,b,v)=>{ const t=Math.max(0,Math.min(1,(v-a)/(b-a))); return t*t*(3-2*t); }, hs=(a,b,c=0)=>{ const s=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return s-Math.floor(s); };
@@ -131,7 +131,7 @@ FOUNT.held=(x,z)=>FOUNT.holds.some(f=>f(x,z));
     const wTris=chunks(2,(d,a,b)=>{ if(Math.max(...d)>-1)return true; const r=BK&&BK.q(a,b); return !!r&&r[1]<BK.m+1&&r[0]<BK.W(r[1])+BK.B+1; },(q,d,pos,ad)=>{ const v=q.map(([a,b])=>[X(a),LV,Z(b)]); for(const t of [[0,2,1],[0,3,2]])for(const k of t){ pos.push(...v[k]); ad.push(Math.max(0,Math.min(25,(bedM(d[k])+pit(q[k][0],q[k][1])-.22)/2.4))); } });
     for(const [pos,ad] of FOUNT.parts.splice(0)){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('aD',new THREE.Float32BufferAttribute(ad,1)); g.computeVertexNormals(); g.computeBoundingSphere(); const me=new THREE.Mesh(g,lakeM); (FOUNT.waters=FOUNT.waters||[]).push(me); me.receiveShadow=true; me.renderOrder=1; grp.add(me); }
     // the lake's water is the Hudson's (owner, 2 Nov 2026: "calm, real water, clear, like hudson same options"): the river's surface shader over the lake's own depth picture, no swell; the river's panel (a double click on the water) sets it
-    const RV=window.RIVER; let swap; { const N=128, ax=Math.min(X(S.x0-3),X(L.cx+1)), az=Math.min(Z(S.y0-3),Z(L.cy+1)), wx=Math.abs(X(L.cx+1)-X(S.x0-3)), wz=Math.abs(Z(L.cy+1)-Z(S.y0-3)), img=new Uint8Array(N*N*4), mx=x=>x/T+SHARED.BOD.OX-(P.ox||0), mz=z=>z/T+SHARED.BOD.OY-(P.oy||0);
+    const RV=MODS.river; let swap; { const N=128, ax=Math.min(X(S.x0-3),X(L.cx+1)), az=Math.min(Z(S.y0-3),Z(L.cy+1)), wx=Math.abs(X(L.cx+1)-X(S.x0-3)), wz=Math.abs(Z(L.cy+1)-Z(S.y0-3)), img=new Uint8Array(N*N*4), mx=x=>x/T+SHARED.BOD.OX-(P.ox||0), mz=z=>z/T+SHARED.BOD.OY-(P.oy||0);
       for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const px=mx(ax+wx*(i+.5)/N), py=mz(az+wz*(j+.5)/N), d=-lake(px,py), m=d>0?bedM(d)+pit(px,py)*Math.min(1,Math.max(0,(d-1.5)/3)):0, k=(j*N+i)*4; img[k]=Math.min(255,Math.round(m*20)); img[k+3]=255; }
       const bt=new THREE.DataTexture(img,N,N); bt.magFilter=bt.minFilter=THREE.LinearFilter; bt.needsUpdate=true;
       swap=()=>{ if(!RV||!RV.surface)return; const m=RV.surface({bed:bt,bedR:new THREE.Vector4(ax,az,wx,wz),lv:LV}); for(const me of FOUNT.waters||[])me.material=m; FOUNT.lakeM=m; };

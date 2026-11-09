@@ -4,7 +4,7 @@ import {BLAZE, FORAGE, ICE, INV, LEVELS, NPCS, ONLINE, pos, RAG, ROOMS, st, VIT,
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
-import {QS, SYS, TILE} from './006-map-pre.js';
+import {MODS, QS, SYS, TILE} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
 import {RIVER} from './066-river.js';
 { const T=TILE, M=T/.84, V3=THREE.Vector3, rnd=Math.random, say=SAY, RF=7*M, RI=7*M, now=()=>performance.now();
@@ -192,5 +192,5 @@ import {RIVER} from './066-river.js';
     { let F=null, fd=(25*M)**2; for(const S of JET.S.values())if(S.k==='f'){ const d=(S.tip.x-pos.x)**2+(S.tip.z-pos.z)**2; if(d<fd){ fd=d; F=S; } } JET.focus=F; JETS_J.length=0;
       if(F){ const hl=Math.hypot(F.dir.x,F.dir.z)||1; for(const p of PL)if(p.kind===3&&p.q.own){ const q=p.q, a=q.t; JETS_J.push({x:q.x,y:q.y,z:q.z,vx:q.vx,vy:q.vy,vz:q.vz,r:p.ph===0?(.05+a*.35)*M:(.15+(a-p.ht)*.6)*M,f:p.ph===0?(a<.04?0:26):10}); }
         if(JETS_J.length>24){ const k=JETS_J.length/24; for(let i=0;i<24;i++)JETS_J[i]=JETS_J[Math.floor(i*k)]; JETS_J.length=24; } }
-      if(window.FIRESIM)FIRESIM.step(dt,F?{x:F.tip.x,y:SHARED.groundY?Math.min(F.tip.y,SHARED.groundY(F.tip.x,F.tip.z)):F.tip.y,z:F.tip.z,dx:F.dir.x/(Math.hypot(F.dir.x,F.dir.z)||1),dz:F.dir.z/(Math.hypot(F.dir.x,F.dir.z)||1)}:null,JETS_J); } iceTick(dt); frostTick(dt); },'146hb-jets');
+      if(MODS.firesim)MODS.firesim.step(dt,F?{x:F.tip.x,y:SHARED.groundY?Math.min(F.tip.y,SHARED.groundY(F.tip.x,F.tip.z)):F.tip.y,z:F.tip.z,dx:F.dir.x/(Math.hypot(F.dir.x,F.dir.z)||1),dz:F.dir.z/(Math.hypot(F.dir.x,F.dir.z)||1)}:null,JETS_J); } iceTick(dt); frostTick(dt); },'146hb-jets');
   window.JETDBG=()=>({on:JET.on,streams:[...JET.S].map(([id,S])=>({id,k:S.k,len:+(S.len/M).toFixed(2),what:S.what,tip:[S.tip.x,S.tip.y,S.tip.z].map(v=>+v.toFixed(2)),dir:[S.dir.x,S.dir.y,S.dir.z].map(v=>+v.toFixed(2)),near:bodies().map(b=>[b.id,+(along(S,b.x,b.y+M,b.z)/M).toFixed(2),+b.x.toFixed(1),+b.y.toFixed(1),+b.z.toFixed(1)])})),parts:PL.length,ice:IL.map(c=>({x:c.x,z:c.z,y:c.y,r:c.r/M})),frost:FM.length,frozen:SHARED.frozen,burn:JET.burnT,fx:[...JET.E].map(([id,e])=>({id,fire:e.fire,ice:e.ice,cold:e.cold})),M}); }

@@ -402,7 +402,7 @@ const SSUB=(()=>{ const W={};
     M.door=(py,p)=>{ if(M.deep)M.deep.visible=SHARED.LVL==='up'; if(busy||UI.freeCam||(RAG.on))return; const k=tread(p.x,p.z);
       if(SHARED.LVL!=='down'&&k!=null&&k>=3)go('in'); else if(SHARED.LVL==='down'&&inExit(p))go('out'); };
     { const S=SM; S.has=(x,z)=>{ if(SHARED.LVL==='down')return false; const gx=SHARED.BOD.MX(x), gy=SHARED.BOD.MY(z); return gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1; }; }
-    M.doorBusy=()=>busy; window.SUBGO=(x,z,lv)=>UI.goTo(x,z,lv); }
+    M.doorBusy=()=>busy; window.SUBGO=MODS.subGo=(x,z,lv)=>UI.goTo(x,z,lv); }
   M.tick=dt=>{ M.flick(dt); };
 }
 MODS.station={BOUND,ground:(x,z)=>SHARED.METRO.inside(x,z)?SHARED.METRO.ground(x,z):STN.DY,DY:SHARED.METRO.DY,plat:SHARED.METRO.plat,lane:SHARED.METRO.lane,path:SHARED.METRO.path};

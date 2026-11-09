@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {BATCH, CLOCK, pos, ROOMS, UI, VIT} from './003b-systems.js';
 import {PPU, renderer, scene} from './004-main.js';
-import {BLDK, cutWalls, FIX, grab, LOTX, LOTY, SEEN, SOL, STORE, SYS, TILE, WP} from './006-map-pre.js';
+import {BLDK, cutWalls, FIX, grab, LOTX, LOTY, MODS, SEEN, SOL, STORE, SYS, TILE, WP} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
 import {OBJ} from './008-batch.js';
 
@@ -252,4 +252,4 @@ await grab('ghostdojo',async()=>{ const {X:BX,Y:BY,Z:BZ,gbox:GB,faceTex,bq,C}=SH
     window.LOOKAT=(x,z,k=1,y=0)=>{ UI.setFree(true); UI.camT.set(x,y,z); SHARED.ppu=SHARED.ppuTo=PPU*k; return [x,z]; };
     window.LOOKYAW=d=>{ SHARED.yaw=SHARED.yawTo=d*Math.PI/180; }; window.LOOKPITCH=d=>{ SHARED.pitch=SHARED.pitchTo=d*Math.PI/180; return SHARED.pitch; };
     window.GSLOOK=(dx=0,dy=0,k=.5,d)=>{ if(d!=null)LOOKYAW(d); return LOOKAT(X(X0+W/2+dx),Z(Y1+dy),k); };
-    window.GSGO=(dx=0,dy=4)=>{ if(window.SUBGO)SUBGO(X(X0+W/2+dx),Z(Y1+dy),'up'); return [X(X0+W/2+dx),Z(Y1+dy)]; }; } });
+    window.GSGO=(dx=0,dy=4)=>{ if(MODS.subGo)MODS.subGo(X(X0+W/2+dx),Z(Y1+dy),'up'); return [X(X0+W/2+dx),Z(Y1+dy)]; }; } });

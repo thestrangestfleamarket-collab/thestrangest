@@ -3,10 +3,11 @@ import {THREE} from './003-shx.js';
 import {pos} from './003b-systems.js';
 import {SYS, TILE, ZU} from './006-map-pre.js';
 import {RIVER} from './066-river.js';
+import {PIER} from './066b-pier.js';
 import {KIT} from './068-kit.js';
 { const DATA=__LAZY__("data/fishboat.json"), K=2;
   const hs=(a,b)=>{ const s=Math.sin(a*127.1+b*311.7)*43758.5453; return s-Math.floor(s); };
-  const build=()=>{ const P=window.PIER, T=TILE, WU=T/.84, RB=RIVER.box; if(!P||!P.G||!RB||!KIT.data.fishboat)return;
+  const build=()=>{ const P=PIER, T=TILE, WU=T/.84, RB=RIVER.box; if(!P||!P.G||!RB||!KIT.data.fishboat)return;
     const M=KIT.data.fishboat, LEN=M.size[2]*K*WU, BEAM=M.size[0]*K*WU, x=P.x-P.hw-LEN/2-3*T, z=P.z0-BEAM/2-.4*T, sink=.28*M.size[1]*K*WU*ZU*24/T;
     const g=KIT.put('fishboat',x,z,{m:M.size[1]*K,rot:-Math.PI/2,group:P.G,ground:()=>RB.lv-sink}); if(!g)return; const me=g.children[0].children[0];
     // solid white, worn: grime and rust low, scuffs and peeling everywhere, the dark parts (glass, tyres, the engine) kept

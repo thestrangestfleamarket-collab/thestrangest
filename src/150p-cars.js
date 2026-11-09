@@ -3,12 +3,12 @@ import {SHARED, THREE} from './003-shx.js';
 import {CARLAMPS, ONLINE, PB, pos, RADIO, RIDE, ROOMS, SKY, st, UI, VLOOK} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
-import {LEVEL, SOL, SYS, TILE} from './006-map-pre.js';
+import {LEVEL, MODS, SOL, SYS, TILE} from './006-map-pre.js';
 import {VEH} from './150o-physmore.js';
 const CARD=__LAZY__("data/cars.json"), RADJ=__LAZY__("data/radio.json"), RFILE={jazz:__FILE__("data/radio/jazz.mp3"),dance:__FILE__("data/radio/dance.mp3"),rag:__FILE__("data/radio/rag.mp3"),opera:__FILE__("data/radio/opera.mp3")};
 { const T=TILE, M0=T/.84, BIG=1.4, M1=M0*BIG, say=(t,c)=>SAY(t,c||'#e8e2cc'), X=SHARED.BOD.XS, Z=SHARED.BOD.ZS;
   const CARS=new Map(), KINDS={}; let DATA=null, mine=null, want=null;
-  const CAR={cars:CARS,kinds:KINDS,get driving(){ return mine; }}; window.CARS=CAR;
+  const CAR={cars:CARS,kinds:KINDS,get driving(){ return mine; }}; window.CARS=MODS.cars=CAR;
   // a car parked past the map's edges (owner, 8 Nov 2026: "move all the cars past the edge of forcefield on street, parked") is only seen: no one gets in where no one can walk
   const EB=(()=>{ const L=(LEVEL.edge&&LEVEL.edge.lines)||[]; if(!L.length)return null; const xs=L.flatMap(l=>[l[0],l[2]]), ys=L.flatMap(l=>[l[1],l[3]]); return [Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys)]; })();
   const inMap=C=>{ if(!EB)return true; const gx=SHARED.BOD.MX(C.x), gy=SHARED.BOD.MY(C.z); return gx>EB[0]&&gx<EB[2]&&gy>EB[1]&&gy<EB[3]; };

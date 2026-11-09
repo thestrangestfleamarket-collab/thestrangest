@@ -85,7 +85,7 @@ import {PAWNS} from './087-npc-creatures.js';
   const build=J=>{ PW=J; const R0=PW.hero_m.rig; CLIPS=SKIN.clips(PW.hero_m.clips,R0.names,false); ALL=[...Object.keys(PW).map(k=>[k,k,0]),...[1,2,3,4].map(n=>['hero_m_'+n,'hero_m',n])];   // one golem kind, four of it, in the dungeon (owner, 5 Nov 2026)
     ALL.forEach((k,i)=>(k[2]||!PEOPLE.includes(k[0])||QS.get('sheet')===k[0])&&MK(k,i)); };
   const go=()=>SYS.started?PAWNS().then(build).catch(e=>console.warn('PAWNS',e)):setTimeout(go,600); go();
-  window.PAWNNEW=(kind,key,X={})=>PW&&MK([key,kind,X.copy||0],0,X);   // X.copy: a stone golem of it
+  window.PAWNNEW=MODS.pawnNew=(kind,key,X={})=>PW&&MK([key,kind,X.copy||0],0,X);   // X.copy: a stone golem of it
   window.PAWNCAM=(i=0,k=1.6)=>{ const N=PAWNL[i]; UI.setFree(true); UI.camT.set(N.st.x,N.g.position.y+N.H*.5,N.st.z); SHARED.ppu=SHARED.ppuTo=PPU*k; };
   window.PAWNDBG=()=>PAWNL.map(N=>({key:N.key,x:+N.st.x.toFixed(1),z:+N.st.z.toFixed(1),to:!!N.st.to,vis:N.g.visible}));
   // THE SOAK (tests/soak.cjs): n extra pawns scattered over the walkable map, roaming wide, not in the crowd; PAWNSOAKDBG reports the ones breaking an invariant.

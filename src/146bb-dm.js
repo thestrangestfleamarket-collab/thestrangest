@@ -91,7 +91,7 @@ const DM={open:false,draft:null,sel:null,room:0,pick:null,tab:'layout'}; window.
           +field('RESPAWN',num('respawn',e.respawn,10,0,3600)+' <span class="dim">s (0 never)</span>')+field('LOOT',`<select data-k="loot">${LOOT.map(b=>`<option ${b===e.loot?'selected':''}>${b}</option>`).join('')}</select>`)
           +`<div class="row"><button class="btn" id="dmdup">DUPLICATE</button><button class="btn" id="dmrm">REMOVE</button></div>`; } };
     const show=()=>{ P.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('on',b.dataset.tab===DM.tab)); $('#dmtab').innerHTML=tabs[DM.tab]();
-      const d=DM.draft, L=window.DUNMOBS&&DUNMOBS.live; $('#dmhint').textContent=`${d.map.length} ROOMS AND CORRIDORS · ${d.mobs.reduce((a,e)=>a+e.n,0)} CREATURES IN THE DRAFT`+(window.DUNMOBS&&DUNMOBS.trying?' · TRYING IT':'')+(L?` · PUBLISHED: ${L.mobs.reduce((a,e)=>a+e.n,0)}${L.by?' BY '+L.by:''}`:' · PUBLISHED: EMPTY'); draw(); };
+      const d=DM.draft, L=MODS.dunmobs&&MODS.dunmobs.live; $('#dmhint').textContent=`${d.map.length} ROOMS AND CORRIDORS · ${d.mobs.reduce((a,e)=>a+e.n,0)} CREATURES IN THE DRAFT`+(MODS.dunmobs&&MODS.dunmobs.trying?' · TRYING IT':'')+(L?` · PUBLISHED: ${L.mobs.reduce((a,e)=>a+e.n,0)}${L.by?' BY '+L.by:''}`:' · PUBLISHED: EMPTY'); draw(); };
     DM.show=show;
     P.addEventListener('click',e=>{ const t=e.target.closest('button'); if(!t)return; const d=DM.draft, r=d.map[DM.room-1];
       if(t.dataset.tab){ DM.tab=t.dataset.tab; return show(); }
@@ -107,18 +107,18 @@ const DM={open:false,draft:null,sel:null,room:0,pick:null,tab:'layout'}; window.
       if(id==='dmdup'&&DM.sel){ const e2={...DM.sel,id:'e'+Date.now().toString(36)+(uid++),x:DM.sel.x+.8*TILE}; d.mobs.push(e2); DM.sel=e2; tidy(); save(); return show(); }
       if(id==='dmrm'&&DM.sel){ d.mobs.splice(d.mobs.indexOf(DM.sel),1); DM.sel=null; save(); return show(); }
       if(id==='dmclear'){ d.mobs=[]; DM.sel=null; save(); msg('NO CREATURES IN THE DRAFT. TRY IT OR PUBLISH IT TO EMPTY THE DUNGEON.'); return show(); }
-      if(id==='dmlive'){ const L=DUNMOBS.live; DM.draft=L?JSON.parse(JSON.stringify({...L,map:L.map||D().map0()})):fresh(); DM.sel=null; save(); msg('THE PUBLISHED DUNGEON IS IN THE DRAFT.'); return show(); }
-      if(id==='dmtry'){ tidy(); DUNMOBS.tryIt(DM.draft).then(()=>{ msg('TRYING THE DRAFT: ONLY YOU SEE IT. STOP TRYING TO GO BACK.'); show(); }); return; }
-      if(id==='dmstop'){ DUNMOBS.tryIt(null).then(()=>{ msg('BACK TO THE PUBLISHED DUNGEON.'); show(); }); return; }
-      if(id==='dmpub'){ tidy(); if(DUNMOBS.publish(DM.draft))msg('SENT…'); return; }
-      if(id==='dmgo'){ if(window.DUNGEON)DUNGEON.go(1); return; } });
+      if(id==='dmlive'){ const L=MODS.dunmobs.live; DM.draft=L?JSON.parse(JSON.stringify({...L,map:L.map||D().map0()})):fresh(); DM.sel=null; save(); msg('THE PUBLISHED DUNGEON IS IN THE DRAFT.'); return show(); }
+      if(id==='dmtry'){ tidy(); MODS.dunmobs.tryIt(DM.draft).then(()=>{ msg('TRYING THE DRAFT: ONLY YOU SEE IT. STOP TRYING TO GO BACK.'); show(); }); return; }
+      if(id==='dmstop'){ MODS.dunmobs.tryIt(null).then(()=>{ msg('BACK TO THE PUBLISHED DUNGEON.'); show(); }); return; }
+      if(id==='dmpub'){ tidy(); if(MODS.dunmobs.publish(DM.draft))msg('SENT…'); return; }
+      if(id==='dmgo'){ if(MODS.dunPlay)MODS.dunPlay.go(1); return; } });
     P.addEventListener('change',e=>{ const t=e.target, d=DM.draft;
       if(t.dataset.r!=null){ const r=d.map[DM.room-1]; if(!r)return; const i=+t.dataset.r; r[i]=i===0?String(t.value).toUpperCase().slice(0,32):i===6?(t.checked?1:0):+t.value; tidy(); save(); return show(); }
       if(t.dataset.k&&DM.sel){ const k=t.dataset.k, e2=DM.sel; e2[k]=t.type==='checkbox'?(t.checked?1:0):t.type==='number'?+t.value:k==='name'?String(t.value).toUpperCase().slice(0,32):t.value; save(); show(); } });
     P.addEventListener('input',e=>{ const t=e.target; if(t.type==='range'&&t.dataset.r==='5'){ const r=DM.draft.map[DM.room-1]; if(r){ r[5]=+t.value; t.nextElementSibling.textContent=Math.round(r[5]*100)+'%'; save(); draw(); } } });
     return P; };
   DM.toggle=async on=>{ if(window.LOAD)await LOAD('later'); if(window.LOAD)await LOAD('dungeon'); const P=build(); DM.open=on==null?!DM.open:!!on; P.hidden=!DM.open; if(!DM.open)return;
-    if(!DM.draft)DM.draft=load()||(window.DUNMOBS&&DUNMOBS.live?JSON.parse(JSON.stringify({...DUNMOBS.live,map:DUNMOBS.live.map||D().map0()})):fresh()); DM.show();
+    if(!DM.draft)DM.draft=load()||(MODS.dunmobs&&MODS.dunmobs.live?JSON.parse(JSON.stringify({...MODS.dunmobs.live,map:MODS.dunmobs.live.map||D().map0()})):fresh()); DM.show();
     if(BUGS.owner)BUGS.owner().then(o=>{ P.querySelector('#dmpub').hidden=!o; }).catch(()=>{}); };
   addEventListener('keydown',e=>{ if(e.shiftKey&&!e.ctrlKey&&!e.metaKey&&(e.key==='Y'||e.key==='y')&&!(e.target&&e.target.matches&&e.target.matches('input,textarea,select'))){ e.preventDefault(); DM.toggle(); } });
   SYS.every(()=>{ if(DM.open&&DM.draw&&SHARED.LVL==='down')DM.draw(); },500,'146bb-dm map');

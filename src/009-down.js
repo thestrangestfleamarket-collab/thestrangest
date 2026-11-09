@@ -385,7 +385,7 @@ const SSUB=(()=>{ const W={};
     // settled: nothing downloading and every square within reach painted (a view's switch waits for it, at most 20 s; the painting goes faster behind the black)
     FADE.R=()=>{ const D=CULL.drawD&&CULL.drawD(); return (D||40*TILE)+8*TILE; };   // (with the draw distance ALL, the near ring a view needs first: the old 40 tiles)   // (what the view draws: the draw distance and a little; past it the squares paint on in the background)
     // every loading screen that ends in a close-up view lifts once that view is painted (owner, 7 Nov 2026)
-    FADE.settle=async(max=20000)=>{ const t0=performance.now(); for(;;){ const L=window.__LDG, R=FADE.R(); if(!(L&&L.now.size)&&!FADE.left())return true; if(performance.now()-t0>max)return false; BATCH.rush(60,R); await new Promise(r=>requestAnimationFrame(r)); } };
+    FADE.need=[]; FADE.settle=async(max=20000)=>{ const t0=performance.now(); try{ await Promise.all(FADE.need.map(f=>f())); }catch(e){ console.warn('FADE.need',e); } for(;;){ const L=window.__LDG, R=FADE.R(); if(!(L&&L.now.size)&&!FADE.left())return true; if(performance.now()-t0>max)return false; BATCH.rush(60,R); await new Promise(r=>requestAnimationFrame(r)); } };
     FADE.el=el; FADE.run=async(text,work,o={})=>{ const tr=el.style.transition, w=ms=>new Promise(r=>setTimeout(r,ms)), fr=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
       const live=window.__started&&!o.silent, was=el.style.opacity==='1'; FADE.busy=(FADE.busy||0)+1;
       if(live){ ft.textContent=text||''; barOn(true); el.style.pointerEvents='auto'; el.style.transition=o.cut?'none':'opacity .3s steps(4)'; el.style.opacity='1'; if(!o.cut&&!was)await w(320); }

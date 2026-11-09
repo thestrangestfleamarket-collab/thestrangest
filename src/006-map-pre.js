@@ -103,9 +103,9 @@ const SECTIONS=(()=>{ const S=LEVEL.sections, G=S.grid, box=(c,r)=>({id:S.ids[c]
   return {...S,list,all:{x0:G.x0,x1:G.x0+G.cols*G.w,y0:G.y0,y1:G.y0+G.rows*G.h},live:{x0:home.x0,x1:home.x1,y0:home.y0,y1:home.y1},loaded:[home],home,of:id=>list.find(b=>b.id===id)||null,
     // where you arrive in a section: the middle of its stretch of the ring street (map units)
     spawn:b=>{ const R=S.ring; return {x:(b.x0+b.x1)/2,y:b.row===0?(R.outer.y0+R.park.y0)/2:(R.outer.y1+R.park.y1)/2}; },
-    // a spot outside the section you are in (one saved in another section) puts you on your section's street; underground and the hand-built section's insides off the map stay
+    // a spot outside the section you are in (one saved in another section) puts you on your section's street; underground, the hand-built section's insides off the map and your apartment stay
     fit:p=>{ const X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, L=SECTIONS.live, zs=[Z(L.y0),Z(L.y1)]; if(SHARED.floor==='down')return false; if(p.x>X(L.x0)&&p.x<X(L.x1)&&p.z>Math.min(...zs)&&p.z<Math.max(...zs))return false;
-      if(home.id===SECTION.id&&ROOMS.boxAt&&ROOMS.boxAt(p.x,p.z))return false; const s=SECTIONS.spawn(home); p.set(X(s.x),0,Z(s.y)); SHARED.py=0; return true; },
+      if(home.id===SECTION.id&&(ROOMS.boxAt&&ROOMS.boxAt(p.x,p.z)||MODS.apts&&MODS.apts.inR&&MODS.apts.inR(p.x,p.z)))return false; const s=SECTIONS.spawn(home); p.set(X(s.x),0,Z(s.y)); SHARED.py=0; return true; },
     at:(x,y)=>{ const c=Math.floor((x-G.x0)/G.w), r=Math.floor((y-G.y0)/G.h); return c>=0&&r>=0&&c<G.cols&&r<G.rows?S.ids[c][r]:null; }}; })(); SHARED.SECTIONS=SECTIONS; SECTIONS.station=(((LEVEL.loop&&LEVEL.loop.stations)||[]).find(s=>s.id===SECTION.id)||{}).name||SECTIONS.streets.south;
 try{ LEVEL.homes=Object.assign(LEVEL.homes||{},__DATA__("data/behaviour.json")); }catch(e){}
 try{ LEVEL.chars=__DATA__("data/characters.json")||{}; }catch(e){ LEVEL.chars={}; }

@@ -113,6 +113,7 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
       else{ want=Math.atan2(ex,ez); const turn=Math.abs(((want-st.h+Math.PI*3)%(Math.PI*2))-Math.PI);
         if(turn<.5){ const step=Math.min(d,st.v*dt), nx=st.x+ex/d*step, nz=st.z+ez/d*step;
           const ns=st.L?N.nose(nx,nz):null; if(!N.free(nx,nz,st.R)||ns&&!N.free(ns.x,ns.z,st.R)){ if(st.goIn&&d<st.R+1.6*TILE){ goIn(); return; } st.to=null; st.wait=.5; }
+          else if(!N.fly&&!N.tiny&&(N.lv||'up')==='up'&&pedHold(st.x,st.z,nx,nz)){ st.held=0; }
           else if(!N.fly&&!N.tiny&&(!VIT.dead&&gap(you.x,you.z,nx,nz)<st.R+.35&&gap(you.x,you.z,nx,nz)<gap(you.x,you.z)&&Math.abs(SHARED.py-g.position.y)<2||NPCS.inway(N,nx,nz))){ if((st.held=(st.held||0)+dt)>2){ st.to=null; st.held=0; st.wait=1; } }
           else{ st.x=nx; st.z=nz; moving=true; st.held=0; } } } }
     else{ if(st.face)want=Math.atan2(st.face.x-st.x,st.face.z-st.z); if(!st.hold&&(st.wait-=dt)<=0)pick(); }
@@ -139,8 +140,23 @@ const STLANE={x0:SHARED.BOD.XS(SHARED.BOD.MAP.x0+2),x1:Math.min(SHARED.BOD.XS(SH
   inBox=(b,x,z,R)=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R,
   inBuilding=(x,z,R)=>ROOMS.boxes().some(b=>b.y0<1&&x>b.x0-R&&x<b.x1+R&&z>b.z0-R&&z<b.z1+R)||(MODS.apts&&MODS.apts.inside&&MODS.apts.inside(x,z))||inBox(CSB,x,z,R),
   stfree=(x,z,R)=>RINGX.inside(x,z,R)&&!inBox(STHOLE,x,z,R)&&!inBox(CSHOLE,x,z,R)&&!inBuilding(x,z,R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R)&&!FOUNT.wet(x,z,R)&&!PONDS.wet(x,z,R);
+// the rules of the street (owner, 9 Nov 2026: "they should know not to stand in the street , rules of the city"): a walker keeps to the sidewalks and paths, crosses Market St only on a crosswalk, and at the park gate's only on WALK
+const RDX=x=>(x-SHARED.BOD.XS(0))/(SHARED.BOD.XS(1)-SHARED.BOD.XS(0)), RDZ=z=>(z-SHARED.BOD.ZS(0))/(SHARED.BOD.ZS(1)-SHARED.BOD.ZS(0)),
+  xingAt=(x,y)=>{ const R=SHARED.BOD.road; return R&&R.xw?R.xw.find(w=>{ const u=w.ax==='x'?x:y, v=w.ax==='x'?y:x; return u>=w.a0&&u<=w.a1&&v>=w.l0-.5&&v<=w.h0+.5; }):null; },
+  inRoad=(x,z)=>{ const R=SHARED.BOD.road; return !!(R&&R.at(RDX(x),RDZ(z))); },
+  stroad=(x,z)=>inRoad(x,z)&&!xingAt(RDX(x),RDZ(z)),
+  pedfree=(x,z,R)=>stfree(x,z,R)&&!stroad(x,z),
+  // stepping off the kerb onto the lit crossing while it does not say WALK: wait
+  pedHold=(x0,z0,x1,z1)=>{ if(inRoad(x0,z0)||!inRoad(x1,z1))return false; const w=xingAt(RDX(x1),RDZ(z1)), R=SHARED.BOD.road; return !!(w&&w.lit&&R.walk&&!R.walk()); },
+  // the nearest sidewalk point to one in the road (any: a crosswalk too; straight across to the nearer kerb), else the point itself
+  offRoad=(x,z,any)=>{ if(!(any?inRoad(x,z):stroad(x,z)))return {x,z}; const T=TILE; for(let d=.5*T;d<12*T;d+=.5*T)for(const s of [1,-1]){ const q=z+s*d; if(!inRoad(x,q))return {x,z:q+s*.6*T}; } return {x,z}; };
+window.PEDFREE=pedfree; window.STROAD=stroad;
 const ROAM={L:STLANE,wallZ:SHARED.BOD.ZS(PARK.y0+PARK.oy),gate:[SHARED.BOD.XS(PARK.gate[0]+PARK.ox+.8),SHARED.BOD.XS(PARK.gate[1]+PARK.ox-.8)]};
 window.ROAMDBG=()=>ROAM;
+// a walk to the other side of Market St: to the nearest crosswalk's near end, then its far end
+ROAM.across=(a,b)=>{ const R=SHARED.BOD.road; if(!R||!R.xw)return null; const ya=RDZ(a.z), yb=RDZ(b.z), X=SHARED.BOD.XS, Z=SHARED.BOD.ZS; let best=null, bd=1e9;
+  for(const w of R.xw){ if(w.ax!=='x'||!((ya<w.l0&&yb>w.h0)||(ya>w.h0&&yb<w.l0)))continue; const u=(w.a0+w.a1)/2, d=Math.abs(u-RDX(a.x))+Math.abs(u-RDX(b.x)); if(d<bd){ bd=d; best=[{x:X(u),z:Z(ya<w.l0?w.l0-.6:w.h0+.6)},{x:X(u),z:Z(ya<w.l0?w.h0+.6:w.l0-.6)}]; } }
+  return best; };
 // HOME RANGES: every character has a home, a circle it is usually found in (st.home, also N.home: {x, z, r, id, shop}; r 0 stays put). A home near a building's door (HOMES.doors: every inside but your apartment) has that building as its shop: now and then the character walks to the door and goes in for a while, hidden, its work skipped.
 // The level file can place it (LEVEL.homes[id] = [x, y, r, shop] in map tiles, shop optional (null for none); id is the key, then key#2, key#3 for more of the same);
 // otherwise a character first put on Market St takes the next street spot, spread along both sidewalks, and anyone else keeps the spot it was made at.
@@ -173,7 +189,7 @@ HOMES.door=h=>{ '@later'; if(h.shop===null)return null; const L=HOMES.doors(); i
   return L.find(d=>d.id===h.shop)||null; };
 HOMES.goIn=st=>{ const h=st.home; st.goIn=null; if(!h||!(h.r>0)||Math.random()>=HOMES.IN)return false; const d=HOMES.door(h); if(!d)return false; st.to={x:d.x,z:d.z}; st.next=null; st.goIn=d.id; return true; };
 HOMES.pick=(st,free,lane)=>{ '@later'; const h=st.home; if(!h||!(h.r>0))return false; if(WALKS.pick&&WALKS.pick(st))return true; if(HOMES.goIn(st))return true;
-  for(let k=0;k<12;k++){ let to=HOMES.inside(h); if(lane)to={x:Math.max(lane.x0,Math.min(lane.x1,to.x)),z:Math.max(lane.z0,Math.min(lane.z1,to.z))}; if(free(to.x,to.z,st.R)){ st.to=to; st.next=null; return true; } } return false; };
+  for(let k=0;k<12;k++){ let to=HOMES.inside(h); if(lane)to={x:Math.max(lane.x0,Math.min(lane.x1,to.x)),z:Math.max(lane.z0,Math.min(lane.z1,to.z))}; if(free(to.x,to.z,st.R)&&!stroad(to.x,to.z)){ st.to=to; st.next=null; return true; } } return false; };
 window.HOMES=HOMES; window.STFREE=stfree;
 window.HOMESDBG=wake=>NPCS.filter(N=>{ if(wake&&N.st)N.st.wait=0; return true; }).filter(N=>N.st&&N.st.home&&N.st.home.r>0).map(N=>[N.key,N.st.home.shop===undefined?'?':N.st.home.shop,N.st.goIn||'',N.st.inT!=null?+N.st.inT.toFixed(0):'',N.far?'far':'near']);
 const DUN=()=>{ const D=MODS.dungeon; if(!D)return null; const B=D.B, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, lane={x0:X(B.x0+1.2),x1:X(B.x1-1.2),z0:Z(B.y0+1.2),z1:Z(B.y1-1.2)},
@@ -181,7 +197,8 @@ const DUN=()=>{ const D=MODS.dungeon; if(!D)return null; const B=D.B, X=SHARED.B
   let p={x:(lane.x0+lane.x1)/2,z:(lane.z0+lane.z1)/2}; for(let k=0;k<60;k++){ const q={x:lane.x0+Math.random()*(lane.x1-lane.x0),z:lane.z0+Math.random()*(lane.z1-lane.z0)}; if(free(q.x,q.z,.4*TILE)){ p=q; break; } }
   return {lv:'down',group:MAPG.dungeon?'dungeon':'down',lane,free,ground:(x,z)=>D.ground(x,z),roam:false,x:p.x,z:p.z,dun:true}; };
 ROAM.pick=(st,free)=>{ '@later'; if(st.home&&!(st.home.r>0))return false; if(WALKS.pick&&WALKS.pick(st))return true; for(let k=0;k<12;k++){ const a=Math.random()*Math.PI*2, r=(2+Math.random()*7)*TILE, to={x:st.x+Math.sin(a)*r,z:st.z+Math.cos(a)*r};
-    if(!free(to.x,to.z,st.R))continue;
+    if(!free(to.x,to.z,st.R)||stroad(to.x,to.z))continue;
+    const X=ROAM.across(st,to); if(X){ st.to=X[0]; st.next=X[1]; return true; }
     if((st.z<ROAM.wallZ)!==(to.z<ROAM.wallZ)){ st.next=to; st.to={x:ROAM.gate[0]+Math.random()*(ROAM.gate[1]-ROAM.gate[0]),z:ROAM.wallZ}; } else{ st.to=to; st.next=null; } return true; } return false; };
 NPCS.SHADE=40*TILE; NPCS.near=(x,z,r=NPCS.SHADE)=>{ for(const N of NPCS)if(!N.shaded&&N.lv===SHARED.LVL&&Math.hypot(N.st.x-x,N.st.z-z)<r)N.shade(); };
 SYS.add('near',(x,z)=>NPCS.near(x,z),'npc shading');
@@ -219,4 +236,4 @@ SYS.add('near',(x,z)=>NPCS.near(x,z),'npc shading');
   NPCS.R=25*TILE; NPCS.DRAW=30*TILE; NPCS.seen=(x,y,z,r)=>FR.intersectsSphere(SP.set(V.set(x,y,z),r||2*TILE)); NPCS.live=(x,y,z,r)=>Math.hypot(x-pos.x,z-pos.z)<NPCS.R&&NPCS.seen(x,y,z,r);
   NPCS.cull=on=>{ const one=(o,g)=>{ if(on){ if(o.hid&&g.visible){ g.visible=false; o._cv=true; } } else if(o._cv){ g.visible=true; o._cv=false; } };
     for(const N of NPCS)one(N,N.g); for(const X of NPCS.extra)if(X.g)one(X,X.g); }; }
-export {CSB, CSHOLE, DUN, HOMES, makeNPC, ROAM, stfree, STHOLE, STLANE};
+export {CSB, CSHOLE, DUN, HOMES, inRoad, makeNPC, offRoad, pedfree, pedHold, ROAM, stfree, STHOLE, STLANE, stroad};

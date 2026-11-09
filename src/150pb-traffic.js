@@ -1,6 +1,6 @@
 // THE TRAFFIC: cars driving both ways along Market St and flying cars and small spacecraft above them, from the shared clock so every player sees the same ones; the park gate's crossing light (built in 069-dress) turns on a timer or its button, the cars stop at its line and for anyone in the road.
 import {SHARED, THREE} from './003-shx.js';
-import {CARLAMPS, CULL, DRESS, ONLINE, PARK, pos, SPEED, UI, VLOOK} from './003b-systems.js';
+import {CARLAMPS, CULL, DRESS, ONLINE, PARK, pos, SPEED, UI, VLOOK, WALKS} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OUT, SOL, SYS, TILE} from './006-map-pre.js';
@@ -31,9 +31,8 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
 
   /* ---------- the light: green, then on a timer (or sooner by the button) amber and red with WALK, everyone's the same from the clock ---------- */
   const CY=90, P0=()=>+((ONLINE.world||{})['xing:gate'])||0;
-  const light=t=>{ const d=t-P0(); if(d>=0&&d<23)return d<1?{m:'g',x:'h'}:d<4?{m:'y',x:'h'}:{m:'r',x:d<5?'h':d<15?'w':d<19?(Math.floor(d*2)&1?'h':'-'):'h'};
-    const r=((t%CY)+CY)%CY; return r<70?{m:'g',x:'h'}:r<73?{m:'y',x:'h'}:{m:'r',x:r<74?'h':r<84?'w':r<88?(Math.floor(r*2)&1?'h':'-'):'h'}; };
-  TRAFFIC.light=()=>light(now()); if(window.TLX)TLX.gate=TRAFFIC.light;
+  const light=t=>WALKS.sim.light(t,P0());   // one clock with the walkers on the server (worker/folk.js)
+  TRAFFIC.light=()=>light(now()); if(window.TLX)TLX.gate=TRAFFIC.light; if(SHARED.BOD.road)SHARED.BOD.road.walk=()=>TRAFFIC.light().x==='w';   // walkers wait for it (076 pedHold)
   TRAFFIC.press=()=>{ const t=now(), r=((t%CY)+CY)%CY, L=light(t); if(L.m!=='g')return say(L.x==='w'?'WALK.':'WAIT FOR THE WALK.'); if(t-P0()<35||r>=47)return say('THE LIGHT CHANGES SOON.'); ONLINE.put('xing:gate',String(Math.round(t*10)/10)); say('YOU PRESS THE BUTTON. WAIT FOR THE WALK.'); };
 
   /* ---------- the buttons: a yellow box on each crossing light's pole ---------- */

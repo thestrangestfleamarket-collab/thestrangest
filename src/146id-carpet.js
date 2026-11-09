@@ -57,7 +57,7 @@ const CARPET={}; window.CARPET=CARPET;
     C.ox=ox; C.oy=oy; C.oz=oz; C.hd=hd;
     const P=C.P, x=C.x, c=Math.cos(hd), s=Math.sin(hd), S=m.scale.x||1; for(let v=0;v<N;v++){ const p=v*3, wx=x[p]-ox, wy=x[p+1]-oy, wz=x[p+2]-oz; P[p]=(wx*c-wz*s)/S; P[p+1]=wy/S; P[p+2]=(wx*s+wz*c)/S; }
     C.geo.attributes.position.needsUpdate=true; C.geo.computeVertexNormals();
-    const tp=C.tp, back=-Math.min(.08*T,sp*.012)/S; C.EDGE.forEach((v,e)=>{ const p=v*3, end=v<NX?-1:1, q=e*6; tp[q]=P[p]; tp[q+1]=P[p+1]; tp[q+2]=P[p+2]; tp[q+3]=P[p]; tp[q+4]=P[p+1]-.06*T/S+Math.sin(t*7+e)*.008*T/S*(1+sp/T); tp[q+5]=P[p+2]+end*.07*T/S+back; });
+    const tp=C.tp, fl=Math.min(1,sp/(5*T)), back=-.13*T*fl/S, L0=.13*T/S; C.EDGE.forEach((v,e)=>{ const p=v*3, end=v<NX?-1:1, q=e*6, sw=Math.sin(t*2.6+e*1.7)*.025*T/S, sx=Math.sin(t*2.1+e*2.3)*.015*T/S; tp[q]=P[p]; tp[q+1]=P[p+1]; tp[q+2]=P[p+2]; tp[q+3]=P[p]+sx; tp[q+4]=P[p+1]-L0*(1-.55*fl); tp[q+5]=P[p+2]+end*.012*T/S+back+sw; });   // the tassels hang from the ends and sway; flying, they trail back (owner, 9 Nov 2026: "the strings at end of rug should be dangling")
     C.tg.attributes.position.needsUpdate=true; };
   // carried: rolled up, its tassels at both ends
   const rolled=()=>{ const g=new THREE.Group(), t=tex().clone(); t.needsUpdate=true; t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(1,3);

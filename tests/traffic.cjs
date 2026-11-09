@@ -1,4 +1,4 @@
-// THE TRAFFIC (150pb-traffic, the crossing in 069-dress): node tests/traffic.cjs [out]: the vehicles load and drive; on red no car is on the park gate's crosswalk and the waiting cars are behind their line; a car stops for someone standing in its lane; the button starts the walk; a walker's way crosses only on a crosswalk; <out>.png the crossing
+// THE TRAFFIC (150pb-traffic, the crossing in 069-dress): node tests/traffic.cjs [out]: the vehicles load and drive; nothing with wheels flies; the owner's speeds (SPEED) set each lane's; on red no car or flier is on the park gate's crosswalk and the waiting ones are behind their line; a car stops for someone standing in its lane; the button starts the walk; a walker's way crosses only on a crosswalk; <out>.png the crossing
 const {chromium}=require('playwright');
 (async()=>{ const out=process.argv[2]; const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:1000,height:700}});
   const errs=[]; pg.on('pageerror',e=>errs.push(e.message)); let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
@@ -7,6 +7,9 @@ const {chromium}=require('playwright');
   const T=()=>pg.evaluate(()=>TRAFFIC.dbg()); let d=await T();
   ok(d.lanes.length===4&&d.lanes.every(L=>L.cars.every(c=>c.model)),'four lanes, every vehicle has a model');
   ok(new Set(d.lanes.flatMap(L=>L.cars.map(c=>c.model))).size>=8,'many kinds of vehicle');
+  ok(d.lanes.filter(L=>L.fly).every(L=>L.cars.every(c=>c.model!=='rover')),'nothing with wheels flies');
+  const sp=await pg.evaluate(()=>{ const v0=TRAFFIC.lanes.map(L=>L.v); SPEED.set({traffic:2,fliers:.5}); const v1=TRAFFIC.lanes.map(L=>L.v); SPEED.set({}); return {v0,v1,v2:TRAFFIC.lanes.map(L=>L.v)}; });
+  ok(sp.v1.every((v,i)=>Math.abs(v-sp.v0[i]*(i<2?2:.5))<1e-6)&&sp.v2.every((v,i)=>v===sp.v0[i]),'the owner\'s speeds set the road\'s and the fliers\' '+JSON.stringify(sp));
   const R=()=>pg.evaluate(()=>{ const t=Date.now()/1000+TRAFFIC.skew; return ((t%90)+90)%90; });
   // green (the timer's 40 s of 90): someone in the westbound lane ahead of a car; it stops short of them
   await pg.evaluate(()=>{ const t=Date.now()/1000, r=((t%90)+90)%90; TRAFFIC.skew=(36-r); }); await pg.waitForTimeout(3000); d=await T();
@@ -18,9 +21,9 @@ const {chromium}=require('playwright');
   // on into the red (73 s), then 6 s more
   while(true){ const r=await R(); if(r>=79&&r<84)break; await pg.waitForTimeout(1000); } d=await T();
   ok(d.light.m==='r'&&d.light.x==='w','red for the cars, WALK for people: '+JSON.stringify(d.light));
-  const [x0,x1]=d.cross, G=d.lanes.filter(L=>!L.fly);
-  ok(G.every(L=>L.cars.every(c=>!c.on||c.x+c.len<x0||c.x-c.len>x1)),'no car on the crosswalk on red '+JSON.stringify([x0,x1,G.map(L=>L.cars.filter(c=>c.on&&!(c.x+c.len<x0||c.x-c.len>x1)).map(c=>[c.model,+c.x.toFixed(1),c.sp,+L.stop.toFixed(1)]))]));
-  ok(G.every(L=>L.cars.every(c=>{ if(!c.on)return true; const before=L.dir<0?c.x>x1&&c.x<L.stop+25:c.x<x0&&c.x>L.stop-25; return !before||(L.dir<0?c.x-c.len>=L.stop-1:c.x+c.len<=L.stop+1); })),'the waiting cars are behind their line')
+  const [x0,x1]=d.cross, G=d.lanes;
+  ok(G.every(L=>L.cars.every(c=>!c.on||c.x+c.len<x0||c.x-c.len>x1)),'no car or flier on the crosswalk on red '+JSON.stringify([x0,x1,G.map(L=>L.cars.filter(c=>c.on&&!(c.x+c.len<x0||c.x-c.len>x1)).map(c=>[c.model,+c.x.toFixed(1),c.sp,+L.stop.toFixed(1)]))]));
+  ok(G.every(L=>L.cars.every(c=>{ if(!c.on)return true; const before=L.dir<0?c.x>x1&&c.x<L.stop+25:c.x<x0&&c.x>L.stop-25; return !before||(L.dir<0?c.x-c.len>=L.stop-1:c.x+c.len<=L.stop+1); })),'the waiting cars and fliers are behind their line')
   await pg.evaluate(()=>{ const t=Date.now()/1000, r=((t%90)+90)%90; TRAFFIC.skew=(20-r); TRAFFIC.press(); }); await pg.waitForTimeout(6000); d=await T();
   ok(d.light.m==='r'&&d.light.x==='w','the button brings the walk: '+JSON.stringify(d.light));
   // the rules of the street (076 pedfree): a walker's way across Market St keeps to the crosswalk; the road is no place to stand, the crosswalk is

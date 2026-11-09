@@ -1,6 +1,6 @@
 # THE TRAFFIC'S VEHICLES (owner, 9 Nov 2026: "add all vehicles"): Polyfork's street cars, floating cars and small spacecraft fetched into .polyfork/
 # (never committed) and baked flat-coloured into data/traffic.json like data/heli.json: {id: {name, fly, len, size: [x,y,z] metres, parts: {body: {b, p, c, at}}}},
-# forward +z, feet at 0, centred. Spacecraft are shrunk to a car's length (len, metres): nothing massive.
+# forward +z, feet at 0, centred. Spacecraft are shrunk to a car's length (len, metres): nothing massive. Nothing with wheels flies (owner, 9 Nov 2026): the rover drives.
 # Run: python3 tools/traffic-bake.py
 import os, json, time, base64, urllib.request, numpy as np
 pb={}; exec(compile(open('tools/props-bake.py').read().split('OUT=json.load')[0].replace('out=sys.argv[1]; args=sys.argv[2:]',''),'props-bake','exec'),pb)
@@ -19,7 +19,7 @@ MODELS=[('town-car','town-car-56eeb6','TOWN CAR',0,None,0),('hatchback','compact
   ('suv','family-crossover-suv-42027f','CROSSOVER',0,None,0),('minivan','family-minivan-924de0','MINIVAN',0,None,0),('pickup','pickup-truck-a34bf2','PICKUP',0,None,0),('kei-van','kei-van-211ed5','KEI VAN',0,None,0),
   ('hover-coupe','wheeled-city-coupe-5c381e','HOVER COUPE',1,None,0),('hover-pod','commuter-hover-pod-5b6307','HOVER POD',1,None,0),('hover-patrol','security-patrol-cruiser-b40d27','HOVER PATROL',1,None,0),
   ('sky-tender','lighter-than-air-tender-0c7361','SKY TENDER',1,None,0),('starfighter','agile-starfighter-89805f','STARFIGHTER',1,4.6,0),('interceptor','interceptor-9d2289','INTERCEPTOR',1,4.6,0),
-  ('escape-pod','escape-pod-49232b','ESCAPE POD',1,2.6,0),('rover','exploration-rover-7afd91','ROVER',1,None,0),('scout-ship','scout-ship-289ccc','SCOUT SHIP',1,4.6,0),('raider','alien-raider-98249f','RAIDER',1,4.6,0)]
+  ('escape-pod','escape-pod-49232b','ESCAPE POD',1,2.6,0),('rover','exploration-rover-7afd91','ROVER',0,None,0),('scout-ship','scout-ship-289ccc','SCOUT SHIP',1,4.6,0),('raider','alien-raider-98249f','RAIDER',1,4.6,0)]
 FWD=float(os.environ.get('FWD','1'))   # (Polyfork's front: +z; -1 turns every model round)
 def bake(f,L,turn):
     T,Cc=pb['from_glb'](f); P=T.reshape(-1,3).copy(); col=Cc.reshape(-1,3)

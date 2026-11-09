@@ -79,9 +79,16 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms)), frames=n=>new Promise(r=>{ cons
 const MAPG={}, MODS={};  const OVERHEAD=[]; SHARED.RPASS=null; SHARED.FIRE=null;
 // the start's loading screen (#loading): each place's builder named as it is built, a bar by how many of the last start's builders are done
 const START={k:0,n:(()=>{ try{ return +localStorage.getItem('market-grabs')||21; }catch(e){ return 21; } })()}; START.show=name=>{ const L=document.getElementById('loading'); if(!L)return; if(!START.el){ L.innerHTML='<div style="display:flex;flex-direction:column;gap:12px;align-items:center"><div>OPENING THE MARKET</div><div style="width:min(320px,70vw);height:8px;border:2px solid #3a3f4e;padding:2px"><div class="sb" style="height:100%;width:0;background:#8a8f9c"></div></div><div class="sl" style="font-size:10px;color:#5d6270"></div></div>'; START.el=L; }
-  L.querySelector('.sb').style.width=Math.min(100,START.k/START.n*100).toFixed(0)+'%'; L.querySelector('.sl').textContent=name?'BUILDING '+name.toUpperCase().replace(/[^A-Z0-9]+/g,' ')+' ('+(START.k+1)+' / '+Math.max(START.n,START.k+1)+')':'READY'; };
-START.done=()=>{ try{ localStorage.setItem('market-grabs',START.k); }catch(e){} START.show(null); };
-START.reveal=()=>{ const L=document.getElementById('loading'); if(!L)return; let k=3; const f=()=>{ if(--k>0)return requestAnimationFrame(f); L.textContent=''; L.style.opacity='0'; L.style.pointerEvents='none'; setTimeout(()=>L.remove(),1000); }; requestAnimationFrame(f); };
+  L.querySelector('.sb').style.width=Math.min(60,START.k/START.n*60).toFixed(0)+'%'; L.querySelector('.sl').textContent=name?'BUILDING '+name.toUpperCase().replace(/[^A-Z0-9]+/g,' ')+' ('+(START.k+1)+' / '+Math.max(START.n,START.k+1)+')':'READY'; };
+START.bar=(t,f)=>{ const L=START.el; if(!L)return; L.querySelector('.sb').style.width=Math.max(0,Math.min(100,f*100)).toFixed(1)+'%'; L.querySelector('.sl').textContent=t; };   // the bar's last stretch: what the start finishes before it lets you in (owner, 9 Nov 2026)
+START.done=()=>{ try{ localStorage.setItem('market-grabs',START.k); }catch(e){} };
+START.reveal=()=>{ const L=document.getElementById('loading'); if(!L)return; const t0=performance.now(); let exp=0, last=-1, still=0; try{ exp=+localStorage.getItem('market-meshes')||0; }catch(e){}
+  // the game runs behind the screen until nothing more is being added (the far streets, the mirror past the edges, the park, the trains...), the bar against what the last start ended with
+  const tick=()=>{ let n=0; scene.traverse(o=>{ if(o.isMesh||o.isPoints||o.isLine)n++; }); const BQ=window.BATCH, busy=!!(BQ&&BQ.left&&BQ.left()>0); if(n===last&&!busy)still+=250; else still=0; last=n;
+    START.bar('FINISHING WHAT YOU CAN SEE ('+Math.min(100,Math.round(n/Math.max(exp,n)*100))+'%)',.9+.1*Math.min(1,n/Math.max(exp,n,1))*(still>=2000?1:.97));
+    if(still<2000&&performance.now()-t0<90000)return void setTimeout(tick,250);
+    try{ localStorage.setItem('market-meshes',n); }catch(e){} START.bar('READY',1); let k=3; const f=()=>{ if(--k>0)return requestAnimationFrame(f); L.textContent=''; L.style.opacity='0'; L.style.pointerEvents='none'; setTimeout(()=>L.remove(),1000); }; requestAnimationFrame(f); };
+  setTimeout(tick,250); };
 const grab=async(name,fn)=>{ if(!SYS.started)START.show(name); const n0=scene.children.length; await fn(); if(!SYS.started)START.k++; const g=new THREE.Group(); g.name=name; for(const o of scene.children.slice(n0))g.add(o); scene.add(g); MAPG[name]=g; return g; };
 __CODE__("worker/mappatch.js")
 const LEVEL0=__DATA__("data/world.json"), MAPFILE=MAPPATCH.file(LEVEL0);

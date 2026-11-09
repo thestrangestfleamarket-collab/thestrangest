@@ -7110,7 +7110,7 @@
    ]
   },
   "park": {
-   "note": "Central Park past the forcefield, the whole of it (owner, 8 Nov 2026: Manhattan): a wall just inside West St and plain low trees in bands (x0, y0, x1, y1 in tiles) inside sections.ring.park, none in the clearings (x, y, rx, ry: the reservoir, the lawns, the ponds) or on the paths (edge.ground.paths)",
+   "note": "Central Park past the forcefield, the whole of it (owner, 8 Nov 2026: Manhattan): a wall just inside West St and plain low trees in bands (x0, y0, x1, y1 in tiles) inside sections.ring.park (n of them, and clumps: bunches of bigger trees), none in the clearings (x, y, rx, ry: the reservoir, the lawns, the ponds) or on the paths (edge.ground.paths)",
    "wall": [
     -23.9,
     -38,
@@ -7137,7 +7137,8 @@
      452
     ]
    ],
-   "n": 4000,
+   "n": 2400,
+   "clumps": 450,
    "clear": [
     [
      1060,

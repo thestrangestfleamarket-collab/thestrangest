@@ -378,10 +378,10 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
       if(x>px0&&x<px1&&y>py0&&y<py1){ if(x<px0+.5||x>px1-.5||y<py0+.5||y>py1-.5)return 'wall'; if(FOUNT.lake(x-P.ox,y-P.oy)<0)return 'water'; if(FOUNT.ter(x-P.ox,y-P.oy)<0)return 'way'; return P.path&&P.path(x-P.ox,y-P.oy)?'way':P.brook&&(h=>h!=null&&h<P.brook.L(P.brook.q(x-P.ox,y-P.oy)[1]))(P.brook.h(x-P.ox,y-P.oy))?'water':'lawn'; }
       for(let i=G.length-1;i>=0;i--){ const g=G[i]; if(x>=g.x0&&x<g.x1&&y>=g.y0&&y<g.y1)return /road|Road/.test(g.id)?'road':g.id==='alley'?'alley':g.id==='corner'?(g.z<0?'road':'walk'):'walk'; } return 'land'; };
     const KN=Object.keys(C), KS=new Uint8Array(W*H), im=new ImageData(W,H); for(let j=0;j<H;j++)for(let i=0;i<W;i++){ const k=kind(F.x0+(i+.5)/S,F.y1-(j+.5)/S), c=C[k], o=(j*W+i)*4; KS[j*W+i]=KN.indexOf(k); im.data[o]=c[0]; im.data[o+1]=c[1]; im.data[o+2]=c[2]; im.data[o+3]=255; }
-    const NP=(LEVEL.places||[]).filter(p=>p.name&&p.kind!=='gate'), bare=n=>(n||'').toUpperCase().replace(/^THE /,''), NAMED=new Set(NP.map(p=>bare(p.name)));
+    const NP=(LEVEL.places||[]).filter(p=>p.name&&p.kind!=='gate'&&!p.away), bare=n=>(n||'').toUpperCase().replace(/^THE /,''), NAMED=new Set(NP.map(p=>bare(p.name)));
     const B=[], add=(a,b,col,n,k)=>B.push({x0:Math.min(a[0],b[0]),y0:Math.min(a[1],b[1]),x1:Math.max(a[0],b[0]),y1:Math.max(a[1],b[1]),col,n,k:k||'bld'});
-    for(const p of LEVEL.places||[])if(p.kind==='front'||p.kind==='gate')add([p.x0,p.y0!=null?p.y0:LEVEL.block.back],[p.x1,p.y1!=null?p.y1:SHARED.BOD.OY],[110,104,96],'');
-    { const b=SHARED.BOD.B0; add(bt(b.x0,b.y0),bt(b.x1,b.y1),[176,86,58],''); }
+    for(const p of LEVEL.places||[])if((p.kind==='front'||p.kind==='gate')&&!p.away)add([p.x0,p.y0!=null?p.y0:LEVEL.block.back],[p.x1,p.y1!=null?p.y1:SHARED.BOD.OY],[110,104,96],'');
+    if(!SHARED.BOD.HUD){ const b=SHARED.BOD.B0; add(bt(b.x0,b.y0),bt(b.x1,b.y1),[176,86,58],''); }
     if(MODS.apts&&MODS.apts.A){ const a=MODS.apts.A; add(bt(a.x0,a.y0),bt(a.x1,a.y1),[150,74,58],''); }
     { const g=SHARED.BOD.grounds.find(q=>q.id==='ghostst'); if(g)add(bt(g.x0,g.y0),bt(g.x1,g.y1),[112,78,48],''); }
     if(window.BLK){ for(const q of BLK.blds)add([q.x0,q.y0],[q.x1,q.y1],[110,100,96],''); for(const q of BLK.lots)add([q.x0,q.y0],[q.x1,q.y1],q.kind==='park'?[64,66,70]:[94,80,64],'','lot'); }
@@ -456,7 +456,6 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   { const q=QS.get('place'); if(q)SYS.onStart(()=>setTimeout(()=>goPlace(q.toUpperCase()),300),'094-ui place'); }
   const PLACEN=PLACES.map(p=>p[0]), ROOMN=[];
   { const add=(n,x,z,lv)=>{ ROOMN.push(n); PLACES.push([n,x,z,lv]); }, mid=(X,Z,r)=>[(X(r[0])+X(r[2]))/2,(Z(r[1])+Z(r[3]))/2], B=SHARED.BOD.SB;
-    add('THE SHOP',...mid(SHARED.BOD.X,SHARED.BOD.Z,[B.x0,SHARED.BOD.BODOFF,B.x1,B.y1]),'up');
     if(SHARED.BOD.GD){ const s=SHARED.BOD.GD.shift||[0,0], m=mid(SHARED.BOD.X,SHARED.BOD.Z,SHARED.BOD.GD.floor||SHARED.BOD.GD.r); add('THE BATHS',m[0]+s[0],m[1]+s[1],'up'); }
     PLACES.push(['THE SUBWAY STAIRS',SHARED.BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),SHARED.BOD.ZS(MAPSTAIR.y1+1.2),'up']); PLACEN.push('THE SUBWAY STAIRS'); }
   { const sel=$('#placesel'), grp=(label,list)=>{ if(!list.length)return; const g=document.createElement('optgroup'); g.label=label; for(const n of list){ const o=document.createElement('option'); o.value=n; o.textContent=n; g.appendChild(o); } sel.appendChild(g); };

@@ -47,7 +47,7 @@ import {STALL} from './081-stalls.js';
     if(ring)S.push(`<path d="M0 0H${mw.toFixed(1)}V720H0Z ${ring} L${TX(CH[0][0]).toFixed(1)} ${TY(CH[0][1]).toFixed(1)}Z" fill="${PAPER}" fill-opacity=".62" fill-rule="evenodd"/>`);
     const SM=MODS.sections; if(SM&&SM.road&&SM.inner)for(const r of [SM.road,SM.inner])S.push(`<rect x="${TX(r.x0)}" y="${TY(r.y1)}" width="${TX(r.x1)-TX(r.x0)}" height="${TY(r.y0)-TY(r.y1)}" fill="none" stroke="${INK}" stroke-width="1.5" opacity=".5"/>`);
     // the buildings: the level file's places, then the plan's other boxes where none stands
-    const B=LEVEL.places.filter(p=>p.kind!=='passage').map(p=>({x0:p.x0,y0:p.y1!=null?p.y0:LEVEL.block.back,x1:p.x1,y1:p.y1!=null?p.y1:LEVEL.block.front,n:p.name||'',k:p.kind==='fair'||p.kind==='lot'?'lot':p.kind==='stairs'?'stairs':'bld',place:null}));
+    const B=LEVEL.places.filter(p=>p.kind!=='passage'&&!p.away).map(p=>({x0:p.x0,y0:p.y1!=null?p.y0:LEVEL.block.back,x1:p.x1,y1:p.y1!=null?p.y1:LEVEL.block.front,n:p.name||'',k:p.kind==='fair'||p.kind==='lot'?'lot':p.kind==='stairs'?'stairs':'bld',place:null}));
     for(const s of STALL.made)if(s.name){ const a=OX+s.bx[0]/T, b=OX+s.bx[2]/T, c=OY+s.bx[1]/T, d=OY+s.bx[3]/T; B.push({x0:Math.min(a,b),x1:Math.max(a,b),y0:Math.min(c,d)-.6,y1:Math.max(c,d)+.6,n:s.name,k:'bld',place:null}); }   // the park wall's stalls
     for(const b of Q.B){ if(b.k==='bld'&&!B.some(q=>q.x0<b.x1-.5&&b.x0<q.x1-.5&&q.y0<b.y1-.5&&b.y0<q.y1-.5))B.push({...b,place:null}); }
     // the places: every one GO TO lists; an inside stands at its door on the street; places in one building (or at one door) share its number, which sits on the building

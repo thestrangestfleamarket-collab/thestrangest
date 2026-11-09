@@ -10,7 +10,7 @@ const {chromium}=require('playwright');
   await pg.evaluate(()=>{ const v=VEGDBG(); STORE.pos.set(v.wx+1.2,0,v.wz+3.2); }); await pg.waitForTimeout(3500); await pg.screenshot({path:out+'-veg.png'});
   await pg.evaluate(()=>VEG.SHOP.open()); await pg.waitForTimeout(800); await pg.screenshot({path:out+'-shop.png'}); await pg.evaluate(()=>{ document.getElementById('vegp').hidden=true; });
   await pg.evaluate(()=>{ const b=[...document.querySelectorAll('#places button')].find(b=>b.textContent==='THE BODEGA'); b&&b.click(); }); await pg.waitForTimeout(500);
-  await pg.evaluate(()=>{ const P=__UI.places().find(p=>p[0]==='THE SHOP'); STORE.pos.set(P[1]+.6,0,P[2]+.4); }); await pg.waitForTimeout(4000); await pg.screenshot({path:out+'-fox.png'});
+  await pg.evaluate(()=>{ const P=__UI.places().find(p=>p[0]==='THE BODEGA'); STORE.pos.set(P[1]+.6,0,P[2]+.4); }); await pg.waitForTimeout(4000); await pg.screenshot({path:out+'-fox.png'});
   await pg.keyboard.press('Escape'); await pg.waitForTimeout(2500); await pg.screenshot({path:out+'-menu.png'});
   console.log('go to options',await pg.evaluate(()=>document.querySelectorAll('#placesel option').length));
   console.log('errors',Object.keys(errs)); await b.close(); })();

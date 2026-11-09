@@ -8,7 +8,7 @@ const {chromium}=require('playwright');
   await pg.evaluate(()=>{ window.__LT=[]; new PerformanceObserver(l=>{ for(const e of l.getEntries())__LT.push(e.duration); }).observe({entryTypes:['longtask']}); });
   const step=async(name,fn)=>{ await pg.evaluate(()=>{ __LT.length=0; window.__F=0; window.__T0=performance.now(); const f=()=>{ __F++; if(performance.now()-__T0<6000)requestAnimationFrame(f); }; requestAnimationFrame(f); }); await pg.evaluate(fn); await pg.waitForTimeout(6500);
     const r=await pg.evaluate(()=>({longest:Math.round(Math.max(0,...__LT)),tasks:__LT.length,fps:+(__F/6).toFixed(1),room:!!ROOMS.cur})); console.log(name,JSON.stringify(r)); };
-  const P=await pg.evaluate(()=>{ const p=__UI.places(); return {shop:p.find(x=>x[0]==='THE SHOP'),bod:p.find(x=>x[0]==='THE BODEGA')}; });
+  const P=await pg.evaluate(()=>{ const p=__UI.places(); return {shop:p.find(x=>x[0]==='THE BODEGA'),bod:p.find(x=>x[0]==='THE BODEGA')}; });
   await step('street',()=>{});
   await step('into the shop',new Function(`STORE.pos.set(${P.shop[1]},0,${P.shop[2]});`));
   await pg.screenshot({path:out+'-in.png'});

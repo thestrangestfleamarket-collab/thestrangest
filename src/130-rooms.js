@@ -68,7 +68,9 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
   ROOMS.enterAt=(id,at)=>offRun(id,ROOMS.lazy[id]&&ROOMS.lazy[id].done?'':'ENTERING '+ROOMS.off[id].name,()=>ROOMS.goIn(id,at));   // enter and spawn at a chosen spot inside (the GO TO menu, a saved spot)
   ROOMS.boxAt=(x,z)=>{ for(const id in ROOMS.off){ const b=ROOMS.off[id].box; if(b&&x>=b.x0&&x<=b.x1&&z>=b.z0&&z<=b.z1)return id; } return null; };   // which off-map inside, if any, holds this point
   ROOMS.exit=id=>ROOMS.off[id]&&IV.b&&IV.b.off===id?offRun(id,'',()=>ROOMS.goOut(id)):null;
-  ROOMS.offIn=()=>IV.b&&IV.b.off||IV.reOff||null;   // (between a reset and the room put back you are still in it)
+  ROOMS.offIn=()=>IV.b&&IV.b.off||IV.reOff||null;
+  { let t0=0; SYS.add('places',()=>{ if(SHARED.LVL!=='up'||FADE.busy||IV.busy||ROOMS.offIn()||!window.__started){ t0=0; return; } let id=null; for(const k in ROOMS.off){ const o=ROOMS.off[k]; if(o.out&&o.box&&within(o.box,pos.x,pos.z,6)&&!within(o.box,o.out[0],o.out[1],6)){ id=k; break; } }
+    if(!id){ t0=0; return; } const now=performance.now(); if(!t0)t0=now; if(now-t0<1000)return; t0=0; const o=ROOMS.off[id]; offRun(id,'',()=>{ UI.goTo(o.out[0],o.out[1],o.out[2],o.out[3]); }); },'130-rooms stray'); }   // on an inside's spot off the map without being in it (a reset, an old saved spot): out at its door, never left on the bare ground out there   // (between a reset and the room put back you are still in it)
   ROOMS.real=()=>{ const id=ROOMS.offIn(); return id?(WINDOWS.from&&WINDOWS.from(id)):pos; };   // where you are on the street: in a room off the map, where it stands if its windows look out at the street live, else null
   BATCH.at=ROOMS.real;   // in a room off the map with no window out the street's painted ground and walls are dropped, painted again on the way out
   ROOMS.offBuild=async id=>{ const L=offL(id); if(!L.done){ await L.need(); if(!L.done)L.go(); } return L; };   // an inside built without going in (for its windows' first picture)

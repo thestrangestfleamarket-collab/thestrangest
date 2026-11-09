@@ -30,7 +30,7 @@ Object.assign(USE,{seat:null}); window.USE=USE;
   const stand=back=>{ const s=USE.seat; if(!s)return; USE.seat=null; st.sit=null; if(back){ pos.x=s.back.x; pos.z=s.back.z; } };
   USE.stand=()=>stand(true);
   USE.sitAt=(x,z,y,hd,more)=>{ '@later'; SFX.play('creak',{vol:.5,vary:.3,delay:.4}); const g=SHARED.groundY(x,z);   // sit at a point: a chair's top, a train's seat (more: what carries the seat)
-    USE.seat={back:pos.clone(),x,z,...more}; pos.x=x; pos.z=z; SHARED.target=null; SHARED.heading=hd; st.sit={z:Math.max(2,(y-g)/(ZU*W3.SZ*(W3.BH||1)))}; MOTION.play('sitDown'); };
+    USE.seat={back:pos.clone(),x,z,...more}; pos.x=x; pos.z=z; SHARED.target=null; SHARED.heading=hd; st.sit={z:Math.max(2,(y-g)/(ZU*W3.SZ*(W3.BH||1)))}; st.target=0; st.w=0; MOTION.play('sitDown'); st.mv=st.mvw=0; };   // (no stride carried onto the seat: it slid you off a bench, owner 9 Nov 2026)
   const sitOn=(se,th)=>{ const [x,z]=near(se.S,.4*T); let fx=se.fx, fz=se.fz; if(!fx&&!fz){ fx=pos.x-x; fz=pos.z-z; const l=Math.hypot(fx,fz)||1; fx/=l; fz/=l; }
     USE.sitAt(x-fx*.06*T,z-fz*.06*T,se.y,Math.atan2(fx,fz)); };
   const lightsOf=b=>{ const e=.8*T; return LITE.recs.filter(L=>{ const p=L.position; return p.x>b.min.x-e&&p.x<b.max.x+e&&p.y>b.min.y-e&&p.y<b.max.y+e&&p.z>b.min.z-e&&p.z<b.max.z+e; }); };
@@ -95,7 +95,7 @@ Object.assign(USE,{seat:null}); window.USE=USE;
   addEventListener('keydown',e=>{ if(USE.seat&&!e.repeat&&(sitKeys.has((e.key||'').toLowerCase())||!/^(q|e|r|z|x|v|c|0|=|-|\+|escape|control|alt|meta|tab)$/i.test(e.key||'')))stand(true); });
   const g0=UI.goTick; let last=performance.now();
   UI.goTick=()=>{ g0(); const now=performance.now(), dt=Math.min(.05,(now-last)/1000); last=now;
-    const S=USE.seat; if(S){ if(SHARED.target||st.move&&!/sitDown/.test(st.move.name)||RAG.on)stand(!RAG.on); else if(Math.hypot(pos.x-S.x,pos.z-S.z)>.3*T){ USE.seat=null; st.sit=null; } else { pos.x=S.x; pos.z=S.z; } }
+    const S=USE.seat; if(S){ if(SHARED.target||st.move&&!/sitDown/.test(st.move.name)||RAG.on)stand(!RAG.on); else if(Math.hypot(pos.x-S.x,pos.z-S.z)>.3*T){ USE.seat=null; st.sit=null; } else { pos.x=S.x; pos.z=S.z; st.mv=0; } }
     for(const d of DOORS){ const step=dt*9, k=d.to-d.a; d.a=Math.abs(k)<=step?d.to:d.a+Math.sign(k)*step; turnDoor(d); if(d.a===d.to)DOORS.delete(d); }
     for(let i=0;i<CANS.length;i++){ const m=CANS[i], u=m.userData; if(u.rest)continue; u.vy-=30*T*dt; m.position.y+=u.vy*dt; if(m.position.y<=u.floor){ m.position.y=u.floor; if(Math.abs(u.vy)>2*T){ u.vy*=-.3; } else { u.rest=true; m.rotation.z=Math.PI/2; m.position.y=u.floor-.03*T; } } }
     for(const o of BLINK){ o.blink-=dt; tint(o,o.blink>0&&Math.floor(o.blink/.125)%2===0?[1.8,1.8,1.8]:[1,1,1],glows); if(!(o.blink>0))BLINK.delete(o); }

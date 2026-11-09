@@ -127,7 +127,7 @@ await grab('dungeon',async()=>{});
   SYS.add('life',dt=>{ if(!mine||!mine.hz||SHARED.LVL!=='down'){ if(SHARED.drag!==1)SHARED.drag=1; return; } const H=mine.hz, f=1+.35*(band()-1), gx=iX(pos.x), gy=iZ(pos.z), alive=!VIT.dead&&!(VIT.out>0), onG=SHARED.py-ground(pos.x,pos.z)<.2*TILE;
     spikes(false);
     for(const sp of H.sp)if(sp.up&&!sp.hit&&alive&&onG&&inside(sp,gx,gy)){ sp.hit=true; VIT.hurt(.07*f); say('sp','THE SPIKES STAB UP INTO YOUR FEET!'); }   // a trap's hurt has no side to block from
-    if(alive&&onG&&H.lava.some(h=>inLava(h,gx,gy))){ if((lavaT-=dt)<=0){ lavaT=.35; VIT.hurt(.05*f); say('lava','THE LAVA BURNS YOU!','#ff6a3a'); } } else lavaT=0;
+    if(alive&&onG&&!SHARED.fireproof&&H.lava.some(h=>inLava(h,gx,gy))){ if((lavaT-=dt)<=0){ lavaT=.35; VIT.hurt(.05*f); say('lava','THE LAVA BURNS YOU!','#ff6a3a'); } } else lavaT=0;
     if(webT>0){ webT-=dt; SHARED.drag=.08; if(webT<=0){ webFree=2; SHARED.drag=1; say('web','YOU TEAR YOURSELF FREE OF THE WEB.','#d8d8c8'); } }
     else{ SHARED.drag=1; if(webFree>0)webFree-=dt; else if(alive&&H.webs.some(w=>Math.hypot(gx-w.cx,gy-w.cy)<w.r*.8)){ webT=2+.3*band(); say('web','YOU ARE STUCK IN A SPIDER WEB!','#d8d8c8'); } } },'062a-dungeon');
   const S=CASTLE.stair, top={x:((S.x0+S.x1)/2-72)*TILE,z:(S.y0-.5+77)*TILE};

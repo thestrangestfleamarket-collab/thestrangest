@@ -62,7 +62,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(!!shore, 'the river is found (' + JSON.stringify(shore) + ')');
     if (shore) {
       await pg.evaluate(s => { __dbg.UI.goTo(s.sx, s.sz, 'up'); SHARED.heading = Math.atan2(s.wx - s.sx, s.wz - s.sz); }, shore); await pg.waitForTimeout(3000);
-      await pg.evaluate(s => { const p = __dbg.you(), h = Math.atan2(s.wx - p.x, s.wz - p.z); SHARED.heading = h; JETS.aim = new __dbg.THREE.Vector3(Math.sin(h), -.25, Math.cos(h)).normalize(); WIELD.set('frost'); JETS.hold = true; }, shore);
+      await pg.evaluate(s => { const p = __dbg.you(), h = Math.atan2(s.wx - p.x, s.wz - p.z); SHARED.heading = h; JETS.aim = new __dbg.THREE.Vector3(Math.sin(h), -.55, Math.cos(h)).normalize(); WIELD.set('frost'); JETS.hold = true; }, shore);
       const ice = await until(() => { const d = JETDBG(); return d.ice.length && d.ice[0].r > .8 ? { what: d.streams[0] && d.streams[0].what, ice: d.ice } : null; }, 40000);
       if (!ice) console.log('  stream at the river: ' + JSON.stringify(await pg.evaluate(() => JETDBG().streams.map(s => ({ what: s.what, len: s.len, tip: s.tip, dir: s.dir })))));
       ok(!!ice, 'the freeze ray freezes the river where it lands (' + JSON.stringify(ice) + ')');

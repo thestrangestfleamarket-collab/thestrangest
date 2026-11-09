@@ -90,7 +90,7 @@ START.reveal=()=>{ const L=document.getElementById('loading'); if(!L)return; con
     if(still<2000&&performance.now()-t0<90000)return void setTimeout(tick,250);
     try{ localStorage.setItem('market-meshes',n); }catch(e){} START.bar('READY',1); let k=3; const f=()=>{ if(--k>0)return requestAnimationFrame(f); L.textContent=''; L.style.opacity='0'; L.style.pointerEvents='none'; setTimeout(()=>L.remove(),1000); }; requestAnimationFrame(f); };
   setTimeout(tick,250); };
-const grab=async(name,fn)=>{ if(!SYS.started)START.show(name); const n0=scene.children.length; await fn(); if(!SYS.started)START.k++; const g=new THREE.Group(); g.name=name; for(const o of scene.children.slice(n0))g.add(o); scene.add(g); MAPG[name]=g; return g; };
+const grab=async(name,fn)=>{ if(!SYS.started)START.show(name); const n0=scene.children.length, t0=performance.now(); await fn(); (START.ms=START.ms||{})[name]=Math.round(performance.now()-t0); if(!SYS.started)START.k++; const g=new THREE.Group(); g.name=name; for(const o of scene.children.slice(n0))g.add(o); scene.add(g); MAPG[name]=g; return g; };
 __CODE__("worker/mappatch.js")
 const LEVEL0=__DATA__("data/world.json"), MAPFILE=MAPPATCH.file(LEVEL0);
 const MAPLIVE=window.__MAPLIVE||(/^https?:$/.test(location.protocol)&&QS.get('map')!=='base'?await (async()=>{ try{ const c=new AbortController(), t=setTimeout(()=>c.abort(),4000), r=await fetch(MAPFILE,{credentials:'same-origin',signal:c.signal}); clearTimeout(t); return r.status===200?await r.json():null; }catch(e){ return null; } })():null);

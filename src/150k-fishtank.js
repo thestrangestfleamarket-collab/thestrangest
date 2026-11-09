@@ -23,7 +23,7 @@ import {ROOMK} from './150a-bedroom.js';
   for(const k of ['FISH TANK'])ROOMK.always.add(k);   // in every apartment from the start (owner, 7 Nov 2026)
   ROOMK.parts.push(c=>{ '@apts'; const {part,mat,rbox,cap,Lx,Ly,du,solid}=c;
     // along the back wall between the back door and the corner, where no window is (owner, 9 Nov 2026: larger, a showpiece)
-    const TW=Math.max(2.4,Math.min(3.6,Lx-du-1.15)), TD=1, TH=1.2, SH=.7, U0=Math.min(Lx-.12-TW/2,(du+.95+Lx-.12)/2), V0=Ly-TD/2-.13, SW=TW-2*GL, SD=TD-2*GL, WY=SH+TH*.9;
+    const TW=Math.max(2.4,Math.min(3.6,Lx-du-2.4)), TD=1, TH=1.2, SH=.7, U0=du+.95+TW/2, V0=Ly-TD/2-.13, SW=TW-2*GL, SD=TD-2*GL, WY=SH+TH*.9;
     const sandY=(x,z)=>SH+.06+.03+.09*Math.min(1,Math.max(0,(z+SD/2)/SD))+.012*Math.sin(x*5.1+z*3.3);   // the sand's top, banked up toward the back
     cap('FISH TANK',g=>{ const tg=new THREE.Group(); tg.position.set(U0,0,V0); g.add(tg); const P=(geo,m,x,y,z,ry=0,cast=true)=>part(geo,m,x,y,z,ry,tg,cast);
       const V3=THREE.Vector3, ONE=new V3(1,1,1);

@@ -149,7 +149,7 @@ window.TESTS=TESTS;
         if(j==='sit'&&st.sit)return ['pass','sat down'];
         if(j==='decorate'&&MODS.apts&&MODS.apts.inReal&&K.cash()<s.c0)return ['pass','bought a thing for $'+(s.c0-K.cash())]; } };
     /* ---------- PLAY IT THROUGH: the steps, a shot of each from four angles, its spot code and what the game said ---------- */
-    const SAID=[]; { const tap=()=>{ const J=document.getElementById('hlines'); if(!J)return setTimeout(tap,2000); new MutationObserver(()=>{ const L=J.lastElementChild, t=L&&L.textContent; if(t&&t!==SAID[SAID.length-1]){ SAID.push(t.slice(0,120)); if(SAID.length>12)SAID.shift(); } }).observe(J,{childList:true,subtree:true,characterData:true});   // the HUD's log: what the game said }; tap(); }
+    const SAID=[]; { const tap=()=>{ const J=document.getElementById('hlines'); if(!J)return setTimeout(tap,2000); new MutationObserver(()=>{ const L=J.lastElementChild, t=L&&L.textContent; if(t&&t!==SAID[SAID.length-1]){ SAID.push(t.slice(0,120)); if(SAID.length>12)SAID.shift(); } }).observe(J,{childList:true,subtree:true,characterData:true}); }; tap(); }   // the HUD's log: what the game said
     const frames=n=>new Promise(r=>{ const f=()=>--n>0?requestAnimationFrame(f):r(); requestAnimationFrame(f); });
     const ANG=[['behind',0],['side',Math.PI/2],['front',Math.PI],['first',null]];
     const shoot=async(keep)=>{ const o=[]; if(!BUGS.grab)return o; BOT.draw=true; const v0=UI.view, y0=SHARED.yaw, d0=UI.dist; if(d0>0)UI.dist=UI.distTo=d0*.6;   // nearer, so walls inside a shop stand behind the camera less

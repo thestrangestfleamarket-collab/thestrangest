@@ -2,7 +2,7 @@
 // takes you to a room of the menu's (THE SHOP) and moves you through it, a shot at each of three spots (<out>-0/1/2.png): what stands in the
 // room should look the same in all three, only the near walls' band cut
 const {chromium}=require('playwright');
-(async()=>{ const [out,room='THE SHOP']=process.argv.slice(2); const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']});
+(async()=>{ const [out,room='THE BODEGA']=process.argv.slice(2); const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']});
   const pg=await b.newPage({viewport:{width:900,height:700}}); const errs={}; pg.on('pageerror',e=>{ errs[e.message]=1; }); pg.on('console',m=>{ const t=m.text(); if(/ROOMS:|ERROR|shader/i.test(t))errs[t.slice(0,160)]=1; });
   await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&hour='+(process.env.HOUR||21),{timeout:180000}); await pg.waitForTimeout(24000);
   await pg.evaluate(r=>{ const b=[...document.querySelectorAll('button')].find(b=>b.textContent.trim()===r); if(b)b.click(); },room); await pg.waitForTimeout(3000);

@@ -132,7 +132,9 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
     const home=(k,a)=>{ if(k&&LEVEL.homes&&!LEVEL.homes[k])LEVEL.homes[k]=[+tx(X(cx+(a?a[0]:0))).toFixed(2),+tz(Z(R.y0+(a?a[1]:2.2))).toFixed(2),0,id]; };
     home(who,p.at); for(const k in p.more||{})home(k,p.more[k]); };   // (more: whoever else stands in the shop)
   for(const id of ['theatre','play','bar','bodega','bath']){ const p=WP[id]; if(!p||!p.pf||DEF[id]||AWAY.has(id==='play'?'playhouse':id))continue; const LW=MS.lot(id,200), S=p.face==='s', fy=S?LW.y0:LW.y1, TA=TURN(LW,p.face||'n'); MSHOP.fronts.push({id,pf:p.pf,x:X((LW.x0+LW.x1)/2),zf:Z(fy),zi:Math.sign(Z(fy+(S?1:-1))-Z(fy)),w:Math.abs(X(LW.x1)-X(LW.x0)),rot:TA.hd(0),L:TA.L,pt:TA.pt});
-    if(id==='bodega'||id==='bath'){ const r=box4(LW.x0,LW.y0,LW.x1,LW.y1); SOL.up.push(r); FIX.up.push([r[0],r[1],0,r[2],r[3],Y(120)]); } }   // the theatre's, playhouse's, bar's, bodega's and bath house's Polyfork outsides (their insides off the map; the bodega and bath house solid here, the others by their own builders)   // the theatre's and the playhouse's Polyfork outsides (their insides off the map)
+    const F=MSHOP.fronts[MSHOP.fronts.length-1], PD=id==='bodega'&&p.pf==='bodega'&&SHARED.pfDoor?SHARED.pfDoor(F.x,F.zf,F.zi,1):null;
+    if(PD&&ROOMS.off.bodega)Object.assign(ROOMS.off.bodega,{door:PD.door,out:PD.out,shift:null});
+    if(id==='bodega'||id==='bath')for(const r of PD?PD.sol:[box4(LW.x0,LW.y0,LW.x1,LW.y1)]){ SOL.up.push(r); FIX.up.push([r[0],r[1],0,r[2],r[3],Y(120)]); } }   // the theatre's, playhouse's, bar's, bodega's and bath house's Polyfork outsides (their insides off the map; the bodega and bath house solid here, the others by their own builders)   // the theatre's and the playhouse's Polyfork outsides (their insides off the map)
   let n=0; for(const id in DEF)if(WP[id])make(id,WP[id].pf&&!DEF[id].pf?{...DEF[id],pf:WP[id].pf}:DEF[id],n++);   // a place that names a Polyfork building stands it (owner, 7 Nov 2026: the Hudson row's shops)
   window.MSHOPDBG=()=>({shops:Object.keys(MSHOP.at),built:Object.keys(MSHOP.at).filter(id=>ROOMS.lazy[id]&&ROOMS.lazy[id].done)});
 });

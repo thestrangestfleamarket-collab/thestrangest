@@ -480,7 +480,9 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     for(const q of LP){ const [x,y]=snap(q[0],q[1]), d=pd(x,y); if(d<.5||d>2.6||BK.wet(x,y,.8)||FOUNT.lake(x,y)<1||inCL(x,y,1)||x<P.x0+2||x>P.x1-2||y<P.y0+2||y>P.y1-2)continue;
       if(TREES.some(t=>Math.hypot(t[1]-x,t[2]-y)<1.6)||ok.some(o=>Math.hypot(o[0]-x,o[1]-y)<9))continue; ok.push([x,y]); }
     // a pair at the drawbridge's foot, either side of the way up to the gate
-    for(const sd of [-1,1]){ const [x,y]=snap(CASTLE.gate-PO.x+sd*2.4,CL[1]-1.8); if(inCL(x,y,.2)||pd(x,y)<.5)continue; for(let i=ok.length-1;i>=0;i--)if(Math.hypot(ok[i][0]-x,ok[i][1]-y)<6)ok.splice(i,1); ok.push([x,y]); }
+    for(const sd of [-1,1]){ const [x,y]=snap(CASTLE.gate-PO.x+sd*2.4,CL[1]-1.8); if(inCL(x,y,.2)||pd(x,y)<.5)continue; for(let i=ok.length-1;i>=0;i--)if(Math.hypot(ok[i][0]-x,ok[i][1]-y)<6)ok.splice(i,1); ok.push(Object.assign([x,y],{gate:1})); }
+    // the park's one kind of lamp post, a third fewer (owner, 9 Nov 2026: "more sparse by 33%"): the most crowded one goes, until two in three are left
+    { const nn=o=>ok.reduce((m,q)=>q===o?m:Math.min(m,Math.hypot(q[0]-o[0],q[1]-o[1])),1e9); for(let want=Math.round(ok.length*2/3);ok.length>want;){ let bi=0, bd=1e9; ok.forEach((o,i)=>{ const d=nn(o); if(d<bd&&!o.gate){ bd=d; bi=i; } }); ok.splice(bi,1); } }
     LP.length=0; LP.push(...ok); }
   // the park lamp (owner, 28 Oct 2026): a dark metal post and a metal hood; the bulb hides under the hood, so only its light on the ground shows
   const MET=(c0,c1)=>(i,j)=>{ const t=(i*7+j*3)%11<2?1.12:1; return [c0*t|0,c1*t|0,(c1+6)*t|0]; };
@@ -488,7 +490,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     for(const [w,z0,z1,c] of [[.07,h0-4,h0,52],[.3,h0,h0+2,62],[.25,h0+2,h0+4,74],[.17,h0+4,h0+6,86],[.07,h0+6,h0+9,70]])block(x-w,y-w,x+w,y+w,z0,z1,35,()=>[c+30,c+34,c+40],0,z1-z0,MET(c,c+4));
     { const w=.2, yb=Y(h0-.2), tx=SHARED.BOD.faceTex(6,6,(i,j)=>i<1||i>4||j<1||j>4?[90,88,84]:[255,236,190,1]); SHARED.BOD.bq([X(x-w),yb,Z(y-w)],[X(x+w),yb,Z(y-w)],[X(x+w),yb,Z(y+w)],[X(x-w),yb,Z(y+w)],tx,'G'); SHARED.BOD.bq([X(x-w),yb,Z(y+w)],[X(x+w),yb,Z(y+w)],[X(x+w),yb,Z(y-w)],[X(x-w),yb,Z(y-w)],tx,'G'); }
     const L=new THREE.PointLight(new THREE.Color(1,.86,.62),70,12*TILE,1.6); L.position.set(X(x),Y(h0-6),Z(y)); L.userData.i0=L.intensity; L.userData.near=.3*TILE; L.intensity=0; (PARK.hoods||(PARK.hoods=[])).push(L); scene.add(L); lamps.push(L);   // lit by night only, with the path lamps (lampLit)
-    o.sol=[X(x-.1),Z(y-.1),X(x+.1),Z(y+.1)]; o.fix=[X(x-.1),Z(y-.1),0,X(x+.1),Z(y+.1),Y(h0)]; o.follow=[L]; SOL.up.push(o.sol); FIX.up.push(o.fix); } BATCH.tag=null; });
+    o.sol=[X(x-.1),Z(y-.1),X(x+.1),Z(y+.1)]; o.fix=[X(x-.1),Z(y-.1),0,X(x+.1),Z(y+.1),Y(h0)]; o.follow=[L]; SOL.up.push(o.sol); FIX.up.push(o.fix); } BATCH.tag=null; if(WEEDS.addFeet)WEEDS.addFeet(LP.map(([x,y])=>[X(x),Z(y),.15*TILE,.6*TILE])); });
   const sol=(x0,y0,x1,y1,h)=>{ SOL.up.push([X(x0),Z(y0),X(x1),Z(y1)]); FIX.up.push([X(x0),Z(y0),0,X(x1),Z(y1),Y(h)]); };
   for(const [x0,y0,x1,y1] of RUNS)sol(x0,y0,x1,y1,WH); for(const [,,x0,y0,x1,y1] of PIERS)sol(x0-.14,y0-.14,x1+.14,y1+.14,PH+18);
   const BM=(k,map,emap)=>new THREE.MeshLambertMaterial({map,emissiveMap:emap||null,emissive:emap?new THREE.Color(1,1,1):new THREE.Color(0,0,0),alphaTest:.5,side:THREE.DoubleSide});

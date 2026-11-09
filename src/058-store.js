@@ -223,7 +223,7 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
     STORE.doorThings=()=>{ '@later'; if(typeof UI==='undefined'||!UI.thing)return; for(const id in STORE.inside){ const R=STORE.inside[id]; if(R.th)continue; if(WALKIN[id]){ STORE.door(id); continue; } const SD=STORE.streetDoor[id], [x,y]=SD?SD.door:DOORP(R,.35), hb=new THREE.Mesh(new THREE.BoxGeometry(1.4*TILE,2.6*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false}));
       hb.position.set(X(x),1.3*TILE,Z(y)); scene.add(hb); R.th={name:/^THE /.test(R.name)?R.name:'THE '+R.name,ghost:1,obj:hb,reach:1.4*TILE,near:2.4*TILE,tall:2.6*TILE,act:()=>STORE.enter(id,true)}; UI.thing(R.th);
         const [ex,ey]=DOORP(R,-.35), he=new THREE.Mesh(new THREE.BoxGeometry(1.4*TILE,2.6*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false})); he.position.set(X(ex),1.3*TILE,Z(ey)); scene.add(he);
-        UI.thing({name:'OUT TO THE STREET',ghost:1,obj:he,reach:1.4*TILE,near:2.4*TILE,tall:2.6*TILE,act:()=>STORE.exit(id)}); }};
+        UI.thing({name:'OUT TO THE STREET',exit:1,ghost:1,obj:he,reach:1.4*TILE,near:2.4*TILE,tall:2.6*TILE,act:()=>STORE.exit(id)}); }};
     // a street shop's door you walk through (WALKIN): its inside built when you come within NEAR and held until past FAR; the door swings open as you reach it once the inside is built, and blocks while shut
     STORE.held=new Set(); const DOORS={}, NEAR=14*TILE, FAR=18*TILE, REACH=2.4*TILE, building=new Set();
     STORE.open=id=>!!DOORS[id]&&DOORS[id].t>.6;

@@ -317,7 +317,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       for (let v = 0; v < A.length; v += 3) { const [x, y] = P.at(A[v], A[v + 2]); if (x < P.x0 + 1.5 || x > P.x1 - 1.5 || y < P.y0 + 1.5 || y > P.y1 - 1.5) out++; }
       return { ring: true, n: P.ringN, still: !R.geometry.attributes.aSw, low: R.userData.items.every(o => /\.low$/.test(o.k)), out, climb: P.treeItems().length >= P.ringN }; }).catch(e => ({ err: e.message }));
     const ck = await pg.evaluate(() => ({ k: window.FORAGE && FORAGE.climbK ? FORAGE.climbK() : null, grow: !!(window.FORAGE && FORAGE.climbed), lad: !!(window.__dbg.MAPK && window.__dbg.MAPK.MODS.apts.lad), sk: !!(window.FORAGE && FORAGE.SK.some(s => s[0] === 'climb')) })).catch(e => ({ err: e.message }));
-    ok(ck.sk && ck.k >= .7 && ck.k <= 1.5 && ck.grow && ck.lad, 'CLIMBING is one skill for every climb: its pace and growth live on the skills system, the fire escape ladder is there to read it: ' + JSON.stringify(ck));
+    ok(ck.sk && ck.k >= .7 && ck.k <= 3.5 && ck.grow && ck.lad, 'CLIMBING is one skill for every climb: its pace and growth live on the skills system (today\'s pace to 20, four times at 100, 9 Nov 2026), the fire escape ladder is there to read it: ' + JSON.stringify(ck));
     const rf = await pg.evaluate(() => typeof ROOFSDBG !== 'undefined' ? ROOFSDBG() : null).catch(e => ({ err: e.message }));
     ok(rf && !rf.blockProps && !(rf.propRows || []).length, 'no garages, so no garage roofs to dress (9 Nov 2026): ' + JSON.stringify(rf));
     const mk = await pg.evaluate(() => { const all = [...BLK.blds.map(q => ({ ...q, kind: 'garage' })), ...BLK.lots], a = q => q.row === 5 ? [q.y0, q.y1] : [q.x0, q.x1]; let same = 0;

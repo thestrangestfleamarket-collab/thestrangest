@@ -100,7 +100,7 @@ import {WORTH} from './140c-worth.js';
     TRAIN:TRMAX,base:stBase,trained:k=>S.tr[k]||0,toward:k=>S.tp[k]||0,
     gain:(k,n=1)=>{ if(S.st[k]==null||S.st[k]>=TRMAX)return 0; const g=Math.min(TRMAX,S.st[k]+n)-S.st[k]; S.st[k]+=g; S.tr[k]=(S.tr[k]||0)+g; saveSoon(); PACK.draw(); return g; },
     work:(k,w)=>{ if(S.st[k]==null||S.st[k]>=TRMAX||!(w>0))return 0; S.tp[k]=(S.tp[k]||0)+w*(TRMAX-S.st[k])/70; let g=0; while(S.tp[k]>=1&&S.st[k]<TRMAX){ S.tp[k]-=1; g+=FORAGE.stats.gain(k,1); } if(g)say(`YOUR ${STN.find(s=>s[0]===k)[1]} RISES TO ${S.st[k]}.`,'#7fd0ff'); else saveSoon(); return g; }};   // work: effort toward the next point, slower the higher the stat (owner, 8 Nov 2026: up to 100)
-  FORAGE.climbK=()=>.7+.8*sk('climb')/100; FORAGE.climbed=()=>use('climb',-50,150);   // the CLIMBING skill: how fast any climb goes (trunks, ladders), and a reach that works it
+  FORAGE.climbK=()=>.86*(1+3*Math.max(0,sk('climb')-20)/80); FORAGE.climbed=()=>use('climb',-50,150);   // the CLIMBING skill: how fast any climb goes (trunks, ladders; the same up to 20, four times that at 100), and a reach that works it
   const RANK=[[100,'GRANDMASTER'],[90,'MASTER'],[80,'ADEPT'],[70,'EXPERT'],[50,'JOURNEYMAN'],[30,'APPRENTICE'],[0,'NOVICE']]; FORAGE.rank=k=>RANK.find(r=>sk(k)>=r[0])[1];
   // a lesson: pay a trainer (a merchant who buys the category, an arcade game, the holodeck) to raise a skill up to that trainer's cap
   FORAGE.train=(k,cap=300,cost,amt=10)=>{ '@later'; if(!SK.some(s=>s[0]===k))return; const nm=(SK.find(s=>s[0]===k)||[0,k])[1], c=cost??(8+Math.round(S.sk[k]/20)); if(S.sk[k]>=cap)return say('THERE IS NOTHING MORE TO TEACH YOU IN '+nm+' HERE.','#c8a090');

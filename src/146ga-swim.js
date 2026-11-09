@@ -47,14 +47,15 @@ Object.assign(SWIM,{d:null,tankS:0}); window.SWIM=SWIM;
   const NM=500, R=3*WM, mg=new THREE.BufferGeometry(), mp=new Float32Array(NM*3), m0=new Float32Array(NM*3); for(let i=0;i<NM*3;i++)m0[i]=(Math.random()*2-1)*R;
   mg.setAttribute('position',new THREE.BufferAttribute(mp,3)); const motes=LEVELS.own(new THREE.Points(mg,new THREE.PointsMaterial({color:0xa8c49a,size:.012*WM,transparent:true,opacity:.5,depthWrite:false})),'*'); motes.frustumCulled=false; motes.visible=false; scene.add(motes);
   const vig=document.createElement('div'); vig.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:5;display:none;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 45%,rgba(4,16,8,.55) 100%)'; document.body.appendChild(vig);
-  let uw=false, mt=0, seen=0, dfo=false; const far=[], hid=[], P=new V();   // far things that ignore fog (the far city, backdrops): hidden while you are under, the murk would hide them
+  let uw=false, mt=0, seen=0, dfo=false, cf=null; const far=[], hid=[], P=new V();   // far things that ignore fog (the far city, backdrops): hidden while you are under, the murk would hide them
   (MODS.waters=MODS.waters||[]).push({pre:(scene,cam)=>{ uw=!!(scene.fog&&scene.fog.uw)&&!!cam&&!cam.isOrthographicCamera; motes.visible=uw; if(vig.style.display!==(uw?'':'none'))vig.style.display=uw?'':'none'; if(!uw){ seen=0; return; } if(DFOG.pass){ dfo=!DFOG.pass.enabled; DFOG.pass.enabled=true; DFOG.under={s:scene.fog.near,e:scene.fog.far,c:scene.fog.color}; }   // the distance fog pass becomes the water's fog: nothing past the murk shows
     if(performance.now()-seen>2000){ seen=performance.now(); far.length=0; scene.traverse(o=>{ const m=o.material; if(!(o.isMesh||o.isPoints)||!m||Array.isArray(m)||m.fog!==false||m.uniforms&&m.uniforms.uUW)return; far.push(o); }); }
     for(const o of [FAR3.mesh,FAR3.farMesh,FAR3.panels,FAR3.trees])if(o&&o.isObject3D&&o.visible){ o.visible=false; hid.push(o); }   // the far city's own mist shader skips the fog
     const lim=scene.fog.far*1.3; for(const o of far){ if(!o.visible)continue; o.getWorldPosition(P); if(P.distanceTo(cam.position)>lim){ o.visible=false; hid.push(o); } }
+    SWIM.view=0; if(SWIM.cut!==false&&cam.far>lim){ cf={cam,far:cam.far}; cam.far=lim; cam.updateProjectionMatrix(); SWIM.view=lim; SWIM.murk=scene.fog.far; }   // nothing past the murk is drawn at all: the view ends just beyond it
     mt+=1/60; const c=cam.position, a=mg.attributes.position.array, w=2*R;
     for(let i=0;i<NM;i++){ for(let k=0;k<3;k++){ const base=m0[i*3+k]+(k===1?-mt*.05*WM:Math.sin(mt*.3+i)*.1*WM), cc=k===0?c.x:k===1?c.y:c.z; a[i*3+k]=cc+(((base-cc)%w+w*1.5)%w-R); } }
-    mg.attributes.position.needsUpdate=true; },post:()=>{ for(const o of hid)o.visible=true; hid.length=0; if(DFOG.pass){ DFOG.under=null; if(dfo){ DFOG.pass.enabled=false; dfo=false; } } }});
+    mg.attributes.position.needsUpdate=true; },post:()=>{ for(const o of hid)o.visible=true; hid.length=0; if(cf){ cf.cam.far=cf.far; cf.cam.updateProjectionMatrix(); cf=null; } if(DFOG.pass){ DFOG.under=null; if(dfo){ DFOG.pass.enabled=false; dfo=false; } } }});
 
   // the rented scuba set: a full tank when you rent it, worn on your back; under water it breathes for you until it runs dry, then it goes back to the shark
   FORAGE.add({names:{scuba:'SCUBA SET (RENTAL)'}});
@@ -65,4 +66,4 @@ Object.assign(SWIM,{d:null,tankS:0}); window.SWIM=SWIM;
   VIT.tankTxt=()=>EQUIP.breathe&&SWIM.tankS>0?' · TANK '+Math.floor(SWIM.tankS/60)+':'+String(Math.floor(SWIM.tankS%60)).padStart(2,'0'):'';
   SYS.add('rent',id=>{ const s=+ITEMS.prop(id,'tank')||0; if(!s)return; SWIM.tankS=s; save(); if(EQUIP.by[ITEMS.prop(id,'slot')]!==id)EQUIP.wear(id,true);
     say('THE FISHERMAN STRAPS ON A FULL TANK: '+Math.round(s/60)+' MINUTES OF AIR UNDER WATER.'); },'146ga-swim');
-  window.SWIMDBG=()=>{ const W=st.water; return {in:!!(W&&W.in),dive:!!(W&&W.dive),d:SWIM.d,y:W&&W.y,level:W&&W.level,floor:W&&W.floor,arms:root.visible,uw,tank:SWIM.tankS,breathe:!!EQUIP.breathe,air:VIT.air}; }; }
+  window.SWIMDBG=()=>{ const W=st.water; return {in:!!(W&&W.in),dive:!!(W&&W.dive),d:SWIM.d,y:W&&W.y,level:W&&W.level,floor:W&&W.floor,arms:root.visible,uw,view:SWIM.view,murk:SWIM.murk,tank:SWIM.tankS,breathe:!!EQUIP.breathe,air:VIT.air}; }; }

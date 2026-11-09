@@ -282,7 +282,7 @@ const fishInit=()=>{ if(FISHING.at)return; const T=TILE, RB={get lv(){ return RI
     FISHING.enter=()=>{ '@later'; if(FISHING.mode)return; if(!FORAGE.has('rod'))return say('YOU NEED A ROD. FISHING & SCUBA ON THE HUDSON ROW SELLS THEM.','#c8a090'); if(WIELD.on!=='rod')WIELD.set('rod'); if(WIELD.on!=='rod')return;
       FISHING.mode=SHARED.fishing=true; prev=UI.view; if(UI.view!=='first'&&UI.view!=='follow')UI.setView('follow'); SHARED.yawTo=SHARED.heading+Math.PI; SHARED.target=null; sig=''; GO.hidden=true;
       say('FISHING. DRAG TO LOOK ROUND, THE WHEEL ZOOMS. HOLD CAST (SPACE) FOR POWER, LET GO TO THROW.','#8fe3d6'); };
-    FISHING.leave=()=>{ if(!FISHING.mode)return; if(S_){ if(S_.st==='land')unhook(); else FISHING.reel(); } FISHING.mode=SHARED.fishing=false; hold=null; FISHING.reeling=false; ring.visible=false; PB.style.display='none'; HUDF.style.bottom='52px'; if(prev&&prev!==UI.view)UI.setView(prev); prev=null; };
+    FISHING.leave=()=>{ if(!FISHING.mode)return; if(S_){ try{ if(S_.st==='land')unhook(); else FISHING.reel(); }catch(e){ console.warn('FISHING leave',e); FISHING.reel(); } } FISHING.mode=SHARED.fishing=false; hold=null; FISHING.reeling=false; ring.visible=false; PB.style.display='none'; HUDF.style.bottom='52px'; if(prev&&prev!==UI.view)UI.setView(prev); prev=null; };
     const throwIt=()=>{ const p=power(); hold=null; pw=p; const [x,z]=ahead(MIND+p*(MAXD()-MIND)); if(!FISHING.at(x,z))return say('THAT WOULD LAND ON DRY GROUND. TURN TO THE WATER OR CHANGE THE POWER.','#c8a090'); FISHING.cast(x,z); };
     const down=()=>{ const s=S_; if(!s){ hold={t:0}; return; } if(s.st==='fight'){ FISHING.reeling=true; return; } if(s.st==='bite')return strike(); if(s.st==='land')return unhook(); FISHING.reel(); say('YOU REEL IN YOUR LINE.'); };
     let pside=false; const up=()=>{ if(hold)throwIt(); FISHING.reeling=false; };
@@ -306,7 +306,7 @@ const fishInit=()=>{ if(FISHING.at)return; const T=TILE, RB={get lv(){ return RI
     addEventListener('pointerup',()=>{ if(FISHING.mode){ up(); if(pside){ FISHING.side=0; pside=false; } } });
     const typing=e=>e.target&&e.target.closest&&e.target.closest('input,textarea,[contenteditable="true"]');
     const LOCK=new Set(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','1','j','k','n','r','u','i','2','3','4','p','f','v','b',' ','escape']), LEFT=new Set(['a','arrowleft']), RIGHT=new Set(['d','arrowright']);
-    addEventListener('keydown',e=>{ if(typing(e))return; const k=(e.key||'').toLowerCase();
+    addEventListener('keydown',e=>{ const k=(e.key||'').toLowerCase(); if(k==='escape'&&FISHING.mode&&typing(e)){ e.target.blur(); e.preventDefault(); e.stopImmediatePropagation(); FISHING.leave(); return; } if(typing(e))return;
       if(!FISHING.mode){ if(k==='f'&&!GO.hidden&&!e.repeat){ FISHING.enter(); e.preventDefault(); e.stopImmediatePropagation(); } return; }
       if(!LOCK.has(k))return; e.preventDefault(); e.stopImmediatePropagation(); if(e.repeat)return;
       if(k===' ')down(); else if(k==='escape'||k==='f')FISHING.leave(); else if(k==='v')view(); else if(k==='b')baitNext(); else if(LEFT.has(k))FISHING.side=-1; else if(RIGHT.has(k))FISHING.side=1;

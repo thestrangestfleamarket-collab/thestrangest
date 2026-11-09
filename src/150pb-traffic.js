@@ -49,7 +49,7 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C,3)); g.computeVertexNormals(); g.computeBoundingSphere(); return g; };
   const lid=k=>D&&D[k]?'tr:'+k:'car:'+k, size=k=>{ const s=D&&D[k]?D[k].size:[2,1.4,4.9], l=VLOOK.scaleOf(lid(k)); return l===1?s:s.map(v=>v*l); };
   const tpl=k=>{ if(TPL[k])return TPL[k]; let g=null; if(D[k]){ g=new THREE.Group(); const me=new THREE.Mesh(geo(D[k].parts.body),MAT); me.name='BODY'; me.castShadow=true; g.add(me); g.scale.setScalar(M1); VLOOK.dress('tr:'+k,g); } else if(MODS.cars&&MODS.cars.build)g=MODS.cars.build(k); if(g)g.traverse(o=>{ o.userData.anyRoom=false; }); return TPL[k]=g; };
-  const take=k=>{ const P=POOL[k]||(POOL[k]=[]); if(P.length)return P.pop(); const t=tpl(k); if(!t)return null; const m=t.clone(); GRP.add(m); return m; };
+  const take=k=>{ const P=POOL[k]||(POOL[k]=[]); if(P.length)return P.pop(); const t=tpl(k); if(!t)return null; const m=t.clone(); GRP.add(m); if(MODS.cars&&MODS.cars.cab)MODS.cars.cab(m); return m; };
   const give=C=>{ if(!C.m)return; C.m.visible=false; (POOL[C.model]||(POOL[C.model]=[])).push(C.m); C.m=null; };
   const pick=(L,C,lap)=>{ if(C.fixed)return C.fixed; const list=L.fly?L.FL:L.GR; return list[(C.i*7+lap*3+L.seed*5)%list.length]; };
 

@@ -87,6 +87,7 @@ jobs:
           k passport 'src/159d|passport\.cjs'
           k scanner 'src/159e|src/146-|scanner\.cjs'
           k cafe    'src/144c[a-z]|src/038zd|data/bookstore|worker/door|cafe\.cjs|tgames\.cjs'
+          k invites 'src/144c[a-z]|src/111d-online|src/141e-map|src/162d-hud|worker/door|invites'
           k spray   'src/159f|src/146-|spray\.cjs'
           k paint   'src/159[g-i]|src/150a|src/150d|src/140b|src/146h|data/characters|worker/|paint\.cjs|trade-server\.cjs'
           k bodega80 'src/039-bodega|src/016-street-kit|bodega80s\.cjs'
@@ -521,6 +522,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' dunsrv')
         run: node tests/dunmobs-server.cjs
+      - name: The invitations (a card, the map's mark, ACCEPT sits you at the table; the server hands them on across sections)
+        timeout-minutes: 20
+        if: contains(steps.f.outputs.run, ' invites')
+        run: node tests/invites.cjs dist/market.html && node tests/invites-server.cjs
       - name: The cars' server (one driver a car, parking kept and heard)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' cars')

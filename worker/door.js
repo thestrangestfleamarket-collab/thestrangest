@@ -397,6 +397,12 @@ export class Block extends Server {
       const text = word(m.text, 200), st = sayStyle(m.st); if (text) this.broadcast(JSON.stringify({ t: "say", id: s.id, name: s.name, text, st }), [c.id]);
     } else if (m.t === "tr") {
       this.trade(c, s, m);
+    } else if ((m.t === "inv" || m.t === "invr") && s.name) {   // an invitation to a player online anywhere (inv), or their answer (invr): handed on by this section's block or another's
+      const to = word(m.to, 64); if (!to || to === s.id) return; const d = {}; if (m.d && typeof m.d === "object") for (const k of Object.keys(m.d).slice(0, 6)) if (/^[a-z]{1,8}$/.test(k)) d[k] = typeof m.d[k] === "number" ? num(m.d[k], -1e4, 1e4) : word(m.d[k], 24);
+      const x = { t: "inv", op: m.t === "inv" ? "ask" : m.op === "yes" ? "yes" : "no", from: s.id, name: s.name, sec: this.name, k: /^[a-z]{1,12}$/.test(m.k || "") ? m.k : "", d, at: now };
+      this.invite(to, x).then(n => { if (!n && x.op === "ask") c.send(JSON.stringify({ t: "inv", op: "gone", from: to })); });
+    } else if (m.t === "everyone") {   // who is online in every section, for an invitation
+      Promise.all(SECROOMS.map(r => r === this.name ? Promise.resolve(this.names()) : blockAsk(this.env, r, "names").catch(() => []))).then(L => c.send(JSON.stringify({ t: "everyone", all: L.flat().filter(p => p.id !== s.id).slice(0, 200) })));
     } else if (m.t === "take") {   // a loose thing on the ground: whoever asks first gets it, told with its record; the rest see it go
       const k = word(m.k, 40); if (!k || !k.startsWith("drop:")) return; this.dropT(); const r = this.ctx.storage.sql.exec("select rec, until from drops where k = ?", k).toArray()[0], v = r && r.until >= now ? r.rec : "";
       if (r) this.dropGone(k); c.send(JSON.stringify({ t: "took", k, v }));
@@ -434,13 +440,19 @@ export class Block extends Server {
         say(c, { op: "done", with: other, give: mine.o[s.id] || e, get: mine.o[other] || e }); return say(oc, { op: "done", with: s.id, give: mine.o[other] || e, get: mine.o[s.id] || e }); }
       return st(); }
   }
+  names() { return this.roster().filter(p => p.name).map(p => ({ id: p.id, name: p.name, sec: this.name })); }
+  hand(to, x) { let n = 0; const j = JSON.stringify(x); for (const o of this.getConnections()) if (o.state && o.state.id === to) { o.send(j); n++; } return n; }
+  async invite(to, x) { const n = this.hand(to, x); if (n) return n;
+    const L = await Promise.all(SECROOMS.filter(r => r !== this.name).map(r => blockAsk(this.env, r, "inv", { to, m: x }).then(o => o.n || 0).catch(() => 0))); return L.reduce((a, b) => a + b, 0); }
   put(k, v) { this.world().then(W => { if (v === "") delete W[k]; else W[k] = v; this.ctx.storage.put("world", W); this.broadcast(JSON.stringify({ t: "world", k, v })); });
   }
   async onRequest(req) { const path = new URL(req.url).pathname;
     if (path === "/who") return Response.json(this.roster().map(p => p.id));
+    if (path === "/names") return Response.json(this.names());
     let b = {}; try { b = await req.json(); } catch (e) {}
     if (path === "/tell") { const m = JSON.stringify({ t: "tell", from: "THE MARKET", text: word(b.text, 500) }); let n = 0;
       for (const c of this.getConnections()) if (c.state && (b.to === "*" || c.state.id === b.to)) { c.send(m); n++; } return Response.json({ n }); }
+    if (path === "/inv") return Response.json({ n: b && b.m && b.m.t === "inv" ? this.hand(String(b.to || ""), b.m) : 0 });
     if (path === "/kick") { for (const c of this.getConnections()) if (c.state && c.state.id === b.id) c.close(b.out ? 4002 : 4001, b.out ? "out" : "removed"); return Response.json({ ok: true }); }
     return new Response("not found", { status: 404 }); }
   onClose(c) { if (this.dev) this.dev.delete(c.id); const s = c.state; if (s && s.id && !this.roster(c.id).some(p => p.id === s.id)) { this.broadcast(JSON.stringify({ t: "out", id: s.id }));

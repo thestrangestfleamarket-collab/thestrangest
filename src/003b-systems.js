@@ -7,6 +7,8 @@ const ROOMS={lazy:{},off:{},grounds:[]},
   CHARP={},
   BAG={},   // the bag: THE PACK drawn as a bag of item pictures, the ground drops and the paperdoll (162e-bag)
   HUD={},   // the heads-up display (162d-hud): the minimap, the message log and the quick bar
+  INVITES={kinds:{}},   // invitations between players (144ch-invites); a kind of invitation is registered in INVITES.kinds by its own file
+  MARKS=[],   // marks on the MAP and the minimap ({x,z,name,until}): an invitation's place
   ED={},
   pos=new THREE.Vector3(-2.2,0,3.2),
   keys=new Set(),
@@ -110,7 +112,7 @@ const ROOMS={lazy:{},off:{},grounds:[]},
   GTSAMP=[],
   IMK={},
   BOOKS={},
-  TABLES=window.TABLES={sit:()=>{},top:()=>null,leave:()=>{}},   // the bookstore café's game tables (144cc-tables fills it); the bookstore's room (144ca) sets them
+  TABLES=window.TABLES={sit:()=>{},top:()=>null,leave:()=>{},chairs:[]},   // the bookstore café's game tables (144cc-tables fills it); the bookstore's room (144ca) sets them
   TALK=window.TALK={on:false,shops:new Map(),ops:{},tests:{},vars:{}},   // the talk window (159da-talk); the shops and the clicks hand characters to it; a character with its own shop panel sets TALK.shops
   INSPECT=window.INSPECT={kinds:[],on:false},   // the inspect window (150cy-inspect); each item family pushes {is:id=>bool, make:id=>Object3D} in its own file
   RADIO=window.RADIO={src:new Map(),next:()=>0,now:()=>null},   // the radio's stations (150p-cars) heard from more than cars: a room's source (a jukebox) is RADIO.src.set(id,{id,room}); RADIO.next(id) tunes it on (shared, like a car's)
@@ -121,4 +123,4 @@ const ROOMS={lazy:{},off:{},grounds:[]},
   Object.assign(LAND,{down:nf,move:no,up:no},LAND); Object.assign(SNDED,{close:no,into:no},SNDED); Object.assign(RINSP,{toggle:no},RINSP);
   Object.assign(EDITORS,{menu:no,key:no},EDITORS); Object.assign(SUMMON,{id:()=>'',here:()=>[],list:()=>[],go:no,back:no},SUMMON);
   Object.assign(NEWS,{init:no},NEWS); Object.assign(BINS,{station:no},BINS); Object.assign(PNM,{tick:no},PNM); Object.assign(SGM,{tick:no},SGM); }
-export {AMB, ARCH, ARCHI, BAG, BINS, BLAZE, BLK, BOAT, BOOKS, BROOK, BUGS, CHARP, CHARS, CINEMA, CITY, CIVIC, CLIP, CLOCK, CULL, DN, DRESS, DRM, DRONE, ED, EQUIP, FAR3, FEEL, FIGFX, FIRSTDAY, FLOW, FORAGE, GAMEED, GHOSTS, GPH, GPUT, GTRH, GTSAMP, GUARD, GUIDE, HUD, IMK, INSPECT, INTERIORS, INV, ITEMED, ITEMS, keys, LAND, LEVELS, LINES, LITE, LOOK, LOOKS, MAIL, MAPED, MOTION, MUS, NEWS, NPCS, ONLINE, PARK, PASSPORT, PB, PERFX, PETS, PH, PHYS, PNM, POND, PONDS, pos, PS2, RADIO, RAG, RIDE, RINSP, ROOMS, SCANNER, SELFSH, SFX, SGM, SHAD, SHOPS, SIGNS, SKY, SND, SNDED, SPRAY, st, STAGE, SWIM, TABLES, TALK, TENANTS, TESTS, TEXT, TRADE, TRAINERS, TRICKS, UI, USE, VAULT, VIS, VIT, VR, vwV, W3, WALKS, WE, WED, WEEDS, WHERE, WIELD, WINDOWS, WORKERS, wvV, WX, ZONES};
+export {AMB, ARCH, ARCHI, BAG, BINS, BLAZE, BLK, BOAT, BOOKS, BROOK, BUGS, CHARP, CHARS, CINEMA, CITY, CIVIC, CLIP, CLOCK, CULL, DN, DRESS, DRM, DRONE, ED, EQUIP, FAR3, FEEL, FIGFX, FIRSTDAY, FLOW, FORAGE, GAMEED, GHOSTS, GPH, GPUT, GTRH, GTSAMP, GUARD, GUIDE, HUD, IMK, INSPECT, INTERIORS, INV, INVITES, ITEMED, ITEMS, keys, LAND, LEVELS, LINES, LITE, LOOK, LOOKS, MAIL, MAPED, MARKS, MOTION, MUS, NEWS, NPCS, ONLINE, PARK, PASSPORT, PB, PERFX, PETS, PH, PHYS, PNM, POND, PONDS, pos, PS2, RADIO, RAG, RIDE, RINSP, ROOMS, SCANNER, SELFSH, SFX, SGM, SHAD, SHOPS, SIGNS, SKY, SND, SNDED, SPRAY, st, STAGE, SWIM, TABLES, TALK, TENANTS, TESTS, TEXT, TRADE, TRAINERS, TRICKS, UI, USE, VAULT, VIS, VIT, VR, vwV, W3, WALKS, WE, WED, WEEDS, WHERE, WIELD, WINDOWS, WORKERS, wvV, WX, ZONES};

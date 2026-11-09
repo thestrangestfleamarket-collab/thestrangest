@@ -11,14 +11,14 @@ const SAVE=(()=>{ const KEY='market-save', V=5;
     if(+o.v<5){ try{ for(const [k,n] of [['cinema-snd','cinema'],['market-grid','grid'],['market-shade','shade'],['market-self','self'],['market-home','home']]){ const v=localStorage.getItem(k); if(v!=null&&o[n]==null)o[n]=v; localStorage.removeItem(k); } }catch(e){} }
     o.v=V; return o; };
   const read=()=>{ try{ const o=JSON.parse(localStorage.getItem(KEY)||'null'); if(o&&typeof o==='object'&&!Array.isArray(o)&&+o.v<=V)return migrate(o); }catch(e){} return null; };
-  const write=()=>{ if(CAPTURE){ SAVE.blocked++; return true; } try{ localStorage.setItem(KEY,JSON.stringify(S)); return true; }catch(e){ return false; } };
+  let blocked=0; const write=()=>{ if(CAPTURE){ blocked++; return true; } try{ localStorage.setItem(KEY,JSON.stringify(S)); return true; }catch(e){ return false; } };
   let S=read(); if(S)write();
   if(!S){ S={v:V}; write(); }
   const A={V,KEY,
     get:k=>{ const v=S[k]; return v==null?null:typeof v==='string'?v:String(v); },
     set:(k,v)=>{ S[k]=v==null?null:String(v); return write(); },
     del:k=>{ delete S[k]; return write(); },
-    V, capture:CAPTURE, blocked:0, all:()=>Object.assign({},S),
+    V, capture:CAPTURE, get blocked(){ return blocked; }, all:()=>Object.assign({},S),
     clear:()=>{ S={v:V}; try{ localStorage.removeItem(KEY); }catch(e){} }};
   return A; })();
 // THE OWNED STORE: player-owned state — cash, inventory, items, mail, forage. The one seam between the game and where that state lives.

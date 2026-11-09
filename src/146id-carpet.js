@@ -73,7 +73,7 @@ const CARPET={}; window.CARPET=CARPET;
   /* ---------- flying it as you fly (G): it floats a hand above the ground, W A S D turns and flies it on, SPACE climbs and SHIFT sinks as fast as flying does, up through the clouds to the same 300 m; low down walls stop you, up high it goes over everything ---------- */
   const WM=T/.84, TOP=300*WM, LOW=.35*T, POSE={k:'carpet',z:0,lean:0};
   RIDE.kind('carpet',{name:'MAGIC CARPET',hint:'E UNROLLS IT AND YOU SIT. WASD FLIES, SPACE UP, SHIFT DOWN, E STEPS OFF.',onSay:'THE CARPET UNROLLS AND FLOATS. YOU SIT DOWN ON IT.',held:.35,dry:true,hop:false,ease:8,
-    make:()=>make(), carried:()=>rolled(),
+    make:()=>make(), hand:()=>rolled(),
     on:R=>{ R.h=0; R.vy=0; R.down=false; },
     leave:R=>{ if(R.h>LOW*1.6){ R.down=true; say('THE CARPET SINKS TO THE GROUND.'); } else RIDE.off('YOU STEP OFF THE CARPET.'); },
     step:(R,dt,I)=>{ const id=R.on, vmax=(+prop(id,'speed')||9)*T, k=Math.min(1,dt*2);

@@ -45,7 +45,7 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
   /* ---------- driving: each car keeps to its place on the clock, slowing for the light, the car ahead and anyone in the road, then catching up ---------- */
   const xOf=(L,s)=>L.dir>0?xW+s:xE-s;
   const blockers=()=>{ const B=[{x:pos.x,z:pos.z}]; for(const o of (ONLINE.others&&ONLINE.others.values())||[])if(o.p&&!o.dead)B.push({x:o.p.x,z:o.p.z}); if(window.CARS&&CARS.cars)for(const C of CARS.cars.values())if(!C.by&&C.mesh)B.push({x:C.x,z:C.z,r:2.4*M1}); return B; };
-  const step=dt=>{ const t=now(), Lt=light(t), B=LANES[0].GR?blockers():[], R=Math.max(90*T,(window.CULL&&CULL.R)||0), up=OUT.open&&!PARK.in&&SHARED.LVL==='up';
+  const step=dt=>{ const t=now(), Lt=light(t), B=LANES[0].GR?blockers():[], R=Math.max(90*T,(window.CULL&&CULL.R)||0), up=OUT.open&&!(PARK.within&&PARK.within(pos.x,pos.z))&&SHARED.LVL==='up';
     for(const L of LANES){ if(!L.GR)continue; const hw=Math.abs(zs-zm)/2+.6*M0;
       const nom=C=>t*L.v+C.i*LC/L.n;
       for(const C of L.cars){ if(C.u==null||!C.m&&Math.abs(nom(C)-C.u)>LC*.8){ C.u=nom(C); C.sp=L.v; } }

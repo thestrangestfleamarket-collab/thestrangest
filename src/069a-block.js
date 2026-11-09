@@ -1,4 +1,4 @@
-// THE BLOCK: BLK builds what stands between the real buildings across Market St, on the Hudson row and on West St: closed garages, empty parking lots and empty dirt lots (no fences).
+// THE BLOCK: BLK builds what stands between the real buildings across Market St, on the Hudson row and on West St: empty parking lots and empty dirt lots (no fences).
 import {SHARED, THREE} from './003-shx.js';
 import {BLK, PARK, pos, ROOMS, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
@@ -66,10 +66,10 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
     quad(P,U,I,v(q.x0,q.y0),v(q.x1,q.y0),v(q.x1,q.y1),v(q.x0,q.y1),[0,0],[1,0],[1,1],[0,1]);
     mesh(P,U,I,new THREE.MeshLambertMaterial({map:tex(c),side:THREE.DoubleSide}));
     BLK.lots.push(q); }
-  const TINTS=[[1.3,.82,.66],[1.12,1,.84],[.92,.95,1.02],[1.2,.95,.8],[1.05,.9,.92],[.98,1.02,.92],[1.25,.88,.72],[1.1,1.04,.95],[.9,.9,.96]], KINDS=['garage','park','empty'];
+  const TINTS=[[1.3,.82,.66],[1.12,1,.84],[.92,.95,1.02],[1.2,.95,.8],[1.05,.9,.92],[.98,1.02,.92],[1.25,.88,.72],[1.1,1.04,.95],[.9,.9,.96]], KINDS=['empty','park','empty'];   // no garages for now (owner, 9 Nov 2026): an empty lot where one stood
   const fill=(a,b,mk)=>{ let x=a, i=0; while(b-x>1.5){ const r=((Math.sin(x*12.9898+i*78.233)*43758.5453)%1+1)%1, w=6+r*4, e=b-x-w<3?b:x+w; mk(x,e,i++); x=e; } };
   const holes=(on,a0,a1)=>{ const g=[]; let y=a0; for(const [a,b] of on.slice().sort((p,q)=>p[0]-q[0])){ if(a>=a1)break; if(a-.1>y)g.push([y,a-.1]); y=Math.max(y,b+.1); } if(a1>y)g.push([y,a1]); return g; };   // (only the stretch a0..a1: a span past its end leaves no gap)
-  let n=0; const spot=(row,off,i,box)=>{ n++; const kind=row===1||row===2?'garage':KINDS[(i+off)%3], side=row===1?'s':row===2?'n':'e';   // Market St's row (row 1, owner 5 Nov 2026: one shut garage between every two shops) and the Hudson row (row 2) are all closed garages
+  let n=0; const spot=(row,off,i,box)=>{ n++; const kind=row===1||row===2?'empty':KINDS[(i+off)%3], side=row===1?'s':row===2?'n':'e';   // Market St's row and the Hudson row: empty lots in every gap
     if(kind==='garage')building({...box,h:112,e:row===5,k:400+n*11,tint:TINTS[n%TINTS.length],lit:0,garage:true,row});
     else lot({...box,kind,row,side}); };
   // (the Drive's buildings on the rows, data/world.json block.pf, keep their spans)

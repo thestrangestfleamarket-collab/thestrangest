@@ -1,16 +1,18 @@
 // THE ROOM EDITOR: DECORATE your apartment like the Sims (owner, 25 and 27 Oct 2026): T in your apartment (the view as it is); a click picks a thing up and a drag moves it on a grid (green fits, red doesn't), small things onto tables and shelves, pictures and wall lights onto the wall you point at; Q/E turn, Shift+wheel resizes, DEL puts it away; a buy bar of pictured things at prices; walls, floor and every light; saved to your account.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INV, ONLINE, pos} from './003b-systems.js';
+import {FORAGE, INV, ONLINE, pos, UI} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {MODS, QS, SYS} from './006-map-pre.js';
 import {ROOMK} from './150a-bedroom.js';
 { const HOME={layout:null,loaded:false}, web=/^https?:$/.test(location.protocol);
+  // EP: every apartment's layout saved before this was reset to the default one (owner, 9 Nov 2026); what was placed in it is given back once, the first time its room is built
+  const EP=1, cur=L=>L&&(L.ep||0)>=EP?L:null;
   const getLocal=()=>{ try{ return JSON.parse(SAVE.get('home')||'null'); }catch(e){ return null; } };
   const setLocal=L=>{ SAVE.set('home',JSON.stringify(L)); };
   const ask=async body=>{ const r=await fetch('/home',{method:'POST',headers:{'content-type':'application/json'},credentials:'same-origin',body:JSON.stringify(body)}); if(!r.ok)throw new Error(r.status); return r.json(); };
-  HOME.load=async()=>{ let L=null; if(web){ try{ L=(await ask({})).home; }catch(e){} } if(!L)L=getLocal(); HOME.layout=L; HOME.loaded=true; if(L&&ROOMK.api)apply(ROOMK.api,L); };
+  HOME.load=async()=>{ let L=null; if(web){ try{ L=(await ask({})).home; }catch(e){} } if(!L)L=getLocal(); if(L&&!cur(L)){ HOME.stale=L; L=null; } HOME.layout=L; HOME.loaded=true; if(L&&ROOMK.api)apply(ROOMK.api,L); };
   HOME.save=async L=>{ HOME.layout=L; setLocal(L); if(web){ try{ await ask({put:L}); HOME.saved=Date.now(); }catch(e){ HOME.err=String(e); } } };
 
   /* ---------- a room as a layout: where every piece stands, what you added and put away, the walls, the floor, the lights ---------- */
@@ -18,19 +20,23 @@ import {ROOMK} from './150a-bedroom.js';
   const snapshot=A=>{ '@later'; const things={}, added=[], lights={};
     for(const un of A.units()){ const t=A.getT(un), e={u:r3(t.u),h:r3(t.h),v:r3(t.v),ry:r3(t.ry),s:r3(t.s)}; if(un.gone)e.gone=1; if(un.added)added.push({id:un.id,kind:un.kind,paid:un.paid||0,...e}); else things[un.id]=e; }
     for(const q of A.lightsAll()){ const L=A.lightGet(q.id); delete L.type0; lights[q.id]=L; }
-    const L={v:1,wall:A.R.wall,floor:A.R.floor,kfloor:A.R.kfloorK,glow:A.R.glowK,addN:A.R.addN,things,added,lights}; for(const k of ROOMK.keep)try{ k.out(L,A); }catch(e){} return L; };
+    const L={v:1,ep:EP,wall:A.R.wall,floor:A.R.floor,kfloor:A.R.kfloorK,glow:A.R.glowK,addN:A.R.addN,things,added,lights}; for(const k of ROOMK.keep)try{ k.out(L,A); }catch(e){} return L; };
   const apply=(A,L)=>{ '@later'; if(!L||!A)return; if(L.wall)A.wall(L.wall); if(L.floor)A.floor(L.floor); if(L.kfloor)A.kfloor(L.kfloor); if(L.glow!=null)A.glow(L.glow); A.R.addN=Math.max(A.R.addN,L.addN||0); for(const k of ROOMK.keep)try{ k.in(L,A); }catch(e){}
     for(const a of L.added||[]){ if(A.units().some(u=>u.id===a.id))continue; const un=A.spawn(a.kind,a,a.id); if(!un)continue; un.paid=a.paid||0; if(a.gone)A.remove(un); }
     for(const un of A.units())if(!un.added&&L.things&&L.things[un.id]){ const t=L.things[un.id]; A.setT(un,t); if(t.gone)A.remove(un); }   // the pieces every flat has, where you moved them
     for(const id in L.lights||{})A.light(id,L.lights[id]); };
   // the room starts empty but for ROOMK.always (the TV, typewriter, telescope, globes, microscope, fish tank): its other pieces are only kinds to buy, what you bought comes back from your layout (?furnished=1 keeps it as built, for the tests of its pieces)
   const SORT={};
-  ROOMK.built.push(A=>{ '@later'; sortKinds(A); const lt={}; for(const q of A.lightsAll())lt[q.id]=A.lightGet(q.id); A.R.bare={wall:A.R.wall,floor:A.R.floor,kfloor:A.R.kfloorK,glow:A.R.glowK,lights:lt}; if(!QS.has('furnished'))for(const un of A.units().slice())if(!un.added&&!ROOMK.always.has(un.kind))A.drop(un); if(HOME.guest)apply(A,HOME.guest.layout); else if(HOME.loaded)apply(A,HOME.layout); if(ED.on)ED.panel(); });
+  ROOMK.built.push(A=>{ '@later'; sortKinds(A); const lt={}; for(const q of A.lightsAll())lt[q.id]=A.lightGet(q.id); A.R.bare={wall:A.R.wall,floor:A.R.floor,kfloor:A.R.kfloorK,glow:A.R.glowK,lights:lt}; if(!QS.has('furnished'))for(const un of A.units().slice())if(!un.added&&!ROOMK.always.has(un.kind))A.drop(un); if(HOME.stale&&!HOME.guest){ const S=HOME.stale, K=A.kinds(); HOME.stale=null; let back=0, n=0; for(const a of S.added||[]){ const KO=K[a.kind]; if(KO&&KO.own){ FORAGE.give(KO.own,1); n++; } else back+=a.paid||0; }
+      INV.cash=(INV.cash||0)+back; if(INV.save)INV.save(); HOME.save(snapshot(A)); if(back||n)UI.log('YOUR APARTMENT WAS RESET'+(back?': $'+back+' BACK FOR YOUR FURNITURE':'')+(n?(back?',':':')+' '+n+' THING'+(n>1?'S':'')+' BACK IN YOUR PACK':'')+'.','#c8a090'); }
+    if(HOME.guest)apply(A,HOME.guest.layout); else if(HOME.loaded)apply(A,HOME.layout); if(ED.on)ED.panel(); });
   // a visit: another player's apartment is your rooms dressed in their layout, to look at, not to change; leaving puts yours back
   const swap=L=>{ const A=ROOMK.api; if(!A)return; for(const un of A.units().slice())if(un.added)A.drop(un); const D=A.R.bare||{}; apply(A,{...D,...(L||{}),lights:{...(D.lights||{}),...((L&&L.lights)||{})}}); };
   HOME.visit=async(id,name,L0)=>{ '@later'; if(!id||(MODS.apts&&MODS.apts.inReal))return; let L=L0; if(L===undefined&&web){ try{ L=(await ask({who:id})).home; }catch(e){ L=null; } }
-    HOME.guest={id,name:String(name||'A NEIGHBOUR').toUpperCase(),layout:L||null}; MODS.apts.host=id; const G=HOME.guest; await MODS.apts.enterReal(null,G.name+"'S APARTMENT"); if(HOME.guest!==G)return; swap(G.layout); G.in=true; };
+    HOME.guest={id,name:String(name||'A NEIGHBOUR').toUpperCase(),layout:cur(L)}; MODS.apts.host=id; const G=HOME.guest; await MODS.apts.enterReal(null,G.name+"'S APARTMENT"); if(HOME.guest!==G)return; swap(G.layout); G.in=true; };
   ONLINE.visit=(id,name)=>HOME.visit(id,name);
+  // every tenant's apartment (not only who is online), for the map's quick jumps; asked at most once a minute
+  let TN=null, TT=0; ONLINE.tenants=async()=>{ if(!web)return []; if(TN&&Date.now()-TT<60000)return TN; try{ TN=((await ask({list:1})).list||[]).map(t=>({id:t.who,name:t.name||'A NEIGHBOUR'})); TT=Date.now(); }catch(e){ TN=TN||[]; } return TN; };
   SYS.add('places',()=>{ if(HOME.guest&&HOME.guest.in&&MODS.apts&&!MODS.apts.inReal){ HOME.guest=null; MODS.apts.host=null; swap(HOME.layout); } },'150d-visit');
   HOME.load();
 

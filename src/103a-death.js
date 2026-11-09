@@ -4,7 +4,7 @@ import {GHOSTS, INV, keys, LEVELS, ONLINE, PH, pos, RAG, ROOMS, st, UI, VIT, W3}
 import {renderer, scene} from './004-main.js';
 import {OWNED, SAVE} from './005-save.js';
 import {FADE, QS, STORE, SYS, TILE, wait} from './006-map-pre.js';
-{ const T=TILE, el=document.createElement('div'), css=document.createElement('style'); el.id='dead'; el.hidden=true;
+{ const T=TILE, el=document.createElement('div'), css=document.createElement('style'); el.id='dead'; el.className='mlb'; el.hidden=true;
   css.textContent='#dead{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top,0px));transform:translateX(-50%);font:12px var(--pixel);color:var(--key);background:var(--panel);border:2px solid var(--line);padding:6px 10px;z-index:15;pointer-events:none;zoom:var(--uiz,1)} #dead[hidden]{display:none}';
   document.head.appendChild(css); document.body.appendChild(el);
   const DEAD='YOU ARE DEAD. FLOAT TO THE BATH HOUSE ON THE LAKE\'S ISLAND.', note=(t,s)=>{ el.textContent=t; el.hidden=false; clearTimeout(note.t); if(s)note.t=setTimeout(()=>{ if(VIT.dead)note(DEAD); else el.hidden=true; },s*1000); };

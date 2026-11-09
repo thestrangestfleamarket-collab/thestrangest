@@ -100,11 +100,11 @@ const WRE=()=>window.ROOMED||{};   // the room editor (150d, later in the page):
   /* ---------- the menu ---------- */
   const P=document.createElement('div'); P.id='winp'; P.hidden=true;
   P.style.cssText='position:fixed;left:50%;top:12%;transform:translateX(-50%);width:min(420px,94vw);z-index:21;padding:12px 14px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#3b2a1e;background:#ece5d3;border:3px solid #3b2a1e;zoom:var(--uiz,1)';
-  const css=document.createElement('style'); css.textContent='#winp .row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:8px 0} #winp .row>span:first-child{width:84px} #winp input[type=range]{flex:1;min-width:120px} #winp .btn{font:inherit;padding:4px 7px;background:#ece5d3;color:#3b2a1e;border:2px solid #3b2a1e;cursor:pointer} #winp .btn.on{background:#3b2a1e;color:#ece5d3} #winp .mclose{float:right} #winp .dim{opacity:.6}';
+  const css=document.createElement('style'); css.textContent='#winp .row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:8px 0} #winp .row>span:first-child{width:110px} #winp input[type=range]{flex:1;min-width:120px} #winp .btn{font:inherit;padding:4px 7px;background:#ece5d3;color:#3b2a1e;border:2px solid #3b2a1e;cursor:pointer} #winp .btn.on{background:#3b2a1e;color:#ece5d3} #winp .mclose{float:right} #winp .dim{opacity:.6}';
   document.head.appendChild(css); document.body.appendChild(P);
   const guest=()=>!!(WRE().HOME&&WRE().HOME.guest);
   let saveT=0; const save=()=>{ clearTimeout(saveT); saveT=setTimeout(()=>{ if(WRE().snapshot&&WRE().HOME&&!guest())WRE().HOME.save(WRE().snapshot()); },1200); };
-  const draw=()=>{ '@later'; const W=WINDR.cur; if(!W){ P.hidden=true; return; } const d=W.d, ro=guest(), b=(k,v,on,lab)=>`<button class="btn ${on?'on':''}" data-k="${k}" data-v="${v}" ${ro&&k!=='open'?'disabled':''}>${lab}</button>`;
+  const draw=()=>{ '@later'; const W=WINDR.cur; if(!W){ P.hidden=true; return; } const d=W.d, ro=guest(), x=P.querySelector(':scope>.pX'), b=(k,v,on,lab)=>`<button class="btn ${on?'on':''}" data-k="${k}" data-v="${v}" ${ro&&k!=='open'?'disabled':''}>${lab}</button>`;
     P.innerHTML=`<div><b>WINDOW</b>${ro?' <span class="dim">(LOOK ONLY)</span>':''} <button class="btn mclose" data-k="close">DONE</button></div>
       <div class="row"><span>THE SASH</span>${b('open',1,W.open,'OPEN')}${b('open',0,!W.open,'SHUT')}</div>
       <div class="row"><span>CURTAINS</span>${Object.entries(CUR).map(([k,o])=>b('c',k,d.c===k,o.n)).join('')}</div>
@@ -114,7 +114,7 @@ const WRE=()=>window.ROOMED||{};   // the room editor (150d, later in the page):
       ${d.b!=='none'?`<div class="row"><span>${d.b==='shutters'?'SHUT':'LOWERED'}</span><input type="range" min="0" max="100" value="${Math.round(d.bl*100)}" data-r="bl" ${ro?'disabled':''}></div>`:''}
       ${BLI[d.b]&&BLI[d.b].slat?`<div class="row"><span>TILT</span><input type="range" min="0" max="100" value="${Math.round(d.bt*100)}" data-r="bt" ${ro?'disabled':''}></div>`:''}
       ${d.b!=='none'?`<div class="row"><span>COLOUR</span><input type="color" value="${d.bc||BLI[d.b].c}" data-r="bc" ${ro?'disabled':''}></div>`:''}
-      ${ro?'':`<div class="row"><span></span><button class="btn" data-k="all">DRESS EVERY WINDOW THE SAME</button></div>`}`; };
+      ${ro?'':`<div class="row"><span></span><button class="btn" data-k="all">DRESS EVERY WINDOW THE SAME</button></div>`}`; if(x)P.appendChild(x); };
   WINDR.open=W=>{ WINDR.cur=W; draw(); P.hidden=false; }; WINDR.close=()=>{ P.hidden=true; WINDR.cur=null; };
   P.addEventListener('click',e=>{ const t=e.target.closest('button[data-k]'); if(!t)return; const W=WINDR.cur, k=t.dataset.k, v=t.dataset.v; if(!W)return;
     if(k==='close')return WINDR.close();

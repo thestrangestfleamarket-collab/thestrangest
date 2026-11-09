@@ -1,6 +1,6 @@
 // THE TRAFFIC: cars driving both ways along Market St and flying cars and small spacecraft above them, from the shared clock so every player sees the same ones; the park gate's crossing light (built in 069-dress) turns on a timer or its button, the cars stop at its line and for anyone in the road.
 import {SHARED, THREE} from './003-shx.js';
-import {CULL, DRESS, ONLINE, PARK, pos, UI} from './003b-systems.js';
+import {CARLAMPS, CULL, DRESS, ONLINE, PARK, pos, UI} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OUT, SOL, SYS, TILE} from './006-map-pre.js';
@@ -45,7 +45,7 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
   /* ---------- driving: each car keeps to its place on the clock, slowing for the light, the car ahead and anyone in the road, then catching up ---------- */
   const xOf=(L,s)=>L.dir>0?xW+s:xE-s;
   const blockers=()=>{ const B=[{x:pos.x,z:pos.z}]; for(const o of (ONLINE.others&&ONLINE.others.values())||[])if(o.p&&!o.dead)B.push({x:o.p.x,z:o.p.z}); if(window.CARS&&CARS.cars)for(const C of CARS.cars.values())if(!C.by&&C.mesh)B.push({x:C.x,z:C.z,r:2.4*M1}); return B; };
-  const step=dt=>{ const t=now(), Lt=light(t), B=LANES[0].GR?blockers():[], R=Math.max(90*T,(window.CULL&&CULL.R)||0), up=OUT.open&&!PARK.in&&SHARED.LVL==='up';
+  const step=dt=>{ const t=now(), Lt=light(t), B=LANES[0].GR?blockers():[], R=Math.max(90*T,(window.CULL&&CULL.R)||0), up=OUT.open&&!(PARK.within&&PARK.within(pos.x,pos.z))&&SHARED.LVL==='up';
     for(const L of LANES){ if(!L.GR)continue; const hw=Math.abs(zs-zm)/2+.6*M0;
       const nom=C=>t*L.v+C.i*LC/L.n;
       for(const C of L.cars){ if(C.u==null||!C.m&&Math.abs(nom(C)-C.u)>LC*.8){ C.u=nom(C); C.sp=L.v; } }
@@ -70,5 +70,8 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
       const fl=ks.filter(k=>d[k].fly), gr=ks.filter(k=>!d[k].fly), ready=()=>{ const g=carsIn()?gr.concat(GAME):gr; for(const L of LANES){ L.FL=fl; L.GR=g; } };
       ready(); let n=0; const again=()=>{ if(carsIn()){ for(const L of LANES)for(const C of L.cars){ give(C); C.lap=-1; C.model=null; } ready(); } else if(++n<30)setTimeout(again,2000); }; setTimeout(again,2000);
     }).catch(e=>console.warn('TRAFFIC: the vehicles did not load',e)); },'150pb-traffic');
+  // their lamps (150pc): every car on the road, measured once from its model
+  const DIM={}, dimOf=k=>DIM[k]||(DIM[k]=(()=>{ const t=tpl(k); if(!t)return null; const b=new THREE.Box3().setFromObject(t); return [b.max.x-b.min.x,b.max.y-b.min.y,b.max.z-b.min.z,b.min.y]; })());
+  CARLAMPS.src.push(out=>{ for(const L of LANES)for(const C of L.cars){ if(!C.m||!C.m.visible)continue; const d=dimOf(C.model); if(d)out.push({x:C.m.position.x,y:C.m.position.y,z:C.m.position.z,r:C.m.rotation.y,dim:d,fly:!!L.fly}); } });
   TRAFFIC.dbg=()=>({loaded:!!D,light:light(now()),cross:[gx0,gx1],lanes:LANES.map(L=>({dir:L.dir,fly:!!L.fly,z:L.z,stop:xOf(L,L.stop),cars:L.cars.map(C=>({model:C.model,x:xOf(L,((C.u%LC)+LC)%LC),on:(((C.u%LC)+LC)%LC)<SPAN,len:size(C.model)[2]*M1/2,s:+((((C.u%LC)+LC)%LC)/T).toFixed(1),sp:+(C.sp/M0).toFixed(1),shown:!!(C.m&&C.m.visible)}))}))});
 }

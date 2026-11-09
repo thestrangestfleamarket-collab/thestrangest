@@ -54,7 +54,7 @@ One pull request each, in this order; the game stays playable after every one.
 - [x] **Market St traffic** (owner, 9 Nov 2026; done 9 Nov, claude/inspiring-maxwell-ynwbpy): poles to the kerb with lights on top, lamp posts gone, cars and fliers driving, the park gate's stop light and button. `src/150pb-traffic.js`, `tools/traffic-bake.py`, `tests/traffic.cjs`. Waits for his look and yes.
 
 **To try on the live site** (one sitting; each line is in its area below):
-phones and tablets: the touch pad, its layout, a controller on a phone (8 Nov) ·
+phones and tablets: the door now lets them in (9 Nov), the touch pad, its layout, a controller on a phone (8 Nov) ·
 the Mesh2Motion moves · the cars, their insides and the radio · the menus, the start spot, the map and GO TO (#563, #571, #576) ·
 the HUD margin on his screen · the fair's fence · a ghost's revival in the bath · the egg poacher · the fluffy grass · the castle at night ·
 VR on the Quest 3 (and the painter in it) · the Polyfork avatar, the only body now, and the new YOU window (5 Nov).
@@ -187,6 +187,7 @@ In order (each step builds on the one before): RLS SQL → login cookie with the
   with the trade line.
 
 ## Places and insides
+- [x] **The telescope and microscope from real data (the 14 mockups)** · P2 · XL · code · done 9 Nov [claude/confident-mccarthy-kk7wgw]. Owner, 9 Nov 2026: "lets add all to game". Next: the aurora in the street's own sky, the firsts board on a wall.
 - [x] **Invitations: the café's board games first** · P2 · M · code · done 9 Nov [claude/stoic-dijkstra-smffz6]. Next kinds register in `INVITES.kinds`.
 - [ ] **The bookstore café: twice as wide, a coffee bar, five game tables** · P2 · L · code. [taking: claude/clever-galileo-0fj20f, 7 Nov] Owner, 7 Nov 2026: layout A, inside only, players and the computer, for fun, all the games.
 
@@ -231,6 +232,7 @@ In order (each step builds on the one before): RLS SQL → login cookie with the
 ## Skate park (Section B)
 
 One pass, one pull request.
+- [x] **The skate pit** (owner, 9 Nov 2026: "do a large skate pit", in place of the plaza; done 9 Nov) · P2 · M · code. `src/111fda-skatepit.js`, `tests/skatepit.cjs`. Waits for his look and yes.
 - [ ] **The map editor and its ground picture for Section B** · P3 · L · code · risk med. Placed by `sections.places` in `data/world.json`
   (owner, 4 Nov: "option 1, open air, remove the gate in A"). The owners' editor (`src/editor/editor.html:54`) still reads the old
   `parkPlaces.skatepark`; nothing in it or in `src/096-mapedit.js` reads `sections.places`; it edits one section (`SID`, editor.html:116);
@@ -338,6 +340,8 @@ One pass, one pull request.
   where they fell (`N.rag=null` without moving `N.st`). Seen only on your screen (see shared physics).
 
 ## Physics and vehicles
+- [x] **The flamethrower and the freeze ray** (owner, 9 Nov 2026; done 9 Nov) · P2 · M · code. `146hb-jets`, `tests/jets.cjs`. [taking: claude/practical-cerf-gt0vnr]
+- [ ] **Jets follow-ups** · P3 · S · pick. Fires and ice are worked out on each player's page (where a stream lands matches, how a fire spreads may not); characters burn and freeze but do not run from the fire.
 - [x] **Things take room** (owner, 8 Nov 2026: "do all three go"; done 8 Nov) · P1 · M · code. Characters their body's size, waiting for each other, solids from step height, characters in the loose things' physics; `tests/space.cjs`.
 
 - [x] **The hotel's helipad** · P2 · M · code + look. 7 Nov 2026 (owner: "add heliped on top of building. helicopter. have it fly around and land. pilot"): the deck, two helicopters on the sky tour, ride along, fly it yourself (`150pa-heli`, `tests/heli.cjs`). [taking: claude/sharp-gates-thwxtx, 7 Nov 2026]

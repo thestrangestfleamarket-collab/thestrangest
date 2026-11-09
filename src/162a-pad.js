@@ -74,7 +74,7 @@ import {PAD} from './075-main-13.js';
   const pick=()=>{ if(PAD.tp&&PAD.tp.live)return PAD.tp; const gs=[...navigator.getGamepads()].filter(g=>g&&g.connected), st=gs.filter(g=>g.mapping==='standard'), pool=st.length?st:gs; return pool.reduce((a,g)=>!a||g.timestamp>a.timestamp?g:a,null); };
   const zr={};
   const rep=(k,on)=>{ const now=performance.now(); if(!on){ zr[k]=0; return false; } if(!zr[k]){ zr[k]=now+350; return true; } if(now>=zr[k]){ zr[k]=now+120; return true; } return false; };
-  const pump=PAD.step=(now,gp)=>{ '@later'; const dt=Math.min(.05,(now-(PAD.t||now))/1000); PAD.t=now; if(!gp){ if(PAD.held.size)letGo(); return; }
+  const pump=PAD.step=(now,gp)=>{ const dt=Math.min(.05,(now-(PAD.t||now))/1000); PAD.t=now; if(!gp){ if(PAD.held.size)letGo(); return; }
     if(gp.id!==PAD.id){ PAD.id=gp.id; PAD.ps=/054c|playstation|dualsense|dualshock/i.test(gp.id); PAD.q=gp===PAD.xr; }
     const Bv=gp.buttons.map(b=>b.value), pr=PAD.prev, on=i=>i>=0&&(Bv[i]||0)>.5, hit=i=>on(i)&&!((pr[i]||0)>.5), ax=gp.axes, b=a=>{ const v=BIND[a]; return v>=M_?v-M_:v; };
     const act=Bv.some((v,i)=>Math.abs(v-(pr[i]||0))>.1)||ax.some(a=>Math.abs(a)>.4); PAD.prev=Bv;

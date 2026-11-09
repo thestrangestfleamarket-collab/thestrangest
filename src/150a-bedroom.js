@@ -1,10 +1,10 @@
-// THE APARTMENT ROOM: your apartment as one open room (25 Oct 2026), its shell as the owner's isometric apartment picture (26 Oct 2026): warm beige walls plain to their light grey tops, warm brown boards, the side wall's three windows onto the live sky, the back wall blank (your front door opens on the hall, 150n), a cool moonlight through them by night, the house below and the sky round it; its pieces are each a unit you move (the bedroom 150b, the kitchen 150c).
+// THE APARTMENT ROOM: your apartment as one open room (25 Oct 2026), its shell as the owner's isometric apartment picture (26 Oct 2026): warm beige walls plain to their light grey tops, warm brown boards, the side wall's three windows onto the live sky, the back wall blank (your front door opens on the hall, 150n), a cool moonlight through them by night, the house below and the sky round it; its pieces are each a unit you move (the bedroom 150b).
 import {SHARED, THREE} from './003-shx.js';
 import {AMB, CLOCK, GPH, SFX, SHAD, SKY, UI, USE} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {MODS, SYS} from './006-map-pre.js';
 import {PEEK} from './008-batch.js';
-const ROOMK={parts:[],wires:{},built:[],api:null,keep:[],always:new Set(),save:()=>false,guest:()=>false};   // the room's other parts (the bedroom 150b, the kitchen 150c) add their builders and what their pieces do (wires); the room editor (150d) hears when it is built and works through api; always: the kinds every apartment has from the start, never emptied out
+const ROOMK={parts:[],wires:{},built:[],api:null,keep:[],always:new Set(),save:()=>false,guest:()=>false};   // the room's other parts (the bedroom 150b) add their builders and what their pieces do (wires); the room editor (150d) hears when it is built and works through api; always: the kinds every apartment has from the start, never emptied out
 { const APTS=MODS.apts;
   if(APTS&&APTS.R){ const V3=THREE.Vector3, cl=(v,a,b)=>Math.max(a,Math.min(b,v)), MPU=.907;   // the apartment's art unit is .907 m: the picture's sizes are metres
     const col=c=>new THREE.Color('rgb('+c.join(',')+')');

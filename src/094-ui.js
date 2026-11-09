@@ -67,7 +67,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   const drawBadge=()=>{ const m=[UI.freeCam&&'FREE CAMERA: '+NAME(keyOf('c'))+' to go back',UI.fly&&(UI.landing?'LANDING':'FLY: SPACE UP · SHIFT DOWN · '+NAME(keyOf('g'))+' to land')].filter(Boolean); badge.textContent=m.join(' · '); badge.hidden=!m.length; };
   function setFree(on){ UI.freeCam=on; if(on)UI.camT.copy(disp); drawBadge(); }
   // flying like a superhero (G): a cape on, Space up and Shift down, faster the longer you fly one way, up through the clouds (132b) to FLY.top; G again comes down where you are and lands
-  const WM=TILE/.84, FLY=UI.FLY={top:300*WM,sp:0,vy:0,max:42,min:7};
+  const WM=TILE/.84, FLY=UI.FLY={top:300*WM,sp:0,vy:0,max:10.5,min:1.75};
   // where you can come down: over a building's solid, the nearest clear ground round it (CLIP's test, as the townsfolk are moved out of walls)
   const clearOf=(x,z)=>{ const L=SHARED.LVL==='down'?SOL.down:SOL.up, R=.35*TILE; if(!CLIP.hit||!CLIP.hit(L,x,z,R))return null; for(let r=TILE/2;r<=60*TILE;r+=TILE/2){ const n=Math.max(8,Math.round(2*Math.PI*r/(TILE/2))); for(let k=0;k<n;k++){ const a=k/n*2*Math.PI, px=x+Math.sin(a)*r, pz=z+Math.cos(a)*r; const B=SHARED.BOUND; if(B&&(px<B.x0||px>B.x1||pz<B.z0||pz>B.z1))continue; if(!CLIP.hit(L,px,pz,R))return {x:px,z:pz,t:0}; } } return null; };
   const flyS=()=>st.fly||(st.fly={on:false,k:0,t:0,f:0,u:0});
@@ -80,13 +80,13 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     let mx=0,mz=0; if(up){mx+=fx;mz+=fz;} if(dn){mx-=fx;mz-=fz;} if(rt){mx+=-fz;mz+=fx;} if(lf){mx-=-fz;mz-=fx;} const n=Math.hypot(mx,mz)||1;
     UI.camT.x+=mx/n*s; UI.camT.z+=mz/n*s; UI.camT.y+=((keys.has(' ')?1:0)-(keys.has('shift')&&!L?1:0))*s*.7;
     UI.camT.x=Math.max(SHARED.BOUND.x0,Math.min(SHARED.BOUND.x1,UI.camT.x)); UI.camT.z=Math.max(SHARED.BOUND.z0,Math.min(SHARED.BOUND.z1,UI.camT.z)); UI.camT.y=Math.max(-12,Math.min(30,UI.camT.y)); };
-  UI.flyGo=(dt,moving)=>{ FLY.sp=moving?Math.min(FLY.max,Math.max(FLY.min,FLY.sp)+dt*(3+FLY.sp*.45)):Math.max(0,FLY.sp-dt*30); return FLY.sp*WM*dt; };   // metres a second, built up the longer you fly
+  UI.flyGo=(dt,moving)=>{ FLY.sp=moving?Math.min(FLY.max,Math.max(FLY.min,FLY.sp)+dt*(.75+FLY.sp*.45)):Math.max(0,FLY.sp-dt*30); return FLY.sp*WM*dt; };   // metres a second, built up the longer you fly
   UI.canFly=()=>!!(FORAGE.S&&FORAGE.S.fx&&FORAGE.S.fx.fly>0);
-  UI.flyStep=dt=>{ if(dt&&!UI.landing&&!UI.canFly()){ UI.landing=true; FLY.to=clearOf(pos.x,pos.z); drawBadge(); } const F=flyS(), g=SHARED.groundY?SHARED.groundY(pos.x,pos.z):0, L=UI.landing, w=L?-1:(keys.has(' ')?1:0)-(keys.has('shift')?1:0), top=w>0?14:w<0?L?Math.max(4,Math.min(30,(SHARED.py-g)/WM*1.2)):22:0;
+  UI.flyStep=dt=>{ if(dt&&!UI.landing&&!UI.canFly()){ UI.landing=true; FLY.to=clearOf(pos.x,pos.z); drawBadge(); } const F=flyS(), g=SHARED.groundY?SHARED.groundY(pos.x,pos.z):0, L=UI.landing, w=L?-1:(keys.has(' ')?1:0)-(keys.has('shift')?1:0), top=w>0?3.5:w<0?L?Math.max(4,Math.min(30,(SHARED.py-g)/WM*1.2)):5.5:0;
     FLY.vy+=(w*top-FLY.vy)*Math.min(1,dt*(w?2.2:4)); SHARED.py+=FLY.vy*WM*dt; SHARED.py=Math.max(-5,Math.min(FLY.top,SHARED.py));
     if(L&&FLY.to){ const dx=FLY.to.x-pos.x, dz=FLY.to.z-pos.z, d=Math.hypot(dx,dz), st=Math.min(d,14*WM*dt); if(d<.05||(FLY.to.t+=dt)>8)FLY.to=null; else{ pos.x+=dx/d*st; pos.z+=dz/d*st; SHARED.heading=Math.atan2(dx,dz); } }   // over a building: glide to clear ground as you come down
     if(L&&!FLY.to&&SHARED.py-g<.15*WM){ SHARED.py=Math.max(SHARED.py,g); setFly(false,true); }
-    F.f+=(Math.min(1,FLY.sp/9)-F.f)*Math.min(1,dt*3); F.u+=(Math.max(-1,Math.min(1,FLY.vy/12))-F.u)*Math.min(1,dt*3); pos.x=Math.max(SHARED.BOUND.x0,Math.min(SHARED.BOUND.x1,pos.x)); pos.z=Math.max(SHARED.BOUND.z0,Math.min(SHARED.BOUND.z1,pos.z)); };
+    F.f+=(Math.min(1,FLY.sp/2.25)-F.f)*Math.min(1,dt*3); F.u+=(Math.max(-1,Math.min(1,FLY.vy/3))-F.u)*Math.min(1,dt*3); pos.x=Math.max(SHARED.BOUND.x0,Math.min(SHARED.BOUND.x1,pos.x)); pos.z=Math.max(SHARED.BOUND.z0,Math.min(SHARED.BOUND.z1,pos.z)); };
   const cv=renderer.domElement; let L=null;
   UI.off=new THREE.Vector3(); UI.eul=new THREE.Euler(); const viewV=()=>UI.freeCam?UI.camT:UI.off, piv=new THREE.Vector3(), q0=new THREE.Quaternion(), q1=new THREE.Quaternion(), tv=new THREE.Vector3();
   const ndc=e=>{ const r=cv.getBoundingClientRect(); return new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1)); };
@@ -277,7 +277,9 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     <div class="pane" data-p="ps2">
       <div class="row onoff"><button class="btn" id="dps2">PS2 FILTER</button></div>
       <div class="row" id="dps2p"><button class="btn" data-k="pix">1 PIXELS</button><button class="btn" data-k="col">2 COLOURS</button><button class="btn" data-k="smear">3 SMEAR</button><button class="btn" data-k="fringe">4 FRINGES</button><button class="btn" data-k="grain">5 GRAIN</button></div>
-      <div class="row"><span>STRENGTH</span><input type="range" id="dps2k" min="0" max="2" step="0.05"><span id="dps2kv"></span></div></div>
+      <div class="row"><span>STRENGTH</span><input type="range" id="dps2k" min="0" max="2" step="0.05"><span id="dps2kv"></span></div>
+      <div class="row onoff"><button class="btn" id="dps2m">ON MENUS</button></div>
+      <div class="row"><span>MENU LEVEL</span><input type="range" id="dps2mk" min="0" max="2" step="0.05"><span id="dps2mkv"></span></div></div>
     <div class="pane" data-p="sound"><h3>SOUND</h3><div class="row"><button class="btn" id="dsfx">EFFECTS</button><button class="btn" id="damb">AMBIENCE</button><span>VOLUME</span><input type="range" id="dvol" min="0" max="1" step="0.01"></div><div id="dsndin"></div></div>
     <div class="pane" data-p="keys"><div class="dim" style="margin-bottom:8px">click a key, then press the one you want (Escape to keep it)</div><table id="keytab"></table>
       <div class="row" style="margin-top:10px"><button class="btn" id="kreset">ALL BACK AS THEY WERE</button></div><div id="credits" class="dim" style="margin-top:14px;font-size:9px"></div></div>
@@ -454,7 +456,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     sel.addEventListener('keydown',e=>e.stopPropagation()); }
   const zMin=UI.ZOUT, zMax=UI.ZL[UI.ZL.length-1], z2r=v=>Math.log(v/zMin)/Math.log(zMax/zMin), r2z=r=>zMin*Math.pow(zMax/zMin,r);
   function drawDisplay(){ '@later'; $('#dps2').setAttribute('aria-pressed',String(PS2.on)); $('#dps2p').querySelectorAll('[data-k]').forEach(b=>{ b.setAttribute('aria-pressed',String(!!PS2.parts[b.dataset.k])); b.disabled=!PS2.on; }); $('#dps2k').value=PS2.k; $('#dps2k').disabled=!PS2.on; $('#dps2kv').textContent=Math.round(PS2.k*100)+'%'; M.querySelectorAll('[data-res]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.res===SHARED.RESI))); $('#dsfx').textContent='EFFECTS '+(SFX.on?'ON':'OFF'); $('#dsfx').setAttribute('aria-pressed',String(SFX.on)); $('#damb').textContent='AMBIENCE '+(AMB.on?'ON':'OFF'); $('#damb').setAttribute('aria-pressed',String(AMB.on)); $('#dvol').value=SFX.vol; $('#dlook').setAttribute('aria-pressed',String(LOOK.on)); $('#dlook').textContent='GLOW AND NIGHT LOOK '+(LOOK.on?'ON':'OFF'); $('#dsteps').value=W3.shade.steps; $('#ddepth').value=W3.shade.depth; M.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===UI.view))); $('#dzoom').value=z2r(SHARED.ppuTo); $('#dtilt').value=(SHARED.pitchTo-PMIN)/(PMAX-PMIN);
-    $('#dlit').textContent='LIGHT ON THEM: '+(UI.lit?'LAMPS':'FLAT'); $('#dlit').setAttribute('aria-pressed',String(UI.lit)); $('#dbody').setAttribute('aria-pressed',String(PB.on)); $('#dsway').setAttribute('aria-pressed',String(UI.sway)); $('#dswayl').value=UI.swayL; $('#dswaylv').textContent=UI.swayL;  $('#dloose').value=PB.loose; $('#doutl').setAttribute('aria-pressed',String(OUTL.on)); $('#doutl').textContent='OUTLINE '+(OUTL.on?'ON':'OFF'); $('#dps2').setAttribute('aria-pressed',String(!!PS2.on)); if(PS2.parts){ for(const e of document.querySelectorAll('#dps2p [data-k]')){ e.setAttribute('aria-pressed',String(!!PS2.parts[e.dataset.k])); e.disabled=!PS2.on; } $('#dps2k').value=PS2.k; $('#dps2k').disabled=!PS2.on; $('#dps2kv').textContent=Math.round(PS2.k*100)+'%'; } }
+    $('#dlit').textContent='LIGHT ON THEM: '+(UI.lit?'LAMPS':'FLAT'); $('#dlit').setAttribute('aria-pressed',String(UI.lit)); $('#dbody').setAttribute('aria-pressed',String(PB.on)); $('#dsway').setAttribute('aria-pressed',String(UI.sway)); $('#dswayl').value=UI.swayL; $('#dswaylv').textContent=UI.swayL;  $('#dloose').value=PB.loose; $('#doutl').setAttribute('aria-pressed',String(OUTL.on)); $('#doutl').textContent='OUTLINE '+(OUTL.on?'ON':'OFF'); $('#dps2').setAttribute('aria-pressed',String(!!PS2.on)); if(PS2.parts){ for(const e of document.querySelectorAll('#dps2p [data-k]')){ e.setAttribute('aria-pressed',String(!!PS2.parts[e.dataset.k])); e.disabled=!PS2.on; } $('#dps2k').value=PS2.k; $('#dps2k').disabled=!PS2.on; $('#dps2kv').textContent=Math.round(PS2.k*100)+'%'; } const PM=PS2.menu; if(PM){ $('#dps2m').setAttribute('aria-pressed',String(PM.on)); $('#dps2m').disabled=!PS2.on; $('#dps2mk').value=PM.k; $('#dps2mk').disabled=!PS2.on||!PM.on; $('#dps2mkv').textContent=Math.round(PM.k*100)+'%'; } }
   { const SH={on:true,lv:2}, D=$('#dshd'); D.innerHTML='<button class="btn" data-s="1">ON</button><button class="btn" data-l="1">SHADED</button><button class="btn" data-l="2">SELF</button>';   // the figures' shadows: on/off, lit by the lamps, or self-shadowed too
     const drawSh=()=>{ W3.lv.value=SH.on?SH.lv:0; D.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s?String(SH.on):String(SH.on&&SH.lv===+b.dataset.l))); D.querySelector('[data-s]').textContent=SH.on?'ON':'OFF'; };
     D.querySelectorAll('button').forEach(b=>b.onclick=()=>{ if(b.dataset.s)SH.on=!SH.on; else{ SH.lv=+b.dataset.l; SH.on=true; } drawSh(); }); drawSh(); }
@@ -465,6 +467,8 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   $('#dps2').onclick=()=>{ PS2.set(!PS2.on); drawDisplay(); };
   $('#dps2p').onclick=e=>{ const b=e.target.closest('[data-k]'); if(!b)return; PS2.parts[b.dataset.k]=!PS2.parts[b.dataset.k]; PS2.save(); drawDisplay(); };
   $('#dps2k').oninput=e=>{ PS2.k=+e.target.value; PS2.save(); drawDisplay(); };
+  $('#dps2m').onclick=()=>{ if(PS2.menu)PS2.menu.set(!PS2.menu.on); drawDisplay(); };
+  $('#dps2mk').oninput=e=>{ if(!PS2.menu)return; PS2.menu.k=+e.target.value; PS2.menu.save(); drawDisplay(); };
   $('#dlook').onclick=()=>{ LOOK.on=!LOOK.on; try{ SAVE.set('look',LOOK.on?'1':'0'); }catch(e){} drawDisplay(); };
   $('#dzoom').oninput=e=>{ SHARED.ppuTo=r2z(+e.target.value); }; $('#dtilt').oninput=e=>{ SHARED.pitchTo=clampP(PMIN+(+e.target.value)*(PMAX-PMIN)); };
   M.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{ if(!UI.viewsHere().includes(b.dataset.view)){ UI.log('DRIVING, THE VIEW STAYS BEHIND THE CAR.','#c8a090'); return; } UI.switchView(b.dataset.view).then(drawDisplay); drawDisplay(); });
@@ -498,7 +502,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
 .ml *{font-family:inherit!important;letter-spacing:inherit!important} .ml *:not(h1):not(h2):not(h3):not(h4){font-size:inherit!important}
 .ml button{${C};background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:3px 8px!important;cursor:pointer}
 .ml select,.ml input,.ml textarea{${C};background:#031a0d!important;border:0!important;border-radius:0!important;box-shadow:inset 0 0 0 2px #3aa866!important}
-.ml button[style*="color:#f2c14e"],.ml button[aria-selected="true"]{color:#020a06!important;background:#7dffa8!important}
+.ml button[style*="color:#f2c14e"],.ml button[aria-selected="true"],.ml button.on,.ml .sl.on{color:#020a06!important;background:#7dffa8!important}
 .ml button:hover:not(:disabled),.ml button:focus-visible{color:#020a06!important;background:#7dffa8!important;outline:0}
 .ml button:disabled{opacity:.4}
 ${sel('background',['#f2c14e','#8fe3d6'])}{color:#020a06!important;background:#7dffa8!important}
@@ -511,7 +515,10 @@ ${sel('color',['#d8a845'])}{${HI}}
 .ml tr,.ml td,.ml [style*="border-bottom:1px solid"],.ml [style*="border:1px solid"]{border-color:#0d3a1f!important}
 .ml .mclose{display:none!important}
 .ml .pX{color:#7dffa8!important;background:#020a06!important;box-shadow:inset 0 0 0 2px #3aa866!important;border:0!important}
-.ml .pX:hover{color:#020a06!important;background:#7dffa8!important}`;
+.ml .pX:hover{color:#020a06!important;background:#7dffa8!important}
+.mlb{font-family:'Share Tech Mono',ui-monospace,monospace!important;font-size:16px!important;letter-spacing:1px!important;${C};background:repeating-linear-gradient(0deg,rgba(125,255,168,.05) 0 1px,transparent 1px 3px),#020a06!important;border:0!important;border-radius:0!important;box-shadow:0 0 0 2px #3aa866!important;text-shadow:0 0 5px #4aff9055}
+.mlb button{font:inherit!important;${C};background:transparent!important;border:0!important;box-shadow:none!important}
+button.mlb:hover:not(:disabled),.mlb button:hover{color:#020a06!important;background:#7dffa8!important;text-shadow:none}`;
     document.head.appendChild(ML);
     const HL=document.createElement('style'), PN='background:repeating-linear-gradient(0deg,rgba(125,255,168,.05) 0 1px,transparent 1px 3px),rgba(2,10,6,.82);box-shadow:0 0 0 1px #2d5a40', GL='text-shadow:0 0 5px #4aff9055', MONO="font-family:'Share Tech Mono',ui-monospace,monospace";   // the HUD in the same look (owner, 4 Nov 2026: "B")
     HL.textContent=`body #vit{${MONO};font-size:13px;color:#7dffa8;${GL};${PN};padding:8px 10px;width:190px} body #vit #vnm{font-size:14px} body #vit .b{height:8px;margin-top:16px;background:transparent;box-shadow:inset 0 0 0 1px #2d5a40;padding:1px} body #vit .b s,body #vit .b b{top:-15px;font-size:11px;color:#3aa866}
@@ -527,7 +534,7 @@ body #onl{${MONO};font-size:13px;color:#7dffa8;${GL}} body #onl button{color:#7d
 body #onllist,body #onllog div{${PN};border:0} body #onllog b{color:#d8ffe4} body #onlin{background:#020a06;color:#7dffa8;border:1px solid #7dffa8}
 body #mode,body #said{${MONO};font-size:14px;color:#7dffa8;${GL};${PN};border:0} body #roomsay{${MONO};font-size:14px}`;
     document.head.appendChild(HL);
-    const NOT=/^(stage|subfade|stat|mode|said|vit|fjour|roomsay|roomedbtn|vrbtn|menu|loading|onl|newver|shbar|fishgo|dead)$/, DARK=/^rgba?\((11, 13, 19|13, 15, 20|16, 18, 26|5, 7, 11|14, 26, 18|24, 36, 28)/, IDS=/^(cinemap|nsp|talkp|hornp|holog|cabwin|inspp|cpadmin|roomed|roombuy|tletter|rvpan|ited|led|lnd|we|looks|snded|edmenu|chared|design|feelp|rinsp|emotes)$/;
+    const NOT=/^(stage|subfade|stat|mode|said|vit|fjour|roomsay|roomedbtn|vrbtn|menu|loading|onl|newver|shbar|fishgo|dead)$/, DARK=/^rgba?\((11, 13, 19|13, 15, 20|16, 18, 26|5, 7, 11|14, 26, 18|24, 36, 28)/, IDS=/^(cinemap|nsp|talkp|hornp|holog|cabwin|inspp|cpadmin|roomed|roombuy|tletter|rvpan|ited|led|lnd|we|looks|snded|edmenu|chared|design|feelp|rinsp|emotes|winp|ceilp|crtp|libp|typerp)$/;
     UI.menuLook=()=>{ for(const el of document.body.children){ if(el.dataset.ml||el.hidden||NOT.test(el.id))continue; const cs=getComputedStyle(el); if(cs.display==='none'||cs.position!=='fixed')continue;   // a window in the old dark panel takes the menu's look the first time it shows
       el.dataset.ml=IDS.test(el.id)||DARK.test(cs.backgroundColor)&&(el.querySelector('button,table,input,select,h3')||PANS.some(p=>p[0]===el.id))?'1':'0'; if(el.dataset.ml==='1')el.classList.add('ml'); } }; }
   const hide=el=>{ el.hidden=true; if(el.style.display)el.style.display='none'; };

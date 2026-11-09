@@ -47,7 +47,7 @@ import {ROOMK} from './150a-bedroom.js';
   /* ---------- the catalog: what each kind is, its department and its price ---------- */
   const DEPTS0=[['seating','SEATING'],['beds','BEDS'],['surfaces','SURFACES'],['storage','STORAGE'],['kitchen','KITCHEN'],['decor','DECOR'],['plants','PLANTS'],['lights','LIGHTS']];
   const DEPT={BENCH:'seating',CHAIR:'seating','KITCHEN CHAIR':'seating',BED:'beds',PILLOW:'beds',BLANKETS:'beds',DESK:'surfaces','CORNER DESK':'surfaces',TABLE:'surfaces',PENINSULA:'surfaces',
-    DRAWERS:'storage',HUTCH:'storage','CUBBY SHELF':'storage','RECORD CABINET':'storage',BOOKCASE:'storage','WALL SHELF':'storage','OPEN SHELVES':'storage','WALL CABINET':'storage',
+    DRAWERS:'storage',HUTCH:'storage','CUBBY SHELF':'storage','RECORD CABINET':'storage',BOOKCASE:'storage',BOOKSHELF:'storage','WALL SHELF':'storage','OPEN SHELVES':'storage','WALL CABINET':'storage',
     COUNTER:'kitchen','CORNER COUNTER':'kitchen','SIDE COUNTER':'kitchen','SHORT COUNTER':'kitchen',SINK:'kitchen',STOVE:'kitchen',HOOD:'kitchen',FRIDGE:'kitchen',MICROWAVE:'kitchen',TOASTER:'kitchen','COFFEE MACHINE':'kitchen',
     'DISH RACK':'kitchen','DISH SOAP':'kitchen','PAPER TOWELS':'kitchen',CANISTER:'kitchen',POT:'kitchen',PLATES:'kitchen',MUG:'kitchen',CUP:'kitchen',MILL:'kitchen','DUTCH OVEN':'kitchen',UTENSILS:'kitchen',OIL:'kitchen',ORANGES:'kitchen','CUTTING BOARD':'kitchen',KNIFE:'kitchen',DONUTS:'kitchen',
     PLANT:'plants','TRAILING PLANT':'plants',LAMP:'lights'};
@@ -92,7 +92,7 @@ import {ROOMK} from './150a-bedroom.js';
   const P=document.createElement('div'); P.id='roomed'; P.hidden=true; document.body.appendChild(P);
   const BUY=document.createElement('div'); BUY.id='roombuy'; BUY.hidden=true; document.body.appendChild(BUY);
   const SAYEL=document.createElement('div'); SAYEL.id='roomsay'; SAYEL.hidden=true; document.body.appendChild(SAYEL);
-  const B=document.createElement('button'); B.id='roomedbtn'; B.hidden=true; B.textContent='DECORATE · T'; B.onclick=()=>ED.toggle(); document.body.appendChild(B);
+  const B=document.createElement('button'); B.id='roomedbtn'; B.className='mlb'; B.hidden=true; B.textContent='DECORATE · T'; B.onclick=()=>ED.toggle(); document.body.appendChild(B);
   let tab='things', dept='seating', helper=null, hover=null, saveT=0, sayT=0;
   const say=m=>{ SAYEL.textContent=m; SAYEL.hidden=false; clearTimeout(sayT); sayT=setTimeout(()=>{ SAYEL.hidden=true; },2200); ED.said=m; };
   const dirty=()=>{ clearTimeout(saveT); saveT=setTimeout(()=>{ const A=A_(); if(A)HOME.save(snapshot(A)); },1200); };

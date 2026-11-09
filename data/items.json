@@ -2120,5 +2120,25 @@
   "boost": "big",
   "boostS": 120,
   "size": 0.1
+ },
+ "saddle": {
+  "slot": "hand",
+  "grants": "horse",
+  "value": 120,
+  "weight": 9
+ },
+ "cowboyhat": {
+  "slot": "head",
+  "look": "hat:BRIM HAT · SHERIFF",
+  "value": 25,
+  "weight": 0.15
+ },
+ "magic_carpet": {
+  "slot": "hand",
+  "grants": "carpet",
+  "offworld": true,
+  "value": 300,
+  "speed": 9,
+  "weight": 6
  }
 }

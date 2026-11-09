@@ -61,9 +61,9 @@ import {SWAP} from './159i-trade.js';
     else if(d.w)put(pick,d.w);
     else if(b.classList.contains('dl-pack')&&BAG.toggle)BAG.toggle(true); });
 
-  // another player: the same doll, them alone in the street's own light, what they wear, their health; MESSAGE, TRADE, VISIT
+  // another player: the same doll, them alone in the street's own light, what they wear, their health; MESSAGE, TRADE, ID CARD, VISIT
   const O=win('dollo',false); let who=null, msg=false;
-  const OB=[['MESSAGE',()=>{ msg=!msg; drawO(); if(msg)setTimeout(()=>{ const i=O.q('.dl-pick input'); if(i)i.focus(); },0); }],['TRADE',()=>SWAP.ask&&SWAP.ask(who)],['VISIT',()=>{ if(ONLINE.visit)ONLINE.visit(who.id,who.name); },()=>ONLINE.visit&&!(who.x&&who.x.noapt)]];
+  const OB=[['MESSAGE',()=>{ msg=!msg; drawO(); if(msg)setTimeout(()=>{ const i=O.q('.dl-pick input'); if(i)i.focus(); },0); }],['TRADE',()=>SWAP.ask&&SWAP.ask(who)],['ID CARD',()=>PASSPORT.show&&PASSPORT.show(who),()=>!!PASSPORT.show],['VISIT',()=>{ if(ONLINE.visit)ONLINE.visit(who.id,who.name); },()=>ONLINE.visit&&!(who.x&&who.x.noapt)]];
   const send=()=>{ const i=O.q('.dl-pick input'), t=i&&i.value.trim(); if(!t)return; if(ONLINE.pm&&ONLINE.pm(who,t)){ i.value=''; msg=false; drawO(); } };
   const drawO=()=>{ const o=who; if(!o)return; O.q('.dl-nm').textContent=(o.name||'TENANT').toUpperCase()+(o.x&&o.x.title?' the '+String(o.x.title).toUpperCase():'');
     O.q('.dl-btns').innerHTML=btns(OB); const hp=o.dead?0:o.hp==null?1:o.hp; O.q('.dl-bars').innerHTML=bar('HP',Math.round(hp*100)+'%','#7dffa8',o.dead?'GHOST':Math.round(hp*100)+'%');

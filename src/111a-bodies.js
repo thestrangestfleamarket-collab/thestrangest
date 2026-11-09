@@ -44,9 +44,12 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     // a cape flaps in flight (body.flap: its points' fl, 0 at the tie to 1 at the hem, and fd, out from the body): lifted off the back and rippling, by PM.fk (pose)
     const FL=body.flap?(PM.fk={value:0},PM.ft={value:0},'attribute float fl; attribute vec3 fd; uniform float uFK,uFT;'):'', P0=body.flap?'position+fd*fl*uFK*(.04+.16*fl+.07*sin(uFT*12.-fl*8.+fd.x*2.))':'position';
     // body.rnd (your avatar): its points marked sm (its rounded head, 111c) shaded by their own smooth normals, the rest flat
-    const SM=body.rnd?'attribute float sm; varying float vSm;':'', NF=body.rnd?' if(vSm>.5){ vec3 sn=normalize(vNormal); normal=dot(sn,normal)<0.?-sn:sn; }':'';
+    // body.rnd: what hangs off it (ov: BACK, its bags and straps, 111c) drawn a few centimetres nearer the eye than it is, so it shows over every coat (owner, 9 Nov 2026)
+    const OV=body.rnd?' if(ov>.5){ vec4 mo=mvPosition; float od=uOV*length(modelViewMatrix[1].xyz); if(projectionMatrix[3][3]>.5)mo.z+=od; else mo.xyz*=max(0.,1.-od/length(mo.xyz)); gl_Position=projectionMatrix*mo; }':'';
+    const SM=body.rnd?'attribute float sm; attribute float ov; uniform float uOV; varying float vSm;':'', NF=body.rnd?' if(vSm>.5){ vec3 sn=normalize(vNormal); normal=dot(sn,normal)<0.?-sn:sn; }':'';
     const mat=new THREE.MeshToonMaterial({vertexColors:true,gradientMap:W3.GP,side:THREE.DoubleSide});
-    mat.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.uniforms.uHH=PM.hh; if(FL){ sh.uniforms.uFK=PM.fk; sh.uniforms.uFT=PM.ft; } sh.fragmentShader='#define BODYB .0015\n'+(SM?'varying float vSm;\n':'')+sh.fragmentShader; sh.vertexShader=MOVE+FL+SM+'\n'+sh.vertexShader.replace('#include <beginnormal_vertex>',AT_+' vec3 objectNormal=mat3(PM)*normal;').replace('#include <begin_vertex>','vec3 transformed=(PM*vec4('+P0+',1.)).xyz;'+HH+(SM?' vSm=sm;':''));
+    if(body.rnd)PM.ov={value:.035*(body.S||1)};
+    mat.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.uniforms.uHH=PM.hh; if(PM.ov)sh.uniforms.uOV=PM.ov; if(FL){ sh.uniforms.uFK=PM.fk; sh.uniforms.uFT=PM.ft; } sh.fragmentShader='#define BODYB .0015\n'+(SM?'varying float vSm;\n':'')+sh.fragmentShader; sh.vertexShader=MOVE+FL+SM+'\n'+sh.vertexShader.replace('#include <beginnormal_vertex>',AT_+' vec3 objectNormal=mat3(PM)*normal;').replace('#include <begin_vertex>','vec3 transformed=(PM*vec4('+P0+',1.)).xyz;'+HH+(SM?' vSm=sm;':'')).replace('#include <project_vertex>','#include <project_vertex>\n'+OV);
       // a body's own layers (cloth over its lining, over the skin) a few millimetres apart: its shadow test leans that much more toward the light, or they shadow each other in specks (owner, 6 Nov 2026: "seems like its shadows")
       sh.fragmentShader=sh.fragmentShader.replace('#include <lights_fragment_begin>',THREE.ShaderChunk.lights_fragment_begin.replace(/((?:directional|spot|point)LightShadows?(?:\[ *\w+ *\])?)\.shadowBias/g,'($1.shadowBias-BODYB)')).replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(cross(dFdx(vViewPosition),dFdy(vViewPosition)));'+NF+' vec3 nonPerturbedNormal=normal;'); W3.rim(sh); };
     mat.customProgramCacheKey=()=>'body'+NB+CK+'b'+(FL?'f':'')+(SM?'r':'');
@@ -204,7 +207,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     LOWV.set((a[0]*w+c[0]*(1-w))*x+(a[4]*w+c[4]*(1-w))*y+(a[8]*w+c[8]*(1-w))*z+(a[12]*w+c[12]*(1-w)),lo,(a[2]*w+c[2]*(1-w))*x+(a[6]*w+c[6]*(1-w))*y+(a[10]*w+c[10]*(1-w))*z+(a[14]*w+c[14]*(1-w)));
     G.updateMatrixWorld(true); LOWV.applyMatrix4(G.matrixWorld); const sy=G.scale.y||1, f=(ground(LOWV.x,LOWV.z)-LOWV.y)/sy; if(!isFinite(f)||f<.3||f>80)return;
     for(let i=0;i<NB;i++)P[i].elements[13]+=f; }
-  function pose(B,PM,body,S){ const k=body.S; PM.B=B; if(PM.fk){ const F=S&&S.fly; PM.fk.value=F?F.k*(.35+.65*Math.min(1,F.f||0)):0; PM.ft.value=performance.now()/1000; } chain(B,body); place(PM,body,k);
+  function pose(B,PM,body,S){ const k=body.S; PM.B=B; if(PM.ov)PM.ov.value=.035*k; if(PM.fk){ const F=S&&S.fly; PM.fk.value=F?F.k*(.35+.65*Math.min(1,F.f||0)):0; PM.ft.value=performance.now()/1000; } chain(B,body); place(PM,body,k);
     if(body.contact){ const g=body.GEO;
       if(body._calG!==g){ const B0=R.build(R.walkPose({ph:0,w:0,run:0},null),null); chain(B0,body); place(PM,body,k); const l0=lowOf(PM,body); body._cal=l0==null?null:l0-rigLow(B0); body._calG=g; chain(B,body); place(PM,body,k); }
       // seated (a seat, the kart, a car, a bike): its hips on the rig's hips, the seat, its legs from there (owner, 5 Nov 2026: in the kart it sat high above the seat)

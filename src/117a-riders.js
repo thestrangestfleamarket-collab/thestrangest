@@ -44,7 +44,7 @@ import {castPose, POSES} from './112-main-14.js';
     rd.pose(0); return rd; };
   const RIDERS=window.RIDERS={list:[],made:false}; let queue=null, pt=0;
   SYS.add('places',dt=>{ if(SHARED.LVL!=='down')return;
-    if(!RIDERS.made){ RIDERS.made=true; queue=[]; const day=Math.floor(Date.now()/864e5);
+    if(!RIDERS.made){ RIDERS.made=true; TRAINS.ensure(); queue=[]; const day=Math.floor(Date.now()/864e5);
       for(const tn of TRAINS.list){ const r=rng(day*7+tn.id); tn.cars.forEach((car,c)=>{ const free=car.seats.slice(), n=c?2:3; for(let k=0;k<n&&free.length;k++){ const seat=free.splice(Math.floor(r()*free.length),1)[0]; queue.push(()=>RIDERS.list.push(make(car,seat,rng(day*131+tn.id*17+c*5+k)))); } }); } }
     if(queue&&queue.length){ queue.shift()(); return; }
     pt+=dt; let n=0; for(const rd of RIDERS.list){ if(n>=4||pt<rd.next||!rd.g.parent)continue; rd.g.getWorldPosition(rd.w); const d=Math.hypot(rd.w.x-pos.x,rd.w.z-pos.z); rd.next=pt+(d<30?.07:.6); if(d<80){ rd.pose(pt); n++; } } },'117a-riders');

@@ -2049,5 +2049,76 @@
   "slot": "hand",
   "value": 150,
   "weight": 0.9
+ },
+ "shroom_keen": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "icon": "mush",
+  "boost": "keen",
+  "boostS": 300,
+  "size": 0.1
+ },
+ "shroom_heal": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "icon": "mush",
+  "boost": "regen",
+  "boostS": 60,
+  "size": 0.1
+ },
+ "shroom_cure": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "icon": "mush",
+  "cures": true,
+  "size": 0.1
+ },
+ "shroom_jump": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "icon": "mush",
+  "boost": "jump",
+  "boostS": 120,
+  "size": 0.1
+ },
+ "shroom_luck": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "icon": "mush",
+  "boost": "luck",
+  "boostS": 300,
+  "size": 0.1
+ },
+ "shroom_fire": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "icon": "mush",
+  "boost": "fire",
+  "boostS": 120,
+  "size": 0.1
+ },
+ "shroom_small": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "icon": "mush",
+  "boost": "small",
+  "boostS": 120,
+  "size": 0.1
+ },
+ "shroom_big": {
+  "edible": true,
+  "stackable": true,
+  "sellable": true,
+  "icon": "mush",
+  "boost": "big",
+  "boostS": 120,
+  "size": 0.1
  }
 }

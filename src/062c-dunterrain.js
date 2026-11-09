@@ -18,11 +18,13 @@ import {MODS, STN, SYS, TILE} from './006-map-pre.js';
       for(const a of avoid){ const d=a.r!=null?Math.hypot(x-a.x,y-a.y)-a.r:Math.max(a.x0-x,x-a.x1,a.y0-y,y-a.y1,0); m*=sm((d-.4)/1.2); if(m<=0)return 0; } return m; }; };
   const avoidOf=L=>{ const A=[]; for(const h of L.hz)A.push(h.t==='web'?{x:h.cx,y:h.cy,r:h.r}:{x0:h.x0,y0:h.y0,x1:h.x1,y1:h.y1}); for(const t of L.took||[])A.push({x:t[0],y:t[1],r:t[2]+.4});
     if(theme(L)==='subway'){ const {R}=L, w=R.x1-R.x0>R.y1-R.y0; L.track=w?{x0:R.x0+1.5,x1:R.x1-1.5,y0:L.R.cy-.9,y1:L.R.cy+.9,w}:{x0:R.cx-.9,x1:R.cx+.9,y0:R.y0+1.5,y1:R.y1-1.5,w}; A.push(L.track); } return A; };
-  const make=L=>{ const {R,n}=L, r=rng(L.seed*613+11), A=avoidOf(L), M=maskOf(L,A), W=R.x1-R.x0, H=R.y1-R.y0, area=W*H, F=[];
+  const corridorMask=L=>{ const {B,ds}=L, op=[]; for(const [a,b] of ds.b)op.push([a,B.y0,b,B.y0]); for(const [a,b] of ds.f)op.push([a,B.y1,b,B.y1]); for(const [a,b] of ds.w)op.push([B.x0,a,B.x0,b]); for(const [a,b] of ds.e)op.push([B.x1,a,B.x1,b]);
+    return (x,y)=>{ let m=1; for(const q of op){ m*=sm((dSeg(x,y,...q)-1.2)/1.6); if(m<=0)return 0; } return m; }; };   // a corridor's floor rolls too, flat only where it meets a room
+  const make=L=>{ const {R,n}=L, r=rng(L.seed*613+11), A=L.c?[]:avoidOf(L), M=L.c?corridorMask(L):maskOf(L,A), W=R.x1-R.x0, H=R.y1-R.y0, area=W*H, F=[];
     const fits=(cx,cy,rx,ry)=>{ if(M(cx,cy)<.8)return false; let lo=0; for(let k=0;k<12;k++){ const a=k/12*6.283; if(M(cx+Math.cos(a)*rx*.8,cy+Math.sin(a)*ry*.8)<.5)lo++; } if(lo>3)return false; return !F.some(f=>Math.hypot(cx-f.cx,cy-f.cy)<Math.max(rx,ry)+Math.max(f.rx,f.ry)+1.6); };
     const add=(h)=>{ for(let t=0;t<90;t++){ const rx=1.5+r()*(Math.min(W,H)>12?2.6:1.4), ry=Math.max(1.3,rx*(.6+r()*.6)), cx=R.x0+rx+2.4+r()*Math.max(0,W-2*rx-4.8), cy=R.y0+ry+2.4+r()*Math.max(0,H-2*ry-4.8);
-      if(fits(cx,cy,rx,ry)){ F.push({cx,cy,rx,ry,h,ramp:r()*6.283}); return; } } };
-    const ledges=L.k===1?1:area>320?2:area>110?1:0, pits=L.k===1?0:area>260?2:area>120?1:(n>2&&area>80?1:0);
+      if(fits(cx,cy,rx,ry)){ F.push({cx,cy,rx,ry,h,ramp:Math.atan2(R.cy-cy,R.cx-cx)+(r()-.5)*1.2}); return; } } };   // the way up (or out) faces into the room, never into a wall
+    const ledges=L.c?0:L.k===1?1:area>320?2:area>110?1:0, pits=L.c?0:L.k===1?0:area>260?2:area>120?1:(n>2&&area>80?1:0);
     for(let i=0;i<ledges;i++)add(30+r()*16); for(let i=0;i<pits;i++)add(-(38+r()*18));
     const x0=R.x0, y0=R.y0, nx=Math.ceil(W/RS)+1, ny=Math.ceil(H/RS)+1, g=new Float32Array(nx*ny), s=L.seed;
     const at=(x,y)=>{ const m=M(x,y); if(m<=0)return 0; let v=8*(vn(x*.33,y*.33,s)-.5)*2+3*(vn(x*1.1,y*1.1,s+9)-.5);
@@ -107,10 +109,27 @@ import {MODS, STN, SYS, TILE} from './006-map-pre.js';
         else if(o.near){ const a=r()*6.283, d=o.near[2]*(1+r()*.6); x=o.near[0]+Math.cos(a)*d; y=o.near[1]+Math.sin(a)*d; } else { x=R.x0+rad+r()*(R.x1-R.x0-2*rad); y=R.y0+rad+r()*(R.y1-R.y0-2*rad); }
         if(o.anyFree?x>R.x0+rad&&x<R.x1-rad&&y>R.y0+rad&&y<R.y1-rad&&!took.some(t=>Math.hypot(x-t[0],y-t[1])<t[2]+rad):free(x,y,rad,o.wall?0:o.need)&&(o.slope||flat(x,y,rad*.7))){ took.push([x,y,rad]); return [x,y]; } } return null; };
     const pf=(k,x,y,sc,o={})=>{ const z=o.z??gy(x,y)-1, q=put(o.G||G0,k,x,y,z,o.rot??r()*6.283,sc,o); if(q&&o.solid)sol(x-q.r*o.solid,y-q.r*o.solid,x+q.r*o.solid,y+q.r*o.solid,z+q.h); return q; };
-    if(!L.c)for(const [k,w,a0,a1,at,[nx,ny]] of sides){ const S=SD[k]; for(let u=a0+1.2;u<a1-1.2;u+=2+r()*1.6){ const tu=u-(w==='l'||w==='r'?R.y0:R.x0); if(hot(w,tu)||gaps(k[1],u))continue;   // rock bulging from the wall, in tiers up its height
+    if(!L.c)for(const [k,w,a0,a1,at,[nx,ny]] of sides){ const S=SD[k]; for(let u=a0+1.2;u<a1-1.2;u+=3.4+r()*2.4){ const tu=u-(w==='l'||w==='r'?R.y0:R.x0); if(hot(w,tu)||gaps(k[1],u))continue;   // rock bulging from the wall, in tiers up its height
         if(L.up&&k==='Kb'&&u>L.up.x0-1.6&&u<L.up.x1+1.6)continue; const rr=.6+r()*.8, [wx,wy]=at(u), cx=wx+nx*rr*.15, cy=wy+ny*rr*.15, hz=18+r()*44;
         lump(S[0],S[1],cx,cy,0,nx?rr*.9:rr*1.3,ny?rr*.9:rr*1.3,hz,SCHIST,L.seed+Math.round(u*7),R); sol(Math.min(wx,cx+nx*rr*.6)-(ny?rr*.8:0),Math.min(wy,cy+ny*rr*.6)-(nx?rr*.8:0),Math.max(wx,cx+nx*rr*.6)+(ny?rr*.8:0),Math.max(wy,cy+ny*rr*.6)+(nx?rr*.8:0),hz*.8);
-        if(r()<.55){ const r2=.5+r()*.9; lump(S[0],S[1],wx+nx*r2*.1,wy+ny*r2*.1,110+r()*R.H*.5,nx?r2*.7:r2*1.6,ny?r2*.7:r2*1.6,30+r()*60,SCHIST.map(v=>v*.85),L.seed+Math.round(u*11),R); } } }
+        } }   // (the skin does the rest of the wall)
+    // a skin of rock over every wall, corridors too: it bulges out by different amounts all the way up, flares at the floor, swells by a doorway and tapers into it, and keeps clear of the torches (owner, 8 Nov 2026: "still too many straight lines, this place isnt man made")
+    { const du=.62, ZS=[0,8,20,36,56,82,114,155,210,280,R.H+4], sd=L.seed+71, TW={Kw:'l',Ke:'r',Kb:'b',Kf:'f'}, SK={Kb:[[],[]],Kf:[[],[]],Kw:[[],[]],Ke:[[],[]]};
+      for(const [k,w,a0,a1,at,[nx,ny]] of sides){ const ops=(k==='Kb'?ds.b:k==='Kf'?ds.f:k==='Kw'?ds.w:ds.e), segs=[]; let a=a0; for(const [p,q] of ops){ if(p>a)segs.push([a,p]); a=Math.max(a,q); } if(a1>a)segs.push([a,a1]);
+        const tor=(L.R.torches||[]).filter(t=>t.w===TW[k]).map(t=>(w==='l'||w==='r'?R.y0:R.x0)+t.u), S=SD[k];
+        const D=(u,z,s0,s1)=>{ const e=Math.min(u-s0,s1-u); let d=.14+.5*vn(u*.55,z*.011,sd)+.22*vn(u*1.6,z*.035,sd+2)+.34*sm((36-z)/36); d*=(1+.7*sm((1.3-e)/1.3))*sm(e/.3);
+          for(const tu of tor){ const q=Math.hypot((u-tu)/.95,(z-86)/62); if(q<1)d=d*(1-.82*sm((1-q)/.6))+.03; } if(L.up&&k==='Kb'&&u>L.up.x0-.6&&u<L.up.x1+.6)d=0; return Math.min(d,L.c?.55:.95); };   // (a rounded hollow round each torch, not a flat cut)
+        for(const [s0,s1] of segs){ if(s1-s0<.3)continue; const us=[]; for(let u=s0;u<s1-1e-6;u+=du)us.push(u); us.push(s1);
+          const SKk=SK[k], c3=new THREE.Color(), V=(u,z)=>{ const [x,y]=at(u), d=D(u,z,s0,s1), col=wall(nx,ny,x,y,z,R); c3.setRGB(col[0]/255,col[1]/255,col[2]/255,THREE.SRGBColorSpace); return [X(x+nx*d),Y(z)+dy,Z(y+ny*d),c3.r,c3.g,c3.b]; };
+          for(let i=0;i<us.length-1;i++){ for(let j=0;j<ZS.length-1;j++){ const u0=us[i], u1=us[i+1], z0=ZS[j], z1=ZS[j+1], A=V(u0,z0), Bq=V(u1,z0), Cq=V(u1,z1), Dq=V(u0,z1);
+              const ex=Bq[0]-A[0], ey=Bq[1]-A[1], ez=Bq[2]-A[2], fx=Cq[0]-A[0], fy=Cq[1]-A[1], fz=Cq[2]-A[2], cx=ey*fz-ez*fy, cz=ex*fy-ey*fx, out=cx*nx+cz*ny>0;   // wound to face into the room, so a camera behind it sees through
+              for(const v of out?[A,Bq,Cq,A,Cq,Dq]:[A,Cq,Bq,A,Dq,Cq]){ SKk[0].push(v[0],v[1],v[2]); SKk[1].push(v[3],v[4],v[5]); } }
+            const dm=D((us[i]+us[i+1])/2,8,s0,s1); if(dm>.22){ const [x,y]=at(us[i]), [x2,y2]=at(us[i+1]); sol(Math.min(x,x2,x+nx*dm*.8),Math.min(y,y2,y+ny*dm*.8),Math.max(x,x2,x+nx*dm*.8),Math.max(y,y2,y+ny*dm*.8),60); } } } }
+      for(const k in SK){ const [P,C]=SK[k]; if(!P.length)continue; const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C,3)); g.computeVertexNormals();
+        const m=SKM.clone(); m.clippingPlanes=[PL[k]]; const me=new THREE.Mesh(g,m); me.receiveShadow=true; own(me); } }
+    if(!L.c)for(const [k,w,a0,a1,at,[nx,ny]] of sides){ const ops=(k==='Kb'?ds.b:k==='Kf'?ds.f:k==='Kw'?ds.w:ds.e), S=SD[k];   // each doorway's edges rounded off by a tall mass of rock, so no straight edge shows where the wall ends
+      for(const [p,q] of ops)for(const u of [p,q]){ if(u<=a0+.05||u>=a1-.05)continue; const [wx,wy]=at(u), rr=.5+r()*.25, bx=nx?{x0:R.x0,x1:R.x1,y0:-1e9,y1:1e9}:{x0:-1e9,x1:1e9,y0:R.y0,y1:R.y1};
+        lump(S[0],S[1],wx+nx*rr*.35,wy+ny*rr*.35,0,rr,rr,R.H*(.55+r()*.35),SCHIST,L.seed+Math.round(u*13),bx); sol(wx-rr*.55,wy-rr*.55,wx+rr*.55,wy+rr*.55,80); } }
     if(!L.c)for(const [cx,cy,k] of [[R.x0,R.y0,'Kb'],[R.x1,R.y0,'Kb'],[R.x0,R.y1,'Kf'],[R.x1,R.y1,'Kf']]){ if(L.up&&cy===R.y0&&Math.abs(cx-(L.up.x0+L.up.x1)/2)<3)continue; const rr=1+r()*.8;
       lump(SD[k][0],SD[k][1],cx,cy,0,rr,rr,60+r()*90,SCHIST,L.seed+cx,R); sol(cx-rr*.6,cy-rr*.6,cx+rr*.6,cy+rr*.6,90); }
     const drips=ceil(L,CP,CC), n=L.n||1, big=(R.x1-R.x0)*(R.y1-R.y0);
@@ -142,11 +161,12 @@ import {MODS, STN, SYS, TILE} from './006-map-pre.js';
     if(th==='cistern'&&L.T){ for(const f of L.T.F)if(f.h<0){ const wl=new THREE.Mesh(new THREE.CircleGeometry(1,24).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({color:0x1e4a48,transparent:true,opacity:.78,emissive:0x061414}));   // a pit holds the dark water that seeps in
         wl.scale.set(f.rx*TILE*1.05,1,f.ry*TILE*1.05); wl.position.set(X(f.cx),Y(f.h*.55+.3)+dy,Z(f.cy)); own(wl); } }
     for(const k in SD){ const [P,C]=SD[k]; if(!P.length)continue; const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C,3)); g.computeVertexNormals();
-      const m=MODS.castleStairMat.clone(); m.clippingPlanes=[PL[k]]; const me=new THREE.Mesh(g,m); me.castShadow=me.receiveShadow=true; own(me); }   // cut with their wall where it opens toward you
+      const m=MODS.castleStairMat.clone(); m.clippingPlanes=[PL[k]]; const me=new THREE.Mesh(g,m); me.receiveShadow=true; own(me); }   // cut with their wall where it opens toward you (no shadows of their own: the torch's shadow map would draw them six times over)
     const mk=(G,mat,sh)=>{ if(!G.P.length)return; const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(G.P,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(G.C,3)); if(G.I)g.setIndex(G.I); g.computeVertexNormals(); const me=new THREE.Mesh(g,mat); me.castShadow=me.receiveShadow=!!sh; own(me); };
-    mk(G0,PFM,true); for(const k in GS){ const m=PFM.clone(); m.clippingPlanes=[PL[k]]; mk(GS[k],m,true); }
+    mk(G0,PFM,false); for(const k in GS){ const m=PFM.clone(); m.clippingPlanes=[PL[k]]; mk(GS[k],m,false); }
     if(CP.length)mk({P:CP,C:CC},CEILM,false); };
   const CEILM=new THREE.MeshLambertMaterial({vertexColors:true,flatShading:true});   // seen only from below
+  const SKM=new THREE.MeshLambertMaterial({vertexColors:true,flatShading:true});   // the rock skin: one-sided, facing the room
   // where the ground is a cliff: boxes (world x0,z0,x1,z1), one run of steep cells to a row, that routes and the monsters keep out of
   const cliffs=L=>{ const T=L.T; if(!T)return []; if(T.cl)return T.cl; const {x0,y0,nx,ny,g}=T, out=[], st=(i,j)=>{ const v=g[j*nx+i]; return (i+1<nx&&Math.abs(g[j*nx+i+1]-v)>11)||(j+1<ny&&Math.abs(g[(j+1)*nx+i]-v)>11); };
     for(let j=0;j<ny;j++){ let a=-1; for(let i=0;i<=nx;i++){ const s=i<nx&&st(i,j); if(s&&a<0)a=i; if(!s&&a>=0){ const gx0=x0+a*RS-RS*.5, gx1=x0+(i-1)*RS+RS*.5, gy0=y0+j*RS-RS*.5, gy1=y0+j*RS+RS*.5, xa=X(gx0), xb=X(gx1), za=Z(gy0), zb=Z(gy1); out.push([Math.min(xa,xb),Math.min(za,zb),Math.max(xa,xb),Math.max(za,zb)]); a=-1; } } }

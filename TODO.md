@@ -256,6 +256,7 @@ One pass, one pull request.
 - [x] **The park's animals to the pet store's cages; every living thing a pet; THE AQUARIUM** (owner, 8 Nov 2026: "hudson lot, apartment tank only, birds ok, go"; done 8 Nov) · P2 · L · code. `src/146zj-pets.js`, `src/146zjb-aquarium.js`, `tools/pets-more.py`, `tools/petcages-bake.py`, `tests/petstore.cjs`. Waits for his look and yes.
 - [x] **The pet shops split; the park farm and its barn** (owner, 8 Nov 2026: "separate buildings, recommendations, big liz, A, yes go"; done 8 Nov) · P2 · L · code. `src/146zj-pets.js`, `src/059i-mshops.js`, `tools/pets-more.py`, `tools/petcages-bake.py`, `tests/petstore.cjs`. Waits for his look and yes.
 - [ ] **Keepers for the new pet shops and the barn** · P3 · S · pick. Every unarchived character fitting is working elsewhere; the owner names who (from the archive or new).
+- [x] **Your pet at home** (owner, 9 Nov 2026: "in your apartment's living room and bedroom, wandering by findPath, jumping or flying up onto things, idling, asleep"; done 9 Nov) · P2 · M · code. `src/146zj-pets.js`, `tests/pethome.cjs`. Waits for his look and yes.
 
 - [x] **One menu, the pager gone** (done 5 Nov) · P2 · L · code. Owner, 5 Nov: "B"; "leave the map and bag as is. BBs changes. do the rest. go".
 - [ ] **After the archive (5 Nov)** · P1 · code. Left: the playhouse as an empty hall; the rest of the archived cast's bodies still ship in the cast data (hidden by ARCH). Dropped (owner, 5 Nov): the map

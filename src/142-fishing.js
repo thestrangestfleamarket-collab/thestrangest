@@ -119,7 +119,7 @@ const fishInit=()=>{ if(FISHING.at)return; const T=TILE, RB={get lv(){ return RI
     for(const [id,nm,one] of []){ const v=IP(id,'value')||0, n=FORAGE.has(id)||0; o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">${nm}</td><td style="text-align:right;padding:4px 6px">$${v}</td><td style="text-align:right">${one&&n?'YOURS':`${n?'x'+n+' ':''}<button ${B} data-tack="${id}">BUY</button>`}</td></tr>`; }
     o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">ROWBOAT · A TRIP</td><td style="text-align:right;padding:4px 6px">$5</td><td style="text-align:right">${BOAT.on?'OUT':`<button ${B} data-boat="1">RENT</button>`}</td></tr>`+FORAGE.trainRows(['fish'])+`</table>`;
     if(0&&ids.length)o+=`<div style="margin:10px 0 4px;color:#9b9584">YOUR CATCH</div><table style="border-collapse:collapse;width:100%">`;
-    for(const id of ids){ const v=PRICE[id], n=INV.items[id]; o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">${FORAGE.NM[id]}</td><td style="text-align:right;padding:4px 6px">$${v}</td><td style="text-align:right">x${n}</td><td style="text-align:right;white-space:nowrap"><button ${B} data-sell="${id}">SELL</button>${n>1?`<button ${B} data-sell="${id}" data-n="all">ALL $${v*n}</button>`:''}</td></tr>`; }
+    for(const id of ids){ const n=INV.items[id], v=WORTH.sell(id,1,PRICE[id]), va=WORTH.sell(id,n,PRICE[id]); o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">${FORAGE.NM[id]}</td><td style="text-align:right;padding:4px 6px">$${v}</td><td style="text-align:right">x${n}</td><td style="text-align:right;white-space:nowrap"><button ${B} data-sell="${id}">SELL</button>${n>1?`<button ${B} data-sell="${id}" data-n="all">ALL $${va}</button>`:''}</td></tr>`; }
     if(ids.length)o+=`</table>`;
     const x=sp.querySelector(':scope>.pX'); sp.innerHTML=o; if(x)sp.appendChild(x); };
   sp.addEventListener('click',e=>{ '@later'; const b=e.target.closest('button'); if(!b||b.classList.contains('pX'))return; const d=b.dataset;
@@ -130,7 +130,7 @@ const fishInit=()=>{ if(FISHING.at)return; const T=TILE, RB={get lv(){ return RI
       if(one&&!FORAGE.has('rod'))say('YOU NEED A ROD FIRST.','#c8a090'); else if(id==='crabpot'&&(FORAGE.has('crabpot')||0)+potsOut()>=3)say('THREE POTS IS THE LIMIT.','#c8a090'); else if(INV.cash<v)say('YOU CANNOT AFFORD THAT.','#c8a090');
       else { INV.cash-=v; FORAGE.give(id); say(`YOU TAKE THE ${FORAGE.NM[id]} AND DROP $${v} IN THE BOX.`); } }
     if(d.boat){ if(INV.cash<5)say('YOU CANNOT AFFORD THAT.','#c8a090'); else { INV.cash-=5; sp.hidden=true; BOAT.launch(); } }
-    if(d.sell){ const n=d.n==='all'?FORAGE.has(d.sell):1, v=WORTH.of(d.sell,n,PRICE[d.sell]); FORAGE.take(d.sell,n); INV.cash+=v; say(`YOU SELL ${n} ${FORAGE.NM[d.sell]} FOR $${v}.`,'#f2c14e'); SFX.play('clunk',{vol:.5}); }
+    if(d.sell){ const n=d.n==='all'?FORAGE.has(d.sell):1, v=WORTH.sell(d.sell,n,PRICE[d.sell]); FORAGE.take(d.sell,n); INV.cash+=v; say(`YOU SELL ${n} ${FORAGE.NM[d.sell]} FOR $${v}.`,'#f2c14e'); SFX.play('clunk',{vol:.5}); }
     STAND.draw(); FORAGE.draw(); });
   STAND.open=()=>{ sp.hidden=false; STAND.draw(); };
   const boat=new THREE.Group(); boat.visible=false; scene.add(boat); const BW=1.1*T, BLn=2.6*T, Y=v=>v*T/.84;
@@ -164,7 +164,7 @@ const fishInit=()=>{ if(FISHING.at)return; const T=TILE, RB={get lv(){ return RI
   FISHING.odds=(x,z,bait=S.hook,h=CLOCK.h)=>{ '@later'; const w=FISHING.at(x,z); if(!w)return null; const bk=bait?IP(bait,'bait'):null, pd=period(h), per={}; let sum=0;
     // the water's kinds by tier (RARITY): 70, 25 and 5 in a hundred shared among its common, rare and super-rare; the super-rare only once the Fisherman ranks you high enough
     const TN={c:0,r:0,s:0}, TK={common:'c',rare:'r',super:'s'}, tof=id=>TK[IP(id,'tier')]||'c', here=SPECIES.filter(id=>IP(id,'water')===w.kind&&w.depth>=(IP(id,'depth')||0)&&(tof(id)!=='s'||RARITY.open('fish'))); for(const id of here)TN[tof(id)]++;
-    for(const id of here){ const b=!bk?0:IP(id,'bait')===bk?1.6:.5, bt=IP(id,'bites'), tm=bt==='any'?1:bt===pd?1.5:.3, t=tof(id), v=RARITY.ODDS[t]*10/TN[t]*b*tm; if(v>0){ per[id]=v; sum+=v; } }
+    for(const id of here){ const b=!bk?0:IP(id,'bait')===bk?1.6:.5, bt=IP(id,'bites'), tm=bt==='any'?1:bt===pd?1.5:.3, t=tof(id), v=RARITY.ODDS[t]*10/TN[t]*b*tm*(t!=='c'?SHARED.luck||1:1); if(v>0){ per[id]=v; sum+=v; } }
     if(w.kind==='river'&&bk)for(const [id,,c] of JUNK){ per[id]=c; sum+=c; }
     for(const f of FISHING.EXTRA){ const r=f({x,z,w,bait:bk,h}); if(r)for(const id in r){ const v=sum*r[id]; per[id]=(per[id]||0)+v; sum+=v; } }
     const now=performance.now()/1000, r=rests.filter(q=>Math.hypot(q[0]-x,q[1]-z)<3*T).reduce((m,q)=>Math.min(m,(now-q[2])/40),1), lam=K*sum*(1+FORAGE.sk('fish')/100)*Math.max(0,r);

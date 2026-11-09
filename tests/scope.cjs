@@ -31,7 +31,16 @@ const SHOTS = process.env.SHOTS;
     ok(!bt.left && Math.abs(bt.alt - bt.d.alt) < .3 && Math.abs(((bt.az - bt.d.az + 540) % 360) - 180) < .5, 'GO TO slews the tube onto Betelgeuse (' + [bt.alt, bt.az].map(x => x.toFixed(2)) + ' vs ' + [bt.d.alt, bt.d.az].map(x => x.toFixed(2)) + ')');
     if (SHOTS) { await pg.evaluate(() => { SCOPE.mag = 6; SCOPE.focus = .18; }); await pg.waitForTimeout(1500); await pg.screenshot({ path: SHOTS + '/scope-orion.png' }); }
 
-    // the Sun: never without the filter
+    // below the horizon: GO TO says so and stays put; aimed under the rooftops the eyepiece shows the ground, not sky
+    const bh = await pg.evaluate(async () => { let H = 0; for (; H < 24 && SCOPE.altOf('moon').alt > -5; H++) SCOPE.fixJD = SCOPE.jdAt(H); SCOPE.filter = false; SCOPE.mag = 200; SCOPE.goTo('moon'); const g = !!SCOPE.goto, n = SCOPE.note && SCOPE.note.s;
+      SCOPE.fixJD = SCOPE.jdAt(12); SCOPE.alt = -9; SCOPE.va = SCOPE.vz = 0; await new Promise(r => setTimeout(r, 600)); const c = [...document.querySelectorAll('canvas')].find(c => c.style.cursor === 'grab' && c.offsetWidth);
+      const x = c.getContext('2d').getImageData(c.width / 2, c.height / 2, 1, 1).data; return { g, n, px: [x[0], x[1], x[2]] }; });
+    ok(!bh.g && /BELOW THE HORIZON/.test(bh.n || ''), 'GO TO a Moon below the horizon says so and does not drive into the ground (' + bh.n + ')');
+    const m31 = await pg.evaluate(async () => { SCOPE.fixJD = SCOPE.jdAt(22); SCOPE.mag = 200; SCOPE.focus = .9; const h = SCOPE.altOf('m31'); SCOPE.alt = h.alt; SCOPE.az = h.az; SCOPE.goto = null; SCOPE.va = SCOPE.vz = 0;
+      for (let k = 0; k < 40 && !(SCOPE.centre === 'm31'); k++) await new Promise(r => setTimeout(r, 100)); const t = performance.now(); for (let i = 0; i < 10; i++) SCOPE.view.draw(.016); SCOPE.focus = .18; return { ms: (performance.now() - t) / 10, c: SCOPE.centre, alt: h.alt }; });
+    ok(m31.c === 'm31' && m31.ms < 60, 'Andromeda at 200x, out of focus, draws in ' + m31.ms.toFixed(1) + ' ms a frame (centre ' + m31.c + ', alt ' + m31.alt.toFixed(0) + '°)');
+    ok(bh.px[2] < 120, 'aimed below the rooftops at noon, the eyepiece shows the ground, not blue sky (' + bh.px + ')');
+
     const sun = await pg.evaluate(async () => { SCOPE.fixJD = SCOPE.jdAt(12); SCOPE.filter = false; SCOPE.mag = 50; SCOPE.goTo('sun'); for (let k = 0; k < 120 && SCOPE.goto; k++) await new Promise(r => setTimeout(r, 250)); await new Promise(r => setTimeout(r, 400));
       const a = { glare: SCOPE.glare }; SCOPE.filter = true; await new Promise(r => setTimeout(r, 600)); return { a, b: { glare: SCOPE.glare, centre: SCOPE.centre } }; });
     ok(sun.a.glare > .6, 'pointed at the Sun without a filter, the eyepiece whites out (' + sun.a.glare.toFixed(2) + ')');

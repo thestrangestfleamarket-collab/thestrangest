@@ -23,12 +23,12 @@ const DFOG={};
       float qn(vec3 p){ vec3 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); return mix(mix(mix(qh(i),qh(i+vec3(1,0,0)),f.x),mix(qh(i+vec3(0,1,0)),qh(i+vec3(1,1,0)),f.x),f.y),mix(mix(qh(i+vec3(0,0,1)),qh(i+vec3(1,0,1)),f.x),mix(qh(i+vec3(0,1,1)),qh(i+vec3(1,1,1)),f.x),f.y),f.z); }
       void main(){ float d=texture2D(tDepth,vUv).x, f=0., m=0., dd=0., land=0.; vec4 c=texture2D(tDiffuse,vUv);
         if(uO>.5){
-        if(d<.99999){ vec4 v=uPInv*vec4(vUv*2.-1.,d*2.-1.,1.); v/=v.w; vec3 w=(uCamW*v).xyz, cp=(uCamW*vec4(0.,0.,0.,1.)).xyz; dd=mix(max(0.,distance(w,cp)-distance(uP,cp)),length(w.xz-uP.xz),uV); float g=smoothstep(uS,uE,dd), g2=smoothstep(uS*.4,uE,dd), ge=g2*g2, gw=smoothstep(uS,uE*2.,dd), wet=step(w.y,uW); land=step(uK.x,w.x)*step(w.x,uK.z)*step(uK.y,w.z)*step(w.z,uK.w);
+        if(d<.9999995){ vec4 v=uPInv*vec4(vUv*2.-1.,d*2.-1.,1.); v/=v.w; vec3 w=(uCamW*v).xyz, cp=(uCamW*vec4(0.,0.,0.,1.)).xyz; dd=mix(max(0.,distance(w,cp)-distance(uP,cp)),length(w.xz-uP.xz),uV); float g=smoothstep(uS,uE,dd), g2=smoothstep(uS*.4,uE,dd), ge=g2*g2, gw=smoothstep(uS,uE*2.,dd), wet=step(w.y,uW); land=step(uK.x,w.x)*step(w.x,uK.z)*step(uK.y,w.z)*step(w.z,uK.w);
           f=g; m=land>.5?mix(uF>0.?ge:g*uH,gw,wet):uH>0.?mix(mix(mix(min(.85,g),g,uF),gw,wet),min(.85,g),smoothstep(uY.x,uY.y,vUv.y)):0.; }
         else if(uH>0.&&uV>0.){ vec4 v=uPInv*vec4(vUv*2.-1.,1.,1.); v/=v.w; vec3 w=(uCamW*v).xyz, cp=(uCamW*vec4(0.,0.,0.,1.)).xyz; m=smoothstep(0.,-.03,(w.y-cp.y)/length(w-cp)); }
         if(f>.001&&uB>0.){ vec2 o=uB*f/uR; vec4 s=c*2.+texture2D(tDiffuse,vUv+vec2(o.x,0.))+texture2D(tDiffuse,vUv-vec2(o.x,0.))+texture2D(tDiffuse,vUv+vec2(0.,o.y))+texture2D(tDiffuse,vUv-vec2(0.,o.y))
           +texture2D(tDiffuse,vUv+o)+texture2D(tDiffuse,vUv-o)+texture2D(tDiffuse,vUv+vec2(o.x,-o.y))+texture2D(tDiffuse,vUv+vec2(-o.x,o.y)); c=s/10.; }
-        vec3 to=uC; if(uD>0.){ m=0.; if(d<.99999){ c.rgb*=1.-uH*smoothstep(uS,uE,dd);
+        vec3 to=uC; if(uD>0.){ m=0.; if(d<.9999995){ c.rgb*=1.-uH*smoothstep(uS,uE,dd);
             vec4 v=uPInv*vec4(vUv*2.-1.,d*2.-1.,1.); v/=v.w; vec3 w=(uCamW*v).xyz, cp=(uCamW*vec4(0.,0.,0.,1.)).xyz, seg=w-cp, ins=uC; float L=length(seg), a=0., rf=0.; vec3 ray=seg/max(.001,L);
             if(uA.x+uA.y>0.){ float lo=max(0.,min(cp.y,w.y)-uG)*uA.z, dh=abs(seg.y)*uA.z, avg=(dh<.001?1.-dh*.5+dh*dh/6.:(1.-exp(-dh))/dh)*exp(-lo);
               a=min(uAM,1.-exp(-max(0.,L-uS)*(uA.x+uA.y*avg))); if(uSt>0.)a=min(1.,floor(a*uSt+by(gl_FragCoord.xy))/uSt);
@@ -37,7 +37,7 @@ const DFOG={};
               ins=mix(uMC,uC,sb)+uSC*lt*(1.-g*g)/pow(1.+g*g-2.*g*mu,1.5); c.rgb=mix(c.rgb,ins,a); }
             m=uF>0.?land*smoothstep(uF*.67,uF,dd)*step(dd,uF*1.05):0.;
             if(uRm.x>0.){ float ri=min(min(w.x-uK.x,uK.z-w.x),min(w.z-uK.y,uK.w-w.z)); rf=land*(1.-smoothstep(0.,uRm.x,ri))*smoothstep(uRm.y,uRm.z,L); m=max(m,rf); }
-            if(m>.001){ float hit=0., L0=lin(d); vec3 acc=vec3(0.); float na=0.; for(int i=1;i<=14;i++){ vec2 q=vUv+vec2(0.,float(i*i)*3./uR.y); if(q.y>1.)break; float dq=texture2D(tDepth,q).x; if(dq>=.99999||rf>.001&&lin(dq)>L0*1.25){ hit=1.; for(int j=0;j<5;j++){ vec2 r=q+vec2((float(j)-2.)*9./uR.x,float(j*j)*4./uR.y); if(r.y<=1.&&texture2D(tDepth,r).x>=.99999){ acc+=texture2D(tDiffuse,r).rgb; na+=1.; } } break; } } to=na>0.?mix(acc/na,ins,.35):ins; } } }
+            if(m>.001){ float hit=0., L0=lin(d); vec3 acc=vec3(0.); float na=0.; for(int i=1;i<=14;i++){ vec2 q=vUv+vec2(0.,float(i*i)*3./uR.y); if(q.y>1.)break; float dq=texture2D(tDepth,q).x; if(dq>=.9999995||rf>.001&&lin(dq)>L0*1.25){ hit=1.; for(int j=0;j<5;j++){ vec2 r=q+vec2((float(j)-2.)*9./uR.x,float(j*j)*4./uR.y); if(r.y<=1.&&texture2D(tDepth,r).x>=.9999995){ acc+=texture2D(tDiffuse,r).rgb; na+=1.; } } break; } } to=na>0.?mix(acc/na,ins,.35):ins; } } }
         c.rgb=mix(c.rgb,to,m); }
         if(uQK.x>0.){ vec4 a=uPInv*vec4(vUv*2.-1.,-1.,1.), b=uPInv*vec4(vUv*2.-1.,min(d,.99999)*2.-1.,1.); vec3 ro=(uCamW*vec4(a.xyz/a.w,1.)).xyz, rd=(uCamW*vec4(b.xyz/b.w,1.)).xyz-ro;
           vec3 iv=1./(rd+step(abs(rd),vec3(1e-7))*1e-7), t0=(uQ0-ro)*iv, t1=(uQ1-ro)*iv, lo=min(t0,t1), hi=max(t0,t1); float tn=max(max(max(lo.x,lo.y),lo.z),0.), tf=min(min(min(hi.x,hi.y),hi.z),1.);

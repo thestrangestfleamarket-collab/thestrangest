@@ -594,5 +594,6 @@ body #mode,body #said{${MONO};font-size:14px;color:#7dffa8;${GL};${PN};border:0}
       if(!el.dataset.pan){ el.dataset.pan=1; drag(el,el.id); }
       const c=own(el); if(c&&!c.classList.contains('mclose'))c.classList.add('mclose');
       if(!el.querySelector(':scope>.pX')){ const x=document.createElement('button'); x.className='pX'; x.type='button'; x.textContent='X'; x.title='close'; x.onclick=e=>{ e.stopPropagation(); const b=own(el); if(b)b.click(); else hide(el); }; el.appendChild(x); } } };
-  const huds=()=>{ for(const id of HUDP){ const el=document.getElementById(id); if(!el)continue; if(!el.dataset.mv)hudMove(el); if(POS[id]&&!el.style.left)put(el,id); } };
+  const DRAGONLY=['shopg'];   // a window with its own look that still moves (the shops' bag-style window, 8 Nov 2026)
+  const huds=()=>{ for(const id of DRAGONLY){ const el=document.getElementById(id); if(el&&!el.hidden&&!el.dataset.pan){ el.dataset.pan=1; drag(el,id); } } for(const id of HUDP){ const el=document.getElementById(id); if(!el)continue; if(!el.dataset.mv)hudMove(el); if(POS[id]&&!el.style.left)put(el,id); } };
   look(); SYS.every(()=>{ look(); UI.menuLook(); frame(); huds(); },400,'094-ui look'); }

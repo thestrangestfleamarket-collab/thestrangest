@@ -111,7 +111,7 @@ import {WORTH} from './140c-worth.js';
   FORAGE.keen=()=>S.fx.keen?20:0;
   { let sta0=1, acc=0; SYS.add('vitalsPre',()=>{ sta0=VIT.sta; },'141-forage'); SYS.add('vitals',dt=>{ if(!!S.fx.invis!==!!SHARED.unseen)unseen(); VIT.spendK=1-(S.st.sta-30)/150; if(S.fx.str&&VIT.sta<sta0)VIT.sta=sta0;
       if(S.fx.poison)VIT.heal(-dt/50,.05); if(S.fx.regen)VIT.heal(dt/30);
-      SHARED.fireproof=!!S.fx.fire; SHARED.luck=S.fx.luck?2:1; st.hi=S.fx.jump?2.5:1; if(W3.SZ){ if(SZ0==null)SZ0=W3.SZ; const to=SZ0*(S.fx.small?.4:S.fx.big?2:1); W3.SZ=Math.abs(to-W3.SZ)<1e-3?to:W3.SZ+(to-W3.SZ)*Math.min(1,dt*3); }
+      VIT.heatProof=S.fx.fire?50:0; SHARED.luck=S.fx.luck?2:1; st.hi=S.fx.jump?2.5:1; if(W3.SZ){ if(SZ0==null)SZ0=W3.SZ; const to=SZ0*(S.fx.small?.4:S.fx.big?2:1); W3.SZ=Math.abs(to-W3.SZ)<1e-3?to:W3.SZ+(to-W3.SZ)*Math.min(1,dt*3); }
       S.food=1; if(window.WX&&WX.now&&WX.now.rain>.25)FORAGE.wetT=performance.now()/1e3;
       for(const k in S.fx){ S.fx[k]-=dt; if(S.fx[k]<=0){ delete S.fx[k]; say({str:'YOUR STRENGTH FADES.',keen:'YOUR EYE IS ORDINARY AGAIN.',swift:'YOUR STEP SLOWS.',invis:'YOU CAN BE SEEN AGAIN.',fly:'THE FLIGHT MUSHROOM WEARS OFF. YOU COME DOWN.',jump:'YOUR LEGS ARE ORDINARY AGAIN.',luck:'YOUR LUCK RUNS OUT.',fire:'FIRE CAN HURT YOU AGAIN.',small:'YOU GROW BACK TO YOUR OWN SIZE.',big:'YOU SHRINK BACK TO YOUR OWN SIZE.',regen:'THE MENDING STOPS.',dark:'THE DARK CLOSES IN AGAIN.',poison:'THE POISON HAS WORN OFF.'}[k]||'',k==='poison'?'#9fe07f':'#c8c2b0'); if(k==='swift'&&base){ st.wk=base[0]; st.rk=base[1]; base=null; } if(k==='keen')FORAGE.sync(); if(k==='invis')unseen(); } }
       if((acc+=dt)>5){ acc=0; saveSoon(); } if(PACK.open&&(PACK.t=(PACK.t||0)+dt)>1){ PACK.t=0; PACK.bars(); } },'141-forage'); }

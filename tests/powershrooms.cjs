@@ -19,7 +19,7 @@ let bad = 0; const ok = (c, m) => { console.log((c ? 'ok   ' : 'FAIL ') + m); if
       eat('shroom_keen'); eat('shroom_heal'); eat('shroom_jump'); eat('shroom_luck'); eat('shroom_fire');
       o.fx = ['keen', 'regen', 'jump', 'luck', 'fire'].filter(k => !(S.fx[k] > 0));
       await wait(300);
-      o.flags = { fire: SHARED.fireproof, luck: SHARED.luck, hi: __dbg.ST.hi };
+      o.flags = { fire: !__dbg.VIT.burns('lava') && __dbg.VIT.burns('dragon'), luck: SHARED.luck, hi: __dbg.ST.hi };
       S.fx.poison = 30; eat('shroom_cure'); o.cured = !S.fx.poison;
       const sz0 = W3.SZ; eat('shroom_big'); await wait(7000); o.big = W3.SZ / sz0;
       eat('shroom_small'); await wait(7000); o.small = W3.SZ / sz0; o.bigGone = !S.fx.big;
@@ -30,7 +30,7 @@ let bad = 0; const ok = (c, m) => { console.log((c ? 'ok   ' : 'FAIL ') + m); if
     ok(!r.sold.length, 'the Mushroom Seller sells every one' + (r.sold.length ? ': ' + r.sold : ''));
     ok(!r.kit.length, 'every one is in the kits' + (r.kit.length ? ': ' + r.kit : ''));
     ok(!r.fx.length, 'keen eye, healing, jump, luck and fireproof take hold' + (r.fx.length ? ': missing ' + r.fx : ''));
-    ok(r.flags.fire === true && r.flags.luck === 2 && r.flags.hi === 2.5, 'fireproof, luck and jump reach the systems that read them ' + JSON.stringify(r.flags));
+    ok(r.flags.fire === true && r.flags.luck === 2 && r.flags.hi === 2.5, 'fireproof covers lava (heat 50) but never dragonfire (100); luck and jump reach the systems that read them ' + JSON.stringify(r.flags));
     ok(r.cured, 'the cure poison mushroom takes the poison away');
     ok(r.big > 1.8 && r.small < .6 && r.bigGone && Math.abs(r.back - 1) < .05, 'grow doubles you, shrink takes you to two-fifths and undoes grow, and you come back to your size ' + JSON.stringify([r.big, r.small, r.back]));
   }

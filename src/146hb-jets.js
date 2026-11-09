@@ -6,6 +6,7 @@ import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {QS, SYS, TILE} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
+import {RIVER} from './066-river.js';
 { const T=TILE, M=T/.84, V3=THREE.Vector3, rnd=Math.random, say=SAY, RF=7*M, RI=7*M, now=()=>performance.now();
   FORAGE.add({names:{flamer:'FLAMETHROWER',frost:'FREEZE RAY'}});
   if(!OWNED.get('jets')||QS.get('fresh')){ if(!INV.items.flamer)INV.items.flamer=1; if(!INV.items.frost)INV.items.frost=1; INV.save(); OWNED.set('jets','1'); }
@@ -68,11 +69,12 @@ import {FLAME} from './007-fire.js';
   const path=S=>{ const P=S.P; P.length=0; P.push(S.tip.clone()); if(S.k!=='f'){ P.push(S.tip.clone().addScaledVector(S.dir,S.R)); return; }
     const p=S.tip.clone(), v=S.dir.clone().multiplyScalar(14*M); let s=0; const h=.02; for(let t=0;t<FUEL*3&&s<S.R;t+=h){ v.y-=G*h; v.multiplyScalar(1/(1+KD*v.length()*h)); const d=v.length()*h; p.addScaledVector(v,h); s+=d; if(Math.round(t/h)%3===2)P.push(p.clone()); } P.push(p.clone()); };
   const cast=S=>{ path(S); ray.camera=SHARED.cam; S.end=null; S.what=''; let s=0; const P=S.P, D=new V3();
-    const gy=(x,z)=>SHARED.groundY?SHARED.groundY(x,z):-1e9;
+    const gy0=(x,z)=>SHARED.groundY?SHARED.groundY(x,z):-1e9, wl=(x,z)=>window.RIVER&&RIVER.level?RIVER.level(x,z):null, gy=(x,z)=>{ const w=wl(x,z); return w==null?gy0(x,z):w; };
     for(let i=1;i<P.length;i++){ D.subVectors(P[i],P[i-1]); let l=D.length(); if(l<1e-6)continue; const g1=gy(P[i].x,P[i].z), under=P[i].y<g1; let lu=l; if(under){ const g0=gy(P[i-1].x,P[i-1].z), a=P[i-1].y-g0, b=g1-P[i].y, u=a/Math.max(1e-6,a+b); lu=l*u; } ray.set(P[i-1],D.normalize()); ray.far=l;
       let h=null; try{ h=ray.intersectObjects(scene.children,true).find(h=>(s+h.distance)>.25*M&&seen(h.object)); }catch(e){}
+      if(h&&wl(h.point.x,h.point.z)!=null&&h.point.y<wl(h.point.x,h.point.z)&&h.object!==iceMe)h=null;
       if(h){ S.end=h.point.clone(); S.what=h.object===iceMe?'ice':wet(h.object)?'water':Math.abs(h.point.y-gy(h.point.x,h.point.z))<.35*M?'ground':'wall'; P.length=i; P.push(S.end.clone()); s+=h.distance; break; }
-      if(under){ l=lu; S.end=P[i-1].clone().addScaledVector(D,l); S.end.y=gy(S.end.x,S.end.z); S.what='ground'; P.length=i; P.push(S.end.clone()); s+=l; break; } s+=l; }
+      if(under){ l=lu; S.end=P[i-1].clone().addScaledVector(D,l); S.end.y=gy(S.end.x,S.end.z); S.what=wl(S.end.x,S.end.z)!=null?(ICE.at(S.end.x,S.end.z)!=null?'ice':'water'):'ground'; P.length=i; P.push(S.end.clone()); s+=l; break; } s+=l; }
     S.len=s; };
   const along=(S,x,y,z)=>{ let best=1e9; const P=S.P; for(let i=1;i<P.length;i++){ const a=P[i-1], b=P[i], dx=b.x-a.x, dy=b.y-a.y, dz=b.z-a.z, l2=dx*dx+dy*dy+dz*dz||1, t=Math.max(0,Math.min(1,((x-a.x)*dx+(y-a.y)*dy+(z-a.z)*dz)/l2)); best=Math.min(best,Math.hypot(a.x+dx*t-x,a.y+dy*t-y,a.z+dz*t-z)); } return best; };
 

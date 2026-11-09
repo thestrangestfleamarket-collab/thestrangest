@@ -103,7 +103,7 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
   BOT.kit={JOB,walk,walking,use,click,close,cash,counter,sellAll,nearest,thAt,d2,roam,say,cfg:()=>C,doing:t=>{ doing=t; },stop:()=>{ path=null; SHARED.target=null; },reset:()=>{ task=null; path=null; SHARED.target=null; }};   // for the tests (162h)
   ONLINE.mine.noapt=()=>C.apt?null:1;   // a bot has no apartment unless the owner gave it one
   BOT.status=status; BOT.bye=()=>{ try{ ONLINE.send({t:'bye'}); }catch(e){} };
-  let drawn=0; SYS.add('life',dt=>{ if(!BOT.ready)return; dt=Math.min(dt||.016,.25); SHARED.covered=(++drawn%20)!==0;   // nobody watches a bot's screen: a picture now and then, so its game runs at full speed
+  let drawn=0; SYS.add('life',dt=>{ if(!BOT.ready)return; dt=Math.min(dt||.016,.25); SHARED.covered=!BOT.draw&&(++drawn%20)!==0;   // nobody watches a bot's screen: a picture now and then, so its game runs at full speed
     // health: never over what the owner set; can't be knocked down keeps it full
     const cap=C.hp??1; if(C.god)VIT.hp=cap; else if(VIT.hp>cap)VIT.hp=cap;
     // hit back: whoever is close when health drops

@@ -1,6 +1,6 @@
 // THE HORSE (owner, 9 Nov 2026: "add horse that you can ride, saddle. give all players this. real size. real horse animation riding. add cowboy hat to inventory"): every player's SADDLE calls their own saddled quarter horse (Polyfork's, life size, through PETS); hold it and E: you swing up; W walks (held, it trots), Shift gallops, A D turn, S halts and backs; E gets down and it waits there; others see you ride. And the COWBOY HAT.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INSPECT, INV, keys, ONLINE, PETS, pos, RIDE, ROOMS, SFX, st, UI} from './003b-systems.js';
+import {FORAGE, INSPECT, INV, keys, ONLINE, PETS, pos, RIDE, ROOMS, SFX, SPEED, st, UI} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
@@ -78,7 +78,7 @@ const HORSE={}; window.HORSE=HORSE;
     seat:(m,o)=>{ const H=m.userData.H||(m.userData.mine?mine:null); if(!H||!fit(H))return o.set(0,1.45*WU,0); return m.worldToLocal(o.copy(H.seatW)); }, fit:()=>1,
     // its own motion: a horse's paces, not a board's glide; it turns slower the faster it goes and pulls up at a wall
     step:(R,dt,{mx,mz,ml})=>{ let want=0, e=0;
-      if(ml>0){ e=wrap(Math.atan2(mx,mz)-R.hd); if(Math.abs(e)>2.4){ want=R.v>.2*WU?0:-V.back; e=0; } else { fwdT+=dt; want=keys.has('shift')?V.gallop:fwdT>1.6?V.trot:V.walk; } } else fwdT=0;
+      if(ml>0){ e=wrap(Math.atan2(mx,mz)-R.hd); if(Math.abs(e)>2.4){ want=R.v>.2*WU?0:-V.back; e=0; } else { fwdT+=dt; want=(keys.has('shift')?V.gallop:fwdT>1.6?V.trot:V.walk)*SPEED.of('horse'); } } else fwdT=0;
       const v=R.v/WU, a=want>v?(want>V.trot?2.6:1.8):(ml>0?4:3); R.brk=want<v-1.5?Math.min(1,(v-want)/6):0;
       const nv=want>v?Math.min(want,v+a*dt):Math.max(want,v-a*dt), turn=(1.7/(1+Math.abs(nv)*.12))*dt, d=Math.max(-turn,Math.min(turn,e));
       R.hd+=d; R.lean+=((d/Math.max(dt,1e-3))*.5-R.lean)*Math.min(1,dt*5); R.v=nv*WU;

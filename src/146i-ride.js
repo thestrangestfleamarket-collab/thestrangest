@@ -1,6 +1,6 @@
 // THE RIDE: RIDE carries you on a thing you hold and then stand on or hang from — any item whose GRANTS is a kind registered here (ride: a hoverboard; lift: a balloon). Hold it and click to get on, click again to get off; WASD steers it, SPACE hops; others see you on it.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, ITEMS, keys, LEVELS, ONLINE, pos, RAG, RIDE, ROOMS, SFX, st, VIT, W3, WIELD} from './003b-systems.js';
+import {FORAGE, ITEMS, keys, LEVELS, ONLINE, pos, RAG, RIDE, ROOMS, SFX, SPEED, st, VIT, W3, WIELD} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {SYS, TILE} from './006-map-pre.js';
@@ -25,7 +25,7 @@ Object.assign(RIDE,{on:null,kind:null,v:0,hd:0,lift:0,z:0,vz:0,dry:false,ease:20
   RIDE.floor=g=>{ const k=RIDE.cur; return k&&k.floor?k.floor(g,RIDE):g+RIDE.lift; };
   // the board's own motion: it keeps its speed, carves toward where you steer, brakes when you pull back; a wall at speed throws you off
   RIDE.steer=(dt,mx,mz)=>{ '@later'; const R=RIDE, k=R.cur, id=R.on; if(!k)return; const lost=!k.world&&!FORAGE.has(id)||!free()||(indoors()&&!k.inside); if(lost||!k.world&&WIELD.on!==id){ if(!lost&&k.leave)k.leave(R); else { R.off(ROOMS.cur?'YOU PICK IT UP; NOT INDOORS.':''); return; } }
-    const ml=Math.hypot(mx,mz), vmax=(+prop(id,'speed')||5)*T, acc=(k.acc||3)*T, len=+prop(id,'len')||.8, input={mx,mz,ml};
+    const ml=Math.hypot(mx,mz), vmax=(+prop(id,'speed')||5)*T*SPEED.of(k.cat||'boards'), acc=(k.acc||3)*T*SPEED.of(k.cat||'boards'), len=+prop(id,'len')||.8, input={mx,mz,ml};
     if(k.step&&k.step(R,dt,input))return;
     if(ml>0){ const want=Math.atan2(mx,mz), e=wrap(want-R.hd), back=Math.abs(e)>2.4&&R.v>.5*T;
       if(back)R.v=Math.max(0,R.v-acc*2.2*dt); else { const turn=(k.turn||2.6)/(1+R.v/T*.12*len)*dt, d=Math.max(-turn,Math.min(turn,e)); R.hd+=d; R.lean+=((d/Math.max(dt,1e-3))*.12-R.lean)*Math.min(1,dt*6); if(Math.abs(e)<1.4)R.v=Math.min(vmax,R.v+acc*dt*(1-R.v/vmax*.6)); } }

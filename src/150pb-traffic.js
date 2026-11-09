@@ -1,6 +1,6 @@
 // THE TRAFFIC: cars driving both ways along Market St and flying cars and small spacecraft above them, from the shared clock so every player sees the same ones; the park gate's crossing light (built in 069-dress) turns on a timer or its button, the cars stop at its line and for anyone in the road.
 import {SHARED, THREE} from './003-shx.js';
-import {CARLAMPS, CULL, DRESS, ONLINE, PARK, pos, UI} from './003b-systems.js';
+import {CARLAMPS, CULL, DRESS, ONLINE, PARK, pos, SPEED, UI} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OUT, SOL, SYS, TILE} from './006-map-pre.js';
@@ -12,10 +12,13 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
   const GAME=['muscle-car-60s','convertible-60s','station-wagon-70s','pickup-truck-70s','wedge-coupe-80s','camper-van'];
   const zs=Z(SHARED.BOD.CURB), zp=Z(SHARED.BOD.FAR), zm=(zs+zp)/2, xW=X(-129), xE=X(261), SPAN=xE-xW, OFF=40*M0, LC=SPAN+OFF;
   const gx0=X(PARK.gate[0]+PARK.ox), gx1=X(PARK.gate[1]+PARK.ox);
-  // the lanes: right-hand traffic, westbound on the shops' side; the fliers 8 m over the same lanes, never stopping
+  // the lanes: right-hand traffic, westbound on the shops' side; the fliers 8 m over the same lanes, stopping at the fliers' light over the crossing light
   const LANES=[{dir:-1,z:(zs+zm)/2,fly:0,v:10*M0,n:5,seed:0},{dir:1,z:(zp+zm)/2,fly:0,v:10*M0,n:5,seed:3},{dir:-1,z:(zs+zm)/2,fly:8*M0,v:14*M0,n:3,seed:5},{dir:1,z:(zp+zm)/2,fly:8*M0,v:14*M0,n:3,seed:8}];
   for(const L of LANES){ L.stop=L.dir<0?(xE-gx1)-1.6*M0:(gx0-xW)-1.6*M0; L.cars=[]; for(let i=0;i<L.n;i++)L.cars.push({i,u:null,sp:L.v,model:null,m:null,lap:-1,sol:null}); }
   TRAFFIC.lanes=LANES;
+  // the owner's speeds (SPEED.of('traffic'), SPEED.of('fliers')): a change moves every car's place on the clock by whole laps, so each keeps where it is and eases to its new place
+  const speeds=()=>{ const t=now(); for(const L of LANES){ L.v0=L.v0||L.v; const v=L.v0*SPEED.of(L.fly?'fliers':'traffic'); if(v===L.v)continue; const sh=Math.round(t*(v-L.v)/LC)*LC; L.v=v; for(const C of L.cars)if(C.u!=null)C.u+=sh; } };
+  speeds(); SPEED.on(speeds);
 
   /* ---------- the light: green, then on a timer (or sooner by the button) amber and red with WALK, everyone's the same from the clock ---------- */
   const CY=90, P0=()=>+((ONLINE.world||{})['xing:gate'])||0;
@@ -51,9 +54,9 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
       for(const C of L.cars){ if(C.u==null||!C.m&&Math.abs(nom(C)-C.u)>LC*.8){ C.u=nom(C); C.sp=L.v; } }
       const ord=L.cars.slice().sort((a,b)=>b.u-a.u);
       ord.forEach((C,j)=>{ const s=((C.u%LC)+LC)%LC, len=size(C.model)[2]*M1/2; let lim=Infinity;
-        if(!L.fly){ if(Lt.m!=='g'&&s+len<=L.stop){ const g=L.stop-(s+len); if(Lt.m==='r'||g>C.sp*C.sp/(2*5*M0))lim=Math.min(lim,g); }
-          const A=ord[j-1]||ord[ord.length-1]; if(A!==C){ let g=A.u-C.u; if(g<0)g+=LC; g-=len+size(A.model)[2]*M1/2+2*M0; lim=Math.min(lim,g); }
-          if(s<SPAN){ const x=xOf(L,s); for(const b of B){ if(Math.abs(b.z-L.z)>hw+(b.r||0))continue; const d=(b.x-x)*L.dir-(b.r||.5*M0); if(d>-len&&d<len+28*M0)lim=Math.min(lim,d-len-2*M0); } } }
+        if(Lt.m!=='g'&&s+len<=L.stop){ const g=L.stop-(s+len); if(Lt.m==='r'||g>C.sp*C.sp/(2*5*M0))lim=Math.min(lim,g); }
+        { const A=ord[j-1]||ord[ord.length-1]; if(A!==C){ let g=A.u-C.u; if(g<0)g+=LC; g-=len+size(A.model)[2]*M1/2+2*M0; lim=Math.min(lim,g); } }
+        if(!L.fly){ if(s<SPAN){ const x=xOf(L,s); for(const b of B){ if(Math.abs(b.z-L.z)>hw+(b.r||0))continue; const d=(b.x-x)*L.dir-(b.r||.5*M0); if(d>-len&&d<len+28*M0)lim=Math.min(lim,d-len-2*M0); } } }
         const want=Math.min(L.v+Math.max(-.5*L.v,Math.min(.6*L.v,(nom(C)-C.u)*.25)),lim<Infinity?Math.sqrt(2*4*M0*Math.max(0,lim)):1e9);
         C.sp+=Math.max(-9*M0*dt,Math.min(3*M0*dt,want-C.sp)); if(C.sp<0)C.sp=0; if(lim<.05*M0&&lim<Infinity)C.sp=Math.min(C.sp,0); C.u+=C.sp*dt;
         const s2=((C.u%LC)+LC)%LC, lap=Math.floor(C.u/LC), on=s2<SPAN, x=xOf(L,s2), near=on&&up&&Math.abs(x-pos.x)<R&&Math.abs(L.z-pos.z)<R;

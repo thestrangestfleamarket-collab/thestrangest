@@ -1,6 +1,6 @@
 // THE TRAINS: TRAINS runs the loop's two trains on the timetable (from the clock, so everyone sees the same train), carries whoever rides, and keeps the stations' boards and the cars' next-stop signs.
 import {SHARED, THREE} from './003-shx.js';
-import {LEVELS, LITE, pos, st, TEXT, UI, USE} from './003b-systems.js';
+import {LEVELS, LITE, pos, SPEED, st, TEXT, UI, USE} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {grab, LAMPD, LAMPI, lamps, QS, SECTIONS, SYS, TILE, ZU} from './006-map-pre.js';
 import {PEEK} from './008-batch.js';
@@ -8,15 +8,17 @@ import {LOOP} from './009b-loop.js';
 for(const [k,d] of Object.entries({'loop.riding':'TRAIN {id} · TO {next}'}))TEXT.t(k,d);
 const TRAINS=window.TRAINS={list:[],skew:0,T:TILE};
 await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL=28, NCAR=1, SY0=50, CW=2.15, CWI=1.88, GAP=.6, DOORS=[-7.4,0,7.25], DWH=.78, FLOOR=2, FZ=34, SILL=30, WTOP=64, DOORH=82, CEIL=88, TOP=98;
-  const mod=(a,n)=>((a%n)+n)%n, V=D.speed, A=D.accel, ta=V/A, da=V*V/(2*A);
+  const mod=(a,n)=>((a%n)+n)%n; let V=0, A=0, ta=0, da=0;
   const runT=d=>d>=2*da?d/V+ta:2*Math.sqrt(d/A), runS=(d,t)=>{ const Tt=runT(d); if(t<=0)return 0; if(t>=Tt)return d; if(d>=2*da){ if(t<ta)return .5*A*t*t; if(t<Tt-ta)return da+V*(t-ta); return d-.5*A*(Tt-t)**2; } return t<Tt/2?.5*A*t*t:d-.5*A*(Tt-t)**2; };
   TRAINS.now=()=>Date.now()/1000+TRAINS.skew;
   { const q=QS.get('traint'); if(q!=null&&q!=='')TRAINS.skew=+q-Date.now()/1000; }
 
   // the timetable: from A round the loop, 60 s at every station, the runs between them at the trains' speed; train 2 runs a quarter lap behind train 1, so the two never call at a station together (a half lap put the shuttles there at once)
+  // the owner's speed (SPEED.of('trains')) runs them faster or slower between stations; the timetable is made again when it changes
+  const plan=()=>{ const k=SPEED.of('trains'); V=D.speed*k; A=D.accel*k; ta=V/A; da=V*V/(2*A);
   D.trains.forEach((t,ti)=>{ const tr=L.TRK[t.track], Lt=tr.L, stops=L.order(t), i0=stops.findIndex(s=>s.old), seq=stops.slice(i0).concat(stops.slice(0,i0)), tbl=[]; let tm=0;
     seq.forEach((st,i)=>{ const nx=seq[(i+1)%seq.length], d=mod(t.dir*(nx.s[t.track]-st.s[t.track]),Lt), Tr=runT(d); tbl.push({st,nx,arr:tm,dep:tm+D.dwell,d,T:Tr}); tm+=D.dwell+Tr; });
-    TRAINS.list.push({...t,i:ti,tr,tbl,lap:tm,off:ti*tm/4,cars:[]}); });
+    const o={...t,i:ti,tr,tbl,lap:tm,off:ti*tm/4,legs:null}; if(TRAINS.list[ti])Object.assign(TRAINS.list[ti],o); else TRAINS.list.push({...o,cars:[]}); });
   // one station loaded: each train shuttles, the station, out to one tunnel end, back, the station, out to the other end, back; every leg takes the same time (a train waits longer in the dark at a nearer end), so the two trains take turns at the platform, one every half leg, for good
   if(L.STA.length===1){ const st=L.STA[0], s0of=tn=>st.s[tn.track], MG=NCAR*(CARL+GAP)/2+2;
     for(const tn of TRAINS.list){ const k=tn.track, s0=s0of(tn), Lt=tn.tr.L, E=L.ENDS[k]||[], fw=E.find(e=>e.dir>0), bk=E.find(e=>e.dir<0);
@@ -25,6 +27,8 @@ await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL
     for(const tn of TRAINS.list){ const s0=s0of(tn), legs=[]; let tm=0;
       for(const [sg,d] of tn.ends){ if(d>1){ const Tr=runT(d); legs.push({t0:tm,dur:D.dwell,s0,sg:0,d:0,doors:true}); tm+=D.dwell; legs.push({t0:tm,dur:Tr,s0,sg,d}); tm+=Tr; legs.push({t0:tm,dur:P-D.dwell-2*Tr,s0:s0+sg*d,sg:0,d:0}); tm+=P-D.dwell-2*Tr; legs.push({t0:tm,dur:Tr,s0:s0+sg*d,sg:-sg,d}); tm+=Tr; } else { legs.push({t0:tm,dur:P,s0,sg:0,d:0,doors:true}); tm+=P; } }
       Object.assign(tn,{legs,lap:tm,off:tn.i*P/2,tbl:[{st,nx:st,arr:0,dep:D.dwell}]}); } }
+  };
+  plan(); SPEED.on(plan);
   const state=(tn,now=TRAINS.now())=>{ const t=mod(now-tn.off,tn.lap);
     if(tn.legs){ const st=L.STA[0]; for(const g of tn.legs)if(t<g.t0+g.dur){ const u=t-g.t0; return g.doors?{s:g.s0,doors:true,at:st,next:st,left:g.dur-u}:{s:g.s0+g.sg*runS(g.d,u),doors:false,at:null,from:st,next:st,left:tn.legs.filter(q=>q.doors&&q.t0>=g.t0+g.dur).concat(tn.legs.filter(q=>q.doors).map(q=>({...q,t0:q.t0+tn.lap})))[0].t0-t}; } return {s:tn.legs[0].s0,doors:true,at:st,next:st,left:0}; }
     for(const e of tn.tbl){ if(t<e.dep)return {s:e.st.s[tn.track],doors:true,at:e.st,next:e.nx,left:e.dep-t};

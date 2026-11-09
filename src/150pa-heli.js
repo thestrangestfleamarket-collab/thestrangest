@@ -1,6 +1,6 @@
 // THE HELIPAD: Polyfork's rooftop helipad deck and windsock on the bank, and the news helicopter (data/heli.json) that flies a round of the city every five minutes from the shared clock and lands again, its rotor still on the pad, a Polyfork pilot at the controls; ride along in a seat, or take the controls yourself (one pilot, kept by the section's server like a car).
 import {SHARED, THREE} from './003-shx.js';
-import {keys, ONLINE, pos, RIDE, st, UI} from './003b-systems.js';
+import {keys, ONLINE, pos, RIDE, SPEED, st, UI} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {FIX, LEVEL, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
@@ -17,6 +17,8 @@ const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
   const DEFS=[{id:'news',model:'utility',name:'THE NEWS HELICOPTER',s:.615,mark:'NEWS',pilot:'aircrew_pilot',label:'THE NEWS PILOT',seats:[[-.38,.62,2.45],[.38,.62,2.45],[-.42,.62,1.0],[.42,.62,1.0]]}];
   // the sky tour's way, in map tiles: out over the Hudson, east along the river, down the park's east side to the big lake, back west over the park and up West St
   const WAY=[[24.7,-101.9],[34,-130],[110,-150],[210,-142],[245,-92],[242,0],[228,118],[165,166],[60,152],[2,92],[-36,22],[-40,-62],[-12,-122],[24.7,-101.9]];
+  // the owner's speed (SPEED.of('heli')) shortens or lengthens the round's cruise, Fk its whole flight
+  let Fk=F, Ck=DN0-UP1; const setF=()=>{ Ck=Math.min(CYC-60-UP1-(F-DN0),(DN0-UP1)/SPEED.of('heli')); Fk=UP1+Ck+(F-DN0); }; setF(); SPEED.on(setF);
   let D=null, built=false, curve=null, LEN=0, restHd=0, mineH=null, want=null, ui=null;
   const now=()=>(TRAINS.now?TRAINS.now():Date.now()/1000)+HELI.skew;   // (skew: a test's way to move the tour's clock)
 
@@ -47,7 +49,7 @@ const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
   const TQ=new THREE.Vector3(), PQ=new THREE.Vector3();
   const ease=u=>u-Math.sin(2*Math.PI*u)/(2*Math.PI);
   // where a helicopter on the tour is at time u of its flight: {x,y,z,hd,pitch,bank,rot}
-  const tour=(u,o)=>{ const P=HELI.pad, top=P.top, hi=top+LIFT*MV;
+  const tour=(u,o)=>{ const P=HELI.pad, top=P.top, hi=top+LIFT*MV; u=u<UP1?u:u<UP1+Ck?UP1+(u-UP1)*(DN0-UP1)/Ck:u-(Fk-F);
     if(u<UP0){ Object.assign(o,{x:P.x,y:top,z:P.z,hd:restHd,pitch:0,bank:0,rot:u/UP0}); return o; }
     curve.getTangentAt(0,TQ); const h0=Math.atan2(TQ.x,TQ.z);
     if(u<UP1){ const k=sm((u-UP0)/(UP1-UP0)); Object.assign(o,{x:P.x,y:top+(hi-top)*k,z:P.z,hd:restHd+wrap(h0-restHd)*k,pitch:0,bank:0,rot:1}); return o; }
@@ -57,14 +59,14 @@ const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
     curve.getTangentAt(Math.min(1,a+.004),TQ); const turn=wrap(Math.atan2(TQ.x,TQ.z)-hd);
     Object.assign(o,{x:PQ.x,y,z:PQ.z,hd,pitch:.16*v,bank:Math.max(-.45,Math.min(.45,-turn*12*v)),rot:1}); return o; };
   // a helicopter left away from the pad flies itself home at the start of its next rest: up, straight over, down
-  const homeway=(H,u,o)=>{ const P=HELI.pad, p=H.park, hi=Math.max(p.y,P.top)+LIFT*MV, d=Math.hypot(P.x-p.x,P.z-p.z), cr=d/(14*M0), to=Math.atan2(P.x-p.x,P.z-p.z);
+  const homeway=(H,u,o)=>{ const P=HELI.pad, p=H.park, hi=Math.max(p.y,P.top)+LIFT*MV, d=Math.hypot(P.x-p.x,P.z-p.z), cr=d/(14*M0*SPEED.of('heli')), to=Math.atan2(P.x-p.x,P.z-p.z);
     const t1=UP0, t2=t1+6, t3=t2+cr, t4=t3+10, t5=t4+2;
     if(u<t1){ Object.assign(o,{x:p.x,y:p.y,z:p.z,hd:p.hd,pitch:0,bank:0,rot:u/t1}); return o; }
     if(u<t2){ const k=sm((u-t1)/6); Object.assign(o,{x:p.x,y:p.y+(hi-p.y)*k,z:p.z,hd:p.hd+wrap(to-p.hd)*k,pitch:0,bank:0,rot:1}); return o; }
     if(u<t3){ const k=ease((u-t2)/cr); Object.assign(o,{x:p.x+(P.x-p.x)*k,y:hi,z:p.z+(P.z-p.z)*k,hd:to,pitch:.16*(1-Math.cos(2*Math.PI*(u-t2)/cr)),bank:0,rot:1}); return o; }
     if(u<t4){ const k=sm((u-t3)/10); Object.assign(o,{x:P.x,y:hi+(P.top-hi)*k,z:P.z,hd:to+wrap(restHd-to)*k,pitch:0,bank:0,rot:1}); return o; }
     Object.assign(o,{x:P.x,y:P.top,z:P.z,hd:restHd,pitch:0,bank:0,rot:Math.max(0,1-(u-t4)/10)}); o.done=u>=t5; return o; };
-  HELI.homeLen=H=>{ const P=HELI.pad, p=H.park; return UP0+6+Math.hypot(P.x-p.x,P.z-p.z)/(14*M0)+12; };
+  HELI.homeLen=H=>{ const P=HELI.pad, p=H.park; return UP0+6+Math.hypot(P.x-p.x,P.z-p.z)/(14*M0*SPEED.of('heli'))+12; };
 
   /* ---------- the ground a helicopter stands on: the ground, or the top of whatever solid is under it (a roof, the deck) ---------- */
   const surf=(x,z,y=1e9,r=1.2*M0)=>{ let g=SHARED.groundY(x,z); for(const f of FIX.up){ if(x+r<f[0]||x-r>f[3]||z+r<f[1]||z-r>f[4])continue; if(f[5]>g&&f[5]<=y+.6*MV)g=f[5]; } return g; };
@@ -81,7 +83,7 @@ const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
     return [1,-1].map(sd=>{ const me=new THREE.Mesh(g,m); me.position.set(sd*.875,.95,.72); me.rotation.y=sd*Math.PI/2; return me; }); };
   const phase=H=>((now()+H.i*H2)%CYC+CYC)%CYC;   // its own clock: 0..F flying, F..CYC resting
   HELI.phase=phase;
-  const fetchAt=H=>{ const t0=H.park.t+5, p=((t0+H.i*H2)%CYC+CYC)%CYC; return t0+((F-p)%CYC+CYC)%CYC; };
+  const fetchAt=H=>{ const t0=H.park.t+5, p=((t0+H.i*H2)%CYC+CYC)%CYC; return t0+((Fk-p)%CYC+CYC)%CYC; };
   const S=new THREE.Vector3();
   const update=(H,dt)=>{ const u=phase(H), o=H.s0; o.done=false; let mode;
     if(H.by&&H.by===(ONLINE.me||'me')&&mineH===H){ mode='mine'; Object.assign(o,FLY); }
@@ -89,11 +91,11 @@ const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
     else if(H.park){ const t=now(), go=fetchAt(H), k=t-go;   // its pilot fetches it at the start of its first rest after it was left
       if(k>=0&&k<HELI.homeLen(H)){ mode='home'; homeway(H,k,o); } else if(k>=HELI.homeLen(H)){ H.park=null; if(ONLINE.on)ONLINE.put('car:heli-'+H.id,''); mode='rest'; Object.assign(o,{x:HELI.pad.x,y:HELI.pad.top,z:HELI.pad.z,hd:restHd,pitch:0,bank:0,rot:0}); }
       else { mode='parked'; Object.assign(o,{x:H.park.x,y:H.park.y,z:H.park.z,hd:H.park.hd,pitch:0,bank:0,rot:0}); } }
-    else if(u<F){ mode='tour'; tour(u,o); }
-    else { mode='rest'; Object.assign(o,{x:HELI.pad.x,y:HELI.pad.top,z:HELI.pad.z,hd:restHd,pitch:0,bank:0,rot:Math.max(0,1-(u-F)/3)}); }
+    else if(u<Fk){ mode='tour'; tour(u,o); }
+    else { mode='rest'; Object.assign(o,{x:HELI.pad.x,y:HELI.pad.top,z:HELI.pad.z,hd:restHd,pitch:0,bank:0,rot:Math.max(0,1-(u-Fk)/3)}); }
     H.mode=mode; H.rot=o.rot; H.root.position.set(o.x,o.y,o.z); H.root.rotation.set(o.pitch||0,o.hd,o.bank||0); H.root.updateMatrixWorld(true);
     H.spin=(H.spin+dt*o.rot*o.rot*30)%(Math.PI*2); const pr=H.parts; if(pr.rotor)pr.rotor.rotation.y=H.spin; if(pr.tail)pr.tail.rotation.x=H.spin*1.6;
-    const open=mode==='rest'&&u>F+10&&u<CYC-8?1:0; for(const [n,sd] of [['doorL',1],['doorR',-1]])if(pr[n]){ const d=pr[n]; d.userData.o=(d.userData.o||0)+(open-(d.userData.o||0))*Math.min(1,dt*3); d.position.z=d.userData.at.z-.95*d.userData.o; }
+    const open=mode==='rest'&&u>Fk+10&&u<CYC-8?1:0; for(const [n,sd] of [['doorL',1],['doorR',-1]])if(pr[n]){ const d=pr[n]; d.userData.o=(d.userData.o||0)+(open-(d.userData.o||0))*Math.min(1,dt*3); d.position.z=d.userData.at.z-.95*d.userData.o; }
     // solid where it stands on the ground away from the pad
     if(!H.sol){ H.sol=[0,0,0,0]; SOL.up.push(H.sol); } const still=mode==='parked'&&H.park.y<SHARED.groundY(o.x,o.z)+.5*MV, r=2*H.s*M0;
     if(still){ H.sol[0]=o.x-r; H.sol[1]=o.z-r; H.sol[2]=o.x+r; H.sol[3]=o.z+r; } else H.sol[0]=H.sol[1]=H.sol[2]=H.sol[3]=-1e7;
@@ -137,13 +139,13 @@ const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
       FLY.rot=Math.min(1,FLY.rot+dt/3); const ready=FLY.rot>=1, k=Math.min(1,dt*1.5);
       const g0=surf(FLY.x,FLY.z,FLY.y), air=FLY.y>g0+.05*MV;
       FLY.vy+=((ready?v*VUP:-.5*VUP)-FLY.vy)*Math.min(1,dt*2.5); FLY.turn+=(tr*TURN-FLY.turn)*Math.min(1,dt*3);
-      if(air||v>0&&ready){ FLY.vf+=((f>0?f*VMAX:f*VBACK)-FLY.vf)*k*.6; FLY.hd+=FLY.turn*dt; } else { FLY.vf*=Math.exp(-dt*6); if(ready)FLY.hd+=FLY.turn*dt*.3; }
+      if(air||v>0&&ready){ FLY.vf+=((f>0?f*VMAX*SPEED.of('heli'):f*VBACK)-FLY.vf)*k*.6; FLY.hd+=FLY.turn*dt; } else { FLY.vf*=Math.exp(-dt*6); if(ready)FLY.hd+=FLY.turn*dt*.3; }
       const ox=FLY.x, oz=FLY.z, oy=FLY.y; FLY.x+=Math.sin(FLY.hd)*FLY.vf*dt; FLY.z+=Math.cos(FLY.hd)*FLY.vf*dt; FLY.y=Math.min(TOPY,FLY.y+FLY.vy*dt);
       if(B){ FLY.x=Math.max(B.x0,Math.min(B.x1,FLY.x)); FLY.z=Math.max(B.z0,Math.min(B.z1,FLY.z)); }
       // a building in the way: you stop against it, or settle on its roof from above
       const r=1.8*M0; for(const b of FIX.up){ if(FLY.x+r<b[0]||FLY.x-r>b[3]||FLY.z+r<b[1]||FLY.z-r>b[4])continue; if(FLY.y>=b[5]-.05*MV||FLY.y+3*MV<b[2])continue; if(oy>=b[5]-.05*MV){ FLY.y=b[5]; continue; } FLY.x=ox; FLY.z=oz; FLY.vf*=-.2; break; }
       const g=surf(FLY.x,FLY.z,FLY.y); if(FLY.y<g){ FLY.y=g; FLY.vy=Math.max(0,FLY.vy); } FLY.down=FLY.y<g+.05*MV&&Math.abs(FLY.vf)<1.5*M0;
-      FLY.pitch+=((FLY.vf/VMAX)*.22-FLY.pitch)*Math.min(1,dt*3); FLY.bank+=((FLY.down?0:-FLY.turn*.35*Math.min(1,Math.abs(FLY.vf)/(8*M0)))-FLY.bank)*Math.min(1,dt*3);
+      FLY.pitch+=(Math.min(1,FLY.vf/VMAX)*.22-FLY.pitch)*Math.min(1,dt*3); FLY.bank+=((FLY.down?0:-FLY.turn*.35*Math.min(1,Math.abs(FLY.vf)/(8*M0)))-FLY.bank)*Math.min(1,dt*3);
       pos.x=FLY.x; pos.z=FLY.z; R.hd=SHARED.heading=FLY.hd; R.v=Math.abs(FLY.vf); R.y=FLY.y; st.move=null;
       H.root.position.set(FLY.x,FLY.y,FLY.z); H.root.rotation.set(FLY.pitch,FLY.hd,FLY.bank); H.root.updateMatrixWorld(true); return true; },
     floor:(g,R)=>R.y!=null?R.y:g,
@@ -156,7 +158,7 @@ const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
     say('YOU TAKE THE CONTROLS OF '+H.name+'. SPACE LIFTS.'); };
   const atPad=()=>{ const P=HELI.pad; return Math.hypot(FLY.x-P.x,FLY.z-P.z)<3*M0&&Math.abs(FLY.y-P.top)<.6*MV; };
   const land=()=>{ const H=mineH; if(!H)return; if(!FLY.down)return say('LAND FIRST: SHIFT TAKES YOU DOWN.','#c8a090');
-    const home=atPad(), u=phase(H); if(home&&!(u>=F+2&&u<CYC-2))return say('IT IS DUE OUT ON ITS ROUND. LAND ON THE STREET.','#c8a090');
+    const home=atPad(), u=phase(H); if(home&&!(u>=Fk+2&&u<CYC-2))return say('IT IS DUE OUT ON ITS ROUND. LAND ON THE STREET.','#c8a090');
     mineH=null; H.by=null; const o={x:FLY.x,y:FLY.y,z:FLY.z,hd:FLY.hd}; RIDE.off();
     if(home){ H.park=null; if(ONLINE.on){ ONLINE.send({t:'car',k:'heli-'+H.id,on:0}); ONLINE.put('car:heli-'+H.id,''); } H.mode='rest'; down(H,'YOU SET IT DOWN ON THE PAD AND TAKE THE STAIRS DOWN.'); }
     else { o.t=now(); H.park=o; if(ONLINE.on){ ONLINE.send({t:'car',k:'heli-'+H.id,on:0}); ONLINE.put('car:heli-'+H.id,[o.x,o.z,o.hd,o.t].map(v=>+v.toFixed(3)).join(',')); } H.mode='parked'; H.s0={...o,pitch:0,bank:0,rot:0}; down(H,'YOU SHUT IT DOWN AND CLIMB OUT. ITS PILOT WILL FLY IT HOME.'); } };
@@ -176,7 +178,7 @@ const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
   const hudOff=()=>{ HUD.style.display='none'; };
   addEventListener('keydown',e=>{ if(!/^heli/.test(RIDE.on||'')||e.repeat||/INPUT|TEXTAREA/.test((e.target&&e.target.tagName)||''))return; if((e.key||'').toLowerCase()==='f'){ e.preventDefault(); out(); } });
   const ASK=document.createElement('div'); ASK.id='heliask'; ASK.style.cssText=HUD.style.cssText.replace('bottom:64px','bottom:120px'); document.body.appendChild(ASK);
-  const ask=H=>{ if(!H){ const n=HELI.list.map(h=>Math.ceil((CYC-phase(h))%CYC)).filter(s=>s>0); return say('THE HELICOPTER IS OUT. IT LANDS IN '+Math.min(...n.map(s=>s>CYC-F?s-(CYC-F):s))+' S.'); }
+  const ask=H=>{ if(!H){ const n=HELI.list.map(h=>Math.ceil((CYC-phase(h))%CYC)).filter(s=>s>0); return say('THE HELICOPTER IS OUT. IT LANDS IN '+Math.min(...n.map(s=>s>CYC-Fk?s-(CYC-Fk):s))+' S.'); }
     ASK.innerHTML='<span>'+H.name+'</span><button data-r style="'+BTN+'">RIDE ALONG</button><button data-f style="'+BTN+'">FLY IT YOURSELF</button><button data-x style="'+BTN+'">NO</button>'; ASK.style.display='flex';
     const shut=()=>{ ASK.style.display='none'; }; ASK.querySelector('[data-r]').style.display=H.mode==='rest'?'':'none';
     ASK.querySelector('[data-r]').onclick=()=>{ shut(); rideAlong(H); }; ASK.querySelector('[data-f]').onclick=()=>{ shut(); fly(H); }; ASK.querySelector('[data-x]').onclick=shut; setTimeout(shut,12000); };

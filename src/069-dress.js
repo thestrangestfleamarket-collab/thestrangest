@@ -66,20 +66,20 @@ const TLX={tick:()=>{}}; window.DRESS=Object.assign(DRESS,{gaps:()=>{ const G=[]
         head(x,y+3.2*M,z+.22*M,[0,1],'s');
         ped(x,y+2.3*M,z-.2*M,[0,-1],'xm'); ped(x-sx*.2*M,y+2.3*M,z,[-sx,0],'xs');
         solid(x,z,.22*M,T); TL.push({x,z}); }
-      // the park gate's crossing: a light over each way's lane before the crosswalk, its stop line, a walk light across and a button at each end (150pb-traffic runs it)
+      // the park gate's crossing: a light over each way's lane before the crosswalk, its stop line, a walk light across and a button at each end, and up the same pole the flying traffic's light at their height (150pb-traffic runs it)
       { const gx0=SHARED.BOD.XS(PARK.gate[0]+PARK.ox), gx1=SHARED.BOD.XS(PARK.gate[1]+PARK.ox), zs=SHARED.BOD.ZS(SHARED.BOD.CURB), zp=SHARED.BOD.ZS(SHARED.BOD.FAR), zm=(zs+zp)/2, T=5.6*M; DRESS.sig=[];
         for(const [x,z,sd,zl] of [[gx1+1.1*M,zs-.6*M,1,(zs+zm)/2],[gx0-1.1*M,zp+.6*M,-1,(zp+zm)/2]]){ const y=G(x,z), AL=Math.abs(zl-z)+.4*M, f=[sd,0];
-          cyl(x,y+.25*M,z,.2*M,.5*M,0x3f4448); cyl(x,y+T/2,z,.09*M,T,GR); cyl(x,y+T+.06*M,z,.11*M,.12*M,0x3f4448);
+          const TF=10.4*M; cyl(x,y+.25*M,z,.2*M,.5*M,0x3f4448); cyl(x,y+TF/2,z,.09*M,TF,GR); cyl(x,y+TF+.06*M,z,.11*M,.12*M,0x3f4448);
           blk(x,y+T-.3*M,z+sd*AL/2,.12*M,.14*M,AL,GR); blk(x,y+T-.75*M,z+sd*AL*.22,.06*M,.06*M,AL*.44,GR);
-          head(x,y+T-.95*M,zl,f,'gm'); head(x+sd*.22*M,y+3.2*M,z,f,'gm'); ped(x,y+2.3*M,z+sd*.2*M,[0,sd],'gx');
+          head(x,y+T-.95*M,zl,f,'gm'); blk(x+sd*.14*M,y+9.1*M,z,.2*M,.12*M,.12*M,GR); head(x+sd*.3*M,y+9.1*M,z,f,'gf'); head(x+sd*.22*M,y+3.2*M,z,f,'gm'); ped(x,y+2.3*M,z+sd*.2*M,[0,sd],'gx');
           const sx=x+sd*.5*M, sy=G(sx,zl); blk(sx,sy+.012,zl,.32*M,.024,Math.abs(zl-zm)*2-.5*M,0xe9e6dc);
-          solid(x,z,.22*M,T); TL.push({x,z}); DRESS.sig.push({x,z,y,sd,stop:sx,lane:zl,btn:[x,y+1.15*M,z-sd*.16*M]}); } }
+          solid(x,z,.22*M,TF); TL.push({x,z}); DRESS.sig.push({x,z,y,sd,stop:sx,lane:zl,btn:[x,y+1.15*M,z-sd*.16*M]}); } }
       const ON={r:0xff3b2a,y:0xffb020,g:0x44f2a0,h:0xff7a1a,w:0xf2f2ea}, OFF={r:0x3a1410,y:0x3a2a10,g:0x0f3324,h:0x2e1a0c,w:0x202224};
       const sm=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshBasicMaterial({color:0xffffff}),Math.max(1,SIG.length)), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), cc=new THREE.Color();
       SIG.forEach((s,i)=>{ const [x,y,z,a,b,d]=s.p; sm.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q,new THREE.Vector3(a,b,d))); sm.setColorAt(i,cc.setHex(OFF[s.k])); }); scene.add(sm);
       const CY=44, phase=t=>{ const m=t<18?'g':t<21?'y':'r', sd=t>=23&&t<39?'g':t>=39&&t<42?'y':'r', fl=Math.floor(t*2)&1, p=(a,b)=>t>=a&&t<a+(b-a)*2/3?'w':t>=a&&t<b&&fl?'h':t>=a&&t<b?'-':'h';
         return {m,s:sd,xs:p(0,18),xm:p(23,39)}; };
-      let last=''; TLX.tick=()=>{ const t=(performance.now()/1000)%CY, P=phase(t), Q=TLX.gate&&TLX.gate(); P.gm=Q?Q.m:'g'; P.gx=Q?Q.x:'h'; const key=P.m+P.s+P.xs+P.xm+P.gm+P.gx; if(key===last)return; last=key;
+      let last=''; TLX.tick=()=>{ const t=(performance.now()/1000)%CY, P=phase(t), Q=TLX.gate&&TLX.gate(); P.gm=Q?Q.m:'g'; P.gf=Q?Q.f||Q.m:'g'; P.gx=Q?Q.x:'h'; const key=P.m+P.s+P.xs+P.xm+P.gm+P.gf+P.gx; if(key===last)return; last=key;
         SIG.forEach((s,i)=>{ sm.setColorAt(i,cc.setHex(P[s.grp]===s.k?ON[s.k]:OFF[s.k])); }); sm.instanceColor.needsUpdate=true; };
       TLX.phase=phase; TLX.at=TL; TLX.mesh=sm; window.TLX=TLX; }
     pole.castShadow=true; scene.add(pole,lant);

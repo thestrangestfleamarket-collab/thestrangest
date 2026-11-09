@@ -19,7 +19,7 @@ const LSEED={x0:66,split:76,a0:78.5,x1:93.5,c0:96,deep:-104.5,back:-89.5,walk:-7
 const KCITY={tun:{x0:44,x1:51,y0:-104.5,y1:-79,d:90},brg:{x0:140,x1:147,y0:-104.5,y1:-79,deck:96},yc:(LSEED.street+LSEED.grass)/2,wX:[[41.3,43.6],[51.4,53.7]],eX:[[137.4,139.7]],xMouth:[-77,-74.6]};
 const LBLD=[{id:'lbodega',x0:LSEED.split-8,y0:LSEED.walk-14,x1:LSEED.split,y1:LSEED.walk,h:130,st:1,c:[150,70,56]},{id:'lapts',x0:LSEED.a0,y0:LSEED.walk-7,x1:LSEED.x1,y1:LSEED.walk,h:130,st:1},{id:'lbodega3',x0:.8,y0:-58,x1:8.8,y1:-44,h:130,st:1}];
 const landK=(x,y)=>y>=LSEED.street&&y<LSEED.grass?3:y>=LSEED.walk||y>=LSEED.grass?5:1;
-const SLAB=[[168,163,150],[161,156,143],[173,168,155]], SEAM=[131,126,115];
+const SLAB=[[156,152,144],[148,144,136],[162,158,150]], SEAM=[131,126,115];
 const BRICK=[[146,80,63],[137,73,58],[154,88,70],[128,68,54]], MORTAR=[92,54,45], COPE=[182,176,164];
 function woodCol(x,y){ const r=Math.floor(y*4), o=hash(r,0,13)*3, b=Math.floor(x/1.5+o);
   const c=[[150,112,72],[142,104,66],[156,118,78]][Math.floor(hash(b,r,17)*3)]; return mt('wood',(y*4-r)<.08||(x/1.5+o-b)<.03?sh(c,.75):c); }
@@ -28,22 +28,27 @@ function grain(x,y,k,s=1){ return (cvNoise(x/(5*s),y/(5*s),k)*3+cvNoise(x/(1.7*s
 function crack(x,y,k,s=1.6,w=.007,on=.55){ return cvNoise(x/(s*4),y/(s*4),k+1)>on&&Math.abs(cvNoise(x/s,y/s,k)-.5)<w; }
 function spot(x,y,k,s,r,p){ const i=Math.floor(x/s), j=Math.floor(y/s); if(hash(i,j,k)>p)return false; const cx=(i+.2+hash(i,j,k+1)*.6)*s, cy=(j+.2+hash(i,j,k+2)*.6)*s; return Math.hypot(x-cx,(y-cy))<r; }
 const GROUT=[86,82,74], WEEDC=[[70,104,50],[92,128,60],[58,86,42],[112,140,70]];
-const SLB=2;
-function slabCol(x,y){ const wy=(y+(cvNoise(x*1.3+9,y*1.3,403)-.5)*.08)/SLB, j=Math.floor(wy), wx=(x+(cvNoise(x*1.3,y*1.3,401)-.5)*.08)/SLB+hash(j,0,425)*.6;
-  const i=Math.floor(wx), fx=wx-i, fy=wy-j, ex=Math.min(fx,1-fx)*SLB, ey=Math.min(fy,1-fy)*SLB, e=Math.min(ex,ey), n=grain(x,y,301,1.2), px=Math.floor(x*24), py=Math.floor(y*24), hp=hash(px,py,405);
-  const ci=Math.round(wx), cj=Math.round(wy), chip=ex<.14&&ey<.14&&hash(ci,cj,411)<.4&&Math.hypot(ex,ey)<.07+hash(ci,cj,413)*.07;
-  const green=cvNoise(x/2.2,y/2.2,415)+(landK(x+.8,y)===1||landK(x-.8,y)===1||landK(x,y+.8)===1||landK(x,y-.8)===1?.2:0);
-  if(e<.042||chip){ if(green>.7&&hp<.7)return mt('pavement',WEEDC[Math.floor(hash(px,py,417)*4)]); return mt('pavement',hp<.2?sh(GROUT,.86):hp>.9?sh(GROUT,1.1):GROUT); }
-  if(e<.07&&green>.78&&hp<.35)return mt('pavement',WEEDC[Math.floor(hash(px,py,419)*4)]);
-  if(hash(i,j,305)<.16&&crack(x,y,307,.9,.014,.3)){ if(green>.55&&hp<.5)return mt('pavement',WEEDC[(px+py)&3]); return mt('pavement',sh(GROUT,.95)); }
-  if(spot(x,y,309,.25,.025,.07))return mt('pavement',[108,104,98]);
-  let c=SLAB[Math.floor(hash(i,j,7)*3)]; const tx=(hash(i,j,421)-.5)*.12, ty=(hash(i,j,423)-.5)*.12; c=sh(c,1+tx*(fx-.5)*2+ty*(fy-.5)*2);
-  if(e<.084)c=sh(c,(fx*SLB<.084||fy*SLB<.084)?1.08:.86);
-  return mt('pavement',speck(n<.3?sh(c,.93):n<.36&&hp<.5?sh(c,.94):n>.72?sh(c,1.04):c,x,y,3)); }
+const SLB=2.4;
+// the sidewalk: New York's 5 ft flags, worn: patched, tipped, stained, gum, cracks, broken corners, weeds in the joints and cracks (a weed pixel carries .w, where THE STREET'S WEAR stands its tufts)
+function slabCol(x,y){ const i=Math.floor(x/SLB), j=Math.floor(y/SLB), fx=x/SLB-i, fy=y/SLB-j, ex=Math.min(fx,1-fx)*SLB, ey=Math.min(fy,1-fy)*SLB, e=Math.min(ex,ey), px=Math.floor(x*24), py=Math.floor(y*24), hp=hash(px,py,405), n=grain(x,y,301,.9);
+  const green=cvNoise(x/2.2,y/2.2,415)+(landK(x+.8,y)===1||landK(x-.8,y)===1||landK(x,y+.8)===1||landK(x,y-.8)===1?.25:0), weed=k=>{ const c=WEEDC[Math.floor(hash(px,py,k)*4)], o=[c[0],c[1],c[2]]; o.w=1; return mt('pavement',o); };
+  if(e<.03){ if(green>.62&&hp<.6)return weed(417); return mt('pavement',hp<.4?[78,76,72]:[92,89,84]); }
+  const k=hash(i,j,7); let b=k<.1?[186,183,176]:k>.7?[124,120,113]:SLAB[Math.floor(hash(i,j,9)*3)]; if(e<.11)b=sh(b,1.07);
+  let t=1+(hash(i,j,421)-.5)*.06*(fx-.5)+(hash(i,j,423)-.5)*.06*(fy-.5); if(hash(i,j,425)<.22){ t+=(fx-.5)*.18; if(fx<.05)t*=.7; }
+  let c=sh(b,t*(.93+.12*n)); const g=Math.max(0,cvNoise(x/3.5,y/3.5,427)-.55)*.4+Math.max(0,cvNoise(x/1.2,y/1.2,429)-.72)*.6; c=sh(c,1-g);
+  { const cx=fx<.5?0:1, cy=fy<.5?0:1, ci=i+cx, cj=j+cy, dx=Math.abs(fx-cx)*SLB, dy=Math.abs(fy-cy)*SLB, rr=.16+hash(ci,cj,431)*.26, dd=Math.hypot(dx,dy)*(.8+.5*cvNoise(Math.atan2(dy,dx)*3,ci,433));
+    if(hash(ci,cj,435)<.35&&dd<rr){ if(dd>rr-.035)return mt('pavement',sh(c,.5)); if(green>.5&&cvNoise(x*3,y*3,437)>.5)return weed(439); return mt('pavement',sh([c[0]*.5+60,c[1]*.5+56,c[2]*.5+50],.75+.3*hash(px,py,441))); } }
+  if(hash(i,j,305)<.5){ const an=hash(i,j,307)*Math.PI, d=Math.abs((fx-hash(i,j,309))*SLB*Math.sin(an)-(fy-.5)*SLB*Math.cos(an))+(cvNoise(x*6,y*6,311)-.5)*.06;
+    if(d<.022){ if(green>.45&&cvNoise(x/1.5,y/1.5,313)<.8&&hp<.45)return weed(315); return mt('pavement',sh(c,.5)); } if(d<.04)c=sh(c,.9); }
+  if(e<.06&&green>.7&&hp<.5)return weed(419);
+  const gd=.55+.6*Math.exp(-(((cvNoise(x/9,y/9,317)-.5)*6)**2)), s=spot(x,y,319,.21,.032,.1*gd)||spot(x,y,321,.37,.045,.045*gd)?(hash(px,py,323)<.6?[58,56,54]:sh(c,.7)):null; if(s)return mt('pavement',s);
+  if(spot(x,y,309,3.1,.55,.1))c=sh(c,.8);
+  return mt('pavement',speck(c,x,y,3)); }
+// the kerb: worn concrete, 6 in. wide, in 1.5-tile lengths, its road edge chipped and dark
 function kerbCol(ax){ return (x,y)=>{ const a=ax==='y'?y:x, px=Math.floor(x*24), py=Math.floor(y*24), hp=hash(px,py,431), n=grain(x,y,433,.8);
-  if(((a%1.5)+1.5)%1.5<.042)return mt('kerb',GROUT); const c=sh([178,174,164],.9+.16*n+(hash(Math.floor(a/1.5),0,435)-.5)*.08); return mt('kerb',hp<.03?sh(c,.75):hp>.97?sh(c,1.12):c); }; }
-function kerbFace(a,z,H){ const hp=hash(Math.floor(a*24),z,437), n=grain(a,z/24,439,.8); if(((a%1.5)+1.5)%1.5<.042)return GROUT;
-  let c=sh([150,146,138],.88+.18*n); if(z>=H-1)c=sh(c,1.15); else if(z<1)c=sh(c,.62); else if(z<2)c=sh(c,.8); return hp<.05?sh(c,.8):c; }
+  if(((a%1.5)+1.5)%1.5<.035)return mt('kerb',[90,88,84]); const c=sh([164,160,152],.88+.14*n+(hash(Math.floor(a/1.5),0,435)-.5)*.1-Math.max(0,cvNoise(a/2,0,445)-.6)*.5); return mt('kerb',hp<.05?sh(c,.7):hp>.97?sh(c,1.1):c); }; }
+function kerbFace(a,z,H){ const hp=hash(Math.floor(a*24),z,437), n=grain(a,z/24,439,.8); if(((a%1.5)+1.5)%1.5<.035)return [72,70,66];
+  let c=sh([150,146,138],.86+.16*n); if(z>=H-1)c=cvNoise(a*2,0,441)>.55?sh(c,.62):sh(c,1.12); else if(z<1)c=sh(c,.5); else if(z<3)c=sh(c,.68+.08*z-(cvNoise(a/1.5,0,443)>.6?.12:0)); return hp<.06?sh(c,.75):c; }
 function roadCol(x,y,w){ const c=w?[86,87,90]:[62,64,68], n=grain(x,y,37,1.3), S=LSEED, yc=KCITY.yc;
   if(crack(x,y,141,1.5,w?.012:.007,w?.4:.56))return mt('road',sh(c,.7));
   const p=cvNoise(x/3.2,y/3.2,143); if(!w&&p>.76)return mt('road',speck(p<.765?[44,45,48]:[54,55,58],x,y,145));

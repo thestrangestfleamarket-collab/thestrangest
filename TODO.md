@@ -54,7 +54,7 @@ One pull request each, in this order; the game stays playable after every one.
 - [x] **Market St traffic** (owner, 9 Nov 2026; done 9 Nov, claude/inspiring-maxwell-ynwbpy): poles to the kerb with lights on top, lamp posts gone, cars and fliers driving, the park gate's stop light and button. `src/150pb-traffic.js`, `tools/traffic-bake.py`, `tests/traffic.cjs`. Waits for his look and yes.
 
 **To try on the live site** (one sitting; each line is in its area below):
-phones and tablets: the touch pad, its layout, a controller on a phone (8 Nov) ·
+phones and tablets: the door now lets them in (9 Nov), the touch pad, its layout, a controller on a phone (8 Nov) ·
 the Mesh2Motion moves · the cars, their insides and the radio · the menus, the start spot, the map and GO TO (#563, #571, #576) ·
 the HUD margin on his screen · the fair's fence · a ghost's revival in the bath · the egg poacher · the fluffy grass · the castle at night ·
 VR on the Quest 3 (and the painter in it) · the Polyfork avatar, the only body now, and the new YOU window (5 Nov).

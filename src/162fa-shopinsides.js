@@ -1,6 +1,6 @@
 // THE SHOPS' SHARED INSIDE (MSHOP.kit._): a merchant's shop without a kit of its own gets a floor and walls in its colours, a counter with its keeper behind it, shelves showing what the keeper sells (each thing's own picture), a lamp; the hotel, tailor and barber counters do their own thing (rest, WEAR, LOOK).
 import {THREE} from './003-shx.js';
-import {ARCHI, BAG, CHARS, INV, SHOPS, TALK, UI, VIT} from './003b-systems.js';
+import {ARCHI, BAG, CHARS, DOLL, INV, SHOPS, TALK, VIT} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {IKIT} from './038zc-ikit.js';
 import {MSHOP} from './059i-mshops.js';
@@ -19,8 +19,8 @@ import {MSHOP} from './059i-mshops.js';
   // what the counter does: open the keeper's shop, or the shop's own service
   const SERVE={hotel:()=>{ if(VIT.dead)return say('THE CLERK: GHOSTS RECOVER IN THE BATH HOUSE\'S STEAM, NOT HERE.','#c8a090'); if(VIT.hp>=1)return say('THE CLERK: YOU LOOK RESTED ALREADY. COME BACK WHEN YOU\'RE HURT.','#c8a090');
       if(INV.cash<10)return say('A ROOM IS $10 A REST. YOU HAVE $'+Math.round(INV.cash)+'.','#c8a090'); INV.cash-=10; VIT.heal(1); say('YOU SLEEP A WHILE UPSTAIRS. FULL HEALTH. $10.'); },
-    tailor:()=>{ say('THE TAILOR: LET\'S SEE WHAT YOU\'RE WEARING.'); UI.menuTab&&UI.menuTab('you','wear'); },
-    barber:()=>{ say('THE BARBER: SIT DOWN. WHAT ARE WE DOING TODAY?'); UI.menuTab&&UI.menuTab('you','look'); }};
+    tailor:()=>{ say('THE TAILOR: LET\'S SEE WHAT YOU\'RE WEARING.'); DOLL.looks('wear'); },
+    barber:()=>{ say('THE BARBER: SIT DOWN. WHAT ARE WE DOING TODAY?'); DOLL.looks('look'); }};
   const SVN={hotel:'THE FRONT DESK (REST $10: FULL HEALTH)',tailor:'THE TAILOR\'S COUNTER (CHANGE WHAT YOU WEAR)',barber:'THE BARBER\'S COUNTER (CHANGE YOUR HAIR)'};
   // a good on a shelf or the table: its own 3D model, its real size or the space's if it is bigger (owner, 8 Nov 2026: "no more icons to represent anything")
   const good=(id,room,at,y,ry)=>{ if(!BAG.look)return null; const g=BAG.look(id), b=new THREE.Box3().setFromObject(g), z=b.getSize(new THREE.Vector3()), k=Math.min(1,room/Math.max(z.x,z.y,z.z,1e-3)); g.scale.multiplyScalar(k); g.position.set(at[0],y,at[1]); g.rotation.y=ry; return g; };

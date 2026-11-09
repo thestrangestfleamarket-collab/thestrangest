@@ -88,6 +88,7 @@ jobs:
           k cafe    'src/144c[a-z]|src/038zd|data/bookstore|worker/door|cafe\.cjs|tgames\.cjs'
           k invites 'src/144c[a-z]|src/111d-online|src/141e-map|src/162d-hud|worker/door|invites'
           k spray   'src/159f|src/146-|spray\.cjs'
+          k money   'src/159[ij]|src/005-save|src/101-gems|src/103a|src/140c|worker/door|economy\.cjs'
           k paint   'src/159[g-i]|src/150a|src/150d|src/140b|src/146h|data/characters|worker/|paint\.cjs|trade-server\.cjs'
           k bodega80 'src/039-bodega|src/016-street-kit|bodega80s\.cjs'
           k bedroom 'src/150[a-c]|src/150ea|src/059a|bedroom'
@@ -537,6 +538,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' paint')
         run: node tests/trade-server.cjs
+      - name: The money's server (the bucket, the body's drops, the stalls)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' money')
+        run: node tests/economy.cjs
       - name: The guide book (Shift+G, every chapter's steps and pictures)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' guide')

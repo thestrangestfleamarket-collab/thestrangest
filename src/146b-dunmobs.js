@@ -30,11 +30,11 @@ __CODE__("worker/dunmobs.js")
   const MIX={1:{green:.7,blue:.3},2:{green:.3,blue:.5,purple:.2},3:{blue:.4,purple:.4,red:.2},4:{purple:.5,red:.5},5:{purple:.2,red:.8}};
   const tierAt=n=>{ const W=MIX[Math.min(5,Math.max(1,n))]; let r=Math.random(); for(const k in W)if((r-=W[k])<0)return k; return Object.keys(W).pop(); };
   const F=()=>1+.35*(lvl-1), see=()=>2.6+.5*lvl;   // deeper: tougher, harder hitting, quicker to notice you
-  const LOOT={green:[['$',1,3,7],['quartz',0,0,3]],blue:[['$',2,6,5],['quartz',0,0,2],['amethyst',0,0,2]],
-    purple:[['$',5,12,4],['amethyst',0,0,2],['geode',0,0,2],['amber',0,0,1],['m_chanterelle',0,0,1]],
-    red:[['$',10,25,4],['moonstone',0,0,2],['opal',0,0,2],['emerald',0,0,1]],spider:[['$',4,12,5],['amethyst',0,0,2],['emerald',0,0,1]],
-    bone:[['$',3,9,6],['quartz',0,0,2],['amethyst',0,0,2],['geode',0,0,1]],gold:[['$',20,40,3],['sapphire',0,0,1],['ruby',0,0,1]]};
-  const GC={quartz:0xf4f0ff,amethyst:0xb070ff,geode:0x9a8a7a,amber:0xf0a030,moonstone:0xd8e8ff,opal:0xffe8f4,emerald:0x30d070,sapphire:0x3060ff,ruby:0xff2040,p_refresh:0x58d8e8,p_heal:0xe84848,p_str:0xe8a030,m_chanterelle:0xe08a2a};
+  const LOOT={green:[['$',3,8,7],['quartz',0,0,3],['p_refresh',0,0,1]],blue:[['$',6,15,5],['quartz',0,0,2],['amethyst',0,0,2],['p_heal',0,0,1]],
+    purple:[['$',12,30,4],['amethyst',0,0,2],['geode',0,0,2],['amber',0,0,1],['m_chanterelle',0,0,1],['p_str',0,0,1],['sword_steel',0,0,.4]],
+    red:[['$',25,60,4],['moonstone',0,0,2],['opal',0,0,2],['emerald',0,0,1],['p_gheal',0,0,.6],['sword_ench',0,0,.25]],spider:[['$',10,25,5],['amethyst',0,0,2],['emerald',0,0,1],['p_heal',0,0,1]],
+    bone:[['$',8,20,6],['quartz',0,0,2],['amethyst',0,0,2],['geode',0,0,1],['sword',0,0,1],['p_heal',0,0,1]],gold:[['$',50,100,3],['sapphire',0,0,1],['ruby',0,0,1],['sword_ench',0,0,.3]]};
+  const GC={quartz:0xf4f0ff,amethyst:0xb070ff,geode:0x9a8a7a,amber:0xf0a030,moonstone:0xd8e8ff,opal:0xffe8f4,emerald:0x30d070,sapphire:0x3060ff,ruby:0xff2040,p_refresh:0x58d8e8,p_heal:0xe84848,p_str:0xe8a030,p_gheal:0xff7088,m_chanterelle:0xe08a2a,sword:0xc8ccd4,sword_steel:0xd8dce4,sword_ench:0x9ad8ff};
   for(const id in GC)ITEMS.reg(id,{color:'#'+GC[id].toString(16).padStart(6,'0')});   // the loot's colours are the item model's (the bag's pictures read them)
   const SKL={2:['skeleton_guard_light','Minion'],3:['skeleton_guard_light','skeleton_guard_heavy','Minion'],4:['skeleton_guard_heavy','skeleton_mage','Warrior','Rogue'],5:['skeleton_reaper','skeleton_mage','Warrior','Mage','Gold']};
   const SST={ogre:[4,.05],ogre_mage:[3,.05],ogre_guard_light:[4,.06],ogre_guard_heavy:[5,.07],spider:[3,.05],skeleton_guard_light:[3,.06],skeleton_guard_heavy:[5,.08],skeleton_mage:[3,.06],skeleton_reaper:[6,.1],Minion:[3,.05],Warrior:[5,.08],Rogue:[3,.05],Mage:[3,.06],Gold:[9,.1]}, KK=['Minion','Warrior','Rogue','Mage','Gold'];

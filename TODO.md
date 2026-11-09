@@ -46,7 +46,7 @@ headset · NPC voices (lifts the 19 Oct "no sound" rule).
 
 CI runs only on pull requests and by hand (the workflow has no push trigger), so `main` itself is checked only when someone starts it.
 - [ ] **Tests failing on `main`** · P2 · S · check. `tests/skills.cjs` waits for archived daily asks and can't pass; `tests/loop.cjs` and
-  `tests/riders.cjs` (the trains never stand at A with doors open).
+  `tests/riders.cjs` (the trains never stand at A with doors open). `tests/bank.cjs` fails two lines on `main` (9 Nov): the bank's inside is still drawn after you leave, and the gold after the dragon burns you.
 - [ ] **The full GitHub run doesn't finish inside 75 minutes** · P2 · S · check. No full run on `main` has passed since 4 Nov.
 - [ ] **Bodega register test**: clicking dog food doesn't add it to the basket (live game) · P2 · S · find.
 - [ ] **Merged without a green check or re-run, look at them live** · P2 · look. Skate pit #877, floating eyes #869, haze #858, shop

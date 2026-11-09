@@ -55,7 +55,7 @@ const SCOPE={alt:35,az:270,va:0,vz:0,mag:25,focus:0,track:true,lines:true,filter
     /* ---------- the page: the eyepiece's round field and the knobs beside it ---------- */
     const O=document.createElement('div'); O.id='scopev'; O.hidden=true; O.style.cssText='position:fixed;inset:0;z-index:30;background:#000;display:flex;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#3b2a1e';
     const cv=document.createElement('canvas'); cv.style.cssText='flex:1;min-width:0;height:100%;cursor:grab;touch-action:none'; O.appendChild(cv);
-    const P=document.createElement('div'); P.style.cssText='width:min(250px,40vw);overflow:auto;padding:12px;background:#ece5d3;border-left:3px solid #3b2a1e;zoom:var(--uiz,1)'; O.appendChild(P);
+    const P=document.createElement('div'); P.className='ml'; P.style.cssText='width:min(250px,40vw);overflow:auto;padding:12px;background:#ece5d3;border-left:3px solid #3b2a1e;zoom:var(--uiz,1)'; O.appendChild(P);
     const css=document.createElement('style'); css.textContent='#scopev .row{margin:8px 0} #scopev .row>b{display:block;margin-bottom:4px} #scopev .btn{font:inherit;padding:4px 7px;margin:0 3px 3px 0;background:#ece5d3;color:#3b2a1e;border:2px solid #3b2a1e;cursor:pointer} #scopev .btn.on{background:#3b2a1e;color:#ece5d3} #scopev select,#scopev input[type=range]{width:100%;font:inherit} #scopev .info{color:#6a4a32;line-height:1.5}';
     document.head.appendChild(css); document.body.appendChild(O);
     const MAGS=[[6,'FINDER 6X'],[25,'25X'],[50,'50X'],[100,'100X'],[200,'200X']], FOV=m=>m===6?7:50/m;

@@ -1,7 +1,7 @@
 // THE NEW VERSION: tells the player when a newer build of the game is ready.
 import {SYS} from './006-map-pre.js';
 import {BUILDV} from './135-where.js';
-{ const show=()=>{ '@later'; if(document.getElementById('newver'))return; const d=document.createElement('div'); d.id='newver';
+{ const show=()=>{ '@later'; if(document.getElementById('newver'))return; const d=document.createElement('div'); d.id='newver'; d.className='mlb';
     d.style.cssText='position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:40;font:12px var(--pixel,monospace);color:#f2c14e;background:#0b0d13f2;border:2px solid #f2c14e;padding:8px 12px;display:flex;gap:12px;align-items:center';
     d.innerHTML='<span>A NEW VERSION IS READY</span><button style="font:inherit;color:#0b0d13;background:#f2c14e;border:0;padding:4px 10px;cursor:pointer">REFRESH</button><button aria-label="Close" style="font:inherit;color:#8a8f9c;background:none;border:0;cursor:pointer">X</button>';
     const [r,x]=d.querySelectorAll('button'); r.onclick=()=>location.reload(); x.onclick=()=>d.remove(); document.body.appendChild(d); };

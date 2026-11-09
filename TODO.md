@@ -52,6 +52,7 @@ One pull request each, in this order; the game stays playable after every one.
 
 ## For the owner
 - [x] **Market St traffic** (owner, 9 Nov 2026; done 9 Nov, claude/inspiring-maxwell-ynwbpy): poles to the kerb with lights on top, lamp posts gone, cars and fliers driving, the park gate's stop light and button. `src/150pb-traffic.js`, `tools/traffic-bake.py`, `tests/traffic.cjs`. Waits for his look and yes.
+- [x] **Central Park: benches, lamps, tufts, climbing** (owner, 9 Nov 2026; done 9 Nov, wt/park): half the benches and you stay sat, one kind of lamp post a third fewer, tufts and weeds at the feet of things, climb speed from CLIMBING (4x at 100), big trees' feet solid, SPACE jumps off. `tests/climb.cjs`, `tests/parksolid.cjs`, `tests/parkpf.cjs`. Waits for his look and yes.
 
 **To try on the live site** (one sitting; each line is in its area below):
 phones and tablets: the door now lets them in (9 Nov), the touch pad, its layout, a controller on a phone (8 Nov) ·

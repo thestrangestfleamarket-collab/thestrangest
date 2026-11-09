@@ -602,7 +602,7 @@ const moveAt=st=>moveAtOf(st.move);
 function moveAtOf(mv){ const def=mv.def,t=Math.min(mv.t,def.dur),ks=def.kl&&t>def.air.t0+def.air.T?def.kl:def.k; let i=1; while(i<ks.length-1&&ks[i].t<t) i++;
   const A=ks[i-1],B=ks[i],x=B.t>A.t?clamp((t-A.t)/(B.t-A.t),0,1):1; let P=B.e===smooth?flow(ks,i,x):mix(A.P,B.P,B.e(x));
   const a=def.air; if(a&&t>=a.t0&&t<=a.t0+a.T){ const tau=t-a.t0,i2=Math.min(240,Math.round(tau/a.T*240));
-    P.root=V(P.root.x,P.root.y+a.v0*tau-a.g*tau*tau/2,P.root.z); P.pv=a.c; if(a.spin) P.pitch+=a.spin[i2];
+    P.root=V(P.root.x,P.root.y+(a.v0*tau-a.g*tau*tau/2)*(mv.hi||1),P.root.z); P.pv=a.c; if(a.spin) P.pitch+=a.spin[i2];
     if(mv.variant){ const v=mv.variant,w=Math.min(1,(t-v.t)/0.08)*(1-smooth(clamp((tau/a.T-0.8)/0.17,0,1))); if(w>0){ const Q=apply(P,AIRV[v.name]); P=mix(P,Q,w); } }
     for(const n of 'LR') delete P[n].ik; }
   const tp=def.topple; if(tp&&t<tp.T){ const th=tp.tab[Math.min(tp.tab.length-1,Math.round(t*240))]; P.pitch=th; P.root=V(0,STAND*Math.cos(th),STAND*Math.sin(th)); for(const n of 'LR') if(P[n].ik) legIK(P,n,n=='L'?1:-1,P[n].ik,P[n].kp); }
@@ -696,7 +696,7 @@ function handed(st,def){ if(!def||!def.lead||(st.hand||'R')===def.lead) return d
 const pace=st=>gaitOf(st.run).speed*((st.wk||1)+((st.rk||1)-(st.wk||1))*st.run);
 function begin(st,name,dd){ const def=handed(st,dd||MOVES[name]),from=JSON.parse(JSON.stringify(st.out&&!(st.out.t>0)?st.out.pose:st.last||rawPose(st))),om=st.move;   // (straight after a move ends: from its last pose, its travel already taken into the step)
   if(om){ const z=from.root.z; st.dist+=z-(om.zc||0); from.root=V(from.root.x,from.root.y,0); }
-  st.move={def,name,t:0,from,held:true,variant:null,floor:def.deck?0:floorOf(st)}; st.out=null; st.next=null;
+  st.move={def,name,t:0,from,held:true,variant:null,floor:def.deck?0:floorOf(st),hi:def.air&&!def.src.drop?st.hi||1:1}; st.out=null; st.next=null;
   if(def.below!=null) st.move.base=Math.min(floorOf(st)-def.below,from.root.y-STAND);
   st.mvw=Math.max(pace(st)*st.w,om?.9*st.mv:0); st.mv=def.air?st.mvw+def.air.vz:st.mvw*0.9; }
 const ARMMOVES=new Set(['jab','cross','uppercut','block','wave']);

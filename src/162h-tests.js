@@ -92,14 +92,15 @@ window.TESTS=TESTS;
       const P=UI.places().find(p=>p[0]===n), near=P&&isFinite(P[1])?Math.hypot(pos.x-P[1],pos.z-P[2])<8*T:false, inn=n==='YOUR APARTMENT'?!!(MODS.apts&&MODS.apts.inReal):ROOMS.cur!==s.r&&ROOMS.cur!=null;
       if(near||inn||Math.hypot(pos.x-s.x,pos.z-s.z)>4*T)return true; if(c.t-s.gone>25)return ['fail','GO TO '+n+' did not take it there']; };
     // up to a seller (their shop's counter, or them on the street) with their window open; fn presses the buttons
+    const q_t=c=>c.t;
     const seller=(c,dt,fn)=>{ const e=c.e, s=c.s;
       if(e.shop){ const r=K.counter(e.shop,dt,()=>{ s.btn=fn(); },s); if(r===null)return ['fail','could not get to the counter in '+e.shop]; if(r)s.sold=1; return r?true:undefined; }
       const N=N_(e.who), th=thOf(N); if(!th)return ['skip',e.who+' is not in the world now'];
       if(!s.used){ if(K.use(th,dt))s.used=c.t; return; } if(c.t-s.used<1.2)return;
       if(!panelUp()){ const o=[...document.querySelectorAll('#talkp [data-i]')].find(d=>/BUY|SELL|TRADE|WARES|SHOP|WHAT.*HAVE|LOOK/i.test(d.textContent)); if(o&&!s.opt){ s.opt=1; o.click(); return; } if(TALK.close)TALK.close(); SHOPS.open(N); }
-      s.btn=fn(); K.close(); SHOPS.close(); return true; };
+      if(!s.pw){ s.btn=fn(); s.pw=q_t(c)+1.8; return; } K.answer(); if(q_t(c)<s.pw)return; K.close(); SHOPS.close(); return true; };
     const buyIt=(c,dt,id)=>{ const s=c.s; if(s.n0==null){ s.n0=have(id); s.c0=K.cash(); const p=+ITEMS.prop(id,'value')||1; if(K.cash()<p)return ['skip','$'+K.cash()+' is not enough for '+NM(id)+' ($'+Math.round(p)+')']; }
-      const r=seller(c,dt,()=>K.click(`[data-buy="${id}"]`)); if(r!==true)return r;
+      const r=seller(c,dt,()=>K.buy(id)); if(r!==true)return r;
       if(have(id)>s.n0)return ['pass','bought '+NM(id)+' for $'+(s.c0-K.cash())]; return ['fail',s.btn?'pressed BUY, nothing came ($'+s.c0+' then $'+K.cash()+')':'no BUY button for '+NM(id)]; };
     const sub=(c,k)=>{ const s=c.s[k]||(c.s[k]={}); return {e:c.e,t:c.t,s}; };
     const RUN={
@@ -115,7 +116,7 @@ window.TESTS=TESTS;
         const p=document.getElementById('talkp'); return TALK.on&&p&&!p.hidden?['pass',String(N.name||'').toLowerCase()+' talked']:panelUp()?['pass','opened their shop']:['fail','double-clicked, nothing opened']; },
       buy:(c,dt)=>buyIt(c,dt,c.e.item),
       sell:(c,dt)=>{ const s=c.s, P=(FORAGE.BUYK&&FORAGE.BUYK[c.e.group])||[]; if(!s.id){ s.id=Object.keys(INV.items).find(id=>INV.items[id]>0&&P.some(p=>id.startsWith(p))); if(!s.id)return ['skip','has no '+c.e.group+' to sell (the skill tests find some)']; s.n0=have(s.id); s.c0=K.cash(); }
-        const r=seller(c,dt,()=>K.click(`[data-sold="${s.id}"]`)||K.click(`[data-sell="${s.id}"]`)); if(r!==true)return r;
+        const r=seller(c,dt,()=>K.press(`.shr[data-sold="${s.id}"]`)||K.click(`[data-sold="${s.id}"]`)||K.click(`[data-sell="${s.id}"]`)); if(r!==true)return r;
         return have(s.id)<s.n0&&K.cash()>s.c0?['pass','sold '+NM(s.id)+' for $'+(K.cash()-s.c0)]:['fail',s.btn?'pressed SELL, nothing happened':'no SELL button for '+NM(s.id)]; },
       learn:(c,dt)=>{ const s=c.s, k=c.e.skill; if(s.v0==null){ s.v0=FORAGE.sk(k); s.c0=K.cash(); }
         const r=seller(c,dt,()=>K.click(`[data-train="${k}"]`)); if(r!==true)return r;
@@ -148,14 +149,14 @@ window.TESTS=TESTS;
         if(j==='sit'&&st.sit)return ['pass','sat down'];
         if(j==='decorate'&&MODS.apts&&MODS.apts.inReal&&K.cash()<s.c0)return ['pass','bought a thing for $'+(s.c0-K.cash())]; } };
     /* ---------- PLAY IT THROUGH: the steps, a shot of each from four angles, its spot code and what the game said ---------- */
-    const SAID=[]; { const tap=()=>{ const J=document.getElementById('fjour'); if(!J)return setTimeout(tap,2000); new MutationObserver(m=>{ for(const r of m)for(const n of r.addedNodes)if(n.textContent){ SAID.push(n.textContent.slice(0,120)); if(SAID.length>12)SAID.shift(); } }).observe(J,{childList:true}); }; tap(); }
+    const SAID=[]; { const tap=()=>{ const J=document.getElementById('hlines'); if(!J)return setTimeout(tap,2000); new MutationObserver(()=>{ const L=J.lastElementChild, t=L&&L.textContent; if(t&&t!==SAID[SAID.length-1]){ SAID.push(t.slice(0,120)); if(SAID.length>12)SAID.shift(); } }).observe(J,{childList:true,subtree:true,characterData:true});   // the HUD's log: what the game said }; tap(); }
     const frames=n=>new Promise(r=>{ const f=()=>--n>0?requestAnimationFrame(f):r(); requestAnimationFrame(f); });
     const ANG=[['behind',0],['side',Math.PI/2],['front',Math.PI],['first',null]];
-    const shoot=async(keep)=>{ const o=[]; if(!BUGS.grab)return o; BOT.draw=true; const v0=UI.view, y0=SHARED.yaw;
+    const shoot=async(keep)=>{ const o=[]; if(!BUGS.grab)return o; BOT.draw=true; const v0=UI.view, y0=SHARED.yaw, d0=UI.dist; if(d0>0)UI.dist=UI.distTo=d0*.6;   // nearer, so walls inside a shop stand behind the camera less
       try{ for(const [a,off] of ANG){ if(off==null)UI.setView('first'); else { if(UI.view!=='third')UI.setView('third'); SHARED.yaw=SHARED.yawTo=y0+off; } await frames(4); const jpg=await BUGS.grab(); if(!jpg)continue;
           if(keep&&!keep.jpg)keep.jpg=jpg; LAST.push({a,jpg}); if(LAST.length>8)LAST.shift();
           let k=null; try{ const r=await fetch('/botshot',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jpg})}); const j=await r.json(); k=j.k||null; }catch(e){} o.push({a,k}); } }
-      finally{ UI.setView(v0==='first'?'first':'third'); SHARED.yaw=SHARED.yawTo=y0; BOT.draw=false; } return o; };
+      finally{ UI.setView(v0==='first'?'first':'third'); SHARED.yaw=SHARED.yawTo=y0; if(d0>0)UI.dist=UI.distTo=d0; BOT.draw=false; } return o; };
     const LAST=[]; BOT.lastShots=()=>LAST;
     const shopWho=n=>{ for(const p of LEVEL.places||[])if(p.name===n&&p.merchant)return p.merchant; return null; };
     const nearRe=(re,far=40)=>K.nearest(UI.things.filter(t=>t&&t.obj&&t.act&&re.test(t.name||'')&&K.d2(K.thAt(t).x,K.thAt(t).z)<far*T));

@@ -98,7 +98,7 @@ const MIC={open:false,data:null,ext:[]}; window.MIC=MIC;   // ext: what later fi
   MIC.objective=i=>{ if(!V.el||i===V.obj||!OBJ[i])return; V.obj=i; V.blurT=.45; V.zf+=(Math.random()-.5)*OBJ[i].dof*3; V.draw(); if(SFX)SFX.play('click',{vol:.5,vary:.2}); };   // parfocal, nearly: a touch of fine focus after each turn
   MIC.focus=d=>{ if(!V.el)return; V.zf+=d*(Math.abs(d)>=10?1:Math.min(1,OBJ[V.obj].dof*.4+.1)); };
   // the stage's travel ends where the specimen does: a stop at each edge, the knob's spring giving a little
-  const edge=()=>{ '@later'; const w=(V.slide&&V.slide.id==='pond')?V.PW:V.W||0, h=(V.slide&&V.slide.id==='pond')?V.PW:V.H||w; if(!w)return; const hx=w/2, hy=h/2;
+  const edge=()=>{ '@later'; const lv=V.slide&&(V.slide.id==='pond'||V.slide.live), w=lv?V.PW:V.W||0, h=lv?V.PW:V.H||w; if(!w)return; const hx=w/2, hy=h/2;
     if(V.sx>hx){ V.sx=hx; V.vx=-Math.abs(V.vx)*.15; } if(V.sx<-hx){ V.sx=-hx; V.vx=Math.abs(V.vx)*.15; } if(V.sy>hy){ V.sy=hy; V.vy=-Math.abs(V.vy)*.15; } if(V.sy<-hy){ V.sy=-hy; V.vy=Math.abs(V.vy)*.15; } };
 
   /* ---------- the pond water: every organism at its real size (µm), speed and depth; small things jostled by the water's molecules ---------- */
@@ -145,7 +145,7 @@ const MIC={open:false,data:null,ext:[]}; window.MIC=MIC;   // ext: what later fi
     g.fillStyle=`rgb(${Math.round(250*Math.min(1,lamp))},${Math.round(244*Math.min(1,lamp))},${Math.round(222*Math.min(1,lamp))})`; g.fillRect(0,0,S,S);
     const tb=V.blurT>0?V.blurT*16:0, filt=(b)=>`blur(${(b+tb).toFixed(1)}px) brightness(${lamp.toFixed(2)}) contrast(${con.toFixed(2)})`;
     g.translate(S/2,S/2);
-    if(V.slide&&V.slide.id==='pond'&&V.org){ swim(Math.min(.05,dt)); const cx=V.sx, cy=V.sy;
+    if(V.slide&&(V.slide.id==='pond'||V.slide.live)&&V.org){ swim(Math.min(.05,dt)); const cx=V.sx, cy=V.sy;
       g.filter=`brightness(${lamp.toFixed(2)}) contrast(${con.toFixed(2)})`;
       for(const p of V.part){ const px=(p.x-cx)*k, py=(p.y-cy)*k, r0=p.d/2*k, r=Math.max(.6,r0); if(r0<.3||Math.abs(px)>S/2+r||Math.abs(py)>S/2+r)continue; const b=blurOf(p.z-50-V.zf)+tb, a=Math.max(.05,.55/(1+b*.5));
         g.fillStyle=p.c?`rgba(120,96,60,${a})`:`rgba(70,80,70,${a})`; g.beginPath(); g.arc(px,py,r+b*.6,0,7); g.fill(); }
@@ -195,3 +195,4 @@ const MIC={open:false,data:null,ext:[]}; window.MIC=MIC;   // ext: what later fi
   SYS.add('places',dt=>{ if(MIC.open&&MIC.frame)MIC.frame(dt||0); if(MIC.open&&!(MODS.apts&&MODS.apts.inReal))MIC.close(); },'150ff-microscope');
   window.MICDBG=()=>MIC.dbg();
 }
+export {MIC};

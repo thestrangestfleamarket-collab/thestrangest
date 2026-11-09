@@ -133,18 +133,19 @@ import {FLAME} from './007-fire.js';
   // where you aim: the point under the mouse (on your ground, or out along the ray), from the nozzle; no mouse (the headset): the way the tool points
   const AIMP=new V3(), aimMine=S=>{ if(JET.aim){ S.dir.copy(JET.aim); return; } const r=WIELD.ray; if(!r||VR.on)return; const c=r.origin, d=r.direction, far=c.distanceTo(S.tip)+S.R;
     let t=d.y<-1e-3?(SHARED.py-c.y)/d.y:far; if(!(t>0)||t>far)t=far; AIMP.copy(c).addScaledVector(d,t).sub(S.tip); if(AIMP.lengthSq()>.01*M*M)S.dir.copy(AIMP.normalize()); };
-  const drop=S=>{ if(S.bm)S.bm.visible=false; JET.S.delete(S.id); };
+  const drop=S=>{ if(S.bm)S.bm.visible=false; if(S.rp){ S.rp.visible=false; S.rp.S=null; S.rp=null; } JET.S.delete(S.id); };
   ONLINE.hear.jet=m=>{ '@later'; const S=JET.S.get(m.id); if(m.k==='f'||m.k==='i'){ let T=S; if(!T||T.k!==m.k){ if(T)drop(T); JET.S.set(m.id,T=mk(m.id,m.k)); } else T.at=now(); if(Array.isArray(m.v)){ T.rv=(T.rv||new V3()).set(+m.v[0]||0,+m.v[1]||0,+m.v[2]||1); if(T.rv.lengthSq()<1e-4)T.rv=null; else T.rv.normalize(); } } else if(S)drop(S); };
   const PL=[];
   // each drop or puff is born somewhere inside the frame (its own age), so the stream is whole however long the frame was
-  const emit=(S,dt)=>{ const f=S.k==='f', rate=f?260:150; S.eA+=dt*rate; while(S.eA>=1){ S.eA-=1; const a=rnd()*dt, sp=(f?14:12)*M*(.9+rnd()*.2), j=f?.05:.04;
+  const emit=(S,dt)=>{ const f=S.k==='f', rate=f?120:150; S.eA+=dt*rate; while(S.eA>=1){ S.eA-=1; const a=rnd()*dt, sp=(f?14:12)*M*(.9+rnd()*.2), j=f?.05:.04;
       const vx=(S.dir.x+(rnd()-.5)*j)*sp, vy=(S.dir.y+(rnd()-.5)*j)*sp, vz=(S.dir.z+(rnd()-.5)*j)*sp, x=S.tip.x+vx*a, y=S.tip.y+vy*a-(f?G*a*a/2:0), z=S.tip.z+vz*a;
-      const kind=f?3:rnd()<.3?8:7, q=kind===3?FLAME.part(3,x,y,z,vx,vy,vz,.6+rnd()*.35,(.13+rnd()*.08)*M):kind===8?FLAME.part(8,x,y,z,vx,vy,vz,.7+rnd()*.4,.022*M,rnd()*9,G):FLAME.part(7,x,y,z,vx,vy,vz,.6+rnd()*.4,(.09+rnd()*.06)*M);
-      if(q){ q.t=a; PL.push({q,L:S.len*(.92+rnd()*.12),s:sp*a,kind,ph:0}); } } };
+      const kind=f?3:rnd()<.3?8:7, q=kind===3?FLAME.part(3,x,y,z,vx,vy,vz,1+rnd()*.45,.12*M):kind===8?FLAME.part(8,x,y,z,vx,vy,vz,.7+rnd()*.4,.022*M,rnd()*9,G):FLAME.part(7,x,y,z,vx,vy,vz,.6+rnd()*.4,(.09+rnd()*.06)*M);
+      if(q){ q.t=a; PL.push({q,S,L:S.len*(.92+rnd()*.12),s:sp*a,kind,ph:0,ht:0,hd:0}); } } };
   // fuel: gravity and air drag till it lands; then it burns as gas: dragged to a stop, rising as hot air does. Frost mist sinks as cold air does; ice crystals fall and bounce
   const parts=dt=>{ for(let i=PL.length-1;i>=0;i--){ const p=PL[i], q=p.q; if(q.t>=q.life){ PL.splice(i,1); continue; } const v=Math.hypot(q.vx,q.vy,q.vz);
+      if(p.kind===3){ const d=p.ph===0?(.1+q.t*1.3)*M:Math.min(1.7*M,p.hd+(q.t-p.ht)*2.2*M); q.sz=d/(1+2.2*q.t/q.life); }
       if(p.ph===0){ p.s+=v*dt; const gy=SHARED.groundY?SHARED.groundY(q.x,q.z):-1e9, low=q.y<gy+.03*M;
-        if(p.s>=p.L||low||(p.kind===3&&q.t>FUEL*2)){ p.ph=1; if(low)q.y=gy+.03*M; const s=v*(p.kind===3?.16:.1);
+        if(p.s>=p.L||low||(p.kind===3&&q.t>FUEL*2)){ p.ph=1; p.ht=q.t; p.hd=(.1+q.t*1.3)*M; if(low)q.y=gy+.03*M; const s=v*(p.kind===3?.16:.1);
           if(p.kind===8){ q.vy=Math.abs(q.vy)*.25; q.vx*=.35; q.vz*=.35; } else { const a=rnd()*6.28; q.vx=Math.cos(a)*s+q.vx*.08; q.vz=Math.sin(a)*s+q.vz*.08; q.vy=p.kind===3?(.4+rnd()*.8)*M:.05*M; } continue; }
         if(p.kind===3){ q.vy-=G*dt; const k=1/(1+KD*v*dt); q.vx*=k; q.vy*=k; q.vz*=k; } else if(p.kind===7){ const k=Math.max(0,1-.6*dt); q.vx*=k; q.vy=q.vy*k-.4*M*dt; q.vz*=k; } continue; }
       if(p.kind===8){ const gy=SHARED.groundY?SHARED.groundY(q.x,q.z):-1e9; if(q.y<gy+.02*M&&q.vy<0){ q.y=gy+.02*M; q.vy=-q.vy*.3; q.vx*=.5; q.vz*=.5; } continue; }
@@ -164,6 +165,30 @@ import {FLAME} from './007-fire.js';
       if(S.k==='f'){ e.ice=Math.max(0,e.ice-dt*2); e.cold=0; if(b.id!=='me')e.fire=Math.max(e.fire,3); }
       else{ e.fire=0; if(b.id!=='me'){ e.cold+=dt; if(e.cold>=.9&&e.ice<=0){ e.ice=4; e.cold=-2; } else if(e.ice>0)e.ice=Math.min(5,e.ice+dt*.3); } }
       if(mine&&b.o){ const t=now(); if(t-(S.zT[b.id]||0)>300){ S.zT[b.id]=t; ONLINE.send({t:'zap',to:b.id,k:S.k}); } } } };
+  /* ---------- the flame's core: one tube of burning fuel drawn through the stream's own drops, newest at the nozzle, so it bends and whips as the nozzle sweeps ---------- */
+  const RN=40, SD=8, ROPES=[], ropeMat=new THREE.ShaderMaterial({uniforms:{uT},toneMapped:false,side:THREE.DoubleSide,
+    vertexShader:'attribute float aU; attribute float aS; varying float vU, vS; varying vec3 vN, vV; void main(){ vU=aU; vS=aS; vec4 w=modelViewMatrix*vec4(position,1.); vN=normalize(normalMatrix*normal); vV=-w.xyz; gl_Position=projectionMatrix*w; }',
+    fragmentShader:'uniform float uT; varying float vU, vS; varying vec3 vN, vV;'+
+      ' float h3(vec3 p){ p=fract(p*.3183099+vec3(.1,.2,.3)); p*=17.; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }'+
+      ' float vn(vec3 x){ vec3 i=floor(x), f=fract(x); f=f*f*(3.-2.*f); return mix(mix(mix(h3(i),h3(i+vec3(1,0,0)),f.x),mix(h3(i+vec3(0,1,0)),h3(i+vec3(1,1,0)),f.x),f.y),mix(mix(h3(i+vec3(0,0,1)),h3(i+vec3(1,0,1)),f.x),mix(h3(i+vec3(0,1,1)),h3(i+vec3(1,1,1)),f.x),f.y),f.z); }'+
+      ' float fbm(vec3 p){ return .5*vn(p)+.25*vn(p*2.03+7.1)+.125*vn(p*4.01+3.7)+.0625*vn(p*8.05+1.3); }'+
+      ' vec3 ramp(float h){ vec3 c=mix(vec3(.42,.035,.01),vec3(1.,.26,.03),smoothstep(.02,.32,h)); c=mix(c,vec3(1.,.62,.12),smoothstep(.28,.6,h)); return mix(c,vec3(1.,.93,.66),smoothstep(.62,.92,h)); }'+
+      ' void main(){ ivec2 bq=ivec2(mod(gl_FragCoord.xy,4.)); float bt[16]=float[16](0.,8.,2.,10.,12.,4.,14.,6.,3.,11.,1.,9.,15.,7.,13.,5.), th=(bt[bq.x+bq.y*4]+.5)/16.;'+
+      ' float e=abs(dot(normalize(vN),normalize(vV))), n=fbm(vec3(vS*2.2,vU*9.-uT*11.,uT*.8)), n2=fbm(vec3(vS*5.,vU*22.-uT*17.,uT*1.3+4.));'+
+      ' float heat=(1.15-.8*vU)*(.35+.75*e)+(n-.47)*1.1+(n2-.47)*.5; if(heat<th*.45+.12)discard; gl_FragColor=vec4(ramp(heat*1.05),1.); }'});
+  const ropeIdx=(()=>{ const I=[]; for(let r=0;r<RN-1;r++)for(let k=0;k<SD;k++){ const a=r*SD+k, b=r*SD+(k+1)%SD, c=a+SD, d=b+SD; I.push(a,c,b,b,c,d); } return I; })();
+  const ropeMk=()=>{ let m=ROPES.find(m=>!m.S); if(m)return m; const g=new THREE.BufferGeometry(), A=(n,k)=>{ const a=new THREE.BufferAttribute(new Float32Array(RN*SD*k),k); a.setUsage(THREE.DynamicDrawUsage); g.setAttribute(n,a); return a; };
+    A('position',3); A('normal',3); A('aU',1); const s=new THREE.BufferAttribute(new Float32Array(RN*SD),1); for(let i=0;i<RN*SD;i++)s.array[i]=(i%SD)/SD; g.setAttribute('aS',s); g.setIndex(ropeIdx);
+    m=new THREE.Mesh(g,ropeMat); m.frustumCulled=false; m.raycast=()=>{}; m.userData.anyRoom=1; scene.add(LEVELS.own(m,'*')); ROPES.push(m); return m; };
+  const SP=[], T3=new V3(), A3=new V3(), B3=new V3(), C3=new V3();
+  const rope=S=>{ SP.length=0; for(const p of PL)if(p.S===S&&p.kind===3&&p.ph===0)SP.push(p.q); SP.sort((a,b)=>a.t-b.t); const m=S.rp||(S.rp=ropeMk()); m.S=S;
+    const n=Math.min(RN-1,SP.length), pts=[{x:S.tip.x,y:S.tip.y,z:S.tip.z,t:0}]; for(let i=0;i<n;i++)pts.push(SP[Math.floor(i*SP.length/n)]); if(pts.length<3){ m.visible=false; return; } m.visible=true;
+    const g=m.geometry, P=g.attributes.position.array, N=g.attributes.normal.array, U=g.attributes.aU.array, L=pts.length, tmax=Math.max(.05,pts[L-1].t);
+    for(let r=0;r<L;r++){ const a=pts[Math.max(0,r-1)], b=pts[Math.min(L-1,r+1)], c=pts[r]; T3.set(b.x-a.x,b.y-a.y,b.z-a.z).normalize(); A3.crossVectors(T3,UP); if(A3.lengthSq()<1e-6)A3.set(1,0,0); A3.normalize(); B3.crossVectors(A3,T3);
+      const rad=Math.min(.32*M,(.03+c.t*.55)*M)*(r===L-1?.5:1), u=c.t/tmax;
+      for(let k=0;k<SD;k++){ const th=k/SD*6.2832, cs=Math.cos(th), sn=Math.sin(th), i=r*SD+k; C3.copy(A3).multiplyScalar(cs).addScaledVector(B3,sn);
+        P[i*3]=c.x+C3.x*rad; P[i*3+1]=c.y+C3.y*rad; P[i*3+2]=c.z+C3.z*rad; N[i*3]=C3.x; N[i*3+1]=C3.y; N[i*3+2]=C3.z; U[i]=u; } }
+    g.setDrawRange(0,(L-1)*SD*6); g.attributes.position.needsUpdate=true; g.attributes.normal.needsUpdate=true; g.attributes.aU.needsUpdate=true; };
   const FL=new THREE.PointLight(new THREE.Color(1,.55,.2),0,8*M,1.6); FL.userData.fire=1; scene.add(FL);
   const firing=()=>{ const id=WIELD.on, g=WIELD.held&&WIELD.held(); if((id!=='flamer'&&id!=='frost')||!g||!g.visible||VIT.dead||VIT.out>0||RAG.on||SHARED.frozen>0)return ''; if(VR.on&&JET.burst<=0)JET.hold=false; return JET.hold||JET.burst>0?(id==='flamer'?'f':'i'):''; };
   const pilots=new Map();
@@ -179,6 +204,7 @@ import {FLAME} from './007-fire.js';
       if(S.k==='i'){ const b=S.bm||(S.bm=beam()); b.visible=true; b.position.copy(S.tip); b.quaternion.setFromUnitVectors(UP,S.dir); b.scale.set(.045*M,Math.max(.01,S.len),.045*M); } else if(S.bm){ S.bm.visible=false; S.bm=null; }
       if(S.k==='f'){ const d=(S.tip.x-pos.x)**2+(S.tip.z-pos.z)**2; if(d<lb){ lb=d; lp=S.P[Math.floor(S.P.length/2)]||S.tip; } }
       emit(S,dt); land(S,dt,mine); if(L)hits(S,dt,L,mine); }
+    for(const S of JET.S.values())if(S.k==='f')rope(S); for(const r of ROPES)if(r.S&&(r.S.k!=='f'||JET.S.get(r.S.id)!==r.S)){ r.visible=false; r.S.rp=null; r.S=null; }
     if(lp){ FL.position.copy(lp); FL.position.y+=.3*M; FL.intensity=14*FLAME.flick(3); } else FL.intensity=0; uT.value=now()/1000%1000;
     parts(dt); if(L)bodyFx(dt,L); iceTick(dt); frostTick(dt); },'146hb-jets');
   window.JETDBG=()=>({on:JET.on,streams:[...JET.S].map(([id,S])=>({id,k:S.k,len:+(S.len/M).toFixed(2),what:S.what,tip:[S.tip.x,S.tip.y,S.tip.z].map(v=>+v.toFixed(2)),dir:[S.dir.x,S.dir.y,S.dir.z].map(v=>+v.toFixed(2)),near:bodies().map(b=>[b.id,+(along(S,b.x,b.y+M,b.z)/M).toFixed(2),+b.x.toFixed(1),+b.y.toFixed(1),+b.z.toFixed(1)])})),parts:PL.length,ice:IL.map(c=>({x:c.x,z:c.z,y:c.y,r:c.r/M})),frost:FM.length,frozen:SHARED.frozen,burn:JET.burnT,fx:[...JET.E].map(([id,e])=>({id,fire:e.fire,ice:e.ice,cold:e.cold})),M}); }

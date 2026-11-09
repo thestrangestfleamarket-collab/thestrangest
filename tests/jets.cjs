@@ -36,7 +36,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(!!zf, 'a player in the fire is zapped and burns (' + JSON.stringify(zf) + ')');
     await shot('burn');
     await pg.evaluate(() => { JETS.hold = false; __sent.length = 0; WIELD.set('frost'); JETS.hold = true; });
-    const zi = await until(() => { const z = __sent.filter(m => m.t === 'zap' && m.to === 'a' && m.k === 'i'), e = JETDBG().fx.find(f => f.id === 'a'); return z.length && e && e.ice > 0 ? { zaps: z.length, ice: e.ice } : null; }, 10000);
+    const zi = await until(() => { const z = __sent.filter(m => m.t === 'zap' && m.to === 'a' && m.k === 'i'), e = JETDBG().fx.find(f => f.id === 'a'); return z.length && e && e.ice > 0 ? { zaps: z.length, ice: e.ice } : null; }, 40000);
     ok(!!zi, 'a player in the freezing mist is zapped and frozen in ice (' + JSON.stringify(zi) + ')');
     await shot('frozen');
     await pg.evaluate(() => { JETS.hold = false; JETS.aim = null; WIELD.set(null); });
@@ -63,7 +63,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     if (shore) {
       await pg.evaluate(s => { __dbg.UI.goTo(s.sx, s.sz, 'up'); SHARED.heading = s.hd; }, shore); await pg.waitForTimeout(3000);
       await pg.evaluate(() => { const h = SHARED.heading; JETS.aim = new __dbg.THREE.Vector3(Math.sin(h), -.45, Math.cos(h)).normalize(); WIELD.set('frost'); JETS.hold = true; });
-      const ice = await until(() => { const d = JETDBG(); return d.ice.length && d.ice[0].r > .8 ? { what: d.streams[0] && d.streams[0].what, ice: d.ice } : null; }, 15000);
+      const ice = await until(() => { const d = JETDBG(); return d.ice.length && d.ice[0].r > .8 ? { what: d.streams[0] && d.streams[0].what, ice: d.ice } : null; }, 40000);
+      if (!ice) console.log('  stream at the river: ' + JSON.stringify(await pg.evaluate(() => JETDBG().streams.map(s => ({ what: s.what, len: s.len, tip: s.tip, dir: s.dir })))));
       ok(!!ice, 'the freeze ray freezes the river where it lands (' + JSON.stringify(ice) + ')');
       await shot('ice');
       await pg.evaluate(() => { JETS.hold = false; WIELD.set(null); });

@@ -57,6 +57,10 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       return { dyed: mats.some(m => /^dye#2a4a7a$/i.test(m)) && mats.some(m => /^dye#34507e$/i.test(m)), shades: !!(W(c).eye && W(c).eye.shades && W(c).eye.shades.visible), nv: !!(W(e).eye && W(e).eye.nv && W(e).eye.nv.visible), lamp: !!(W(f).lamp && W(f).lamp.visible), armour: !!(W(d).worn && W(d).worn.root.visible && W(d).worn.armour.visible), sit: !!(c && c.S.sit), hang: !!(d && d.S.hang), mine: (() => { FORAGE.give('jeans', 1); EQUIP.wear('jeans'); return EQUIP.code(); })() }; });
     ok(r6.dyed && r6.shades && r6.armour && r6.nv && r6.lamp, 'a player\'s worn clothes and gear show on their copy (dyed jacket and jeans, shades, armour, night-vision goggles, headlamp): ' + JSON.stringify(r6));
     ok(r6.sit && r6.hang && /^~jeans~/.test(r6.mine), 'their sitting and hanging reach their pose, and what you wear goes in your look: ' + JSON.stringify(r6));
+    const dl = await pg.evaluate(() => { const o = [...ONLINE.others.values()].find(q => q.fig && !q.dead), sent = [], s0 = ONLINE.send, on0 = ONLINE.on; o.fig.th.act(); const el = document.getElementById('dollo'), open = !el.hidden, btns = [...el.querySelectorAll('[data-b]')].map(b => b.textContent).join(), slots = el.querySelectorAll('[data-s]').length;
+      ONLINE.send = m => sent.push(m); ONLINE.on = true; const ok = ONLINE.pm(o, 'hi there'); ONLINE.send = s0; ONLINE.on = on0; ONLINE.feed({ t: 'pm', from: o.id, name: 'ROSA', text: 'back at you' }); el.hidden = true;
+      return { id: o.id, open, btns, slots, ok, sent, heard: /FROM ROSA: back at you/.test(document.getElementById('onllog').textContent) }; });
+    ok(dl.open && /^MESSAGE,TRADE/.test(dl.btns) && dl.slots === 6 && dl.ok && dl.sent[0] && dl.sent[0].t === 'pm' && dl.sent[0].to === dl.id && dl.heard, 'double-clicking a player opens their paper doll (MESSAGE, TRADE; their slots); a message goes to them alone and theirs shows in your chat (9 Nov 2026): ' + JSON.stringify(dl));
     ok(!r3.err.length, 'no SYS errors (' + r3.err.join(',') + ')');
   }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));

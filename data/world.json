@@ -65,9 +65,9 @@
    {
     "id": "skateplaza",
     "section": "B",
-    "x": 92,
+    "x": 104,
     "y": 328.5,
-    "w": 40,
+    "w": 64,
     "d": 32,
     "note": "the skate plaza (src/111fda-skateplaza.js) beside the skate park, out in the open: its middle and its size in x and y (map units)"
    }

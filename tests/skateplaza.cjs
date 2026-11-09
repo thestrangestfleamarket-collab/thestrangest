@@ -1,4 +1,4 @@
-// THE SKATE PLAZA (src/111fda-skateplaza.js): node tests/skateplaza.cjs [out folder]. In Section B, beside the skate park: built in the open, on GO TO; its ledges are ground and grind lines; L on a ledge grinds it; after dark its tube lamps light.
+// THE SKATE PLAZA (src/111fda-skateplaza.js): node tests/skateplaza.cjs [out folder]. In Section B, beside the skate park: built in the open, on GO TO; its ledges are ground and grind lines; the pool's rim is ground and a grind line, its water walled off; L on a ledge grinds it; after dark its tube lamps light.
 const {chromium}=require('playwright'); const OUT=process.argv[2];
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:960,height:640}}); const errs={}; let bad=0;
   pg.on('pageerror',e=>{ const k=e.message.slice(0,160); errs[k]=(errs[k]||0)+1; });
@@ -11,7 +11,9 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
   await U(()=>SHARED.LVL==='up',60000);
   let d=await pg.evaluate(()=>{ const D=PLAZA.dbg(), L=D.ledge, [x,z]=D.at((L[0]+L[2])/2,(L[1]+L[3])/2), [fx,fz]=D.at(0,0); return {top:SHARED.groundY(x,z),floor:SHARED.groundY(fx,fz)}; });
   rec('a ledge is ground above the paving',d.top>0&&Math.abs(d.floor)<.05,JSON.stringify(d));
-  rec('after dark its tube lamps light',await U(()=>{ const D=PLAZA.dbg(); return D.lit&&D.lamps===7; },30000));
+  d=await pg.evaluate(()=>{ const P=PLAZA.dbg().pool, T=__dbg.cv().TILE, [rx,rz]=PLAZA.dbg().at(P.u,P.v+P.r+P.w/2), [wx,wz]=PLAZA.dbg().at(P.u,P.v); return {rim:SHARED.groundY(rx,rz),wet:PLAZA.dbg().solid(wx,wz),rails:PLAZA.dbg().poolRails}; });
+  rec('the pool: its rim is ground to stand and grind on, its water walled off',d.rim>0&&d.wet&&d.rails>=20,JSON.stringify(d));
+  rec('after dark its tube lamps light',await U(()=>{ const D=PLAZA.dbg(); return D.lit&&D.lamps===D.lampN; },30000));
   d=await pg.evaluate(()=>{ const T=__dbg.cv().TILE, r=SKATE.rails.find(q=>q.plaza&&q.kind===1), mx=(r.a[0]+r.b[0])/2, mz=(r.a[2]+r.b[2])/2, hd=Math.atan2(r.b[0]-r.a[0],r.b[2]-r.a[2]);
     FORAGE.give('skateboard',1); WIELD.set('skateboard'); RIDE.mount('skateboard'); window.__k=(k,on)=>dispatchEvent(new KeyboardEvent(on?'keydown':'keyup',{key:k,bubbles:true,cancelable:true}));
     window.__sim=n=>{ for(let i=0;i<n;i++)RIDE.steer(1/30,0,0); return TRICKSDBG(); };

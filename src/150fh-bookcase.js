@@ -25,8 +25,8 @@ import {ROOMK} from './150a-bedroom.js';
     let s=11; const rnd=()=>{ s=(s*16807)%2147483647; return (s-1)/2147483646; };
     for(let i=0;i<70;i++){ const x=rnd()*128, w=.6+rnd()*2.2, a=.05+rnd()*.12; g.fillStyle=rnd()<.6?`rgba(40,22,10,${a})`:`rgba(150,100,60,${a})`; g.beginPath(); g.moveTo(x,0); for(let y=0;y<=512;y+=32)g.lineTo(x+Math.sin(y*.012+i)*3*rnd(),y); g.lineTo(x+w,512); g.lineTo(x+w,0); g.fill(); }
     GT=new THREE.CanvasTexture(cv); GT.colorSpace=THREE.SRGBColorSpace; GT.wrapS=GT.wrapT=THREE.RepeatWrapping; GT.anisotropy=4; return GT; };
-  ROOMK.parts.push(c=>{ '@apts'; const {part,mat,rbox,cap,cur,solid,Lx}=c, p=(geo,m,u,h,v,ry=0,par=cur(),cast=true)=>part(geo,m,u,h,v,ry,par,cast);
-    const U0=Lx-BK.D/2-.05, V0=6.45, RY=-Math.PI/2;   // on the living room's east wall, between the fish tank and the window by the TV, facing into the room
+  ROOMK.parts.push(c=>{ '@apts'; const {part,mat,rbox,cap,cur,solid,Lx,Ly}=c, p=(geo,m,u,h,v,ry=0,par=cur(),cast=true)=>part(geo,m,u,h,v,ry,par,cast);
+    const U0=Lx-BK.D/2-.05, V0=Ly*.36, RY=-Math.PI/2;   // on the living room's east wall between its two front windows, facing into the room
     cap('BOOKSHELF',()=>{ const g=new THREE.Group(); g.position.set(U0,0,V0); g.rotation.y=RY; cur().add(g);
       const t=grain(), wood=mat([255,255,255],{map:t}), woodD=mat([150,120,100],{map:t}), back=mat([92,62,40]), brass=mat([196,160,82]);
       const {W,H,D,SD,IN,SH}=BK, Z=D/2;

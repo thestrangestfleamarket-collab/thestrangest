@@ -1,11 +1,10 @@
 // THE START: every system's init, the first ground patches, where you stand, and __started.
 import {SHARED, THREE} from './003-shx.js';
-import {AMB, BINS, CLIP, CLOCK, CULL, DRONE, ED, GHOSTS, GPH, INTERIORS, keys, LAND, LINES, LITE, LOOKS, NEWS, NPCS, PARK, PERFX, PETS, pos, RAG, ROOMS, SFX, SNDED, st, UI, VIT, W3, WEEDS, WHERE} from './003b-systems.js';
+import {AMB, BINS, CLIP, CLOCK, CULL, DRONE, ED, GHOSTS, GPH, INTERIORS, keys, LAND, LINES, LITE, LOOKS, NEWS, NPCS, PARK, PERFX, pos, RAG, ROOMS, SFX, SNDED, st, UI, VIT, W3, WEEDS, WHERE} from './003b-systems.js';
 import {PPU, renderer, resize, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {applyTime, AWAY, CASTLE, cutWalls, DITH, FIX, FREE, lamps, LAY, MAPG, MAPSTAIR, MODS, QS, RING, SECTIONS, SOL, START, STORE, SYS, TILE} from './006-map-pre.js';
 import {BATCH, OBJS} from './008-batch.js';
-import {MSHOP} from './059i-mshops.js';
 import {OUTL} from './072-walker3d.js';
 import {collide, frame} from './075-main-13.js';
 import {BVH} from './137-bvh.js';
@@ -17,9 +16,6 @@ import {NAV} from './153-nav.js';
 // the start ends only when everything in sight is there (owner, 9 Nov 2026: "needs to show progress bar in real time and only load once its really finished"): the rest of the code, Central Park when you start near it, every square of the streets in reach painted, the bar moving through each
 const settle=async()=>{ const step=()=>new Promise(r=>setTimeout(r,0));
   START.bar('DOWNLOADING THE REST OF THE MARKET',.6); await LOAD('later');
-  { const ids=Object.keys(ROOMS.off).filter(id=>ROOMS.off[id].keep&&MSHOP.at[id]);   // every shop's inside built now and kept, its animals in (owner, 9 Nov 2026: "load the interiors of the shops at the start of the game now instead of when you get near. its too laggy")
-    for(const [i,id] of ids.entries()){ START.bar('OPENING THE SHOPS ('+(i+1)+' / '+ids.length+')',.6); try{ await ROOMS.offBuild(id); }catch(e){ console.warn('shop '+id,e); } await step(); }
-    for(let t=0;t<3000&&PETS.loading&&PETS.loading()>0;t++){ START.bar('WAKING THE PETS ('+PETS.loading()+' TO GO)',.61); await new Promise(r=>setTimeout(r,50)); } }
   if(!PARK.ready&&PARK.within(pos.x,pos.z,-20)){ const N0=Math.max(1,PARK.Q.length); let done=false; const p=PARK.load().finally(()=>{ done=true; }); while(!done){ const k=N0-PARK.Q.length; START.bar('BUILDING CENTRAL PARK ('+k+' / '+N0+')',.62+.28*k/N0); await new Promise(r=>setTimeout(r,40)); } await p; }
   const L0=Math.max(1,BATCH.left()); for(let i=0;i<5000;i++){ const n=BATCH.left(); START.bar('PAINTING THE STREETS ('+(L0-n)+' / '+L0+')',.9+.1*(L0-n)/L0); if(!n)break; BATCH.rush(60); await step(); }
   START.bar('READY',1); };

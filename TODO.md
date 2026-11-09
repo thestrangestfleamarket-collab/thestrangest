@@ -55,7 +55,7 @@ One pull request each, in this order; the game stays playable after every one.
 Each line names the chat it came from; check HISTORY before starting, a newer decision wins.
 
 **Checks**
-- [ ] Core's stale lines: 3 expect shop insides to wait (they're built at the start since 9 Nov), 2 garage checks (now empty lots), the 12 vs 14 wear slots, the real-time clock (ignores a test's `?hour`), the overhead view (flaky). Fail on `main` and every pull request · P1 · S · check
+- [ ] Core's stale lines: ~~3 expect shop insides to wait~~ (true again 9 Nov: no inside is built at the start), 2 garage checks (now empty lots), the 12 vs 14 wear slots, the real-time clock (ignores a test's `?hour`), the overhead view (flaky). Fail on `main` and every pull request · P1 · S · check
 - [ ] Bodega register test: clicking dog food doesn't add it to the basket (live game) · P2 · S · find (Avatar screen redesign)
 - [ ] `tests/skills.cjs` waits for archived daily asks and can't pass; `tests/loop.cjs` and `tests/riders.cjs` fail on `main` (the trains never stand at A with doors open) · P2 · S · check
 - [ ] The full GitHub run doesn't finish inside 75 minutes · P2 · S · check

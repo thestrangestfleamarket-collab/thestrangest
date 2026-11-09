@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {INTERIORS, LITE, NPCS, pos, ROOMS, SHAD, UI, WEEDS, WINDOWS} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {AWAY, BF, BLDK, cutWalls, EASTX, FADE, FIX, grab, lamps, LAY, OFFDX, QS, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
+import {AWAY, BF, BLDK, cutWalls, EASTX, FADE, FIX, grab, lamps, LAY, OFFDX, QS, SOL, START, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
 import {BATCH, OBJ, PEEK} from './008-batch.js';
 import {WATER} from './009-down.js';
@@ -185,7 +185,7 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
   STORE.bound={x0:X(PLATE.x0),x1:X(PLATE.x1),z0:Z(PLATE.y0),z1:Z(PLATE.y1)};
   STORE.inStore=(x,z)=>x>STORE.bound.x0&&x<STORE.bound.x1&&z>STORE.bound.z0&&z<STORE.bound.z1;
   STORE.meshes=M; STORE.stats=BATCH.stats; STORE.XYZ={X,Y,Z};
-  { const pend=[]; let done=false;
+  { const pend=[]; let done=false; START.wait('THE STREET',()=>done||QS.get('steps')==='0');
     const lit=()=>{ if(!LITE.recs.length)return; const nl=[]; scene.traverse(o=>{ if(o.isPointLight&&!o.userData.pool)nl.push(o); }); for(const L of nl){ L.userData.grp=null; L.castShadow=false; L.removeFromParent(); LITE.recs.push(L); } };
     const need=()=>[...new Set(['later',...STEPS.map(f=>f.chunk).filter(Boolean)])];
     const step=()=>{ STEPS.shift()(); pend.push(...BATCH.items.splice(0)); lit(); STORE.doorThings(); };

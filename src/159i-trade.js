@@ -1,5 +1,5 @@
 // SWAP, the trade between players: double-click a player who is standing to ask them to trade; each puts things from the pack and cash in, both ACCEPT, and the block's server tells both games to swap them (a gift is a trade with nothing back).
-import {ARCHI, FORAGE, INV, ONLINE, PASSPORT, TEXT} from './003b-systems.js';
+import {ARCHI, DOLL, FORAGE, INV, ONLINE, PASSPORT, TEXT} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {SYS} from './006-map-pre.js';
@@ -18,7 +18,7 @@ const SWAP={no:[id=>ARCHI(id)||id==='passport'||id.startsWith('photo_')||id.star
   const cash=()=>Math.floor(INV.cash||0);
 
   /* ---------- asking and being asked ---------- */
-  PASSPORT.trade=o=>SWAP.ask(o); ONLINE.useUp=o=>(ONLINE.botUse&&ONLINE.botUse(o))||(PASSPORT.show?PASSPORT.show(o):SWAP.ask(o));   // an owner's own bot opens its window (136ca); anyone else's ID card shows (owner, 8 Nov 2026), its ASK TO TRADE asks them to trade
+  PASSPORT.trade=o=>SWAP.ask(o); ONLINE.useUp=o=>(ONLINE.botUse&&ONLINE.botUse(o))||(DOLL.see?DOLL.see(o):SWAP.ask(o));   // an owner's own bot opens its window (136ca), anyone else their paper doll (owner, 9 Nov 2026: "if you click on someone else you just see them"), with TRADE and their ID card
   let pre=null;   // a thing dragged onto them goes in as soon as the trade opens
   SWAP.ask=(o,put)=>{ if(!ONLINE.on)return say('TRADING NEEDS THE BLOCK: YOU ARE NOT ONLINE.','#c8a090'); if(T)return say('YOU ARE ALREADY TRADING.','#c8a090'); pre=put&&put.id?put:null;
     ONLINE.send({t:'tr',op:'ask',to:o.id}); say('YOU ASK '+(o.name||'THEM')+' TO TRADE.'); };

@@ -1,6 +1,6 @@
 // THE BAG: BAG is your inventory (I): a leather backpack that is its own window with no box round it, one size, moved by its top; its mouth holds a list of your things, each with its picture, in the order you drag them to; dragged out of the bag a thing drops at your feet, onto another player it starts a trade, onto a shopkeeper it opens the shop; a pixel picture for every item family (the item model's PICTURE); what you wear (EQUIP) or hold (WIELD) stays in it, tagged. Containers (the item model's HOLDS THINGS: a pouch, a chest) open as bags of their own and carry what is in them. Things dragged out onto the ground (or off the quick bar onto the world) are loose things everyone in the section sees (the Block keeps them, each 60 to 120 minutes), in their own 3D look near you, picked up by a double click; a stack asks how many.
 import {SHARED, THREE} from './003-shx.js';
-import {ARCHI, BAG, CHARS, EQUIP, FORAGE, HUD, INSPECT, INV, ITEMS, LEVELS, ONLINE, pos, ROOMS, SFX, SHOPS, st, TALK, TEXT, UI, VIT, WE, WIELD} from './003b-systems.js';
+import {ARCHI, BAG, CHARS, DOLL, EQUIP, FORAGE, HUD, INSPECT, INV, ITEMS, LEVELS, ONLINE, pos, ROOMS, SFX, SHOPS, st, TALK, TEXT, UI, VIT, WE, WIELD} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {OWNED} from './005-save.js';
@@ -232,6 +232,8 @@ window.BAG=BAG;
         if(TILED){ const tl=tiles(key,contents(key)), O=ORD[key], k=Math.max(0,Math.min(O.length-1,Math.floor((y+tl.c/2)/tl.c)*tl.cols+Math.floor((x+tl.c/2)/tl.c))); O.splice(O.indexOf(id),1); O.splice(k,0,id); saveSet(); }
         else { (POS[key]||(POS[key]={}))[id]=[Math.round(Math.max(0,Math.min(MW-IC,x))),Math.round(Math.max(0,Math.min(MH-IC,y)))]; savePos(); } sel=id; selWin=key; redraw(); return; }
       const q=u.closest('#hqb .qs'); if(q){ HUD.set(+q.dataset.i,id); return; }
+      if(u.closest('#doll')&&DOLL.drop){ if(from!=='bag')return say('TAKE IT OUT OF THE '+name(from)+' FIRST.','#c8a090'); DOLL.drop(id); return redraw(); }
+      if(u.closest('#dollo')&&DOLL.who&&DOLL.who()){ if(from!=='bag')return say('TAKE IT OUT OF THE '+name(from)+' FIRST.','#c8a090'); const o=DOLL.who(); howMany(id,from,e.clientX,e.clientY).then(n=>{ if(n&&window.SWAP)SWAP.ask(o,{id,n}); }); return; }
       if(u.closest('.bagw,#hqb'))return redraw();
       const th=who(e.clientX,e.clientY); if(th){ if(th.player){ if(from!=='bag')return say('TAKE IT OUT OF THE '+name(from)+' FIRST.','#c8a090'); howMany(id,from,e.clientX,e.clientY).then(n=>{ if(n&&window.SWAP)SWAP.ask(th.player,{id,n}); }); return; }
         const N=th.npc; if(TALK.shops.has(N))return TALK.shops.get(N)(); if(CHARS.trade&&CHARS.trade(N)&&window.SHOPS)return SHOPS.open(N); return say((N.name||'THEY')+" DOESN'T TRADE.",'#c8a090'); }

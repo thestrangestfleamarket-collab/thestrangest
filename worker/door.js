@@ -479,6 +479,9 @@ export class Block extends Server {
       this.broadcast(JSON.stringify({ t: "lives", all: { [m.k]: lvBrief(r) } }));
     } else if (m.t === "say") {
       const text = word(m.text, 200), st = sayStyle(m.st); if (text) this.broadcast(JSON.stringify({ t: "say", id: s.id, name: s.name, text, st }), [c.id]);
+    } else if (m.t === "pm" && s.name) {   // a message to one player in this section (the paper doll's MESSAGE)
+      const to = word(m.to, 64), text = word(m.text, 200); if (!to || to === s.id || !text) return;
+      if (!this.hand(to, { t: "pm", from: s.id, name: s.name, text })) c.send(JSON.stringify({ t: "pm", op: "gone", from: to }));
     } else if (m.t === "tr") {
       this.trade(c, s, m);
     } else if ((m.t === "inv" || m.t === "invr") && s.name) {   // an invitation to a player online anywhere (inv), or their answer (invr): handed on by this section's block or another's

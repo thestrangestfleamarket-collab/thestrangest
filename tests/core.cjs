@@ -96,9 +96,10 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       o.fade = FADE.busy;
       const Bd = SHARED.BOUND, c = __dbg.collide(Bd.x1 + 500, Bd.z1 + 500); o.clamp = c[0] <= Bd.x1 + 1e-6 && c[1] <= Bd.z1 + 1e-6;
       o.shared = Object.keys(SHARED).length;
-      o.lazy = [Object.keys(ROOMS.lazy).length, Object.keys(ROOMS.lazy).filter(k => ROOMS.lazy[k].done)];
+      const shop = k => !!(ROOMS.off[k] && ROOMS.off[k].keep && window.MSHOP && MSHOP.at[k]);   // the shops' insides are built at the start (owner, 9 Nov 2026)
+      o.lazy = [Object.keys(ROOMS.lazy).length, Object.keys(ROOMS.lazy).filter(k => ROOMS.lazy[k].done && !shop(k))];
       o.queues = BATCH.queues.length;
-      o.off = Object.keys(ROOMS.off).map(k => [k, !!ROOMS.lazy[k], !!(ROOMS.off[k].box && ROOMS.off[k].spawn && ROOMS.off[k].out && ROOMS.off[k].build), !!ROOMS.off[k].P]);
+      o.off = Object.keys(ROOMS.off).map(k => [k, !!ROOMS.lazy[k], !!(ROOMS.off[k].box && ROOMS.off[k].spawn && ROOMS.off[k].out && ROOMS.off[k].build), !!ROOMS.off[k].P, shop(k)]);
       o.doors = HOMES.doors().map(d => d.id); o.shops = HOMESDBG().filter(r => r[1] && r[1] !== '?').length;
       o.offAPI = ['enter', 'enterAt', 'exit', 'goIn', 'goOut', 'offIn', 'boxAt', 'real', 'unstow', 'stowed'].every(k => typeof ROOMS[k] === 'function');
       o.offGround = (() => { try { const g = { x0: 1e7, x1: 1e7 + 10, z0: 1e7, z1: 1e7 + 10, ground: () => 42 }; ROOMS.grounds.push(g); const v = SHARED.groundY(1e7 + 5, 1e7 + 5), w = SHARED.groundY(1e7 + 50, 1e7 + 5); ROOMS.grounds.splice(ROOMS.grounds.indexOf(g), 1); return v === 42 && w !== 42; } catch (e) { return { ok: false, err: String(e).slice(0, 200) }; } })();
@@ -130,7 +131,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       o.walks = !!(window.WALKS && WALKS.by instanceof Map && typeof WALKS.reg === 'function' && typeof WALKS.pick === 'function' && SYS.P.city.some(s => s.name === '111db-walks') && SYS.P.hi.some(s => s.name === '111db-walks') && WALKS.S && typeof WALKS.S.freeFn === 'function' && WALKS.remote === false);
       o.tenants = !document.querySelector('[data-t="tenants"]') && !!document.getElementById('dten');
       o.gym = (() => { try { const F = window.FORAGE, V = __dbg.VIT; if (!F || !F.stats.work || !window.GYM || !V.bouts) return { ok: false }; const st0 = { ...F.ST }, tr0 = F.stats.trained('sta'); F.ST.sta = 99; const g = F.stats.work('sta', 300), top = F.ST.sta; F.ST.sta = st0.sta; F.stats.gain('sta', 0);
-        return { ok: true, capped: g === 1 && top === 100, reg: !!ROOMS.off.gym, lazy: !GYMDBG().built, bout: V.bouts.length > 0 && GYM.inRing() === false }; } catch (e) { return { ok: false, err: String(e).slice(0, 200) }; } })();
+        return { ok: true, capped: g === 1 && top === 100, reg: !!ROOMS.off.gym, lazy: !GYMDBG().built || !!(ROOMS.off.gym && ROOMS.off.gym.keep && window.MSHOP && MSHOP.at.gym), bout: V.bouts.length > 0 && GYM.inRing() === false }; } catch (e) { return { ok: false, err: String(e).slice(0, 200) }; } })();
       o.equip = (() => { try { const E = window.EQUIP, I = window.ITEMS, V = __dbg.VIT, F = window.FORAGE; if (!E || !I || !V || !F || typeof E.wear !== 'function') return { ok: false };
         const slots = I.prop('armor', 'slot') === 'body' && I.prop('armor', 'grants') === 'guard' && I.prop('cloudcoat', 'slot') === 'body' && I.prop('cloudcoat', 'grants') === 'float';
         const d0 = V.def === 0 && E.float === false; F.give('armor', 1); E.wear('armor'); const guard = V.def > 0 && E.worn === 'armor';
@@ -147,11 +148,17 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
         return { ok: true, street, bound, borrowed, back }; } catch (e) { return { ok: false, err: String(e).slice(0, 200) }; } })();
       o.charp = await (async () => { try { const U = window.__UI; if (!U || typeof U.toggleMenu !== 'function') return { ok: false };
         U.toggleMenu(); const home = document.querySelector('#dhome'), secs = [...document.querySelectorAll('#mnav [data-sec]')].map(b => b.dataset.sec).join();
-        const built = !!(home && home.querySelector('#cpav') && home.querySelector('#cpbtns button')), tabsHidden = /^you,set,pets,pack(,tenants,bots,admin)?$/.test(secs) && U.menuNow()[0] === 'you', open = U.menuOpen === true;
+        const tabsHidden = /^set,pets,pack(,tenants,bots,admin)?$/.test(secs) && U.menuNow()[0] === 'set', open = U.menuOpen === true;   // no PROFILE: the paper doll (9 Nov 2026)
+        U.menuTab('pets', 'pet'); const built = !!(home && home.querySelector('#cpav') && home.querySelector('#cpbtns button'));
         const pick = !home.querySelector('#cpslots') && !home.querySelector('#cphp');   // the paperdoll and the bars left the page (2 Nov 2026)
         U.toggleMenu();
         let log = -1; if (window.CHARP && typeof CHARP.tools === 'function') { const ap = document.createElement('div'); CHARP.tools(ap); log = ap.querySelectorAll('ul li').length; }
-        return { ok: true, open, built, tabsHidden, pick, closed: U.menuOpen === false, log }; } catch (e) { return { ok: false, err: String(e).slice(0, 200) }; } })();
+        const D = window.DOLL, dl = document.getElementById('doll'); let doll = false;
+        if (D && D.me && dl) { D.me(); const slots = [...dl.querySelectorAll('[data-s]')].map(x => x.dataset.s).join(), btns = [...dl.querySelectorAll('[data-b]')].map(x => x.textContent).join();
+          dl.querySelector('[data-s=head]').click(); const gear = !dl.querySelector('.dl-pick').hidden; D.me();
+          D.looks('wear'); const lk = document.getElementById('looks'), noLook = lk.querySelector('.ltabs [data-t=look]').hidden && !lk.querySelector('.ltabs [data-t=wear]').hidden; lk.hidden = true;
+          doll = slots === 'head,eyes,body,legs,back,hand' && /^WEAR,WORDS,SKILLS,JOURNAL,EMOTES,PASSPORT,LOG OUT$/.test(btns) && gear && dl.hidden && noLook; }
+        return { ok: true, open, built, tabsHidden, pick, closed: U.menuOpen === false, log, doll }; } catch (e) { return { ok: false, err: String(e).slice(0, 200) }; } })();
       o.bodies = (() => { try { const B = window.BODIES; if (!B || !B.by || typeof B.set !== 'function') return { ok: false };
         const inGame = !!B.by.knight && !B.by.man && !B.by.woman, none = !B.by.knight.playable;
         const btns = [...document.querySelectorAll('[id^=lbody-]')].map(b => b.id.slice(6)), noRow = btns[0] === 'walker' && btns.every(k => k === 'walker' || k === 'merchant');
@@ -186,8 +193,8 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.fade === 0, 'no fade is left running after the start');
     ok(r.clamp, 'collision keeps you inside the world');
     ok(r.queues >= 2, 'the far painting queues are there (bodega ground, park wall): ' + r.queues);
-    ok(r.lazy[0] >= 3 && !r.lazy[1].length, 'no inside of a building is built at the start (' + r.lazy[0] + ' insides wait; built: ' + r.lazy[1].join(',') + ')');
-    ok(r.offAPI && r.off.length >= 1 && r.off.every(q => q[1] && q[2] && !q[3]), 'insides off the map: each one waits (box, spawn, way out, builder) and none is built at the start (' + r.off.map(q => q[0]).join(',') + ')');
+    ok(r.lazy[0] >= 3 && !r.lazy[1].length, 'no inside of a building but the shops is built at the start (' + r.lazy[0] + ' insides wait; built: ' + r.lazy[1].join(',') + ')');
+    ok(r.offAPI && r.off.length >= 1 && r.off.every(q => q[1] && q[2] && (!q[3] || q[4])), 'insides off the map: each one waits (box, spawn, way out, builder) and none but the shops is built at the start (' + r.off.map(q => q[0]).join(',') + ')');
     ok(r.offGround, 'an off-map place in ROOMS.grounds says the ground inside its box, and only there (SHARED.groundY)');
     ok(r.offSpawn, 'every off-map inside has enterAt/boxAt and its spawn falls inside its own box (GO TO enters it, never teleports onto its footprint)');
     if (r.goto) { r.goto.unnamed = L.places.filter(p => p.name && p.kind !== 'gate' && !r.goto.map.includes(p.name)).map(p => p.name); delete r.goto.map; }
@@ -211,7 +218,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.windows, 'WINDOWS is wired (the bodega\'s street panes registered while its own front stands on Market St; none for its Polyfork front on the Hudson, 7 Nov 2026)');
     ok(r.cinema, 'CINEMA is wired (shared screen: tick, push, admin, now; idle off the street)');
     ok(r.tenants, 'the owner\'s TENANTS page is there and not a settings tab (it opens from ADMIN)');
-    ok(r.gym && r.gym.ok && r.gym.capped && r.gym.reg && r.gym.lazy && r.gym.bout, 'the gym: training stops a stat at 100, its inside is off the map and built only when you go in, the ring is a fight not to the death: ' + JSON.stringify(r.gym));
+    ok(r.gym && r.gym.ok && r.gym.capped && r.gym.reg && r.gym.lazy && r.gym.bout, 'the gym: training stops a stat at 100, its inside is off the map (a shop: built at the start, 9 Nov 2026), the ring is a fight not to the death: ' + JSON.stringify(r.gym));
     ok(r.online, 'ONLINE is wired (other players: feed, at/V for the ragdoll, chat key, a SYS life entry; alone off the website)');
     ok(r.walks, 'WALKS is wired (the folk\'s walks: register, the pick hook, city and hi entries; run here off the website)');
     ok(r.layers.ok && r.layers.hid && r.layers.off && r.layers.back && r.layers.briefs, 'the Walker is a base body in underwear with shirt, pants, shoes and hair as layers on top: ' + JSON.stringify(r.layers));
@@ -220,7 +227,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.wsmooth.on && r.wsmooth.tris > 12000 && r.wsmooth.tris < 60000, 'the Walker is welded by dual contouring (straight hems, no ripples) with a sane triangle count (styles not worn are built when picked): ' + JSON.stringify(r.wsmooth));
     ok(r.equip.ok && r.equip.slots && r.equip.d0 && r.equip.guard && r.equip.float && r.equip.off, 'EQUIP wears body gear and resolves its grant (guard softens blows, float lifts), one off at a time: ' + JSON.stringify(r.equip));
     ok(r.hud && r.hud.vit && r.hud.slots && r.hud.setOk && r.hud.log && r.hud.map && r.hud.haze !== false, 'the HUD: vitals top left with numbers, ten quick slots that take a thing, the log takes the chat and the game\'s lines, the minimap paints from the map\'s plan with no MAP item, HAZE RANGE in GRAPHICS moves the fog\'s end: ' + JSON.stringify(r.hud));
-    ok(r.charp.ok && r.charp.open && r.charp.built && r.charp.tabsHidden && r.charp.pick && r.charp.closed && r.charp.log === 0, 'the menu opens (ESC) at YOU, its sections down the left: avatar + buttons built, an empty slot opens its gear list, opens and closes; TOOLS has no game log (owner, 8 Nov 2026): ' + JSON.stringify(r.charp));
+    ok(r.charp.ok && r.charp.open && r.charp.built && r.charp.tabsHidden && r.charp.pick && r.charp.closed && r.charp.log === 0 && r.charp.doll, 'the menu opens (ESC) at SETTINGS, its sections down the left (no PROFILE); the live avatar + buttons built; TOOLS has no game log (owner, 8 Nov 2026); the paper doll: six slots, its buttons, an empty slot lists its gear, opens and closes, its WEAR has no LOOK (9 Nov 2026): ' + JSON.stringify(r.charp));
     { // RESURRECT in the menu (4 Nov 2026): every player; only while dead; back to life where you stand
       const r0 = await pg.evaluate(async () => { const VIT = window.__dbg.VIT, U = window.__dbg.UI, btn = () => [...document.querySelectorAll('#cpbtns .cp-btn')].find(b => /^RESURRECT/.test(b.textContent)), P0 = window.__dbg.you();
         U.toggleMenu(); const alive = !!btn() && btn().disabled; U.toggleMenu(); VIT.die(); const t0 = performance.now(); while (!VIT.dead && performance.now() - t0 < 15000) await new Promise(r => setTimeout(r, 200));

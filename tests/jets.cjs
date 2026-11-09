@@ -56,19 +56,19 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.evaluate(() => ONLINE.feed({ t: 'jet', id: 'a', k: '' }));
 
     // the river: frozen, stood on
-    await pg.evaluate(() => __dbg.go(40, 10)); await until(() => { for (let x = -300; x <= 300; x += 6) for (let z = -300; z <= 300; z += 6) if (RIVER.over(x, z)) return true; return false; }, 20000);
+    await pg.evaluate(() => __dbg.UI.goTo(40, -130, 'up')); await until(() => { for (let x = -300; x <= 300; x += 6) for (let z = -300; z <= 300; z += 6) if (RIVER.over(x, z)) return true; return false; }, 40000);
     const shore = await pg.evaluate(() => { let best = null; const P = __dbg.you(); for (let x = -300; x <= 300; x += 6) for (let z = -300; z <= 300; z += 6) { if (!RIVER.over(x, z)) continue; const d = Math.hypot(x - P.x, z - P.z); if (!best || d < best.d) best = { x, z, d }; } if (!best) return null;
       const dirs = [[0, 1], [0, -1], [1, 0], [-1, 0]]; for (const [dx, dz] of dirs) { let k = 0; while (k < 60 && RIVER.over(best.x + dx * k, best.z + dz * k)) k += .5; if (k < 60) return { wx: best.x + dx * (k - 3), wz: best.z + dz * (k - 3), sx: best.x + dx * (k + 1.5), sz: best.z + dz * (k + 1.5), hd: Math.atan2(-dx, -dz) }; } return null; });
     ok(!!shore, 'the river is found (' + JSON.stringify(shore) + ')');
     if (shore) {
-      await pg.evaluate(s => { __dbg.go(s.sx, s.sz); SHARED.heading = s.hd; }, shore); await pg.waitForTimeout(3000);
+      await pg.evaluate(s => { __dbg.UI.goTo(s.sx, s.sz, 'up'); SHARED.heading = s.hd; }, shore); await pg.waitForTimeout(3000);
       await pg.evaluate(() => { const h = SHARED.heading; JETS.aim = new __dbg.THREE.Vector3(Math.sin(h), -.45, Math.cos(h)).normalize(); WIELD.set('frost'); JETS.hold = true; });
       const ice = await until(() => { const d = JETDBG(); return d.ice.length && d.ice[0].r > .8 ? { what: d.streams[0] && d.streams[0].what, ice: d.ice } : null; }, 15000);
       ok(!!ice, 'the freeze ray freezes the river where it lands (' + JSON.stringify(ice) + ')');
       await shot('ice');
       await pg.evaluate(() => { JETS.hold = false; WIELD.set(null); });
       if (ice) {
-        const c = ice.ice[0]; await pg.evaluate(c => __dbg.go(c.x, c.z), c); await pg.waitForTimeout(2500);
+        const c = ice.ice[0]; await pg.evaluate(c => __dbg.UI.goTo(c.x, c.z, 'up'), c); await pg.waitForTimeout(2500);
         const on = await pg.evaluate(() => ({ swim: !!(__dbg.ST.water && __dbg.ST.water.in), py: SHARED.py, at: ICE.at(__dbg.you().x, __dbg.you().z) }));
         ok(!on.swim && on.at != null && Math.abs(on.py - on.at) < .3, 'you stand on the ice, not in the water (' + JSON.stringify(on) + ')');
       }

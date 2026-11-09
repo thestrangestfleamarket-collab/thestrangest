@@ -48,7 +48,7 @@ import {SWAP} from './159i-trade.js';
   const worn=s=>s==='hand'?WIELD.on||null:EQUIP.by[s]||null;
   const fits=s=>s==='hand'?(WIELD.LIST||[]).filter(id=>FORAGE.has(id)):Object.keys(INV.items||{}).filter(id=>ITEMS.prop&&ITEMS.prop(id,'slot')===s);
   const put=(s,id)=>{ if(s==='hand')WIELD.set(id); else if(id)EQUIP.wear(id); else EQUIP.off(s); pick=null; draw(); };
-  const BT=[['WEAR',()=>DOLL.looks('wear')],['WORDS',()=>DOLL.looks('words')],['SKILLS',()=>UI.menuTab('pack','skills')],['JOURNAL',()=>UI.menuTab('pack','journal')],['EMOTES',()=>MOTION.toggle&&MOTION.toggle()],['PASSPORT',()=>PASSPORT.open&&PASSPORT.open()],['RESURRECT',()=>{ if(VIT.revive)VIT.revive(); },()=>VIT.dead],['LOG OUT',()=>CHARP.logout&&CHARP.logout()]];
+  const BT=[['EDIT',()=>DOLL.looks('look')],['WEAR',()=>DOLL.looks('wear')],['WORDS',()=>DOLL.looks('words')],['SKILLS',()=>UI.menuTab('pack','skills')],['JOURNAL',()=>UI.menuTab('pack','journal')],['EMOTES',()=>MOTION.toggle&&MOTION.toggle()],['PASSPORT',()=>PASSPORT.open&&PASSPORT.open()],['RESURRECT',()=>{ if(VIT.revive)VIT.revive(); },()=>VIT.dead],['LOG OUT',()=>CHARP.logout&&CHARP.logout()]];
   const hud=k=>{ const i=document.getElementById('v'+k), n=document.getElementById('v'+k+'n'); return [i&&i.style.width||'100%',n?n.textContent:'']; };
   const bars=()=>{ const h=hud('hp'), t=hud('st'); A.q('.dl-bars').innerHTML=bar('HP',h[0],'#7dffa8',h[1])+bar('STA',t[0],'#d8ff7d',t[1]); };
   const draw=()=>{ A.q('.dl-nm').textContent=(LOOKS.L&&LOOKS.L.name||'TENANT').toUpperCase(); A.q('.dl-btns').innerHTML=btns(BT);

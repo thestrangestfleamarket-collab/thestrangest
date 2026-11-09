@@ -148,7 +148,8 @@ const LIB={data:null,max:5,inside:[]}; window.LIB=LIB;   // inside: what else fu
 
   /* ---------- the furniture is polyfork's (data/bookstore.json, baked in metres): chairs, rugs, lamps, the radiator and curtains, the clock; loaded behind the fade on the way in ---------- */
   const PJ=__LAZY__("data/bookstore.json"); let PG=null, GEO=null; const pfGeo=()=>PG||(PG=PJ().then(D=>{ const G={}; for(const k in D){ const g=KIT.decode(D[k]); g.computeBoundingBox(); G[k]=g; } return GEO=G; }));
-  { let wrapped=false; SYS.add('places',()=>{ if(wrapped)return; const o=ROOMS.off&&ROOMS.off.books; if(!o)return; wrapped=true; const n0=o.need; o.need=()=>Promise.all([n0?n0():null,pfGeo(),load().catch(()=>null),typeof LOAD==='function'?LOAD('tables'):null,arts()]); },'144ca-library'); }
+  { let wrapped=false; const wrap=()=>{ if(wrapped)return; const o=ROOMS.off&&ROOMS.off.books; if(!o)return; wrapped=true; const n0=o.need; o.need=()=>Promise.all([n0?n0():null,pfGeo(),load().catch(()=>null),typeof LOAD==='function'?LOAD('tables'):null,arts()]); };
+    wrap(); SYS.add('places',wrap,'144ca-library'); }   // at once: the shops' insides are built during the start (owner, 9 Nov 2026: "put the books back into the bookstore")
   let DUST=null;
   /* ---------- a bookcase: Polyfork's alcove bookcase, empty, its four open shelves holding ten real books each, each a spine painted from the book (its cloth, gold bands, title and author; the real spine where one survives), thick or thin by its length ---------- */
   const BC={W:1,H:2.2,D:.355,Z0:-.15,FZ:.15,SH:[.65,1.04,1.415,1.79],TOPS:[1.01,1.385,1.76,2.15],IN:.94,BW:.03};   // metres: the case (its back at Z0, its shelves' front at FZ), its shelves' tops and the boards over them, the room inside a shelf, the boards

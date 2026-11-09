@@ -42,7 +42,10 @@ import {AVATAR} from './111c-avatar.js';
   // standing still a moment: listening while someone talks to you, bent over when out of breath, hurting when low on health (until it no longer holds, or you move)
   let still=0; const STANCE=[['listen',()=>!!(window.TALK&&TALK.on)],['tired',()=>!!VIT.tired],['hurt',()=>VIT.hp>0&&VIT.hp<.3]];
   const idle=()=>!st.move&&!st.up&&!st.sit&&!st.ride&&!st.climb&&!st.hang&&!(st.water&&st.water.in)&&!(st.target>0)&&!RAG.on&&!VIT.dead&&!SHARED.drive&&!UI.freeCam;
-  SYS.add('life',dt=>{ if(cur||!idle()){ still=0; return; } if((still+=dt)<1.5)return; still=-1e9; const s=STANCE.find(([,f])=>f()); if(s)play(s[0],{loop:true,while:s[1]}).then(ok=>{ if(!ok)still=0; }); else still=0; },'111da-motion');
+  let calm=0; const CALM=['pf_Cross','pf_Phone','pf_Cross'];   // (owner, 9 Nov 2026: "more idle animations for players when standing")
+  SYS.add('life',dt=>{ if(cur||!idle()){ still=0; calm=0; return; } calm+=dt; if((still+=dt)<1.5)return; const s=STANCE.find(([,f])=>f());
+    if(s){ still=-1e9; play(s[0],{loop:true,while:s[1]}).then(ok=>{ if(!ok)still=0; }); return; }
+    if(calm>14+Math.random()*10&&Math.random()<dt){ calm=0; still=-1e9; const until=performance.now()+5000+Math.random()*5000; play(CALM[Math.floor(Math.random()*CALM.length)],{loop:true,while:()=>performance.now()<until}).then(ok=>{ still=0; }); } },'111da-motion');
   // a hard landing (owner, 7 Nov 2026: "add hard landing"): dropped more than about a storey in a moment (off a roof, a fire escape, a ledge), Polyfork's landing where you come down
   let ly=null, lx=0, lz=0, llv=null, hi=null; const LANDH=2.5*TILE;
   SYS.add('life',dt=>{ const y=SHARED.py, skip=ly==null||llv!==SHARED.LVL||Math.hypot(pos.x-lx,pos.z-lz)>2*TILE||FADE.busy||UI.fly||UI.freeCam||st.ride||SHARED.drive||RAG.on||VIT.dead||(st.water&&st.water.in)||st.climb||st.hang||ROOMS.cur;

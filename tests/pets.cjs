@@ -77,6 +77,10 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
     const c0=INV.cash, f0=h.finds||0, rnd=Math.random; Math.random=()=>0; try{ PETS.fetch(); } finally{ Math.random=rnd; } const found=(h.finds||0)-f0;
     h.hu=95; UI.menuTab('pets','mine'); await W(800); const slow=/SLOWED: HUNGRY/.test(document.getElementById('dpets').textContent); UI.toggleMenu(); h.hu=10; return {found,got:INV.cash-c0,slow}; });
   rec('a loyal, fed pet finds things for you; a hungry one is slowed',sts.found===1&&sts.slow,JSON.stringify(sts));
+  // E's choices (9 Nov 2026): beside your pet, E offers it and TELL ... TO GO HOME; the wheel steps between them; GO HOME sends it home at once
+  const gh=await pg.evaluate(async()=>{ const W=ms=>new Promise(r=>setTimeout(r,ms)); for(let i=0;i<80&&!(PETS.mine()&&PETS.mine().g.visible);i++)await W(250); const N=PETS.mine(); if(!N)return {pet:false}; N.st.x=pos.x+Math.sin(SHARED.heading)*.8*PETS.WU; N.st.z=pos.z+Math.cos(SHARED.heading)*.8*PETS.WU; N.st.to=null; await W(400);
+    const L=UI.choices(), names=L.map(c=>c.name), i=names.findIndex(n=>/TO GO HOME/.test(n)); if(i<0)return {names}; UI.pickI=0; const a=UI.pickI; UI.pickStep(1); const stepped=UI.pickI!==a; UI.pickI=i; await W(50); UI.pickI=i; UI.useKey(); for(let k=0;k<40&&!PETS.my().h;k++)await W(100); const home=!!PETS.my().h; await W(1500); const gone=!PETS.mine(); PETS.set({h:false}); return {names,stepped,home,gone}; });
+  rec('E offers your pet and TELL IT TO GO HOME; the wheel steps between them; it goes home at once',gh.stepped&&gh.home&&gh.gone,JSON.stringify(gh));
   if(OUT){ require('fs').mkdirSync(OUT,{recursive:true});   // in the park's open meadow, third person, the pet in front of you, side on
     await pg.evaluate(h=>{ document.getElementById('looks').hidden=true; UI.goTo(h[0],h[1],h[2],h[3]); },home); await wait(4000);
     for(const k of ['dog','cat','parrot','pigeon','crow','rabbit','elephant','giraffe','trex','rdragonling','lion','bee']){

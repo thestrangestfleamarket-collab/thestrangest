@@ -27,17 +27,20 @@ import {SWAP} from './159i-trade.js';
   .doll .dl-slots img{width:30px;height:30px;image-rendering:pixelated;object-fit:contain}
   .doll .dl-slots small,.doll .dl-pack small{font-size:11px!important;color:#3aa866}
   .doll .dl-pick{margin-top:8px;box-shadow:inset 0 0 0 2px #3aa866;padding:6px;display:flex;flex-wrap:wrap;gap:4px}
+  .doll[inert]{filter:brightness(.55) grayscale(.5)}
   .doll .dl-pick[hidden]{display:none} .doll .dl-pick input{flex:1;min-width:0;padding:3px 6px}`;
   document.head.appendChild(css);
   // one doll for both: your own and another player's are the same window, each with its own buttons
   const win=(id,pack)=>{ const el=document.createElement('div'); el.id=id; el.hidden=true; el.className='doll ml'; el.dataset.ml='1';
-    el.innerHTML=`<div class="dl-hd"><span class="dl-nm"></span><i>DRAG TO TURN</i></div>
+    el.innerHTML=`<div class="dl-hd"><span class="dl-nm"></span><i>DRAG TO TURN · WHEEL TO ZOOM</i></div>
     <div class="dl-body"><div class="dl-pic"><canvas width="${W}" height="${H}"></canvas></div>
     <div class="dl-side"><div class="dl-btns"></div><div class="dl-bars"></div>${pack?'<button class="dl-pack" type="button" title="your bag"><span></span><small>BACKPACK</small></button>':''}</div></div>
     <div class="dl-slots"></div><div class="dl-pick" hidden></div><button class="mclose" type="button">CLOSE</button>`;
     document.body.appendChild(el); el.querySelector('.mclose').onclick=()=>{ el.hidden=true; }; el.addEventListener('keydown',e=>e.stopPropagation());
-    const cv=el.querySelector('canvas'), d={el,cv,g:cv.getContext('2d'),spin:0,q:s=>el.querySelector(s)};
-    let dx=null; cv.addEventListener('pointerdown',e=>{ dx=e.clientX; cv.setPointerCapture(e.pointerId); e.stopPropagation(); }); cv.addEventListener('pointermove',e=>{ if(dx==null)return; d.spin+=(e.clientX-dx)*.025; dx=e.clientX; }); const up=()=>{ dx=null; }; cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
+    const cv=el.querySelector('canvas'), d={el,cv,g:cv.getContext('2d'),spin:0,zm:1,off:0,q:s=>el.querySelector(s)};
+    let dx=null, dy=0; const lim=()=>{ const m=.5-.5/d.zm; d.off=Math.max(-m,Math.min(m,d.off)); };   // drag sideways to turn, up and down to look along you once zoomed; the wheel zooms where you point
+    cv.addEventListener('pointerdown',e=>{ dx=e.clientX; dy=e.clientY; cv.setPointerCapture(e.pointerId); e.stopPropagation(); }); cv.addEventListener('pointermove',e=>{ if(dx==null)return; d.spin+=(e.clientX-dx)*.025; d.off+=(e.clientY-dy)/(cv.clientHeight||420)/d.zm; lim(); dx=e.clientX; dy=e.clientY; });
+    cv.addEventListener('wheel',e=>{ e.preventDefault(); e.stopPropagation(); const r=cv.getBoundingClientRect(), fy=.5-(e.clientY-r.top)/(r.height||1), z=Math.max(1,Math.min(4,d.zm*Math.exp(-e.deltaY*.0015))); d.off+=fy/d.zm-fy/z; d.zm=z; lim(); },{passive:false}); const up=()=>{ dx=null; }; cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
     return d; };
   const btns=B=>B.map((b,i)=>b[2]&&!b[2]()?'':`<button type="button" data-b="${i}">${b[0]}</button>`).join('');
   const bar=(n,w,c,t)=>`<div class="dl-bar">${n} <span>${t}</span><i><b style="width:${w};background:${c}"></b></i></div>`;
@@ -74,9 +77,9 @@ import {SWAP} from './159i-trade.js';
   let rt=null, cam=null; const B3=new THREE.Box3(), C=new THREE.Vector3(), S=new THREE.Vector3(), CC=new THREE.Color();
   const see=()=>{ const o=who, f=o&&o.fig; if(!f||!f.th||!f.th.obj){ O.el.hidden=true; who=null; return; }
     if(!rt){ rt=new THREE.WebGLRenderTarget(W,H); rt.texture.colorSpace=THREE.SRGBColorSpace; cam=new THREE.OrthographicCamera(-1,1,1,-1,.01,100); }
-    B3.setFromObject(f.th.obj); B3.getCenter(C); B3.getSize(S); const hh=S.y*1.14, ww=hh*W/H, dp=Math.max(S.x,S.z), d=S.y*3, a=f.g.rotation.y+O.spin;
+    B3.setFromObject(f.th.obj); B3.getCenter(C); B3.getSize(S); const hh=S.y*1.14/O.zm, ww=hh*W/H, dp=Math.max(S.x,S.z), d=S.y*3, a=f.g.rotation.y+O.spin;
     cam.left=-ww/2; cam.right=ww/2; cam.top=hh/2; cam.bottom=-hh/2; cam.near=d-dp*2; cam.far=d+dp*2; cam.updateProjectionMatrix();
-    cam.position.set(C.x+Math.sin(a)*d,C.y,C.z+Math.cos(a)*d); cam.up.set(0,1,0); cam.lookAt(C); cam.updateMatrixWorld(true);
+    C.y+=O.off*S.y*1.14; cam.position.set(C.x+Math.sin(a)*d,C.y,C.z+Math.cos(a)*d); cam.up.set(0,1,0); cam.lookAt(C); cam.updateMatrixWorld(true);
     const bg=scene.background, fog=scene.fog, off=scene.children.filter(c=>c.visible&&c!==f.g&&!c.isLight); scene.background=null; scene.fog=null; for(const c of off)c.visible=false; renderer.getClearColor(CC); const ca=renderer.getClearAlpha();   // only them, in the street's own light
     renderer.setRenderTarget(rt); renderer.setClearColor(0x000000,0); renderer.clear(); renderer.render(scene,cam); renderer.setRenderTarget(null); renderer.setClearColor(CC,ca); scene.background=bg; scene.fog=fog; for(const c of off)c.visible=true;
     const px=new Uint8Array(W*H*4); renderer.readRenderTargetPixels(rt,0,0,W,H,px); PS2.page(px,W,H,O.cv.getBoundingClientRect().height||420,pxS());
@@ -84,16 +87,19 @@ import {SWAP} from './159i-trade.js';
 
   let last=0, lastUi=0;
   SYS.add('win',t=>{ if(A.el.hidden&&O.el.hidden)return; if(t-last<80)return; last=t;
-    if(!A.el.hidden&&CHARP.draw)CHARP.draw(A.cv,A.g,A.spin); if(!O.el.hidden)see();
+    if(!A.el.hidden&&CHARP.draw)CHARP.draw(A.cv,A.g,A.spin,A.zm,A.off); if(!O.el.hidden)see();
     if(t-lastUi>500){ lastUi=t; if(!A.el.hidden){ if(!pick)draw(); else bars(); } if(!O.el.hidden&&!msg)drawO(); } },'162ea-doll');
 
   const front=el=>{ for(const x of [A.el,O.el])x.style.zIndex=x===el?32:31; };
   Object.assign(DOLL,{
-    me:()=>{ if(!A.el.hidden){ A.el.hidden=true; return; } A.spin=0; pick=null; draw(); A.el.hidden=false; front(A.el); },
-    see:o=>{ if(!o||!o.fig)return; if(who!==o)msg=false; who=o; O.spin=0; drawO(); O.el.hidden=false; front(O.el); see(); },
+    me:()=>{ if(!A.el.hidden){ A.el.hidden=true; return; } A.spin=0; A.zm=1; A.off=0; pick=null; draw(); A.el.hidden=false; front(A.el); },
+    see:o=>{ if(!o||!o.fig)return; if(who!==o)msg=false; who=o; O.spin=0; O.zm=1; O.off=0; drawO(); O.el.hidden=false; front(O.el); see(); },
     who:()=>who,
     // the YOU window without its LOOK (the look is set on the first day; ADMIN's AVATAR changes it after): WEAR and WORDS; the barber's chair opens all of it
-    looks:t=>{ LOOKS.only=t==='look'?null:new Set(['wear','words']); LOOKS.open(); LOOKS.tab(t); },
+    // it opens above the doll, which waits (dimmed, nothing to press) until you close it
+    looks:t=>{ LOOKS.only=t==='look'?null:new Set(['wear','words']); LOOKS.open(); LOOKS.tab(t); const P=document.getElementById('looks'); if(!P||P.hidden||P.classList.contains('inmenu'))return;
+      P.style.zIndex=33; A.el.inert=true; const free=()=>{ if(!P.hidden&&!A.el.hidden)return; mo.disconnect(); A.el.inert=false; P.style.zIndex=''; };
+      const mo=new MutationObserver(free); mo.observe(P,{attributes:true,attributeFilter:['hidden']}); mo.observe(A.el,{attributes:true,attributeFilter:['hidden']}); },
     // something dragged out of the bag onto your doll is put on, if it is worn or held
     drop:id=>{ const s=ITEMS.prop&&ITEMS.prop(id,'slot'); if(s&&s!=='hand'&&SL.some(x=>x[0]===s)){ EQUIP.wear(id); draw(); return true; } if((WIELD.LIST||[]).includes(id)){ WIELD.set(id); draw(); return true; } say('THE '+FORAGE.name(id)+' IS NOT SOMETHING YOU WEAR.'); return true; } });
   window.DOLL=DOLL; }

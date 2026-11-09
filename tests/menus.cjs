@@ -23,9 +23,9 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(await texts('#mnav [data-sec]') === 'SETTINGS,PETS,INVENTORY', 'the sections down the left: SETTINGS, PETS, INVENTORY (no PROFILE: the paper doll, 9 Nov 2026; no ADMIN for a player; no MAP, PEOPLE, BBS or GUIDE)');
     await pg.keyboard.press('Escape'); await until(() => !__UI.menuOpen);
     await pg.evaluate(() => DOLL.me()); ok(await until(() => !document.getElementById('doll').hidden), 'double-clicking yourself opens your paper doll');
-    ok(await pg.evaluate(() => [...document.querySelectorAll('#doll [data-b]')].map(x => x.textContent).join() === 'WEAR,WORDS,SKILLS,JOURNAL,EMOTES,PASSPORT,LOG OUT'), 'the doll has WEAR, WORDS, SKILLS, JOURNAL, EMOTES, PASSPORT and LOG OUT');
+    ok(await pg.evaluate(() => [...document.querySelectorAll('#doll [data-b]')].map(x => x.textContent).join() === 'EDIT,WEAR,WORDS,SKILLS,JOURNAL,EMOTES,PASSPORT,LOG OUT'), 'the doll has EDIT, WEAR, WORDS, SKILLS, JOURNAL, EMOTES, PASSPORT and LOG OUT');
     await pg.waitForTimeout(1500); await shot('doll');
-    await pg.evaluate(() => document.querySelector('#doll [data-b="0"]').click()); ok(await until(() => !document.getElementById('looks').hidden && document.querySelector('#looks .ltabs [data-t=look]').hidden), 'its WEAR opens what you wear, with no LOOK');
+    await pg.evaluate(() => document.querySelector('#doll [data-b="1"]').click()); ok(await until(() => !document.getElementById('looks').hidden && document.querySelector('#looks .ltabs [data-t=look]').hidden), 'its WEAR opens what you wear, with no LOOK');
     await shot('wear'); await pg.evaluate(() => { document.getElementById('looks').hidden = true; DOLL.me(); });
     await pg.keyboard.press('Escape'); await until(() => __UI.menuOpen);
     await sec('pack'); ok(await until(() => FORAGE.PACK.open && document.querySelector('#dpack #packp')), 'INVENTORY shows your skills in the menu');

@@ -33,6 +33,7 @@ Look there before changing how something looks or behaves, and add a dated entry
 - `data/*.json`: baked models, clips and textures, put in where the code says `__DATA__("data/x.json")`. `__FILE__("data/radio/x.mp3")` is a file fetched as it is (the car radio's stations, `tools/radio-bake.py`).
   `data/full/` keeps the unsimplified originals and the bakes' own inputs (never shipped; `data/` holds only what the page loads). `tools/`: bake and trim scripts.
   After re-baking a character, run `python3 tools/trim-clips.py` (keeps only clips the code names, at 12 fps).
+  The windows' still pictures of their insides (`data/winpics.json`): `PW_CHROMIUM=/opt/pw-browsers/chromium node tools/winpics.cjs` after a build, then build again; re-run when a shop with glass changes.
 - To add a file, give it a number between its neighbours (e.g. `054a-name.js`, or renumber).
 - **Before reading a file, grep it in `docs/MAP.md`** (made by `node tools/map.cjs`, 9 s, and by the build; not kept in git since 4 Nov 2026,
   so run it first in a fresh checkout): what it needs, what it gives,

@@ -121,6 +121,7 @@ jobs:
           k swim    'src/146ga-swim|src/066-river|src/065a|swim\.cjs'
           k visit   'src/150d|src/146z|src/059a|src/111d|visit\.cjs'
           k aptfixed 'src/150a|src/150d|src/150f|src/150k|aptfixed\.cjs'
+          k firetown 'src/141c|src/059[ad]|src/130a|src/161a|firetown\.cjs'
           k aptradio 'src/150fb|src/150p-cars|src/150a|src/150d|data/radio|aptradio\.cjs'
           k clock   'src/134b|worker/clock|worker/door|clock\.cjs'
           k westst  'src/023|src/05[89]-|src/059[e-h]|westst'
@@ -382,6 +383,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' aptfixed')
         run: node tests/aptfixed.cjs dist/market.html
+      - name: The town from your fire escape (pictured on the landing, not in your rooms)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' firetown')
+        run: node tests/firetown.cjs dist/market.html
       - name: The apartment's radio (in a fresh apartment, its panel, it plays, quieter away, kept in the layout)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' aptradio')

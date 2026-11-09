@@ -41,8 +41,9 @@ import {RIVER} from './066-river.js';
       if(!c){ if(IL.length>=IN){ let o=0; IL.forEach((q,i)=>{ if(q.t>IL[o].t)o=i; }); IL.splice(o,1); } c={x,y,z,r:.25*M,a:rnd()*6.28,t:0}; IL.push(c); }
       c.r=Math.min(2.6*M,c.r+dt*.8*M/Math.max(1,c.r/M)); c.t=0; const k=Math.min(1,dt*.6); c.x+=(x-c.x)*k*.3; c.z+=(z-c.z)*k*.3; },
     melt:(x,z,dt)=>{ for(const c of IL)if(Math.hypot(c.x-x,c.z-z)<c.r+.4*M){ c.r-=dt*.9*M; c.t=Math.max(c.t,60); } },
-    feed:(st,pos)=>{ const y=ICE.at(pos.x,pos.z); if(y==null||SHARED.LVL!=='up'||SHARED.py>y+.6*M)return false; RIG.water(st,{level:null,floor:0}); return true; },
-    floor:g=>{ const y=IL.length&&SHARED.LVL==='up'?ICE.at(pos.x,pos.z):null; return y!=null&&y>g&&SHARED.py<y+.6*M?y:g; }});
+    water:(x,z)=>window.RIVER&&RIVER.level?RIVER.level(x,z):null,   // over open water the ice is the floor; elsewhere only what is not under something higher
+    feed:(st,pos)=>{ const y=ICE.at(pos.x,pos.z); if(y==null||SHARED.LVL!=='up'||ICE.water(pos.x,pos.z)==null&&SHARED.py>y+.6*M)return false; RIG.water(st,{level:null,floor:0}); return true; },
+    floor:g=>{ const y=IL.length&&SHARED.LVL==='up'?ICE.at(pos.x,pos.z):null; return y!=null&&(ICE.water(pos.x,pos.z)!=null||y>g&&SHARED.py<y+.6*M)?y:g; }});
   window.ICE=ICE;
   const iceTick=dt=>{ if(!IL.length)return; for(let i=IL.length-1;i>=0;i--){ const c=IL[i]; c.t+=dt; if(c.t>90)c.r-=dt*.02*M; if(c.r<.15*M)IL.splice(i,1); } iceDraw(); };
 

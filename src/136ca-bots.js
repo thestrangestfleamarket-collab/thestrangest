@@ -14,7 +14,7 @@ import {AVATAR} from './111c-avatar.js';
   const sel=(f,list,v)=>`<select data-f="${f}" style="${IN}">${list.map(([k,n])=>`<option value="${esc(k)}"${k===v?' selected':''}>${esc(n)}</option>`).join('')}</select>`;
   // the menu's BOTS (owner, 9 Nov 2026: "that menu is confusing"; "the tests should have a drop down of all the test involved and you should be able to select which ones"): two tabs, BOTS (each bot's state in plain words, EDIT one at a time) and TESTING (1 what to test, 2 which bots, start, 3 results)
   const CSS='<style>.bots .card{border:1px solid var(--line,#2f8a55);padding:6px 8px;margin:6px 0}.bots .l1{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.bots .nm{color:#ffe08a;flex:1}.bots .st{margin:4px 0 2px;padding:2px 8px;border-left:4px solid}.bots .play{border-color:#5cf08a}.bots .start{border-color:#e8c860}.bots .stuck{border-color:#f0907a}.bots .off{border-color:#4a5a50;opacity:.7}.bots .row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:5px 0}.bots .col label{display:block;margin:2px 0}.bots h4{margin:10px 0 4px;font-size:.85em;letter-spacing:1px;opacity:.85}.bots .pass{color:#7fe89a}.bots .fail{color:#f0907a}.bots .skip{color:#d8c070}.bots .bar{height:8px;border:1px solid #2f8a55;margin:4px 0}.bots .bar i{display:block;height:100%;background:#5cf08a}.bots .tabs{display:flex;gap:6px;margin-bottom:6px}.bots .tabs .btn[aria-pressed=true]{background:#8ff5a9;color:#04140b}.bots .kind{border:1px solid #23603d;margin:4px 0}.bots .kh{display:flex;align-items:center;gap:6px;padding:3px 6px;cursor:pointer;flex-wrap:wrap}.bots .kl{max-height:260px;overflow:auto;padding:2px 8px 6px 26px}.bots .kl label{display:block;font-size:.9em;margin:1px 0}.bots .why{opacity:.75;font-size:.85em}.bots .go{cursor:pointer;text-decoration:underline;margin-left:6px}</style>';
-  const KIND={go:'places',use:'things to use',talk:'people to talk to',buy:'buying',sell:'selling',learn:'lessons',skill:'skills',pet:'pets',arcade:'arcade games',job:'sit, decorate'};
+  const KIND={flow:'play it through (step by step, with screenshots)',go:'places',use:'things to use',talk:'people to talk to',buy:'buying',sell:'selling',learn:'lessons',skill:'skills',pet:'pets',arcade:'arcade games',job:'sit, decorate'};
   const save=(k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }, load_=(k,d)=>{ try{ const v=JSON.parse(localStorage.getItem(k)); return v??d; }catch(e){ return d; } };
   let el=null, D=null, say='', TAB=load_('bots-tab','bots'), EDIT=null, how=false, find='';
   let RES=[]; const RBY=()=>{ const m=new Map(); for(const r of RES)m.set(r.id,r); return m; };   // each test's last result {id,r,why,bot,at}
@@ -56,6 +56,15 @@ Leave that window open; Ctrl+C stops every bot.</div><div class="row"><code>${es
       <div class="row" style="margin-top:10px"><button class="btn" data-a="save">SAVE</button><button class="btn" data-a="back">CANCEL</button><span style="flex:1"></span><button class="btn" data-a="del">DELETE</button></div><div class="why">${esc(b.email||'')}</div></div>`;
   // TESTING: 1 what (each kind opens to its tests), 2 which bots, start, 3 results
   const mark=r=>!r?'<span class="why">·</span>':r.r==='pass'?'<span class="pass">✓</span>':r.r==='fail'?'<span class="fail">✗</span>':'<span class="skip">–</span>';
+  const OPT=Object.assign({shots:1,report:1},load_('bots-opt',{})), FOPEN=new Set(), SHOT={};
+  const FL=()=>(TESTS.FLOWS||[]);
+  // a play-through's steps: what it did, what the game said, its spot code and its screenshots
+  const steps=r=>`<div class="kl" style="max-height:none">${r.x.steps.map((st,i)=>`<div style="margin:6px 0"><span class="${st.r}">${st.r==='pass'?'✓':st.r==='fail'?'✗':'–'} ${i+1}. ${esc(st.n)}</span> <span class="why">— ${esc(st.why)}</span>${st.said&&st.said.length?`<div class="why">the game said: "${esc(st.said[st.said.length-1])}"</div>`:''}
+      <div class="row">${(st.shots||[]).map(sh=>sh.k?`<img data-shot="${esc(sh.k)}" title="${esc(sh.a)} (click to enlarge)" style="width:110px;height:62px;object-fit:cover;border:1px solid #2f8a55;cursor:zoom-in;background:#0c2a1a">`:'').join('')}${st.spot?`<button class="btn" data-spot="${esc(st.spot)}" title="copy this exact spot and view">#</button>`:''}</div></div>`).join('')}</div>`;
+  const flows=mine=>mine.filter(r=>r.x&&r.x.steps).map(r=>{ const n=r.x.steps.length, op=FOPEN.has(r.id); return `<div class="kind"><div class="kh" data-fo="${esc(r.id)}"><span>${op?'▾':'▸'}</span><span class="${r.r}">${r.r==='pass'?'✓':r.r==='fail'?'✗':'–'}</span><b>${esc(tname(r.id))}</b><span class="why">${n} step${n===1?'':'s'} · ${esc(r.why)}</span></div>${op?steps(r):''}</div>`; }).join('');
+  const quick=()=>`<div class="card"><b>QUICK TEST</b> <span class="why">a new bot plays one thing through, step by step</span>
+      <div class="row"><select id="qflow" style="${IN};max-width:100%">${FL().map(([id,n])=>`<option value="${esc(id)}"${OPT.flow===id?' selected':''}>${esc(n)}</option>`).join('')}</select><button class="btn" id="qnew">▶ RUN ON A NEW BOT</button></div></div>
+    <div class="row"><label><input type="checkbox" id="oshot"${OPT.shots?' checked':''}> screenshots of each step (4 angles)</label><label><input type="checkbox" id="orep"${OPT.report?' checked':''}> failures to the bug queue, with a screenshot</label></div>`;
   const testTab=()=>{ const L=list(), R=RBY(), cats=TESTS.cats||[], q=find.trim().toLowerCase(), hit=t=>!q||t.name.toLowerCase().includes(q);
     const kinds=cats.map(([k])=>{ const T=L.filter(t=>t.cat===k), V=T.filter(hit), np=T.filter(t=>PICK.has(t.id)).length, pf=T.filter(t=>R.get(t.id)&&R.get(t.id).r==='fail').length, pp=T.filter(t=>R.get(t.id)&&R.get(t.id).r==='pass').length, op=OPENK.has(k)||!!q;
       if(q&&!V.length)return '';
@@ -65,13 +74,13 @@ Leave that window open; Ctrl+C stops every bot.</div><div class="row"><code>${es
     const runs=B.filter(b=>b.on&&b.job==='tests'), t=runs.reduce((a,b)=>{ const x=b.status&&b.status.tests; if(x){ a.d+=x.pass+x.fail+x.skip; a.l+=x.left; } return a; },{d:0,l:0});
     const mine=RES.filter(r=>r.at>=RUNAT).sort((a,c)=>({fail:0,skip:1,pass:2}[a.r]-{fail:0,skip:1,pass:2}[c.r])), n=k=>mine.filter(r=>r.r===k).length, all=Math.max(t.d+t.l,mine.length);
     const fails=mine.filter(r=>r.r!=='pass');
-    return `<h4>1. WHAT TO TEST</h4><div class="row"><input id="tfind" type="text" placeholder="find a test (e.g. skate, fishing rod, cat)" value="${esc(find)}" style="flex:1;min-width:200px;${IN}"><button class="btn" id="tnone">PICK NONE</button></div>${L.length?kinds:'<div class="why">making the list…</div>'}
+    return `${quick()}<h4>1. WHAT TO TEST</h4><div class="row"><input id="tfind" type="text" placeholder="find a test (e.g. skate, fishing rod, cat)" value="${esc(find)}" style="flex:1;min-width:200px;${IN}"><button class="btn" id="tnone">PICK NONE</button></div>${L.length?kinds:'<div class="why">making the list…</div>'}
       <div class="why">${PICK.size} test${PICK.size===1?'':'s'} picked${PICK.size&&nb?' · about '+Math.max(1,Math.round(PICK.size*1.5/nb))+' minute'+(Math.round(PICK.size*1.5/nb)>1?'s':'')+' with '+nb+' bot'+(nb===1?'':'s'):''}</div>
       <h4>2. WHICH BOTS</h4>${B.length?`<div class="row">${B.map(b=>`<label><input type="checkbox" data-u="${esc(b.id)}"${use.has(b.id)?' checked':''}> ${esc(b.name)} <span class="why">(${state(b)[1].slice(2).toLowerCase()})</span></label>`).join('')}</div><div class="why">The picked tests are split between them; START turns them on.</div>`:'<div class="why">No bots yet: make one in BOTS.</div>'}
       <div class="row" style="margin-top:8px"><button class="btn" id="tgo"${PICK.size&&nb?'':' disabled'}>▶ START TESTING</button>${runs.length?'<button class="btn" id="tstop">STOP</button>':''}</div>
       <h4>3. RESULTS${RUNAT?' <span class="why">since '+new Date(RUNAT).toLocaleTimeString()+'</span>':''}</h4>
       ${all?`<div class="bar"><i style="width:${Math.round((mine.length/all)*100)}%"></i></div>`:''}<div class="why">${mine.length} of ${all||PICK.size} done · <span class="pass">${n('pass')} passed</span> · <span class="fail">${n('fail')} failed</span> · <span class="skip">${n('skip')} skipped</span>${runs.length?' · '+runs.length+' bot'+(runs.length===1?'':'s')+' testing':''}</div>
-      ${fails.map(r=>`<div class="${r.r}">${r.r==='fail'?'✗':'–'} ${esc(tname(r.id))} <span class="why">— ${esc(r.why)}</span>${goWhere(r.id)?`<span class="go" data-go="${esc(r.id)}">GO THERE</span>`:''}</div>`).join('')}
+      ${flows(mine)}${fails.filter(r=>!(r.x&&r.x.steps)).map(r=>`<div class="${r.r}">${r.r==='fail'?'✗':'–'} ${esc(tname(r.id))} <span class="why">— ${esc(r.why)}</span>${goWhere(r.id)?`<span class="go" data-go="${esc(r.id)}">GO THERE</span>`:''}</div>`).join('')}
       ${n('pass')?`<div class="why" style="cursor:pointer" id="tpass">${how==='pass'?mine.filter(r=>r.r==='pass').map(r=>'✓ '+esc(tname(r.id))+' — '+esc(r.why)).join('<br>'):'+ '+n('pass')+' passed (show)'}</div>`:''}
       ${fails.length?`<div class="row" style="margin-top:6px"><button class="btn" id="tre">TEST THE FAILED AGAIN</button><button class="btn" id="tbug">SEND FAILED TO BUG QUEUE</button></div>`:''}${RES.length?'<div class="row"><button class="btn" id="tclr">CLEAR ALL RESULTS</button></div>':''}`; };
   // where a test happens, to see it for yourself
@@ -81,7 +90,7 @@ Leave that window open; Ctrl+C stops every bot.</div><div class="row"><code>${es
   const keepPick=()=>save('bots-pick',[...PICK]);
   const start=async btn=>{ const B=D.bots.filter(b=>(USE||new Set(D.bots.filter(x=>x.on&&state(x)[0]!=='stuck').map(x=>x.id))).has(b.id)), ids=list().filter(t=>PICK.has(t.id)).map(t=>t.id); if(!B.length||!ids.length)return;
     btn.disabled=true; RUNAT=Date.now(); save('bots-runat',RUNAT); const share=B.map(()=>[]); ids.forEach((id,i)=>share[i%B.length].push(id));
-    for(let i=0;i<B.length;i++)await api({do:'botset',id:B[i].id,set:{on:true,job:'tests',tests:share[i].slice(0,800),run:RUNAT}});
+    for(let i=0;i<B.length;i++)await api({do:'botset',id:B[i].id,set:{on:true,job:'tests',tests:share[i].slice(0,800),run:RUNAT,shots:!!OPT.shots,report:!!OPT.report}});
     say=ids.length+' tests started on '+B.length+' bot'+(B.length===1?'':'s'); await load(); };
   const fileFails=async btn=>{ if(!BUGS.file){ say='the bug queue is only on the website'; return draw(); } btn.disabled=true; let n=0;
     for(const r of RES.filter(r=>r.r==='fail'&&r.at>=RUNAT)){ const k=r.id+'|'+r.at; if(FILED.has(k))continue; const b=D.bots.find(x=>x.id===r.bot);
@@ -90,11 +99,13 @@ Leave that window open; Ctrl+C stops every bot.</div><div class="row"><code>${es
   const draw=()=>{ '@later'; if(!el)return; if(!D){ el.innerHTML='<div class="why">...</div>'; return; } if(D.why){ el.innerHTML='<div>'+esc(D.why)+'</div>'; return; }
     const b=EDIT&&D.bots.find(x=>x.id===EDIT); if(EDIT&&!b)EDIT=null;
     el.innerHTML=`${CSS}<div class="bots"><div class="tabs"><button class="btn" data-tab="bots" aria-pressed="${TAB==='bots'}">BOTS</button><button class="btn" data-tab="test" aria-pressed="${TAB==='test'}">TESTING</button></div>${TAB==='test'?testTab():b?editView(b):botsTab()}</div>`;
-    wire(el,()=>draw()); el.dataset.dirty=''; };
+    wire(el,()=>draw()); el.dataset.dirty=''; shots(el); };
+  const shots=async root=>{ for(const im of root.querySelectorAll('img[data-shot]')){ const k=im.dataset.shot; if(!SHOT[k]){ const r=await api({do:'shot',k}); if(r&&r.jpg)SHOT[k]=r.jpg; else continue; } if(im.isConnected)im.src=SHOT[k]; } };
   const wire=(root,redraw)=>{ const $=s=>root.querySelector(s);
     for(const f of root.querySelectorAll('input,select'))for(const ev of ['keydown','keyup'])f.addEventListener(ev,e=>e.stopPropagation());
     root.oninput=e=>{ if(e.target.id==='tfind'){ find=e.target.value; const c=e.target.selectionStart; redraw(); const t=root.querySelector('#tfind'); if(t){ t.focus(); t.setSelectionRange(c,c); } return; } if(e.target.matches('[data-f]'))root.dataset.dirty='1'; };
     root.onchange=e=>{ const x=e.target;
+      if(x.id==='oshot'||x.id==='orep'){ OPT[x.id==='oshot'?'shots':'report']=x.checked?1:0; save('bots-opt',OPT); return; }
       if(x.dataset.t){ if(x.checked)PICK.add(x.dataset.t); else PICK.delete(x.dataset.t); keepPick(); redraw(); return; }
       if(x.dataset.kall){ for(const t of list())if(t.cat===x.dataset.kall){ if(x.checked)PICK.add(t.id); else PICK.delete(t.id); } keepPick(); redraw(); return; }
       if(x.dataset.u){ USE=USE||new Set(D.bots.filter(b=>b.on&&state(b)[0]!=='stuck').map(b=>b.id)); if(x.checked)USE.add(x.dataset.u); else USE.delete(x.dataset.u); redraw(); return; }
@@ -104,6 +115,11 @@ Leave that window open; Ctrl+C stops every bot.</div><div class="row"><code>${es
       const kh=t.closest('[data-k]'); if(kh&&!t.matches('input')){ const k=kh.dataset.k; if(OPENK.has(k))OPENK.delete(k); else OPENK.add(k); save('bots-openk',[...OPENK]); redraw(); return; }
       const qb=t.closest('[data-q]'); if(qb){ const [k,w]=qb.dataset.q.split(':'), R=RBY(), q=find.trim().toLowerCase(); for(const x of list())if(x.cat===k&&(!q||x.name.toLowerCase().includes(q))){ const r=R.get(x.id), on=w==='all'||(w==='fail'&&r&&r.r==='fail')||(w==='new'&&!r); if(w==='none'||!on)PICK.delete(x.id); else PICK.add(x.id); } keepPick(); redraw(); return; }   // while searching, only the tests shown
       const g=t.closest('[data-go]'); if(g){ const w=goWhere(g.dataset.go); if(w)UI.goName(w); return; }
+      const fo=t.closest('[data-fo]'); if(fo){ const k=fo.dataset.fo; if(FOPEN.has(k))FOPEN.delete(k); else FOPEN.add(k); redraw(); return; }
+      if(t.dataset.spot){ try{ navigator.clipboard.writeText(t.dataset.spot); say='spot copied: paste it to Claude, or use it to go there'; }catch(err){ prompt('THE SPOT',t.dataset.spot); } redraw(); return; }
+      if(t.dataset.shot&&t.src){ const w=window.open(''); if(w)w.document.write('<img src="'+t.src+'" style="max-width:100%">'); return; }
+      if(t.id==='qnew'){ const id=root.querySelector('#qflow').value, f=FL().find(x=>x[0]===id); OPT.flow=id; save('bots-opt',OPT); RUNAT=Date.now(); save('bots-runat',RUNAT);
+        act(t,{do:'botnew',set:{at:[pos.x,pos.z],on:1,job:'tests',tests:['flow:'+id],run:RUNAT,shots:!!OPT.shots,report:!!OPT.report,name:('TEST '+id).toUpperCase().slice(0,24)}},()=>'a new bot is starting: '+(f?f[1]:id)+' (its game takes 1 to 3 minutes to load)'); return; }
       if(t.id==='tnone'){ PICK.clear(); keepPick(); redraw(); return; }
       if(t.id==='tgo'){ start(t); return; }
       if(t.id==='tstop'){ t.disabled=true; (async()=>{ for(const b of D.bots.filter(b=>b.on&&b.job==='tests'))await api({do:'botset',id:b.id,set:{job:'stand'}}); say='testing stopped: they stand still'; await load(); })(); return; }

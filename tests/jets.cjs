@@ -56,6 +56,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.evaluate(() => ONLINE.feed({ t: 'jet', id: 'a', k: '' }));
 
     // the river: frozen, stood on
+    await pg.evaluate(() => __dbg.go(40, 10)); await until(() => { for (let x = -300; x <= 300; x += 6) for (let z = -300; z <= 300; z += 6) if (RIVER.over(x, z)) return true; return false; }, 20000);
     const shore = await pg.evaluate(() => { let best = null; const P = __dbg.you(); for (let x = -300; x <= 300; x += 6) for (let z = -300; z <= 300; z += 6) { if (!RIVER.over(x, z)) continue; const d = Math.hypot(x - P.x, z - P.z); if (!best || d < best.d) best = { x, z, d }; } if (!best) return null;
       const dirs = [[0, 1], [0, -1], [1, 0], [-1, 0]]; for (const [dx, dz] of dirs) { let k = 0; while (k < 60 && RIVER.over(best.x + dx * k, best.z + dz * k)) k += .5; if (k < 60) return { wx: best.x + dx * (k - 3), wz: best.z + dz * (k - 3), sx: best.x + dx * (k + 1.5), sz: best.z + dz * (k + 1.5), hd: Math.atan2(-dx, -dz) }; } return null; });
     ok(!!shore, 'the river is found (' + JSON.stringify(shore) + ')');

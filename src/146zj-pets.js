@@ -118,7 +118,8 @@ window.PETS=PETS;
     PG.add(N.g); N.g.rotation.order='YXZ'; N.mixer=mixer; N.pet=P; N.petKind=K;
     // pet it: a word and a sit, now and then
     const hb=new THREE.Mesh(new THREE.BoxGeometry(long*WU,Math.max(.3,metres)*WU,long*WU),new THREE.MeshBasicMaterial({visible:false})); hb.position.y=metres*WU/2; N.g.add(hb);
-    N.th={name:o.mine?'PET '+(P.n||'YOUR '+K.name).toUpperCase():(o.owner?o.owner+"'S ":'')+(P.n||K.name).toUpperCase(),obj:hb,reach:1.6*TILE,near:2.6*TILE,tall:Math.max(.4,metres)*WU,act:()=>{ const r=o.rec||o.mine&&!o.preview&&out(); if(r&&now()-(r.pet||0)>5*60e3){ r.pet=now(); r.lo=cl(r.lo+2); keep(); } SAY(o.mine?(P.n||'YOUR '+K.name).toUpperCase()+(r&&r.hu>60?' NUZZLES YOUR POCKETS. IT IS HUNGRY.':' IS HAPPY TO SEE YOU.'):'IT SNIFFS YOUR HAND.','#9fe07f'); }};
+    N.th={name:o.mine?'PET '+(P.n||'YOUR '+K.name).toUpperCase():(o.owner?o.owner+"'S ":'')+(P.n||K.name).toUpperCase(),obj:hb,reach:1.6*TILE,near:2.6*TILE,tall:Math.max(.4,metres)*WU,act:()=>{ const r=o.rec||o.mine&&!o.preview&&out(); if(r&&now()-(r.pet||0)>5*60e3){ r.pet=now(); r.lo=cl(r.lo+2); keep(); } SAY(o.mine?(P.n||'YOUR '+K.name).toUpperCase()+(r&&r.hu>60?' NUZZLES YOUR POCKETS. IT IS HUNGRY.':' IS HAPPY TO SEE YOU.'):'IT SNIFFS YOUR HAND.','#9fe07f'); },
+      acts:o.mine&&!o.preview&&!o.stay?[{name:'TELL '+(P.n||'YOUR '+K.name).toUpperCase()+' TO GO HOME',act:()=>PETS.goHome&&PETS.goHome()}]:null};
     UI.thing(N.th); return N; };
   const drop=N=>{ if(!N)return; const i=NPCS.indexOf(N); if(i>=0)NPCS.splice(i,1); N.g.removeFromParent(); if(N.th){ const j=UI.things.indexOf(N.th); if(j>=0)UI.things.splice(j,1); } N.me.geometry.dispose(); N.mixer&&N.mixer.stopAllAction(); };
   /* ---------- yours ---------- */
@@ -190,6 +191,7 @@ window.PETS=PETS;
     $('#lptn').onchange=()=>set({n:$('#lptn').value.trim().slice(0,18)});
     $('#lptz').oninput=()=>{ $('#lptzv').textContent=' '+$('#lptz').value+'%'; }; $('#lptz').onchange=()=>set({z:+$('#lptz').value});
     $('#lpth0').onclick=()=>set({h:false}); $('#lpth1').onclick=()=>set({h:true});
+    PETS.goHome=()=>{ const P=MY; if(!P||inShop)return; set({h:true}); SAY((P.n||'YOUR PET').toUpperCase()+' GOES HOME TO YOUR APARTMENT.','#9fe07f'); };   // at once (owner, 9 Nov 2026: "tell your pet to go home")
     $('#lptc').onchange=e=>{ const P=cur(), i=+e.target.dataset.i; if(!P||!(i>=0))return; const c=P.c.slice(); c[i]=e.target.value; set({c}); };
     $('#lptp').onclick=e=>{ const b=e.target.closest('button'); const P=cur(); if(!b||!P)return; const K=I.by[P.k]; if(b.dataset.p==='')return set({c:K.zones.map(z=>z[1])}); const pr=K.presets[b.dataset.p]; if(pr)set({c:K.zones.map(([z,d],i)=>pr[z]||P.c[i]||d)}); };
     $('#lpts').onchange=e=>{ const P=cur(), i=+e.target.dataset.i; if(!P||!(i>=0))return; const s=P.s.slice(); s[i]=+e.target.value; set({s}); };

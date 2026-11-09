@@ -30,7 +30,7 @@ renderer.domElement.addEventListener('pointerdown',e=>{ if(e.button===2||e.butto
 renderer.domElement.addEventListener('pointermove',e=>{ if(!drag)return; UI.orbit(e.clientX-drag.x,e.clientY-drag.y); drag={x:e.clientX,y:e.clientY}; });
 renderer.domElement.addEventListener('pointerup',()=>drag=null);
 UI.holdUp=new THREE.Vector3();
-renderer.domElement.addEventListener('wheel',e=>{ e.preventDefault(); if(UI.hold&&UI.hold.look&&!UI.persp){ const c=SHARED.cam; UI.hold.dy=(UI.hold.dy||0)-e.deltaY*(c.top-c.bottom)/(c.zoom||1)/1500; return; } UI.zoomLv(e); },{passive:false});
+renderer.domElement.addEventListener('wheel',e=>{ e.preventDefault(); if(!UI.menuOpen&&UI.pickStep&&UI.pickStep(e.deltaY))return; if(UI.hold&&UI.hold.look&&!UI.persp){ const c=SHARED.cam; UI.hold.dy=(UI.hold.dy||0)-e.deltaY*(c.top-c.bottom)/(c.zoom||1)/1500; return; } UI.zoomLv(e); },{passive:false});
 addEventListener('keydown',e=>{ const k=UI.key(e); if(!k)return; if(TRICKS.takes&&TRICKS.takes(k))return; if(FEEL.key(k,e))return; const FT=FEEL.take(); if(k===' '&&!e.repeat&&FT)FEEL.press(); keys.add(k); if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();
   if(k==='0'){ SHARED.yawTo=VIEW0.yaw; SHARED.pitchTo=VIEW0.pitch; SHARED.ppuTo=VIEW0.ppu; UI.home(); } if(k==='1'&&!e.repeat&&!ED.on&&window.WIELD)WIELD.next();
   if(k==='shift'){ if(!e.repeat)SHARED.shiftAlone=true; } else if(!WALKK.has(k))SHARED.shiftAlone=false; if(st.water&&st.water.in&&(k===' '||k==='j')){ e.preventDefault(); } else if(MOVEK[k]&&!e.repeat&&!SHARED.drive&&!RAG.on&&!VIT.dead&&!(VIT.out>0)&&!(SHARED.frozen>0)&&!UI.freeCam&&!ED.on&&!UI.fly&&!(FT&&k===' ')){ RIG.act(st,MOVEK[k]); SYS.run('act',MOVEK[k],1); } });

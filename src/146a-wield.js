@@ -28,7 +28,7 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
   const J_=(J,n)=>J[n+WIELD.hand];
   // a slash across: round the world's up, or round the camera's forward when the arm is raised or dropped (so a lifted arm still cuts across the screen)
   const slash=(v,S,dt)=>{ S.t+=dt; const u=Math.min(1,S.t/S.T), e=u*u*(3-2*u); sax.copy(UP).addScaledVector(v,-v.y); if(sax.lengthSq()<.1)sax.copy(cz); sax.normalize(); v.applyAxisAngle(sax,S.s*(1.5-3*e)*(S.h?1.4:1)).setY(v.y-(S.h?.45:.25)*Math.sin(Math.PI*u)).normalize(); return S.t>=S.T; };
-  let phOk=false, sw=null, side=1, spd=0, cutT=0, combo=0, lastSw=0;
+  let phOk=false, sw=null, side=1, spd=0, cutT=0, combo=0, lastSw=0, heavy=false;
   // the arm swings only in front of the body (owner, 2 Nov 2026): an aim going behind is held at the body's sides; the keys turn the body, never the swing
   const front=v=>{ const fx=Math.sin(SHARED.heading), fz=Math.cos(SHARED.heading), k=v.x*fx+v.z*fz; if(k<.05)v.x+=fx*(.05-k),v.z+=fz*(.05-k); return v.normalize(); };
   renderer.domElement.addEventListener('pointermove',e=>{ ms.x=e.clientX; ms.y=e.clientY; });
@@ -36,7 +36,7 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
     const m=MESH[id]||(MESH[id]=mk(id)); if(!m.parent){ m.matrixAutoUpdate=false; m.userData.anyRoom=1; scene.add(m); } /* what you hold comes into every room with you: the room cull leaves it be */ WIELD.on=id; SHARED.target=null; if(/^sword/.test(id))MOTION.play('draw'); say('YOU HOLD THE '+NM[id]+'. '+(KIND[id]&&KIND[id].hint||'THE MOUSE SWINGS IT ROUND YOU, A CLICK SLASHES.'),'#e8e2cc'); FORAGE.draw(); };
   WIELD.next=()=>{ const own=LIST.filter(k=>FORAGE.has(k)), i=own.indexOf(WIELD.on); WIELD.set(i+1<own.length?own[i+1]:null); if(!WIELD.on)say('YOUR HANDS ARE FREE.','#e8e2cc'); };
   const WIELD_strike0=()=>{ '@later'; if(!WIELD.on||WIELD.block||sw&&sw.t<.18||VIT.dead||VIT.out>0||RAG.on)return false; if(KIND[WIELD.on]&&KIND[WIELD.on].use){ if(!KIND[WIELD.on].ekey)KIND[WIELD.on].use(); return false; }   // what you ride is used with E, not a click (owner, 8 Nov 2026) let heavy=false;
-    if(WIELD.sword){ const now=performance.now(); combo=now-lastSw<900?combo+1:0; lastSw=now; heavy=combo>=2; if(heavy)combo=-1; const winded=VIT.sta<.08;
+    heavy=false; if(WIELD.sword){ const now=performance.now(); combo=now-lastSw<900?combo+1:0; lastSw=now; heavy=combo>=2; if(heavy)combo=-1; const winded=VIT.sta<.08;
       VIT.spend(heavy?.12:.06); VIT.inFight(5); WIELD.swing={heavy,winded,t:now,ax:aim0.x,az:aim0.z}; sw={t:0,T:winded?.55:heavy?.42:.3,s:side,h:heavy}; ONLINE.send({t:'swing',s:side,h:heavy?1:0}); }
     else sw={t:0,T:.3,s:side}; MOTION.play(heavy?'swingHeavy':side>0?'swingA':'swingB'); side=-side; SFX.play('step',{vol:.3,pitch:heavy?1.5:2.2}); return true; };
   WIELD.strike=(...a)=>{ const r=WIELD_strike0(...a); if(r)SYS.run('strike'); return r; };

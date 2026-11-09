@@ -11,6 +11,9 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ok(d0.cars.length === 6 && d0.cars.every(c => c.shown && c.z < -60 && c.z > -72), 'six cars parked along Market St\'s kerb: ' + JSON.stringify(d0.cars.map(c => [c.id, c.model, c.x, c.z])));
   const past = await pg.evaluate(async () => { CARS.getIn('c1'); await new Promise(r => setTimeout(r, 800)); return CARS.driving; });
   ok(!past, 'a car parked past the map\'s edge is only seen: no one gets in (owner, 8 Nov 2026)');
+  const cab = await pg.evaluate(async () => { const C = [...CARS.cars.values()].find(q => q.id !== 'c1' && q.mesh && q.mesh.getObjectByName('INSIDE')), I = C.mesh.getObjectByName('INSIDE'), w = { x: C.x, z: C.z }, sl = () => new Promise(r => setTimeout(r, 900));
+    const far = { x: STORE.pos.x, z: STORE.pos.z }; STORE.pos.set(w.x + 60, 0, w.z); await sl(); const away = I.visible; STORE.pos.set(w.x + 3, 0, w.z); await sl(); const near = I.visible; STORE.pos.set(far.x, 0, far.z); return { away, near }; });
+  ok(cab.away === false && cab.near === true, "a car's inside is drawn only near it (owner, 9 Nov 2026): " + JSON.stringify(cab));
   await pg.evaluate(() => { const C = CARS.cars.get('c1'); C.x = SHARED.BOD.XS(78.2); C.z = SHARED.BOD.ZS(-67); });   // the rest drives one brought back onto Market St
   const v0 = await pg.evaluate(() => __dbg.UI.view);
   await pg.evaluate(() => CARS.getIn('c1')); await pg.waitForTimeout(1500);

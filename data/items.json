@@ -2132,5 +2132,13 @@
   "look": "hat:BRIM HAT · SHERIFF",
   "value": 25,
   "weight": 0.15
+ },
+ "magic_carpet": {
+  "slot": "hand",
+  "grants": "carpet",
+  "offworld": true,
+  "value": 300,
+  "speed": 9,
+  "weight": 6
  }
 }

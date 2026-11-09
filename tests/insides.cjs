@@ -18,7 +18,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(s0.every(([, d]) => !d), 'no inside is built before you go in: ' + JSON.stringify(s0));
     for (let round = 1; round <= 2; round++) {
       for (const id of ids) {
-        await pg.evaluate(id => { STORE.gate[id] = () => true; return STORE.enter(id, true); }, id);   // (the theatre asks for a ticket: let the check in)
+        await pg.evaluate(id => { STORE.gate[id] = () => true; return STORE.enter(id, true); }, id);
         const built = await until(id => STORE.inside[id].done && !!STORE.inside[id].P, id, 60000);
         await pg.evaluate(async id => { window.__P = STORE.inside[id].P; await STORE.exit(id); const h = window.__home; __dbg.ui().goTo(h[0], h[2], h[1]); }, id);   // then back to where you started: a shop whose glass shows its inside keeps it built while you stand near (owner, 4 Nov 2026)
         const dropped = await until(id => !STORE.inside[id].done && !STORE.inside[id].P, id, 60000);

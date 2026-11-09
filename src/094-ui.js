@@ -67,7 +67,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   const drawBadge=()=>{ const m=[UI.freeCam&&'FREE CAMERA: '+NAME(keyOf('c'))+' to go back',UI.fly&&(UI.landing?'LANDING':'FLY: SPACE UP · SHIFT DOWN · '+NAME(keyOf('g'))+' to land')].filter(Boolean); badge.textContent=m.join(' · '); badge.hidden=!m.length; };
   function setFree(on){ UI.freeCam=on; if(on)UI.camT.copy(disp); drawBadge(); }
   // flying like a superhero (G): a cape on, Space up and Shift down, faster the longer you fly one way, up through the clouds (132b) to FLY.top; G again comes down where you are and lands
-  const WM=TILE/.84, FLY=UI.FLY={top:300*WM,sp:0,vy:0,max:42,min:7};
+  const WM=TILE/.84, FLY=UI.FLY={top:300*WM,sp:0,vy:0,max:10.5,min:1.75};
   // where you can come down: over a building's solid, the nearest clear ground round it (CLIP's test, as the townsfolk are moved out of walls)
   const clearOf=(x,z)=>{ const L=SHARED.LVL==='down'?SOL.down:SOL.up, R=.35*TILE; if(!CLIP.hit||!CLIP.hit(L,x,z,R))return null; for(let r=TILE/2;r<=60*TILE;r+=TILE/2){ const n=Math.max(8,Math.round(2*Math.PI*r/(TILE/2))); for(let k=0;k<n;k++){ const a=k/n*2*Math.PI, px=x+Math.sin(a)*r, pz=z+Math.cos(a)*r; const B=SHARED.BOUND; if(B&&(px<B.x0||px>B.x1||pz<B.z0||pz>B.z1))continue; if(!CLIP.hit(L,px,pz,R))return {x:px,z:pz,t:0}; } } return null; };
   const flyS=()=>st.fly||(st.fly={on:false,k:0,t:0,f:0,u:0});
@@ -80,13 +80,13 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     let mx=0,mz=0; if(up){mx+=fx;mz+=fz;} if(dn){mx-=fx;mz-=fz;} if(rt){mx+=-fz;mz+=fx;} if(lf){mx-=-fz;mz-=fx;} const n=Math.hypot(mx,mz)||1;
     UI.camT.x+=mx/n*s; UI.camT.z+=mz/n*s; UI.camT.y+=((keys.has(' ')?1:0)-(keys.has('shift')&&!L?1:0))*s*.7;
     UI.camT.x=Math.max(SHARED.BOUND.x0,Math.min(SHARED.BOUND.x1,UI.camT.x)); UI.camT.z=Math.max(SHARED.BOUND.z0,Math.min(SHARED.BOUND.z1,UI.camT.z)); UI.camT.y=Math.max(-12,Math.min(30,UI.camT.y)); };
-  UI.flyGo=(dt,moving)=>{ FLY.sp=moving?Math.min(FLY.max,Math.max(FLY.min,FLY.sp)+dt*(3+FLY.sp*.45)):Math.max(0,FLY.sp-dt*30); return FLY.sp*WM*dt; };   // metres a second, built up the longer you fly
+  UI.flyGo=(dt,moving)=>{ FLY.sp=moving?Math.min(FLY.max,Math.max(FLY.min,FLY.sp)+dt*(.75+FLY.sp*.45)):Math.max(0,FLY.sp-dt*30); return FLY.sp*WM*dt; };   // metres a second, built up the longer you fly
   UI.canFly=()=>!!(FORAGE.S&&FORAGE.S.fx&&FORAGE.S.fx.fly>0);
-  UI.flyStep=dt=>{ if(dt&&!UI.landing&&!UI.canFly()){ UI.landing=true; FLY.to=clearOf(pos.x,pos.z); drawBadge(); } const F=flyS(), g=SHARED.groundY?SHARED.groundY(pos.x,pos.z):0, L=UI.landing, w=L?-1:(keys.has(' ')?1:0)-(keys.has('shift')?1:0), top=w>0?14:w<0?L?Math.max(4,Math.min(30,(SHARED.py-g)/WM*1.2)):22:0;
+  UI.flyStep=dt=>{ if(dt&&!UI.landing&&!UI.canFly()){ UI.landing=true; FLY.to=clearOf(pos.x,pos.z); drawBadge(); } const F=flyS(), g=SHARED.groundY?SHARED.groundY(pos.x,pos.z):0, L=UI.landing, w=L?-1:(keys.has(' ')?1:0)-(keys.has('shift')?1:0), top=w>0?3.5:w<0?L?Math.max(4,Math.min(30,(SHARED.py-g)/WM*1.2)):5.5:0;
     FLY.vy+=(w*top-FLY.vy)*Math.min(1,dt*(w?2.2:4)); SHARED.py+=FLY.vy*WM*dt; SHARED.py=Math.max(-5,Math.min(FLY.top,SHARED.py));
     if(L&&FLY.to){ const dx=FLY.to.x-pos.x, dz=FLY.to.z-pos.z, d=Math.hypot(dx,dz), st=Math.min(d,14*WM*dt); if(d<.05||(FLY.to.t+=dt)>8)FLY.to=null; else{ pos.x+=dx/d*st; pos.z+=dz/d*st; SHARED.heading=Math.atan2(dx,dz); } }   // over a building: glide to clear ground as you come down
     if(L&&!FLY.to&&SHARED.py-g<.15*WM){ SHARED.py=Math.max(SHARED.py,g); setFly(false,true); }
-    F.f+=(Math.min(1,FLY.sp/9)-F.f)*Math.min(1,dt*3); F.u+=(Math.max(-1,Math.min(1,FLY.vy/12))-F.u)*Math.min(1,dt*3); pos.x=Math.max(SHARED.BOUND.x0,Math.min(SHARED.BOUND.x1,pos.x)); pos.z=Math.max(SHARED.BOUND.z0,Math.min(SHARED.BOUND.z1,pos.z)); };
+    F.f+=(Math.min(1,FLY.sp/2.25)-F.f)*Math.min(1,dt*3); F.u+=(Math.max(-1,Math.min(1,FLY.vy/3))-F.u)*Math.min(1,dt*3); pos.x=Math.max(SHARED.BOUND.x0,Math.min(SHARED.BOUND.x1,pos.x)); pos.z=Math.max(SHARED.BOUND.z0,Math.min(SHARED.BOUND.z1,pos.z)); };
   const cv=renderer.domElement; let L=null;
   UI.off=new THREE.Vector3(); UI.eul=new THREE.Euler(); const viewV=()=>UI.freeCam?UI.camT:UI.off, piv=new THREE.Vector3(), q0=new THREE.Quaternion(), q1=new THREE.Quaternion(), tv=new THREE.Vector3();
   const ndc=e=>{ const r=cv.getBoundingClientRect(); return new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1)); };

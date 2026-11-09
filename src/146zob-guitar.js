@@ -18,6 +18,7 @@ const GUITAR={}; window.GUITAR=GUITAR;
   const loadSongs=()=>songsP||(songsP=SONGF().then(J=>{ for(const g of J.songs)GTBOOK.push({name:g.name,by:g.by,lvl:g.lvl,secs:g.secs,credit:g.credit,notes:g.n}); fillSongs(); }).catch(e=>{ songsP=null; console.warn('guitar songs',e); }));
   const SONGS=()=>GTBOOK.map((b,i)=>[i,b]).filter(([,b])=>!b.kept);
   const skill=()=>FORAGE.sk?FORAGE.sk('guitar')||0:0, canPlay=i=>!!GTBOOK[i]&&SONGBK.can('guitar',GTBOOK,GTBOOK[i]);
+  FORAGE.MAXFN.push(()=>fillSongs());
   GUITAR.loadSongs=loadSongs; GUITAR.canPlay=canPlay; GUITAR.BOOK=GTBOOK;
   // the chords on the number keys (more on the panel)
   const BRIGHT={p:.5,i:1,m:1,a:1,s:.85};

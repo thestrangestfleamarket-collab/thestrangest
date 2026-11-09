@@ -151,7 +151,7 @@ const INSTR={KINDS:{}}; window.INSTR=INSTR;
     for(const el of PN.querySelectorAll('select,input'))el.addEventListener('keydown',e=>e.stopPropagation());
     PN.querySelector('#invol').oninput=e=>GSND.setVol(+e.target.value);
     PN.hidden=false; fillSongs(); drawPanel(); };
-  INSTR.fillSongs=()=>fillSongs();
+  INSTR.fillSongs=()=>fillSongs(); FORAGE.MAXFN.push(()=>fillSongs());
   const fillSongs=()=>{ const el=PN&&PN.querySelector('#insong'); if(!el||!ME.K)return; const v=el.value, K=ME.K;
     el.innerHTML=SONGBK.options(K.skill,K.BOOK)||'<option>THE BOOK IS ON ITS WAY…</option>';
     if(v)el.value=v; };

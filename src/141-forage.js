@@ -146,7 +146,7 @@ import {WORTH} from './140c-worth.js';
   FORAGE.POWER=['airshroom','glowcap','shroom_invis','shroom_str','shroom_swift','shroom_fly','shroom_keen','shroom_heal','shroom_cure','shroom_jump','shroom_luck','shroom_fire','shroom_small','shroom_big'];
   FORAGE.ownerKit=()=>{ for(const id of FORAGE.POWER){ const n=99-have(id); if(n>0)give(id,n); } for(const k of ['guitar','piano','drums','harp'])if(!have(k))give(k,1); saveSoon(); FORAGE.draw(); };
   // the owner's ALL SKILLS 100 (ADMIN > TOOLS): every skill reads 100 while it is on, nothing is gained, and the real levels are untouched under it
-  FORAGE.maxed=v=>{ if(v==null)return MAXED; MAXED=!!v; S.max=MAXED?1:0; saveSoon(); FORAGE.draw(); FORAGE.sync(); if(window.INSTR&&INSTR.fillSongs)INSTR.fillSongs(); return MAXED; };
+  FORAGE.maxed=v=>{ if(v==null)return MAXED; MAXED=!!v; S.max=MAXED?1:0; saveSoon(); FORAGE.draw(); FORAGE.sync(); for(const f of FORAGE.MAXFN)f(); return MAXED; }; FORAGE.MAXFN=[];
   SYS.onStart(()=>{ if(BUGS.owner)BUGS.owner().then(o=>{ if(o){ FORAGE.ownerKit(); if(S.max)FORAGE.maxed(true); } }).catch(()=>{}); },'141-forage owners');
   // the full kit, sent to a player from TENANTS (OWNED 'gift'): one of everything a live shop sells (20 of what stacks, 99 of each power mushroom), every instrument; rentals stay rented
   FORAGE.fullKit=()=>{ const P=FORAGE.POWER, ids=new Set([...P,'guitar','piano','drums','harp']);

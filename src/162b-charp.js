@@ -1,6 +1,6 @@
 // THE CHARACTER PAGE: ADMIN's AVATAR (your live avatar beside your look; PASSPORT, RESURRECT, LOG OUT), the paper doll's picture of you (CHARP.draw) and ADMIN's TOOLS (STATS, the render inspector, the game log).
 import {THREE} from './003-shx.js';
-import {BUGS, CHARP, ITEMED, PASSPORT, PS2, RINSP, TEXT, UI, VIT, W3, WE} from './003b-systems.js';
+import {BUGS, CHARP, FORAGE, ITEMED, PASSPORT, PS2, RINSP, TEXT, UI, VIT, W3, WE} from './003b-systems.js';
 import {pxS, renderer} from './004-main.js';
 import {SYS} from './006-map-pre.js';
 import {DESIGN} from './102b-designer.js';

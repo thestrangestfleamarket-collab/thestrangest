@@ -7,10 +7,15 @@ const FOLKSIM={};
       if(Array.isArray(e.p)&&e.p.length){ E.path=[{x:E.x,z:E.z}].concat(e.p.map(q=>({x:N(q[0]),z:N(q[1])}))); E.i=1; E.to={x:E.path[1].x,z:E.path[1].z}; } } return S; };
   // kept small: the rest of an errand's way as pairs, a decimal each
   F.save=S=>{ const by={}; for(const k in S.by){ const E=S.by[k], o={x:E.x,z:E.z,hd:E.hd,v:E.v,v0:E.v0,R:E.R,to:E.to,next:E.next,wait:E.wait,in:E.in,goal:E.goal,done:E.done,auto:E.auto,mode:E.mode}; if(E.path&&E.i<E.path.length)o.p=E.path.slice(E.i).map(q=>[Math.round(q.x*10)/10,Math.round(q.z*10)/10]); by[k]=o; }
-    return {t:S.t,H:S.H,T:S.T,gate:S.gate,g:S.g&&{v:S.g.v,x0:S.g.x0,z0:S.g.z0,c:S.g.c,w:S.g.w,h:S.g.h,rle:S.g.rle},by}; };
+    return {t:S.t,H:S.H,T:S.T,gate:S.gate,g:S.g&&{v:S.g.v,x0:S.g.x0,z0:S.g.z0,c:S.g.c,w:S.g.w,h:S.g.h,rle:S.g.rle,xl:S.xl},by}; };
+  // the park gate's crossing light (owner, 9 Nov 2026), one clock for the page's light (150pb) and the walkers here: green, then on a 90 s timer (or 23 s after its button, p0) amber and red, WALK, then flashing
+  F.light=(t,p0)=>{ const d=t-(+p0||0); if(d>=0&&d<23)return d<1?{m:'g',x:'h'}:d<4?{m:'y',x:'h'}:{m:'r',x:d<5?'h':d<15?'w':d<19?(Math.floor(d*2)&1?'h':'-'):'h'};
+    const r=((t%90)+90)%90; return r<70?{m:'g',x:'h'}:r<73?{m:'y',x:'h'}:{m:'r',x:r<74?'h':r<84?'w':r<88?(Math.floor(r*2)&1?'h':'-'):'h'}; };
+  // a walker steps onto the lit crossing (S.xl) only on WALK (S.walk on the page; the server's clock and button, S.now and S.p0)
+  const inXL=(S,x,z)=>{ const b=S.xl; return !!b&&x>b.x0&&x<b.x1&&z>b.z0&&z<b.z1; }, kerb=(S,E,x,z)=>!inXL(S,E.x,E.z)&&inXL(S,x,z)&&!(S.walk?S.walk():S.now==null||F.light(S.now,S.p0).x==='w');
   // the walk grid: the page's free ground in half-tile cells (rle: runs of blocked, free, blocked... in base 36), decoded when first read
   F.grid=(S,G)=>{ if(!G||!(G.w>0)||!(G.h>0)||typeof G.rle!=='string'){ S.g=null; return false; } if(G.w*G.h>4e6||G.rle.length>4e5)return false;
-    S.g={v:String(G.v||''),x0:N(G.x0),z0:N(G.z0),c:N(G.c,1)||1,w:G.w|0,h:G.h|0,rle:G.rle,m:null}; if(G.T>0)S.T=+G.T; if(G.gate)S.gate={z:N(G.gate.z),x0:N(G.gate.x0),x1:N(G.gate.x1)}; return true; };
+    S.g={v:String(G.v||''),x0:N(G.x0),z0:N(G.z0),c:N(G.c,1)||1,w:G.w|0,h:G.h|0,rle:G.rle,m:null}; if(G.T>0)S.T=+G.T; if(G.gate)S.gate={z:N(G.gate.z),x0:N(G.gate.x0),x1:N(G.gate.x1)}; if(G.xl)S.xl={x0:N(G.xl.x0),z0:N(G.xl.z0),x1:N(G.xl.x1),z1:N(G.xl.z1)}; return true; };
   F.pack=(m,n)=>{ const r=[]; let v=0, run=0; for(let k=0;k<n;k++){ const b=m[k]?1:0; if(b===v)run++; else { r.push(run.toString(36)); v=b; run=1; } } r.push(run.toString(36)); return r.join(','); };
   const cells=g=>{ if(g.m)return g.m; const m=new Uint8Array(g.w*g.h); let k=0, v=0; for(const r of g.rle.split(',')){ const n=parseInt(r,36)||0; if(v)m.fill(1,k,Math.min(m.length,k+n)); k+=n; v^=1; } g.m=m; return m; };
   F.free=(S,x,z)=>{ if(S.freeFn)return !!S.freeFn(x,z); const g=S.g; if(!g)return false; const i=Math.floor((x-g.x0)/g.c), j=Math.floor((z-g.z0)/g.c); if(i<0||j<0||i>=g.w||j>=g.h)return false; return cells(g)[j*g.w+i]===1; };
@@ -61,6 +66,7 @@ const FOLKSIM={};
     if(E.to){ const ex=E.to.x-E.x, ez=E.to.z-E.z, d=Math.hypot(ex,ez), step=E.v*dt;
       if(d<=Math.max(step,.05)){ E.x=E.to.x; E.z=E.to.z; if(E.path&&++E.i<E.path.length){ E.to={x:E.path[E.i].x,z:E.path[E.i].z}; return; } if(E.path||E.goal){ arrive(S,E,rnd); return; } E.to=E.next||null; E.next=null; if(!E.to)E.wait=1.5+rnd()*4; return; }
       const nx=E.x+ex/d*step, nz=E.z+ez/d*step; E.hd=Math.atan2(ex,ez);
+      if(kerb(S,E,nx,nz))return;
       if(inway(S,E,nx,nz)&&(E.held=(E.held||0)+dt)<3)return; E.held=0;
       if(F.free(S,nx,nz)||!F.free(S,E.x,E.z)){ E.x=nx; E.z=nz; E.stuck=0; } else if(E.path){ if((E.stuck+=dt)>3){ E.x=E.to.x; E.z=E.to.z; E.stuck=0; } } else { E.to=null; E.next=null; E.wait=.5; } return; }
     if(E.mode.hold)return; if((E.wait-=dt)>0)return; if(!pick(S,E,rnd))E.wait=1; };

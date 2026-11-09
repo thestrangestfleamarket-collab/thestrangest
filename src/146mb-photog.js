@@ -1,13 +1,12 @@
 // THE PHOTOGRAPHER: PHOTOGRAPHY, a skill and a living: the camera knows the subject in its frame (a bird, a butterfly, a park creature, a dungeon monster, a golem, a townsperson); a print is worth more the rarer the subject, the higher or deeper the spot, the nearer the danger, the sharper and fuller the frame and the better the photographer, and less for the same kind again that day; the rangers and the Professor buy them; taking and selling them trains the skill.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, ITEMS, NPCS} from './003b-systems.js';
+import {BIRDS, FORAGE, ITEMS, NPCS} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {TILE} from './006-map-pre.js';
 import {CREATS} from './087-npc-creatures.js';
 import {BFLY} from './143-bfly.js';
-import {BIRDS} from './144b-birds.js';
 import {TREES} from './144e-trees.js';
 import {WILD} from './144f-wild.js';
 import {GOLEMS} from './146e-golems.js';

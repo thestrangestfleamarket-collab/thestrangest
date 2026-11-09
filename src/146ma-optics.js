@@ -1,11 +1,10 @@
 // THE OPTICS: the binoculars (8x42) and the camera (a 35 mm rangefinder) every player owns from the start, held in the hand and raised to the eye: real fields of view, a hand that shakes with breath, pulse and movement, focus by distance, a rangefinder, the birds' field guide; the camera's exposure from the scene's light, its prints into the Newsreel's photos (146m).
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, FORAGE, INV, NPCS, pos, RAG, ROOMS, SFX, st, UI, VIT, W3, WIELD, WX, ZONES} from './003b-systems.js';
+import {BIRDS, CLOCK, FORAGE, INV, NPCS, pos, RAG, ROOMS, SFX, st, UI, VIT, W3, WIELD, WX, ZONES} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {PCAM, renderer, scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {MODS, QS, SYS, TILE} from './006-map-pre.js';
-import {BIRDS} from './144b-birds.js';
 import {PHOTOS} from './146m-prints.js';
 { const T=TILE, M=T/.84, V3=THREE.Vector3, say=SAY, cl=(v,a,b)=>v<a?a:v>b?b:v, D2R=Math.PI/180;
   const OPTIC={up:null,fov0:60,view0:null,dist:null,what:'',sharp:1}; window.OPTIC=OPTIC;

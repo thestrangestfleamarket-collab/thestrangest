@@ -175,7 +175,7 @@ import {BVH} from './137-bvh.js';
   // what the other physics extras use: the engine, the world, the fixed body, a body's loose thing, and hooks into each step (pre/post), its events (coll) and whether to keep stepping (ext)
   Object.assign(GPH,{pre:[],post:[],coll:[],ext:[],phys:()=>ready?{R,world,fb,you}:null,ofCollider:h=>byC.get(h),active:()=>act,heldNow:()=>held});
   // hanging things on a joint at their top: wind and bumps swing them, SWAYING THINGS sets how freely
-  let gt=0; const gust=dt=>{ '@later'; const k=PHYS.lv('joints'); if(!k||(gt-=dt)>0)return; gt=1.5+Math.random()*3; const w=(window.WX&&WX.now&&WX.now.wind)||.2, out=!(ROOMS&&ROOMS.cur);
+  let gt=0; const gust=dt=>{ '@later'; const k=PHYS.lv('joints'); if(!k||(gt-=dt)>0)return; gt=1.5+Math.random()*3; const w=(WX&&WX.now&&WX.now.wind)||.2, out=!(ROOMS&&ROOMS.cur);
     for(const it of act)if(it.hang&&it!==held){ const j=it.m*(out?w*1.4:.08)*k*.05*(.5+Math.random()); it.rb.wakeUp(); it.rb.applyImpulse({x:(Math.random()-.5)*j,y:0,z:(Math.random()-.5)*j},true); } };
   // standing on things: Rapier's character controller as your body here; it steps up onto low loose things (STAND ON THINGS: how high), stands on them, and shoves the rest
   const CH=.45, CR=.38, HH=CH+CR+.01; let kcc=null, kb=null, kco=null, kfoot=null;

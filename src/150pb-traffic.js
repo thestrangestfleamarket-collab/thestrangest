@@ -32,7 +32,7 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
   /* ---------- the light: green, then on a timer (or sooner by the button) amber and red with WALK, everyone's the same from the clock ---------- */
   const CY=90, P0=()=>+((ONLINE.world||{})['xing:gate'])||0;
   const light=t=>WALKS.sim.light(t,P0());   // one clock with the walkers on the server (worker/folk.js)
-  TRAFFIC.light=()=>light(now()); if(window.TLX)TLX.gate=TRAFFIC.light; if(SHARED.BOD.road)SHARED.BOD.road.walk=()=>TRAFFIC.light().x==='w';   // walkers wait for it (076 pedHold)
+  TRAFFIC.light=()=>light(now()); if(TLX)TLX.gate=TRAFFIC.light; if(SHARED.BOD.road)SHARED.BOD.road.walk=()=>TRAFFIC.light().x==='w';   // walkers wait for it (076 pedHold)
   TRAFFIC.press=()=>{ const t=now(), r=((t%CY)+CY)%CY, L=light(t); if(L.m!=='g')return say(L.x==='w'?'WALK.':'WAIT FOR THE WALK.'); if(t-P0()<35||r>=47)return say('THE LIGHT CHANGES SOON.'); ONLINE.put('xing:gate',String(Math.round(t*10)/10)); say('YOU PRESS THE BUTTON. WAIT FOR THE WALK.'); };
 
   /* ---------- the buttons: a yellow box on each crossing light's pole ---------- */
@@ -77,7 +77,7 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
 
   /* ---------- the kit fetched after the start, the game's cars once theirs are in ---------- */
   const carsIn=()=>!!(window.CARS&&CARS.dbg&&CARS.build&&CARS.dbg().loaded);
-  let asked=false; SYS.add('life',()=>{ if(asked||!window.__started)return; asked=true; TD().then(d=>{ D=d; const ks=Object.keys(d).filter(k=>d[k]&&d[k].parts);
+  let asked=false; SYS.add('life',()=>{ if(asked||!SYS.started)return; asked=true; TD().then(d=>{ D=d; const ks=Object.keys(d).filter(k=>d[k]&&d[k].parts);
       const fl=ks.filter(k=>d[k].fly), gr=ks.filter(k=>!d[k].fly), ready=()=>{ const g=carsIn()?gr.concat(GAME):gr; for(const L of LANES){ L.FL=fl; L.GR=g; } };
       for(const k of ks)VLOOK.kind('tr:'+k,{name:d[k].name,grp:d[k].fly?'FLYING TRAFFIC':'ROAD TRAFFIC',make:()=>{ const g=new THREE.Group(), me=new THREE.Mesh(geo(d[k].parts.body),MAT); me.name='BODY'; g.add(me); g.scale.setScalar(M1); return VLOOK.dress('tr:'+k,g); },traffic:k});
       ready(); fleet(); let n=0; const again=()=>{ if(carsIn()){ for(const L of LANES)for(const C of L.cars){ give(C); C.lap=-1; C.model=null; } ready(); } else if(++n<30)setTimeout(again,2000); }; setTimeout(again,2000);

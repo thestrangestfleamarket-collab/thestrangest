@@ -8,6 +8,11 @@ catch (e) { ok(false, 'imports: ' + String(e.stdout || '') + String(e.stderr || 
 { const fs = require('fs'), bad = fs.readdirSync(ROOT + '/src').filter(f => /\.js$/.test(f) && /CLOCKWISE/.test(fs.readFileSync(ROOT + '/src/' + f, 'utf8'))); ok(!bad.length, 'the Loop\'s signs name streets, not directions (no CLOCKWISE in src' + (bad.length ? ': ' + bad.join(', ') : '') + ')'); }
 
 { const gone = [...new Set(['/.github/workflows/site.yml', '/CLAUDE.md'].flatMap(f => fs.readFileSync(ROOT + f, 'utf8').match(/tests\/[\w-]+\.cjs/g) || []))].filter(t => !fs.existsSync(ROOT + '/' + t)); ok(!gone.length, 'every test the workflow and CLAUDE.md name exists' + (gone.length ? ': ' + gone.join(', ') : '')); }
+// a file reads another file's thing by its name (the imports see it), not through window: only these old ones are left, and the list only shrinks
+{ const OLD = new Set('CARS FIREV POSOK STRIKES ROOMED DUNMOBS CREATNEW __started HILL GUARDX DUNKEEP __dbg SUBGO RUNNER RIVER PIER PAWNNEW GOODSHIT FLEA FIRESIM DUNGEON'.split(' ')), S = fs.readdirSync(ROOT + '/src').filter(f => /\.js$/.test(f)).map(f => [f, fs.readFileSync(ROOT + '/src/' + f, 'utf8')]), def = {};
+  for (const [f, t] of S) for (const m of t.matchAll(/\bwindow\.([A-Za-z_$][\w$]*)\s*=(?!=)/g)) (def[m[1]] = def[m[1]] || new Set()).add(f);
+  const bad = []; for (const [f, t] of S) for (const m of t.matchAll(/\bwindow\.([A-Za-z_$][\w$]*)\b(?!\s*=(?!=))/g)) if (def[m[1]] && !def[m[1]].has(f) && !OLD.has(m[1])) bad.push(f + ': window.' + m[1]);
+  ok(!bad.length, 'no file reads another file\'s thing through window (import it, or declare it in 003b-systems.js)' + (bad.length ? ': ' + [...new Set(bad)].slice(0, 8).join(', ') : '')); }
 const L = JSON.parse(fs.readFileSync(ROOT + '/data/world.json', 'utf8'));
 ok(L.places.every(p => p.x0 < p.x1), 'every place in the level file has x0 < x1');
 // the asset contract (data/full/contract.json): every baked record has its pieces, every reference between files resolves

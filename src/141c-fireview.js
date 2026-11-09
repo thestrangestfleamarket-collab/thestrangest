@@ -1,9 +1,9 @@
 // THE FIRE ESCAPE VIEW: your landing on the apartment house's fire escape, with the landings above and below, built from the house's own facade and landings round your apartment (one place, off the map): its door opens and you walk out.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, FAR3, GPH, pos, SFX, SKY, UI} from './003b-systems.js';
+import {BATCH, CLOCK, FAR3, GPH, pos, SFX, SKY, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {BLDK, MISTE, MODS, STORE, SYS, TILE} from './006-map-pre.js';
-import {BATCH, PEEK} from './008-batch.js';
+import {PEEK} from './008-batch.js';
 import {BLOCKS} from './038zb-blocks.js';
 { const APTS=MODS.apts, F=window.FIREV, T=TILE, KK=BLDK, {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, {HZ,S}=F, A=APTS.AL, FE=APTS.ESC[0], DU=APTS.DU, DO=APTS.DO, LV=F.lv;
   const ix=x=>x/(T*KK)+SHARED.BOD.OX, iy=z=>z/(T*KK)+SHARED.BOD.OY, cl=v=>Math.max(0,Math.min(1,v)), nk=()=>cl((4-CLOCK.elev())/8);

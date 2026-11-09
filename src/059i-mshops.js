@@ -1,9 +1,8 @@
 // THE MERCHANTS' SHOPS: MSHOP, the one way a merchant gets a small shop: its outside one painted block on its lot in the level file (shopfront, window, door, sign), its inside off the map (about half the bodega), built behind the fade when you go in and furnished by the merchant's own kit (MSHOP.kit[id]), or else the shared one (MSHOP.kit._, 162fa).
 import {SHARED, THREE} from './003-shx.js';
-import {ROOMS, WINDOWS} from './003b-systems.js';
+import {BATCH, ROOMS, WINDOWS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {AWAY, FIX, grab, LEVEL, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
-import {BATCH} from './008-batch.js';
 import {BLOCKS} from './038zb-blocks.js';
 import {FACADES} from './038zc-facades.js';
 const MSHOP={kit:{},at:{},defs:{},fronts:[]};

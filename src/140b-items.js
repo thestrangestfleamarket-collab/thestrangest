@@ -1,5 +1,5 @@
 // THE ITEM MODEL: ITEMS holds each item type's shared properties (burnable, edible, sellable, value, ...): data/items.json, the owner's edits over it, and what the families register in code (FORAGE.add) under both; ITEMED.props is the ITEM editor's settings pane (the editor itself: 140ba).
-import {FORAGE, ITEMED, ITEMS} from './003b-systems.js';
+import {FORAGE, GPH, ITEMED, ITEMS} from './003b-systems.js';
 import {OWNED} from './005-save.js';
 import {TPANE} from './087dz-tpane.js';
 { const BOOL=[['burnable','BURNS'],['edible','EDIBLE'],['stackable','STACKS'],['pickup','PICK UP'],['sellable','SELLABLE'],['offworld','OFF-WORLD'],['rental','RENTAL'],['reuse','NOT USED UP'],['potted','IN CRAB POTS'],['container','HOLDS THINGS'],['cures','CURES POISON']];
@@ -19,10 +19,10 @@ import {TPANE} from './087dz-tpane.js';
   const norm=s=>String(s||'').toLowerCase().replace(/\s+/g,'_');
   // item types the game has made that have no settings yet (a forage find, a loose thing)
   const discovered=()=>{ '@later'; const s=new Set();
-    try{ if(window.FORAGE&&FORAGE.ids)for(const id of FORAGE.ids())s.add(norm(id)); }catch(e){}
-    try{ const G=window.GPH; if(G&&G.loose)for(const it of G.loose())if(it&&it.name)s.add(norm(it.name)); }catch(e){}
+    try{ if(FORAGE&&FORAGE.ids)for(const id of FORAGE.ids())s.add(norm(id)); }catch(e){}
+    try{ const G=GPH; if(G&&G.loose)for(const it of G.loose())if(it&&it.name)s.add(norm(it.name)); }catch(e){}
     for(const id in ITEMS.defs)s.delete(id); return [...s].sort(); };
-  const nameOf=id=>{ try{ return (window.FORAGE&&FORAGE.NM&&FORAGE.NM[id])||id; }catch(e){ return id; } };
+  const nameOf=id=>{ try{ return (FORAGE&&FORAGE.NM&&FORAGE.NM[id])||id; }catch(e){ return id; } };
   const HEX=v=>/^#[0-9a-f]{6}$/i.test(v||'');
   // an item's settings in el (Tweakpane): one with none yet is made on its first change, from init (a Polyfork piece's slot)
   const props=async(el,id,init)=>{ '@later'; if(el.__tp){ el.__tp.dispose(); el.__tp=null; } if(!id)return;

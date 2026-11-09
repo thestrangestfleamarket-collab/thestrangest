@@ -41,7 +41,7 @@ import {RIVER} from './066-river.js';
       if(!c){ if(IL.length>=IN){ let o=0; IL.forEach((q,i)=>{ if(q.t>IL[o].t)o=i; }); IL.splice(o,1); } c={x,y,z,r:.25*M,a:rnd()*6.28,t:0}; IL.push(c); }
       c.r=Math.min(2.6*M,c.r+dt*.8*M/Math.max(1,c.r/M)); c.t=0; const k=Math.min(1,dt*.6); c.x+=(x-c.x)*k*.3; c.z+=(z-c.z)*k*.3; },
     melt:(x,z,dt)=>{ for(const c of IL)if(Math.hypot(c.x-x,c.z-z)<c.r+.4*M){ c.r-=dt*.9*M; c.t=Math.max(c.t,60); } },
-    water:(x,z)=>window.RIVER&&RIVER.level?RIVER.level(x,z):null,   // over open water the ice is the floor; elsewhere only what is not under something higher
+    water:(x,z)=>RIVER&&RIVER.level?RIVER.level(x,z):null,   // over open water the ice is the floor; elsewhere only what is not under something higher
     feed:(st,pos)=>{ const y=ICE.at(pos.x,pos.z); if(y==null||SHARED.LVL!=='up'||ICE.water(pos.x,pos.z)==null&&SHARED.py>y+.6*M)return false; RIG.water(st,{level:null,floor:0}); return true; },
     floor:g=>{ const y=IL.length&&SHARED.LVL==='up'?ICE.at(pos.x,pos.z):null; return y!=null&&(ICE.water(pos.x,pos.z)!=null||y>g&&SHARED.py<y+.6*M)?y:g; }});
   window.ICE=ICE;
@@ -71,7 +71,7 @@ import {RIVER} from './066-river.js';
   const path=S=>{ const P=S.P; P.length=0; P.push(S.tip.clone()); if(S.k!=='f'){ P.push(S.tip.clone().addScaledVector(S.dir,S.R)); return; }
     const p=S.tip.clone(), v=S.dir.clone().multiplyScalar(14*M); let s=0; const h=.02; for(let t=0;t<FUEL*3&&s<S.R;t+=h){ v.y-=G*h; v.multiplyScalar(1/(1+KD*v.length()*h)); const d=v.length()*h; p.addScaledVector(v,h); s+=d; if(Math.round(t/h)%3===2)P.push(p.clone()); } P.push(p.clone()); };
   const cast=S=>{ path(S); ray.camera=SHARED.cam; S.end=null; S.what=''; let s=0; const P=S.P, D=new V3();
-    const gy0=(x,z)=>SHARED.groundY?SHARED.groundY(x,z):-1e9, wl=(x,z)=>window.RIVER&&RIVER.level?RIVER.level(x,z):null, gy=(x,z)=>{ const w=wl(x,z); return w==null?gy0(x,z):w; };
+    const gy0=(x,z)=>SHARED.groundY?SHARED.groundY(x,z):-1e9, wl=(x,z)=>RIVER&&RIVER.level?RIVER.level(x,z):null, gy=(x,z)=>{ const w=wl(x,z); return w==null?gy0(x,z):w; };
     for(let i=1;i<P.length;i++){ D.subVectors(P[i],P[i-1]); let l=D.length(); if(l<1e-6)continue; const g1=gy(P[i].x,P[i].z), under=P[i].y<g1; let lu=l; if(under){ const g0=gy(P[i-1].x,P[i-1].z), a=P[i-1].y-g0, b=g1-P[i].y, u=a/Math.max(1e-6,a+b); lu=l*u; } ray.set(P[i-1],D.normalize()); ray.far=l;
       let h=null; try{ h=ray.intersectObjects(scene.children,true).find(h=>(s+h.distance)>.25*M&&seen(h.object)); }catch(e){}
       if(h&&wl(h.point.x,h.point.z)!=null&&h.point.y<wl(h.point.x,h.point.z)&&h.object!==iceMe)h=null;

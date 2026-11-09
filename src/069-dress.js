@@ -48,7 +48,7 @@ const TLX={tick:()=>{}}; window.DRESS=Object.assign(DRESS,{gaps:()=>{ const G=[]
     DRESS.lampAt=(x,y,z,set)=>{ const L=light(x,y,z,60,15*TILE), P=pools[pools.length-1], me=new THREE.Mesh(poolGeo,poolMat); me.scale.set(P[3],1,P[3]); me.position.set(x,G(x,z)+.03,z); me.renderOrder=1; me.visible=false; scene.add(me); P.push(me); P.set=set; return L; };   // a lamp on something else (the power poles, 069b), lit with the rest
     const LIT=new THREE.Color(0xffe4b0), DIM=new THREE.Color(0x4a4238);
     DRESS.tick=()=>{ TLX.tick(); const e=CLOCK.dayElev(), k=Math.max(0,Math.min(1,(3-e)/8)), up=OUT.world; poolMat.opacity=k;
-      pools.forEach((P,j)=>{ const [L,,,,me]=P, on=e<P.on; if(on!==P.lit){ P.lit=on; L.intensity=on?L.userData.i0:0; const c=on?LIT:DIM; if(P.set)P.set(on); else if(j<heads.length){ hd.setColorAt(j,c); hd.instanceColor.needsUpdate=true; } else { lant.setColorAt(j-heads.length,c); lant.instanceColor.needsUpdate=true; } } if(on)L.intensity=L.userData.i0*(window.DN?DN.lk:1);
+      pools.forEach((P,j)=>{ const [L,,,,me]=P, on=e<P.on; if(on!==P.lit){ P.lit=on; L.intensity=on?L.userData.i0:0; const c=on?LIT:DIM; if(P.set)P.set(on); else if(j<heads.length){ hd.setColorAt(j,c); hd.instanceColor.needsUpdate=true; } else { lant.setColorAt(j-heads.length,c); lant.instanceColor.needsUpdate=true; } } if(on)L.intensity=L.userData.i0*(DN?DN.lk:1);
         me.visible=up&&k>0&&on&&!L.userData.off; }); };
     { const RD=SHARED.BOD.road, CK=(RD.KR-.45)/Math.SQRT2, HS=0x2b3036, GR=0x5d6266, TL=[], SIG=[], sq=(f,cx,cy,cz,w,h,d)=>f[0]?[cx,cy,cz,d,h,w]:[cx,cy,cz,w,h,d];
       const lampAt=(x,y,z,f,w,h,grp,k)=>{ SIG.push({p:sq(f,x+f[0]*.02*M,y,z+f[1]*.02*M,w,h,.05*M),grp,k}); };

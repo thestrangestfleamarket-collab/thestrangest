@@ -1,10 +1,10 @@
 // THE STORE: rooms with doors (diner, bar, museum, keep, cottage, aquarium, avenue) and their places in the menu. Its own builder.
 import {SHARED, THREE} from './003-shx.js';
-import {INTERIORS, LITE, NPCS, pos, ROOMS, SHAD, UI, WEEDS, WINDOWS} from './003b-systems.js';
+import {BATCH, CLIP, INTERIORS, LITE, NPCS, pos, ROOMS, SHAD, UI, WEEDS, WINDOWS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {AWAY, BF, BLDK, cutWalls, EASTX, FADE, FIX, grab, lamps, LAY, OFFDX, QS, SOL, START, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
-import {BATCH, OBJ, PEEK} from './008-batch.js';
+import {OBJ, PEEK} from './008-batch.js';
 import {WATER} from './009-down.js';
 import {BLOCKS} from './038zb-blocks.js';
 await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,C,place,facade}=SHARED.BOD, {CATALOG,PROPS,LAMPS,PRESETS,LBLD,T,sh,hash}=K, {grain,speck,lawnCol:grassCol}=SHARED.BOD.g;
@@ -195,22 +195,22 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
     for(const [x,z,w,ry] of [[(Tk.x0+Tk.x1)/2,Tk.y0,Tk.x1-Tk.x0,0],[(Tk.x0+Tk.x1)/2,Tk.y1,Tk.x1-Tk.x0,0],[Tk.x0,(Tk.y0+Tk.y1)/2,Tk.y1-Tk.y0,Math.PI/2],[Tk.x1,(Tk.y0+Tk.y1)/2,Tk.y1-Tk.y0,Math.PI/2]]){ const m=new THREE.Mesh(new THREE.PlaneGeometry(w*TILE*BLDK,gh),gm); m.position.set(X(x),gy,Z(z)); m.rotation.y=ry; scene.add(m); }  }
       if(STORE.houseAt){ const H=STORE.houseAt, hp=(dx,dy,z)=>[X(H[0]+dx),Y(z+(STORE.houseZ||0)),Z(H[1]+dy)], HP=[hp(-.16,-.09,38),hp(-.12,.07,41),hp(.18,.09,37),hp(.13,-.1,35),hp(-.06,0,44),hp(.06,0,44),hp(.08,-.11,32),hp(-.24,0,47),hp(.24,0,47),hp(0,-.17,49)];
     [12,21].forEach((k,i)=>{ const b=BF.add(k,HP); b.at=b.to=i*4; b.g.position.set(...HP[b.at]); }); }
-      if(ROOMS.reset)ROOMS.reset(); if(window.CLIP)window.CLIP.run(); INTERIORS.build(); };
+      if(ROOMS.reset)ROOMS.reset(); if(CLIP)CLIP.run(); INTERIORS.build(); };
     STORE.need=()=>LOAD(...need());
     STORE.ensure=async()=>{ await LOAD(...need()); finish(); };
     STORE.offGo=n=>{ const o=OFF[n]; if(!o||o.done)return; if(!LOADED(o.fn.chunk)||need().some(c=>!LOADED(c)))return o.wait||(o.wait=LOAD(o.fn.chunk,...need()).then(()=>STORE.offGo(n))); finish(); o.done=1; STORE.now=1; o.fn(); STORE.now=0; const it=BATCH.items.splice(0); lit(); if(it.length){ BATCH.items=it; Object.assign(STORE.meshes,bake()); }
-      if(ROOMS.reset)ROOMS.reset(); if(window.CLIP)window.CLIP.run(); INTERIORS.build(); };
+      if(ROOMS.reset)ROOMS.reset(); if(CLIP)CLIP.run(); INTERIORS.build(); };
     const REGS=()=>[UI.things,cutWalls,STORE.roofs,LITE.recs,SOL.up,FIX.up,lamps,FLAME.src,PEEK.boxes,...Object.values(SYS.P)];   // every list an inside's build adds to
     const took=()=>({n:scene.children.length,regs:REGS().map(A=>[A,A.length])});
     STORE.inGo=id=>{ '@later'; finish(); const R=STORE.inside[id]; if(!R||R.done)return; R.done=true; const S=R.drop?took():null; STORE.now=1; R.go(); STORE.now=0; const it=BATCH.items.splice(0); lit(); if(it.length){ BATCH.items=it; Object.assign(STORE.meshes,bake()); }
       if(S){ const seen=new Set(S.regs.map(r=>r[0])); R.P={objs:scene.children.slice(S.n),regs:[...S.regs.map(([A,n])=>[A,A.slice(n)]),...REGS().filter(A=>!seen.has(A)).map(A=>[A,A.slice(0)])]}; }
-      if(ROOMS.reset)ROOMS.reset(); if(window.CLIP)window.CLIP.run(); INTERIORS.build(); };
+      if(ROOMS.reset)ROOMS.reset(); if(CLIP)CLIP.run(); INTERIORS.build(); };
     // an inside marked drop (R.drop) is taken down once you are out of it, built again behind the fade next time
     STORE.unGo=id=>{ '@later'; const R=STORE.inside[id], P=R&&R.P; if(!P)return; R.P=null; R.done=false; const out=(A,L)=>{ for(const a of L){ const i=A.indexOf(a); if(i>=0)A.splice(i,1); } };
       for(const [A,L] of P.regs)out(A,L); LITE.t=0; if(R.un)R.un();
       for(const k in STORE.meshes)if(P.objs.includes(STORE.meshes[k]))delete STORE.meshes[k];
       for(const o of P.objs){ o.removeFromParent(); o.traverse(c=>{ if(c.geometry&&!c.geometry.userData.keep)c.geometry.dispose(); for(const q of c.material?[].concat(c.material):[]){ if(q.userData.keep)continue; if(q.map)q.map.dispose(); if(q.emissiveMap)q.emissiveMap.dispose(); q.dispose(); } }); }
-      if(ROOMS.reset)ROOMS.reset(); if(window.CLIP)window.CLIP.run(); INTERIORS.build(); };
+      if(ROOMS.reset)ROOMS.reset(); if(CLIP)CLIP.run(); INTERIORS.build(); };
     { let t=0; SYS.add('life',()=>{ const now=performance.now(); if(now-t<1000)return; t=now; if(FADE.busy)return; for(const id in STORE.inside){ const R=STORE.inside[id]; if(!R.P||WINDOWS.held.has(id)||STORE.held.has(id))continue; const Rm=STORE.rooms.find(r=>r.id===id); if(Rm&&!Rm.inside(pos.x,pos.z)&&ROOMS.cur!==Rm)STORE.unGo(id); } },'059-store-drop'); }
     const DOORP=(R,k)=>{ const d=R.door, B=R.B; return d.w==='f'?[d.a,B.y1+k]:d.w==='b'?[d.a,B.y0-k]:d.w==='w'?[B.x0-k,d.a]:[B.x1+k,d.a]; };
     STORE.gate={};   // a door that asks something first (the theatre: a ticket): id -> () => true to go in

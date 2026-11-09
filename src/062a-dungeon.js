@@ -1,11 +1,10 @@
 // THE DUNGEON: the dungeon under the castle, its rooms, stairs, torches and walls (closes its own builder).
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, LEVELS, LITE, PH, pos, RAG, UI, VIT} from './003b-systems.js';
+import {BATCH, CITY, LEVELS, LITE, PH, pos, RAG, UI, VIT} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {CASTLE, cutWalls, FADE, FIX, grab, MAPG, MODS, OFFDX, SOL, STN, SYS, TILE} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
-import {BATCH} from './008-batch.js';
 import {castleMat, gboxS} from './062-castle.js';
 await grab('dungeon',async()=>{});
 { const K=SHARED.BOD.KC, KP=SHARED.BOD.K.PROPS, Kc=K.CATALOG, sh=SHARED.BOD.K.sh, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, Y=SHARED.BOD.YS, {faceTex,bq,C}=SHARED.BOD, P0=K.DGP, D0=K.DGN, dy=STN.DY, T=.1, NL=5, G=MAPG.dungeon;

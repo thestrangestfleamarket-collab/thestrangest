@@ -14,7 +14,7 @@ FOUNT.held=(x,z)=>FOUNT.holds.some(f=>f(x,z));
   const lake=FOUNT.lake=(x,y)=>ISL.length?Math.max(shoreL(x,y),isl(x,y)):shoreL(x,y); FOUNT.islands=ISL;
   // the footbridges (parkPlaces.bridges): a plank walk over the water from an island to the shore; how far a map point is from the nearest one's deck
   const BRG=(LEVEL.parkPlaces&&LEVEL.parkPlaces.bridges)||[], brD=FOUNT.bridgeD=(x,y)=>{ let m=1e9; for(const B of BRG){ const dx=B.x1-B.x0, dy=B.y1-B.y0, l2=dx*dx+dy*dy||1, t=Math.max(0,Math.min(1,((x-B.x0)*dx+(y-B.y0)*dy)/l2)); m=Math.min(m,Math.hypot(x-B.x0-dx*t,y-B.y0-dy*t)-B.w/2); } return m; };
-  if(BRG.length)FOUNT.holds.push((x,z)=>brD(x/TILE+SHARED.BOD.OX-((window.PARK&&PARK.ox)||0),z/TILE+SHARED.BOD.OY-((window.PARK&&PARK.oy)||0))<0);
+  if(BRG.length)FOUNT.holds.push((x,z)=>brD(x/TILE+SHARED.BOD.OX-((PARK&&PARK.ox)||0),z/TILE+SHARED.BOD.OY-((PARK&&PARK.oy)||0))<0);
   const ter=FOUNT.ter=(x,y)=>FOUNT.S&&FOUNT.on?Math.hypot(x-FOUNT.S.C.x,y-FOUNT.S.C.y)-FOUNT.S.R:1e9;
   FOUNT.bedM=d=>Math.min(3.5,Math.max(0,d)*.42);
   FOUNT.away=(x,y)=>Math.min(lake(x,y)-1,ter(x,y)-1);
@@ -202,9 +202,9 @@ FOUNT.held=(x,z)=>FOUNT.holds.some(f=>f(x,z));
     FOUNT.pre=(scene,cam)=>{ const c=cam.position; uw=!cam.isOrthographicCamera&&grp.visible&&c.y<LV&&FOUNT.bedAt(c.x,c.z)!=null&&!!(scene.background&&scene.background.isColor); if(!uw)return;
       let k=1; try{ k=.3+.7*Math.max(0,Math.min(1,(CLOCK.elev()+4)/14)); }catch(e){}
       const see=FLOW.see(Math.max(0,(LV-c.y)*.84/T),9); UF.color.setRGB(.2,.4,.36,THREE.SRGBColorSpace).multiplyScalar(k*see.k); UF.near=0; UF.far=see.far/.84*T; UF.uw=true; fog0=scene.fog; bg0.copy(scene.background); scene.fog=UF; scene.background.copy(UF.color);
-      if(window.SKY&&SKY.dome){ dome=SKY.dome.visible; SKY.dome.visible=false; } };
-    FOUNT.post=scene=>{ if(!uw)return; scene.fog=fog0; scene.background.copy(bg0); if(window.SKY&&SKY.dome)SKY.dome.visible=dome; uw=false; };
-    if(window.BROOK&&BROOK.still)BROOK.still(FOUNT.waters||[]);
+      if(SKY&&SKY.dome){ dome=SKY.dome.visible; SKY.dome.visible=false; } };
+    FOUNT.post=scene=>{ if(!uw)return; scene.fog=fog0; scene.background.copy(bg0); if(SKY&&SKY.dome)SKY.dome.visible=dome; uw=false; };
+    if(BROOK&&BROOK.still)BROOK.still(FOUNT.waters||[]);
     FOUNT.ready=true; };
 }
 export {FOUNT};

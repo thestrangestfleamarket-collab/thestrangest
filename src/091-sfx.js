@@ -1,9 +1,9 @@
 // THE SOUNDS: SFX makes every sound effect and loop in code, with the volume and the sound mix.
 import {SHARED, THREE} from './003-shx.js';
-import {pos, SFX, SND, USE} from './003b-systems.js';
+import {pos, SFX} from './003b-systems.js';
 import {SAVE} from './005-save.js';
 import {QS, TILE} from './006-map-pre.js';
-const SOUND=QS.get('sound')==='1';
+const SOUND=QS.get('sound')!=='0';
 const SNDMIX0={fx:{},loops:{},gap:1,blip:1};
 Object.assign(SFX,{on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}});
 { const rnd=()=>Math.random()*2-1, TAU=Math.PI*2;
@@ -11,10 +11,15 @@ Object.assign(SFX,{on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}});
   const mixOf=o=>({fx:Object.assign({},SNDMIX0.fx,o&&o.fx||{}),loops:Object.assign({},SNDMIX0.loops,o&&o.loops||{}),gap:o&&o.gap!=null?+o.gap:SNDMIX0.gap,blip:o&&o.blip!=null?+o.blip:SNDMIX0.blip});
   try{ SFX.mix=mixOf(JSON.parse(SAVE.get('sndmix')||'null')); }catch(e){ SFX.mix=mixOf(null); }
   SFX.saveMix=()=>SAVE.set('sndmix',JSON.stringify(SFX.mix)); SFX.resetMix=()=>{ SFX.mix={fx:{},loops:{},gap:1,blip:1}; SAVE.del('sndmix'); }; SFX.fxLevel=k=>SFX.mix.fx[k]==null?1:+SFX.mix.fx[k];
-  SFX.ctx=()=>{ if(!SOUND)return null; if(SND.ctx)return SND.ctx; if(USE.ac)return USE.ac; if(!SFX.ac)try{ SFX.ac=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } return SFX.ac; };
+  // the page's one audio context: made at the first click or key (or when something asks with SFX.wake), everything heard goes out through SFX.out
+  let woke=false; const mk=()=>{ if(!SOUND)return null; if(!SFX.ac)try{ SFX.ac=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } return SFX.ac; };
+  SFX.ctx=()=>SFX.ac||(woke||(navigator.userActivation&&navigator.userActivation.hasBeenActive)?mk():null);
+  SFX.wake=()=>{ const c=mk(); if(c&&c.state!=='running')c.resume().catch(()=>{}); return c; };
+  { const w=()=>{ woke=true; SFX.wake(); }; addEventListener('pointerdown',w,true); addEventListener('keydown',w,true); }
   SFX.live=()=>{ const c=SFX.ctx(); return c&&c.state==='running'?c:null; };
-  const bus=c=>{ if(!SFX.g||SFX.g.context!==c){ SFX.g=c.createGain(); SFX.g.connect(c.destination); } SFX.g.gain.value=SFX.on?SFX.vol:0; return SFX.g; };
-  SFX.set=(on,vol)=>{ if(on!=null)SFX.on=on; if(vol!=null)SFX.vol=vol; SAVE.set('sfx',SFX.on?'1':'0'); SAVE.set('vol',String(SFX.vol)); const c=SFX.ctx(); if(c)bus(c); };
+  SFX.out=c=>{ if(!SFX.m||SFX.m.context!==c){ SFX.m=c.createGain(); SFX.m.gain.value=SFX.vol; SFX.m.connect(c.destination); } return SFX.m; };
+  const bus=c=>{ if(!SFX.g||SFX.g.context!==c){ SFX.g=c.createGain(); SFX.g.connect(SFX.out(c)); } SFX.g.gain.value=SFX.on?1:0; return SFX.g; };
+  SFX.set=(on,vol)=>{ if(on!=null)SFX.on=on; if(vol!=null)SFX.vol=vol; SAVE.set('sfx',SFX.on?'1':'0'); SAVE.set('vol',String(SFX.vol)); const c=SFX.ac; if(c){ bus(c); SFX.out(c).gain.setTargetAtTime(SFX.vol,c.currentTime,.03); } };
   const env=(t,p)=>Math.pow(Math.max(0,1-t),p), lp=()=>{ let y=0; return (x,k)=>(y=y*(1-k)+x*k); };
   const R={
     click:{len:.015,f:(D,n)=>{ for(let i=0;i<n;i++){ const t=i/n; D[i]=rnd()*env(t,2)*.6; } }},
@@ -32,6 +37,7 @@ Object.assign(SFX,{on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}});
     drip:{len:.18,f:(D,n,S)=>{ for(let i=0;i<n;i++){ const s=i/S, t=i/n; D[i]=Math.sin(TAU*(1400-600*t)*s)*env(t,4)*.3; } }},
     splash:{len:.32,f:(D,n,S)=>{ const f=lp(); for(let i=0;i<n;i++){ const t=i/n, s=i/S; D[i]=f(rnd(),.35)*env(t,2.5)*.5+Math.sin(TAU*(180-120*t)*s)*env(t,6)*.25; } }},
     blip:{len:.06,f:(D,n,S)=>{ for(let i=0;i<n;i++){ const t=i/n, s=i/S; D[i]=Math.sin(TAU*1800*s)*Math.sin(t*Math.PI)*.3; } }},
+    ding:{len:.7,f:(D,n,S)=>{ for(let i=0;i<n;i++){ const s=i/S; D[i]=(Math.sin(TAU*1320*s)+Math.sin(TAU*2640*s)*.35+Math.sin(TAU*3960*s)*.12)*Math.min(s*400,1)*Math.exp(-s*7)*.3; } }},
     chirp:{len:.22,f:(D,n,S)=>{ for(let i=0;i<n;i++){ const t=i/n, s=i/S, k=Math.floor(t*3), u=t*3-k; D[i]=Math.sin(TAU*(2600+1400*u+300*k)*s)*Math.sin(u*Math.PI)*.2; } }},
     cricket:{len:.45,f:(D,n,S)=>{ for(let i=0;i<n;i++){ const s=i/S, t=i/n, g=(s*26)%1<.3?1:0; D[i]=Math.sin(TAU*4200*s)*g*Math.sin(t*Math.PI)*.12; } }},
     bark:{len:.3,f:(D,n,S)=>{ const F=lp(); for(let i=0;i<n;i++){ let v=0; for(const st of [0,n*.5|0]){ const dt=i-st; if(dt>=0&&dt<n*.4){ const t=dt/(n*.4), s=dt/S; v+=(Math.sin(TAU*(320-80*t)*s)*.5+F(rnd(),.4)*.4)*Math.min(t*20,1)*env(t,2); } } D[i]=v*.5; } }},

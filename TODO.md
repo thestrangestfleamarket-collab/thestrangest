@@ -40,7 +40,7 @@ whole-map layouts A–F · the broken set piece · the companion drone · the ec
 tree crowns (A–F) and trees by distance · the castle's torches · the jets follow-ups · the avatar follow-ups · the `Home` split (which
 objects, the live migration).
 After the beta: photos in trade · the bow · birds, dragons' clips and more human clips · VR hand-walking, hand models, filters in the
-headset · NPC voices (lifts the 19 Oct "no sound" rule).
+headset · NPC voices.
 
 ## CI, checks and tools
 
@@ -226,6 +226,13 @@ One tree pass (more leaves mean more shadow triangles).
 - [ ] **Phones** · P2 · L · look + code. Login on a phone never tried (the door lets them in since 9 Nov); the touch pad; menus fitted to
   phone screens, home-screen install, lighter graphics.
 
+## Sound
+
+Owner, 9 Nov 2026: "real sounds". Each batch is named by the owner first.
+- [ ] **P2 M pick** Real recordings in place of the code-made effects, a batch at a time: footsteps by surface, doors, cars, the fair's rides, fights, weather, the day and night ambience.
+- [ ] **P2 M code** Other players heard: their footsteps, hits and doors from where they stand, fading with distance.
+- [ ] **P3 S pick** The bodega's counter radio still plays its code-made tune: give it the market's stations like the apartments'?
+
 ## VR
 
 Last (owner, 7 Nov 2026: "we will do VR checks last"): every check and look line here waits until the rest is done.
@@ -250,4 +257,4 @@ Last (owner, 7 Nov 2026: "we will do VR checks last"): every check and look line
   already said is reused when it fits, a new one only when nothing fits, up to 100 lines.
 - Today: the line pools (`src/092-lines.js`) and the scripted talk window (`src/159da-talk.js`). No AI or voice code yet.
 - Needs: an ElevenLabs account, key and voices; the worker holds the keys and makes the calls; storage for lines, audio and log; a
-  budget; the 19 Oct "no sound" rule lifted for voices.
+  budget.

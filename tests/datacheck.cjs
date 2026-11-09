@@ -14,7 +14,7 @@ const SND=(()=>{ const out=[], ext=/\.(mp3|ogg|wav|m4a|opus|webm)$/i, walk=d=>{ 
 const PROV=JSON.parse(fs.readFileSync('data/full/sounds.json','utf8')).sounds;
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--autoplay-policy=no-user-gesture-required']}); const pg=await b.newPage({viewport:{width:900,height:620}});
   const errs={}; pg.on('pageerror',e=>{ const k=e.message+(process.env.STACK?' @ '+(e.stack||'').split('\n').slice(1,3).join(' '):''); errs[k]=(errs[k]||0)+1; });
-  const url='file://'+process.cwd()+'/dist/market.html?hour=21&hideme=1&sound=1';   // the recipes need the page's audio context, off since the 19 Oct no-sound rule unless asked
+  const url='file://'+process.cwd()+'/dist/market.html?hour=21&hideme=1';
   // the old keys planted before the page runs (a browser that played before this save existed)
   await pg.addInitScript(()=>{ if(!localStorage.getItem('market-save')&&!localStorage.getItem('planted')){ localStorage.setItem('planted','1'); localStorage.setItem('market-looks',JSON.stringify({name:'TESTER',sex:'M'})); localStorage.setItem('market-outline','1'); localStorage.setItem('market-grain','12'); localStorage.setItem('market-keys',JSON.stringify({v:'p'})); } });
   await pg.goto(url,{waitUntil:'commit',timeout:180000});
@@ -31,7 +31,7 @@ const PROV=JSON.parse(fs.readFileSync('data/full/sounds.json','utf8')).sounds;
     SAVE.set('probe','x'); out.save.probe=JSON.parse(localStorage.getItem('market-save')).probe; SAVE.del('probe'); out.save.gone=SAVE.get('probe');
     out.name=LOOKS.L.name; out.dith=DITH; out.outl=OUTL.on;
     // the sounds: every recipe a finite, audible buffer; the ambience's names recipes
-    const c=SFX.ctx(); if(c&&c.state!=='running')await c.resume().catch(()=>{}); out.ctx=c&&c.state;
+    const c=SFX.wake(); if(c&&c.state!=='running')await c.resume().catch(()=>{}); out.ctx=c&&c.state;
     out.sfx={}; for(const k of SFX.names()){ const B=SFX.buffer(k,c), D=B.getChannelData(0); let mx=0, fin=true; for(let i=0;i<D.length;i++){ const v=Math.abs(D[i]); if(!isFinite(v)){ fin=false; break; } if(v>mx)mx=v; } out.sfx[k]={n:D.length,mx:+mx.toFixed(3),fin,len:SFX.recipe(k).len}; }
     out.ambNames=[...new Set(Object.values(AMB.sets).flat().map(e=>e[0]))].filter(k=>!SFX.recipe(k));
     SFX.mix.fx.click=.5; SFX.saveMix(); out.mix=JSON.parse(JSON.parse(localStorage.getItem('market-save')).sndmix).fx.click; out.mixLvl=SFX.fxLevel('click'); SFX.resetMix(); out.mixReset=SFX.fxLevel('click'); await __dbg.SNDED.open(); out.edRows=document.querySelectorAll('#snded .tp-sldv').length; __dbg.SNDED.close();

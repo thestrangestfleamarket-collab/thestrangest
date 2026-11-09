@@ -6,7 +6,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   pg.on('pageerror', e => errs.push(e.message));
   await pg.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&npcwait=99&hour=9&place=your%20apartment', { waitUntil: 'commit', timeout: 180000 });
   for (let i = 0; i < 240; i++) { await pg.waitForTimeout(1000); if (await pg.evaluate(() => !!window.__started).catch(() => false)) break; }
-  await pg.waitForTimeout(8000);
+  for(let i=0;i<60;i++){ await pg.waitForTimeout(2000); if(await pg.evaluate(()=>window.WINDRDBG&&WINDRDBG().n>0).catch(()=>false))break; } await pg.waitForTimeout(2000);
   const r = await pg.evaluate(async () => { const D = WINDRDBG(), n = D.n; D.pick(0); const menu = WINDRDBG().open; D.click('b', 'venetian'); D.click('c', 'velvet'); D.click('all'); D.click('close');
     await new Promise(r => setTimeout(r, 2500)); const d = WINDRDBG(), L = ROOMED.snapshot(); ROOMED.apply({ ...L, win: L.win.map(() => ({ c: 'none', b: 'none' })) }); const cleared = WINDRDBG().d.every(x => x.c === 'none' && x.b === 'none');
     ROOMED.apply(L); return { n, menu, every: d.d.every(x => x.c === 'velvet' && x.b === 'venetian'), cloth: d.cloth, lit: d.lit, saved: L.win && L.win[0], cleared, back: WINDRDBG().d.every(x => x.c === 'velvet') }; });

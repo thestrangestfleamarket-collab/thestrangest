@@ -66,14 +66,15 @@ window.PETS=PETS;
   PETS.room=()=>RM;
   const make=async(id,P,lead,o={})=>{ const K=(await idx()).by[P.k]; if(!K)return null; const D=await kind(P.k), {P:Pp,T}=shape(D,P), R=rig(D,T), CL=clips(D,T);
     const geo=SKIN.geom(D.mesh); geo.attributes.position.array.set(Pp); paint(D,P,geo);
-    const long=K.long*P.z/100, big=Math.max(...D.size), metres=D.tall*long/big, FC=pickClip(CL,'fly'), flies=!!FC, onlyFly=!!FC&&pickClip(CL,'walk')===FC;
+    const long=o.long||K.long*P.z/100, big=Math.max(...D.size), metres=D.tall*long/big, FC=pickClip(CL,'fly'), flies=!!FC, onlyFly=!!FC&&pickClip(CL,'walk')===FC;
     const mixer=new THREE.AnimationMixer(R.bones[0]), A={}, act=n=>A[n]||(A[n]=mixer.clipAction(CL[n])); let cur=null, hover=0, lastL=null, idleT=0;
     const walkV=Math.max(.5,Math.min(1.6,1.7*metres)), runV=Math.max(1.4,Math.min(4.5,3.6*metres));
     const st0={x:0,z:0}, H={on:false,mode:'idle',t:0,path:null,i:0,hop:null,top:null,y:0,sq:0};
     const N=makeNPC(null,{key:'pet-'+id,name:(P.n||K.name).toUpperCase(),names:['body'],lv:SHARED.LVL||'up',group:'pets',geo,skin:R,tall:D.tall,rank:[0],metres,x:0,z:0,lane:{x0:-1e9,x1:1e9,z0:-1e9,z1:1e9},
       free:()=>true,radius:Math.min(.25,long*.3),speed:walkV/.84,stride:0,rock:0,bob:0,pick:()=>{},noSelf:true,
       ground:(x,z)=>(H.on?H.y:groundAt(x,z,lastL?lastL.y:SHARED.py))+hover*WU,
-      brain:(dt,you,st)=>{ const L=lead(); if(!L){ N.g.visible=false; return; } N.g.visible=true; const v=lastL?Math.hypot(L.x-lastL.x,L.z-lastL.z)/Math.max(dt,1e-3):0; lastL=L;
+      brain:(dt,you,st)=>{ if(o.drive){ const Dv=o.drive(N); if(!Dv){ N.g.visible=false; return; } N.g.visible=true; st.x=Dv.x; st.z=Dv.z; st.h=Dv.h; st.to=null; st.face=null; st.hold=true; N.dv=Dv.v||0; N.fly=!!Dv.ghost; N.placed=true; lastL={x:Dv.x,z:Dv.z,y:Dv.y}; return; }   // (ridden: its rider moves it, 146zjc)
+        const L=lead(); if(!L){ N.g.visible=false; return; } N.g.visible=true; const v=lastL?Math.hypot(L.x-lastL.x,L.z-lastL.z)/Math.max(dt,1e-3):0; lastL=L;
         const RM=o.room&&o.room(); if(RM){ home(dt,st,RM,L); return; } if(H.on)leave();
         const dx=st.x-L.x, dz=st.z-L.z, d=Math.hypot(dx,dz)/WU;
         if(!N.placed||d>14||Math.abs((N.g.position.y-hover*WU)-L.y)>2.5*WU){ place(L); return; }
@@ -83,6 +84,7 @@ window.PETS=PETS;
         if(d>far){ const k=(far-.65)/d; st.to={x:L.x+dx*k,z:L.z+dz*k}; st.v=(d>far+1.8?Math.max(runV*sp,v/WU*1.15):walkV*sp)*WU; } else if(d<far-.4){ st.to=null; st.face={x:L.x,z:L.z}; } },
       anim:(dt,moving,st)=>{ const fast=moving&&st.v>walkV*WU*1.2, air=onlyFly||flies&&H.on&&H.mode==='hop'||flies&&!H.on&&(moving&&(st.v>walkV*WU*1.2||hover>.05)||lastL&&lastL.y-groundAt(lastL.x,lastL.z,lastL.y)>.3*WU);
         hover+=((air?(onlyFly?.9:1.3):0)-hover)*Math.min(1,dt*2.5);
+        if(o.drive){ const G=o.gait(N.dv/WU), w=pickClip(CL,G.c); if(w!==cur){ act(w).reset().fadeIn(.25).play(); if(cur)act(cur).fadeOut(.25); cur=w; } act(cur).timeScale=G.f?G.f*CL[cur].duration:1; mixer.update(dt); return; }
         const zz=H.on&&H.mode==='sleep', hop=H.on&&H.mode==='hop', want=air&&FC||(hop?pickClip(CL,'run'):moving?pickClip(CL,fast?'run':'walk'):pickClip(CL,'idle'));
         if(want!==cur){ act(want).reset().fadeIn(.2).play(); if(cur)act(cur).fadeOut(.2); cur=want; } act(cur).timeScale=zz?.15:moving&&!air?Math.max(.6,Math.min(1.8,st.v/(fast?runV:walkV)/WU)):1; mixer.update(dt);
         H.sq+=((zz?1:0)-H.sq)*Math.min(1,dt*2); N.g.scale.set(1+.1*H.sq,1-.4*H.sq,1+.1*H.sq); }});   // (asleep: curled low, breathing slow)

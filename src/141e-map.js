@@ -1,6 +1,6 @@
 // THE MAP: a folded 1986 visitor's brochure. MAP in the menu (or Shift+M, or a click on the minimap) brings it up, unfolded over the screen at once (no motion, owner 4 Nov 2026): the street level painted flat, every place numbered in its own colour, a guide column; F flips it to THE SUBWAY on the back; a click on a place or a station goes there; ESC puts it away.
 import {SHARED} from './003-shx.js';
-import {FORAGE, keys, ONLINE, PARK, pos, ROOMS, TEXT, UI} from './003b-systems.js';
+import {FORAGE, keys, MARKS, ONLINE, PARK, pos, ROOMS, TEXT, UI} from './003b-systems.js';
 import {LEVEL, MODS, SECTION, SECTIONS, SYS, TILE} from './006-map-pre.js';
 import {LOOP} from './009b-loop.js';
 import {STALL} from './081-stalls.js';
@@ -79,6 +79,7 @@ import {STALL} from './081-stalls.js';
       for(const [n,x,y,r] of [[ST.south,cx,(rd.y0+inn.y0)/2,0],[ST.north,cx,(rd.y1+inn.y1)/2,0],[ST.west,(rd.x0+inn.x0)/2,cy,-90],[ST.east,(rd.x1+inn.x1)/2,cy,-90]])if(!Q.L2.some(l=>l[0]===n))lab(n,x,y,12,{ls:3,r}); }
     if(lines)S.push(`<path d="${lines}" fill="none" stroke="#12b5cf" stroke-width="2.5" stroke-dasharray="7 4"/>`);
     for(const o of (ONLINE.others?[...ONLINE.others.values()]:[])){ if(!o.p)continue; S.push(`<circle cx="${WX(o.p.x).toFixed(1)}" cy="${WY(o.p.z).toFixed(1)}" r="4" fill="${BLUE}" stroke="${PAPER}" stroke-width="1.2"/>${txt(o.name||'',WX(o.p.x),WY(o.p.z)-7,7,{a:'middle'})}`); }
+    for(const M of MARKS){ const x=WX(M.x), y=WY(M.z); if(x<0||x>mw||y<0||y>720)continue; S.push(`<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><path d="M0 0 L-7 -12 A8 8 0 1 1 7 -12 Z" fill="#1fa35a" stroke="${PAPER}" stroke-width="1.5"/><circle cy="-16" r="3" fill="${PAPER}"/></g>`+txt('INVITED: '+(M.name||''),x,y-28,8,{a:'middle',f:'#1fa35a'})); }   // an invitation's place: a green pin
     for(const p of PL){ if(p.lv==='down')continue; const b=B.find(q=>q.place===p), x=b?(TX(b.x0)+TX(b.x1))/2:WX(p.x), y=b?(TY(b.y0)+TY(b.y1))/2:WY(p.z), r=b?Math.max(4.5,Math.min(8.5,(TX(b.x1)-TX(b.x0))/2-.5,(TY(b.y0)-TY(b.y1))/2-.5)):8.5; if(x<0||x>mw||y<0||y>720)continue; S.push(bullet(p.n,x.toFixed(1),y.toFixed(1),r.toFixed(1),p.col,r*(p.n>9?1.05:1.2),` data-go="${esc(p.name)}"`)); }   // a narrow shop's number shrinks to fit it
     { const C=ROOMS.cur, R=C&&ROOMS.off[C.off||C.lz||C.id], o=R&&R.out, at=o?((o[2]||'up')==='up'?[o[0],o[1]]:null):SHARED.LVL==='up'&&!(C&&C.off)?[pos.x,pos.z]:null;
       if(at){ const x=WX(at[0]), y=WY(at[1]); if(x>0&&x<mw&&y>0&&y<720){ S.push(star(x,y,10)); S.push(txt(TEXT.t('bro.here'),x,y+21,8,{a:'middle',f:RED})); } } }

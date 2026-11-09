@@ -93,6 +93,7 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
       F.g.updateMatrixWorld(true); const G=F.g.matrixWorld, J=o.B.J, P=(p,q)=>q.set(p.x,p.y,p.z).applyMatrix4(G), b=new V3(), e=new V3(), w=new V3(), x=new V3(), z=new V3();
       const AH=F.PM&&F.body&&BODIES.hand(t.h,F.PM,F.body,o.B); P(AH?AH.elbow:J['elbow'+t.h],e); P(AH?AH.palm:J['palm'+t.h],b); w.subVectors(P(AH?AH.wrist:J['wrist'+t.h],w),e).normalize(); x.crossVectors(w,UP); if(x.lengthSq()<1e-4)x.set(1,0,0); x.normalize(); z.crossVectors(x,w);
       t.m.matrix.makeBasis(x,w,z).setPosition(b); t.m.matrixWorld.copy(t.m.matrix); if(t.m.tipL)(t.tip||(t.tip=new V3())).copy(t.m.tipL).applyMatrix4(t.m.matrix); } };
+  WIELD.held=()=>MESH[WIELD.on]||null; WIELD.theirG=id=>{ const t=theirs.get(id); return t&&t.m.visible?t.m:null; };   // the thing in your hand, and in theirs (its matrix is where it is)
   WIELD.theirTip=id=>{ const t=theirs.get(id); return t&&t.m.visible&&t.tip||null; };   // another player's held rod or kite: where its line starts
   WIELD.head=head; window.WIELDDBG=()=>[...theirs].map(([id,t])=>({id,w:t.w,shown:t.m.visible,sw:!!t.sw}));
   SYS.add('life',dt=>{ share(dt||0); if(theirs.size)draw(dt||0); },'146a-wield'); }

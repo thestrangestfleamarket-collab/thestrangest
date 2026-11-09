@@ -212,7 +212,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     if(!c){ if(WIELD.useHeld)WIELD.useHeld(); return; } if(c.held){ WIELD.useHeld(); return; } const th=c.sub?{...c.th,name:c.sub.name,act:c.sub.act}:c.th; th.started=false; goal=th; };
   UI.useNear=()=>{ const best=UI.nearThing(); if(!best)return false; best.started=false; goal=best; return true; };
   UI.go=d=>{ UI.clickGo=true; UI.clickRun=d>6; };
-  const GAITR=[0,.5,1]; UI.gaitRun=()=>VIT.tired?0:GAITR[SHARED.gait||0];   // walk, jog, run (owner, 7 Nov 2026: "w -> forward shift+w -> jog ... press shift again and you go into run mode")
+  const GAITR=[0,.5,1]; UI.gaitRun=()=>VIT.tired?0:GAITR[SHARED.gait||0];   // walk or run (owner, 9 Nov 2026: "get rid of the jog and only use run (shift once)")
   UI.runTick=()=>{ st.jog=(SHARED.gait||0)===1&&!VIT.tired; if(!UI.clickGo){ if(!UI.menuOpen)st.runTarget=UI.gaitRun(); return; } if(!SHARED.target){ UI.clickGo=false; st.runTarget=UI.gaitRun(); return; } st.runTarget=Math.max(UI.gaitRun(),!VIT.tired&&UI.clickRun&&Math.hypot(SHARED.target.x-pos.x,SHARED.target.z-pos.z)>1.6?1:0); };
   UI.goTick=()=>{ if(!goal)return; const p=thAt(goal), d=Math.max(0,Math.hypot(p.x-pos.x,p.z-pos.z)-(goal.r||0)), reach=goal.pick?Math.min(goal.reach||1,.5*TILE):goal.reach||1;
     const stuck=!SHARED.target&&goal.started; if(d>reach&&!(stuck&&d<(goal.near||0))){ if(stuck)goal=null; else { const k=(d-reach*0.8)/d; SHARED.target=new THREE.Vector3(pos.x+(p.x-pos.x)*k,SHARED.py,pos.z+(p.z-pos.z)*k); if(!goal.started)UI.go(d); goal.started=true; } return; }

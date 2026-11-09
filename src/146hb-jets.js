@@ -69,10 +69,10 @@ import {FLAME} from './007-fire.js';
     const p=S.tip.clone(), v=S.dir.clone().multiplyScalar(14*M); let s=0; const h=.02; for(let t=0;t<FUEL*3&&s<S.R;t+=h){ v.y-=G*h; v.multiplyScalar(1/(1+KD*v.length()*h)); const d=v.length()*h; p.addScaledVector(v,h); s+=d; if(Math.round(t/h)%3===2)P.push(p.clone()); } P.push(p.clone()); };
   const cast=S=>{ path(S); ray.camera=SHARED.cam; S.end=null; S.what=''; let s=0; const P=S.P, D=new V3();
     const gy=(x,z)=>SHARED.groundY?SHARED.groundY(x,z):-1e9;
-    for(let i=1;i<P.length;i++){ D.subVectors(P[i],P[i-1]); let l=D.length(); if(l<1e-6)continue; const g1=gy(P[i].x,P[i].z), under=P[i].y<g1; if(under){ const g0=gy(P[i-1].x,P[i-1].z), a=P[i-1].y-g0, b=g1-P[i].y, u=a/Math.max(1e-6,a+b); l*=u; } ray.set(P[i-1],D.normalize()); ray.far=l;
+    for(let i=1;i<P.length;i++){ D.subVectors(P[i],P[i-1]); let l=D.length(); if(l<1e-6)continue; const g1=gy(P[i].x,P[i].z), under=P[i].y<g1; let lu=l; if(under){ const g0=gy(P[i-1].x,P[i-1].z), a=P[i-1].y-g0, b=g1-P[i].y, u=a/Math.max(1e-6,a+b); lu=l*u; } ray.set(P[i-1],D.normalize()); ray.far=l;
       let h=null; try{ h=ray.intersectObjects(scene.children,true).find(h=>(s+h.distance)>.25*M&&seen(h.object)); }catch(e){}
       if(h){ S.end=h.point.clone(); S.what=h.object===iceMe?'ice':wet(h.object)?'water':Math.abs(h.point.y-gy(h.point.x,h.point.z))<.35*M?'ground':'wall'; P.length=i; P.push(S.end.clone()); s+=h.distance; break; }
-      if(under){ S.end=P[i-1].clone().addScaledVector(D,l); S.end.y=gy(S.end.x,S.end.z); S.what='ground'; P.length=i; P.push(S.end.clone()); s+=l; break; } s+=l; }
+      if(under){ l=lu; S.end=P[i-1].clone().addScaledVector(D,l); S.end.y=gy(S.end.x,S.end.z); S.what='ground'; P.length=i; P.push(S.end.clone()); s+=l; break; } s+=l; }
     S.len=s; };
   const along=(S,x,y,z)=>{ let best=1e9; const P=S.P; for(let i=1;i<P.length;i++){ const a=P[i-1], b=P[i], dx=b.x-a.x, dy=b.y-a.y, dz=b.z-a.z, l2=dx*dx+dy*dy+dz*dz||1, t=Math.max(0,Math.min(1,((x-a.x)*dx+(y-a.y)*dy+(z-a.z)*dz)/l2)); best=Math.min(best,Math.hypot(a.x+dx*t-x,a.y+dy*t-y,a.z+dz*t-z)); } return best; };
 

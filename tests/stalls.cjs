@@ -5,7 +5,7 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok  ':'FAIL')+' '+m); if(!c)bad++; 
   const errs=[]; pg.on('pageerror',e=>errs.push(String(e).slice(0,200)));
   await pg.goto('file://'+path.resolve(process.argv[2]||'dist/market.html')+'?fresh=1&at=66,-102');
   await pg.waitForFunction(()=>window.__started&&window.STALLS&&STALLS.things.length>0,null,{timeout:240000}).catch(()=>{});
-  const r=await pg.evaluate(()=>({n:STALLS.things.length,names:STALLS.things.map(t=>t.name),things:STALLS.things.every(t=>UI.things.includes(t)&&t.obj&&t.obj.parent)}));
+  const r=await pg.evaluate(()=>({n:STALLS.things.length,names:STALLS.things.map(t=>t.name),things:STALLS.things.every(t=>__dbg.UI.things.includes(t)&&t.obj&&t.obj.parent)}));
   ok(r.n===5&&r.things&&r.names.every(n=>/FOR RENT/.test(n)),'five stalls on the market row, each a thing to double-click: '+JSON.stringify(r.names));
   const off=await pg.evaluate(()=>{ const L=[]; const s=window.SAY; STALLS.open('s1'); return document.getElementById('stallp').hidden; });
   ok(off,'off the website a stall does not open (it needs the block)');

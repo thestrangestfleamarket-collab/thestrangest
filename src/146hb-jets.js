@@ -93,7 +93,7 @@ import {FLAME} from './007-fire.js';
     return L.map(o=>{ const src=Array.isArray(o.material)?o.material[0]:o.material, mat=shellMat(src,.035*M/Math.max(1e-6,o.getWorldScale(SW).x)), s=o.isSkinnedMesh?new THREE.SkinnedMesh(o.geometry,mat):new THREE.Mesh(o.geometry,mat);
       if(o.isSkinnedMesh)s.bind(o.skeleton,o.bindMatrix); s.userData.iceShell=1; s.raycast=()=>{}; s.frustumCulled=false; s.renderOrder=3; s.onBeforeRender=o.onBeforeRender; o.add(s); return s; }); };
   const thaw=sh=>{ for(const s of sh){ s.removeFromParent(); s.material.dispose(); } };
-  const tag=()=>{ const c=document.createElement('canvas'); c.width=160; c.height=48; const t=new THREE.CanvasTexture(c), sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false,transparent:true})); sp.scale.set(.75*M,.225*M,1); sp.renderOrder=9; sp.raycast=()=>{}; sp.userData.anyRoom=1; scene.add(LEVELS.own(sp,'*')); sp.c=c; sp.t=t; sp.n=-1; return sp; };
+  const tag=()=>{ const c=document.createElement('canvas'); c.width=160; c.height=48; const t=new THREE.CanvasTexture(c), sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false,transparent:true})); sp.scale.set(1*M,.3*M,1); sp.renderOrder=9; sp.raycast=()=>{}; sp.userData.anyRoom=1; scene.add(LEVELS.own(sp,'*')); sp.c=c; sp.t=t; sp.n=-1; return sp; };
   const tagSet=(sp,v)=>{ const n=Math.ceil(v*10); if(n===sp.n)return; sp.n=n; const g=sp.c.getContext('2d'); g.clearRect(0,0,160,48); g.font='bold 30px monospace'; g.textAlign='center'; g.lineWidth=6; g.strokeStyle='#0a1a26'; const s='ICE '+(n/10).toFixed(1); g.strokeText(s,80,35); g.fillStyle='#bff0ff'; g.fillText(s,80,35); sp.t.needsUpdate=true; };
   const fx=(id)=>{ let e=JET.E.get(id); if(!e){ e={fire:0,ice:0,cold:0,burn:null,sh:null,tg:null}; JET.E.set(id,e); } return e; };
   const bodyFx=(dt,L)=>{ const by=new Map(L.map(b=>[b.id,b]));
@@ -165,7 +165,7 @@ import {FLAME} from './007-fire.js';
   const FL=new THREE.PointLight(new THREE.Color(1,.55,.2),0,8*M,1.6); FL.userData.fire=1; scene.add(FL);
   const firing=()=>{ const id=WIELD.on, g=WIELD.held&&WIELD.held(); if((id!=='flamer'&&id!=='frost')||!g||!g.visible||VIT.dead||VIT.out>0||RAG.on||SHARED.frozen>0)return ''; if(VR.on&&JET.burst<=0)JET.hold=false; return JET.hold||JET.burst>0?(id==='flamer'?'f':'i'):''; };
   const pilots=new Map();
-  SYS.add('life',dt=>{ dt=Math.min(dt||0,.1); JET.burst=Math.max(0,JET.burst-dt); selfTick(dt);
+  SYS.add('life',dt=>{ dt=Math.min(dt||0,.25); JET.burst=Math.max(0,JET.burst-dt); selfTick(dt);
     const k=firing(); { let S=JET.S.get('me'); if(k){ if(!S||S.k!==k){ if(S)drop(S); JET.S.set('me',S=mk('me',k)); } S.at=now(); } else if(S)drop(S); } JET.on=k;
     if(ONLINE.on&&(k!==JET.sent||k&&now()-JET.sentT>160)){ const S=JET.S.get('me'), r=v=>Math.round(v*100)/100; JET.sent=k; JET.sentT=now(); ONLINE.send(k&&S?{t:'jet',k,v:[r(S.dir.x),r(S.dir.y),r(S.dir.z)]}:{t:'jet',k}); }
     for(const g of HELD){ if(g.kind!=='f')continue; let s=pilots.get(g); const on=g.visible&&!!g.parent; if(on&&!s){ s=FLAME.add({kind:'candle',name:'pilot light',x:0,y:0,z:0,w:.03*M,h:.06*M}); pilots.set(g,s); }

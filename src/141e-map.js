@@ -1,6 +1,6 @@
 // THE MAP: a folded 1986 visitor's brochure. MAP in the menu (or Shift+M, or a click on the minimap) brings it up, unfolded over the screen at once (no motion, owner 4 Nov 2026): the street level painted flat, every place numbered in its own colour, a guide column; F flips it to THE SUBWAY on the back; a click on a place or a station goes there; ESC puts it away.
 import {SHARED} from './003-shx.js';
-import {FORAGE, keys, ONLINE, PARK, pos, ROOMS, TEXT, UI} from './003b-systems.js';
+import {FORAGE, keys, MARKS, ONLINE, PARK, pos, ROOMS, TEXT, UI} from './003b-systems.js';
 import {LEVEL, MODS, SECTION, SECTIONS, SYS, TILE} from './006-map-pre.js';
 import {LOOP} from './009b-loop.js';
 import {STALL} from './081-stalls.js';
@@ -79,6 +79,7 @@ import {STALL} from './081-stalls.js';
       for(const [n,x,y,r] of [[ST.south,cx,(rd.y0+inn.y0)/2,0],[ST.north,cx,(rd.y1+inn.y1)/2,0],[ST.west,(rd.x0+inn.x0)/2,cy,-90],[ST.east,(rd.x1+inn.x1)/2,cy,-90]])if(!Q.L2.some(l=>l[0]===n))lab(n,x,y,12,{ls:3,r}); }
     if(lines)S.push(`<path d="${lines}" fill="none" stroke="#12b5cf" stroke-width="2.5" stroke-dasharray="7 4"/>`);
     for(const o of (ONLINE.others?[...ONLINE.others.values()]:[])){ if(!o.p)continue; S.push(`<circle cx="${WX(o.p.x).toFixed(1)}" cy="${WY(o.p.z).toFixed(1)}" r="4" fill="${BLUE}" stroke="${PAPER}" stroke-width="1.2"/>${txt(o.name||'',WX(o.p.x),WY(o.p.z)-7,7,{a:'middle'})}`); }
+    for(const M of MARKS){ const x=WX(M.x), y=WY(M.z); if(x<0||x>mw||y<0||y>720)continue; S.push(`<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><path d="M0 0 L-7 -12 A8 8 0 1 1 7 -12 Z" fill="#1fa35a" stroke="${PAPER}" stroke-width="1.5"/><circle cy="-16" r="3" fill="${PAPER}"/></g>`+txt('INVITED: '+(M.name||''),x,y-28,8,{a:'middle',f:'#1fa35a'})); }   // an invitation's place: a green pin
     for(const p of PL){ if(p.lv==='down')continue; const b=B.find(q=>q.place===p), x=b?(TX(b.x0)+TX(b.x1))/2:WX(p.x), y=b?(TY(b.y0)+TY(b.y1))/2:WY(p.z), r=b?Math.max(4.5,Math.min(8.5,(TX(b.x1)-TX(b.x0))/2-.5,(TY(b.y0)-TY(b.y1))/2-.5)):8.5; if(x<0||x>mw||y<0||y>720)continue; S.push(bullet(p.n,x.toFixed(1),y.toFixed(1),r.toFixed(1),p.col,r*(p.n>9?1.05:1.2),` data-go="${esc(p.name)}"`)); }   // a narrow shop's number shrinks to fit it
     { const C=ROOMS.cur, R=C&&ROOMS.off[C.off||C.lz||C.id], o=R&&R.out, at=o?((o[2]||'up')==='up'?[o[0],o[1]]:null):SHARED.LVL==='up'&&!(C&&C.off)?[pos.x,pos.z]:null;
       if(at){ const x=WX(at[0]), y=WY(at[1]); if(x>0&&x<mw&&y>0&&y<720){ S.push(star(x,y,10)); S.push(txt(TEXT.t('bro.here'),x,y+21,8,{a:'middle',f:RED})); } } }
@@ -134,13 +135,15 @@ import {STALL} from './081-stalls.js';
     for(let i=0;i<4;i++){ const p=document.createElement('div'); p.className='pn'; p.innerHTML=`<div class="fc"><svg viewBox="${i*320} 0 320 720">${F}</svg><u></u>${i?'<i class="l"></i>':''}${i<3?'<i class="r"></i>':''}</div><div class="fc bk"><svg viewBox="${(3-i)*320} 0 320 720">${K}</svg>${i<3?'<u></u><i class="l"></i>':''}</div>`; parent.appendChild(p); parent=p; }
     if(G&&G.sel){ const q=G.sel, box=document.createElement('div'); box.className='gob'; Object.assign(box.style,{left:q.x+'px',top:q.y+'px',width:q.w+'px',height:q.h+'px'});   // GO TO: every place the game registers, A to Z, with its number on the map, and your neighbours' apartments (owner, 8 Nov 2026)
       const key=n=>n.replace(/^THE /,''), items=LG.flatMap(([,L])=>L.map(o=>({name:o.name,n:o.s?o.s.n:null,col:o.s?o.s.col:null}))).sort((a,b)=>key(a.name).localeCompare(key(b.name)));
-      const apts=(ONLINE.others&&ONLINE.visit?[...ONLINE.others.values()]:[]).filter(o=>o&&o.id&&o.name).map(o=>({name:o.name.toUpperCase()+"'S APARTMENT",visit:o})).sort((a,b)=>a.name.localeCompare(b.name));
-      const row=(o,i)=>`<div class="gor" data-goto="${esc(o.name)}" data-i="${i}">${o.n!=null?`<i style="background:${o.col};${DARK[o.col]?'color:#111':''}">${o.n}</i>`:'<i style="background:#fff"></i>'}${esc(o.name)}${o.visit?'<span>'+esc(TEXT.t('bro.online'))+'</span>':''}</div>`;
-      const ALL=[...items,...apts];
+      // every tenant's apartment: those online now (marked) and the rest from the server's list
+      let TL=[]; const apts=[], ALL=[...items], mkApts=()=>{ if(!ONLINE.visit)return; const on=ONLINE.others?[...ONLINE.others.values()].filter(o=>o&&o.id&&o.name):[], seen=new Set(on.map(o=>o.id));
+        apts.length=0; for(const o of on)apts.push({name:o.name.toUpperCase()+"'S APARTMENT",visit:o,on:1}); for(const t of TL)if(!seen.has(t.id)){ seen.add(t.id); apts.push({name:String(t.name).toUpperCase()+"'S APARTMENT",visit:t}); }
+        apts.sort((a,b)=>a.name.localeCompare(b.name)); ALL.length=items.length; ALL.push(...apts); }; mkApts();
+      const row=(o,i)=>`<div class="gor" data-goto="${esc(o.name)}" data-i="${i}">${o.n!=null?`<i style="background:${o.col};${DARK[o.col]?'color:#111':''}">${o.n}</i>`:'<i style="background:#fff"></i>'}${esc(o.name)}${o.on?'<span>'+esc(TEXT.t('bro.online'))+'</span>':''}</div>`;
       box.innerHTML=`<button type="button" aria-haspopup="listbox"><b>${esc(TEXT.t('bro.choose'))}</b><b>▾</b></button><div class="gol" hidden role="listbox"><input type="text" placeholder="${esc(TEXT.t('bro.find'))}" aria-label="${esc(TEXT.t('bro.find'))}"><div class="gox"></div></div>`;
       const L=box.querySelector('.gol'), F=box.querySelector('input'), X=box.querySelector('.gox');
-      const fill=()=>{ const f=F.value.trim().toUpperCase(), pick=o=>!f||o.name.includes(f); X.innerHTML=items.map((o,i)=>[o,i]).filter(([o])=>pick(o)).map(([o,i])=>row(o,i)).join('')+(apts.some(pick)?`<h6>${esc(TEXT.t('bro.neighbours'))}</h6>`+apts.map((o,i)=>[o,items.length+i]).filter(([o])=>pick(o)).map(([o,i])=>row(o,i)).join(''):''); };
-      const toggle=()=>{ L.hidden=!L.hidden; if(!L.hidden){ F.value=''; fill(); F.focus(); } };
+      const fill=()=>{ mkApts(); const f=F.value.trim().toUpperCase(), pick=o=>!f||o.name.includes(f); X.innerHTML=items.map((o,i)=>[o,i]).filter(([o])=>pick(o)).map(([o,i])=>row(o,i)).join('')+(apts.some(pick)?`<h6>${esc(TEXT.t('bro.neighbours'))}</h6>`+apts.map((o,i)=>[o,items.length+i]).filter(([o])=>pick(o)).map(([o,i])=>row(o,i)).join(''):''); };
+      const toggle=()=>{ L.hidden=!L.hidden; if(!L.hidden){ F.value=''; fill(); F.focus(); if(ONLINE.tenants)ONLINE.tenants().then(l=>{ TL=l||[]; if(!L.hidden)fill(); }); } };
       box.querySelector('button').onclick=e=>{ e.stopPropagation(); toggle(); };
       F.oninput=fill;
       X.onclick=e=>{ e.stopPropagation(); const r=e.target.closest('.gor'); if(!r)return; const o=ALL[+r.dataset.i]; if(!o)return; go(()=>o.visit?ONLINE.visit(o.visit.id,o.visit.name):UI.goName(o.name)); };

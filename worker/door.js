@@ -86,7 +86,8 @@ export default {
       if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401);
       let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
-      if (p === "/home") { if (body.who !== undefined) return json({ home: await homeOf(env).get(word(body.who, 64)) });   // a visit: another player's apartment, to look at
+      if (p === "/home") { if (body.list !== undefined) return json({ list: (await homeOf(env).tenants()).filter(t => t.who !== id) });   // every tenant's apartment, for the map's quick jumps
+        if (body.who !== undefined) return json({ home: await homeOf(env).get(word(body.who, 64)) });   // a visit: another player's apartment, to look at
         if (body.put === undefined) return json({ home: await homeOf(env).get(id) });
         const t = JSON.stringify(body.put); if (!body.put || typeof body.put !== "object" || Array.isArray(body.put) || t.length > 65536) return json({ why: "bad room" }, 400);
         if (tooMany("home:" + id, 120)) return json({ why: "too many saves, wait a minute" }, 429);
@@ -397,6 +398,12 @@ export class Block extends Server {
       const text = word(m.text, 200), st = sayStyle(m.st); if (text) this.broadcast(JSON.stringify({ t: "say", id: s.id, name: s.name, text, st }), [c.id]);
     } else if (m.t === "tr") {
       this.trade(c, s, m);
+    } else if ((m.t === "inv" || m.t === "invr") && s.name) {   // an invitation to a player online anywhere (inv), or their answer (invr): handed on by this section's block or another's
+      const to = word(m.to, 64); if (!to || to === s.id) return; const d = {}; if (m.d && typeof m.d === "object") for (const k of Object.keys(m.d).slice(0, 6)) if (/^[a-z]{1,8}$/.test(k)) d[k] = typeof m.d[k] === "number" ? num(m.d[k], -1e4, 1e4) : word(m.d[k], 24);
+      const x = { t: "inv", op: m.t === "inv" ? "ask" : m.op === "yes" ? "yes" : "no", from: s.id, name: s.name, sec: this.name, k: /^[a-z]{1,12}$/.test(m.k || "") ? m.k : "", d, at: now };
+      this.invite(to, x).then(n => { if (!n && x.op === "ask") c.send(JSON.stringify({ t: "inv", op: "gone", from: to })); });
+    } else if (m.t === "everyone") {   // who is online in every section, for an invitation
+      Promise.all(SECROOMS.map(r => r === this.name ? Promise.resolve(this.names()) : blockAsk(this.env, r, "names").catch(() => []))).then(L => c.send(JSON.stringify({ t: "everyone", all: L.flat().filter(p => p.id !== s.id).slice(0, 200) })));
     } else if (m.t === "take") {   // a loose thing on the ground: whoever asks first gets it, told with its record; the rest see it go
       const k = word(m.k, 40); if (!k || !k.startsWith("drop:")) return; this.dropT(); const r = this.ctx.storage.sql.exec("select rec, until from drops where k = ?", k).toArray()[0], v = r && r.until >= now ? r.rec : "";
       if (r) this.dropGone(k); c.send(JSON.stringify({ t: "took", k, v }));
@@ -434,13 +441,19 @@ export class Block extends Server {
         say(c, { op: "done", with: other, give: mine.o[s.id] || e, get: mine.o[other] || e }); return say(oc, { op: "done", with: s.id, give: mine.o[other] || e, get: mine.o[s.id] || e }); }
       return st(); }
   }
+  names() { return this.roster().filter(p => p.name).map(p => ({ id: p.id, name: p.name, sec: this.name })); }
+  hand(to, x) { let n = 0; const j = JSON.stringify(x); for (const o of this.getConnections()) if (o.state && o.state.id === to) { o.send(j); n++; } return n; }
+  async invite(to, x) { const n = this.hand(to, x); if (n) return n;
+    const L = await Promise.all(SECROOMS.filter(r => r !== this.name).map(r => blockAsk(this.env, r, "inv", { to, m: x }).then(o => o.n || 0).catch(() => 0))); return L.reduce((a, b) => a + b, 0); }
   put(k, v) { this.world().then(W => { if (v === "") delete W[k]; else W[k] = v; this.ctx.storage.put("world", W); this.broadcast(JSON.stringify({ t: "world", k, v })); });
   }
   async onRequest(req) { const path = new URL(req.url).pathname;
     if (path === "/who") return Response.json(this.roster().map(p => p.id));
+    if (path === "/names") return Response.json(this.names());
     let b = {}; try { b = await req.json(); } catch (e) {}
     if (path === "/tell") { const m = JSON.stringify({ t: "tell", from: "THE MARKET", text: word(b.text, 500) }); let n = 0;
       for (const c of this.getConnections()) if (c.state && (b.to === "*" || c.state.id === b.to)) { c.send(m); n++; } return Response.json({ n }); }
+    if (path === "/inv") return Response.json({ n: b && b.m && b.m.t === "inv" ? this.hand(String(b.to || ""), b.m) : 0 });
     if (path === "/kick") { for (const c of this.getConnections()) if (c.state && c.state.id === b.id) c.close(b.out ? 4002 : 4001, b.out ? "out" : "removed"); return Response.json({ ok: true }); }
     return new Response("not found", { status: 404 }); }
   onClose(c) { if (this.dev) this.dev.delete(c.id); const s = c.state; if (s && s.id && !this.roster(c.id).some(p => p.id === s.id)) { this.broadcast(JSON.stringify({ t: "out", id: s.id }));
@@ -485,9 +498,9 @@ async function admin(env, b, origin) {
   const users = async () => { if (!k) return []; const r = await call("/auth/v1/admin/users?per_page=1000"); return r.ok ? (await r.json()).users || [] : []; };
   if (b.do === "list") {
     const [us, pl, ad, co, on] = await Promise.all([users(), call("/rest/v1/players?select=*").then(r => r.ok ? r.json() : []), call("/rest/v1/admins?select=*").then(r => r.ok ? r.json() : []),
-      call("/rest/v1/invite_codes?select=*").then(r => r.ok ? r.json() : []), blockAsk(env, room, "who").catch(() => [])]);
+      call("/rest/v1/invite_codes?select=*").then(r => r.ok ? r.json() : []), blockAsk(env, room, "who").catch(() => [])]), nm = await homeOf(env).namesAll().catch(() => ({}));
     return { ok: true, email: !!env.RESEND_API_KEY, codes: co, letters: await postOf(env).list(),
-      users: us.map(x => ({ id: x.id, email: x.email, phone: x.phone || "", joined: x.created_at, last: x.last_sign_in_at, confirmed: x.email_confirmed_at, provider: x.app_metadata && x.app_metadata.provider,
+      users: us.map(x => ({ id: x.id, email: x.email, name: nm[x.id] || "", phone: x.phone || "", joined: x.created_at, last: x.last_sign_in_at, confirmed: x.email_confirmed_at, provider: x.app_metadata && x.app_metadata.provider,
         banned: x.banned_until && Date.parse(x.banned_until) > Date.now() ? x.banned_until : null, player: pl.find(p => p.id === x.id) || null, admin: ad.some(a => a.user_id === x.id), online: on.includes(x.id) })) };
   }
   if (b.do === "code") { const n = Math.max(1, Math.min(1000, Math.floor(+b.uses || 1))), code = newCode();
@@ -535,6 +548,8 @@ async function admin(env, b, origin) {
       const r = await call("/rest/v1/players?id=eq." + id, { method: "PATCH", body: JSON.stringify({ apt }) }); if (!r.ok) return res(r); }
     return { ok: true };
   }
+  // the full kit: the player's game hands it over at its next start (FORAGE.fullKit)
+  if (b.do === "kit") { if (!user()) return { why: "no such player" }; return (await homeOf(env).ownedPut(id, { gift: "kit" })) ? { ok: true } : { why: "their save is full" }; }
   if (b.do === "admin") return res(b.on ? await call("/rest/v1/admins", { method: "POST", body: JSON.stringify({ user_id: id }) }) : await call("/rest/v1/admins?user_id=eq." + id, { method: "DELETE" }));
   if (b.do === "ban") { const r = await call("/auth/v1/admin/users/" + id, { method: "PUT", body: JSON.stringify({ ban_duration: b.on ? "876000h" : "none" }) });
     if (r.ok && b.on) { forget(id); await kick(id); } return res(r); }
@@ -672,6 +687,7 @@ export class Post extends DurableObject {
 export class Home extends DurableObject {
   constructor(ctx, env) { super(ctx, env); this.sql = ctx.storage.sql; this.sql.exec("create table if not exists homes(who text primary key, room text, at integer)"); }
   get(id) { const r = this.sql.exec("select room from homes where who = ?", id).toArray()[0]; try { return r ? JSON.parse(r.room) : null; } catch (e) { return null; } }
+  tenants() { this.nameT(); return this.sql.exec("select n.who as who, n.name as name from names n union select h.who, null from homes h where h.who not in (select who from names) limit 2000").toArray().map(r => ({ who: r.who, name: r.name || null })); }
   put(id, room) { this.sql.exec("insert into homes(who, room, at) values(?, ?, ?) on conflict(who) do update set room = excluded.room, at = excluded.at", id, room, Date.now()); return true; }
   // each player's owned things, a row a key (at most 2 MB a player)
   ownedT() { this.sql.exec("create table if not exists owned(who text, k text, v text, at integer, primary key(who, k))"); }
@@ -680,6 +696,7 @@ export class Home extends DurableObject {
     const no = this.sql.exec("select coalesce(max(no), 999) + 1 as no from passports").toArray()[0].no; this.sql.exec("insert into passports(who, no, at) values(?, ?, ?)", id, no, Date.now()); return no; }
   // every citizen's name, one a player and no two alike (low: the name in small letters, for the check)
   nameT() { this.sql.exec("create table if not exists names(who text primary key, name text, low text unique, at integer)"); }
+  namesAll() { this.nameT(); const o = {}; for (const r of this.sql.exec("select who, name from names").toArray()) o[r.who] = r.name; return o; }
   nameGet(id) { this.nameT(); const r = this.sql.exec("select name from names where who = ?", id).toArray()[0]; return r ? r.name : null; }
   nameClaim(id, name) { this.nameT(); const low = name.toLowerCase(), r = this.sql.exec("select who from names where low = ?", low).toArray()[0]; if (r && r.who !== id) return false;
     this.sql.exec("insert into names(who, name, low, at) values(?, ?, ?, ?) on conflict(who) do update set name = excluded.name, low = excluded.low, at = excluded.at", id, name, low, Date.now()); return true; }

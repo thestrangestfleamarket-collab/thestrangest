@@ -1,4 +1,4 @@
-// THE BLOCK: BLK builds what stands between the real buildings across Market St, on the Hudson row and on West St: closed garages, empty parking lots and empty dirt lots (no fences).
+// THE BLOCK: BLK builds what stands between the real buildings across Market St, on the Hudson row and on West St: empty parking lots and empty dirt lots (no fences).
 import {SHARED, THREE} from './003-shx.js';
 import {BLK, PARK, pos, ROOMS, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
@@ -66,10 +66,10 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
     quad(P,U,I,v(q.x0,q.y0),v(q.x1,q.y0),v(q.x1,q.y1),v(q.x0,q.y1),[0,0],[1,0],[1,1],[0,1]);
     mesh(P,U,I,new THREE.MeshLambertMaterial({map:tex(c),side:THREE.DoubleSide}));
     BLK.lots.push(q); }
-  const TINTS=[[1.3,.82,.66],[1.12,1,.84],[.92,.95,1.02],[1.2,.95,.8],[1.05,.9,.92],[.98,1.02,.92],[1.25,.88,.72],[1.1,1.04,.95],[.9,.9,.96]], KINDS=['garage','park','empty'];
+  const TINTS=[[1.3,.82,.66],[1.12,1,.84],[.92,.95,1.02],[1.2,.95,.8],[1.05,.9,.92],[.98,1.02,.92],[1.25,.88,.72],[1.1,1.04,.95],[.9,.9,.96]], KINDS=['empty','park','empty'];   // no garages for now (owner, 9 Nov 2026): an empty lot where one stood
   const fill=(a,b,mk)=>{ let x=a, i=0; while(b-x>1.5){ const r=((Math.sin(x*12.9898+i*78.233)*43758.5453)%1+1)%1, w=6+r*4, e=b-x-w<3?b:x+w; mk(x,e,i++); x=e; } };
   const holes=(on,a0,a1)=>{ const g=[]; let y=a0; for(const [a,b] of on.slice().sort((p,q)=>p[0]-q[0])){ if(a>=a1)break; if(a-.1>y)g.push([y,a-.1]); y=Math.max(y,b+.1); } if(a1>y)g.push([y,a1]); return g; };   // (only the stretch a0..a1: a span past its end leaves no gap)
-  let n=0; const spot=(row,off,i,box)=>{ n++; const kind=row===1||row===2?'garage':KINDS[(i+off)%3], side=row===1?'s':row===2?'n':'e';   // Market St's row (row 1, owner 5 Nov 2026: one shut garage between every two shops) and the Hudson row (row 2) are all closed garages
+  let n=0; const spot=(row,off,i,box)=>{ n++; const kind=row===1||row===2?'empty':KINDS[(i+off)%3], side=row===1?'s':row===2?'n':'e';   // Market St's row and the Hudson row: empty lots in every gap
     if(kind==='garage')building({...box,h:112,e:row===5,k:400+n*11,tint:TINTS[n%TINTS.length],lit:0,garage:true,row});
     else lot({...box,kind,row,side}); };
   // (the Drive's buildings on the rows, data/world.json block.pf, keep their spans)
@@ -118,7 +118,12 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
     // the land past the edges (owner, 7 Nov 2026: "set a base color for far off distance things like grass"; "needs to be entire lake visible"): one low-res grass picture outside the section, the big lake whole in it, under the strips
     { const GD=E.ground, Ls=E.lines||[]; if(GD&&Ls.length){ const [bx0,by0,bx1,by1]=GD.box, k=GD.px||2, W=Math.ceil((bx1-bx0)/k), H=Math.ceil((by1-by0)/k), c=cv(W,H), g=c.getContext('2d'), im=g.createImageData(W,H), d=im.data, gc=GD.grass, wc=GD.water;
       const MR=E.mirror, WM=new Uint8Array(W*H), S=window.FOUNT&&FOUNT.S, L=S&&S.L, ox=(window.PARK&&PARK.ox)||0, oy=(window.PARK&&PARK.oy)||0;
-      for(let j=0;j<H;j++)for(let i=0;i<W;i++){ const x=bx0+(i+.5)*k, y=by0+(j+.5)*k, wet=L&&Math.abs(x-ox-L.x)<L.rx+12&&Math.abs(y-oy-L.y)<L.ry+12&&FOUNT.lake(x-ox,y-oy)<0, b=wet?wc:gc, n=wet?.97+rnd()*.06:.86+rnd()*.2, q=(j*W+i)*4;
+      // what the ground is at a spot: the park's grass, lawns and waters inside the ring, its streets round it, the city's blocks past them (data/world.json sections.ring, edge.ground)
+      const RG=LEVEL.sections&&LEVEL.sections.ring, PKB=RG&&RG.park, OUB=RG&&RG.outer, inR=(x,y,r)=>r&&x>r.x0&&x<r.x1&&y>r.y0&&y<r.y1, ell=(x,y,[ex,ey,rx,ry,a])=>{ const c=Math.cos((a||0)*Math.PI/180), s=Math.sin((a||0)*Math.PI/180), u=(x-ex)*c+(y-ey)*s, v=-(x-ex)*s+(y-ey)*c; return (u/rx)**2+(v/ry)**2<1; };
+      const PM=new Uint8Array(W*H); { const pc=cv(W,H), pg=pc.getContext('2d'); pg.strokeStyle='#fff'; pg.lineWidth=1.6; for(const pl of GD.paths||[]){ pg.beginPath(); pl.forEach(([x,y],q)=>pg[q?'lineTo':'moveTo']((x-bx0)/k,(y-by0)/k)); pg.stroke(); } const pd=pg.getImageData(0,0,W,H).data; for(let q=0;q<W*H;q++)PM[q]=pd[q*4+3]>90?1:0; }
+      const [BKX,BKY]=GD.block||[64,28], isPark=(x,y)=>!PKB||inR(x,y,PKB), kindAt=(x,y,q)=>{ if(!isPark(x,y))return inR(x,y,OUB)||!GD.city?GD.street||gc:((x-OUB.x1)%BKX+BKX)%BKX<4||((y-OUB.y1)%BKY+BKY)%BKY<4?GD.street:GD.city;
+        if((GD.waters||[]).some(e=>ell(x,y,e)))return wc; if(PM[q])return GD.path||gc; if((GD.lawns||[]).some(e=>ell(x,y,e)))return GD.lawn||gc; return gc; };
+      for(let j=0;j<H;j++)for(let i=0;i<W;i++){ const x=bx0+(i+.5)*k, y=by0+(j+.5)*k, wet=L&&Math.abs(x-ox-L.x)<L.rx+12&&Math.abs(y-oy-L.y)<L.ry+12&&FOUNT.lake(x-ox,y-oy)<0, b=wet?wc:kindAt(x,y,j*W+i), n=wet?.97+rnd()*.06:.86+rnd()*.2, q=(j*W+i)*4;
         d[q]=b[0]*n; d[q+1]=b[1]*n; d[q+2]=b[2]*n; WM[q>>2]=wet?1:0; d[q+3]=wet?0:MR&&y>MR.ground[0]&&y<MR.ground[1]&&(x>MR.x[1]&&x<MR.x[1]+MR.reach||x<MR.x[0]&&x>MR.x[0]-MR.reach)?0:255; }
       g.putImageData(im,0,0); const t=tex(c), m=new THREE.MeshLambertMaterial({map:t,alphaTest:.5});
       const c2=cv(W,H), g2=c2.getContext('2d'), i2=g2.createImageData(W,H); for(let q=0;q<W*H;q++){ i2.data.set([d[q*4],d[q*4+1],d[q*4+2],WM[q]?255:0],q*4); } g2.putImageData(i2,0,0); const m2=new THREE.MeshLambertMaterial({map:tex(c2),alphaTest:.5}), SUB=[];   // the lake's stand-in until the park's own water is built (then it shows through the hole)
@@ -138,9 +143,14 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
         for(const m of [sw,rl]){ m.raycast=()=>{}; m.userData.cullOf=1; m.userData.haze=1; G.add(m); } BLK.back.push({parkwall:true,x0:wa,x1:we}); } }
       const BANDS=P.bands||[P.trees], N=P.n||400, crown=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshLambertMaterial({color:0x3f6d2e,flatShading:true}),N), trunk=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshLambertMaterial({color:0x4a3a2c}),N), M4=new THREE.Matrix4(), Q=new THREE.Quaternion(), V=new THREE.Vector3(), S=new THREE.Vector3();
       const FS=window.FOUNT&&FOUNT.S, FL=FS&&FS.L, pox=(window.PARK&&PARK.ox)||0, poy=(window.PARK&&PARK.oy)||0, WET=(x,y)=>!!FL&&Math.abs(x-pox-FL.x)<FL.rx+16&&Math.abs(y-poy-FL.y)<FL.ry+16&&FOUNT.lake(x-pox,y-poy)<6;   // none in the big lake (owner, 8 Nov 2026: "the lake has a chunk of green in it")
+      // none in the park's clearings or on its paths (edge.park.clear, edge.ground.paths)
+      const CL=P.clear||[], PS=((E.ground&&E.ground.paths)||[]).flatMap(pl=>pl.slice(1).map((b,q)=>[pl[q],b])), dSeg=(x,y,[[ax,ay],[bx,by]])=>{ const dx=bx-ax, dy=by-ay, t=Math.max(0,Math.min(1,((x-ax)*dx+(y-ay)*dy)/(dx*dx+dy*dy||1))); return Math.hypot(x-ax-t*dx,y-ay-t*dy); };
+      const OFF=(x,y)=>CL.some(([cx,cy,rx,ry])=>((x-cx)/rx)**2+((y-cy)/ry)**2<1)||PS.some(sg=>dSeg(x,y,sg)<5);
       const AR=BANDS.map(q=>(q[2]-q[0])*(q[3]-q[1])), AT=AR.reduce((a,b)=>a+b,0);
-      for(let i=0;i<N;i++){ let r0=rnd()*AT, bi=0; while(bi<BANDS.length-1&&r0>AR[bi]){ r0-=AR[bi]; bi++; } const [t0,u0,t1,u1]=BANDS[bi]; let x=t0+rnd()*(t1-t0), y=u0+rnd()*(u1-u0); for(let k=0;k<8&&WET(x,y);k++){ x=t0+rnd()*(t1-t0); y=u0+rnd()*(u1-u0); } const r=(2.2+rnd()*2.4)*T, h=(2+rnd()*2)*T, wx=XS(x), wz=ZS(y);
+      for(let i=0;i<N;i++){ let r0=rnd()*AT, bi=0; while(bi<BANDS.length-1&&r0>AR[bi]){ r0-=AR[bi]; bi++; } const [t0,u0,t1,u1]=BANDS[bi]; let x=t0+rnd()*(t1-t0), y=u0+rnd()*(u1-u0); for(let k=0;k<8&&(WET(x,y)||OFF(x,y));k++){ x=t0+rnd()*(t1-t0); y=u0+rnd()*(u1-u0); } const r=(2.2+rnd()*2.4)*T, h=(2+rnd()*2)*T, wx=XS(x), wz=ZS(y);
         Q.setFromAxisAngle(V.set(0,1,0),rnd()*6.28); crown.setMatrixAt(i,M4.compose(V.set(wx,h+r*.7,wz),Q,S.set(r,r*(.8+rnd()*.3),r))); trunk.setMatrixAt(i,M4.compose(V.set(wx,h/2,wz),Q,S.set(.35*T,h,.35*T))); }
+      // (shrunk away before the end of the view, so the drawing's edge never shows as a dark line of trees: owner, 8 Nov 2026, "there is a dark sliver")
+      for(const im of [crown,trunk]){ im.material.onBeforeCompile=sh=>{ sh.vertexShader=sh.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>\n#ifdef USE_INSTANCING\n transformed*=1.-smoothstep(${(380*T).toFixed(1)},${(470*T).toFixed(1)},distance((modelMatrix*instanceMatrix*vec4(0.,0.,0.,1.)).xyz,cameraPosition));\n#endif`); }; im.material.customProgramCacheKey=()=>'farparktrees'; }
       for(const im of [crown,trunk]){ im.raycast=()=>{}; im.castShadow=false; im.receiveShadow=true; im.userData.cullOf=1; G.add(im); } BLK.back.push({park:true,n:N}); } }
   window.BLOCKDBG=()=>({blds:BLK.blds.map(q=>[q.row,q.x0,q.x1,q.h]),lots:BLK.lots.map(q=>[q.row,q.kind,q.x0,q.x1,q.y0,q.y1]),band:BLK.band(pos.x,pos.z)});
 }

@@ -193,7 +193,7 @@ SYS.add('near',(x,z)=>NPCS.near(x,z),'npc shading');
       // far off (owner, 8 Nov 2026: "i want to make sure arent rendering things are levels we dont need to from things far away"): past NPCS.LOD a character is its plain shape (two boxes its own size, its colours), not posed or drawn whole; it still walks where it goes
       const lod=seen&&!far&&!N.sheet&&d>NPCS.LOD*(SHARED.lodK||1)&&!!N.g.parent.visible&&LEVELS.drawn(N.g); N.lod=lod;
       N.far=far||lod; N.hid=lod||!N.sheet&&(!seen||far&&!N.shaded||CULL.past(p.x,p.z,Math.max(TILE,N.cullR||0))); if(!N.shaded&&(!far||d<NPCS.SHADE)&&shadeN<2){ N.shade(); shadeN++; }
-      if(!far&&!lod)N.tick(dt,you); else{ if(N.farMove)N.farMove(dt); if(N.st){ N.g.position.x=N.st.x; N.g.position.z=N.st.z; } } }   // a body not ticked still stands where its character is
+      if(!far&&!lod)N.tick(dt,you); else{ if(N.farMove)N.farMove(dt); if(N.st){ N.g.position.x=N.st.x; N.g.position.z=N.st.z; if(!N.hid&&N.ground)N.g.position.y=N.ground(N.st.x,N.st.z)+(N._bb||0); } } }   // a body not ticked still stands where its character is (and on its ground, if it is drawn)
     NPCS.lodDraw();
     for(const X of NPCS.extra){ const a=X.at; X.hid=!!a&&(!FR.intersectsSphere(SP.set(V.set(a.x,(a.y||0)+1,a.z),2*TILE))||CULL.past(a.x,a.z,2*TILE)); } };
   // the far characters' plain shapes: a body box and a head box each, as tall and wide as the character's own body (measured once), one draw for all

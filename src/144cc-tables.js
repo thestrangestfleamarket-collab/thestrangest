@@ -1,9 +1,10 @@
 // THE BOOKSTORE CAFÉ'S GAME TABLES: five tables of four seats; sit, pick a public-domain game (board, cards, dice; TG, the rules in 144cd–144cg), play other players or the computer, for fun. A table's game is shared through the online world store (key tbl:books:<n>); off the website it plays in the page.
 import {THREE} from './003-shx.js';
-import {INV, ONLINE, ROOMS, st, TABLES, USE} from './003b-systems.js';
+import {INV, INVITES, ONLINE, ROOMS, st, TABLES, USE} from './003b-systems.js';
 import {SAY} from './003d-say.js';
-import {SYS} from './006-map-pre.js';
+import {STORE, SYS} from './006-map-pre.js';
 import {MINI} from './038zd-mini.js';
+import {MSHOP} from './059i-mshops.js';
 const TG={lib:[],G:null};
 { /* ---------- helpers every game uses: a seeded random in the state, cards, dice, buttons ---------- */
   TG.rng=S=>()=>{ let t=(S.r=(S.r+0x6D2B79F5)>>>0); t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296; };
@@ -96,16 +97,31 @@ const TG={lib:[],G:null};
     if(b==='new'){ R.st=null; R.P=null; R.g=''; for(let i=0;i<4;i++)if(R.s[i]==='cpu')R.s[i]=''; publish(n,R); return; }
     if(b.startsWith('seat')){ const i=+b.slice(4); R.s[i]=R.s[i]==='cpu'?'':'cpu'; publish(n,R); return; }
     if(b.startsWith('g:')){ R.g=b.slice(2); R.st=null; R.P=null; const G2=TG.G[R.g]; let f=R.s.filter(Boolean).length; for(let i=0;i<4&&f>G2.max;i++)if(R.s[i]==='cpu'){ R.s[i]=''; f--; } for(let i=0;i<4&&f<G2.min;i++)if(!R.s[i]){ R.s[i]='cpu'; f++; } publish(n,R); return; }
-    if(b==='back'){ R.g=''; publish(n,R); return; }
-    if(b==='start'&&G){ const P=players(R); if(P.length<G.min||P.length>G.max)return; const st0={r:(Math.random()*4294967296)>>>0}; R.st=G.init(P.length,TG.rng(st0)); if(R.st.r==null)R.st.r=st0.r; R.P=P; publish(n,R); } };
+    if(b==='back'){ R.g=''; pick=false; publish(n,R); return; }
+    if(b==='inv'){ pick=!pick; if(pick&&!INVITES.everyone().length)say('NO ONE ELSE IS ONLINE RIGHT NOW.'); return; }
+    if(b.startsWith('p:')&&G){ const p=INVITES.everyone().find(q=>q.id===b.slice(2)); if(p&&INVITES.send(p.id,p.name,'books',{n,g:R.g}))pick=false; return; }
+    if(b==='start'&&G){ pick=false; const P=players(R); if(P.length<G.min||P.length>G.max)return; const st0={r:(Math.random()*4294967296)>>>0}; R.st=G.init(P.length,TG.rng(st0)); if(R.st.r==null)R.st.r=st0.r; R.P=P; publish(n,R); } };
   const KINDS=[['board','BOARD GAMES'],['cards','CARDS'],['dice','DICE']];
   const lobby=(g,R,G,u)=>{ const L=Object.entries(TG.G);
     if(!G){ let y=12; for(const [k,label] of KINDS){ const rows=L.filter(([,q])=>q.kind===k); if(!rows.length)continue; TG.text(g,label,W/2,y+6,{b:1,serif:1,s:14}); y+=20;
         rows.forEach(([id,q],i)=>{ const c=i%3, x=8+c*170, yy=y+Math.floor(i/3)*28; TG.btn(g,u,'g:'+id,x,yy,164,24,q.name.toUpperCase()+' '+(q.min===q.max?q.min:q.min+'-'+q.max)); }); y+=Math.ceil(rows.length/3)*28+8; } return; }
-    const P=players(R); TG.text(g,G.name.toUpperCase(),W/2,60,{b:1,serif:1,s:26}); TG.text(g,(G.min===G.max?G.min:G.min+' TO '+G.max)+' PLAYERS',W/2,92,{s:13});
+    const P=players(R), can=G.max>=2&&open1(R)>=0;   // only a game for two or more is played with an invited player
+    if(pick&&can){ const L=INVITES.everyone().slice(0,24); TG.text(g,'INVITE A PLAYER TO '+G.name.toUpperCase(),W/2,24,{b:1,serif:1,s:16}); TG.text(g,L.length?'THEY GET A CARD AND A MARK ON THEIR MAP.':'NO ONE ELSE IS ONLINE RIGHT NOW.',W/2,46,{s:11,c:'#c9b890'});
+      L.forEach((q,i)=>{ const x=8+(i%3)*170, y=64+Math.floor(i/3)*30; TG.btn(g,u,'p:'+q.id,x,y,164,26,q.name.toUpperCase().slice(0,16)+(q.sec&&q.sec!==ONLINE.room?' ('+q.sec.slice(2).toUpperCase()+')':'')); });
+      TG.btn(g,u,'inv',W/2-90,BH-46,180,28,'BACK'); return; }
+    TG.text(g,G.name.toUpperCase(),W/2,60,{b:1,serif:1,s:26}); TG.text(g,(G.min===G.max?G.min:G.min+' TO '+G.max)+' PLAYERS',W/2,92,{s:13});
     const words=G.help.split(' '); let line='', y=130; for(const w of words){ if((line+' '+w).length>58){ TG.text(g,line,W/2,y,{s:12}); y+=18; line=w; } else line=(line?line+' ':'')+w; } TG.text(g,line,W/2,y,{s:12});
     TG.text(g,'CLICK AN EMPTY SEAT ABOVE FOR THE COMPUTER; LEAVE IT EMPTY FOR A PLAYER.',W/2,BH-120,{s:11,c:'#c9b890'});
-    const ok=P.length>=G.min&&P.length<=G.max; TG.btn(g,u,'start',W/2-90,BH-90,180,36,ok?'START':P.length<G.min?'NEEDS '+G.min:'AT MOST '+G.max,ok); TG.btn(g,u,'back',W/2-90,BH-46,180,28,'OTHER GAMES'); };
+    const ok=P.length>=G.min&&P.length<=G.max; TG.btn(g,u,'start',W/2-90,BH-90,180,36,ok?'START':P.length<G.min?'NEEDS '+G.min:'AT MOST '+G.max,ok); TG.btn(g,u,'back',W/2-90,BH-46,180,28,'OTHER GAMES'); if(can&&ONLINE.on)TG.btn(g,u,'inv',W/2-90,BH-160,180,30,'INVITE A PLAYER'); };
+  // a seat an invited player can take: an empty one, else one the computer holds
+  const open1=R=>{ const i=R.s.findIndex(id=>!id); return i>=0?i:R.s.findIndex(id=>id==='cpu'); };
+  let pick=false;
+  INVITES.kinds.books={what:d=>{ const G=TG.games()[d.g]; return 'TO PLAY '+(G?G.name.toUpperCase():'A GAME')+' AT THE BOOKSTORE CAFÉ (TABLE '+((+d.n||0)+1)+')'; },
+    where:()=>{ const a=MSHOP.at&&MSHOP.at.books; return a&&a.door?{x:a.door[0],z:a.door[1],name:'THE BOOKSTORE'}:null; },
+    // accepting: into the bookstore, then sat in a free seat at that table
+    go:async d=>{ const n=Math.max(0,Math.min(N-1,Math.floor(+d.n||0))); if(ROOMS.offIn&&ROOMS.offIn()!=='books'){ if(STORE.ensure)await STORE.ensure(); await ROOMS.enter('books'); }
+      for(let i=0;i<40&&!TABLES.chairs[n*4];i++)await new Promise(r=>setTimeout(r,250)); const R=T[n], k=R.s.findIndex(id=>id===me())>=0?R.s.indexOf(me()):open1(R), f=TABLES.chairs[n*4+k];
+      if(k<0||!f){ say('TABLE '+(n+1)+' IS FULL.'); return; } f(); }};
   /* ---------- the coffee bar (pay at the bar, take it with you) and the game cupboard (every game, its players and rules) ---------- */
   const MENU=[['d_coffee','A COFFEE',1],['f_croissant','A CROISSANT',2],['f_cake','A SLICE OF CAKE',3]];
   TABLES.bar=()=>{ '@tables'; MINI.open({title:'THE COFFEE BAR',w:400,h:230,help:'Click to buy. Pay at the bar; it goes in your bag.',

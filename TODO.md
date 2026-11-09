@@ -186,6 +186,7 @@ In order (each step builds on the one before): RLS SQL → login cookie with the
   with the trade line.
 
 ## Places and insides
+- [x] **Invitations: the café's board games first** · P2 · M · code · done 9 Nov [claude/stoic-dijkstra-smffz6]. Next kinds register in `INVITES.kinds`.
 - [ ] **The bookstore café: twice as wide, a coffee bar, five game tables** · P2 · L · code. [taking: claude/clever-galileo-0fj20f, 7 Nov] Owner, 7 Nov 2026: layout A, inside only, players and the computer, for fun, all the games.
 
 - [ ] **Shop insides: can you walk in and out?** · P2 · S (check) · find, then pick. Owner, 3 Nov (his shot of the bath house): "when

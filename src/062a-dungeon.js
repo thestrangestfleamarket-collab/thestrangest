@@ -69,7 +69,7 @@ await grab('dungeon',async()=>{});
     const floor=(x0,y0,x1,y1,R)=>{ if(x1-x0<.01||y1-y0<.01)return; bq([X(x0),Y(.3)+dy,Z(y1)],[X(x1),Y(.3)+dy,Z(y1)],[X(x1),Y(.3)+dy,Z(y0)],[X(x0),Y(.3)+dy,Z(y0)],faceTex(Math.round((x1-x0)*24),Math.round((y1-y0)*24),(i,j)=>C(MODS.dunTerr?MODS.dunTerr.floorCol(x0+(i+.5)/24,y0+(j+.5)/24,R,'cave'):K.dungeonFloorCol(x0+(i+.5)/24,y0+(j+.5)/24,R))),'L'); };
     for(const {R} of Ls)for(const t of R.torches){ const [x,y]=t.w==='l'?[R.x0+.16,R.y0+t.u]:t.w==='r'?[R.x1-.16,R.y0+t.u]:t.w==='b'?[R.x0+t.u,R.y0+.16]:[R.x0+t.u,R.y1-.16]; Kc['wall torch'](x,y,t.w); }
     const LK=MODS.dunLook, solid=LK?Ls.filter(l=>!l.c).flatMap(l=>LK.props(l,Kc)):[], TR=MODS.dunTerr;
-    if(TR)for(const l of Ls)if(!l.c&&!l.T)TR.make(l);   // the uneven ground, after the props so it keeps them on the flat
+    if(TR)for(const l of Ls)if(!l.T)TR.make(l);   // the uneven ground, after the props so it keeps them on the flat
     for(const l of Ls)if(!l.T)floor(l.B.x0,l.B.y0,l.B.x1,l.B.y1,l.R);
     const made=KP.slice(n0); KP.length=n0; BATCH.meshes={}; BATCH.cast=true; for(const [k,b] of WB)gboxS(b,k,dy); for(const p of made)for(const b of p.boxes)gboxS(b,'L',dy);
     BATCH.build((k,map,emap)=>castleMat(k,map,emap,PL[k])); BATCH.cast=false;

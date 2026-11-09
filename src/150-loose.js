@@ -219,7 +219,9 @@ import {BVH} from './137-bvh.js';
     return {d:h.distance,th:{name:(it.name||'').replace(/^cottage: /,'').toUpperCase(),pick:true,obj:o,reach:.85*T+r,near:1.6*T+r,tall:Math.max(.4*T,it.h[1]*2),act:()=>grab(it)}}; };
   GPH.loose=()=>items;
   // what the inspect window shows: the thing in your hands, else the loose thing under the pointer; its look copied (shared buffers marked, never freed)
-  GPH.inspectable=ray=>{ '@later'; let it=held; if(!it&&ray&&picks.length){ const h=ray.intersectObjects(picks,false)[0]; it=h&&itemOf(h,ready?act:pre); } if(!it)return null;
+  GPH.inspectable=ray=>{ '@later'; let it=held; if(!it&&ray&&picks.length){ const h=ray.intersectObjects(picks,false)[0]; it=h&&itemOf(h,ready?act:pre); } if(!it)return null; const L=GPH.look(it);
+    return {obj:L.obj,mine:L.mine,name:(it.name||'').replace(/^cottage: /,''),info:[it===held?'IN YOUR HANDS':'ON THE GROUND',Math.round((it.m||1)*10)/10+' KG']}; };
+  GPH.look=it=>{ '@later';
     const sub=(g,rs,mat)=>{ const G=new THREE.BufferGeometry(); let n=0; for(const [a,b] of rs)n+=b-a; for(const k in g.attributes){ const A=g.attributes[k], s=A.itemSize, d=new A.array.constructor(n*s); let j=0; for(const [a,b] of rs){ d.set(A.array.subarray(a*s,b*s),j*s); j+=b-a; } G.setAttribute(k,new THREE.BufferAttribute(d,s,A.normalized)); } return new THREE.Mesh(G,mat); };
     let obj, mine=true;
     if(it.k==='o'){ obj=it.obj; mine=false; }
@@ -227,7 +229,7 @@ import {BVH} from './137-bvh.js';
     else if(it.k==='i'){ obj=new THREE.Group(); for(const [me,i] of it.inst){ const m=new THREE.InstancedMesh(me.geometry,me.material,1); me.getMatrixAt(i,M4); m.setMatrixAt(0,M4); if(me.instanceColor){ const c=new THREE.Color(); me.getColorAt(i,c); m.setColorAt(0,c); } m.userData.shared=true; obj.add(m); } }
     else if(it.dm){ obj=new THREE.Group(); for(const D of it.dm)obj.add(new THREE.Mesh(D.me.geometry.clone(),D.me.material)); }
     else { const by=new Map(); for(const p of it.parts)(by.get(p.me)||by.set(p.me,[]).get(p.me)).push([p.v0,p.v0+6]); obj=new THREE.Group(); for(const [me,rs] of by)obj.add(sub(me.geometry,rs,me.material)); }
-    return {obj,mine,name:(it.name||'').replace(/^cottage: /,''),info:[it===held?'IN YOUR HANDS':'ON THE GROUND',Math.round((it.m||1)*10)/10+' KG']}; };
+    return {obj,mine}; };
   // a whole object (its own meshes, any shape) as a loose thing: pushed, knocked over, picked up and thrown like the rest; GPH.drop takes it out again
   GPH.add=(obj,{name,m=1}={})=>{ '@later'; obj.updateMatrixWorld(true); const B=new THREE.Box3(); obj.traverse(q=>{ if(q.isMesh&&!q.userData.soft)B.expandByObject(q,true); }); if(B.isEmpty())B.setFromObject(obj); const c=B.getCenter(new THREE.Vector3());   // soft parts (hanging leaves) stay out of the body's box
     const it=mk(null,'o',B.min.toArray(),B.max.toArray(),{name:name||obj.name||'',obj,m,q0:obj.quaternion.clone(),off:obj.position.clone().sub(c)}); obj.traverse(q=>{ if(q.isMesh)q.userData.loose=it; }); items.push(it); fin([it]); return it; };

@@ -16,7 +16,7 @@ import {loose, looseDraw, P, PHH, PHYOU, phyStep, phyYouNow, ragBlend, ragPose, 
 import {FLOATS} from './074-floats.js';
 
 looseDraw();
-let looseAcc=0, J0=null, J0t=0; SHARED.trip=false; const SUNG={t:0,lit:0,k:0,rc:new THREE.Raycaster(),o:new THREE.Vector3(),hit:[]};
+let looseAcc=0, J0=null, J0t=0; SHARED.trip=false; const SUNG={t:0,lit:0,k:0,rc:new THREE.Raycaster(),o:new THREE.Vector3(),hit:[],st:[]};
 
 const PAD={mv:null,n:0}; SHARED.target=null;
 const VIEW0={yaw:Math.PI/4,pitch:Math.PI/6,ppu:PPU*1.5}; SHARED.yaw=VIEW0.yaw; SHARED.pitch=VIEW0.pitch; SHARED.yawTo=SHARED.yaw; SHARED.pitchTo=SHARED.pitch; SHARED.ppuTo=SHARED.ppu;
@@ -92,8 +92,8 @@ function frame(now,xf){ if(!xf){ requestAnimationFrame(frame); if(VR.on)return; 
 
   SYS.go(()=>{ if(UI.freeCam)LITE.tick(dt,UI.camT.x,UI.camT.y,UI.camT.z); else LITE.tick(dt,pos.x,SHARED.py+1.2*TILE,pos.z); },'lite');
   SYS.go(()=>{ let lampW=0; for(const L of lamps){ if(!L.visible||!(L.intensity>0)||!L.parent)continue; const d=Math.hypot(L.position.x-pos.x,L.position.z-pos.z); if(d<6)lampW=Math.max(lampW,(1-d/6)*Math.min(1,L.intensity/(L.userData.i0||L.intensity))); }
-  { const G=SUNG, sun=CLOCK.sun, out=SHARED.LVL==='up'&&!ROOMS.cur&&sun&&sun.intensity>.6&&CLOCK.dir&&CLOCK.dir.y>.05; if((G.t-=dt)<=0){ G.t=.15; G.lit=0; if(out){ G.rc.set(G.o.set(pos.x,SHARED.py+1.1*TILE,pos.z),CLOCK.dir); G.rc.camera=SHARED.cam; G.rc.far=40*TILE; G.hit.length=0; let blk=false;
-      for(const h of G.rc.intersectObjects(scene.children,true,G.hit)){ const o=h.object, m=Array.isArray(o.material)?o.material[0]:o.material; let v=true; for(let q=o;q;q=q.parent)if(!q.visible||q===W3.group){ v=false; break; } if(!v||o.isSprite||!m||m.transparent||m.depthWrite===false||o.isPoints||o.isSprite||o.isLine)continue; blk=true; break; }
+  { const G=SUNG, sun=CLOCK.sun, out=SHARED.LVL==='up'&&!ROOMS.cur&&sun&&sun.intensity>.6&&CLOCK.dir&&CLOCK.dir.y>.05; if((G.t-=dt)<=0){ G.t=.15; G.lit=0; if(out){ G.rc.set(G.o.set(pos.x,SHARED.py+1.1*TILE,pos.z),CLOCK.dir); G.rc.camera=SHARED.cam; G.rc.far=40*TILE; let blk=false; const S=G.st; S.length=0; for(const c of scene.children)S.push(c);   // only what is drawn, and the first solid hit is enough
+      while(S.length&&!blk){ const o=S.pop(); if(!o.visible||o===W3.group)continue; for(const c of o.children)S.push(c); if(!o.isMesh||!o.layers.test(G.rc.layers))continue; const m=Array.isArray(o.material)?o.material[0]:o.material; if(!m||m.transparent||m.depthWrite===false)continue; G.hit.length=0; o.raycast(G.rc,G.hit); blk=G.hit.length>0; }
       G.lit=blk?0:Math.min(1,(sun.intensity-.6)/1.4); } } G.k+=(G.lit-G.k)*Math.min(1,dt*4); }
   W3.tint.setRGB(.58,.6,.66).lerp(C2.setRGB(1,1,1),Math.max(Math.max(0,lampW)*(ROOMS.cur?0.35:0.7),SUNG.k*.9)); if(ED.on)W3.tint.setRGB(1,1,1); },'tint');
   SYS.go(()=>DRESS.tick(dt,pos),'dress'); SYS.run('dress',dt,pos); SYS.go(()=>RINGX.tick(dt),'ring'); SYS.run('ring',dt); SYS.go(()=>RIVER.tick(dt,pos),'river'); SYS.go(()=>{ FOUNT.tick&&FOUNT.tick(dt,pos); },'fount'); SYS.go(()=>RIVER.hud(),'riverhud'); SYS.go(()=>{ if(window.BROOK&&BROOK.tick)BROOK.tick(dt,pos); },'brook'); SYS.go(()=>{ const r=MODS.apts.tick(); if(r)SHARED.solids=r; },'apts'); SYS.go(()=>{ const r2=STORE.stackTick&&STORE.stackTick(); if(r2)SHARED.solids=r2; },'storestack'); SYS.go(()=>CITY.tick(dt,pos),'city'); SYS.run('city',dt,pos); SYS.go(()=>NPCS.tick(dt,pos),'npcs'); SYS.go(()=>{ if(SHARED.FIRE)SHARED.FIRE.tick(dt); },'fire'); SYS.go(()=>FIGFX.tick(dt,pos),'figfx'); SYS.go(()=>FLAME.tick(dt,pos),'flame'); SYS.go(()=>MUS.tick(dt),'mus'); SYS.go(()=>PNM.tick(dt),'pnm'); SYS.go(()=>SGM.tick(dt),'sgm'); SYS.go(()=>DRM.tick(dt),'drm'); SYS.go(()=>STAGE.tick(dt),'stage');

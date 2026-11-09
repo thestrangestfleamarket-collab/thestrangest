@@ -57,12 +57,14 @@ Object.assign(SWIM,{d:null,tankS:0}); window.SWIM=SWIM;
     for(let i=0;i<NM;i++){ for(let k=0;k<3;k++){ const base=m0[i*3+k]+(k===1?-mt*.05*WM:Math.sin(mt*.3+i)*.1*WM), cc=k===0?c.x:k===1?c.y:c.z; a[i*3+k]=cc+(((base-cc)%w+w*1.5)%w-R); } }
     mg.attributes.position.needsUpdate=true; },post:()=>{ for(const o of hid)o.visible=true; hid.length=0; if(cf){ cf.cam.far=cf.far; cf.cam.updateProjectionMatrix(); cf=null; } if(DFOG.pass){ DFOG.under=null; if(dfo){ DFOG.pass.enabled=false; dfo=false; } } }});
 
-  // the rented scuba set: a full tank when you rent it, worn on your back; under water it breathes for you until it runs dry, then it goes back to the shark
-  FORAGE.add({names:{scuba:'SCUBA SET (RENTAL)'}});
+  // the scuba set, bought (owner, 9 Nov 2026: "no more renting scuba gear, and you only buy it"): worn, under water it breathes for you until the tank runs dry; out of the water it is filled again
+  FORAGE.add({names:{scuba:'SCUBA SET'}});
   const save=()=>{ try{ OWNED.set('tank',String(Math.max(0,SWIM.tankS).toFixed(1))); }catch(e){} }; try{ SWIM.tankS=+OWNED.get('tank')||0; }catch(e){}
   SWIM.tank=()=>EQUIP.breathe?SWIM.tankS:0; let st5=0;
   VIT.supply=dt=>{ '@later'; if(!EQUIP.breathe||SWIM.tankS<=0)return false; SWIM.tankS-=dt; if(VIT.air<VIT.airMax)VIT.air=Math.min(VIT.airMax,VIT.air+dt*VIT.airMax/2.5);   // breathing from the tank: your own breath comes back if((st5+=dt)>5){ st5=0; save(); }
-    if(SWIM.tankS<=0){ SWIM.tankS=0; const id=EQUIP.by.back; if(id){ EQUIP.off('back'); if(ITEMS.prop(id,'rental'))FORAGE.take(id,1); } save(); say('YOUR TANK IS EMPTY. THE RENTED SET GOES BACK TO FISHING & SCUBA.','#c8a090'); if(FORAGE.draw)FORAGE.draw(); return false; } return true; };
+    if(SWIM.tankS<=0){ SWIM.tankS=0; save(); say('YOUR TANK IS EMPTY. IT FILLS AGAIN OUT OF THE WATER.','#c8a090'); return false; } return true; };
+  const full=()=>{ const id=Object.values(EQUIP.by).find(q=>q&&EQUIP.ability(q)==='breathe'); return id?+ITEMS.prop(id,'tank')||0:0; };
+  SYS.add('vitals',()=>{ if(!EQUIP.breathe||st.water&&st.water.in)return; const f=full(); if(f&&SWIM.tankS<f){ SWIM.tankS=f; save(); } },'146ga-swim tank');
   VIT.tankTxt=()=>EQUIP.breathe&&SWIM.tankS>0?' · TANK '+Math.floor(SWIM.tankS/60)+':'+String(Math.floor(SWIM.tankS%60)).padStart(2,'0'):'';
   SYS.add('rent',id=>{ const s=+ITEMS.prop(id,'tank')||0; if(!s)return; SWIM.tankS=s; save(); if(EQUIP.by[ITEMS.prop(id,'slot')]!==id)EQUIP.wear(id,true);
     say('THE FISHERMAN STRAPS ON A FULL TANK: '+Math.round(s/60)+' MINUTES OF AIR UNDER WATER.'); },'146ga-swim');

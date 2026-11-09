@@ -3,7 +3,7 @@ const {chromium}=require('playwright');
 (async()=>{ const out=process.argv[2]; const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:1000,height:700}});
   const errs=[]; pg.on('pageerror',e=>errs.push(e.message)); let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
   await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&hour=13&at=45,4',{timeout:300000});
-  await pg.waitForFunction(()=>window.__started,null,{timeout:400000}); await pg.waitForFunction(()=>window.TRAFFIC&&TRAFFIC.dbg().loaded,null,{timeout:120000});
+  await pg.waitForFunction(()=>window.__started,null,{timeout:400000}); await pg.waitForFunction(()=>window.TRAFFIC&&TRAFFIC.dbg().loaded&&TRAFFIC.dbg().lanes.every(L=>L.cars.every(c=>c.model)),null,{timeout:120000,polling:1000}).catch(()=>{});
   const T=()=>pg.evaluate(()=>TRAFFIC.dbg()); let d=await T();
   ok(d.lanes.length===4&&d.lanes.every(L=>L.cars.every(c=>c.model)),'four lanes, every vehicle has a model');
   ok(new Set(d.lanes.flatMap(L=>L.cars.map(c=>c.model))).size>=8,'many kinds of vehicle');

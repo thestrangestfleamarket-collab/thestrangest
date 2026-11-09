@@ -1,6 +1,6 @@
 // THE PHYSICS EXTRAS: trigger zones (the dartboard, the trash cans), ragdolls for the townsfolk (a fast thing or a vehicle knocks them over), VEH (Rapier's raycast vehicle for anything you drive) and the go-kart on it.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, GPH, keys, NPCS, PB, PHYS, pos, RIDE, SFX, st} from './003b-systems.js';
+import {FORAGE, GPH, keys, NPCS, PB, PHYS, pos, RIDE, SFX, SPEED, st} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {SYS, TILE} from './006-map-pre.js';
 import {OBJS} from './008-batch.js';
@@ -86,8 +86,8 @@ const VEH={};   // what you drive on Rapier's raycast vehicle (VEH.make below); 
       for(let i=0;i<4;i++){ const ww=w[i]; ww.rotation.set(V.vc.wheelRotation(i)||0,i<2?V.vc.wheelSteering(i)||0:0,0,'YXZ'); const L=V.vc.wheelSuspensionLength(i); if(L!=null)ww.position.y=S.wy+(S.rest-L)/S.unit; } return true; };
     return V; };
   GPH.ext.push(()=>LIVE.size>0);
-  GPH.pre.push(h=>{ '@later'; for(const V of LIVE){ const S=V.S, vc=V.vc, f=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0), sd=(keys.has('a')||keys.has('arrowleft')?1:0)-(keys.has('d')||keys.has('arrowright')?1:0), sp=vc.currentVehicleSpeed();
-    V.steer+=(sd*S.steer/(1+Math.abs(sp)/S.steerFade)-V.steer)*Math.min(1,h*8); const back=f<0&&sp>.3*M1, eng=back||f>0&&sp>S.vmax||f<0&&sp<-S.vback?0:f*(f>0?S.engine:S.reverse);
+  GPH.pre.push(h=>{ '@later'; for(const V of LIVE){ const S=V.S, vc=V.vc, f=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0), sd=(keys.has('a')||keys.has('arrowleft')?1:0)-(keys.has('d')||keys.has('arrowright')?1:0), sp=vc.currentVehicleSpeed(), K=SPEED.of(S.cat||'cars');
+    V.steer+=(sd*S.steer/(1+Math.abs(sp)/S.steerFade)-V.steer)*Math.min(1,h*8); const back=f<0&&sp>.3*M1, eng=back||f>0&&sp>S.vmax*K||f<0&&sp<-S.vback*K?0:f*(f>0?S.engine:S.reverse)*K;
     for(const i of [0,1])vc.setWheelSteering(i,V.steer); for(const i of [2,3])vc.setWheelEngineForce(i,eng); for(let i=0;i<4;i++)vc.setWheelBrake(i,back?S.brake:f?0:S.idle); vc.updateVehicle(h,undefined,0x00010005); } });
 
   /* ---------- the go-kart: a RIDE kind on VEH; with VEHICLE PHYSICS off it glides like a board ---------- */
@@ -103,10 +103,10 @@ const VEH={};   // what you drive on Rapier's raycast vehicle (VEH.make below); 
       const h=new THREE.Mesh(new THREE.CylinderGeometry(WH*.45,WH*.45,.13,8),gr); h.rotation.z=Math.PI/2; w.add(h); G.add(w); return w; });
     G.scale.setScalar(T); return G; };
   const s0=M1*.84, KR=VEH.make({half:[.31*s0,.1*s0,.62*s0],lift:.35*s0,mass:140,wheels:[[WX,WZ],[-WX,WZ],[WX,-WZ],[-WX,-WZ]].map(([x,z])=>[x*s0,-.02*s0,z*s0]),r:WH*s0,rest:.14*s0,travel:.1*s0,
-    engine:260*M1,reverse:150*M1,vmax:8*M1,vback:2.5*M1,brake:6*M1,idle:.6*M1,steer:.5,steerFade:4*M1,knockR:.55*M1,down:.31*T,wy:WH,unit:T});
+    engine:260*M1,reverse:150*M1,vmax:8*M1,vback:2.5*M1,brake:6*M1,idle:.6*M1,steer:.5,steerFade:4*M1,cat:'kart',knockR:.55*M1,down:.31*T,wy:WH,unit:T});
   // a kart as a RIDE kind on its vehicle V: the item you carry (KR), or one boarded where it stands (the fair's rentals, VEH.kartKind)
   const kartKind=(V,o={})=>({name:'GO-KART',hint:'E SETS IT DOWN AND YOU GET IN. W GOES, S BRAKES AND BACKS, A AND D STEER, E GETS OUT.',onSay:'YOU SET THE KART DOWN AND SQUEEZE IN.',held:.3,
-    make, lift:.001, acc:3.4, turn:2.2, drag:.8, knock:99, hop:false, V,
+    make, cat:'kart', lift:.001, acc:3.4, turn:2.2, drag:.8, knock:99, hop:false, V,
     on:()=>{ if(!PB.R)PB.load(); }, off:()=>V.drop(),
     pose:R=>{ POSE.steer=V.on?V.steer*2:Math.max(-1,Math.min(1,R.lean*2)); return POSE; },
     step:(R,dt)=>{ if(!V.step(R))return false; st.ride=POSE; return true; },

@@ -47,7 +47,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
   const fxDec=v=>{ const m=/^(\d)-(\d)-(\d{2,3})-(\d{2,3})$/.exec(v||''); if(!m)return null; const c=(x,a,b)=>Math.max(a,Math.min(b,+x)); return {e:c(m[1],0,FE.length-1),m:c(m[2],0,FM.length-1),es:c(m[3],50,150),ms:c(m[4],50,150)}; };
   const code=L=>[L.f,L.b,L.h,L.skin,L.hair,...SLOTS.slice(0,OLD).map(x=>enc(x,L)),L.bare?'1':'',...SLOTS.slice(OLD).map(x=>enc(x,L)),L.eye&&L.eye!==EYE0?L.eye:'','',shEnc(L.sh),'',fxEnc(L)].join('.').replace(/\.+$/,'');   // (then barefoot, then the later slots, then the eyes)
   const hex=s=>/^[0-9a-f]{6}$/.test(s||'')?s:null, cols=s=>/^[0-9a-f]{6}$|^(?:[0-9a-f]{6})?(?:_(?:[0-9a-f]{6})?)+$/.test(s||'')?s:null;   // one colour (the piece's main part), or one a part in the piece's zone order, _ between (an empty part keeps its own)
-  const decode=c=>{ '@later'; const a=String(c||'').split('.'), L=DEF(); if(a.length<5)return L;
+  const decode=c=>{ const a=String(c||'').split('.'), L=DEF(); if(a.length<5)return L;
     L.f=a[0]==='f'?'f':'m'; L.b=Math.min(2,Math.max(0,parseInt(a[1])||0)); L.h=Math.min(110,Math.max(90,parseInt(a[2])||100)); L.skin=hex(a[3])||L.skin; L.hair=hex(a[4])||L.hair; L.w={};
     if(a[5+OLD]==='1')L.bare=true; { const e=hex(a[6+SLOTS.length]); if(e)L.eye=e; } { const sh=shDec(a[8+SLOTS.length]); if(sh)L.sh=sh; } { const x=fxDec(a[10+SLOTS.length]); if(x)L.fx=x; }
     SLOTS.forEach(([s],i)=>{ const v=a[at(i)]; if(!v||NOPROP.has(s))return; const [n,col]=v.split('~'), p=byN.get(parseInt(n,36)); if(p&&!GONE(p)&&p.slot===s&&p.figs.includes(L.f))L.w[s]=[p.n,cols(col)||'']; });

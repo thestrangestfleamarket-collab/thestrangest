@@ -26,7 +26,8 @@ const TOWERK={}; window.TOWERK=TOWERK;
   const unlook=()=>{ const S=TOWERK.spy; if(!S)return; TOWERK.spy=null; PCAM.fov=S.fov; PCAM.updateProjectionMatrix(); if(S.view&&S.view!=='first')UI.setView(S.view); };
   SYS.add('life',()=>{ const S=TOWERK.spy; if(S&&Math.hypot(pos.x-S.x,pos.z-S.z)>.3*T)unlook(); },'146zn-spyglass');
   // the roof: up the ladder you stand by the spyglass; the hatch takes you back down into the guardroom
-  TOWERK.roof=()=>{ '@later'; const s=GTOWER.site&&GTOWER.site(); if(!s)return; ROOMS.exit('sqtower'); let n=0; const up=()=>{ if((ROOMS.offIn&&ROOMS.offIn()==='sqtower'||window.FADE&&FADE.busy)&&n++<60)return setTimeout(up,250); onRoof(s); UI.goTo(s.x+.3*T,s.z+.2*T,s.top); say('YOU CLIMB OUT ONTO THE ROOF. THE SQUIRREL SALUTES.'); }; setTimeout(up,250); };
+  TOWERK.roof=()=>{ '@later'; const s=GTOWER.site&&GTOWER.site(); if(!s)return; let n=0; const up=()=>{ const inn=ROOMS.offIn&&ROOMS.offIn()==='sqtower', busy=window.FADE&&FADE.busy; if((inn||busy)&&n++<480){ if(inn&&!busy)ROOMS.exit('sqtower'); return setTimeout(up,250); } if(inn)return; onRoof(s); UI.goTo(s.x+.3*T,s.z+.2*T,s.top); say('YOU CLIMB OUT ONTO THE ROOF. THE SQUIRREL SALUTES.'); };
+    up(); };   // (out of the room first, however long its fade takes, then up)
   // on the roof the tower's own solids are lifted (they know no height) and its top is your ground; both come back once you are off it (down the hatch, or stepping off the edge)
   const onRoof=s=>{ if(TOWERK.lifted)return; const L=TOWERK.lifted=[]; for(let i=SOL.up.length-1;i>=0;i--){ const b=SOL.up[i]; if(b[0]<s.x&&b[2]>s.x&&b[1]<s.z&&b[3]>s.z){ L.push(b); SOL.up.splice(i,1); } } TOWERK.roofAt=s; };
   const offRoof=()=>{ const L=TOWERK.lifted; if(!L)return; TOWERK.lifted=null; TOWERK.roofAt=null; SOL.up.push(...L); };
@@ -42,7 +43,7 @@ const TOWERK={}; window.TOWERK=TOWERK;
   const reg=()=>{ const s=GTOWER.site&&GTOWER.site(); if(!s||ROOMS.off.sqtower)return !!ROOMS.off.sqtower; const c=window.GCAVE&&GCAVE.c, a=c?Math.atan2(c.x-s.x,c.z-s.z):0, dx=Math.sin(a), dz=Math.cos(a), rr=s.w/2;
     const F=frame(), C=F.pw(4,4), H=3.2*MW, sp=F.pw(4,4+RR-1.0), ex=F.pw(4,4+RR-.15);
     ROOMS.off.sqtower={name:"THE SQUIRREL'S TOWER",box:{x0:C[0]-4*MW,z0:C[1]-4*MW,x1:C[0]+4*MW,z1:C[1]+4*MW,y0:-1,y1:H+1},noCeil:true,need:()=>Promise.resolve(),
-      build:()=>ROOMS.part(TOWERK.G=Object.assign(new THREE.Group(),{name:'tower-in'}),()=>{ scene.add(TOWERK.G); furnish(); }),unbuild:()=>{ if(TOWERK.G)TOWERK.G.removeFromParent(); TOWERK.G=null; },
+      build:()=>{ const P=ROOMS.part(TOWERK.G=Object.assign(new THREE.Group(),{name:'tower-in'}),furnish); scene.add(TOWERK.G); return P; },unbuild:()=>{ if(TOWERK.G)TOWERK.G.removeFromParent(); TOWERK.G=null; },
       spawn:[sp[0],sp[1],0,Math.PI],out:[s.x+dx*(rr+1.2*T),s.z+dz*(rr+1.2*T),0,a],door:[s.x+dx*(rr+.15*T),0,s.z+dz*(rr+.15*T)],exit:[ex[0],0,ex[1]],exitName:'OUT TO THE PARK'};
     if(ROOMS.reset)ROOMS.reset(); roofSet(); return true; };
   { let done=false; SYS.add('life',()=>{ if(!done)done=reg(); },'146zn-tower'); }

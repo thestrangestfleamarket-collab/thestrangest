@@ -1,6 +1,6 @@
 // THE HUD: HUD draws the round minimap top right (from the MAP's plan), the message log bottom left (the game's lines and the chat, UI.log) and the quick bar (ten slots on keys 1 to 0, filled by dragging from the pack).
 import {SHARED} from './003-shx.js';
-import {BAG, ED, FORAGE, HUD, INV, LEVELS, MOTION, ONLINE, PASSPORT, pos, ROOMS, TEXT, UI, WE, WIELD, WX, ZONES} from './003b-systems.js';
+import {BAG, ED, FORAGE, HUD, INV, LEVELS, MARKS, MOTION, ONLINE, PASSPORT, pos, ROOMS, TEXT, UI, WE, WIELD, WX, ZONES} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {MODS, SECTION, SYS, TILE} from './006-map-pre.js';
@@ -34,6 +34,7 @@ import {QUESTS} from './160a-quests.js';
     const sx=x=>r+(x-mx)*K/Q.S, sy=y=>r+(y-my)*K/Q.S;
     for(const o of ONLINE.others.values()){ if(!o.p)continue; if(D&&!MODS.dungeon.inside(o.p.x,o.p.z))continue; const a=sx(D?D.wx(o.p.x):Q.sx(B.OX+o.p.x/T)), b=sy(D?D.wz(o.p.z):Q.sy(B.OY+o.p.z/T)); if(Math.hypot(a-r,b-r)>r-3)continue; g.fillStyle='#000'; g.fillRect(a-3,b-3,6,6); g.fillStyle='#ffd27a'; g.fillRect(a-2,b-2,4,4); }
     { const A=!D&&window.QUESTS&&QUESTS.anchor&&QUESTS.anchor(); if(A){ const a=sx(Q.sx(B.OX+A.x/T)), b=sy(Q.sy(B.OY+A.z/T)), d=Math.hypot(a-r,b-r), k=d>r-6?(r-6)/d:1, x=r+(a-r)*k, y=r+(b-r)*k; g.save(); g.translate(x,y); g.rotate(Math.PI/4); g.fillStyle='#000'; g.fillRect(-4,-4,8,8); g.fillStyle='#7ad3ff'; g.fillRect(-3,-3,6,6); g.restore(); } }   // the quest's step: a blue diamond, held at the rim when it is off the map
+    if(!D)for(const M of MARKS){ const a=sx(Q.sx(B.OX+M.x/T)), b=sy(Q.sy(B.OY+M.z/T)), d=Math.hypot(a-r,b-r), k=d>r-6?(r-6)/d:1, x=r+(a-r)*k, y=r+(b-r)*k; g.fillStyle='#000'; g.fillRect(x-5,y-5,10,10); g.fillStyle='#7dffa8'; g.fillRect(x-4,y-4,8,8); g.fillStyle='#000'; g.fillRect(x-1,y-1,2,2); }   // an invitation's place: a green square
     const h=SHARED.heading||0, dx=Math.sin(h), dy=-Math.cos(h); g.translate(r,r); g.rotate(Math.atan2(dy,dx)+Math.PI/2); g.beginPath(); g.moveTo(0,-7); g.lineTo(5,6); g.lineTo(0,3); g.lineTo(-5,6); g.closePath(); g.fillStyle='#fff'; g.fill(); g.lineWidth=1; g.strokeStyle='#000'; g.stroke(); g.restore();
     g.fillStyle='#fff'; g.strokeStyle='#000'; g.lineWidth=2; g.font='8px Silkscreen,monospace'; g.textAlign='center'; g.strokeText('N',r,10); g.fillText('N',r,10); };
   let mt=0, ot=0;

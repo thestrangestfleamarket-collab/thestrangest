@@ -288,7 +288,7 @@ const LIB={data:null,max:5,inside:[]}; window.LIB=LIB;   // inside: what else fu
     use('THE GAME CUPBOARD: EVERY GAME WE HAVE',W-.4,7.6,1.5,1,()=>TABLES.list(),1.4);
     TUSE.length=0; CAFE.forEach(([du,v],n)=>{ const u=Wb+du; put(G,'bistrotable',u,v,0,1); sol(u-.36,v-.36,u+.36,v+.36);
       const top=TABLES.top(n,.62*MW); if(top){ const p=F.pw(u,v); top.position.set(p[0],.757*MW,p[1]); top.rotation.z=F.hd(0,1); A.add(top); }
-      SEATS.forEach(([a,b,fu,fv],i)=>{ put(G,'bistrochair',u+a,v+b,fu,fv); const th=use(TABLES.label(n),u+a,v+b,.5,.9,()=>{ const p=F.pw(u+a*.85,v+b*.85); USE.sitAt(p[0],p[1],.46*MW,F.hd(fu,fv)); setTimeout(()=>TABLES.sit(n,i),600); },1.1); TUSE.push([th,n]); }); });
+      SEATS.forEach(([a,b,fu,fv],i)=>{ put(G,'bistrochair',u+a,v+b,fu,fv); const go=()=>{ const p=F.pw(u+a*.85,v+b*.85); USE.sitAt(p[0],p[1],.46*MW,F.hd(fu,fv)); setTimeout(()=>TABLES.sit(n,i),600); }; TABLES.chairs[n*4+i]=go; const th=use(TABLES.label(n),u+a,v+b,.5,.9,go,1.1); TUSE.push([th,n]); }); });
     warm(Wb+3.7,2.6,2.3,1.5,6.5,0xffd29a); warm(Wb+3.7,6.35,2.3,1.3,6,0xffd29a);
     for(const t of ARTS||[]){ const a=t.at, e=.005; if(t.wall==='b')hang(A,use,F,t,Wb+a,e,0,1,1.75); else if(t.wall==='e')hang(A,use,F,t,W-e,a,-1,0,t.hc||1.75); else if(t.wall==='p')hang(A,use,F,t,Wb+.06+e,a,1,0,1.7); else hang(A,use,F,t,Wb+a,D-e,0,-1,1.75); } };
   SYS.every(()=>{ for(const [th,n] of TUSE)th.name=TABLES.label(n); },1000,'144ca-cafe');

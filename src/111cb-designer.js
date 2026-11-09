@@ -1,7 +1,7 @@
 // THE AVATAR DESIGNER (owner, 8 Nov 2026: "update the walker designer with the new avatar. make sure all the controls reall control the avatar"): your avatar in the studio, each part's SIZE, LENGTH, WIDTH and DEPTH and your HEIGHT, kept with your look so the other players see it.
 import {THREE} from './003-shx.js';
 import {PS2, W3} from './003b-systems.js';
-import {renderer} from './004-main.js';
+import {pxS, renderer} from './004-main.js';
 import {SYS} from './006-map-pre.js';
 import {DESIGN} from './102b-designer.js';
 import {BODIES} from './111a-bodies.js';
@@ -53,7 +53,7 @@ const DESIGNER={}; window.DESIGNER=DESIGNER;
   const shot=()=>{ const g=W3.group; if(!g||!W3.mesh)return; if(!rt){ rt=new THREE.WebGLRenderTarget(W,H); rt.texture.colorSpace=THREE.SRGBColorSpace; cam=new THREE.OrthographicCamera(-1,1,1,-1,.01,200); }
     g.updateMatrixWorld(true); const gp=g.getWorldPosition(V.clone()), Y=span(g), top=Y?Y[1]+.12:gp.y+2.2, bot=Y?Y[0]-.06:gp.y-.08, full=Math.max(.6,top-bot), hh=full/zoom, cy=zoom>1?bot+full*(AT[part]??.5):(top+bot)/2, ww=hh*W/H, a=g.rotation.y+turn;
     cam.left=-ww/2; cam.right=ww/2; cam.top=hh/2; cam.bottom=-hh/2; cam.updateProjectionMatrix(); cam.position.set(gp.x+Math.sin(a)*20,cy,gp.z+Math.cos(a)*20); cam.lookAt(gp.x,cy,gp.z); cam.updateMatrixWorld(true);
-    DESIGN.portrait(rt,cam); const px=new Uint8Array(W*H*4); renderer.readRenderTargetPixels(rt,0,0,W,H,px); if(PS2.on)PS2.img(px,W,H,PS2.linesFor(cv.getBoundingClientRect().height||300));
+    DESIGN.portrait(rt,cam); const px=new Uint8Array(W*H*4); renderer.readRenderTargetPixels(rt,0,0,W,H,px); PS2.page(px,W,H,cv.getBoundingClientRect().height||300,pxS());
     const im=g2.createImageData(W,H); for(let y=0;y<H;y++)im.data.set(px.subarray((H-1-y)*W*4,(H-y)*W*4),y*W*4); g2.putImageData(im,0,0); };
   SYS.add('win',t=>{ if(!DESIGNER.on||t-last<50)return; last=t; try{ shot(); }catch(e){ console.warn('DESIGNER',e); } },'111cb-designer');
   DESIGNER.open=()=>{ if(!el)build(); const L=AVATAR.L(); sh=L.sh?JSON.parse(JSON.stringify(L.sh)):{}; h=L.h||100; turn=0; zoom=1; draw(); el.hidden=false; DESIGNER.on=true; el.focus(); };

@@ -31,6 +31,11 @@ const vn=(x,y)=>{ const i=Math.floor(x), j=Math.floor(y); let fx=x-i, fy=y-j; fx
 const gr=(i,j,Y)=>((hh(i,j)*.55+hh(Math.floor(i*.5)+71,Math.floor(j*.5)+71)*.45)-.5)*.034*(.2+1.5*vn(i/9,j/9))*ss(.03,.28,Y);
 // a picture shown cssH tall on the page: the lines to give PS2.img so its pixels are the game's own size (the character page, the designer)
 PS2.linesFor=cssH=>(SHARED.cellLines||PS2.lines()||240)*cssH/innerHeight*PS2.tune().k;
+// a picture at the game's own resolution (each of its pixels pxS of the screen's), its PS2 look after: px read back W x H (bottom row first), shown cssH tall
+PS2.page=(px,W,H,cssH,pxS)=>{ const L=Math.round(cssH*(devicePixelRatio||1)/pxS);
+  if(L>=8&&L<H){ const Lx=Math.max(1,Math.round(W*L/H)), o=new Uint8Array(px);
+    for(let y=0;y<H;y++){ const sy=Math.min(H-1,Math.floor((Math.floor(y*L/H)+.5)*H/L)); for(let x=0;x<W;x++){ const sx=Math.min(W-1,Math.floor((Math.floor(x*Lx/W)+.5)*W/Lx)), a=(y*W+x)*4, b=(sy*W+sx)*4; px[a]=o[b]; px[a+1]=o[b+1]; px[a+2]=o[b+2]; px[a+3]=o[b+3]; } } }
+  if(PS2.on)PS2.img(px,W,H,PS2.linesFor(cssH)); };
 PS2.img=(px,W,H,lines)=>{ const T=PS2.tune(), L=Math.max(8,Math.round(T.pix?Math.min(H,lines/T.k):H)), Lx=Math.max(8,Math.round(W*L/H)), N=Lx*L, Y=new Float32Array(N), I=new Float32Array(N), Q=new Float32Array(N), A=new Uint8Array(N), q=v=>T.Q>=1?Math.floor(v/T.Q)*T.Q/255:v/255;
   for(let j=0;j<L;j++)for(let i=0;i<Lx;i++){ const k=(Math.floor((j+.5)*H/L)*W+Math.floor((i+.5)*W/Lx))*4, r=q(px[k]), g=q(px[k+1]), b=q(px[k+2]), n=j*Lx+i;
     A[n]=px[k+3]>=24?px[k+3]:0; Y[n]=.299*r+.587*g+.114*b; I[n]=.596*r-.274*g-.322*b; Q[n]=.211*r-.523*g+.312*b; }

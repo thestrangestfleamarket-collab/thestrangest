@@ -16,7 +16,7 @@ Risk is noted only when it isn't low.
 
 ## The order of work
 
-1. **Keep the checks honest**: core's stale lines, then the tests failing on `main`, then a full run that finishes.
+1. **Keep the checks honest**: the tests failing on `main`, then a full run that finishes (core passes on `main`, 9 Nov).
 2. **The owner's look session** (one sitting on the live site): every **look** line, listed under "For the owner" below.
 3. **The owner's picks** (one batch of questions): every **pick** line, listed under "For the owner" below.
 4. **Performance, measured first**: the render inspector's "undefined ×16", the subway station at the start, the start-up and frame-time
@@ -45,9 +45,6 @@ headset · NPC voices (lifts the 19 Oct "no sound" rule).
 ## CI, checks and tools
 
 CI runs only on pull requests and by hand (the workflow has no push trigger), so `main` itself is checked only when someone starts it.
-- [ ] **Core's stale lines** · P1 · S · check. Gathered 9 Nov: 3 expect shop insides to wait (they're built at the start since 9 Nov), 2
-  garage checks (now empty lots), the 12 vs 14 wear slots, the real-time clock (ignores a test's `?hour`), the overhead view (flaky). Fail
-  on `main` and every pull request. Some were fixed on 8–9 Nov; re-run `tests/core.cjs` on `main` first.
 - [ ] **Tests failing on `main`** · P2 · S · check. `tests/skills.cjs` waits for archived daily asks and can't pass; `tests/loop.cjs` and
   `tests/riders.cjs` (the trains never stand at A with doors open).
 - [ ] **The full GitHub run doesn't finish inside 75 minutes** · P2 · S · check. No full run on `main` has passed since 4 Nov.

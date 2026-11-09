@@ -16,7 +16,7 @@ Risk is noted only when it isn't low.
 
 ## The order of work
 
-1. **Keep the checks honest**: core's overhead-view check, then a full run that finishes (loop, riders and skills pass on `main`, 9 Nov).
+1. **Keep the checks honest**: a full run that finishes (core, loop, riders and skills pass, 9 Nov).
 2. **The owner's look session** (one sitting on the live site): every **look** line, listed under "For the owner" below.
 3. **The owner's picks** (one batch of questions): every **pick** line, listed under "For the owner" below.
 4. **Performance, measured first**: the render inspector's "undefined ×16", the subway station at the start, the start-up and frame-time
@@ -47,8 +47,8 @@ headset · NPC voices (lifts the 19 Oct "no sound" rule).
 CI runs only on pull requests and by hand (the workflow has no push trigger), so `main` itself is checked only when someone starts it.
 - [x] **Tests failing on `main`** · P2 · S · check. Done 9 Nov: the loop's station A followed the subway's move (trains stop at the platform
   again: `loop.cjs`, `riders.cjs`); `skills.cjs` checks only what isn't archived.
-- [ ] **Core fails on `main`: the overhead view** · P1 · S · find. "Dragging it stops while you are still on screen" (7 Nov): a long drag
-  leaves you off screen (`tests/core.cjs`, 9 Nov, three runs). Passed earlier the same day: a recent merge, or the check.
+- [x] **Core fails on `main`: the overhead view** · done 9 Nov: the check now follows the 8 Nov rule (some part of you, feet to head,
+  on screen), not your middle inside the screen; the game was right.
 - [ ] **The full GitHub run doesn't finish inside 75 minutes** · P2 · S · check. No full run on `main` has passed since 4 Nov.
 - [ ] **Bodega register test**: clicking dog food doesn't add it to the basket (live game) · P2 · S · find.
 - [ ] **Merged without a green check or re-run, look at them live** · P2 · look. Skate pit #877, floating eyes #869, haze #858, shop

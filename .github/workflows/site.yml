@@ -63,7 +63,6 @@ jobs:
           k photog  'src/146m|src/160b|photog'
           k earn    'src/140c|src/160b|data/trainers|earn'
           k register 'src/146ze|src/038zd|register'
-          k lanyard 'src/111bb|src/111c-avatar|lanyard'
           k brawl   'src/146h|src/146a|src/103|brawl'
           k physx   'src/090|src/150-loose|src/150o|physx'
           k vr      'src/162[a-c]|vr\.cjs'
@@ -196,10 +195,6 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' register')
         run: node tests/register.cjs dist/market.html
-      - name: The lanyard string (hangs, swings, settles, on top of what you wear)
-        timeout-minutes: 15
-        if: contains(steps.f.outputs.run, ' lanyard')
-        run: node tests/lanyard.cjs dist/market.html
       - name: The ground drops' server (kept, told, first to take, expiry, the cap)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' drops')

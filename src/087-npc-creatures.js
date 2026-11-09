@@ -122,7 +122,7 @@ const CREATS=[]; window.CREATS=CREATS;
   const SEEN={}, WSH=[]; let shareT=0; SYS.every(()=>{ if(!WSH.length||!WALKS.on||!WALKS.reg||!(window.LOAD))return; if(shareT)return; shareT=1; LOAD('later').then(()=>{ for(const [N,m] of WSH.splice(0))WALKS.reg(N,m); shareT=0; }); },2000,'087 animals walk shared');
   CREATURESREADY.then(()=>{ for(const e of CH)spawn(e); });
   // the Drive's animals (owner, 3 Nov 2026): the park's woods, its farm, its zoo and its dinosaur valley, bugs in the grass, cats and a dog on the street
-  { const R=(x0,y0,x1,y1)=>({x0:X(x0),x1:X(x1),z0:Z(y0),z1:Z(y1),park:1}), WOOD=PARKL, FARM=R(200,22,224,52), ZOO=R(-20,104,22,134), DINO=R(62,132,104,176), LAKE=R(140,-2,166,22);
+  { const R=(x0,y0,x1,y1)=>({x0:X(x0),x1:X(x1),z0:Z(y0),z1:Z(y1),park:1}), WOOD=PARKL, FARM=R(86.5,-31,98.8,-14), ZOO=R(-20,104,22,134), DINO=R(62,132,104,176), LAKE=R(140,-2,166,22);
     const DRY=(x,z,R)=>FREE(x,z,R)&&!((window.FLOW&&FLOW.waters)||[]).some(w=>w.has&&w.has(x,z));
     const k=(n,lane,pace,o={})=>KIND[n]=Object.assign({walk:n+'_Walk',run:n+'_Run',idle:n+'_Idle',pace,lane,park:lane!==ALL,free:lane===LAKE?FREE:DRY},o), fly=(n,lane,f,o)=>k(n,lane,3,Object.assign({walk:n+'_Fly',run:null,idle:n+'_Fly',fly:f},o));
     const RS=(n,...L)=>L.map(([c,p,nt])=>[n+'_'+c,p,nt]);   // what it does when it stops, now and then: [clip, chance, night only]
@@ -139,7 +139,7 @@ const CREATS=[]; window.CREATS=CREATS;
       ['Raptor','VELOCIRAPTOR',.9,3,1.4],['Stego','STEGOSAURUS',3.5,2,.5],['Brachio','BRACHIOSAURUS',11,1,.4],['Ptera','PTERANODON',1.6,2,1.4],
       ['AntQueen','ANT QUEEN',.015,2,.05],['WoodAnt','WOOD ANT',.008,6,.06],['Aphid','APHID',.004,6,.005],['Ladybird','LADYBIRD',.008,4,.03],['Hopper','GRASSHOPPER',.02,4,.2],['Beetle','STAG BEETLE',.03,2,.05],['Mantis','PRAYING MANTIS',.04,2,.03],
       ['Caterpillar','CATERPILLAR',.01,3,.01],['Slug','LEOPARD SLUG',.02,3,.01],['Snail','SNAIL',.025,3,.01],['Crab','HERMIT CRAB',.04,3,.1],['Bee','HONEYBEE',.015,6,.8],['Bumblebee','BUMBLEBEE',.02,3,.7],['Firefly','FIREFLY',.012,5,.4]];
-    const PARKKEEP=new Set(['Crow','Owl','Duck','Penguin','Bee','Bumblebee','Firefly']);   // the rest are pets at the pet store
+    const PARKKEEP=new Set(['Crow','Owl','Duck','Penguin','Bee','Bumblebee','Firefly','Cow','Pig','Horse','Mule']);   // the rest are pets at the pet shops; the farm animals graze the farm's paddock
     CREATS.FA=FA; const FL=__LAZY__("data/fauna.json"), hs=(a,b)=>{ const v=Math.sin(a*127.1+b*311.7)*43758.5453; return v-Math.floor(v); }, inv=(L,x,z)=>[(x-X(0))/(X(1)-X(0)),(z-Z(0))/(Z(1)-Z(0))];
     CREATURESREADY.then(()=>FL()).then(J=>{ Object.assign(C,J); FA.forEach(([key,name,m,n,sp],i)=>{ if(!C[key]||!PARKKEEP.has(key))return; const L=KIND[key].lane; for(let j=0;j<n;j++){ const x=L.x0+hs(i,j)*(L.x1-L.x0), z=L.z0+hs(j,i+7)*(L.z1-L.z0); spawn([key,name,m,inv(L,x,z),sp,0]); } }); }).catch(e=>console.warn('FAUNA',e)); }
   window.CREATNEW=(key,id,metres,X={})=>{ '@later'; const D=C[key], K=KIND[key], rig=rigOf(D.rig), CL=clipsOf(D), mixer=new THREE.AnimationMixer(rig.bones[0]), A={}, act=n=>A[n]||(A[n]=mixer.clipAction(CL[n])); let cur=null, cn;

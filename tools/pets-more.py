@@ -60,8 +60,26 @@ BR=[ # key, NAME, base, group, type, metres, colours by zone, shape
  ('greenslime','GREEN SLIME','slime','creatures','SLIME',.4,pg(body='#3ad040'),None),
  ('blueslime','BLUE SLIME','slime','creatures','SLIME',.4,pg(body='#4a8aff'),None),
  ('redslime','RED SLIME','slime','creatures','SLIME',.4,pg(body='#e8443a'),None),
- ('purpleslime','PURPLE SLIME','slime','creatures','SLIME',.4,pg(body='#a85ae8'),None)]
+ ('purpleslime','PURPLE SLIME','slime','creatures','SLIME',.4,pg(body='#a85ae8'),None),
+ # the lizards from the crocodile (owner, 8 Nov 2026: "lizards"): a short snout, long legs, slim; and BIG LIZ, the giant city lizard from the T. rex, back plates up her spine
+ ('gecko','LEOPARD GECKO','crocodile','reptiles','LIZARD',.22,pg(coat='#e8c860',flank='#f0d880',belly='#f4ecd8',scute='#3a3028',iris='#2a2420'),('lizard',.45)),
+ ('iguana','GREEN IGUANA','crocodile','reptiles','LIZARD',.9,pg(coat='#5aa040',flank='#78b850',belly='#a8c880',scute='#3a6a2a',iris='#c8a030'),('lizard',.6)),
+ ('monitor','MONITOR LIZARD','crocodile','reptiles','LIZARD',1.0,pg(coat='#4a4a38',flank='#6a6448',belly='#c8c0a0',scute='#2a2a20',iris='#c8b040'),('lizard',.7)),
+ ('chameleon','CHAMELEON','crocodile','reptiles','LIZARD',.3,pg(coat='#58c060',flank='#e8a040',belly='#d8e8a0',scute='#2a8a8a',iris='#e8d040'),('lizard',.4)),
+ ('beardie','BEARDED DRAGON','crocodile','reptiles','LIZARD',.45,pg(coat='#c8945a',flank='#d8a870',belly='#ecd8b0',scute='#8a5a30',iris='#3a2a18'),('lizard',.5)),
+ ('bigliz','BIG LIZ','trex','reptiles','GIANT CITY LIZARD',1.2,pg(coat='#4a5448',back='#3a4238',stripe='#2a302a',belly='#6a7462',crown='#323a30',pale='#7a8470',claw='#1e1e1e',dark='#141414'),('ridge',.12))]
 
+def lead_of(D):
+    M=D['mesh']; n=M['n']; j=B(M['j'],np.uint8).reshape(-1,4); w=B(M['w'],np.uint8).reshape(-1,4); return j[np.arange(n),np.argmax(w,1)]
+def lizard(D,snout):
+    """a lizard's head from a crocodile's: the face ahead of the eyes pulled back to `snout` of its length (the head bone keeps its place)"""
+    P=pts(D['mesh']); G=world(D['rig']); nm=D['rig']['names']; L=lead_of(D); hd=[nm.index(x) for x in ('Head','Jaw') if x in nm]; h=G[nm.index('Head')][:3,3]
+    m=np.isin(L,hd); f=P[m,2]>h[2]; Q=P.copy(); q=Q[m]; q[f,2]=h[2]+(q[f,2]-h[2])*snout; Q[m]=q; return Q-P
+def ridge(D,amp):
+    """BIG LIZ's back plates: the top of her spine and tail raised in a row of points"""
+    P=pts(D['mesh']); G=world(D['rig']); nm=D['rig']['names']; L=lead_of(D); sp=[i for i,x in enumerate(nm) if x in ('Hips','Spine','Chest','Neck') or x.startswith('Tail')]
+    by=np.array([G[i][1,3] for i in range(len(nm))]); H=P[:,1].max()-P[:,1].min(); m=np.isin(L,sp)&(np.abs(P[:,0])<H*.05)&(P[:,1]>by[L]+H*.02)
+    Q=P.copy(); z=P[m,2]; Q[m,1]+=H*amp*np.maximum(0,np.sin(z/H*38))**.6; return Q-P
 def bushy(D):
     """a squirrel's tail from a rat's: the tail's corners pushed out round it (thick at the middle) and the whole tail swung up over the back"""
     M=D['mesh']; R=D['rig']; P=pts(M); n=len(P); G=world(R); nm=R['names']; tb=[i for i,x in enumerate(nm) if x.startswith('Tail')]
@@ -92,17 +110,42 @@ os.makedirs('data/pets/b',exist_ok=True)
 for key,name,of,grp,typ,m,cols,shape in BR:
     D=bases.get(of) or bases.setdefault(of,json.load(open('data/pets/'+of+'.json'))); K0=have[of]
     rec={'key':key,'of':of,'t':{}}
-    if shape=='bushy':
-        dp=bushy(D); s=float(np.abs(dp).max()/127) or 1.0; rec['p']=b64(np.round(dp/s).astype(np.int8)); rec['s']=round(s,8); Pn=pts(D['mesh'])+dp
+    dp=bushy(D) if shape=='bushy' else lizard(D,shape[1]) if shape and shape[0]=='lizard' else ridge(D,shape[1]) if shape and shape[0]=='ridge' else None
+    if dp is not None:
+        s=float(np.abs(dp).max()/127) or 1.0; rec['p']=b64(np.round(dp/s).astype(np.int8)); rec['s']=round(s,8); Pn=pts(D['mesh'])+dp
     else: Pn=pts(D['mesh'])
     lo=Pn.min(0); hi=Pn.max(0); rec['size']=np.round(hi-lo,4).tolist(); rec['tall']=float(round(hi[1]-lo[1],4))
     json.dump(rec,open('data/pets/b/'+key+'.json','w'),separators=(',',':'))
     zones=[[z,cols.get(z,c)] for z,c in D['zones']]; bad=set(cols)-{z for z,_ in D['zones']}; assert not bad,(key,bad)
-    have[key]={'key':key,'name':name,'group':grp,'of':of,'type':typ,'clips':K0['clips'],'size':rec['size'],'long':m,'zones':zones,'presets':{},'knobs':K0['knobs'],**({'s0':K0['s0']} if 's0' in K0 else {})}
+    have[key]={'key':key,'name':name,'group':grp,'of':of,'type':typ,'clips':K0['clips'],'size':rec['size'],'long':m,'zones':zones,'presets':{},'knobs':K0['knobs'],**({'s0':K0['s0']} if 's0' in K0 else {}),**({'s0':[50,30,100,40,0]} if shape and shape[0]=='lizard' else {})}
     print(key,'of',of,m,'m')
 new=[k for k,*_ in NEW]; nb=[b[0] for b in BR]
 order=[k['key'] for k in KINDS['kinds'] if not k.get('of') and k['key'] not in new]+new+[k['key'] for k in KINDS['kinds'] if k.get('of') and k['key'] not in nb]+nb
-KINDS['kinds']=[have[k] for k in order]; json.dump(KINDS,open('data/pets.json','w'),separators=(',',':')); print('data/pets.json',len(KINDS['kinds']),'kinds')
+KINDS['kinds']=[have[k] for k in order]
+# where each is sold (owner, 8 Nov 2026: "(dogs & cats) (lizards, dragons, godzilla, dinosaurs) (birds) (butterflies), lets put a small farm in central park with barn you can buy the farm animals there inside"; his picks: the wild and zoo animals at the barn, the crabs at the aquarium, rabbits and rats with the dogs and cats, the other bugs with the butterflies, slimes, bats and the giant rat with the lizards, chickens and ducks at the farm)
+def shop(K):
+    b=K.get('of') or K['key']; g=K['group']
+    if g in ('dogs','cats','rabbits'): return 'pets'
+    if b=='frog' or b=='cavefrog': return 'reptiles'
+    if g=='pets': return 'pets'
+    if b in ('chicken','duck'): return 'barn'
+    if g in ('birds','parrots','poultry'): return 'birdshop'
+    if b in ('crocodile','beelzebufo'): return 'reptiles'
+    if g in ('farm','horses','livestock','zoo','wild'): return 'barn'
+    if g=='bugs' or b in ('spider','wasp'): return 'butterflies'
+    if g=='shore': return 'aquarium'
+    return 'reptiles'
+for K in KINDS['kinds']: K['shop']=shop(K)
+# which breeds stand in the shops' cages beside every base animal (the rest are in the adoption books)
+CAGE=set('''chihuahua pomeranian pug jackrussell beagle dachshund corgi frenchie bulldog husky shiba poodle dalmatian bordercollie labrador golden boxer greatdane domestic siamese persian mainecoon ragdoll bengal sphynx blackcat calico tuxedo ginger russianblue scottishfold hollandlop lionhead netherland angora
+ robin bluejay cardinal oriole starling sparrow mockingbird redwing redtail heron mourningdove whitedove fantail scarletmacaw blueandgold hyacinth africangrey cockatoo cockatiel budgie lovebird sunconure eclectus
+ gecko iguana monitor chameleon beardie bigliz cavefrog pitsnake cavebat greenslime blueslime redslime purpleslime giantrat radspider giantwasp
+ clydesdale shetland minidonkey highland holstein potbelly merino pygmy silkie'''.split())
+for K in KINDS['kinds']:
+    K.pop('cage',None)
+    if not K.get('of') or K['key'] in CAGE: K['cage']=1
+import collections; print(collections.Counter(K['shop'] for K in KINDS['kinds']))
+json.dump(KINDS,open('data/pets.json','w'),separators=(',',':')); print('data/pets.json',len(KINDS['kinds']),'kinds')
 # the page's list of pet files, one lazy load a file
 src='src/146zj-pets.js'; S=open(src).read()
 pf=','.join('%s:__LAZY__("data/pets/%s.json")'%(k['key'],k['key']) for k in KINDS['kinds'] if not k.get('of'))

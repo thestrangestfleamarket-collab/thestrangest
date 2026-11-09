@@ -9,7 +9,7 @@ const PARKPF={done:false,things:0,patches:[],tris:0,solids:0,moved:0,skipped:[]}
 { const DATA=__LAZY__("data/parkpf.json"), CELL=24, FAR=72, NEAR=36, SHD=28;
   const LAMP={globelamp:1,colonial:1,campuslamp:1,jlamp:1,sealamp:1,stringlights:.6};
   const SOLID=new Set(['boatshed','conservatory','greenhouse','toilet','seatoilet','refresh','coffee','newsstand','icecream','hotdog','founder','plazafountain','campusfountain','zen','trailmap','trailhead','lion','picnictable','library',
-    'ironbench','parkbench','campusbench','logbench','b2bbench','amphi','basket','trashcan','planter','planterbox','bollard','drink','sphere','birdbath','beehive','bikerack','wayfind','campusrail','bowtop','arearail','ironfence']);
+    'ironbench','parkbench','campusbench','logbench','b2bbench','amphi','basket','trashcan','planter','planterbox','bollard','drink','sphere','birdbath','beehive','bikerack','wayfind','campusrail','bowtop','arearail','ironfence','picket']);
   const POST={colonial:.32,globelamp:.32,sealamp:.32,campuslamp:.3,jlamp:.34,birdhouse:.26};   // a lamp or a pole: only its post is in the way, not its head
   const SEAT=new Set(['ironbench','parkbench','campusbench','logbench','b2bbench','amphi']);
   const WET=new Set(['raft','canoe','kayak','skiff','duck','dock','launch','lifebuoy','archbridge','creekbridge','woodbridge','logbridge','trestle']);
@@ -27,7 +27,7 @@ const PARKPF={done:false,things:0,patches:[],tris:0,solids:0,moved:0,skipped:[]}
     const cells=new Map(), lampAt=[], seats=[];
     for(const o of LEVEL.things||[]){ if(!String(o.k).startsWith('p:'))continue; const k=o.k.slice(2), Dk=D[k]; if(!Dk){ PARKPF.skipped.push(k); continue; } PARKPF.things++;
       const a=o.rot||0, ca=Math.cos(a), sa=Math.sin(a), [sx,sy,sz]=Dk.size, ex=(Math.abs(ca)*sx+Math.abs(sa)*sz)/2, ez=(Math.abs(sa)*sx+Math.abs(ca)*sz)/2;
-      let mx=o.x, my=o.y; const free=(x,y)=>{ const X=B.XS(x), Z=B.ZS(y); return BRIDGE.has(k)||(WET.has(k)||!wet(x,y))&&!hit(X-ex*M*.8,Z-ez*M*.8,X+ex*M*.8,Z+ez*M*.8); };   // a bridge spans the brook's bank rocks
+      let mx=o.x, my=o.y; const free=(x,y)=>{ const X=B.XS(x), Z=B.ZS(y); return o.fixed||BRIDGE.has(k)||(WET.has(k)||!wet(x,y))&&!hit(X-ex*M*.8,Z-ez*M*.8,X+ex*M*.8,Z+ez*M*.8); };   // a bridge spans the brook's bank rocks
       if(!free(mx,my)){ let f=null; for(let r=.6;r<=3&&!f;r+=.6)for(let i=0;i<8&&!f;i++){ const u=mx+Math.cos(i*Math.PI/4)*r, v=my+Math.sin(i*Math.PI/4)*r; if(free(u,v))f=[u,v]; }
         if(!f){ PARKPF.skipped.push(o.k+'@'+o.x+','+o.y); continue; } [mx,my]=f; PARKPF.moved++; }
       const x=B.XS(mx), z=B.ZS(my), y=o.float?water(x,z):(SHARED.groundY?SHARED.groundY(x,z):0);

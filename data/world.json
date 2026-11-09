@@ -776,10 +776,10 @@
    "id": "barn",
    "name": "THE BARN",
    "kind": "front",
-   "x0": 72.8,
-   "x1": 81.2,
-   "y0": -25.6,
-   "y1": -18.4,
+   "x0": 59.8,
+   "x1": 68.2,
+   "y0": 16.4,
+   "y1": 23.6,
    "face": "e",
    "park": true,
    "inW": 26,
@@ -1008,11 +1008,22 @@
    },
    {
     "id": "farm",
-    "x": 85,
-    "y": -22,
+    "x": 72,
+    "y": 20,
     "w": 34,
     "d": 24,
-    "note": "the farm (owner, 8 Nov 2026): the barn and its paddock; no trees or paths here"
+    "note": "the farm (owner, 8 Nov 2026; moved deeper into the park 9 Nov 2026): the barn and its paddock; no trees or paths here; pen the paddock inside its fence (map tiles), gate its shut gate in the fence's gap (rot as a thing's)",
+    "pen": [
+     73.3,
+     10.8,
+     86.0,
+     28.2
+    ],
+    "gate": {
+     "x": 86.78,
+     "y": 21.9,
+     "rot": 1.5708
+    }
    }
   ],
   "stalls": [
@@ -4356,87 +4367,87 @@
   },
   {
    "k": "p:redbarn",
-   "x": 77,
-   "y": -22,
+   "x": 64,
+   "y": 20,
    "rot": 1.5708,
    "fixed": true
   },
   {
    "k": "p:picket",
-   "x": 87.88,
-   "y": -32.0,
+   "x": 74.88,
+   "y": 10.0,
    "rot": 0
   },
   {
    "k": "p:picket",
-   "x": 87.88,
-   "y": -12.96,
+   "x": 74.88,
+   "y": 29.04,
    "rot": 0
   },
   {
    "k": "p:picket",
-   "x": 92.64,
-   "y": -32.0,
+   "x": 79.64,
+   "y": 10.0,
    "rot": 0
   },
   {
    "k": "p:picket",
-   "x": 92.64,
-   "y": -12.96,
+   "x": 79.64,
+   "y": 29.04,
    "rot": 0
   },
   {
    "k": "p:picket",
-   "x": 97.4,
-   "y": -32.0,
+   "x": 84.4,
+   "y": 10.0,
    "rot": 0
   },
   {
    "k": "p:picket",
-   "x": 97.4,
-   "y": -12.96,
+   "x": 84.4,
+   "y": 29.04,
    "rot": 0
   },
   {
    "k": "p:picket",
-   "x": 85.5,
-   "y": -29.62,
+   "x": 72.5,
+   "y": 12.38,
    "rot": 1.5708
   },
   {
    "k": "p:picket",
-   "x": 99.78,
-   "y": -29.62,
+   "x": 86.78,
+   "y": 12.38,
    "rot": 1.5708
   },
   {
    "k": "p:picket",
-   "x": 85.5,
-   "y": -24.86,
+   "x": 72.5,
+   "y": 17.14,
    "rot": 1.5708
   },
   {
    "k": "p:picket",
-   "x": 99.78,
-   "y": -24.86,
+   "x": 86.78,
+   "y": 17.14,
    "rot": 1.5708
   },
   {
    "k": "p:picket",
-   "x": 85.5,
-   "y": -20.1,
+   "x": 72.5,
+   "y": 21.9,
    "rot": 1.5708
   },
   {
    "k": "p:picket",
-   "x": 85.5,
-   "y": -15.34,
+   "x": 72.5,
+   "y": 26.66,
    "rot": 1.5708
   },
   {
    "k": "p:picket",
-   "x": 99.78,
-   "y": -15.34,
+   "x": 86.78,
+   "y": 26.66,
    "rot": 1.5708
   }
  ],

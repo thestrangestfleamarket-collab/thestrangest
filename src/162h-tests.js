@@ -198,8 +198,8 @@ window.TESTS=TESTS;
       if(s.shoot)return; if(s.end)return s.end;
       const step=L[s.i]; if(!step)return ['pass','all '+L.length+' steps worked',{steps:s.log}];
       const q=s.q||(s.q={t:0,s:{},e:{},r0:performance.now()}); q.t+=dt; const [kind,...a]=step, lim=kind==='job'?a[3]||300:180;
-      let r; if(q.t>lim||(performance.now()-q.r0)/1000>lim*1.5)r=['fail','took longer than '+Math.round(Math.max(q.t,(performance.now()-q.r0)/1000))+' s'+(K.cfg&&BOT.status?' (it was: '+String(BOT.status().doing||'').slice(0,60)+')':'')]; else { try{ r=STEP[kind](q,dt,a); }catch(e){ r=['fail','the game threw: '+String(e.message||e).slice(0,90)]; } }
-      if(r===true)r=['pass','done']; if(!Array.isArray(r))return;
+      let r; if(q.t>lim||(performance.now()-q.r0)/1000>lim*1.5)r=['fail','took longer than '+Math.round(Math.max(q.t,(performance.now()-q.r0)/1000))+' s'+(q.doing?' (it was: '+q.doing.slice(0,70)+')':'')]; else { try{ r=STEP[kind](q,dt,a); }catch(e){ r=['fail','the game threw: '+String(e.message||e).slice(0,90)]; } }
+      if(BOT.status){ const d=BOT.status().doing; if(d&&!/^test \d/.test(d))q.doing=d; } if(r===true)r=['pass','done']; if(!Array.isArray(r))return;
       const name=kind==='go'?'go to '+a[0]:kind==='buy'?'buy '+NM(a[1]):kind==='learn'?'learn '+SKN(a[1]):kind==='sell'?'sell '+a[1]:kind==='use'||kind==='pack'?(kind==='use'?a[1]:a[2]):kind==='job'?a[2]:kind+' '+(a[0]??'');
       const rec={n:name,r:r[0],why:String(r[1]||'').slice(0,140),spot:window.SPOT?SPOT.make():'',said:SAID.slice(-2),at:Date.now()}; s.log.push(rec); tidy();
       const C=K.cfg(), keep={}; s.shoot=(C.shots===0||C.shots===false)?Promise.resolve([]):shoot(keep);

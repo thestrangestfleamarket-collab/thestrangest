@@ -115,7 +115,7 @@ const ROOMS={lazy:{},off:{},grounds:[]},
   TABLES=window.TABLES={sit:()=>{},top:()=>null,leave:()=>{},chairs:[]},   // the bookstore café's game tables (144cc-tables fills it); the bookstore's room (144ca) sets them
   TALK=window.TALK={on:false,shops:new Map(),ops:{},tests:{},vars:{}},   // the talk window (159da-talk); the shops and the clicks hand characters to it; a character with its own shop panel sets TALK.shops
   INSPECT=window.INSPECT={kinds:[],on:false},   // the inspect window (150cy-inspect); each item family pushes {is:id=>bool, make:id=>Object3D} in its own file
-  RADIO=window.RADIO={src:new Map(),next:()=>0,now:()=>null},   // the radio's stations (150p-cars) heard from more than cars: a room's source (a jukebox) is RADIO.src.set(id,{id,room}); RADIO.next(id) tunes it on (shared, like a car's)
+  RADIO=window.RADIO={src:new Map(),next:()=>0,now:()=>null},   // the radio's stations (150p-cars) heard from more than cars: a room's source (a jukebox) is RADIO.src.set(id,{id,room}); RADIO.next(id) tunes it on (shared, like a car's); one with its own set gives st/vol/here/at/R (an apartment's radio, 150fb)
   WORKERS=window.WORKERS={idle:{},made:{},models:{},make:()=>Promise.resolve()};   // the insides' non-human workers (146zb-workers): WORKERS.make(place) the first time you go in; idle[key] how one moves at its spot; models[key] a body made by code (MERCH's way) for one with no folk recipe
 // the archived editors and town life (owner, 5 Nov 2026) leave these calls answered by nothing
 { const no=()=>{}, nf=()=>false;

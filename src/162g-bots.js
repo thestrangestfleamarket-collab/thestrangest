@@ -3,6 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {CITY, FORAGE, INV, LOOKS, ONLINE, pos, ROOMS, SHOPS, st, UI, USE, VIT, WEEDS} from './003b-systems.js';
 import {FADE, MODS, QS, SYS, TILE} from './006-map-pre.js';
 import {OBJS} from './008-batch.js';
+import {RIVER} from './066-river.js';
 import {AVATAR} from './111c-avatar.js';
 import {FISHING} from './142-fishing.js';
 const BOT=window.BOT={ready:false}, BOTV=new THREE.Vector3();
@@ -27,7 +28,7 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
   const close=()=>{ for(const b of document.querySelectorAll('.pX'))if(b.offsetParent)b.click(); };
   const cash=()=>Math.round(INV.cash||0);
   // into a shop by the map's GO TO, up to its counter, then press its buttons (fn); true once done, false while on the way, null if it can't be reached
-  const counter=(shop,dt,fn,s=task,re=/^THE COUNTER/)=>{ s.at=s.at||{}; if(!s.at[shop]){ s.at[shop]=1; s.wt=12; UI.goName(shop); return false; }   // always by GO TO first: a counter nearby may be another shop's
+  const counter=(shop,dt,fn,s=task,re=/^THE COUNTER/)=>{ s.at=s.at||{}; if(!s.at[shop]){ s.at[shop]=1; s.wt=30; UI.goName(shop); return false; }   // always by GO TO first: a counter nearby may be another shop's
     if(FADE.busy)return false; const th=nearest(UI.things,t=>re.test(t.name||'')), p=th&&thAt(th);
     if(!th||d2(p.x,p.z)>30*T){ if((s.wt-=dt)>0)return false; return null; }
     if(!s.pressed){ if(!use(th,dt))return false; s.pressed=1; s.pw=1.8; fn(); return false; }   // the shop's window: press, then answer how many and YES, then close
@@ -71,16 +72,18 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
         task={s:'find',keep:Object.keys(INV.items).filter(id=>/^[mu]_/.test(id)&&INV.items[id]>0).reduce((a,id)=>a+INV.items[id],0)}; say(lines()[0]||''); doing='sold, now $'+cash(); } },
     fish:dt=>{ if(goal()){ doing='made $'+earned()+' on this job (goal reached)'; return; } task=task||{s:'gear'}; if(task.hold>0&&task.s==='gear'){ task.hold-=dt; return; } const F=FORAGE, fish=FISHING.held?FISHING.held():0, bait=['bait','bait_cut'].some(id=>F.has(id));
       const BAIT=['bait','bait_cut'], stand=nearest(UI.things,th=>/BOATS/.test(th.name||''));
-      if(task.s==='gear'){ if(F.has('rod')&&bait){ task={s:'cast',go:3}; UI.goName('TO THE HUDSON (THE PIER)'); return; } doing=F.has('rod')?'buying bait':'buying a rod';
+      if(task.s==='gear'){ if(F.has('rod')&&BAIT.reduce((n,id)=>n+(F.has(id)||0),0)>=3){ task={s:'cast',go:3}; UI.goName('TO THE HUDSON (THE PIER)'); return; } doing=F.has('rod')?'buying bait':'buying a rod';
         const r=counter('FISHING & SCUBA',dt,()=>{ if(!F.has('rod'))buy('rod'); else buy('bait'); }); if(r===false)return;
         if(r===null){ doing='can\'t get to FISHING & SCUBA'; task={s:'gear',hold:30}; } else if(!F.has('rod')||!BAIT.some(id=>F.has(id))){ const c0=task.c0??cash(); task={s:'gear',c0,tries:(task.tries||0)+1}; if(task.tries>4){ doing='can\'t buy fishing gear ($'+cash()+')'; task.hold=30; task.tries=0; } } return; }
       if(task.s==='sell'){ doing='selling '+fish+' fish'; const r=stand&&d2(thAt(stand).x,thAt(stand).z)<40*T?(use(stand,dt)?(sellAll(),close(),true):false):counter('FISHING & SCUBA',dt,sellAll);
         if(r===false)return; task={s:'gear'}; if(r===null){ task={s:'cast',hold:60}; doing='nobody buying fish nearby'; } return; }
       if(task.s==='cast'){ if(task.go>0){ task.go-=dt; return; } if(!bait&&!FISHING.state?.()){ task.s='gear'; return; } if(task.hold>0)task.hold-=dt; if(fish>=(FISHING.room?FISHING.room():5)&&!(task.hold>0)){ FISHING.leave&&FISHING.leave(); task.s='sell'; return; }
         const S=FISHING.state&&FISHING.state(); FISHING.auto=true; if(S&&S.st){ doing='fishing ('+S.st+'), '+fish+' caught'; return; }
-        if(st.water&&st.water.in){ if(!task.out){ task.out=1; task.far=0; path=null; } doing='climbing out of the water'; if(!walking(dt)&&task.dry)walk(task.dry[0],task.dry[1]); return; } task.out=0;   // never fish while swimming
+        if(RIVER.swim||st.water&&st.water.in){ if(!task.out){ task.out=1; task.far=0; path=null; } doing='climbing out of the water'; if(!walking(dt)&&task.dry)walk(task.dry[0],task.dry[1]); return; } task.out=0;   // never fish while swimming
         if(walking(dt))return; let best=null; for(let r=2;r<=12&&!best;r+=1.5)for(let k=0;k<16;k++){ const a=k*Math.PI/8, x=pos.x+Math.sin(a)*r*T, z=pos.z+Math.cos(a)*r*T; if(FISHING.at(x,z)){ best=[x,z]; break; } }
-        if(!best&&!task.far){ task.far=1; let f=null; for(let r=14;r<=240&&!f;r+=3)for(let k=0;k<24;k++){ const a=k*Math.PI/12, x=pos.x+Math.sin(a)*r*T, z=pos.z+Math.cos(a)*r*T; if(FISHING.at(x,z)){ let e=r; while(e>1&&FISHING.at(pos.x+Math.sin(a)*(e-.5)*T,pos.z+Math.cos(a)*(e-.5)*T))e-=.5; f=[pos.x+Math.sin(a)*(e-1.5)*T,pos.z+Math.cos(a)*(e-1.5)*T]; break; } }   // GO TO leaves it at the way through: walk on to dry land at the nearest water's edge
+        if(!best&&!task.far){ task.far=1; let f=null, fd=1e9; const P=RIVER.onPier||(()=>false);   // GO TO leaves it at the way through: on to the nearest pier with water beside it (or dry ground by the water)
+          for(let r=4;r<=240;r+=2)for(let k=0;k<32;k++){ const a=k*Math.PI/16, x=pos.x+Math.sin(a)*r*T, z=pos.z+Math.cos(a)*r*T, dry=P(x,z,0)||!RIVER.over(x,z);
+            if(dry&&r<fd&&[[2,0],[-2,0],[0,2],[0,-2]].some(([u,v])=>FISHING.at(x+u*T,z+v*T))){ f=[x,z]; fd=r; } }
           if(f){ task.dry=f; walk(f[0],f[1]); doing='walking to the water'; return; } }
         if(!best){ if(stand&&!task.pier){ task.pier=1; const p=thAt(stand); walk(p.x,p.z); } else roam(dt,here(task)); doing='looking for water'; return; }
         if(!FISHING.mode&&FISHING.enter)FISHING.enter(); FISHING.cast(best[0],best[1]); doing='casting'; } },

@@ -288,7 +288,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     const [cx,cy]=P.round, W=k=>/^Oak/.test(k)?.42:F[k].wide*.45, add=(k,x,y,m,t)=>{ out.push([k,+x.toFixed(1),+y.toFixed(1),+m.toFixed(1),+t.toFixed(2)]); RR.push(m*W(k)); }, near=(x,y,r,f,g)=>out.some((o,j)=>Math.hypot(o[1]-x,o[2]-y)<Math.max(g,(RR[j]+r)*f)),
       ok=(x,y,r)=>!(pd(x,y)<3+r||y<P.y0+TREEY+4||y>P.y1-r-8||x<P.x0+r+10||x>P.x1-r-10||Math.hypot(x-cx,y-cy)<P.round[2]+r+6||KEEP.some(b=>x>b[0]-r&&x<b[2]+r&&y>b[1]-r&&y<b[3]+r)||BK.wet(x,y,r)||FOUNT.lake(x,y)<r*.35+1.5||FOUNT.ter(x,y)<r+.5);
     // as thick as Central Park (owner, 8 Nov 2026, his photos of the Mall, the Gapstow pond and the park from the air): rows down both sides of every path, their crowns meeting over it; trees along the lake's track and the brook; woods between, crowns touching, in drifts; open lawns round the giants and where the woods thin
-    { const BIG=(LEVEL.bigTrees||[]).filter(o=>o.kind).map(o=>[o.x-PO.x,o.y-PO.y]), PF={greenhouse:9,torii:5,zen:9,archbridge:8,creekbridge:7,woodbridge:7,logbridge:6,trestle:8,horse:3,picnictable:3,canoe:3,kayak:3,skiff:3};
+    { const BIG=(LEVEL.bigTrees||[]).filter(o=>o.kind).map(o=>[o.x-PO.x,o.y-PO.y]), PF={greenhouse:9,torii:5,zen:9,archbridge:8,creekbridge:7,woodbridge:7,logbridge:6,trestle:8,redbarn:7,picket:2.6,picnictable:3,canoe:3,kayak:3,skiff:3};
       const C=8, GR=new Map(), cell=(x,y)=>Math.floor(x/C)+','+Math.floor(y/C), put=(x,y,r)=>{ const q=cell(x,y); if(!GR.has(q))GR.set(q,[]); GR.get(q).push([x,y,r]); }, around=(x,y,R,f)=>{ const n=Math.ceil(R/C); for(let i=-n;i<=n;i++)for(let j=-n;j<=n;j++)for(const e of GR.get(cell(x+i*C,y+j*C))||[])if(f(e))return true; return false; };
       const TH=new Map(); for(const o of LEVEL.things||[]){ const k=String(o.k||''); if(!/^p:/.test(k))continue; const r=PF[k.slice(2)]||.5, x=o.x-PO.x, y=o.y-PO.y, q=cell(x,y); if(!TH.has(q))TH.set(q,[]); TH.get(q).push([x,y,r]); }
       const onThing=(x,y,r)=>{ for(let i=-2;i<=2;i++)for(let j=-2;j<=2;j++)for(const [a,b,s] of TH.get(cell(x+i*C,y+j*C))||[])if(Math.hypot(a-x,b-y)<s+r)return true; return false; };
@@ -318,7 +318,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       // one row along the wall, each crown just clear of the next (owner: "this size and distance from each other")
       const lowR=k=>{ const q=k+'.low'; if(!F[q])F[q]=TREEGEN.low(F[k].sum,F[k].trunk); return F[q].rad/.84; }; let s=5000;
       const row=(a0,a1,at,g)=>{ let u=a0, prev=0; for(;;){ const k=TK[Math.floor(hash(s,1,11)*TK.length)%TK.length], m=5.25*(1.6+.6*hash(s,2,13)), r=lowR(k)*m; u+=(prev+r)/2+.3; if(u>a1-r)break; prev=r;
-        const [x,y]=at(u,r+1.1), sd=s++; if(gap(u,g,PAD+r)||!edgeOK(x,y))continue; add(k,x,y,m,hash(sd,4,19)*6.28); } };
+        const [x,y]=at(u,r+1.1), sd=s++; if(gap(u,g,PAD+r)||!edgeOK(x,y)||KEEP.some(b=>x>b[0]&&x<b[2]&&y>b[1]&&y<b[3]))continue; add(k,x,y,m,hash(sd,4,19)*6.28); } };
       row(P.x0+1,P.x1-1,(u,o)=>[u,P.y0+o],P.gate); if(!PARK.openN)row(P.x0+1,P.x1-1,(u,o)=>[u,P.y1-o],PARK.ngate);
       const RM=Math.max(...TK.map(k=>lowR(k)*9))*2;   // the side rows leave the corners to the end rows
       row(P.y0+RM,P.y1-RM,(u,o)=>[P.x0+o,u],PARK.wgate); if(!PARK.openE)row(P.y0+RM,P.y1-RM,(u,o)=>[P.x1-o,u],PARK.egate); }
@@ -394,7 +394,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     IT.forEach((it,i)=>{ const h=Math.max(1,(it.top||it.y+4*TILE)-it.y), r=Math.max(.6*TILE,it.r||2*TILE), g=GR[Math.floor(hash(Math.round(it.x*3),Math.round(it.z*3),77)*4)];
       shape[i]=[M4.compose(V.set(it.x,it.y+h*.62,it.z),Q,S3.set(r*.95,h*.42,r*.95)).clone(),M4.compose(V.set(it.x,it.y-.2*TILE,it.z),Q,S3.set(Math.max(.18*TILE,(it.tr||r*.08)),h*.5,Math.max(.18*TILE,(it.tr||r*.08)))).clone()];
       crown.setColorAt(i,c.setRGB(g[0],g[1],g[2],THREE.SRGBColorSpace)); crown.setMatrixAt(i,Z); trunk.setMatrixAt(i,Z); });
-    for(const m of [crown,trunk]){ m.castShadow=true; m.receiveShadow=true; m.frustumCulled=false; (R.parent||scene).add(m); } PARK.ringFar=crown;
+    for(const m of [crown,trunk]){ m.userData.noSmallCull=1; m.castShadow=true; m.receiveShadow=true; m.frustumCulled=false; (R.parent||scene).add(m); } PARK.ringFar=crown;
     const NEAR=30*TILE, near=new Uint8Array(n).fill(2); let lx=1e9, lz=1e9;
     PARK.ringLod=()=>{ if(Math.hypot(pos.x-lx,pos.z-lz)<TILE)return; lx=pos.x; lz=pos.z; const ed=R.userData.edited, gone=R.userData.gone; let ch=false;
       for(let i=0;i<n;i++){ const id=ID[i]; if(id==null||id<0)continue; const it=IT[i], nr=(ed&&ed.has(id))||Math.hypot(it.x-pos.x,it.z-pos.z)-(it.r||0)<NEAR?1:0; if(nr===near[i])continue; near[i]=nr; ch=true;
@@ -415,6 +415,18 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       for(const M of [R,P.standFar])if(M&&M.isBatchedMesh)M.userData.items.forEach((it,i)=>set(M,M.userData.ids[i],Math.hypot(it.x-pos.x,it.z-pos.z)-it.r<=far));
       for(const G of [PARK.trunks,PARK.ringTrunks])if(G&&G.userData.cull)G.userData.cull(far,pos.x,pos.z); };
     PARK.lodReset=()=>{ lx=1e9; }; SYS.add('life',()=>PARK.lod(),'061-treelod'); }
+  // the park's small things only near (owner, 8 Nov 2026: "yes drop the small props past 70 tiles"): every repeated small thing in the park (tufts, flowers, mushrooms, posts, lamps: each under 1.5 tiles) drawn only within 70 tiles of you; the trees and the big pieces always
+  { const R=70*TILE, Z=new THREE.Matrix4().makeScale(0,0,0), M=new THREE.Matrix4(), V=new THREE.Vector3(), Q=new THREE.Quaternion(), SC=new THREE.Vector3(), L=[], seen=new WeakSet(); let lx=1e9, lz=1e9, scanT=0;
+    const take=im=>{ if(seen.has(im))return; seen.add(im); if(im.userData.noSmallCull||im.count<20)return; const g=im.geometry; if(!g.boundingSphere)g.computeBoundingSphere(); let big=0; const n=im.count, cx=new Float32Array(n), cz=new Float32Array(n), m0=new Float32Array(n*16);
+      for(let i=0;i<n;i++){ im.getMatrixAt(i,M); M.premultiply(im.matrixWorld); M.decompose(V,Q,SC); cx[i]=V.x; cz[i]=V.z; if(g.boundingSphere.radius*Math.max(SC.x,SC.y,SC.z)>1.5*TILE)big++; im.getMatrixAt(i,M); M.toArray(m0,i*16); }
+      if(big>n*.1)return; L.push({im,n,cx,cz,m0,vis:new Uint8Array(n).fill(1),ver:im.instanceMatrix.version}); };
+    PARK.smallCull=()=>{ if((scanT-=1)<=0){ scanT=15; for(const G of new Set([MAPG.parkwall,MAPG.park,...scene.children.filter(c=>/^park(wall)?$/.test(c.name))]))if(G)G.traverse(o=>{ if(o.isInstancedMesh)take(o); }); }
+      if(Math.hypot(pos.x-lx,pos.z-lz)<2*TILE)return; lx=pos.x; lz=pos.z;
+      for(const e of L){ const im=e.im; if(im.instanceMatrix.version!==e.ver){ for(let i=0;i<e.n&&i<im.count;i++)if(e.vis[i]){ im.getMatrixAt(i,M); M.toArray(e.m0,i*16); } }   // (someone else moved them: their places kept)
+        let ch=false; for(let i=0;i<e.n&&i<im.count;i++){ const on=Math.hypot(e.cx[i]-pos.x,e.cz[i]-pos.z)<R?1:0; if(on===e.vis[i])continue; e.vis[i]=on; ch=true; im.setMatrixAt(i,on?M.fromArray(e.m0,i*16):Z); }
+        if(ch)im.instanceMatrix.needsUpdate=true; e.ver=im.instanceMatrix.version; } };
+    SYS.every(()=>PARK.smallCull(),300,'061-park the small things only near');
+    window.SMALLCULLDBG=()=>({meshes:L.length,all:L.reduce((a,e)=>a+e.n,0),shown:L.reduce((a,e)=>a+e.vis.reduce((x,v)=>x+v,0),0)}); }
   window.PARKDBG=()=>({oaks:PARK.oaks,trees:TREES,back:TREES.back,TL,progs:renderer.info.programs.length});
   PARK.later(()=>{ '@park'; PARK.rocks=mesh([['BigRock3',87.5,-37,2.6,1.8],['BigRock5',126,-41,2.4,.2],['Rock_12',55.5,-41,1,1],['Rock1',111,-41,.6,2],['BigRock1',66,-35,2,1.1]].map(([k,x,y,...r])=>[k,RX(x),RY(y),...r]),false);
   { const UG=[['bush1',1.1],['bush2',1.2],['bush3',1.3],['bush4',1.5],['bush5',1.1],['flower1',.5],['flower2',.7],['flower3',.3],['flower4',.7],['flower5',.35],['flower6',.8],['grass1',.5],['grass2',.6],['grass1',.45],['grass2',.55],['mushroom1',.3],['mushroom2',.35],['mushroom3',.3],['mushroom4',.25],['stone2',.5],['stone3',.2],['stones1',.25]];

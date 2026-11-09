@@ -36,18 +36,17 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
     const g=BODIES.by.avatar.GEO, me=W3.group.children.find(m=>m.geometry===g); return {ready:!!(PB&&PB.ready),steps:(W3.body.physN||0)-n0,shown:!!(me&&me.visible)}; });
   rec('the physics body moves the avatar as it moved the Walker',ph.ready&&ph.steps>=5&&ph.shown,JSON.stringify(ph));
   // every garment the cast wears (owner, 5 Nov 2026), and the back and both hands: each slot offers them, a pack or a held thing adds to you, a tool in that hand puts it down
-  const cnt=await pg.evaluate(()=>Object.fromEntries(['hat','neck','back','righthand','lefthand','bottom'].map(s=>[s,document.querySelectorAll('#lavt-'+s+' option').length-1])));
-  rec('the whole cast\'s wardrobe is offered by kind: hats, neck, back, right and left hand',cnt.hat>=35&&cnt.neck>=20&&cnt.back>=10&&cnt.righthand>=50&&cnt.lefthand>=20,JSON.stringify(cnt));
+  const cnt=await pg.evaluate(()=>({...Object.fromEntries(['hat','neck','back','bottom'].map(s=>[s,document.querySelectorAll('#lavt-'+s+' option').length-1])),hands:!!document.getElementById('lavt-righthand')||!!document.getElementById('lavt-lefthand')}));
+  rec('the whole cast\'s wardrobe is offered by kind: hats, neck, back; no right or left hand (owner, 8 Nov 2026: "you cant just put them in your hand as props")',cnt.hat>=35&&cnt.neck>=20&&cnt.back>=10&&!cnt.hands,JSON.stringify(cnt));
   // every version too (owner, 5 Nov 2026), under its kind: TROUSERS lists each one who wears trousers, grouped by theme
   const tv=await pg.evaluate(async()=>{ const p=AVATAR.pieces.find(x=>x.slot==='bottom'&&x.label==='TROUSERS'); await AVATAR.wear('bottom',p.n); AVATAR.draw(); const s=document.getElementById('lav-bottom');
     return {kind:document.getElementById('lavt-bottom').value,versions:s.options.length,groups:s.querySelectorAll('optgroup').length,all:AVATAR.pieces.length}; });
   rec('every version of a garment: TROUSERS offers dozens, grouped by theme',tv.kind==='TROUSERS'&&tv.versions>=40&&tv.groups>=10&&tv.all>=900,JSON.stringify(tv));
-  const pk=await id('back','BACKPACK'), fr=await id('righthand','FISHING ROD'), bk=await id('lefthand','BOOK');
+  const pk=await id('back','BACKPACK'), fr=await pg.evaluate(()=>(AVATAR.pieces.find(p=>p.slot==='righthand')||{}).n), bk=await pg.evaluate(()=>(AVATAR.pieces.find(p=>p.slot==='lefthand')||{}).n);
   const hd=await pg.evaluate(async([pk,fr,bk])=>{ const t=()=>BODIES.by.avatar.GEO.attributes.position.count/3, a=t(); await AVATAR.wear('back',pk); const b=t(); await AVATAR.wear('righthand',fr); await AVATAR.wear('lefthand',bk); const c=t(), code=AVATAR.code();
     const was=WIELD.on; WIELD.on='net'; await AVATAR.set({}); const d=t(), seen=BODIES.by.avatar.look(); WIELD.on=was; await AVATAR.set({});
-    return {a,b,c,d,code,seen,rt:JSON.stringify(AVATAR.decode(code))===JSON.stringify(AVATAR.L())}; },[pk,fr,bk]);
-  rec('a backpack and things in both hands are worn, and the look round-trips',hd.b>hd.a&&hd.c>hd.b&&hd.rt,JSON.stringify({a:hd.a,b:hd.b,c:hd.c,code:hd.code}));
-  rec('a tool in your hand puts down what that hand held, for you and the others',hd.d<hd.c&&hd.d>hd.b&&!hd.seen.endsWith('.'+bk.toString(36)+'.'+fr.toString(36)),JSON.stringify({d:hd.d,seen:hd.seen}));
+    return {a,b,c,d,code,seen,w:JSON.stringify(AVATAR.decode(code).w),rt:JSON.stringify(AVATAR.decode(code))===JSON.stringify(AVATAR.L())}; },[pk,fr,bk]);
+  rec('a backpack is worn, a thing put in either hand from the wardrobe is not, and the look round-trips',hd.b>hd.a&&hd.c===hd.b&&hd.rt&&!/hand/.test(hd.w),JSON.stringify({a:hd.a,b:hd.b,c:hd.c,code:hd.code}));
   const oldc=await pg.evaluate(()=>{ const a=AVATAR.code().split('.').slice(0,17); return JSON.stringify(AVATAR.decode(a.join('.')).w); });
   rec('a look saved before the new slots still reads the same',!/back|hand"/.test(oldc)&&/top/.test(oldc),oldc);
   const mc=await pg.evaluate(async pk=>{ await AVATAR.wear('back',pk); AVATAR.draw(); const k=document.getElementById('lavk-back'), ins=[...k.querySelectorAll('input')], pack=ins.find(i=>/pack colour$/.test(i.getAttribute('aria-label')));
@@ -62,9 +61,11 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
   rec('outfits: the whole cast, by theme; one goes on all together',of.outfits>=190&&of.themes>=30&&of.slots>=5&&of.ok&&of.tris>3000&&of.menu===of.themes,JSON.stringify(of));
   const c1=await pg.evaluate(()=>AVATAR.code()); rec('the look round-trips as a code',await pg.evaluate(c=>AVATAR.decode(c)&&JSON.stringify(AVATAR.decode(c))===JSON.stringify(AVATAR.L()),c1),c1);
   const rm=await pg.evaluate(c=>{ const v=BODIES.by.avatar.variant(c); return v?v.geo().attributes.position.count/3:0; },c1); rec('another player wearing it gets the same body',rm===await tris(),rm);
-  // THE PASSPORT (owner, 8 Nov 2026): no lanyard; the card is in your pack and cannot be dropped; double-clicking another player shows their card
-  const pp=await pg.evaluate(()=>({has:FORAGE.has('passport'),drop:BAG.drop?BAG.drop('passport'):false,still:FORAGE.has('passport'),noPanel:!document.getElementById('lavly'),noWear:!('wear' in PASSPORT),code:!/lan/.test(JSON.stringify(AVATAR.decode(AVATAR.code())))}));
-  rec('the passport: in your pack, it cannot be dropped; no lanyard to wear or design',pp.has&&pp.drop===false&&pp.still&&pp.noPanel&&pp.noWear&&pp.code,JSON.stringify(pp));
+  // NO LANYARD (owner, 9 Nov 2026: "remove lanyard from game totally - doesnt exist"): no LANYARD line in YOU, none in the wardrobe, none worn; the passport stays in the pack and cannot be dropped
+  const ly=await pg.evaluate(()=>{ const kinds=[...document.querySelectorAll('[id^="lavt-"] option')].map(o=>o.textContent), n=AVATAR.pieces.find(p=>p.k==='LANYARD');
+    if(n)AVATAR.wear(n.slot,n.n); const worn=Object.values(AVATAR.L().w).some(w=>w&&w[0]===(n&&n.n));
+    return {row:!!document.querySelector('#lavly'),kind:kinds.some(t=>/LANYARD/.test(t)),worn,lan:'lan' in AVATAR.L(),has:FORAGE.has('passport'),drop:BAG.drop?BAG.drop('passport'):false}; });
+  rec('no lanyard anywhere: no LANYARD line, none in the wardrobe, none can be worn; the passport is in the pack and cannot be dropped',!ly.row&&!ly.kind&&!ly.worn&&!ly.lan&&ly.has&&ly.drop===false,JSON.stringify(ly));
   const card=await pg.evaluate(async()=>{ const P=__dbg.you(), lk='b:avatar:'+AVATAR.code(); ONLINE.feed({t:'hi',you:'me',all:[{id:'q',name:'ROSA',look:lk,x:{id:'4321|APT 3A · THE TOWER, MARKET ST|SECTION A, NEW YORK|1990-04-02|140|2026-11-01'},at:[P.x+1.2,P.z,SHARED.py,0,SHARED.LVL,'']}]});
     let o=null; for(let i=0;i<40&&!(o&&o.fig);i++){ await new Promise(r=>setTimeout(r,250)); o=ONLINE.others.get('q'); } if(!o||!o.fig)return {fig:false};
     o.fig.th.act(); const w=document.getElementById('passportw'), t=w&&w.textContent||''; const c=w&&w.querySelector('.pPh'), px=c?c.getContext('2d').getImageData(0,0,150,200).data:[]; let ink=0; for(let i=3;i<px.length;i+=4)if(px[i]>0)ink++;
@@ -74,6 +75,14 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
   const fc=await pg.evaluate(()=>{ const g=BODIES.by.avatar.GEO; return g.attributes.position.count/3; }); rec('she is dressed too',fc>2000,'tris '+fc);
   await pg.evaluate(()=>AVATAR.set({b:2,h:108})); const tall=await pg.evaluate(()=>BODIES.by.avatar.S); await pg.evaluate(()=>AVATAR.set({h:92})); const short=await pg.evaluate(()=>BODIES.by.avatar.S);
   rec('height: taller is drawn bigger',tall>short*1.1,tall.toFixed(3)+' vs '+short.toFixed(3));
+  // the eyes and mouth you pick lie on the face (owner, 9 Nov 2026: "eyes float off face"): each point no more than 5 mm in front of the head's surface under it
+  const gap=await pg.evaluate(async()=>{ const keep=AVATAR.L().fx; let worst=0; for(const e of [1,2,3,7]){ await AVATAR.set({fx:{e,m:e,es:150,ms:100}}); const g=BODIES.by.avatar.GEO, P=g.attributes.position.array, N=g.attributes.normal.array, SM=g.attributes.sm.array, BI=g.attributes.bi.array, BW=g.attributes.bw.array, n=P.length/9;
+      let S0=n; while(S0>0&&SM[(S0-1)*3]===0&&N[(S0-1)*9+2]===1)S0--; const hd=[]; for(let t=0;t<S0;t++)if([0,1,2].every(j=>BI[(t*3+j)*2]===2&&BW[t*3+j]>.99))hd.push(t);
+      const zAt=(x,y)=>{ let z=-1e9; for(const t of hd){ const o=t*9, a=[P[o],P[o+1],P[o+2]], b=[P[o+3],P[o+4],P[o+5]], c=[P[o+6],P[o+7],P[o+8]], D=(b[1]-c[1])*(a[0]-c[0])+(c[0]-b[0])*(a[1]-c[1]); if(Math.abs(D)<1e-12)continue;
+        const l1=((b[1]-c[1])*(x-c[0])+(c[0]-b[0])*(y-c[1]))/D, l2=((c[1]-a[1])*(x-c[0])+(a[0]-c[0])*(y-c[1]))/D, l3=1-l1-l2; if(l1<-1e-6||l2<-1e-6||l3<-1e-6)continue; z=Math.max(z,l1*a[2]+l2*b[2]+l3*c[2]); } return z; };
+      if(S0===n)return 'none drawn'; for(let t=S0;t<n;t++)for(let j=0;j<3;j++){ const o=t*9+j*3; worst=Math.max(worst,P[o+2]-zAt(P[o],P[o+1])); } }
+    await AVATAR.set({fx:keep||{}}); return worst; });
+  rec('the picked eyes and mouth lie on the face, not in front of it',typeof gap==='number'&&gap<.005,typeof gap==='number'?'furthest '+(gap*1000).toFixed(1)+' mm':gap);
   if(OUT){   // in third person, the camera in front of you, in the park's open meadow (the shots' rule: an open field, third or first person)
     const look=async(nm,set,wear)=>{ await pg.evaluate(async([set,wear])=>{ document.getElementById('looks').hidden=true; const L=AVATAR.L(); L.w={}; await AVATAR.set(set);
         for(const [s,l,c] of wear){ const o=AVATAR.pieces.find(x=>x.slot===s&&x.label===l); await AVATAR.wear(s,o?o.n:null,c); }

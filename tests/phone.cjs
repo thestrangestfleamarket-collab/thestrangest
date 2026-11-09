@@ -1,0 +1,25 @@
+// THE BRICK PHONE: node tests/phone.cjs dist/market.html. Every player has one; using it opens its screen of what the bodega sells; an order is paid (price and delivery) and the drone brings it to you outdoors, a parcel at your feet you take in.
+const {chromium}=require('playwright'), path=require('path');
+(async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:1000,height:600}}), errs=[]; let bad=0;
+  const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; }; pg.on('pageerror',e=>errs.push(e.message));
+  await pg.goto('file://'+path.resolve(process.argv[2]||'dist/market.html')+'?hour=12&fresh=1&at=60,-60',{waitUntil:'commit',timeout:180000}); await pg.waitForFunction(()=>window.__started,null,{timeout:300000}); await pg.waitForTimeout(5000);
+  const A=await pg.evaluate(async()=>{ await LOAD('later'); return {have:INV.items.brickphone||0,name:FORAGE.name('brickphone')}; });
+  ok(A.have===1&&A.name==='BRICK PHONE','every player has a BRICK PHONE '+JSON.stringify(A));
+  const B=await pg.evaluate(async()=>{ HUD.useItem('brickphone'); await new Promise(r=>setTimeout(r,800)); return {open:!!MINI.on,title:MINI.on&&MINI.on.title}; });
+  ok(B.open&&B.title==='BRICK PHONE','using it opens its screen '+JSON.stringify(B));
+  const C=await pg.evaluate(async()=>{ MINI.close(); const L=(()=>{ const A=BODEGA.all(); return [...A.supplies,...A.shelves,...A.goods]; })(), r=L.find(q=>q.price>0); INV.cash=500; const c0=INV.cash, n0=INV.items[r.id]||0, e=PHONE.order(r);
+    for(let i=0;i<120&&DRONE.state!=='home';i++)await new Promise(q=>setTimeout(q,500));
+    const th=__dbg.UI.things.find(t=>t.name==='A PARCEL: '+r.name), p=th&&th.obj.position, P=__dbg.pos(), d=p?Math.hypot(p.x-P[0],p.z-P[2])/__dbg.cv().TILE:null; if(th)th.act();
+    return {lines:L.length,e,paid:c0-INV.cash,price:r.price,parcel:!!th,d,got:(INV.items[r.id]||0)-n0}; });
+  ok(C.lines>10&&!C.e&&C.paid===C.price+2,'an order is paid: its price and $2 delivery '+JSON.stringify(C));
+  ok(C.parcel&&C.d<3&&C.got===1,'the drone brings it to you: a parcel at your feet, taken in '+JSON.stringify({d:C.d,got:C.got}));
+  const D=await pg.evaluate(async()=>{ const sent=[]; const s0=ONLINE.send, on0=ONLINE.on; ONLINE.send=m=>sent.push(m); ONLINE.on=true;
+    const A=BODEGA.all(), r=[...A.supplies,...A.shelves,...A.goods].find(q=>q.price>0); INV.cash=500; PHONE.order(r); const mine=sent.find(m=>m.t==='drone');
+    for(let i=0;i<120&&DRONE.state!=='home';i++)await new Promise(q=>setTimeout(q,500));
+    const n0=__dbg.scene.children.length, P=__dbg.pos(); ONLINE.feed({t:'drone',id:'zed',lb:'A CAN OF CAT FOOD',f:0,x:P[0]+3,y:0,z:P[2]}); await new Promise(q=>setTimeout(q,300)); const flying=__dbg.scene.children.length>n0;
+    for(let i=0;i<40;i++)await new Promise(q=>setTimeout(q,500)); const left=__dbg.scene.children.filter(c=>c.isMesh&&c.geometry&&c.geometry.type==='BoxGeometry'&&Math.hypot(c.position.x-P[0]-3,c.position.z-P[2])<.6).length;
+    ONLINE.send=s0; ONLINE.on=on0; return {mine:!!mine&&mine.f===1,flying,left}; });
+  ok(D.mine,'your order tells the others: the drone is shared '+JSON.stringify(D));
+  ok(D.flying&&D.left>0,'another player\'s delivery: you see the drone fly in and the parcel left by them');
+  ok(!errs.length,'no page errors '+errs.slice(0,2).join(' | '));
+  await b.close(); process.exit(bad?1:0); })();

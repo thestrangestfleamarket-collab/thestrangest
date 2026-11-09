@@ -69,7 +69,7 @@ await grab('dungeon',async()=>{});
     const floor=(x0,y0,x1,y1,R)=>{ if(x1-x0<.01||y1-y0<.01)return; bq([X(x0),Y(.3)+dy,Z(y1)],[X(x1),Y(.3)+dy,Z(y1)],[X(x1),Y(.3)+dy,Z(y0)],[X(x0),Y(.3)+dy,Z(y0)],faceTex(Math.round((x1-x0)*24),Math.round((y1-y0)*24),(i,j)=>C(MODS.dunTerr?MODS.dunTerr.floorCol(x0+(i+.5)/24,y0+(j+.5)/24,R,'cave'):K.dungeonFloorCol(x0+(i+.5)/24,y0+(j+.5)/24,R))),'L'); };
     for(const {R} of Ls)for(const t of R.torches){ const [x,y]=t.w==='l'?[R.x0+.16,R.y0+t.u]:t.w==='r'?[R.x1-.16,R.y0+t.u]:t.w==='b'?[R.x0+t.u,R.y0+.16]:[R.x0+t.u,R.y1-.16]; Kc['wall torch'](x,y,t.w); }
     const LK=MODS.dunLook, solid=LK?Ls.filter(l=>!l.c).flatMap(l=>LK.props(l,Kc)):[], TR=MODS.dunTerr;
-    if(TR)for(const l of Ls)if(!l.c&&!l.T)TR.make(l);   // the uneven ground, after the props so it keeps them on the flat
+    if(TR)for(const l of Ls)if(!l.T)TR.make(l);   // the uneven ground, after the props so it keeps them on the flat
     for(const l of Ls)if(!l.T)floor(l.B.x0,l.B.y0,l.B.x1,l.B.y1,l.R);
     const made=KP.slice(n0); KP.length=n0; BATCH.meshes={}; BATCH.cast=true; for(const [k,b] of WB)gboxS(b,k,dy); for(const p of made)for(const b of p.boxes)gboxS(b,'L',dy);
     BATCH.build((k,map,emap)=>castleMat(k,map,emap,PL[k])); BATCH.cast=false;
@@ -127,7 +127,7 @@ await grab('dungeon',async()=>{});
   SYS.add('life',dt=>{ if(!mine||!mine.hz||SHARED.LVL!=='down'){ if(SHARED.drag!==1)SHARED.drag=1; return; } const H=mine.hz, f=1+.35*(band()-1), gx=iX(pos.x), gy=iZ(pos.z), alive=!VIT.dead&&!(VIT.out>0), onG=SHARED.py-ground(pos.x,pos.z)<.2*TILE;
     spikes(false);
     for(const sp of H.sp)if(sp.up&&!sp.hit&&alive&&onG&&inside(sp,gx,gy)){ sp.hit=true; VIT.hurt(.07*f); say('sp','THE SPIKES STAB UP INTO YOUR FEET!'); }   // a trap's hurt has no side to block from
-    if(alive&&onG&&H.lava.some(h=>inLava(h,gx,gy))){ if((lavaT-=dt)<=0){ lavaT=.35; VIT.hurt(.05*f); say('lava','THE LAVA BURNS YOU!','#ff6a3a'); } } else lavaT=0;
+    if(alive&&onG&&VIT.burns('lava')&&H.lava.some(h=>inLava(h,gx,gy))){ if((lavaT-=dt)<=0){ lavaT=.35; VIT.hurt(.05*f); say('lava','THE LAVA BURNS YOU!','#ff6a3a'); } } else lavaT=0;
     if(webT>0){ webT-=dt; SHARED.drag=.08; if(webT<=0){ webFree=2; SHARED.drag=1; say('web','YOU TEAR YOURSELF FREE OF THE WEB.','#d8d8c8'); } }
     else{ SHARED.drag=1; if(webFree>0)webFree-=dt; else if(alive&&H.webs.some(w=>Math.hypot(gx-w.cx,gy-w.cy)<w.r*.8)){ webT=2+.3*band(); say('web','YOU ARE STUCK IN A SPIDER WEB!','#d8d8c8'); } } },'062a-dungeon');
   const S=CASTLE.stair, top={x:((S.x0+S.x1)/2-72)*TILE,z:(S.y0-.5+77)*TILE};

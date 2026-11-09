@@ -1,16 +1,18 @@
 // THE ROOM EDITOR: DECORATE your apartment like the Sims (owner, 25 and 27 Oct 2026): T in your apartment (the view as it is); a click picks a thing up and a drag moves it on a grid (green fits, red doesn't), small things onto tables and shelves, pictures and wall lights onto the wall you point at; Q/E turn, Shift+wheel resizes, DEL puts it away; a buy bar of pictured things at prices; walls, floor and every light; saved to your account.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INV, ONLINE, pos} from './003b-systems.js';
+import {BAG, FORAGE, INSPECT, INV, ONLINE, PETS, pos, UI} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {MODS, QS, SYS} from './006-map-pre.js';
 import {ROOMK} from './150a-bedroom.js';
 { const HOME={layout:null,loaded:false}, web=/^https?:$/.test(location.protocol);
+  // EP: every apartment's layout saved before this was reset to the default one (owner, 9 Nov 2026); what was placed in it is given back once, the first time its room is built
+  const EP=1, cur=L=>L&&(L.ep||0)>=EP?L:null;
   const getLocal=()=>{ try{ return JSON.parse(SAVE.get('home')||'null'); }catch(e){ return null; } };
   const setLocal=L=>{ SAVE.set('home',JSON.stringify(L)); };
   const ask=async body=>{ const r=await fetch('/home',{method:'POST',headers:{'content-type':'application/json'},credentials:'same-origin',body:JSON.stringify(body)}); if(!r.ok)throw new Error(r.status); return r.json(); };
-  HOME.load=async()=>{ let L=null; if(web){ try{ L=(await ask({})).home; }catch(e){} } if(!L)L=getLocal(); HOME.layout=L; HOME.loaded=true; if(L&&ROOMK.api)apply(ROOMK.api,L); };
+  HOME.load=async()=>{ let L=null; if(web){ try{ L=(await ask({})).home; }catch(e){} } if(!L)L=getLocal(); if(L&&!cur(L)){ HOME.stale=L; L=null; } HOME.layout=L; HOME.loaded=true; if(L&&ROOMK.api)apply(ROOMK.api,L); };
   HOME.save=async L=>{ HOME.layout=L; setLocal(L); if(web){ try{ await ask({put:L}); HOME.saved=Date.now(); }catch(e){ HOME.err=String(e); } } };
 
   /* ---------- a room as a layout: where every piece stands, what you added and put away, the walls, the floor, the lights ---------- */
@@ -18,26 +20,34 @@ import {ROOMK} from './150a-bedroom.js';
   const snapshot=A=>{ '@later'; const things={}, added=[], lights={};
     for(const un of A.units()){ const t=A.getT(un), e={u:r3(t.u),h:r3(t.h),v:r3(t.v),ry:r3(t.ry),s:r3(t.s)}; if(un.gone)e.gone=1; if(un.added)added.push({id:un.id,kind:un.kind,paid:un.paid||0,...e}); else things[un.id]=e; }
     for(const q of A.lightsAll()){ const L=A.lightGet(q.id); delete L.type0; lights[q.id]=L; }
-    const L={v:1,wall:A.R.wall,floor:A.R.floor,kfloor:A.R.kfloorK,glow:A.R.glowK,addN:A.R.addN,things,added,lights}; for(const k of ROOMK.keep)try{ k.out(L,A); }catch(e){} return L; };
+    const L={v:1,ep:EP,wall:A.R.wall,floor:A.R.floor,kfloor:A.R.kfloorK,glow:A.R.glowK,addN:A.R.addN,things,added,lights}; for(const k of ROOMK.keep)try{ k.out(L,A); }catch(e){} return L; };
   const apply=(A,L)=>{ '@later'; if(!L||!A)return; if(L.wall)A.wall(L.wall); if(L.floor)A.floor(L.floor); if(L.kfloor)A.kfloor(L.kfloor); if(L.glow!=null)A.glow(L.glow); A.R.addN=Math.max(A.R.addN,L.addN||0); for(const k of ROOMK.keep)try{ k.in(L,A); }catch(e){}
     for(const a of L.added||[]){ if(A.units().some(u=>u.id===a.id))continue; const un=A.spawn(a.kind,a,a.id); if(!un)continue; un.paid=a.paid||0; if(a.gone)A.remove(un); }
     for(const un of A.units())if(!un.added&&L.things&&L.things[un.id]){ const t=L.things[un.id]; A.setT(un,t); if(t.gone)A.remove(un); }   // the pieces every flat has, where you moved them
     for(const id in L.lights||{})A.light(id,L.lights[id]); };
   // the room starts empty but for ROOMK.always (the TV, typewriter, telescope, globes, microscope, fish tank): its other pieces are only kinds to buy, what you bought comes back from your layout (?furnished=1 keeps it as built, for the tests of its pieces)
   const SORT={};
-  ROOMK.built.push(A=>{ '@later'; sortKinds(A); const lt={}; for(const q of A.lightsAll())lt[q.id]=A.lightGet(q.id); A.R.bare={wall:A.R.wall,floor:A.R.floor,kfloor:A.R.kfloorK,glow:A.R.glowK,lights:lt}; if(!QS.has('furnished'))for(const un of A.units().slice())if(!un.added&&!ROOMK.always.has(un.kind))A.drop(un); if(HOME.guest)apply(A,HOME.guest.layout); else if(HOME.loaded)apply(A,HOME.layout); if(ED.on)ED.panel(); });
+  ROOMK.built.push(A=>{ '@later'; sortKinds(A); const lt={}; for(const q of A.lightsAll())lt[q.id]=A.lightGet(q.id); A.R.bare={wall:A.R.wall,floor:A.R.floor,kfloor:A.R.kfloorK,glow:A.R.glowK,lights:lt}; if(!QS.has('furnished'))for(const un of A.units().slice())if(!un.added&&!ROOMK.always.has(un.kind))A.drop(un); if(HOME.stale&&!HOME.guest){ const S=HOME.stale, K=A.kinds(); HOME.stale=null; let back=0, n=0; for(const a of S.added||[]){ const KO=K[a.kind]; if(KO&&KO.own){ FORAGE.give(KO.own,1); n++; } else back+=a.paid||0; }
+      INV.cash=(INV.cash||0)+back; if(INV.save)INV.save(); HOME.save(snapshot(A)); if(back||n)UI.log('YOUR APARTMENT WAS RESET'+(back?': $'+back+' BACK FOR YOUR FURNITURE':'')+(n?(back?',':':')+' '+n+' THING'+(n>1?'S':'')+' BACK IN YOUR PACK':'')+'.','#c8a090'); }
+    if(HOME.guest)apply(A,HOME.guest.layout); else if(HOME.loaded)apply(A,HOME.layout); if(ED.on)ED.panel(); });
   // a visit: another player's apartment is your rooms dressed in their layout, to look at, not to change; leaving puts yours back
   const swap=L=>{ const A=ROOMK.api; if(!A)return; for(const un of A.units().slice())if(un.added)A.drop(un); const D=A.R.bare||{}; apply(A,{...D,...(L||{}),lights:{...(D.lights||{}),...((L&&L.lights)||{})}}); };
   HOME.visit=async(id,name,L0)=>{ '@later'; if(!id||(MODS.apts&&MODS.apts.inReal))return; let L=L0; if(L===undefined&&web){ try{ L=(await ask({who:id})).home; }catch(e){ L=null; } }
-    HOME.guest={id,name:String(name||'A NEIGHBOUR').toUpperCase(),layout:L||null}; MODS.apts.host=id; const G=HOME.guest; await MODS.apts.enterReal(null,G.name+"'S APARTMENT"); if(HOME.guest!==G)return; swap(G.layout); G.in=true; };
+    HOME.guest={id,name:String(name||'A NEIGHBOUR').toUpperCase(),layout:cur(L)}; MODS.apts.host=id; const G=HOME.guest; await MODS.apts.enterReal(null,G.name+"'S APARTMENT"); if(HOME.guest!==G)return; swap(G.layout); G.in=true; };
   ONLINE.visit=(id,name)=>HOME.visit(id,name);
+  // every tenant's apartment (not only who is online), for the map's quick jumps; asked at most once a minute
+  let TN=null, TT=0; ONLINE.tenants=async()=>{ if(!web)return []; if(TN&&Date.now()-TT<60000)return TN; try{ TN=((await ask({list:1})).list||[]).map(t=>({id:t.who,name:t.name||'A NEIGHBOUR'})); TT=Date.now(); }catch(e){ TN=TN||[]; } return TN; };
   SYS.add('places',()=>{ if(HOME.guest&&HOME.guest.in&&MODS.apts&&!MODS.apts.inReal){ HOME.guest=null; MODS.apts.host=null; swap(HOME.layout); } },'150d-visit');
+  // your pets at home go with your layout, so a visitor finds them in your rooms (146zj); a change to who is at home is saved the next time you are in
+  ROOMK.keep.push({out:L=>{ if(PETS.atHome)L.pets=PETS.atHome(); },in:()=>{}});
+  PETS.guestOf=()=>HOME.guest&&{name:HOME.guest.name,pets:(HOME.guest.layout&&HOME.guest.layout.pets)||[]};
+  SYS.every(()=>{ const A=ROOMK.api; if(!A||!HOME.loaded||HOME.guest||!(MODS.apts&&MODS.apts.inReal)||!PETS.atHome)return; const p=JSON.stringify(PETS.atHome()); if(p!==JSON.stringify((HOME.layout&&HOME.layout.pets)||[]))HOME.save(snapshot(A)); },5000,'150d-pets');
   HOME.load();
 
   /* ---------- the catalog: what each kind is, its department and its price ---------- */
   const DEPTS0=[['seating','SEATING'],['beds','BEDS'],['surfaces','SURFACES'],['storage','STORAGE'],['kitchen','KITCHEN'],['decor','DECOR'],['plants','PLANTS'],['lights','LIGHTS']];
   const DEPT={BENCH:'seating',CHAIR:'seating','KITCHEN CHAIR':'seating',BED:'beds',PILLOW:'beds',BLANKETS:'beds',DESK:'surfaces','CORNER DESK':'surfaces',TABLE:'surfaces',PENINSULA:'surfaces',
-    DRAWERS:'storage',HUTCH:'storage','CUBBY SHELF':'storage','RECORD CABINET':'storage',BOOKCASE:'storage','WALL SHELF':'storage','OPEN SHELVES':'storage','WALL CABINET':'storage',
+    DRAWERS:'storage',HUTCH:'storage','CUBBY SHELF':'storage','RECORD CABINET':'storage',BOOKCASE:'storage',BOOKSHELF:'storage','WALL SHELF':'storage','OPEN SHELVES':'storage','WALL CABINET':'storage',
     COUNTER:'kitchen','CORNER COUNTER':'kitchen','SIDE COUNTER':'kitchen','SHORT COUNTER':'kitchen',SINK:'kitchen',STOVE:'kitchen',HOOD:'kitchen',FRIDGE:'kitchen',MICROWAVE:'kitchen',TOASTER:'kitchen','COFFEE MACHINE':'kitchen',
     'DISH RACK':'kitchen','DISH SOAP':'kitchen','PAPER TOWELS':'kitchen',CANISTER:'kitchen',POT:'kitchen',PLATES:'kitchen',MUG:'kitchen',CUP:'kitchen',MILL:'kitchen','DUTCH OVEN':'kitchen',UTENSILS:'kitchen',OIL:'kitchen',ORANGES:'kitchen','CUTTING BOARD':'kitchen',KNIFE:'kitchen',DONUTS:'kitchen',
     PLANT:'plants','TRAILING PLANT':'plants',LAMP:'lights'};
@@ -72,9 +82,10 @@ import {ROOMK} from './150a-bedroom.js';
   #roombuy{position:fixed;left:calc(12px + env(safe-area-inset-left,0px));right:calc(12px + env(safe-area-inset-right,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));max-width:980px;margin:0 auto;background:color-mix(in srgb,var(--bg) 97%,transparent);border:2px solid var(--line);font:12px var(--pixel);color:var(--fg);z-index:20}
   #roombuy .top{display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:2px solid var(--line)} #roombuy .top b{color:var(--key)} #roombuy .tabs{flex-wrap:wrap} #roombuy .tabs button{font-size:10px;flex:1 0 auto;padding:6px 6px}
   #roombuy input{font:inherit;color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;padding:3px 6px;width:150px}
-  #roombuy .tiles{display:flex;gap:6px;overflow-x:auto;padding:8px 10px} #roombuy .tile{flex:0 0 84px;border:2px solid #3a3f4e;background:#0e1016;cursor:pointer;padding:4px 2px;text-align:center;font:inherit;color:var(--fg)}
-  #roombuy .tile:hover{border-color:var(--key)} #roombuy .tile.poor{opacity:.45} #roombuy .tile img,#roombuy .tile i{display:block;width:64px;height:64px;margin:0 auto 3px;image-rendering:pixelated}
-  #roombuy .tile span{display:block;font-size:8px;line-height:1.2;height:20px;overflow:hidden} #roombuy .tile em{font-style:normal;color:var(--key);font-size:10px}
+  #roombuy .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:12px 10px;padding:10px 12px;max-height:44vh;overflow-y:auto;background:#17191f}
+  #roombuy .tile{display:flex;flex-direction:column;align-items:stretch;border:2px solid transparent;background:none;cursor:pointer;padding:0;text-align:left;font:inherit;color:#ece6d6} #roombuy .tile:hover{border-color:var(--key)} #roombuy .tile.poor{opacity:.45}
+  #roombuy .tile img,#roombuy .tile i{display:block;width:100%;aspect-ratio:1/1;height:auto;background:#eceae4;object-fit:contain}
+  #roombuy .tile span{display:block;font-size:10px;font-weight:bold;line-height:1.25;margin:5px 3px 0;min-height:13px} #roombuy .tile small{display:block;font-size:9px;color:#8f95a3;margin:2px 3px 0;min-height:11px} #roombuy .tile em{font-style:normal;color:var(--key);font-size:10px;margin:2px 3px 0}
   #roomsay{position:fixed;left:50%;transform:translateX(-50%);top:calc(52px + env(safe-area-inset-top,0px));font:12px var(--pixel);color:#ffd2c8;background:var(--panel);border:2px solid #7a3a30;padding:6px 12px;z-index:21;pointer-events:none}
   #roomedbtn{position:fixed;left:50%;transform:translateX(-50%);top:calc(12px + env(safe-area-inset-top,0px));font:12px var(--pixel);color:var(--key);background:var(--panel);border:2px solid var(--line);padding:6px 12px;cursor:pointer;z-index:19}`;
   document.head.appendChild(css);
@@ -85,6 +96,7 @@ import {ROOMK} from './150a-bedroom.js';
   let tab='things', dept='seating', helper=null, hover=null, saveT=0, sayT=0;
   const say=m=>{ SAYEL.textContent=m; SAYEL.hidden=false; clearTimeout(sayT); sayT=setTimeout(()=>{ SAYEL.hidden=true; },2200); ED.said=m; };
   const dirty=()=>{ clearTimeout(saveT); saveT=setTimeout(()=>{ const A=A_(); if(A)HOME.save(snapshot(A)); },1200); };
+  ROOMK.save=()=>{ if(HOME.guest||!A_())return false; dirty(); return true; }; ROOMK.guest=()=>!!HOME.guest; ROOMK.snap=()=>A_()?snapshot(A_()):null;   // a piece's own settings saved with the layout (the fish tank)
   const hexs=c=>'#'+c.map(x=>x.toString(16).padStart(2,'0')).join('');
   const name=un=>un.name+(un.added?' (NEW)':'');
   const cash=()=>Math.round(INV.cash||0);
@@ -142,10 +154,10 @@ import {ROOMK} from './150a-bedroom.js';
   /* ---------- little pictures of each kind for the buy bar (drawn once each, a couple a frame, with the game's own renderer) ---------- */
   const PICS={}, PQ=[]; let picRT=null, picBuf=null;
   const TS=new THREE.Scene(); TS.add(new THREE.HemisphereLight(0xfff4e6,0x50505c,2.2)); { const d=new THREE.DirectionalLight(0xffffff,2.4); d.position.set(2,4,3); TS.add(d); }
-  const TC=new THREE.OrthographicCamera(-1,1,1,-1,.01,100), PS=64;
+  const TC=new THREE.OrthographicCamera(-1,1,1,-1,.01,100), PS=160, SZ={};
   const drawPic=kind=>{ '@later'; const A=A_(), K=A&&A.kinds()[kind]; if(!K)return; const tpl=K.tpl; if(K.bad){ PICS[kind]=''; for(const el of BUY.querySelectorAll('[data-add]'))if(el.dataset.add===kind)el.remove(); return; } const o=tpl.clone(true), drop=[]; o.position.set(0,0,0); o.rotation.set(0,0,0); o.scale.setScalar(1);
     o.traverse(q=>{ if(q.isLight||q.userData.hit||q.userData.blob||q.userData.soft||(q.material&&q.material.visible===false))drop.push(q); }); for(const q of drop)q.removeFromParent();
-    TS.add(o); const B=new THREE.Box3().setFromObject(o), c=B.getCenter(new THREE.Vector3()), r=Math.max(.05,B.getSize(new THREE.Vector3()).length()/2);
+    TS.add(o); const B=new THREE.Box3().setFromObject(o), c=B.getCenter(new THREE.Vector3()), bs=B.getSize(new THREE.Vector3()), r=Math.max(.05,bs.length()/2); SZ[kind]=`${bs.x.toFixed(1)}×${bs.z.toFixed(1)}×${bs.y.toFixed(1)} m`;
     TC.left=TC.bottom=-r*1.05; TC.right=TC.top=r*1.05; TC.near=.01; TC.far=r*8; TC.position.copy(c).add(new THREE.Vector3(1,.85,1).normalize().multiplyScalar(r*4)); TC.lookAt(c); TC.updateProjectionMatrix();
     if(!picRT){ picRT=new THREE.WebGLRenderTarget(PS,PS); picBuf=new Uint8Array(PS*PS*4); }
     const prevRT=renderer.getRenderTarget(), prevClip=renderer.localClippingEnabled, prevCol=renderer.getClearColor(new THREE.Color()), prevA=renderer.getClearAlpha(), prevSh=renderer.shadowMap.autoUpdate;
@@ -153,7 +165,7 @@ import {ROOMK} from './150a-bedroom.js';
     finally{ renderer.setRenderTarget(prevRT); renderer.localClippingEnabled=prevClip; renderer.setClearColor(prevCol,prevA); renderer.shadowMap.autoUpdate=prevSh; TS.remove(o); }
     const cv=document.createElement('canvas'); cv.width=cv.height=PS; const g=cv.getContext('2d'), im=g.createImageData(PS,PS), gam=v=>Math.round(255*Math.pow(v/255,1/2.2));
     for(let y=0;y<PS;y++)for(let x=0;x<PS;x++){ const s=((PS-1-y)*PS+x)*4, d=(y*PS+x)*4; im.data[d]=gam(picBuf[s]); im.data[d+1]=gam(picBuf[s+1]); im.data[d+2]=gam(picBuf[s+2]); im.data[d+3]=picBuf[s+3]; }
-    g.putImageData(im,0,0); PICS[kind]=cv.toDataURL(); for(const el of BUY.querySelectorAll('[data-pic]'))if(el.dataset.pic===kind)el.outerHTML=`<img alt="" src="${PICS[kind]}">`; };
+    g.putImageData(im,0,0); PICS[kind]=cv.toDataURL(); for(const el of BUY.querySelectorAll('[data-pic]'))if(el.dataset.pic===kind)el.outerHTML=`<img alt="" src="${PICS[kind]}">`; for(const el of BUY.querySelectorAll('[data-sz]'))if(el.dataset.sz===kind)el.textContent=SZ[kind]; };
 
   /* ---------- the buy bar ---------- */
   const forSale=A=>{ const K=A.kinds(); return Object.keys(K).filter(k=>!NOSALE.has(k)&&!K[k].bad&&(!K[k].own||owned(K[k]))).sort((a,b)=>K[a].name<K[b].name?-1:1); };
@@ -162,7 +174,7 @@ import {ROOMK} from './150a-bedroom.js';
     let h=`<div class="top"><b>BUY</b><span>YOU HAVE $${have.toLocaleString('en-US')}</span><input id="roomfind" placeholder="FIND" value="${find.replace(/"/g,'')}"><span style="margin-left:auto;color:var(--dim);font-size:10px">${ED.carry?'CLICK TO PUT IT DOWN · ESC TAKES IT BACK':'CLICK A THING TO BUY IT'}</span></div>`;
     h+=`<div class="tabs">${depts(A).map(([k,n])=>`<button data-dept="${k}" class="${!q&&dept===k?'on':''}">${n}</button>`).join('')}</div><div class="tiles">`;
     for(const k of ks){ const p=price(k); if(!PICS[k]&&!PQ.includes(k))PQ.push(k);
-      h+=`<button class="tile${have<p?' poor':''}" data-add="${k}">${PICS[k]?`<img alt="" src="${PICS[k]}">`:`<i data-pic="${k}"></i>`}<span>${K[k].name}</span><em>${K[k].own?'YOURS x'+owned(K[k]):'$'+p}</em></button>`; }
+      h+=`<button class="tile${have<p?' poor':''}" data-add="${k}">${PICS[k]?`<img alt="" src="${PICS[k]}">`:`<i data-pic="${k}"></i>`}<span>${K[k].name}</span><small data-sz="${k}">${SZ[k]||''}</small><em>${K[k].own?'YOURS x'+owned(K[k]):'$'+p}</em></button>`; }
     const f=document.activeElement&&document.activeElement.id==='roomfind'; BUY.innerHTML=h+(ks.length?'':'<span style="color:var(--dim)">NOTHING HERE</span>')+'</div>';
     if(f){ const i=BUY.querySelector('#roomfind'); i.focus(); i.setSelectionRange(i.value.length,i.value.length); }
     P.style.maxHeight=Math.max(160,innerHeight-BUY.offsetHeight-48)+'px'; };   // the panel stops above the bar, however tall its tabs wrap
@@ -284,10 +296,59 @@ import {ROOMK} from './150a-bedroom.js';
     else used=false; if(used){ e.stopImmediatePropagation(); e.preventDefault(); } },true);
 
   // the button shows in your apartment; the editor closes if you leave it; the buy bar's pictures a couple a frame
-  SYS.add('places',()=>{ const h=inHome(); if(B.hidden===h)B.hidden=!h; if(ED.on&&!h)ED.toggle(); if(helper&&ED.sel){ if(ED.sel.gone||!ED.sel.obj.parent)select(null); else helper.update(); }
+  SYS.add('places',()=>{ const h=inHome(); if(B.hidden===h)B.hidden=!h; if(ED.on&&!h)ED.toggle(); if(!ED.on&&!SP.hidden)SP.hidden=true; if(helper&&ED.sel){ if(ED.sel.gone||!ED.sel.obj.parent)select(null); else helper.update(); }
     if(hover&&(hover.un.gone||!hover.un.obj.parent))setHover(null);
     if(ED.on&&PQ.length)for(let i=0;i<2&&PQ.length;i++){ const k=PQ.shift(); if(!PICS[k])try{ drawPic(k); }catch(err){ PICS[k]=''; } } },'150d-roomedit');
+  /* ---------- putting something on a surface: double-click a table, a shelf, a counter; choose from your pack (or buy a small thing); a top-down view of it, click where it goes ---------- */
+  const SP=document.createElement('div'); SP.id='surfp'; SP.hidden=true; document.body.appendChild(SP);
+  { const css=document.createElement('style'); css.textContent=`#surfp{position:fixed;left:50%;top:8%;transform:translateX(-50%);width:min(760px,94vw);max-height:84vh;overflow:auto;z-index:22;background:#17191f;border:2px solid var(--line);font:12px var(--pixel);color:#ece6d6;padding:10px 12px} #surfp h3{margin:0 0 8px;color:var(--key);font:inherit} #surfp .btn{font:inherit;color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;padding:4px 7px;cursor:pointer} #surfp .btn.on{border-color:var(--key);color:var(--key)} #surfp .x{float:right}
+    #surfp .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:10px;margin-top:8px} #surfp .card{border:2px solid transparent;background:none;cursor:pointer;padding:0;text-align:left;font:inherit;color:inherit} #surfp .card:hover{border-color:var(--key)} #surfp .card img,#surfp .card i{display:block;width:100%;aspect-ratio:1/1;background:#eceae4;object-fit:contain;image-rendering:pixelated} #surfp .card span{display:block;font-size:10px;margin:4px 3px 0} #surfp .card em{display:block;font-style:normal;color:var(--key);font-size:10px;margin:2px 3px}
+    #surfp canvas{display:block;margin:8px auto;max-width:100%;cursor:crosshair;border:2px solid #3a3f4e;background:#000} #surfp .dim{color:#8f95a3}`; document.head.appendChild(css); }
+  const SURF={un:null,lv:0,pick:null};
+  // a piece's flat tops in room metres: its solid's tops and its shelves, the ones a thing could stand on
+  const tops=un=>{ '@later'; const A=A_(), t=A.getT(un), c=Math.cos(t.ry||0), sn=Math.sin(t.ry||0), s=t.s||1, xf=(x,z)=>[t.u+(x*c+z*sn)*s,t.v+(-x*sn+z*c)*s], out=[];
+    const rect=(r,h)=>{ const P=[xf(r[0],r[1]),xf(r[2],r[1]),xf(r[0],r[3]),xf(r[2],r[3])]; return {u0:Math.min(...P.map(q=>q[0])),v0:Math.min(...P.map(q=>q[1])),u1:Math.max(...P.map(q=>q[0])),v1:Math.max(...P.map(q=>q[1])),h}; };
+    for(const r of un.sol||[]){ const h=t.h+r[4]*s; if(h>.15&&h<2.3&&(r[2]-r[0])*s>.12&&(r[3]-r[1])*s>.12)out.push({...rect(r,h),name:'THE TOP'}); }
+    (un.shf||[]).forEach((r,i)=>{ const h=t.h+r[5]*s; if(h>.05&&h<2.4)out.push({...rect(r,h),name:'SHELF '+(i+1)}); });
+    out.sort((a,b)=>b.h-a.h); const seen=new Set(); return out.filter(q=>{ const k=q.h.toFixed(2); if(seen.has(k))return false; seen.add(k); return true; }); };
+  // a thing from your pack as a piece for your rooms: its own model, about a hand or two in size; placing it uses it up, putting it away gives it back
+  const packKind=(A,id)=>{ const k='pack:'+id, R=A.R; if(R.kinds[k])return k; const NM=(FORAGE.NM&&FORAGE.NM[id])||id, D={kind:k,name:String(NM).toUpperCase(),loose:true,m:.4,wire:null,sol:[],shf:[],own:id,dept:'yours',deptName:'YOURS'};
+    Object.defineProperty(D,'tpl',{configurable:true,enumerable:true,get(){ const g=new THREE.Group(); let o=null; try{ o=INSPECT.model(id); }catch(e){} if(o){ const B=new THREE.Box3().setFromObject(o), sz=B.getSize(new THREE.Vector3()), k2=.26/Math.max(.01,sz.x,sz.y,sz.z);
+        o.scale.multiplyScalar(k2); const B2=new THREE.Box3().setFromObject(o), c=B2.getCenter(new THREE.Vector3()); o.position.sub(new THREE.Vector3(c.x,B2.min.y,c.z)); o.traverse(q=>{ if(q.isMesh){ q.castShadow=q.receiveShadow=true; } }); g.add(o); }
+      Object.defineProperty(D,'tpl',{value:g,enumerable:true}); return g; }});
+    R.kinds[k]=D; return k; };
+  ROOMK.keep.push({ out:()=>{}, in:(L,A)=>{ for(const a of (L&&L.added)||[])if(String(a.kind).startsWith('pack:'))packKind(A,a.kind.slice(5)); } });
+  const packList=()=>Object.entries(INV.items||{}).filter(([id,n])=>n>0&&!/^\$/.test(id)).map(([id,n])=>({id,n,name:String((FORAGE.NM&&FORAGE.NM[id])||id).toUpperCase()})).sort((a,b)=>a.name<b.name?-1:1);
+  const packPic=id=>{ try{ const c=BAG.pic&&BAG.pic(id); return c?c.toDataURL():''; }catch(e){ return ''; } };
+  const drawSurf=()=>{ '@later'; const A=A_(), un=SURF.un; if(!A||!un){ SP.hidden=true; return; } const T=tops(un); if(!T.length){ SP.hidden=true; return; } const L=T[Math.min(SURF.lv,T.length-1)];
+    let h=`<button class="btn x" data-a="close">CLOSE</button><h3>PUT SOMETHING ON THE ${un.name}</h3>`;
+    if(T.length>1)h+=`<div>${T.map((q,i)=>`<button class="btn ${i===SURF.lv?'on':''}" data-lv="${i}">${q.name}</button>`).join(' ')}</div>`;
+    if(!SURF.pick){ const P=packList(), K=A.kinds(), small=forSale(A).filter(k=>K[k].loose&&!K[k].own).slice(0,60);
+      h+=`<div class="dim" style="margin-top:6px">FROM YOUR PACK</div><div class="grid">${P.length?P.map(p=>`<button class="card" data-pk="${p.id}">${packPic(p.id)?`<img alt="" src="${packPic(p.id)}">`:'<i></i>'}<span>${p.name}</span><em>x${p.n}</em></button>`).join(''):'<span class="dim">YOUR PACK IS EMPTY</span>'}</div>`;
+      h+=`<div class="dim" style="margin-top:12px">OR BUY A SMALL THING</div><div class="grid">${small.map(k=>{ if(!PICS[k]&&!PQ.includes(k))PQ.push(k); return `<button class="card" data-buy="${k}">${PICS[k]?`<img alt="" src="${PICS[k]}">`:'<i></i>'}<span>${K[k].name}</span><em>$${price(k)}</em></button>`; }).join('')}</div>`; SP.innerHTML=h; return; }
+    h+=`<div class="dim" style="margin-top:6px">CLICK WHERE ON ${L.name} THE ${SURF.pick.name} GOES · <button class="btn" data-a="back">CHOOSE SOMETHING ELSE</button></div><canvas width="480" height="480"></canvas>`; SP.innerHTML=h; topView(L,SP.querySelector('canvas')); };
+  // the surface from straight above, drawn by the game itself; a click on it maps back to the room through the corners' own projections
+  const TVC=new THREE.OrthographicCamera(-1,1,1,-1,.01,100); let tvRT=null, tvBuf=null;
+  const topView=(L,cv)=>{ '@later'; const A=A_(), N=480, pad=.12, cu=(L.u0+L.u1)/2, cvv=(L.v0+L.v1)/2, half=Math.max(L.u1-L.u0,L.v1-L.v0)/2+pad, c=A.W(cu,L.h,cvv), M_=A.M||1;
+    TVC.left=TVC.bottom=-half*M_; TVC.right=TVC.top=half*M_; TVC.near=.01; TVC.far=4*M_; TVC.position.set(c.x,c.y+2.5*M_,c.z); const vz=A.W(cu,L.h,cvv-1).sub(c).normalize(); TVC.up.copy(vz); TVC.lookAt(c); TVC.updateProjectionMatrix(); TVC.updateMatrixWorld();
+    if(!tvRT){ tvRT=new THREE.WebGLRenderTarget(N,N); tvBuf=new Uint8Array(N*N*4); } const prev=renderer.getRenderTarget(), pc=renderer.localClippingEnabled;
+    try{ renderer.localClippingEnabled=false; renderer.setRenderTarget(tvRT); renderer.clear(); renderer.render(scene,TVC); renderer.readRenderTargetPixels(tvRT,0,0,N,N,tvBuf); } finally{ renderer.setRenderTarget(prev); renderer.localClippingEnabled=pc; }
+    const g=cv.getContext('2d'), im=g.createImageData(N,N), gam=v=>Math.round(255*Math.pow(v/255,1/2.2)); for(let y=0;y<N;y++)for(let x=0;x<N;x++){ const s2=((N-1-y)*N+x)*4, d=(y*N+x)*4; im.data[d]=gam(tvBuf[s2]); im.data[d+1]=gam(tvBuf[s2+1]); im.data[d+2]=gam(tvBuf[s2+2]); im.data[d+3]=255; } g.putImageData(im,0,0);
+    const P=(u,v)=>{ const p=A.W(u,L.h,v).project(TVC); return [(p.x+1)/2*N,(1-p.y)/2*N]; }, a=P(L.u0,L.v0), b=P(L.u1,L.v0), d=P(L.u0,L.v1);
+    g.strokeStyle='#f2c14e'; g.lineWidth=2; g.setLineDash([6,4]); g.beginPath(); g.moveTo(...a); g.lineTo(...b); g.lineTo(b[0]+d[0]-a[0],b[1]+d[1]-a[1]); g.lineTo(...d); g.closePath(); g.stroke();
+    cv.onclick=e=>{ const r=cv.getBoundingClientRect(), x=(e.clientX-r.left)/r.width*N, y=(e.clientY-r.top)/r.height*N, ex=[b[0]-a[0],b[1]-a[1]], ey=[d[0]-a[0],d[1]-a[1]], q=[x-a[0],y-a[1]], det=ex[0]*ey[1]-ex[1]*ey[0]; if(Math.abs(det)<1e-6)return;
+      const s_=(q[0]*ey[1]-q[1]*ey[0])/det, t_=(ex[0]*q[1]-ex[1]*q[0])/det; if(s_<0||s_>1||t_<0||t_>1){ say('ON THE '+un_name()+', PLEASE'); return; } placeOn(L.u0+s_*(L.u1-L.u0),L.v0+t_*(L.v1-L.v0),L.h); }; };
+  const un_name=()=>SURF.un?SURF.un.name:'';
+  const placeOn=(u,v,h)=>{ '@later'; const A=A_(), P=SURF.pick; if(!A||!P)return; let un=null;
+    if(P.pack){ const k=packKind(A,P.pack); if(!FORAGE.has(P.pack)){ say('NONE LEFT IN YOUR PACK'); return; } FORAGE.take(P.pack,1); un=add(k,{u,v,h:h+.01,ry:0,s:1},0); if(!un){ FORAGE.give(P.pack,1); return; } }
+    else { const p=price(P.buy); if(cash()<p){ say('NOT ENOUGH MONEY: $'+p); return; } INV.cash-=p; un=add(P.buy,{u,v,h:h+.01,ry:0,s:1},p); if(!un){ INV.cash+=p; return; } }
+    A.setT(un,{...A.getT(un),u,v,h:h+.01}); select(un); say('ON THE '+un_name()+': THE '+un.name); SURF.pick=null; SP.hidden=true; drawBuy(); };
+  SURF.open=un=>{ if(!tops(un).length){ say('NOTHING STANDS ON THE '+un.name); return; } SURF.un=un; SURF.lv=0; SURF.pick=null; SP.hidden=false; drawSurf(); };
+  SP.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; const A=A_(); if(b.dataset.a==='close'){ SP.hidden=true; return; } if(b.dataset.a==='back'){ SURF.pick=null; return drawSurf(); }
+    if(b.dataset.lv!=null){ SURF.lv=+b.dataset.lv; return drawSurf(); } if(b.dataset.pk){ SURF.pick={pack:b.dataset.pk,name:String((FORAGE.NM&&FORAGE.NM[b.dataset.pk])||b.dataset.pk).toUpperCase()}; return drawSurf(); }
+    if(b.dataset.buy&&A){ SURF.pick={buy:b.dataset.buy,name:A.kinds()[b.dataset.buy].name}; return drawSurf(); } });
+  addEventListener('dblclick',e=>{ if(!ED.on||e.target!==renderer.domElement||ED.carry)return; const h=pick(e); if(!h||h.un.loose)return; e.stopImmediatePropagation(); e.preventDefault(); if(drag)finish(); SURF.open(h.un); },true);
   window.ROOMEDDBG=()=>{ '@later'; const A=A_(); return {on:ED.on,sel:ED.sel&&ED.sel.id,undo:ED.undo.length,saved:HOME.saved||0,layout:!!HOME.layout,units:A?A.units().length:0,gone:A?A.units().filter(u=>u.gone).length:0,added:A?A.units().filter(u=>u.added).length:0,wall:A&&A.R.wall,floor:A&&A.R.floor,kfloor:A&&A.R.kfloorK,
     carry:!!ED.carry,grid:ED.grid,cash:cash(),pics:Object.keys(PICS).filter(k=>PICS[k]).length,fp:fpG.visible?fpG.children.filter(m=>m.visible).map(m=>m.material===FPM.ok?'ok':'no'):[],said:ED.said||''}; };
-  ED._api=A_; ED.HOME=HOME; ED.snapshot=()=>A_()&&snapshot(A_()); ED.apply=L=>apply(A_(),L); ED.add=add; ED.select=select; ED.putAway=putAway; ED.turn=turn; ED.size=size; ED.fits=(un,t)=>fits(un,t||A_().getT(un)); ED.sortOf=sortOf; ED.price=price; ED.sell=()=>sell(); ED.place=()=>placeCarry();
+  ED._api=A_; ED.HOME=HOME; ED.snapshot=()=>A_()&&snapshot(A_()); ED.apply=L=>apply(A_(),L); ED.add=add; ED.select=select; ED.putAway=putAway; ED.turn=turn; ED.size=size; ED.fits=(un,t)=>fits(un,t||A_().getT(un)); ED.sortOf=sortOf; ED.price=price; ED.sell=()=>sell(); ED.place=()=>placeCarry(); ED.surf=SURF; ED.tops=un=>tops(un); ED.placeOn=placeOn; ED.packKind=id=>packKind(A_(),id);
 }

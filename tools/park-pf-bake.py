@@ -25,7 +25,7 @@ PARK={'parkbench':'park-bench-dc8b62','ironbench':'cast-iron-plaza-bench-b4096d'
   'picnictable':'heavy-timber-picnic-table-1ac060','planter':'flower-planter-550bfb','planterbox':'campus-planter-box-10970a',
   'bollard':'sidewalk-bollard-c2567e','sphere':'concrete-sphere-bollard-d99a57','conservatory':'glass-conservatory-a938d5',
   'greenhouse':'greenhouse-53ab6d','koi':'japanese-koi-pond-78d204','zen':'zen-sand-garden-79a828','lookout':'splay-leg-lookout-tower-6fae7e',
-  'bunting':'bunting-run-2ac207','duck':'duck-base','pigeon':'pigeon-base','horse':'horse-base'}
+  'bunting':'bunting-run-2ac207','redbarn':'red-barn-d41683','duck':'duck-base','pigeon':'pigeon-base','horse':'horse-base'}
 C='.polyfork'; os.makedirs(C,exist_ok=True)
 def get(i):
     f=os.path.join(C,i+'.glb')
@@ -40,7 +40,7 @@ def get(i):
     return f
 out='data/parkpf.json'
 if os.path.exists(out): os.remove(out)
-KEEP={'parkbench','campusrail','trashcan','picnictable','jlamp','drink','archbridge','creekbridge','woodbridge','logbridge','trestle','canoe','kayak','skiff','zen','greenhouse','torii','duck','pigeon','horse'}   # (owner, 7 Nov 2026: "remove all the assets except for: park bench, duck, campusrail, trashcan, picnic table, j lamp, drink, bridges, boats, zen, greenhouse, torii - and animals")
+KEEP={'parkbench','campusrail','trashcan','picnictable','jlamp','drink','archbridge','creekbridge','woodbridge','logbridge','trestle','canoe','kayak','skiff','zen','greenhouse','torii','duck','pigeon','redbarn','picket'}   # (owner, 7 Nov 2026: "remove all the assets except for: park bench, duck, campusrail, trashcan, picnic table, j lamp, drink, bridges, boats, zen, greenhouse, torii - and animals")
 PARK={k:v for k,v in PARK.items() if k in KEEP}
 L=os.path.join(C,'park.list'); open(L,'w').write(''.join(k+' '+get(i)+'\n' for k,i in PARK.items()))
 subprocess.run([sys.executable,'tools/polyfork-bake.py','props',L,'-'],check=True,env={**os.environ,'OUT':out})

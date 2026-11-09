@@ -51,6 +51,7 @@ One pull request each, in this order; the game stays playable after every one.
 - [x] **The bath house and the bodega still open on Market St** (done 7 Nov: both back on Market St's row with the map moved again) · P1 · M · pick + code. After "only Market St" (7 Nov) their lots are on the Hudson row, but GO TO THE BATH HOUSE lands on an apartment house's fire escape (the baths are built in place inside the APARTMENTS block), and the bodega's door and the old bodega front stand on Market St over APARTMENTS 4. Move both insides off the map with their doors on their Hudson lots (the owner's pick).
 
 ## For the owner
+- [x] **Market St traffic** (owner, 9 Nov 2026; done 9 Nov, claude/inspiring-maxwell-ynwbpy): poles to the kerb with lights on top, lamp posts gone, cars and fliers driving, the park gate's stop light and button. `src/150pb-traffic.js`, `tools/traffic-bake.py`, `tests/traffic.cjs`. Waits for his look and yes.
 
 **To try on the live site** (one sitting; each line is in its area below):
 phones and tablets: the touch pad, its layout, a controller on a phone (8 Nov) ·
@@ -149,7 +150,7 @@ In order (each step builds on the one before): RLS SQL → login cookie with the
 (art in its own object) → money on the server → trade checked on the server. Live-data steps go in one window, after the checks run on
 `main`, and end with the owner trying it live.
 
-- [ ] **Commit the Supabase RLS SQL** · P1 · S · pick + code. 1 Nov review §B9. `players`, `admins`, `invite_codes`, `bug_reports` (and
+- [x] **Commit the Supabase RLS SQL** · done 9 Nov (`supabase/policies.sql`, read live; nothing changed there) · P1 · S · pick + code. 1 Nov review §B9. `players`, `admins`, `invite_codes`, `bug_reports` (and
   `join_beta`, the `bugs` bucket's policies) live only in the dashboard. Add them under `supabase/` beside `apartments.sql`/`cinema.sql`.
   The owner pastes the current policies, or OKs reading them with the Supabase tools; review before applying anything.
 - [ ] **Login cookie HttpOnly** · P2 · M · code · risk med-high (live auth). 1 Nov review §B8. `src/door/door.html:44` sets the Supabase
@@ -172,20 +173,22 @@ In order (each step builds on the one before): RLS SQL → login cookie with the
   object for the whole game, against "build for many". Fix: one object per player (`idFromName(id)`), a small passport-counter object
   (stays unique), and art in its own object (anyone reads a finished painting by id). Visits (`body.who`) read another player's object.
   Migrate live data once; do it before access widens. Fold the money migration below into the same window if the owner agrees.
-- [ ] **Money on the server** · P2 · XL · pick + code · risk high. From the 1 Nov review (its #1; owner: add to TODO, 4 Nov). Cash is a
+- [x] **Money on the server** · done 9 Nov [claude/relaxed-bohr-vnxr7f]: a bucket on the server, a ledger; not full server authority (the game still decides what you catch) · P1 · · XL · pick + code · risk high. From the 1 Nov review (its #1; owner: add to TODO, 4 Nov). Cash is a
   client-held string in `/owned` (`worker/door.js:80-84`), so any logged-in player can set their balance; shops and the BBS spend it.
   `INV.cash` is written at about 50 places in 27 files, mostly earnings (fishing, forage, arcade, fair, gems), so a buy/sell ledger
   priced from `data/items.json` isn't enough: earnings need a rule each, or a capped "earn" call. `/owned` stops taking cash; migrate each
   balance once. Owner decides first: which object, how to migrate. (`docs/REVIEW-2026-11-01.md` §B6.)
-- [ ] **Trade: the server trusts each game's offer** · P3 · M (cash) / XL (items) · code · risk high. From #564: `trade()`
+- [x] **Trade: the server trusts each game's offer** · done 9 Nov [claude/relaxed-bohr-vnxr7f]: each side pays first, only what was paid changes hands · P1 · · M (cash) / XL (items) · code · risk high. From #564: `trade()`
   (`worker/door.js:283-306`) only clamps shapes; each game applies the swap itself (`src/159i-trade.js:43-45`). Cash checked server-side
   needs the money ledger; items need a server-held pack (no line for that yet). Low on its own today (anyone can set anything in `/owned`),
   high once money is on the server.
-- [ ] **Shared-world writes aren't checked** · P3 · M · code. Found in the 4 Nov audit: review §B7 (anyone may write any `world` key on the
+- [x] **Shared-world writes aren't checked** · done 9 Nov (`WORLD_KEYS`) · P3 · M · code. Found in the 4 Nov audit: review §B7 (anyone may write any `world` key on the
   block, including `add` counters) has no line. The shared ground and pouches (4 Nov) also trust the client's item records. Decide the rules
   with the trade line.
 
 ## Places and insides
+- [x] **The telescope and microscope from real data (the 14 mockups)** · P2 · XL · code · done 9 Nov [claude/confident-mccarthy-kk7wgw]. Owner, 9 Nov 2026: "lets add all to game". Next: the aurora in the street's own sky, the firsts board on a wall.
+- [x] **Invitations: the café's board games first** · P2 · M · code · done 9 Nov [claude/stoic-dijkstra-smffz6]. Next kinds register in `INVITES.kinds`.
 - [ ] **The bookstore café: twice as wide, a coffee bar, five game tables** · P2 · L · code. [taking: claude/clever-galileo-0fj20f, 7 Nov] Owner, 7 Nov 2026: layout A, inside only, players and the computer, for fun, all the games.
 
 - [ ] **Shop insides: can you walk in and out?** · P2 · S (check) · find, then pick. Owner, 3 Nov (his shot of the bath house): "when
@@ -229,6 +232,7 @@ In order (each step builds on the one before): RLS SQL → login cookie with the
 ## Skate park (Section B)
 
 One pass, one pull request.
+- [x] **The skate pit** (owner, 9 Nov 2026: "do a large skate pit", in place of the plaza; done 9 Nov) · P2 · M · code. `src/111fda-skatepit.js`, `tests/skatepit.cjs`. Waits for his look and yes.
 - [ ] **The map editor and its ground picture for Section B** · P3 · L · code · risk med. Placed by `sections.places` in `data/world.json`
   (owner, 4 Nov: "option 1, open air, remove the gate in A"). The owners' editor (`src/editor/editor.html:54`) still reads the old
   `parkPlaces.skatepark`; nothing in it or in `src/096-mapedit.js` reads `sections.places`; it edits one section (`SID`, editor.html:116);
@@ -251,6 +255,10 @@ One pass, one pull request.
 - [x] **Pets** (owner, 7 Nov 2026: "use polyfork cats and dogs and birds, let people choose one as pet (choose color, style) use the base models"; done 7 Nov) · P2 · L · code. `src/146zj-pets.js`, `tools/pets-bake.py`, `tests/pets.cjs`. Waits for his look and yes.
 - [x] **Every breed, the permapet, PETS in the menu** (owner, 8 Nov 2026: "try to add every breed possible"; "player can pick their main pet when they start"; "add PETS menu in esc menu"; done 8 Nov) · P2 · L · code. `tools/breeds-bake.py`, `tools/breeds_list.py`, `src/146zj-pets.js`, `src/162g-firstday.js`, `tests/pets.cjs`. Waits for his look and yes.
 - [x] **Pets, the rest** (owner, 8 Nov 2026: "1-6"; done 8 Nov) · P2 · L · code. Breeds for every farm and pet animal, better dog bases, dog food back, pets at home, stats at work. Waits for his look and yes.
+- [x] **The park's animals to the pet store's cages; every living thing a pet; THE AQUARIUM** (owner, 8 Nov 2026: "hudson lot, apartment tank only, birds ok, go"; done 8 Nov) · P2 · L · code. `src/146zj-pets.js`, `src/146zjb-aquarium.js`, `tools/pets-more.py`, `tools/petcages-bake.py`, `tests/petstore.cjs`. Waits for his look and yes.
+- [x] **The pet shops split; the park farm and its barn** (owner, 8 Nov 2026: "separate buildings, recommendations, big liz, A, yes go"; done 8 Nov) · P2 · L · code. `src/146zj-pets.js`, `src/059i-mshops.js`, `tools/pets-more.py`, `tools/petcages-bake.py`, `tests/petstore.cjs`. Waits for his look and yes.
+- [ ] **Keepers for the new pet shops and the barn** · P3 · S · pick. Every unarchived character fitting is working elsewhere; the owner names who (from the archive or new).
+- [x] **Your pet at home** (owner, 9 Nov 2026: "in your apartment's living room and bedroom, wandering by findPath, jumping or flying up onto things, idling, asleep"; done 9 Nov) · P2 · M · code. `src/146zj-pets.js`, `tests/pethome.cjs`. Waits for his look and yes.
 
 - [x] **One menu, the pager gone** (done 5 Nov) · P2 · L · code. Owner, 5 Nov: "B"; "leave the map and bag as is. BBs changes. do the rest. go".
 - [ ] **After the archive (5 Nov)** · P1 · code. Left: the playhouse as an empty hall; the rest of the archived cast's bodies still ship in the cast data (hidden by ARCH). Dropped (owner, 5 Nov): the map
@@ -332,6 +340,8 @@ One pass, one pull request.
   where they fell (`N.rag=null` without moving `N.st`). Seen only on your screen (see shared physics).
 
 ## Physics and vehicles
+- [x] **The flamethrower and the freeze ray** (owner, 9 Nov 2026; done 9 Nov) · P2 · M · code. `146hb-jets`, `tests/jets.cjs`. [taking: claude/practical-cerf-gt0vnr]
+- [ ] **Jets follow-ups** · P3 · S · pick. Fires and ice are worked out on each player's page (where a stream lands matches, how a fire spreads may not); characters burn and freeze but do not run from the fire.
 - [x] **Things take room** (owner, 8 Nov 2026: "do all three go"; done 8 Nov) · P1 · M · code. Characters their body's size, waiting for each other, solids from step height, characters in the loose things' physics; `tests/space.cjs`.
 
 - [x] **The hotel's helipad** · P2 · M · code + look. 7 Nov 2026 (owner: "add heliped on top of building. helicopter. have it fly around and land. pilot"): the deck, two helicopters on the sky tour, ride along, fly it yourself (`150pa-heli`, `tests/heli.cjs`). [taking: claude/sharp-gates-thwxtx, 7 Nov 2026]

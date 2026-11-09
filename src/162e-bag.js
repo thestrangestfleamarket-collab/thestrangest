@@ -58,7 +58,20 @@ window.BAG=BAG;
     const k=BAG.kind(id), A=colour(id,k), a=shade(A), B=k==='fruit'?'#3f8a3a':k==='cube'?'#f4efe4':a;
     c=document.createElement('canvas'); c.width=c.height=10; const g=c.getContext('2d'); ART[k].forEach((row,y)=>{ for(let x=0;x<10;x++){ const ch=row[x]; if(!ch||ch==='.')continue; g.fillStyle=ch==='A'?A:ch==='a'?a:ch==='B'?B:PAL[ch]||'#f0f'; g.fillRect(x,y,1,1); } }); CV.set(id,c); return c; };
   BAG.pic=paint;
-  const URL=new Map(); BAG.icon=id0=>{ const id=kindOf(id0); let u=URL.get(id); if(!u){ u=paint(id).toDataURL(); URL.set(id,u); } return u; }; if(HUD.qdraw)HUD.qdraw();
+  // a thing's picture everywhere (the bag, the quick bar, the vault; owner, 8 Nov 2026: "lets use the 3d models in inventory too and quickslot, etc. no more icons to represent anything"): its own 3D model (INSPECT.model) photographed in a little studio, turned three-quarters; a few a frame, blank until its turn, every list redrawn as they come
+  const URL=new Map(), WANT=new Set(), BLANK='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', TS=96; let TR=null, TC=null, TSC=null, TCV=null, TPX=null, again=0;
+  BAG.icon=id0=>{ const id=kindOf(id0), u=URL.get(id); if(u)return u; WANT.add(id); return BLANK; };
+  const shoot=id=>{ '@later'; if(!TR){ TR=new THREE.WebGLRenderTarget(TS,TS); TR.texture.colorSpace=THREE.SRGBColorSpace; TC=new THREE.OrthographicCamera(-1,1,1,-1,.01,100); TSC=new THREE.Scene(); const k=new THREE.DirectionalLight(0xffffff,2.2); k.position.set(-2,4,3); TSC.add(new THREE.AmbientLight(0xffffff,1.1),new THREE.HemisphereLight(0xdfe8ff,0x3a3020,.6),k); TCV=document.createElement('canvas'); TCV.width=TCV.height=TS; TPX=new Uint8Array(TS*TS*4); }
+    let m=null; try{ m=INSPECT.model(id); }catch(e){} if(!m)return BLANK; TSC.add(m); m.updateMatrixWorld(true);
+    const b=new THREE.Box3().setFromObject(m); if(b.isEmpty()){ TSC.remove(m); return BLANK; } const c=b.getCenter(new THREE.Vector3()), z=b.getSize(new THREE.Vector3()), r=Math.max(z.x,z.y,z.z)*.6||1;
+    TC.left=TC.bottom=-r; TC.right=TC.top=r; TC.far=r*12; TC.updateProjectionMatrix(); TC.position.set(c.x+Math.sin(.7)*r*5,c.y+r*2.6,c.z+Math.cos(.7)*r*5); TC.lookAt(c); TC.updateMatrixWorld(true);
+    const rt=renderer.getRenderTarget(), cc=new THREE.Color(), ca=renderer.getClearAlpha(); renderer.getClearColor(cc); renderer.setRenderTarget(TR); renderer.setClearColor(0,0); renderer.clear(); renderer.render(TSC,TC);
+    renderer.readRenderTargetPixels(TR,0,0,TS,TS,TPX); renderer.setRenderTarget(rt); renderer.setClearColor(cc,ca); TSC.remove(m);
+    const im=TCV.getContext('2d').createImageData(TS,TS); for(let y=0;y<TS;y++)im.data.set(TPX.subarray((TS-1-y)*TS*4,(TS-y)*TS*4),y*TS*4); TCV.getContext('2d').putImageData(im,0,0); return TCV.toDataURL(); };
+  SYS.add('win',()=>{ if(!WANT.size)return; let k=0; for(const id of WANT){ WANT.delete(id); try{ URL.set(id,shoot(id)); }catch(e){ URL.set(id,BLANK); console.warn('BAG picture',id,e); } if(++k>=3)break; } again=1; },'162e-bag pictures');
+  SYS.every(()=>{ if(!again||WANT.size)return; again=0; try{ redraw(); }catch(e){} if(HUD.qdraw)HUD.qdraw(); },300,'162e-bag pictures redraw');
+  BAG.look=id=>{ '@later'; const P=look(id).clone(); return P; };   // a thing at its real size, its foot at 0 (the shop's shelves)
+  if(HUD.qdraw)HUD.qdraw();
   if(SH){ const im=new Image(); im.onload=()=>{ SIMG=im; CV.clear(); URL.clear(); if(HUD.qdraw)HUD.qdraw(); if(window.__started&&BAG.draw)try{ BAG.draw(); }catch(e){} }; im.src=SH.png; }
 
   /* ---------- containers: a pouch or a chest is one thing each (pouch~3), holding things of its own ---------- */
@@ -152,7 +165,7 @@ window.BAG=BAG;
     { const b0=new THREE.Box3().setFromObject(m), z=b0.getSize(V3); if(!b0.isEmpty()&&!m.userData.pf&&z.y>1.8*Math.max(z.x,z.z)&&!/^(fl_|bnet$|net$|balloon$)/.test(kindOf(id))){ const W=new THREE.Group(); W.add(m); W.rotation.x=-Math.PI/2; m=W; } }   // (a long thin thing, a sword, lies on its side; a flower or a net on its stand stays up, and Polyfork's stand as made)
     const b=new THREE.Box3().setFromObject(m), L=b.isEmpty()?1:Math.max(.001,...b.getSize(V3).toArray()), want=realM(id), S=b.isEmpty()?MTR:want?want*MTR/L:L>5||L<.01?.3*MTR/L:MTR, I=new THREE.Group(); I.add(m); I.scale.setScalar(S); if(!b.isEmpty())I.position.set(-(b.min.x+b.max.x)/2*S,-b.min.y*S,-(b.min.z+b.max.z)/2*S);
     P.add(I); P.userData.tall=b.isEmpty()?.3*MTR:(b.max.y-b.min.y)*S; LOOK.set(id,P); return P; };
-  PFI.on.push(()=>{ LOOK.clear(); for(const g of GRD)if(g.m){ g.m.removeFromParent(); g.m=null; } near(); });   // Polyfork's models came: what lies about takes them
+  PFI.on.push(()=>{ LOOK.clear(); for(const g of GRD)if(g.m){ g.m.removeFromParent(); g.m=null; } near(); for(const id of URL.keys())WANT.add(id); URL.clear(); });   // Polyfork's models came: what lies about takes them
   const room=()=>{ const c=ROOMS.cur; return c?String(c.off||c.id||''):''; };
   const unthing=th=>{ const i=UI.things.indexOf(th); if(i>=0)UI.things.splice(i,1); };
   const place=g=>{ '@later'; const sp=new THREE.Group(); sp.name='loose-'+g.id; sp.position.set(g.x,g.y,g.z); sp.rotation.y=(parseInt(g.key.slice(-4),36)||0)%628/100; sp.userData.level=g.lv||'street'; sp.visible=false; scene.add(sp); g.sp=sp;
@@ -165,7 +178,7 @@ window.BAG=BAG;
   // a container leaves with what is in it (and what is in those), as a record; back in a bag it is a fresh one of its kind
   const pack=c=>{ const I=INV.inside[c]||{}, out={in:{},subs:{}}; for(const id in I){ const n=I[id]; if(n<1)continue; if(isCont(id)){ const k=kindOf(id)+'#'+id; out.subs[k]=pack(id); out.in[k]=1; delete INV.items[id]; } else { FORAGE.take(id,n); out.in[id]=n; } } delete INV.inside[c]; return out; };
   const unpack=(k,r)=>{ const inst=fresh(kindOf(k)); INV.items[inst]=1; INV.inside[inst]={}; for(const id in r.in||{}){ const n=r.in[id]; if(id.includes('#')){ const sub=unpack(id,(r.subs||{})[id]||{}); INV.inside[inst][sub]=1; } else { FORAGE.give(id,n); INV.inside[inst][id]=n; } } return inst; };
-  const finish=(g,r)=>{ if(isCont(r.id))unpack(r.id,r); else FORAGE.give(r.id,r.n||1); if(INV.save)INV.save(); say('YOU PICK UP '+(/^(A|AN|THE) /.test(name(r.id))?'':'THE ')+name(r.id)+(r.n>1?' ×'+r.n:'')+'.','#f2c14e'); SFX.play('clunk',{vol:.4,pitch:1.6}); lose(g); saveG(); redraw(); };
+  const finish=(g,r)=>{ if(r.id==='cash')INV.cash=(INV.cash||0)+Math.max(0,Math.floor(+r.n||0)); else if(isCont(r.id))unpack(r.id,r); else FORAGE.give(r.id,r.n||1); if(INV.save)INV.save(); say(r.id==='cash'?'YOU PICK UP $'+r.n+'.':'YOU PICK UP '+(/^(A|AN|THE) /.test(name(r.id))?'':'THE ')+name(r.id)+(r.n>1?' ×'+r.n:'')+'.','#f2c14e'); SFX.play('clunk',{vol:.4,pitch:1.6}); lose(g); saveG(); redraw(); };
   BAG.pickUp=g=>{ if(!GRD.includes(g)||g.taking)return; if(g.key.startsWith('drop:')){ if(!online()){ say('YOU CANNOT REACH IT OFFLINE.','#c8a090'); return; } g.taking=true; ONLINE.send({t:'take',k:g.key}); return; } finish(g,{id:g.id,n:g.n,in:g.in,subs:g.subs}); };
   BAG.drop=(id,n=1,at,from='bag')=>{ '@later'; if(id==='passport')return say('YOUR PASSPORT STAYS WITH YOU.','#c8a090'),false; if(isCont(id))n=1; n=Math.min(n,have(id,from)); if(n<1)return false;
     if(VIT.dead)return say('A GHOST HOLDS NOTHING.','#c8a090'),false; const rm=room(); if(ROOMS.cur&&(!rm||/^apt/i.test(rm)))return say('NOT IN HERE. DROP IT OUTSIDE.','#c8a090'),false; if(st.water&&st.water.in)return say('NOT IN THE WATER.','#c8a090'),false;

@@ -30,11 +30,11 @@ __CODE__("worker/dunmobs.js")
   const MIX={1:{green:.7,blue:.3},2:{green:.3,blue:.5,purple:.2},3:{blue:.4,purple:.4,red:.2},4:{purple:.5,red:.5},5:{purple:.2,red:.8}};
   const tierAt=n=>{ const W=MIX[Math.min(5,Math.max(1,n))]; let r=Math.random(); for(const k in W)if((r-=W[k])<0)return k; return Object.keys(W).pop(); };
   const F=()=>1+.35*(lvl-1), see=()=>2.6+.5*lvl;   // deeper: tougher, harder hitting, quicker to notice you
-  const LOOT={green:[['$',1,3,7],['quartz',0,0,3]],blue:[['$',2,6,5],['quartz',0,0,2],['amethyst',0,0,2]],
-    purple:[['$',5,12,4],['amethyst',0,0,2],['geode',0,0,2],['amber',0,0,1],['m_chanterelle',0,0,1]],
-    red:[['$',10,25,4],['moonstone',0,0,2],['opal',0,0,2],['emerald',0,0,1]],spider:[['$',4,12,5],['amethyst',0,0,2],['emerald',0,0,1]],
-    bone:[['$',3,9,6],['quartz',0,0,2],['amethyst',0,0,2],['geode',0,0,1]],gold:[['$',20,40,3],['sapphire',0,0,1],['ruby',0,0,1]]};
-  const GC={quartz:0xf4f0ff,amethyst:0xb070ff,geode:0x9a8a7a,amber:0xf0a030,moonstone:0xd8e8ff,opal:0xffe8f4,emerald:0x30d070,sapphire:0x3060ff,ruby:0xff2040,p_refresh:0x58d8e8,p_heal:0xe84848,p_str:0xe8a030,m_chanterelle:0xe08a2a};
+  const LOOT={green:[['$',3,8,7],['quartz',0,0,3],['p_refresh',0,0,1]],blue:[['$',6,15,5],['quartz',0,0,2],['amethyst',0,0,2],['p_heal',0,0,1]],
+    purple:[['$',12,30,4],['amethyst',0,0,2],['geode',0,0,2],['amber',0,0,1],['m_chanterelle',0,0,1],['p_str',0,0,1],['sword_steel',0,0,.4]],
+    red:[['$',25,60,4],['moonstone',0,0,2],['opal',0,0,2],['emerald',0,0,1],['p_gheal',0,0,.6],['sword_ench',0,0,.25]],spider:[['$',10,25,5],['amethyst',0,0,2],['emerald',0,0,1],['p_heal',0,0,1]],
+    bone:[['$',8,20,6],['quartz',0,0,2],['amethyst',0,0,2],['geode',0,0,1],['sword',0,0,1],['p_heal',0,0,1]],gold:[['$',50,100,3],['sapphire',0,0,1],['ruby',0,0,1],['sword_ench',0,0,.3]]};
+  const GC={quartz:0xf4f0ff,amethyst:0xb070ff,geode:0x9a8a7a,amber:0xf0a030,moonstone:0xd8e8ff,opal:0xffe8f4,emerald:0x30d070,sapphire:0x3060ff,ruby:0xff2040,p_refresh:0x58d8e8,p_heal:0xe84848,p_str:0xe8a030,p_gheal:0xff7088,m_chanterelle:0xe08a2a,sword:0xc8ccd4,sword_steel:0xd8dce4,sword_ench:0x9ad8ff};
   for(const id in GC)ITEMS.reg(id,{color:'#'+GC[id].toString(16).padStart(6,'0')});   // the loot's colours are the item model's (the bag's pictures read them)
   const SKL={2:['skeleton_guard_light','Minion'],3:['skeleton_guard_light','skeleton_guard_heavy','Minion'],4:['skeleton_guard_heavy','skeleton_mage','Warrior','Rogue'],5:['skeleton_reaper','skeleton_mage','Warrior','Mage','Gold']};
   const SST={ogre:[4,.05],ogre_mage:[3,.05],ogre_guard_light:[4,.06],ogre_guard_heavy:[5,.07],spider:[3,.05],skeleton_guard_light:[3,.06],skeleton_guard_heavy:[5,.08],skeleton_mage:[3,.06],skeleton_reaper:[6,.1],Minion:[3,.05],Warrior:[5,.08],Rogue:[3,.05],Mage:[3,.06],Gold:[9,.1]}, KK=['Minion','Warrior','Rogue','Mage','Gold'];
@@ -64,7 +64,7 @@ __CODE__("worker/dunmobs.js")
   const near=(x,z,r0,r1,R)=>{ for(let k=0;k<12;k++){ const a=Math.random()*Math.PI*2, r=r0+Math.random()*(r1-r0), p={x:x+Math.sin(a)*r,z:z+Math.cos(a)*r}; if(free(p.x,p.z,R))return p; } return null; };
   const unthing=th=>{ const i=UI.things.indexOf(th); if(i>=0)UI.things.splice(i,1); const j=things.indexOf(th); if(j>=0)things.splice(j,1); th.obj.removeFromParent(); if(th.vis)th.vis.removeFromParent(); };
   const thing=(name,x,z,act,vis)=>{ const hb=new THREE.Mesh(HB,HM); hb.position.set(x,gnd(x,z)+.15*T,z); G.add(hb); if(vis)G.add(vis); const th={name,pick:true,obj:hb,vis,reach:.9*T,near:1.6*T,tall:.35*T,act:()=>act(th)}; UI.thing(th); things.push(th); return th; };
-  const roll=k=>{ const t=LOOT[k], w=t.reduce((a,e)=>a+e[3],0); let r=Math.random()*w; for(const e of t)if((r-=e[3])<0)return GEMS.TIER&&GEMS.TIER[e[0]]==='s'&&!RARITY.open('gem')?t.find(x=>x[0]==='$')||e:e; return t[0]; };   // a super-rare stone waits for your rank with the Scuba Diver
+  const roll=k=>{ const L=SHARED.luck||1, wt=e=>e[3]*(L>1&&GEMS.TIER&&/^[rs]$/.test(GEMS.TIER[e[0]])?L:1), t=LOOT[k], w=t.reduce((a,e)=>a+wt(e),0); let r=Math.random()*w; for(const e of t)if((r-=wt(e))<0)return GEMS.TIER&&GEMS.TIER[e[0]]==='s'&&!RARITY.open('gem')?t.find(x=>x[0]==='$')||e:e; return t[0]; };   // a super-rare stone waits for your rank with the Scuba Diver
   const UPT={green:'blue',blue:'purple',purple:'red',red:'red',bone:'red',spider:'red',gold:'gold'};
   const xp=(a,b)=>{ for(let i=0;i<lvl;i++)FORAGE.use('fight',a+(lvl-1)*6,b+(lvl-1)*6); };   // deeper kills teach more
   const loot=(k,p,x,z)=>{ const up=()=>Math.random()<.12*(lvl-1)?UPT[k]:k; if(Math.random()<Math.min(.95,p*(1+.25*(lvl-1))))drop(up(),x,z); if(Math.random()<.15*(lvl-1)+Math.max(FORAGE.sk('sword'),FORAGE.sk('fight'))/400)drop(up(),x,z); };   // a better fighter wins a little more from each
@@ -81,7 +81,8 @@ __CODE__("worker/dunmobs.js")
   const {strikes,inCone,strength}=STRIKES;
   const resolve=()=>{ if(!RES){ RES=[]; for(const N of NPCS){ const k=N.key, lv=OGRE.includes(k)?[1]:Object.keys(SKL).filter(n=>SKL[n].includes(k)).map(Number);
       if(!lv.length||KK.includes(k)&&!(window.GUARDX&&(GUARDX.GUARDS.includes(N)||k==='Gold')))continue; if(RES.some(r=>r.N===N))continue;
-      RES.push({N,key:k,lv,kk:KK.includes(k),ogre:OGRE.includes(k),v0:N.st.v,hp:0,style:N.guard?N.guard.style:{hit:'Unarmed_Melee_Attack_Punch_A',reach:.65,at:.38}}); } } return RES; };
+      RES.push({N,key:k,lv,kk:KK.includes(k),ogre:OGRE.includes(k),v0:N.st.v,hp:0,style:N.guard?N.guard.style:{hit:'Unarmed_Melee_Attack_Punch_A',reach:.65,at:.38}}); }
+      for(const N of NPCS)if(/^hero_m_\d$/.test(N.key)&&N.lv==='down'&&!N.parked0){ N.parked0=1; PK.add(N.g); VIS.hide(N.g,'parked'); N.st.to=null; N.st.hold=true; } } return RES; };   // the stone golems the dungeon had before the dungeon master (5 Nov): put away with the rest (7 Nov: no creatures but the master's)
   const park=r=>{ const N=r.N; PK.add(N.g); VIS.hide(N.g,'parked'); N.st.to=null; N.st.hold=true; N.alert=false; r.on=false; };   // put away: hidden, and nothing to double-click
   const place=(r,used)=>{ VIS.hide(r.N.g,'parked',false); const N=r.N, st=N.st, p=spot(st.R,[L.atUp,L.atDn,...used]); used.push(p); st.x=p.x; st.z=p.z; st.to=null; st.face=null; st.hold=true; st.sx=st.sz=0; N.free=(x,z,R)=>free(x,z,R)&&!slimes.some(o=>!o.dead&&Math.hypot(o.x-x,o.z-z)<R+.24*T); N.alert=false;
     N.g.position.set(st.x,gnd(st.x,st.z),st.z); grp().add(N.g); N.ground=gnd; N.lv=lvOf(); N.me.rotation.x=0; N.me.position.y=0; if(r.kk&&N.an)N.an.clear();

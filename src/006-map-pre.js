@@ -85,7 +85,7 @@ START.bar=(t,f)=>{ const L=START.el; if(!L)return; L.querySelector('.sb').style.
 START.done=()=>{ try{ localStorage.setItem('market-grabs',START.k); }catch(e){} };
 START.reveal=()=>{ const L=document.getElementById('loading'); if(!L)return; const t0=performance.now(); let exp=0, last=-1, still=0; try{ exp=+localStorage.getItem('market-meshes')||0; }catch(e){}
   // the game runs behind the screen until nothing more is being added (the far streets, the mirror past the edges, the park, the trains...), the bar against what the last start ended with
-  const tick=()=>{ let n=0; scene.traverse(o=>{ if(o.isMesh||o.isPoints||o.isLine)n++; }); const BQ=window.BATCH, busy=!!(BQ&&BQ.left&&BQ.left()>0); if(n===last&&!busy)still+=250; else still=0; last=n;
+  const tick=()=>{ let n=0; scene.traverse(o=>{ if((o.isMesh||o.isPoints||o.isLine)&&!o.userData.cullOf)n++; }); const BQ=window.BATCH, busy=!!(BQ&&BQ.left&&BQ.left()>0); if(n===last&&!busy)still+=250; else still=0; last=n;
     START.bar('FINISHING WHAT YOU CAN SEE ('+Math.min(100,Math.round(n/Math.max(exp,n)*100))+'%)',.9+.1*Math.min(1,n/Math.max(exp,n,1))*(still>=2000?1:.97));
     if(still<2000&&performance.now()-t0<90000)return void setTimeout(tick,250);
     try{ localStorage.setItem('market-meshes',n); }catch(e){} START.bar('READY',1); let k=3; const f=()=>{ if(--k>0)return requestAnimationFrame(f); L.textContent=''; L.style.opacity='0'; L.style.pointerEvents='none'; setTimeout(()=>L.remove(),1000); }; requestAnimationFrame(f); };

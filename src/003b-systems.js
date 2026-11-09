@@ -5,6 +5,7 @@ const ROOMS={lazy:{},off:{},grounds:[]},
   LEVELS={of:{},ways:[],below:y=>y<-1.6?'down':'up',own:(o,id)=>{ o.userData.level=id; return o; }},
   UI={camKeeps:[]},   // camKeeps: places that keep the camera out of their walls
   CHARP={},
+  DOLL={},   // the paper doll (162ea-doll): you, what you wear and your buttons; another player as they are
   BAG={},   // the bag: THE PACK drawn as a bag of item pictures, the ground drops and the paperdoll (162e-bag)
   HUD={},   // the heads-up display (162d-hud): the minimap, the message log and the quick bar
   INVITES={kinds:{}},   // invitations between players (144ch-invites); a kind of invitation is registered in INVITES.kinds by its own file
@@ -123,4 +124,4 @@ const ROOMS={lazy:{},off:{},grounds:[]},
   Object.assign(LAND,{down:nf,move:no,up:no},LAND); Object.assign(SNDED,{close:no,into:no},SNDED); Object.assign(RINSP,{toggle:no},RINSP);
   Object.assign(EDITORS,{menu:no,key:no},EDITORS); Object.assign(SUMMON,{id:()=>'',here:()=>[],list:()=>[],go:no,back:no},SUMMON);
   Object.assign(NEWS,{init:no},NEWS); Object.assign(BINS,{station:no},BINS); Object.assign(PNM,{tick:no},PNM); Object.assign(SGM,{tick:no},SGM); }
-export {AMB, ARCH, ARCHI, BAG, BINS, BLAZE, BLK, BOAT, BOOKS, BROOK, BUGS, CHARP, CHARS, CINEMA, CITY, CIVIC, CLIP, CLOCK, CULL, DN, DRESS, DRM, DRONE, ED, EQUIP, FAR3, FEEL, FIGFX, FIRSTDAY, FLOW, FORAGE, GAMEED, GHOSTS, GPH, GPUT, GTRH, GTSAMP, GUARD, GUIDE, HUD, IMK, INSPECT, INTERIORS, INV, INVITES, ITEMED, ITEMS, keys, LAND, LEVELS, LINES, LITE, LOOK, LOOKS, MAIL, MAPED, MARKS, MOTION, MUS, NEWS, NPCS, ONLINE, PARK, PASSPORT, PB, PERFX, PETS, PH, PHYS, PNM, POND, PONDS, pos, PS2, RADIO, RAG, RIDE, RINSP, ROOMS, SCANNER, SELFSH, SFX, SGM, SHAD, SHOPS, SIGNS, SKY, SND, SNDED, SPRAY, st, STAGE, SWIM, TABLES, TALK, TENANTS, TESTS, TEXT, TRADE, TRAINERS, TRICKS, UI, USE, VAULT, VIS, VIT, VR, vwV, W3, WALKS, WE, WED, WEEDS, WHERE, WIELD, WINDOWS, WORKERS, wvV, WX, ZONES};
+export {AMB, ARCH, ARCHI, BAG, BINS, BLAZE, BLK, BOAT, BOOKS, BROOK, BUGS, CHARP, CHARS, CINEMA, CITY, CIVIC, CLIP, CLOCK, CULL, DN, DOLL, DRESS, DRM, DRONE, ED, EQUIP, FAR3, FEEL, FIGFX, FIRSTDAY, FLOW, FORAGE, GAMEED, GHOSTS, GPH, GPUT, GTRH, GTSAMP, GUARD, GUIDE, HUD, IMK, INSPECT, INTERIORS, INV, INVITES, ITEMED, ITEMS, keys, LAND, LEVELS, LINES, LITE, LOOK, LOOKS, MAIL, MAPED, MARKS, MOTION, MUS, NEWS, NPCS, ONLINE, PARK, PASSPORT, PB, PERFX, PETS, PH, PHYS, PNM, POND, PONDS, pos, PS2, RADIO, RAG, RIDE, RINSP, ROOMS, SCANNER, SELFSH, SFX, SGM, SHAD, SHOPS, SIGNS, SKY, SND, SNDED, SPRAY, st, STAGE, SWIM, TABLES, TALK, TENANTS, TESTS, TEXT, TRADE, TRAINERS, TRICKS, UI, USE, VAULT, VIS, VIT, VR, vwV, W3, WALKS, WE, WED, WEEDS, WHERE, WIELD, WINDOWS, WORKERS, wvV, WX, ZONES};

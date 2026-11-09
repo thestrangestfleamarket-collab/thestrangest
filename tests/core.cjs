@@ -145,11 +145,17 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
         return { ok: true, street, bound, borrowed, back }; } catch (e) { return { ok: false, err: String(e).slice(0, 200) }; } })();
       o.charp = await (async () => { try { const U = window.__UI; if (!U || typeof U.toggleMenu !== 'function') return { ok: false };
         U.toggleMenu(); const home = document.querySelector('#dhome'), secs = [...document.querySelectorAll('#mnav [data-sec]')].map(b => b.dataset.sec).join();
-        const built = !!(home && home.querySelector('#cpav') && home.querySelector('#cpbtns button')), tabsHidden = /^you,set,pets,pack(,tenants,bots,admin)?$/.test(secs) && U.menuNow()[0] === 'you', open = U.menuOpen === true;
+        const tabsHidden = /^set,pets,pack(,tenants,bots,admin)?$/.test(secs) && U.menuNow()[0] === 'set', open = U.menuOpen === true;   // no PROFILE: the paper doll (9 Nov 2026)
+        U.menuTab('pets', 'pet'); const built = !!(home && home.querySelector('#cpav') && home.querySelector('#cpbtns button'));
         const pick = !home.querySelector('#cpslots') && !home.querySelector('#cphp');   // the paperdoll and the bars left the page (2 Nov 2026)
         U.toggleMenu();
         let log = -1; if (window.CHARP && typeof CHARP.tools === 'function') { const ap = document.createElement('div'); CHARP.tools(ap); log = ap.querySelectorAll('ul li').length; }
-        return { ok: true, open, built, tabsHidden, pick, closed: U.menuOpen === false, log }; } catch (e) { return { ok: false, err: String(e).slice(0, 200) }; } })();
+        const D = window.DOLL, dl = document.getElementById('doll'); let doll = false;
+        if (D && D.me && dl) { D.me(); const slots = [...dl.querySelectorAll('[data-s]')].map(x => x.dataset.s).join(), btns = [...dl.querySelectorAll('[data-b]')].map(x => x.textContent).join();
+          dl.querySelector('[data-s=head]').click(); const gear = !dl.querySelector('#dlpick').hidden; D.me();
+          D.looks('wear'); const lk = document.getElementById('looks'), noLook = lk.querySelector('.ltabs [data-t=look]').hidden && !lk.querySelector('.ltabs [data-t=wear]').hidden; lk.hidden = true;
+          doll = slots === 'head,eyes,body,legs,back,hand' && /^WEAR,WORDS,SKILLS,JOURNAL,EMOTES,PASSPORT,LOG OUT$/.test(btns) && gear && dl.hidden && noLook; }
+        return { ok: true, open, built, tabsHidden, pick, closed: U.menuOpen === false, log, doll }; } catch (e) { return { ok: false, err: String(e).slice(0, 200) }; } })();
       o.bodies = (() => { try { const B = window.BODIES; if (!B || !B.by || typeof B.set !== 'function') return { ok: false };
         const inGame = !!B.by.knight && !B.by.man && !B.by.woman, none = !B.by.knight.playable;
         const btns = [...document.querySelectorAll('[id^=lbody-]')].map(b => b.id.slice(6)), noRow = btns[0] === 'walker' && btns.every(k => k === 'walker' || k === 'merchant');
@@ -218,7 +224,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.wsmooth.on && r.wsmooth.tris > 12000 && r.wsmooth.tris < 60000, 'the Walker is welded by dual contouring (straight hems, no ripples) with a sane triangle count (styles not worn are built when picked): ' + JSON.stringify(r.wsmooth));
     ok(r.equip.ok && r.equip.slots && r.equip.d0 && r.equip.guard && r.equip.float && r.equip.off, 'EQUIP wears body gear and resolves its grant (guard softens blows, float lifts), one off at a time: ' + JSON.stringify(r.equip));
     ok(r.hud && r.hud.vit && r.hud.slots && r.hud.setOk && r.hud.log && r.hud.map && r.hud.haze !== false, 'the HUD: vitals top left with numbers, ten quick slots that take a thing, the log takes the chat and the game\'s lines, the minimap paints from the map\'s plan with no MAP item, HAZE RANGE in GRAPHICS moves the fog\'s end: ' + JSON.stringify(r.hud));
-    ok(r.charp.ok && r.charp.open && r.charp.built && r.charp.tabsHidden && r.charp.pick && r.charp.closed && r.charp.log === 0, 'the menu opens (ESC) at YOU, its sections down the left: avatar + buttons built, an empty slot opens its gear list, opens and closes; TOOLS has no game log (owner, 8 Nov 2026): ' + JSON.stringify(r.charp));
+    ok(r.charp.ok && r.charp.open && r.charp.built && r.charp.tabsHidden && r.charp.pick && r.charp.closed && r.charp.log === 0 && r.charp.doll, 'the menu opens (ESC) at SETTINGS, its sections down the left (no PROFILE); the live avatar + buttons built; TOOLS has no game log (owner, 8 Nov 2026); the paper doll: six slots, its buttons, an empty slot lists its gear, opens and closes, its WEAR has no LOOK (9 Nov 2026): ' + JSON.stringify(r.charp));
     { // RESURRECT in the menu (4 Nov 2026): every player; only while dead; back to life where you stand
       const r0 = await pg.evaluate(async () => { const VIT = window.__dbg.VIT, U = window.__dbg.UI, btn = () => [...document.querySelectorAll('#cpbtns .cp-btn')].find(b => /^RESURRECT/.test(b.textContent)), P0 = window.__dbg.you();
         U.toggleMenu(); const alive = !!btn() && btn().disabled; U.toggleMenu(); VIT.die(); const t0 = performance.now(); while (!VIT.dead && performance.now() - t0 < 15000) await new Promise(r => setTimeout(r, 200));

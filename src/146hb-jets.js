@@ -43,6 +43,7 @@ import {RIVER} from './066-river.js';
     melt:(x,z,dt)=>{ for(const c of IL)if(Math.hypot(c.x-x,c.z-z)<c.r+.4*M){ c.r-=dt*.9*M; c.t=Math.max(c.t,60); } },
     feed:(st,pos)=>{ const y=ICE.at(pos.x,pos.z); if(y==null||SHARED.LVL!=='up'||SHARED.py>y+.6*M)return false; RIG.water(st,{level:null,floor:0}); return true; },
     floor:g=>{ const y=IL.length&&SHARED.LVL==='up'?ICE.at(pos.x,pos.z):null; return y!=null&&y>g&&SHARED.py<y+.6*M?y:g; }});
+  window.ICE=ICE;
   const iceTick=dt=>{ if(!IL.length)return; for(let i=IL.length-1;i>=0;i--){ const c=IL[i]; c.t+=dt; if(c.t>90)c.r-=dt*.02*M; if(c.r<.15*M)IL.splice(i,1); } iceDraw(); };
 
   /* ---------- frost on the ground: the burn mark's twin, white and blue, dithered away ---------- */

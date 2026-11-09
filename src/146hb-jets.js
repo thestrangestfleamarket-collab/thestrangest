@@ -80,7 +80,7 @@ import {FLAME} from './007-fire.js';
   const bodies=()=>{ const L=[{id:'me',x:pos.x,y:SHARED.py,z:pos.z,root:W3.group}];
     for(const o of ONLINE.others.values()){ if(o.why!=='near you'||o.dead||!o.fig||!o.fig.g||!o.p)continue; const p=o.p; L.push({id:o.id,x:p.x,y:p.y??o.fig.g.position.y,z:p.z,o,root:o.fig.g}); }
     for(const N of NPCS.all?NPCS.all():[]){ if(!N.g||!N.g.visible||N.far||!N.st||N.lv&&N.lv!==SHARED.LVL)continue; L.push({id:'npc:'+(N.key||'')+(N.uid||''),x:N.st.x,y:N.g.position.y,z:N.st.z,N,root:N.g}); } return L; };
-  const touches=(S,b)=>{ const P=S.P; for(let i=1;i<P.length;i++)for(let k=0;k<4;k++){ const a=P[i-1], c=P[i], u=(k+1)/4, x=a.x+(c.x-a.x)*u, y=a.y+(c.y-a.y)*u, z=a.z+(c.z-a.z)*u; if(y>b.y-.1*M&&y<b.y+1.9*M&&Math.hypot(x-b.x,z-b.z)<.4*M)return true; } return false; };
+  const touches=(S,b)=>{ const P=S.P; for(let i=1;i<P.length;i++)for(let k=0;k<4;k++){ const a=P[i-1], c=P[i], u=(k+1)/4, x=a.x+(c.x-a.x)*u, y=a.y+(c.y-a.y)*u, z=a.z+(c.z-a.z)*u; if(y>b.y-.1*M&&y<b.y+1.9*M&&Math.hypot(x-b.x,z-b.z)<.45*M)return true; } return false; };
 
   /* ---------- on fire: flames that ride a body. Frozen: a shell of ice over the body's own shape, held in the pose it was caught in, a timer over it till it thaws ---------- */
   const SRC=[], flameSrc=()=>{ let s=SRC.find(s=>s.free); if(!s){ s=FLAME.add({kind:'bed',name:'burning',x:0,y:-1e4,z:0,w:.5*M,h:1.2*M,embers:3,smoke:1.4}); SRC.push(s); } s.free=false; s.on=true; return s; };
@@ -128,8 +128,11 @@ import {FLAME} from './007-fire.js';
   /* ---------- the streams: yours from your nozzle, theirs from theirs as they say they fire ---------- */
   const mk=(id,k)=>({id,k,tip:new V3(),dir:new V3(0,0,1),R:k==='f'?RF:RI,P:[],len:0,end:null,what:'',cT:0,eA:0,lT:0,zT:{},at:now(),bm:null});
   const tipOf=(g,S)=>{ if(!g||!g.visible||!g.parent)return false; S.tip.copy(g.tipL).applyMatrix4(g.matrix); const e=g.matrix.elements; S.dir.set(e[4],e[5],e[6]).normalize(); return true; };
+  // where you aim: the point under the mouse (on your ground, or out along the ray), from the nozzle; no mouse (the headset): the way the tool points
+  const AIMP=new V3(), aimMine=S=>{ if(JET.aim){ S.dir.copy(JET.aim); return; } const r=WIELD.ray; if(!r||VR.on)return; const c=r.origin, d=r.direction, far=c.distanceTo(S.tip)+S.R;
+    let t=d.y<-1e-3?(SHARED.py-c.y)/d.y:far; if(!(t>0)||t>far)t=far; AIMP.copy(c).addScaledVector(d,t).sub(S.tip); if(AIMP.lengthSq()>.01*M*M)S.dir.copy(AIMP.normalize()); };
   const drop=S=>{ if(S.bm)S.bm.visible=false; JET.S.delete(S.id); };
-  ONLINE.hear.jet=m=>{ '@later'; const S=JET.S.get(m.id); if(m.k==='f'||m.k==='i'){ if(!S||S.k!==m.k){ if(S)drop(S); JET.S.set(m.id,mk(m.id,m.k)); } else S.at=now(); } else if(S)drop(S); };
+  ONLINE.hear.jet=m=>{ '@later'; const S=JET.S.get(m.id); if(m.k==='f'||m.k==='i'){ let T=S; if(!T||T.k!==m.k){ if(T)drop(T); JET.S.set(m.id,T=mk(m.id,m.k)); } else T.at=now(); if(Array.isArray(m.v)){ T.rv=(T.rv||new V3()).set(+m.v[0]||0,+m.v[1]||0,+m.v[2]||1); if(T.rv.lengthSq()<1e-4)T.rv=null; else T.rv.normalize(); } } else if(S)drop(S); };
   const PL=[];
   // each drop or puff is born somewhere inside the frame (its own age), so the stream is whole however long the frame was
   const emit=(S,dt)=>{ const f=S.k==='f', rate=f?260:150; S.eA+=dt*rate; while(S.eA>=1){ S.eA-=1; const a=rnd()*dt, sp=(f?14:12)*M*(.9+rnd()*.2), j=f?.05:.04;
@@ -164,12 +167,12 @@ import {FLAME} from './007-fire.js';
   const pilots=new Map();
   SYS.add('life',dt=>{ dt=Math.min(dt||0,.1); JET.burst=Math.max(0,JET.burst-dt); selfTick(dt);
     const k=firing(); { let S=JET.S.get('me'); if(k){ if(!S||S.k!==k){ if(S)drop(S); JET.S.set('me',S=mk('me',k)); } S.at=now(); } else if(S)drop(S); } JET.on=k;
-    if(ONLINE.on&&(k!==JET.sent||k&&now()-JET.sentT>1500)){ JET.sent=k; JET.sentT=now(); ONLINE.send({t:'jet',k}); }
+    if(ONLINE.on&&(k!==JET.sent||k&&now()-JET.sentT>160)){ const S=JET.S.get('me'), r=v=>Math.round(v*100)/100; JET.sent=k; JET.sentT=now(); ONLINE.send(k&&S?{t:'jet',k,v:[r(S.dir.x),r(S.dir.y),r(S.dir.z)]}:{t:'jet',k}); }
     for(const g of HELD){ if(g.kind!=='f')continue; let s=pilots.get(g); const on=g.visible&&!!g.parent; if(on&&!s){ s=FLAME.add({kind:'candle',name:'pilot light',x:0,y:0,z:0,w:.03*M,h:.06*M}); pilots.set(g,s); }
       if(s){ s.on=on; if(on){ p3.copy(g.tipL).applyMatrix4(g.matrix); s.x=p3.x; s.y=p3.y-.02*M; s.z=p3.z; s.a.position.copy(p3); } } }
     const L=JET.S.size||JET.E.size?bodies():null; let lb=(30*M)**2, lp=null;
     for(const [id,S] of JET.S){ const mine=id==='me', g=mine?WIELD.held():WIELD.theirG&&WIELD.theirG(id);
-      if(!mine&&now()-S.at>2500){ drop(S); continue; } if(!tipOf(g,S)){ if(S.bm)S.bm.visible=false; continue; }
+      if(!mine&&now()-S.at>2500){ drop(S); continue; } if(!tipOf(g,S)){ if(S.bm)S.bm.visible=false; continue; } if(mine)aimMine(S); else if(S.rv)S.dir.copy(S.rv);
       if((S.cT-=dt)<=0||!S.P.length){ S.cT=.12; cast(S); } else S.P[0].copy(S.tip);
       if(S.k==='i'){ const b=S.bm||(S.bm=beam()); b.visible=true; b.position.copy(S.tip); b.quaternion.setFromUnitVectors(UP,S.dir); b.scale.set(.045*M,Math.max(.01,S.len),.045*M); } else if(S.bm){ S.bm.visible=false; S.bm=null; }
       if(S.k==='f'){ const d=(S.tip.x-pos.x)**2+(S.tip.z-pos.z)**2; if(d<lb){ lb=d; lp=S.P[Math.floor(S.P.length/2)]||S.tip; } }

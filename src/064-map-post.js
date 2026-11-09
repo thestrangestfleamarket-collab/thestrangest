@@ -23,13 +23,13 @@ SHARED.groundY=(x,z)=>{ for(const g of ROOMS.grounds)if(x>g.x0&&x<g.x1&&z>g.z0&&
   if(G)g('ghost',SHARED.BOD.X(G.x0),SHARED.BOD.Z(G.y0),SHARED.BOD.X(G.x1),SHARED.BOD.Z(G.y1)); for(const R of STORE.rooms)g(R.id,R.x0,R.z0,R.x1,R.z1); }
 const HEMI=new THREE.HemisphereLight(0x55607a,0x14110e,.3); scene.add(HEMI);
 Object.assign(LITE,{N:8,pool:[],recs:[],sel:[],t:0,f:0,at:null,V:new THREE.Vector3()}); window.LITE=LITE;
-for(let i=0;i<LITE.N;i++){ const L=new THREE.PointLight(0xffffff,0,8*TILE,1.6); L.userData.pool=true; if(!i){ L.castShadow=true; L.shadow.mapSize.set(1024,1024); L.shadow.camera.near=.1; L.shadow.camera.far=14; L.shadow.bias=-.002; L.shadow.normalBias=.06; L.shadow.autoUpdate=false; } scene.add(L); LITE.pool.push(L); }
-{ let t=0; SYS.add('life',dt=>{ if((t-=dt)>0)return; t=.2; if(LITE.pool[0].intensity>0)LITE.pool[0].shadow.needsUpdate=true; },'064-lampshadow'); }   // a dark lamp's shadow is never seen: not redrawn
+for(let i=0;i<LITE.N;i++){ const L=new THREE.PointLight(0xffffff,0,8*TILE,1.6); L.userData.pool=true; if(!i){ L.castShadow=false; L.shadow.mapSize.set(1024,1024); L.shadow.camera.near=.1; L.shadow.camera.far=14; L.shadow.bias=-.002; L.shadow.normalBias=.06; L.shadow.autoUpdate=false; } scene.add(L); LITE.pool.push(L); }
+{ let t=0; SYS.add('life',dt=>{ if((t-=dt)>0)return; t=.2; if(LITE.pool[0].castShadow&&LITE.pool[0].intensity>0)LITE.pool[0].shadow.needsUpdate=true; },'064-lampshadow'); }   // a dark lamp's shadow is never seen: not redrawn
 SHL.push(LITE.pool[0],LITE.pool[1]);
 const LITE_init0=()=>{ const top=o=>{ while(o.parent&&o.parent!==scene)o=o.parent; return o; };
   scene.traverse(o=>{ if(o.isPointLight&&!o.userData.pool)LITE.recs.push(o); });
   for(const L of LITE.recs){ const g=top(L); L.userData.grp=g===L?null:g; L.castShadow=false; L.removeFromParent(); } };
-LITE.init=(...a)=>{ const r=LITE_init0(...a); SYS.run('liteInit'); return r; };
+LITE.init=(...a)=>{ const r=LITE_init0(...a); LITE.ready=true; SYS.run('liteInit'); return r; };
 LITE.dim=p=>{ const c=SHARED.cam; if(!c||!UI.persp)return 1; const t=Math.min(1,Math.max(0,(c.position.distanceTo(p)/TILE-10)/30)); return 1-.85*t*t*(3-2*t); };   // far lamps light the ground less
 LITE.tick=(dt,x,y,z)=>{ const P=LITE.pool;
   LITE.t=Math.min(LITE.t-dt,.25); if(!(LITE.t>0)){ LITE.t=.25; const R=typeof ROOMS!=='undefined'?ROOMS:null, RB=R&&R.boxes?R.boxes():[], cur=R?R.cur:null, e=.5*TILE;

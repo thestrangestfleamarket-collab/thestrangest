@@ -2,7 +2,7 @@
 import {THREE} from './003-shx.js';
 import {pos, SFX, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {FADE, MODS, STORE, SYS} from './006-map-pre.js';
+import {MODS, STORE} from './006-map-pre.js';
 import {ROOMK} from './150a-bedroom.js';
 { const APTS=MODS.apts, H={built:false,on:()=>null};
   ROOMK.parts.push(c=>{ '@apts'; const {apt,R,M,W,part,mat,tex,rnd,Lx,Ly,HW,du,solid}=c, TH=.24, HD=APTS.HALL*.907, v0=Ly+TH, v1=Ly+HD-TH, vc=(v0+v1)/2, LW=(v1-v0)/2, vm=v0+LW, EW=2.1, SC=4.6, LN=.95, us=Lx-SC, N=14, RISE=HW/2/N, TR=(SC-LN)/N, O=W(0,0,0);
@@ -39,9 +39,11 @@ import {ROOMK} from './150a-bedroom.js';
     const hitAt=(u,h,v,w,hh,d,name,act)=>{ const hb=new THREE.Mesh(new THREE.BoxGeometry(w*M,hh*M,d*M),new THREE.MeshBasicMaterial({visible:false})); hb.position.copy(W(u,h,v)); scene.add(hb); UI.thing({name,ghost:1,obj:hb,reach:1.6*M,near:2.8*M,tall:hh*M,act}); };
     hitAt(EW+.3,DT/2,vc,.6,DT,1.4,'ELEVATOR',()=>{ if(APTS.inReal)APTS.exitReal('DOWN TO THE STREET'); });
     hitAt(du,1.15,Ly+TH/2,1.2,2.3,.8,'FRONT DOOR',()=>{ const D=APTS.frontDoor; if(!APTS.inReal||!D)return; D.set(!D.open); const at=W(du,1.1,Ly); if(D.open)SFX.play('latch',{at,vol:.8}); else SFX.play('door',{at,vol:.35,pitch:1.6,delay:.25}); });
+    // the stairs: double-click a flight to take it (walking onto it does nothing, so nobody, visitors included, is thrown out by stepping on it)
+    hitAt(Lx-LN/2,1.2,(vm+v1)/2,LN,2.4,v1-vm,'STAIRS DOWN TO THE STREET',()=>{ if(APTS.inReal)APTS.exitReal('DOWN THE STAIRS'); });
+    hitAt(Lx-LN/2,1.2,(v0+vm)/2,LN,2.4,vm-v0,'STAIRS UP TO THE ROOF',()=>{ if(APTS.inReal)APTS.roofGo(); });
     if(STORE.furnish&&STORE.furnish.hall)STORE.furnish.hall({box,hitAt,W,M,Lx,Ly,HW,du,v0,v1,vc,EW,us,TH,mat,solid});
     H.built=true; });
-  SYS.add('places',()=>{ if(!H.built||!APTS.inReal||!window.POSOK||FADE.busy)return; const on=H.on(); if(on==='down')APTS.exitReal('DOWN THE STAIRS'); else if(on==='up')APTS.roofGo(); },'150n-hall');
   window.HALLDBG=()=>({built:H.built,real:!!APTS.inReal,floors:APTS.floors,things:UI.things.filter(t=>t.name==='ELEVATOR'||t.name==='FRONT DOOR'||t.name==='STAIRS DOWN').map(t=>t.name),on:H.built?H.on():null,door:!!(APTS.frontDoor&&APTS.frontDoor.open),
     land:k=>{ const p=H.land(k); UI.goTo(p.x,p.z,APTS.floorY); },go:()=>{ UI.goTo(H.mid.x,H.mid.z,APTS.floorY); },view:v=>UI.setView(v),use:n=>{ const t=UI.things.find(t=>t.name===n); if(t)t.act(); return !!t; }});
 }

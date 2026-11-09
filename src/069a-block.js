@@ -149,6 +149,8 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
       const AR=BANDS.map(q=>(q[2]-q[0])*(q[3]-q[1])), AT=AR.reduce((a,b)=>a+b,0);
       for(let i=0;i<N;i++){ let r0=rnd()*AT, bi=0; while(bi<BANDS.length-1&&r0>AR[bi]){ r0-=AR[bi]; bi++; } const [t0,u0,t1,u1]=BANDS[bi]; let x=t0+rnd()*(t1-t0), y=u0+rnd()*(u1-u0); for(let k=0;k<8&&(WET(x,y)||OFF(x,y));k++){ x=t0+rnd()*(t1-t0); y=u0+rnd()*(u1-u0); } const r=(2.2+rnd()*2.4)*T, h=(2+rnd()*2)*T, wx=XS(x), wz=ZS(y);
         Q.setFromAxisAngle(V.set(0,1,0),rnd()*6.28); crown.setMatrixAt(i,M4.compose(V.set(wx,h+r*.7,wz),Q,S.set(r,r*(.8+rnd()*.3),r))); trunk.setMatrixAt(i,M4.compose(V.set(wx,h/2,wz),Q,S.set(.35*T,h,.35*T))); }
+      // (shrunk away before the end of the view, so the drawing's edge never shows as a dark line of trees: owner, 8 Nov 2026, "there is a dark sliver")
+      for(const im of [crown,trunk]){ im.material.onBeforeCompile=sh=>{ sh.vertexShader=sh.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>\n#ifdef USE_INSTANCING\n transformed*=1.-smoothstep(${(380*T).toFixed(1)},${(470*T).toFixed(1)},distance((modelMatrix*instanceMatrix*vec4(0.,0.,0.,1.)).xyz,cameraPosition));\n#endif`); }; im.material.customProgramCacheKey=()=>'farparktrees'; }
       for(const im of [crown,trunk]){ im.raycast=()=>{}; im.castShadow=false; im.receiveShadow=true; im.userData.cullOf=1; G.add(im); } BLK.back.push({park:true,n:N}); } }
   window.BLOCKDBG=()=>({blds:BLK.blds.map(q=>[q.row,q.x0,q.x1,q.h]),lots:BLK.lots.map(q=>[q.row,q.kind,q.x0,q.x1,q.y0,q.y1]),band:BLK.band(pos.x,pos.z)});
 }

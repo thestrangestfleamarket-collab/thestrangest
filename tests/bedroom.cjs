@@ -23,16 +23,14 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const cl0 = await pg.evaluate(() => CEILDBG());
     ok(cl0.n === 4 && cl0.set && cl0.set.length === 4 && cl0.set.every(s => s && s.on) && cl0.thing, 'four ceiling lights overhead, on, with a wall panel (' + JSON.stringify([cl0.n, cl0.i, cl0.thing]) + ')');
     ok(cl0.vis.every(v => !v) && cl0.i.every(i => i > 0), 'in the isometric view the fittings hide with the ceiling, their light stays (' + JSON.stringify([cl0.vis, cl0.i]) + ')');
-    const cl1 = await pg.evaluate(async () => { __dbg.UI.things.find(t => t.name === 'CEILING LIGHTS').act(); const r = document.querySelector('#ceilp input[data-k="k"]'); r.value = 40; r.dispatchEvent(new Event('input', { bubbles: true }));
+    const cl1 = await pg.evaluate(async () => { __dbg.UI.things.find(t => t.name === 'LIGHT SWITCH').act(); const r = document.querySelector('#ceilp input[data-k="k"]'); r.value = 40; r.dispatchEvent(new Event('input', { bubbles: true }));
       const t = document.querySelector('#ceilp input[data-k="tone"]'); t.value = 5000; t.dispatchEvent(new Event('input', { bubbles: true })); await new Promise(r => setTimeout(r, 300)); const d = CEILDBG(); CEIL.close(); return d; });
     ok(cl1.panel && cl1.set.every(s => Math.abs(s.k - .4) < .01 && s.tone === 5000) && cl1.i.every((i, j) => i < cl0.i[j]), 'the wall panel sets all four: brightness and warmth (' + JSON.stringify([cl1.set[0].k, cl1.set[0].tone, cl1.i]) + ')');
     ok(await pg.evaluate(() => !!(window.GPH && GPH.loose().some(i => i.k === 'o' && i.name === 'CHAIR'))), 'the chair is a loose thing you can push and pick up');
     ok(await pg.evaluate(() => ['SIT ON THE BED', 'SIT ON THE BENCH', 'PET THE CAT'].every(n => __dbg.UI.things.some(t => t.name === n))), 'you can sit on the bed and the bench, and pet the cat');
     const bp = await pg.evaluate(async () => { const b0 = BEDPICDBG(); for (const t of __dbg.UI.things.filter(t => /^(OPEN THE DRAWERS|RECORD PLAYER: OFF)$/.test(t.name))) t.act(); await new Promise(r => setTimeout(r, 300)); return { b0, b1: BEDPICDBG() }; });
     ok(bp.b0.built && bp.b0.drawers.length >= 3 && bp.b1.drawers.every(x => x) && bp.b1.record.every(x => x), 'the bedroom is built; its drawers open, the record turns (' + JSON.stringify({ d: bp.b1.drawers, r: bp.b1.record }) + ')');
-    const k = await pg.evaluate(async () => { const k0 = KITCHENDBG(); for (const n of ['OPEN THE FRIDGE', 'STOVE: OFF', 'TAP: OFF']) { const t = __dbg.UI.things.find(t => t.name === n); if (t) t.act(); } await new Promise(r => setTimeout(r, 300)); return { k0, k1: KITCHENDBG() }; });
-    ok(k.k0.built && !k.k0.fridge && k.k1.fridge && k.k1.stove && k.k1.tap, 'the kitchen is built; the fridge opens, the stove lights, the tap runs (' + JSON.stringify(k) + ')');
-    ok(k.k0.meshes < 120, 'the kitchen\'s pieces are each baked into a few meshes (' + k.k0.meshes + ')');
+    ok(await pg.evaluate(() => !window.KITCHENDBG && !__dbg.UI.things.some(t => /FRIDGE|STOVE|TAP:/.test(t.name))), 'no kitchen in the apartment (owner, 9 Nov 2026)');
     const inside = await pg.evaluate(() => { const A = __dbg.MAPK.MODS.apts.R, B = SHARED.BOD, x0 = Math.min(B.X(A.x0), B.X(A.x1)), x1 = Math.max(B.X(A.x0), B.X(A.x1)), z0 = Math.min(B.Z(A.y0), B.Z(A.y1)), z1 = Math.max(B.Z(A.y0), B.Z(A.y1));
       return LOOSE.list(true).filter(q => q.k === 'o' && q.c[2] > Math.min(B.Z(A.y0), B.Z(A.y1)) - .1 && (q.c[0] - q.h[0] < x0 || q.c[0] + q.h[0] > x1 || q.c[2] - q.h[2] < z0 || q.c[2] + q.h[2] > z1)).map(q => q.name); });
     ok(!inside.length && d.loose >= 40, 'every loose thing starts clear of the walls, so the walls stay solid to it (' + d.loose + ' things; in a wall: ' + inside.join(',') + ')');

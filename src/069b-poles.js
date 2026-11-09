@@ -5,9 +5,9 @@ import {scene} from './004-main.js';
 import {BLOCK, FIX, MAPSTAIR, MODS, OUT, SOL, STORE, SYS, TILE} from './006-map-pre.js';
 const WIRES=window.WIRES={perch:[],poles:[],tick:()=>{}};
 { const M=TILE/.84, V3=THREE.Vector3, G=MODS.bodega.ground, h3=(a,b,c)=>{ const v=Math.sin(a*12.9898+b*78.233+c*37.719)*43758.5453; return v-Math.floor(v); };
-  const X0=SHARED.BOD.XS(BLOCK.x0), X1=SHARED.BOD.XS(BLOCK.x1), zp=DRESS.kerb.sw+.5-.5*M, A=MODS.apts&&MODS.apts.A;
+  const X0=SHARED.BOD.XS(BLOCK.x0), X1=SHARED.BOD.XS(BLOCK.x1), zp=SHARED.BOD.ZS(SHARED.BOD.CURB)-.6*M, A=MODS.apts&&MODS.apts.A;
   const doors=[SHARED.BOD.X((SHARED.BOD.B0.x0+SHARED.BOD.B0.x1)/2),A?SHARED.BOD.X(MODS.apts.DX):1e9,SHARED.BOD.GD?SHARED.BOD.X(SHARED.BOD.GD.door[0]):1e9,SHARED.BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),...(STORE.main?STORE.main.doors.map(d=>d[1]):[])];
-  const free=x=>DRESS.poles.every(p=>Math.abs(p.z-zp)>3*M||Math.abs(p.x-x)>3*M)&&SHARED.BOD.signs.every(s=>Math.abs(SHARED.BOD.ZS(s.y)-zp)>3*M||Math.abs(SHARED.BOD.XS(s.x)-x)>2*M)&&DRESS.cans.every(c=>Math.abs(c.x-x)>1.6*M)
+  const free=x=>DRESS.poles.concat(DRESS.sig||[]).every(p=>Math.abs(p.z-zp)>3*M||Math.abs(p.x-x)>3*M)&&SHARED.BOD.signs.every(s=>Math.abs(SHARED.BOD.ZS(s.y)-zp)>3*M||Math.abs(SHARED.BOD.XS(s.x)-x)>2*M)&&DRESS.cans.every(c=>Math.abs(c.x-x)>1.6*M)
     &&doors.every(d=>Math.abs(d-x)>3.2*M)&&!SOL.up.some(b=>x>b[0]-.8*M&&x<b[2]+.8*M&&zp>b[1]-.8*M&&zp<b[3]+.8*M);
   const XS=[]; for(let i=0;i<4;i++){ const c=X0+(X1-X0)*(i+.5)/4; for(let k=0;k<60;k++){ const x=c+(k&1?-1:1)*Math.ceil(k/2)*.4*M; if(free(x)){ XS.push(x); break; } } }
   const HP=8*M, AY=7.35*M, AW=1.2*M, IW=1*M, AT=256, AH=512, cv=document.createElement('canvas'); cv.width=AT; cv.height=AH;
@@ -43,7 +43,7 @@ const WIRES=window.WIRES={perch:[],poles:[],tick:()=>{}};
     for(let k=0;k<n;k++)quad(pt(k,0),pt(k+1,0),pt(k+1,1),pt(k,1),uv(k/n,0),uv((k+1)/n,0),uv((k+1)/n,1),uv(k/n,1),f);
     if(cap){ const T=B.clone().addScaledVector(ax,L), u=UV(cap,.5,.5); for(let k=0;k<n;k++)tri(T,pt(k,1),pt(k+1,1),u,u,u,f); } };
   const X_=new V3(1,0,0), Y_=new V3(0,1,0), Z_=new V3(0,0,1), v=(a,s)=>a.clone().multiplyScalar(s);
-  const ends=[];
+  const ends=[], LENS=[];
   XS.forEach((x,p)=>{ const s=p*17+3, y0=G(x,zp), lean=h3(s,1,1)<.5?.012+.018*h3(s,2,1):0, la=h3(s,3,1)*6.28, ax=new V3(Math.sin(la)*lean,1,Math.cos(la)*lean).normalize(), B=new V3(x,y0-.4*M,zp), at=h=>B.clone().addScaledVector(ax,h+.4*M);
     cyl(B,ax,HP+.4*M,.135*M,.1*M,8,(u,t)=>UV([p*SW,0,SW,SH],u,t),p,SWT.cap);
     const arm=at(AY), ex=new V3().crossVectors(ax,Z_).normalize(), ez=new V3().crossVectors(ex,ax).normalize();
@@ -57,8 +57,12 @@ const WIRES=window.WIRES={perch:[],poles:[],tick:()=>{}};
     if(p===1){ const c=at(6.1*M).addScaledVector(ez,.42*M); box(at(6.25*M).addScaledVector(ez,.16*M),v(ex,.06*M),v(ax,.2*M),v(ez,.05*M),SWT.steel,p);
       cyl(c.clone().addScaledVector(ax,-.38*M),ax,.76*M,.24*M,.24*M,8,(u,t)=>UV(SWT.can,u,t),p); cyl(c.clone().addScaledVector(ax,.38*M),ax,.05*M,.255*M,.2*M,8,()=>UV(SWT.can,.5,.02),p,SWT.can);
       for(const o of [-.1,.1])cyl(c.clone().addScaledVector(ax,.43*M).addScaledVector(ex,o*M),ax,.12*M,.03*M,.022*M,6,(u,t)=>UV(SWT.glass,u,t),p,SWT.glass); }
+    { const b=at(HP-.12*M), h=b.clone().addScaledVector(ez,2.3*M).addScaledVector(ax,.12*M); box(b.clone().addScaledVector(ez,1.15*M).addScaledVector(ax,.06*M),v(ex,.045*M),v(ax,.05*M),v(ez,1.17*M),SWT.steel,p);
+      box(h,v(ex,.19*M),v(ax,.08*M),v(ez,.34*M),SWT.steel,p); LENS.push(h.clone().addScaledVector(ax,-.09*M)); }   // the street light on top: an arm out over the road, its head
     const top=at(HP); WIRES.poles.push({x,z:zp,y0,top}); WIRES.perch.push({x:top.x,z:top.z,y:top.y+.02*M,h:h3(s,5,1)<.5?0:Math.PI,pole:p});
     SOL.up.push([x-.15*M,zp-.15*M,x+.15*M,zp+.15*M]); FIX.up.push([x-.15*M,zp-.15*M,y0,x+.15*M,zp+.15*M,y0+HP]); });
+  if(LENS.length){ const me=new THREE.InstancedMesh(new THREE.BoxGeometry(.32*M,.03*M,.56*M),new THREE.MeshBasicMaterial({color:0xffffff}),LENS.length), m4=new THREE.Matrix4(), LIT=new THREE.Color(0xffe4b0), DIM=new THREE.Color(0x4a4238);
+    LENS.forEach((q,i)=>{ me.setMatrixAt(i,m4.makeTranslation(q.x,q.y,q.z)); me.setColorAt(i,DIM); if(DRESS.lampAt)DRESS.lampAt(q.x,q.y-.3*M,q.z,on=>{ me.setColorAt(i,on?LIT:DIM); me.instanceColor.needsUpdate=true; }); }); scene.add(me); OUT.add(me,'world'); WIRES.lamps=LENS; }
   if(XS.length>1){ const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(Pp,3)); geo.setAttribute('uv',new THREE.Float32BufferAttribute(Uu,2)); geo.setAttribute('pf',new THREE.Float32BufferAttribute(Ff,1)); geo.computeVertexNormals();
     const uF={value:new THREE.Vector4(1,1,1,1)}; WIRES.fade=uF.value; const mat=new THREE.MeshLambertMaterial({map,flatShading:true});
     mat.onBeforeCompile=sh=>{ sh.uniforms.uF=uF; sh.vertexShader='attribute float pf; varying float vPf;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vPf=pf;');

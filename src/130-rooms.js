@@ -72,7 +72,7 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
   ROOMS.real=()=>{ const id=ROOMS.offIn(); return id?(WINDOWS.from&&WINDOWS.from(id)):pos; };   // where you are on the street: in a room off the map, where it stands if its windows look out at the street live, else null
   BATCH.at=ROOMS.real;   // in a room off the map with no window out the street's painted ground and walls are dropped, painted again on the way out
   ROOMS.offBuild=async id=>{ const L=offL(id); if(!L.done){ await L.need(); if(!L.done)L.go(); } return L; };   // an inside built without going in (for its windows' first picture)
-  ROOMS.offDrop=id=>{ const o=ROOMS.off[id], L=ROOMS.lazy[id]; if(!o||!L||!L.done||ROOMS.offIn()===id)return; ROOMS.unpart(o.P); o.P=null; if(o.unbuild)o.unbuild(); L.done=false; };   // and dropped again: nothing inside stays built at the start
+  ROOMS.offDrop=id=>{ const o=ROOMS.off[id], L=ROOMS.lazy[id]; if(!o||o.keep||!L||!L.done||ROOMS.offIn()===id)return; ROOMS.unpart(o.P); o.P=null; if(o.unbuild)o.unbuild(); L.done=false; };   // and dropped again: nothing inside stays built at the start
   const kOf=b=>[b.x0,b.z0,b.x1,b.z1,b.y0].map(v=>(+v).toFixed(2)).join();
   const lazyOf=b=>{ if(!b||b.noBuild)return null; const L=b.lz&&ROOMS.lazy[b.lz]; if(L)return L.done?null:L; const S=b.id&&STORE.inside&&STORE.inside[b.id];
     return S&&!S.done?{name:/^THE /.test(S.name)?S.name:'THE '+S.name,S,go:()=>{ S.busy=false; STORE.inGo(b.id); },need:async()=>{ if(STORE.need)await STORE.need(); if(STORE.pre&&STORE.pre[b.id])await STORE.pre[b.id](); }}:null; };

@@ -38,7 +38,7 @@ async function house(HP,mine,FL,HI){ const APTS0=APTS; { const APTS=mine?APTS0:{
   for(const side of ['w','e'])for(let lv=1;lv<ST;lv++)for(const k of SIDE)win(side,sideAt(k),RZ+lv*S+WZ[0],RZ+lv*S+WZ[1],{box:false,hw:WHW});
   const ivy=[{side:'f',a0:A.x0,a1:A.x0+2.4,h:RZ+S*1.7,seed:5,fall:.6},{side:'f',a0:A.x1-2,a1:A.x1,h:RZ+S*2.4,seed:7,fall:.6},{side:'w',a0:A.y1-4.5,a1:A.y1,h:RZ+S*2.2,seed:9,fall:.8},{side:'e',a0:A.y0+4,a1:A.y1-.4,h:RZ+S*2.1,seed:11},{side:'b',a0:A.x0+10,a1:A.x1,h:RZ+S*1.4,seed:13,fall:.6}];
   const roofCol=(x,y)=>{ const n=hash(Math.floor(x*4),Math.floor(y*4),61), e=Math.min(x-A.x0,A.x1-x,y-A.y0,A.y1-y); return e<.25?sh([118,50,38],e<.1?.8:1.05):n<.3?[50,50,52]:n>.7?[66,64,62]:[58,57,57]; };
-  const PAINT=APTS.paint=BLOCKS.facade({feats,ivy,top:TOP,wall:BLOCKS.brick([138,60,44]),trim:[118,50,38],base:{z1:RZ,paint:BLOCKS.brick([120,52,40])}}), BB=(FACADES.make({id:'apts',L:A,pt:TA.pt,z1:TOP,wall:[138,60,44],trim:[200,170,150],frame:[40,34,32],seed:61,ground:RZ,door:{u:m,w:1.1,h:100},rich:{base:true,stoop:.8,near:40},glass:true,sign:{text:'THE TOWER',color:[255,226,170],bg:[30,22,20],u:m}}),{x0:X(AW.x0),z0:Z(AW.y0),x1:X(AW.x1),z1:Z(AW.y1)});   // the house on the street is a solid painted block (floors 1-9 just a block); your floor-10 apartment is built off the map
+  const PAINT=APTS.paint=BLOCKS.facade({feats,ivy,top:TOP,wall:BLOCKS.brick([138,60,44]),trim:[118,50,38],base:{z1:RZ,paint:BLOCKS.brick([120,52,40])}}), BB=(FACADES.make({id:'apts',L:A,pt:TA.pt,z1:TOP,wall:[138,60,44],trim:[200,170,150],frame:[40,34,32],seed:61,ground:RZ,door:{u:m,w:1.1,h:100},glass:true,sign:{text:'THE TOWER',color:[255,226,170],bg:[30,22,20],u:m}}),{x0:X(AW.x0),z0:Z(AW.y0),x1:X(AW.x1),z1:Z(AW.y1)});   // the house on the street is a solid painted block (floors 1-9 just a block); your floor-10 apartment is built off the map
   { const CN=[118,50,38]; tgbox({x0:A.x0-.3,x1:A.x1+.3,y0:A.y0-.3,y1:A.y1+.3,z0:TOP-12,z1:TOP,c:CN,...rock(CN,61,.9,14),top:roofCol},'A');
     const tk=loc(X(AW.x0+5),Z(AW.y0+2.4)), bx_=m+(tk[0]<m?3.2:-3.2), BH=APTS.BH={x0:bx_-1.4,x1:bx_+1.4,y0:A.y0+.5,y1:A.y0+3.3,cx:bx_}, rk=rock(CN,69,.9,14); tgbox({...BH,z0:TOP,z1:TOP+72,c:CN,fs:(nx,ny,X_,Y_,z,f)=>!nx&&Math.abs(X_-bx_)<.45&&z<TOP+62?sh([44,32,26],f):rk.fs(nx,ny,X_,Y_,z,f),top:rk.top},'A'); }   // the stair head at the back of the roof, clear of the roof kit's water tank (148)
 
@@ -84,20 +84,15 @@ async function house(HP,mine,FL,HI){ const APTS0=APTS; { const APTS=mine?APTS0:{
     try{ APTS.escape(F,lvs,h0,h1); BATCH.build(APTS.MKA); return Object.values(BATCH.meshes||{}); } finally { BATCH.cast=kc; BATCH.meshes=km; BATCH.items=keep; } };
 
   const ST0={x0:m-DW-.25,x1:m+DW+.25,y0:A.y1,land:.85,tr:.42,n:3}; ST0.y1=A.y1+ST0.land+ST0.n*ST0.tr; APTS.ST0=ST0;
-  { const BS=[98,95,90], NO=[136,131,122], CH=[86,84,80], IRN=[28,30,34], BRS=[186,148,72], top=i=>(RZ+1)*(ST0.n-i)/(ST0.n+1), MID=[(ST0.x0+ST0.x1)/2,(ST0.x1-ST0.x0)/2], g=b=>tgbox(b.c===IRN||b.c===BRS?b:{...b,...rock(b.c,b.c===CH?67:63,.7,9,b.c===CH?null:MID)},'A');
+  { const BS=[98,95,90], NO=[136,131,122], CH=[86,84,80], IRN=[28,30,34], top=i=>(RZ+1)*(ST0.n-i)/(ST0.n+1), MID=[(ST0.x0+ST0.x1)/2,(ST0.x1-ST0.x0)/2], g=b=>tgbox(b.c===IRN?b:{...b,...rock(b.c,b.c===CH?67:63,.7,9,b.c===CH?null:MID)},'A');
     g({x0:ST0.x0,x1:ST0.x1,y0:ST0.y0,y1:ST0.y0+ST0.land,z0:0,z1:RZ+1,c:BS}); g({x0:ST0.x0-.01,x1:ST0.x1+.01,y0:ST0.y0+ST0.land-.06,y1:ST0.y0+ST0.land+.01,z0:RZ-1,z1:RZ+1.25,c:NO});
     for(let i=0;i<ST0.n;i++){ const y0=ST0.y0+ST0.land+i*ST0.tr, h=top(i); g({x0:ST0.x0,x1:ST0.x1,y0,y1:y0+ST0.tr,z0:0,z1:h,c:BS}); g({x0:ST0.x0-.01,x1:ST0.x1+.01,y0:y0+ST0.tr-.06,y1:y0+ST0.tr+.01,z0:h-2,z1:h+.25,c:NO}); }
     for(const [c0,c1] of [[ST0.x0-.22,ST0.x0],[ST0.x1,ST0.x1+.22]]){ g({x0:c0,x1:c1,y0:ST0.y0,y1:ST0.y0+ST0.land,z0:0,z1:RZ+7,c:CH});
       for(let i=0;i<ST0.n;i++){ const y0=ST0.y0+ST0.land+i*ST0.tr; g({x0:c0,x1:c1,y0,y1:y0+ST0.tr,z0:0,z1:top(i)+7,c:CH}); }
-      const xm=(c0+c1)/2, rail=(y0,y1,z)=>g({x0:xm-.04,x1:xm+.04,y0,y1,z0:z,z1:z+2.5,c:BRS}), post=(y,z0,z1)=>g({x0:xm-.025,x1:xm+.025,y0:y-.025,y1:y+.025,z0,z1,c:IRN});
+      const xm=(c0+c1)/2, rail=(y0,y1,z)=>g({x0:xm-.03,x1:xm+.03,y0,y1,z0:z,z1:z+2,c:IRN}), post=(y,z0,z1)=>g({x0:xm-.025,x1:xm+.025,y0:y-.025,y1:y+.025,z0,z1,c:IRN});
       rail(ST0.y0,ST0.y0+ST0.land,RZ+7+26); for(let y=ST0.y0+.12;y<ST0.y0+ST0.land;y+=.18)post(y,RZ+7,RZ+7+26);
       for(let i=0;i<ST0.n;i++){ const y0=ST0.y0+ST0.land+i*ST0.tr, z=top(i)+7; rail(y0,y0+ST0.tr,z+26); post(y0+ST0.tr*.3,z,z+26); post(y0+ST0.tr*.75,z,z+26); }
       g({x0:xm-.06,x1:xm+.06,y0:ST0.y1-.12,y1:ST0.y1+.01,z0:top(ST0.n-1)+7,z1:top(ST0.n-1)+7+34,c:IRN}); }
-    // the areaway railing along the front either side of the stoop: iron pickets with spear tops between heavier posts, solid
-    for(const [a,b] of [[A.x0+.4,ST0.x0-.5],[ST0.x1+.5,A.x1-.4]]){ if(b-a<.5)continue; const v0=A.y1+.46, v1=A.y1+.52, RH=28;
-      g({x0:a,x1:b,y0:v0,y1:v1,z0:RH-2,z1:RH,c:IRN}); g({x0:a,x1:b,y0:v0,y1:v1,z0:4,z1:6,c:IRN}); g({x0:a,x1:b,y0:v0+.01,y1:v1-.01,z0:RH-9,z1:RH-8,c:IRN});
-      for(let x=a;x<=b+.01;x+=.13){ const post=Math.abs(((x-a)/.13)%6)<.01; g({x0:x-(post?.04:.012),x1:x+(post?.04:.012),y0:v0-(post?.02:0),y1:v1+(post?.02:0),z0:0,z1:RH+(post?5:3),c:IRN}); }
-      const r=tbox4(a,v0-.02,b,v1+.02); SOL.up.push(r); FIX.up.push([r[0],r[1],0,r[2],r[3],Yr(RH)]); }
     tcard(ST0.x0+.22,ST0.y0+.5,RZ+1,.4,34,'tall',71,'A'); tcard(ST0.x1-.22,ST0.y0+.5,RZ+1,.4,26,'flower',73,'A'); }
 
   const WPL=APTS.WPL=Object.fromEntries(['Wf','Wb','Ww','We'].map(k=>[k,new THREE.Plane(new THREE.Vector3(0,-1,0),1e6)]));   // your apartment's four walls, each cut down in the isometric view when it stands between you and the camera
@@ -161,6 +156,7 @@ async function house(HP,mine,FL,HI){ const APTS0=APTS; { const APTS=mine?APTS0:{
   const FURN=[], DYN={win:[],bar:[],cur:[],flame:[]}; let PA=null, AS=[], AF=[], AG=null;
   const DG=.5, ED=APTS.escDoor={open:false,sol:null,set:o=>{ ED.open=!!o; if(!APTS.solid)return; if(ED.open&&ED.sol){ APTS.unsolid(ED.sol); ED.sol=null; } else if(!ED.open&&!ED.sol)ED.sol=APTS.solid(DC-DG,AR.y0-.4,DC+DG,AR.y0,WH); }};   // the door to the fire escape: open, you walk through; shut, it is wall
   const FD=APTS.frontDoor={open:false,sol:null,set:o=>{ FD.open=!!o; if(!APTS.solid)return; if(FD.open&&FD.sol){ APTS.unsolid(FD.sol); FD.sol=null; } else if(!FD.open&&!FD.sol)FD.sol=APTS.solid(DC-DG,AR.y1,DC+DG,AR.y1+.4,WH); }}; APTS.floorY=Yh(0);   // your front door, onto the hall
+  APTS.inside=()=>APTS.inReal&&AG?{x0:Math.min(X(AR.x0),X(AR.x1)),x1:Math.max(X(AR.x0),X(AR.x1)),z0:Math.min(Z(AR.y0),Z(AR.y1)),z1:Math.max(Z(AR.y0),Z(AR.y1)),y:Yh(0),sol:AS,fix:AF}:null;   // your room's floor, its solids and the tops of what stands in it (your pets at home)
   APTS.furnish=(lv,fn)=>{ FURN.push(fn); if(PA){ const Q=ROOMS.part(AG,fn); for(const k of ['objs','things','cuts','lights'])PA[k].push(...Q[k]); } };
   const build=()=>{ '@apts'; const K=SHARED.BOD.K, n0=K.PROPS.length, l0=SHARED.BOD.STOREK.LAMPS.length; AG=new THREE.Group(); AG.name='apts-in'; scene.add(AG); AS=[];
     const sol=(x0,y0,x1,y1,h)=>{ const r=box4(x0,y0,x1,y1); AS.push(r); SOL.up.push(r); let f=null; if(h!=null){ f=[r[0],r[1],Yh(0),r[2],r[3],Yh(h)]; AF.push(f); FIX.up.push(f); } return {r,f}; }; APTS.solid=sol;

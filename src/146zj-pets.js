@@ -1,7 +1,7 @@
 // THE PETS: Polyfork's base animals (data/pets/<kind>.json, tools/pets-bake.py) as a pet that follows you: adopt one at THE PET STORE, its colours, shape and size yours to choose; YOU's PET tab changes its look; other players see it.
 import {SHARED, THREE} from './003-shx.js';
 import {B64, F32, I16, SKIN} from './003a-skin.js';
-import {FORAGE, INV, LEVELS, LOOKS, NPCS, ONLINE, PETS, pos, ROOMS, SFX, st, UI, VIT, WINDOWS} from './003b-systems.js';
+import {CITY, CLOCK, FORAGE, INV, LEVELS, LOOKS, NPCS, ONLINE, PETS, pos, ROOMS, SFX, st, UI, VIT, WINDOWS} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {OWNED} from './005-save.js';
@@ -55,29 +55,66 @@ window.PETS=PETS;
   const PG=new THREE.Group(); PG.name='pets'; PG.userData.anyRoom=true; scene.add(LEVELS.own(PG,'*')); MAPG.pets=new THREE.Group();   // (makeNPC's group is only a holder: each pet moves into PG, which no room hides (not one of MAPG's, anyRoom), so your pet goes in with you)
   const THEIRS=new Map(); PETS.theirs=THEIRS;
   const groundAt=(x,z,y0)=>{ let g=typeof SHARED.groundY!=='undefined'?SHARED.groundY(x,z):y0; if(!(Math.abs(g-y0)<1.2*WU))g=y0; return g; };
+  // your room as a pet sees it (MODS.apts.inside): the free floor for the pathfinder (clear of the walls and furniture), and the tops it can hop onto (a hand's height to a little over head height, room on them)
+  let RM=null;
+  const roomNow=()=>{ const t=performance.now(); if(RM&&t-RM.t<500)return RM; const I=MODS.apts&&MODS.apts.inside&&MODS.apts.inside(); if(!I)return RM=null; let sig=I.sol.length*7+I.fix.length; for(const r of I.sol)sig+=r[0]*3+r[1]*5+r[2]*7+r[3]*11; for(const f of I.fix)sig+=f[0]*3+f[1]*5+f[5]*13;
+    if(RM&&RM.sig===sig&&RM.I.x0===I.x0){ RM.t=t; return RM; } const m=.14*WU, inR=r=>r[2]>I.x0&&r[0]<I.x1&&r[3]>I.z0&&r[1]<I.z1, S=I.sol.filter(inR);
+    const free=(x,z)=>x>I.x0+m&&x<I.x1-m&&z>I.z0+m&&z<I.z1-m&&!S.some(r=>x>r[0]-m&&x<r[2]+m&&z>r[1]-m&&z<r[3]+m); free.box=[I.x0,I.z0,I.x1,I.z1]; free.cell=.18*WU;
+    const F=I.fix.filter(f=>inR([f[0],f[1],f[3],f[4]])), tops=[];
+    for(const f of F){ const h=(f[5]-I.y)/WU; if(h<.18||h>2.4)continue; if(F.some(g=>g!==f&&g[2]>f[5]-.01*WU&&g[2]<f[5]+.35*WU&&g[0]<f[3]&&g[3]>f[0]&&g[1]<f[4]&&g[4]>f[1]))continue; tops.push({x0:f[0],z0:f[1],x1:f[3],z1:f[4],y:f[5],h}); }   // (nothing low over it: not a shelf inside a bookcase)
+    return RM={sig,I,free,tops,y:I.y,t}; };
+  PETS.room=()=>RM;
   const make=async(id,P,lead,o={})=>{ const K=(await idx()).by[P.k]; if(!K)return null; const D=await kind(P.k), {P:Pp,T}=shape(D,P), R=rig(D,T), CL=clips(D,T);
     const geo=SKIN.geom(D.mesh); geo.attributes.position.array.set(Pp); paint(D,P,geo);
-    const long=K.long*P.z/100, big=Math.max(...D.size), metres=D.tall*long/big, FC=pickClip(CL,'fly'), flies=!!FC, onlyFly=!!FC&&pickClip(CL,'walk')===FC;
+    const long=o.long||K.long*P.z/100, big=Math.max(...D.size), metres=D.tall*long/big, FC=pickClip(CL,'fly'), flies=!!FC, onlyFly=!!FC&&pickClip(CL,'walk')===FC;
     const mixer=new THREE.AnimationMixer(R.bones[0]), A={}, act=n=>A[n]||(A[n]=mixer.clipAction(CL[n])); let cur=null, hover=0, lastL=null, idleT=0;
     const walkV=Math.max(.5,Math.min(1.6,1.7*metres)), runV=Math.max(1.4,Math.min(4.5,3.6*metres));
-    const st0={x:0,z:0};
+    const st0={x:0,z:0}, H={on:false,mode:'idle',t:0,path:null,i:0,hop:null,top:null,y:0,sq:0};
     const N=makeNPC(null,{key:'pet-'+id,name:(P.n||K.name).toUpperCase(),names:['body'],lv:SHARED.LVL||'up',group:'pets',geo,skin:R,tall:D.tall,rank:[0],metres,x:0,z:0,lane:{x0:-1e9,x1:1e9,z0:-1e9,z1:1e9},
       free:()=>true,radius:Math.min(.25,long*.3),speed:walkV/.84,stride:0,rock:0,bob:0,pick:()=>{},noSelf:true,
-      ground:(x,z)=>groundAt(x,z,lastL?lastL.y:SHARED.py)+hover*WU,
-      brain:(dt,you,st)=>{ const L=lead(); if(!L){ N.g.visible=false; return; } N.g.visible=true; const v=lastL?Math.hypot(L.x-lastL.x,L.z-lastL.z)/Math.max(dt,1e-3):0; lastL=L;
+      ground:(x,z)=>(H.on?H.y:groundAt(x,z,lastL?lastL.y:SHARED.py))+hover*WU,
+      brain:(dt,you,st)=>{ if(o.drive){ const Dv=o.drive(N); if(!Dv){ N.g.visible=false; return; } N.g.visible=true; st.x=Dv.x; st.z=Dv.z; st.h=Dv.h; st.to=null; st.face=null; st.hold=true; N.dv=Dv.v||0; N.fly=!!Dv.ghost; N.placed=true; lastL={x:Dv.x,z:Dv.z,y:Dv.y}; return; }   // (ridden: its rider moves it, 146zjc)
+        const L=lead(); if(!L){ N.g.visible=false; return; } N.g.visible=true; const v=lastL?Math.hypot(L.x-lastL.x,L.z-lastL.z)/Math.max(dt,1e-3):0; lastL=L;
+        const RM=o.room&&o.room(); if(RM){ home(dt,st,RM,L); return; } if(H.on)leave();
         const dx=st.x-L.x, dz=st.z-L.z, d=Math.hypot(dx,dz)/WU;
         if(!N.placed||d>14||Math.abs((N.g.position.y-hover*WU)-L.y)>2.5*WU){ place(L); return; }
         if(o.preview){ if(d>3)place(L); st.to=null; st.face={x:L.x,z:L.z}; return; }
         if(o.stay){ if(!st.to&&(idleT-=dt)<0){ idleT=3+Math.random()*5; const a=Math.random()*6.28, r=Math.random()*1.6*WU; st.to={x:o.stay.x+Math.sin(a)*r,z:o.stay.z+Math.cos(a)*r}; st.v=walkV*WU; } return; }
         const R=o.rec||o.mine&&out(), far=R?(R.lo<25?3.4:R.lo>=80?1.4:1.7):1.7, sp=pace(R);   // (its loyalty keeps it close, a shy one lags; hungry or ill, it is slow)
         if(d>far){ const k=(far-.65)/d; st.to={x:L.x+dx*k,z:L.z+dz*k}; st.v=(d>far+1.8?Math.max(runV*sp,v/WU*1.15):walkV*sp)*WU; } else if(d<far-.4){ st.to=null; st.face={x:L.x,z:L.z}; } },
-      anim:(dt,moving,st)=>{ const fast=moving&&st.v>walkV*WU*1.2, air=onlyFly||flies&&(moving&&(st.v>walkV*WU*1.2||hover>.05)||lastL&&lastL.y-groundAt(lastL.x,lastL.z,lastL.y)>.3*WU);
+      anim:(dt,moving,st)=>{ const fast=moving&&st.v>walkV*WU*1.2, air=onlyFly||flies&&H.on&&H.mode==='hop'||flies&&!H.on&&(moving&&(st.v>walkV*WU*1.2||hover>.05)||lastL&&lastL.y-groundAt(lastL.x,lastL.z,lastL.y)>.3*WU);
         hover+=((air?(onlyFly?.9:1.3):0)-hover)*Math.min(1,dt*2.5);
-        const want=air&&FC||(moving?pickClip(CL,fast?'run':'walk'):pickClip(CL,'idle'));
-        if(want!==cur){ act(want).reset().fadeIn(.2).play(); if(cur)act(cur).fadeOut(.2); cur=want; } act(cur).timeScale=moving&&!air?Math.max(.6,Math.min(1.8,st.v/(fast?runV:walkV)/WU)):1; mixer.update(dt); }});
+        if(o.drive){ const G=o.gait(N.dv/WU), w=pickClip(CL,G.c); if(w!==cur){ act(w).reset().fadeIn(.25).play(); if(cur)act(cur).fadeOut(.25); cur=w; } act(cur).timeScale=G.f?G.f*CL[cur].duration:1; mixer.update(dt); return; }
+        const zz=H.on&&H.mode==='sleep', hop=H.on&&H.mode==='hop', want=air&&FC||(hop?pickClip(CL,'run'):moving?pickClip(CL,fast?'run':'walk'):pickClip(CL,'idle'));
+        if(want!==cur){ act(want).reset().fadeIn(.2).play(); if(cur)act(cur).fadeOut(.2); cur=want; } act(cur).timeScale=zz?.15:moving&&!air?Math.max(.6,Math.min(1.8,st.v/(fast?runV:walkV)/WU)):1; mixer.update(dt);
+        H.sq+=((zz?1:0)-H.sq)*Math.min(1,dt*2); N.g.scale.set(1+.1*H.sq,1-.4*H.sq,1+.1*H.sq); }});   // (asleep: curled low, breathing slow)
     const gap=(.25+long*.6)*WU, clear=(x,z)=>!(SHARED.solids||[]).some(b=>x>b[0]-gap&&x<b[2]+gap&&z>b[1]-gap&&z<b[3]+gap);   // (room for its whole body)
     const place=L=>{ const st=N.st, r=o.preview?1.6:1.1; let a=L.hd+Math.PI*.8; if(o.preview){ a=L.hd; for(const d of [.5,-.5,.9,-.9,1.3,-1.3,1.8,-1.8,0]){ const x=L.x+Math.sin(L.hd+d)*r*WU, z=L.z+Math.cos(L.hd+d)*r*WU; if(clear(x,z)){ a=L.hd+d; break; } } } st.x=L.x+Math.sin(a)*r*WU; st.z=L.z+Math.cos(a)*r*WU; st.h=o.preview?L.hd+Math.PI:L.hd; st.to=null; N.placed=true; };   // (preview: in front of you, facing you, while you choose it)
-    N.farMove=()=>{ const L=lead(); if(L)place(L); };   // (a pet left far behind, not ticked: back beside its person)
+    /* at home (owner, 9 Nov 2026: "in your apartment's living room and bedroom, wandering by findPath, jumping or flying up onto things, idling, asleep"): the city's pathfinder over the room's
+       free floor, a hop up onto a bed, couch, chair or table top it can reach (a flyer to high things too), a while there, and sleep, more by night */
+    const reach=flies?2.4:Math.min(1.1,.45+metres*2), lap=(.12+long*.3)*WU, rnd=(a,b)=>a+Math.random()*(b-a);
+    const anyFree=(RM,near)=>{ const I=RM.I; for(let k=0;k<40;k++){ const x=near&&k<20?near.x+rnd(-1.5,1.5)*WU:rnd(I.x0,I.x1), z=near&&k<20?near.z+rnd(-1.5,1.5)*WU:rnd(I.z0,I.z1); if(RM.free(x,z))return {x,z}; } return null; };
+    const goTo=(RM,to,then)=>{ const r=CITY.route&&CITY.route('up',{x:N.st.x,z:N.st.z},to,RM.free,true); if(!r||r.pts.length<2)return false; H.path=r.pts; H.i=1; H.then=then; N.st.to=r.pts[1]; N.st.v=walkV*WU*rnd(.6,1); H.mode='walk'; return true; };
+    const hopTo=(x,z,y,top)=>{ const st=N.st, up=y>H.y, dh=Math.abs(y-H.y)/WU; H.hop={x0:st.x,z0:st.z,y0:H.y,x1:x,z1:z,y1:y,t:0,d:flies?.8+dh*.5:.4+dh*.35,arc:(flies?.15:.12+dh*.25)*WU,top:up?top:null}; H.mode='hop'; st.to=null; st.face=null; H.path=null; };
+    const rest=(RM,on)=>{ const night=CLOCK.h>=21||CLOCK.h<6, zz=fainted(o.rec||o.mine&&out())||Math.random()<(night?.5:.15)*(on?1.6:1); H.mode=zz?'sleep':'idle'; H.t=zz?rnd(25,70)*(night?2:1):rnd(3,9); };
+    const home=(dt,st,RM,L)=>{ const I=RM.I;
+      if(!H.on){ H.on=true; H.top=H.hop=H.path=null; H.y=RM.y; hover=0; const sp=o.stay&&RM.free(o.stay.x,o.stay.z)?o.stay:RM.free(st.x,st.z)&&N.placed?null:anyFree(RM,L); if(sp){ st.x=sp.x; st.z=sp.z; } N.placed=true; st.to=null; st.face=null; H.mode='idle'; H.t=rnd(1,3); }
+      if(H.mode==='hop'){ const h=H.hop, k=Math.min(1,(h.t+=dt)/h.d); st.x=h.x0+(h.x1-h.x0)*k; st.z=h.z0+(h.z1-h.z0)*k; H.y=h.y0+(h.y1-h.y0)*k+h.arc*4*k*(1-k); st.h=Math.atan2(h.x1-h.x0,h.z1-h.z0)||st.h; st.to=null;
+        if(k>=1){ H.y=h.y1; H.top=h.top; H.hop=null; rest(RM,!!H.top); } return; }
+      if(H.mode==='walk'){ const p=H.path&&H.path[H.i]; if(st.to)return; if(!p||Math.hypot(st.x-p.x,st.z-p.z)>.15*WU){ H.path=null; rest(RM); return; }
+        if(H.i<H.path.length-1){ st.to=H.path[++H.i]; return; } H.path=null; const t=H.then; H.then=null; if(t)t(); else rest(RM); return; }
+      if(fainted(o.rec||o.mine&&out())){ H.mode='sleep'; return; }
+      if((H.t-=dt)>0)return;
+      if(H.top){ const T=H.top, a=anyFree(RM,{x:(T.x0+T.x1)/2,z:(T.z0+T.z1)/2}); if(a)hopTo(a.x,a.z,RM.y,null); else H.t=2; return; }
+      const r=Math.random(), tops=RM.tops.filter(T=>T.h<=reach&&T.x1-T.x0>lap&&T.z1-T.z0>lap);
+      if(r<(flies?.45:.35)&&tops.length){ const T=tops[Math.floor(Math.random()*tops.length)], cx=(T.x0+T.x1)/2, cz=(T.z0+T.z1)/2, ax=Math.max(T.x0-lap,Math.min(T.x1+lap,st.x)), az=Math.max(T.z0-lap,Math.min(T.z1+lap,st.z));
+        let at=null; for(const [x,z] of [[ax,az],[T.x0-lap*1.4,cz],[T.x1+lap*1.4,cz],[cx,T.z0-lap*1.4],[cx,T.z1+lap*1.4]])if(RM.free(x,z)){ at={x,z}; break; }
+        const on=()=>hopTo(Math.max(T.x0+lap*.6,Math.min(T.x1-lap*.6,st.x+(cx-st.x)*.5)),Math.max(T.z0+lap*.6,Math.min(T.z1-lap*.6,st.z+(cz-st.z)*.5)),T.y,T);
+        if(at&&(Math.hypot(at.x-st.x,at.z-st.z)<.2*WU?(on(),true):goTo(RM,at,on)))return; }
+      if(r<.8){ const to=anyFree(RM); if(to&&goTo(RM,to))return; }
+      rest(RM); };
+    const leave=()=>{ H.on=false; H.path=H.hop=H.top=null; H.sq=0; N.g.scale.set(1,1,1); N.st.to=null; N.placed=false; };
+    N.atHome=H; N.farMove=()=>{ if(H.on&&!(o.room&&o.room()))leave(); const L=lead(); if(L&&!H.on)place(L); };   // (a pet left far behind, not ticked: back beside its person)
     PG.add(N.g); N.g.rotation.order='YXZ'; N.mixer=mixer; N.pet=P; N.petKind=K;
     // pet it: a word and a sit, now and then
     const hb=new THREE.Mesh(new THREE.BoxGeometry(long*WU,Math.max(.3,metres)*WU,long*WU),new THREE.MeshBasicMaterial({visible:false})); hb.position.y=metres*WU/2; N.g.add(hb);
@@ -123,7 +160,7 @@ window.PETS=PETS;
   let mine=null, mineCode='', homeSpot=null;
   const refresh=()=>{ const P=shown(), want=P&&(inShop||!fainted(out()))&&(!P.h||inShop||atHome())?code(P)+(P.h&&!inShop?'@h':'')+(inShop?'@s':''):''; if(want===mineCode)return; mineCode=want; const my=++gen;
     drop(mine); mine=null; if(!want)return; homeSpot=P.h&&!inShop?{x:pos.x,z:pos.z}:null;
-    make('mine',P,meLead,{mine:true,stay:homeSpot,preview:inShop}).then(N=>{ if(my!==gen){ drop(N); return; } mine=N; }).catch(e=>console.warn('PET',e)); };
+    make('mine',P,meLead,{mine:true,stay:homeSpot,preview:inShop,room:()=>!inShop&&atHome()&&!MODS.apts.host?roomNow():null}).then(N=>{ if(my!==gen){ drop(N); return; } mine=N; }).catch(e=>console.warn('PET',e)); };
   PETS.WU=WU; PETS.dbg={UI,OWNED,pos,ROOMS}; PETS.make=make; PETS.drop=drop; PETS.idx=idx;
   PETS.mine=()=>mine; PETS.my=()=>MY; PETS.code=code; PETS.decode=decode;
   ONLINE.mine.pf=()=>MY&&!MY.h?code(MY):null;
@@ -263,11 +300,15 @@ window.PETS=PETS;
   SYS.every(()=>{ tickAll(false); fetch(); if(!choosing)PETS.menuDraw(); },60000,'pet hours');
   // the pets not out with you wait in your apartment, wandering, while you are there (six at most)
   const HOME=new Map(); let homeAt=null;
-  const homePets=()=>{ const on=atHome()&&!inShop, want=new Map();
-    if(on){ if(!homeAt)homeAt={x:pos.x,z:pos.z}; for(const r of LIST)if((!r.out||fainted(r)||decode(r.c).h)&&want.size<6&&!(r.out&&mine))want.set(r.id,r); } else homeAt=null;
+  const atHomeList=()=>LIST.filter(r=>!r.out||fainted(r)||decode(r.c).h).slice(0,6).map(r=>r.c);
+  PETS.atHome=atHomeList;   // (kept with your room's layout, 150d, so a visitor finds them there)
+  const homePets=()=>{ const on=atHome()&&!inShop, want=new Map(), host=on&&MODS.apts.host, G=host&&PETS.guestOf?PETS.guestOf():null;
+    if(on){ if(!homeAt)homeAt={x:pos.x,z:pos.z};
+      if(host){ const T=THEIRS.get(host); (G&&G.pets||[]).forEach((c,i)=>{ if(want.size<6&&decode(c)&&!(T&&T.c===c))want.set('g'+host+i,{c,guest:G.name}); }); }   // a visit: your host's pets live here (one out with them, if they are in, is beside them)
+      else for(const r of LIST)if((!r.out||fainted(r)||decode(r.c).h)&&want.size<6&&!(r.out&&mine))want.set(r.id,r); } else homeAt=null;
     for(const [id,h] of HOME)if(!want.has(id)||want.get(id).c!==h.c){ drop(h.N); h.dead=1; HOME.delete(id); }
     let i=0; for(const [id,r] of want){ i++; if(HOME.has(id))continue; const h={c:r.c,N:null}; HOME.set(id,h); const a=i*1.3, spot={x:homeAt.x+Math.sin(a)*1.6*WU,z:homeAt.z+Math.cos(a)*1.6*WU};
-      make('home'+id,decode(r.c),meLead,{stay:spot,mine:true,rec:r}).then(N=>{ if(h.dead)drop(N); else h.N=N; }).catch(e=>console.warn('PET',e)); } };
+      make('home'+id,decode(r.c),meLead,r.guest?{stay:spot,owner:r.guest,room:()=>atHome()?roomNow():null}:{stay:spot,mine:true,rec:r,room:()=>atHome()&&!MODS.apts.host?roomNow():null}).then(N=>{ if(h.dead)drop(N); else h.N=N; }).catch(e=>console.warn('PET',e)); } };
   PETS.home=()=>HOME;
   SYS.every(homePets,700,'pets at home');
   SYS.onStart(()=>{ idx().then(()=>tickAll(true)).catch(()=>{}); },'146zj-pets hours');
@@ -277,7 +318,9 @@ window.PETS=PETS;
   const CORDER=['pets','dogs','cats','rabbits','farm','horses','livestock','poultry','zoo','wild','reptiles','dino','dragons','creatures','birds','parrots','bugs','shore'];
   /* ---------- an animal on show: its pet body in its first colours, fitted to a box (w along, h up, d across, metres), doing what its kind does at rest ---------- */
   const LIVE=new Set(), MWm=IKIT.MW;
-  const show=async(key,fit,o={})=>{ const I0=await idx(), K=I0.by[key]; if(!K)return null; const P=fresh(K), D=await kind(key), {P:Pp,T}=shape(D,P), R=rig(D,T), CL=clips(D,T), geo=SKIN.geom(D.mesh);
+  let LOADN=0; PETS.loading=()=>LOADN;   // (the start waits for every shop's animals: none comes in later)
+  const show=async(key,fit,o={})=>{ LOADN++; try{ return await show0(key,fit,o); } finally{ LOADN--; } };
+  const show0=async(key,fit,o={})=>{ const I0=await idx(), K=I0.by[key]; if(!K)return null; const P=fresh(K), D=await kind(key), {P:Pp,T}=shape(D,P), R=rig(D,T), CL=clips(D,T), geo=SKIN.geom(D.mesh);
     geo.attributes.position.array.set(Pp); geo.attributes.position.needsUpdate=true; paint(D,P,geo); geo.computeVertexNormals();
     const me=new THREE.SkinnedMesh(geo,new THREE.MeshLambertMaterial({vertexColors:true})); me.add(R.bones[0]); me.bind(R.skeleton); me.frustumCulled=false;
     const lo=[1e9,1e9,1e9], hi=[-1e9,-1e9,-1e9]; for(let k=0;k<Pp.length;k++){ const c=k%3; if(Pp[k]<lo[c])lo[c]=Pp[k]; if(Pp[k]>hi[c])hi[c]=Pp[k]; }
@@ -353,7 +396,7 @@ window.PETS=PETS;
       else if(fr==='glass'){ glass(-W2,W2,CD,.035,CH-.03); bx(-W2,W2,CD-.03,CD,.03,.07,WOOD); }
       else { const n=fr==='mesh'?40:16, c=fr==='mesh'?0x4a5a48:BAR; for(let k=1;k<n;k++){ const a=-W2+k*2*W2/n; bx(a-.005,a+.005,CD-.01,CD,.03,CH-.03,c); } if(fr==='mesh')for(let k=1;k<10;k++)bx(-W2,W2,CD-.01,CD,k*CH/10-.004,k*CH/10+.004,c); }
       furnish(hab,bx,cy,bl,f=>K2.glow(f),CH,CW,CD); };
-    const gen=A.gen=(A.gen||0)+1;
+    const gen=A.gen=(A.gen||0)+1; LOADN++;
     const pic=!!(WINDOWS.taking&&WINDOWS.taking.has(id));   // (built only for the street's first picture of its windows: the cages without their animals, nothing fetched)
     idx().then(I=>{ if(A.gen!==gen||!A.live())return;
       const L=I.kinds.filter(k=>k.shop===id&&k.cage).sort((a,b)=>CORDER.indexOf(a.group)-CORDER.indexOf(b.group));
@@ -377,7 +420,7 @@ window.PETS=PETS;
         show(k.key,fit,{shop:id,pace:false,fly:habOf(k)==='flying'}).then(B=>{ if(!B)return; if(A.gen!==gen||!G2.parent)return; B.fitH=fit.h; B.base=new THREE.Vector3(c[0],.47*MW,c[1]); B.along=new THREE.Vector3(F.eu[0],0,F.eu[1]); B.slide=B.g;
           B.g.position.copy(B.base); if(G2.userData.street)B.street=B.base.clone().applyMatrix4(G2.userData.street); B.g.rotation.y=F.hd(0,1); G2.add(B.g); LIVE.add(B); }).catch(()=>{}); });
       for(const t of TH)UI.thing(t); if(!A.late(G2,TH)){ for(const t of TH){ const j=UI.things.indexOf(t); if(j>=0)UI.things.splice(j,1); } return; } (PETS.caged||(PETS.caged={}))[id]=Math.min(L.length,all.length); };
-      if(!A.late(G,[]))return; if(pic)PEND.set(id,{A,gen,fill}); else fill(); }).catch(e=>console.warn('PET CAGES',e)); };
+      LOADN--; if(!A.late(G,[]))return; if(pic)PEND.set(id,{A,gen,fill}); else fill(); }).catch(e=>{ LOADN--; console.warn('PET CAGES',e); }).catch(e=>console.warn('PET CAGES',e)); };
     kit.drop=()=>{ const d=MSHOP.kit._&&MSHOP.kit._.drop; if(d)d(); }; return kit; };
   const PEND=new Map(); SYS.every(()=>{ for(const [id,q] of PEND){ if(q.A.gen!==q.gen||!q.A.live()){ PEND.delete(id); continue; } if((ROOMS.offIn&&ROOMS.offIn()===id)||WINDOWS.held.has(id)){ PEND.delete(id); q.fill(); } } },300,'pet shops filled');
   const CAGE={CW:1.4,CH:.72,CD:.6,ROWS:4}, STALL={CW:1.7,CH:1.4,CD:1.0,ROWS:1,stall:true};

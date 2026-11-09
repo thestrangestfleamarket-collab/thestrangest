@@ -1,6 +1,6 @@
 // THE HELIPAD: Polyfork's rooftop helipad deck and windsock on the bank, and the news helicopter (data/heli.json) that flies a round of the city every five minutes from the shared clock and lands again, its rotor still on the pad, a Polyfork pilot at the controls; ride along in a seat, or take the controls yourself (one pilot, kept by the section's server like a car).
 import {SHARED, THREE} from './003-shx.js';
-import {keys, ONLINE, pos, RIDE, SPEED, st, UI} from './003b-systems.js';
+import {keys, ONLINE, pos, RIDE, SPEED, st, UI, VLOOK} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {FIX, LEVEL, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
@@ -29,7 +29,7 @@ const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C,3)); g.computeVertexNormals(); g.computeBoundingSphere(); return g; };
   const MAT=new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide});
   const model=(k,sx,sy)=>{ const M=D[k], G=new THREE.Group(), parts={}; G.scale.set(sx,sy,sx);
-    for(const n in M.parts){ const Q=M.parts[n], p=new THREE.Group(), me=new THREE.Mesh(geo(Q),MAT); me.castShadow=me.receiveShadow=true; p.position.set(...Q.at); p.add(me); G.add(p); parts[n]=p; p.userData.at=p.position.clone(); }
+    for(const n in M.parts){ const Q=M.parts[n], p=new THREE.Group(), me=new THREE.Mesh(geo(Q),MAT); me.castShadow=me.receiveShadow=true; p.name=n.toUpperCase(); p.position.set(...Q.at); p.add(me); G.add(p); parts[n]=p; p.userData.at=p.position.clone(); }
     G.userData.parts=parts; return G; };
 
   /* ---------- the pad on the bank's roof: the deck, the windsock, where the pilot waits ---------- */
@@ -73,9 +73,9 @@ const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
 
   /* ---------- each helicopter's state each frame ---------- */
   const mk=(def,i)=>{ const H={...def,i,by:null,park:null,mode:'rest',s0:{},rot:0,spin:0,seatO:[],taken:[],sol:null};
-    H.root=new THREE.Group(); H.root.rotation.order='YXZ'; H.root.userData.anyRoom=false; H.body=model(def.model,def.s*M0,def.s*MV); H.root.add(H.body); scene.add(H.root);
+    H.root=new THREE.Group(); H.root.rotation.order='YXZ'; H.root.userData.anyRoom=false; H.body=model(def.model,def.s*M0,def.s*MV); H.root.add(H.body); VLOOK.kind('heli:'+def.id,{name:def.name,grp:'HELICOPTERS',make:()=>{ const b=model(def.model,def.s*M0,def.s*MV); if(def.mark)b.userData.parts.body.add(...markSides(def.mark)); return VLOOK.dress('heli:'+def.id,b); }}); scene.add(H.root);
     H.seatO=def.seats.map(s=>{ const o=new THREE.Object3D(); o.position.set(s[0]*def.s*M0,s[1]*def.s*MV,s[2]*def.s*M0); H.root.add(o); return o; });
-    H.parts=H.body.userData.parts; if(def.mark)H.parts.body.add(...markSides(def.mark)); return H; };
+    H.parts=H.body.userData.parts; if(def.mark)H.parts.body.add(...markSides(def.mark)); VLOOK.dress('heli:'+def.id,H.body); return H; };
   // its name along both sides of the cabin, over the doors: white letters on a red panel, in the model's metres
   const markSides=t=>{ const c=document.createElement('canvas'); c.width=96; c.height=20; const x=c.getContext('2d'); x.fillStyle='#b8202a'; x.fillRect(0,0,96,20); x.fillStyle='#f4efe4'; x.fillRect(0,1,96,1); x.fillRect(0,18,96,1);
     x.font='bold 17px sans-serif'; x.textAlign='center'; x.textBaseline='middle'; x.fillText(t.split('').join(String.fromCharCode(8202)),48,11); const tx=new THREE.CanvasTexture(c); tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.colorSpace=THREE.SRGBColorSpace;

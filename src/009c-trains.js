@@ -1,6 +1,6 @@
 // THE TRAINS: TRAINS runs the loop's two trains on the timetable (from the clock, so everyone sees the same train), carries whoever rides, and keeps the stations' boards and the cars' next-stop signs.
 import {SHARED, THREE} from './003-shx.js';
-import {LEVELS, LITE, pos, SPEED, st, TEXT, UI, USE} from './003b-systems.js';
+import {LEVELS, LITE, pos, SPEED, st, TEXT, UI, USE, VLOOK} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {grab, LAMPD, LAMPI, lamps, QS, SECTIONS, SYS, TILE, ZU} from './006-map-pre.js';
 import {PEEK} from './008-batch.js';
@@ -130,7 +130,9 @@ await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL
     im(new THREE.TorusGeometry(.08*T,.016*T,5,10),MPOLE,straps,(o,[x,zz])=>{ o.position.set(x*T,Y(FZ+SY0+1.5),zz*T); o.rotation.set(0,Math.PI/2,0); });
     for(const e of [-1,1]){ const me=new THREE.Mesh(new THREE.PlaneGeometry(2.6*T,z(10)),tn.signM); me.position.set(e*(HL-.1),Y(FZ+DOORH+2),0); me.rotation.y=e>0?-Math.PI/2:Math.PI/2; inner.add(me); }
     for(const k of [-1,1]){ const Lp=new THREE.PointLight(new THREE.Color(.93,.97,1),LAMPI*.25,8*T,LAMPD); Lp.userData.i0=Lp.intensity; Lp.userData.at=new THREE.Vector3(k*HL/2,Y(FZ+CEIL-6),0); scene.add(Lp); lamps.push(Lp); lights.push(Lp); }
-    scene.add(G); return {G,ext,inner,roof,strips,upper,leaves,lights,seats,c,door:0,poles:poles.map(([x,zz])=>({a:x*T,v:zz*T})),straps:straps.map(([x,zz])=>({a:x*T,v:zz*T}))}; };
+    VLOOK.dress('train',ext); scene.add(G); return {G,ext,inner,roof,strips,upper,leaves,lights,seats,c,door:0,poles:poles.map(([x,zz])=>({a:x*T,v:zz*T})),straps:straps.map(([x,zz])=>({a:x*T,v:zz*T}))}; };
+  // the trains in the vehicle editor: their colours only (their size and parts are the stations' and the riders')
+  VLOOK.kind('train',{name:'THE LOOP TRAIN',grp:'TRAINS',colour:true,make:()=>{ const c=TRAINS.list[0]&&TRAINS.list[0].cars[0]; return c?VLOOK.dress('train',c.ext.clone()):null; }});
   // the cars built only the first time you are down on the platforms (owner, 9 Nov 2026: "dont load the train unless you go into subway platform"); the timetable runs from the start without them
   TRAINS.ensure=()=>{ if(TRAINS.built)return; TRAINS.built=true;
   for(const tn of TRAINS.list){ const cv=document.createElement('canvas'); cv.width=512; cv.height=64; const tx=new THREE.CanvasTexture(cv); tx.colorSpace=THREE.SRGBColorSpace; tn.sign={cv,tx,last:''}; tn.signM=new THREE.MeshBasicMaterial({map:tx});

@@ -69,7 +69,7 @@ const HORSE={}; window.HORSE=HORSE;
   const V=HORSE.V={walk:1.7,trot:3.8,gallop:12,back:.8};
   let fwdT=0;
   const k={name:'HORSE',hint:'E CALLS YOUR HORSE AND YOU SWING UP. W WALKS (HOLD IT: A TROT), SHIFT GALLOPS, A D TURN, S HALTS, E GETS DOWN.',onSay:'YOU SWING UP INTO THE SADDLE.',held:1,hand:()=>saddle(),
-    make:()=>new THREE.Group(), lift:.001, hop:false, knock:1e9, ease:12,
+    make:()=>new THREE.Group(), noLook:true, lift:.001, hop:false, knock:1e9, ease:12,
     on:R=>{ const H=mineH(), d=park?Math.hypot(park.x-pos.x,park.z-pos.z)/WU:1e9;
       if(park&&d<4&&park.lv===(SHARED.LVL||'up')){ pos.x=park.x; pos.z=park.z; R.hd=park.h; } else say('YOU WHISTLE. YOUR HORSE TROTS UP.');
       park=null; fwdT=0; SHARED.heading=R.hd; if(SFX.play)SFX.play('step',{vol:.6,pitch:.5}); },

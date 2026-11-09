@@ -15,7 +15,7 @@ import {SYS} from './006-map-pre.js';
   const row=([k,n])=>{ const v=+SPEED.k[k]||1; return '<div class="row"><span>'+TEXT.esc(n)+'</span><input type="range" data-veh="'+k+'" min="'+LO+'" max="'+HI+'" step="0.05" value="'+v+'" style="--p:'+((v-LO)/(HI-LO)*100).toFixed(1)+'%"><span class="dim" data-vv="'+k+'" style="min-width:4em;text-align:right">×'+v.toFixed(2)+'</span></div>'; };
   const draw=()=>{ if(!host||!host.isConnected)return;
     host.innerHTML='<h3>VEHICLE SPEEDS</h3><div class="dim">×1 is each one\'s own speed; EVERYTHING multiplies them all. The same for every player.</div>'+KINDS.map(row).join('')
-      +'<div class="row onoff"><button class="btn" data-vact="save">SAVE FOR EVERYONE</button><button class="btn" data-vact="reset">RESET ALL TO ×1</button></div><div class="dim">'+TEXT.esc(say)+'</div>'; };
+      +'<div style="display:flex;flex-wrap:wrap;gap:6px;margin:6px 0"><button class="btn" data-vact="save">SAVE FOR EVERYONE</button><button class="btn" data-vact="reset">RESET ALL TO ×1</button></div><div class="dim">'+TEXT.esc(say)+'</div>'; };
   let bound=null;
   SPEED.panel=el=>{ host=el; say=''; draw(); if(bound===el)return; bound=el;
     el.addEventListener('input',e=>{ const r=e.target.closest('[data-veh]'); if(!r)return; const k=r.dataset.veh, v=+r.value; set({...SPEED.k,[k]:v}); const t=el.querySelector('[data-vv="'+k+'"]'); if(t)t.textContent='×'+v.toFixed(2); say='NOT SAVED YET'; const s=el.querySelector('.dim:last-child'); if(s)s.textContent=say; });

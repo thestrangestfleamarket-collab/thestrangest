@@ -1,7 +1,7 @@
 // THE STREET'S WEAR (owner, 9 Nov 2026: "wear tear. outside decor. vents, draings, sidewalk, etc. tufts"): along Market St and the Hudson promenade, storm drains at the kerb, manhole covers in the road, grass tufts in the painted sidewalk's weedy joints and broken corners and at the walls' foot (the cracks, stains and gum are painted by slabCol); each kind one instanced draw.
 import {SHARED, THREE} from './003-shx.js';
 import {scene} from './004-main.js';
-import {BLOCK, MODS, TILE} from './006-map-pre.js';
+import {BLOCK, MAPSTAIR, MODS, RING, TILE} from './006-map-pre.js';
 import {slabCol} from './014-gamekit.js';
 { const B=SHARED.BOD, G=MODS.bodega.ground, M=1/.84*TILE, XS=B.XS, ZS=B.ZS, x0=XS(BLOCK.x0+2), x1=XS(BLOCK.x1-2), h=(a,b,c)=>{ const v=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return v-Math.floor(v); };
   const zMF=ZS(BLOCK.front), zSW=ZS(B.CURB), zFAR=ZS(B.FAR), zPF=ZS(BLOCK.prom[1]), zPN=ZS(BLOCK.prom[0]);   // Market St's walk front..kerb, its road; the Hudson's promenade
@@ -21,7 +21,7 @@ import {slabCol} from './014-gamekit.js';
     const mt=new THREE.MeshLambertMaterial({map:t,transparent:true,alphaTest:.5,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3}); inst(decal(.75,.75),mt,L); }
   // tufts where the painted sidewalk has weeds (slabCol's .w): along its joints and in its broken corners; more at the walls' foot and the kerb's edge
   const TU=[], SL=2.4, mx=w=>(w-XS(0))/TILE, my=w=>(w-ZS(0))/TILE, wx=t=>XS(t), wz=t=>ZS(t), tx0=mx(x0), tx1=mx(x1);
-  for(const [za,zb] of WALK){ const ty0=Math.min(my(za),my(zb))+.35, ty1=Math.max(my(za),my(zb))-.35, tryAt=(x,y,s)=>{ if(y<ty0||y>ty1||x<tx0||x>tx1)return; const c=slabCol(x,y); if(c&&c.w&&h(x,y,31)<.3)TU.push([wx(x),wz(y),s]); };
+  for(const [za,zb] of WALK){ const ty0=Math.min(my(za),my(zb))+.35, ty1=Math.max(my(za),my(zb))-.35, tryAt=(x,y,s)=>{ if(y<ty0||y>ty1||x<tx0||x>tx1)return; if([MAPSTAIR,...RING.stairs].some(S=>x>=S.x0-.3&&x<S.x1+.3&&y>=S.y0-.3&&y<S.y1+.3))return; const c=slabCol(x,y); if(c&&c.w&&h(x,y,31)<.3)TU.push([wx(x),wz(y),s]); };
     for(let gx=Math.ceil(tx0/SL)*SL;gx<tx1;gx+=SL)for(let y=ty0;y<ty1;y+=1/8)tryAt(gx+(h(gx,y,32)-.5)*.05,y,.7+h(gx,y,33)*.5);
     for(let gy=Math.ceil(ty0/SL)*SL;gy<ty1;gy+=SL)for(let x=tx0;x<tx1;x+=1/8)tryAt(x,gy+(h(x,gy,34)-.5)*.05,.7+h(x,gy,35)*.5);
     for(let gx=Math.ceil(tx0/SL)*SL;gx<tx1;gx+=SL)for(let gy=Math.floor(ty0/SL)*SL;gy<=ty1+SL;gy+=SL)for(let k=0;k<10;k++){ const a=h(gx,gy,36+k)*6.28, r=h(gx,gy,50+k)*.4; tryAt(gx+Math.cos(a)*r,gy+Math.sin(a)*r,1); }

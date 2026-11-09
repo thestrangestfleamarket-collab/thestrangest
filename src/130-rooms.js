@@ -73,6 +73,7 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
   BATCH.at=ROOMS.real;   // in a room off the map with no window out the street's painted ground and walls are dropped, painted again on the way out
   ROOMS.offBuild=async id=>{ const L=offL(id); if(!L.done){ await L.need(); if(!L.done)L.go(); } return L; };   // an inside built without going in (for its windows' first picture)
   ROOMS.offDrop=id=>{ const o=ROOMS.off[id], L=ROOMS.lazy[id]; if(!o||o.keep||!L||!L.done||ROOMS.offIn()===id)return; ROOMS.unpart(o.P); o.P=null; if(o.unbuild)o.unbuild(); L.done=false; };   // and dropped again: nothing inside stays built at the start
+  SYS.add('places',()=>{ const cur=ROOMS.offIn(); for(const id in ROOMS.off){ const g=ROOMS.off[id].P&&ROOMS.off[id].P.group; if(g)VIS.hide(g,'away',!(cur===id||(WINDOWS.held&&WINDOWS.held.has(id))||(WINDOWS.taking&&WINDOWS.taking.has(id)))); } },'130-rooms away');   // a built inside is drawn only while you are in it or see it through its glass, never from across the map
   const kOf=b=>[b.x0,b.z0,b.x1,b.z1,b.y0].map(v=>(+v).toFixed(2)).join();
   const lazyOf=b=>{ if(!b||b.noBuild)return null; const L=b.lz&&ROOMS.lazy[b.lz]; if(L)return L.done?null:L; const S=b.id&&STORE.inside&&STORE.inside[b.id];
     return S&&!S.done?{name:/^THE /.test(S.name)?S.name:'THE '+S.name,S,go:()=>{ S.busy=false; STORE.inGo(b.id); },need:async()=>{ if(STORE.need)await STORE.need(); if(STORE.pre&&STORE.pre[b.id])await STORE.pre[b.id](); }}:null; };

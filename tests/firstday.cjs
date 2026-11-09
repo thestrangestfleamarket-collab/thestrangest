@@ -29,15 +29,15 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
   rec('the look: woman, the skin, the hair and its colour, the eyes, on your avatar (and in the look others read)',L.f==='f'&&L.skin==='7e4c2f'&&L.hair==='b98a4e'&&L.eye==='3f6b3a'&&/\.3f6b3a$/.test(L.code)&&String(L.w)===String(pony),JSON.stringify(L));
   await click('[data-nav="1"]'); await click('[data-st="int"][data-d="-5"]'); await click('[data-st="int"][data-d="-5"]'); await click('[data-st="str"][data-d="5"]'); await click('[data-st="str"][data-d="5"]'); await click('[data-st="str"][data-d="5"]'); await shot('3-stats');
   const st0=await pg.evaluate(()=>document.querySelector('#fday .stp').textContent);
-  await click('[data-nav="1"]');
+  await click('[data-nav="1"]'); await click('[data-nav="1"]');   // (then the permapet, 8 Nov 2026: none picked, out you go)
   const end=await pg.evaluate(()=>({on:FIRSTDAY.on,hidden:document.getElementById('fday').hidden,st:FORAGE.stats.get(),picked:FORAGE.stats.picked(),cash:INV.cash,snacks:INV.items.fr_apple||0,rod:FORAGE.has('rod'),flag:__dbg.SAVE.get('firstday'),bar:HUDDBG().slots.slice(0,2),name:ONLINE.myName()}));
   rec('the stats are yours (90 points, each 10 to 60)',end.picked&&end.st.str+end.st.int+end.st.sta<=90&&end.st.str===40&&end.st.int===20,st0+' '+JSON.stringify(end.st));
   rec('out onto the platform: the setup gone, with $1,000, two apples and a fishing rod, both on the quick bar',!end.on&&end.hidden&&end.cash===1000&&end.snacks===2&&end.rod&&end.flag==='1'&&end.bar[0]==='fr_apple'&&end.bar[1]==='rod',JSON.stringify(end));
   rec('other players see your name',end.name==='ROSA THE TRADER',end.name);
   await wait(1500); await shot('4-out');
-  // the passport: the card in the map's look, your photo, every line from what you are
-  const pp=await pg.evaluate(async()=>{ PASSPORT.open(); await new Promise(r=>setTimeout(r,800)); const w=document.getElementById('passportw'), t=w.textContent, c=w.querySelector('.pPh'), d=c.getContext('2d').getImageData(0,0,c.width,c.height).data; let n=0; for(let i=3;i<d.length;i+=4)if(d[i]>0)n++;
-    return {name:/ROSA THE TRADER/.test(t),dob:/03\/14\/1961/.test(t),eyes:/EYES\s*GRN/.test(t),hair:/HAIR\s*BLN/.test(t),sex:/SEX\s*F/.test(t),hgt:/HGT\s*5'-\d\d"/.test(t),hand:/HAND/.test(t),no:/CITIZEN NO\./.test(t),stamps:/STAMP/.test(t),photo:n}; });
+  // the passport: the card in the map's look, your photo, every line from what you are (its lines are boxes you can edit since 7 Nov 2026: read what they show)
+  const pp=await pg.evaluate(async()=>{ PASSPORT.open(); await new Promise(r=>setTimeout(r,800)); const w=document.getElementById('passportw'), cl=w.cloneNode(true), O=[...w.querySelectorAll('input,select')]; [...cl.querySelectorAll('input,select')].forEach((e,i)=>{ const o=O[i]; e.replaceWith(o.tagName==='SELECT'?(o.selectedOptions[0]||{}).textContent||'':o.type==='date'&&/^\d{4}-\d\d-\d\d$/.test(o.value)?o.value.slice(5,7)+'/'+o.value.slice(8)+'/'+o.value.slice(0,4):o.value); }), t=cl.textContent, c=w.querySelector('.pPh'), d=c.getContext('2d').getImageData(0,0,c.width,c.height).data; let n=0; for(let i=3;i<d.length;i+=4)if(d[i]>0)n++;
+    return {name:/ROSA THE TRADER/.test(t),dob:/03\/14\/1961/.test(t),eyes:/EYES\s*GRN/.test(t),hair:/HAIR\s*BLN/.test(t),sex:/SEX\s*F/.test(t),hgt:/HGT\s*5'-\d\d"/.test(t),hand:/HAND/.test(t),no:/CITIZEN \d+/.test(t),stamps:/STAMP/.test(t),photo:n}; });
   await shot('5-passport'); await pg.evaluate(()=>PASSPORT.close());
   rec('the passport is the card: your name, date of birth, sex, height, green eyes, blond hair, hand, citizen number and a photo of you; no stamps',pp.name&&pp.dob&&pp.eyes&&pp.hair&&pp.sex&&pp.hgt&&pp.hand&&pp.no&&!pp.stamps&&pp.photo>2000,JSON.stringify(pp));
   const E=Object.entries(errs); rec('no page errors',!E.length,E.map(([k,v])=>v+'× '+k).join(' | '));

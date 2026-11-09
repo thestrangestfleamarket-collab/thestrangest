@@ -92,7 +92,7 @@ import {ROOMK} from './150a-bedroom.js';
   const P=document.createElement('div'); P.id='roomed'; P.hidden=true; document.body.appendChild(P);
   const BUY=document.createElement('div'); BUY.id='roombuy'; BUY.hidden=true; document.body.appendChild(BUY);
   const SAYEL=document.createElement('div'); SAYEL.id='roomsay'; SAYEL.hidden=true; document.body.appendChild(SAYEL);
-  const B=document.createElement('button'); B.id='roomedbtn'; B.hidden=true; B.textContent='DECORATE · T'; B.onclick=()=>ED.toggle(); document.body.appendChild(B);
+  const B=document.createElement('button'); B.id='roomedbtn'; B.className='mlb'; B.hidden=true; B.textContent='DECORATE · T'; B.onclick=()=>ED.toggle(); document.body.appendChild(B);
   let tab='things', dept='seating', helper=null, hover=null, saveT=0, sayT=0;
   const say=m=>{ SAYEL.textContent=m; SAYEL.hidden=false; clearTimeout(sayT); sayT=setTimeout(()=>{ SAYEL.hidden=true; },2200); ED.said=m; };
   const dirty=()=>{ clearTimeout(saveT); saveT=setTimeout(()=>{ const A=A_(); if(A)HOME.save(snapshot(A)); },1200); };

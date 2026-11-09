@@ -24,4 +24,8 @@ const {chromium}=require('playwright');
   await pg.evaluate(()=>{ const t=Date.now()/1000, r=((t%90)+90)%90; TRAFFIC.skew=(20-r); TRAFFIC.press(); }); await pg.waitForTimeout(6000); d=await T();
   ok(d.light.m==='r'&&d.light.x==='w','the button brings the walk: '+JSON.stringify(d.light));
   if(out){ await pg.evaluate(()=>{ STORE.pos.set(52,0,4); SHARED.py=SHARED.groundY(52,4); }); await pg.waitForTimeout(4000); await pg.screenshot({path:out+'.png'}); }
+  // the car lamps (150pc): off by day; after dark the cars on the road show head and tail lights and the nearest light the road for real
+  ok(await pg.evaluate(()=>!CARLAMPS.dbg().on),'no car lamps by day');
+  const cl=await pg.evaluate(async()=>{ const e0=CLOCK.dayElev; CLOCK.dayElev=()=>-30; await new Promise(r=>setTimeout(r,1500)); const d=CARLAMPS.dbg(); CLOCK.dayElev=e0; return d; });
+  ok(cl.on&&cl.lens===cl.cars*4&&cl.lit>0&&cl.spots.some(v=>v>0),'after dark the cars show their lamps and the nearest light the road: '+JSON.stringify(cl));
   ok(!errs.length,'no page errors '+errs.slice(0,3).join(' | ')); await b.close(); process.exit(bad?1:0); })();

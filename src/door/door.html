@@ -22,7 +22,7 @@ input{font:inherit;letter-spacing:inherit;background:rgba(0,0,0,.35);color:var(-
 </style></head><body><div id="door"></div>
 <script type="module">
 const SB_URL='https://jvcetttmqseoteidfggn.supabase.co', SB_KEY='sb_publishable_UkzD8hOizW1hPr6hm3duQQ_07ZodPik';
-const T={name:'The Strangest Flea Market',phone:'not on phones yet: come back on a computer',login:'log in',have:'already have an account? log in',back:'back',
+const T={name:'The Strangest Flea Market',login:'log in',have:'already have an account? log in',back:'back',
   'code.title':'your invitation','code.body':'the market is invite only for now','code.ph':'invite code','code.go':'next','code.bad':'that invite code is not valid or already used',
   'make.ok':'code accepted ✓','make.body':'your email and a password, to log in again later','make.go':'start day 1','make.exists':'that email already has an account: log in instead',
   email:'email',password:'password',password2:'password again',short:'the password needs at least 8 characters',match:'the two passwords are different',bademail:'enter your email',
@@ -33,7 +33,6 @@ const T={name:'The Strangest Flea Market',phone:'not on phones yet: come back on
 const tx=(k,v)=>{ let s=T[k]??k; for(const [a,b] of Object.entries(v||{}))s=s.split('{'+a+'}').join(b); return s; };
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const el=document.getElementById('door');
-const PHONE=matchMedia('(hover:none) and (pointer:coarse)').matches;
 const S={step:'title',email:'',code:'',err:'',busy:false};
 let recovery=false; try{ recovery=/[?&]code=/.test(location.search)&&Object.keys(localStorage).some(k=>/-code-verifier$/.test(k)&&/PASSWORD_RECOVERY/.test(localStorage.getItem(k)||'')); }catch(e){}
 let sbP=null; const sb=()=>sbP||(sbP=import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm').then(m=>m.createClient(SB_URL,SB_KEY,{auth:{flowType:'pkce',persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}})));
@@ -50,7 +49,7 @@ function draw(){ const s=S, e=esc, b=(a,t,cls='')=>'<button type="button" class=
   const err=s.err?'<div class="err">'+e(s.err)+'</div>':'', inp=(id,type,ph,ac,v)=>'<input id="'+id+'" type="'+type+'" autocomplete="'+ac+'" placeholder="'+e(tx(ph))+'"'+(v!=null?' value="'+e(v)+'"':'')+'>', box=h=>'<div class="box">'+h+'</div>';
   const step=s.step; let h='';
   if(step==='title')h='<div class="box title"><h1 class="logo">'+e(tx('name')).replace(/^(the)\s+(strangest)\s+/i,'$1<br>$2<br>')+'</h1>'+
-    (PHONE?'<div class="k">'+e(tx('phone'))+'</div>':'<input id="dcode" type="text" maxlength="32" autocomplete="off" spellcheck="false" placeholder="'+e(tx('code.ph'))+'"'+(s.code?' value="'+e(s.code)+'"':'')+'>'+
+    ('<input id="dcode" type="text" maxlength="32" autocomplete="off" spellcheck="false" placeholder="'+e(tx('code.ph'))+'"'+(s.code?' value="'+e(s.code)+'"':'')+'>'+
     '<div>'+b('docode','code.go','on')+'</div>'+err+'<div>'+b('login','have','link')+'</div>')+'</div>';
   else if(step==='opening')h=box('<div class="k blink">'+e(tx('opening'))+'</div>');
   else if(step==='nocode')h=box('<h2>'+e(tx('code.title'))+'</h2><div class="k">'+e(tx('nocode.body'))+'</div><input id="dcode" type="text" maxlength="32" autocomplete="off" placeholder="'+e(tx('code.ph'))+'"'+(s.code?' value="'+e(s.code)+'"':'')+'>'+
@@ -85,6 +84,6 @@ function draw(){ const s=S, e=esc, b=(a,t,cls='')=>'<button type="button" class=
   on('donewpass',async()=>{ const pw=pw2(), {error}=await (await sb()).auth.updateUser({password:pw}); if(error)throw error; recovery=false; await enter(); }); }
 
 draw();
-if(/[?&]code=/.test(location.search)&&!PHONE)sb().then(async c=>{ const {data}=await c.auth.getSession(); history.replaceState(null,'',location.pathname);
+if(/[?&]code=/.test(location.search))sb().then(async c=>{ const {data}=await c.auth.getSession(); history.replaceState(null,'',location.pathname);
   if(!(data&&data.session))return; if(recovery){ S.step='newpass'; draw(); return; } await enter(); draw(); }).catch(e=>{ S.err=e.message||String(e); draw(); });
 </script></body></html>

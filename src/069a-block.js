@@ -100,7 +100,9 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
     const back=o=>{ const W=o.x1-o.x0, D=o.y1-o.y0, H=YP(o.h), L=fc=>new THREE.MeshLambertMaterial({map:fc.map,emissive:0xffffff,emissiveMap:fc.em});
       const FZ=L(face(W,o.h,{k:o.k,tint:o.tint,lit:.24,nodoor:1})), FX=L(face(D,o.h,{k:o.k+7,tint:o.tint,lit:.24,nodoor:1}));
       const m=new THREE.Mesh(new THREE.BoxGeometry(W*T,H,D*T),[FX,FX,roofM,roofM,FZ,FZ]); m.position.set((XS(o.x0)+XS(o.x1))/2,H/2,(ZS(o.y0)+ZS(o.y1))/2); m.receiveShadow=true; m.raycast=()=>{}; m.userData.haze=1; G.add(m); PEEK.whole(m); BLK.back.push({...o,mesh:m}); };
-    let k=0; for(const [ax,a0,a1,b0,b1] of E.runs||[]){ const dir=Math.sign(a1-a0), end=a0+dir*Math.min(Math.abs(a1-a0),NEAR); let p=a0;
+    // a row starts past the last real building on it (owner, 8 Nov 2026: "make sure the buildings dont over lap")
+    const clear=(ax,p,dir,b0,b1)=>{ for(const q of LEVEL.places||[]){ const [u0,u1,v0,v1]=ax==='x'?[q.x0,q.x1,q.y0,q.y1]:[q.y0,q.y1,q.x0,q.x1]; if(u0==null||v0==null||v1<=b0||v0>=b1)continue; if(u0<p&&u1>p)p=dir<0?u0-1.2:u1+1.2; } return p; };
+    let k=0; for(const [ax,a0,a1,b0,b1] of E.runs||[]){ const dir=Math.sign(a1-a0); let p=clear(ax,a0,dir,b0,b1); const end=p+dir*Math.min(Math.abs(a1-p),NEAR);
       while((end-p)*dir>2){ const w=Math.min(14+rnd()*8,Math.abs(end-p)), h=360+Math.floor(rnd()*3)*120, q1=p+dir*w, lo=Math.min(p,q1), hi=Math.max(p,q1);
         back(ax==='x'?{x0:lo,x1:hi,y0:b0,y1:b1,h,k:900+k*13,tint:TINTS[k%TINTS.length]}:{x0:b0,x1:b1,y0:lo,y1:hi,h,k:900+k*13,tint:TINTS[k%TINTS.length]}); k++; p=q1+dir*1.2; } } }
   // the streets and the park carried on past the edges (owner, 7 Nov 2026: "the map to look like it keeps going (past map) lower res ... like real nyc"): low-res ground strips, the park's wall and a band of plain trees (data/world.json edge.strips, edge.park)
@@ -137,10 +139,13 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
       wl.position.set((XS(a0)+XS(a1))/2,YP(45),(ZS(b0)+ZS(b1))/2); wl.raycast=()=>{}; wl.userData.cullOf=1; wl.userData.haze=1; G.add(wl);
       // Market St's park wall past the mirror's reach (161d): plain stone and a railing of bars, to the end of the strips
       if(PARK.wallOn){ const [,w0,w1]=PARK.wallOn, wa=E.mirror?E.mirror.x[1]+E.mirror.reach:PARK.wallOn[0], we=Math.max(...((E.strips&&E.strips.list)||[]).map(q=>q[2]),wa), L=XS(we)-XS(wa); if(L>0){ const cx=(XS(wa)+XS(we))/2, cz=(ZS(w0)+ZS(w1))/2, d=Math.abs(ZS(w1)-ZS(w0));
-        const sw=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(L),YP(96),d),new THREE.MeshLambertMaterial({color:0x6a6862})); sw.position.set(cx,YP(48),cz);
-        const rc=cv(4,16), rg=rc.getContext('2d'); rg.fillStyle='#24282b'; rg.fillRect(0,0,1,16); rg.fillRect(0,0,4,1); rg.fillRect(0,10,4,1); const rt=tex(rc); rt.wrapS=THREE.RepeatWrapping; rt.repeat.set(Math.abs(L)/(.19*T*2),1);
-        const rl=new THREE.Mesh(new THREE.PlaneGeometry(Math.abs(L),YP(43)),new THREE.MeshLambertMaterial({map:rt,transparent:true,alphaTest:.5,side:THREE.DoubleSide})); rl.position.set(cx,YP(96+21.5),cz);
-        for(const m of [sw,rl]){ m.raycast=()=>{}; m.userData.cullOf=1; m.userData.haze=1; G.add(m); } BLK.back.push({parkwall:true,x0:wa,x1:we}); } }
+        // (in pieces, each sunk away before the end of the view, so the far plane never leaves a dark line of railing on the horizon: owner, 9 Nov 2026, "im seeing that dark line")
+        const SEG=40*T, NS=Math.ceil(Math.abs(L)/SEG), x0w=Math.min(XS(wa),XS(we)), sink=sh=>{ sh.vertexShader=sh.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>\n#ifdef USE_INSTANCING\n transformed.y*=1.-smoothstep(${(380*T).toFixed(1)},${(470*T).toFixed(1)},distance((modelMatrix*instanceMatrix*vec4(0.,0.,0.,1.)).xyz,cameraPosition));\n#endif`); };
+        const rc=cv(4,16), rg=rc.getContext('2d'); rg.fillStyle='#24282b'; rg.fillRect(0,0,1,16); rg.fillRect(0,0,4,1); rg.fillRect(0,10,4,1); const rt=tex(rc); rt.wrapS=THREE.RepeatWrapping; rt.repeat.set(SEG/(.19*T*2),1);
+        const wm=new THREE.MeshLambertMaterial({color:0x6a6862}), rm=new THREE.MeshLambertMaterial({map:rt,transparent:true,alphaTest:.5,side:THREE.DoubleSide}); for(const m of [wm,rm]){ m.onBeforeCompile=sink; m.customProgramCacheKey=()=>'wallsink'+(m.map?1:0); m.userData.hz=1; }
+        const sw=new THREE.InstancedMesh(new THREE.BoxGeometry(SEG,YP(96),d).translate(0,YP(48),0),wm,NS), rl=new THREE.InstancedMesh(new THREE.PlaneGeometry(SEG,YP(43)).translate(0,YP(96+21.5),0),rm,NS), M4=new THREE.Matrix4();
+        for(let i=0;i<NS;i++){ M4.makeTranslation(x0w+(i+.5)*SEG,0,cz); sw.setMatrixAt(i,M4); rl.setMatrixAt(i,M4); }
+        for(const m of [sw,rl]){ m.raycast=()=>{}; m.userData.cullOf=1; m.frustumCulled=false; G.add(m); } BLK.back.push({parkwall:true,x0:wa,x1:we}); } }
       const BANDS=P.bands||[P.trees], N=P.n||400, crown=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshLambertMaterial({color:0x3f6d2e,flatShading:true}),N), trunk=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshLambertMaterial({color:0x4a3a2c}),N), M4=new THREE.Matrix4(), Q=new THREE.Quaternion(), V=new THREE.Vector3(), S=new THREE.Vector3();
       const FS=window.FOUNT&&FOUNT.S, FL=FS&&FS.L, pox=(window.PARK&&PARK.ox)||0, poy=(window.PARK&&PARK.oy)||0, WET=(x,y)=>!!FL&&Math.abs(x-pox-FL.x)<FL.rx+16&&Math.abs(y-poy-FL.y)<FL.ry+16&&FOUNT.lake(x-pox,y-poy)<6;   // none in the big lake (owner, 8 Nov 2026: "the lake has a chunk of green in it")
       // none in the park's clearings, on its paths or on a section's places (edge.park.clear, edge.ground.paths, sections.places)

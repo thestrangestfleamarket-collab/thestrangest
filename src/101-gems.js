@@ -18,8 +18,8 @@ Object.assign(INV,{items:{},picked:{}}); window.INV=INV; GEMS.TIER=GTIER; window
   INV.mark=k=>{ INV.picked[k]=day(); save(); };   // a find taken today (INV.pick also gives a stone)
   INV.pick=k=>{ '@later'; if(!INV.ready(k)){ TRADE.note('NOTHING HERE TODAY. BACK TOMORROW'); return false; } const id=INV.random(), g=byId(id); INV.picked[k]=day(); INV.add(id);
     TRADE.note('YOU FOUND '+(/^[AEIOU]/.test(g[1])?'AN ':'A ')+g[1]+' · THE GEM SHOP PAYS $'+g[2]); SFX.play('chirp',{vol:.4}); return true; };
-  INV.sell=(id,n=1)=>{ '@later'; const g=byId(id), have=INV.items[id]||0; n=Math.min(n,have); if(!g||n<1)return 0; INV.items[id]=have-n; if(!INV.items[id])delete INV.items[id]; INV.cash+=g[2]*n; save();
-    if(window.CIVIC&&CIVIC.note)CIVIC.note('you sold '+n+' '+g[1].toLowerCase()+' to the golems for $'+g[2]*n,'park'); SFX.play('clunk',{vol:.5}); return g[2]*n; }; }
+  INV.sell=(id,n=1)=>{ '@later'; const g=byId(id), have=INV.items[id]||0; n=Math.min(n,have); if(!g||n<1)return 0; INV.items[id]=have-n; if(!INV.items[id])delete INV.items[id]; const v=window.WORTH?window.WORTH.sell(id,n,g[2]):g[2]*n; INV.cash+=v; save();
+    if(window.CIVIC&&CIVIC.note)CIVIC.note('you sold '+n+' '+g[1].toLowerCase()+' to the golems for $'+v,'park'); SFX.play('clunk',{vol:.5}); return v; }; }
  window.TRADE=TRADE;
 { const esc=TEXT.esc, btn='class="btn" style="margin:0 0 0 6px;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:3px 8px;cursor:pointer"';
   const panel=()=>{ '@later'; let P=document.getElementById('gemp'); if(P)return P; P=document.createElement('div'); P.id='gemp'; P.hidden=true;
@@ -31,8 +31,8 @@ Object.assign(INV,{items:{},picked:{}}); window.INV=INV; GEMS.TIER=GTIER; window
   TRADE.draw=()=>{ const P=document.getElementById('gemp'); if(!P||P.hidden)return;
     let o=`<h3 style="margin:0 0 4px;color:#f2c14e;font:12px Silkscreen,monospace">THE GOLEMS BUY</h3><div style="color:#9b9584;margin-bottom:8px">Rare gems and crystals, any kind. Fair prices, paid in coin.</div>
       <div style="margin-bottom:8px">YOU HAVE <b style="color:#f2c14e">$${Math.round(INV.cash)}</b> · ${INV.count()} STONE${INV.count()===1?'':'S'}</div><table style="border-collapse:collapse;width:100%">`;
-    for(const [id,name,price] of GEMS){ const n=INV.items[id]||0;
-      o+=`<tr style="border-bottom:1px solid #22252f;${n?'':'color:#7d7a70'}"><td style="padding:4px 2px">${esc(name)}</td><td style="text-align:right;padding:4px 6px">$${price}</td><td style="text-align:right;padding:4px 6px">${n?'x'+n:'-'}</td><td style="text-align:right;white-space:nowrap">${n?`<button ${btn} data-s="${id}">SELL</button>${n>1?`<button ${btn} data-s="${id}" data-n="all">ALL $${price*n}</button>`:''}`:''}</td></tr>`; }
+    for(const [id,name,pr] of GEMS){ const n=INV.items[id]||0, W=window.WORTH, price=W?W.sell(id,1,pr):pr, all=W?W.sell(id,n,pr):pr*n;
+      o+=`<tr style="border-bottom:1px solid #22252f;${n?'':'color:#7d7a70'}"><td style="padding:4px 2px">${esc(name)}</td><td style="text-align:right;padding:4px 6px">$${price}</td><td style="text-align:right;padding:4px 6px">${n?'x'+n:'-'}</td><td style="text-align:right;white-space:nowrap">${n?`<button ${btn} data-s="${id}">SELL</button>${n>1?`<button ${btn} data-s="${id}" data-n="all">ALL $${all}</button>`:''}`:''}</td></tr>`; }
     o+=(window.FORAGE&&FORAGE.trainRows?FORAGE.trainRows(['gem']):'')+`</table><div style="color:#9b9584;margin-top:10px">Find them: the glints on the cave's floor (back each day).</div>`;
     const x=P.querySelector(':scope>.pX'); P.innerHTML=o; if(x)P.appendChild(x); };
   TRADE.open=N=>{ const P=panel(); P.hidden=false; TRADE.draw();

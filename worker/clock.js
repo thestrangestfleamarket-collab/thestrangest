@@ -7,6 +7,7 @@ const CLK={TZ:'America/Chicago'};
   CLK.ok=c=>!!c&&typeof c==='object'&&(c.off==null||isFinite(c.off))&&(c.stop==null||isFinite(c.stop));
   CLK.at=(t,c)=>c&&c.stop!=null&&isFinite(c.stop)?+c.stop:t+(c&&isFinite(c.off)?+c.off:0);   // the game's moment (ms) at real moment t
   CLK.local=(t,c)=>{ const g=CLK.at(t,c); return g+CLK.zone(g); };   // the same, on Central's wall clock
+  CLK.day=(t,c)=>Math.floor(CLK.local(t,c)/86400000);   // the game's date, as a day number (the same for every player)
   CLK.hour=(t,c)=>((CLK.local(t,c)/3600000)%24+24)%24;   // the hour of the day, 0 to 24
   CLK.count=(t,c)=>Math.floor(CLK.local(t,c)/3600000);   // whole hours since the epoch on Central's clock (the lives' H)
   // the owner's settings: put the clock at hour h (keeping its stop), stop it, run it on from where it stands, back to real time

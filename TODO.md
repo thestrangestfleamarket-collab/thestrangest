@@ -172,12 +172,12 @@ In order (each step builds on the one before): RLS SQL → login cookie with the
   object for the whole game, against "build for many". Fix: one object per player (`idFromName(id)`), a small passport-counter object
   (stays unique), and art in its own object (anyone reads a finished painting by id). Visits (`body.who`) read another player's object.
   Migrate live data once; do it before access widens. Fold the money migration below into the same window if the owner agrees.
-- [ ] **Money on the server** · P2 · XL · pick + code · risk high. From the 1 Nov review (its #1; owner: add to TODO, 4 Nov). Cash is a
+- [ ] **Money on the server** · P1 · [taking: claude/relaxed-bohr-vnxr7f, 9 Nov: owner "fix"] · XL · pick + code · risk high. From the 1 Nov review (its #1; owner: add to TODO, 4 Nov). Cash is a
   client-held string in `/owned` (`worker/door.js:80-84`), so any logged-in player can set their balance; shops and the BBS spend it.
   `INV.cash` is written at about 50 places in 27 files, mostly earnings (fishing, forage, arcade, fair, gems), so a buy/sell ledger
   priced from `data/items.json` isn't enough: earnings need a rule each, or a capped "earn" call. `/owned` stops taking cash; migrate each
   balance once. Owner decides first: which object, how to migrate. (`docs/REVIEW-2026-11-01.md` §B6.)
-- [ ] **Trade: the server trusts each game's offer** · P3 · M (cash) / XL (items) · code · risk high. From #564: `trade()`
+- [ ] **Trade: the server trusts each game's offer** · P1 · [taking: claude/relaxed-bohr-vnxr7f, 9 Nov] · M (cash) / XL (items) · code · risk high. From #564: `trade()`
   (`worker/door.js:283-306`) only clamps shapes; each game applies the swap itself (`src/159i-trade.js:43-45`). Cash checked server-side
   needs the money ledger; items need a server-held pack (no line for that yet). Low on its own today (anyone can set anything in `/owned`),
   high once money is on the server.

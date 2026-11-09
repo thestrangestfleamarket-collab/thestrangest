@@ -124,7 +124,7 @@ const SCOPE={alt:35,az:270,va:0,vz:0,mag:25,focus:0,track:true,lines:true,filter
       // the light: the Sun's height sets the sky (New York's glow keeps it from black), the weather covers it
       const sun=where('sun',jd), sunH=eq2hor(sun.ra,sun.dec,lst), sv=eqv(sun.ra,sun.dec), sunOff=Math.acos(cl(sv[0]*t[0]+sv[1]*t[1]+sv[2]*t[2],-1,1))*R2D;
       const day=cl((sunH.alt+12)/12,0,1), Wx=(SCOPE.wx&&SCOPE.wx(jd))||(window.WX&&WX.now)||{cloud:0,rain:0,snow:0,fog:0}, wet=Math.max(Wx.rain||0,Wx.snow||0), cover=cl(((Wx.cloud||0)-.2)/.7,0,1), filt=SCOPE.filter?1e-5:1;
-      let lim=cl(8.3-11*day,-4,8.3)-2*cover-3*(Wx.fog||0); if(SCOPE.filter)lim=-30;
+      let lim=cl(8.3-11*day,-4,8.3)-2*cover-3*(Wx.fog||0); if(SCOPE.mag===1)lim-=3; if(SCOPE.filter)lim=-30;   // the eye's 7 mm against the tube's 80
       const sky=day*filt*(1-.4*cover); g.fillStyle='#000'; g.fillRect(0,0,w,h); g.save(); g.beginPath(); g.arc(cx,cy,R,0,7); g.clip();
       g.fillStyle=`rgb(${Math.round(10+120*sky)},${Math.round(13+160*sky)},${Math.round(26+210*sky)})`; g.fillRect(cx-R,cy-R,2*R,2*R);
       // the air: seeing makes everything tremble a little, more the more you magnify (about 2.5 arc seconds over the city)
@@ -132,7 +132,7 @@ const SCOPE={alt:35,az:270,va:0,vz:0,mag:25,focus:0,track:true,lines:true,filter
       const see=2.5/3600*pxd, jx=wob[0]*see, jy=wob[1]*see, blur=Math.min(28,Math.abs(SCOPE.focus-.18)*SCOPE.mag*.45)+(SCOPE.mag>=100?see*.4:0);
       g.filter=blur>.3?`blur(${blur.toFixed(1)}px)`:'none'; g.translate(jx,jy);
       // the stars, by magnitude and colour
-      if(SX&&lim>-2){ const cR=Math.cos(Math.min(89,fov*.75)*D2R), pk=Math.max(.6,Math.min(1.6,25/SCOPE.mag+.4));
+      if(SX&&lim>-2){ const cR=Math.cos(Math.min(89,fov*.75)*D2R), pk=SCOPE.mag===1?.75:Math.max(.6,Math.min(1.6,25/SCOPE.mag+.4));
         for(let i=0;i<SX.length;i++){ const m=SM[i]; if(m>lim)continue; const v=hv(SX[i],SY[i],SZ[i]); if(v[0]*t[0]+v[1]*t[1]+v[2]*t[2]<cR||v[1]<-.02)continue; const p=proj(v); if(!p)continue;
           const k=cl((lim-m)/4,0,1), tw=1-.35*Math.random()*(1-v[1]); g.globalAlpha=k*tw*(1-cover*.85); g.fillStyle=SC[i]; g.beginPath(); g.arc(p[0],p[1],pk*Math.max(.7,(lim+1.5-m)*.45),0,7); g.fill(); }
         g.globalAlpha=1; }

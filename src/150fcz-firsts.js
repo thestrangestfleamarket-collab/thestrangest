@@ -21,3 +21,4 @@ const FIRSTS={}; window.FIRSTS=FIRSTS;
       el.addEventListener('click',e=>{ if(e.target===el||e.target.closest('[data-x="firsts-x"]'))el.style.display='none'; }); document.body.appendChild(el); }
     el.innerHTML=`<div style="width:min(560px,92vw);max-height:90vh;overflow:auto;background:#ece5d3;border:3px solid #3b2a1e;padding:14px 16px;box-sizing:border-box">${FIRSTS.html()}</div>`.replace(/class="btn"/g,'style="font:inherit;padding:4px 7px;background:#ece5d3;color:#3b2a1e;border:2px solid #3b2a1e;cursor:pointer"'); el.style.display='flex'; };
 }
+export {FIRSTS};

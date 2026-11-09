@@ -152,7 +152,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
         let log = -1; if (window.CHARP && typeof CHARP.tools === 'function') { const ap = document.createElement('div'); CHARP.tools(ap); log = ap.querySelectorAll('ul li').length; }
         const D = window.DOLL, dl = document.getElementById('doll'); let doll = false;
         if (D && D.me && dl) { D.me(); const slots = [...dl.querySelectorAll('[data-s]')].map(x => x.dataset.s).join(), btns = [...dl.querySelectorAll('[data-b]')].map(x => x.textContent).join();
-          dl.querySelector('[data-s=head]').click(); const gear = !dl.querySelector('#dlpick').hidden; D.me();
+          dl.querySelector('[data-s=head]').click(); const gear = !dl.querySelector('.dl-pick').hidden; D.me();
           D.looks('wear'); const lk = document.getElementById('looks'), noLook = lk.querySelector('.ltabs [data-t=look]').hidden && !lk.querySelector('.ltabs [data-t=wear]').hidden; lk.hidden = true;
           doll = slots === 'head,eyes,body,legs,back,hand' && /^WEAR,WORDS,SKILLS,JOURNAL,EMOTES,PASSPORT,LOG OUT$/.test(btns) && gear && dl.hidden && noLook; }
         return { ok: true, open, built, tabsHidden, pick, closed: U.menuOpen === false, log, doll }; } catch (e) { return { ok: false, err: String(e).slice(0, 200) }; } })();

@@ -134,7 +134,7 @@ jobs:
           k interiors2 'src/038z[cd]|src/146z5|src/146z[j-n]|src/151z|src/151c-ph-house|src/060-cave|src/146e-golems|src/059e-ghostdojo|src/059h-bank|src/150n-hall|src/063-tower|src/136c-tenants|interiors2\.cjs'
           k skate   'src/146i|src/111fd|src/001-rig|data/skate|skate\.cjs'
           k mmo     'src/111d-online|src/111da-motion|src/146h-brawl|src/146i|worker/door|mmo\.cjs|workflows/site'
-          k kit     'src/141-forage|src/111fd|src/146i-ride|src/003b|data/items|kit\.cjs'
+          k kit     'src/141-forage|src/111fd|src/146i-ride|src/003b|data/items|kit\.cjs|src/136c-tenants'
           k guitar  'src/111b-hands|src/106-game-play-3-guitar|src/108-game-play-3-guitar|src/146zo|src/111a-bodies|src/111c-avatar|data/pfhand|data/pfguitar|worker/door|guitar\.cjs'
           k firstday 'src/162g-firstday|src/102-looks|src/141-forage|src/101-gems|worker/door\.js|firstday\.cjs'
           k avatar  'src/111c-avatar|src/111a-bodies|src/102-looks|src/001-rig|src/111da-motion|data/pfavatar|data/pfanim|avatar\.cjs|avatarmoves\.cjs|pfclips\.cjs'
@@ -448,6 +448,10 @@ jobs:
         timeout-minutes: 10
         if: contains(steps.f.outputs.run, ' kit')
         run: node tests/kit.cjs dist/market.html
+      - name: The full kit (sent from TENANTS, lands in the bag once)
+        timeout-minutes: 10
+        if: contains(steps.f.outputs.run, ' kit')
+        run: node tests/fullkit.cjs dist/market.html
       - name: The guitar and the hands (jointed hands worn, the bodega sells it, chords land, a song plays, the strings' pitches, another player's guitar, the park's)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' guitar')

@@ -5,7 +5,7 @@ import {renderer, scene} from './004-main.js';
 import {TILE} from './006-map-pre.js';
 { const NX=64, NY=32, NZ=64, TX=8, AW=NX*TX, AH=NZ*(NY/TX), HM=.125, M=TILE/.84, H=HM*M, NE=24, V3=THREE.Vector3;
   const FS={on:false,idle:9,O:new V3(),ci:[0,0,0]}; window.FIRESIM=FS;
-  const HEAD=`precision highp float; precision highp sampler2D;
+  const HEAD=`precision highp float; precision highp sampler2D; out vec4 fragOut;
 const float NX=${NX}., NY=${NY}., NZ=${NZ}., TX=${TX}.; const vec2 AT=vec2(${AW}.,${AH}.);
 ivec2 at(ivec3 c){ return ivec2((c.y%${TX})*${NX}+c.x,(c.y/${TX})*${NZ}+c.z); }
 vec4 F(sampler2D t,ivec3 c){ c=clamp(c,ivec3(0),ivec3(${NX-1},${NY-1},${NZ-1})); return texelFetch(t,at(c),0); }
@@ -18,7 +18,7 @@ ivec3 cellI(){ ivec2 p=ivec2(gl_FragCoord.xy); return ivec3(p.x%${NX},p.x/${NX}+
   const pass=fs=>new THREE.ShaderMaterial({uniforms:U,vertexShader:VS,fragmentShader:HEAD+fs,glslVersion:THREE.GLSL3,depthTest:false,depthWrite:false});
   // the swirl (curl), to keep the small eddies the grid would smooth away
   const mCurl=pass(`uniform sampler2D uV; void main(){ ivec3 c=cellI(); vec3 L=F(uV,c-ivec3(1,0,0)).xyz, R=F(uV,c+ivec3(1,0,0)).xyz, D=F(uV,c-ivec3(0,1,0)).xyz, Up=F(uV,c+ivec3(0,1,0)).xyz, B=F(uV,c-ivec3(0,0,1)).xyz, Fw=F(uV,c+ivec3(0,0,1)).xyz;
-  vec3 w=.5*vec3((Up.z-D.z)-(Fw.y-B.y),(Fw.x-B.x)-(R.z-L.z),(R.y-L.y)-(Up.x-D.x)); gl_FragColor=vec4(w,length(w)); }`);
+  vec3 w=.5*vec3((Up.z-D.z)-(Fw.y-B.y),(Fw.x-B.x)-(R.z-L.z),(R.y-L.y)-(Up.x-D.x)); fragOut=vec4(w,length(w)); }`);
   // velocity (xyz, cells a second) and heat (w): carried by the flow; fuel burning heats it; hot air rises, smoke sinks; the swirl kept; the jets of fuel push it
   const EMIT=`for(int i=0;i<${NE};i++){ if(i>=uN)break; vec3 e=uE[i].xyz; float rr=uE[i].w, dd=length(p-e); if(dd<rr){ float k=1.-dd/rr;`;
   const mVel=pass(`uniform sampler2D uV,uD,uC; uniform float uDt; uniform vec3 uShift; uniform vec4 uE[${NE}], uEV[${NE}]; uniform int uN;
@@ -29,16 +29,16 @@ void main(){ ivec3 c=cellI(); vec3 p=vec3(c)+.5; vec4 v0=F(uV,c); vec3 q=p+uShif
   vec3 g=vec3(r-l,up-dn,f-b); float gl=length(g); if(gl>1e-5)vel+=7.*cross(g/gl,F(uC,c).xyz)*uDt;
   ${EMIT} vel=mix(vel,uEV[i].xyz,clamp(k*1.6,0.,1.)); T=max(T,.35*k); } }
   vel*=1.-.25*uDt; if(c.y==0)vel.y=max(vel.y,0.); if(c.x==0||c.x==${NX-1}||c.z==0||c.z==${NZ-1}||c.y==${NY-1})vel*=.6;
-  gl_FragColor=vec4(vel,T); }`);
+  fragOut=vec4(vel,T); }`);
   // fuel (r), soot (g) and how fast it burns here (b): carried by the new flow; fuel burns to soot; the jets lay fuel
   const mDen=pass(`uniform sampler2D uV,uD; uniform float uDt; uniform vec3 uShift; uniform vec4 uE[${NE}], uEV[${NE}]; uniform int uN;
 void main(){ ivec3 c=cellI(); vec3 p=vec3(c)+.5; vec4 v=F(uV,c); vec3 q=p+uShift-v.xyz*uDt; vec4 d=S(uD,q);
   float burn=min(d.r,7.*uDt); d.r-=burn; d.g+=burn*.22; d.g*=1.-.7*uDt; d.b=mix(d.b,burn/max(uDt,1e-4),.6);
-  ${EMIT} d.r+=uEV[i].w*k*uDt; } } d.r=min(d.r,3.); gl_FragColor=d; }`);
+  ${EMIT} d.r+=uEV[i].w*k*uDt; } } d.r=min(d.r,3.); fragOut=d; }`);
   // incompressible air: the divergence, the pressure that cancels it (Jacobi), its gradient taken off
-  const mDiv=pass(`uniform sampler2D uV; void main(){ ivec3 c=cellI(); float d=.5*((F(uV,c+ivec3(1,0,0)).x-F(uV,c-ivec3(1,0,0)).x)+(F(uV,c+ivec3(0,1,0)).y-F(uV,c-ivec3(0,1,0)).y)+(F(uV,c+ivec3(0,0,1)).z-F(uV,c-ivec3(0,0,1)).z)); gl_FragColor=vec4(d,0.,0.,1.); }`);
-  const mJac=pass(`uniform sampler2D uP,uDiv; void main(){ ivec3 c=cellI(); float s=F(uP,c+ivec3(1,0,0)).x+F(uP,c-ivec3(1,0,0)).x+F(uP,c+ivec3(0,1,0)).x+F(uP,c-ivec3(0,1,0)).x+F(uP,c+ivec3(0,0,1)).x+F(uP,c-ivec3(0,0,1)).x; gl_FragColor=vec4((s-F(uDiv,c).x)/6.,0.,0.,1.); }`);
-  const mGrad=pass(`uniform sampler2D uV,uP; void main(){ ivec3 c=cellI(); vec4 v=F(uV,c); v.xyz-=.5*vec3(F(uP,c+ivec3(1,0,0)).x-F(uP,c-ivec3(1,0,0)).x,F(uP,c+ivec3(0,1,0)).x-F(uP,c-ivec3(0,1,0)).x,F(uP,c+ivec3(0,0,1)).x-F(uP,c-ivec3(0,0,1)).x); gl_FragColor=v; }`);
+  const mDiv=pass(`uniform sampler2D uV; void main(){ ivec3 c=cellI(); float d=.5*((F(uV,c+ivec3(1,0,0)).x-F(uV,c-ivec3(1,0,0)).x)+(F(uV,c+ivec3(0,1,0)).y-F(uV,c-ivec3(0,1,0)).y)+(F(uV,c+ivec3(0,0,1)).z-F(uV,c-ivec3(0,0,1)).z)); fragOut=vec4(d,0.,0.,1.); }`);
+  const mJac=pass(`uniform sampler2D uP,uDiv; void main(){ ivec3 c=cellI(); float s=F(uP,c+ivec3(1,0,0)).x+F(uP,c-ivec3(1,0,0)).x+F(uP,c+ivec3(0,1,0)).x+F(uP,c-ivec3(0,1,0)).x+F(uP,c+ivec3(0,0,1)).x+F(uP,c-ivec3(0,0,1)).x; fragOut=vec4((s-F(uDiv,c).x)/6.,0.,0.,1.); }`);
+  const mGrad=pass(`uniform sampler2D uV,uP; void main(){ ivec3 c=cellI(); vec4 v=F(uV,c); v.xyz-=.5*vec3(F(uP,c+ivec3(1,0,0)).x-F(uP,c-ivec3(1,0,0)).x,F(uP,c+ivec3(0,1,0)).x-F(uP,c-ivec3(0,1,0)).x,F(uP,c+ivec3(0,0,1)).x-F(uP,c-ivec3(0,0,1)).x); fragOut=v; }`);
   const quad=new THREE.Mesh(new THREE.PlaneGeometry(1,1)), sc=new THREE.Scene(), cam=new THREE.Camera(); quad.frustumCulled=false; sc.add(quad);
   let RT=null; const rt=()=>new THREE.WebGLRenderTarget(AW,AH,{type:THREE.HalfFloatType,minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,depthBuffer:false,stencilBuffer:false});
   const make=()=>{ '@later'; RT={V:[rt(),rt()],D:[rt(),rt()],P:[rt(),rt()],C:rt(),Div:rt()}; const r0=renderer.getRenderTarget(); for(const k in RT)for(const t of [].concat(RT[k])){ renderer.setRenderTarget(t); renderer.clear(true,false,false); } renderer.setRenderTarget(r0); };
@@ -54,7 +54,7 @@ vec3 ramp(float h){ vec3 c=mix(vec3(.42,.035,.01),vec3(1.,.26,.03),smoothstep(.0
 void main(){ vec3 c=(vW-uO)/uH; if(any(lessThan(c,vec3(0.)))||any(greaterThan(c,vec3(NX,NY,NZ))))discard; float T=S(uV,c).w; vec4 d=S(uD,c); float fire=T+d.b*.05, sm=d.g;
   float a=1.-exp(-(fire*.55+sm*.35)*${(Math.sqrt(NX*NX+NY*NY+NZ*NZ)/NS).toFixed(3)}); if(a<.004)discard;
   vec3 e=ramp(clamp(fire*.55,0.,1.))*(.6+1.6*min(fire,1.6)), s=vec3(.06,.055,.05); vec3 col=mix(s,e,clamp(fire/(fire+sm*.8+1e-3),0.,1.));
-  gl_FragColor=vec4(col*a,a); }`});
+  fragOut=vec4(col*a,a); }`});
   const sg=new THREE.BufferGeometry(); sg.setAttribute('position',new THREE.BufferAttribute(new Float32Array(NS*4*3),3)); sg.attributes.position.setUsage(THREE.DynamicDrawUsage);
   { const I=[]; for(let i=0;i<NS;i++){ const a=i*4; I.push(a,a+1,a+2,a,a+2,a+3); } sg.setIndex(I); }
   const vol=new THREE.Mesh(sg,rMat); vol.frustumCulled=false; vol.raycast=()=>{}; vol.renderOrder=6; vol.visible=false; vol.name='fire volume'; vol.userData.anyRoom=1; scene.add(LEVELS.own(vol,'*'));

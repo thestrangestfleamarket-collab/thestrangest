@@ -68,7 +68,6 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     await pg.waitForTimeout(3000);
     for (let i = 0; i < 40; i++) { if (await pg.evaluate(() => !!(window.SHAFTS && SHAFTS.occ === 1)).catch(() => false)) break; await pg.waitForTimeout(500); }   // the sun's first shadow pass (slow under software GL)
     await pg.waitForFunction(() => window.RPGNPC && RPGNPC.list && RPGNPC.list.length >= 6 && window.BODIES && BODIES.by.hero && BODIES.by.poacher, { timeout: 30000 }).catch(() => {});   // the deferred street walkers
-    await pg.waitForFunction(() => window.WINDOWS && WINDOWS.firstDone && !(WINDOWS.taking && WINDOWS.taking.size), { timeout: 120000 }).catch(() => {});   // the bodega's window pictures (begun a few seconds after the start, a pane at a time) build its inside meanwhile
     await pg.waitForFunction(() => window.CLOCK && CLOCK.sunH === 13 && CLOCK.h === 13, { timeout: 60000 }).catch(() => {});   // the test's ?hour=13 set by a frame of the clock
     const r = await pg.evaluate(async () => {
       const o = {}, B = SHARED.BOD, X = B.XS, Z = B.ZS;

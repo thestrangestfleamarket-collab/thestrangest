@@ -4,6 +4,7 @@ import {EQUIP, FLOW, FORAGE, ITEMS, LOOKS, VIT, W3} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {GARB} from './072b-garb.js';
+import {AVATAR} from './111c-avatar.js';
 Object.assign(EQUIP,{fit:[1.3,1.55,1.1,-.2,.04],by:{},float:false,light:false,sight:false,breathe:false,night:false}); window.EQUIP=EQUIP; Object.defineProperty(EQUIP,'worn',{get:()=>EQUIP.by.body||null});
 { const say=SAY, prop=(id,k)=>window.ITEMS&&ITEMS.prop?ITEMS.prop(id,k):undefined, name=id=>(FORAGE.NM&&FORAGE.NM[id])||id, SLOTS=['body','legs','head','eyes','back'];
   FORAGE.add({names:{armor:'ARMOUR',cloudcoat:'CLOUD COAT'},prices:{armor:40,cloudcoat:60}});
@@ -11,7 +12,12 @@ Object.assign(EQUIP,{fit:[1.3,1.55,1.1,-.2,.04],by:{},float:false,light:false,si
   const ABIL={ guard:{on:()=>VIT.def=.5, off:()=>VIT.def=0}, float:{on:()=>EQUIP.float=true, off:()=>EQUIP.float=false}, light:{on:()=>EQUIP.light=true, off:()=>EQUIP.light=false}, sight:{on:()=>EQUIP.sight=true, off:()=>EQUIP.sight=false}, breathe:{on:()=>EQUIP.breathe=true, off:()=>EQUIP.breathe=false}, night:{on:()=>EQUIP.night=true, off:()=>EQUIP.night=false} };
   const save=()=>{ try{ OWNED.set('equip',JSON.stringify(EQUIP.by)); }catch(e){} };
   EQUIP.ability=id=>prop(id,'grants');
-  EQUIP.off=(slot='body')=>{ const id=EQUIP.by[slot]; if(!id)return; const a=ABIL[EQUIP.ability(id)]; if(a)a.off(); delete EQUIP.by[slot]; dye(); };
+  // a worn item with a look ('slot:LABEL', a piece of the wardrobe: the cowboy hat) puts that piece on your figure while worn, and gives back what was there
+  const PREV=(()=>{ try{ return JSON.parse(OWNED.get('equip-prev')||'{}')||{}; }catch(e){ return {}; } })();
+  const lookOf=id=>{ const v=prop(id,'look'); if(!v||v==='none'||!AVATAR.pieces)return null; const i=String(v).indexOf(':'), s=v.slice(0,i), p=AVATAR.pieces.find(q=>q.slot===s&&q.label===v.slice(i+1)); return p?[s,p.n]:null; };
+  const lookOn=id=>{ const l=lookOf(id); if(!l)return; const w=AVATAR.worn()[l[0]]; if(w&&w[0]===l[1])return; PREV[l[0]]=w?w.slice():null; OWNED.set('equip-prev',JSON.stringify(PREV)); AVATAR.wear(l[0],l[1]); };
+  const lookOff=id=>{ const l=lookOf(id); if(!l)return; const w=AVATAR.worn()[l[0]], p=PREV[l[0]]; if(w&&w[0]===l[1])AVATAR.wear(l[0],p?p[0]:null,p?p[1]:''); delete PREV[l[0]]; OWNED.set('equip-prev',JSON.stringify(PREV)); };
+  EQUIP.off=(slot='body')=>{ const id=EQUIP.by[slot]; if(!id)return; const a=ABIL[EQUIP.ability(id)]; if(a)a.off(); delete EQUIP.by[slot]; lookOff(id); dye(); };
   // a worn item with a colour dyes what it covers: body your shirt, legs your trousers (the same for another player's figure, from their look)
   EQUIP.colours=by=>{ const c=s=>{ const id=by[s], v=id&&prop(id,'color'); return v&&v!=='none'?v:null; }; return {shirt:c('body'),pants:c('legs')}; };
   // what you wear, for your look code: the item in each slot, in slot order; and back
@@ -21,7 +27,7 @@ Object.assign(EQUIP,{fit:[1.3,1.55,1.1,-.2,.04],by:{},float:false,light:false,si
   EQUIP.wear=(id,quiet)=>{ '@later'; const slot=prop(id,'slot'); if(!SLOTS.includes(slot))return;
     if(EQUIP.by[slot]===id){ EQUIP.off(slot); save(); if(!quiet)say('YOU TAKE OFF THE '+name(id)+'.','#e8e2cc'); if(FORAGE.draw)FORAGE.draw(); return; }
     if(!FORAGE.has(id)){ if(!quiet)say('YOU HAVE NO '+name(id)+'.','#c8a090'); return; }
-    EQUIP.off(slot); EQUIP.by[slot]=id; const a=ABIL[EQUIP.ability(id)]; if(a)a.on(); dye(); save(); if(!quiet)say('YOU WEAR THE '+name(id)+'.','#e8e2cc'); if(FORAGE.draw)FORAGE.draw(); };
+    EQUIP.off(slot); EQUIP.by[slot]=id; const a=ABIL[EQUIP.ability(id)]; if(a)a.on(); lookOn(id); dye(); save(); if(!quiet)say('YOU WEAR THE '+name(id)+'.','#e8e2cc'); if(FORAGE.draw)FORAGE.draw(); };
   FORAGE.ROWB.push(id=>SLOTS.includes(prop(id,'slot'))?[[EQUIP.by[prop(id,'slot')]===id?'TAKE OFF':'WEAR','equip']]:[]);
   FORAGE.ACT.equip=id=>EQUIP.wear(id);
   try{ const W=JSON.parse(OWNED.get('equip')||'{}')||{}; for(const s in W)if(W[s]&&FORAGE.has(W[s]))EQUIP.wear(W[s],true); }catch(e){}   // what you wore stays on between visits

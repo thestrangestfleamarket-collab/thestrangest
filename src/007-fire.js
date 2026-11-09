@@ -3,7 +3,7 @@ import {THREE} from './003-shx.js';
 import {LEVELS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {TILE} from './006-map-pre.js';
-const FLAME=(()=>{ const N=640, K={candle:0,torch:1,bed:2,ball:3,ember:4,smoke:5}, SRC=[], PT=[];
+const FLAME=(()=>{ const N=640, K={candle:0,torch:1,bed:2,ball:3,ember:4,smoke:5,steam:6,frost:7,glint:8}, SRC=[], PT=[];
   const VS=`attribute vec4 iP; attribute vec4 iS; varying vec2 vUv; varying float vK, vSd, vA;
 #include <clipping_planes_pars_vertex>
 void main(){ vK=iP.w; vSd=iS.z; vA=iS.w; vUv=position.xy; vec4 mvPosition=viewMatrix*vec4(iP.xyz,1.); vec2 r=vec2(1.,0.), u=vec2(0.,1.), q=position.xy-.5;
@@ -39,7 +39,8 @@ void main(){
   else{ vec2 q=(p-.5)*2.; float r=length(q);
     if(vK<3.5){ float n=fbm(vec3(q*2.4+vec2(0.,-t*2.6),t*.8+s)), heat=1.05-r*1.15+(n-.47)*1.1; if(heat<th*.25)discard; col=ramp(heat*1.15); }
     else if(vK<4.5){ if(r>1.)discard; col=ramp(.3+.65*vA)*(1.2-r*.4); }
-    else{ float n=fbm(vec3(q*1.7,t*.35+s)), a=(1.-r)*(.45+n)*vA; if(a<th*.9+.05)discard; col=vK>5.5?vec3(.78,.8,.82)*(.85+.3*n):vec3(.075,.07,.066)*(.7+.8*n); } }
+    else if(vK>7.5){ if(r>1.)discard; col=mix(vec3(.5,.78,1.),vec3(.95,1.,1.),vA)*(1.15-r*.35); }
+    else{ float n=fbm(vec3(q*1.7,t*.35+s)), a=(1.-r)*(.45+n)*vA; if(a<th*.9+.05)discard; col=vK>6.5?vec3(.68,.86,1.)*(.9+.3*n):vK>5.5?vec3(.78,.8,.82)*(.85+.3*n):vec3(.075,.07,.066)*(.7+.8*n); } }
   gl_FragColor=vec4(col,1.);
   #include <colorspace_fragment>
 }`;
@@ -54,7 +55,7 @@ void main(){
     if(s.ride)s.off=[s.x-s.ride.position.x,s.y-s.ride.position.y,s.z-s.ride.position.z];
     s.a.position.set(s.x,s.y,s.z); (o.parent||scene).add(s.a); SRC.push(s); return s; };
   const shown=o=>{ for(;o;o=o.parent)if(!o.visible)return false; return true; };
-  const part=(k,x,y,z,vx,vy,vz,life,sz,sd=Math.random()*9,g=0)=>{ if(PT.length>=N-64)return; PT.push({k,x,y,z,vx,vy,vz,t:0,life,sz,sd,g}); };
+  const part=(k,x,y,z,vx,vy,vz,life,sz,sd=Math.random()*9,g=0)=>{ if(PT.length>=N-64)return null; const q={k,x,y,z,vx,vy,vz,t:0,life,sz,sd,g}; PT.push(q); return q; };
   const ember=(x,y,z,v=1)=>part(4,x,y,z,(Math.random()-.5)*.3*TILE*v,(.5+Math.random()*.7)*TILE*v,(Math.random()-.5)*.3*TILE*v,.7+Math.random()*1.1,(.025+Math.random()*.02)*TILE,Math.random()*9);
   const puff=(x,y,z,k=1,kk=5)=>part(kk,x,y,z,(Math.random()-.5)*.04*TILE,(.22+Math.random()*.12)*TILE*Math.sqrt(k),(Math.random()-.5)*.04*TILE,(2.2+Math.random()*1.6)*Math.sqrt(k),.14*TILE*k,Math.random()*9);
   const props=(list,X,Y,Z,lights=[])=>{ '@later'; const out=[], used=new Set();
@@ -72,10 +73,10 @@ void main(){
       if(s.smoke){ s.sa+=dt*s.smoke; while(s.sa>=1){ s.sa-=1; puff(s.x+(Math.random()-.5)*s.w*.2,s.y+(s.k<0?0:s.h*.8),s.z+(Math.random()-.5)*s.w*.2,s.sk,s.steam); } }
       if(s.k>=0&&n<N){ P.set([s.x,s.y,s.z,s.k],n*4); S.set([s.w,s.h,s.sd,1],n*4); n++; } }
     for(const q of PT){ q.t+=dt; const u=q.t/q.life; if(u>=1)continue;
-      if(q.k===4){ q.vx+=(Math.random()-.5)*.8*TILE*dt; q.vz+=(Math.random()-.5)*.8*TILE*dt; q.vy+=(q.g?-q.g:-.2*TILE)*dt; const dr=Math.max(0,1-1.2*dt); q.vx*=dr; q.vz*=dr; }
+      if(q.k===4||q.k===8){ q.vx+=(Math.random()-.5)*.8*TILE*dt; q.vz+=(Math.random()-.5)*.8*TILE*dt; q.vy+=(q.g?-q.g:-.2*TILE)*dt; const dr=Math.max(0,1-1.2*dt); q.vx*=dr; q.vz*=dr; }
       else{ q.vx+=Math.sin(q.t*1.3+q.sd)*.05*TILE*dt; q.vz+=Math.cos(q.t*1.1+q.sd*1.7)*.05*TILE*dt; }
       q.x+=q.vx*dt; q.y+=q.vy*dt; q.z+=q.vz*dt; if(n>=N)continue;
-      const sz=q.k===4?q.sz*(1-u*.7):q.sz*(1+2.2*u), a=q.k===4?1-u:Math.min(1,u*5)*(1-u)*.9;
+      const em=q.k===4||q.k===8, sz=em?q.sz*(1-u*.7):q.sz*(1+2.2*u), a=em?1-u:Math.min(1,u*5)*(1-u)*.9;
       P.set([q.x,q.y,q.z,q.k],n*4); S.set([sz,sz,q.sd,a],n*4); n++; }
     for(let i=PT.length-1;i>=0;i--)if(PT[i].t>=PT[i].life)PT.splice(i,1);
     g.instanceCount=n; aP.needsUpdate=n>0; aS.needsUpdate=n>0; me.visible=n>0; FLAME.n=n; };

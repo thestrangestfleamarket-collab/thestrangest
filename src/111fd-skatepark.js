@@ -67,7 +67,7 @@ const SKATE={rails:[]}; window.SKATE=SKATE;
       const sign=new THREE.Mesh(new THREE.BoxGeometry(2*MH,1.5*MV,.06*MH),[MAT(),MAT(),MAT(),MAT(),new THREE.MeshBasicMaterial({map:tx}),new THREE.MeshBasicMaterial({map:tx})]), sp=at(GX+4.2,GZ-2.6);
       sign.geometry.deleteAttribute('color'); sign.material.forEach((m,i)=>{ if(i<4){ m.vertexColors=false; m.color.set(0x2a2d36); } }); sign.position.set(sp[0],wy_(1.6),sp[1]); sign.rotation.y=Math.PI+TH; G.add(sign);
       const post=new THREE.Mesh(new THREE.BoxGeometry(.1*MH,.9*MV,.1*MH),new THREE.MeshLambertMaterial({color:0x2a2d36})); post.position.set(sp[0],wy_(.45),sp[1]); G.add(post); }
-    SKATE.rails=(D.rails||[]).map(r=>{ const a=at(r[0],r[2]), b=at(r[3],r[5]); return {a:[a[0],wy_(r[1]),a[1]],b:[b[0],wy_(r[4]),b[1]],kind:r[6]}; });   // the grind lines, in the world
+    SKATE.rails.push(...(D.rails||[]).map(r=>{ const a=at(r[0],r[2]), b=at(r[3],r[5]); return {a:[a[0],wy_(r[1]),a[1]],b:[b[0],wy_(r[4]),b[1]],kind:r[6]}; }));   // the grind lines, in the world
     // the skaters, each where the kit stood them; they mill about near their spot
     BODS().then(J=>{ if(!G)return; SK={g:new THREE.Group(),list:[]}; SK.g.name='skaters'; scene.add(SK.g);
       D.people.forEach((p,i)=>{ const k=p.key==='skate-shop-owner'?'skateshop':'skater'+i, b=J.bodies['s'+p.b]; if(!b)return; BODIES.add({...BODIES.rebakedBody(J,'s'+p.b,{}),key:k,label:NAMES[p.key]||'A SKATER',root:SK.g,size:b.height/1.8,hd:p.hd+TH,ground:SKATE.ground,...(RIDERS[p.key]?{ride:KINDS[RIDERS[p.key][0]],rideSpeed:RIDERS[p.key][1]}:{})});

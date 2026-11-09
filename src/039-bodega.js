@@ -1375,8 +1375,8 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
     {id:'wstE',x0:RG.wr1+.16,y0:MAP.y1,x1:RG.wx1,y1:WEND,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
     {id:'wstEnd',x0:RG.wx0,y0:WEND,x1:RG.wx1,y1:WEND+3,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
     (G=>({id:'ghostst',bld:true,x0:G.u(G.ground.x0),y0:G.v(G.Y0-1.2),x1:G.u(G.ground.x1),y1:G.y1e,z:.1,col:(x,y)=>G.court(G.iu(x),y>G.y1e-.25?y:G.iv(y)),tex:null,rep:2}))(SHARED.BOD.GDK),
-    {id:'grassW',x0:MAP.x0,y0:B00.y0,x1:B0.x0,y1:W,z:0,col:holed((x,y)=>x>MAPSTAIR.x0-8&&x<MAPSTAIR.x1+8?slabCol(x,y):lawnCol(x,y)),tex:null,rep:2},
-    {id:'hudson',x0:BLOCK.hudson[0],y0:BLOCK.alley[1],x1:BLOCK.hudson[1],y1:CURB-.16,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},...PATCH].map(g=>g.id==='corner'||g.bld||g.id==='alley'||g.id==='prom'||g.id==='grassW'||g.col===RW?g:{...g,col:SW(g.col)});
+    {id:'grassW',x0:MAP.x0,y0:B00.y0,x1:B0.x0,y1:W,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},   // concrete behind the rows, no grass (owner, 9 Nov 2026)
+    {id:'hudson',x0:BLOCK.hudson[0],y0:BLOCK.alley[1],x1:BLOCK.hudson[1],y1:CURB-.16,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},...PATCH].map(g=>g.id==='corner'||g.bld||g.id==='alley'||g.id==='prom'||g.col===RW?g:{...g,col:SW(g.col)});
   // a ground leaves out what a later one at its height covers: two painted in one place fight for the same pixels (the way through to the Hudson over the lawn and the walk)
   { const G=SHARED.BOD.grounds; G.forEach((g,i)=>{ if(g.bld)return; const over=G.slice(i+1).filter(q=>!q.bld&&q.z===g.z&&q.x0<g.x1&&q.x1>g.x0&&q.y0<g.y1&&q.y1>g.y0); if(!over.length)return; const f=g.col; g.col=(x,y)=>over.some(q=>x>=q.x0&&x<q.x1&&y>=q.y0&&y<q.y1)?null:f(x,y); }); }
   SHARED.BOD.LAMPS=LAMPS.filter(l=>!l.off&&l.r>0);

@@ -10,7 +10,7 @@ const FACADES={night:{value:0},made:0,tris:0,near:[]};
     MS.onBeforeCompile=sh=>{ sh.uniforms.uNight=FACADES.night; sh.vertexShader='attribute float aGlow; varying float vGlow;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vGlow=aGlow;');
       sh.fragmentShader='uniform float uNight; varying float vGlow;\n'+sh.fragmentShader.replace('#include <opaque_fragment>','outgoingLight+=diffuseColor.rgb*vGlow*uNight*1.6;\n#include <opaque_fragment>'); };
     MS.customProgramCacheKey=()=>'facade1';
-    MG=new THREE.MeshPhongMaterial({color:0x9fb4c4,specular:0xffffff,shininess:90,transparent:true,opacity:.28,depthWrite:false,side:THREE.DoubleSide}); };
+    MG=new THREE.MeshPhongMaterial({color:0xb8ccd8,specular:0xffffff,shininess:110,transparent:true,opacity:.12,depthWrite:false,side:THREE.DoubleSide}); };
   SYS.add('life',()=>{ const h=CLOCK.h??12, c=x=>Math.max(0,Math.min(1,x)); FACADES.night.value=1-c((h-6.5)/1.5)*c((19.5-h)/1.5); },'038zc-facades');
   // the rich fronts' carved stone shows only near (o.rich.near tiles); farther the plain front stands alone
   let nt=0; SYS.add('places',dt=>{ if((nt-=dt||0)>0)return; nt=.25; for(const n of FACADES.near){ const v=Math.hypot(pos.x-n.x,pos.z-n.z)<n.r; if(n.g.visible!==v)n.g.visible=v; } },'038zc-facades near');
@@ -46,10 +46,11 @@ const FACADES={night:{value:0},made:0,tris:0,near:[]};
     if(RI&&RI.base)for(let i=0;i<nb;i++){ const c=b0+(i+.5)*bay; if(o.door&&Math.abs(c-o.door.u)<o.door.w+(RI.stoop||1.4))continue; holes.push({u0:c-.42,u1:c+.42,z0:5,z1:GF-5,kind:'base'}); }
     let fl=0; for(let z=GF+30;z+66<TOP-6;z+=FH,fl++)for(let i=0;i<nb;i++){ const c=b0+(i+.5)*bay; holes.push({u0:c-ww/2,u1:c+ww/2,z0:z,z1:z+64,kind:'win',sill:1,fl}); }
     // the front wall with real holes: cut into cells at every opening's edges, a cell inside an opening left out
-    const us=[...new Set([x0,x1,...holes.flatMap(h=>[h.u0,h.u1])])].sort((a,b)=>a-b), zs=[...new Set([0,H,...holes.flatMap(h=>[h.z0,h.z1])])].sort((a,b)=>a-b);
+    const us=[...new Set([x0,x1,...holes.flatMap(h=>[h.u0,h.u1])])].sort((a,b)=>a-b), zs=[...new Set([0,6,16,30,H,...holes.flatMap(h=>[h.z0,h.z1])])].filter(z=>z<=H).sort((a,b)=>a-b);
+    const grime=z=>z<6?.74:z<16?.84:z<30?.93:1;   // (wear: the foot of a wall darkened by the street's dirt and splash)
     for(let i=0;i+1<us.length;i++)for(let j=0;j+1<zs.length;j++){ const um=(us[i]+us[i+1])/2, zm=(zs[j]+zs[j+1])/2; if(holes.some(h=>um>h.u0&&um<h.u1&&zm>h.z0&&zm<h.z1))continue;
       if(RI){ tq(zm<RU?'stone':'brick',W(us[i],y1,zs[j]),W(us[i+1],y1,zs[j]),W(us[i+1],y1,zs[j+1]),W(us[i],y1,zs[j+1]),us[i]-x0,us[i+1]-x0,zs[j],zs[j+1]); continue; }
-      quad(W(us[i],y1,zs[j]),W(us[i+1],y1,zs[j]),W(us[i+1],y1,zs[j+1]),W(us[i],y1,zs[j+1]),wall.map(c=>c*(1-.03*hs(i,j,seed)))); }
+      quad(W(us[i],y1,zs[j]),W(us[i+1],y1,zs[j]),W(us[i+1],y1,zs[j+1]),W(us[i],y1,zs[j+1]),wall.map(c=>c*(1-.06*hs(i,j,seed))*grime(zm))); }
     // RICH: each window in a carved stone surround (quoins, a hood with its keystone, a sill on two brackets), its sash framed; an air conditioner in some of the lowest floor's
     const carve=(h,k,v)=>{ const {u0,u1,z0,z1}=h, mu=(u0+u1)/2, fq=T; T=NEAR; const st=f=>ST.map(c=>c*f*(.94+.1*hs(k,seed,17)));
       for(const [a,b] of [[u0,u0+.06],[u1-.06,u1]])box(a,b,v,v+.06,z0,z1,fr); box(u0,u1,v,v+.06,z1-3,z1,fr); box(u0,u1,v,v+.06,z0,z0+3,fr);
@@ -84,7 +85,12 @@ const FACADES={night:{value:0},made:0,tris:0,near:[]};
     for(const [k,h] of holes.entries()){ const {u0,u1,z0,z1}=h, d=h.kind==='shop'?.12:D, R=trim.map(c=>c*.7);
       quad(W(u0,y1,z0),W(u0,y1-d,z0),W(u0,y1-d,z1),W(u0,y1,z1),R); quad(W(u1,y1-d,z0),W(u1,y1,z0),W(u1,y1,z1),W(u1,y1-d,z1),R); quad(W(u0,y1-d,z1),W(u1,y1-d,z1),W(u1,y1,z1),W(u0,y1,z1),R.map(c=>c*.8));
       if(z0>0)quad(W(u0,y1,z0),W(u1,y1,z0),W(u1,y1-d,z0),W(u0,y1-d,z0),R.map(c=>c*1.1));
-      if(h.kind==='shop')continue;
+      if(h.kind==='shop'){ const v=y1-d, F=fr.map(c=>c*1.15), n=Math.max(1,Math.round((u1-u0)/1.6)), tz=z1>60?z1-16:null;   // a shopfront's frame: a deep surround, mullions, a transom with its own lights, a sill, the stall riser below
+        box(u0,u0+.08,v,y1+.06,z0,z1,F); box(u1-.08,u1,v,y1+.06,z0,z1,F); box(u0,u1,v,y1+.06,z1-2.4,z1,F); box(u0-.06,u1+.06,y1-.02,y1+.14,z0-2.5,z0,trim,1.08);
+        for(let i=1;i<n;i++){ const u=u0+(u1-u0)*i/n; box(u-.035,u+.035,v,y1+.04,z0,z1,F); }
+        if(tz){ box(u0,u1,v,y1+.05,tz-1.2,tz+1.2,F); for(let i=1;i<n*2;i++){ const u=u0+(u1-u0)*i/(n*2); box(u-.015,u+.015,v,y1+.03,tz,z1,F); } }
+        if(z0>3){ box(u0,u1,y1-.04,y1+.04,0,z0-2.5,trim,.62); for(let i=0;i<n;i++){ const a=u0+(u1-u0)*i/n+.12, b=u0+(u1-u0)*(i+1)/n-.12; if(b-a>.2)box(a,b,y1+.04,y1+.06,1.5,z0-4,trim,.7); } }
+        continue; }
       if(h.kind==='base'){ const v=y1-d, lit=hs(k,seed,7)<.6?1:0, r=v-.6; quad(W(u0,r,z0),W(u1,r,z0),W(u1,r,z1),W(u0,r,z1),lit?[150,104,52]:[22,22,26],lit*1.3); glass(W(u0,v+.02,z0),W(u1,v+.02,z0),W(u1,v+.02,z1),W(u0,v+.02,z1));
         for(let u=u0+.12;u<u1-.05;u+=.14)box(u-.015,u+.015,v+.06,v+.09,z0,z1,[30,30,34]); box(u0,u1,v+.06,v+.09,(z0+z1)/2-.6,(z0+z1)/2+.6,[30,30,34]); continue; }
       if(h.kind==='door'&&RI){ entry(h,d); continue; }
@@ -97,7 +103,14 @@ const FACADES={night:{value:0},made:0,tris:0,near:[]};
       glass(W(u0,v+.02,z0),W(u1,v+.02,z0),W(u1,v+.02,z1),W(u0,v+.02,z1));
       const mu=(u0+u1)/2; box(mu-.03,mu+.03,v,v+.05,z0,z1,fr); box(u0,u1,v,v+.05,(z0+z1)/2-1.5,(z0+z1)/2+1.5,fr);   // the frame's cross
       if(RI){ carve(h,k,v); continue; }
-      if(h.sill)box(u0-.12,u1+.12,y1-.02,y1+.12,z0-5,z0,trim,1.05); box(u0-.08,u1+.08,y1-.02,y1+.06,z1,z1+8,trim,.95); }
+      if(h.sill){ box(u0-.12,u1+.12,y1-.02,y1+.12,z0-5,z0,trim,1.05); for(let t=0;t<3;t++){ const a=u0+(u1-u0)*hs(k,t,31), w=.05+.08*hs(t,k,37), L=12+30*hs(k+t,9,41); quad(W(a,y1+.012,Math.max(0,z0-5-L)),W(a+w,y1+.012,Math.max(0,z0-5-L)),W(a+w,y1+.012,z0-5),W(a,y1+.012,z0-5),wall.map(c=>c*.78)); } }   // the rain's streaks off the sill
+      box(u0-.08,u1+.08,y1-.02,y1+.06,z1,z1+8,trim,.95); }
+    // a building's own wear and works: a downpipe from the roof to the pavement at one end, bracketed, with its shoe; a grilled vent or two; the meter box by the door (owner, 9 Nov 2026: "wear tear. outside decor. vents, draings")
+    { const PIPE=[78,80,82], side=hs(seed,1,51)<.5, pu=side?x0+.42:x1-.62; box(pu,pu+.16,y1+.02,y1+.18,6,TOP,PIPE,.9); box(pu-.04,pu+.2,y1+.02,y1+.24,0,7,PIPE,.8); box(pu-.06,pu+.22,y1+.02,y1+.2,TOP-8,TOP,PIPE,1);
+      for(let z=24;z<TOP-10;z+=40)box(pu-.05,pu+.21,y1-.01,y1+.2,z,z+2.5,[60,62,64]);
+      const nv=1+Math.floor(hs(seed,2,53)*2); for(let i=0;i<nv;i++){ const vu=x0+1+(x1-x0-2.4)*hs(seed,i,57), vz=GF+(hs(i,seed,59)<.5?-26:22); if(holes.some(h=>vu+.5>h.u0&&vu<h.u1&&vz+12>h.z0&&vz<h.z1))continue;
+        box(vu,vu+.5,y1-.01,y1+.07,vz,vz+12,[110,112,112],.9); for(let t=1;t<5;t++)box(vu+.04,vu+.46,y1+.07,y1+.09,vz+t*2.4,vz+t*2.4+.9,[48,50,52]); }
+      if(o.door||(o.shop&&o.shop.length)){ const du=o.door?o.door.u+o.door.w+.5:(o.shop[0].u1+.25); if(du+.5<x1-.6&&!holes.some(h=>du+.5>h.u0&&du<h.u1&&h.z0<40))box(du,du+.42,y1-.01,y1+.12,24,40,[136,140,132],.95); } }
     // string courses between the floors, a cornice and frieze at the top, a plinth, pilasters at the corners
     for(let z=GF+16;z<TOP-40;z+=FH)box(x0,x1,y1-.02,y1+.07,z,z+5,trim,.92);
     box(x0-.05,x1+.05,y1-.02,y1+.12,TOP,TOP+14,trim,.85); box(x0-.15,x1+.15,y1-.02,y1+.32,TOP+14,TOP+24,trim,1.05); box(x0,x1,y1-.02,y1+.05,0,8,trim,.7);

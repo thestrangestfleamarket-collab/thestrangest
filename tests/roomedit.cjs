@@ -28,7 +28,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ok(st, 'the page starts');
   if (st) {
     const R = await room(), R0 = R;
-    const own = await pg.evaluate(() => ROOMED._api().units().filter(u => !u.added).length); ok(await pg.evaluate(() => ROOMED._api().units().every(u => !u.added && ['CRT TV', 'WRITING DESK', 'TELESCOPE', 'EARTH GLOBE', 'GLOBE TABLE', 'LAB DESK', 'LAB STOOL', 'FISH TANK', 'TABLE RADIO', 'RECLINER', 'ROUND RUG'].includes(u.kind))), 'the apartment starts empty but for its own pieces (the TV, typewriter, telescope, globes, microscope, fish tank: owner, 7 Nov 2026)');
+    const own = await pg.evaluate(() => ROOMED._api().units().filter(u => !u.added).length); ok(await pg.evaluate(() => ROOMED._api().units().every(u => !u.added && ['CRT TV', 'WRITING DESK', 'TELESCOPE', 'EARTH GLOBE', 'GLOBE TABLE', 'LAB DESK', 'LAB STOOL', 'FISH TANK', 'TABLE RADIO', 'RECLINER', 'ROUND RUG', 'BOOKSHELF', 'FLOOR PLANT', 'OLIVE TREE', 'FERN STAND', 'HANGING PLANT', 'FLOWERING PLANT', 'HERB POT', 'BASIL POT'].includes(u.kind))), 'the apartment starts empty but for its own pieces (the TV, typewriter, telescope, globes, microscope, fish tank: owner, 7 Nov 2026)');
     ok((await db()).cash >= 1000, 'you start with $1,000 (' + (await db()).cash + ')');
     await pg.evaluate(() => { window.INV.cash = 1e6; });   // enough for everything the check buys (a player starts with $1,000 since 7 Nov 2026)
     ok(await pg.evaluate(() => !document.getElementById('roomedbtn').hidden), 'the DECORATE button shows in your apartment');
@@ -50,12 +50,12 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const tb1 = await T(bed), moved = Math.hypot(tb1.u - tb.u, tb1.v - tb.v);
     ok((await db()).sel === bed && moved > .2 && Math.abs(tb1.u / .25 - Math.round(tb1.u / .25)) < 1e-6, 'a click picks it up and a drag moves it on the grid (' + moved.toFixed(2) + ' m)');
     ok(await pg.evaluate(id => { const un = ROOMED._api().units().find(u => u.id === id); return un.h.length > 0 && un.h.every(h => h.r && SHARED.solids.includes(h.r)); }, bed), 'its solid moved with it');
-    // a desk: dragged onto the bed it goes red and back
-    const fr = await buy('DESK', Math.min(R.Lx - .6, tb1.u + 2), 0, tb1.v), tf0 = await T(fr);
+    // a bookcase: dragged onto the bed it goes red and back
+    const fr = await buy('BOOKCASE', Math.max(.6, tb1.u - 2), 0, tb1.v), tf0 = await T(fr);
     const pf = await at(tf0.u, .8, tf0.v), pb = await at(tb1.u, 0, tb1.v);
     await pg.mouse.move(pf.x, pf.y); await pg.mouse.down(); await pg.mouse.move(pb.x, pb.y, { steps: 8 }); await pg.waitForTimeout(200);
     const red = (await db()).fp.includes('no'); await pg.mouse.up(); await pg.waitForTimeout(400); const tf1 = await T(fr);
-    ok(red && Math.hypot(tf1.u - tf0.u, tf1.v - tf0.v) < .01 && /IN THE WAY/.test((await db()).said), 'a desk dragged onto the bed shows red and goes back (' + (await db()).said + ')');
+    ok(red && Math.hypot(tf1.u - tf0.u, tf1.v - tf0.v) < .01 && /IN THE WAY/.test((await db()).said), 'a bookcase dragged onto the bed shows red and goes back (' + (await db()).said + ')');
     // Q turns a quarter, the wheel makes it bigger
     await pg.evaluate(id => ROOMED.select(ROOMED._api().units().find(u => u.id === id)), bed);
     const tq0 = await T(bed); await pg.keyboard.press('q'); await pg.waitForTimeout(200); const pq = await at(tq0.u, .5, tq0.v); await pg.mouse.move(pq.x, pq.y); await pg.keyboard.down('Shift'); await pg.mouse.wheel(0, -120); await pg.keyboard.up('Shift'); await pg.waitForTimeout(300);

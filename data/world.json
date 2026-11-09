@@ -650,7 +650,8 @@
    "face": "s",
    "row": 2,
    "name": "ANTIQUES & PAWN",
-   "pf": "antiques"
+   "pf": "antiques",
+   "merchant": "junkman"
   },
   {
    "id": "aquarium",

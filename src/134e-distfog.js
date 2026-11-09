@@ -8,7 +8,7 @@ import {BATCH} from './008-batch.js';
 import {RIVER} from './066-river.js';
 import {TPANE} from './087dz-tpane.js';
 const DFOG={};
-{ const D0={on:true,cut:false,start:15,end:180,blur:0,haze:0,air:.3,mist:.4,most:.6,mistH:3,sun:0,g:.6,rays:1,tint:.25,steps:0,rim:0}; let C; try{ C=Object.assign({},D0); }catch(e){ C=Object.assign({},D0); }   // far things darker and blurrier, never hazed or cut (owner, 7 Nov 2026: "as something like the helicopter gets further away its less clear and gets darker and blurrier")
+{ const D0={on:true,cut:false,start:40,end:180,blur:0,haze:0,air:.3,mist:.4,most:.6,mistH:3,sun:0,g:.6,rays:1,tint:.25,steps:0,rim:0}; let C; try{ C=Object.assign({},D0); }catch(e){ C=Object.assign({},D0); }   // far things darker and blurrier, never hazed or cut (owner, 7 Nov 2026: "as something like the helicopter gets further away its less clear and gets darker and blurrier")
   const comp=SHARED.composer;
   for(const rt of [comp.renderTarget1,comp.renderTarget2])if(!rt.depthTexture){ rt.depthTexture=new THREE.DepthTexture(rt.width,rt.height); rt.depthTexture.type=THREE.UnsignedIntType; rt.dispose(); }
   const pass=new ShaderPass({uniforms:{tDiffuse:{value:null},uAM:{value:1},tDepth:{value:null},uPInv:{value:new THREE.Matrix4()},uCamW:{value:new THREE.Matrix4()},uP:{value:new THREE.Vector3()},uC:{value:new THREE.Color()},
@@ -31,7 +31,7 @@ const DFOG={};
         vec3 to=uC; if(uD>0.){ m=0.; if(d<.99999){ c.rgb*=1.-uH*smoothstep(uS,uE,dd);
             vec4 v=uPInv*vec4(vUv*2.-1.,d*2.-1.,1.); v/=v.w; vec3 w=(uCamW*v).xyz, cp=(uCamW*vec4(0.,0.,0.,1.)).xyz, seg=w-cp, ins=uC; float L=length(seg), a=0., rf=0.; vec3 ray=seg/max(.001,L);
             if(uA.x+uA.y>0.){ float lo=max(0.,min(cp.y,w.y)-uG)*uA.z, dh=abs(seg.y)*uA.z, avg=(dh<.001?1.-dh*.5+dh*dh/6.:(1.-exp(-dh))/dh)*exp(-lo);
-              a=min(uAM,1.-exp(-L*smoothstep(uS*.5,uS,L)*(uA.x+uA.y*avg))); if(uSt>0.)a=min(1.,floor(a*uSt+by(gl_FragCoord.xy))/uSt);
+              a=min(uAM,1.-exp(-max(0.,L-uS)*(uA.x+uA.y*avg))); if(uSt>0.)a=min(1.,floor(a*uSt+by(gl_FragCoord.xy))/uSt);
               float sb=(1.-smoothstep(0.,.05,abs(ray.y)))*smoothstep(.55,.97,a); float mu=dot(ray,uSun.xyz), g=uSun.w, lt=1.; if(mu>-.2&&uSC.r+uSC.g+uSC.b>0.){ vec3 n=normalize(cross(dFdx(w),dFdy(w))); if(dot(n,ray)>0.)n=-n; float tn=uSun.y/max(.05,length(uSun.xz)), hs=dot(n,uSun.xyz)<0.?max(0.,w.y-uP.y)/max(.05,tn):0.; lt=0.;   // a face turned from the sun shades the air in front of it as far as its shadow reaches
                 for(int i=0;i<8;i++){ float t=(float(i)+.5)/8., m=uOcc>.5?sunAt(cp+seg*t):-1.; lt+=min(m>=0.?m:1.,step(hs,(1.-t)*L)); } lt/=8.; }   // the air in a shadow (a building's, a tree's) is not lit by the sun
               ins=mix(uMC,uC,sb)+uSC*lt*(1.-g*g)/pow(1.+g*g-2.*g*mu,1.5); c.rgb=mix(c.rgb,ins,a); }
@@ -51,7 +51,7 @@ const DFOG={};
     { const c=cam.position, d=HV.set(0,0,-1).applyQuaternion(cam.quaternion); d.y=0; d.normalize(); HV.copy(c).addScaledVector(d,400*TILE).setY(0).project(cam); const hz=(HV.y+1)/2; u.uY.value.set(hz+.08,hz+.5); }   // the skyline: whole haze at the horizon, clearing up the screen
     if(FAR3.land)u.uK.value.set(...FAR3.land);
     // the air: AIR and MIST are the share taken at the fog's END (over level ground for the mist), MIST HEIGHT where the mist has thinned to a third; the sun's lobe fades out as it sets; the mist's colour is the horizon's greyed by TINT
-    { const E=u.uE.value, den=f=>-Math.log(1-Math.min(.95,Math.max(0,f)))/E; if(iso||dn)u.uA.value.set(0,0,1); else { const e=CLOCK.elev(), ls=1+.8*Math.max(0,Math.min(1,(e+4)/6))*(1-Math.max(0,Math.min(1,(e-4)/14))); u.uA.value.set(den(Math.min(.9,C.air*ls)),den(Math.min(.9,C.mist*ls)),1/(Math.max(.5,C.mistH)*TILE)); }   // (thicker as the sun sets: owner, 8 Nov 2026) u.uAM.value=C.most??1;
+    { const E=u.uE.value, den=f=>-Math.log(1-Math.min(.95,Math.max(0,f)))/Math.max(TILE,E-u.uS.value); if(iso||dn)u.uA.value.set(0,0,1); else { const e=CLOCK.elev(), ls=1+.8*Math.max(0,Math.min(1,(e+4)/6))*(1-Math.max(0,Math.min(1,(e-4)/14))); u.uA.value.set(den(Math.min(.9,C.air*ls)),den(Math.min(.9,C.mist*ls)),1/(Math.max(.5,C.mistH)*TILE)); }   // (thicker as the sun sets: owner, 8 Nov 2026) u.uAM.value=C.most??1;
       const hc=u.uC.value, l=hc.r*.3+hc.g*.59+hc.b*.11; u.uMC.value.setRGB(l*.92,l*.92,l*.92).lerp(hc,1-C.tint); const sv=CLOCK.sunV, k=Math.max(0,Math.min(1,(CLOCK.elev()+6)/12)); u.uSun.value.set(sv.x,sv.y,sv.z,C.g??.6); { const sh=CLOCK.sun&&CLOCK.sun.shadow, f=CLOCK.sunF&&CLOCK.sunF.shadow, occ=!!(sh&&sh.map&&renderer.shadowMap.enabled&&renderer.shadowMap.type===THREE.BasicShadowMap&&!iso&&!dn); u.uOcc.value=occ?1:0;
         if(occ){ u.uShN.value=sh.map.depthTexture||sh.map.texture; u.uMN.value.copy(sh.matrix); const hf=!!(f&&f.map); u.uHasF.value=hf?1:0; if(hf){ u.uShF.value=f.map.depthTexture||f.map.texture; u.uMF.value.copy(f.matrix); } } } const lo=1+1.5*(1-Math.max(0,Math.min(1,(CLOCK.elev()-2)/16))); u.uSC.value.copy(CLOCK.sun.color).multiplyScalar(C.sun*k*.08*lo); SHARED.hazeRays=C.on&&!iso&&!dn?(C.rays||0)*k:0;
       u.uSt.value=C.steps; u.uRm.value.set(iso||dn?0:C.rim*TILE,u.uS.value,u.uS.value*2); u.uNF.value.set(cam.near,cam.far); u.uG.value=0; }

@@ -164,7 +164,7 @@ const fishInit=()=>{ if(FISHING.at)return; const T=TILE, RB={get lv(){ return RI
   FISHING.odds=(x,z,bait=S.hook,h=CLOCK.h)=>{ '@later'; const w=FISHING.at(x,z); if(!w)return null; const bk=bait?IP(bait,'bait'):null, pd=period(h), per={}; let sum=0;
     // the water's kinds by tier (RARITY): 70, 25 and 5 in a hundred shared among its common, rare and super-rare; the super-rare only once the Fisherman ranks you high enough
     const TN={c:0,r:0,s:0}, TK={common:'c',rare:'r',super:'s'}, tof=id=>TK[IP(id,'tier')]||'c', here=SPECIES.filter(id=>IP(id,'water')===w.kind&&w.depth>=(IP(id,'depth')||0)&&(tof(id)!=='s'||RARITY.open('fish'))); for(const id of here)TN[tof(id)]++;
-    for(const id of here){ const b=!bk?0:IP(id,'bait')===bk?1.6:.5, bt=IP(id,'bites'), tm=bt==='any'?1:bt===pd?1.5:.3, t=tof(id), v=RARITY.ODDS[t]*10/TN[t]*b*tm; if(v>0){ per[id]=v; sum+=v; } }
+    for(const id of here){ const b=!bk?0:IP(id,'bait')===bk?1.6:.5, bt=IP(id,'bites'), tm=bt==='any'?1:bt===pd?1.5:.3, t=tof(id), v=RARITY.ODDS[t]*10/TN[t]*b*tm*(t!=='c'?SHARED.luck||1:1); if(v>0){ per[id]=v; sum+=v; } }
     if(w.kind==='river'&&bk)for(const [id,,c] of JUNK){ per[id]=c; sum+=c; }
     for(const f of FISHING.EXTRA){ const r=f({x,z,w,bait:bk,h}); if(r)for(const id in r){ const v=sum*r[id]; per[id]=(per[id]||0)+v; sum+=v; } }
     const now=performance.now()/1000, r=rests.filter(q=>Math.hypot(q[0]-x,q[1]-z)<3*T).reduce((m,q)=>Math.min(m,(now-q[2])/40),1), lam=K*sum*(1+FORAGE.sk('fish')/100)*Math.max(0,r);

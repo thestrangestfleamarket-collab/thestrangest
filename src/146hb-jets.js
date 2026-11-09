@@ -80,7 +80,7 @@ import {FLAME} from './007-fire.js';
   const bodies=()=>{ const L=[{id:'me',x:pos.x,y:SHARED.py,z:pos.z,root:W3.group}];
     for(const o of ONLINE.others.values()){ if(o.why!=='near you'||o.dead||!o.fig||!o.fig.g||!o.p)continue; const p=o.p; L.push({id:o.id,x:p.x,y:p.y??o.fig.g.position.y,z:p.z,o,root:o.fig.g}); }
     for(const N of NPCS.all?NPCS.all():[]){ if(!N.g||!N.g.visible||N.far||!N.st||N.lv&&N.lv!==SHARED.LVL)continue; L.push({id:'npc:'+(N.key||'')+(N.uid||''),x:N.st.x,y:N.g.position.y,z:N.st.z,N,root:N.g}); } return L; };
-  const touches=(S,b)=>{ const P=S.P; for(let i=1;i<P.length;i++)for(let k=0;k<4;k++){ const a=P[i-1], c=P[i], u=(k+1)/4, x=a.x+(c.x-a.x)*u, y=a.y+(c.y-a.y)*u, z=a.z+(c.z-a.z)*u; if(y>b.y-.1*M&&y<b.y+1.9*M&&Math.hypot(x-b.x,z-b.z)<.45*M)return true; } return false; };
+  const touches=(S,b)=>Math.min(along(S,b.x,b.y+.4*M,b.z),along(S,b.x,b.y+M,b.z),along(S,b.x,b.y+1.6*M,b.z))<.5*M;
 
   /* ---------- on fire: flames that ride a body. Frozen: a shell of ice over the body's own shape, held in the pose it was caught in, a timer over it till it thaws ---------- */
   const SRC=[], flameSrc=()=>{ let s=SRC.find(s=>s.free); if(!s){ s=FLAME.add({kind:'bed',name:'burning',x:0,y:-1e4,z:0,w:.5*M,h:1.2*M,embers:3,smoke:1.4}); SRC.push(s); } s.free=false; s.on=true; return s; };

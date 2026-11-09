@@ -188,7 +188,7 @@ window.TESTS=TESTS;
         if(!s.on){ s.on=q.t; RIDE.mount(id); return; } if(q.t-s.on<2)return; if(!RIDE.on)return ['fail','E (get on) did nothing'];
         if(!s.off){ s.off=q.t; s.x=pos.x; SHARED.target=new pos.constructor(pos.x+3*T,0,pos.z); return; } if(q.t-s.off<3)return; RIDE.off(); return RIDE.on?['fail','could not get off']:['pass','got on, rode, got off']; },
       climb:(q,dt)=>{ const s=q.s, IT=window.PARK&&PARK.climbable||[]; const it=s.it||(s.it=K.nearest(IT.map(o=>({obj:{getWorldPosition:v=>v.set(o.x,0,o.z)},o})))); if(!it)return ['fail','no tree to climb near'];
-        const o=it.o, d=K.d2(o.x,o.z); if(!s.at){ if(d>o.tr+.8*T){ if(!s.w){ s.w=1; K.walk(o.x+(pos.x-o.x)/(d||1)*(o.tr+.5*T),o.z+(pos.z-o.z)/(d||1)*(o.tr+.5*T)); } K.walking(dt); if(q.t>60)return ['fail','could not reach the tree']; return; } s.at=q.t; TREES.want=o; return; }
+        const o=it.o, r=Math.max(o.tr,o.rf||0), d=K.d2(o.x,o.z); if(!s.at){ if(d>r+.8*T){ if(!s.w){ s.w=1; K.walk(o.x+(pos.x-o.x)/(d||1)*(r+.5*T),o.z+(pos.z-o.z)/(d||1)*(r+.5*T)); } K.walking(dt); if(q.t>60)return ['fail','could not reach the tree']; return; } s.at=q.t; TREES.want=o; return; }
         if(q.t-s.at<2)return; if(!(st.climb||st.hang))return ['fail','SPACE at the trunk did not start a climb'];
         keys.add('w'); if(q.t-s.at<8)return; keys.delete('w'); const h=TREES.h; return h>0?['pass','climbed '+h.toFixed(1)+' up']:['fail','on the trunk but did not go up']; },
       talk:(q,dt,[n])=>{ const s=q.s; s.done=s.done||[]; if(s.done.length>=n)return ['pass','talked to '+s.done.join(', ')];

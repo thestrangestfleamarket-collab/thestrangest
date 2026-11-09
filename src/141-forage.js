@@ -1,6 +1,6 @@
 // THE FORAGE: FORAGE lets the player gather mushrooms and things, keeps their pack, and sells them.
 import {SHARED, THREE} from './003-shx.js';
-import {ARCHI, BAG, BUGS, CITY, CIVIC, CLOCK, ED, EQUIP, FIRSTDAY, FORAGE, INSPECT, INV, ITEMS, LINES, LOOKS, MAIL, MOTION, NPCS, ONLINE, pos, SFX, st, TALK, TEXT, TRICKS, UI, VIT, W3, WE, WEEDS, WX} from './003b-systems.js';
+import {ARCH, ARCHI, BAG, BUGS, CHARS, CITY, CIVIC, CLOCK, ED, EQUIP, FIRSTDAY, FORAGE, INSPECT, INV, ITEMS, LINES, LOOKS, MAIL, MOTION, NPCS, ONLINE, pos, SFX, st, TALK, TEXT, TRICKS, UI, VIT, W3, WE, WEEDS, WX} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
@@ -142,6 +142,12 @@ import {WORTH} from './140c-worth.js';
   // the owners' kit, each start: every power mushroom to 99, every instrument in the bag and its skill at 100
   FORAGE.ownerKit=()=>{ for(const id of ['airshroom','glowcap','shroom_invis','shroom_str','shroom_swift','shroom_fly']){ const n=99-have(id); if(n>0)give(id,n); } for(const k of ['guitar','piano','drums','harp']){ S.sk[k]=1000; if(!have(k))give(k,1); } saveSoon(); FORAGE.draw(); };
   SYS.onStart(()=>{ if(BUGS.owner)BUGS.owner().then(o=>{ if(o)FORAGE.ownerKit(); }).catch(()=>{}); },'141-forage owners');
+  // the full kit, sent to a player from TENANTS (OWNED 'gift'): one of everything a live shop sells (20 of what stacks, 99 of each power mushroom), every instrument; rentals stay rented
+  FORAGE.fullKit=()=>{ const P=['airshroom','glowcap','shroom_invis','shroom_str','shroom_swift','shroom_fly'], ids=new Set([...P,'guitar','piano','drums','harp']);
+    for(const c in CHARS.store){ const t=!ARCH.has(c)&&CHARS.store[c]&&CHARS.store[c].trade; for(const x of (t&&Array.isArray(t.sells)&&t.sells)||[])ids.add(x); } for(const [x] of FORAGE.SELLS)ids.add(x);
+    let g=0; for(const id of ids){ if(ARCHI(id)||!ITEMS.def(id)||ITEMS.prop(id,'rental'))continue; const n=(P.includes(id)?99:ITEMS.prop(id,'stackable')||ITEMS.prop(id,'edible')?20:1)-have(id); if(n>0){ give(id,n); g++; } }
+    saveSoon(); FORAGE.draw(); return g; };
+  SYS.onStart(()=>{ if(OWNED.get('gift')!=='kit')return; const g=FORAGE.fullKit(); OWNED.del('gift'); say('THE OWNERS SENT YOU A FULL KIT: '+g+' KINDS OF THINGS ARE IN YOUR BAG.','#7fdc8a'); },'141-forage gift');
   SYS.every(()=>{ const d=day(); if(d!==S.pd){ const old=S.pd; S.pd=d; for(const k in S.picked)if(!k.startsWith(d+':'))delete S.picked[k]; if(old!==-1&&WEEDS.chunks){ CH.clear(); for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); FORAGE.sync(); } save(); } },1000);
   { const TRL=[], shod0=()=>LOOKS.L&&!LOOKS.L.bare; let acc=0, lx=pos.x, lz=pos.z;
     const pressed=(x,z,now)=>{ const R=.8*T; for(const p of TRL)if(now-p[2]<3.5&&Math.hypot(x-p[0],z-p[1])<R)return 1;

@@ -61,11 +61,11 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
   rec('outfits: the whole cast, by theme; one goes on all together',of.outfits>=190&&of.themes>=30&&of.slots>=5&&of.ok&&of.tris>3000&&of.menu===of.themes,JSON.stringify(of));
   const c1=await pg.evaluate(()=>AVATAR.code()); rec('the look round-trips as a code',await pg.evaluate(c=>AVATAR.decode(c)&&JSON.stringify(AVATAR.decode(c))===JSON.stringify(AVATAR.L()),c1),c1);
   const rm=await pg.evaluate(c=>{ const v=BODIES.by.avatar.variant(c); return v?v.geo().attributes.position.count/3:0; },c1); rec('another player wearing it gets the same body',rm===await tris(),rm);
-  // THE LANYARD (owner, 8 Nov 2026): you start wearing your passport round your neck; it is in the look's code (others see it) and taking it off leaves it in the pack
-  const ly=await pg.evaluate(async()=>{ const on=PASSPORT.worn, c=AVATAR.code(), t1=BODIES.by.avatar.GEO.attributes.position.count/3; PASSPORT.wear(false); await new Promise(r=>setTimeout(r,1500));
-    const t0=BODIES.by.avatar.GEO.attributes.position.count/3, off=PASSPORT.worn, has=FORAGE.has('passport'), drop=BAG.drop?BAG.drop('passport'):false; PASSPORT.wear(true); await new Promise(r=>setTimeout(r,1500));
-    return {on,off,lan:AVATAR.decode(c).lan,t1,t0,has,drop,back:PASSPORT.worn}; });
-  rec('the passport on its lanyard: worn from the start, in the code, off to the pack and on again; it cannot be dropped',ly.on&&ly.lan===1&&!ly.off&&ly.t1>ly.t0&&ly.has&&ly.drop===false&&ly.back,JSON.stringify(ly));
+  // NO LANYARD (owner, 9 Nov 2026: "remove lanyard from game totally - doesnt exist"): no LANYARD line in YOU, none in the wardrobe, none worn; the passport stays in the pack and cannot be dropped
+  const ly=await pg.evaluate(()=>{ const kinds=[...document.querySelectorAll('[id^="lavt-"] option')].map(o=>o.textContent), n=AVATAR.pieces.find(p=>p.k==='LANYARD');
+    if(n)AVATAR.wear(n.slot,n.n); const worn=Object.values(AVATAR.L().w).some(w=>w&&w[0]===(n&&n.n));
+    return {row:!!document.querySelector('#lavly'),kind:kinds.some(t=>/LANYARD/.test(t)),worn,lan:'lan' in AVATAR.L(),has:FORAGE.has('passport'),drop:BAG.drop?BAG.drop('passport'):false}; });
+  rec('no lanyard anywhere: no LANYARD line, none in the wardrobe, none can be worn; the passport is in the pack and cannot be dropped',!ly.row&&!ly.kind&&!ly.worn&&!ly.lan&&ly.has&&ly.drop===false,JSON.stringify(ly));
   await pg.evaluate(()=>AVATAR.set({f:'f'})); rec('the woman: her wardrobe loads, no beards offered',await U(()=>AVATAR.ready()&&AVATAR.L().f==='f'&&![...document.querySelectorAll('#lavt-face option')].some(o=>/BEARD|STUBBLE|GOATEE|MOUSTACHE/.test(o.textContent))));
   const fc=await pg.evaluate(()=>{ const g=BODIES.by.avatar.GEO; return g.attributes.position.count/3; }); rec('she is dressed too',fc>2000,'tris '+fc);
   await pg.evaluate(()=>AVATAR.set({b:2,h:108})); const tall=await pg.evaluate(()=>BODIES.by.avatar.S); await pg.evaluate(()=>AVATAR.set({h:92})); const short=await pg.evaluate(()=>BODIES.by.avatar.S);

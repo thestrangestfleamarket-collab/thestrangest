@@ -1,11 +1,11 @@
 // THE WINDOWS' DRESSING: double-click a window of your apartment for its menu (open or shut it; curtains: none, sheer, linen, velvet, café; blinds: none, venetian, roller, roman, bamboo, shutters, lowered and tilted); the sun's rays through the glass, with dust in them, cut by what hangs there; saved with your apartment.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, ED, pos, SFX} from './003b-systems.js';
+import {CLOCK, pos, SFX} from './003b-systems.js';
 import {MODS, SYS} from './006-map-pre.js';
 import {DRAPE} from './072a-cloth.js';
 import {ROOMK} from './150a-bedroom.js';
 const WINDR={wins:[],cur:null}; window.WINDR=WINDR;
-const RE=()=>window.ROOMED||{};   // the room editor (150d, later in the page): its saving and who is visiting
+const WRE=()=>window.ROOMED||{};   // the room editor (150d, later in the page): its saving and who is visiting
 { const CUR={none:{n:'NONE'},sheer:{n:'SHEER',c:'#f4f1ea',op:.55,t:.6},linen:{n:'LINEN',c:'#d9ccb4',op:.93,t:.22},velvet:{n:'VELVET',c:'#6e1f2c',op:1,t:.03},cafe:{n:'CAFÉ',c:'#e8e0cc',op:.9,t:.25,half:1}};
   const BLI={none:{n:'NONE'},venetian:{n:'VENETIAN',c:'#ece6da',slat:1},roller:{n:'ROLLER',c:'#e2dccd',t:.14},roman:{n:'ROMAN',c:'#c9b79a',t:.12},bamboo:{n:'BAMBOO',c:'#b8955e',t:.38},shutters:{n:'SHUTTERS',c:'#f2efe6',slat:1}};
   const D0=()=>({c:'none',cd:0,cc:null,b:'none',bl:1,bt:.25,bc:null});
@@ -102,8 +102,8 @@ const RE=()=>window.ROOMED||{};   // the room editor (150d, later in the page): 
   P.style.cssText='position:fixed;left:50%;top:12%;transform:translateX(-50%);width:min(420px,94vw);z-index:21;padding:12px 14px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#3b2a1e;background:#ece5d3;border:3px solid #3b2a1e;zoom:var(--uiz,1)';
   const css=document.createElement('style'); css.textContent='#winp .row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:8px 0} #winp .row>span:first-child{width:84px} #winp input[type=range]{flex:1;min-width:120px} #winp .btn{font:inherit;padding:4px 7px;background:#ece5d3;color:#3b2a1e;border:2px solid #3b2a1e;cursor:pointer} #winp .btn.on{background:#3b2a1e;color:#ece5d3} #winp .mclose{float:right} #winp .dim{opacity:.6}';
   document.head.appendChild(css); document.body.appendChild(P);
-  const guest=()=>!!(RE().HOME&&RE().HOME.guest);
-  let saveT=0; const save=()=>{ clearTimeout(saveT); saveT=setTimeout(()=>{ if(RE().snapshot&&RE().HOME&&!guest())RE().HOME.save(RE().snapshot()); },1200); };
+  const guest=()=>!!(WRE().HOME&&WRE().HOME.guest);
+  let saveT=0; const save=()=>{ clearTimeout(saveT); saveT=setTimeout(()=>{ if(WRE().snapshot&&WRE().HOME&&!guest())WRE().HOME.save(WRE().snapshot()); },1200); };
   const draw=()=>{ '@later'; const W=WINDR.cur; if(!W){ P.hidden=true; return; } const d=W.d, ro=guest(), b=(k,v,on,lab)=>`<button class="btn ${on?'on':''}" data-k="${k}" data-v="${v}" ${ro&&k!=='open'?'disabled':''}>${lab}</button>`;
     P.innerHTML=`<div><b>WINDOW</b>${ro?' <span class="dim">(LOOK ONLY)</span>':''} <button class="btn mclose" data-k="close">DONE</button></div>
       <div class="row"><span>THE SASH</span>${b('open',1,W.open,'OPEN')}${b('open',0,!W.open,'SHUT')}</div>
@@ -149,5 +149,5 @@ const RE=()=>window.ROOMED||{};   // the room editor (150d, later in the page): 
       if(W.cloth&&W.cloth.length&&h){ TP.set(pos.x,SHARED.py+.9*((ROOMK.api&&ROOMK.api.R.M)||1),pos.z); W.g.worldToLocal(TP); const near=Math.hypot(TP.x,TP.z-.1)<1.4;
         for(const c of W.cloth){ if(W.br<.01&&!near&&c.still>30)continue; clothStep(c,h,W.br||0,t,near?TP:null); } } } },'150ab-windress');
   window.WINDRDBG=()=>({n:WINDR.wins.length,open:!P.hidden,d:WINDR.wins.map(W=>({...W.d})),lit:WINDR.wins.filter(W=>W.ru&&W.ru.uI.value>0).length,cloth:WINDR.wins.reduce((a,W)=>a+(W.cloth?W.cloth.length:0),0),
-    pick:i=>WINDR.open(WINDR.wins[i]),saved:()=>{ const L=RE().snapshot&&RE().snapshot(); return L&&L.win; },set:(i,o)=>{ const W=WINDR.wins[i]; Object.assign(W.d,o); dress(W); },click:(k,v)=>{ const b=P.querySelector(`button[data-k="${k}"]${v!=null?`[data-v="${v}"]`:''}`); if(b)b.click(); return !!b; }});
+    pick:i=>WINDR.open(WINDR.wins[i]),saved:()=>{ const L=WRE().snapshot&&WRE().snapshot(); return L&&L.win; },set:(i,o)=>{ const W=WINDR.wins[i]; Object.assign(W.d,o); dress(W); },click:(k,v)=>{ const b=P.querySelector(`button[data-k="${k}"]${v!=null?`[data-v="${v}"]`:''}`); if(b)b.click(); return !!b; }});
 }

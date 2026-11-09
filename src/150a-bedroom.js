@@ -86,13 +86,13 @@ const ROOMK={parts:[],wires:{},built:[],api:null,keep:[],always:new Set()};   //
       const shelfNow=(u0,v0,u1,v1,b,t)=>APTS.shelf&&APTS.shelf(A.x0+u0/MPU,A.y0+v0/MPU,A.x0+u1/MPU,A.y0+v1/MPU,fy+b*M,fy+(t-.002)*M);
       const solid=(u0,v0,u1,v1,t)=>CUR?CUR.sol.push([u0,v0,u1,v1,t]):solidNow(u0,v0,u1,v1,t);   // inside a unit: kept with it, placed wherever it stands
       const shelf=(u0,v0,u1,v1,b,t)=>CUR?CUR.shf.push([u0,v0,u1,v1,b,t]):shelfNow(u0,v0,u1,v1,b,t);
-      const FRAME=[24,24,26], CREAM=[222,208,186], TRIM=[66,36,20], WOODO=[184,104,50], WOODD=[96,54,30];
+      const FRAME=[16,16,18], CREAM=[222,208,186], TRIM=[66,36,20], WOODO=[184,104,50], WOODD=[96,54,30];
 
       /* ---------- the shell: one open room; cream walls, the dark crown and skirting, the glow strips, the planks on a cream slab ---------- */
       R.floorMat=mat([255,255,255],{map:FLOORS.warm.gen(Lx,Ly),roughness:.55}); FLOORS.warm.t=R.floorMat.map; R.floorMat.bumpMap=R.floorMat.map; R.floorMat.bumpScale=1.2; part(new THREE.PlaneGeometry(Lx,Ly).rotateX(-Math.PI/2),R.floorMat,Lx/2,0,Ly/2,0,apt,false);
       part(new THREE.BoxGeometry(Lx+2*TH,.3,Ly+2*TH),mat([176,182,182],{roughness:.9}),Lx/2,-.152,Ly/2,0,apt,false);   // the slab the room stands on, its edge seen against the dark
       const rect=(w,h,holes=[])=>{ const sh=new THREE.Shape([new THREE.Vector2(0,0),new THREE.Vector2(w,0),new THREE.Vector2(w,h),new THREE.Vector2(0,h)]); for(const [a0,a1,b0,b1] of holes)sh.holes.push(new THREE.Path([new THREE.Vector2(a0,b0),new THREE.Vector2(a1,b0),new THREE.Vector2(a1,b1),new THREE.Vector2(a0,b1)])); return sh; };
-      const WW=2*WI.WHW*MPU, fw=WI.FWU.map(u=>u*MPU), du=WI.DU*MPU, wz=WI.WZ.map(z=>px(z-.15)), FD=[du-.48,du+.48,0,2.3], BD=[du-.5,du+.5,0,2.2], SWS=WI.SIDE.map(k=>[Ly*(1-k)-TH-.0054,wz[0],wz[1],WW,FRAME]);   // the side walls' windows where the house has them outside: centre, sill, head, width, frame
+      const WW=2*WI.WHW*MPU, fw=WI.FWU.map(u=>u*MPU), du=WI.DU*MPU, wz=WI.WZ.map(z=>px(z-.15)), FD=[du-.64,du+.64,0,3.06], BD=[du-.665,du+.665,0,2.93], SWS=WI.SIDE.map(k=>[Ly*(1-k)-TH-.0054,wz[0],wz[1],WW,FRAME]);   // the side walls' windows where the house has them outside: centre, sill, head, width, frame
       const win=c=>[c-WW/2,c+WW/2,wz[0],wz[1]];
       // aged plaster: cream kept, but soft stains, faint streaks and fine grain so the walls aren't flat (owner: grittier, keep cozy)
       const wallTex=(()=>{ const t=tex(512,512,(g,W,H)=>{ g.fillStyle='#ffffff'; g.fillRect(0,0,W,H);
@@ -120,30 +120,38 @@ const ROOMK={parts:[],wires:{},built:[],api:null,keep:[],always:new Set()};   //
       // clear glass: you see out of it, onto the fire escape and the sky beyond (only a faint sheen of its own)
       const glass=k=>APTS.glassMat(clip(k));
       // the picture's window: a thick orange frame of four panes and its sill
-      const windowAt=(k,uc,v,ry,out,z0,z1,w,panes=[2,2],fc=FRAME)=>{ const g=new THREE.Group(); g.position.set(uc,0,v); g.rotation.y=ry; apt.add(g); const wm=mat(fc,{roughness:.55,...clip(k)});
+      const windowAt=(k,uc,v,ry,out,z0,z1,w,panes=[3,3],fc=FRAME)=>{ const g=new THREE.Group(); g.position.set(uc,0,v); g.rotation.y=ry; apt.add(g); const wm=mat(fc,{roughness:.55,...clip(k)});
         const sash=new THREE.Group(); g.add(sash);   // the glass and its bars: slides up into the wall when the window is opened
         part(new THREE.PlaneGeometry(w-.04,z1-z0-.04),glass(k),0,(z0+z1)/2,-.16,0,sash,false);
-        for(const s of [-1,1])part(rbox(.09,z1-z0+.06,.16,.012),wm,s*(w/2-.025),(z0+z1)/2,-.06,0,g); part(rbox(w+.04,.09,.16,.012),wm,0,z1-.005,-.06,0,g);
+        for(const s of [-1,1])part(rbox(.05,z1-z0+.04,.16,.006),wm,s*(w/2-.005),(z0+z1)/2,-.06,0,g); part(rbox(w+.04,.05,.16,.006),wm,0,z1+.015,-.06,0,g);   // black steel: slim sections
         part(rbox(w+.16,.05,.2,.012),wm,0,z0-.01,-.04,0,g);
-        for(let i=1;i<panes[0];i++)part(rbox(.04,z1-z0,.05,.006),wm,-w/2+w*i/panes[0],(z0+z1)/2,-.13,0,sash);
-        for(let j=1;j<panes[1];j++)part(rbox(w,.04,.05,.006),wm,0,z0+(z1-z0)*j/panes[1],-.13,0,sash);
+        for(let i=1;i<panes[0];i++)part(rbox(.022,z1-z0,.04,.004),wm,-w/2+w*i/panes[0],(z0+z1)/2,-.13,0,sash);
+        for(let j=1;j<panes[1];j++)part(rbox(w,.022,.04,.004),wm,0,z0+(z1-z0)*j/panes[1],-.13,0,sash);
         // double-click it: it opens (the sash up half way) and a calm breeze comes in; again, it shuts
         const W_={g,sash,open:false,o:0,br:0,H:(z1-z0)*.5,k,w,z0,z1}; R.wins.push(W_);
         const hb=new THREE.Mesh(new THREE.BoxGeometry(w,z1-z0,.3),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(0,(z0+z1)/2,-.05); hb.userData.soft=hb.userData.keep=hb.userData.hit=1; g.add(hb);
         const th={name:'OPEN THE WINDOW',obj:hb,reach:1.6*M,near:2.6*M,tall:(z1-z0)*M,act:()=>{ W_.open=!W_.open; th.name=W_.open?'CLOSE THE WINDOW':'OPEN THE WINDOW'; if(SFX)SFX.play('latch',{vol:.5,vary:.2}); }};
         UI.thing(th); R.winTh.push(th); W_.th=th;
         return g; };
-      const doorAt=(k,uc,v,ry,out,o)=>{ const g=new THREE.Group(); g.position.set(uc,0,v); g.rotation.y=ry; apt.add(g); const wm=mat(WOODD,{roughness:.5,...clip(k)}), w=o[1]-o[0], h=o[3];
-        for(const s of [-1,1])part(rbox(.08,h+.08,.03,.006),wm,s*(w/2+.04),h/2+.04,.015,0,g); part(rbox(w+.24,.08,.03,.006),wm,0,h+.04,.015,0,g);
+      // a door: a moulded casing on plinth blocks, a six-panel leaf (raised panels in bevelled frames) or a glazed one in black steel, three brass hinges, a lever on a rose, a threshold
+      const doorAt=(k,uc,v,ry,out,o)=>{ const g=new THREE.Group(); g.position.set(uc,0,v); g.rotation.y=ry; apt.add(g); const wm=mat(WOODD,{roughness:.5,...clip(k)}), wl=mat([112,66,38],{...clip(k)}), wk=mat([78,44,24],{...clip(k)}), br=mat([196,156,84],{...clip(k)}), w=o[1]-o[0], h=o[3];
+        for(const s of [-1,1]){ part(rbox(.11,h+.11,.035,.006),wm,s*(w/2+.055),(h+.11)/2,.017,0,g); part(rbox(.03,h+.11,.05,.006),wk,s*(w/2+.115),(h+.11)/2,.025,0,g); part(rbox(.15,.2,.05,.006),wk,s*(w/2+.06),.1,.025,0,g); }   // the casing, its back band, the plinth blocks
+        part(rbox(w+.3,.11,.035,.006),wm,0,h+.055,.017,0,g); part(rbox(w+.38,.04,.06,.008),wk,0,h+.13,.03,0,g); part(rbox(w+.04,.012,.14,.004),wk,0,.006,-.06,0,g);   // the head, its cap, the threshold
         const hinge=new THREE.Group(); hinge.position.set(-w/2,0,-.08); g.add(hinge); const leaf=new THREE.Group(); leaf.position.set(w/2,0,0); hinge.add(leaf); R.doors[k]=hinge;
-        if(out){ const fw_=.09, ww=w-.02, hh=h-.02, b0=.32;   // a glazed door: a frame of stiles and rails round six panes of clear glass you see out of
-          for(const s of [-1,1])part(rbox(fw_,hh,.05,.008),wm,s*(ww/2-fw_/2),h/2,0,0,leaf); part(rbox(ww,b0,.05,.008),wm,0,b0/2+.01,0,0,leaf); part(rbox(ww,fw_,.05,.008),wm,0,h-.01-fw_/2,0,0,leaf);
-          const gw=ww-2*fw_, g0=b0+.01, g1=h-.01-fw_, gh=g1-g0; part(rbox(.04,gh,.045,.006),wm,0,(g0+g1)/2,0,0,leaf); for(const t of [1/3,2/3])part(rbox(gw,.04,.045,.006),wm,0,g0+gh*t,0,0,leaf);
+        for(const y of [.25,h/2,h-.25])part(rbox(.03,.11,.06,.004),br,-w/2+.005,y,0,0,leaf);   // the hinges
+        if(out){ const sm=mat([20,20,22],{...clip(k)}), fw_=.06, ww=w-.02, hh=h-.02, b0=.42;   // glazed: a black steel frame of small panes over a steel kick panel, as the windows
+          for(const s of [-1,1])part(rbox(fw_,hh,.05,.006),sm,s*(ww/2-fw_/2),h/2,0,0,leaf); part(rbox(ww,b0,.05,.008),sm,0,b0/2+.01,0,0,leaf); part(rbox(ww,fw_,.05,.008),sm,0,h-.01-fw_/2,0,0,leaf);
+          const gw=ww-2*fw_, g0=b0+.01, g1=h-.01-fw_, gh=g1-g0; for(const t of [1/3,2/3])part(rbox(.022,gh,.045,.004),sm,-gw/2+gw*t,(g0+g1)/2,0,0,leaf); for(let r=1;r<5;r++)part(rbox(gw,.022,.045,.004),sm,0,g0+gh*r/5,0,0,leaf);
           part(new THREE.PlaneGeometry(gw,gh),glass(k),0,(g0+g1)/2,0,0,leaf,false); }
-        else { part(rbox(w-.02,h-.02,.05,.008),wm,0,h/2,0,0,leaf); for(let r=0;r<2;r++)for(let c=0;c<2;c++)part(rbox(w*.34,h*(r?.42:.3),.012,.006),mat([118,68,38],{roughness:.5,...clip(k)}),(c-.5)*w*.44,h*(r?.68:.25),.03,0,leaf); }
-        part(new THREE.SphereGeometry(.03,12,8),mat([200,160,90],{roughness:.3,metalness:.7,...clip(k)}),w/2-.1,1.0,.05,0,leaf); };
+        else { part(rbox(w-.02,h-.02,.05,.008),wl,0,h/2,0,0,leaf); const cw=(w-.02-.36)/2, rows=[[.12,h*.36],[h*.36+.12,h*.62],[h*.62+.12,h-.12]];
+          for(const sd of [1,-1])for(let c=0;c<2;c++)for(const [a,b] of rows){ const x=(c-.5)*(cw+.12), hh=b-a, ym=(a+b)/2, z=sd*.026;
+            part(rbox(cw,hh,.008,.002),wk,x,ym,z,0,leaf); for(const [bx,by,bw,bh] of [[0,hh/2-.02,cw,.04],[0,-hh/2+.02,cw,.04],[cw/2-.02,0,.04,hh],[-cw/2+.02,0,.04,hh]])part(rbox(bw,bh,.012,.003),wl,x+bx,ym+by,z+sd*.003,0,leaf);
+            part(rbox(cw-.12,hh-.12,.016,.004),wl,x,ym,z+sd*.006,0,leaf); } }
+        for(const sd of [1,-1]){ const z=sd*.04; part(new THREE.CylinderGeometry(.03,.03,.012,16).rotateX(Math.PI/2),br,w/2-.1,1.0*h/2.3,z,0,leaf); part(rbox(.13,.022,.022,.008),br,w/2-.155,1.0*h/2.3,z+sd*.03,0,leaf);   // the rose and the lever
+          part(rbox(.03,.06,.008,.003),br,w/2-.1,.86*h/2.3,z,0,leaf); }   // the keyhole's plate
+      };
       windowAt('Wf',fw[0],0,0,[0,-1,1,0],wz[0],wz[1],WW); windowAt('Wf',fw[1],0,0,[0,-1,1,0],wz[0],wz[1],WW);
-      for(const w of SWS){ windowAt('Ww',w[0],0,Math.PI/2,[-1,0,0,1],w[1],w[2],w[3],[2,2],w[4]).position.set(0,0,w[0]); windowAt('We',w[0],0,-Math.PI/2,[1,0,0,-1],w[1],w[2],w[3],[2,2],w[4]).position.set(Lx,0,w[0]); }
+      for(const w of SWS){ windowAt('Ww',w[0],0,Math.PI/2,[-1,0,0,1],w[1],w[2],w[3],[3,3],w[4]).position.set(0,0,w[0]); windowAt('We',w[0],0,-Math.PI/2,[1,0,0,-1],w[1],w[2],w[3],[3,3],w[4]).position.set(Lx,0,w[0]); }
       doorAt('Wf',du,0,0,[0,-1,1,0],FD); doorAt('Wb',du,Ly,Math.PI,null,BD);
 
       /* ---------- the pieces: each one a unit you can move, turn, resize or put away (the room editor, 150d) ---------- */

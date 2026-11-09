@@ -41,7 +41,7 @@ const BOARDS={designs:{}}; window.BOARDS=BOARDS;
 
   // riding one: it hovers a hand's width up, keeps its speed, carves; you stand sideways on it
   const POSE={k:'skate',push:-1,brake:false,goofy:false,z:0};
-  RIDE.kind('ride',{name:'HOVERBOARD',hint:'E DROPS IT AND YOU STEP ON. WASD RIDES, SPACE HOPS, E STEPS OFF.',onSay:'YOU DROP THE BOARD; IT HANGS IN THE AIR. YOU STEP ON.',held:.55,
+  RIDE.kind('ride',{name:'HOVERBOARD',cat:'boards',hint:'E DROPS IT AND YOU STEP ON. WASD RIDES, SPACE HOPS, E STEPS OFF.',onSay:'YOU DROP THE BOARD; IT HANGS IN THE AIR. YOU STEP ON.',held:.55,
     make:id=>BOARDS.mesh(id), lift:.32, acc:2.4, turn:2.8, drag:.35, knock:6, hop:3.2,
     pose:R=>{ POSE.brake=R.v<.2*T; return POSE; },
     place:(m,R,t)=>{ m.rotation.z=Math.max(-.35,Math.min(.35,-R.lean*.35)); m.rotation.x=R.vz?-Math.max(-.3,Math.min(.3,R.vz/T*.06)):0; const g=m.userData.glow; if(g)g.material.opacity=.35+.15*Math.sin(t*5)+Math.min(.3,R.v/T*.03); },

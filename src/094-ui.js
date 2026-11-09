@@ -192,7 +192,19 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
       if(d>(th.near||(th.reach||1)+1.2*TILE)||Math.abs(p.y-py)>2*TILE)continue; const s=d-(dx*hx+dz*hz)/(d||1)*.6*TILE; if(s<bs){ bs=s; best=th; } }
     if(!best&&typeof USE!=='undefined')for(const dy of [0,-.5,-1.2]){ ray.set(new THREE.Vector3(pos.x,SHARED.py+TILE,pos.z),new THREE.Vector3(hx,dy,hz).normalize()); ray.far=2.4*TILE; const u=USE.pick(ray); ray.far=Infinity; if(u){ best=u.th; break; } }
     return best; };
-  UI.useKey=()=>{ if(UI.menuOpen||UI.gamewin||SHARED.covered||TALK.on)return; if(RIDE.on&&WIELD.useHeld&&WIELD.useHeld())return; if(UI.useNear())return; if(WIELD.useHeld)WIELD.useHeld(); };   // E: the thing near you, else what you hold (owner, 8 Nov 2026)
+  // every choice E has (owner, 9 Nov 2026: "when you have multiple things you can press E for you need to be able to scroll through"): what you hold first, then the things in reach nearest first with their own extra acts; the wheel steps through them
+  UI.pickI=0; let pickKey='';
+  UI.choices=()=>{ if(ED.on||UI.freeCam||MAPED.on||WE.on||LAND.on)return []; const L=[], K=WIELD.on&&WIELD.kinds&&WIELD.kinds[WIELD.on];
+    if(K&&K.use)L.push({held:true,name:'USE '+String((FORAGE.name&&FORAGE.name(WIELD.on))||K.name||WIELD.on).toUpperCase()});
+    const hx=Math.sin(SHARED.heading), hz=Math.cos(SHARED.heading), Wt=st.water, py=Wt&&Wt.in&&Wt.level!=null?Wt.y*ZU:SHARED.py, S=[];
+    for(const th of THINGS){ if(th.quiet||th.name==='YOU'||!th.obj.visible||th.obj.parent&&!th.obj.parent.visible||!LEVELS.drawn(th.obj))continue; const p=thAt(th), dx=p.x-pos.x, dz=p.z-pos.z, d=Math.max(0,Math.hypot(dx,dz)-(th.r||0));
+      if(d>(th.near||(th.reach||1)+1.2*TILE)||Math.abs(p.y-py)>2*TILE)continue; S.push([d-(dx*hx+dz*hz)/(d||1)*.6*TILE,th]); }
+    S.sort((a,b)=>a[0]-b[0]); if(!S.length){ const b=UI.nearThing(); if(b)S.push([0,b]); }
+    for(const [,th] of S.slice(0,4)){ L.push({th,name:th.name}); for(const a of th.acts||[])L.push({th,sub:a,name:a.name}); }
+    const k=L.map(c=>c.name).join('|'); if(k!==pickKey){ pickKey=k; UI.pickI=0; } if(UI.pickI>=L.length)UI.pickI=0; return L; };
+  let pickT=0; UI.pickStep=d=>{ const L=UI.choices(); if(L.length<2)return false; const t=performance.now(); if(t-pickT<160)return true; pickT=t; UI.pickI=(UI.pickI+(d>0?1:L.length-1))%L.length; if(window.PROMPT)window.PROMPT.tick(); return true; };
+  UI.useKey=()=>{ if(UI.menuOpen||UI.gamewin||SHARED.covered||TALK.on)return; if(RIDE.on&&WIELD.useHeld&&WIELD.useHeld())return; const L=UI.choices(), c=L[UI.pickI];
+    if(!c){ if(WIELD.useHeld)WIELD.useHeld(); return; } if(c.held){ WIELD.useHeld(); return; } const th=c.sub?{...c.th,name:c.sub.name,act:c.sub.act}:c.th; th.started=false; goal=th; };
   UI.useNear=()=>{ const best=UI.nearThing(); if(!best)return false; best.started=false; goal=best; return true; };
   UI.go=d=>{ UI.clickGo=true; UI.clickRun=d>6; };
   const GAITR=[0,.5,1]; UI.gaitRun=()=>VIT.tired?0:GAITR[SHARED.gait||0];   // walk, jog, run (owner, 7 Nov 2026: "w -> forward shift+w -> jog ... press shift again and you go into run mode")

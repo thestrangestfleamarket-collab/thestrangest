@@ -1,6 +1,6 @@
 // THE TRAINS: TRAINS runs the loop's two trains on the timetable (from the clock, so everyone sees the same train), carries whoever rides, and keeps the stations' boards and the cars' next-stop signs.
 import {SHARED, THREE} from './003-shx.js';
-import {LEVELS, pos, st, TEXT, UI, USE} from './003b-systems.js';
+import {LEVELS, LITE, pos, st, TEXT, UI, USE} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {grab, LAMPD, LAMPI, lamps, QS, SECTIONS, SYS, TILE, ZU} from './006-map-pre.js';
 import {PEEK} from './008-batch.js';
@@ -127,13 +127,17 @@ await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL
     for(const e of [-1,1]){ const me=new THREE.Mesh(new THREE.PlaneGeometry(2.6*T,z(10)),tn.signM); me.position.set(e*(HL-.1),Y(FZ+DOORH+2),0); me.rotation.y=e>0?-Math.PI/2:Math.PI/2; inner.add(me); }
     for(const k of [-1,1]){ const Lp=new THREE.PointLight(new THREE.Color(.93,.97,1),LAMPI*.25,8*T,LAMPD); Lp.userData.i0=Lp.intensity; Lp.userData.at=new THREE.Vector3(k*HL/2,Y(FZ+CEIL-6),0); scene.add(Lp); lamps.push(Lp); lights.push(Lp); }
     scene.add(G); return {G,ext,inner,roof,strips,upper,leaves,lights,seats,c,door:0,poles:poles.map(([x,zz])=>({a:x*T,v:zz*T})),straps:straps.map(([x,zz])=>({a:x*T,v:zz*T}))}; };
+  // the cars built only the first time you are down on the platforms (owner, 9 Nov 2026: "dont load the train unless you go into subway platform"); the timetable runs from the start without them
+  TRAINS.ensure=()=>{ if(TRAINS.built)return; TRAINS.built=true;
   for(const tn of TRAINS.list){ const cv=document.createElement('canvas'); cv.width=512; cv.height=64; const tx=new THREE.CanvasTexture(cv); tx.colorSpace=THREE.SRGBColorSpace; tn.sign={cv,tx,last:''}; tn.signM=new THREE.MeshBasicMaterial({map:tx});
     for(let c=0;c<NCAR;c++)tn.cars.push(makeCar(tn,c)); }
   for(const tn of TRAINS.list)for(const car of tn.cars){ for(const g of [car.ext,car.upper['-1'],car.upper['1']])g.traverse(o=>{ if(o.isMesh&&!o.geometry.attributes.aWl)PEEK.mark(o.geometry); }); car.peek={me:car.G,b:new THREE.Box3()}; PEEK.boxes.push(car.peek); }
+    if(LITE.ready)for(const tn of TRAINS.list)for(const car of tn.cars)for(const Lp of car.lights){ Lp.castShadow=false; Lp.userData.grp=null; Lp.removeFromParent(); LITE.recs.push(Lp); } };   // (lights made after the start join the lamp pool, as the start's did: a light added to the scene recompiles every material)
   LEVELS.of.station.groups.push('trains');
 
   // each frame: where the cars are (centre, along, across in world units), from where the train is on its track
   let clk=0;
+  const at0=(tn,now)=>{ const S=state(tn,now), tr=tn.tr, sc=S.s+tn.dir*((NCAR-1)/2)*(CARL+GAP), a=tr.pt(sc-tn.dir*CARL/2), b=tr.pt(sc+tn.dir*CARL/2); return {x:(L.WX(a.x)+L.WX(b.x))/2,z:(L.WZ(a.y)+L.WZ(b.y))/2}; };   // where the first car is, built or not (the loop map)
   const place=(tn,now,dt)=>{ const S=state(tn,now), tr=tn.tr; tn.S=S; clk+=dt/TRAINS.list.length; const run=S.doors?0:Math.min(1,Math.abs(tn.v||0)/V);
     tn.cars.forEach((car,c)=>{ const sc=S.s+tn.dir*((NCAR-1)/2-c)*(CARL+GAP), a=tr.pt(sc-tn.dir*CARL/2), b=tr.pt(sc+tn.dir*CARL/2), x=(L.WX(a.x)+L.WX(b.x))/2, zz=(L.WZ(a.y)+L.WZ(b.y))/2;
       let ux=L.WX(b.x)-L.WX(a.x), uz=L.WZ(b.y)-L.WZ(a.y); const l=Math.hypot(ux,uz)||1; ux/=l; uz/=l;
@@ -160,7 +164,7 @@ await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL
     font(g,26); g.fillStyle='#ffb347'; g.fillText(a,12,h/2); font(g,18,700); const tw=g.measureText(b).width; g.fillStyle=S.doors?'#7fd36b':'#e7685a'; g.fillText(b,w-tw-12,h/2); tn.sign.tx.needsUpdate=true; };
   let bt=0;
   const ang=p=>Math.atan2(p.ux,p.uz);
-  SYS.add('carry',dt=>{ const now=TRAINS.now(); for(const tn of TRAINS.list)place(tn,now,dt||0);   // before you move and are drawn, so you ride with the car, not a frame behind it
+  SYS.add('carry',dt=>{ if(SHARED.LVL==='down')TRAINS.ensure(); const now=TRAINS.now(); for(const tn of TRAINS.list){ tn.at=at0(tn,now); place(tn,now,dt||0); }   // before you move and are drawn, so you ride with the car, not a frame behind it
     if(SHARED.LVL!=='down'){ ride.c=ride.tn=null; SHARED.floorFrame=null; return; }
     if(ride.c&&ride.c.p0){ const q=loc(ride.c.p0,pos.x,pos.z), w=wrl(ride.c.p,q.a,q.v); pos.x=w.x; pos.z=w.z; SHARED.heading+=ang(ride.c.p)-ang(ride.c.p0); }
     const se=USE.seat; if(se&&se.car){ if(se.car!==ride.c){ USE.seat=null; st.sit=null; } else { const w=wrl(se.car.p,se.a,se.v), b=wrl(se.car.p,se.ba,se.bv); se.x=pos.x=w.x; se.z=pos.z=w.z; se.back.x=b.x; se.back.z=b.z; SHARED.heading=ang(se.car.p)+se.hl; } }

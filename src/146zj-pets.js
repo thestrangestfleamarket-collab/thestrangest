@@ -5,7 +5,7 @@ import {CITY, CLOCK, FORAGE, INV, LEVELS, LOOKS, NPCS, ONLINE, PETS, pos, ROOMS,
 import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {OWNED} from './005-save.js';
-import {MAPG, MODS, SYS, TILE} from './006-map-pre.js';
+import {MAPG, MODS, SKINCULL, SYS, TILE} from './006-map-pre.js';
 import {IKIT} from './038zc-ikit.js';
 import {MSHOP} from './059i-mshops.js';
 import {makeNPC} from './076-npc-map.js';
@@ -232,7 +232,7 @@ window.PETS=PETS;
   const PV={key:'',busy:null,rt:{}};
   const pvBuild=async P=>{ const K=(await idx()).by[P.k]; if(!K)return; const D=await kind(P.k), {P:Pp,T}=shape(D,P), R=rig(D,T), CL=clips(D,T), geo=SKIN.geom(D.mesh);
     geo.attributes.position.array.set(Pp); geo.attributes.position.needsUpdate=true; paint(D,P,geo); geo.computeVertexNormals();
-    const me=new THREE.SkinnedMesh(geo,new THREE.MeshLambertMaterial({vertexColors:true})); me.add(R.bones[0]); me.bind(R.skeleton); me.frustumCulled=false;
+    const me=new THREE.SkinnedMesh(geo,new THREE.MeshLambertMaterial({vertexColors:true})); me.add(R.bones[0]); me.bind(R.skeleton); SKINCULL(me);
     const mix=new THREE.AnimationMixer(R.bones[0]), id=pickClip(CL,'idle'); if(id)mix.clipAction(CL[id]).play();
     if(!PV.sc){ PV.sc=new THREE.Scene(); PV.sc.add(new THREE.HemisphereLight(0xffffff,0x506050,2.4)); const d=new THREE.DirectionalLight(0xffffff,1.6); d.position.set(1.5,3,2); PV.sc.add(d); PV.cam=new THREE.PerspectiveCamera(28,1,.01,100); }
     if(PV.me){ PV.sc.remove(PV.me); PV.me.geometry.dispose(); PV.me.material.dispose(); }
@@ -322,7 +322,7 @@ window.PETS=PETS;
   const show=async(key,fit,o={})=>{ LOADN++; try{ return await show0(key,fit,o); } finally{ LOADN--; } };
   const show0=async(key,fit,o={})=>{ const I0=await idx(), K=I0.by[key]; if(!K)return null; const P=fresh(K), D=await kind(key), {P:Pp,T}=shape(D,P), R=rig(D,T), CL=clips(D,T), geo=SKIN.geom(D.mesh);
     geo.attributes.position.array.set(Pp); geo.attributes.position.needsUpdate=true; paint(D,P,geo); geo.computeVertexNormals();
-    const me=new THREE.SkinnedMesh(geo,new THREE.MeshLambertMaterial({vertexColors:true})); me.add(R.bones[0]); me.bind(R.skeleton); me.frustumCulled=false;
+    const me=new THREE.SkinnedMesh(geo,new THREE.MeshLambertMaterial({vertexColors:true})); me.add(R.bones[0]); me.bind(R.skeleton); SKINCULL(me);
     const lo=[1e9,1e9,1e9], hi=[-1e9,-1e9,-1e9]; for(let k=0;k<Pp.length;k++){ const c=k%3; if(Pp[k]<lo[c])lo[c]=Pp[k]; if(Pp[k]>hi[c])hi[c]=Pp[k]; }
     const ex=hi.map((v,c)=>Math.max(1e-4,v-lo[c])), m=Math.min(K.long/Math.max(...ex),fit.w*.8/ex[2],fit.h*.8/ex[1],fit.d*.85/ex[0]), sc=m*MWm;   // (metres for a model unit; it faces along its box)
     const g=new THREE.Group(), body=new THREE.Group(); body.add(me); g.add(body); me.scale.setScalar(sc); me.position.set(-(lo[0]+hi[0])/2*sc,-lo[1]*sc,-(lo[2]+hi[2])/2*sc);

@@ -43,7 +43,7 @@ import {ROOMK} from './150a-bedroom.js';
   /* ---------- the catalog: what each kind is, its department and its price ---------- */
   const DEPTS0=[['seating','SEATING'],['beds','BEDS'],['surfaces','SURFACES'],['storage','STORAGE'],['kitchen','KITCHEN'],['decor','DECOR'],['plants','PLANTS'],['lights','LIGHTS']];
   const DEPT={BENCH:'seating',CHAIR:'seating','KITCHEN CHAIR':'seating',BED:'beds',PILLOW:'beds',BLANKETS:'beds',DESK:'surfaces','CORNER DESK':'surfaces',TABLE:'surfaces',PENINSULA:'surfaces',
-    DRAWERS:'storage',HUTCH:'storage','CUBBY SHELF':'storage','RECORD CABINET':'storage',BOOKCASE:'storage','WALL SHELF':'storage','OPEN SHELVES':'storage','WALL CABINET':'storage',
+    DRAWERS:'storage',HUTCH:'storage','CUBBY SHELF':'storage','RECORD CABINET':'storage',BOOKCASE:'storage',BOOKSHELF:'storage','WALL SHELF':'storage','OPEN SHELVES':'storage','WALL CABINET':'storage',
     COUNTER:'kitchen','CORNER COUNTER':'kitchen','SIDE COUNTER':'kitchen','SHORT COUNTER':'kitchen',SINK:'kitchen',STOVE:'kitchen',HOOD:'kitchen',FRIDGE:'kitchen',MICROWAVE:'kitchen',TOASTER:'kitchen','COFFEE MACHINE':'kitchen',
     'DISH RACK':'kitchen','DISH SOAP':'kitchen','PAPER TOWELS':'kitchen',CANISTER:'kitchen',POT:'kitchen',PLATES:'kitchen',MUG:'kitchen',CUP:'kitchen',MILL:'kitchen','DUTCH OVEN':'kitchen',UTENSILS:'kitchen',OIL:'kitchen',ORANGES:'kitchen','CUTTING BOARD':'kitchen',KNIFE:'kitchen',DONUTS:'kitchen',
     PLANT:'plants','TRAILING PLANT':'plants',LAMP:'lights'};

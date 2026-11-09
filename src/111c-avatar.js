@@ -6,7 +6,6 @@ import {OWNED} from './005-save.js';
 import {SYS} from './006-map-pre.js';
 import {BODIES} from './111a-bodies.js';
 import {HANDS} from './111b-hands.js';
-import {LANYARD} from './111bb-lanyard.js';
 const AVATAR={}; window.AVATAR=AVATAR;
 { const I=__DATA__("data/pfavatar.json"), LOAD={m:__LAZY__("data/pfavatar-m.json"),f:__LAZY__("data/pfavatar-f.json")}, D={}, WAIT={}, SW={};
   // the pieces in files of about a megabyte, a kind's versions together, each fetched once something in it is worn (a figure's body and walk come first; c: a piece's file)
@@ -14,6 +13,8 @@ const AVATAR={}; window.AVATAR=AVATAR;
   const SLOTS=[['hair','HAIR'],['face','FACE'],['eyes','GLASSES'],['hat','HAT'],['top','TOP'],['coat','JACKET'],['bottom','BOTTOMS'],['feet','SHOES'],['belt','BELT'],['neck','NECK'],['hands','HANDS'],['back','BACK'],['righthand','RIGHT HAND'],['lefthand','LEFT HAND']], OLD=11;   // (the slots after OLD came later: their codes go after the barefoot mark)
   // no props held in the hands from the wardrobe (owner, 8 Nov 2026: "remove the ability to add something to your left or right hand in the character menu ... you cant just put them in your hand as props"): the slots stay in the list (the look codes keep their places) but are never offered, worn or drawn
   const NOPROP=new Set(['righthand','lefthand']);
+  // no lanyards (owner, 9 Nov 2026: "remove lanyard from game totally - doesnt exist"): the wardrobe's LANYARD pieces are never worn or offered
+  const GN=new Set(I.pieces.filter(p=>p.k==='LANYARD').map(p=>p.n)), GONE=p=>GN.has(p.n);
   const SKINS=['f3d5bd','e6b892','d9a984','c08a64','a26a45','7e4c2f','5c3622','3e2416'], HAIRC=['1d1712','3b2a1e','5a3a24','8a5a32','b98a4e','d8c28a','8c8c8c','e8e4dc'];
   const EYES=[['2a2019','BRN'],['4a2c17','BRN'],['6b5a2a','HAZ'],['3f6b3a','GRN'],['3b6ea8','BLU'],['6f7b85','GRY'],['8a5a1a','AMB'],['111111','BLK']], EYE0='2a2019';   // (the eye colours to pick, owner 7 Nov 2026, each with the passport's code)
   const BUILDN=['SLIM','MEDIUM','BROAD'], byN=new Map(I.pieces.map(p=>[p.n,p])), nOf=(slot,label)=>{ const p=I.pieces.find(q=>q.slot===slot&&q.label===label); return p?p.n:null; };
@@ -44,14 +45,12 @@ const AVATAR={}; window.AVATAR=AVATAR;
   // the face you picked: eyes-mouth-eye size-mouth size ('' as it came)
   const fxEnc=L=>{ const F=fxOf(L); return F.e||F.m||F.es!==100||F.ms!==100?[F.e,F.m,F.es,F.ms].join('-'):''; };
   const fxDec=v=>{ const m=/^(\d)-(\d)-(\d{2,3})-(\d{2,3})$/.exec(v||''); if(!m)return null; const c=(x,a,b)=>Math.max(a,Math.min(b,+x)); return {e:c(m[1],0,FE.length-1),m:c(m[2],0,FM.length-1),es:c(m[3],50,150),ms:c(m[4],50,150)}; };
-  const code=L=>[L.f,L.b,L.h,L.skin,L.hair,...SLOTS.slice(0,OLD).map(x=>enc(x,L)),L.bare?'1':'',...SLOTS.slice(OLD).map(x=>enc(x,L)),L.eye&&L.eye!==EYE0?L.eye:'',L.lan?'1':'',shEnc(L.sh),LYOK(L.ly)?L.ly:'',fxEnc(L)].join('.').replace(/\.+$/,'');   // (then barefoot, then the later slots, then the eyes)
-  // the lanyard's look (owner, 8 Nov 2026): frame_frameColour_string_stringColour: the badge's frame (0 none, 1 clear, 2 metal, 3 coloured), the string (0 cord, 1 flat strap, 2 bead chain)
-  const LYOK=s=>/^[0-3]_[0-9a-f]{6}_[0-2]_[0-9a-f]{6}$/.test(s||''), LY0='0_c0392b_0_181818', lyOf=L=>{ const a=(LYOK(L.ly)?L.ly:LY0).split('_'); return {fr:+a[0],fc:a[1],st:+a[2],sc:a[3]}; };
+  const code=L=>[L.f,L.b,L.h,L.skin,L.hair,...SLOTS.slice(0,OLD).map(x=>enc(x,L)),L.bare?'1':'',...SLOTS.slice(OLD).map(x=>enc(x,L)),L.eye&&L.eye!==EYE0?L.eye:'','',shEnc(L.sh),'',fxEnc(L)].join('.').replace(/\.+$/,'');   // (then barefoot, then the later slots, then the eyes)
   const hex=s=>/^[0-9a-f]{6}$/.test(s||'')?s:null, cols=s=>/^[0-9a-f]{6}$|^(?:[0-9a-f]{6})?(?:_(?:[0-9a-f]{6})?)+$/.test(s||'')?s:null;   // one colour (the piece's main part), or one a part in the piece's zone order, _ between (an empty part keeps its own)
   const decode=c=>{ '@later'; const a=String(c||'').split('.'), L=DEF(); if(a.length<5)return L;
     L.f=a[0]==='f'?'f':'m'; L.b=Math.min(2,Math.max(0,parseInt(a[1])||0)); L.h=Math.min(110,Math.max(90,parseInt(a[2])||100)); L.skin=hex(a[3])||L.skin; L.hair=hex(a[4])||L.hair; L.w={};
-    if(a[5+OLD]==='1')L.bare=true; { const e=hex(a[6+SLOTS.length]); if(e)L.eye=e; } if(a[7+SLOTS.length]==='1')L.lan=1; { const sh=shDec(a[8+SLOTS.length]); if(sh)L.sh=sh; } if(LYOK(a[9+SLOTS.length]))L.ly=a[9+SLOTS.length]; { const x=fxDec(a[10+SLOTS.length]); if(x)L.fx=x; }
-    SLOTS.forEach(([s],i)=>{ const v=a[at(i)]; if(!v||NOPROP.has(s))return; const [n,col]=v.split('~'), p=byN.get(parseInt(n,36)); if(p&&p.slot===s&&p.figs.includes(L.f))L.w[s]=[p.n,cols(col)||'']; });
+    if(a[5+OLD]==='1')L.bare=true; { const e=hex(a[6+SLOTS.length]); if(e)L.eye=e; } { const sh=shDec(a[8+SLOTS.length]); if(sh)L.sh=sh; } { const x=fxDec(a[10+SLOTS.length]); if(x)L.fx=x; }
+    SLOTS.forEach(([s],i)=>{ const v=a[at(i)]; if(!v||NOPROP.has(s))return; const [n,col]=v.split('~'), p=byN.get(parseInt(n,36)); if(p&&!GONE(p)&&p.slot===s&&p.figs.includes(L.f))L.w[s]=[p.n,cols(col)||'']; });
     return L; };
 
   /* ---------- the figure's data, fetched once someone wears it ---------- */
@@ -119,31 +118,6 @@ const AVATAR={}; window.AVATAR=AVATAR;
       q.copy(p).sub(w.E).addScaledVector(w.a,-w.len); const x=q.dot(w.u1), y=q.dot(w.u2);
       const nx=w.R[0]+(x-w.R[0])*(1+(w.kx-1)*s)+(w.H[0]-w.R[0])*s, ny=w.R[1]+(y-w.R[1])*(1+(w.ky-1)*s)+(w.H[1]-w.R[1])*s;
       p.addScaledVector(w.u1,nx-x).addScaledVector(w.u2,ny-y); X[i*3]=p.x; X[i*3+1]=p.y; X[i*3+2]=p.z; } };
-  // the passport on its lanyard (owner, 8 Nov 2026: "put it on a lanyard around neck that you wear"): a strap round the back of the neck laid on what you wear there (its outline round the body,
-  // band by band); the two strands down the chest and the badge (the passport's tall card) hang as a real string (LANYARD, 111bb)
-  const lanyard=(parts,D_,L)=>{ const O=I.skel[L.f].origin, NB=24, NA=32, Y0=O[3][1]-.3, BH=.02, R=new Float32Array(NB*NA); let sz=0, nz=0;
-    parts.forEach((P,pi)=>{ if(P.slot==='hair'||P.slot==='back'||P.cape)return; const d=D_[pi], v=P.v, Q=d.pos;
-      for(let q=0;q<Q.length/3;q++){ const b=d.w[q]>=128?d.bone[q*2]:d.bone[q*2+1]; const x=(Q[q*3]+32500)*v.sc+v.lo[0], y=(Q[q*3+1]+32500)*v.sc+v.lo[1], z=(Q[q*3+2]+32500)*v.sc+v.lo[2];
-        if(pi===0&&P.zones[d.zone[q]]==='eye'){ sz+=z; nz++; } if(b!==1&&b!==2&&b!==3&&b!==6)continue; const j=Math.floor((y-Y0)/BH); if(j<0||j>=NB)continue;
-        const a=((Math.atan2(x,z)/(2*Math.PI)+1)%1)*NA|0, r=Math.hypot(x,z); if(r>R[j*NA+a])R[j*NA+a]=r; } });
-    const S=nz&&sz<0?-1:1;   // (the way the face looks)
-    const rad=(y,t)=>{ const j=Math.max(0,Math.min(NB-1,Math.floor((y-Y0)/BH))), a=((((S>0?t:Math.PI-t)/(2*Math.PI))%1+1)%1)*NA; let m=0; for(let dj=-1;dj<=1;dj++)for(let da=-1;da<=1;da++){ const jj=j+dj; if(jj<0||jj>=NB)continue; m=Math.max(m,R[jj*NA+((Math.floor(a)+da)%NA+NA)%NA]); } return m||.1; };
-    const at=(y,t,o)=>{ const r=rad(y,t)+o; return [Math.sin(t)*r,y,S*Math.cos(t)*r]; };
-    const T=[], tri=(a,b,c,h)=>T.push([a,b,c,h]), quad=(a,b,c,d,h)=>{ tri(a,b,c,h); tri(a,c,d,h); };
-    const strap=(pts,w,h)=>{ for(let i=0;i<pts.length-1;i++){ const [p,t]=pts[i], [q,u]=pts[i+1], dx=q[0]-p[0], dy=q[1]-p[1], dz=q[2]-p[2];
-        const side=(P,tt)=>{ const nx=Math.sin(tt), nzz=S*Math.cos(tt), cx=dy*nzz, cy=dz*nx-dx*nzz, cz=-dy*nx, l=Math.hypot(cx,cy,cz)||1; return [[P[0]+cx/l*w,P[1]+cy/l*w,P[2]+cz/l*w],[P[0]-cx/l*w,P[1]-cy/l*w,P[2]-cz/l*w]]; };
-        const [a,b]=side(p,t), [c,d]=side(q,u); quad(a,b,d,c,h); } };
-    const LY=lyOf(L), yN=O[2][1]+.03, yC=yN-.8*(yN-(O[3][1]-.09)), tN=.62, ST=LY.sc, HW=[.0024,.0045,.003][LY.st];   // (the strands 20% shorter, twice as thick, owner, 8 Nov 2026)
-    const loop=[]; for(let i=0;i<=20;i++){ const t=tN+(2*Math.PI-2*tN)*i/20, k=Math.sin(Math.PI*i/20); loop.push([at(yN+.03*k,t,.014),t]); } strap(loop,HW,ST);
-    let zf=0; for(let y=yC-.16;y<=yC;y+=.02)for(let t=-.35;t<=.35;t+=.07)zf=Math.max(zf,rad(y,t)*Math.cos(t)); zf+=.012;
-    const clip=[0,yC,S*zf], str=sd=>{ const Y=[], Tt=[], R=[]; for(let i=0;i<14;i++){ const u=i/14; Y.push(yN+(yC-yN)*u); Tt.push(sd*(tN+(.1-tN)*u)); R.push(rad(Y[i],Tt[i])+.014); }   // (its path smoothed: clear of the highest of what is worn nearby, no bumps)
-      const Rm=R.map((r,i)=>Math.max(...R.slice(Math.max(0,i-2),i+3))), Rs=Rm.map((r,i)=>{ const w=Rm.slice(Math.max(0,i-2),i+3); return w.reduce((a,b)=>a+b,0)/w.length; });
-      const pts=Y.map((y,i)=>[Math.sin(Tt[i])*Rs[i],y,S*Math.cos(Tt[i])*Rs[i]]); pts.push(clip); return pts; };
-    const W=.07, H=.1, yt=yC-.012, badge=[], R4=(x0,y0,x1,y1,o,h)=>badge.push([x0,y0-yC,x1,y1-yC,o,h]);
-    R4(-.008,yC+.004,.008,yt,0,'9a9a9a'); if(LY.fr){ const fc=['','d8eef4','a9aeb4',LY.fc][LY.fr], e=.0045; R4(-W/2-e,yt+e,W/2+e,yt-H-e,-.0012,fc); R4(-.012,yt+e+.003,.012,yt+e,-.0012,fc); } R4(-W/2,yt,W/2,yt-H,0,'f6f4ec'); R4(-W/2,yt,W/2,yt-H,-.002,'1a1a1a'); R4(-W/2,yt,W/2,yt-.018,.0008,'ffd400');
-    const py=yt-.024; R4(-.018,py,.018,py-.036,.0008,'d6e2e8'); R4(-.008,py-.008,.008,py-.026,.0016,L.skin); R4(-.009,py-.004,.009,py-.009,.0018,L.hair); R4(-.015,py-.028,.015,py-.036,.0016,'8aa6b4');
-    R4(-.022,py-.042,.022,py-.049,.0008,'111111'); R4(-.016,py-.054,.016,py-.058,.0008,'e53935'); R4(-.026,py-.064,-.004,py-.067,.0008,'666666'); R4(.004,py-.064,.026,py-.067,.0008,'666666');
-    T.spec={L:str(1),R:str(-1),H:.012+H,badge,S,rad,col:parseInt(ST,16),hw:HW,st:LY.st}; return T; };
   // the head's top corners rounded (owner, 8 Nov 2026: "round off the head of the avatar with true curves", "we arent round hair just the head shape", "just add rounded corners to
   // the 4 top corners of head"): the body's own head (not what is worn on it) keeps its box below RR from its top; above, its edges to the top bend round on circles of RR; the head's
   // faces over that cut away (clipBelow) for a lid (roundOf's cap), shaded smooth (sm)
@@ -222,7 +196,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
       put(FE[F.e],cx,cy,sc,(front(.02,.12,cy-.08,cy+.08)??b[0][2])+.0008,sd<0); }
     if(F.m&&zm>=0){ const b=box(q=>d.zone[q]===zm); if(b){ const cx=(b[0][0]+b[1][0])/2, cy=(b[0][1]+b[1][1])/2, sc=(b[1][0]-b[0][0])/56*F.ms/100; put(FM[F.m],cx,cy,sc,(front(.015,.12,cy-.08,cy+.08)??b[0][2])+.0008,false); } }
     return T; };
-  function geoFor(J,L,bare,nob){ const worn=[]; for(const [s] of SLOTS){ if(NOPROP.has(s))continue; const w=L.w[s], p=w&&J.byN.get(w[0]); if(p&&!(bare&&s==='feet'))worn.push([s,p,w[1]]); }   // (barefoot: your shoes off, LOOKS.shoes)
+  function geoFor(J,L,bare,nob){ const worn=[]; for(const [s] of SLOTS){ if(NOPROP.has(s))continue; const w=L.w[s], p=w&&!GN.has(w[0])&&J.byN.get(w[0]); if(p&&!(bare&&s==='feet'))worn.push([s,p,w[1]]); }   // (barefoot: your shoes off, LOOKS.shoes)
     const cov=new Set(); for(const [,p] of worn)for(const c of p.covers)cov.add(c); const hide=culled(c=>cov.has(c));
     const pfh=!cov.has('hands'), hb=(d,q)=>{ const b=d.w[q]>=128?d.bone[q*2]:d.bone[q*2+1]; return b===5||b===8; }, isHand=(P,d,t)=>pfh&&P.slot==='body'&&hb(d,d.tri[t*3])&&hb(d,d.tri[t*3+1])&&hb(d,d.tri[t*3+2]);   // (bare hands: its own simple ones marked hh, folded away while Polyfork's jointed ones are drawn, near the camera: 111b)
     const hat=worn.find(x=>x[0]==='hat'), coat=worn.find(x=>x[0]==='coat');
@@ -231,7 +205,6 @@ const AVATAR={}; window.AVATAR=AVATAR;
       const alt=(s==='hair'&&hat||s==='top'&&coat&&coat[1].covers.includes('sleeves'))&&p.alt&&p.alt[L.b], v=alt||p.v[L.b]; if(v)parts.push({v,zones:p.zones,pal:p.pal,main:p.main,col:c,slot:s,cape:/CAPE/.test(p.k||p.label)}); }
     let nf=0; const D_=parts.map(P=>dec(P.v)), FX0=fxOf(L), HZ=nob?[]:[FX0.e?J.body.zones.indexOf('eye'):-1,FX0.m?J.body.zones.indexOf('mouth'):-1].filter(z=>z>=0);
     const kept=(d,t,pi)=>!(d.reg&&d.reg[t]<255&&hide[d.reg[t]])&&!(pi===0&&HZ.length&&HZ.includes(d.zone[d.tri[t*3]]));   // (the body's own eyes or mouth off where you picked others)
-    const LAN=L.lan?lanyard(parts,D_,L):[], LSP=LAN.spec||null; nf+=LAN.length;
     const unq=(d,v)=>{ const Q=d.pos, X=new Float32Array(Q.length); for(let i=0;i<Q.length;i++)X[i]=(Q[i]+32500)*v.sc+v.lo[i%3]; return X; }, WF=pfh&&!nob?wristFit(unq(D_[0],parts[0].v),D_[0],L):null;
     const SZ=shapeOf(L.f,L.sh);
     const XS=parts.map((P,pi)=>{ const d=D_[pi], X=unq(d,P.v); if(WF&&WF.length)fitWrist(X,d,WF); else taper(X,d,L.f); if(SZ)reshape(X,d,SZ); return X; });
@@ -270,14 +243,11 @@ const AVATAR={}; window.AVATAR=AVATAR;
           continue; }
         va.fromArray(XR,ix[0]*3); vb.fromArray(XR,ix[1]*3); vc.fromArray(XR,ix[2]*3); n.subVectors(vb,va).cross(e.subVectors(vc,va)).normalize();
         ix.forEach((q,j)=>{ const o=f*3+j, c=C[d.zone[q]]||C[0]; pos.set([XR[q*3],XR[q*3+1],XR[q*3+2]],o*3); nor.set([n.x,n.y,n.z],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([d.bone[q*2],d.bone[q*2+1]],o*2); bw[o]=d.w[q]/255; hh[o]=ish; if(P.cape){ const u=Math.max(0,(y1-X[q*3+1])/Math.max(1e-3,y1-y0)), x=X[q*3], z=X[q*3+2], l=Math.hypot(x,z)||1; fl[o]=u*u; fd.set([x/l*.2,0,back],o*3); } }); f++; } });
-    if(SZ){ const T=new THREE.Vector3(), sh=a=>T.fromArray(a).sub(SZ.O[1]).applyMatrix3(SZ.A[1]).add(SZ.O1[1]).toArray(); for(const t of LAN)for(let j=0;j<3;j++)t[j]=sh(t[j]); if(LSP){ LSP.L=LSP.L.map(sh); LSP.R=LSP.R.map(sh); LSP.shape={O:SZ.O[1],A:SZ.A[1],O1:SZ.O1[1]}; } }   // (the lanyard on the chest as shaped)
     if(RH){ const c=lin(L.skin); for(const F of RH.cap){ F.p.forEach((P,j)=>{ const o=f*3+j; pos.set(P,o*3); nor.set(F.nn[j],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([HB,HB],o*2); bw[o]=1; hh[o]=0; sm[o]=1; }); f++; } }
     for(const [A,B,C3,h] of FX){ const c=lin(h); [A,B,C3].forEach((P,j)=>{ const o=f*3+j; pos.set(P,o*3); nor.set([0,0,1],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([HB,HB],o*2); bw[o]=1; hh[o]=0; }); f++; }
-    for(const [A,B,C3,h] of LAN){ const c=lin(h); va.fromArray(A); vb.fromArray(B); vc.fromArray(C3); n.subVectors(vb,va).cross(e.subVectors(vc,va)).normalize();
-      [A,B,C3].forEach((P,j)=>{ const o=f*3+j; pos.set(P,o*3); nor.set([n.x,n.y,n.z],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([1,1],o*2); bw[o]=1; hh[o]=0; }); f++; }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('normal',new THREE.BufferAttribute(nor,3)); g.setAttribute('color',new THREE.BufferAttribute(col,3));
     g.setAttribute('bi',new THREE.BufferAttribute(bi,2)); g.setAttribute('bw',new THREE.BufferAttribute(bw,1)); g.setAttribute('fl',new THREE.BufferAttribute(fl,1)); g.setAttribute('fd',new THREE.BufferAttribute(fd,3)); g.setAttribute('hh',new THREE.BufferAttribute(hh,1)); g.setAttribute('sm',new THREE.BufferAttribute(sm,1)); g.computeBoundingSphere();
-    g.userData.hands=pfh?{skin:L.skin,b:L.b,grip:{L:false,R:false}}:null; g.userData.lan=LSP; return g; }
+    g.userData.hands=pfh?{skin:L.skin,b:L.b,grip:{L:false,R:false}}:null; return g; }
   const empty=()=>{ const g=new THREE.BufferGeometry(); for(const [k,s] of [['position',3],['normal',3],['color',3],['bi',2],['bw',1],['fl',1],['fd',3],['hh',1],['sm',1]])g.setAttribute(k,new THREE.BufferAttribute(new Float32Array(0),s)); return g; };
   // a body's skeleton for a figure and a height (taller: the same body drawn bigger on the rig)
   const fitTo=(body,L)=>{ const S=I.skel[L.f], Z=shapeOf(L.f,L.sh), {off,binv}=BODIES.skeleton(Z?Z.O1.map(o=>o.toArray()):S.origin,S.rest); Object.assign(body,{height:S.height*100/L.h,hipY:Z?Z.O1[0].y:S.hipY,off,binv,contact:true,dq:true,rnd:true,O0:Z?Z.O:null,O1:Z?Z.O1:null}); delete body._calG; delete body._bind; return BODIES.fit(body); };   // (contact: rests on what the rig rests on, 111a)
@@ -290,7 +260,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
   const CAPE=nOf('neck','HERO CAPE'), flying=()=>!!(st.fly&&st.fly.on);   // flying (G, 094): the wardrobe's hero cape goes on over what you wear at the neck
   const mine=()=>{ const o=LOOKS.over||{}, w={...L.w}; if(WIELD.on)delete w[WIELD.hand==='L'?'lefthand':'righthand']; if(CAPE!=null&&flying())w.neck=[CAPE,'']; const up=w.coat?'coat':w.top?'top':null; if(o.shirt&&up)w[up]=[w[up][0],o.shirt.replace('#','')]; if(o.pants&&w.bottom)w.bottom=[w.bottom[0],o.pants.replace('#','')]; return {...L,w,bare:!!(LOOKS.L&&LOOKS.L.bare)}; };
   const VAR=new Map(), BAD=new Set();
-  const onMesh=(me,PM,b)=>{ const h=me.geometry.userData.hands; if(h)HANDS.add(me,PM,b,h); const ly=me.geometry.userData.lan; if(ly)LANYARD.add(me,PM,ly); };
+  const onMesh=(me,PM,b)=>{ const h=me.geometry.userData.hands; if(h)HANDS.add(me,PM,b,h); };
   const body={key:'avatar',label:'AVATAR',playable:true,flap:true,geo:empty,onMesh:(me,PM)=>onMesh(me,PM,body),look:()=>code(mine()),clip:n=>clip(L.f,n),act:S=>AVATAR.act(S),
     failed:c=>BAD.has(String(c)),variant:c=>{ '@later'; const k=String(c); let b=VAR.get(k); if(b)return b; const M=decode(k), J=D[M.f];
       if(!has(M.f,M.w)){ if(BAD.has(k))return null; need(M.f,M.w).then(()=>{ if(ONLINE.refig)ONLINE.refig('b:avatar'); }).catch(e=>{ BAD.add(k); console.warn('AVATAR',e); if(ONLINE.refig)ONLINE.refig('b:avatar'); }); return null; }
@@ -299,7 +269,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
   let gen=0;
   const refresh=()=>{ const my=++gen, M0=mine(); return need(L.f,M0.w).then(J=>{ if(my!==gen)return; fitTo(body,L); const M=mine(); body.GEO=geoFor(J,M,M.bare); body.anim=J.anim||null; draw(); }).catch(e=>console.warn('AVATAR',e)); };
   AVATAR.set=o=>{ L=Object.assign(L,o); if(o.f){ for(const s in L.w)if(L.w[s]&&!byN.get(L.w[s][0]).figs.includes(L.f))delete L.w[s]; } save(); return refresh(); };
-  AVATAR.wear=(slot,n,c)=>{ if(NOPROP.has(slot)&&n!=null)return refresh(); if(n==null)delete L.w[slot]; else L.w[slot]=[n,c||(L.w[slot]&&L.w[slot][0]===n?L.w[slot][1]:'')]; save(); return refresh(); };
+  AVATAR.wear=(slot,n,c)=>{ if((NOPROP.has(slot)||GN.has(n))&&n!=null)return refresh(); if(n==null)delete L.w[slot]; else L.w[slot]=[n,c||(L.w[slot]&&L.w[slot][0]===n?L.w[slot][1]:'')]; save(); return refresh(); };
 
   /* ---------- YOU: the avatar's lines (LOOKS.add) — figure, build, height, skin and hair colour on LOOK; a piece and its colour for each slot on WEAR ---------- */
   const $=s=>document.querySelector(s);
@@ -317,7 +287,6 @@ const AVATAR={}; window.AVATAR=AVATAR;
     LOOKS.add('avs','SKIN',el('lavs',SKINS.map(h=>`<button class="sw" data-c="${h}" aria-label="skin #${h}"><i style="background:#${h}"></i></button>`).join('')+'<input type="color" id="lavsc" aria-label="any skin colour">'),{...A,order:4});
     LOOKS.add('avc','HAIR COLOUR',el('lavc',HAIRC.map(h=>`<button class="sw" data-c="${h}" aria-label="hair #${h}"><i style="background:#${h}"></i></button>`).join('')+'<input type="color" id="lavcc" aria-label="any hair colour">'),{...A,order:5});
     for(const [k,t,N,o] of [['e','EYES',FEYES,5.1],['m','MOUTH',FMOUTHS,5.2]])LOOKS.add('avx'+k,t,el(null,`<select id="lavx${k}" aria-label="${t.toLowerCase()} style">${N.map((n,i)=>`<option value="${i}">${n}</option>`).join('')}</select><input type="range" id="lavx${k}s" min="50" max="150" step="5" aria-label="${t.toLowerCase()} size"><span id="lavx${k}v" class="dim"></span>`),{...A,order:o});
-    LOOKS.add('avly','LANYARD',el('lavly','<select id="lavlf" aria-label="badge frame"><option value="0">NO FRAME</option><option value="1">CLEAR FRAME</option><option value="2">METAL FRAME</option><option value="3">COLOURED FRAME</option></select><input type="color" id="lavlfc" aria-label="frame colour"><select id="lavls" aria-label="string"><option value="0">CORD</option><option value="1">FLAT STRAP</option><option value="2">BEAD CHAIN</option></select><input type="color" id="lavlsc" aria-label="string colour">'),{...A,order:5.5});
     LOOKS.add('ave','EYE COLOUR',el('lave',EYES.map(([h,t])=>`<button class="sw" data-c="${h}" aria-label="eyes ${t} #${h}"><i style="background:#${h}"></i></button>`).join('')+'<input type="color" id="lavec" aria-label="any eye colour">'),{...A,order:5.15});
     LOOKS.add('avwear','OUTFIT',el(null,'<button id="lavgo">CHOOSE WHAT YOU WEAR</button><span id="lavw" class="dim"></span>'),{...A,order:6});
     LOOKS.add('w-outfit','OUTFIT',el(null,'<select id="lavog" aria-label="outfit theme"></select><select id="lavo" aria-label="outfit"></select><span></span>','avw'),{...A,tab:'wear',order:-1});
@@ -325,7 +294,6 @@ const AVATAR={}; window.AVATAR=AVATAR;
     $('#lavgo').onclick=()=>LOOKS.tab('wear');
     for(const k of 'em'){ const sel=$('#lavx'+k), r=$('#lavx'+k+'s'); stop(sel); stop(r); sel.onchange=()=>AVATAR.set({fx:{...fxOf(L),[k]:+sel.value}});
       r.oninput=()=>{ $('#lavx'+k+'v').textContent=' '+r.value+'%'; }; r.onchange=()=>AVATAR.set({fx:{...fxOf(L),[k+'s']:+r.value}}); }
-    { const ly=()=>{ const v=k=>$('#'+k).value; AVATAR.set({ly:[v('lavlf'),v('lavlfc').slice(1),v('lavls'),v('lavlsc').slice(1)].join('_')}); }; for(const k of ['lavlf','lavlfc','lavls','lavlsc']){ stop($('#'+k)); $('#'+k).onchange=ly; } }
     $('#lavf').onclick=e=>{ const b=e.target.closest('button'); if(b)AVATAR.set({f:b.dataset.f}); };
     $('#lavb').onclick=e=>{ const b=e.target.closest('button'); if(b)AVATAR.set({b:+b.dataset.b}); };
     const h=$('#lavh'); stop(h); h.oninput=()=>{ $('#lavhv').textContent=' '+h.value+'%'; }; h.onchange=()=>AVATAR.set({h:+h.value});
@@ -350,7 +318,6 @@ const AVATAR={}; window.AVATAR=AVATAR;
     $('#lavh').value=L.h; $('#lavhv').textContent=' '+L.h+'%'; { const F=fxOf(L); for(const k of 'em'){ $('#lavx'+k).value=String(F[k]); $('#lavx'+k+'s').value=F[k+'s']; $('#lavx'+k+'v').textContent=' '+F[k+'s']+'%'; } } $('#lavsc').value='#'+L.skin; $('#lavcc').value='#'+L.hair;
     for(const b of $('#lavs').children)if(b.dataset.c)on(b,b.dataset.c===L.skin); for(const b of $('#lavc').children)if(b.dataset.c)on(b,b.dataset.c===L.hair); { const e=L.eye||EYE0; $('#lavec').value='#'+e; for(const b of $('#lave').children)if(b.dataset.c)on(b,b.dataset.c===e); }
     $('#lavw').textContent=D[L.f]?'':' LOADING…';
-    { const y=lyOf(L); $('#lavlf').value=String(y.fr); $('#lavlfc').value='#'+y.fc; $('#lavlfc').style.visibility=y.fr===3?'':'hidden'; $('#lavls').value=String(y.st); $('#lavlsc').value='#'+y.sc; }
     for(const [s] of SLOTS){ if(NOPROP.has(s))continue; const K=kinds(s), sel=$('#lav-'+s), k=$('#lavk-'+s), kd=$('#lavt-'+s), w=L.w[s], J=D[L.f], cur=w&&byN.get(w[0]);
       sel.closest('.lr').dataset.off=K.size?'':'1';
       kd.innerHTML='<option value="">NONE</option>'+[...K].map(([t,v])=>`<option value="${esc(t)}">${esc(t)}${v.length>1?' ('+v.length+')':''}</option>`).join(''); kd.value=cur?cur.k:'';
@@ -362,11 +329,11 @@ const AVATAR={}; window.AVATAR=AVATAR;
     LOOKS.layout(); }
   // a WEAR line's kinds, each with its versions (who wears it), for your figure; the one-each piece first
   const esc=t=>String(t).replace(/[&<>"]/g,c=>'&#'+c.charCodeAt(0)+';'), KC={};
-  const kinds=s=>KC[L.f+s]||(KC[L.f+s]=(()=>{ const M=new Map(); for(const p of I.pieces.filter(p=>p.slot===s&&p.figs.includes(L.f)).sort((a,b)=>a.k.localeCompare(b.k)||(a.label===a.k?-1:b.label===b.k?1:a.v.localeCompare(b.v)))){ if(!M.has(p.k))M.set(p.k,[]); M.get(p.k).push(p); } return M; })());
+  const kinds=s=>KC[L.f+s]||(KC[L.f+s]=(()=>{ const M=new Map(); for(const p of I.pieces.filter(p=>p.slot===s&&!GONE(p)&&p.figs.includes(L.f)).sort((a,b)=>a.k.localeCompare(b.k)||(a.label===a.k?-1:b.label===b.k?1:a.v.localeCompare(b.v)))){ if(!M.has(p.k))M.set(p.k,[]); M.get(p.k).push(p); } return M; })());
   // a still figure (or just the pieces, body false) in your build and colours, wearing w: the ITEM editor's pictures (140ba)
   AVATAR.statue=(w,{body=true,f}={})=>{ const M={...L,f:f||L.f,w,bare:false}; return need(M.f,M.w).then(J=>geoFor(J,M,false,!body)); };
   AVATAR.pieces=I.pieces; AVATAR.outfits=I.outfits||[];
-  AVATAR.outfit=i=>{ const o=AVATAR.outfits[i]; if(!o)return refresh(); L.w={}; for(const [s,[n,c]] of Object.entries(o.w)){ if(NOPROP.has(s))continue; const p=byN.get(n); if(p&&p.figs.includes(L.f)&&SLOTS.some(x=>x[0]===s))L.w[s]=[n,c||'']; } return AVATAR.set(o.hair?{hair:o.hair}:{}); };
+  AVATAR.outfit=i=>{ const o=AVATAR.outfits[i]; if(!o)return refresh(); L.w={}; for(const [s,[n,c]] of Object.entries(o.w)){ if(NOPROP.has(s)||GN.has(n))continue; const p=byN.get(n); if(p&&p.figs.includes(L.f)&&SLOTS.some(x=>x[0]===s))L.w[s]=[n,c||'']; } return AVATAR.set(o.hair?{hair:o.hair}:{}); };
   AVATAR.draw=draw; LOOKS.onChange=()=>refresh();
   need(L.f,L.w).catch(()=>{});   // (your figure and what you wear start coming with the page: you are only ever the avatar)
   SYS.onStart(()=>{ LOOKS.who=()=>BODIES.pick()==='avatar'?'avatar':'walker'; fitTo(body,L); BODIES.add(body); BODIES.onPick.push(k=>{ if(k==='avatar')refresh(); draw(); }); if(BODIES.pick()==='avatar')refresh(); draw();

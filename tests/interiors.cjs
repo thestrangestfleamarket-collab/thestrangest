@@ -55,9 +55,10 @@ const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv
     const a=await pg.evaluate(()=>{ const th=n=>__dbg.UI.things.find(t=>t.name.startsWith(n));
       th('THE INFORMATION DESK (THE FLOOR PLAN)').act(); const plan=MINI.on&&MINI.on.title==='THE FLOOR PLAN'; MINI.close();
       const casts=__dbg.UI.things.filter(t=>/\(A (CAST|COPY)\)/.test(t.name)).length;
-      const AR=STORE.rooms.find(r=>r.id==='art'), V=new (SHARED.cam.position.constructor)(), inArt=t=>{ t.obj.getWorldPosition(V); return AR.inside(V.x,V.z); }, shops=__dbg.UI.things.filter(t=>/ESPRESSO|PASTRY|POSTCARD|PRINTS|CAFÉ/.test(t.name)&&inArt(t)).length;   // (the bookstore's coffee bar, built at the start since 9 Nov, is not the museum's)
+      const R=STORE.rooms.find(r=>r.id==='art'), bx=R.box||R, inArt=t=>{ const o=t.obj; if(!o||!o.updateWorldMatrix)return true; o.updateWorldMatrix(true,false); const e=o.matrixWorld.elements; return e[12]>bx.x0&&e[12]<bx.x1&&e[14]>bx.z0&&e[14]<bx.z1; };   // (the bookstore café elsewhere is not the museum's)
+      const shopL=__dbg.UI.things.filter(t=>/ESPRESSO|PASTRY|POSTCARD|PRINTS|CAFÉ/.test(t.name)&&inArt(t)).map(t=>t.name), shops=shopL.length;
       INV.cash=5; th('A GUIDED TOUR WITH ROSIE').act(); const paid=INV.cash===2&&!!GALLERY.touring;
-      return {plan,casts,shops,paid}; });
+      return {plan,casts,shops,paid,shopL}; });
     rec('art museum: the floor plan; no casts, no café, no gift shop',a.plan&&a.casts===0&&a.shops===0,JSON.stringify(a));
     const tour=await pg.waitForFunction(()=>{ const T=GALLERY.touring; if(T&&T.N.st.to){ T.N.st.x=T.N.st.to.x; T.N.st.z=T.N.st.to.z; } return GALLERY.last&&T&&T.i>=0; },null,{timeout:120000,polling:500}).then(()=>true).catch(()=>false);   // she walks at the frames' pace; on a slow machine the check sets her down at her stop
     rec('art museum: the tour costs $3, ROSIE walks to a painting and tells you about it',a.paid&&tour,await pg.evaluate(()=>JSON.stringify({last:GALLERY.last,i:GALLERY.touring&&GALLERY.touring.i})));

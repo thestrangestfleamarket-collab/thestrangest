@@ -1,6 +1,6 @@
 // THE BALLOON WITCH: a tiny witch carried over Market St by her black balloon, who sells black balloons — hold one and click: it lifts you over fences, cars, water and the golems (not buildings), WASD drifts you along; click again to come down; a balloon has two minutes of air, then it sinks you gently and is gone.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, ITEMS, pos, RIDE, SFX, st} from './003b-systems.js';
+import {FORAGE, ITEMS, pos, RIDE, SFX, SPEED, st} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {TILE} from './006-map-pre.js';
@@ -24,7 +24,7 @@ const BALLOON={AIR:120}; window.BALLOON=BALLOON;
     for(const [x0,z0,x1,z1] of SHARED.solids){ const w=x1-x0, d=z1-z0; if(Math.min(w,d)<2.5*T&&w*d<12*T*T)continue; const cx=Math.max(x0,Math.min(x1,p.x)), cz=Math.max(z0,Math.min(z1,p.z)), dx=p.x-cx, dz=p.z-cz, d2=dx*dx+dz*dz;
       if(d2>=r*r)continue; if(d2>1e-8){ const q=Math.sqrt(d2); p.x=cx+dx/q*r; p.z=cz+dz/q*r; } else { const o=[p.x-x0+r,x1-p.x+r,p.z-z0+r,z1-p.z+r], m=Math.min(...o); if(m===o[0])p.x=x0-r; else if(m===o[1])p.x=x1+r; else if(m===o[2])p.z=z0-r; else p.z=z1+r; } } };
   const POSE={k:'zip',z:0,sway:0};
-  RIDE.kind('lift',{name:'BLACK BALLOON',hint:'E AND IT LIFTS YOU. WASD DRIFTS. E BRINGS YOU DOWN.',onSay:'THE BALLOON TUGS. YOUR FEET LEAVE THE GROUND.',held:.5,dry:true,hop:false,ease:6,
+  RIDE.kind('lift',{name:'BLACK BALLOON',cat:'balloon',hint:'E AND IT LIFTS YOU. WASD DRIFTS. E BRINGS YOU DOWN.',onSay:'THE BALLOON TUGS. YOUR FEET LEAVE THE GROUND.',held:.5,dry:true,hop:false,ease:6,
     make:()=>balloon(),
     on:R=>{ R.h=0; R.down=SHARED.LVL!=='up'; R.vx=0; R.vz2=0; R.warned=false; const a=airGet(); say('THE BALLOON HAS AIR FOR '+Math.ceil(a)+' S.','#d8d8e8'); },
     leave:R=>{ if(!R.down){ R.down=true; say('YOU LET A LITTLE AIR OUT. YOU SINK.','#d8d8e8'); } },
@@ -32,7 +32,7 @@ const BALLOON={AIR:120}; window.BALLOON=BALLOON;
       if(a<15&&!R.warned){ R.warned=true; say('THE BALLOON IS GOING SOFT.','#c8a090'); }
       const sinking=R.down||a<=0, want=sinking?0:TOP*T; R.h=Math.max(0,R.h+Math.max(-(a<=0?.6:1.1)*T*dt,Math.min(1.4*T*dt,want-R.h)));
       if(sinking&&R.h<=0){ if(a<=0){ FORAGE.take(id,1); if(FORAGE.draw)FORAGE.draw(); airSet(BALLOON.AIR); RIDE.off('THE BALLOON WRINKLES AND IS DONE.'); if(SFX.play)SFX.play('click',{vol:.5,pitch:.4}); } else { airSet(a); RIDE.off('YOUR FEET FIND THE GROUND.'); } return true; }
-      const up=Math.min(1,R.h/(1.5*T)), vmax=(+prop(id,'speed')||5)*T*up, k=Math.min(1,dt*1.6);
+      const up=Math.min(1,R.h/(1.5*T)), vmax=(+prop(id,'speed')||5)*T*up*SPEED.of('balloon'), k=Math.min(1,dt*1.6);
       R.vx+=((I.ml?I.mx/I.ml*vmax:0)-R.vx)*k; R.vz2+=((I.ml?I.mz/I.ml*vmax:0)-R.vz2)*k;
       pos.x+=R.vx*dt; pos.z+=R.vz2*dt; fly(pos); R.v=Math.hypot(R.vx,R.vz2); if(R.v>.3*T)R.hd=Math.atan2(R.vx,R.vz2); SHARED.heading=R.hd;
       const t=performance.now()/1000; R.lift=R.h+Math.sin(t*1.3)*.06*T*up; POSE.sway=Math.sin(t*1.1)*.06*up-R.vx/T*.02; st.ride=POSE; return true; },

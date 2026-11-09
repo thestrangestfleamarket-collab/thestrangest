@@ -1,6 +1,6 @@
 // THE MAGIC CARPET: a woven rug (painted pixel by pixel) that floats and flies you anywhere: a real cloth (a grid of points held by its threads, weighed by gravity, held up by its magic, pushed by the air it flies through and pressed down where you sit), every player given one; others see you on it, its cloth moving the same way.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INSPECT, ITEMS, keys, pos, RIDE, st} from './003b-systems.js';
+import {FORAGE, INSPECT, ITEMS, keys, pos, RIDE, SPEED, st} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {TILE} from './006-map-pre.js';
 import {collide} from './075-main-13.js';
@@ -72,11 +72,11 @@ const CARPET={}; window.CARPET=CARPET;
 
   /* ---------- flying it as you fly (G): it floats a hand above the ground, W A S D turns and flies it on, SPACE climbs and SHIFT sinks as fast as flying does, up through the clouds to the same 300 m; low down walls stop you, up high it goes over everything ---------- */
   const WM=T/.84, TOP=300*WM, LOW=.35*T, POSE={k:'carpet',z:0,lean:0};
-  RIDE.kind('carpet',{name:'MAGIC CARPET',hint:'E UNROLLS IT AND YOU SIT. WASD FLIES, SPACE UP, SHIFT DOWN, E STEPS OFF.',onSay:'THE CARPET UNROLLS AND FLOATS. YOU SIT DOWN ON IT.',held:.35,dry:true,hop:false,ease:8,
+  RIDE.kind('carpet',{name:'MAGIC CARPET',cat:'carpet',hint:'E UNROLLS IT AND YOU SIT. WASD FLIES, SPACE UP, SHIFT DOWN, E STEPS OFF.',onSay:'THE CARPET UNROLLS AND FLOATS. YOU SIT DOWN ON IT.',held:.35,dry:true,hop:false,ease:8,
     make:()=>make(), hand:()=>rolled(),
     on:R=>{ R.h=0; R.vy=0; R.down=false; },
     leave:R=>{ if(R.h>LOW*1.6){ R.down=true; say('THE CARPET SINKS TO THE GROUND.'); } else RIDE.off('YOU STEP OFF THE CARPET.'); },
-    step:(R,dt,I)=>{ const id=R.on, vmax=(+prop(id,'speed')||9)*T, k=Math.min(1,dt*2);
+    step:(R,dt,I)=>{ const id=R.on, vmax=(+prop(id,'speed')||9)*T*SPEED.of('carpet'), k=Math.min(1,dt*2);
       if(I.ml>0){ const want=Math.atan2(I.mx,I.mz), e=wrap(want-R.hd), d=cl(e,-1.7*dt,1.7*dt); R.hd+=d; R.lean+=(d/Math.max(dt,1e-3)*.2-R.lean)*Math.min(1,dt*4); R.v+=((Math.abs(e)<1.3?vmax:0)-R.v)*Math.min(1,dt*(Math.abs(e)<1.3?.8:1.6)); }
       else { R.v=Math.max(0,R.v-1.2*T*dt); R.lean*=1-Math.min(1,dt*3); }
       const w=R.down?-1:(keys.has(' ')?1:0)-(keys.has('shift')?1:0); R.vy+=(w*(w>0?3.5:R.down?Math.max(4,Math.min(30,R.h/WM*1.2)):5.5)*WM-R.vy)*k; R.h=cl(R.h+R.vy*dt,0,TOP);

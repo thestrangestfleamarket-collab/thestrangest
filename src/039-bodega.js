@@ -1217,9 +1217,9 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
   put('wr1','shop shelf',B.x1-.36,B.y0+2.2,1); put('wm1','shop shelf',m-.3,B.y0+3.3,3); put('win1','shop shelf',(B.x0+.35+m-.95)/2-1,B.y1-.62); put('win2','shop shelf',(m+.95+B.x1-.35)/2-1,B.y1-.62);   // each display centred on its window
   put('counter','long counter',B.x1-1.05,B.y0+5.4,1); put('cigs','cigarette rack',B.x1-.22,B.y0+5.0,1,1); O.cigs.boxes=O.cigs.boxes.map(b=>b.foot?b:zShift(b,42));
   put('radio','radio',B.x1-.24,B.y0+4.0,1,1);
-  put('lotto','lottery machine',B.x1-1.05,B.y0+4.15,1); put('jar','candy jar',B.x1-1.05,B.y0+4.62);
+  put('jar','candy jar',B.x1-1.05,B.y0+4.62);
   { const top=Math.max(...O.counter.boxes.map(b=>b.z1)), drop=top*.25; O.counter.boxes=O.counter.boxes.map(b=>Object.assign({},b,{z0:b.z0*.75,z1:b.z1*.75}));
-    for(const k of ['lotto','jar'])if(O[k])O[k].boxes=O[k].boxes.map(b=>b.z0>=top*.8?zShift(b,-drop):b); } put('bags','paper bags',B.x1-.5,B.y0+7.3); put('phone','wall phone',B.x1-.15,B.y0+7.3,0,1);
+    for(const k of ['jar'])if(O[k])O[k].boxes=O[k].boxes.map(b=>b.z0>=top*.8?zShift(b,-drop):b); } put('bags','paper bags',B.x1-.5,B.y0+7.3); put('phone','wall phone',B.x1-.15,B.y0+7.3,0,1);
   put('clock','wall clock',B.x0+3.1,B.y0+.14,0,1); put('mirror','convex mirror',B.x0+.42,B.y0+.15,0,1); put('calendar','calendar',B.x0+.11,B.y0+1.95,0,1); put('cord','extension cord',B.x0+.11,B.y0+.12,0,1);
   put('tube1','fluorescent tube',m,B.y0+2.5); put('tube2','fluorescent tube',m,B.y0+6.5);
   put('fan','box fan',B.x0+5.1,B.y0+.36); put('fly','fly strip',m-.8,B.y0+4.5); put('bell','door bell',m,B.y1-.24);

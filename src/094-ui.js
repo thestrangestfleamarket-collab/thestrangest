@@ -73,7 +73,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   const flyS=()=>st.fly||(st.fly={on:false,k:0,t:0,f:0,u:0});
   function setFly(on,now){ const g=SHARED.groundY?SHARED.groundY(pos.x,pos.z):0;
     if(!on&&!now&&UI.fly){ if(UI.landing){ UI.landing=false; FLY.to=null; drawBadge(); return; } if(SHARED.py-g>1.5*WM||clearOf(pos.x,pos.z)){ UI.landing=true; FLY.to=clearOf(pos.x,pos.z); drawBadge(); return; } }   // high up: come down first (G again while coming down flies on)
-    if(on&&!UI.fly&&!UI.canFly()){ SAY('YOU NEED TO EAT A DRIFTCAP MUSHROOM TO FLY.','#ffd27a'); return; }   // flying comes from the DRIFTCAP (141)
+    if(on&&!UI.fly&&!UI.canFly()){ SAY('YOU NEED TO EAT A FLIGHT MUSHROOM TO FLY.','#ffd27a'); return; }   // flying comes from the FLIGHT MUSHROOM (141)
     UI.fly=on; UI.landing=false; flyS().on=on; if(on){ SHARED.target=null; st.move=null; FLY.sp=0; FLY.vy=0; } drawBadge(); }
   UI.setFly=setFly; UI.setFree=setFree;
   UI.camStep=(dt,a,up,dn,lf,rt)=>{ if(!UI.freeCam||UI.menuOpen)return; const fx=-Math.sin(a), fz=-Math.cos(a), s=dt*9*PPU/Math.max(4,SHARED.ppu);

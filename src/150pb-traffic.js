@@ -9,7 +9,7 @@ import {TLX} from './069-dress.js';
 const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
 { const TD=__LAZY__("data/traffic.json"), T=TILE, M0=T/.84, M1=M0*1.4, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, say=(t,c)=>SAY(t,c||'#e8e2cc');
   const now=()=>(TRAINS.now?TRAINS.now():Date.now()/1000)+TRAFFIC.skew;
-  const GAME=['muscle-car-60s','convertible-60s','station-wagon-70s','pickup-truck-70s','wedge-coupe-80s','camper-van'];
+  const GAME=['muscle-car-60s','convertible-60s','station-wagon-70s','pickup-truck-70s','wedge-coupe-80s','camper-van','police-cruiser-80s'];
   const zs=Z(SHARED.BOD.CURB), zp=Z(SHARED.BOD.FAR), zm=(zs+zp)/2, xW=X(-129), xE=X(261), SPAN=xE-xW, OFF=40*M0, LC=SPAN+OFF;
   const gx0=X(PARK.gate[0]+PARK.ox), gx1=X(PARK.gate[1]+PARK.ox);
   // the lanes: right-hand traffic, westbound on the shops' side; the fliers 8 m over the same lanes, stopping at the fliers' light over the crossing light
@@ -84,6 +84,6 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
     }).catch(e=>console.warn('TRAFFIC: the vehicles did not load',e)); },'150pb-traffic');
   // their lamps (150pc): every car on the road, measured once from its model
   const DIM={}, dimOf=k=>DIM[k]||(DIM[k]=(()=>{ const t=tpl(k); if(!t)return null; const b=new THREE.Box3().setFromObject(t); return [b.max.x-b.min.x,b.max.y-b.min.y,b.max.z-b.min.z,b.min.y]; })());
-  CARLAMPS.src.push(out=>{ for(const L of LANES)for(const C of L.cars){ if(!C.m||!C.m.visible)continue; const d=dimOf(C.model); if(d)out.push({x:C.m.position.x,y:C.m.position.y,z:C.m.position.z,r:C.m.rotation.y,dim:d,fly:!!L.fly}); } });
+  CARLAMPS.src.push(out=>{ for(const L of LANES)for(const C of L.cars){ if(!C.m||!C.m.visible)continue; const d=dimOf(C.model); if(d)out.push({x:C.m.position.x,y:C.m.position.y,z:C.m.position.z,r:C.m.rotation.y,dim:d,fly:!!L.fly,own:!!(window.CARS&&CARS.own&&CARS.own(C.model))}); } });
   TRAFFIC.dbg=()=>({loaded:!!D,light:light(now()),cross:[gx0,gx1],lanes:LANES.map(L=>({dir:L.dir,fly:!!L.fly,z:L.z,stop:xOf(L,L.stop),cars:L.cars.map(C=>({model:C.model,x:xOf(L,((C.u%LC)+LC)%LC),on:(((C.u%LC)+LC)%LC)<SPAN,len:size(C.model)[2]*M1/2,s:+((((C.u%LC)+LC)%LC)/T).toFixed(1),sp:+(C.sp/M0).toFixed(1),shown:!!(C.m&&C.m.visible)}))}))});
 }

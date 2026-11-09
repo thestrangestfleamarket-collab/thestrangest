@@ -1,7 +1,7 @@
 # THE TRAFFIC'S VEHICLES (owner, 9 Nov 2026: "add all vehicles"): Polyfork's street cars, floating cars and small spacecraft fetched into .polyfork/
 # (never committed) and baked flat-coloured into data/traffic.json like data/heli.json: {id: {name, fly, len, size: [x,y,z] metres, parts: {body: {b, p, c, at}}}},
 # forward +z, feet at 0, centred. Spacecraft are shrunk to a car's length (len, metres): nothing massive. Nothing with wheels flies (owner, 9 Nov 2026): the rover drives.
-# Run: python3 tools/traffic-bake.py
+# The police cruiser is the game's own now (tools/cruiser-bake.py). Run: python3 tools/traffic-bake.py
 import os, json, time, base64, urllib.request, numpy as np
 pb={}; exec(compile(open('tools/props-bake.py').read().split('OUT=json.load')[0].replace('out=sys.argv[1]; args=sys.argv[2:]',''),'props-bake','exec'),pb)
 _trs=pb['trs']; pb['trs']=lambda n:np.array(n['matrix'],float).reshape(4,4).T if 'matrix' in n else _trs(n)
@@ -15,7 +15,7 @@ def get(i):
 b64=lambda a:base64.b64encode(np.ascontiguousarray(a).tobytes()).decode()
 # [key, Polyfork id, name, flies, length in metres (None: as made), turned (degrees about up, to face +z)]
 MODELS=[('town-car','town-car-56eeb6','TOWN CAR',0,None,0),('hatchback','compact-hatchback-386417','HATCHBACK',0,None,0),('yellow-cab','yellow-cab-8df4a0','YELLOW CAB',0,None,0),
-  ('police','police-cruiser-a2d25e','POLICE CRUISER',0,None,0),('boxy-sedan','boxy-sedan-70s-7d55f7','BOXY SEDAN',0,None,0),('hatchback-80s','hatchback-80s-e95554','80S HATCHBACK',0,None,0),
+  ('boxy-sedan','boxy-sedan-70s-7d55f7','BOXY SEDAN',0,None,0),('hatchback-80s','hatchback-80s-e95554','80S HATCHBACK',0,None,0),
   ('suv','family-crossover-suv-42027f','CROSSOVER',0,None,0),('minivan','family-minivan-924de0','MINIVAN',0,None,0),('pickup','pickup-truck-a34bf2','PICKUP',0,None,0),('kei-van','kei-van-211ed5','KEI VAN',0,None,0),
   ('hover-coupe','wheeled-city-coupe-5c381e','HOVER COUPE',1,None,0),('hover-pod','commuter-hover-pod-5b6307','HOVER POD',1,None,0),('hover-patrol','security-patrol-cruiser-b40d27','HOVER PATROL',1,None,0),
   ('sky-tender','lighter-than-air-tender-0c7361','SKY TENDER',1,None,0),('starfighter','agile-starfighter-89805f','STARFIGHTER',1,4.6,0),('interceptor','interceptor-9d2289','INTERCEPTOR',1,4.6,0),

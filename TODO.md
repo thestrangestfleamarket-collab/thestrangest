@@ -174,6 +174,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [ ] **STAND ON THINGS only rose halfway in the test** · P3 · S-M · check. 0.10 of a 0.20 block; the test's bar was lowered to pass.
 - [ ] **The go-kart** · P3 · M · code + pick. Gets in where you stand, not where you set it down; held, it shows as a little kart in your
   hands; a wall at speed just stops it (owner: should it throw you out?). Run `tests/cars.cjs`.
+- [ ] **The police cruiser, for the owner** (9 Nov 2026) · P2 · S · look. Its shape and paint against real 80s photos, the roof lights by night, the siren and horn by ear, where it is parked (West St); the other six cars have no opening parts yet.
 - [ ] **The cars, in game, for the owner** · P2 · S · look. The insides, the cars 40% bigger next to the buildings, the radio by ear
   (loudness, the muffle outside, the four stations, starting at the shared moment).
 - [ ] **Physics is only on your own screen** · P4 · XL · pick + code · risk high. Other players don't see karts, flying loose things or

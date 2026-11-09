@@ -1,4 +1,4 @@
-// THE CARS CHECK: node tests/cars.cjs dist/market.html. The six parked cars on Market St; get in one and W drives it on Rapier's wheels; F gets out and it stays parked where it stopped; a car someone else drives (as the section's server says) is not drawn parked and cannot be taken, and shows where they park it. No page errors.
+// THE CARS CHECK: node tests/cars.cjs dist/market.html. The six parked cars on Market St and the police cruiser on West St (its doors, trunk, light bar, horn and siren); get in one and W drives it on Rapier's wheels; F gets out and it stays parked where it stopped; a car someone else drives (as the section's server says) is not drawn parked and cannot be taken, and shows where they park it. No page errors.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=cars::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -8,7 +8,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   await pg.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=13&physics=1', { waitUntil: 'commit' });
   await pg.waitForFunction(() => window.__started && window.CARS && CARS.dbg().loaded, null, { timeout: 400000, polling: 500 });
   const d0 = await pg.evaluate(() => CARS.dbg());
-  ok(d0.cars.length === 6 && d0.cars.every(c => c.shown && c.z < -60 && c.z > -72), 'six cars parked along Market St\'s kerb: ' + JSON.stringify(d0.cars.map(c => [c.id, c.model, c.x, c.z])));
+  ok(d0.cars.length === 7 && d0.cars.slice(0, 6).every(c => c.shown && c.z < -60 && c.z > -72) && d0.cars[6].model === 'police-cruiser-80s' && d0.cars[6].shown && d0.cars[6].x < -24.5 && d0.cars[6].x > -52.5, 'six cars parked along Market St\'s kerb, the police cruiser on West St: ' + JSON.stringify(d0.cars.map(c => [c.id, c.model, c.x, c.z])));
   const past = await pg.evaluate(async () => { CARS.getIn('c1'); await new Promise(r => setTimeout(r, 800)); return CARS.driving; });
   ok(!past, 'a car parked past the map\'s edge is only seen: no one gets in (owner, 8 Nov 2026)');
   await pg.evaluate(() => { const C = CARS.cars.get('c1'); C.x = SHARED.BOD.XS(78.2); C.z = SHARED.BOD.ZS(-67); });   // the rest drives one brought back onto Market St
@@ -35,6 +35,19 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const d3 = await pg.evaluate(() => { ONLINE.feed({ t: 'car', k: 'c2', by: 'a' }); const s = CARS.dbg().cars[1]; CARS.getIn('c2'); return { shown: s.shown, by: s.by, driving: CARS.dbg().driving }; });
   const d4 = await pg.evaluate(() => { ONLINE.feed({ t: 'car', k: 'c2', by: null, at: [SHARED.BOD.XS(60), SHARED.BOD.ZS(-60), 1.2].join(',') }); return CARS.dbg().cars[1]; });
   ok(d3.by === 'a' && !d3.shown && !d3.driving && d4.shown && !d4.by && Math.abs(d4.x - 60) < .2 && Math.abs(d4.z + 60) < .2, 'a car someone else drives is not drawn parked and cannot be taken; it shows where they park it: ' + JSON.stringify({ d3, d4 }));
+  // the police cruiser (150pe-carparts): its parts open on their hinges, the light bar, the lamps, the horn and the siren, one shared word a car
+  await pg.evaluate(() => SYS.run('world', 'car:c7', [SHARED.BOD.XS(70), SHARED.BOD.ZS(-67), 1.57].join())); await pg.waitForTimeout(600);
+  const P = () => pg.evaluate(() => { const d = CARX.dbg(); return { st: d.cars.c7, parts: d.parts }; }), p0 = await P();
+  ok(p0.parts.length >= 1 && Object.keys(p0.parts[0].open).length === 6 && p0.parts[0].marks >= 10 && p0.st.b === 0, 'the cruiser is made with six parts on hinges and its lettering and plates: ' + JSON.stringify(p0.parts[0]));
+  const things = await pg.evaluate(() => __dbg.UI.things.filter(t => t.car && t.car.id === 'c7').map(t => t.name));
+  await pg.evaluate(() => { const t = __dbg.UI.things.find(t => t.car && t.car.id === 'c7' && t.name === 'TRUNK'); t.act(); ONLINE.feed({ t: 'world', k: 'cst:c7', v: (CARX.parts.bits(CARS.cars.get('c7')) | 64 | 4) + '.3' }); }); await pg.waitForTimeout(2500); const p1 = await P();
+  ok(things.length === 6 && things.includes('DRIVER\'S DOOR') && p1.st.b === 84 && p1.st.h === 3 && p1.parts[0].open.TRUNK > .9 && p1.parts[0].open['DOOR RL'] > .9 && p1.parts[0].open.HOOD === 0 && p1.parts[0].bar, 'double-clicking the trunk opens it; what another player does (a door, the roof lights) shows on the parked car: ' + JSON.stringify({ things, p1 }));
+  await pg.evaluate(() => __dbg.UI.things.find(t => t.car && t.car.id === 'c7' && t.name === 'DRIVER\'S DOOR').act()); await pg.waitForTimeout(1800);
+  const h0 = await pg.evaluate(() => ({ driving: CARS.dbg().driving, st: CARX.dbg().cars.c7, hud: document.getElementById('carhud').innerText.replace(/\s+/g, ' ') }));
+  for (const k of ['h', 'n', 'l', 'b']) await pg.keyboard.press(k); await pg.waitForTimeout(500);
+  const h1 = await pg.evaluate(() => ({ st: CARX.dbg().cars.c7, ride: CARX.dbg().parts.find(p => p.head > 1) }));
+  await pg.keyboard.press('f'); await pg.waitForTimeout(1200); const h2 = await pg.evaluate(() => CARX.dbg().cars.c7);
+  ok(h0.driving === 'c7' && !(h0.st.b & 15) && /HORN H/.test(h0.hud) && /SIREN N/.test(h0.hud) && h1.st.h === 4 && (h1.st.b & 448) === 128 + 256 && !!h1.ride && !(h2.b & 128) && (h2.b & 256), 'the driver\'s door lets you in (the doors shut); H honks, N the siren, L the lamps, B the roof lights; out of it the siren stops: ' + JSON.stringify({ h0, h1, h2 }));
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close(); console.log(fails.length ? fails.length + ' failed' : 'all car checks passed'); process.exit(fails.length ? 1 : 0);
 })();

@@ -20,7 +20,7 @@ import {OUT, SYS, TILE} from './006-map-pre.js';
     list.length=0; if(k>0&&up)for(const f of CARLAMPS.src)try{ f(list); }catch(err){}
     CARLAMPS.on=list.length>0; let n=0, nb=0;
     for(const v of list.slice(0,N)){ const [w,h,l,y0]=v.dim, fx=Math.sin(v.r), fz=Math.cos(v.r), sx=fz, sz=-fx, yl=v.y+y0+h*.36; q.setFromAxisAngle(Y,v.r);
-      for(const [ff,col,sz0] of [[1,HEAD,.08],[-1,TAIL,.06]])for(const sd of [-1,1]){ const o=l/2+.01*M, a=w*.33;
+      if(!v.own)for(const [ff,col,sz0] of [[1,HEAD,.08],[-1,TAIL,.06]])for(const sd of [-1,1]){ const o=l/2+.01*M, a=w*.33;
         P.set(v.x+fx*o*ff+sx*a*sd,yl+(ff<0?.04*M:0),v.z+fz*o*ff+sz*a*sd); S.set(w*.17,h*sz0,.04*M); lens.setMatrixAt(n,m4.compose(P,q,S)); lens.setColorAt(n,col); n++; }
       v.d=(v.x-pos.x)**2+(v.z-pos.z)**2; v.b=-1;
       if(!v.fly){ v.b=nb; P.set(v.x+fx*l/2,SHARED.groundY(v.x+fx*l/2,v.z+fz*l/2)+.03,v.z+fz*l/2); S.set(w*1.1,1,13*M); beam.setMatrixAt(nb,m4.compose(P,q,S)); nb++; } }

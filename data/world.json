@@ -830,6 +830,13 @@
    "x": 315.6,
    "y": -67,
    "hd": 90
+  },
+  {
+   "id": "c7",
+   "model": "police-cruiser-80s",
+   "x": -27.5,
+   "y": -8,
+   "hd": 0
   }
  ],
  "parkPlaces": {

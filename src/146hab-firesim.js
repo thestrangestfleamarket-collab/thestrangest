@@ -41,7 +41,7 @@ void main(){ ivec3 c=cellI(); vec3 p=vec3(c)+.5; vec4 v=F(uV,c); vec3 q=p+uShift
   const mGrad=pass(`uniform sampler2D uV,uP; void main(){ ivec3 c=cellI(); vec4 v=F(uV,c); v.xyz-=.5*vec3(F(uP,c+ivec3(1,0,0)).x-F(uP,c-ivec3(1,0,0)).x,F(uP,c+ivec3(0,1,0)).x-F(uP,c-ivec3(0,1,0)).x,F(uP,c+ivec3(0,0,1)).x-F(uP,c-ivec3(0,0,1)).x); fragOut=v; }`);
   const quad=new THREE.Mesh(new THREE.PlaneGeometry(1,1)), sc=new THREE.Scene(), cam=new THREE.Camera(); quad.frustumCulled=false; sc.add(quad);
   let RT=null; const rt=()=>new THREE.WebGLRenderTarget(AW,AH,{type:THREE.HalfFloatType,minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,depthBuffer:false,stencilBuffer:false});
-  const make=()=>{ '@later'; RT={V:[rt(),rt()],D:[rt(),rt()],P:[rt(),rt()],C:rt(),Div:rt()}; const r0=renderer.getRenderTarget(); for(const k in RT)for(const t of [].concat(RT[k])){ renderer.setRenderTarget(t); renderer.clear(true,false,false); } renderer.setRenderTarget(r0); };
+  const make=()=>{ '@later'; RT={V:[rt(),rt()],D:[rt(),rt()],P:[rt(),rt()],C:rt(),Div:rt()}; const r0=renderer.getRenderTarget(), cc=renderer.getClearColor(new THREE.Color()), ca=renderer.getClearAlpha(); renderer.setClearColor(0,0); for(const k in RT)for(const t of [].concat(RT[k])){ renderer.setRenderTarget(t); renderer.clear(true,false,false); } renderer.setClearColor(cc,ca); renderer.setRenderTarget(r0); };
   const run=(m,to)=>{ quad.material=m; renderer.setRenderTarget(to); renderer.render(sc,cam); };
   const sw=a=>{ const t=a[0]; a[0]=a[1]; a[1]=t; };
 

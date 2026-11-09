@@ -81,7 +81,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
     if(S.sit)S._pfSat=1; else if(S._pfSat){ S._pfSat=0; S._pfUp=now; }   // (up from a seat: Polyfork's stand-up, unless you walk off)
     if(S.ride)return /^(car|kart)$/.test(S.ride.k)?{n:'Driving',loop:1,seat:1}:null;
     if(W&&W.in)return (W.under||0)>.5||(W.back||0)>.5?null:(W.swim||0)>.5?{n:'Swimming',loop:1,seat:1,head:1.5,rest:-2.4}:{n:'Treading water',loop:1,seat:1,head:2,rest:-21};
-    if(m){ const n=m.name; if(n.startsWith('mc_pf_')){ const e=AVATAR.PF[n.slice(6)]; return e&&{n:e[0],t:e[1]+(e[3]?m.t%(e[2]-e[1]):Math.min(m.t,e[2]-e[1]))}; }
+    if(m){ const n=m.name; if(n.startsWith('mc_pf_')){ const e=AVATAR.PF[n.slice(6)]; if(!e)return null; const t=e[1]+(e[3]?m.t%(e[2]-e[1]):Math.min(m.t,e[2]-e[1])), cut=e[3]&&m.t>=m.def.dur&&S._pfL&&S._pfL[0]===n; if(!cut)S._pfL=[n,t]; return {n:e[0],t:cut?S._pfL[1]:t}; }   // (a loop stopped: where it was, never back to its start for a frame)
       if(MV[n])return one(m,MV[n]); if(n==='crouch')return {n:'Crouch',loop:1}; return null; }
     if(up){ if(MV[up.name])return one(up,MV[up.name]); if(up.name==='carry')return {n:'Walk carrying',loco:1}; return null; }
     if(S.sit)return {n:'Sitting',loop:1,seat:1};
@@ -222,7 +222,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
       for(let t=0;t<d.tri.length/3;t++){ if(!kept(d,t,pi))continue; const ix=[d.tri[t*3],d.tri[t*3+1],d.tri[t*3+2]]; if(ix.every(q=>X[q*3+1]<=RH.ty)){ nf++; continue; }
         const out=clipBelow(ix.map((q,j)=>({b:[j===0?1:0,j===1?1:0,j===2?1:0],p:[X[q*3],X[q*3+1],X[q*3+2]]})),RH.ty); cut.set(t,out); nf+=out.length; } });
     if(RH)nf+=RH.cap.length;
-    const pos=new Float32Array(nf*9), nor=new Float32Array(nf*9), col=new Float32Array(nf*9), bi=new Float32Array(nf*6), bw=new Float32Array(nf*3), fl=new Float32Array(nf*3), hh=new Float32Array(nf*3), fd=new Float32Array(nf*9), sm=new Float32Array(nf*3), va=new THREE.Vector3(), vb=new THREE.Vector3(), vc=new THREE.Vector3(), n=new THREE.Vector3(), e=new THREE.Vector3();
+    const pos=new Float32Array(nf*9), nor=new Float32Array(nf*9), col=new Float32Array(nf*9), bi=new Float32Array(nf*6), bw=new Float32Array(nf*3), fl=new Float32Array(nf*3), hh=new Float32Array(nf*3), fd=new Float32Array(nf*9), sm=new Float32Array(nf*3), ov=new Float32Array(nf*3), va=new THREE.Vector3(), vb=new THREE.Vector3(), vc=new THREE.Vector3(), n=new THREE.Vector3(), e=new THREE.Vector3();
     let f=0;
     parts.forEach((P,pi)=>{ const d=D_[pi], v=P.v, X=XS[pi], XR=XM[pi], cut=CUT[pi];
       let y0=1e9, y1=-1e9; if(P.cape)for(let i=1;i<X.length;i+=3){ y0=Math.min(y0,X[i]); y1=Math.max(y1,X[i]); }   // a cape: how far down it each point is, and which way is out from the body
@@ -247,13 +247,13 @@ const AVATAR={}; window.AVATAR=AVATAR;
               col.set([b[0]*cs[0].r+b[1]*cs[1].r+b[2]*cs[2].r,b[0]*cs[0].g+b[1]*cs[1].g+b[2]*cs[2].g,b[0]*cs[0].b+b[1]*cs[1].b+b[2]*cs[2].b],o*3); bi.set([b0,b1],o*2); bw[o]=w; hh[o]=ish; sm[o]=1; }); f++; }
           continue; }
         va.fromArray(XR,ix[0]*3); vb.fromArray(XR,ix[1]*3); vc.fromArray(XR,ix[2]*3); n.subVectors(vb,va).cross(e.subVectors(vc,va)).normalize();
-        ix.forEach((q,j)=>{ const o=f*3+j, c=C[d.zone[q]]||C[0]; pos.set([XR[q*3],XR[q*3+1],XR[q*3+2]],o*3); nor.set([n.x,n.y,n.z],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([d.bone[q*2],d.bone[q*2+1]],o*2); bw[o]=d.w[q]/255; hh[o]=ish; if(P.cape){ const u=Math.max(0,(y1-X[q*3+1])/Math.max(1e-3,y1-y0)), x=X[q*3], z=X[q*3+2], l=Math.hypot(x,z)||1; fl[o]=u*u; fd.set([x/l*.2,0,back],o*3); } }); f++; } });
+        ix.forEach((q,j)=>{ const o=f*3+j, c=C[d.zone[q]]||C[0]; pos.set([XR[q*3],XR[q*3+1],XR[q*3+2]],o*3); nor.set([n.x,n.y,n.z],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([d.bone[q*2],d.bone[q*2+1]],o*2); bw[o]=d.w[q]/255; hh[o]=ish; if(P.slot==='back')ov[o]=1; if(P.cape){ const u=Math.max(0,(y1-X[q*3+1])/Math.max(1e-3,y1-y0)), x=X[q*3], z=X[q*3+2], l=Math.hypot(x,z)||1; fl[o]=u*u; fd.set([x/l*.2,0,back],o*3); } }); f++; } });
     if(RH){ const c=lin(L.skin); for(const F of RH.cap){ F.p.forEach((P,j)=>{ const o=f*3+j; pos.set(P,o*3); nor.set(F.nn[j],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([HB,HB],o*2); bw[o]=1; hh[o]=0; sm[o]=1; }); f++; } }
     for(const [A,B,C3,h] of FX){ const c=lin(h); [A,B,C3].forEach((P,j)=>{ const o=f*3+j; pos.set(P,o*3); nor.set([0,0,1],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([HB,HB],o*2); bw[o]=1; hh[o]=0; }); f++; }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('normal',new THREE.BufferAttribute(nor,3)); g.setAttribute('color',new THREE.BufferAttribute(col,3));
-    g.setAttribute('bi',new THREE.BufferAttribute(bi,2)); g.setAttribute('bw',new THREE.BufferAttribute(bw,1)); g.setAttribute('fl',new THREE.BufferAttribute(fl,1)); g.setAttribute('fd',new THREE.BufferAttribute(fd,3)); g.setAttribute('hh',new THREE.BufferAttribute(hh,1)); g.setAttribute('sm',new THREE.BufferAttribute(sm,1)); g.computeBoundingSphere();
+    g.setAttribute('bi',new THREE.BufferAttribute(bi,2)); g.setAttribute('bw',new THREE.BufferAttribute(bw,1)); g.setAttribute('fl',new THREE.BufferAttribute(fl,1)); g.setAttribute('fd',new THREE.BufferAttribute(fd,3)); g.setAttribute('hh',new THREE.BufferAttribute(hh,1)); g.setAttribute('sm',new THREE.BufferAttribute(sm,1)); g.setAttribute('ov',new THREE.BufferAttribute(ov,1)); g.computeBoundingSphere();
     g.userData.hands=pfh?{skin:L.skin,b:L.b,grip:{L:false,R:false}}:null; return g; }
-  const empty=()=>{ const g=new THREE.BufferGeometry(); for(const [k,s] of [['position',3],['normal',3],['color',3],['bi',2],['bw',1],['fl',1],['fd',3],['hh',1],['sm',1]])g.setAttribute(k,new THREE.BufferAttribute(new Float32Array(0),s)); return g; };
+  const empty=()=>{ const g=new THREE.BufferGeometry(); for(const [k,s] of [['position',3],['normal',3],['color',3],['bi',2],['bw',1],['fl',1],['fd',3],['hh',1],['sm',1],['ov',1]])g.setAttribute(k,new THREE.BufferAttribute(new Float32Array(0),s)); return g; };
   // a body's skeleton for a figure and a height (taller: the same body drawn bigger on the rig)
   const fitTo=(body,L)=>{ const S=I.skel[L.f], Z=shapeOf(L.f,L.sh), {off,binv}=BODIES.skeleton(Z?Z.O1.map(o=>o.toArray()):S.origin,S.rest); Object.assign(body,{height:S.height*100/L.h,hipY:Z?Z.O1[0].y:S.hipY,off,binv,contact:true,dq:true,rnd:true,O0:Z?Z.O:null,O1:Z?Z.O1:null,J0:Z?Z.O1:S.origin.map(o=>new THREE.Vector3(...o))}); delete body._calG; delete body._bind; return BODIES.fit(body); };   // (contact: rests on what the rig rests on, 111a)
 

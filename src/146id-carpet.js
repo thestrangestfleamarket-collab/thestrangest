@@ -37,12 +37,12 @@ const CARPET={}; window.CARPET=CARPET;
     const frame=(lx,lz,dy,out,k)=>{ const y1=lx*sb+lz*sp+dy, x1=lx*cb, z1=lz*cp; out[k]=C.ox+x1*c+z1*s; out[k+1]=C.oy+y1; out[k+2]=C.oz-x1*s+z1*c; }, F=[0,0,0];
     for(let v=0;v<N;v++){ const p=v*3, i=v%NX, j=(v/NX)|0, lx=REST[p], lz=REST[p+2];
       if(SIT(i,j)){ frame(lx,lz,-.035*T,x,p); o[p]=x[p]-C.vx*h; o[p+1]=x[p+1]-C.vy*h; o[p+2]=x[p+2]-C.vz*h; continue; }
-      const edge=Math.min(1,Math.max(Math.abs(i-4)/4,Math.abs(j-5.5)/5.5)), wave=Math.sin(t*2.3-lz/T*3.1+lx/T*.8)*.045*T*edge*(1-Math.min(1,sp2/(4*T))*.5); frame(lx,lz,wave,F,0);
+      const edge=Math.min(1,Math.max(Math.abs(i-4)/4,Math.abs(j-5.5)/5.5)), wave=Math.sin(t*2.3-lz/T*3.1+lx/T*.8)*.03*T*edge*(1-Math.min(1,sp2/(4*T))*.5); frame(lx,lz,wave,F,0);
       const vx=(x[p]-o[p])/h, vy=(x[p+1]-o[p+1])/h, vz=(x[p+2]-o[p+2])/h;
       // gravity, all but a tenth of it borne by the magic, and a spring of magic toward the rug's plane; the air drags what moves through it
       let ay=-G*.1+(F[1]-x[p+1])*70-vy*6, ax=(F[0]-x[p])*(edge<.6?1.5:.4)-vx*.8, az=(F[2]-x[p+2])*(edge<.6?1.5:.4)-vz*.8;
       // the air flowing over the rug lifts and flaps its free edges, more the faster it flies
-      if(sp2>.3*T){ const f=Math.sin(t*(9+sp2/T*.8)+j*.9+i*.5)*sp2*1.1*edge*edge; ay+=f; }
+      if(sp2>.3*T){ const f=Math.sin(t*(9+sp2/T*.8)+j*.9+i*.5)*sp2*2.4*edge*edge; ay+=f; }
       const nx=2*x[p]-o[p]+ax*h*h, ny=2*x[p+1]-o[p+1]+ay*h*h, nz=2*x[p+2]-o[p+2]+az*h*h; o[p]=x[p]; o[p+1]=x[p+1]; o[p+2]=x[p+2]; x[p]=nx; x[p+1]=Math.max(C.gy+.02*T,ny); x[p+2]=nz; }
     for(let it=0;it<6;it++)for(const [a,b,k,r] of LINKS){ const A=a*3, B=b*3, ex=x[B]-x[A], ey=x[B+1]-x[A+1], ez=x[B+2]-x[A+2], d=Math.hypot(ex,ey,ez)||1e-6, e=(d-r)/d*.5*k;
       const pa=SIT(a%NX,(a/NX)|0), pb=SIT(b%NX,(b/NX)|0); if(pa&&pb)continue; const wa=pa?0:pb?2:1, wb=pb?0:pa?2:1;

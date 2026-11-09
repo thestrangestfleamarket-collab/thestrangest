@@ -15,10 +15,11 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), SHOTS=process.argv
   const cloth=()=>pg.evaluate(()=>CARPET.dbg());
   const r=await pg.evaluate(async()=>{ WIELD.set('magic_carpet'); await new Promise(r=>setTimeout(r,400)); const ok=RIDE.mount('magic_carpet'); await new Promise(r=>setTimeout(r,8000)); return {ok,on:RIDE.on,pose:__dbg.ST.ride&&__dbg.ST.ride.k,h:CARPET.dbg().lift}; });
   rec('E sits you on it cross-legged and it floats off the ground',r.ok&&r.on==='magic_carpet'&&r.pose==='carpet'&&r.h>.2,JSON.stringify(r));
-  const c0=await cloth(); rec('at rest its cloth is whole and nearly flat, a rug\'s width',c0&&c0.fin&&c0.span>1.1&&c0.span<1.45&&c0.rough<.4,JSON.stringify(c0)); await shot('carpet-rest');
+  const peak=async()=>{ let b=null; for(let i=0;i<8;i++){ const c=await cloth(); if(!b||c.rough>b.rough)b=Object.assign({},c,{fin:c.fin&&(!b||b.fin)}); await pg.waitForTimeout(300); } return b; };
+  const c0=await peak(); rec('at rest its cloth is whole and nearly flat, a rug\'s width',c0&&c0.fin&&c0.span>1.1&&c0.span<1.45&&c0.rough<.4,JSON.stringify(c0)); await shot('carpet-rest');
     await key(' ','Space',true); await pg.waitForTimeout(8000); await key(' ','Space',false);
   const up=(await cloth()).lift; rec('SPACE climbs',up>r.h+.4,'lift '+up);
-  await key('w','KeyW',true); await pg.waitForTimeout(12000); const c1=await cloth(); await shot('carpet-flying');
+  await key('w','KeyW',true); await pg.waitForTimeout(12000); const c1=await peak(); await shot('carpet-flying');
   const m={v:c1.v}; await key('w','KeyW',false);
   rec('W flies it on, and its free edges move with the air',m.v>2&&c1&&c1.fin&&c1.rough>c0.rough,JSON.stringify({m,c1}));
   const off=await pg.evaluate(async()=>{ RIDE.cur.leave(RIDE); for(let i=0;i<120&&RIDE.on;i++)await new Promise(r=>setTimeout(r,250)); return {off:!RIDE.on,ride:__dbg.ST.ride}; });

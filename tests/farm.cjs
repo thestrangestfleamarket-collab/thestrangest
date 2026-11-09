@@ -2,7 +2,7 @@
 const {chromium}=require('playwright'), path=require('path');
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:900,height:600}}), errs=[]; let bad=0;
   const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; }; pg.on('pageerror',e=>errs.push(e.message));
-  await pg.goto('file://'+path.resolve(process.argv[2]||'dist/market.html')+'?hour=13&fresh=1&at=91,19.5',{waitUntil:'commit',timeout:240000}); await pg.waitForFunction(()=>window.__started,null,{timeout:400000,polling:2000});
+  await pg.goto('file://'+path.resolve(process.argv[2]||'dist/market.html')+'?hour=13&fresh=1&at=20,111.8',{waitUntil:'commit',timeout:240000}); await pg.waitForFunction(()=>window.__started,null,{timeout:400000,polling:2000});
   await pg.waitForFunction(()=>window.CREATS&&CREATS.filter(N=>N.life).length>=6&&window.FARMDBG&&FARMDBG().gate,null,{timeout:200000,polling:2000}).catch(()=>{});
   const S=()=>pg.evaluate(()=>{ const P=FARMDBG().pen, z0=Math.min(P.z0,P.z1), z1=Math.max(P.z0,P.z1); return CREATS.filter(N=>N.life).map(N=>({k:N.key,a:N.life.act,in:N.st.x>=P.x0-.3&&N.st.x<=P.x1+.3&&N.st.z>=z0-.3&&N.st.z<=z1+.3})); });
   const acts=new Set(); let out=0, n=0; for(let i=0;i<8;i++){ const L=await S(); n=L.length; for(const q of L){ acts.add(q.a); if(!q.in)out++; } await pg.waitForTimeout(8000); }

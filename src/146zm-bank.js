@@ -1,5 +1,5 @@
-// THE BANK'S TELLER HALL: two teller cages at the front, one kept by THE RAT; an account at either cage that keeps your cash on the server and pays a little interest each day (1%, at most $50 a day); where the bank's staff and its customers go. The dragon's hoard stays behind them.
-import {CITY, INV, WORKERS} from './003b-systems.js';
+// THE BANK'S TELLER HALL: two teller cages at the front, one kept by THE RAT; an account at either cage that keeps your cash on the server; where the bank's staff and its customers go. The dragon's hoard stays behind them.
+import {INV, WORKERS} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
@@ -7,17 +7,16 @@ import {STORE} from './006-map-pre.js';
 import {IKIT} from './038zc-ikit.js';
 import {MINI} from './038zd-mini.js';
 const BANKK={}; window.BANKK=BANKK;
-{ const say=(t,c)=>SAY(t,c||'#f2c14e'), day=()=>(window.CITY&&CITY.day)||0;
-  // the account: its balance and the day it last earned, kept like your cash (OWNED: on the server when you play on the website)
-  const read=()=>{ try{ const v=OWNED.get('bank'); const o=typeof v==='string'?JSON.parse(v):v; return o&&o.v===1?o:{v:1,bal:0,day:day()}; }catch(e){ return {v:1,bal:0,day:day()}; } };
+{ const say=(t,c)=>SAY(t,c||'#f2c14e');
+  // the account: its balance, kept like your cash (OWNED: on the server when you play on the website)
+  const read=()=>{ try{ const v=OWNED.get('bank'); const o=typeof v==='string'?JSON.parse(v):v; return o&&o.v===1?o:{v:1,bal:0}; }catch(e){ return {v:1,bal:0}; } };
   const write=o=>{ try{ OWNED.set('bank',JSON.stringify(o)); }catch(e){} };
-  BANKK.account=()=>{ const o=read(), d=day(); if(d>o.day){ let gain=0; for(let i=0;i<Math.min(7,d-o.day);i++){ const g=Math.min(50,Math.floor(o.bal*.01)); o.bal+=g; gain+=g; } o.day=d; write(o); if(gain)say(`THE BANK PAID $${gain} IN INTEREST.`); } return o; };
-  BANKK.age=n=>{ const o=read(); o.day-=n; write(o); };   // a day or more since it last earned (for the check)
+  BANKK.account=()=>read();
   BANKK.move=n=>{ '@later'; const o=BANKK.account(); n=Math.trunc(n); if(n>0){ n=Math.min(n,INV.cash); if(!n)return 'YOU HAVE NO CASH ON YOU.'; INV.cash-=n; o.bal+=n; } else if(n<0){ const m=Math.min(-n,o.bal); if(!m)return 'THE ACCOUNT IS EMPTY.'; o.bal-=m; INV.cash+=m; n=-m; }
     write(o); if(INV.save)INV.save(); return ''; };
   // the cage's window: your cash, the balance, buttons to put in and take out
   const B=[['IN $10',10],['IN $100',100],['IN ALL',1e12],['OUT $10',-10],['OUT $100',-100],['OUT ALL',-1e12]];
-  BANKK.open=who=>MINI.open({title:'THE BANK · '+(who||'THE CAGE'),w:380,h:300,help:'Money in the account is kept for you and earns 1% a day (at most $50 a day).',
+  BANKK.open=who=>MINI.open({title:'THE BANK · '+(who||'THE CAGE'),w:380,h:300,help:'Money in the account is kept for you.',
     start:S=>{ S.o=BANKK.account(); },
     tick:S=>{ if(!S.press)return; const i=B.findIndex((b,k)=>{ const x=20+(k%3)*118, y=150+Math.floor(k/3)*60; return S.mx>x&&S.mx<x+108&&S.my>y&&S.my<y+46; }); if(i<0)return; const no=BANKK.move(B[i][1]); S.o=BANKK.account(); S.line=no||(B[i][1]>0?'DEPOSITED.':'WITHDRAWN.'); },
     draw:(S,g)=>{ g.fillStyle='#1a1612'; g.fillRect(0,0,380,300); g.textAlign='left'; g.textBaseline='top'; g.font='13px monospace'; g.fillStyle='#c8b080'; g.fillText('ON YOU',20,24); g.fillText('IN THE ACCOUNT',20,70); g.font='bold 22px monospace'; g.fillStyle='#f4ecd8'; g.fillText('$'+INV.cash.toLocaleString(),20,40); g.fillStyle='#f0c040'; g.fillText('$'+S.o.bal.toLocaleString(),20,86);

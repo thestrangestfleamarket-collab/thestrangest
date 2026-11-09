@@ -570,6 +570,9 @@ function ridePose(st){ const R=st.ride,P=neutral(),z=R.z||0;
   else if(R.k==='car'){
     P.root=V(0,RIDEG.sit,0); P.bend=-30*D; P.nod=4*D;
     for(const [n,k] of [['L',1],['R',-1]]){ P[n].th=[84*D,6*D]; P[n].sh=[22*D,2*D]; P[n].foot=-8*D; P[n].ua=[58*D,14*D]; P[n].fa=[50*D,(6+(R.steer||0)*26*k)*D]; P[n].fist=1; } }
+  else if(R.k==='horse'){   // astride a saddle: thighs round the barrel, heels down in the stirrups, the reins in both hands over the horn; forward with the pace (lean), a hand up to stop (R.lean <0: leaning back)
+    const L=R.lean||0; P.root=V(0,RIDEG.sit,0); P.bend=(4+L*16)*D; P.nod=(-4-L*6)*D;
+    for(const [n,k] of [['L',1],['R',-1]]){ P[n].th=[R.th0*D,R.th1*D]; P[n].sh=[R.sh0*D,R.sh1*D]; P[n].foot=R.ft*D; P[n].ua=[(R.ua0+L*12)*D,R.ua1*D]; P[n].fa=[(R.fa0+L*10)*D,(R.fa1+(R.steer||0)*14*k)*D]; P[n].fist=1; } }
   else if(R.k==='zip'){
     P.root=V(0,z+STAND,0); P.nod=-10*D; P.pitch=(R.sway||0); P.bend=6*D;
     for(const n of 'LR'){ P[n].ua=[174*D,14*D]; P[n].fa=[178*D,6*D]; P[n].fist=1; P[n].th=[26*D,4*D]; P[n].sh=[18*D,4*D]; P[n].foot=-14*D; } }
@@ -602,7 +605,7 @@ const moveAt=st=>moveAtOf(st.move);
 function moveAtOf(mv){ const def=mv.def,t=Math.min(mv.t,def.dur),ks=def.kl&&t>def.air.t0+def.air.T?def.kl:def.k; let i=1; while(i<ks.length-1&&ks[i].t<t) i++;
   const A=ks[i-1],B=ks[i],x=B.t>A.t?clamp((t-A.t)/(B.t-A.t),0,1):1; let P=B.e===smooth?flow(ks,i,x):mix(A.P,B.P,B.e(x));
   const a=def.air; if(a&&t>=a.t0&&t<=a.t0+a.T){ const tau=t-a.t0,i2=Math.min(240,Math.round(tau/a.T*240));
-    P.root=V(P.root.x,P.root.y+a.v0*tau-a.g*tau*tau/2,P.root.z); P.pv=a.c; if(a.spin) P.pitch+=a.spin[i2];
+    P.root=V(P.root.x,P.root.y+(a.v0*tau-a.g*tau*tau/2)*(mv.hi||1),P.root.z); P.pv=a.c; if(a.spin) P.pitch+=a.spin[i2];
     if(mv.variant){ const v=mv.variant,w=Math.min(1,(t-v.t)/0.08)*(1-smooth(clamp((tau/a.T-0.8)/0.17,0,1))); if(w>0){ const Q=apply(P,AIRV[v.name]); P=mix(P,Q,w); } }
     for(const n of 'LR') delete P[n].ik; }
   const tp=def.topple; if(tp&&t<tp.T){ const th=tp.tab[Math.min(tp.tab.length-1,Math.round(t*240))]; P.pitch=th; P.root=V(0,STAND*Math.cos(th),STAND*Math.sin(th)); for(const n of 'LR') if(P[n].ik) legIK(P,n,n=='L'?1:-1,P[n].ik,P[n].kp); }
@@ -696,7 +699,7 @@ function handed(st,def){ if(!def||!def.lead||(st.hand||'R')===def.lead) return d
 const pace=st=>gaitOf(st.run).speed*((st.wk||1)+((st.rk||1)-(st.wk||1))*st.run);
 function begin(st,name,dd){ const def=handed(st,dd||MOVES[name]),from=JSON.parse(JSON.stringify(st.out&&!(st.out.t>0)?st.out.pose:st.last||rawPose(st))),om=st.move;   // (straight after a move ends: from its last pose, its travel already taken into the step)
   if(om){ const z=from.root.z; st.dist+=z-(om.zc||0); from.root=V(from.root.x,from.root.y,0); }
-  st.move={def,name,t:0,from,held:true,variant:null,floor:def.deck?0:floorOf(st)}; st.out=null; st.next=null;
+  st.move={def,name,t:0,from,held:true,variant:null,floor:def.deck?0:floorOf(st),hi:def.air&&!def.src.drop?st.hi||1:1}; st.out=null; st.next=null;
   if(def.below!=null) st.move.base=Math.min(floorOf(st)-def.below,from.root.y-STAND);
   st.mvw=Math.max(pace(st)*st.w,om?.9*st.mv:0); st.mv=def.air?st.mvw+def.air.vz:st.mvw*0.9; }
 const ARMMOVES=new Set(['jab','cross','uppercut','block','wave']);
@@ -778,7 +781,7 @@ function pose(st,inPlace){ const busy=st.move||st.out,P=JSON.parse(JSON.stringif
   if(!busy&&!swimming&&!st.up&&!st.sit) B.walkF=st.w>0.05&&st.target>0?Math.floor((st.wd||0)/WSTEP)%8:-1;
   const m=st.move; B.anim=swimming||st.sit?null:m?(!m.variant&&STUDIO.includes(m.name)?m.name+'/'+Math.floor(m.t*10):null):st.up&&!st.out?(st.w<0.05&&STUDIO.includes(st.up.name)?st.up.name+'/'+Math.floor(st.up.t*10):null):B.walkF!=null?(B.walkF<0?'stand/0':'walk/'+B.walkF):null;
   if(st.sign)B.anim=null; st.B=B;
-  B.seat=!!(st.sit||st.ride&&/^(kart|car|bike)$/.test(st.ride.k));   // seated: a body of other proportions sits where the rig sits (111a)
+  B.seat=!!(st.sit||st.ride&&/^(kart|car|bike|horse)$/.test(st.ride.k));   // seated: a body of other proportions sits where the rig sits (111a)
   return B; }
 
 const PIECES=['head','hair','beard','neck','torso','hips'].concat(...['L','R'].map(n=>['sleeve','upperArm','forearm','hand','thigh','shin','shoe'].map(k=>k+n)),

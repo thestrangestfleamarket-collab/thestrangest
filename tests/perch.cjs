@@ -8,18 +8,20 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
   await pg.evaluate(()=>{ for(const k of ['UI','OWNED','pos'])if(!window[k])window[k]=PETS.dbg[k]; const f=document.getElementById('fday'); if(f)f.hidden=true; });
   // a parrot held up in the air beside you: its wings beat (the clip alone holds them still)
   const fl=await pg.evaluate(async()=>{ const W=PETS.WU, N=await PETS.make('tparrot',{k:'parrot',n:'',c:[],s:[],z:100,h:false},()=>({x:pos.x+2*W,z:pos.z,y:SHARED.py+2*W,hd:0}));
-    const bone=()=>{ let q=null; N.g.traverse(o=>{ if(o.isBone&&o.name==='LeftWing')q=o.quaternion.clone(); }); return q; }, qs=[];
-    for(let i=0;i<12;i++){ await new Promise(r=>setTimeout(r,1500)); qs.push(bone()); } let mx=0; for(const a of qs)for(const c of qs)mx=Math.max(mx,2*Math.acos(Math.min(1,Math.abs(a.dot(c))))*57.3);
-    const air=N.restless(); PETS.drop(N); return {deg:+mx.toFixed(1),air}; });
-  rec('a parrot in the air beats its wings and is never frozen still',fl.deg>20&&fl.air,JSON.stringify(fl));
+    const ar=[], bone=()=>{ let q=null; N.g.traverse(o=>{ if(o.isBone&&o.name==='LeftWing')q=o.quaternion.clone(); }); return q; }, qs=[];
+    for(let i=0;i<12;i++){ await new Promise(r=>setTimeout(r,1500)); N.PR.still=-1e9; qs.push(bone()); ar.push(N.restless()?1:0); } let mx=0; for(const a of qs)for(const c of qs)mx=Math.max(mx,2*Math.acos(Math.min(1,Math.abs(a.dot(c))))*57.3);
+    const air=ar.join(''); PETS.drop(N); return {deg:+mx.toFixed(1),air}; });
+  rec('a parrot in the air beats its wings and is never frozen still',fl.deg>20&&/^0*1+$/.test(fl.air),JSON.stringify(fl));
   for(const [k,where,w] of [['parrot','shoulder'],['budgie','head'],['crow','shoulder'],['scarletmacaw','shoulder'],['owl','head','head'],['bee','head'],['parrot','fly','fly']]){
     await pg.evaluate(([k,w])=>{ for(const r of PETS.list().slice())if(!r.perma)PETS.letGo(r.id); for(const r of PETS.list().slice())if(r.perma)r.perma=false,PETS.letGo(r.id); const P={k,n:'',c:[],s:[],z:100,h:false,w:w||''}; PETS.add(P); },[k,w]);
     await pg.waitForFunction(([k,w])=>{ const N=PETS.mine(); return !!(N&&N.pet.k===k&&(N.pet.w||'')===(w||'')&&N.g.visible); },[k,w],{timeout:60000});
     await pg.evaluate(()=>{ PETS.mine().PR.still=5; });   // (the page runs about a frame a second here: skip the wait for you to stand still)
     const ok=await U(()=>{ const N=PETS.mine(); return !!(N&&N.perched()); },w==='fly'?40000:180000);
-    const p=await pg.evaluate(()=>{ const N=PETS.mine(), W=PETS.WU; return {k:N.pet.k,on:N.perched(),up:+((N.g.position.y-SHARED.py)/W).toFixed(2),off:+(Math.hypot(N.g.position.x-pos.x,N.g.position.z-pos.z)/W).toFixed(2)}; });
+    const fs=[]; for(let i=0;i<5&&ok;i++){ await wait(1500); fs.push(await pg.evaluate(()=>{ const N=PETS.mine(), F=N.feet(); return (F.y-PETS.topAt(F.x,F.z))/PETS.WU; })); } fs.sort((a,b)=>a-b);
+    const p=await pg.evaluate(()=>{ const N=PETS.mine(), W=PETS.WU; const F=N.feet(), fy=F.y, top=PETS.topAt(F.x,F.z);
+      return {k:N.pet.k,on:N.perched(),up:+((N.g.position.y-SHARED.py)/W).toFixed(2),off:+(Math.hypot(N.g.position.x-pos.x,N.g.position.z-pos.z)/W).toFixed(2),feet:+((fy-top)/W).toFixed(3)}; });
     if(where==='fly'){ rec('a parrot set to fly behind you never lands, its wings beating',!ok&&!p.on&&await pg.evaluate(()=>PETS.mine().restless()),JSON.stringify(p)); continue; }
-    rec('a still '+k+' lands on your '+where,ok&&p.on===where&&p.up>1&&p.off<.4,JSON.stringify(p));
+    rec('a still '+k+' lands on your '+where+', its feet on top (median of five, within 3 cm)',ok&&p.on===where&&p.up>1&&p.off<.4&&Math.abs(fs[2])<.03,JSON.stringify({...p,feet:+(fs[2]||0).toFixed(3)}));
     if(OUT)for(const a of [0,1.57,3.14,-1.57]){ await pg.evaluate(a=>{ UI.setView('third'); UI.dist=Math.min(UI.dist,2.2*PETS.WU); SHARED.pitchTo=SHARED.pitch=.12; SHARED.yawTo=SHARED.yaw=SHARED.heading+a; },a); await wait(2500); await pg.screenshot({path:OUT+'/perch-'+k+'-'+Math.round(a*10)+'.png'}); } }
   // a dog whose person is up in the air (flying, up high): it waits on the ground below
   const dg=await pg.evaluate(async()=>{ const W=PETS.WU, gy=SHARED.groundY(pos.x,pos.z); let L={x:pos.x,z:pos.z,y:gy,hd:0}; const N=await PETS.make('tdog',{k:'dog',n:'',c:[],s:[],z:100,h:false},()=>L);

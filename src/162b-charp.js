@@ -1,7 +1,7 @@
 // THE CHARACTER PAGE: the menu's YOU (your live avatar beside your look; PASSPORT, RESURRECT, LOG OUT) and ADMIN's TOOLS (STATS, the render inspector, the game log).
 import {THREE} from './003-shx.js';
 import {BUGS, CHARP, ITEMED, PASSPORT, PS2, RINSP, TEXT, UI, VIT, W3, WE} from './003b-systems.js';
-import {pxS, renderer} from './004-main.js';
+import {renderer} from './004-main.js';
 import {SYS} from './006-map-pre.js';
 import {DESIGN} from './102b-designer.js';
 import {DESIGNER} from './111cb-designer.js';
@@ -18,7 +18,7 @@ import {DM} from './146bb-dm.js';
     cam.left=-ww/2; cam.right=ww/2; cam.top=hh/2; cam.bottom=-hh/2; cam.near=.01; cam.far=d*3+60; cam.updateProjectionMatrix();
     cam.position.set(gp.x,cy,gp.z+d); cam.up.set(0,1,0); cam.lookAt(gp.x,cy,gp.z); cam.updateMatrixWorld(true);
     DESIGN.portrait(rt,cam);
-    const px=new Uint8Array(W*H*4); renderer.readRenderTargetPixels(rt,0,0,W,H,px); if(PS2.on)PS2.img(px,W,H,Math.min(H,300*(devicePixelRatio||1)/pxS()));   // the same pixel size as the game around it, at your RESOLUTION
+    const px=new Uint8Array(W*H*4); renderer.readRenderTargetPixels(rt,0,0,W,H,px); if(PS2.on)PS2.img(px,W,H,PS2.linesFor(cv.getBoundingClientRect().height||300));   // the same pixel size as the game around it, at your RESOLUTION
     g.rotation.y=sv.ry; g.visible=sv.vis; g.matrixAutoUpdate=sv.am; g.updateMatrixWorld(true);
     const im=g2.createImageData(W,H); for(let y=0;y<H;y++)im.data.set(px.subarray((H-1-y)*W*4,(H-y)*W*4),y*W*4); g2.putImageData(im,0,0); };
   const loop=t=>{ if(!on||!UI.menuOpen||!el)return; if(t-last<55)return; last=t; shot(); }; SYS.add('win',loop,'162b-charp');

@@ -318,6 +318,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
     LOOKS.add('avc','HAIR COLOUR',el('lavc',HAIRC.map(h=>`<button class="sw" data-c="${h}" aria-label="hair #${h}"><i style="background:#${h}"></i></button>`).join('')+'<input type="color" id="lavcc" aria-label="any hair colour">'),{...A,order:5});
     for(const [k,t,N,o] of [['e','EYES',FEYES,5.1],['m','MOUTH',FMOUTHS,5.2]])LOOKS.add('avx'+k,t,el(null,`<select id="lavx${k}" aria-label="${t.toLowerCase()} style">${N.map((n,i)=>`<option value="${i}">${n}</option>`).join('')}</select><input type="range" id="lavx${k}s" min="50" max="150" step="5" aria-label="${t.toLowerCase()} size"><span id="lavx${k}v" class="dim"></span>`),{...A,order:o});
     LOOKS.add('avly','LANYARD',el('lavly','<select id="lavlf" aria-label="badge frame"><option value="0">NO FRAME</option><option value="1">CLEAR FRAME</option><option value="2">METAL FRAME</option><option value="3">COLOURED FRAME</option></select><input type="color" id="lavlfc" aria-label="frame colour"><select id="lavls" aria-label="string"><option value="0">CORD</option><option value="1">FLAT STRAP</option><option value="2">BEAD CHAIN</option></select><input type="color" id="lavlsc" aria-label="string colour">'),{...A,order:5.5});
+    LOOKS.add('ave','EYE COLOUR',el('lave',EYES.map(([h,t])=>`<button class="sw" data-c="${h}" aria-label="eyes ${t} #${h}"><i style="background:#${h}"></i></button>`).join('')+'<input type="color" id="lavec" aria-label="any eye colour">'),{...A,order:5.15});
     LOOKS.add('avwear','OUTFIT',el(null,'<button id="lavgo">CHOOSE WHAT YOU WEAR</button><span id="lavw" class="dim"></span>'),{...A,order:6});
     LOOKS.add('w-outfit','OUTFIT',el(null,'<select id="lavog" aria-label="outfit theme"></select><select id="lavo" aria-label="outfit"></select><span></span>','avw'),{...A,tab:'wear',order:-1});
     SLOTS.forEach(([s,t],i)=>!NOPROP.has(s)&&LOOKS.add('w-'+s,t,el(null,`<select id="lavt-${s}" aria-label="${t} kind"></select><select id="lav-${s}" aria-label="${t} version"></select><span id="lavk-${s}" class="avk"></span>`,'avw'),{...A,tab:'wear',order:i}));
@@ -329,6 +330,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
     $('#lavb').onclick=e=>{ const b=e.target.closest('button'); if(b)AVATAR.set({b:+b.dataset.b}); };
     const h=$('#lavh'); stop(h); h.oninput=()=>{ $('#lavhv').textContent=' '+h.value+'%'; }; h.onchange=()=>AVATAR.set({h:+h.value});
     $('#lavs').onclick=e=>{ const b=e.target.closest('button'); if(b)AVATAR.set({skin:b.dataset.c}); }; $('#lavsc').onchange=e=>AVATAR.set({skin:e.target.value.slice(1)});
+    $('#lave').onclick=e=>{ const b=e.target.closest('button'); if(b)AVATAR.set({eye:b.dataset.c}); }; $('#lavec').onchange=e=>AVATAR.set({eye:e.target.value.slice(1)});
     $('#lavc').onclick=e=>{ const b=e.target.closest('button'); if(b)AVATAR.set({hair:b.dataset.c}); }; $('#lavcc').onchange=e=>AVATAR.set({hair:e.target.value.slice(1)});
     // OUTFITS: a theme, then one of the cast in it; their whole look goes on (what your figure can wear of it), their hair colour too
     const og=$('#lavog'), ol=$('#lavo'), OG=[...new Set((I.outfits||[]).map(o=>o.g))].sort(); stop(og); stop(ol);
@@ -346,7 +348,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
   function draw(){ if(!panel())return; if(BODIES.pick()!=='avatar')return LOOKS.layout();
     for(const b of $('#lavf').children)on(b,b.dataset.f===L.f); for(const b of $('#lavb').children)on(b,+b.dataset.b===L.b);
     $('#lavh').value=L.h; $('#lavhv').textContent=' '+L.h+'%'; { const F=fxOf(L); for(const k of 'em'){ $('#lavx'+k).value=String(F[k]); $('#lavx'+k+'s').value=F[k+'s']; $('#lavx'+k+'v').textContent=' '+F[k+'s']+'%'; } } $('#lavsc').value='#'+L.skin; $('#lavcc').value='#'+L.hair;
-    for(const b of $('#lavs').children)if(b.dataset.c)on(b,b.dataset.c===L.skin); for(const b of $('#lavc').children)if(b.dataset.c)on(b,b.dataset.c===L.hair);
+    for(const b of $('#lavs').children)if(b.dataset.c)on(b,b.dataset.c===L.skin); for(const b of $('#lavc').children)if(b.dataset.c)on(b,b.dataset.c===L.hair); { const e=L.eye||EYE0; $('#lavec').value='#'+e; for(const b of $('#lave').children)if(b.dataset.c)on(b,b.dataset.c===e); }
     $('#lavw').textContent=D[L.f]?'':' LOADING…';
     { const y=lyOf(L); $('#lavlf').value=String(y.fr); $('#lavlfc').value='#'+y.fc; $('#lavlfc').style.visibility=y.fr===3?'':'hidden'; $('#lavls').value=String(y.st); $('#lavlsc').value='#'+y.sc; }
     for(const [s] of SLOTS){ if(NOPROP.has(s))continue; const K=kinds(s), sel=$('#lav-'+s), k=$('#lavk-'+s), kd=$('#lavt-'+s), w=L.w[s], J=D[L.f], cur=w&&byN.get(w[0]);

@@ -110,7 +110,7 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
       api.sol(R.x0-.1,R.y0,R.x0+.1,R.y1); api.sol(R.x1-.1,R.y0,R.x1+.1,R.y1); api.sol(R.x0,R.y0-.1,R.x1,R.y0+.1); api.sol(R.x0,R.y1-.1,cx-.9,R.y1+.1); api.sol(cx+.9,R.y1-.1,R.x1,R.y1+.1); return PA; };
     const unbuild=()=>{ for(const r of S){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } S=[]; if(G){ G.removeFromParent(); G=null; } PA=null; const k=MSHOP.kit[id]||MSHOP.kit._; if(k&&k.drop)k.drop(); };
     const wb=box4(R.x0-.2,R.y0-.2,R.x1+.2,R.y1+.2);
-    ROOMS.off[id]={name:D.name,box:{x0:wb[0],z0:wb[1],x1:wb[2],z1:wb[3],y0:-1,y1:Y(WH+30)},need:()=>LOAD('later'),build,unbuild,
+    ROOMS.off[id]={name:D.name,box:{x0:wb[0],z0:wb[1],x1:wb[2],z1:wb[3],y0:-1,y1:Y(WH+30)},need:()=>LOAD('later'),build,unbuild,keep:true,
       spawn:[X(cx),Z(R.y1-1.3),0,Math.PI],out:[...at(lcx,L.y1+.9),0,TA.hd(0)],door:(d=>[d[0],Y(0),d[1]])(at(lcx,L.y1+.25)),exit:[X(cx),0,Z(R.y1-.25)],exitName:'OUT TO THE STREET'};
     { // its window, real both ways (130a): the street front and the inside's front wall are matched at the door (M: street to inside, turned and moved), the glass the part of the painted window that lies along the inside's wall
       const V3=THREE.Vector3, P2=(q,y=0)=>new V3(q[0],y,q[1]), S0=P2(at(lcx,L.y1)), us=P2(at(lcx+1,L.y1)).sub(S0).normalize(), ns=P2(at(lcx,L.y1+1)).sub(S0).normalize(), I0=new V3(X(cx),0,Z(R.y1)), ui=new V3(Math.sign(X(cx+1)-X(cx)),0,0), ni=new V3(0,0,Math.sign(Z(R.y1+1)-Z(R.y1))), up=new V3(0,1,0);

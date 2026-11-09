@@ -1,8 +1,8 @@
 // THE FIRE ESCAPE VIEW: your landing on the apartment house's fire escape, with the landings above and below, built from the house's own facade and landings round your apartment (one place, off the map): its door opens and you walk out.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, CULL, FAR3, GPH, pos, ROOMS, SFX, SKY, UI, VR, WINDOWS} from './003b-systems.js';
+import {CLOCK, CULL, FAR3, GPH, pos, ROOMS, SFX, SKY, UI, VIS, VR, WINDOWS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
-import {BLDK, FADE, MISTE, MODS, STORE, SYS, TILE} from './006-map-pre.js';
+import {BLDK, FADE, MAPG, MISTE, MODS, STORE, SYS, TILE} from './006-map-pre.js';
 import {BATCH, PEEK} from './008-batch.js';
 import {BLOCKS} from './038zb-blocks.js';
 { const APTS=MODS.apts, F=window.FIREV, T=TILE, KK=BLDK, {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, {HZ,S}=F, A=APTS.AL, FE=APTS.ESC[0], DU=APTS.DU, DO=APTS.DO, LV=F.lv;
@@ -98,19 +98,20 @@ import {BLOCKS} from './038zb-blocks.js';
     if(F.cum){ const u=F.cum.material.uniforms; u.uDr.value=performance.now()/1000;
       SHARED.cam.getWorldDirection(cd); const h=Math.hypot(cd.x,cd.z)||1; u.uIso.value.set(-cd.x/h,-cd.z/h,iso?-cd.y/h:0); } },'141c-fireview');   // G is turned half round; in the isometric view each cloud is moved up or down by its depth, so the layer stays one band at the bottom of the screen
   // the town from your landing: the real town round your house, drawn small and seldom from where your flat really stands (the glass's way, 130a) and shown behind everything: a cube of pictures in the behind and first-person views, one wide flat picture in the isometric
-  const TW=F.town={ms:250,px:512,pad:1.5,hz:.28,far:900,n:0}, tU={uC:{value:null},uT:{value:null},uO:{value:0},uPI:{value:new THREE.Matrix4()},uCW:{value:new THREE.Matrix4()},uUV:{value:new THREE.Vector4(1,1,0,0)},uSky:{value:BLUE},uHz:{value:TW.hz}};
+  const TW=F.town={ms:250,px:512,pad:1.5,hz:.12,far:900,n:0}, tU={uC:{value:null},uT:{value:null},uO:{value:0},uPI:{value:new THREE.Matrix4()},uCW:{value:new THREE.Matrix4()},uUV:{value:new THREE.Vector4(1,1,0,0)},uSky:{value:BLUE},uHz:{value:TW.hz}};
   const tq=new THREE.Mesh(new THREE.PlaneGeometry(2,2),new THREE.ShaderMaterial({uniforms:tU,depthWrite:false,vertexShader:'varying vec2 vU; void main(){ vU=uv; gl_Position=vec4(position.xy,1.,1.); }',
     fragmentShader:'uniform samplerCube uC; uniform sampler2D uT; uniform float uO, uHz; uniform mat4 uPI, uCW; uniform vec4 uUV; uniform vec3 uSky; varying vec2 vU; void main(){ vec3 c; if(uO>.5)c=texture2D(uT,vU*uUV.xy+uUV.zw).rgb; else { vec4 v=uPI*vec4(vU*2.-1.,1.,1.); vec3 d=mat3(uCW)*(v.xyz/v.w); c=textureCube(uC,vec3(-d.x,d.y,-d.z)).rgb; } gl_FragColor=vec4(mix(c,uSky,uHz),1.); }'}));
   tq.frustumCulled=false; tq.renderOrder=900; tq.visible=false; tq.raycast=()=>{}; tq.userData.sky=1; scene.add(tq);
-  let tc=null, tr=null, tn=0, tt=0, tf=0; const oc0=new THREE.Vector3(), oq=new THREE.Quaternion(), ov=new THREE.Vector3(), ox=new THREE.Vector3(), oy=new THREE.Vector3(), CYC=[4,0,1,3]; let oz=0, ocam=null;
+  let tc=null, tr=null, tn=0, tt=0, tf=0; const oc0=new THREE.Vector3(), oq=new THREE.Quaternion(), ov=new THREE.Vector3(), ox=new THREE.Vector3(), oy=new THREE.Vector3(), CYC=[4,0,1,3]; let oz=0, ocam=null; const tp=new THREE.Plane();   // only what lies out past your landing's rail: the real house and its fire escapes are the ones round you
   // one picture: you stand in the town for it (what is drawn there goes by where you are), the town's own cut by distance kept
-  const shoot=(cam,rt,face)=>{ const sb=renderer.shadowMap.autoUpdate, px=pos.x, pz=pos.z; renderer.shadowMap.autoUpdate=false; tq.visible=false; ov.set(px,0,pz).applyMatrix4(G.matrix);
-    const FU=FAR3.FU, fg=scene.fog, mk=FU&&FU.uMK.value, mx=MISTE.x, fv=[FAR3.mesh,FAR3.panels,FAR3.trees].map(o=>o&&o.visible); if(FU&&FAR3.fog){ FU.uMK.value=.8; FU.uMP.value.set(ov.x,0,ov.z); MISTE.x=1; scene.fog=FAR3.fog; for(const o of [FAR3.mesh,FAR3.panels,FAR3.trees])if(o)o.visible=true; }
-    try{ pos.x=ov.x; pos.z=ov.z; CULL.begin(); ROOMS.peek(()=>{ renderer.setRenderTarget(rt,face||0); renderer.clear(); renderer.render(scene,cam); }); }
-    finally{ if(FU&&FAR3.fog){ FU.uMK.value=mk; FU.uMP.value.copy(pos); MISTE.x=mx; scene.fog=fg; [FAR3.mesh,FAR3.panels,FAR3.trees].forEach((o,i)=>{ if(o)o.visible=fv[i]; }); } CULL.end(); pos.x=px; pos.z=pz; renderer.setRenderTarget(null); renderer.shadowMap.autoUpdate=sb; tq.visible=true; TW.n++; } };
+  const shoot=(cam,rt,face)=>{ const sb=renderer.shadowMap.autoUpdate, px=pos.x, pz=pos.z; renderer.shadowMap.autoUpdate=false; tq.visible=false; const rx=ov.set(px,0,pz).applyMatrix4(G.matrix).x, rz=ov.z;
+    const FU=FAR3.FU, RG=window.FARCITY&&FARCITY.ring, fg=scene.fog, mk=FU&&FU.uMK.value, mx=MISTE.x, fv=[FAR3.mesh,FAR3.panels,FAR3.trees].map(o=>o&&o.visible); if(FU&&FAR3.fog){ FU.uMK.value=.8; FU.uMP.value.set(rx,0,rz); MISTE.x=1; scene.fog=FAR3.fog; for(const o of [FAR3.mesh,FAR3.panels,FAR3.trees])if(o)o.visible=true; } if(RG)RG.visible=!cam.isOrthographicCamera; VIS.hide(MAPG.block,'fire',false);
+    try{ pos.x=rx; pos.z=rz; CULL.begin(); ROOMS.peek(()=>{ renderer.clippingPlanes=[tp.set(ov.set(0,0,-1),Z(V(DO+.25))).applyMatrix4(G.matrix)]; renderer.setRenderTarget(rt,face||0); renderer.clear(); renderer.render(scene,cam); }); }
+    finally{ VIS.hide(MAPG.block,'fire',true); if(RG)RG.visible=false; if(FU&&FAR3.fog){ FU.uMK.value=mk; FU.uMP.value.copy(pos); MISTE.x=mx; scene.fog=fg; [FAR3.mesh,FAR3.panels,FAR3.trees].forEach((o,i)=>{ if(o)o.visible=fv[i]; }); } CULL.end(); pos.x=px; pos.z=pz; renderer.setRenderTarget(null); renderer.shadowMap.autoUpdate=sb; tq.visible=true; TW.n++; } };
   tq.onBeforeRender=(r,s,cam)=>{ if(cam.isOrthographicCamera){ if(!ocam)return; ov.copy(cam.position).sub(oc0); const w=(cam.right-cam.left)/cam.zoom, h=(cam.top-cam.bottom)/cam.zoom, k=1/TW.pad; tU.uUV.value.set(k,k,.5-k/2+ov.dot(ox)/w*k,.5-k/2+ov.dot(oy)/h*k); }
     else { tU.uPI.value.copy(cam.projectionMatrixInverse); tU.uCW.value.copy(cam.matrixWorld); } };
-  SYS.add('places',()=>{ const on=F.on&&!VR.on&&!FADE.busy&&!WINDOWS.busy; if(F.cum)F.cum.visible=!on; if(!on){ tq.visible=false; tn=0; ocam=null; return; } const cam=SHARED.cam, now=performance.now();
+  SYS.add('places',()=>{ const on=F.on&&!VR.on&&!FADE.busy&&!WINDOWS.busy; if(F.cum)F.cum.visible=!on; if(on!==tq.visible)VIS.hide(MAPG.block,'fire',on);   // the map's ground carried on past its edges runs under this lot: out here it is in the town's picture only
+    if(!on){ tq.visible=false; tn=0; ocam=null; return; } const cam=SHARED.cam, now=performance.now(); if(window.FARCITY&&FARCITY.ring)FARCITY.ring.visible=false;   // the far skyline goes round the eye: here it belongs to the town's picture, not to the landing
     if(cam.isOrthographicCamera){ tU.uO.value=1; const W=Math.round(TW.px*cam.right/cam.top), sh=ov.copy(cam.position).sub(oc0), w=(cam.right-cam.left)/cam.zoom, h=(cam.top-cam.bottom)/cam.zoom, m=(TW.pad-1)/2;
       if(ocam&&cam.zoom===oz&&cam.quaternion.angleTo(oq)<1e-4&&Math.abs(sh.dot(ox))<m*w&&Math.abs(sh.dot(oy))<m*h&&now-tt<TW.ms*2)return;
       if(!tr)tr=new THREE.WebGLRenderTarget(W,TW.px,{type:THREE.HalfFloatType}); else if(tr.width!==W)tr.setSize(W,TW.px); if(!ocam)ocam=cam.clone(); ocam.copy(cam); for(const k of ['left','right','top','bottom'])ocam[k]=cam[k]*TW.pad; ocam.updateProjectionMatrix();

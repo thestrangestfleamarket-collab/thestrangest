@@ -30,9 +30,10 @@ import {LEVEL, QS, SYS, TILE} from './006-map-pre.js';
         if(hh>C.base[1]*1.6&&rnd()<.5){ const t2=yOf(Math.atan2(hh*1.08*T,D*T)); g.fillRect(x+Math.floor(w*.2),t2,Math.max(2,Math.floor(w*.6)),top-t2); }
         for(let yy=top+2;yy<bot-1;yy+=3)for(let xx=x+1;xx<x+w-1;xx+=2)if(rnd()<.5){ g.fillStyle=`rgb(${Math.round(L*255)},255,${tone})`; g.fillRect(xx,yy,1,1); } }
       x+=w+(rnd()<.3?1:0); } }
-  const tex=new THREE.CanvasTexture(cv); tex.magFilter=THREE.NearestFilter; tex.minFilter=THREE.LinearFilter; tex.generateMipmaps=false; tex.wrapS=THREE.RepeatWrapping;
+  const tex=new THREE.CanvasTexture(cv); tex.magFilter=THREE.NearestFilter; tex.minFilter=THREE.NearestFilter; tex.generateMipmaps=false;   // (never blended: a blend of ground and building texels drew a dark line at the horizon)
+  tex.wrapS=THREE.RepeatWrapping;
   const RAD=C.panorama*T, PH=RAD*(Math.tan(E1)-Math.tan(E0)), pmat=new THREE.ShaderMaterial({uniforms:{uTex:{value:tex},uHaze:U.uHaze,uDay:U.uDay},fog:false,side:THREE.BackSide,
-    vertexShader:`varying vec2 vU; void main(){ vU=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); gl_Position.z=gl_Position.w*.99999; }`,   // (behind everything, never cut off by the far plane: it was, and showed as a floating strip)
+    vertexShader:`varying vec2 vU; void main(){ vU=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); gl_Position.z=gl_Position.w*.9999995; }`,   // (behind everything, never cut off by the far plane: it was, and showed as a floating strip; just short of the sky's depth, which the fog (134e) reads as sky)
     fragmentShader:`uniform sampler2D uTex; uniform vec3 uHaze; uniform float uDay; varying vec2 vU; float h(vec2 p){ return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453); }
       void main(){ vec4 t=texture2D(uTex,vU); if(t.a<.5)discard;
         if(t.r<.1){ vec3 g=t.b<.25?vec3(.22,.40,.58):t.b<.5?vec3(.24,.37,.18):t.b<.75?vec3(.28,.28,.30):vec3(.14,.25,.11); gl_FragColor=vec4(mix(g*(.25+.75*uDay),uHaze,.9),1.); return; }   // (nearly the haze: from up high it shows past where the land is drawn, and must never read as a line)

@@ -512,8 +512,10 @@ await grab('park',async()=>{});
     for(const f of [()=>ROOMS.reset(),()=>CLIP.run(),()=>PERFX.chunk(),()=>CULL.scan()])try{ f(); }catch(e){ console.warn('PARK',e); } P.ms=Math.round(performance.now()-t0); };
   P.show=on=>{ '@later'; P.in=on; VIS.hide(G,'park',true); VIS.hide(G,'park',!(on&&SHARED.LVL==='up')); if(P.stand)P.stand.visible=!on||!!(PARK.trees&&PARK.trees.isBatchedMesh&&P.stand.isBatchedMesh); if(PARK.lodReset)PARK.lodReset(); if(MODS.landHoles)MODS.landHoles(on); if(window.WEEDS&&WEEDS.lawnDrop)WEEDS.lawnDrop(P.rect()); for(const f of P.onShow)try{ f(on); }catch(e){ console.warn('PARK',e); } };
   const go=async(on,jump)=>{ busy=true; await FADE.run(on?'ENTERING CENTRAL PARK':'LEAVING CENTRAL PARK',async()=>{ P.hold=true; try{ if(on&&!P.ready)await P.load(); } finally{ P.hold=false; } P.show(on); },{cut:jump,hold:140}); busy=false; };
+  { const load0=P.load; let once=null; P.load=()=>once||(once=load0()); }
+  P.due=()=>!P.ready&&SHARED.floor==='up'&&P.within(pos.x,pos.z,-20); FADE.arrive.push(async()=>{ if(P.due()&&!P.hold){ P.hold=true; try{ await P.load(); } finally{ P.hold=false; } } });
   let bg=false; const NEAR=14;   // the park is drawn (and loaded quietly first) from this many tiles outside its wall, so its gates show the real inside
-  P.door=(py,p)=>{ if(busy||!window.__started||SHARED.LVL!=='up'||LEVELS.way||UI.freeCam)return; const jump=lx!=null&&Math.hypot(p.x-lx,p.z-lz)>2*TILE; lx=p.x; lz=p.z;
+  P.door=(py,p)=>{ if(busy||!window.__started||SHARED.LVL!=='up'||SHARED.floor!=='up'||LEVELS.way||UI.freeCam)return; const jump=lx!=null&&Math.hypot(p.x-lx,p.z-lz)>2*TILE; lx=p.x; lz=p.z;
     if(!P.ready&&!bg&&P.within(p.x,p.z,-NEAR-6)){ bg=true; P.load().finally(()=>{ bg=false; }); }
     const w=P.within(p.x,p.z,P.in?-NEAR-.35:-NEAR+.35); if(w===P.in)return; if(w&&!P.ready&&!bg||jump)go(w,jump); else if(!w||P.ready)P.show(w); };
   window.PARKPLACE=()=>({in:P.in,ready:P.ready,busy,ms:P.ms,steps:P.steps,left:P.Q.length,kids:G.children.length}); }

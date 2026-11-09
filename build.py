@@ -127,7 +127,12 @@ for n, c in CH['code'].items(): open('dist/g/x-' + n + '.js', 'w').write('"use s
 m = subprocess.run(['node', 'tools/bundle.cjs', 'dist/g/game.js', 'dist/g'] + ['dist/g/x-' + n + '.js' for n in CH['code']], check=True, capture_output=True, text=True).stdout.strip()
 for f in os.listdir('dist/g'):
     if f.endswith('.js') and 'https://cdn.jsdelivr.net/npm/' in read('dist/g/' + f): sys.exit('dist/g/' + f + ' still asks cdn.jsdelivr.net for a package: the website bundles them')
-open('dist/g/market.html', 'w').write('<!doctype html><meta name="market-build" content="' + bv + '"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><title>The Market</title><body bgcolor=#0e1016><script type=module src=/g/' + m + '></script>')
+# what the start always fetches is asked for with the page, beside the game's own file, not after that file has come and been read
+pre = ''.join('<link rel=modulepreload href=/g/' + f + '>' for f in sorted(set(re.findall(r'(?:from|import)\s*"\./(c\.[0-9a-f]+\.js)"', read('dist/g/' + m))))) \
+    + ''.join('<link rel=preload as=script href=/g/' + f + '>' for f in sorted(os.listdir('dist/g')) if re.match(r'rig\..*\.js$', f)) \
+    + ''.join('<link rel=preload as=fetch crossorigin href=/g/' + json.loads(n) + '>' for f in used for n in [names[f], bins.get(f)] if n) \
+    + ''.join('<link rel=preload as=fetch crossorigin href=/g/' + f + '>' for f in sorted(os.listdir('dist/g')) if re.match(r'x-later\..*\.js$', f))
+open('dist/g/market.html', 'w').write('<!doctype html><meta name="market-build" content="' + bv + '"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><title>The Market</title>' + pre + '<body bgcolor=#0e1016><script type=module src=/g/' + m + '></script>')
 pages = pages[:2] + ['dist/g/market.html'] + (['dist/editor.html'] if EDITOR else [])
 for f in pages:
     t = read(f)

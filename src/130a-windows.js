@@ -1,6 +1,6 @@
 // THE WINDOWS: a glass pane shows the real view through it, drawn live in 3D through your own camera: from inside, the real street where the building stands; from the street, the real inside (built and held while you are near; further off, a picture of it taken while you were in).
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, LITE, NPCS, pos, ROOMS, SKY, VIS, VR, WINDOWS} from './003b-systems.js';
+import {CLOCK, LITE, NPCS, PETS, ROOMS, SKY, VIS, VR, WINDOWS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
 { const cam=new THREE.PerspectiveCamera(62,1,.05,400*TILE), V=new THREE.Vector3(), N=new THREE.Vector3(), C=new THREE.Vector3(), Q=new THREE.Quaternion(), done={};
@@ -15,10 +15,10 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
   // until its first picture a pane is plain dark glass under the same sheen
   const DARK=new THREE.DataTexture(new Uint8Array([22,26,32,255]),1,1); DARK.needsUpdate=true; DARK.colorSpace=THREE.SRGBColorSpace; const darkM=glass(DARK);
   WINDOWS.dark=me=>{ me.material=darkM; me.visible=true; }; for(const p of WINDOWS.panes)if(p.dark&&!p.rt)WINDOWS.dark(p.me);
-  const bake=p=>{ const P=place(p.off), b=P&&P.b, sh=P&&P.sh; if(!b||!sh||!p.me.parent)return; const me=p.me, g=me.geometry.parameters; let fov=60; me.updateWorldMatrix(true,false);
+  const bake=p=>{ const P=place(p.off), b=P&&P.b; if(!b||!p.me.parent)return; const me=p.me, g=me.geometry.parameters; let fov=60; me.updateWorldMatrix(true,false);
     me.getWorldPosition(V); N.set(0,0,1).applyQuaternion(me.getWorldQuaternion(Q)); N.y=0; N.normalize();
-    if(p.look==='out'){ C.set((b.x0+b.x1)/2,0,(b.z0+b.z1)/2); if(N.dot(C.sub(V).setY(0))>0)N.negate(); V.x+=sh[0]; V.z+=sh[1]; V.addScaledVector(N,.25*TILE); }
-    else{ V.x-=sh[0]; V.z-=sh[1]; C.set((b.x0+b.x1)/2,0,(b.z0+b.z1)/2); if(N.dot(C.clone().sub(V).setY(0))<0)N.negate(); const nr=me.userData.near!=null?me.userData.near:.45; V.addScaledVector(N,nr*TILE); if(nr<0)fov=2*Math.atan((g.height||1)/2/(-nr*TILE))*180/Math.PI; }   // a pane with a negative near is pictured from the street side, the whole pane in frame, as a passer-by sees it
+    if(p.look==='out'){ C.set((b.x0+b.x1)/2,0,(b.z0+b.z1)/2); if(N.dot(C.sub(V).setY(0))>0)N.negate(); V.applyMatrix4(P.Mi); N.transformDirection(P.Mi); V.addScaledVector(N,.25*TILE); }
+    else{ V.applyMatrix4(P.M); N.transformDirection(P.M); C.set((b.x0+b.x1)/2,0,(b.z0+b.z1)/2); if(N.dot(C.clone().sub(V).setY(0))<0)N.negate(); const nr=me.userData.near!=null?me.userData.near:.45; V.addScaledVector(N,nr*TILE); if(nr<0)fov=2*Math.atan((g.height||1)/2/(-nr*TILE))*180/Math.PI; }   // a pane with a negative near is pictured from the street side, the whole pane in frame, as a passer-by sees it
     const a=Math.max(.3,Math.min(4,(g.width||1)/(g.height||1))), w=a>=1?256:Math.round(256*a), h=a>=1?Math.round(256/a):256;
     if(!p.rt){ p.rt=new THREE.WebGLRenderTarget(w,h); p.rt.texture.colorSpace=THREE.SRGBColorSpace; me.material=glass(p.rt.texture,p.look==='in'?1.7:1); }
     cam.aspect=a; cam.fov=fov; cam.updateProjectionMatrix(); cam.position.copy(V); cam.lookAt(V.x+N.x,V.y,V.z+N.z); cam.updateMatrixWorld();
@@ -54,35 +54,19 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
           renderer.clippingPlanes=[new THREE.Plane(g.n,g.c-eps)]; renderer.setRenderTarget(rt); renderer.clear(); renderer.render(scene,lc); for(const p of g.L)if(p.me.material!==rt.m){ if(!p.live)p.pic=p.me.material; p.me.material=rt.m; p.me.visible=true; p.live=1; } } renderer.clippingPlanes=clip; };
       const back=fit?relight(fit,todo[0][1].at.x,todo[0][1].at.z):null, bg=scene.background; const shut=inward&&off; const dome=inward&&SKY.dome&&SKY.dome.visible; if(dome)SKY.dome.visible=false; if(inward)scene.background=BLACK; if(shut)ROOMS.offHide(true); const RF=fill&&SHARED.roomFill, rf=RF?[RF.intensity,RF.color.clone(),RF.groundColor.clone()]:null; if(rf){ RF.intensity=fill.intensity; RF.color.copy(fill.color); RF.groundColor.copy(fill.groundColor); } try{ if(peek){ const sh=[...NPCS.map(N=>N.g),...(NPCS.extra||[]).map(X=>X&&X.g)].filter(g=>g&&VIS.hidden(g,'shut')), dr=VIS.hidden(SKY.dome,'room'); for(const g of sh)VIS.hide(g,'shut',false); if(dr)VIS.hide(SKY.dome,'room',false); try{ ROOMS.peek(draw); } finally{ for(const g of sh)VIS.hide(g,'shut',true); if(dr)VIS.hide(SKY.dome,'room',true); } } else draw(); } finally{ if(back)back(); if(rf){ RF.intensity=rf[0]; RF.color.copy(rf[1]); RF.groundColor.copy(rf[2]); } scene.background=bg; if(shut)ROOMS.offHide(false); if(dome)SKY.dome.visible=true; } }
     catch(e){ console.warn('WINDOWS live',e); } finally{ renderer.setRenderTarget(null); for(const p of hid)p.me.visible=true; renderer.shadowMap.autoUpdate=sb; WINDOWS.busy=false; } };
-  // from the street: a shop near you (NEAR) whose glass looks in has its inside built and held (WINDOWS.held: not dropped) while you are near; let go further off (FAR), dropped as before
-  const NEAR=14*TILE, FAR=18*TILE, building=new Set(), built=id=>{ const o=ROOMS.off[id]; return o?!!(ROOMS.lazy[id]&&ROOMS.lazy[id].done):!!(STORE.inside&&STORE.inside[id]&&STORE.inside[id].done); };
-  const build=id=>{ '@later'; if(building.has(id))return; building.add(id); (async()=>{ if(ROOMS.off[id]){ await ROOMS.offBuild(id); ROOMS.ceilOf(id); } else{ await STORE.ensure(); if(STORE.pre[id])await STORE.pre[id](); if(!built(id))STORE.inGo(id); } })().catch(e=>console.warn('WINDOWS build',e)).finally(()=>building.delete(id)); };
-  let S0=null, moved=false;   // nothing is built for the glass until you have walked a step from where you started (the start builds no inside)
-  const onScreen=L=>{ '@later'; const cam=SHARED.cam; M4.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse); FR.setFromProjectionMatrix(M4); return L.some(p=>{ const me=p.me; me.geometry.boundingSphere||me.geometry.computeBoundingSphere(); SP.copy(me.geometry.boundingSphere).applyMatrix4(me.matrixWorld); return FR.intersectsSphere(SP); }); };
+  // from the street a pane shows a still picture of its inside: taken by tools/winpics.cjs (WINDOWS.shoot), shipped in data/winpics.json, put on after the start; no inside is built for its glass
   const unlive=p=>{ if(p.live){ p.me.material=p.pic||p.me.material; p.live=0; } if(p.only)p.me.visible=!!p.dark; };
   SYS.add('rooms',()=>{ WINDOWS.eyes.length=0; if(WINDOWS.busy||VR.on||FADE.busy)return; const id=(ROOMS.offIn&&ROOMS.offIn())||(ROOMS.cur&&ROOMS.cur.id&&STORE.inside&&STORE.inside[ROOMS.cur.id]?ROOMS.cur.id:null);
     if(id){ const P=place(id), L=WINDOWS.panes.filter(p=>p.off===id&&p.look==='out'&&p.me.parent); for(const p of WINDOWS.panes)if(p.look==='in')unlive(p); if(!P||!L.length)return; const b=P.b;
-      const RB=ROOMS.boxes(); return view(L,P.Mi,(b.x0+b.x1)/2,(b.z0+b.z1)/2,false,(P.eps??.02)*TILE,true,true,WINDOWS.panes.filter(p=>p.off===id),q=>!RB.some(r=>q.x>r.x0&&q.x<r.x1&&q.z>r.z0&&q.z<r.z1)); }
-    if(ROOMS.cur||!window.__started)return; if(!S0)S0={x:pos.x,z:pos.z}; if(!moved&&Math.hypot(pos.x-S0.x,pos.z-S0.z)<TILE)return; moved=true; const by={}; for(const p of WINDOWS.panes)if(p.look==='in'&&p.me.parent)(by[p.off]=by[p.off]||[]).push(p);
-    for(const k in by){ const L=by[k]; let dm=1e9; for(const p of L){ p.me.getWorldPosition(V); dm=Math.min(dm,Math.hypot(V.x-pos.x,V.z-pos.z)); }
-      if(dm>FAR||(dm>NEAR&&!WINDOWS.held.has(k))){ if(WINDOWS.held.delete(k)||L.some(p=>p.live))L.forEach(unlive); continue; } if(!WINDOWS.held.has(k)&&!onScreen(L))continue; WINDOWS.held.add(k); if(!built(k)){ build(k); continue; } if(ROOMS.off[k])ROOMS.ceilOf(k);
-      const P=place(k); if(!P)continue; const b=P.b; C.set((b.x0+b.x1)/2,0,(b.z0+b.z1)/2).applyMatrix4(P.Mi); view(L,P.M,C.x,C.z,true,(P.eps??.3)*TILE,false,false,WINDOWS.panes.filter(p=>p.off===k),q=>q.x>b.x0&&q.x<b.x1&&q.z>b.z0&&q.z<b.z1,!!ROOMS.off[k],ROOMS.off[k]&&ROOMS.off[k].fill); } },'130a-windows-live');
-  // the first picture without a visit: an inside off the map with panes looking in (the bodega) is built a moment after the start, pictured from the street and dropped again; the pictures are kept in the browser for this build, so the next start needs no build
-  const KEY=id=>'winpic:'+id+':'+(((document.querySelector('meta[name=market-build]')||{}).content)||'local'), buf=new Uint8Array(256*256*4);
-  const shot=p=>{ const w=p.rt.width, h=p.rt.height, cv=document.createElement('canvas'); cv.width=w; cv.height=h; const g=cv.getContext('2d'), im=g.createImageData(w,h); renderer.readRenderTargetPixels(p.rt,0,0,w,h,buf);
-    for(let y=0;y<h;y++)im.data.set(buf.subarray((h-1-y)*w*4,(h-y)*w*4),y*w*4); g.putImageData(im,0,0); return cv.toDataURL('image/png'); };
-  // taken in small steps, each when the page is idle with a frame drawn between (the build, each pane's picture, each pane's saving), never one long stall
-  const idle=()=>new Promise(r=>requestAnimationFrame(()=>(window.requestIdleCallback?requestIdleCallback(()=>r(),{timeout:1500}):setTimeout(r,30))));
-  const bakeOne=p=>{ const sb=renderer.shadowMap.autoUpdate, others=WINDOWS.panes.filter(q=>q.off===p.off&&!q.only&&q.me.visible), vis=others.map(q=>q.me.visible);
-    for(const q of others)q.me.visible=false; renderer.shadowMap.autoUpdate=false; try{ bake(p); } finally{ renderer.shadowMap.autoUpdate=sb; others.forEach((q,i)=>{ q.me.visible=q.rt?true:vis[i]; }); } };
-  let chain=Promise.resolve();
-  const firstOne=async id=>{ const L=WINDOWS.panes.filter(p=>p.off===id&&p.look==='in'&&!p.only); if(!L.length||done[id]!=null)return; let S=null; try{ S=JSON.parse(localStorage.getItem(KEY(id))||'null'); }catch(e){}
-    if(S&&S.length===L.length){ await Promise.all(L.map((p,i)=>new Promise(res=>{ const im=new Image(); im.onload=()=>{ const t=new THREE.Texture(im); t.colorSpace=THREE.SRGBColorSpace; t.needsUpdate=true; p.me.material=glass(t,1.7); p.me.visible=true; p.kept=t; res(); }; im.onerror=()=>res(); im.src=S[i]; }))); if(L.every(p=>p.kept))return; }
-    const o=ROOMS.off[id], P=place(id); if(!o||!ROOMS.offBuild||!P||!P.sh)return;
-    WINDOWS.taking.add(id); try{ const was=ROOMS.lazy[id]&&ROOMS.lazy[id].done; await idle(); await ROOMS.offBuild(id);
-      for(const p of L){ await idle(); if(ROOMS.offIn()===id)return; while(WINDOWS.busy)await idle(); WINDOWS.busy=true; try{ bakeOne(p); } finally{ WINDOWS.busy=false; } }
-      const pics=[]; for(const p of L){ await idle(); pics.push(p.rt?shot(p):''); } if(pics.every(Boolean))try{ localStorage.setItem(KEY(id),JSON.stringify(pics)); }catch(e){}
-      await idle(); WINDOWS.taking.delete(id); if(!was&&!WINDOWS.held.has(id)&&ROOMS.offIn()!==id)ROOMS.offDrop(id); } catch(e){ console.warn('WINDOWS first',e); } finally{ WINDOWS.taking.delete(id); } };
-  WINDOWS.first=id=>chain=chain.then(()=>firstOne(id));
-  let firstAt=0; SYS.add('places',()=>{ if(!window.__started||FADE.busy||WINDOWS.firstDone)return; if(!firstAt)firstAt=performance.now(); if(performance.now()-firstAt<4000)return; WINDOWS.firstDone=true; for(const id in ROOMS.off)if(!ROOMS.offIn()&&WINDOWS.panes.some(p=>p.off===id&&p.look==='in'&&!p.only))WINDOWS.first(id); },'130a-windows-first');
+      const RB=ROOMS.boxes(); return view(L,P.Mi,(b.x0+b.x1)/2,(b.z0+b.z1)/2,false,(P.eps??.02)*TILE,true,true,WINDOWS.panes.filter(p=>p.off===id),q=>!RB.some(r=>q.x>r.x0&&q.x<r.x1&&q.z>r.z0&&q.z<r.z1)); } },'130a-windows-live');
+  const buf=new Uint8Array(256*256*4);
+  const shot=p=>{ '@later'; const w=p.rt.width, h=p.rt.height, cv=document.createElement('canvas'); cv.width=w; cv.height=h; const g=cv.getContext('2d'), im=g.createImageData(w,h); renderer.readRenderTargetPixels(p.rt,0,0,w,h,buf);
+    for(let y=0;y<h;y++)im.data.set(buf.subarray((h-1-y)*w*4,(h-y)*w*4),y*w*4); g.putImageData(im,0,0); return cv.toDataURL('image/jpeg',.8); };
+  const inL=id=>WINDOWS.panes.filter(p=>p.off===id&&p.look==='in'&&p.me.parent), frame=()=>new Promise(r=>requestAnimationFrame(()=>r()));
+  WINDOWS.shoot=async id=>{ '@later'; const L=inL(id), o=ROOMS.off[id], P=place(id); if(!L.length||!o||!P)return null; await ROOMS.offBuild(id); for(let t=0;t<600&&PETS.loading&&PETS.loading()>0;t++)await new Promise(r=>setTimeout(r,100));
+    WINDOWS.held.add(id); for(let k=0;k<4;k++)await frame(); const b=P.b, sb=renderer.shadowMap.autoUpdate, bg=scene.background, dome=SKY.dome&&SKY.dome.visible, back=relight(q=>q.x>b.x0&&q.x<b.x1&&q.z>b.z0&&q.z<b.z1,(b.x0+b.x1)/2,(b.z0+b.z1)/2), out=[];
+    try{ renderer.shadowMap.autoUpdate=false; scene.background=BLACK; if(dome)SKY.dome.visible=false; for(const p of L){ p.me.visible=false; bake(p); out.push(p.rt?shot(p):''); } }
+    finally{ back(); scene.background=bg; if(dome)SKY.dome.visible=true; renderer.shadowMap.autoUpdate=sb; WINDOWS.held.delete(id); if(ROOMS.offIn()!==id)ROOMS.offDrop(id); } return out; };
+  const PICS=__LAZY__("data/winpics.json");
+  SYS.onStart(()=>{ PICS().then(D=>{ for(const id in D){ const L=inL(id); if(L.length!==D[id].length)continue; L.forEach((p,i)=>{ if(!D[id][i])return; new THREE.TextureLoader().load(D[id][i],t=>{ if(p.rt)return; t.colorSpace=THREE.SRGBColorSpace; p.me.material=p.pic=glass(t,1.7); p.me.visible=true; }); }); } }).catch(e=>SYS.fail('winpics',e)); },'130a-winpics');
   window.WINDOWS=WINDOWS; }

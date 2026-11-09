@@ -589,7 +589,7 @@ body #mode,body #said{${MONO};font-size:14px;color:#7dffa8;${GL};${PN};border:0}
   const look=()=>{ for(const [id,close,sub] of PANS){ const el=document.getElementById(id); if(!el)continue; const box=sub?el.querySelector(sub):el; if(!box)continue;
       if(!box.dataset.pan){ box.dataset.pan=1; drag(box,id); if(getComputedStyle(box).position==='static')box.style.position='relative'; }
       if(!box.querySelector(':scope>.pX')){ const x=document.createElement('button'); x.className='pX'; x.type='button'; x.textContent='X'; x.title='close'; x.onclick=e=>{ e.stopPropagation(); close?close(el):hide(el); }; box.appendChild(x); } } };
-  const own=el=>[...el.querySelectorAll('button')].find(b=>/^(CLOSE|DONE|PUT AWAY|LEAVE|CANCEL|X|✕|×)$/i.test(b.textContent.trim())&&!b.classList.contains('pX'));
+  const own=el=>[...el.querySelectorAll('button')].find(b=>/^(CLOSE|DONE|PUT AWAY|LEAVE|CANCEL|X|✕|×)(\s+(ESC|ENTER|[A-Z0-9]))?$/i.test(b.textContent.trim())&&!b.classList.contains('pX'));   // (a button may carry its key: LEAVE ESC)
   const frame=()=>{ for(const el of document.querySelectorAll('body>.ml')){ if(PANS.some(p=>p[0]===el.id))continue;   // every menu: the same frame, drag and X; its own CLOSE button folds into the X
       if(!el.dataset.pan){ el.dataset.pan=1; drag(el,el.id); }
       const c=own(el); if(c&&!c.classList.contains('mclose'))c.classList.add('mclose');

@@ -32,7 +32,7 @@ VIT.breathe=s=>{ VIT.air=Math.min(AIRCEIL,VIT.air+(+s||0)); };   // a breathing 
     if(under&&!(VIT.supply&&VIT.supply(dt))){ VIT.air=Math.max(0,VIT.air-dt);
       if(VIT.air<=0&&!VIT.dead){ VIT.hp=Math.max(0,VIT.hp-dt/18); if((glug-=dt)<=0){ SFX.play('thud',{vol:.4,pitch:.6,vary:.2}); glug=1; } if(VIT.hp<=0)VIT.die(); } }
     else if(!under){ if(VIT.air<VIT.airMax)VIT.air=Math.min(VIT.airMax,VIT.air+dt*VIT.airMax/2.5); glug=0; }   // a plain breath comes back at the surface; banked air stays
-    if(VIT.out>0){ VIT.out-=dt; keys.clear(); SHARED.target=null; if(VIT.out<=0){ VIT.fainted=false; if(!VIT.dead)VIT.hp=Math.max(VIT.hp,.4); } } else if(!VIT.dead){ let k=0; for(const f of VIT.mends)k+=f()||0; if(k>0)VIT.hp=Math.min(1,VIT.hp+dt*k); }   // health never comes back by itself: food, potions, rest, the bath
+    if(VIT.out>0){ VIT.out-=dt; keys.clear(); SHARED.target=null; if(VIT.out<=0){ VIT.fainted=false; if(!VIT.dead)VIT.hp=Math.max(VIT.hp,.4); } } else if(!VIT.dead){ let k=0; for(const f of VIT.mends)k+=f()||0; if(!VIT.fight&&VIT.air>0)k+=1/240; if(k>0)VIT.hp=Math.min(1,VIT.hp+dt*k); }   // health comes back by itself, slowly (full in 4 min, not in a fight or out of air); rest, the bath, food and potions on top
     VIT.fight=Math.max(0,VIT.fight-dt);
     const wet=!!(st.water&&st.water.in)||VIT.air<VIT.airMax-.05, show=!!window.__started; if(B.hidden===show)B.hidden=!show;
     if(show){ hpI.style.width=(VIT.hp*100).toFixed(0)+'%'; stI.style.width=(VIT.sta*100).toFixed(0)+'%'; const hm=ST('str'), sm=ST('sta'), im=ST('int'); hpN.textContent=Math.round(VIT.hp*hm)+' / '+hm; stN.textContent=Math.round(VIT.sta*sm)+' / '+sm; inI.style.width='100%'; inN.textContent=im+' / '+im;

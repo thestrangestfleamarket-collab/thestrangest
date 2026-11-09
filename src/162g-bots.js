@@ -79,6 +79,8 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
       if(task.s==='cast'){ if(task.go>0){ task.go-=dt; return; } if(!bait&&!FISHING.state?.()){ task.s='gear'; return; } if(task.hold>0)task.hold-=dt; if(fish>=(FISHING.room?FISHING.room():5)&&!(task.hold>0)){ FISHING.leave&&FISHING.leave(); task.s='sell'; return; }
         const S=FISHING.state&&FISHING.state(); FISHING.auto=true; if(S&&S.st){ doing='fishing ('+S.st+'), '+fish+' caught'; return; }
         if(walking(dt))return; let best=null; for(let r=2;r<=12&&!best;r+=1.5)for(let k=0;k<16;k++){ const a=k*Math.PI/8, x=pos.x+Math.sin(a)*r*T, z=pos.z+Math.cos(a)*r*T; if(FISHING.at(x,z)){ best=[x,z]; break; } }
+        if(!best&&!task.far){ task.far=1; let f=null; for(let r=14;r<=240&&!f;r+=3)for(let k=0;k<24;k++){ const a=k*Math.PI/12, x=pos.x+Math.sin(a)*r*T, z=pos.z+Math.cos(a)*r*T; if(FISHING.at(x,z)){ f=[x-Math.sin(a)*1.2*T,z-Math.cos(a)*1.2*T]; break; } }   // GO TO leaves it at the way through: walk on to the nearest water
+          if(f){ walk(f[0],f[1]); doing='walking to the water'; return; } }
         if(!best){ if(stand&&!task.pier){ task.pier=1; const p=thAt(stand); walk(p.x,p.z); } else roam(dt,here(task)); doing='looking for water'; return; }
         if(!FISHING.mode&&FISHING.enter)FISHING.enter(); FISHING.cast(best[0],best[1]); doing='casting'; } },
     decorate:dt=>{ if(!C.apt){ doing='has no apartment (OWN APARTMENT is off)'; return; } const E=window.ROOMED; task=task||{s:'in',n:0,t:0};

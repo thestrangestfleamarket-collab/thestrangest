@@ -1,9 +1,9 @@
 // THE CITY: CITY lists the town's places and keeps the day, jobs and schedules of its people.
 import {SHARED} from './003-shx.js';
-import {CITY, CLIP, CLOCK, MAPED, NPCS, PARK} from './003b-systems.js';
+import {CITY, CLIP, CLOCK, DN, MAPED, NPCS, PARK} from './003b-systems.js';
 import {CASTLE, MAPSTAIR, MODS, QS, SOL, STORE, TILE} from './006-map-pre.js';
 import {STHOLE} from './076-npc-map.js';
-Object.assign(CITY,{on:QS.get('city')==='1',jobs:[],sched:[],day:0,nj:0,extra:[]}); window.CITY=CITY;
+Object.assign(CITY,{on:QS.get('city')==='1',jobs:[],sched:[],day:DN.day?DN.day():0,nj:0,extra:[]}); window.CITY=CITY;
 { const T=TILE, R0=.3*T, C0=T/2;
   CITY.places=()=>{ const P=[], add=(id,name,x,z,dz,lv='up',o={})=>P.push(Object.assign({id,name,lv,at:{x,z},door:{x,z:z+dz}},o));
     { const B=SHARED.BOD.B0; add('bodega','THE BODEGA',SHARED.BOD.X((B.x0+B.x1)/2),SHARED.BOD.Z(B.y1),T); }
@@ -53,7 +53,7 @@ Object.assign(CITY,{on:QS.get('city')==='1',jobs:[],sched:[],day:0,nj:0,extra:[]
       if(st.to&&st.held>.6&&(E.side=(E.side||0))<6){ const dx=p.x-st.x, dz=p.z-st.z, d=Math.hypot(dx,dz)||1, px=-dz/d, pz=dx/d; for(const k of [1,-1,1.8,-1.8]){ const q={x:st.x+px*k*T+dx/d*.4*T,z:st.z+pz*k*T+dz/d*.4*T}; if(N.free(q.x,q.z,st.R)&&!NPCS.some(o=>o!==N&&o.lv===N.lv&&o.mode!=='hidden'&&o.blocks(q.x,q.z,st.R*1.5))){ E.r.pts.splice(E.i,0,q); E.side++; st.to={x:q.x,z:q.z}; st.held=0; break; } } }
       if(!st.to){ if(++E.stuck>8){ E.stuck=0; if(++E.re>5){ CITY.stop(N); E.then&&E.then(false); continue; } const dx=p.x-st.x, dz=p.z-st.z, d=Math.hypot(dx,dz)||1; grid(N.lv||'up',N.free).mark(st.x+dx/d*.5*T,st.z+dz/d*.5*T); const r=CITY.route(N.lv||'up',{x:st.x,z:st.z},E.to,N.free,true); if(!r){ CITY.stop(N); E.then&&E.then(false); continue; } E.r=r; E.i=1; }
         st.to={x:p.x,z:p.z}; st.wait=0; st.hold=false; if(E.v)st.v=E.v; } }
-    const h=CLOCK.h, l=CITY.lastH??h; if(h<l-12)CITY.day++;
+    const h=CLOCK.h, l=CITY.lastH??h; if(DN.day)CITY.day=DN.day(); else if(h<l-12)CITY.day++;
     for(const e of CITY.sched){ const hit=h>=l?(e.h>l&&e.h<=h):(e.h>l||e.h<=h); if(hit&&e.fired!==CITY.day+':'+e.h){ e.fired=CITY.day+':'+e.h; try{ e.fn(e); }catch(err){ console.warn('CITY.at',e.name,err); } } }
     CITY.lastH=h; };
   CITY.setHour=h=>CLOCK.set(h); CITY.hour=()=>CLOCK.h;

@@ -69,7 +69,6 @@ function bodegaWall(q,nx,ny,X,Y,z,f){ const u=nx?Y:X, i=Math.floor(u*1.5), j=Mat
         B.push({x0:a,y0:y+.06,x1:a+.17,y1:y+.16,z0:z,z1:z+10,c:p,foot:0,fj:(u,zz)=>zz>z+7?sh(p,1.15):zz<z+2?[226,226,220]:p,top:()=>sh(p,1.1)}); } }
     B.push({x0:x,y0:y,x1:x+L,y1:y+D+.02,z0:92,z1:102,c:[236,214,120],foot:0,fj:(u,z)=>z>94&&z<100&&Math.floor((u-x)*FP/4)%3===1?[40,80,200]:[236,214,120],top:()=>QG.steel});
     return prop(B); };
-  const lottoMachine=(x,y)=>{ SHARED.PNAME='lottery machine'; const c=[220,222,226]; return prop([ft(x,y,x+.4,y+.36),{x0:x,y0:y,x1:x+.4,y1:y+.36,z0:30,z1:46,c,foot:0,fj:(u,z)=>z>38&&z<44&&u>x+.06&&u<x+.34?lit([80,120,220]):z<33?[60,62,66]:c,fi:()=>sh(c,.7),top:()=>sh(c,.9)}]); };
   const candyJar=(x,y)=>{ SHARED.PNAME='candy jar'; const G=[200,220,230], C=[[220,60,60],[240,200,60],[60,160,80],[240,120,160]], w=.26, e=.025;
     const edge=(a0)=>(u,z)=>u-a0<e||a0+w-u<e||z<31?sh(G,.95):null;
     const B=[ft(x,y,x+w,y+w),{x0:x,y0:y,x1:x+w,y1:y+w,z0:30,z1:31,c:G,foot:0,nb:1,top:()=>null},{x0:x,y0:y,x1:x+w,y1:y+w,z0:31,z1:40,c:G,foot:0,nb:1,fj:edge(x),fi:edge(y),top:()=>null},
@@ -100,8 +99,8 @@ function bodegaWall(q,nx,ny,X,Y,z,f){ const u=nx?Y:X, i=Math.floor(u*1.5), j=Mat
     top:(u,v)=>{ const e=Math.min(u-x,x+L-u,v-y,y+D-v); if(e<.04)return [58,60,66]; const a=Math.floor((u-x)*24), b=Math.floor((v-y)*24); if(a%4===1&&b%4===1)return [14,14,16]; return grain(u,v,431,.4)>.62?[48,50,54]:c; },fi:()=>[24,24,28],fj:()=>[28,28,32]}],null,{walk:true}); };
   Object.assign(CATALOG,{'rubber mat':(x,y)=>rubberMat(x-.8,y-.3),'counter mat':(x,y)=>rubberMat(x-.3,y-1.2,.6,2.4),'counter':(x,y)=>counter(x-.86,y-.33),'long counter':(x,y)=>counter(x-1.5,y-.33,3),'shelf of goods':(x,y)=>goodsShelf(x-1,y-.31),'shop shelf':(x,y)=>shopShelf(x-1,y-.25),'door mat':(x,y)=>doorMat(x-.5,y-.33),'drinks fridge':(x,y)=>drinksFridge(x-.39,y-.46),
     'newspaper rack':(x,y)=>newsRack(x-.25,y-.2),'drone box':(x,y)=>droneDock(x,y),'drone flap':(x,y)=>droneFlap(x-.3,y-.025),
-    'cigarette rack':(x,y)=>cigRack(x-1.6,y-.11),'lottery machine':(x,y)=>lottoMachine(x-.2,y-.18),'candy jar':(x,y)=>candyJar(x-.13,y-.13),'paper bags':(x,y)=>paperBags(x-.21,y-.15),'wall phone':(x,y)=>wallPhone(x-.04,y-.13),
+    'cigarette rack':(x,y)=>cigRack(x-1.6,y-.11),'candy jar':(x,y)=>candyJar(x-.13,y-.13),'paper bags':(x,y)=>paperBags(x-.21,y-.15),'wall phone':(x,y)=>wallPhone(x-.04,y-.13),
     'radio':(x,y)=>radio(x-.25,y-.12),'convex mirror':(x,y)=>convexMirror(x-.22,y-.04),'extension cord':(x,y)=>cord(x,y,y+3.3,[y+1,y+1.95,y+2.9]),'box fan':(x,y)=>boxFan(x-.25,y-.08),'fly strip':(x,y)=>flyStrip(x,y),
     'fluorescent tube':(x,y)=>tube(x-1,y),'wall clock':(x,y)=>wallClock(x-.2,y-.03),'calendar':(x,y)=>calendar(x,y-.15),'door bell':(x,y)=>doorBell(x,y)});
-  for(const k of ['counter','long counter','shelf of goods','shop shelf','door mat','drinks fridge','newspaper rack','drone box','drone flap','cigarette rack','lottery machine','candy jar','paper bags','wall phone','radio','convex mirror','extension cord','box fan','fly strip','wall clock','calendar','door bell','fluorescent tube','rubber mat','counter mat'])KIND_OF[k]=k; }
+  for(const k of ['counter','long counter','shelf of goods','shop shelf','door mat','drinks fridge','newspaper rack','drone box','drone flap','cigarette rack','candy jar','paper bags','wall phone','radio','convex mirror','extension cord','box fan','fly strip','wall clock','calendar','door bell','fluorescent tube','rubber mat','counter mat'])KIND_OF[k]=k; }
 export {bodegaFloorCol, bodegaWall};

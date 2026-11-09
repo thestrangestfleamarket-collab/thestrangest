@@ -51,6 +51,7 @@ One pull request each, in this order; the game stays playable after every one.
 - [x] **The bath house and the bodega still open on Market St** (done 7 Nov: both back on Market St's row with the map moved again) · P1 · M · pick + code. After "only Market St" (7 Nov) their lots are on the Hudson row, but GO TO THE BATH HOUSE lands on an apartment house's fire escape (the baths are built in place inside the APARTMENTS block), and the bodega's door and the old bodega front stand on Market St over APARTMENTS 4. Move both insides off the map with their doors on their Hudson lots (the owner's pick).
 
 ## For the owner
+- [x] **Market St traffic** (owner, 9 Nov 2026; done 9 Nov, claude/inspiring-maxwell-ynwbpy): poles to the kerb with lights on top, lamp posts gone, cars and fliers driving, the park gate's stop light and button. `src/150pb-traffic.js`, `tools/traffic-bake.py`, `tests/traffic.cjs`. Waits for his look and yes.
 
 **To try on the live site** (one sitting; each line is in its area below):
 phones and tablets: the touch pad, its layout, a controller on a phone (8 Nov) ·
@@ -149,7 +150,7 @@ In order (each step builds on the one before): RLS SQL → login cookie with the
 (art in its own object) → money on the server → trade checked on the server. Live-data steps go in one window, after the checks run on
 `main`, and end with the owner trying it live.
 
-- [ ] **Commit the Supabase RLS SQL** · P1 · S · pick + code. 1 Nov review §B9. `players`, `admins`, `invite_codes`, `bug_reports` (and
+- [x] **Commit the Supabase RLS SQL** · done 9 Nov (`supabase/policies.sql`, read live; nothing changed there) · P1 · S · pick + code. 1 Nov review §B9. `players`, `admins`, `invite_codes`, `bug_reports` (and
   `join_beta`, the `bugs` bucket's policies) live only in the dashboard. Add them under `supabase/` beside `apartments.sql`/`cinema.sql`.
   The owner pastes the current policies, or OKs reading them with the Supabase tools; review before applying anything.
 - [ ] **Login cookie HttpOnly** · P2 · M · code · risk med-high (live auth). 1 Nov review §B8. `src/door/door.html:44` sets the Supabase
@@ -172,16 +173,16 @@ In order (each step builds on the one before): RLS SQL → login cookie with the
   object for the whole game, against "build for many". Fix: one object per player (`idFromName(id)`), a small passport-counter object
   (stays unique), and art in its own object (anyone reads a finished painting by id). Visits (`body.who`) read another player's object.
   Migrate live data once; do it before access widens. Fold the money migration below into the same window if the owner agrees.
-- [ ] **Money on the server** · P2 · XL · pick + code · risk high. From the 1 Nov review (its #1; owner: add to TODO, 4 Nov). Cash is a
+- [x] **Money on the server** · done 9 Nov [claude/relaxed-bohr-vnxr7f]: a bucket on the server, a ledger; not full server authority (the game still decides what you catch) · P1 · · XL · pick + code · risk high. From the 1 Nov review (its #1; owner: add to TODO, 4 Nov). Cash is a
   client-held string in `/owned` (`worker/door.js:80-84`), so any logged-in player can set their balance; shops and the BBS spend it.
   `INV.cash` is written at about 50 places in 27 files, mostly earnings (fishing, forage, arcade, fair, gems), so a buy/sell ledger
   priced from `data/items.json` isn't enough: earnings need a rule each, or a capped "earn" call. `/owned` stops taking cash; migrate each
   balance once. Owner decides first: which object, how to migrate. (`docs/REVIEW-2026-11-01.md` §B6.)
-- [ ] **Trade: the server trusts each game's offer** · P3 · M (cash) / XL (items) · code · risk high. From #564: `trade()`
+- [x] **Trade: the server trusts each game's offer** · done 9 Nov [claude/relaxed-bohr-vnxr7f]: each side pays first, only what was paid changes hands · P1 · · M (cash) / XL (items) · code · risk high. From #564: `trade()`
   (`worker/door.js:283-306`) only clamps shapes; each game applies the swap itself (`src/159i-trade.js:43-45`). Cash checked server-side
   needs the money ledger; items need a server-held pack (no line for that yet). Low on its own today (anyone can set anything in `/owned`),
   high once money is on the server.
-- [ ] **Shared-world writes aren't checked** · P3 · M · code. Found in the 4 Nov audit: review §B7 (anyone may write any `world` key on the
+- [x] **Shared-world writes aren't checked** · done 9 Nov (`WORLD_KEYS`) · P3 · M · code. Found in the 4 Nov audit: review §B7 (anyone may write any `world` key on the
   block, including `add` counters) has no line. The shared ground and pouches (4 Nov) also trust the client's item records. Decide the rules
   with the trade line.
 

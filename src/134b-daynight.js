@@ -8,7 +8,7 @@ import {TPANE} from './087dz-tpane.js';
 __CODE__("worker/clock.js")
 Object.assign(DN,{lk:1,mode:'day',modes:['day','dusk','night'],names:{day:'DAY',dusk:'DUSK',night:'NIGHT'},FADE:60000,hold:null,clk:null});
 // the game's hour, the same for everyone: real Central time unless the owner set or stopped it (worker/clock.js, DN.clk); the look follows the real sunrise and sunset there, unless the owner holds one
-DN.clockH=()=>CLK.hour(Date.now(),DN.clk); { let tk=-1, tv=null; DN.times=()=>{ const k=Math.floor(Date.now()/60000); if(k!==tk){ tk=k; tv=CLK.sun(Date.now(),DN.clk); } return tv; }; }   // the real sunrise and sunset on the game's date
+DN.clockH=()=>CLK.hour(Date.now(),DN.clk); DN.day=()=>CLK.day(Date.now(),DN.clk); { let tk=-1, tv=null; DN.times=()=>{ const k=Math.floor(Date.now()/60000); if(k!==tk){ tk=k; tv=CLK.sun(Date.now(),DN.clk); } return tv; }; }   // the real sunrise and sunset on the game's date
 // the looks over the day: NIGHT, then about an hour each way of sunrise blending through DUSK's colours into DAY, and the same the other way round sunset: [from, to, how far]
 DN.mix=h=>{ const {rise:r,set:st}=DN.times(), w=(a,b,x0)=>[a,b,Math.max(0,Math.min(1,h-x0))];
   if(h>=r-1.1&&h<r-.1)return w('night','dusk',r-1.1); if(h>=r-.1&&h<r+.9)return w('dusk','day',r-.1); if(h>=st-.9&&h<st+.1)return w('day','dusk',st-.9); if(h>=st+.1&&h<st+1.1)return w('dusk','night',st+.1);

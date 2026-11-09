@@ -4,8 +4,8 @@ import {CLOCK, LITE, NPCS, pos, ROOMS, SKY, VIS, VR, WINDOWS} from './003b-syste
 import {renderer, scene} from './004-main.js';
 import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
 { const cam=new THREE.PerspectiveCamera(62,1,.05,400*TILE), V=new THREE.Vector3(), N=new THREE.Vector3(), C=new THREE.Vector3(), Q=new THREE.Quaternion(), done={};
-  // the glass: the picture a little cool and dim, two soft streaks of sheen across it
-  const glass=(map,boost=1)=>{ const m=new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,toneMapped:false}); m.onBeforeCompile=sh=>{ sh.fragmentShader=sh.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\n { vec2 q=vMapUv; float t=q.x*.8+q.y*.55; diffuseColor.rgb=diffuseColor.rgb*vec3(.84,.88,.93)*'+boost.toFixed(2)+'+vec3(.045,.05,.055)*smoothstep(.04,0.,abs(t-.55))+vec3(.022)*smoothstep(.1,0.,abs(t-.82)); }'); }; return m; };   // a shop window seen from the street is brighter than its picture: the inside's lamps are few
+  // the glass: clear (owner, 9 Nov 2026: "make the glass less opaque"), the faintest cool tint and two thin streaks of sheen
+  const glass=(map,boost=1)=>{ const m=new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,toneMapped:false}); m.onBeforeCompile=sh=>{ sh.fragmentShader=sh.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\n { vec2 q=vMapUv; float t=q.x*.8+q.y*.55; diffuseColor.rgb=diffuseColor.rgb*vec3(.96,.98,1.)*'+boost.toFixed(2)+'+vec3(.022,.025,.028)*smoothstep(.03,0.,abs(t-.55))+vec3(.01)*smoothstep(.08,0.,abs(t-.82)); }'); }; return m; };   // a shop window seen from the street is brighter than its picture: the inside's lamps are few
   // a pane (WINDOWS.pane: its mesh, the inside it belongs to: ROOMS.off[id] with shift, inside to street; and which way it looks: 'out' from inside at the street, 'in' from the street at the inside)
   // the place a pane belongs to: an inside off the map (its box, shift: inside to street) or a street shop built in place (its own box, no shift)
   // M: street to inside, Mi: inside to street (an off-map inside with xf, a merchant's shop, is turned as well as moved; with shift only moved)

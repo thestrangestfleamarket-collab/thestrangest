@@ -7,6 +7,13 @@ import {BATCH} from './008-batch.js';
 import {BLOCKS} from './038zb-blocks.js';
 import {FACADES} from './038zc-facades.js';
 const MSHOP={kit:{},at:{},defs:{},fronts:[]};
+// the real signs' pictures: gold leaf letters (a dark edge, a lighter face), a painted blade sign's name, a neon OPEN
+const SHOPSIGN=(()=>{ const C={}, mk=(k,w,h,f)=>C[k]||(C[k]=(()=>{ const cv=document.createElement('canvas'); cv.width=w; cv.height=h; const g=cv.getContext('2d'); f(g,w,h); const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return t; })());
+  const fit=(g,t,w,h,font)=>{ let s=h; do{ g.font=font.replace('S',s+'px'); s-=2; }while(g.measureText(t).width>w*.94&&s>8); };
+  return {gold:(t,big)=>mk('g'+t,1024,128,(g,w,h)=>{ fit(g,t,w,h*(big?.86:.7),'bold S Georgia, serif'); g.textAlign='center'; g.textBaseline='middle'; g.lineJoin='round'; g.lineWidth=7; g.strokeStyle='rgba(40,22,6,.9)'; g.strokeText(t,w/2,h/2+4);
+      const gr=g.createLinearGradient(0,h*.2,0,h*.85); gr.addColorStop(0,'#fff0b0'); gr.addColorStop(.45,'#e0b048'); gr.addColorStop(.55,'#b07a20'); gr.addColorStop(1,'#f0c860'); g.fillStyle=gr; g.fillText(t,w/2,h/2+4); }),
+    blade:(t,c)=>mk('b'+t,512,160,(g,w,h)=>{ g.fillStyle='rgba(0,0,0,0)'; g.clearRect(0,0,w,h); g.strokeStyle='#d8b060'; g.lineWidth=6; g.strokeRect(10,10,w-20,h-20); fit(g,t,w-60,h*.6,'bold S Georgia, serif'); g.textAlign='center'; g.textBaseline='middle'; g.fillStyle=`rgb(${(c||[240,220,180]).join(',')})`; g.fillText(t,w/2,h/2+3); }),
+    open:()=>mk('open',256,96,(g,w,h)=>{ g.font='bold 64px Arial, sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.lineWidth=5; g.strokeStyle='#ff3040'; g.shadowColor='#ff2030'; g.shadowBlur=18; g.strokeText('OPEN',w/2,h/2+2); g.shadowBlur=6; g.strokeStyle='#ffd0d8'; g.lineWidth=2; g.strokeText('OPEN',w/2,h/2+2); g.strokeStyle='#40a0ff'; g.lineWidth=4; g.shadowColor='#3080ff'; g.shadowBlur=12; g.strokeRect(10,8,w-20,h-16); })}; })();
 await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED.BOD.g.hash, sh=SHARED.BOD.K.sh, MS=STORE.main, T=TILE;
   const lit=c=>Object.assign([c[0],c[1],c[2]],{e:1});
   const box4=(x0,y0,x1,y1)=>{ const a=X(x0), b=X(x1), c=Z(y0), d=Z(y1); return [Math.min(a,b),Math.min(c,d),Math.max(a,b),Math.max(c,d)]; };
@@ -35,7 +42,8 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
       ['skate','THE SKATE SHOP','SKATE',[104,64,52],[255,170,60]],['fishing','FISHING & SCUBA','TACKLE',[90,84,82],[130,210,255]],['tailor','THE TAILOR','TAILOR',[120,72,60],[240,220,190]],
       ['barber','THE BARBER','BARBER',[116,66,58],[255,120,120]],['aquarium','THE AQUARIUM','AQUARIUM',[70,92,104],[120,220,255]],['hotel','THE HOTEL','HOTEL',[110,78,62],[255,230,170]],['antiques','ANTIQUES & PAWN','PAWN',[110,84,64],[255,200,120]],['outfitter','THE OUTFITTER','GEAR',[90,92,80],[180,255,140]]].map(([id,name,sign,w,c])=>[id,{name,sign,signC:c,neon:true,signBg:[30,26,28],wall:BLOCKS.brick(w),trim:[200,190,170],frame:[44,40,42],door:.5,h:id==='hotel'?300:170}])),
     barn:{name:'THE BARN',sign:'BARN',signC:[240,230,200],neon:false,signBg:[120,30,26],wall:BLOCKS.brick([150,40,34]),trim:[230,220,200],frame:[60,40,30],door:.5,h:200,none:true}};   // (none: its outside is a modelled thing of its own, the park's Polyfork red barn)
-  for(const id of ['pets','reptiles','birdshop','butterflies'])Object.assign(DEF[id],{both:true,glass:true,dw:1.0,wz:[8,96]});   // the pet shops' giant windows either side of a glass door, nearly floor to sign (owner, 9 Nov 2026), the pets on show behind them
+  for(const id of ['pets','reptiles','birdshop','butterflies'])Object.assign(DEF[id],{both:true,glass:true,dw:1.0,wz:[8,96]});
+  Object.assign(DEF.pets,{real:'PUPPIES · KITTENS · RABBITS'}); Object.assign(DEF.reptiles,{real:'LIZARDS · DRAGONS · DINOSAURS'}); Object.assign(DEF.birdshop,{real:'SONGBIRDS · PARROTS · HAWKS'}); Object.assign(DEF.butterflies,{real:'BUTTERFLIES · BEES · BEETLES'});   // their real signs (owner, 9 Nov 2026): gold leaf on the glass, a blade sign, a neon OPEN   // the pet shops' giant windows either side of a glass door, nearly floor to sign (owner, 9 Nov 2026), the pets on show behind them
 
   /* ---------- the outside: a shopfront painted on the block's street face ---------- */
   const front=(D,W)=>{ const H0=100, sz=4, sc=Math.floor((W*24-(D.sign.length*6-1)*sz)/2), on=MS.word(D.sign,sc,H0+8,sz), du=D.door*W;
@@ -60,6 +68,20 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
     if(D.pf){ const S=p.face==='s', fy=S?LW.y0:LW.y1, zi=Math.sign(Z(fy+(S?1:-1))-Z(fy)); MSHOP.fronts.push({id,pf:D.pf,x:X((LW.x0+LW.x1)/2),zf:Z(fy),zi,w:Math.abs(X(LW.x1)-X(LW.x0)),rot:TA.hd(0),L,pt:TA.pt,du:lcx}); }   // the Polyfork building stands on the lot (068a-pfrow); the lot's solid below is its footprint
     else if(!D.none){ const dw=D.dw||.85, du=D.door*W, wz=D.wz||[19,89], sh0=D.both?[[lcx-D.half+.08,lcx-dw-.28,wz[0],wz[1]],[lcx+dw+.28,lcx+D.half-.08,wz[0],wz[1]],[lcx-dw+.12,lcx+dw-.12,12,86]]:[[L.x0+(du>W/2?.35:du+dw+.15),L.x0+(du>W/2?du-dw-.15:W-.35),16,92]];
       FACADES.make({id,L,pt:TA.pt,z1:D.h,wall:(D.wall&&D.wall.c)||[128,64,52],trim:D.trim,frame:D.frame,seed:id.length*31+n,ground:118,door:D.both?null:{u:lcx,w:dw},shop:sh0.map(([u0,u1,z0,z1])=>({u0,u1,z0,z1})),sign:{text:D.sign,color:D.signC,bg:D.signBg,u:(L.x0+L.x1)/2}}); }   // modelled, not painted (owner, 8 Nov 2026)
+    if(D.real&&!D.pf&&!D.none){ const ry=(()=>{ const a=at(lcx,L.y1), b=at(lcx,L.y1+1); return Math.atan2(b[0]-a[0],b[1]-a[1]); })(), tl=Math.abs(X(1)-X(0)), dw=D.dw||.85, hf=(p.inW||11)/2-.3, wz=D.wz||[19,89], G=new THREE.Group(); G.name=id+'-signs';
+      const plane=(u,v,z0,z1,w,tex,o2={})=>{ const m=new THREE.Mesh(new THREE.PlaneGeometry(w*tl,Y(z1)-Y(z0)),new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false,side:o2.both?THREE.DoubleSide:THREE.FrontSide,toneMapped:false,...(o2.add?{blending:THREE.AdditiveBlending}:{})}));
+        const q=at(u,v); m.position.set(q[0],(Y(z0)+Y(z1))/2,q[1]); m.rotation.y=ry+(o2.turn||0); m.renderOrder=4; m.raycast=()=>{}; G.add(m); return m; };
+      // gold leaf on the glass: the name over one window, what it keeps over the other
+      const L0=[lcx-hf+.08,lcx-dw-.28], L1=[lcx+dw+.28,lcx+hf-.08];
+      for(const [[a,b],t,big] of [[L0,D.name,1],[L1,D.real,0]]){ const w=(b-a)*.86; plane((a+b)/2,L.y1+.06,wz[1]-(big?32:26),wz[1]-8,w,SHOPSIGN.gold(t,big)); }
+      // a blade sign out over the pavement beside the door, on its iron bracket, the name both sides
+      { const u=lcx+dw+.75, out0=L.y1+.15, out1=L.y1+1.35, z0=wz[1]+6, z1=z0+20, FR=[34,30,28];
+        const bx=(u0,u1,v0,v1,za,zb,c)=>{ const a=at(u0,v0), b=at(u1,v1), m=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(b[0]-a[0])||.04*tl,Y(zb)-Y(za),Math.abs(b[1]-a[1])||.04*tl),new THREE.MeshLambertMaterial({color:new THREE.Color(c[0]/255,c[1]/255,c[2]/255)})); m.position.set((a[0]+b[0])/2,(Y(za)+Y(zb))/2,(a[1]+b[1])/2); m.castShadow=true; G.add(m); };
+        bx(u-.03,u+.03,L.y1,out1+.1,z1+2,z1+3.5,FR); bx(u-.03,u+.03,L.y1,L.y1+.5,z1-6,z1+2,FR); bx(u-.02,u+.02,out0,out0+.02,z1,z1+2,FR); bx(u-.02,u+.02,out1,out1+.02,z1,z1+2,FR);
+        bx(u-.025,u+.025,out0,out1,z0,z1,D.signBg||[30,26,28]); const t=SHOPSIGN.blade(D.sign,D.signC); for(const sd of [1,-1])plane(u+sd*.03,(out0+out1)/2,z0+1.5,z1-1.5,out1-out0-.1,t,{turn:sd*Math.PI/2}); }
+      // the neon OPEN low in the left window, brighter after dark
+      { const m=plane(L0[1]-.75,L.y1+.055,wz[0]+6,wz[0]+19,1.1,SHOPSIGN.open(),{add:true}); m.onBeforeRender=()=>{ m.material.opacity=.55+.45*FACADES.night.value; }; }
+      scene.add(G); }
     if(!D.pf&&!D.none){ BATCH.build(MKA); for(const me of Object.values(BATCH.meshes)){ me.castShadow=true; me.receiveShadow=true; } BATCH.meshes={}; }
     // a Hudson shop is open at the front (owner, 8 Nov 2026: "they should be open area you walk in no door"): its walls, shelves and counter are solid, the shop is walked into, its merchant behind the counter; the bookstore keeps its door (its library and stacks are inside)
     if(p.row===2&&D.pf&&id!=='books'){ const m=1/.84, w=L.x1-L.x0, c=(L.x0+L.x1)/2, sb=(u0,v0,u1,v1,h)=>{ const a=TA.pt(u0,v0), b=TA.pt(u1,v1), r=box4(a[0],a[1],b[0],b[1]); SOL.up.push(r); FIX.up.push([r[0],r[1],0,r[2],r[3],Y(h)]); };

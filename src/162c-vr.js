@@ -230,7 +230,7 @@ import {AVATAR} from './111c-avatar.js';
   VR.aim=(x,y)=>{ const p=new V3((x/PN.W-.5)*panel.scale.x,(.5-y/PN.H)*panel.scale.y,0).applyQuaternion(panel.quaternion).add(panel.position); return {x:p.x,y:p.y,z:p.z}; };
   VR.dbg=()=>({rays:PTR.filter(P=>P.src).map(P=>({h:P.src.handedness,hand:!!P.src.hand,o:P.o,d:P.d,hit:P.hit,x:P.x,y:P.y})),wrist:wrist.visible?wrist.position.toArray():null,finger:TIPR.toArray()});
 
-  const btn=document.createElement('button'); btn.type='button'; btn.id='vrbtn'; btn.hidden=true; btn.textContent='ENTER VR'; btn.title='Play in your headset (hold B to leave)';
+  const btn=document.createElement('button'); btn.type='button'; btn.id='vrbtn'; btn.className='mlb'; btn.hidden=true; btn.textContent='ENTER VR'; btn.title='Play in your headset (hold B to leave)';
   btn.style.cssText='position:fixed;left:calc(12px + env(safe-area-inset-left,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:5;font:12px var(--pixel);color:var(--key);background:var(--panel);border:2px solid var(--line);padding:8px 12px;cursor:pointer';
   btn.onclick=()=>{ btn.blur(); if(VR.on)VR.leave(); else VR.enter(); }; document.body.appendChild(btn);
   if(xr&&xr.isSessionSupported)xr.isSessionSupported('immersive-vr').then(ok=>{ btn.hidden=!ok; }).catch(()=>{});

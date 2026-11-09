@@ -23,20 +23,20 @@ import {LEVEL, QS, SYS, TILE} from './006-map-pre.js';
   // the Hudson straight through to the horizon (owner, 8 Nov 2026: "make sure there arent any building in the hudson (it should go straight through)"): a direction that meets the river far off is water all the way
   const CH=new Uint8Array(W); for(let x=0;x<W;x++)CH[x]=isWet(at((x+.5)/W,C.ring[C.ring.length-1]*T)[1])?1:0;
   // (the ground just past the view; what is beyond it shows only as the far shore's strip at the horizon)
-  for(let x=0;x<W;x++){ const [tx0,ty]=at((x+.5)/W,C.ring[0]*T), k=CH[x]?'water':land(tx0,ty); g.fillStyle=`rgb(0,0,${LK[k]*64+32})`; g.fillRect(x,yOf(0)-1,1,H);
-    if(k==='water'&&!CH[x]&&C.ring.some(D=>land(...at((x+.5)/W,D*T))!=='water')){ g.fillStyle=`rgb(0,0,${LK.street*64+32})`; g.fillRect(x,yOf(0)-1,1,3); } }   // (the far shore at the horizon under its towers, not water)
+  for(let x=0;x<W;x++){ const [tx0,ty]=at((x+.5)/W,C.ring[0]*T), k=CH[x]?'water':land(tx0,ty); g.fillStyle=`rgb(0,0,${LK[k]*64+32})`; g.fillRect(x,yOf(0)-1,1,H); }
   for(const [L,D,k] of C.ring.map((D,i,A)=>[.4+.6*i/Math.max(1,A.length-1),D,.65+.3*i/Math.max(1,A.length-1)]).reverse()){ let x=0;
     while(x<W){ let w=3+Math.floor(rnd()*9*k); const [tx,ty]=at((x+w/2)/W,D*T); const wh=CH[Math.min(W-1,Math.floor(x+w/2))]?'water':where(tx,ty); let hh=wh==='water'||wh==='park'?0:tall(tx,ty)*(wh==='low'?C.lowK:1); if(rnd()<.15)hh*=.3; w=Math.max(w,Math.ceil(hh*.3/(2*Math.PI*D/W)));
       if(hh>0){ const top=yOf(Math.atan2(hh*T,D*T)), bot=yOf(0), tone=Math.floor(rnd()*255); g.fillStyle=`rgb(${Math.round(L*255)},0,${tone})`; g.fillRect(x,top,w,bot-top);
         if(hh>C.base[1]*1.6&&rnd()<.5){ const t2=yOf(Math.atan2(hh*1.08*T,D*T)); g.fillRect(x+Math.floor(w*.2),t2,Math.max(2,Math.floor(w*.6)),top-t2); }
         for(let yy=top+2;yy<bot-1;yy+=3)for(let xx=x+1;xx<x+w-1;xx+=2)if(rnd()<.5){ g.fillStyle=`rgb(${Math.round(L*255)},255,${tone})`; g.fillRect(xx,yy,1,1); } }
       x+=w+(rnd()<.3?1:0); } }
-  const tex=new THREE.CanvasTexture(cv); tex.magFilter=THREE.NearestFilter; tex.minFilter=THREE.LinearFilter; tex.generateMipmaps=false; tex.wrapS=THREE.RepeatWrapping;
+  const tex=new THREE.CanvasTexture(cv); tex.magFilter=THREE.NearestFilter; tex.minFilter=THREE.NearestFilter; tex.generateMipmaps=false;   // (never blended: a blend of ground and building texels drew a dark line at the horizon)
+  tex.wrapS=THREE.RepeatWrapping;
   const RAD=C.panorama*T, PH=RAD*(Math.tan(E1)-Math.tan(E0)), pmat=new THREE.ShaderMaterial({uniforms:{uTex:{value:tex},uHaze:U.uHaze,uDay:U.uDay},fog:false,side:THREE.BackSide,
-    vertexShader:`varying vec2 vU; void main(){ vU=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); gl_Position.z=gl_Position.w*.99999; }`,   // (behind everything, never cut off by the far plane: it was, and showed as a floating strip)
+    vertexShader:`varying vec2 vU; void main(){ vU=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); gl_Position.z=gl_Position.w*.9999995; }`,   // (behind everything, never cut off by the far plane: it was, and showed as a floating strip; just short of the sky's depth, which the fog (134e) reads as sky)
     fragmentShader:`uniform sampler2D uTex; uniform vec3 uHaze; uniform float uDay; varying vec2 vU; float h(vec2 p){ return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453); }
       void main(){ vec4 t=texture2D(uTex,vU); if(t.a<.5)discard;
-        if(t.r<.1){ vec3 g=t.b<.25?vec3(.22,.40,.58):t.b<.5?vec3(.24,.37,.18):t.b<.75?vec3(.28,.28,.30):vec3(.14,.25,.11); gl_FragColor=vec4(mix(g*(.25+.75*uDay),uHaze,.72),1.); return; }
+        if(t.r<.1){ vec3 g=t.b<.25?vec3(.22,.40,.58):t.b<.5?vec3(.24,.37,.18):t.b<.75?vec3(.28,.28,.30):vec3(.14,.25,.11); gl_FragColor=vec4(mix(g*(.25+.75*uDay),uHaze,.9),1.); return; }   // (nearly the haze: from up high it shows past where the land is drawn, and must never read as a line)
         // (all of it past the view: the air takes most of it, more the further (t.r), blue-grey shapes a little darker than the haze, as from far off)
         vec3 base=mix(vec3(.26,.30,.38),vec3(.36,.38,.44),t.b)*(.25+.75*uDay);
         vec3 c=mix(base,uHaze,.55+.4*t.r); c+=t.g*step(.55,h(floor(vU*vec2(${W}.,${H}.))))*vec3(1.,.82,.5)*.3*(1.-uDay)*(1.-.7*t.r); gl_FragColor=vec4(c,1.); }`});

@@ -2,6 +2,7 @@
 import {SHARED} from './003-shx.js';
 import {ARCH, ARCHI, BUGS, CHARS, FORAGE, INV, ITEMS, keys, NPCS, PARK, PETS, pos, RIDE, ROOMS, SHOPS, st, TALK, TESTS, UI, VIT} from './003b-systems.js';
 import {FADE, LEVEL, MODS, QS, STORE, TILE} from './006-map-pre.js';
+import {MINI} from './038zd-mini.js';
 import {FISHING} from './142-fishing.js';
 import {TREES} from './144e-trees.js';
 import {SPOT} from './162fb-spot.js';
@@ -84,7 +85,7 @@ window.TESTS=TESTS;
     const start=c=>{ run=String(c.run||0); Q=null; cur=null; out=[]; tally={pass:0,fail:0,skip:0}; try{ done=JSON.parse(localStorage.getItem(K0+run)||'{}'); }catch(e){ done={}; }
       TESTS.all().then(L=>{ ALLT=L; Q=TESTS.pick(L,c.tests).filter(t=>!done[t.id]); }); };
     const have=id=>FORAGE.has(id)||0, N_=k=>people().find(q=>CHARS.id(q)===k), thOf=N=>N&&UI.things.find(t=>t.npc===N);
-    const tidy=()=>{ if(FISHING.mode&&FISHING.leave)FISHING.leave(); FISHING.auto=false; K.close(); if(SHOPS.close)SHOPS.close(); if(TALK.on&&TALK.close)TALK.close(); if(STORE.cabs&&STORE.cabs.on&&STORE.cabs.close)STORE.cabs.close(); K.stop(); K.reset(); };
+    const tidy=()=>{ if(MINI.on&&MINI.close)MINI.close(); if(FISHING.mode&&FISHING.leave)FISHING.leave(); FISHING.auto=false; K.close(); if(SHOPS.close)SHOPS.close(); if(TALK.on&&TALK.close)TALK.close(); if(STORE.cabs&&STORE.cabs.on&&STORE.cabs.close)STORE.cabs.close(); K.stop(); K.reset(); };
     const panelUp=()=>{ const p=document.getElementById('shopg'); return !!(p&&!p.hidden)||[...document.querySelectorAll('[data-buy],[data-sell],[data-sold],[data-train]')].some(e=>e.offsetParent); };
     /* ---------- the steps the tests share: each returns undefined while going, true once done, or [result, why] ---------- */
     // GO TO a place as the map does; there once the fade is over and it is near the place's spot (or inside)
@@ -176,7 +177,7 @@ window.TESTS=TESTS;
       use:(q,dt,[re,what,until])=>{ const s=q.s, R=new RegExp(re.slice(1,-1)); if(until&&UNTIL[until]&&s.u0==null){ UNTIL[until](s); s.u0=1; }
         if(!s.th){ s.th=nearRe(R); if(!s.th){ if(q.t>20)return ['fail','found nothing like '+re+' to '+what+' here']; return; } s.bag=bag(); s.cash=K.cash(); s.said=SAID.length; }
         if(!s.used){ if(K.use(s.th,dt))s.used=q.t; else if(q.t>90)return ['fail','could not reach '+String(s.th.name).toLowerCase()]; return; }
-        if(q.t-s.used<2)return; const ok=until&&UNTIL[until]?UNTIL[until](s):(bag()!==s.bag||K.cash()!==s.cash||SAID.length>s.said||panelUp()||!!st.sit||document.querySelector('.menu:not([hidden]),#looks:not([hidden]),#talkp:not([hidden])'));
+        if(q.t-s.used<2)return; const ok=until&&UNTIL[until]?UNTIL[until](s):(bag()!==s.bag||K.cash()!==s.cash||SAID.length>s.said||panelUp()||!!st.sit||!!MINI.on||document.querySelector('.menu:not([hidden]),#looks:not([hidden]),#talkp:not([hidden])'));
         if(!ok&&until&&q.t<60&&(!s.again||q.t-s.again>8)){ s.again=q.t; s.used=0; return; }   // try again a few times (a catch can miss)
         return ok?['pass','used '+String(s.th.name).toLowerCase()+(SAID.length>s.said?': "'+SAID[SAID.length-1]+'"':'')]:['fail','used '+String(s.th.name).toLowerCase()+', nothing happened']; },
       job:(q,dt,[name,until,what])=>{ const s=q.s; if(!s.on){ s.on=1; UNTIL[until](s); } K.JOB[name](dt); if(UNTIL[until](s))return ['pass',what+' done']; },

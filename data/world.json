@@ -63,13 +63,14 @@
     "note": "the skate park (src/111fd-skatepark.js), out in the open in this section's park: its middle, the way its gate faces, its size in x and y (map units)"
    },
    {
-    "id": "skateplaza",
+    "id": "skatepit",
     "section": "B",
-    "x": 104,
-    "y": 328.5,
-    "w": 64,
-    "d": 32,
-    "note": "the skate plaza (src/111fda-skateplaza.js) beside the skate park, out in the open: its middle and its size in x and y (map units)"
+    "x": 150,
+    "y": 372,
+    "w": 56,
+    "d": 40,
+    "sunk": true,
+    "note": "the skate pit (src/111fda-skatepit.js), a large concrete bowl out in the open deeper in this section's park: its middle and its size in x and y (map units); sunk: the far ground is cut over it"
    }
   ],
   "ring": {

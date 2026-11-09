@@ -499,7 +499,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
 .ml *{font-family:inherit!important;letter-spacing:inherit!important} .ml *:not(h1):not(h2):not(h3):not(h4){font-size:inherit!important}
 .ml button{${C};background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:3px 8px!important;cursor:pointer}
 .ml select,.ml input,.ml textarea{${C};background:#031a0d!important;border:0!important;border-radius:0!important;box-shadow:inset 0 0 0 2px #3aa866!important}
-.ml button[style*="color:#f2c14e"],.ml button[aria-selected="true"]{color:#020a06!important;background:#7dffa8!important}
+.ml button[style*="color:#f2c14e"],.ml button[aria-selected="true"],.ml button.on{color:#020a06!important;background:#7dffa8!important}
 .ml button:hover:not(:disabled),.ml button:focus-visible{color:#020a06!important;background:#7dffa8!important;outline:0}
 .ml button:disabled{opacity:.4}
 ${sel('background',['#f2c14e','#8fe3d6'])}{color:#020a06!important;background:#7dffa8!important}
@@ -528,7 +528,7 @@ body #onl{${MONO};font-size:13px;color:#7dffa8;${GL}} body #onl button{color:#7d
 body #onllist,body #onllog div{${PN};border:0} body #onllog b{color:#d8ffe4} body #onlin{background:#020a06;color:#7dffa8;border:1px solid #7dffa8}
 body #mode,body #said{${MONO};font-size:14px;color:#7dffa8;${GL};${PN};border:0} body #roomsay{${MONO};font-size:14px}`;
     document.head.appendChild(HL);
-    const NOT=/^(stage|subfade|stat|mode|said|vit|fjour|roomsay|roomedbtn|vrbtn|menu|loading|onl|newver|shbar|fishgo|dead)$/, DARK=/^rgba?\((11, 13, 19|13, 15, 20|16, 18, 26|5, 7, 11|14, 26, 18|24, 36, 28)/, IDS=/^(cinemap|nsp|talkp|hornp|holog|cabwin|inspp|cpadmin|roomed|roombuy|tletter|rvpan|ited|led|lnd|we|looks|snded|edmenu|chared|design|feelp|rinsp|emotes)$/;
+    const NOT=/^(stage|subfade|stat|mode|said|vit|fjour|roomsay|roomedbtn|vrbtn|menu|loading|onl|newver|shbar|fishgo|dead)$/, DARK=/^rgba?\((11, 13, 19|13, 15, 20|16, 18, 26|5, 7, 11|14, 26, 18|24, 36, 28)/, IDS=/^(cinemap|nsp|talkp|hornp|holog|cabwin|inspp|cpadmin|roomed|roombuy|tletter|rvpan|ited|led|lnd|we|looks|snded|edmenu|chared|design|feelp|rinsp|emotes|winp|ceilp|crtp|libp)$/;
     UI.menuLook=()=>{ for(const el of document.body.children){ if(el.dataset.ml||el.hidden||NOT.test(el.id))continue; const cs=getComputedStyle(el); if(cs.display==='none'||cs.position!=='fixed')continue;   // a window in the old dark panel takes the menu's look the first time it shows
       el.dataset.ml=IDS.test(el.id)||DARK.test(cs.backgroundColor)&&(el.querySelector('button,table,input,select,h3')||PANS.some(p=>p[0]===el.id))?'1':'0'; if(el.dataset.ml==='1')el.classList.add('ml'); } }; }
   const hide=el=>{ el.hidden=true; if(el.style.display)el.style.display='none'; };

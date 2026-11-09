@@ -1,4 +1,4 @@
-// THE PS2 FILTER ON MENUS: PS2.menu, the filter's look laid over every open window (the ones the pad counts) as an SVG filter, on or off with its own level (PS2 FILTER tab); the same five parts as the game's.
+// THE PS2 FILTER ON MENUS: PS2.menu, the filter's look laid over every open window and the HUD (everything on the page but the game's picture and the words in the world) as an SVG filter, on or off with its own level (PS2 FILTER tab); the same five parts as the game's.
 import {PS2} from './003b-systems.js';
 import {SAVE} from './005-save.js';
 import {SYS} from './006-map-pre.js';
@@ -25,7 +25,10 @@ import {PAD} from './075-main-13.js';
       f+=`<feComposite in="${last}" in2="${z}" operator="arithmetic" k1="${(2*a).toFixed(3)}" k2="${(1-a).toFixed(3)}"/><feComposite in2="${last}" operator="in" result="${o}"/>`; last=o; }
     svg.innerHTML=`<filter id="ps2mf" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">${f||'<feOffset/>'}</filter>`; };
   const tagged=new Set();
-  const apply=()=>{ const want=M.on&&PS2.on&&M.k>.01&&PAD.panels?new Set(PAD.panels()):new Set();
+  const area=e=>{ const r=e.getBoundingClientRect(); return r.width>0&&r.height>0; };
+  const hud=want=>{ for(const e of document.body.children){ if(want.has(e)||e.hidden||/^(stage|loading|subfade|wlabels)$/.test(e.id)||!(e instanceof HTMLElement)||!e.getClientRects().length)continue;
+      if(area(e))want.add(e); else for(const c of e.children)if(c instanceof HTMLElement&&area(c))want.add(c); } };   // a box of no size would clip its own filter: its children wear it
+  const apply=()=>{ const want=M.on&&PS2.on&&M.k>.01&&PAD.panels?new Set(PAD.panels()):new Set(); if(M.on&&PS2.on&&M.k>.01)hud(want);
     if(want.size)build(); for(const e of tagged)if(!want.has(e)){ e.classList.remove('ps2m'); tagged.delete(e); } for(const e of want)if(!tagged.has(e)){ e.classList.add('ps2m'); tagged.add(e); } };
   M.set=on=>{ M.on=!!on; M.save(); apply(); };
   M.save=()=>{ try{ SAVE.set('ps2m',M.on?'1':'0'); SAVE.set('ps2mk',String(M.k)); }catch(e){} key=''; apply(); };

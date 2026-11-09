@@ -50,7 +50,7 @@ import {ROOMK} from './150a-bedroom.js';
   /* ---------- the set and its stand, in your apartment by the living room's wall ---------- */
   for(const k of ['CRT TV'])ROOMK.always.add(k);   // in every apartment from the start (owner, 7 Nov 2026)
   ROOMK.parts.push(c=>{ '@apts'; const {part,mat,rbox,cap,cur,solid}=c, p=(geo,m,u,h,v,ry=0,par=cur(),cast=true)=>part(geo,m,u,h,v,ry,par,cast), keep=me=>{ me.userData.keep=1; return me; };
-    const U0=c.Lx-.56, V0=c.Ly*.62, RY=-Math.PI/2;   // against the living room's far wall, facing into the room
+    const U0=c.Lx-.56, V0=c.Ly-.66, RY=-Math.PI/2;   // in the back corner of the living room's far wall, facing into the room (owner, 9 Nov 2026)
     const wood=mat([92,58,34]), woodD=mat([60,38,22]), black=mat([28,28,30]), grey=mat([58,58,62]), chrome=mat([176,178,184]), grille=mat([40,40,42]);
     cap('CRT TV',()=>{ const g=new THREE.Group(); g.position.set(U0,0,V0); g.rotation.y=RY; cur().add(g);
       // the stand: a low walnut cabinet, an open shelf with the tape deck, two doors below

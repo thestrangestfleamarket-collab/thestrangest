@@ -23,7 +23,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const cl0 = await pg.evaluate(() => CEILDBG());
     ok(cl0.n === 4 && cl0.set && cl0.set.length === 4 && cl0.set.every(s => s && s.on) && cl0.thing, 'four ceiling lights overhead, on, with a wall panel (' + JSON.stringify([cl0.n, cl0.i, cl0.thing]) + ')');
     ok(cl0.vis.every(v => !v) && cl0.i.every(i => i > 0), 'in the isometric view the fittings hide with the ceiling, their light stays (' + JSON.stringify([cl0.vis, cl0.i]) + ')');
-    const cl1 = await pg.evaluate(async () => { __dbg.UI.things.find(t => t.name === 'CEILING LIGHTS').act(); const r = document.querySelector('#ceilp input[data-k="k"]'); r.value = 40; r.dispatchEvent(new Event('input', { bubbles: true }));
+    const cl1 = await pg.evaluate(async () => { __dbg.UI.things.find(t => t.name === 'LIGHT SWITCH').act(); const r = document.querySelector('#ceilp input[data-k="k"]'); r.value = 40; r.dispatchEvent(new Event('input', { bubbles: true }));
       const t = document.querySelector('#ceilp input[data-k="tone"]'); t.value = 5000; t.dispatchEvent(new Event('input', { bubbles: true })); await new Promise(r => setTimeout(r, 300)); const d = CEILDBG(); CEIL.close(); return d; });
     ok(cl1.panel && cl1.set.every(s => Math.abs(s.k - .4) < .01 && s.tone === 5000) && cl1.i.every((i, j) => i < cl0.i[j]), 'the wall panel sets all four: brightness and warmth (' + JSON.stringify([cl1.set[0].k, cl1.set[0].tone, cl1.i]) + ')');
     ok(await pg.evaluate(() => !!(window.GPH && GPH.loose().some(i => i.k === 'o' && i.name === 'CHAIR'))), 'the chair is a loose thing you can push and pick up');

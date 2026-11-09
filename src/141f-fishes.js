@@ -9,20 +9,19 @@ const FISHES={list:[],ready:false}; window.FISHES=FISHES;
 { const T=TILE, MPU=.84/T, WU=1/MPU, DATA=__LAZY__("data/fishes.json"), PACK=__LAZY__("data/fish.json"), IP=(id,k)=>ITEMS.prop(id,k);
   const B=s=>{ const t=atob(s), u=new Uint8Array(t.length); for(let i=0;i<t.length;i++)u[i]=t.charCodeAt(i); return u; }, F=s=>new Float32Array(B(s).buffer), U16=s=>new Uint16Array(B(s).buffer);
   // length in metres for a weight (kg): a fish a third of a metre at a third of a kilo, longer for the long ones; the reef shoal by the pack's sizes
-  const LONG={x_eel:3.2,x_sturgeon:1.5,x_pike:1.6,x_crab:.55,x_flounder:1.1,x_trout:1.1,x_catfish:1.1,x_sunfish:.85,x_bluegill:.85}, PACKL={clownfish:.42,bluetang:.46,koi:.75,koi_gold:.75,koi_showa:.75,koi_sanke:.75,koi_platinum:.75,koi_asagi:.75,koi_orange:.75,koi_black:.75,goldfish:.3,puffer:.5,lionfish:.5,mandarinfish:.34,moorishidol:.44,butterflyfish:.4,shark:2.4,yellowtang:.44,firefish:.36,cardinalfish:.36,chromis:.3,cleanerwrasse:.34,foxface:.46,dolphin:2.4,stingray:1.4,seaturtle:1.2,moray:1.6,jellyfish:.5,octopus:1,coelacanth:1.7,barracuda:1.5,angelfish:.3,plesiosaur:4,chromisshoal:.3,shrimp:.2,
+  const LONG={x_eel:3.2,x_sturgeon:1.5,x_pike:1.6,x_crab:.55,x_flounder:1.1,x_trout:1.1,x_catfish:1.1,x_sunfish:.85,x_bluegill:.85}, PACKL={clownfish:.42,bluetang:.46,koi:.75,koi_gold:.75,koi_showa:.75,koi_sanke:.75,koi_platinum:.75,koi_asagi:.75,koi_orange:.75,koi_black:.75,pfkoi:.75,pfclown:.42,pfbluetang:.46,goldfish:.3,puffer:.5,lionfish:.5,mandarinfish:.34,moorishidol:.44,butterflyfish:.4,shark:2.4,yellowtang:.44,firefish:.36,cardinalfish:.36,chromis:.3,cleanerwrasse:.34,foxface:.46,dolphin:2.4,stingray:1.4,seaturtle:1.2,moray:1.6,jellyfish:.5,octopus:1,coelacanth:1.7,barracuda:1.5,angelfish:.3,plesiosaur:4,chromisshoal:.3,shrimp:.2,
     sockeye:.8,goatfish:.45,seabream:.55,wrasse:.45,stripedpuffer:.45,trevally:.7,dace:.3,knifejaw:.5};
   const lenM=(id,kg)=>PACKL[id]?PACKL[id]*.84:.45*Math.cbrt(kg)*(LONG[id]||1);
   // how each swims: the body's wave across (most fish), up and down (the flounder lying flat), the eel's long wave, the crab not at all
   const STYLE={x_flounder:1,x_eel:2,x_crab:3,stingray:1,moray:2,jellyfish:3,octopus:3,seaturtle:3,shrimp:3}, CAP=12;
   const M={}, mats={}; let loading=null, packIds=[];
-  const WAVE=v=>`#include <begin_vertex>
-      { float w=clamp(.5-position.x,0.,1.), ph=${v}.x, a=${v}.y; int k=int(${v}.z+.5);
-        if(k==0)transformed.z+=a*(.04+w*w*.22)*sin(ph+position.x*7.);
-        else if(k==1)transformed.y+=a*(.03+w*w*.12)*sin(ph+position.x*8.);
-        else if(k==2)transformed.z+=a*.07*(.3+w)*sin(ph+position.x*16.); }`;
   const swimMat=(map,vc)=>{ '@later'; const m=new THREE.MeshLambertMaterial({map:map||null,vertexColors:!!vc,side:THREE.DoubleSide});
     m.onBeforeCompile=sh=>{ sh.fragmentShader=sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*.3;');   // light of its own: under water the sun comes only from above
-      sh.vertexShader='attribute vec3 aSw;\n'+sh.vertexShader.replace('#include <begin_vertex>',WAVE('aSw')); };
+      sh.vertexShader='attribute vec3 aSw;\n'+sh.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
+      { float w=clamp(.5-position.x,0.,1.), ph=aSw.x, a=aSw.y; int k=int(aSw.z+.5);
+        if(k==0)transformed.z+=a*(.04+w*w*.22)*sin(ph+position.x*7.);
+        else if(k==1)transformed.y+=a*(.03+w*w*.12)*sin(ph+position.x*8.);
+        else if(k==2)transformed.z+=a*.07*(.3+w)*sin(ph+position.x*16.); }`); };
     m.customProgramCacheKey=()=>'fishswim'+(map?1:0)+(vc?1:0); return m; };
   const geoOf=(id,d)=>{ '@later'; const g=new THREE.BufferGeometry(); if(d.u){ g.setAttribute('position',new THREE.BufferAttribute(F(d.p),3)); g.setAttribute('uv',new THREE.BufferAttribute(U16(d.u),2,true)); g.setIndex(new THREE.BufferAttribute(U16(d.i),1)); }
       else { const p=F(d.p), c=B(d.c), n=c.length/3, C=new Float32Array(n*3), q=new THREE.Color(); for(let i=0;i<n;i++){ q.setRGB(c[i*3]/255,c[i*3+1]/255,c[i*3+2]/255,THREE.SRGBColorSpace); C[i*3]=q.r; C[i*3+1]=q.g; C[i*3+2]=q.b; }
@@ -38,11 +37,11 @@ const FISHES={list:[],ready:false}; window.FISHES=FISHES;
   // a single fish to hold (the hooked one, the one in the inspect window): the species' own shape and picture, still
   FISHES.model=(id,kg=1)=>{ const m=M[id]; if(!m)return null; let mt=mats[id]; if(!mt){ mt=mats[id]=new THREE.MeshLambertMaterial({map:m.map,vertexColors:m.vc,side:THREE.DoubleSide}); }
     const o=new THREE.Mesh(m.g,mt); const L=lenM(id,kg)*WU; o.scale.setScalar(L); o.userData.shared=true; return o; };
-  // one fish of a kind that swims on its own (the apartment tank): the body's wave as the river's, set by sw (x the wave's phase, y its size)
-  FISHES.swimmer=(id,len)=>{ const m=M[id]; if(!m)return null; const u={value:new THREE.Vector3(0,0,STYLE[id]||0)}, mt=new THREE.MeshLambertMaterial({map:m.map,vertexColors:m.vc,side:THREE.DoubleSide});
-    mt.onBeforeCompile=sh=>{ sh.uniforms.uSw=u; sh.vertexShader='uniform vec3 uSw;\n'+sh.vertexShader.replace('#include <begin_vertex>',WAVE('uSw')); }; mt.customProgramCacheKey=()=>'fishone'+(m.map?1:0)+(m.vc?1:0);
-    const o=new THREE.Mesh(m.g,mt); o.scale.setScalar(len); o.userData.shared=true; return {o,sw:u.value,style:STYLE[id]||0}; };
   FISHES.len=(id,kg)=>lenM(id,kg)*WU;
+  // a school of one kind somewhere of its own (the apartment's tank): the same model and swim, its owner places each (userData.sw: a fish's phase, beat, style)
+  FISHES.school=(id,n)=>{ const m=M[id]; if(!m)return null; const g=new THREE.BufferGeometry(); for(const k in m.g.attributes){ if(k==='aSw')continue; const a=m.g.attributes[k]; g.setAttribute(k,new THREE.BufferAttribute(a.array,a.itemSize,a.normalized)); }
+    if(m.g.index)g.setIndex(new THREE.BufferAttribute(m.g.index.array,1)); g.boundingSphere=m.g.boundingSphere; const sw=new THREE.InstancedBufferAttribute(new Float32Array(n*3),3); sw.setUsage(THREE.DynamicDrawUsage); g.setAttribute('aSw',sw);
+    const im=new THREE.InstancedMesh(g,m.im.material,n); im.count=0; im.frustumCulled=false; im.instanceMatrix.setUsage(THREE.DynamicDrawUsage); Object.assign(im.userData,{sw,style:STYLE[id]||0}); return im; };
 
   // who swims where: the catch of each water (the item model's LIVES IN and DEPTH), a few of each near you, more of the common ones; the Hudson's reef shoal when its water shows it
   const catchOf=kind=>Object.keys(ITEMS.defs||{}).filter(id=>IP(id,'water')===kind&&M[id]);

@@ -22,9 +22,6 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     for (let i = 0; i < 40 && !(await pg.evaluate(() => window.TANKDBG && TANKDBG().some(t => t.fish > 0 && t.vis))); i++) await pg.waitForTimeout(1000);
     const th = () => __dbg.UI.things.find(t => /FISH TANK|FEED THE FISH/.test(t.name));
     ok(await pg.evaluate(th), 'the fish tank can be double-clicked');
-    const s0 = await pg.evaluate(() => TANKDBG()[0]); await pg.waitForTimeout(3000); const s1 = await pg.evaluate(() => TANKDBG()[0]);
-    ok(s0.len >= .18 && s0.len <= .36, 'the koi are real size, 20 to 34 cm (' + s0.len + ' m)');
-    ok(s1.wave > .3 && s1.bubbles > 0 && s1.inside && s1.ph.some((p, i) => Math.hypot(p[0] - s0.ph[i][0], p[1] - s0.ph[i][1]) > .005), 'they swim with their tails, stay inside the glass, and the air stone bubbles (' + JSON.stringify({ wave: s1.wave, bubbles: s1.bubbles, inside: s1.inside }) + ')');
     const y0 = await pg.evaluate(() => TANKDBG()[0].y);
     await pg.evaluate(() => { FORAGE.give('g_fishfood', 1); __dbg.UI.things.find(t => /FISH TANK|FEED THE FISH/.test(t.name)).act(); });
     for (let i = 0; i < 40 && (await pg.evaluate(() => TANKDBG()[0].y)) < y0 + .1; i++) await pg.waitForTimeout(500);

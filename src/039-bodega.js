@@ -1217,9 +1217,9 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
   put('wr1','shop shelf',B.x1-.36,B.y0+2.2,1); put('wm1','shop shelf',m-.3,B.y0+3.3,3); put('win1','shop shelf',(B.x0+.35+m-.95)/2-1,B.y1-.62); put('win2','shop shelf',(m+.95+B.x1-.35)/2-1,B.y1-.62);   // each display centred on its window
   put('counter','long counter',B.x1-1.05,B.y0+5.4,1); put('cigs','cigarette rack',B.x1-.22,B.y0+5.0,1,1); O.cigs.boxes=O.cigs.boxes.map(b=>b.foot?b:zShift(b,42));
   put('radio','radio',B.x1-.24,B.y0+4.0,1,1);
-  put('lotto','lottery machine',B.x1-1.05,B.y0+4.15,1); put('jar','candy jar',B.x1-1.05,B.y0+4.62);
+  put('jar','candy jar',B.x1-1.05,B.y0+4.62);
   { const top=Math.max(...O.counter.boxes.map(b=>b.z1)), drop=top*.25; O.counter.boxes=O.counter.boxes.map(b=>Object.assign({},b,{z0:b.z0*.75,z1:b.z1*.75}));
-    for(const k of ['lotto','jar'])if(O[k])O[k].boxes=O[k].boxes.map(b=>b.z0>=top*.8?zShift(b,-drop):b); } put('bags','paper bags',B.x1-.5,B.y0+7.3); put('phone','wall phone',B.x1-.15,B.y0+7.3,0,1);
+    for(const k of ['jar'])if(O[k])O[k].boxes=O[k].boxes.map(b=>b.z0>=top*.8?zShift(b,-drop):b); } put('bags','paper bags',B.x1-.5,B.y0+7.3); put('phone','wall phone',B.x1-.15,B.y0+7.3,0,1);
   put('clock','wall clock',B.x0+3.1,B.y0+.14,0,1); put('mirror','convex mirror',B.x0+.42,B.y0+.15,0,1); put('calendar','calendar',B.x0+.11,B.y0+1.95,0,1); put('cord','extension cord',B.x0+.11,B.y0+.12,0,1);
   put('tube1','fluorescent tube',m,B.y0+2.5); put('tube2','fluorescent tube',m,B.y0+6.5);
   put('fan','box fan',B.x0+5.1,B.y0+.36); put('fly','fly strip',m-.8,B.y0+4.5); put('bell','door bell',m,B.y1-.24);
@@ -1375,8 +1375,8 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
     {id:'wstE',x0:RG.wr1+.16,y0:MAP.y1,x1:RG.wx1,y1:WEND,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
     {id:'wstEnd',x0:RG.wx0,y0:WEND,x1:RG.wx1,y1:WEND+3,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
     (G=>({id:'ghostst',bld:true,x0:G.u(G.ground.x0),y0:G.v(G.Y0-1.2),x1:G.u(G.ground.x1),y1:G.y1e,z:.1,col:(x,y)=>G.court(G.iu(x),y>G.y1e-.25?y:G.iv(y)),tex:null,rep:2}))(SHARED.BOD.GDK),
-    {id:'grassW',x0:MAP.x0,y0:B00.y0,x1:B0.x0,y1:W,z:0,col:holed((x,y)=>x>MAPSTAIR.x0-8&&x<MAPSTAIR.x1+8?slabCol(x,y):lawnCol(x,y)),tex:null,rep:2},
-    {id:'hudson',x0:BLOCK.hudson[0],y0:BLOCK.alley[1],x1:BLOCK.hudson[1],y1:CURB-.16,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},...PATCH].map(g=>g.id==='corner'||g.bld||g.id==='alley'||g.id==='prom'||g.id==='grassW'||g.col===RW?g:{...g,col:SW(g.col)});
+    {id:'grassW',x0:MAP.x0,y0:B00.y0,x1:B0.x0,y1:W,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},   // concrete behind the rows, no grass (owner, 9 Nov 2026)
+    {id:'hudson',x0:BLOCK.hudson[0],y0:BLOCK.alley[1],x1:BLOCK.hudson[1],y1:CURB-.16,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},...PATCH].map(g=>g.id==='corner'||g.bld||g.id==='alley'||g.id==='prom'||g.col===RW?g:{...g,col:SW(g.col)});
   // a ground leaves out what a later one at its height covers: two painted in one place fight for the same pixels (the way through to the Hudson over the lawn and the walk)
   { const G=SHARED.BOD.grounds; G.forEach((g,i)=>{ if(g.bld)return; const over=G.slice(i+1).filter(q=>!q.bld&&q.z===g.z&&q.x0<g.x1&&q.x1>g.x0&&q.y0<g.y1&&q.y1>g.y0); if(!over.length)return; const f=g.col; g.col=(x,y)=>over.some(q=>x>=q.x0&&x<q.x1&&y>=q.y0&&y<q.y1)?null:f(x,y); }); }
   SHARED.BOD.LAMPS=LAMPS.filter(l=>!l.off&&l.r>0);

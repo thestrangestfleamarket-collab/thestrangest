@@ -114,7 +114,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
       const sp=o.q?Math.hypot(p.x-o.q.x,p.z-o.q.z)/Math.max(dt,1e-3):0; o.q={x:p.x,z:p.z}; o.S.target=sp>.4*TILE?1:0; R.step(o.S,o.frozen>0?0:dt);
       const M=F.me.material, gh=!!o.dead, fl=o.flashT>now; if(F.ghost!==gh){ F.ghost=gh; M.transparent=gh; M.opacity=gh?.35:1; M.depthWrite=!gh; M.color.set(gh?0xcfe0ff:0xffffff); M.needsUpdate=true; F.me.castShadow=!gh; }
       if(F.fl!==fl&&M.emissive){ F.fl=fl; M.emissive.setScalar(fl?.55:0); }
-      g.visible=true; g.position.set(p.x,p.y,p.z); g.rotation.y=p.hd; if(F.body)musScale(g,1); else musScale(g,F.bh||1); o.d=((Math.round(p.hd/PI4)%8)+8)%8;
+      g.visible=true; g.position.set(p.x,p.y,p.z); g.rotation.y=p.hd; if(F.body)musScale(g,1); else musScale(g,F.bh||1); const sz=o.x&&+o.x.sz; if(sz>0)g.scale.multiplyScalar(sz); o.S.hi=o.x&&+o.x.hi||1; o.d=((Math.round(p.hd/PI4)%8)+8)%8;
       if(F.PM){ const v=!rg&&o.vr&&now-o.vr.t<3000?o.vr:null; if(v||F.PM.vr){ o.wantPose=true; if(!v&&F.PM.hands)F.PM.hands.fg=null; F.PM.vr=v; } }   // (a headset player: their own head, arms and fingers every frame, 162cb)
       if(rg||!o.B||o.wantPose||ASTEP.gate(o,dt)){ o.wantPose=false; R.farOnly(false); const B=o.B=rg?ragPoseOf(rg.b,{x:rg.o[0],y:rg.o[1]},rg.hd):R.pose(o.S,true); if(F.body){ BODIES.pose(B,F.PM,F.body,rg?null:o.S); const W=o.S.water; if(!rg&&o.S._pfHead&&W&&W.in&&W.level!=null&&F.body.binv&&BODIES.headUp)BODIES.headUp(F.PM,F.body,o.S,F.g,F.me); } else F.PCS.forEach((pc,i)=>F.FM.set(i,R.frameOf(pc.on||pc.n,B))); }
       if(!F.body){ const b=BUILT.get(o.key)||{}, H=F.wornH||(F.wornH={}); GARB.draw(g,o.B,gh?null:b.garb,H,F.me,b.garbE); if(EQUIP.draw&&b.by&&Object.keys(b.by).length)EQUIP.draw(g,o.B,b.by,H); }

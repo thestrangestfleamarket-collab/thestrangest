@@ -60,8 +60,8 @@ def walk(poly,step):
         acc=l-(d-step)
     return out
 B=T(4)
-# benches every 4 m both sides: the Mall park benches, the cross walk cast-iron, the side paths campus benches
-lineup(mall,B,HW+.9,'parkbench',lambda x,y:nearRound(x,y) or gates(x,y) or nearJ(x,y))
+# benches every 4 m both sides (the Mall's every 8 m: owner, 9 Nov 2026: "reduce benches in central park by 50%"): the Mall park benches, the cross walk cast-iron, the side paths campus benches
+lineup(mall,2*B,HW+.9,'parkbench',lambda x,y:nearRound(x,y) or gates(x,y) or nearJ(x,y))
 lineup(cross,B,HW+.9,'ironbench',lambda x,y:nearRound(x,y) or gates(x,y) or nearJ(x,y) or abs(x-112)<6)
 lineup(p5,B,HW+.9,'campusbench',lambda x,y:math.hypot(x-112,y-25)<6)
 lineup(p6,B,HW+.9,'campusbench',lambda x,y:y<66)
@@ -167,13 +167,13 @@ put('toilet',122,165); put('trashcan',105,165)
 st=T(PF['ironfence']['size'][0])
 for i in range(6): put('ironfence',-21.6,140+st*(i+.5),math.pi/2)
 BROOK=[[201,102]]+[p for p in PP['brook']['pts'] if not inBL(p[0],p[1],8) and p!=[190,104]]
-KEEP={'parkbench','campusrail','trashcan','picnictable','jlamp','drink','archbridge','creekbridge','woodbridge','logbridge','trestle','canoe','kayak','skiff','zen','greenhouse','torii','duck','pigeon','horse'}   # (owner, 7 Nov 2026: "remove all the assets except for: park bench, duck, campusrail, trashcan, picnic table, j lamp, drink, bridges, boats, zen, greenhouse, torii - and animals")
+KEEP={'parkbench','campusrail','trashcan','picnictable','drink','archbridge','creekbridge','woodbridge','logbridge','trestle','canoe','kayak','skiff','zen','greenhouse','torii','duck','pigeon','horse'}   # (owner, 7 Nov 2026: "remove all the assets except for: park bench, duck, campusrail, trashcan, picnic table, j lamp, drink, bridges, boats, zen, greenhouse, torii - and animals")
 FLOAT={'raft','canoe','kayak','skiff','duck'}
 W=json.load(open('data/world.json'))
 W['things']=[t for t in W['things'] if not str(t['k']).startswith('p:')]
 FL=FLOAT
 for k,x,y,r in P:
-    if k in ('globelamp','colonial','campuslamp','sealamp'): k='jlamp'   # the park's lamps are J lamps (owner, 7 Nov 2026: "fix 3": the park lit at night as before)
+    # no Polyfork lamps: the park's one lamp post is its own (061-park.js; owner, 9 Nov 2026: "should only be 1 kind of lamp post")
     if k not in KEEP: continue
     o={'k':'p:'+k,'x':round(x,2),'y':round(y,2)}
     if abs(r)>1e-4: o['rot']=round(r,3)

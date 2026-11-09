@@ -1,4 +1,4 @@
-// THE CLIMBING CHECK: node tests/climb.cjs dist/market.html. In the park, on a big tree: a trunk climbed with SPACE then W, gone round with D, jumped up with SPACE; a branch grabbed from under it, hung along, pulled up onto and stood on; the CLIMBING skill is there and bounds the height.
+// THE CLIMBING CHECK: node tests/climb.cjs dist/market.html. In the park, on a big tree: a trunk climbed with SPACE then W, gone round with D, jumped off with SPACE; a branch grabbed from under it, hung along, pulled up onto and stood on; the CLIMBING skill is there and bounds the height.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=climb::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -15,10 +15,12 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const dbg = () => pg.evaluate(() => { const d = TREESDBG(); for (const k of ['x', 'z', 'py', 'hd', 'gy', 'h', 'ch', 'u']) if (typeof d[k] === 'number') d[k] = +d[k].toFixed(2); return d; });
   const sk = await pg.evaluate(() => ({ has: FORAGE.SK.some(s => s[0] === 'climb'), v: FORAGE.sk('climb') }));
   ok(sk.has && sk.v > 0, 'CLIMBING is a skill: ' + JSON.stringify(sk));
+  const sp = await pg.evaluate(() => { const S = FORAGE.S.sk, was = S.climb, k = v => { S.climb = v * 10; return FORAGE.climbK(); }, r = { at0: k(0), at20: k(20), at60: k(60), at100: k(100) }; S.climb = was; return r; });
+  ok(sp.at0 === sp.at20 && Math.abs(sp.at100 / sp.at20 - 4) < 1e-9 && sp.at60 > sp.at20 && sp.at60 < sp.at100, 'the CLIMBING skill sets the speed: the same up to 20, four times that at 100 (owner, 9 Nov 2026): ' + JSON.stringify(sp));
   // a tree with branches to hang from, and its lowest hold outside the trunk
   const tree = await pg.evaluate(() => { const T = TREES.T, IT = PARK.climbable; let best = null;
     IT.forEach((it, i) => { if (it.top - it.y < 3 * T) return; for (const l of TREES.limbs(it)) for (let u = 0; u <= 1.001; u += .1) { const p = TREES.at(l, u); if (p.r < TREES.RS || !TREES.outside(it, p)) continue; const h = p.y + p.r - it.y; if (!best || h < best.h) best = { i, h, u, l: TREES.limbs(it).indexOf(l), x: p.x, z: p.z, top: p.y + p.r }; } });
-    if (!best) return null; const it = IT[best.i]; return Object.assign(best, { tx: it.x, tz: it.z, ty: it.y, tall: it.top - it.y, rT: TREES.rT(it), T, limbs: TREES.limbs(it).length }); });
+    if (!best) return null; const it = IT[best.i]; return Object.assign(best, { tx: it.x, tz: it.z, ty: it.y, tall: it.top - it.y, rT: Math.max(TREES.rT(it), it.rf || 0), T, limbs: TREES.limbs(it).length }); });
   ok(tree && tree.limbs > 0, 'a park tree carries branches to climb on: ' + JSON.stringify(tree && { k: tree.i, limbs: tree.limbs, lowHold: +(tree.h / tree.T).toFixed(2), tall: +(tree.tall / tree.T).toFixed(1) }));
   if (!tree) { console.log('errs', errs); await b.close(); process.exit(1); }
   // stand at the foot and press SPACE: you climb it; W goes on up
@@ -39,11 +41,11 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   else ok(c4.mode === 'trunk' && c4.ch <= cap + .02, 'the climb stops at the skill\'s height: ' + JSON.stringify({ ch: c4.ch, cap: +cap.toFixed(2) }));
   await hold('s', 340); const c2b = await dbg();
   ok(c2b.mode === 'trunk' && c2b.ch < c4.ch - .5, 'S climbs down: ' + JSON.stringify({ from: c4.ch, to: c2b.ch }));
-  await tap(' '); const f3 = await frames(); while ((await frames()) - f3 < 15) await pg.waitForTimeout(50); const c3 = await dbg();
-  ok(c3.climbing && (c3.mode === 'hang' || c3.ch > c2b.ch + .2 * tree.T), 'SPACE on the trunk jumps up (or catches a branch): ' + JSON.stringify({ from: c2b.ch, to: c3.ch, mode: c3.mode }));
-  // down and off (from a branch: let go)
-  for (let k = 0; k < 40 && (await dbg()).climbing; k++) await hold('s', 200); const c5 = await dbg();
-  ok(!c5.climbing, 'S climbs down and off: ' + JSON.stringify(c5));
+  // SPACE on the trunk jumps you off it, away from the tree, down to the ground (owner, 9 Nov 2026)
+  const r3 = Math.hypot(c2b.x - tree.tx, c2b.z - tree.tz); await tap(' '); const f3 = await frames(); while ((await frames()) - f3 < 4) await pg.waitForTimeout(50); const c3 = await dbg();
+  ok(c3.mode === 'fly' && !c3.climb, 'SPACE on the trunk jumps you off it: ' + JSON.stringify({ mode: c3.mode, climb: c3.climb }));
+  for (let k = 0; k < 3000 && (await dbg()).climbing; k++) await pg.waitForTimeout(200); const c5 = await dbg();
+  ok(!c5.climbing && Math.hypot(c5.x - tree.tx, c5.z - tree.tz) > r3 + .5 * tree.T && c5.py < c5.gy + .3 * tree.T, 'you land on the ground away from the tree: ' + JSON.stringify({ from: +(r3 / tree.T).toFixed(2), to: +(Math.hypot(c5.x - tree.tx, c5.z - tree.tz) / tree.T).toFixed(2), py: c5.py, gy: c5.gy }));
   // under a branch: SPACE grabs it, you hang; A or D moves along it; W pulls you up to stand on it
   const under = await pg.evaluate(t => { TREES.go(t.x, t.z); return { g: SHARED.groundY(t.x, t.z), top: t.top, reach: (3 + .9 * FORAGE.sk('climb') / 100) * t.T }; }, tree);
   await pg.waitForTimeout(400);

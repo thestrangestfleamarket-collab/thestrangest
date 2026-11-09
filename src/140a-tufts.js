@@ -45,17 +45,18 @@ const TUFTS=window.TUFTS={wind:0,dir:1};
         const lv=lvOf(x,z), sy0=s*K.hi*(K.flat?.4:1), sy5=Math.max(sy0,knee*(.9+.2*hsh(i,j,29+ri))/D.h), sy=sy0+(sy5-sy0)*lv/4;
         M.compose(V.set(x,y,z),Q.setFromAxisAngle(up,a),S.set(w,sy,w)); (L[K.shape]=L[K.shape]||[]).push(x,z,...M.elements,KC[K.i](hsh(i,j,23+ri)),lv>=2?1:0);
       }
-      // tufts at the foot of every tree (owner, 2 Nov 2026: "add tufts at bottom of trees naturally"): a ragged ring of taller ones hugging each trunk, the lawn's own kind there
-      if(!ri)for(const [fx,fz,fr] of WEEDS.feet||[]){ if(fx<x0-2*T||fx>=x0+CS+2*T||fz<z0-2*T||fz>=z0+CS+2*T)continue; const n=10+Math.floor(hsh(Math.round(fx),Math.round(fz),31)*8);
-        for(let k=0;k<n;k++){ const h1=hsh(Math.round(fx*7)+k,Math.round(fz*7),33), h2=hsh(k,Math.round(fx*3+fz*5),37), a=k/n*6.283+(h1-.5)*.7, d=fr+.08*T+h2*h2*.9*T, x=fx+Math.cos(a)*d, z=fz+Math.sin(a)*d; if(x<x0||x>=x0+CS||z<z0||z>=z0+CS)continue;
-          const K=GRASS.at(x/T,z/T), sn=K.shape||'clump'; let y=lawnNear(x,z); if(typeof y!=='number'){ if(typeof WEEDS.fine(x,z)==='undefined'||WEEDS.isOff(x,z))continue; y=SHARED.groundY(x,z); }
-          const D=SHP[sn], tall=1.3+.9*(1-Math.min(1,(d-fr)/(.9*T)))*(.8+.4*h1), s=knee*R.sz*(.85+.4*h2), w=s*D.w*(K.flat?1.4:1.1), M2=M.compose(V.set(x,y,z),Q.setFromAxisAngle(up,h1*6.283),S.set(w,s*TUFTS.height(x,z)*Math.max(.7,K.hi)*tall*(K.flat?.5:1),w));
+      // tufts and weeds at the foot of every tree and thing on the lawn (owner, 2 Nov 2026: "add tufts at bottom of trees naturally"; 9 Nov 2026: "more natural tufts and weeds around the bases"): a ragged ring of taller ones hugging each foot (WEEDS.feet: [x, z, its radius, how far out they run]), thickest against it, some of them weeds' blades
+      if(!ri)for(const [fx,fz,fr,fw=.9*T] of WEEDS.feet||[]){ if(fx<x0-fr-fw-T||fx>=x0+CS+fr+fw+T||fz<z0-fr-fw-T||fz>=z0+CS+fr+fw+T)continue; const n=Math.ceil(6.283*(fr+.4*fw)/(.17*T)*(.8+.4*hsh(Math.round(fx),Math.round(fz),31)));
+        for(let k=0;k<n;k++){ const h1=hsh(Math.round(fx*7)+k,Math.round(fz*7),33), h2=hsh(k,Math.round(fx*3+fz*5),37), a=k/n*6.283+(h1-.5)*.7, d=fr+.05*T+Math.pow(h2,1.7)*fw, x=fx+Math.cos(a)*d, z=fz+Math.sin(a)*d; if(x<x0||x>=x0+CS||z<z0||z>=z0+CS)continue;
+          const K=GRASS.at(x/T,z/T), sn=hsh(k,Math.round(fz*3+fx*5),39)<.35?'blade':K.shape||'clump'; let y=lawnNear(x,z); if(typeof y!=='number'){ if(typeof WEEDS.fine(x,z)==='undefined'||WEEDS.isOff(x,z))continue; y=SHARED.groundY(x,z); }
+          const D=SHP[sn], tall=1.3+.9*(1-Math.min(1,(d-fr)/fw))*(.8+.4*h1), s=knee*R.sz*(.85+.4*h2), w=s*D.w*(K.flat?1.4:1.1), M2=M.compose(V.set(x,y,z),Q.setFromAxisAngle(up,h1*6.283),S.set(w,s*TUFTS.height(x,z)*Math.max(.7,K.hi)*tall*(K.flat?.5:1),w));
           (L[sn]=L[sn]||[]).push(x,z,...M2.elements,KC[K.i](h2),TUFTS.level(x,z)>=2?1:0); } }
       out.push(L); });
-    return {x0,z0,CS,L:out}; };
+    return {x0,z0,CS,L:out,gb}; };
   const SP=.3*T, lawnNear=(x,z)=>{ const y=WEEDS.fine(x,z); if(typeof y==='number')return y; for(const [u,v] of [[SP,0],[-SP,0],[0,SP],[0,-SP]])if(typeof WEEDS.fine(x+u,z+v)==='number')return SHARED.groundY(x,z); return null; };   // a tuft a little past the lawn's edge, so they run right up to the paths
   let dirty=true, lx=1e9, lz=1e9;
-  SYS.add('weedsAdd',(k,gb)=>{ CH.set(k,make(k,gb)); dirty=true; },'140a-tufts'); SYS.add('weedsDrop',k=>{ if(CH.delete(k))dirty=true; },'140a-tufts');
+  SYS.add('weedsAdd',(k,gb)=>{ CH.set(k,make(k,gb)); dirty=true; },'140a-tufts');
+  WEEDS.addFeet=L=>{ const F=WEEDS.feet=WEEDS.feet||[]; F.push(...L); for(const [k,c] of CH)if(c&&L.some(([x,z,r,w=.9*T])=>x+r+w>c.x0&&x-r-w<c.x0+c.CS&&z+r+w>c.z0&&z-r-w<c.z0+c.CS))CH.set(k,make(k,c.gb)); dirty=true; };   // feet registered after their lawn's tufts were made SYS.add('weedsDrop',k=>{ if(CH.delete(k))dirty=true; },'140a-tufts');
   // the rings round you: copied in from the chunks near enough when you have walked a little or the lawn changed
   const fill=()=>{ const px=pos.x, pz=pos.z; RINGS.forEach((R,ri)=>{ const r0=ri?R1:0, r1=ri?R2:R1; for(const sn of SN){ const me=R.M[sn], A=me.instanceMatrix.array, C=me.instanceColor.array, BA=me.geometry.attributes.aBend, B=BA.array; let n=0;
       for(const c of CH.values()){ if(!c)continue; const L=c.L[ri][sn]; if(!L)continue; const dx=Math.max(c.x0-px,0,px-c.x0-c.CS), dz=Math.max(c.z0-pz,0,pz-c.z0-c.CS); if(dx*dx+dz*dz>=r1*r1)continue;

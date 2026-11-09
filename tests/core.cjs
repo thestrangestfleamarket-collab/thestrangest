@@ -7,6 +7,7 @@ try { execFileSync('node', ['--stack-size=8000', ROOT + '/tools/imports.cjs', '-
 catch (e) { ok(false, 'imports: ' + String(e.stdout || '') + String(e.stderr || '')); }
 { const fs = require('fs'), bad = fs.readdirSync(ROOT + '/src').filter(f => /\.js$/.test(f) && /CLOCKWISE/.test(fs.readFileSync(ROOT + '/src/' + f, 'utf8'))); ok(!bad.length, 'the Loop\'s signs name streets, not directions (no CLOCKWISE in src' + (bad.length ? ': ' + bad.join(', ') : '') + ')'); }
 
+{ const gone = [...new Set(['/.github/workflows/site.yml', '/CLAUDE.md'].flatMap(f => fs.readFileSync(ROOT + f, 'utf8').match(/tests\/[\w-]+\.cjs/g) || []))].filter(t => !fs.existsSync(ROOT + '/' + t)); ok(!gone.length, 'every test the workflow and CLAUDE.md name exists' + (gone.length ? ': ' + gone.join(', ') : '')); }
 const L = JSON.parse(fs.readFileSync(ROOT + '/data/world.json', 'utf8'));
 ok(L.places.every(p => p.x0 < p.x1), 'every place in the level file has x0 < x1');
 // the asset contract (data/full/contract.json): every baked record has its pieces, every reference between files resolves
@@ -67,7 +68,6 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     await pg.waitForTimeout(3000);
     for (let i = 0; i < 40; i++) { if (await pg.evaluate(() => !!(window.SHAFTS && SHAFTS.occ === 1)).catch(() => false)) break; await pg.waitForTimeout(500); }   // the sun's first shadow pass (slow under software GL)
     await pg.waitForFunction(() => window.RPGNPC && RPGNPC.list && RPGNPC.list.length >= 6 && window.BODIES && BODIES.by.hero && BODIES.by.poacher, { timeout: 30000 }).catch(() => {});   // the deferred street walkers
-    await pg.waitForFunction(() => window.WINDOWS && WINDOWS.firstDone && !(WINDOWS.taking && WINDOWS.taking.size), { timeout: 120000 }).catch(() => {});   // the bodega's window pictures (begun a few seconds after the start, a pane at a time) build its inside meanwhile
     await pg.waitForFunction(() => window.CLOCK && CLOCK.sunH === 13 && CLOCK.h === 13, { timeout: 60000 }).catch(() => {});   // the test's ?hour=13 set by a frame of the clock
     const r = await pg.evaluate(async () => {
       const o = {}, B = SHARED.BOD, X = B.XS, Z = B.ZS;
@@ -75,7 +75,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       o.inspect = !!(window.INSPECT && INSPECT.kinds.length >= 10 && typeof INSPECT.item === 'function' && __dbg.ui().keyOf('inspect') && FORAGE.ROWB.some(f => (f('m_button') || []).some(b => b[1] === 'inspect')));
       o.talk = !!(window.TALK && typeof TALK.open === 'function' && TALK.shops instanceof Map && TALK.script && (() => { const N = __dbg.npcs().find(n => n.key === 'teddy'); const t = N && TALK.script(N); return !!(t && t.lines && t.lines[t.start]); })());
       o.fair = !!(window.FAIR && Object.keys(FAIR.rides).length >= 13 && window.MIDWAY && Object.keys(MIDWAY.booths).length >= 12 && window.CREW && typeof CREW.spots.fair === 'function' && window.ZONES && ZONES.list.some(z => z[0] === 'fair') && !FAIR.built);
-      o.phases = Object.keys(SYS.P); o.sysErr = Object.entries(SYS.P).flatMap(([k, v]) => v.filter(s => s.err).map(s => k + ':' + s.name));
+      o.phases = Object.keys(SYS.P); o.sysErr = SYS.errs.slice();
       o.hud = (() => { try { try { const ok = {}; ok.vit = !document.getElementById('vit').hidden && getComputedStyle(document.getElementById('vit')).top !== 'auto' && /^\d+ \/ \d+$/.test(document.getElementById('vhpn').textContent) && /^\d+ \/ \d+$/.test(document.getElementById('vinn').textContent);
         ok.slots = document.querySelectorAll('#hqb .qs').length === 10; HUD.set(1, 'mortar'); ok.setOk = HUD.slots[1] === 'mortar' && /^MORTAR/.test(document.querySelectorAll('#hqb .qs')[1].title) && !!document.querySelectorAll('#hqb .qs')[1].querySelector('img'); HUD.set(1, null);
         __dbg.ui().log('a test line', null, 'MEL'); SAY('A SAID LINE'); ok.log = HUD.lines().slice(-2).join('|') === 'MEL a test line|A SAID LINE'; ok.map = !!HUDDBG().map && !!HUDDBG().plan && document.getElementById('hmz').textContent.startsWith('A') && !FORAGE.has('map');
@@ -96,10 +96,9 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       o.fade = FADE.busy;
       const Bd = SHARED.BOUND, c = __dbg.collide(Bd.x1 + 500, Bd.z1 + 500); o.clamp = c[0] <= Bd.x1 + 1e-6 && c[1] <= Bd.z1 + 1e-6;
       o.shared = Object.keys(SHARED).length;
-      const shop = k => !!(ROOMS.off[k] && ROOMS.off[k].keep && window.MSHOP && MSHOP.at[k]);   // the shops' insides are built at the start (owner, 9 Nov 2026)
-      o.lazy = [Object.keys(ROOMS.lazy).length, Object.keys(ROOMS.lazy).filter(k => ROOMS.lazy[k].done && !shop(k))];
+      o.lazy = [Object.keys(ROOMS.lazy).length, Object.keys(ROOMS.lazy).filter(k => ROOMS.lazy[k].done)];
       o.queues = BATCH.queues.length;
-      o.off = Object.keys(ROOMS.off).map(k => [k, !!ROOMS.lazy[k], !!(ROOMS.off[k].box && ROOMS.off[k].spawn && ROOMS.off[k].out && ROOMS.off[k].build), !!ROOMS.off[k].P, shop(k)]);
+      o.off = Object.keys(ROOMS.off).map(k => [k, !!ROOMS.lazy[k], !!(ROOMS.off[k].box && ROOMS.off[k].spawn && ROOMS.off[k].out && ROOMS.off[k].build), !!ROOMS.off[k].P]);
       o.doors = HOMES.doors().map(d => d.id); o.shops = HOMESDBG().filter(r => r[1] && r[1] !== '?').length;
       o.offAPI = ['enter', 'enterAt', 'exit', 'goIn', 'goOut', 'offIn', 'boxAt', 'real', 'unstow', 'stowed'].every(k => typeof ROOMS[k] === 'function');
       o.offGround = (() => { try { const g = { x0: 1e7, x1: 1e7 + 10, z0: 1e7, z1: 1e7 + 10, ground: () => 42 }; ROOMS.grounds.push(g); const v = SHARED.groundY(1e7 + 5, 1e7 + 5), w = SHARED.groundY(1e7 + 50, 1e7 + 5); ROOMS.grounds.splice(ROOMS.grounds.indexOf(g), 1); return v === 42 && w !== 42; } catch (e) { return { ok: false, err: String(e).slice(0, 200) }; } })();
@@ -131,7 +130,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       o.walks = !!(window.WALKS && WALKS.by instanceof Map && typeof WALKS.reg === 'function' && typeof WALKS.pick === 'function' && SYS.P.city.some(s => s.name === '111db-walks') && SYS.P.hi.some(s => s.name === '111db-walks') && WALKS.S && typeof WALKS.S.freeFn === 'function' && WALKS.remote === false);
       o.tenants = !document.querySelector('[data-t="tenants"]') && !!document.getElementById('dten');
       o.gym = (() => { try { const F = window.FORAGE, V = __dbg.VIT; if (!F || !F.stats.work || !window.GYM || !V.bouts) return { ok: false }; const st0 = { ...F.ST }, tr0 = F.stats.trained('sta'); F.ST.sta = 99; const g = F.stats.work('sta', 300), top = F.ST.sta; F.ST.sta = st0.sta; F.stats.gain('sta', 0);
-        return { ok: true, capped: g === 1 && top === 100, reg: !!ROOMS.off.gym, lazy: !GYMDBG().built || !!(ROOMS.off.gym && ROOMS.off.gym.keep && window.MSHOP && MSHOP.at.gym), bout: V.bouts.length > 0 && GYM.inRing() === false }; } catch (e) { return { ok: false, err: String(e).slice(0, 200) }; } })();
+        return { ok: true, capped: g === 1 && top === 100, reg: !!ROOMS.off.gym, lazy: !GYMDBG().built, bout: V.bouts.length > 0 && GYM.inRing() === false }; } catch (e) { return { ok: false, err: String(e).slice(0, 200) }; } })();
       o.equip = (() => { try { const E = window.EQUIP, I = window.ITEMS, V = __dbg.VIT, F = window.FORAGE; if (!E || !I || !V || !F || typeof E.wear !== 'function') return { ok: false };
         const slots = I.prop('armor', 'slot') === 'body' && I.prop('armor', 'grants') === 'guard' && I.prop('cloudcoat', 'slot') === 'body' && I.prop('cloudcoat', 'grants') === 'float';
         const d0 = V.def === 0 && E.float === false; F.give('armor', 1); E.wear('armor'); const guard = V.def > 0 && E.worn === 'armor';
@@ -179,7 +178,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.inspect, 'INSPECT is wired: its families, the key, LOOK in the pack');
     ok(r.talk, 'TALK is wired: a character\'s script reads from characters.json, the shops hand over to it');
     ok(r.sway, 'CAMERA SWAY and its level (1-10) are in the menu, a SYS cam entry, off by default');
-    ok(!r.sysErr.length, 'no system has thrown' + (r.sysErr.length ? ': ' + r.sysErr.join(', ') : ''));
+    ok(!r.sysErr.length, 'no system has thrown and no page error is on the ledger (SYS.errs)' + (r.sysErr.length ? ': ' + r.sysErr.join(' | ') : ''));
     ok(r.zoneHere === 'market', 'at 53,10 you are on Market St (' + r.zoneHere + ')');
     ok(r.zoneDown === 'station', 'down at 0,0 is the subway station (' + r.zoneDown + ')');
     ok(r.zoneRoom === 'inside', 'in a room is inside (' + r.zoneRoom + ')');
@@ -193,8 +192,8 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.fade === 0, 'no fade is left running after the start');
     ok(r.clamp, 'collision keeps you inside the world');
     ok(r.queues >= 2, 'the far painting queues are there (bodega ground, park wall): ' + r.queues);
-    ok(r.lazy[0] >= 3 && !r.lazy[1].length, 'no inside of a building but the shops is built at the start (' + r.lazy[0] + ' insides wait; built: ' + r.lazy[1].join(',') + ')');
-    ok(r.offAPI && r.off.length >= 1 && r.off.every(q => q[1] && q[2] && (!q[3] || q[4])), 'insides off the map: each one waits (box, spawn, way out, builder) and none but the shops is built at the start (' + r.off.map(q => q[0]).join(',') + ')');
+    ok(r.lazy[0] >= 3 && !r.lazy[1].length, 'no inside of a building is built at the start (' + r.lazy[0] + ' insides wait; built: ' + r.lazy[1].join(',') + ')');
+    ok(r.offAPI && r.off.length >= 1 && r.off.every(q => q[1] && q[2] && !q[3]), 'insides off the map: each one waits (box, spawn, way out, builder) and none is built at the start (' + r.off.map(q => q[0]).join(',') + ')');
     ok(r.offGround, 'an off-map place in ROOMS.grounds says the ground inside its box, and only there (SHARED.groundY)');
     ok(r.offSpawn, 'every off-map inside has enterAt/boxAt and its spawn falls inside its own box (GO TO enters it, never teleports onto its footprint)');
     if (r.goto) { r.goto.unnamed = L.places.filter(p => p.name && p.kind !== 'gate' && !r.goto.map.includes(p.name)).map(p => p.name); delete r.goto.map; }
@@ -218,7 +217,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.windows, 'WINDOWS is wired (the bodega\'s street panes registered while its own front stands on Market St; none for its Polyfork front on the Hudson, 7 Nov 2026)');
     ok(r.cinema, 'CINEMA is wired (shared screen: tick, push, admin, now; idle off the street)');
     ok(r.tenants, 'the owner\'s TENANTS page is there and not a settings tab (it opens from ADMIN)');
-    ok(r.gym && r.gym.ok && r.gym.capped && r.gym.reg && r.gym.lazy && r.gym.bout, 'the gym: training stops a stat at 100, its inside is off the map (a shop: built at the start, 9 Nov 2026), the ring is a fight not to the death: ' + JSON.stringify(r.gym));
+    ok(r.gym && r.gym.ok && r.gym.capped && r.gym.reg && r.gym.lazy && r.gym.bout, 'the gym: training stops a stat at 100, its inside is off the map and built only when you go in, the ring is a fight not to the death: ' + JSON.stringify(r.gym));
     ok(r.online, 'ONLINE is wired (other players: feed, at/V for the ragdoll, chat key, a SYS life entry; alone off the website)');
     ok(r.walks, 'WALKS is wired (the folk\'s walks: register, the pick hook, city and hi entries; run here off the website)');
     ok(r.layers.ok && r.layers.hid && r.layers.off && r.layers.back && r.layers.briefs, 'the Walker is a base body in underwear with shirt, pants, shoes and hair as layers on top: ' + JSON.stringify(r.layers));

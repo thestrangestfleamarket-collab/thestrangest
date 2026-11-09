@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {CULL, keys, LEVELS, pos, RAG, ROOMS, SHAD, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {cutWalls, FADE, FIX, grab, LAMPD, LAMPI, lamps, MAPSTAIR, MODS, QS, SECTIONS, SOL, STN, TILE, ZU} from './006-map-pre.js';
+import {cutWalls, FADE, FIX, grab, LAMPD, LAMPI, lamps, MAPSTAIR, MODS, QS, SECTIONS, SOL, STN, SYS, TILE, ZU} from './006-map-pre.js';
 import {BATCH, OBJ} from './008-batch.js';
 const WATER={drops:[], uH:{value:null}, uWB:{value:new THREE.Vector4()}, uLevel:{value:0}, uGrid:{value:new THREE.Vector2()}, uCK:{value:+(QS0=>QS0.get('ck')||160)(new URLSearchParams(location.search))}, mats:[]};
 WATER.caustic=m=>{ '@later'; m.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,{uH:WATER.uH,uWB:WATER.uWB,uLevel:WATER.uLevel,uGrid:WATER.uGrid,uCK:WATER.uCK});
@@ -385,7 +385,7 @@ const SSUB=(()=>{ const W={};
     // settled: nothing downloading and every square within reach painted (a view's switch waits for it, at most 20 s; the painting goes faster behind the black)
     FADE.R=()=>{ const D=CULL.drawD&&CULL.drawD(); return (D||40*TILE)+8*TILE; };   // (with the draw distance ALL, the near ring a view needs first: the old 40 tiles)   // (what the view draws: the draw distance and a little; past it the squares paint on in the background)
     // every loading screen that ends in a close-up view lifts once that view is painted (owner, 7 Nov 2026)
-    FADE.settle=async(max=20000)=>{ const t0=performance.now(); for(;;){ const L=window.__LDG, R=FADE.R(); if(!(L&&L.now.size)&&!FADE.left())return true; if(performance.now()-t0>max)return false; BATCH.rush(60,R); await new Promise(r=>requestAnimationFrame(r)); } };
+    FADE.settle=async(max=20000)=>{ const t0=performance.now(); for(const f of FADE.arrive)try{ await f(); }catch(e){ SYS.fail('arrive',e); } for(;;){ const L=window.__LDG, R=FADE.R(); if(!(L&&L.now.size)&&!FADE.left()){ if(CULL.rush)CULL.rush(); return true; } if(performance.now()-t0>max)return false; BATCH.rush(60,R); await new Promise(r=>requestAnimationFrame(r)); } };
     FADE.el=el; FADE.run=async(text,work,o={})=>{ const tr=el.style.transition, w=ms=>new Promise(r=>setTimeout(r,ms)), fr=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
       const live=window.__started&&!o.silent, was=el.style.opacity==='1'; FADE.busy=(FADE.busy||0)+1;
       if(live){ ft.textContent=text||''; barOn(true); el.style.pointerEvents='auto'; el.style.transition=o.cut?'none':'opacity .3s steps(4)'; el.style.opacity='1'; if(!o.cut&&!was)await w(320); }

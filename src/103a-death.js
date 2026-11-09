@@ -1,10 +1,10 @@
 // THE DEATH: what happens when you die: the YOU ARE DEAD note, the fall, your body left holding what you carried, and the ghost's float to the bath house on the lake's island, whose steam brings you back to life there (or RESURRECT in the menu).
 import {SHARED, THREE} from './003-shx.js';
-import {GHOSTS, INV, keys, LEVELS, PH, pos, RAG, st, UI, VIT, W3} from './003b-systems.js';
+import {GHOSTS, INV, keys, LEVELS, ONLINE, PH, pos, RAG, ROOMS, st, UI, VIT, W3} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {OWNED, SAVE} from './005-save.js';
 import {FADE, QS, STORE, SYS, TILE, wait} from './006-map-pre.js';
-{ const T=TILE, el=document.createElement('div'), css=document.createElement('style'); el.id='dead'; el.hidden=true;
+{ const T=TILE, el=document.createElement('div'), css=document.createElement('style'); el.id='dead'; el.className='mlb'; el.hidden=true;
   css.textContent='#dead{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top,0px));transform:translateX(-50%);font:12px var(--pixel);color:var(--key);background:var(--panel);border:2px solid var(--line);padding:6px 10px;z-index:15;pointer-events:none;zoom:var(--uiz,1)} #dead[hidden]{display:none}';
   document.head.appendChild(css); document.body.appendChild(el);
   const DEAD='YOU ARE DEAD. FLOAT TO THE BATH HOUSE ON THE LAKE\'S ISLAND.', note=(t,s)=>{ el.textContent=t; el.hidden=false; clearTimeout(note.t); if(s)note.t=setTimeout(()=>{ if(VIT.dead)note(DEAD); else el.hidden=true; },s*1000); };
@@ -16,20 +16,20 @@ import {FADE, QS, STORE, SYS, TILE, wait} from './006-map-pre.js';
   // a ghost sees the world in black and white (owner, 8 Nov 2026: "when you're a ghost the game is black and white")
   const grey=()=>{ const c=renderer.domElement, on=!!VIT.dead; if(c.dataset.ghost===(on?'1':''))return; c.dataset.ghost=on?'1':''; c.style.filter=on?'grayscale(1)':''; };
   SYS.every(grey,300,'103a-death grey');
-  // your body (owner, 7 Nov 2026): it stays where you fell with all you carried for an hour; alive again, a double-click takes it all back
+  // your body (owner, 7 Nov 2026): it stays where you fell with all you carried for an hour; alive again, a double-click takes it all back; online, after the hour the section's server lets it all fall to the ground for anyone (owner, 9 Nov 2026)
   let body=null;
   const keepBody=c=>{ try{ if(c)OWNED.set('corpse',JSON.stringify(c)); else OWNED.del('corpse'); }catch(e){} };
   const hideBody=()=>{ if(!body)return; body.me.removeFromParent(); body.me.geometry.dispose(); const i=UI.things.indexOf(body.th); if(i>=0)UI.things.splice(i,1); body=null; };
   const showBody=c=>{ hideBody(); if(!c)return; const me=new THREE.Mesh(new THREE.CapsuleGeometry(.16*T,.9*T,4,8).rotateZ(Math.PI/2),new THREE.MeshToonMaterial({color:0x6a5a4a,gradientMap:W3.GP}));
     me.position.set(c.x,c.py+.16*T,c.z); me.rotation.y=c.h||0; me.castShadow=true; scene.add(LEVELS.own(me,c.lv||'*'));
     const th={name:'YOUR BODY',obj:me,reach:1.6*T,near:2.4*T,tall:.5*T,act:()=>takeBody()}; UI.thing(th); body={c,me,th}; };
-  const takeBody=()=>{ if(!body||VIT.dead)return; const c=body.c; for(const k in c.items)INV.items[k]=(INV.items[k]||0)+c.items[k]; Object.assign(INV.inside,c.inside||{}); INV.cash+=c.cash||0; INV.save(); hideBody(); keepBody(null); note('YOU TAKE BACK WHAT YOUR BODY HELD.',4); };
+  const takeBody=()=>{ if(!body||VIT.dead)return; const c=body.c; for(const k in c.items)INV.items[k]=(INV.items[k]||0)+c.items[k]; Object.assign(INV.inside,c.inside||{}); INV.cash+=c.cash||0; INV.save(); hideBody(); keepBody(null); note('YOU TAKE BACK WHAT YOUR BODY HELD.',4); if(ONLINE.on)ONLINE.send({t:'body',take:1}); };
   const inBath=()=>{ const G=SHARED.BOD&&SHARED.BOD.GD; return !!(G&&G.inside&&SHARED.LVL==='up'&&G.inside()); };
   VIT.die=()=>{ if(VIT.dead)return; VIT.dead=true; VIT.fainted=false; VIT.hp=0; VIT.out=2.4; SHARED.trip=true; gh=0; rise=-1; wt=0; wn=0; want=false; try{ SAVE.set('dead','1'); }catch(e){} note(DEAD);
     const old=body&&body.c, c={x:pos.x,z:pos.z,py:SHARED.py,h:SHARED.heading,lv:SHARED.LVL==='down'&&LEVELS.cur||'*',dn:SHARED.LVL==='down',t:Date.now(),items:{...INV.items},inside:{...(INV.inside||{})},cash:INV.cash};
     try{ SAVE.set('deadat',JSON.stringify({x:c.x,z:c.z,h:c.h,dn:c.dn})); }catch(e){}
     if(old){ for(const k in old.items)c.items[k]=(c.items[k]||0)+old.items[k]; Object.assign(c.inside,old.inside||{}); c.cash+=old.cash||0; }   // a body already lying somewhere: what it held comes to the new one
-    if(Object.keys(c.items).length||c.cash){ INV.items={}; INV.inside={}; INV.cash=0; INV.save(); keepBody(c); showBody(c); } };
+    if(Object.keys(c.items).length||c.cash){ INV.items={}; INV.inside={}; INV.cash=0; INV.save(); keepBody(c); showBody(c); if(ONLINE.on)ONLINE.send({t:'body',v:{x:c.x,y:c.py,z:c.z,lv:LEVELS.cur||'street',rm:typeof ROOMS.cur==='string'?ROOMS.cur:''}}); } };
   const back=async here=>{ '@later'; busy=true; await FADE.run('REFRESHED',async()=>{ await wait(1500);
     const G=SHARED.BOD.GD, K=SHARED.BOD.GDK, dx=G.door[0], oy=K?K.y1e+.6:G.door[1]+3;
     if(!here&&!G.here){ STORE.goTo(SHARED.BOD.X(dx),SHARED.BOD.Z(oy),'up'); SHARED.heading=SHARED.BOD.Z(oy+1)>SHARED.BOD.Z(oy)?0:Math.PI; PH.hd=SHARED.heading; } keys.clear(); SHARED.target=null;
@@ -37,7 +37,7 @@ import {FADE, QS, STORE, SYS, TILE, wait} from './006-map-pre.js';
     },{hold:200}); note('You feel refreshed.',5); busy=false; };
   // RESURRECT in the menu (owner, 4 Nov 2026, every player): back to life where you stand (a ragdoll still falling settles first)
   let want=false; VIT.revive=()=>{ if(!VIT.dead||busy)return false; want=true; return true; };
-  SYS.add('vitals',(dt)=>{ if(body&&Date.now()-body.c.t>HOUR){ hideBody(); keepBody(null); note('YOUR BODY HAS CRUMBLED TO DUST, AND WHAT IT HELD WITH IT.',6); }
+  SYS.add('vitals',(dt)=>{ if(body&&Date.now()-body.c.t>HOUR){ const on=ONLINE.on; hideBody(); if(!on)keepBody(null); note(on?'YOUR BODY HAS CRUMBLED. WHAT IT HELD LIES ON THE GROUND THERE, FOR ANYONE.':'YOUR BODY HAS CRUMBLED TO DUST, AND WHAT IT HELD WITH IT.',6); }
     if(!VIT.dead||busy)return; VIT.hp=0;
     if(want){ VIT.out=0; } if(want&&!RAG.on){ want=false; if(st.move&&st.move.name==='fall'&&st.move.held)RIG.release(st,'F'); back(true); return; }
     if(gh>=1&&!RAG.on&&st.move&&st.move.name==='fall'&&st.move.held)RIG.release(st,'F');

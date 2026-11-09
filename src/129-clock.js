@@ -1,6 +1,6 @@
 // THE CLOCK: CLOCK keeps the day's hour (CLOCK.h: shops, lamps, the NPCs' routines) and the sun's own hour (CLOCK.sunH, the look's, when set), and moves the sun and moon, their light and their shadows.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, NPCS, PARK, pos, ROOMS, W3} from './003b-systems.js';
+import {CLOCK, NPCS, ONLINE, PARK, pos, ROOMS, W3} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {QS, RING, TILE} from './006-map-pre.js';
 import {WATER} from './009-down.js';
@@ -60,7 +60,7 @@ Object.assign(CLOCK,{h:17.4,sunH:null,run:false,speed:1,shadeH:16,sunV:new THREE
   CLOCK.set=h=>{ CLOCK.h=((h%24)+24)%24; };
   CLOCK.dark=()=>elev(CLOCK.h)<-2;
   const DYN=()=>{ const out=new Set(); if(window.W3&&W3.group)out.add(W3.group); for(const N of NPCS)if(N.g)out.add(N.g); for(const x of NPCS.extra||[])if(x&&x.g)out.add(x.g);
-    if(window.CREATS)for(const N of CREATS)if(N.g)out.add(N.g); for(const k of ['BOAT','DRONE'])if(window[k]&&window[k].g)out.add(window[k].g); return out; };
+    if(window.CREATS)for(const N of CREATS)if(N.g)out.add(N.g); for(const k of ['BOAT','DRONE'])if(window[k]&&window[k].g)out.add(window[k].g); for(const o of ONLINE.others?.values()||[])if(o.fig&&o.fig.g)out.add(o.fig.g); return out; };
   { const SM=renderer.shadowMap, orig=SM.render;
     SM.render=(lights,sc,camera)=>{ if(sc!==scene)return orig.call(SM,lights,sc,camera); const rest=lights.filter(L=>L!==sunL&&L!==sunD&&L!==sunF); if(!CLOCK.main){ SM.needsUpdate=true; return orig.call(SM,rest,sc,camera); } const m0=camera.layers.mask, dk=!!(window.ROOMS&&ROOMS.dark&&ROOMS.dark()); camera.layers.enable(3);
       const st=dk?[]:[sunL,sunF].filter(L=>lights.includes(L)&&L.shadow.needsUpdate);

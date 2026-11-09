@@ -112,6 +112,14 @@ add('shroom_invis', mush('shroom_invis', 'tall', '#d8d4e8', '#ece8f4', [(3, 9, '
 add('shroom_str', mush('shroom_str', 'fat', '#a8401e', '#e8cfa0', [(1, 3, K), (0, 2, '#e8d8b0'), (14, 3, K), (15, 2, '#e8d8b0')]))
 add('shroom_swift', mush('shroom_swift', 'shaggy', '#c8c0b4', '#e8e0d4', []))
 add('shroom_fly', mush('shroom_fly', 'flat', '#bfe4ff', '#f0f8ff', [], glow='#ffffff'))
+add('shroom_keen', mush('shroom_keen', 'dome', '#f2c14e', '#f4ecd0', [(5, 5, K), (6, 5, '#ffffff'), (9, 5, K), (10, 5, '#ffffff')]))
+add('shroom_heal', mush('shroom_heal', 'dome', '#e8607a', '#f4e6e8', [(7, 4, '#ffffff'), (6, 5, '#ffffff'), (7, 5, '#ffffff'), (8, 5, '#ffffff'), (7, 6, '#ffffff')]))
+add('shroom_cure', mush('shroom_cure', 'tall', '#5fbf5a', '#e4f0dc', [(5, 3, '#d8ffc8'), (7, 5, '#d8ffc8'), (6, 7, '#d8ffc8')]))
+add('shroom_jump', mush('shroom_jump', 'tall', '#ff9a3a', '#f4e4cc', [(5, 2, '#ffe0a0'), (8, 4, '#ffe0a0'), (6, 6, '#ffe0a0')]))
+add('shroom_luck', mush('shroom_luck', 'flat', '#2fa84f', '#e8f0dc', [(4, 5, '#f2d24e'), (8, 5, '#f2d24e'), (12, 5, '#f2d24e'), (6, 6, '#f2d24e'), (10, 6, '#f2d24e')]))
+add('shroom_fire', mush('shroom_fire', 'fat', '#e8401a', '#f4dcb0', [(5, 4, '#ffd23a'), (9, 4, '#ffd23a'), (7, 5, '#ffd23a'), (11, 5, '#ffd23a')], glow='#ffb030'))
+add('shroom_small', mush('shroom_small', 'dome', '#b8a8f0', '#ece8f8', [(6, 4, '#ffffff'), (9, 5, '#ffffff')]))
+add('shroom_big', mush('shroom_big', 'fat', '#6a2a9a', '#e0d0ec', [(4, 4, '#c8a0f0'), (8, 3, '#c8a0f0'), (11, 5, '#c8a0f0')]))
 
 def load_bfly(path):
     d = json.load(open(path))

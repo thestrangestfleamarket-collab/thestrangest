@@ -1,8 +1,9 @@
 // A BOT'S MIND (?bot=1, a page tools/bots.cjs runs): plays the game as a player does, by the job the owner set in BOTS (walks by the click-to-walk, uses things, buys and sells at the shops' own buttons).
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, FORAGE, INV, LOOKS, ONLINE, pos, ROOMS, SHOPS, st, UI, USE, VIT, WEEDS} from './003b-systems.js';
+import {CITY, FORAGE, INV, keys, LOOKS, ONLINE, pos, ROOMS, SHOPS, st, UI, USE, VIT, WEEDS} from './003b-systems.js';
 import {FADE, MODS, QS, SYS, TILE} from './006-map-pre.js';
 import {OBJS} from './008-batch.js';
+import {RIVER} from './066-river.js';
 import {AVATAR} from './111c-avatar.js';
 import {FISHING} from './142-fishing.js';
 const BOT=window.BOT={ready:false}, BOTV=new THREE.Vector3();
@@ -27,11 +28,16 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
   const close=()=>{ for(const b of document.querySelectorAll('.pX'))if(b.offsetParent)b.click(); };
   const cash=()=>Math.round(INV.cash||0);
   // into a shop by the map's GO TO, up to its counter, then press its buttons (fn); true once done, false while on the way, null if it can't be reached
-  const counter=(shop,dt,fn,s=task,re=/^THE COUNTER/)=>{ s.at=s.at||{}; if(!s.at[shop]){ s.at[shop]=1; s.wt=12; UI.goName(shop); return false; }   // always by GO TO first: a counter nearby may be another shop's
+  const counter=(shop,dt,fn,s=task,re=/^THE COUNTER/,stay=false)=>{ s.at=s.at||{}; if(!s.at[shop]){ s.at[shop]=1; s.wt=30; UI.goName(shop); return false; }   // always by GO TO first: a counter nearby may be another shop's
     if(FADE.busy)return false; const th=nearest(UI.things,t=>re.test(t.name||'')), p=th&&thAt(th);
     if(!th||d2(p.x,p.z)>30*T){ if((s.wt-=dt)>0)return false; return null; }
-    if(!use(th,dt))return false; fn(); close(); SHOPS.close&&SHOPS.close(); return true; };
-  const sellAll=()=>{ let n=0; while((click('[data-sold][data-n="all"]')||click('[data-sell][data-n="all"]'))&&n++<30); };
+    if(!s.pressed){ if(!use(th,dt))return false; s.pressed=1; s.pw=1.8; fn(); return false; }   // the shop's window: press, then answer how many and YES, then close
+    answer(); if((s.pw-=dt)>0)return false; s.pressed=0; if(!stay){ close(); SHOPS.close&&SHOPS.close(); } return true; };   // stay: what it opened stays open (the pet store's adoption book)
+  // the shops are double-clicked (a row, then HOW MANY and YES), the old panels still have buttons
+  const press=sel=>{ const b=[...document.querySelectorAll(sel)].find(e=>e.offsetParent!==null); if(!b)return false; const r=b.getBoundingClientRect(); b.dispatchEvent(new MouseEvent('dblclick',{bubbles:true,clientX:r.left+4,clientY:r.top+4})); return true; };
+  const answer=()=>{ click('#bagask .ak-all'); click('#shopg [data-q="y"]'); };
+  const buy=id=>press(`.shr[data-buy="${id}"]`)||click(`[data-buy="${id}"]`);
+  const sellAll=()=>{ if(press('.shr[data-sold]'))return true; let n=0; while((click('[data-sold][data-n="all"]')||click('[data-sell][data-n="all"]'))&&n++<30); return n>0; };
   let cash0=null; const earned=()=>cash()-(cash0??cash()), goal=()=>C.goal>0&&earned()>=C.goal;   // a goal is what it earns on this job, not what it had
   // walk about a centre (home, or where a job brought it), its own pauses
   let rw=0; const roam=(dt,c,far,ok)=>{ if(walking(dt))return; if((rw-=dt)>0){ doing='looking round'; return; } const h=c||{x:pos.x,z:pos.z};
@@ -66,14 +72,20 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
         task={s:'find',keep:Object.keys(INV.items).filter(id=>/^[mu]_/.test(id)&&INV.items[id]>0).reduce((a,id)=>a+INV.items[id],0)}; say(lines()[0]||''); doing='sold, now $'+cash(); } },
     fish:dt=>{ if(goal()){ doing='made $'+earned()+' on this job (goal reached)'; return; } task=task||{s:'gear'}; if(task.hold>0&&task.s==='gear'){ task.hold-=dt; return; } const F=FORAGE, fish=FISHING.held?FISHING.held():0, bait=['bait','bait_cut'].some(id=>F.has(id));
       const BAIT=['bait','bait_cut'], stand=nearest(UI.things,th=>/BOATS/.test(th.name||''));
-      if(task.s==='gear'){ if(F.has('rod')&&bait){ task={s:'cast',go:3}; UI.goName('TO THE HUDSON (THE PIER)'); return; } doing=F.has('rod')?'buying bait':'buying a rod';
-        const r=counter('FISHING & SCUBA',dt,()=>{ if(!F.has('rod'))click('[data-buy="rod"]'); for(let i=0;i<5;i++)click('[data-buy="bait"]'); }); if(r===false)return;
-        if(r===null||!F.has('rod')||!BAIT.some(id=>F.has(id))){ doing=r===null?'can\'t get to FISHING & SCUBA':'can\'t afford fishing gear ($'+cash()+')'; task={s:'gear',hold:30}; } return; }
+      if(task.s==='gear'){ if(F.has('rod')&&BAIT.reduce((n,id)=>n+(F.has(id)||0),0)>=3){ task={s:'cast',go:3}; UI.goName('TO THE HUDSON (THE PIER)'); return; } doing=F.has('rod')?'buying bait':'buying a rod';
+        const r=counter('FISHING & SCUBA',dt,()=>{ if(!F.has('rod'))buy('rod'); else buy('bait'); }); if(r===false)return;
+        if(r===null){ doing='can\'t get to FISHING & SCUBA'; task={s:'gear',hold:30}; } else if(!F.has('rod')||!BAIT.some(id=>F.has(id))){ const c0=task.c0??cash(); task={s:'gear',c0,tries:(task.tries||0)+1}; if(task.tries>4){ doing='can\'t buy fishing gear ($'+cash()+')'; task.hold=30; task.tries=0; } } return; }
       if(task.s==='sell'){ doing='selling '+fish+' fish'; const r=stand&&d2(thAt(stand).x,thAt(stand).z)<40*T?(use(stand,dt)?(sellAll(),close(),true):false):counter('FISHING & SCUBA',dt,sellAll);
         if(r===false)return; task={s:'gear'}; if(r===null){ task={s:'cast',hold:60}; doing='nobody buying fish nearby'; } return; }
       if(task.s==='cast'){ if(task.go>0){ task.go-=dt; return; } if(!bait&&!FISHING.state?.()){ task.s='gear'; return; } if(task.hold>0)task.hold-=dt; if(fish>=(FISHING.room?FISHING.room():5)&&!(task.hold>0)){ FISHING.leave&&FISHING.leave(); task.s='sell'; return; }
-        const S=FISHING.state&&FISHING.state(); FISHING.auto=true; if(S&&S.st){ doing='fishing ('+S.st+'), '+fish+' caught'; return; }
-        if(walking(dt))return; let best=null; for(let r=2;r<=12&&!best;r+=1.5)for(let k=0;k<16;k++){ const a=k*Math.PI/8, x=pos.x+Math.sin(a)*r*T, z=pos.z+Math.cos(a)*r*T; if(FISHING.at(x,z)){ best=[x,z]; break; } }
+        const S=FISHING.state&&FISHING.state(); FISHING.auto=true; if(S&&S.st){ doing='fishing ('+S.st+'), '+fish+' caught'; if(S.st==='wait'&&S.t>40){ FISHING.reel(); (task.tried=task.tried||[]).push([pos.x,pos.z]); task.far=0; doing='nothing biting: trying another spot'; } return; }   // as the game tells a player: NOTHING IS BITING. TRY ANOTHER SPOT
+        if(RIVER.swim||st.water&&st.water.in){ doing='climbing out of the water'; if(!task.out){ task.out=1; task.far=0; path=null; let f=null, fd=1e9; for(let r=1;r<=40;r+=1)for(let k=0;k<24;k++){ const a=k*Math.PI/12, x=pos.x+Math.sin(a)*r*T, z=pos.z+Math.cos(a)*r*T; if((RIVER.onPier(x,z,0)||!RIVER.over(x,z))&&r<fd){ f=[x,z]; fd=r; } } task.exit=f; }
+          if(task.exit)SHARED.target=new THREE.Vector3(task.exit[0],SHARED.py,task.exit[1]); task.sp=(task.sp||0)+dt; if(task.sp>1.5){ task.sp=0; keys.add(' '); setTimeout(()=>keys.delete(' '),200); } return; } task.out=0;   // swim to the nearest dry ground, SPACE climbs a ladder or the bank   // never fish while swimming
+        if(walking(dt))return; let best=null; for(let r=2;r<=12&&!best;r+=1.5)for(let k=0;k<16;k++){ const a=k*Math.PI/8, x=pos.x+Math.sin(a)*r*T, z=pos.z+Math.cos(a)*r*T; if(FISHING.at(x,z)&&!(task.tried||[]).some(([u,v])=>Math.hypot(pos.x-u,pos.z-v)<6*T)){ best=[x,z]; break; } }
+        if(!best&&!task.far){ task.far=1; let f=null, fd=1e9; const P=RIVER.onPier||(()=>false);   // GO TO leaves it at the way through: on to the nearest pier with water beside it (or dry ground by the water)
+          for(let r=4;r<=240;r+=2)for(let k=0;k<32;k++){ const a=k*Math.PI/16, x=pos.x+Math.sin(a)*r*T, z=pos.z+Math.cos(a)*r*T, dry=P(x,z,0)||!RIVER.over(x,z);
+            if(dry&&r<fd&&(()=>{ for(let u=.1;u<1;u+=.1){ const px=pos.x+(x-pos.x)*u, pz=pos.z+(z-pos.z)*u; if(RIVER.over(px,pz)&&!P(px,pz,0))return false; } return true; })()&&!(task.tried||[]).some(([u,v])=>Math.hypot(x-u,z-v)<8*T)&&[[2,0],[-2,0],[0,2],[0,-2]].some(([u,v])=>FISHING.at(x+u*T,z+v*T))){ f=[x,z]; fd=r; } }
+          if(f){ task.dry=f; walk(f[0],f[1]); doing='walking to the water'; return; } }
         if(!best){ if(stand&&!task.pier){ task.pier=1; const p=thAt(stand); walk(p.x,p.z); } else roam(dt,here(task)); doing='looking for water'; return; }
         if(!FISHING.mode&&FISHING.enter)FISHING.enter(); FISHING.cast(best[0],best[1]); doing='casting'; } },
     decorate:dt=>{ if(!C.apt){ doing='has no apartment (OWN APARTMENT is off)'; return; } const E=window.ROOMED; task=task||{s:'in',n:0,t:0};
@@ -100,10 +112,10 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
     if(!placed||was.place!==C.place||String(was.at)!==String(C.at)||(C.call&&was.call!==C.call)){ placed=true; path=null; place(); }
     if(cash0==null||was.job!==C.job||was.goal!==C.goal)cash0=cash(); if(was.job!==C.job||was.who!==C.who){ doing='starting: '+C.job; task=null; path=null; SHARED.target=null; mad=null; if(FISHING.mode&&C.job!=='fish')FISHING.leave(); }
     if(VIT.hp>C.hp)VIT.hp=C.hp??1; };
-  BOT.kit={JOB,walk,walking,use,click,close,cash,counter,sellAll,nearest,thAt,d2,roam,say,cfg:()=>C,doing:t=>{ doing=t; },stop:()=>{ path=null; SHARED.target=null; },reset:()=>{ task=null; path=null; SHARED.target=null; }};   // for the tests (162h)
+  BOT.kit={JOB,press,answer,buy,walk,walking,use,click,close,cash,counter,sellAll,nearest,thAt,d2,roam,say,cfg:()=>C,doing:t=>{ doing=t; },stop:()=>{ path=null; SHARED.target=null; },reset:()=>{ task=null; path=null; SHARED.target=null; }};   // for the tests (162h)
   ONLINE.mine.noapt=()=>C.apt?null:1;   // a bot has no apartment unless the owner gave it one
   BOT.status=status; BOT.bye=()=>{ try{ ONLINE.send({t:'bye'}); }catch(e){} };
-  let drawn=0; SYS.add('life',dt=>{ if(!BOT.ready)return; dt=Math.min(dt||.016,.25); SHARED.covered=(++drawn%20)!==0;   // nobody watches a bot's screen: a picture now and then, so its game runs at full speed
+  let drawn=0; SYS.add('life',dt=>{ if(!BOT.ready)return; dt=Math.min(dt||.016,.25); SHARED.covered=!BOT.draw&&(++drawn%20)!==0;   // nobody watches a bot's screen: a picture now and then, so its game runs at full speed
     // health: never over what the owner set; can't be knocked down keeps it full
     const cap=C.hp??1; if(C.god)VIT.hp=cap; else if(VIT.hp>cap)VIT.hp=cap;
     // hit back: whoever is close when health drops

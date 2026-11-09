@@ -9,12 +9,12 @@ import {ROOMK} from './150a-bedroom.js';
     for(let i=0;i<26000;i++){ const a=rnd()*6.283, d=Math.sqrt(rnd())*C; g.fillStyle=rnd()<.5?'rgba(255,250,240,.10)':'rgba(70,50,30,.10)'; g.fillRect(C+Math.cos(a)*d,C+Math.sin(a)*d,1.4,1.4); }
     RT=new THREE.CanvasTexture(cv); RT.colorSpace=THREE.SRGBColorSpace; RT.anisotropy=4; return RT; };
   ROOMK.parts.push(c=>{ '@apts'; const {part,mat,rbox,cap,cur,solid,Lx,Ly}=c, p=(geo,m,u,h,v,ry=0,par=cur(),cast=true)=>part(geo,m,u,h,v,ry,par,cast);
-    const TU=Lx-.56, TV=Ly-.66, RU=TU-2.75, RV=TV-.05;   // the TV in its corner; the chair 2.75 m in front of it
+    const TU=Lx-.64, TV=Ly-.34, RU=TU, RV=TV-2.7;   // the TV in its corner facing the room; the chair 2.7 m in front of it
     // the round rug between them, a finger thick, its pile soft at the edge
-    cap('ROUND RUG',()=>{ const t=rugTex(), m=mat([255,255,255],{map:t,bumpMap:t,bumpScale:2}); const R0=1.55, cu=(TU+RU)/2+.15, cv=TV-.15;
+    cap('ROUND RUG',()=>{ const t=rugTex(), m=mat([255,255,255],{map:t,bumpMap:t,bumpScale:2}); const R0=1.15, cu=Lx-1.25, cv=RV+.85;
       p(new THREE.CylinderGeometry(R0,R0,.014,64),m,cu,.007,cv,0,cur(),false); p(new THREE.TorusGeometry(R0-.01,.009,6,64).rotateX(Math.PI/2),mat([176,156,132]),cu,.009,cv,0,cur(),false); },{bake:true});
     // the recliner: a deep seat on a low plinth, rolled padded arms, a tall tufted back leaning a little, the footrest folded under, a lever at its side
-    cap('RECLINER',g0=>{ const g=new THREE.Group(); g.position.set(RU,0,RV); g.rotation.y=Math.PI/2; cur().add(g);
+    cap('RECLINER',g0=>{ const g=new THREE.Group(); g.position.set(RU,0,RV); cur().add(g);
       const lea=mat([96,58,38]), leaD=mat([70,42,28]), base=mat([38,30,26]), seam=mat([58,36,24]);
       const q=(geo,m,x,y,z,rx=0)=>{ const me=p(geo,m,x,y,z,0,g); if(rx)me.rotation.x=rx; return me; };
       q(rbox(.86,.12,.82,.03),base,0,.06,0);                                   // the plinth

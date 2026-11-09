@@ -73,7 +73,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   const flyS=()=>st.fly||(st.fly={on:false,k:0,t:0,f:0,u:0});
   function setFly(on,now){ const g=SHARED.groundY?SHARED.groundY(pos.x,pos.z):0;
     if(!on&&!now&&UI.fly){ if(UI.landing){ UI.landing=false; FLY.to=null; drawBadge(); return; } if(SHARED.py-g>1.5*WM||clearOf(pos.x,pos.z)){ UI.landing=true; FLY.to=clearOf(pos.x,pos.z); drawBadge(); return; } }   // high up: come down first (G again while coming down flies on)
-    if(on&&!UI.fly&&!UI.canFly()){ SAY('YOU NEED TO EAT A DRIFTCAP MUSHROOM TO FLY.','#ffd27a'); return; }   // flying comes from the DRIFTCAP (141)
+    if(on&&!UI.fly&&!UI.canFly()){ SAY('YOU NEED TO EAT A FLIGHT MUSHROOM TO FLY.','#ffd27a'); return; }   // flying comes from the FLIGHT MUSHROOM (141)
     UI.fly=on; UI.landing=false; flyS().on=on; if(on){ SHARED.target=null; st.move=null; FLY.sp=0; FLY.vy=0; } drawBadge(); }
   UI.setFly=setFly; UI.setFree=setFree;
   UI.camStep=(dt,a,up,dn,lf,rt)=>{ if(!UI.freeCam||UI.menuOpen)return; const fx=-Math.sin(a), fz=-Math.cos(a), s=dt*9*PPU/Math.max(4,SHARED.ppu);
@@ -161,7 +161,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
       const n=d>0?[...L].reverse().find(v=>v>c*1.02):L.find(v=>v<c*.98); if(n==null)return; last=t; UI.distTo=n; return; }
     const c=SHARED.ppuTo; if(d>0&&RW/rppu()>=UI.MAXW*.995)return; const n=d<0?UI.ZL.find(v=>v>c*1.02):[...UI.ZL].reverse().find(v=>v<c*.98); if(n==null)return; last=t; SHARED.ppuTo=n; zAt=null; }; }   // each step zooms round the middle of the screen, wherever you have dragged the view (owner, 7 Nov 2026)
   UI.viewsHere=()=>window.CARS&&CARS.driving?['third']:['iso','third','first'];   // every view everywhere (owner, 7 Nov 2026: "all views from all locations in map, no restrictions"); driving keeps behind the car
-  { const W=window, own=UI.owned=()=>!!((W.FISHING&&W.FISHING.mode)||(W.OPTIC&&W.OPTIC.up)||(W.TOWERK&&W.TOWERK.spy)||(W.VR&&W.VR.s)||(W.ROAM&&W.ROAM.on)||UI.freeCam);
+  { const W=window, own=UI.owned=()=>!!((W.FISHING&&W.FISHING.mode)||(W.OPTIC&&W.OPTIC.up)||(W.TOWERK&&W.TOWERK.spy)||(W.VR&&W.VR.s)||(W.ROAM&&W.ROAM.on)||UI.freeCam||UI.holdCam);
     SYS.add('cam',()=>{ if(!window.__started||own())return; { const V=UI.viewsHere(); if(!V.includes(UI.view))UI.setView(V[0]); } if(!UI.persp&&SHARED.ppuTo<UI.ZOUT)SHARED.ppuTo=UI.ZOUT; if(UI.view==='iso'&&!UI.hold)SHARED.pitchTo=SHARED.pitch=VIEW0.pitch; if(!UI.persp)UI.keepOn(); },'094-views'); }
   UI.keepOn=()=>{ const c=SHARED.cam; if(!c||!c.isOrthographicCamera)return; const z=c.zoom||1, R=tv.setFromMatrixColumn(c.matrixWorld,0), hw=(c.right-c.left)/2/z*.85, hh=(c.top-c.bottom)/2/z*.8;   // the view drags only as far as keeps you on screen (owner, 7 Nov 2026)
     if(!Number.isFinite(UI.off.x+UI.off.y+UI.off.z))UI.off.set(0,0,0); if(!(hw>0&&hh>0&&Number.isFinite(R.x+R.y+R.z)))return;   // a bad frame never sticks: the view comes back to you

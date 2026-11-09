@@ -32,11 +32,7 @@ const TLX={tick:()=>{}}; window.DRESS=Object.assign(DRESS,{gaps:()=>{ const G=[]
     if(DRESS.tall){ const x=CP.x, z=CP.z, y=G(x,z), T8=8.2*M, AL=2.7*M, L2=[];
       for(const [dx,dz] of [[0,-1],[1,0]]){ const ex=x+dx*AL, ez=z+dz*AL, ay=y+T8-.15*M, h=heads.length, L=light(ex,ay-.25*M,ez,55,16*TILE); heads.push([ex,ay-.06*M,ez]); L2.push([L,h]); }
       POLES.push({x,z,d:-1,ax:'z',ring:'inner',y:y+T8-.6*M,h:L2[0][1],h2:L2[1][1],L:L2[0][0],L2:L2[1][0],corner:1,...solid(x,z,.3*M,T8)}); DRESS.corner={x,z,y,lamps:L2.map(q=>q[0])}; }
-    const wz=SHARED.BOD.ZS(PARK.y0+PARK.oy), pz=far+.95*M, g0=SHARED.BOD.XS(PARK.gate[0]+PARK.ox), g1=SHARED.BOD.XS(PARK.gate[1]+PARK.ox), pts=[[g0-.9*M,pz],[g1+.9*M,pz]], px1=SHARED.BOD.XS(PARK.x1+PARK.ox)-2;
-    for(let x=g0-28*M;x>SHARED.BOD.XS(PARK.x0+PARK.ox)+2;x-=28*M)pts.push([x,pz]); for(let x=g1+28*M;x<px1;x+=28*M)pts.push([x,pz]);
-    { const A=MODS.apts&&MODS.apts.A, dz=[SHARED.BOD.X((SHARED.BOD.B0.x0+SHARED.BOD.B0.x1)/2),A?SHARED.BOD.X(MODS.apts.DX!=null?MODS.apts.DX:A.x1-1):1e9,SHARED.BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),...(STORE.main?STORE.main.doors.map(d=>d[1]):[])], sz=sw-.75*M;
-      for(const [a,b] of DRESS.gaps())if(b-a>=2.5){ const x=SHARED.BOD.XS(b-a>6?a+1.2:(a+b)/2); if(dz.every(d=>Math.abs(d-x)>2*M))pts.push([x,sz]); } }
-    { const clear=([x,z])=>heads.every(([hx,,hz])=>Math.hypot(hx-x,hz-z)>2.6*M); for(let i=pts.length-1;i>=0;i--)if(!clear(pts[i]))pts.splice(i,1); }
+    const pz=far+.95*M, pts=[];
     if(Array.isArray(LEVEL.lamps)){ pts.length=0; for(const l of LEVEL.lamps)pts.push([SHARED.BOD.XS(l.x),SHARED.BOD.ZS(l.y)]); }   // the map editor's lamp posts (world.json lamps, map tiles), in place of the spaced ones
     DRESS.own=pts.length;
     pts.push(...(DRESS.extra||[]));   // the other sections' posts (066c)
@@ -49,9 +45,10 @@ const TLX={tick:()=>{}}; window.DRESS=Object.assign(DRESS,{gaps:()=>{ const G=[]
     const hd=new THREE.InstancedMesh(new THREE.BoxGeometry(.5*M,.08*M,.26*M),lant.material,heads.length); heads.forEach(([x,y,z],i)=>hd.setMatrixAt(i,m4.makeTranslation(x,y-.08*M,z))); scene.add(hd);
     for(const P of pools){ const [L,x,z,r]=P, me=new THREE.Mesh(poolGeo,poolMat); me.scale.set(r,1,r); me.position.set(x,G(x,z)+.03,z); me.renderOrder=1; me.visible=false; scene.add(me); P.push(me); }
     DRESS.pools=pools;
+    DRESS.lampAt=(x,y,z,set)=>{ const L=light(x,y,z,60,15*TILE), P=pools[pools.length-1], me=new THREE.Mesh(poolGeo,poolMat); me.scale.set(P[3],1,P[3]); me.position.set(x,G(x,z)+.03,z); me.renderOrder=1; me.visible=false; scene.add(me); P.push(me); P.set=set; return L; };   // a lamp on something else (the power poles, 069b), lit with the rest
     const LIT=new THREE.Color(0xffe4b0), DIM=new THREE.Color(0x4a4238);
     DRESS.tick=()=>{ TLX.tick(); const e=CLOCK.dayElev(), k=Math.max(0,Math.min(1,(3-e)/8)), up=OUT.world; poolMat.opacity=k;
-      pools.forEach((P,j)=>{ const [L,,,,me]=P, on=e<P.on; if(on!==P.lit){ P.lit=on; L.intensity=on?L.userData.i0:0; const c=on?LIT:DIM; if(j<heads.length){ hd.setColorAt(j,c); hd.instanceColor.needsUpdate=true; } else { lant.setColorAt(j-heads.length,c); lant.instanceColor.needsUpdate=true; } } if(on)L.intensity=L.userData.i0*(window.DN?DN.lk:1);
+      pools.forEach((P,j)=>{ const [L,,,,me]=P, on=e<P.on; if(on!==P.lit){ P.lit=on; L.intensity=on?L.userData.i0:0; const c=on?LIT:DIM; if(P.set)P.set(on); else if(j<heads.length){ hd.setColorAt(j,c); hd.instanceColor.needsUpdate=true; } else { lant.setColorAt(j-heads.length,c); lant.instanceColor.needsUpdate=true; } } if(on)L.intensity=L.userData.i0*(window.DN?DN.lk:1);
         me.visible=up&&k>0&&on&&!L.userData.off; }); };
     { const RD=SHARED.BOD.road, CK=(RD.KR-.45)/Math.SQRT2, HS=0x2b3036, GR=0x5d6266, TL=[], SIG=[], sq=(f,cx,cy,cz,w,h,d)=>f[0]?[cx,cy,cz,d,h,w]:[cx,cy,cz,w,h,d];
       const lampAt=(x,y,z,f,w,h,grp,k)=>{ SIG.push({p:sq(f,x+f[0]*.02*M,y,z+f[1]*.02*M,w,h,.05*M),grp,k}); };
@@ -69,12 +66,20 @@ const TLX={tick:()=>{}}; window.DRESS=Object.assign(DRESS,{gaps:()=>{ const G=[]
         head(x,y+3.2*M,z+.22*M,[0,1],'s');
         ped(x,y+2.3*M,z-.2*M,[0,-1],'xm'); ped(x-sx*.2*M,y+2.3*M,z,[-sx,0],'xs');
         solid(x,z,.22*M,T); TL.push({x,z}); }
+      // the park gate's crossing: a light over each way's lane before the crosswalk, its stop line, a walk light across and a button at each end (150pb-traffic runs it)
+      { const gx0=SHARED.BOD.XS(PARK.gate[0]+PARK.ox), gx1=SHARED.BOD.XS(PARK.gate[1]+PARK.ox), zs=SHARED.BOD.ZS(SHARED.BOD.CURB), zp=SHARED.BOD.ZS(SHARED.BOD.FAR), zm=(zs+zp)/2, T=5.6*M; DRESS.sig=[];
+        for(const [x,z,sd,zl] of [[gx1+1.1*M,zs-.6*M,1,(zs+zm)/2],[gx0-1.1*M,zp+.6*M,-1,(zp+zm)/2]]){ const y=G(x,z), AL=Math.abs(zl-z)+.4*M, f=[sd,0];
+          cyl(x,y+.25*M,z,.2*M,.5*M,0x3f4448); cyl(x,y+T/2,z,.09*M,T,GR); cyl(x,y+T+.06*M,z,.11*M,.12*M,0x3f4448);
+          blk(x,y+T-.3*M,z+sd*AL/2,.12*M,.14*M,AL,GR); blk(x,y+T-.75*M,z+sd*AL*.22,.06*M,.06*M,AL*.44,GR);
+          head(x,y+T-.95*M,zl,f,'gm'); head(x+sd*.22*M,y+3.2*M,z,f,'gm'); ped(x,y+2.3*M,z+sd*.2*M,[0,sd],'gx');
+          const sx=x+sd*.5*M, sy=G(sx,zl); blk(sx,sy+.012,zl,.32*M,.024,Math.abs(zl-zm)*2-.5*M,0xe9e6dc);
+          solid(x,z,.22*M,T); TL.push({x,z}); DRESS.sig.push({x,z,y,sd,stop:sx,lane:zl,btn:[x,y+1.15*M,z-sd*.16*M]}); } }
       const ON={r:0xff3b2a,y:0xffb020,g:0x44f2a0,h:0xff7a1a,w:0xf2f2ea}, OFF={r:0x3a1410,y:0x3a2a10,g:0x0f3324,h:0x2e1a0c,w:0x202224};
       const sm=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),new THREE.MeshBasicMaterial({color:0xffffff}),Math.max(1,SIG.length)), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), cc=new THREE.Color();
       SIG.forEach((s,i)=>{ const [x,y,z,a,b,d]=s.p; sm.setMatrixAt(i,m4.compose(new THREE.Vector3(x,y,z),q,new THREE.Vector3(a,b,d))); sm.setColorAt(i,cc.setHex(OFF[s.k])); }); scene.add(sm);
       const CY=44, phase=t=>{ const m=t<18?'g':t<21?'y':'r', sd=t>=23&&t<39?'g':t>=39&&t<42?'y':'r', fl=Math.floor(t*2)&1, p=(a,b)=>t>=a&&t<a+(b-a)*2/3?'w':t>=a&&t<b&&fl?'h':t>=a&&t<b?'-':'h';
         return {m,s:sd,xs:p(0,18),xm:p(23,39)}; };
-      let last=''; TLX.tick=()=>{ const t=(performance.now()/1000)%CY, P=phase(t), key=P.m+P.s+P.xs+P.xm; if(key===last)return; last=key;
+      let last=''; TLX.tick=()=>{ const t=(performance.now()/1000)%CY, P=phase(t), Q=TLX.gate&&TLX.gate(); P.gm=Q?Q.m:'g'; P.gx=Q?Q.x:'h'; const key=P.m+P.s+P.xs+P.xm+P.gm+P.gx; if(key===last)return; last=key;
         SIG.forEach((s,i)=>{ sm.setColorAt(i,cc.setHex(P[s.grp]===s.k?ON[s.k]:OFF[s.k])); }); sm.instanceColor.needsUpdate=true; };
       TLX.phase=phase; TLX.at=TL; TLX.mesh=sm; window.TLX=TLX; }
     pole.castShadow=true; scene.add(pole,lant);

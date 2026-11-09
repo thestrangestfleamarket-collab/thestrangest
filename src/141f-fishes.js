@@ -15,13 +15,14 @@ const FISHES={list:[],ready:false}; window.FISHES=FISHES;
   // how each swims: the body's wave across (most fish), up and down (the flounder lying flat), the eel's long wave, the crab not at all
   const STYLE={x_flounder:1,x_eel:2,x_crab:3,stingray:1,moray:2,jellyfish:3,octopus:3,seaturtle:3,shrimp:3}, CAP=12;
   const M={}, mats={}; let loading=null, packIds=[];
-  const swimMat=(map,vc)=>{ '@later'; const m=new THREE.MeshLambertMaterial({map:map||null,vertexColors:!!vc,side:THREE.DoubleSide});
-    m.onBeforeCompile=sh=>{ sh.fragmentShader=sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*.3;');   // light of its own: under water the sun comes only from above
-      sh.vertexShader='attribute vec3 aSw;\n'+sh.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
-      { float w=clamp(.5-position.x,0.,1.), ph=aSw.x, a=aSw.y; int k=int(aSw.z+.5);
+  const WAVE=v=>`#include <begin_vertex>
+      { float w=clamp(.5-position.x,0.,1.), ph=${v}.x, a=${v}.y; int k=int(${v}.z+.5);
         if(k==0)transformed.z+=a*(.04+w*w*.22)*sin(ph+position.x*7.);
         else if(k==1)transformed.y+=a*(.03+w*w*.12)*sin(ph+position.x*8.);
-        else if(k==2)transformed.z+=a*.07*(.3+w)*sin(ph+position.x*16.); }`); };
+        else if(k==2)transformed.z+=a*.07*(.3+w)*sin(ph+position.x*16.); }`;
+  const swimMat=(map,vc)=>{ '@later'; const m=new THREE.MeshLambertMaterial({map:map||null,vertexColors:!!vc,side:THREE.DoubleSide});
+    m.onBeforeCompile=sh=>{ sh.fragmentShader=sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*.3;');   // light of its own: under water the sun comes only from above
+      sh.vertexShader='attribute vec3 aSw;\n'+sh.vertexShader.replace('#include <begin_vertex>',WAVE('aSw')); };
     m.customProgramCacheKey=()=>'fishswim'+(map?1:0)+(vc?1:0); return m; };
   const geoOf=(id,d)=>{ '@later'; const g=new THREE.BufferGeometry(); if(d.u){ g.setAttribute('position',new THREE.BufferAttribute(F(d.p),3)); g.setAttribute('uv',new THREE.BufferAttribute(U16(d.u),2,true)); g.setIndex(new THREE.BufferAttribute(U16(d.i),1)); }
       else { const p=F(d.p), c=B(d.c), n=c.length/3, C=new Float32Array(n*3), q=new THREE.Color(); for(let i=0;i<n;i++){ q.setRGB(c[i*3]/255,c[i*3+1]/255,c[i*3+2]/255,THREE.SRGBColorSpace); C[i*3]=q.r; C[i*3+1]=q.g; C[i*3+2]=q.b; }
@@ -37,6 +38,10 @@ const FISHES={list:[],ready:false}; window.FISHES=FISHES;
   // a single fish to hold (the hooked one, the one in the inspect window): the species' own shape and picture, still
   FISHES.model=(id,kg=1)=>{ const m=M[id]; if(!m)return null; let mt=mats[id]; if(!mt){ mt=mats[id]=new THREE.MeshLambertMaterial({map:m.map,vertexColors:m.vc,side:THREE.DoubleSide}); }
     const o=new THREE.Mesh(m.g,mt); const L=lenM(id,kg)*WU; o.scale.setScalar(L); o.userData.shared=true; return o; };
+  // one fish of a kind that swims on its own (the apartment tank): the body's wave as the river's, set by sw (x the wave's phase, y its size)
+  FISHES.swimmer=(id,len)=>{ const m=M[id]; if(!m)return null; const u={value:new THREE.Vector3(0,0,STYLE[id]||0)}, mt=new THREE.MeshLambertMaterial({map:m.map,vertexColors:m.vc,side:THREE.DoubleSide});
+    mt.onBeforeCompile=sh=>{ sh.uniforms.uSw=u; sh.vertexShader='uniform vec3 uSw;\n'+sh.vertexShader.replace('#include <begin_vertex>',WAVE('uSw')); }; mt.customProgramCacheKey=()=>'fishone'+(m.map?1:0)+(m.vc?1:0);
+    const o=new THREE.Mesh(m.g,mt); o.scale.setScalar(len); o.userData.shared=true; return {o,sw:u.value,style:STYLE[id]||0}; };
   FISHES.len=(id,kg)=>lenM(id,kg)*WU;
 
   // who swims where: the catch of each water (the item model's LIVES IN and DEPTH), a few of each near you, more of the common ones; the Hudson's reef shoal when its water shows it

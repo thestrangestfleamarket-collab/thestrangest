@@ -28,7 +28,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ok(st, 'the page starts');
   if (st) {
     const R = await room(), R0 = R;
-    const own = await pg.evaluate(() => ROOMED._api().units().filter(u => !u.added).length); ok(await pg.evaluate(() => ROOMED._api().units().every(u => !u.added && ['CRT TV', 'WRITING DESK', 'TELESCOPE', 'EARTH GLOBE', 'GLOBE TABLE', 'LAB DESK', 'LAB STOOL', 'FISH TANK'].includes(u.kind))), 'the apartment starts empty but for its own pieces (the TV, typewriter, telescope, globes, microscope, fish tank: owner, 7 Nov 2026)');
+    const own = await pg.evaluate(() => ROOMED._api().units().filter(u => !u.added).length); ok(await pg.evaluate(() => ROOMED._api().units().every(u => !u.added && ['CRT TV', 'WRITING DESK', 'TELESCOPE', 'EARTH GLOBE', 'GLOBE TABLE', 'LAB DESK', 'LAB STOOL', 'FISH TANK', 'RECLINER', 'ROUND RUG'].includes(u.kind))), 'the apartment starts empty but for its own pieces (the TV, typewriter, telescope, globes, microscope, fish tank: owner, 7 Nov 2026)');
     ok((await db()).cash >= 1000, 'you start with $1,000 (' + (await db()).cash + ')');
     await pg.evaluate(() => { window.INV.cash = 1e6; });   // enough for everything the check buys (a player starts with $1,000 since 7 Nov 2026)
     ok(await pg.evaluate(() => !document.getElementById('roomedbtn').hidden), 'the DECORATE button shows in your apartment');
@@ -65,19 +65,19 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok((await db()).gone === 1 && await pg.evaluate(() => !!document.querySelector('#roomed [data-back]')), 'DEL puts it away and the panel lists it');
     await pg.click('#roomed [data-back]'); await pg.waitForTimeout(300);
     ok((await db()).gone === 0, 'the panel brings it back');
-    // a table, and a lamp put on it
+    // a desk, and a lamp put on it
     // a spot for the table that is open floor on screen (not under the panel or the bar)
     let spot = [R.Lx * .5, R.Ly * .5]; for (const [fu, fv] of [[.2, .2], [.2, .8], [.5, .2], [.8, .8], [.35, .65], [.65, .35], [.8, .2]]) { const q = await at(R.Lx * fu, .76, R.Ly * fv); if (await pg.evaluate(([x, y]) => { const e = document.elementFromPoint(x, y); return e && e.tagName === 'CANVAS'; }, [q.x, q.y])) { spot = [R.Lx * fu, R.Ly * fv]; break; } }
-    const tab = await buy('TABLE', spot[0], 0, spot[1]), tt = await T(tab);
+    const tab = await buy('DESK', spot[0], 0, spot[1]), tt = await T(tab);
     await pg.click('#roombuy [data-dept="lights"]');
     const lamp = await buy('LAMP', tt.u, .76, tt.v); await pg.waitForTimeout(1500);
     const tl = await T(lamp);
-    ok(lamp && tl.h > .6 && tl.h < 1, 'a lamp put down over the table stands on it (h ' + (tl && tl.h.toFixed(2)) + ')');
+    ok(lamp && tl.h > .6 && tl.h < 1, 'a lamp put down over the desk stands on it (h ' + (tl && tl.h.toFixed(2)) + ')');
     // a picture onto a wall
     await pg.click('#roombuy [data-dept="decor"]');
     let pic = null, tp = null; for (const [u, v] of [[R.Lx / 2, R.Ly], [0, R.Ly / 2], [R.Lx / 2, 0], [R.Lx, R.Ly / 2]]) { if (pic) { await pg.evaluate(id => { ROOMED.select(ROOMED._api().units().find(u => u.id === id)); ROOMED.sell(); }, pic); }
-      pic = await buy('PICTURE', u, 1.5, v); tp = await T(pic); if (tp && Math.min(tp.u, R.Lx - tp.u, tp.v, R.Ly - tp.v) < .3 && Math.abs(tp.h + .2 - 1.5) < .6) break; }
-    ok(tp && Math.min(tp.u, R.Lx - tp.u, tp.v, R.Ly - tp.v) < .3 && tp.h > .6, 'a picture goes onto the wall you point at (' + (tp && [tp.u, tp.h, tp.v].map(x => x.toFixed(2)).join(',')) + ')');
+      pic = await buy('WALL SHELF', u, 1.5, v); tp = await T(pic); if (tp && Math.min(tp.u, R.Lx - tp.u, tp.v, R.Ly - tp.v) < .3 && Math.abs(tp.h + .2 - 1.5) < .6) break; }
+    ok(tp && Math.min(tp.u, R.Lx - tp.u, tp.v, R.Ly - tp.v) < .3 && tp.h > .6, 'a wall shelf goes onto the wall you point at (' + (tp && [tp.u, tp.h, tp.v].map(x => x.toFixed(2)).join(',')) + ')');
     // a game item found by name
     await pg.fill('#roomfind', 'bus stop'); await pg.waitForTimeout(500);
     const bus = await buy('g:bus stop', R.Lx * .2, 0, R.Ly * .8);

@@ -121,6 +121,7 @@ jobs:
           k swim    'src/146ga-swim|src/066-river|src/065a|swim\.cjs'
           k visit   'src/150d|src/146z|src/059a|src/111d|visit\.cjs'
           k aptfixed 'src/150a|src/150d|src/150f|src/150k|aptfixed\.cjs'
+          k aptradio 'src/150fb|src/150p-cars|src/150a|src/150d|data/radio|aptradio\.cjs'
           k clock   'src/134b|worker/clock|worker/door|clock\.cjs'
           k westst  'src/023|src/05[89]-|src/059[e-h]|westst'
           k pfrow   'src/068a|src/059i|src/069a|data/street|data/world|tools/row-lay|pfrow'
@@ -412,6 +413,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' aptfixed')
         run: node tests/aptfixed.cjs dist/market.html
+      - name: The apartment's radio (in a fresh apartment, its panel, it plays, quieter away, kept in the layout)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' aptradio')
+        run: node tests/aptradio.cjs dist/market.html
       - name: The clock's buttons (set, pause, run, real time) reach the server
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' clock')

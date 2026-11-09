@@ -127,21 +127,26 @@ const CARD=__LAZY__("data/cars.json"), RADJ=__LAZY__("data/radio.json"), RFILE={
     lp.type='lowpass'; lp.frequency.value=900; g.gain.value=0; src.connect(lp); lp.connect(g); g.connect(pan); pan.connect(x.destination); return RAD.ch[S.id]={a,lp,g,pan,quiet:0,chk:0}; };
   const NOW=()=>performance.now()/1000;
   const P3=new THREE.Vector3(); let rT=0, fT=0;
-  // a room's source (a jukebox): heard whole by whoever is in its room
-  const inRoom=s=>!!s.room&&((ROOMS.offIn&&ROOMS.offIn()===s.room)||!!(ROOMS.cur&&ROOMS.cur.id===s.room));
-  RADIO.now=id=>{ const s=RADIO.src.get(id), S=s&&station(stOf(s)); if(!S)return null; const n=nowAt(S).k; return {call:S.call,name:S.name,title:n?n.title:''}; };
+  // a room's source (a jukebox): heard whole by whoever is in its room; one with its own set (an apartment's radio, 150fb) keeps its station (st), volume (vol), where it is heard (here) and where it stands (at: quieter as you walk away, gone at R)
+  const inRoom=s=>s.here?!!s.here():!!s.room&&((ROOMS.offIn&&ROOMS.offIn()===s.room)||!!(ROOMS.cur&&ROOMS.cur.id===s.room));
+  const sOf=s=>s.st?(+s.st()||0):stOf(s);
+  RADIO.load=()=>RAD.data?Promise.resolve(RAD.data):RADJ().then(d=>{ RAD.data=d; RAD.asked=true; wake(); return d; });
+  RADIO.wake=()=>wake(); RADIO.nowAt=S=>nowAt(S).k;
+  RADIO.now=id=>{ const s=RADIO.src.get(id), S=s&&station(sOf(s)); if(!S)return null; const n=nowAt(S).k; return {call:S.call,name:S.name,title:n?n.title:''}; };
   RADIO.next=id=>{ '@later'; const s=RADIO.src.get(id); if(!s)return 0; wake(); if(!RAD.data){ if(!RAD.asked){ RAD.asked=true; RADJ().then(d=>{ RAD.data=d; RADIO.next(id); }).catch(()=>{}); } return 0; }
     const n=(stOf(s)+1)%(RAD.data.stations.length+1); ONLINE.put('radio:'+id,n); const S=station(n); say(S?'THE JUKEBOX: '+S.call+', '+S.name+'.':'THE JUKEBOX IS OFF.'); return n; };
-  SYS.add('life',dt=>{ if(!DATA||(rT-=dt||0)>0)return; rT=.1; const on=[...CARS.values()].filter(C=>stOf(C)&&(C===mine||C.by)), rooms=[...RADIO.src.values()].filter(s=>stOf(s)&&inRoom(s));
+  SYS.add('life',dt=>{ if((!DATA&&!RADIO.src.size)||(rT-=dt||0)>0)return; rT=.1; const on=[...CARS.values()].filter(C=>stOf(C)&&(C===mine||C.by)), rooms=[...RADIO.src.values()].filter(s=>sOf(s)&&inRoom(s));
     if((on.length||rooms.length)&&!RAD.data&&!RAD.asked){ RAD.asked=true; RADJ().then(d=>{ RAD.data=d; for(const C of CARS.values())showRadio(C); }).catch(()=>{}); }
     if(!RAD.data)return; if((fT-=.1)<=0){ fT=2; for(const C of CARS.values())if(stOf(C)||C===mine)showRadio(C); }
     const up=SHARED.LVL==='up'&&!ROOMS.cur, best={};
     for(const C of on){ const S=station(stOf(C)); if(!S)continue; let x=C.x, z=C.z, inside=C===mine;
       if(!inside){ const o=ONLINE.others&&ONLINE.others.get(C.by), g=o&&o.fig&&o.fig.g; if(g){ x=g.position.x; z=g.position.z; } }
-      const d=inside?0:Math.hypot(pos.x-x,pos.z-z)/T, k=inside?1:up?.55*Math.max(0,1-d/25)**1.5:0; if(k>((best[S.id]||{}).k||0))best[S.id]={k,inside,x,z}; } for(const s of rooms){ const S=station(stOf(s)); if(S&&.7>((best[S.id]||{}).k||0))best[S.id]={k:.7,inside:true,x:pos.x,z:pos.z}; } RAD.best=best;
+      const d=inside?0:Math.hypot(pos.x-x,pos.z-z)/T, k=inside?1:up?.55*Math.max(0,1-d/25)**1.5:0; if(k>((best[S.id]||{}).k||0))best[S.id]={k,inside,x,z}; } for(const s of rooms){ const S=station(sOf(s)); if(!S)continue; let k=s.vol??.7, x=pos.x, z=pos.z, pan=false;
+      if(s.at){ const p=s.at(); if(p){ const d=Math.hypot(pos.x-p.x,pos.z-p.z); k*=Math.max(0,1-d/(s.R||10*T))**1.4; x=p.x; z=p.z; pan=true; } }
+      if(k>((best[S.id]||{}).k||0))best[S.id]={k,inside:true,pan,x,z}; } RAD.best=best;
     for(const S of RAD.data.stations){ const b=best[S.id], c=b&&b.k>0?chan(S):RAD.ch[S.id]; if(!c)continue; const x=RAD.ctx, t=x.currentTime;
       if(b&&b.k>0){ c.quiet=0; const nw=NOW(); c.g.gain.setTargetAtTime(b.k*RAD.vol,t,.25); c.lp.frequency.setTargetAtTime(b.inside?16000:900,t,.2);
-        if(!b.inside&&SHARED.cam){ P3.set(b.x,SHARED.py+1,b.z).project(SHARED.cam); c.pan.pan.setTargetAtTime(Math.max(-.8,Math.min(.8,P3.x*.8)),t,.1); } else c.pan.pan.setTargetAtTime(0,t,.1);
+        if((!b.inside||b.pan)&&SHARED.cam){ P3.set(b.x,SHARED.py+1,b.z).project(SHARED.cam); c.pan.pan.setTargetAtTime(Math.max(-.8,Math.min(.8,P3.x*.8)),t,.1); } else c.pan.pan.setTargetAtTime(0,t,.1);
         const want=(Date.now()/1000)%S.len; if(c.a.paused){ try{ c.a.currentTime=want; }catch(e){} c.a.play().catch(()=>{}); c.chk=nw+3; }
         else if(nw>c.chk){ c.chk=nw+3; const off=Math.abs(c.a.currentTime-want); if(off>1.5&&off<S.len-1.5)try{ c.a.currentTime=want; }catch(e){} } }
       else { c.g.gain.setTargetAtTime(0,t,.2); if(!c.a.paused){ if(!c.quiet)c.quiet=NOW(); else if(NOW()-c.quiet>1.5){ c.a.pause(); c.quiet=0; } } } } },'150p-cars');

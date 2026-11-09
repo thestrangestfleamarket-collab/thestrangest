@@ -84,7 +84,7 @@ window.TESTS=TESTS;
     const start=c=>{ run=String(c.run||0); Q=null; cur=null; out=[]; tally={pass:0,fail:0,skip:0}; try{ done=JSON.parse(localStorage.getItem(K0+run)||'{}'); }catch(e){ done={}; }
       TESTS.all().then(L=>{ ALLT=L; Q=TESTS.pick(L,c.tests).filter(t=>!done[t.id]); }); };
     const have=id=>FORAGE.has(id)||0, N_=k=>people().find(q=>CHARS.id(q)===k), thOf=N=>N&&UI.things.find(t=>t.npc===N);
-    const tidy=()=>{ K.close(); if(SHOPS.close)SHOPS.close(); if(TALK.on&&TALK.close)TALK.close(); if(STORE.cabs&&STORE.cabs.on&&STORE.cabs.close)STORE.cabs.close(); K.stop(); K.reset(); };
+    const tidy=()=>{ if(FISHING.mode&&FISHING.leave)FISHING.leave(); FISHING.auto=false; K.close(); if(SHOPS.close)SHOPS.close(); if(TALK.on&&TALK.close)TALK.close(); if(STORE.cabs&&STORE.cabs.on&&STORE.cabs.close)STORE.cabs.close(); K.stop(); K.reset(); };
     const panelUp=()=>{ const p=document.getElementById('shopg'); return !!(p&&!p.hidden)||[...document.querySelectorAll('[data-buy],[data-sell],[data-sold],[data-train]')].some(e=>e.offsetParent); };
     /* ---------- the steps the tests share: each returns undefined while going, true once done, or [result, why] ---------- */
     // GO TO a place as the map does; there once the fade is over and it is near the place's spot (or inside)

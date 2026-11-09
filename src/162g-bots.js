@@ -28,11 +28,11 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
   const close=()=>{ for(const b of document.querySelectorAll('.pX'))if(b.offsetParent)b.click(); };
   const cash=()=>Math.round(INV.cash||0);
   // into a shop by the map's GO TO, up to its counter, then press its buttons (fn); true once done, false while on the way, null if it can't be reached
-  const counter=(shop,dt,fn,s=task,re=/^THE COUNTER/)=>{ s.at=s.at||{}; if(!s.at[shop]){ s.at[shop]=1; s.wt=30; UI.goName(shop); return false; }   // always by GO TO first: a counter nearby may be another shop's
+  const counter=(shop,dt,fn,s=task,re=/^THE COUNTER/,stay=false)=>{ s.at=s.at||{}; if(!s.at[shop]){ s.at[shop]=1; s.wt=30; UI.goName(shop); return false; }   // always by GO TO first: a counter nearby may be another shop's
     if(FADE.busy)return false; const th=nearest(UI.things,t=>re.test(t.name||'')), p=th&&thAt(th);
     if(!th||d2(p.x,p.z)>30*T){ if((s.wt-=dt)>0)return false; return null; }
     if(!s.pressed){ if(!use(th,dt))return false; s.pressed=1; s.pw=1.8; fn(); return false; }   // the shop's window: press, then answer how many and YES, then close
-    answer(); if((s.pw-=dt)>0)return false; s.pressed=0; close(); SHOPS.close&&SHOPS.close(); return true; };
+    answer(); if((s.pw-=dt)>0)return false; s.pressed=0; if(!stay){ close(); SHOPS.close&&SHOPS.close(); } return true; };   // stay: what it opened stays open (the pet store's adoption book)
   // the shops are double-clicked (a row, then HOW MANY and YES), the old panels still have buttons
   const press=sel=>{ const b=[...document.querySelectorAll(sel)].find(e=>e.offsetParent!==null); if(!b)return false; const r=b.getBoundingClientRect(); b.dispatchEvent(new MouseEvent('dblclick',{bubbles:true,clientX:r.left+4,clientY:r.top+4})); return true; };
   const answer=()=>{ click('#bagask .ak-all'); click('#shopg [data-q="y"]'); };

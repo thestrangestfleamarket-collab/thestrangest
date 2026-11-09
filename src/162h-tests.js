@@ -131,7 +131,7 @@ window.TESTS=TESTS;
         if(!s.th||s.th.tries>4){ const L=UI.things.filter(t=>t&&t.obj&&t.act&&H.re.test(t.name||'')&&(!s.th||t!==s.th)&&!(s.no||[]).includes(t)); if(s.th)(s.no=s.no||[]).push(s.th); s.th=K.nearest(L); if(!s.th)return ['fail','found nothing to do '+SKN(k)+' with'+(H.at?' at '+H.at:'')]; s.th.tries=0; s.by=String(s.th.name).toLowerCase(); }
         if(s.w>0){ s.w-=dt; return; } if(K.use(s.th,dt)){ s.th.tries++; s.w=3; tidy(); } },
       pet:(c,dt)=>{ const s=c.s, e=c.e; if(s.c0==null){ s.c0=K.cash(); if(K.cash()<30)return ['skip','$'+K.cash()+' is too little for a pet']; }
-        if(!s.open){ const r=K.counter('THE PET STORE',dt,()=>{},s,/^THE ADOPTION BOOK/); if(r===null)return ['fail','could not get to the adoption book']; if(r)s.open=c.t; return; }
+        if(!s.open){ const r=K.counter(((LEVEL.places||[]).find(p=>p.id==='pets')||{}).name||'THE PET STORE',dt,()=>{},s,/^THE ADOPTION BOOK/,true); if(r===null)return ['fail','could not get to the adoption book']; if(r)s.open=c.t; return; }
         if(!PETS.inShop()){ if(c.t-s.open>8)return ['fail','the adoption book did not open']; return; }
         if(!s.chose){ const g=document.getElementById('lptg'), k=document.getElementById('lptk'); if(!g||!k)return; g.value=e.group; g.dispatchEvent(new Event('change')); k.value=e.kind; k.dispatchEvent(new Event('change')); s.chose=c.t; return; }
         if(c.t-s.chose<1)return; if(!s.paid){ const b=document.getElementById('lpta'); if(b)b.click(); s.paid=c.t; return; } if(c.t-s.paid<1)return;
@@ -163,11 +163,13 @@ window.TESTS=TESTS;
     const bag=()=>Object.values(INV.items).reduce((a,n)=>a+(n>0?n:0),0);
     const UNTIL={caught:s=>FISHING.held()>(s.f0??(s.f0=FISHING.held())),picked:s=>{ const n=Object.keys(INV.items).filter(id=>/^[mu]_/.test(id)).reduce((a,id)=>a+INV.items[id],0); return n>(s.m0??(s.m0=n)); },
       spent:s=>K.cash()<(s.c0??(s.c0=K.cash())),earned20:s=>K.cash()>=(s.c0??(s.c0=K.cash()))+20,gotBfly:s=>Object.keys(INV.items).some(id=>/^bu?_\d/.test(id)&&INV.items[id]>(s['b'+id]??0)),gotFlower:s=>Object.keys(INV.items).some(id=>/^fl_/.test(id)&&INV.items[id]>0),healed:()=>VIT.hp>=.99};
+    // who sells, teaches or buys it now, from the game's own list (a shop first, the one named if it still does): the shops move and change hands
+    const find=(cat,ok,named)=>{ const L=(ALLT||[]).filter(t=>t.cat===cat&&ok(t)); return L.find(t=>t.shop===named)||L.find(t=>t.shop)||L[0]||null; };
     const STEP={
       go:(q,dt,[n])=>{ const r=goTo(q,q.s,n); return r===true?['pass','got to '+n]:r; },
-      learn:(q,dt,[shop,skill])=>{ q.e={shop,who:shopWho(shop),skill}; return RUN.learn(q,dt); },
-      buy:(q,dt,[shop,item])=>{ q.e={shop,who:shopWho(shop),item}; return RUN.buy(q,dt); },
-      sell:(q,dt,[shop,group])=>{ q.e={shop,who:shopWho(shop),group}; return RUN.sell(q,dt); },
+      learn:(q,dt,[shop,skill])=>{ const t=find('learn',x=>x.skill===skill,shop); if(!t)return ['fail','nobody teaches '+SKN(skill)+' now']; q.e=t; return RUN.learn(q,dt); },
+      buy:(q,dt,[shop,item])=>{ const t=find('buy',x=>x.item===item,shop); if(!t)return ['fail','nobody sells '+NM(item)+' now']; q.e=t; return RUN.buy(q,dt); },
+      sell:(q,dt,[shop,group])=>{ const t=find('sell',x=>x.group===group,shop); if(!t)return ['fail','nobody buys '+group+' now']; q.e=t; return RUN.sell(q,dt); },
       skill:(q,dt,[k])=>{ q.e={skill:k}; return RUN.skill(q,dt); },
       pet:(q,dt,[kind])=>{ const t=(ALLT||[]).find(x=>x.id==='pet:'+kind); if(!t)return ['fail','no pet called '+kind]; q.e=t; return RUN.pet(q,dt); },
       arcade:(q,dt,[game])=>{ q.e={game}; return RUN.arcade(q,dt); },

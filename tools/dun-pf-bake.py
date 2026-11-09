@@ -1,6 +1,6 @@
 # THE DUNGEON'S POLYFORK THINGS (owner, 8 Nov 2026: "use polyfork assets where you can, dont just put them randomly in spots, make the relative sizes, logicaly atmospheric"):
 # polyfork.dev's cave pieces, fetched into .polyfork/ (git-ignored) and baked by polyfork-bake.py (props, in metres) into data/dunpf.json; placed by src/062c-dunterrain.js where the cave would put them.
-# Run: python3 tools/dun-pf-bake.py   (TRIS=n per model, needs pip fast-simplification)
+# Run: TRIS=220 python3 tools/dun-pf-bake.py   (each model simplified to 220 triangles; needs pip fast-simplification scipy)
 import sys, os, time, subprocess, urllib.request
 DUN={'stalactites':'stalactite-cluster-6cca9a','stalagmite':'lair-stalagmite-7d4d95','crystalcol':'lair-crystal-column-877d1a','rubble':'collapse-rubble-mound-4fbfed',
   'scree':'scree-heap-42cce5','masonry':'masonry-rubble-chunk-c4da0b','ashlar':'fallen-ashlar-block-87824e','moss':'moss-patch-3ecaf4','mosscushion':'moss-cushion-2eabef',

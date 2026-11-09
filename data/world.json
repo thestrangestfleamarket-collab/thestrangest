@@ -7010,17 +7010,10 @@
    ]
   },
   "city": {
-   "note": "the far city (owner, 8 Nov 2026: Manhattan, the whole island): past the backdrop to the end of the view, plain shapes; past that a painted ring. In tiles: center, R (how far the shapes go), near (x0,y0,x1,y1: the street's band, left alone; the park inside sections.ring.outer has none), water (the Hudson, a y band), lowY/lowK (past this y the far shore, lower), east (the East River: its near bank as [x,y] points along the island, its width; past the island's ends all water; across it the far shore, lowK), base (lowest, highest), clusters (x, y, peak, radius: downtown, midtown, uptown, the far shore's), block (x, y), fade (from, to), ring (the painted outline's layers, the first just past what the view reaches; the island's city is only this outline, no shapes (owner, 8 Nov 2026: \"only build what is needed for the outline\") distances), panorama (the ring's radius)",
+   "note": "the far city (owner, 8 Nov 2026: Manhattan, the whole island; only the outline past what the view reaches, no shapes): a painted ring all round. In tiles: center, water (the Hudson, a y band), lowY/lowK (past this y the far shore, lower), east (the East River: its near bank as [x,y] points along the island, its width; past the island's ends all water; across it the far shore, lowK), base (lowest, highest), clusters (x, y, peak, radius: downtown, midtown, uptown, the far shore's), ring (the outline's layers, the first just past the view; a direction that meets the Hudson at the last one is water all the way), panorama (the ring's radius)",
    "center": [
     105,
     -25
-   ],
-   "R": 900,
-   "near": [
-    -345,
-    -125,
-    535,
-    -22
    ],
    "water": [
     [
@@ -7059,14 +7052,6 @@
      110,
      110
     ]
-   ],
-   "block": [
-    64,
-    28
-   ],
-   "fade": [
-    480,
-    1000
    ],
    "ring": [
     560,
@@ -7355,27 +7340,8 @@
    }
   },
   "far": {
-   "note": "the far city past the backdrop: (axis, from, to, across from, across to, lowest, highest storeys in tiles); shore: where the water past the river ends (the far bank, a map y); ends: how far the far water and its shore run (map x)",
-   "list": [
-    [
-     "x",
-     -6000,
-     6000,
-     -767.8,
-     -747.8,
-     8,
-     34
-    ],
-    [
-     "x",
-     -6000,
-     6000,
-     -735.8,
-     -727.8,
-     5,
-     14
-    ]
-   ],
+   "note": "the water past the river: shore, where it ends (the far bank, a map y); ends: how far the far water and its shore run (map x); list: rows of shapes on the far shore, none (owner, 8 Nov 2026: only the outline past the view)",
+   "list": [],
    "shore": -723.8,
    "ends": [
     -6000,

@@ -182,6 +182,8 @@ In order (each step builds on the one before): RLS SQL → login cookie with the
   (`worker/door.js:283-306`) only clamps shapes; each game applies the swap itself (`src/159i-trade.js:43-45`). Cash checked server-side
   needs the money ledger; items need a server-held pack (no line for that yet). Low on its own today (anyone can set anything in `/owned`),
   high once money is on the server.
+- [ ] **Stalls and trades still mint money** · P1 · M · code · risk high. Found 9 Nov by the week simulation (`docs/research/week-sim-2026-11-09.md`), confirmed on `wrangler dev`: a stall's `put` of things never owned then `take` returns them; a stall `buy` never checks the buyer's cash ($950,000 collected); a trade's `paid` hands over whatever is claimed ($2,000,000 from $0). Check against the server's `/owned` pack; charge stall rent on the server.
+- [ ] **The starter kit is cut by the item bucket** · P1 · S · code. Found 9 Nov (same): 1,404 units against a 600 bucket, a new player loses 798 (nine power mushroom kinds and the skateboard) on the first save.
 - [x] **Shared-world writes aren't checked** · done 9 Nov (`WORLD_KEYS`) · P3 · M · code. Found in the 4 Nov audit: review §B7 (anyone may write any `world` key on the
   block, including `add` counters) has no line. The shared ground and pouches (4 Nov) also trust the client's item records. Decide the rules
   with the trade line.

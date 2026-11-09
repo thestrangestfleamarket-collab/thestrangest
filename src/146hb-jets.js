@@ -132,9 +132,9 @@ import {FLAME} from './007-fire.js';
   ONLINE.hear.jet=m=>{ '@later'; const S=JET.S.get(m.id); if(m.k==='f'||m.k==='i'){ if(!S||S.k!==m.k){ if(S)drop(S); JET.S.set(m.id,mk(m.id,m.k)); } else S.at=now(); } else if(S)drop(S); };
   const PL=[];
   // each drop or puff is born somewhere inside the frame (its own age), so the stream is whole however long the frame was
-  const emit=(S,dt)=>{ const f=S.k==='f', rate=f?170:130; S.eA+=dt*rate; while(S.eA>=1){ S.eA-=1; const a=rnd()*dt, sp=(f?14:12)*M*(.9+rnd()*.2), j=f?.05:.04;
+  const emit=(S,dt)=>{ const f=S.k==='f', rate=f?260:150; S.eA+=dt*rate; while(S.eA>=1){ S.eA-=1; const a=rnd()*dt, sp=(f?14:12)*M*(.9+rnd()*.2), j=f?.05:.04;
       const vx=(S.dir.x+(rnd()-.5)*j)*sp, vy=(S.dir.y+(rnd()-.5)*j)*sp, vz=(S.dir.z+(rnd()-.5)*j)*sp, x=S.tip.x+vx*a, y=S.tip.y+vy*a-(f?G*a*a/2:0), z=S.tip.z+vz*a;
-      const kind=f?3:rnd()<.3?8:7, q=kind===3?FLAME.part(3,x,y,z,vx,vy,vz,.6+rnd()*.35,(.11+rnd()*.07)*M):kind===8?FLAME.part(8,x,y,z,vx,vy,vz,.7+rnd()*.4,.022*M,rnd()*9,G):FLAME.part(7,x,y,z,vx,vy,vz,.6+rnd()*.4,(.09+rnd()*.06)*M);
+      const kind=f?3:rnd()<.3?8:7, q=kind===3?FLAME.part(3,x,y,z,vx,vy,vz,.6+rnd()*.35,(.13+rnd()*.08)*M):kind===8?FLAME.part(8,x,y,z,vx,vy,vz,.7+rnd()*.4,.022*M,rnd()*9,G):FLAME.part(7,x,y,z,vx,vy,vz,.6+rnd()*.4,(.09+rnd()*.06)*M);
       if(q){ q.t=a; PL.push({q,L:S.len*(.92+rnd()*.12),s:sp*a,kind,ph:0}); } } };
   // fuel: gravity and air drag till it lands; then it burns as gas: dragged to a stop, rising as hot air does. Frost mist sinks as cold air does; ice crystals fall and bounce
   const parts=dt=>{ for(let i=PL.length-1;i>=0;i--){ const p=PL[i], q=p.q; if(q.t>=q.life){ PL.splice(i,1); continue; } const v=Math.hypot(q.vx,q.vy,q.vz);
@@ -176,4 +176,4 @@ import {FLAME} from './007-fire.js';
       emit(S,dt); land(S,dt,mine); if(L)hits(S,dt,L,mine); }
     if(lp){ FL.position.copy(lp); FL.position.y+=.3*M; FL.intensity=14*FLAME.flick(3); } else FL.intensity=0; uT.value=now()/1000%1000;
     parts(dt); if(L)bodyFx(dt,L); iceTick(dt); frostTick(dt); },'146hb-jets');
-  window.JETDBG=()=>({on:JET.on,streams:[...JET.S].map(([id,S])=>({id,k:S.k,len:+(S.len/M).toFixed(2),what:S.what})),parts:PL.length,ice:IL.map(c=>({x:c.x,z:c.z,y:c.y,r:c.r/M})),frost:FM.length,frozen:SHARED.frozen,burn:JET.burnT,fx:[...JET.E].map(([id,e])=>({id,fire:e.fire,ice:e.ice})),M}); }
+  window.JETDBG=()=>({on:JET.on,streams:[...JET.S].map(([id,S])=>({id,k:S.k,len:+(S.len/M).toFixed(2),what:S.what,tip:[S.tip.x,S.tip.y,S.tip.z].map(v=>+v.toFixed(2)),dir:[S.dir.x,S.dir.y,S.dir.z].map(v=>+v.toFixed(2)),near:bodies().map(b=>[b.id,+(along(S,b.x,b.y+M,b.z)/M).toFixed(2),+b.x.toFixed(1),+b.y.toFixed(1),+b.z.toFixed(1)])})),parts:PL.length,ice:IL.map(c=>({x:c.x,z:c.z,y:c.y,r:c.r/M})),frost:FM.length,frozen:SHARED.frozen,burn:JET.burnT,fx:[...JET.E].map(([id,e])=>({id,fire:e.fire,ice:e.ice})),M}); }

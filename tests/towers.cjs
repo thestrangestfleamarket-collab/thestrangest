@@ -13,6 +13,6 @@ const {chromium}=require('playwright'), page=process.argv[2]||'dist/market.html'
   ok(R.ways,'the stair down to the dungeon is still a way between the park and the dungeon');
   const top=R.G.filter(g=>g.top), foot=R.G.filter(g=>!g.top);
   ok(R.G.length===14&&R.G.every(g=>g.d!=null&&g.d<6),'every guard is at its tower ('+R.G.map(g=>g.k.replace('gd_','')+':'+g.tower+(g.d!=null?'@'+g.d.toFixed(1):'')).join(' ')+')');
-  ok(top.length>=10&&top.every(g=>Math.abs(g.y-g.roof)<.05*Math.abs(g.roof)+.01),'the guards on the roofs stand on them ('+top.length+' up, '+foot.length+' at the stair tower\'s foot)');
+  ok(top.length>=10&&top.every(g=>Math.abs(g.y-g.roof)<.05*Math.abs(g.roof)+.01),'the guards on the roofs stand on them ('+top.map(g=>g.y.toFixed(2)+'/'+g.roof.toFixed(2)).join(' ')+'; '+top.length+' up, '+foot.length+' at the stair tower\'s foot)');
   ok(!errs.filter(e=>!/^the /.test(e)&&!/^every|^six|^no /.test(e)).length,'no page errors');
   console.log(errs.length?errs.length+' failed':'all tower checks passed'); await b.close(); process.exit(errs.length?1:0); })();

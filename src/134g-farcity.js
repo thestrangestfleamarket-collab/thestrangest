@@ -7,8 +7,8 @@ import {LEVEL, QS, SYS, TILE} from './006-map-pre.js';
   let sd=C.seed||7; const rnd=()=>{ sd=(sd*16807)%2147483647; return sd/2147483647; };
   const [cx,cy]=C.center, wet=C.water||[], cl=C.clusters||[];
   const U={uHaze:{value:new THREE.Color()},uDay:{value:1}}, isWet=y=>wet.some(([a,b])=>y>a&&y<b);
-  // the island (owner, 8 Nov 2026: Manhattan): the Hudson's y band, the East River past its near bank (C.east), all water past the island's ends; across either the far shore, lower; Central Park inside the ring (LEVEL.sections.ring)
-  const RG=LEVEL.sections&&LEVEL.sections.ring, PK=RG&&RG.park, inR=(x,y,r)=>!!r&&x>r.x0&&x<r.x1&&y>r.y0&&y<r.y1, EB=C.east, BK=EB&&EB.bank;
+  // the island (owner, 8 Nov 2026: Manhattan): the Hudson's y band, the East River past its near bank (C.east), all water past the island's ends; across either the far shore, lower; Central Park in its far box (edge.ground.park, else the ring's)
+  const RG=LEVEL.sections&&LEVEL.sections.ring, PK=(LEVEL.edge.ground&&LEVEL.edge.ground.park)||(RG&&RG.park), inR=(x,y,r)=>!!r&&x>r.x0&&x<r.x1&&y>r.y0&&y<r.y1, EB=C.east, BK=EB&&EB.bank;
   const bankY=x=>{ if(!BK)return 1e9; if(x<BK[0][0]||x>BK[BK.length-1][0])return null; let i=1; while(i<BK.length-1&&BK[i][0]<x)i++; const [ax,ay]=BK[i-1], [bx,by]=BK[i]; return ay+(by-ay)*(x-ax)/(bx-ax||1); };
   const where=(x,y)=>{ if(isWet(y))return 'water'; if(C.lowY!=null&&y<C.lowY)return 'low'; const b=bankY(x); if(b==null)return 'water'; if(y>b)return y<b+EB.w?'water':'low'; if(inR(x,y,PK))return 'park'; return 'city'; };
   // how tall the city looks at a spot, as the angle it rises to, so each row back stands only a little over the one before (owner, 9 Nov 2026: "have the skyline get gradually bigger but not 2-4x bigger"): the front row's own angle, a fifth more each row back, up to half again near the clusters of towers

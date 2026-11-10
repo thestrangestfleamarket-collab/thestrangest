@@ -80,7 +80,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   await pg.waitForTimeout(1500); await pg.keyboard.press('f'); await pg.waitForTimeout(1200); const r3 = await half();
   ok(near(r2.h, r0.h * 1.3) && r2.next && near(r3.h, r0.h) && !r3.next, 'a resize while it is driven waits for the next boarding: ' + JSON.stringify({ driving: r2, out: r3 }));
   // a corner's arc the same (owner, 10 Nov 2026: "fix the small leftovers"): driven at it from the road, toward the corner's centre, the car's front rolls up onto the pavement, its nose tipped up (the pole on the corner taken away for the drive)
-  const ka = await pg.evaluate(() => { const a = SHARED.BOD.kerbArcs[0], t = -Math.PI / 4, R = a.r + 3; return { cx: a.cx, cy: a.cy, r: a.r, x: a.cx + Math.cos(t) * R, y: a.cy + Math.sin(t) * R }; });
+  const ka = await pg.evaluate(() => { const a = (SHARED.BOD.kerbArcs || [])[0]; if (!a) return null; const t = -Math.PI / 4, R = a.r + 3; return { cx: a.cx, cy: a.cy, r: a.r, x: a.cx + Math.cos(t) * R, y: a.cy + Math.sin(t) * R }; });
+  if (ka) {
   await pg.evaluate(k => __dbg.UI.goTo(k.x, k.y, 'up'), ka); await pg.waitForTimeout(3000);
   await pg.evaluate(k => { const B = SHARED.BOD, T = __dbg.cv().TILE, cx = B.XS(k.cx), cz = B.ZS(k.cy), inn = (x0, z0, x1, z1) => Math.hypot(Math.max(x0 - cx, 0, cx - x1), Math.max(z0 - cz, 0, cz - z1)) < k.r * T && x1 - x0 < T && z1 - z0 < T;
     window.__pole = [SHARED.solids.filter(r => inn(r[0], r[1], r[2], r[3])), SHARED.fixed.filter(f => inn(f[0], f[1], f[3], f[4]))]; for (const r of __pole[0]) SHARED.solids.splice(SHARED.solids.indexOf(r), 1); for (const f of __pole[1]) SHARED.fixed.splice(SHARED.fixed.indexOf(f), 1);
@@ -94,6 +95,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const pole = await pg.evaluate(() => { SHARED.solids.push(...__pole[0]); SHARED.fixed.push(...__pole[1]); return __pole[0].length + __pole[1].length; });
   ok(arcN > 0 && arc0 && rad(arc0) > ka.r + 2.5 && arcIn < ka.r + 1.7 && tilt > 3 && Math.abs(side(arc1)) < .6, 'a corner\'s arc is a slope too: driven at it, the car rolls up onto the pavement, not shoved along it: ' + JSON.stringify({ arcs: arcN, pole, corner: ka, from: arc0 && arc0.p, to: arc1.p, r: +arcIn.toFixed(2), tilt: +tilt.toFixed(1), side: +side(arc1).toFixed(2) }));
   await pg.waitForTimeout(1500); await pg.keyboard.press('f'); await pg.waitForTimeout(1200);
+  } else ok(true, 'no corner kerb to drive at (West St is park, no road: owner, 10 Nov 2026)');
   await pg.evaluate(() => VLOOK.set('kart', null)); await until(new Function('return Math.abs(RIDE.kinds.kart.V.S.half[0] / ' + r0.kart + ' - 1) < .01'));
   // the go-kart (owner, 10 Nov 2026: "Throw you out"): E sets it down in front of you and you get in there; a wall at speed throws you out over the front, the kart left where it hit
   await pg.evaluate(() => __dbg.UI.goTo(100, -60, 'up')); await pg.waitForTimeout(3000);

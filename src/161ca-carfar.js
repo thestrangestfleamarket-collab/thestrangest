@@ -1,4 +1,4 @@
-// THE FAR CARS: a car on the road (the traffic, 150pb) or parked (150p) past the detail distance is drawn in a few pieces, one for each of its looks (paint, chrome, glass, glow…: its body, wheels, doors, kit and inside merged at rest) instead of forty and more; near, the car as it is (owner, 10 Nov 2026: far cars in fewer draws).
+// THE FAR CARS: a car on the road (the traffic, 150pb) or parked (150p) past the detail distance is drawn in a few pieces, one for each of its looks (paint, chrome, glass, glow…: its body, wheels, doors and kit merged at rest) instead of forty and more; near, the car as it is (owner, 10 Nov 2026: far cars in fewer draws).
 import {SHARED, THREE} from './003-shx.js';
 import {VLOOK} from './003b-systems.js';
 import {MODS, SYS, TILE} from './006-map-pre.js';
@@ -8,7 +8,8 @@ const CARFAR={}; window.CARFAR=CARFAR;
 { const GEO={}, LIVE=new Set(), V=new THREE.Vector3();
   // what goes in: a still, plain mesh (no picture, nothing drawn its own way); the pieces of one look (material, colour, glow, shine) merged into one, each piece's colour in its corners
   const keyOf=(o,m)=>[m.type,m.side,m.transparent?1:0,m.opacity,m.emissive?m.emissive.getHexString()+':'+m.emissiveIntensity:'',m.metalness??'',m.roughness??'',m.envMap?m.envMap.uuid:'',m.flatShading?1:0,m.toneMapped?1:0,m.depthWrite?1:0,o.castShadow?1:0,o.renderOrder].join('|');
-  const groups=m=>{ const G=new Map(); m.updateMatrixWorld(true); const walk=o=>{ if(!o.visible||o.userData.carFar)return; const mt=o.material;
+  const groups=m=>{ const G=new Map(); m.updateMatrixWorld(true); const walk=o=>{ if(!o.visible||o.userData.carFar||o.name==='INSIDE')return; const mt=o.material;   // (no inside: past 12 m the game hides it, 150p)
+     
       if(o.isMesh&&!o.isInstancedMesh&&!o.isSkinnedMesh&&mt&&!Array.isArray(mt)&&!mt.map&&!(mt.alphaTest>0)&&!o.morphTargetInfluences&&o.geometry&&o.geometry.attributes.position){ const k=keyOf(o,mt); let g=G.get(k); if(!g)G.set(k,g={L:[],o}); g.L.push(o); }
       for(const c of o.children)walk(c); }; walk(m); return [...G.values()]; };
   const bake=m=>groups(m).map(({L,o})=>{ const mt=o.material.clone(); mt.vertexColors=true; if(mt.color)mt.color.set(1,1,1); return {geo:MERGE.geo(L,m),mat:mt,cast:o.castShadow,rec:o.receiveShadow,ro:o.renderOrder}; });

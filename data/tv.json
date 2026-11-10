@@ -1,5 +1,5 @@
 {
- "note": "Public-domain cartoons and TV shows streamed from the Internet Archive (archive.org/details/<id>); each channel one loop on the real clock, so every TV shows the same moment; THE GUIDE (guide) plays anything on demand. src/150fa-crt.js.",
+ "note": "Public-domain cartoons, TV shows, odd old films (the Prelinger Archives) and NASA films streamed from the Internet Archive (archive.org/details/<id>); each channel one loop on the real clock, so every TV shows the same moment; THE GUIDE (guide) plays anything on demand. src/150fa-crt.js.",
  "channels": [
   {
    "ch": 2,
@@ -457,6 +457,245 @@
    ]
   },
   {
+   "ch": 7,
+   "name": "ODD REELS",
+   "sub": "The Prelinger Archives: ads, school and safety films, 1935-1963",
+   "kind": "shows",
+   "shows": [
+    {
+     "id": "DuckandC1951",
+     "file": "DuckandC1951_512kb.mp4",
+     "title": "DUCK AND COVER",
+     "year": 1951,
+     "len": 555.4
+    },
+    {
+     "id": "AboutBan1935",
+     "file": "AboutBan1935_512kb.mp4",
+     "title": "ABOUT BANANAS",
+     "year": 1935,
+     "len": 664.0
+    },
+    {
+     "id": "LeaveItt1940",
+     "file": "LeaveItt1940_512kb.mp4",
+     "title": "LEAVE IT TO ROLL-OH",
+     "year": 1940,
+     "len": 522.7
+    },
+    {
+     "id": "DatingDo1949",
+     "file": "DatingDo1949_512kb.mp4",
+     "title": "DATING: DO'S AND DON'TS",
+     "year": 1949,
+     "len": 745.4
+    },
+    {
+     "id": "ClassicT1948",
+     "file": "ClassicT1948_512kb.mp4",
+     "title": "CLASSIC TV COMMERCIALS",
+     "year": 1948,
+     "len": 536.5
+    },
+    {
+     "id": "hindenberg_explodes",
+     "file": "hindenberg_explodes_512kb.mp4",
+     "title": "HINDENBURG EXPLODES",
+     "year": 1937,
+     "len": 326.6
+    },
+    {
+     "id": "Designfo1956",
+     "file": "Designfo1956_512kb.mp4",
+     "title": "DESIGN FOR DREAMING",
+     "year": 1956,
+     "len": 556.8
+    },
+    {
+     "id": "ShyGuy1947",
+     "file": "ShyGuy1947_512kb.mp4",
+     "title": "SHY GUY",
+     "year": 1947,
+     "len": 815.3
+    },
+    {
+     "id": "TimeSave1936",
+     "file": "TimeSave1936_512kb.mp4",
+     "title": "TIME SAVERS FOR HOUSE MAKERS",
+     "year": 1936,
+     "len": 59.9
+    },
+    {
+     "id": "isforAto1953",
+     "file": "isforAto1953_512kb.mp4",
+     "title": "A IS FOR ATOM",
+     "year": 1953,
+     "len": 882.8
+    },
+    {
+     "id": "CaseofSp1940",
+     "file": "CaseofSp1940_512kb.mp4",
+     "title": "A CASE OF SPRING FEVER",
+     "year": 1940,
+     "len": 496.7
+    },
+    {
+     "id": "SpotNews1937",
+     "file": "SpotNews1937_512kb.mp4",
+     "title": "SPOT NEWS",
+     "year": 1937,
+     "len": 555.3
+    },
+    {
+     "id": "Sniffles1955",
+     "file": "Sniffles1955_512kb.mp4",
+     "title": "SNIFFLES AND SNEEZES",
+     "year": 1955,
+     "len": 583.2
+    },
+    {
+     "id": "OnceUpon1956",
+     "file": "OnceUpon1956_512kb.mp4",
+     "title": "ONCE UPON A HONEYMOON",
+     "year": 1956,
+     "len": 868.5
+    },
+    {
+     "id": "StopDriv1959",
+     "file": "04365_512kb.mp4",
+     "title": "STOP DRIVING US CRAZY!",
+     "year": 1959,
+     "len": 591.3
+    },
+    {
+     "id": "PrivateL1947",
+     "file": "PrivateL1947_512kb.mp4",
+     "title": "PRIVATE LIFE OF A CAT",
+     "year": 1947,
+     "len": 1321.4
+    },
+    {
+     "id": "HowtoBeW1949",
+     "file": "HowtoBeW1949_512kb.mp4",
+     "title": "HOW TO BE WELL GROOMED",
+     "year": 1949,
+     "len": 641.0
+    },
+    {
+     "id": "Magicint1941",
+     "file": "Magicint1941_512kb.mp4",
+     "title": "MAGIC IN THE AIR",
+     "year": 1941,
+     "len": 478.5
+    },
+    {
+     "id": "4050_Destination_Earth_01_47_33_28",
+     "file": "4050_Destination_Earth_01_47_33_28.mp4",
+     "title": "DESTINATION EARTH",
+     "year": 1956,
+     "len": 819.6
+    },
+    {
+     "id": "Sleepfor1950",
+     "file": "Sleepfor1950_512kb.mp4",
+     "title": "SLEEP FOR HEALTH",
+     "year": 1950,
+     "len": 644.3
+    },
+    {
+     "id": "OneGotFa1963",
+     "file": "OneGotFa1963_512kb.mp4",
+     "title": "ONE GOT FAT",
+     "year": 1963,
+     "len": 887.5
+    },
+    {
+     "id": "BetterUs1950",
+     "file": "BetterUs1950_512kb.mp4",
+     "title": "BETTER USE OF LEISURE TIME",
+     "year": 1950,
+     "len": 632.2
+    },
+    {
+     "id": "RideforC1937",
+     "file": "RideforC1937_512kb.mp4",
+     "title": "A RIDE FOR CINDERELLA",
+     "year": 1937,
+     "len": 650.1
+    },
+    {
+     "id": "JoanAvoi1947",
+     "file": "JoanAvoi1947_512kb.mp4",
+     "title": "JOAN AVOIDS A COLD",
+     "year": 1947,
+     "len": 625.4
+    },
+    {
+     "id": "Televisi1960",
+     "file": "Televisi1960_512kb.mp4",
+     "title": "TV COMMERCIALS OF THE 50s AND 60s",
+     "year": 1960,
+     "len": 1515.7
+    },
+    {
+     "id": "DontBeaS1947",
+     "file": "DontBeaS1947_512kb.mp4",
+     "title": "DON'T BE A SUCKER",
+     "year": 1947,
+     "len": 1041.4
+    },
+    {
+     "id": "American1958",
+     "file": "American1958_512kb.mp4",
+     "title": "AMERICAN LOOK",
+     "year": 1958,
+     "len": 491.3
+    },
+    {
+     "id": "CoffeeBreak",
+     "file": "CoffeeBreak_512kb.mp4",
+     "title": "COFFEE BREAK",
+     "year": 1958,
+     "len": 844.8
+    },
+    {
+     "id": "HealthYo1953",
+     "file": "HealthYo1953_512kb.mp4",
+     "title": "HEALTH: YOUR POSTURE",
+     "year": 1953,
+     "len": 640.5
+    },
+    {
+     "id": "MotherTa1952",
+     "file": "MotherTa1952_512kb.mp4",
+     "title": "MOTHER TAKES A HOLIDAY",
+     "year": 1952,
+     "len": 809.6
+    },
+    {
+     "id": "GoingPla1948",
+     "file": "GoingPla1948_512kb.mp4",
+     "title": "GOING PLACES",
+     "year": 1948,
+     "len": 513.9
+    },
+    {
+     "id": "2323_In_The_Suburbs_06_59_59_00",
+     "file": "2323_In_The_Suburbs_06_59_59_00.mp4",
+     "title": "IN THE SUBURBS",
+     "year": 1957,
+     "len": 1171.4
+    },
+    {
+     "id": "0248_Are_You_Popular_E00020_19_00_34_00",
+     "file": "0248_Are_You_Popular_E00020_19_00_34_00.mp4",
+     "title": "ARE YOU POPULAR?",
+     "year": 1947,
+     "len": 598.1
+    }
+   ]
+  },
+  {
    "ch": 9,
    "name": "OLD TIME TOONS",
    "sub": "1930-1948",
@@ -773,6 +1012,175 @@
     }
    ],
    "kind": "shows"
+  },
+  {
+   "ch": 13,
+   "name": "MISSION CONTROL",
+   "sub": "NASA films, 1959-1975",
+   "kind": "shows",
+   "shows": [
+    {
+     "id": "project_mercury_mr-1_launch",
+     "file": "project_mercury_mr-1_launch_512kb.mp4",
+     "title": "PROJECT MERCURY: THE MR-1 LAUNCH",
+     "year": 1960,
+     "len": 874.6
+    },
+    {
+     "id": "SF122",
+     "file": "SF122_512kb.mp4",
+     "title": "X-15: FIRST FREE FLIGHT",
+     "year": 1959,
+     "len": 56.9
+    },
+    {
+     "id": "way_stations_in_space",
+     "file": "way_stations_in_space_512kb.mp4",
+     "title": "WAY STATIONS IN SPACE",
+     "year": 1961,
+     "len": 747.2
+    },
+    {
+     "id": "SF143",
+     "file": "SF143_512kb.mp4",
+     "title": "CHIMP INTO SPACE",
+     "year": 1961,
+     "len": 98.9
+    },
+    {
+     "id": "TheJohnGlennStory",
+     "file": "The_John_Glenn_Story_512kb.mp4",
+     "title": "THE JOHN GLENN STORY",
+     "year": 1963,
+     "len": 1791.4
+    },
+    {
+     "id": "highlights_1965_1",
+     "file": "highlights_1965_1_512kb.mp4",
+     "title": "HIGHLIGHTS 1965, PART I",
+     "year": 1965,
+     "len": 937.3
+    },
+    {
+     "id": "four_days_of_gemini_4",
+     "file": "four_days_of_gemini_4_512kb.mp4",
+     "title": "FOUR DAYS OF GEMINI 4",
+     "year": 1965,
+     "len": 1663.1
+    },
+    {
+     "id": "highlights_1965_2",
+     "file": "highlights_1965_2_512kb.mp4",
+     "title": "HIGHLIGHTS 1965, PART II",
+     "year": 1965,
+     "len": 705.2
+    },
+    {
+     "id": "gemini_x_a_quick_look",
+     "file": "gemini_x_a_quick_look_512kb.mp4",
+     "title": "GEMINI X: A QUICK LOOK",
+     "year": 1966,
+     "len": 545.5
+    },
+    {
+     "id": "highlights_1965_3",
+     "file": "highlights_1965_3_512kb.mp4",
+     "title": "HIGHLIGHTS 1965, PART III",
+     "year": 1965,
+     "len": 738.8
+    },
+    {
+     "id": "gemini_xi",
+     "file": "gemini_xi_512kb.mp4",
+     "title": "GEMINI XI",
+     "year": 1966,
+     "len": 979.3
+    },
+    {
+     "id": "gemini_ii_reentry_mission",
+     "file": "gemini_ii_reentry_mission_512kb.mp4",
+     "title": "GEMINI II REENTRY MISSION",
+     "year": 1972,
+     "len": 448.8
+    },
+    {
+     "id": "gov.archives.arc.1257098",
+     "file": "gov.archives.arc.1257098_512kb.mp4",
+     "title": "SPACE NAVIGATION",
+     "year": 1967,
+     "len": 1255.3
+    },
+    {
+     "id": "gov.archives.arc.45015",
+     "file": "gov.archives.arc.45015_512kb.mp4",
+     "title": "AMERICA IN SPACE: THE FIRST DECADE",
+     "year": 1968,
+     "len": 1712.1
+    },
+    {
+     "id": "Apollo_8_-_Go_For_TLI",
+     "file": "Apollo_8_-_Go_For_TLI_64kb_512kb.mp4",
+     "title": "APOLLO 8: GO FOR TLI",
+     "year": 1969,
+     "len": 1302.1
+    },
+    {
+     "id": "Apollo_9__Three_To_Make_Ready",
+     "file": "Apollo_9_Three_To_Make_Ready_512kb.mp4",
+     "title": "APOLLO 9: THREE TO MAKE READY",
+     "year": 1969,
+     "len": 1024.9
+    },
+    {
+     "id": "gov.archives.arc.45017",
+     "file": "gov.archives.arc.45017_512kb.mp4",
+     "title": "THE EAGLE HAS LANDED: THE FLIGHT OF APOLLO 11",
+     "year": 1969,
+     "len": 1705.9
+    },
+    {
+     "id": "MoonShotFootage-Apollo12",
+     "file": "MoonShotFootage-Apollo12.mp4",
+     "title": "APOLLO 12: MOON SHOT",
+     "year": 1969,
+     "len": 405.5
+    },
+    {
+     "id": "HoustonWeveGotAProblem",
+     "file": "Apollo_13_Houston_We_Have_A_Problem_512kb.mp4",
+     "title": "APOLLO 13: HOUSTON, WE'VE GOT A PROBLEM",
+     "year": 1972,
+     "len": 1692.0
+    },
+    {
+     "id": "IntheMountainsOfTheMoonApollo15",
+     "file": "Apollo_15_In_The_Mountains_Of_The_Moon_512kb.mp4",
+     "title": "APOLLO 15: IN THE MOUNTAINS OF THE MOON",
+     "year": 1972,
+     "len": 1551.2
+    },
+    {
+     "id": "NothingSoHiddenApollo16",
+     "file": "Apollo_16_Nothing_So_Hidden..._512kb.mp4",
+     "title": "APOLLO 16: NOTHING SO HIDDEN",
+     "year": 1972,
+     "len": 1618.3
+    },
+    {
+     "id": "skylab_gyroscopes_in_space",
+     "file": "skylab_gyroscopes_in_space_512kb.mp4",
+     "title": "SKYLAB, PROGRAM 4: GYROSCOPES IN SPACE",
+     "year": 1973,
+     "len": 1005.5
+    },
+    {
+     "id": "gov.ntis.ava03129vnb1",
+     "file": "ava03129vnb1_512kb.mp4",
+     "title": "THE TIME OF APOLLO",
+     "year": 1975,
+     "len": 1709.2
+    }
+   ]
   }
  ]
 }

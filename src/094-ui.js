@@ -460,7 +460,8 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   window.__UI=UI;
   const goTo=(x,z,lv,hd,fl)=>{ pos.set(x,0,z); SHARED.target=null; if(hd!=null)SHARED.heading=hd; SHARED.floor=fl||(typeof lv==='number'?LEVELS.below(lv):lv==='down'?'down':'up'); SHARED.py=typeof lv==='number'?lv:lv==='down'?(L=>L&&L.ground?L.ground(x,z):MODS.station.ground(x,z))(LEVELS.at?LEVELS.of[LEVELS.at(x,z,'down')]:null):0; if(UI.freeCam)UI.camT.set(x,SHARED.py+.9,z); else UI.off.set(0,0,0); if(UI.menuOpen)toggleMenu(); };
   UI.goTo=goTo;
-  const toPlace=(x,z,lv,hd)=>{ const id=(lv==null||lv==='up')&&ROOMS.boxAt?ROOMS.boxAt(x,z):null; if(id)ROOMS.enterAt(id,[x,z,0,hd!=null?hd:0]); else goTo(x,z,lv,hd); };   // a GO TO destination inside an off-map inside enters it, not teleport onto its footprint (which the next step would eject you from)
+  const toPlace=(x,z,lv,hd)=>{ const up=lv==null||lv==='up', id=up&&ROOMS.boxAt?ROOMS.boxAt(x,z):null; if(id)return ROOMS.enterAt(id,[x,z,0,hd!=null?hd:0]);
+    const sr=up&&STORE.enter&&STORE.inside&&(STORE.rooms||[]).find(R=>STORE.inside[R.id]&&x>R.x0&&x<R.x1&&z>R.z0&&z<R.z1); if(sr)return STORE.enter(sr.id,true); goTo(x,z,lv,hd); };   // a GO TO destination inside an off-map inside enters it, not teleport onto its footprint (which the next step would eject you from)
   { let dr=null, moved=false; mcv.addEventListener('pointerdown',e=>{ dr={x:e.clientX,y:e.clientY,cx:V.cx,cy:V.cy}; moved=false; mcv.setPointerCapture(e.pointerId); });
     mcv.addEventListener('pointermove',e=>{ if(!dr)return; const r=mcv.getBoundingClientRect(), v=view(), dx=(e.clientX-dr.x)/r.width*DW/v.k, dy=(e.clientY-dr.y)/r.height*mcv.height/v.k; if(Math.abs(e.clientX-dr.x)+Math.abs(e.clientY-dr.y)>5)moved=true; if(moved){ V.cx=dr.cx-dx; V.cy=dr.cy-dy; drawMap(); } });
     mcv.addEventListener('pointerup',()=>{ dr=null; }); mcv.addEventListener('pointercancel',()=>{ dr=null; });

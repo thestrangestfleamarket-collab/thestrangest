@@ -21,20 +21,18 @@ await grab('art',async()=>{ if(AWAY.has('art')||!WP.art)return;
     if(/Botticelli|Michelangelo|Caravaggio|Velázquez|Goya/.test(a))return 1; return 0; };
   const size=t=>{ const ar=t.w/t.h; if(ar>4)return [4.6,4.6/ar]; const big=/Night Watch|Medusa|Meninas|Earthly Delights|Ghent|Grande Jatte|Rainy Day|Innocents/.test(t.t); let h=big?2.4:ar<.8?1.7:1.35, w=h*ar; if(!big&&w>2.6){ w=2.6; h=w/ar; } return [w,h]; };
   let DATA=null, LAY=null;
-  // the hang (owner, 10 Nov 2026: salon, frames close): by school, the big ones alone, the rest in pairs one above the other; round the walls from the door, one even gap as wide as fits
+  // the hang (owner, 10 Nov 2026: "spread them out so they fill out all the walls"): one row at eye height, by school, round the walls from the door; each wall takes its share by its length, its paintings evenly spaced along it
   const layout=()=>{ '@later'; LAY=[]; const sz=i=>size(DATA[i]), cols=[];
-    for(let g=0;g<GAL.length;g++){ const ids=DATA.map((t,i)=>i).filter(i=>GROUP(DATA[i])===g), solo=ids.filter(i=>{ const [w,h]=sz(i); return h>1.8||w>2.45; }), rest=ids.filter(i=>!solo.includes(i)).sort((a,b)=>sz(b)[0]-sz(a)[0]||a-b);
-      for(let k=0;k<rest.length;k+=2)cols.push({g,ids:rest.slice(k,k+2).sort((a,b)=>sz(b)[1]-sz(a)[1]||a-b)}); for(const i of solo)cols.push({g,ids:[i]}); }
-    for(const c of cols)c.w=Math.max(...c.ids.map(i=>sz(i)[0]));
+    for(let g=0;g<GAL.length;g++)for(const i of DATA.map((t,i)=>i).filter(i=>GROUP(DATA[i])===g))cols.push({g,ids:[i],w:sz(i)[0]});
     const E=.6, segs=[{ax:'x',at:B.y1-.1,nx:0,ny:-1,a0:B.x0+E,a1:cx-D.wd/2-1,d:-1},{ax:'y',at:B.x0+.1,nx:1,ny:0,a0:B.y0+E,a1:B.y1-E,d:-1},{ax:'x',at:B.y0+.1,nx:0,ny:1,a0:B.x0+E,a1:B.x1-E,d:1},{ax:'y',at:B.x1-.1,nx:-1,ny:0,a0:B.y0+E,a1:B.y1-E,d:1},{ax:'x',at:B.y1-.1,nx:0,ny:-1,a0:cx+D.wd/2+1,a1:B.x1-E,d:-1}];
-    const fit=(g,s)=>{ const out=segs.map(()=>[]); let k=0; for(let j=0;j<segs.length&&k<cols.length;j++){ let used=g; const len=segs[j].a1-segs[j].a0; while(k<cols.length&&used+cols[k].w*s+g<=len){ used+=cols[k].w*s+g; out[j].push(cols[k++]); } } return k===cols.length?out:null; };
-    let best=null; for(let s=1;s>.5&&!best;s-=.02)for(let g=.55;g>=.35-1e-9&&!best;g-=.01){ const o=fit(g,s); if(o)best={o,g,s}; }
-    if(!best){ console.warn('art museum: the walls are short'); return; } const {o,g,s}=best; A_.gap=+g.toFixed(2); A_.scale=+s.toFixed(2);
-    o.forEach((cs,j)=>{ if(!cs.length)return; const f=segs[j], tot=cs.reduce((a,c)=>a+c.w*s,0)+g*(cs.length-1); let a=(f.a1-f.a0-tot)/2;
+    const lens=segs.map(f=>f.a1-f.a0), tot=lens.reduce((a,b)=>a+b,0), cw=cols.reduce((a,c)=>a+c.w,0);
+    const fit=s=>{ const out=segs.map(()=>[]); let k=0, end=0; for(let j=0;j<segs.length;j++){ end+=lens[j]; let used=0; while(k<cols.length){ const c=cols[k], mid=(k?cols.slice(0,k).reduce((a,q)=>a+q.w,0):0)+c.w/2;
+        if(j<segs.length-1&&mid/cw>end/tot)break; if(used+c.w*s+.8*(out[j].length+1)>lens[j])break; used+=c.w*s; out[j].push(c); k++; } } return k===cols.length?out:null; };
+    let best=null; for(let s=1;s>.4&&!best;s-=.02){ const o=fit(s); if(o)best={o,s}; }
+    if(!best){ console.warn('art museum: the walls are short'); return; } const {o,s}=best; A_.scale=+s.toFixed(2);
+    let gmin=1e9; o.forEach((cs,j)=>{ if(!cs.length)return; const f=segs[j], used=cs.reduce((a,c)=>a+c.w*s,0), g=(lens[j]-used)/(cs.length+1); gmin=Math.min(gmin,g); let a=g;
       for(const c of cs){ const m=a+c.w*s/2, at=f.d>0?f.a0+m:f.a1-m, fr={...f,rm:{k:0,g:c.g,col:WALLC}}, [w0,h0]=sz(c.ids[0]);
-        if(c.ids.length===1)LAY.push({i:c.ids[0],w:w0*s,h:h0*s,f:fr,a:at,zc:LOW+(3.4*ZPU+GAPZ)/2});
-        else { const [w1,h1]=sz(c.ids[1]); LAY.push({i:c.ids[0],w:w0*s,h:h0*s,f:fr,a:at,zc:LOW+h0*s*ZPU/2}); LAY.push({i:c.ids[1],w:w1*s,h:h1*s,f:fr,a:at,zc:LOW+h0*s*ZPU+GAPZ+h1*s*ZPU/2}); }
-        a+=c.w*s+g; } }); };
+        LAY.push({i:c.ids[0],w:w0*s,h:h0*s,f:fr,a:at,zc:LOW+(3.4*ZPU+GAPZ)/2}); a+=c.w*s+g; } }); A_.gap=+gmin.toFixed(2); };
   const glyph=(s,k,c,z,z0)=>{ const i=Math.floor(c/k), r=Math.floor((z-z0)/k); if(c<0||r<0||r>6)return false; const g=MUF[s[Math.floor(i/6)]], q=i%6; return !!g&&q<5&&g[(6-r)*5+q]==='#'; };
   const parquet=(x,y)=>{ '@later'; const Lb=.84, Wb=.14, a=(x+y)*Math.SQRT1_2, b=(x-y)*Math.SQRT1_2, i=Math.floor(a/Lb), j=Math.floor(b/Lb), A=(i+j)&1, p=A?b-j*Lb:a-i*Lb, q=A?a-i*Lb:b-j*Lb, k=Math.floor(p/Wb);
     if(p-k*Wb<.045||q<.045)return [70,48,30]; const n=hash(i*5+k,j*3+A,1751), c=n<.3?OAKD:n<.68?OAK:OAKL, g=hash(Math.floor(a*40),Math.floor(b*8),1753); return g<.06?sh(c,.9):g>.95?sh(c,1.07):c; };
@@ -63,7 +61,7 @@ await grab('art',async()=>{ if(AWAY.has('art')||!WP.art)return;
   // the inside drawn when you go in: the walls, the ceiling and its skylight, then the paintings
   const canvasTex=(w,h,draw,rx=1,ry=1)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; draw(c.getContext('2d'),w,h); const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(rx,ry); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return t; };
   const img=src=>new Promise(r=>{ if(!src)return r(null); const i=new Image(); i.onload=()=>r(i); i.onerror=()=>r(null); i.src=src; });
-  const build=async()=>{ '@art'; if(!DATA||!LAY)return; const gen=A_.gen; const G=new THREE.Group(); G.name='art museum'; const WL=await img(TEX&&TEX.plaster), WD=await img(TEX&&TEX.wood), WDV=await img(TEX&&TEX.woodv);
+  const build=async()=>{ '@art'; if(!DATA||!LAY)return; const gen=A_.gen; const G=new THREE.Group(); G.name='art museum'; G.userData.anyRoom=true; const WL=await img(TEX&&TEX.plaster), WD=await img(TEX&&TEX.wood), WDV=await img(TEX&&TEX.woodv);
     const rgb=a=>'rgb('+a.map(v=>Math.round(v)).join(',')+')';
     // a floor's band of wall, one floor high and as wide: the plaster in the floor's colour, the wood dado and its rail, the picture rail, the slab's edge above
     const wallTex=col=>canvasTex(512,512,(g,w,h)=>{ const zy=z=>h*(1-z/FZ); g.fillStyle=rgb(col); g.fillRect(0,0,w,h); if(WL){ g.globalCompositeOperation='multiply'; for(let x=0;x<w;x+=256)for(let y=0;y<h;y+=256)g.drawImage(WL,x,y,256,256); g.globalCompositeOperation='source-over'; }
@@ -179,7 +177,7 @@ await grab('art',async()=>{ if(AWAY.has('art')||!WP.art)return;
   const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
   A_.viewOne=async t=>{ await LOAD('art'); if(!Object.keys(TOURS).length){ try{ TOURS=await ARTTOURS()||{}; }catch(e){ TOURS={}; } } view(t,null); };   // a painting hung elsewhere (the bookstore café) opens in this viewer with its tour
   STORE.pre.art=async()=>{ await LOAD('art'); if(!DATA){ DATA=await ART(); try{ TOURS=await ARTTOURS()||{}; }catch(e){ TOURS={}; } try{ TEX=await ARTTEX(); }catch(e){ TEX=null; } layout(); } };
-  rec('art','THE ART MUSEUM',B,D,true);
+  rec('art','THE ART MUSEUM',B,D,true).away=1;   // its inside stands off the map: inside it the whole map is hidden, not just what is near
   STORE.artFrame={B,FZ,cx,DOORY,data:()=>DATA};   // the inside's corner, its walls' height, the paintings' list, for what furnishes it
   STEPS.push(()=>{ '@later'; room('art','THE ART MUSEUM',B,{floor:null,in:()=>STONE,out:front,cope:STONEL},D,set0,{xo:1,noCeil:1,noWins:1}); const S=STORE.inside.art;
     if(S&&!S.done){ const g0=S.go; S.go=()=>{ g0(); for(const [a,c] of [[B.x0,cx-5],[cx-5,cx+5],[cx+5,B.x1]])K.flat(a,B.y0,c,B.y1,.15,marble,'L'); build(); if(STORE.furnish&&STORE.furnish.art)STORE.furnish.art(STORE.artFrame); }; }

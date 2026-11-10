@@ -10,6 +10,7 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
   rec('the bar is a door on the Hudson row with an inside',await pg.evaluate(()=>!!(ROOMS.off.bar&&MSHOP.at.bar)));
   await pg.evaluate(()=>ROOMS.enter('bar'));
   const inn=await U(()=>ROOMS.offIn&&ROOMS.offIn()==='bar'&&!(window.FADE&&FADE.busy)&&__dbg.UI.things.some(t=>t.obj&&t.obj.parent&&t.name==='THE BAR (DRINKS)'));
+  await U(()=>LOUNGEDBG().geo,120000);   // its Polyfork pieces come after the room itself (slower on a busy runner)
   rec('you go in; the lounge is built',inn,JSON.stringify(await pg.evaluate(()=>LOUNGEDBG())));
   const live=n=>pg.evaluate(n=>__dbg.UI.things.filter(t=>t.obj&&t.obj.parent&&t.name===n).length,n);
   const L=await pg.evaluate(()=>{ const s=new Set(); scene.traverse(o=>{ if(o.isMesh&&o.geometry&&o.material&&o.material===KIT.mat)s.add(o.geometry.uuid); }); return s.size; }).catch(()=>-1);

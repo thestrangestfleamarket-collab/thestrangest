@@ -74,13 +74,13 @@ import {GHOLD} from './146zoa-guitar-hold.js';
     cotton:(a)=>S.cloud(a), popcorn:(a,b)=>{ const g=S.tub(0xd83a3a,0xf4efe4); for(let i=0;i<9;i++)add(g,'ball',0xf4e8c0,Math.cos(i*2.3)*.035,.13+(i%3)*.01,Math.sin(i*2.3)*.035,.014,.012,.014,0,0,0,M('food')); return g; },
   };
   // which shape each item is (by its id), first match
-  const BY=[[/^guitar$/,'guitar'],[/^plate_/,'frame'],[/^harp$/,'harp'],[/^piano$/,'piano'],[/^drums$/,'drums'],[/^kazoo$/,'kazoo'],
+  const BY=[[/^guitar$/,'guitar'],[/^harp$/,'harp'],[/^piano$/,'piano'],[/^drums$/,'drums'],[/^kazoo$/,'kazoo'],
     [/^spray_/,'spray'],[/^g_(beans|soup|tuna|spam|catfood|vienna|soda|beer|coffee|cleanser)$/,'can'],[/^g_(juice|water|shampoo|dishsoap|aspirin)$|^soda_|^lemonade$|^p_royal$|^curse_stink$/,'bottle'],[/^g_bleach$|^water$/,'jug'],[/^g_milk$/,'carton'],
     [/^g_(fishfood|oats|yogurt|noodles|vaseline)$/,'tub'],[/^(honey_|jar_)|^curse_(cloud|rats)$/,'jar'],[/^g_(chips|bagels|dogfood|rice|diapers|tp|towels|bananas|plantains)$|^dirt$|^fix_parts$/,'sack'],[/^g_(koolaid|gum|batteries|candy)$|^seed_/,'packet'],
     [/^g_(cereal|detergent|pasta|tea|qtips|matches|eggs|bread|cheese|butter)$|^f_(bonbons|candybox)$/,'box'],[/^g_(candle|bulb)$|^wax_candle$/,'candle'],[/^g_(toothbrush|toothpaste|deodorant|lighter|sponge|soap)$/,'block'],
     [/^cut_m_/,'mushroom'],[/^cut_/,'gem'],[/^(amber|amethyst|emerald|ruby|sapphire|opal|moonstone|quartz)$/,'crystal'],[/^(meteor|geode)$/,'rock'],[/^([mu]_|shroom_)/,'mushroom'],[/^fr_/,'fruit'],[/^mo_/,'moth'],
     [/^d_/,'glass'],[/^f_(chowder|hash|eggs|pancake|grilled|smokeeel|sturgeon|grillbass|hfish|hmush|fishfry|nachos)$/,'plate'],[/^f_(croissant|bec|blt|burger|hero|chopped|cake|pie)$/,'lump'],[/^f_icepop$|^corndog$|^funnelcake$/,'stick'],[/^f_popcorn$|^popcorn$/,'popcorn'],[/^cotton_candy$/,'cotton'],[/^f_gumball$/,'ball'],
-    [/^(art_postcard|mus_postcard|lotto_ticket|play_ticket|ticket|fairticket|ptix|fairphoto|photo)$/,'card'],[/^(art_print|paper|news_paper)$/,'flat'],[/^(canvas_|painting$|unfinished$)/,'board'],[/^(passport|mus_guidebook)$/,'book'],[/^rf_scroll$/,'scroll'],
+    [/^(art_postcard|mus_postcard|lotto_ticket|play_ticket|ticket|fairticket|ptix|fairphoto|photo)$/,'card'],[/^(art_print|paper|news_paper)$|^plate_/,'flat'],[/^(canvas_|painting$|unfinished$)/,'board'],[/^(passport|mus_guidebook)$/,'book'],[/^rf_scroll$/,'scroll'],
     [/^(coat_|jacket_)/,'coat'],[/^jeans$/,'jeans'],[/^bee_veil$/,'hat'],[/^(shades|nv_goggles)$/,'goggles'],[/^(plush_|mus_plush$)/,'plush'],[/^prize_ring$/,'ring'],[/^prize_yoyo$/,'yoyo'],[/^cube\d$/,'cube'],[/^arc_token$/,'coin'],
     [/^(handheld|junk_handheld|pockettv|junk_pockettv|walkman|junk_walkman)$/,'gadget'],[/^phone_/,'phone'],[/^radio_scanner$/,'radio'],[/^reel_/,'reel'],[/^rod_/,'rod'],[/^lure_spoon$/,'lure'],[/^lure_worm$/,'worm'],[/^crabpot$/,'crab'],[/^auger$/,'auger'],[/^cooler_/,'cooler'],
     [/^bee_hive$/,'hive'],[/^bee_smoker$/,'smoker'],[/^bee_wax$/,'block'],[/^gb_/,'ball'],[/^gem_wheel$/,'wheel'],[/^orchard_key$/,'key'],[/^quill_pen$/,'pen'],[/^bird_feather$/,'feather'],[/^nut_acorn$/,'acorns'],[/^pouch$/,'pouch'],[/^scuba$/,'tank'],

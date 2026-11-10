@@ -475,11 +475,9 @@
    "id": "subway",
    "name": "SUBWAY STAIRS",
    "kind": "stairs",
-   "x0": 219.75,
-   "x1": 223.75,
-   "y0": -116.5,
-   "y1": -110.5,
-   "note": "on the Hudson promenade in front of the garage by the Bookstore (owner, 8 Nov 2026)"
+   "x0": 131.9,
+   "x1": 135.9,
+   "note": "on Market St between the arcade and the theatre, over the loop's straight (owner, 10 Nov 2026: back from the Hudson promenade)"
   },
   {
    "id": "apts",
@@ -868,6 +866,52 @@
    "x": 315.6,
    "y": -67,
    "hd": 90
+  },
+  {
+   "id": "c7",
+   "model": "police-cruiser-80s",
+   "x": -27.5,
+   "y": -8,
+   "hd": 0
+  },
+  {
+   "id": "c8",
+   "model": "taxi-coupe",
+   "x": -27.5,
+   "y": 4,
+   "hd": 0
+  },
+  {
+   "id": "c9",
+   "model": "taxi-pod",
+   "x": -27.5,
+   "y": 16,
+   "hd": 0
+  },
+  {
+   "id": "c10",
+   "model": "ambulance",
+   "x": -27.5,
+   "y": 29,
+   "hd": 0
+  },
+  {
+   "id": "c11",
+   "model": "police-flier",
+   "x": -29,
+   "y": 44,
+   "hd": 0
+  },
+  {
+   "id": "c12",
+   "model": "submersible",
+   "x": 20,
+   "y": -80,
+   "hd": 180,
+   "moor": [
+    9,
+    45
+   ]
   }
  ],
  "parkPlaces": {
@@ -1119,7 +1163,7 @@
    {
     "id": "gems",
     "name": "THE GEM STALL",
-    "merchant": "scuba_diver",
+    "merchant": "rock_golem",
     "goods": [
      "geode",
      "stone",
@@ -1197,6 +1241,7 @@
    ]
   }
  ],
+ "racks": {"note": "the brochure racks on the street (159k-brochures): map tiles, rot the way one faces in radians", "at": [{"x": 108.5, "y": -40.5}, {"x": 127, "y": -71.8}, {"x": 171.5, "y": -110.2}]},
  "things": [
   {
    "k": "meter",
@@ -1439,8 +1484,8 @@
   },
   {
    "k": "p:parkbench",
-   "x": 117.35,
-   "y": 74.27,
+   "x": 115.63,
+   "y": 78.43,
    "rot": -1.33
   },
   {
@@ -2136,19 +2181,19 @@
   {
    "k": "p:campusrail",
    "x": 48.91,
-   "y": 52.91,
+   "y": 47.41,
    "rot": -0.259
   },
   {
    "k": "p:campusrail",
    "x": 50.06,
-   "y": 53.22,
+   "y": 47.72,
    "rot": -0.259
   },
   {
    "k": "p:campusrail",
    "x": 51.2,
-   "y": 53.52,
+   "y": 48.02,
    "rot": -0.257
   },
   {
@@ -6370,12 +6415,12 @@
   ],
   "near": 60,
   "ground": {
-   "note": "the land past the edges (owner, 7 Nov 2026: \"set a base color for far off distance things like grass\"; 8 Nov 2026: the whole of Central Park, the city round it): one low-res picture under everything outside the section: grass in sections.ring.park, the ring streets road, the city past them in blocks (city, its streets every block tiles); the park's waters and lawns (x, y, rx, ry, turn in degrees) and paths ([x,y] points, the drive and the cross roads); the big lake's whole shore in it (box x0, y0, x1, y1 in tiles; tiles a pixel; colours)",
+   "note": "the land past the edges (owner, 7 Nov 2026: \"set a base color for far off distance things like grass\"; 8 Nov 2026: the whole of Central Park, the city round it): one low-res picture under everything outside the section: grass in park (the far park's box, twice the ring's park each way, owner 10 Nov 2026), outer (its streets' outer edge) road, the city past them in blocks (city, its streets every block tiles); the park's waters and lawns (x, y, rx, ry, turn in degrees) and paths ([x,y] points, the drive and the cross roads); the big lake's whole shore in it (box x0, y0, x1, y1 in tiles; tiles a pixel; colours)",
    "box": [
-    -1200,
+    -2300,
     -130.1,
-    1500,
-    1400
+    2540,
+    2160
    ],
    "px": 4,
    "grass": [
@@ -6433,6 +6478,69 @@
      60,
      45,
      0
+    ],
+    [
+     -822,
+     250,
+     170,
+     120,
+     0
+    ],
+    [
+     -232,
+     90,
+     60,
+     25,
+     -8
+    ],
+    [
+     -1022,
+     80,
+     60,
+     45,
+     0
+    ],
+    [
+     1060,
+     662,
+     170,
+     120,
+     0
+    ],
+    [
+     470,
+     822,
+     60,
+     25,
+     -8
+    ],
+    [
+     1260,
+     832,
+     60,
+     45,
+     0
+    ],
+    [
+     -822,
+     662,
+     170,
+     120,
+     0
+    ],
+    [
+     -232,
+     822,
+     60,
+     25,
+     8
+    ],
+    [
+     -1022,
+     832,
+     60,
+     45,
+     0
     ]
    ],
    "lawns": [
@@ -6446,6 +6554,48 @@
     [
      470,
      260,
+     90,
+     55,
+     0
+    ],
+    [
+     -522,
+     230,
+     130,
+     85,
+     0
+    ],
+    [
+     -232,
+     260,
+     90,
+     55,
+     0
+    ],
+    [
+     760,
+     682,
+     130,
+     85,
+     0
+    ],
+    [
+     470,
+     652,
+     90,
+     55,
+     0
+    ],
+    [
+     -522,
+     682,
+     130,
+     85,
+     0
+    ],
+    [
+     -232,
+     652,
      90,
      55,
      0
@@ -6591,8 +6741,440 @@
       960,
       456
      ]
+    ],
+    [
+     [
+      -1004,
+      -8
+     ],
+     [
+      -1027,
+      -3
+     ],
+     [
+      -1046,
+      10
+     ],
+     [
+      -1059,
+      29
+     ],
+     [
+      -1064,
+      52
+     ],
+     [
+      -1064,
+      366
+     ],
+     [
+      -1059,
+      389
+     ],
+     [
+      -1046,
+      408
+     ],
+     [
+      -1027,
+      421
+     ],
+     [
+      -1004,
+      426
+     ],
+     [
+      172,
+      426
+     ],
+     [
+      195,
+      421
+     ],
+     [
+      214,
+      408
+     ],
+     [
+      227,
+      389
+     ],
+     [
+      232,
+      366
+     ],
+     [
+      232,
+      52
+     ],
+     [
+      227,
+      29
+     ],
+     [
+      214,
+      10
+     ],
+     [
+      195,
+      -3
+     ],
+     [
+      172,
+      -8
+     ],
+     [
+      -1004,
+      -8
+     ]
+    ],
+    [
+     [
+      -92,
+      -38
+     ],
+     [
+      -112,
+      100
+     ],
+     [
+      -72,
+      300
+     ],
+     [
+      -92,
+      456
+     ]
+    ],
+    [
+     [
+      -402,
+      -38
+     ],
+     [
+      -422,
+      100
+     ],
+     [
+      -382,
+      300
+     ],
+     [
+      -402,
+      456
+     ]
+    ],
+    [
+     [
+      -722,
+      -38
+     ],
+     [
+      -742,
+      100
+     ],
+     [
+      -702,
+      300
+     ],
+     [
+      -722,
+      456
+     ]
+    ],
+    [
+     [
+      1242,
+      920
+     ],
+     [
+      1265,
+      915
+     ],
+     [
+      1284,
+      902
+     ],
+     [
+      1297,
+      883
+     ],
+     [
+      1302,
+      860
+     ],
+     [
+      1302,
+      546
+     ],
+     [
+      1297,
+      523
+     ],
+     [
+      1284,
+      504
+     ],
+     [
+      1265,
+      491
+     ],
+     [
+      1242,
+      486
+     ],
+     [
+      66,
+      486
+     ],
+     [
+      43,
+      491
+     ],
+     [
+      24,
+      504
+     ],
+     [
+      11,
+      523
+     ],
+     [
+      6,
+      546
+     ],
+     [
+      6,
+      860
+     ],
+     [
+      11,
+      883
+     ],
+     [
+      24,
+      902
+     ],
+     [
+      43,
+      915
+     ],
+     [
+      66,
+      920
+     ],
+     [
+      1242,
+      920
+     ]
+    ],
+    [
+     [
+      330,
+      950
+     ],
+     [
+      350,
+      812
+     ],
+     [
+      310,
+      612
+     ],
+     [
+      330,
+      456
+     ]
+    ],
+    [
+     [
+      640,
+      950
+     ],
+     [
+      660,
+      812
+     ],
+     [
+      620,
+      612
+     ],
+     [
+      640,
+      456
+     ]
+    ],
+    [
+     [
+      960,
+      950
+     ],
+     [
+      980,
+      812
+     ],
+     [
+      940,
+      612
+     ],
+     [
+      960,
+      456
+     ]
+    ],
+    [
+     [
+      -1004,
+      920
+     ],
+     [
+      -1027,
+      915
+     ],
+     [
+      -1046,
+      902
+     ],
+     [
+      -1059,
+      883
+     ],
+     [
+      -1064,
+      860
+     ],
+     [
+      -1064,
+      546
+     ],
+     [
+      -1059,
+      523
+     ],
+     [
+      -1046,
+      504
+     ],
+     [
+      -1027,
+      491
+     ],
+     [
+      -1004,
+      486
+     ],
+     [
+      172,
+      486
+     ],
+     [
+      195,
+      491
+     ],
+     [
+      214,
+      504
+     ],
+     [
+      227,
+      523
+     ],
+     [
+      232,
+      546
+     ],
+     [
+      232,
+      860
+     ],
+     [
+      227,
+      883
+     ],
+     [
+      214,
+      902
+     ],
+     [
+      195,
+      915
+     ],
+     [
+      172,
+      920
+     ],
+     [
+      -1004,
+      920
+     ]
+    ],
+    [
+     [
+      -92,
+      950
+     ],
+     [
+      -112,
+      812
+     ],
+     [
+      -72,
+      612
+     ],
+     [
+      -92,
+      456
+     ]
+    ],
+    [
+     [
+      -402,
+      950
+     ],
+     [
+      -422,
+      812
+     ],
+     [
+      -382,
+      612
+     ],
+     [
+      -402,
+      456
+     ]
+    ],
+    [
+     [
+      -722,
+      950
+     ],
+     [
+      -742,
+      812
+     ],
+     [
+      -702,
+      612
+     ],
+     [
+      -722,
+      456
+     ]
     ]
-   ]
+   ],
+   "park": {
+    "x0": -1094,
+    "y0": -38,
+    "x1": 1332,
+    "y1": 950
+   },
+   "outer": {
+    "x0": -1122.5,
+    "y0": -77,
+    "x1": 1360.5,
+    "y1": 978.5
+   }
   },
   "strips": {
    "note": "the streets carried on past the edges, low-res ground (x0, y0, x1, y1, kind)",
@@ -6708,37 +7290,16 @@
      3000,
      -107.9,
      "prom"
-    ],
-    [
-     -52.5,
-     212,
-     -49.3,
-     520,
-     "walk"
-    ],
-    [
-     -49.3,
-     212,
-     -27.2,
-     520,
-     "road"
-    ],
-    [
-     -27.2,
-     212,
-     -24,
-     520,
-     "walk"
     ]
    ]
   },
   "park": {
-   "note": "Central Park past the forcefield, the whole of it (owner, 8 Nov 2026: Manhattan): a wall just inside West St and plain low trees in bands (x0, y0, x1, y1 in tiles) inside sections.ring.park (n of them, and clumps: bunches of bigger trees), none in the clearings (x, y, rx, ry: the reservoir, the lawns, the ponds) or on the paths (edge.ground.paths)",
+   "note": "Central Park past the forcefield, the whole of it (owner, 8 Nov 2026: Manhattan): a wall just inside West St and plain low trees in bands (x0, y0, x1, y1 in tiles) inside edge.ground.park (n of them, and clumps: bunches of bigger trees), none in the clearings (x, y, rx, ry: the reservoir, the lawns, the ponds) or on the paths (edge.ground.paths)",
    "wall": [
     -23.9,
     -38,
     -23.3,
-    456
+    181
    ],
    "bands": [
     [
@@ -6758,10 +7319,22 @@
      -34,
      1328,
      452
+    ],
+    [
+     -1090,
+     -34,
+     -56,
+     946
+    ],
+    [
+     -52,
+     460,
+     1328,
+     946
     ]
    ],
-   "n": 2400,
-   "clumps": 450,
+   "n": 6400,
+   "clumps": 1200,
    "clear": [
     [
      1060,
@@ -6790,6 +7363,96 @@
     [
      1260,
      80,
+     66,
+     50
+    ],
+    [
+     -822,
+     250,
+     180,
+     130
+    ],
+    [
+     -522,
+     230,
+     135,
+     90
+    ],
+    [
+     -232,
+     260,
+     95,
+     60
+    ],
+    [
+     -232,
+     90,
+     66,
+     32
+    ],
+    [
+     -1022,
+     80,
+     66,
+     50
+    ],
+    [
+     1060,
+     662,
+     180,
+     130
+    ],
+    [
+     760,
+     682,
+     135,
+     90
+    ],
+    [
+     470,
+     652,
+     95,
+     60
+    ],
+    [
+     470,
+     822,
+     66,
+     32
+    ],
+    [
+     1260,
+     832,
+     66,
+     50
+    ],
+    [
+     -822,
+     662,
+     180,
+     130
+    ],
+    [
+     -522,
+     682,
+     135,
+     90
+    ],
+    [
+     -232,
+     652,
+     95,
+     60
+    ],
+    [
+     -232,
+     822,
+     66,
+     32
+    ],
+    [
+     -1022,
+     832,
      66,
      50
     ]
@@ -7123,6 +7786,37 @@
      ]
     ],
     "w": 180
+   },
+   "blocks": {
+    "note": "the city's buildings past the park (owner, 10 Nov 2026: \"fill it out logical with the rest of the buildings in NYC\"): plain boxes on every block of edge.ground's city within depth tiles of the park's streets, one draw; lots across a block (two rows, each lot min to max tiles wide), a storey's height (px, as the rows'), storeys low then tall on a block's ends (avenue), the row facing the park (park: how often, storeys), towers further out (how often near and far, storeys, how much taller far); past them the painted skyline",
+    "depth": 460,
+    "lot": [
+     12,
+     26
+    ],
+    "storey": 90,
+    "low": [
+     3,
+     6
+    ],
+    "avenue": [
+     6,
+     11
+    ],
+    "park": [
+     0.35,
+     8,
+     14
+    ],
+    "tower": [
+     0.012,
+     0.04,
+     14,
+     24,
+     0.5
+    ],
+    "far": 900,
+    "seed": 11
    }
   },
   "far": {

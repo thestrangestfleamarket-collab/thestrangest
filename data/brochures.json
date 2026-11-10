@@ -1,0 +1,1293 @@
+{
+ "price": 2,
+ "full": 50,
+ "list": [
+  {
+   "id": "wreck",
+   "style": "gloss",
+   "place": "FISHING & SCUBA",
+   "k": "Dive the",
+   "t": [
+    "PIRATE",
+    "WRECK!"
+   ],
+   "s": "SHARKS · SUNKEN GOLD · GEMS\n55 METRES UNDER THE HUDSON",
+   "burst": "SCUBA SET|$40",
+   "panels": [
+    [
+     [
+      "h",
+      "REAL SUNKEN TREASURE"
+     ],
+     [
+      "pic",
+      1
+     ],
+     [
+      "ul",
+      [
+       "A 48 m pirate ship, broken in two, her black flag still on the mast.",
+       "Swim INSIDE: the stern cabin and a hold full of barrels.",
+       "SEVEN chests of old coins and gems, full again every day.",
+       "FOUR sharks on guard. They bite!",
+       "Raise the ship's bell with a SALVAGE WINCH: it pays $150."
+      ]
+     ]
+    ],
+    [
+     [
+      "h",
+      "ANYONE CAN DIVE"
+     ],
+     [
+      "pic",
+      2
+     ],
+     [
+      "ol",
+      [
+       "Buy a SCUBA SET at FISHING & SCUBA and WEAR it from your pack. The tank holds 5 minutes of air and fills again, free, whenever you are out of the water.",
+       "Add GOGGLES and a HEADLIGHT. It is dark down there.",
+       "Step off the quay. Hold SPACE to go down, SHIFT to come up.",
+       "About 25 seconds down: the ship. Double-click a chest."
+      ]
+     ]
+    ],
+    [
+     [
+      "h",
+      "WHERE"
+     ],
+     [
+      "pic",
+      3
+     ],
+     [
+      "p",
+      "FISHING & SCUBA, on the Hudson row. The wreck lies on the deepest bed of the Hudson, 55 m down."
+     ],
+     [
+      "h",
+      "WHAT IT COSTS"
+     ],
+     [
+      "cost",
+      [
+       [
+        "SCUBA SET",
+        "$40"
+       ],
+       [
+        "DIVING GOGGLES",
+        "$30"
+       ],
+       [
+        "HEADLIGHT",
+        "$45"
+       ],
+       [
+        "SALVAGE WINCH",
+        "$120"
+       ]
+      ]
+     ],
+     [
+      "go"
+     ]
+    ]
+   ],
+   "no": 1
+  },
+  {
+   "id": "fish",
+   "style": "xerox",
+   "place": "FISHING & SCUBA",
+   "k": "FISHING & SCUBA · THE HUDSON ROW",
+   "t": [
+    "THE FISH",
+    "ARE",
+    "BITING."
+   ],
+   "s": "17 kinds. The Hudson and the lake. I buy what you land.",
+   "burst": "ask me about|the old catfish",
+   "panels": [
+    [
+     [
+      "h",
+      "What's in the water"
+     ],
+     [
+      "pic",
+      1
+     ],
+     [
+      "p",
+      "Eleven kinds in the Hudson: white perch, tomcod, eel, blue crab, catfish, shad, flounder, bluefish, striped bass, and the Atlantic sturgeon, 40 kg of him."
+     ],
+     [
+      "p",
+      "Six more in the park lake, up to the northern pike. Day, dusk and night each bring different fish."
+     ],
+     [
+      "p",
+      "Now and then the hook brings up a boot, a tin can, a message in a bottle or a sunken chest."
+     ],
+     [
+      "p",
+      "THE OLD CATFISH lies under the pier between 2 and 4 in the morning. Cut bait. Once a day."
+     ]
+    ],
+    [
+     [
+      "h",
+      "How you do it"
+     ],
+     [
+      "ol",
+      [
+       "Hold your rod.",
+       "By the water press F.",
+       "Hold SPACE for power, let go to cast. B changes bait.",
+       "The float dips: SPACE, and quick.",
+       "Hold SPACE to reel. Ease off when it says EASE. Pull A or D against a run.",
+       "Take it off the hook. X or ESC when you are done."
+      ]
+     ],
+     [
+      "pic",
+      2
+     ],
+     [
+      "p",
+      "Crab pot: press P facing the water. Come back for the buoy."
+     ]
+    ],
+    [
+     [
+      "h",
+      "WHERE"
+     ],
+     [
+      "pic",
+      3
+     ],
+     [
+      "p",
+      "The long pier at the foot of the way through to the Hudson. Tackle at FISHING & SCUBA. Rowboats at the foot of the pier."
+     ],
+     [
+      "h",
+      "WHAT IT COSTS"
+     ],
+     [
+      "cost",
+      [
+       [
+        "FISHING ROD",
+        "$15"
+       ],
+       [
+        "WORMS, CUT BAIT",
+        "$1"
+       ],
+       [
+        "CRAB POT",
+        "$25"
+       ],
+       [
+        "CARBON ROD",
+        "$60"
+       ],
+       [
+        "SURF ROD",
+        "$180"
+       ],
+       [
+        "COOLERS",
+        "$20 to $120"
+       ],
+       [
+        "ROWBOAT, A TRIP",
+        "$5"
+       ]
+      ]
+     ],
+     [
+      "go"
+     ]
+    ]
+   ],
+   "no": 2
+  },
+  {
+   "id": "pets",
+   "style": "pets",
+   "place": "DOGS & CATS",
+   "k": "THE PET SHOPS OF MARKET ST",
+   "t": [
+    "A FRIEND",
+    "FOR LIFE"
+   ],
+   "s": "Pugs to plesiosaurs. Over 400 kinds.",
+   "burst": "FROM|$10",
+   "panels": [
+    [
+     [
+      "h",
+      "WHO'S WAITING"
+     ],
+     [
+      "pic",
+      1
+     ],
+     [
+      "ul",
+      [
+       "DOGS & CATS: 140 kinds of dog, 59 of cat, and rabbits.",
+       "LIZARDS & DRAGONS: ten dinosaurs with a T. REX, seven dragons and BIG LIZ.",
+       "THE BIRD SHOP and THE BUTTERFLY SHOP.",
+       "THE BARN in Central Park: horses, cows, pigs, an elephant, a giraffe, a lion.",
+       "THE AQUARIUM: 52 fish and sea animals for the tank in your apartment. A shark. A dolphin. A plesiosaur."
+      ]
+     ],
+     [
+      "p",
+      "Every one of them is pet-sized."
+     ]
+    ],
+    [
+     [
+      "h",
+      "HOW TO ADOPT"
+     ],
+     [
+      "ol",
+      [
+       "Go into a shop. Double-click a cage, or THE ADOPTION BOOK.",
+       "Pick the kind, the colours and the shape.",
+       "Press ADOPT.",
+       "ESC, then PETS: feed it, take it out, choose where it rides. Head, shoulder, flying or walking.",
+       "Press E to pet it."
+      ]
+     ],
+     [
+      "pic",
+      2
+     ],
+     [
+      "p",
+      "A fed, loyal pet finds you dollars."
+     ]
+    ],
+    [
+     [
+      "h",
+      "WHERE"
+     ],
+     [
+      "pic",
+      3
+     ],
+     [
+      "p",
+      "Four shops side by side on Market St, between the bar and the bodega. THE BARN is in Central Park. THE AQUARIUM is on the Hudson row."
+     ],
+     [
+      "h",
+      "WHAT IT COSTS"
+     ],
+     [
+      "cost",
+      [
+       [
+        "BUGS, CRABS",
+        "$10"
+       ],
+       [
+        "RABBITS, POULTRY",
+        "$20"
+       ],
+       [
+        "BIRDS",
+        "$25"
+       ],
+       [
+        "DOGS, CATS",
+        "$30"
+       ],
+       [
+        "PARROTS",
+        "$40"
+       ],
+       [
+        "HORSES, FARM",
+        "$60"
+       ],
+       [
+        "DINOSAURS",
+        "$150"
+       ],
+       [
+        "DRAGONS",
+        "$200"
+       ],
+       [
+        "DOG FOOD · CAT FOOD",
+        "$5 · $1"
+       ]
+      ]
+     ],
+     [
+      "go"
+     ]
+    ]
+   ],
+   "no": 3
+  },
+  {
+   "id": "nature",
+   "style": "park",
+   "place": "CENTRAL PARK",
+   "k": "Central Park",
+   "t": [
+    "Birds &",
+    "Butterflies"
+   ],
+   "s": "25 butterflies · 13 birds · a journal to fill",
+   "burst": null,
+   "panels": [
+    [
+     [
+      "h",
+      "What to look for"
+     ],
+     [
+      "pic",
+      1
+     ],
+     [
+      "p",
+      "Twenty-five butterflies fly the park, twelve common and thirteen rare, from the Monarch to the Apollo and the Homerus Swallowtail. A rare one is worth $40 to $250."
+     ],
+     [
+      "p",
+      "Thirteen birds, from the house sparrow to the red-tailed hawk. A first sighting pays: $40 for the oriole, $60 for the scarlet tanager, $80 for the hawk."
+     ],
+     [
+      "p",
+      "The WILDLIFE page of your journal: crow, great horned owl, mallard, honeybee, bumblebee. A full page pays $50."
+     ]
+    ],
+    [
+     [
+      "h",
+      "In the field"
+     ],
+     [
+      "ol",
+      [
+       "Hold the BUTTERFLY NET and double-click a butterfly. You carry 5; jars hold 20, 50 or 100.",
+       "IDENTIFY it in your pack, then sell it or RELEASE it.",
+       "Double-click a bird: WATCH, TAME with birdseed, or CATCH with a bird net and a cage.",
+       "Scatter seed or hang a FEEDER, and stand still.",
+       "Hold BINOCULARS, click to raise them. The wheel focuses.",
+       "Double-click a creature and keep still 5 seconds to log it."
+      ]
+     ],
+     [
+      "pic",
+      2
+     ]
+    ],
+    [
+     [
+      "h",
+      "WHERE"
+     ],
+     [
+      "pic",
+      3
+     ],
+     [
+      "p",
+      "All of Central Park. THE BUTTERFLY STALL and THE BIRD STALL stand on the park wall, west of the gate."
+     ],
+     [
+      "h",
+      "WHAT IT COSTS"
+     ],
+     [
+      "cost",
+      [
+       [
+        "BUTTERFLY NET",
+        "$8"
+       ],
+       [
+        "JARS",
+        "$6 · $14 · $25"
+       ],
+       [
+        "BIRD NET",
+        "$12"
+       ],
+       [
+        "BIRD CAGE",
+        "$5"
+       ],
+       [
+        "BIRDSEED",
+        "$1"
+       ],
+       [
+        "BIRD FEEDER",
+        "$14"
+       ],
+       [
+        "BINOCULARS 8X42",
+        "$30"
+       ],
+       [
+        "CAMERA 35 MM",
+        "$120"
+       ]
+      ]
+     ],
+     [
+      "go"
+     ]
+    ]
+   ],
+   "no": 4
+  },
+  {
+   "id": "shroom",
+   "style": "psych",
+   "place": "THE MUSHROOM STALL",
+   "k": "The Mushroom Stall",
+   "t": [
+    "EAT ONE",
+    "AND FLY"
+   ],
+   "s": "Fourteen power mushrooms. Eighteen wild ones.",
+   "burst": null,
+   "panels": [
+    [
+     [
+      "h",
+      "What they do"
+     ],
+     [
+      "pic",
+      1
+     ],
+     [
+      "ul",
+      [
+       "FLIGHT: five minutes in the air, up through the clouds, cape on.",
+       "SHRINK: two-fifths your size. GROW: twice your size.",
+       "JUMP: two and a half times as high.",
+       "BREATH: 20 more seconds under water.",
+       "And NIGHT VISION, INVISIBILITY, STRENGTH, SPEED, KEEN EYE, HEALING, CURE POISON, LUCK and FIREPROOF."
+      ]
+     ],
+     [
+      "p",
+      "Wild in the park: 18 kinds, MEADOW BUTTON to LION'S MANE. Ink cap and black trumpet after rain, oyster at dawn, GHOST CAP by night, deep in the park. RED CAP, FLY AGARIC and MOONGLOW are poison."
+     ]
+    ],
+    [
+     [
+      "h",
+      "How to fly"
+     ],
+     [
+      "ol",
+      [
+       "Buy a FLIGHT MUSHROOM at THE MUSHROOM STALL.",
+       "Eat it from your pack.",
+       "Press G to take off.",
+       "W A S D to fly. SPACE up, SHIFT down.",
+       "Press G to land."
+      ]
+     ],
+     [
+      "pic",
+      2
+     ],
+     [
+      "p",
+      "To pick a wild one, double-click it on a park lawn."
+     ]
+    ],
+    [
+     [
+      "h",
+      "WHERE"
+     ],
+     [
+      "pic",
+      3
+     ],
+     [
+      "p",
+      "THE MUSHROOM STALL, on the park wall east of the gate. Wild ones grow on the lawns of Central Park."
+     ],
+     [
+      "h",
+      "WHAT IT COSTS"
+     ],
+     [
+      "cost",
+      [
+       [
+        "FLIGHT · LUCK",
+        "$30"
+       ],
+       [
+        "INVISIBILITY",
+        "$25"
+       ],
+       [
+        "FIREPROOF · SHRINK · GROW",
+        "$20"
+       ],
+       [
+        "STRENGTH · KEEN EYE",
+        "$15"
+       ],
+       [
+        "SPEED · JUMP",
+        "$12"
+       ],
+       [
+        "NIGHT VISION · HEALING",
+        "$10"
+       ],
+       [
+        "BREATH",
+        "$8"
+       ],
+       [
+        "CURE POISON",
+        "$6"
+       ]
+      ]
+     ],
+     [
+      "go"
+     ]
+    ]
+   ],
+   "no": 5
+  },
+  {
+   "id": "bees",
+   "style": "honey",
+   "place": "THE BEEKEEPER'S STALL",
+   "k": "The Beekeeper's Stall",
+   "t": [
+    "PARK",
+    "HONEY"
+   ],
+   "s": "Keep bees. Six honeys. One only by moonlight.",
+   "burst": null,
+   "panels": [
+    [
+     [
+      "h",
+      "Six honeys"
+     ],
+     [
+      "pic",
+      1
+     ],
+     [
+      "p",
+      "The flowers within eight tiles of the hive decide the honey: wildflower, clover, sunflower, lavender or rose."
+     ],
+     [
+      "p",
+      "MOON HONEY is made only at night, deep in the park, and is worth ten times wildflower."
+     ],
+     [
+      "p",
+      "A frame fills every half hour, up to four times faster among flowers. Ten frames to a hive, three hives to a keeper."
+     ]
+    ],
+    [
+     [
+      "h",
+      "Keeping bees"
+     ],
+     [
+      "ol",
+      [
+       "Buy a BEEHIVE, a SMOKER, a VEIL and EMPTY JARS.",
+       "Stand on a park lawn where flowers grow thick. In your pack press SET IT HERE.",
+       "Leave it. The hive fills in real time.",
+       "Come back. The smoker quiets the bees; the veil keeps stings off.",
+       "Double-click the hive and TAKE HONEY.",
+       "LIFT IT to move the hive."
+      ]
+     ],
+     [
+      "pic",
+      2
+     ]
+    ],
+    [
+     [
+      "h",
+      "WHERE"
+     ],
+     [
+      "pic",
+      3
+     ],
+     [
+      "p",
+      "THE BEEKEEPER'S STALL, on the park wall west of the gate. The Village Gardener keeps it and buys your honey and wax."
+     ],
+     [
+      "h",
+      "WHAT IT COSTS"
+     ],
+     [
+      "cost",
+      [
+       [
+        "A BEEHIVE",
+        "$40"
+       ],
+       [
+        "BEE SMOKER",
+        "$12"
+       ],
+       [
+        "BEEKEEPER'S VEIL",
+        "$15"
+       ],
+       [
+        "EMPTY HONEY JAR",
+        "$1"
+       ]
+      ]
+     ],
+     [
+      "go"
+     ]
+    ]
+   ],
+   "no": 6
+  },
+  {
+   "id": "art",
+   "style": "museum",
+   "place": "THE ART MUSEUM",
+   "k": "Market St",
+   "t": [
+    "The Art",
+    "Museum"
+   ],
+   "s": "53 paintings. Admission free.",
+   "burst": null,
+   "panels": [
+    [
+     [
+      "h",
+      "The collection"
+     ],
+     [
+      "pic",
+      1
+     ],
+     [
+      "p",
+      "Fifty-three paintings in one room under a skylight, hung close, two high, the way the old salons hung them."
+     ],
+     [
+      "p",
+      "The Night Watch. The Milkmaid. The Great Wave. Washington Crossing the Delaware. Madame X."
+     ],
+     [
+      "p",
+      "Double-click any painting to see it full screen, at the full resolution of the museum that owns it."
+     ]
+    ],
+    [
+     [
+      "h",
+      "Your visit"
+     ],
+     [
+      "ol",
+      [
+       "Walk in. Admission is free.",
+       "THE FLOOR PLAN by the door lists every painting.",
+       "Double-click a painting to look closely.",
+       "Press GUIDED TOUR on a painting that has one."
+      ]
+     ],
+     [
+      "pic",
+      2
+     ],
+     [
+      "h",
+      "The sealed vault"
+     ],
+     [
+      "p",
+      "Three dials and a star chart, new each night. The clues are on the cornerstone, on the founder's statue, in a note at the bookstore and on the sky poster by the door."
+     ]
+    ],
+    [
+     [
+      "h",
+      "WHERE"
+     ],
+     [
+      "pic",
+      3
+     ],
+     [
+      "p",
+      "THE ART MUSEUM, at the east end of Market St."
+     ],
+     [
+      "h",
+      "WHAT IT COSTS"
+     ],
+     [
+      "cost",
+      [
+       [
+        "ADMISSION",
+        "FREE"
+       ]
+      ]
+     ],
+     [
+      "go"
+     ]
+    ]
+   ],
+   "no": 7
+  },
+  {
+   "id": "books",
+   "style": "cafe",
+   "place": "THE BOOKSTORE",
+   "k": "The Bookstore",
+   "t": [
+    "Books,",
+    "a table",
+    "& a game"
+   ],
+   "s": "640 real books. 37 games. All free.",
+   "burst": null,
+   "panels": [
+    [
+     [
+      "h",
+      "On the shelves"
+     ],
+     [
+      "pic",
+      1
+     ],
+     [
+      "p",
+      "Sixteen cases of forty: 640 real books, the most read of all time and a case for each skill, from mycology to swordsmanship."
+     ],
+     [
+      "p",
+      "Borrow five at a time and read them anywhere from your pack."
+     ],
+     [
+      "p",
+      "Eight real paintings hang on the café walls: Manet, Seurat, Caillebotte, Degas, Corot, Van Gogh. Each has its own tour."
+     ],
+     [
+      "p",
+      "At home, YOUR BOOKSHELF holds 70 more."
+     ]
+    ],
+    [
+     [
+      "h",
+      "At the tables"
+     ],
+     [
+      "p",
+      "Five tables, 37 games, one to four players: chess, checkers, go, shogi, xiangqi, backgammon, mancala, dominoes, hearts, spades, bridge, cribbage, blackjack, klondike and more."
+     ],
+     [
+      "ol",
+      [
+       "Double-click a TABLE to sit.",
+       "Pick a game.",
+       "Click an empty seat to seat the computer, or INVITE A PLAYER."
+      ]
+     ],
+     [
+      "pic",
+      2
+     ],
+     [
+      "h",
+      "To borrow"
+     ],
+     [
+      "p",
+      "Double-click a case, click a spine, BORROW IT."
+     ]
+    ],
+    [
+     [
+      "h",
+      "WHERE"
+     ],
+     [
+      "pic",
+      3
+     ],
+     [
+      "p",
+      "THE BOOKSTORE, at the east end of the Hudson row. The Professor keeps it."
+     ],
+     [
+      "h",
+      "WHAT IT COSTS"
+     ],
+     [
+      "cost",
+      [
+       [
+        "BORROWING",
+        "FREE"
+       ],
+       [
+        "THE GAMES",
+        "FREE"
+       ],
+       [
+        "A CANVAS",
+        "$4 to $12"
+       ],
+       [
+        "PAPER",
+        "$1"
+       ]
+      ]
+     ],
+     [
+      "go"
+     ]
+    ]
+   ],
+   "no": 8
+  },
+  {
+   "id": "arcade",
+   "style": "neon",
+   "place": "THE ARCADE",
+   "k": "MARKET ST",
+   "t": [
+    "THE",
+    "ARCADE"
+   ],
+   "s": "FREE PLAY · TOP TEN · THE HOLODECK",
+   "burst": "FREE|PLAY",
+   "panels": [
+    [
+     [
+      "h",
+      "NOW PLAYING"
+     ],
+     [
+      "pic",
+      1
+     ],
+     [
+      "ul",
+      [
+       "RAINBOW RUN",
+       "GALAXY RAID",
+       "MAZE",
+       "ROAD 85",
+       "TORCHBEARER: 30 hand-laid floors, then endless",
+       "PETRI: one dish shared by the whole market"
+      ]
+     ],
+     [
+      "p",
+      "COMING SOON: KNUCKLE CITY, DRAGON POP, MONSTER ROAD."
+     ]
+    ],
+    [
+     [
+      "h",
+      "HOW TO PLAY"
+     ],
+     [
+      "ol",
+      [
+       "Double-click a cabinet.",
+       "Play. ESC leaves the game.",
+       "Make the top ten and enter your initials. Everyone sees the same table."
+      ]
+     ],
+     [
+      "pic",
+      2
+     ],
+     [
+      "h",
+      "THE HOLODECK"
+     ],
+     [
+      "p",
+      "Now running ROAM: a ship among the meteors."
+     ]
+    ],
+    [
+     [
+      "h",
+      "WHERE"
+     ],
+     [
+      "pic",
+      3
+     ],
+     [
+      "p",
+      "THE ARCADE, on Market St beside the way through to the Hudson."
+     ],
+     [
+      "h",
+      "WHAT IT COSTS"
+     ],
+     [
+      "cost",
+      [
+       [
+        "EVERY CABINET",
+        "FREE"
+       ],
+       [
+        "THE HOLODECK",
+        "FREE"
+       ]
+      ]
+     ],
+     [
+      "go"
+     ]
+    ]
+   ],
+   "no": 9
+  },
+  {
+   "id": "music",
+   "style": "gig",
+   "place": "THE BODEGA",
+   "k": "Instruments at the Bodega",
+   "t": [
+    "PLAY",
+    "SOME",
+    "THING"
+   ],
+   "s": "GUITAR · PIANO · DRUMS · HARP",
+   "burst": null,
+   "panels": [
+    [
+     [
+      "h",
+      "THE BOOK"
+     ],
+     [
+      "pic",
+      1
+     ],
+     [
+      "p",
+      "Real pieces, every one credited: 183 for guitar, 330 for piano, 311 for harp, and grooves for the drums."
+     ],
+     [
+      "p",
+      "Your fingers land on the right strings and keys. Everyone near you sees and hears you play."
+     ],
+     [
+      "p",
+      "Each piece asks for a skill level, 1 to 100."
+     ]
+    ],
+    [
+     [
+      "h",
+      "HOW TO PLAY"
+     ],
+     [
+      "ol",
+      [
+       "Buy an instrument at THE BODEGA.",
+       "In your pack, PLAY. It is set down before you and you sit at it.",
+       "Pick a piece from the book.",
+       "Press PLAY. CLOSE-UP shows your hands.",
+       "PUT AWAY when you are done."
+      ]
+     ],
+     [
+      "pic",
+      2
+     ],
+     [
+      "p",
+      "Try one first: THE PARK'S GUITAR stands free on the park path, and THE BAR has a grand piano."
+     ]
+    ],
+    [
+     [
+      "h",
+      "WHERE"
+     ],
+     [
+      "pic",
+      3
+     ],
+     [
+      "p",
+      "THE BODEGA, on Market St beside the way through to the Hudson."
+     ],
+     [
+      "h",
+      "WHAT IT COSTS"
+     ],
+     [
+      "cost",
+      [
+       [
+        "A GUITAR",
+        "$180"
+       ],
+       [
+        "A DRUM KIT",
+        "$450"
+       ],
+       [
+        "A HARP",
+        "$700"
+       ],
+       [
+        "A PIANO",
+        "$900"
+       ]
+      ]
+     ],
+     [
+      "go"
+     ]
+    ]
+   ],
+   "no": 10
+  },
+  {
+   "id": "stars",
+   "style": "observ",
+   "place": "YOUR APARTMENT",
+   "k": "From your own window",
+   "t": [
+    "THE SKY",
+    "TONIGHT"
+   ],
+   "s": "A telescope and a microscope in every apartment",
+   "burst": null,
+   "panels": [
+    [
+     [
+      "h",
+      "Through the telescope"
+     ],
+     [
+      "pic",
+      1
+     ],
+     [
+      "p",
+      "The real sky over New York, tonight: the stars of the Yale Bright Star Catalogue, the planets, the Moon, the ISS passing over, this year's comets, the meteor showers at their real rates."
+     ],
+     [
+      "p",
+      "Today's Sun from NASA's Solar Dynamics Observatory, sunspots and all."
+     ],
+     [
+      "p",
+      "Real clouds too. If New York is overcast, so is your eyepiece."
+     ]
+    ],
+    [
+     [
+      "h",
+      "How to observe"
+     ],
+     [
+      "ol",
+      [
+       "Go home. Double-click the TELESCOPE.",
+       "Choose an eyepiece and focus.",
+       "GO TO finds a target. The clock drive keeps it in view.",
+       "Fit the solar filter before you look at the Sun."
+      ]
+     ],
+     [
+      "pic",
+      2
+     ],
+     [
+      "h",
+      "Under the microscope"
+     ],
+     [
+      "p",
+      "Pond water alive with microbes. Make slides from what you carry: stones in polarised light, wings, spores, pollen, feathers. Objectives from 4x to 100x."
+     ]
+    ],
+    [
+     [
+      "h",
+      "WHERE"
+     ],
+     [
+      "pic",
+      3
+     ],
+     [
+      "p",
+      "YOUR APARTMENT. Both instruments are already there."
+     ],
+     [
+      "h",
+      "WHAT IT COSTS"
+     ],
+     [
+      "cost",
+      [
+       [
+        "THE TELESCOPE",
+        "FREE"
+       ],
+       [
+        "THE MICROSCOPE",
+        "FREE"
+       ]
+      ]
+     ],
+     [
+      "go"
+     ]
+    ]
+   ],
+   "no": 11
+  },
+  {
+   "id": "gems",
+   "style": "jewel",
+   "place": "THE GEM STALL",
+   "k": "The Gem Stall",
+   "t": [
+    "TEN",
+    "STONES"
+   ],
+   "s": "Find them. Cut them. Sell them.",
+   "burst": null,
+   "panels": [
+    [
+     [
+      "h",
+      "The stones"
+     ],
+     [
+      "pic",
+      1
+     ],
+     [
+      "p",
+      "From the commonest to the rarest: quartz, amethyst, geode, amber, moonstone, opal, emerald, sapphire, ruby, and the STAR METEORITE."
+     ],
+     [
+      "p",
+      "A cut stone is worth more than twice a rough one. A cut can also crack."
+     ]
+    ],
+    [
+     [
+      "h",
+      "Where they hide"
+     ],
+     [
+      "ul",
+      [
+       "The seven sunken chests of the Hudson wreck: a stone in each, every day.",
+       "A sunken chest on your fishing hook.",
+       "The hawk's nest on the water tower, up your fire escape: a stone a day.",
+       "Loot in THE DUNGEON under the castle."
+      ]
+     ],
+     [
+      "pic",
+      2
+     ],
+     [
+      "h",
+      "Cut and sell"
+     ],
+     [
+      "ol",
+      [
+       "Buy A GEM WHEEL at THE GEM STALL.",
+       "In your pack, CUT a stone.",
+       "Sell it to the Scuba Diver at the stall."
+      ]
+     ]
+    ],
+    [
+     [
+      "h",
+      "WHERE"
+     ],
+     [
+      "pic",
+      3
+     ],
+     [
+      "p",
+      "THE GEM STALL, on the park wall east of the gate."
+     ],
+     [
+      "h",
+      "WHAT IT COSTS"
+     ],
+     [
+      "cost",
+      [
+       [
+        "A GEM WHEEL",
+        "$35"
+       ],
+       [
+        "HEADLIGHT",
+        "$45"
+       ]
+      ]
+     ],
+     [
+      "go"
+     ]
+    ]
+   ],
+   "no": 12
+  }
+ ]
+}

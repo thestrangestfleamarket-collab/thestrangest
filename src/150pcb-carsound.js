@@ -1,5 +1,5 @@
 // THE CARS' ENGINES: the car you drive, other players' cars and the traffic near you each hum a recorded engine, higher and louder the faster they go (CARLAMPS.src lists what drives).
-import {SHARED, THREE} from './003-shx.js';
+import {SHARED} from './003-shx.js';
 import {CARLAMPS, ONLINE, pos, RIDE, ROOMS, SFX} from './003b-systems.js';
 import {SYS, TILE} from './006-map-pre.js';
 { const M=TILE/.84, VMAX=20*M, FAR=30*TILE, N=4, V=[], list=[], last=new Map(), AT={x:0,y:0,z:0}; let tk=0;

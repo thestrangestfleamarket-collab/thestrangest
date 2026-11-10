@@ -33,6 +33,7 @@ const PICS = process.env.PICS ? require(path.resolve(process.env.PICS)) : {
     await ev(m => { SHARED.py = m * 33.9 / 30 / .84; }, m); await pg.keyboard.down('w'); await pg.waitForTimeout(3500); };
   const land = async () => { await pg.keyboard.up('w'); await ev(() => { const y = __dbg.you(); SHARED.py = SHARED.groundY(y.x, y.z) + 2; }); await pg.keyboard.press('g'); await pg.waitForTimeout(6000); };
   const dive = async () => { await river(); await ev(() => { for (const id of ['goggles', 'headlight', 'scuba']) { INV.add(id, 1); EQUIP.wear(id, true); } const [x, z] = WRECK.at, T = __dbg.cv().TILE; STORE.goTo(x + 4 * T, z + 3 * T, 'up'); }); await settle(3000); await wait(() => RIVER.swim); await pg.waitForTimeout(3000); };
+  const undress = () => ev(() => { for (const s in EQUIP.by) EQUIP.off(s); });
   // each stop: how to get there, and how to leave it
   const STOPS = {
     fs: [() => goN('FISHING & SCUBA')], mstall: [() => goN('THE MUSHROOM STALL')], bstall: [() => goN("THE BEEKEEPER'S STALL")], gstall: [() => goN('THE GEM STALL')], gate: [() => goN('CENTRAL PARK')],
@@ -44,8 +45,8 @@ const PICS = process.env.PICS ? require(path.resolve(process.env.PICS)) : {
     pier: [async () => { await river(); const p = await ev(() => { const T = __dbg.cv().TILE; return [PIER.x + 3.2 * T, PIER.zE + 1.6 * T]; }); await goW(...p); await ev(() => WIELD.set('rod')); }],
     cast: [async () => { await STOPS.pier[0](); await ev(() => { FORAGE.give('bait_cut', 5); FORAGE.ACT.fhook('bait_cut'); FISHING.enter(); }); await pg.waitForTimeout(4000); }, () => pg.keyboard.press('Escape')],
     fly60: [() => fly(60), land], fly130: [() => fly(130), land],
-    dive: [async () => { await dive(); await pg.keyboard.down(' '); await pg.waitForTimeout(6000); }, () => pg.keyboard.up(' ')],
-    deep: [async () => { await dive(); await pg.keyboard.down(' '); await pg.waitForTimeout(3000); await ev(() => { const W = __dbg.ST.water; W.dive = true; W.y = W.level + (W.floor - W.level) * .95; }); await pg.waitForTimeout(3500); await pg.keyboard.up(' '); }],
+    dive: [async () => { await dive(); await pg.keyboard.down(' '); await pg.waitForTimeout(6000); }, async () => { await pg.keyboard.up(' '); await undress(); }],
+    deep: [async () => { await dive(); await pg.keyboard.down(' '); await pg.waitForTimeout(3000); await ev(() => { const W = __dbg.ST.water; W.dive = true; W.y = W.level + (W.floor - W.level) * .95; }); await pg.waitForTimeout(3500); await pg.keyboard.up(' '); }, () => undress()],
     scope: [async () => { await goN('YOUR APARTMENT'); const p = await ev(() => { const t = __dbg.UI.things.find(t => t.name === 'TELESCOPE'), q = t.obj.getWorldPosition(t.obj.position.clone()), y = __dbg.you(), d = Math.hypot(y.x - q.x, y.z - q.z) || 1, T = __dbg.cv().TILE; return [q.x + (y.x - q.x) / d * .9 * T, q.z + (y.z - q.z) / d * .9 * T]; });
       await goW(...p); await ev(() => { __dbg.UI.dist *= .5; }); }, () => ev(() => { __dbg.UI.dist /= .5; })],
     moon: [async () => { await goN('YOUR APARTMENT'); await ev(async () => { await SCOPE.open(); for (const k in FORAGE.S.sk) FORAGE.S.sk[k] = Math.max(FORAGE.S.sk[k], 1000); }); await pg.waitForTimeout(5000);

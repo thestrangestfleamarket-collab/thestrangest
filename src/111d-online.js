@@ -58,7 +58,8 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
     else if(m.t==='rag'&&m.id&&Array.isArray(m.b)){ const o=ONLINE.others.get(m.id); if(!o||!o.rag)return; const r=o.rag; r.b=m.b.map((v,i)=>({name:r.n[i],x:[+v[0],+v[1],+v[2]],m3:qMat([+v[3],+v[4],+v[5],+v[6]]),jl:r.jl[i]||{}})); r.o=[+m.o[0],+m.o[1]]; r.hd=+m.hd||0; r.t=performance.now(); return; }
     else if(m.t==='ragoff'&&m.id){ const o=ONLINE.others.get(m.id); if(o){ o.rag=null; o.B=null; } return; }
     else if(ONLINE.hear[m.t]){ ONLINE.hear[m.t](m); return; }
-    else if(m.t==='say'&&m.text){ const o=m.id&&ONLINE.others.get(m.id); if(o){ o.say=String(m.text); o.sayT=performance.now(); o.st=style(m.st); } line(m.name||(o&&o.name)||'TENANT',m.text); if(m.id)SYS.run('said',String(m.id),String(m.text)); }
+    else if(m.t==='say'&&m.text){ const o=m.id&&ONLINE.others.get(m.id), sg=m.sg&&ONLINE.signs, text=sg?ONLINE.signs.read(m.id&&String(m.id),String(m.text),String(m.sg)):String(m.text);   // (signed: their hands sign it, you read what your SIGN LANGUAGE reaches; 146zs)
+      if(o){ o.say=text; o.sayT=performance.now(); o.st=style(m.st); } line((m.name||(o&&o.name)||'TENANT')+(sg?' (SIGNS)':''),text); if(m.id)SYS.run('said',String(m.id),text); }
     list(); };
 
   /* ---------- their bodies: one built body per look (the Walker in clothes, shod or barefoot, or a body of its own), shared by everyone wearing it ---------- */
@@ -132,9 +133,11 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
       #onlin{pointer-events:auto;width:100%;box-sizing:border-box;margin-top:4px;font:inherit;background:#0b0d13;color:inherit;border:2px solid #ffd27a;padding:4px}`;
     document.head.appendChild(css);
     EL=document.createElement('div'); EL.id='onl'; EL.hidden=true;
-    EL.innerHTML=`<div class="hd"><button id="onlwho" aria-expanded="false">ONLINE 1</button><span class="k"></span></div><div id="onllist" hidden></div><div id="onllog" aria-live="polite"></div><input id="onlin" type="text" maxlength="200" placeholder="say something · enter sends · esc closes" hidden>`;
+    EL.innerHTML=`<div class="hd"><button id="onlwho" aria-expanded="false">ONLINE 1</button><button id="onlsign" aria-pressed="false" title="sign what you say (SIGN LANGUAGE)">SIGN</button><span class="k"></span></div><div id="onllist" hidden></div><div id="onllog" aria-live="polite"></div><input id="onlin" type="text" maxlength="200" placeholder="say something · enter sends · esc closes" hidden>`;
     (document.getElementById('hchat')||document.body).appendChild(EL); EL.hidden=false;
     const who=EL.querySelector('#onlwho'), L=EL.querySelector('#onllist'), I=EL.querySelector('#onlin');
+    const sb=EL.querySelector('#onlsign'), sbs=()=>{ const on=!!(ONLINE.signs&&ONLINE.signs.on()); sb.setAttribute('aria-pressed',String(on)); sb.style.color=on?'#7fd0ff':''; }; sbs();
+    sb.onclick=()=>{ if(ONLINE.signs)ONLINE.signs.toggle(); sbs(); sb.blur(); };
     who.onclick=()=>{ L.hidden=!L.hidden; who.setAttribute('aria-expanded',String(!L.hidden)); list(); };
     L.onclick=e=>{ const b=e.target.closest('button[data-visit]'); if(!b||!ONLINE.visit)return; const o=ONLINE.others.get(b.dataset.visit); if(o)ONLINE.visit(o.id,o.name); };
     for(const ev of ['keydown','keyup'])I.addEventListener(ev,e=>{ e.stopPropagation(); if(ev!=='keydown')return;
@@ -172,7 +175,9 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
     if(ONLINE.others.size)draw(dt,now); fade(dt);
     if(ME.say&&now-ME.sayT<ONLINE.sayFor*1000){ ME.st=SP; if(VR.on){ if(ME.lab)ME.lab.show(false); tag(ME); ME.tag.visible=true; ME.tag.position.set(pos.x,SHARED.py+2.65*TILE,pos.z); fit(ME.tag); } else { if(ME.tag)ME.tag.visible=false; lab(ME); ME.lab.at(pos.x,SHARED.py+2.15*TILE,pos.z); } } else { if(ME.tag)ME.tag.visible=false; if(ME.lab)ME.lab.show(false); }; };
   const ME={mine:true,say:'',sayT:0,st:SP,tag:null,tagS:''}; ONLINE.ME=ME;
-  ONLINE.said=t=>{ t=String(t||'').trim().slice(0,200); if(!t)return; if(/^bank$/i.test(t)&&VAULT.open){ VAULT.open(); return; } send({t:'say',text:t,st:SP}); line(myName(),t); ME.say=t; ME.sayT=performance.now(); };
+  ONLINE.said=t=>{ t=String(t||'').trim().slice(0,200); if(!t)return; if(/^bank$/i.test(t)&&VAULT.open){ VAULT.open(); return; }
+    const sg=ONLINE.signs&&ONLINE.signs.mine(t); if(sg)t=sg.text;   // (the SIGN toggle: what your hands sign of it, 146zs)
+    send(sg?{t:'say',text:t,st:SP,sg:sg.k}:{t:'say',text:t,st:SP}); line(myName()+(sg?' (SIGNS)':''),t); ME.say=t; ME.sayT=performance.now(); };
   const PS=['sit','climb','hang','water','grip','fly'], pick=o=>{ const r={}; let n=0; for(const k in o){ const v=o[k]; if(n>=16)break; if(typeof v==='number'&&isFinite(v)){ r[k]=Math.round(v*100)/100; n++; } else if(typeof v==='boolean'){ r[k]=v; n++; } } return r; };
   const snap=()=>{ const s={}; for(const k of PS){ const v=st[k]; if(v&&typeof v==='object'&&(k!=='water'||v.in))s[k]=pick(v); } return s; };
   let psSent='', psT=0, psKeep=0;

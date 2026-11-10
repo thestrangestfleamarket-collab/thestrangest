@@ -29,13 +29,14 @@ Object.assign(LINES,{log:[]});
   const ON=[], MAX=3, V=new THREE.Vector3();
   const you=()=>(LOOKS.L&&LOOKS.L.name)||'';
   LINES.say=(N,k,ctx)=>{ '@later'; if(!N||!N.g)return ''; const text=POOL[k]?LINES.pick(k,Object.assign({name:you()},ctx||{})):String(k); if(!text)return '';
+    const sg=LINES.signs&&LINES.signs(N,text); if(sg)text=sg;   // (a townsperson who signs: their line as far as you read signs, no voice; 146zs)
     const old=ON.findIndex(o=>o.N===N); if(old>=0){ ON[old].el.remove(); ON.splice(old,1); } while(ON.length>=MAX){ ON[0].el.remove(); ON.shift(); }
     const el=document.createElement('div'); el.className='said2'; document.body.appendChild(el);
-    const o={N,el,text,n:0,t:0,life:Math.max(1.5,Math.min(4.5,text.length/40+.8)),voice:N.voice||(N.voice=SFX.voiceOf(N.key||N.name))}; ON.push(o);
+    const o={N,el,text,n:0,t:0,life:Math.max(1.5,Math.min(4.5,text.length/40+.8)),voice:sg?null:N.voice||(N.voice=SFX.voiceOf(N.key||N.name))}; ON.push(o);
     LINES.log.push({who:N.key||N.name,pool:POOL[k]?k:null,text,at:Date.now(),h:typeof CLOCK!=='undefined'?+CLOCK.h.toFixed(2):null}); if(LINES.log.length>100)LINES.log.shift(); return text; };
   LINES.tick=dt=>{ if(!ON.length)return; const r=renderer.domElement.getBoundingClientRect();
     for(let i=ON.length-1;i>=0;i--){ const o=ON[i], N=o.N; o.t+=dt;
-      const n=Math.min(o.text.length,Math.floor(o.t*40)); if(n>o.n){ if((n&1)===0||n===o.text.length)SFX.blip(o.voice,{at:{x:N.st.x,z:N.st.z},far:14*TILE}); o.n=n; o.el.textContent=o.text.slice(0,n); }
+      const n=Math.min(o.text.length,Math.floor(o.t*40)); if(n>o.n){ if(o.voice&&((n&1)===0||n===o.text.length))SFX.blip(o.voice,{at:{x:N.st.x,z:N.st.z},far:14*TILE}); o.n=n; o.el.textContent=o.text.slice(0,n); }
       const shown=N.g.visible&&!N.far&&N.lv===SHARED.LVL&&(!N.g.parent||N.g.parent.visible)&&LEVELS.drawn(N.g); if(!shown||o.t>o.life+o.text.length/40){ o.el.remove(); ON.splice(i,1); continue; }
       V.set(N.st.x,N.g.position.y+(N.H||1.8)*1.06,N.st.z).project(SHARED.cam); const off=V.z>1||V.x<-1.2||V.x>1.2||V.y<-1.2||V.y>1.2; o.el.hidden=off; if(off)continue;
       o.el.style.left=Math.round(r.left+(V.x+1)/2*r.width)+'px'; o.el.style.top=Math.round(r.top+(1-V.y)/2*r.height)+'px'; } };

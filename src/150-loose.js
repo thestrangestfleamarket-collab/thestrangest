@@ -175,7 +175,7 @@ import {BVH} from './137-bvh.js';
   // what the other physics extras use: the engine, the world, the fixed body, a body's loose thing, and hooks into each step (pre/post), its events (coll) and whether to keep stepping (ext)
   Object.assign(GPH,{pre:[],post:[],coll:[],ext:[],phys:()=>ready?{R,world,fb,you}:null,ofCollider:h=>byC.get(h),active:()=>act,heldNow:()=>held});
   // hanging things on a joint at their top: wind and bumps swing them, SWAYING THINGS sets how freely
-  let gt=0; const gust=dt=>{ '@later'; const k=PHYS.lv('joints'); if(!k||(gt-=dt)>0)return; gt=1.5+Math.random()*3; const w=(window.WX&&WX.now&&WX.now.wind)||.2, out=!(ROOMS&&ROOMS.cur);
+  let gt=0; const gust=dt=>{ '@later'; const k=PHYS.lv('joints'); if(!k||(gt-=dt)>0)return; gt=1.5+Math.random()*3; const w=(WX&&WX.now&&WX.now.wind)||.2, out=!(ROOMS&&ROOMS.cur);
     for(const it of act)if(it.hang&&it!==held){ const j=it.m*(out?w*1.4:.08)*k*.05*(.5+Math.random()); it.rb.wakeUp(); it.rb.applyImpulse({x:(Math.random()-.5)*j,y:0,z:(Math.random()-.5)*j},true); } };
   // standing on things: Rapier's character controller as your body here; it steps up onto low loose things (STAND ON THINGS: how high), stands on them, and shoves the rest
   const CH=.45, CR=.38, HH=CH+CR+.01; let kcc=null, kb=null, kco=null, kfoot=null;
@@ -244,7 +244,7 @@ import {BVH} from './137-bvh.js';
   window.GOODSPUT=(dx,dz)=>{ if(!held)return false; const it=held; putAt(it,new THREE.Vector3(pos.x+dx,SHARED.py,pos.z+dz)); const p=it.rb.translation(); return [p.x-pos.x,p.z-pos.z]; };
   window.GOODSAT=i=>{ const it=items.filter(q=>q.k==='v')[i]; const p=it.rb?it.rb.translation():it.t; return [p.x,p.y,p.z]; };
   window.GOODSDBG=()=>({built:ready,pre:pre.size,n:items.length,active:act.size,awake:[...act].filter(it=>!it.rb.isSleeping()).length,moved:items.filter(it=>it.moved).length,held:held&&held.name,statics:[...stat.values()].reduce((s,q)=>s+q.cs.length,0),ms:+GPH.ms.toFixed(3),hooks:!!hooks});
-  window.GOODSHIT=(k=4,r=3,n)=>{ let c=0; for(const it of act){ const p=it.rb.translation(); if(Math.hypot(p.x-pos.x,p.z-pos.z)<r*T&&(!n||rx(n).test(it.name))){ c++; it.rb.wakeUp(); it.rb.applyImpulse({x:(Math.random()-.5)*k*it.rb.mass(),y:k*.5*it.rb.mass(),z:(Math.random()-.5)*k*it.rb.mass()},true); } } return c; };
+  window.GOODSHIT=MODS.goodsHit=(k=4,r=3,n)=>{ let c=0; for(const it of act){ const p=it.rb.translation(); if(Math.hypot(p.x-pos.x,p.z-pos.z)<r*T&&(!n||rx(n).test(it.name))){ c++; it.rb.wakeUp(); it.rb.applyImpulse({x:(Math.random()-.5)*k*it.rb.mass(),y:k*.5*it.rb.mass(),z:(Math.random()-.5)*k*it.rb.mass()},true); } } return c; };
   window.LOOSE={list:(all)=>(all?items:[...act]).map(it=>({name:it.name,k:it.k,m:+it.m.toFixed(1),heavy:it.heavy,sol:it.sol.length,active:!!it.rb,awake:!!it.rb&&!it.rb.isSleeping(),at:(it.rb?[it.rb.translation()]:[it.t]).map(p=>[p.x,p.y,p.z].map(v=>+v.toFixed(3)))[0],c:it.c.map(v=>+v.toFixed(3)),h:it.h.map(v=>+v.toFixed(3)),sols:it.sol.map(([r])=>r.slice())})),
     push:(n,x,y,z)=>{ const it=nearest(q=>rx(n).test(q.name)); if(!it)return null; it.rb.wakeUp(); it.rb.applyImpulse({x:x*it.rb.mass(),y:y*it.rb.mass(),z:z*it.rb.mass()},true); return it.name; },
     nearest:n=>{ const it=nearest(q=>rx(n).test(q.name)); return it&&{name:it.name,m:it.m,heavy:it.heavy,awake:it===held||!!it.rb&&!it.rb.isSleeping(),at:(p=>[p.x,p.y,p.z])(at(it)),h:it.h,sols:it.sol.map(([r])=>r.slice()),dm:!!it.dm}; },

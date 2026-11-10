@@ -4,7 +4,7 @@ import {ARCHI, FORAGE, INV, ITEMS, ONLINE, TEXT, UI} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
-import {MAPG, SYS, TILE} from './006-map-pre.js';
+import {MAPG, MODS, SYS, TILE} from './006-map-pre.js';
 const STALLS={all:{},mine:null,RENT:15,DAYS:7,CUT:.05}; window.STALLS=STALLS;
 {
   const say=(t,c)=>SAY(t,c||'#e8e2cc'), esc=TEXT.esc, B='font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 7px;cursor:pointer';
@@ -55,7 +55,7 @@ const STALLS={all:{},mine:null,RENT:15,DAYS:7,CUT:.05}; window.STALLS=STALLS;
   SYS.add('hi',()=>{ send({op:'list'}); },'159j-stalls');
   // the market row's tables (data/world.json 'mstall' and 'ftable', laid by 111fb): each one a stall to double-click
   const hit=new THREE.MeshBasicMaterial({visible:false});
-  const make=()=>{ '@later'; if(things.length||!window.FLEA||!FLEA.made)return false; const L=FLEA.made.filter(t=>t.k==='mstall'||t.k==='ftable').slice(0,5); if(!L.length)return false;
+  const make=()=>{ '@later'; if(things.length||!MODS.flea||!MODS.flea.made)return false; const L=MODS.flea.made.filter(t=>t.k==='mstall'||t.k==='ftable').slice(0,5); if(!L.length)return false;
     L.forEach((t,i)=>{ const f=t.fix, w=Math.max(.2,f[3]-f[0]), d=Math.max(.2,f[4]-f[1]), hgt=Math.max(.2,f[5]-f[2]), m=new THREE.Mesh(new THREE.BoxGeometry(w,hgt,d),hit);
       m.position.set((f[0]+f[3])/2,f[2]+hgt/2,(f[1]+f[4])/2); (MAPG.bodega||MAPG.street||scene).add(m);
       const th={name:label('s'+(i+1),i),obj:m,reach:2.4*TILE,near:3*TILE,tall:hgt,act:()=>STALLS.open(th.sid),sid:'s'+(i+1)}; things.push(th); UI.thing(th); });

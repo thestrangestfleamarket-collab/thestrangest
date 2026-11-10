@@ -99,6 +99,7 @@ jobs:
           k arcade  'src/059[b,g-o]|arcade-torch|arcade-petri'
           k bbs     'src/146-drone|src/059a|bbs\.cjs'
           k layout 'src/094-ui|src/162d-hud|src/103-vitals|layout\.cjs'
+          k use 'src/094-ui|src/100-use|src/001-rig|src/111da-motion|tests/use\.cjs'
           k insides 'src/059-store|src/059-street|src/059h|src/059p|src/008-batch|insides\.cjs'
           k roofq 'src/148c-roofquests|src/144a-garden|roof-quests\.cjs'
           k riverq 'src/066-river|src/066b-pier|src/066ba-wreck|src/142-fishing|src/146d-gear|src/146gb-hudson|src/150q-hudtrophies|river-quests\.cjs'
@@ -116,6 +117,7 @@ jobs:
           k visit   'src/150d|src/146z|src/059a|src/111d|visit\.cjs'
           k aptfixed 'src/150a|src/150d|src/150f|src/150k|aptfixed\.cjs'
           k aptradio 'src/150fb|src/150p-cars|src/150a|src/150d|data/radio|aptradio\.cjs'
+          k sound   'src/091-sfx|src/093-|src/100-use|src/146zo-|src/150p-cars|sound\.cjs'
           k clock   'src/134b|worker/clock|worker/door|clock\.cjs'
           k westst  'src/023|src/05[89]-|src/059[e-h]|westst'
           k pfrow   'src/068a|src/059i|src/069a|data/street|data/world|tools/row-lay|pfrow'
@@ -348,6 +350,9 @@ jobs:
       - name: The screen's layout (drag the HUD and windows, saved, back after a reload)
         if: contains(steps.f.outputs.run, ' layout')
         run: node tests/layout.cjs dist/market.html
+      - name: Use (E uses what is in reach, no walk; a double click walks up, stops dead, no slide)
+        if: contains(steps.f.outputs.run, ' use')
+        run: node tests/use.cjs
       - name: The computer's BBS (dial-in, order, drone delivery, drone view)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' bbs')
@@ -388,6 +393,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' aptradio')
         run: node tests/aptradio.cjs dist/market.html
+      - name: The sound (on by default, one audio context and volume, every effect plays)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' sound')
+        run: node tests/sound.cjs dist/market.html
       - name: The clock's buttons (set, pause, run, real time) reach the server
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' clock')

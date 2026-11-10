@@ -189,7 +189,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     const live=THINGS.filter(th=>th.obj.visible&&(!th.obj.parent||th.obj.parent.visible)&&LEVELS.drawn(th.obj)); const hits=ray.intersectObjects(live.map(th=>th.obj),true);
     let best=null, bd=1e9; if(hits.length){ let o=hits[0].object; const th=live.find(th=>{ let q=o; while(q){ if(q===th.obj)return true; q=q.parent; } return false; }); if(th){ best=th; bd=hits[0].distance; } }
     const u=USE.pick(ray); if(u&&u.d<bd)best=u.th;
-    if(best){ best.started=false; goal=best; return; }
+    if(best){ walkUp(best); return; }
     if(RIVER&&RIVER.pick&&!VIT.dead&&RIVER.pick(ray.ray,pos))return;
     goal=null; });
   UI.nearThing=()=>{ if(ED.on||UI.freeCam||MAPED.on||WE.on||LAND.on)return null; const hx=Math.sin(SHARED.heading), hz=Math.cos(SHARED.heading), Wt=st.water, py=Wt&&Wt.in&&Wt.level!=null?Wt.y*ZU:SHARED.py; let best=null, bs=1e9;   // a swimmer's own height (a sunken chest is reached by diving to it)
@@ -210,14 +210,26 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     const k=L.map(c=>c.name).join('|'); if(k!==pickKey){ pickKey=k; UI.pickI=0; } if(UI.pickI>=L.length)UI.pickI=0; return L; };
   let pickT=0; UI.pickStep=d=>{ const L=UI.choices(); if(L.length<2)return false; const t=performance.now(); if(t-pickT<160)return true; pickT=t; UI.pickI=(UI.pickI+(d>0?1:L.length-1))%L.length; if(PROMPT)PROMPT.tick(); return true; };
   UI.useKey=()=>{ if(UI.menuOpen||UI.gamewin||SHARED.covered||TALK.on)return; if(RIDE.on&&WIELD.useHeld&&WIELD.useHeld())return; const L=UI.choices(), c=L[UI.pickI];
-    if(!c){ if(WIELD.useHeld)WIELD.useHeld(); return; } if(c.held){ WIELD.useHeld(); return; } const th=c.sub?{...c.th,name:c.sub.name,act:c.sub.act}:c.th; th.started=false; goal=th; };
-  UI.useNear=()=>{ const best=UI.nearThing(); if(!best)return false; best.started=false; goal=best; return true; };
+    if(!c){ if(WIELD.useHeld)WIELD.useHeld(); return; } if(c.held){ WIELD.useHeld(); return; } useNow(c.sub?{...c.th,name:c.sub.name,act:c.sub.act}:c.th); };
+  UI.useNear=()=>{ const best=UI.nearThing(); if(!best)return false; useNow(best); return true; };
   UI.go=d=>{ UI.clickGo=true; UI.clickRun=d>6; };
   const GAITR=[0,.5,1]; UI.gaitRun=()=>VIT.tired?0:GAITR[SHARED.gait||0];   // walk or run (owner, 9 Nov 2026: "get rid of the jog and only use run (shift once)")
   UI.runTick=()=>{ st.jog=(SHARED.gait||0)===1&&!VIT.tired; if(!UI.clickGo){ if(!UI.menuOpen)st.runTarget=UI.gaitRun(); return; } if(!SHARED.target){ UI.clickGo=false; st.runTarget=UI.gaitRun(); return; } st.runTarget=Math.max(UI.gaitRun(),!VIT.tired&&UI.clickRun&&Math.hypot(SHARED.target.x-pos.x,SHARED.target.z-pos.z)>1.6?1:0); };
-  UI.goTick=()=>{ if(!goal)return; const p=thAt(goal), d=Math.max(0,Math.hypot(p.x-pos.x,p.z-pos.z)-(goal.r||0)), reach=goal.pick?Math.min(goal.reach||1,.5*TILE):goal.reach||1;
-    const stuck=!SHARED.target&&goal.started; if(d>reach&&!(stuck&&d<(goal.near||0))){ if(stuck)goal=null; else { const k=(d-reach*0.8)/d; SHARED.target=new THREE.Vector3(pos.x+(p.x-pos.x)*k,SHARED.py,pos.z+(p.z-pos.z)*k); if(!goal.started)UI.go(d); goal.started=true; } return; }
-    SHARED.target=null; SHARED.heading=Math.atan2(p.x-pos.x,p.z-pos.z); const g=goal; goal=null; if(VIT.dead&&!g.ghost)return say('YOU ARE A GHOST.',p.clone().setY(p.y+(g.tall||1.6))); { const why=g.can&&g.can(); if(why&&why!==true)return say(String(why).toUpperCase(),p.clone().setY(p.y+(g.tall||1.6))); } if(g.pick&&!st.sit&&!st.ride&&!(st.water&&st.water.in)){ RIG.act(st,{pick:((g.pick===true?p.y:SHARED.py+g.pick)-SHARED.py)/W3.group.scale.y,z:d/W3.group.scale.x}); setTimeout(()=>g.act(),330); } else { if(!g.npc&&!st.sit&&!st.ride&&!(st.water&&st.water.in)&&!st.move)MOTION.play(/DOOR|GATE|HATCH|FRIDGE|CABINET|CHEST|LOCKER|CLOSET/.test(String(g.name||'').toUpperCase())?'pf_Open':'pf_Use'); g.act(); } if(g.npc&&typeof LINES!=='undefined'){ if(!TALK.on)LINES.say(g.npc,'greet'); } else say(g.name,p.clone().setY(p.y+(g.tall||1.6))); };
+  // E uses what is in reach from where you stand, never a walk; a double click walks up first, then the same (owner, 10 Nov 2026: "redo it completely")
+  const gap=th=>{ const p=thAt(th); return Math.max(0,Math.hypot(p.x-pos.x,p.z-pos.z)-(th.r||0)); }, reachOf=th=>th.pick?Math.min(th.reach||1,.5*TILE):th.reach||1, nearOf=th=>th.near||reachOf(th)+1.2*TILE;
+  const halt=()=>{ goal=null; SHARED.target=null; UI.clickGo=false; st.target=0; st.w=0; st.mv=st.mvw=0; st.stop=null; };   // stopped dead: no stride carried into what comes next
+  const useNow=g=>{ const p=thAt(g), d=gap(g), up=p.clone().setY(p.y+(g.tall||1.6)); halt(); SHARED.heading=Math.atan2(p.x-pos.x,p.z-pos.z);
+    if(VIT.dead&&!g.ghost)return say('YOU ARE A GHOST.',up); { const why=g.can&&g.can(); if(why&&why!==true)return say(String(why).toUpperCase(),up); }
+    const free=!st.sit&&!st.ride&&!(st.water&&st.water.in);
+    if(g.pick&&free){ RIG.act(st,{pick:((g.pick===true?p.y:SHARED.py+g.pick)-SHARED.py)/W3.group.scale.y,z:d/W3.group.scale.x}); setTimeout(()=>g.act(),330); }
+    else { if(!g.npc&&free&&!st.move)MOTION.play(/DOOR|GATE|HATCH|FRIDGE|CABINET|CHEST|LOCKER|CLOSET/.test(String(g.name||'').toUpperCase())?'pf_Open':'pf_Use'); g.act(); }
+    if(g.npc&&typeof LINES!=='undefined'){ if(!TALK.on)LINES.say(g.npc,'greet'); } else say(g.name,up); };
+  const walkUp=UI.walkUp=th=>{ if(gap(th)<=reachOf(th))return useNow(th); goal={th}; };
+  const WALKK=['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'];
+  UI.goTick=()=>{ if(!goal)return; const g=goal.th; if(!g.obj.visible||WALKK.some(k=>keys.has(k))||VIT.out>0){ goal=null; return; }   // walking away calls it off
+    const d=gap(g); if(d<=reachOf(g))return useNow(g);
+    if(goal.on&&!SHARED.target){ if(d<=nearOf(g))useNow(g); else goal=null; return; }   // stopped short (a counter, a wall): use it from there if it is in reach at all
+    const p=thAt(g), k=(d-reachOf(g)*.8)/Math.max(d,1e-6); SHARED.target=new THREE.Vector3(pos.x+(p.x-pos.x)*k,SHARED.py,pos.z+(p.z-pos.z)*k); if(!goal.on)UI.go(d); goal.on=true; };
   const css=document.createElement('style'); css.textContent=`
   #mode{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(124px + var(--fy,0px) + env(safe-area-inset-bottom,0px));font:12px var(--pixel);color:var(--key);background:var(--panel);border:2px solid var(--line);padding:6px 10px;z-index:15}
   #mode[hidden],#said[hidden]{display:none}

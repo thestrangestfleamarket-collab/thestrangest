@@ -1,13 +1,25 @@
-// THE SQUIRREL'S TOWER: GTOWER builds the tall round tower beside the golems' cave.
+// THE WATCHTOWERS: GTOWER builds the tall round towers, the squirrel's beside the golems' cave and five more where world.json puts them (parkPlaces tower2 to tower6); GTOWER.at says where each stands.
 import {SHARED, THREE} from './003-shx.js';
 import {BATCH, PARK} from './003b-systems.js';
-import {FIX, LEVEL, MAPG, SOL, SYS, TILE} from './006-map-pre.js';
+import {scene} from './004-main.js';
+import {FIX, lamps, LEVEL, MAPG, SOL, SYS, TILE} from './006-map-pre.js';
+import {FLAME} from './007-fire.js';
 import {OBJ} from './008-batch.js';
 import {GCAVE} from './060-cave.js';
 const GTOWER={}; window.GTOWER=GTOWER;
 { const H=173, PH=4, MH=8, TH=212, TC=58, R=1.5, RB=R+.1, RI=R-.06, TA=-Math.PI*.75, TD=R+.22, TR=.46;
   GTOWER.ring=()=>{ const S=GCAVE.S; if(!S)return null; const t=S.tw, P=PARK; return {cx:t.x,cy:t.y,R,RI,TA,X:x=>SHARED.BOD.XS(x+P.ox),Z:y=>SHARED.BOD.ZS(y+P.oy)}; };
+  GTOWER.IDS=['tower','tower2','tower3','tower4','tower5','tower6'];
+  GTOWER.at=id=>{ const t=id==='tower'?GCAVE.S&&GCAVE.S.tw:(LEVEL.parkPlaces||{})[id]; if(!t)return null; return {x:SHARED.BOD.XS(t.x+PARK.ox),z:SHARED.BOD.ZS(t.y+PARK.oy),tx:t.x,ty:t.y,r:RI,top:SHARED.BOD.YS(H)}; };   // a watchtower's middle (world and park tiles), its roof's radius in tiles and its roof's height
   GTOWER.site=()=>{ const S=GCAVE.S; if(!S)return null; const P=PARK, t=S.tw; return {x:SHARED.BOD.XS(t.x+P.ox),z:SHARED.BOD.ZS(t.y+P.oy),w:2*RB*TILE,d:2*RB*TILE,r:RI*TILE,top:SHARED.BOD.YS(H)}; };
+  // a torch on every roof (owner, 10 Nov 2026: "add a torch on each roof"), lit by night with the park's lamps
+  const torch=(cx,cy)=>{ const X=x=>SHARED.BOD.XS(x+PARK.ox), Z=y=>SHARED.BOD.ZS(y+PARK.oy), Y=SHARED.BOD.YS, T=TILE, a=TA+Math.PI, r=RI*.72, x=X(cx+Math.cos(a)*r), z=Z(cy+Math.sin(a)*r), y0=Y(H), P=[], Cc=[];
+    const put=(g,c,y)=>{ g=g.toNonIndexed(); g.translate(x,y,z); const p=g.attributes.position; for(let i=0;i<p.count;i++){ P.push(p.getX(i),p.getY(i),p.getZ(i)); Cc.push(...c); } };
+    put(new THREE.CylinderGeometry(.03*T,.04*T,Y(30),6),[.36,.27,.18],y0+Y(15)); put(new THREE.CylinderGeometry(.06*T,.045*T,Y(7),6),[.1,.08,.07],y0+Y(32));
+    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(Cc,3)); g.computeVertexNormals();
+    const me=new THREE.Mesh(g,new THREE.MeshLambertMaterial({vertexColors:true,flatShading:true})); me.castShadow=true; me.name='tower torch'; MAPG.parkwall.add(me);
+    const L=new THREE.PointLight(new THREE.Color(1,.64,.32),60,10*T,1.6); L.position.set(x,y0+Y(40),z); L.userData.i0=60; L.userData.torch=1; L.intensity=0; (PARK.hoods||(PARK.hoods=[])).push(L); scene.add(L); lamps.push(L);
+    FLAME.add({kind:'torch',name:'tower torch',x,y:y0+Y(36),z,w:.3*T,h:Y(12),embers:.6,smoke:1,sk:.6,seed:cx*7+cy*13,parent:MAPG.parkwall}); GTOWER.torches=(GTOWER.torches||0)+1; };
   const build=(t=GCAVE.S.tw)=>{ const P=PARK, X=x=>SHARED.BOD.XS(x+P.ox), Z=y=>SHARED.BOD.ZS(y+P.oy), Y=SHARED.BOD.YS, {bq,faceTex,C}=SHARED.BOD, K=SHARED.BOD.STOREK.keep, sh=SHARED.BOD.K.sh, cx=t.x, cy=t.y;
     const KB={x0:426,x1:435.5,y0:-86,y1:-77,h:520}, lum=c=>c[0]+c[1]+c[2], TRIM=[184,174,150], TRD=[150,140,120];
     const paint=(face,u,z,cap=520)=>{ let best=null; for(let k=0;k<3;k++){ const U=(u*3+k)/24, Zb=z*3+k, nx=face==='l'?-1:face==='r'?1:0, ny=face==='f'?1:face==='b'?-1:0;
@@ -44,7 +56,7 @@ const GTOWER={}; window.GTOWER=GTOWER;
     BATCH.cast=true; BATCH.build((k,map,emap)=>new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide})); BATCH.cast=false;
     const Ms=BATCH.meshes||{}; BATCH.meshes={}; for(const me of Object.values(Ms)){ MAPG.parkwall.add(me); GTOWER.me=me; GTOWER.tris=me.geometry.attributes.position.count/3; }
     const sol=(a0,b0,a1,b1,h)=>{ SOL.up.push([X(a0),Z(b0),X(a1),Z(b1)]); FIX.up.push([X(a0),Z(b0),0,X(a1),Z(b1),Y(h)]); };
-    const q=RB*.72; sol(cx-q,cy-RB,cx+q,cy+RB,H+PH); sol(cx-RB,cy-q,cx+RB,cy+q,H+PH); sol(tx-TR,ty-TR,tx+TR,ty+TR,TH); GTOWER.ready=true; };
-  const go=()=>{ if(!SYS.started||typeof GCAVE==='undefined'||!GCAVE.S||!MAPG.parkwall)return setTimeout(go,400); setTimeout(()=>{ try{ build(); const PP=LEVEL.parkPlaces||{}; for(const k of ['tower2','tower3'])if(PP[k])build({x:PP[k].x,y:PP[k].y}); }catch(e){ console.warn('TOWER: not built',e); } },600); };   // more towers stand where world.json puts them (the park's borders)
+    const q=RB*.72; sol(cx-q,cy-RB,cx+q,cy+RB,H+PH); sol(cx-RB,cy-q,cx+RB,cy+q,H+PH); sol(tx-TR,ty-TR,tx+TR,ty+TR,TH); torch(cx,cy); GTOWER.ready=true; };
+  const go=()=>{ if(!SYS.started||typeof GCAVE==='undefined'||!GCAVE.S||!MAPG.parkwall)return setTimeout(go,400); setTimeout(()=>{ try{ build(); const PP=LEVEL.parkPlaces||{}; for(const k of GTOWER.IDS.slice(1))if(PP[k])build({x:PP[k].x,y:PP[k].y}); }catch(e){ console.warn('TOWER: not built',e); } },600); };   // more towers stand where world.json puts them (owner, 10 Nov 2026: six, near the park's dangers)
   go(); }
 export {GTOWER};

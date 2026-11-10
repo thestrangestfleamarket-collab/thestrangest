@@ -30,7 +30,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(r1b.styled && r1b.mine && r1b.noName && r1b.you && r1b.stay && r1b.sayFor === 7 && r1b.logged, 'words over heads: ROSA\'s in her font, colour and size; your own over your head with no name; YOUR WORDS in the YOU window and WORDS STAY in CHAT (' + JSON.stringify(r1b) + ')');
     const x0 = await pg.evaluate(() => ONLINE.others.get('a').fig.g.position.x);
     await pg.evaluate(() => new Promise(res => { const P = __dbg.you(); let i = 0; const t = setInterval(() => { i++; ONLINE.feed({ t: 'mv', id: 'a', at: [P.x + 1.5 + i * .3, P.z, SHARED.py, Math.PI / 2, SHARED.LVL, ''] }); if (i === 6) { clearInterval(t); res(); } }, 160); }));
-    await pg.waitForTimeout(1500);
+    await pg.waitForFunction(x0 => ONLINE.others.get('a').fig.g.position.x > x0 + 1.5, x0, { timeout: 8000, polling: 250 }).catch(() => {});   // (a slow runner draws few frames)
     const r2 = await pg.evaluate(() => { const o = ONLINE.others.get('a'); return { x: o.fig.g.position.x, walk: o.S.target }; });
     ok(r2.x > x0 + 1.5, 'ROSA walks where the server sends her (' + x0.toFixed(2) + ' -> ' + r2.x.toFixed(2) + ')');
     const w = await pg.evaluate(() => { const sent = []; const s0 = ONLINE.send; ONLINE.send = m => sent.push(m); ONLINE.feed({ t: 'world', k: 'bin:T', v: 3 }); ONLINE.add('bin:T', 2); ONLINE.put('lit:T', 1); ONLINE.send = s0; return { v: ONLINE.world['bin:T'], l: ONLINE.world['lit:T'], sent }; });

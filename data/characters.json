@@ -4180,10 +4180,18 @@
   "name": "THE SCUBA DIVER",
   "trade": {
    "sells": [
-    "headlight",
     "g_fishfood"
    ],
-   "line": "A good light for down below. I buy every stone you bring me.",
+   "line": "Fish food for the tanks."
+  }
+ },
+ "rock_golem": {
+  "name": "THE ROCK GOLEM",
+  "trade": {
+   "sells": [
+    "headlight"
+   ],
+   "line": "Stones? We buy stones. Every one you bring. And a good light for the dark.",
    "buys": [
     "gems"
    ],

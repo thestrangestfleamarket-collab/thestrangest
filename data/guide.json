@@ -119,7 +119,7 @@
     "Choose WHAT DO YOU SELL? to open the shop.",
     "Click BUY (or 5 to buy five). Some things are RENT or REFILL.",
     "Merchants who buy things show a BUYS list. Click SELL, or ALL to sell all of one kind.",
-    "Who buys what: the Mushroom Seller mushrooms; the Tomato vegetables, fruit and flowers; the Fisherman in Waders fish; the Park Ranger butterflies; the Forest Ranger birds and feathers; the Village Gardener honey and wax; the Professor mended books and paintings; the Samurai Warrior swords; the Scuba Diver gems and cut gems.",
+    "Who buys what: the Mushroom Seller mushrooms; the Tomato vegetables, fruit and flowers; the Fisherman in Waders fish; the Park Ranger butterflies; the Forest Ranger birds and feathers; the Village Gardener honey and wax; the Professor mended books and paintings; the Samurai Warrior swords; the Rock Golem gems.",
     "Merchants teach what they know: LESSON raises a skill for a fee.",
     "To look closely at something, press [5] or LOOK in the pack. Drag to turn it, wheel to zoom."
    ]
@@ -140,7 +140,7 @@
       "THE MUSHROOM SHOP (the Mushroom Seller): buys mushrooms. Teaches FORAGING and MYCOLOGY.",
       "THE BATH HOUSE: ghosts come back to life in its steam.",
       "THE BODEGA: pay yourself at the register.",
-      "THE GEM SHOP (the Scuba Diver): headlight. Buys gems. Teaches GEMS.",
+      "THE GEM STALL (the Rock Golem, at the park wall east of the gate): headlight. Buys gems. Teaches GEMS.",
       "THE ARMOURY (the Samurai Warrior): four swords. Buys swords. Teaches SWORDSMANSHIP.",
       "THE SKATE SHOP: skateboard, hover boards, go-kart."
      ]

@@ -63,9 +63,6 @@ const SHOTS = process.argv[3];
     await pg.waitForTimeout(1400); await shot('5-swing'); await pg.waitForTimeout(400);
     await hold(' ', 1500); await wait(() => !RIDE.on && !!(__dbg.ST.water && __dbg.ST.water.in), 60000); m = await me();
     ok(!m.ride && m.swim, 'you let go and drop into the pool (' + JSON.stringify(m) + ')');
-    // the look by night
-    await ev(() => __dbg.CLOCK.set(21.5));
-    await at(F.C[0] + F.R + 6, F.C[1] + 1, F.C[0] - 6, F.C[1], { pitch: -.1 }); await pg.waitForTimeout(8000); await shot('6-night');
   }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 4).join(' | ') : ''));
   await b.close(); console.log(fails.length ? fails.length + ' FAILED' : 'all ok'); process.exit(fails.length ? 1 : 0);

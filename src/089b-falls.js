@@ -54,7 +54,8 @@ window.FALLS=FALLS;
   // the park's own hills (089-pond) and lawn leave this ground to the falls' mesh
   (P.ownGround=P.ownGround||[]).push(inFP);
   // a ledge too high to step up stops you; one you walk off, you drop from (075 collide)
-  (MODS.ledges=MODS.ledges||[]).push({lv:'up',tooHigh:(x,z,py)=>{ const a=mx(x), b=my(z); if(!inFP(a,b))return false; const w=st.water&&st.water.in?(WL*M+G0)+.4*M:py; return shape(a,b,h0(a,b)/M,true)*M-w>STEP*M; }});
+  (MODS.ledges=MODS.ledges||[]).push({lv:'up',tooHigh:(x,z,py)=>{ const a=mx(x), b=my(z); if(!inFP(a,b))return false; const w=st.water&&st.water.in?(WL*M+G0)+.4*M:py; const wh=(u,v)=>shape(u,v,h0(u,v)/M,true), h=wh(a,b); if(h*M-w>STEP*M)return true; if(h*M-w<.15*M)return false;
+    return Math.max(Math.abs(wh(a+.5,b)-wh(a-.5,b)),Math.abs(wh(a,b+.5)-wh(a,b-.5)))/.84>1.45; }});   // (and ground steeper than about 55 degrees, however small the step: the stairs are 37)
   // the pool: you swim and dive in it; fish and the rod know it as still water (MODS.hill under the water)
   const wet=(x,y)=>cutD(x,y)<0&&drawH(x,y)<WL-.05;
   (MODS.waters=MODS.waters||[]).push({feed:(st,pos,dt,go,keys)=>{ if(SHARED.LVL!=='up')return false; const a=mx(pos.x), b=my(pos.z); if(!inFP(a,b)||!wet(a,b))return false;

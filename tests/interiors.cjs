@@ -46,8 +46,8 @@ const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv
     await pg.evaluate(()=>{ INV.add('ticket',1); STORE.enter('theatre',true); }); const inT=await U(()=>STORE.inside.theatre&&STORE.inside.theatre.done&&!(window.FADE&&FADE.busy),180000).then(()=>true).catch(()=>false);
     await U(()=>WORKERSDBG().some(w=>w.k==='w_raccoon'&&w.made),60000).catch(()=>{});
     rec('theatre: a ticket lets you in, THE RACCOON is made',inT&&await pg.evaluate(()=>WORKERSDBG().some(w=>w.k==='w_raccoon'&&w.made)));
-    const fp=await pg.evaluate(()=>{ const R=STORE.rooms.find(r=>r.id==='theatre'), seats=__dbg.UI.things.filter(t=>/^(AN? (ARMCHAIR|CAR SEAT|BARBER CHAIR|OFFICE CHAIR|LAWN CHAIR|BEANBAG|RECLINER|COUCH)|THE BATHTUB)$/.test(t.name)); return {listed:(R.seats||[]).length,sit:seats.length,snack:!!(R.spots||{}).CONCESSIONS,fox:!!(CINEMA.dbg&&CINEMA.dbg().fox),box:!!(CINEMA.boxG&&CINEMA.boxG())}; });
-    rec('theatre: the seats are listed for moviegoers and can be sat in, the snack bar has its keeper\'s spot, the fox stands in the box office '+JSON.stringify(fp),fp.listed>=30&&fp.sit>=28&&fp.snack&&fp.box);
+    const fp=await pg.evaluate(()=>{ const R=STORE.rooms.find(r=>r.id==='theatre'), seats=__dbg.UI.things.filter(t=>t.name==='A ROW OF SEATS'); return {listed:(R.seats||[]).length,sit:seats.length,snack:!!(R.spots||{}).CONCESSIONS,fox:!!(CINEMA.dbg&&CINEMA.dbg().fox),box:!!(CINEMA.boxG&&CINEMA.boxG())}; });
+    rec('theatre: the seats are listed for moviegoers and can be sat in, the snack bar has its keeper\'s spot, the fox stands in the box office '+JSON.stringify(fp),fp.listed>=60&&fp.sit===10&&fp.snack&&fp.box);
     if(OUT)await pg.screenshot({path:OUT+'/theatre.png'}).catch(()=>{});
     await pg.evaluate(()=>STORE.exit('theatre')); await pg.waitForTimeout(3000); }
   /* ---------- THE ART MUSEUM ---------- */

@@ -1,4 +1,4 @@
-// THE MOVIE THEATRE, FURNISHED as THE FLEA PIT (owner, 10 Nov 2026): a partition with a doorway between the lobby and the seats, rows of seats no two alike (armchairs, car seats, barber chairs, a couch, a bathtub), the snack bar in an old ice cream truck run by THE RACCOON, a dead claw machine, a lost-and-found bin; watching a film from a seat rests you; where the doorman, the usher and the moviegoers go.
+// THE MOVIE THEATRE, FURNISHED as THE FLEA PIT (owner, 10 Nov 2026): a partition with a doorway between the lobby and the seats, rows of red movie seats (owner, 10 Nov 2026: regular movie seats), the snack bar in an old ice cream truck run by THE RACCOON, a dead claw machine, a lost-and-found bin; watching a film from a seat rests you; where the doorman, the usher and the moviegoers go.
 import {SHARED, THREE} from './003-shx.js';
 import {CINEMA, FORAGE, st, USE, VIT, WORKERS} from './003b-systems.js';
 import {SAY} from './003d-say.js';
@@ -13,17 +13,15 @@ const THEATRE={}; window.THEATRE=THEATRE;
   const at0=(TB,x,y)=>{ const q=TB?TB.pt(x,y):[x,y]; return [BOD.X(q[0]),BOD.Z(q[1])]; };
   const frameOf=(B,TB)=>IKIT.frame({x0:B.x0+.1,y0:B.y0+.1,x1:B.x1-.1,y1:B.y1-.1,id:'theatre'},(x,y)=>at0(TB,x,y));
   // the room in metres (u from the screen wall, v from the back side to the street side): the partition, the doorway in it, the rows, the truck; every seat with its kind, its middle and its width
-  const KINDS=['armchair','car seat','barber chair','office chair','lawn chair','armchair','beanbag','recliner'];
-  const geo=(B,F)=>{ const U=x=>(x-B.x0-.1)*TM, V=y=>(y-B.y0-.1)*TM, Wm=F.W, Dm=F.D, cy=V((B.y0+B.y1)/2), up=U(B.x1-5.5), seats=[];
+  // the seats: regular movie seats, red, folding, in a row on metal standards with shared armrests; each side of the aisle a row of them (a block: its places' middles)
+  const SW=.58, SITH=.46;
+  const geo=(B,F)=>{ const U=x=>(x-B.x0-.1)*TM, V=y=>(y-B.y0-.1)*TM, Wm=F.W, Dm=F.D, cy=V((B.y0+B.y1)/2), up=U(B.x1-5.5), rows=[];
     for(let i=0;i<5;i++){ const uc=U(B.x0+4.6+i*1.65);
-      for(const [a,b] of [[.7,cy-.75],[cy+.75,Dm-.7]]){ const w=(b-a)/3; for(let s=0;s<3;s++){ const vc=a+(s+.5)*w, k=(i*7+s*3+(a<cy?0:5))%KINDS.length; seats.push({uc,vc,w,kind:KINDS[k],row:i}); } } }
-    { const last=seats.filter(s=>s.row===4), L=last.filter(s=>s.vc<cy), Rr=last.filter(s=>s.vc>cy);   // the back row: a couch over two places on one side, a bathtub at the end of the other
-      L[0].kind='couch'; L[0].vc=(L[0].vc+L[1].vc)/2; L[0].w*=2; seats.splice(seats.indexOf(L[1]),1); Rr[2].kind='bathtub'; }
-    return {U,V,Wm,Dm,cy,up,seats,truck:{u0:Wm-2.3,v0:cy-2.7,v1:cy+2.7},door:{v0:cy-1,v1:cy+1}}; };
-  const SITH={armchair:.48,'car seat':.5,'barber chair':.62,'office chair':.5,'lawn chair':.42,beanbag:.32,recliner:.5,couch:.46,bathtub:.4};
+      for(const [a,b] of [[.7,cy-.75],[cy+.75,Dm-.7]]){ const n=Math.floor((b-a)/SW), v0=(a+b)/2-n*SW/2; rows.push({uc,v0,n,vs:Array.from({length:n},(_,k)=>v0+(k+.5)*SW)}); } }
+    return {U,V,Wm,Dm,cy,up,rows,truck:{u0:Wm-2.3,v0:cy-2.7,v1:cy+2.7},door:{v0:cy-1,v1:cy+1}}; };
   const place=R=>{ '@later'; const {B,TB}=STORE.theatreFrame, F=frameOf(B,TB), G=geo(B,F), sp=(u,v,du,dv,h)=>{ const p=F.pw(u,v); return {x:p[0],z:p[1],hd:F.hd(du,dv),...(h!=null?{y:h*IKIT.MW}:{})}; };
     R.spots={'DOORMAN, TICKETS WITH THE TICKET FOX':sp(G.Wm-3.4,G.Dm-1.1,0,-1),USHER:sp(G.up+.6,G.cy+1.4,-1,0),CONCESSIONS:sp(G.Wm-1.2,G.cy,-1,0)};
-    const S=[]; for(const s of G.seats){ if(s.kind==='couch')for(const o of [-.7,.7])S.push(sp(s.uc,s.vc+o,-1,0,SITH.couch)); else S.push(sp(s.uc,s.vc,-1,0,SITH[s.kind])); }
+    const S=[]; for(const r of G.rows)for(const v of r.vs)S.push(sp(r.uc,v,-1,0,SITH));
     R.seats=THEATRE.places=[...S,sp(G.truck.u0-.9,G.cy-.6,1,0),sp(G.truck.u0-.9,G.cy+.6,1,0)]; };
   { let done=false; const go=()=>{ if(done)return; const R=room(); if(R&&STORE.theatreFrame){ place(R); done=true; } }; go(); SYS.add('life',go,'146zf-theatre'); }
   // a film watched from a seat rests you
@@ -42,21 +40,12 @@ const THEATRE={}; window.THEATRE=THEATRE;
       const P=['#c8463c','#3c6ea8','#d8b040','#6a9a48','#a050a0','#e07a30'];
       for(const [v,side,k] of [[1.2,1,0],[2.6,1,1],[Dm-1.4,1,2],[Dm-2.8,1,3],[1.6,-1,4],[Dm-1.8,-1,5]]){ const c=P[k], hh=1.0+R()*.3;
         pic(side>0?u1+.012:u0-.012,v,1.4,hh*.7,hh,side,0,IKIT.tex(54,76,(g,w,h)=>{ g.fillStyle=c; g.fillRect(0,0,w,h); g.fillStyle='rgba(255,250,235,.25)'; g.fillRect(0,0,w,h); g.fillStyle='#16110d'; g.fillRect(6,6,w-12,10); g.fillStyle='rgba(20,16,14,.4)'; g.beginPath(); g.arc(w/2,h*.55,14,0,7); g.fill(); g.fillStyle='rgba(240,232,210,.9)'; g.fillRect(8,h-14,w-16,4); if(k%2){ g.fillStyle='#3d4b43'; g.beginPath(); g.moveTo(w,h*.6); g.lineTo(w*.55,h); g.lineTo(w,h); g.fill(); } })); } }
-    // the seats, no two alike, each one you can sit in
-    const SEAT={
-      armchair:(s,c)=>{ const u=s.uc, v=s.vc, hw=.42; box(u-.4,v-hw,u+.4,v+hw,.12,.4,c); box(u-.38,v-hw+.12,u+.3,v+hw-.12,.4,.5,c); box(u+.28,v-hw,u+.46,v+hw,.12,1.0,c); for(const o of [-1,1])box(u-.4,v+o*hw-(o>0?.14:0),u+.4,v+o*hw+(o<0?.14:0),.12,.68,c); for(const a of [-1,1])for(const b of [-1,1])box(u+a*.34-.03,v+b*.34-.03,u+a*.34+.03,v+b*.34+.03,0,.12,C.wood); },
-      'car seat':(s,c)=>{ const u=s.uc, v=s.vc; box(u-.4,v-.36,u+.4,v+.36,0,.3,0x6a6058); box(u-.36,v-.3,u+.32,v+.3,.3,.5,0x1e1c1c); box(u+.24,v-.3,u+.42,v+.3,.4,1.1,0x1e1c1c); box(u+.28,v-.16,u+.42,v+.16,1.1,1.32,0x1e1c1c); for(const o of [-.3,.3])box(u-.36,v+o-.03,u+.32,v+o+.03,.5,.6,0x2a2826); box(u-.2,v-.05,u+.2,v+.05,.3,.32,C.chrome); },
-      'barber chair':(s,c)=>{ const u=s.uc, v=s.vc; cyl(u,v,.28,0,.06,C.chrome); cyl(u,v,.08,.06,.45,C.chrome); box(u-.36,v-.3,u+.3,v+.3,.45,.62,0xa8242c); box(u+.24,v-.28,u+.4,v+.28,.62,1.3,0xa8242c); box(u+.3,v-.14,u+.42,v+.14,1.3,1.48,0x1e1c1c); for(const o of [-.34,.34])box(u-.3,v+o-.04,u+.3,v+o+.04,.78,.84,C.chrome); box(u-.62,v-.2,u-.48,v+.2,.12,.18,C.chrome); },
-      'office chair':(s,c)=>{ const u=s.uc, v=s.vc; for(const a of [0,1,2,3,4]){ const t=a/5*Math.PI*2; box(u+Math.cos(t)*.28-.04,v+Math.sin(t)*.28-.04,u+Math.cos(t)*.28+.04,v+Math.sin(t)*.28+.04,0,.06,C.dark); } cyl(u,v,.04,.06,.42,C.steel); box(u-.3,v-.28,u+.26,v+.28,.42,.5,0x3a4a6a); box(u+.22,v-.24,u+.3,v+.24,.5,1.05,0x3a4a6a); },
-      'lawn chair':(s,c)=>{ const u=s.uc, v=s.vc; for(const o of [-.3,.3]){ box(u-.36,v+o-.02,u+.36,v+o+.02,0,.03,C.steel); box(u+.3,v+o-.02,u+.34,v+o+.02,0,.9,C.steel); box(u-.36,v+o-.02,u-.32,v+o+.02,0,.42,C.steel); } for(let k=0;k<5;k++)box(u-.32+k*.12,v-.3,u-.22+k*.12,v+.3,.4,.42,k%2?0x2a8a6a:C.white); for(let k=0;k<5;k++)box(u+.29,v-.3,u+.33,v+.3,.45+k*.1,.53+k*.1,k%2?0x2a8a6a:C.white); },
-      beanbag:(s,c)=>{ ball(s.uc,s.vc,.22,.45,c,.55); ball(s.uc+.25,s.vc,.4,.3,c,.9); },
-      recliner:(s,c)=>{ const u=s.uc, v=s.vc; box(u-.42,v-.42,u+.44,v+.42,0,.42,0x7a2a2a); box(u-.4,v-.36,u+.3,v+.36,.42,.52,0x8a3232); box(u+.26,v-.38,u+.46,v+.38,.42,1.15,0x7a2a2a); for(const o of [-.42,.32])box(u-.36,v+o,u+.42,v+o+.1,.42,.7,0x6a2424); box(u-.7,v-.3,u-.42,v+.3,.2,.34,0x7a2a2a); },
-      couch:(s,c)=>{ const u=s.uc, v=s.vc, hw=s.w/2-.15; box(u-.42,v-hw,u+.42,v+hw,.12,.4,c); for(const o of [-1,1])box(u-.4,v+o*hw/2-hw/2+.03,u+.3,v+o*hw/2+hw/2-.03,.4,.52,c); box(u+.28,v-hw,u+.46,v+hw,.12,.95,c); for(const o of [-1,1])box(u-.42,v+o*hw-(o>0?.16:0),u+.42,v+o*hw+(o<0?.16:0),.12,.66,c); ball(u+.2,v-hw+.4,.68,.16,0xd8b040,.7); for(const a of [-1,1])for(const b of [-1,1])box(u+a*.36-.03,v+b*(hw-.06)-.03,u+a*.36+.03,v+b*(hw-.06)+.03,0,.12,C.wood); },
-      bathtub:(s,c)=>{ const u=s.uc, v=s.vc, hw=.42; box(u-.6,v-hw,u+.6,v+hw,.12,.56,C.white); box(u-.52,v-hw+.08,u+.52,v+hw-.08,.5,.565,0xc8c4bc); ball(u+.62,v,.5,.22,C.white,.9); for(const a of [-1,1])for(const b of [-1,1])ball(u+a*.48,v+b*.32,.07,.08,C.trim); box(u-.4,v-.3,u+.4,v+.3,.4,.5,0x3c6ea8); ball(u+.36,v,.62,.18,0xd8b040,.6); }};
-    const VEL=[0x8a6a2a,0x5a6a3a,0x7a2a3a,0x3a4a7a,0x6a3a5a,0x8a4a2a];
-    for(const s of G.seats){ const c=VEL[(R()*VEL.length)|0], h=SITH[s.kind], spots=s.kind==='couch'?[[s.uc,s.vc-.7,h,-1,0],[s.uc,s.vc+.7,h,-1,0]]:[[s.uc,s.vc,h,-1,0]];
-      seat(s.kind==='bathtub'?'THE BATHTUB':(/^[aeiou]/.test(s.kind)?'AN ':'A ')+s.kind.toUpperCase(),own(()=>SEAT[s.kind](s,c)),spots);
-      const half=s.kind==='couch'?s.w/2-.1:s.kind==='bathtub'?.45:.4; sol(s.uc-.1,s.vc-half,s.uc+.4,s.vc+half); }
+    // the seats: a row of red movie seats each side of the aisle, the seats folded down, a metal standard and an armrest between each, a cup holder on every armrest; each row one thing you sit in (the nearest place)
+    const RED=0x8a1c24, RDK=0x5e1218, STD=0x2a2a2e;
+    for(const r of G.rows){ const {uc:u,v0,n}=r, v1=v0+n*SW, spots=r.vs.map(v=>[u,v,SITH,-1,0]);
+      const b=own(()=>{ for(let k=0;k<=n;k++){ const v=v0+k*SW; box(u-.3,v-.03,u+.36,v+.03,0,.62,STD); box(u-.32,v-.05,u+.3,v+.05,.62,.68,0x3a2a24); cyl(u-.26,v,.04,.6,.7,0x1a1a1c,.045,8); }
+        for(let k=0;k<n;k++){ const a=v0+k*SW+.04, c=v0+(k+1)*SW-.04; box(u-.3,a,u+.2,c,.36,.48,RED); box(u+.18,a,u+.34,c,.4,1.02,RED); box(u+.34,a,u+.37,c,.42,1.0,RDK); box(u+.16,a+.02,u+.36,c-.02,1.0,1.06,RDK); } });
+      seat('A ROW OF SEATS',b,spots); sol(u-.05,v0,u+.38,v1); }
     // the snack bar: the serving side of an old ice cream truck against the lobby's back wall, its window open, the counter and the raccoon behind it
     { const {u0,v0,v1}=G.truck, u1=Wm-.05, top=2.5, ch=1.02;
       box(u0,v0,u0+.12,v1,0,ch,C.cream); box(u0+.12,v0+.18,u0+.95,v1-.18,0,ch,0xc8b8a0); box(u0-.02,v0,u0+.14,v1,.62,.74,C.pink); box(u0-.3,v0+.05,u0+.14,v1-.05,ch,ch+.06,C.steel);

@@ -955,6 +955,78 @@
     ]
    ]
   },
+  "digs": {
+   "note": "THE FOSSIL DIGS (owner, 10 Nov 2026: \"fossil digs\"): where fossils lie in the park (src/150cyc-fossils.js), map tiles; size the radius its holes are dug in, holes how many (each dug once a day), finds the animals by RARITY tier (c, r, s), band the diggers its sign asks for, deco the Polyfork bones lying there",
+   "sites": [
+    {
+     "id": "brook",
+     "name": "THE BROOK BANK",
+     "x": 178,
+     "y": 49,
+     "size": 3,
+     "holes": 6,
+     "band": "0+",
+     "deco": "pile",
+     "decoS": 0.6,
+     "finds": {
+      "c": [
+       "trilobite",
+       "ammonite"
+      ],
+      "r": [
+       "fish"
+      ],
+      "s": [
+       "mastodon"
+      ]
+     }
+    },
+    {
+     "id": "claypit",
+     "name": "THE CLAY PIT",
+     "x": 140,
+     "y": -2,
+     "size": 3.5,
+     "holes": 6,
+     "band": "30+",
+     "deco": "skull",
+     "decoS": 0.5,
+     "finds": {
+      "c": [
+       "sabre"
+      ],
+      "r": [
+       "mastodon"
+      ],
+      "s": [
+       "raptor"
+      ]
+     }
+    },
+    {
+     "id": "quarry",
+     "name": "THE OLD QUARRY",
+     "x": 208,
+     "y": 24,
+     "size": 4,
+     "holes": 7,
+     "band": "60+",
+     "deco": "ribs",
+     "decoS": 1,
+     "finds": {
+      "c": [
+       "raptor"
+      ],
+      "r": [
+       "trike"
+      ],
+      "s": [
+       "trex"
+      ]
+     }
+    }
+   ]
+  },
   "shelvedSites": [
    {
     "id": "pub",

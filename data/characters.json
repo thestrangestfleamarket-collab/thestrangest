@@ -2748,18 +2748,22 @@
     "canvas_t",
     "paper",
     "quill_pen",
-    "stack_key"
+    "stack_key",
+    "trowel",
+    "fos_brush"
    ],
    "buys": [
     "paintings",
     "antiquities",
     "photos",
     "slime",
-    "plates"
+    "plates",
+    "fossils"
    ],
    "teaches": [
     "guitar",
-    "astro"
+    "astro",
+    "paleo"
    ],
    "line": "Canvases and paper. I buy good paintings and old things."
   }

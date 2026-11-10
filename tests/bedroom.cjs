@@ -35,11 +35,11 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       return LOOSE.list(true).filter(q => q.k === 'o' && q.c[2] > Math.min(B.Z(A.y0), B.Z(A.y1)) - .1 && (q.c[0] - q.h[0] < x0 || q.c[0] + q.h[0] > x1 || q.c[2] - q.h[2] < z0 || q.c[2] + q.h[2] > z1)).map(q => q.name); });
     ok(!inside.length && d.loose >= 40, 'every loose thing starts clear of the walls, so the walls stay solid to it (' + d.loose + ' things; in a wall: ' + inside.join(',') + ')');
     const tv = await pg.evaluate(async () => { const t = __dbg.UI.things.find(t => /^CRT TV/.test(t.name)); if (!t) return null; t.act(); for (let i = 0; i < 20 && !CRTDBG().data; i++) await new Promise(r => setTimeout(r, 250));
-      const a = CRTDBG(); document.querySelector('#crtp button[data-a=on]').click(); const b = CRTDBG(); document.querySelector('#crtp button[data-c="2"]').click(); const c = CRTDBG();
+      const a = CRTDBG(); document.querySelector('#crtp button[data-a=on]').click(); const b = CRTDBG(); document.querySelector('#crtp button[data-c="4"]').click(); const c = CRTDBG();
       const v = document.querySelector('#crtp input[data-k=vol]'); v.value = 80; v.dispatchEvent(new Event('input', { bubbles: true })); const d = CRTDBG(); document.querySelector('#crtp button[data-a=off]').click(); const e = CRTDBG(); CRT.close();
       return { a, b, c, d, e, n: CRT.data.channels.map(c => c.shows.length) }; });
-    ok(tv && tv.a.panel && tv.a.data && tv.a.screens === 1, 'the CRT TV stands in the room; a double click opens its panel and loads the channels only then (' + JSON.stringify(tv && tv.n) + ')');
-    ok(tv && tv.b.on && /\.mp4$/.test(tv.b.src) && tv.c.ch === 2 && tv.c.src !== tv.b.src && Math.abs(tv.d.vol - .8) < .01 && !tv.e.on && !tv.e.src, 'it turns on to a cartoon, changes channel, sets the volume, turns off (' + JSON.stringify(tv && [tv.b.src, tv.c.src]) + ')');
+    ok(tv && tv.a.panel && tv.a.data && tv.a.unit, 'the CRT TV stands in the room; a double click opens its panel and loads the channels only then (' + JSON.stringify(tv && tv.n) + ')');
+    ok(tv && tv.b.on && /\.mp4$/.test(tv.b.src) && tv.c.ch === 4 && tv.c.src !== tv.b.src && Math.abs(tv.d.vol - .8) < .01 && !tv.e.on && !tv.e.src, 'it turns on to a cartoon, changes channel, sets the volume, turns off (' + JSON.stringify(tv && [tv.b.src, tv.c.src]) + ')');
     const err = await pg.evaluate(() => Object.entries(SYS.P).flatMap(([k, v]) => v.filter(s => s.err).map(s => k + ':' + s.name)));
     ok(!err.length, 'no SYS errors (' + err.join(',') + ')');
   }

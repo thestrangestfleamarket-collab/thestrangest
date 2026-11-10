@@ -2,7 +2,7 @@
 // meshopt-packed) retold on one of our baked characters, keeping its own skin and bones. Each mapped bone turns in the world as its
 // Mesh2Motion bone turns from its rest; a wing's arm first takes the Mesh2Motion rest's direction (our dragon rests wings up, theirs flat), its hand
 // kept whole (the fingers' fan holds the membrane), turning only as much more than the arm as the Mesh2Motion hand does.
-// node tools/m2m-bake.cjs <mesh2motion-app/static/assets> <dragon|spider|fox|horse>   (writes the clips into the character's data file and its data/full copy,
+// node tools/m2m-bake.cjs <mesh2motion-app/static/assets> <dragon|spider|fox|farm|horse>   (writes the clips into the character's data file and its data/full copy,
 // read from the full one; then python3 tools/trim-clips.py)
 const fs=require('fs'), path=require('path');
 const R=path.join(__dirname,'..'), NM=path.join(R,'node_modules/three/');
@@ -25,6 +25,7 @@ const RIGS={
     map:{ Hips:'hips', Spine:'spine_2', Chest:'spine_3', Neck:'spine_4', Head:'head', Jaw:'mouth', LeftEar:'ear_1_l', RightEar:'ear_1_r', Tail:'tail_1', TailTip:'tail_3',
       ...Object.fromEntries(['Left','Right'].flatMap(sd=>{ const s=sd==='Left'?'l':'r'; return [['FrontUpLeg','front_leg_upper'],['FrontElbow','front_leg_lower'],['FrontLeg','front_leg_ankle'],['FrontFoot','front_leg_foot'],
         ['HindUpLeg','back_leg_upper'],['HindLeg','back_leg_lower'],['HindHock','back_leg_ankle'],['HindFoot','back_leg_foot']].map(([o,t])=>[sd+o,t+'_'+s]); })) } },
+  farm:{ dir:'fox', files:['data/fauna.json'], keys:['Cow','Pig'], fps:12, root:'Hips', hips:'hips', clips:{'sleep':'Sleep'}, map:null },
   horse:{ files:['data/fauna.json'], keys:['Horse','WildHorse','Mule'], fps:12, root:'Hips', hips:'hips', clips:{'eating':'Graze','sleep':'Sleep'},
     map:{ Hips:'hips', Spine:'spine_2', Chest:'spine_3', Neck:'spine_5', Head:'head', Jaw:'mouth', LeftEar:'ear_1_l', RightEar:'ear_1_r', Tail:'tail_1', TailTip:'tail_3',
       ...Object.fromEntries(['Left','Right'].flatMap(sd=>{ const s=sd==='Left'?'l':'r'; return [['FrontUpLeg','front_leg_upper'],['FrontLeg','front_leg_lower'],['FrontFoot','front_leg_ankle'],
@@ -32,9 +33,10 @@ const RIGS={
   spider:{ files:['data/creatures.json','data/full/creatures.json'], key:'Spider', fps:24, pose:true, clips:{'hit':'Spider_Hit'},
     map:{ Body:'hips', Thorax:'spine_1', Head:'head', Abdomen:'tail_1', ...Object.fromEntries(['L','R'].flatMap(sd=>[['Front','a'],['MidFront','b'],['MidBack','c'],['Back','d']]
       .flatMap(([o,t])=>['','2','3'].map((k,i)=>[o+'Leg'+k+'_'+sd,'leg_'+t+'_'+(i+1)+'_'+sd.toLowerCase()])))) } } };
+RIGS.farm.map=RIGS.fox.map;
 (async()=>{ for(const KEY of (RIGS[WHO].keys||[RIGS[WHO].key])){ const C={...RIGS[WHO],key:KEY,clips:RIGS[WHO].keys?Object.fromEntries(Object.entries(RIGS[WHO].clips).map(([f,n])=>[f,KEY+'_'+n])):RIGS[WHO].clips};
   const THREE=await import(NM+'build/three.module.js'), {GLTFLoader}=await import(NM+'examples/jsm/loaders/GLTFLoader.js'), {MeshoptDecoder}=await import(NM+'examples/jsm/libs/meshopt_decoder.module.js');
-  const dir=path.join(ASSETS,WHO), L=new GLTFLoader(); L.setMeshoptDecoder(MeshoptDecoder);
+  const dir=path.join(ASSETS,C.dir||WHO), L=new GLTFLoader(); L.setMeshoptDecoder(MeshoptDecoder);
   const load=f=>new Promise((ok,no)=>{ const b=fs.readFileSync(f); L.parse(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength),'',ok,no); });
   const of=d=>C.key?d[C.key]:d, D=of(JSON.parse(fs.readFileSync(path.join(R,C.files[C.files.length-1])))), RG=D.rig, BN=RG.names, NB=BN.length, JI=Object.fromEntries(BN.map((n,i)=>[n,i]));
   const V=a=>new THREE.Vector3(...a), Q=a=>new THREE.Quaternion(...a);

@@ -36,14 +36,14 @@ const SKYSHOW={things:[],want:false,live:{kp:null,sats:[]},mets:[],n:0}; window.
     hz(best.alt,best.az,sat1); if(was&&was.n===best.n){ sat0.copy(satV); satF=0; } else { satV.copy(sat1); satF=1; } U.uPlC.value[5].setRGB(1,.97,.9); };
   SKYSHOW.burst=n=>{ const jd=SKYSHOW.jd(), r0=rate; rate={all:3600,list:[{nm:'SPORADIC',hr:3600,v:40}]}; for(let i=0;i<n;i++){ const m=meteor(1e6+SKYSHOW.n+i,jd); if(m)SKYSHOW.mets.push(m); } rate=r0; };   // a test's
   let lastN=performance.now();
-  SYS.add('sky',()=>{ const now=performance.now(), dt=Math.min(.25,(now-lastN)/1000); lastN=now; if(!SKY.on())return; const t=DN.skyT(), jd=EPH.jdOf(t), M=SKYSHOW.mets;
+  SYS.add('sky',()=>{ const now=performance.now(), el=(now-lastN)/1000, dt=Math.min(.25,el); lastN=now; if(!SKY.on())return; const t=DN.skyT(), jd=EPH.jdOf(t), M=SKYSHOW.mets;
     { const n=performance.now(); if(n>=slowT){ slowT=n+4000; slow(jd); } }
     { const u=U.uPl.value[5], b=SKYSHOW.sat; if(b){ if(satF<1){ satF=Math.min(1,satF+dt); satV.copy(sat0).lerp(sat1,satF).normalize(); } u.set(satV.x,satV.y,satV.z,(SKYSHOW.look||0)*cl(1.2-b.mag*.45,.3,3.2)); } else u.w=0; }
     // looking up into the night a few seconds asks for the live sky (150fg)
     if(!SKYSHOW.want&&sunAlt<-6&&SHARED.cam){ const e=SHARED.cam.matrixWorld.elements; if(-e[9]>.45&&(upT+=dt)>3)SKYSHOW.want=true; }
     { const n=performance.now(); if(n>=rateT){ rateT=n+60000; rate=EPH.rate(jd,6); } }
     const s=Math.floor(t/1000); if(s!==lastS){ lastS=s; if(M.length<2&&rate.all>0){ const m=meteor(s,jd); if(m){ M.push(m); SKYSHOW.n++; SKYSHOW.last=m; } } }
-    for(let i=M.length-1;i>=0;i--){ M[i].t+=dt; if(M[i].t>M[i].T)M.splice(i,1); }
+    for(let i=M.length-1;i>=0;i--){ M[i].t+=Math.min(2,el); if(M[i].t>M[i].T)M.splice(i,1); }   // (by the clock, so a slow machine's streak still ends on time)
     for(let i=0;i<2;i++){ const m=M[i], a=U.uMetA.value[i], b=U.uMetB.value[i]; if(!m){ a.w=0; continue; }
       const f=m.t/m.T, at=(g,o)=>o.copy(m.v).multiplyScalar(Math.cos(g*D2R)).addScaledVector(m.d,Math.sin(g*D2R)); at(Math.max(0,m.len*f-m.len*.35),tA); at(m.len*f,tB);
       a.set(tA.x,tA.y,tA.z,m.k*Math.sin(Math.PI*f)*(SKYSHOW.look||0)); b.set(tB.x,tB.y,tB.z,0); (m.head||(m.head=new THREE.Vector3())).copy(tB); } 

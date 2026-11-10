@@ -173,7 +173,15 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
     if(L.length){ const im=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1).translate(0,.5,0),new THREE.MeshLambertMaterial({color:0xffffff}),L.length), M4=new THREE.Matrix4(), Q=new THREE.Quaternion(), V=new THREE.Vector3(), S=new THREE.Vector3(), C=new THREE.Color();
       const LOW=[0x8a4a3a,0x7a3d30,0x9a6a4a,0xb09a7a,0x6b5a52,0x8d8478,0xa39684,0x5e4a44,0xb8ac98,0x74655c], TALL=[0xa8a296,0x8f949a,0xbdb4a2,0x7d8590,0x9c8f80];
       L.forEach(([x,y,w,dp,st],i)=>{ im.setMatrixAt(i,M4.compose(V.set(XS(x),0,ZS(y)),Q,S.set(w*T,st*SH,dp*T))); const P=st>14?TALL:LOW; im.setColorAt(i,C.setHex(P[Math.floor(rd()*P.length)]).multiplyScalar(.8+rd()*.3)); });
-      im.material.onBeforeCompile=sh=>{ sh.vertexShader=sh.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>\n#ifdef USE_INSTANCING\n transformed.y*=1.-smoothstep(${(1150*T).toFixed(1)},${(1290*T).toFixed(1)},distance((modelMatrix*instanceMatrix*vec4(0.,0.,0.,1.)).xyz,cameraPosition));\n#endif`); }; im.material.customProgramCacheKey=()=>'farcityboxes';
+      // by night as the painted skyline past them: dark shapes into the horizon's colour, windows lit (owner, 10 Nov 2026: "all the distance buildings need to have same look"); 134g keeps the colour and the hour
+      const CU=BLK.cityU={uHaze:{value:new THREE.Color()},uNight:{value:0}};
+      im.material.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,CU);
+        sh.vertexShader='varying vec4 vCW;\n'+sh.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>\n#ifdef USE_INSTANCING\n transformed.y*=1.-smoothstep(${(1150*T).toFixed(1)},${(1290*T).toFixed(1)},distance((modelMatrix*instanceMatrix*vec4(0.,0.,0.,1.)).xyz,cameraPosition));
+ vec3 cS=vec3(length(instanceMatrix[0].xyz),length(instanceMatrix[1].xyz),length(instanceMatrix[2].xyz)); vCW=vec4((abs(normal.x)>.5?position.z*cS.z:position.x*cS.x)/${(SH*.9).toFixed(2)},position.y*cS.y/${SH.toFixed(2)},fract((instanceMatrix[3].x+instanceMatrix[3].z)*.0137)*61.,abs(normal.y));\n#endif`);
+        sh.fragmentShader='uniform vec3 uHaze; uniform float uNight; varying vec4 vCW;\n'+sh.fragmentShader.replace('#include <dithering_fragment>',`#include <dithering_fragment>
+ if(uNight>0.){ vec2 wc=floor(vCW.xy), wf=fract(vCW.xy); float wh=fract(sin(dot(wc+vCW.z,vec2(12.9898,78.233)))*43758.5453), wl=step(wh,.3)*step(.25,wf.x)*step(wf.x,.75)*step(.3,wf.y)*step(wf.y,.75);
+  float cw=max(fwidth(vCW.x),fwidth(vCW.y)), cl=exp2(max(0.,ceil(log2(cw*1.3)))); wl=mix(wl,step(fract(sin(dot(floor(vCW.xy/cl)+vCW.z+cl,vec2(12.9898,78.233)))*43758.5453),.08),smoothstep(.2,.5,cw))*step(vCW.w,.5);
+  vec3 nb=mix(mix(vec3(.26,.30,.38),vec3(.36,.38,.44),fract(vCW.z))*.3,uHaze,.55)+wl*vec3(1.,.82,.5)*.45; gl_FragColor.rgb=mix(gl_FragColor.rgb,nb,uNight); }`); }; im.material.customProgramCacheKey=()=>'farcityboxes';
       im.raycast=()=>{}; im.castShadow=false; im.receiveShadow=false; im.frustumCulled=false; im.name='farcity'; G.add(im); BLK.back.push({city:true,n:L.length}); } } }
   window.BLOCKDBG=()=>({blds:BLK.blds.map(q=>[q.row,q.x0,q.x1,q.h]),lots:BLK.lots.map(q=>[q.row,q.kind,q.x0,q.x1,q.y0,q.y1]),band:BLK.band(pos.x,pos.z)});
 }

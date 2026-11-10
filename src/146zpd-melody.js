@@ -10,12 +10,9 @@ import {INSTR} from './003b-systems.js';
   // the note sounding now (or the last one): its place in the score, and whether it still sounds
   const cur=(P,H,t)=>{ const ev=INSTR.score(P).ev; let i=H.ci||0; if(i>=ev.length||ev[i]&&ev[i].t>t)i=0; while(i+1<ev.length&&ev[i+1].t<=t)i++; H.ci=i; const e=ev[i]; return e&&e.t<=t?{e,i,on:t<e.t+e.d+.04}:null; };
   const lay=m=>{ m.rotation.x=Math.PI/2; return m; };
-  const stool=g=>{ g.add(cyl(.17,.17,.06,0x1a1414,18,0,.43,0)); for(const a of [.5,2.6,-1.6])g.add(cyl(.012,.012,.4,0x1a1414,6,Math.sin(a)*.12,.2,Math.cos(a)*.12)); };
-  // Polyfork's models of them (150cyb, when they have come): each laid along its instrument's own line, the first shapes hidden under it
-  let PF=null; const LIVE=new Set();
-  const dress=(it,C)=>{ const m=PF(C.id); if(!m)return; for(const c of it.children)c.visible=false; m.rotation.y=C.pf[0]; m.position.set(C.pf[1],C.pf[2],C.pf[3]); it.add(m);
+  // Polyfork's models of them (150cyb, when they have come): each laid along its instrument's own line, the first shapes hidden under it; its moving parts (the trumpet's valves) in it.userData.pf
+  const dress=(it,C,PF)=>{ const m=PF(C.id); if(!m)return; for(const c of it.children)c.visible=false; m.rotation.y=C.pf[0]; m.position.set(C.pf[1],C.pf[2],C.pf[3]); it.add(m); it.userData.pf=m.userData.parts;
     const bow=it.userData.bow, b=bow&&PF('violin_bow'); if(b){ for(const c of bow.children)c.visible=false; b.position.y=-.03; bow.add(b); } };
-  INSTR.dressMel=mk=>{ PF=mk; for(const [it,C] of LIVE)dress(it,C); LIVE.clear(); };
   const make=(C)=>{ const [LO,HI]=C.range;
     const K={id:C.id,name:C.name,skill:C.id,seat:{y:.46,z:0},lean:0,look:C.look||0,BOOK:[],slip:[LO,HI],cam:C.cam};
     K.dsp=()=>({fam:'hit',poly:6,body:[],dry:0,wet:0,gain:.5});
@@ -30,7 +27,7 @@ import {INSTR} from './003b-systems.js';
     K.compile=T=>{ const n=T.n, ev=[]; let lo=127, hi=0, t=0; for(let i=0;i+2<n.length;i+=3){ lo=Math.min(lo,n[i+1]); hi=Math.max(hi,n[i+1]); } const sh=12*Math.round((LO+HI-lo-hi)/24);
       for(let i=0;i+2<n.length;i+=3){ t+=n[i]/100; let m=n[i+1]+sh; while(m<LO)m+=12; while(m>HI)m-=12; ev.push({t,n:m,d:n[i+2]/100,v:.75,h:'R'}); }
       T.c={ev,len:ev.reduce((a,e)=>Math.max(a,e.t+e.d),0)}; };
-    K.model=()=>{ const g=new THREE.Group(), it=new THREE.Group(); stool(g); g.add(it); g.userData.it=it; C.build(it,it.userData); it.position.copy(C.at(new V3(0,1.1,.02))); it.quaternion.copy(C.q); if(PF)dress(it,C); else LIVE.add([it,C]); return g; };
+    K.model=()=>{ const g=new THREE.Group(), it=new THREE.Group(); INSTR.stool(g,.46); g.add(it); g.userData.it=it; C.build(it,it.userData); it.position.copy(C.at(new V3(0,1.1,.02))); it.quaternion.copy(C.q); INSTR.pf(PF=>dress(it,C,PF)); return g; };
     K.feet=()=>({L:new V3(.11,.09,.3),R:new V3(-.11,.09,.3)});
     K.sway=(P,t)=>{ const sc=INSTR.score(P), n=sc.ev.length; return n&&t-sc.ev[n-1].t<3?.03*Math.sin(t*1.2):0; };
     if(C.lookY)K.lookY=()=>C.lookY;
@@ -74,4 +71,4 @@ import {INSTR} from './003b-systems.js';
       hands:(P,t,H,h,c)=>{ const o=at(h), v=o.clone().addScaledVector(T,.22).add(new V3(.024,.045,0)), d=valves(c);
         return {R:{wr:v.clone().add(new V3(-.085,.04,-.03)),Fd:new V3(1,-.25,.15),Dd:new V3(-.1,.9,-.35),pole:new V3(-.8,-.6,-.3),fist:fing([0,d[0],d[1],d[2],0])},
           L:{wr:v.clone().add(new V3(.09,-.05,-.025)),Fd:new V3(-.9,.3,.1),Dd:new V3(.35,-.15,.9),pole:new V3(.8,-.6,-.2),fist:GRIP}}; },
-      anim:(P,H,t,dt,U,c)=>{ const d=valves(c); U.v.forEach((m,i)=>{ m.position.y+=((d[i]?.022:.035)-m.position.y)*.5; }); } }); } }
+      anim:(P,H,t,dt,U,c)=>{ const d=valves(c), pv=U.pf||{}; U.v.forEach((m,i)=>{ m.position.y+=((d[i]?.022:.035)-m.position.y)*.5; const q=pv['piston-'+(i+1)]; if(q)q.position.y=q.userData.at.y-(.035-m.position.y)*1.3; }); } }); } }

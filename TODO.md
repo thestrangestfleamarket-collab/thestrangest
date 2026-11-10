@@ -82,6 +82,8 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
 ## Performance
 
 - [x] **"undefined ×16" in the render inspector**, about 129k triangles in the park: find what it is · P1 · S · find. Found 9 Nov (claude/beautiful-einstein-i82dp0): the backdrop park trees, four instanced meshes drawn whole; now drawn by cell.
+- [x] **The street walkers' cost ("dress", 15 ms a frame in the render inspector, 10 Nov)** · P1 · S · code. Their rig step and pose worked out every finger (they have no finger bones), at 120 steps a second; now without fingers, and where they stand checked only when they move.
+- [x] **Far trees drawn when off screen** (10 Nov) · P2 · S · code. The park ring's and the big trees' far shapes were never culled; now culled tree by tree like the rest. The render inspector also counted every piece of a culled batch as drawn (fixed). Cloud trees: none placed yet.
 - [ ] **The subway station is built and painted at the start** (15 MB): build it on the way down · P2 · M · code.
 - [ ] **The park shop animals**: all 179 download at the start; measure the start on a real connection · P2 · S · check.
 - [ ] **The start-up and frame-time comparison** · P1 · M · check. Never finished (2 Nov, `tests/startprof.cjs`). Redo it on today's main
@@ -143,6 +145,18 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [ ] **Keepers for the new pet shops and the barn** · P3 · S · pick. Every unarchived character fitting is working elsewhere.
 - [ ] **The gym, next if wanted** · P4 · pick. A sparring bot in the ring, a trainer, bets on fights.
 - [ ] **The bots' goals** · pick. Options given to the owner (9 Nov).
+- [ ] **The owner's nine (9 Nov 2026: "Violin, flute, trumpet, Dances CMU motion-capture library, Painting copies, sign language, juggling, ade animal taming as skill, fossil digs, bar games, implants")** · one pull request each, in this order:
+  - [x] **Violin, flute, trumpet** · P2 · L · code. [taking: claude/blissful-goodall-udydlj, 9 Nov]
+  - [ ] **The piano, harp and drums as Polyfork models** · P3 · M · code. Owner, 10 Nov: "Use very realistic instruments models and textures" (his pick: Polyfork); their keys, strings and heads move, so each needs fitting.
+  - [ ] **Violin, flute, trumpet, seen live** · look. How each is held and sounds; the tunes are the piano pieces' top line.
+  - [ ] **Dances** · P2 · L · code. Learnt by band like songs, from the CMU motion-capture library; performed for tips.
+  - [ ] **Painting copies** · P2 · L · code. Copy open-collection masterworks by difficulty; hang or sell them.
+  - [ ] **Sign language** · P2 · L · code. Owner: "Both": what you type is signed by your hands as far as your skill reaches, and some townsfolk only sign.
+  - [ ] **Juggling** · P3 · M · code. Patterns by band, street performing.
+  - [ ] **Animal taming, a skill** · P2 · XL · pick + code. Owner: "everything" (wildlife as pets, monsters that fight beside you, mounts): options first.
+  - [ ] **Fossil digs** · P3 · L · code. Dig bones, assemble skeletons for the museum.
+  - [ ] **Bar games** · P2 · XL · pick + code. Owner's picks: darts (the archived 301), pool, bowling (needs its own place: options first).
+  - [ ] **Implants** · P3 · L · pick + code. Owner: "Both" (stat boosts and new abilities), fitted at a clinic.
 - [ ] **The instruments, the rest** · P3 · S · code. The bar's piano and kit playable in place; a bandstand for the park guitar.
 - [ ] **Companion drone NPC**: mockup done, waiting on "go" · pick.
 - [x] **Your AI double** (owner, 9 Nov 2026; done 9 Nov) · P2 · M · code. `src/162gb-twin.js`, `worker/twin.js`, `tests/twin.cjs`. Needs the `ANTHROPIC_API_KEY` secret on the worker.
@@ -172,7 +186,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [ ] **The car radio unconfirmed** (cars parked past the map edge) · look.
 
 ## Physics and vehicles
-- [ ] **Vehicle editor follow-ups** · P3 · S · look. Done 10 Nov: a resized car or kart drives at its size, the traffic's models have their parts, the horse is in (colours and size). Left: the train shows once you have been down to a platform; the horse's preview shows your own coat only.
+- [x] **Vehicle editor follow-ups** · P3 · S · look. Done 10 Nov: a resized car or kart drives at its size, the traffic's models have their parts, the horse is in (colours and size), the train shows before you go down, the horse's COAT picker.
 
 - [ ] **Jets follow-ups** · P3 · S · pick. Fires and ice are worked out on each player's page (where a stream lands matches, how a fire
   spreads may not); characters burn and freeze but do not run from the fire.
@@ -181,11 +195,15 @@ steps go in one window, after the checks run on `main`, and end with the owner t
   Add cases to `tests/physx.cjs`.
 - [ ] **STAND ON THINGS only rose halfway in the test** · P3 · S-M · check. 0.10 of a 0.20 block; the test's bar was lowered to pass.
 - [x] **The go-kart** · set down in front of you and got in there; a wall at speed throws you out (owner, 10 Nov 2026: "Throw you out"). Left: held, it shows as a little kart in your hands (owner: keep or change?); the Boardwright's wall is archived (the Skate Shop's shelves show it).
+- [ ] **The hover cars and the police flier, for the owner** (10 Nov 2026) · P2 · S · look. Two taxis, the ambulance, the police flier: their shapes against Polyfork's, the shine by day and night, flying them (SPACE, SHIFT), where they park (West St).
+- [ ] **The submersible, for the owner** (10 Nov 2026) · P2 · S · look. How it reads deep in the dark Hudson (its lamps, the hull), where it is moored; it passes through the pirate wreck (no walls for it yet); no dive check in `tests/cars.cjs` (the river is not built at the test's start).
+- [ ] **Still to build of the owner's 9 Nov list** · P2 · XL · code. The red ship 5x as a 1000-year wreck in the park's lake, swum through (owner, 10 Nov: "Lake"; needs a basin in the lake's bed; the pirate wreck's aged surface is in `066ba-wreck.js`) · a new captain aboard the airship. No words; retro-futuristic, real glass and metal.
+- [ ] **The police cruiser, for the owner** (9 Nov 2026) · P2 · S · look. Its shape and paint against real 80s photos, the roof lights by night, the siren and horn by ear, where it is parked (West St); the other six cars have no opening parts yet.
 - [ ] **The cars, in game, for the owner** · P2 · S · look. The insides, the cars 40% bigger next to the buildings, the radio by ear
   (loudness, the muffle outside, the four stations, starting at the shared moment).
 - [ ] **Physics is only on your own screen** · P4 · XL · pick + code · risk high. Other players don't see karts, flying loose things or
   broken glass; broken and binned things come back on reload. The shared ground (`drop:<key>` records) is the pattern.
-- [ ] **Walls and ground are still boxes to the physics** · P4 · L / XL · code · risk high. The kerb is done (a slope, owner 10 Nov 2026: "Just the kerb"; corners' arcs still boxes); the rest stays boxes; Rapier's deterministic build waits for shared physics.
+- [ ] **Walls and ground are still boxes to the physics** · P4 · L / XL · code · risk high. The kerb is done (a slope, owner 10 Nov 2026: "Just the kerb"; the corners' arcs too); the rest stays boxes; Rapier's deterministic build waits for shared physics.
 
 ## Trees and grass
 
@@ -206,7 +224,7 @@ One tree pass (more leaves mean more shadow triangles).
 
 - [ ] **The owner tries the moves live and approves** · P2 · S · look. #557, #561 and the Mixamo clips (7 Nov): emotes, kick and dodge,
   eating, crafting, planting, mining, sitting down, the fishing cast and pull, the sword or net swing, the dragons' fire breath and naps.
-- [ ] **More animals rest** · P3 · M · code. Done: dog, fox, wolf, horse, wild horse, mule; the others on the fox's rig (`tools/m2m-bake.cjs`).
+- [x] **More animals rest** (done 10 Nov 2026) · P3 · M · code. Done: dog, fox, wolf, horse, wild horse, mule, cow, pig (the fox's Sleep, `tools/m2m-bake.cjs farm`); the other fox-rig animals are not in the game.
 - [ ] **Standing up from a seat** · P3 · M · code · risk med. `stand()` in `src/100-use.js` puts you off the seat at once: play the
   stand-up first, then move you off, without blocking movement.
 - [x] **Fishing from the rowboat has no body move** · done 10 Nov: sat in the boat the rod is held and swung to cast and reel (a seat with `hold`).

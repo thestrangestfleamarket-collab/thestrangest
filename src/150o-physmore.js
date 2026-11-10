@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {BAG, FORAGE, GPH, INSPECT, keys, NPCS, PB, PHYS, pos, RIDE, SFX, SPEED, st, VLOOK} from './003b-systems.js';
 import {SAY} from './003d-say.js';
-import {SYS, TILE} from './006-map-pre.js';
+import {FIX, SYS, TILE} from './006-map-pre.js';
 import {OBJS} from './008-batch.js';
 const VEH={};   // what you drive on Rapier's raycast vehicle (VEH.make below); the go-kart's here, the cars' in 150p-cars
 { const T=TILE, M1=T/.84, say=(t,c)=>SAY(t,c||'#e8e2cc');
@@ -87,6 +87,17 @@ const VEH={};   // what you drive on Rapier's raycast vehicle (VEH.make below); 
     V.place=(m,w)=>{ '@later'; if(!V.on)return false; const S=V.S, r=V.rb.rotation(), p=V.rb.translation(); m.quaternion.set(r.x,r.y,r.z,r.w); m.position.set(p.x,p.y-S.down,p.z);
       for(let i=0;i<4;i++){ const ww=w[i]; ww.rotation.set(V.vc.wheelRotation(i)||0,i<2?V.vc.wheelSteering(i)||0:0,0,'YXZ'); const L=V.vc.wheelSuspensionLength(i); if(L!=null)ww.position.y=S.wy+(S.rest-L)/S.unit; } return true; };
     return V; };
+  // flying one yourself (the helicopter, the hover cars): F {x,y,z,hd,vf,vy,turn,pitch,bank,down} moved a step by what is pressed (f forward, tr turn, v up), slowed against a building or set on its roof, kept inside the map's edges
+  VEH.fly=(F,dt,o)=>{ const k=Math.min(1,dt*1.5), g0=o.surf(F.x,F.z,F.y), air=F.y>g0+.05*o.mv;
+    F.vy+=((o.ready?o.v*o.vup:-.5*o.vup)-F.vy)*Math.min(1,dt*2.5); F.turn+=(o.tr*o.turn-F.turn)*Math.min(1,dt*3);
+    if(air||o.v>0&&o.ready){ F.vf+=((o.f>0?o.f*o.vmax:o.f*o.vback)-F.vf)*k*.6; F.hd+=F.turn*dt; } else { F.vf*=Math.exp(-dt*6); if(o.ready)F.hd+=F.turn*dt*.3; }
+    const ox=F.x, oz=F.z, oy=F.y; F.x+=Math.sin(F.hd)*F.vf*dt; F.z+=Math.cos(F.hd)*F.vf*dt; F.y=Math.min(o.top,F.y+F.vy*dt);
+    if(o.B){ F.x=Math.max(o.B.x0,Math.min(o.B.x1,F.x)); F.z=Math.max(o.B.z0,Math.min(o.B.z1,F.z)); }
+    const r=o.r; for(const b of FIX.up){ if(F.x+r<b[0]||F.x-r>b[3]||F.z+r<b[1]||F.z-r>b[4])continue; if(F.y>=b[5]-.05*o.mv||F.y+o.tall<b[2])continue; if(oy>=b[5]-.05*o.mv){ F.y=b[5]; continue; } F.x=ox; F.z=oz; F.vf*=-.2; break; }
+    const g=o.surf(F.x,F.z,F.y); if(F.y<g){ F.y=g; F.vy=Math.max(0,F.vy); } F.down=F.y<g+.05*o.mv&&Math.abs(F.vf)<o.slow;
+    F.pitch+=(Math.min(1,F.vf/o.vref)*.22-F.pitch)*Math.min(1,dt*3); F.bank+=((F.down?0:-F.turn*.35*Math.min(1,Math.abs(F.vf)/o.bankAt))-F.bank)*Math.min(1,dt*3); };
+  // the ground something that flies stands on: the ground, or the top of whatever solid is under it (a roof)
+  VEH.surf=(x,z,y=1e9,r=1.2*M1,mv=1)=>{ let g=SHARED.groundY(x,z); for(const f of FIX.up){ if(x+r<f[0]||x-r>f[3]||z+r<f[1]||z-r>f[4])continue; if(f[5]>g&&f[5]<=y+.6*mv)g=f[5]; } return g; };
   GPH.ext.push(()=>LIVE.size>0);
   GPH.pre.push(h=>{ '@later'; for(const V of LIVE){ const S=V.S, vc=V.vc, f=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0), sd=(keys.has('a')||keys.has('arrowleft')?1:0)-(keys.has('d')||keys.has('arrowright')?1:0), sp=vc.currentVehicleSpeed(), K=SPEED.of(S.cat||'cars');
     V.steer+=(sd*S.steer/(1+Math.abs(sp)/S.steerFade)-V.steer)*Math.min(1,h*8); const back=f<0&&sp>.3*M1, eng=back||f>0&&sp>S.vmax*K||f<0&&sp<-S.vback*K?0:f*(f>0?S.engine:S.reverse)*K;

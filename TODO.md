@@ -123,6 +123,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 
 ## Places and insides
 
+- [x] **The movie theatre as THE FLEA PIT** (owner, 10 Nov 2026: "i want to redsesign the movie theater", picked B) · P2 · M · code + look. Front, dark inside, box office, seats [taking: claude/laughing-curie-ui41fc, 10 Nov]
 - [ ] **The fish market** · P2 · M · look. Owner, 9 Nov 2026: waits for his look and yes. Not yet: the workers keep no hours (the jobs system is archived), the editor's ground picture (`tools/topmap.cjs`) not re-made, the minimap does not draw the sheds.
 - [ ] **The fish market's sheds** · P3 · S · pick. The two sheds stand on the row, not on the water side as the real ones did (the quay stays open for fishing); say if they should cross the street.
 - [ ] **The telescope** · P3 · S · code. The firsts board on no wall; satellite passes follow the game hour, not the real one; GO TO
@@ -199,7 +200,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [x] **The go-kart** · set down in front of you and got in there; a wall at speed throws you out (owner, 10 Nov 2026: "Throw you out"). Left: held, it shows as a little kart in your hands (owner: keep or change?); the Boardwright's wall is archived (the Skate Shop's shelves show it).
 - [ ] **The hover cars and the police flier, for the owner** (10 Nov 2026) · P2 · S · look. Two taxis, the ambulance, the police flier: their shapes against Polyfork's, the shine by day and night, flying them (SPACE, SHIFT), where they park (West St).
 - [ ] **The submersible, for the owner** (10 Nov 2026) · P2 · S · look. How it reads deep in the dark Hudson (its lamps, the hull), where it is moored; it passes through the pirate wreck (no walls for it yet); no dive check in `tests/cars.cjs` (the river is not built at the test's start).
-- [ ] **The lake wreck, for the owner** (10 Nov 2026) · P2 · S · look. Its look under water by day and night, the way in, the hold; the follow camera crowds it in its narrow basin. Still to build of his 9 Nov list: a new captain aboard the airship.
+- [ ] **The lake wreck, for the owner** (10 Nov 2026) · P2 · S · look. Its look under water by day and night, the way in, the hold; the follow camera crowds it in its narrow basin. (The airship's captain built 10 Nov; he can be seen only from far below.)
 - [ ] **The police cruiser, for the owner** (9 Nov 2026) · P2 · S · look. Its shape and paint against real 80s photos, the roof lights by night, the siren and horn by ear, where it is parked (West St); the other six cars have no opening parts yet.
 - [ ] **The cars, in game, for the owner** · P2 · S · look. The insides, the cars 40% bigger next to the buildings, the radio by ear
   (loudness, the muffle outside, the four stations, starting at the shared moment).
@@ -215,6 +216,8 @@ One tree pass (more leaves mean more shadow triangles).
 - [ ] **Trees by distance** · P2 · L · pick + code. The nine looks at https://claude.ai/artifact/TQ1obJhoEbEzv3cquPxwfC. The park's trees
   became whole only near you, a crown on a trunk far off (8 Nov): check what's left to pick.
 - [ ] **Look at the fluffy grass in game** · P3 · S · look. The tufts and the grass in five heights (8 Nov).
+- [ ] **Fruit trees: the picks left open** · P3 · S · pick. Of `mockups/fruit-trees.html` (10 Nov): making things (a cider press, an olive press, a sugar shack: where?) and who may pick (only the keeper for now).
+- [ ] **Fruit trees: look at them in game** · P3 · S · look. The orchard by the farm and a big pot at home (10 Nov).
 
 ## Clothes and the avatar
 

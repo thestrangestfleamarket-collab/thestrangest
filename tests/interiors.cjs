@@ -41,10 +41,12 @@ const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv
     await pg.evaluate(()=>ROOMS.exit('bodega')); const out=await U(()=>!(ROOMS.offIn&&ROOMS.offIn())&&!(window.FADE&&FADE.busy),60000).then(()=>true).catch(()=>false);
     rec('bodega: you go in and come back out',inB&&out); }
   /* ---------- THE MOVIE THEATRE ---------- */
-  // a ticket lets you in; its popcorn and soda machines are archived (7 Nov 2026)
-  if(!await has('theatre'))skip('theatre'); else { await pg.evaluate(()=>{ INV.add('ticket',1); STORE.enter('theatre',true); }); const inT=await U(()=>STORE.inside.theatre&&STORE.inside.theatre.done&&!(window.FADE&&FADE.busy),180000).then(()=>true).catch(()=>false);
-    await U(()=>WORKERSDBG().some(w=>w.k==='w_raccoon'&&w.made),60000).catch(()=>{});
-    rec('theatre: a ticket lets you in, THE RACCOON is made',inT&&await pg.evaluate(()=>WORKERSDBG().some(w=>w.k==='w_raccoon'&&w.made)));
+  // THE FLEA PIT (10 Nov 2026): no way in without a ticket, a ticket lets you in; no snack bar; the fox at the box office, every seat on the list and every row to sit in
+  if(!await has('theatre'))skip('theatre'); else { const no=await pg.evaluate(()=>{ INV.items.ticket=0; return STORE.gate.theatre?STORE.gate.theatre():true; }); rec('theatre: no ticket, no way in',no===false);
+    await pg.evaluate(()=>{ INV.add('ticket',1); STORE.enter('theatre',true); }); const inT=await U(()=>STORE.inside.theatre&&STORE.inside.theatre.done&&!(window.FADE&&FADE.busy),180000).then(()=>true).catch(()=>false);
+    rec('theatre: a ticket lets you in',inT);
+    const fp=await pg.evaluate(()=>{ const R=STORE.rooms.find(r=>r.id==='theatre'), seats=__dbg.UI.things.filter(t=>t.name==='A ROW OF SEATS'); return {listed:(R.seats||[]).length,sit:seats.length,snack:!!(R.spots||{}).CONCESSIONS||WORKERSDBG().some(w=>w.k==='w_raccoon'&&w.made),fox:!!(CINEMA.dbg&&CINEMA.dbg().fox),box:!!(CINEMA.boxG&&CINEMA.boxG())}; });
+    rec('theatre: the seats are listed for moviegoers and can be sat in, no snack bar, the fox stands in the box office '+JSON.stringify(fp),fp.listed===56&&fp.sit===8&&!fp.snack&&fp.box);
     if(OUT)await pg.screenshot({path:OUT+'/theatre.png'}).catch(()=>{});
     await pg.evaluate(()=>STORE.exit('theatre')); await pg.waitForTimeout(3000); }
   /* ---------- THE ART MUSEUM ---------- */

@@ -24,7 +24,7 @@ const FARM={};
   FARM.join=(N,i,clips,rig,names,K)=>{ const st=N.st, v=st.v, day=plan(i,v), B=n=>{ const k=names.indexOf(n); return k<0?null:rig.bones[k]; };
     const bones={Neck:[B('Neck')],Head:[B('Head')],FrontUp:[B('LeftFrontUpLeg'),B('RightFrontUpLeg')],FrontLow:[B('LeftFrontElbow')||B('LeftFrontLeg'),B('RightFrontElbow')||B('RightFrontLeg')],HindUp:[B('LeftHindUpLeg'),B('RightHindUpLeg')],HindLow:[B('LeftHindLeg'),B('RightHindLeg')]};
     const hips=B('Hips'), hy0=hips?hips.position.y:0, q0=new Map(); for(const L of Object.values(bones))for(const b of L)if(b)q0.set(b,b.quaternion.clone());
-    const has=c=>!!clips[K+'_'+c], lies=!has('Sleep');   // a horse or a mule has its own graze and sleep; a cow or a pig lies down to rest
+    const has=c=>!!clips[K+'_'+c], lies=!has('Graze');   // a horse or a mule grazes and dozes standing; a cow or a pig lies down to rest (on its Sleep clip when it has one)
     const life={act:'stand',clip:null,k:1,w:0,pose:null,look:null};
     const person=()=>{ let b=null, bd=7*T; const see=(x,z)=>{ const d=Math.hypot(x-st.x,z-st.z); if(d<bd){ bd=d; b={x,z}; } }; see(pos.x,pos.z); if(ONLINE.others)for(const o of ONLINE.others.values())if(o.p&&o.why==='near you')see(o.p.x,o.p.z); return b; };
     const set=(p,dt)=>{ let a=p.act; const gap=Math.hypot(p.x-st.x,p.z-st.z); st.hold=true; st.wait=1;
@@ -32,8 +32,8 @@ const FARM={};
       if(a==='walk'){ st.to={x:p.to.x,z:p.to.z}; st.v=v; } else st.to=gap>.3*T?{x:p.x,z:p.z}:null;
       const lying=a==='sleep'||a==='rest'&&lies, q=a!=='walk'&&!lying?person():null; if(q)a='watch';   // someone near: it stops what it is doing and watches them
       st.face=q||(st.to?null:{x:st.x+Math.sin(p.h),z:st.z+Math.cos(p.h)});
-      life.act=a; life.clip=a==='graze'&&has('Graze')?K+'_Graze':a==='sleep'&&has('Sleep')?K+'_Sleep':null;
-      life.pose=a==='graze'&&!has('Graze')?'graze':lying&&!has('Sleep')?(a==='sleep'?'sleep':'lie'):a==='rest'?'doze':null; life.k=a==='sleep'?.25:a==='rest'?.5:1; };
+      life.act=a; life.clip=a==='graze'&&has('Graze')?K+'_Graze':lying&&has('Sleep')?K+'_Sleep':null;
+      life.pose=a==='graze'&&!has('Graze')?'graze':lying&&!has('Sleep')?(a==='sleep'?'sleep':'lie'):a==='rest'&&!lying?'doze':null; life.k=a==='sleep'?.25:a==='rest'?.5:1; };
     life.drive=dt=>set(day(),dt); N.farMove=()=>{ const p=day(); st.x=p.x; st.z=p.z; st.to=null; };
     // before the clip: the bones it moves back to their rest; after: the pose, eased in and out
     let last=null; life.anim=(dt,mixer)=>{ for(const [b,q] of q0)b.quaternion.copy(q); if(hips)hips.position.y=hy0; mixer.update(dt*life.k);

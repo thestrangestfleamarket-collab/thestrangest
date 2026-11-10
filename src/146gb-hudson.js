@@ -1,4 +1,4 @@
-// THE HUDSON'S SET PIECES: the Old Catfish under the pier (2 to 4 am, cut bait, a strong line), Heron Island in the shallows and its herons at dawn, gold in the silt round the wreck (scanner and extractor), the sunken safe under its debris, the Long Swim from the pier to the island, the wreck's bronze bell (a winch raises it; it hangs in the park for anyone to ring) and the pirate captain's logbook (mend it, read it, dig on the island).
+// THE HUDSON'S SET PIECES: the Old Catfish under the pier (2 to 4 am, cut bait, a strong line), Heron Island in the shallows and its herons at dawn, gold in the silt round the wreck (scanner and extractor), the sunken safe under its debris, the Long Swim from the pier to the island, the wreck's bronze bell (one raised before the winch was retired hangs in the park for anyone to ring) and the pirate captain's logbook (mend it, read it, dig on the island).
 import {SHARED, THREE} from './003-shx.js';
 import {CITY, CLOCK, EQUIP, FORAGE, INSPECT, INV, ITEMS, MAIL, ONLINE, PARK, pos, SFX, st, SWIM, UI, VIT} from './003b-systems.js';
 import {SAY} from './003d-say.js';
@@ -23,10 +23,10 @@ const HUDSON={}; window.HUDSON=HUDSON;
 
   FORAGE.add({names:{trophy_cat:'THE OLD CATFISH (FOR THE WALL)',ring_belly:'A TARNISHED GOLD RING',gold_flake:'GOLD FLAKES',gold_nugget:'A GOLD NUGGET',doubloon:'PIRATE DOUBLOONS',medal_swim:'THE LONG SWIM MEDAL',winch:'A SALVAGE WINCH',bk_captlog:"THE CAPTAIN'S LOGBOOK (ROTTED)",logbook_capt:"THE CAPTAIN'S LOGBOOK",spyglass:"THE CAPTAIN'S SPYGLASS"},
     prices:{trophy_cat:300,ring_belly:120,gold_flake:18,gold_nugget:85,doubloon:30,medal_swim:40,winch:120,bk_captlog:5,logbook_capt:150,spyglass:260}});
-  FORAGE.sell('trophy_cat','ring_belly','doubloon','spyglass','medal_swim','winch'); (FORAGE.BUYK.antiquities=FORAGE.BUYK.antiquities||[]).push('trophy_cat','ring_belly','doubloon','spyglass','medal_swim','winch'); GEMS.push(['gold_flake','GOLD FLAKES',18,0],['gold_nugget','GOLD NUGGET',85,0]);   // weight 0: the gem shop buys gold, it is never a random find
+  FORAGE.sell('trophy_cat','ring_belly','doubloon','spyglass','medal_swim'); (FORAGE.BUYK.antiquities=FORAGE.BUYK.antiquities||[]).push('trophy_cat','ring_belly','doubloon','spyglass','medal_swim'); GEMS.push(['gold_flake','GOLD FLAKES',18,0],['gold_nugget','GOLD NUGGET',85,0]);   // weight 0: the gem shop buys gold, it is never a random find
   { const LK={trophy_cat:['plate',0x6a4a2a,0x5a5a4a],ring_belly:['lump',0xc8a040],gold_flake:['jar',0xe8e0c8,0xf2c14e],gold_nugget:['lump',0xf2c14e],doubloon:['lump',0xd8b040],medal_swim:['lump',0xd8b040],winch:['gadget',0x4a4a4e,0x8a6a3a],bk_captlog:['book',0x4a3a2a,0x8a7a5a],logbook_capt:['book',0x5a2a1a,0xe8dcc0],spyglass:['gadget',0x8a6a3a,0xd8b040]};
     INSPECT.kinds.push({is:id=>!!LK[id],make:id=>INSPECT.shape(...LK[id])}); }
-  FORAGE.HELP.push('THE HUDSON: the Old Catfish bites by the pier pilings from 2 to 4 am on cut bait and a strong line; herons stand on Heron Island at dawn (walk, never run, near them); the scanner and extractor find gold in the silt round the wreck; the sunken safe beside it takes strength; the Long Swim runs from the pier to the island; a salvage winch raises the wreck\'s bell; the captain\'s logbook lies in its stern cabin.');
+  FORAGE.HELP.push('THE HUDSON: the Old Catfish bites by the pier pilings from 2 to 4 am on cut bait and a strong line; herons stand on Heron Island at dawn (walk, never run, near them); the scanner and extractor find gold in the silt round the wreck; the sunken safe beside it takes strength; the Long Swim runs from the pier to the island; the captain\'s logbook lies in its stern cabin.');
 
   // THE OLD CATFISH: its own bite in the fishing odds, landed through the fishing fight like any fish; it never fits a pan, so it becomes a trophy, and its belly holds a ring
   FISHING.NAMES.x_oldcat='THE OLD CATFISH'; ITEMS.reg('x_oldcat',{fight:9,weight:25,value:250,bait:'cut',bites:'night'});
@@ -106,7 +106,7 @@ const HUDSON={}; window.HUDSON=HUDSON;
   const bellGeo=()=>{ const P=[[.02,.62],[.09,.6],[.13,.55],[.15,.45],[.17,.3],[.21,.14],[.27,.03],[.28,0]].map(([r,h])=>new THREE.Vector2(r*MW,h*MW)); return new THREE.LatheGeometry(P,18); };
   const wreckBits=()=>{ const F=WRECK.F, s=WRECK.S, mid=WRECK.mid, at=(u,v)=>F.pw(u*s,v*s), G=new THREE.Group(); scene.add(G); const A=WRECK.aged, bronze=A?A('bronze'):L(0x5e6a48), iron=A?A('iron'):L(0x2a2c2a), rust=A?A('iron'):L(0x5a3a26), wood=A?A('wood',{color:0x3b2a1c}):L(0x3b2a1c);   // a century under water, like the wreck
     const BL=new THREE.Group(); { const p=at(8.1,mid+1.3); BL.position.set(p[0],WRECK.floorY+.3*MW,p[1]); BL.rotation.set(0,.7,Math.PI/2+.2); G.add(BL); mesh(BL,bellGeo(),bronze,0,-.3*MW,0).material.side=THREE.DoubleSide; }   // the bell, fallen at the break
-    const bell={name:"THE SHIP'S BRONZE BELL",obj:hit(BL,.7*MW,.8*MW,.7*MW,0,0,0),reach:1.6*T,near:2.6*T,tall:.6*MW,act:()=>lift()}; UI.thing(bell);
+    const bell=null;
     const LB=new THREE.Group(); { const p=at(14.2,mid-.5); LB.position.set(p[0],WRECK.floorY+3.4*s*MW+.03*MW,p[1]); LB.rotation.y=.4; G.add(LB); mesh(LB,new THREE.BoxGeometry(.32*MW,.07*MW,.24*MW),L(0x3a2c1e),0,0,0); }   // on the captain's table
     const book={name:"THE CAPTAIN'S LOGBOOK",obj:hit(LB,.5*MW,.3*MW,.5*MW,0,.05*MW,0),reach:1.4*T,near:2.4*T,tall:.3*MW,act:()=>takeBook()}; UI.thing(book);
     // the safe beside the hull (a few metres off it), under a spar, a cannon and an anchor (top first)
@@ -123,11 +123,6 @@ const HUDSON={}; window.HUDSON=HUDSON;
       const m=mesh(g,new THREE.CircleGeometry(1.8*MW,14),silt,0,0,0); m.rotation.x=-Math.PI/2; m.scale.y=.7; const gl=[]; for(let j=0;j<4;j++){ const o=mesh(g,new THREE.OctahedronGeometry(.07*MW,0),glint,Math.cos(j*1.9)*.9*MW,.05*MW,Math.sin(j*1.9)*.6*MW); o.visible=false; gl.push(o); }
       return {k:'silt'+i,x:p[0],z:p[1],y,g,gl,lit:0}; });
     return {G,BL,bell,LB,book,SG,door,parts,safe,SI}; };
-  const lift=()=>{ '@later'; if(raised())return; if(!FORAGE.has('winch'))return say('IT IS TOO HEAVY TO SWIM UP WITH. A SALVAGE WINCH WOULD RAISE IT (FISHING & SCUBA SELLS ONE).','#c8a090');
-    air(6); if(Math.random()>cl((int()-10)/35+.15,.1,1))return say('YOU RIG THE WINCH, BUT THE KNOT SLIPS AND THE LINE FALLS SLACK. RIG IT AGAIN, MORE CAREFULLY.','#e0a888');
-    if(str()<25)return say('THE WINCH IS RIGGED, BUT YOU CANNOT TURN THE CRANK AGAINST THE BELL\'S WEIGHT. YOU NEED MORE STRENGTH.','#e0a888');
-    S.bell=1; save(); if(ONLINE.on&&ONLINE.put)ONLINE.put('riverbell',day()||1); INV.cash+=150; SFX.play('bell',{vol:.7,pitch:.8});
-    say('YOU CRANK, AND THE BELL RISES OUT OF THE SILT AND UP THROUGH THE GREEN WATER. THE CITY PAYS YOU $150 FOR IT; IT WILL HANG IN CENTRAL PARK FOR ANYONE TO RING.','#f2c14e'); };
   const takeBook=()=>{ '@later'; if(S.book)return; S.book=1; save(); FORAGE.give('logbook_capt',1); FORAGE.draw(); say('A LOGBOOK IN A SWOLLEN LEATHER COVER. READ IT FROM YOUR PACK.','#c8b0ff'); };
   FORAGE.ROWB.push(id=>id==='logbook_capt'?[['READ','capread']]:[]);
   FORAGE.ACT.capread=()=>{ '@later'; if(!FORAGE.has('logbook_capt'))return;

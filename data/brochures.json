@@ -29,8 +29,7 @@
        "A 48 m pirate ship, broken in two, her black flag still on the mast.",
        "Swim INSIDE: the stern cabin and a hold full of barrels.",
        "SEVEN chests of old coins and gems, full again every day.",
-       "FOUR sharks on guard. They bite!",
-       "Raise the ship's bell with a SALVAGE WINCH: it pays $150."
+       "FOUR sharks on guard. They bite!"
       ]
      ]
     ],
@@ -84,10 +83,6 @@
        [
         "HEADLIGHT",
         "$45"
-       ],
-       [
-        "SALVAGE WINCH",
-        "$120"
        ]
       ]
      ],
@@ -96,7 +91,21 @@
      ]
     ]
    ],
-   "no": 1
+   "no": 1,
+   "start": {
+    "spot": "wreck",
+    "kit": {
+     "scuba": 1,
+     "goggles": 1,
+     "headlight": 1
+    },
+    "wear": [
+     "scuba",
+     "goggles",
+     "headlight"
+    ],
+    "R": 90
+   }
   },
   {
    "id": "fish",
@@ -156,10 +165,6 @@
      [
       "pic",
       2
-     ],
-     [
-      "p",
-      "Crab pot: press P facing the water. Come back for the buoy."
      ]
     ],
     [
@@ -191,10 +196,6 @@
         "$1"
        ],
        [
-        "CRAB POT",
-        "$25"
-       ],
-       [
         "CARBON ROD",
         "$60"
        ],
@@ -217,7 +218,16 @@
      ]
     ]
    ],
-   "no": 2
+   "no": 2,
+   "start": {
+    "spot": "pier",
+    "kit": {
+     "rod": 1,
+     "bait_cut": 10
+    },
+    "hold": "rod",
+    "R": 60
+   }
   },
   {
    "id": "pets",
@@ -458,7 +468,23 @@
      ]
     ]
    ],
-   "no": 4
+   "no": 4,
+   "start": {
+    "via": "CENTRAL PARK",
+    "at": [
+     112,
+     -10.6
+    ],
+    "kit": {
+     "net": 1,
+     "jar_s": 3,
+     "bnet": 1,
+     "cage": 1,
+     "bseed": 5
+    },
+    "hold": "net",
+    "R": 120
+   }
   },
   {
    "id": "shroom",
@@ -579,7 +605,18 @@
      ]
     ]
    ],
-   "no": 5
+   "no": 5,
+   "start": {
+    "via": "CENTRAL PARK",
+    "at": [
+     112,
+     -10.6
+    ],
+    "kit": {
+     "shroom_fly": 1
+    },
+    "R": 400
+   }
   },
   {
    "id": "bees",
@@ -679,7 +716,21 @@
      ]
     ]
    ],
-   "no": 6
+   "no": 6,
+   "start": {
+    "via": "CENTRAL PARK",
+    "at": [
+     125.1,
+     -15.1
+    ],
+    "kit": {
+     "bee_hive": 1,
+     "bee_smoker": 1,
+     "bee_veil": 1,
+     "jar_honey": 4
+    },
+    "R": 120
+   }
   },
   {
    "id": "art",
@@ -704,7 +755,7 @@
      ],
      [
       "p",
-       "Twenty paintings people call life-changing in one room under a skylight, hung close, two high, the way the old salons hung them."
+      "Twenty paintings people call life-changing in one room under a skylight, hung close, two high, the way the old salons hung them."
      ],
      [
       "p",
@@ -1091,7 +1142,18 @@
      ]
     ]
    ],
-   "no": 10
+   "no": 10,
+   "start": {
+    "via": "CENTRAL PARK",
+    "at": [
+     121.8,
+     59.2
+    ],
+    "kit": {
+     "guitar": 1
+    },
+    "R": 80
+   }
   },
   {
    "id": "stars",
@@ -1200,7 +1262,7 @@
     "TEN",
     "STONES"
    ],
-   "s": "Find them. Cut them. Sell them.",
+   "s": "Find them. Sell them.",
    "burst": null,
    "panels": [
     [
@@ -1215,10 +1277,6 @@
      [
       "p",
       "From the commonest to the rarest: quartz, amethyst, geode, amber, moonstone, opal, emerald, sapphire, ruby, and the STAR METEORITE."
-     ],
-     [
-      "p",
-      "A cut stone is worth more than twice a rough one. A cut can also crack."
      ]
     ],
     [
@@ -1241,15 +1299,11 @@
      ],
      [
       "h",
-      "Cut and sell"
+      "Sell them"
      ],
      [
-      "ol",
-      [
-       "Buy A GEM WHEEL at THE GEM STALL.",
-       "In your pack, CUT a stone.",
-       "Sell it to the Scuba Diver at the stall."
-      ]
+      "p",
+      "Sell a stone to the Scuba Diver at the stall."
      ]
     ],
     [
@@ -1273,10 +1327,6 @@
       "cost",
       [
        [
-        "A GEM WHEEL",
-        "$35"
-       ],
-       [
         "HEADLIGHT",
         "$45"
        ]
@@ -1287,7 +1337,17 @@
      ]
     ]
    ],
-   "no": 12
+   "no": 12,
+   "start": {
+    "via": "THE DUNGEON",
+    "kit": {
+     "headlight": 1
+    },
+    "wear": [
+     "headlight"
+    ],
+    "R": 150
+   }
   }
  ]
 }

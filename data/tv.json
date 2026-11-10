@@ -1,5 +1,5 @@
 {
- "note": "Public-domain cartoons, TV shows, odd old films (the Prelinger Archives) and NASA films, and Blender Studio's open movies (CC BY, Blender Foundation) streamed from the Internet Archive (archive.org/details/<id>); each channel one loop on the real clock, so every TV shows the same moment; THE GUIDE (guide) plays anything on demand. src/150fa-crt.js.",
+ "note": "Public-domain cartoons, TV shows, odd old films (the Prelinger Archives) and NASA films, and Blender Studio's open movies (CC BY, Blender Foundation) streamed from the Internet Archive (archive.org/details/<id>); each channel one loop on the real clock, so every TV shows the same moment; THE GUIDE (guide) plays anything on demand. src/150fa-crt.js; a channel with live:true streams live cams (shows {yt, title, len: its turn in seconds}) through the cinema's player.",
  "channels": [
   {
    "ch": 2,
@@ -790,6 +790,49 @@
      "title": "ARE YOU POPULAR?",
      "year": 1947,
      "len": 598.1
+    }
+   ]
+  },
+  {
+   "ch": 8,
+   "name": "CRITTER CAM",
+   "sub": "live from around the world, a new place every half hour",
+   "live": true,
+   "shows": [
+    {
+     "yt": "J7ZrIDvqlic",
+     "title": "BROOKS FALLS BEARS · ALASKA",
+     "len": 1800
+    },
+    {
+     "yt": "0P_LBKqVbfs",
+     "title": "ELEPHANTS AT THE WATERHOLE · SOUTH AFRICA",
+     "len": 1800
+    },
+    {
+     "yt": "Fz6sl9YJZE0",
+     "title": "MANATEES · HOMOSASSA SPRINGS, FLORIDA",
+     "len": 1800
+    },
+    {
+     "yt": "GGIE1E-kaMQ",
+     "title": "THE EAGLES' NEST · DECORAH, IOWA",
+     "len": 1800
+    },
+    {
+     "yt": "5e4lsEe4Vew",
+     "title": "THE WOLF PACK · MINNESOTA",
+     "len": 1800
+    },
+    {
+     "yt": "DHUnz4dyb54",
+     "title": "THE TROPICAL REEF",
+     "len": 1800
+    },
+    {
+     "yt": "OOT6YlOYgaU",
+     "title": "THE KITTEN ROOM",
+     "len": 1800
     }
    ]
   },

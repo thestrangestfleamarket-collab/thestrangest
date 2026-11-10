@@ -91,6 +91,8 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       o.talk = !!(window.TALK && typeof TALK.open === 'function' && TALK.shops instanceof Map && TALK.script && (() => { const N = __dbg.npcs().find(n => n.key === 'teddy'); const t = N && TALK.script(N); return !!(t && t.lines && t.lines[t.start]); })());
       o.fair = !!(window.FAIR && Object.keys(FAIR.rides).length >= 13 && window.MIDWAY && Object.keys(MIDWAY.booths).length >= 12 && window.CREW && typeof CREW.spots.fair === 'function' && window.ZONES && ZONES.list.some(z => z[0] === 'fair') && !FAIR.built);
       o.phases = Object.keys(SYS.P); o.sysErr = SYS.errs.slice();
+      // a walker takes a step toward a spot just ahead of it (10 Nov 2026: a helper its step reads was removed with the bots, and every walker stood still)
+      o.step = (() => { const L = __dbg.NPCS && (__dbg.NPCS.all ? __dbg.NPCS.all() : [...__dbg.NPCS, ...(__dbg.NPCS.extra || [])]) || [], N = L.find(n => n.tick && n.st && !n.fly && !n.tiny && n.g && n.g.visible); if (!N) return 'none'; const s0 = { ...N.st }; try { N.st.wait = 0; N.st.hold = false; N.st.h = 0; N.st.to = { x: N.st.x, z: N.st.z + 2 }; N.tick(.05, { x: 1e9, z: 1e9 }); return 'ok'; } catch (e) { return String(e && e.message || e).slice(0, 160); } finally { Object.assign(N.st, s0); } })();
       o.hud = (() => { try { try { const ok = {}; ok.vit = !document.getElementById('vit').hidden && getComputedStyle(document.getElementById('vit')).top !== 'auto' && /^\d+ \/ \d+$/.test(document.getElementById('vhpn').textContent) && /^\d+ \/ \d+$/.test(document.getElementById('vinn').textContent);
         ok.slots = document.querySelectorAll('#hqb .qs').length === 10; HUD.set(1, 'mortar'); ok.setOk = HUD.slots[1] === 'mortar' && /^MORTAR/.test(document.querySelectorAll('#hqb .qs')[1].title) && !!document.querySelectorAll('#hqb .qs')[1].querySelector('img'); HUD.set(1, null);
         __dbg.ui().log('a test line', null, 'MEL'); SAY('A SAID LINE'); ok.log = HUD.lines().slice(-2).join('|') === 'MEL a test line|A SAID LINE'; ok.map = !!HUDDBG().map && !!HUDDBG().plan && document.getElementById('hmz').textContent.startsWith('A') && !FORAGE.has('map');
@@ -193,6 +195,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.inspect, 'INSPECT is wired: its families, the key, LOOK in the pack');
     ok(r.talk, 'TALK is wired: a character\'s script reads from characters.json, the shops hand over to it');
     ok(r.sway, 'CAMERA SWAY and its level (1-10) are in the menu, a SYS cam entry, off by default');
+    ok(r.step === 'ok', 'a walker\'s step runs without an error (' + r.step + ')');
     ok(!r.sysErr.length, 'no system has thrown and no page error is on the ledger (SYS.errs)' + (r.sysErr.length ? ': ' + r.sysErr.join(' | ') : ''));
     ok(r.zoneHere === 'market', 'at 53,10 you are on Market St (' + r.zoneHere + ')');
     ok(r.zoneDown === 'station', 'down at 0,0 is the subway station (' + r.zoneDown + ')');

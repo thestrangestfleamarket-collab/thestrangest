@@ -1,6 +1,6 @@
 // THE CARS: the racing-cars kit's six cars (data/cars.json, CC0) parked on Market St (their spots in data/world.json's cars); double-click one to get in and drive it (a RIDE kind boarded where it stands, on VEH: W goes, S brakes and backs, A and D steer); GET OUT (or F) parks it where it stands. The section's server keeps where each car is parked and who drives it, so everyone sees the same cars, one driver a car.
 import {SHARED, THREE} from './003-shx.js';
-import {CARLAMPS, CARX, FLOW, keys, ONLINE, PB, pos, RADIO, RIDE, ROOMS, SKY, SPEED, st, UI, VLOOK} from './003b-systems.js';
+import {CARLAMPS, CARX, FLOW, keys, ONLINE, PB, pos, RADIO, RIDE, ROOMS, SFX, SKY, SPEED, st, UI, VLOOK} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {LEVEL, MODS, SOL, SYS, TILE, ZU} from './006-map-pre.js';
@@ -162,12 +162,17 @@ const CARD=__LAZY__("data/cars.json"), RADJ=__LAZY__("data/radio.json"), RFILE={
   RAD.tune=(C,n)=>{ if(!C)return; if(stOf(C)===n)return; ONLINE.put('radio:'+C.id,n); showRadio(C); };
   RAD.next=()=>{ '@later'; if(!mine)return; wake(); if(!RAD.data){ if(!RAD.asked){ RAD.asked=true; RADJ().then(d=>{ RAD.data=d; RAD.next(); }).catch(e=>console.warn('CARS: the radio did not load',e)); } return; }
     const n=(stOf(mine)+1)%(RAD.data.stations.length+1); RAD.tune(mine,n); const S=station(n); say(S?'THE RADIO: '+S.call+', '+S.name+'.':'THE RADIO IS OFF.'); };
-  const wake=()=>{ if(RAD.ctx){ if(RAD.ctx.state!=='running')RAD.ctx.resume(); return; } if(!RAD.data)return; try{ RAD.ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} };
+  const wake=()=>{ if(RAD.data)RAD.ctx=SFX.wake(); };
   addEventListener('pointerdown',wake); addEventListener('keydown',wake);
-  const chan=S=>{ '@later'; let c=RAD.ch[S.id]; if(c||!RAD.ctx)return c; const a=new Audio(RFILE[S.id]); a.preload='auto'; a.loop=true; const x=RAD.ctx, src=x.createMediaElementSource(a), lp=x.createBiquadFilter(), g=x.createGain(), pan=x.createStereoPanner();
-    lp.type='lowpass'; lp.frequency.value=900; g.gain.value=0; src.connect(lp); lp.connect(g); g.connect(pan); pan.connect(x.destination); return RAD.ch[S.id]={a,lp,g,pan,quiet:0,chk:0}; };
+  const chan=S=>{ '@later'; let c=RAD.ch[S.id]; if(c||!RAD.ctx)return c; const a=new Audio(RFILE[S.id]); a.preload='auto'; a.loop=true; const x=RAD.ctx, src=x.createMediaElementSource(a), lp=x.createBiquadFilter(), g=x.createGain(), pan=SFX.spot(x,true);
+    lp.type='lowpass'; lp.frequency.value=900; g.gain.value=0; src.connect(lp); lp.connect(g); g.connect(pan); pan.connect(SFX.out(x)); return RAD.ch[S.id]={a,lp,g,pan,quiet:0,chk:0}; };
   const NOW=()=>performance.now()/1000;
-  const P3=new THREE.Vector3(); let rT=0, fT=0;
+  // the radio you hear best, told to the device (Media Session): its name on the lock screen, the next-track key turning your car's dial
+  let mKey='', mT=0; const media=()=>{ const MS=navigator.mediaSession; if(!MS||!window.MediaMetadata||NOW()<mT)return; mT=NOW()+1; let S=null, k=0; for(const q of RAD.data.stations){ const b=RAD.best[q.id]; if(b&&b.k>k){ k=b.k; S=q; } }
+    const n=S&&nowAt(S).k, key=S?S.id+'|'+(n?n.title:''):''; if(key===mKey)return; mKey=key;
+    MS.metadata=S?new MediaMetadata({title:n&&n.title?n.title+(n.year?' ('+n.year+')':''):S.name,artist:S.call+' '+S.name,album:'THE MARKET RADIO'}):null; MS.playbackState=S?'playing':'none';
+    try{ MS.setActionHandler('nexttrack',S?()=>RAD.next():null); }catch(e){} };
+  let rT=0, fT=0;
   // a room's source (a jukebox): heard whole by whoever is in its room; one with its own set (an apartment's radio, 150fb) keeps its station (st), volume (vol), where it is heard (here) and where it stands (at: quieter as you walk away, gone at R)
   const inRoom=s=>s.here?!!s.here():!!s.room&&((ROOMS.offIn&&ROOMS.offIn()===s.room)||!!(ROOMS.cur&&ROOMS.cur.id===s.room));
   const sOf=s=>s.st?(+s.st()||0):stOf(s);
@@ -184,10 +189,10 @@ const CARD=__LAZY__("data/cars.json"), RADJ=__LAZY__("data/radio.json"), RFILE={
       if(!inside){ const o=ONLINE.others&&ONLINE.others.get(C.by), g=o&&o.fig&&o.fig.g; if(g){ x=g.position.x; z=g.position.z; } }
       const d=inside?0:Math.hypot(pos.x-x,pos.z-z)/T, k=inside?1:up?.55*Math.max(0,1-d/25)**1.5:0; if(k>((best[S.id]||{}).k||0))best[S.id]={k,inside,x,z}; } for(const s of rooms){ const S=station(sOf(s)); if(!S)continue; let k=s.vol??.7, x=pos.x, z=pos.z, pan=false;
       if(s.at){ const p=s.at(); if(p){ const d=Math.hypot(pos.x-p.x,pos.z-p.z); k*=Math.max(0,1-d/(s.R||10*T))**1.4; x=p.x; z=p.z; pan=true; } }
-      if(k>((best[S.id]||{}).k||0))best[S.id]={k,inside:true,pan,x,z}; } RAD.best=best;
+      if(k>((best[S.id]||{}).k||0))best[S.id]={k,inside:true,pan,x,z}; } RAD.best=best; media();
     for(const S of RAD.data.stations){ const b=best[S.id], c=b&&b.k>0?chan(S):RAD.ch[S.id]; if(!c)continue; const x=RAD.ctx, t=x.currentTime;
       if(b&&b.k>0){ c.quiet=0; const nw=NOW(); c.g.gain.setTargetAtTime(b.k*RAD.vol,t,.25); c.lp.frequency.setTargetAtTime(b.inside?16000:900,t,.2);
-        if((!b.inside||b.pan)&&SHARED.cam){ P3.set(b.x,SHARED.py+1,b.z).project(SHARED.cam); c.pan.pan.setTargetAtTime(Math.max(-.8,Math.min(.8,P3.x*.8)),t,.1); } else c.pan.pan.setTargetAtTime(0,t,.1);
+        if(!b.inside||b.pan)c.pan.to(b.x,SHARED.py+TILE,b.z); else c.pan.to();
         const want=(Date.now()/1000)%S.len; if(c.a.paused){ try{ c.a.currentTime=want; }catch(e){} c.a.play().catch(()=>{}); c.chk=nw+3; }
         else if(nw>c.chk){ c.chk=nw+3; const off=Math.abs(c.a.currentTime-want); if(off>1.5&&off<S.len-1.5)try{ c.a.currentTime=want; }catch(e){} } }
       else { c.g.gain.setTargetAtTime(0,t,.2); if(!c.a.paused){ if(!c.quiet)c.quiet=NOW(); else if(NOW()-c.quiet>1.5){ c.a.pause(); c.quiet=0; } } } } },'150p-cars');

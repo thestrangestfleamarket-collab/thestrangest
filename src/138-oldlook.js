@@ -1,7 +1,7 @@
 // THE OLD LOOK: LOOK, a late pass (the PS2 filter after it): the old game's glow, and the look's colour of everything and haze over everything (DN.U). The sun's rays are the shafts in the world (134d), never a star drawn on the screen at the player.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, DN, LOOK} from './003b-systems.js';
-import {renderer, RH, RW, ShaderPass} from './004-main.js';
+import {CLOCK, DN, LOOK, W3} from './003b-systems.js';
+import {renderer, RH, RW, scene, ShaderPass} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {OUT} from './006-map-pre.js';
 Object.assign(LOOK,{on:true, glowK:{value:0}, night:{value:0}, cool:{value:0}});
@@ -16,19 +16,21 @@ LOOK.shader={uniforms:{tDiffuse:{value:null},tH:{value:null},tG:{value:null},uRe
   vertexShader:LOOKV,
   fragmentShader:`uniform sampler2D tDiffuse,tG; uniform vec2 uRes; uniform float uNight,uGlowK,uCool,uLiftK; uniform vec3 uGrade,uLift; varying vec2 vUv;
     float lum(vec3 c){ return dot(c,vec3(.3,.59,.11)); }
-    void main(){ vec3 col=texture2D(tDiffuse,vUv).rgb;
+    void main(){ vec4 c0=texture2D(tDiffuse,vUv); vec3 col=c0.rgb; float pl=c0.a>.3&&c0.a<.75?1.:0.;
       if(uGlowK>0.){ vec3 g=texture2D(tG,vUv).rgb; col=1.-(1.-col)*(1.-clamp(g*uGlowK,0.,1.)); }
       { float l0=lum(col); col*=mix(vec3(1.),mix(vec3(.84,.92,1.16),vec3(1.08,1.,.88),smoothstep(.18,.62,l0)),uCool); }
-      float l=lum(col), k=uNight*.8*(1.-smoothstep(.06,.42,l));
+      float l=lum(col), k=uNight*.8*(1.-smoothstep(.06,.42,l))*(1.-pl);
       col=mix(col,vec3(l),k)*mix(vec3(1.),vec3(.62,.87,1.31),k);
-      col=mix(col,vec3(.039,.063,.188),uNight*.3*(1.-l)*(1.-l));
+      col=mix(col,vec3(.039,.063,.188),uNight*.3*(1.-l)*(1.-l)*(1.-pl));
       col=mix(col*uGrade,uLift,uLiftK);
-      gl_FragColor=vec4(col,texture2D(tDiffuse,vUv).a); }`};
+      gl_FragColor=vec4(col,pl>.5?1.:c0.a); }`};
 LOOK.tick=()=>{ const dark=CLOCK.dark()?1:0, inside=!OUT.open;
   LOOK.night.value+=(dark-LOOK.night.value)*.1; if(Math.abs(dark-LOOK.night.value)<.01)LOOK.night.value=dark;
   LOOK.glowK.value=(LOOK.on?(dark||inside?1.28:.5):0)*(DN.P&&DN.P().glow!=null?DN.P().glow:1); if(LOOK.sp){ LOOK.sp.enabled=LOOK.on||DN.U.liftK.value>0||DN.U.grade.value.r+DN.U.grade.value.g+DN.U.grade.value.b<2.99; LOOK.sp.uniforms.uRes.value.set(RW,RH); } };
 
 LOOK.sp=new ShaderPass(LOOK.shader); SHARED.composer.addPass(LOOK.sp); SHARED.carry(LOOK.sp);
+// players are left out of the night look (owner, 10 Nov 2026): their pixels marked only in the main picture this pass reads (W3.mark, 072)
+scene.onBeforeRender=()=>{ W3.mark.value=CLOCK.main&&LOOK.sp.enabled&&LOOK.night.value>0&&!renderer.xr.isPresenting&&!(SHARED.drive&&SHARED.drive.draw)?1:0; };
 { const o={type:renderer.extensions.has('EXT_color_buffer_float')?THREE.FloatType:THREE.HalfFloatType,minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,depthBuffer:false}; LOOK.rtH=new THREE.WebGLRenderTarget(1,1,o); LOOK.rtG=new THREE.WebGLRenderTarget(1,1,o); }
 LOOK.sp.uniforms.tG.value=LOOK.rtG.texture;
 LOOK.vp=new ShaderPass({uniforms:{tDiffuse:{value:null},tH:{value:null},uRes:{value:null}},vertexShader:LOOKV,

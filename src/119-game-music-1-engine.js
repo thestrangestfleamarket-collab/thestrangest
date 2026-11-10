@@ -1,5 +1,5 @@
 // THE MUSIC ENGINE: IMX, the sound engine that plays plucked strings and the instruments.
-import {GTSAMP, IMK, SND} from './003b-systems.js';
+import {GTSAMP, IMK, SFX, SND} from './003b-systems.js';
 import {GTA, gtAudio} from './106-game-play-3-guitar-1-body.js';
 import {IMSAMPS} from './118-game-music-1b-samples-data.js';
 const IMX={ok:false,busy:false,failed:0,nodes:new Map(),out:null,src:`
@@ -84,7 +84,7 @@ function imxOut(){ '@later'; const c=SND.ctx; if(IMX.out)return IMX.out; const c
   for(let ch=0;ch<2;ch++){ const q=ir.getChannelData(ch); for(let i=0;i<len;i++){ const t=i/c.sampleRate; q[i]=(Math.random()*2-1)*Math.exp(-t*13.8/.6)*(t<.005?0:1); } for(const ms of [6,11,17,24,31])q[Math.floor(c.sampleRate*ms/1000)+ch*11]+=.5; }
   cv.buffer=ir; wet.gain.value=.18; dry.gain.value=1; dry.connect(SND.out); dry.connect(cv); cv.connect(wet); wet.connect(SND.out); return IMX.out=dry; }
 function imxNode(who,kind){ '@later'; if(!imxReady())return null; const key=who+'|'+kind; let N=IMX.nodes.get(key); if(N){ N.at=performance.now(); return N; }
-  const I=IMK[kind], c=SND.ctx; if(!I)return null; const node=new AudioWorkletNode(c,'imx',{outputChannelCount:[1],processorOptions:I.dsp}), dry=c.createGain(), g=c.createGain(), pan=c.createStereoPanner();
+  const I=IMK[kind], c=SND.ctx; if(!I)return null; const node=new AudioWorkletNode(c,'imx',{outputChannelCount:[1],processorOptions:I.dsp}), dry=c.createGain(), g=c.createGain(), pan=SFX.spot(c,true); pan.to();
   g.gain.value=who==='me'?1:0; node.connect(dry); dry.connect(g); g.connect(pan); pan.connect(imxOut());
   N={who,kind,node,dry,g,pan,at:performance.now(),motion:null,pipe:0,on:[]}; node.port.onmessage=e=>{ N.motion=e.data.m; N.pipe=e.data.pipe; }; IMX.nodes.set(key,N); imsLoad(kind); return N; }
 function imxSend(N,evs){ if(!N)return; const t0=SND.ctx.currentTime+.02; N.node.port.postMessage({ev:evs.map(e=>({...e,t:t0+(e.dt||0)}))}); N.at=performance.now(); imxRec(N,evs,t0); }

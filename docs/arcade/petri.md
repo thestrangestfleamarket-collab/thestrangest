@@ -62,7 +62,7 @@ count of players at the top; a thin minimap bottom left.
 
 ## 7. Attract mode
 
-The cabinet's screen plays itself in the room (the card, the top ten, then a cell steered by the attract mode).
+No attract bot (owner, 10 Nov 2026): the cabinet's screen in the room shows the arcade's usual demo, nothing steering a cell for you.
 
 ## 8. Scoring and the table
 
@@ -84,8 +84,7 @@ each other's cells, the server eats the smaller one.
 ## 11. The build, in two pull requests
 
 1. **The dish**: the shared simulation, the client, the cabinet, the check. Playable alone.
-2. **The whole market in it**: the `Dish` Durable Object, the client's wiring to it, the online check, the attract mode in the live
-   dish.
+2. **The whole market in it**: the `Dish` Durable Object, the client's wiring to it, the online check.
 
 ## 12. Open for the owner
 

@@ -9,7 +9,7 @@ const DISH={
   pellet:(S,x,y,c)=>{ const q={id:S.next++,x:x??S.rnd()*DW,y:y??S.rnd()*DH,c:c??Math.floor(S.rnd()*COLS.length)}; S.pellets.push(q); if(S.ev)S.ev.push([q.id,q.x|0,q.y|0,q.c]); return q; },
   ate:(S,i)=>{ const q=S.pellets[i]; if(S.ev)S.ev.push([q.id]); S.pellets[i]=S.pellets[S.pellets.length-1]; S.pellets.pop(); },
   virus:(S,x,y,vx,vy)=>{ S.viruses.push({x:x??S.rnd()*DW,y:y??S.rnd()*DH,m:VIRUSM,fed:0,vx:vx||0,vy:vy||0}); },
-  join:(S,id,name,col)=>{ const p={id,name,col,dir:[0,0],split:0,eject:0,best:0,eaten:0,dead:0,n:0,think:S.rnd()}; S.players[id]=p; DISH.spawn(S,p); return p; },
+  join:(S,id,name,col)=>{ const p={id,name,col,dir:[0,0],split:0,eject:0,best:0,eaten:0,dead:0,n:0}; S.players[id]=p; DISH.spawn(S,p); return p; },
   leave:(S,id)=>{ S.cells=S.cells.filter(c=>c.o!==id); delete S.players[id]; },
   spawn:(S,p)=>{ let x=0, y=0; for(let k=0;k<20;k++){ x=200+S.rnd()*(DW-400); y=200+S.rnd()*(DH-400); if(!S.cells.some(c=>Math.hypot(c.x-x,c.y-y)<c.r+300))break; } DISH.cell(S,p,10,x,y,0,0); p.dead=0; },
   cell:(S,p,m,x,y,vx,vy)=>{ const c={id:S.next++,o:p.id,m,r:rad(m),x,y,vx,vy,mt:S.t+mergeT(m)}; S.cells.push(c); p.n++; return c; },
@@ -41,15 +41,7 @@ const DISH={
     if(S.cells.some(c=>!c.m)){ S.cells=S.cells.filter(c=>c.m>0); for(const id in P)P[id].n=0; for(const c of S.cells)P[c.o].n++; }
     for(const id in P){ const p=P[id]; const m=DISH.mass(S,id); if(m>p.best)p.best=m; if(!p.n&&!p.dead){ p.dead=1; p.died=S.t; } }
     while(S.pellets.length<NP)DISH.pellet(S); while(S.viruses.length<NV)DISH.virus(S);
-    for(const id in P){ const p=P[id]; if(!p.auto)continue; p.think-=dt; if(p.think>0)continue; p.think=.3; DISH.brain(S,p); }
-    DISH.board(S); },
-  // the attract mode: flee the big, chase the small, else the nearest pellet
-  brain:(S,p)=>{ const mine=S.cells.filter(c=>c.o===p.id); if(!mine.length)return; let cx=0, cy=0, mm=0, big=0; for(const c of mine){ cx+=c.x; cy+=c.y; mm+=c.m; big=Math.max(big,c.m); } cx/=mine.length; cy/=mine.length;
-    let flee=null, fd=600, prey=null, pd=520; for(const c of S.cells){ if(c.o===p.id)continue; const d=Math.hypot(c.x-cx,c.y-cy); if(c.m>big*1.25&&d<fd){ flee=c; fd=d; } else if(c.m*1.25<big&&d<pd){ prey=c; pd=d; } }
-    for(const v of S.viruses){ if(big<VIRUSM*1.25)continue; const d=Math.hypot(v.x-cx,v.y-cy); if(d<rad(big)+60&&d<fd){ flee=v; fd=d; } }
-    let tx_, ty_; if(flee){ tx_=cx-(flee.x-cx); ty_=cy-(flee.y-cy); } else if(prey){ tx_=prey.x; ty_=prey.y; if(pd<rad(big)*2.2&&prey.m*2.5<big&&big>60&&mine.length<4)p.split=1; }
-    else { let best=null, bd=1e9; for(let i=0;i<S.pellets.length;i+=3){ const q=S.pellets[i]; const d=(q.x-cx)*(q.x-cx)+(q.y-cy)*(q.y-cy); if(d<bd){ bd=d; best=q; } } if(best){ tx_=best.x; ty_=best.y; } else { tx_=DW/2; ty_=DH/2; } }
-    const n=Math.hypot(tx_-cx,ty_-cy)||1; p.dir=[(tx_-cx)/n,(ty_-cy)/n]; }
+    DISH.board(S); }
 };
 const DISHK={DW,DH,NP,NV,MINSPLIT,MAXCELLS,EJECT,EJECTCOST,VIRUSM,COLS,rad,spd,mergeT,rng};
 export {DISH, DISHK};

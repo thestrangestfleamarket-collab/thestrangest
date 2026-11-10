@@ -1,4 +1,4 @@
-// THE PETRI CHECK: node tests/arcade-petri.cjs [dist/market.html]. Enters THE ARCADE, plays PETRI (alone in the dish off the website, no bots): the coin starts you at mass 10, the only one in it; eating pellets grows you; SPACE splits you in two and the pieces merge back; C ejects a blob and costs mass; a virus bursts a big cell; a big cell eats you and it is GAME OVER with the best mass; the attract mode steers on its own. Exits 1 if anything fails.
+// THE PETRI CHECK: node tests/arcade-petri.cjs [dist/market.html]. Enters THE ARCADE, plays PETRI (alone in the dish off the website, no bots): the coin starts you at mass 10, the only one in it; eating pellets grows you; SPACE splits you in two and the pieces merge back; C ejects a blob and costs mass; a virus bursts a big cell; a big cell eats you and it is GAME OVER with the best mass. Exits 1 if anything fails.
 const {chromium}=require('playwright'), path=require('path');
 let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c){ bad++; if(process.env.GITHUB_ACTIONS)console.log('::error title=arcade-petri::'+String(m).replace(/\n/g,' ').slice(0,900)); } };
 (async()=>{
@@ -23,9 +23,6 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c){ bad++; 
   await pg.evaluate(()=>{ const C=PETRIDBG().cheat; C.grow(50); C.big(4000,60,0); }); await pg.keyboard.down('ArrowRight'); g=await gwait(4,g=>g.dead); await pg.keyboard.up('ArrowRight'); await pg.waitForTimeout(300); d=await D();
   ok(g.dead&&d.over&&d.mode!=='play'&&/MASS \d+ · \d+ EATEN/.test(d.g&&d.g.sub||''),'a cell five times your mass eats you: GAME OVER with the best mass ('+JSON.stringify({dead:g.dead,over:d.over,mode:d.mode,sub:d.g&&d.g.sub})+')');
   await pg.keyboard.press('Escape'); await pg.waitForTimeout(300); ok(!(await pg.evaluate(()=>STORE.cabs.on)),'ESC leaves the cabinet');
-  await pg.evaluate(()=>{ STORE.cabs.play('PETRI'); }); await pg.waitForFunction(()=>STORE.cabs.on&&STORE.cabs.dbg().loaded,null,{timeout:90000}); await pg.keyboard.press('Space'); await pg.waitForTimeout(300);
-  const p0=await G(); await pg.evaluate(()=>PETRIDBG().cheat.auto(1)); g=await gwait(6,g=>Math.hypot(g.x-p0.x,g.y-p0.y)>60); ok(Math.hypot(g.x-p0.x,g.y-p0.y)>60,'the attract mode steers you by itself ('+Math.hypot(g.x-p0.x,g.y-p0.y).toFixed(0)+' units)');
-  await pg.keyboard.press('Escape'); await pg.waitForTimeout(200);
   ok(!errs.length&&!late.length,'no page errors, no slow chunk fetch '+errs.concat(late).slice(0,3).join(' | '));
   await b.close(); console.log(bad?bad+' FAILED':'all ok'); process.exit(bad?1:0);
 })().catch(e=>{ console.error(e); process.exit(1); });

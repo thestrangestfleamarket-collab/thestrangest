@@ -216,6 +216,8 @@ One tree pass (more leaves mean more shadow triangles).
 - [ ] **Trees by distance** · P2 · L · pick + code. The nine looks at https://claude.ai/artifact/TQ1obJhoEbEzv3cquPxwfC. The park's trees
   became whole only near you, a crown on a trunk far off (8 Nov): check what's left to pick.
 - [ ] **Look at the fluffy grass in game** · P3 · S · look. The tufts and the grass in five heights (8 Nov).
+- [ ] **Fruit trees: the picks left open** · P3 · S · pick. Of `mockups/fruit-trees.html` (10 Nov): making things (a cider press, an olive press, a sugar shack: where?) and who may pick (only the keeper for now).
+- [ ] **Fruit trees: look at them in game** · P3 · S · look. The orchard by the farm and a big pot at home (10 Nov).
 
 ## Clothes and the avatar
 
@@ -249,6 +251,7 @@ One tree pass (more leaves mean more shadow triangles).
 ## Menus, map, HUD and phones
 
 - [ ] **Try live** · P2 · S · look. The menus, where you start, the map and GO TO.
+- [x] **The map in the menus' green look** (owner, 10 Nov 2026: "B, go"; done 10 Nov) · P2 · M · code. `src/141e-map.js`, `tests/brochure.cjs`. Waits for his look and yes.
 - [ ] **The brochures** · P2 · S · look. Twelve, each in its own style, from three street racks (10 Nov): the styles, the photographs, where the racks stand, $2 and the $50 full set. Re-shoot a brochure's photographs and fix its words when its activity changes (`tools/brochure-shots.cjs`).
 - [ ] **The HUD's 24px margin on the owner's own screen** · P3 · S · look. His pick A (4 Nov); checked locally only.
 - [ ] **Phones** · P2 · L · look + code. Login on a phone never tried (the door lets them in since 9 Nov); the touch pad; menus fitted to

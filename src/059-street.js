@@ -23,7 +23,7 @@ await grab('mainstreet',async()=>{ const K=STORE.kit, {room,STEPS}=K, {X,Y,Z,pla
     const SEG=[[6,14.65,-6],[16.6,19.5,-7.95],[2.8,2.8+W-11.55,8.75]];
     const pic=(X_,z)=>{ const u=X_-B.x0; for(const [a,b,o] of SEG)if(u>=a+o&&u<b+o)return TH.THFRONT(u-o,z); return null; };
     const out=(nx,ny,Xw,Yw,z,f,cap)=>{ if(ny>0){ const c=pic(Xw,z); if(c)return c.e?c:sh(c,f); } const u=(nx?Yw:Xw)*24|0, r=z|0; if(r>B.h-8)return sh([200,192,170],f); return sh(r%8<1||(u+(r>>3&1)*8)%16<1?[120,52,44]:[156,66,54],f); };
-    const cy=(B.y0+B.y1)/2, tz=(X(1)-X(0))/(Y(1)-Y(0)), S={y0:cy-6,y1:cy+6,x:B.x0+T,z0:30,m:.4}; S.z1=S.z0+(S.y1-S.y0)*tz*9/16;
+    const cy=(B.y0+B.y1)/2, tz=(X(1)-X(0))/(Y(1)-Y(0)), S={y0:cy-3.2,y1:cy+3.2,x:B.x0+T,z0:44,m:.3}; S.z1=S.z0+(S.y1-S.y0)*tz*9/16;
     // the walls: old green paint over a brown dado, water run down from the top, the paint gone in places to the plaster; a few torn posters; the screen wall a faded red curtain
     const POST=[[178,64,54],[56,104,150],[200,164,62],[98,140,70],[150,74,150],[208,118,50]];
     const inWall=(_,nx,ny,X_,Y_,z,f)=>{ const u=nx?Y_:X_, n=.92+.14*hs(Math.floor(u*24),Math.floor(z/2),71), cell=Math.floor(u*1.3), hp=hs(cell,Math.floor(z/30),83);
@@ -41,7 +41,7 @@ await grab('mainstreet',async()=>{ const K=STORE.kit, {room,STEPS}=K, {X,Y,Z,pla
       for(const [a,b,o] of SEG){ TH.thAt(B.x1-o,B.y0); TH.thFront(p=>{ const u0=Math.max(p[0],a), u1=Math.min(p[1],b); return u1-u0>.01?[u0,u1,...p.slice(2)]:null; }); }
       turn(B,n0,l0);
       // the screen: a bedsheet-white sheet in a thrift-shop frame, patched once in a corner
-      const FR=[104,72,40], FRd=[70,46,26], fr={c:FR,top:()=>FRd,fi:(y,z)=>sh(FR,((y*24|0)+(z|0))%9<2?.8:1),fj:()=>FRd}, sx=S.x+.06, PA=[S.y1-2.6,S.y1-1.7,S.z0+10,S.z0+22];
+      const FR=[104,72,40], FRd=[70,46,26], fr={c:FR,top:()=>FRd,fi:(y,z)=>sh(FR,((y*24|0)+(z|0))%9<2?.8:1),fj:()=>FRd}, sx=S.x+.06, PA=[S.y1-1.5,S.y1-.9,S.z0+6,S.z0+14];
       SHARED.PNAME='movie screen'; prop([{x0:S.x,y0:S.y0,x1:sx,y1:S.y1,z0:S.z0,z1:S.z1,c:[176,172,158],top:()=>FRd,fj:()=>FRd,fi:(y,z)=>y>PA[0]&&y<PA[1]&&z>PA[2]&&z<PA[3]?(((y*24|0)+(z|0))%6<1?[90,80,70]:[196,188,164]):[176,172,158]},
         {x0:S.x,y0:S.y0-S.m,x1:sx+.08,y1:S.y1+S.m,z0:S.z1,z1:S.z1+12,...fr},{x0:S.x,y0:S.y0-S.m,x1:sx+.08,y1:S.y1+S.m,z0:S.z0-10,z1:S.z0,...fr},{x0:S.x,y0:S.y0-S.m,x1:sx+.08,y1:S.y0,z0:S.z0,z1:S.z1,...fr},{x0:S.x,y0:S.y1,x1:sx+.08,y1:S.y1+S.m,z0:S.z0,z1:S.z1,...fr}],null,{high:true});
       // dark (owner, 10 Nov 2026): only the caged bulbs down the sides, turned low

@@ -2,6 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {PERFX, pos, UI, VIS} from './003b-systems.js';
 import {scene} from './004-main.js';
+import {OWNED} from './005-save.js';
 import {AWAY, BLDK, grab, OFFDX, STORE, TILE, TURN, WP} from './006-map-pre.js';
 import {BLOCKS} from './038zb-blocks.js';
 import {FACADES} from './038zc-facades.js';
@@ -99,6 +100,54 @@ await grab('art',async()=>{ if(AWAY.has('art')||!WP.art)return;
   A_.lay=()=>LAY?LAY.map(p=>({k:p.f.rm.k,g:p.f.rm.g,key:fk(p.f.nx,p.f.ny,p.f.at,p.f.rm.k),a:+p.a.toFixed(2),w:+p.w.toFixed(2),z:Math.round(p.zc)})):[];
   A_.dbg=()=>({hung:A_.hung,n:DATA?DATA.length:0,lay:LAY?LAY.length:0,drawn:A_.groups.map(g=>VIS&&VIS.why(g).length?0:g.visible?1:0).join(''),galleries:1,floors:1,gap:A_.gap,scale:A_.scale,floor:A_.floor()});
   // the viewer: double-click a painting and it fills the screen, framed on its own wall; the museum's full-resolution file is fetched only then (the small picture shows until it comes); wheel, pinch, + and - zoom, drag pans, double-click zooms in or back; a painting with a tour (data/art-tours.json) has GUIDED TOUR
+  // the tour's reader (owner, 10 Nov 2026: "too hard to read ... add voice reading ... change font, color, background, size"): its words, its player, its settings (kept with what you own)
+  const TRF={serif:['SERIF','Literata, Georgia, serif'],clear:['CLEAR',"'Atkinson Hyperlegible', Verdana, sans-serif"],easy:['EASY','Lexend, Verdana, sans-serif'],pixel:['PIXEL','Silkscreen, monospace']};
+  const TRC={paper:['PAPER','#f3ebdd','#1e1a16','#f5d77a'],night:['NIGHT','#1b1714','#f1e7d2','#6b5520'],sepia:['SEPIA','#e8d3ae','#3b2a18','#f7c96a'],high:['HIGH','#000000','#fff36b','#2a4bff'],white:['WHITE','#ffffff','#000000','#ffe27a']};
+  const TRD={font:'serif',size:21,theme:'paper',lead:1.6,mode:'panel',read:true,next:true,voice:'',rate:1};
+  const TR={ get:()=>{ let o={}; try{ o=JSON.parse(OWNED.get('tour-reader')||'{}')||{}; }catch(e){} return {...TRD,...o}; }, save:R=>{ try{ OWNED.set('tour-reader',JSON.stringify(R)); }catch(e){} },
+    fonts:()=>{ if(TR.f)return; TR.f=1; const l=document.createElement('link'); l.rel='stylesheet'; l.href='https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,600&family=Atkinson+Hyperlegible:wght@400;700&family=Lexend:wght@400;600&display=swap'; document.head.appendChild(l); },
+    voices:()=>{ const S=window.speechSynthesis; if(!S)return []; const v=S.getVoices(), en=v.filter(x=>/^en/i.test(x.lang)); return en.length?en:v; },
+    voice:n=>{ const L=TR.voices(); return L.find(x=>x.name===n)||L.find(x=>/Google US English|Samantha|Daniel|Aria|Jenny/.test(x.name))||L[0]||null; },
+    style:(el,R)=>{ const C=TRC[R.theme]||TRC.paper, st=el.style; st.setProperty('--tr-bg',C[1]); st.setProperty('--tr-ink',C[2]); st.setProperty('--tr-mark',C[3]); st.setProperty('--tr-font',(TRF[R.font]||TRF.serif)[1]); st.setProperty('--tr-size',R.size+'px'); st.setProperty('--tr-lead',R.lead); },
+    panel:(box,R,done)=>{ const b=(on,k,v,lab,css='')=>'<button data-set="'+k+'" data-v="'+v+'" class="'+(on?'on':'')+'" style="'+css+'">'+lab+'</button>', E=x=>String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+      box.innerHTML='<div class="tr-sh"><b>READER SETTINGS</b><button data-set="x" aria-label="Close settings">✕</button></div>'+
+        '<div class="tr-sl">FONT</div><div class="tr-sg g4">'+Object.entries(TRF).map(([k,[n,f]])=>b(R.font===k,'font',k,n,'font-family:'+f.replace(/"/g,"'"))).join('')+'</div>'+
+        '<div class="tr-sl">TEXT SIZE · '+R.size+' PX</div><div class="tr-sg g3">'+b(0,'size',-2,'A−')+'<span class="tr-sz"><i style="width:'+((R.size-16)/20*100)+'%"></i></span>'+b(0,'size',2,'A+')+'</div>'+
+        '<div class="tr-sl">COLOURS</div><div class="tr-sg g5">'+Object.entries(TRC).map(([k,[n,bg,ink]])=>b(R.theme===k,'theme',k,n,'background:'+bg+';color:'+ink)).join('')+'</div>'+
+        '<div class="tr-sl">LINE SPACING</div><div class="tr-sg g3">'+[[1.35,'TIGHT'],[1.6,'NORMAL'],[1.9,'AIRY']].map(([v,n])=>b(R.lead===v,'lead',v,n)).join('')+'</div>'+
+        '<div class="tr-sl">READ ALOUD</div><label class="tr-ck"><input type="checkbox" data-set="read" '+(R.read?'checked':'')+'> Start reading by itself</label><label class="tr-ck"><input type="checkbox" data-set="next" '+(R.next?'checked':'')+'> Go on to the next stop by itself</label>'+
+        (window.speechSynthesis?'<div class="tr-sg g2"><select data-set="voice" aria-label="Voice">'+TR.voices().map(v=>'<option value="'+E(v.name)+'"'+(TR.voice(R.voice)===v?' selected':'')+'>'+E(v.name+' ('+v.lang+')')+'</option>').join('')+'</select>'+
+          '<select data-set="rate" aria-label="Speed">'+[.75,1,1.25,1.5].map(r=>'<option value="'+r+'"'+(r===R.rate?' selected':'')+'>SPEED '+r+'×</option>').join('')+'</select></div>':'<div class="tr-sl">THIS BROWSER HAS NO VOICE</div>');
+      box.onclick=e=>{ const t=e.target.closest('button[data-set]'); if(!t)return; const k=t.dataset.set, v=t.dataset.v; if(k==='x'){ box.hidden=true; return; }
+        if(k==='size')R.size=Math.max(16,Math.min(36,R.size+ +v)); else if(k==='lead')R.lead=+v; else R[k]=v; TR.save(R); TR.panel(box,R,done); done(); };
+      box.onchange=e=>{ const t=e.target, k=t.dataset.set; if(!k)return; R[k]=t.type==='checkbox'?t.checked:k==='rate'?+t.value:t.value; TR.save(R); done(); };
+      if(window.speechSynthesis&&!TR.voices().length&&!TR.vw){ TR.vw=1; speechSynthesis.addEventListener('voiceschanged',()=>{ if(!box.hidden)TR.panel(box,R,done); }); } } };
+  const TRCSS='[data-tr][hidden]{display:none!important}[data-tr]{font-family:var(--tr-font);color:var(--tr-ink);letter-spacing:0;cursor:default;box-sizing:border-box}[data-tr] *{box-sizing:border-box}'+
+    '[data-tr] button{font:12px Silkscreen,monospace;letter-spacing:.6px;min-height:44px;min-width:44px;padding:0 12px;border:2px solid currentColor;background:transparent;color:inherit;cursor:pointer}[data-tr] button.on{outline:3px solid var(--tr-mark);outline-offset:-6px}'+
+    '.tr-p{position:absolute;right:0;top:0;bottom:0;width:min(470px,44vw);background:var(--tr-bg);display:flex;flex-direction:column;gap:14px;padding:20px 26px;overflow:auto}'+
+    '@media (max-width:760px){.tr-p{top:auto;left:0;width:auto;height:58vh}}'+
+    '.tr-h{display:flex;align-items:center;gap:8px}.tr-no{font:30px Silkscreen,monospace;line-height:1;opacity:.8}.tr-of{flex:1;font:12px Silkscreen,monospace;letter-spacing:.6px;opacity:.75}'+
+    '.tr-t{margin:0;font-size:calc(var(--tr-size)*1.5);line-height:1.15;font-weight:600}'+
+    '.tr-pl{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--tr-ink);color:var(--tr-bg)}.tr-pl button{border-color:var(--tr-bg)}'+
+    '.tr-play{border-radius:50%;width:56px;height:56px;background:var(--tr-mark)!important;color:#1e1a16!important;border:none!important;font-size:16px!important}'+
+    '.tr-bar{flex:1;height:8px;background:color-mix(in srgb,var(--tr-bg) 30%,transparent);position:relative}.tr-bar::after{content:"";position:absolute;left:0;top:0;bottom:0;width:var(--p,0%);background:var(--tr-mark);transition:width .3s}'+
+    '.tr-x{font-size:var(--tr-size);line-height:var(--tr-lead);flex:1}.tr-x p{margin:0 0 .7em}.tr-x span,.tr-t{transition:background .2s}[data-s].on{background:var(--tr-mark);box-shadow:0 0 0 3px var(--tr-mark)}'+
+    '.tr-f{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.tr-f label,.tr-ck{display:flex;align-items:center;gap:8px;font-size:15px;flex:1}.tr-f input,.tr-ck input{width:22px;height:22px}'+
+    '.tr-s{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.84);color:#fff;padding:18px 24px;display:flex;flex-direction:column;align-items:center;gap:12px}'+
+    '.tr-s p{margin:0;max-width:980px;text-align:center;font-size:calc(var(--tr-size)*1.3);line-height:1.4;color:#fff;font-family:var(--tr-font)}.tr-s div{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center}.tr-s .tr-of{color:#d8d2c4}'+
+    '.tr-set{position:absolute;right:16px;top:64px;width:min(520px,calc(100vw - 32px));max-height:calc(100vh - 90px);overflow:auto;background:#17130f;color:#f1e7d2;border:2px solid #3a3128;padding:18px 20px;display:flex;flex-direction:column;gap:10px;font-family:\'Atkinson Hyperlegible\',Verdana,sans-serif;z-index:2}'+
+    '.tr-sh{display:flex;align-items:center}.tr-sh b{flex:1;font:14px Silkscreen,monospace;letter-spacing:.6px;font-weight:400}.tr-sl{font:11px Silkscreen,monospace;letter-spacing:.6px;color:#bfb39b;margin-top:6px}'+
+    '.tr-sg{display:grid;gap:8px}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:auto 1fr auto;align-items:center}.g4{grid-template-columns:repeat(4,1fr)}.g5{grid-template-columns:repeat(5,1fr)}'+
+    '.tr-set button{font-size:13px;letter-spacing:0}.tr-sz{height:8px;background:#3a3128;display:block}.tr-sz i{display:block;height:8px;background:#f5d77a}'+
+    '.tr-set select{min-height:44px;background:#17130f;color:#f1e7d2;border:2px solid #f1e7d2;font-size:15px;font-family:inherit;padding:0 8px;width:100%}';
+  const TRH=
+    '<div data-k="card" data-tr hidden class="tr-p" role="region" aria-label="Guided tour"><div class="tr-h"><span class="tr-no" data-k="cno"></span><span class="tr-of" data-k="cn"></span><button data-k="mode">SUBTITLES</button><button data-k="aa" aria-label="Reader settings: font, size, colours" style="font:600 18px var(--tr-font)">Aa</button><button data-k="end" aria-label="End the tour">✕</button></div>'+
+      '<h2 class="tr-t" data-k="ct"></h2>'+
+      '<div class="tr-pl"><button data-k="back" aria-label="Previous stop">◀</button><button data-k="play" class="tr-play" aria-label="Read aloud">▶</button><div class="tr-bar" data-k="bar"></div><button data-k="next">NEXT ▶</button></div>'+
+      '<div class="tr-x" data-k="cx" aria-live="polite"></div>'+
+      '<div class="tr-f"><label><input type="checkbox" data-k="auto"> Next stop by itself</label><button data-k="rate">1×</button><button data-k="end2">END TOUR</button></div></div>'+
+    '<div data-k="subs" data-tr hidden class="tr-s"><p data-k="sx" aria-live="polite"></p><div><button data-k="sback">◀ BACK</button><button data-k="splay" class="tr-play" aria-label="Read aloud">▶</button><button data-k="snext">NEXT</button><span class="tr-of" data-k="sn"></span><button data-k="smode">READING PANEL</button><button data-k="saa" aria-label="Reader settings: font, size, colours">Aa</button><button data-k="send">END</button></div></div>'+
+    '<div data-k="set" data-tr hidden class="tr-set" role="dialog" aria-label="Reader settings"></div>';
   let V=null, TOURS={}, TEX=null;
   const view=(t,p)=>{ '@art'; if(!V){ const el=document.createElement('div'); el.id='artview'; el.hidden=true;
       el.style.cssText='position:fixed;inset:0;z-index:30;background:#0c0b0a;overflow:hidden;touch-action:none;user-select:none;cursor:grab;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#e8e2cc';
@@ -106,10 +155,9 @@ await grab('art',async()=>{ if(AWAY.has('art')||!WP.art)return;
         '<div data-k="cap" style="position:absolute;left:0;right:0;bottom:0;padding:14px 18px;background:linear-gradient(transparent,#0c0b0ae8 40%);pointer-events:none"></div>'+
         '<div style="position:absolute;top:12px;right:12px;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><button data-k="tour">GUIDED TOUR</button><button data-k="out">−</button><button data-k="in">+</button><button data-k="fit">FIT</button><button data-k="one">FULL SIZE</button><button data-k="x">CLOSE ✕</button></div>'+
         '<div data-k="st" style="position:absolute;top:16px;left:18px;color:#c8b98a;text-shadow:0 1px 2px #000"></div>'+
-        '<div data-k="card" hidden style="position:absolute;right:16px;bottom:72px;width:min(380px,calc(100vw - 32px));max-height:calc(100vh - 150px);overflow:auto;padding:14px 16px;background:#14120fef;border:2px solid #5a5248;line-height:1.55;font:12px Georgia,serif;letter-spacing:0;color:#e8e2cc;cursor:default">'+
-          '<div data-k="cn" style="font:10px Silkscreen,monospace;letter-spacing:.4px;color:#a89c84"></div><div data-k="ct" style="font:13px Silkscreen,monospace;letter-spacing:.4px;color:#f4ecd4;margin:6px 0 8px"></div><div data-k="cx"></div>'+
-          '<div style="display:flex;gap:6px;margin-top:12px;font:11px Silkscreen,monospace"><button data-k="back">BACK</button><button data-k="next">NEXT</button><span style="flex:1"></span><button data-k="end">END TOUR</button></div></div>';
-      for(const b of el.querySelectorAll('button'))b.style.cssText='font:11px Silkscreen,monospace;letter-spacing:.4px;color:#e8e2cc;background:#1c1a18e0;border:1px solid #5a5248;padding:6px 10px;cursor:pointer';
+        TRH;
+      for(const b of el.querySelectorAll('button'))if(!b.closest('[data-tr]'))b.style.cssText='font:11px Silkscreen,monospace;letter-spacing:.4px;color:#e8e2cc;background:#1c1a18e0;border:1px solid #5a5248;padding:6px 10px;cursor:pointer';
+      { const st=document.createElement('style'); st.textContent=TRCSS; el.appendChild(st); }
       document.body.appendChild(el); const im=el.querySelector('img'), q=k=>el.querySelector('[data-k="'+k+'"]'), W0=q('world');
       V={el,im,s:1,x:0,y:0,w:1,h:1,fit:1,max:8,full:null,t:null,tour:null};
       const put=()=>{ W0.style.transform='translate('+V.x+'px,'+V.y+'px) scale('+V.s+')'; };
@@ -137,21 +185,44 @@ await grab('art',async()=>{ if(AWAY.has('art')||!WP.art)return;
         im.style.boxShadow='0 0 0 '+px(Math.max(1,.012*u))+' #1a120c,inset 0 0 '+px(.04*u)+' rgba(0,0,0,.35)'; };
       V.size=(w,h,keep)=>{ const c=keep?{cx:(el.clientWidth/2-V.x)/(V.w*V.s),cy:(el.clientHeight/2-V.y)/(V.h*V.s),r:V.s/V.fit}:null; V.w=w; V.h=h; im.style.width=w+'px'; im.style.height=h+'px'; V.dress(); fitNow();
         if(V.tour){ V.go(V.tour.i,true); return; } if(c){ V.s=Math.min(V.max,V.fit*c.r); V.x=el.clientWidth/2-c.cx*V.w*V.s; V.y=el.clientHeight/2-c.cy*V.h*V.s; clamp(); } };
-      // the tour: each step glides to its part of the painting (at: [x, y, w, h] as fractions of it; none: the whole) and tells its story in the card
+      // the tour (owner, 10 Nov 2026: the mix of the mockups): each step glides to its part of the painting (at: [x, y, w, h] as fractions of it; none: the whole); its words in the reading panel beside it with the audio guide's player on top, or as subtitles under it; read aloud by the browser's own voice, sentence by sentence, the one being read lit
       let anim=0; const stop=()=>{ cancelAnimationFrame(anim); anim=0; };
-      const card=q('card');
-      V.go=(i,now)=>{ const T=V.tour; if(!T)return; i=Math.max(0,Math.min(T.steps.length-1,i)); T.i=i; const S=T.steps[i], W=el.clientWidth, H=el.clientHeight, wide=W>760, aw=wide?W-420:W, ah=wide?H-60:H*.55;
-        const a=S.at||[-.04,-.04,1.08,1.08], rw=a[2]*V.w, rh=a[3]*V.h, s=Math.min(V.max,Math.min(aw*.86/rw,ah*.86/rh)), x=aw/2-(a[0]*V.w+rw/2)*s, y=(wide?H/2:ah/2+12)-(a[1]*V.h+rh/2)*s;
-        q('cn').textContent=(T.name||'GUIDED TOUR')+' · '+(i+1)+' / '+T.steps.length; q('ct').textContent=S.title||''; q('cx').innerHTML=(S.text||'').split('\n').map(x=>'<p style="margin:0 0 8px">'+esc(x)+'</p>').join('');
-        q('back').style.visibility=i?'visible':'hidden'; q('next').textContent=i<T.steps.length-1?'NEXT':'FINISH';
+      const card=q('card'), subs=q('subs'), set=q('set'), SP=window.speechSynthesis||null, RD=TR.get();
+      const sents=t=>(t||'').split(/\n/).map(p=>p.match(/[^.!?]+[.!?]+["”')]*\s*|[^.!?]+$/g)||[p]);
+      const look=()=>{ TR.style(el,RD); q('mode').textContent='SUBTITLES'; q('rate').textContent=RD.rate+'×'; q('auto').checked=!!RD.next; };
+      const showMode=()=>{ const T=V.tour; card.hidden=!T||RD.mode!=='panel'; subs.hidden=!T||RD.mode!=='subs'; };
+      const speak=k=>{ const T=V.tour; if(!T||!SP)return; SP.cancel(); const tok=++T.tok, L=T.sen;
+        if(k>=L.length){ if(RD.next&&T.i<T.steps.length-1){ V.go(T.i+1); return; } T.play=false; T.cur=-1; mark(); return; }
+        T.cur=k; mark(); const u=new SpeechSynthesisUtterance(L[k]); u.rate=RD.rate; const vo=TR.voice(RD.voice); if(vo){ u.voice=vo; u.lang=vo.lang; } else u.lang='en-US';
+        u.onend=()=>{ if(V.tour===T&&T.tok===tok&&T.play)speak(k+1); }; u.onerror=()=>{ if(V.tour===T&&T.tok===tok){ T.play=false; mark(); } }; SP.speak(u); };
+      const mark=()=>{ const T=V.tour; if(!T)return; for(const e of el.querySelectorAll('[data-s]'))e.classList.toggle('on',+e.dataset.s===T.cur);
+        for(const b of [q('play'),q('splay')]){ b.textContent=T.play?'❚❚':'▶'; b.setAttribute('aria-label',T.play?'Pause reading':'Read aloud'); b.hidden=!SP; }
+        const n=T.sen.length, k=Math.max(0,T.cur); q('bar').style.setProperty('--p',(T.play||T.cur>=0?(k+1)/n*100:0)+'%');
+        q('sx').textContent=T.sen[T.cur>=0?T.cur:0]||''; q('sn').textContent='STOP '+(T.i+1)+' OF '+T.steps.length+(n>1?' · LINE '+(k+1)+' OF '+n:''); };
+      V.go=(i,now)=>{ const T=V.tour; if(!T)return; i=Math.max(0,Math.min(T.steps.length-1,i)); T.i=i; const S=T.steps[i], W=el.clientWidth, H=el.clientHeight;
+        const P=sents(S.text); T.sen=[S.title||'',...P.flat().map(x=>x.trim())].filter(Boolean); let n=1;
+        q('cno').textContent=i+1; q('cn').textContent='STOP '+(i+1)+' OF '+T.steps.length; q('ct').textContent=S.title||''; q('ct').dataset.s=0;
+        q('cx').innerHTML=P.map(ps=>'<p>'+ps.map(x=>'<span data-s="'+(n++)+'">'+esc(x)+'</span>').join('')+'</p>').join('');
+        q('back').style.visibility=i?'visible':'hidden'; q('next').textContent=i<T.steps.length-1?'NEXT ▶':'FINISH'; q('snext').textContent='NEXT ▶';
+        showMode(); T.cur=-1; mark();
+        const wide=W>760, pw=RD.mode==='panel'&&wide?card.offsetWidth:0, ph=RD.mode==='panel'&&!wide?card.offsetHeight:RD.mode==='subs'?subs.offsetHeight:0, aw=W-pw, ah=H-ph-(pw?60:20);
+        const a=S.at||[-.04,-.04,1.08,1.08], rw=a[2]*V.w, rh=a[3]*V.h, s=Math.min(V.max,Math.min(aw*.86/rw,ah*.86/rh)), x=aw/2-(a[0]*V.w+rw/2)*s, y=(pw?H/2:ah/2+12)-(a[1]*V.h+rh/2)*s;
+        if(T.play)speak(0); else if(SP)SP.cancel();
         stop(); if(now){ V.s=s; V.x=x; V.y=y; put(); return; } const s0=V.s, x0=V.x, y0=V.y, t0=performance.now(), D=1300;
         const f=()=>{ const k=Math.min(1,(performance.now()-t0)/D), e=k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2, ls=Math.log(s0)+(Math.log(s)-Math.log(s0))*e, ss=Math.exp(ls), r=(ss-s0)/((s-s0)||1);
           V.s=ss; V.x=x0+(x-x0)*(Math.abs(s-s0)>1e-6?r:e); V.y=y0+(y-y0)*(Math.abs(s-s0)>1e-6?r:e); put(); if(k<1)anim=requestAnimationFrame(f); else anim=0; }; anim=requestAnimationFrame(f); };
-      V.tourOn=()=>{ const T=TOURS[tkey(V.t)]; if(!T)return; V.tour={...T,i:0}; card.hidden=false; q('tour').hidden=true; V.go(0); };
-      V.tourOff=()=>{ if(!V.tour)return; V.tour=null; card.hidden=true; q('tour').hidden=!TOURS[tkey(V.t)]; stop(); fitNow(); };
-      q('tour').onclick=V.tourOn; q('next').onclick=()=>{ const T=V.tour; if(!T)return; if(T.i>=T.steps.length-1)V.tourOff(); else V.go(T.i+1); }; q('back').onclick=()=>V.tour&&V.go(V.tour.i-1); q('end').onclick=()=>V.tourOff();
-      for(const k of ['pointerdown','wheel','dblclick'])card.addEventListener(k,e=>e.stopPropagation(),{passive:true});
-      V.close=()=>{ if(!el.hidden&&UI.gamewin==='art')UI.gamewin=null; V.tour=null; card.hidden=true; stop(); el.hidden=true; im.onload=null; if(V.full)V.full.src=''; V.full=null; V.got=false; V.t=null; };
+      V.tourOn=()=>{ const T=TOURS[tkey(V.t)]; if(!T)return; TR.fonts(); look(); V.tour={...T,i:0,tok:0,cur:-1,sen:[],play:!!(SP&&RD.read)}; q('tour').hidden=true; V.go(0); };
+      V.tourOff=()=>{ if(!V.tour)return; V.tour.tok++; V.tour=null; if(SP)SP.cancel(); card.hidden=true; subs.hidden=true; set.hidden=true; q('tour').hidden=!TOURS[tkey(V.t)]; stop(); fitNow(); };
+      const play=()=>{ const T=V.tour; if(!T||!SP)return; if(T.play){ T.play=false; T.tok++; SP.cancel(); mark(); } else { T.play=true; speak(Math.max(0,T.cur)); } };
+      const line=d=>{ const T=V.tour; if(!T)return; const k=(T.cur<0?0:T.cur)+d; if(k<0)return V.go(T.i-1); if(k>=T.sen.length)return q('next').onclick(); if(T.play)speak(k); else { T.cur=k; mark(); } };
+      const swap=()=>{ RD.mode=RD.mode==='panel'?'subs':'panel'; TR.save(RD); if(V.tour)V.go(V.tour.i); };
+      q('tour').onclick=V.tourOn; q('next').onclick=()=>{ const T=V.tour; if(!T)return; if(T.i>=T.steps.length-1)V.tourOff(); else V.go(T.i+1); }; q('back').onclick=()=>V.tour&&V.go(V.tour.i-1); q('end').onclick=q('send').onclick=q('end2').onclick=()=>V.tourOff();
+      q('play').onclick=q('splay').onclick=play; q('sback').onclick=()=>line(-1); q('snext').onclick=()=>line(1); q('mode').onclick=q('smode').onclick=swap;
+      q('rate').onclick=()=>{ const R=[.75,1,1.25,1.5]; RD.rate=R[(R.indexOf(RD.rate)+1)%R.length]; TR.save(RD); look(); TR.panel(set,RD,look); const T=V.tour; if(T&&T.play)speak(Math.max(0,T.cur)); };
+      q('auto').onchange=e=>{ RD.next=e.target.checked; TR.save(RD); };
+      q('aa').onclick=q('saa').onclick=()=>{ set.hidden=!set.hidden; if(!set.hidden)TR.panel(set,RD,()=>{ look(); if(V.tour)V.go(V.tour.i,true); }); };
+      for(const w of [card,subs,set])for(const k of ['pointerdown','wheel','dblclick'])w.addEventListener(k,e=>e.stopPropagation(),{passive:true});
+      V.close=()=>{ if(!el.hidden&&UI.gamewin==='art')UI.gamewin=null; if(V.tour)V.tour.tok++; V.tour=null; if(SP)SP.cancel(); card.hidden=true; subs.hidden=true; set.hidden=true; stop(); el.hidden=true; im.onload=null; if(V.full)V.full.src=''; V.full=null; V.got=false; V.t=null; };
       q('x').onclick=V.close; q('in').onclick=()=>zoom(1.6); q('out').onclick=()=>zoom(1/1.6); q('fit').onclick=fitNow; q('one').onclick=()=>zoom(1/V.s);
       el.addEventListener('wheel',e=>{ e.preventDefault(); zoom(Math.exp(-e.deltaY*.0018),e.clientX,e.clientY); },{passive:false});
       const P=new Map(); let pd=0;
@@ -162,17 +233,18 @@ await grab('art',async()=>{ if(AWAY.has('art')||!WP.art)return;
       el.addEventListener('dblclick',e=>{ if(e.target.tagName==='BUTTON')return; if(V.s>V.fit*1.05)fitNow(); else zoom(3,e.clientX,e.clientY); });
       addEventListener('resize',()=>{ if(!el.hidden)V.size(V.w,V.h,true); });
       addEventListener('keydown',e=>{ if(el.hidden)return; e.stopImmediatePropagation(); e.preventDefault(); const k=e.key;
-        if(V.tour&&(k==='ArrowRight'||k===' '))return q('next').onclick(); if(V.tour&&k==='ArrowLeft')return V.go(V.tour.i-1); if(k==='Escape')return V.tour?V.tourOff():V.close();
+        if(V.tour&&k===' ')return play(); if(V.tour&&k==='ArrowRight')return q('next').onclick(); if(V.tour&&k==='ArrowLeft')return V.go(V.tour.i-1); if(k==='Escape')return V.tour?V.tourOff():V.close();
         if(k==='+'||k==='=')zoom(1.6); else if(k==='-'||k==='_')zoom(1/1.6); else if(k==='0')fitNow();
         else if(/^Arrow/.test(k)){ V.x+=k==='ArrowLeft'?80:k==='ArrowRight'?-80:0; V.y+=k==='ArrowUp'?80:k==='ArrowDown'?-80:0; clamp(); } },true);
       addEventListener('keyup',e=>{ if(!el.hidden){ e.stopImmediatePropagation(); } },true);
       V.cap=q('cap'); V.st=q('st'); V.q=q; }
     const {el,im}=V; V.close(); V.t=t; V.look=p?{col:p.f.rm.col,gilt:[0,1,2].includes(p.f.rm.g),h:p.h}:null; el.hidden=false; if(!UI.gamewin)UI.gamewin='art'; V.q('tour').hidden=!TOURS[tkey(t)];
-    V.cap.innerHTML='<div style="font-size:15px;color:#f4ecd4">'+esc(t.t.toUpperCase())+'</div><div style="margin-top:4px">'+esc(t.a.toUpperCase())+', '+esc(t.d)+'</div><div style="margin-top:4px;color:#a89c84">'+esc(t.m.toUpperCase())+' · PUBLIC DOMAIN (CC0)</div>';
+    V.cap.innerHTML='<div style="font-size:15px;color:#f4ecd4">'+esc(t.t.toUpperCase())+'</div><div style="margin-top:4px">'+esc(t.a.toUpperCase())+', '+esc(t.d)+'</div><div style="margin-top:4px;color:#a89c84">'+esc(t.m.toUpperCase())+' · PUBLIC DOMAIN</div>';
     im.onload=null; im.src=t.i; V.size(t.w*4,t.h*4); V.st.textContent=t.f?'LOADING FULL RESOLUTION…':'';
     if(t.f){ const F=V.full=new Image(); F.decoding='async'; F.onload=()=>{ if(V.full!==F||V.t!==t)return; im.src=F.src; V.got=true; V.size(F.naturalWidth,F.naturalHeight,true); V.st.textContent='FULL RESOLUTION · '+F.naturalWidth+' × '+F.naturalHeight; };
       F.onerror=()=>{ if(V.full===F)V.st.textContent='THE FULL PICTURE COULD NOT BE FETCHED'; }; F.src=t.f; } };
   const tkey=t=>t?t.t+'|'+t.a:'';
+  A_.reader=()=>TR.get(); A_.readerReset=()=>TR.save({...TRD});
   A_.view=view; A_.viewer=()=>V&&{open:!V.el.hidden,full:!!V.got,w:V.w,h:V.h,s:+V.s.toFixed(3),fit:+V.fit.toFixed(3),max:+V.max.toFixed(3),t:V.t&&V.t.t,wall:!!V.look,tour:V.tour?{i:V.tour.i,n:V.tour.steps.length,title:V.tour.steps[V.tour.i].title}:null,hasTour:!!TOURS[tkey(V.t)]}; A_.tourOn=()=>V&&V.tourOn(); A_.tourNext=()=>V&&V.q('next').onclick(); A_.tourOff=()=>V&&V.tourOff();
   const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
   A_.viewOne=async t=>{ await LOAD('art'); if(!Object.keys(TOURS).length){ try{ TOURS=await ARTTOURS()||{}; }catch(e){ TOURS={}; } } view(t,null); };   // a painting hung elsewhere (the bookstore café) opens in this viewer with its tour

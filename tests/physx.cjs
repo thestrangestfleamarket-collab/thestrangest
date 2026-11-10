@@ -9,7 +9,10 @@ const wait=(pg,ms)=>pg.waitForTimeout(ms);
   await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&hour=14&physics=1&at=79.6,1.6',{timeout:180000});
   for(let i=0;i<200&&!await pg.evaluate(()=>!!window.__started).catch(()=>false);i++)await wait(pg,1000);
   for(let i=0;i<60&&!await pg.evaluate(()=>GOODSDBG().built).catch(()=>false);i++)await wait(pg,1000);
-  await pg.evaluate(()=>{ const c=LOOSE.list(true).find(q=>q.name==='milk crates'); if(c)__dbg.UI.goTo(c.at[0]+1.5,c.at[2],'up'); });   // the crates move with the map: go to them
+  // a stack of milk crates of its own beside you (the street's were a loose thing until the bodega's front became a painted block)
+  await pg.evaluate(()=>{ const p=__dbg.pos(), M=__dbg.cv().TILE/.84, W=__dbg.W3.mesh, g=new W.geometry.constructor(), A=W.geometry.attributes.position.constructor, P=[], y0=SHARED.groundY(p[0]+1.2*M,p[2]+1.6*M);
+    for(const x of [-.25,.25])for(const y of [0,.6])for(const z of [-.25,.25])P.push(p[0]+1.2*M+x*M,y0+y*M,p[2]+1.6*M+z*M); const I=[0,1,3,0,3,2,4,6,7,4,7,5,0,4,5,0,5,1,2,3,7,2,7,6,0,2,6,0,6,4,1,5,7,1,7,3];
+    g.setAttribute('position',new A(new Float32Array(P),3)); g.setIndex(I); g.computeVertexNormals(); const m=new W.constructor(g,W.material); __dbg.scene.add(m); GPH.add(m,{name:'milk crates',m:3}); });
   for(let i=0;i<60&&!await pg.evaluate(()=>GOODSDBG().active>0).catch(()=>false);i++)await wait(pg,1000);
   await wait(pg,1500);
   const ui=await pg.evaluate(()=>{ const B=document.querySelector('#menu [data-p="graphics"] #dphx'); return {rows:B?B.querySelectorAll('[data-px]').length:0,cfg:PHYS.cfg}; });

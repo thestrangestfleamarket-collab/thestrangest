@@ -7,7 +7,7 @@ import {HANDS} from './111b-hands.js';
 import {GHOLD} from './146zoa-guitar-hold.js';
 const VRB={};
 { const V3=THREE.Vector3, Q4=THREE.Quaternion, M4=THREE.Matrix4;
-  const EYE=new V3(0,.19,.02), HEADMAX=1.1, RATE=.1, FLIP=new Q4().setFromAxisAngle(new V3(0,1,0),Math.PI);
+  const EYE=new V3(0,.19,.02), HEADMAX=1.1, LEANMAX=.35, RATE=.1, FLIP=new Q4().setFromAxisAngle(new V3(0,1,0),Math.PI);
   const POLE={L:new V3(.45,-1,-.35),R:new V3(-.45,-1,-.35)}, ARM={L:[3,4,5],R:[6,7,8]};
   // a controller's grip to the wrist (OpenXR: the grip's x to the right, -z along the controller; the wrist's -z to the knuckles, +y the back of the hand), the wrist a little behind the palm
   const GRIP={L:new Q4().setFromAxisAngle(new V3(0,0,1),Math.PI/2),R:new Q4().setFromAxisAngle(new V3(0,0,1),-Math.PI/2)}, GBACK=new V3(0,0,.06);
@@ -44,7 +44,11 @@ const VRB={};
     r={restM,W:restM.map(()=>new M4()),RQ:restM.map(m=>{ const q=new Q4(); m.decompose(PV,q,SV); return q; }),st,X:{}};
     if(st&&st.base)for(const S of 'LR'){ const X=new M4(); if(S==='R')X.makeScale(-1,1,1); X.multiply(HANDS.REST[N.wrist].clone().invert()).multiply(st.base[S].clone().invert()); const q=new Q4(); X.decompose(PV,q,SV); r.X[S]=q; }
     RM.set(body,r); return r; };
-  const QT=new Q4(), QA=new Q4(), QB=new Q4(), O2=new V3(), E=new V3(), TG=new V3(), PO=new V3(), KS=new V3();
+  const QT=new Q4(), QA=new Q4(), QB=new Q4(), O2=new V3(), E=new V3(), TG=new V3(), PO=new V3(), KS=new V3(), HP=new V3(), LA=new V3(), LB=new V3(), QL=new Q4(), ML=new M4(), MT=new M4();
+  // your own body leans at the waist so its head is where your real head is (the idle's sway would carry it off); the legs keep their moves
+  const lean=(W,QT,k,eye)=>{ HP.setFromMatrixPosition(W[1]); LA.setFromMatrixPosition(W[2]).add(E.copy(EYE).applyQuaternion(QT).multiplyScalar(k)).sub(HP); LB.copy(eye).sub(HP); if(LA.lengthSq()<1e-9||LB.lengthSq()<1e-9)return;
+    QL.setFromUnitVectors(LA.normalize(),LB.normalize()); const w=Math.min(1,Math.abs(QL.w)), ang=2*Math.acos(w); if(ang>LEANMAX)QL.slerp(QB.identity(),1-LEANMAX/ang);
+    ML.makeTranslation(HP.x,HP.y,HP.z).multiply(MT.makeRotationFromQuaternion(QL)).multiply(MT.makeTranslation(-HP.x,-HP.y,-HP.z)); for(let i=1;i<9;i++)W[i].premultiply(ML); QT.premultiply(QL); };
   const smooth=d=>{ const now=performance.now(), a=d.s?1-Math.exp(-Math.min(.1,(now-d.st)/1000)*14):1; d.st=now; const s=d.s||(d.s={h:[0,0,0,1],L:null,R:null}), g=d.g;
     QA.fromArray(s.h).slerp(QB.fromArray(g.h),a).toArray(s.h);
     for(const S of 'LR'){ const G=g[S]; if(!G){ s[S]=null; continue; } let C=s[S]; if(!C){ C=s[S]={d:G.d.slice(),q:G.q.slice(),f:G.f?G.f.slice():null}; continue; }
@@ -54,7 +58,7 @@ const VRB={};
   const fgOf=(st,S,f)=>{ const F=st.vrfg||(st.vrfg={L:[0,1,2,3,4].map(()=>[0,0,0,0]),R:[0,1,2,3,4].map(()=>[0,0,0,0])}); for(let i=0;i<5;i++)for(let k=0;k<4;k++)F[S][i][k]=f[i*4+k]; return F[S]; };
   BODIES.track=(PM,body,d)=>{ if(!body.binv)return; const P=PM.value, st=PM.hands, R=prep(body,st), W=R.W, RQ=R.RQ, D=d.raw?d:smooth(d);
     for(let i=1;i<9;i++)W[i].multiplyMatrices(P[i],R.restM[i]);
-    P[1].decompose(PV,QT,SV); const k=SV.x; KS.set(k,k,k);
+    P[1].decompose(PV,QT,SV); const k=SV.x; KS.set(k,k,k); if(D.e)lean(W,QT,k,D.e);
     QA.fromArray(D.h); QB.copy(QT).invert().multiply(QA); { const w=Math.min(1,Math.abs(QB.w)), ang=2*Math.acos(w); if(ang>HEADMAX)QB.slerp(QM.identity(),1-HEADMAX/ang); } QA.copy(QT).multiply(QB);
     O2.setFromMatrixPosition(W[2]); W[2].compose(O2,QB.copy(QA).multiply(RQ[2]),KS);
     E.copy(EYE).applyQuaternion(QA).multiplyScalar(k).add(O2); if(D.e)VRB.eye=[...DV.subVectors(D.e,E).applyQuaternion(QB.copy(QA).invert()).multiplyScalar(1/k).toArray()];   // (your real eye from where the avatar's is, in its head's frame, metres: for the checks)
@@ -63,7 +67,7 @@ const VRB={};
       if(H.m)TG.copy(H.m); else TG.fromArray(H.d).multiplyScalar(k).add(E); IK.reach(W,ids,TG,PO.copy(POLE[S]).transformDirection(P[1])); IK.untwist(W,ids,1);
       if(R.X[S]){ O2.setFromMatrixPosition(W[h]); W[h].compose(O2,QB.fromArray(H.q).multiply(R.X[S]).multiply(RQ[h]),KS); IK.untwist(W,ids,2); }
       if(st&&H.f){ fg=fg||{L:null,R:null}; fg[S]=fgOf(st,S,H.f); } }
-    for(let i=2;i<9;i++)P[i].multiplyMatrices(W[i],body.binv[i]);
+    for(let i=1;i<9;i++)P[i].multiplyMatrices(W[i],body.binv[i]);
     if(st)st.fg=fg; };
 
   /* ---------- each frame in the headset: your body follows you; ten times a second the others are told ---------- */

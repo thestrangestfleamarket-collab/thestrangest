@@ -150,7 +150,7 @@
      "steps": [
       "THE BANK: your vault (see THE BANK).",
       "THE MOVIE THEATRE, THE PLAYHOUSE and THE ART MUSEUM.",
-      "FISHING & SCUBA (the Fisherman in Waders): rods, reels, lures, bait, crab pot, coolers, goggles, a scuba tank to rent. Buys fish. Teaches FISHING.",
+      "FISHING & SCUBA (the Fisherman in Waders): rods, reels, lures, bait, coolers, goggles, a scuba tank to rent. Buys fish. Teaches FISHING.",
       "THE BOOKSTORE (the Professor): the free library; bookbinding kits, canvases, paper, quill. Buys mended books and paintings. Teaches BOOKBINDING.",
       "THE ARCADE: free games and the Holodeck. The Game Master teaches GOLF."
      ]
@@ -293,12 +293,9 @@
   },
   {
    "id": "pots",
-   "title": "CRAB POTS AND COOLERS",
-   "what": "Catch crabs while you are away, and carry more fish.",
+   "title": "COOLERS",
+   "what": "Carry more fish.",
    "steps": [
-    "Buy a CRAB POT ($25) from the Fisherman in Waders. You can have three out.",
-    "Face the water and press [P] in fishing mode (or DROP IN THE WATER in your pack). If you carry cut bait, the pot is baited and catches twice as fast.",
-    "Leave it. Come back later and double-click its orange buoy to haul it up. Other players see your buoys, and you see theirs (only you can haul yours).",
     "You can carry 5 fish in your hands. A cooler (small, medium or big) holds 15, 40 or 100 more. With no room, a new fish goes back in the water."
    ]
   },
@@ -434,7 +431,7 @@
     "Find a brochure rack on the street: by the park gate, on Market St, or on the Hudson walk.",
     "Double-click the rack and click a cover to buy it ($2).",
     "Read it any time from your pack: READ.",
-    "Click the cover to open it. GO THERE takes you to the place.",
+    "Click the cover to open it. START takes you to the place and lends you what it needs (the scuba set, the rod, the nets...); the loan goes back when you leave.",
     "Collect all twelve: a full set pays $50."
    ]
   },

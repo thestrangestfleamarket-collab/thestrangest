@@ -12,13 +12,13 @@ const CLK={TZ:'America/Chicago'};
   CLK.count=(t,c)=>Math.floor(CLK.local(t,c)/3600000);   // whole hours since the epoch on Central's clock (the lives' H)
   // the owner's settings: put the clock at hour h (keeping its stop), stop it, run it on from where it stands, back to real time
   CLK.setHour=(t,c,h)=>{ const now=CLK.hour(t,c); let d=((h-now)%24+24)%24; if(d>12)d-=24; const g=CLK.at(t,c)+d*3600000; return c&&c.stop!=null?{off:g-t,stop:g}:{off:g-t,stop:null}; };
-  // the real sunrise and sunset there on the game's date (Chicago, 41.88 N 87.63 W; NOAA's sums), as hours on Central's clock: {rise, set}
-  CLK.LAT=41.88; CLK.LON=-87.63;
+  // the real sunrise and sunset over New York (40.71 N 74.01 W, the game's sky; NOAA's sums) on the game's date, as hours on Central's clock: {rise, set}
+  CLK.LAT=40.7128; CLK.LON=-74.006;
   CLK.sun=(t,c)=>{ const L=CLK.local(t,c), d=new Date(L), N=Math.floor((Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate())-Date.UTC(d.getUTCFullYear(),0,1))/86400000)+1, y=2*Math.PI/365*(N-1), R=Math.PI/180;
     const eq=229.18*(.000075+.001868*Math.cos(y)-.032077*Math.sin(y)-.014615*Math.cos(2*y)-.040849*Math.sin(2*y)), de=.006918-.399912*Math.cos(y)+.070257*Math.sin(y)-.006758*Math.cos(2*y)+.000907*Math.sin(2*y)-.002697*Math.cos(3*y)+.00148*Math.sin(3*y);
     const ha=Math.acos(Math.max(-1,Math.min(1,Math.cos(90.833*R)/(Math.cos(CLK.LAT*R)*Math.cos(de))-Math.tan(CLK.LAT*R)*Math.tan(de))))/R, z=(L-CLK.at(t,c))/3600000;
     return {rise:(720-4*(CLK.LON+ha)-eq)/60+z,set:(720-4*(CLK.LON-ha)-eq)/60+z}; };
-  // the real Moon over Chicago at the game's moment (suncalc's sums): alt and az in radians (az from the south, west positive), phase 0 new to .5 full to 1, kept ten seconds
+  // the real Moon over New York at the game's moment (suncalc's sums): alt and az in radians (az from the south, west positive), phase 0 new to .5 full to 1, kept ten seconds
   CLK.lst=(t,c)=>(((280.16+360.9856235*(CLK.at(t,c)/86400000-10957.5)+CLK.LON)%360)+360)%360;   // the sidereal time there (degrees): which stars are overhead
   { let mk=null, mv=null; CLK.moon=(t,c)=>{ const g=CLK.at(t,c), k=Math.floor(g/10000); if(k===mk)return mv; mk=k;
     const R=Math.PI/180, d=g/86400000-10957.5, e=23.4397*R, ra=(l,b)=>Math.atan2(Math.sin(l)*Math.cos(e)-Math.tan(b)*Math.sin(e),Math.cos(l)), dec=(l,b)=>Math.asin(Math.sin(b)*Math.cos(e)+Math.cos(b)*Math.sin(e)*Math.sin(l));

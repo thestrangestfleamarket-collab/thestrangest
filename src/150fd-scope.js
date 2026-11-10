@@ -1,7 +1,8 @@
-// THE TELESCOPE: a brass refractor on its tripod at your apartment's side window; double-click for the eyepiece: the real sky (Yale Bright Star Catalogue, the planets, Moon and Sun computed for New York) turned so the game's night is the real night, eyepieces, focus, a clock drive, GO TO, a solar filter, and the weather in the way.
+// THE TELESCOPE: a brass refractor on its tripod at your apartment's side window; double-click for the eyepiece: the real sky over New York at the game's moment (Yale Bright Star Catalogue; the planets, Moon and Sun from 134bb), the same sky the street has, eyepieces, focus, a clock drive, GO TO, a solar filter, and the weather in the way.
 import {THREE} from './003-shx.js';
-import {CLOCK, SFX, WX} from './003b-systems.js';
+import {DN, SFX, WX} from './003b-systems.js';
 import {MODS, SYS} from './006-map-pre.js';
+import {EPH} from './134bb-ephem.js';
 import {ROOMK} from './150a-bedroom.js';
 const SCOPE={alt:35,az:270,va:0,vz:0,mag:25,focus:.18,track:true,lines:true,filter:false,goto:null,open:null,data:null,stars:null,view:null,ext:[]}; window.SCOPE=SCOPE;   // ext: what later files add ({panel, click, input, draw, open, close}, 150fg on)
 { const STARS=__LAZY__("data/stars.json"), SCOPEJ=__LAZY__("data/scope.json");
@@ -10,47 +11,12 @@ const SCOPE={alt:35,az:270,va:0,vz:0,mag:25,focus:.18,track:true,lines:true,filt
   /* ---------- the view: everything that runs only once someone looks through it ---------- */
   const make=()=>{ '@scope';
     const D2R=Math.PI/180, R2D=180/Math.PI, sn=x=>Math.sin(x*D2R), cs=x=>Math.cos(x*D2R), nrm=x=>((x%360)+360)%360, s180=x=>{ x=nrm(x); return x>180?x-360:x; }, cl=(v,a,b)=>Math.max(a,Math.min(b,v));
-    const LAT=40.7128, LON=-74.006, EPS=23.43928;
-    // JPL's approximate Keplerian elements (Standish, 1800-2050): a, e, I, L, long. perihelion, node, each with its rate per century
-    const EL={me:[.38709927,.00000037,.20563593,.00001906,7.00497902,-.00594749,252.2503235,149472.67411175,77.45779628,.16047689,48.33076593,-.12534081],
-      ve:[.72333566,.0000039,.00677672,-.00004107,3.39467605,-.0007889,181.9790995,58517.81538729,131.60246718,.00268329,76.67984255,-.27769418],
-      em:[1.00000261,.00000562,.01671123,-.00004392,-.00001531,-.01294668,100.46457166,35999.37244981,102.93768193,.32327364,0,0],
-      ma:[1.52371034,.00001847,.0933941,.00007882,1.84969142,-.00813131,-4.55343205,19140.30268499,-23.94362959,.44441088,49.55953891,-.29257343],
-      ju:[5.202887,-.00011607,.04838624,-.00013253,1.30439695,-.00183714,34.39644051,3034.74612775,14.72847983,.21252668,100.47390909,.20469106],
-      sa:[9.53667594,-.0012506,.05386179,-.00050991,2.48599187,.00193609,49.95424423,1222.49362201,92.59887831,-.41897216,113.66242448,-.28867794],
-      ur:[19.18916464,-.00196176,.04725744,-.00004397,.77263783,-.00242939,313.23810451,428.48202785,170.9542763,.40805281,74.01692503,.04240589],
-      ne:[30.06992276,.00026291,.00859048,.00005105,1.77004347,.00035372,-55.12002969,218.45945325,44.96476227,-.32241464,131.78422574,-.00508664]};
-    const BODY={sun:{name:'THE SUN',id:'sun',km:1392700,H:-26.7,col:'#fff4d0',fill:.98},moon:{name:'THE MOON',id:'moon',km:3474.8,col:'#d8d4c8',fill:.98},me:{name:'MERCURY',id:'mercury',km:4879,H:-.6,col:'#bfb3a3',fill:.82},ve:{name:'VENUS',id:'venus',km:12104,H:-4.4,col:'#fff1cf',fill:.78},
-      ma:{name:'MARS',id:'mars',km:6792,H:-1.5,col:'#e08a5a',fill:.98},ju:{name:'JUPITER',id:'jupiter',km:142984,H:-9.4,col:'#efd9b4',fill:.95},sa:{name:'SATURN',id:'saturn',km:120536,H:-8.9,col:'#ead8a0',fill:.37},ur:{name:'URANUS',id:'uranus',km:51118,H:-7.2,col:'#bfe4ec',fill:.8},ne:{name:'NEPTUNE',id:'neptune',km:49528,H:-6.9,col:'#7f9ff0',fill:.84}};   // fill: how much of its photo the disc spans
-    const helio=(k,T)=>{ const q=EL[k], a=q[0]+q[1]*T, e=q[2]+q[3]*T, I=q[4]+q[5]*T, L=q[6]+q[7]*T, wb=q[8]+q[9]*T, O=q[10]+q[11]*T, w=wb-O, Mr=s180(L-wb)*D2R; let E=Mr+e*Math.sin(Mr);
-      for(let i=0;i<8;i++)E-=(E-e*Math.sin(E)-Mr)/(1-e*Math.cos(E)); const xp=a*(Math.cos(E)-e), yp=a*Math.sqrt(1-e*e)*Math.sin(E), cw=cs(w), sw=sn(w), cO=cs(O), sO=sn(O), cI=cs(I), sI=sn(I);
-      return [(cw*cO-sw*sO*cI)*xp+(-sw*cO-cw*sO*cI)*yp,(cw*sO+sw*cO*cI)*xp+(-sw*sO+cw*cO*cI)*yp,(sw*sI)*xp+(cw*sI)*yp]; };
-    const toEq=(x,y,z)=>{ const ye=y*cs(EPS)-z*sn(EPS), ze=y*sn(EPS)+z*cs(EPS), r=Math.hypot(x,ye,ze); return {ra:nrm(Math.atan2(ye,x)*R2D),dec:Math.asin(ze/r)*R2D,r}; };
-    // where a body is (J2000 right ascension and declination, degrees), how far (AU), its size (degrees), its phase angle and brightness
-    const where=(k,jd)=>{ const T=(jd-2451545)/36525, E=helio('em',T);
-      if(k==='sun'){ const q=toEq(-E[0],-E[1],-E[2]); return {...q,k,deg:BODY.sun.km/(q.r*149597870.7)*R2D,i:0,mag:-26.7}; }
-      if(k==='moon'){ const l=218.32+481267.881*T+6.29*sn(135+477198.87*T)-1.27*sn(259.3-413335.36*T)+.66*sn(235.7+890534.22*T)+.21*sn(269.9+954397.74*T)-.19*sn(357.5+35999.05*T)-.11*sn(186.5+966404.03*T)-1.3969713*T;
-        const b=5.13*sn(93.3+483202.02*T)+.28*sn(228.2+960400.89*T)-.28*sn(318.3+6003.15*T)-.17*sn(217.6-407332.21*T), p=.9508+.0518*cs(135+477198.87*T)+.0095*cs(259.3-413335.36*T)+.0078*cs(235.7+890534.22*T)+.0028*cs(269.9+954397.74*T);
-        const q=toEq(cs(b)*cs(l),cs(b)*sn(l),sn(b)), km=6378.14/sn(p), S=where('sun',jd), el=Math.acos(cl(sn(q.dec)*sn(S.dec)+cs(q.dec)*cs(S.dec)*cs(q.ra-S.ra),-1,1))*R2D;
-        return {ra:q.ra,dec:q.dec,r:km/149597870.7,k,deg:BODY.moon.km/km*R2D,par:p,i:180-el,mag:-12.7+.026*(180-el)+4e-9*Math.pow(180-el,4)}; }
-      const P=helio(k,T), g=[P[0]-E[0],P[1]-E[1],P[2]-E[2]], q=toEq(...g), rp=Math.hypot(...P), re=Math.hypot(...E), ci=cl((rp*rp+q.r*q.r-re*re)/(2*rp*q.r),-1,1);
-      return {...q,k,deg:BODY[k].km/(q.r*149597870.7)*R2D,i:Math.acos(ci)*R2D,mag:BODY[k].H+5*Math.log10(rp*q.r)}; };
-    const galilean=jd=>{ const d=jd-2451545, V=172.74+.00111588*d, M=357.529+.9856003*d, N=20.02+.0830853*d+.329*sn(V), J=66.115+.9025179*d-.329*sn(V), A=1.915*sn(M)+.02*sn(2*M), B=5.555*sn(N)+.168*sn(2*N), K=J+A-B,
-      R=1.00014-.01671*cs(M)-.00014*cs(2*M), r=5.20872-.25208*cs(N)-.00611*cs(2*N), D=Math.sqrt(r*r+R*R-2*r*R*cs(K)), psi=Math.asin(R/D*sn(K))*R2D, t=d-D/173;
-      return [['IO',163.8069+203.4058646*t,5.9057],['EUROPA',358.414+101.2916335*t,9.3966],['GANYMEDE',5.7176+50.234518*t,14.9883],['CALLISTO',224.8092+21.48798*t,26.3627]].map(([n,u,a])=>({n,x:a*sn(u+psi-B),front:cs(u+psi-B)>0})); };   // x in Jupiter's radii, west positive
-    const gmst=jd=>nrm(280.46061837+360.98564736629*(jd-2451545));
-    // horizon coordinates (alt, az from north through east) of a sky position, and back
-    const eq2hor=(ra,dec,lst)=>{ const H=lst-ra, alt=Math.asin(cl(sn(LAT)*sn(dec)+cs(LAT)*cs(dec)*cs(H),-1,1))*R2D, az=nrm(Math.atan2(-cs(dec)*sn(H),sn(dec)*cs(LAT)-cs(dec)*cs(H)*sn(LAT))*R2D); return {alt,az}; };
-    const hor2eq=(alt,az,lst)=>{ const dec=Math.asin(cl(sn(alt)*sn(LAT)+cs(alt)*cs(LAT)*cs(az),-1,1))*R2D, H=Math.atan2(-sn(az)*cs(alt),sn(alt)*cs(LAT)-cs(alt)*sn(LAT)*cs(az))*R2D; return {ra:nrm(lst-H),dec}; };
+    const {where,gmst,eq2hor,hor2eq,galilean,BODY,LAT}=EPH;
 
-    /* ---------- the time: today's real date in New York, the game's hour turned so its night is the real night ---------- */
-    const tz=d=>{ const m=d.getUTCMonth(); return m>=3&&m<=9||m===2&&d.getUTCDate()>=10||m===10&&d.getUTCDate()<2?4:5; };   // hours behind UTC: daylight time March to the start of November
-    let RS=null; const riseSet=J0=>{ if(RS&&RS.J0===J0)return RS; const alt=t=>{ const jd=J0+t/24, S=where('sun',jd); return eq2hor(S.ra,S.dec,nrm(gmst(jd)+LON)).alt; }; let R=6, S=18;
-      for(let t=2;t<12;t+=.1)if(alt(t)<-.833&&alt(t+.1)>=-.833){ R=t+.05; break; } for(let t=12;t<23;t+=.1)if(alt(t)>=-.833&&alt(t+.1)<-.833){ S=t+.05; break; } return RS={J0,R,S}; };
-    const mapH=(h,R,S)=>{ h=nrm(h*15)/15; if(h>=6&&h<20)return R+(h-6)/14*(S-R); const n=(h-20+24)%24; return S+n/10*(R+24-S); };
-    SCOPE.jdAt=(h,now=Date.now())=>{ const d=new Date(now), z=tz(d), L=new Date(now-z*3600e3), J0=Date.UTC(L.getUTCFullYear(),L.getUTCMonth(),L.getUTCDate())/864e5+2440587.5+z/24, rs=riseSet(J0); return J0+mapH(h,rs.R,rs.S)/24; };
-    SCOPE.jd=()=>SCOPE.fixJD||SCOPE.jdAt(CLOCK.h??12);
-    SCOPE.astro={where,gmst,eq2hor,hor2eq,lst:jd=>nrm(gmst(jd)+LON),LAT,LON,BODY,toEq,helio,EPS,tz};
+    /* ---------- the time: the sky's own moment (134b), the same sky the street has ---------- */
+    SCOPE.jdAt=(h,now=Date.now())=>EPH.jdOf(DN.skyAt(h,now));
+    SCOPE.jd=()=>SCOPE.fixJD||EPH.jdOf(DN.skyT());
+    SCOPE.astro=EPH;
 
     /* ---------- the page: the eyepiece's round field and the knobs beside it ---------- */
     const O=document.createElement('div'); O.id='scopev'; O.hidden=true; O.style.cssText='position:fixed;inset:0;z-index:30;background:#000;display:flex;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#3b2a1e';
@@ -175,7 +141,7 @@ const SCOPE={alt:35,az:270,va:0,vz:0,mag:25,focus:.18,track:true,lines:true,filt
       const nt=SCOPE.note&&SCOPE.note.t>performance.now()?SCOPE.note.s:''; if(nt)g.fillText(nt,cx,Math.min(h-10,cy+R+16)); else if(glare>.6)g.fillText('THE SUN! NEVER WITHOUT A SOLAR FILTER.',cx,cy+R+16>h-6?h-10:cy+R+16); else if(wet>.15)g.fillText(Wx.snow>Wx.rain?'SNOW ON THE GLASS':'RAIN ON THE GLASS',cx,Math.min(h-10,cy+R+16)); else if(cover>.6)g.fillText('CLOUDED OVER',cx,Math.min(h-10,cy+R+16));
       // what is in the middle, and where the tube points
       near.sort((a,b)=>a[2]-b[2]); const c0=near[0]&&near[0][2]<R*.35?near[0]:null; SCOPE.centre=c0?c0[0]:null; SCOPE.centreObj=c0?c0[1]:null; SCOPE.near=near; SCOPE.glare=glare; SCOPE.lim=lim;
-      const el=O.querySelector('#scoper'); if(el&&(SCOPE._rt=(SCOPE._rt||0)-dt)<=0){ SCOPE._rt=.25; const q=hor2eq(SCOPE.alt,SCOPE.az,lst), lt=nrm(((jd-2440587.5)*864e5-tz(new Date())*36e5)/36e5*15)/15, f2=n=>String(Math.floor(n)).padStart(2,'0');
+      const el=O.querySelector('#scoper'); if(el&&(SCOPE._rt=(SCOPE._rt||0)-dt)<=0){ SCOPE._rt=.25; const q=hor2eq(SCOPE.alt,SCOPE.az,lst), lt=CLK.hour(EPH.msOf(jd),null), f2=n=>String(Math.floor(n)).padStart(2,'0');
         let s=`ALT ${SCOPE.alt.toFixed(1)}° AZ ${SCOPE.az.toFixed(1)}°<br>RA ${f2(q.ra/15)}h ${f2(q.ra/15%1*60)}m DEC ${q.dec>=0?'+':'-'}${Math.abs(q.dec).toFixed(1)}°<br>LOCAL ${f2(lt)}:${f2(lt%1*60)} · SUN ${sunH.alt.toFixed(0)}°`;
         if(c0){ const [k,o]=c0, D=BODY[k]?(SCOPE.data.sky||[]).find(x=>x.id===BODY[k].id)||{}:o, nm=BODY[k]?BODY[k].name:o.name; s+=`<br><br><b>${esc(nm)}</b>${BODY[k]&&k!=='sun'?` · ${(BODY[k].km/(o.r*149597870.7)*R2D*3600).toFixed(k==='moon'?0:1)}″${o.i>2?' · '+Math.round((1+Math.cos(o.i*D2R))*50)+'% LIT':''}`:''}${D.about?'<br>'+esc(D.about):''}${D.credit?'<br><span style="opacity:.7">'+esc(D.credit)+'</span>':''}`; }
         el.innerHTML=s; } };

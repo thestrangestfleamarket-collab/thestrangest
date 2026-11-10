@@ -19,7 +19,7 @@ const SKYL={on:false,data:{},err:{}}; window.SKYL=SKYL;
   const make=()=>{ '@scope';
     const D2R=Math.PI/180, R2D=180/Math.PI, A=SCOPE.astro, cl=(v,a,b)=>Math.max(a,Math.min(b,v)), sn=x=>Math.sin(x*D2R), cs=x=>Math.cos(x*D2R), nrm=x=>((x%360)+360)%360;
     const msOf=jd=>(jd-2440587.5)*864e5, hz=(alt,az)=>[cs(alt)*sn(az),sn(alt),cs(alt)*cs(az)], esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-    const hhmm=jd=>{ const d=new Date(msOf(jd)-A.tz(new Date(msOf(jd)))*36e5); return String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0'); };
+    const hhmm=jd=>{ const h=CLK.hour(msOf(jd),null); return String(Math.floor(h)).padStart(2,'0')+':'+String(Math.floor(h%1*60)).padStart(2,'0'); };
     const D=SKYL.data; let at=0, redraw=0;
     const load=()=>{ if(Date.now()-at<20*60e3)return; at=Date.now(); for(const k of ['weather','sats','comets','rocks','spots','flares','kp'])get(k).then(v=>{ D[k]=v; delete SKYL.err[k]; parse(k); redraw=1; }).catch(e=>{ SKYL.err[k]=String(e&&e.message||e); });
       const im=new Image(); im.onload=()=>{ SCOPE.files.sun=im.src; A.BODY.sun.fill=.9375; if(SCOPE.view)SCOPE.view.drop('sun'); SKYL.sunLive=true; redraw=1; }; im.onerror=()=>{ SKYL.err.sun='no picture'; }; im.src=SKYL.url('sun'); };   // the SDO picture's disc spans 93.75% of its frame

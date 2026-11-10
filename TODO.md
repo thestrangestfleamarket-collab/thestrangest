@@ -253,7 +253,7 @@ One tree pass (more leaves mean more shadow triangles).
   unfinished painting.
 
 ## Menus, map, HUD and phones
-- [ ] **The map fills its window** · pick. Mocked up (`mockups/map-fill.html`, A/B/C), waiting on the owner.
+- [x] **The map fills its pane** (owner, 10 Nov 2026: "A go"; done 10 Nov) · P2 · S · code. `src/141e-map.js`, `tests/brochure.cjs`. Waits for his look and yes.
 
 - [ ] **Try live** · P2 · S · look. The menus, where you start, the map and GO TO.
 - [x] **The map in the menus' green look** (owner, 10 Nov 2026: "B, go"; done 10 Nov) · P2 · M · code. `src/141e-map.js`, `tests/brochure.cjs`. Waits for his look and yes.

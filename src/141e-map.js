@@ -9,9 +9,9 @@ import {STALL} from './081-stalls.js';
     'bro.train':'TRAIN {n} · TO {next}','bro.track1':'TRAIN 1 · the outer track','bro.track2':'TRAIN 2 · the inner track','bro.stop':'A STOP AT EVERY STATION · click one to ride there','bro.quiet':'the dim stations are sections not built yet',
     'bro.hint':'CLICK A PLACE TO GO THERE · WHEEL ZOOMS · DRAG MOVES','bro.water':'THE HUDSON','bro.lake':'THE LAKE','bro.alley':'THE ALLEY','bro.prom':'THE PROMENADE','bro.g.underground':'UNDERGROUND','bro.g.else':'ELSEWHERE',
     'bro.find':'TYPE A NAME...','bro.neighbours':'NEIGHBOURS','bro.online':'online','bro.dun':'THE DUNGEON','bro.dun2':'its plan shows once you have been down'}))TEXT.t(k,d);
-  const css=document.createElement('style'); css.textContent=`#dbro svg.mv{display:block;margin:0 auto;width:auto;max-width:100%;height:calc(92vh - 215px);min-height:280px;background:#010805;box-shadow:inset 0 0 0 2px #3aa866;cursor:grab;touch-action:none;user-select:none;fill:#7dffa8}
+  const css=document.createElement('style'); css.textContent=`#menu .panes:has(>#dbro.mfull:not([hidden])){padding:0;position:relative;overflow:hidden} #dbro.mfull{position:absolute;inset:0} #dbro svg.mv{display:block;width:100%;height:100%;background:#010805;cursor:grab;touch-action:none;user-select:none;fill:#7dffa8}
     #dbro svg.mv text{font-family:var(--pixel);letter-spacing:1px} #dbro svg [data-go],#dbro svg [data-st]{cursor:pointer} #dbro svg [data-go]:hover,#dbro svg [data-st]:hover{opacity:.7} #dbro svg .nb:hover rect{fill:#7dffa8} #dbro svg .nb:hover text{fill:#020a06}
-    #dbro .hint{margin-top:8px;font-size:13px} #dbro .gof{box-sizing:border-box;width:100%;font:inherit;color:var(--mt);background:var(--mb);border:2px solid var(--mi);padding:6px 8px;margin-bottom:8px} #dbro .gof::placeholder{color:var(--md)}
+    #dbro .mvo{position:absolute;z-index:2;background:rgba(1,8,5,.85);box-shadow:inset 0 0 0 1px #3aa866} #dbro .hint{left:10px;bottom:10px;padding:4px 8px;font-size:12px;pointer-events:none} #dbro .mvz{right:10px;top:10px;display:flex;flex-direction:column} #dbro .mvz button{width:36px;height:36px;font:20px var(--pixel);color:var(--mt);background:none;border:0;cursor:pointer;padding:0} #dbro .mvz button:hover{background:var(--mf);color:var(--mk)} #dbro .gof{box-sizing:border-box;width:100%;font:inherit;color:var(--mt);background:var(--mb);border:2px solid var(--mi);padding:6px 8px;margin-bottom:8px} #dbro .gof::placeholder{color:var(--md)}
     #dbro .gor{display:flex;gap:10px;align-items:center;padding:4px;cursor:pointer;white-space:nowrap} #dbro .gor i{font-style:normal;flex:none;width:28px;text-align:right;color:var(--md)} #dbro .gor span{margin-left:auto;color:var(--md)}
     #dbro .gor:hover{background:var(--mf);color:var(--mk)} #dbro .gor:hover i,#dbro .gor:hover span{color:var(--mk)} #dbro canvas.dun{display:block;max-width:100%;image-rendering:pixelated;filter:sepia(1) hue-rotate(75deg) saturate(1.6);box-shadow:0 0 0 2px #3aa866}`;
   document.head.appendChild(css);
@@ -74,7 +74,7 @@ import {STALL} from './081-stalls.js';
     { const Cu=ROOMS.cur, R=Cu&&ROOMS.off[Cu.off||Cu.lz||Cu.id], o=R&&R.out, at=o?((o[2]||'up')==='up'?[o[0],o[1]]:null):SHARED.LVL==='up'&&!(Cu&&Cu.off)?[pos.x,pos.z]:null;
       if(at){ const x=WX(at[0]), y=WY(at[1]); if(x>0&&x<mw&&y>0&&y<720){ S.push(star(x,y,10)); S.push(txt(TEXT.t('bro.here'),x,y+21,8,{a:'middle',f:C.y})); } } }
     S.push(`<g transform="translate(${mw-34} 34)"><circle r="20" fill="${C.k}" stroke="${C.i}" stroke-width="1.5"/><polygon points="0,-16 5,0 0,4 -5,0" fill="${C.f}"/><polygon points="0,16 5,0 0,-4 -5,0" fill="${C.i}" opacity=".6"/>${txt('N',0,-24,10,{a:'middle',f:C.i})}</g>`);
-    return `<svg class="mv" viewBox="0 0 ${mw.toFixed(1)} 720" preserveAspectRatio="xMidYMid meet" style="aspect-ratio:${mw.toFixed(1)}/720"><clipPath id="mvc"><rect width="${mw.toFixed(1)}" height="720"/></clipPath><g clip-path="url(#mvc)">${S.join('')}</g></svg>`; };
+    return `<svg class="mv" viewBox="0 0 ${mw.toFixed(1)} 720" preserveAspectRatio="xMidYMid meet"><clipPath id="mvc"><rect width="${mw.toFixed(1)}" height="720"/></clipPath><g clip-path="url(#mvc)">${S.join('')}</g></svg>`; };
   /* ---------- SUBWAY: the section grid, the park, the two tracks, every station ---------- */
   const subway=()=>{ '@later'; const S=[], D=LOOP.D, SE=SECTIONS, gr=SE.grid, cols=gr.cols, rows=gr.rows, x0=400, y0=122, gw=800, gh=476, tw=gw/cols, th=gh/rows, loaded=new Set(SE.loaded.map(b=>b.id)), home=SECTION.id, OFF='#1d5a33';
     S.push(`<rect x="380" y="0" width="840" height="720" fill="${KC.void}"/><rect x="${x0}" y="96" width="${gw}" height="26" fill="${KC.water}"/><rect x="${x0}" y="${y0+gh}" width="${gw}" height="26" fill="${KC.water}"/>`+txt(TEXT.t('bro.water'),x0+gw/2,y0+gh+18,9,{a:'middle',f:C.f,ls:3}));
@@ -92,7 +92,7 @@ import {STALL} from './081-stalls.js';
     S.push(`<line x1="400" y1="640" x2="1200" y2="640" stroke="${C.i}" stroke-width="2"/><line x1="400" y1="662" x2="440" y2="662" stroke="${C.f}" stroke-width="9"/><line x1="400" y1="690" x2="440" y2="690" stroke="${C.i}" stroke-width="9"/>`);
     S.push(txt(next?TEXT.t('bro.train',null,{n:1,next:next[0]}):TEXT.t('bro.track1'),450,666,11,{f:C.f})+txt(next?TEXT.t('bro.train',null,{n:2,next:next[1]}):TEXT.t('bro.track2'),450,694,11,{f:C.f}));
     S.push(txt(TEXT.t('bro.stop'),800,666,11,{f:C.f})+txt(TEXT.t('bro.quiet'),800,684,10,{f:C.i}));
-    return `<svg class="mv" viewBox="380 0 840 720" preserveAspectRatio="xMidYMid meet" style="aspect-ratio:840/720">${S.join('')}</svg>`; };
+    return `<svg class="mv" viewBox="380 0 840 720" preserveAspectRatio="xMidYMid meet">${S.join('')}</svg>`; };
   /* ---------- UNDERGROUND: its places, and the dungeon's plan once it has been built ---------- */
   const under=()=>{ '@later'; const L=(LG.find(([k])=>k===TEXT.t('bro.g.underground'))||[,[]])[1], E=TEXT.esc||esc;
     let h=`<h3>${E(TEXT.t('bro.g.underground'))}</h3>`+L.map(o=>`<div class="gor" data-go="${E(o.name)}"><i>${o.s?o.s.n:''}</i>${E(o.name)}</div>`).join('');
@@ -110,22 +110,23 @@ import {STALL} from './081-stalls.js';
   let H=null, T='street', VB=null, VB0=null, ALL=[];
   const go=f=>{ if(UI.menuOpen)UI.toggleMenu(); f(); };
   const svgPt=(svg,e)=>{ const p=svg.createSVGPoint(); p.x=e.clientX; p.y=e.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); };
+  const fitVB=()=>{ if(!VB)return; const w=VB[2], h=VB[3]; VB[0]=Math.max(VB0[0]-w/2,Math.min(VB0[0]+VB0[2]-w/2,VB[0])); VB[1]=Math.max(VB0[1]-h/2,Math.min(VB0[1]+VB0[3]-h/2,VB[1])); };
+  const zoomBy=(k,p)=>{ if(!VB)return; p=p||{x:VB[0]+VB[2]/2,y:VB[1]+VB[3]/2}; const w=Math.min(VB0[2]*1.5,Math.max(VB0[2]/12,VB[2]*k)), h=w*VB0[3]/VB0[2]; VB=[p.x-(p.x-VB[0])*w/VB[2],p.y-(p.y-VB[1])*h/VB[3],w,h]; fitVB(); setVB(); };
   const setVB=()=>{ const s=H&&H.querySelector('svg.mv'); if(s&&VB)s.setAttribute('viewBox',VB.map(v=>v.toFixed(1)).join(' ')); };
   const wire=host=>{ if(host._bro)return; host._bro=1; let dr=null, moved=false;
-    host.addEventListener('pointerdown',e=>{ const s=e.target.closest&&e.target.closest('svg.mv'); if(!s)return; dr={x:e.clientX,y:e.clientY,vb:VB.slice(),k:VB[2]/s.getBoundingClientRect().width}; moved=false; });
-    host.addEventListener('pointermove',e=>{ if(!dr)return; if(Math.abs(e.clientX-dr.x)+Math.abs(e.clientY-dr.y)>5)moved=true; if(moved&&VB[2]<VB0[2]){ VB[0]=Math.max(VB0[0],Math.min(VB0[0]+VB0[2]-VB[2],dr.vb[0]-(e.clientX-dr.x)*dr.k)); VB[1]=Math.max(VB0[1],Math.min(VB0[1]+VB0[3]-VB[3],dr.vb[1]-(e.clientY-dr.y)*dr.k)); setVB(); } });
+    host.addEventListener('pointerdown',e=>{ const s=e.target.closest&&e.target.closest('svg.mv'); if(!s)return; const R=s.getBoundingClientRect(); dr={x:e.clientX,y:e.clientY,vb:VB.slice(),k:Math.max(VB[2]/R.width,VB[3]/R.height)}; moved=false; });
+    host.addEventListener('pointermove',e=>{ if(!dr)return; if(Math.abs(e.clientX-dr.x)+Math.abs(e.clientY-dr.y)>5)moved=true; if(moved&&VB){ VB[0]=dr.vb[0]-(e.clientX-dr.x)*dr.k; VB[1]=dr.vb[1]-(e.clientY-dr.y)*dr.k; fitVB(); setVB(); } });
     addEventListener('pointerup',()=>{ dr=null; });
-    host.addEventListener('wheel',e=>{ const s=e.target.closest&&e.target.closest('svg.mv'); if(!s||!VB)return; e.preventDefault(); const p=svgPt(s,e), k=e.deltaY<0?.8:1.25, w=Math.min(VB0[2],Math.max(VB0[2]/4,VB[2]*k)), h=w*VB0[3]/VB0[2];
-      VB=[Math.max(VB0[0],Math.min(VB0[0]+VB0[2]-w,p.x-(p.x-VB[0])*w/VB[2])),Math.max(VB0[1],Math.min(VB0[1]+VB0[3]-h,p.y-(p.y-VB[1])*h/VB[3])),w,h]; setVB(); },{passive:false});
-    host.addEventListener('click',e=>{ '@later'; if(moved){ moved=false; return; } const el=e.target.closest?e.target.closest('[data-go],[data-st],[data-i]'):null;
+    host.addEventListener('wheel',e=>{ const s=e.target.closest&&e.target.closest('svg.mv'); if(!s||!VB)return; e.preventDefault(); zoomBy(e.deltaY<0?.8:1.25,svgPt(s,e)); },{passive:false});
+    host.addEventListener('click',e=>{ '@later'; if(moved){ moved=false; return; } const zb=e.target.closest&&e.target.closest('[data-z]'); if(zb){ const z=+zb.dataset.z; if(z)zoomBy(z>0?.7:1.4); else if(VB0){ VB=VB0.slice(); setVB(); } return; } const el=e.target.closest?e.target.closest('[data-go],[data-st],[data-i]'):null;
       if(el&&el.dataset.go){ const n=el.dataset.go; return go(()=>(UI.goName||UI.goPlace)(n)); }
       if(el&&el.dataset.i!=null){ const o=ALL[+el.dataset.i]; if(o)go(()=>o.visit?ONLINE.visit(o.visit.id,o.visit.name):UI.goName(o.name)); return; }
       if(el&&el.dataset.st){ const st=(LOOP.STA||[]).find(q=>q.id===el.dataset.st); if(!st)return; return go(()=>{ if(st.old)return UI.goTo(MODS.station.plat.x,MODS.station.plat.z,'down'); const p=st.P(LOOP.LEN/2,LOOP.MID,0); UI.goTo(p[0],p[2],'down'); }); }
       const s=e.target.closest&&e.target.closest('svg.mv'); if(T!=='street'||!s||!G)return; const p=svgPt(s,e); if(p.x<0||p.x>G.mw||p.y<0||p.y>720)return;   // a plain click on the street: go there
       const [x,zz]=G.toWorld(p.x,p.y); go(()=>UI.goTo(x,zz,'up')); }); };
   const into=(host,tab)=>{ '@later'; H=host; T=tab||'street'; wire(host); const pic=street(); let h='';
-    if(T==='street'||T==='subway'){ h=(T==='street'?pic:subway())+`<div class="dim hint">${esc(TEXT.t('bro.hint'))}</div>`; host.innerHTML=h; const s=host.querySelector('svg.mv'), v=s.viewBox.baseVal; VB0=[v.x,v.y,v.width,v.height]; VB=VB0.slice(); return; }
-    VB=VB0=null;
+    if(T==='street'||T==='subway'){ h=(T==='street'?pic:subway())+`<div class="mvo mvz"><button data-z="1" title="zoom in">+</button><button data-z="-1" title="zoom out">−</button><button data-z="0" title="the whole map">◎</button></div><div class="mvo dim hint">${esc(TEXT.t('bro.hint'))}</div>`; host.classList.add('mfull'); host.innerHTML=h; const s=host.querySelector('svg.mv'), v=s.viewBox.baseVal; VB0=[v.x,v.y,v.width,v.height]; VB=VB0.slice(); return; }
+    VB=VB0=null; host.classList.remove('mfull');
     if(T==='under'){ const [u,P]=under(); host.innerHTML=u; const c=host.querySelector('canvas.dun'); if(c&&P){ c.width=P.cv.width; c.height=P.cv.height; const g=c.getContext('2d'); g.drawImage(P.cv,0,0); g.font='9px "Share Tech Mono",monospace'; g.textAlign='center'; g.fillStyle=C.f; for(const n of P.names)g.fillText(n.nm,n.x,n.y);
       if(SHARED.LVL==='down'&&MODS.dungeon&&MODS.dungeon.in&&MODS.dungeon.in()){ g.fillStyle=C.y; g.fillRect(P.wx(pos.x)-4,P.wz(pos.z)-4,8,8); } } return; }
     host.innerHTML=`<input class="gof" type="text" placeholder="${esc(TEXT.t('bro.find'))}" aria-label="${esc(TEXT.t('bro.find'))}"><div class="gox"></div>`;

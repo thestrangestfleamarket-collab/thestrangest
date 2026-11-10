@@ -18,7 +18,24 @@ const {chromium}=require('playwright');
     let h=el.querySelector('[data-pick="horse"]'); while(h&&h.tagName!=='H3')h=h.previousElementSibling; const grp=h&&h.textContent==='RIDES';
     const r={rides:!!grp,pals:el.querySelectorAll('input[data-pal]').length,size:!!el.querySelector('input[data-f="s"]'),parts:!!el.querySelector('[data-part]'),drawn:d?+(n/(d.length/4)*100).toFixed(1):0};
     el.querySelector('[data-pick="car:muscle-car-60s"]').click(); return r; });
-  ok(hz.rides&&hz.pals>=8&&hz.size&&!hz.parts&&hz.drawn>3,'the horse is in the editor under RIDES: its coat colours and its size, no parts, turning in the studio '+JSON.stringify(hz));
+  ok(hz.rides&&hz.pals>=1&&hz.size&&!hz.parts&&hz.drawn>3,'the horse is in the editor under RIDES: its coat colours and its size, no parts, turning in the studio '+JSON.stringify(hz));
+  // the coat being edited (10 Nov 2026, owner: "fix the small leftovers"): a COAT picker rebuilds the preview in that coat, its colours following
+  const cz=await pg.evaluate(async()=>{ const el=document.getElementById('dvedit'), w=ms=>new Promise(r=>setTimeout(r,ms));
+    const mean=()=>{ const c=el.querySelector('.vcv'), d=c.getContext('2d').getImageData(0,0,c.width,c.height).data; let n=0,R=0,G=0,B=0; for(let i=0;i<d.length;i+=4)if(Math.abs(d[i]-0x15)+Math.abs(d[i+1]-0x17)+Math.abs(d[i+2]-0x1e)>30){ n++; R+=d[i]; G+=d[i+1]; B+=d[i+2]; } return n?[R/n,G/n,B/n]:[0,0,0]; };
+    const pals=()=>[...el.querySelectorAll('input[data-pal]')].map(i=>i.dataset.pal).join();
+    el.querySelector('[data-pick="horse"]').click(); for(let t=0;t<200&&!el.querySelector('input[data-pal]');t++)await w(300); await w(2500);
+    const sel=el.querySelector('select[data-var]'); if(!sel)return {picker:false}; const names=[...sel.options].map(o=>o.textContent), a=names[sel.selectedIndex], p0=pals(), m0=mean();
+    const to=names.indexOf(a==='GREY'?'BLACK':'GREY'); sel.value=String(to); sel.dispatchEvent(new Event('change',{bubbles:true}));
+    for(let t=0;t<200&&pals()===p0;t++)await w(300); await w(2500); const s2=el.querySelector('select[data-var]'), m1=mean();
+    const got={picker:true,coats:names.length,from:a,to:s2&&s2.options[s2.selectedIndex].textContent,p0,p1:pals(),diff:Math.round(Math.abs(m1[0]-m0[0])+Math.abs(m1[1]-m0[1])+Math.abs(m1[2]-m0[2]))};
+    el.querySelector('[data-pick="car:muscle-car-60s"]').click(); return got; });
+  ok(cz.picker&&cz.coats===8&&cz.to===(cz.from==='GREY'?'BLACK':'GREY')&&cz.p0!==cz.p1&&cz.diff>40,'the COAT picker shows the horse in the coat picked, with that coat\'s colours '+JSON.stringify(cz));
+  // the train before anyone went down (owner, 9 Nov 2026: "dont load the train unless you go into subway platform"): one car's outside of its own in the studio, the trains not built
+  const tz=await pg.evaluate(async()=>{ const el=document.getElementById('dvedit'), w=ms=>new Promise(r=>setTimeout(r,ms)), b0=!!TRAINS.built; el.querySelector('[data-pick="train"]').click(); await w(3000);
+    const c=el.querySelector('.vcv'), d=c&&c.getContext('2d').getImageData(0,0,c.width,c.height).data; let n=0; if(d)for(let i=0;i<d.length;i+=4)if(Math.abs(d[i]-0x15)+Math.abs(d[i+1]-0x17)+Math.abs(d[i+2]-0x1e)>30)n++;
+    const got={before:b0,drawn:d?+(n/(d.length/4)*100).toFixed(1):0,pals:el.querySelectorAll('input[data-pal]').length,built:!!TRAINS.built,cars:TRAINS.list.reduce((a,t)=>a+t.cars.length,0)};
+    el.querySelector('[data-pick="car:muscle-car-60s"]').click(); return got; });
+  ok(!tz.before&&tz.drawn>3&&tz.pals>=1&&!tz.built&&tz.cars===0,'the train shows in the studio on a page that never went underground, and the trains stay unbuilt '+JSON.stringify(tz));
   await pg.waitForTimeout(1500);
   const e=await pg.evaluate(async()=>{ const C=CARS.cars.get('c1'), m=C.mesh, P=VLOOK.palette(m), s0=m.scale.x, ps=VLOOK.parts(m), w=ps.find(p=>p.key.startsWith('WHEEL FL'));
     VLOOK.set('car:muscle-car-60s',{s:1.5,pal:{[P[0]]:'ff00ff'},parts:{[w.key]:{h:1}}}); await new Promise(r=>setTimeout(r,400));
@@ -41,4 +58,8 @@ const {chromium}=require('playwright');
   ok(p.had&&p.shown&&p.near<12&&p.gone,'a copy parks in front of you and is taken away '+JSON.stringify(p));
   if(out){ await pg.evaluate(()=>{ __dbg.UI.toggleMenu(); __dbg.UI.toggleMenu(); __dbg.UI.menuTab('set'); document.querySelectorAll('.panes>[data-p]').forEach(p=>p.hidden=p.dataset.p!=='vedit'); const el=document.getElementById('dvedit'); VLOOK.panel(el); el.querySelector('[data-pick="car:taxi-coupe"]').click(); });
     await pg.waitForTimeout(2500); await pg.screenshot({path:out+'.png'}); }
+  // a look set before the trains are built is on them when they are
+  const tw=await pg.evaluate(async()=>{ const o=VLOOK.kinds.train.make(), P=VLOOK.palette(o); VLOOK.live.delete(o); o.userData.vlDrop(); const k=P.find(h=>h!=='ffffff')||P[0]; VLOOK.set('train',{pal:{[k]:'ff00ff'}}); TRAINS.ensure(); await new Promise(r=>setTimeout(r,400));
+    let pink=0; TRAINS.list[0].cars[0].ext.traverse(o=>{ if(o.isMesh)for(const m of [].concat(o.material))if(m.color&&m.color.getHex()===0xff00ff)pink++; }); VLOOK.set('train',null); return {key:k,pink}; });
+  ok(tw.pink>0,'a train look set in the editor is on the real trains when they are built '+JSON.stringify(tw));
   ok(!errs.length,'no page errors '+errs.slice(0,3).join(' | ')); await b.close(); process.exit(bad?1:0); })();

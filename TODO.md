@@ -69,7 +69,7 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
 - [ ] **The Hudson row** · P2 · L · pick + code. Its buildings, corner grass, sparse trees, townsfolk routes; a second fishing shop west
   of the west flea lot (owner asked for both sides; only Fishing & Scuba stands); stall keepers; the lost shrubs and small trees.
 - [ ] **The apartment house** · P2 · L · code. The lobbies and the other floors (only your own flat is built).
-- [ ] **West St out of our section** · P1 · L · code · risk high. Owner, 10 Nov: "No roads in park at all". Its road, kerbs, traffic turn and wall become park; the forcefield, the walkers' grid, the cars' routes and the Tower's corner follow.
+- [x] **West St out of our section** (10 Nov, claude/fervent-hawking-wkq7zv). Left: the brochure's subtitle still says WEST ST (with the sections re-plan).
 - [ ] **The eight sections on the new ring** · P1 · XL · code · risk high. Owner, 10 Nov ("Yes go" of the lettered mockup): A mid-Hudson side with C and E, B and G on the ends, D F H along the back. `sections.grid`/`ring`, the Loop's tracks and stations (end stations need a west/east side), the subway map, section B's skate park and pit.
 - [ ] **Whole-map layouts A–F** · pick. Mocked up (A Ring + F Stack recommended), waiting on the owner.
 - [ ] **One set piece broken after the lanyard/shop removals**: bring its two items back, or archive it too? · pick.
@@ -82,6 +82,8 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
 ## Performance
 
 - [x] **"undefined ×16" in the render inspector**, about 129k triangles in the park: find what it is · P1 · S · find. Found 9 Nov (claude/beautiful-einstein-i82dp0): the backdrop park trees, four instanced meshes drawn whole; now drawn by cell.
+- [x] **The street walkers' cost ("dress", 15 ms a frame in the render inspector, 10 Nov)** · P1 · S · code. Their rig step and pose worked out every finger (they have no finger bones), at 120 steps a second; now without fingers, and where they stand checked only when they move.
+- [x] **Far trees drawn when off screen** (10 Nov) · P2 · S · code. The park ring's and the big trees' far shapes were never culled; now culled tree by tree like the rest. The render inspector also counted every piece of a culled batch as drawn (fixed). Cloud trees: none placed yet.
 - [ ] **The subway station is built and painted at the start** (15 MB): build it on the way down · P2 · M · code.
 - [ ] **The park shop animals**: all 179 download at the start; measure the start on a real connection · P2 · S · check.
 - [ ] **The start-up and frame-time comparison** · P1 · M · check. Never finished (2 Nov, `tests/startprof.cjs`). Redo it on today's main
@@ -142,10 +144,21 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 
 - [ ] **Keepers for the new pet shops and the barn** · P3 · S · pick. Every unarchived character fitting is working elsewhere.
 - [ ] **The gym, next if wanted** · P4 · pick. A sparring bot in the ring, a trainer, bets on fights.
-- [ ] **The bots' goals** · pick. Options given to the owner (9 Nov).
+- [ ] **The owner's nine (9 Nov 2026: "Violin, flute, trumpet, Dances CMU motion-capture library, Painting copies, sign language, juggling, ade animal taming as skill, fossil digs, bar games, implants")** · one pull request each, in this order:
+  - [x] **Violin, flute, trumpet** · P2 · L · code. [taking: claude/blissful-goodall-udydlj, 9 Nov]
+  - [ ] **The piano, harp and drums as Polyfork models** · P3 · M · code. Owner, 10 Nov: "Use very realistic instruments models and textures" (his pick: Polyfork); their keys, strings and heads move, so each needs fitting.
+  - [ ] **Violin, flute, trumpet, seen live** · look. How each is held and sounds; the tunes are the piano pieces' top line.
+  - [ ] **Dances** · P2 · L · code. Learnt by band like songs, from the CMU motion-capture library; performed for tips.
+  - [ ] **Painting copies** · P2 · L · code. Copy open-collection masterworks by difficulty; hang or sell them.
+  - [ ] **Sign language** · P2 · L · code. Owner: "Both": what you type is signed by your hands as far as your skill reaches, and some townsfolk only sign.
+  - [ ] **Juggling** · P3 · M · code. Patterns by band, street performing.
+  - [ ] **Animal taming, a skill** · P2 · XL · pick + code. Owner: "everything" (wildlife as pets, monsters that fight beside you, mounts): options first.
+  - [ ] **Fossil digs** · P3 · L · code. Dig bones, assemble skeletons for the museum.
+  - [ ] **Bar games** · P2 · XL · pick + code. Owner's picks: darts (the archived 301), pool, bowling (needs its own place: options first).
+  - [ ] **Implants** · P3 · L · pick + code. Owner: "Both" (stat boosts and new abilities), fitted at a clinic.
 - [ ] **The instruments, the rest** · P3 · S · code. The bar's piano and kit playable in place; a bandstand for the park guitar.
 - [ ] **Companion drone NPC**: mockup done, waiting on "go" · pick.
-- [x] **Your AI double** (owner, 9 Nov 2026; done 9 Nov) · P2 · M · code. `src/162gb-twin.js`, `worker/twin.js`, `tests/twin.cjs`. Needs the `ANTHROPIC_API_KEY` secret on the worker.
+- [x] **Your AI double** (owner, 9 Nov 2026; done 9 Nov) · P2 · M · code. `src/162gb-twin.js`, `worker/twin.js`, `tests/twin.cjs`. Removed 10 Nov 2026 with all the bots.
 - [ ] **Flight with the cape** · P2 · M · look + code. Its moves check times out, the cape isn't cloth, clouds hide you; DRIFTCAP lasts 5 min.
 - [ ] **Not seen** · look. The floating-eyes fix side on, the paper doll live, clothing layers at night under lamps (#654), the delivery
   drone with two real players.
@@ -181,6 +194,10 @@ steps go in one window, after the checks run on `main`, and end with the owner t
   Add cases to `tests/physx.cjs`.
 - [ ] **STAND ON THINGS only rose halfway in the test** · P3 · S-M · check. 0.10 of a 0.20 block; the test's bar was lowered to pass.
 - [x] **The go-kart** · set down in front of you and got in there; a wall at speed throws you out (owner, 10 Nov 2026: "Throw you out"). Left: held, it shows as a little kart in your hands (owner: keep or change?); the Boardwright's wall is archived (the Skate Shop's shelves show it).
+- [ ] **The hover cars and the police flier, for the owner** (10 Nov 2026) · P2 · S · look. Two taxis, the ambulance, the police flier: their shapes against Polyfork's, the shine by day and night, flying them (SPACE, SHIFT), where they park (West St).
+- [ ] **The submersible, for the owner** (10 Nov 2026) · P2 · S · look. How it reads deep in the dark Hudson (its lamps, the hull), where it is moored; it passes through the pirate wreck (no walls for it yet); no dive check in `tests/cars.cjs` (the river is not built at the test's start).
+- [ ] **The lake wreck, for the owner** (10 Nov 2026) · P2 · S · look. Its look under water by day and night, the way in, the hold; the follow camera crowds it in its narrow basin. Still to build of his 9 Nov list: a new captain aboard the airship.
+- [ ] **The police cruiser, for the owner** (9 Nov 2026) · P2 · S · look. Its shape and paint against real 80s photos, the roof lights by night, the siren and horn by ear, where it is parked (West St); the other six cars have no opening parts yet.
 - [ ] **The cars, in game, for the owner** · P2 · S · look. The insides, the cars 40% bigger next to the buildings, the radio by ear
   (loudness, the muffle outside, the four stations, starting at the shared moment).
 - [ ] **Physics is only on your own screen** · P4 · XL · pick + code · risk high. Other players don't see karts, flying loose things or

@@ -23,7 +23,7 @@ const TLX={tick:()=>{}}; window.DRESS=Object.assign(DRESS,{gaps:()=>{ const G=[]
       for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const d0=Math.hypot((i+.5)/N*2-1,(j+.5)/N*2-1), d=d0+(SMOOTH||CEL?0:(h(i,j)-.5)*.1), a=SMOOTH?Math.max(0,1-d0)**1.6*.24:d<.38?.2:d<.68?.11:d<.96?.05:0, q=(j*N+i)*4; im.data[q]=255; im.data[q+1]=214; im.data[q+2]=150; im.data[q+3]=Math.round(a*255); }
       g.putImageData(im,0,0); const t=new THREE.CanvasTexture(cv); t.magFilter=t.minFilter=SMOOTH?THREE.LinearFilter:THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; return t; })();
     const poolMat=new THREE.MeshBasicMaterial({map:poolTex,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false,polygonOffset:true,polygonOffsetFactor:-2}), poolGeo=new THREE.PlaneGeometry(2,2).rotateX(-Math.PI/2);
-    const RC=SHARED.BOD.road.CORN.find(c=>c.x===RING.wr1&&c.y===SHARED.BOD.FAR), CK=(SHARED.BOD.road.KR-.45)/Math.SQRT2, CP={x:SHARED.BOD.XS(RC.cx-RC.sx*CK),z:SHARED.BOD.ZS(RC.cy-RC.sy*CK)}, ok=(x,z)=>G(x,z)>-.01&&Math.hypot(x-CP.x,z-CP.z)>4*M;
+    const RC=SHARED.BOD.road.CORN.find(c=>c.x===RING.wr1&&c.y===SHARED.BOD.FAR), CK=(SHARED.BOD.road.KR-.45)/Math.SQRT2, CP=RC?{x:SHARED.BOD.XS(RC.cx-RC.sx*CK),z:SHARED.BOD.ZS(RC.cy-RC.sy*CK)}:{x:1e9,z:1e9}, ok=(x,z)=>G(x,z)>-.01&&Math.hypot(x-CP.x,z-CP.z)>4*M;
     if(DRESS.tall)for(let i=0;i<n;i++){ const x=x0+i*SP;
       sl(x,sw-.25*M,1).L=light(x,5.8*M,sw+1.4*M,40,13*TILE); heads.push([x,5.8*M,sw+1.4*M]);
       const xf=x+SP/2; if(xf<SX1-3&&ok(xf,far+.25*M)&&!(xf>SHARED.BOD.XS(RING.wr0)-1&&xf<SHARED.BOD.XS(RING.wr1)+1)){ sl(xf,far+.25*M,-1).L=light(xf,5.8*M,far-1.4*M,40,13*TILE); heads.push([xf,5.8*M,far-1.4*M]); } }

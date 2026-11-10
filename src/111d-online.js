@@ -58,7 +58,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
     else if(m.t==='rag'&&m.id&&Array.isArray(m.b)){ const o=ONLINE.others.get(m.id); if(!o||!o.rag)return; const r=o.rag; r.b=m.b.map((v,i)=>({name:r.n[i],x:[+v[0],+v[1],+v[2]],m3:qMat([+v[3],+v[4],+v[5],+v[6]]),jl:r.jl[i]||{}})); r.o=[+m.o[0],+m.o[1]]; r.hd=+m.hd||0; r.t=performance.now(); return; }
     else if(m.t==='ragoff'&&m.id){ const o=ONLINE.others.get(m.id); if(o){ o.rag=null; o.B=null; } return; }
     else if(ONLINE.hear[m.t]){ ONLINE.hear[m.t](m); return; }
-    else if(m.t==='say'&&m.text){ const o=m.id&&ONLINE.others.get(m.id); if(o){ o.say=String(m.text); o.sayT=performance.now(); o.st=style(m.st); } line(m.name||(o&&o.name)||'TENANT',m.text); if(m.id)SYS.run('said',String(m.id),String(m.text)); }
+    else if(m.t==='say'&&m.text){ const o=m.id&&ONLINE.others.get(m.id); if(o){ o.say=String(m.text); o.sayT=performance.now(); o.st=style(m.st); } line(m.name||(o&&o.name)||'TENANT',m.text); }
     list(); };
 
   /* ---------- their bodies: one built body per look (the Walker in clothes, shod or barefoot, or a body of its own), shared by everyone wearing it ---------- */
@@ -113,7 +113,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
     C.sort((a,b)=>a.dd-b.dd); for(const o of C.slice(MAXN))hide(o);
     for(const o of C.slice(0,MAXN)){ try{ const rg=o.rag&&o.rag.b&&now-o.rag.t<3000?o.rag:null, p=o.p=rg?{...o.p,x:rg.o[0]*TL,z:-rg.o[1]*TL,hd:rg.hd}:o.p; if(o.key!==(o.look||'w00'))fig(o); const F=o.fig; if(!F)continue; const g=F.g;
       const sp=o.q?Math.hypot(p.x-o.q.x,p.z-o.q.z)/Math.max(dt,1e-3):0; o.q={x:p.x,z:p.z}; o.S.target=sp>.4*TILE?1:0; R.step(o.S,o.frozen>0?0:dt);
-      const M=F.me.material, gh=!!o.dead, op=gh?.35:o.x&&o.x.twin?.5:1, fl=o.flashT>now; if(F.ghost!==gh||F.op!==op){ F.ghost=gh; F.op=op; M.transparent=op<1; M.opacity=op; M.depthWrite=op===1; M.color.set(gh?0xcfe0ff:0xffffff); M.needsUpdate=true; F.me.castShadow=op===1; }   // a ghost, or someone's AI double (162gb) half see-through
+      const M=F.me.material, gh=!!o.dead, op=gh?.35:1, fl=o.flashT>now; if(F.ghost!==gh||F.op!==op){ F.ghost=gh; F.op=op; M.transparent=op<1; M.opacity=op; M.depthWrite=op===1; M.color.set(gh?0xcfe0ff:0xffffff); M.needsUpdate=true; F.me.castShadow=op===1; }   // a ghost half see-through
       if(F.fl!==fl&&M.emissive){ F.fl=fl; M.emissive.setScalar(fl?.55:0); }
       g.visible=true; g.position.set(p.x,p.y,p.z); g.rotation.y=p.hd; if(F.body)musScale(g,1); else musScale(g,F.bh||1); const sz=o.x&&+o.x.sz; if(sz>0)g.scale.multiplyScalar(sz); o.S.hi=o.x&&+o.x.hi||1; o.d=((Math.round(p.hd/PI4)%8)+8)%8;
       if(F.PM){ const v=!rg&&o.vr&&now-o.vr.t<3000?o.vr:null; if(v||F.PM.vr){ o.wantPose=true; if(!v&&F.PM.hands)F.PM.hands.fg=null; F.PM.vr=v; } }   // (a headset player: their own head, arms and fingers every frame, 162cb)
@@ -166,7 +166,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
   addEventListener('pageshow',e=>{ if(e.persisted&&sock&&sock.reconnect)sock.reconnect(); });
   ONLINE.tick=dt=>{ const now=performance.now();
     if(ONLINE.on){ acc+=dt; meAcc+=dt;
-      if(meAcc>1){ meAcc=0; const n=myName(), k=(ONLINE.lookAs&&ONLINE.lookAs())||lookKey(), dead=VIT.dead?1:0, hp=Math.round(VIT.hp*20)/20, x={}; for(const f in ONLINE.mine){ try{ const v=ONLINE.mine[f](); if(v!=null)x[f]=v; }catch(e){} } const s=n+'|'+k+'|'+dead+'|'+hp+'|'+JSON.stringify(x); if(s!==meSent){ meSent=s; send({t:'me',name:n,look:k,dead,hp,x}); } }
+      if(meAcc>1){ meAcc=0; const n=myName(), k=lookKey(), dead=VIT.dead?1:0, hp=Math.round(VIT.hp*20)/20, x={}; for(const f in ONLINE.mine){ try{ const v=ONLINE.mine[f](); if(v!=null)x[f]=v; }catch(e){} } const s=n+'|'+k+'|'+dead+'|'+hp+'|'+JSON.stringify(x); if(s!==meSent){ meSent=s; send({t:'me',name:n,look:k,dead,hp,x}); } }
       keep+=dt; if(acc>=SEND){ acc=0; const a=[+pos.x.toFixed(2),+pos.z.toFixed(2),+SHARED.py.toFixed(2),+Math.atan2(Math.sin(SHARED.heading),Math.cos(SHARED.heading)).toFixed(2),SHARED.LVL||'up',roomKey()];
         if(!last||Math.abs(a[0]-last[0])+Math.abs(a[1]-last[1])+Math.abs(a[2]-last[2])>.01||Math.abs(a[3]-last[3])>.04||a[4]!==last[4]||a[5]!==last[5]||keep>4){ last=a; keep=0; send({t:'mv',at:a}); } } }
     if(ONLINE.others.size)draw(dt,now); fade(dt);

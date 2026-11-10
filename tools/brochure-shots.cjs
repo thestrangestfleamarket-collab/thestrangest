@@ -5,7 +5,7 @@
 const { chromium } = require('playwright'), path = require('path'), fs = require('fs');
 const OUT = path.resolve(process.argv[2] || 'data/brochures'), ONLY = process.argv[3] && process.argv[3].split(','), PI = Math.PI, W = 720, H = 480;
 const PICS = process.env.PICS ? require(path.resolve(process.env.PICS)) : {
-  wreck: [['dive', 'third', 0, .1, [0, .27, .78, 1]], ['deep', 'third', PI, .35, [0, .4, 1, 1]], ['deep', 'third', 0, .35, [0, .45, .9, 1]], ['fsfront', 'third', PI, .1, [0, .12, .72, 1]]],
+  wreck: [['dive', 'third', 0, .1, [0, .27, .78, 1]], ['deep', 'third', null, null, [0, .42, .72, 1], "(() => { const [cx, cz] = WRECK.at, q = __dbg.pos(); SHARED.yaw = SHARED.yawTo = Math.atan2(q[0] - cx, q[2] - cz) + 0; SHARED.pitch = SHARED.pitchTo = 0.3; })()"], ['deep', 'third', null, null, [0, .4, .72, 1], "(() => { const [cx, cz] = WRECK.at, q = __dbg.pos(); SHARED.yaw = SHARED.yawTo = Math.atan2(q[0] - cx, q[2] - cz) + 0.6; SHARED.pitch = SHARED.pitchTo = 0.35; })()"], ['fsfront', 'third', PI, .1, [0, .12, .72, 1]]],
   fish: [['pier', 'third', 0, .12, [0, .36, 1, 1]], ['pier', 'third', PI, .12, [0, .3, .74, 1]], ['cast', 'third', null, null, [0, .05, .72, 1]], ['pier', 'third', -PI / 2, .12, [0, .3, .74, 1]]],
   pets: [['pets', 'third', 0, .2, [0, .05, 1, .62]], ['rept', 'third', 0, .15, [0, .05, 1, .62]], ['aqua', 'third', PI / 2, .12, [0, .3, .72, 1]], ['pets', 'third', -PI / 2, .15, [0, .12, .74, 1]]],
   nature: [['lake', 'third', PI / 2, .12, [0, .3, .72, 1]], ['lawn', 'third', PI / 2, .12, [0, .3, .72, 1]], ['lake', 'third', -PI / 2, .12, [0, .3, .72, 1]], ['gate', 'third', 0, .12, [0, 0, .72, 1]]],
@@ -16,7 +16,7 @@ const PICS = process.env.PICS ? require(path.resolve(process.env.PICS)) : {
   arcade: [['arcade', 'first', -PI / 3, .05, [0, .1, .72, 1]], ['arcade', 'first', PI / 3, .05, [0, .15, .72, 1]], ['arcade', 'third', -2 * PI / 3, .1, [0, .15, .72, 1]], ['arcade', 'third', PI, .12, [0, .25, 1, 1]]],
   music: [['guitar', 'third', 0, .2, [0, 0, .72, 1]], ['guitar', 'third', PI, .2, [0, .08, .72, 1]], ['bar', 'third', 0, .12, [0, .08, 1, .72]], ['bodfront', 'third', 0, .1, [0, 0, .7, 1]]],
   stars: [['scope', 'third', PI / 6, .12, [0, 0, .62, 1]], ['moon', 'hud', null, null, [.01, .125, .61, .875]], ['mic', 'hud', null, null, [.15, .1, .86, .72]], ['scopefar', 'third', .55, .1, [0, .08, 1, 1]]],
-  gems: [['dungeon', 'third', 0, .12, [0, .1, .72, 1]], ['dungeon', 'third', -PI, .12, [0, .15, .72, 1]], ['deep', 'third', -PI / 2, .35, [0, .45, 1, 1]], ['gstall', 'third', PI, .12, [0, .35, .74, 1]]],
+  gems: [['dungeon', 'third', 0, .12, [0, .1, .72, 1]], ['dungeon', 'third', -PI, .12, [0, .15, .72, 1]], ['deep', 'third', null, null, [0, .4, .72, 1], "(() => { const [cx, cz] = WRECK.at, q = __dbg.pos(); SHARED.yaw = SHARED.yawTo = Math.atan2(q[0] - cx, q[2] - cz) + -0.6; SHARED.pitch = SHARED.pitchTo = 0.35; })()"], ['gstall', 'third', PI, .12, [0, .35, .74, 1]]],
 };
 (async () => {
   fs.mkdirSync(OUT, { recursive: true });
@@ -47,7 +47,6 @@ const PICS = process.env.PICS ? require(path.resolve(process.env.PICS)) : {
     fly60: [() => fly(60), land], fly130: [() => fly(130), land],
     dive: [async () => { await dive(); await pg.keyboard.down(' '); await pg.waitForTimeout(6000); }, async () => { await pg.keyboard.up(' '); await undress(); }],
     deep: [async () => { await dive(); await pg.keyboard.down(' '); const t0 = Date.now(); while (Date.now() - t0 < 240000 && !(await ev(() => RIVER.dep >= RIVER.bot - 7))) await pg.waitForTimeout(400); await pg.keyboard.up(' '); await pg.waitForTimeout(2500); }, () => undress()],
-    deepin: [async () => { await STOPS.deep[0](); await ev(() => { const [cx, cz] = WRECK.at, p = __dbg.pos(); SHARED.yaw = SHARED.yawTo = Math.atan2(p[0] - cx, p[2] - cz); SHARED.pitch = SHARED.pitchTo = .3; }); await pg.keyboard.down('w'); await pg.waitForTimeout(4000); await pg.keyboard.up('w'); await pg.waitForTimeout(1500); }, () => undress()],
     scope: [async () => { await goN('YOUR APARTMENT'); const p = await ev(() => { const t = __dbg.UI.things.find(t => t.name === 'TELESCOPE'), q = t.obj.getWorldPosition(t.obj.position.clone()), y = __dbg.you(), d = Math.hypot(y.x - q.x, y.z - q.z) || 1, T = __dbg.cv().TILE; return [q.x + (y.x - q.x) / d * .9 * T, q.z + (y.z - q.z) / d * .9 * T]; });
       await goW(...p); await ev(() => { __dbg.UI.dist *= .5; }); }, () => ev(() => { __dbg.UI.dist /= .5; })],
     moon: [async () => { await goN('YOUR APARTMENT'); await ev(async () => { await SCOPE.open(); for (const k in FORAGE.S.sk) FORAGE.S.sk[k] = Math.max(FORAGE.S.sk[k], 1000); }); await pg.waitForTimeout(5000);

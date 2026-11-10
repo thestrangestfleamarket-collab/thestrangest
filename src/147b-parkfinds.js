@@ -115,7 +115,7 @@ const PQ={}; window.PQ=PQ;
     scr-=dt; if(inn&&scr<=0&&ORCH.thorns.some(([x,z])=>Math.hypot(pos.x-x,pos.z-z)<.9*T)){ scr=2; if(VIT.hurt)VIT.hurt(.02); say('THORNS SCRATCH YOU.','#e0a080'); } };
   // its key: down the castle's well, once
   const WELL={}; const buildWell=()=>{ '@later'; const C=MODS.castle.BOUND, x=C.x1-4.4*T, z=C.z1-5.4*T, G=new THREE.Group(); G.position.set(x,gy(x,z),z); scene.add(G); WELL.G=G;
-    WELL.th={name:'THE CASTLE WELL',obj:hit(G,1.4*T,1.2*T),reach:2*T,near:2.8*T,tall:1*T,act:()=>{ if(SFX.play)SFX.play('creak',{vol:.5});
+    WELL.th={name:'THE OLD WELL',obj:hit(G,1.4*T,1.2*T),reach:2*T,near:2.8*T,tall:1*T,act:()=>{ if(SFX.play)SFX.play('creak',{vol:.5});
       if(INV.picked.orchkey==null||!has('orchard_key')&&!ready('orchkey',7)){ if(has('orchard_key'))return say('YOU HAUL UP THE BUCKET: COLD WATER, NOTHING ELSE.'); took('orchkey'); FORAGE.give('orchard_key',1); FORAGE.draw(); return say('YOU HAUL UP THE BUCKET. AN OLD IRON KEY LIES IN THE SILT, ITS TAG READS "ORCHARD".','#f2c14e'); }
       say('YOU HAUL UP THE BUCKET: COLD WATER, NOTHING ELSE.'); }}; UI.thing(WELL.th); };
 

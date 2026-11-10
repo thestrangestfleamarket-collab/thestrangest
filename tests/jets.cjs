@@ -20,6 +20,10 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const lit = await until(() => { const d = JETDBG(); return d.streams[0] && d.streams[0].what === 'ground' && BLAZE.F.length > 0 && d.parts > 5 ? { s: d.streams[0], fires: BLAZE.F.length, parts: d.parts } : null; }, 12000);
     ok(!!lit, 'the flamethrower shoots fire that lands on the ground and lights a fire there (' + JSON.stringify(lit) + ')');
     await shot('fire');
+    const modes = {}; for (const [m, nm] of [['jet', 'fuel jet'], ['tube', 'cel flame'], ['plasma', 'plasma']]) { await pg.evaluate(m => { JETS.mode = m; }, m);
+      modes[m] = await until(nm => { let v = false; __scene.traverse(o => { if (o.name === nm && o.visible) v = true; }); return v; }, 8000, nm); await shot('mode-' + m); }
+    await pg.evaluate(() => { JETS.mode = 'fluid'; });
+    ok(modes.jet && modes.tube && modes.plasma, 'the flamethrower\'s modes each draw their fire (' + JSON.stringify(modes) + ')');
     await pg.evaluate(() => { JETS.hold = false; }); await pg.waitForTimeout(800);
     const n0 = await pg.evaluate(() => BLAZE.F.length);
     await pg.evaluate(() => { WIELD.set('frost'); JETS.hold = true; });

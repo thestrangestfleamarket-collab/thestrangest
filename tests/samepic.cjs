@@ -6,7 +6,7 @@
 // starts faster gets another beam). The pictures are kept in the out dir for a look.
 const {chromium}=require('playwright'), path=require('path'), fs=require('fs');
 const [BASE,HEAD,OUT='out/samepic']=process.argv.slice(2).map((p,i)=>i<2?path.resolve(p):p);
-const PLACES=['THE STREET','THE DUNGEON','THE CASTLE','CENTRAL PARK','THE PLATFORM','THE BODEGA','in:diner','in:bar'];
+const PLACES=['THE STREET','THE DUNGEON','THE DUNGEON STAIR','CENTRAL PARK','THE PLATFORM','THE BODEGA','in:diner','in:bar'];
 let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
 (async()=>{ fs.mkdirSync(OUT,{recursive:true}); const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
   const shot=async(page,place,tag)=>{ const pg=await b.newPage({viewport:{width:960,height:540}}); pg.setDefaultTimeout(900000); const errs=[];

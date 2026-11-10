@@ -74,7 +74,7 @@ import {GHOLD} from './146zoa-guitar-hold.js';
     cotton:(a)=>S.cloud(a), popcorn:(a,b)=>{ const g=S.tub(0xd83a3a,0xf4efe4); for(let i=0;i<9;i++)add(g,'ball',0xf4e8c0,Math.cos(i*2.3)*.035,.13+(i%3)*.01,Math.sin(i*2.3)*.035,.014,.012,.014,0,0,0,M('food')); return g; },
   };
   // which shape each item is (by its id), first match
-  const BY=[[/^guitar$/,'guitar'],[/^harp$/,'harp'],[/^piano$/,'piano'],[/^drums$/,'drums'],[/^kazoo$/,'kazoo'],
+  const BY=[[/^guitar$/,'guitar'],[/^plate_/,'frame'],[/^harp$/,'harp'],[/^piano$/,'piano'],[/^drums$/,'drums'],[/^kazoo$/,'kazoo'],
     [/^spray_/,'spray'],[/^g_(beans|soup|tuna|spam|catfood|vienna|soda|beer|coffee|cleanser)$/,'can'],[/^g_(juice|water|shampoo|dishsoap|aspirin)$|^soda_|^lemonade$|^p_royal$|^curse_stink$/,'bottle'],[/^g_bleach$|^water$/,'jug'],[/^g_milk$/,'carton'],
     [/^g_(fishfood|oats|yogurt|noodles|vaseline)$/,'tub'],[/^(honey_|jar_)|^curse_(cloud|rats)$/,'jar'],[/^g_(chips|bagels|dogfood|rice|diapers|tp|towels|bananas|plantains)$|^dirt$|^fix_parts$/,'sack'],[/^g_(koolaid|gum|batteries|candy)$|^seed_/,'packet'],
     [/^g_(cereal|detergent|pasta|tea|qtips|matches|eggs|bread|cheese|butter)$|^f_(bonbons|candybox)$/,'box'],[/^g_(candle|bulb)$|^wax_candle$/,'candle'],[/^g_(toothbrush|toothpaste|deodorant|lighter|sponge|soap)$/,'block'],

@@ -5996,3 +5996,4 @@ Owner: "what polyfork animations do we have for our character", then "yes lets u
 - 10 Nov 2026, the big lake's deep hole (same ask): the 25 m hole moved off the bath house island's edge (the island had filled it), out into open water.
 - 10 Nov 2026, fishing from the rowboat (same ask; TODO): sat in the boat you hold the rod and swing it to cast and reel, as on the pier.
 - 10 Nov 2026, shrink and grow mushrooms (owner: "why when i shrink or grow every npc does too?"): a bug; they change only you, every other body stays its size.
+- 10 Nov 2026, fewer Actions minutes (owner: "make the checks use fewer minutes"): the places check runs only when a pull request touches code splitting (`'@name'`, `LOAD`), the build, the worker or the page's HTML; no machine is started just to decide whether to check or measure.

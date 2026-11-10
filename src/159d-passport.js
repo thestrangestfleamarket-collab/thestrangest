@@ -77,11 +77,15 @@ import {AVATAR} from './111c-avatar.js';
   const POSES=[['','STANDING'],['greet','WAVE'],['foldArms','ARMS FOLDED'],['cheer','CHEER'],['fistPump','FIST PUMP',.65],['dab','DAB'],['powerUp','POWER UP'],['confused','CONFUSED'],['angry','ANGRY',.35],['guard','GUARD']];   // (each held at the moment of its move that reads best: the middle unless given)
   PASSPORT.POSES=POSES; PASSPORT.photo=(c,look,pose)=>photo(c,look,pose,null);
   const photo=async(c,look,pose,live)=>{ '@later'; if(!c)return; const g2=c.getContext('2d'), m=/^b:avatar:(.*)$/.exec(String(look||'')), base=BODIES.by.avatar, body=m&&base&&base.variant?base.variant(m[1]):null;
-    if(!body){ if(live&&DESIGN.snapOf)DESIGN.snapOf(g2,c.width,c.height,live); return; }
+    if(!body){ if(live&&DESIGN.snapOf){ DESIGN.snapOf(g2,c.width,c.height,live); fitPic(c); } return; }
     const S=RIG.create(); S.target=0; if(pose&&POSES.some(p=>p[0]===pose)){ const I=await MOTION.ensure(); if(RIG.MOVES['mc_'+pose]){ RIG.begin(S,'mc_'+pose); const d=(I[pose]&&I[pose].dur)||1; const k=PASSPORT.poseAt!=null?PASSPORT.poseAt:(POSES.find(p=>p[0]===pose)[2]??.5); for(let t=0;t<d*k;t+=1/30)RIG.step(S,1/30); } } else for(let i=0;i<10;i++)RIG.step(S,1/30);
     const M=BODIES.mesh(body), G=new THREE.Group(); G.add(M.me); M.me.frustumCulled=false; BODIES.pose(RIG.pose(S,true),M.PM,body,S); G.updateMatrixWorld(true);
-    const bx=new THREE.Box3(), v=new V3(); const IV=new THREE.Matrix4(); M.PM.value.forEach((m4,i)=>bx.expandByPoint(body.binv?v.setFromMatrixPosition(IV.copy(body.binv[i]).invert()).applyMatrix4(m4):v.setFromMatrixPosition(m4))); const h=bx.max.y-bx.min.y; bx.max.y+=.16*h; bx.min.y-=.05*h; bx.expandByVector(v.set(.1*h,0,.1*h));   // (framed on the posed bones: the head's top and the soles past them)
-    try{ DESIGN.snapOf(g2,c.width,c.height,G,{box:bx}); } finally{ G.remove(M.me); } };
+    const bx=new THREE.Box3(), v=new V3(); const IV=new THREE.Matrix4(); M.PM.value.forEach((m4,i)=>bx.expandByPoint(body.binv?v.setFromMatrixPosition(IV.copy(body.binv[i]).invert()).applyMatrix4(m4):v.setFromMatrixPosition(m4))); const h=bx.max.y-bx.min.y; bx.max.y+=.4*h; bx.min.y-=.07*h; bx.expandByVector(v.set(.2*h,0,.2*h));   // (framed on the posed bones, with room for the whole head above the head bone and the soles below)
+    try{ DESIGN.snapOf(g2,c.width,c.height,G,{box:bx}); } finally{ G.remove(M.me); } fitPic(c); };
+  const fitPic=c=>{ const W=c.width, H=c.height, g=c.getContext('2d'), d=g.getImageData(0,0,W,H).data; let x0=W,y0=H,x1=-1,y1=-1;   // the whole figure in the frame: cropped to what was drawn, scaled to fit with a margin
+    for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(d[(y*W+x)*4+3]>8){ if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; } if(x1<0)return;
+    const w=x1-x0+1, h=y1-y0+1, k=Math.min(W*.86/w,H*.84/h), t=document.createElement('canvas'); t.width=w; t.height=h; t.getContext('2d').drawImage(c,x0,y0,w,h,0,0,w,h);
+    g.clearRect(0,0,W,H); g.imageSmoothingEnabled=false; g.drawImage(t,0,0,w,h,Math.round((W-w*k)/2),Math.round(H-H*.06-h*k),Math.round(w*k),Math.round(h*k)); };
   // in your pack, never leaves you (no dropping, no trading); the lanyard is gone (owner, 8 Nov 2026)
   FORAGE.ACT.passport=()=>PASSPORT.open(); FORAGE.ROWB.push(id=>id==='passport'?[['SHOW','passport']]:[]);
   // another player's card (owner, 8 Nov 2026: "if you double click on another player it shows their id on your screen"): what their card says travels with them (ONLINE.mine.id), the rest is read from their look

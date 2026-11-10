@@ -1,6 +1,6 @@
 // THE VIOLIN, THE FLUTE AND THE TRUMPET (owner, 9 Nov 2026: "Violin, flute, trumpet"): the instruments of one note at a time, held as you sit (INSTR, 146zp): the violin under the chin with its bow drawn down and up a note, the flute across to the right, the trumpet out front with its three valves; their sound real recordings of each (the VS Chamber Orchestra's, CC0); one book for the three, the tunes of the piano's pieces (data/melody-songs.json), each moved by octaves into the instrument's range.
 import {THREE} from './003-shx.js';
-import {INSTR} from './146zp-instruments.js';
+import {INSTR} from './003b-systems.js';
 { const {box,cyl,mat,sm}=INSTR, V3=THREE.Vector3, Q4=THREE.Quaternion, UP=new V3(0,1,0), Z=new V3(0,0,1);
   const MEL=__LAZY__("data/melody-songs.json"), hz=m=>440*Math.pow(2,(m-69)/12);
   const HALF=[[.35,.25,.2,0],[.55,.6,.4,-.1],[.55,.65,.4,-.03],[.55,.65,.4,.04],[.5,.6,.4,.12]], DOWN=[[.45,.3,.25,0],[.85,.9,.55,-.1],[.85,.95,.55,-.03],[.85,.95,.55,.04],[.8,.9,.55,.12]], GRIP=[[.5,.5,.35,0],[1.1,1.2,.8,-.1],[1.15,1.25,.8,-.03],[1.15,1.25,.8,.04],[1.1,1.2,.8,.12]];

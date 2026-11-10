@@ -1,8 +1,7 @@
 // THE THINGS' POLYFORK MODELS (owner, 8 Nov 2026: "lets look for polyfork assets for anything in game and use those"): an item Polyfork has (data/pfitems.json, tools/pfitems-bake.py) is drawn as that model wherever items are (the ground, the inspect window), fetched after the start; the shapes of 150cya until it comes and for the rest.
 import {THREE} from './003-shx.js';
-import {INSPECT} from './003b-systems.js';
+import {INSPECT, INSTR} from './003b-systems.js';
 import {SYS} from './006-map-pre.js';
-import {INSTR} from './146zp-instruments.js';
 const PFI={on:[]}; window.PFI=PFI;
 { const LZ=__LAZY__("data/pfitems.json"), GEO=new Map(), MAT=new THREE.MeshStandardMaterial({vertexColors:true,flatShading:true,roughness:.85}); let D=null, P=null;
   PFI.load=()=>P||(P=LZ().then(j=>{ D=j; for(const f of PFI.on)try{ f(); }catch(e){ console.warn('PFI',e); } }).catch(e=>{ P=null; console.warn('PFI',e); }));

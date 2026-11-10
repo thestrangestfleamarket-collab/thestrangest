@@ -1108,6 +1108,14 @@
      "y": 21.9,
      "rot": 1.5708
     }
+   },
+   {
+    "id": "falls",
+    "x": 172.5,
+    "y": 90,
+    "w": 53,
+    "d": 36,
+    "note": "the falls (src/089b-falls.js): no trees here"
    }
   ],
   "stalls": [
@@ -1195,7 +1203,25 @@
     "w": 3,
     "note": "the bath house island's footbridge to the shore, walked off once you are alive again (owner, 8 Nov 2026)"
    }
-  ]
+  ],
+  "falls": {
+   "note": "THE FALLS (owner, 10 Nov 2026): Central Park's waterfall beside the big lake, between the brook and the giant tree; map tiles: x, y the plunge pool's middle, r its radius, box the rock massif, lobe the pool's south lobe under big tree A's rope swing; h the cliff's height in metres",
+   "x": 181,
+   "y": 88,
+   "r": 9.5,
+   "h": 18,
+   "box": [
+    150,
+    77,
+    187,
+    106
+   ],
+   "lobe": [
+    183,
+    78,
+    5.5
+   ]
+  }
  },
  "paths": [
   {

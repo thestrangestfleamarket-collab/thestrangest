@@ -12,7 +12,7 @@ import {ROOMK} from './150a-bedroom.js';
   const getLocal=()=>{ try{ return JSON.parse(SAVE.get('home')||'null'); }catch(e){ return null; } };
   const setLocal=L=>{ SAVE.set('home',JSON.stringify(L)); };
   const ask=async body=>{ const r=await fetch('/home',{method:'POST',headers:{'content-type':'application/json'},credentials:'same-origin',body:JSON.stringify(body)}); if(!r.ok)throw new Error(r.status); return r.json(); };
-  HOME.load=async()=>{ let L=null; if(web){ try{ L=(await ask({})).home; }catch(e){} } if(!L)L=getLocal(); if(L&&!cur(L)){ HOME.stale=L; L=null; } HOME.layout=L; HOME.loaded=true; if(L&&ROOMK.api)apply(ROOMK.api,L); };
+  HOME.load=async()=>{ let L=null; if(web){ try{ L=(await ask({})).home; }catch(e){} } if(!L)L=getLocal(); if(L&&!cur(L)){ HOME.stale=L; L=null; } HOME.layout=L; HOME.loaded=true; if(L&&ROOMK.api){ apply(ROOMK.api,L); tidy(ROOMK.api); } };
   HOME.save=async L=>{ HOME.layout=L; setLocal(L); if(web){ try{ await ask({put:L}); HOME.saved=Date.now(); }catch(e){ HOME.err=String(e); } } };
 
   /* ---------- a room as a layout: where every piece stands, what you added and put away, the walls, the floor, the lights ---------- */
@@ -29,7 +29,9 @@ import {ROOMK} from './150a-bedroom.js';
   const SORT={};
   ROOMK.built.push(A=>{ '@later'; sortKinds(A); const lt={}; for(const q of A.lightsAll())lt[q.id]=A.lightGet(q.id); A.R.bare={wall:A.R.wall,floor:A.R.floor,kfloor:A.R.kfloorK,glow:A.R.glowK,lights:lt}; if(!QS.has('furnished'))for(const un of A.units().slice())if(!un.added&&!ROOMK.always.has(un.kind))A.drop(un); if(HOME.stale&&!HOME.guest){ const S=HOME.stale, K=A.kinds(); HOME.stale=null; let back=0, n=0; for(const a of S.added||[]){ const KO=K[a.kind]; if(KO&&KO.own){ FORAGE.give(KO.own,1); n++; } else back+=a.paid||0; }
       INV.cash=(INV.cash||0)+back; if(INV.save)INV.save(); HOME.save(snapshot(A)); if(back||n)UI.log('YOUR APARTMENT WAS RESET'+(back?': $'+back+' BACK FOR YOUR FURNITURE':'')+(n?(back?',':':')+' '+n+' THING'+(n>1?'S':'')+' BACK IN YOUR PACK':'')+'.','#c8a090'); }
-    if(HOME.guest)apply(A,HOME.guest.layout); else if(HOME.loaded)apply(A,HOME.layout); if(ED.on)ED.panel(); });
+    if(HOME.guest)apply(A,HOME.guest.layout); else if(HOME.loaded){ apply(A,HOME.layout); tidy(A); } if(ED.on)ED.panel(); });
+  // a layout that comes back with pieces inside one another is put right once, and says so
+  const tidy=A=>{ '@later'; if(HOME.guest||!HOME.layout)return; const m=unclip(); if(!m.length)return; HOME.save(snapshot(A)); for(const [x,y] of m)UI.log('THE '+x+' WAS STANDING IN THE '+y+': MOVED CLEAR.','#c8a090'); };
   // a visit: another player's apartment is your rooms dressed in their layout, to look at, not to change; leaving puts yours back
   const swap=L=>{ const A=ROOMK.api; if(!A)return; for(const un of A.units().slice())if(un.added)A.drop(un); const D=A.R.bare||{}; apply(A,{...D,...(L||{}),lights:{...(D.lights||{}),...((L&&L.lights)||{})}}); };
   HOME.visit=async(id,name,L0)=>{ '@later'; if(!id||(MODS.apts&&MODS.apts.inReal))return; let L=L0; if(L===undefined&&web){ try{ L=(await ask({who:id})).home; }catch(e){ L=null; } }
@@ -146,6 +148,11 @@ import {ROOMK} from './150a-bedroom.js';
   const bringBack=un=>{ const A=A_(); A.restore(un); did({t:'back',un}); select(un); };
   // somewhere it fits, near where it was asked for: rings of grid steps outward
   const findSpot=(un,t)=>{ if(fits(un,t).ok)return t; const A=A_(), P=A.porch; for(let r=1;r<=24;r++)for(let i=-r;i<=r;i++)for(const [du,dv] of [[i,-r],[i,r],[-r,i],[r,i]]){ const q={...t,u:snap(t.u,GS)+du*GS,v:snap(t.v,GS)+dv*GS}; if((q.u<0||q.v<0||q.u>A.Lx||q.v>A.Ly)&&!(P&&q.u>=P.u0&&q.u<=P.u1&&q.v>=P.v0&&q.v<=P.v1))continue; if(fits(un,q).ok)return q; } return t; };
+  // pieces standing in one another (owner, 10 Nov 2026): every pair of standing pieces whose solids overlap; unclip moves one of each pair to the nearest spot it fits
+  const clips=()=>{ '@later'; const A=A_(), out=[]; if(!A)return out; const U=A.units().filter(u=>!u.gone&&!u.loose&&u.sol&&u.sol.length&&sortOf(u)==='big'), e=.03, B=U.map(u=>boxes(u,A.getT(u)));
+    for(let i=0;i<U.length;i++)for(let j=i+1;j<U.length;j++)if(B[i].some(p=>B[j].some(q=>p[0]<q[2]-e&&q[0]<p[2]-e&&p[1]<q[3]-e&&q[1]<p[3]-e&&p[4]<q[5]-e&&q[4]<p[5]-e)))out.push([U[i],U[j]]); return out; };
+  const unclip=()=>{ '@later'; const A=A_(), moved=[]; for(let n=0;n<12;n++){ const C=clips(); if(!C.length)break; const [a,b]=C[0], area=u=>{ const f=own(u); return (f[2]-f[0])*(f[3]-f[1]); }, m=a.added!==b.added?(a.added?a:b):area(a)<area(b)?a:b, t=A.getT(m);
+      const q=findSpot(m,{...t,u:t.u+(n?GS:0)}); if(q===t||!fits(m,q).ok)break; A.setT(m,q); moved.push([m.name,(m===a?b:a).name]); } return moved; };
   const add=(kind,at,paid)=>{ '@later'; const A=A_(), K=A.kinds()[kind]; if(!K)return null; const me=A.toApt(pos.x,SHARED.py,pos.z), base=K.loose?A.getT({loose:true,obj:K.tpl}):{h:K.tpl.position.y};
     const P=A.porch, out=P&&me.v<-.15&&!K.mount, t=at||{u:out?Math.max(P.u0+.4,Math.min(P.u1-.4,me.u+.6)):Math.max(.4,Math.min(A.Lx-.4,me.u+.6)),h:K.mount==='ceil'?A.HW:K.mount==='wall'?1.8:K.loose?Math.max(.05,base.h):base.h,v:out?(P.v0+P.v1)/2:Math.max(.4,Math.min(A.Ly-.4,me.v+.6)),ry:0,s:1}; const un=A.spawn(kind,t); if(!un)return null;
     un.paid=paid||0; const q=findSpot(un,A.getT(un)); if(q!==t)A.setT(un,q); did({t:'add',un}); select(un); return un; };
@@ -354,5 +361,5 @@ import {ROOMK} from './150a-bedroom.js';
   addEventListener('dblclick',e=>{ if(!ED.on||e.target!==renderer.domElement||ED.carry)return; const h=pick(e); if(!h||h.un.loose)return; e.stopImmediatePropagation(); e.preventDefault(); if(drag)finish(); SURF.open(h.un); },true);
   window.ROOMEDDBG=()=>{ '@later'; const A=A_(); return {out:A?A.units().filter(u=>!u.gone&&A.getT(u).v<0).map(u=>u.kind):[],on:ED.on,sel:ED.sel&&ED.sel.id,undo:ED.undo.length,saved:HOME.saved||0,layout:!!HOME.layout,units:A?A.units().length:0,gone:A?A.units().filter(u=>u.gone).length:0,added:A?A.units().filter(u=>u.added).length:0,wall:A&&A.R.wall,floor:A&&A.R.floor,kfloor:A&&A.R.kfloorK,
     carry:!!ED.carry,grid:ED.grid,cash:cash(),pics:Object.keys(PICS).filter(k=>PICS[k]).length,fp:fpG.visible?fpG.children.filter(m=>m.visible).map(m=>m.material===FPM.ok?'ok':'no'):[],said:ED.said||''}; };
-  ED._api=A_; ED.HOME=HOME; ED.snapshot=()=>A_()&&snapshot(A_()); ED.apply=L=>apply(A_(),L); ED.add=add; ED.select=select; ED.putAway=putAway; ED.turn=turn; ED.size=size; ED.fits=(un,t)=>fits(un,t||A_().getT(un)); ED.sortOf=sortOf; ED.price=price; ED.sell=()=>sell(); ED.place=()=>placeCarry(); ED.surf=SURF; ED.tops=un=>tops(un); ED.placeOn=placeOn; ED.packKind=id=>packKind(A_(),id);
+  ED._api=A_; ED.HOME=HOME; ED.snapshot=()=>A_()&&snapshot(A_()); ED.apply=L=>apply(A_(),L); ED.add=add; ED.select=select; ED.putAway=putAway; ED.turn=turn; ED.size=size; ED.fits=(un,t)=>fits(un,t||A_().getT(un)); ED.sortOf=sortOf; ED.price=price; ED.sell=()=>sell(); ED.place=()=>placeCarry(); ED.surf=SURF; ED.tops=un=>tops(un); ED.placeOn=placeOn; ED.packKind=id=>packKind(A_(),id); ED.clips=()=>clips().map(p=>p.map(u=>u.name)); ED.unclip=unclip;
 }

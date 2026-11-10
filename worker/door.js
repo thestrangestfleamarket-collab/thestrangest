@@ -119,6 +119,7 @@ export default {
         return json({ ok: await homeOf(env).put(id, t) }); }
       // what you own (cash, pack, skills, logs...): one copy a player, read at the start, written back key by key
       if (p === "/owned") { if (body.put === undefined) { const H = homeOf(env), [owned, no, name] = await Promise.all([H.ownedGet(id), H.passport(id), H.nameGet(id)]); return json({ owned, me: { ...meOf(request, id), no, name } }); }
+        if (body.kit !== undefined) { if (await owner(env, id, dev) !== true) return json({ why: "owners only" }, 403); await homeOf(env).econAllow(id, 0, Math.min(20000, Math.max(0, Math.floor(+body.kit || 0))), "owners' kit"); return json({ ok: true }); }   // an owner's own kit, each start (141-forage)
         const put = body.put; if (!put || typeof put !== "object" || Array.isArray(put)) return json({ why: "bad save" }, 400);
         const ks = Object.keys(put); if (ks.length > 80 || ks.some(k => !/^[a-z0-9_.-]{1,40}$/i.test(k) || (put[k] !== null && (typeof put[k] !== "string" || put[k].length > 262144)))) return json({ why: "bad save" }, 400);
         if (tooMany("owned:" + id, 120)) return json({ why: "too many saves, wait a minute" }, 429);
@@ -156,11 +157,13 @@ export default {
       const own = await owner(env, id, dev); if (own !== true) return json({ why: "only the owner (" + own + ")" }, 403);
       if (body.do === "text") { const key = String(body.key || ""), text = String(body.text || ""); if (!/^[a-z0-9_.\- ]{1,80}$/i.test(key) || text.length > 400) return json({ why: "bad text" }, 400); return json({ ok: await postOf(env).putText(key, text) }); }
       return json(await admin(env, body, url.origin)); }
-    if (request.method !== "POST" || !["/enter", "/join/check", "/join"].includes(p)) return new Response("not found", { status: 404 });
+    if (request.method !== "POST" || !["/enter", "/join/check", "/join", "/ask"].includes(p)) return new Response("not found", { status: 404 });
     if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
     if (tooMany(request.headers.get("CF-Connecting-IP") || "local")) return json({ why: "too many tries, wait a minute" }, 429);
     if (p === "/enter") { const t = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, ""); return json(t && t.length < 5000 ? await pass(env, t, dev) : { why: "login" }); }
     let body; try { body = await request.json(); } catch (e) { body = null; } if (!body || typeof body !== "object") return json({ why: "bad message" }, 400);
+    // asking for an invite (owner, 10 Nov 2026): the email waits in TENANTS until the owner sends it a code
+    if (p === "/ask") { const m = String(body.email || "").trim().toLowerCase(); if (!MAIL.test(m) || m.length > 200) return json({ why: "email" }); return json({ ok: await postOf(env).ask(m) }); }
     const k = svc(env); if (!k) return json({ why: "the market can't take new tenants yet (the server has no key to make accounts)" });
     const code = String(body.code || "").trim().toUpperCase(); if (!CODE.test(code) || !(await codeOk(env, k, code))) return json({ why: "code" });
     return p === "/join/check" ? json({ ok: true }) : json(await join(env, k, code, body));
@@ -431,7 +434,8 @@ export class Block extends Server {
       const v = Array.isArray(m.v) ? [num(m.v[0], -2, 2), num(m.v[1], -2, 2)] : null; o.send(JSON.stringify(m.t === "toss" ? { t: "toss", id: s.id, v } : { t: m.t, id: s.id }));
     } else if (m.t === "jet") {   // a flamethrower or freeze ray firing (146hb), or stopping
       const k = m.k === "f" || m.k === "i" ? m.k : "", v = k && Array.isArray(m.v) ? [num(m.v[0], -1, 1), num(m.v[1], -1, 1), num(m.v[2], -1, 1)] : null;
-      this.broadcast(JSON.stringify(v ? { t: "jet", id: s.id, k, v } : { t: "jet", id: s.id, k }), [c.id]);
+      const md = Number.isInteger(m.m) && m.m >= 0 && m.m < 8 ? m.m : 0;
+      this.broadcast(JSON.stringify(v ? { t: "jet", id: s.id, k, v, m: md } : { t: "jet", id: s.id, k }), [c.id]);
     } else if (m.t === "zap") {   // its stream on a player near the shooter: they burn or freeze
       const to = String(m.to || ""); if (!to || to === s.id) return; const o = this.near(s, to, 12); if (!o) return;
       o.send(JSON.stringify({ t: "zap", id: s.id, k: m.k === "i" ? "i" : "f", from: [s.at[0], s.at[1]] }));
@@ -533,14 +537,14 @@ export class Block extends Server {
       if (r) this.dropGone(k); c.send(JSON.stringify({ t: "took", k, v }));
       if (v) { try { const o = JSON.parse(v); if (String(o.by || "").startsWith("body:")) homeOf(this.env).econAllow(s.id, o.id === "cash" ? o.n : 0, o.id === "cash" ? 0 : o.n, "a body's drop").catch(() => {}); } catch (e) {} }
     } else if (m.t === "sky") {   // a telescope shared at a star party (src/150fh): where it points, to everyone in the section
-      this.broadcast(JSON.stringify({ t: "sky", id: s.id, name: word(s.name, 24), on: m.on ? 1 : 0, alt: num(m.alt, -90, 90), az: num(m.az, 0, 360), mag: num(m.mag, 1, 400), f: num(m.f, -1, 1), fl: m.fl ? 1 : 0, jd: num(m.jd, 2.4e6, 2.6e6), ctl: word(m.ctl, 60) }), [c.id]);
+      this.broadcast(JSON.stringify({ t: "sky", id: s.id, name: word(s.name, 24), on: m.on ? 1 : 0, alt: num(m.alt, -90, 90), az: num(m.az, 0, 360), mag: num(m.mag, 1, 400), f: num(m.f, -1, 1), fl: m.fl ? 1 : 0, jd: num(m.jd, 2.4e6, 2.6e6), ctl: word(m.ctl, 60), obs: m.obs ? 1 : 0, n: num(m.n, 0, 99) | 0 }), [c.id]);
     } else if (m.t === "tv") {   // an apartment's CRT TV (src/150fa): power, channel and what THE GUIDE plays, to everyone else in that apartment
       const rm = s.at && s.at[5]; if (!rm || !rm.startsWith("apt:")) return;
       const q = m.p && typeof m.p === "object" ? m.p : null, p = q && /^[A-Za-z0-9_.-]{1,80}$/.test(q.id || "") && /^[A-Za-z0-9_.-]{1,120}\.mp4$/.test(q.file || "") ? { id: q.id, file: q.file, title: word(q.title, 90), year: num(q.year, 0, 3000) | 0, len: num(q.len, 1, 20000) } : null;
       const x = JSON.stringify({ t: "tv", id: s.id, on: m.on ? 1 : 0, ch: num(m.ch, 0, 99) | 0, p, t0: num(m.t0, 0, 1e14) });
       for (const o of this.getConnections()) if (o !== c && o.state && o.state.at && o.state.at[5] === rm) o.send(x);
     } else if (m.t === "skyw") {   // a watcher joining, leaving or (handed the tube) steering someone's telescope: to that one player
-      const to = String(m.to || ""), op = /^(join|leave|steer)$/.test(m.op) ? m.op : ""; if (!to || to === s.id || !op) return;
+      const to = String(m.to || ""), op = /^(join|leave|steer|ask)$/.test(m.op) ? m.op : ""; if (!to || to === s.id || !op) return;
       for (const o of this.getConnections()) if (o.state && o.state.id === to) { o.send(JSON.stringify({ t: "skyw", id: s.id, name: word(s.name, 24), op, alt: num(m.alt, -90, 90), az: num(m.az, 0, 360) })); break; }
     } else if (m.t === "world") {
       const k = word(m.k, 40); if (!k) return; if (k === "time") this.clkAt = 0;
@@ -628,7 +632,7 @@ async function owner(env, id, dev) {
 const postOf = env => env.Post.get(env.Post.idFromName("post"));
 // a trade's offer, cleaned: at most 16 kinds of things (1 to 9999 each), cash, and a painting's description for each painting in it
 // the kinds of shared things a player may set on the block (the rest are refused): owner: only an owner (they tell everyone to read again); add: a counter, one at a time
-const WORLD_KEYS = [{ re: /^time$/, owner: 1 }, { re: /^looks$/, owner: 1 }, { re: /^veh$/, owner: 1 }, { re: /^we$/, owner: 1 }, { re: /^riverbell$/ }, { re: /^riverbell:rung$/, add: 1 },
+const WORLD_KEYS = [{ re: /^time$/, owner: 1 }, { re: /^looks$/, owner: 1 }, { re: /^veh$/, owner: 1 }, { re: /^snd$/, owner: 1 }, { re: /^we$/, owner: 1 }, { re: /^riverbell$/ }, { re: /^riverbell:rung$/, add: 1 },
   { re: /^car:[\w-]{1,32}$/ }, { re: /^radio:[\w-]{1,32}$/ }, { re: /^cst:[\w-]{1,32}$/ }, { re: /^gate:[\w-]{1,32}$/ }, { re: /^flag:[\w-]{1,32}$/ }, { re: /^tbl:[\w:-]{1,34}$/ }, { re: /^tag:[\w:.-]{1,34}$/ }];
 // the stalls: their names, the rent a day, how many days ahead, the market's cut of a sale, how many kinds a stall shows
 const STALL = { ids: ["s1", "s2", "s3", "s4", "s5"], rent: 15, days: 7, cut: .05, kinds: 12 };
@@ -656,12 +660,12 @@ const blockAsk = async (env, room, path, body) => { const s = await getServerByN
   return r.json(); };
 const newCode = () => { const A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", b = crypto.getRandomValues(new Uint8Array(8)); let s = ""; for (const x of b) s += A[x % 32]; return "MARKET-" + s.slice(0, 4) + "-" + s.slice(4); };
 // one request per 100 emails (Resend's batch), so a message to everyone stays under the worker's subrequest limit
-async function email(env, to, subject, text) {
-  const from = env.MAIL_FROM || "THE MARKET <market@thestrangestfleamarket.com>"; let n = 0;
+async function email(env, to, subject, text, why = {}) {
+  const from = env.MAIL_FROM || "THE MARKET <market@auth.thestrangestfleamarket.com>"; let n = 0;
   for (let i = 0; i < to.length; i += 100) { const part = to.slice(i, i + 100);
     const r = await fetch("https://api.resend.com/emails/batch", { method: "POST", headers: { Authorization: "Bearer " + env.RESEND_API_KEY, "content-type": "application/json" },
       body: JSON.stringify(part.map(x => ({ from, to: [x], subject, text }))) });
-    if (r.ok) n += part.length; }
+    if (r.ok) n += part.length; else why.t = r.status + " " + (await r.text()).slice(0, 200); }
   return n;
 }
 async function admin(env, b, origin) {
@@ -676,7 +680,7 @@ async function admin(env, b, origin) {
       if (gone.length && all) await P.botsDrop(gone); }
     const [us, pl, ad, co, on] = await Promise.all([users(), call("/rest/v1/players?select=*").then(r => r.ok ? r.json() : []), call("/rest/v1/admins?select=*").then(r => r.ok ? r.json() : []),
       call("/rest/v1/invite_codes?select=*").then(r => r.ok ? r.json() : []), blockAsk(env, room, "who").catch(() => [])]), nm = await homeOf(env).namesAll().catch(() => ({}));
-    return { ok: true, email: !!env.RESEND_API_KEY, codes: co, letters: await postOf(env).list(),
+    return { ok: true, email: !!env.RESEND_API_KEY, codes: co, letters: await postOf(env).list(), asks: await postOf(env).asks(),
       users: us.map(x => ({ id: x.id, email: x.email, name: nm[x.id] || "", phone: x.phone || "", joined: x.created_at, last: x.last_sign_in_at, confirmed: x.email_confirmed_at, provider: x.app_metadata && x.app_metadata.provider,
         banned: x.banned_until && Date.parse(x.banned_until) > Date.now() ? x.banned_until : null, player: pl.find(p => p.id === x.id) || null, admin: ad.some(a => a.user_id === x.id), online: on.includes(x.id) })) };
   }
@@ -685,6 +689,13 @@ async function admin(env, b, origin) {
   if (b.do === "codeoff") { const code = String(b.code || ""); if (!CODE.test(code)) return { why: "no such code" };
     const r = await call("/rest/v1/invite_codes?select=uses&code=eq." + encodeURIComponent(code)), c = r.ok ? (await r.json())[0] : null; if (!c) return { why: "no such code" };
     return res(await call("/rest/v1/invite_codes?code=eq." + encodeURIComponent(code), { method: "PATCH", body: JSON.stringify({ max_uses: c.uses }) })); }
+  if (b.do === "askcode" || b.do === "askoff") { const m = String(b.email || "").trim().toLowerCase(); if (!MAIL.test(m)) return { why: "no such email" };
+    if (b.do === "askoff") return { ok: await postOf(env).askOff(m) };
+    if (!env.RESEND_API_KEY) return { why: "email is not set up" };
+    const code = newCode(), r = await call("/rest/v1/invite_codes", { method: "POST", body: JSON.stringify({ code, uses: 0, max_uses: 1 }) }); if (!r.ok) return res(r);
+    const w = {}, n = await email(env, [m], "YOUR INVITE TO THE STRANGEST FLEA MARKET", "Your invite code: " + code + "\n\nEnter it at " + origin + "/ to make your account.", w);
+    if (!n) return { why: "the email did not go out (code " + code + "): " + (w.t || "?") };
+    await postOf(env).askSent(m); return { ok: true, code }; }
   if (b.do === "tell") {
     const to = b.to === "*" ? "*" : id, subject = String(b.subject || "A LETTER FROM THE MARKET").slice(0, 120), text = String(b.text || "").slice(0, 4000).trim(), out = { ok: true };
     if (!text || (to !== "*" && !user())) return { why: "who to, and what?" };
@@ -775,6 +786,13 @@ export class Post extends DurableObject {
   botIds() { return this.sql.exec("select name from sqlite_master where type = 'table' and name = 'bots'").toArray().length ? this.sql.exec("select id from bots").toArray().map(r => r.id) : []; }
   async botsDrop(ids) { for (const id of ids) await this.ctx.storage.delete("twin:" + id); await this.ctx.storage.delete("botkey"); this.sql.exec("drop table if exists bots"); this.sql.exec("drop table if exists tests");
     if (this.sql.exec("select name from sqlite_master where type = 'table' and name = 'files'").toArray().length) this.sql.exec("delete from files where k like 'bs-%'"); return true; }
+  // who asked for an invite at the door (at most 2000 waiting)
+  askT() { this.sql.exec("create table if not exists asks(email text primary key, at integer, sent integer)"); }
+  ask(m) { this.askT(); if (this.sql.exec("select count(*) as n from asks where sent is null").toArray()[0].n >= 2000) return true;
+    this.sql.exec("insert or ignore into asks(email, at) values(?, ?)", m, Date.now()); return true; }
+  asks() { this.askT(); return this.sql.exec("select email, at, sent from asks order by at desc limit 500").toArray(); }
+  askSent(m) { this.askT(); this.sql.exec("update asks set sent = ? where email = ?", Date.now(), m); return true; }
+  askOff(m) { this.askT(); this.sql.exec("delete from asks where email = ?", m); return true; }
   // shared files, kept in 1 MB parts
   putFile(k, type, buf) { this.sql.exec("create table if not exists files(k text, part integer, type text, data blob, at integer, primary key(k, part))"); this.sql.exec("delete from files where k = ?", k);
     for (let i = 0, n = 0; i < buf.byteLength; i += 1 << 20, n++) this.sql.exec("insert into files(k, part, type, data, at) values(?, ?, ?, ?, ?)", k, n, type, buf.slice(i, i + (1 << 20)), Date.now()); return true; }

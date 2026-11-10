@@ -17,7 +17,12 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   await pg.goto('file://' + PAGE + '?hour=12&physics=1', { waitUntil: 'commit', timeout: 300000 });
   let up = false; for (let i = 0; i < 400 && !(up = await pg.evaluate(() => !!window.__started).catch(() => false)); i++) await pg.waitForTimeout(1000);
   if (!up) { ok(false, 'the page started'); await b.close(); process.exit(1); }
+  // no horse walks the map now: the check stands one by you
+  await pg.evaluate(async () => { if (__dbg.NPCS.find(n => n.key === 'horse')) return; if (window.LOAD) await LOAD('later'); for (let i = 0; i < 100 && !(window.CREATURES && CREATURES.Horse); i++) await new Promise(r => setTimeout(r, 300)); const h = CREATNEW('Horse', 'horse', 1.6); h.st.x = STORE.pos.x + 4; h.st.z = STORE.pos.z; });
   await pg.waitForTimeout(15000);
+  // (the tomato is a standing body of the cast now, NPCS.extra, no longer a walker)
+  // (the cast is built over the start's first seconds: wait till the tomato and a second character who blocks are standing, or two minutes)
+  for (let i = 0; i < 120 && !(await pg.evaluate(() => { const N = __dbg.NPCS, a = (N.find(n => n.key === 'tomato') || N.extra.find(x => x.key === 'tomato' && x.on && x.st)); return !!a && N.some(n => n !== a && n.st && n.blocks && (n.lv || 'up') === (a.lv || 'up') && !n.fly && !n.tiny && n.key !== 'dragon'); }).catch(() => false)); i++) await pg.waitForTimeout(1000);
   const r = await pg.evaluate(() => { const N = __dbg.NPCS, by = k => N.find(n => n.key === k), o = {};
     for (const k of ['elephant', 'horse', 'cat', 'tomato', 'bat', 'rat']) { const n = by(k); if (n) o[k] = { R: n.st.R, L: n.st.L || 0, fly: !!n.fly, tiny: !!n.tiny }; }
     // you walk into the horse's flank and the elephant's trunk end: kept out of the body itself, not just its middle
@@ -28,7 +33,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     // a standing body (the cast's, NPCS.extra) keeps you out too
     const X = N.extra.find(x => x.on && x.st && x.g && x.mode !== 'hidden' && (x.lv || 'up') === SHARED.LVL); if (X) { const vis = X.g.visible, s = X.st, p = { x: s.x + .02, z: s.z }; X.g.visible = true; N.pushX(p); X.g.visible = vis; o.extra = { key: X.key, d: Math.hypot(p.x - s.x, p.z - s.z), need: (s.R || .3) + .3 }; }
     // two characters: the second is told to walk through the first, it waits instead
-    const a = by('tomato'), m = a && N.find(n => n !== a && n.st && n.blocks && (n.lv || 'up') === (a.lv || 'up') && !n.fly && !n.tiny && n.key !== 'dragon'); if (a && m) { const f = [a.far, m.far]; a.far = m.far = false; o.inway = N.inway(m, a.st.x + .05, a.st.z) && !N.inway(m, a.st.x + 50, a.st.z); [a.far, m.far] = f; }
+    const a = (N.find(n => n.key === 'tomato') || N.extra.find(x => x.key === 'tomato' && x.on && x.st)), m = a && N.find(n => n !== a && n.st && n.blocks && (n.lv || 'up') === (a.lv || 'up') && !n.fly && !n.tiny && n.key !== 'dragon'); if (a && m) { const f = [a.far, m.far]; a.far = m.far = false; o.inway = N.inway(m, a.st.x + .05, a.st.z) && !N.inway(m, a.st.x + 50, a.st.z); [a.far, m.far] = f; }
     o.clip = { added: CLIP.added, found: CLIP.found.length };
     return o; });
   console.log(JSON.stringify(r));
@@ -39,7 +44,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ok(r.inway === true, 'a character waits for one in its way, not when the way is clear');
   ok(r.clip.added > 0, 'the load\'s pass made the placed things solid (' + r.clip.added + ' boxes)');
   // the physics: walk to the nearest character so the loose things' world wakes, then it holds a body for each character near you
-  const near = await pg.evaluate(() => { const N = __dbg.NPCS.find(n => n.key === 'tomato'); if (!N) return null; __dbg.ui().goTo(N.st.x + 2, N.st.z); return N.key; });
+  const near = await pg.evaluate(() => { const L = __dbg.NPCS, N = L.find(n => n.key === 'tomato') || L.extra.find(x => x.key === 'tomato' && x.on && x.st); if (!N) return null; __dbg.ui().goTo(N.st.x + 2, N.st.z); return N.key; });
   let crowd = []; for (let i = 0; i < 40 && !crowd.length; i++) { await pg.waitForTimeout(1000); crowd = await pg.evaluate(() => GPH.ready && GPH.crowd ? GPH.crowd() : []); }
   if (!crowd.length) console.log('physics:', JSON.stringify(await pg.evaluate(() => ({ ready: !!GPH.ready, n: GPH.n, me: __dbg.pos(), near: __dbg.NPCS.filter(n => n.st && Math.hypot(n.st.x - __dbg.pos()[0], n.st.z - __dbg.pos()[2]) < 15).map(n => [n.key, n.lv, !!n.far, !!n.fly, !!n.tiny, n.mode, n.st.inT, n.g.visible, !!n._cv, +n.g.position.y.toFixed(2)]) }))));
   ok(crowd.length > 0, 'the characters near you are bodies in the loose things\' physics (' + crowd.slice(0, 6).join(', ') + (near ? '; near ' + near : '') + ')');

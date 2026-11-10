@@ -117,6 +117,7 @@ jobs:
           k visit   'src/150d|src/146z|src/059a|src/111d|visit\.cjs'
           k aptfixed 'src/150a|src/150d|src/150f|src/150k|aptfixed\.cjs'
           k aptradio 'src/150fb|src/150p-cars|src/150a|src/150d|data/radio|aptradio\.cjs'
+          k crt     'src/150fa|src/150a|src/150d|data/tv\.json|worker/door|crt\.cjs'
           k sound   'src/091-sfx|src/093-|src/100-use|src/146zo-|src/150p-cars|sound\.cjs'
           k clock   'src/134b|worker/clock|worker/door|clock\.cjs'
           k westst  'src/023|src/05[89]-|src/059[e-h]|westst'
@@ -394,6 +395,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' aptradio')
         run: node tests/aptradio.cjs dist/market.html
+      - name: The CRT TV (its panel, THE GUIDE plays a pick, shared with the room, kept in the layout, close up and full screen)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' crt')
+        run: node tests/crt.cjs dist/market.html
       - name: The sound (on by default, one audio context and volume, every effect plays)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' sound')

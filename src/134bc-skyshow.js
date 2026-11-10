@@ -14,7 +14,7 @@ const SKYSHOW={things:[],want:false,live:{kp:null,sats:[]},mets:[],n:0}; window.
   // every few seconds: the planets, the Moon's shadow, what is up
   const slow=jd=>{ const T=[], P=DN.P?DN.P():{}, e=CLOCK.elev(), W=WX.now||{}, look=cl((2-e)/5)*Math.min(1,P.star??1)*(1-.9*cl(((W.cloud||0)-.3)/.6)); sunAlt=EPH.seen('sun',jd).alt;
     const lim=cl(-4.5-sunAlt*.8,-5,6);   // the faintest thing the eye picks out of the twilight
-    PL.forEach((k,i)=>{ const s=EPH.seen(k,jd), u=U.uPl.value[i], vis=s.alt>0?cl((lim-s.mag)/1.5)*look:0; hz(s.alt,s.az,tA); u.set(tA.x,tA.y,tA.z,vis*cl(1.2-s.mag*.45,.3,3.2)); U.uPlC.value[i].set(EPH.BODY[k].col);
+    PL.forEach((k,i)=>{ const s=EPH.seen(k,jd), u=U.uPl.value[i], vis=s.alt>0?cl((lim-s.mag)/1.5)*look:0; SKYSHOW.eq(s.ra,s.dec,tA); u.set(tA.x,tA.y,tA.z,vis*cl(1.2-s.mag*.45,.3,3.2)); U.uPlC.value[i].set(EPH.BODY[k].col);
       if(s.alt>0)T.push({id:k,name:EPH.BODY[k].name,kind:'planet',v:tA.clone(),mag:s.mag,alt:s.alt,az:s.az,seen:vis>.05}); });
     { const m=EPH.seen('moon',jd); if(m.alt>0)T.push({id:'moon',name:'THE MOON',kind:'moon',v:CLOCK.moonV.clone(),mag:m.mag,alt:m.alt,az:m.az,seen:U.uMoonK.value>.05,lit:Math.round((1+Math.cos(m.i*D2R))*50)});
       const sh=EPH.shadow(jd); SKYSHOW.eclipse=sh.sep<sh.um+sh.rm?sh:null;
@@ -35,7 +35,8 @@ const SKYSHOW={things:[],want:false,live:{kp:null,sats:[]},mets:[],n:0}; window.
   SKYSHOW.feed=(sats,kp)=>{ const L=SKYSHOW.live, was=SKYSHOW.sat; L.sats=sats||[]; L.kp=kp; let best=null; for(const s of L.sats)if(s.alt>8&&s.lit&&sunAlt<-6&&s.mag<3&&(!best||s.mag<best.mag))best=s; SKYSHOW.sat=best; if(!best)return;
     hz(best.alt,best.az,sat1); if(was&&was.n===best.n){ sat0.copy(satV); satF=0; } else { satV.copy(sat1); satF=1; } U.uPlC.value[5].setRGB(1,.97,.9); };
   SKYSHOW.burst=n=>{ const jd=SKYSHOW.jd(), r0=rate; rate={all:3600,list:[{nm:'SPORADIC',hr:3600,v:40}]}; for(let i=0;i<n;i++){ const m=meteor(1e6+SKYSHOW.n+i,jd); if(m)SKYSHOW.mets.push(m); } rate=r0; };   // a test's
-  SYS.add('sky',dt=>{ if(!SKY.on())return; const t=DN.skyT(), jd=EPH.jdOf(t), M=SKYSHOW.mets;
+  let lastN=performance.now();
+  SYS.add('sky',()=>{ const now=performance.now(), dt=Math.min(.25,(now-lastN)/1000); lastN=now; if(!SKY.on())return; const t=DN.skyT(), jd=EPH.jdOf(t), M=SKYSHOW.mets;
     { const n=performance.now(); if(n>=slowT){ slowT=n+4000; slow(jd); } }
     { const u=U.uPl.value[5], b=SKYSHOW.sat; if(b){ if(satF<1){ satF=Math.min(1,satF+dt); satV.copy(sat0).lerp(sat1,satF).normalize(); } u.set(satV.x,satV.y,satV.z,(SKYSHOW.look||0)*cl(1.2-b.mag*.45,.3,3.2)); } else u.w=0; }
     // looking up into the night a few seconds asks for the live sky (150fg)
@@ -47,3 +48,4 @@ const SKYSHOW={things:[],want:false,live:{kp:null,sats:[]},mets:[],n:0}; window.
       const f=m.t/m.T, at=(g,o)=>o.copy(m.v).multiplyScalar(Math.cos(g*D2R)).addScaledVector(m.d,Math.sin(g*D2R)); at(Math.max(0,m.len*f-m.len*.35),tA); at(m.len*f,tB);
       a.set(tA.x,tA.y,tA.z,m.k*Math.sin(Math.PI*f)*(SKYSHOW.look||0)); b.set(tB.x,tB.y,tB.z,0); (m.head||(m.head=new THREE.Vector3())).copy(tB); } },'134bc-skyshow');
 }
+export {SKYSHOW};

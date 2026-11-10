@@ -11,8 +11,9 @@ const EPH={};
     sa:[9.53667594,-.0012506,.05386179,-.00050991,2.48599187,.00193609,49.95424423,1222.49362201,92.59887831,-.41897216,113.66242448,-.28867794],
     ur:[19.18916464,-.00196176,.04725744,-.00004397,.77263783,-.00242939,313.23810451,428.48202785,170.9542763,.40805281,74.01692503,.04240589],
     ne:[30.06992276,.00026291,.00859048,.00005105,1.77004347,.00035372,-55.12002969,218.45945325,44.96476227,-.32241464,131.78422574,-.00508664]};
-  const BODY={sun:{name:'THE SUN',id:'sun',km:1392700,H:-26.7,col:'#fff4d0',fill:.98},moon:{name:'THE MOON',id:'moon',km:3474.8,col:'#d8d4c8',fill:.98},me:{name:'MERCURY',id:'mercury',km:4879,H:-.6,col:'#bfb3a3',fill:.82},ve:{name:'VENUS',id:'venus',km:12104,H:-4.4,col:'#fff1cf',fill:.78},
+  const BODY={sun:{name:'THE SUN',id:'sun',km:1392700,H:-26.7,col:'#fff4d0',fill:.98},moon:{name:'THE MOON',id:'moon',km:3474.8,col:'#d8d4c8',fill:.98},me:{name:'MERCURY',id:'mercury',km:4879,H:-.42,col:'#bfb3a3',fill:.82},ve:{name:'VENUS',id:'venus',km:12104,H:-4.4,col:'#fff1cf',fill:.78},
     ma:{name:'MARS',id:'mars',km:6792,H:-1.5,col:'#e08a5a',fill:.98},ju:{name:'JUPITER',id:'jupiter',km:142984,H:-9.4,col:'#efd9b4',fill:.95},sa:{name:'SATURN',id:'saturn',km:120536,H:-8.9,col:'#ead8a0',fill:.37},ur:{name:'URANUS',id:'uranus',km:51118,H:-7.2,col:'#bfe4ec',fill:.8},ne:{name:'NEPTUNE',id:'neptune',km:49528,H:-6.9,col:'#7f9ff0',fill:.84}};   // fill: how much of its photo the disc spans
+  const PH={me:[.038,-.000273,.000002],ve:[.0009,.000239,-.00000065],ma:[.016,0,0],ju:[.005,0,0],sa:[.044,0,0]};   // the phase terms of each planet's brightness (Meeus)
   const helio=(k,T)=>{ const q=EL[k], a=q[0]+q[1]*T, e=q[2]+q[3]*T, I=q[4]+q[5]*T, L=q[6]+q[7]*T, wb=q[8]+q[9]*T, O=q[10]+q[11]*T, w=wb-O, Mr=s180(L-wb)*D2R; let E=Mr+e*Math.sin(Mr);
     for(let i=0;i<8;i++)E-=(E-e*Math.sin(E)-Mr)/(1-e*Math.cos(E)); const xp=a*(Math.cos(E)-e), yp=a*Math.sqrt(1-e*e)*Math.sin(E), cw=cs(w), sw=sn(w), cO=cs(O), sO=sn(O), cI=cs(I), sI=sn(I);
     return [(cw*cO-sw*sO*cI)*xp+(-sw*cO-cw*sO*cI)*yp,(cw*sO+sw*cO*cI)*xp+(-sw*sO+cw*cO*cI)*yp,(sw*sI)*xp+(cw*sI)*yp]; };
@@ -25,7 +26,8 @@ const EPH={};
       const q=toEq(cs(b)*cs(l),cs(b)*sn(l),sn(b)), km=6378.14/sn(p), S=where('sun',jd), el=Math.acos(cl(sn(q.dec)*sn(S.dec)+cs(q.dec)*cs(S.dec)*cs(q.ra-S.ra),-1,1))*R2D;
       return {ra:q.ra,dec:q.dec,r:km/149597870.7,k,deg:BODY.moon.km/km*R2D,par:p,i:180-el,mag:-12.7+.026*(180-el)+4e-9*Math.pow(180-el,4)}; }
     const P=helio(k,T), g=[P[0]-E[0],P[1]-E[1],P[2]-E[2]], q=toEq(...g), rp=Math.hypot(...P), re=Math.hypot(...E), ci=cl((rp*rp+q.r*q.r-re*re)/(2*rp*q.r),-1,1);
-    return {...q,k,deg:BODY[k].km/(q.r*149597870.7)*R2D,i:Math.acos(ci)*R2D,mag:BODY[k].H+5*Math.log10(rp*q.r)}; };
+    const i=Math.acos(ci)*R2D, ph=PH[k]||[0,0,0]; let mag=BODY[k].H+5*Math.log10(rp*q.r)+ph[0]*i+ph[1]*i*i+ph[2]*i*i*i; if(k==='sa'){ const sb=Math.abs(sn(ring(jd,g))); mag+=-2.6*sb+1.25*sb*sb; }   // dimmer as less of its lit face turns to us; Saturn brighter with its rings open
+    return {...q,k,deg:BODY[k].km/(q.r*149597870.7)*R2D,i,mag}; };
   // how far Saturn's rings are tipped toward us (degrees; 0 edge on, 27 wide open)
   const ring=(jd,g)=>{ if(!g){ const T=(jd-2451545)/36525, E=helio('em',T), P=helio('sa',T); g=[P[0]-E[0],P[1]-E[1],P[2]-E[2]]; } const lam=Math.atan2(g[1],g[0])*R2D, bet=Math.atan2(g[2],Math.hypot(g[0],g[1]))*R2D; return Math.asin(cl(sn(28.06)*cs(bet)*sn(lam-169.5)-cs(28.06)*sn(bet),-1,1))*R2D; };
   const galilean=jd=>{ const d=jd-2451545, V=172.74+.00111588*d, M=357.529+.9856003*d, N=20.02+.0830853*d+.329*sn(V), J=66.115+.9025179*d-.329*sn(V), A=1.915*sn(M)+.02*sn(2*M), B=5.555*sn(N)+.168*sn(2*N), K=J+A-B,

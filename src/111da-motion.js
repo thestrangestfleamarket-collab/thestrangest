@@ -5,7 +5,7 @@ import {FADE, SYS, TILE} from './006-map-pre.js';
 import {AVATAR} from './111c-avatar.js';
 { const DATA=__LAZY__("data/moves2.json"), R=RIG, info={}; let ready=null, cur=null;
   const EMOTES=[['WAVE','greet'],['CLAP','clap'],['CHEER','cheer'],['FIST PUMP','fistPump'],['DAB','dab'],['YES','yes'],['NOD','nod'],['NO','no'],['ANGRY','angry'],['CONFUSED','confused'],['FLEX','flex'],['KNOCK','knock'],['POWER UP','powerUp'],['TALK','talk'],['ARMS FOLDED','foldArms'],
-    ['DANCE','dance'],['ARM PUMP','armPump'],['BODY ROLL','bodyRoll'],['CHARLESTON','charleston'],['HIP REACH','hipReach'],['MOONWALK','moonwalk'],['JUMPING JACKS','jacks'],['PUSH-UPS','pushups'],['SIT DOWN','sitGround'],['MEDITATE','meditate'],['SLEEP','sleep'],['SHIVER','shiver'],
+    ['DANCE','dance'],['ARM PUMP','armPump'],['BODY ROLL','bodyRoll'],['CHARLESTON','charleston'],['HIP REACH','hipReach'],['MOONWALK','moonwalk'],['JUMPING JACKS','jacks'],['PUSH-UPS','pushups'],['SIT DOWN','sitGround'],['MEDITATE','meditate'],['SLEEP','sleep'],['STARGAZE','stargaze'],['SHIVER','shiver'],
     ['LISTEN','listen'],['DIZZY','dizzy'],['SHAKE OFF','shakeOff'],['HURT','hurt'],['TIRED','tired'],
     ['STROLL','stroll'],['STRUT','strut'],['SNEAK','sneak'],['TIPTOE','tiptoe'],['STAGGER','stagger'],['LIMP','limp'],['SPRINT','sprint'],['BACK UP','backUp'],['CROUCH WALK','crouchWalk'],['CRAWL','crawl'],['FORMAL WALK','formalWalk'],
     ['BACKFLIP','backflip'],['ROLL','rollGo'],['STUMBLE BACK','knockback'],['GROUND POUND','pound'],['FRONT KICK','kickFront'],['ROUNDHOUSE','kickRound'],['GUARD','guard'],['SWORD COMBO','swordCombo'],['SLASH','slash'],
@@ -34,7 +34,8 @@ import {AVATAR} from './111c-avatar.js';
   const has=n=>!!R.MOVES['mc_'+n];
   // play one on a rig state: a whole-body move from his current pose (a held tool's arm still goes where the game aims it); a looped one starts again as it ends, until he walks, another move takes over or its `while` fails
   const start=(S,n,loop)=>{ R.begin(S,'mc_'+n); return {S,n,loop}; };
-  const play=async(n,o={})=>{ await ensure(); if(!has(n)||RAG.on||VIT.dead)return false; const loop=o.loop??info[n].loop;
+  const play=async(n,o={})=>{ const sp=MOTION.special&&MOTION.special[n]; if(sp)return sp(o);   // (an emote that is its own thing to do: STARGAZE, 150fi)
+    await ensure(); if(!has(n)||RAG.on||VIT.dead)return false; const loop=o.loop??info[n].loop;
     cur=start(st,n,loop); cur.while=o.while; if(o.share!==false)SYS.run('act',{m:'mc_'+n,loop:loop?1:0}); return true; };
   const stop=()=>{ if(!cur)return; const was=cur; cur=null; if(st.move&&st.move.name==='mc_'+was.n)st.move.t=st.move.def.dur; SYS.run('act',{stop:1}); };
   const theirs=new Map();
@@ -64,7 +65,7 @@ import {AVATAR} from './111c-avatar.js';
   const KINDS=[['GREET AND TALK',['greet','yes','nod','no','pf_Agree','pf_Shake','talk','pf_Chat','pf_Phone','pf_Laugh','listen','clap','cheer','fistPump','dab','flex','knock','powerUp']],
     ['MOODS',['angry','confused','foldArms','pf_Cross','pf_Drunk','shiver','dizzy','shakeOff','hurt','tired']],
     ['DANCE',['dance','pf_Bop','pf_HipHop','pf_Twist','pf_Swing','pf_Thriller','armPump','bodyRoll','charleston','hipReach','moonwalk']],
-    ['REST AND EXERCISE',['sitGround','meditate','sleep','jacks','pushups']],
+    ['REST AND EXERCISE',['sitGround','meditate','sleep','stargaze','jacks','pushups']],
     ['WALKS',['stroll','strut','sneak','tiptoe','stagger','limp','sprint','backUp','crouchWalk','crawl','formalWalk']],
     ['TRICKS AND FIGHTING',['backflip','rollGo','knockback','pound','kickFront','kickRound','guard','swordCombo','slash','throw','toss']],
     ['WORK',['pickUp']]];

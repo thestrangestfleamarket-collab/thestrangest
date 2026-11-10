@@ -1,5 +1,7 @@
 // THE LIVE SKY IN THE TELESCOPE: New York's real clouds (Open-Meteo), the satellites passing over (CelesTrak orbits, satellite.js), this week's comets and asteroids (JPL), meteor showers at their real rates, today's Sun (NASA SDO) with its sunspot groups and flares, and the northern lights when NOAA's Kp is high enough; fetched only when the eyepiece opens.
 import {WX} from './003b-systems.js';
+import {SYS} from './006-map-pre.js';
+import {SKYSHOW} from './134bc-skyshow.js';
 import {FIRSTS} from './150fcz-firsts.js';
 import {SCOPE} from './150fd-scope.js';
 const SKYL={on:false,data:{},err:{}}; window.SKYL=SKYL;
@@ -21,7 +23,9 @@ const SKYL={on:false,data:{},err:{}}; window.SKYL=SKYL;
     const msOf=jd=>(jd-2440587.5)*864e5, hz=(alt,az)=>[cs(alt)*sn(az),sn(alt),cs(alt)*cs(az)], esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
     const hhmm=jd=>{ const h=CLK.hour(msOf(jd),null); return String(Math.floor(h)).padStart(2,'0')+':'+String(Math.floor(h%1*60)).padStart(2,'0'); };
     const D=SKYL.data; let at=0, redraw=0;
-    const load=()=>{ if(Date.now()-at<20*60e3)return; at=Date.now(); for(const k of ['weather','sats','comets','rocks','spots','flares','kp'])get(k).then(v=>{ D[k]=v; delete SKYL.err[k]; parse(k); redraw=1; }).catch(e=>{ SKYL.err[k]=String(e&&e.message||e); });
+    const ask=k=>get(k).then(v=>{ D[k]=v; delete SKYL.err[k]; parse(k); redraw=1; }).catch(e=>{ SKYL.err[k]=String(e&&e.message||e); }); let atS=0;
+    const loadS=()=>{ const n=Date.now(); if(n-atS<20*60e3||n-at<20*60e3)return; atS=n; ask('sats'); ask('kp'); };   // the street's sky needs only the orbits and the Kp
+    const load=()=>{ if(Date.now()-at<20*60e3)return; at=Date.now(); for(const k of ['weather','sats','comets','rocks','spots','flares','kp'])ask(k);
       const im=new Image(); im.onload=()=>{ SCOPE.files.sun=im.src; A.BODY.sun.fill=.9375; if(SCOPE.view)SCOPE.view.drop('sun'); SKYL.sunLive=true; redraw=1; }; im.onerror=()=>{ SKYL.err.sun='no picture'; }; im.src=SKYL.url('sun'); };   // the SDO picture's disc spans 93.75% of its frame
     const parse=k=>{ if(k==='sats')sats.parse(D.sats); if(k==='comets'||k==='rocks')smalls(); };
 
@@ -108,14 +112,7 @@ const SKYL={on:false,data:{},err:{}}; window.SKYL=SKYL;
         if(d<C.R*.9){ const id=s.o.kind+':'+s.o.name; C.near.push([id,{name:s.o.name,about:`${s.o.kind==='comet'?'A COMET':'AN ASTEROID'} · MAG ${s.mag.toFixed(1)} · ${s.dl.toFixed(2)} AU FROM EARTH, ${s.r.toFixed(2)} FROM THE SUN`,credit:'NASA JPL SMALL-BODY DATABASE',cat:s.o.kind,tier:s.o.kind==='comet'?'s':'r'},d]); if(vis>.2)FIRSTS.mark(s.o.kind); } } };
 
     /* ---------- meteor showers (IMO's calendar): radiant, peak, ZHR, speed, active days ---------- */
-    const SHW=[['QUADRANTIDS',1,3,230,49,80,41,-6,9],['LYRIDS',4,22,271,34,18,49,-8,8],['ETA AQUARIIDS',5,6,338,-1,50,66,-17,22],['S. DELTA AQUARIIDS',7,30,340,-16,25,41,-18,24],['PERSEIDS',8,12,48,58,100,59,-26,12],
-      ['DRACONIDS',10,8,262,54,5,20,-2,2],['S. TAURIDS',10,10,32,9,5,27,-30,41],['ORIONIDS',10,21,95,16,20,66,-19,17],['N. TAURIDS',11,12,58,22,5,29,-23,28],['LEONIDS',11,17,152,22,15,71,-11,13],['GEMINIDS',12,14,112,33,150,35,-10,6],['URSIDS',12,22,217,76,10,33,-5,4]];   // name, month, day, RA, Dec, ZHR, km/s, days before and after
-    const showers=jd=>{ const d=new Date(msOf(jd)), y=d.getUTCFullYear(), out=[];
-      for(const [nm,mo,dy,ra,dec,zhr,v,b,a] of SHW)for(const yy of [y-1,y,y+1]){ const pk=Date.UTC(yy,mo-1,dy,12)/864e5+2440587.5, dd=jd-pk; if(dd<b||dd>a)continue; const w=Math.max(.7,(a-b)/10); out.push({nm,ra,dec,zhr:zhr*Math.exp(-Math.abs(dd)/w),v,pk}); }
-      return out; };
-    // meteors seen by one person over the whole sky an hour: ZHR × the radiant's height × the sky's darkness (population index 2.2), and about 8 sporadic ones
-    SKYL.rate=(jd,lim=6.5)=>{ const lst=A.lst(jd), su=A.where('sun',jd); if(A.eq2hor(su.ra,su.dec,lst).alt>-12)return {all:0,list:[]}; const f=Math.pow(2.2,Math.min(6.5,lim)-6.5), list=[];
-      for(const s of showers(jd)){ const h=A.eq2hor(s.ra,s.dec,lst).alt; if(h>0)list.push({...s,hr:s.zhr*sn(h)*f}); } list.push({nm:'SPORADIC',hr:8*f,v:40}); return {all:list.reduce((a,s)=>a+s.hr,0),list}; };
+    const SHW=A.SHW, showers=A.showers; SKYL.rate=A.rate;   // the showers' calendar and rates are the street's too (134bb)
     const mets=[]; let metT=0, rateNow={all:0,list:[]}; SKYL.meteors=mets; SKYL.metCount=0;
     // one meteor: a random spot over 15°, flying along the great circle away from its radiant (sporadics any way), for its length at its speed
     const spawn=(jd,lim)=>{ const pick=Math.random()*rateNow.all; let s=null, acc=0; for(const x of rateNow.list){ acc+=x.hr; if(pick<=acc){ s=x; break; } } if(!s)return;
@@ -180,6 +177,11 @@ const SKYL={on:false,data:{},err:{}}; window.SKYL=SKYL;
       close(){ follow=null; mets.length=0; }};
     SKYL.sats=sats; SKYL.look=(n,jd)=>{ const s=sats.list.find(x=>x.n===n); return s&&sats.look(s,jd); }; SKYL.seenFrom=(name,jd)=>{ const o=small.find(x=>x.name===name); return o&&seenFrom(o,jd); }; SKYL.wx=wx;
     SKYL.follow=n=>{ follow=n; lastGo=null; };
+    // the street's sky (134bc): the satellites up now and the Kp, about once a second
+    E.load=loadS; E.street=jd=>{ const out=[]; if(sats.ready)for(const s of sats.list){ if(!NAMES[s.n]&&s.std>2.5)continue; const q=sats.look(s,jd); if(q&&q.alt>8)out.push({n:s.n,name:s.name,alt:q.alt,az:q.az,mag:q.mag,lit:q.lit,km:q.km}); } return {sats:out,kp:kpAt(jd)}; };
     return E; };
+  // looking up into the night outdoors (SKYSHOW.want) brings the live sky in for the street too
+  { let st=0, t=0; SYS.add('places',()=>{ if(!SKYSHOW.want||st===1)return; if(!st){ st=1; (async()=>{ if(window.LOAD)await LOAD('scope'); if(!L)L=make(); L.load(); st=2; })().catch(e=>{ SKYL.err.street=String(e&&e.message||e); st=3; }); return; }
+      if(st!==2)return; const n=performance.now(); if(n<t)return; t=n+1000; L.load(); const r=L.street(SKYSHOW.jd()); SKYSHOW.feed(r.sats,r.kp); },'150fg-skylive street'); }
   SCOPE.ext.push({open(){ if(!L)L=make(); L.open(); },panel:()=>L?L.panel():'',click:b=>!!L&&L.click(b),draw:C=>{ if(!L)return; const t0=performance.now(); L.draw(C); SKYL.cost=(SKYL.cost||0)*.95+(performance.now()-t0)*.05; },close(){ if(L)L.close(); }});
 }

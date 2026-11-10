@@ -19,7 +19,7 @@ const CLK={TZ:'America/Chicago'};
     const ha=Math.acos(Math.max(-1,Math.min(1,Math.cos(90.833*R)/(Math.cos(CLK.LAT*R)*Math.cos(de))-Math.tan(CLK.LAT*R)*Math.tan(de))))/R, z=(L-CLK.at(t,c))/3600000;
     return {rise:(720-4*(CLK.LON+ha)-eq)/60+z,set:(720-4*(CLK.LON-ha)-eq)/60+z}; };
   // the real Moon over New York at the game's moment (suncalc's sums): alt and az in radians (az from the south, west positive), phase 0 new to .5 full to 1, kept ten seconds
-  CLK.lst=(t,c)=>(((280.16+360.9856235*(CLK.at(t,c)/86400000-10957.5)+CLK.LON)%360)+360)%360;   // the sidereal time there (degrees): which stars are overhead
+  CLK.lst=(t,c)=>(((280.46061837+360.98564736629*(CLK.at(t,c)/86400000-10957.5)+CLK.LON)%360)+360)%360;   // the sidereal time there (degrees): which stars are overhead
   { let mk=null, mv=null; CLK.moon=(t,c)=>{ const g=CLK.at(t,c), k=Math.floor(g/10000); if(k===mk)return mv; mk=k;
     const R=Math.PI/180, d=g/86400000-10957.5, e=23.4397*R, ra=(l,b)=>Math.atan2(Math.sin(l)*Math.cos(e)-Math.tan(b)*Math.sin(e),Math.cos(l)), dec=(l,b)=>Math.asin(Math.sin(b)*Math.cos(e)+Math.cos(b)*Math.sin(e)*Math.sin(l));
     const L=R*(218.316+13.176396*d), M=R*(134.963+13.064993*d), F=R*(93.272+13.22935*d), l=L+R*6.289*Math.sin(M), b=R*5.128*Math.sin(F), dist=385001-20905*Math.cos(M), mra=ra(l,b), mde=dec(l,b);

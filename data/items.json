@@ -2141,5 +2141,23 @@
   "value": 300,
   "speed": 9,
   "weight": 6
+ },
+ "violin": {
+  "value": 350,
+  "weight": 0.6,
+  "sellable": true,
+  "size": 0.6
+ },
+ "flute": {
+  "value": 250,
+  "weight": 0.5,
+  "sellable": true,
+  "size": 0.66
+ },
+ "trumpet": {
+  "value": 300,
+  "weight": 1.1,
+  "sellable": true,
+  "size": 0.5
  }
 }

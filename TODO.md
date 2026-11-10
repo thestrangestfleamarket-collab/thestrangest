@@ -167,7 +167,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [ ] **The car radio unconfirmed** (cars parked past the map edge) · look.
 
 ## Physics and vehicles
-- [ ] **Vehicle editor follow-ups** · P3 · M · pick + code. A car's size changes its look and where it stands, not how it drives (the driving body keeps its size); the traffic's Polyfork models are one painted piece (their colours change, parts only as a whole: re-bake with parts in `tools/traffic-bake.py`); the horse is a pet's body, not in the editor; the train shows once you have been down to a platform.
+- [ ] **Vehicle editor follow-ups** · P3 · M · pick + code. A car's size changes its look and where it stands, not how it drives (the driving body keeps its size); the traffic's Polyfork models have their parts (10 Nov 2026); the horse is a pet's body, not in the editor; the train shows once you have been down to a platform.
 
 - [ ] **Jets follow-ups** · P3 · S · pick. Fires and ice are worked out on each player's page (where a stream lands matches, how a fire
   spreads may not); characters burn and freeze but do not run from the fire.

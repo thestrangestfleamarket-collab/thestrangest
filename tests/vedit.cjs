@@ -23,6 +23,11 @@ const {chromium}=require('playwright');
     const d=TRAFFIC.dbg(), n1=d.lanes.map(L=>L.cars.length), road=d.lanes.filter(L=>!L.fly).flatMap(L=>L.cars).filter(c=>c.model==='hatchback').length, air=d.lanes.filter(L=>L.fly).flatMap(L=>L.cars).filter(c=>c.model==='hover-pod').length;
     VLOOK.more={}; VLOOK.set('tr:hatchback',null); await new Promise(r=>setTimeout(r,500)); return {n0,n1,road,air,n2:TRAFFIC.dbg().lanes.map(L=>L.cars.length)}; });
   ok(t.n1.reduce((a,b)=>a+b)===t.n0.reduce((a,b)=>a+b)+3&&t.road>=2&&t.air>=1&&t.n2.join()===t.n0.join(),'more of a model joins the traffic in its own lanes, and goes again '+JSON.stringify(t));
+  const tp=await pg.evaluate(async()=>{ const id='tr:town-car', keys=VLOOK.parts(VLOOK.kinds[id].make()).map(p=>p.key), cps=()=>{ const o=[], S=__dbg.scene; S.traverse(x=>{ if(x.userData.vlook===id&&x.visible&&x.parent&&x.parent.type==='Group'&&x.parent.parent===S)o.push(x); }); return o; };
+    VLOOK.more={'town-car':4}; VLOOK.set(id,{parts:{'WHEEL FL':{h:1}}}); let c=[]; for(let i=0;i<60&&!c.length;i++){ await new Promise(r=>setTimeout(r,500)); c=cps(); }
+    const got={keys,copies:c.length,hid:c.length&&c.every(m=>{ const P=VLOOK.parts(m); return P.length===keys.length&&P.every(p=>p.m.visible===(p.key!=='WHEEL FL')); })};
+    VLOOK.more={}; VLOOK.set(id,null); await new Promise(r=>setTimeout(r,500)); got.back=cps().every(m=>VLOOK.parts(m).every(p=>p.m.visible)); return got; });
+  ok(tp.keys.length>=5&&tp.keys.includes('BODY')&&tp.keys.includes('WHEEL FL')&&tp.copies>0&&tp.hid&&tp.back,'a traffic model has its named parts, and a hidden wheel hides on its road copies '+JSON.stringify(tp));
   const p=await pg.evaluate(async()=>{ const c=await VLOOK.park('camper-van'), C=CARS.cars.get(c.id); const had=!!(C&&C.model==='camper-van'); await new Promise(r=>setTimeout(r,1500)); const shown=!!(C.mesh&&C.mesh.visible), near=Math.hypot(C.x-STORE.pos.x,C.z-STORE.pos.z);
     await VLOOK.unpark(c.id); return {id:c.id,had,shown,near:+near.toFixed(1),gone:!CARS.cars.has(c.id)}; });
   ok(p.had&&p.shown&&p.near<12&&p.gone,'a copy parks in front of you and is taken away '+JSON.stringify(p));

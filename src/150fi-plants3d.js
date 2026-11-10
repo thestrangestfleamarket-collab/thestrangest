@@ -110,7 +110,7 @@ const PLANT3={}; window.PLANT3=PLANT3;
     // the baskets: a pendulum on its cord, tugged by its vines; the vines a chain each, falling, swinging, pushed by the draught and out of your way
     const Q=S.sw, Vn=S.vine; if(!Q||!Vn)return; const c=Vn.c, X=c.X, sw=Q.g;
     const near=Math.hypot(PA.x-sw.position.x,PA.z-sw.position.z)<1.4&&PB.y>Q.bot-1.1;
-    if(Q.rest&&c.calm>20&&!near)return;
+    const go=near&&Math.hypot(S.pv[0],S.pv[2])>.05; if(go||S.aw==null)S.aw=20; if(S.aw<=0||(Q.rest&&c.calm>20&&!go)){ S.aw=0; return; } S.aw-=h;   // awake while it settles or you walk through it, then at rest
     let tx=0, tz=0; for(const s of c.str){ const a=(s.i0+1)*3, b=(s.i0+3)*3; tx+=X[b]-X[a]; tz+=X[b+2]-X[a+2]; }
     const g0=9.8/Q.L; Q.vx+=(-g0*Q.ax-.5*Q.vx-tz*.6/Q.L)*h; Q.vz+=(-g0*Q.az-.5*Q.vz+tx*.6/Q.L)*h; Q.ax+=Q.vx*h; Q.az+=Q.vz*h;
     sw.rotation.set(Q.ax,0,Q.az); sw.updateMatrix(); const qm=Math.abs(Q.vx)+Math.abs(Q.vz)+Math.abs(Q.ax)+Math.abs(Q.az); Q.rest=Math.abs(Q.vx)+Math.abs(Q.vz)<1.5e-4&&qm<3e-3?1:0;

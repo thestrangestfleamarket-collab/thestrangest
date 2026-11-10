@@ -24,7 +24,7 @@ import {SCOPE} from './150fd-scope.js';
     const box=document.createElement('div'); box.style.cssText='flex:1;min-width:0;position:relative;cursor:grab;touch-action:none'; O.appendChild(box);
     const lab=document.createElement('canvas'); lab.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none'; box.appendChild(lab);
     const P=document.createElement('div'); P.className='ml'; P.style.cssText='width:min(240px,40vw);overflow:auto;padding:12px;background:#ece5d3;border-left:3px solid #3b2a1e;zoom:var(--uiz,1)'; O.appendChild(P);
-    const css=document.createElement('style'); css.textContent='#globev .row{margin:8px 0} #globev .btn{font:inherit;padding:4px 7px;margin:0 3px 3px 0;background:#ece5d3;color:#3b2a1e;border:2px solid #3b2a1e;cursor:pointer} #globev .btn.on{background:#3b2a1e;color:#ece5d3} #globev .info{color:#6a4a32;line-height:1.5}';
+    const css=document.createElement('style'); css.textContent='#globev[hidden]{display:none!important} #globev .row{margin:8px 0} #globev .btn{font:inherit;padding:4px 7px;margin:0 3px 3px 0;background:#ece5d3;color:#3b2a1e;border:2px solid #3b2a1e;cursor:pointer} #globev .btn.on{background:#3b2a1e;color:#ece5d3} #globev .info{color:#6a4a32;line-height:1.5}';
     document.head.appendChild(css); document.body.appendChild(O);
     let full=false, phase='', R=null, cv=null, S=null, cam=null, ball=null, tiltG=null, mat=null, light=null, k='earth', labels=true, lights=true, pitch=12, dist=4.3, drag=null, hover='', last=0, sun=null;
     const panel=()=>{ const D=GLOBE.data||{}, cr=((D.globes||[]).find(g=>g.id===k)||{}).credit||'NASA';
@@ -94,7 +94,7 @@ import {SCOPE} from './150fd-scope.js';
       p(new THREE.CylinderGeometry(.035,.05,H-r-.12,12),wood,0,(H-r-.12)/2+.05,0,0,G); p(new THREE.CylinderGeometry(.05,.035,.06,12),wood,0,H-r-.06,0,0,G);
       const ring=p(new THREE.TorusGeometry(r+.06,.018,6,40).rotateX(Math.PI/2),wood,0,H,0,0,G); for(let i=0;i<3;i++){ const a=i*Math.PI*2/3+.3, A=new THREE.Vector3(0,H-r-.08,0), B=new THREE.Vector3(Math.cos(a)*(r+.06),H-.01,Math.sin(a)*(r+.06)), D=B.clone().sub(A), st=p(new THREE.CylinderGeometry(.011,.011,D.length(),6),wood,(A.x+B.x)/2,(A.y+B.y)/2,(A.z+B.z)/2,0,G); st.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),D.normalize()); }   // three arms from the column up to the horizon ring
       const C=new THREE.Group(); C.position.set(0,H,0); G.add(C); ball('earth',r,C); solid(E0[0]-.3,E0[1]-.3,E0[0]+.3,E0[1]+.3,H+r); },{wire:'globe',bake:true});
-    const T0=[.42,8.2], TH=.64;
+    const T0=[.42,c.Ly-1.3], TH=.64;
     cap('GLOBE TABLE',()=>{ const G=new THREE.Group(); G.position.set(T0[0],0,T0[1]); cur().add(G); p(new THREE.CylinderGeometry(.3,.3,.03,28),wood,0,TH-.015,0,0,G); p(new THREE.CylinderGeometry(.03,.04,TH-.03,10),woodD,0,(TH-.03)/2,0,0,G);
       for(let i=0;i<3;i++){ const a=i*Math.PI*2/3; p(rbox(.04,.03,.24,.008),woodD,Math.cos(a)*.1,.015,Math.sin(a)*.1,-a+Math.PI/2,G); } solid(T0[0]-.3,T0[1]-.3,T0[0]+.3,T0[1]+.3,TH); },{bake:true});
     for(const [k,du,dv] of [['moon',-.13,-.04],['mars',.12,.06]])cap(k.toUpperCase()+' GLOBE',()=>{ const G=new THREE.Group(); G.position.set(T0[0]+du,TH,T0[1]+dv); cur().add(G); const r=.085;

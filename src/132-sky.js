@@ -21,7 +21,8 @@ import {HEMI} from './064-map-post.js';
   const U={uH:{value:new THREE.Color()},uM:{value:new THREE.Color()},uZ:{value:new THREE.Color()},uS:{value:new THREE.Color()},uA:{value:new THREE.Color()},
     uSunDir:{value:new THREE.Vector3(0,1,0)},uSunCol:{value:new THREE.Color()},uSunK:{value:0},uSunR:{value:.04},uSideK:{value:1},
     uMoonDir:{value:new THREE.Vector3(0,1,0)},uMoonK:{value:0},uMoonR:{value:.03},uMoonPh:{value:.5},uMoonCol:{value:new THREE.Color(.86,.89,.95)},uBlood:{value:0},uGap:{value:0},uSkyK:{value:0},uStar:{value:0},uStOn:{value:0},uStC:{value:null},uMwC:{value:null},uEq:{value:new THREE.Matrix3()},uSt:{value:new THREE.Vector3(0,1,1)},uMw:{value:new THREE.Vector2(1,1)},uMw1:{value:new THREE.Color(.74,.8,1)},uMw2:{value:new THREE.Color(1,.87,.64)},uFogC:{value:new THREE.Color()},uFogK:{value:0},uGrey:{value:new THREE.Color()},uGreyK:{value:0},
-    uBands:{value:CEL?8:SMOOTH?0:24},uMistK:{value:0},uMistC:{value:new THREE.Color()},uT:{value:0},uCov:{value:.2},uCL:{value:1.16},uZk:{value:.62},uHk:{value:.5},uCldC:{value:new THREE.Color(.5,.49,.47)},uCldK:{value:.9},uCD:{value:1},uCumA:{value:0},uGr:{value:new THREE.Color(1,1,1)},uLift:{value:new THREE.Color()},uCool:{value:0},uLiftK:{value:0}};
+    uBands:{value:CEL?8:SMOOTH?0:24},uMistK:{value:0},uMistC:{value:new THREE.Color()},uT:{value:0},uCov:{value:.2},uCL:{value:1.16},uZk:{value:.62},uHk:{value:.5},uCldC:{value:new THREE.Color(.5,.49,.47)},uCldK:{value:.9},uCD:{value:1},uCumA:{value:0},uGr:{value:new THREE.Color(1,1,1)},uLift:{value:new THREE.Color()},uCool:{value:0},uLiftK:{value:0},
+    uPl:{value:[0,1,2,3,4,5].map(()=>new THREE.Vector4(0,1,0,0))},uPlC:{value:[0,1,2,3,4,5].map(()=>new THREE.Color(1,1,1))},uMetA:{value:[0,1].map(()=>new THREE.Vector4(0,1,0,0))},uMetB:{value:[0,1].map(()=>new THREE.Vector4(0,1,0,0))},uAur:{value:new THREE.Vector4(0,.3,0,0)},uEvt:{value:0},uSh:{value:new THREE.Vector3(99,99,0)}};   // the planets and a satellite, shooting stars, the northern lights, the Earth's shadow on the Moon (134bc fills them)
   // THE CUMULUS: a field of lumpy 3D clouds (puffs heaped on a flat base) baked once into a cube the dome reads (each pixel its normal, its height in the cloud, its cover), lit live by the sun in cel steps; the field turns very slowly. SKY.cumulus makes the same clouds as meshes (the clouds below your landing, 141c).
   const CUMD='uniform vec3 uSunDir,uSunCol,uCldC,uZ,uGrey,uGr,uLift; uniform float uSunK,uCldK,uCL,uCD,uGreyK,uCool,uLiftK;';
   const CUMG=`vec3 cumShade(vec3 n,float h,vec3 v){ float r=1.-clamp(dot(n,v),0.,1.), k=clamp((dot(n,uSunDir)*.5+.5)*.8+h*.5-.2-r*r*.75,0.,1.);   // each puff's rim turned from you a step darker, so the heap reads round k=floor(k*3.+.5)/3.;
@@ -58,13 +59,13 @@ import {HEMI} from './064-map-post.js';
   U.uCum={value:CU.rt.texture}; SKY.CU=CU;
   const mat=new THREE.ShaderMaterial({uniforms:U,side:THREE.BackSide,depthWrite:false,depthTest:true,
     vertexShader:'varying vec3 vD; void main(){ vD=position; vec4 p=projectionMatrix*modelViewMatrix*vec4(position,1.); gl_Position=p.xyww; }',
-    fragmentShader:`uniform vec3 uH,uM,uS,uA,uMoonDir,uFogC; uniform float uSunR,uSideK,uMoonK,uMoonR,uMoonPh,uStar,uFogK,uBands,uMistK,uZk,uHk,uCumA,uT; uniform vec3 uMistC,uMoonCol; uniform float uBlood,uSkyK,uStOn; uniform vec3 uSt,uMw1,uMw2; uniform vec2 uMw; uniform mat3 uEq; uniform samplerCube uCum,uStC,uMwC; varying vec3 vD;
+    fragmentShader:`uniform vec3 uH,uM,uS,uA,uMoonDir,uFogC; uniform float uSunR,uSideK,uMoonK,uMoonR,uMoonPh,uStar,uFogK,uBands,uMistK,uZk,uHk,uCumA,uT; uniform vec3 uMistC,uMoonCol; uniform float uBlood,uSkyK,uStOn; uniform vec3 uSt,uMw1,uMw2; uniform vec2 uMw; uniform mat3 uEq; uniform samplerCube uCum,uStC,uMwC; uniform vec4 uPl[6],uMetA[2],uMetB[2],uAur; uniform vec3 uPlC[6],uSh; uniform float uEvt; varying vec3 vD;
       ${CUMD}
       float hs(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
       float vn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); vec2 m=mod(i,256.); return mix(mix(hs(m),hs(mod(m+vec2(1,0),256.)),f.x),mix(hs(mod(m+vec2(0,1),256.)),hs(mod(m+vec2(1,1),256.)),f.x),f.y); }
       ${CUMG}
       vec3 moon(vec3 c,vec3 d,float k){ float a=acos(clamp(dot(d,uMoonDir),-1.,1.)), disc=1.-step(uMoonR,a), hr=(step(a,uMoonR*2.3)+step(a,uMoonR*4.))*.5*(1.-disc); c=mix(c,vec3(.34,.05,.04),hr*.45*uBlood*k);
-        vec3 t1=normalize(cross(uMoonDir,vec3(0.,1.,0.))), t2=cross(uMoonDir,t1); vec2 q=vec2(dot(d,t1),dot(d,t2))/uMoonR; float ph=uMoonPh*6.2832, lit=step(0.,dot(vec3(q,sqrt(max(0.,1.-dot(q,q)))),vec3(sin(ph),0.,-cos(ph)))); return mix(c,mix(uMoonCol*.12,uMoonCol,lit),disc*k); }
+        vec3 t1=normalize(cross(uMoonDir,vec3(0.,1.,0.))), t2=cross(uMoonDir,t1); vec2 q=vec2(dot(d,t1),dot(d,t2))/uMoonR; float ph=uMoonPh*6.2832, lit=step(0.,dot(vec3(q,sqrt(max(0.,1.-dot(q,q)))),vec3(sin(ph),0.,-cos(ph)))); vec3 mc=mix(uMoonCol,vec3(.4,.12,.06),uSh.z>0.?1.-smoothstep(uSh.z-.1,uSh.z+.1,length(q-uSh.xy)):0.); return mix(c,mix(mc*.12,mc,lit),disc*k); }
       vec3 bt(vec3 c,float el){ return mix(c,c*vec3(1.4,.42,.38)+vec3(.05,.003,0.),uBlood*(.3+.7*(1.-smoothstep(0.,.55,el)))); }
       void main(){ vec3 d=normalize(vD); float el=max(d.y,0.); vec2 hz=normalize(d.xz+vec2(1e-4,0.)), sh=normalize(uSunDir.xz+vec2(1e-4,0.)); float cs=dot(hz,sh);
         vec3 c=mix(uH,uM,smoothstep(0.,.3,el)); c=mix(c,uZ,smoothstep(.2,.85,el));
@@ -73,6 +74,11 @@ import {HEMI} from './064-map-post.js';
         if(uStar>0.&&uStOn>.5){ vec3 q=uEq*d; float ex=smoothstep(-.01,.3,d.y), tw=1.+(vn(q.xy*140.+uT*5.)+vn(q.zx*140.-uT*4.)-1.)*.5*uSt.y*(1.-.7*el);   // the real sky (134ba): dimmer low down through more air, where it twinkles more
           vec3 s=textureCube(uStC,q).rgb; vec4 m=textureCube(uMwC,q); s*=smoothstep(uSt.x-.06,uSt.x,max(s.r,max(s.g,s.b))); s*=s; s=max(mix(vec3(dot(s,vec3(.3333))),s,uSt.z),0.); st=s*2.2*uStar*(.25+.75*ex)*max(tw,0.);
           mwc=mix(uMw1,uMw2,m.g)*m.r*m.r*.5*uMw.x*min(uStar,1.2)*ex*mix(1.,.35+1.3*hs(floor(q.xy*420.)+floor(q.z*420.)*37.),uMw.y); }   // grained like the countless faint stars it is, so the picture's 15-bit colour never steps it into flat patches
+        if(uEvt>0.){ float ex=.25+.75*smoothstep(-.01,.3,d.y);   // the planets and a passing satellite: steady points, each its colour; shooting stars: a streak brightest at its head
+          for(int i=0;i<6;i++){ float w=uPl[i].w; if(w>0.){ float a=1.-dot(d,uPl[i].xyz); st+=uPlC[i]*w*ex*(exp(-a*9e5)+.16*exp(-a*5e4)); } }
+          for(int i=0;i<2;i++){ float w=uMetA[i].w; if(w>0.){ vec3 a=uMetA[i].xyz, ab=uMetB[i].xyz-a; float t=clamp(dot(d-a,ab)/max(dot(ab,ab),1e-9),0.,1.), r=length(d-(a+ab*t)); st+=vec3(1.,.97,.9)*w*t*t*exp(-r*r*1.4e6); } }
+          if(uAur.x>0.&&d.y>0.){ float az=atan(d.x,d.z), base=.03+.07*vn(vec2(az*5.+uT*.04,uT*.02)), h=(d.y-base)/uAur.y, cur=step(0.,h)*smoothstep(0.,.07,h)*exp(-h*2.4), ray=.5+.5*vn(vec2(az*46.+uT*.25,uT*.05+3.));   // the northern lights: green curtains low in the north, red tops in a great storm
+            st+=mix(vec3(.16,1.,.45),vec3(.85,.16,.4),smoothstep(.45,1.,h)*uAur.z)*cur*ray*smoothstep(1.5,.35,abs(az))*uAur.x*.55; } }
         c=moon(c,d,uMoonK);
         { float ang=acos(clamp(dot(d,uSunDir),-1.,1.)); float disc=1.-step(uSunR,ang); float halo=(1.-smoothstep(uSunR,uSunR*4.,ang))*.45; if(uBands>0.)halo=floor(halo*3.)/3.*.45;
           c=mix(c,mix(uSunCol,vec3(1.,.96,.9),.45),halo*uSunK); c=mix(c,uSunCol,disc*uSunK); }
@@ -89,7 +95,7 @@ import {HEMI} from './064-map-post.js';
         if(uMistK>0.){ vec3 q=pow(max(c,0.),vec3(1./2.2)); float y=max(dot(q,vec3(.299,.587,.114)),1e-4); c=pow(q*(floor(y*16.+.5)/16./y),vec3(2.2)); } else if(uBands>0.){ float y=max(dot(c,vec3(.299,.587,.114)),1e-4); c*=floor(y*uBands+.5)/uBands/y; }   // bands of brightness, each its own hue: rounding each colour apart striped the blue with lilac
         c+=(st+mwc)*(1.-uGreyK)*(1.-uFogK)*(1.-D)*(1.-.85*uMoonK*smoothstep(uMoonR*1.05,uMoonR,acos(clamp(dot(d,uMoonDir),-1.,1.))));   // the stars and the Milky Way, smooth over the banded sky, never through the moon
         gl_FragColor=vec4(ungrade(c),1.); }`});
-  const dome=new THREE.Mesh(new THREE.BoxGeometry(2000,2000,2000),mat); dome.frustumCulled=false; dome.renderOrder=900; dome.matrixAutoUpdate=true; scene.add(dome); SKY.dome=dome; SKY.on=()=>dome.visible||!!(SKY.cumOn&&SKY.cumOn()); OUT.add(dome,'open');
+  const dome=new THREE.Mesh(new THREE.BoxGeometry(2000,2000,2000),mat); dome.frustumCulled=false; dome.renderOrder=900; dome.matrixAutoUpdate=true; scene.add(dome); SKY.dome=dome; SKY.on=()=>dome.visible||!!(SKY.cumOn&&SKY.cumOn()); OUT.add(dome,'sky');
   dome.onBeforeRender=(r,s,c)=>{ dome.position.copy(c.position); dome.scale.setScalar(c.isOrthographicCamera?Math.max(1,(c.right-c.left)*1.2/2000):1); dome.updateMatrixWorld(); };
   {
     SKY.sunCover=0; }

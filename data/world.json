@@ -1077,6 +1077,14 @@
     "note": "where the island's footbridge lands: no trees here"
    },
    {
+    "id": "orchard",
+    "x": 72,
+    "y": -10,
+    "w": 30,
+    "d": 22,
+    "note": "the park orchard (owner, 10 Nov 2026): eight plots, one a player, for the fruit trees (src/147d); no trees or paths here"
+   },
+   {
     "id": "falls",
     "x": 172.5,
     "y": 90,
@@ -3998,12 +4006,6 @@
    "k": "p:trashcan",
    "x": 105,
    "y": 165
-  },
-  {
-   "k": "p:picket",
-   "x": 86.78,
-   "y": 26.66,
-   "rot": 1.5708
   }
  ],
  "pathWidth": 7.2,

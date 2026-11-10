@@ -1,0 +1,191 @@
+<title>Movie Theatre Redesign</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Limelight&family=Barlow+Condensed:wght@400;600&family=Barlow:wght@400;500&display=swap">
+<style>
+/* layout: a dark lobby wall of four one-sheets; each style a lit case with its street front and its floor plan side by side */
+:root{
+  --night:#121016; --case:#1c1920; --edge:#332d38; --paper:#efe6d6; --dim:#a79e93; --bulb:#ffd27a;
+  --display:'Limelight',Georgia,serif; --body:'Barlow',system-ui,sans-serif; --label:'Barlow Condensed','Arial Narrow',sans-serif;
+  color-scheme:dark;
+}
+body{background:var(--night);color:var(--paper);font:16px/1.55 var(--body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:32px 64px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:40px}
+header{display:flex;flex-direction:column;gap:8px;max-width:72ch}
+.eyebrow{font:600 13px var(--label);letter-spacing:.2em;text-transform:uppercase;color:var(--bulb)}
+h1{font:400 clamp(34px,6vw,62px)/1.02 var(--display);margin:0;text-wrap:balance}
+header p{margin:0;color:var(--dim)}
+.common{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:500 14px var(--label);letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--edge);border-radius:3px;padding:4px 10px;color:var(--paper)}
+.style{display:flex;flex-direction:column;gap:14px;background:var(--case);border:1px solid var(--edge);border-radius:6px;padding:22px}
+.head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.letter{font:400 44px/1 var(--display);color:var(--accent)}
+h2{font:400 28px/1.1 var(--display);margin:0;color:var(--paper);text-wrap:balance}
+.style>p{margin:0;max-width:75ch;color:var(--dim)}
+.pics{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+figure{margin:0;display:flex;flex-direction:column;gap:6px;min-width:0}
+figcaption{font:600 12px var(--label);letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+svg{width:100%;height:auto;display:block;border-radius:4px;max-width:100%}
+ul{margin:0;padding-left:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:4px 24px;color:var(--paper)}
+li{min-width:0}
+li b{font:600 15px var(--label);letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.foot{color:var(--dim);max-width:72ch}
+@media (max-width:760px){.pics{grid-template-columns:1fr}}
+</style>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">Market St · between the Arcade and the Playhouse</span>
+  <h1>The Movie Theatre, four ways</h1>
+  <p>Pick a letter. Every style has the same rooms: a box office in the front wall, a lobby with a snack bar, and an auditorium with seats you can sit in, facing the screen that already plays the film schedule. Only the look and the seats change.</p>
+  <div class="common">
+    <span class="chip">Box office · ticket to go in</span><span class="chip">Lobby</span><span class="chip">Snack bar with a keeper</span><span class="chip">Seats for players and townsfolk</span><span class="chip">The screen and its films as now</span>
+  </div>
+</header>
+<div id="list"></div>
+<p class="foot">Plans are seen from above, the street at the bottom. Sizes are rough; the building keeps its lot. Tell me a letter, or mix them (say "A's front with C's seats").</p>
+</div>
+
+<script>
+const S=[
+{k:'A',name:'The Palace',accent:'#e0b04a',
+ blurb:'A 1920s movie palace. A tall lit blade sign and a bulb marquee outside; inside red velvet, gold plaster, a curtain that opens before each film, and a small balcony.',
+ pts:[['Front','Blade sign, chasing bulbs, brass doors, backlit poster cases'],['Box office','A gilded booth in the wall, arched glass'],['Lobby','Red carpet, a chandelier, a grand stair to the balcony'],['Snack bar','A long marble counter, the popcorn machine in a glass case'],['Seats','Red velvet rows, 8 a row, 6 rows, plus a balcony of 10'],['Screen','Gold proscenium, curtains open at showtime']]},
+{k:'B',name:'The Flea Pit',accent:'#ff5f8f',
+ blurb:'A strange, run-down picture house that fits the market. Buzzing neon with a dead letter, layered torn posters, and seats that were clearly bought at the flea market.',
+ pts:[['Front','Flickering neon, a hand-lettered marquee, peeling posters'],['Box office','A chicken-wire window with a bell and a cash tin'],['Lobby','Checkered floor, a broken claw machine, a lost-and-found bin'],['Snack bar','A counter built from an old ice cream truck'],['Seats','No two alike: couches, car seats, barber chairs, a bathtub'],['Screen','A bedsheet-white screen in a thrift frame, patched once']]},
+{k:'C',name:'The Multiplex',accent:'#4fd3ff',
+ blurb:'A clean modern cinema. A glass front lit from inside, a digital showtimes wall, and a dark auditorium with big recliners on stepped tiers.',
+ pts:[['Front','Glass wall, LED name strip, digital posters'],['Box office','A ticket kiosk and a staffed counter'],['Lobby','Polished floor, showtimes screens, a cup-holder rail'],['Snack bar','Backlit menu boards, soda fountain, nacho warmer'],['Seats','Large recliners, 2 each side of the aisle, 4 tiers'],['Screen','Wall to wall, LED step lights in the aisle']]},
+{k:'D',name:'The Rooftop',accent:'#9be36a',
+ blurb:'The lobby and snack bar on the ground floor; the films play on the roof under the real sky and the moon, with deck chairs, blankets and a parked old car to sit in.',
+ pts:[['Front','A narrow lit stair hall, string lights running up the front'],['Box office','A window at the foot of the stair'],['Lobby','A small bar room, a stair up to the roof'],['Snack bar','Popcorn and soda in paper bags to carry up'],['Seats','Deck chairs, beanbags, blankets, two old cars'],['Screen','Open-air screen on a steel frame; rain and night are real']]}
+];
+
+const bulbs=(x1,x2,y,step,c)=>{let s='';for(let x=x1;x<=x2;x+=step)s+=`<circle cx="${x}" cy="${y}" r="2.2" fill="${c}"/>`;return s};
+const seatRows=(rows,per,y0,dy,w,h,gap,fill,odd)=>{let s='';for(let r=0;r<rows;r++){const y=y0+r*dy;for(let side=0;side<2;side++){for(let i=0;i<per;i++){const x=side?200+gap/2+i*(w+3):200-gap/2-(i+1)*(w+3)+3;const f=odd?odd[(r*per*2+side*per+i)%odd.length]:fill;s+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="2" fill="${f}"/>`}}}return s};
+const lbl=(x,y,t,c='#efe6d6',sz=11,a='middle')=>`<text x="${x}" y="${y}" fill="${c}" font-family="Barlow Condensed,Arial Narrow,sans-serif" font-size="${sz}" font-weight="600" letter-spacing=".08em" text-anchor="${a}">${t}</text>`;
+
+function plan(o){
+  // common floor plan: auditorium top, lobby bottom, street below
+  return `<svg viewBox="0 0 400 300" role="img" aria-label="${o.name} floor plan">
+  <rect width="400" height="300" fill="#16141a"/>
+  <rect x="0" y="270" width="400" height="30" fill="#2a2a2e"/>${lbl(200,290,'MARKET ST','#8d8790',11)}
+  <rect x="40" y="14" width="320" height="256" fill="${o.floor}" stroke="#4a4450" stroke-width="2"/>
+  <rect x="40" y="180" width="320" height="2" fill="#4a4450"/>
+  ${o.aud}
+  ${o.lobby}
+  <rect x="180" y="266" width="40" height="8" fill="${o.accent}"/>${lbl(200,262,'DOORS',o.accent,9)}
+  </svg>`;
+}
+
+const LOBBY=(acc,box,snack,extra='')=>`
+  <rect x="44" y="236" width="44" height="30" fill="${box}"/>${lbl(66,254,'BOX',acc,9)}${lbl(66,264,'OFFICE',acc,8)}
+  <rect x="270" y="190" width="86" height="22" fill="${snack}"/>${lbl(313,205,'SNACK BAR',acc,10)}
+  <rect x="175" y="178" width="50" height="6" fill="${acc}"/>${lbl(200,196,'TO THE SEATS','#a79e93',9)}
+  ${lbl(150,235,'LOBBY','#efe6d6',13)}${extra}`;
+
+const D={
+A:{
+ front:`<svg viewBox="0 0 400 300" role="img" aria-label="The Palace front">
+ <rect width="400" height="300" fill="#0d0b14"/><rect x="0" y="262" width="400" height="38" fill="#2a2729"/>
+ <rect x="60" y="40" width="280" height="222" fill="#5a2b22"/>
+ <rect x="60" y="40" width="280" height="10" fill="#c9973a"/>
+ ${[80,120,280,320].map(x=>`<rect x="${x-3}" y="50" width="6" height="70" fill="#c9973a" opacity=".6"/>`).join('')}
+ <rect x="184" y="4" width="32" height="118" fill="#8b1c1c" stroke="#e0b04a" stroke-width="2"/>
+ ${'PALACE'.split('').map((c,i)=>`<text x="200" y="${24+i*17}" fill="#ffd27a" font-family="Limelight,Georgia,serif" font-size="16" text-anchor="middle">${c}</text>`).join('')}
+ <path d="M70 128 H330 L318 168 H82 Z" fill="#2b1414" stroke="#e0b04a" stroke-width="2"/>
+ ${bulbs(76,324,126,8,'#ffd27a')}${bulbs(86,314,170,8,'#ffd27a')}
+ <rect x="96" y="136" width="208" height="26" fill="#f6eedb"/>
+ <text x="200" y="154" fill="#111" font-family="Barlow Condensed,sans-serif" font-weight="600" font-size="15" text-anchor="middle" letter-spacing=".08em">NOSFERATU · 7:00 · 9:30</text>
+ <rect x="160" y="196" width="80" height="66" fill="#ffcf8a" opacity=".85"/><rect x="198" y="196" width="4" height="66" fill="#8a5d22"/>
+ <rect x="168" y="228" width="26" height="3" fill="#c9973a"/><rect x="206" y="228" width="26" height="3" fill="#c9973a"/>
+ <path d="M106 262 V206 a16 16 0 0 1 32 0 V262 Z" fill="#c9973a"/><path d="M110 236 V208 a12 12 0 0 1 24 0 V236 Z" fill="#ffe2a8"/>
+ <rect x="74" y="190" width="22" height="34" fill="#ffd27a" opacity=".25"/><rect x="77" y="193" width="16" height="28" fill="#2e4c7a"/>
+ <rect x="262" y="190" width="22" height="34" fill="#ffd27a" opacity=".25"/><rect x="265" y="193" width="16" height="28" fill="#7a2e3e"/>
+ <rect x="304" y="190" width="22" height="34" fill="#ffd27a" opacity=".25"/><rect x="307" y="193" width="16" height="28" fill="#3e7a2e"/>
+ </svg>`,
+ plan:{floor:'#2a1418',accent:'#e0b04a',
+  aud:`<rect x="70" y="18" width="260" height="8" fill="#f6eedb"/><rect x="62" y="18" width="10" height="14" fill="#a01f1f"/><rect x="328" y="18" width="10" height="14" fill="#a01f1f"/>${lbl(200,40,'SCREEN · CURTAIN','#e0b04a',9)}
+   ${seatRows(6,4,58,16,11,9,26,'#b02a2a')}
+   <rect x="44" y="150" width="312" height="26" fill="#3a1a1e" stroke="#e0b04a" stroke-dasharray="3 3"/>${lbl(200,167,'BALCONY ABOVE · 10 SEATS','#e0b04a',9)}`,
+  lobby:LOBBY('#e0b04a','#6a4a1c','#7a6a5a',`<circle cx="150" cy="215" r="9" fill="none" stroke="#ffd27a" stroke-width="2"/><rect x="96" y="190" width="30" height="40" fill="#5a2b22"/>${lbl(111,214,'STAIR','#e0b04a',8)}<rect x="175" y="200" width="50" height="64" fill="#7a1c1c" opacity=".7"/>`)}},
+B:{
+ front:`<svg viewBox="0 0 400 300" role="img" aria-label="The Flea Pit front">
+ <rect width="400" height="300" fill="#0e0d10"/><rect x="0" y="262" width="400" height="38" fill="#2b2a28"/>
+ <rect x="60" y="56" width="280" height="206" fill="#4a463e"/>
+ <path d="M60 56 L88 64 L120 54 L160 62 L210 52 L260 63 L300 55 L340 60 V56 H60Z" fill="#3a362f"/>
+ <text x="200" y="98" fill="#ff5f8f" font-family="Limelight,Georgia,serif" font-size="32" text-anchor="middle" style="filter:drop-shadow(0 0 6px #ff5f8f)">FLEA P<tspan fill="#5a2a3a" style="filter:none">I</tspan>T</text>
+ <rect x="84" y="112" width="232" height="34" fill="#e8dcbc" transform="rotate(-1.5 200 129)"/>
+ <text x="200" y="135" fill="#222" font-family="Barlow Condensed,sans-serif" font-weight="600" font-size="15" text-anchor="middle" transform="rotate(-1.5 200 129)">TONITE: TH M N FR M MARS</text>
+ ${[[70,160,'#c96'],[86,168,'#69c'],[74,190,'#c66'],[292,158,'#9c6'],[306,176,'#cc6'],[288,196,'#96c']].map(([x,y,c])=>`<rect x="${x}" y="${y}" width="24" height="30" fill="${c}" opacity=".7" transform="rotate(${(x%7)-3} ${x+12} ${y+15})"/>`).join('')}
+ <path d="M74 220 l20 -8 l-4 18 z" fill="#e8dcbc" opacity=".5"/>
+ <rect x="164" y="190" width="72" height="72" fill="#3a2e24"/><rect x="170" y="196" width="28" height="60" fill="#c8a060" opacity=".55"/><rect x="202" y="196" width="28" height="60" fill="#c8a060" opacity=".35"/>
+ <rect x="112" y="200" width="36" height="30" fill="#2a2a2a"/><path d="M112 200 h36 v30 h-36 z M118 200 v30 M124 200 v30 M130 200 v30 M136 200 v30 M142 200 v30 M112 206 h36 M112 212 h36 M112 218 h36 M112 224 h36" stroke="#888" stroke-width=".6" fill="none"/>
+ ${lbl(130,244,'TIX $5','#ff5f8f',11)}
+ <rect x="252" y="200" width="30" height="40" fill="#5f8fff" opacity=".18"/>${lbl(267,224,'OPEN','#5fffb0',10)}
+ </svg>`,
+ plan:{floor:'#22201c',accent:'#ff5f8f',
+  aud:`<rect x="80" y="18" width="240" height="8" fill="#f0eee6"/><rect x="150" y="18" width="20" height="8" fill="#d8d2c0"/>${lbl(200,40,'SCREEN (PATCHED)','#ff5f8f',9)}
+   ${seatRows(5,3,58,22,16,12,30,null,['#7a5a3a','#3a5a7a','#8a3a3a','#5a7a3a','#7a7a7a','#9a7a2a','#5a3a7a','#3a7a6a'])}
+   <rect x="58" y="150" width="58" height="18" rx="6" fill="#6a4a2e"/>${lbl(87,163,'COUCH','#efe6d6',9)}
+   <rect x="284" y="150" width="58" height="18" rx="9" fill="#d8d8d0"/>${lbl(313,163,'BATHTUB','#222',9)}`,
+  lobby:LOBBY('#ff5f8f','#3a3a3a','#e8e0d0',`<rect x="96" y="194" width="18" height="22" fill="#5fffb0" opacity=".5"/>${lbl(105,226,'CLAW','#5fffb0',8)}${[0,1,2,3,4,5].map(i=>`<rect x="${150+i*14}" y="236" width="7" height="7" fill="#efe6d6" opacity=".15"/>`).join('')}`)}},
+C:{
+ front:`<svg viewBox="0 0 400 300" role="img" aria-label="The Multiplex front">
+ <rect width="400" height="300" fill="#0b0e12"/><rect x="0" y="262" width="400" height="38" fill="#25282c"/>
+ <rect x="50" y="44" width="300" height="218" fill="#1f2328"/>
+ <rect x="50" y="70" width="300" height="5" fill="#4fd3ff" style="filter:drop-shadow(0 0 5px #4fd3ff)"/>
+ <text x="200" y="62" fill="#e8f6ff" font-family="Barlow,sans-serif" font-weight="500" font-size="16" text-anchor="middle" letter-spacing=".5em">CINEMA</text>
+ <rect x="62" y="90" width="276" height="172" fill="#9fd8ef" opacity=".14"/>
+ ${[108,154,200,246,292].map(x=>`<rect x="${x}" y="90" width="2" height="172" fill="#3a4048"/>`).join('')}
+ <rect x="72" y="104" width="30" height="44" fill="#d04040"/><rect x="298" y="104" width="30" height="44" fill="#3a6ad0"/>
+ <rect x="120" y="104" width="160" height="30" fill="#0a1a24" stroke="#4fd3ff"/>
+ ${lbl(200,123,'1:15  4:30  7:00  9:45','#4fd3ff',12)}
+ <rect x="168" y="190" width="64" height="72" fill="#e8f6ff" opacity=".25"/><rect x="199" y="190" width="2" height="72" fill="#4fd3ff"/>
+ <rect x="80" y="214" width="22" height="34" fill="#2a2e34" stroke="#4fd3ff"/><rect x="84" y="218" width="14" height="12" fill="#4fd3ff" opacity=".6"/>${lbl(91,258,'KIOSK','#4fd3ff',8)}
+ <rect x="260" y="150" width="70" height="10" fill="#ffd27a" opacity=".3"/>
+ </svg>`,
+ plan:{floor:'#15181c',accent:'#4fd3ff',
+  aud:`<rect x="44" y="18" width="312" height="8" fill="#e8f6ff"/>${lbl(200,40,'SCREEN · WALL TO WALL','#4fd3ff',9)}
+   ${[0,1,2,3].map(r=>`<rect x="44" y="${54+r*30}" width="312" height="26" fill="#1c2026"/>`).join('')}
+   ${seatRows(4,2,58,30,26,18,40,'#3a3f48')}
+   ${[0,1,2,3].map(r=>`<circle cx="200" cy="${66+r*30}" r="1.6" fill="#4fd3ff"/>`).join('')}
+   ${lbl(68,178,'4 TIERS · 16 RECLINERS','#a79e93',9,'start')}`,
+  lobby:LOBBY('#4fd3ff','#20303a','#2a3440',`<rect x="96" y="238" width="14" height="22" fill="#2a2e34" stroke="#4fd3ff"/><rect x="292" y="232" width="60" height="6" fill="#4fd3ff" opacity=".5"/>${lbl(322,250,'SHOWTIMES WALL','#4fd3ff',8)}`)}},
+D:{
+ front:`<svg viewBox="0 0 400 300" role="img" aria-label="The Rooftop front">
+ <rect width="400" height="300" fill="#0c1020"/>${[[40,20],[90,40],[330,30],[360,60],[20,70],[300,12]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="1.2" fill="#fff"/>`).join('')}
+ <circle cx="352" cy="32" r="12" fill="#f4eccc"/><circle cx="347" cy="28" r="11" fill="#0c1020"/>
+ <rect x="0" y="262" width="400" height="38" fill="#2a2a2e"/>
+ <rect x="80" y="96" width="240" height="166" fill="#3e4048"/>
+ <rect x="100" y="40" width="200" height="56" fill="#cfd8e0" opacity=".9"/><rect x="104" y="44" width="192" height="48" fill="#7aa0c8"/>
+ <path d="M104 92 L150 64 L190 80 L240 56 L296 86 V92Z" fill="#a8c8e0"/>
+ <rect x="110" y="96" width="4" height="10" fill="#555"/><rect x="286" y="96" width="4" height="10" fill="#555"/>
+ <path d="M80 100 Q200 128 320 100" stroke="#ffd27a" fill="none"/>${[0,1,2,3,4,5,6,7,8,9,10].map(i=>{const t=i/10,x=80+240*t,y=100+4*28*t*(1-t);return `<circle cx="${x}" cy="${y}" r="2" fill="#ffd27a"/>`}).join('')}
+ <text x="200" y="150" fill="#9be36a" font-family="Limelight,Georgia,serif" font-size="24" text-anchor="middle">ROOFTOP PICTURES</text>
+ ${lbl(200,170,'TONIGHT AT DUSK','#efe6d6',12)}
+ <rect x="174" y="196" width="52" height="66" fill="#ffcf8a" opacity=".7"/><path d="M178 258 l40 -50" stroke="#8a6030" stroke-width="3"/>
+ <rect x="116" y="206" width="34" height="28" fill="#ffd27a" opacity=".5"/>${lbl(133,246,'TICKETS','#9be36a',9)}
+ <rect x="250" y="200" width="44" height="32" fill="#ffd27a" opacity=".3"/>${lbl(272,244,'POPCORN','#9be36a',9)}
+ </svg>`,
+ plan:{floor:'#1a1d22',accent:'#9be36a',
+  aud:`<rect x="40" y="14" width="320" height="166" fill="#20262c"/>${lbl(52,30,'ON THE ROOF','#9be36a',10,'start')}
+   <rect x="90" y="36" width="220" height="7" fill="#e8eef4"/>${lbl(200,56,'OPEN-AIR SCREEN','#9be36a',9)}
+   ${[0,1,2].map(r=>[0,1,2,3,4,5].map(i=>`<rect x="${86+i*40}" y="${70+r*22}" width="18" height="12" rx="2" fill="#c0603a"/>`).join('')).join('')}
+   <rect x="60" y="140" width="46" height="24" rx="8" fill="#5a7a9a"/>${lbl(83,156,'OLD CAR','#efe6d6',8)}
+   <rect x="294" y="140" width="46" height="24" rx="8" fill="#9a5a5a"/>${lbl(317,156,'OLD CAR','#efe6d6',8)}
+   ${[0,1,2].map(i=>`<rect x="${150+i*36}" y="142" width="24" height="20" fill="#6a8a4a" opacity=".7"/>`).join('')}${lbl(200,174,'BLANKETS','#a79e93',8)}`,
+  lobby:LOBBY('#9be36a','#4a5a2a','#4a4038',`<rect x="96" y="188" width="40" height="44" fill="#2e3238"/>${[0,1,2,3,4].map(i=>`<rect x="96" y="${190+i*9}" width="40" height="2" fill="#9be36a" opacity=".5"/>`).join('')}${lbl(116,242,'STAIR UP','#9be36a',8)}`)}}
+};
+
+document.getElementById('list').outerHTML=S.map(s=>{const d=D[s.k];return `
+<section class="style" style="--accent:${s.accent}">
+ <div class="head"><span class="letter">${s.k}</span><h2>${s.name}</h2></div>
+ <p>${s.blurb}</p>
+ <div class="pics">
+  <figure>${d.front}<figcaption>From Market St, at night</figcaption></figure>
+  <figure>${plan({name:s.name,...d.plan})}<figcaption>Floor plan</figcaption></figure>
+ </div>
+ <ul>${s.pts.map(([a,b])=>`<li><b>${a}</b> · ${b}</li>`).join('')}</ul>
+</section>`}).join('');
+</script>

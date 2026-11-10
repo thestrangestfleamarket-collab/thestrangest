@@ -1,4 +1,4 @@
-// THE MOVIE THEATRE, FURNISHED as THE FLEA PIT (owner, 10 Nov 2026): one dark room of red movie seats in rows each side of the aisle facing the screen, dim caged bulbs and small aisle lights; watching a film from a seat rests you; where the doorman, the usher and the moviegoers go.
+// THE MOVIE THEATRE, FURNISHED as THE FLEA PIT (owner, 10 Nov 2026): one dark room of red movie seats, four rows of seven, each side of the aisle facing the screen, dim caged bulbs and small aisle lights; watching a film from a seat rests you; where the doorman, the usher and the moviegoers go.
 import {SHARED, THREE} from './003-shx.js';
 import {CINEMA, st, USE, VIT} from './003b-systems.js';
 import {scene} from './004-main.js';
@@ -13,8 +13,8 @@ const THEATRE={}; window.THEATRE=THEATRE;
   // the seats: regular movie seats, red, folding, in a row on metal standards with shared armrests; each side of the aisle a row of them (a block: its places' middles)
   const SW=.58, SITH=.46;
   const geo=(B,F)=>{ const U=x=>(x-B.x0-.1)*TM, V=y=>(y-B.y0-.1)*TM, Wm=F.W, Dm=F.D, cy=V((B.y0+B.y1)/2), rows=[];
-    for(let i=0;B.x0+4.6+i*1.65<=B.x1-3;i++){ const uc=U(B.x0+4.6+i*1.65);
-      for(const [a,b] of [[.7,cy-.75],[cy+.75,Dm-.7]]){ const n=Math.floor((b-a)/SW), v0=(a+b)/2-n*SW/2; rows.push({uc,v0,n,vs:Array.from({length:n},(_,k)=>v0+(k+.5)*SW)}); } }
+    for(let i=0;i<4;i++){ const uc=U(B.x0+2.6+i*1.4);
+      for(const [a,b] of [[.7,cy-.75],[cy+.75,Dm-.7]]){ const n=Math.min(7,Math.floor((b-a)/SW)), v0=(a+b)/2-n*SW/2; rows.push({uc,v0,n,vs:Array.from({length:n},(_,k)=>v0+(k+.5)*SW)}); } }
     return {U,V,Wm,Dm,cy,rows}; };
   const place=R=>{ '@later'; const {B,TB}=STORE.theatreFrame, F=frameOf(B,TB), G=geo(B,F), sp=(u,v,du,dv,h)=>{ const p=F.pw(u,v); return {x:p[0],z:p[1],hd:F.hd(du,dv),...(h!=null?{y:h*IKIT.MW}:{})}; };
     R.spots={'DOORMAN, TICKETS WITH THE TICKET FOX':sp(G.Wm-1.2,G.Dm-1.1,0,-1),USHER:sp(G.Wm-1.2,G.cy,-1,0)};
@@ -33,8 +33,8 @@ const THEATRE={}; window.THEATRE=THEATRE;
         for(let k=0;k<n;k++){ const a=v0+k*SW+.04, c=v0+(k+1)*SW-.04; box(u-.3,a,u+.2,c,.36,.48,RED); box(u+.18,a,u+.34,c,.4,1.02,RED); box(u+.34,a,u+.37,c,.42,1.0,RDK); box(u+.16,a+.02,u+.36,c-.02,1.0,1.06,RDK); } });
       seat('A ROW OF SEATS',b,spots); sol(u-.05,v0,u+.38,v1); }
     // caged bulbs down the sides, turned low; a small light at the end of every row on the aisle
-    for(const x of [B.x0+4,B.x0+8,B.x0+12,B.x0+16])for(const y of [B.y0+.6,B.y1-.6]){ const u=G.U(x), v=G.V(y), s=v<cy?1:-1; box(u-.04,v-s*.32,u+.04,v-s*.1,2.95,3.0,DK); glow(()=>ball(u,v-s*.02,3.06,.07,0xffe0a0)); }
+    for(const x of [B.x0+2.5,B.x0+6.5])for(const y of [B.y0+.6,B.y1-.6]){ const u=G.U(x), v=G.V(y), s=v<cy?1:-1; box(u-.04,v-s*.32,u+.04,v-s*.1,2.95,3.0,DK); glow(()=>ball(u,v-s*.02,3.06,.07,0xffe0a0)); }
     for(const r of G.rows){ const v=r.v0<cy?r.v0+r.n*SW+.06:r.v0-.06; glow(()=>box(r.uc-.32,v-.02,r.uc-.24,v+.02,.12,.16,0xffc070)); }
     K.flush();
-    for(const [u,v] of [[G.U(B.x0+4),.9],[G.U(B.x0+10),Dm-.9],[G.U(B.x0+16),.9]]){ const L=new THREE.PointLight(0xffb070,1.1,4*MW,1.8), p=F.pw(u,v); L.position.set(p[0],3*MW,p[1]); scene.add(L); } };
+    for(const [u,v] of [[G.U(B.x0+2.5),.9],[G.U(B.x0+6.5),Dm-.9]]){ const L=new THREE.PointLight(0xffb070,1.1,4*MW,1.8), p=F.pw(u,v); L.position.set(p[0],3*MW,p[1]); scene.add(L); } };
 }

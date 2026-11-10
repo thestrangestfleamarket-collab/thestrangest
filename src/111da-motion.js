@@ -40,7 +40,7 @@ import {AVATAR} from './111c-avatar.js';
   const theirs=new Map();
   const tickOne=(c,dt)=>{ const S=c.S, m=S.move; if(c.while&&!c.while()){ if(m&&m.name==='mc_'+c.n)m.t=m.def.dur; return false; } if(m&&m.name==='mc_'+c.n){ if(c.loop&&!(S.target>0)&&m.t>=m.def.dur-.05)R.begin(S,'mc_'+c.n); return true; } if(!c.loop||S.target>0||m||S.sit||S.climb||S.hang||S.ride||S.water&&S.water.in)return false; R.begin(S,'mc_'+c.n); return true; };   // (a loop starts again from its last pose before it ends: no frame back toward standing between)
   // standing still a moment: listening while someone talks to you, bent over when out of breath, hurting when low on health (until it no longer holds, or you move)
-  let still=0; const STANCE=[['listen',()=>!!(window.TALK&&TALK.on)],['tired',()=>!!VIT.tired],['hurt',()=>VIT.hp>0&&VIT.hp<.3]];
+  let still=0; const STANCE=[['listen',()=>!!(TALK&&TALK.on)],['tired',()=>!!VIT.tired],['hurt',()=>VIT.hp>0&&VIT.hp<.3]];
   const idle=()=>!st.move&&!st.up&&!st.sit&&!st.ride&&!st.climb&&!st.hang&&!(st.water&&st.water.in)&&!(st.target>0)&&!RAG.on&&!VIT.dead&&!SHARED.drive&&!UI.freeCam;
   let calm=0; const CALM=['pf_Cross','pf_Phone','pf_Cross'];   // (owner, 9 Nov 2026: "more idle animations for players when standing")
   SYS.add('life',dt=>{ if(cur||!idle()){ still=0; calm=0; return; } calm+=dt; if((still+=dt)<1.5)return; const s=STANCE.find(([,f])=>f());

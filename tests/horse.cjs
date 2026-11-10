@@ -1,4 +1,4 @@
-// THE HORSE CHECK: node tests/horse.cjs dist/market.html. Everyone has a SADDLE and a COWBOY HAT; held, the saddle's E calls the horse and you ride (in the saddle, on its back); W walks, held a trot, Shift gallops; E gets down and the horse waits; the hat goes on your head and comes off; nothing throws.
+// THE HORSE CHECK: node tests/horse.cjs dist/market.html. Everyone has a SADDLE and a COWBOY HAT; held, the saddle's E calls the horse and you ride (in the saddle, on its back); W walks, held a trot, Shift gallops; it will not go into deep water; E gets down and the horse waits; the hat goes on your head and comes off; nothing throws.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=horse::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 const SHOTS = process.env.SHOTS;
@@ -22,6 +22,18 @@ const SHOTS = process.env.SHOTS;
   ok(s1.on === 'saddle' && s1.mine && s1.ok, 'E with the saddle: your horse, saddled, and you on it ' + JSON.stringify(s1));
   ok(s1.seat && s1.seat[1] > 1.3 && s1.seat[1] < 2.3, 'the seat is on a life-size horse\'s back (1.3-2.3 units up) ' + JSON.stringify(s1.seat));
   await pg.waitForTimeout(1500); await shot('1-mounted');
+  // the owner's look (ADMIN > VEHICLE EDITOR, 10 Nov 2026): a bigger horse lifts the seat with it, its gait takes fewer strides; a coat colour turned into his paints the body
+  const lk = await pg.evaluate(async () => { const WU = 33.9 / 30 / .84, y = __dbg.you(), g = SHARED.groundY(y.x, y.z) / WU, N = HORSE.body(), C = N.me.geometry.attributes.color.array, pink = () => { let n = 0; for (let i = 0; i < C.length; i += 3) if (C[i] > 60 && C[i + 1] < 12 && Math.abs(C[i] - C[i + 2]) < 12) n++; return n; };
+    const s0 = HORSE.dbg().seat[1] - g, p0 = pink(), coat = VLOOK.kinds.horse.pal(); VLOOK.set('horse', { s: 1.3, pal: Object.fromEntries(coat.map(k => [k, 'ff00ff'])) }); await new Promise(r => setTimeout(r, 1500));
+    const d = HORSE.dbg(), s1 = d.seat[1] - g, p1 = pink(); VLOOK.set('horse', null); await new Promise(r => setTimeout(r, 1500));
+    return { s0: +s0.toFixed(2), s1: +s1.toFixed(2), size: d.size, p0, p1, back: pink(), size2: HORSE.dbg().size, on: RIDE.on }; });
+  ok(lk.size === 1.3 && Math.abs(lk.s1 / lk.s0 - 1.3) < .08 && lk.p0 === 0 && lk.p1 > 100 && lk.back === 0 && lk.size2 === 1 && lk.on === 'saddle', 'its look: size 1.3 lifts the seat 1.3 times, the coat repainted, and back again ' + JSON.stringify(lk));
+
+  // the brook is a few steps ahead (north-east of the start): it wades the edge, pulls up before the deep water, and you stay up, dry
+  await pg.keyboard.down('w'); const sw = await until(s => s.v > .5, 30), sb = await until(s => s.v < .05 || !s.on, 40);
+  const wet = await pg.evaluate(() => ({ depth: +(FLOW.depth(__dbg.you().x, __dbg.you().z) / (33.9 / 30 / .84)).toFixed(2) }));
+  ok(sw.v > .5 && sb.on === 'saddle' && sb.v < .05 && wet.depth < .7, 'into the brook: it pulls up before the deep water and you stay in the saddle ' + JSON.stringify({ ...sb, ...wet }));
+  await pg.keyboard.up('w'); await pg.evaluate(() => { const h = RIDE.hd + Math.PI; RIDE.hd = SHARED.heading = h; SHARED.yaw = SHARED.yawTo = h - Math.PI; }); await pg.waitForTimeout(500);   // (turned round, the brook behind: open ground ahead; W goes the way the camera looks)
   await pg.keyboard.down('w'); const s2 = await until(s => s.v > 3.4, 60); await shot('2-trot', null);
   ok(s2.v > 3.4 && s2.v < 4.2, 'W walks, held it trots ' + JSON.stringify(s2));
   await pg.keyboard.down('Shift'); const s3 = await until(s => s.v > 9, 60); await shot('3-gallop', null);

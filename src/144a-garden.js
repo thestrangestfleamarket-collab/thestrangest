@@ -1,6 +1,6 @@
 // THE GARDEN: GARDEN, the wild flowers (each grass kind its own, park and street) and the garden plots the player can plant.
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, CLOCK, FORAGE, INSPECT, ITEMS, MAIL, MOTION, pos, ROOMS, SFX, UI, WEEDS, WX} from './003b-systems.js';
+import {BIRDS, CITY, CLOCK, FORAGE, INSPECT, ITEMS, MAIL, MOTION, pos, ROOMS, SFX, UI, WEEDS, WX} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
@@ -37,7 +37,7 @@ const GARDEN={}; window.GARDEN=GARDEN;
   FORAGE.add({names:NM,prices:Object.assign({},PR,BP),recipes:BQ});
   FORAGE.CK.garden={short:'GARD',made:nm=>`YOU TIE A ${nm}.`,fail:'THE STEMS SNAP. THE FLOWERS ARE SPOILED.'};
   FORAGE.HELP.push('GARDENING picks wildflowers, grows flowers from seed on any lawn (the tomato sells seeds) and ties bouquets.');
-  const day=()=>window.MAIL&&MAIL.ready?MAIL.day():window.CITY?CITY.day||0:0, now=()=>day()*24+CLOCK.h, GROW=24;
+  const day=()=>window.MAIL&&MAIL.ready?MAIL.day():CITY?CITY.day||0:0, now=()=>day()*24+CLOCK.h, GROW=24;
   GARDEN.beds=[]; GARDEN.now=now; const GR=p=>{ const b=p.bed&&GARDEN.beds.find(q=>q.id===p.bed); return b&&b.grow?b.grow:GROW; };   // a bed of its own (a place's: GARDEN.beds, {id, at(x,z)->y, grow hours}) plants like a lawn
   const S={v:1,picked:{},pd:-1,plots:[],log:{}}; try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1)Object.assign(S,D); S.log=S.log||{}; }catch(e){}
   let saveT=0; const save=()=>OWNED.set(KEY,JSON.stringify(S)), saveSoon=()=>{ clearTimeout(saveT); saveT=setTimeout(save,800); };
@@ -78,14 +78,14 @@ const GARDEN={}; window.GARDEN=GARDEN;
     for(let i=0;i<Q.length;i+=3){ const d=(Q[i]-x)**2+(Q[i+2]-z)**2; if(d<bd){ bd=d; b=i; } } return b==null?null:g.top(x,Q[b+1],z); };
   GARDEN.lawnAt=lawnAt;
   FORAGE.ROWB.push(id=>id.startsWith('sd_')?[['PLANT','gplant']]:[]);
-  FORAGE.ACT.gplant=id=>{ '@later'; const k=id.slice(3); if(SHARED.LVL!=='up'||(window.ROOMS&&ROOMS.cur))return say('PLANT IT IN A LAWN, OUTDOORS.','#c8a090');
+  FORAGE.ACT.gplant=id=>{ '@later'; const k=id.slice(3); if(SHARED.LVL!=='up'||(ROOMS&&ROOMS.cur))return say('PLANT IT IN A LAWN, OUTDOORS.','#c8a090');
     const y=lawnAt(pos.x,pos.z); if(y==null)return say('YOU NEED BARE LAWN UNDER YOUR FEET TO PLANT IT.','#c8a090');
     if(S.plots.length>=12)return say('YOU ALREADY TEND TWELVE PLANTS. PICK SOME FIRST.','#c8a090'); if(S.plots.some(p=>Math.hypot(p.x-pos.x,p.z-pos.z)<.45*T))return say('SOMETHING IS ALREADY PLANTED HERE.','#c8a090');
     FORAGE.take(id,1); MOTION.play('plant'); const bd=GARDEN.beds.find(b=>b.at(pos.x,pos.z)!=null); S.plots.push({k,x:pos.x,y,z:pos.z,t:now(),a:Math.random()*6.28,...(bd?{bed:bd.id}:{})}); say(`YOU PLANT THE ${SEED[k][0]}. IT WILL BLOOM IN A DAY.`,'#9fe07f'); save(); sync(); };
   GARDEN.harvest=p=>{ '@later'; const g=(now()-p.t)/GR(p), [nm,d]=FL[p.k]; if(g<1){ const h=Math.ceil((1-g)*GR(p)); return say(`YOUR ${nm} IS ${g<.4?'STILL A SPROUT':'IN BUD'}. ABOUT ${h} HOUR${h===1?'':'S'} MORE.`,'#c8c2b0'); }
     const i=S.plots.indexOf(p); if(i>=0)S.plots.splice(i,1); SFX.play('step',{vol:.4}); MOTION.play('harvest');
-    const R=15*T, near=L=>L.some(q=>Math.hypot(q.x-p.x,q.z-p.z)<R), cs=CREATS.filter(N=>N.wild&&N.body.visible).map(N=>({k:N.kind,x:N.web?N.web.x:N.st.x,z:N.web?N.web.z:N.st.z})), W=window.WX&&WX.now;
-    const help=near(cs.filter(c=>c.k==='Frog'||c.k==='Spider'))||!!(window.BIRDS&&near(window.BIRDS.list)), harm=near(cs.filter(c=>c.k==='Rat'))||!!(W&&W.rain>.3&&CLOCK.dark()), pm=help&&!harm?1:harm&&!help?-1:0;
+    const R=15*T, near=L=>L.some(q=>Math.hypot(q.x-p.x,q.z-p.z)<R), cs=CREATS.filter(N=>N.wild&&N.body.visible).map(N=>({k:N.kind,x:N.web?N.web.x:N.st.x,z:N.web?N.web.z:N.st.z})), W=WX&&WX.now;
+    const help=near(cs.filter(c=>c.k==='Frog'||c.k==='Spider'))||!!(BIRDS&&near(BIRDS.list)), harm=near(cs.filter(c=>c.k==='Rat'))||!!(W&&W.rain>.3&&CLOCK.dark()), pm=help&&!harm?1:harm&&!help?-1:0;
     if(pm>0)say('FROGS, SPIDERS AND BIRDS NEARBY HAVE KEPT THE PESTS OFF.','#9fe07f'); else if(pm<0)say(W&&W.rain>.3?'SLUGS HAVE BEEN AT IT IN THE WET NIGHT.':'RATS HAVE BEEN NIBBLING AT IT.','#c8a090');
     if(use('garden',d-25,d+25)){ const n=Math.max(1,2+(sk('garden')>d+20?1:0)+pm), sd=Math.random()<.35; FORAGE.give('fl_'+p.k,n); S.log[p.k]=(S.log[p.k]||0)+n; if(sd)FORAGE.give('sd_'+p.k,1); say(`YOU CUT ${n} ${nm}S${sd?', AND SAVE A '+SEED[p.k][0].replace(/S$/,''):''}.`,'#b8f0a0'); }
     else { FORAGE.give('fl_'+p.k,1); say(`ONLY ONE ${nm} IS ANY GOOD.`,'#c8a090'); }

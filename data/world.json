@@ -650,7 +650,69 @@
    "face": "s",
    "row": 2,
    "name": "ANTIQUES & PAWN",
-   "pf": "antiques"
+   "pf": "antiques",
+   "merchant": "junkman"
+  },
+  {
+   "id": "fishing",
+   "kind": "front",
+   "x0": -36.5,
+   "x1": -12.5,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2,
+   "name": "FISHING & SCUBA",
+   "merchant": "fisherman_in_waders",
+   "pf": "outfitter"
+  },
+  {
+   "id": "armor",
+   "kind": "front",
+   "x0": -11.5,
+   "x1": 0.5,
+   "name": "THE ARMOURY",
+   "merchant": "samurai_warrior",
+   "lot": true,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2,
+   "pf": "florist"
+  },
+  {
+   "id": "skate",
+   "kind": "front",
+   "x0": 1.5,
+   "x1": 13.5,
+   "name": "THE SKATE SHOP",
+   "merchant": "skate_shop_owner",
+   "lot": true,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2,
+   "pf": "florist"
+  },
+  {
+   "id": "books",
+   "name": "THE BOOKSTORE",
+   "kind": "front",
+   "x0": 14.5,
+   "x1": 35.5,
+   "merchant": "professor",
+   "at": [
+    -2.4,
+    9.62
+   ],
+   "inW": 16,
+   "inD": 10,
+   "inH": 100,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2,
+   "pf": "books"
   },
   {
    "id": "aquarium",
@@ -675,7 +737,7 @@
    "y1": -95.9,
    "face": "s",
    "row": 2,
-   "name": "THE FISH MARKET",
+   "name": "THE FISH TABLES",
    "fence": "barbed"
   },
   {
@@ -690,76 +752,52 @@
    "name": "THE FLEA MARKET"
   },
   {
-   "id": "flea2",
-   "kind": "lot",
+   "id": "fishmarket",
+   "kind": "market",
    "x0": 116.37,
-   "x1": 146.99,
+   "x1": 252,
    "y0": -107.9,
    "y1": -95.9,
    "face": "s",
    "row": 2,
-   "name": "THE FLEA MARKET"
-  },
-  {
-   "id": "fishing",
-   "kind": "front",
-   "x0": 146.99,
-   "x1": 170.99,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2,
-   "name": "FISHING & SCUBA",
-   "merchant": "fisherman_in_waders",
-   "pf": "outfitter"
-  },
-  {
-   "id": "armor",
-   "kind": "front",
-   "x0": 182.49,
-   "x1": 194.49,
-   "name": "THE ARMOURY",
-   "merchant": "samurai_warrior",
-   "lot": true,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2,
-   "pf": "florist"
-  },
-  {
-   "id": "skate",
-   "kind": "front",
-   "x0": 206,
-   "x1": 218,
-   "name": "THE SKATE SHOP",
-   "merchant": "skate_shop_owner",
-   "lot": true,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2,
-   "pf": "florist"
-  },
-  {
-   "id": "books",
-   "name": "THE BOOKSTORE",
-   "kind": "front",
-   "x0": 229.5,
-   "x1": 250.5,
-   "merchant": "professor",
-   "at": [
-    -2.4,
-    9.62
+   "name": "THE FISH MARKET",
+   "note": "the Hudson row east of the way through (owner, 9 Nov 2026): the yard, the tin shed, the brick shed (x spans), the highway over the promenade (y span, deck height in metres, a bent every so many tiles); stalls: a wholesaler each (who: its record in characters.json)",
+   "yard": [
+    117,
+    147
    ],
-   "inW": 16,
-   "inD": 10,
-   "inH": 100,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2,
-   "pf": "books"
+   "tin": [
+    148.5,
+    200
+   ],
+   "brick": [
+    203.5,
+    250.5
+   ],
+   "highway": {
+    "y0": -128.6,
+    "y1": -111.4,
+    "h": 6.6,
+    "every": 11.3
+   },
+   "stalls": [
+    {
+     "who": "fm_bluewater",
+     "x": 160.5
+    },
+    {
+     "who": "fm_carmelo",
+     "x": 187.5
+    },
+    {
+     "who": "fm_oldslip",
+     "x": 215
+    },
+    {
+     "who": "fm_lightning",
+     "x": 240
+    }
+   ]
   },
   {
    "id": "bath",
@@ -4339,6 +4377,24 @@
    118,
    44,
    0
+  ],
+  "hanga_roa_fisherman": [
+   161.38,
+   -104.2,
+   0,
+   null
+  ],
+  "trucker": [
+   124.6,
+   -103,
+   0,
+   null
+  ],
+  "railway_carter": [
+   174,
+   -110.3,
+   9,
+   null
   ]
  },
  "editor": {

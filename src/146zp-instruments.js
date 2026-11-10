@@ -1,15 +1,16 @@
 // THE INSTRUMENTS YOU SIT AT (owner, 7 Nov 2026: "lets do piano and drums and harp ... play like the guitar"; "start me with every instrument and 100 skill in each"): INSTR, one way to own, set down, sit at and play the piano, the drum kit and the harp (146zpa-c fill in each): the instrument before you, your body seated with its arms, hands and every finger (or stick) on what it plays, its sound from the music engine's strings, heads and hammers, a song book by skill, the close-up, and everyone near seeing and hearing it.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, ONLINE, pos, st, UI, W3} from './003b-systems.js';
+import {FORAGE, INSTR, ONLINE, pos, st, UI, W3} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {SYS} from './006-map-pre.js';
 import {BODIES} from './111a-bodies.js';
 import {HANDS} from './111b-hands.js';
 import {BODEGA} from './146ze-bodega.js';
+import {SONGBK} from './146znz-songbook.js';
 import {GSND} from './146zo-guitar-sound.js';
 import {GHOLD} from './146zoa-guitar-hold.js';
 import {GUITAR} from './146zob-guitar.js';
-const INSTR={KINDS:{}}; window.INSTR=INSTR;
+ window.INSTR=INSTR;
 { const say=(t,c)=>SAY(t,c||'#e8e2cc'), now=()=>performance.now()/1000, V3=THREE.Vector3, M4=THREE.Matrix4, Q4=THREE.Quaternion;
   const esc=t=>String(t).replace(/[&<>"]/g,c=>'&#'+c.charCodeAt(0)+';');
   // a kind: {id, name, skill, model(), seat:{y,z}, lean, look, feet(P,t), hands(P,t,H), act(P,k,v), anim(P,H,t,dt), keys(e,down), panel(), click(b,down), draw(PN), book(), cam}
@@ -49,12 +50,13 @@ const INSTR={KINDS:{}}; window.INSTR=INSTR;
   INSTR.off=(P,e,t)=>{ if(!e||e.d<1e6)return; e.d=Math.max(.03,(t??now())-e.t); if(P.K.release)rel(P,P.K.release(e,P),GSND.now()+.005); };
   INSTR.raw=(P,evs)=>{ voice(P); rel(P,evs,GSND.now()+.01); };
   let freeN=0;
-  const learnt=(K,T)=>{ const n=1+Math.floor((T.secs||40)/30), l=T.lvl||10; for(let i=0;i<n;i++)FORAGE.use(K.skill,l-30,l+20); };
-  const songGo=(P,i)=>{ const T=P.K.BOOK[i]; if(!T)return; if(!T.c)P.K.compile(T); P.song=i; P.s0=now()+.6; P.cur=0; };
+  const songGo=(P,i,fail=0)=>{ const T=P.K.BOOK[i]; if(!T)return; if(!T.c)P.K.compile(T); P.song=i; P.s0=now()+.6; P.cur=0; P.fail=fail; };
   const songStop=P=>{ if(P.song<0)return; P.song=-1; if(P.V&&P.K.hush)rel(P,P.K.hush(P),GSND.now()+.01); };
   // a song's notes go to the voice a little ahead of the clock
-  const songTick=P=>{ if(P.song<0)return; const T=P.K.BOOK[P.song], c=T&&T.c; if(!c)return songStop(P); const t=time(P); if(t>c.len+1){ if(P===ME){ learnt(P.K,T); drawPanel(); } songStop(P); return; } const V=voice(P); if(!V)return;
-    while(P.cur<c.ev.length&&c.ev[P.cur].t<=t+.12){ const e=c.ev[P.cur++]; if(e.t<t-.05)continue; const when=GSND.now()+Math.max(0,e.t-t)+.02; emit(P,e,when);
+  const songTick=P=>{ if(P.song<0)return; const T=P.K.BOOK[P.song], c=T&&T.c; if(!c)return songStop(P); const t=time(P); if(P.fail&&t>P.fail){ songStop(P); if(P===ME){ tell('stop'); SONGBK.done(P.K.skill,T,false,P.fail/c.len); fillSongs(); drawPanel(); } return; }
+    if(t>c.len+1){ songStop(P); if(P===ME){ SONGBK.done(P.K.skill,T,true); fillSongs(); drawPanel(); } return; } const V=voice(P); if(!V)return;
+    while(P.cur<c.ev.length&&c.ev[P.cur].t<=t+.12){ let e=c.ev[P.cur++]; if(e.t<t-.05)continue; if(P.fail&&e.t>P.fail-SONGBK.LEAD){ const d=SONGBK.slip(); if(d===0)continue; if(d){ const R=P.K.slip; e={...e,n:Math.max(R[0],Math.min(R[1],e.n+d))}; } }
+      const when=GSND.now()+Math.max(0,e.t-t)+.02; emit(P,e,when);
       if(P.K.release&&e.d<60)rel(P,P.K.release(e,P),when+e.d); } };
 
   /* ---------- the body seated at it: lowered onto the seat, leaning in, the legs to the floor or the pedals, the arms to where the hands play, each finger on its key or string ---------- */
@@ -108,12 +110,12 @@ const INSTR={KINDS:{}}; window.INSTR=INSTR;
   INSTR.tell=tell;
   INSTR.start=id=>{ const K=INSTR.KINDS[id]; if(!K)return; if(on){ if(ME.K===K)return; INSTR.stop(); }
     if(st.water&&st.water.in||st.ride||st.climb||st.hang||st.sit)return say('NOT HERE: STAND SOMEWHERE STEADY AND OPEN TO SET IT DOWN.','#c8a090');
-    if(window.GUITAR&&GUITAR.on())GUITAR.stop(); GSND.wake(); on=true; ME.K=K; setTimeout(()=>smp(K),400); ME.song=-1; ME.live={ev:[]}; ME.st={}; ME.cur=0;
+    if(GUITAR&&GUITAR.on())GUITAR.stop(); GSND.wake(); on=true; ME.K=K; setTimeout(()=>smp(K),400); ME.song=-1; ME.live={ev:[]}; ME.st={}; ME.cur=0;
     prevView=UI.view; if(CU.on&&!UI.persp)UI.setView('third'); panel(true); tell('on'); K.loadBook&&K.loadBook();
     say('YOU SET DOWN '+K.name+' AND SIT AT IT. PICK A PIECE FROM THE BOOK · ` PLAYS IT · TAB THE CLOSE-UP · ESC TO PUT IT AWAY.'); };
   INSTR.stop=()=>{ if(!on)return; on=false; songStop(ME); if(ME.K&&ME.K.hush&&ME.V)rel(ME,ME.K.hush(ME),GSND.now()+.01); unhold(ME); panel(false); tell('off'); if(prevView&&prevView!==UI.view&&!/third/.test(prevView))UI.setView(prevView); prevView=''; };
   INSTR.play=(k,v)=>{ if(!on)return; const K=ME.K; if(k==='song'&&v===ME.song)k='stop';
-    if(k==='song'){ const T=K.BOOK[v]; if(!T||(T.lvl||1)>skill(K)+1e-6)return say(T?`${T.name.toUpperCase()} NEEDS ${K.skill.toUpperCase()} ${T.lvl}; YOURS IS ${skill(K).toFixed(1)}. PLAY EASIER PIECES TO GET BETTER.`:'THAT PIECE IS NOT IN THE BOOK.','#c8a090'); songGo(ME,v); tell('song',v); }
+    if(k==='song'){ const T=K.BOOK[v]; if(!T||!SONGBK.can(K.skill,K.BOOK,T))return say(T?`${T.name.toUpperCase()} IS NOT OPEN TO YOU YET (${K.skill.toUpperCase()} ${T.lvl}; YOURS IS ${skill(K).toFixed(1)}). LEARN THE PIECES YOU HAVE.`:'THAT PIECE IS NOT IN THE BOOK.','#c8a090'); if(!T.c)K.compile(T); const r=SONGBK.start(K.skill,T), f=r.ok?0:+(T.c.len*r.at).toFixed(1); songGo(ME,v,f); tell('song',v+(f?':'+f:'')); }
     else if(k==='stop'){ songStop(ME); tell('stop'); }
     drawPanel(); };
 
@@ -149,9 +151,9 @@ const INSTR={KINDS:{}}; window.INSTR=INSTR;
     for(const el of PN.querySelectorAll('select,input'))el.addEventListener('keydown',e=>e.stopPropagation());
     PN.querySelector('#invol').oninput=e=>GSND.setVol(+e.target.value);
     PN.hidden=false; fillSongs(); drawPanel(); };
-  INSTR.fillSongs=()=>fillSongs();
-  const fillSongs=()=>{ const el=PN&&PN.querySelector('#insong'); if(!el||!ME.K)return; const v=el.value, K=ME.K, k=skill(K), B=[[1,20,'EASY'],[21,50,'MEDIUM'],[51,80,'HARD'],[81,100,'MASTER']], S=K.BOOK.map((b,i)=>[i,b]);
-    el.innerHTML=B.map(([a,b,nm])=>{ const L=S.filter(([,T])=>T.lvl>=a&&T.lvl<=b).sort((x,y)=>x[1].lvl-y[1].lvl); return L.length?`<optgroup label="${nm} (${a}-${b})">`+L.map(([i,T])=>`<option value="${i}">${T.lvl>k?'× ':''}${esc(T.name.toUpperCase())}${T.by?' · '+esc(T.by.toUpperCase()):''} · ${T.lvl}</option>`).join('')+'</optgroup>':''; }).join('')||'<option>THE BOOK IS ON ITS WAY…</option>';
+  INSTR.fillSongs=()=>fillSongs(); FORAGE.MAXFN.push(()=>fillSongs());
+  const fillSongs=()=>{ const el=PN&&PN.querySelector('#insong'); if(!el||!ME.K)return; const v=el.value, K=ME.K;
+    el.innerHTML=SONGBK.options(K.skill,K.BOOK)||'<option>THE BOOK IS ON ITS WAY…</option>';
     if(v)el.value=v; };
   const drawPanel=()=>{ if(!PN||PN.hidden||!ME.K)return; const K=ME.K, T=ME.song>=0&&K.BOOK[ME.song];
     PN.querySelector('#insk').textContent=K.skill.toUpperCase()+' '+skill(K).toFixed(1);
@@ -173,7 +175,7 @@ const INSTR={KINDS:{}}; window.INSTR=INSTR;
   const them=(id,kid)=>{ const K=INSTR.KINDS[kid]; if(!K)return null; let P=THEM.get(id); if(P&&P.K!==K){ unhold(P); P=null; } if(!P){ P=mk(id,K); THEM.set(id,P); } return P; };
   ONLINE.hear.ins=m=>{ if(!m.id||!INSTR.KINDS[m.i])return; const P=them(m.id,m.i); if(!P)return; const k=m.k, v=String(m.v||'');
     if(k==='off'){ unhold(P); THEM.delete(m.id); return; } if(k==='on')return;
-    if(k==='song'&&+v>=0){ const K=P.K; (K.BOOK[+v]?Promise.resolve():K.loadBook?K.loadBook():Promise.resolve()).then(()=>{ if(K.BOOK[+v])songGo(P,+v); }); }
+    if(k==='song'&&parseInt(v)>=0){ const K=P.K, i=parseInt(v), f=+v.split(':')[1]||0; (K.BOOK[i]?Promise.resolve():K.loadBook?K.loadBook():Promise.resolve()).then(()=>{ if(K.BOOK[i])songGo(P,i,f); }); }
     else if(k==='stop')songStop(P);
     else if(k==='b'&&P.K.hear)for(const it of v.split(',').slice(0,12))if(it)P.K.hear(P,it[0],it.slice(1)); };
 
@@ -198,4 +200,3 @@ const INSTR={KINDS:{}}; window.INSTR=INSTR;
   INSTR.shelf=(id,mk,sc)=>{ if(!BODEGA.MAKE)return; BODEGA.MAKE[id]=()=>{ const g=new THREE.Group(), m=mk(); m.scale.setScalar(sc); g.add(m); return g; }; const row=BODEGA.LAYOUT.find(r=>r[0]==='wr1'&&r[1]===0); if(row)row[2].push(id); else BODEGA.LAYOUT.push(['wr1',0,[id]]); };
   // a song book loaded the first time someone near plays (data/<id>-songs.json): each piece its notes compiled by the kind
   INSTR.lazyBook=(K,load)=>{ let p=null; K.loadBook=()=>p||(p=load().then(J=>{ for(const g of J.songs)K.BOOK.push(g); fillSongs(); }).catch(e=>{ p=null; console.warn(K.id+' songs',e); })); }; }
-export {INSTR};

@@ -1,13 +1,12 @@
 // THE DRUM KIT (owner, 7 Nov 2026: "lets do piano and drums and harp"): a five-piece kit with hi-hat, crash and ride, set down and sat at (INSTR, 146zp): a stick in each fist (the hand for each hit chosen as a drummer would, alternating when fast), the kick and the hi-hat under the feet, the cymbals swinging on their stands when struck; its sound the music engine's drum heads and cymbals (120); the book is grooves of every kind at every speed (made here, not downloaded).
 import {THREE} from './003-shx.js';
-import {IMK} from './003b-systems.js';
+import {IMK, INSTR} from './003b-systems.js';
 import {imAct} from './120-game-music-2-instruments.js';
-import {INSTR} from './146zp-instruments.js';
 { const {box,cyl,mat,sm,FIST}=INSTR, V3=THREE.Vector3;
   // where each piece is (metres, the drummer at the origin facing +z, +x their left): its centre, radius, depth, tilt toward the drummer; the music engine's order (IMK['drum kit'].parts)
   const PART=[{n:'KICK',c:[-.04,.27,.72],r:.26,d:.36,kick:1},{n:'SNARE',c:[.16,.6,.36],r:.17,d:.13,tilt:.12},{n:'TOM 1',c:[.15,.8,.56],r:.13,d:.2,tilt:.4},{n:'TOM 2',c:[-.17,.8,.56],r:.14,d:.21,tilt:.4},
     {n:'FLOOR TOM',c:[-.43,.55,.38],r:.18,d:.36,tilt:.05},{n:'HI-HAT',c:[.42,.78,.36],r:.18,cym:1,tilt:.08},{n:'CRASH',c:[.38,1.08,.66],r:.22,cym:1,tilt:.28},{n:'RIDE',c:[-.52,.98,.58],r:.26,cym:1,tilt:.18}];
-  const K={id:'drums',name:'A DRUM KIT',skill:'drums',seat:{y:.48,z:0},lean:.1,look:.45,BOOK:[],cam:{p:[.85,1.65,1.45],t:[0,.7,.35]},
+  const K={id:'drums',name:'A DRUM KIT',skill:'drums',seat:{y:.48,z:0},lean:.1,look:.45,BOOK:[],slip:[1,7],cam:{p:[.85,1.65,1.45],t:[0,.7,.35]},
     help:'SPACE KICK · S SNARE · A HI-HAT, Q OPEN, Z ITS PEDAL · D F G THE TOMS · W CRASH · E RIDE, R ITS BELL · SHIFT ACCENT · ` A SONG'};
   K.dsp=()=>Object.assign({},IMK['drum kit'].dsp,{poly:40});
   // a hit's sound: a head struck nearer its middle or edge, a cymbal on its bow or bell, the hi-hat open when the left foot is up

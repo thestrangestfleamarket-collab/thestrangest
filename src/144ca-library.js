@@ -27,7 +27,7 @@ const LIB={data:null,max:5,inside:[]}; window.LIB=LIB;   // inside: what else fu
   const names=()=>{ if(!LIB.data)return; FORAGE.add({names:Object.fromEntries(LIB.data.books.flatMap(b=>[['lb_'+b.id,'LIBRARY BOOK: '+b.t],['hb_'+b.id,'YOUR BOOK: '+b.t]]))}); };
   FORAGE.ROWB.push(id=>/^[lh]b_/.test(id)?[['READ','lread']]:[]);
   FORAGE.ACT.lread=id=>LIB.read(id.slice(3));
-  if(window.INSPECT&&INSPECT.kinds)INSPECT.kinds.push({is:id=>/^[lh]b_/.test(id),make:id=>{ const b=LIB.by&&LIB.by[id.slice(3)]; const c=b&&b.col?parseInt(b.col.slice(1),16):0x6a3a2a; return INSPECT.shape('book',c,0xf2ead6); }});
+  if(INSPECT&&INSPECT.kinds)INSPECT.kinds.push({is:id=>/^[lh]b_/.test(id),make:id=>{ const b=LIB.by&&LIB.by[id.slice(3)]; const c=b&&b.col?parseInt(b.col.slice(1),16):0x6a3a2a; return INSPECT.shape('book',c,0xf2ead6); }});
   if(S.b.length||S.h.length)load().catch(()=>{});
   const borrowed=id=>S.b.includes(id);
   // a borrowed book no longer on the shelves goes back by itself

@@ -16,6 +16,6 @@ import {ROOMK} from './150a-bedroom.js';
   FIXIT.dial=pc=>{ '@later'; const A=ROOMK.api, U=A?A.units():[], has=n=>U.some(u=>u.kind==='fx:'+n&&!u.gone);
     if(pc&&!has('modem'))return SAY('NO DIAL TONE. THE COMPUTER NEEDS A MODEM BESIDE IT.','#c8a090');
     if(!pc&&!has('pc_home'))return SAY('THE MODEM SQUEALS AT NOTHING. IT NEEDS A COMPUTER.','#c8a090');
-    FIXIT.dialed=true; SAY('EEEE-KSSHHH-BWONG. CONNECTED TO THE MARKET BOARD.','#9fe0a0'); if(window.DRONE&&DRONE.open)DRONE.open(); };
+    FIXIT.dialed=true; SAY('EEEE-KSSHHH-BWONG. CONNECTED TO THE MARKET BOARD.','#9fe0a0'); if(DRONE&&DRONE.open)DRONE.open(); };
 
 }

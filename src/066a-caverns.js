@@ -45,7 +45,7 @@ const CAVERNS={hooks:[]}; window.CAVERNS=CAVERNS; MODS.waters=MODS.waters||[];  
       const UF=new THREE.Fog(C.murk,0,7*T), bg0=new THREE.Color(); UF.uw=true; let fog0=null, uw=false;
       MODS.waters.push({feed,pre:(scene,cam)=>{ uw=!!M&&SHARED.LVL==='down'&&inside(pos.x,pos.z)&&!dry(pos.x,pos.z)&&!!(scene.background&&scene.background.isColor)&&!((K=>K&&cam&&cam.position.y>dy+Y(K.lv))(inP(pos.x,pos.z))); if(!uw)return; UF.far=(EQUIP.sight?C.clear:C.see)*T; fog0=scene.fog; bg0.copy(scene.background); scene.fog=UF; scene.background.copy(UF.color); },
         post:scene=>{ if(!uw)return; scene.fog=fog0; scene.background.copy(bg0); uw=false; }}); }
-    SYS.add('places',()=>{ if(!window.__started||busy||FADE.busy)return; if(SHARED.LVL==='down'&&inside(pos.x,pos.z)&&!M)go(1); },'066a-caverns '+C.id);   // a saved spot down here builds it at the start
+    SYS.add('places',()=>{ if(!SYS.started||busy||FADE.busy)return; if(SHARED.LVL==='down'&&inside(pos.x,pos.z)&&!M)go(1); },'066a-caverns '+C.id);   // a saved spot down here builds it at the start
     const K=C.id.toUpperCase(); window[K]={go,get built(){ return !!M; }}; window[K+'DBG']=()=>({built:!!M,lv:SHARED.LVL,inside:inside(pos.x,pos.z),objs:M?M.objs.length:0,swim:!!(st.water&&st.water.in),things:M?M.things.map(t=>t.name):[]});
     if(C.enter)C.enter(api); STORE.places.push([C.name,0,0,'down','see',null,()=>(C.outs.river||Object.values(C.outs)[0])()]);   // GO TO: up at its way in from the river
     return api; };

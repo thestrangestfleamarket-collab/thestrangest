@@ -11,7 +11,7 @@ import {GEMS} from './101-gems.js';
 import {FISHING} from './142-fishing.js';
 const HUDSON={}; window.HUDSON=HUDSON;
 { const T=TILE, MW=T/.84, say=(t,c)=>SAY(t,c||'#9fd8ff'), KEY='hudson', cl=(v,a,b)=>v<a?a:v>b?b:v, L=c=>new THREE.MeshLambertMaterial({color:c});
-  const day=()=>window.MAIL&&MAIL.ready?MAIL.day():window.CITY?CITY.day||0:0, done=k=>{ INV.picked[k]=day(); INV.save(); };
+  const day=()=>window.MAIL&&MAIL.ready?MAIL.day():CITY?CITY.day||0:0, done=k=>{ INV.picked[k]=day(); INV.save(); };
   const S={v:1,book:0,read:0,tries:0,dug:0,digs:0,best:0,medal:0,spook:-1,bell:0,safe:{d:-1,n:0}};
   try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1&&!(QS.get('fresh')&&QS.get('keepinv')!=='1'))Object.assign(S,D); }catch(e){} const save=()=>OWNED.set(KEY,JSON.stringify(S)); HUDSON.S=S;
   const str=()=>FORAGE.ST.str*(FORAGE.S.fx&&FORAGE.S.fx.str?1.5:1), int=()=>FORAGE.ST.int;

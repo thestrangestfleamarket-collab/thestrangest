@@ -2,7 +2,7 @@
 import {THREE} from './003-shx.js';
 import {ROOMS, USE} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {SYS} from './006-map-pre.js';
+import {MODS, SYS} from './006-map-pre.js';
 const MERGE={builds:0}; window.MERGE=MERGE; const SG=new Map();
 { const V=new THREE.Vector3(), N3=new THREE.Matrix3(), M=new THREE.Matrix4(), GI=new THREE.Matrix4(), C=new THREE.Color(), DONE=new Map();
   const MOVE=new Set(['lamp','fridge','vend','radio']);
@@ -38,7 +38,7 @@ const MERGE={builds:0}; window.MERGE=MERGE; const SG=new Map();
     const made=[]; for(const [,B] of by){ if(B.length<2)continue; const m0=B[0].material, mat=m0.clone(); mat.vertexColors=true; if(mat.color)mat.color.set(1,1,1); mat.userData={};
       const me=new THREE.Mesh(merge(B,G),mat); me.castShadow=B[0].castShadow; me.receiveShadow=B[0].receiveShadow; me.name='merged'; me.userData.merged=B.length; G.add(me); made.push(me); for(const o of B)o.visible=false; }
     DONE.set(P,{sig:sigOf(L),made,hid:L.filter(o=>!o.visible),at:new Map(L.map(o=>{ const e=o.matrixWorld.elements; return [o,[e[12],e[13],e[14],e[0],e[8]]]; }))}); };
-  let t=0; SYS.add('rooms',()=>{ const now=performance.now(); if(now-t<1000)return; t=now; const ed=window.ROOMED&&ROOMED.on;
+  let t=0; SYS.add('rooms',()=>{ const now=performance.now(); if(now-t<1000)return; t=now; const ed=MODS.roomed&&MODS.roomed.on;
     for(const g of scene.children)if(g.userData.mergeStatic&&!SG.has(g))SG.set(g,{group:g,things:[]});   // (still groups a builder marks: the view out of your windows)
     for(const [g,P] of SG)if(!g.parent){ ROOMS.unmerge(P); SG.delete(g); }
     for(const P of [...(ROOMS.built||[]),...SG.values()]){ if(ed){ ROOMS.unmerge(P); continue; } let shown=true; for(let q=P.group;q;q=q.parent)if(!q.visible){ shown=false; break; } if(shown)mergeRoom(P); } },'161c-merge');

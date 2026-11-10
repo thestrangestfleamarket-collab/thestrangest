@@ -1,9 +1,8 @@
 // THE SECTIONS: B to H round the park (grab('sections')), built only when loaded (today only yours is: their builder waits in the later chunk), each A's size and basic for now: the ring street, a row of plain painted buildings on its outer side, the water past them, the park's grass and trees inside, lamps, each station's entrance and a sign where one section meets the next.
 import {SHARED, THREE} from './003-shx.js';
-import {DRESS, TEXT} from './003b-systems.js';
+import {BATCH, DRESS, TEXT} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {BLDK, FIX, grab, LOTX, LOTY, MAPG, MODS, SECTION, SECTIONS, SOL, TILE, ZU} from './006-map-pre.js';
-import {BATCH} from './008-batch.js';
 import {LOOP} from './009b-loop.js';
 import {slabCol} from './014-gamekit.js';
 import {BLOCKS} from './038zb-blocks.js';

@@ -30,7 +30,7 @@ Risk is noted only when it isn't low.
 
 **To try on the live site** (one sitting; each line is in its area below):
 everything merged since 7 Nov that "waits for his look and yes" (the new layout and fronts, the bar, the gym, the pets and pet shops, the
-farm, the guitar and instruments, the traffic, the skate pit, the telescope and microscope, the far view) · the merges without a green
+fish market (9 Nov), the farm, the guitar and instruments, the traffic, the skate pit, the telescope and microscope, the far view) · the merges without a green
 check (below) · phones and tablets · the moves · the cars, their insides and the radio · the menus, the start spot, the map and GO TO ·
 the HUD margin on his screen · the bath house on the island and a ghost's revival · the fluffy grass · the castle at night ·
 VR on the Quest 3 (and the painter in it), last.
@@ -45,6 +45,7 @@ headset · NPC voices (lifts the 19 Oct "no sound" rule).
 ## CI, checks and tools
 
 CI runs only on pull requests and by hand (the workflow has no push trigger), so `main` itself is checked only when someone starts it.
+- [ ] **`tools/row-lay.cjs` is stale** · P2 · S · code. Its place list is the 8 Nov layout; running it writes that over `data/world.json` (found 9 Nov). Bring it up to date or remove it.
 - [x] **Tests failing on `main`** · P2 · S · check. Done 9 Nov: the loop's station A followed the subway's move (trains stop at the platform
   again: `loop.cjs`, `riders.cjs`); `skills.cjs` checks only what isn't archived.
 - [x] **Core fails on `main`: the overhead view** · done 9 Nov: the check now follows the 8 Nov rule (some part of you, feet to head,
@@ -115,6 +116,8 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 
 ## Places and insides
 
+- [ ] **The fish market** · P2 · M · look. Owner, 9 Nov 2026: waits for his look and yes. Not yet: the workers keep no hours (the jobs system is archived), the editor's ground picture (`tools/topmap.cjs`) not re-made, the minimap does not draw the sheds.
+- [ ] **The fish market's sheds** · P3 · S · pick. The two sheds stand on the row, not on the water side as the real ones did (the quay stays open for fishing); say if they should cross the street.
 - [ ] **The telescope** · P3 · S · code. The firsts board on no wall; satellite passes follow the game hour, not the real one; GO TO
   Betelgeuse failed once; the aurora in the street's own sky.
 - [ ] **The shop insides: walk in and out** · P2 · S (check) · find. Owner, 3 Nov: "you get sent to a middle area where you cant walk in
@@ -140,6 +143,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [ ] **The bots' goals** · pick. Options given to the owner (9 Nov).
 - [ ] **The instruments, the rest** · P3 · S · code. The bar's piano and kit playable in place; a bandstand for the park guitar.
 - [ ] **Companion drone NPC**: mockup done, waiting on "go" · pick.
+- [x] **Your AI double** (owner, 9 Nov 2026; done 9 Nov) · P2 · M · code. `src/162gb-twin.js`, `worker/twin.js`, `tests/twin.cjs`. Needs the `ANTHROPIC_API_KEY` secret on the worker.
 - [ ] **Flight with the cape** · P2 · M · look + code. Its moves check times out, the cape isn't cloth, clouds hide you; DRIFTCAP lasts 5 min.
 - [ ] **Not seen** · look. The floating-eyes fix side on, the paper doll live, clothing layers at night under lamps (#654), the delivery
   drone with two real players.
@@ -166,7 +170,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [ ] **The car radio unconfirmed** (cars parked past the map edge) · look.
 
 ## Physics and vehicles
-- [ ] **Vehicle editor follow-ups** · P3 · M · pick + code. A car's size changes its look and where it stands, not how it drives (the driving body keeps its size); the traffic's Polyfork models are one painted piece (their colours change, parts only as a whole: re-bake with parts in `tools/traffic-bake.py`); the horse is a pet's body, not in the editor; the train shows once you have been down to a platform.
+- [ ] **Vehicle editor follow-ups** · P3 · S · look. Done 10 Nov: a resized car or kart drives at its size, the traffic's models have their parts, the horse is in (colours and size). Left: the train shows once you have been down to a platform; the horse's preview shows your own coat only.
 
 - [ ] **Jets follow-ups** · P3 · S · pick. Fires and ice are worked out on each player's page (where a stream lands matches, how a fire
   spreads may not); characters burn and freeze but do not run from the fire.
@@ -174,14 +178,12 @@ steps go in one window, after the checks run on `main`, and end with the owner t
   ask whether the physics one stays), an upright trash can taking small things, hanging plants and lanterns swaying, glass breaking.
   Add cases to `tests/physx.cjs`.
 - [ ] **STAND ON THINGS only rose halfway in the test** · P3 · S-M · check. 0.10 of a 0.20 block; the test's bar was lowered to pass.
-- [ ] **The go-kart** · P3 · M · code + pick. Gets in where you stand, not where you set it down; held, it shows as a little kart in your
-  hands; a wall at speed just stops it (owner: should it throw you out?). Run `tests/cars.cjs`.
+- [x] **The go-kart** · set down in front of you and got in there; a wall at speed throws you out (owner, 10 Nov 2026: "Throw you out"). Left: held, it shows as a little kart in your hands (owner: keep or change?); the Boardwright's wall is archived (the Skate Shop's shelves show it).
 - [ ] **The cars, in game, for the owner** · P2 · S · look. The insides, the cars 40% bigger next to the buildings, the radio by ear
   (loudness, the muffle outside, the four stations, starting at the shared moment).
 - [ ] **Physics is only on your own screen** · P4 · XL · pick + code · risk high. Other players don't see karts, flying loose things or
   broken glass; broken and binned things come back on reload. The shared ground (`drop:<key>` records) is the pattern.
-- [ ] **Walls and ground are still boxes to the physics** · P4 · L / XL · code · risk high. A kerb as a box is why cars get shoved onto
-  the pavement; Rapier's deterministic build waits for shared physics.
+- [ ] **Walls and ground are still boxes to the physics** · P4 · L / XL · code · risk high. The kerb is done (a slope, owner 10 Nov 2026: "Just the kerb"; corners' arcs still boxes); the rest stays boxes; Rapier's deterministic build waits for shared physics.
 
 ## Trees and grass
 
@@ -205,7 +207,7 @@ One tree pass (more leaves mean more shadow triangles).
 - [ ] **More animals rest** · P3 · M · code. Done: dog, fox, wolf, horse, wild horse, mule; the others on the fox's rig (`tools/m2m-bake.cjs`).
 - [ ] **Standing up from a seat** · P3 · M · code · risk med. `stand()` in `src/100-use.js` puts you off the seat at once: play the
   stand-up first, then move you off, without blocking movement.
-- [ ] **Fishing from the rowboat has no body move** · P3 · M · code. The rod and arm are hidden while seated (`src/146a-wield.js`).
+- [x] **Fishing from the rowboat has no body move** · done 10 Nov: sat in the boat the rod is held and swung to cast and reel (a seat with `hold`).
 - [ ] **Birds glide** (after the beta) · P4 · M-L · pick + code. Mesh2Motion's `bird` rig onto the crows and owls.
 - [ ] **The dragons' unused clips** (after the beta) · P4 · S-M · pick. Land, Roar, Walk (Glide stays unused: always flapping).
 - [ ] **Bow draw and shoot** (after the beta) · P4 · M / L · pick. No bow in the game: the owner decides on one first.

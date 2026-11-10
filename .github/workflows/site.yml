@@ -132,10 +132,12 @@ jobs:
           k skate   'src/146i|src/111fd|src/001-rig|src/069a-block|data/skate|data/world\.json|skate\.cjs|skatepit\.cjs'
           k mmo     'src/111d-online|src/111da-motion|src/146h-brawl|src/146i|worker/door|mmo\.cjs|workflows/site'
           k kit     'src/141-forage|src/111fd|src/146i-ride|src/003b|data/items|kit\.cjs|src/136c-tenants'
+          k browser 'src/162ac-mouselook|src/162ad-awake|src/091-sfx|src/094-ui|browser\.cjs'
           k guitar  'src/111b-hands|src/106-game-play-3-guitar|src/108-game-play-3-guitar|src/146zo|src/111a-bodies|src/111c-avatar|data/pfhand|data/pfguitar|worker/door|guitar\.cjs'
           k firstday 'src/162g-firstday|src/102-looks|src/141-forage|src/101-gems|worker/door\.js|firstday\.cjs'
           k avatar  'src/111c-avatar|src/111a-bodies|src/102-looks|src/001-rig|src/111da-motion|data/pfavatar|data/pfanim|avatar\.cjs|avatarmoves\.cjs|pfclips\.cjs'
           k wild    'src/087-npc-creatures|src/144[f-h]|src/076-npc-map|wild\.cjs'
+          k brochures 'src/159k-brochures|data/brochures|brochures\.cjs'
           k places  'build\.py|tools/(chunks|later|yields|minify|imports)|worker/|src/(000|002|end)|\.html$|package|wrangler|places\.cjs|workflows/site'
           D=$(git diff -U0 "origin/$BASE"...HEAD -- 'src/*.js' 2>/dev/null | grep -E '^[-+][^-+]' || true)
           if grep -qE "'@[a-z]|LOAD(ED)?\(" <<<"$D"; then case "$R" in *' places'*) ;; *) R="$R places";; esac; fi
@@ -432,6 +434,10 @@ jobs:
         timeout-minutes: 10
         if: contains(steps.f.outputs.run, ' kit')
         run: node tests/fullkit.cjs dist/market.html
+      - name: The browser's extras (the mouse look in first person, a sound's place in 3D, the screen kept awake)
+        timeout-minutes: 10
+        if: contains(steps.f.outputs.run, ' browser')
+        run: node tests/browser.cjs dist/market.html
       - name: The guitar and the hands (jointed hands worn, the bodega sells it, chords land, a song plays, the strings' pitches, another player's guitar, the park's)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' guitar')
@@ -464,6 +470,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' wild')
         run: node tests/wild.cjs
+      - name: The brochures (the racks, buying, reading, GO THERE, the full set)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' brochures')
+        run: node tests/brochures.cjs
       - name: Check the site opens (door, then THE MARKET)
         timeout-minutes: 15
         run: node tests/site.cjs

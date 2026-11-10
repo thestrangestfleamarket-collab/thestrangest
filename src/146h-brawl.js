@@ -11,11 +11,11 @@ import {collide} from './075-main-13.js';
   const PARTS=[['headBase','headTop',6.5,'head'],['pelvis','chest',6.2,'body'],['chest','neck',6,'body'],['shoulderL','elbowL',2.6,'arm'],['elbowL','wristL',2.3,'arm'],['shoulderR','elbowR',2.6,'arm'],['elbowR','wristR',2.3,'arm'],
     ['hipL','kneeL',3.6,'leg'],['kneeL','ankleL',3,'leg'],['hipR','kneeR',3.6,'leg'],['kneeR','ankleR',3,'leg'],['ankleL','toeL',2.4,'leg'],['ankleR','toeR',2.4,'leg']];
   const LIMBS={fist:[['wristL',3.2],['wristR',3.2]],foot:[['ballL',3],['ballR',3],['ankleL',3],['ankleR',3]]};
-  const sh=()=>W3.SZ/PPU, sv=k=>ZU*W3.SZ*(k??(W3.BH||1));
-  const toW=(j,p,k,out)=>{ const lx=j.x*sh(), lz=j.z*sh(), c=Math.cos(p.hd), s=Math.sin(p.hd); return out.set(p.x+lx*c+lz*s,p.y+j.y*sv(k),p.z-lx*s+lz*c); };
+  const sh=(m=W3.SZ)=>m/PPU, sv=(k,m=W3.SZ)=>ZU*m*(k??(W3.BH||1));
+  const toW=(j,p,k,out,m)=>{ const lx=j.x*sh(m), lz=j.z*sh(m), c=Math.cos(p.hd), s=Math.sin(p.hd); return out.set(p.x+lx*c+lz*s,p.y+j.y*sv(k,m),p.z-lx*s+lz*c); };
   const segD=(p,a,b)=>{ E.subVectors(b,a); const l2=E.lengthSq(); let t=l2?Q.subVectors(p,a).dot(E)/l2:0; t=Math.max(0,Math.min(1,t)); return Q.copy(a).addScaledVector(E,t).distanceTo(p); };
-  const touch=(o,c,r)=>{ const J=o.B&&o.B.J, k=o.fig&&o.fig.body?1:undefined; if(!J)return null;
-    for(const [a,b,rr,part] of PARTS){ if(!J[a]||!J[b])continue; toW(J[a],o.p,k,A); toW(J[b],o.p,k,B); if(segD(c,A,B)<r+rr*sh())return part; } return null; };
+  const touch=(o,c,r)=>{ const J=o.B&&o.B.J, k=o.fig&&o.fig.body?1:undefined, m=W3.BASE*(o.x&&+o.x.sz||1); if(!J)return null;
+    for(const [a,b,rr,part] of PARTS){ if(!J[a]||!J[b])continue; toW(J[a],o.p,k,A,m); toW(J[b],o.p,k,B,m); if(segD(c,A,B)<r+rr*sh(m))return part; } return null; };
 
   /* ---------- your blows: each strike STRIKES gives is live for a moment; whichever of your fists, feet or blade touches a body part lands once on that player ---------- */
   let live=[];

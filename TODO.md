@@ -40,7 +40,7 @@ whole-map layouts A–F · the broken set piece · the companion drone · the ec
 tree crowns (A–F) and trees by distance · the castle's torches · the jets follow-ups · the avatar follow-ups · the `Home` split (which
 objects, the live migration).
 After the beta: photos in trade · the bow · birds, dragons' clips and more human clips · VR hand-walking, hand models, filters in the
-headset · NPC voices (lifts the 19 Oct "no sound" rule).
+headset · NPC voices.
 
 ## CI, checks and tools
 
@@ -69,6 +69,8 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
 - [ ] **The Hudson row** · P2 · L · pick + code. Its buildings, corner grass, sparse trees, townsfolk routes; a second fishing shop west
   of the west flea lot (owner asked for both sides; only Fishing & Scuba stands); stall keepers; the lost shrubs and small trees.
 - [ ] **The apartment house** · P2 · L · code. The lobbies and the other floors (only your own flat is built).
+- [ ] **West St out of our section** · P1 · L · code · risk high. Owner, 10 Nov: "No roads in park at all". Its road, kerbs, traffic turn and wall become park; the forcefield, the walkers' grid, the cars' routes and the Tower's corner follow.
+- [ ] **The eight sections on the new ring** · P1 · XL · code · risk high. Owner, 10 Nov ("Yes go" of the lettered mockup): A mid-Hudson side with C and E, B and G on the ends, D F H along the back. `sections.grid`/`ring`, the Loop's tracks and stations (end stations need a west/east side), the subway map, section B's skate park and pit.
 - [ ] **Whole-map layouts A–F** · pick. Mocked up (A Ring + F Stack recommended), waiting on the owner.
 - [ ] **One set piece broken after the lanyard/shop removals**: bring its two items back, or archive it too? · pick.
 - [ ] **Large trees from Market St**: fix 1 merged 9 Nov (from #778); fixes 2 onward not seen · look.
@@ -228,9 +230,23 @@ One tree pass (more leaves mean more shadow triangles).
 ## Menus, map, HUD and phones
 
 - [ ] **Try live** · P2 · S · look. The menus, where you start, the map and GO TO.
+- [ ] **The brochures** · P2 · S · look. Twelve, each in its own style, from three street racks (10 Nov): the styles, the photographs, where the racks stand, $2 and the $50 full set. Re-shoot a brochure's photographs and fix its words when its activity changes (`tools/brochure-shots.cjs`).
 - [ ] **The HUD's 24px margin on the owner's own screen** · P3 · S · look. His pick A (4 Nov); checked locally only.
 - [ ] **Phones** · P2 · L · look + code. Login on a phone never tried (the door lets them in since 9 Nov); the touch pad; menus fitted to
   phone screens, home-screen install, lighter graphics.
+- [ ] **Notifications** · P4 · M · pick. Owner, 9 Nov (batch 2). The service worker is in; needs his picks (what notifies: a letter, the night
+  market; where the player says yes) and a push key set as a secret on the worker.
+- [ ] **The browser's extras** · P3 · S · look. The mouse look in first person, 3D sound, the app's icon and home-screen install, the
+  lock-screen radio (9 Nov): wait for his look and yes.
+
+## Sound
+
+Owner, 9 Nov 2026: "real sounds". Each batch is named by the owner first.
+- [ ] **P2 M pick** Real recordings in place of the code-made effects, a batch at a time (footsteps and doors done, 10 Nov): cars, the fair's rides, fights, weather, the day and night ambience.
+- [ ] **P3 S look** Listen to the footsteps and doors live: the takes were picked by measurement, not by ear.
+- [ ] **P3 M code** Footsteps know only stone, grass and wood: the park's paths, sand, water's edge, metal stairs and carpet still sound as those three.
+- [ ] **P2 M code** Other players heard: their footsteps, hits and doors from where they stand, fading with distance.
+- [ ] **P3 S pick** The bodega's counter radio still plays its code-made tune: give it the market's stations like the apartments'?
 
 ## VR
 
@@ -256,4 +272,4 @@ Last (owner, 7 Nov 2026: "we will do VR checks last"): every check and look line
   already said is reused when it fits, a new one only when nothing fits, up to 100 lines.
 - Today: the line pools (`src/092-lines.js`) and the scripted talk window (`src/159da-talk.js`). No AI or voice code yet.
 - Needs: an ElevenLabs account, key and voices; the worker holds the keys and makes the calls; storage for lines, audio and log; a
-  budget; the 19 Oct "no sound" rule lifted for voices.
+  budget.

@@ -6,7 +6,7 @@ import {QS, RING, TILE} from './006-map-pre.js';
 import {WATER} from './009-down.js';
 import {HEMI} from './064-map-post.js';
 import {CREATS} from './087-npc-creatures.js';
-Object.assign(CLOCK,{h:17.4,sunH:null,run:false,speed:1,shadeH:16,sunV:new THREE.Vector3(0,1,0),moonV:new THREE.Vector3(0,1,0),
+Object.assign(CLOCK,{movers:[],h:17.4,sunH:null,run:false,speed:1,shadeH:16,sunV:new THREE.Vector3(0,1,0),moonV:new THREE.Vector3(0,1,0),
   // the calendar: the day (the same for everyone), its season (north; ?season= or the owner's SEASON pick in ATMOSPHERE to preview one) and the moon's phase on an 8-day cycle (0 new, .5 full)
   day:()=>Math.floor(Date.now()/86400000),seasonOf:day=>{ const m=new Date(day*86400000).getUTCMonth(); return m<2||m===11?'winter':m<5?'spring':m<8?'summer':'autumn'; },
   SEASONS:{spring:{tint:0x9fd08a,mix:0,desat:0,amb:0,snow:0,temp:14},summer:{tint:0xd9b35a,mix:.1,desat:.02,amb:.03,snow:0,temp:26},autumn:{tint:0xc8763a,mix:.26,desat:.08,amb:.05,snow:0,temp:12},winter:{tint:0xcfe0f0,mix:.24,desat:.5,amb:.08,snow:.6,temp:1}},
@@ -61,13 +61,13 @@ Object.assign(CLOCK,{h:17.4,sunH:null,run:false,speed:1,shadeH:16,sunV:new THREE
   CLOCK.set=h=>{ CLOCK.h=((h%24)+24)%24; };
   CLOCK.dark=()=>elev(CLOCK.h)<-2;
   const DYN=()=>{ const out=new Set(); if(W3&&W3.group)out.add(W3.group); for(const N of NPCS)if(N.g)out.add(N.g); for(const x of NPCS.extra||[])if(x&&x.g)out.add(x.g);
-    if(CREATS)for(const N of CREATS)if(N.g)out.add(N.g); for(const k of ['BOAT','DRONE'])if(window[k]&&window[k].g)out.add(window[k].g); for(const o of ONLINE.others?.values()||[])if(o.fig&&o.fig.g)out.add(o.fig.g); return out; };
+    if(CREATS)for(const N of CREATS)if(N.g)out.add(N.g); for(const k of ['BOAT','DRONE'])if(window[k]&&window[k].g)out.add(window[k].g); for(const o of ONLINE.others?.values()||[])if(o.fig&&o.fig.g)out.add(o.fig.g); for(const f of CLOCK.movers)for(const o of f())if(o)out.add(o); return out; };
   { const SM=renderer.shadowMap, orig=SM.render;
     SM.render=(lights,sc,camera)=>{ if(sc!==scene)return orig.call(SM,lights,sc,camera); const rest=lights.filter(L=>L!==sunL&&L!==sunD&&L!==sunF); if(!CLOCK.main){ SM.needsUpdate=true; return orig.call(SM,rest,sc,camera); } const m0=camera.layers.mask, dk=!!(ROOMS&&ROOMS.dark&&ROOMS.dark()); camera.layers.enable(3);
       const st=dk?[]:[sunL,sunF].filter(L=>lights.includes(L)&&L.shadow.needsUpdate);
       if(st.length){ const t0=performance.now(), hid=[]; for(const o of DYN())if(o.visible){ o.visible=false; hid.push(o); } SM.needsUpdate=true; orig.call(SM,st,sc,camera); for(const o of hid)o.visible=true; const ms=+(performance.now()-t0).toFixed(1); if(st.includes(sunL))SC.n++; if(st.includes(sunF))SC.nf++;
         if(window.SUNLOG){ let c=0; sc.traverseVisible(o=>{ if(o.isMesh&&o.castShadow)c++; }); SUNLOG.push([+(performance.now()/1000).toFixed(2),c,ms,st.map(L=>L===sunL?'n':'f').join('')]); } }
-      if(!dk&&lights.includes(sunD)&&sunD.shadow.needsUpdate){ const ch=SC.root.children; ch.length=0; for(const o of DYN())if(o.visible&&o.parent)ch.push(o); SM.needsUpdate=true; orig.call(SM,[sunD],SC.root,camera); SC.nd++; }
+      if(!dk&&lights.includes(sunD)&&sunD.shadow.needsUpdate){ const ch=SC.root.children; ch.length=0; for(const o of DYN())if(o.visible&&o.parent)ch.push(o); SC.root.traverse=f=>sc.traverse(f); SM.needsUpdate=true; orig.call(SM,[sunD],SC.root,camera); SC.nd++; }
       SM.needsUpdate=true; orig.call(SM,rest,sc,camera); camera.layers.mask=m0; }; }
   window.SUNDBG=()=>({still:SC.n,moving:SC.nd,far:SC.nf,box:SC.fb&&SC.fb.map(v=>+(v/TILE).toFixed(1)),fcam:[sunF.shadow.camera.right/TILE,sunF.shadow.camera.top/TILE,sunF.shadow.camera.far/TILE,sunF.shadow.normalBias].map(v=>+v.toFixed(2)),dyn:DYN().size,maps:[sunL.shadow.mapSize.x,sunD.shadow.mapSize.x,sunF.shadow.mapSize.x],patch:THREE.ShaderChunk.lights_fragment_begin.includes('NUM_DIR_LIGHT_SHADOWS > 2')});
   CLOCK.sun=sunL; CLOCK.sunD=sunD; CLOCK.sunF=sunF; CLOCK.dyn=DYN; window.CLOCK=CLOCK; CLOCK.elev=()=>elev(CLOCK.sunH??CLOCK.h); CLOCK.dayElev=()=>elev(CLOCK.h); CLOCK.SKYV=SKYV;

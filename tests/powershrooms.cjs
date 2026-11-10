@@ -22,7 +22,8 @@ let bad = 0; const ok = (c, m) => { console.log((c ? 'ok   ' : 'FAIL ') + m); if
       o.flags = { fire: !__dbg.VIT.burns('lava') && __dbg.VIT.burns('dragon'), luck: SHARED.luck, hi: __dbg.ST.hi };
       S.fx.poison = 30; eat('shroom_cure'); o.cured = !S.fx.poison;
       const sz0 = W3.SZ, settle = async to => { for (let i = 0; i < 120 && Math.abs(W3.SZ / sz0 - to) > .02; i++) await wait(250); return W3.SZ / sz0; };   // it eases in over frames, slow under software drawing
-      eat('shroom_big'); o.big = await settle(2);
+      const npc = () => { const N = (__dbg.NPCS || []).find(N => N.g && N.g.scale.x > 0); return N ? N.g.scale.x / (N.size || 1) : 0; }, n0 = npc();
+      eat('shroom_big'); o.big = await settle(2); await wait(500); o.npc = n0 ? npc() / n0 : 0;
       eat('shroom_small'); o.small = await settle(.4); o.bigGone = !S.fx.big;
       S.fx.small = .01; o.back = await settle(1);
       return o;
@@ -34,6 +35,7 @@ let bad = 0; const ok = (c, m) => { console.log((c ? 'ok   ' : 'FAIL ') + m); if
     ok(r.flags.fire === true && r.flags.luck === 2 && r.flags.hi === 2.5, 'fireproof covers lava (heat 50) but never dragonfire (100); luck and jump reach the systems that read them ' + JSON.stringify(r.flags));
     ok(r.cured, 'the cure poison mushroom takes the poison away');
     ok(Math.abs(r.big - 2) < .03 && Math.abs(r.small - .4) < .03 && r.bigGone && Math.abs(r.back - 1) < .03, 'grow doubles you, shrink takes you to two-fifths and undoes grow, and you come back to your size ' + JSON.stringify([r.big, r.small, r.back]));
+    ok(Math.abs(r.npc - 1) < .03, 'the folk stay their size when you grow (' + r.npc + ')');
   }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.join(' | ') : ''));
   await b.close(); process.exit(bad ? 1 : 0);

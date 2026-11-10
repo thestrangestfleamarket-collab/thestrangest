@@ -428,6 +428,18 @@
    ]
   },
   {
+   "id": "brochures",
+   "title": "BROCHURES",
+   "what": "A leaflet for each thing to do: what it is, where it is, how to do it and what it costs.",
+   "steps": [
+    "Find a brochure rack on the street: by the park gate, on Market St, or on the Hudson walk.",
+    "Double-click the rack and click a cover to buy it ($2).",
+    "Read it any time from your pack: READ.",
+    "Click the cover to open it. GO THERE takes you to the place.",
+    "Collect all twelve: a full set pays $50."
+   ]
+  },
+  {
    "id": "places",
    "title": "PLACES TO GO",
    "what": "Double-click a door to go in. Double-click OUT TO THE STREET to leave.",

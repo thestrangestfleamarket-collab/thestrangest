@@ -40,7 +40,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     const MOVE=`attribute vec2 bi; attribute float bw; attribute float hh; uniform float uHH; uniform mat4 uPM[${NB}];`+(body.dq?DQ:''), AT_=body.dq?`mat4 PM=dqm(uPM[int(bi.x+.5)],uPM[int(bi.y+.5)],bw);`:`mat4 PM=uPM[int(bi.x+.5)]*bw+uPM[int(bi.y+.5)]*(1.-bw);`, CK=body.dq?'d':'';
     if(body.smooth)return smooth(body,PM,MOVE,AT_);
     // the body's own simple hands (hh) folded away while Polyfork's jointed ones are drawn in their place (PM.hh, 111b: only near the camera)
-    PM.hh={value:0}; const HH=' if(hh*uHH>.5)transformed=vec3(0.);';
+    PM.hh={value:0}; PM.pl={value:body.rnd?1:0}; const HH=' if(hh*uHH>.5)transformed=vec3(0.);';
     // a cape flaps in flight (body.flap: its points' fl, 0 at the tie to 1 at the hem, and fd, out from the body): lifted off the back and rippling, by PM.fk (pose)
     const FL=body.flap?(PM.fk={value:0},PM.ft={value:0},'attribute float fl; attribute vec3 fd; uniform float uFK,uFT;'):'', P0=body.flap?'position+fd*fl*uFK*(.04+.16*fl+.07*sin(uFT*12.-fl*8.+fd.x*2.))':'position';
     // body.rnd (your avatar): its points marked sm (its rounded head, 111c) shaded by their own smooth normals, the rest flat
@@ -51,7 +51,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     if(body.rnd)PM.ov={value:.035*(body.S||1)};
     mat.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.uniforms.uHH=PM.hh; if(PM.ov)sh.uniforms.uOV=PM.ov; if(FL){ sh.uniforms.uFK=PM.fk; sh.uniforms.uFT=PM.ft; } sh.fragmentShader='#define BODYB .0015\n'+(SM?'varying float vSm;\n':'')+sh.fragmentShader; sh.vertexShader=MOVE+FL+SM+'\n'+sh.vertexShader.replace('#include <beginnormal_vertex>',AT_+' vec3 objectNormal=mat3(PM)*normal;').replace('#include <begin_vertex>','vec3 transformed=(PM*vec4('+P0+',1.)).xyz;'+HH+(SM?' vSm=sm;':'')).replace('#include <project_vertex>','#include <project_vertex>\n'+OV);
       // a body's own layers (cloth over its lining, over the skin) a few millimetres apart: its shadow test leans that much more toward the light, or they shadow each other in specks (owner, 6 Nov 2026: "seems like its shadows")
-      sh.fragmentShader=sh.fragmentShader.replace('#include <lights_fragment_begin>',THREE.ShaderChunk.lights_fragment_begin.replace(/((?:directional|spot|point)LightShadows?(?:\[ *\w+ *\])?)\.shadowBias/g,'($1.shadowBias-BODYB)')).replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(cross(dFdx(vViewPosition),dFdy(vViewPosition)));'+NF+' vec3 nonPerturbedNormal=normal;'); W3.rim(sh); };
+      sh.fragmentShader=sh.fragmentShader.replace('#include <lights_fragment_begin>',THREE.ShaderChunk.lights_fragment_begin.replace(/((?:directional|spot|point)LightShadows?(?:\[ *\w+ *\])?)\.shadowBias/g,'($1.shadowBias-BODYB)')).replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(cross(dFdx(vViewPosition),dFdy(vViewPosition)));'+NF+' vec3 nonPerturbedNormal=normal;'); W3.rim(sh,PM.pl); };
     mat.customProgramCacheKey=()=>'body'+NB+CK+'b'+(FL?'f':'')+(SM?'r':'');
     const dist=new THREE.MeshDistanceMaterial({side:THREE.DoubleSide}); dist.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.uniforms.uHH=PM.hh; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'+HH); }; dist.customProgramCacheKey=()=>'bodydist'+NB+CK;
     const depth=new THREE.MeshDepthMaterial({side:THREE.DoubleSide,depthPacking:THREE.RGBADepthPacking}); depth.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.uniforms.uHH=PM.hh; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'+HH); }; depth.customProgramCacheKey=()=>'bodydepth'+NB+CK;
@@ -282,7 +282,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       if(body.ride){ const RS=NPC.RS, vm=(body.rideSpeed||3)*TILE/.84, mv=!!st.to&&SR.target>0;   // on its board: rolls, pushing off while it gathers speed, coasts, brakes to a stop
         RS.v=mv?Math.min(vm,RS.v+vm*.5*dt):Math.max(0,RS.v-vm*1.5*dt); if(mv&&RS.v<vm*.9){ RS.pt+=dt*1.3; RS.push=RS.pt%1; } else { RS.pt=0; RS.push=-1; }
         go=st.to?Math.min(RS.v*dt,Math.hypot(st.to.x-st.x,st.to.z-st.z)):0; SR.ride=body.ride.pose(RS); }
-      else{ const d0=SR.dist; R.farOnly(true); R.step(SR,dt); R.farOnly(false); go=(SR.dist-d0)*W3.SZ/PPU*.85; }
+      else{ const d0=SR.dist; R.farOnly(true); R.step(SR,dt); R.farOnly(false); go=(SR.dist-d0)*W3.BASE/PPU*.85; }
       if(go>0){ const nx=st.x+Math.sin(st.hd)*go, nz=st.z+Math.cos(st.hd)*go; if(free(nx,nz)){ st.x=NPC.fx=nx; st.z=NPC.fz=nz; } else { st.to=null; st.next=null; st.wait=.5+Math.random(); if(NPC.RS)NPC.RS.v=0; } }
       st.y=(body.ground||MODS.bodega.ground)(st.x,st.z)+(body.lift?body.lift(performance.now()/1000,NPC):0); g.position.set(st.x,st.y,st.z); g.rotation.y=st.hd; musScale(g,1); if(NPC.size!==1)g.scale.multiplyScalar(NPC.size);
       if(NPC.board){ const b=NPC.board; b.visible=true; b.position.set(st.x,st.y+R.RIDEG.deck*g.scale.y,st.z); b.rotation.set(0,st.hd,0); if(body.ride.place)body.ride.place(b,NPC.RS,0,{g,S:body.S||1}); }

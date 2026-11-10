@@ -129,8 +129,12 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [x] **The movie theatre as THE FLEA PIT** (owner, 10 Nov 2026: "i want to redsesign the movie theater", picked B) · P2 · M · code + look. Front, dark inside, box office, seats [taking: claude/laughing-curie-ui41fc, 10 Nov]
 - [ ] **The fish market** · P2 · M · look. Owner, 9 Nov 2026: waits for his look and yes. Not yet: the workers keep no hours (the jobs system is archived), the editor's ground picture (`tools/topmap.cjs`) not re-made, the minimap does not draw the sheds.
 - [ ] **The fish market's sheds** · P3 · S · pick. The two sheds stand on the row, not on the water side as the real ones did (the quay stays open for fishing); say if they should cross the street.
-- [ ] **The telescope** · P3 · S · code. The firsts board on no wall; satellite passes follow the game hour, not the real one; GO TO
-  Betelgeuse failed once; the aurora in the street's own sky.
+- [ ] **The telescope** · P3 · S · code. The firsts board on no wall; GO TO Betelgeuse failed once. (10 Nov: satellite passes follow the
+  real hour and the aurora is in the street's own sky.)
+- [x] **The public observatory** (owner, 10 Nov 2026: "Both") · P2 · L · code. A dome in the park with one big shared telescope, deeper than
+  the others (`SCOPE.site`); star parties there. Options or a mockup first.
+- [ ] **The night sky, left over** (10 Nov) · P3 · M · code. The editor's ground picture has no observatory until `tools/topmap.cjs` is run again. A solar eclipse in the street's sky (the eyepiece has it); other players don't
+  see your field telescope's tripod; the names and STARGAZE's lines are not in the VR headset; photographs for the other 100 Messier objects.
 - [ ] **The shop insides: walk in and out** · P2 · S (check) · find. Owner, 3 Nov: "you get sent to a middle area where you cant walk in
   or out". Since then the Hudson shops are walk-in and the shops' insides built at the start (9 Nov). Left: go into the bar, the Art
   Museum and the bank and check you land in the room and can walk back out; prove it in `tests/places.cjs`.
@@ -193,6 +197,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [ ] **The car radio unconfirmed** (cars parked past the map edge) · look.
 
 ## Physics and vehicles
+- [x] **Glitched slab on Market St; three road cars out** · P1 · S · fix. Done 10 Nov: the subway train no longer shows on the street; boxy sedan, 80s hatchback and yellow cab gone from the traffic.
 - [x] **Vehicle editor follow-ups** · P3 · S · look. Done 10 Nov: a resized car or kart drives at its size, the traffic's models have their parts, the horse is in (colours and size), the train shows before you go down, the horse's COAT picker.
 
 - [ ] **Jets follow-ups** · P3 · S · pick. Fires and ice are worked out on each player's page (where a stream lands matches, how a fire

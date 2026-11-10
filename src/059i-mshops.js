@@ -41,8 +41,9 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
       ['birds','THE BIRD SHOP','BIRDS',[124,74,60],[170,220,255]],['pets','DOGS & CATS','DOGS & CATS',[96,60,50],[180,255,170]],['reptiles','LIZARDS & DRAGONS','REPTILES',[70,84,56],[150,255,120]],['birdshop','THE BIRD SHOP','BIRDS',[96,74,60],[150,210,255]],['butterflies','THE BUTTERFLY SHOP','BUTTERFLIES',[104,70,84],[220,170,255]],['mush','THE MUSHROOM SHOP','MUSHROOMS',[118,70,58],[255,150,110]],
       ['gems','THE GEM SHOP','GEMS',[92,86,90],[140,255,230]],['armor','THE ARMOURY','ARMS',[84,78,76],[255,120,90]],['clothes','THE CLOTHES SHOP','CLOTHES',[126,68,56],[255,220,160]],
       ['skate','THE SKATE SHOP','SKATE',[104,64,52],[255,170,60]],['fishing','FISHING & SCUBA','TACKLE',[90,84,82],[130,210,255]],['tailor','THE TAILOR','TAILOR',[120,72,60],[240,220,190]],
-      ['barber','THE BARBER','BARBER',[116,66,58],[255,120,120]],['aquarium','THE AQUARIUM','AQUARIUM',[70,92,104],[120,220,255]],['hotel','THE HOTEL','HOTEL',[110,78,62],[255,230,170]],['antiques','ANTIQUES & PAWN','PAWN',[110,84,64],[255,200,120]],['outfitter','THE OUTFITTER','GEAR',[90,92,80],[180,255,140]]].map(([id,name,sign,w,c])=>[id,{name,sign,signC:c,neon:true,signBg:[30,26,28],wall:BLOCKS.brick(w),trim:[200,190,170],frame:[44,40,42],door:.5,h:id==='hotel'?300:170}]))};
-  for(const id of ['pets','reptiles','birdshop','butterflies','aquarium'])DEF[id].blank=true;   // brick fronts, no windows: the inside is built only when you go in (owner, 9 Nov 2026)
+      ['barber','THE BARBER','BARBER',[116,66,58],[255,120,120]],['aquarium','THE AQUARIUM','AQUARIUM',[70,92,104],[120,220,255]],['hotel','THE HOTEL','HOTEL',[110,78,62],[255,230,170]],['antiques','ANTIQUES & PAWN','PAWN',[110,84,64],[255,200,120]],['outfitter','THE OUTFITTER','GEAR',[90,92,80],[180,255,140]]].map(([id,name,sign,w,c])=>[id,{name,sign,signC:c,neon:true,signBg:[30,26,28],wall:BLOCKS.brick(w),trim:[200,190,170],frame:[44,40,42],door:.5,h:id==='hotel'?300:170}])),
+    observatory:{name:'THE OBSERVATORY',sign:'OBSERVATORY',signC:[230,226,214],neon:false,signBg:[40,44,54],wall:BLOCKS.brick([170,166,158]),trim:[220,216,206],frame:[50,54,62],door:.5,h:170,none:true}};   // (none: its outside is a modelled thing of its own, 059ia)
+  for(const id of ['pets','reptiles','birdshop','butterflies','aquarium','observatory'])DEF[id].blank=true;   // brick fronts, no windows: the inside is built only when you go in (owner, 9 Nov 2026)
   Object.assign(DEF.pets,{real:'PUPPIES · KITTENS · RABBITS'}); Object.assign(DEF.reptiles,{real:'LIZARDS · DRAGONS · DINOSAURS'}); Object.assign(DEF.birdshop,{real:'SONGBIRDS · PARROTS · HAWKS'}); Object.assign(DEF.butterflies,{real:'BUTTERFLIES · BEES · BEETLES'});   // their real signs (owner, 9 Nov 2026): a blade sign
 
   /* ---------- the outside: a shopfront painted on the block's street face ---------- */
@@ -123,7 +124,7 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
         const pout=new THREE.Mesh(new THREE.PlaneGeometry(w,h)); pout.position.copy(new V3(X(cx+mid),yc,Z(R.y1-.04))); pout.rotation.y=Math.atan2(ni.x,ni.z); scene.add(pout); WINDOWS.pane(pout,id,'out',false,true); };
       if(D.pf||D.none||D.blank){} else if(D.both){ const hf=D.half, wz=D.wz||[19,89]; pane(-hf+.08,-dw-.28,wz[0],wz[1]); pane(dw+.28,hf-.08,wz[0],wz[1]); pane(-dw+.12,-.06,12,86); pane(.06,dw-.12,12,86); }   // both windows and the two glass doors, real through
       else pane((du>W/2?.35:du+dw+.15)-du,(du>W/2?du-dw-.15:W-.35)-du,16,92); }
-    MSHOP.at[id]={R,cx,door:at(lcx,L.y1+.25)};
+    MSHOP.at[id]={R,cx,door:at(lcx,L.y1+.25),mid:at((L.x0+L.x1)/2,(L.y0+L.y1)/2),half:[Math.abs(X(LW.x1)-X(LW.x0))/2,Math.abs(Z(LW.y1)-Z(LW.y0))/2]};
     STORE.places.push([D.name,X(cx),Z(R.y1-1.3),'up','off',Math.PI]);
     // its merchant stands inside, behind the counter, unless the level file or the character editor put them elsewhere
     const who=p.merchant, B=SHARED.BOD, tx=w=>(w-B.XS(0))/(B.XS(1)-B.XS(0)), tz=w=>(w-B.ZS(0))/(B.ZS(1)-B.ZS(0));   // (homes are in the street's tiles)

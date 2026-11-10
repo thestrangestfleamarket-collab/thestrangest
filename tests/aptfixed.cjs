@@ -9,11 +9,10 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   let st = false; for (let i = 0; i < 60 && !st; i++) { await pg.waitForTimeout(3000); st = await pg.evaluate(() => !!window.__started).catch(() => false); }
   ok(st, 'the page starts');
   if (st) {
-    const want = ['CRT TV', 'WRITING DESK', 'TELESCOPE', 'EARTH GLOBE', 'GLOBE TABLE', 'LAB DESK', 'LAB STOOL', 'FISH TANK', 'TABLE RADIO', 'ROUND RUG', 'RECLINER', 'BOOKSHELF', 'FLOOR PLANT', 'OLIVE TREE', 'FERN STAND', 'HANGING PLANT', 'FLOWERING PLANT', 'HERB POT', 'BASIL POT'];
+    const want = ['CRT TV', 'WRITING DESK', 'TELESCOPE', 'EARTH GLOBE', 'GLOBE TABLE', 'LAB DESK', 'LAB STOOL', 'FISH TANK', 'TABLE RADIO', 'ROUND RUG', 'RECLINER', 'BOOKSHELF', 'FLOOR PLANT', 'OLIVE TREE', 'FERN STAND', 'HANGING PLANT', 'FLOWERING PLANT', 'HERB POT', 'BASIL POT', 'BISTRO TABLE', 'LAWN CHAIR', 'POTTED SHRUB', 'FLOWER PLANTER', 'WOODEN CRATE', 'CANDLE LANTERN', 'CACTUS POT', 'WATERING CAN'];
     let d = null; for (let i = 0; i < 40; i++) { d = await pg.evaluate(() => window.BEDROOMDBG && BEDROOMDBG()); if (d && d.built && want.every(k => d.kinds.includes(k))) break; await pg.waitForTimeout(1000); }
     ok(d && want.every(k => d.kinds.includes(k)), 'a fresh apartment has its own pieces: ' + JSON.stringify(d && d.kinds));
-    const landing = ['BISTRO TABLE', 'LAWN CHAIR', 'POTTED SHRUB', 'FLOWER PLANTER', 'WOODEN CRATE', 'CANDLE LANTERN', 'CACTUS POT', 'WATERING CAN'];   // the fire escape's starter set (10 Nov 2026, tests/firetown.cjs)
-    ok(d && d.kinds.every(k => want.includes(k) || landing.includes(k)), 'and nothing else until you buy it (but the fire escape\'s starter set)' + (d ? ': ' + JSON.stringify(d.kinds.filter(k => !want.includes(k) && !landing.includes(k))) : ''));
+    ok(d && d.kinds.every(k => want.includes(k)), 'and nothing else until you buy it');
     const v = await pg.evaluate(async () => { const A = __dbg.MAPK.MODS.apts; await A.enterReal(); for (let i = 0; i < 40 && (window.FADE && FADE.busy); i++) await new Promise(r => setTimeout(r, 250)); return { inReal: !!A.inReal, views: __dbg.UI.viewsHere() }; });
     ok(v.inReal && v.views.includes('third') && v.views.includes('first'), 'in your apartment you can go to third and first person, as in any inside (owner, 7 Nov 2026): ' + JSON.stringify(v));
   }

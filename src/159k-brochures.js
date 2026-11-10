@@ -7,6 +7,7 @@ import {OWNED} from './005-save.js';
 import {FADE, FIX, LEVEL, MAPG, SOL, STORE, SYS, TILE} from './006-map-pre.js';
 import {PIER} from './066b-pier.js';
 import {WRECK} from './066ba-wreck.js';
+import {BEES} from './147a-bees.js';
 const BROCH={}; window.BROCH=BROCH;
 { const T=TILE, M=T/.84, esc=TEXT.esc, KEY='broch', PRE='bq_', say=(t,c)=>SAY(t,c||'#e8d6a8');
   const DATA=__LAZY__("data/brochures.json");
@@ -161,7 +162,8 @@ const BROCH={}; window.BROCH=BROCH;
   const idle=async()=>{ await until(()=>FADE.busy,1500); let calm=0; const t0=performance.now(); while(calm<600&&performance.now()-t0<40000){ await wait(100); calm=FADE.busy?0:calm+100; } };
   const SPOT={ wreck:async()=>await until(()=>WRECK.built&&WRECK.at)&&[WRECK.at[0]+4*T,WRECK.at[1]+3*T], pier:async()=>await until(()=>PIER&&PIER.x!=null)&&[PIER.x+3.2*T,PIER.zE+1.6*T] };
   const giveBack=quiet=>{ const L=S.loan; if(!L)return; const back=[];
-    for(const [k,n] of Object.entries(L.kit)){ for(const s in EQUIP.by)if(EQUIP.by[s]===k)EQUIP.off(s); if(WIELD.on===k)WIELD.set(null); const m=Math.min(n,FORAGE.has(k)||0); if(m>0){ FORAGE.take(k,m); back.push(FORAGE.name(k)); } }
+    for(const [k,n] of Object.entries(L.kit)){ for(const s in EQUIP.by)if(EQUIP.by[s]===k)EQUIP.off(s); if(WIELD.on===k)WIELD.set(null); const m=Math.min(n,FORAGE.has(k)||0); if(m>0){ FORAGE.take(k,m); back.push(FORAGE.name(k)); }
+      if(k==='bee_hive'&&m<n&&BEES.S)for(const h of BEES.S.hives.filter(h=>h.t>=L.t).sort((a,b)=>b.t-a.t).slice(0,n-m))if(BEES.unset(h))back.push('THE HIVE YOU SET DOWN'); }
     S.loan=null; save(); if(FORAGE.draw)FORAGE.draw(); if(!quiet&&back.length)say('THE LOANED GEAR GOES BACK: '+back.join(', ')+'.','#c8a090'); };
   const start=async id=>{ await ready(); const b=BROCH.by[id], st=b.start||{}; giveBack(true); (UI.goName||UI.goPlace)(st.via||b.place); await idle();
     const at=st.spot?await SPOT[st.spot]():st.at?[SHARED.BOD.XS(st.at[0]),SHARED.BOD.ZS(st.at[1])]:null; if(at){ STORE.goTo(at[0],at[1],'up'); await idle(); }

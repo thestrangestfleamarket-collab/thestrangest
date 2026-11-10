@@ -946,6 +946,21 @@
    "x": 255,
    "y": 59.5
   },
+  "tower4": {
+   "x": 51,
+   "y": 119,
+   "watch": "the dungeon stair (owner, 10 Nov 2026: towers near anything that has monsters or danger in the park)"
+  },
+  "tower5": {
+   "x": 186,
+   "y": 104,
+   "watch": "the big lake's west shore and its ice"
+  },
+  "tower6": {
+   "x": 226,
+   "y": 95,
+   "watch": "the ghosts' island and its footbridge"
+  },
   "brook": {
    "note": "the brook's course from its spring to the lake (map tiles); the lake's middle ends it",
    "pts": [

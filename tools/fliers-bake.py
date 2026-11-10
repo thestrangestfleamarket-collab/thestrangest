@@ -178,7 +178,80 @@ SPECS['police-flier']={'name':'POLICE FLIER','paint':PBLUE,'trim':(70,98,132),'t
    'cowl':1.0,'a':.45,'b':-.35,'deck':-1.0,'doors':[{'n':'DOOR F','z':(.43,-.33),'segs':(5,8),'seat':1}],
    'cab':{'hw':.5,'belt':.74,'z0':-.75,'z1':.95,'roof':1.12,'dd':.34,'seat':-.2,'doors':1,'rows':1,'fl':.34},
    'marks':{'bar':[0,.93,-1.2,.62],'decals':[]}}
+# ---------- the submersible: Polyfork's escape pod's outline (an egg 3 m tall, a band round its middle, a round port in front, a cap on top), made a diving bell you ride ----------
+HULL=(232,230,222); BAND=(52,92,160); BRASS=(196,148,62); KEEL=(40,44,54); GRAT=(52,54,58); SEAT=(120,60,36); CONS=(58,62,70); GREEN=(46,138,74)
+def revolve(m,prof,n=28,skip=None,tag=''):
+    # prof: [(y, r, colour of the band up to the next)] turned about the upright axis, smooth; skip(a0,a1,y0,y1): strips left open (a port)
+    for j in range(len(prof)-1):
+        (y0,r0,col),(y1,r1,_)=prof[j],prof[j+1]
+        for i in range(n):
+            a0,a1=2*math.pi*i/n,2*math.pi*(i+1)/n
+            if skip and skip((a0+a1)/2,(y0+y1)/2): continue
+            def P(y,r,a): return [r*math.sin(a),y,r*math.cos(a)]
+            def N(a,jj):
+                ya,ra,_=prof[max(0,jj-1)]; yb,rb,_=prof[min(len(prof)-1,jj+1)]; dy,dr=yb-ya,rb-ra; l=(dy*dy+dr*dr)**.5 or 1; return [dy/l*math.sin(a),-dr/l,dy/l*math.cos(a)]
+            Q=[P(y0,r0,a0),P(y0,r0,a1),P(y1,r1,a1),P(y1,r1,a0)]; QN=[N(a0,j),N(a1,j),N(a1,j+1),N(a0,j+1)]
+            if r0<1e-6: Q=Q[1:]; QN=QN[1:]
+            elif r1<1e-6: Q=Q[:3]; QN=QN[:3]
+            smooth(Q,QN,col,m,tag)
+def port(m,g,c,ax,r,d=.2):
+    # a round port standing out of the hull: a brass tube and bolted ring, thick glass in it (ax: 'z' front, 'x' or '-x' a side)
+    sg=-1 if ax.startswith('-') else 1; a=ax[-1]; o=list(c)
+    m.cyl(o,a,r+.1,sg*d,BRASS,20,caps=False); k={'x':0,'y':1,'z':2}[a]; e=list(o); e[k]+=sg*d
+    for i in range(20):
+        a0,a1=2*math.pi*i/20,2*math.pi*(i+1)/20
+        def P(rr,t):
+            u,v=rr*math.cos(t),rr*math.sin(t); return [e[0],e[1]+u,e[2]+v] if a=='x' else [e[0]+u,e[1]+v,e[2]]
+        m.poly([P(r+.1,a0),P(r+.1,a1),P(r-.02,a1),P(r-.02,a0)],BRASS,[sg if a=='x' else 0,0,sg if a=='z' else 0])
+    for i in range(8):
+        t=2*math.pi*i/8; u,v=(r+.04)*math.cos(t),(r+.04)*math.sin(t); b=[e[0],e[1]+u,e[2]+v] if a=='x' else [e[0]+u,e[1]+v,e[2]]; m.cyl(b,a,.022,sg*.02,CHROME,6)
+    gl=list(o); gl[k]+=sg*(d-.05); g.cyl(gl,a,r-.02,sg*.02,DARK,20)
+def subhull():
+    m=Mesh(); g=Mesh(); H=Mesh(); A=lambda a:abs(math.atan2(math.sin(a),math.cos(a)))
+    hole=lambda a,y:(A(a)<.3 and 1.0<y<1.72) or (abs(A(a)-math.pi/2)<.2 and 1.2<y<1.62)
+    prof=[(0,0,KEEL),(.02,.5,KEEL),(.26,.8,KEEL),(.5,.98,HULL),(.76,1.2,HULL),(1.0,1.33,BAND),(1.26,1.39,BAND),(1.52,1.33,HULL),(1.77,1.2,HULL),(2.02,1.0,HULL),(2.22,.76,HULL),(2.34,.58,BRASS),(2.42,.56,HULL),(2.56,.52,HULL)]
+    revolve(m,prof,32,hole)
+    for y in (1.0,1.52): revolve(m,[(y-.025,1.345,BRASS),(y+.025,1.345,BRASS)],32,hole)                 # the band's brass edges
+    for i in range(16):                                                                              # a ring of rivets under the neck
+        t=2*math.pi*i/16; m.cyl([1.02*math.sin(t),2.0,1.02*math.cos(t)],'y',.025,.02,CHROME,6)
+    port(m,g,[0,1.36,1.26],'z',.5,.2); port(m,g,[1.3,1.41,0],'x',.24,.14); port(m,g,[-1.3,1.41,0],'-x',.24,.14)
+    # the cap: a dome hatch on its hinge, a hand wheel on it; the neck's rim
+    revolve(H,[(2.56,.56,BRASS),(2.62,.56,HULL),(2.8,.42,HULL),(2.92,.22,HULL),(2.96,0,HULL)],24); H.cyl([0,2.96,0],'y',.03,.08,CHROME,8); 
+    for t in range(4): H.box([-.2,3.03,-.015],[.2,3.05,.015],CHROME,rot=('y',t*math.pi/4,[0,3.04,0]))
+    revolve(H,[(3.03,.2,CHROME),(3.05,.2,CHROME)],16)
+    # the skids it rests on, the keel's weights
+    for sd in (1,-1):
+        m.cyl([sd*.82,-.3,-1.0],'z',.05,2.0,CHROME,8)
+        for z in (-.6,.6): m.box([sd*.82-.03,-.3,z-.03],[sd*.82+.03,.3,z+.03],CHROME,rot=('z',sd*.25,[sd*.82,-.3,z]))
+        m.cyl([sd*.55,.02,-.7],'z',.16,1.4,KEEL,10)
+    # two flood lamps on a bar over the port, the beacon and the aerial on the cap's side, the arm with its claw
+    m.box([-.62,2.0,.92],[.62,2.04,.96],CHROME)
+    for sd in (1,-1): m.cyl([sd*.5,1.96,.9],'z',.13,.2,CHROME,12,capcol=DARK); m.cyl([sd*.5,1.96,1.1],'z',.11,.012,LENS,12,tag='head',e=LENS); m.box([sd*.5-.02,1.9,.86],[sd*.5+.02,2.02,.9],CHROME)
+    m.cyl([.42,2.4,-.3],'y',.05,.1,RED,10,tag='tail',e=RED); m.cyl([-.4,2.38,-.34],'y',.008,.9,DARK,5)
+    m.cyl([.62,.62,1.0],'z',.035,.7,CHROME,8); m.cyl([.62,.62,1.7],'y',.03,-.22,CHROME,8); m.box([.57,.36,1.68],[.6,.42,1.86],CHROME); m.box([.64,.36,1.68],[.67,.42,1.86],CHROME)
+    # inside: a grating to stand on, the pilot's seat, the desk under the port with lit dials and a stick, air bottles, a pipe run
+    m.poly([[1.14*math.sin(2*math.pi*i/20),.74,1.14*math.cos(2*math.pi*i/20)] for i in range(20)],GRAT,[0,1,0])
+    m.box([-.28,.74,-.5],[.28,.98,.06],CONS); m.box([-.26,.98,-.46],[.26,1.06,.04],SEAT); m.box([-.26,1.06,-.5],[.26,1.66,-.38],SEAT,rot=('x',.12,[0,1.06,-.44]))
+    m.box([-.5,.74,.62],[.5,1.02,1.02],CONS); m.box([-.5,1.02,.62],[.5,1.06,1.0],CONS,rot=('x',-.5,[0,1.02,.62]))
+    for i,x in enumerate((-.34,-.12,.12,.34)): m.cyl([x,1.09,.76],'y',.07,.012,AMBER if i%2 else (120,220,160),12,tag='turn',e=AMBER if i%2 else (120,220,160))
+    m.cyl([0,1.02,.5],'y',.02,.2,CHROME,6); m.cyl([0,1.22,.5],'y',.035,.05,DARK,8)
+    for sd,c in ((1,GREEN),(-1,(214,170,40))): m.cyl([sd*.95,.8,-.55],'y',.09,.8,c,10); m.cyl([sd*.95,1.6,-.55],'y',.03,.07,CHROME,6)
+    revolve(m,[(1.9,1.02,BRASS),(1.94,1.0,BRASS)],24,lambda a,y:A(a)<.5)
+    return m,g,H
+def thruster():
+    # a small ducted propeller about its shaft (z): a brass ring, three blades
+    m=Mesh(); m.cyl([0,0,-.09],'z',.17,.18,BRASS,14,caps=False); m.cyl([0,0,-.09],'z',.15,.18,KEEL,14,caps=False); m.cyl([0,0,-.05],'z',.04,.1,CHROME,8)
+    for i in range(3): m.box([-.14,-.035,-.008],[.14,.035,.008],CHROME,rot=('z',i*math.pi/3,[0,0,0]))
+    return m
+def make_sub():
+    m,g,H=subhull(); W=thruster(); h=[0,2.56,-.54]; P=[v for q in m.g.values() for v in q['p']]
+    for w in ([-1.52,1.26,-.2],[1.52,1.26,-.2]): m.box([min(w[0],w[0]*.86),w[1]-.03,w[2]-.05],[max(w[0],w[0]*.86),w[1]+.03,w[2]+.05],CHROME)
+    for sd in (1,-1): m.box([sd*.5-.03,1.0,-1.36],[sd*.5+.03,1.06,-1.1],CHROME)
+    return {'name':'SUBMERSIBLE','dive':1,'draft':2.25,'seat':[0,1.0,-.2],'size':[3.1,3.3,2.9],'low':-.3,'wheels':[[-1.52,1.26,-.2],[1.52,1.26,-.2],[-.5,1.03,-1.42],[.5,1.03,-1.42]],'r':.17,
+            'body':pack2(m.g),'glass':pack2(g.g),'cab':None,'wheel':pack2(W.g),'parts':[{'n':'HATCH','use':'hatch','at':h,'ax':'x','open':-1.9,'g':pack2(H.g,h),'gl':[]}],'marks':{'decals':[]},'tris':[m.tris()+g.tris()+H.tris(),W.tris()]}
+MAT.update({BRASS:'chrome',KEEL:'rubber',GRAT:'rubber',CONS:'rubber',SEAT:'rubber'})
 if __name__=='__main__':
     f=os.path.join(ROOT,'data/cars.json'); J=json.load(open(f))
+    c=make_sub(); J['cars']['submersible']=c; print('submersible',c['size'],c['tris'],len(json.dumps(c))//1024,'KB')
     for k,s in SPECS.items(): c=make(s); J['cars'][k]=c; print(k,c['size'],'triangles',c['tris'],'parts',[p['n'] for p in c['parts']],len(json.dumps(c))//1024,'KB')
     s=json.dumps(J,separators=(',',':')); open(f,'w').write(s); print(len(s)//1024,'KB')

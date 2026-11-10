@@ -17,7 +17,7 @@ import {OUT, SYS, TILE} from './006-map-pre.js';
   const m4=new THREE.Matrix4(), q=new THREE.Quaternion(), Y=new THREE.Vector3(0,1,0), P=new THREE.Vector3(), S=new THREE.Vector3(), list=[];
   CARLAMPS.on=false; CARLAMPS.lit=0; window.CARLAMPS=CARLAMPS;
   SYS.add('life',()=>{ const e=CLOCK.dayElev(), k=Math.max(0,Math.min(1,(1.5-e)/5)), up=SHARED.LVL==='up'&&!(ROOMS.cur&&ROOMS.cur.off);
-    list.length=0; if(k>0&&up)for(const f of CARLAMPS.src)try{ f(list); }catch(err){}
+    list.length=0; if(up)for(const f of CARLAMPS.src)try{ f(list); }catch(err){} if(!(k>0)){ let n=0; for(const v of list)if(v.always)list[n++]=v; list.length=n; }   // by day only a lamp that is always wanted (the submersible's, under water)
     CARLAMPS.on=list.length>0; let n=0, nb=0;
     for(const v of list.slice(0,N)){ const [w,h,l,y0]=v.dim, fx=Math.sin(v.r), fz=Math.cos(v.r), sx=fz, sz=-fx, yl=v.y+y0+h*.36; q.setFromAxisAngle(Y,v.r);
       if(!v.own)for(const [ff,col,sz0] of [[1,HEAD,.08],[-1,TAIL,.06]])for(const sd of [-1,1]){ const o=l/2+.01*M, a=w*.33;
@@ -25,10 +25,11 @@ import {OUT, SYS, TILE} from './006-map-pre.js';
       v.d=(v.x-pos.x)**2+(v.z-pos.z)**2; v.b=-1;
       if(!v.fly){ v.b=nb; P.set(v.x+fx*l/2,SHARED.groundY(v.x+fx*l/2,v.z+fz*l/2)+.03,v.z+fz*l/2); S.set(w*1.1,1,13*M); beam.setMatrixAt(nb,m4.compose(P,q,S)); nb++; } }
     // the nearest on the ground get the real light; their painted beam is put away (it would light the road twice)
-    const near=list.filter(v=>v.b>=0).sort((a,b)=>a.d-b.d).slice(0,NS);
-    SP.forEach((L,i)=>{ const v=near[i]; if(!v){ L.intensity=0; return; } const [w,h,l,y0]=v.dim, fx=Math.sin(v.r), fz=Math.cos(v.r);
-      L.position.set(v.x+fx*(l/2+.1*M),v.y+y0+h*.4,v.z+fz*(l/2+.1*M)); L.target.position.set(v.x+fx*(l/2+8*M),v.y-1.5*M,v.z+fz*(l/2+8*M)); L.target.updateMatrixWorld(); L.intensity=110*k;
-      beam.setMatrixAt(v.b,m4.makeScale(0,0,0)); });
+    const near=list.filter(v=>v.b>=0||v.always).sort((a,b)=>(b.always?1:0)-(a.always?1:0)||a.d-b.d).slice(0,NS);
+    if(near[0]&&near[0].always)near.splice(1,0,{fill:near[0]});   // a lamp always wanted also lights its own hull, from behind and above
+    SP.forEach((L,i)=>{ const v=near[i]; if(!v){ L.intensity=0; return; } if(v.fill){ const q=v.fill, [w,h,l,y0]=q.dim, fx=Math.sin(q.r), fz=Math.cos(q.r); L.position.set(q.x-fx*5*M,q.y+y0+h+4*M,q.z-fz*5*M); L.target.position.set(q.x+fx*M,q.y+y0+h*.4,q.z+fz*M); L.target.updateMatrixWorld(); L.intensity=320; return; } const [w,h,l,y0]=v.dim, fx=Math.sin(v.r), fz=Math.cos(v.r);
+      L.position.set(v.x+fx*(l/2+.1*M),v.y+y0+h*.4,v.z+fz*(l/2+.1*M)); L.target.position.set(v.x+fx*(l/2+8*M),v.y-1.5*M,v.z+fz*(l/2+8*M)); L.target.updateMatrixWorld(); L.intensity=v.always?260:110*k;
+      if(v.b>=0)beam.setMatrixAt(v.b,m4.makeScale(0,0,0)); });
     lens.count=n; beam.count=nb; beamM.opacity=.55*k; CARLAMPS.lit=near.length;
     if(n){ lens.instanceMatrix.needsUpdate=true; if(lens.instanceColor)lens.instanceColor.needsUpdate=true; } if(nb)beam.instanceMatrix.needsUpdate=true; },'150pc-carlamps');
   CARLAMPS.dbg=()=>({on:CARLAMPS.on,cars:list.length,own:list.filter(v=>v.own).length,lit:CARLAMPS.lit,lens:lens.count,beams:beam.count,spots:SP.map(L=>+L.intensity.toFixed(1))});

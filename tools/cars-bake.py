@@ -116,6 +116,6 @@ for i in root['children']:
     R[nm]={'name':CARS[nm],'size':[round(max(P[k::3])-min(P[k::3]),3) for k in range(3)],'low':round(min(P[1::3]),3),'wheels':[corners[k] for k in ('fl','fr','rl','rr')],
            'r':round(max(abs(v) for v in [x for g in wheel.values() for x in g['p'][1::3]]),3),'body':pack(body),'glass':pack(glass) if glass else [],'cab':CAB[0],'wheel':pack(wheel),'tris':[tb,tw]}
 cz={'__file__':os.path.join(ROOT,'tools/cruiser-bake.py'),'__name__':'cruiser'}; exec(compile(open(cz['__file__']).read(),'cruiser-bake','exec'),cz); R['police-cruiser-80s']=cz['make']()
-fz={'__file__':os.path.join(ROOT,'tools/fliers-bake.py'),'__name__':'fliers'}; exec(compile(open(fz['__file__']).read(),'fliers-bake','exec'),fz); R.update({k:fz['make'](v) for k,v in fz['SPECS'].items()})   # the hover cars   # the game's own police cruiser, modelled in code
+fz={'__file__':os.path.join(ROOT,'tools/fliers-bake.py'),'__name__':'fliers'}; exec(compile(open(fz['__file__']).read(),'fliers-bake','exec'),fz); R.update({k:fz['make'](v) for k,v in fz['SPECS'].items()}); R['submersible']=fz['make_sub']()   # the hover cars   # the game's own police cruiser, modelled in code
 s=json.dumps({'src':'racing-cars-kit (CC0)','cars':R},separators=(',',':')); open(os.path.join(ROOT,'data/cars.json'),'w').write(s)
 print(len(R),'cars,',tris,'triangles drawn,',len(s)//1024,'KB'); [print(' ',k,v['name'],v['size'],v['tris'],'wheels',v['wheels'],'r',v['r']) for k,v in R.items()]

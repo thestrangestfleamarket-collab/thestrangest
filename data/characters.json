@@ -2322,14 +2322,11 @@
  "junkman": {
   "name": "THE JUNK DEALER",
   "trade": {
-   "sells": [
-    "tv_small",
-    "phone_home",
-    "modem",
-    "binoc",
-    "shades"
+   "sells": [],
+   "buys": [
+    "pawn"
    ],
-   "line": "It all works. Some of it on purpose."
+   "line": "Anything with a value, I'll take it. Half now. Someone pays full later."
   },
   "talk": {
    "start": "hi",

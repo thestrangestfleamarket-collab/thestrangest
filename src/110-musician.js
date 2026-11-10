@@ -35,7 +35,7 @@ function musBox(P){ '@later'; const [cx,cy,cz,hx,hy,hz]=P.box, F=P.F0, g=new THR
   for(let i=0;i<n;i++){ const x=p.getX(i)+cx-F.o.x, y=p.getY(i)+cy-F.o.y, z=p.getZ(i)+cz-F.o.z, a=nn.getX(i), b=nn.getY(i), c=nn.getZ(i);
     pos.set([d(x,y,z,F.x),d(x,y,z,F.y),d(x,y,z,F.z)],i*3); nor.set([d(a,b,c,F.x),d(a,b,c,F.y),d(a,b,c,F.z)],i*3); c1.set([r[1].r,r[1].g,r[1].b],i*3); }
   const o=new THREE.BufferGeometry(); o.setAttribute('position',new THREE.BufferAttribute(pos,3)); o.setAttribute('normal',new THREE.BufferAttribute(nor,3)); o.setAttribute('c1',new THREE.BufferAttribute(c1,3)); o.setAttribute('mat',new THREE.BufferAttribute(new Float32Array(n).fill(mi),1)); return o; }
-const musScale=(g,bh)=>g.scale.set(W3.SZ/PPU,ZU*W3.SZ*(bh||W3.BH||1),W3.SZ/PPU);
+const musScale=(g,bh)=>g.scale.set(W3.BASE/PPU,ZU*W3.BASE*(bh||W3.BH||1),W3.BASE/PPU);
 const sheetView=(g,y)=>{ '@later'; UI.setFree(true); UI.camT.set(g.position.x,y,g.position.z); SHARED.ppu=SHARED.ppuTo=PPU*4; window.SHEETTURN=d=>{ SHARED.yaw=SHARED.yawTo=d*Math.PI/180; }; window.SHEETZOOM=k=>{ SHARED.ppu=SHARED.ppuTo=PPU*k; };
   for(const G of Object.values(MAPG))for(const c of G.children)if(c!==g)c.visible=false; for(const c of scene.children)if(!c.isLight&&!c.isCamera&&c!==MAPG.bodega)c.visible=false;
   const K=new THREE.Color(0), r0=renderer.render.bind(renderer); renderer.render=(s,c)=>{ if(s===scene){ s.background=K; s.fog=null; if(SKY.dome)SKY.dome.visible=false; } r0(s,c); }; };

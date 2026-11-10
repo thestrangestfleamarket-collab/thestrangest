@@ -1,0 +1,79 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Map Redesign</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{--mf:#7dffa8;--mi:#3aa866;--mb:#031a0d;--md:#3aa866;--mo:#d8ffe4;--mk:#020a06}
+body{margin:0;background:#05070a;font:18px 'Share Tech Mono',monospace;color:var(--mf);letter-spacing:2px}
+.opt{padding:30px 16px 40px;display:flex;flex-direction:column;align-items:center}
+.lbl{color:#f2c14e;font-size:20px;margin-bottom:12px;max-width:1000px;width:100%}.lbl small{display:block;color:#9aa;font-size:14px;letter-spacing:1px;margin-top:4px}
+.box{width:1000px;max-width:100%;height:640px;box-sizing:border-box;display:grid;gap:12px;padding:12px;background:repeating-linear-gradient(0deg,rgba(125,255,168,.05) 0 1px,transparent 1px 3px),#010805;box-shadow:inset 0 0 0 2px var(--mi);position:relative}
+.fr{background:rgba(3,26,13,.85);box-shadow:inset 0 0 0 2px var(--mi);min-width:0;min-height:0}
+.ttl{grid-column:1/-1;display:flex;justify-content:space-between;padding:10px 52px 10px 18px;font-size:24px;letter-spacing:4px}.ttl b{font-weight:400}.ttl span{color:var(--md);font-size:16px}
+.x{position:absolute;right:-12px;top:-12px;width:24px;height:24px;background:#010805;box-shadow:inset 0 0 0 2px var(--mi);font-size:12px;display:flex;align-items:center;justify-content:center}
+.tabs{display:flex;flex-direction:column;gap:4px;padding:16px 10px}.tabs div{padding:8px 10px;white-space:nowrap}.on{background:var(--mf);color:var(--mk)}
+.top{display:flex;gap:6px;padding:8px;flex-wrap:wrap}.top div{padding:6px 10px}
+.list{overflow:hidden;padding:12px 14px;font-size:15px}.list h3{font-weight:400;font-size:13px;color:var(--md);margin:12px 0 6px;padding-bottom:5px;border-bottom:2px solid var(--mi)}.list h3:first-child{margin-top:0}
+.r{display:flex;gap:8px;align-items:center;padding:2px 2px;white-space:nowrap}.r i{font-style:normal;flex:none;width:24px;text-align:right;color:var(--md)}.r.hi{background:var(--mf);color:var(--mk)}.r.hi i{color:var(--mk)}
+.r u{text-decoration:none;flex:none;width:12px;height:12px;border-radius:50%}
+.srch{border:2px solid var(--mi);background:var(--mb);padding:6px 8px;color:var(--md);font-size:14px;margin-bottom:8px}
+.foot{grid-column:1/-1;padding:8px 14px;font-size:13px;color:var(--md);display:flex;justify-content:space-between}
+svg{display:block;width:100%;height:100%}svg text{font-family:'Share Tech Mono',monospace;letter-spacing:1.5px}
+.split2{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:12px;min-height:0}
+</style></head><body>
+
+<div class="opt"><div class="lbl">A · THE MENU'S OWN MAP<small>Its own window like now (Shift+M, the minimap, MAP on the quick bar), framed like every menu. Map in green on black, numbers in boxes, the guide down the right with a search. Tabs: STREET, SUBWAY, UNDERGROUND.</small></div>
+<div class="box" style="grid-template-rows:auto auto minmax(0,1fr) auto"><div class="x">X</div>
+<div class="fr ttl"><b>[ THE STRANGEST FLEA MARKET ]</b><span>MAP · SECTION A</span></div>
+<div class="fr top" style="grid-column:1/-1"><div class="on">STREET</div><div>SUBWAY</div><div>UNDERGROUND</div><div style="margin-left:auto;color:var(--md)">THE HOURS 4:12 PM</div></div>
+<div class="split2"><div class="fr" id="mA"></div><div class="fr list" id="lA"></div></div>
+<div class="foot fr"><span>CLICK A PLACE TO GO THERE · WHEEL ZOOMS · ESC CLOSES</span><span>★ YOU ARE HERE</span></div>
+</div></div>
+
+<div class="opt"><div class="lbl">B · A SECTION OF THE ESC MENU<small>MAP sits down the left with SETTINGS, PETS, INVENTORY; its parts are tabs along the top (STREET, SUBWAY, UNDERGROUND, GO TO). The list is GO TO's own tab, so the map gets the whole pane.</small></div>
+<div class="box" style="grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr)"><div class="x">X</div>
+<div class="fr ttl"><b>[ THE STRANGEST FLEA MARKET ]</b><span>MAP</span></div>
+<div class="fr tabs" style="grid-row:2/4;align-self:stretch"><div>SETTINGS</div><div>PETS</div><div>INVENTORY</div><div class="on">MAP</div></div>
+<div class="fr top"><div class="on">STREET</div><div>SUBWAY</div><div>UNDERGROUND</div><div>GO TO</div></div>
+<div class="fr" id="mB"></div>
+</div></div>
+
+<div class="opt"><div class="lbl">C · GREEN FRAME, PLACES IN COLOUR<small>Like A, but each place keeps its own colour (the minimap and invitations still match it); the ground stays dark green so it reads as the menus.</small></div>
+<div class="box" style="grid-template-rows:auto auto minmax(0,1fr) auto"><div class="x">X</div>
+<div class="fr ttl"><b>[ THE STRANGEST FLEA MARKET ]</b><span>MAP · SECTION A</span></div>
+<div class="fr top" style="grid-column:1/-1"><div class="on">STREET</div><div>SUBWAY</div><div>UNDERGROUND</div><div style="margin-left:auto;color:var(--md)">THE HOURS 4:12 PM</div></div>
+<div class="split2"><div class="fr" id="mC"></div><div class="fr list" id="lC"></div></div>
+<div class="foot fr"><span>CLICK A PLACE TO GO THERE · WHEEL ZOOMS · ESC CLOSES</span><span>★ YOU ARE HERE</span></div>
+</div></div>
+
+<script>
+const PAL=['#ff7a1a','#00c06a','#ffd400','#a05ee0','#2f8fff','#ff3fa4'];
+const G={market:[['YOUR APARTMENT',1],['THE BAR',2],['THE BUTTERFLY SHOP',3],['DOGS & CATS',4],['LIZARDS & DRAGONS',5],['THE BIRD SHOP',7],['THE BODEGA',10],['TO THE HUDSON',12],['THE ARCADE',14],['KNUCKLE & IRON',17],['THE BANK',18],['THE ART MUSEUM',19]],
+hudson:[['ANTIQUES & PAWN',20],['FISHING & SCUBA',21],['THE ARMOURY',22],['THE SKATE SHOP',23],['THE BOOKSTORE',24],['THE AQUARIUM',25],['THE FLEA MARKET',26],['THE FISH MARKET',27]],
+park:[['THE SQUIRREL\'S TOWER',28],['THE CASTLE',29],['THE BARN',30],['CENTRAL PARK',31],['THE BATH HOUSE',32]],under:[['THE DUNGEON',33],['THE PLATFORM',34]]};
+function map(el,mode){ // mode: 'mono' | 'col'
+  const P={bg:'#020c06',park:mode==='col'?'#0c3a1c':'#0a2e17',path:'#1d5a33',water:mode==='col'?'#0b2a4a':'#06301e',wline:mode==='col'?'#2f8fff':'#3aa866',st:'#0f2a1a',line:'#3aa866',txt:'#7dffa8',dim:'#3aa866'};
+  const W=680,H=470; let s=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet"><defs><pattern id="g${el}" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="#0d3a1f" stroke-width=".6"/></pattern></defs><rect width="${W}" height="${H}" fill="${P.bg}"/><rect width="${W}" height="${H}" fill="url(#g${el})"/>`;
+  s+=`<rect x="70" y="10" width="600" height="300" fill="${P.park}" stroke="${P.line}" stroke-width="2"/>`;
+  s+=`<path d="M470 10 H670 V150 C630 160 600 120 560 110 C520 100 480 70 470 10Z" fill="${P.water}" stroke="${P.wline}" stroke-width="2"/>`;
+  s+=`<path d="M300 10 C310 80 280 140 300 200 C310 250 300 280 300 310 M70 175 C200 160 300 175 450 170 C550 165 620 175 670 170 M160 90 C150 140 170 200 180 230 M560 120 C540 180 470 200 450 230" fill="none" stroke="${P.path}" stroke-width="7" stroke-linecap="round"/>`;
+  s+=`<path d="M590 140 C580 200 540 220 520 245" fill="none" stroke="${P.wline}" stroke-width="3"/>`;
+  s+=`<text x="300" y="168" fill="${P.txt}" font-size="20" text-anchor="middle" opacity=".9">CENTRAL PARK</text><text x="590" y="70" fill="${P.txt}" font-size="12" text-anchor="middle">THE LAKE</text>`;
+  s+=`<rect x="0" y="0" width="60" height="345" fill="${P.st}"/><text x="35" y="250" fill="${P.dim}" font-size="11" transform="rotate(-90 35 250)" text-anchor="middle">WEST ST</text>`;
+  s+=`<rect x="0" y="312" width="${W}" height="34" fill="${P.st}"/><text x="340" y="334" fill="${P.dim}" font-size="12" text-anchor="middle">MARKET ST</text>`;
+  s+=`<rect x="0" y="420" width="${W}" height="22" fill="${P.st}"/><text x="340" y="435" fill="${P.dim}" font-size="11" text-anchor="middle">THE PROMENADE</text>`;
+  s+=`<rect x="0" y="444" width="${W}" height="26" fill="${P.water}"/><path d="M0 444H${W}" stroke="${P.wline}" stroke-width="2"/><text x="340" y="462" fill="${P.txt}" font-size="12" text-anchor="middle">THE HUDSON</text>`;
+  const box=(x,y,w,h,n,i)=>{ const c=PAL[n%6]; const fill=mode==='col'?c:'#06301a', st=mode==='col'?'#020a06':P.line, tc=mode==='col'?'#020a06':P.txt;
+    return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${fill}" stroke="${st}" stroke-width="2" ${n===24?'stroke-width="3"':''}/><text x="${x+w/2}" y="${y+h/2+5}" fill="${tc}" font-size="13" text-anchor="middle">${n}</text>`; };
+  [[8,1],[60,2],[100,3],[140,4],[180,5],[225,7],[265,10],[370,14],[490,17],[540,18],[600,19]].forEach(([x,n])=>s+=box(x,352,36,30,n));
+  s+=`<rect x="310" y="352" width="40" height="30" fill="none" stroke="${P.dim}" stroke-dasharray="4 3"/><text x="330" y="372" fill="${P.dim}" font-size="11" text-anchor="middle">12</text>`;
+  [[4,20,40],[48,21,44],[96,22,26],[126,23,26],[156,24,44],[204,25,34],[242,26,30]].forEach(([x,n,w])=>s+=box(x,386,w,30,n));
+  s+=`<rect x="276" y="386" width="64" height="30" fill="none" stroke="${P.dim}" stroke-dasharray="4 3"/><text x="308" y="405" fill="${P.dim}" font-size="9" text-anchor="middle">FLEA MKT</text>`;
+  s+=box(350,386,320,30,27);
+  s+=box(150,60,40,30,29)+box(500,40,34,24,32)+box(200,250,24,22,30)+box(290,282,24,20,31)+box(80,280,20,18,28);
+  s+=`<text x="245" y="349" fill="#f2c14e" font-size="16">★</text><text x="262" y="349" fill="#f2c14e" font-size="9">YOU</text>`;
+  s+=`<rect x="0" y="0" width="${W}" height="${H}" fill="none" stroke="${P.line}" stroke-width="2" stroke-dasharray="8 6" opacity=".7"/>`;
+  s+=`<g transform="translate(640 34)"><circle r="16" fill="${P.bg}" stroke="${P.line}" stroke-width="2"/><path d="M0 -11 L4 2 L-4 2Z" fill="${P.txt}"/><text y="12" fill="${P.dim}" font-size="9" text-anchor="middle">N</text></g>`;
+  document.getElementById(el).innerHTML=s+'</svg>'; }
+function list(el,mode){ const sec=(h,a)=>`<h3>${h}</h3>`+a.map(([n,i])=>`<div class="r${n==='THE BODEGA'?' hi':''}">${mode==='col'?`<u style="background:${PAL[i%6]}"></u>`:''}<i>${i}</i>${n}</div>`).join('');
+  document.getElementById(el).innerHTML=`<div class="srch">GO TO: TYPE A NAME...</div>`+sec('MARKET ST',G.market.slice(0,8))+sec('THE HUDSON',G.hudson.slice(0,5))+sec('CENTRAL PARK',G.park.slice(0,3))+`<div class="r" style="color:var(--md)">▼ 16 MORE</div>`; }
+map('mA','mono');list('lA','mono');map('mB','mono');map('mC','col');list('lC','col');
+</script></body></html>

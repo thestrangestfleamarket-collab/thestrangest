@@ -129,7 +129,9 @@
      "https://opengameart.org/content/car-sound-effects-pack-low-quality",
      "https://opengameart.org/content/amb-rain-loop-1",
      "https://opengameart.org/content/rain-long-thunder",
-     "https://opengameart.org/content/100-cc0-sfx-2"
+     "https://opengameart.org/content/100-cc0-sfx-2",
+     "https://opengameart.org/content/stream-sounds",
+     "https://opengameart.org/content/40-cc0-water-splash-slime-sfx"
     ],
     "authors": {
      "step_stone, step_grass": "Fantozzi (freesound.org pack 10338), cut by qubodup",
@@ -138,13 +140,22 @@
      "latch": "Cough-E",
      "car_engine, car_start, car_stop, car_door_open, car_door_close, horn": "GGBotNet",
      "rain": "Kresiek The Furry",
-     "thunder": "rubberduck; WuxiaScrub"
+     "thunder": "rubberduck; WuxiaScrub",
+     "falls": "kurt (OpenGameArt, Stream Sounds: loudstream), CC-BY 3.0: credit kurt",
+     "splash": "rubberduck"
     }
    },
    "licence": {
     "name": "CC0 1.0",
     "url": "https://creativecommons.org/publicdomain/zero/1.0/",
-    "snapshot": "data/full/sfx/licence.txt"
+    "snapshot": "data/full/sfx/licence.txt",
+    "except": {
+     "falls": {
+      "name": "CC-BY 3.0",
+      "url": "https://creativecommons.org/licenses/by/3.0/",
+      "credit": "Stream Sounds by kurt, opengameart.org/content/stream-sounds"
+     }
+    }
    }
   }
  ]

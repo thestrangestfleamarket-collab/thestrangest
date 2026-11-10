@@ -77,7 +77,7 @@ const THEATRE={}; window.THEATRE=THEATRE;
     { const u=up+.9, v=Dm-.8; box(u-.45,v-.45,u+.45,v+.45,0,1.0,0x2a6a8a); box(u-.43,v-.43,u+.43,v+.43,1.9,2.2,0x2a6a8a); glow(()=>box(u-.44,v-.46,u+.44,v-.44,1.95,2.15,0xff80c0)); box(u-.42,v-.42,u+.42,v+.42,1.0,1.03,C.glass);
       for(let i=0;i<9;i++)ball(u-.28+(i%3)*.28,v-.28+Math.floor(i/3)*.28,1.12,.12,[0xe0c040,0xe06080,0x60a0e0,0x80c060][i%4]); for(const a of [-1,1])for(const b of [-1,1])box(u+a*.42-.02,v+b*.42-.02,u+a*.42+.02,v+b*.42+.02,1.0,1.9,C.steel); box(u-.02,v-.02,u+.02,v+.02,1.5,1.9,C.steel); ball(u,v,1.48,.06,C.steel);
       pic(u,v-.47,.55,.5,.24,0,-1,hand('OUT OF\nORDER',100,48,'#f0e6c8','#a81c28',18)); sol(u-.45,v-.45,u+.45,v+.45);
-      use('THE CLAW MACHINE',u,v,1,2.2,()=>SAY('OUT OF ORDER. SOMEBODY\'S BEAR IS STILL IN THERE.','#c8a090'));
+      use('THE OLD CLAW MACHINE',u,v,1,2.2,()=>SAY('OUT OF ORDER. SOMEBODY\'S BEAR IS STILL IN THERE.','#c8a090'));
       const lu=Wm-.8, lv=Dm-2.1; box(lu-.35,lv-.35,lu+.35,lv+.35,0,.62,0x8a6a40); ball(lu-.1,lv,.66,.14,0xc84040); ball(lu+.12,lv+.12,.64,.11,0x404080); cyl(lu+.15,lv-.15,.03,.4,1.05,C.dark,.03,6); box(lu+.09,lv-.21,lu+.21,lv-.09,1.0,1.1,C.dark);
       pic(lu-.36,lv,.2,.6,.3,-1,0,hand('LOST +\nFOUND',100,50,'#c8a878','#16110d',18)); sol(lu-.35,lv-.35,lu+.35,lv+.35);
       const LF=['A SINGLE GLOVE, THREE UMBRELLAS AND A RETAINER.','SOMEBODY\'S FALSE TEETH. NOBODY HAS ASKED.','A PHOTOGRAPH OF A DOG IN A HAT.','ONE ROLLER SKATE, LACED.'];

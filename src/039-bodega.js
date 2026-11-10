@@ -1242,7 +1242,7 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
       M.milkcrates(bo.x0+.25,bo.y1+.18,3); M.milkcrates(bo.x1-1.05,bo.y1+.18,2); }
     M.gatebox(bo.x0+.2,bo.x1-.2,bo.y1,114); M.bell(bm,bo.y1,98); M.meterbox(bo.x0+.9,bo.y1,30); M.number(bo.x0+1.6,bo.y1,82,'66');
     for(const p of PROPL.slice(n0))FRONT.push(p); }
-    { const K=SHARED.GHOSTK.GSK, BP=WP.bath&&WP.bath.park?WP.bath:null; if(BP)K.s=K.s*.75; const s=K.s; { const o=LAY.o('ghost'); K.o=BP?[LOTX((BP.x0+BP.x1)/2)-4*s,LOTY(BP.y0)]:[131+o.x/BLDK,W-8.3*s+o.y/BLDK]; K.HOME=[K.o[0]+.4*s,K.o[1]+4.1*s,K.o[0]+7.8*s,K.o[1]+9.1*s]; } const n3=PROPL.length;   // in Central Park three quarters of its size (owner, 8 Nov 2026: "lets put the bathhouse inside central park, 25% smaller")
+    { const K=SHARED.GHOSTK.GSK, BP=WP.bath&&WP.bath.park?WP.bath:null; if(BP)K.s=K.s*.75; K.flip=!!(BP&&BP.face==='s'); const s=K.s; { const o=LAY.o('ghost'); K.o=BP?[LOTX((BP.x0+BP.x1)/2)-4*s,LOTY(BP.y0)]:[131+o.x/BLDK,W-8.3*s+o.y/BLDK]; K.HOME=[K.o[0]+.4*s,K.o[1]+4.1*s,K.o[0]+7.8*s,K.o[1]+9.1*s]; } const n3=PROPL.length;   // in Central Park three quarters of its size (owner, 8 Nov 2026: "lets put the bathhouse inside central park, 25% smaller")
       for(const [k,dx,dy] of PRESETS['Preset Ghost Street 1'])if(!/row house|utility pole/.test(k))CATALOG[k](K.o[0]-3.5*s+dx,K.o[1]-.45*s+dy);
       for(const p of PROPL.slice(n3))GHOSTST.push(p); SHARED.BOD.GHOSTST=GHOSTST; SHARED.BOD.GSK=K; gdShape(GHOSTST,K,LAMPS);
     }
@@ -1377,7 +1377,7 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
     {id:'wstEnd',x0:RG.wx0,y0:WEND,x1:RG.wx1,y1:WEND+3,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2}
     ]:[{id:'kerb2',x0:MAP.x0,y0:FAR,x1:MAP.x1,y1:FAR+KB,z:0,col:kerbCol('x'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
     {id:'walk2',x0:RG.wx0,y0:FAR+KB,x1:MAP.x1,y1:MAP.y1,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2}]),
-    (G=>({id:'ghostst',bld:true,x0:G.u(G.ground.x0),y0:G.v(G.Y0-1.2),x1:G.u(G.ground.x1),y1:G.y1e,z:.1,col:(x,y)=>G.court(G.iu(x),y>G.y1e-.25?y:G.iv(y)),tex:null,rep:2}))(SHARED.BOD.GDK),
+    (G=>{ const xa=G.u(G.ground.x0), xb=G.u(G.ground.x1), ya=G.v(G.Y0-1.2), yb=G.ry(G.y1e); return {id:'ghostst',bld:true,x0:Math.min(xa,xb),y0:Math.min(ya,yb),x1:Math.max(xa,xb),y1:Math.max(ya,yb),z:.1,col:(x,y)=>{ const yr=G.ry(y); return G.court(G.iu(x),yr>G.y1e-.25?yr:G.iv(y)); },tex:null,rep:2}; })(SHARED.BOD.GDK),
     {id:'grassW',x0:MAP.x0,y0:B00.y0,x1:B0.x0,y1:W,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},   // concrete behind the rows, no grass (owner, 9 Nov 2026)
     {id:'hudson',x0:BLOCK.hudson[0],y0:BLOCK.alley[1],x1:BLOCK.hudson[1],y1:CURB-KB,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},...PATCH].map(g=>g.id==='corner'||g.bld||g.id==='alley'||g.id==='prom'||g.col===RW?g:{...g,col:SW(g.col)});
   // a ground leaves out what a later one at its height covers: two painted in one place fight for the same pixels (the way through to the Hudson over the lawn and the walk)
@@ -1783,7 +1783,8 @@ const PROPS=__DATA__("data/props.json");
 function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3.2*s, W=6.8*s*SC, D=3*s*SC, X0=cx-W/2, X1=cx+W/2, Y0=Y1-D, dx=(W-6.8*s)/2;
   for(let i=GS.length-1;i>=0;i--){ const p=GS[i]; for(let j=LAMPS.length-1;j>=0;j--)if(LAMPS[j].prop===p)LAMPS.splice(j,1); GS.splice(i,1); }
   const G=SHARED.BOD.GDK={o,s,SC,X0,X1,Y0,Y1,W,D,cx,y1e:o[1]+8.3*s};
-  G.S=1.5; G.u=x=>cx+(x-cx)*G.S; G.v=y=>Y1+(y-Y1)*G.S; G.iu=x=>cx+(x-cx)/G.S; G.iv=y=>Y1+(y-Y1)/G.S;   // the whole bath house 1.5x about the middle of its front (owner, 8 Nov 2026); its court still ends at the street
+  G.S=1.5; G.flip=!!K.flip; const yc=Y1-D*G.S/2, F=G.flip?-1:1; G.rx=x=>G.flip?2*cx-x:x; G.ry=y=>G.flip?2*yc-y:y;   // flip: turned half round about its middle, its front to the south (the place's face 's')
+  G.u=x=>G.rx(cx+(x-cx)*G.S); G.v=y=>G.ry(Y1+(y-Y1)*G.S); G.iu=x=>cx+(G.rx(x)-cx)/G.S; G.iv=y=>Y1+(G.ry(y)-Y1)/G.S;   // the whole bath house 1.5x about the middle of its front (owner, 8 Nov 2026); its court still ends at the street
   G.ground={x0:X0-1.6,x1:X1+1.6};
   G.pool=[X0+.22,Y0+.22,X1-.22,(Y0+Y1)/2+.15];
   G.court=(x,y)=>{ const {hash,grain}=SHARED.BOD.g, sh=SHARED.BOD.K.sh, px=Math.floor(x*24), py=Math.floor(y*24);

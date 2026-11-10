@@ -1,5 +1,5 @@
 // EVERY BUILDING FACES ITS STREET (owner, 22 Oct 2026: "make sure the front of all buildings face the street they are on"; only Market St, 7 Nov 2026):
-// your flat's way out leaves you on Market St (the park side), the theatre's on the promenade (the river side); West St has no buildings and no filler; no garages between the rows' buildings.
+// your flat's way out and the theatre's leave you on Market St's sidewalk (the theatre on Market St, 8 Nov 2026); West St has no buildings and no filler; empty garages fill the gaps between Market St's buildings (8 Nov 2026).
 // Run: node tests/westst.cjs   (slow in a cloud container: software rendering)
 const {chromium}=require('playwright');
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
@@ -12,8 +12,8 @@ const {chromium}=require('playwright');
   await pg.evaluate(()=>__dbg.MAPK.MODS.apts.enterReal()); await idle(); await pg.waitForTimeout(800); await pg.evaluate(()=>__dbg.MAPK.MODS.apts.exitReal()); await idle(); await pg.waitForTimeout(500);
   { const o=await at(); ok(o.y>L.front-.5&&o.y<L.front+8,'your flat: out onto Market St\'s sidewalk, the park side ('+o.x.toFixed(1)+', '+o.y.toFixed(1)+')'); }
   if(await pg.evaluate(()=>!!STORE.inside.theatre)){ await pg.evaluate(()=>STORE.enter('theatre',true)); await idle(); await pg.waitForTimeout(800); await pg.evaluate(()=>STORE.exit('theatre')); await idle(); await pg.waitForTimeout(500);
-  { const o=await at(); ok(o.y<L.row2[0]+.5&&o.y>L.row2[0]-8,'the theatre: out onto the promenade, the river side ('+o.x.toFixed(1)+', '+o.y.toFixed(1)+')'); } }
+  { const o=await at(); ok(o.y>L.front-.5&&o.y<L.front+8,'the theatre: out onto Market St\'s sidewalk ('+o.x.toFixed(1)+', '+o.y.toFixed(1)+')'); } }
   const g=await pg.evaluate(wx=>{ const B=[...window.BLK.blds,...window.BLK.lots]; return {west:B.filter(q=>q.row===5).length,inside:B.filter(q=>q.row===1&&q.x1>wx+.1).length,pf:PFROWDBG().houses}; },L.wx);
-  ok(g.west===0&&g.pf===0,'West St: no buildings, no filler ('+JSON.stringify(g)+')'); ok(g.inside===0,'no garages between Market St\'s buildings ('+g.inside+')');
+  ok(g.west===0&&g.pf===0,'West St: no buildings, no filler ('+JSON.stringify(g)+')'); ok(g.inside>0,'empty garages fill the gaps between Market St\'s buildings ('+g.inside+')');
   ok(!errs.length,'no page errors'+(errs.length?': '+errs.join(' | '):''));
   console.log(bad?bad+' failed':'all street-facing checks passed'); await b.close(); process.exit(bad?1:0); })();

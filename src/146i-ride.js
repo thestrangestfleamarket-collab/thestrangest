@@ -1,6 +1,6 @@
 // THE RIDE: RIDE carries you on a thing you hold and then stand on or hang from — any item whose GRANTS is a kind registered here (ride: a hoverboard; lift: a balloon). Hold it and click to get on, click again to get off; WASD steers it, SPACE hops; others see you on it.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, ITEMS, keys, LEVELS, ONLINE, pos, RAG, RIDE, ROOMS, SFX, SPEED, st, VIT, VLOOK, W3, WIELD} from './003b-systems.js';
+import {CLOCK, FORAGE, ITEMS, keys, LEVELS, ONLINE, pos, RAG, RIDE, ROOMS, SFX, SPEED, st, VIT, VLOOK, W3, WIELD} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {SYS, TILE} from './006-map-pre.js';
@@ -13,7 +13,7 @@ Object.assign(RIDE,{on:null,kind:null,v:0,hd:0,lift:0,z:0,vz:0,dry:false,ease:20
   const kindOf=id=>RIDE.kinds[prop(id,'grants')]||(RIDE.kinds[id]&&RIDE.kinds[id].world?RIDE.kinds[id]:null); RIDE.kindOf=kindOf;
   // what you ride wears the owner's look for it (VLOOK, by the item's id; a car is dressed by its own maker)
   const made=id=>{ const k=kindOf(id), m=k.make(id); return k.world||k.noLook?m:VLOOK.dress(id,m); };
-  const M=new Map(), mesh=id=>{ let m=M.get(id); if(!m){ m=made(id); m.userData.anyRoom=true; m.traverse(c=>{ if(c.isMesh){ c.castShadow=true; c.userData.ownMat=true; } }); scene.add(LEVELS.own(m,'*')); M.set(id,m); } return m; };
+  const M=new Map(); CLOCK.movers.push(()=>M.values()); const mesh=id=>{ let m=M.get(id); if(!m){ m=made(id); m.userData.anyRoom=true; m.traverse(c=>{ if(c.isMesh){ c.castShadow=true; c.userData.ownMat=true; } }); scene.add(LEVELS.own(m,'*')); M.set(id,m); } return m; };
   // held, it is a WIELD tool: a click gets on; on it, a click (or the same key) gets off
   const hold=(id,k)=>{ const w={name:(FORAGE.NM&&FORAGE.NM[id])||id.toUpperCase(),hint:k.hint||'E GETS ON; E GETS OFF.',make:()=>{ const g=(k.hand||k.make)(id); g.scale.multiplyScalar(k.held||.6); g.head=new V3(0,.4,0); return g; },ekey:1,use:()=>{ RIDE.on?(RIDE.cur&&RIDE.cur.leave?RIDE.cur.leave(RIDE):RIDE.off()):RIDE.mount(id); },aim:(dt,aim)=>{ aim.set(Math.sin(SHARED.heading)*.25,-.95,Math.cos(SHARED.heading)*.25).normalize(); return true; }};
     (WIELD.pend=WIELD.pend||[]).push([id,w]); if(WIELD.kind)WIELD.kind(id,w); };
@@ -23,7 +23,7 @@ Object.assign(RIDE,{on:null,kind:null,v:0,hd:0,lift:0,z:0,vz:0,dry:false,ease:20
     RIDE.on=id; RIDE.cur=k; RIDE.v=0; RIDE.hd=SHARED.heading; RIDE.z=0; RIDE.vz=0; RIDE.lean=0; RIDE.dry=!!k.dry; RIDE.ease=k.ease||20; RIDE.t0=performance.now(); st.move=null;
     st.ride=k.pose(RIDE); SHARED.target=null; if(k.on)k.on(RIDE); share(); say(k.onSay||'YOU STEP ON.'); if(SFX.play)SFX.play('step',{vol:.4,pitch:.7}); return true; };
   RIDE.off=(why,fall)=>{ '@later'; if(!RIDE.on)return; const k=RIDE.cur, id=RIDE.on; RIDE.on=null; RIDE.cur=null; RIDE.dry=false; RIDE.ease=20; st.ride=null; RIDE.lift=0; if(k&&k.off)k.off(id,fall); const m=M.get(id); if(m)m.visible=false; share();
-    if(why)say(why,fall?'#c8a090':'#e8e2cc'); if(fall)SHARED.trip=true; };
+    if(why)say(why,fall?'#c8a090':'#e8e2cc'); if(fall)SHARED.trip=k&&k.fly||true; };   // fly: how hard a fall throws you (SHARED.trip, 075)
   RIDE.floor=g=>{ const k=RIDE.cur; return k&&k.floor?k.floor(g,RIDE):g+RIDE.lift; };
   // the board's own motion: it keeps its speed, carves toward where you steer, brakes when you pull back; a wall at speed throws you off
   RIDE.steer=(dt,mx,mz)=>{ '@later'; const R=RIDE, k=R.cur, id=R.on; if(!k)return; const lost=!k.world&&!FORAGE.has(id)||!free()||(indoors()&&!k.inside); if(lost||!k.world&&WIELD.on!==id){ if(!lost&&k.leave)k.leave(R); else { R.off(ROOMS.cur?'YOU PICK IT UP; NOT INDOORS.':''); return; } }

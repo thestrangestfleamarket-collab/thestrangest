@@ -6,7 +6,7 @@ import {QS, RING, TILE} from './006-map-pre.js';
 import {WATER} from './009-down.js';
 import {HEMI} from './064-map-post.js';
 import {CREATS} from './087-npc-creatures.js';
-Object.assign(CLOCK,{h:17.4,sunH:null,run:false,speed:1,shadeH:16,sunV:new THREE.Vector3(0,1,0),moonV:new THREE.Vector3(0,1,0),
+Object.assign(CLOCK,{movers:[],h:17.4,sunH:null,run:false,speed:1,shadeH:16,sunV:new THREE.Vector3(0,1,0),moonV:new THREE.Vector3(0,1,0),
   // the calendar: the day (the same for everyone), its season (north; ?season= or the owner's SEASON pick in ATMOSPHERE to preview one) and the moon's phase on an 8-day cycle (0 new, .5 full)
   day:()=>Math.floor(Date.now()/86400000),seasonOf:day=>{ const m=new Date(day*86400000).getUTCMonth(); return m<2||m===11?'winter':m<5?'spring':m<8?'summer':'autumn'; },
   SEASONS:{spring:{tint:0x9fd08a,mix:0,desat:0,amb:0,snow:0,temp:14},summer:{tint:0xd9b35a,mix:.1,desat:.02,amb:.03,snow:0,temp:26},autumn:{tint:0xc8763a,mix:.26,desat:.08,amb:.05,snow:0,temp:12},winter:{tint:0xcfe0f0,mix:.24,desat:.5,amb:.08,snow:.6,temp:1}},
@@ -61,7 +61,7 @@ Object.assign(CLOCK,{h:17.4,sunH:null,run:false,speed:1,shadeH:16,sunV:new THREE
   CLOCK.set=h=>{ CLOCK.h=((h%24)+24)%24; };
   CLOCK.dark=()=>elev(CLOCK.h)<-2;
   const DYN=()=>{ const out=new Set(); if(W3&&W3.group)out.add(W3.group); for(const N of NPCS)if(N.g)out.add(N.g); for(const x of NPCS.extra||[])if(x&&x.g)out.add(x.g);
-    if(CREATS)for(const N of CREATS)if(N.g)out.add(N.g); for(const k of ['BOAT','DRONE'])if(window[k]&&window[k].g)out.add(window[k].g); for(const o of ONLINE.others?.values()||[])if(o.fig&&o.fig.g)out.add(o.fig.g); return out; };
+    if(CREATS)for(const N of CREATS)if(N.g)out.add(N.g); for(const k of ['BOAT','DRONE'])if(window[k]&&window[k].g)out.add(window[k].g); for(const o of ONLINE.others?.values()||[])if(o.fig&&o.fig.g)out.add(o.fig.g); for(const f of CLOCK.movers)for(const o of f())if(o)out.add(o); return out; };
   { const SM=renderer.shadowMap, orig=SM.render;
     SM.render=(lights,sc,camera)=>{ if(sc!==scene)return orig.call(SM,lights,sc,camera); const rest=lights.filter(L=>L!==sunL&&L!==sunD&&L!==sunF); if(!CLOCK.main){ SM.needsUpdate=true; return orig.call(SM,rest,sc,camera); } const m0=camera.layers.mask, dk=!!(ROOMS&&ROOMS.dark&&ROOMS.dark()); camera.layers.enable(3);
       const st=dk?[]:[sunL,sunF].filter(L=>lights.includes(L)&&L.shadow.needsUpdate);

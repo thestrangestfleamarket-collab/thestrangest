@@ -22,6 +22,8 @@ FOUNT.held=(x,z)=>FOUNT.holds.some(f=>f(x,z));
   const TRACK=FOUNT.TRACK=[4.2,1.9]; FOUNT.trackD=(x,y)=>{ const S=FOUNT.S; if(!S||x>S.wx1+2.5||y>S.wy1+2.5)return 1e9; return Math.abs(shoreL(x,y)-TRACK[0])-TRACK[1]; };
   FOUNT.at=P=>{ if(FOUNT.S)return FOUNT.S; const wx1=P.x1-8, wy1=P.y1-8, R=23, cx=wx1-R-8; let yS=P.round[1]+4.2+3;
     const C={x:cx,y:Math.ceil(yS+3.5+R)}, BL=LEVEL.parkPlaces.bigLake||{}, L={x:BL.x??P.x1,y:BL.y??P.y1,rx:BL.rx||110,ry:BL.ry||85}; L.cx=L.x+L.rx+6; L.cy=L.y+L.ry+6;
+    // the lake's deep holes (owner, 28 Oct 2026: "make the lake and hudson go very deep in certain spots"): two, 25 and 40 m down, black without a light; [x, y, radius, depth], clear of the islands
+    FOUNT.HOLES=[[L.x-L.rx*.62,L.y-L.ry*.12,7,25],[L.x+L.rx*.2,L.y-L.ry*.35,9,40]];
     FOUNT.S={C,R,L,wx1,wy1}; const S=FOUNT.S, pts=[];
     for(let i=0;i<600;i++){ const a=Math.PI*2*i/600, cx=Math.cos(a), cy=Math.sin(a); let t=0; while(t<220&&raw(L.x+cx*t,L.y+cy*t)<0)t+=.2; let t0=Math.max(0,t-.2), t1=t; for(let k=0;k<16;k++){ const t=(t0+t1)/2; if(raw(L.x+cx*t,L.y+cy*t)<0)t0=t; else t1=t; } pts.push([L.x+cx*t0,L.y+cy*t0]); }
     // the whole shore (owner, 7 Nov 2026: "the stream should lead to the actual large lake in corner ... not all fitting in this section"): most of it lies past the forcefield, seen, never walked
@@ -64,8 +66,7 @@ FOUNT.held=(x,z)=>FOUNT.holds.some(f=>f(x,z));
     PARK.later(()=>{ try{ build(); }catch(e){ console.warn('FOUNT: not built',e); } }); };
   const build=()=>{ '@park'; const P=PARK, S=FOUNT.S, {C,R,L}=S, X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0)), Y=SHARED.BOD.YS, T=TILE, WU=T/.84, V3=THREE.Vector3, grp=MAPG.park||scene, CX=X(C.x), CZ=Z(C.y);
     const LV=-.22*WU, bedM=FOUNT.bedM, BK=P.brook, bk=(a,b)=>{ const h=BK&&BK.h(a,b); return h==null?1e9:h*WU-.5*ZU; }, bedY0=d=>-bedM(d)*WU-.04; FOUNT.LV=LV;
-    // the lake's deep holes (owner, 28 Oct 2026: "make the lake and hudson go very deep in certain spots"): two, 25 and 40 m down, black without a light
-    const HOLE=[[L.x-L.rx*.45,L.y-L.ry*.15,7,25],[L.x+L.rx*.2,L.y-L.ry*.35,9,40]], pit=(x,y)=>HOLE.reduce((a,[hx,hy,r,dd])=>a+dd*Math.exp(-((x-hx)**2+(y-hy)**2)/(r*r)),0);
+    const HOLE=FOUNT.HOLES, pit=(x,y)=>HOLE.reduce((a,[hx,hy,r,dd])=>a+dd*Math.exp(-((x-hx)**2+(y-hy)**2)/(r*r)),0);
     const bedY=(d,x,y)=>bedY0(d)-(x!=null&&d>1.5?pit(x,y)*Math.min(1,(d-1.5)/3)*WU:0); FOUNT.bedY=bedY;
     FOUNT.bedAt=(x,z)=>{ if(SHARED.LVL!=='up')return null; const d=-lake(x/T+SHARED.BOD.OX-(P.ox||0),z/T+SHARED.BOD.OY-(P.oy||0)); const px=x/T+SHARED.BOD.OX-(P.ox||0), py=z/T+SHARED.BOD.OY-(P.oy||0); return d>-1?bedY(d,px,py):null; };
     { const mx=x=>x/T+SHARED.BOD.OX-(P.ox||0), mz=z=>z/T+SHARED.BOD.OY-(P.oy||0), a=[X(S.x0-3),X(L.cx+3)], b=[Z(S.y0-3),Z(L.cy+3)];   // the big lake in the one water (065a): its bed, a bank that rises past the shore

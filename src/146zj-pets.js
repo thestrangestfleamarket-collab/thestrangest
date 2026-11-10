@@ -164,6 +164,7 @@ window.PETS=PETS;
     const hb=new THREE.Mesh(new THREE.BoxGeometry(long*WU,Math.max(.3,metres)*WU,long*WU),new THREE.MeshBasicMaterial({visible:false})); hb.position.y=metres*WU/2; N.g.add(hb);
     N.th={name:o.mine?'PET '+(P.n||'YOUR '+K.name).toUpperCase():(o.owner?o.owner+"'S ":'')+(P.n||K.name).toUpperCase(),obj:hb,reach:1.6*TILE,near:2.6*TILE,tall:Math.max(.4,metres)*WU,act:()=>{ const r=o.rec||o.mine&&!o.preview&&out(); if(r&&now()-(r.pet||0)>5*60e3){ r.pet=now(); r.lo=cl(r.lo+2); keep(); } SAY(o.mine?(P.n||'YOUR '+K.name).toUpperCase()+(r&&r.hu>60?' NUZZLES YOUR POCKETS. IT IS HUNGRY.':' IS HAPPY TO SEE YOU.'):'IT SNIFFS YOUR HAND.','#9fe07f'); },
       acts:o.mine&&!o.preview&&!o.stay?[{name:'TELL '+(P.n||'YOUR '+K.name).toUpperCase()+' TO GO HOME',act:()=>PETS.goHome&&PETS.goHome()}]:null};
+    N.repaint=c=>paint(D,{...P,c},geo);   // (other zone colours on the same body: the owner's coats for the horse)
     UI.thing(N.th); return N; };
   const drop=N=>{ if(!N)return; const i=NPCS.indexOf(N); if(i>=0)NPCS.splice(i,1); N.g.removeFromParent(); if(N.th){ const j=UI.things.indexOf(N.th); if(j>=0)UI.things.splice(j,1); } N.me.geometry.dispose(); N.mixer&&N.mixer.stopAllAction(); };
   /* ---------- yours ---------- */
@@ -276,10 +277,14 @@ window.PETS=PETS;
   SYS.onStart(()=>{ const P=$('#looks'); if(P)new MutationObserver(()=>{ if(!P.hidden)draw(); }).observe(P,{attributes:true,attributeFilter:['hidden']}); if(MY)idx().then(draw).catch(()=>{}); },'146zj-pets');
   /* ---------- a pet's portrait: its own little stage, drawn into a canvas (the first day, the PETS menu) ---------- */
   const PV={key:'',busy:null,rt:{}};
-  const pvBuild=async P=>{ const K=(await idx()).by[P.k]; if(!K)return; const D=await kind(P.k), {P:Pp,T}=shape(D,P), R=rig(D,T), CL=clips(D,T), geo=SKIN.geom(D.mesh);
+  // a body on its own, standing idle (a portrait's, the vehicle editor's horse); repaint(c) gives it other zone colours
+  const still=async P=>{ const K=(await idx()).by[P.k]; if(!K)return null; const D=await kind(P.k), {P:Pp,T}=shape(D,P), R=rig(D,T), CL=clips(D,T), geo=SKIN.geom(D.mesh);
     geo.attributes.position.array.set(Pp); geo.attributes.position.needsUpdate=true; paint(D,P,geo); geo.computeVertexNormals();
     const me=new THREE.SkinnedMesh(geo,new THREE.MeshLambertMaterial({vertexColors:true})); me.add(R.bones[0]); me.bind(R.skeleton); SKINCULL(me);
-    const mix=new THREE.AnimationMixer(R.bones[0]), id=pickClip(CL,'idle'); if(id)mix.clipAction(CL[id]).play();
+    const mix=new THREE.AnimationMixer(R.bones[0]), id=pickClip(CL,'idle'); if(id)mix.clipAction(CL[id]).play(); mix.update(0);
+    me.repaint=c=>paint(D,{...P,c},geo); return {me,mix,Pp}; };
+  PETS.still=P=>still(P).then(r=>r&&r.me);
+  const pvBuild=async P=>{ const r=await still(P); if(!r)return; const {me,mix,Pp}=r;
     if(!PV.sc){ PV.sc=new THREE.Scene(); PV.sc.add(new THREE.HemisphereLight(0xffffff,0x506050,2.4)); const d=new THREE.DirectionalLight(0xffffff,1.6); d.position.set(1.5,3,2); PV.sc.add(d); PV.cam=new THREE.PerspectiveCamera(28,1,.01,100); }
     if(PV.me){ PV.sc.remove(PV.me); PV.me.geometry.dispose(); PV.me.material.dispose(); }
     const lo=[1e9,1e9,1e9], hi=[-1e9,-1e9,-1e9]; for(let i=0;i<Pp.length;i++){ const c=i%3; if(Pp[i]<lo[c])lo[c]=Pp[i]; if(Pp[i]>hi[c])hi[c]=Pp[i]; }

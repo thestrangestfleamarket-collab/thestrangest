@@ -1,6 +1,6 @@
 // THE CARS: the racing-cars kit's six cars (data/cars.json, CC0) parked on Market St (their spots in data/world.json's cars); double-click one to get in and drive it (a RIDE kind boarded where it stands, on VEH: W goes, S brakes and backs, A and D steer); GET OUT (or F) parks it where it stands. The section's server keeps where each car is parked and who drives it, so everyone sees the same cars, one driver a car.
 import {SHARED, THREE} from './003-shx.js';
-import {CARLAMPS, ONLINE, PB, pos, RADIO, RIDE, ROOMS, SKY, st, UI, VLOOK} from './003b-systems.js';
+import {CARLAMPS, ONLINE, PB, pos, RADIO, RIDE, ROOMS, SFX, SKY, st, UI, VLOOK} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {LEVEL, MODS, SOL, SYS, TILE} from './006-map-pre.js';
@@ -71,9 +71,11 @@ const CARD=__LAZY__("data/cars.json"), RADJ=__LAZY__("data/radio.json"), RFILE={
 
   /* ---------- each model a RIDE kind boarded where it stands, on VEH ---------- */
   const POSE={k:'car',steer:0,z:0};
-  const kindFor=model=>{ if(KINDS[model])return KINDS[model]; const D=DATA.cars[model], [w,h,L]=D.size, r=D.r, rest=.15, top=D.low+h;
-    const V=VEH.make({half:[w*.46*M1,(top-.25)/2*M1,L*.47*M1],cy:((top+.25)/2-r)*M1,lift:(r+.05)*M1,mass:1200,wheels:D.wheels.map(q=>[q[0]*M1,(q[1]-r+rest)*M1,q[2]*M1]),r:r*M1,rest:rest*M1,travel:.12*M1,stiff:30,grip:3,
-      engine:2400*M0,reverse:1200*M0,vmax:20*M0,vback:4*M0,brake:50*M0,idle:5*M0,steer:.55,steerFade:8*M0,knockR:1.6*M1,down:r*M1,wy:D.wheels[0][1],unit:M1});
+  // its vehicle at the size the owner gave its look (VLOOK 'car:<model>'): the body, wheels and springs grow with it
+  const specFor=model=>{ const D=DATA.cars[model], [w,h,L]=D.size, r=D.r, rest=.15, top=D.low+h, S=M1*VLOOK.scaleOf('car:'+model);
+    return {half:[w*.46*S,(top-.25)/2*S,L*.47*S],cy:((top+.25)/2-r)*S,lift:(r+.05)*S,mass:1200,wheels:D.wheels.map(q=>[q[0]*S,(q[1]-r+rest)*S,q[2]*S]),r:r*S,rest:rest*S,travel:.12*S,stiff:30,grip:3,
+      engine:2400*M0,reverse:1200*M0,vmax:20*M0,vback:4*M0,brake:50*M0,idle:5*M0,steer:.55,steerFade:8*M0,knockR:1.6*S,down:r*S,wy:D.wheels[0][1],unit:S}; };
+  const kindFor=model=>{ if(KINDS[model])return KINDS[model]; const D=DATA.cars[model], V=VEH.make(specFor(model));
     const k=KINDS[model]={name:D.name,world:true,cat:'cars',V,seat:(m,o)=>{ const c=m.userData.cab; return c?o.copy(c.seat):o.set(0,.5,0); }, fit:m=>{ const c=m.userData.cab; return c?c.fit:1; },make:()=>build(model),lift:.001,acc:4,turn:1.4,drag:1.2,knock:99,hop:false,ease:20,
       on:()=>{ if(!PB.R)PB.load(); }, off:()=>V.drop(),
       pose:R=>{ POSE.steer=V.on?V.steer*2:0; return POSE; },
@@ -100,7 +102,7 @@ const CARD=__LAZY__("data/cars.json"), RADJ=__LAZY__("data/radio.json"), RFILE={
   const getIn=id=>{ '@later'; const C=CARS.get(id); if(!C||!DATA||!inMap(C))return; if(mine)return; if(RIDE.on)return say('GET OFF WHAT YOU ARE RIDING FIRST.','#c8a090'); if(C.by&&C.by!==ONLINE.me)return say('SOMEONE IS DRIVING IT.','#c8a090');
     if(ONLINE.on&&ONLINE.me){ want=id; ONLINE.send({t:'car',k:id,on:1}); setTimeout(()=>{ if(want===id){ want=null; say('THE CAR DID NOT ANSWER. TRY AGAIN.','#c8a090'); } },4000); } else board(id); };
   const getOut=()=>{ '@later'; const C=mine; if(!C)return; RAD.tune(C,0); mine=null; UI.distMin=null; HUD.style.display='none'; C.x=pos.x; C.z=pos.z; C.hd=SHARED.heading; C.by=null; RIDE.off('YOU GET OUT AND LEAVE IT PARKED.'); if(CAR.v0&&CAR.v0!==UI.view)UI.setView(CAR.v0); CAR.v0=null; if(ONLINE.on)ONLINE.send({t:'car',k:C.id,on:0,at:[C.x,C.z,C.hd]}); at(C);
-    const D=DATA.cars[C.model], s=(D.size[0]/2+.7)*M1; pos.x=C.x-Math.cos(C.hd)*s; pos.z=C.z+Math.sin(C.hd)*s; SHARED.py=SHARED.groundY(pos.x,pos.z); };
+    const D=DATA.cars[C.model], s=(D.size[0]/2*VLOOK.scaleOf('car:'+C.model)+.7)*M1; pos.x=C.x-Math.cos(C.hd)*s; pos.z=C.z+Math.sin(C.hd)*s; SHARED.py=SHARED.groundY(pos.x,pos.z); };
   // the car you drive carries its lamps (150pc), measured once from its model standing straight
   const DIMS={}; CARLAMPS.src.push(out=>{ const C=mine; if(!C||!C.mesh)return; const m=C.mesh; let d=DIMS[C.model]; if(!d){ const r=m.rotation.y, p=m.position.clone(); m.rotation.set(0,0,0); m.position.set(0,0,0); const b=new THREE.Box3().setFromObject(m); m.rotation.set(0,r,0); m.position.copy(p); m.updateMatrixWorld(); d=DIMS[C.model]=[b.max.x-b.min.x,b.max.y-b.min.y,b.max.z-b.min.z,b.min.y]; }
     out.push({x:pos.x,y:SHARED.py,z:pos.z,r:SHARED.heading,dim:d}); });
@@ -121,10 +123,10 @@ const CARD=__LAZY__("data/cars.json"), RADJ=__LAZY__("data/radio.json"), RFILE={
   RAD.tune=(C,n)=>{ if(!C)return; if(stOf(C)===n)return; ONLINE.put('radio:'+C.id,n); showRadio(C); };
   RAD.next=()=>{ '@later'; if(!mine)return; wake(); if(!RAD.data){ if(!RAD.asked){ RAD.asked=true; RADJ().then(d=>{ RAD.data=d; RAD.next(); }).catch(e=>console.warn('CARS: the radio did not load',e)); } return; }
     const n=(stOf(mine)+1)%(RAD.data.stations.length+1); RAD.tune(mine,n); const S=station(n); say(S?'THE RADIO: '+S.call+', '+S.name+'.':'THE RADIO IS OFF.'); };
-  const wake=()=>{ if(RAD.ctx){ if(RAD.ctx.state!=='running')RAD.ctx.resume(); return; } if(!RAD.data)return; try{ RAD.ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} };
+  const wake=()=>{ if(RAD.data)RAD.ctx=SFX.wake(); };
   addEventListener('pointerdown',wake); addEventListener('keydown',wake);
   const chan=S=>{ '@later'; let c=RAD.ch[S.id]; if(c||!RAD.ctx)return c; const a=new Audio(RFILE[S.id]); a.preload='auto'; a.loop=true; const x=RAD.ctx, src=x.createMediaElementSource(a), lp=x.createBiquadFilter(), g=x.createGain(), pan=x.createStereoPanner();
-    lp.type='lowpass'; lp.frequency.value=900; g.gain.value=0; src.connect(lp); lp.connect(g); g.connect(pan); pan.connect(x.destination); return RAD.ch[S.id]={a,lp,g,pan,quiet:0,chk:0}; };
+    lp.type='lowpass'; lp.frequency.value=900; g.gain.value=0; src.connect(lp); lp.connect(g); g.connect(pan); pan.connect(SFX.out(x)); return RAD.ch[S.id]={a,lp,g,pan,quiet:0,chk:0}; };
   const NOW=()=>performance.now()/1000;
   const P3=new THREE.Vector3(); let rT=0, fT=0;
   // a room's source (a jukebox): heard whole by whoever is in its room; one with its own set (an apartment's radio, 150fb) keeps its station (st), volume (vol), where it is heard (here) and where it stands (at: quieter as you walk away, gone at R)
@@ -165,7 +167,7 @@ const CARD=__LAZY__("data/cars.json"), RADJ=__LAZY__("data/radio.json"), RFILE={
   // copies the owner parks (ADMIN > VEHICLE EDITOR, the map's newcars): added and taken away while you play
   CAR.add=c=>{ if(!c||CARS.has(c.id))return; CARS.set(c.id,{id:c.id,model:c.model,x:X(c.x),z:Z(c.y),hd:(c.hd||0)*Math.PI/180,by:null,mesh:null,sol:null,copy:true}); if(DATA)show(); };
   CAR.remove=id=>{ const C=CARS.get(id); if(!C||C.by)return; CARS.delete(id); if(C.mesh){ scene.remove(C.mesh); const i=UI.things.findIndex(t=>t.obj===C.mesh); if(i>=0)UI.things.splice(i,1); } if(C.sol)C.sol[0]=C.sol[1]=C.sol[2]=C.sol[3]=-1e7; };
-  VLOOK.on(id=>{ if(DATA&&(!id||id.startsWith('car:')))for(const C of CARS.values())at(C); });
+  VLOOK.on(id=>{ if(DATA&&(!id||id.startsWith('car:'))){ for(const C of CARS.values())at(C); for(const m in KINDS)if(!id||id==='car:'+m)KINDS[m].V.size(specFor(m)); } });
   let asked=false; SYS.add('life',()=>{ if(asked||!SYS.started)return; asked=true; CARD().then(d=>{ DATA=d; for(const m in d.cars)VLOOK.kind('car:'+m,{name:d.cars[m].name,grp:'CARS YOU DRIVE',make:()=>build(m),park:m,traffic:m}); show(); }).catch(e=>console.warn('CARS: the kit did not load',e)); },'150p-cars');
   CAR.dbg=()=>({loaded:!!DATA,cars:[...CARS.values()].map(C=>({id:C.id,model:C.model,x:+(C.x/T+SHARED.BOD.OX).toFixed(1),z:+(C.z/T+SHARED.BOD.OY).toFixed(1),hd:+C.hd.toFixed(2),by:C.by,shown:!!(C.mesh&&C.mesh.visible)})),driving:mine&&mine.id,veh:mine?!!KINDS[mine.model].V.on:false,rb:mine&&KINDS[mine.model].V.rb?(()=>{ const V=KINDS[mine.model].V, p=V.rb.translation(), r=V.rb.rotation(); return {p:[p.x/T+SHARED.BOD.OX,p.y/T,p.z/T+SHARED.BOD.OY].map(v=>+v.toFixed(2)),r:[r.x,r.y,r.z,r.w].map(v=>+v.toFixed(2)),sp:+(V.sp/T).toFixed(2)}; })():null,v:+((RIDE.v||0)/T).toFixed(2)});
 }

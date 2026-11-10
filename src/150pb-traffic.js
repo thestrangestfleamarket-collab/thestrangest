@@ -1,6 +1,6 @@
 // THE TRAFFIC: cars driving both ways along Market St and flying cars and small spacecraft above them, from the shared clock so every player sees the same ones; the park gate's crossing light (built in 069-dress) turns on a timer or its button, the cars stop at its line and for anyone in the road.
 import {SHARED, THREE} from './003-shx.js';
-import {CARLAMPS, CULL, DRESS, ONLINE, PARK, pos, SPEED, UI, VLOOK, WALKS} from './003b-systems.js';
+import {CARLAMPS, CLOCK, CULL, DRESS, ONLINE, PARK, pos, SPEED, UI, VLOOK, WALKS} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {MODS, OUT, SOL, SYS, TILE} from './006-map-pre.js';
@@ -41,14 +41,15 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
       UI.thing({name:'CROSSING BUTTON',obj:g,reach:1.2*T,near:3*T,tall:.4*M0,act:()=>TRAFFIC.press()}); } }
 
   /* ---------- the vehicles: the game's own cars (150p) and Polyfork's (data/traffic.json), one model made once and copied ---------- */
-  let D=null; const TPL={}, POOL={}, GRP=new THREE.Group(); scene.add(GRP);
+  let D=null; const TPL={}, POOL={}, GRP=new THREE.Group(); scene.add(GRP); CLOCK.movers.push(()=>[GRP]);
   const MAT=new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide});
   const geo=Q=>{ const q=new Int16Array(Uint8Array.from(atob(Q.p),c=>c.charCodeAt(0)).buffer), col=Uint8Array.from(atob(Q.c),c=>c.charCodeAt(0)), b=Q.b, P=new Float32Array(q.length), C=new Float32Array(col.length), c=new THREE.Color();
     for(let i=0;i<q.length;i++){ const a=i%3; P[i]=b[a]+(q[i]+32768)/65535*(b[a+3]-b[a]); }
     for(let i=0;i<col.length;i+=3){ c.setRGB(col[i]/255,col[i+1]/255,col[i+2]/255,THREE.SRGBColorSpace); C[i]=c.r; C[i+1]=c.g; C[i+2]=c.b; }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C,3)); g.computeVertexNormals(); g.computeBoundingSphere(); return g; };
   const lid=k=>D&&D[k]?'tr:'+k:'car:'+k, size=k=>{ const s=D&&D[k]?D[k].size:[2,1.4,4.9], l=VLOOK.scaleOf(lid(k)); return l===1?s:s.map(v=>v*l); };
-  const tpl=k=>{ if(TPL[k])return TPL[k]; let g=null; if(D[k]){ g=new THREE.Group(); const me=new THREE.Mesh(geo(D[k].parts.body),MAT); me.name='BODY'; me.castShadow=true; g.add(me); g.scale.setScalar(M1); VLOOK.dress('tr:'+k,g); } else if(MODS.cars&&MODS.cars.build)g=MODS.cars.build(k); if(g)g.traverse(o=>{ o.userData.anyRoom=false; }); return TPL[k]=g; };
+  const body=(Q,k)=>{ const g=new THREE.Group(); for(const n in Q.parts){ const q=Q.parts[n], me=new THREE.Mesh(geo(q),MAT); me.name=n; me.position.set(...q.at); me.castShadow=true; g.add(me); } g.scale.setScalar(M1); return VLOOK.dress('tr:'+k,g); };
+  const tpl=k=>{ if(TPL[k])return TPL[k]; let g=null; if(D[k])g=body(D[k],k); else if(MODS.cars&&MODS.cars.build)g=MODS.cars.build(k); if(g)g.traverse(o=>{ o.userData.anyRoom=false; }); return TPL[k]=g; };
   const take=k=>{ const P=POOL[k]||(POOL[k]=[]); if(P.length)return P.pop(); const t=tpl(k); if(!t)return null; const m=t.clone(); GRP.add(m); if(MODS.cars&&MODS.cars.cab)MODS.cars.cab(m); return m; };
   const give=C=>{ if(!C.m)return; C.m.visible=false; (POOL[C.model]||(POOL[C.model]=[])).push(C.m); C.m=null; };
   const pick=(L,C,lap)=>{ if(C.fixed)return C.fixed; const list=L.fly?L.FL:L.GR; return list[(C.i*7+lap*3+L.seed*5)%list.length]; };
@@ -79,7 +80,7 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
   const carsIn=()=>!!(MODS.cars&&MODS.cars.dbg&&MODS.cars.build&&MODS.cars.dbg().loaded);
   let asked=false; SYS.add('life',()=>{ if(asked||!SYS.started)return; asked=true; TD().then(d=>{ D=d; const ks=Object.keys(d).filter(k=>d[k]&&d[k].parts);
       const fl=ks.filter(k=>d[k].fly), gr=ks.filter(k=>!d[k].fly), ready=()=>{ const g=carsIn()?gr.concat(GAME):gr; for(const L of LANES){ L.FL=fl; L.GR=g; } };
-      for(const k of ks)VLOOK.kind('tr:'+k,{name:d[k].name,grp:d[k].fly?'FLYING TRAFFIC':'ROAD TRAFFIC',make:()=>{ const g=new THREE.Group(), me=new THREE.Mesh(geo(d[k].parts.body),MAT); me.name='BODY'; g.add(me); g.scale.setScalar(M1); return VLOOK.dress('tr:'+k,g); },traffic:k});
+      for(const k of ks)VLOOK.kind('tr:'+k,{name:d[k].name,grp:d[k].fly?'FLYING TRAFFIC':'ROAD TRAFFIC',make:()=>body(d[k],k),traffic:k});
       ready(); fleet(); let n=0; const again=()=>{ if(carsIn()){ for(const L of LANES)for(const C of L.cars){ give(C); C.lap=-1; C.model=null; } ready(); } else if(++n<30)setTimeout(again,2000); }; setTimeout(again,2000);
     }).catch(e=>console.warn('TRAFFIC: the vehicles did not load',e)); },'150pb-traffic');
   // their lamps (150pc): every car on the road, measured once from its model

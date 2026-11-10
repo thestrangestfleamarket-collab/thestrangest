@@ -13,7 +13,7 @@ await grab('ghostdojo',async()=>{ const {X:BX,Y:BY,Z:BZ,gbox:GB,faceTex,bq,C}=SH
     const xi0=X0+T, xi1=X1-T, yi0=Y0+T, yi1=Y1-T, cx=(xi0+xi1)/2, cy=(yi0+yi1)/2, WD=J.DJWOOD;
     const lit=c=>Object.assign([Math.min(255,c[0]),Math.min(255,c[1]),Math.min(255,c[2])],{e:1});
     J.setDJ({H:160});
-    const BAY={a0:1.4,a1:5.2,z0:36,z1:124,out:.14}, DOOR={a0:W/2-1.2,a1:W/2+1.2,z0:0,z1:DH}, EW={a0:9.4,a1:12.4,z0:40,z1:124};
+    const KW=Math.min(1,W/14.6), BAY={a0:1.4*KW,a1:5.2*KW,z0:36,z1:124,out:.14}, DOOR={a0:W/2-1.2,a1:W/2+1.2,z0:0,z1:DH}, EW={a0:9.4*KW,a1:12.4*KW,z0:40,z1:124};   // the windows laid out for a 14.6-tile front, kept clear of the door on a narrower one
     const RND={back:[3.3],west:[D/2]}, RZc=76, RR=27;
     const UW=[{a0:2.0,a1:4.6},{a0:W-4.6,a1:W-2.0}], UZ0=H+42, UZ1=H+104, SIGN={a0:W/2-1.45,a1:W/2+1.45,z0:H+46,z1:H+100};
     const IVY={front:[[.25,262,1.3],[W-.3,150,.7]],west:[[.9,290,1.5],[3.5,210,1.3],[5.6,130,.9]],back:[[1.6,190,1.4],[8.6,250,1.7],[13.2,150,.8]],east:[[4.6,120,.8]]};

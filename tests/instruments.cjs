@@ -19,9 +19,9 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
   // the skills: MUSIC the first kind, with the four instruments
   const sk=await pg.evaluate(async()=>{ __dbg.UI.menuTab('pack','skills'); await new Promise(r=>setTimeout(r,500)); const t=(document.getElementById('packp')||{}).innerText||''; __dbg.UI.toggleMenu&&__dbg.UI.toggleMenu();
     const i=k=>t.indexOf(k); return {music:i('MUSIC'),wild:i('THE WILD'),guitar:i('GUITAR'),piano:i('PIANO'),drums:i('DRUMS'),harp:i('HARP'),sk:['piano','drums','harp'].map(k=>FORAGE.sk(k))}; });
-  rec('the skills list MUSIC first: GUITAR, PIANO, DRUMS, HARP, each starting at 10',sk.music>=0&&sk.music<sk.wild&&[sk.guitar,sk.piano,sk.drums,sk.harp].every(v=>v>sk.music&&v<sk.wild)&&sk.sk.every(v=>v===10),JSON.stringify(sk));
-  const ok=await pg.evaluate(()=>{ for(const k of ['guitar','piano','drums','harp'])delete INV.items[k]; FORAGE.ownerKit(); return {items:['guitar','piano','drums','harp'].map(k=>INV.items[k]||0),sk:['guitar','piano','drums','harp'].map(k=>FORAGE.sk(k))}; });
-  rec('an owner starts with the guitar, piano, drum kit and harp in the bag, each skill at 100',ok.items.every(n=>n===1)&&ok.sk.every(v=>v===100),JSON.stringify(ok));
+  rec('the skills list MUSIC first: GUITAR, PIANO, DRUMS, HARP, each starting at 0',sk.music>=0&&sk.music<sk.wild&&[sk.guitar,sk.piano,sk.drums,sk.harp].every(v=>v>sk.music&&v<sk.wild)&&sk.sk.every(v=>v===0),JSON.stringify(sk));
+  const ok=await pg.evaluate(()=>{ for(const k of ['guitar','piano','drums','harp'])delete INV.items[k]; FORAGE.ownerKit(); const K=['guitar','piano','drums','harp'], r={items:K.map(k=>INV.items[k]||0)}; FORAGE.maxed(true); r.sk=K.map(k=>FORAGE.sk(k)); FORAGE.use('piano',0,200); r.kept=FORAGE.S.sk.piano; FORAGE.maxed(false); r.off=K.map(k=>FORAGE.sk(k)); return r; });
+  rec('an owner starts with the guitar, piano, drum kit and harp in the bag; ALL SKILLS 100 reads every skill 100 and off gives the real levels back',ok.items.every(n=>n===1)&&ok.sk.every(v=>v===100)&&ok.kept===0&&ok.off.every(v=>v===0),JSON.stringify(ok));
   await pg.evaluate(()=>{ for(const k of ['guitar','piano','drums','harp'])FORAGE.S.sk[k]=100; });
   const sh=await pg.evaluate(()=>['piano','drums','harp'].map(id=>({id,name:FORAGE.name(id),price:ITEMS.prop(id,'value'),shelf:BODEGA.LAYOUT.some(r=>r[2].includes(id)),make:!!(BODEGA.MAKE[id]&&BODEGA.MAKE[id]().children.length)})));
   rec('the bodega sells A PIANO ($900), A DRUM KIT ($450) and A HARP ($700) on its shelf',sh.every(s=>s.shelf&&s.make)&&sh.map(s=>s.name+' '+s.price).join()==='A PIANO 900,A DRUM KIT 450,A HARP 700',JSON.stringify(sh));
@@ -42,6 +42,12 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
     const s=await pg.evaluate(async K=>{ const P=INSTR.ME; FORAGE.S.sk[K]=1000; if(P.K.loadBook)await P.K.loadBook(); const i=P.K.BOOK.findIndex(T=>T.lvl===1); INSTR.play('song',i); const seen=new Set(), keys=new Set();
       for(let k=0;k<14;k++){ await new Promise(r=>setTimeout(r,300)); const H=P.H; seen.add(JSON.stringify(K==='drums'?[H.wr.L,H.wr.R].map(v=>v.toArray().map(x=>x.toFixed(3))):[H.fg.L,H.fg.R])); if(K==='piano')for(const [m,q] of Object.entries(H.G.userData.keys))if(q.dip>.5)keys.add(m); }
       const r={song:P.song===i,notes:P.cur,poses:seen.size,keys:keys.size}; INSTR.play('stop'); FORAGE.S.sk[K]=100; const hard=P.K.BOOK.findIndex(T=>T.lvl>=50); INSTR.play('song',hard); r.refused=P.song===-1; return r; },K);
+    // the book's learning: five open in each band reached, a stumble stops the piece, three clean plays learn it and open the next
+    const lb=await pg.evaluate(async K=>{ const P=INSTR.ME, B=P.K.BOOK, S=FORAGE.S, cnt=()=>{ const o={}; for(const v of SONGBK.state(K,B).values())o[v]=(o[v]||0)+1; return o; }; S.songs={}; const r={};
+      S.sk[K]=50; r.at5=cnt(); S.sk[K]=250; r.at25=cnt(); const T=B.slice().sort((a,b)=>a.lvl-b.lvl)[0]; r.ch=[SONGBK.chance(K,T)]; S.sk[K]=0; r.ch.push(SONGBK.chance(K,T));
+      const i=B.indexOf(T); if(!T.c)P.K.compile(T); const say0=window.SAY; S.sk[K]=1000; INSTR.play('song',i); P.fail=1.2; await new Promise(r=>setTimeout(r,2600)); r.stumbled=P.song===-1&&!SONGBK.learnt(K,T);
+      for(let n=0;n<3;n++)SONGBK.done(K,T,true); S.sk[K]=50; r.learnt=SONGBK.learnt(K,T); r.after=cnt(); S.songs={}; S.sk[K]=100; return r; },K);
+    rec(`the ${K} book: five pieces open at 0-10, ten by 20-30, a stumble stops the piece, three clean plays learn it and the next opens`,lb.at5.open===5&&!lb.at5.learnt&&lb.at25.open===15&&lb.ch[0]===1&&lb.ch[1]>.3&&lb.ch[1]<.7&&lb.stumbled&&lb.learnt&&lb.after.learnt===1&&lb.after.open===5,JSON.stringify(lb));
     rec(`a ${K} song from the book plays (its notes go out, the hands move${K==='piano'?', keys go down':''}), and one past your skill is refused`,s.song&&s.notes>5&&s.poses>=5&&(K!=='piano'||s.keys>=3)&&s.refused,JSON.stringify(s));
     await pg.evaluate(()=>INSTR.stop()); await wait(300); }
   // the sound: each rings out loud through the instruments' own audio; each at its real pitch, rendered offline

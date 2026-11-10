@@ -1,0 +1,25 @@
+{
+  "name": "the-strangest-flea-market",
+  "productName": "The Strangest Flea Market",
+  "version": "1.0.0",
+  "description": "THE MARKET for Windows",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win nsis --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "38.4.0",
+    "electron-builder": "26.0.12"
+  },
+  "build": {
+    "publish": null,
+    "appId": "com.thestrangestfleamarket.market",
+    "productName": "The Strangest Flea Market",
+    "files": ["main.js"],
+    "directories": { "output": "out" },
+    "win": { "target": "nsis", "signAndEditExecutable": false },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true, "createDesktopShortcut": true, "createStartMenuShortcut": true, "shortcutName": "The Strangest Flea Market", "artifactName": "TheStrangestFleaMarket-Setup-${version}.exe" }
+  }
+}

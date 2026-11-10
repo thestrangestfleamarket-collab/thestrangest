@@ -5996,3 +5996,4 @@ Owner: "what polyfork animations do we have for our character", then "yes lets u
 - 10 Nov 2026, the big lake's deep hole (same ask): the 25 m hole moved off the bath house island's edge (the island had filled it), out into open water.
 - 10 Nov 2026, fishing from the rowboat (same ask; TODO): sat in the boat you hold the rod and swing it to cast and reel, as on the pier.
 - 10 Nov 2026, shrink and grow mushrooms (owner: "why when i shrink or grow every npc does too?"): a bug; they change only you, every other body stays its size.
+- 10 Nov 2026, the items check brought up to the 3D pictures (owner: "fix the items test for the 3D pictures"): every live item's picture is a photograph of its own model; the specimen plates, which had none (the parcel), show as a flat print like the art prints.

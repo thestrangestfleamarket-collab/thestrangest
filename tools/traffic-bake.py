@@ -14,8 +14,7 @@ def get(i):
     return f
 b64=lambda a:base64.b64encode(np.ascontiguousarray(a).tobytes()).decode()
 # [key, Polyfork id, name, flies, length in metres (None: as made), turned (degrees about up, to face +z)]
-MODELS=[('town-car','town-car-56eeb6','TOWN CAR',0,None,0),('hatchback','compact-hatchback-386417','HATCHBACK',0,None,0),('yellow-cab','yellow-cab-8df4a0','YELLOW CAB',0,None,0),
-  ('boxy-sedan','boxy-sedan-70s-7d55f7','BOXY SEDAN',0,None,0),('hatchback-80s','hatchback-80s-e95554','80S HATCHBACK',0,None,0),
+MODELS=[('town-car','town-car-56eeb6','TOWN CAR',0,None,0),('hatchback','compact-hatchback-386417','HATCHBACK',0,None,0),
   ('suv','family-crossover-suv-42027f','CROSSOVER',0,None,0),('minivan','family-minivan-924de0','MINIVAN',0,None,0),('pickup','pickup-truck-a34bf2','PICKUP',0,None,0),('kei-van','kei-van-211ed5','KEI VAN',0,None,0),
   
   ('sky-tender','lighter-than-air-tender-0c7361','SKY TENDER',1,None,0),('interceptor','interceptor-9d2289','INTERCEPTOR',1,4.6,0),

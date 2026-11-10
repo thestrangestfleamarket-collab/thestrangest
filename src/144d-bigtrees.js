@@ -70,7 +70,7 @@ PARK.climbable=[];
       for(const L_ of cells.values()){ let x=0,y=0,z=0,w=0; for(const P of L_){ const a=P[3]**3; x+=P[0]*a; y+=P[1]*a; z+=P[2]*a; w+=a; } x/=w; y/=w; z/=w; let r=0; for(const P of L_)r=Math.max(r,Math.hypot(P[0]-x,P[1]-y,P[2]-z)*.6+P[3]); FB.push([x,y,z,r,L_[0][4]]); }
       it.f1=FB.length; }
     const FL=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshLambertMaterial({color:0xffffff,flatShading:true}),FB.length);
-    FB.forEach(([x,y,z,r,k],i)=>{ FL.setMatrixAt(i,m4.compose(v.set(x,y,z),q,s.setScalar(r))); const G=GREEN[k]; FL.setColorAt(i,c.setRGB(G[0],G[1],G[2],THREE.SRGBColorSpace)); });
+    FB.forEach(([x,y,z,r,k],i)=>{ FL.setMatrixAt(i,m4.compose(v.set(x,y,z),q,s.setScalar(r))); FL.setColorAt(i,c.setRGB(.4,.63,.34,THREE.SRGBColorSpace)); });   // one green from far off (the four greens' patches flickered in the dark)
     const TG=new THREE.CylinderGeometry(.35,1,1,6,1,true).translate(0,.5,0), FT=new THREE.InstancedMesh(TG,bark,items.length*2), UP=new THREE.Vector3(0,1,0), D=new THREE.Vector3();
     const tubeAt=(i,a,b,r)=>{ D.set(b[0]-a[0],b[1]-a[1],b[2]-a[2]); const L_=D.length(); q.setFromUnitVectors(UP,D.normalize()); FT.setMatrixAt(i,m4.compose(v.set(a[0],a[1],a[2]),q,s.set(r,L_,r))); q.identity(); };
     items.forEach((it,i)=>{ it.T0=[[it.x,it.y-.5*T,it.z],[it.x,it.top,it.z],it.tr*1.15]; const lb=it.lb, b0=lb[0]; let e=0; while(e+1<lb.length&&lb[e+1][0]===lb[e][3]&&lb[e+1][2]===lb[e][5])e++; const be=lb[e];   // (the big branch: its segments come first, end to end)

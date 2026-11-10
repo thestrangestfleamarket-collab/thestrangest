@@ -434,7 +434,8 @@ export class Block extends Server {
       const v = Array.isArray(m.v) ? [num(m.v[0], -2, 2), num(m.v[1], -2, 2)] : null; o.send(JSON.stringify(m.t === "toss" ? { t: "toss", id: s.id, v } : { t: m.t, id: s.id }));
     } else if (m.t === "jet") {   // a flamethrower or freeze ray firing (146hb), or stopping
       const k = m.k === "f" || m.k === "i" ? m.k : "", v = k && Array.isArray(m.v) ? [num(m.v[0], -1, 1), num(m.v[1], -1, 1), num(m.v[2], -1, 1)] : null;
-      this.broadcast(JSON.stringify(v ? { t: "jet", id: s.id, k, v } : { t: "jet", id: s.id, k }), [c.id]);
+      const md = Number.isInteger(m.m) && m.m >= 0 && m.m < 8 ? m.m : 0;
+      this.broadcast(JSON.stringify(v ? { t: "jet", id: s.id, k, v, m: md } : { t: "jet", id: s.id, k }), [c.id]);
     } else if (m.t === "zap") {   // its stream on a player near the shooter: they burn or freeze
       const to = String(m.to || ""); if (!to || to === s.id) return; const o = this.near(s, to, 12); if (!o) return;
       o.send(JSON.stringify({ t: "zap", id: s.id, k: m.k === "i" ? "i" : "f", from: [s.at[0], s.at[1]] }));
@@ -536,14 +537,14 @@ export class Block extends Server {
       if (r) this.dropGone(k); c.send(JSON.stringify({ t: "took", k, v }));
       if (v) { try { const o = JSON.parse(v); if (String(o.by || "").startsWith("body:")) homeOf(this.env).econAllow(s.id, o.id === "cash" ? o.n : 0, o.id === "cash" ? 0 : o.n, "a body's drop").catch(() => {}); } catch (e) {} }
     } else if (m.t === "sky") {   // a telescope shared at a star party (src/150fh): where it points, to everyone in the section
-      this.broadcast(JSON.stringify({ t: "sky", id: s.id, name: word(s.name, 24), on: m.on ? 1 : 0, alt: num(m.alt, -90, 90), az: num(m.az, 0, 360), mag: num(m.mag, 1, 400), f: num(m.f, -1, 1), fl: m.fl ? 1 : 0, jd: num(m.jd, 2.4e6, 2.6e6), ctl: word(m.ctl, 60) }), [c.id]);
+      this.broadcast(JSON.stringify({ t: "sky", id: s.id, name: word(s.name, 24), on: m.on ? 1 : 0, alt: num(m.alt, -90, 90), az: num(m.az, 0, 360), mag: num(m.mag, 1, 400), f: num(m.f, -1, 1), fl: m.fl ? 1 : 0, jd: num(m.jd, 2.4e6, 2.6e6), ctl: word(m.ctl, 60), obs: m.obs ? 1 : 0, n: num(m.n, 0, 99) | 0 }), [c.id]);
     } else if (m.t === "tv") {   // an apartment's CRT TV (src/150fa): power, channel and what THE GUIDE plays, to everyone else in that apartment
       const rm = s.at && s.at[5]; if (!rm || !rm.startsWith("apt:")) return;
       const q = m.p && typeof m.p === "object" ? m.p : null, p = q && /^[A-Za-z0-9_.-]{1,80}$/.test(q.id || "") && /^[A-Za-z0-9_.-]{1,120}\.mp4$/.test(q.file || "") ? { id: q.id, file: q.file, title: word(q.title, 90), year: num(q.year, 0, 3000) | 0, len: num(q.len, 1, 20000) } : null;
       const x = JSON.stringify({ t: "tv", id: s.id, on: m.on ? 1 : 0, ch: num(m.ch, 0, 99) | 0, p, t0: num(m.t0, 0, 1e14) });
       for (const o of this.getConnections()) if (o !== c && o.state && o.state.at && o.state.at[5] === rm) o.send(x);
     } else if (m.t === "skyw") {   // a watcher joining, leaving or (handed the tube) steering someone's telescope: to that one player
-      const to = String(m.to || ""), op = /^(join|leave|steer)$/.test(m.op) ? m.op : ""; if (!to || to === s.id || !op) return;
+      const to = String(m.to || ""), op = /^(join|leave|steer|ask)$/.test(m.op) ? m.op : ""; if (!to || to === s.id || !op) return;
       for (const o of this.getConnections()) if (o.state && o.state.id === to) { o.send(JSON.stringify({ t: "skyw", id: s.id, name: word(s.name, 24), op, alt: num(m.alt, -90, 90), az: num(m.az, 0, 360) })); break; }
     } else if (m.t === "world") {
       const k = word(m.k, 40); if (!k) return; if (k === "time") this.clkAt = 0;
@@ -659,12 +660,12 @@ const blockAsk = async (env, room, path, body) => { const s = await getServerByN
   return r.json(); };
 const newCode = () => { const A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", b = crypto.getRandomValues(new Uint8Array(8)); let s = ""; for (const x of b) s += A[x % 32]; return "MARKET-" + s.slice(0, 4) + "-" + s.slice(4); };
 // one request per 100 emails (Resend's batch), so a message to everyone stays under the worker's subrequest limit
-async function email(env, to, subject, text) {
-  const from = env.MAIL_FROM || "THE MARKET <market@thestrangestfleamarket.com>"; let n = 0;
+async function email(env, to, subject, text, why = {}) {
+  const from = env.MAIL_FROM || "THE MARKET <market@auth.thestrangestfleamarket.com>"; let n = 0;
   for (let i = 0; i < to.length; i += 100) { const part = to.slice(i, i + 100);
     const r = await fetch("https://api.resend.com/emails/batch", { method: "POST", headers: { Authorization: "Bearer " + env.RESEND_API_KEY, "content-type": "application/json" },
       body: JSON.stringify(part.map(x => ({ from, to: [x], subject, text }))) });
-    if (r.ok) n += part.length; }
+    if (r.ok) n += part.length; else why.t = r.status + " " + (await r.text()).slice(0, 200); }
   return n;
 }
 async function admin(env, b, origin) {
@@ -692,8 +693,8 @@ async function admin(env, b, origin) {
     if (b.do === "askoff") return { ok: await postOf(env).askOff(m) };
     if (!env.RESEND_API_KEY) return { why: "email is not set up" };
     const code = newCode(), r = await call("/rest/v1/invite_codes", { method: "POST", body: JSON.stringify({ code, uses: 0, max_uses: 1 }) }); if (!r.ok) return res(r);
-    const n = await email(env, [m], "YOUR INVITE TO THE STRANGEST FLEA MARKET", "Your invite code: " + code + "\n\nEnter it at " + origin + "/ to make your account.");
-    if (!n) return { why: "the email did not go out (code " + code + ")" };
+    const w = {}, n = await email(env, [m], "YOUR INVITE TO THE STRANGEST FLEA MARKET", "Your invite code: " + code + "\n\nEnter it at " + origin + "/ to make your account.", w);
+    if (!n) return { why: "the email did not go out (code " + code + "): " + (w.t || "?") };
     await postOf(env).askSent(m); return { ok: true, code }; }
   if (b.do === "tell") {
     const to = b.to === "*" ? "*" : id, subject = String(b.subject || "A LETTER FROM THE MARKET").slice(0, 120), text = String(b.text || "").slice(0, 4000).trim(), out = { ok: true };

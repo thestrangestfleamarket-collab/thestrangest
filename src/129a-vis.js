@@ -27,7 +27,7 @@ LEVELS.of.street={name:SECTIONS.streets.south,floor:'up',base:true};
   LEVELS.hide=(cur=LEVELS.cur)=>{ const H=[]; for(const o of scene.children)if(o.visible&&!on(owner(o),cur)){ o.visible=false; H.push(o); } return H; };
   LEVELS.show=H=>{ if(H)for(const o of H)o.visible=true; };
   window.LEVELS=LEVELS; }
-Object.assign(ZONES,{cur:null,list:[['market',SECTIONS.streets.south],['fair','THE STRANGEST FAIR'],['cp','CENTRAL PARK'],['secp','SOUTH EAST CENTRAL PARK'],['station','THE SUBWAY STATION'],['dungeon','THE DUNGEON'],['inside','INSIDE']],fns:[]});
+Object.assign(ZONES,{cur:null,list:[['market',SECTIONS.streets.south],['fair','THE STRANGEST FAIR'],['cp','CENTRAL PARK'],['secp','SOUTH EAST CENTRAL PARK'],['station','THE SUBWAY STATION'],['dungeon','THE DUNGEON'],['inside','INSIDE']],fns:[],dark:{cp:1.2,secp:1.2}});   // dark: how much darker than the lamp-lit street a zone's night sky is (magnitudes; the telescopes read it)
 { const mid=()=>{ const P=PARK; return (P.y0+P.y1)/2+(P.oy||0); }, FAIRP=(LEVEL.places||[]).find(p=>p.kind==='fair');
   ZONES.at=(x,z,lv,room)=>{ if(lv==='down'){ const id=LEVELS.at(x,z,'down'), L=LEVELS.of[id]; return {id,name:L.label?L.label():L.name}; }
     if(room)return {id:'inside',name:String(room.name||room.lz||room.id||'INSIDE').toUpperCase()};

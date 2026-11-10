@@ -11,7 +11,7 @@ import {VEG} from './144-veggies.js';
 import {GARDEN} from './144a-garden.js';
 const PQ={}; window.PQ=PQ;
 { const T=TILE, WU=T/.84, say=(t,c)=>SAY(t,c||'#e8e2cc'), use=(k,a,b,x)=>FORAGE.use(k,a,b,x), sk=k=>FORAGE.sk(k), has=id=>FORAGE.has(id);
-  const day=()=>window.MAIL&&MAIL.ready?MAIL.day():window.CITY?CITY.day||0:0;
+  const day=()=>window.MAIL&&MAIL.ready?MAIL.day():CITY?CITY.day||0:0;
   const ready=(k,per=1)=>INV.picked[k]==null||Math.floor(INV.picked[k]/per)<Math.floor(day()/per), took=k=>{ INV.picked[k]=day(); INV.save(); };
   const out=()=>SHARED.LVL==='up'&&!(ROOMS&&ROOMS.cur), gy=(x,z)=>typeof SHARED.groundY==='function'?SHARED.groundY(x,z):0;
   const L=c=>new THREE.MeshLambertMaterial({color:c}), HIT=new THREE.MeshBasicMaterial({visible:false}), now=()=>performance.now()/1000;
@@ -175,7 +175,7 @@ const PQ={}; window.PQ=PQ;
   const unMoth=m=>{ LOFT.lampG.remove(m.g); const i=UI.things.indexOf(m.th); if(i>=0)UI.things.splice(i,1); const j=LOFT.moths.indexOf(m); if(j>=0)LOFT.moths.splice(j,1); for(const b of LOFT.bats)if(b.prey===m)b.prey=null; };
   const mothsHeld=()=>Object.keys(INV.items).reduce((a,id)=>a+(id.startsWith('mo_')?INV.items[id]:0),0);
   PQ.net=m=>{ '@later'; if(!has('net'))return say('YOU NEED A BUTTERFLY NET FOR MOTHS ON THE WING. THE BUTTERFLY SHOP ON MARKET ST HAS THEM.','#c8a090');
-    if(window.BFLY&&BFLY.held&&BFLY.held()+mothsHeld()>=BFLY.room())return say('YOUR JARS ARE FULL. SELL SOME, OR BUY A BIGGER JAR.','#c8a090');
+    if(BFLY&&BFLY.held&&BFLY.held()+mothsHeld()>=BFLY.room())return say('YOUR JARS ARE FULL. SELL SOME, OR BUY A BIGGER JAR.','#c8a090');
     const d=m.K[1]; if(SFX.play)SFX.play('step',{vol:.4}); if(!use('ento',d-25,d+25,-0)){ m.a+=2; m.r=(.3+Math.random()*.6)*WU; return say('IT TUMBLES OUT OF YOUR NET AND BACK TO THE LIGHT.','#c8a090'); }
     FORAGE.give(m.K[0],1); FORAGE.draw(); unMoth(m); say(m.K===LUNA?'YOU NET THE LUNA MOTH. ITS LONG GREEN TAILS TREMBLE. A RARE CATCH!':'YOU NET A '+NM[m.K[0]]+'.',m.K===LUNA?'#f2c14e':'#e8e2cc'); };
   const loftTick=dt=>{ if(!LOFT.G)return; const n=Math.hypot(pos.x-LOFT.x,pos.z-LOFT.z)<120*T; LOFT.G.visible=n&&out(); const t=now();

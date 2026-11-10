@@ -1,7 +1,7 @@
 // THE PAWNS: the baked characters (data/pawns.json) given arms, cloth colours and animation.
 import {SHARED, THREE} from './003-shx.js';
 import {BY, F32, SKIN} from './003a-skin.js';
-import {pos, UI} from './003b-systems.js';
+import {PAWNL, pos, UI} from './003b-systems.js';
 import {PPU} from './004-main.js';
 import {MODS, QS, SOL, SYS, TILE} from './006-map-pre.js';
 import {DUN, makeNPC, stfree, STLANE} from './076-npc-map.js';
@@ -9,7 +9,7 @@ import {PAWNS} from './087-npc-creatures.js';
 { const geomOf=M=>SKIN.geom(M), rigOf=R=>SKIN.rig(R);
   let PW=null, CLIPS=null, ALL=null, MK=null;   // filled by build() once the pawns data (data/pawns.json, lazy) has loaded, just after the start
   const HOLD=QS.get('pawnclip'), WALKC=QS.get('pawnwalk')||'UAL_Walk_Loop', IDLEC=QS.get('pawnidle')||'UAL_Idle_Loop', WALK=1.6, RUNU=5.5, STILLC=new Set(['UAL_Idle_Loop','idle_a','idle_b','sit_floor_idle_a']);
-  const PAWNL=[]; window.PAWNL=PAWNL;
+   window.PAWNL=PAWNL;
   const UNIFORM={};
   const dressed=(g,t)=>{ if(!t)return g; const c=g.attributes.color.array; for(let i=0;i<c.length;i+=3){ const l=(c[i]*.3+c[i+1]*.59+c[i+2]*.11)/255; for(let j=0;j<3;j++)c[i+j]=Math.min(255,c[i+j]*.4+t[j]*255*.6*(.3+.7*l)); } return g; };
   const hs=(i,j)=>{ const v=Math.sin(i*12.9898+j*78.233)*43758.5453; return v-Math.floor(v); };
@@ -84,8 +84,8 @@ import {PAWNS} from './087-npc-creatures.js';
     N.mixer=mixer; N.kind=kind; N.act=act; if(copy&&!X.npc)N.park=true; if(!X.npc)PAWNL.push(N); return N; };
   const build=J=>{ PW=J; const R0=PW.hero_m.rig; CLIPS=SKIN.clips(PW.hero_m.clips,R0.names,false); ALL=[...Object.keys(PW).map(k=>[k,k,0]),...[1,2,3,4].map(n=>['hero_m_'+n,'hero_m',n])];   // one golem kind, four of it, in the dungeon (owner, 5 Nov 2026)
     ALL.forEach((k,i)=>(k[2]||!PEOPLE.includes(k[0])||QS.get('sheet')===k[0])&&MK(k,i)); };
-  const go=()=>window.__started?PAWNS().then(build).catch(e=>console.warn('PAWNS',e)):setTimeout(go,600); go();
-  window.PAWNNEW=(kind,key,X={})=>PW&&MK([key,kind,X.copy||0],0,X);   // X.copy: a stone golem of it
+  const go=()=>SYS.started?PAWNS().then(build).catch(e=>console.warn('PAWNS',e)):setTimeout(go,600); go();
+  window.PAWNNEW=MODS.pawnNew=(kind,key,X={})=>PW&&MK([key,kind,X.copy||0],0,X);   // X.copy: a stone golem of it
   window.PAWNCAM=(i=0,k=1.6)=>{ const N=PAWNL[i]; UI.setFree(true); UI.camT.set(N.st.x,N.g.position.y+N.H*.5,N.st.z); SHARED.ppu=SHARED.ppuTo=PPU*k; };
   window.PAWNDBG=()=>PAWNL.map(N=>({key:N.key,x:+N.st.x.toFixed(1),z:+N.st.z.toFixed(1),to:!!N.st.to,vis:N.g.visible}));
   // THE SOAK (tests/soak.cjs): n extra pawns scattered over the walkable map, roaming wide, not in the crowd; PAWNSOAKDBG reports the ones breaking an invariant.

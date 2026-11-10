@@ -10,7 +10,7 @@ import {MINI} from './038zd-mini.js';
 import {LIB} from './144ca-library.js';
 const MVAULT={}; window.MVAULT=MVAULT;
 { const say=(t,c)=>SAY(t,c||'#e8dcb0'), T=TILE, MW=TILE/.84, TM=.924, KEY='vault', OX=()=>SHARED.BOD.XS(-3280), OZ=()=>SHARED.BOD.ZS(0), RW=7, RD=7, H=3.2;
-  const day=()=>window.MAIL&&MAIL.ready?MAIL.day():window.CITY?CITY.day||0:0;
+  const day=()=>window.MAIL&&MAIL.ready?MAIL.day():CITY?CITY.day||0:0;
   const hs=(a,b)=>{ let h=Math.imul(a|0,374761393)+Math.imul(b|0,668265263); h=Math.imul(h^(h>>>13),1274126177); return ((h^(h>>>16))>>>0)/4294967296; };
   // the antiquities: found in the vault, donated to the museum (the first of each pays twice its worth and goes on show), the Professor buys the rest
   const ART=[['va_astrolabe','A BRASS ASTROLABE',90],['va_scarab','A LAPIS SCARAB',60],['va_coin','A GOLD COIN OF ROME',70],['va_lamp','A CLAY OIL LAMP',40],['va_seal','A JADE SEAL',80],['va_globe','A CELESTIAL GLOBE',120],['va_chart','A SEA CHART ON VELLUM',75],['va_idol','A STONE IDOL',100]];

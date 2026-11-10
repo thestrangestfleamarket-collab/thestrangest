@@ -101,7 +101,7 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
           if(f){ task.dry=f; walk(f[0],f[1]); doing='walking to the water'; return; } }
         if(!best){ if(stand&&!task.pier){ task.pier=1; const p=thAt(stand); walk(p.x,p.z); } else roam(dt,here(task)); doing='looking for water'; return; }
         if(!FISHING.mode&&FISHING.enter)FISHING.enter(); FISHING.cast(best[0],best[1]); doing='casting'; } },
-    decorate:dt=>{ if(!C.apt){ doing='has no apartment (OWN APARTMENT is off)'; return; } const E=window.ROOMED; task=task||{s:'in',n:0,t:0};
+    decorate:dt=>{ if(!C.apt){ doing='has no apartment (OWN APARTMENT is off)'; return; } const E=MODS.roomed; task=task||{s:'in',n:0,t:0};
       if(task.s==='in'){ if(MODS.apts&&MODS.apts.inReal){ task.s='buy'; return; } if(!task.go){ task.go=1; UI.goName('YOUR APARTMENT'); } doing='going home'; return; }
       if(!MODS.apts.inReal){ task={s:'in',n:0,t:0}; return; } if(!E){ doing='no decorating here'; return; }
       if(task.s==='buy'){ if(walking(dt))return; if((task.t-=dt)>0)return; task.t=2+R()*2; if(!E.on)E.toggle();

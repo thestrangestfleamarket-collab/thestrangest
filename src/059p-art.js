@@ -1,6 +1,6 @@
 // THE ART MUSEUM: on Market St, a stone front like the MUSEUM OF EARTH's (portico, ART MUSEUM over the door, two banners); its inside, built off the map behind the fade when you go in: an atrium with no ceilings, a walkway round an open void on each floor above the first up to a skylight, three paintings on each outer wall of each floor (as many floors as the paintings of data/art.json need), a glass elevator against the back walkway that you call, walk into and ride, its doors sliding open on each floor; double-click a painting to see it full screen on its wall, its full-resolution file fetched from its museum only then, with a guided tour where one is written (data/art-tours.json).
 import {SHARED, THREE} from './003-shx.js';
-import {PERFX, pos, UI} from './003b-systems.js';
+import {PERFX, pos, UI, VIS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {AWAY, BLDK, FADE, grab, OFFDX, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
 import {BLOCKS} from './038zb-blocks.js';
@@ -158,7 +158,7 @@ await grab('art',async()=>{ if(AWAY.has('art')||!WP.art)return;
     for(const bt of LM.querySelectorAll('button'))bt.onclick=()=>{ LM.hidden=true; const f=bt.dataset.f; if(f!=='x'&&+f!==A_.lv)A_.go(+f); };
     LM.hidden=false; if(UI.menuLook)UI.menuLook(); };
   A_.lay=()=>LAY?LAY.map(p=>({k:p.f.rm.k,g:p.f.rm.g,key:fk(p.f.nx,p.f.ny,p.f.at,p.f.rm.k),a:+p.a.toFixed(2),w:+p.w.toFixed(2)})):[];
-  A_.dbg=()=>({hung:A_.hung,n:DATA?DATA.length:0,lay:LAY?LAY.length:0,drawn:A_.groups.map(g=>window.VIS&&window.VIS.why(g).length?0:g.visible?1:0).join(''),galleries:RS.length,floors:NF,floor:A_.floor()});
+  A_.dbg=()=>({hung:A_.hung,n:DATA?DATA.length:0,lay:LAY?LAY.length:0,drawn:A_.groups.map(g=>VIS&&VIS.why(g).length?0:g.visible?1:0).join(''),galleries:RS.length,floors:NF,floor:A_.floor()});
   // the viewer: double-click a painting and it fills the screen, framed on its own wall; the museum's full-resolution file is fetched only then (the small picture shows until it comes); wheel, pinch, + and - zoom, drag pans, double-click zooms in or back; a painting with a tour (data/art-tours.json) has GUIDED TOUR
   let V=null, TOURS={}, TEX=null;
   const view=(t,p)=>{ '@art'; if(!V){ const el=document.createElement('div'); el.id='artview'; el.hidden=true;

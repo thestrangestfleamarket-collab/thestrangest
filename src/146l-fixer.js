@@ -17,7 +17,7 @@ const FIXIT={}; window.FIXIT=FIXIT;
   const draw=(S,tm)=>{ const g=S.c.getContext('2d'), W=64, H=48; if(!S.on){ g.fillStyle='#0b0e0c'; g.fillRect(0,0,W,H); g.fillStyle='rgba(120,140,130,.15)'; g.fillRect(6,5,18,8); S.t.needsUpdate=true; return; }
     if(S.ch===0){ const im=g.createImageData(W,H); for(let i=0;i<W*H;i++){ const v=Math.random()*200|0; im.data.set([v,v,v+10,255],i*4); } g.putImageData(im,0,0); }
     else if(S.ch===1){ const C=['#c0c0c0','#c0c000','#00c0c0','#00c000','#c000c0','#c00000','#0000c0']; C.forEach((c,i)=>{ g.fillStyle=c; g.fillRect(i*W/7,0,W/7+1,H*.7); }); g.fillStyle='#101010'; g.fillRect(0,H*.7,W,H*.3); g.fillStyle='#e0e0e0'; g.font='7px monospace'; g.fillText('WMKT 7',18,H-5); }
-    else if(S.ch===2&&window.CINEMA&&CINEMA.drawTimes){ g.fillStyle='#06101a'; g.fillRect(0,0,W,H); try{ CINEMA.drawTimes(g,W,H,4); }catch(e){} }
+    else if(S.ch===2&&CINEMA&&CINEMA.drawTimes){ g.fillStyle='#06101a'; g.fillRect(0,0,W,H); try{ CINEMA.drawTimes(g,W,H,4); }catch(e){} }
     else { const d=new Date(); g.fillStyle='#04203a'; g.fillRect(0,0,W,H); g.fillStyle='#f2c14e'; g.font='bold 8px monospace'; g.fillText('MARKET',4,10); g.fillStyle='#e8e8e8'; g.fillText(d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),4,24); g.fillStyle='#8ac'; g.font='6px monospace'; g.fillText('TRACK 1: ON TIME',4,36); g.fillText(['FAIR','CLOUDY','RAIN'][(tm/60|0)%3],4,44); }
     S.t.needsUpdate=true; };
   const SETS={
@@ -40,7 +40,7 @@ const FIXIT={}; window.FIXIT=FIXIT;
       const hs=new THREE.Mesh(new THREE.CapsuleGeometry(.025,.18,6,12),std(0x1c1c1e,{roughness:.4})); hs.rotation.z=Math.PI/2; hs.position.set(0,.085,0); G.add(hs); for(const s of [-1,1]){ const cup=new THREE.Mesh(new THREE.CylinderGeometry(.04,.035,.04,14),std(0x2a2a2c)); cup.position.set(s*.09,.075,0); G.add(cup); }
       return G; },loose:1.2}};
   FORAGE.add({names:Object.fromEntries(Object.entries(SETS).map(([k,v])=>[k,v.name]))});
-  if(window.INSPECT&&INSPECT.kinds)INSPECT.kinds.push({is:id=>!!SETS[id],make:id=>SETS[id].make()});
+  if(INSPECT&&INSPECT.kinds)INSPECT.kinds.push({is:id=>!!SETS[id],make:id=>SETS[id].make()});
   // the screens draw a frame a second when seen; channels: static, colour bars, the cinema's listings, the market's news (the computer's own board)
   const seen=o=>{ for(let q=o;q;q=q.parent){ if(!q.visible)return false; if(q.isScene)return true; } return false; };
   let scT=0; SYS.add('life',dt=>{ if((scT-=dt||0)>0)return; scT=.9; const tm=Date.now()/1000; for(let i=SCR.length-1;i>=0;i--){ const S=SCR[i]; if(S.m&&!S.m.parent&&S.dead){ SCR.splice(i,1); continue; } if(S.m&&seen(S.m))draw(S,tm); } },'146l-fixer');

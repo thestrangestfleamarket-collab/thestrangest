@@ -1,15 +1,14 @@
 // THE BIRDS: BIRDS, the town's birds that hop, walk and fly, and that the player can catch.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, DRESS, FORAGE, INSPECT, INV, ITEMS, MAIL, NPCS, ONLINE, PARK, pos, ROOMS, SFX, UI, W3, WEEDS, WX} from './003b-systems.js';
+import {BIRDS, CLOCK, DRESS, FLORA, FORAGE, INSPECT, INV, ITEMS, MAIL, NPCS, ONLINE, PARK, pos, ROOMS, SFX, UI, W3, WEEDS, WX} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
 import {RARITY} from './013a-rarity.js';
 import {PARTSNPC} from './080-npc-parts.js';
-import {FLORA} from './142a-flora.js';
 import {GARDEN} from './144a-garden.js';
-const BIRDS={list:[]}; window.BIRDS=BIRDS;
+ window.BIRDS=BIRDS;
 { const T=TILE, WU=T/.84, say=SAY, use=FORAGE.use, KEY='birds', SPOT=new THREE.Vector3(), {shape,sph,cyl,box,blob}=PARTSNPC.T, VIS=1.5;
   const K=[['HOUSE SPARROW','Passer domesticus',.15,0,3,6,'hop',{body:0x8a6a4a,breast:0xb8ae9c,head:0x8a8a86,cap:0x6e6e70,mask:0x2a2622,wing:0x7a5232,bar:0xe8e0d0,tail:0x5a4632,beak:0x2a2622,leg:0xb08a70}],
     ['ROCK PIGEON','Columba livia',.32,5,4,3,'walk',{body:0x8a90a0,breast:0x6a7488,head:0x4a5868,mask:0x4a7a6a,wing:0x9aa0ae,bar:0x2a2a30,tail:0x6a7080,beak:0x3a3a3a,leg:0xc85050}],
@@ -55,21 +54,21 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
   const add=(k,x,y,z,o={})=>{ const hb=new THREE.Mesh(HB,HM); scene.add(hb); const b=Object.assign({k,x,y,z,yaw:Math.random()*6.28,pitch:0,st:'ground',t:Math.random()*5,until:1+Math.random()*3,wing:0,lift:0,hb,spots:[[x,y,z]],s:K[k][2]/1.2*WU*VIS},o);
     b.th={name:'A BIRD',obj:hb,reach:2*T,near:2.8*T,tall:.4*T,act:()=>BIRDS.menu(b)}; UI.thing(b.th); BIRDS.list.push(b); return b; };
   const drop=b=>{ scene.remove(b.hb); const i=BIRDS.list.indexOf(b); if(i>=0)BIRDS.list.splice(i,1); const j=UI.things.indexOf(b.th); if(j>=0)UI.things.splice(j,1); if(PANEL.b===b)close(); };
-  const turn=()=>Math.floor((window.CLOCK?CLOCK.h:12)/2), dayN=()=>(window.MAIL&&MAIL.ready?MAIL.day():0)*13+turn();
+  const turn=()=>Math.floor((CLOCK?CLOCK.h:12)/2), dayN=()=>(window.MAIL&&MAIL.ready?MAIL.day():0)*13+turn();
   const chunk=(key,grp)=>{ const Q=grp.sq; if(!Q||Q.length<12)return; const d=dayN(), i0=3*Math.floor(hsh(Q[0]/T,Q[2]/T,701)*(Q.length/3)), cx=Q[i0], cz=Q[i0+2], park=WEEDS.inPark(cx,cz), deep=WEEDS.inPark(cx,cz,10);
     if(park&&!PARK.in||hsh(cx/T+d,cz/T,703)>(park?.75:.3))return; const k=pickC(hsh(cx/T+d*3,cz/T,705),deep&&hsh(cz/T,cx/T+d,707)<.25); if(k===HAWK)return; const n=flockN(k,hsh(cx/T,cz/T+d,709)), sp=[];
     for(let i=0;i<Q.length&&sp.length<8;i+=3){ const x=Q[i], z=Q[i+2]; if(Math.hypot(x-cx,z-cz)>3*T||hsh(x/T+d,z/T,711)>.3)continue; sp.push([x,grp.top(x,Q[i+1],z),z]); } if(sp.length<2)return;
     for(let j=0;j<n;j++){ const p=sp[j%sp.length], b=add(k,p[0]+(Math.random()-.5)*.6*T,p[1],p[2]+(Math.random()-.5)*.6*T,{src:key,spots:sp}); } };
   const CHK=new Set(); { SYS.add('weedsAdd',(key,grp)=>{ if(!CHK.has(key)){ CHK.add(key); chunk(key,grp); } },'144b-birds');
     SYS.add('weedsDrop',key=>{ CHK.delete(key); for(const b of [...BIRDS.list])if(b.src===key)drop(b); },'144b-birds'); if(WEEDS.chunks)for(const [k,g] of WEEDS.chunks)if(g&&g.sq){ CHK.add(k); chunk(k,g); } }
-  const street=()=>{ if(!window.DRESS||!DRESS.kerb||typeof SHARED.groundY==='undefined')return; const {sw,far}=DRESS.kerb, side=Math.abs(pos.z-sw)<Math.abs(pos.z-far)?-1:1, zk=side<0?sw:far;
+  const street=()=>{ if(!DRESS||!DRESS.kerb||typeof SHARED.groundY==='undefined')return; const {sw,far}=DRESS.kerb, side=Math.abs(pos.z-sw)<Math.abs(pos.z-far)?-1:1, zk=side<0?sw:far;
     if(Math.abs(pos.z-zk)>14*T||BIRDS.list.filter(b=>b.src==='street').length>=6)return; const x=Math.min(SHARED.BOUND.x1-T,Math.max(SHARED.BOUND.x0+T,pos.x+(Math.random()<.5?-1:1)*(7+Math.random()*9)*T));
     const r=Math.random(), k=r<.6?1:r<.88?0:2, sp=[]; for(let i=0;i<6;i++){ const sx=x+(Math.random()-.5)*3*T, sz=zk+side*(.4+Math.random()*1.2)*T; sp.push([sx,SHARED.groundY(sx,sz),sz]); }
     const n=Math.min(4,flockN(k,Math.random())); for(let j=0;j<n;j++){ const p=sp[j%sp.length]; add(k,p[0],p[1],p[2],{src:'street',spots:sp}); } };
-  const posts=()=>{ const P=(window.DRESS&&DRESS.lampposts)||[]; for(const p of P){ if(Math.hypot(p.x-pos.x,p.z-pos.z)>30*T||BIRDS.list.some(b=>b.post===p))continue; const r=hsh(p.x/T+dayN(),p.z/T,731); if(r>.12)continue;
+  const posts=()=>{ const P=(DRESS&&DRESS.lampposts)||[]; for(const p of P){ if(Math.hypot(p.x-pos.x,p.z-pos.z)>30*T||BIRDS.list.some(b=>b.post===p))continue; const r=hsh(p.x/T+dayN(),p.z/T,731); if(r>.12)continue;
     add(r<.035?HAWK:r<.08?2:1,p.x,p.y,p.z,{st:'perch',post:p,src:'post',spots:[[p.x,p.y,p.z]]}); } };
-  const SMALL=[0,3,5,6,7,8,9,2], gy=(x,z)=>(window.GARDEN&&GARDEN.lawnAt?GARDEN.lawnAt(x,z):null)??SHARED.groundY(x,z);
-  const shrubs=()=>{ if(!window.FLORA||typeof SHARED.groundY==='undefined')return; const tn=dayN(); let nb=BIRDS.list.filter(b=>b.src==='bush'||b.src==='bed').length;
+  const SMALL=[0,3,5,6,7,8,9,2], gy=(x,z)=>(GARDEN&&GARDEN.lawnAt?GARDEN.lawnAt(x,z):null)??SHARED.groundY(x,z);
+  const shrubs=()=>{ if(!FLORA||typeof SHARED.groundY==='undefined')return; const tn=dayN(); let nb=BIRDS.list.filter(b=>b.src==='bush'||b.src==='bed').length;
     for(const bu of PARK.in?FLORA.near(pos.x,pos.z,30*T):[]){ if(nb>=16)return; if(bu.bd===tn)continue; bu.bd=tn; const r=hsh(bu.x/T+tn,bu.z/T,741); if(r>.2)continue; const k=SMALL[Math.floor(hsh(bu.z/T,bu.x/T+tn,743)*SMALL.length)], sp=[];
       for(let i=0;i<4;i++){ const a=i*1.57+r*9, d=bu.r+(.3+.8*hsh(i,bu.x/T,745))*T, x=bu.x+Math.cos(a)*d, z=bu.z+Math.sin(a)*d; sp.push([x,gy(x,z),z]); } if(bu.solid)sp.push([bu.x,bu.y+bu.h*.96,bu.z,1]);
       const n=Math.min(3,flockN(k,hsh(tn,bu.x/T,747))); for(let j=0;j<n;j++){ const p=j===0&&sp[4]&&r<.1?sp[4]:sp[j%4]; add(k,p[0],p[1],p[2],{src:'bush',spots:sp,st:p[3]?'perch':'ground'}); nb++; } }
@@ -81,7 +80,7 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
   PARK.onShow.push(on=>{ if(!on)for(const b of [...BIRDS.list])if((b.src==='bush'||b.src==='bed')&&WEEDS.inPark(b.x,b.z))drop(b); });
   const flyTo=(b,x,y,z,away,land)=>{ const d=Math.hypot(x-b.x,z-b.z); b.fly={a:[b.x,b.y,b.z],c:[x,y,z],t:0,dur:.7+d/(4.5*T)+(b.k===HAWK?1:0),h:Math.min(3.5,.4+d/T*.25)*WU*(land===2?.4:1),away,land}; b.st='fly'; b.yaw=Math.atan2(x-b.x,z-b.z); };
   const SHY=k=>k!==1&&k!==4&&k!==HAWK;
-  const flush=b=>{ '@later'; if(b.st==='pet'||b.st==='opet'||b.st==='fly'||b.st==='hid')return; if(SHY(b.k)&&window.FLORA&&Math.random()<.8){ const c=FLORA.cover(b.x,b.z,pos.x,pos.z); if(c){ flyTo(b,c.x+(Math.random()-.5)*.2*c.r,c.y+c.h*.45,c.z+(Math.random()-.5)*.2*c.r,false,2); return; } } const a=Math.atan2(b.x-pos.x,b.z-pos.z)+(Math.random()-.5), far=b.spots.filter(s=>Math.hypot(s[0]-pos.x,s[2]-pos.z)>4*T);
+  const flush=b=>{ '@later'; if(b.st==='pet'||b.st==='opet'||b.st==='fly'||b.st==='hid')return; if(SHY(b.k)&&FLORA&&Math.random()<.8){ const c=FLORA.cover(b.x,b.z,pos.x,pos.z); if(c){ flyTo(b,c.x+(Math.random()-.5)*.2*c.r,c.y+c.h*.45,c.z+(Math.random()-.5)*.2*c.r,false,2); return; } } const a=Math.atan2(b.x-pos.x,b.z-pos.z)+(Math.random()-.5), far=b.spots.filter(s=>Math.hypot(s[0]-pos.x,s[2]-pos.z)>4*T);
     if(far.length&&Math.random()<.6){ const s=far[Math.floor(Math.random()*far.length)]; flyTo(b,s[0],s[1],s[2],false,s[3]); } else flyTo(b,b.x+Math.sin(a)*28*T,b.y+9*WU,b.z+Math.cos(a)*28*T,true); };
   BIRDS.flush=flush; let lx=0, lz=0, still=0, spd=0; const m4=new THREE.Matrix4(), mw=new THREE.Matrix4(), mr=new THREE.Matrix4(), q=new THREE.Quaternion(), e=new THREE.Euler(), V3=THREE.Vector3, sv=new V3(), pv=new V3(), col=new THREE.Color();
   const seedAt=()=>{ if(S.seed&&S.seed.t>0)return S.seed; let b=null, bd=30*T; const L=[S.feed]; if(ONLINE.on)for(const F of FEEDS.values())L.push(F.f); for(const f of L){ if(!f)continue; const d=Math.hypot(f.x-pos.x,f.z-pos.z); if(d<bd){ bd=d; b=f; } } return b; };
@@ -117,7 +116,7 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
     WS.t+=dt*(spd<.3*T?1:.4); if(WS.t>=8){ WS.t=0; use('bird',WS.d-25,WS.d+25,WS.bonus+(spd<.1*T?5:0)); } };
   BIRDS.watching=()=>WS&&{k:WS.b.k,t:+WS.t.toFixed(1)};
   const hunt=dt=>{ for(const h of BIRDS.list){ if(h.k!==HAWK||h.st!=='perch'||!h.post||PANEL.b===h)continue; if((h.hunt=(h.hunt??20+Math.random()*40)-dt)>0)continue; h.hunt=25+Math.random()*50;
-      if(Math.hypot(h.x-pos.x,h.z-pos.z)>30*T)continue; const L=((window.DRESS&&DRESS.lampposts)||[]).filter(p=>p!==h.post&&Math.hypot(p.x-h.x,p.z-h.z)<25*T&&Math.hypot(p.x-h.x,p.z-h.z)>6*T&&!BIRDS.list.some(b=>b.post===p)); if(!L.length)continue;
+      if(Math.hypot(h.x-pos.x,h.z-pos.z)>30*T)continue; const L=((DRESS&&DRESS.lampposts)||[]).filter(p=>p!==h.post&&Math.hypot(p.x-h.x,p.z-h.z)<25*T&&Math.hypot(p.x-h.x,p.z-h.z)>6*T&&!BIRDS.list.some(b=>b.post===p)); if(!L.length)continue;
       const p=L[Math.floor(Math.random()*L.length)]; let n=0; for(const b of BIRDS.list)if(b!==h&&b.k!==HAWK&&b.st!=='pet'&&b.st!=='opet'&&Math.hypot(b.x-h.x,b.z-h.z)<15*T){ flush(b); n++; }
       h.post=p; h.spots=[[p.x,p.y,p.z]]; flyTo(h,p.x,p.y,p.z,false,1); if(Math.hypot(h.x-pos.x,h.z-pos.z)<20*T)say(n?'A RED-TAILED HAWK TAKES OFF. THE SMALL BIRDS SCATTER FOR COVER.':'A RED-TAILED HAWK GLIDES TO ANOTHER LAMPPOST.','#e8d0a0'); } };
   const FE=[]; let feT=10; const FG=new THREE.PlaneGeometry(.04*WU,.13*WU), FM=new THREE.MeshLambertMaterial({color:0xe4ddd0,side:THREE.DoubleSide});
@@ -128,7 +127,7 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
     const f={me}; f.th={name:'A FEATHER',obj:me,reach:1.6*T,near:2.5*T,tall:.2*T,act:()=>{ FORAGE.give('bird_feather',1); say('A FEATHER A BIRD LEFT BEHIND. YOU KEEP IT.','#e8e2cc'); unfeather(f); FORAGE.draw(); }}; UI.thing(f.th); FE.push(f); };
   BIRDS.feathers=()=>FE.length;
   BIRDS.tick=dt=>{ if(!dt)return; wtick(dt); const mv=Math.hypot(pos.x-lx,pos.z-lz); spd=spd*.8+mv/dt*.2; lx=pos.x; lz=pos.z; still=spd<.1*T?still+dt:0;
-    const W=window.WX&&WX.now, out=SHARED.LVL==='up'&&!(window.ROOMS&&ROOMS.cur)&&!(window.CLOCK&&CLOCK.dark())&&!(W&&(W.rain>.25||W.snow>.25||W.wind>.8)); BIRDS.out=out;
+    const W=WX&&WX.now, out=SHARED.LVL==='up'&&!(ROOMS&&ROOMS.cur)&&!(CLOCK&&CLOCK.dark())&&!(W&&(W.rain>.25||W.snow>.25||W.wind>.8)); BIRDS.out=out;
     if(S.seed){ S.seed.t-=dt; if(S.seed.t<=0)S.seed=null; } const n={};
     if(out){ hunt(dt); shed(dt); }
     const rch=binoc()?WR1:2*T; theirs(); for(const b of [...BIRDS.list]){ if(b.th)b.th.reach=b.st==='pet'?2*T:rch; const pet=b.st==='pet'||b.st==='opet', show=pet||out; b.hb.visible=show&&!pet&&b.st!=='hid'; if(b.st==='opet'&&!(b.o&&b.o.fig&&b.o.fig.g.visible))continue; if(!show)continue; if(!pet&&(Math.hypot(b.x-pos.x,b.z-pos.z)>20*T||!NPCS.seen(b.x,b.y,b.z,1.5*T)))continue; if(pet||NPCS.live(b.x,b.y,b.z,1.5*T))step(b,dt); if(BIRDS.list.includes(b))place(b,n); }
@@ -172,7 +171,7 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
   FORAGE.ROWB.push(id=>id.startsWith('bd_')?[['TAME','btame'],['RELEASE','bfree2']]:id==='bseed'?[['SCATTER','bscatter']]:id==='feeder'?[['HANG IT HERE','bhang']]:id.startsWith('pet_')?[['CAGE IT','bcage'],['LET GO','bletgo']]:[]);
   FORAGE.ACT.bfree2=id=>{ const k=+id.slice(3); FORAGE.take(id,1); FORAGE.give('cage',1); const b=add(k,pos.x,SHARED.py+1*WU,pos.z,{src:'free'}); flyTo(b,pos.x+18*T,b.y+7*WU,pos.z-14*T,true); say(`YOU OPEN THE CAGE. THE ${K[k][0]} FLIES OFF.`,'#9fe07f'); };
   FORAGE.ACT.btame=id=>{ const k=+id.slice(3), d=DIFF(k); if(use('bird',d-10,d+40)){ FORAGE.take(id,1); FORAGE.give('cage',1); makePet(k); } else say('IT PECKS YOUR FINGER AND WILL NOT COME OUT.','#c8a090'); };
-  FORAGE.ACT.bscatter=()=>{ '@later'; if(SHARED.LVL!=='up'||(window.ROOMS&&ROOMS.cur))return say('SCATTER IT OUTDOORS.','#c8a090'); FORAGE.take('bseed',1); S.seed={x:pos.x,y:(GARDEN.lawnAt&&GARDEN.lawnAt(pos.x,pos.z))??(typeof SHARED.groundY!=='undefined'?SHARED.groundY(pos.x,pos.z):pos.y),z:pos.z,t:90};
+  FORAGE.ACT.bscatter=()=>{ '@later'; if(SHARED.LVL!=='up'||(ROOMS&&ROOMS.cur))return say('SCATTER IT OUTDOORS.','#c8a090'); FORAGE.take('bseed',1); S.seed={x:pos.x,y:(GARDEN.lawnAt&&GARDEN.lawnAt(pos.x,pos.z))??(typeof SHARED.groundY!=='undefined'?SHARED.groundY(pos.x,pos.z):pos.y),z:pos.z,t:90};
     say('YOU SCATTER A HANDFUL OF SEED. STAND STILL AND THE BIRDS WILL COME.','#9fe07f'); };
   FORAGE.ACT.bletgo=()=>freePet();
   // a feeder: yours (a double click takes it down) or another player's (theirs comes from the section, like hives and pots)
@@ -188,7 +187,7 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
   const theirFeed=(id,name,list)=>{ '@later'; feederGone(FEEDS.get(id)); FEEDS.delete(id); if(!id||id===ONLINE.me||!Array.isArray(list)||!list[0])return; const a=list[0], f={x:+a[0],y:+a[1],z:+a[2]}; if(!isFinite(f.x)||!isFinite(f.z))return;
     const who=String(name||'A NEIGHBOUR').toUpperCase(), F=feederAt(f,who,()=>say(`${who}'S FEEDER. THE BIRDS LIKE IT.`,'#e8e2cc')); F.f=f; FEEDS.set(id,F); };
   ONLINE.puts.feeder={set:theirFeed,clear:()=>{ for(const id of [...FEEDS.keys()])theirFeed(id); },share};
-  FORAGE.ACT.bhang=()=>{ '@later'; if(SHARED.LVL!=='up'||(window.ROOMS&&ROOMS.cur))return say('HANG IT OUTDOORS.','#c8a090'); FORAGE.take('feeder',1); S.feed={x:pos.x,y:(GARDEN.lawnAt&&GARDEN.lawnAt(pos.x,pos.z))??(typeof SHARED.groundY!=='undefined'?SHARED.groundY(pos.x,pos.z):pos.y),z:pos.z,t:1};
+  FORAGE.ACT.bhang=()=>{ '@later'; if(SHARED.LVL!=='up'||(ROOMS&&ROOMS.cur))return say('HANG IT OUTDOORS.','#c8a090'); FORAGE.take('feeder',1); S.feed={x:pos.x,y:(GARDEN.lawnAt&&GARDEN.lawnAt(pos.x,pos.z))??(typeof SHARED.groundY!=='undefined'?SHARED.groundY(pos.x,pos.z):pos.y),z:pos.z,t:1};
     save(); share(); feederShow(); say('YOU HANG THE FEEDER. BIRDS NEARBY WILL COME TO IT. A DOUBLE CLICK TAKES IT DOWN.','#9fe07f'); };
   setTimeout(feederShow,0); BIRDS.feeder=()=>FD&&FD.th;
   FORAGE.ACT.bcage=id=>{ '@later'; const k=+id.slice(4); if(!FORAGE.has('cage'))return say('YOU NEED AN EMPTY CAGE (THE BIRD SHOP HAS THEM).','#c8a090'); FORAGE.take('cage',1); const b=petOf(); for(const q of Object.keys(INV.items))if(q.startsWith('pet_'))delete INV.items[q]; if(b)drop(b); FORAGE.give('bd_'+k,1); say(`YOU PUT YOUR TAME ${K[k][0]} IN THE CAGE.`,'#b8f0a0'); };
@@ -196,4 +195,3 @@ const BIRDS={list:[]}; window.BIRDS=BIRDS;
   { const pk=Object.keys(INV.items).find(id=>id.startsWith('pet_')); if(pk){ const k=+pk.slice(4); const b=add(k,pos.x,SHARED.py+1.4*WU,pos.z); b.st='pet'; b.src='pet'; b.th.name='YOUR TAME '+K[k][0]; } }
   BIRDS.TIER=TIER; window.BIRDS=BIRDS; BIRDS.K=K; BIRDS.T=T; BIRDS.ME=ME; BIRDS.add=add; BIRDS.drop=drop; BIRDS.S=S;
   window.BIRDDBG=()=>({out:BIRDS.out,n:BIRDS.list.length,shown:BIRDS.shown,tris:TRIS,kinds:BIRDS.list.map(b=>K[b.k][0]+':'+b.st),seen:{...S.seen},seed:S.seed,bird:FORAGE.sk('bird')}); }
-export {BIRDS};

@@ -192,7 +192,7 @@ const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
     UI.thing({name:'THE HELIPAD (UP THE BANK STAIRS)',obj:sign,reach:1.4*T,near:2.6*T,tall:2.2*T,act:()=>ask(HELI.list.find(h=>h.mode==='rest'&&!h.by&&!h.park))}); built=true; return true; };
   // the models are fetched once; until the bank is there, the pad is only tried again every two seconds
   let asked=0, tries=0, nextTry=0;
-  SYS.add('life',()=>{ if(built||!window.__started||!PFROW.done)return; if(D&&D!==1){ const t=performance.now(); if(t<nextTry)return; nextTry=t+2000; make(); return; }
+  SYS.add('life',()=>{ if(built||!SYS.started||!PFROW.done)return; if(D&&D!==1){ const t=performance.now(); if(t<nextTry)return; nextTry=t+2000; make(); return; }
     if(asked||tries>=3)return; asked=1; tries++; D=1; HD().then(J=>{ D=J; asked=0; make(); }).catch(e=>{ D=null; asked=0; console.warn('HELI: the models did not load',e); }); },'150pa-heli');
   // before you move: every helicopter where its clock (or its pilot) says, so a seat carries you the same frame
   SYS.add('carry',dt=>{ if(!built)return; dt=dt||0; HELI.n=(HELI.n||0)+1; for(const H of HELI.list){ update(H,dt); if(H.th)H.th.reach=(H.mode==='rest'?14:3.5)*M0; }

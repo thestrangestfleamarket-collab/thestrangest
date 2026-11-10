@@ -42,18 +42,18 @@ const SWAP={no:[id=>ARCHI(id)||id==='passport'||id.startsWith('photo_')||id.star
     if(op==='done'){ done(m); return; }
     if(op==='x'){ if(m.back)take(m.back); say('THE TRADE IS OFF'+(m.why?': '+String(m.why).toUpperCase():'')+(m.back?'. WHAT YOU PUT IN IS BACK':'')+'.','#c8a090'); shut(); } };
   let pend=false;
-  const payload=()=>{ '@later'; const items={}, art={}; for(const id in T.mine.items){ const n=Math.min(T.mine.items[id],INV.items[id]||0); if(n>0&&can(id)){ items[id]=n; if(id.startsWith('pt_')&&window.PAINTINGS){ const a=PAINTINGS.meta(id.slice(3)); if(a)art[id.slice(3)]=a; } } } return {items,cash:Math.min(T.mine.cash,cash()),art}; };
+  const payload=()=>{ '@later'; const items={}, art={}; for(const id in T.mine.items){ const n=Math.min(T.mine.items[id],INV.items[id]||0); if(n>0&&can(id)){ items[id]=n; if(id.startsWith('pt_')&&PAINTINGS){ const a=PAINTINGS.meta(id.slice(3)); if(a)art[id.slice(3)]=a; } } } return {items,cash:Math.min(T.mine.cash,cash()),art}; };
   const flush=()=>{ clearTimeout(sendT); if(!T||!pend)return false; pend=false; ONLINE.send({t:'tr',op:'offer',o:payload()}); return true; };
   const offer=()=>{ pend=true; clearTimeout(sendT); sendT=setTimeout(flush,150); };   // the server takes one trade message each 100 ms
   // both accepted: what this game put in leaves the pack now, and the server is told what really left; only that changes hands
   const pay=g=>{ '@later'; if(INV.save)INV.save(); OWNED.sync().catch(()=>{}).then(()=>payNow(g)); };   // the server takes it from its own copy of your pack: bring it up to date first
   const payNow=g=>{ '@later'; const items={}, art={};
-    for(const id in g.items||{}){ const n=Math.min(Math.floor(+g.items[id]||0),INV.items[id]||0); if(n>0){ FORAGE.take(id,n); items[id]=n; if(id.startsWith('pt_')&&window.PAINTINGS){ const k=id.slice(3); if(g.art&&g.art[k])art[k]=g.art[k]; PAINTINGS.gave(k); } } }
+    for(const id in g.items||{}){ const n=Math.min(Math.floor(+g.items[id]||0),INV.items[id]||0); if(n>0){ FORAGE.take(id,n); items[id]=n; if(id.startsWith('pt_')&&PAINTINGS){ const k=id.slice(3); if(g.art&&g.art[k])art[k]=g.art[k]; PAINTINGS.gave(k); } } }
     const c=Math.min(Math.max(0,Math.floor(+g.cash||0)),cash()); INV.cash=cash()-c; if(INV.save)INV.save(); if(FORAGE.draw)FORAGE.draw();
     ONLINE.send({t:'tr',op:'paid',o:{items,cash:c,art}}); if(T){ T.paying=true; draw(); } };
   // things coming in: the other side's, or this side's own back
   const take=r=>{ '@later'; INV.cash=cash()+Math.max(0,Math.floor(+r.cash||0));
-    for(const id in r.art||{})if(window.PAINTINGS)PAINTINGS.got(id,r.art[id]);
+    for(const id in r.art||{})if(PAINTINGS)PAINTINGS.got(id,r.art[id]);
     for(const id in r.items||{}){ const n=Math.max(0,Math.floor(+r.items[id]||0)); if(n&&/^[a-z0-9_]{1,48}$/.test(id))FORAGE.give(id,n); }
     if(INV.save)INV.save(); if(FORAGE.draw)FORAGE.draw(); };
   SWAP.pay=pay; SWAP.take=take;

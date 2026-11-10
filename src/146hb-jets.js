@@ -4,7 +4,7 @@ import {BLAZE, FORAGE, ICE, INV, LEVELS, NPCS, ONLINE, pos, RAG, ROOMS, st, VIT,
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
-import {QS, SYS, TILE} from './006-map-pre.js';
+import {MODS, QS, SYS, TILE} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
 import {RIVER} from './066-river.js';
 { const T=TILE, M=T/.84, V3=THREE.Vector3, rnd=Math.random, say=SAY, RF=7*M, RI=7*M, now=()=>performance.now();
@@ -41,7 +41,7 @@ import {RIVER} from './066-river.js';
       if(!c){ if(IL.length>=IN){ let o=0; IL.forEach((q,i)=>{ if(q.t>IL[o].t)o=i; }); IL.splice(o,1); } c={x,y,z,r:.25*M,a:rnd()*6.28,t:0}; IL.push(c); }
       c.r=Math.min(2.6*M,c.r+dt*.8*M/Math.max(1,c.r/M)); c.t=0; const k=Math.min(1,dt*.6); c.x+=(x-c.x)*k*.3; c.z+=(z-c.z)*k*.3; },
     melt:(x,z,dt)=>{ for(const c of IL)if(Math.hypot(c.x-x,c.z-z)<c.r+.4*M){ c.r-=dt*.9*M; c.t=Math.max(c.t,60); } },
-    water:(x,z)=>window.RIVER&&RIVER.level?RIVER.level(x,z):null,   // over open water the ice is the floor; elsewhere only what is not under something higher
+    water:(x,z)=>RIVER&&RIVER.level?RIVER.level(x,z):null,   // over open water the ice is the floor; elsewhere only what is not under something higher
     feed:(st,pos)=>{ const y=ICE.at(pos.x,pos.z); if(y==null||SHARED.LVL!=='up'||ICE.water(pos.x,pos.z)==null&&SHARED.py>y+.6*M)return false; RIG.water(st,{level:null,floor:0}); return true; },
     floor:g=>{ const y=IL.length&&SHARED.LVL==='up'?ICE.at(pos.x,pos.z):null; return y!=null&&(ICE.water(pos.x,pos.z)!=null||y>g&&SHARED.py<y+.6*M)?y:g; }});
   window.ICE=ICE;
@@ -71,7 +71,7 @@ import {RIVER} from './066-river.js';
   const path=S=>{ const P=S.P; P.length=0; P.push(S.tip.clone()); if(S.k!=='f'){ P.push(S.tip.clone().addScaledVector(S.dir,S.R)); return; }
     const p=S.tip.clone(), v=S.dir.clone().multiplyScalar(14*M); let s=0; const h=.02; for(let t=0;t<FUEL*3&&s<S.R;t+=h){ v.y-=G*h; v.multiplyScalar(1/(1+KD*v.length()*h)); const d=v.length()*h; p.addScaledVector(v,h); s+=d; if(Math.round(t/h)%3===2)P.push(p.clone()); } P.push(p.clone()); };
   const cast=S=>{ path(S); ray.camera=SHARED.cam; S.end=null; S.what=''; let s=0; const P=S.P, D=new V3();
-    const gy0=(x,z)=>SHARED.groundY?SHARED.groundY(x,z):-1e9, wl=(x,z)=>window.RIVER&&RIVER.level?RIVER.level(x,z):null, gy=(x,z)=>{ const w=wl(x,z); return w==null?gy0(x,z):w; };
+    const gy0=(x,z)=>SHARED.groundY?SHARED.groundY(x,z):-1e9, wl=(x,z)=>RIVER&&RIVER.level?RIVER.level(x,z):null, gy=(x,z)=>{ const w=wl(x,z); return w==null?gy0(x,z):w; };
     for(let i=1;i<P.length;i++){ D.subVectors(P[i],P[i-1]); let l=D.length(); if(l<1e-6)continue; const g1=gy(P[i].x,P[i].z), under=P[i].y<g1; let lu=l; if(under){ const g0=gy(P[i-1].x,P[i-1].z), a=P[i-1].y-g0, b=g1-P[i].y, u=a/Math.max(1e-6,a+b); lu=l*u; } ray.set(P[i-1],D.normalize()); ray.far=l;
       let h=null; try{ h=ray.intersectObjects(scene.children,true).find(h=>(s+h.distance)>.25*M&&seen(h.object)); }catch(e){}
       if(h&&wl(h.point.x,h.point.z)!=null&&h.point.y<wl(h.point.x,h.point.z)&&h.object!==iceMe)h=null;
@@ -192,5 +192,5 @@ import {RIVER} from './066-river.js';
     { let F=null, fd=(25*M)**2; for(const S of JET.S.values())if(S.k==='f'){ const d=(S.tip.x-pos.x)**2+(S.tip.z-pos.z)**2; if(d<fd){ fd=d; F=S; } } JET.focus=F; JETS_J.length=0;
       if(F){ const hl=Math.hypot(F.dir.x,F.dir.z)||1; for(const p of PL)if(p.kind===3&&p.q.own){ const q=p.q, a=q.t; JETS_J.push({x:q.x,y:q.y,z:q.z,vx:q.vx,vy:q.vy,vz:q.vz,r:p.ph===0?(.05+a*.35)*M:(.15+(a-p.ht)*.6)*M,f:p.ph===0?(a<.04?0:26):10}); }
         if(JETS_J.length>24){ const k=JETS_J.length/24; for(let i=0;i<24;i++)JETS_J[i]=JETS_J[Math.floor(i*k)]; JETS_J.length=24; } }
-      if(window.FIRESIM)FIRESIM.step(dt,F?{x:F.tip.x,y:SHARED.groundY?Math.min(F.tip.y,SHARED.groundY(F.tip.x,F.tip.z)):F.tip.y,z:F.tip.z,dx:F.dir.x/(Math.hypot(F.dir.x,F.dir.z)||1),dz:F.dir.z/(Math.hypot(F.dir.x,F.dir.z)||1)}:null,JETS_J); } iceTick(dt); frostTick(dt); },'146hb-jets');
+      if(MODS.firesim)MODS.firesim.step(dt,F?{x:F.tip.x,y:SHARED.groundY?Math.min(F.tip.y,SHARED.groundY(F.tip.x,F.tip.z)):F.tip.y,z:F.tip.z,dx:F.dir.x/(Math.hypot(F.dir.x,F.dir.z)||1),dz:F.dir.z/(Math.hypot(F.dir.x,F.dir.z)||1)}:null,JETS_J); } iceTick(dt); frostTick(dt); },'146hb-jets');
   window.JETDBG=()=>({on:JET.on,streams:[...JET.S].map(([id,S])=>({id,k:S.k,len:+(S.len/M).toFixed(2),what:S.what,tip:[S.tip.x,S.tip.y,S.tip.z].map(v=>+v.toFixed(2)),dir:[S.dir.x,S.dir.y,S.dir.z].map(v=>+v.toFixed(2)),near:bodies().map(b=>[b.id,+(along(S,b.x,b.y+M,b.z)/M).toFixed(2),+b.x.toFixed(1),+b.y.toFixed(1),+b.z.toFixed(1)])})),parts:PL.length,ice:IL.map(c=>({x:c.x,z:c.z,y:c.y,r:c.r/M})),frost:FM.length,frozen:SHARED.frozen,burn:JET.burnT,fx:[...JET.E].map(([id,e])=>({id,fire:e.fire,ice:e.ice,cold:e.cold})),M}); }

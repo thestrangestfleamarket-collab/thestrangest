@@ -30,7 +30,7 @@ Object.assign(SWIM,{d:null,tankS:0}); window.SWIM=SWIM;
   const place=(m,a,b,r)=>{ d.subVectors(b,a); const L=d.length()||1e-4; m.position.addVectors(a,b).multiplyScalar(.5); m.quaternion.setFromUnitVectors(Y,d.divideScalar(L)); m.scale.set(r,(L+2*r)/6,r); };   // the capsule is 6 tall: its ends just past each joint
   SYS.add('cam',dt=>{ const W=st.water, sw0=!!(W&&W.in)&&!VIT.dead&&UI.persp&&!UI.freeCam, cam=SHARED.cam;
     if(sw0){ const eye=SHARED.py+(W.y+28)*ZU;   // the eyes go down with you: just under the head's top, so under water when you are
-      if(UI.view==='first')cam.position.y=eye; else if(!(window.FOUNT&&FOUNT.swim)&&W.under>.01)cam.position.y+=(Math.min(cam.position.y,eye+.6*WM)-cam.position.y)*Math.min(1,W.under); }
+      if(UI.view==='first')cam.position.y=eye; else if(!(FOUNT&&FOUNT.swim)&&W.under>.01)cam.position.y+=(Math.min(cam.position.y,eye+.6*WM)-cam.position.y)*Math.min(1,W.under); }
     const on=UI.view==='first'&&sw0; root.visible=on; if(!on)return; t+=dt||.016;
     const c=LOOKS.COL&&LOOKS.COL.skin; if(c&&c!==sk){ sk=c; skin.color.set(c); }
     root.position.copy(cam.position); root.quaternion.copy(cam.quaternion); root.scale.setScalar(WM);

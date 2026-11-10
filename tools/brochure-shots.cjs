@@ -14,7 +14,7 @@ const PICS = process.env.PICS ? require(path.resolve(process.env.PICS)) : {
   art: [['artfront', 'third', 0, .1, [.03, 0, .72, .82]], ['mus', 'first', 0, .05, [0, .05, 1, 1]], ['mus', 'third', 3 * PI / 4, .2, [0, .15, 1, 1]], ['artside', 'third', PI / 4, .1, [0, .05, .66, 1]]],
   books: [['books', 'third', 0, .12, [0, .08, 1, .72]], ['books', 'third', -PI / 2, .1, [0, .12, .62, 1]], ['books', 'third', PI / 2, .12, [.3, .15, 1, 1]], ['books', 'third', 0, .12, [.05, .2, .6, .75]]],
   arcade: [['arcade', 'first', -PI / 3, .05, [0, .1, .72, 1]], ['arcade', 'first', PI / 3, .05, [0, .15, .72, 1]], ['arcade', 'third', -2 * PI / 3, .1, [0, .15, .72, 1]], ['arcade', 'third', PI, .12, [0, .25, 1, 1]]],
-  music: [['guitar', 'third', 0, .2, [0, 0, .72, 1]], ['guitar', 'first', null, null, [0, .08, .72, 1]], ['bar', 'third', 0, .12, [0, .08, 1, .72]], ['bodfront', 'third', -PI, .1, [0, 0, .7, 1]]],
+  music: [['guitar', 'third', 0, .2, [0, 0, .72, 1]], ['guitar', 'third', PI, .2, [0, .08, .72, 1]], ['bar', 'third', 0, .12, [0, .08, 1, .72]], ['bodfront', 'third', 0, .1, [0, 0, .7, 1]]],
   stars: [['scope', 'third', PI / 6, .12, [0, 0, .62, 1]], ['moon', 'hud', null, null, [.01, .125, .61, .875]], ['mic', 'hud', null, null, [.15, .1, .86, .72]], ['scopefar', 'third', .55, .1, [0, .08, 1, 1]]],
   gems: [['dungeon', 'third', 0, .12, [0, .1, .72, 1]], ['dungeon', 'third', -PI, .12, [0, .15, .72, 1]], ['deep', 'third', -PI / 2, .35, [0, .45, 1, 1]], ['gstall', 'third', PI, .12, [0, .35, .74, 1]]],
 };
@@ -29,7 +29,7 @@ const PICS = process.env.PICS ? require(path.resolve(process.env.PICS)) : {
   const goN = async n => { await ev(n => __dbg.UI.goName(n), n); await settle(); }, goW = async (x, z) => { await ev(([x, z]) => STORE.goTo(x, z, 'up'), [x, z]); await settle(); };
   const goT = (x, y) => ev(([x, y]) => [SHARED.BOD.XS(x), SHARED.BOD.ZS(y)], [x, y]).then(p => goW(...p)), room = async id => { await ev(id => ROOMS.enter(id), id); await settle(7000); };
   const river = async () => { await goT(61, -118); await wait(() => window.RIVER && RIVER.on, 90000); };
-  const fly = async m => { await goW(45.2, 62); await ev(() => { FORAGE.give('shroom_fly', 1); FORAGE.eat('shroom_fly'); }); await pg.keyboard.press('g'); await pg.waitForTimeout(3000); await pg.keyboard.down(' '); await pg.waitForTimeout(5000); await pg.keyboard.up(' ');
+  const fly = async m => { await goW(45.2, 62); await ev(() => { WIELD.set(null); FORAGE.give('shroom_fly', 1); FORAGE.eat('shroom_fly'); }); await pg.keyboard.press('g'); await pg.waitForTimeout(3000); await pg.keyboard.down(' '); await pg.waitForTimeout(5000); await pg.keyboard.up(' ');
     await ev(m => { SHARED.py = m * 33.9 / 30 / .84; }, m); await pg.keyboard.down('w'); await pg.waitForTimeout(3500); };
   const land = async () => { await pg.keyboard.up('w'); await ev(() => { const y = __dbg.you(); SHARED.py = SHARED.groundY(y.x, y.z) + 2; }); await pg.keyboard.press('g'); await pg.waitForTimeout(6000); };
   const dive = async () => { await river(); await ev(() => { for (const id of ['goggles', 'headlight', 'scuba']) { INV.add(id, 1); EQUIP.wear(id, true); } const [x, z] = WRECK.at, T = __dbg.cv().TILE; STORE.goTo(x + 4 * T, z + 3 * T, 'up'); }); await settle(3000); await wait(() => RIVER.swim); await pg.waitForTimeout(3000); };

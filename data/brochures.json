@@ -704,7 +704,7 @@
      ],
      [
       "p",
-      "Fifty-three paintings hang three to a wall around an atrium that rises to a skylight. A glass elevator serves every floor."
+      "Fifty-three paintings in one room under a skylight, hung close, two high, the way the old salons hung them."
      ],
      [
       "p",
@@ -724,10 +724,9 @@
       "ol",
       [
        "Walk in. Admission is free.",
-       "THE INFORMATION DESK shows the floor plan.",
+       "THE FLOOR PLAN by the door lists every painting.",
        "Double-click a painting to look closely.",
-       "Take A GUIDED TOUR WITH ROSIE around the first floor.",
-       "Double-click THE ELEVATOR BUTTONS for the other floors."
+       "Press GUIDED TOUR on a painting that has one."
       ]
      ],
      [
@@ -766,10 +765,6 @@
        [
         "ADMISSION",
         "FREE"
-       ],
-       [
-        "A GUIDED TOUR WITH ROSIE",
-        "$3"
        ]
       ]
      ],

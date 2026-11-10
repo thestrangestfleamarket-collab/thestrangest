@@ -125,7 +125,7 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
     if(!placed||was.place!==C.place||String(was.at)!==String(C.at)||(C.call&&was.call!==C.call)){ placed=true; path=null; place(); }
     if(cash0==null||was.job!==C.job||was.goal!==C.goal)cash0=cash(); if(was.job!==C.job||was.who!==C.who){ doing='starting: '+C.job; task=null; path=null; SHARED.target=null; mad=null; if(FISHING.mode&&C.job!=='fish')FISHING.leave(); }
     if(VIT.hp>C.hp)VIT.hp=C.hp??1; };
-  BOT.kit={JOB,press,answer,buy,walk,walking,use,click,close,cash,counter,sellAll,nearest,thAt,d2,roam,say,cfg:()=>C,doing:t=>{ doing=t; },stop:()=>{ path=null; SHARED.target=null; },reset:()=>{ task=null; path=null; SHARED.target=null; }};   // for the tests (162h)
+  BOT.kit={JOB,fightOn,press,answer,buy,walk,walking,use,click,close,cash,counter,sellAll,nearest,thAt,d2,roam,say,cfg:()=>C,doing:t=>{ doing=t; },stop:()=>{ path=null; SHARED.target=null; },reset:()=>{ task=null; path=null; SHARED.target=null; }};   // for the tests (162h)
   ONLINE.mine.noapt=()=>C.apt?null:1;   // a bot has no apartment unless the owner gave it one
   BOT.status=status; BOT.bye=()=>{ try{ ONLINE.send({t:'bye'}); }catch(e){} };
   let drawn=0; SYS.add('life',dt=>{ if(!BOT.ready)return; dt=Math.min(dt||.016,.25); SHARED.covered=!BOT.draw&&(++drawn%20)!==0;   // nobody watches a bot's screen: a picture now and then, so its game runs at full speed
@@ -135,7 +135,7 @@ if(QS.get('bot')==='1'){ const T=TILE, R=Math.random;
     if(VIT.hp<hp0-.001&&C.fight&&!VIT.dead){ let b=null, bd=2.5*T; for(const o of ONLINE.others.values()){ if(o.p&&o.why==='near you'&&!o.dead){ const d=d2(o.p.x,o.p.z); if(d<bd){ bd=d; b=o; } } } if(b)mad={id:b.id,t:12}; }
     hp0=VIT.hp; if(VIT.dead||VIT.out>0){ doing=VIT.dead?'down':'knocked out'; return; }
     if(mad){ mad.t-=dt; const o=ONLINE.others.get(mad.id); if(o&&mad.t>0&&fightOn(o,dt))return; mad=null; path=null; }
-    try{ (JOB[C.job]||JOB.stand)(dt); }catch(e){ doing='stuck: '+String(e.message||e).slice(0,80); task=null; path=null; }
+    try{ if(!(BOT.over&&BOT.over(dt)))(JOB[C.job]||JOB.stand)(dt); }catch(e){ doing='stuck: '+String(e.message||e).slice(0,80); task=null; path=null; }
     const L=lines(); if(L.length&&(sayT-=dt)<0){ sayT=(C.job==='chat'?12:30)+R()*30; say(L[Math.floor(R()*L.length)]); } },'162g-bots');
   SYS.onStart(()=>{ setTimeout(()=>{ BOT.ready=true; doing='ready'; },1500); },'162g-bots');
 }

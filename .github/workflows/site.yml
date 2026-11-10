@@ -70,7 +70,7 @@ jobs:
           k animals 'src/087|src/111db|worker/folk|animals\.cjs'
           k parksolid 'src/111fe|src/100-use|data/world|parksolid\.cjs'
           k guardians 'src/146ja|src/146k|src/146b|worker/dunmobs|src/103a|src/059e|data/guardians|guardians\.cjs|body\.cjs'
-          k faunarest 'src/087-npc-creatures|src/086a-farm|data/fauna|fauna-rest\.cjs'
+          k towers  'src/062-castle|src/063-tower|src/146ja|data/guardians|towers\.cjs'
           k itempics 'src/162e-bag|src/162d-hud|src/162fa-shopinsides|src/150cy|itempics\.cjs'
           k ground  'src/162e-bag|src/150cy-inspect|src/140b-items|data/items|grounditems\.cjs'
           k avdesign 'src/111c-avatar|src/111cb-designer|src/102b-designer|avdesigner\.cjs'
@@ -86,7 +86,7 @@ jobs:
           k bodega80 'src/039-bodega|src/016-street-kit|bodega80s\.cjs'
           k bedroom 'src/150[a-c]|src/150ea|src/059a|bedroom'
           k roomedit 'src/150[c-e]|src/150cz|src/059a|roomedit'
-          k fishing 'src/142-|src/142b|src/066|src/141f|fishing'
+          k fishing 'src/142-|src/066|src/141f|fishing'
           k guide   'src/136d|data/guide|guide'
           k bank    'src/059h|src/058-store|src/161-perf|bank'
           k art     'src/059p-art|data/art|art\.cjs'
@@ -237,10 +237,6 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' itempics')
         run: node tests/itempics.cjs dist/market.html
-      - name: fauna rests
-        timeout-minutes: 15
-        if: contains(steps.f.outputs.run, ' faunarest')
-        run: node tests/fauna-rest.cjs dist/market.html
       - name: motion
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' motion')
@@ -269,6 +265,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' parksolid')
         run: node tests/parksolid.cjs dist/market.html
+      - name: The watchtowers (the castle gone, the stair kept, six towers, each guard at its tower)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' towers')
+        run: node tests/towers.cjs dist/market.html
       - name: The keep's guardians (the crew, a breakout fought, a bounty)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' guardians')
@@ -449,6 +449,10 @@ jobs:
         timeout-minutes: 10
         if: contains(steps.f.outputs.run, ' kit')
         run: node tests/fullkit.cjs dist/market.html
+      - name: The owners' kit (every usable carried thing, the carried telescope and microscope)
+        timeout-minutes: 10
+        if: contains(steps.f.outputs.run, ' kit')
+        run: node tests/ownerkit.cjs dist/market.html
       - name: The browser's extras (the mouse look in first person, a sound's place in 3D, the screen kept awake)
         timeout-minutes: 10
         if: contains(steps.f.outputs.run, ' browser')

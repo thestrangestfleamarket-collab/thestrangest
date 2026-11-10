@@ -14,6 +14,7 @@ Object.assign(LINES,{log:[]});
     gd_up:['Up you come, {{name}}.','Someone comes. Good, it\'s you.','Back from below? You look it.','Hold. Ah. Pass, friend.','Mind the gate as you go.','The stair is yours.'],
     thanks:['Thanks, {{name}}.','Much obliged.','There you go.','Read it before the rain does.','Come back tomorrow, it\'s all new.','Keep the change. No, wait.'],
     mushroom:['Mushrooms. Fresh picked.','These ones glow a little.','Try one. Or don\'t.','Found them under the bridge.','Only the red ones bite.','For you, {{name}}, half price.'],
+    courier:['Parcel for... no, not you.','Coming through!','Sign here. No, here.','Left at the door, {{name}}. As usual.','Can\'t stop, it\'s fragile.','Beep beep.'],
   };
   const RECENT_MAX=14; let recent=[]; try{ recent=JSON.parse(SAVE.get('recent')||'[]')||[]; }catch(e){ recent=[]; }
   const hashS=s=>{ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; };

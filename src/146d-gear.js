@@ -22,9 +22,3 @@ import {GEMS} from './101-gems.js';
     const C=on&&ONLINE.others&&ONLINE.others.size?[...ONLINE.others.values()].filter(o=>o.why==='near you'&&o.fig&&o.fig.g.visible&&lit(o)).sort((a,b)=>Math.hypot(a.p.x-pos.x,a.p.z-pos.z)-Math.hypot(b.p.x-pos.x,b.p.z-pos.z)):[];
     THEIRS.forEach((l,i)=>{ const o=C[i]; if(!o){ l.intensity=0; return; } const p=o.fig.g.position, h=o.fig.g.rotation.y; l.position.set(p.x+Math.sin(h)*.8*T,p.y+1.5*T,p.z+Math.cos(h)*.8*T); l.intensity=14; }); },'146d-gear');
   window.GEARDBG=()=>({light:EQUIP.light,sight:EQUIP.sight,head:L.intensity,theirs:THEIRS.map(l=>l.intensity)}); }
-// cutting a gem on the gem wheel (owner, 5 Nov 2026: gem cutting kept): a pack recipe for each stone but the geode, worth twice and more cut, trained and judged by GEMS
-{ const RG={c:[-10,40],r:[10,60],s:[30,85]}, CUT=GEMS.filter(g=>g[0]!=='geode'&&!g[0].startsWith('cut_')), P=g=>Math.round(g[2]*2.2);
-  FORAGE.add({names:{gem_wheel:'A GEM WHEEL',...Object.fromEntries(CUT.map(g=>['cut_'+g[0],'CUT '+g[1]]))},prices:Object.fromEntries(CUT.map(g=>['cut_'+g[0],P(g)])),
-    recipes:CUT.map(g=>['cut_'+g[0],'CUT '+g[1],'gem',RG[GEMS.TIER[g[0]]]||RG.c,{[g[0]]:1},'sells for $'+P(g)])});
-  for(const g of CUT)GEMS.push(['cut_'+g[0],'CUT '+g[1],P(g),0]);   // weight 0: never found, only cut
-  FORAGE.CK.gem={short:'CUT',need:()=>FORAGE.has('gem_wheel')?null:'YOU NEED A GEM WHEEL (THE GEM SHOP ON MARKET ST SELLS THEM).',made:nm=>`YOU GRIND AND POLISH IT: ${nm}.`,fail:'IT CRACKS ON THE WHEEL. THE STONE IS LOST.'}; }

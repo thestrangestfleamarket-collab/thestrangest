@@ -1,4 +1,4 @@
-# Bakes the superhero (data/full/superhero-male.gltf, its own skin on the UAL skeleton) into data/hero.json for BODIES: the head kept,
+# Bakes the superhero (data/full/superhero-male.gltf, its own skin on the UAL skeleton) into archive/data/hero.json for BODIES: the head kept,
 # the body simplified, each face painted a suit colour, each corner held by its two strongest of the 15 bones. python3 tools/hero-bake.py (needs numpy, fast-simplification)
 import json,numpy as np,fast_simplification as FS
 SRC='data/full/superhero-male.gltf'
@@ -68,5 +68,5 @@ out={'bones':BONES,'colors':COLORS,'bodies':{'hero':{
   'height':round(float(P[:,1].max()),4),'hipY':round(float(JP['pelvis'][1]),4),
   'origin':[np.round(FR[b][0],4).tolist() for b in BONES],'rest':[np.round(FR[b][1].T.reshape(-1),5).tolist() for b in BONES],
   'pos':np.round(P,4).reshape(-1).tolist(),'tri':F.reshape(-1).tolist(),'bone':top.reshape(-1).tolist(),'w':np.round(w,3).tolist(),'col':col.tolist()}}}
-json.dump(out,open('data/hero.json','w'),separators=(',',':'))
-print('data/hero.json',len(F),'triangles')
+json.dump(out,open('archive/data/hero.json','w'),separators=(',',':'))
+print('archive/data/hero.json',len(F),'triangles')

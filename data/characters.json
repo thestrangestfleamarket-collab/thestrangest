@@ -3250,16 +3250,18 @@
  },
  "railway_carter": {
   "pf": "railway-carter-971897",
-  "group": "loop",
+  "group": "hudson",
   "job": {
-   "at": "subway",
-   "title": "FREIGHT",
+   "at": "fishmarket",
+   "title": "JOURNEYMAN, HAND TRUCK",
    "hours": [
-    6,
+    4,
     14
-   ]
+   ],
+   "r": 10,
+   "home": "house"
   },
-  "name": "THE RAILWAY CARTER"
+  "name": "THE JOURNEYMAN"
  },
  "trainspotter": {
   "pf": "trainspotter-ffd141",
@@ -3548,16 +3550,18 @@
  },
  "trucker": {
   "pf": "trucker-9266a8",
-  "group": "depot",
+  "group": "hudson",
   "job": {
-   "at": "depot",
-   "title": "DRIVES THE TRUCK",
+   "at": "fishmarket",
+   "title": "DRIVES THE FISH TRUCK",
    "hours": [
-    6,
+    4,
     14
-   ]
+   ],
+   "r": 3,
+   "home": "house"
   },
-  "name": "THE TRUCKER"
+  "name": "THE FISH TRUCKER"
  },
  "village_engineer": {
   "pf": "village-engineer-a44949",
@@ -4146,16 +4150,16 @@
   "pf": "hanga-roa-fisherman-e56812",
   "group": "hudson",
   "job": {
-   "at": "hudson",
-   "title": "FISHES OFF THE PIER",
+   "at": "fishmarket",
+   "title": "FISHMONGER, BLUEWATER FISH CO.",
    "hours": [
-    6,
+    4,
     14
    ],
-   "r": 8,
+   "r": 0,
    "home": "house"
   },
-  "name": "THE HANGA ROA FISHERMAN"
+  "name": "THE FISHMONGER"
  },
  "scuba_diver": {
   "pf": "scuba-diver-bdd1c8",
@@ -6024,6 +6028,72 @@
      ]
     }
    }
+  }
+ },
+ "fm_bluewater": {
+  "name": "BLUEWATER FISH CO.",
+  "trade": {
+   "sells": [
+    "x_flounder",
+    "x_bluefish",
+    "x_bass",
+    "x_shad",
+    "bait_cut"
+   ],
+   "buys": [
+    "fish"
+   ],
+   "pays": 1.25,
+   "line": "Flounder, blues, bass, off the boats this morning. Bring me what you land, I pay better than the shed."
+  }
+ },
+ "fm_carmelo": {
+  "name": "CARMELO & SONS",
+  "trade": {
+   "sells": [
+    "x_perch",
+    "x_sunfish",
+    "x_catfish",
+    "x_eel",
+    "bait_cut"
+   ],
+   "buys": [
+    "fish"
+   ],
+   "pays": 1.25,
+   "line": "Pan fish, cats and eels, by the piece. You fish? I buy, and I pay market price."
+  }
+ },
+ "fm_oldslip": {
+  "name": "OLD SLIP SHELLFISH",
+  "trade": {
+   "sells": [
+    "x_crab",
+    "x_eel",
+    "crabpot",
+    "cooler_s"
+   ],
+   "buys": [
+    "fish"
+   ],
+   "pays": 1.25,
+   "line": "Blue crabs by the bushel, live. Got crabs of your own? Put them on the scale."
+  }
+ },
+ "fm_lightning": {
+  "name": "LIGHTNING FILLET CO.",
+  "trade": {
+   "sells": [
+    "x_sturgeon",
+    "x_bass",
+    "x_bluefish",
+    "cooler_m"
+   ],
+   "buys": [
+    "fish"
+   ],
+   "pays": 1.25,
+   "line": "The big fish get cut here. Sturgeon, bass: I take all you can carry."
   }
  }
 }

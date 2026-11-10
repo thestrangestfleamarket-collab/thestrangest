@@ -1,5 +1,6 @@
 // THE MERCHANT BODIES: MERCH, the kit each merchant's body is made with — a skeleton of the rig's 15 bones in metres, parts hung on them (each part a shape, a colour and a little jitter), baked once into one body for BODIES; idle poses and things held in the hands ride on top.
 import {THREE} from './003-shx.js';
+import {ARCH} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {BODIES} from './111a-bodies.js';
 const MERCH={list:[],SURF:{plain:0,knit:1,cloth:2,denim:3,leather:4,metal:5,skin:6,fur:7,wood:8,ivory:9,plastic:9,glass:10,tulle:11}};
@@ -52,7 +53,7 @@ const MERCH={list:[],SURF:{plain:0,knit:1,cloth:2,denim:3,leather:4,metal:5,skin
     geo.setAttribute('color',new THREE.Float32BufferAttribute(C2,3)); geo.setAttribute('bi',new THREE.Float32BufferAttribute(I2,2)); geo.setAttribute('bw',new THREE.Float32BufferAttribute(W2,1)); geo.computeBoundingSphere(); return geo; };
 
   /* ---------- a merchant: def {key, label, height (m), model()->skel with parts, at, size (x/10 of a person, the owner's scale), idle(t,N)->rig pose, after(B,N,dt), lift(t)} ---------- */
-  MERCH.add=def=>{ const S=def.model();
+  MERCH.add=def=>{ if(ARCH.has(def.key))return null; const S=def.model();   // an archived character gets no body
     const body={key:def.key,label:def.label,height:def.height,hipY:S.q.hipY,off:offOf(S.B),binv:null,at:def.at??0,geo:()=>MERCH.bake(S),
       size:(def.size||10)/10,smooth:true,idle:def.idle,after:def.after,lift:def.lift,hd:def.hd,root:def.inside?scene:null};
     BODIES.add(body); MERCH.list.push(body); return body; };

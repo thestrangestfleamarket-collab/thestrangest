@@ -9,7 +9,10 @@ PACKS={   # folder: the pack's file (its page and author are in data/full/sounds
  'tinyworlds':'https://opengameart.org/sites/default/files/%5Bkdd%5DDifferentSteps_0.zip',
  'qubodup':'https://opengameart.org/sites/default/files/qubodup-DoorSet.7z',
  'coughe':'https://opengameart.org/sites/default/files/DoorLockSounds.zip',
- 'ggbotnet':['https://opengameart.org/sites/default/files/'+f+'.ogg' for f in ('car_door_close_0','car_door_open_0','car_engine_loop_1','car_engine_start_up_0','car_engine_turning_off_0','car_horn_0')]}
+ 'ggbotnet':['https://opengameart.org/sites/default/files/'+f+'.ogg' for f in ('car_door_close_0','car_door_open_0','car_engine_loop_1','car_engine_start_up_0','car_engine_turning_off_0','car_horn_0')],
+ 'kresiek':['https://opengameart.org/sites/default/files/amb_rain_loop_1.ogg'],
+ 'wuxiascrub':['https://opengameart.org/sites/default/files/rain-thunder.ogg'],
+ 'rubberduck':'https://opengameart.org/sites/default/files/sfx_100_v2.zip'}
 F='fantozzi/Fantozzi-footsteps/flac/Fantozzi-'; Q='qubodup/qubodup-DoorSet/flac/qubodup-Door'
 SETS={   # name: (its takes, how loud next to the others)
  'step_stone':([F+f'Stone{s}{i}.flac' for s in 'LR' for i in (1,2,3)],.8),
@@ -23,7 +26,9 @@ SETS={   # name: (its takes, how loud next to the others)
  'car_stop':(['ggbotnet/car_engine_turning_off_0.ogg'],.8),
  'car_door_open':(['ggbotnet/car_door_open_0.ogg'],.8),
  'car_door_close':(['ggbotnet/car_door_close_0.ogg'],.9),
- 'horn':(['ggbotnet/car_horn_0.ogg'],.6)}
+ 'horn':(['ggbotnet/car_horn_0.ogg'],.6),
+ 'rain':([('kresiek/amb_rain_loop_1.ogg',20,12)],.8,'loop'),
+ 'thunder':(['rubberduck/sfx100v2_thunder_01.ogg',('wuxiascrub/rain-thunder.ogg',20.6,8)],.9)}
 def get(k,url):
     d=D+k
     if os.path.isdir(d) and os.listdir(d): return
@@ -37,15 +42,19 @@ def get(k,url):
     else:
         import py7zr; py7zr.SevenZipFile(f).extractall(d)
     os.remove(f)
+def raw(f):
+    # a file, or (file, from, seconds): that part of it
+    a=['-ss',str(f[1]),'-t',str(f[2]+.6)] if isinstance(f,tuple) else []; f=D+(f[0] if isinstance(f,tuple) else f)
+    return subprocess.run(['ffmpeg','-v','error']+a+['-i',f,'-ac','1','-ar',str(SR),'-af','highpass=f=30','-f','f32le','-'],capture_output=True,check=True).stdout
 def pcm(f):
-    out=subprocess.run(['ffmpeg','-v','error','-i',f,'-ac','1','-ar',str(SR),'-f','f32le','-'],capture_output=True,check=True).stdout
+    out=raw(f)
     x=list(struct.unpack('<%df'%(len(out)//4),out)); pk=max(abs(v) for v in x) or 1
     a=next(i for i,v in enumerate(x) if abs(v)>pk*.03); b=len(x)-next(i for i,v in enumerate(reversed(x)) if abs(v)>pk*.015)
     a=max(0,a-int(.004*SR)); b=min(len(x),b+int(.03*SR)); x=x[a:b]; n=len(x); fi=int(.002*SR); fo=min(n//3,int(.03*SR))
     return [v/pk*(min(1,i/fi))*(min(1,(n-i)/fo)) for i,v in enumerate(x)]
 def loop(f):
     # a loop: its steady middle, the end crossfaded into the start so it repeats without a seam
-    out=subprocess.run(['ffmpeg','-v','error','-i',f,'-ac','1','-ar',str(SR),'-f','f32le','-'],capture_output=True,check=True).stdout
+    out=raw(f)
     x=list(struct.unpack('<%df'%(len(out)//4),out)); x=x[int(.25*SR):len(x)-int(.2*SR)]; pk=max(abs(v) for v in x) or 1; c=int(.3*SR); n=len(x)-c
     return [(x[i]*(i/c)+x[n+i]*(1-i/c) if i<c else x[i])/pk for i in range(n)]
 for k,u in PACKS.items(): get(k,u)
@@ -53,7 +62,7 @@ data=[]; table={}; t=0
 for name,(files,lvl,*kind) in SETS.items():
     table[name]=[]
     for f in files:
-        x=[v*lvl*.89 for v in (loop if kind else pcm)(D+f)]; table[name].append([round(t+GAP,4),round(len(x)/SR,3)]); data+=[0.]*int(GAP*SR)+x; t+=GAP+len(x)/SR
+        x=[v*lvl*.89 for v in (loop if kind else pcm)(f)]; table[name].append([round(t+GAP,4),round(len(x)/SR,3)]); data+=[0.]*int(GAP*SR)+x; t+=GAP+len(x)/SR
 data+=[0.]*int(GAP*SR)
 subprocess.run(['ffmpeg','-v','error','-y','-f','f32le','-ar',str(SR),'-ac','1','-i','-','-c:a','libmp3lame','-b:a','96k','data/sfx.mp3'],input=struct.pack('<%df'%len(data),*data),check=True)
 json.dump(table,open('data/sfx.json','w'),separators=(',',':'))

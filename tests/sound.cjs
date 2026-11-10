@@ -1,4 +1,4 @@
-// THE SOUND CHECK: node tests/sound.cjs dist/market.html. Sound is on by default; the effects, the radio and the instruments share one audio context and one master volume; every effect the code asks for has a recipe or recorded takes and plays; the recorded takes (data/sfx.mp3) load and are audible; footsteps follow the ground; a car you drive hums its engine, H honks (not the emotes), getting out stops it; the SOUND tab shows.
+// THE SOUND CHECK: node tests/sound.cjs dist/market.html. Sound is on by default; the effects, the radio and the instruments share one audio context and one master volume; every effect the code asks for has a recipe or recorded takes and plays; the recorded takes (data/sfx.mp3) load and are audible; footsteps follow the ground; a car you drive hums its engine, H honks (not the emotes), getting out stops it; in a storm the recorded rain plays and thunder follows the lightning; the SOUND tab shows.
 const { chromium } = require('playwright'), path = require('path'), fs = require('fs');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=sound::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 const asked = new Set(); for (const f of fs.readdirSync('src')) if (f.endsWith('.js')) for (const m of fs.readFileSync('src/' + f, 'utf8').matchAll(/SFX\.play\('(\w+)'/g)) asked.add(m[1]);
@@ -23,7 +23,7 @@ const http = require('http'), PAGE = path.resolve(process.argv[2] || 'dist/marke
   ok(Math.abs(r2.m - .4) < .02, 'the volume moves the master: ' + r2.m);
   ok(r2.gt && r2.rad === 'running' && r2.n === 1, 'the guitar and the radio play on the same one audio context: ' + JSON.stringify(r2));
   ok(r2.off, 'EFFECTS off silences the effects');
-  const r3 = await pg.evaluate(async () => { const S = __dbg.SFX, names = ['step_stone', 'step_grass', 'step_wood', 'dooropen', 'door', 'latch', 'car_engine', 'car_start', 'car_stop', 'car_door_open', 'car_door_close', 'horn']; S.play('door', { vol: .01 }); for (let i = 0; i < 80 && !S.bank.buf; i++) await new Promise(r => setTimeout(r, 250)); const b = S.bank.buf; if (!b) return { ok: false };
+  const r3 = await pg.evaluate(async () => { const S = __dbg.SFX, names = ['step_stone', 'step_grass', 'step_wood', 'dooropen', 'door', 'latch', 'car_engine', 'car_start', 'car_stop', 'car_door_open', 'car_door_close', 'horn', 'rain', 'thunder']; S.play('door', { vol: .01 }); for (let i = 0; i < 80 && !S.bank.buf; i++) await new Promise(r => setTimeout(r, 250)); const b = S.bank.buf; if (!b) return { ok: false };
     const D = b.getChannelData(0), sr = b.sampleRate, quiet = []; for (const k of names) for (const [t, L] of S.takes(k) || [[0, 0]]) { let mx = 0; for (let i = Math.floor(t * sr); i < (t + L) * sr && i < D.length; i++) mx = Math.max(mx, Math.abs(D[i])); if (!(mx > .2)) quiet.push(k); }
     const R = __dbg.ROOMS, c0 = R.cur, out = S.ground(); R.cur = { id: 'x' }; const ins = S.ground(); R.cur = c0; return { ok: true, secs: +b.duration.toFixed(1), quiet, out, ins, played: !!S.play('step_' + S.ground(), { vol: .01 }), door: typeof S.door }; });
   ok(r3.ok && !r3.quiet.length && r3.played, 'the recorded footsteps and doors load, every take is audible and plays: ' + JSON.stringify(r3));
@@ -42,6 +42,11 @@ const http = require('http'), PAGE = path.resolve(process.argv[2] || 'dist/marke
   await pg.keyboard.press('f'); await pg.waitForTimeout(1500);
   const c3 = await pg.evaluate(() => ({ driving: !!CARS.driving, stop: window.__played.includes('car_stop') }));
   ok(!c3.driving && c3.stop, 'getting out: the engine stops: ' + JSON.stringify(c3));
+  await pg.evaluate(() => { window.__played.length = 0; WX.hold = 'STORM'; WX.flashK = 1; });
+  await pg.waitForFunction(() => __dbg.AMB.dbg().rain && window.__played.includes('thunder'), null, { timeout: 30000, polling: 250 }).catch(() => {});
+  const w1 = await pg.evaluate(() => ({ ...__dbg.AMB.dbg(), thunder: window.__played.includes('thunder') }));
+  ok(w1.rain && w1.rainG > 0 && w1.thunder, 'in a storm the recorded rain plays and thunder follows the lightning: ' + JSON.stringify(w1));
+  await pg.evaluate(() => { WX.hold = null; WX.flashK = 0; });
   await pg.evaluate(() => { __dbg.UI.toggleMenu(); }); await pg.waitForTimeout(600);
   const tab = await pg.evaluate(() => { const p = document.querySelector('.panes>[data-p="sound"]'); return !!p && !!document.querySelector('#dvol'); });
   ok(tab, 'the menu has its SOUND pane');

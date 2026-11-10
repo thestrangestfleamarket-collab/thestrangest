@@ -12,7 +12,7 @@ if(!GUARD.shelved)PARK.later(()=>{ '@park'; const T=TILE, PI=Math.PI, X=SHARED.B
   BREAK.hurt=hurt;
   // a wave: on the clock, so every player sees the same nights (about one night in two, sometime between nine and one)
   const waveAt=day=>h3(day,3,7)<.55?21+h3(day,5,9)*4:null; let lastWave=-1;
-  BREAK.wave=n=>window.DUNKEEP&&DUNKEEP.wave(n);
+  BREAK.wave=n=>MODS.dunkeep&&MODS.dunkeep.wave(n);
   SYS.add('breakout',n=>{ if(!n)return; BREAK.on=true; if(Math.hypot(pos.x-TOP.x,pos.z-TOP.z)<40*T)say('SOMETHING IS COMING UP THE CASTLE STAIR!','#ff8a6a'); },'146k-breakout');
   const nearest=(x,z,max)=>{ let b=null, bd=max; for(const c of BREAK.list){ if(c.dead)continue; const d=Math.hypot(c.x-x,c.z-z); if(d<bd){ bd=d; b=c; } } return b&&{c:b,d:bd}; };
   // a guardian in the fight: closes to striking distance and swings in time (melee), or keeps its distance and shoots (bow) or casts (staff)
@@ -34,7 +34,7 @@ if(!GUARD.shelved)PARK.later(()=>{ '@park'; const T=TILE, PI=Math.PI, X=SHARED.B
     if(A.mv.t>=q.T){ A.mv=null; N.cd=.3+Math.random()*.6; if(s.v0)s.v=s.v0; } return true; };
   SYS.add('life',dt=>{ const day=window.MAIL&&MAIL.ready?MAIL.day():Math.floor(Date.now()/864e5), h=CLOCK.h??12, w=waveAt(day);
     if(w!=null&&lastWave!==day&&((h>=w&&h<w+1)||(w>=24&&h>=w-24&&h<w-23))){ lastWave=day; if(PARK.ready)BREAK.wave(); }
-    BREAK.list=window.DUNKEEP?DUNKEEP.list():[]; if(!BREAK.list.length&&!BREAK.on)return; if(!PARK.in&&!BREAK.list.some(c=>!c.dead))return;
+    BREAK.list=MODS.dunkeep?MODS.dunkeep.list():[]; if(!BREAK.list.length&&!BREAK.on)return; if(!PARK.in&&!BREAK.list.some(c=>!c.dead))return;
     for(const N of GUARD.list){ if(N.mode==='home'||N.gd.inside||N.gd.perch&&N.gd.perch!=='wall')continue; const t=nearest(N.st.x,N.st.z,16*T); if(t&&!N.ctl)N.ctl=ctl; }
     if(BREAK.list.some(c=>!c.dead))BREAK.seen=true;
     for(const b of bolts){ b.t+=dt; const c=b.c, ty=c.g.position.y+.2*MV, dx=c.x-b.m.position.x, dy=ty-b.m.position.y, dz=c.z-b.m.position.z, l=Math.hypot(dx,dy,dz), v=9*MH*dt;

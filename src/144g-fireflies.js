@@ -1,6 +1,6 @@
 // FIREFLIES: blinking swarms by the park's pond and plants at night; double click one to cup a firefly and let it go, or fill an empty butterfly jar that glows while you carry it and lets them out at dawn.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, FORAGE, PARK, pos, UI, W3, WX} from './003b-systems.js';
+import {CLOCK, FORAGE, PARK, POND, pos, UI, W3, WX} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {OWNED} from './005-save.js';
@@ -12,7 +12,7 @@ import {WILD} from './144f-wild.js';
   FORAGE.add({names:{jar_fly:'A JAR OF FIREFLIES'}});
   const out=()=>CLOCK.dark()&&!(WX.now&&(WX.now.rain>.3||WX.now.wind>.8));
   let SW=null, pts=null; const glowMat=()=>new THREE.PointsMaterial({size:5,sizeAttenuation:false,vertexColors:true,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false});
-  const build=()=>{ const P=window.POND; if(!P||!P.ready||!P.c||!PARK.ready)return false; const C=[];
+  const build=()=>{ const P=POND; if(!P||!P.ready||!P.c||!PARK.ready)return false; const C=[];
     for(let i=0;i<3;i++){ const a=i*2.1+.4, r=P.r+rnd(1,3.5)*WU; C.push({x:P.c.x+Math.cos(a)*r,z:P.c.z+Math.sin(a)*r}); }
     const U=(PARK.under&&PARK.under.userData.items||[]).filter(o=>o.top!=null); for(let i=0;i<3&&U.length;i++){ const o=U[Math.floor((i*.37+.11)*U.length)%U.length]; C.push({x:o.x+rnd(-1,1)*WU,z:o.z+rnd(-1,1)*WU}); }
     const G=new THREE.BufferGeometry(), n=C.length*N; G.setAttribute('position',new THREE.Float32BufferAttribute(new Float32Array(n*3),3)); G.setAttribute('color',new THREE.Float32BufferAttribute(new Float32Array(n*3),3));

@@ -1,6 +1,6 @@
 // THE MAP, BEFORE THE PLACES: lots and layout (LBLD, LAY), the away list (AWAY), the grab() that groups a place's meshes, shared state (SOL, FIX, MODS).
 import {SHARED, THREE} from './003-shx.js';
-import {ROOMS} from './003b-systems.js';
+import {BATCH, ROOMS} from './003b-systems.js';
 import {PPU, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 const CEL=(()=>{ const q=+new URLSearchParams(location.search).get('cel'); let v=null; try{ v=+SAVE.get('bands'); }catch(e){} const n=q||v||4; return Math.max(3,Math.min(5,n|0)); })();
@@ -86,7 +86,7 @@ START.done=()=>{ try{ localStorage.setItem('market-grabs',START.k); }catch(e){} 
 START.waits=[]; START.wait=(name,fn)=>{ START.waits.push({name,fn}); };   // start work that goes on after the start (the street's later steps, the mirror's first look): the loading screen stays until each says it is done
 START.reveal=()=>{ const L=document.getElementById('loading'); if(!L)return; const t0=performance.now(); let exp=0, last=-1, still=0, tok=0; try{ exp=+localStorage.getItem('market-meshes')||0; }catch(e){}
   // the game runs behind the screen until nothing more is being added (the far streets, the mirror past the edges, the park, the trains...), the bar against what the last start ended with
-  const tick=()=>{ let n=0; scene.traverse(o=>{ if((o.isMesh||o.isPoints||o.isLine)&&!o.userData.cullOf)n++; }); const BQ=window.BATCH, busy=!!(BQ&&BQ.left&&BQ.left()>0); if(n===last&&!busy)still+=250; else still=0; last=n; const open=START.waits.filter(w=>{ try{ return !w.fn(); }catch(e){ return false; } }), ok=!open.length&&!busy; if(!ok)tok=0; else if(!tok)tok=performance.now(); const go=ok&&(still>=500||performance.now()-tok>3000);
+  const tick=()=>{ let n=0; scene.traverse(o=>{ if((o.isMesh||o.isPoints||o.isLine)&&!o.userData.cullOf)n++; }); const BQ=BATCH, busy=!!(BQ&&BQ.left&&BQ.left()>0); if(n===last&&!busy)still+=250; else still=0; last=n; const open=START.waits.filter(w=>{ try{ return !w.fn(); }catch(e){ return false; } }), ok=!open.length&&!busy; if(!ok)tok=0; else if(!tok)tok=performance.now(); const go=ok&&(still>=500||performance.now()-tok>3000);
     START.bar(open.length?'FINISHING '+open[0].name:'FINISHING WHAT YOU CAN SEE ('+Math.min(100,Math.round(n/Math.max(exp,n)*100))+'%)',.9+.1*Math.min(1,n/Math.max(exp,n,1))*(go?1:.97));
     if(!go&&performance.now()-t0<90000)return void setTimeout(tick,250);
     try{ localStorage.setItem('market-meshes',n); }catch(e){} START.bar('READY',1); let k=3; const f=()=>{ if(--k>0)return requestAnimationFrame(f); L.textContent=''; L.style.opacity='0'; L.style.pointerEvents='none'; setTimeout(()=>L.remove(),1000); }; requestAnimationFrame(f); };

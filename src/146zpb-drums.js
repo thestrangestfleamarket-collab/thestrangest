@@ -1,8 +1,7 @@
 // THE DRUM KIT (owner, 7 Nov 2026: "lets do piano and drums and harp"): a five-piece kit with hi-hat, crash and ride, set down and sat at (INSTR, 146zp): a stick in each fist (the hand for each hit chosen as a drummer would, alternating when fast), the kick and the hi-hat under the feet, the cymbals swinging on their stands when struck; its sound the music engine's drum heads and cymbals (120); the book is grooves of every kind at every speed (made here, not downloaded).
 import {THREE} from './003-shx.js';
-import {IMK} from './003b-systems.js';
+import {IMK, INSTR} from './003b-systems.js';
 import {imAct} from './120-game-music-2-instruments.js';
-import {INSTR} from './146zp-instruments.js';
 { const {box,cyl,mat,sm,FIST}=INSTR, V3=THREE.Vector3;
   // where each piece is (metres, the drummer at the origin facing +z, +x their left): its centre, radius, depth, tilt toward the drummer; the music engine's order (IMK['drum kit'].parts)
   const PART=[{n:'KICK',c:[-.04,.27,.72],r:.26,d:.36,kick:1},{n:'SNARE',c:[.16,.6,.36],r:.17,d:.13,tilt:.12},{n:'TOM 1',c:[.15,.8,.56],r:.13,d:.2,tilt:.4},{n:'TOM 2',c:[-.17,.8,.56],r:.14,d:.21,tilt:.4},

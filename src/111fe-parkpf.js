@@ -64,7 +64,7 @@ const PARKPF={done:false,things:0,patches:[],tris:0,solids:0,moved:0,skipped:[]}
     g.putImageData(im,0,0); const tx=new THREE.CanvasTexture(cv); tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.generateMipmaps=false; tx.colorSpace=THREE.SRGBColorSpace;
     const ge=new THREE.BufferGeometry(); ge.setAttribute('position',new THREE.BufferAttribute(pp,3)); ge.computeBoundingSphere();
     const glow=new THREE.Points(ge,new THREE.PointsMaterial({map:tx,size:2.6*T,sizeAttenuation:true,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false})); glow.renderOrder=2; glow.visible=false; glow.raycast=()=>{}; root.add(glow);
-    const lit=()=>{ let d=false; try{ d=CLOCK.dark(); }catch(_){ } glow.visible=d; for(const l of recs)l.intensity=d?l.userData.i0*(window.DN?DN.lk:1):0; PARKPF.lit=d; };
+    const lit=()=>{ let d=false; try{ d=CLOCK.dark(); }catch(_){ } glow.visible=d; for(const l of recs)l.intensity=d?l.userData.i0*(DN?DN.lk:1):0; PARKPF.lit=d; };
     PARKPF.lamps=recs.length; lit(); SYS.every(lit,2000,'111fe-parkpf lamps'); };
   let cullT=0; const cull=()=>{ const up=SHARED.LVL==='up', T=TILE; for(const p of PARKPF.patches){ const d=Math.hypot(p.x-pos.x,p.z-pos.z)-p.r; p.me.visible=up&&d<(p.big?FAR:NEAR)*T; p.me.castShadow=p.me.visible&&p.big&&d<SHD*T; } };
   SYS.add('places',dt=>{ if(!PARKPF.done||(cullT-=dt)>0)return; cullT=.4; cull(); },'111fe-parkpf cull');

@@ -1,11 +1,11 @@
 // THE FLORA: FLORA plants the bushes and flower beds on the street (none in the park).
 import {SHARED, THREE} from './003-shx.js';
-import {DRESS, PARK, WEEDS} from './003b-systems.js';
+import {DRESS, FLORA, PARK, WEEDS} from './003b-systems.js';
 import {CASTLE, FIX, MAPG, SOL, STORE, TILE} from './006-map-pre.js';
 import {GCAVE} from './060-cave.js';
 import {FOUNT} from './060a-fount.js';
 import {STALL} from './081-stalls.js';
-const FLORA={bushes:[],beds:[],tris:0,n:{}}; window.FLORA=FLORA;
+ window.FLORA=FLORA;
 { const T=TILE, WU=T/.84, V3=THREE.Vector3, VB=1.25, VF=1.4;
   const hsh=(a,b,s)=>{ let h=(Math.floor(a*97)*374761393+Math.floor(b*89)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
   const m4=new THREE.Matrix4(), q=new THREE.Quaternion(), e=new THREE.Euler(), col=new THREE.Color();
@@ -104,4 +104,3 @@ const FLORA={bushes:[],beds:[],tris:0,n:{}}; window.FLORA=FLORA;
   FLORA.near=(x,z,R,what)=>(what==='bed'?FLORA.beds:FLORA.bushes).filter(o=>Math.hypot(o.x-x,o.z-z)<R);
   FLORA.cover=(bx,bz,px,pz,R=8*T)=>{ let best=null, bd=1e9; for(const b of FLORA.bushes){ const d=Math.hypot(b.x-bx,b.z-bz); if(d>R)continue; const dp=Math.hypot(b.x-px,b.z-pz); if(dp<2.2*T||dp<Math.hypot(bx-px,bz-pz)*.7)continue; const s=d-dp*.3; if(s<bd){ bd=s; best=b; } } return best; };
   window.FLORADBG=()=>({bushes:FLORA.bushes.length,flowers:FLORA.flowers,beds:FLORA.beds.length,tris:FLORA.tris,n:FLORA.n,K:FLORA.K}); }
-export {FLORA};

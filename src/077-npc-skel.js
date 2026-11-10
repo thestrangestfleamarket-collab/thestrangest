@@ -53,7 +53,7 @@ MODS.skel=SKELGO;
         N.alert=!st.to; if(st.to)st.h0=null; else{ if(st.h0==null)st.h0=st.h; const a=st.h0+Math.sin(G.look*.7)*1.1; st.face={x:st.x+Math.sin(a),z:st.z+Math.cos(a)}; } }});
     GUARDS.push(N); N.guard=G; }
   { const DN=DUN(); skel('Minion','GOLD SKELETON',1.4,DN?DN.x:T_(77),DN?DN.z:Z_(SHARED.BOD.FAR),.45,{key:'Gold',walkN:'Walking_A',idleN:'Idle_A',gild:true,dun:DN}); }
-  window.GUARDX={free,SEE,RUN,LANE,T_,Z_,d2,GUARDS,skel};
+  window.GUARDX=MODS.guardx={free,SEE,RUN,LANE,T_,Z_,d2,GUARDS,skel};
   window.SKELGUARDDBG=()=>({guards:GUARDS.map(N=>({k:N.key,mode:N.guard.mode,x:+(N.st.x/TILE).toFixed(1),z:+(N.st.z/TILE).toFixed(1),act:N.an.once&&N.an.once.n})),dark:CLOCK.dark()});
   }));
 window.SKELDBG=()=>NPCS.filter(N=>N.mixer).map(N=>({key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),to:!!N.st.to,bones:N.me.skeleton.bones.length}));

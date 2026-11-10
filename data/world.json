@@ -490,6 +490,21 @@
    "face": "n"
   },
   {
+   "id": "clinic",
+   "name": "THE CLINIC",
+   "kind": "front",
+   "x0": -16.5,
+   "x1": 2.71,
+   "merchant": "doctor",
+   "lot": true,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n",
+   "inW": 14,
+   "inD": 10,
+   "inH": 112
+  },
+  {
    "id": "bar",
    "name": "THE BAR",
    "kind": "front",

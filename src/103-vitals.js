@@ -4,7 +4,7 @@ import {FORAGE, keys, pos, SFX, st, UI, VIT} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {SYS, TILE} from './006-map-pre.js';
 const AIR=16, AIRCEIL=240;                       // seconds: a plain breath, and the most air you can bank from mushrooms
-Object.assign(VIT,{hp:1,sta:1,out:0,fainted:false,tired:false,fight:0,dead:false,def:0,air:AIR,airMax:AIR});
+Object.assign(VIT,{hp:1,sta:1,out:0,fainted:false,tired:false,fight:0,dead:false,def:0,air:AIR,airMax:AIR,AIR,staK:1,hpPlus:0});
 VIT.inFight=t=>{ VIT.fight=Math.max(VIT.fight,t||5); };
 VIT.breathe=s=>{ VIT.air=Math.min(AIRCEIL,VIT.air+(+s||0)); };   // a breathing mushroom adds air for the next dive
 { const css=document.createElement('style'); css.textContent=`#vit{position:fixed;left:calc((24px + var(--fx,0px) + env(safe-area-inset-left,0px)) / var(--uiz,1));top:calc((24px + var(--fy,0px) + env(safe-area-inset-top,0px)) / var(--uiz,1));width:170px;z-index:5;pointer-events:none;font:10px Silkscreen,monospace;letter-spacing:1px;color:#fff;text-shadow:1px 1px 0 #000,0 0 3px #000;zoom:var(--uiz,1)}
@@ -22,12 +22,12 @@ VIT.breathe=s=>{ VIT.air=Math.min(AIRCEIL,VIT.air+(+s||0)); };   // a breathing 
   VIT.HEAT={lava:50,dragon:100}; VIT.heatProof=0; VIT.burns=k=>(VIT.HEAT[k]??100)>VIT.heatProof;   // heat 0-100 (owner, 9 Nov 2026): you are covered up to VIT.heatProof
   VIT.hurt=(d,from)=>{ '@later'; if(VIT.dead)return 0; if(VIT.out>0){ if(VIT.fainted&&d>=.03)VIT.die(); return 0; }
     let parry=false; if(VIT.guard&&from){ const g=VIT.guard(d,from); d=g.d; parry=!!g.parry; }
-    if(d>0){ const now=performance.now(); if(now-thudAt>250){ thudAt=now; SFX.play('thud',{vol:.7,vary:.2}); } VIT.hp=Math.max(0,VIT.hp-d*(30/ST('str'))*(1-Math.max(0,Math.min(.9,VIT.def||0)))); } VIT.inFight(5); if(VIT.hp<=0&&VIT.bouts.some(f=>f())){ VIT.hp=.02; SYS.run('knockout',from); } else if(VIT.hp<=0)VIT.faint(); else if(d>0&&!parry)SYS.run('hurt',d,from); return parry?2:1; };
+    if(d>0){ const now=performance.now(); if(now-thudAt>250){ thudAt=now; SFX.play('thud',{vol:.7,vary:.2}); } VIT.hp=Math.max(0,VIT.hp-d*(30/(ST('str')+(VIT.hpPlus||0)))*(1-Math.max(0,Math.min(.9,VIT.def||0)))); } VIT.inFight(5); if(VIT.hp<=0&&VIT.bouts.some(f=>f())){ VIT.hp=.02; SYS.run('knockout',from); } else if(VIT.hp<=0)VIT.faint(); else if(d>0&&!parry)SYS.run('hurt',d,from); return parry?2:1; };
   VIT.spend=x=>{ VIT.sta=Math.max(0,VIT.sta-x*(VIT.spendK||1)); rest=0; };   // effort: stamina comes back only after a rest
   VIT.tick=dt=>{ if(VIT.sta<=0)VIT.tired=true; else if(VIT.tired&&VIT.sta>=1/3){ VIT.tired=false; }   // empty: no running till a third is back
     if(VIT.tired)st.runTarget=0;
     const sp=Math.hypot(pos.x-lx,pos.z-lz)/Math.max(dt,1e-3); lx=pos.x; lz=pos.z; const running=st.run>.55&&sp>.6*TILE&&!UI.fly&&!UI.freeCam;
-    if(running){ VIT.sta=Math.max(0,VIT.sta-dt/12); rest=0; } else if((rest+=dt)>.8)VIT.sta=Math.min(1,VIT.sta+dt/7);
+    if(running){ VIT.sta=Math.max(0,VIT.sta-dt/12); rest=0; } else if((rest+=dt)>.8)VIT.sta=Math.min(1,VIT.sta+dt/7*(VIT.staK||1));
     const W=st.water, under=!!(W&&W.in&&W.level!=null&&W.y<W.level-34);     // fully under, by the river's own measure
     if(under&&!(VIT.supply&&VIT.supply(dt))){ VIT.air=Math.max(0,VIT.air-dt);
       if(VIT.air<=0&&!VIT.dead){ VIT.hp=Math.max(0,VIT.hp-dt/18); if((glug-=dt)<=0){ SFX.play('thud',{vol:.4,pitch:.6,vary:.2}); glug=1; } if(VIT.hp<=0)VIT.die(); } }
@@ -35,6 +35,6 @@ VIT.breathe=s=>{ VIT.air=Math.min(AIRCEIL,VIT.air+(+s||0)); };   // a breathing 
     if(VIT.out>0){ VIT.out-=dt; keys.clear(); SHARED.target=null; if(VIT.out<=0){ VIT.fainted=false; if(!VIT.dead)VIT.hp=Math.max(VIT.hp,.4); } } else if(!VIT.dead){ let k=0; for(const f of VIT.mends)k+=f()||0; if(!VIT.fight&&VIT.air>0)k+=1/240; if(k>0)VIT.hp=Math.min(1,VIT.hp+dt*k); }   // health comes back by itself, slowly (full in 4 min, not in a fight or out of air); rest, the bath, food and potions on top
     VIT.fight=Math.max(0,VIT.fight-dt);
     const wet=!!(st.water&&st.water.in)||VIT.air<VIT.airMax-.05, show=!!SYS.started; if(B.hidden===show)B.hidden=!show;
-    if(show){ hpI.style.width=(VIT.hp*100).toFixed(0)+'%'; stI.style.width=(VIT.sta*100).toFixed(0)+'%'; const hm=ST('str'), sm=ST('sta'), im=ST('int'); hpN.textContent=Math.round(VIT.hp*hm)+' / '+hm; stN.textContent=Math.round(VIT.sta*sm)+' / '+sm; inI.style.width='100%'; inN.textContent=im+' / '+im;
+    if(show){ hpI.style.width=(VIT.hp*100).toFixed(0)+'%'; stI.style.width=(VIT.sta*100).toFixed(0)+'%'; const hm=ST('str')+(VIT.hpPlus||0), sm=ST('sta'), im=ST('int'); hpN.textContent=Math.round(VIT.hp*hm)+' / '+hm; stN.textContent=Math.round(VIT.sta*sm)+' / '+sm; inI.style.width='100%'; inN.textContent=im+' / '+im;
       airRow.style.display=wet?'':'none'; if(wet){ airI.style.width=(VIT.air/Math.max(VIT.airMax,VIT.air)*100).toFixed(0)+'%'; airI.style.background=VIT.air<=0?'#c84a3a':'#4aa6e0'; airN.textContent=Math.ceil(VIT.air)+'s'+(VIT.tankTxt?VIT.tankTxt():''); } } };
 }

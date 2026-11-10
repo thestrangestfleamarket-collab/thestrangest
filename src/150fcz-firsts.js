@@ -2,7 +2,7 @@
 import {ONLINE} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 const FIRSTS={}; window.FIRSTS=FIRSTS;
-{ FIRSTS.K={iss:'THE ISS, CAUGHT IN THE EYEPIECE',sat:'A SATELLITE PASSING OVER',comet:'A COMET',rock:'AN ASTEROID',meteor:'A SHOOTING STAR',aurora:'THE NORTHERN LIGHTS',flare:'A SUNSPOT GROUP THAT FLARED',rings:"SATURN'S RINGS",moons:"JUPITER'S FOUR MOONS",deep:'A NEBULA OR GALAXY',
+{ FIRSTS.K={iss:'THE ISS, CAUGHT IN THE EYEPIECE',sat:'A SATELLITE PASSING OVER',comet:'A COMET',rock:'AN ASTEROID',meteor:'A SHOOTING STAR',aurora:'THE NORTHERN LIGHTS',flare:'A SUNSPOT GROUP THAT FLARED',rings:"SATURN'S RINGS",moons:"JUPITER'S FOUR MOONS",deep:'A NEBULA OR GALAXY',eclipse:'AN ECLIPSE',double:'A DOUBLE STAR, PARTED',
     tardigrade:'A WATER BEAR, ALIVE',rotifer:'A ROTIFER',daphnia:'A WATER FLEA',volvox:'A VOLVOX COLONY',jar:'A JAR GROWN A WEEK',crystal:'A CRYSTAL IN POLARISED LIGHT'};
   // the night: the date the evening began, Central time; it turns over at 7 in the morning
   FIRSTS.night=(now=Date.now())=>{ try{ return new Date(now-7*3600e3).toLocaleDateString('en-CA',{timeZone:'America/Chicago'}).replace(/-/g,''); }catch(e){ return new Date(now-7*3600e3).toISOString().slice(0,10).replace(/-/g,''); } };

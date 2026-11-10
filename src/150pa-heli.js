@@ -137,15 +137,7 @@ const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
     pose:()=>POSE, on:()=>{ FLY.rot=H.rot; hud(H,0); }, off:()=>hudOff(),
     step:(R,dt)=>{ const f=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0), tr=(keys.has('a')||keys.has('arrowleft')?1:0)-(keys.has('d')||keys.has('arrowright')?1:0), v=(keys.has(' ')?1:0)-(keys.has('shift')||keys.has('c')?1:0);
       FLY.rot=Math.min(1,FLY.rot+dt/3); const ready=FLY.rot>=1, k=Math.min(1,dt*1.5);
-      const g0=surf(FLY.x,FLY.z,FLY.y), air=FLY.y>g0+.05*MV;
-      FLY.vy+=((ready?v*VUP:-.5*VUP)-FLY.vy)*Math.min(1,dt*2.5); FLY.turn+=(tr*TURN-FLY.turn)*Math.min(1,dt*3);
-      if(air||v>0&&ready){ FLY.vf+=((f>0?f*VMAX*SPEED.of('heli'):f*VBACK)-FLY.vf)*k*.6; FLY.hd+=FLY.turn*dt; } else { FLY.vf*=Math.exp(-dt*6); if(ready)FLY.hd+=FLY.turn*dt*.3; }
-      const ox=FLY.x, oz=FLY.z, oy=FLY.y; FLY.x+=Math.sin(FLY.hd)*FLY.vf*dt; FLY.z+=Math.cos(FLY.hd)*FLY.vf*dt; FLY.y=Math.min(TOPY,FLY.y+FLY.vy*dt);
-      if(B){ FLY.x=Math.max(B.x0,Math.min(B.x1,FLY.x)); FLY.z=Math.max(B.z0,Math.min(B.z1,FLY.z)); }
-      // a building in the way: you stop against it, or settle on its roof from above
-      const r=1.8*M0; for(const b of FIX.up){ if(FLY.x+r<b[0]||FLY.x-r>b[3]||FLY.z+r<b[1]||FLY.z-r>b[4])continue; if(FLY.y>=b[5]-.05*MV||FLY.y+3*MV<b[2])continue; if(oy>=b[5]-.05*MV){ FLY.y=b[5]; continue; } FLY.x=ox; FLY.z=oz; FLY.vf*=-.2; break; }
-      const g=surf(FLY.x,FLY.z,FLY.y); if(FLY.y<g){ FLY.y=g; FLY.vy=Math.max(0,FLY.vy); } FLY.down=FLY.y<g+.05*MV&&Math.abs(FLY.vf)<1.5*M0;
-      FLY.pitch+=(Math.min(1,FLY.vf/VMAX)*.22-FLY.pitch)*Math.min(1,dt*3); FLY.bank+=((FLY.down?0:-FLY.turn*.35*Math.min(1,Math.abs(FLY.vf)/(8*M0)))-FLY.bank)*Math.min(1,dt*3);
+      VEH.fly(FLY,dt,{f,tr,v,ready,vmax:VMAX*SPEED.of('heli'),vback:VBACK,vup:VUP,turn:TURN,top:TOPY,B,surf,r:1.8*M0,mv:MV,slow:1.5*M0,bankAt:8*M0,tall:3*MV,vref:VMAX});
       pos.x=FLY.x; pos.z=FLY.z; R.hd=SHARED.heading=FLY.hd; R.v=Math.abs(FLY.vf); R.y=FLY.y; st.move=null;
       H.root.position.set(FLY.x,FLY.y,FLY.z); H.root.rotation.set(FLY.pitch,FLY.hd,FLY.bank); H.root.updateMatrixWorld(true); return true; },
     floor:(g,R)=>R.y!=null?R.y:g,

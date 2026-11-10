@@ -1,6 +1,6 @@
 // THE BROCHURES: the folded leaflets in the street racks (world.json racks), one for each thing to do, each printed in its own style: buy one at a rack, read it from your pack, GO THERE takes you to its place; a full set pays once.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INV, SFX, TEXT, UI} from './003b-systems.js';
+import {FORAGE, INSPECT, INV, SFX, TEXT, UI} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
@@ -25,6 +25,8 @@ const BROCH={}; window.BROCH=BROCH;
   const IDS=Object.keys(B), PRICE=2, FULL=50;
   const S={v:1,got:{},paid:0}; try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1)Object.assign(S,D); }catch(e){} const save=()=>{ try{ OWNED.set(KEY,JSON.stringify(S)); }catch(e){} };
   FORAGE.add({names:Object.fromEntries(IDS.map(id=>[PRE+id,'BROCHURE: '+B[id][0]]))});
+  INSPECT.kinds.push({is:id=>id.startsWith(PRE)&&!!B[id.slice(PRE.length)],make:id=>{ const b=B[id.slice(PRE.length)], c1=parseInt(b[1].slice(1),16), c2=parseInt(b[2].slice(1),16), P=INSPECT.part, o={kind:'paper'}, g=new THREE.Group();   // its 3D model: a folded leaflet in its rack's two colours
+    g.add(P('box',c1,0,.006,0,.1,.012,.21,0,0,0,o),P('box',c2,0,.0125,-.075,.1,.001,.05,0,0,0,o),P('box',c2,0,.0125,.045,.07,.001,.07,0,0,0,o)); return g; }});
   FORAGE.ROWB.push(id=>id.startsWith(PRE)&&B[id.slice(PRE.length)]?[['READ','bqread']]:[]); FORAGE.ACT.bqread=id=>BROCH.read(id.slice(PRE.length));
   const have=id=>(FORAGE.has(PRE+id)||0)>0, count=()=>IDS.filter(id=>S.got[id]).length;
   const LOOK=()=>{ '@brochures';

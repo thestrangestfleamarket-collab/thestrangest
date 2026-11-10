@@ -264,7 +264,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null,keep:[],always:new Set(),save:(
       const lightReset=id=>{ let e=lightsAll().find(q=>q.id===id); if(!e)return; const u=e.L.userData; paint(e.L); light(id,{type:u.type0}); e=lightsAll().find(q=>q.id===id)||e;
         Object.assign(u,{k:1,tone:null,col:null,tint:null,reach:null},u.def); light(id,{on:true}); e.L.color.setHex(u.c0); paint(e.L); };
       const lift=un=>{ const g=un.gone; un.gone=true; body(un); un.gone=g; };   // out of the physics while you carry it
-      R.api={R,M,Lx,Ly,HW,units:()=>R.units,kinds:()=>R.kinds,getT,setT,remove,restore,spawn,drop,lift,toApt,W,unitBox,wall,floor,lightsAll,light,lightGet,lightReset,walls:WALLS,floors:FLOORS,kfloors:KFLOORS,kfloor,thumb,glow:k=>{ R.glowK=cl(k,0,3); }};
+      R.api={R,M,Lx,Ly,HW,porch:(F=>F?{u0:(A.x1-A.x0-F.ub)*MPU+.12,u1:(A.x1-A.x0-F.ua)*MPU-.12,v0:-(.24+APTS.DO*MPU)+.14,v1:-.3}:null)(APTS.ESC&&APTS.ESC[0]),units:()=>R.units,kinds:()=>R.kinds,getT,setT,remove,restore,spawn,drop,lift,toApt,W,unitBox,wall,floor,lightsAll,light,lightGet,lightReset,walls:WALLS,floors:FLOORS,kfloors:KFLOORS,kfloor,thumb,glow:k=>{ R.glowK=cl(k,0,3); }};
       if(R.kfloor)kfloor('oak'); ROOMK.api=R.api; for(const f of ROOMK.built)f(R.api);
       window.BEDROOMDBG=()=>({built:!!R,Lx,Ly,fw,du,HW,loose:R?R.th.length:0,units:R?R.units.length:0,kinds:R?R.units.map(u=>u.kind):[],at:R?R.units.filter(u=>!u.loose).map(u=>{ const b=new THREE.Box3().setFromObject(u.obj), a=R.apt.matrixWorld.clone().invert(); b.applyMatrix4(a); return [u.kind,+b.min.x.toFixed(2),+b.max.x.toFixed(2),+b.min.z.toFixed(2),+b.max.z.toFixed(2)]; }):[],walls:Object.values(APTS.WPL||{}).map(p=>+p.constant.toFixed(2)),lamps:R?R.lamps.map(l=>l.on):[]}); };
 

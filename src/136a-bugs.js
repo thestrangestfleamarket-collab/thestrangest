@@ -68,6 +68,6 @@ import {BUILDV} from './135-where.js';
       if(b.dataset.a==='pic'){ const im=box.querySelector('img'); if(!im.hidden){ im.hidden=true; return; } b.textContent='...'; try{ const u=await be.shot(r); if(u){ im.src=u; im.hidden=false; } }catch(x){} b.textContent='PICTURE'; }
       if(b.dataset.a==='go'){ const a=r.context.at; UI.toggleMenu(); STORE.goTo(a[0],a[1],a[2],null,r.context.lvl); if(r.context.hd!=null)SHARED.heading=r.context.hd; if(r.context.hour!=null)CLOCK.set(r.context.hour); } }; };
   const logout=()=>{ try{ document.cookie='tsfm-pass=; path=/; max-age=0; samesite=strict'; }catch(e){} try{ localStorage.removeItem(LS); }catch(e){} location.replace('/'); };
-  Object.assign(BUGS,{sb,tok,owner:SITE.owner,logout,file:async(body,context,jpg)=>{ '@later'; const B=await backend(); if(!B)throw new Error('not on the website'); await B.send(String(body).slice(0,2000),context,jpg||''); },grab:()=>grab()});   // a report sent by the game for the owner (a bot's failed test)
+  Object.assign(BUGS,{sb,tok,owner:SITE.owner,logout});
   BUGS.open=async(e,m)=>{ el=e; mode=m||'report'; if(mode==='queue'){ el.innerHTML='<h3>THE QUEUE</h3><div class="row" id="bugst"></div><div id="bugq"></div>'; queue(); return; } ctx=where(); el.innerHTML='<div class="dim">...</div>'; shot=await grab(); draw(); };   // the queue is ADMIN's own tab
   addEventListener('keydown',e=>{ if(e.key==='F8'&&!e.repeat){ e.preventDefault(); UI.menuTab('bug'); } }); }

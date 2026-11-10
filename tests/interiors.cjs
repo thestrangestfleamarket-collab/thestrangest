@@ -50,21 +50,16 @@ const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv
     if(OUT)await pg.screenshot({path:OUT+'/theatre.png'}).catch(()=>{});
     await pg.evaluate(()=>STORE.exit('theatre')); await pg.waitForTimeout(3000); }
   /* ---------- THE ART MUSEUM ---------- */
-  { await pg.evaluate(async()=>{ if(STORE.ensure)await STORE.ensure(); STORE.enter('art',true); }); await U(()=>STORE.inside.art&&STORE.inside.art.done&&!(window.FADE&&FADE.busy)&&__dbg.UI.things.some(t=>/^A GUIDED TOUR WITH ROSIE/.test(t.name))&&STORE.art&&STORE.art.built,240000);
-    const p=await people('art'); rec('art museum: staff spots and visitor places inside it, standing places clear',p.spots>=4&&p.seats>=12&&p.spotsIn&&p.seatsIn&&!p.spotsFree.length&&!p.standFree,JSON.stringify(p));
-    const rd=()=>{ const N=BODIES.by.w_redpanda&&BODIES.by.w_redpanda.npc, s=STORE.rooms.find(r=>r.id==='art').spots['DOCENT TOURS']; return N?Math.hypot(N.st.x-s.x,N.st.z-s.z):null; };
-    await pg.waitForFunction(`(${rd})()!=null&&(${rd})()<.2`,null,{timeout:90000}).catch(()=>{}); rec('art museum: ROSIE THE RED PANDA stands by her tour sign',await pg.evaluate(`(${rd})()<.2`));
+  { await pg.evaluate(async()=>{ if(STORE.ensure)await STORE.ensure(); STORE.enter('art',true); }); await U(()=>STORE.inside.art&&STORE.inside.art.done&&!(window.FADE&&FADE.busy)&&__dbg.UI.things.some(t=>t.name==='THE FLOOR PLAN')&&STORE.art&&STORE.art.built,240000);
+    const p=await people('art'); rec('art museum: nobody works there; visitor places inside it, standing places clear',p.spots===0&&p.seats>=12&&p.seatsIn&&!p.standFree,JSON.stringify(p));
     const a=await pg.evaluate(()=>{ const th=n=>__dbg.UI.things.find(t=>t.name.startsWith(n));
-      th('THE INFORMATION DESK (THE FLOOR PLAN)').act(); const plan=MINI.on&&MINI.on.title==='THE FLOOR PLAN'; MINI.close();
+      th('THE FLOOR PLAN').act(); const plan=MINI.on&&MINI.on.title==='THE FLOOR PLAN'; MINI.close();
       const casts=__dbg.UI.things.filter(t=>/\(A (CAST|COPY)\)/.test(t.name)).length;
       const R=STORE.rooms.find(r=>r.id==='art'), bx=R.box||R, inArt=t=>{ const o=t.obj; if(!o||!o.updateWorldMatrix)return true; o.updateWorldMatrix(true,false); const e=o.matrixWorld.elements; return e[12]>bx.x0&&e[12]<bx.x1&&e[14]>bx.z0&&e[14]<bx.z1; };   // (the bookstore café elsewhere is not the museum's)
-      const shopL=__dbg.UI.things.filter(t=>/ESPRESSO|PASTRY|POSTCARD|PRINTS|CAFÉ/.test(t.name)&&inArt(t)).map(t=>t.name), shops=shopL.length;
-      INV.cash=5; th('A GUIDED TOUR WITH ROSIE').act(); const paid=INV.cash===2&&!!GALLERY.touring;
-      return {plan,casts,shops,paid,shopL}; });
-    rec('art museum: the floor plan; no casts, no café, no gift shop',a.plan&&a.casts===0&&a.shops===0,JSON.stringify(a));
-    const tour=await pg.waitForFunction(()=>{ const T=GALLERY.touring; if(T&&T.N.st.to){ T.N.st.x=T.N.st.to.x; T.N.st.z=T.N.st.to.z; } return GALLERY.last&&T&&T.i>=0; },null,{timeout:120000,polling:500}).then(()=>true).catch(()=>false);   // she walks at the frames' pace; on a slow machine the check sets her down at her stop
-    rec('art museum: the tour costs $3, ROSIE walks to a painting and tells you about it',a.paid&&tour,await pg.evaluate(()=>JSON.stringify({last:GALLERY.last,i:GALLERY.touring&&GALLERY.touring.i})));
+      const shopL=__dbg.UI.things.filter(t=>/ESPRESSO|PASTRY|POSTCARD|PRINTS|CAFÉ|GUIDED TOUR|INFORMATION DESK/.test(t.name)&&inArt(t)).map(t=>t.name), shops=shopL.length;
+      return {plan,casts,shops,shopL,rosie:ARCH.has('w_redpanda')}; });
+    rec('art museum: the floor plan by the door; no casts, café, gift shop, desk or tour',a.plan&&a.casts===0&&a.shops===0&&a.rosie,JSON.stringify(a));
     if(OUT)await pg.screenshot({path:OUT+'/art.png'}).catch(()=>{});
-    await pg.evaluate(()=>STORE.exit('art')); await pg.waitForTimeout(4000); rec('art museum: leaving ends the tour',await pg.evaluate(()=>!GALLERY.touring)); }
+    await pg.evaluate(()=>STORE.exit('art')); await pg.waitForTimeout(4000); }
   rec('no page errors',!errs.length,errs.slice(0,3).join(' | '));
   await b.close(); process.exit(bad?1:0); })();

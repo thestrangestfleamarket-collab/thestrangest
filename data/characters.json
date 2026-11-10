@@ -2720,8 +2720,8 @@
   "pf": "professor-14dc4d",
   "group": "art",
   "job": {
-   "at": "art",
-   "title": "CURATOR",
+   "at": "books",
+   "title": "THE COUNTER",
    "hours": [
     10,
     17
@@ -2767,27 +2767,11 @@
  "tour_guide": {
   "pf": "tour-guide-1b0428",
   "group": "art",
-  "job": {
-   "at": "art",
-   "title": "TOURS OF THE GALLERIES",
-   "hours": [
-    10,
-    17
-   ]
-  },
   "name": "THE TOUR GUIDE"
  },
  "graduate_in_gown": {
   "pf": "graduate-in-gown-c72050",
   "group": "art",
-  "job": {
-   "at": "art",
-   "title": "DOCENT",
-   "hours": [
-    10,
-    17
-   ]
-  },
   "name": "THE GRADUATE IN GOWN"
  },
  "senior_scientist": {
@@ -5781,14 +5765,6 @@
    "f2": "#f2ede6",
    "coat": "robe",
    "cc": "#22262e"
-  },
-  "job": {
-   "at": "art",
-   "title": "DOCENT TOURS",
-   "hours": [
-    0,
-    24
-   ]
   },
   "talk": {
    "start": "hi",

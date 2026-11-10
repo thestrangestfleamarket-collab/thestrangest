@@ -135,7 +135,7 @@ pre = ''.join('<link rel=modulepreload href=/g/' + f + '>' for f in sorted(set(r
     + ''.join('<link rel=preload as=script href=/g/' + f + '>' for f in sorted(os.listdir('dist/g')) if re.match(r'rig\..*\.js$', f)) \
     + ''.join('<link rel=preload as=fetch crossorigin href=/g/' + json.loads(n) + '>' for f in used for n in [names[f], bins.get(f)] if n) \
     + ''.join('<link rel=preload as=fetch crossorigin href=/g/' + f + '>' for f in sorted(os.listdir('dist/g')) if re.match(r'x-later\..*\.js$', f))
-open('dist/g/market.html', 'w').write('<!doctype html><meta name="market-build" content="' + bv + '"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><title>The Market</title><link rel=manifest href=/app.webmanifest><link rel=apple-touch-icon href=/icon-192.png><meta name=theme-color content=#0e1016><meta name=mobile-web-app-capable content=yes>' + pre + '<body bgcolor=#0e1016><script type=module src=/g/' + m + '></script>')
+open('dist/g/market.html', 'w').write('<!doctype html><meta name="market-build" content="' + bv + '"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><title>The Market</title><link rel=icon href="data:,"><link rel=manifest href=/app.webmanifest><link rel=apple-touch-icon href=/icon-192.png><meta name=theme-color content=#0e1016><meta name=mobile-web-app-capable content=yes>' + pre + '<body bgcolor=#0e1016><script type=module src=/g/' + m + '></script>')
 pages = pages[:2] + ['dist/g/market.html'] + (['dist/editor.html'] if EDITOR else [])
 for f in pages:
     t = read(f)

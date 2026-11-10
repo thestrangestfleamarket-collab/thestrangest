@@ -143,11 +143,7 @@ const RDX=x=>(x-SHARED.BOD.XS(0))/(SHARED.BOD.XS(1)-SHARED.BOD.XS(0)), RDZ=z=>(z
   xingAt=(x,y)=>{ const R=SHARED.BOD.road; return R&&R.xw?R.xw.find(w=>{ const u=w.ax==='x'?x:y, v=w.ax==='x'?y:x; return u>=w.a0&&u<=w.a1&&v>=w.l0-.5&&v<=w.h0+.5; }):null; },
   inRoad=(x,z)=>{ const R=SHARED.BOD.road; return !!(R&&R.at(RDX(x),RDZ(z))); },
   stroad=(x,z)=>inRoad(x,z)&&!xingAt(RDX(x),RDZ(z)),
-  pedfree=(x,z,R)=>stfree(x,z,R)&&!stroad(x,z),
-  // stepping off the kerb onto the lit crossing while it does not say WALK: wait
-  pedHold=(x0,z0,x1,z1)=>{ if(inRoad(x0,z0)||!inRoad(x1,z1))return false; const w=xingAt(RDX(x1),RDZ(z1)), R=SHARED.BOD.road; return !!(w&&w.lit&&R.walk&&!R.walk()); },
-  // the nearest sidewalk point to one in the road (any: a crosswalk too; straight across to the nearer kerb), else the point itself
-  offRoad=(x,z,any)=>{ if(!(any?inRoad(x,z):stroad(x,z)))return {x,z}; const T=TILE; for(let d=.5*T;d<12*T;d+=.5*T)for(const s of [1,-1]){ const q=z+s*d; if(!inRoad(x,q))return {x,z:q+s*.6*T}; } return {x,z}; };
+  pedfree=(x,z,R)=>stfree(x,z,R)&&!stroad(x,z);
 window.PEDFREE=pedfree; window.STROAD=stroad;
 const ROAM={L:STLANE,wallZ:SHARED.BOD.ZS(PARK.y0+PARK.oy),gate:[SHARED.BOD.XS(PARK.gate[0]+PARK.ox+.8),SHARED.BOD.XS(PARK.gate[1]+PARK.ox-.8)]};
 window.ROAMDBG=()=>ROAM;
@@ -234,4 +230,4 @@ SYS.add('near',(x,z)=>NPCS.near(x,z),'npc shading');
   NPCS.R=25*TILE; NPCS.DRAW=30*TILE; NPCS.seen=(x,y,z,r)=>FR.intersectsSphere(SP.set(V.set(x,y,z),r||2*TILE)); NPCS.live=(x,y,z,r)=>Math.hypot(x-pos.x,z-pos.z)<NPCS.R&&NPCS.seen(x,y,z,r);
   NPCS.cull=on=>{ const one=(o,g)=>{ if(on){ if(o.hid&&g.visible){ g.visible=false; o._cv=true; } } else if(o._cv){ g.visible=true; o._cv=false; } };
     for(const N of NPCS)one(N,N.g); for(const X of NPCS.extra)if(X.g)one(X,X.g); }; }
-export {CSB, CSHOLE, DUN, HOMES, inRoad, makeNPC, offRoad, pedfree, pedHold, ROAM, stfree, STHOLE, STLANE, stroad};
+export {CSB, CSHOLE, DUN, HOMES, makeNPC, pedfree, ROAM, stfree, STHOLE, STLANE};

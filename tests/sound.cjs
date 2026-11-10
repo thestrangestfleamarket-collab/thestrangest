@@ -36,8 +36,8 @@ const http = require('http'), PAGE = path.resolve(process.argv[2] || 'dist/marke
   await pg.waitForFunction(() => CARS.driving && CARSND.voices() > 0, null, { timeout: 30000, polling: 250 }).catch(() => {});
   const c1 = await pg.evaluate(() => ({ driving: !!CARS.driving, voices: CARSND.voices(), played: window.__played.slice() }));
   ok(c1.driving && c1.voices >= 1 && ['car_door_open', 'car_door_close', 'car_start'].every(k => c1.played.includes(k)), 'getting in: the door, the start, and the engine hums: ' + JSON.stringify(c1));
-  await pg.evaluate(() => { const h0 = CARS.horn; CARS.horn = () => { window.__horned = true; h0(); }; }); await pg.keyboard.press('h'); await pg.waitForTimeout(400);
-  const c2 = await pg.evaluate(() => ({ horn: window.__played.filter(k => k === 'horn').length >= 1 && window.__horned, emotes: [...document.querySelectorAll('[id*=emot],[class*=emot]')].some(e => e.offsetParent !== null) }));
+  await pg.evaluate(() => { window.__played.length = 0; }); await pg.keyboard.press('h'); await pg.waitForTimeout(600);
+  const c2 = await pg.evaluate(() => ({ horn: window.__played.includes('horn'), emotes: [...document.querySelectorAll('[id*=emot],[class*=emot]')].some(e => e.offsetParent !== null) }));
   ok(c2.horn && !c2.emotes, 'H in the car honks and does not open the emotes: ' + JSON.stringify(c2));
   await pg.keyboard.press('f'); await pg.waitForTimeout(1500);
   const c3 = await pg.evaluate(() => ({ driving: !!CARS.driving, stop: window.__played.includes('car_stop') }));

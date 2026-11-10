@@ -135,7 +135,7 @@ const CARD=__LAZY__("data/cars.json"), RADJ=__LAZY__("data/radio.json"), RFILE={
   /* ---------- in and out ---------- */
   const HUD=document.createElement('div'); HUD.id='carhud'; HUD.style.cssText='position:fixed;left:50%;bottom:64px;transform:translateX(-50%);z-index:12;display:none;gap:10px;align-items:center;padding:6px 10px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#ece5d3;background:#0e1016e0;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
   const BTN='font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 8px;cursor:pointer';
-  HUD.innerHTML='<span></span><button data-h style="'+BTN+'">HORN (H)</button><button data-r style="'+BTN+'">RADIO (T)</button><button data-o style="'+BTN+'">GET OUT (F)</button>'; document.body.appendChild(HUD); HUD.querySelector('[data-o]').onclick=()=>getOut(); HUD.querySelector('[data-r]').onclick=()=>RAD.next(); HUD.querySelector('[data-h]').onclick=()=>CAR.horn&&CAR.horn();
+  HUD.innerHTML='<span></span><button data-r style="'+BTN+'">RADIO (T)</button><button data-o style="'+BTN+'">GET OUT (F)</button>'; document.body.appendChild(HUD); HUD.querySelector('[data-o]').onclick=()=>getOut(); HUD.querySelector('[data-r]').onclick=()=>RAD.next();
   const board=id=>{ '@later'; const C=CARS.get(id), k=C&&kindFor(C.model); if(!k)return; C.by=ONLINE.me||'me'; at(C); pos.x=C.x; pos.z=C.z; SHARED.py=SHARED.groundY(C.x,C.z); SHARED.heading=C.hd; k.V.x=C.x; k.V.z=C.z; k.V.hd=C.hd;
     if(!RIDE.mount('car:'+C.model)){ C.by=null; at(C); if(ONLINE.on)ONLINE.send({t:'car',k:id,on:0}); return; } k.V.x=k.V.z=k.V.hd=null; mine=C; UI.distMin=Math.max(1.2*TILE,DATA.cars[C.model].size[0]*M1); CAR.v0=UI.view; UI.setView('third'); HUD.querySelector('span').textContent=k.name+' · '+(k.hint||'W GO · S BRAKE · A D STEER · Q E LOOK'); HUD.style.display='flex'; say('YOU GET IN THE '+k.name+'.');
     SFX.play('car_door_open',{vol:.8}); SFX.play('car_door_close',{vol:.8,delay:.6}); SFX.play('car_start',{vol:.7,delay:1}); };
@@ -150,9 +150,6 @@ const CARD=__LAZY__("data/cars.json"), RADJ=__LAZY__("data/radio.json"), RFILE={
   ONLINE.hear.car=m=>{ '@later'; const C=CARS.get(m.k); if(!C){ for(const f of VEH.hear||[])f(m); return; }   // another thing you drive on the same lock (the helicopters, VEH.hear)
   if(m.no){ if(want===m.k){ want=null; say('SOMEONE IS DRIVING IT.','#c8a090'); } C.by=m.by; if(DATA)at(C); return; }
     if(typeof m.at==='string')fromWorld('car:'+m.k,m.at); if(m.by&&m.by===ONLINE.me){ if(want===m.k){ want=null; board(m.k); } return; } if(mine===C&&!m.by)return; if(!!C.by!==!!m.by&&C.mesh)SFX.play('car_door_close',{at:{x:C.x,z:C.z},vol:.8,far:14*T}); C.by=m.by||null; if(DATA)at(C); };
-  CAR.horn=()=>{ if(!mine)return; SFX.play('horn',{vol:.9}); if(ONLINE.on)ONLINE.send({t:'horn'}); };
-  ONLINE.hear.horn=m=>{ const o=ONLINE.others&&ONLINE.others.get(m.id); if(o&&o.p)SFX.play('horn',{at:{x:o.p.x,z:o.p.z},far:40*T,vol:.9}); };
-  addEventListener('keydown',e=>{ if(!mine||(e.key||'').toLowerCase()!=='h'||/INPUT|TEXTAREA/.test((e.target&&e.target.tagName)||''))return; e.preventDefault(); e.stopImmediatePropagation(); if(!e.repeat)CAR.horn(); },true);
   addEventListener('keydown',e=>{ if(!mine||e.repeat||/INPUT|TEXTAREA/.test((e.target&&e.target.tagName)||''))return; const k=(e.key||'').toLowerCase(); if(k==='f'){ e.preventDefault(); getOut(); } else if(k==='t'){ e.preventDefault(); RAD.next(); } });
   /* ---------- the radio: four stations of public-domain records (data/radio.json, the Library of Congress's National Jukebox), each one loop that
      plays the same moment for everyone (the clock's seconds); the driver tunes it (T or RADIO), kept in the section's world as radio:<car>;

@@ -480,20 +480,6 @@
    "note": "on Market St between the arcade and the theatre, over the loop's straight (owner, 10 Nov 2026: back from the Hudson promenade)"
   },
   {
-   "id": "bowling",
-   "name": "THE STRANGEST LANES",
-   "kind": "front",
-   "x0": -66.5,
-   "x1": -47.5,
-   "lot": true,
-   "y0": -92.4,
-   "y1": -77,
-   "face": "n",
-   "inW": 16,
-   "inD": 38,
-   "inH": 110
-  },
-  {
    "id": "apts",
    "name": "THE TOWER",
    "kind": "front",
@@ -508,7 +494,7 @@
    "name": "THE CLINIC",
    "kind": "front",
    "x0": -16.5,
-   "x1": 2.71,
+   "x1": -7.15,
    "merchant": "doctor",
    "lot": true,
    "y0": -92.4,
@@ -517,6 +503,20 @@
    "inW": 14,
    "inD": 10,
    "inH": 112
+  },
+  {
+   "id": "bowling",
+   "name": "THE STRANGEST LANES",
+   "kind": "front",
+   "x0": -6.65,
+   "x1": 2.71,
+   "lot": true,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n",
+   "inW": 16,
+   "inD": 38,
+   "inH": 110
   },
   {
    "id": "bar",

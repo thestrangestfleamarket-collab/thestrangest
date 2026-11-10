@@ -8,6 +8,7 @@
     "SUPABASE_URL": "https://jvcetttmqseoteidfggn.supabase.co",
     "SUPABASE_KEY": "sb_publishable_UkzD8hOizW1hPr6hm3duQQ_07ZodPik"
   },
+  "r2_buckets": [{ "binding": "DL", "bucket_name": "thestrangest-downloads" }],
   "durable_objects": { "bindings": [{ "name": "Block", "class_name": "Block" }, { "name": "Post", "class_name": "Post" }, { "name": "Home", "class_name": "Home" }, { "name": "Dish", "class_name": "Dish" }] },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Block"] }, { "tag": "v2", "new_sqlite_classes": ["Post"] }, { "tag": "v3", "new_sqlite_classes": ["Home"] }, { "tag": "v4", "new_sqlite_classes": ["Dish"] }, { "tag": "v5", "new_sqlite_classes": ["Botrun"] }, { "tag": "v6", "deleted_classes": ["Botrun"] }],
   "workers_dev": true,

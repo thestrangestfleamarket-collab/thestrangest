@@ -39,6 +39,8 @@ function tooMany(ip, max = GUESS_MAX) { const min = Math.floor(Date.now() / 6000
   if (!g || g.min !== min) { if (guesses.size > 5000) for (const [k, v] of guesses) if (v.min !== min) guesses.delete(k); guesses.set(ip, { n: 1, min }); return false; }
   return ++g.n > max; }
 
+const WINEXE = "windows/TheStrangestFleaMarket-Setup.exe";   // the Windows app's installer in the DL bucket, put there by the windows app workflow
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url), p = url.pathname, dev = env.DEV_AUTH === "1" && loopback(request.headers.get("CF-Connecting-IP"));
@@ -49,6 +51,9 @@ export default {
     if ((request.method === "GET" || request.method === "HEAD") && APPF.test(p)) {
       const r = await env.ASSETS.fetch(new Request(url.origin + p)); if (!r.ok) return new Response("not found", { status: 404 });
       const out = new Response(r.body, r); if (p.endsWith(".webmanifest")) out.headers.set("content-type", "application/manifest+json"); out.headers.set("cache-control", "public, max-age=86400"); return out; }
+    if ((request.method === "GET" || request.method === "HEAD") && p === "/download/windows") {
+      const o = env.DL && await env.DL.get(WINEXE); if (!o) return new Response("not found", { status: 404 });
+      return new Response(request.method === "HEAD" ? null : o.body, { headers: { "content-type": "application/vnd.microsoft.portable-executable", "content-length": String(o.size), "content-disposition": 'attachment; filename="TheStrangestFleaMarket-Setup.exe"', "cache-control": "public, max-age=3600", etag: o.httpEtag } }); }
     if (request.method === "GET" && p === "/sw.js") {
       if (!(await inside(env, request, dev))) return new Response("not found", { status: 404 });
       const out = await page(env, url, "/sw.js", request, "private, no-cache"); out.headers.set("content-type", "text/javascript; charset=utf-8"); return out; }

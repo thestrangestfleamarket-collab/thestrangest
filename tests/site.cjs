@@ -110,6 +110,8 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
   await door.goto(BASE+'/',{waitUntil:'load'}); await door.waitForTimeout(1500);
   ok(await door.locator('#dcode').isVisible().catch(()=>false),'/ without a login: the door, with its invite code box');
   ok(!derr.length,'the door: no page errors '+derr.join(' | '));
+  ok(await door.locator('a[href="/download/windows"]').isVisible().catch(()=>false),'the door: the download for windows link');
+  { const r=await fetch(BASE+'/download/windows'); ok(r.status===404||(r.ok&&/attachment/.test(r.headers.get('content-disposition')||'')),'/download/windows: the installer, or not found while the bucket is empty'); }
   await door.click('[data-a="ask"]'); await door.fill('#dmail','asker@example.com'); await door.click('[data-a="doask"]'); await door.waitForTimeout(1000);
   ok(/asker@example\.com/i.test(await door.locator('#door').innerText()),'the door: asking for an invite takes an email');
   { const pc=await b.newContext({viewport:{width:412,height:915},isMobile:true,hasTouch:true}), ph=await pc.newPage(); await ph.goto(BASE+'/',{waitUntil:'load'}); await ph.waitForTimeout(1500);

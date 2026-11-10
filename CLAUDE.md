@@ -30,7 +30,7 @@ Look there before changing how something looks or behaves, and add a dated entry
   touch a file that lacks it. Otherwise keep comments rare and short: a line where the code would mislead without it. The minifier
   strips them all (`legalComments: 'none'`), so they cost the download nothing. History goes in `docs/HISTORY.md` and in git, never
   in the source. No comments in HTML or CSS (the build checks pages for an unclosed `<!--`).
-- `desktop/`: the Windows app (Electron, a window on the website; `cd desktop && npm install && npm run dist` writes `desktop/out/*.exe`, needs wine off Windows; or the by-hand `windows app` workflow).
+- `desktop/`: the Windows app (Electron, a window on the website; `cd desktop && npm install && npm run dist` writes `desktop/out/*.exe`, needs wine off Windows; or the by-hand `windows app` workflow, which also puts it in the R2 bucket `thestrangest-downloads` that the door's "download for windows" link (`/download/windows`) serves).
 - `data/*.json`: baked models, clips and textures, put in where the code says `__DATA__("data/x.json")`. `__FILE__("data/radio/x.mp3")` is a file fetched as it is (the car radio's stations, `tools/radio-bake.py`).
   `data/full/` keeps the unsimplified originals and the bakes' own inputs (never shipped; `data/` holds only what the page loads). `tools/`: bake and trim scripts.
   After re-baking a character, run `python3 tools/trim-clips.py` (keeps only clips the code names, at 12 fps).

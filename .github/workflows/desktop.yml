@@ -3,6 +3,9 @@ on: workflow_dispatch
 jobs:
   build:
     runs-on: windows-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
     defaults: { run: { working-directory: desktop } }
     steps:
       - uses: actions/checkout@v4
@@ -12,3 +15,7 @@ jobs:
       - run: npm run dist
       - uses: actions/upload-artifact@v4
         with: { name: windows-installer, path: desktop/out/*.exe }
+      - name: put it on the website (/download/windows)
+        if: ${{ env.CLOUDFLARE_API_TOKEN != '' }}
+        shell: bash
+        run: npx -y wrangler@4 r2 object put thestrangest-downloads/windows/TheStrangestFleaMarket-Setup.exe --file "$(ls out/*.exe | head -1)" --content-type application/vnd.microsoft.portable-executable --remote

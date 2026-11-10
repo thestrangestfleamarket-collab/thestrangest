@@ -15,7 +15,7 @@ h2{font:inherit;font-size:14px;color:#e8c46a;margin:0;letter-spacing:.12em;text-
 .k{color:var(--dim);font-size:11px;text-shadow:0 0 4px rgba(154,150,134,.4)}.err{color:#e0725f;font-size:11px}.ok{color:var(--accent);font-size:11px}
 button{font:inherit;letter-spacing:inherit;text-transform:inherit;color:var(--ink);background:transparent;border:2px solid var(--line);padding:4px 12px;cursor:pointer;margin:2px}
 .box button{text-shadow:0 0 4px rgba(233,228,212,.35)}button.on{border-color:var(--accent);color:var(--accent);text-shadow:0 0 5px rgba(217,180,90,.5);box-shadow:0 0 6px rgba(217,180,90,.25)}
-button.link{border:0;color:var(--dim);font-size:10px;text-decoration:underline;text-underline-offset:3px}button:disabled{opacity:.5}
+button.link,a.link{border:0;color:var(--dim);font-size:10px;text-decoration:underline;text-underline-offset:3px}button:disabled{opacity:.5}
 input{font:inherit;letter-spacing:inherit;background:rgba(0,0,0,.35);color:var(--ink);border:1px solid #3a4440;padding:5px 8px;width:240px;max-width:100%;box-sizing:border-box}
 .blink{animation:blink 1.4s steps(2) infinite}@keyframes blink{50%{opacity:.35}}
 @media (prefers-reduced-motion:reduce){h1.logo{animation:none}}
@@ -24,7 +24,7 @@ input{font:inherit;letter-spacing:inherit;background:rgba(0,0,0,.35);color:var(-
 const SB_URL='https://jvcetttmqseoteidfggn.supabase.co', SB_KEY='sb_publishable_UkzD8hOizW1hPr6hm3duQQ_07ZodPik';
 const T={name:'The Strangest Flea Market',login:'log in',have:'already have an account? log in',back:'back',
   'code.title':'your invitation','code.body':'the market is invite only for now','code.ph':'invite code','code.go':'next','code.bad':'that invite code is not valid or already used',
-  'ask':'no code? ask for one','ask.title':'ask for an invite','ask.body':'leave your email and we\'ll send you a code when a spot opens','ask.go':'ask','ask.sent':'thanks: we\'ll email {email} when your code is ready.',
+  'ask':'no code? ask for one','win':'download for windows','ask.title':'ask for an invite','ask.body':'leave your email and we\'ll send you a code when a spot opens','ask.go':'ask','ask.sent':'thanks: we\'ll email {email} when your code is ready.',
   'make.ok':'code accepted ✓','make.body':'your email and a password, to log in again later','make.go':'start day 1','make.exists':'that email already has an account: log in instead',
   email:'email',password:'password',password2:'password again',short:'the password needs at least 8 characters',match:'the two passwords are different',bademail:'enter your email',
   'login.title':'welcome back','login.bad':'wrong email or password','login.forgot':'forgot password?','login.link':'email me a login link instead',
@@ -51,7 +51,7 @@ function draw(){ const s=S, e=esc, b=(a,t,cls='')=>'<button type="button" class=
   const step=s.step; let h='';
   if(step==='title')h='<div class="box title"><h1 class="logo">'+e(tx('name')).replace(/^(the)\s+(strangest)\s+/i,'$1<br>$2<br>')+'</h1>'+
     ('<input id="dcode" type="text" maxlength="32" autocomplete="off" spellcheck="false" placeholder="'+e(tx('code.ph'))+'"'+(s.code?' value="'+e(s.code)+'"':'')+'>'+
-    '<div>'+b('docode','code.go','on')+'</div>'+err+'<div>'+b('ask','ask','link')+'</div><div>'+b('login','have','link')+'</div>')+'</div>';
+    '<div>'+b('docode','code.go','on')+'</div>'+err+'<div>'+b('ask','ask','link')+'</div><div>'+b('login','have','link')+'</div>'+(/Electron/.test(navigator.userAgent)?'':'<div><a class="link" href="/download/windows" download>'+e(tx('win'))+'</a></div>'))+'</div>';
   else if(step==='ask')h=box('<h2>'+e(tx('ask.title'))+'</h2><div class="k">'+e(tx('ask.body'))+'</div>'+inp('dmail','email','email','email',s.email)+'<div>'+b('doask','ask.go','on')+'</div>'+err+'<div>'+b('home','back','link')+'</div>');
   else if(step==='asked')h=box('<div class="k">'+e(tx('ask.sent',{email:s.email}))+'</div><div>'+b('home','back','link')+'</div>');
   else if(step==='opening')h=box('<div class="k blink">'+e(tx('opening'))+'</div>');

@@ -62,7 +62,7 @@ window.PETS=PETS;
   const groundAt=(x,z,y0)=>{ let g=typeof SHARED.groundY!=='undefined'?SHARED.groundY(x,z):y0; if(!(Math.abs(g-y0)<1.2*WU))g=y0; return g; };
   // your room as a pet sees it (MODS.apts.inside): the free floor for the pathfinder (clear of the walls and furniture), and the tops it can hop onto (a hand's height to a little over head height, room on them)
   let RM=null;
-  const roomNow=()=>{ const t=performance.now(); if(RM&&t-RM.t<500)return RM; const I=MODS.apts&&MODS.apts.inside&&MODS.apts.inside(); if(!I)return RM=null; let sig=I.sol.length*7+I.fix.length; for(const r of I.sol)sig+=r[0]*3+r[1]*5+r[2]*7+r[3]*11; for(const f of I.fix)sig+=f[0]*3+f[1]*5+f[5]*13;
+  const roomNow=()=>{ const t=performance.now(); if(RM&&t-RM.t<500)return RM; const I=MODS.apts&&MODS.apts.room&&MODS.apts.room(); if(!I)return RM=null; let sig=I.sol.length*7+I.fix.length; for(const r of I.sol)sig+=r[0]*3+r[1]*5+r[2]*7+r[3]*11; for(const f of I.fix)sig+=f[0]*3+f[1]*5+f[5]*13;
     if(RM&&RM.sig===sig&&RM.I.x0===I.x0){ RM.t=t; return RM; } const m=.14*WU, inR=r=>r[2]>I.x0&&r[0]<I.x1&&r[3]>I.z0&&r[1]<I.z1, S=I.sol.filter(inR);
     const free=(x,z)=>x>I.x0+m&&x<I.x1-m&&z>I.z0+m&&z<I.z1-m&&!S.some(r=>x>r[0]-m&&x<r[2]+m&&z>r[1]-m&&z<r[3]+m); free.box=[I.x0,I.z0,I.x1,I.z1]; free.cell=.18*WU;
     const F=I.fix.filter(f=>inR([f[0],f[1],f[3],f[4]])), tops=[];

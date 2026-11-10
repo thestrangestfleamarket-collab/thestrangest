@@ -111,7 +111,7 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
   ok(await door.locator('#dcode').isVisible().catch(()=>false),'/ without a login: the door, with its invite code box');
   ok(!derr.length,'the door: no page errors '+derr.join(' | '));
   await door.click('[data-a="ask"]'); await door.fill('#dmail','asker@example.com'); await door.click('[data-a="doask"]'); await door.waitForTimeout(1000);
-  ok(/asker@example\.com/.test(await door.locator('#door').innerText()),'the door: asking for an invite takes an email');
+  ok(/asker@example\.com/i.test(await door.locator('#door').innerText()),'the door: asking for an invite takes an email');
   { const pc=await b.newContext({viewport:{width:412,height:915},isMobile:true,hasTouch:true}), ph=await pc.newPage(); await ph.goto(BASE+'/',{waitUntil:'load'}); await ph.waitForTimeout(1500);
     ok(await ph.locator('#dcode').isVisible().catch(()=>false),'the door on a phone: the invite code box, not turned away'); await pc.close(); }
   const ctx=await b.newContext(); await ctx.addCookies([{name:'tsfm-pass',value:'dev:site-check',url:BASE}]);

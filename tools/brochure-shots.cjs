@@ -1,10 +1,10 @@
 // THE BROCHURES' PHOTOGRAPHS (data/brochures/<id>-<n>.jpg; n 0 the cover, 1 and 2 inside, 3 the place): taken in the built game, the HUD hidden, cut clear of the minimap.
 // MIN=0 SKIP=g python3 build.py, then PW_CHROMIUM=/opt/pw-browsers/chromium node tools/brochure-shots.cjs [out dir] [only, as art-0,books]; slow under software rendering (about 15 s a picture).
 // The game's hour is HOUR (13 unless set); the sky's photographs are taken at dusk: HOUR=20 ... stars, the cover and the room then brightened 1.7x (the Moon is wherever it really is that evening).
-// Re-shoot a brochure when its place changes. Each picture: [stop, view, yaw, pitch, cut (x0,y0,x1,y1 of the game's frame)]; a stop is how you get there and what you hold.
+// Re-shoot a brochure when its place changes. Each picture: [stop, view, yaw, pitch, cut (x0,y0,x1,y1 of the game's frame), set (code run first, optional)]; PICS=table.json FULL=1 to try framings; a stop is how you get there and what you hold.
 const { chromium } = require('playwright'), path = require('path'), fs = require('fs');
 const OUT = path.resolve(process.argv[2] || 'data/brochures'), ONLY = process.argv[3] && process.argv[3].split(','), PI = Math.PI, W = 720, H = 480;
-const PICS = {
+const PICS = process.env.PICS ? require(path.resolve(process.env.PICS)) : {
   wreck: [['dive', 'third', 0, .1, [0, .27, .78, 1]], ['deep', 'third', PI, .35, [0, .4, 1, 1]], ['deep', 'third', 0, .35, [0, .45, .9, 1]], ['fs', 'third', PI, .12, [0, .22, .72, 1]]],
   fish: [['pier', 'third', 0, .12, [0, .36, 1, 1]], ['pier', 'third', PI, .12, [0, .3, .74, 1]], ['cast', 'third', null, null, [0, .05, .72, 1]], ['pier', 'third', -PI / 2, .12, [0, .3, .74, 1]]],
   pets: [['pets', 'third', 0, .12, [.12, .12, .88, .66]], ['rept', 'third', 0, .12, [0, .12, 1, .62]], ['aqua', 'third', PI / 2, .12, [0, .3, .72, 1]], ['pets', 'third', PI / 2, .12, [.1, .2, 1, 1]]],
@@ -57,9 +57,9 @@ const PICS = {
   const hud = on => ev(on => { if (!on) { window.__hid = []; document.querySelectorAll('body *').forEach(e => { if (e.tagName !== 'CANVAS' && !e.querySelector('canvas') && e.tagName !== 'SCRIPT' && e.tagName !== 'STYLE' && e.style.visibility !== 'hidden') { window.__hid.push([e, e.style.visibility]); e.style.visibility = 'hidden'; } }); } else for (const [e, v] of window.__hid || []) e.style.visibility = v; }, on);
   const todo = []; for (const id in PICS) PICS[id].forEach((p, i) => { if (!ONLY || ONLY.includes(id) || ONLY.includes(id + '-' + i)) todo.push([id, i, ...p]); });
   todo.sort((a, c) => a[2] < c[2] ? -1 : a[2] > c[2] ? 1 : 0); await clear(); let at = null;
-  for (const [id, i, stop, view, yaw, pitch, cut] of todo) { try {
+  for (const [id, i, stop, view, yaw, pitch, cut0, set] of todo) { const cut = process.env.FULL ? [0, 0, 1, 1] : cut0; try {
       if (stop !== at) { if (at && STOPS[at][1]) await STOPS[at][1](); await ev(() => { if (ROOMS.cur && ROOMS.cur.off) ROOMS.exit(ROOMS.cur.off); }); await pg.waitForTimeout(1500); await clear(); await STOPS[stop][0](); at = stop; }
-      if (view !== 'hud') { await ev(v => { __dbg.UI.viewsHere = () => ['iso', 'third', 'first']; __dbg.UI.setView(v); }, view); if (yaw != null) await ev(([y, p]) => { SHARED.yaw = SHARED.yawTo = y; SHARED.pitch = SHARED.pitchTo = p; }, [yaw, pitch]); await pg.waitForTimeout(1800); await hud(false); await pg.waitForTimeout(250); }
+      if (view !== 'hud') { await ev(v => { __dbg.UI.viewsHere = () => ['iso', 'third', 'first']; __dbg.UI.setView(v); }, view); if (yaw != null) await ev(([y, p]) => { SHARED.yaw = SHARED.yawTo = y; SHARED.pitch = SHARED.pitchTo = p; }, [yaw, pitch]); if (set) await ev(set); await pg.waitForTimeout(set ? 3000 : 1800); await hud(false); await pg.waitForTimeout(250); }
       const gx = W * .0667, gy = H * .0656, gw = W * .8666, gh = H * .8684, clip = view === 'hud' ? { x: W * cut[0], y: H * cut[1], width: W * (cut[2] - cut[0]), height: H * (cut[3] - cut[1]) } : { x: gx + gw * cut[0] + 2, y: gy + gh * cut[1] + 2, width: gw * (cut[2] - cut[0]) - 4, height: gh * (cut[3] - cut[1]) - 4 };
       await pg.screenshot({ path: `${OUT}/${id}-${i}.jpg`, type: 'jpeg', quality: 80, clip }); if (view !== 'hud') await hud(true); console.log('shot', id + '-' + i, stop);
     } catch (e) { console.log('FAILED', id + '-' + i, stop, e.message.slice(0, 160)); at = null; } }

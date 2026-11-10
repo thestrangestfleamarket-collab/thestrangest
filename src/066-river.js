@@ -174,7 +174,7 @@ RIVER.build=()=>{ if(RIVER.on)return; const n0=scene.children.length; const R=RI
   const sea=new THREE.Mesh(new THREE.PlaneGeometry(sx1-sx0,SD).rotateX(-Math.PI/2),farMat); sea.position.set((sx0+sx1)/2,LV-0.05,rz0-SD/2); sea.renderOrder=-1; sea.visible=false; scene.add(sea); RIVER.sea=sea;
   if(FARE.shore!=null){ const LD=220*T, land=new THREE.Mesh(new THREE.PlaneGeometry(sx1-sx0,LD).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({color:0x3e3c37})); land.position.set(0,-LV+.05-.1*T,-SD/2-LD/2); land.receiveShadow=false; sea.add(land); RIVER.farLand=land;
     const bank=new THREE.Mesh(new THREE.PlaneGeometry(sx1-sx0,-LV+.2*T),new THREE.MeshLambertMaterial({color:0x2e2c29})); bank.position.set(0,(-LV+.2*T)/2-.15*T,-SD/2); sea.add(bank); }   // (the land a little above the street's level, its bank down to the water)
-  for(const [a,b] of [[lx0-200,lx0+2*T],[lx1-2*T,lx1+200]]){ const m=new THREE.Mesh(new THREE.PlaneGeometry(b-a,rz1-rz0).rotateX(-Math.PI/2),farMat); m.position.set((a+b)/2-sea.position.x,0,(rz0+rz1)/2-sea.position.z); m.renderOrder=-1; sea.add(m); }   // past both ends of the river too: open water, not a hole
+  for(const [a,b] of [[Math.min(sx0,lx0-200),lx0+2*T],[lx1-2*T,Math.max(sx1,lx1+200)]]){ const m=new THREE.Mesh(new THREE.PlaneGeometry(b-a,rz1-rz0).rotateX(-Math.PI/2),farMat); m.position.set((a+b)/2-sea.position.x,0,(rz0+rz1)/2-sea.position.z); m.renderOrder=-1; sea.add(m); }   // past both ends of the river too: open water, not a hole
   const setFlats=()=>{ flatAll.scale.x=lx1-lx0; flatAll.position.x=(lx0+lx1)/2; const a=RIVER.cx-WIN/2, b=RIVER.cx+WIN/2;
     flatL.scale.x=Math.max(.01,a-lx0); flatL.position.x=(lx0+a)/2; flatR.scale.x=Math.max(.01,lx1-b); flatR.position.x=(b+lx1)/2; };
 

@@ -1,9 +1,9 @@
 // THE CINEMA: the movie theatre screen plays a schedule of public-domain films (the Internet Archive's) at the same moment for everyone, or a YouTube link an admin puts on; its marquee and poster outside follow it.
 import {SHARED, THREE} from './003-shx.js';
-import {BUGS, CINEMA, LITE, pos, PS2, SIGNS, TEXT, UI} from './003b-systems.js';
+import {BUGS, CINEMA, FORAGE, INV, LITE, pos, PS2, SIGNS, TEXT, UI} from './003b-systems.js';
 import {renderer, scene, ShaderPass} from './004-main.js';
 import {SAVE} from './005-save.js';
-import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
+import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
 
 { const ROW='theatre';
   const vid=u=>{ u=String(u||'').trim(); const m=/(?:youtu\.be\/|v=|embed\/|shorts\/)([A-Za-z0-9_-]{11})/.exec(u)||/^([A-Za-z0-9_-]{11})$/.exec(u); return m?m[1]:''; };
@@ -165,8 +165,20 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
 
   let lastSync=0, adminThings=false;
   let signT=0;
-  const tick=()=>{ const mt=STORE.main&&STORE.main.theatre; CINEMA.on=false; if(!mt||!mt.fm)return; if(performance.now()-signT>5000){ signT=performance.now(); sign(); }
-    const up=SHARED.LVL==='up'; if(canopy){ canopy.box.visible=up; } if(post){ post.group.visible=up; if(post.front)post.front.visible=up&&!mt.R.inside(pos.x,pos.z); }
+  // the ticket fox stands at the box office window facing the street; the theatre's door takes a ticket (owner, 10 Nov 2026)
+  CINEMA.EXT=1.1;   // how far the ground floor steps out from the building, in tiles (the street door is moved out with it)
+  CINEMA.boxG=()=>box_o&&box_o.G; CINEMA.dbg=()=>({box:box_o&&[+box_o.x.toFixed(2),+box_o.z.toFixed(2),box_o.ox,box_o.oz],marquee:canopy&&canopy.box.position.toArray().map(v=>+v.toFixed(2)),neon:!!neon,fox:!!foxN});
+  let foxN=null; CINEMA.toon=(k,N)=>{ if(k==='ticketfox'){ foxN=N; N.g.userData.seenOut=true; } };
+  const fox=()=>{ const N=foxN; if(!N||!box_o||!N.st)return; const s=N.st, b=box_o, x=b.x-b.ox*.15*TILE, z=b.z-b.oz*.15*TILE;
+    N.home={id:'ticketfox',x,z,r:0}; s.x=x; s.z=z; s.to=null; s.hold=true; s.face={x:x+b.ox*5*TILE,z:z+b.oz*5*TILE}; };
+  let named=false;
+  const gate=()=>{ '@later'; const n=INV.items&&INV.items.ticket|0, say=t=>FORAGE.say&&FORAGE.say(t);
+    if(n>0){ INV.add('ticket',-1); if(FORAGE.draw)FORAGE.draw(); const P=CINEMA.playing(); say('YOU HAND OVER A TICKET'+(P&&P.title?' FOR '+P.title:'')+'.'); return true; }
+    say('YOU NEED A TICKET. THE FOX AT THE BOX OFFICE SELLS THEM.'); return false; };
+  const tick=()=>{ if(STORE.gate&&!STORE.gate.theatre)STORE.gate.theatre=gate; const mt=STORE.main&&STORE.main.theatre; CINEMA.on=false; if(!mt||!mt.fm)return; if(performance.now()-signT>5000){ signT=performance.now(); sign(); } fox();
+    if(!named&&FORAGE.add){ named=true; FORAGE.add({names:{ticket:'MOVIE TICKET'},prices:{ticket:5}}); }
+    const up=SHARED.LVL==='up'; if(canopy){ canopy.box.visible=up; } if(post){ post.group.visible=up; if(post.front)post.front.visible=up&&!mt.R.inside(pos.x,pos.z); } if(box_o)box_o.G.visible=up;
+    if(neon){ neon.me.visible=neon.rail.visible=up; const t=performance.now(); if(up&&t>neon.t){ neon.on=!neon.on&&Math.random()<.45; neon.t=t+(neon.on?40+Math.random()*140:250+Math.random()*2800); neonDraw(); } }
     if(CINEMA.admin&&!adminThings&&canopy&&post){ adminThings=true;
       UI.thing({name:'THE MARQUEE',ghost:1,obj:canopy.box,reach:2.2*TILE,near:6*TILE,tall:1,act:()=>editMarquee()});
       UI.thing({name:'THE POSTER',ghost:1,obj:post.group,reach:1.6*TILE,near:5*TILE,tall:1,act:()=>editPoster()}); }
@@ -192,8 +204,8 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
       if(id)fetch('https://www.youtube.com/oembed?format=json&url=https://youtu.be/'+id).then(r=>r.ok?r.json():null).then(j=>{ if(j&&j.title){ CINEMA.ytTitle=j.title; sign(); } }).catch(()=>{}); }
     sign(); };
 
-  // the front: a lit marquee box over the doors (the video's title unless an admin wrote its lines) and a lit poster case on the wall
-  let canopy=null, post=null; const ovr={text:null,bri:null,col:null};
+  // the front, THE FLEA PIT (owner, 10 Nov 2026): a hand-lettered marquee over the doors (the film's title unless an admin wrote its lines), a pink FLEA PIT neon with a dead letter, a crooked poster case
+  let canopy=null, post=null, box_o=null, neon=null; const ovr={text:null,bri:null,col:null};
   const canv=(w,h)=>{ const cv=document.createElement('canvas'); cv.width=w; cv.height=h; const tex=new THREE.CanvasTexture(cv); tex.magFilter=THREE.NearestFilter; tex.minFilter=THREE.LinearFilter; tex.generateMipmaps=false; tex.colorSpace=THREE.SRGBColorSpace; return {cv,g:cv.getContext('2d'),tex}; };
   const FACE='"Arial Narrow","Helvetica Neue",Arial,sans-serif';
   const fit=(g,t,maxW,px)=>{ let s=px; do{ g.font='900 '+Math.round(s)+'px '+FACE; s-=1; }while(g.measureText(t).width>maxW&&s>8); };
@@ -201,12 +213,20 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
   const split2=t=>{ if(t.length<=34)return [t]; const m=t.length/2; let b=-1; for(let i=0;i<t.length;i++)if(t[i]===' '&&(b<0||Math.abs(i-m)<Math.abs(b-m)))b=i; return b<0?[t]:[t.slice(0,b),t.slice(b+1)]; };
   const own=k=>String(cur()[k]||'').trim();
   const lines=()=>{ const o=ovr.text!=null?ovr.text:own('marquee'); return o?o.toUpperCase().split('\n').map(s=>s.trim()).filter(Boolean).slice(0,3):['NOW SHOWING',...split2(title())].slice(0,3); };
-  const litBg=(g,W,H)=>{ const gr=g.createLinearGradient(0,0,0,H); gr.addColorStop(0,'#d9e6f5'); gr.addColorStop(.5,'#f6faff'); gr.addColorStop(1,'#d9e6f5'); g.fillStyle=gr; g.fillRect(0,0,W,H); };
-  const rails=(g,W,H,n)=>{ g.fillStyle='rgba(60,70,84,.5)'; for(let i=1;i<n;i++){ const y=Math.round(6+i*(H-12)/n); g.fillRect(0,y-1,W,2); } g.fillStyle='#8f98a3'; g.fillRect(0,0,W,6); g.fillRect(0,H-6,W,6); };
-  const drawCanopy=()=>{ '@later'; const {front,side}=canopy, L=lines(), n=L.length, auto=!own('marquee');
-    { const {g,cv,tex}=front, W=cv.width, H=cv.height, rh=(H-12)/n; litBg(g,W,H); rails(g,W,H,n); g.fillStyle='#111214'; g.textAlign='center'; g.textBaseline='middle'; if('letterSpacing' in g)g.letterSpacing='3px';
-      L.forEach((t,i)=>{ fit(g,t,W-80,rh*(auto&&n>1&&i===0?.5:.74)); g.fillText(t,W/2,6+rh*(i+.54)); }); tex.needsUpdate=true; }
-    { const {g,cv,tex}=side; litBg(g,cv.width,cv.height); rails(g,cv.width,cv.height,n); tex.needsUpdate=true; } };
+  const rnd=a=>()=>{ a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; };   // seeded, so every player sees the same front
+  const HAND='Impact,"Haettenschweiler","Arial Narrow",sans-serif';
+  // a line of hand-painted letters, each a little off its neighbours
+  const hand=(g,t,cx,cy,maxW,h,R)=>{ g.font='900 '+Math.round(h)+'px '+HAND; const w=g.measureText(t).width, s=Math.min(1,maxW/Math.max(1,w)); g.save(); g.translate(cx,cy); g.scale(s,1); let x=-w/2;
+    for(const ch of t){ const cw=g.measureText(ch).width; g.save(); g.translate(x+cw/2,(R()-.5)*h*.1); g.rotate((R()-.5)*.12); g.fillText(ch,0,0); g.restore(); x+=cw; } g.restore(); };
+  // the marquee's board: old cream enamel, stained, rust running from the top
+  const board=(g,W,H,R)=>{ g.fillStyle='#e4d8b6'; g.fillRect(0,0,W,H);
+    for(let i=0;i<46;i++){ const x=R()*W, y=R()*H, r=(.03+R()*.14)*H, gr=g.createRadialGradient(x,y,0,x,y,r); gr.addColorStop(0,'rgba(116,90,48,.24)'); gr.addColorStop(1,'rgba(116,90,48,0)'); g.fillStyle=gr; g.fillRect(x-r,y-r,2*r,2*r); }
+    g.fillStyle='rgba(104,64,34,.3)'; for(let i=0;i<9;i++){ const x=R()*W; g.fillRect(x,0,3+R()*6,H*(.15+R()*.5)); }
+    g.fillStyle='#4a2c1e'; g.fillRect(0,0,W,10); g.fillRect(0,H-10,W,10); };
+  const drawCanopy=()=>{ '@later'; const {front,side}=canopy, L=lines(), n=L.length, auto=!own('marquee'), R=rnd(L.join('').length*131+7);
+    { const {g,cv,tex}=front, W=cv.width, H=cv.height, rh=(H-20)/n; board(g,W,H,R); g.fillStyle='#16110d'; g.textAlign='center'; g.textBaseline='middle';
+      L.forEach((t,i)=>{ hand(g,t,W/2,10+rh*(i+.55),W-110,rh*(auto&&n>1&&i===0?.46:.7),R); }); tex.needsUpdate=true; }
+    { const {g,cv,tex}=side; board(g,cv.width,cv.height,R); tex.needsUpdate=true; } };
   const posterSrc=()=>{ const o=own('poster'), y=vid(o); if(o)return y?'/yt/'+y+'.jpg':o; if(ytOn())return '/yt/'+vid(cur().video_id)+'.jpg'; return '/ia/'+nextF().id+'.jpg'; };
   // the picture without its dark bars or border (a letterboxed thumbnail, a poster scanned with a black edge)
   const trim=img=>{ '@later'; const w=img.width, h=img.height; try{ const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'); g.drawImage(img,0,0); const d=g.getImageData(0,0,w,h).data;
@@ -220,40 +240,95 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
     img.onload=()=>{ if(posterSrc()!==src)return; try{ g.fillStyle='#000'; g.fillRect(0,0,W,H); const c=trim(img), s=Math.max(W/c[2],H/c[3]), dw=c[2]*s, dh=c[3]*s; g.drawImage(img,c[0],c[1],c[2],c[3],(W-dw)/2,(H-dh)/2,dw,dh);
       if(!mine){ const d=g.getImageData(0,0,W,H), a=d.data; for(let i=0;i<a.length;i+=4){ a[i]=qz(a[i]); a[i+1]=qz(a[i+1]); a[i+2]=qz(a[i+2]); } g.putImageData(d,0,0); } }catch(e){} tex.needsUpdate=true; };
     img.src=src; };
-  // the street front under the marquee (owner, 27 Oct 2026): dark stone and gold, glass double doors with push bars under a lit ENTRANCE, backlit poster cases
-  const storefront=({at,ry,tw,Yb,bx,bz,alongX,R,Wb,cS,post})=>{ '@later'; const F=new THREE.Group(), dS=alongX?bx:bz, sg=Math.sign(cS-dS||1), s0=alongX?R.x0:R.z0, s1=alongX?R.x1:R.z1, lo=Math.min(s0,s1), hi=Math.max(s0,s1), y0=Yb(0), top=Yb(97);
-    const OUT=.11*tw, put=(me,s,out,y)=>{ me.position.copy(at(s,OUT+out,y)); me.rotation.y=ry; F.add(me); return me; }, flat=(w,h,m)=>new THREE.Mesh(new THREE.PlaneGeometry(w,h),m), blk=(w,h,d,c)=>new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshLambertMaterial({color:c}));
-    const glow=m=>new THREE.MeshBasicMaterial({map:m.tex,toneMapped:false}), L=s=>sg*s;
-    { const px=96/tw, W=Math.round(Wb*px), H=Math.round((top-y0)*px), c=canv(W,H), g=c.g, band=Math.round(H*.07), kick=Math.round(H*.06);
-      g.fillStyle='#141217'; g.fillRect(0,0,W,H); for(let i=0;i<W*H/60;i++){ const v=24+Math.random()*22|0; g.fillStyle=`rgb(${v},${v-2},${v+3})`; g.fillRect(Math.random()*W|0,Math.random()*H|0,1,1); }
-      g.fillStyle='#0b0a0d'; for(let x=0;x<W;x+=Math.round(px*tw*.9))g.fillRect(x,band,2,H-band-kick);
-      g.fillStyle='#7a1e24'; g.fillRect(0,0,W,band); g.fillStyle='#c9a24a'; g.fillRect(0,band-4,W,4); g.fillRect(0,0,W,3); for(let x=0;x<W;x+=band){ g.beginPath(); g.moveTo(x,band-4); g.lineTo(x+band/2,6); g.lineTo(x+band,band-4); g.fill(); }
-      g.fillStyle='#8a6a32'; g.fillRect(0,H-kick,W,kick); g.fillStyle='#c9a24a'; g.fillRect(0,H-kick,W,3); c.tex.magFilter=THREE.LinearFilter; c.tex.needsUpdate=true;
-      const me=put(new THREE.Mesh(new THREE.PlaneGeometry(Wb,top-y0),new THREE.MeshLambertMaterial({map:c.tex,emissive:0x0c0a0c})),cS,.015*tw,(y0+top)/2); me.receiveShadow=true; }
-    { const dw=1.5*tw, dh=Yb(80)-y0, BR=0x6b4a28, br=.07*tw, lc=canv(128,256), g=lc.g, gr=g.createLinearGradient(0,0,0,256);   // the doors: warm lobby light behind glass
-      gr.addColorStop(0,'#3a2a1c'); gr.addColorStop(.55,'#b07a3c'); gr.addColorStop(1,'#e8b56a'); g.fillStyle=gr; g.fillRect(0,0,128,256); g.fillStyle='rgba(255,240,210,.18)'; g.beginPath(); g.moveTo(14,0); g.lineTo(44,0); g.lineTo(8,256); g.lineTo(0,256); g.fill(); lc.tex.needsUpdate=true;
-      put(flat(dw+.2*tw,Yb(95)-y0,new THREE.MeshBasicMaterial({color:0x050405})),dS,.02*tw,(y0+Yb(95))/2);
-      for(const k of [-1,1]){ put(flat(dw/2-br,dh-br,glow(lc)),dS+L(k*dw/4),.05*tw,y0+dh/2); const bar=put(blk(.04*tw,.05*tw,.08*tw,0xd9b45a),dS+L(k*(dw/2-.16*tw)),.11*tw,y0+dh*.5); bar.scale.y=dh*.35/(.05*tw); }
-      for(const s of [-dw/2,0,dw/2])put(blk(br,Yb(95)-y0,.1*tw,BR),dS+L(s),.06*tw,(y0+Yb(95))/2);
-      put(blk(dw+br,br,.1*tw,BR),dS,.06*tw,Yb(80)); put(blk(dw+br,br,.1*tw,BR),dS,.06*tw,Yb(95)-br/2);
-      const tc=canv(512,96); { const g2=tc.g; g2.fillStyle='#120d08'; g2.fillRect(0,0,512,96); g2.fillStyle='#ffd27a'; g2.textAlign='center'; g2.textBaseline='middle'; if('letterSpacing' in g2)g2.letterSpacing='10px'; fit(g2,'ENTRANCE',440,58); g2.fillText('ENTRANCE',256,50); tc.tex.needsUpdate=true; }
-      put(flat(dw-br,Yb(95)-Yb(80)-br*1.5,glow(tc)),dS,.05*tw,(Yb(80)+Yb(95))/2); }
-    const ph=Yb(78)-Yb(18), pw=ph*27/40, hc=canv(64,64); { const g=hc.g, gr=g.createRadialGradient(32,32,4,32,32,32); gr.addColorStop(0,'rgba(255,236,200,.5)'); gr.addColorStop(1,'rgba(255,236,200,0)'); g.fillStyle=gr; g.fillRect(0,0,64,64); hc.tex.needsUpdate=true; }
-    const halo=new THREE.MeshBasicMaterial({map:hc.tex,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}), pm=new THREE.MeshBasicMaterial({map:post.tex,toneMapped:false}), rim=new THREE.MeshBasicMaterial({color:0xfff2d8,toneMapped:false}), cases=[];
-    for(const o of [1.95,6.9]){ const s=dS+L(o*tw); if(s-pw/2-.25*tw<lo||s+pw/2+.25*tw>hi)continue; const yc=(Yb(18)+Yb(78))/2, G=new THREE.Group();   // a lightbox: the poster lit from behind, a bright edge where the light spills round it
-      const fr=blk(pw+.18*tw,ph+.18*tw,.12*tw,0x0c0b0d); fr.position.z=.06*tw; const r=flat(pw+.05*tw,ph+.05*tw,rim); r.position.z=.121*tw; const p=flat(pw,ph,pm); p.position.z=.123*tw; const h=flat(pw*2,ph*1.5,halo); h.position.z=.02*tw;
-      G.add(h,fr,r,p); G.position.copy(at(s,OUT,yc)); G.rotation.y=ry; F.add(G); cases.push(G); }
-    post.group=cases[0]||F; scene.add(F); return F; };
-  const buildSigns=m=>{ '@later'; if(canopy)return; const dd=(STORE.main.doors||[]).find(d=>d[0]==='THE MOVIE THEATRE'); if(!dd)return;
-    const Yb=SHARED.BOD.Y, tw=Math.abs(SHARED.BOD.X(1)-SHARED.BOD.X(0)), R=m.R, bx=dd[3], bz=dd[4]; let ox=dd[1]-bx, oz=dd[2]-bz; const L=Math.hypot(ox,oz)||1; ox/=L; oz/=L;
-    const alongX=Math.abs(oz)>=Math.abs(ox), Wb=alongX?R.x1-R.x0:R.z1-R.z0, cS=alongX?(R.x0+R.x1)/2:(R.z0+R.z1)/2, ry=Math.atan2(ox,oz);
-    const at=(s,out,y)=>alongX?new THREE.Vector3(s,y,bz+oz*out):new THREE.Vector3(bx+ox*out,y,s);
-    const cw=Wb*.74, ch=Yb(140)-Yb(98), cd=1.5*tw, front=canv(2048,Math.round(2048*ch/cw)), side=canv(64,256), sof=canv(512,64), dark=new THREE.MeshLambertMaterial({color:0x26282c});
-    { const g=sof.g; g.fillStyle='#2e3136'; g.fillRect(0,0,512,64); g.fillStyle='#fff3d6'; for(let r=0;r<2;r++)for(let x=24;x<512;x+=44){ g.beginPath(); g.arc(x+(r?22:0),18+r*28,4,0,7); g.fill(); } sof.tex.needsUpdate=true; }
+  // the ground floor stepped out to the pavement: old green paint under layers of torn posters, two wooden doors under a bare bulb, a crooked poster case ringed with bulbs, the box office set into it
+  // a w by h sheet with a window cut in it (the box office), its picture still spread over the whole sheet
+  const holed=(w,h,cx,cy,hw,hh)=>{ '@later'; const S=new THREE.Shape([new THREE.Vector2(-w/2,-h/2),new THREE.Vector2(w/2,-h/2),new THREE.Vector2(w/2,h/2),new THREE.Vector2(-w/2,h/2)]);
+    S.holes.push(new THREE.Path([new THREE.Vector2(cx-hw,cy-hh),new THREE.Vector2(cx-hw,cy+hh),new THREE.Vector2(cx+hw,cy+hh),new THREE.Vector2(cx+hw,cy-hh)])); const g=new THREE.ShapeGeometry(S), P=g.attributes.position, U=g.attributes.uv;
+    for(let i=0;i<P.count;i++)U.setXY(i,P.getX(i)/w+.5,P.getY(i)/h+.5); return g; };
+  const POSTC=['#c8463c','#3c6ea8','#d8b040','#6a9a48','#a050a0','#e07a30','#2a2a2a','#e8e0c8','#58a8a0','#b03060'];
+  const storefront=({at,ry,tw,Yb,Wb,cS,dS,dir,EXT,lo,hi,post})=>{ '@later'; const F=new THREE.Group(), y0=Yb(0), top=Yb(118), R=rnd(97), L=v=>dir*v;
+    const put=(me,s,out,y)=>{ me.position.copy(at(s,out,y)); me.rotation.y=ry; F.add(me); return me; }, flat=(w,h,m)=>new THREE.Mesh(new THREE.PlaneGeometry(w,h),m), blk=(w,h,d,c)=>new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshLambertMaterial({color:c}));
+    const glow=m=>new THREE.MeshBasicMaterial({map:m.tex,toneMapped:false}), bS=dS+L(-3.2*tw), pS=dS+L(3.4*tw), BW=2.3*tw, win={y0:Yb(36),y1:Yb(84)}, dw=1.7*tw, dh=Yb(84)-y0;
+    { const px=64/tw, W=Math.round(Wb*px), H=Math.round((top-y0)*px), c=canv(W,H), g=c.g, U=s=>(Wb/2+(s-cS)*dir)*px, kick=Math.round(H*.07);
+      g.fillStyle='#3d4b43'; g.fillRect(0,0,W,H); for(let i=0;i<W*H/90;i++){ const v=R(); g.fillStyle=v<.5?'rgba(20,28,24,.18)':'rgba(140,150,130,.12)'; g.fillRect(R()*W|0,R()*H|0,1+R()*3|0,1+R()*3|0); }
+      for(let i=0;i<10;i++){ const x=R()*W, y=R()*H*.8, w=(.4+R()*1.2)*tw*px, h=(.3+R()*.8)*tw*px; g.fillStyle='#6e3a2c'; g.fillRect(x,y,w,h); g.fillStyle='#4e2a20'; for(let r=y;r<y+h;r+=8)g.fillRect(x,r,w,1); for(let r=y,k=0;r<y+h;r+=8,k++)for(let q=x+(k&1?8:0);q<x+w;q+=16)g.fillRect(q,r,1,8); }   // the paint gone, the brick under it
+      for(let i=0;i<34;i++){ const w=(.55+R()*.65)*tw*px, h=w*(1.25+R()*.3), x=R()*(W-w), y=H*.06+R()*(H*.72-h), col=POSTC[R()*POSTC.length|0], tilt=(R()-.5)*.1, torn=R();   // the posters, one over another, torn
+        g.save(); g.translate(x+w/2,y+h/2); g.rotate(tilt); g.beginPath(); g.moveTo(-w/2,-h/2); for(let k=0;k<=8;k++)g.lineTo(-w/2+w*k/8,-h/2+(R()-.5)*4); const cut=torn<.4?h*(.2+R()*.5):0;
+        for(let k=0;k<=10;k++)g.lineTo(w/2+(R()-.5)*3,-h/2+(h-cut)*k/10); for(let k=8;k>=0;k--)g.lineTo(-w/2+w*k/8,h/2-cut+(R()-.5)*(cut?14:3)); g.closePath(); g.fillStyle=col; g.fill(); g.clip();
+        g.fillStyle='rgba(255,250,235,.22)'; g.fillRect(-w/2,-h/2,w,h); g.fillStyle=R()<.5?'rgba(20,16,14,.75)':'rgba(250,240,220,.8)'; g.fillRect(-w*.38,-h*.38,w*.76,h*.12); g.fillRect(-w*.3,-h*.2,w*.6,h*.05);
+        g.fillStyle='rgba(20,16,14,.35)'; g.beginPath(); g.arc((R()-.5)*w*.3,h*.08,w*.22,0,7); g.fill(); g.fillStyle='rgba(20,16,14,.5)'; for(let k=0;k<3;k++)g.fillRect(-w*.34,h*.3+k*h*.05,w*.68*(.5+R()*.5),2); g.restore(); }
+      g.strokeStyle='rgba(230,230,220,.55)'; g.lineWidth=3; for(let i=0;i<4;i++){ g.beginPath(); let x=R()*W, y=H*.55+R()*H*.3; g.moveTo(x,y); for(let k=0;k<6;k++){ x+=10+R()*16; y+=(R()-.5)*22; g.lineTo(x,y); } g.stroke(); }   // a few tags
+      g.fillStyle='#4a3022'; g.fillRect(0,H-kick,W,kick); g.fillStyle='rgba(150,80,40,.45)'; for(let i=0;i<W/30;i++)g.fillRect(R()*W,H-kick,2+R()*5,kick*R());
+      g.fillStyle='#1c1d1a'; g.fillRect(0,0,W,Math.round(H*.035)); c.tex.magFilter=THREE.LinearFilter; c.tex.needsUpdate=true;
+      const me=put(new THREE.Mesh(holed(Wb,top-y0,(bS-cS)*dir,(win.y0+win.y1)/2-(y0+top)/2,BW/2-.12*tw,(win.y1-win.y0)/2),new THREE.MeshLambertMaterial({map:c.tex,emissive:0x0b0c0b})),cS,EXT,(y0+top)/2); me.receiveShadow=true; }
+    put(blk(Wb+.12*tw,.22*tw,EXT+.18*tw,0x24231f),cS,(EXT+.18*tw)/2,top+.1*tw);   // the cornice
+    for(const s of [lo+.04*tw,hi-.04*tw])put(blk(.08*tw,top-y0,EXT,0x343f39),s,EXT/2,(y0+top)/2);
+    { const DT=canv(64,160), g=DT.g; g.fillStyle='#5a3b27'; g.fillRect(0,0,64,160); for(let x=0;x<64;x+=16){ g.fillStyle='#3a2416'; g.fillRect(x,0,2,160); }   // the doors: planks, the old green paint coming off
+      for(let i=0;i<40;i++){ g.fillStyle=R()<.7?'#46604e':'#2f2016'; g.fillRect(R()*64,R()*160,2+R()*10,2+R()*14); } DT.tex.needsUpdate=true;
+      const lc=canv(32,48), lg=lc.g, gr=lg.createLinearGradient(0,0,0,48); gr.addColorStop(0,'#5a4020'); gr.addColorStop(1,'#d8a050'); lg.fillStyle=gr; lg.fillRect(0,0,32,48); lg.fillStyle='rgba(60,50,30,.5)'; for(let i=0;i<30;i++)lg.fillRect(R()*32,R()*48,2,2); lc.tex.needsUpdate=true;
+      put(flat(dw+.26*tw,Yb(92)-y0,new THREE.MeshBasicMaterial({color:0x080605})),dS,EXT+.01*tw,(y0+Yb(92))/2);
+      for(const k of [-1,1]){ const s=dS+L(k*dw/4); put(new THREE.Mesh(new THREE.BoxGeometry(dw/2-.05*tw,dh,.08*tw),new THREE.MeshLambertMaterial({map:DT.tex})),s,EXT+.05*tw,y0+dh/2);
+        put(flat(dw*.24,dh*.26,glow(lc)),s,EXT+.095*tw,y0+dh*.7); put(blk(.05*tw,.06*tw,.07*tw,0xa88438),dS+L(k*.13*tw),EXT+.12*tw,y0+dh*.47); }
+      const nc=canv(128,48), ng=nc.g; ng.fillStyle='#e8dcc0'; ng.fillRect(0,0,128,48); ng.fillStyle='#1a1410'; ng.textAlign='center'; ng.textBaseline='middle'; hand(ng,'NO REFUNDS',64,25,116,30,R); nc.tex.needsUpdate=true;
+      put(flat(.62*tw,.23*tw,new THREE.MeshLambertMaterial({map:nc.tex})),dS+L(dw/4),EXT+.1*tw,y0+dh*.45).rotation.z=-.06;
+      put(blk(.06*tw,.06*tw,.3*tw,0x2a2a2a),dS,EXT+.15*tw,Yb(96)); put(new THREE.Mesh(new THREE.SphereGeometry(.1*tw,10,8),new THREE.MeshBasicMaterial({color:0xffe0a0,toneMapped:false})),dS,EXT+.3*tw,Yb(93)); }
+    { const ph=Yb(78)-Yb(22), pw=ph*27/40, yc=(Yb(22)+Yb(78))/2, G=new THREE.Group(), pm=new THREE.MeshBasicMaterial({map:post.tex,toneMapped:false});   // the poster case: a wooden box hung a little crooked, bulbs round it, not all of them working
+      if(pS-pw/2-.4*tw>lo&&pS+pw/2+.4*tw<hi){ const fr=blk(pw+.32*tw,ph+.32*tw,.14*tw,0x3c2618); fr.position.z=.07*tw; const p=flat(pw,ph,pm); p.position.z=.142*tw; G.add(fr,p);
+        const on=new THREE.MeshBasicMaterial({color:0xffe6a8,toneMapped:false}), off=new THREE.MeshLambertMaterial({color:0x403a34}), bg=new THREE.SphereGeometry(.05*tw,8,6), hw=pw/2+.1*tw, hh=ph/2+.1*tw, per=2*(hw+hh)*2, n=22;
+        for(let i=0;i<n;i++){ let d=i/n*per, x, y; if(d<2*hw){ x=-hw+d; y=hh; } else if((d-=2*hw)<2*hh){ x=hw; y=hh-d; } else if((d-=2*hh)<2*hw){ x=hw-d; y=-hh; } else { d-=2*hw; x=-hw; y=-hh+d; }
+          const b=new THREE.Mesh(bg,i%7===3||i%9===5?off:on); b.position.set(x,y,.16*tw); G.add(b); }
+        G.rotation.z=.04; const H=new THREE.Group(); H.add(G); H.position.copy(at(pS,EXT,yc)); H.rotation.y=ry; F.add(H); post.group=H; } }
+    post.group=post.group||F; scene.add(F); return {F,bS,BW,win}; };
+  // the box office set into the wall: a chicken-wire window over a low counter with a bell and a cash tin, the ticket fox behind it, the showtimes on an old television at the back
+  const boxOffice=({at,ry,tw,Yb,EXT,bS,BW,win,ox,oz})=>{ '@later'; const D=EXT-.12*tw, H=Yb(104)-Yb(0), kc=at(bS,EXT-D/2,0), y0=SHARED.groundY(kc.x,kc.z), G=new THREE.Group(), R=rnd(31); G.position.set(kc.x,y0,kc.z); G.rotation.y=ry; scene.add(G);
+    const WALL=new THREE.MeshLambertMaterial({color:0x343f39}), WOOD=new THREE.MeshLambertMaterial({color:0x5a3b27}), IN=new THREE.MeshLambertMaterial({color:0x6a4a38}),
+      GL=new THREE.MeshPhongMaterial({color:0xb8c0a8,specular:0x606050,shininess:30,transparent:true,opacity:.16,depthWrite:false});
+    const bx=(w,h,d,m,x,y,z)=>{ const me=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m); me.position.set(x,y,z); me.castShadow=me.receiveShadow=true; G.add(me); return me; };
+    const W=BW, cy=win.y0-Yb(0), gy=win.y1-Yb(0);
+    bx(W,H,.08*tw,IN,0,H/2,-D/2); for(const sx of [-1,1])bx(.12*tw,H,D,WALL,sx*(W/2-.06*tw),H/2,0); bx(W,.08*tw,D,WALL,0,H-.04*tw,0); bx(W,H-gy,.12*tw,WALL,0,(H+gy)/2,D/2-.06*tw);
+    bx(W,cy,.12*tw,WALL,0,cy/2,D/2-.06*tw); bx(W*1.04,.06*tw,.36*tw,WOOD,0,cy,D/2-.1*tw);
+    const gl=new THREE.Mesh(new THREE.PlaneGeometry(W-.24*tw,gy-cy-.06*tw),GL); gl.position.set(0,(cy+gy)/2,D/2-.07*tw); G.add(gl);
+    const wc=canv(128,128), wg=wc.g; wg.strokeStyle='rgba(110,108,96,.85)'; wg.lineWidth=1.5; for(let k=-128;k<256;k+=16){ wg.beginPath(); wg.moveTo(k,0); wg.lineTo(k+128,128); wg.stroke(); wg.beginPath(); wg.moveTo(k+128,0); wg.lineTo(k,128); wg.stroke(); }
+    wc.tex.wrapS=wc.tex.wrapT=THREE.RepeatWrapping; wc.tex.generateMipmaps=true; wc.tex.minFilter=THREE.LinearMipmapLinearFilter; wc.tex.magFilter=THREE.LinearFilter; wc.tex.repeat.set((W-.24*tw)/(.9*tw),(gy-cy)/(.9*tw)); wc.tex.needsUpdate=true;
+    const wire=new THREE.Mesh(new THREE.PlaneGeometry(W-.24*tw,gy-cy-.06*tw),new THREE.MeshBasicMaterial({map:wc.tex,transparent:true,depthWrite:false})); wire.position.set(0,(cy+gy)/2,D/2-.075*tw); G.add(wire);
+    const hole=new THREE.Mesh(new THREE.PlaneGeometry(.5*tw,.12*tw),new THREE.MeshBasicMaterial({color:0x0b0b0d})); hole.position.set(0,cy+.08*tw,D/2-.065*tw); G.add(hole);
+    bx(.14*tw,.05*tw,.14*tw,new THREE.MeshLambertMaterial({color:0xc8a040}),-W*.3,cy+.05*tw,D/2-.2*tw); bx(.1*tw,.02*tw,.1*tw,new THREE.MeshLambertMaterial({color:0x8a6a28}),-W*.3,cy+.09*tw,D/2-.2*tw);   // the bell
+    bx(.36*tw,.14*tw,.24*tw,new THREE.MeshLambertMaterial({color:0x2e5a3a}),W*.28,cy+.1*tw,D/2-.24*tw);   // the cash tin
+    const sg=canv(512,112); { const g=sg.g; g.fillStyle='#d8ccae'; g.fillRect(0,0,512,112); g.fillStyle='rgba(110,80,40,.25)'; for(let i=0;i<30;i++)g.fillRect(R()*512,R()*112,4+R()*30,2+R()*10); g.fillStyle='#8a1e24'; g.textAlign='center'; g.textBaseline='middle'; hand(g,'BOX OFFICE',256,58,460,78,R); sg.tex.needsUpdate=true; }
+    const sign_=new THREE.Mesh(new THREE.PlaneGeometry(W*.86,W*.86*112/512),new THREE.MeshLambertMaterial({map:sg.tex})); sign_.position.set(0,(H+gy)/2+.04*tw,D/2+.012*tw); sign_.rotation.z=.025; G.add(sign_);
+    const tc=canv(160,96); { const g=tc.g; g.fillStyle='#f0e6c8'; g.fillRect(0,0,160,96); g.fillStyle='#16110d'; g.textAlign='center'; g.textBaseline='middle'; hand(g,'TIX $5',80,50,144,62,R); tc.tex.needsUpdate=true; }
+    const tix=new THREE.Mesh(new THREE.PlaneGeometry(.52*tw,.31*tw),new THREE.MeshLambertMaterial({map:tc.tex})); tix.position.set(W/2-.5*tw,gy-.32*tw,D/2-.05*tw); tix.rotation.z=-.09; G.add(tix);
+    const sc=canv(612,400), sw=W*.36, sh_=sw*400/612, tvx=W*.24, tvy=Yb(78)-Yb(0);   // an old television on a shelf, the showtimes on it
+    bx(sw+.2*tw,sh_+.2*tw,.5*tw,new THREE.MeshLambertMaterial({color:0x4a3a2a}),tvx,tvy,-D/2+.3*tw); bx(sw+.5*tw,.05*tw,.6*tw,WOOD,tvx,tvy-sh_/2-.13*tw,-D/2+.3*tw);
+    const scr=new THREE.Mesh(new THREE.PlaneGeometry(sw,sh_),new THREE.MeshBasicMaterial({map:sc.tex})); scr.position.set(tvx,tvy,-D/2+.56*tw); G.add(scr);
+    bx(.03*tw,.3*tw,.03*tw,new THREE.MeshLambertMaterial({color:0x222222}),0,H-.2*tw,0); const bulb=new THREE.Mesh(new THREE.SphereGeometry(.07*tw,8,6),new THREE.MeshBasicMaterial({color:0xffe0a0,toneMapped:false})); bulb.position.set(0,H-.4*tw,0); G.add(bulb);
+    G.updateMatrixWorld(); const lamp=new THREE.PointLight(0xffc88a,4,3*tw,1.6); lamp.position.set(0,H*.8,0).applyMatrix4(G.matrixWorld); LITE.recs.push(lamp);
+    G.traverse(o=>{ o.userData.seenOut=true; }); return {G,sc,key:'',x:kc.x,z:kc.z,ox,oz}; };
+  // the neon on top of the marquee: FLEA PIT in pink tubes, its I gone dark (it catches now and then)
+  const neonDraw=()=>{ '@later'; const {c,on}=neon, g=c.g, W=c.cv.width, H=c.cv.height, T='FLEA PIT'; g.clearRect(0,0,W,H); g.font='900 '+Math.round(H*.74)+'px '+HAND; g.textBaseline='middle'; g.lineJoin='round';
+    const w=g.measureText(T).width, sc=Math.min(1,(W-60)/w); g.save(); g.translate(W/2,H/2+4); g.scale(sc,1); let x=-w/2;
+    for(let i=0;i<T.length;i++){ const ch=T[i], cw=g.measureText(ch).width, dead=i===6&&!on; g.textAlign='center';
+      if(ch!==' '){ if(!dead){ g.shadowColor='#ff3c7c'; g.shadowBlur=26; g.strokeStyle='#ff4f8a'; g.lineWidth=13; g.strokeText(ch,x+cw/2,0); g.shadowBlur=8; g.strokeStyle='#ffd0e0'; g.lineWidth=4; g.strokeText(ch,x+cw/2,0); }
+        else { g.shadowBlur=0; g.strokeStyle='#5a2a3c'; g.lineWidth=11; g.strokeText(ch,x+cw/2,0); g.strokeStyle='#7a4a5a'; g.lineWidth=3; g.strokeText(ch,x+cw/2,0); } }
+      x+=cw; } g.restore(); c.tex.needsUpdate=true; if(neon.light)neon.light.intensity=on?3.2:2.6; };
+  const buildSigns=()=>{ '@later'; if(canopy)return; const SD=STORE.streetDoor&&STORE.streetDoor.theatre, LT=STORE.main&&STORE.main.lot&&STORE.main.lot('theatre',300); if(!SD||!LT)return;
+    const B=SHARED.BOD, Yb=B.Y, tw=Math.abs(B.X(1)-B.X(0)), bx=B.X(SD.door[0]), bz=B.Z(SD.door[1]); let ox=B.X(SD.out[0])-bx, oz=B.Z(SD.out[1])-bz; const l=Math.hypot(ox,oz)||1; ox/=l; oz/=l;
+    const alongX=Math.abs(oz)>=Math.abs(ox), ry=Math.atan2(ox,oz), e=alongX?[B.Z(LT.y0),B.Z(LT.y1)]:[B.X(LT.x0),B.X(LT.x1)], oc=alongX?B.Z(SD.out[1]):B.X(SD.out[0]), f0=Math.abs(e[0]-oc)<Math.abs(e[1]-oc)?e[0]:e[1];
+    const s0=alongX?B.X(LT.x0):B.Z(LT.y0), s1=alongX?B.X(LT.x1):B.Z(LT.y1), lo=Math.min(s0,s1), hi=Math.max(s0,s1), Wb=hi-lo, cS=(lo+hi)/2, dS=alongX?bx:bz, dir=alongX?Math.cos(ry):-Math.sin(ry), EXT=CINEMA.EXT*tw;
+    const at=(s,out,y)=>alongX?new THREE.Vector3(s,y,f0+oz*out):new THREE.Vector3(f0+ox*out,y,s);
+    { const a=at(lo,0,0), b=at(hi,EXT,0); SOL.up.push([Math.min(a.x,b.x),Math.min(a.z,b.z),Math.max(a.x,b.x),Math.max(a.z,b.z)]); }   // the stepped-out ground floor is solid
+    const cw=Math.min(Wb*.7,13*tw), ch=Yb(138)-Yb(102), cd=1.5*tw, front=canv(2048,Math.round(2048*ch/cw)), side=canv(64,256), sof=canv(512,64), dark=new THREE.MeshLambertMaterial({color:0x2a2420});
+    { const g=sof.g, R=rnd(5); g.fillStyle='#2e2a26'; g.fillRect(0,0,512,64); for(let r=0;r<2;r++)for(let x=24;x<512;x+=44){ g.fillStyle=R()<.22?'#4a443c':'#fff0cc'; g.beginPath(); g.arc(x+(r?22:0),18+r*28,4,0,7); g.fill(); } sof.tex.needsUpdate=true; }
     const box=new THREE.Mesh(new THREE.BoxGeometry(cw,ch,cd),[new THREE.MeshBasicMaterial({map:side.tex}),new THREE.MeshBasicMaterial({map:side.tex}),dark,new THREE.MeshBasicMaterial({map:sof.tex}),new THREE.MeshBasicMaterial({map:front.tex}),dark]);
-    box.position.copy(at(cS,cd/2+.02,Yb(119))); box.rotation.y=ry; scene.add(box);
-    canopy={box,front,side,key:''}; STORE.openHide=STORE.openHide||{}; (STORE.openHide.theatre=STORE.openHide.theatre||[]).push(box);   // not seen from inside
-    post={...canv(270,400),key:''}; post.front=storefront({at,ry,tw,Yb,bx,bz,alongX,R,Wb,cS,post});
+    box.position.copy(at(cS,EXT+cd/2+.02,Yb(120))); box.rotation.y=ry; scene.add(box);
+    canopy={box,front,side,key:''};
+    { const nw=Math.min(cw*.7,7*tw), nh=nw*.26, c=canv(1024,Math.round(1024*nh/nw)), me=new THREE.Mesh(new THREE.PlaneGeometry(nw,nh),new THREE.MeshBasicMaterial({map:c.tex,transparent:true,toneMapped:false,depthWrite:false}));
+      me.position.copy(at(cS,EXT+cd*.55,Yb(138)+nh/2+.05*tw)); me.rotation.y=ry; scene.add(me);
+      const rail=new THREE.Mesh(new THREE.BoxGeometry(nw*.9,.06*tw,.08*tw),dark); rail.position.copy(at(cS,EXT+cd*.5,Yb(138)+.05*tw)); rail.rotation.y=ry; scene.add(rail);
+      const light=new THREE.PointLight(0xff4f8a,3,7*tw,1.6); light.position.copy(at(cS,EXT+cd+1.2*tw,Yb(150))); LITE.recs.push(light);
+      neon={c,me,rail,light,on:false,t:0}; neonDraw(); }
+    post={...canv(270,400),key:''}; const fr=storefront({at,ry,tw,Yb,Wb,cS,dS,dir,EXT,lo,hi,post}); post.front=fr.F;
+    box_o=boxOffice({at,ry,tw,Yb,EXT,bS:fr.bS,BW:fr.BW,win:fr.win,ox,oz});
     SIGNS.list.push({me:box,name:'THEATRE MARQUEE',place:'street',get:()=>({text:ovr.text,bri:ovr.bri,col:ovr.col}),
       set:o=>{ ovr.text=o&&o.text!=null?o.text:null; ovr.bri=o&&o.bri!=null?o.bri:null; ovr.col=o&&o.col!=null?o.col:null;
         const c=new THREE.Color(ovr.col||'#ffffff').multiplyScalar(ovr.bri==null?1:ovr.bri); for(const i of [0,1,4]){ const mm=box.material[i]; if(mm&&mm.color)mm.color.copy(c); } canopy.key=''; sign(); }});
@@ -261,7 +336,7 @@ import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
     sign(); };
   const sign=()=>{ '@later'; if(canopy){ const k=lines().join('|'); if(k!==canopy.key){ canopy.key=k; drawCanopy(); } }
     if(post){ const k=posterSrc()+'|'+title()+'|'+own('poster'); if(k!==post.key){ post.key=k; drawPoster(); } }
- };
+    if(box_o){ const k=CINEMA.upcoming(1)[0].start+'|'+ytOn(); if(k!==box_o.key){ box_o.key=k; CINEMA.drawTimes(box_o.sc.g,box_o.sc.cv.width,box_o.sc.cv.height); box_o.sc.tex.needsUpdate=true; } } };
   // the showtimes, as the box office's screen draws them: the film on now and the next ones, in the viewer's own time
   CINEMA.drawTimes=(g,W,H,n=6)=>{ '@later'; const L=CINEMA.upcoming(n), P=CINEMA.playing(), hm=t=>new Date(t).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}).toUpperCase();
     g.fillStyle='#0b0c10'; g.fillRect(0,0,W,H); g.fillStyle='#d8a845'; g.fillRect(0,0,W,H*.15); g.fillStyle='#0b0c10'; g.textAlign='center'; g.textBaseline='middle'; fit(g,'SHOWTIMES',W*.8,H*.1); g.fillText('SHOWTIMES',W/2,H*.075);

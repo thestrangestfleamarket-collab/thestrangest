@@ -12,7 +12,7 @@ const VS=1;
 const cardG=new THREE.PlaneGeometry(PW/PPU,PICH/PPU); cardG.translate(0,(AY-PICH/2)/PPU,0);
 const youMat=new THREE.MeshBasicMaterial({map:ptex,alphaTest:0.5,side:THREE.DoubleSide});
 const you=new THREE.Mesh(cardG,youMat); you.castShadow=true; scene.add(LEVELS.own(you,'*'));
- SHARED.heading=0.8; SHARED.py=0; window.POSOK=1; const HOUR=3600e3; let SAVED=null; const SPOT0=(()=>{ try{ const s=QS.get('spot'); if(!s||!/^S1/.test(s))return null; const o=JSON.parse(atob(s.slice(2).replace(/-/g,'+').replace(/_/g,'/')));   // ?spot=: a spot code from the # under the map (162fb): you, the view, the hour and the weather as they were
+ SHARED.heading=0.8; SHARED.py=0; window.POSOK=MODS.posok=1; const HOUR=3600e3; let SAVED=null; const SPOT0=(()=>{ try{ const s=QS.get('spot'); if(!s||!/^S1/.test(s))return null; const o=JSON.parse(atob(s.slice(2).replace(/-/g,'+').replace(/_/g,'/')));   // ?spot=: a spot code from the # under the map (162fb): you, the view, the hour and the weather as they were
     if(!['x','z','y'].every(k=>Number.isFinite(o[k])))return null; if(o.hr!=null&&QS.get('hour')==null)QS.set('hour',String(o.hr)); if(typeof o.wx==='string'&&o.wx&&QS.get('wx')==null)QS.set('wx',o.wx); return o; }catch(e){ return null; } })();
   { if(SPOT0){ SAVED={x:SPOT0.x,z:SPOT0.z,y:SPOT0.y,hd:SPOT0.h||0,lv:SPOT0.lv||LEVELS.below(SPOT0.y),t:Date.now()}; pos.set(SAVED.x,0,SAVED.z); SHARED.py=SAVED.y; SHARED.heading=SAVED.hd; SHARED.floor=SAVED.lv; }
   else { const a=(QS.get('at')||'').split(',').map(Number); if(a.length>=2&&a.every(isFinite)){ pos.set(a[0],0,a[1]); SHARED.py=a[2]||0; SHARED.floor=LEVELS.below(SHARED.py); }

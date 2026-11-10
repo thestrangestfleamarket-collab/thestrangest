@@ -27,7 +27,7 @@ const LIB={data:null,max:5,inside:[]}; window.LIB=LIB;   // inside: what else fu
   const names=()=>{ if(!LIB.data)return; FORAGE.add({names:Object.fromEntries(LIB.data.books.flatMap(b=>[['lb_'+b.id,'LIBRARY BOOK: '+b.t],['hb_'+b.id,'YOUR BOOK: '+b.t]]))}); };
   FORAGE.ROWB.push(id=>/^[lh]b_/.test(id)?[['READ','lread']]:[]);
   FORAGE.ACT.lread=id=>LIB.read(id.slice(3));
-  if(window.INSPECT&&INSPECT.kinds)INSPECT.kinds.push({is:id=>/^[lh]b_/.test(id),make:id=>{ const b=LIB.by&&LIB.by[id.slice(3)]; const c=b&&b.col?parseInt(b.col.slice(1),16):0x6a3a2a; return INSPECT.shape('book',c,0xf2ead6); }});
+  if(INSPECT&&INSPECT.kinds)INSPECT.kinds.push({is:id=>/^[lh]b_/.test(id),make:id=>{ const b=LIB.by&&LIB.by[id.slice(3)]; const c=b&&b.col?parseInt(b.col.slice(1),16):0x6a3a2a; return INSPECT.shape('book',c,0xf2ead6); }});
   if(S.b.length||S.h.length)load().catch(()=>{});
   const borrowed=id=>S.b.includes(id);
   // a borrowed book no longer on the shelves goes back by itself
@@ -148,7 +148,8 @@ const LIB={data:null,max:5,inside:[]}; window.LIB=LIB;   // inside: what else fu
 
   /* ---------- the furniture is polyfork's (data/bookstore.json, baked in metres): chairs, rugs, lamps, the radiator and curtains, the clock; loaded behind the fade on the way in ---------- */
   const PJ=__LAZY__("data/bookstore.json"); let PG=null, GEO=null; const pfGeo=()=>PG||(PG=PJ().then(D=>{ const G={}; for(const k in D){ const g=KIT.decode(D[k]); g.computeBoundingBox(); G[k]=g; } return GEO=G; }));
-  { let wrapped=false; SYS.add('places',()=>{ if(wrapped)return; const o=ROOMS.off&&ROOMS.off.books; if(!o)return; wrapped=true; const n0=o.need; o.need=()=>Promise.all([n0?n0():null,pfGeo(),load().catch(()=>null),typeof LOAD==='function'?LOAD('tables'):null,arts()]); },'144ca-library'); }
+  { let wrapped=false; const wrap=()=>{ if(wrapped)return; const o=ROOMS.off&&ROOMS.off.books; if(!o)return; wrapped=true; const n0=o.need; o.need=()=>Promise.all([n0?n0():null,pfGeo(),load().catch(()=>null),typeof LOAD==='function'?LOAD('tables'):null,arts()]); };
+    wrap(); SYS.add('places',wrap,'144ca-library'); }   // at once: the shops' insides are built during the start (owner, 9 Nov 2026: "put the books back into the bookstore")
   let DUST=null;
   /* ---------- a bookcase: Polyfork's alcove bookcase, empty, its four open shelves holding ten real books each, each a spine painted from the book (its cloth, gold bands, title and author; the real spine where one survives), thick or thin by its length ---------- */
   const BC={W:1,H:2.2,D:.355,Z0:-.15,FZ:.15,SH:[.65,1.04,1.415,1.79],TOPS:[1.01,1.385,1.76,2.15],IN:.94,BW:.03};   // metres: the case (its back at Z0, its shelves' front at FZ), its shelves' tops and the boards over them, the room inside a shelf, the boards
@@ -201,7 +202,7 @@ const LIB={data:null,max:5,inside:[]}; window.LIB=LIB;   // inside: what else fu
   const VW=document.createElement('div'); VW.id='libv'; VW.hidden=true; VW.style.cssText='position:fixed;inset:0;z-index:22;background:#120c08;touch-action:none';
   document.body.appendChild(VW); const VC=document.createElement('canvas'); VC.style.cssText='position:absolute;inset:0;width:100%;height:100%;cursor:grab'; VW.appendChild(VC);
   const VB=document.createElement('div'); VB.style.cssText='position:absolute;left:50%;bottom:max(14px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:flex;gap:6px;font:11px Silkscreen,monospace;zoom:var(--uiz,1)';
-  VB.innerHTML='<button class="btn" data-v="prev">&lt; CASE</button><button class="btn" data-v="out">−</button><button class="btn" data-v="fit">FIT</button><button class="btn" data-v="in">+</button><button class="btn" data-v="next">CASE &gt;</button><button class="btn" data-v="up">▲ SHELF</button><button class="btn" data-v="down">▼ SHELF</button><button class="btn" data-v="rot">ROTATE</button><button class="btn" data-v="x">CLOSE</button>';
+  VB.className='mlb'; VB.innerHTML='<button class="btn" data-v="prev">&lt; CASE</button><button class="btn" data-v="out">−</button><button class="btn" data-v="fit">FIT</button><button class="btn" data-v="in">+</button><button class="btn" data-v="next">CASE &gt;</button><button class="btn" data-v="up">▲ SHELF</button><button class="btn" data-v="down">▼ SHELF</button><button class="btn" data-v="rot">ROTATE</button><button class="btn" data-v="x">CLOSE</button>';
   VW.appendChild(VB); { const st=document.createElement('style'); st.textContent='#libv .btn{font:inherit;padding:6px 10px;background:#ece5d3;color:#3b2a1e;border:2px solid #3b2a1e;cursor:pointer} #libv[hidden]{display:none!important}'; document.head.appendChild(st); }
   const V={ci:0,s:1,x:0,y:0,fit:1,rows:null,hit:[],row:null,rot:0};
   let vpend=false; const vdraw=()=>{ if(vpend)return; vpend=true; requestAnimationFrame(()=>{ vpend=false; if(!VW.hidden)vpaint(); }); };   // one redraw a frame: the filter is a pass over every pixel

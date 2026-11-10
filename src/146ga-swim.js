@@ -30,7 +30,7 @@ Object.assign(SWIM,{d:null,tankS:0}); window.SWIM=SWIM;
   const place=(m,a,b,r)=>{ d.subVectors(b,a); const L=d.length()||1e-4; m.position.addVectors(a,b).multiplyScalar(.5); m.quaternion.setFromUnitVectors(Y,d.divideScalar(L)); m.scale.set(r,(L+2*r)/6,r); };   // the capsule is 6 tall: its ends just past each joint
   SYS.add('cam',dt=>{ const W=st.water, sw0=!!(W&&W.in)&&!VIT.dead&&UI.persp&&!UI.freeCam, cam=SHARED.cam;
     if(sw0){ const eye=SHARED.py+(W.y+28)*ZU;   // the eyes go down with you: just under the head's top, so under water when you are
-      if(UI.view==='first')cam.position.y=eye; else if(!(window.FOUNT&&FOUNT.swim)&&W.under>.01)cam.position.y+=(Math.min(cam.position.y,eye+.6*WM)-cam.position.y)*Math.min(1,W.under); }
+      if(UI.view==='first')cam.position.y=eye; else if(!(FOUNT&&FOUNT.swim)&&W.under>.01)cam.position.y+=(Math.min(cam.position.y,eye+.6*WM)-cam.position.y)*Math.min(1,W.under); }
     const on=UI.view==='first'&&sw0; root.visible=on; if(!on)return; t+=dt||.016;
     const c=LOOKS.COL&&LOOKS.COL.skin; if(c&&c!==sk){ sk=c; skin.color.set(c); }
     root.position.copy(cam.position); root.quaternion.copy(cam.quaternion); root.scale.setScalar(WM);
@@ -47,22 +47,25 @@ Object.assign(SWIM,{d:null,tankS:0}); window.SWIM=SWIM;
   const NM=500, R=3*WM, mg=new THREE.BufferGeometry(), mp=new Float32Array(NM*3), m0=new Float32Array(NM*3); for(let i=0;i<NM*3;i++)m0[i]=(Math.random()*2-1)*R;
   mg.setAttribute('position',new THREE.BufferAttribute(mp,3)); const motes=LEVELS.own(new THREE.Points(mg,new THREE.PointsMaterial({color:0xa8c49a,size:.012*WM,transparent:true,opacity:.5,depthWrite:false})),'*'); motes.frustumCulled=false; motes.visible=false; scene.add(motes);
   const vig=document.createElement('div'); vig.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:5;display:none;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 45%,rgba(4,16,8,.55) 100%)'; document.body.appendChild(vig);
-  let uw=false, mt=0, seen=0, dfo=false; const far=[], hid=[], P=new V();   // far things that ignore fog (the far city, backdrops): hidden while you are under, the murk would hide them
+  let uw=false, mt=0, seen=0, dfo=false, cf=null; const far=[], hid=[], P=new V();   // far things that ignore fog (the far city, backdrops): hidden while you are under, the murk would hide them
   (MODS.waters=MODS.waters||[]).push({pre:(scene,cam)=>{ uw=!!(scene.fog&&scene.fog.uw)&&!!cam&&!cam.isOrthographicCamera; motes.visible=uw; if(vig.style.display!==(uw?'':'none'))vig.style.display=uw?'':'none'; if(!uw){ seen=0; return; } if(DFOG.pass){ dfo=!DFOG.pass.enabled; DFOG.pass.enabled=true; DFOG.under={s:scene.fog.near,e:scene.fog.far,c:scene.fog.color}; }   // the distance fog pass becomes the water's fog: nothing past the murk shows
     if(performance.now()-seen>2000){ seen=performance.now(); far.length=0; scene.traverse(o=>{ const m=o.material; if(!(o.isMesh||o.isPoints)||!m||Array.isArray(m)||m.fog!==false||m.uniforms&&m.uniforms.uUW)return; far.push(o); }); }
     for(const o of [FAR3.mesh,FAR3.farMesh,FAR3.panels,FAR3.trees])if(o&&o.isObject3D&&o.visible){ o.visible=false; hid.push(o); }   // the far city's own mist shader skips the fog
     const lim=scene.fog.far*1.3; for(const o of far){ if(!o.visible)continue; o.getWorldPosition(P); if(P.distanceTo(cam.position)>lim){ o.visible=false; hid.push(o); } }
+    SWIM.view=0; if(SWIM.cut!==false&&cam.far>lim){ cf={cam,far:cam.far}; cam.far=lim; cam.updateProjectionMatrix(); SWIM.view=lim; SWIM.murk=scene.fog.far; }   // nothing past the murk is drawn at all: the view ends just beyond it
     mt+=1/60; const c=cam.position, a=mg.attributes.position.array, w=2*R;
     for(let i=0;i<NM;i++){ for(let k=0;k<3;k++){ const base=m0[i*3+k]+(k===1?-mt*.05*WM:Math.sin(mt*.3+i)*.1*WM), cc=k===0?c.x:k===1?c.y:c.z; a[i*3+k]=cc+(((base-cc)%w+w*1.5)%w-R); } }
-    mg.attributes.position.needsUpdate=true; },post:()=>{ for(const o of hid)o.visible=true; hid.length=0; if(DFOG.pass){ DFOG.under=null; if(dfo){ DFOG.pass.enabled=false; dfo=false; } } }});
+    mg.attributes.position.needsUpdate=true; },post:()=>{ for(const o of hid)o.visible=true; hid.length=0; if(cf){ cf.cam.far=cf.far; cf.cam.updateProjectionMatrix(); cf=null; } if(DFOG.pass){ DFOG.under=null; if(dfo){ DFOG.pass.enabled=false; dfo=false; } } }});
 
-  // the rented scuba set: a full tank when you rent it, worn on your back; under water it breathes for you until it runs dry, then it goes back to the shark
-  FORAGE.add({names:{scuba:'SCUBA SET (RENTAL)'}});
+  // the scuba set, bought (owner, 9 Nov 2026: "no more renting scuba gear, and you only buy it"): worn, under water it breathes for you until the tank runs dry; out of the water it is filled again
+  FORAGE.add({names:{scuba:'SCUBA SET'}});
   const save=()=>{ try{ OWNED.set('tank',String(Math.max(0,SWIM.tankS).toFixed(1))); }catch(e){} }; try{ SWIM.tankS=+OWNED.get('tank')||0; }catch(e){}
   SWIM.tank=()=>EQUIP.breathe?SWIM.tankS:0; let st5=0;
   VIT.supply=dt=>{ '@later'; if(!EQUIP.breathe||SWIM.tankS<=0)return false; SWIM.tankS-=dt; if(VIT.air<VIT.airMax)VIT.air=Math.min(VIT.airMax,VIT.air+dt*VIT.airMax/2.5);   // breathing from the tank: your own breath comes back if((st5+=dt)>5){ st5=0; save(); }
-    if(SWIM.tankS<=0){ SWIM.tankS=0; const id=EQUIP.by.back; if(id){ EQUIP.off('back'); if(ITEMS.prop(id,'rental'))FORAGE.take(id,1); } save(); say('YOUR TANK IS EMPTY. THE RENTED SET GOES BACK TO FISHING & SCUBA.','#c8a090'); if(FORAGE.draw)FORAGE.draw(); return false; } return true; };
+    if(SWIM.tankS<=0){ SWIM.tankS=0; save(); say('YOUR TANK IS EMPTY. IT FILLS AGAIN OUT OF THE WATER.','#c8a090'); return false; } return true; };
+  const full=()=>{ const id=Object.values(EQUIP.by).find(q=>q&&EQUIP.ability(q)==='breathe'); return id?+ITEMS.prop(id,'tank')||0:0; };
+  SYS.add('vitals',()=>{ if(!EQUIP.breathe||st.water&&st.water.in)return; const f=full(); if(f&&SWIM.tankS<f){ SWIM.tankS=f; save(); } },'146ga-swim tank');
   VIT.tankTxt=()=>EQUIP.breathe&&SWIM.tankS>0?' · TANK '+Math.floor(SWIM.tankS/60)+':'+String(Math.floor(SWIM.tankS%60)).padStart(2,'0'):'';
   SYS.add('rent',id=>{ const s=+ITEMS.prop(id,'tank')||0; if(!s)return; SWIM.tankS=s; save(); if(EQUIP.by[ITEMS.prop(id,'slot')]!==id)EQUIP.wear(id,true);
     say('THE FISHERMAN STRAPS ON A FULL TANK: '+Math.round(s/60)+' MINUTES OF AIR UNDER WATER.'); },'146ga-swim');
-  window.SWIMDBG=()=>{ const W=st.water; return {in:!!(W&&W.in),dive:!!(W&&W.dive),d:SWIM.d,y:W&&W.y,level:W&&W.level,floor:W&&W.floor,arms:root.visible,uw,tank:SWIM.tankS,breathe:!!EQUIP.breathe,air:VIT.air}; }; }
+  window.SWIMDBG=()=>{ const W=st.water; return {in:!!(W&&W.in),dive:!!(W&&W.dive),d:SWIM.d,y:W&&W.y,level:W&&W.level,floor:W&&W.floor,arms:root.visible,uw,view:SWIM.view,murk:SWIM.murk,tank:SWIM.tankS,breathe:!!EQUIP.breathe,air:VIT.air}; }; }

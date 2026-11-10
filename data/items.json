@@ -9,7 +9,8 @@
   "offworld": true,
   "value": 30,
   "slot": "eyes",
-  "grants": "sight"
+  "grants": "sight",
+  "look": "eyes:DIVE MASK"
  },
  "headlight": {
   "offworld": true,
@@ -388,7 +389,7 @@
   "slot": "back",
   "grants": "breathe",
   "tank": 300,
-  "rental": true,
+  "look": "top:WETSUIT|coat:|bottom:|belt:|hat:DIVE HOOD · SCUBA DIVER|eyes:DIVE MASK|back:AIR TANK|feet:FINS|hands:WORK GLOVES · HIKER~3a4258",
   "size": 0.7
  },
  "ticket": {
@@ -2132,5 +2133,13 @@
   "look": "hat:BRIM HAT · SHERIFF",
   "value": 25,
   "weight": 0.15
+ },
+ "magic_carpet": {
+  "slot": "hand",
+  "grants": "carpet",
+  "offworld": true,
+  "value": 300,
+  "speed": 9,
+  "weight": 6
  }
 }

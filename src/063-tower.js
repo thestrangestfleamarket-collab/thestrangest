@@ -1,8 +1,8 @@
 // THE SQUIRREL'S TOWER: GTOWER builds the tall round tower beside the golems' cave.
 import {SHARED, THREE} from './003-shx.js';
-import {PARK} from './003b-systems.js';
-import {FIX, LEVEL, MAPG, SOL, TILE} from './006-map-pre.js';
-import {BATCH, OBJ} from './008-batch.js';
+import {BATCH, PARK} from './003b-systems.js';
+import {FIX, LEVEL, MAPG, SOL, SYS, TILE} from './006-map-pre.js';
+import {OBJ} from './008-batch.js';
 import {GCAVE} from './060-cave.js';
 const GTOWER={}; window.GTOWER=GTOWER;
 { const H=173, PH=4, MH=8, TH=212, TC=58, R=1.5, RB=R+.1, RI=R-.06, TA=-Math.PI*.75, TD=R+.22, TR=.46;
@@ -45,6 +45,6 @@ const GTOWER={}; window.GTOWER=GTOWER;
     const Ms=BATCH.meshes||{}; BATCH.meshes={}; for(const me of Object.values(Ms)){ MAPG.parkwall.add(me); GTOWER.me=me; GTOWER.tris=me.geometry.attributes.position.count/3; }
     const sol=(a0,b0,a1,b1,h)=>{ SOL.up.push([X(a0),Z(b0),X(a1),Z(b1)]); FIX.up.push([X(a0),Z(b0),0,X(a1),Z(b1),Y(h)]); };
     const q=RB*.72; sol(cx-q,cy-RB,cx+q,cy+RB,H+PH); sol(cx-RB,cy-q,cx+RB,cy+q,H+PH); sol(tx-TR,ty-TR,tx+TR,ty+TR,TH); GTOWER.ready=true; };
-  const go=()=>{ if(!window.__started||typeof GCAVE==='undefined'||!GCAVE.S||!MAPG.parkwall)return setTimeout(go,400); setTimeout(()=>{ try{ build(); const PP=LEVEL.parkPlaces||{}; for(const k of ['tower2','tower3'])if(PP[k])build({x:PP[k].x,y:PP[k].y}); }catch(e){ console.warn('TOWER: not built',e); } },600); };   // more towers stand where world.json puts them (the park's borders)
+  const go=()=>{ if(!SYS.started||typeof GCAVE==='undefined'||!GCAVE.S||!MAPG.parkwall)return setTimeout(go,400); setTimeout(()=>{ try{ build(); const PP=LEVEL.parkPlaces||{}; for(const k of ['tower2','tower3'])if(PP[k])build({x:PP[k].x,y:PP[k].y}); }catch(e){ console.warn('TOWER: not built',e); } },600); };   // more towers stand where world.json puts them (the park's borders)
   go(); }
 export {GTOWER};

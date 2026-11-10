@@ -1,10 +1,9 @@
 // THE DISTANCE FOG: the further past you a thing is (from the camera), the darker and more blurred it is, slightly, and the air between takes it: a thin haze everywhere and a ground mist that thins with height, in the horizon's colour greyed, warm toward the sun, the sky's own colour only on a level sightline where the air is nearly opaque, smooth or in stepped dithered bands (STEPS); the last stretch before its end and the land's rim fade into what is seen just above them, so nothing pops where the drawing stops (CULL); the sky untouched; under water it is the water's fog; in a steamy room (SHARED.steam) the steam; ATMOSPHERE sets it.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, CULL, ED, FAR3, MAPED, pos, ROOMS, UI} from './003b-systems.js';
+import {BATCH, CLOCK, CULL, ED, FAR3, MAPED, pos, ROOMS, UI} from './003b-systems.js';
 import {renderer, scene, ShaderPass} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
-import {BATCH} from './008-batch.js';
 import {RIVER} from './066-river.js';
 import {TPANE} from './087dz-tpane.js';
 const DFOG={};
@@ -22,13 +21,14 @@ const DFOG={};
       float qh(vec3 p){ return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5); }
       float qn(vec3 p){ vec3 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); return mix(mix(mix(qh(i),qh(i+vec3(1,0,0)),f.x),mix(qh(i+vec3(0,1,0)),qh(i+vec3(1,1,0)),f.x),f.y),mix(mix(qh(i+vec3(0,0,1)),qh(i+vec3(1,0,1)),f.x),mix(qh(i+vec3(0,1,1)),qh(i+vec3(1,1,1)),f.x),f.y),f.z); }
       void main(){ float d=texture2D(tDepth,vUv).x, f=0., m=0., dd=0., land=0.; vec4 c=texture2D(tDiffuse,vUv);
+        if(d>=1.){ for(int k=1;k<=2;k++){ float db=texture2D(tDepth,vUv-vec2(0.,float(k)/uR.y)).x; if(db<1.&&lin(db)>.6*uNF.y){ d=db; break; } } }   // (land at the very end of the view reads as the sky's depth: hazed like the land just under it, never left as a dark line)
         if(uO>.5){
-        if(d<.99999){ vec4 v=uPInv*vec4(vUv*2.-1.,d*2.-1.,1.); v/=v.w; vec3 w=(uCamW*v).xyz, cp=(uCamW*vec4(0.,0.,0.,1.)).xyz; dd=mix(max(0.,distance(w,cp)-distance(uP,cp)),length(w.xz-uP.xz),uV); float g=smoothstep(uS,uE,dd), g2=smoothstep(uS*.4,uE,dd), ge=g2*g2, gw=smoothstep(uS,uE*2.,dd), wet=step(w.y,uW); land=step(uK.x,w.x)*step(w.x,uK.z)*step(uK.y,w.z)*step(w.z,uK.w);
+        if(d<1.){ vec4 v=uPInv*vec4(vUv*2.-1.,d*2.-1.,1.); v/=v.w; vec3 w=(uCamW*v).xyz, cp=(uCamW*vec4(0.,0.,0.,1.)).xyz; dd=mix(max(0.,distance(w,cp)-distance(uP,cp)),length(w.xz-uP.xz),uV); float g=smoothstep(uS,uE,dd), g2=smoothstep(uS*.4,uE,dd), ge=g2*g2, gw=smoothstep(uS,uE*2.,dd), wet=step(w.y,uW); land=step(uK.x,w.x)*step(w.x,uK.z)*step(uK.y,w.z)*step(w.z,uK.w);
           f=g; m=land>.5?mix(uF>0.?ge:g*uH,gw,wet):uH>0.?mix(mix(mix(min(.85,g),g,uF),gw,wet),min(.85,g),smoothstep(uY.x,uY.y,vUv.y)):0.; }
         else if(uH>0.&&uV>0.){ vec4 v=uPInv*vec4(vUv*2.-1.,1.,1.); v/=v.w; vec3 w=(uCamW*v).xyz, cp=(uCamW*vec4(0.,0.,0.,1.)).xyz; m=smoothstep(0.,-.03,(w.y-cp.y)/length(w-cp)); }
         if(f>.001&&uB>0.){ vec2 o=uB*f/uR; vec4 s=c*2.+texture2D(tDiffuse,vUv+vec2(o.x,0.))+texture2D(tDiffuse,vUv-vec2(o.x,0.))+texture2D(tDiffuse,vUv+vec2(0.,o.y))+texture2D(tDiffuse,vUv-vec2(0.,o.y))
           +texture2D(tDiffuse,vUv+o)+texture2D(tDiffuse,vUv-o)+texture2D(tDiffuse,vUv+vec2(o.x,-o.y))+texture2D(tDiffuse,vUv+vec2(-o.x,o.y)); c=s/10.; }
-        vec3 to=uC; if(uD>0.){ m=0.; if(d<.99999){ c.rgb*=1.-uH*smoothstep(uS,uE,dd);
+        vec3 to=uC; if(uD>0.){ m=0.; if(d<1.){ c.rgb*=1.-uH*smoothstep(uS,uE,dd);
             vec4 v=uPInv*vec4(vUv*2.-1.,d*2.-1.,1.); v/=v.w; vec3 w=(uCamW*v).xyz, cp=(uCamW*vec4(0.,0.,0.,1.)).xyz, seg=w-cp, ins=uC; float L=length(seg), a=0., rf=0.; vec3 ray=seg/max(.001,L);
             if(uA.x+uA.y>0.){ float lo=max(0.,min(cp.y,w.y)-uG)*uA.z, dh=abs(seg.y)*uA.z, avg=(dh<.001?1.-dh*.5+dh*dh/6.:(1.-exp(-dh))/dh)*exp(-lo);
               a=min(uAM,1.-exp(-max(0.,L-uS)*(uA.x+uA.y*avg))); if(uSt>0.)a=min(1.,floor(a*uSt+by(gl_FragCoord.xy))/uSt);
@@ -37,7 +37,7 @@ const DFOG={};
               ins=mix(uMC,uC,sb)+uSC*lt*(1.-g*g)/pow(1.+g*g-2.*g*mu,1.5); c.rgb=mix(c.rgb,ins,a); }
             m=uF>0.?land*smoothstep(uF*.67,uF,dd)*step(dd,uF*1.05):0.;
             if(uRm.x>0.){ float ri=min(min(w.x-uK.x,uK.z-w.x),min(w.z-uK.y,uK.w-w.z)); rf=land*(1.-smoothstep(0.,uRm.x,ri))*smoothstep(uRm.y,uRm.z,L); m=max(m,rf); }
-            if(m>.001){ float hit=0., L0=lin(d); vec3 acc=vec3(0.); float na=0.; for(int i=1;i<=14;i++){ vec2 q=vUv+vec2(0.,float(i*i)*3./uR.y); if(q.y>1.)break; float dq=texture2D(tDepth,q).x; if(dq>=.99999||rf>.001&&lin(dq)>L0*1.25){ hit=1.; for(int j=0;j<5;j++){ vec2 r=q+vec2((float(j)-2.)*9./uR.x,float(j*j)*4./uR.y); if(r.y<=1.&&texture2D(tDepth,r).x>=.99999){ acc+=texture2D(tDiffuse,r).rgb; na+=1.; } } break; } } to=na>0.?mix(acc/na,ins,.35):ins; } } }
+            if(m>.001){ float hit=0., L0=lin(d); vec3 acc=vec3(0.); float na=0.; for(int i=1;i<=14;i++){ vec2 q=vUv+vec2(0.,float(i*i)*3./uR.y); if(q.y>1.)break; float dq=texture2D(tDepth,q).x; if(dq>=1.||rf>.001&&lin(dq)>L0*1.25){ hit=1.; for(int j=0;j<5;j++){ vec2 r=q+vec2((float(j)-2.)*9./uR.x,float(j*j)*4./uR.y); if(r.y<=1.&&texture2D(tDepth,r).x>=1.){ acc+=texture2D(tDiffuse,r).rgb; na+=1.; } } break; } } to=na>0.?mix(acc/na,ins,.35):ins; } } }
         c.rgb=mix(c.rgb,to,m); }
         if(uQK.x>0.){ vec4 a=uPInv*vec4(vUv*2.-1.,-1.,1.), b=uPInv*vec4(vUv*2.-1.,min(d,.99999)*2.-1.,1.); vec3 ro=(uCamW*vec4(a.xyz/a.w,1.)).xyz, rd=(uCamW*vec4(b.xyz/b.w,1.)).xyz-ro;
           vec3 iv=1./(rd+step(abs(rd),vec3(1e-7))*1e-7), t0=(uQ0-ro)*iv, t1=(uQ1-ro)*iv, lo=min(t0,t1), hi=max(t0,t1); float tn=max(max(max(lo.x,lo.y),lo.z),0.), tf=min(min(min(hi.x,hi.y),hi.z),1.);
@@ -47,7 +47,7 @@ const DFOG={};
   const draw=pass.render.bind(pass), HZ=new THREE.Color(.78,.81,.85), HV=new THREE.Vector3();
   pass.render=(r,w,rb,dt,mask)=>{ const u=pass.uniforms, cam=(SHARED.RPASS&&SHARED.RPASS.camera)||SHARED.cam; u.tDepth.value=rb.depthTexture; u.uPInv.value.copy(cam.projectionMatrixInverse); u.uCamW.value.copy(cam.matrixWorld);
     u.uP.value.copy(pos); u.uS.value=C.start*TILE; u.uE.value=Math.max(C.start+1,C.end)*TILE; const iso=!UI.persp, dn=SHARED.LVL==='down'||!!(ROOMS.cur&&ROOMS.cur.off&&ROOMS.off[ROOMS.cur.off]&&ROOMS.off[ROOMS.cur.off].clearAir); u.uB.value=iso||dn?0:C.blur; u.uH.value=iso||dn?0:C.haze; { const f=DFOG.cut(), g=CULL.drawD?CULL.drawD():0; u.uF.value=dn?0:f>0&&g>0?Math.min(f,g):f||g; }   // where the drawing stops, the far fades into the sky above it
-    u.uC.value.copy(FAR3.fog&&FAR3.fog.color||(scene.background&&scene.background.isColor?scene.background:HZ)); u.uR.value.set(rb.width,rb.height); u.uW.value=window.RIVER&&RIVER.box&&!dn?RIVER.box.lv+.2*TILE:-1e9; u.uV.value=1; u.uD.value=1;   // the Hudson's water fades softer and further than land, so from high up it has no hard ring
+    u.uC.value.copy(FAR3.fog&&FAR3.fog.color||(scene.background&&scene.background.isColor?scene.background:HZ)); u.uR.value.set(rb.width,rb.height); u.uW.value=RIVER&&RIVER.box&&!dn?RIVER.box.lv+.2*TILE:-1e9; u.uV.value=1; u.uD.value=1;   // the Hudson's water fades softer and further than land, so from high up it has no hard ring
     { const c=cam.position, d=HV.set(0,0,-1).applyQuaternion(cam.quaternion); d.y=0; d.normalize(); HV.copy(c).addScaledVector(d,400*TILE).setY(0).project(cam); const hz=(HV.y+1)/2; u.uY.value.set(hz+.08,hz+.5); }   // the skyline: whole haze at the horizon, clearing up the screen
     if(FAR3.land)u.uK.value.set(...FAR3.land);
     // the air: AIR and MIST are the share taken at the fog's END (over level ground for the mist), MIST HEIGHT where the mist has thinned to a third; the sun's lobe fades out as it sets; the mist's colour is the horizon's greyed by TINT

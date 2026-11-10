@@ -1,9 +1,9 @@
-// THE CINEMA: the movie theatre screen plays a schedule of public-domain films (the Internet Archive's) at the same moment for everyone, or a YouTube link an admin puts on; its marquee, poster and showtimes outside follow it.
+// THE CINEMA: the movie theatre screen plays a schedule of public-domain films (the Internet Archive's) at the same moment for everyone, or a YouTube link an admin puts on; its marquee and poster outside follow it.
 import {SHARED, THREE} from './003-shx.js';
 import {BUGS, CINEMA, LITE, pos, PS2, SIGNS, TEXT, UI} from './003b-systems.js';
 import {renderer, scene, ShaderPass} from './004-main.js';
 import {SAVE} from './005-save.js';
-import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
+import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
 
 { const ROW='theatre';
   const vid=u=>{ u=String(u||'').trim(); const m=/(?:youtu\.be\/|v=|embed\/|shorts\/)([A-Za-z0-9_-]{11})/.exec(u)||/^([A-Za-z0-9_-]{11})$/.exec(u); return m?m[1]:''; };
@@ -165,17 +165,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
 
   let lastSync=0, adminThings=false;
   let signT=0;
-  // the ticket fox stands at the box office window facing the street; the theatre's door takes a ticket
-  CINEMA.boxG=()=>box_o&&box_o.G; CINEMA.dbg=()=>({box:box_o&&[+box_o.x.toFixed(2),+box_o.z.toFixed(2),box_o.ox,box_o.oz],marquee:canopy&&canopy.box.position.toArray().map(v=>+v.toFixed(2)),fox:!!foxN});
-  let foxN=null; CINEMA.toon=(k,N)=>{ if(k==='ticketfox'){ foxN=N; N.g.userData.seenOut=true; } };
-  const fox=()=>{ const N=foxN; if(!N||!box_o||!N.st)return; const s=N.st, b=box_o, x=b.x-b.ox*.2*TILE, z=b.z-b.oz*.2*TILE;
-    N.home={id:'ticketfox',x,z,r:0}; s.x=x; s.z=z; s.to=null; s.hold=true; s.face={x:x+b.ox*5*TILE,z:z+b.oz*5*TILE}; };
-  const F0=()=>window.FORAGE; let named=false;
-  const gate=()=>true, gate0=()=>{ '@later'; const I=window.INV, n=I&&I.items&&I.items.ticket|0, say=t=>F0()&&F0().say&&F0().say(t);
-    if(n>0){ I.add('ticket',-1); if(F0()&&F0().draw)F0().draw(); const P=CINEMA.playing(); say('YOU HAND OVER A TICKET'+(P&&P.title?' FOR '+P.title:'')+'.'); return true; }
-    say('YOU NEED A TICKET. THE FOX AT THE BOX OFFICE SELLS THEM.'); return false; };
-  const tick=()=>{ if(STORE.gate&&!STORE.gate.theatre)STORE.gate.theatre=gate; const mt=STORE.main&&STORE.main.theatre; CINEMA.on=false; if(!mt||!mt.fm)return; if(performance.now()-signT>5000){ signT=performance.now(); sign(); } fox();
-    if(!named&&F0()&&F0().add){ named=true; F0().add({names:{ticket:'MOVIE TICKET'},prices:{ticket:5}}); }
+  const tick=()=>{ const mt=STORE.main&&STORE.main.theatre; CINEMA.on=false; if(!mt||!mt.fm)return; if(performance.now()-signT>5000){ signT=performance.now(); sign(); }
     const up=SHARED.LVL==='up'; if(canopy){ canopy.box.visible=up; } if(post){ post.group.visible=up; if(post.front)post.front.visible=up&&!mt.R.inside(pos.x,pos.z); }
     if(CINEMA.admin&&!adminThings&&canopy&&post){ adminThings=true;
       UI.thing({name:'THE MARQUEE',ghost:1,obj:canopy.box,reach:2.2*TILE,near:6*TILE,tall:1,act:()=>editMarquee()});
@@ -203,7 +193,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     sign(); };
 
   // the front: a lit marquee box over the doors (the video's title unless an admin wrote its lines) and a lit poster case on the wall
-  let canopy=null, post=null, box_o=null; const ovr={text:null,bri:null,col:null};
+  let canopy=null, post=null; const ovr={text:null,bri:null,col:null};
   const canv=(w,h)=>{ const cv=document.createElement('canvas'); cv.width=w; cv.height=h; const tex=new THREE.CanvasTexture(cv); tex.magFilter=THREE.NearestFilter; tex.minFilter=THREE.LinearFilter; tex.generateMipmaps=false; tex.colorSpace=THREE.SRGBColorSpace; return {cv,g:cv.getContext('2d'),tex}; };
   const FACE='"Arial Narrow","Helvetica Neue",Arial,sans-serif';
   const fit=(g,t,maxW,px)=>{ let s=px; do{ g.font='900 '+Math.round(s)+'px '+FACE; s-=1; }while(g.measureText(t).width>maxW&&s>8); };
@@ -231,11 +221,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
       if(!mine){ const d=g.getImageData(0,0,W,H), a=d.data; for(let i=0;i<a.length;i+=4){ a[i]=qz(a[i]); a[i+1]=qz(a[i+1]); a[i+2]=qz(a[i+2]); } g.putImageData(d,0,0); } }catch(e){} tex.needsUpdate=true; };
     img.src=src; };
   // the street front under the marquee (owner, 27 Oct 2026): dark stone and gold, glass double doors with push bars under a lit ENTRANCE, backlit poster cases
-  // a w by h sheet with a window cut in it (the box office), its picture still spread over the whole sheet
-  const holed=(w,h,cx,cy,hw,hh)=>{ '@later'; const S=new THREE.Shape([new THREE.Vector2(-w/2,-h/2),new THREE.Vector2(w/2,-h/2),new THREE.Vector2(w/2,h/2),new THREE.Vector2(-w/2,h/2)]);
-    S.holes.push(new THREE.Path([new THREE.Vector2(cx-hw,cy-hh),new THREE.Vector2(cx-hw,cy+hh),new THREE.Vector2(cx+hw,cy+hh),new THREE.Vector2(cx+hw,cy-hh)])); const g=new THREE.ShapeGeometry(S), P=g.attributes.position, U=g.attributes.uv;
-    for(let i=0;i<P.count;i++)U.setXY(i,P.getX(i)/w+.5,P.getY(i)/h+.5); return g; };
-  const storefront=({at,ry,tw,Yb,bx,bz,alongX,R,Wb,cS,post,win})=>{ '@later'; const F=new THREE.Group(), dS=alongX?bx:bz, sg=Math.sign(cS-dS||1), s0=alongX?R.x0:R.z0, s1=alongX?R.x1:R.z1, lo=Math.min(s0,s1), hi=Math.max(s0,s1), y0=Yb(0), top=Yb(97);
+  const storefront=({at,ry,tw,Yb,bx,bz,alongX,R,Wb,cS,post})=>{ '@later'; const F=new THREE.Group(), dS=alongX?bx:bz, sg=Math.sign(cS-dS||1), s0=alongX?R.x0:R.z0, s1=alongX?R.x1:R.z1, lo=Math.min(s0,s1), hi=Math.max(s0,s1), y0=Yb(0), top=Yb(97);
     const OUT=.11*tw, put=(me,s,out,y)=>{ me.position.copy(at(s,OUT+out,y)); me.rotation.y=ry; F.add(me); return me; }, flat=(w,h,m)=>new THREE.Mesh(new THREE.PlaneGeometry(w,h),m), blk=(w,h,d,c)=>new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshLambertMaterial({color:c}));
     const glow=m=>new THREE.MeshBasicMaterial({map:m.tex,toneMapped:false}), L=s=>sg*s;
     { const px=96/tw, W=Math.round(Wb*px), H=Math.round((top-y0)*px), c=canv(W,H), g=c.g, band=Math.round(H*.07), kick=Math.round(H*.06);
@@ -243,7 +229,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
       g.fillStyle='#0b0a0d'; for(let x=0;x<W;x+=Math.round(px*tw*.9))g.fillRect(x,band,2,H-band-kick);
       g.fillStyle='#7a1e24'; g.fillRect(0,0,W,band); g.fillStyle='#c9a24a'; g.fillRect(0,band-4,W,4); g.fillRect(0,0,W,3); for(let x=0;x<W;x+=band){ g.beginPath(); g.moveTo(x,band-4); g.lineTo(x+band/2,6); g.lineTo(x+band,band-4); g.fill(); }
       g.fillStyle='#8a6a32'; g.fillRect(0,H-kick,W,kick); g.fillStyle='#c9a24a'; g.fillRect(0,H-kick,W,3); c.tex.magFilter=THREE.LinearFilter; c.tex.needsUpdate=true;
-      const me=put(new THREE.Mesh(holed(Wb,top-y0,(alongX?Math.cos(ry):-Math.sin(ry))*(win.s-cS),(win.y0+win.y1)/2-(y0+top)/2,win.hw,(win.y1-win.y0)/2),new THREE.MeshLambertMaterial({map:c.tex,emissive:0x0c0a0c})),cS,.015*tw,(y0+top)/2); me.receiveShadow=true; }
+      const me=put(new THREE.Mesh(new THREE.PlaneGeometry(Wb,top-y0),new THREE.MeshLambertMaterial({map:c.tex,emissive:0x0c0a0c})),cS,.015*tw,(y0+top)/2); me.receiveShadow=true; }
     { const dw=1.5*tw, dh=Yb(80)-y0, BR=0x6b4a28, br=.07*tw, lc=canv(128,256), g=lc.g, gr=g.createLinearGradient(0,0,0,256);   // the doors: warm lobby light behind glass
       gr.addColorStop(0,'#3a2a1c'); gr.addColorStop(.55,'#b07a3c'); gr.addColorStop(1,'#e8b56a'); g.fillStyle=gr; g.fillRect(0,0,128,256); g.fillStyle='rgba(255,240,210,.18)'; g.beginPath(); g.moveTo(14,0); g.lineTo(44,0); g.lineTo(8,256); g.lineTo(0,256); g.fill(); lc.tex.needsUpdate=true;
       put(flat(dw+.2*tw,Yb(95)-y0,new THREE.MeshBasicMaterial({color:0x050405})),dS,.02*tw,(y0+Yb(95))/2);
@@ -267,26 +253,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     const box=new THREE.Mesh(new THREE.BoxGeometry(cw,ch,cd),[new THREE.MeshBasicMaterial({map:side.tex}),new THREE.MeshBasicMaterial({map:side.tex}),dark,new THREE.MeshBasicMaterial({map:sof.tex}),new THREE.MeshBasicMaterial({map:front.tex}),dark]);
     box.position.copy(at(cS,cd/2+.02,Yb(119))); box.rotation.y=ry; scene.add(box);
     canopy={box,front,side,key:''}; STORE.openHide=STORE.openHide||{}; (STORE.openHide.theatre=STORE.openHide.theatre||[]).push(box);   // not seen from inside
-    const dS=alongX?bx:bz, ph=Yb(70)-Yb(14), pw=ph*27/40, bS=dS-Math.sign(cS-dS||1)*2.7*tw, W=2.3*tw;
-    post={...canv(270,400),key:''}; post.front=storefront({at,ry,tw,Yb,bx,bz,alongX,R,Wb,cS,post,win:{s:bS,hw:W/2-.14*tw,y0:Yb(36),y1:Yb(92)}});
-    // the box office set into the theatre's front wall: a glass window flush with it over a low counter, the ticket fox behind it, the showtimes small on the back wall
-    { const D=1.5*tw, H=Yb(104)-Yb(0), kc=at(bS,.13*tw-D/2,0), y0=SHARED.groundY(kc.x,kc.z), G=new THREE.Group(); G.position.set(kc.x,y0,kc.z); G.rotation.y=ry; scene.add(G);
-      const STONE=new THREE.MeshLambertMaterial({color:0x1e1a1c}), TRIM=new THREE.MeshLambertMaterial({color:0xc9a24a}), IN=new THREE.MeshLambertMaterial({color:0x5a1a22}),
-        GL=new THREE.MeshPhongMaterial({color:0x9fc4d8,specular:0xffffff,shininess:90,transparent:true,opacity:.22,depthWrite:false});
-      const bx=(w,h,d,m,x,y,z)=>{ const me=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m); me.position.set(x,y,z); me.castShadow=me.receiveShadow=true; G.add(me); return me; };
-      const cy=Yb(36)-Yb(0), gy=Yb(92)-Yb(0);
-      bx(W,H,.08*tw,IN,0,H/2,-D/2); for(const sx of [-1,1])bx(.14*tw,H,D,STONE,sx*(W/2-.07*tw),H/2,0); bx(W,H-gy,.16*tw,STONE,0,(H+gy)/2,D/2-.08*tw); bx(W,.08*tw,D,STONE,0,H-.04*tw,0);
-      bx(W,cy,.16*tw,STONE,0,cy/2,D/2-.08*tw); bx(W*1.02,.05*tw,.2*tw,TRIM,0,cy,D/2); bx(W*1.02,.04*tw,.06*tw,TRIM,0,gy,D/2);
-      const gl=new THREE.Mesh(new THREE.PlaneGeometry(W-.28*tw,gy-cy-.06*tw),GL); gl.position.set(0,(cy+gy)/2,D/2-.06*tw); G.add(gl);
-      const hole=new THREE.Mesh(new THREE.PlaneGeometry(.5*tw,.12*tw),new THREE.MeshBasicMaterial({color:0x0b0b0d})); hole.position.set(0,cy+.07*tw,D/2-.055*tw); G.add(hole);
-      const sg=canv(512,96); { const g=sg.g; g.fillStyle='#14100f'; g.fillRect(0,0,512,96); g.strokeStyle='#e8c060'; g.lineWidth=5; g.strokeRect(5,5,502,86); g.fillStyle='#ffd77a'; g.textAlign='center'; g.textBaseline='middle'; fit(g,'BOX OFFICE',440,60); g.fillText('BOX OFFICE',256,50); sg.tex.needsUpdate=true; }
-      const sign_=new THREE.Mesh(new THREE.PlaneGeometry(W*.8,W*.8*96/512),new THREE.MeshBasicMaterial({map:sg.tex})); sign_.position.set(0,(H+gy)/2,D/2+.005*tw); G.add(sign_);
-      const sc=canv(612,400), sw=W*.42, scr=new THREE.Mesh(new THREE.PlaneGeometry(sw,sw*400/612),new THREE.MeshBasicMaterial({map:sc.tex})); scr.position.set(W*.22,Yb(80)-Yb(0),-D/2+.06*tw); G.add(scr);
-      bx(sw+.06*tw,sw*400/612+.06*tw,.03*tw,STONE,W*.22,Yb(80)-Yb(0),-D/2+.04*tw);
-      G.updateMatrixWorld(); const lamp=new THREE.PointLight(0xffd9a0,4,3*tw,1.6); lamp.position.set(0,H*.85,0).applyMatrix4(G.matrixWorld); LITE.recs.push(lamp);
-      G.traverse(o=>{ o.userData.seenOut=true; }); box_o={G,sc,key:'',x:kc.x,z:kc.z,ox,oz};
-      { const c4=[[-W/2,-D/2],[W/2,-D/2],[W/2,D/2-.13*tw],[-W/2,D/2-.13*tw]].map(([x,z])=>new THREE.Vector3(x,0,z).applyAxisAngle(new THREE.Vector3(0,1,0),ry).add(kc)); SOL.up.push([Math.min(...c4.map(v=>v.x)),Math.min(...c4.map(v=>v.z)),Math.max(...c4.map(v=>v.x)),Math.max(...c4.map(v=>v.z))]); }
-    }
+    post={...canv(270,400),key:''}; post.front=storefront({at,ry,tw,Yb,bx,bz,alongX,R,Wb,cS,post});
     SIGNS.list.push({me:box,name:'THEATRE MARQUEE',place:'street',get:()=>({text:ovr.text,bri:ovr.bri,col:ovr.col}),
       set:o=>{ ovr.text=o&&o.text!=null?o.text:null; ovr.bri=o&&o.bri!=null?o.bri:null; ovr.col=o&&o.col!=null?o.col:null;
         const c=new THREE.Color(ovr.col||'#ffffff').multiplyScalar(ovr.bri==null?1:ovr.bri); for(const i of [0,1,4]){ const mm=box.material[i]; if(mm&&mm.color)mm.color.copy(c); } canopy.key=''; sign(); }});
@@ -294,7 +261,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     sign(); };
   const sign=()=>{ '@later'; if(canopy){ const k=lines().join('|'); if(k!==canopy.key){ canopy.key=k; drawCanopy(); } }
     if(post){ const k=posterSrc()+'|'+title()+'|'+own('poster'); if(k!==post.key){ post.key=k; drawPoster(); } }
-    if(box_o){ const k=CINEMA.upcoming(1)[0].start+'|'+ytOn(); if(k!==box_o.key){ box_o.key=k; CINEMA.drawTimes(box_o.sc.g,box_o.sc.cv.width,box_o.sc.cv.height); box_o.sc.tex.needsUpdate=true; } } };
+ };
   // the showtimes, as the box office's screen draws them: the film on now and the next ones, in the viewer's own time
   CINEMA.drawTimes=(g,W,H,n=6)=>{ '@later'; const L=CINEMA.upcoming(n), P=CINEMA.playing(), hm=t=>new Date(t).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}).toUpperCase();
     g.fillStyle='#0b0c10'; g.fillRect(0,0,W,H); g.fillStyle='#d8a845'; g.fillRect(0,0,W,H*.15); g.fillStyle='#0b0c10'; g.textAlign='center'; g.textBaseline='middle'; fit(g,'SHOWTIMES',W*.8,H*.1); g.fillText('SHOWTIMES',W/2,H*.075);

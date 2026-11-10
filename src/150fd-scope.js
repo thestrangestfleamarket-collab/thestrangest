@@ -55,7 +55,7 @@ const SCOPE={alt:35,az:270,va:0,vz:0,mag:25,focus:.18,track:true,lines:true,filt
     /* ---------- the page: the eyepiece's round field and the knobs beside it ---------- */
     const O=document.createElement('div'); O.id='scopev'; O.hidden=true; O.style.cssText='position:fixed;inset:0;z-index:30;background:#000;display:flex;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#3b2a1e';
     const cv=document.createElement('canvas'); cv.style.cssText='flex:1;min-width:0;height:100%;cursor:grab;touch-action:none'; O.appendChild(cv);
-    const P=document.createElement('div'); P.style.cssText='width:min(250px,40vw);overflow:auto;padding:12px;background:#ece5d3;border-left:3px solid #3b2a1e;zoom:var(--uiz,1)'; O.appendChild(P);
+    const P=document.createElement('div'); P.className='ml'; P.style.cssText='width:min(250px,40vw);overflow:auto;padding:12px;background:#ece5d3;border-left:3px solid #3b2a1e;zoom:var(--uiz,1)'; O.appendChild(P);
     const css=document.createElement('style'); css.textContent='#scopev .row{margin:8px 0} #scopev .row>b{display:block;margin-bottom:4px} #scopev .btn{font:inherit;padding:4px 7px;margin:0 3px 3px 0;background:#ece5d3;color:#3b2a1e;border:2px solid #3b2a1e;cursor:pointer} #scopev .btn.on{background:#3b2a1e;color:#ece5d3} #scopev select,#scopev input[type=range]{width:100%;font:inherit} #scopev .info{color:#6a4a32;line-height:1.5}';
     document.head.appendChild(css); document.body.appendChild(O);
     const MAGS=[[1,'NAKED EYE'],[6,'FINDER 6X'],[25,'25X'],[50,'50X'],[100,'100X'],[200,'200X']], FOV=m=>m===1?100:m===6?7:50/m;
@@ -124,7 +124,7 @@ const SCOPE={alt:35,az:270,va:0,vz:0,mag:25,focus:.18,track:true,lines:true,filt
       const eqv=(ra,dec)=>hv(cs(dec)*cs(ra),cs(dec)*sn(ra),sn(dec));
       // the light: the Sun's height sets the sky (New York's glow keeps it from black), the weather covers it
       const sun=where('sun',jd), sunH=eq2hor(sun.ra,sun.dec,lst), sv=eqv(sun.ra,sun.dec), sunOff=Math.acos(cl(sv[0]*t[0]+sv[1]*t[1]+sv[2]*t[2],-1,1))*R2D;
-      const day=cl((sunH.alt+12)/12,0,1), Wx=(SCOPE.wx&&SCOPE.wx(jd))||(window.WX&&WX.now)||{cloud:0,rain:0,snow:0,fog:0}, wet=Math.max(Wx.rain||0,Wx.snow||0), cover=cl(((Wx.cloud||0)-.2)/.7,0,1), filt=SCOPE.filter?1e-5:1;
+      const day=cl((sunH.alt+12)/12,0,1), Wx=(SCOPE.wx&&SCOPE.wx(jd))||(WX&&WX.now)||{cloud:0,rain:0,snow:0,fog:0}, wet=Math.max(Wx.rain||0,Wx.snow||0), cover=cl(((Wx.cloud||0)-.2)/.7,0,1), filt=SCOPE.filter?1e-5:1;
       let lim=cl(8.3-11*day,-4,8.3)-2*cover-3*(Wx.fog||0); if(SCOPE.mag===1)lim-=3; if(SCOPE.filter)lim=-30;   // the eye's 7 mm against the tube's 80
       const sky=day*filt*(1-.4*cover); g.fillStyle='#000'; g.fillRect(0,0,w,h); g.save(); g.beginPath(); g.arc(cx,cy,R,0,7); g.clip();
       g.fillStyle=`rgb(${Math.round(10+120*sky)},${Math.round(13+160*sky)},${Math.round(26+210*sky)})`; g.fillRect(cx-R,cy-R,2*R,2*R);

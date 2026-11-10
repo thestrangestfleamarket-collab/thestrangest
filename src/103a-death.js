@@ -4,12 +4,12 @@ import {GHOSTS, INV, keys, LEVELS, ONLINE, PH, pos, RAG, ROOMS, st, UI, VIT, W3}
 import {renderer, scene} from './004-main.js';
 import {OWNED, SAVE} from './005-save.js';
 import {FADE, QS, STORE, SYS, TILE, wait} from './006-map-pre.js';
-{ const T=TILE, el=document.createElement('div'), css=document.createElement('style'); el.id='dead'; el.hidden=true;
+{ const T=TILE, el=document.createElement('div'), css=document.createElement('style'); el.id='dead'; el.className='mlb'; el.hidden=true;
   css.textContent='#dead{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top,0px));transform:translateX(-50%);font:12px var(--pixel);color:var(--key);background:var(--panel);border:2px solid var(--line);padding:6px 10px;z-index:15;pointer-events:none;zoom:var(--uiz,1)} #dead[hidden]{display:none}';
   document.head.appendChild(css); document.body.appendChild(el);
   const DEAD='YOU ARE DEAD. FLOAT TO THE BATH HOUSE ON THE LAKE\'S ISLAND.', note=(t,s)=>{ el.textContent=t; el.hidden=false; clearTimeout(note.t); if(s)note.t=setTimeout(()=>{ if(VIT.dead)note(DEAD); else el.hidden=true; },s*1000); };
   const MH=T/.84, WAIT=10, HOUR=36e5; let S=null, gh=0, rise=-1, busy=false, dp=null, wt=0, wt0=0, wn=0;
-  const sheet=()=>{ '@later'; if(S||!window.GHOSTS||!GHOSTS.cloth)return S; const MV=SHARED.BOD.YS(24)/.84, mat=new THREE.MeshToonMaterial({color:0xf2f0ea,emissive:0x2a3040,gradientMap:W3.GP,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false}), em=new THREE.MeshBasicMaterial({color:0x0c0c10,transparent:true,opacity:0}), eg=new THREE.CircleGeometry(1,10);
+  const sheet=()=>{ '@later'; if(S||!GHOSTS||!GHOSTS.cloth)return S; const MV=SHARED.BOD.YS(24)/.84, mat=new THREE.MeshToonMaterial({color:0xf2f0ea,emissive:0x2a3040,gradientMap:W3.GP,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false}), em=new THREE.MeshBasicMaterial({color:0x0c0c10,transparent:true,opacity:0}), eg=new THREE.CircleGeometry(1,10);
     S=GHOSTS.cloth(1.15,true,17,.24,mat,pos.x/MH,SHARED.py/MV+1.5,pos.z/MH); S.MV=MV; S.mat=mat; S.em=em; S.eyes=[-1,1].map(()=>{ const e=new THREE.Mesh(eg,em); e.scale.set(.05*MH,.075*MV,1); e.renderOrder=4; scene.add(LEVELS.own(e,'*')); return e; }); return S; };
   const look=on=>{ W3.mesh.visible=!on; W3.ghost=on; if(S){ S.me.visible=on; for(const e of S.eyes)e.visible=on; } };
   const V=new THREE.Vector3();

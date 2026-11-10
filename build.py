@@ -46,6 +46,7 @@ raw, page = page, data(page[:i] + art + body + page[j:])
 open('dist/market.html', 'w').write(page)
 
 open('dist/door.html', 'w').write(read('src/door/door.html'))
+for f in ['app.webmanifest', 'icon-192.png', 'icon-512.png']: shutil.copy('src/door/' + f, 'dist/' + f)   # the installable app: its manifest and icon, handed to anyone
 # the owners' map editor: its own light page (no game), the ground picture beside it (tools/topmap.cjs)
 EDITOR = False  # the map editor is archived (owner, 5 Nov 2026)
 shutil.rmtree('dist/edmap', ignore_errors=True)
@@ -127,12 +128,18 @@ for n, c in CH['code'].items(): open('dist/g/x-' + n + '.js', 'w').write('"use s
 m = subprocess.run(['node', 'tools/bundle.cjs', 'dist/g/game.js', 'dist/g'] + ['dist/g/x-' + n + '.js' for n in CH['code']], check=True, capture_output=True, text=True).stdout.strip()
 for f in os.listdir('dist/g'):
     if f.endswith('.js') and 'https://cdn.jsdelivr.net/npm/' in read('dist/g/' + f): sys.exit('dist/g/' + f + ' still asks cdn.jsdelivr.net for a package: the website bundles them')
-open('dist/g/market.html', 'w').write('<!doctype html><meta name="market-build" content="' + bv + '"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><title>The Market</title><body bgcolor=#0e1016><script type=module src=/g/' + m + '></script>')
+# what the start always fetches is asked for with the page, beside the game's own file, not after that file has come and been read
+pre = ''.join('<link rel=modulepreload href=/g/' + f + '>' for f in sorted(set(re.findall(r'(?:from|import)\s*"\./(c\.[0-9a-f]+\.js)"', read('dist/g/' + m))))) \
+    + ''.join('<link rel=preload as=script href=/g/' + f + '>' for f in sorted(os.listdir('dist/g')) if re.match(r'rig\..*\.js$', f)) \
+    + ''.join('<link rel=preload as=fetch crossorigin href=/g/' + json.loads(n) + '>' for f in used for n in [names[f], bins.get(f)] if n) \
+    + ''.join('<link rel=preload as=fetch crossorigin href=/g/' + f + '>' for f in sorted(os.listdir('dist/g')) if re.match(r'x-later\..*\.js$', f))
+open('dist/g/market.html', 'w').write('<!doctype html><meta name="market-build" content="' + bv + '"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><title>The Market</title><link rel=manifest href=/app.webmanifest><link rel=apple-touch-icon href=/icon-192.png><meta name=theme-color content=#0e1016><meta name=mobile-web-app-capable content=yes>' + pre + '<body bgcolor=#0e1016><script type=module src=/g/' + m + '></script>')
 pages = pages[:2] + ['dist/g/market.html'] + (['dist/editor.html'] if EDITOR else [])
 for f in pages:
     t = read(f)
     if t.count('<!--') != t.count('-->') or not t.startswith('<') or t.startswith('<!--'):
         sys.exit(f + ': broken page (an unclosed <!-- or no page at the top)')
+open('dist/sw.js', 'w').write(read('src/door/sw.js').replace('__KEEP__', json.dumps(sorted('/g/' + f for f in os.listdir('dist/g') if f != 'market.html'))))   # the service worker, with this build's files: what it keeps, and all it keeps
 open('dist/.assetsignore', 'w').write('/market.html\n')   # the tests' single-file page: never handed out, and past the 25 MiB a Workers asset may be
 if subprocess.run(['node', 'tools/map.cjs', 'docs/MAP.md'], capture_output=True).returncode:
     print('docs/MAP.md not refreshed (node tools/map.cjs failed: is acorn installed?)')

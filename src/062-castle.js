@@ -1,10 +1,10 @@
 // THE CASTLE: its curtain walls, drums, gate and well in Central Park (built with the park, not at the start) and the stairs down to the dungeon.
 import {SHARED, THREE} from './003-shx.js';
-import {PARK, pos} from './003b-systems.js';
+import {BATCH, PARK, pos} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {CASTLE, cutWalls, FIX, grab, lamps, MAPG, MODS, SOL, STN, TILE} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
-import {BATCH, OBJ} from './008-batch.js';
+import {OBJ} from './008-batch.js';
 const gboxS=(b,kind='L',dy=0,ys=1)=>{ '@later'; const X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, Y=z=>SHARED.BOD.YS(z*ys)+dy, {faceTex,bq,C}=SHARED.BOD, {x0,x1,y0,y1,z0,z1}=b; if(b.foot&&z1-z0<.05)return; const k=(b.em?2:1)*ys*(b.tk||1), H=Math.max(1,Math.round((z1-z0)*k));   // (tk: fewer texels to a unit, for a tall wall)
   if(b.em&&kind==='L')kind='B';
   const side=(nx,ny,P,Q,z)=>C(b.fs?b.fs(nx,ny,P,Q,z-z0,nx?.68:.84):nx&&b.fi?b.fi(Q,z):ny&&b.fj?b.fj(P,z):b.c);

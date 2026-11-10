@@ -1,10 +1,9 @@
 // THE ARCADE: the arcade on Main Street as one painted block (its neon ARCADE front); its inside is built off the map when you go in: black walls, four cabinets along each side wall (double-click one to play its game; the games register in 059g), and the holodeck behind the back wall (double-click its door): an empty green grid with a panel on its far wall (double-click it for the list of adventures, each a program in STORE.holo.programs).
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INV, ROOMS, TEXT, UI, WIELD} from './003b-systems.js';
+import {BATCH, FORAGE, INV, ROOMS, TEXT, UI, WIELD} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {BLDK, FADE, FIX, grab, LEVEL, OFFDX, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
-import {BATCH} from './008-batch.js';
 import {LAMPS} from './014-gamekit.js';
 import {BLOCKS} from './038zb-blocks.js';
 import {FACADES} from './038zc-facades.js';
@@ -43,12 +42,16 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
     if(z>=110&&z<170&&c>=c0-8&&c<c0+35*k6+8)return MS.neon(on,c,z,k6,[255,80,200],f)||sh([24,16,32],f);
     return null; };
   const wall=BLOCKS.brick([96,58,80]);
+  // Polyfork #12 (the bodega's building, 068a): its only door is the double door on its chamfered front corner; s=-1 when it stands mirrored. Its walls, that door's spot outside and where you come out.
+  SHARED.pfDoor=(x,zf,zi,s)=>{ const M=TILE/.84, c=1.29*M, xa=x-5.53*M*s, xb=x+4.41*M*s, za=zf+zi*11.06*M, zb=zf+zi*1.12*M, dx=x+3.12*M*s, dz=zf+zi*2.41*M, nx=s*Math.SQRT1_2, nz=-zi*Math.SQRT1_2, r=(a,b,c_,d)=>[Math.min(a,c_),Math.min(b,d),Math.max(a,c_),Math.max(b,d)];
+    return {sol:[r(xa,za,xb-c*s,zb),r(xb-c*s,za,xb,zb-zi*c)],door:[dx+nx*.25*TILE,0,dz+nz*.25*TILE],out:[dx+nx*1.3*TILE,dz+nz*1.3*TILE,0,Math.atan2(nx,nz)]}; };
+  const PFA=WP.arcade.pf==='bodega'?SHARED.pfDoor(X((LW.x0+LW.x1)/2),Z(LW.y1),Math.sign(Z(LW.y1-1)-Z(LW.y1)),-1):null;
   if(WP.arcade.pf==='bodega'){ const fy=LW.y1, X=SHARED.BOD.X, Z=SHARED.BOD.Z; (SHARED.PFCORNER=SHARED.PFCORNER||[]).push({id:'arcade',x:X((LW.x0+LW.x1)/2),zf:Z(fy),zi:Math.sign(Z(fy-1)-Z(fy)),rot:TA.hd(0),flip:true}); }   // the Hudson entrance's east corner in the bodega's building, mirrored (owner, 8 Nov 2026)
   else FACADES.make({id:'arcade',L,pt:TA.pt,z1:L.h,wall:[96,58,80],trim:[150,120,170],frame:[58,40,70],seed:53,ground:118,door:{u:lcx,w:.9},glass:true,sign:{text:'ARCADE',color:[255,80,200],bg:[24,16,32]}});
   if(0)BLOCKS.make({x0:LW.x0,x1:LW.x1,y0:LW.y0,y1:LW.y1,z0:0,z1:L.h,kind:'A',turn:TA,roof:(x,y)=>sh([40,36,44],.92+.12*hs(Math.floor(x*4),Math.floor(y*4),61)),
     paint:(side,u,z,f)=>(side==='f'&&front(u-L.x0,z,f))||(z>L.h-10?sh([60,44,70],f):wall(u,z,f))});
   BATCH.build(MKA); for(const me of Object.values(BATCH.meshes)){ me.castShadow=true; me.receiveShadow=true; } BATCH.meshes={};
-  { const r=box4(LW.x0,LW.y0,LW.x1,LW.y1); SOL.up.push(r); FIX.up.push([r[0],r[1],0,r[2],r[3],Y(L.h)]); }
+  for(const r of PFA?PFA.sol:[box4(LW.x0,LW.y0,LW.x1,LW.y1)]){ SOL.up.push(r); FIX.up.push([r[0],r[1],0,r[2],r[3],Y(L.h)]); }
   MS.unplace('ARCADE'); MS.unplace('THE ARCADE');
 
   const AX=480+OFFDX/BLDK, AR={x0:AX,x1:AX+16,y0:-100,y1:-87}, HD={x0:AX,x1:AX+16,y0:-113,y1:-100}, cx=(AR.x0+AR.x1)/2, hy=(HD.y0+HD.y1)/2, WH=130, DW=.8, DH=95;
@@ -261,6 +264,7 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
   ROOMS.off.arcade={name:'THE ARCADE',ar:AR,addSol:r=>{ AS.push(r); SOL.up.push(r); },box:{x0:wb[0],z0:wb[1],x1:wb[2],z1:wb[3],y0:-1,y1:Y(WH+40)},rooms:[rb(AR),rb(HD)],need:()=>LOAD('arcade','later'),
     build:()=>{ AG=new THREE.Group(); AG.name='arcade-in'; scene.add(AG); AS=[]; PA=ROOMS.part(AG,build,MKA); return PA; },unbuild,
     spawn:[X(cx),Z(AR.y1-1.3),0,Math.PI],out:[...at(lcx,L.y1+.9),0,TA.hd(0)],door:(d=>[d[0],Y(0),d[1]])(at(lcx,L.y1+.25)),exit:[X(cx),0,Z(AR.y1-.25)],exitName:'OUT TO MAIN STREET'};
+  if(PFA)Object.assign(ROOMS.off.arcade,{door:PFA.door,out:PFA.out});
   { const B=SHARED.BOD, tx=w=>(w-B.XS(0))/(B.XS(1)-B.XS(0)), tz=w=>(w-B.ZS(0))/(B.ZS(1)-B.ZS(0)); if(LEVEL.homes&&!LEVEL.homes.game_master)LEVEL.homes.game_master=[+tx(X(cx-2.2)).toFixed(2),+tz(Z(AR.y0+1.6)).toFixed(2),0,'arcade']; }   // the Game Master by the holodeck's door (owner, 5 Nov 2026)
   { const sp=ROOMS.off.arcade.spawn; STORE.places.push(['THE ARCADE',sp[0],sp[1],'up','off',sp[3]],['THE HOLODECK',X(cx),Z(hy+3),'up','off',Math.PI]); }
   window.ARCDBG=()=>({built:!!PA,cabs:PA?PA.things.filter(t=>/^PLAY /.test(t.name)).length:0,things:PA?PA.things.map(t=>t.name):[],holo:{programs:HOLO.programs.map(P=>P.name),open:!hp.hidden,run:HOLO.run?HOLO.run.P.name:null,rows:hp.querySelectorAll('button[data-run]').length}});

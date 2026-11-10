@@ -1,9 +1,8 @@
 // NPCs: makeNPC builds a body with self-shading and its cel material; the NPC list, culling and the street lane.
 import {SHARED, THREE} from './003-shx.js';
-import {B64} from './003a-skin.js';
 import {ARCH, CHARS, CLIP, CULL, LEVELS, NPCS, ONLINE, PARK, PONDS, pos, ROOMS, SELFSH, UI, VIT, W3, WALKS, WINDOWS} from './003b-systems.js';
 import {PPU, renderer, scene} from './004-main.js';
-import {ASTEP, CASTLE, LEVEL, MAPG, MAPSTAIR, MODS, RING, SOL, STN, STORE, SYS, TILE, ZU} from './006-map-pre.js';
+import {ASTEP, CASTLE, LEVEL, MAPG, MAPSTAIR, MODS, RING, SKINCULL, SOL, STN, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
 import {RINGX} from './065-ring.js';
 const NOYOU={x:1e6,y:0,z:1e6}, FOOT=new WeakMap();
@@ -21,8 +20,7 @@ vec3 rock(vec3 c,vec3 p0,float sd){ vec3 p=p0*3.+sd*17.3, i=floor(p), f=fract(p)
   if(edge<.07)o=c*(edge<.035?.3:.5);
   return o; }`;
 const NPCMID=new THREE.Vector3();
-function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'down',hp:1,sta:1}; const b=B64, geo=o.geo||new THREE.BufferGeometry();
-  if(!o.geo){ const P=new Float32Array(b(D.p).buffer); geo.setAttribute('position',new THREE.BufferAttribute(P,3)); geo.setAttribute('color',new THREE.BufferAttribute(b(D.c),3,true)); geo.setAttribute('reg',new THREE.BufferAttribute(Float32Array.from(b(D.r)),1)); }
+function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'down',hp:1,sta:1}; const geo=o.geo;
   const RG=geo.attributes.reg.array; geo.computeVertexNormals();
   N.renorm=()=>{ geo.computeVertexNormals(); const P=geo.attributes.position.array, Nn=geo.attributes.normal.array, acc=new Map(); let mx=0; for(let i=0;i<P.length;i++)mx=Math.max(mx,Math.abs(P[i]));
     const key=mx*2e3<65000?i=>((Math.round(P[i]*2e3)+65536)*131072+Math.round(P[i+1]*2e3)+65536)*131072+Math.round(P[i+2]*2e3)+65536:i=>Math.round(P[i]*2e3)+','+Math.round(P[i+1]*2e3)+','+Math.round(P[i+2]*2e3);
@@ -79,9 +77,9 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
     s.vertexShader='varying vec3 vWW;\n'+s.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vWW=(modelMatrix*vec4(transformed,1.)).xyz;');
     s.fragmentShader='uniform float uLv,uSelf,uMine; uniform mat4 uLVP; uniform sampler2D uSM; varying vec3 vWW;\n'+s.fragmentShader.replace('#include <opaque_fragment>','#include <opaque_fragment>\n if(uLv>1.5&&uMine>.5){ vec4 sp=uLVP*vec4(vWW,1.); vec3 q=sp.xyz/sp.w*0.5+0.5; if(q.x>0.&&q.x<1.&&q.y>0.&&q.y<1.&&q.z-0.006>texture2D(uSM,q.xy).r) gl_FragColor.rgb*=uSelf; }');
     s.fragmentShader='uniform float uEye; uniform vec3 uEyeC; varying float vS,vR,vF; varying vec3 vO;\n'+DENIM_GLSL+'\n'+s.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n if(vF>1.5)diffuseColor.rgb=rock(diffuseColor.rgb,vO,fract(vF)); else if(vF>.5)diffuseColor.rgb=denim(diffuseColor.rgb,vO); diffuseColor.rgb*=vS>.55?.36:vS>.15?.6:1.;').replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(vNormal); vec3 nonPerturbedNormal=normal;')
-      .replace('#include <opaque_fragment>','#include <opaque_fragment>\n if(abs(vR-uEye)<.5)gl_FragColor=vec4(uEyeC,1.);').replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*0.025;'); };
+      .replace('#include <opaque_fragment>','#include <opaque_fragment>\n if(abs(vR-uEye)<.5)gl_FragColor=vec4(uEyeC,1.);'); W3.rim(s); };
   toon.customProgramCacheKey=()=>'npctoon';
-  const me=o.skin?new THREE.SkinnedMesh(geo,mat):new THREE.Mesh(geo,mat); me.castShadow=true; me.receiveShadow=true; N.me=me; N.flat=mat; N.toon=toon; if(o.skin){ me.add(o.skin.bones[0]); me.bind(o.skin.skeleton); me.frustumCulled=false; }
+  const me=o.skin?new THREE.SkinnedMesh(geo,mat):new THREE.Mesh(geo,mat); me.castShadow=true; me.receiveShadow=true; N.me=me; N.flat=mat; N.toon=toon; if(o.skin){ me.add(o.skin.bones[0]); me.bind(o.skin.skeleton); SKINCULL(me); }
   const H=o.metres/.84*TILE, s=H/tall, body=new THREE.Group(), g=new THREE.Group(); body.add(me); body.scale.set(s,s*ZU*24/TILE,s); g.add(body); MAPG[o.group||'down'].add(g);
   const TX=x=>(x+27)*TILE+STN.DX, TZ=y=>(y+73)*TILE+STN.DZ, LN=o.lane||{x0:TX(-29.5),x1:TX(-28.6),z0:TZ(-84.2),z1:TZ(-61.9)}, LX0=LN.x0, LX1=LN.x1, LZ0=LN.z0, LZ1=LN.z1, QS=new URLSearchParams(location.search), ground=o.ground||MODS.station.ground, longX=LX1-LX0>LZ1-LZ0;
   const st={x:o.x??TX(-29),z:o.z??TZ(o.at),h:Math.PI/2,to:null,wait:+(QS.get('npcwait')||2),ph:Math.random()*6,R:o.radius*TILE,v:o.speed*TILE};
@@ -113,6 +111,7 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
       else{ want=Math.atan2(ex,ez); const turn=Math.abs(((want-st.h+Math.PI*3)%(Math.PI*2))-Math.PI);
         if(turn<.5){ const step=Math.min(d,st.v*dt), nx=st.x+ex/d*step, nz=st.z+ez/d*step;
           const ns=st.L?N.nose(nx,nz):null; if(!N.free(nx,nz,st.R)||ns&&!N.free(ns.x,ns.z,st.R)){ if(st.goIn&&d<st.R+1.6*TILE){ goIn(); return; } st.to=null; st.wait=.5; }
+          else if(!N.fly&&!N.tiny&&(N.lv||'up')==='up'&&pedHold(st.x,st.z,nx,nz)){ st.held=0; }
           else if(!N.fly&&!N.tiny&&(!VIT.dead&&gap(you.x,you.z,nx,nz)<st.R+.35&&gap(you.x,you.z,nx,nz)<gap(you.x,you.z)&&Math.abs(SHARED.py-g.position.y)<2||NPCS.inway(N,nx,nz))){ if((st.held=(st.held||0)+dt)>2){ st.to=null; st.held=0; st.wait=1; } }
           else{ st.x=nx; st.z=nz; moving=true; st.held=0; } } } }
     else{ if(st.face)want=Math.atan2(st.face.x-st.x,st.face.z-st.z); if(!st.hold&&(st.wait-=dt)<=0)pick(); }
@@ -132,15 +131,30 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
     N.LVP.value.multiplyMatrices(N.smCam.projectionMatrix,N.smCam.matrixWorldInverse); const ms=[]; g.traverse(o=>{ if(o.isMesh){ ms.push([o,o.material]); o.material=N.depthMat; } });
     renderer.setRenderTarget(smOf()); renderer.clear(); renderer.render(g,N.smCam); renderer.setRenderTarget(null); for(const [o,m] of ms)o.material=m; };
   N.selfSh=!o.noSelf;
-  N.g=g; N.st=st; N.body=body; N.H=H; if(CHARS.apply)CHARS.apply(N); if(ARCH.has(N.key)){ g.visible=false; N.archived=true; return N; } NPCS.push(N); return N; }
+  N.g=g; N.st=st; N.body=body; N.H=H; if(CHARS.apply)CHARS.apply(N); if(ARCH.has(N.key)){ g.visible=false; N.archived=true; (ARCH.built=ARCH.built||[]).push(N.key); return N; } NPCS.push(N); return N; }
 SYS.add('shadow',r=>{ for(const N of NPCS)if(N.selfSh)try{ N.shadowPass(r); }catch(e){ if(!N.shErr){ N.shErr=1; console.warn('NPC shadow',N.key,e); } } },'npc shadows');
 const STLANE={x0:SHARED.BOD.XS(SHARED.BOD.MAP.x0+2),x1:Math.min(SHARED.BOD.XS(SHARED.BOD.MAP.x1-2),RINGX.bound.x1-TILE),z0:SHARED.BOD.ZS(-76.3),z1:Math.min(SHARED.BOD.ZS(RING.wy1-1),RINGX.bound.z1-TILE)}, STHOLE=[SHARED.BOD.XS(MAPSTAIR.x0-.6),SHARED.BOD.ZS(MAPSTAIR.y0),SHARED.BOD.XS(MAPSTAIR.x1+.6),SHARED.BOD.ZS(MAPSTAIR.y1+.6)],
   CSHOLE=[SHARED.BOD.XS(CASTLE.stair.x0-.6),SHARED.BOD.ZS(CASTLE.stair.y0-.6),SHARED.BOD.XS(CASTLE.stair.x1+.6),SHARED.BOD.ZS(CASTLE.stair.y1+.6)], CSB=[SHARED.BOD.XS(CASTLE.b[0]-.5),SHARED.BOD.ZS(CASTLE.b[2]-.5),SHARED.BOD.XS(CASTLE.b[1]+.5),SHARED.BOD.ZS(CASTLE.b[3]+.5)],
   inBox=(b,x,z,R)=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R,
   inBuilding=(x,z,R)=>ROOMS.boxes().some(b=>b.y0<1&&x>b.x0-R&&x<b.x1+R&&z>b.z0-R&&z<b.z1+R)||(MODS.apts&&MODS.apts.inside&&MODS.apts.inside(x,z))||inBox(CSB,x,z,R),
   stfree=(x,z,R)=>RINGX.inside(x,z,R)&&!inBox(STHOLE,x,z,R)&&!inBox(CSHOLE,x,z,R)&&!inBuilding(x,z,R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R)&&!FOUNT.wet(x,z,R)&&!PONDS.wet(x,z,R);
+// the rules of the street (owner, 9 Nov 2026: "they should know not to stand in the street , rules of the city"): a walker keeps to the sidewalks and paths, crosses Market St only on a crosswalk, and at the park gate's only on WALK
+const RDX=x=>(x-SHARED.BOD.XS(0))/(SHARED.BOD.XS(1)-SHARED.BOD.XS(0)), RDZ=z=>(z-SHARED.BOD.ZS(0))/(SHARED.BOD.ZS(1)-SHARED.BOD.ZS(0)),
+  xingAt=(x,y)=>{ const R=SHARED.BOD.road; return R&&R.xw?R.xw.find(w=>{ const u=w.ax==='x'?x:y, v=w.ax==='x'?y:x; return u>=w.a0&&u<=w.a1&&v>=w.l0-.5&&v<=w.h0+.5; }):null; },
+  inRoad=(x,z)=>{ const R=SHARED.BOD.road; return !!(R&&R.at(RDX(x),RDZ(z))); },
+  stroad=(x,z)=>inRoad(x,z)&&!xingAt(RDX(x),RDZ(z)),
+  pedfree=(x,z,R)=>stfree(x,z,R)&&!stroad(x,z),
+  // stepping off the kerb onto the lit crossing while it does not say WALK: wait
+  pedHold=(x0,z0,x1,z1)=>{ if(inRoad(x0,z0)||!inRoad(x1,z1))return false; const w=xingAt(RDX(x1),RDZ(z1)), R=SHARED.BOD.road; return !!(w&&w.lit&&R.walk&&!R.walk()); },
+  // the nearest sidewalk point to one in the road (any: a crosswalk too; straight across to the nearer kerb), else the point itself
+  offRoad=(x,z,any)=>{ if(!(any?inRoad(x,z):stroad(x,z)))return {x,z}; const T=TILE; for(let d=.5*T;d<12*T;d+=.5*T)for(const s of [1,-1]){ const q=z+s*d; if(!inRoad(x,q))return {x,z:q+s*.6*T}; } return {x,z}; };
+window.PEDFREE=pedfree; window.STROAD=stroad;
 const ROAM={L:STLANE,wallZ:SHARED.BOD.ZS(PARK.y0+PARK.oy),gate:[SHARED.BOD.XS(PARK.gate[0]+PARK.ox+.8),SHARED.BOD.XS(PARK.gate[1]+PARK.ox-.8)]};
 window.ROAMDBG=()=>ROAM;
+// a walk to the other side of Market St: to the nearest crosswalk's near end, then its far end
+ROAM.across=(a,b)=>{ const R=SHARED.BOD.road; if(!R||!R.xw)return null; const ya=RDZ(a.z), yb=RDZ(b.z), X=SHARED.BOD.XS, Z=SHARED.BOD.ZS; let best=null, bd=1e9;
+  for(const w of R.xw){ if(w.ax!=='x'||!((ya<w.l0&&yb>w.h0)||(ya>w.h0&&yb<w.l0)))continue; const u=(w.a0+w.a1)/2, d=Math.abs(u-RDX(a.x))+Math.abs(u-RDX(b.x)); if(d<bd){ bd=d; best=[{x:X(u),z:Z(ya<w.l0?w.l0-.6:w.h0+.6)},{x:X(u),z:Z(ya<w.l0?w.h0+.6:w.l0-.6)}]; } }
+  return best; };
 // HOME RANGES: every character has a home, a circle it is usually found in (st.home, also N.home: {x, z, r, id, shop}; r 0 stays put). A home near a building's door (HOMES.doors: every inside but your apartment) has that building as its shop: now and then the character walks to the door and goes in for a while, hidden, its work skipped.
 // The level file can place it (LEVEL.homes[id] = [x, y, r, shop] in map tiles, shop optional (null for none); id is the key, then key#2, key#3 for more of the same);
 // otherwise a character first put on Market St takes the next street spot, spread along both sidewalks, and anyone else keeps the spot it was made at.
@@ -173,7 +187,7 @@ HOMES.door=h=>{ '@later'; if(h.shop===null)return null; const L=HOMES.doors(); i
   return L.find(d=>d.id===h.shop)||null; };
 HOMES.goIn=st=>{ const h=st.home; st.goIn=null; if(!h||!(h.r>0)||Math.random()>=HOMES.IN)return false; const d=HOMES.door(h); if(!d)return false; st.to={x:d.x,z:d.z}; st.next=null; st.goIn=d.id; return true; };
 HOMES.pick=(st,free,lane)=>{ '@later'; const h=st.home; if(!h||!(h.r>0))return false; if(WALKS.pick&&WALKS.pick(st))return true; if(HOMES.goIn(st))return true;
-  for(let k=0;k<12;k++){ let to=HOMES.inside(h); if(lane)to={x:Math.max(lane.x0,Math.min(lane.x1,to.x)),z:Math.max(lane.z0,Math.min(lane.z1,to.z))}; if(free(to.x,to.z,st.R)){ st.to=to; st.next=null; return true; } } return false; };
+  for(let k=0;k<12;k++){ let to=HOMES.inside(h); if(lane)to={x:Math.max(lane.x0,Math.min(lane.x1,to.x)),z:Math.max(lane.z0,Math.min(lane.z1,to.z))}; if(free(to.x,to.z,st.R)&&!stroad(to.x,to.z)){ st.to=to; st.next=null; return true; } } return false; };
 window.HOMES=HOMES; window.STFREE=stfree;
 window.HOMESDBG=wake=>NPCS.filter(N=>{ if(wake&&N.st)N.st.wait=0; return true; }).filter(N=>N.st&&N.st.home&&N.st.home.r>0).map(N=>[N.key,N.st.home.shop===undefined?'?':N.st.home.shop,N.st.goIn||'',N.st.inT!=null?+N.st.inT.toFixed(0):'',N.far?'far':'near']);
 const DUN=()=>{ const D=MODS.dungeon; if(!D)return null; const B=D.B, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, lane={x0:X(B.x0+1.2),x1:X(B.x1-1.2),z0:Z(B.y0+1.2),z1:Z(B.y1-1.2)},
@@ -181,7 +195,8 @@ const DUN=()=>{ const D=MODS.dungeon; if(!D)return null; const B=D.B, X=SHARED.B
   let p={x:(lane.x0+lane.x1)/2,z:(lane.z0+lane.z1)/2}; for(let k=0;k<60;k++){ const q={x:lane.x0+Math.random()*(lane.x1-lane.x0),z:lane.z0+Math.random()*(lane.z1-lane.z0)}; if(free(q.x,q.z,.4*TILE)){ p=q; break; } }
   return {lv:'down',group:MAPG.dungeon?'dungeon':'down',lane,free,ground:(x,z)=>D.ground(x,z),roam:false,x:p.x,z:p.z,dun:true}; };
 ROAM.pick=(st,free)=>{ '@later'; if(st.home&&!(st.home.r>0))return false; if(WALKS.pick&&WALKS.pick(st))return true; for(let k=0;k<12;k++){ const a=Math.random()*Math.PI*2, r=(2+Math.random()*7)*TILE, to={x:st.x+Math.sin(a)*r,z:st.z+Math.cos(a)*r};
-    if(!free(to.x,to.z,st.R))continue;
+    if(!free(to.x,to.z,st.R)||stroad(to.x,to.z))continue;
+    const X=ROAM.across(st,to); if(X){ st.to=X[0]; st.next=X[1]; return true; }
     if((st.z<ROAM.wallZ)!==(to.z<ROAM.wallZ)){ st.next=to; st.to={x:ROAM.gate[0]+Math.random()*(ROAM.gate[1]-ROAM.gate[0]),z:ROAM.wallZ}; } else{ st.to=to; st.next=null; } return true; } return false; };
 NPCS.SHADE=40*TILE; NPCS.near=(x,z,r=NPCS.SHADE)=>{ for(const N of NPCS)if(!N.shaded&&N.lv===SHARED.LVL&&Math.hypot(N.st.x-x,N.st.z-z)<r)N.shade(); };
 SYS.add('near',(x,z)=>NPCS.near(x,z),'npc shading');
@@ -219,4 +234,4 @@ SYS.add('near',(x,z)=>NPCS.near(x,z),'npc shading');
   NPCS.R=25*TILE; NPCS.DRAW=30*TILE; NPCS.seen=(x,y,z,r)=>FR.intersectsSphere(SP.set(V.set(x,y,z),r||2*TILE)); NPCS.live=(x,y,z,r)=>Math.hypot(x-pos.x,z-pos.z)<NPCS.R&&NPCS.seen(x,y,z,r);
   NPCS.cull=on=>{ const one=(o,g)=>{ if(on){ if(o.hid&&g.visible){ g.visible=false; o._cv=true; } } else if(o._cv){ g.visible=true; o._cv=false; } };
     for(const N of NPCS)one(N,N.g); for(const X of NPCS.extra)if(X.g)one(X,X.g); }; }
-export {CSB, CSHOLE, DUN, HOMES, makeNPC, ROAM, stfree, STHOLE, STLANE};
+export {CSB, CSHOLE, DUN, HOMES, inRoad, makeNPC, offRoad, pedfree, pedHold, ROAM, stfree, STHOLE, STLANE, stroad};

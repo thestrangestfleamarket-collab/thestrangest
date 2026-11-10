@@ -15,6 +15,8 @@ const run=async()=>{
   r=await art('alice',{del:id}); ok(r.j.ok===false,'nor deletes it');
   r=await art('alice',{put:{id:'../x',d:pic}}); ok(r.s===400,'a bad id is refused '+r.s);
 
+  const own=(who,body)=>fetch(BASE+'/owned',{method:'POST',headers:{cookie:'tsfm-pass=dev:'+who,origin:BASE,'content-type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json());
+  await own('alice',{put:{inv:JSON.stringify({v:1,items:{pt_abcdef12:1},cash:100})}}); await own('bob',{put:{inv:JSON.stringify({v:1,items:{},cash:500})}});   // (a trade pays from the server's copy of each pack)
   const a=await open('alice'), b=await open('bob'), c=await open('carol'); await wait(400);
   for(const [w,x] of [[a,0],[b,1],[c,400]])w.send(JSON.stringify({t:'mv',at:[x,0,0,0,'up','']})); await wait(300);
   c.send(JSON.stringify({t:'tr',op:'ask',to:'dev-alice'})); await wait(300);

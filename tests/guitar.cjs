@@ -34,8 +34,8 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
   rec('every chord\'s pressing fingertips land on their strings at their frets (within 10 mm)',Object.values(p.miss).every(m=>m<=10),JSON.stringify(p.miss));
   if(OUT){ await pg.evaluate(()=>{ GUITAR.play('chord','C'); GUITAR.closeUp(true); }); await wait(1500); await pg.screenshot({path:OUT+'/guitar-closeup.png'}); }
   // a song moves the fingers and plucks the strings
-  const s=await pg.evaluate(async()=>{ const H=GUITAR.ME.H, snap=()=>JSON.stringify([H.fg.L,H.fg.R]); FORAGE.S.sk.guitar=1000; GUITAR.play('song',0); const seen=new Set(); for(let i=0;i<12;i++){ await new Promise(r=>setTimeout(r,250)); seen.add(snap()); }
-    const r={song:GUITAR.ME.song,poses:seen.size,notes:GUITAR.ME.cur}; GUITAR.play('stop'); FORAGE.S.sk.guitar=100; return r; });
+  const s=await pg.evaluate(async()=>{ const H=GUITAR.ME.H, snap=()=>JSON.stringify([H.fg.L,H.fg.R]); FORAGE.S.sk.guitar=1000; const i0=GUITAR.BOOK.findIndex((b,i)=>GUITAR.canPlay(i)&&SONGBK.chance('guitar',b)===1); GUITAR.play('song',i0); const seen=new Set(); for(let i=0;i<12;i++){ await new Promise(r=>setTimeout(r,250)); seen.add(snap()); }
+    const r={song:GUITAR.ME.song===i0?0:-1,poses:seen.size,notes:GUITAR.ME.cur}; GUITAR.play('stop'); FORAGE.S.sk.guitar=100; return r; });
   rec('a song from the book plays: its notes go out and the fingers move',s.song===0&&s.poses>=6&&s.notes>5,JSON.stringify(s));
   // the sound: the strings ring out loud, and each open string at its real pitch
   const a=await pg.evaluate(async()=>{ const G=GUITAR.GSND; G.wake(); for(let i=0;i<40&&!G.ok;i++)await new Promise(r=>setTimeout(r,250)); if(!G.ok)return {ok:false};
@@ -65,7 +65,7 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
     FORAGE.ACT.gstow('guitar'); await new Promise(r=>setTimeout(r,300)); r.stowed=!GUITAR.slung()&&!me().children.some(c=>c.name==='guitar')&&ONLINE.mine.gtr()==null; return r; });
   rec('ESC puts it down onto your back (your fingers the rig\'s again, the panel gone, others see it slung); STOW IT puts it in the bag',!e.on&&e.slung&&e.onBody&&!e.fg&&!e.panel&&e.seen==='b'&&e.stowed,JSON.stringify(e));
   // the songs: the book's five and the downloaded pieces, each needing its GUITAR level; practice raises it
-  const sg=await pg.evaluate(async()=>{ const B=GUITAR.BOOK; FORAGE.S.sk.guitar=100; GUITAR.start('own'); await GUITAR.loadSongs(); const lv=FORAGE.sk('guitar'), hard=B.findIndex(b=>b.lvl>50&&b.notes);
+  const sg=await pg.evaluate(async()=>{ const B=GUITAR.BOOK; FORAGE.S.sk.guitar=100; GUITAR.start('own'); await GUITAR.loadSongs(); const lv=FORAGE.sk('guitar'), hard=B.findIndex(b=>b.lvl>50&&b.lvl<=60&&b.notes&&b.lvl===Math.min(...B.filter(q=>q.lvl>50&&!q.kept).map(q=>q.lvl)));
     GUITAR.play('song',hard); const refused=GUITAR.ME.song!==hard; FORAGE.S.sk.guitar=1000; GUITAR.play('song',hard); await new Promise(r=>setTimeout(r,2500)); const playing=GUITAR.ME.song===hard, notes=GUITAR.ME.cur; GUITAR.play('stop');
     FORAGE.S.sk.guitar=100; for(let i=0;i<600;i++)GUITAR.play('pluck',1+i%6); const after=FORAGE.sk('guitar'); GUITAR.stop(); GUITAR.stow();
     return {book:B.length,downloaded:B.filter(b=>b.notes).length,skill:lv,inSkills:FORAGE.SK.some(s=>s[0]==='guitar'),refused,playing,notes,after}; });

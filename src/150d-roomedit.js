@@ -68,7 +68,7 @@ import {ROOMK} from './150a-bedroom.js';
   const sortOf=un=>{ if(SORT[un.kind])return SORT[un.kind]; const D=kindOf(un.kind); if(D&&D.game){ const f=own(un); return SORT[un.kind]=sortAs(D,un.kind,f[5]-f[4],f[4]); } return un.loose?'small':'big'; };
 
   /* ---------- the editor ---------- */
-  const ED={on:false,sel:null,undo:[],grid:true}; window.ROOMED=ED;
+  const ED={on:false,sel:null,undo:[],grid:true}; window.ROOMED=MODS.roomed=ED;
   const A_=()=>ROOMK.api, inHome=()=>!!(MODS.apts&&MODS.apts.inReal&&ROOMK.api);
   const css=document.createElement('style'); css.textContent=`
   #roomed{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));top:12px;width:300px;max-height:calc(100vh - 210px);display:flex;flex-direction:column;background:color-mix(in srgb,var(--bg) 97%,transparent);border:2px solid var(--line);font:12px var(--pixel);color:var(--fg);z-index:20}
@@ -92,7 +92,7 @@ import {ROOMK} from './150a-bedroom.js';
   const P=document.createElement('div'); P.id='roomed'; P.hidden=true; document.body.appendChild(P);
   const BUY=document.createElement('div'); BUY.id='roombuy'; BUY.hidden=true; document.body.appendChild(BUY);
   const SAYEL=document.createElement('div'); SAYEL.id='roomsay'; SAYEL.hidden=true; document.body.appendChild(SAYEL);
-  const B=document.createElement('button'); B.id='roomedbtn'; B.hidden=true; B.textContent='DECORATE · T'; B.onclick=()=>ED.toggle(); document.body.appendChild(B);
+  const B=document.createElement('button'); B.id='roomedbtn'; B.className='mlb'; B.hidden=true; B.textContent='DECORATE · T'; B.onclick=()=>ED.toggle(); document.body.appendChild(B);
   let tab='things', dept='seating', helper=null, hover=null, saveT=0, sayT=0;
   const say=m=>{ SAYEL.textContent=m; SAYEL.hidden=false; clearTimeout(sayT); sayT=setTimeout(()=>{ SAYEL.hidden=true; },2200); ED.said=m; };
   const dirty=()=>{ clearTimeout(saveT); saveT=setTimeout(()=>{ const A=A_(); if(A)HOME.save(snapshot(A)); },1200); };

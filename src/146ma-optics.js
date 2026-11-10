@@ -1,11 +1,10 @@
 // THE OPTICS: the binoculars (8x42) and the camera (a 35 mm rangefinder) every player owns from the start, held in the hand and raised to the eye: real fields of view, a hand that shakes with breath, pulse and movement, focus by distance, a rangefinder, the birds' field guide; the camera's exposure from the scene's light, its prints into the Newsreel's photos (146m).
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, FORAGE, INV, NPCS, pos, RAG, ROOMS, SFX, st, UI, VIT, W3, WIELD, WX, ZONES} from './003b-systems.js';
+import {BIRDS, CLOCK, FORAGE, INV, NPCS, pos, RAG, ROOMS, SFX, st, UI, VIT, W3, WIELD, WX, ZONES} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {PCAM, renderer, scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {MODS, QS, SYS, TILE} from './006-map-pre.js';
-import {BIRDS} from './144b-birds.js';
 import {PHOTOS} from './146m-prints.js';
 { const T=TILE, M=T/.84, V3=THREE.Vector3, say=SAY, cl=(v,a,b)=>v<a?a:v>b?b:v, D2R=Math.PI/180;
   const OPTIC={up:null,fov0:60,view0:null,dist:null,what:'',sharp:1}; window.OPTIC=OPTIC;
@@ -84,12 +83,12 @@ import {PHOTOS} from './146m-prints.js';
   const binocsView=()=>{ '@binocs'; const cv=document.createElement('canvas'); cv.style.cssText='position:fixed;inset:0;width:100%;height:100%;z-index:19;pointer-events:none;display:none'; document.body.appendChild(cv);
     const bar=document.createElement('div'); bar.style.cssText='position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:20;display:none;gap:6px;font:11px Silkscreen,monospace;color:#ece5d3';
     bar.innerHTML='<button data-a="n">FOCUS NEAR</button><button data-a="f">FOCUS FAR</button><button data-a="g">FIELD GUIDE</button><button data-a="x">LOWER</button>';
-    for(const b of bar.children)b.style.cssText='font:inherit;color:#ece5d3;background:rgba(14,16,22,.85);border:2px solid #3a3f4e;padding:4px 8px;cursor:pointer'; document.body.appendChild(bar);
-    const list=document.createElement('div'); list.style.cssText='position:fixed;left:50%;top:12%;transform:translateX(-50%);z-index:21;width:min(380px,92vw);max-height:70vh;overflow:auto;display:none;padding:12px;font:11px Silkscreen,monospace;color:#3b2a1e;background:#ece5d3;border:3px solid #3b2a1e'; document.body.appendChild(list);
+    for(const b of bar.children){ b.className='mlb'; b.style.cssText='font:inherit;color:#ece5d3;background:rgba(14,16,22,.85);border:2px solid #3a3f4e;padding:4px 8px;cursor:pointer'; } document.body.appendChild(bar);
+    const list=document.createElement('div'); list.className='ml'; list.style.cssText='position:fixed;left:50%;top:12%;transform:translateX(-50%);z-index:21;width:min(380px,92vw);max-height:70vh;overflow:auto;display:none;padding:12px;font:11px Silkscreen,monospace;color:#3b2a1e;background:#ece5d3;border:3px solid #3b2a1e'; document.body.appendChild(list);
     let dpt=.05, hold=0, txt='';   // focus in dioptres (1/m): .05 is 20 m; 0 is infinity
     const drawList=()=>{ const K=BIRDS.K||[]; list.innerHTML='<b>YOUR FIELD GUIDE</b> ('+Object.keys(OPTIC.guide).length+' OF '+K.length+')<br><br>'+K.map((k,i)=>OPTIC.guide[k[0]]?`<div>✔ ${k[0]} <i style="color:#7a6a5a">${k[1]}</i></div>`:`<div style="color:#a09080">· ? ? ?</div>`).join('')+'<br><button data-c>CLOSE</button>'; };
     list.addEventListener('click',e=>{ if(e.target.closest('[data-c]'))list.style.display='none'; });
-    bar.addEventListener('click',e=>{ const a=e.target.closest('button')&&e.target.closest('button').dataset.a; if(a==='n')V.focus(-1); if(a==='f')V.focus(1); if(a==='x')OPTIC.lower(); if(a==='g'){ drawList(); list.style.display=list.style.display==='none'?'block':'none'; } });
+    bar.addEventListener('click',e=>{ const a=e.target.closest('button')&&e.target.closest('button').dataset.a; if(a==='n')V.focus(-1); if(a==='f')V.focus(1); if(a==='x')OPTIC.lower(); if(a==='g'){ drawList(); const on=list.style.display==='none'||list.hidden; list.hidden=false; list.style.display=on?'block':'none'; } });
     const draw=()=>{ const W=innerWidth, H=innerHeight; if(cv.width!==W||cv.height!==H){ cv.width=W; cv.height=H; } const g=cv.getContext('2d'); g.clearRect(0,0,W,H);
       g.fillStyle='#000'; g.fillRect(0,0,W,H); g.globalCompositeOperation='destination-out'; const r=H*.47;
       for(const cx of [W/2-r*.42,W/2+r*.42]){ const gr=g.createRadialGradient(cx,H/2,r*.9,cx,H/2,r); gr.addColorStop(0,'rgba(0,0,0,1)'); gr.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle=gr; g.beginPath(); g.arc(cx,H/2,r,0,7); g.fill(); }

@@ -6,7 +6,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const pg = await b.newPage({ viewport: { width: 1200, height: 760 } }), errs = [];
   pg.on('pageerror', e => errs.push(e.message.slice(0, 300)));
   const url = 'file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?hour=13&at=53,10';
-  const start = async q => { await pg.goto(url + q, { waitUntil: 'commit' }); let st = false; for (let i = 0; i < 60 && !st; i++) { await pg.waitForTimeout(3000); st = await pg.evaluate(() => !!window.__started).catch(() => false); } await pg.waitForTimeout(2500); return st; };
+  const start = async q => { await pg.goto(url + q, { waitUntil: 'commit' }); let st = false; for (let i = 0; i < 60 && !st; i++) { await pg.waitForTimeout(3000); st = await pg.evaluate(() => !!window.__started).catch(() => false); } await pg.waitForFunction(() => { const L = document.getElementById('loading'); return !L || getComputedStyle(L).pointerEvents === 'none'; }, null, { timeout: 120000 }).catch(() => {}); await pg.waitForTimeout(2500); return st; };   // the loading screen stays over everything until the game has drawn (7 Nov 2026)
   ok(await start('&fresh=1'), 'the page starts');
   const box = id => pg.evaluate(id => { const e = document.getElementById(id); if (!e || e.hidden) return null; const r = e.getBoundingClientRect(); return { x: Math.round(r.left), y: Math.round(r.top), w: r.width, h: r.height }; }, id);
   const dragBy = async (x, y, dx, dy) => { await pg.mouse.move(x, y); await pg.mouse.down(); for (let i = 1; i <= 8; i++) await pg.mouse.move(x + dx * i / 8, y + dy * i / 8); await pg.mouse.up(); await pg.waitForTimeout(300); };

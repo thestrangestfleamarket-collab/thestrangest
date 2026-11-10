@@ -1,12 +1,13 @@
 // THE PASSPORT: every player is issued one at first login, a card in the map's look (a number, the home section, the date; your photo, name, address, date of birth, height, eyes and hair from what you are; the login and the day it was made from the server; your hand, LEFT or RIGHT, chosen here: it holds, swings, punches and picks up), kept with your things and shown from the pack. Every station exit has a gate: a forcefield across the way out, unseen until you walk into it without showing your passport, that opens six seconds for everyone when a passport is shown at the machine beside it; coming in from the street is always free.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, LOOKS, ONLINE, PASSPORT, pos, SFX, st, TEXT, UI} from './003b-systems.js';
+import {FORAGE, LOOKS, MOTION, ONLINE, PASSPORT, pos, SFX, st, TEXT, UI} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {MAPG, SECTION, SOL, SYS, TILE} from './006-map-pre.js';
 import {LOOP} from './009b-loop.js';
 import {APTS} from './059a-apts.js';
 import {DESIGN} from './102b-designer.js';
+import {BODIES} from './111a-bodies.js';
 import {AVATAR} from './111c-avatar.js';
 {
   const T=TILE, OPEN=6, V3=THREE.Vector3, esc=TEXT.esc, say=(t,c)=>SAY(t,c||'#c8c2b0');
@@ -35,7 +36,7 @@ import {AVATAR} from './111c-avatar.js';
   const uniq=L=>{ const o=[]; for(const [h,t] of L)if(!o.some(e=>e[1]===t))o.push([h,t]); return o; };
   const inch=L=>Math.round(67*(L.h||100)/100), HTS=[]; for(let n=60;n<=74;n++)HTS.push([n,Math.floor(n/12)+"'-"+String(n%12).padStart(2,'0')+'"']);
   const wgt=L=>P.wgt||Math.round(155*((L.h||100)/100)**2*[.85,1,1.2][L.b==null?1:L.b]);   // (until you write your own: from your height and build)
-  const snap=()=>{ const c=!sp.hidden&&sp.querySelector('.pPh'); if(c)try{ DESIGN.snap(c.getContext('2d'),150,200,{head:true}); }catch(e){ console.warn('PASSPORT photo',e); } };   // (the photo of you as you are now: the designer's portrait, shoulders and up)
+  const snap=()=>{ const c=!sp.hidden&&sp.querySelector('.pPh'); if(c)photo(c,'b:avatar:'+(AVATAR.code?AVATAR.code():''),P.pose||'',null).catch(e=>console.warn('PASSPORT photo',e)); };   // (the photo of you as you are now, whole, in your chosen pose)
   const look=o=>Promise.resolve(AVATAR.set&&AVATAR.set(o)).catch(e=>console.warn('PASSPORT look',e)).then(()=>{ if(!sp.hidden)draw(); setTimeout(snap,400); });
   const edit=async(f,v)=>{ const L=AVATAR.L?AVATAR.L():{};
     if(f==='name'){ const r=PASSPORT.claim?await PASSPORT.claim(v):{ok:false,why:'offline'}; if(r.ok&&LOOKS.setName)LOOKS.setName(r.name); else say(r.why==='taken'?'THAT NAME IS TAKEN.':r.why==='offline'?'THE MARKET CANNOT BE REACHED.':r.why==='busy'?'TOO MANY TRIES. WAIT A MINUTE.':'A NAME IS 3 TO 16 LETTERS OR DIGITS.','#e5403a'); return draw(); }
@@ -46,7 +47,8 @@ import {AVATAR} from './111c-avatar.js';
     if(f==='h')return look({h:Math.min(110,Math.max(90,Math.round(+v*100/67)))});
     if(f==='b')return look({b:+v});
     if(f==='eye')return look({eye:v});
-    if(f==='hair')return look({hair:v}); };
+    if(f==='hair')return look({hair:v});
+    if(f==='pose'){ P.pose=POSES.some(p=>p[0]===v)?v:''; save(); return draw(); } };
   const draw=()=>{ '@later'; const name=((LOOKS.L&&LOOKS.L.name)||'').trim().toUpperCase()||'A TENANT', L=AVATAR.L?AVATAR.L():{}, sex=L.f==='f'?'F':'M', dob=P.dob||'', hand=st.hand==='L'?'L':'R';
     const EY=uniq(AVATAR.EYES||[['2a2019','BRN']]), HR=uniq(HAIRN), ey=near(L.eye||'2a2019',EY), hr=near(L.hair,HR);
     const hb=h=>`<button class="pH" data-h="${h}" style="font:900 11px 'Helvetica Neue',Helvetica,Arial,sans-serif;padding:3px 9px;cursor:pointer;border:2px solid #111;margin-right:4px;background:${hand===h?'#111':'#f6f4ec'};color:${hand===h?'#f6f4ec':'#111'}">${h}</button>`;
@@ -63,7 +65,7 @@ import {AVATAR} from './111c-avatar.js';
           ${K(17,'WGT',`<span style="display:flex;align-items:baseline">${IN('wgt',wgt(L),'width:38px','number')}<span>LB</span></span>`)}${K(18,'EYES',SEL('eye',EY.find(e=>e[1]===ey)[0],EY))}${K(19,'HAIR',SEL('hair',HR.find(e=>e[1]===hr)[0],HR))}
           ${K('','BUILD',SEL('b',L.b==null?1:L.b,(AVATAR.BUILDN||['SLIM','MEDIUM','BROAD']).map((t,i)=>[i,t])))}${K(3,'ISSUED',usd(P.issued))}${K(4,'EXPIRES','NEVER')}
         </div>
-        <div style="display:flex;justify-content:space-between;align-items:flex-end;width:100%;margin-top:6px"><div>${lb('','HAND')}${hb('R')}${hb('L')}</div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;width:100%;margin-top:6px"><div>${lb('','HAND')}${hb('R')}${hb('L')}</div><div style="min-width:110px">${lb('','PHOTO POSE')}${SEL('pose',P.pose||'',POSES)}</div>
           <div style="font-family:'Brush Script MT','Segoe Script','Snell Roundhand',cursive;font-size:${Math.min(30,Math.round(320/Math.max(4,name.length)))}px;line-height:1;color:#1a2a6c;white-space:nowrap">${esc(name.charAt(0)+name.slice(1).toLowerCase())}</div></div>
       </div></div><button class="pX" style="position:absolute;right:-6px;top:-38px">X</button></div>`;
     sp.querySelector('.pX').onclick=()=>PASSPORT.close(); sp.querySelectorAll('.pH').forEach(b=>{ b.onclick=()=>PASSPORT.setHand(b.dataset.h); });
@@ -71,8 +73,38 @@ import {AVATAR} from './111c-avatar.js';
     snap(); };   // (the photo of you as you are now: the designer's portrait, shoulders and up)
   PASSPORT.set=o=>{ Object.assign(P,o); save(); if(!sp.hidden)draw(); };
   PASSPORT.open=()=>{ sp.hidden=false; sp.style.display='flex'; draw(); }; PASSPORT.close=()=>{ sp.hidden=true; sp.style.display='none'; };
-  // kept in the pack; it never leaves you (no dropping, no trading)
+  // the photo: your whole body in the pose you choose for it (owner, 8 Nov 2026: "show the full avatar in the photo on badge, and let players choose their default pose"), from a copy of the body posed apart from the street
+  const POSES=[['','STANDING'],['greet','WAVE'],['foldArms','ARMS FOLDED'],['cheer','CHEER'],['fistPump','FIST PUMP',.65],['dab','DAB'],['powerUp','POWER UP'],['confused','CONFUSED'],['angry','ANGRY',.35],['guard','GUARD']];   // (each held at the moment of its move that reads best: the middle unless given)
+  PASSPORT.POSES=POSES; PASSPORT.photo=(c,look,pose)=>photo(c,look,pose,null);
+  const photo=async(c,look,pose,live)=>{ '@later'; if(!c)return; const g2=c.getContext('2d'), m=/^b:avatar:(.*)$/.exec(String(look||'')), base=BODIES.by.avatar, body=m&&base&&base.variant?base.variant(m[1]):null;
+    if(!body){ if(live&&DESIGN.snapOf)DESIGN.snapOf(g2,c.width,c.height,live); return; }
+    const S=RIG.create(); S.target=0; if(pose&&POSES.some(p=>p[0]===pose)){ const I=await MOTION.ensure(); if(RIG.MOVES['mc_'+pose]){ RIG.begin(S,'mc_'+pose); const d=(I[pose]&&I[pose].dur)||1; const k=PASSPORT.poseAt!=null?PASSPORT.poseAt:(POSES.find(p=>p[0]===pose)[2]??.5); for(let t=0;t<d*k;t+=1/30)RIG.step(S,1/30); } } else for(let i=0;i<10;i++)RIG.step(S,1/30);
+    const M=BODIES.mesh(body), G=new THREE.Group(); G.add(M.me); M.me.frustumCulled=false; BODIES.pose(RIG.pose(S,true),M.PM,body,S); G.updateMatrixWorld(true);
+    const bx=new THREE.Box3(), v=new V3(); const IV=new THREE.Matrix4(); M.PM.value.forEach((m4,i)=>bx.expandByPoint(body.binv?v.setFromMatrixPosition(IV.copy(body.binv[i]).invert()).applyMatrix4(m4):v.setFromMatrixPosition(m4))); const h=bx.max.y-bx.min.y; bx.max.y+=.16*h; bx.min.y-=.05*h; bx.expandByVector(v.set(.1*h,0,.1*h));   // (framed on the posed bones: the head's top and the soles past them)
+    try{ DESIGN.snapOf(g2,c.width,c.height,G,{box:bx}); } finally{ G.remove(M.me); } };
+  // in your pack, never leaves you (no dropping, no trading); the lanyard is gone (owner, 8 Nov 2026)
   FORAGE.ACT.passport=()=>PASSPORT.open(); FORAGE.ROWB.push(id=>id==='passport'?[['SHOW','passport']]:[]);
+  // another player's card (owner, 8 Nov 2026: "if you double click on another player it shows their id on your screen"): what their card says travels with them (ONLINE.mine.id), the rest is read from their look
+  const cardOf=()=>[P.no,P.a1||addr(),P.a2||'SECTION '+P.home+', NEW YORK',P.dob||'',P.wgt||'',P.issued||'',P.pose||''].map(v=>String(v).replace(/\|/g,' ')).join('|');
+  ONLINE.mine.id=cardOf;
+  PASSPORT.show=o=>{ '@later'; if(!o)return; const a=String(o.x&&o.x.id||'').split('|'), lk=String(o.look||''), m=/^b:avatar:(.*)$/.exec(lk), L=m&&AVATAR.decode?AVATAR.decode(m[1]):null;
+    const name=(o.name||'A TENANT').toUpperCase(), v=t=>esc(t||'—');
+    const EY=uniq(AVATAR.EYES||[['2a2019','BRN']]), HR=uniq(HAIRN);
+    const sex=L?(L.f==='f'?'F':'M'):'—', hgt=L?(HTS.find(e=>e[0]===inch(L))||[0,'—'])[1]:'—', w=a[4]||(L?Math.round(155*((L.h||100)/100)**2*[.85,1,1.2][L.b==null?1:L.b]):''), ey=L?near(L.eye||'2a2019',EY):'—', hr=L?near(L.hair,HR):'—', bd=L?(AVATAR.BUILDN||['SLIM','MEDIUM','BROAD'])[L.b==null?1:L.b]:'—';
+    sp.innerHTML=`<div style="position:relative"><div style="width:360px;background:#f6f4ec;color:#111;border-radius:18px;overflow:hidden;position:relative;box-shadow:0 20px 60px #000;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;text-transform:uppercase">
+      <div style="background:#ffd400;color:#111;font-weight:900;letter-spacing:1px;font-size:17px;padding:12px 18px;text-align:center">THE STRANGEST FLEA MARKET</div>
+      <div style="padding:22px 26px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center">
+        <canvas class="pPh" width="150" height="200" style="border:3px solid #111;background:#d6e2e8;image-rendering:pixelated;display:block"></canvas>
+        <div style="font-size:30px;font-weight:900;letter-spacing:.4px">${esc(name)}</div>
+        <div style="font-size:15px;font-weight:900;color:#e53935">CITIZEN ${v(a[0])} · TENANT</div>
+        <div style="font-size:13px;font-weight:900;line-height:1.4">${v(a[1])}<br>${v(a[2])}</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px 18px;width:100%;margin-top:8px;text-align:left">
+          ${K(5,'DOB',esc(usd(a[3])))}${K(15,'SEX',sex)}${K(16,'HGT',esc(hgt))}${K(17,'WGT',w?esc(w)+' LB':'—')}${K(18,'EYES',ey)}${K(19,'HAIR',hr)}${K('','BUILD',esc(bd))}${K(3,'ISSUED',esc(usd(a[5])))}${K(4,'EXPIRES','NEVER')}
+        </div>
+        <div style="display:flex;gap:8px;margin-top:6px"><button class="pT" style="font:900 12px 'Helvetica Neue',Helvetica,Arial,sans-serif;padding:5px 12px;cursor:pointer;border:2px solid #111;background:#111;color:#f6f4ec">ASK TO TRADE</button></div>
+      </div></div><button class="pX" style="position:absolute;right:-6px;top:-38px">X</button></div>`;
+    sp.hidden=false; sp.style.display='flex'; sp.querySelector('.pX').onclick=()=>PASSPORT.close(); sp.querySelector('.pT').onclick=()=>{ PASSPORT.close(); if(PASSPORT.trade)PASSPORT.trade(o); };
+    photo(sp.querySelector('.pPh'),lk,a[6]||'',o.fig&&o.fig.g).catch(e=>console.warn('PASSPORT their photo',e)); };
   // the gates: a hex forcefield across each station's exit, solid while closed; a machine beside it
   const [fcv,ftex]=(()=>{ const c=document.createElement('canvas'); c.width=c.height=512; const g=c.getContext('2d'); g.clearRect(0,0,512,512); g.strokeStyle='rgba(110,210,255,.85)'; g.lineWidth=2; const r=22;
     for(let j=0;j<16;j++)for(let i=0;i<16;i++){ const x=i*r*1.73+(j%2?r*.866:0), y=j*r*1.5; g.beginPath(); for(let k=0;k<6;k++){ const an=Math.PI/6+k*Math.PI/3; g.lineTo(x+r*Math.cos(an),y+r*Math.sin(an)); } g.closePath(); g.stroke(); }

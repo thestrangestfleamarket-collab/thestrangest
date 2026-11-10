@@ -40,15 +40,18 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     const MOVE=`attribute vec2 bi; attribute float bw; attribute float hh; uniform float uHH; uniform mat4 uPM[${NB}];`+(body.dq?DQ:''), AT_=body.dq?`mat4 PM=dqm(uPM[int(bi.x+.5)],uPM[int(bi.y+.5)],bw);`:`mat4 PM=uPM[int(bi.x+.5)]*bw+uPM[int(bi.y+.5)]*(1.-bw);`, CK=body.dq?'d':'';
     if(body.smooth)return smooth(body,PM,MOVE,AT_);
     // the body's own simple hands (hh) folded away while Polyfork's jointed ones are drawn in their place (PM.hh, 111b: only near the camera)
-    PM.hh={value:0}; const HH=' if(hh*uHH>.5)transformed=vec3(0.);';
+    PM.hh={value:0}; PM.pl={value:body.rnd?1:0}; const HH=' if(hh*uHH>.5)transformed=vec3(0.);';
     // a cape flaps in flight (body.flap: its points' fl, 0 at the tie to 1 at the hem, and fd, out from the body): lifted off the back and rippling, by PM.fk (pose)
     const FL=body.flap?(PM.fk={value:0},PM.ft={value:0},'attribute float fl; attribute vec3 fd; uniform float uFK,uFT;'):'', P0=body.flap?'position+fd*fl*uFK*(.04+.16*fl+.07*sin(uFT*12.-fl*8.+fd.x*2.))':'position';
     // body.rnd (your avatar): its points marked sm (its rounded head, 111c) shaded by their own smooth normals, the rest flat
-    const SM=body.rnd?'attribute float sm; varying float vSm;':'', NF=body.rnd?' if(vSm>.5){ vec3 sn=normalize(vNormal); normal=dot(sn,normal)<0.?-sn:sn; }':'';
+    // body.rnd: what hangs off it (ov: BACK, its bags and straps, 111c) drawn a few centimetres nearer the eye than it is, so it shows over every coat (owner, 9 Nov 2026)
+    const OV=body.rnd?' if(ov>.5){ vec4 mo=mvPosition; float od=uOV*length(modelViewMatrix[1].xyz); if(projectionMatrix[3][3]>.5)mo.z+=od; else mo.xyz*=max(0.,1.-od/length(mo.xyz)); gl_Position=projectionMatrix*mo; }':'';
+    const SM=body.rnd?'attribute float sm; attribute float ov; uniform float uOV; varying float vSm;':'', NF=body.rnd?' if(vSm>.5){ vec3 sn=normalize(vNormal); normal=dot(sn,normal)<0.?-sn:sn; }':'';
     const mat=new THREE.MeshToonMaterial({vertexColors:true,gradientMap:W3.GP,side:THREE.DoubleSide});
-    mat.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.uniforms.uHH=PM.hh; if(FL){ sh.uniforms.uFK=PM.fk; sh.uniforms.uFT=PM.ft; } sh.fragmentShader='#define BODYB .0015\n'+(SM?'varying float vSm;\n':'')+sh.fragmentShader; sh.vertexShader=MOVE+FL+SM+'\n'+sh.vertexShader.replace('#include <beginnormal_vertex>',AT_+' vec3 objectNormal=mat3(PM)*normal;').replace('#include <begin_vertex>','vec3 transformed=(PM*vec4('+P0+',1.)).xyz;'+HH+(SM?' vSm=sm;':''));
+    if(body.rnd)PM.ov={value:.035*(body.S||1)};
+    mat.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.uniforms.uHH=PM.hh; if(PM.ov)sh.uniforms.uOV=PM.ov; if(FL){ sh.uniforms.uFK=PM.fk; sh.uniforms.uFT=PM.ft; } sh.fragmentShader='#define BODYB .0015\n'+(SM?'varying float vSm;\n':'')+sh.fragmentShader; sh.vertexShader=MOVE+FL+SM+'\n'+sh.vertexShader.replace('#include <beginnormal_vertex>',AT_+' vec3 objectNormal=mat3(PM)*normal;').replace('#include <begin_vertex>','vec3 transformed=(PM*vec4('+P0+',1.)).xyz;'+HH+(SM?' vSm=sm;':'')).replace('#include <project_vertex>','#include <project_vertex>\n'+OV);
       // a body's own layers (cloth over its lining, over the skin) a few millimetres apart: its shadow test leans that much more toward the light, or they shadow each other in specks (owner, 6 Nov 2026: "seems like its shadows")
-      sh.fragmentShader=sh.fragmentShader.replace('#include <lights_fragment_begin>',THREE.ShaderChunk.lights_fragment_begin.replace(/((?:directional|spot|point)LightShadows?(?:\[ *\w+ *\])?)\.shadowBias/g,'($1.shadowBias-BODYB)')).replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(cross(dFdx(vViewPosition),dFdy(vViewPosition)));'+NF+' vec3 nonPerturbedNormal=normal;').replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*0.16;'); };
+      sh.fragmentShader=sh.fragmentShader.replace('#include <lights_fragment_begin>',THREE.ShaderChunk.lights_fragment_begin.replace(/((?:directional|spot|point)LightShadows?(?:\[ *\w+ *\])?)\.shadowBias/g,'($1.shadowBias-BODYB)')).replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(cross(dFdx(vViewPosition),dFdy(vViewPosition)));'+NF+' vec3 nonPerturbedNormal=normal;'); W3.rim(sh,PM.pl); };
     mat.customProgramCacheKey=()=>'body'+NB+CK+'b'+(FL?'f':'')+(SM?'r':'');
     const dist=new THREE.MeshDistanceMaterial({side:THREE.DoubleSide}); dist.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.uniforms.uHH=PM.hh; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'+HH); }; dist.customProgramCacheKey=()=>'bodydist'+NB+CK;
     const depth=new THREE.MeshDepthMaterial({side:THREE.DoubleSide,depthPacking:THREE.RGBADepthPacking}); depth.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.uniforms.uHH=PM.hh; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT_+' vec3 transformed=(PM*vec4(position,1.)).xyz;'+HH); }; depth.customProgramCacheKey=()=>'bodydepth'+NB+CK;
@@ -135,7 +138,14 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       else { clipAt(C.Walk,S._mph+C.Walk.contact,i,Q1,P1); clipAt(C.Run,S._mph+C.Run.contact,i,Q2,P2); Q1.slerp(Q2,r); P1.lerp(P2,r);
         clipAt(C.Idle,S._mit,i,Q2,P2); Q2.slerp(Q1,w); P2.lerp(P1,w); }
       if(aw>.001&&S._pc){ clipT(S._pc.c,S._pc.t,S._pc.l,i,Q1,P1); if(S._pf&&S._pf.w>0){ clipT(S._pf.c,S._pf.t,S._pf.l,i,Q4,P4); Q1.slerp(Q4,S._pf.w); P1.lerp(P4,S._pf.w); } Q2.slerp(Q1,aw); P2.lerp(P1,aw); }
-      PM.value[i].compose(P2.multiplyScalar(k),Q2,SC.set(k,k,k)); } if(body.O1)relen(PM,body); }
+      PM.value[i].compose(P2.multiplyScalar(k),Q2,SC.set(k,k,k)); } look(PM,body,S,dt,w,aw); if(body.O1)relen(PM,body); }
+  // standing still a while, the head looks about (owner, 9 Nov 2026: "more idle animations for players when standing, like looking around"): a glance to a side, down, up at the sky, back ahead, every few seconds
+  const LK=[[0,0],[.55,.05],[-.6,0],[.3,.28],[-.25,-.32],[.1,-.18],[0,.12]], LQ=new THREE.Quaternion(), LP=new THREE.Quaternion(), LE=new THREE.Euler(), LV=new V3(), LM=new THREE.Matrix4(), LT=new THREE.Matrix4();
+  const look=(PM,body,S,dt,w,aw)=>{ if(!body.J0)return; const still=w<.05&&aw<.05; S._ls=still?(S._ls||0)+dt:0; let ty=0, tp=0;
+    if(S._ls>2.5){ if(!(S._lt>0)){ S._lt=2.5+Math.random()*3; S._lk=LK[Math.floor(Math.random()*LK.length)]; } S._lt-=dt; [ty,tp]=S._lk||[0,0]; }
+    const e=Math.min(1,dt*2.2); S._ly=(S._ly||0)+(ty-(S._ly||0))*e; S._lp=(S._lp||0)+(tp-(S._lp||0))*e; if(Math.abs(S._ly)+Math.abs(S._lp)<.004)return;
+    const H=2, M=PM.value[H]; LV.copy(body.J0[H]).applyMatrix4(M); LQ.setFromEuler(LE.set(-S._lp,S._ly,0,'YXZ')); LM.makeRotationFromQuaternion(LQ);
+    M.premultiply(LT.makeTranslation(-LV.x,-LV.y,-LV.z)).premultiply(LM).premultiply(LT.makeTranslation(LV.x,LV.y,LV.z)); };
   // a reshaped body (the designer, 111c: O1 the shape's joints) on a recorded clip: every bone turned as the clip has it, each joint where its parent's bone, at the shape's length, puts it
   const RL=BONES.map(()=>new V3()), RM=new THREE.Matrix3(), RV=new V3();
   const relen=(PM,body)=>{ const O1=body.O1; for(let i=0;i<NB;i++){ const n=BONES[i], p=PARENT[n]?BONES.indexOf(PARENT[n]):-1, e=PM.value[i].elements;
@@ -197,7 +207,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     LOWV.set((a[0]*w+c[0]*(1-w))*x+(a[4]*w+c[4]*(1-w))*y+(a[8]*w+c[8]*(1-w))*z+(a[12]*w+c[12]*(1-w)),lo,(a[2]*w+c[2]*(1-w))*x+(a[6]*w+c[6]*(1-w))*y+(a[10]*w+c[10]*(1-w))*z+(a[14]*w+c[14]*(1-w)));
     G.updateMatrixWorld(true); LOWV.applyMatrix4(G.matrixWorld); const sy=G.scale.y||1, f=(ground(LOWV.x,LOWV.z)-LOWV.y)/sy; if(!isFinite(f)||f<.3||f>80)return;
     for(let i=0;i<NB;i++)P[i].elements[13]+=f; }
-  function pose(B,PM,body,S){ const k=body.S; PM.B=B; if(PM.fk){ const F=S&&S.fly; PM.fk.value=F?F.k*(.35+.65*Math.min(1,F.f||0)):0; PM.ft.value=performance.now()/1000; } chain(B,body); place(PM,body,k);
+  function pose(B,PM,body,S){ const k=body.S; PM.B=B; if(PM.ov)PM.ov.value=.035*k; if(PM.fk){ const F=S&&S.fly; PM.fk.value=F?F.k*(.35+.65*Math.min(1,F.f||0)):0; PM.ft.value=performance.now()/1000; } chain(B,body); place(PM,body,k);
     if(body.contact){ const g=body.GEO;
       if(body._calG!==g){ const B0=R.build(R.walkPose({ph:0,w:0,run:0},null),null); chain(B0,body); place(PM,body,k); const l0=lowOf(PM,body); body._cal=l0==null?null:l0-rigLow(B0); body._calG=g; chain(B,body); place(PM,body,k); }
       // seated (a seat, the kart, a car, a bike): its hips on the rig's hips, the seat, its legs from there (owner, 5 Nov 2026: in the kart it sat high above the seat)
@@ -272,7 +282,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       if(body.ride){ const RS=NPC.RS, vm=(body.rideSpeed||3)*TILE/.84, mv=!!st.to&&SR.target>0;   // on its board: rolls, pushing off while it gathers speed, coasts, brakes to a stop
         RS.v=mv?Math.min(vm,RS.v+vm*.5*dt):Math.max(0,RS.v-vm*1.5*dt); if(mv&&RS.v<vm*.9){ RS.pt+=dt*1.3; RS.push=RS.pt%1; } else { RS.pt=0; RS.push=-1; }
         go=st.to?Math.min(RS.v*dt,Math.hypot(st.to.x-st.x,st.to.z-st.z)):0; SR.ride=body.ride.pose(RS); }
-      else{ const d0=SR.dist; R.step(SR,dt); go=(SR.dist-d0)*W3.SZ/PPU*.85; }
+      else{ const d0=SR.dist; R.step(SR,dt); go=(SR.dist-d0)*W3.BASE/PPU*.85; }
       if(go>0){ const nx=st.x+Math.sin(st.hd)*go, nz=st.z+Math.cos(st.hd)*go; if(free(nx,nz)){ st.x=nx; st.z=nz; } else { st.to=null; st.next=null; st.wait=.5+Math.random(); if(NPC.RS)NPC.RS.v=0; } }
       st.y=(body.ground||MODS.bodega.ground)(st.x,st.z)+(body.lift?body.lift(performance.now()/1000,NPC):0); g.position.set(st.x,st.y,st.z); g.rotation.y=st.hd; musScale(g,1); if(NPC.size!==1)g.scale.multiplyScalar(NPC.size);
       if(NPC.board){ const b=NPC.board; b.visible=true; b.position.set(st.x,st.y+R.RIDEG.deck*g.scale.y,st.z); b.rotation.set(0,st.hd,0); if(body.ride.place)body.ride.place(b,NPC.RS,0,{g,S:body.S||1}); }
@@ -287,17 +297,6 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   SYS.add('dress',dt=>{ liveP(dt||0); for(const b of BODIES.list)if(b.npc&&b.npc.tick)b.npc.tick(dt||0); },'111a-bodies');   // every walker body, one entry
 
   /* ---------- a body: key, label, geo() (position, normal, color, bi, bw), height and hip height (its units), off {bone:[parent,x,y,z]}, binv (or null), at (main street spot) ---------- */
-  /* ---------- a baked body (hero-bake: pos, tri, col a face, bone and w a corner) as one flat-faced mesh in the palette PAL {colour:[hex, shade jitter]} ---------- */
-  const hash=i=>{ const h=Math.sin(i*127.1+311.7)*43758.5453; return h-Math.floor(h); };
-  BODIES.baked=(D,key,label,at,PAL,more)=>{ '@later'; const b=D.bodies[key], {off,binv}=BODIES.skeleton(b.origin,b.rest);
-    const geo=()=>{ const P=b.pos, T=b.tri, nf=T.length/3, pos=new Float32Array(nf*9), nor=new Float32Array(nf*9), col=new Float32Array(nf*9), bi=new Float32Array(nf*6), bw=new Float32Array(nf*3);
-      const C=D.colors.map(c=>new THREE.Color(PAL[c][0])), va=new V3(),vb=new V3(),vc=new V3(),n=new V3(),e=new V3();
-      for(let f=0;f<nf;f++){ const ix=[T[f*3],T[f*3+1],T[f*3+2]]; va.fromArray(P,ix[0]*3); vb.fromArray(P,ix[1]*3); vc.fromArray(P,ix[2]*3); n.subVectors(vb,va).cross(e.subVectors(vc,va)).normalize();
-        const ci=b.col[f], k=1+(hash(f)-.5)*2*PAL[D.colors[ci]][1];
-        ix.forEach((v,j)=>{ const o=f*3+j; pos.set([P[v*3],P[v*3+1],P[v*3+2]],o*3); nor.set([n.x,n.y,n.z],o*3); col.set([C[ci].r*k,C[ci].g*k,C[ci].b*k],o*3); bi.set([b.bone[v*2],b.bone[v*2+1]],o*2); bw[o]=b.w[v]; }); }
-      const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('normal',new THREE.BufferAttribute(nor,3)); g.setAttribute('color',new THREE.BufferAttribute(col,3));
-      g.setAttribute('bi',new THREE.BufferAttribute(bi,2)); g.setAttribute('bw',new THREE.BufferAttribute(bw,1)); g.computeBoundingSphere(); return g; };
-    BODIES.add({key,label,geo,height:b.height,hipY:b.hipY,off,binv,at,...more}); };
   /* ---------- a re-baked body (rig-rebake.py: a clip character's own skeleton baked onto these 15 bones, its own per-vertex colours) as one flat-faced mesh ---------- */
   const rebakedObj=(D,key,more)=>{ const b=D.bodies[key], {off,binv}=BODIES.skeleton(b.origin,b.rest);
     const geo=()=>{ const Q=I16(b.pos), P=new Float32Array(Q.length); for(let i=0;i<Q.length;i++)P[i]=(Q[i]+32500)*b.sc+b.lo[i%3];

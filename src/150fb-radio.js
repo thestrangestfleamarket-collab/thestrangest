@@ -85,5 +85,5 @@ import {ROOMK} from './150a-bedroom.js';
   ROOMK.keep.push({ out:L=>{ L.radio={on:RS.on?1:0,st:RS.st,vol:Math.round(RS.vol*100)/100}; },
     in:L=>{ const r=L.radio||{}; RS.on=!!r.on; RS.st=Math.max(1,Math.min(9,r.st|0||1)); RS.vol=r.vol!=null?Math.max(0,Math.min(1,+r.vol||0)):.6; relabel(); draw(); } });
   let dT=0; SYS.add('places',dt=>{ if(!home()){ if(!P.hidden)P.hidden=true; return; } if(!P.hidden&&(dT-=dt||0)<=0){ dT=2; draw(); } },'150fb-radio');
-  window.TRADIODBG=()=>({on:RS.on,st:RS.st,vol:RS.vol,panel:!P.hidden,data:!!RS.data,srcs:[...RADIO.src.keys()].filter(k=>k.startsWith('apt-radio:')),thing:UI.things.some(t=>/^TABLE RADIO/.test(t.name)),mix:window.CARS&&CARS.radio&&CARS.radio()});
+  window.TRADIODBG=()=>({on:RS.on,st:RS.st,vol:RS.vol,panel:!P.hidden,data:!!RS.data,srcs:[...RADIO.src.keys()].filter(k=>k.startsWith('apt-radio:')),thing:UI.things.some(t=>/^TABLE RADIO/.test(t.name)),mix:MODS.cars&&MODS.cars.radio&&MODS.cars.radio()});
 }

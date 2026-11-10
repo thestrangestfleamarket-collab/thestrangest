@@ -1,11 +1,11 @@
 // THE PARK: its layout, the forest (instanced trees with sway in the shader), paths and the park wall.
 import {SHARED, THREE} from './003-shx.js';
 import {B64, F32} from './003a-skin.js';
-import {CLIP, CLOCK, CULL, DN, LEVELS, LITE, NPCS, PARK, PERFX, pos, ROOMS, UI, VIS, WED, WEEDS} from './003b-systems.js';
+import {BATCH, CLIP, CLOCK, CULL, DN, LEVELS, LITE, NPCS, PARK, PERFX, pos, ROOMS, UI, VIS, WED, WEEDS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {CASTLE, CLIPX, EASTX, FADE, FIX, grab, lamps, LAY, LEVEL, MAINX, MAPG, MODS, NORTHX, NORTHY, PARKGX, PARKLAKE, PARKRY, QS, SOL, SYS, TILE, ZU} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
-import {BATCH, OBJ, PEEK} from './008-batch.js';
+import {OBJ, PEEK} from './008-batch.js';
 import {BRICKS} from './014-gamekit.js';
 import {BLOCKS} from './038zb-blocks.js';
 import {FOREST, PROPS} from './039-bodega.js';
@@ -67,7 +67,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     P.camp0=best||{x:S.C.x+S.R+6,y:S.C.y,nx:1,ny:0}; S.oaks=S.oaks.filter(o=>Math.hypot(o[1]-P.camp0.x,o[2]-P.camp0.y)>10); return P.camp0; };
   { const c=P.campAt(); HK.push([c.x-5,c.y-5,c.x+5,c.y+5]); }
   { const h0=P.hill; P.hill=(x,y)=>{ const r=BK.q(x,y); if(!r)return h0(x,y); const e=r[0]-BK.W(r[1])-BK.B; if(path(x,y))return BK.hump(x,y)*TILE/.84; if(e>=0)return h0(x,y)*ss(0,5,e); return BK.h(x,y)*TILE/.84; }; }
-  window.HILL=(wx,wz)=>{ const g=window.PARK; return g&&g.hill?g.hill(SHARED.BOD.MX(wx)-(g.ox||0),SHARED.BOD.MY(wz)-(g.oy||0)):0; };
+  window.HILL=MODS.hill=(wx,wz)=>{ const g=window.PARK; return g&&g.hill?g.hill(SHARED.BOD.MX(wx)-(g.ox||0),SHARED.BOD.MY(wz)-(g.oy||0)):0; };
   const [rcx,rcy,rr]=P.round, smx=(a,b,k)=>{ const h=Math.max(k-Math.abs(a-b),0)/k; return Math.max(a,b)+h*h*k/4; };
   const dep=(x,y)=>smx(3.6-segD(x,y),rr-Math.hypot(x-rcx,y-rcy),2), eo=(x,y)=>{ const n=1.3*(cvn(x/4.5,y/4.5,421)-.5)+.6*(cvn(x/1.4,y/1.4,423)-.5)-.12; return n>.12?.12+(n-.12)*.35:n; }, vis=P.vis=(x,y)=>dep(x,y)+eo(x,y);
   const SC=.36, GR=.05, STN=[[112,109,102],[126,122,113],[140,135,124],[102,104,104],[134,124,108]], TF=[[40,72,32],[54,92,40],[72,114,50],[96,138,62]], SOIL=[[78,66,50],[66,56,44]], KC=new Map();
@@ -230,7 +230,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       const hm=new THREE.SpriteMaterial({map:HT,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false}), SPR=[], LL=[];
       for(const [x,y,z] of HL){ const s=new THREE.Sprite(hm); s.position.set(x,y,z); s.scale.set(2.6*M,2.6*M,1); s.renderOrder=2; s.visible=false; SPR.push(s);
         const L=new THREE.PointLight(new THREE.Color(1,.8,.52),24,12*TILE,1.6); L.position.set(x,y,z); L.userData.i0=24; L.intensity=0; scene.add(L); lamps.push(L); LL.push(L); LGP[LL.length-1].follow=[L,s]; }
-      const lit=()=>{ let d=false; try{ d=CLOCK.dark(); }catch(_){ } glass.color.setHex(d?0xffc978:0x6e6656); core.color.setHex(d?0xfff6dc:0x8a7e66); for(const s of SPR)s.visible=d; for(const L of LL.concat(PARK.hoods||[]))L.intensity=d?L.userData.i0*(window.DN?DN.lk:1):0; }; lit(); SYS.every(lit,2000,'061-park lamps'); PARK.lampLit=lit; } }
+      const lit=()=>{ let d=false; try{ d=CLOCK.dark(); }catch(_){ } glass.color.setHex(d?0xffc978:0x6e6656); core.color.setHex(d?0xfff6dc:0x8a7e66); for(const s of SPR)s.visible=d; for(const L of LL.concat(PARK.hoods||[]))L.intensity=d?L.userData.i0*(DN?DN.lk:1):0; }; lit(); SYS.every(lit,2000,'061-park lamps'); PARK.lampLit=lit; } }
   const TL=[0,1,2,3].includes(+QS.get('treelook'))&&QS.get('treelook')!==null?+QS.get('treelook'):2;
   const treeLook=sh=>{ sh.vertexShader='attribute vec3 aTr; varying vec3 vTr; varying vec3 vLw;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vTr=aTr; vLw=transformed;')
       .replace('#include <shadowmap_vertex>',THREE.ShaderChunk.shadowmap_vertex.replace(/(directional|point)LightShadows\[ i \]\.shadowNormalBias/g,'($&+aTr.z*.35)'));
@@ -385,7 +385,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
   const NOTREES=QS.get('trees')==='0';   // no trees placed yet (owner, 5 Nov 2026); ?trees=1 shows them
   PARK.trunksOf=trunks;
   const NI=TREES.length-PARK.ringN, INO=[], INC=[]; PARK.later(()=>{ PARK.trees=NOTREES||!INO.length?null:mesh(INO,true,true,true,{lod:'near'}); PARK.cards=NOTREES||!INC.length?null:mesh(INC,true,true,true,{noTrunk:1,cards:1}); PARK.trunks=INC.length?trunks(INC):null; PARK.feet=INO.length+INC.length?feet(INO.concat(INC)):null;   // only the ring along the wall, no trees inside (owner, 7 Nov 2026)
-    if(PARK.trees&&window.WEEDS){ const F=WEEDS.feet=WEEDS.feet||[]; for(const it of PARK.trees.userData.items||[])if(it.sol)F.push([it.x,it.z,(it.sol[2]-it.sol[0])/2]); } if(window.WEEDS&&WEEDS.lawnDrop)WEEDS.lawnDrop(P.rect()); });
+    if(PARK.trees&&WEEDS){ const F=WEEDS.feet=WEEDS.feet||[]; for(const it of PARK.trees.userData.items||[])if(it.sol)F.push([it.x,it.z,(it.sol[2]-it.sol[0])/2]); } if(WEEDS&&WEEDS.lawnDrop)WEEDS.lawnDrop(P.rect()); });
   PARK.ring=NOTREES?null:mesh(TREES,true,true,false,{}); PARK.ringTrunks=null;   // the old trees in their own leaves, the ring and the park's woods in one mesh
   // the ring cheap from far off (owner, 8 Nov 2026: "simplify the other park trees too"): each tree whole within 30 tiles of you; further off its plain shape, a round crown (twenty triangles) on a six-sided trunk, all of them one draw; a tree moved in the world editor stays whole
   if(PARK.ring&&PARK.ring.isBatchedMesh){ const R=PARK.ring, IT=R.userData.items||[], ID=R.userData.ids||[], n=IT.length, GR=[[.29,.47,.24],[.35,.53,.28],[.25,.42,.22],[.4,.58,.3]];
@@ -480,7 +480,9 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     for(const q of LP){ const [x,y]=snap(q[0],q[1]), d=pd(x,y); if(d<.5||d>2.6||BK.wet(x,y,.8)||FOUNT.lake(x,y)<1||inCL(x,y,1)||x<P.x0+2||x>P.x1-2||y<P.y0+2||y>P.y1-2)continue;
       if(TREES.some(t=>Math.hypot(t[1]-x,t[2]-y)<1.6)||ok.some(o=>Math.hypot(o[0]-x,o[1]-y)<9))continue; ok.push([x,y]); }
     // a pair at the drawbridge's foot, either side of the way up to the gate
-    for(const sd of [-1,1]){ const [x,y]=snap(CASTLE.gate-PO.x+sd*2.4,CL[1]-1.8); if(inCL(x,y,.2)||pd(x,y)<.5)continue; for(let i=ok.length-1;i>=0;i--)if(Math.hypot(ok[i][0]-x,ok[i][1]-y)<6)ok.splice(i,1); ok.push([x,y]); }
+    for(const sd of [-1,1]){ const [x,y]=snap(CASTLE.gate-PO.x+sd*2.4,CL[1]-1.8); if(inCL(x,y,.2)||pd(x,y)<.5)continue; for(let i=ok.length-1;i>=0;i--)if(Math.hypot(ok[i][0]-x,ok[i][1]-y)<6)ok.splice(i,1); ok.push(Object.assign([x,y],{gate:1})); }
+    // the park's one kind of lamp post, a third fewer (owner, 9 Nov 2026: "more sparse by 33%"): the most crowded one goes, until two in three are left
+    { const nn=o=>ok.reduce((m,q)=>q===o?m:Math.min(m,Math.hypot(q[0]-o[0],q[1]-o[1])),1e9); for(let want=Math.round(ok.length*2/3);ok.length>want;){ let bi=0, bd=1e9; ok.forEach((o,i)=>{ const d=nn(o); if(d<bd&&!o.gate){ bd=d; bi=i; } }); ok.splice(bi,1); } }
     LP.length=0; LP.push(...ok); }
   // the park lamp (owner, 28 Oct 2026): a dark metal post and a metal hood; the bulb hides under the hood, so only its light on the ground shows
   const MET=(c0,c1)=>(i,j)=>{ const t=(i*7+j*3)%11<2?1.12:1; return [c0*t|0,c1*t|0,(c1+6)*t|0]; };
@@ -488,7 +490,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     for(const [w,z0,z1,c] of [[.07,h0-4,h0,52],[.3,h0,h0+2,62],[.25,h0+2,h0+4,74],[.17,h0+4,h0+6,86],[.07,h0+6,h0+9,70]])block(x-w,y-w,x+w,y+w,z0,z1,35,()=>[c+30,c+34,c+40],0,z1-z0,MET(c,c+4));
     { const w=.2, yb=Y(h0-.2), tx=SHARED.BOD.faceTex(6,6,(i,j)=>i<1||i>4||j<1||j>4?[90,88,84]:[255,236,190,1]); SHARED.BOD.bq([X(x-w),yb,Z(y-w)],[X(x+w),yb,Z(y-w)],[X(x+w),yb,Z(y+w)],[X(x-w),yb,Z(y+w)],tx,'G'); SHARED.BOD.bq([X(x-w),yb,Z(y+w)],[X(x+w),yb,Z(y+w)],[X(x+w),yb,Z(y-w)],[X(x-w),yb,Z(y-w)],tx,'G'); }
     const L=new THREE.PointLight(new THREE.Color(1,.86,.62),70,12*TILE,1.6); L.position.set(X(x),Y(h0-6),Z(y)); L.userData.i0=L.intensity; L.userData.near=.3*TILE; L.intensity=0; (PARK.hoods||(PARK.hoods=[])).push(L); scene.add(L); lamps.push(L);   // lit by night only, with the path lamps (lampLit)
-    o.sol=[X(x-.1),Z(y-.1),X(x+.1),Z(y+.1)]; o.fix=[X(x-.1),Z(y-.1),0,X(x+.1),Z(y+.1),Y(h0)]; o.follow=[L]; SOL.up.push(o.sol); FIX.up.push(o.fix); } BATCH.tag=null; });
+    o.sol=[X(x-.1),Z(y-.1),X(x+.1),Z(y+.1)]; o.fix=[X(x-.1),Z(y-.1),0,X(x+.1),Z(y+.1),Y(h0)]; o.follow=[L]; SOL.up.push(o.sol); FIX.up.push(o.fix); } BATCH.tag=null; if(WEEDS.addFeet)WEEDS.addFeet(LP.map(([x,y])=>[X(x),Z(y),.15*TILE,.6*TILE])); });
   const sol=(x0,y0,x1,y1,h)=>{ SOL.up.push([X(x0),Z(y0),X(x1),Z(y1)]); FIX.up.push([X(x0),Z(y0),0,X(x1),Z(y1),Y(h)]); };
   for(const [x0,y0,x1,y1] of RUNS)sol(x0,y0,x1,y1,WH); for(const [,,x0,y0,x1,y1] of PIERS)sol(x0-.14,y0-.14,x1+.14,y1+.14,PH+18);
   const BM=(k,map,emap)=>new THREE.MeshLambertMaterial({map,emissiveMap:emap||null,emissive:emap?new THREE.Color(1,1,1):new THREE.Color(0,0,0),alphaTest:.5,side:THREE.DoubleSide});
@@ -508,10 +510,12 @@ await grab('park',async()=>{});
   P.box=()=>{ const r=P.rect(), b=CASTLE.b, B=SHARED.BOD, xs=[B.XS(b[0]),B.XS(b[1])], zs=[B.ZS(b[2]),B.ZS(b[3])]; return [Math.min(r[0],...xs),Math.min(r[1],...zs),Math.max(r[2],...xs),Math.max(r[3],...zs)]; };   // the park and the castle, in the world
   P.steps=[]; P.load=async()=>{ FADE.note('DOWNLOADING THE PARK'); await LOAD('park'); const t0=performance.now(), N0=P.Q.length; while(P.Q.length){ FADE.note('BUILDING THE PARK',N0-P.Q.length,N0); const t=performance.now(); P.run(P.Q.shift()); P.steps.push(Math.round(performance.now()-t)); await brk(); } P.ready=true; FADE.note(null); scene.updateMatrixWorld();
     for(const f of [()=>ROOMS.reset(),()=>CLIP.run(),()=>PERFX.chunk(),()=>CULL.scan()])try{ f(); }catch(e){ console.warn('PARK',e); } P.ms=Math.round(performance.now()-t0); };
-  P.show=on=>{ '@later'; P.in=on; VIS.hide(G,'park',true); VIS.hide(G,'park',!(on&&SHARED.LVL==='up')); if(P.stand)P.stand.visible=!on||!!(PARK.trees&&PARK.trees.isBatchedMesh&&P.stand.isBatchedMesh); if(PARK.lodReset)PARK.lodReset(); if(MODS.landHoles)MODS.landHoles(on); if(window.WEEDS&&WEEDS.lawnDrop)WEEDS.lawnDrop(P.rect()); for(const f of P.onShow)try{ f(on); }catch(e){ console.warn('PARK',e); } };
+  P.show=on=>{ '@later'; P.in=on; VIS.hide(G,'park',true); VIS.hide(G,'park',!(on&&SHARED.LVL==='up')); if(P.stand)P.stand.visible=!on||!!(PARK.trees&&PARK.trees.isBatchedMesh&&P.stand.isBatchedMesh); if(PARK.lodReset)PARK.lodReset(); if(MODS.landHoles)MODS.landHoles(on); if(WEEDS&&WEEDS.lawnDrop)WEEDS.lawnDrop(P.rect()); for(const f of P.onShow)try{ f(on); }catch(e){ console.warn('PARK',e); } };
   const go=async(on,jump)=>{ busy=true; await FADE.run(on?'ENTERING CENTRAL PARK':'LEAVING CENTRAL PARK',async()=>{ P.hold=true; try{ if(on&&!P.ready)await P.load(); } finally{ P.hold=false; } P.show(on); },{cut:jump,hold:140}); busy=false; };
+  { const load0=P.load; let once=null; P.load=()=>once||(once=load0()); }
+  P.due=()=>!P.ready&&SHARED.floor==='up'&&!(MODS.apts&&MODS.apts.inReal)&&P.within(pos.x,pos.z,-20); FADE.arrive.push(async()=>{ if(P.due()&&!P.hold){ P.hold=true; try{ await P.load(); } finally{ P.hold=false; } } });
   let bg=false; const NEAR=14;   // the park is drawn (and loaded quietly first) from this many tiles outside its wall, so its gates show the real inside
-  P.door=(py,p)=>{ if(busy||!window.__started||SHARED.LVL!=='up'||LEVELS.way||UI.freeCam)return; const jump=lx!=null&&Math.hypot(p.x-lx,p.z-lz)>2*TILE; lx=p.x; lz=p.z;
+  P.door=(py,p)=>{ if(busy||!SYS.started||SHARED.LVL!=='up'||SHARED.floor!=='up'||LEVELS.way||UI.freeCam)return; const jump=lx!=null&&Math.hypot(p.x-lx,p.z-lz)>2*TILE; lx=p.x; lz=p.z;
     if(!P.ready&&!bg&&P.within(p.x,p.z,-NEAR-6)){ bg=true; P.load().finally(()=>{ bg=false; }); }
     const w=P.within(p.x,p.z,P.in?-NEAR-.35:-NEAR+.35); if(w===P.in)return; if(w&&!P.ready&&!bg||jump)go(w,jump); else if(!w||P.ready)P.show(w); };
   window.PARKPLACE=()=>({in:P.in,ready:P.ready,busy,ms:P.ms,steps:P.steps,left:P.Q.length,kids:G.children.length}); }

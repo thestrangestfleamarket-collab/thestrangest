@@ -1,11 +1,10 @@
 // THE USE: USE lets the player sit on, switch, open and pick up the things around them.
 import {SHARED, THREE} from './003-shx.js';
-import {LEVELS, LITE, MOTION, PARK, PERFX, pos, RAG, SFX, SND, st, UI, USE, VIT, W3} from './003b-systems.js';
+import {LEVELS, LITE, MOTION, PARK, PERFX, pos, RAG, SFX, st, UI, USE, VIT, W3} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {TILE, ZU} from './006-map-pre.js';
 import {OBJS} from './008-batch.js';
 import {KIT} from './068-kit.js';
-import {SOUND} from './091-sfx.js';
 Object.assign(USE,{seat:null}); window.USE=USE;
 { const T=TILE, V3=THREE.Vector3, v=new V3(), KINDS=[[/bench|chair|stool|sofa|armchair|couch|recliner|sitting log/i,'sit'],[/lamp|lantern|wall light|fluorescent tube|andon/i,'lamp'],[/drinks fridge/i,'fridge'],[/drinks machine/i,'vend'],[/^radio$/i,'radio']];
   const kindOf=o=>{ if(o.useK!==undefined)return o.useK; const k=KINDS.find(([r])=>r.test(o.name||'')); return o.useK=k?k[1]:null; };
@@ -30,7 +29,7 @@ Object.assign(USE,{seat:null}); window.USE=USE;
   const stand=back=>{ const s=USE.seat; if(!s)return; USE.seat=null; st.sit=null; if(back){ pos.x=s.back.x; pos.z=s.back.z; } };
   USE.stand=()=>stand(true);
   USE.sitAt=(x,z,y,hd,more)=>{ '@later'; SFX.play('creak',{vol:.5,vary:.3,delay:.4}); const g=SHARED.groundY(x,z);   // sit at a point: a chair's top, a train's seat (more: what carries the seat)
-    USE.seat={back:pos.clone(),x,z,...more}; pos.x=x; pos.z=z; SHARED.target=null; SHARED.heading=hd; st.sit={z:Math.max(2,(y-g)/(ZU*W3.SZ*(W3.BH||1)))}; MOTION.play('sitDown'); };
+    USE.seat={back:pos.clone(),x,z,...more}; pos.x=x; pos.z=z; SHARED.target=null; SHARED.heading=hd; st.sit={z:Math.max(2,(y-g)/(ZU*W3.SZ*(W3.BH||1)))}; st.target=0; st.w=0; MOTION.play('sitDown'); st.mv=st.mvw=0; };   // (no stride carried onto the seat: it slid you off a bench, owner 9 Nov 2026)
   const sitOn=(se,th)=>{ const [x,z]=near(se.S,.4*T); let fx=se.fx, fz=se.fz; if(!fx&&!fz){ fx=pos.x-x; fz=pos.z-z; const l=Math.hypot(fx,fz)||1; fx/=l; fz/=l; }
     USE.sitAt(x-fx*.06*T,z-fz*.06*T,se.y,Math.atan2(fx,fz)); };
   const lightsOf=b=>{ const e=.8*T; return LITE.recs.filter(L=>{ const p=L.position; return p.x>b.min.x-e&&p.x<b.max.x+e&&p.y>b.min.y-e&&p.y<b.max.y+e&&p.z>b.min.z-e&&p.z<b.max.z+e; }); };
@@ -65,7 +64,7 @@ Object.assign(USE,{seat:null}); window.USE=USE;
         let nx=uy*wz-uz*wy, ny=uz*wx-ux*wz, nz=ux*wy-uy*wx; const l=Math.hypot(nx,ny,nz)||1; for(let q=0;q<3;q++){ N[j+q*3]=nx/l; N[j+q*3+1]=ny/l; N[j+q*3+2]=nz/l; } }
       tg.add(g); }); for(const g of tg){ g.attributes.position.needsUpdate=g.attributes.normal.needsUpdate=true; } };
   const fridge=(o,th)=>{ const d=doorOf(o); d.to=d.to?0:1.75; DOORS.add(d); th.name=d.to?'OPEN':'SHUT'; const at=box(o).getCenter(new V3()); if(d.to)SFX.play('latch',{at,vol:.8}); else SFX.play('door',{at,vol:.35,pitch:1.6,delay:.25}); };
-  const ac=()=>{ if(!SOUND)return null; if(SND.ctx)return SND.ctx; if(!USE.ac)try{ USE.ac=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } if(USE.ac.state!=='running')USE.ac.resume(); return USE.ac; };
+  const ac=()=>SFX.ctx();
   const BLINK=new Set(), canM=new THREE.MeshLambertMaterial({color:new THREE.Color('rgb(196,44,40)')}), canG=new THREE.BoxGeometry(.07*T,.13*T,.07*T), CANS=[];
   const vend=(o,th)=>{ '@later'; const b=box(o), c=b.getCenter(new V3()); let dx=pos.x-c.x, dz=pos.z-c.z; if(Math.abs(dx)>Math.abs(dz)){ dx=Math.sign(dx); dz=0; } else { dz=Math.sign(dz); dx=0; }
     const m=new THREE.Mesh(canG,canM); m.position.set(dx?(dx>0?b.max.x:b.min.x)+dx*.12*T:c.x+(Math.random()-.5)*.2*T,b.min.y+.45*T,dz?(dz>0?b.max.z:b.min.z)+dz*.12*T:c.z+(Math.random()-.5)*.2*T); m.castShadow=true;
@@ -73,7 +72,7 @@ Object.assign(USE,{seat:null}); window.USE=USE;
     o.blink=.5; BLINK.add(o); th.name='A CAN'; };
   const TUNE=[[0,.25],[4,.25],[7,.25],[9,.5],[7,.25],[4,.25],[2,.5],[0,.25],[2,.25],[4,.5],[-3,.25],[0,.75],[null,.5]];
   const radio=(o,th)=>{ o.on=!o.on; USE.radio=o.on?{o,n:0,t:0}:null; if(USE.rg){ USE.rg.gain.cancelScheduledValues(0); USE.rg.disconnect(); USE.rg=null; } th.name=o.on?'RADIO ON':'RADIO OFF'; };
-  const radioTick=()=>{ '@later'; const R=USE.radio, c=R&&ac(); if(!c||c.state!=='running')return; if(!USE.rg){ USE.rg=c.createGain(); USE.rg.connect(c.destination); R.t=c.currentTime+.05; }
+  const radioTick=()=>{ '@later'; const R=USE.radio, c=R&&ac(); if(!c||c.state!=='running')return; if(!USE.rg){ USE.rg=c.createGain(); USE.rg.connect(SFX.out(c)); R.t=c.currentTime+.05; }
     const p=box(R.o).getCenter(v), d=Math.hypot(p.x-pos.x,p.z-pos.z); USE.rg.gain.setTargetAtTime(.07*Math.max(0,1-d/(9*T)),c.currentTime,.1);
     while(R.t<c.currentTime+.3){ const [s,len]=TUNE[R.n%TUNE.length], dur=len*.42; R.n++; if(s!=null)for(const [k,typ,amp] of [[0,'square',.5],[-12,'triangle',.8]]){ const os=c.createOscillator(), G=c.createGain(); os.type=typ; os.frequency.value=392*Math.pow(2,(s+k)/12);
         G.gain.setValueAtTime(amp,R.t); G.gain.setTargetAtTime(0,R.t+dur*.6,.04); os.connect(G).connect(USE.rg); os.start(R.t); os.stop(R.t+dur+.2); } R.t+=dur; } };
@@ -95,7 +94,7 @@ Object.assign(USE,{seat:null}); window.USE=USE;
   addEventListener('keydown',e=>{ if(USE.seat&&!e.repeat&&(sitKeys.has((e.key||'').toLowerCase())||!/^(q|e|r|z|x|v|c|0|=|-|\+|escape|control|alt|meta|tab)$/i.test(e.key||'')))stand(true); });
   const g0=UI.goTick; let last=performance.now();
   UI.goTick=()=>{ g0(); const now=performance.now(), dt=Math.min(.05,(now-last)/1000); last=now;
-    const S=USE.seat; if(S){ if(SHARED.target||st.move&&!/sitDown/.test(st.move.name)||RAG.on)stand(!RAG.on); else if(Math.hypot(pos.x-S.x,pos.z-S.z)>.3*T){ USE.seat=null; st.sit=null; } else { pos.x=S.x; pos.z=S.z; } }
+    const S=USE.seat; if(S){ if(SHARED.target||st.move&&!/sitDown/.test(st.move.name)||RAG.on)stand(!RAG.on); else if(Math.hypot(pos.x-S.x,pos.z-S.z)>.3*T){ USE.seat=null; st.sit=null; } else { pos.x=S.x; pos.z=S.z; st.mv=0; } }
     for(const d of DOORS){ const step=dt*9, k=d.to-d.a; d.a=Math.abs(k)<=step?d.to:d.a+Math.sign(k)*step; turnDoor(d); if(d.a===d.to)DOORS.delete(d); }
     for(let i=0;i<CANS.length;i++){ const m=CANS[i], u=m.userData; if(u.rest)continue; u.vy-=30*T*dt; m.position.y+=u.vy*dt; if(m.position.y<=u.floor){ m.position.y=u.floor; if(Math.abs(u.vy)>2*T){ u.vy*=-.3; } else { u.rest=true; m.rotation.z=Math.PI/2; m.position.y=u.floor-.03*T; } } }
     for(const o of BLINK){ o.blink-=dt; tint(o,o.blink>0&&Math.floor(o.blink/.125)%2===0?[1.8,1.8,1.8]:[1,1,1],glows); if(!(o.blink>0))BLINK.delete(o); }

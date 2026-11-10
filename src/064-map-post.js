@@ -23,13 +23,13 @@ SHARED.groundY=(x,z)=>{ for(const g of ROOMS.grounds)if(x>g.x0&&x<g.x1&&z>g.z0&&
   if(G)g('ghost',SHARED.BOD.X(G.x0),SHARED.BOD.Z(G.y0),SHARED.BOD.X(G.x1),SHARED.BOD.Z(G.y1)); for(const R of STORE.rooms)g(R.id,R.x0,R.z0,R.x1,R.z1); }
 const HEMI=new THREE.HemisphereLight(0x55607a,0x14110e,.3); scene.add(HEMI);
 Object.assign(LITE,{N:8,pool:[],recs:[],sel:[],t:0,f:0,at:null,V:new THREE.Vector3()}); window.LITE=LITE;
-for(let i=0;i<LITE.N;i++){ const L=new THREE.PointLight(0xffffff,0,8*TILE,1.6); L.userData.pool=true; if(!i){ L.castShadow=true; L.shadow.mapSize.set(1024,1024); L.shadow.camera.near=.1; L.shadow.camera.far=14; L.shadow.bias=-.002; L.shadow.normalBias=.06; L.shadow.autoUpdate=false; } scene.add(L); LITE.pool.push(L); }
-{ let t=0; SYS.add('life',dt=>{ if((t-=dt)>0)return; t=.2; if(LITE.pool[0].intensity>0)LITE.pool[0].shadow.needsUpdate=true; },'064-lampshadow'); }   // a dark lamp's shadow is never seen: not redrawn
+for(let i=0;i<LITE.N;i++){ const L=new THREE.PointLight(0xffffff,0,8*TILE,1.6); L.userData.pool=true; if(!i){ L.castShadow=false; L.shadow.mapSize.set(1024,1024); L.shadow.camera.near=.1; L.shadow.camera.far=14; L.shadow.bias=-.002; L.shadow.normalBias=.06; L.shadow.autoUpdate=false; } scene.add(L); LITE.pool.push(L); }
+{ let t=0; SYS.add('life',dt=>{ if((t-=dt)>0)return; t=.2; if(LITE.pool[0].castShadow&&LITE.pool[0].intensity>0)LITE.pool[0].shadow.needsUpdate=true; },'064-lampshadow'); }   // a dark lamp's shadow is never seen: not redrawn
 SHL.push(LITE.pool[0],LITE.pool[1]);
 const LITE_init0=()=>{ const top=o=>{ while(o.parent&&o.parent!==scene)o=o.parent; return o; };
   scene.traverse(o=>{ if(o.isPointLight&&!o.userData.pool)LITE.recs.push(o); });
   for(const L of LITE.recs){ const g=top(L); L.userData.grp=g===L?null:g; L.castShadow=false; L.removeFromParent(); } };
-LITE.init=(...a)=>{ const r=LITE_init0(...a); SYS.run('liteInit'); return r; };
+LITE.init=(...a)=>{ const r=LITE_init0(...a); LITE.ready=true; SYS.run('liteInit'); return r; };
 LITE.dim=p=>{ const c=SHARED.cam; if(!c||!UI.persp)return 1; const t=Math.min(1,Math.max(0,(c.position.distanceTo(p)/TILE-10)/30)); return 1-.85*t*t*(3-2*t); };   // far lamps light the ground less
 LITE.tick=(dt,x,y,z)=>{ const P=LITE.pool;
   LITE.t=Math.min(LITE.t-dt,.25); if(!(LITE.t>0)){ LITE.t=.25; const R=typeof ROOMS!=='undefined'?ROOMS:null, RB=R&&R.boxes?R.boxes():[], cur=R?R.cur:null, e=.5*TILE;
@@ -102,7 +102,7 @@ window.MAPDBG=()=>({LVL:SHARED.LVL,cut:MODS.stairCut.constant,vis:Object.fromEnt
   for(const S of RING.stairs)hole(tt(XS(S.x0)),tt(ZS(S.y0)),tt(XS(S.x1)),tt(ZS(S.y1)));
   { const S=CASTLE.stair; hole(tt(XS(S.x0)),tt(ZS(S.y0)),tt(XS(S.x1)),tt(ZS(S.y1))); }
   const mk=()=>{ const geo=new THREE.ShapeGeometry(sh); geo.rotateX(-Math.PI/2); geo.scale(TILE,1,TILE); geo.translate(0,-.5*ZU,0); return geo; }, geo=mk(); let geoH=null;
-  MODS.landHoles=on=>{ if(on&&!geoH&&window.PARK&&PARK.brook&&FOUNT.S){ for(const H of PARK.wetHole())sh.holes.push(new THREE.Path(H.map(([x,y])=>{ let a=tt(XS(x+(PARK.ox||0))), z=Math.min(ZT-.3,tt(ZS(y+(PARK.oy||0)))); if(z>ZA)a=Math.min(a,XE-.3); return new THREE.Vector2(a,-z); }))); geoH=mk(); } m.geometry=on&&geoH?geoH:geo; };
+  MODS.landHoles=on=>{ if(on&&!geoH&&PARK&&PARK.brook&&FOUNT.S){ for(const H of PARK.wetHole())sh.holes.push(new THREE.Path(H.map(([x,y])=>{ let a=tt(XS(x+(PARK.ox||0))), z=Math.min(ZT-.3,tt(ZS(y+(PARK.oy||0)))); if(z>ZA)a=Math.min(a,XE-.3); return new THREE.Vector2(a,-z); }))); geoH=mk(); } m.geometry=on&&geoH?geoH:geo; };
   const MR=LEVEL.edge&&LEVEL.edge.mirror, MB=[0,1].map(i=>{ if(!MR)return new THREE.Vector4(1e9,1e9,1e9,1e9); const a=i?MR.x[1]:MR.x[0]-MR.reach, b=i?MR.x[1]+MR.reach:MR.x[0], za=tt(ZS(MR.ground[0])), zb=tt(ZS(MR.ground[1])); return new THREE.Vector4(tt(XS(a)),Math.min(za,zb),tt(XS(b)),Math.max(za,zb)); });   // the street's mirror past its ends (161d) brings its own lawn
   const lm=new THREE.MeshLambertMaterial({map:t}); lm.onBeforeCompile=sh=>{ sh.uniforms.tGK={value:gt}; sh.uniforms.tKM={value:KM.m}; sh.uniforms.uKM={value:KM.v}; sh.uniforms.uMB={value:MB};
     sh.fragmentShader='uniform highp sampler2DArray tGK; uniform sampler2D tKM; uniform vec4 uKM, uMB[2];\n'+sh.fragmentShader.replace('#include <map_fragment>',`{ highp vec2 gt=vMapUv*${K}.; for(int i=0;i<2;i++)if(gt.x>uMB[i].x&&gt.x<uMB[i].z&&-gt.y>uMB[i].y&&-gt.y<uMB[i].w)discard; highp vec2 gq=floor(gt*24.)/24.; vec2 gj=vec2(fract(sin(dot(gq,vec2(12.9898,78.233)))*43758.5453),fract(sin(dot(gq,vec2(39.3468,11.135)))*24634.6345))-.5;

@@ -650,7 +650,69 @@
    "face": "s",
    "row": 2,
    "name": "ANTIQUES & PAWN",
-   "pf": "antiques"
+   "pf": "antiques",
+   "merchant": "junkman"
+  },
+  {
+   "id": "fishing",
+   "kind": "front",
+   "x0": -36.5,
+   "x1": -12.5,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2,
+   "name": "FISHING & SCUBA",
+   "merchant": "fisherman_in_waders",
+   "pf": "outfitter"
+  },
+  {
+   "id": "armor",
+   "kind": "front",
+   "x0": -11.5,
+   "x1": 0.5,
+   "name": "THE ARMOURY",
+   "merchant": "samurai_warrior",
+   "lot": true,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2,
+   "pf": "florist"
+  },
+  {
+   "id": "skate",
+   "kind": "front",
+   "x0": 1.5,
+   "x1": 13.5,
+   "name": "THE SKATE SHOP",
+   "merchant": "skate_shop_owner",
+   "lot": true,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2,
+   "pf": "florist"
+  },
+  {
+   "id": "books",
+   "name": "THE BOOKSTORE",
+   "kind": "front",
+   "x0": 14.5,
+   "x1": 35.5,
+   "merchant": "professor",
+   "at": [
+    -2.4,
+    9.62
+   ],
+   "inW": 16,
+   "inD": 10,
+   "inH": 100,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2,
+   "pf": "books"
   },
   {
    "id": "aquarium",
@@ -675,7 +737,7 @@
    "y1": -95.9,
    "face": "s",
    "row": 2,
-   "name": "THE FISH MARKET",
+   "name": "THE FISH TABLES",
    "fence": "barbed"
   },
   {
@@ -690,76 +752,52 @@
    "name": "THE FLEA MARKET"
   },
   {
-   "id": "flea2",
-   "kind": "lot",
+   "id": "fishmarket",
+   "kind": "market",
    "x0": 116.37,
-   "x1": 146.99,
+   "x1": 252,
    "y0": -107.9,
    "y1": -95.9,
    "face": "s",
    "row": 2,
-   "name": "THE FLEA MARKET"
-  },
-  {
-   "id": "fishing",
-   "kind": "front",
-   "x0": 146.99,
-   "x1": 170.99,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2,
-   "name": "FISHING & SCUBA",
-   "merchant": "fisherman_in_waders",
-   "pf": "outfitter"
-  },
-  {
-   "id": "armor",
-   "kind": "front",
-   "x0": 182.49,
-   "x1": 194.49,
-   "name": "THE ARMOURY",
-   "merchant": "samurai_warrior",
-   "lot": true,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2,
-   "pf": "florist"
-  },
-  {
-   "id": "skate",
-   "kind": "front",
-   "x0": 206,
-   "x1": 218,
-   "name": "THE SKATE SHOP",
-   "merchant": "skate_shop_owner",
-   "lot": true,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2,
-   "pf": "florist"
-  },
-  {
-   "id": "books",
-   "name": "THE BOOKSTORE",
-   "kind": "front",
-   "x0": 229.5,
-   "x1": 250.5,
-   "merchant": "professor",
-   "at": [
-    -2.4,
-    9.62
+   "name": "THE FISH MARKET",
+   "note": "the Hudson row east of the way through (owner, 9 Nov 2026): the yard, the tin shed, the brick shed (x spans), the highway over the promenade (y span, deck height in metres, a bent every so many tiles); stalls: a wholesaler each (who: its record in characters.json)",
+   "yard": [
+    117,
+    147
    ],
-   "inW": 16,
-   "inD": 10,
-   "inH": 100,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2,
-   "pf": "books"
+   "tin": [
+    148.5,
+    200
+   ],
+   "brick": [
+    203.5,
+    250.5
+   ],
+   "highway": {
+    "y0": -128.6,
+    "y1": -111.4,
+    "h": 6.6,
+    "every": 11.3
+   },
+   "stalls": [
+    {
+     "who": "fm_bluewater",
+     "x": 160.5
+    },
+    {
+     "who": "fm_carmelo",
+     "x": 187.5
+    },
+    {
+     "who": "fm_oldslip",
+     "x": 215
+    },
+    {
+     "who": "fm_lightning",
+     "x": 240
+    }
+   ]
   },
   {
    "id": "bath",
@@ -776,10 +814,10 @@
    "id": "barn",
    "name": "THE BARN",
    "kind": "front",
-   "x0": 72.8,
-   "x1": 81.2,
-   "y0": -25.6,
-   "y1": -18.4,
+   "x0": 59.8,
+   "x1": 68.2,
+   "y0": 16.4,
+   "y1": 23.6,
    "face": "e",
    "park": true,
    "inW": 26,
@@ -1008,11 +1046,22 @@
    },
    {
     "id": "farm",
-    "x": 85,
-    "y": -22,
+    "x": 72,
+    "y": 20,
     "w": 34,
     "d": 24,
-    "note": "the farm (owner, 8 Nov 2026): the barn and its paddock; no trees or paths here"
+    "note": "the farm (owner, 8 Nov 2026; moved deeper into the park 9 Nov 2026): the barn and its paddock; no trees or paths here; pen the paddock inside its fence (map tiles), gate its shut gate in the fence's gap (rot as a thing's)",
+    "pen": [
+     73.3,
+     10.8,
+     86.0,
+     28.2
+    ],
+    "gate": {
+     "x": 86.78,
+     "y": 21.9,
+     "rot": 1.5708
+    }
    }
   ],
   "stalls": [
@@ -1148,6 +1197,7 @@
    ]
   }
  ],
+ "racks": {"note": "the brochure racks on the street (159k-brochures): map tiles, rot the way one faces in radians", "at": [{"x": 108.5, "y": -40.5}, {"x": 127, "y": -71.8}, {"x": 171.5, "y": -110.2}]},
  "things": [
   {
    "k": "meter",
@@ -1306,18 +1356,6 @@
   },
   {
    "k": "p:parkbench",
-   "x": 104.71,
-   "y": -23.43,
-   "rot": 1.478
-  },
-  {
-   "k": "p:parkbench",
-   "x": 113.67,
-   "y": -22.59,
-   "rot": -1.664
-  },
-  {
-   "k": "p:parkbench",
    "x": 104.51,
    "y": -18.2,
    "rot": 1.583
@@ -1327,18 +1365,6 @@
    "x": 113.5,
    "y": -18.31,
    "rot": -1.559
-  },
-  {
-   "k": "p:parkbench",
-   "x": 104.86,
-   "y": -12.99,
-   "rot": 1.686
-  },
-  {
-   "k": "p:parkbench",
-   "x": 113.8,
-   "y": -14.02,
-   "rot": -1.456
   },
   {
    "k": "p:parkbench",
@@ -1354,18 +1380,6 @@
   },
   {
    "k": "p:parkbench",
-   "x": 106.78,
-   "y": -3.07,
-   "rot": 1.816
-  },
-  {
-   "k": "p:parkbench",
-   "x": 115.51,
-   "y": -5.26,
-   "rot": -1.326
-  },
-  {
-   "k": "p:parkbench",
    "x": 107.98,
    "y": 1.58,
    "rot": 1.824
@@ -1375,18 +1389,6 @@
    "x": 116.69,
    "y": -0.68,
    "rot": -1.317
-  },
-  {
-   "k": "p:parkbench",
-   "x": 109.08,
-   "y": 6.06,
-   "rot": 1.793
-  },
-  {
-   "k": "p:parkbench",
-   "x": 117.86,
-   "y": 4.08,
-   "rot": -1.348
   },
   {
    "k": "p:parkbench",
@@ -1402,39 +1404,15 @@
   },
   {
    "k": "p:parkbench",
-   "x": 110.42,
-   "y": 14.76,
-   "rot": 1.635
-  },
-  {
-   "k": "p:parkbench",
-   "x": 119.4,
-   "y": 14.18,
-   "rot": -1.506
-  },
-  {
-   "k": "p:parkbench",
    "x": 119.45,
    "y": 19.42,
    "rot": -1.613
   },
   {
    "k": "p:parkbench",
-   "x": 118.96,
-   "y": 24.6,
-   "rot": -1.712
-  },
-  {
-   "k": "p:parkbench",
    "x": 118.04,
    "y": 29.61,
    "rot": -1.785
-  },
-  {
-   "k": "p:parkbench",
-   "x": 116.89,
-   "y": 34.4,
-   "rot": -1.822
   },
   {
    "k": "p:parkbench",
@@ -1450,27 +1428,9 @@
   },
   {
    "k": "p:parkbench",
-   "x": 105.84,
-   "y": 41.6,
-   "rot": 1.364
-  },
-  {
-   "k": "p:parkbench",
-   "x": 114.65,
-   "y": 43.45,
-   "rot": -1.778
-  },
-  {
-   "k": "p:parkbench",
    "x": 104.97,
    "y": 46.61,
    "rot": 1.436
-  },
-  {
-   "k": "p:parkbench",
-   "x": 107.44,
-   "y": 71.86,
-   "rot": 1.825
   },
   {
    "k": "p:parkbench",
@@ -1486,18 +1446,6 @@
   },
   {
    "k": "p:parkbench",
-   "x": 109.6,
-   "y": 80.85,
-   "rot": 1.763
-  },
-  {
-   "k": "p:parkbench",
-   "x": 118.43,
-   "y": 79.13,
-   "rot": -1.379
-  },
-  {
-   "k": "p:parkbench",
    "x": 110.26,
    "y": 85.18,
    "rot": 1.679
@@ -1507,18 +1455,6 @@
    "x": 119.21,
    "y": 84.21,
    "rot": -1.462
-  },
-  {
-   "k": "p:parkbench",
-   "x": 110.5,
-   "y": 89.47,
-   "rot": 1.576
-  },
-  {
-   "k": "p:parkbench",
-   "x": 119.5,
-   "y": 89.43,
-   "rot": -1.566
   },
   {
    "k": "p:parkbench",
@@ -1534,18 +1470,6 @@
   },
   {
    "k": "p:parkbench",
-   "x": 109.65,
-   "y": 98.08,
-   "rot": 1.385
-  },
-  {
-   "k": "p:parkbench",
-   "x": 118.49,
-   "y": 99.74,
-   "rot": -1.757
-  },
-  {
-   "k": "p:parkbench",
    "x": 108.68,
    "y": 102.49,
    "rot": 1.331
@@ -1555,18 +1479,6 @@
    "x": 117.42,
    "y": 104.63,
    "rot": -1.811
-  },
-  {
-   "k": "p:parkbench",
-   "x": 107.51,
-   "y": 107.04,
-   "rot": 1.316
-  },
-  {
-   "k": "p:parkbench",
-   "x": 116.22,
-   "y": 109.31,
-   "rot": -1.826
   },
   {
    "k": "p:parkbench",
@@ -1582,18 +1494,6 @@
   },
   {
    "k": "p:parkbench",
-   "x": 105.31,
-   "y": 116.69,
-   "rot": 1.399
-  },
-  {
-   "k": "p:parkbench",
-   "x": 114.18,
-   "y": 118.23,
-   "rot": -1.742
-  },
-  {
-   "k": "p:parkbench",
    "x": 104.66,
    "y": 121.82,
    "rot": 1.49
@@ -1603,18 +1503,6 @@
    "x": 113.63,
    "y": 122.54,
    "rot": -1.651
-  },
-  {
-   "k": "p:parkbench",
-   "x": 104.52,
-   "y": 127.05,
-   "rot": 1.596
-  },
-  {
-   "k": "p:parkbench",
-   "x": 113.51,
-   "y": 126.82,
-   "rot": -1.545
   },
   {
    "k": "p:parkbench",
@@ -1630,18 +1518,6 @@
   },
   {
    "k": "p:parkbench",
-   "x": 105.78,
-   "y": 137.29,
-   "rot": 1.776
-  },
-  {
-   "k": "p:parkbench",
-   "x": 114.6,
-   "y": 135.46,
-   "rot": -1.366
-  },
-  {
-   "k": "p:parkbench",
    "x": 106.91,
    "y": 142.12,
    "rot": 1.819
@@ -1651,18 +1527,6 @@
    "x": 115.63,
    "y": 139.91,
    "rot": -1.323
-  },
-  {
-   "k": "p:parkbench",
-   "x": 108.11,
-   "y": 146.74,
-   "rot": 1.823
-  },
-  {
-   "k": "p:parkbench",
-   "x": 116.82,
-   "y": 144.5,
-   "rot": -1.319
   },
   {
    "k": "p:parkbench",
@@ -1678,18 +1542,6 @@
   },
   {
    "k": "p:parkbench",
-   "x": 110.01,
-   "y": 155.6,
-   "rot": 1.719
-  },
-  {
-   "k": "p:parkbench",
-   "x": 118.91,
-   "y": 154.26,
-   "rot": -1.422
-  },
-  {
-   "k": "p:parkbench",
    "x": 110.45,
    "y": 159.9,
    "rot": 1.622
@@ -1699,18 +1551,6 @@
    "x": 119.44,
    "y": 159.43,
    "rot": -1.519
-  },
-  {
-   "k": "p:parkbench",
-   "x": 110.44,
-   "y": 164.18,
-   "rot": 1.516
-  },
-  {
-   "k": "p:parkbench",
-   "x": 119.42,
-   "y": 164.67,
-   "rot": -1.626
   },
   {
    "k": "p:parkbench",
@@ -3929,16 +3769,6 @@
    "y": 42
   },
   {
-   "k": "p:jlamp",
-   "x": 173,
-   "y": 55
-  },
-  {
-   "k": "p:jlamp",
-   "x": 206,
-   "y": 64
-  },
-  {
    "k": "p:archbridge",
    "x": 160,
    "y": 27,
@@ -4126,317 +3956,93 @@
    "y": 160
   },
   {
-   "k": "p:jlamp",
-   "x": 80,
-   "y": 154
-  },
-  {
-   "k": "p:jlamp",
-   "x": 100,
-   "y": 154
-  },
-  {
    "k": "p:trashcan",
    "x": 105,
    "y": 165
   },
   {
-   "k": "p:jlamp",
-   "x": 103.41,
-   "y": -22.2,
-   "rot": 1.505
-  },
-  {
-   "k": "p:jlamp",
-   "x": 116.14,
-   "y": -7.76,
-   "rot": -1.344
-  },
-  {
-   "k": "p:jlamp",
-   "x": 108.57,
-   "y": 9.56,
-   "rot": 1.746
-  },
-  {
-   "k": "p:jlamp",
-   "x": 105.51,
-   "y": 37.68,
-   "rot": 1.329
-  },
-  {
-   "k": "p:jlamp",
-   "x": 108.25,
-   "y": 98.93,
-   "rot": 1.367
-  },
-  {
-   "k": "p:jlamp",
-   "x": 115.77,
-   "y": 116.28,
-   "rot": -1.776
-  },
-  {
-   "k": "p:jlamp",
-   "x": 103.58,
-   "y": 131.11,
-   "rot": 1.677
-  },
-  {
-   "k": "p:jlamp",
-   "x": 117.98,
-   "y": 144.2,
-   "rot": -1.319
-  },
-  {
-   "k": "p:jlamp",
-   "x": 109.29,
-   "y": 160.99,
-   "rot": 1.594
-  },
-  {
-   "k": "p:jlamp",
-   "x": -8.18,
-   "y": 68.11,
-   "rot": 3.081
-  },
-  {
-   "k": "p:jlamp",
-   "x": 6.17,
-   "y": 55.24,
-   "rot": 0.234
-  },
-  {
-   "k": "p:jlamp",
-   "x": 23.47,
-   "y": 62.79,
-   "rot": -2.977
-  },
-  {
-   "k": "p:jlamp",
-   "x": 38.87,
-   "y": 51.55,
-   "rot": -0.164
-  },
-  {
-   "k": "p:jlamp",
-   "x": 51.65,
-   "y": 66.32,
-   "rot": 2.905
-  },
-  {
-   "k": "p:jlamp",
-   "x": 67.96,
-   "y": 56.73,
-   "rot": 0.061
-  },
-  {
-   "k": "p:jlamp",
-   "x": 84.94,
-   "y": 65.01,
-   "rot": -2.882
-  },
-  {
-   "k": "p:jlamp",
-   "x": 98.3,
-   "y": 50.89,
-   "rot": 0.061
-  },
-  {
-   "k": "p:jlamp",
-   "x": 129.95,
-   "y": 56.2,
-   "rot": -0.164
-  },
-  {
-   "k": "p:jlamp",
-   "x": 145.35,
-   "y": 67.46,
-   "rot": -2.977
-  },
-  {
-   "k": "p:jlamp",
-   "x": 158.13,
-   "y": 52.68,
-   "rot": 0.237
-  },
-  {
-   "k": "p:jlamp",
-   "x": 219.14,
-   "y": 55.25,
-   "rot": 0.234
-  },
-  {
-   "k": "p:jlamp",
-   "x": 251.84,
-   "y": 51.54,
-   "rot": -0.164
-  },
-  {
-   "k": "p:jlamp",
-   "x": 109.63,
-   "y": 19.81,
-   "rot": 0.428
-  },
-  {
-   "k": "p:jlamp",
-   "x": 125.63,
-   "y": 25.05,
-   "rot": -2.714
-  },
-  {
-   "k": "p:jlamp",
-   "x": 132.16,
-   "y": 9.54,
-   "rot": 0.428
-  },
-  {
-   "k": "p:jlamp",
-   "x": 48.35,
-   "y": 61.47,
-   "rot": -1.924
-  },
-  {
-   "k": "p:jlamp",
-   "x": 34.32,
-   "y": 71.23,
-   "rot": 1.531
-  },
-  {
-   "k": "p:jlamp",
-   "x": 47.8,
-   "y": 81.58,
-   "rot": -1.224
-  },
-  {
-   "k": "p:jlamp",
-   "x": 40.2,
-   "y": 95.98,
-   "rot": 1.677
-  },
-  {
-   "k": "p:jlamp",
-   "x": 145.78,
-   "y": 174.62
-  },
-  {
-   "k": "p:jlamp",
-   "x": 151.2,
-   "y": 152.72
-  },
-  {
-   "k": "p:jlamp",
-   "x": 163.2,
-   "y": 132.51
-  },
-  {
-   "k": "p:jlamp",
-   "x": 190.28,
-   "y": 108.9
-  },
-  {
-   "k": "p:jlamp",
-   "x": 214.62,
-   "y": 97.41
-  },
-  {
-   "k": "p:jlamp",
-   "x": 245.79,
-   "y": 90.39
-  },
-  {
-   "k": "p:jlamp",
-   "x": 142.19,
-   "y": 2.61
-  },
-  {
-   "k": "p:jlamp",
-   "x": 162.5,
-   "y": 10
-  },
-  {
    "k": "p:redbarn",
-   "x": 77,
-   "y": -22,
+   "x": 64,
+   "y": 20,
    "rot": 1.5708,
    "fixed": true
   },
   {
    "k": "p:picket",
-   "x": 87.88,
-   "y": -32.0,
+   "x": 74.88,
+   "y": 10.0,
    "rot": 0
   },
   {
    "k": "p:picket",
-   "x": 87.88,
-   "y": -12.96,
+   "x": 74.88,
+   "y": 29.04,
    "rot": 0
   },
   {
    "k": "p:picket",
-   "x": 92.64,
-   "y": -32.0,
+   "x": 79.64,
+   "y": 10.0,
    "rot": 0
   },
   {
    "k": "p:picket",
-   "x": 92.64,
-   "y": -12.96,
+   "x": 79.64,
+   "y": 29.04,
    "rot": 0
   },
   {
    "k": "p:picket",
-   "x": 97.4,
-   "y": -32.0,
+   "x": 84.4,
+   "y": 10.0,
    "rot": 0
   },
   {
    "k": "p:picket",
-   "x": 97.4,
-   "y": -12.96,
+   "x": 84.4,
+   "y": 29.04,
    "rot": 0
   },
   {
    "k": "p:picket",
-   "x": 85.5,
-   "y": -29.62,
+   "x": 72.5,
+   "y": 12.38,
    "rot": 1.5708
   },
   {
    "k": "p:picket",
-   "x": 99.78,
-   "y": -29.62,
+   "x": 86.78,
+   "y": 12.38,
    "rot": 1.5708
   },
   {
    "k": "p:picket",
-   "x": 85.5,
-   "y": -24.86,
+   "x": 72.5,
+   "y": 17.14,
    "rot": 1.5708
   },
   {
    "k": "p:picket",
-   "x": 99.78,
-   "y": -24.86,
+   "x": 86.78,
+   "y": 17.14,
    "rot": 1.5708
   },
   {
    "k": "p:picket",
-   "x": 85.5,
-   "y": -20.1,
+   "x": 72.5,
+   "y": 21.9,
    "rot": 1.5708
   },
   {
    "k": "p:picket",
-   "x": 85.5,
-   "y": -15.34,
+   "x": 72.5,
+   "y": 26.66,
    "rot": 1.5708
   },
   {
    "k": "p:picket",
-   "x": 99.78,
-   "y": -15.34,
+   "x": 86.78,
+   "y": 26.66,
    "rot": 1.5708
   }
  ],
@@ -4771,6 +4377,24 @@
    118,
    44,
    0
+  ],
+  "hanga_roa_fisherman": [
+   161.38,
+   -104.2,
+   0,
+   null
+  ],
+  "trucker": [
+   124.6,
+   -103,
+   0,
+   null
+  ],
+  "railway_carter": [
+   174,
+   -110.3,
+   9,
+   null
   ]
  },
  "editor": {
@@ -6725,7 +6349,7 @@
    ],
    [
     "x",
-    -50,
+    -101.2,
     -3000,
     -107.9,
     -95.9
@@ -6747,12 +6371,12 @@
   ],
   "near": 60,
   "ground": {
-   "note": "the land past the edges (owner, 7 Nov 2026: \"set a base color for far off distance things like grass\"; 8 Nov 2026: the whole of Central Park, the city round it): one low-res picture under everything outside the section: grass in sections.ring.park, the ring streets road, the city past them in blocks (city, its streets every block tiles); the park's waters and lawns (x, y, rx, ry, turn in degrees) and paths ([x,y] points, the drive and the cross roads); the big lake's whole shore in it (box x0, y0, x1, y1 in tiles; tiles a pixel; colours)",
+   "note": "the land past the edges (owner, 7 Nov 2026: \"set a base color for far off distance things like grass\"; 8 Nov 2026: the whole of Central Park, the city round it): one low-res picture under everything outside the section: grass in park (the far park's box, twice the ring's park each way, owner 10 Nov 2026), outer (its streets' outer edge) road, the city past them in blocks (city, its streets every block tiles); the park's waters and lawns (x, y, rx, ry, turn in degrees) and paths ([x,y] points, the drive and the cross roads); the big lake's whole shore in it (box x0, y0, x1, y1 in tiles; tiles a pixel; colours)",
    "box": [
-    -1200,
+    -2300,
     -130.1,
-    1500,
-    1400
+    2540,
+    2160
    ],
    "px": 4,
    "grass": [
@@ -6810,6 +6434,69 @@
      60,
      45,
      0
+    ],
+    [
+     -822,
+     250,
+     170,
+     120,
+     0
+    ],
+    [
+     -232,
+     90,
+     60,
+     25,
+     -8
+    ],
+    [
+     -1022,
+     80,
+     60,
+     45,
+     0
+    ],
+    [
+     1060,
+     662,
+     170,
+     120,
+     0
+    ],
+    [
+     470,
+     822,
+     60,
+     25,
+     -8
+    ],
+    [
+     1260,
+     832,
+     60,
+     45,
+     0
+    ],
+    [
+     -822,
+     662,
+     170,
+     120,
+     0
+    ],
+    [
+     -232,
+     822,
+     60,
+     25,
+     8
+    ],
+    [
+     -1022,
+     832,
+     60,
+     45,
+     0
     ]
    ],
    "lawns": [
@@ -6823,6 +6510,48 @@
     [
      470,
      260,
+     90,
+     55,
+     0
+    ],
+    [
+     -522,
+     230,
+     130,
+     85,
+     0
+    ],
+    [
+     -232,
+     260,
+     90,
+     55,
+     0
+    ],
+    [
+     760,
+     682,
+     130,
+     85,
+     0
+    ],
+    [
+     470,
+     652,
+     90,
+     55,
+     0
+    ],
+    [
+     -522,
+     682,
+     130,
+     85,
+     0
+    ],
+    [
+     -232,
+     652,
      90,
      55,
      0
@@ -6968,8 +6697,440 @@
       960,
       456
      ]
+    ],
+    [
+     [
+      -1004,
+      -8
+     ],
+     [
+      -1027,
+      -3
+     ],
+     [
+      -1046,
+      10
+     ],
+     [
+      -1059,
+      29
+     ],
+     [
+      -1064,
+      52
+     ],
+     [
+      -1064,
+      366
+     ],
+     [
+      -1059,
+      389
+     ],
+     [
+      -1046,
+      408
+     ],
+     [
+      -1027,
+      421
+     ],
+     [
+      -1004,
+      426
+     ],
+     [
+      172,
+      426
+     ],
+     [
+      195,
+      421
+     ],
+     [
+      214,
+      408
+     ],
+     [
+      227,
+      389
+     ],
+     [
+      232,
+      366
+     ],
+     [
+      232,
+      52
+     ],
+     [
+      227,
+      29
+     ],
+     [
+      214,
+      10
+     ],
+     [
+      195,
+      -3
+     ],
+     [
+      172,
+      -8
+     ],
+     [
+      -1004,
+      -8
+     ]
+    ],
+    [
+     [
+      -92,
+      -38
+     ],
+     [
+      -112,
+      100
+     ],
+     [
+      -72,
+      300
+     ],
+     [
+      -92,
+      456
+     ]
+    ],
+    [
+     [
+      -402,
+      -38
+     ],
+     [
+      -422,
+      100
+     ],
+     [
+      -382,
+      300
+     ],
+     [
+      -402,
+      456
+     ]
+    ],
+    [
+     [
+      -722,
+      -38
+     ],
+     [
+      -742,
+      100
+     ],
+     [
+      -702,
+      300
+     ],
+     [
+      -722,
+      456
+     ]
+    ],
+    [
+     [
+      1242,
+      920
+     ],
+     [
+      1265,
+      915
+     ],
+     [
+      1284,
+      902
+     ],
+     [
+      1297,
+      883
+     ],
+     [
+      1302,
+      860
+     ],
+     [
+      1302,
+      546
+     ],
+     [
+      1297,
+      523
+     ],
+     [
+      1284,
+      504
+     ],
+     [
+      1265,
+      491
+     ],
+     [
+      1242,
+      486
+     ],
+     [
+      66,
+      486
+     ],
+     [
+      43,
+      491
+     ],
+     [
+      24,
+      504
+     ],
+     [
+      11,
+      523
+     ],
+     [
+      6,
+      546
+     ],
+     [
+      6,
+      860
+     ],
+     [
+      11,
+      883
+     ],
+     [
+      24,
+      902
+     ],
+     [
+      43,
+      915
+     ],
+     [
+      66,
+      920
+     ],
+     [
+      1242,
+      920
+     ]
+    ],
+    [
+     [
+      330,
+      950
+     ],
+     [
+      350,
+      812
+     ],
+     [
+      310,
+      612
+     ],
+     [
+      330,
+      456
+     ]
+    ],
+    [
+     [
+      640,
+      950
+     ],
+     [
+      660,
+      812
+     ],
+     [
+      620,
+      612
+     ],
+     [
+      640,
+      456
+     ]
+    ],
+    [
+     [
+      960,
+      950
+     ],
+     [
+      980,
+      812
+     ],
+     [
+      940,
+      612
+     ],
+     [
+      960,
+      456
+     ]
+    ],
+    [
+     [
+      -1004,
+      920
+     ],
+     [
+      -1027,
+      915
+     ],
+     [
+      -1046,
+      902
+     ],
+     [
+      -1059,
+      883
+     ],
+     [
+      -1064,
+      860
+     ],
+     [
+      -1064,
+      546
+     ],
+     [
+      -1059,
+      523
+     ],
+     [
+      -1046,
+      504
+     ],
+     [
+      -1027,
+      491
+     ],
+     [
+      -1004,
+      486
+     ],
+     [
+      172,
+      486
+     ],
+     [
+      195,
+      491
+     ],
+     [
+      214,
+      504
+     ],
+     [
+      227,
+      523
+     ],
+     [
+      232,
+      546
+     ],
+     [
+      232,
+      860
+     ],
+     [
+      227,
+      883
+     ],
+     [
+      214,
+      902
+     ],
+     [
+      195,
+      915
+     ],
+     [
+      172,
+      920
+     ],
+     [
+      -1004,
+      920
+     ]
+    ],
+    [
+     [
+      -92,
+      950
+     ],
+     [
+      -112,
+      812
+     ],
+     [
+      -72,
+      612
+     ],
+     [
+      -92,
+      456
+     ]
+    ],
+    [
+     [
+      -402,
+      950
+     ],
+     [
+      -422,
+      812
+     ],
+     [
+      -382,
+      612
+     ],
+     [
+      -402,
+      456
+     ]
+    ],
+    [
+     [
+      -722,
+      950
+     ],
+     [
+      -742,
+      812
+     ],
+     [
+      -702,
+      612
+     ],
+     [
+      -722,
+      456
+     ]
     ]
-   ]
+   ],
+   "park": {
+    "x0": -1094,
+    "y0": -38,
+    "x1": 1332,
+    "y1": 950
+   },
+   "outer": {
+    "x0": -1122.5,
+    "y0": -77,
+    "x1": 1360.5,
+    "y1": 978.5
+   }
   },
   "strips": {
    "note": "the streets carried on past the edges, low-res ground (x0, y0, x1, y1, kind)",
@@ -7085,37 +7246,16 @@
      3000,
      -107.9,
      "prom"
-    ],
-    [
-     -52.5,
-     212,
-     -49.3,
-     520,
-     "walk"
-    ],
-    [
-     -49.3,
-     212,
-     -27.2,
-     520,
-     "road"
-    ],
-    [
-     -27.2,
-     212,
-     -24,
-     520,
-     "walk"
     ]
    ]
   },
   "park": {
-   "note": "Central Park past the forcefield, the whole of it (owner, 8 Nov 2026: Manhattan): a wall just inside West St and plain low trees in bands (x0, y0, x1, y1 in tiles) inside sections.ring.park, none in the clearings (x, y, rx, ry: the reservoir, the lawns, the ponds) or on the paths (edge.ground.paths)",
+   "note": "Central Park past the forcefield, the whole of it (owner, 8 Nov 2026: Manhattan): a wall just inside West St and plain low trees in bands (x0, y0, x1, y1 in tiles) inside edge.ground.park (n of them, and clumps: bunches of bigger trees), none in the clearings (x, y, rx, ry: the reservoir, the lawns, the ponds) or on the paths (edge.ground.paths)",
    "wall": [
     -23.9,
     -38,
     -23.3,
-    456
+    181
    ],
    "bands": [
     [
@@ -7135,9 +7275,22 @@
      -34,
      1328,
      452
+    ],
+    [
+     -1090,
+     -34,
+     -56,
+     946
+    ],
+    [
+     -52,
+     460,
+     1328,
+     946
     ]
    ],
-   "n": 4000,
+   "n": 6400,
+   "clumps": 1200,
    "clear": [
     [
      1060,
@@ -7166,6 +7319,96 @@
     [
      1260,
      80,
+     66,
+     50
+    ],
+    [
+     -822,
+     250,
+     180,
+     130
+    ],
+    [
+     -522,
+     230,
+     135,
+     90
+    ],
+    [
+     -232,
+     260,
+     95,
+     60
+    ],
+    [
+     -232,
+     90,
+     66,
+     32
+    ],
+    [
+     -1022,
+     80,
+     66,
+     50
+    ],
+    [
+     1060,
+     662,
+     180,
+     130
+    ],
+    [
+     760,
+     682,
+     135,
+     90
+    ],
+    [
+     470,
+     652,
+     95,
+     60
+    ],
+    [
+     470,
+     822,
+     66,
+     32
+    ],
+    [
+     1260,
+     832,
+     66,
+     50
+    ],
+    [
+     -822,
+     662,
+     180,
+     130
+    ],
+    [
+     -522,
+     682,
+     135,
+     90
+    ],
+    [
+     -232,
+     652,
+     95,
+     60
+    ],
+    [
+     -232,
+     822,
+     66,
+     32
+    ],
+    [
+     -1022,
+     832,
      66,
      50
     ]
@@ -7499,6 +7742,37 @@
      ]
     ],
     "w": 180
+   },
+   "blocks": {
+    "note": "the city's buildings past the park (owner, 10 Nov 2026: \"fill it out logical with the rest of the buildings in NYC\"): plain boxes on every block of edge.ground's city within depth tiles of the park's streets, one draw; lots across a block (two rows, each lot min to max tiles wide), a storey's height (px, as the rows'), storeys low then tall on a block's ends (avenue), the row facing the park (park: how often, storeys), towers further out (how often near and far, storeys, how much taller far); past them the painted skyline",
+    "depth": 460,
+    "lot": [
+     12,
+     26
+    ],
+    "storey": 90,
+    "low": [
+     3,
+     6
+    ],
+    "avenue": [
+     6,
+     11
+    ],
+    "park": [
+     0.35,
+     8,
+     14
+    ],
+    "tower": [
+     0.012,
+     0.04,
+     14,
+     24,
+     0.5
+    ],
+    "far": 900,
+    "seed": 11
    }
   },
   "far": {

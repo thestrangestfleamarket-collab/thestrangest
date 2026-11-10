@@ -10,7 +10,7 @@ import {MINI} from './038zd-mini.js';
 import {LIB} from './144ca-library.js';
 const MVAULT={}; window.MVAULT=MVAULT;
 { const say=(t,c)=>SAY(t,c||'#e8dcb0'), T=TILE, MW=TILE/.84, TM=.924, KEY='vault', OX=()=>SHARED.BOD.XS(-3280), OZ=()=>SHARED.BOD.ZS(0), RW=7, RD=7, H=3.2;
-  const day=()=>window.MAIL&&MAIL.ready?MAIL.day():window.CITY?CITY.day||0:0;
+  const day=()=>window.MAIL&&MAIL.ready?MAIL.day():CITY?CITY.day||0:0;
   const hs=(a,b)=>{ let h=Math.imul(a|0,374761393)+Math.imul(b|0,668265263); h=Math.imul(h^(h>>>13),1274126177); return ((h^(h>>>16))>>>0)/4294967296; };
   // the antiquities: found in the vault, donated to the museum (the first of each pays twice its worth and goes on show), the Professor buys the rest
   const ART=[['va_astrolabe','A BRASS ASTROLABE',90],['va_scarab','A LAPIS SCARAB',60],['va_coin','A GOLD COIN OF ROME',70],['va_lamp','A CLAY OIL LAMP',40],['va_seal','A JADE SEAL',80],['va_globe','A CELESTIAL GLOBE',120],['va_chart','A SEA CHART ON VELLUM',75],['va_idol','A STONE IDOL',100]];
@@ -132,7 +132,7 @@ const MVAULT={}; window.MVAULT=MVAULT;
     try{ await FADE.run('',async()=>{ if(!R.done){ await STORE.ensure(); if(STORE.pre.art)await STORE.pre.art(); } ROOMS.goOut('vault'); if(!R.done)STORE.inGo('art'); },{cut:true}); } finally{ IV.busy=false; } };
   const reg=()=>{ if(ROOMS.off.vault)return true; const o=outAt(); if(!o)return false; const F=frame(), sp=F.pw(RW/2,RD-1.4), a=F.pw(0,0), b=F.pw(RW,RD);
     ROOMS.off.vault={name:'THE SEALED VAULT',box:{x0:Math.min(a[0],b[0])-.3*T,z0:Math.min(a[1],b[1])-.3*T,x1:Math.max(a[0],b[0])+.3*T,z1:Math.max(a[1],b[1])+.3*T,y0:-1,y1:(H+.5)*MW},noCeil:true,need:()=>LOAD('later'),
-      build:()=>ROOMS.part(G=Object.assign(new THREE.Group(),{name:'vault-in'}),()=>{ scene.add(G); furnish(); }),unbuild:()=>{ if(G)G.removeFromParent(); G=null; MVAULT.cases=null; },spawn:[sp[0],sp[1],0,F.hd(0,-1)],out:o};
+      build:()=>{ const P=ROOMS.part(G=Object.assign(new THREE.Group(),{name:'vault-in'}),furnish); scene.add(G); return P; },unbuild:()=>{ if(G)G.removeFromParent(); G=null; MVAULT.cases=null; },spawn:[sp[0],sp[1],0,F.hd(0,-1)],out:o};
     if(ROOMS.reset)ROOMS.reset(); return true; };
   { let done=false; SYS.add('life',()=>{ if(!done)done=reg(); },'146zha-vault-reg'); }
   window.MVAULTDBG=()=>({reg:!!ROOMS.off.vault,inside:ROOMS.offIn&&ROOMS.offIn()==='vault',open:MVAULT.isOpen(),dials:S.dials.slice(),star:S.star,read:Object.keys(S.read),clues:ON.length,int:FORAGE.ST.int,cases:(MVAULT.cases||[]).map(c=>c.th.name),shown:DISP.n,code:code(day())});

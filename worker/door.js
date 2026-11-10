@@ -402,7 +402,7 @@ export class Block extends Server {
   onMessage(c, raw) {
     const s = c.state; if (!s || typeof raw !== "string" || raw.length > (raw.startsWith('{"t":"folk"') ? 400000 : raw.startsWith('{"t":"mobgrid"') || raw.startsWith('{"t":"dmset"') ? 200000 : 2500)) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
     const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0, at: {} }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 60) return;
-    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, sky: 200, skyw: 100, ride: 300, car: 300, curse: 1500, puff: 800, drone: 3000, ps: 150, fish: 200, world: 120, puts: 1000, lives: 3000, met: 1000, tr: 100, gtr: 25, ins: 20, mobgrid: 3000, dmset: 3000, breakout: 5000, mobhit: 60, mobpar: 200, vr: 60, tv: 200, body: 1000, st: 150, jet: 150, zap: 120 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
+    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, sky: 200, skyw: 100, ride: 300, car: 300, curse: 1500, puff: 800, drone: 3000, ps: 150, fish: 200, world: 120, puts: 1000, lives: 3000, met: 1000, tr: 100, gtr: 25, ins: 20, mobgrid: 3000, dmset: 3000, breakout: 5000, mobhit: 60, mobpar: 200, vr: 60, tv: 200, body: 1000, st: 150, jet: 150, zap: 120, arm: 40 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
     if (m.t === "bye") { this.onClose(c); c.setState({ ...s, id: "" }); try { c.close(1000, "bye"); } catch (e) {} return; }   // leaving: out for everyone now, not when the socket times out
     if (m.t === "mv" && Array.isArray(m.at)) {
       const a = m.at, at = [num(a[0], -1e5, 1e5), num(a[1], -1e5, 1e5), num(a[2], -1e4, 1e4), num(a[3], -10, 10), word(a[4], 8), word(a[5], 60)];
@@ -438,6 +438,17 @@ export class Block extends Server {
     } else if (m.t === "zap") {   // its stream on a player near the shooter: they burn or freeze
       const to = String(m.to || ""); if (!to || to === s.id) return; const o = this.near(s, to, 12); if (!o) return;
       o.send(JSON.stringify({ t: "zap", id: s.id, k: m.k === "i" ? "i" : "f", from: [s.at[0], s.at[1]] }));
+    } else if (m.t === "arm") {   // a weapon fired, thrown or set (146hc), for everyone else to draw
+      const k = /^(shot|proj|mine|boom|trap|portal|blow)$/.test(m.k) ? m.k : ""; if (!k) return;
+      const v3 = a => Array.isArray(a) ? [num(a[0], -1e5, 1e5), num(a[1], -1e4, 1e4), num(a[2], -1e5, 1e5)] : null, o = { t: "arm", id: s.id, k, w: word(m.w, 16) };
+      if (m.p) o.p = v3(m.p); if (Array.isArray(m.v)) o.v = [num(m.v[0], -1, 1), num(m.v[1], -1, 1), num(m.v[2], -1, 1)]; if (Array.isArray(m.e)) o.e = m.e.slice(0, 8).map(v3);
+      if (k === "mine" || k === "boom") o.i = num(m.i, 0, 1e6); if (k === "portal") o.c = m.c ? 1 : 0; if (k === "blow") o.on = m.on ? 1 : 0;
+      if (k === "trap") { o.to = word(m.to, 140); o.s = m.s === "bubble" ? "bubble" : "net"; o.d = num(m.d, 0, 6); }
+      this.broadcast(JSON.stringify(o), [c.id]);
+    } else if (m.t === "shot") {   // a weapon's hit on a player in its reach, judged by the one who fired: hurt, thrown, caught, alight
+      const to = String(m.to || ""); if (!to || to === s.id) return; const o = this.near(s, to, 170); if (!o) return;
+      const fx = Array.isArray(m.f) ? num(m.f[0], -1e5, 1e5) : s.at[0], fz = Array.isArray(m.f) ? num(m.f[1], -1e5, 1e5) : s.at[1], f = Math.hypot(fx - s.at[0], fz - s.at[1]) < 170 ? [fx, fz] : [s.at[0], s.at[1]];
+      o.send(JSON.stringify({ t: "shot", id: s.id, w: word(m.w, 16), d: num(m.d, 0, .6), kb: num(m.kb, 0, 3), dn: m.dn ? 1 : 0, tr: m.tr === "net" || m.tr === "bubble" ? m.tr : "", tt: num(m.tt, 0, 6), fire: m.fire ? 1 : 0, from: f }));
     } else if (m.t === "hit" || m.t === "parried") {
       const to = String(m.to || ""); if (!to || to === s.id) return; const o = this.near(s, to, 6); if (!o) return;
       o.send(JSON.stringify(m.t === "hit" ? { t: "hit", id: s.id, d: num(m.d, 0, .5), kb: num(m.kb, 0, 3), heavy: !!m.heavy, k: word(m.k, 6), from: [s.at[0], s.at[1]] } : { t: "parried", id: s.id }));
@@ -449,7 +460,7 @@ export class Block extends Server {
     } else if (m.t === "mobgrid" && m.g) {   // the dungeon's map and the monsters' book, baked by a page (worker/dunmobs.js)
       this.mobs().then(MS => { if (MOBSIM.grid(MS, m.g)) { this.mobSaved = 0; this.ctx.storage.put("mobs", MOBSIM.save(MS)); this.mobGo(); } });
     } else if (m.t === "mobhit" || m.t === "mobpar") {   // a blow on a monster, or a monster's blow caught on the beat
-      this.mobs().then(MS => { if (!MS.g || !s.at || !MOBSIM.roomAt(MS, s.at[0], s.at[1], s.at[4] === "down" ? "down" : "up")) return; const i = num(m.i, 0, 1e9), mo = MS.m.find(q => q.i === i); if (!mo || Math.hypot(mo.x - s.at[0], mo.z - s.at[1]) > 4 * MS.g.T) return;
+      this.mobs().then(MS => { if (!MS.g || !s.at || !MOBSIM.roomAt(MS, s.at[0], s.at[1], s.at[4] === "down" ? "down" : "up")) return; const i = num(m.i, 0, 1e9), mo = MS.m.find(q => q.i === i); if (!mo || Math.hypot(mo.x - s.at[0], mo.z - s.at[1]) > (m.rg ? 60 : 4) * MS.g.T) return;
         if (m.t === "mobpar") { MOBSIM.parried(MS, i); return; }
         const r = MOBSIM.hit(MS, i, { d: num(m.d, 0, 20), kb: num(m.kb, 0, 3), heavy: !!m.hv, x: s.at[0], z: s.at[1] });
         if (r.res === "dead") c.send(JSON.stringify({ t: "mobkill", i, w: r.m.kind, key: r.m.key, x: r.m.x, z: r.m.z, n: r.n, loot: r.m.loot || "" })); else if (r.res === "blocked") c.send(JSON.stringify({ t: "mobres", i, res: "blocked" })); });

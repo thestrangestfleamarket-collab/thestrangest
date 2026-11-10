@@ -122,6 +122,7 @@ import {RIVER} from './066-river.js';
   const selfTick=dt=>{ coldIn=Math.max(0,coldIn-dt*.4); immune=Math.max(0,immune-dt);
     if(SHARED.frozen>0){ SHARED.frozen-=dt; if(VIT.dead)SHARED.frozen=0; if(SHARED.frozen<=0){ SHARED.frozen=0; immune=2.5; say('THE ICE CRACKS AND YOU ARE FREE.','#9fe6ff'); } }
     if(JET.burnT>0){ if(st.water&&st.water.in){ JET.burnT=0; for(let k=0;k<4;k++)FLAME.puff(pos.x,SHARED.py+.8*M,pos.z,1.2,6); } else { JET.burnT-=dt; if((dotT-=dt)<=0){ dotT=.5; if(!VIT.dead)VIT.hurt(.01); } } } };
+  MODS.bodies=bodies; MODS.burnMe=burnMe; MODS.alight=(id,s)=>{ if(id!=='me'){ const e=fx(id); e.fire=Math.max(e.fire,s); } };   // for the other weapons (146hc)
   ONLINE.hear.zap=m=>{ '@later'; fx('me'); const f=Array.isArray(m.from)?{x:+m.from[0],z:+m.from[1]}:null; if(m.k==='i')freezeMe(.3); else burnMe(.025,f); };
 
   /* ---------- the beam of the freeze ray: a bright core with frost running down it ---------- */

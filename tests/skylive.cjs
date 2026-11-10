@@ -18,7 +18,7 @@ const jdOf = s => Date.parse(s) / 864e5 + 2440587.5;
   if (st) {
     for (let i = 0; i < 30 && !(await pg.evaluate(() => window.BEDROOMDBG && BEDROOMDBG().built)); i++) await pg.waitForTimeout(1000);
     ok(!reqs.length, 'nothing of the live sky is fetched before the eyepiece opens (' + reqs.length + ')');
-    await pg.evaluate(async () => { await SCOPE.open(); });
+    await pg.evaluate(async () => { DN.fixT = Date.parse('2026-11-09T06:00:00Z'); await SCOPE.open(); });   // (a night inside the weather fixture's three days)
     for (let i = 0; i < 40 && !(await pg.evaluate(() => SKYL.data.weather && SKYL.data.kp && SKYL.data.comets && SKYL.data.rocks && SKYL.sats.ready && SKYL.sunLive)); i++) await pg.waitForTimeout(500);
     const got = await pg.evaluate(() => ({ k: Object.keys(SKYL.data), sats: SKYL.sats.list.length, ready: !!SKYL.sats.ready, sun: !!SKYL.sunLive, err: SKYL.err }));
     ok(got.k.length >= 7 && got.ready && got.sats > 50 && got.sun, 'opening it fetches the feeds and satellite.js (' + JSON.stringify(got) + ')');

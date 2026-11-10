@@ -37,7 +37,7 @@ Object.assign(CLOCK,{movers:[],h:17.4,sunH:null,run:false,speed:1,shadeH:16,sunV
     mixC(A[5],B[5],t,sunL.color); sunL.intensity=up?A[6]+(B[6]-A[6])*t:0;
     const dir=new THREE.Vector3(Math.sin(az)*Math.cos(el),Math.sin(el),Math.cos(az)*Math.cos(el)); CLOCK.dir=dir;
     { const sa=azim(H), se=e*D; CLOCK.sunV.set(Math.sin(sa)*Math.cos(se),Math.sin(se),Math.cos(sa)*Math.cos(se));
-      const mr=CLOCK.moonReal&&CLOCK.moonReal(), ma=mr?mr.az:azim(H+12)*.5+.6, me=mr?mr.alt:48*D; CLOCK.moonV.set(Math.sin(ma)*Math.cos(me),Math.sin(me),Math.cos(ma)*Math.cos(me)); }   // the moon's disc where the real one is (its light stays the night's own)
+      const mr=CLOCK.moonReal&&CLOCK.moonReal(), ma=mr?mr.az:azim(H+12)*.5+.6, me=mr?mr.alt:48*D; CLOCK.moonV.set(Math.sin(ma)*Math.cos(me),Math.sin(me),(mr?-1:1)*Math.cos(ma)*Math.cos(me)); }   // the moon's disc where the real one is among the stars (south is -z, as 134ba has it; its light stays the night's own)
     const aim=L=>{ const sc=L.shadow.camera, tx=(sc.right-sc.left)/L.shadow.mapSize.x; SNM.lookAt(dir,ORG,UPV); SR.setFromMatrixColumn(SNM,0); SU.setFromMatrixColumn(SNM,1); SP.set(pos.x,SHARED.py,pos.z);
       const a=Math.round(SP.dot(SR)/tx)*tx, b=Math.round(SP.dot(SU)/tx)*tx, c=SP.dot(dir); L.target.position.copy(SR).multiplyScalar(a).addScaledVector(SU,b).addScaledVector(dir,c);
       L.position.copy(L.target.position).addScaledVector(dir,200*TILE); L.target.updateMatrixWorld(); L.updateMatrixWorld(); };

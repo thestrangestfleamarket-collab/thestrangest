@@ -12,7 +12,7 @@ import {KIT} from './068-kit.js';
 import {BODIES} from './111a-bodies.js';
 const LOUNGE={uses:[]}; window.LOUNGE=LOUNGE;   // uses: later files add to the room as it builds (K, F)
 { const PJ=__LAZY__("data/bar.json"); let PG=null, GEO=null; const geo=()=>PG||(PG=PJ().then(D=>{ const G={}; for(const k in D){ const g=KIT.decode(D[k]); g.computeBoundingBox(); G[k]=g; } return GEO=G; }));
-  { let wrapped=false; SYS.add('places',()=>{ if(wrapped)return; const o=ROOMS.off&&ROOMS.off.bar; if(!o)return; wrapped=true; const n0=o.need; o.need=()=>Promise.all([n0?n0():null,geo()]); },'146zca-lounge'); }
+  { let wrapped=false; const wrap=()=>{ if(wrapped)return; const o=ROOMS.off&&ROOMS.off.bar; if(!o)return; wrapped=true; const n0=o.need; o.need=()=>Promise.all([n0?n0():null,geo()]); }; wrap(); SYS.add('places',wrap,'146zca-lounge'); }   // (now when the bar is there already: going in before the first frame must wait for the pieces too)
   const say=(t,c)=>SAY(t,c||'#e8c8a0'), inBar=()=>!!(ROOMS.offIn&&ROOMS.offIn()==='bar');
   MSHOP.kit.bar=A=>{ '@later'; const R=A.R, F=IKIT.frame(R), MW=IKIT.MW, W=F.W, D=F.D, tm=D/(R.y1-R.y0), K=IKIT.room(F,o=>A.add(o),()=>{}), {box,pic,words,use}=K, G=GEO||{}, HT=A.WH/24*tm;
     const tx=u=>F.tu(u), ty=v=>F.tv(v), sol=(u0,v0,u1,v1)=>A.sol(R.x0+Math.min(u0,u1)/tm,R.y0+Math.min(v0,v1)/tm,R.x0+Math.max(u0,u1)/tm,R.y0+Math.max(v0,v1)/tm);

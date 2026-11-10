@@ -231,6 +231,10 @@ One tree pass (more leaves mean more shadow triangles).
 - [ ] **The HUD's 24px margin on the owner's own screen** · P3 · S · look. His pick A (4 Nov); checked locally only.
 - [ ] **Phones** · P2 · L · look + code. Login on a phone never tried (the door lets them in since 9 Nov); the touch pad; menus fitted to
   phone screens, home-screen install, lighter graphics.
+- [ ] **Notifications** · P4 · M · pick. Owner, 9 Nov (batch 2). The service worker is in; needs his picks (what notifies: a letter, the night
+  market; where the player says yes) and a push key set as a secret on the worker.
+- [ ] **The browser's extras** · P3 · S · look. The mouse look in first person, 3D sound, the app's icon and home-screen install, the
+  lock-screen radio (9 Nov): wait for his look and yes.
 
 ## Sound
 

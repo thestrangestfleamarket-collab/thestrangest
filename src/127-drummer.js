@@ -23,4 +23,4 @@ DRM.make=(S=STORE.bar,o={})=>{ '@later'; if(!S)return; const live=DRM.live=o.liv
   DRM.tick=dt=>{ const d=Math.hypot(pos.x-AT.x,pos.z-AT.z); if(!DRM.on||!live()||d>18){ hush(); return; } const now=performance.now();
     octStep(dt,now); octHabits(now); const p=octPose(now), A=octArms(p), B=octBody(A);
     F.draw(B);
-    const N=IMX.nodes.get('bar|drum kit'); if(N&&SND.ctx){ const c=SND.ctx, v=new THREE.Vector3(AT.x,1,AT.z).project(SHARED.cam); N.g.gain.setTargetAtTime(.9*Math.max(0,1-d/14),c.currentTime,.1); N.pan.pan.setTargetAtTime(Math.max(-.8,Math.min(.8,v.x*.8)),c.currentTime,.1); } }; };
+    const N=IMX.nodes.get('bar|drum kit'); if(N&&SND.ctx){ const c=SND.ctx; N.g.gain.setTargetAtTime(.9*Math.max(0,1-d/14),c.currentTime,.1); N.pan.to(AT.x,AT.y+1,AT.z); } }; };

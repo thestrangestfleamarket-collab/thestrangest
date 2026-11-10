@@ -74,16 +74,18 @@
    "hc": "#8a6e56",
    "w": "sword",
    "at": [
-    10,
-    -7,
-    6
+    0.8,
+    0,
+    0,
+    90
    ],
-   "role": "patrol",
+   "role": "post",
    "say": [
     "Halt! Oh. You're one of the big ones. Carry on.",
     "Rust on the helm, not on the blade."
    ],
-   "home": "castle"
+   "tower": "tower5",
+   "top": true
   },
   {
    "k": "gd_lanternrat",
@@ -270,16 +272,18 @@
    "cape": "#3a3a3c",
    "w": "spear",
    "at": [
-    -4,
-    8,
-    6
+    0.8,
+    0,
+    0,
+    270
    ],
-   "role": "patrol",
+   "role": "post",
    "say": [
     "West wall, all clear.",
     "Seen a big rat? Not me. The other kind."
    ],
-   "home": "castle"
+   "tower": "tower5",
+   "top": true
   },
   {
    "k": "gd_owlaxe",
@@ -366,19 +370,20 @@
    "w": "sword",
    "shield": "#8a8a7a",
    "at": [
-    15,
-    9.3,
+    0.8,
     0,
-    0
+    0,
+    270
    ],
    "role": "post",
    "say": [
     "Come close and find out.",
     "Small. Sharp. On duty."
    ],
-   "home": "castle",
    "coat": "armour",
-   "cc": "#7a7a72"
+   "cc": "#7a7a72",
+   "tower": "tower6",
+   "top": true
   },
   {
    "k": "gd_rabbit",
@@ -446,8 +451,8 @@
    "sash": "#e8481c",
    "hold": "herbs",
    "at": [
-    10.5,
-    12,
+    0.8,
+    0,
     0,
     0
    ],
@@ -456,7 +461,8 @@
     "Hurt? Come here. Hold still.",
     "Leaf and root. It mends what the dark breaks."
    ],
-   "home": "castle"
+   "tower": "tower2",
+   "top": true
   },
   {
    "k": "gd_pandaarcher",
@@ -470,18 +476,18 @@
    "c2": "#b0502a",
    "w": "bow",
    "at": [
-    7,
-    0.15,
+    0.8,
     0,
-    0
+    0,
+    90
    ],
    "role": "post",
    "say": [
     "I can hit a moth at forty paces.",
     "Watching the gate. Always watching the gate."
    ],
-   "home": "castle",
-   "perch": "wall"
+   "tower": "tower6",
+   "top": true
   },
   {
    "k": "gd_beardpanda",
@@ -550,17 +556,17 @@
    "cape": "#1a1a1c",
    "w": "greatsword",
    "at": [
-    10.7,
-    -5.0,
+    -4,
+    1,
     0,
-    0
+    270
    ],
    "role": "post",
    "say": [
     "The keep stands. As long as I do, it stands.",
     "Report anything that crawls. Anything."
    ],
-   "home": "castle"
+   "tower": "tower4"
   },
   {
    "k": "gd_frogmonk",
@@ -599,8 +605,8 @@
    "w": "glowsword",
    "wc": "#7aff5a",
    "at": [
-    13.4,
-    2.6,
+    0.8,
+    0,
     0,
     0
    ],
@@ -609,9 +615,10 @@
     "Poison blade. Don't touch.",
     "Green means go. Down, I mean."
    ],
-   "home": "castle",
    "coat": "armour",
-   "cc": "#6a7a62"
+   "cc": "#6a7a62",
+   "tower": "tower",
+   "top": true
   },
   {
    "k": "gd_redmouse",
@@ -627,17 +634,18 @@
    "w": "glowsword",
    "wc": "#ff6a3a",
    "at": [
-    19.4,
-    2.6,
+    0.8,
     0,
-    0
+    0,
+    180
    ],
    "role": "post",
    "say": [
     "My blade's warm. Want to see?",
     "Fire takes care of spiders."
    ],
-   "home": "castle"
+   "tower": "tower",
+   "top": true
   },
   {
    "k": "gd_crimsonmouse",
@@ -777,10 +785,10 @@
    "c2": "#b8bcc0",
    "w": "axe",
    "at": [
-    18.8,
-    4.6,
+    -2.5,
+    3,
     0,
-    0
+    300
    ],
    "role": "post",
    "bulk": 1.4,
@@ -788,7 +796,7 @@
     "Hrm.",
     "Go down. Come up. In that order."
    ],
-   "home": "castle"
+   "tower": "tower4"
   },
   {
    "k": "gd_frogdruid",
@@ -825,20 +833,20 @@
    "sash": "#4a3424",
    "w": "bow",
    "at": [
-    18,
-    0.15,
+    0.8,
     0,
-    0
+    0,
+    90
    ],
    "role": "post",
    "say": [
     "Back wall's covered.",
     "One arrow, one problem."
    ],
-   "home": "castle",
-   "perch": "wall",
    "coat": "armour",
-   "cc": "#5a6a4a"
+   "cc": "#5a6a4a",
+   "tower": "tower4",
+   "top": true
   },
   {
    "k": "gd_starowl",
@@ -953,10 +961,10 @@
    "c2": "#8a7a50",
    "w": "sword",
    "at": [
-    5.8,
-    13.6,
+    0.8,
     0,
-    90
+    0,
+    180
    ],
    "role": "post",
    "bulk": 1.1,
@@ -964,7 +972,8 @@
     "The tower is mine to watch. Mine alone.",
     "Scales and steel. A good pairing."
    ],
-   "home": "castle"
+   "tower": "tower2",
+   "top": true
   },
   {
    "k": "gd_catknight",
@@ -980,17 +989,17 @@
    "hc": "#6a665e",
    "w": "greatsword",
    "at": [
-    8.2,
-    1.6,
+    -4,
+    -1.5,
     0,
-    0
+    270
    ],
    "role": "post",
    "say": [
     "The gate holds. It always holds.",
     "Mind the blade. It's planted, not sleeping."
    ],
-   "home": "castle"
+   "tower": "tower4"
   },
   {
    "k": "gd_whitecat",
@@ -1005,16 +1014,18 @@
    "shieldback": "#6a6a62",
    "w": "spear",
    "at": [
-    10,
-    -8,
-    8
+    0.8,
+    0,
+    0,
+    270
    ],
-   "role": "patrol",
+   "role": "post",
    "say": [
     "The great gate's quiet. Too quiet.",
     "Spear first. Questions after."
    ],
-   "home": "castle"
+   "tower": "tower3",
+   "top": true
   },
   {
    "k": "gd_kitten",
@@ -1374,16 +1385,18 @@
    "cape": "#6a4a2a",
    "w": "sword",
    "at": [
-    2,
-    10,
-    7
+    0.8,
+    0,
+    0,
+    90
    ],
-   "role": "patrol",
+   "role": "post",
    "say": [
     "White armour. Hard to keep clean.",
     "For the keep!"
    ],
-   "home": "castle"
+   "tower": "tower3",
+   "top": true
   },
   {
    "k": "gd_ram",

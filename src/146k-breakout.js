@@ -13,7 +13,7 @@ if(!GUARD.shelved)PARK.later(()=>{ '@park'; const T=TILE, PI=Math.PI, X=SHARED.B
   // a wave: on the clock, so every player sees the same nights (about one night in two, sometime between nine and one)
   const waveAt=day=>h3(day,3,7)<.55?21+h3(day,5,9)*4:null; let lastWave=-1;
   BREAK.wave=n=>MODS.dunkeep&&MODS.dunkeep.wave(n);
-  SYS.add('breakout',n=>{ if(!n)return; BREAK.on=true; if(Math.hypot(pos.x-TOP.x,pos.z-TOP.z)<40*T)say('SOMETHING IS COMING UP THE CASTLE STAIR!','#ff8a6a'); },'146k-breakout');
+  SYS.add('breakout',n=>{ if(!n)return; BREAK.on=true; if(Math.hypot(pos.x-TOP.x,pos.z-TOP.z)<40*T)say('SOMETHING IS COMING UP THE DUNGEON STAIR!','#ff8a6a'); },'146k-breakout');
   const nearest=(x,z,max)=>{ let b=null, bd=max; for(const c of BREAK.list){ if(c.dead)continue; const d=Math.hypot(c.x-x,c.z-z); if(d<bd){ bd=d; b=c; } } return b&&{c:b,d:bd}; };
   // a guardian in the fight: closes to striking distance and swings in time (melee), or keeps its distance and shoots (bow) or casts (staff)
   const bolts=[], boltG=new THREE.SphereGeometry(.06,10,8);
@@ -35,7 +35,7 @@ if(!GUARD.shelved)PARK.later(()=>{ '@park'; const T=TILE, PI=Math.PI, X=SHARED.B
   SYS.add('life',dt=>{ const day=window.MAIL&&MAIL.ready?MAIL.day():Math.floor(Date.now()/864e5), h=CLOCK.h??12, w=waveAt(day);
     if(w!=null&&lastWave!==day&&((h>=w&&h<w+1)||(w>=24&&h>=w-24&&h<w-23))){ lastWave=day; if(PARK.ready)BREAK.wave(); }
     BREAK.list=MODS.dunkeep?MODS.dunkeep.list():[]; if(!BREAK.list.length&&!BREAK.on)return; if(!PARK.in&&!BREAK.list.some(c=>!c.dead))return;
-    for(const N of GUARD.list){ if(N.mode==='home'||N.gd.inside||N.gd.perch&&N.gd.perch!=='wall')continue; const t=nearest(N.st.x,N.st.z,16*T); if(t&&!N.ctl)N.ctl=ctl; }
+    for(const N of GUARD.list){ if(N.mode==='home'||N.gd.inside||N.gd.perch&&N.gd.perch!=='wall'||N.gd.top&&N.grip!=='bow')continue; const t=nearest(N.st.x,N.st.z,16*T); if(t&&!N.ctl)N.ctl=ctl; }
     if(BREAK.list.some(c=>!c.dead))BREAK.seen=true;
     for(const b of bolts){ b.t+=dt; const c=b.c, ty=c.g.position.y+.2*MV, dx=c.x-b.m.position.x, dy=ty-b.m.position.y, dz=c.z-b.m.position.z, l=Math.hypot(dx,dy,dz), v=9*MH*dt;
       if(l<v||c.dead){ if(!c.dead)hurt(c,1.6); b.t=9; } else b.m.position.set(b.m.position.x+dx/l*v,b.m.position.y+dy/l*v,b.m.position.z+dz/l*v); }

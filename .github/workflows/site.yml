@@ -70,6 +70,7 @@ jobs:
           k animals 'src/087|src/111db|worker/folk|animals\.cjs'
           k parksolid 'src/111fe|src/100-use|data/world|parksolid\.cjs'
           k guardians 'src/146ja|src/146k|src/146b|worker/dunmobs|src/103a|src/059e|data/guardians|guardians\.cjs|body\.cjs'
+          k towers  'src/062-castle|src/063-tower|src/146ja|data/guardians|towers\.cjs'
           k faunarest 'src/087-npc-creatures|src/086a-farm|data/fauna|fauna-rest\.cjs'
           k itempics 'src/162e-bag|src/162d-hud|src/162fa-shopinsides|src/150cy|itempics\.cjs'
           k ground  'src/162e-bag|src/150cy-inspect|src/140b-items|data/items|grounditems\.cjs'
@@ -268,6 +269,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' parksolid')
         run: node tests/parksolid.cjs dist/market.html
+      - name: The watchtowers (the castle gone, the stair kept, six towers, each guard at its tower)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' towers')
+        run: node tests/towers.cjs dist/market.html
       - name: The keep's guardians (the crew, a breakout fought, a bounty)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' guardians')

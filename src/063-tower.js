@@ -1,4 +1,4 @@
-// THE SQUIRREL'S TOWER: GTOWER builds the tall round tower beside the golems' cave.
+// THE WATCHTOWERS: GTOWER builds the tall round towers, the squirrel's beside the golems' cave and five more where world.json puts them (parkPlaces tower2 to tower6); GTOWER.at says where each stands.
 import {SHARED, THREE} from './003-shx.js';
 import {BATCH, PARK} from './003b-systems.js';
 import {FIX, LEVEL, MAPG, SOL, SYS, TILE} from './006-map-pre.js';
@@ -7,6 +7,8 @@ import {GCAVE} from './060-cave.js';
 const GTOWER={}; window.GTOWER=GTOWER;
 { const H=173, PH=4, MH=8, TH=212, TC=58, R=1.5, RB=R+.1, RI=R-.06, TA=-Math.PI*.75, TD=R+.22, TR=.46;
   GTOWER.ring=()=>{ const S=GCAVE.S; if(!S)return null; const t=S.tw, P=PARK; return {cx:t.x,cy:t.y,R,RI,TA,X:x=>SHARED.BOD.XS(x+P.ox),Z:y=>SHARED.BOD.ZS(y+P.oy)}; };
+  GTOWER.IDS=['tower','tower2','tower3','tower4','tower5','tower6'];
+  GTOWER.at=id=>{ const t=id==='tower'?GCAVE.S&&GCAVE.S.tw:(LEVEL.parkPlaces||{})[id]; if(!t)return null; return {x:SHARED.BOD.XS(t.x+PARK.ox),z:SHARED.BOD.ZS(t.y+PARK.oy),tx:t.x,ty:t.y,r:RI,top:SHARED.BOD.YS(H)}; };   // a watchtower's middle (world and park tiles), its roof's radius in tiles and its roof's height
   GTOWER.site=()=>{ const S=GCAVE.S; if(!S)return null; const P=PARK, t=S.tw; return {x:SHARED.BOD.XS(t.x+P.ox),z:SHARED.BOD.ZS(t.y+P.oy),w:2*RB*TILE,d:2*RB*TILE,r:RI*TILE,top:SHARED.BOD.YS(H)}; };
   const build=(t=GCAVE.S.tw)=>{ const P=PARK, X=x=>SHARED.BOD.XS(x+P.ox), Z=y=>SHARED.BOD.ZS(y+P.oy), Y=SHARED.BOD.YS, {bq,faceTex,C}=SHARED.BOD, K=SHARED.BOD.STOREK.keep, sh=SHARED.BOD.K.sh, cx=t.x, cy=t.y;
     const KB={x0:426,x1:435.5,y0:-86,y1:-77,h:520}, lum=c=>c[0]+c[1]+c[2], TRIM=[184,174,150], TRD=[150,140,120];
@@ -45,6 +47,6 @@ const GTOWER={}; window.GTOWER=GTOWER;
     const Ms=BATCH.meshes||{}; BATCH.meshes={}; for(const me of Object.values(Ms)){ MAPG.parkwall.add(me); GTOWER.me=me; GTOWER.tris=me.geometry.attributes.position.count/3; }
     const sol=(a0,b0,a1,b1,h)=>{ SOL.up.push([X(a0),Z(b0),X(a1),Z(b1)]); FIX.up.push([X(a0),Z(b0),0,X(a1),Z(b1),Y(h)]); };
     const q=RB*.72; sol(cx-q,cy-RB,cx+q,cy+RB,H+PH); sol(cx-RB,cy-q,cx+RB,cy+q,H+PH); sol(tx-TR,ty-TR,tx+TR,ty+TR,TH); GTOWER.ready=true; };
-  const go=()=>{ if(!SYS.started||typeof GCAVE==='undefined'||!GCAVE.S||!MAPG.parkwall)return setTimeout(go,400); setTimeout(()=>{ try{ build(); const PP=LEVEL.parkPlaces||{}; for(const k of ['tower2','tower3'])if(PP[k])build({x:PP[k].x,y:PP[k].y}); }catch(e){ console.warn('TOWER: not built',e); } },600); };   // more towers stand where world.json puts them (the park's borders)
+  const go=()=>{ if(!SYS.started||typeof GCAVE==='undefined'||!GCAVE.S||!MAPG.parkwall)return setTimeout(go,400); setTimeout(()=>{ try{ build(); const PP=LEVEL.parkPlaces||{}; for(const k of GTOWER.IDS.slice(1))if(PP[k])build({x:PP[k].x,y:PP[k].y}); }catch(e){ console.warn('TOWER: not built',e); } },600); };   // more towers stand where world.json puts them (owner, 10 Nov 2026: six, near the park's dangers)
   go(); }
 export {GTOWER};

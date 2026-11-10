@@ -2,7 +2,7 @@
 const {chromium}=require('playwright'), page=process.argv[2]||'dist/market.html';
 (async()=>{ const b=await chromium.launch({...(process.env.PWEXE?{executablePath:process.env.PWEXE}:{}),args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:1000,height:640}}); const errs=[];
   pg.on('pageerror',e=>{ errs.push(e.message); console.log('pageerror:',e.message); }); pg.on('console',m=>{ if(/guardian /.test(m.text()))errs.push(m.text()); });
-  await pg.goto('file://'+require('path').resolve(page)+'?hour=12&fresh=1&place=the castle',{waitUntil:'commit',timeout:180000});
+  await pg.goto('file://'+require('path').resolve(page)+'?hour=12&fresh=1&place=the dungeon stair',{waitUntil:'commit',timeout:180000});
   for(let i=0;i<180;i++){ await pg.waitForTimeout(1000); if(await pg.evaluate(()=>!!window.__started&&!!window.GUARDDBG&&GUARDDBG().length>0).catch(()=>false))break; } await pg.waitForTimeout(5000);
   const L=await pg.evaluate(()=>GUARDDBG()); const n=L.length, tris=L.reduce((a,g)=>a+g.tris,0);
   console.log('guardians',n,'tris',Math.round(tris),'max',Math.max(...L.map(g=>g.tris)));

@@ -410,7 +410,7 @@ export class Block extends Server {
   onMessage(c, raw) {
     const s = c.state; if (!s || typeof raw !== "string" || raw.length > (raw.startsWith('{"t":"folk"') ? 400000 : raw.startsWith('{"t":"mobgrid"') || raw.startsWith('{"t":"dmset"') ? 200000 : 2500)) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
     const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0, at: {} }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 60) return;
-    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, sky: 200, skyw: 100, ride: 300, car: 300, curse: 1500, puff: 800, drone: 3000, ps: 150, fish: 200, world: 120, puts: 1000, lives: 3000, met: 1000, tr: 100, gtr: 25, ins: 20, mobgrid: 3000, dmset: 3000, breakout: 5000, mobhit: 60, mobpar: 200, vr: 60, body: 1000, st: 150, jet: 150, zap: 120 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
+    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, sky: 200, skyw: 100, ride: 300, car: 300, curse: 1500, puff: 800, drone: 3000, ps: 150, fish: 200, world: 120, puts: 1000, lives: 3000, met: 1000, tr: 100, gtr: 25, ins: 20, jug: 200, mobgrid: 3000, dmset: 3000, breakout: 5000, mobhit: 60, mobpar: 200, vr: 60, body: 1000, st: 150, jet: 150, zap: 120 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
     if (m.t === "bye") { this.onClose(c); c.setState({ ...s, id: "" }); try { c.close(1000, "bye"); } catch (e) {} return; }   // leaving: out for everyone now, not when the socket times out
     if (m.t === "mv" && Array.isArray(m.at)) {
       const a = m.at, at = [num(a[0], -1e5, 1e5), num(a[1], -1e5, 1e5), num(a[2], -1e4, 1e4), num(a[3], -10, 10), word(a[4], 8), word(a[5], 60)];
@@ -495,12 +495,16 @@ export class Block extends Server {
       this.broadcast(JSON.stringify({ t: "fish", id: s.id, b: v(m.b, 3), x: v(m.x, 3), k: m.k ? word(m.k, 24) : null, boat: v(m.boat, 4) }), [c.id]);
     } else if (m.t === "gtr") {
       // the guitar (src/146zob-guitar.js): what a player plays, for everyone near to hear and see
-      const k = /^(on|off|chord|strum|pluck|capo|song|stop)$/.test(m.k) ? m.k : ""; if (!k) return; const v = word(m.v, 4);
+      const k = /^(on|off|chord|strum|pluck|capo|song|stop)$/.test(m.k) ? m.k : ""; if (!k) return; const v = word(m.v, 12); if (!/^[0-9.:a-zA-Z#]*$/.test(v)) return;
       this.broadcast(JSON.stringify({ t: "gtr", id: s.id, k, v }), [c.id]);
     } else if (m.t === "ins") {
       // the instruments you sit at (src/146zp-instruments.js): the piano, the drums, the harp; what a player plays, for everyone near to hear and see
-      const k = /^(on|off|b|song|stop)$/.test(m.k) ? m.k : "", i = /^(piano|drums|harp)$/.test(m.i) ? m.i : ""; if (!k || !i) return; const v = word(m.v, 48); if (!/^[0-9.,LRFPnup-]*$/.test(v)) return;
+      const k = /^(on|off|b|song|stop)$/.test(m.k) ? m.k : "", i = /^(piano|drums|harp|violin|flute|trumpet)$/.test(m.i) ? m.i : ""; if (!k || !i) return; const v = word(m.v, 48); if (!/^[0-9.,:LRFPnup-]*$/.test(v)) return;
       this.broadcast(JSON.stringify({ t: "ins", id: s.id, k, i, v }), [c.id]);
+    } else if (m.t === "jug") {
+      // juggling (src/146zr-juggle.js): the pattern, when it drops and with what ("i:fail:b|c"), or "" to stop
+      const v = word(m.v, 24); if (!/^([0-9]+:[0-9.]+:[bc])?$/.test(v)) return;
+      this.broadcast(JSON.stringify({ t: "jug", id: s.id, v }), [c.id]);
     } else if (m.t === "drone") {   // a delivery drone flying to a player: everyone near sees it (src/146-drone)
       this.broadcast(JSON.stringify({ t: "drone", id: s.id, lb: word(m.lb, 40), f: m.f ? 1 : 0, x: num(m.x, -1e5, 1e5), y: num(m.y, -1e4, 1e4), z: num(m.z, -1e5, 1e5) }), [c.id]);
     } else if (m.t === "puff") {

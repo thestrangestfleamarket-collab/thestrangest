@@ -282,7 +282,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       if(body.ride){ const RS=NPC.RS, vm=(body.rideSpeed||3)*TILE/.84, mv=!!st.to&&SR.target>0;   // on its board: rolls, pushing off while it gathers speed, coasts, brakes to a stop
         RS.v=mv?Math.min(vm,RS.v+vm*.5*dt):Math.max(0,RS.v-vm*1.5*dt); if(mv&&RS.v<vm*.9){ RS.pt+=dt*1.3; RS.push=RS.pt%1; } else { RS.pt=0; RS.push=-1; }
         go=st.to?Math.min(RS.v*dt,Math.hypot(st.to.x-st.x,st.to.z-st.z)):0; SR.ride=body.ride.pose(RS); }
-      else{ const d0=SR.dist; R.step(SR,dt); go=(SR.dist-d0)*W3.SZ/PPU*.85; }
+      else{ const d0=SR.dist; R.step(SR,dt); go=(SR.dist-d0)*W3.BASE/PPU*.85; }
       if(go>0){ const nx=st.x+Math.sin(st.hd)*go, nz=st.z+Math.cos(st.hd)*go; if(free(nx,nz)){ st.x=nx; st.z=nz; } else { st.to=null; st.next=null; st.wait=.5+Math.random(); if(NPC.RS)NPC.RS.v=0; } }
       st.y=(body.ground||MODS.bodega.ground)(st.x,st.z)+(body.lift?body.lift(performance.now()/1000,NPC):0); g.position.set(st.x,st.y,st.z); g.rotation.y=st.hd; musScale(g,1); if(NPC.size!==1)g.scale.multiplyScalar(NPC.size);
       if(NPC.board){ const b=NPC.board; b.visible=true; b.position.set(st.x,st.y+R.RIDEG.deck*g.scale.y,st.z); b.rotation.set(0,st.hd,0); if(body.ride.place)body.ride.place(b,NPC.RS,0,{g,S:body.S||1}); }

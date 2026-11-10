@@ -9,8 +9,8 @@ import {FLAME} from './007-fire.js';
 import {RARITY} from './013a-rarity.js';
 import {GRASS} from './014a-grass.js';
 import {STALL} from './081-stalls.js';
-import {MUSH} from './083a-npc-mushroom.js';
 import {GEMS} from './101-gems.js';
+import {MUSH} from './111ec-mushseller.js';
  window.FORAGE=FORAGE;
 { const PACK={tab:'skills'}; FORAGE.PACK=PACK; const T=TILE, KEY='forage', esc=TEXT.esc;
   // three tiers (RARITY): common 0-15 and a few dollars, rare 30-45, super-rare 70-90 and a fortune; each grass grows one of each

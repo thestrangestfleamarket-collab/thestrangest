@@ -10,7 +10,7 @@ const MUSH={}; let swing=null;
 { const {SPH,CYL,TOR,grp,mk,paint,hash3,C,mix,fbm,lathe,bend,ribbon}=MERCH.K, PI=Math.PI, T=TILE, V3=THREE.Vector3;
   let seed=11; const rnd=()=>{ seed=(seed*16807)%2147483647; return seed/2147483647; };
   // a mushroom: its stem, the cap's dome and rolled rim, the gills under it; o {r cap, h stem, s stem radius, cap, stem, gill colours, k cap height, seg}
-  const shroom=(par,at,rot,o)=>{ const g=grp(par,at,rot), r=o.r, h=o.h, s=o.s||r*.32, n=o.seg||12, k=o.k||.58;
+  const shroom=(par,at,rot,o)=>{ const g=grp(par,at,rot), r=o.r, h=o.h, s=o.s||r*.32, n=MERCH.K.sq(o.seg||12,6), k=o.k||.58;
     if(h>.002)mk(g,CYL(s*.92,s*1.12,h,Math.max(6,n>>1)),o.stem||'plain:#efe8da',[0,h/2,0]);
     mk(g,SPH(r,n,Math.max(3,n>>1),0,PI*2,0,PI*.5),o.cap,[0,h,0],[0,0,0],[1,k,1]);
     if(n>8){ mk(g,TOR(r*.93,r*.09,4,n),o.cap,[0,h,0],[PI/2,0,0]); mk(g,CYL(r*.9,s*1.05,r*.2,n,true),o.gill||'plain:#a88c76',[0,h-r*.1,0]); }
@@ -43,9 +43,9 @@ const MUSH={}; let swing=null;
     mk(H,bone(SPH(.06,18,12)),BN,[0,-.084,.068],[0,0,0],[1.1,.72,.78]);
     mk(H,SPH(.052,14,6),BLK,[0,-.116,.074],[0,0,0],[1.05,.2,.72]);
     for(let i=0;i<10;i++){ const a=(i-4.5)/4.5*.95, r=.054, w=i===4||i===5?.0125:.0105;
-      mk(H,new THREE.CapsuleGeometry(w*.5,.012,2,6),TOOTH,[Math.sin(a)*r,-.104,.07+Math.cos(a)*r*.92],[0,a,0],[1,1,.8]); }
+      mk(H,MERCH.K.CAP(w*.5,.012,2,6),TOOTH,[Math.sin(a)*r,-.104,.07+Math.cos(a)*r*.92],[0,a,0],[1,1,.8]); }
     mk(H,bone(SPH(.052,18,10)),BN,[0,-.145,.052],[0,0,0],[1.08,.55,.8]);
-    for(let i=0;i<8;i++){ const a=(i-3.5)/3.5*.85, r=.047; mk(H,new THREE.CapsuleGeometry(.0048,.009,2,6),TOOTH,[Math.sin(a)*r,-.127,.068+Math.cos(a)*r*.92],[0,a,0],[1,1,.8]); }
+    for(let i=0;i<8;i++){ const a=(i-3.5)/3.5*.85, r=.047; mk(H,MERCH.K.CAP(.0048,.009,2,6),TOOTH,[Math.sin(a)*r,-.127,.068+Math.cos(a)*r*.92],[0,a,0],[1,1,.8]); }
     mk(H,bone(SPH(.016,10,6)),BN,[0,-.163,.07],[0,0,0],[1.5,.7,.9]);
     mk(B.head,CYL(.036,.044,.16,14),BN.replace('vc','#d8cbb0'),[0,.05,-.01]);
     /* the hair: long, ash-blond, from under the brim down past the shoulders, open round the face; two locks a side over the chest */
@@ -66,9 +66,9 @@ const MUSH={}; let swing=null;
         let c=up?mix(EARTH,SAND,(m-.35)*2):mix(LOAM,EARTH,(n-.3)*1.5); if(up&&hash3(Math.round(x*300),Math.round(z*300),7)>.82)c=mix(c,SPORE,.75); cl.set([c.r,c.g,c.b],i*3); }
       g.setAttribute('color',new THREE.BufferAttribute(cl,3)); mk(HT,g,'knit:vc'); }
     const onHat=(r,a,lift=0)=>{ const y=top(r)+lift, sl=Math.atan(.12*1.6*Math.pow(r/.25,.6)/.25)*1.15; return {at:[Math.sin(a)*r,y,Math.cos(a)*r],rot:[Math.cos(a)*sl,0,-Math.sin(a)*sl]}; };
-    for(let i=0;i<90;i++){ const r=.03+.215*Math.sqrt(rnd()), a=rnd()*PI*2, q=onHat(r,a,-.006), cr=.009+rnd()*.016;
+    const NB=MERCH.K.N(90,24), gB=Math.min(1.7,Math.sqrt(90/NB)); for(let i=0;i<NB;i++){ const r=.03+.215*Math.sqrt(rnd()), a=rnd()*PI*2, q=onHat(r,a,-.006), cr=(.009+rnd()*.016)*gB;
       shroom(HT,q.at,q.rot.map(v=>v+(rnd()-.5)*.5),{r:cr,h:cr*(.2+rnd()*.7),cap:CAPS[i%5],seg:7,k:.8}); }
-    for(let i=0;i<18;i++){ const a=i/22*PI*2+rnd()*.2, cr=.013+rnd()*.012, tl=1.05+rnd()*.35;
+    const NR=MERCH.K.N(18,9), gR=Math.sqrt(18/NR); for(let i=0;i<NR;i++){ const a=i/NR*PI*2+rnd()*.2, cr=(.013+rnd()*.012)*gR, tl=1.05+rnd()*.35;
       shroom(HT,[Math.sin(a)*.243,.068+rnd()*.012,Math.cos(a)*.243],[Math.cos(a)*tl,0,-Math.sin(a)*tl],{r:cr,h:cr*(.4+rnd()*.6),cap:CAPS[(i+2)%5],seg:7,k:.75}); }
     for(let i=0;i<11;i++){ const r=.07+.15*rnd(), a=i/11*PI*2+rnd()*.4, q=onHat(r,a,-.01), cr=.026+rnd()*.022;
       shroom(HT,q.at,q.rot.map(v=>v*1.3+(rnd()-.5)*.3),{r:cr,h:.03+rnd()*.05,s:cr*.28,cap:i%3?TANS[i%3]:CAPS[i%5],gill:'plain:#9a7e62',seg:12}); }
@@ -86,11 +86,11 @@ const MUSH={}; let swing=null;
       mk(B['forearm'+n],paint(sl,robeC(12+s)),'cloth:vc',[0,-.13,0]); mk(B['forearm'+n],CYL(.068,.108,.27,16,1,true),'cloth:#3a1d0e',[0,-.135,0]);
       /* a bony hand gripping under the tray: palm, four knuckled fingers curled forward, the thumb */
       const Hd=B['hand'+n]; mk(Hd,bone(SPH(.032,16,12)),BN,[0,-.04,.006],[0,0,0],[1.05,1.25,.55]);
-      for(let i=0;i<4;i++){ const fx=(i-1.5)*.017, l1=.034-Math.abs(i-1.5)*.004, F=grp(Hd,[fx,-.072,.004],[.5,0,0]); mk(F,new THREE.CapsuleGeometry(.0058,l1,2,6),BN.replace('vc','#ddd1b6'),[0,-l1/2,0]);
-        mk(F,SPH(.0075,6,4),BN.replace('vc','#d4c6a8'),[0,-l1,0]); const G=grp(F,[0,-l1,0],[1.1,0,0]); mk(G,new THREE.CapsuleGeometry(.005,.022,2,6),BN.replace('vc','#ddd1b6'),[0,-.014,0]); }
-      const Th=grp(Hd,[-s*.026,-.035,.012],[.5,0,s*.6]); mk(Th,new THREE.CapsuleGeometry(.006,.032,2,6),BN.replace('vc','#ddd1b6'),[0,-.02,0]);
+      for(let i=0;i<4;i++){ const fx=(i-1.5)*.017, l1=.034-Math.abs(i-1.5)*.004, F=grp(Hd,[fx,-.072,.004],[.5,0,0]); mk(F,MERCH.K.CAP(.0058,l1,2,6),BN.replace('vc','#ddd1b6'),[0,-l1/2,0]);
+        mk(F,SPH(.0075,6,4),BN.replace('vc','#d4c6a8'),[0,-l1,0]); const G=grp(F,[0,-l1,0],[1.1,0,0]); mk(G,MERCH.K.CAP(.005,.022,2,6),BN.replace('vc','#ddd1b6'),[0,-.014,0]); }
+      const Th=grp(Hd,[-s*.026,-.035,.012],[.5,0,s*.6]); mk(Th,MERCH.K.CAP(.006,.032,2,6),BN.replace('vc','#ddd1b6'),[0,-.02,0]);
       mk(B['thigh'+n],CYL(.08,.068,.45,16),'cloth:#4a2a18',[0,-.22,0]); mk(B['shin'+n],CYL(.064,.054,.46,14),'cloth:#4a2a18',[0,-.22,0]);
-      mk(B['shoe'+n],new THREE.CapsuleGeometry(.048,.12,6,14),'leather:#3b2a1c',[0,.04,.05],[PI/2,0,0],[1,1,.75]); }
+      mk(B['shoe'+n],MERCH.K.CAP(.048,.12,6,14),'leather:#3b2a1c',[0,.04,.05],[PI/2,0,0],[1,1,.75]); }
     /* the woven shawl over his right shoulder, hanging down his side to a fringe; the grey leather strap across his chest and its silver clasp */
     { const pts=[[-.13,.475,-.02],[-.19,.43,.06],[-.215,.3,.135],[-.222,.14,.162],[-.232,-.02,.168],[-.24,-.14,.166]], o={fz:.78,lift:.022,wave:(u,v)=>.006*Math.sin(v*40+u*3)};
       const weave=(u,v)=>{ const b=Math.floor((u+.5)*9), w=b%4===0?'#2f3b3a':b%4===1?'#8a6a44':b%4===2?'#c2a77c':'#5a4630', k=.85+.3*fbm(u*40,v*160,1); return C(w).multiplyScalar(k); };
@@ -102,7 +102,7 @@ const MUSH={}; let swing=null;
     { const K=grp(B.torso,[-.05,.355,.198],[-.2,0,-.6]); mk(K,TOR(.016,.005,8,18),'metal:#bdb8ad'); mk(K,CYL(.004,.004,.035,8),'metal:#bdb8ad',[0,-.03,.004]); mk(K,SPH(.008,10,8),'metal:#a8a296',[0,-.05,.006]); }
     /* the tray held out at the waist: a round wooden platter heaped with white and brown mushrooms, some on their sides, some upturned */
     const TR=grp(B.torso,[0,.105,.39],[.12,0,0]); mk(TR,CYL(.275,.255,.024,44),'wood:#6a4529',[0,0,0]); mk(TR,TOR(.268,.013,8,48),'wood:#5a3a22',[0,.012,0],[PI/2,0,0]);
-    seed=37; for(let i=0;i<52;i++){ const rr=.235*Math.sqrt(rnd()), a=rnd()*PI*2, hgt=.012+.075*Math.max(0,1-rr/.24)*(.6+.4*rnd()), cr=.021+rnd()*.015, h=.018+rnd()*.018, k=rnd(), at=[Math.sin(a)*rr,hgt,Math.cos(a)*rr];
+    seed=37; const NT=MERCH.K.N(52,18), gT=Math.min(1.5,Math.pow(52/NT,.4)); for(let i=0;i<NT;i++){ const rr=.235*Math.sqrt(rnd()), a=rnd()*PI*2, hgt=.012+.075*Math.max(0,1-rr/.24)*(.6+.4*rnd()), cr=(.021+rnd()*.015)*gT, h=(.018+rnd()*.018)*gT, k=rnd(), at=[Math.sin(a)*rr,hgt,Math.cos(a)*rr];
       const cap=rnd()<.16?TANS[i%3]:rnd()<.06?'plain:#8c6a4a':CAPS[i%5], o={r:cr,h,s:cr*.36,cap,gill:'plain:#a48a74',seg:10,k:.62};
       if(k<.4)shroom(TR,at,[(rnd()-.5)*.6,rnd()*PI*2,(rnd()-.5)*.6],o);
       else if(k<.8){ at[1]+=cr*.6; const b=rnd()*PI*2; shroom(TR,at,[Math.cos(b)*1.45,b,Math.sin(b)*1.45],o); }

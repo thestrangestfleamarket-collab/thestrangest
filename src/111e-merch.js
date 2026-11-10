@@ -23,6 +23,12 @@ const MERCH={list:[],SURF:{plain:0,knit:1,cloth:2,denim:3,leather:4,metal:5,skin
       for(let i=0;i<p.count;i++){ col.set(fn(p.getX(i),p.getY(i),p.getZ(i))); c.set([col.r,col.g,col.b],i*3); }
       g.setAttribute('color',new THREE.Float32BufferAttribute(c,3)); return g; }};
 
+  // the detail a body is built at (K.Q, 1 full): every shape's sides and rows scaled by it (never under what keeps the shape whole), counts of small repeated things by its root
+  { const _S=K.SPH, _C=K.CYL, _T=K.TOR; K.Q=1; K.sq=(n,m)=>Math.max(m,Math.round(n*K.Q)); K.N=(n,m=1)=>Math.max(m,Math.round(n*Math.sqrt(K.Q)));
+    K.SPH=(r,w=10,h=7,...a)=>_S(r,K.sq(w,6),K.sq(h,4),...a); K.CYL=(rt,rb,h,s=8,...a)=>_C(rt,rb,h,K.sq(s,5),...a); K.TOR=(r,t,rs=6,ts=12,arc)=>_T(r,t,K.sq(rs,3),K.sq(ts,6),arc);
+    K.CAP=(r,l,cs=3,rs=8)=>new THREE.CapsuleGeometry(r,l,K.sq(cs,1),K.sq(rs,4)); K.TUBE=(c,ts,r,rs,cl)=>new THREE.TubeGeometry(c,K.sq(ts,4),r,K.sq(rs,5),cl); }
+  // the street's bodies at a lower detail (?lod=2 half, 3 a third): to compare how they read in the game
+  MERCH.LOD={'2':.5,'3':.3}[new URLSearchParams(location.search).get('lod')]||1;
   // shared shape tools: colours, value noise, turned shapes made fine, bending points, strips laid along a curve
   { const PI=Math.PI;
   const hex=c=>'#'+c.getHexString(), C=h=>new THREE.Color(h), mix=(a,b,t)=>a.clone().lerp(b,Math.max(0,Math.min(1,t)));
@@ -32,10 +38,10 @@ const MERCH={list:[],SURF:{plain:0,knit:1,cloth:2,denim:3,leather:4,metal:5,skin
   // a turned shape from [radius, height] pairs made finer (n rows) so painted colours and folds have points to land on
   const dense=(pts,n)=>{ const L=[0]; for(let i=1;i<pts.length;i++)L.push(L[i-1]+Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1])); const out=[];
     for(let k=0;k<=n;k++){ const s=k/n*L[L.length-1]; let i=1; while(i<L.length-1&&L[i]<s)i++; const t=(s-L[i-1])/((L[i]-L[i-1])||1); out.push(new THREE.Vector2(pts[i-1][0]+(pts[i][0]-pts[i-1][0])*t,pts[i-1][1]+(pts[i][1]-pts[i-1][1])*t)); } return out; };
-  const lathe=(pts,n,seg,fz=1,p0=0,pl=PI*2)=>{ const g=new THREE.LatheGeometry(dense(pts,n),seg,p0,pl); if(fz!==1){ const p=g.attributes.position; for(let i=0;i<p.count;i++)p.setZ(i,p.getZ(i)*fz); } return g; };
+  const lathe=(pts,n,seg,fz=1,p0=0,pl=PI*2)=>{ const g=new THREE.LatheGeometry(dense(pts,K.sq(n,pts.length-1)),K.sq(seg,6),p0,pl); if(fz!==1){ const p=g.attributes.position; for(let i=0;i<p.count;i++)p.setZ(i,p.getZ(i)*fz); } return g; };
   const bend=(g,fn)=>{ const p=g.attributes.position, v=new V3(); for(let i=0;i<p.count;i++){ v.fromBufferAttribute(p,i); fn(v); p.setXYZ(i,v.x,v.y,v.z); } return g; };
   // a strip laid along a curve (cloth, a strap, a lock of hair): across it by its width, out from the body's axis by its lift; col(u,v) its colour
-  const ribbon=(pts,w,nv,nu,col,o={})=>{ const cv=new THREE.CatmullRomCurve3(pts.map(p=>new V3(...p))), P=[], Cc=[], I=[], c=new THREE.Color(), up=new V3(), out=new V3(), side=new V3();
+  const ribbon=(pts,w,nv,nu,col,o={})=>{ nv=K.sq(nv,3); nu=K.sq(nu,2); const cv=new THREE.CatmullRomCurve3(pts.map(p=>new V3(...p))), P=[], Cc=[], I=[], c=new THREE.Color(), up=new V3(), out=new V3(), side=new V3();
     for(let j=0;j<=nv;j++){ const v=j/nv, p=cv.getPoint(v), t=cv.getTangent(v); out.set(p.x,0,p.z/(o.fz||1)).normalize(); if(o.out)out.set(...o.out(v)).normalize(); side.crossVectors(t,out).normalize(); const ww=w*(o.taper?1-o.taper*v:1);
       for(let i=0;i<=nu;i++){ const u=i/nu-.5, q=p.clone().addScaledVector(side,u*ww).addScaledVector(out,(o.lift||0)+(o.wave?o.wave(u,v):0)); P.push(q.x,q.y-(o.ragged?o.ragged(u,v):0),q.z); c.set(col(u,v)); Cc.push(c.r,c.g,c.b); } }
     for(let j=0;j<nv;j++)for(let i=0;i<nu;i++){ const a=j*(nu+1)+i, b=a+nu+1; I.push(a,b,a+1,a+1,b,b+1); }
@@ -72,7 +78,7 @@ const MERCH={list:[],SURF:{plain:0,knit:1,cloth:2,denim:3,leather:4,metal:5,skin
     geo.setAttribute('color',new THREE.Float32BufferAttribute(C2,3)); geo.setAttribute('bi',new THREE.Float32BufferAttribute(I2,2)); geo.setAttribute('bw',new THREE.Float32BufferAttribute(W2,1)); geo.computeBoundingSphere(); return geo; };
 
   /* ---------- a merchant: def {key, label, height (m), model()->skel with parts, at, size (x/10 of a person, the owner's scale), idle(t,N)->rig pose, after(B,N,dt), lift(t)} ---------- */
-  MERCH.add=def=>{ if(ARCH.has(def.key))return null; const S=def.model();   // an archived character gets no body
+  MERCH.add=def=>{ if(ARCH.has(def.key))return null; K.Q=def.q??MERCH.LOD; const S=def.model(); K.Q=1;   // an archived character gets no body
     const body={key:def.key,label:def.label,height:def.height,hipY:S.q.hipY,off:offOf(S.B),binv:null,at:def.at??0,geo:()=>MERCH.bake(S),
       size:(def.size||10)/10,smooth:true,idle:def.idle,after:def.after,lift:def.lift,hd:def.hd,root:def.inside?scene:null};
     BODIES.add(body); MERCH.list.push(body); return body; };

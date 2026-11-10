@@ -29,12 +29,12 @@ import {AVATAR} from './111c-avatar.js';
     return ['play','● PLAYING',(s.doing||'')+(s.cash!=null?' · $'+s.cash:'')+(s.hp!=null?' · health '+Math.round(s.hp*100)+'%':'')]; };
   const jobName=j=>(JOBS.find(x=>x[0]===j)||['',j])[1];
   const card=b=>{ const [k,w,d]=state(b), at=b.status&&b.status.at;
-    return `<div class="card" data-b="${esc(b.id)}"><div class="l1"><span class="nm">${esc(b.name)}</span>${b.on?`<button class="btn" data-a="call" title="bring it to where you stand">CALL</button>${at?'<button class="btn" data-a="goto" title="go to where it is, to watch it">GO TO IT</button>':''}`:''}${k==='stuck'?'<button class="btn" data-a="restart">RESTART</button>':''}<button class="btn" data-a="on">${b.on?'OFF':'ON'}</button><button class="btn" data-a="edit">EDIT</button></div>
+    return `<div class="card" data-b="${esc(b.id)}"><div class="l1"><span class="nm">${esc(b.name)}${b.ai?' · AI':''}</span>${b.on?`<button class="btn" data-a="call" title="bring it to where you stand">CALL</button>${at?'<button class="btn" data-a="goto" title="go to where it is, to watch it">GO TO IT</button>':''}`:''}${k==='stuck'?'<button class="btn" data-a="restart">RESTART</button>':''}<button class="btn" data-a="on">${b.on?'OFF':'ON'}</button><button class="btn" data-a="edit">EDIT</button></div>
       <div class="st ${k}">${w} · ${esc(jobName(b.job))}${d?'<br><span class="why">'+esc(d)+'</span>':''}</div></div>`; };
   const botsTab=()=>{ const B=[...D.bots].sort((a,c)=>{ const o={stuck:0,start:1,play:2,off:3}; return o[state(a)[0]]-o[state(c)[0]]; }), n=k=>D.bots.filter(b=>state(b)[0]===k).length;
     const cf=D.cloud===null?'<div class="fail">Cloudflare is not running bots on this server.</div>':D.cloud&&D.cloud.err?'<div class="fail">CLOUDFLARE: '+esc(D.cloud.err)+'</div>':'';
     return `<div class="card"><div><span class="pass">${n('play')} playing</span> · <span class="skip">${n('start')} starting</span> · <span class="fail">${n('stuck')} stuck</span> · ${n('off')} off${say?' · '+esc(say):''}</div>${cf}
-      <div class="row"><button class="btn" id="bnew">+ NEW BOT</button><button class="btn" id="ball">CALL ALL TO ME</button><button class="btn" id="boff">ALL OFF</button></div>
+      <div class="row"><button class="btn" id="bnew">+ NEW BOT</button>${D.bots.some(b=>b.ai&&b.who===ONLINE.me)?'':'<button class="btn" id="bai" title="a bot that looks like you, follows you and does what you tell it in the chat (@...), its thinking Claude\'s">+ MY AI DOUBLE</button>'}<button class="btn" id="ball">CALL ALL TO ME</button><button class="btn" id="boff">ALL OFF</button></div>
       <div class="why">Bots run on Cloudflare: about 9¢ an hour after 10 free hours a month. Turn them off when you are done. <span class="go" id="bhow">${how?'hide':'run them on a PC instead'}</span></div>
       ${how?`<div class="why" style="white-space:pre-wrap;margin:4px 0">Turn them off here first. Once: install Node (nodejs.org), save tools/bots.cjs in a folder, and in that folder run
   npm install playwright
@@ -50,6 +50,7 @@ Leave that window open; Ctrl+C stops every bot.</div><div class="row"><code>${es
       <label style="margin-top:4px">GOAL $ <input data-f="goal" type="number" min="0" value="${esc(b.goal||'')}" placeholder="none" style="width:90px;${IN}"> <span class="why">stop the money jobs once it has earned this</span></label>
       <h4>WHERE IT STARTS</h4>${sel('place',[['','WHERE IT IS NOW'],...places()],b.place)}
       <h4>LOOKS</h4>${sel('look',[['','RANDOM'],['me','LIKE ME NOW'],...(b.look&&b.look!=='me'?[[b.look,'AS SET']]:[])],b.look)}<label><input data-f="apt" type="checkbox"${b.apt?' checked':''}> its own apartment</label>
+      <h4>AI DOUBLE</h4><label><input data-f="ai" type="checkbox"${b.ai?' checked':''}> Claude thinks for it: it looks like who it follows, half see-through, and does what they say in the chat starting with @</label>
       <h4>FIGHTING</h4><label><input data-f="fight" type="checkbox"${b.fight?' checked':''}> fights back</label><label><input data-f="god" type="checkbox"${b.god?' checked':''}> can't be knocked down</label>
       <label>health <input data-f="hp" type="range" min="5" max="100" value="${esc(Math.round((b.hp??1)*100))}"></label><label>follow / fight ${sel('who',[['','NOBODY'],...people()],b.who&&b.who===ONLINE.me?'me':b.who)}</label>
       <h4>SAYS</h4><input data-f="say" type="text" maxlength="400" value="${esc(b.say||'')}" placeholder="lines it says now and then, split by |" style="width:100%;box-sizing:border-box;${IN}">
@@ -127,6 +128,7 @@ Leave that window open; Ctrl+C stops every bot.</div><div class="row"><code>${es
       if(t.id==='tbug'){ fileFails(t); return; }
       if(t.id==='tclr'){ if(!confirm('Clear every test result?'))return; act(t,{do:'testclear'},()=>'results cleared'); return; }
       if(t.id==='tpass'){ how=how==='pass'?false:'pass'; redraw(); return; }
+      if(t.id==='bai'){ act(t,{do:'botnew',set:{at:[pos.x,pos.z],ai:true,job:'follow',who:ONLINE.me,fight:true,name:((ONLINE.myName?ONLINE.myName():'MY')+' AI').slice(0,24)}},()=>'your AI double is starting next to you (its game takes 1 to 3 minutes): talk to it in the chat starting with @'); return; }
       if(t.id==='bnew'){ act(t,{do:'botnew',set:{at:[pos.x,pos.z]}},r=>{ if(r.id)EDIT=r.id; return 'a new bot where you stand: set it up below'; }); return; }
       if(t.id==='ball'){ t.disabled=true; (async()=>{ const on=D.bots.filter(b=>b.on), c=callSet(); for(const b of on)await api({do:'botset',id:b.id,set:c}); say=on.length?on.length+' coming':'no bot is on'; await load(); })(); return; }
       if(t.id==='boff'){ t.disabled=true; (async()=>{ const L=D.bots.filter(b=>b.on); for(const b of L)await api({do:'botset',id:b.id,set:{on:false}}); say=L.length?L.length+' turned off':'all off already'; await load(); })(); return; }
@@ -142,7 +144,7 @@ Leave that window open; Ctrl+C stops every bot.</div><div class="row"><code>${es
       if(A==='goto'){ const p=x.status.at; UI.goTo(p[0],p[1],'up'); return; }
       if(A==='del'){ if(!confirm('Delete '+x.name+' and its account for good?'))return; EDIT=null; act(a,{do:'botdel',id},()=>'deleted'); return; }
       if(A==='save'){ const look=f('look').value, set={name:f('name').value.trim(),look:look==='me'?AVATAR.code():look,job:f('job').value,who:f('who').value==='me'?ONLINE.me:f('who').value,
-          goal:+f('goal').value||0,say:f('say').value.trim(),hp:(+f('hp').value||100)/100,fight:f('fight').checked,god:f('god').checked,apt:f('apt').checked};
+          goal:+f('goal').value||0,say:f('say').value.trim(),hp:(+f('hp').value||100)/100,fight:f('fight').checked,god:f('god').checked,apt:f('apt').checked,ai:f('ai').checked};
         const pl=f('place').value; if(pl!==(x.place||'')){ set.place=pl; if(pl)set.at=null; }
         EDIT=null; act(a,{do:'botset',id,set},()=>x.name+' saved'); if(root===W)shut(); } }; };
 

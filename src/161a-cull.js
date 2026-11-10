@@ -3,7 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {CULL, ED, FAR3, MAPED, PARK, pos, ROOMS, UI} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
-import {LEVEL, QS, SYS, TILE} from './006-map-pre.js';
+import {LEVEL, MAPG, QS, SYS, TILE} from './006-map-pre.js';
 import {DFOG} from './134e-distfog.js';
 Object.assign(CULL,{L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0',FL:[],H:[],D:[],R:0,hz:QS.get('hazecull')!=='0',PAD:2*TILE});
 { const m4=new THREE.Matrix4(), w4=new THREE.Matrix4(), v=new THREE.Vector3(), S=new THREE.Sphere(), B=new THREE.Box3(), C=new THREE.Color(), key=(x,z)=>Math.floor(x/CULL.CS)*4096+Math.floor(z/CULL.CS);
@@ -68,6 +68,13 @@ Object.assign(CULL,{L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0',FL:[],H:
   const hazeHide=()=>{ if(!(CULL.R>0||CULL.keep))return;
     for(const o of CULL.FL){ if(!o.visible||!o.parent)continue; const F=foot(box(o),o.matrixWorld.elements);
       if(CULL.pastBox(F[0],F[1],F[2],F[3])){ if(o.children.length){ const g=o.geometry; if(g.drawRange.count){ CULL.D.push([g,g.drawRange.count]); g.drawRange.count=0; } } else { o.visible=false; CULL.H.push(o); } } } };
+  // in the park its trees hide the far street, falls, wall and cars (owner, 10 Nov 2026: "stop drawing the far bodega, falls and wall", then the cars by the bank): in first and third person, what in these groups (and in what is marked userData.parkFar) lies wholly past CULL.PS from you is not drawn
+  CULL.PS=100*TILE; const PG=()=>[MAPG.bodega,MAPG.park,MAPG.parkwall,...scene.children.filter(o=>o.userData.parkFar)]; let PL=[], pt=0, px=1e9, pz=1e9;
+  const parkFar=()=>{ if(!(UI.persp&&!UI.freeCam&&!ED.on&&!MAPED.on&&!ROOMS.cur&&SHARED.LVL==='up'&&!renderer.xr.isPresenting&&PARK.within&&PARK.within(pos.x,pos.z))){ PL=[]; px=1e9; return; }
+    const now=performance.now(); if(now-pt>1000||Math.hypot(pos.x-px,pos.z-pz)>TILE/2){ pt=now; px=pos.x; pz=pos.z; PL=[]; const R=CULL.PS;
+      for(const G of PG())if(G)G.traverse(o=>{ if(!(o.isMesh||o.isPoints||o.isLine)||!o.geometry||!o.geometry.attributes.position||(o.userData||{}).rin)return; const F=foot(box(o),o.matrixWorld.elements);
+        if(Math.hypot(Math.max(F[0]-pos.x,0,pos.x-F[2]),Math.max(F[1]-pos.z,0,pos.z-F[3]))>R)PL.push(o); }); }
+    for(const o of PL)if(o.visible){ o.visible=false; CULL.H.push(o); } };
   CULL.add=s=>{ if(!CULL.on||!s||CULL.M.has(s))return; const R={s,px:[],bm:null,n:0,ch:0,np:0}; CULL.M.set(s,R); CULL.L.push(R); };
   // a big, still, plain mesh joins the grid by rule, as an instanced one does: wider than a cell, one plain material, its geometry unchanged between two looks (a mesh still being painted waits)
   const WAIT=new Map(), big=o=>{ const g=o.geometry, M=o.material, P=g.attributes.position; if(Array.isArray(M)||M.isShaderMaterial||M.transparent||o.morphTargetInfluences||(g.index?g.index.count:P.count)<768)return false; if(!g.boundingSphere)g.computeBoundingSphere(); return g.boundingSphere.radius*o.matrixWorld.getMaxScaleOnAxis()>CULL.CS/2; };
@@ -80,7 +87,7 @@ Object.assign(CULL,{L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0',FL:[],H:
     for(const R of CULL.L){ if(R.off)continue; const s=R.s; if(!s.parent){ drop(R); R.off=true; continue; }
       const vv=vers(s); if(!R.done||s.geometry!==R.g||!s.isInstancedMesh&&vv!==R.v||s.isInstancedMesh&&s.count!==R.n){ if(R.done&&++R.np>8){ drop(R); R.off=true; continue; } R.done=true; part(R); if(R.off){ drop(R); continue; } R.ch=0; }
       else if(vv!==R.v){ R.v=vv; fill(R); if(++R.ch>20){ drop(R); R.off=true; continue; } } else R.ch=0;
-      R.vis=s.visible; tie(R); s.visible=false; if(moved||R.fresh){ far(R); R.fresh=false; } } hazeHide(); };
+      R.vis=s.visible; tie(R); s.visible=false; if(moved||R.fresh){ far(R); R.fresh=false; } } hazeHide(); parkFar(); };
   CULL.end=()=>{ for(const o of CULL.H)o.visible=true; for(const [g,n] of CULL.D)g.drawRange.count=n; CULL.D.length=0; CULL.hn=CULL.H.length; CULL.H.length=0; for(const R of CULL.L){ if(R.off||!R.bm)continue; R.s.visible=R.vis; R.bm.visible=false; } };
   SYS.add('perfBounds',()=>CULL.scan(),'161a-cull');
-  window.CULLDBG=()=>({on:CULL.on,keep:CULL.keep,hazeR:CULL.R,hazeList:CULL.FL.length,hazeHid:CULL.hn||0,src:CULL.L.length,live:CULL.L.filter(R=>!R.off&&R.bm).length,wait:WAIT.size,pieces:CULL.L.reduce((a,R)=>a+(R.off||!R.bm?0:R.n),0)}); }
+  window.CULLDBG=()=>({on:CULL.on,keep:CULL.keep,hazeR:CULL.R,hazeList:CULL.FL.length,hazeHid:CULL.hn||0,parkHid:PL.length,src:CULL.L.length,live:CULL.L.filter(R=>!R.off&&R.bm).length,wait:WAIT.size,pieces:CULL.L.reduce((a,R)=>a+(R.off||!R.bm?0:R.n),0)}); }

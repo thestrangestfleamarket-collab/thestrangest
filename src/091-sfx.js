@@ -102,7 +102,7 @@ Object.assign(SFX,{on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}});
   // what is underfoot (wood inside, grass in the park, stone elsewhere) and a door gone through
   SFX.ground=()=>ROOMS.cur||(ROOMS.offIn&&ROOMS.offIn())?'wood':SHARED.LVL==='up'&&PARK.within&&PARK.within(pos.x,pos.z)?'grass':'stone';
   SFX.door=()=>{ SFX.play('dooropen',{vol:.7}); SFX.play('door',{vol:.7,delay:.9}); };
-  const STEP={stone:'step_stone',grass:'step_grass',wood:'step_wood'}; let ph0=0; SFX.steps=(st,go)=>{ const ph=st.ph||0; const down=Math.floor(ph*2)!==Math.floor(ph0*2); ph0=ph; if(!down||!(go>0)||st.w<.3||st.move||!SFX.on)return; SFX.play(STEP[SFX.ground()],{vol:.18+.3*(st.run||0),vary:.12}); };
+  const STEP={stone:'step_stone',grass:'step_grass',wood:'step_wood'}; let ph0=0; SFX.steps=(st,go)=>{ const ph=st.ph||0; const down=Math.floor(ph*2)!==Math.floor(ph0*2); ph0=ph; if(!down||!(go>0)||st.w<.3||st.move||!SFX.on)return; SFX.play(STEP[SFX.ground()],{vol:.045+.075*(st.run||0),vary:.12}); };
   const hashS=s=>{ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; };
   SFX.voiceOf=(key,bank)=>{ const h=hashS(String(key||'')); return {bank:bank||(h&1?'high':'low'),pitch:.92+((h>>>8)%1000)/1000*.16}; };
   const VB={}; const vbuf=(c,bank,i)=>{ '@later'; const key=bank+i; if(VB[key]&&VB[key].sampleRate===c.sampleRate)return VB[key]; const S=c.sampleRate, n=S*.07|0, b=c.createBuffer(1,n,S), D=b.getChannelData(0), f0=(bank==='high'?230:140)*(1+(i%4)*.06), fm=[1.5,2.2,2.8,3.6][(i>>2)%4];

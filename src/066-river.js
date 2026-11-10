@@ -235,7 +235,7 @@ RIVER.build=()=>{ if(RIVER.on)return; const n0=scene.children.length; const R=RI
       if(y<LV+hAt(x,z)&&v[i*3+1]<0){ RIVER.drop(x,z,.12*T,.004*WU); continue; } if(k!==i)for(let q=0;q<3;q++){ p[k*3+q]=p[i*3+q]; v[k*3+q]=v[i*3+q]; } k++; }
     SP.n=k; spg.attributes.position.array.set(SP.p.subarray(0,k*3)); spg.attributes.position.needsUpdate=true; spg.setDrawRange(0,k); };
   const sound=(s,muff)=>{ '@later'; try{ const c=SFX.live&&SFX.live(); if(!c||!SFX.on)return; const n=Math.floor(c.sampleRate*.8), b=c.createBuffer(1,n,c.sampleRate), d=b.getChannelData(0); let l=0; for(let i=0;i<n;i++){ l=(l+.05*(Math.random()*2-1))/1.05; d[i]=l*4*Math.exp(-i/n*(5-s*2)); }
-    const src=c.createBufferSource(); src.buffer=b; const f=c.createBiquadFilter(); f.type=muff?'lowpass':'bandpass'; f.frequency.value=muff?300:1300; f.Q.value=.6; const G=c.createGain(); G.gain.value=(.25+s*.5)*SFX.vol; src.connect(f).connect(G).connect(c.destination); src.start(); }catch(e){} };
+    const src=c.createBufferSource(); src.buffer=b; const f=c.createBiquadFilter(); f.type=muff?'lowpass':'bandpass'; f.frequency.value=muff?300:1300; f.Q.value=.6; const G=c.createGain(); G.gain.value=.25+s*.5; src.connect(f).connect(G).connect(SFX.out(c)); src.start(); }catch(e){} };
 
   RIVER.deep=false; let dbusy=false;
   const deepGo=()=>{ if(RIVER.deep)return; RIVER.deep=true; for(const [m,c,g] of [[surf,surfF,PG(DZ,NX,NZ,0)],[bed,bedF,PG(DZ,BN[0],BN[1],0)]]){ m.remove(c); c.geometry.dispose(); m.geometry.dispose(); m.geometry=g; }

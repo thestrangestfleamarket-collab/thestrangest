@@ -14,3 +14,4 @@ const PSTALLS={list:[]};
       if(left&&n++<60)setTimeout(keep,2000); }; keep(); };
   SYS.onStart(go,'081a-parkstalls'); }
 window.PSTALLS=PSTALLS;
+export {PSTALLS};

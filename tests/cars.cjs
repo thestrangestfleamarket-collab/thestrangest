@@ -1,4 +1,4 @@
-// THE CARS CHECK: node tests/cars.cjs dist/market.html. The six parked cars on Market St; get in one and W drives it on Rapier's wheels; F gets out and it stays parked where it stopped; a resized car drives at its size; the kerb is rolled over; the go-kart is set down in front of you and throws you out at a wall; a car someone else drives (as the section's server says) is not drawn parked and cannot be taken, and shows where they park it. No page errors.
+// THE CARS CHECK: node tests/cars.cjs dist/market.html. The six parked cars on Market St, the police cruiser, the hover cars, the police flier and the submersible on West St and at the pier (doors, trunk, light bar, horn, siren, flying); get in one and W drives it on Rapier's wheels; F gets out and it stays parked where it stopped; a resized car drives at its size; the kerb and a corner's arc are rolled over; the go-kart is set down in front of you and throws you out at a wall; a car someone else drives (as the section's server says) is not drawn parked and cannot be taken, and shows where they park it. No page errors.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=cars::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -8,7 +8,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   await pg.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=13&physics=1', { waitUntil: 'commit' });
   await pg.waitForFunction(() => window.__started && window.CARS && CARS.dbg().loaded, null, { timeout: 400000, polling: 500 });
   const d0 = await pg.evaluate(() => CARS.dbg());
-  ok(d0.cars.length === 6 && d0.cars.every(c => c.shown && c.z < -60 && c.z > -72), 'six cars parked along Market St\'s kerb: ' + JSON.stringify(d0.cars.map(c => [c.id, c.model, c.x, c.z])));
+  ok(d0.cars.length === 12 && d0.cars.slice(7).every(c => /taxi|ambulance|flier|submersible/.test(c.model) && c.shown) && d0.cars.slice(0, 6).every(c => c.shown && c.z < -60 && c.z > -72) && d0.cars[6].model === 'police-cruiser-80s' && d0.cars[6].shown && d0.cars[6].x < -24.5 && d0.cars[6].x > -52.5, 'six cars parked along Market St\'s kerb, the police cruiser on West St: ' + JSON.stringify(d0.cars.map(c => [c.id, c.model, c.x, c.z])));
   const past = await pg.evaluate(async () => { CARS.getIn('c1'); await new Promise(r => setTimeout(r, 800)); return CARS.driving; });
   ok(!past, 'a car parked past the map\'s edge is only seen: no one gets in (owner, 8 Nov 2026)');
   const cab = await pg.evaluate(async () => { const C = [...CARS.cars.values()].find(q => q.id !== 'c1' && q.mesh && q.mesh.getObjectByName('INSIDE')), I = C.mesh.getObjectByName('INSIDE'), w = { x: C.x, z: C.z }, sl = () => new Promise(r => setTimeout(r, 900));
@@ -38,6 +38,27 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const d3 = await pg.evaluate(() => { ONLINE.feed({ t: 'car', k: 'c2', by: 'a' }); const s = CARS.dbg().cars[1]; CARS.getIn('c2'); return { shown: s.shown, by: s.by, driving: CARS.dbg().driving }; });
   const d4 = await pg.evaluate(() => { ONLINE.feed({ t: 'car', k: 'c2', by: null, at: [SHARED.BOD.XS(60), SHARED.BOD.ZS(-60), 1.2].join(',') }); return CARS.dbg().cars[1]; });
   ok(d3.by === 'a' && !d3.shown && !d3.driving && d4.shown && !d4.by && Math.abs(d4.x - 60) < .2 && Math.abs(d4.z + 60) < .2, 'a car someone else drives is not drawn parked and cannot be taken; it shows where they park it: ' + JSON.stringify({ d3, d4 }));
+  // the police cruiser (150pe-carparts): its parts open on their hinges, the light bar, the lamps, the horn and the siren, one shared word a car
+  await pg.evaluate(() => SYS.run('world', 'car:c7', [SHARED.BOD.XS(70), SHARED.BOD.ZS(-67), 1.57].join())); await pg.waitForTimeout(600);
+  const P = () => pg.evaluate(() => { const d = CARX.dbg(); return { st: d.cars.c7, parts: d.parts }; }), p0 = await P();
+  ok(p0.parts.length >= 1 && Object.keys(p0.parts[0].open).length === 6 && p0.parts[0].marks === 4 && p0.st.b === 0, 'the cruiser is made with six parts on hinges its shields and blank plates (no words): ' + JSON.stringify(p0.parts[0]));
+  const things = await pg.evaluate(() => __dbg.UI.things.filter(t => t.car && t.car.id === 'c7').map(t => t.name));
+  await pg.evaluate(() => { const t = __dbg.UI.things.find(t => t.car && t.car.id === 'c7' && t.name === 'TRUNK'); t.act(); ONLINE.feed({ t: 'world', k: 'cst:c7', v: (CARX.parts.bits(CARS.cars.get('c7')) | 64 | 4) + '.3' }); }); await pg.waitForTimeout(2500); const p1 = await P();
+  ok(things.length === 6 && things.includes('DRIVER\'S DOOR') && p1.st.b === 84 && p1.st.h === 3 && p1.parts[0].open.TRUNK > .9 && p1.parts[0].open['DOOR RL'] > .9 && p1.parts[0].open.HOOD === 0 && p1.parts[0].bar, 'double-clicking the trunk opens it; what another player does (a door, the roof lights) shows on the parked car: ' + JSON.stringify({ things, p1 }));
+  await pg.evaluate(() => __dbg.UI.things.find(t => t.car && t.car.id === 'c7' && t.name === 'DRIVER\'S DOOR').act()); await pg.waitForTimeout(1800);
+  const h0 = await pg.evaluate(() => ({ driving: CARS.dbg().driving, st: CARX.dbg().cars.c7, hud: document.getElementById('carhud').innerText.replace(/\s+/g, ' ') }));
+  for (const k of ['h', 'n', 'l', 'b']) await pg.keyboard.press(k); await pg.waitForTimeout(500);
+  const h1 = await pg.evaluate(() => ({ st: CARX.dbg().cars.c7, ride: CARX.dbg().parts.find(p => p.head > 1) }));
+  await pg.keyboard.press('f'); await pg.waitForTimeout(1200); const h2 = await pg.evaluate(() => CARX.dbg().cars.c7);
+  ok(h0.driving === 'c7' && !(h0.st.b & 15) && /HORN H/.test(h0.hud) && /SIREN N/.test(h0.hud) && h1.st.h === 4 && (h1.st.b & 448) === 128 + 256 && !!h1.ride && !(h2.b & 128) && (h2.b & 256), 'the driver\'s door lets you in (the doors shut); H honks, N the siren, L the lamps, B the roof lights; out of it the siren stops: ' + JSON.stringify({ h0, h1, h2 }));
+  // the hover cars (tools/fliers-bake.py): a car that flies is flown like the helicopter (SPACE up, SHIFT down); you get out only landed on the street
+  await pg.evaluate(() => SYS.run('world', 'car:c8', [SHARED.BOD.XS(60), SHARED.BOD.ZS(-60), 1.57].join())); await pg.waitForTimeout(400);
+  await pg.evaluate(() => CARS.getIn('c8')); await pg.waitForTimeout(1500);
+  const fl = async (key, n) => { await pg.keyboard.down(key); const r = await pg.evaluate(n => { const k = CARS.kinds['taxi-coupe']; for (let i = 0; i < n; i++) k.step(RIDE, .1); return { y: +(k.F.y - SHARED.groundY(k.F.x, k.F.z)).toFixed(2), down: k.F.down }; }, n); await pg.keyboard.up(key); return r; };
+  const f0 = await pg.evaluate(() => ({ ride: RIDE.on, parts: Object.keys(CARX.dbg().parts.slice(-1)[0].open).length, hud: document.getElementById('carhud').innerText.replace(/\s+/g, ' ') }));
+  const up = await fl(' ', 30); await pg.keyboard.press('f'); await pg.waitForTimeout(300); const still = await pg.evaluate(() => CARS.dbg().driving);
+  const dn = await fl('Shift', 120); await pg.keyboard.press('f'); await pg.waitForTimeout(1200); const out = await pg.evaluate(() => ({ driving: CARS.dbg().driving, ride: RIDE.on, c: CARS.dbg().cars.find(c => c.id === 'c8') }));
+  ok(f0.ride === 'car:taxi-coupe' && f0.parts === 4 && /SPACE UP/.test(f0.hud) && up.y > 1 && !up.down && still === 'c8' && dn.down && dn.y < .2 && !out.driving && !out.ride && out.c.shown, 'a hover taxi lifts on SPACE, cannot be left in the air, comes down on SHIFT and parks where it lands: ' + JSON.stringify({ f0, up, still, dn, out }));
   // a car resized in the VEHICLE EDITOR drives at that size; while someone drives it, on their next boarding (owner, 10 Nov 2026)
   const half = () => pg.evaluate(() => { const V = CARS.kinds['muscle-car-60s'].V; return { h: V.S.half[0], next: !!V.next, kart: RIDE.kinds.kart.V.S.half[0] }; }), near = (a, b) => Math.abs(a / b - 1) < .01;
   const r0 = await half(); await pg.evaluate(() => { VLOOK.set('car:muscle-car-60s', { s: 1.3 }); VLOOK.set('kart', { s: 1.5 }); });
@@ -56,6 +77,21 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ok(kn > 0 && k0 && k1.p[2] < -69.5 && Math.abs(k1.p[0] - k0.p[0]) < .5 && k1.p[1] > k0.p[1] - .1, 'the kerb is a slope to the physics: the car rolls up onto the pavement, not shoved along it: ' + JSON.stringify({ kerbs: kn, from: k0 && k0.p, to: k1.p }));
   await pg.waitForTimeout(1500); await pg.keyboard.press('f'); await pg.waitForTimeout(1200); const r3 = await half();
   ok(near(r2.h, r0.h * 1.3) && r2.next && near(r3.h, r0.h) && !r3.next, 'a resize while it is driven waits for the next boarding: ' + JSON.stringify({ driving: r2, out: r3 }));
+  // a corner's arc the same (owner, 10 Nov 2026: "fix the small leftovers"): driven at it from the road, toward the corner's centre, the car's front rolls up onto the pavement, its nose tipped up (the pole on the corner taken away for the drive)
+  const ka = await pg.evaluate(() => { const a = SHARED.BOD.kerbArcs[0], t = -Math.PI / 4, R = a.r + 3; return { cx: a.cx, cy: a.cy, r: a.r, x: a.cx + Math.cos(t) * R, y: a.cy + Math.sin(t) * R }; });
+  await pg.evaluate(k => __dbg.UI.goTo(k.x, k.y, 'up'), ka); await pg.waitForTimeout(3000);
+  await pg.evaluate(k => { const B = SHARED.BOD, T = __dbg.cv().TILE, cx = B.XS(k.cx), cz = B.ZS(k.cy), inn = (x0, z0, x1, z1) => Math.hypot(Math.max(x0 - cx, 0, cx - x1), Math.max(z0 - cz, 0, cz - z1)) < k.r * T && x1 - x0 < T && z1 - z0 < T;
+    window.__pole = [SHARED.solids.filter(r => inn(r[0], r[1], r[2], r[3])), SHARED.fixed.filter(f => inn(f[0], f[1], f[3], f[4]))]; for (const r of __pole[0]) SHARED.solids.splice(SHARED.solids.indexOf(r), 1); for (const f of __pole[1]) SHARED.fixed.splice(SHARED.fixed.indexOf(f), 1);
+    const C = CARS.cars.get('c1'); C.x = B.XS(k.x); C.z = B.ZS(k.y); CARS.getIn('c1'); }, ka); await pg.waitForTimeout(2500); await until(() => !!CARS.dbg().rb).catch(() => {});
+  await pg.evaluate(k => { const V = CARS.kinds['muscle-car-60s'].V, B = SHARED.BOD, x = B.XS(k.x), z = B.ZS(k.y), y = SHARED.groundY(x, z) + V.S.lift, h = Math.atan2(B.XS(k.cx) - x, B.ZS(k.cy) - z); if (!V.rb) return;
+    V.rb.setTranslation({ x, y, z }, true); V.rb.setRotation({ x: 0, y: Math.sin(h / 2), z: 0, w: Math.cos(h / 2) }, true); V.rb.setLinvel({ x: 0, y: 0, z: 0 }, true); V.rb.setAngvel({ x: 0, y: 0, z: 0 }, true); }, ka);
+  await pg.waitForTimeout(2000);
+  const rad = q => Math.hypot(q.p[0] - ka.cx, q.p[2] - ka.cy), side = q => { const L = Math.hypot(ka.x - ka.cx, ka.y - ka.cy); return ((q.p[0] - ka.cx) * (ka.y - ka.cy) - (q.p[2] - ka.cy) * (ka.x - ka.cx)) / L; };
+  const arc0 = await pg.evaluate(() => CARS.dbg().rb); await pg.keyboard.down('w'); let arc1 = arc0, arcN = 0, arcIn = 1e9, tilt = 0; const tl = q => Math.acos(Math.min(1, 1 - 2 * (q.r[0] * q.r[0] + q.r[2] * q.r[2]))) * 180 / Math.PI;
+  for (let i = 0; i < 40; i++) { await pg.waitForTimeout(400); const q = await pg.evaluate(() => ({ rb: CARS.dbg().rb, n: GPH.kerbs('kerbc') })); if (q.rb) arc1 = q.rb; arcN = Math.max(arcN, q.n); arcIn = Math.min(arcIn, rad(arc1)); tilt = Math.max(tilt, tl(arc1)); if (arcIn < ka.r + 1.7 && Math.abs(arc1.sp) < .5) break; } await pg.keyboard.up('w');
+  const pole = await pg.evaluate(() => { SHARED.solids.push(...__pole[0]); SHARED.fixed.push(...__pole[1]); return __pole[0].length + __pole[1].length; });
+  ok(arcN > 0 && arc0 && rad(arc0) > ka.r + 2.5 && arcIn < ka.r + 1.7 && tilt > 3 && Math.abs(side(arc1)) < .6, 'a corner\'s arc is a slope too: driven at it, the car rolls up onto the pavement, not shoved along it: ' + JSON.stringify({ arcs: arcN, pole, corner: ka, from: arc0 && arc0.p, to: arc1.p, r: +arcIn.toFixed(2), tilt: +tilt.toFixed(1), side: +side(arc1).toFixed(2) }));
+  await pg.waitForTimeout(1500); await pg.keyboard.press('f'); await pg.waitForTimeout(1200);
   await pg.evaluate(() => VLOOK.set('kart', null)); await until(new Function('return Math.abs(RIDE.kinds.kart.V.S.half[0] / ' + r0.kart + ' - 1) < .01'));
   // the go-kart (owner, 10 Nov 2026: "Throw you out"): E sets it down in front of you and you get in there; a wall at speed throws you out over the front, the kart left where it hit
   await pg.evaluate(() => __dbg.UI.goTo(100, -60, 'up')); await pg.waitForTimeout(3000);

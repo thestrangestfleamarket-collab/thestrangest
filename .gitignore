@@ -2,7 +2,7 @@ __pycache__/
 dist/
 *.png
 .claude/worktrees/
-node_modules/
+node_modules
 mod.mjs
 .wrangler/
 *.gif

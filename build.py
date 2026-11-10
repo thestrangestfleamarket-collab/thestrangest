@@ -46,7 +46,9 @@ raw, page = page, data(page[:i] + art + body + page[j:])
 open('dist/market.html', 'w').write(page)
 
 open('dist/door.html', 'w').write(read('src/door/door.html'))
-for f in ['app.webmanifest', 'icon-192.png', 'icon-512.png']: shutil.copy('src/door/' + f, 'dist/' + f)   # the installable app: its manifest and icon, handed to anyone
+for f in ['app.webmanifest', 'icon-192.png', 'icon-512.png']:
+    if os.path.exists('src/door/' + f): shutil.copy('src/door/' + f, 'dist/' + f)
+    else: print('build: src/door/' + f + ' is missing (the installed app has no icon until it is added)')   # the installable app: its manifest and icon, handed to anyone
 # the owners' map editor: its own light page (no game), the ground picture beside it (tools/topmap.cjs)
 EDITOR = False  # the map editor is archived (owner, 5 Nov 2026)
 shutil.rmtree('dist/edmap', ignore_errors=True)
@@ -133,7 +135,7 @@ pre = ''.join('<link rel=modulepreload href=/g/' + f + '>' for f in sorted(set(r
     + ''.join('<link rel=preload as=script href=/g/' + f + '>' for f in sorted(os.listdir('dist/g')) if re.match(r'rig\..*\.js$', f)) \
     + ''.join('<link rel=preload as=fetch crossorigin href=/g/' + json.loads(n) + '>' for f in used for n in [names[f], bins.get(f)] if n) \
     + ''.join('<link rel=preload as=fetch crossorigin href=/g/' + f + '>' for f in sorted(os.listdir('dist/g')) if re.match(r'x-later\..*\.js$', f))
-open('dist/g/market.html', 'w').write('<!doctype html><meta name="market-build" content="' + bv + '"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><title>The Market</title><link rel=manifest href=/app.webmanifest><link rel=apple-touch-icon href=/icon-192.png><meta name=theme-color content=#0e1016><meta name=mobile-web-app-capable content=yes>' + pre + '<body bgcolor=#0e1016><script type=module src=/g/' + m + '></script>')
+open('dist/g/market.html', 'w').write('<!doctype html><meta name="market-build" content="' + bv + '"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><title>The Market</title><link rel=icon href="data:,"><link rel=manifest href=/app.webmanifest><link rel=apple-touch-icon href=/icon-192.png><meta name=theme-color content=#0e1016><meta name=mobile-web-app-capable content=yes>' + pre + '<body bgcolor=#0e1016><script type=module src=/g/' + m + '></script>')
 pages = pages[:2] + ['dist/g/market.html'] + (['dist/editor.html'] if EDITOR else [])
 for f in pages:
     t = read(f)

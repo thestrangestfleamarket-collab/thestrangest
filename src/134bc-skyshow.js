@@ -46,6 +46,7 @@ const SKYSHOW={things:[],want:false,live:{kp:null,sats:[]},mets:[],n:0}; window.
     for(let i=M.length-1;i>=0;i--){ M[i].t+=dt; if(M[i].t>M[i].T)M.splice(i,1); }
     for(let i=0;i<2;i++){ const m=M[i], a=U.uMetA.value[i], b=U.uMetB.value[i]; if(!m){ a.w=0; continue; }
       const f=m.t/m.T, at=(g,o)=>o.copy(m.v).multiplyScalar(Math.cos(g*D2R)).addScaledVector(m.d,Math.sin(g*D2R)); at(Math.max(0,m.len*f-m.len*.35),tA); at(m.len*f,tB);
-      a.set(tA.x,tA.y,tA.z,m.k*Math.sin(Math.PI*f)*(SKYSHOW.look||0)); b.set(tB.x,tB.y,tB.z,0); (m.head||(m.head=new THREE.Vector3())).copy(tB); } },'134bc-skyshow');
+      a.set(tA.x,tA.y,tA.z,m.k*Math.sin(Math.PI*f)*(SKYSHOW.look||0)); b.set(tB.x,tB.y,tB.z,0); (m.head||(m.head=new THREE.Vector3())).copy(tB); } 
+    { let on=U.uAur.value.x>0||U.uMetA.value[0].w>0||U.uMetA.value[1].w>0; for(const u of U.uPl.value)if(u.w>0)on=true; U.uEvt.value=on?1:0; } },'134bc-skyshow');
 }
 export {SKYSHOW};

@@ -296,7 +296,7 @@ W3.rim=(sh,pl)=>{ sh.uniforms.uMoon=W3.moon; sh.uniforms.uMoonC=W3.moonC; if(pl)
   W3.group.add(m); W3.meshes.push(m); W3.mesh=m;
   scene.add(LEVELS.own(W3.group,'*'));
   const LIGHT=nrm(V(-0.55,0.75,0.5)), m4=new THREE.Matrix4();
-  W3.SZ=1.2; W3.rest=rest;
+  W3.SZ=W3.BASE=1.2; W3.rest=rest;   // BASE: every body's size; SZ: yours (a shrink or grow mushroom changes only it)
   { const H0=PCS.findIndex(P=>P.n==='head'), HF=PCS.findIndex(P=>P.n==='headF'), EYEL=new THREE.Vector3(); W3.headIdx=()=>W3.HIDE[H0]&&HF>=0?HF:H0; W3.eyeAt=out=>{ const HI=W3.headIdx(); if(HI<0||!W3.mesh)return null; W3.mesh.updateWorldMatrix(true,false); return out.copy(EYEL.set(0,2,7)).applyMatrix4(W3.PM.value[HI]).applyMatrix4(W3.mesh.matrixWorld); }; }
   W3.hideMe=W3.hideMeQ=!!QS.get('hideme');
   W3.body={place:()=>{}};

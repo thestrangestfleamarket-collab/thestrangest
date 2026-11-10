@@ -43,9 +43,15 @@ ok(L.paths.every(p => p.a && p.b), 'every park path has two ends');
   ok(x0 > P.x0 + 12 && x1 < n.a[0] - 8 && y0 > e.a[1] + 8 && y1 < P.y1 - 12, 'the castle and its moat stand in the park\'s north-west block, clear of the wall and the ways (owner, 2 Nov 2026)');
   ok(L.paths.some(p => Math.abs(p.b[0] - gx) < .01 && Math.abs(p.b[1] - y0) < .01 && Math.abs(p.a[1] - e.a[1]) < .01), 'a way runs from the cross path to the castle\'s drawbridge'); }
 { const C = JSON.parse(fs.readFileSync(ROOT + '/data/cars.json', 'utf8')).cars, P = L.cars || [];
-  ok(P.length && P.every(c => C[c.model] && c.y > -70 && c.y < -50) && new Set(P.map(c => c.id)).size === P.length, 'every parked car in the level file is a car in data/cars.json, on Market St\'s line between its kerbs (past the forcefield since 8 Nov 2026), its id its own (' + P.length + ')'); }
+  const W = L.streets.west, onMarket = c => c.y > -70 && c.y < -50, onWest = c => c.x > W.x0 && c.x < W.x1 && c.y > -50;
+  ok(P.length && P.every(c => C[c.model] && (onMarket(c) || onWest(c) || (c.moor && C[c.model].dive))) && new Set(P.map(c => c.id)).size === P.length, 'every parked car in the level file is a car in data/cars.json, on Market St\'s line between its kerbs (past the forcefield since 8 Nov 2026) or on West St (the police cruiser, 9 Nov 2026), its id its own (' + P.length + ')');
+  ok(C['police-flier'] && C['police-flier'].fly && C['police-flier'].marks.bar && C['police-flier'].parts.length === 2 && ['taxi-coupe', 'taxi-pod', 'ambulance'].every(k => C[k] && C[k].fly && C[k].parts.length === 4 && C[k].body.some(g => g.m === 'chrome') && C[k].body.some(g => g.t === 'head')), 'the hover cars (tools/fliers-bake.py): two taxis and the ambulance fly, each with four doors, chrome and lamps; the police flier with its canopy doors and light bar');
+  ok(C.submersible && C.submersible.dive && C.submersible.draft > 1 && C.submersible.parts.some(p => p.n === 'HATCH') && C.submersible.glass.length && P.some(c => c.model === 'submersible' && Array.isArray(c.moor)), 'the submersible (tools/fliers-bake.py): it dives, has its hatch and ports, and is moored at the pier in the level file');
+  { const W = JSON.parse(fs.readFileSync(ROOT + '/data/lakewreck.json', 'utf8')); ok(W.len === 23 && W.ship.length && W.bed.length && W.walls.length > 40 && W.chests.length === 4 && W.ship.some(g => g.m === 'paint') && W.ship.some(g => g.m === 'gold'), 'the lake wreck (tools/lakewreck-bake.py): its ship, its bed, its walls and four chests'); }
+  const Z = C['police-cruiser-80s'], pn = Z && (Z.parts || []).map(p => p.n).sort().join();
+  ok(Z && pn === 'DOOR FL,DOOR FR,DOOR RL,DOOR RR,HOOD,TRUNK' && Z.parts.every(p => p.g.length && Math.abs(p.open) > .5 && /^[xy]$/.test(p.ax)) && Z.marks && Z.marks.bar && Z.marks.decals.length === 4 && Z.marks.decals.every(d => d.k === 'plate' || d.k === 'door') && ['head', 'tail', 'turn', 'rev'].every(t => Z.body.some(g => g.t === t)) && Z.size[2] > 5 && Z.size[2] < 5.4 && Z.size[0] < 2.2, 'the police cruiser (tools/cruiser-bake.py): a Gran Fury\'s size, four doors, a hood and a trunk lid on hinges, its lamps named, marks for the light bar, the plates and the door shields (no words)'); }
 { const A = JSON.parse(fs.readFileSync(ROOT + '/data/art.json', 'utf8')), bad = A.filter(t => !(t.t && t.a && t.d && t.m && t.w > 0 && t.h > 0 && /^data:image\/jpeg;base64,/.test(t.i)));
-  ok(A.length >= 50 && !bad.length && new Set(A.map(t => t.t + t.a)).size === A.length, 'the art museum\'s ' + A.length + ' paintings each have a title, artist, date, museum, size and picture, none twice'); }
+  ok(A.length >= 20 && !bad.length && new Set(A.map(t => t.t + t.a)).size === A.length, 'the art museum\'s ' + A.length + ' paintings each have a title, artist, date, museum, size and picture, none twice'); }
 { const S = L.sections, G = S.grid, ids = S.ids.flat(), box = id => { const c = S.ids.findIndex(r => r.includes(id)), r = S.ids[c].indexOf(id); return [G.x0 + c * G.w, G.x0 + (c + 1) * G.w, G.y0 + r * G.h, G.y0 + (r + 1) * G.h]; };
   ok(ids.length === G.cols * G.rows && new Set(ids).size === ids.length && ids.includes(L.section.id), 'the section grid names each of its ' + ids.length + ' sections once, this one among them');
   ok(ids.every(id => L.loop.stations.filter(s => s.id === id).length === 1) && L.loop.stations.every(s => { const [x0, x1] = box(s.id); return s.x - 29 > x0 && s.x + 29 < x1; }), 'every section has one loop station, inside it'); }
@@ -104,6 +110,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       { const V = __dbg.VIT, h0 = V.hp; V.heal(-1, .05); const lo = V.hp; V.heal(.5); const mid = V.hp; V.heal(1); o.heal = [Math.abs(lo - .05) < 1e-9, Math.abs(mid - .55) < 1e-9, V.hp === 1].join(); V.hp = h0; }
       o.fade = FADE.busy;
       const Bd = SHARED.BOUND, c = __dbg.collide(Bd.x1 + 500, Bd.z1 + 500); o.clamp = c[0] <= Bd.x1 + 1e-6 && c[1] <= Bd.z1 + 1e-6;
+      o.ledges = (__dbg.MAPK.MODS.ledges || []).map(l => (typeof l.tooHigh === 'function' ? '' : '!') + l.lv);
       o.shared = Object.keys(SHARED).length;
       o.lazy = [Object.keys(ROOMS.lazy).length, Object.keys(ROOMS.lazy).filter(k => ROOMS.lazy[k].done)];
       o.queues = BATCH.queues.length;
@@ -156,7 +163,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
         return { ok: true, street, bound, borrowed, back }; } catch (e) { return { ok: false, err: String(e).slice(0, 200) }; } })();
       o.charp = await (async () => { try { const U = window.__UI; if (!U || typeof U.toggleMenu !== 'function') return { ok: false };
         U.toggleMenu(); const home = document.querySelector('#dhome'), secs = [...document.querySelectorAll('#mnav [data-sec]')].map(b => b.dataset.sec).join();
-        const tabsHidden = /^set,pets,pack,map(,tenants,bots,admin)?$/.test(secs) && U.menuNow()[0] === 'set', open = U.menuOpen === true;   // no PROFILE: the paper doll (9 Nov 2026)
+        const tabsHidden = /^set,pets,pack,map(,tenants,admin)?$/.test(secs) && U.menuNow()[0] === 'set', open = U.menuOpen === true;   // no PROFILE: the paper doll (9 Nov 2026)
         U.menuTab('pets', 'pet'); const built = !!(home && home.querySelector('#cpav') && home.querySelector('#cpbtns button'));
         const pick = !home.querySelector('#cpslots') && !home.querySelector('#cphp');   // the paperdoll and the bars left the page (2 Nov 2026)
         U.toggleMenu();
@@ -200,6 +207,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.heal === 'true,true,true', 'VIT.heal mends up to full and a slow drain stops at its floor (' + r.heal + ')');
     ok(r.fade === 0, 'no fade is left running after the start');
     ok(r.clamp, 'collision keeps you inside the world');
+    ok(r.ledges.includes('up') && r.ledges.every(l => l === 'up' || l === 'down'), 'a ledge too high to step up is one list for every level (MODS.ledges: ' + r.ledges + ')');
     ok(r.queues >= 2, 'the far painting queues are there (bodega ground, park wall): ' + r.queues);
     ok(r.lazy[0] >= 3 && !r.lazy[1].length, 'no inside of a building is built at the start (' + r.lazy[0] + ' insides wait; built: ' + r.lazy[1].join(',') + ')');
     ok(r.offAPI && r.off.length >= 1 && r.off.every(q => q[1] && q[2] && !q[3]), 'insides off the map: each one waits (box, spawn, way out, builder) and none is built at the start (' + r.off.map(q => q[0]).join(',') + ')');

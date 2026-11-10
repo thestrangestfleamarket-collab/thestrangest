@@ -5,8 +5,8 @@ const {chromium}=require('playwright'), {PNG}=(()=>{ try{ return require('pngjs'
   pg.on('pageerror',e=>console.log('pageerror:',e.message));
   const load=async qq=>{ await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&wx=clear&hideme=1&hour=15.5&walkers=0'+q+qq,{waitUntil:'commit',timeout:180000});
     for(let i=0;i<150;i++){ await pg.waitForTimeout(1000); if(await pg.evaluate(()=>!!window.__started).catch(()=>false))break; }
-    for(let i=0;i<60;i++){ if(await pg.evaluate(()=>!!(window.MUSHDBG&&MUSHDBG().booth)))break; await pg.waitForTimeout(500); } };
-  await load(''); const m=await pg.evaluate(()=>Object.assign(MUSHDBG(),{T:__dbg.cv().TILE})); console.log(JSON.stringify(m));
+    for(let i=0;i<60;i++){ if(await pg.evaluate(()=>!!(window.SELLERDBG&&SELLERDBG().booth)))break; await pg.waitForTimeout(500); } };
+  await load(''); const m=await pg.evaluate(()=>Object.assign(SELLERDBG(),{T:__dbg.cv().TILE})); console.log(JSON.stringify(m));
   await load(`&at=${m.x},${m.z-1.5*m.T}`); await pg.evaluate(()=>__dbg.cam(null,null,__dbg.cv().PPU*2.4)); await pg.waitForTimeout(12000);
   const shots=[]; for(let i=0;i<12;i++){ shots.push(await pg.screenshot({clip:{x:400,y:0,width:220,height:400}})); await pg.waitForTimeout(250); }
   require('fs').writeFileSync(out+'/mush0.png',shots[0]); await pg.screenshot({path:out+'/full.png'}); require('fs').writeFileSync(out+'/mush11.png',shots[11]);

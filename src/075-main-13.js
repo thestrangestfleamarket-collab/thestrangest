@@ -46,7 +46,7 @@ function collide(p,ox,oz){ if(!VIT.dead){ for(const N of NPCS)if(N.lv===SHARED.L
   for(const [x0,z0,x1,z1] of SHARED.solids){ const cx=Math.max(x0,Math.min(x1,p.x)), cz=Math.max(z0,Math.min(z1,p.z)), dx=p.x-cx, dz=p.z-cz, d2=dx*dx+dz*dz;
     if(d2>=r*r)continue; if(d2>1e-8){ const d=Math.sqrt(d2); p.x=cx+dx/d*r; p.z=cz+dz/d*r; }
     else { const o=[p.x-x0+r,x1-p.x+r,p.z-z0+r,z1-p.z+r], m=Math.min(...o); if(m===o[0])p.x=x0-r; else if(m===o[1])p.x=x1+r; else if(m===o[2])p.z=z0-r; else p.z=z1+r; } }
-  const D=MODS.dungeon; if(ox!=null&&SHARED.LVL==='down'&&D&&D.tooHigh&&D.tooHigh(p.x,p.z,SHARED.py)){ if(!D.tooHigh(p.x,oz,SHARED.py))p.z=oz; else if(!D.tooHigh(ox,p.z,SHARED.py))p.x=ox; else { p.x=ox; p.z=oz; } } }   // a ledge too high to step up stops you (you walk off one and drop)
+  if(ox!=null)for(const D of MODS.ledges||[])if(D.lv===SHARED.LVL&&D.tooHigh(p.x,p.z,SHARED.py)){ if(!D.tooHigh(p.x,oz,SHARED.py))p.z=oz; else if(!D.tooHigh(ox,p.z,SHARED.py))p.x=ox; else { p.x=ox; p.z=oz; } } }   // a ledge too high to step up stops you (you walk off one and drop)
 
 const R=new THREE.Vector3(),U=new THREE.Vector3(),F=new THREE.Vector3(),disp=new THREE.Vector3();
 let last=performance.now(), fpsT=0, fpsN=0, t=0, carLook=0;

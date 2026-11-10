@@ -9,7 +9,9 @@ PACKS={   # folder: the pack's file (its page and author are in data/full/sounds
  'tinyworlds':'https://opengameart.org/sites/default/files/%5Bkdd%5DDifferentSteps_0.zip',
  'qubodup':'https://opengameart.org/sites/default/files/qubodup-DoorSet.7z',
  'coughe':'https://opengameart.org/sites/default/files/DoorLockSounds.zip',
- 'ggbotnet':['https://opengameart.org/sites/default/files/'+f+'.ogg' for f in ('car_door_close_0','car_door_open_0','car_engine_loop_1','car_engine_start_up_0','car_engine_turning_off_0','car_horn_0')]}
+ 'ggbotnet':['https://opengameart.org/sites/default/files/'+f+'.ogg' for f in ('car_door_close_0','car_door_open_0','car_engine_loop_1','car_engine_start_up_0','car_engine_turning_off_0','car_horn_0')],
+ 'kurt':'https://opengameart.org/sites/default/files/stream-waterfall.zip',   # CC-BY 3.0: kurt (credit in data/full/sounds.json)
+ 'rubberduck':'https://opengameart.org/sites/default/files/water-splash-slime-sfx.zip'}
 F='fantozzi/Fantozzi-footsteps/flac/Fantozzi-'; Q='qubodup/qubodup-DoorSet/flac/qubodup-Door'
 SETS={   # name: (its takes, how loud next to the others)
  'step_stone':([F+f'Stone{s}{i}.flac' for s in 'LR' for i in (1,2,3)],.8),
@@ -23,7 +25,9 @@ SETS={   # name: (its takes, how loud next to the others)
  'car_stop':(['ggbotnet/car_engine_turning_off_0.ogg'],.8),
  'car_door_open':(['ggbotnet/car_door_open_0.ogg'],.8),
  'car_door_close':(['ggbotnet/car_door_close_0.ogg'],.9),
- 'horn':(['ggbotnet/car_horn_0.ogg'],.6)}
+ 'horn':(['ggbotnet/car_horn_0.ogg'],.6),
+ 'splash':([f'rubberduck/splash_{n:02d}.ogg' for n in (1,4,7,11)],.8),
+ 'falls':(['kurt/stream-waterfall/loudstream.ogg'],.7,'loop')}
 def get(k,url):
     d=D+k
     if os.path.isdir(d) and os.listdir(d): return

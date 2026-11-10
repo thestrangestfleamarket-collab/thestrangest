@@ -28,7 +28,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     // a standing body (the cast's, NPCS.extra) keeps you out too
     const X = N.extra.find(x => x.on && x.st && x.g && x.mode !== 'hidden' && (x.lv || 'up') === SHARED.LVL); if (X) { const vis = X.g.visible, s = X.st, p = { x: s.x + .02, z: s.z }; X.g.visible = true; N.pushX(p); X.g.visible = vis; o.extra = { key: X.key, d: Math.hypot(p.x - s.x, p.z - s.z), need: (s.R || .3) + .3 }; }
     // two characters: the second is told to walk through the first, it waits instead
-    const a = by('tomato'), m = by('mushroom'); if (a && m) { const f = [a.far, m.far]; a.far = m.far = false; o.inway = N.inway(m, a.st.x + .05, a.st.z) && !N.inway(m, a.st.x + 50, a.st.z); [a.far, m.far] = f; }
+    const ok2 = n => n && !n.fly && !n.tiny && n.blocks && n.key !== 'dragon' && (n.lv || 'up') === 'up', a = ok2(by('tomato')) ? by('tomato') : N.find(ok2), m = N.find(n => n !== a && ok2(n));   // any two walkers on the street (the mushroom seller is archived) if (a && m) { const f = [a.far, m.far]; a.far = m.far = false; o.inway = N.inway(m, a.st.x + .05, a.st.z) && !N.inway(m, a.st.x + 50, a.st.z); [a.far, m.far] = f; }
     o.clip = { added: CLIP.added, found: CLIP.found.length };
     return o; });
   console.log(JSON.stringify(r));

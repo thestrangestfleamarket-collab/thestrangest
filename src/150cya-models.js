@@ -59,6 +59,7 @@ import {GHOLD} from './146zoa-guitar-hold.js';
     pouch:(a)=>{ const g=G(); add(g,'ball',a,0,.05,0,.07,.06,.05,0,0,0,M('leather')); add(g,'cone',a,0,.11,0,.03,.04,.03,0,0,0,M('leather')); add(g,'tor',0x3a2a1a,0,.1,0,.03,.03,.02,Math.PI/2,0,0,M('leather')); return g; },
     tank:(a,b)=>{ const g=G(); add(g,'cyl',a,0,.1,0,.09,.6,.09,Math.PI/2,0,0,METAL); add(g,'cap',a,0,.1,.3,.09,.05,.09,Math.PI/2,0,0,METAL); add(g,'cyl',0x2a2a2e,0,.1,.37,.02,.05,.02,Math.PI/2,0,0,METAL); add(g,'box',b,0,.02,0,.25,.03,.3,0,0,0,M('rubber')); return g; },
     flag:(a,b)=>{ const g=G(); add(g,'cyl',0x6a4a2a,0,.005,0,.005,.5,.005,Math.PI/2,0,0,M('wood')); add(g,'cone',a,0,.005,-.14,.1,.25,.004,Math.PI/2,0,0,M('cloth')); return g; },
+    club:(a)=>{ const g=G(); add(g,'cyl',a,0,.03,-.08,.03,.3,.03,Math.PI/2,0,0,M('plastic')); add(g,'cyl',0xf4efe4,0,.03,.1,.012,.14,.012,Math.PI/2,0,0,M('plastic')); add(g,'sph',0xf4efe4,0,.03,.17,.016,.016,.016,0,0,0,M('plastic')); return g; },
     stick:(a,b)=>{ const g=G(); add(g,'cyl',0xe8d0a0,0,.004,.1,.003,.12,.003,Math.PI/2,0,0,M('wood')); add(g,'ball',a,0,.02,-.02,.025,.022,.07,0,0,0,M('food')); return g; },
     cloud:(a)=>{ const g=G(); add(g,'cyl',0xe8e0cc,0,.004,.15,.004,.2,.004,Math.PI/2,0,0,M('paper')); add(g,'ball',a,0,.06,-.05,.12,.11,.12,0,0,0,M('cloth')); return g; },
     pen:(a,b)=>{ const g=S.feather(a,b); add(g,'cone',0x2a2a2e,0,.004,-.13,.003,.02,.003,-Math.PI/2,0,0,METAL); return g; },
@@ -74,7 +75,7 @@ import {GHOLD} from './146zoa-guitar-hold.js';
     cotton:(a)=>S.cloud(a), popcorn:(a,b)=>{ const g=S.tub(0xd83a3a,0xf4efe4); for(let i=0;i<9;i++)add(g,'ball',0xf4e8c0,Math.cos(i*2.3)*.035,.13+(i%3)*.01,Math.sin(i*2.3)*.035,.014,.012,.014,0,0,0,M('food')); return g; },
   };
   // which shape each item is (by its id), first match
-  const BY=[[/^guitar$/,'guitar'],[/^harp$/,'harp'],[/^piano$/,'piano'],[/^drums$/,'drums'],[/^kazoo$/,'kazoo'],
+  const BY=[[/^guitar$/,'guitar'],[/^jugball$/,'ball'],[/^jugclub$/,'club'],[/^harp$/,'harp'],[/^piano$/,'piano'],[/^drums$/,'drums'],[/^kazoo$/,'kazoo'],
     [/^spray_/,'spray'],[/^g_(beans|soup|tuna|spam|catfood|vienna|soda|beer|coffee|cleanser)$/,'can'],[/^g_(juice|water|shampoo|dishsoap|aspirin)$|^soda_|^lemonade$|^p_royal$|^curse_stink$/,'bottle'],[/^g_bleach$|^water$/,'jug'],[/^g_milk$/,'carton'],
     [/^g_(fishfood|oats|yogurt|noodles|vaseline)$/,'tub'],[/^(honey_|jar_)|^curse_(cloud|rats)$/,'jar'],[/^g_(chips|bagels|dogfood|rice|diapers|tp|towels|bananas|plantains)$|^dirt$|^fix_parts$/,'sack'],[/^g_(koolaid|gum|batteries|candy)$|^seed_/,'packet'],
     [/^g_(cereal|detergent|pasta|tea|qtips|matches|eggs|bread|cheese|butter)$|^f_(bonbons|candybox)$/,'box'],[/^g_(candle|bulb)$|^wax_candle$/,'candle'],[/^g_(toothbrush|toothpaste|deodorant|lighter|sponge|soap)$/,'block'],

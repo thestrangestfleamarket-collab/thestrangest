@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Skill Trees</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen&display=swap">
+<style>
+:root{--bg:#0b0d13;--panel:#12141c;--fg:#d8dae2;--dim:#9b9584;--key:#f2c14e;--line:#3a3f4e;--ok:#9fe07f;--sky:#7fd0ff;--pixel:'Silkscreen',monospace;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{margin:0;color:var(--fg);font:11px var(--pixel);letter-spacing:.4px;padding:12px 16px;line-height:1.5}
+h1{font:13px var(--pixel);color:var(--key);margin:0 0 4px;letter-spacing:1px}
+.note{color:var(--dim);margin:0 0 10px;max-width:900px}
+.mode{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+button{font:inherit;color:var(--fg);background:#0e1016;border:2px solid var(--line);padding:4px 10px;cursor:pointer;letter-spacing:.4px}
+button[aria-pressed=true]{color:var(--key);border-color:var(--key)}
+.wrap{display:grid;grid-template-columns:minmax(150px,220px) 1fr;gap:12px}
+@media(max-width:640px){.wrap{grid-template-columns:1fr}}
+.list{background:var(--panel);border:2px solid var(--line);padding:6px}
+.list .row{display:flex;justify-content:space-between;align-items:center;padding:5px 6px;cursor:pointer;border-bottom:1px solid #22252f}
+.list .row.on{background:#1d2130;color:var(--key)}
+.list .row .v{color:var(--key)}
+.list .row .r{color:#8a8676;font-size:10px;display:block}
+.new{color:var(--ok);font-size:9px;margin-left:4px}
+.tree{background:var(--panel);border:2px solid var(--line);padding:10px;min-width:0}
+.th{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.th b{color:var(--key);font-size:13px}
+.how{color:var(--dim);margin-bottom:10px}
+.paths{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media(max-width:520px){.paths{grid-template-columns:1fr}}
+.path{border:2px solid var(--line);padding:8px;min-width:0}
+.path.spec{border-color:var(--key)}
+.ph{display:flex;justify-content:space-between;align-items:baseline;gap:4px;margin-bottom:4px}
+.ph b{color:var(--sky)}
+.pv{color:var(--key)}
+.pd{color:var(--dim);font-size:10px;margin-bottom:6px;min-height:30px}
+.bar{height:6px;background:#22252f;margin-bottom:8px}.bar i{display:block;height:100%;background:var(--key)}
+.node{border:1px solid #2a2d38;padding:5px;margin-top:5px;position:relative}
+.node .t{color:#8a8676;font-size:9px}
+.node.got{border-color:var(--ok);color:var(--ok)}
+.node.pick{border-color:var(--key);color:var(--key);cursor:pointer}
+.node.lock{opacity:.45}
+.node+.node::before{content:'';position:absolute;left:50%;top:-6px;height:5px;border-left:2px solid #2a2d38}
+.specbtn{margin-top:8px;width:100%}
+.foot{color:var(--dim);margin-top:10px}
+</style></head><body>
+<h1>SKILL TREES · MOCKUP</h1>
+<p class="note">Each main skill is a tree with three paths you can specialize in. Pick a skill on the left. Below are two ways it could work: A (perk picks) and B (each path is its own number). The levels shown are a sample player.</p>
+<div class="mode"><button id="mA" aria-pressed="true">A · PERK PICKS</button><button id="mB" aria-pressed="false">B · PATH LEVELS</button></div>
+<div class="wrap"><div class="list" id="list"></div><div class="tree" id="tree"></div></div>
+<p class="foot" id="foot"></p>
+<script>
+const T=[
+ ['music','MUSIC',42,'Playing the guitar (more instruments join later as their own paths).',[
+  ['FINGERSTYLE','harder pieces from the book, cleaner notes',['songs unlock 10 levels sooner','fewer missed notes','play two-part pieces','play any piece in the book']],
+  ['PERFORMER','others near you listen; folk stop and tip',['a crowd gathers','passers-by tip coins','a hat for tips at the park stand','your playing heard across the block']],
+  ['COMPOSER','write your own tab and share it',['write a short tune','save tunes to your book','give or sell a tune to a player','your tune plays on the jukebox']]]],
+ ['astro','ASTRONOMY',18,'NEW. Trained at the telescope: find something in the eyepiece, hold it a few quiet seconds, it goes in the SKY page of your journal.',[
+  ['STARGAZER','stars and constellations',['constellation lines in the eyepiece','star names on hover','the SKY page pays for each constellation','all 88: a title']],
+  ['PLANETS','the Moon and the planets',['higher eyepiece','the Moon\'s craters named','Jupiter\'s moons, Saturn\'s rings','planet transits and eclipses logged']],
+  ['DEEP SKY','clusters, nebulae, galaxies, meteors',['star clusters show','nebulae and galaxies show','meteor showers outdoors at night','comets: the first log pays big']]]],
+ ['myco','MYCOLOGY',55,'Mushrooms: finding, knowing, using.',[
+  ['IDENTIFIER','rare finds sooner',['rare mushrooms marked','super-rare from ADEPT','see a ring from far off','never pick a poison by mistake']],
+  ['POWERS','the mushrooms of power',['powers last 25% longer','stronger strength and speed','driftcap flies higher','mix two powers at once']],
+  ['GROWER','grow mushrooms at home',['a mushroom log for the apartment','two crops at once','grow rare kinds','grow the mushrooms of power']]]],
+ ['forage','FORAGING',37,'Picking in the park and the trees.',[
+  ['GATHERER','more from each pick',['+1 now and then','herbs and greens','pick while walking','double picks']],
+  ['TREE FRUIT','fruit and blossoms up the big trees',['fruit shows from the ground','pick blossoms','rare fruit high up','fruit worth double']],
+  ['TRACKER','squirrels and buried things',['dig up squirrel caches','see tracks on the grass','find lost coins','rare acorns']]]],
+ ['fish','FISHING',61,'River, lakes, pots and the boat.',[
+  ['ANGLER','the rod',['bites come sooner','an easier fight','bigger fish','the rarest fish']],
+  ['CRABBER','crab pots',['one more pot','fuller hauls','rare catches in pots','pots fill twice as fast']],
+  ['BOATMAN','the boat',['row faster','fish from the boat','deep-water fish','reach the far water']]]],
+ ['ento','ENTOMOLOGY',30,'Butterflies, fireflies and bugs.',[
+  ['NETTER','the net',['a wider net','catch on the wing','rare butterflies','two in one swing']],
+  ['NIGHT','fireflies and moths',['fireflies come to you','moths at the lamps','a glowing jar lasts all night','the rare moth']],
+  ['COLLECTOR','jars and the journal',['jars sell for more','extra jar slots','first-of-kind pays double','a full page: a title']]]],
+ ['bird','BIRDING',24,'Watching and catching birds.',[
+  ['WATCHER','binoculars and the journal',['longer binocular range','birds stay longer','rare birds show','the full list: a title']],
+  ['CATCHER','the bird net',['an easier catch','birds you catch sell for more','catch the fast ones','catch the rare ones']],
+  ['CALLER','calling birds to you',['a whistle brings sparrows','call a chosen kind','birds land on your hand','a bird follows you']]]],
+ ['garden','GARDENING',44,'Flowers, plots, vegetables and pots.',[
+  ['FLOWERS','wild flowers and beds',['more flowers a pick','rare flowers','plant beds','flowers sell for more']],
+  ['VEGETABLES','the plots',['faster crops','bigger yields','rare vegetables','a second plot']],
+  ['OFF-WORLD','the star cucumber and friends',['seeds sprout sooner','more fruit a plant','the humming bean sings','an off-world seed of your own']]]],
+ ['bee','BEEKEEPING',20,'Hives, honey and wax.',[
+  ['HIVES','more honey',['hives fill faster','one more hive','calmer bees, no stings','hives by the flower beds give flower honey']],
+  ['WAX','candles and wax goods',['more wax','make candles','scented candles','wax worth more']],
+  ['RARE HONEY','the special honeys',['clover sooner','lavender sooner','moon honey shows','moon honey worth double']]]],
+ ['gem','GEMS',33,'Scanning, digging, diving.',[
+  ['PROSPECTOR','the scanner',['longer scan range','rarer gems show','geodes marked','super-rare veins']],
+  ['DIVER','gems under water',['longer breath','swim faster deep','the headlight lasts','the deepest finds']],
+  ['CUTTER','what a gem is worth',['gems sell for more','crack geodes','cut a gem: worth double','wear a gem for a boost']]]],
+ ['bind','BOOKBINDING',12,'Old books: finding, mending, selling.',[
+  ['MENDER','mending',['faster mends','fewer ruined books','mend rare books','a perfect mend']],
+  ['FINDER','finding books',['more books found','rare books show','first editions','a lost book of your own']],
+  ['DEALER','selling',['better prices','the bookstore buys more','collectors seek you','sell to players at a stall']]]],
+ ['fighting','FIGHTING',48,'SWORDSMANSHIP and MARTIAL ARTS become paths of one tree.',[
+  ['BLADE','swordsmanship',['harder cuts','a combo','a spin strike','a master\'s blade art']],
+  ['HANDS','martial arts',['harder punches','a kick','a throw','fists that stagger']],
+  ['GUARD','blocks and parries',['a wider parry window','blocks take less','counter after a parry','unbroken guard']]]],
+ ['ath','ATHLETICS',39,'NEW tree. CLIMBING moves in; RUNNING and SWIMMING join it.',[
+  ['CLIMBING','trees, ladders, ledges',['climb faster','hang longer','jump to grab higher','climb anything climbable at a run']],
+  ['RUNNING','sprinting and stamina',['sprint longer','faster sprint','vault low fences','barely tire']],
+  ['SWIMMING','water and breath',['longer breath','swim faster','dive deeper','swim against the current']]]],
+ ['sky','SKY',15,'NEW tree. Things that ride the wind.',[
+  ['KITE','flying kites',['a longer line','steadier in gusts','loops and dives','a kite contest win pays']],
+  ['BOARDS','hoverboards and the skateboard',['higher ollies','more tricks','grinds','combo scores']],
+  ['BALLOON','the black balloon',['lift longer','steer better','carry a friend','land soft from anywhere']]]],
+ ['games','GAMES',22,'NEW tree. GOLF moves in; the arcade games join it.',[
+  ['GOLF','the holodeck\'s mini golf',['an aim line','a steadier putt','trick shots','a hole in one pays']],
+  ['DARTS','darts at the bar',['steadier hand','doubles easier','the bullseye','win at 301 for money']],
+  ['POOL','pool',['a guide line','spin on the cue ball','bank shots','win for money']]]]
+];
+const lv=(i,j)=>[[58,30,8],[22,12,20],[70,40,55],[50,30,30],[75,50,58],[45,20,25],[30,22,20],[52,50,30],[25,20,15],[40,35,25],[15,12,10],[60,45,40],[45,52,20],[10,25,8],[30,22,15]][i%15][j];
+let mode='A', cur=0, spec={}, picks={};
+const $=id=>document.getElementById(id), TIERS=[25,50,75,100];
+function list(){ $('list').innerHTML=T.map((t,i)=>`<div class="row${i===cur?' on':''}" data-i="${i}"><span>${t[1]}${/^NEW/.test(t[3])?'<span class="new">NEW</span>':''}<span class="r">${rank(t[2])}</span></span><span class="v">${t[2].toFixed(1)}</span></div>`).join(''); }
+const rank=v=>[[100,'GRANDMASTER'],[90,'MASTER'],[80,'ADEPT'],[70,'EXPERT'],[50,'JOURNEYMAN'],[30,'APPRENTICE'],[0,'NOVICE']].find(r=>v>=r[0])[1];
+function tree(){ const t=T[cur], k=t[0], v=t[2]; picks[k]=picks[k]||{}; if(spec[k]==null)spec[k]=0;
+ let o=`<div class="th"><b>${t[1]}</b><span>${rank(v)} · ${v.toFixed(1)}</span></div><div class="how">${t[3]}</div><div class="paths">`;
+ t[4].forEach((p,j)=>{ const pv=mode==='A'?v:lv(cur,j), sp=spec[k]===j;
+  o+=`<div class="path${(mode==='B'&&sp)||(mode==='A'&&Object.values(picks[k]).includes(j))?' spec':''}"><div class="ph"><b>${p[0]}</b>${mode==='B'?`<span class="pv">${pv.toFixed(1)}</span>`:''}</div><div class="pd">${p[1]}</div>${mode==='B'?`<div class="bar"><i style="width:${pv}%"></i></div>`:''}`;
+  p[2].forEach((n,ti)=>{ const need=TIERS[ti]; let cls='lock';
+   if(mode==='A'){ const pk=picks[k][ti]; if(v>=need){ cls=pk===j?'got':pk==null?'pick':'lock'; } }
+   else { const cap=sp?100:50; cls=pv>=need&&need<=cap?'got':need>cap?'lock':'lock'; }
+   o+=`<div class="node ${cls}" data-t="${ti}" data-j="${j}"><span class="t">${need}${mode==='B'&&!sp&&need>50?' · SPECIALTY ONLY':''}</span><br>${n}</div>`; });
+  if(mode==='B')o+=`<button class="specbtn" data-spec="${j}" aria-pressed="${sp}">${sp?'YOUR SPECIALTY':'MAKE SPECIALTY'}</button>`;
+  o+='</div>'; });
+ $('tree').innerHTML=o+'</div>';
+ $('foot').textContent=mode==='A'
+  ?'A · PERK PICKS: the tree has one number that rises from anything in it. At 25, 50, 75 and 100 you pick one perk from the three paths (gold = ready to pick, click one). Change your picks at the trainer for a fee.'
+  :'B · PATH LEVELS: every path has its own number, raised only by doing that thing. The tree shows the best path. Choose one specialty per tree: it rises faster and goes to 100; the other paths stop at 50. Change it at the trainer for a fee.'; }
+$('list').onclick=e=>{ const r=e.target.closest('.row'); if(r){ cur=+r.dataset.i; list(); tree(); } };
+$('tree').onclick=e=>{ const k=T[cur][0], s=e.target.closest('[data-spec]'); if(s){ spec[k]=+s.dataset.spec; tree(); return; }
+ const n=e.target.closest('.node.pick'); if(n&&mode==='A'){ picks[k][+n.dataset.t]=+n.dataset.j; tree(); } };
+$('mA').onclick=()=>{ mode='A'; $('mA').setAttribute('aria-pressed',true); $('mB').setAttribute('aria-pressed',false); tree(); };
+$('mB').onclick=()=>{ mode='B'; $('mB').setAttribute('aria-pressed',true); $('mA').setAttribute('aria-pressed',false); tree(); };
+list(); tree();
+</script></body></html>

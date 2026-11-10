@@ -1,6 +1,6 @@
 // YOUR PRINTS: the photographs you own (your camera, 146ma), kept in your owned things; each a framed print for your apartment (150g). The store the Newsreel used, kept when he was archived (5 Nov 2026).
 import {THREE} from './003-shx.js';
-import {FORAGE, ZONES} from './003b-systems.js';
+import {FORAGE, ITEMS, ZONES} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {TILE} from './006-map-pre.js';
@@ -8,6 +8,7 @@ const PHOTOS={mine:[]}; window.PHOTOS=PHOTOS;
 { const T=TILE;
   try{ PHOTOS.mine=JSON.parse(OWNED.get('photos')||'[]')||[]; }catch(e){ PHOTOS.mine=[]; }
   const nameOf=p=>'PHOTO: '+p.cap; const reg=()=>FORAGE.add({names:Object.fromEntries(PHOTOS.mine.map(p=>[p.id,nameOf(p)]))}); reg();
+  ITEMS.reg('photo',{sellable:true}); FORAGE.NM.photo='A PHOTOGRAPH'; ITEMS.cls.push({is:id=>id.startsWith('photo_'),as:'photo',calc:{value:id=>{ const p=PHOTOS.mine.find(p=>p.id===id); return p&&p.v||1; }}});
   PHOTOS.save=()=>{ try{ OWNED.set('photos',JSON.stringify(PHOTOS.mine.slice(-40))); }catch(e){} };
   // a photograph of the world: o.from (a camera), fov, W/H, gain (exposure), fx(g,cv) (blur after developing)
   const RTS={}; let cam=null;

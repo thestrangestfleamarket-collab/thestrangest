@@ -7,13 +7,9 @@ import {SYS, TILE} from './006-map-pre.js';
 import {CREATS} from './087-npc-creatures.js';
 const WILD={}; window.WILD=WILD;
 { const T=TILE, say=(t,c)=>SAY(t,c||'#e8e2cc'), KEY='wild';
-  const SP={rat:['BROWN RAT','Rattus norvegicus','forage',5,0],frog:['GREEN FROG','Lithobates clamitans','forage',20,0],snake:['EASTERN GARTER SNAKE','Thamnophis sirtalis','forage',40,15],
-    spider:['GARDEN SPIDER','Araneus diadematus','ento',15,0],wasp:['COMMON WASP','Vespula vulgaris','ento',10,0],bat:['LITTLE BROWN BAT','Myotis lucifugus','bird',35,15],slime:['THE PARK SLIME','unknown to science','myco',30,10],
-    fox:['RED FOX','Vulpes vulpes','forage',35,10],deer:['WHITE-TAILED DEER','Odocoileus virginianus','forage',25,0],wolf:['GREY WOLF','Canis lupus','forage',50,15],bear:['AMERICAN BLACK BEAR','Ursus americanus','forage',55,20],
+  const SP={
     crow:['AMERICAN CROW','Corvus brachyrhynchos','bird',10,0],owl:['GREAT HORNED OWL','Bubo virginianus','bird',45,15],duck:['MALLARD','Anas platyrhynchos','bird',5,0],
-    antqueen:['ANT QUEEN','Lasius niger','ento',40,10],woodant:['WOOD ANT','Formica rufa','ento',10,0],aphid:['APHID','Aphis fabae','ento',30,0],ladybird:['LADYBIRD','Coccinella septempunctata','ento',10,0],
-    hopper:['GRASSHOPPER','Melanoplus differentialis','ento',15,0],beetle:['STAG BEETLE','Lucanus elaphus','ento',35,10],mantis:['PRAYING MANTIS','Mantis religiosa','ento',35,10],caterpillar:['MONARCH CATERPILLAR','Danaus plexippus','ento',15,0],
-    slug:['LEOPARD SLUG','Limax maximus','forage',15,0],snail:['GARDEN SNAIL','Cornu aspersum','forage',10,0],crab:['HERMIT CRAB','Pagurus longicarpus','forage',20,0],bee:['HONEYBEE','Apis mellifera','ento',10,0],bumblebee:['BUMBLEBEE','Bombus impatiens','ento',15,0]};
+    bee:['HONEYBEE','Apis mellifera','ento',10,0],bumblebee:['BUMBLEBEE','Bombus impatiens','ento',15,0]};
   const KS=()=>Object.keys(SP), FULL=50, NEED=5;
   const S={v:1,seen:{},paid:0}; try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1)Object.assign(S,D); }catch(e){} const save=()=>{ try{ OWNED.set(KEY,JSON.stringify(S)); }catch(e){} };
   const kindOf=N=>String(N.key).replace(/#\d+$/,'').replace(/\d+$/,'');
@@ -36,7 +32,7 @@ const WILD={}; window.WILD=WILD;
   const DONE=new Set(); let seenN=0; const things=()=>{ if(CREATS.length===seenN)return; seenN=CREATS.length; for(const N of CREATS){ if(DONE.has(N))continue; DONE.add(N); const k=kindOf(N); if(!SP[k])continue; const hb=new THREE.Mesh(HB,HM); hb.position.y=Math.min(N.H*.5,.6*T)+.05*T; N.g.add(hb); HBS.push([N,hb]);
     UI.thing({name:'A '+SP[k][0].replace(/^THE /,''),obj:hb,reach:N.ex?2*T:2.6*T,near:3*T,tall:.3*T,act:()=>watch(N)}); } };
   FORAGE.BOOK.push({id:'wild',title:'WILDLIFE',rows:()=>KS().map(k=>[SP[k][0],!!S.seen[k],S.seen[k]?'SEEN '+S.seen[k]+' · '+SP[k][1].toUpperCase():'',SP[k][4]>0]),
-    foot:`Double click a creature and keep still to watch it; binoculars watch from afar. Wasps and the snake are out on warm days, bats and rats by night, frogs by the pond, spiders in their webs. A full page pays $${FULL}.`});
-  FORAGE.HELP.push('WILDLIFE: double click a park creature and keep still a few seconds to log it in your journal (it trains its skill: insects ENTOMOLOGY, the bat BIRDING, the slime MYCOLOGY, the rest FORAGING).');
+    foot:`Double click a creature and keep still to watch it; binoculars watch from afar. Owls by night, ducks on the lake, bees among the flowers. A full page pays $${FULL}.`});
+  FORAGE.HELP.push('WILDLIFE: double click a park creature and keep still a few seconds to log it in your journal (it trains its skill: bees ENTOMOLOGY, birds BIRDING).');
   window.WILDDBG=()=>({seen:S.seen,paid:S.paid,watching:WILD.watching(),spd:+(spd/T).toFixed(2),things:CREATS.length}); }
 export {WILD};

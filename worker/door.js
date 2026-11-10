@@ -7,14 +7,36 @@ import { FOLKSIM } from "./folk.js";
 import { MOBSIM } from "./dunmobs.js";
 import { lvBrief, lvGoal, lvH, lvMeet, lvRun } from "./lives.js";
 import { CLK } from "./clock.js";
+import { TWIN } from "./twin.js";
 import LIVESDATA from "../data/lives.json";
+import ITEMDATA from "../data/items.json";
 import WORLD from "../data/world.json";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, CODE = /^[A-Z0-9-]{6,32}$/, MAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 const json = (o, status = 200) => Response.json(o, { status, headers: { "cache-control": "no-store" } });
 const loopback = ip => !ip || ip === "::1" || ip === "localhost" || /^127\./.test(ip) || /^::ffff:127\./.test(ip);
 const SECROOMS = WORLD.sections.ids.flat().map(i => "s-" + String(i).toLowerCase().replace(/[^a-z0-9-]/g, "")), ROOM = /^[a-z0-9-]{1,32}$/, GUESS_MAX = 20, guesses = new Map(), passed = new Map(), FILE = /^\/g\/[a-z0-9-]+\.[0-9a-f]{10}\.(js|json|bin|mp3|jpg|png|webp)$/;
+const APPF = /^\/(app\.webmanifest|icon-(192|512)\.png)$/;   // the installable app's manifest and icon: to anyone
 const EDMAP = /^\/edmap\/t\d{1,2}_\d{1,2}\.jpg$/;
 const BOOK = /^\/book\/(\d{1,6})\.txt$/, FILM = /^\/film\/([A-Za-z0-9_.-]{1,80})\/([A-Za-z0-9_.-]{1,120}\.mp4)$/, IA = /^\/ia\/([A-Za-z0-9_.-]{1,80})\.jpg$/, YT = /^\/yt\/([A-Za-z0-9_-]{11})\.jpg$/, BLANK = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYGD4DwABBAEAHnOcQAAAAABJRU5ErkJggg==";
+const SKYJD = () => Date.now() / 864e5 + 2440587.5, SBDB = "https://ssd-api.jpl.nasa.gov/sbdb_query.api?", SWPC = "https://services.swpc.noaa.gov/";
+const SKYFEEDS = {
+  weather: { ttl: 1800, u: () => "https://api.open-meteo.com/v1/forecast?latitude=40.7128&longitude=-74.006&hourly=cloud_cover,visibility,precipitation,snowfall&past_days=1&forecast_days=2&timezone=UTC" },
+  sats: { ttl: 21600, text: 1, u: () => ["https://celestrak.org/NORAD/elements/gp.php?GROUP=stations&FORMAT=tle", "https://celestrak.org/NORAD/elements/gp.php?GROUP=visual&FORMAT=tle"] },
+  comets: { ttl: 86400, u: () => { const j = Math.round(SKYJD()); return SBDB + new URLSearchParams({ fields: "full_name,e,q,i,om,w,tp,M1,K1", "sb-kind": "c", "sb-cdata": JSON.stringify({ AND: ["tp|RG|" + (j - 400) + "|" + (j + 400), "M1|LT|11", "q|LT|3.5"] }) }); } },
+  rocks: { ttl: 86400, u: () => SBDB + new URLSearchParams({ fields: "full_name,a,e,i,om,w,ma,epoch,H,G", "sb-kind": "a", "sb-cdata": JSON.stringify({ AND: ["H|LT|6.5"] }) }) },
+  sun: { ttl: 900, jpg: 1, u: () => "https://sdo.gsfc.nasa.gov/assets/img/latest/latest_1024_HMIIC.jpg" },
+  spots: { ttl: 3600, u: () => SWPC + "json/solar_regions.json" },
+  flares: { ttl: 1800, u: () => SWPC + "json/goes/primary/xray-flares-7-day.json" },
+  kp: { ttl: 1800, u: () => [SWPC + "products/noaa-planetary-k-index.json", SWPC + "products/noaa-planetary-k-index-forecast.json"] } };
+async function skyFeed(k, request) {
+  const F = SKYFEEDS[k], key = new Request(new URL(request.url).origin + "/sky-cache/" + k + (F.jpg ? ".jpg" : "")), cache = caches.default;
+  const hit = await cache.match(key).catch(() => null); if (hit) return hit;
+  const urls = [].concat(F.u()); let body = null, ok = true;
+  try { const rs = await Promise.all(urls.map(u => fetch(u, { headers: { "user-agent": "thestrangestfleamarket.com telescope" } })));
+    ok = rs.every(r => r.ok); if (ok) body = F.jpg ? await rs[0].arrayBuffer() : F.text ? (await Promise.all(rs.map(r => r.text()))).join("\n") : urls.length > 1 ? JSON.stringify(await Promise.all(rs.map(r => r.json()))) : await rs[0].text(); } catch (e) { ok = false; }
+  if (!ok || body == null) return new Response("not now", { status: 503, headers: { "cache-control": "no-store" } });
+  const out = new Response(body, { headers: { "content-type": F.jpg ? "image/jpeg" : F.text ? "text/plain; charset=utf-8" : "application/json", "cache-control": "public, max-age=" + F.ttl, "x-robots-tag": "noindex" } });
+  await cache.put(key, out.clone()).catch(() => {}); return out; }
 function tooMany(ip, max = GUESS_MAX) { const min = Math.floor(Date.now() / 60000), g = guesses.get(ip);
   if (!g || g.min !== min) { if (guesses.size > 5000) for (const [k, v] of guesses) if (v.min !== min) guesses.delete(k); guesses.set(ip, { n: 1, min }); return false; }
   return ++g.n > max; }
@@ -26,6 +48,12 @@ export default {
       const ok = await inside(env, request, dev);
       const out = ok ? await page(env, url, "/g/market", request, "private, no-cache") : await page(env, url, "/door", request, "no-cache");
       out.headers.set("vary", "Cookie"); return out; }
+    if ((request.method === "GET" || request.method === "HEAD") && APPF.test(p)) {
+      const r = await env.ASSETS.fetch(new Request(url.origin + p)); if (!r.ok) return new Response("not found", { status: 404 });
+      const out = new Response(r.body, r); if (p.endsWith(".webmanifest")) out.headers.set("content-type", "application/manifest+json"); out.headers.set("cache-control", "public, max-age=86400"); return out; }
+    if (request.method === "GET" && p === "/sw.js") {
+      if (!(await inside(env, request, dev))) return new Response("not found", { status: 404 });
+      const out = await page(env, url, "/sw.js", request, "private, no-cache"); out.headers.set("content-type", "text/javascript; charset=utf-8"); return out; }
     // the owners' map editor: its own light page (dist/editor.html) and its ground picture (dist/edmap/), only to a login in admins; anyone else is told nothing is there
     if ((request.method === "GET" || request.method === "HEAD") && (p === "/editor" || EDMAP.test(p))) {
       const id = await who(env, request, dev); if (!id || (await owner(env, id, dev)) !== true) return new Response("not found", { status: 404 });
@@ -59,6 +87,11 @@ export default {
       const miss = !r || !r.ok, out = miss ? new Response(Uint8Array.from(atob(BLANK), c => c.charCodeAt(0)), { status: 200 }) : new Response(r.body, { status: r.status });
       out.headers.set("content-type", miss ? "image/png" : "image/jpeg"); out.headers.set("access-control-allow-origin", "*");
       out.headers.set("cache-control", "public, max-age=86400"); out.headers.set("x-robots-tag", "noindex"); return out; } }
+    // the telescope's live sky (src/150fg): the real weather, satellites, comets, asteroids, today's Sun and space weather, fetched here once for everyone and kept a while
+    const sky = /^\/sky\/([a-z]{2,12})(\.jpg)?$/.exec(p);
+    if (sky && request.method === "GET" && SKYFEEDS[sky[1]] && !!sky[2] === !!SKYFEEDS[sky[1]].jpg) {
+      if (!(await inside(env, request, dev))) return new Response("not found", { status: 404 });
+      return skyFeed(sky[1], request); }
     if (p.startsWith("/parties/")) return (await routePartykitRequest(request, env, {
       onBeforeConnect: async (req, { party, name }) => {
         const room = party === "block" ? ROOM.test(name) : party === "dish" && name === "petri";   // the dish: one for the whole market, the arcade's PETRI
@@ -82,11 +115,12 @@ export default {
       const P = postOf(env); if (!key || key.length > 80 || key !== (await P.botKey())) return json({ why: "wrong runner key (copy it from ADMIN > TENANTS > BOTS)" }, 403);
       let body; try { body = await request.json(); } catch (e) { body = {}; } if (body && body.status && typeof body.status === "object") await P.botStatus(body.status); if (body && body.tests && typeof body.tests === "object") await P.botTests(body.tests);
       return json({ bots: await Promise.all((await P.botList()).filter(b => b.on).map(async b => ({ ...botOut(b), login: await botLogin(env, b) }))) }); }
-    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art")) {
+    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art" || p === "/botshot" || p === "/twin")) {
       if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401);
       let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
-      if (p === "/home") { if (body.who !== undefined) return json({ home: await homeOf(env).get(word(body.who, 64)) });   // a visit: another player's apartment, to look at
+      if (p === "/home") { if (body.list !== undefined) return json({ list: (await homeOf(env).tenants()).filter(t => t.who !== id) });   // every tenant's apartment, for the map's quick jumps
+        if (body.who !== undefined) return json({ home: await homeOf(env).get(word(body.who, 64)) });   // a visit: another player's apartment, to look at
         if (body.put === undefined) return json({ home: await homeOf(env).get(id) });
         const t = JSON.stringify(body.put); if (!body.put || typeof body.put !== "object" || Array.isArray(body.put) || t.length > 65536) return json({ why: "bad room" }, 400);
         if (tooMany("home:" + id, 120)) return json({ why: "too many saves, wait a minute" }, 429);
@@ -96,8 +130,19 @@ export default {
         const put = body.put; if (!put || typeof put !== "object" || Array.isArray(put)) return json({ why: "bad save" }, 400);
         const ks = Object.keys(put); if (ks.length > 80 || ks.some(k => !/^[a-z0-9_.-]{1,40}$/i.test(k) || (put[k] !== null && (typeof put[k] !== "string" || put[k].length > 262144)))) return json({ why: "bad save" }, 400);
         if (tooMany("owned:" + id, 120)) return json({ why: "too many saves, wait a minute" }, 429);
-        return (await homeOf(env).ownedPut(id, put)) ? json({ ok: true }) : json({ why: "too much saved (2 MB a player)", full: true }, 413); }
+        const r = await homeOf(env).ownedSave(id, put); return r.ok ? json(r.clip ? { ok: true, clip: r.clip } : { ok: true }) : json({ why: "too much saved (2 MB a player)", full: true }, 413); }
       // your name (owner, 7 Nov 2026: a unique name chosen at the first day's setup): 3 to 16 letters, digits, spaces, ' or -, in capitals; no one else may have it, whatever its case
+      // a bot's screenshot of a test step (its own login), kept with the last 800 shots; the owner reads them in BOTS > TESTING
+      if (p === "/botshot") { const P = postOf(env); if (!(await P.botList()).some(b => b.id === id)) return json({ why: "only bots send shots" }, 403);
+        const m = /^data:image\/jpeg;base64,([A-Za-z0-9+/=]+)$/.exec(String(body.jpg || "")); if (!m || m[1].length > 400000) return json({ why: "a jpeg under 300 KB" }, 400);
+        const bin = atob(m[1]), buf = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+        return json({ ok: true, k: await P.shotPut(id, buf.buffer) }); }
+      // an owner's AI double asks its mind (worker/twin.js) what to do next: only a bot made an AI double, whose owner is still an owner
+      if (p === "/twin") { const P = postOf(env), b = (await P.botList()).find(x => x.id === id); if (!b || !b.ai) return json({ why: "only an AI double thinks here" }, 403);
+        if (!b.who || (await owner(env, b.who, dev)) !== true) return json({ why: "its owner is not an owner" }, 403);
+        if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
+        if (tooMany("twin:" + id, 40)) return json({ why: "too much at once, wait a minute" }, 429);
+        return json(await TWIN.step(env, { get: () => P.twinGet(id), put: v => P.twinPut(id, v) }, body)); }
       if (p === "/name") { const n = String(body.claim || "").toUpperCase().replace(/\s+/g, " ").trim();
         if (!/^[A-Z0-9][A-Z0-9 '-]{1,14}[A-Z0-9]$/.test(n) || /^(TENANT|ADMIN|OWNER|MODERATOR|SYSTEM|GUEST)\b/.test(n)) return json({ why: "3 to 16 letters or digits" }, 400);
         if (tooMany("name:" + id, 30)) return json({ why: "too many tries, wait a minute" }, 429);
@@ -217,7 +262,8 @@ export class Block extends Server {
   // the block's shared world: small values every player here sees the same (a bin's fill), kept for good
   async world() { if (!this.W) { this.W = (await this.ctx.storage.get("world")) || {};
       // the cars grew 40% (3 Nov 2026): their spots saved before then are cleared once so they park in their own places again (owner, 7 Nov 2026)
-      if ((await this.ctx.storage.get("carsv")) !== 1) { for (const k of Object.keys(this.W)) if (k.startsWith("car:")) delete this.W[k]; await this.ctx.storage.put("world", this.W); await this.ctx.storage.put("carsv", 1); } }
+      if ((await this.ctx.storage.get("carsv")) !== 2) {   // 2: moved past the forcefield (owner, 8 Nov 2026)
+        for (const k of Object.keys(this.W)) if (k.startsWith("car:")) delete this.W[k]; await this.ctx.storage.put("world", this.W); await this.ctx.storage.put("carsv", 2); } }
     return this.W; }
   // the folk's walks (worker/folk.js): every walker on the street, stepped here every second while anyone is in, every ten seconds when nobody is, kept for good; the page sends the walk grid (its build's free ground) and each walker's mode
   async folk() { if (!this.F) { this.F = FOLKSIM.load(await this.ctx.storage.get("folk")); this.F.cast = (await this.ctx.storage.get("folkcast")) || null; const a = await this.ctx.storage.getAlarm(); if (a == null || a < Date.now()) await this.ctx.storage.setAlarm(Date.now() + 1000); } return this.F; }   // (an alarm left in the past, a stale record on disk, is set afresh)
@@ -232,15 +278,17 @@ export class Block extends Server {
   async mobs() { if (!this.MS) this.MS = MOBSIM.load(await this.ctx.storage.get("mobs")); return this.MS; }
   mobGo() { if (!this.mobT && this.MS && this.MS.g) { this.mobAt = Date.now(); this.mobT = setInterval(() => { try { this.mobTick(); } catch (e) { console.error("mobs", e); } }, 200); } }
   mobTick() { const MS = this.MS, now = Date.now(), dt = Math.min(1, (now - (this.mobAt || now)) / 1000); this.mobAt = now; const P = [], who = new Map();
-    for (const c of this.getConnections()) { const t = c.state; if (!t || !t.id || !t.at || t.at[4] !== "down") continue; P.push({ id: t.id, x: t.at[0], z: t.at[1], ok: !t.dead && !(t.x && t.x.invis) }); who.set(t.id, c); }
-    const rooms = new Set(P.map(p => MOBSIM.roomAt(MS, p.x, p.z)).filter(Boolean));
+    for (const c of this.getConnections()) { const t = c.state; if (!t || !t.id || !t.at || !MOBSIM.roomAt(MS, t.at[0], t.at[1], t.at[4] === "down" ? "down" : "up")) continue; P.push({ id: t.id, x: t.at[0], z: t.at[1], lv: t.at[4] === "down" ? "down" : "up", ok: !t.dead && !(t.x && t.x.invis) }); who.set(t.id, c); }
+    const rooms = new Set(P.map(p => MOBSIM.roomAt(MS, p.x, p.z, p.lv)).filter(Boolean));
     if (!rooms.size) { clearInterval(this.mobT); this.mobT = null; this.ctx.storage.put("mobs", MOBSIM.save(MS)); return; }
     for (const e of MOBSIM.step(MS, dt, P)) { const c = who.get(e.to); if (c) c.send(JSON.stringify({ ...e, t: "mobhurt" })); }
-    const msgs = new Map(); for (const [id, c] of who) { const r = MOBSIM.roomAt(MS, c.state.at[0], c.state.at[1]); if (!r) continue; if (!msgs.has(r)) msgs.set(r, JSON.stringify({ t: "mobs", ...MOBSIM.snap(MS, new Set([r])) })); c.send(msgs.get(r)); }   // each player told of their own room
+    const msgs = new Map(); for (const [id, c] of who) { const r = MOBSIM.roomAt(MS, c.state.at[0], c.state.at[1], c.state.at[4] === "down" ? "down" : "up"); if (!r) continue; if (!msgs.has(r)) msgs.set(r, JSON.stringify({ t: "mobs", ...MOBSIM.snap(MS, new Set([r])) })); c.send(msgs.get(r)); }   // each player told of their own room
     if (now - (this.mobSaved || 0) > 30000) { this.mobSaved = now; this.ctx.storage.put("mobs", MOBSIM.save(MS)); } }
   async onAlarm() { const now = Date.now(), n = [...this.getConnections()].length;
     try { this.dropSweep(now); } catch (e) { console.error("drops", e); }
-    try { await this.clock(now); const F = await this.folk(); FOLKSIM.step(F, Math.min(600, Math.max(0, (now - (F.at || now)) / 1000))); F.at = now;
+    try { await this.bodySweep(now); } catch (e) { console.error("bodies", e); }
+    try { await this.stallSweep(now); } catch (e) { console.error("stalls", e); }
+    try { await this.clock(now); const F = await this.folk(); F.now = now / 1000; F.p0 = +((await this.world())["xing:gate"]) || 0; FOLKSIM.step(F, Math.min(600, Math.max(0, (now - (F.at || now)) / 1000))); F.at = now;
       { const H = lvH(now, this.clk); if (F.cast && F.H !== H) { const jump = F.H == null || Math.abs(H - F.H) > 1; F.H = H; this.castHour(F, H, jump); this.folkDirty = true; } }
       if (n) this.broadcast(JSON.stringify({ t: "folk", ...FOLKSIM.snap(F) }));
       if (this.folkDirty || !this.folkSaved || now - this.folkSaved > 30000) { this.folkDirty = false; this.folkSaved = now; await this.ctx.storage.put("folk", FOLKSIM.save(F)); } }
@@ -268,6 +316,82 @@ export class Block extends Server {
     const rec = JSON.stringify(o); this.ctx.storage.sql.exec("insert into drops(k, rec, at, until) values(?, ?, ?, ?)", k, rec, now, o.until);
     const over = this.ctx.storage.sql.exec("select count(*) as n from drops").one().n - 200, gone = over > 0 ? this.ctx.storage.sql.exec("select k from drops order by at, k limit ?", over).toArray().map(q => q.k) : [];
     for (const g of gone) this.dropGone(g); return gone.includes(k) ? null : rec; }
+  // a dead player's body (src/103a-death.js): where it lies; an hour after, what it held (their saved 'corpse') falls to the ground as drops anyone may take, and is theirs no more
+  bodyT() { if (this.bodyOk) return; this.bodyOk = 1; this.ctx.storage.sql.exec("create table if not exists bodies(who text primary key, at text, until integer)"); }
+  bodyAt(who, v, life) { this.bodyT(); const o = { x: num(+(v && v.x), -1e5, 1e5), y: num(+(v && v.y), -1e4, 1e4), z: num(+(v && v.z), -1e5, 1e5), lv: word(v && v.lv, 24) || "street" }; if (v && v.rm) o.rm = word(v.rm, 40);
+    this.ctx.storage.sql.exec("insert into bodies(who, at, until) values(?, ?, ?) on conflict(who) do update set at = excluded.at, until = excluded.until", who, JSON.stringify(o), Date.now() + (life || BODY_LIFE)); }
+  bodyOff(who) { this.bodyT(); this.ctx.storage.sql.exec("delete from bodies where who = ?", who); }
+  async bodySweep(now) { this.bodyT(); for (const r of this.ctx.storage.sql.exec("select who, at from bodies where until < ?", now).toArray()) { this.bodyOff(r.who); await this.bodyFall(r.who, JSON.parse(r.at)); } }
+  async bodyFall(who, at) { const H = homeOf(this.env), o = await H.ownedGet(who); let c = null; try { c = JSON.parse(o.corpse || "null"); } catch (e) {} if (!c || typeof c !== "object") return 0;
+    const L = [], add = (id, n) => { n = Math.floor(+n); if (!/^[a-z0-9_]{1,48}$/.test(id) || !(n > 0)) return; while (n > 0) { const k = Math.min(n, 9999); L.push([id, k]); n -= k; } };
+    for (const k in c.items || {}) add(k, c.items[k]); for (const b in c.inside || {}) for (const k in c.inside[b] || {}) add(k, c.inside[b][k]); add("cash", Math.min(1e9, +c.cash || 0));
+    await H.ownedPut(who, { corpse: null }); H.econNote(who, -Math.floor(+c.cash || 0), 0, 0, "body fell: " + L.length + " drops").catch(() => {});
+    let i = 0; for (const [id, n] of L.slice(0, 60)) { const a = i++ * 2.4, d = .25 + .12 * Math.sqrt(i), k = "drop:b" + Math.random().toString(36).slice(2, 12);
+      const rec = this.dropAdd(k, JSON.stringify({ id, n, x: at.x + Math.cos(a) * d * 40, y: at.y, z: at.z + Math.sin(a) * d * 40, lv: at.lv, rm: at.rm }), "body:" + who, 0); if (rec) this.broadcast(JSON.stringify({ t: "world", k, v: rec })); }
+    this.broadcast(JSON.stringify({ t: "world", k: "body:" + who, v: "" })); return L.length; }
+  // the market's stalls (src/159j-stalls.js): a player rents one for days, sets out things at their own prices; they sell while the renter is away; the till, less the market's cut, is theirs to collect; when the days run out what is left and the till go home (OWNED 'tradein')
+  pawnT() { if (this.pawnOk) return; this.pawnOk = 1; this.ctx.storage.sql.exec("create table if not exists pawn(id text primary key, n integer)"); }
+  pawnAll() { this.pawnT(); const o = {}; for (const r of this.ctx.storage.sql.exec("select id, n from pawn where n > 0").toArray()) o[r.id] = r.n; return o; }
+  pawnAdd(id, k) { this.pawnT(); const r = this.ctx.storage.sql.exec("select n from pawn where id = ?", id).toArray()[0], n = Math.max(0, Math.min(PAWN.most, (r ? r.n : 0) + k));
+    if (n) this.ctx.storage.sql.exec("insert into pawn(id, n) values(?, ?) on conflict(id) do update set n = excluded.n", id, n); else this.ctx.storage.sql.exec("delete from pawn where id = ?", id);
+    this.broadcast(JSON.stringify({ t: "pw", op: "one", id, n })); return n; }
+  pawn(c, s, m) { const op = String(m.op || ""), item = word(m.item, 48), n = Math.max(0, Math.min(9999, Math.floor(+m.n || 0))), say = x => c.send(JSON.stringify({ t: "pw", ...x })), H = homeOf(this.env);
+    if (op === "list") return say({ op: "list", all: this.pawnAll() });
+    if (!/^[a-z0-9_]{1,48}$/.test(item) || n < 1) return; const v = pawnVal(item);
+    if (op === "sell") { const back = why => say({ op: "back", why, items: { [item]: n }, cash: 0 }); if (!v) return back("it is worth nothing here");
+      const have = this.pawnAll(); if (!have[item] && Object.keys(have).length >= PAWN.kinds) return back("the shop is full");
+      const pay = Math.max(1, Math.floor(v * PAWN.buy)) * n;
+      H.econPay(s.id, 0, { [item]: n }, "pawned").then(r => { if (!r.ok) return back(r.why); this.pawnAdd(item, n); H.econAllow(s.id, pay, 0, "pawned").catch(() => {}); say({ op: "paid", item, n, cash: pay }); }).catch(() => back("try again")); return; }
+    if (op === "buy") { const have = this.pawnAll()[item] || 0; if (!v || !have) return say({ op: "no", why: "it is gone" }); const k = Math.min(n, have), cost = Math.ceil(v) * k;
+      if (Math.floor(+m.p || 0) !== Math.ceil(v)) return say({ op: "no", why: "the price changed" });
+      H.econPay(s.id, cost, {}, "bought at the pawn shop").then(r => { if (!r.ok) return say({ op: "no", why: r.why });
+        if ((this.pawnAll()[item] || 0) < k) { H.econGive(s.id, cost, {}, "pawn sale lost").catch(() => {}); return say({ op: "no", why: "it is gone" }); }
+        this.pawnAdd(item, -k); H.econAllow(s.id, 0, k, "bought at the pawn shop").catch(() => {}); say({ op: "bought", item, n: k, cost }); }).catch(() => say({ op: "no", why: "try again" })); } }
+  stallT() { if (this.stallOk) return; this.stallOk = 1; this.ctx.storage.sql.exec("create table if not exists stalls(id text primary key, rec text)"); }
+  stallGet(id) { this.stallT(); const r = this.ctx.storage.sql.exec("select rec from stalls where id = ?", id).toArray()[0]; try { return r ? JSON.parse(r.rec) : null; } catch (e) { return null; } }
+  stallSet(id, o) { if (o) this.ctx.storage.sql.exec("insert into stalls(id, rec) values(?, ?) on conflict(id) do update set rec = excluded.rec", id, JSON.stringify(o)); else this.ctx.storage.sql.exec("delete from stalls where id = ?", id);
+    this.broadcast(JSON.stringify({ t: "st", op: "one", id, o: o ? stallPub(o) : null })); }
+  stallAll() { this.stallT(); const o = {}; for (const r of this.ctx.storage.sql.exec("select id, rec from stalls").toArray()) { try { o[r.id] = stallPub(JSON.parse(r.rec)); } catch (e) {} } return o; }
+  stallHome(o, why) { const items = {}; for (const g of o.goods) items[g.id] = (items[g.id] || 0) + g.n; const got = { items, cash: Math.floor(o.till), art: {} }; if (!got.cash && !Object.keys(items).length) return;
+    const H = homeOf(this.env); H.econAllow(o.who, got.cash, Object.values(items).reduce((a, b) => a + b, 0), "stall " + why).catch(() => {});
+    const c = [...this.getConnections()].find(x => x.state && x.state.id === o.who); if (c) c.send(JSON.stringify({ t: "st", op: "back", why, ...got })); else H.ownedAdd(o.who, "tradein", got).catch(() => {}); }
+  async stallSweep(now) { this.stallT(); for (const r of this.ctx.storage.sql.exec("select id, rec from stalls").toArray()) { let o = null; try { o = JSON.parse(r.rec); } catch (e) {} if (o && o.until < now) { this.stallHome(o, "the rent ran out"); this.stallSet(r.id, null); } } }
+  stall(c, s, m) { const op = String(m.op || ""), id = word(m.id, 8), say = x => c.send(JSON.stringify({ t: "st", ...x })), now = Date.now();
+    if (op === "list") return say({ op: "list", all: this.stallAll(), mine: this.stallMine(s.id) });
+    if (!STALL.ids.includes(id)) return; let o = this.stallGet(id); if (o && o.until < now) { this.stallHome(o, "the rent ran out"); this.stallSet(id, null); o = null; }
+    const mine = o && o.who === s.id, item = word(m.item, 48), n = Math.floor(+m.n || 0);
+    if (op === "rent") { const d = Math.max(1, Math.min(STALL.days, Math.floor(+m.days || 1)));
+      if (o && !mine) return say({ op: "no", why: "someone else rents it" }); if (!o && Object.values(this.stallMineAll(s.id)).length) return say({ op: "no", why: "you already rent a stall" });
+      const left = o ? Math.ceil((o.until - now) / 864e5) : 0; if (left + d > STALL.days) return say({ op: "no", why: "a stall is rented " + STALL.days + " days ahead at most" });
+      const H = homeOf(this.env), cost = d * STALL.rent;
+      H.econPay(s.id, cost, {}, "stall rent").then(r => { if (!r.ok) return say({ op: "no", why: r.why });
+        let q = this.stallGet(id); if (q && q.until < Date.now()) q = null;
+        if ((q && q.who !== s.id) || (!q && Object.values(this.stallMineAll(s.id)).length) || (q ? Math.ceil((q.until - Date.now()) / 864e5) : 0) + d > STALL.days) { H.econGive(s.id, cost, {}, "stall rent").catch(() => {}); return say({ op: "no", why: "someone else rents it" }); }
+        q = q || { who: s.id, name: word(s.name, 24) || "A TENANT", until: Date.now(), till: 0, goods: [] }; q.until += d * 864e5; this.stallSet(id, q); say({ op: "rented", id, cost, days: d }); }).catch(() => say({ op: "no", why: "try again" })); return; }
+    if (op === "buy") { if (!o || mine) return; const g = o.goods.find(q => q.id === item); if (!g || n < 1) return say({ op: "no", why: "it is gone" }); const k = Math.min(n, g.n), p = g.p, cost = p * k;
+      if (Math.floor(+m.p || 0) !== p) return say({ op: "no", why: "the price changed" });
+      const H = homeOf(this.env);
+      H.econPay(s.id, cost, {}, "bought at a stall").then(r => { if (!r.ok) return say({ op: "no", why: r.why });
+        const q = this.stallGet(id), h = q && q.until >= Date.now() && q.goods.find(x => x.id === item);
+        if (!h || h.n < k || h.p !== p) { H.econGive(s.id, cost, {}, "stall sale lost").catch(() => {}); return say({ op: "no", why: "it is gone" }); }
+        h.n -= k; if (!h.n) q.goods = q.goods.filter(x => x !== h); q.till += cost * (1 - STALL.cut); q.sold = (q.sold || 0) + k; this.stallSet(id, q);
+        H.econAllow(s.id, 0, k, "bought at a stall").catch(() => {});
+        const w = [...this.getConnections()].find(x => x.state && x.state.id === q.who); if (w) w.send(JSON.stringify({ t: "st", op: "sold", id, item, n: k, cost }));
+        say({ op: "bought", id, item, n: k, cost }); }).catch(() => say({ op: "no", why: "try again" })); return; }
+    if (!mine) return op === "put" && n > 0 && /^[a-z0-9_]{1,48}$/.test(item) ? say({ op: "back", why: "the stall is not yours", items: { [item]: Math.min(n, 9999) }, cash: 0 }) : say({ op: "no", why: "not your stall" });
+    if (op === "put") { const p = Math.max(1, Math.min(1e6, Math.floor(+m.p || 0))); const g = o.goods.find(q => q.id === item);
+      if (!/^[a-z0-9_]{1,48}$/.test(item) || n < 0 || n > 9999 || (!g && o.goods.length >= STALL.kinds)) { if (n > 0) say({ op: "back", why: "the stall is full", items: { [item]: n }, cash: 0 }); return; }
+      if (n < 1) { if (g && g.p !== p) { g.p = p; this.stallSet(id, o); } return; }
+      homeOf(this.env).econPay(s.id, 0, { [item]: n }, "set out at a stall").then(r => { if (!r.ok) return say({ op: "back", why: r.why, items: { [item]: n }, cash: 0 });
+        const q = this.stallGet(id), h = q && q.who === s.id && q.until >= Date.now() && q.goods.find(x => x.id === item);
+        if (!q || q.who !== s.id || q.until < Date.now() || (!h && q.goods.length >= STALL.kinds)) { homeOf(this.env).econGive(s.id, 0, { [item]: n }, "stall put").catch(() => {}); return say({ op: "back", why: "the stall is not yours", items: { [item]: n }, cash: 0 }); }
+        if (h) { h.n += n; h.p = p; } else q.goods.push({ id: item, n, p }); this.stallSet(id, q); }).catch(() => say({ op: "back", why: "try again", items: { [item]: n }, cash: 0 })); return; }
+    if (op === "take") { const g = o.goods.find(q => q.id === item); if (!g) return; o.goods = o.goods.filter(q => q !== g); this.stallSet(id, o);
+      homeOf(this.env).econAllow(s.id, 0, g.n, "stall take back").catch(() => {}); return say({ op: "back", why: "", items: { [g.id]: g.n }, cash: 0 }); }
+    if (op === "collect") { const v = Math.floor(o.till); if (!v) return; o.till -= v; this.stallSet(id, o); homeOf(this.env).econAllow(s.id, v, 0, "stall till").catch(() => {}); return say({ op: "back", why: "", items: {}, cash: v }); }
+    if (op === "leave") { o.until = 0; this.stallHome(o, "you gave it up"); this.stallSet(id, null); } }
+  stallMineAll(who) { const o = {}; for (const r of this.ctx.storage.sql.exec("select id, rec from stalls").toArray()) { try { const q = JSON.parse(r.rec); if (q.who === who && q.until >= Date.now()) o[r.id] = q; } catch (e) {} } return o; }
+  stallMine(who) { this.stallT(); const L = this.stallMineAll(who), id = Object.keys(L)[0]; return id ? { id, till: Math.floor(L[id].till), sold: L[id].sold || 0 } : null; }
   dropGone(k) { this.ctx.storage.sql.exec("delete from drops where k = ?", k); this.broadcast(JSON.stringify({ t: "world", k, v: "" })); }
   dropSweep(now) { this.dropT(); for (const r of this.ctx.storage.sql.exec("select k from drops where until < ?", now).toArray()) this.dropGone(r.k); }
   // the townspeople's lives (worker/lives.js): one record each, kept by the section and brought up to the game hour when asked
@@ -286,13 +410,13 @@ export class Block extends Server {
   onMessage(c, raw) {
     const s = c.state; if (!s || typeof raw !== "string" || raw.length > (raw.startsWith('{"t":"folk"') ? 400000 : raw.startsWith('{"t":"mobgrid"') || raw.startsWith('{"t":"dmset"') ? 200000 : 2500)) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
     const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0, at: {} }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 60) return;
-    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, ride: 300, car: 300, curse: 1500, puff: 800, ps: 150, fish: 200, world: 120, puts: 1000, lives: 3000, met: 1000, tr: 100, gtr: 25, mobgrid: 3000, dmset: 3000, mobhit: 60, mobpar: 200 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
+    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, sky: 200, skyw: 100, ride: 300, car: 300, curse: 1500, puff: 800, drone: 3000, ps: 150, fish: 200, world: 120, puts: 1000, lives: 3000, met: 1000, tr: 100, gtr: 25, ins: 20, mobgrid: 3000, dmset: 3000, breakout: 5000, mobhit: 60, mobpar: 200, vr: 60, body: 1000, st: 150, jet: 150, zap: 120 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
     if (m.t === "bye") { this.onClose(c); c.setState({ ...s, id: "" }); try { c.close(1000, "bye"); } catch (e) {} return; }   // leaving: out for everyone now, not when the socket times out
     if (m.t === "mv" && Array.isArray(m.at)) {
       const a = m.at, at = [num(a[0], -1e5, 1e5), num(a[1], -1e5, 1e5), num(a[2], -1e4, 1e4), num(a[3], -10, 10), word(a[4], 8), word(a[5], 60)];
-      c.setState({ ...s, at }); this.broadcast(JSON.stringify({ t: "mv", id: s.id, at }), [c.id]); if (at[4] === "down" && !this.mobT) this.mobs().then(MS => { if (MS.g && MOBSIM.roomAt(MS, at[0], at[1])) this.mobGo(); });
+      c.setState({ ...s, at }); this.broadcast(JSON.stringify({ t: "mv", id: s.id, at }), [c.id]); if (!this.mobT) this.mobs().then(MS => { if (MS.g && MOBSIM.roomAt(MS, at[0], at[1], at[4] === "down" ? "down" : "up")) this.mobGo(); });
     } else if (m.t === "me") {
-      const x = {}; if (m.x && typeof m.x === "object") for (const k of Object.keys(m.x).slice(0, 8)) { const v = m.x[k]; if (/^[a-z]{1,8}$/.test(k)) x[k] = typeof v === "number" ? num(v, -1e4, 1e4) : word(v, 24); }
+      const x = {}; if (m.x && typeof m.x === "object") for (const k of Object.keys(m.x).slice(0, 8)) { const v = m.x[k]; if (/^[a-z]{1,8}$/.test(k)) x[k] = typeof v === "number" ? num(v, -1e4, 1e4) : word(v, k === "id" ? 140 : 24); }
       const p = { ...s, name: word(m.name, 24), look: word(m.look, 400), dead: m.dead ? 1 : 0, hp: typeof m.hp === "number" ? num(m.hp, 0, 1) : 1, x }; c.setState(p); this.broadcast(JSON.stringify({ t: "in", p }), [c.id]);
     } else if (m.t === "act") {
       // a key's move, a flinch, an emote or dance (111da: mc_<name>, looped or once) and its stop: every one reaches the others (owner, 7 Nov 2026)
@@ -306,6 +430,9 @@ export class Block extends Server {
     } else if (m.t === "rag" && Array.isArray(m.b) && Array.isArray(m.o) && m.b.length <= 16) {
       const b = m.b.map(v => (Array.isArray(v) ? v.slice(0, 7) : []).map((x, i) => num(x, i < 3 ? -1e5 : -1, i < 3 ? 1e5 : 1)));
       this.broadcast(JSON.stringify({ t: "rag", id: s.id, o: [num(m.o[0], -1e5, 1e5), num(m.o[1], -1e5, 1e5)], hd: num(m.hd, -20, 20), b }), [c.id]);
+    } else if (m.t === "vr") {   // a headset player's own head, hands and fingers (162cb), to everyone else in the section
+      const arr = (a, n) => Array.isArray(a) && a.length ? a.slice(0, n).map(x => num(x, -9, 9)) : 0;
+      this.broadcast(JSON.stringify(m.off ? { t: "vr", id: s.id, off: 1 } : { t: "vr", id: s.id, h: arr(m.h, 4), L: arr(m.L, 27), R: arr(m.R, 27) }), [c.id]);
     } else if (m.t === "ragoff") {
       this.broadcast(JSON.stringify({ t: "ragoff", id: s.id }), [c.id]);
     } else if (m.t === "grab" || m.t === "drop" || m.t === "toss" || m.t === "free") {
@@ -313,16 +440,24 @@ export class Block extends Server {
       const o = m.t === "grab" ? this.near(s, to, 6) : [...this.getConnections()].find(x => x.state && x.state.id === to); if (!o) return;
       if (m.t === "free") { if (H.get(s.id) === to) H.delete(s.id); } else if (m.t === "grab") H.set(to, s.id); else { if (H.get(to) !== s.id) return; H.delete(to); }
       const v = Array.isArray(m.v) ? [num(m.v[0], -2, 2), num(m.v[1], -2, 2)] : null; o.send(JSON.stringify(m.t === "toss" ? { t: "toss", id: s.id, v } : { t: m.t, id: s.id }));
+    } else if (m.t === "jet") {   // a flamethrower or freeze ray firing (146hb), or stopping
+      const k = m.k === "f" || m.k === "i" ? m.k : "", v = k && Array.isArray(m.v) ? [num(m.v[0], -1, 1), num(m.v[1], -1, 1), num(m.v[2], -1, 1)] : null;
+      this.broadcast(JSON.stringify(v ? { t: "jet", id: s.id, k, v } : { t: "jet", id: s.id, k }), [c.id]);
+    } else if (m.t === "zap") {   // its stream on a player near the shooter: they burn or freeze
+      const to = String(m.to || ""); if (!to || to === s.id) return; const o = this.near(s, to, 12); if (!o) return;
+      o.send(JSON.stringify({ t: "zap", id: s.id, k: m.k === "i" ? "i" : "f", from: [s.at[0], s.at[1]] }));
     } else if (m.t === "hit" || m.t === "parried") {
       const to = String(m.to || ""); if (!to || to === s.id) return; const o = this.near(s, to, 6); if (!o) return;
       o.send(JSON.stringify(m.t === "hit" ? { t: "hit", id: s.id, d: num(m.d, 0, .5), kb: num(m.kb, 0, 3), heavy: !!m.heavy, k: word(m.k, 6), from: [s.at[0], s.at[1]] } : { t: "parried", id: s.id }));
     } else if (m.t === "dmset" && m.d) {   // the dungeon master's design, published: only an owner's goes live for everyone
       owner(this.env, s.id, !!(this.dev && this.dev.has(c.id))).then(o => { if (o !== true) { c.send(JSON.stringify({ t: "dmres", ok: 0, why: "only the owner publishes the dungeon" })); return; }
         this.mobs().then(MS => { const d = MOBSIM.design(MS, { ...m.d, by: s.name || s.id }); this.mobSaved = 0; this.ctx.storage.put("mobs", MOBSIM.save(MS)); this.broadcast(JSON.stringify({ t: "dm", d })); c.send(JSON.stringify({ t: "dmres", ok: 1, n: d ? d.mobs.length : 0 })); this.mobGo(); }); });
+    } else if (m.t === "breakout") {   // a wave night: the first page to see it asks; once a day, from the published dungeon
+      this.mobs().then(MS => { const d = Math.floor(Date.now() / 864e5); if (MS.boDay === d) return; MS.boDay = d; const n = MOBSIM.breakout(MS, 3 + Math.floor(Math.random() * 4)); if (!n) return; this.mobSaved = 0; this.ctx.storage.put("mobs", MOBSIM.save(MS)); this.broadcast(JSON.stringify({ t: "breakout", n })); this.mobGo(); });
     } else if (m.t === "mobgrid" && m.g) {   // the dungeon's map and the monsters' book, baked by a page (worker/dunmobs.js)
       this.mobs().then(MS => { if (MOBSIM.grid(MS, m.g)) { this.mobSaved = 0; this.ctx.storage.put("mobs", MOBSIM.save(MS)); this.mobGo(); } });
     } else if (m.t === "mobhit" || m.t === "mobpar") {   // a blow on a monster, or a monster's blow caught on the beat
-      this.mobs().then(MS => { if (!MS.g || !s.at || s.at[4] !== "down") return; const i = num(m.i, 0, 1e9), mo = MS.m.find(q => q.i === i); if (!mo || Math.hypot(mo.x - s.at[0], mo.z - s.at[1]) > 4 * MS.g.T) return;
+      this.mobs().then(MS => { if (!MS.g || !s.at || !MOBSIM.roomAt(MS, s.at[0], s.at[1], s.at[4] === "down" ? "down" : "up")) return; const i = num(m.i, 0, 1e9), mo = MS.m.find(q => q.i === i); if (!mo || Math.hypot(mo.x - s.at[0], mo.z - s.at[1]) > 4 * MS.g.T) return;
         if (m.t === "mobpar") { MOBSIM.parried(MS, i); return; }
         const r = MOBSIM.hit(MS, i, { d: num(m.d, 0, 20), kb: num(m.kb, 0, 3), heavy: !!m.hv, x: s.at[0], z: s.at[1] });
         if (r.res === "dead") c.send(JSON.stringify({ t: "mobkill", i, w: r.m.kind, key: r.m.key, x: r.m.x, z: r.m.z, n: r.n, loot: r.m.loot || "" })); else if (r.res === "blocked") c.send(JSON.stringify({ t: "mobres", i, res: "blocked" })); });
@@ -362,6 +497,12 @@ export class Block extends Server {
       // the guitar (src/146zob-guitar.js): what a player plays, for everyone near to hear and see
       const k = /^(on|off|chord|strum|pluck|capo|song|stop)$/.test(m.k) ? m.k : ""; if (!k) return; const v = word(m.v, 4);
       this.broadcast(JSON.stringify({ t: "gtr", id: s.id, k, v }), [c.id]);
+    } else if (m.t === "ins") {
+      // the instruments you sit at (src/146zp-instruments.js): the piano, the drums, the harp; what a player plays, for everyone near to hear and see
+      const k = /^(on|off|b|song|stop)$/.test(m.k) ? m.k : "", i = /^(piano|drums|harp)$/.test(m.i) ? m.i : ""; if (!k || !i) return; const v = word(m.v, 48); if (!/^[0-9.,LRFPnup-]*$/.test(v)) return;
+      this.broadcast(JSON.stringify({ t: "ins", id: s.id, k, i, v }), [c.id]);
+    } else if (m.t === "drone") {   // a delivery drone flying to a player: everyone near sees it (src/146-drone)
+      this.broadcast(JSON.stringify({ t: "drone", id: s.id, lb: word(m.lb, 40), f: m.f ? 1 : 0, x: num(m.x, -1e5, 1e5), y: num(m.y, -1e4, 1e4), z: num(m.z, -1e5, 1e5) }), [c.id]);
     } else if (m.t === "puff") {
       const k = /^cigar(_blue)?$/.test(m.k) ? m.k : "cigar";
       this.broadcast(JSON.stringify({ t: "puff", id: s.id, x: num(m.x, -1e5, 1e5), y: num(m.y, -1e4, 1e4), z: num(m.z, -1e5, 1e5), k }), [c.id]);
@@ -383,15 +524,39 @@ export class Block extends Server {
       this.broadcast(JSON.stringify({ t: "lives", all: { [m.k]: lvBrief(r) } }));
     } else if (m.t === "say") {
       const text = word(m.text, 200), st = sayStyle(m.st); if (text) this.broadcast(JSON.stringify({ t: "say", id: s.id, name: s.name, text, st }), [c.id]);
+    } else if (m.t === "pm" && s.name) {   // a message to one player in this section (the paper doll's MESSAGE)
+      const to = word(m.to, 64), text = word(m.text, 200); if (!to || to === s.id || !text) return;
+      if (!this.hand(to, { t: "pm", from: s.id, name: s.name, text })) c.send(JSON.stringify({ t: "pm", op: "gone", from: to }));
     } else if (m.t === "tr") {
       this.trade(c, s, m);
+    } else if ((m.t === "inv" || m.t === "invr") && s.name) {   // an invitation to a player online anywhere (inv), or their answer (invr): handed on by this section's block or another's
+      const to = word(m.to, 64); if (!to || to === s.id) return; const d = {}; if (m.d && typeof m.d === "object") for (const k of Object.keys(m.d).slice(0, 6)) if (/^[a-z]{1,8}$/.test(k)) d[k] = typeof m.d[k] === "number" ? num(m.d[k], -1e4, 1e4) : word(m.d[k], 24);
+      const x = { t: "inv", op: m.t === "inv" ? "ask" : m.op === "yes" ? "yes" : "no", from: s.id, name: s.name, sec: this.name, k: /^[a-z]{1,12}$/.test(m.k || "") ? m.k : "", d, at: now };
+      this.invite(to, x).then(n => { if (!n && x.op === "ask") c.send(JSON.stringify({ t: "inv", op: "gone", from: to })); });
+    } else if (m.t === "everyone") {   // who is online in every section, for an invitation
+      Promise.all(SECROOMS.map(r => r === this.name ? Promise.resolve(this.names()) : blockAsk(this.env, r, "names").catch(() => []))).then(L => c.send(JSON.stringify({ t: "everyone", all: L.flat().filter(p => p.id !== s.id).slice(0, 200) })));
+    } else if (m.t === "st") { this.stall(c, s, m);
+    } else if (m.t === "pw") { this.pawn(c, s, m);
+    } else if (m.t === "body") {   // you died here (v), or took your body back (take)
+      if (m.take) { this.bodyOff(s.id); this.broadcast(JSON.stringify({ t: "world", k: "body:" + s.id, v: "" })); } else if (m.v && typeof m.v === "object") this.bodyAt(s.id, m.v, this.dev && this.dev.has(c.id) && m.life ? num(m.life, 500, BODY_LIFE) : 0);
     } else if (m.t === "take") {   // a loose thing on the ground: whoever asks first gets it, told with its record; the rest see it go
       const k = word(m.k, 40); if (!k || !k.startsWith("drop:")) return; this.dropT(); const r = this.ctx.storage.sql.exec("select rec, until from drops where k = ?", k).toArray()[0], v = r && r.until >= now ? r.rec : "";
       if (r) this.dropGone(k); c.send(JSON.stringify({ t: "took", k, v }));
+      if (v) { try { const o = JSON.parse(v); if (String(o.by || "").startsWith("body:")) homeOf(this.env).econAllow(s.id, o.id === "cash" ? o.n : 0, o.id === "cash" ? 0 : o.n, "a body's drop").catch(() => {}); } catch (e) {} }
+    } else if (m.t === "sky") {   // a telescope shared at a star party (src/150fh): where it points, to everyone in the section
+      this.broadcast(JSON.stringify({ t: "sky", id: s.id, name: word(s.name, 24), on: m.on ? 1 : 0, alt: num(m.alt, -90, 90), az: num(m.az, 0, 360), mag: num(m.mag, 1, 400), f: num(m.f, -1, 1), fl: m.fl ? 1 : 0, jd: num(m.jd, 2.4e6, 2.6e6), ctl: word(m.ctl, 60) }), [c.id]);
+    } else if (m.t === "skyw") {   // a watcher joining, leaving or (handed the tube) steering someone's telescope: to that one player
+      const to = String(m.to || ""), op = /^(join|leave|steer)$/.test(m.op) ? m.op : ""; if (!to || to === s.id || !op) return;
+      for (const o of this.getConnections()) if (o.state && o.state.id === to) { o.send(JSON.stringify({ t: "skyw", id: s.id, name: word(s.name, 24), op, alt: num(m.alt, -90, 90), az: num(m.az, 0, 360) })); break; }
     } else if (m.t === "world") {
       const k = word(m.k, 40); if (!k) return; if (k === "time") this.clkAt = 0;
       if (k.startsWith("drop:")) { if (!/^drop:[a-z0-9]{4,24}$/.test(k)) return; const life = this.dev && this.dev.has(c.id) && m.life ? num(m.life, 500, 7200000) : 0; this.world().then(W => { this.drops(W); const rec = this.dropAdd(k, m.v, s.id, life); if (rec) this.broadcast(JSON.stringify({ t: "world", k, v: rec })); }); return; }   // a drop is set once, never changed or cleared by a player (a test's server may give it a short life)   // (the owner changed the clock: read it at the next step)
       if (k.startsWith("sum:")) { owner(this.env, s.id, !!(this.dev && this.dev.has(c.id))).then(o => { if (o === true) this.put(k, typeof m.v === "string" ? word(m.v, 120) : ""); }); return; }   // a summoned character: only an owner moves one
+      if (k.startsWith("first:")) { const v = word(m.v, 80), night = v.split("|")[0]; if (!/^first:[a-z0-9_]{2,30}$/.test(k) || !/^\d{8}$/.test(night)) return;   // tonight's firsts (src/150fcz): the first to find it keeps it until the next night
+        this.world().then(W => { if (String(W[k] || "").split("|")[0] === night) return; W[k] = v; this.ctx.storage.put("world", W); this.broadcast(JSON.stringify({ t: "world", k, v })); }); return; }
+      const kind = WORLD_KEYS.find(r => r.re.test(k)); if (!kind || (m.add != null) !== !!kind.add) return;   // only the kinds of shared things the game has; counters only where it counts
+      if (kind.owner) { owner(this.env, s.id, !!(this.dev && this.dev.has(c.id))).then(o => { if (o === true) this.put(k, typeof m.v === "number" ? num(m.v, 0, 1e13) : word(m.v, 40)); }); return; }
+      if (kind.add) m.add = num(m.add, -1, 1);
       this.world().then(W => { if (Object.keys(W).length > 6000 && !(k in W)) return;
         const v = m.add != null ? Math.max(0, Math.min(1e6, (+W[k] || 0) + num(m.add, -1e6, 1e6))) : typeof m.v === "number" ? num(m.v, -1e6, 1e6) : word(m.v, k.startsWith("tag:") ? 4000 : k.startsWith("tbl:") ? 3600 : k.startsWith("drop:") ? 1200 : 200);
         W[k] = v; this.ctx.storage.put("world", W); this.broadcast(JSON.stringify({ t: "world", k, v })); });
@@ -409,32 +574,48 @@ export class Block extends Server {
       const t = { a: to, b: s.id, o: { [to]: null, [s.id]: null }, ok: {} }; T.set(to, t); T.set(s.id, t);
       say(o, { op: "open", with: s.id, name: s.name || "" }); return say(c, { op: "open", with: to, name: o.state.name || "" }); }
     if (!mine) return; const other = mine.a === s.id ? mine.b : mine.a, oc = conn(other);
-    const end = why => { T.delete(mine.a); T.delete(mine.b); say(c, { op: "x", why }); say(oc, { op: "x", why }); };
+    const end = why => { if (mine.pay) return this.tradeEnd(mine, why); T.delete(mine.a); T.delete(mine.b); say(c, { op: "x", why }); say(oc, { op: "x", why }); };
     if (op === "x") return end("called off");
     if (!oc || !this.near(s, other, 20)) return end("too far apart");
     const st = () => { for (const [x, y] of [[c, other], [oc, s.id]]) { const me = x.state.id; say(x, { op: "st", mine: mine.o[me], theirs: mine.o[y], okMe: !!mine.ok[me], okThem: !!mine.ok[y] }); } };
-    if (op === "offer") { const o = m.o && typeof m.o === "object" ? m.o : {}, items = {}, art = {};
-      for (const k of Object.keys(o.items || {}).slice(0, 16)) { const n = Math.floor(+o.items[k]); if (/^[a-z0-9_]{1,48}$/.test(k) && n >= 1 && n <= 9999) items[k] = n; }
-      for (const k of Object.keys(o.art || {}).slice(0, 6)) { const a = o.art[k]; if (/^[a-z0-9]{6,40}$/.test(k) && a && typeof a === "object" && items["pt_" + k]) art[k] = { t: word(a.t, 40), by: word(a.by, 24), w: num(+a.w || 0, 1, 4096), h: num(+a.h || 0, 1, 4096), c: word(a.c, 16), fr: word(a.fr, 8), d: word(a.d, 16), e: num(+a.e || 0, 0, 1) }; }
-      mine.o[s.id] = { items, cash: Math.floor(num(+o.cash || 0, 0, 1e9)), art }; mine.ok = {}; return st(); }
-    if (op === "ok") { mine.ok[s.id] = !!m.v;
-      if (mine.ok[mine.a] && mine.ok[mine.b]) { T.delete(mine.a); T.delete(mine.b); const e = { items: {}, cash: 0, art: {} };
-        say(c, { op: "done", with: other, give: mine.o[s.id] || e, get: mine.o[other] || e }); return say(oc, { op: "done", with: s.id, give: mine.o[other] || e, get: mine.o[s.id] || e }); }
+    if (op === "offer") { if (mine.pay) return; mine.o[s.id] = tradeClean(m.o); mine.ok = {}; return st(); }
+    // both accept: each game takes what it put in out of its own pack and says what it really took; only that changes hands
+    if (op === "ok") { if (mine.pay) return; mine.ok[s.id] = !!m.v;
+      if (mine.ok[mine.a] && mine.ok[mine.b]) { mine.pay = {}; say(c, { op: "pay", give: mine.o[s.id] || tradeNone() }); say(oc, { op: "pay", give: mine.o[other] || tradeNone() });
+        mine.timer = setTimeout(() => this.tradeEnd(mine, "the other side did not answer"), 10000); return; }
       return st(); }
+    if (op === "paid") { if (!mine.pay || mine.pay[s.id] || mine.paying === s.id) return; const g = tradeAtMost(tradeClean(m.o), mine.o[s.id] || tradeNone()); mine.paying = s.id;
+      homeOf(this.env).econPay(s.id, g.cash, g.items, "trade").then(r => { if (mine.paying === s.id) mine.paying = null; if (this.trades.get(s.id) !== mine) { if (r.ok) { homeOf(this.env).econGive(s.id, g.cash, g.items, "trade ended").catch(() => {}); c.send(JSON.stringify({ t: "tr", op: "x", why: "the trade ended", back: g })); } return; }
+        if (!r.ok) { (mine.unpaid || (mine.unpaid = {}))[s.id] = g; return this.tradeEnd(mine, "they could not pay"); }
+        mine.pay[s.id] = g; if (mine.pay[mine.a] && mine.pay[mine.b]) this.tradeEnd(mine); }).catch(() => { if (mine.paying === s.id) mine.paying = null; }); }
   }
+  // a trade's end once paying began: both paid, each gets the other's; otherwise what was paid goes back; a player who left gets it at the next start (OWNED 'tradein')
+  tradeEnd(t, why, gone) { clearTimeout(t.timer); const T = this.trades; if (T.get(t.a) !== t) return; T.delete(t.a); T.delete(t.b);
+    const conn = id => [...this.getConnections()].find(x => x.state && x.state.id === id);
+    for (const [me, them] of [[t.a, t.b], [t.b, t.a]]) { const mine = t.pay[me], theirs = t.pay[them];
+      const un = t.unpaid && t.unpaid[me], x = why ? (mine ? { op: "x", why, back: mine } : un ? { op: "x", why: "you do not have what you put in", back: un } : { op: "x", why }) : { op: "done", with: them, give: mine, get: theirs };
+      const got = why ? mine : theirs, o = me === gone ? null : conn(me);
+      const H = homeOf(this.env); if (got && (got.cash || Object.keys(got.items).length)) H.econAllow(me, got.cash, Object.values(got.items).reduce((a, b) => a + b, 0), why ? "trade back" : "trade").catch(() => {});
+      if (o) o.send(JSON.stringify({ t: "tr", ...x })); else if (got && (got.cash || Object.keys(got.items).length)) H.ownedAdd(me, "tradein", got).catch(() => {}); } }
+  names() { return this.roster().filter(p => p.name).map(p => ({ id: p.id, name: p.name, sec: this.name })); }
+  hand(to, x) { let n = 0; const j = JSON.stringify(x); for (const o of this.getConnections()) if (o.state && o.state.id === to) { o.send(j); n++; } return n; }
+  async invite(to, x) { const n = this.hand(to, x); if (n) return n;
+    const L = await Promise.all(SECROOMS.filter(r => r !== this.name).map(r => blockAsk(this.env, r, "inv", { to, m: x }).then(o => o.n || 0).catch(() => 0))); return L.reduce((a, b) => a + b, 0); }
   put(k, v) { this.world().then(W => { if (v === "") delete W[k]; else W[k] = v; this.ctx.storage.put("world", W); this.broadcast(JSON.stringify({ t: "world", k, v })); });
   }
   async onRequest(req) { const path = new URL(req.url).pathname;
     if (path === "/who") return Response.json(this.roster().map(p => p.id));
+    if (path === "/names") return Response.json(this.names());
     let b = {}; try { b = await req.json(); } catch (e) {}
     if (path === "/tell") { const m = JSON.stringify({ t: "tell", from: "THE MARKET", text: word(b.text, 500) }); let n = 0;
       for (const c of this.getConnections()) if (c.state && (b.to === "*" || c.state.id === b.to)) { c.send(m); n++; } return Response.json({ n }); }
+    if (path === "/inv") return Response.json({ n: b && b.m && b.m.t === "inv" ? this.hand(String(b.to || ""), b.m) : 0 });
     if (path === "/kick") { for (const c of this.getConnections()) if (c.state && c.state.id === b.id) c.close(b.out ? 4002 : 4001, b.out ? "out" : "removed"); return Response.json({ ok: true }); }
     return new Response("not found", { status: 404 }); }
   onClose(c) { if (this.dev) this.dev.delete(c.id); const s = c.state; if (s && s.id && !this.roster(c.id).some(p => p.id === s.id)) { this.broadcast(JSON.stringify({ t: "out", id: s.id }));
       if (this.held) for (const [k, v] of this.held) if (k === s.id || v === s.id) this.held.delete(k);
       if (this.asks) this.asks.delete(s.id);
-      const tr = this.trades && this.trades.get(s.id); if (tr) { this.trades.delete(tr.a); this.trades.delete(tr.b); const o = [...this.getConnections()].find(x => x.state && x.state.id === (tr.a === s.id ? tr.b : tr.a)); if (o) o.send(JSON.stringify({ t: "tr", op: "x", why: "they left" })); }
+      const tr = this.trades && this.trades.get(s.id); if (tr && tr.pay) this.tradeEnd(tr, "they left", s.id); else if (tr) { this.trades.delete(tr.a); this.trades.delete(tr.b); const o = [...this.getConnections()].find(x => x.state && x.state.id === (tr.a === s.id ? tr.b : tr.a)); if (o) o.send(JSON.stringify({ t: "tr", op: "x", why: "they left" })); }
       if (this.cars) for (const [k, v] of this.cars) if (v === s.id) { this.cars.delete(k); const a = s.at, v2 = a ? [a[0], a[1], a[3]].map(x => +(+x || 0).toFixed(3)).join(",") : null;
         if (v2) this.world().then(W => { W["car:" + k] = v2; this.ctx.storage.put("world", W); this.broadcast(JSON.stringify({ t: "car", k, by: null, at: v2 })); }); else this.broadcast(JSON.stringify({ t: "car", k, by: null })); } } }
 }
@@ -451,6 +632,30 @@ async function owner(env, id, dev) {
   owners.set(id, { until: now + 60000 }); return true;
 }
 const postOf = env => env.Post.get(env.Post.idFromName("post"));
+// a trade's offer, cleaned: at most 16 kinds of things (1 to 9999 each), cash, and a painting's description for each painting in it
+// the kinds of shared things a player may set on the block (the rest are refused): owner: only an owner (they tell everyone to read again); add: a counter, one at a time
+const WORLD_KEYS = [{ re: /^time$/, owner: 1 }, { re: /^looks$/, owner: 1 }, { re: /^veh$/, owner: 1 }, { re: /^we$/, owner: 1 }, { re: /^riverbell$/ }, { re: /^riverbell:rung$/, add: 1 },
+  { re: /^car:[\w-]{1,32}$/ }, { re: /^radio:[\w-]{1,32}$/ }, { re: /^gate:[\w-]{1,32}$/ }, { re: /^flag:[\w-]{1,32}$/ }, { re: /^tbl:[\w:-]{1,34}$/ }, { re: /^tag:[\w:.-]{1,34}$/ }];
+// the stalls: their names, the rent a day, how many days ahead, the market's cut of a sale, how many kinds a stall shows
+const STALL = { ids: ["s1", "s2", "s3", "s4", "s5"], rent: 15, days: 7, cut: .05, kinds: 12 };
+// the pawn shop (src/159ba-pawn.js): it pays half an item's value (data/items.json) and sells what it took at the full value, one stock for the section
+const PAWN = { buy: .5, kinds: 120, most: 999 }, pawnVal = id => { const d = ITEMDATA[id]; const v = d && +d.value; return v > 0 && !(d && d.archived) ? v : 0; };
+const stallPub = o => ({ who: o.who, name: o.name, until: o.until, goods: o.goods });
+const BODY_LIFE = 3600000;   // an hour, then a body's things fall to the ground
+const tradeNone = () => ({ items: {}, cash: 0, art: {} });
+const tradeClean = o => { o = o && typeof o === "object" ? o : {}; const items = {}, art = {};
+  for (const k of Object.keys(o.items || {}).slice(0, 16)) { const n = Math.floor(+o.items[k]); if (/^[a-z0-9_]{1,48}$/.test(k) && n >= 1 && n <= 9999) items[k] = n; }
+  for (const k of Object.keys(o.art || {}).slice(0, 6)) { const a = o.art[k]; if (/^[a-z0-9]{6,40}$/.test(k) && a && typeof a === "object" && items["pt_" + k]) art[k] = { t: word(a.t, 40), by: word(a.by, 24), w: num(+a.w || 0, 1, 4096), h: num(+a.h || 0, 1, 4096), c: word(a.c, 16), fr: word(a.fr, 8), d: word(a.d, 16), e: num(+a.e || 0, 0, 1) }; }
+  return { items, cash: Math.floor(num(+o.cash || 0, 0, 1e9)), art }; };
+// what a game says it paid, never more than it offered
+const tradeAtMost = (p, o) => { const r = { items: {}, cash: Math.min(p.cash, o.cash), art: {} }; for (const k in p.items) if (o.items[k]) r.items[k] = Math.min(p.items[k], o.items[k]); for (const k in p.art) if (r.items["pt_" + k]) r.art[k] = p.art[k]; return r; };
+// what a player is worth, read from their saved things: cash (on you, in the bank, on your body) and things (your bag, the vault, your body)
+const ECON = { cash: 2500, cashMin: 40, units: 600, unitsMin: 30, start: 1000, keys: ["inv", "bank", "vault", "corpse"] };
+const econOf = get => { const J = k => { try { const v = get(k); return v == null ? null : JSON.parse(v); } catch (e) { return null; } };
+  const items = {}, add = o => { if (o && typeof o === "object") for (const k in o) { const n = Math.floor(+o[k]); if (n > 0) items[k] = (items[k] || 0) + Math.min(n, 1e6); } };
+  const inv = J("inv"), bank = J("bank"), vault = J("vault"), body = J("corpse"), n = v => Math.max(0, Math.min(1e9, Math.floor(+v || 0)));
+  let cash = inv && inv.cash != null ? n(inv.cash) : ECON.start; if (inv) add(inv.items); if (bank) cash += n(bank.bal); if (vault) add(vault.items); if (body) { cash += n(body.cash); add(body.items); }
+  return { cash, items }; };
 const homeOf = env => env.Home.get(env.Home.idFromName("homes"));
 const blockAsk = async (env, room, path, body) => { const s = await getServerByName(env.Block, room);
   const r = await s.fetch(new Request("https://block/" + path, { method: body ? "POST" : "GET", body: body ? JSON.stringify(body) : undefined, headers: { "x-partykit-room": room, "content-type": "application/json" } }));
@@ -473,9 +678,9 @@ async function admin(env, b, origin) {
   const users = async () => { if (!k) return []; const r = await call("/auth/v1/admin/users?per_page=1000"); return r.ok ? (await r.json()).users || [] : []; };
   if (b.do === "list") {
     const [us, pl, ad, co, on] = await Promise.all([users(), call("/rest/v1/players?select=*").then(r => r.ok ? r.json() : []), call("/rest/v1/admins?select=*").then(r => r.ok ? r.json() : []),
-      call("/rest/v1/invite_codes?select=*").then(r => r.ok ? r.json() : []), blockAsk(env, room, "who").catch(() => [])]);
+      call("/rest/v1/invite_codes?select=*").then(r => r.ok ? r.json() : []), blockAsk(env, room, "who").catch(() => [])]), nm = await homeOf(env).namesAll().catch(() => ({}));
     return { ok: true, email: !!env.RESEND_API_KEY, codes: co, letters: await postOf(env).list(),
-      users: us.map(x => ({ id: x.id, email: x.email, phone: x.phone || "", joined: x.created_at, last: x.last_sign_in_at, confirmed: x.email_confirmed_at, provider: x.app_metadata && x.app_metadata.provider,
+      users: us.map(x => ({ id: x.id, email: x.email, name: nm[x.id] || "", phone: x.phone || "", joined: x.created_at, last: x.last_sign_in_at, confirmed: x.email_confirmed_at, provider: x.app_metadata && x.app_metadata.provider,
         banned: x.banned_until && Date.parse(x.banned_until) > Date.now() ? x.banned_until : null, player: pl.find(p => p.id === x.id) || null, admin: ad.some(a => a.user_id === x.id), online: on.includes(x.id) })) };
   }
   if (b.do === "code") { const n = Math.max(1, Math.min(1000, Math.floor(+b.uses || 1))), code = newCode();
@@ -492,6 +697,7 @@ async function admin(env, b, origin) {
     return out;
   }
   if (b.do === "bots") { const P = postOf(env); return { ok: true, cloud: env.BROWSER && (env.DEV_AUTH !== "1" || env.BOTRUN_DEV === "1") ? await botrunOf(env).state() : null, key: await P.botKey(), bots: (await P.botList()).map(x => ({ ...botOut(x), email: x.email, status: x.status || null })) }; }
+  if (b.do === "shot") { const u = await postOf(env).shotGet(String(b.k || "")); return u ? { ok: true, jpg: u } : { why: "no such shot (only the last 800 are kept)" }; }
   if (b.do === "tests") return { ok: true, tests: await postOf(env).testList() };
   if (b.do === "testclear") return { ok: await postOf(env).testClear() };
   if (b.do === "botkey") return { ok: true, key: await postOf(env).botKey(true) };
@@ -509,6 +715,7 @@ async function admin(env, b, origin) {
     if (b.do === "botset") { await P.botPut(botRec(x, b.set)); await botKick(env, origin); return { ok: true }; }
     if (UUID.test(id) && k) { const r = await call("/auth/v1/admin/users/" + id, { method: "DELETE" }); if (!r.ok && r.status !== 404) return res(r); await call("/rest/v1/players?id=eq." + id, { method: "DELETE" }); }
     forget(id); await kick(id); bots.delete(id); await P.botDel(id); await botKick(env, origin); return { ok: true }; }
+  if (b.do === "ledger") { if (!user()) return { why: "no such player" }; return { ok: true, ledger: await homeOf(env).ledger(id) }; }
   if (b.do === "art" || b.do === "artget" || b.do === "artoff") { const H = homeOf(env), a = typeof b.art === "string" && /^a[a-z0-9]{6,40}$/.test(b.art) ? b.art : "";
     if (b.do === "art") return { ok: true, art: await H.artList() };
     if (!a) return { why: "no such painting" };
@@ -523,6 +730,8 @@ async function admin(env, b, origin) {
       const r = await call("/rest/v1/players?id=eq." + id, { method: "PATCH", body: JSON.stringify({ apt }) }); if (!r.ok) return res(r); }
     return { ok: true };
   }
+  // the full kit: the player's game hands it over at its next start (FORAGE.fullKit)
+  if (b.do === "kit") { if (!user()) return { why: "no such player" }; await homeOf(env).econAllow(id, 0, 1e5, "kit"); return (await homeOf(env).ownedPut(id, { gift: "kit" })) ? { ok: true } : { why: "their save is full" }; }
   if (b.do === "admin") return res(b.on ? await call("/rest/v1/admins", { method: "POST", body: JSON.stringify({ user_id: id }) }) : await call("/rest/v1/admins?user_id=eq." + id, { method: "DELETE" }));
   if (b.do === "ban") { const r = await call("/auth/v1/admin/users/" + id, { method: "PUT", body: JSON.stringify({ ban_duration: b.on ? "876000h" : "none" }) });
     if (r.ok && b.on) { forget(id); await kick(id); } return res(r); }
@@ -536,9 +745,9 @@ const botRec = (o, set) => { const r = { ...o }, v = set && typeof set === "obje
   if ("name" in v) r.name = word(v.name, 24) || r.name; if ("look" in v) r.look = word(v.look, 400); if ("on" in v) r.on = v.on ? 1 : 0;
   if ("job" in v && JOBS.includes(v.job)) r.job = v.job; if ("who" in v) r.who = word(v.who, 40); if ("say" in v) r.say = word(v.say, 400);
   if ("at" in v) r.at = Array.isArray(v.at) && v.at.length >= 2 ? [num(+v.at[0], -1e4, 1e4), num(+v.at[1], -1e4, 1e4), v.at[2] ? 1 : 0] : null; if ("call" in v) r.call = Math.floor(num(+v.call, 0, 1e13)); if ("place" in v) r.place = word(v.place, 40);
-  if ("hp" in v) r.hp = num(+v.hp, .05, 1); if ("fight" in v) r.fight = v.fight ? 1 : 0; if ("god" in v) r.god = v.god ? 1 : 0; if ("apt" in v) r.apt = v.apt ? 1 : 0; if ("goal" in v) r.goal = Math.max(0, Math.min(1e6, Math.floor(+v.goal || 0)));
+  if ("ai" in v) r.ai = v.ai ? 1 : 0; if ("hp" in v) r.hp = num(+v.hp, .05, 1); if ("fight" in v) r.fight = v.fight ? 1 : 0; if ("god" in v) r.god = v.god ? 1 : 0; if ("apt" in v) r.apt = v.apt ? 1 : 0; if ("shots" in v) r.shots = v.shots ? 1 : 0; if ("report" in v) r.report = v.report ? 1 : 0; if ("goal" in v) r.goal = Math.max(0, Math.min(1e6, Math.floor(+v.goal || 0)));
   if ("tests" in v) r.tests = Array.isArray(v.tests) ? v.tests.slice(0, 800).map(t => word(t, 100)).filter(Boolean) : []; if ("run" in v) r.run = Math.floor(num(+v.run, 0, 1e13)); return r; };
-const botOut = b => ({ id: b.id, name: b.name, look: b.look || "", on: b.on, job: b.job, who: b.who || "", say: b.say || "", at: b.at || null, place: b.place || "", hp: b.hp ?? 1, fight: b.fight ?? 1, god: b.god || 0, goal: b.goal || 0, call: b.call || 0, tests: b.tests || [], run: b.run || 0, apt: b.apt || 0 });
+const botOut = b => ({ id: b.id, name: b.name, look: b.look || "", on: b.on, job: b.job, who: b.who || "", say: b.say || "", at: b.at || null, place: b.place || "", hp: b.hp ?? 1, fight: b.fight ?? 1, god: b.god || 0, goal: b.goal || 0, call: b.call || 0, tests: b.tests || [], run: b.run || 0, apt: b.apt || 0, shots: b.shots ?? 1, report: b.report ?? 1, ai: b.ai || 0 });
 const bots = new Map();   // each bot's login, kept 50 minutes
 async function botLogin(env, b) { if (!UUID.test(b.id)) return { access_token: "dev:" + b.id.slice(4), refresh_token: "" };
   const c = bots.get(b.id); if (c && c.until > Date.now()) return c.s;
@@ -639,13 +848,19 @@ export class Post extends DurableObject {
   botT() { this.sql.exec("create table if not exists bots(id text primary key, rec text, status text, at integer)"); }
   botList() { this.botT(); return this.sql.exec("select rec, status from bots order by at").toArray().map(r => { const b = JSON.parse(r.rec); try { b.status = r.status ? JSON.parse(r.status) : null; } catch (e) {} return b; }); }
   botPut(b) { this.botT(); const { status, ...rec } = b; this.sql.exec("insert into bots(id, rec, at) values(?, ?, ?) on conflict(id) do update set rec = excluded.rec", b.id, JSON.stringify(rec), b.at0 || Date.now()); return true; }
-  botDel(id) { this.botT(); this.sql.exec("delete from bots where id = ?", id); return true; }
+  botDel(id) { this.botT(); this.sql.exec("delete from bots where id = ?", id); this.ctx.storage.delete("twin:" + id); return true; }
+  // an AI double's memory (worker/twin.js): what it was asked and answered, and the order it is on
+  async twinGet(id) { return (await this.ctx.storage.get("twin:" + id)) || null; }
+  async twinPut(id, v) { const o = await this.ctx.storage.get("twin:" + id); if (o && (o.at || 0) > (v.at || 0)) return false; await this.ctx.storage.put("twin:" + id, v); return true; }
   botStatus(all) { this.botT(); let n = 0; for (const id of Object.keys(all).slice(0, 20)) { const v = all[id]; if (!v || typeof v !== "object" || Array.isArray(v) || JSON.stringify(v).length > 2000) continue; this.sql.exec("update bots set status = ? where id = ?", JSON.stringify({ ...v, seen: Date.now() }), id); n++; } return n; }
   // the bots' test results: the latest of each test (a bot sends [test, result, why, when] as it finishes each)
-  testT() { this.sql.exec("create table if not exists tests(id text primary key, r text, why text, bot text, at integer)"); }
+  testT() { this.sql.exec("create table if not exists tests(id text primary key, r text, why text, bot text, at integer)"); if (!this.tx) { this.tx = 1; try { this.sql.exec("alter table tests add column x text"); } catch (e) {} } }   // x: a play-through's steps, shots and spot codes (JSON)
   botTests(all) { this.testT(); let n = 0; for (const bot of Object.keys(all).slice(0, 20)) { const L = all[bot]; if (!Array.isArray(L)) continue;
-    for (const x of L.slice(0, 400)) { if (!Array.isArray(x) || typeof x[0] !== "string" || !["pass", "fail", "skip"].includes(x[1])) continue; this.sql.exec("insert into tests(id, r, why, bot, at) values(?, ?, ?, ?, ?) on conflict(id) do update set r = excluded.r, why = excluded.why, bot = excluded.bot, at = excluded.at", x[0].slice(0, 100), x[1], String(x[2] || "").slice(0, 200), bot.slice(0, 40), Date.now()); n++; } } return n; }
-  testList() { this.testT(); return this.sql.exec("select id, r, why, bot, at from tests").toArray(); }
+    for (const x of L.slice(0, 400)) { if (!Array.isArray(x) || typeof x[0] !== "string" || !["pass", "fail", "skip"].includes(x[1])) continue; const xx = x[4] && typeof x[4] === "object" ? JSON.stringify(x[4]).slice(0, 30000) : null; this.sql.exec("insert into tests(id, r, why, bot, at, x) values(?, ?, ?, ?, ?, ?) on conflict(id) do update set r = excluded.r, why = excluded.why, bot = excluded.bot, at = excluded.at, x = excluded.x", x[0].slice(0, 100), x[1], String(x[2] || "").slice(0, 200), bot.slice(0, 40), Date.now(), xx); n++; } } return n; }
+  shotPut(bot, buf) { const k = "bs-" + bot.slice(0, 12) + "-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); this.putFile(k, "image/jpeg", buf);
+    const old = this.sql.exec("select k from files where k like 'bs-%' and part = 0 order by at desc limit -1 offset 800").toArray(); for (const r of old) this.sql.exec("delete from files where k = ?", r.k); return k; }
+  shotGet(k) { if (!/^bs-[a-z0-9-]{4,40}$/.test(k)) return null; const f = this.getFile(k); if (!f) return null; let s = ""; const u = new Uint8Array(f.data); for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode(...u.subarray(i, i + 0x8000)); return "data:image/jpeg;base64," + btoa(s); }
+  testList() { this.testT(); return this.sql.exec("select id, r, why, bot, at, x from tests").toArray().map(r => { if (r.x) try { r.x = JSON.parse(r.x); } catch (e) { r.x = null; } return r; }); }
   testClear() { this.testT(); this.sql.exec("delete from tests"); return true; }
   async botKey(fresh) { let k = await this.ctx.storage.get("botkey"); if (!k || fresh) { const r = crypto.getRandomValues(new Uint8Array(18)); k = "BOTS-" + [...r].map(x => x.toString(16).padStart(2, "0")).join(""); await this.ctx.storage.put("botkey", k); } return k; }
   // shared files, kept in 1 MB parts
@@ -660,6 +875,7 @@ export class Post extends DurableObject {
 export class Home extends DurableObject {
   constructor(ctx, env) { super(ctx, env); this.sql = ctx.storage.sql; this.sql.exec("create table if not exists homes(who text primary key, room text, at integer)"); }
   get(id) { const r = this.sql.exec("select room from homes where who = ?", id).toArray()[0]; try { return r ? JSON.parse(r.room) : null; } catch (e) { return null; } }
+  tenants() { this.nameT(); return this.sql.exec("select n.who as who, n.name as name from names n union select h.who, null from homes h where h.who not in (select who from names) limit 2000").toArray().map(r => ({ who: r.who, name: r.name || null })); }
   put(id, room) { this.sql.exec("insert into homes(who, room, at) values(?, ?, ?) on conflict(who) do update set room = excluded.room, at = excluded.at", id, room, Date.now()); return true; }
   // each player's owned things, a row a key (at most 2 MB a player)
   ownedT() { this.sql.exec("create table if not exists owned(who text, k text, v text, at integer, primary key(who, k))"); }
@@ -668,10 +884,50 @@ export class Home extends DurableObject {
     const no = this.sql.exec("select coalesce(max(no), 999) + 1 as no from passports").toArray()[0].no; this.sql.exec("insert into passports(who, no, at) values(?, ?, ?)", id, no, Date.now()); return no; }
   // every citizen's name, one a player and no two alike (low: the name in small letters, for the check)
   nameT() { this.sql.exec("create table if not exists names(who text primary key, name text, low text unique, at integer)"); }
+  namesAll() { this.nameT(); const o = {}; for (const r of this.sql.exec("select who, name from names").toArray()) o[r.who] = r.name; return o; }
   nameGet(id) { this.nameT(); const r = this.sql.exec("select name from names where who = ?", id).toArray()[0]; return r ? r.name : null; }
   nameClaim(id, name) { this.nameT(); const low = name.toLowerCase(), r = this.sql.exec("select who from names where low = ?", low).toArray()[0]; if (r && r.who !== id) return false;
     this.sql.exec("insert into names(who, name, low, at) values(?, ?, ?, ?) on conflict(who) do update set name = excluded.name, low = excluded.low, at = excluded.at", id, name, low, Date.now()); return true; }
   ownedGet(id) { this.ownedT(); const o = {}; for (const r of this.sql.exec("select k, v from owned where who = ?", id).toArray()) o[r.k] = r.v; return o; }
+  // the money check: what you own only grows as fast as play allows (a bucket of cash and of things that refills a minute at a time; a trade or an owners' gift adds to it); more than that is not kept
+  econT() { this.sql.exec("create table if not exists econ(who text primary key, cb real, ib real, at integer)"); this.sql.exec("create table if not exists ledger(who text, at integer, dc integer, du integer, cut integer, note text)"); }
+  econGet(id) { this.econT(); const now = Date.now(), r = this.sql.exec("select cb, ib, at from econ where who = ?", id).toArray()[0], e = r ? { cb: r.cb, ib: r.ib } : { cb: ECON.cash, ib: ECON.units }, m = r ? Math.max(0, (now - r.at) / 60000) : 0;
+    e.cb = Math.max(e.cb, Math.min(ECON.cash, e.cb + m * ECON.cashMin)); e.ib = Math.max(e.ib, Math.min(ECON.units, e.ib + m * ECON.unitsMin)); return e; }
+  econSet(id, e) { this.sql.exec("insert into econ(who, cb, ib, at) values(?, ?, ?, ?) on conflict(who) do update set cb = excluded.cb, ib = excluded.ib, at = excluded.at", id, Math.min(1e9, e.cb), Math.min(1e9, e.ib), Date.now()); }
+  econNote(id, dc, du, cut, note) { this.sql.exec("insert into ledger(who, at, dc, du, cut, note) values(?, ?, ?, ?, ?, ?)", id, Date.now(), dc, du, cut, note || ""); this.sql.exec("delete from ledger where at < ?", Date.now() - 14 * 864e5); }
+  econAllow(id, cash, units, note) { const e = this.econGet(id); e.cb += Math.max(0, +cash || 0); e.ib += Math.max(0, +units || 0); this.econSet(id, e); this.econNote(id, 0, 0, 0, "allow " + (note || "") + " $" + Math.floor(+cash || 0) + " +" + Math.floor(+units || 0)); return true; }
+  // paying from the server's own copy of the pack (a stall's rent, goods set out or bought, a trade's side): what isn't there isn't taken, and nothing changes hands
+  econPay(id, cash, items, note) { const c = Math.max(0, Math.floor(+cash || 0)), it = {}; for (const k in items || {}) { const n = Math.floor(+items[k] || 0); if (n > 0) it[k] = n; }
+    const had = this.ownedGet(id); let inv = null; try { inv = JSON.parse(had.inv || "null"); } catch (e) {} if (!inv || typeof inv !== "object") inv = { v: 1, items: {}, cash: ECON.start }; inv.items = inv.items || {};
+    if (Math.floor(+inv.cash || 0) < c) return { ok: false, why: "not enough money" };
+    for (const k in it) if (Math.floor(+inv.items[k] || 0) < it[k]) return { ok: false, why: "you do not have that" };
+    if (!c && !Object.keys(it).length) return { ok: true };
+    inv.cash = Math.floor(+inv.cash || 0) - c; for (const k in it) { inv.items[k] -= it[k]; if (inv.items[k] <= 0) delete inv.items[k]; }
+    if (!this.ownedPut(id, { inv: JSON.stringify(inv) })) return { ok: false, why: "the save is full" };
+    this.econNote(id, -c, 0, 0, "paid " + (note || "") + " $" + c + " " + JSON.stringify(it).slice(0, 160)); return { ok: true }; }
+  // a payment handed back (it lost a race): straight into the server's copy of the pack
+  econGive(id, cash, items, note) { const had = this.ownedGet(id); let inv = null; try { inv = JSON.parse(had.inv || "null"); } catch (e) {} if (!inv || typeof inv !== "object") inv = { v: 1, items: {}, cash: ECON.start }; inv.items = inv.items || {};
+    inv.cash = Math.floor(+inv.cash || 0) + Math.max(0, Math.floor(+cash || 0)); for (const k in items || {}) { const n = Math.floor(+items[k] || 0); if (n > 0) inv.items[k] = (Math.floor(+inv.items[k] || 0)) + n; }
+    this.ownedPut(id, { inv: JSON.stringify(inv) }); this.econNote(id, 0, 0, 0, "refund " + (note || "")); return true; }
+  ledger(id) { this.econT(); return this.sql.exec("select at, dc, du, cut, note from ledger where who = ? order by at desc limit 200", id).toArray(); }
+  ownedSave(id, put) { if (!ECON.keys.some(k => k in put)) return { ok: this.ownedPut(id, put) };
+    const had = this.ownedGet(id), after = { ...had }; for (const k in put) { if (put[k] === null) delete after[k]; else after[k] = put[k]; }
+    const A = econOf(k => had[k]), B = econOf(k => after[k]), e = this.econGet(id), dc = B.cash - A.cash; let du = 0; const up = {};
+    for (const k in B.items) { const g = B.items[k] - (A.items[k] || 0); if (g > 0) { up[k] = g; du += g; } }
+    const clip = { cash: 0, items: {} };
+    if (dc > e.cb) clip.cash = Math.ceil(dc - e.cb);
+    if (du > e.ib) { let left = Math.floor(e.ib); for (const k of Object.keys(up).sort()) { const keep = Math.min(up[k], left); left -= keep; if (up[k] > keep) clip.items[k] = up[k] - keep; } }
+    const cut = clip.cash > 0 || Object.keys(clip.items).length > 0;
+    if (cut) { const J = k => { try { const o = JSON.parse(after[k] || "null"); return o && typeof o === "object" ? o : null; } catch (e) { return null; } }, fix = {};
+      const inv = J("inv") || { cash: ECON.start, items: {} }, bank = J("bank"), vault = J("vault"), body = J("corpse");
+      let c = clip.cash; for (const [o, f] of [[inv, "cash"], [bank, "bal"], [body, "cash"]]) { if (!o || c <= 0) continue; const v = Math.max(0, Math.floor(+o[f] || 0)), t = Math.min(v, c); o[f] = v - t; c -= t; }
+      for (const k in clip.items) { let n = clip.items[k]; for (const o of [inv, vault, body]) { if (!o || !o.items || n <= 0) continue; const v = Math.max(0, Math.floor(+o.items[k] || 0)), t = Math.min(v, n); o.items[k] = v - t; if (!o.items[k]) delete o.items[k]; n -= t; } }
+      put = { ...put, inv: JSON.stringify(inv) }; if (bank) put.bank = JSON.stringify(bank); if (vault) put.vault = JSON.stringify(vault); if (body) put.corpse = JSON.stringify(body); clip.fix = { inv: put.inv, bank: put.bank, vault: put.vault, corpse: put.corpse }; }
+    if (!this.ownedPut(id, put)) return { ok: false };
+    e.cb -= Math.max(0, dc - clip.cash); e.ib -= Math.max(0, du - Object.values(clip.items).reduce((a, b) => a + b, 0)); this.econSet(id, e);
+    if (dc || du || cut) this.econNote(id, dc, du, cut ? 1 : 0, cut ? "cut $" + clip.cash + " " + JSON.stringify(clip.items).slice(0, 200) : "");
+    return cut ? { ok: true, clip } : { ok: true }; }
+  ownedAdd(id, k, x) { this.ownedT(); const r = this.sql.exec("select v from owned where who = ? and k = ?", id, k).toArray()[0]; let L = []; try { L = JSON.parse(r ? r.v : "[]"); } catch (e) {} if (!Array.isArray(L)) L = []; L.push(x); return this.ownedPut(id, { [k]: JSON.stringify(L.slice(-50)) }); }
   ownedPut(id, put) { this.ownedT(); const now = Date.now(), had = this.ownedGet(id); let n = 0; for (const k in had) n += k in put ? 0 : had[k].length; for (const k in put) n += put[k] === null ? 0 : put[k].length;
     if (n > 2 << 20) return false;
     for (const k in put) { if (put[k] === null) this.sql.exec("delete from owned where who = ? and k = ?", id, k); else this.sql.exec("insert into owned(who, k, v, at) values(?, ?, ?, ?) on conflict(who, k) do update set v = excluded.v, at = excluded.at", id, k, put[k], now); }

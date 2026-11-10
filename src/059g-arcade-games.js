@@ -11,7 +11,7 @@ STORE.cabs.kit=()=>{ '@arcade'; const C=STORE.cabs; if(C.K)return C.K;
   const tx=(c,s,x,y,col,sz=8,al='left')=>{ c.font=`bold ${sz}px monospace`; c.textAlign=al; c.textBaseline='top'; c.fillStyle='#000'; c.fillText(s,x+1,y+1); c.fillStyle=col; c.fillText(s,x,y); };
   const bmp=(c,rows,x,y,col,k=1)=>{ c.fillStyle=col; rows.forEach((r,j)=>{ for(let i=0;i<r.length;i++)if(r[i]==='#')c.fillRect(Math.round(x+i*k),Math.round(y+j*k),k,k); }); };
   const beep=(f,d=.08,ty='square',v=.06,f2)=>{ if(MUTE)return; const a=SFX.live&&SFX.live(); if(!a||!SFX.on)return; const o=a.createOscillator(), g=a.createGain(), t=a.currentTime; o.type=ty; o.frequency.setValueAtTime(f,t); if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);
-    g.gain.setValueAtTime(v*(SFX.vol??1),t); g.gain.exponentialRampToValueAtTime(.0001,t+d); o.connect(g); g.connect(a.destination); o.start(t); o.stop(t+d+.02); };
+    g.gain.setValueAtTime(v,t); g.gain.exponentialRampToValueAtTime(.0001,t+d); o.connect(g); g.connect(SFX.out(a)); o.start(t); o.stop(t+d+.02); };
   const DIRS={L:[-1,0],R:[1,0],U:[0,-1],D:[0,1]}, OPP={L:'R',R:'L',U:'D',D:'U'};
   const mv=(e,sp,ok,wrap)=>{ if(e.pick&&!e.d)e.pick(e); if(e.n&&e.d&&e.n===OPP[e.d]){ const v=DIRS[e.d]; e.x+=v[0]; e.y+=v[1]; if(wrap)e.x=(e.x+wrap)%wrap; e.t=1-e.t; e.d=e.n; }
     if(!e.d){ if(e.n&&ok(e.x+DIRS[e.n][0],e.y+DIRS[e.n][1]))e.d=e.n; else return; }
@@ -91,4 +91,4 @@ STORE.cabs.kit=()=>{ '@arcade'; const C=STORE.cabs; if(C.K)return C.K;
 STORE.cabs.add({name:'TORCHBEARER',skill:'myco',lore:{maker:'HALCYON GAMES',place:'CHICAGO',year:1985,col:'#3cf0ff',tag:'WARRIOR NEEDS FOOD. BADLY.',story:['A HUNDRED FLOORS DOWN. FOUR HEROES.','YOUR HEALTH IS A CLOCK; ONLY FOOD STOPS IT.']}});
 STORE.cabs.add({name:'KNUCKLE CITY',skill:'ento',lore:{maker:'CAPSTONE AMUSEMENTS',place:'OSAKA',year:1991,col:'#ff3c5a',tag:'SIX STAGES. ONE CITY. YOUR FISTS.',story:['FROM THE SLUMS TO THE PENTHOUSE.','EAT THE CHICKEN IN THE TRASH CAN.']}});
 STORE.cabs.add({name:'DRAGON POP',skill:'forage',lore:{maker:'TOYBOX',place:'TOKYO',year:1986,col:'#5aff6a',tag:'A HUNDRED ROUNDS OF BUBBLES',story:['TRAP THEM, POP THEM, EAT THE FRUIT.','THE GOOD ENDING NEEDS THE SECRET ROOMS.']}});
-STORE.cabs.add({name:'MONSTER ROAD',skill:'alch',lore:{maker:'SEABRIGHT',place:'YOKOHAMA',year:1987,col:'#ffe83c',tag:'TWELVE ROUNDS TO THE DRAGON',story:['A BOY, A SWORD, AN HOURGLASS.','EVERY ROUND HIDES A DOOR.']}});
+STORE.cabs.add({name:'MONSTER ROAD',skill:'sword',lore:{maker:'SEABRIGHT',place:'YOKOHAMA',year:1987,col:'#ffe83c',tag:'TWELVE ROUNDS TO THE DRAGON',story:['A BOY, A SWORD, AN HOURGLASS.','EVERY ROUND HIDES A DOOR.']}});

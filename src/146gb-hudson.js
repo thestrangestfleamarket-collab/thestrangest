@@ -11,7 +11,7 @@ import {GEMS} from './101-gems.js';
 import {FISHING} from './142-fishing.js';
 const HUDSON={}; window.HUDSON=HUDSON;
 { const T=TILE, MW=T/.84, say=(t,c)=>SAY(t,c||'#9fd8ff'), KEY='hudson', cl=(v,a,b)=>v<a?a:v>b?b:v, L=c=>new THREE.MeshLambertMaterial({color:c});
-  const day=()=>window.MAIL&&MAIL.ready?MAIL.day():window.CITY?CITY.day||0:0, done=k=>{ INV.picked[k]=day(); INV.save(); };
+  const day=()=>window.MAIL&&MAIL.ready?MAIL.day():CITY?CITY.day||0:0, done=k=>{ INV.picked[k]=day(); INV.save(); };
   const S={v:1,book:0,read:0,tries:0,dug:0,digs:0,best:0,medal:0,spook:-1,bell:0,safe:{d:-1,n:0}};
   try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1&&!(QS.get('fresh')&&QS.get('keepinv')!=='1'))Object.assign(S,D); }catch(e){} const save=()=>OWNED.set(KEY,JSON.stringify(S)); HUDSON.S=S;
   const str=()=>FORAGE.ST.str*(FORAGE.S.fx&&FORAGE.S.fx.str?1.5:1), int=()=>FORAGE.ST.int;
@@ -22,9 +22,8 @@ const HUDSON={}; window.HUDSON=HUDSON;
   const hit=(G,w,h,d,x,y,z)=>mesh(G,new THREE.BoxGeometry(w,h,d),new THREE.MeshBasicMaterial({visible:false}),x,y,z);
 
   FORAGE.add({names:{trophy_cat:'THE OLD CATFISH (FOR THE WALL)',ring_belly:'A TARNISHED GOLD RING',gold_flake:'GOLD FLAKES',gold_nugget:'A GOLD NUGGET',doubloon:'PIRATE DOUBLOONS',medal_swim:'THE LONG SWIM MEDAL',winch:'A SALVAGE WINCH',bk_captlog:"THE CAPTAIN'S LOGBOOK (ROTTED)",logbook_capt:"THE CAPTAIN'S LOGBOOK",spyglass:"THE CAPTAIN'S SPYGLASS"},
-    prices:{trophy_cat:300,ring_belly:120,gold_flake:18,gold_nugget:85,doubloon:30,medal_swim:40,winch:120,bk_captlog:5,logbook_capt:150,spyglass:260},
-    recipes:[['logbook_capt',"THE CAPTAIN'S LOGBOOK",'bind',[10,65],{bk_captlog:1,bs_glue:1,bs_thread:2,bs_leather:1},'read it from your pack']]});
-  FORAGE.sell('trophy_cat','ring_belly','doubloon','spyglass','medal_swim'); GEMS.push(['gold_flake','GOLD FLAKES',18,0],['gold_nugget','GOLD NUGGET',85,0]);   // weight 0: the gem shop buys gold, it is never a random find
+    prices:{trophy_cat:300,ring_belly:120,gold_flake:18,gold_nugget:85,doubloon:30,medal_swim:40,winch:120,bk_captlog:5,logbook_capt:150,spyglass:260}});
+  FORAGE.sell('trophy_cat','ring_belly','doubloon','spyglass','medal_swim','winch'); (FORAGE.BUYK.antiquities=FORAGE.BUYK.antiquities||[]).push('trophy_cat','ring_belly','doubloon','spyglass','medal_swim','winch'); GEMS.push(['gold_flake','GOLD FLAKES',18,0],['gold_nugget','GOLD NUGGET',85,0]);   // weight 0: the gem shop buys gold, it is never a random find
   { const LK={trophy_cat:['plate',0x6a4a2a,0x5a5a4a],ring_belly:['lump',0xc8a040],gold_flake:['jar',0xe8e0c8,0xf2c14e],gold_nugget:['lump',0xf2c14e],doubloon:['lump',0xd8b040],medal_swim:['lump',0xd8b040],winch:['gadget',0x4a4a4e,0x8a6a3a],bk_captlog:['book',0x4a3a2a,0x8a7a5a],logbook_capt:['book',0x5a2a1a,0xe8dcc0],spyglass:['gadget',0x8a6a3a,0xd8b040]};
     INSPECT.kinds.push({is:id=>!!LK[id],make:id=>INSPECT.shape(...LK[id])}); }
   FORAGE.HELP.push('THE HUDSON: the Old Catfish bites by the pier pilings from 2 to 4 am on cut bait and a strong line; herons stand on Heron Island at dawn (walk, never run, near them); the scanner and extractor find gold in the silt round the wreck; the sunken safe beside it takes strength; the Long Swim runs from the pier to the island; a salvage winch raises the wreck\'s bell; the captain\'s logbook lies in its stern cabin.');
@@ -129,7 +128,7 @@ const HUDSON={}; window.HUDSON=HUDSON;
     if(str()<25)return say('THE WINCH IS RIGGED, BUT YOU CANNOT TURN THE CRANK AGAINST THE BELL\'S WEIGHT. YOU NEED MORE STRENGTH.','#e0a888');
     S.bell=1; save(); if(ONLINE.on&&ONLINE.put)ONLINE.put('riverbell',day()||1); INV.cash+=150; SFX.play('bell',{vol:.7,pitch:.8});
     say('YOU CRANK, AND THE BELL RISES OUT OF THE SILT AND UP THROUGH THE GREEN WATER. THE CITY PAYS YOU $150 FOR IT; IT WILL HANG IN CENTRAL PARK FOR ANYONE TO RING.','#f2c14e'); };
-  const takeBook=()=>{ '@later'; if(S.book)return; S.book=1; save(); FORAGE.give('bk_captlog',1); FORAGE.draw(); say('A LOGBOOK IN A SWOLLEN LEATHER COVER, ITS PAGES STUCK TOGETHER. MEND IT (BOOKBINDING) AND YOU MIGHT READ IT.','#c8b0ff'); };
+  const takeBook=()=>{ '@later'; if(S.book)return; S.book=1; save(); FORAGE.give('logbook_capt',1); FORAGE.draw(); say('A LOGBOOK IN A SWOLLEN LEATHER COVER. READ IT FROM YOUR PACK.','#c8b0ff'); };
   FORAGE.ROWB.push(id=>id==='logbook_capt'?[['READ','capread']]:[]);
   FORAGE.ACT.capread=()=>{ '@later'; if(!FORAGE.has('logbook_capt'))return;
     if(!S.read&&Math.random()>cl((int()-10)/30+S.tries*.15,.1,1)){ S.tries++; save(); return say('THE CAPTAIN\'S HAND IS CRAMPED AND FADED. YOU MAKE OUT LITTLE TODAY; READ IT AGAIN.','#c8b0ff'); }
@@ -142,7 +141,7 @@ const HUDSON={}; window.HUDSON=HUDSON;
     const c=60+Math.floor(Math.random()*81), n=2+Math.floor(Math.random()*3); INV.cash+=c; FORAGE.give('doubloon',n); done('safe'); FORAGE.draw(); SFX.play('creak',{vol:.6,pitch:.7}); say('THE DOOR GRINDS OPEN: $'+c+' IN BANK SILVER AND '+n+' GOLD DOUBLOONS (THE BANK\'S VAULT KEEPS THEM SAFE).','#f2c14e'); };
   FORAGE.SEAMS.push({scan:()=>{ if(!K||!RIVER.swim)return 0; let n=0; for(const p of K.SI)if(INV.ready(p.k)&&d2(pos,p.x,p.z)<15*MW){ p.lit=performance.now()+60000; n++; } return n; },
     extract:()=>{ if(!K||!RIVER.swim)return 0; let n=0; const now=performance.now(); for(const p of K.SI){ if(p.lit<now||!INV.ready(p.k)||d2(pos,p.x,p.z)>4*MW||sy()>p.y+8*MW)continue; done(p.k); p.lit=0; n++;
-      if(FORAGE.use('prosp',0,70)){ FORAGE.give('gold_nugget',1); say('THE PULSE LIFTS THE SILT: A GOLD NUGGET!','#f2c14e'); } else { const f=1+Math.floor(Math.random()*3); FORAGE.give('gold_flake',f); say('THE PULSE LIFTS THE SILT: '+f+' PINCH'+(f>1?'ES':'')+' OF GOLD FLAKES.','#f2c14e'); } }
+      if(FORAGE.use('gem',0,70)){ FORAGE.give('gold_nugget',1); say('THE PULSE LIFTS THE SILT: A GOLD NUGGET!','#f2c14e'); } else { const f=1+Math.floor(Math.random()*3); FORAGE.give('gold_flake',f); say('THE PULSE LIFTS THE SILT: '+f+' PINCH'+(f>1?'ES':'')+' OF GOLD FLAKES.','#f2c14e'); } }
       if(n)FORAGE.draw(); return n; }});
   const tickWreck=()=>{ const [x,z]=WRECK.at, near=d2(pos,x,z)<140*T, now=performance.now(); K.G.visible=near; if(!near)return; safeDay();
     K.BL.visible=!raised(); K.LB.visible=!S.book; const open=!INV.ready('safe'); K.door.rotation.y=open?-1.6:0;

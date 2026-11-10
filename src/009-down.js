@@ -1,9 +1,9 @@
 // UNDER THE STREET: the water's shader, the station and platform under the street (grab('down')), the day's start and FADE.
 import {SHARED, THREE} from './003-shx.js';
-import {CULL, keys, LEVELS, pos, RAG, ROOMS, SHAD, UI} from './003b-systems.js';
+import {BATCH, CULL, keys, LEVELS, pos, RAG, ROOMS, SHAD, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {cutWalls, FADE, FIX, grab, LAMPD, LAMPI, lamps, MAPSTAIR, MODS, QS, SECTIONS, SOL, STN, TILE, ZU} from './006-map-pre.js';
-import {BATCH, OBJ} from './008-batch.js';
+import {cutWalls, FADE, FIX, grab, LAMPD, LAMPI, lamps, MAPSTAIR, MODS, QS, SECTIONS, SOL, STN, SYS, TILE, ZU} from './006-map-pre.js';
+import {OBJ} from './008-batch.js';
 const WATER={drops:[], uH:{value:null}, uWB:{value:new THREE.Vector4()}, uLevel:{value:0}, uGrid:{value:new THREE.Vector2()}, uCK:{value:+(QS0=>QS0.get('ck')||160)(new URLSearchParams(location.search))}, mats:[]};
 WATER.caustic=m=>{ '@later'; m.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,{uH:WATER.uH,uWB:WATER.uWB,uLevel:WATER.uLevel,uGrid:WATER.uGrid,uCK:WATER.uCK});
   sh.vertexShader='varying vec3 vWp;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vWp=(modelMatrix*vec4(transformed,1.)).xyz;');
@@ -383,11 +383,11 @@ const SSUB=(()=>{ const W={};
       const live_=['note','net','paint'].filter(k=>k in S&&S[k]<1), k=live_.length?S[live_[0]]:Object.keys(S).length?1:0; B0.k=k; fbi.style.width=(B0.k*100).toFixed(1)+'%'; fb.style.visibility='visible'; fl.textContent=parts.join(' · ')||(B0.k>=1?'READY':'LOADING'); };
     let barT=0; const barOn=on=>{ if(on){ if(!B0){ const L=window.__LDG; B0={n:L?L.n:0,d:L?L.d:0,p:0,k:0,s:{}}; } if(!barT)barT=setInterval(bar,250); bar(); } else { clearInterval(barT); barT=0; B0=null; NOTE=null; fb.style.visibility='hidden'; fbi.style.width='0'; fl.textContent=''; } };
     // settled: nothing downloading and every square within reach painted (a view's switch waits for it, at most 20 s; the painting goes faster behind the black)
-    FADE.R=()=>{ const D=CULL.drawD&&CULL.drawD(); return D?D+8*TILE:0; };   // (what the view draws: the draw distance and a little; past it the squares paint on in the background)
+    FADE.R=()=>{ const D=CULL.drawD&&CULL.drawD(); return (D||40*TILE)+8*TILE; };   // (with the draw distance ALL, the near ring a view needs first: the old 40 tiles)   // (what the view draws: the draw distance and a little; past it the squares paint on in the background)
     // every loading screen that ends in a close-up view lifts once that view is painted (owner, 7 Nov 2026)
-    FADE.settle=async(max=20000)=>{ const t0=performance.now(); for(;;){ const L=window.__LDG, R=FADE.R(); if(!(L&&L.now.size)&&!FADE.left())return true; if(performance.now()-t0>max)return false; BATCH.rush(60,R); await new Promise(r=>requestAnimationFrame(r)); } };
+    FADE.settle=async(max=20000)=>{ const t0=performance.now(); for(const f of FADE.arrive)try{ await f(); }catch(e){ SYS.fail('arrive',e); } for(;;){ const L=window.__LDG, R=FADE.R(); if(!(L&&L.now.size)&&!FADE.left()){ if(CULL.rush)CULL.rush(); return true; } if(performance.now()-t0>max)return false; BATCH.rush(60,R); await new Promise(r=>requestAnimationFrame(r)); } };
     FADE.el=el; FADE.run=async(text,work,o={})=>{ const tr=el.style.transition, w=ms=>new Promise(r=>setTimeout(r,ms)), fr=k=>new Promise(r=>{ const f=()=>--k<=0?r():requestAnimationFrame(f); requestAnimationFrame(f); });
-      const live=window.__started&&!o.silent, was=el.style.opacity==='1'; FADE.busy=(FADE.busy||0)+1;
+      const live=SYS.started&&!o.silent, was=el.style.opacity==='1'; FADE.busy=(FADE.busy||0)+1;
       if(live){ ft.textContent=text||''; barOn(true); el.style.pointerEvents='auto'; el.style.transition=o.cut?'none':'opacity .3s steps(4)'; el.style.opacity='1'; if(!o.cut&&!was)await w(320); }
       if(keys.clear&&!o.keep)keys.clear(); try{ SHARED.target=null; }catch(e){}
       try{ if(o.cut)await fr(2); if(work)await work(); if(live&&o.settle!==false&&FADE.R())await FADE.settle(); }catch(e){ console.warn('FADE: '+(text||'')+' did not finish',e); }
@@ -402,7 +402,7 @@ const SSUB=(()=>{ const W={};
     M.door=(py,p)=>{ if(M.deep)M.deep.visible=SHARED.LVL==='up'; if(busy||UI.freeCam||(RAG.on))return; const k=tread(p.x,p.z);
       if(SHARED.LVL!=='down'&&k!=null&&k>=3)go('in'); else if(SHARED.LVL==='down'&&inExit(p))go('out'); };
     { const S=SM; S.has=(x,z)=>{ if(SHARED.LVL==='down')return false; const gx=SHARED.BOD.MX(x), gy=SHARED.BOD.MY(z); return gx>=S.x0&&gx<S.x1&&gy>=S.y0&&gy<S.y1; }; }
-    M.doorBusy=()=>busy; window.SUBGO=(x,z,lv)=>UI.goTo(x,z,lv); }
+    M.doorBusy=()=>busy; window.SUBGO=MODS.subGo=(x,z,lv)=>UI.goTo(x,z,lv); }
   M.tick=dt=>{ M.flick(dt); };
 }
 MODS.station={BOUND,ground:(x,z)=>SHARED.METRO.inside(x,z)?SHARED.METRO.ground(x,z):STN.DY,DY:SHARED.METRO.DY,plat:SHARED.METRO.plat,lane:SHARED.METRO.lane,path:SHARED.METRO.path};

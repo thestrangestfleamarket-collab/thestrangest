@@ -32,7 +32,9 @@ const HANDS={}; window.HANDS=HANDS;
   const AT='vec3 transformed=hjAt(position);';
   const mats=U=>{ const mat=new THREE.MeshToonMaterial({vertexColors:true,gradientMap:W3.GP,side:THREE.DoubleSide});
     mat.onBeforeCompile=sh=>{ sh.uniforms.uHJ=U; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT);
-      sh.fragmentShader=sh.fragmentShader.replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(cross(dFdx(vViewPosition),dFdy(vViewPosition))); vec3 nonPerturbedNormal=normal;').replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*0.16;'); };
+      // (the body's shadow lean, 111a: or the hand shadows itself darker than the arm)
+      sh.fragmentShader='#define BODYB .0015\n'+sh.fragmentShader.replace('#include <lights_fragment_begin>',THREE.ShaderChunk.lights_fragment_begin.replace(/((?:directional|spot|point)LightShadows?(?:\[ *\w+ *\])?)\.shadowBias/g,'($1.shadowBias-BODYB)'));
+      sh.fragmentShader=sh.fragmentShader.replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(cross(dFdx(vViewPosition),dFdy(vViewPosition))); vec3 nonPerturbedNormal=normal;'); W3.rim(sh,W3.YES); };
     mat.customProgramCacheKey=()=>'hands';
     const dist=new THREE.MeshDistanceMaterial({side:THREE.DoubleSide}); dist.onBeforeCompile=sh=>{ sh.uniforms.uHJ=U; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT); }; dist.customProgramCacheKey=()=>'handsdist';
     const depth=new THREE.MeshDepthMaterial({side:THREE.DoubleSide,depthPacking:THREE.RGBADepthPacking}); depth.onBeforeCompile=sh=>{ sh.uniforms.uHJ=U; sh.vertexShader=MOVE+'\n'+sh.vertexShader.replace('#include <begin_vertex>',AT); }; depth.customProgramCacheKey=()=>'handsdepth';
@@ -57,9 +59,12 @@ const HANDS={}; window.HANDS=HANDS;
   const CP=new V3();
   SYS.add('cam',()=>{ const cam=SHARED.cam; if(!cam)return; const far=HANDS.NEAR*TILE/.84;
     for(const st of LIVE){ st.me.getWorldPosition(CP); const near=CP.distanceTo(cam.position)<far; if(st.near!==near){ st.near=near; st.hm.visible=near; if(st.PM.hh)st.PM.hh.value=near?1:0; } } },'111b-hands');
+  // a body's hands in its rest space (the avatar fits its wrists to them, 111c)
+  HANDS.base=(binv,o={})=>{ const k=(o.scale||1)*(1+.05*((o.b??1)-1)), S=new M4().makeScale(k,k,k).multiply(new M4().makeTranslation(-WR.x,-WR.y,-WR.z));
+    return {L:binv[5].clone().invert().multiply(LOCL).multiply(S),R:binv[8].clone().invert().multiply(LOCR).multiply(S).multiply(MX)}; };
+  HANDS.X=X;
   HANDS.add=(me,PM,body,o={})=>{ if(!body.binv)return null; const U={value:Array.from({length:NJ*6},()=>new THREE.Vector4())}, M=mats(U), g=geo(o.skin||'d9a984');
-    const k=(o.scale||.95)*(1+.05*((o.b??1)-1)), S=new M4().makeScale(k,k,k).multiply(new M4().makeTranslation(-WR.x,-WR.y,-WR.z));
-    const base={L:body.binv[5].clone().invert().multiply(LOCL).multiply(S),R:body.binv[8].clone().invert().multiply(LOCR).multiply(S).multiply(MX)};
+    const base=HANDS.base(body.binv,o);
     const hm=new THREE.Mesh(g,M.mat); hm.customDistanceMaterial=M.dist; hm.customDepthMaterial=M.depth; hm.castShadow=hm.receiveShadow=true; hm.name='hands';
     Object.defineProperty(hm,'boundingSphere',{configurable:true,get(){ return me.boundingSphere; },set(){}});   // (seen when the body is)
     const J={L:REST.map(()=>new M4()),R:REST.map(()=>new M4())}, W=new M4(); let fr=-1;

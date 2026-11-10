@@ -1,6 +1,6 @@
 // THE TRICKS: what you do on a skateboard (its RIDE kind asks TRICKS how to move, stand and draw): push and carve; ollie (hold SPACE, let go); in the air flip tricks (J), grabs (K) and spins (A D); grinds and slides on rails, ledges and coping (L); manuals (I); quarter pipes throw you up; reverts (L as you land); bails; each trick's name, the combo's score and multiplier, your best combo kept with your things and the section's top skaters.
 import {SHARED} from './003-shx.js';
-import {ITEMS, keys, ONLINE, pos, RIDE, st, TRICKS, UI} from './003b-systems.js';
+import {ITEMS, keys, ONLINE, pos, RIDE, SPEED, st, TRICKS, UI} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {SECTION, SYS, TILE, ZU} from './006-map-pre.js';
@@ -10,7 +10,7 @@ Object.assign(TRICKS,{best:0,session:0,combo:null}); window.TRICKS=TRICKS;
 { const T=TILE, MH=TILE/.84, MV=ZU*24/.84, PI=Math.PI, wrap=a=>Math.atan2(Math.sin(a),Math.cos(a)), say=(t,c)=>SAY(t,c||'#e8e2cc');
   const ON=()=>!!(RIDE.on&&RIDE.cur&&RIDE.cur===SKATE.board);
   // the trick keys (J flip, K grab, L grind, I manual; the gamepad's X, Y, RB, LB): taken from the walk while you ride, so they never punch, kick or open your pack
-  const DOWN=new Set(), ACT=k=>k==='j'?'flip':k==='k'?'grab':k==='l'||k==='e'?'grind':k==='i'||k==='q'?'manual':null, keyOf=e=>(UI.key?UI.key(e):null)||(e.key||'').toLowerCase();
+  const DOWN=new Set(), ACT=k=>k==='j'?'flip':k==='k'?'grab':k==='l'?'grind':k==='i'||k==='q'?'manual':null, keyOf=e=>(UI.key?UI.key(e):null)||(e.key||'').toLowerCase();
   addEventListener('keydown',e=>{ if(!ON())return; const a=ACT(keyOf(e)); if(!a)return; DOWN.add(a); e.stopImmediatePropagation(); e.preventDefault(); },true);
   addEventListener('keyup',e=>{ const a=ACT(keyOf(e)); if(!a)return; DOWN.delete(a); if(ON())e.stopImmediatePropagation(); },true);
   addEventListener('blur',()=>DOWN.clear());
@@ -59,7 +59,7 @@ Object.assign(TRICKS,{best:0,session:0,combo:null}); window.TRICKS=TRICKS;
     if(R.t0!==R.mt){ Object.assign(R,{mt:R.t0,s:'roll',md:R.hd,z:0,vz:0,vh:0,charge:0,landT:0,spun:0,fakie:false,flip:null,grab:null,rail:null,slide:0,pt:0}); R.gy=G(pos.x,pos.z); TRICKS.combo=null; }
     hit=new Set([...DOWN].filter(a=>!was.has(a))); was.clear(); for(const a of DOWN)was.add(a);
     const sp=keys.has(' '), pop=spWas&&!sp; spWas=sp; dt=Math.min(dt,.05);
-    const vmax=(+ITEMS.prop(RIDE.on,'speed')||5)*T, acc=2.6*T, d=dir();
+    const vmax=(+ITEMS.prop(RIDE.on,'speed')||5)*T*SPEED.of('skate'), acc=2.6*T*SPEED.of('skate'), d=dir();
     if(R.s==='roll'||R.s==='manual'){
       // push and carve toward where you steer; S or pulling back brakes; slopes speed you up and slow you down
       const {mx,mz,ml}=inp; R.pushing=false;

@@ -1,4 +1,4 @@
-// THE PARK'S FINDS: set pieces in the park and the castle grounds, each built only when you come near: ice fishing on the frozen lake (an auger cuts a hole, thin ice cracks under you), the Lost Ball Pond (old golf balls, a snapping turtle) and a hidden green for a hole in one, the Lost Orchard walled in behind the castle (climb in or find its key), the wild hive in a hollow oak, and the moth lamp on the castle's wall-walk at midnight.
+// THE PARK'S FINDS: set pieces in the park and the castle grounds, each built only when you come near: ice fishing on the frozen lake (an auger cuts a hole, thin ice cracks under you), the Lost Orchard walled in behind the castle (climb in or find its key), the wild hive in a hollow oak, and the moth lamp on the castle's wall-walk at midnight.
 import {SHARED, THREE} from './003-shx.js';
 import {CITY, CLOCK, FORAGE, INV, ITEMS, MAIL, PARK, pos, ROOMS, SFX, UI, VIT, WEEDS, WX} from './003b-systems.js';
 import {SAY} from './003d-say.js';
@@ -11,7 +11,7 @@ import {VEG} from './144-veggies.js';
 import {GARDEN} from './144a-garden.js';
 const PQ={}; window.PQ=PQ;
 { const T=TILE, WU=T/.84, say=(t,c)=>SAY(t,c||'#e8e2cc'), use=(k,a,b,x)=>FORAGE.use(k,a,b,x), sk=k=>FORAGE.sk(k), has=id=>FORAGE.has(id);
-  const day=()=>window.MAIL&&MAIL.ready?MAIL.day():window.CITY?CITY.day||0:0;
+  const day=()=>window.MAIL&&MAIL.ready?MAIL.day():CITY?CITY.day||0:0;
   const ready=(k,per=1)=>INV.picked[k]==null||Math.floor(INV.picked[k]/per)<Math.floor(day()/per), took=k=>{ INV.picked[k]=day(); INV.save(); };
   const out=()=>SHARED.LVL==='up'&&!(ROOMS&&ROOMS.cur), gy=(x,z)=>typeof SHARED.groundY==='function'?SHARED.groundY(x,z):0;
   const L=c=>new THREE.MeshLambertMaterial({color:c}), HIT=new THREE.MeshBasicMaterial({visible:false}), now=()=>performance.now()/1000;
@@ -49,7 +49,7 @@ const PQ={}; window.PQ=PQ;
   const cold=()=>CLOCK.season()==='winter'||!!(WX.now&&(WX.now.cold||WX.now.snow>.15));
   const lk=(x,z)=>FOUNT.lake?-FOUNT.lake(x/T+SHARED.BOD.OX-(PARK.ox||0),z/T+SHARED.BOD.OY-(PARK.oy||0)):-1;   // tiles in from the shore
   const iceY=()=>FOUNT.LV+.05*WU, iced=(x,z)=>ICE.on&&lk(x,z)>.6, hole=(x,z,r)=>ICE.holes.find(h=>Math.hypot(h.x-x,h.z-z)<r)||null;
-  FOUNT.held=(x,z)=>iced(x,z)&&(!FOUNT.swim||ICE.climb)&&!ICE.cracks.some(c=>Math.hypot(c.x-x,c.z-z)<1.6*T);
+  FOUNT.holds.push((x,z)=>iced(x,z)&&(!FOUNT.swim||ICE.climb)&&!ICE.cracks.some(c=>Math.hypot(c.x-x,c.z-z)<1.6*T));
   FISHING.waters.push((x,z)=>{ if(!ICE.on||lk(x,z)<=.6)return undefined; return hole(x,z,.7*T)?{kind:'ice',lv:FOUNT.LV,depth:4}:null; });
   const buildIce=()=>{ '@later'; const S=FOUNT.S, Lk=S.L, ox=PARK.ox||0, oy=PARK.oy||0, W=(px,py)=>[SHARED.BOD.XS(px+ox),SHARED.BOD.ZS(py+oy)], N=96;
     const ring=inset=>{ const P=[]; for(let i=0;i<N;i++){ const a=i/N*6.283, ca=Math.cos(a), sa=Math.sin(a); let r=0; for(let q=0;q<Math.max(Lk.rx,Lk.ry)+30;q+=.5){ if(FOUNT.lake(Lk.x+ca*q,Lk.y+sa*q)>-inset)break; r=q; } const [x,z]=W(Lk.x+ca*r,Lk.y+sa*r); P.push(new THREE.Vector2(x,-z)); } return P; };
@@ -75,44 +75,6 @@ const PQ={}; window.PQ=PQ;
     const thin=FOUNT.held(pos.x,pos.z)&&lk(pos.x,pos.z)>THICK&&Math.abs(SHARED.py-iceY())<.5*T; if(!thin||Math.hypot(pos.x-ICE.sx,pos.z-ICE.sz)>.5*T){ ICE.sx=pos.x; ICE.sz=pos.z; ICE.still=0; ICE.warn=false; return; }
     ICE.still+=dt; if(ICE.still>4&&!ICE.warn){ ICE.warn=true; say('THE THIN ICE CREAKS UNDER YOU...','#bfe0ff'); if(SFX.play)SFX.play('creak',{vol:.6}); } if(ICE.still>8)crack(pos.x,pos.z); };
   { const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>{ if(ICE.on&&FOUNT.held(x,z))return iceY(); const y=LOFT.at(x,z); if(y!=null)return y; return sg0?sg0(x,z):null; }; }
-
-  /* ---------- 2. GOLF: the Lost Ball Pond (an old course's water hazard, full of balls; a snapping turtle) and a hidden green for a hole in one, once a day ---------- */
-  const POND={R:3.4*T,wade:0,bit:0}; PQ.POND=POND;
-  const buildPond=(x,z)=>{ '@later'; const G=new THREE.Group(), y=gy(x,z); G.position.set(x,y,z); scene.add(G); POND.G=G; POND.x=x; POND.z=z;
-    const w=new THREE.Mesh(new THREE.CircleGeometry(POND.R,28).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({color:0x3a5a48})); w.position.y=.02*WU; G.add(w);
-    const mud=new THREE.Mesh(new THREE.RingGeometry(POND.R,POND.R+.5*T,28).rotateX(-Math.PI/2),L(0x5a4a32)); mud.position.y=.015*WU; G.add(mud);
-    const ball=new THREE.SphereGeometry(.03*WU,6,4), bm=L(0xf0eee4); for(let i=0;i<22;i++){ const a=hs(i,3)*6.28, r=Math.sqrt(hs(i,5))*POND.R*.9; put(G,ball,bm,Math.cos(a)*r,.035*WU,Math.sin(a)*r); }
-    const reed=new THREE.CylinderGeometry(.01*WU,.014*WU,.9*WU,4), rm=L(0x6a7a3a); for(let i=0;i<30;i++){ const a=hs(i,9)*6.28, r=POND.R+(hs(i,11)-.4)*.6*T; put(G,reed,rm,Math.cos(a)*r,.45*WU,Math.sin(a)*r); }
-    const sign=new THREE.Group(); sign.position.set(POND.R+.9*T,0,0); G.add(sign); put(sign,new THREE.BoxGeometry(.06*WU,1*WU,.06*WU),L(0x5a4430),0,.5*WU,0); put(sign,new THREE.BoxGeometry(.5*WU,.3*WU,.04*WU),L(0xe8e0c8),0,.95*WU,0);
-    // the turtle: a domed shell with a head that comes for a wader who lingers
-    const tu=new THREE.Group(); put(tu,new THREE.SphereGeometry(.22*WU,10,6,0,6.283,0,1.4),L(0x3a3a24),0,0,0).scale.set(1,.5,1.25); POND.head=put(tu,new THREE.SphereGeometry(.07*WU,8,6),L(0x4a4a30),0,.03*WU,.3*WU); G.add(tu); POND.tu=tu; POND.ta=0;
-    POND.th={name:'OLD GOLF BALLS IN THE POND',obj:hit(G,POND.R*1.4,.4*T,.2*T),reach:POND.R+1.6*T,near:POND.R+2.4*T,tall:.3*T,act:()=>PQ.ball()}; UI.thing(POND.th);
-    POND.sign={name:'A SIGN: "HOLE 7 - WATER HAZARD"',obj:hit(sign,.6*T,1.2*T),reach:1.4*T,near:2*T,tall:1*T,act:()=>say('"HOLE 7. PAR 3. WATER HAZARD." THE OLD PARK COURSE IS LONG GONE; ITS BALLS ARE NOT. THEY SAY ITS LAST GREEN STILL HIDES IN THE PARK.','#d8d2b8')}; UI.thing(POND.sign); };
-  const inPond=()=>POND.G&&Math.hypot(pos.x-POND.x,pos.z-POND.z)<POND.R;
-  PQ.ball=()=>{ '@later'; const wade=inPond(), rod=has('rod'); if(!wade&&!rod)return say('WADE IN TO FEEL FOR THEM, OR FISH THEM OUT WITH A ROD FROM THE BANK.','#c8a090');
-    let k=null; for(let i=0;i<6;i++)if(ready('gpond'+i)){ k='gpond'+i; break; } if(!k)return say('YOU HAVE FISHED OUT EVERY BALL YOU CAN FIND TODAY. THE MUD GIVES UP MORE BY TOMORROW.','#c8a090');
-    if(!use(wade?'golf':'fish',-20,70))return say(wade?'YOUR FINGERS FIND ONLY MUD.':'YOUR HOOK SNAGS WEED.','#c8a090'); took(k); const r=Math.random(), id=r<.03?'gb_feathery':r<.15?'gb_gutty':'gb_old'; FORAGE.give(id,1); FORAGE.draw();
-    if(SFX.play)SFX.play('drip',{vol:.5}); say(id==='gb_feathery'?'A FEATHERIE BALL, STITCHED LEATHER, OLDER THAN THE PARK. A REAL FIND!':id==='gb_gutty'?'A VINTAGE GUTTY BALL, HAND-HAMMERED.':'AN OLD GOLF BALL, MUDDY BUT WHOLE.',id==='gb_old'?'#e8e2cc':'#f2c14e'); };
-  const pondTick=dt=>{ if(!POND.G)return; const n=Math.hypot(pos.x-POND.x,pos.z-POND.z)<120*T; POND.G.visible=n&&out(); if(!n)return; const wade=inPond(); POND.wade=wade?POND.wade+dt:0; POND.bit-=dt;
-    const lx=pos.x-POND.x, lz=pos.z-POND.z, tu=POND.tu; let tx, tz; if(POND.wade>2.5){ tx=lx; tz=lz; } else { POND.ta+=dt*.2; tx=Math.cos(POND.ta)*POND.R*.55; tz=Math.sin(POND.ta)*POND.R*.55; }
-    const dx=tx-tu.position.x, dz=tz-tu.position.z, d=Math.hypot(dx,dz)||1, s=Math.min(d,(POND.wade>2.5?.9:.3)*T*dt); tu.position.x+=dx/d*s; tu.position.z+=dz/d*s; tu.rotation.y=Math.atan2(dx,dz);
-    if(POND.wade>2.5&&d<.6*T&&POND.bit<=0){ POND.bit=5; if(VIT.hurt)VIT.hurt(.05); say('A SNAPPING TURTLE BITES YOUR ANKLE! DO NOT LINGER IN ITS POND.','#ff9a8a'); } };
-  const GREEN={}; PQ.GREEN=GREEN;
-  const buildGreen=(x,z)=>{ '@later'; const G=new THREE.Group(); G.position.set(x,gy(x,z),z); scene.add(G); GREEN.G=G; GREEN.x=x; GREEN.z=z;
-    const g=new THREE.Mesh(new THREE.CircleGeometry(2.2*T,24).rotateX(-Math.PI/2),L(0x6aa84a)); g.position.y=.012*WU; g.receiveShadow=true; G.add(g);
-    const cup=new THREE.Mesh(new THREE.CircleGeometry(.06*WU,10).rotateX(-Math.PI/2),L(0x101010)); cup.position.y=.018*WU; G.add(cup);
-    put(G,new THREE.CylinderGeometry(.012*WU,.012*WU,1.6*WU,5),L(0xe8e8e0),0,.8*WU,0); const fl=put(G,new THREE.BoxGeometry(.02*WU,.3*WU,.42*WU),L(0xd83a2a),0,1.45*WU,.21*WU); GREEN.flag=fl;
-    GREEN.ball=put(G,new THREE.SphereGeometry(.035*WU,6,4),L(0xf0eee4),0,.04*WU,0); GREEN.ball.visible=false;
-    GREEN.th={name:'AN OLD GREEN, ITS FLAG STILL UP',obj:hit(G,1.2*T,1.6*T),reach:2.6*T,near:3.4*T,tall:1.5*T,act:()=>PQ.putt()}; UI.thing(GREEN.th); };
-  PQ.putt=()=>{ '@later'; const id=['gb_feathery','gb_gutty','gb_old'].find(has); if(!id)return say('YOU HAVE NO BALL TO PLAY. THE LOST BALL POND IS FULL OF THEM.','#c8a090'); if(GREEN.roll)return;
-    FORAGE.take(id,1); FORAGE.draw(); const bonus=id==='gb_feathery'?25:id==='gb_gutty'?10:0, inn=use('golf',0,110,bonus)&&Math.random()<.25+sk('golf')/250+bonus/100;
-    const b=GREEN.ball, a=Math.atan2(pos.x-GREEN.x,pos.z-GREEN.z), d=Math.min(2.6*T,Math.hypot(pos.x-GREEN.x,pos.z-GREEN.z)); b.visible=true; GREEN.roll={t:0,a,d,inn}; if(SFX.play)SFX.play('click',{vol:.4,pitch:1.5}); };
-  const greenTick=dt=>{ if(!GREEN.G)return; const n=Math.hypot(pos.x-GREEN.x,pos.z-GREEN.z)<100*T; GREEN.G.visible=n&&out(); GREEN.flag.rotation.y=Math.sin(now()*1.3)*.3; const R=GREEN.roll; if(!R)return; R.t+=dt;
-    const k=Math.min(1,R.t/1.6), e=1-(1-k)*(1-k), miss=R.inn?0:.5*T*Math.sin(k*3); GREEN.ball.position.set(Math.sin(R.a)*R.d*(1-e)+Math.cos(R.a)*miss,.04*WU,Math.cos(R.a)*R.d*(1-e)-Math.sin(R.a)*miss);
-    if(k<1)return; GREEN.roll=null; GREEN.ball.visible=false;
-    if(!R.inn)return say('IT LIPS THE CUP AND ROLLS AWAY INTO THE ROUGH. YOUR BALL IS GONE.','#c8a090');
-    if(ready('hio')){ took('hio'); INV.cash+=150; use('golf',0,110); if(SFX.play)SFX.play('chirp',{vol:.6}); say('A HOLE IN ONE! UNDER THE FLAG YOU FIND THE OLD CLUB\'S PRIZE PURSE: $150. (ONCE A DAY.)','#f2c14e'); }
-    else say('IN THE CUP! THE PRIZE PURSE IS EMPTY UNTIL TOMORROW, BUT WHAT A SHOT.','#e8e2cc'); };
 
   /* ---------- 3. FORAGING: the Lost Orchard, an overgrown walled garden behind the castle: climb its wall or find its key; thorns scratch; heirloom fruit and seeds, once a day ---------- */
   const ORCH={W:12,D:9,trees:[]}; PQ.ORCH=ORCH;
@@ -213,7 +175,7 @@ const PQ={}; window.PQ=PQ;
   const unMoth=m=>{ LOFT.lampG.remove(m.g); const i=UI.things.indexOf(m.th); if(i>=0)UI.things.splice(i,1); const j=LOFT.moths.indexOf(m); if(j>=0)LOFT.moths.splice(j,1); for(const b of LOFT.bats)if(b.prey===m)b.prey=null; };
   const mothsHeld=()=>Object.keys(INV.items).reduce((a,id)=>a+(id.startsWith('mo_')?INV.items[id]:0),0);
   PQ.net=m=>{ '@later'; if(!has('net'))return say('YOU NEED A BUTTERFLY NET FOR MOTHS ON THE WING. THE BUTTERFLY SHOP ON MARKET ST HAS THEM.','#c8a090');
-    if(window.BFLY&&BFLY.held&&BFLY.held()+mothsHeld()>=BFLY.room())return say('YOUR JARS ARE FULL. SELL SOME, OR BUY A BIGGER JAR.','#c8a090');
+    if(BFLY&&BFLY.held&&BFLY.held()+mothsHeld()>=BFLY.room())return say('YOUR JARS ARE FULL. SELL SOME, OR BUY A BIGGER JAR.','#c8a090');
     const d=m.K[1]; if(SFX.play)SFX.play('step',{vol:.4}); if(!use('ento',d-25,d+25,-0)){ m.a+=2; m.r=(.3+Math.random()*.6)*WU; return say('IT TUMBLES OUT OF YOUR NET AND BACK TO THE LIGHT.','#c8a090'); }
     FORAGE.give(m.K[0],1); FORAGE.draw(); unMoth(m); say(m.K===LUNA?'YOU NET THE LUNA MOTH. ITS LONG GREEN TAILS TREMBLE. A RARE CATCH!':'YOU NET A '+NM[m.K[0]]+'.',m.K===LUNA?'#f2c14e':'#e8e2cc'); };
   const loftTick=dt=>{ if(!LOFT.G)return; const n=Math.hypot(pos.x-LOFT.x,pos.z-LOFT.z)<120*T; LOFT.G.visible=n&&out(); const t=now();
@@ -234,10 +196,8 @@ const PQ={}; window.PQ=PQ;
     taken.push([cx,cz,16*T]); const L0=FOUNT.S&&FOUNT.S.L, lx=L0?B.XS(L0.x+(PARK.ox||0)):cx, lz=L0?B.ZS(L0.y+(PARK.oy||0)):cz, lr=L0?Math.max(L0.rx,L0.ry)*T:0;
     const o=find(cx,C.z1+14*T,8*T); if(o){ buildOrch(o[0],o[1]); }
     const h=find(lx-(lr+16*T),lz,5*T); if(h)buildHive(h[0],h[1]);
-    const p=find(cx-40*T,cz+back*30*T,5*T); if(p)buildPond(p[0],p[1]);
-    const g=find(cx+60*T,cz-back*50*T,3*T); if(g)buildGreen(g[0],g[1]);
     buildWell(); buildLoft(); };
-  SYS.add('places',dt=>{ dt=Math.min(.1,dt||0); if(can&&!placed&&PARK.ready&&MODS.castle&&FOUNT.S&&FOUNT.LV!=null&&WEEDS.inPark&&WEEDS.inPark(pos.x,pos.z,-40))place(); iceTick(dt); if(!placed)return; pondTick(dt); greenTick(dt); orchTick(dt); hiveTick(dt); loftTick(dt); },'147b-parkfinds');
-  PQ.lk=lk; PQ.iceY=iceY; PQ.step=dt=>{ iceTick(dt); if(placed){ pondTick(dt); loftTick(dt); } };   // (a check steps them by whole seconds; this machine's frames are slow)
-  window.PQDBG=()=>({placed,ice:{on:ICE.on,built:ICE.built,holes:ICE.holes.length,cracks:ICE.cracks.length,cold:cold()},pond:POND.G?[POND.x/T|0,POND.z/T|0]:null,green:GREEN.G?[GREEN.x/T|0,GREEN.z/T|0]:null,orch:ORCH.G?[ORCH.x/T|0,ORCH.z/T|0]:null,hive:HIVE.G?[HIVE.x/T|0,HIVE.z/T|0]:null,loft:LOFT.G?{up:LOFT.up,mode:LOFT.mode,lit:!!LOFT.lit,moths:LOFT.moths.length,top:+(LOFT.top/T).toFixed(2)}:null});
+  SYS.add('places',dt=>{ dt=Math.min(.1,dt||0); if(can&&!placed&&PARK.ready&&MODS.castle&&FOUNT.S&&FOUNT.LV!=null&&WEEDS.inPark&&WEEDS.inPark(pos.x,pos.z,-40))place(); iceTick(dt); if(!placed)return; orchTick(dt); hiveTick(dt); loftTick(dt); },'147b-parkfinds');
+  PQ.lk=lk; PQ.iceY=iceY; PQ.step=dt=>{ iceTick(dt); if(placed){ loftTick(dt); } };   // (a check steps them by whole seconds; this machine's frames are slow)
+  window.PQDBG=()=>({placed,ice:{on:ICE.on,built:ICE.built,holes:ICE.holes.length,cracks:ICE.cracks.length,cold:cold()},orch:ORCH.G?[ORCH.x/T|0,ORCH.z/T|0]:null,hive:HIVE.G?[HIVE.x/T|0,HIVE.z/T|0]:null,loft:LOFT.G?{up:LOFT.up,mode:LOFT.mode,lit:!!LOFT.lit,moths:LOFT.moths.length,top:+(LOFT.top/T).toFixed(2)}:null});
 }

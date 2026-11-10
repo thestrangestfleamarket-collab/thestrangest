@@ -11,8 +11,8 @@ const {chromium}=require('playwright');
   const WJ=JSON.parse(require('fs').readFileSync(process.cwd()+'/data/world.json','utf8')), L={front:WJ.block.front,row2:WJ.block.backrow,wx:WJ.streets.west.x0};
   await pg.evaluate(()=>__dbg.MAPK.MODS.apts.enterReal()); await idle(); await pg.waitForTimeout(800); await pg.evaluate(()=>__dbg.MAPK.MODS.apts.exitReal()); await idle(); await pg.waitForTimeout(500);
   { const o=await at(); ok(o.y>L.front-.5&&o.y<L.front+8,'your flat: out onto Market St\'s sidewalk, the park side ('+o.x.toFixed(1)+', '+o.y.toFixed(1)+')'); }
-  await pg.evaluate(()=>STORE.enter('theatre',true)); await idle(); await pg.waitForTimeout(800); await pg.evaluate(()=>STORE.exit('theatre')); await idle(); await pg.waitForTimeout(500);
-  { const o=await at(); ok(o.y<L.row2[0]+.5&&o.y>L.row2[0]-8,'the theatre: out onto the promenade, the river side ('+o.x.toFixed(1)+', '+o.y.toFixed(1)+')'); }
+  if(await pg.evaluate(()=>!!STORE.inside.theatre)){ await pg.evaluate(()=>STORE.enter('theatre',true)); await idle(); await pg.waitForTimeout(800); await pg.evaluate(()=>STORE.exit('theatre')); await idle(); await pg.waitForTimeout(500);
+  { const o=await at(); ok(o.y<L.row2[0]+.5&&o.y>L.row2[0]-8,'the theatre: out onto the promenade, the river side ('+o.x.toFixed(1)+', '+o.y.toFixed(1)+')'); } }
   const g=await pg.evaluate(wx=>{ const B=[...window.BLK.blds,...window.BLK.lots]; return {west:B.filter(q=>q.row===5).length,inside:B.filter(q=>q.row===1&&q.x1>wx+.1).length,pf:PFROWDBG().houses}; },L.wx);
   ok(g.west===0&&g.pf===0,'West St: no buildings, no filler ('+JSON.stringify(g)+')'); ok(g.inside===0,'no garages between Market St\'s buildings ('+g.inside+')');
   ok(!errs.length,'no page errors'+(errs.length?': '+errs.join(' | '):''));

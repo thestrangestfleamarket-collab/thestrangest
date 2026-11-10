@@ -1,6 +1,6 @@
 // THE HOURS: DN holds the three looks, DAY, DUSK and NIGHT (each sets the sun, sky, mist, clouds and the colour of everything), picked by the game's clock (real Central time; the owner can set it, stop it or hold a look for everyone, /shared/time.json); the looks themselves are the game's or the owner's saved ones (/shared/looks.json); ATMOSPHERE edits them (the owner only).
 import {SHARED, THREE} from './003-shx.js';
-import {BUGS, CLOCK, DN, FAR3, ONLINE, PARK, pos, ROOMS, SKY, VIS, WX} from './003b-systems.js';
+import {BUGS, CLOCK, DN, FAR3, ONLINE, PARK, pos, ROOMS, SKY, VIS, W3, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {MISTE, MISTS, MISTSC, QS, STORE, SYS} from './006-map-pre.js';
 import {HEMI} from './064-map-post.js';
@@ -8,22 +8,22 @@ import {TPANE} from './087dz-tpane.js';
 __CODE__("worker/clock.js")
 Object.assign(DN,{lk:1,mode:'day',modes:['day','dusk','night'],names:{day:'DAY',dusk:'DUSK',night:'NIGHT'},FADE:60000,hold:null,clk:null});
 // the game's hour, the same for everyone: real Central time unless the owner set or stopped it (worker/clock.js, DN.clk); the look follows the real sunrise and sunset there, unless the owner holds one
-DN.clockH=()=>CLK.hour(Date.now(),DN.clk); { let tk=-1, tv=null; DN.times=()=>{ const k=Math.floor(Date.now()/60000); if(k!==tk){ tk=k; tv=CLK.sun(Date.now(),DN.clk); } return tv; }; }   // the real sunrise and sunset on the game's date
+DN.clockH=()=>CLK.hour(Date.now(),DN.clk); DN.day=()=>CLK.day(Date.now(),DN.clk); { let tk=-1, tv=null; DN.times=()=>{ const k=Math.floor(Date.now()/60000); if(k!==tk){ tk=k; tv=CLK.sun(Date.now(),DN.clk); } return tv; }; }   // the real sunrise and sunset on the game's date
 // the looks over the day: NIGHT, then about an hour each way of sunrise blending through DUSK's colours into DAY, and the same the other way round sunset: [from, to, how far]
 DN.mix=h=>{ const {rise:r,set:st}=DN.times(), w=(a,b,x0)=>[a,b,Math.max(0,Math.min(1,h-x0))];
   if(h>=r-1.1&&h<r-.1)return w('night','dusk',r-1.1); if(h>=r-.1&&h<r+.9)return w('dusk','day',r-.1); if(h>=st-.9&&h<st+.1)return w('day','dusk',st-.9); if(h>=st+.1&&h<st+1.1)return w('dusk','night',st+.1);
   return h>=r&&h<st?['day','day',1]:['night','night',1]; };
 DN.lookFor=h=>{ const [a,b,f]=DN.mix(h); return f<.5?a:b; };
 { const U=SKY.U, Q=k=>(QS.get(k)??''),
-    D0={day:{h:9.5,sun:1.3,amb:1.15,sunc:'#fff6e8',ambc:'#e6f0ff',zen:'#2f7ae8',hor:'#b4d6f6',cld:0,cov:.45,cl:1.3,m0:70,m1:100,hz:.8,mist:'#a8cbf0',skym:0,farb:1.15,grade:'#fbfcff',lift:'#000000',liftk:0,lamp:1,star:1,moon:1,cldc:'#f4ecf4',cldk:.9,sunhz:'#ffffff',sunk:0,shaft:.7,glow:1,bands:0,tun:.02},
-      dusk:{h:18.9,sun:.25,amb:.75,sunc:'#ff7050',ambc:'#6a78c0',zen:'#1e2c6e',hor:'#d88aa0',cld:0,cov:.45,cl:1.3,m0:70,m1:100,hz:.8,mist:'#7a6a9a',skym:0,farb:1.15,grade:'#f0f0ff',lift:'#2a3060',liftk:.08,lamp:1,star:1,moon:1,cldc:'#f4ecf4',cldk:.9,sunhz:'#ff9080',sunk:.4,shaft:0,glow:1.3,bands:0,tun:.02},
-      night:{h:23,sun:1.4,amb:1.1,sunc:'#c8d8ff',ambc:'#a8c0ff',zen:'#0a1838',hor:'#1e3460',cld:0,cov:1,cl:1.1,m0:4,m1:140,hz:1,mist:'#1a2a50',skym:0,farb:.62,grade:'#ffffff',lift:'#10204a',liftk:.1,lamp:1.25,star:1.6,moon:1,cldc:'#f0d8d0',cldk:.9,sunhz:'#f4c9a8',sunk:0,shaft:0,glow:1.1,bands:0,tun:.02}};
+    D0={day:{h:9.5,sun:1.3,amb:1.15,sunc:'#fff6e8',ambc:'#e6f0ff',zen:'#2f7ae8',hor:'#b4d6f6',cld:0,cov:.45,cl:1.3,m0:70,m1:100,hz:.8,mist:'#a8cbf0',skym:0,farb:1.15,grade:'#fbfcff',lift:'#000000',liftk:0,lamp:1,star:1,moon:1,cldc:'#f4ecf4',cldk:.9,sunhz:'#ffffff',sunk:0,shaft:.7,glow:1,bands:0,tun:.02,mw:1,mwc1:'#dfe7ff',mwc2:'#fff0d1',mwgr:1,mww:1,mwcore:1,mwdust:1,mwdet:1,stf:1,stw:1,stc:1},
+      dusk:{h:18.9,sun:.25,amb:.75,sunc:'#ff7050',ambc:'#6a78c0',zen:'#1e2c6e',hor:'#d88aa0',cld:0,cov:.45,cl:1.3,m0:70,m1:100,hz:.8,mist:'#7a6a9a',skym:0,farb:1.15,grade:'#f0f0ff',lift:'#2a3060',liftk:.08,lamp:1,star:1,moon:1,cldc:'#f4ecf4',cldk:.9,sunhz:'#ff9080',sunk:.4,shaft:0,glow:1.3,bands:0,tun:.02,mw:1,mwc1:'#dfe7ff',mwc2:'#fff0d1',mwgr:1,mww:1,mwcore:1,mwdust:1,mwdet:1,stf:1,stw:1,stc:1},
+      night:{h:23,sun:1.4,amb:1.1,sunc:'#c8d8ff',ambc:'#a8c0ff',zen:'#0a1838',hor:'#1e3460',cld:0,cov:1,cl:1.1,m0:4,m1:140,hz:1,mist:'#1a2a50',skym:0,farb:.62,grade:'#ffffff',lift:'#10204a',liftk:.1,lamp:1.25,star:1.6,moon:1,cldc:'#f0d8d0',cldk:.9,sunhz:'#f4c9a8',sunk:0,shaft:0,glow:1.1,bands:0,tun:.02,mw:1,mwc1:'#dfe7ff',mwc2:'#fff0d1',mwgr:1,mww:1,mwcore:1,mwdust:1,mwdet:1,stf:1,stw:1,stc:1}};
   const F=[['h','SUN HEIGHT (WHEN HELD; ELSE THE CLOCK)',7.5,18.5,.05,'dg'],['h','DUSK HOUR (WHEN HELD; ELSE THE CLOCK)',17.5,20,.05,'u'],['h','NIGHT HOUR (WHERE THE MOON IS)',19.5,29.5,.05,'n'],['sun','SUNLIGHT',0,2,.01,'dgu'],['sun','MOONLIGHT',0,3,.01,'n'],['sunc','SUNLIGHT COLOUR','c','dgu'],['amb','LIGHT ALL ROUND',0,3,.01],['ambc','LIGHT ALL ROUND COLOUR (THE SHADOWS)','c'],
     ['zen','SKY OVERHEAD','c'],['hor','SKY AT THE HORIZON','c'],['bands','SKY BANDS (0 = SMOOTH)',0,8,1],['cld','CLOUDY (DIMS THE SUN)',0,1,.01],['cov','CLOUD COVER (LOWER = MORE, 1 = NONE)',.2,1,.01],['cl','CLOUD BRIGHTNESS',.5,1.6,.01],
     ['m0','MIST STARTS (TILES PAST TOWN)',-10,120,1],['m1','MIST DEPTH (TILES)',4,160,1],['hz','MIST TINTED BY THE SKY',0,1,.01],['mist','MIST COLOUR','c','dgu'],['skym','SKY HIDDEN BY THE MIST',0,1,.01],['farb','FAR CITY HAZE BRIGHTNESS',.3,1.3,.01],
     ['cldc','CLOUD COLOUR','c','du'],['cldk','CLOUD COLOUR (HOW MUCH)',0,1,.01,'du'],['sunhz','MIST TOWARD THE SUN','c','du'],['sunk','MIST TOWARD THE SUN (HOW MUCH)',0,1,.01,'du'],['shaft','SUN SHAFTS',0,1,.01,'du'],['glow','GLOW',0,2.5,.01],
     ['grade','COLOUR OF EVERYTHING','c'],['lift','HAZE OVER EVERYTHING','c'],['liftk','HAZE OVER EVERYTHING (HOW MUCH)',0,.6,.01],
-    ['tun','LIGHT IN THE SUBWAY TUNNELS',0,.2,.005],['lamp','LAMPS',0,3,.01,'nu'],['star','STARS',0,2,.01,'nu'],['moon','MOON',0,1,.01,'nu']];
+    ['tun','LIGHT IN THE SUBWAY TUNNELS',0,.2,.005],['lamp','LAMPS',0,3,.01,'nu'],['star','STARS',0,2,.01,'nu'],['stf','FAINT STARS (0 = ONLY THE BRIGHT ONES)',0,1,.01,'nu'],['stw','STAR TWINKLE',0,3,.01,'nu'],['stc','STAR COLOUR (0 = ALL WHITE)',0,3,.01,'nu'],['mw','MILKY WAY (0 = NONE)',0,4,.01,'nu'],['mwc1','MILKY WAY COLOUR (ARMS)','c','nu'],['mwc2','MILKY WAY COLOUR (CORE)','c','nu'],['mwgr','MILKY WAY GRAIN',0,1,.01,'nu'],['mww','MILKY WAY WIDTH',.3,3,.01,'n'],['mwcore','MILKY WAY CORE GLOW',0,3,.01,'n'],['mwdust','MILKY WAY DUST LANES',0,2,.01,'n'],['mwdet','MILKY WAY CLOUD DETAIL',0,2,.01,'n'],['moon','MOON',0,1,.01,'nu']];
   const S={}; for(const m of DN.modes)S[m]={...D0[m]};
   { const local=location.protocol==='file:'||/^(127\.|localhost)/.test(location.hostname), q=local?Q('look').toLowerCase():'', qh=local?+(Q('hour')||NaN):NaN; if(DN.modes.includes(q)){ DN.mode=q; DN.test=1; } else if(!isNaN(qh)){ DN.mode=DN.lookFor(qh); S[DN.mode].h=qh; DN.test=1; } }
   // the time: DAY or NIGHT by the clock's hour (or the owner's hold, on the server); a change fades over a minute. The sun and sky stay each look's own (CLOCK.sunH); the day's hour runs
@@ -32,7 +32,7 @@ DN.lookFor=h=>{ const [a,b,f]=DN.mix(h); return f<.5?a:b; };
   DN.moving=()=>!DN.test&&!DN.hold; CLOCK.moonReal=()=>DN.moving()?CLK.moon(Date.now(),DN.clk):null; DN.sunOf=(m,h)=>{ if(m==='night')return S.night.h; const {rise:r,set:st}=DN.times(); return Math.max(4,Math.min(21.4,7.31+(h-r)*10.78/Math.max(1,st-r))); };
   const B={}, ca=new THREE.Color(), cb=new THREE.Color(), blend=(A,C,f)=>{ for(const k in C){ const a=A[k]??C[k], c=C[k]; if(typeof c==='number'){ if(k==='h'){ let d=((c-a)%24+24)%24; if(d>12)d-=24; B[k]=((a+d*f)%24+24)%24; } else B[k]=a+(c-a)*f; } else if(typeof c==='string'&&c[0]==='#'&&typeof a==='string'&&a[0]==='#')B[k]='#'+ca.set(a).lerp(cb.set(c),f).getHexString(); else B[k]=c; } return B; };
   DN.P=()=>B; DN.E=()=>S[DN.mode]; DN.S=S; DN.D0=D0;
-  const fix=()=>{ const P=S[DN.mode]; WX.fix={cloud:P.cld,rain:0,snow:0,storm:0,wind:DN.mode==='night'?.08:.15,dir:1,fog:0}; window.PARK&&PARK.lampLit&&PARK.lampLit(); };
+  const fix=()=>{ const P=S[DN.mode]; WX.fix={cloud:P.cld,rain:0,snow:0,storm:0,wind:DN.mode==='night'?.08:.15,dir:1,fog:0}; PARK&&PARK.lampLit&&PARK.lampLit(); };
   DN.set=(m,fade)=>{ if(!DN.modes.includes(m)||m===DN.mode)return; T.prev=DN.mode; T.t0=fade?Date.now():0; DN.mode=m; fix(); DN.draw(); };   // the time now (the shared pick, or a test's)
   const tc=new THREE.Color(); DN.U={grade:{value:new THREE.Color(1,1,1)},lift:{value:new THREE.Color(0,0,0)},liftK:{value:0}};
   SYS.add('clockPre',()=>{ const f0=Math.min(1,(Date.now()-T.t0)/DN.FADE), f=f0*f0*(3-2*f0); if(!CLOCK.run&&DN.moving()){ const h=DN.clockH(), [ma,mb,g0]=DN.mix(h), g=g0*g0*(3-2*g0), a=DN.sunOf(ma,h), c=DN.sunOf(mb,h); blend(S[ma],S[mb],g); let d=((c-a)%24+24)%24; if(d>12)d-=24; B.h=((a+d*g)%24+24)%24; }   // by the clock the colours turn slowly through sunrise and sunset
@@ -40,8 +40,9 @@ DN.lookFor=h=>{ const [a,b,f]=DN.mix(h); return f<.5?a:b; };
   setTimeout(()=>{ DN.started=1; },5000);   // (from here on a change of look fades)
   SYS.add('sky',()=>{ const P=B, up=SHARED.LVL!=='down';
     CLOCK.sun.intensity*=P.sun; CLOCK.sun.color.multiply(tc.set(P.sunc)); if(up){ HEMI.intensity*=P.amb; if(P.ambc)HEMI.color.multiply(tc.set(P.ambc)); } DN.lk=P.lamp;
-    { const F=DN.fillL||(DN.fillL=(()=>{ const L=new THREE.DirectionalLight(0xffffff,0); L.castShadow=false; scene.add(L); scene.add(L.target); return L; })()), sv=CLOCK.sunV, k=DN.fill??.38;   // the fill: a soft light from opposite the sun, no shadows, so shade keeps a body's shape and colours (owner, 6 Nov 2026: "the shadows are too dark ... just 1 solid dark color")
-      F.color.copy(HEMI.color).lerp(CLOCK.sun.color,.3); F.intensity=up?k*(CLOCK.sun.intensity+HEMI.intensity*.8):0; F.position.set(pos.x-sv.x*100,pos.y+Math.max(.35,Math.abs(sv.y))*100,pos.z-sv.z*100); F.target.position.set(pos.x,pos.y,pos.z); F.target.updateMatrixWorld(); }
+    { const F=DN.fillL||(DN.fillL=(()=>{ const L=new THREE.DirectionalLight(0xffffff,0); L.castShadow=false; scene.add(L); scene.add(L.target); return L; })()), sv=CLOCK.sunV, nk=Math.max(0,Math.min(1,(3-CLOCK.dayElev())/8)), k=DN.fill??(.38-.3*nk);   // the fill: a soft light from opposite the sun, no shadows, so shade keeps a body's shape and colours (owner, 6 Nov 2026: "the shadows are too dark ... just 1 solid dark color")
+      F.color.copy(HEMI.color).lerp(CLOCK.sun.color,.3); F.intensity=up?k*(CLOCK.sun.intensity+HEMI.intensity*.8):0; F.position.set(pos.x-sv.x*100,pos.y+Math.max(.35,Math.abs(sv.y))*100,pos.z-sv.z*100); F.target.position.set(pos.x,pos.y,pos.z); F.target.updateMatrixWorld();
+      W3.moon.value=up&&!ROOMS.cur?.32*nk:0; }   // at night the fill falls away and the moon edges every body instead (owner, 9 Nov 2026)
     DN.U.grade.value.set(P.grade); DN.U.lift.value.set(P.lift); DN.U.liftK.value=up?P.liftk:0;
     if(SKY.on()){ U.uZ.value.set(P.zen); U.uH.value.set(P.hor); U.uM.value.copy(U.uH.value).lerp(U.uZ.value,.45); U.uCov.value=P.cov; U.uCL.value=P.cl; U.uCldC.value.set(P.cldc||'#ffffff'); U.uCldK.value=P.cldk||0; U.uBands.value=P.bands; U.uMistK.value*=P.skym;
       U.uStar.value=Math.min(2,U.uStar.value*P.star); U.uMoonK.value=Math.min(1,U.uMoonK.value*P.moon); }

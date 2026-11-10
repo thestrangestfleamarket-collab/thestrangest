@@ -11,7 +11,7 @@ Object.assign(CULL,{L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0',FL:[],H:
   const WM=new WeakMap(), PK=THREE.Material.prototype.customProgramCacheKey, wrap=m=>{ if(!m||m.isShaderMaterial)return; const W=WM.get(m); if(W&&m.onBeforeCompile===W.wrap)return; const prev=m.onBeforeCompile, ck=W&&W.ck&&m.customProgramCacheKey===W.ck?PK:m.customProgramCacheKey;
     const fn=(sh,r)=>{ if(prev)prev(sh,r); if(!sh.batching)return; let s=sh.vertexShader; if(!/instanceMatrix|USE_INSTANCING/.test(s))return;
       s=s.replace(/\binstanceMatrix\b/g,'batchingMatrix').replace(/\bUSE_INSTANCING\b/g,'USE_BATCHING').replace(/\bUSE_INSTANCING_COLOR\b/g,'USE_BATCHING_COLOR').replace(/\binstanceColor\b/g,'batchingColor');
-      if(s.includes('#include <batching_vertex>'))s=s.replace('#include <batching_vertex>','').replace(/void main\(\)\s*\{/,'void main() {\n#include <batching_vertex>'); sh.vertexShader=s; };
+      if(s.includes('#include <batching_vertex>'))s=s.replace('#include <batching_vertex>','').replace(/void main\(\)\s*\{/,'void main() {\n#include <batching_vertex>\n'); sh.vertexShader=s; };
     m.onBeforeCompile=fn; const key=ck===PK?()=>prev.toString():ck; m.customProgramCacheKey=key; WM.set(m,{wrap:m.onBeforeCompile,ck:ck===PK?key:null}); };   // the program's key still names the hook's own text, as three's default does; the hook is remembered as read back (the shader edit check wraps what is set)
   const drop=R=>{ for(const p of R.px){ p.removeFromParent(); p.dispose(); } R.px=[]; R.bm=null; };
   const vers=s=>{ const g=s.geometry; return s.isInstancedMesh?s.instanceMatrix.version+'/'+(s.instanceColor?'c'+s.instanceColor.version:'')+'/'+s.count:(g.index?g.index.version:0)+'/'+Object.values(g.attributes).map(a=>a.version).join(); };
@@ -49,7 +49,7 @@ Object.assign(CULL,{L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0',FL:[],H:
   // the triangles of a culled mesh's pieces in a frustum (the render inspector), -1 when none
   CULL.view=(R,F)=>{ const bm=R.bm; if(!bm)return -1; let t=-1; for(let i=0;i<R.n;i++){ if(!bm.getVisibleAt(i))continue; bm.getMatrixAt(i,m4); bm.getBoundingSphereAt(R.gid(i),S).applyMatrix4(w4.multiplyMatrices(bm.matrixWorld,m4)); if(F.intersectsSphere(S))t=Math.max(t,0)+R.tri(i); } return t; };
   // DRAW DISTANCE in GRAPHICS (owner, 4 Nov 2026: "add a draw distance for far buildings"): in first and third person nothing on the land wholly past it is drawn; 0 is ALL
-  const DD={v:40};   // the owner's draw distance, fixed (7 Nov 2026)
+  const DD={v:0};   // everything in view drawn, however far (owner, 7 Nov 2026: "lets remove things vanishing when far away")
   CULL.drawD=()=>DD.v>0&&UI.persp&&!UI.freeCam&&!ED.on&&!MAPED.on&&!renderer.xr.isPresenting?DD.v*TILE:0;
   CULL.setDraw=v=>{ DD.v=v>=300?0:Math.max(40,Math.round(v)); try{ SAVE.set('drawd',String(DD.v)); }catch(e){} }; CULL.getDraw=()=>DD.v;
   { const gfx=()=>{ const P=document.querySelector('#menu [data-p="graphics"]'); if(!P)return setTimeout(gfx,1000); if(P.querySelector('#ddist'))return;
@@ -60,20 +60,24 @@ Object.assign(CULL,{L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0',FL:[],H:
     for(const p of LEVEL.places)if(p.id==='apts'||/^house\d+$/.test(p.id)){ const y0=p.y1!=null?p.y0:LEVEL.block.back, y1=p.y1!=null?p.y1:LEVEL.block.front, xa=Math.min(XS(p.x0),XS(p.x1)), xb=Math.max(XS(p.x0),XS(p.x1)), za=Math.min(ZS(y0),ZS(y1)), zb=Math.max(ZS(y0),ZS(y1)); K[0]=Math.min(K[0],xa); K[2]=Math.max(K[2],xb); K[1]=Math.min(K[1],za); K[3]=Math.max(K[3],zb); } return K; };
   const range=()=>{ const f=CULL.hz?DFOG.cut():0, d=CULL.drawD(); CULL.R=f>0&&d>0?Math.min(f,d):f||d; if(CULL.R>0)CULL.R+=CULL.PAD;
     const free=!ROOMS.cur&&SHARED.LVL==='up'&&!UI.freeCam&&!ED.on&&!MAPED.on, BR=LEVEL.block.backrow, ZS=SHARED.BOD.ZS, zr=ZS(BR[0]), z1=ZS(BR[1]), south=Math.sign(ZS(BR[0]-1)-zr);
-    const zone=!free?null:PARK.in&&PARK.box&&PARK.within(pos.x,pos.z,1)?'park':(pos.z-zr)*south>0?'hudson':null;   // in the park only the park; on the Hudson (the promenade, the pier, the river) only the Hudson row and south of it (owner, 7 Nov 2026); the sky and far skyline kept
+    const zone=true?null:PARK.in&&PARK.box&&PARK.within(pos.x,pos.z,1)?'park':(pos.z-zr)*south>0?'hudson':null;   // in the park only the park; on the Hudson (the promenade, the pier, the river) only the Hudson row and south of it (owner, 7 Nov 2026); the sky and far skyline kept
     if(zone!==CULL.zone){ CULL.zone=zone; CULL.keep=zone==='park'?parkKeep():zone==='hudson'?(south<0?[-1e6,-1e6,1e6,z1+.5*TILE]:[-1e6,z1-.5*TILE,1e6,1e6]):null; } };
   const hazeHide=()=>{ if(!(CULL.R>0||CULL.keep))return;
     for(const o of CULL.FL){ if(!o.visible||!o.parent)continue; const F=foot(box(o),o.matrixWorld.elements);
       if(CULL.pastBox(F[0],F[1],F[2],F[3])){ if(o.children.length){ const g=o.geometry; if(g.drawRange.count){ CULL.D.push([g,g.drawRange.count]); g.drawRange.count=0; } } else { o.visible=false; CULL.H.push(o); } } } };
   CULL.add=s=>{ if(!CULL.on||!s||CULL.M.has(s))return; const R={s,px:[],bm:null,n:0,ch:0,np:0}; CULL.M.set(s,R); CULL.L.push(R); };
-  CULL.scan=()=>{ const FL=[]; scene.traverse(o=>{ if((o.isMesh||o.isPoints||o.isLine)&&o.frustumCulled&&!o.isSkinnedMesh&&o.geometry&&o.geometry.attributes.position&&!CULL.M.has(o)&&!o.userData.cullOf)FL.push(o); }); CULL.FL=FL; if(!CULL.on)return; scene.traverse(o=>{ if(o.isMesh&&o.userData.cull&&!o.isInstancedMesh){ CULL.add(o); return; } if(!o.isInstancedMesh||CULL.M.has(o)||o.userData.cullOf||!o.frustumCulled||o.count<8||Object.values(o.geometry.attributes).some(a=>a.isInstancedBufferAttribute))return;
+  // a big, still, plain mesh joins the grid by rule, as an instanced one does: wider than a cell, one plain material, its geometry unchanged between two looks (a mesh still being painted waits)
+  const WAIT=new Map(), big=o=>{ const g=o.geometry, M=o.material, P=g.attributes.position; if(Array.isArray(M)||M.isShaderMaterial||M.transparent||o.morphTargetInfluences||(g.index?g.index.count:P.count)<768)return false; if(!g.boundingSphere)g.computeBoundingSphere(); return g.boundingSphere.radius*o.matrixWorld.getMaxScaleOnAxis()>CULL.CS/2; };
+  let wt=0; const settle=()=>{ const now=performance.now(); if(!WAIT.size||now-wt<1000)return; wt=now; for(const [o,v] of WAIT){ if(!o.parent||CULL.M.has(o)){ WAIT.delete(o); continue; } const n=vers(o); if(n===v){ WAIT.delete(o); CULL.add(o); return; } WAIT.set(o,n); } };
+  CULL.rush=()=>{ for(const o of WAIT.keys())if(o.parent)CULL.add(o); WAIT.clear(); };
+  CULL.scan=()=>{ const FL=[]; scene.traverse(o=>{ if((o.isMesh||o.isPoints||o.isLine)&&o.frustumCulled&&!o.isSkinnedMesh&&o.geometry&&o.geometry.attributes.position&&!CULL.M.has(o)&&!o.userData.cullOf)FL.push(o); }); CULL.FL=FL; if(!CULL.on)return; scene.traverse(o=>{ if(o.isMesh&&o.userData.cull&&!o.isInstancedMesh){ CULL.add(o); return; } if(o.isMesh&&!o.isInstancedMesh&&!o.isBatchedMesh&&!o.isSkinnedMesh&&o.frustumCulled&&o.geometry&&o.geometry.attributes.position&&!CULL.M.has(o)&&!o.userData.cullOf&&!WAIT.has(o)&&big(o)){ WAIT.set(o,''); return; } if(!o.isInstancedMesh||CULL.M.has(o)||o.userData.cullOf||!o.frustumCulled||o.count<8||Object.values(o.geometry.attributes).some(a=>a.isInstancedBufferAttribute))return;
     if(!o.boundingSphere)o.computeBoundingSphere(); if(o.boundingSphere.radius>CULL.CS/2)CULL.add(o); }); };
   let lx=1e9, lz=1e9, lR=-1, lK=null;
-  CULL.begin=()=>{ if(ROOMS.hold)ROOMS.hold(); range(); const moved=Math.hypot(pos.x-lx,pos.z-lz)>TILE/2||CULL.R!==lR||CULL.keep!==lK; if(moved){ lx=pos.x; lz=pos.z; lR=CULL.R; lK=CULL.keep; }
+  CULL.begin=()=>{ if(ROOMS.hold)ROOMS.hold(); range(); settle(); const moved=Math.hypot(pos.x-lx,pos.z-lz)>TILE/2||CULL.R!==lR||CULL.keep!==lK; if(moved){ lx=pos.x; lz=pos.z; lR=CULL.R; lK=CULL.keep; }
     for(const R of CULL.L){ if(R.off)continue; const s=R.s; if(!s.parent){ drop(R); R.off=true; continue; }
       const vv=vers(s); if(!R.done||s.geometry!==R.g||!s.isInstancedMesh&&vv!==R.v||s.isInstancedMesh&&s.count!==R.n){ if(R.done&&++R.np>8){ drop(R); R.off=true; continue; } R.done=true; part(R); if(R.off){ drop(R); continue; } R.ch=0; }
       else if(vv!==R.v){ R.v=vv; fill(R); if(++R.ch>20){ drop(R); R.off=true; continue; } } else R.ch=0;
       R.vis=s.visible; tie(R); s.visible=false; if(moved||R.fresh){ far(R); R.fresh=false; } } hazeHide(); };
   CULL.end=()=>{ for(const o of CULL.H)o.visible=true; for(const [g,n] of CULL.D)g.drawRange.count=n; CULL.D.length=0; CULL.hn=CULL.H.length; CULL.H.length=0; for(const R of CULL.L){ if(R.off||!R.bm)continue; R.s.visible=R.vis; R.bm.visible=false; } };
   SYS.add('perfBounds',()=>CULL.scan(),'161a-cull');
-  window.CULLDBG=()=>({on:CULL.on,keep:CULL.keep,hazeR:CULL.R,hazeList:CULL.FL.length,hazeHid:CULL.hn||0,src:CULL.L.length,live:CULL.L.filter(R=>!R.off&&R.bm).length,pieces:CULL.L.reduce((a,R)=>a+(R.off||!R.bm?0:R.n),0)}); }
+  window.CULLDBG=()=>({on:CULL.on,keep:CULL.keep,hazeR:CULL.R,hazeList:CULL.FL.length,hazeHid:CULL.hn||0,src:CULL.L.length,live:CULL.L.filter(R=>!R.off&&R.bm).length,wait:WAIT.size,pieces:CULL.L.reduce((a,R)=>a+(R.off||!R.bm?0:R.n),0)}); }

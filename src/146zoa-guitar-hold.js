@@ -127,6 +127,7 @@ const GHOLD={};
     clipPose(P1,W,restM,R,a); return a; };
 
   /* ---------- a body holding it: GHOLD.attach puts the guitar on it and a step on its pose (PM.post, 111a) ---------- */
+  GHOLD.IK={reach,aim,untwist,turnAbout,org};   // (the arms' and hands' solvers, shared with the instruments you sit at, 146zp)
   const DIRS={Lf:new V3(-.5,-.05,.85),Ld:new V3(.85,-.1,.5),Rf:new V3(.85,-.1,-.5),Rd:new V3(.15,.25,1),Lpole:new V3(.35,-1,-.15),Rpole:new V3(-.3,-1,-.45)};   // (the elbows' aims in the body's own frame: +x its left, +y up, +z ahead; the left hangs under the neck, the right rests behind the upper bout)
   GHOLD.DIRS=DIRS; GHOLD.stage=4;   // (for checking the hold a stage at a time: 1 the upper arms out, 2 the elbows bent, 3 the hands turned, fingers open, 4 the fingers placed)
   GHOLD.attach=(me,PM,body,src)=>{ if(!body.binv)return null; const gm=GHOLD.model(); gm.matrixAutoUpdate=false; me.add(gm);

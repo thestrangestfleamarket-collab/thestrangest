@@ -18,7 +18,7 @@ const SKATE={rails:[]}; window.SKATE=SKATE;
   const RIDERS={'street-skater':['skate',3.2],'veteran-pool-skater':['skate',3],'vert-skater':['skate',3.4],'beginner-kid-skater':['skate',2],'longboarder':['skate',3.6],'scooter-kid':['scoot',2.6],'bmx-rider':['bmx',4.2]};   // who rides what, how fast (m/s)
   let BD=null; const SPOSE={k:'skate',push:-1,brake:false,goofy:false,z:0};
   const deckH=()=>RIG.RIDEG.deck*(W3.group&&W3.group.scale.y||.046);
-  const SKATEK={name:'SKATEBOARD',hint:'A CLICK SETS IT DOWN AND YOU STEP ON. WASD RIDES, SPACE OLLIES, J FLIPS, K GRABS, L GRINDS, I MANUALS (? FOR ALL OF IT), A CLICK STEPS OFF.',onSay:'YOU DROP THE BOARD AND STEP ON.',held:.6,acc:2.6,turn:2.6,drag:.6,knock:5,hop:3,
+  const SKATEK={name:'SKATEBOARD',cat:'skate',hint:'E SETS IT DOWN AND YOU STEP ON. WASD RIDES, SPACE OLLIES, J FLIPS, K GRABS, L GRINDS, I MANUALS (? FOR ALL OF IT), E STEPS OFF.',onSay:'YOU DROP THE BOARD AND STEP ON.',held:.6,acc:2.6,turn:2.6,drag:.6,knock:5,hop:3,
     make:()=>{ const m=new THREE.Mesh(geo(BD,(x,y,z)=>[x*MH,y*MV,z*MH]),MAT()); m.castShadow=true; m.userData.top=BD.top*MV; return m; },
     floor:(g,R)=>TRICKS.floor?TRICKS.floor(g,R,BD.top*MV-deckH()):g+BD.top*MV-deckH()+(R.z||0),   // you stand on the deck, its wheels on the ground (or a rail's top)
     step:(R,dt,inp)=>TRICKS.step?TRICKS.step(R,dt,inp):false,   // ridden by you: the tricks move it
@@ -35,7 +35,7 @@ const SKATE={rails:[]}; window.SKATE=SKATE;
     pose:R=>{ BPOSE.c=(BPOSE.c||0)+(R.v/TILE)*.14; BPOSE.brake=!(R.v>.2*TILE); return BPOSE; }};   // its cranks under the rig's: they turn as it rolls
   const KINDS={skate:SKATEK,scoot:SCOOTK,bmx:BMXK};
   // the BMX for anyone (owner, 7 Nov 2026: "make the BMX rideable"): the BMX rider's bike, ridden by you as the hoverboard is (data/items.json bmx, grants bmx); others see you on it
-  const BMXP={...BMXK,name:'BMX',hint:'A CLICK SETS IT DOWN AND YOU GET ON. WASD PEDALS AND STEERS, SPACE HOPS, A CLICK GETS OFF.',onSay:'YOU SWING A LEG OVER THE BMX.',held:.5,acc:2.2,turn:2.2,drag:.5,knock:5,hop:2.6,
+  const BMXP={...BMXK,name:'BMX',cat:'skate',hint:'E SETS IT DOWN AND YOU GET ON. WASD PEDALS AND STEERS, SPACE HOPS, E GETS OFF.',onSay:'YOU SWING A LEG OVER THE BMX.',held:.5,acc:2.2,turn:2.2,drag:.5,knock:5,hop:2.6,
     make:()=>{ const m=BMXK.make(); m.scale.setScalar(TILE/.84*.75); return m; },
     place:(m,R,t,c)=>BMXK.place(m,R,t,c||{g:W3.group,S:(BODIES.by[BODIES.pick()]||{}).S||1})};
   SKATE.bmx=BMXP;
@@ -67,7 +67,7 @@ const SKATE={rails:[]}; window.SKATE=SKATE;
       const sign=new THREE.Mesh(new THREE.BoxGeometry(2*MH,1.5*MV,.06*MH),[MAT(),MAT(),MAT(),MAT(),new THREE.MeshBasicMaterial({map:tx}),new THREE.MeshBasicMaterial({map:tx})]), sp=at(GX+4.2,GZ-2.6);
       sign.geometry.deleteAttribute('color'); sign.material.forEach((m,i)=>{ if(i<4){ m.vertexColors=false; m.color.set(0x2a2d36); } }); sign.position.set(sp[0],wy_(1.6),sp[1]); sign.rotation.y=Math.PI+TH; G.add(sign);
       const post=new THREE.Mesh(new THREE.BoxGeometry(.1*MH,.9*MV,.1*MH),new THREE.MeshLambertMaterial({color:0x2a2d36})); post.position.set(sp[0],wy_(.45),sp[1]); G.add(post); }
-    SKATE.rails=(D.rails||[]).map(r=>{ const a=at(r[0],r[2]), b=at(r[3],r[5]); return {a:[a[0],wy_(r[1]),a[1]],b:[b[0],wy_(r[4]),b[1]],kind:r[6]}; });   // the grind lines, in the world
+    SKATE.rails.push(...(D.rails||[]).map(r=>{ const a=at(r[0],r[2]), b=at(r[3],r[5]); return {a:[a[0],wy_(r[1]),a[1]],b:[b[0],wy_(r[4]),b[1]],kind:r[6]}; }));   // the grind lines, in the world
     // the skaters, each where the kit stood them; they mill about near their spot
     BODS().then(J=>{ if(!G)return; SK={g:new THREE.Group(),list:[]}; SK.g.name='skaters'; scene.add(SK.g);
       D.people.forEach((p,i)=>{ const k=p.key==='skate-shop-owner'?'skateshop':'skater'+i, b=J.bodies['s'+p.b]; if(!b)return; BODIES.add({...BODIES.rebakedBody(J,'s'+p.b,{}),key:k,label:NAMES[p.key]||'A SKATER',root:SK.g,size:b.height/1.8,hd:p.hd+TH,ground:SKATE.ground,...(RIDERS[p.key]?{ride:KINDS[RIDERS[p.key][0]],rideSpeed:RIDERS[p.key][1]}:{})});

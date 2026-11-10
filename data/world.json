@@ -61,6 +61,16 @@
     "w": 81,
     "d": 57,
     "note": "the skate park (src/111fd-skatepark.js), out in the open in this section's park: its middle, the way its gate faces, its size in x and y (map units)"
+   },
+   {
+    "id": "skatepit",
+    "section": "B",
+    "x": 150,
+    "y": 372,
+    "w": 56,
+    "d": 40,
+    "sunk": true,
+    "note": "the skate pit (src/111fda-skatepit.js), a large concrete bowl out in the open deeper in this section's park: its middle and its size in x and y (map units); sunk: the far ground is cut over it"
    }
   ],
   "ring": {
@@ -402,10 +412,6 @@
      35.18
     ],
     [
-     36.68,
-     54.91
-    ],
-    [
      56.41,
      70.98
     ],
@@ -469,275 +475,189 @@
    "id": "subway",
    "name": "SUBWAY STAIRS",
    "kind": "stairs",
-   "x0": -51.9,
-   "x1": -47.9
+   "x0": 219.75,
+   "x1": 223.75,
+   "y0": -116.5,
+   "y1": -110.5,
+   "note": "on the Hudson promenade in front of the garage by the Bookstore (owner, 8 Nov 2026)"
   },
   {
    "id": "apts",
-   "name": "APARTMENTS",
+   "name": "THE TOWER",
    "kind": "front",
-   "x0": -70.925,
-   "x1": -52.5,
-   "y0": 141.3,
-   "y1": 169.9,
-   "face": "e"
-  },
-  {
-   "id": "bank",
-   "name": "THE BANK",
-   "kind": "front",
-   "x0": -46.9,
-   "x1": -23.81,
+   "x0": -47,
+   "x1": -17,
    "y0": -92.4,
-   "y1": -77
-  },
-  {
-   "id": "art",
-   "name": "THE ART MUSEUM",
-   "kind": "front",
-   "x0": -23.81,
-   "x1": 1.06,
-   "y0": -92.4,
-   "y1": -77
-  },
-  {
-   "id": "florist",
-   "name": "THE FLORIST",
-   "kind": "front",
-   "x0": 1.06,
-   "x1": 18.82,
-   "merchant": "tomato",
-   "lot": true
-  },
-  {
-   "id": "bees",
-   "kind": "front",
-   "x0": 18.82,
-   "x1": 36.58,
-   "name": "THE BEEKEEPER",
-   "merchant": "village_gardener",
-   "lot": true
-  },
-  {
-   "id": "bfly",
-   "kind": "front",
-   "x0": 36.58,
-   "x1": 54.34,
-   "name": "THE BUTTERFLY SHOP",
-   "merchant": "park_ranger",
-   "lot": true
-  },
-  {
-   "id": "birds",
-   "kind": "front",
-   "x0": 54.34,
-   "x1": 72.11,
-   "name": "THE BIRD SHOP",
-   "merchant": "forest_ranger",
-   "lot": true
-  },
-  {
-   "id": "pets",
-   "name": "THE PET STORE",
-   "kind": "front",
-   "x0": 72.11,
-   "x1": 89.87,
-   "merchant": "aquarium_service_technician",
-   "lot": true
-  },
-  {
-   "id": "mush",
-   "kind": "front",
-   "x0": 89.87,
-   "x1": 107.63,
-   "name": "THE MUSHROOM SHOP",
-   "merchant": "mushroom",
-   "lot": true
-  },
-  {
-   "id": "gems",
-   "kind": "front",
-   "x0": 116.37,
-   "x1": 139.75,
-   "name": "THE GEM SHOP",
-   "merchant": "scuba_diver",
-   "lot": true
-  },
-  {
-   "id": "armor",
-   "kind": "front",
-   "x0": 139.75,
-   "x1": 163.14,
-   "name": "THE ARMOURY",
-   "merchant": "samurai_warrior",
-   "lot": true
-  },
-  {
-   "id": "clothes",
-   "kind": "front",
-   "x0": 163.14,
-   "x1": 186.52,
-   "name": "THE CLOTHES SHOP",
-   "merchant": "valet_attendant",
-   "lot": true
-  },
-  {
-   "id": "skate",
-   "kind": "front",
-   "x0": 186.52,
-   "x1": 209.91,
-   "name": "THE SKATE SHOP",
-   "merchant": "skate_shop_owner",
-   "lot": true
-  },
-  {
-   "id": "diner",
-   "kind": "front",
-   "x0": 209.91,
-   "x1": 252,
-   "name": "THE DINER",
-   "merchant": "diner_waitress",
-   "lot": true
-  },
-  {
-   "id": "hotel",
-   "name": "THE HOTEL",
-   "kind": "front",
-   "x0": -51,
-   "x1": -36.42,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2,
-   "merchant": "front_desk_clerk",
-   "pf": "hotel"
+   "y1": -77,
+   "face": "n"
   },
   {
    "id": "bar",
    "name": "THE BAR",
    "kind": "front",
-   "x0": -34.92,
-   "x1": -27.63,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2,
+   "x0": 3.21,
+   "x1": 21.21,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n",
    "pf": "bar",
    "inW": 17,
    "inD": 26,
    "inH": 172
   },
   {
+   "id": "butterflies",
+   "name": "THE BUTTERFLY SHOP",
+   "kind": "front",
+   "x0": 21.71,
+   "x1": 40.92,
+   "lot": true,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n",
+   "inW": 18.0,
+   "inD": 9,
+   "inH": 112
+  },
+  {
+   "id": "pets",
+   "name": "DOGS & CATS",
+   "kind": "front",
+   "x0": 41.42,
+   "x1": 61.42,
+   "merchant": "aquarium_service_technician",
+   "lot": true,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n",
+   "inW": 18.8,
+   "inD": 9,
+   "inH": 112
+  },
+  {
+   "id": "reptiles",
+   "name": "LIZARDS & DRAGONS",
+   "kind": "front",
+   "x0": 61.92,
+   "x1": 77.92,
+   "lot": true,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n",
+   "inW": 14.8,
+   "inD": 9,
+   "inH": 112
+  },
+  {
+   "id": "birdshop",
+   "name": "THE BIRD SHOP",
+   "kind": "front",
+   "x0": 78.42,
+   "x1": 94.0,
+   "lot": true,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n",
+   "inW": 14.4,
+   "inD": 9,
+   "inH": 112
+  },
+  {
+   "id": "bodega",
+   "name": "THE BODEGA",
+   "kind": "front",
+   "x0": 94.5,
+   "x1": 107.63,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n",
+   "pf": "bodega"
+  },
+  {
+   "id": "arcade",
+   "name": "THE ARCADE",
+   "kind": "front",
+   "x0": 116.37,
+   "x1": 129.5,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n",
+   "pf": "bodega"
+  },
+  {
    "id": "theatre",
    "name": "THE MOVIE THEATRE",
    "kind": "front",
-   "x0": -26.13,
-   "x1": -4.26,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2,
+   "x0": 138.3,
+   "x1": 158.3,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n",
    "pf": "theatre"
   },
   {
    "id": "play",
    "name": "THE PLAYHOUSE",
    "kind": "front",
-   "x0": -2.76,
-   "x1": 19.1,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2,
+   "x0": 162.22,
+   "x1": 182.22,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n",
    "pf": "playhouse"
+  },
+  {
+   "id": "gym",
+   "name": "KNUCKLE & IRON",
+   "kind": "front",
+   "x0": 186.15,
+   "x1": 202.15,
+   "lot": true,
+   "inW": 22,
+   "inD": 17,
+   "inH": 130,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n"
+  },
+  {
+   "id": "bank",
+   "name": "THE BANK",
+   "kind": "front",
+   "x0": 206.07,
+   "x1": 226.07,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n"
+  },
+  {
+   "id": "art",
+   "name": "THE ART MUSEUM",
+   "kind": "front",
+   "x0": 230,
+   "x1": 252,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n"
   },
   {
    "id": "antiques",
    "kind": "front",
-   "x0": 20.6,
-   "x1": 35.18,
+   "x0": -51,
+   "x1": -37,
    "y0": -107.9,
    "y1": -95.9,
    "face": "s",
    "row": 2,
    "name": "ANTIQUES & PAWN",
-   "pf": "antiques"
-  },
-  {
-   "id": "outfitter",
-   "kind": "front",
-   "x0": 36.68,
-   "x1": 54.91,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2,
-   "name": "THE OUTFITTER",
-   "pf": "outfitter"
-  },
-  {
-   "id": "bath",
-   "name": "THE BATH HOUSE",
-   "kind": "front",
-   "x0": 56.41,
-   "x1": 70.98,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2,
-   "pf": "bath"
-  },
-  {
-   "id": "fishtables",
-   "kind": "lot",
-   "x0": 72.48,
-   "x1": 89.32,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2,
-   "name": "THE FISH MARKET",
-   "fence": "barbed"
-  },
-  {
-   "id": "flea",
-   "kind": "lot",
-   "x0": 90.82,
-   "x1": 106.13,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2,
-   "name": "THE FLEA MARKET"
-  },
-  {
-   "id": "flea2",
-   "kind": "lot",
-   "x0": 117.87,
-   "x1": 139.85,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2,
-   "name": "THE FLEA MARKET"
-  },
-  {
-   "id": "bodega",
-   "name": "THE BODEGA",
-   "kind": "front",
-   "x0": 141.35,
-   "x1": 164.5,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2,
-   "pf": "bodega"
+   "pf": "antiques",
+   "merchant": "junkman"
   },
   {
    "id": "fishing",
    "kind": "front",
-   "x0": 166,
-   "x1": 192.17,
+   "x0": -36.5,
+   "x1": -12.5,
    "y0": -107.9,
    "y1": -95.9,
    "face": "s",
@@ -747,11 +667,39 @@
    "pf": "outfitter"
   },
   {
+   "id": "armor",
+   "kind": "front",
+   "x0": -11.5,
+   "x1": 0.5,
+   "name": "THE ARMOURY",
+   "merchant": "samurai_warrior",
+   "lot": true,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2,
+   "pf": "florist"
+  },
+  {
+   "id": "skate",
+   "kind": "front",
+   "x0": 1.5,
+   "x1": 13.5,
+   "name": "THE SKATE SHOP",
+   "merchant": "skate_shop_owner",
+   "lot": true,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2,
+   "pf": "florist"
+  },
+  {
    "id": "books",
    "name": "THE BOOKSTORE",
    "kind": "front",
-   "x0": 193.67,
-   "x1": 214.6,
+   "x0": 14.5,
+   "x1": 35.5,
    "merchant": "professor",
    "at": [
     -2.4,
@@ -767,42 +715,114 @@
    "pf": "books"
   },
   {
-   "id": "arcade",
-   "name": "THE ARCADE",
+   "id": "aquarium",
    "kind": "front",
-   "x0": 216.1,
-   "x1": 226.57,
+   "x0": 36.68,
+   "x1": 54.91,
    "y0": -107.9,
    "y1": -95.9,
    "face": "s",
    "row": 2,
-   "pf": "arcade"
+   "name": "THE AQUARIUM",
+   "merchant": "scuba_diver",
+   "pf": "florist",
+   "bare": true
   },
   {
-   "id": "tailor",
-   "name": "THE TAILOR",
-   "kind": "front",
-   "x0": 228.07,
-   "x1": 238.53,
+   "id": "fishtables",
+   "kind": "lot",
+   "x0": 57.01,
+   "x1": 77.01,
    "y0": -107.9,
    "y1": -95.9,
    "face": "s",
    "row": 2,
-   "merchant": "doorman",
-   "pf": "tailor"
+   "name": "THE FISH TABLES",
+   "fence": "barbed"
   },
   {
-   "id": "barber",
-   "name": "THE BARBER",
-   "kind": "front",
-   "x0": 240.03,
-   "x1": 250.5,
+   "id": "flea",
+   "kind": "lot",
+   "x0": 77.01,
+   "x1": 107.63,
    "y0": -107.9,
    "y1": -95.9,
    "face": "s",
    "row": 2,
-   "merchant": "lounge_crooner",
-   "pf": "barber"
+   "name": "THE FLEA MARKET"
+  },
+  {
+   "id": "fishmarket",
+   "kind": "market",
+   "x0": 116.37,
+   "x1": 252,
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2,
+   "name": "THE FISH MARKET",
+   "note": "the Hudson row east of the way through (owner, 9 Nov 2026): the yard, the tin shed, the brick shed (x spans), the highway over the promenade (y span, deck height in metres, a bent every so many tiles); stalls: a wholesaler each (who: its record in characters.json)",
+   "yard": [
+    117,
+    147
+   ],
+   "tin": [
+    148.5,
+    200
+   ],
+   "brick": [
+    203.5,
+    250.5
+   ],
+   "highway": {
+    "y0": -128.6,
+    "y1": -111.4,
+    "h": 6.6,
+    "every": 11.3
+   },
+   "stalls": [
+    {
+     "who": "fm_bluewater",
+     "x": 160.5
+    },
+    {
+     "who": "fm_carmelo",
+     "x": 187.5
+    },
+    {
+     "who": "fm_oldslip",
+     "x": 215
+    },
+    {
+     "who": "fm_lightning",
+     "x": 240
+    }
+   ]
+  },
+  {
+   "id": "bath",
+   "name": "THE BATH HOUSE",
+   "kind": "front",
+   "x0": 203.24,
+   "x1": 226.76,
+   "y0": 152.2,
+   "y1": 163.76,
+   "face": "s",
+   "park": true
+  },
+  {
+   "id": "barn",
+   "name": "THE BARN",
+   "kind": "front",
+   "x0": 59.8,
+   "x1": 68.2,
+   "y0": 16.4,
+   "y1": 23.6,
+   "face": "e",
+   "park": true,
+   "inW": 26,
+   "inD": 22,
+   "inH": 173
   }
  ],
  "shells": [],
@@ -810,42 +830,42 @@
   {
    "id": "c1",
    "model": "muscle-car-60s",
-   "x": 78.2,
+   "x": 270,
    "y": -67,
    "hd": 90
   },
   {
    "id": "c2",
    "model": "convertible-60s",
-   "x": 87.3,
+   "x": 279.1,
    "y": -67,
    "hd": 90
   },
   {
    "id": "c3",
    "model": "station-wagon-70s",
-   "x": 96.8,
+   "x": 288.6,
    "y": -67,
    "hd": 90
   },
   {
    "id": "c4",
    "model": "pickup-truck-70s",
-   "x": 105.9,
+   "x": 297.7,
    "y": -67,
    "hd": 90
   },
   {
    "id": "c5",
    "model": "wedge-coupe-80s",
-   "x": 123,
+   "x": 306.8,
    "y": -67,
    "hd": 90
   },
   {
    "id": "c6",
    "model": "camper-van",
-   "x": 131.8,
+   "x": 315.6,
    "y": -67,
    "hd": 90
   }
@@ -1006,6 +1026,129 @@
     "d": 8,
     "face": "e"
    }
+  ],
+  "sites": [
+   {
+    "id": "bath",
+    "x": 215,
+    "y": 152,
+    "w": 27.53,
+    "d": 17.55,
+    "note": "the bath house on its island in the lake: no trees or paths here"
+   },
+   {
+    "id": "bridge",
+    "x": 215,
+    "y": 102,
+    "w": 6,
+    "d": 8,
+    "note": "where the island's footbridge lands: no trees here"
+   },
+   {
+    "id": "farm",
+    "x": 72,
+    "y": 20,
+    "w": 34,
+    "d": 24,
+    "note": "the farm (owner, 8 Nov 2026; moved deeper into the park 9 Nov 2026): the barn and its paddock; no trees or paths here; pen the paddock inside its fence (map tiles), gate its shut gate in the fence's gap (rot as a thing's)",
+    "pen": [
+     73.3,
+     10.8,
+     86.0,
+     28.2
+    ],
+    "gate": {
+     "x": 86.78,
+     "y": 21.9,
+     "rot": 1.5708
+    }
+   }
+  ],
+  "stalls": [
+   {
+    "id": "bfly",
+    "name": "THE BUTTERFLY STALL",
+    "merchant": "park_ranger",
+    "goods": [
+     "net",
+     "bjar",
+     "bjar",
+     "bjar"
+    ],
+    "side": "w",
+    "slot": 0
+   },
+   {
+    "id": "bees",
+    "name": "THE BEEKEEPER'S STALL",
+    "merchant": "village_gardener",
+    "goods": [
+     "hive",
+     "comb",
+     "honey",
+     "honey"
+    ],
+    "side": "w",
+    "slot": 1
+   },
+   {
+    "id": "birds",
+    "name": "THE BIRD STALL",
+    "merchant": "forest_ranger",
+    "goods": [
+     "seed",
+     "cage",
+     "cage",
+     "seed"
+    ],
+    "side": "w",
+    "slot": 2
+   },
+   {
+    "id": "mush",
+    "name": "THE MUSHROOM STALL",
+    "side": "e",
+    "slot": 0
+   },
+   {
+    "id": "tomato",
+    "name": "THE VEGETABLE STALL",
+    "side": "e",
+    "slot": 1
+   },
+   {
+    "id": "gems",
+    "name": "THE GEM STALL",
+    "merchant": "scuba_diver",
+    "goods": [
+     "geode",
+     "stone",
+     "crystal",
+     "crystal"
+    ],
+    "side": "e",
+    "slot": 2
+   }
+  ],
+  "stallsNote": "the park wall's stalls (owner, 8 Nov 2026): side w or e of the park gate, slot 0 nearest it; merchant the character who keeps it, goods what its table shows (STALL.GOODS)",
+  "islands": [
+   {
+    "x": 215,
+    "y": 152,
+    "rx": 19,
+    "ry": 14,
+    "note": "the bath house's island in the middle of the lake (owner, 8 Nov 2026): ghosts float out to it"
+   }
+  ],
+  "bridges": [
+   {
+    "x0": 215,
+    "y0": 140,
+    "x1": 215,
+    "y1": 102,
+    "w": 3,
+    "note": "the bath house island's footbridge to the shore, walked off once you are alive again (owner, 8 Nov 2026)"
+   }
   ]
  },
  "paths": [
@@ -1054,6 +1197,7 @@
    ]
   }
  ],
+ "racks": {"note": "the brochure racks on the street (159k-brochures): map tiles, rot the way one faces in radians", "at": [{"x": 108.5, "y": -40.5}, {"x": 127, "y": -71.8}, {"x": 171.5, "y": -110.2}]},
  "things": [
   {
    "k": "meter",
@@ -1160,42 +1304,42 @@
   },
   {
    "k": "mstall",
-   "x": 75.93,
+   "x": 62.04,
    "y": -104.6
   },
   {
    "k": "mstall",
-   "x": 80.9,
+   "x": 67.01,
    "y": -104.6
   },
   {
    "k": "mstall",
-   "x": 85.88,
+   "x": 71.99,
    "y": -104.6
   },
   {
    "k": "ftable",
-   "x": 78.41,
+   "x": 64.52,
    "y": -100
   },
   {
    "k": "ftable",
-   "x": 83.39,
+   "x": 69.5,
    "y": -100
   },
   {
    "k": "scrate",
-   "x": 74.28,
+   "x": 60.39,
    "y": -98.5
   },
   {
    "k": "scrate",
-   "x": 87.52,
+   "x": 73.63,
    "y": -98.5
   },
   {
    "k": "sacks",
-   "x": 86.74,
+   "x": 72.85,
    "y": -98.4
   },
   {
@@ -1212,18 +1356,6 @@
   },
   {
    "k": "p:parkbench",
-   "x": 104.71,
-   "y": -23.43,
-   "rot": 1.478
-  },
-  {
-   "k": "p:parkbench",
-   "x": 113.67,
-   "y": -22.59,
-   "rot": -1.664
-  },
-  {
-   "k": "p:parkbench",
    "x": 104.51,
    "y": -18.2,
    "rot": 1.583
@@ -1233,18 +1365,6 @@
    "x": 113.5,
    "y": -18.31,
    "rot": -1.559
-  },
-  {
-   "k": "p:parkbench",
-   "x": 104.86,
-   "y": -12.99,
-   "rot": 1.686
-  },
-  {
-   "k": "p:parkbench",
-   "x": 113.8,
-   "y": -14.02,
-   "rot": -1.456
   },
   {
    "k": "p:parkbench",
@@ -1260,18 +1380,6 @@
   },
   {
    "k": "p:parkbench",
-   "x": 106.78,
-   "y": -3.07,
-   "rot": 1.816
-  },
-  {
-   "k": "p:parkbench",
-   "x": 115.51,
-   "y": -5.26,
-   "rot": -1.326
-  },
-  {
-   "k": "p:parkbench",
    "x": 107.98,
    "y": 1.58,
    "rot": 1.824
@@ -1281,18 +1389,6 @@
    "x": 116.69,
    "y": -0.68,
    "rot": -1.317
-  },
-  {
-   "k": "p:parkbench",
-   "x": 109.08,
-   "y": 6.06,
-   "rot": 1.793
-  },
-  {
-   "k": "p:parkbench",
-   "x": 117.86,
-   "y": 4.08,
-   "rot": -1.348
   },
   {
    "k": "p:parkbench",
@@ -1308,39 +1404,15 @@
   },
   {
    "k": "p:parkbench",
-   "x": 110.42,
-   "y": 14.76,
-   "rot": 1.635
-  },
-  {
-   "k": "p:parkbench",
-   "x": 119.4,
-   "y": 14.18,
-   "rot": -1.506
-  },
-  {
-   "k": "p:parkbench",
    "x": 119.45,
    "y": 19.42,
    "rot": -1.613
   },
   {
    "k": "p:parkbench",
-   "x": 118.96,
-   "y": 24.6,
-   "rot": -1.712
-  },
-  {
-   "k": "p:parkbench",
    "x": 118.04,
    "y": 29.61,
    "rot": -1.785
-  },
-  {
-   "k": "p:parkbench",
-   "x": 116.89,
-   "y": 34.4,
-   "rot": -1.822
   },
   {
    "k": "p:parkbench",
@@ -1356,27 +1428,9 @@
   },
   {
    "k": "p:parkbench",
-   "x": 105.84,
-   "y": 41.6,
-   "rot": 1.364
-  },
-  {
-   "k": "p:parkbench",
-   "x": 114.65,
-   "y": 43.45,
-   "rot": -1.778
-  },
-  {
-   "k": "p:parkbench",
    "x": 104.97,
    "y": 46.61,
    "rot": 1.436
-  },
-  {
-   "k": "p:parkbench",
-   "x": 107.44,
-   "y": 71.86,
-   "rot": 1.825
   },
   {
    "k": "p:parkbench",
@@ -1392,18 +1446,6 @@
   },
   {
    "k": "p:parkbench",
-   "x": 109.6,
-   "y": 80.85,
-   "rot": 1.763
-  },
-  {
-   "k": "p:parkbench",
-   "x": 118.43,
-   "y": 79.13,
-   "rot": -1.379
-  },
-  {
-   "k": "p:parkbench",
    "x": 110.26,
    "y": 85.18,
    "rot": 1.679
@@ -1413,18 +1455,6 @@
    "x": 119.21,
    "y": 84.21,
    "rot": -1.462
-  },
-  {
-   "k": "p:parkbench",
-   "x": 110.5,
-   "y": 89.47,
-   "rot": 1.576
-  },
-  {
-   "k": "p:parkbench",
-   "x": 119.5,
-   "y": 89.43,
-   "rot": -1.566
   },
   {
    "k": "p:parkbench",
@@ -1440,18 +1470,6 @@
   },
   {
    "k": "p:parkbench",
-   "x": 109.65,
-   "y": 98.08,
-   "rot": 1.385
-  },
-  {
-   "k": "p:parkbench",
-   "x": 118.49,
-   "y": 99.74,
-   "rot": -1.757
-  },
-  {
-   "k": "p:parkbench",
    "x": 108.68,
    "y": 102.49,
    "rot": 1.331
@@ -1461,18 +1479,6 @@
    "x": 117.42,
    "y": 104.63,
    "rot": -1.811
-  },
-  {
-   "k": "p:parkbench",
-   "x": 107.51,
-   "y": 107.04,
-   "rot": 1.316
-  },
-  {
-   "k": "p:parkbench",
-   "x": 116.22,
-   "y": 109.31,
-   "rot": -1.826
   },
   {
    "k": "p:parkbench",
@@ -1488,18 +1494,6 @@
   },
   {
    "k": "p:parkbench",
-   "x": 105.31,
-   "y": 116.69,
-   "rot": 1.399
-  },
-  {
-   "k": "p:parkbench",
-   "x": 114.18,
-   "y": 118.23,
-   "rot": -1.742
-  },
-  {
-   "k": "p:parkbench",
    "x": 104.66,
    "y": 121.82,
    "rot": 1.49
@@ -1509,18 +1503,6 @@
    "x": 113.63,
    "y": 122.54,
    "rot": -1.651
-  },
-  {
-   "k": "p:parkbench",
-   "x": 104.52,
-   "y": 127.05,
-   "rot": 1.596
-  },
-  {
-   "k": "p:parkbench",
-   "x": 113.51,
-   "y": 126.82,
-   "rot": -1.545
   },
   {
    "k": "p:parkbench",
@@ -1536,18 +1518,6 @@
   },
   {
    "k": "p:parkbench",
-   "x": 105.78,
-   "y": 137.29,
-   "rot": 1.776
-  },
-  {
-   "k": "p:parkbench",
-   "x": 114.6,
-   "y": 135.46,
-   "rot": -1.366
-  },
-  {
-   "k": "p:parkbench",
    "x": 106.91,
    "y": 142.12,
    "rot": 1.819
@@ -1557,18 +1527,6 @@
    "x": 115.63,
    "y": 139.91,
    "rot": -1.323
-  },
-  {
-   "k": "p:parkbench",
-   "x": 108.11,
-   "y": 146.74,
-   "rot": 1.823
-  },
-  {
-   "k": "p:parkbench",
-   "x": 116.82,
-   "y": 144.5,
-   "rot": -1.319
   },
   {
    "k": "p:parkbench",
@@ -1584,18 +1542,6 @@
   },
   {
    "k": "p:parkbench",
-   "x": 110.01,
-   "y": 155.6,
-   "rot": 1.719
-  },
-  {
-   "k": "p:parkbench",
-   "x": 118.91,
-   "y": 154.26,
-   "rot": -1.422
-  },
-  {
-   "k": "p:parkbench",
    "x": 110.45,
    "y": 159.9,
    "rot": 1.622
@@ -1605,18 +1551,6 @@
    "x": 119.44,
    "y": 159.43,
    "rot": -1.519
-  },
-  {
-   "k": "p:parkbench",
-   "x": 110.44,
-   "y": 164.18,
-   "rot": 1.516
-  },
-  {
-   "k": "p:parkbench",
-   "x": 119.42,
-   "y": 164.67,
-   "rot": -1.626
   },
   {
    "k": "p:parkbench",
@@ -3815,11 +3749,6 @@
    "y": 56
   },
   {
-   "k": "p:horse",
-   "x": 98,
-   "y": -30
-  },
-  {
    "k": "p:trashcan",
    "x": 101.5,
    "y": -26
@@ -3838,16 +3767,6 @@
    "k": "p:trashcan",
    "x": 104.5,
    "y": 42
-  },
-  {
-   "k": "p:jlamp",
-   "x": 173,
-   "y": 55
-  },
-  {
-   "k": "p:jlamp",
-   "x": 206,
-   "y": 64
   },
   {
    "k": "p:archbridge",
@@ -4037,258 +3956,119 @@
    "y": 160
   },
   {
-   "k": "p:jlamp",
-   "x": 80,
-   "y": 154
-  },
-  {
-   "k": "p:jlamp",
-   "x": 100,
-   "y": 154
-  },
-  {
    "k": "p:trashcan",
    "x": 105,
    "y": 165
   },
   {
-   "k": "p:jlamp",
-   "x": 103.41,
-   "y": -22.2,
-   "rot": 1.505
+   "k": "p:redbarn",
+   "x": 64,
+   "y": 20,
+   "rot": 1.5708,
+   "fixed": true
   },
   {
-   "k": "p:jlamp",
-   "x": 116.14,
-   "y": -7.76,
-   "rot": -1.344
+   "k": "p:picket",
+   "x": 74.88,
+   "y": 10.0,
+   "rot": 0
   },
   {
-   "k": "p:jlamp",
-   "x": 108.57,
-   "y": 9.56,
-   "rot": 1.746
+   "k": "p:picket",
+   "x": 74.88,
+   "y": 29.04,
+   "rot": 0
   },
   {
-   "k": "p:jlamp",
-   "x": 105.51,
-   "y": 37.68,
-   "rot": 1.329
+   "k": "p:picket",
+   "x": 79.64,
+   "y": 10.0,
+   "rot": 0
   },
   {
-   "k": "p:jlamp",
-   "x": 108.25,
-   "y": 98.93,
-   "rot": 1.367
+   "k": "p:picket",
+   "x": 79.64,
+   "y": 29.04,
+   "rot": 0
   },
   {
-   "k": "p:jlamp",
-   "x": 115.77,
-   "y": 116.28,
-   "rot": -1.776
+   "k": "p:picket",
+   "x": 84.4,
+   "y": 10.0,
+   "rot": 0
   },
   {
-   "k": "p:jlamp",
-   "x": 103.58,
-   "y": 131.11,
-   "rot": 1.677
+   "k": "p:picket",
+   "x": 84.4,
+   "y": 29.04,
+   "rot": 0
   },
   {
-   "k": "p:jlamp",
-   "x": 117.98,
-   "y": 144.2,
-   "rot": -1.319
+   "k": "p:picket",
+   "x": 72.5,
+   "y": 12.38,
+   "rot": 1.5708
   },
   {
-   "k": "p:jlamp",
-   "x": 109.29,
-   "y": 160.99,
-   "rot": 1.594
+   "k": "p:picket",
+   "x": 86.78,
+   "y": 12.38,
+   "rot": 1.5708
   },
   {
-   "k": "p:jlamp",
-   "x": -8.18,
-   "y": 68.11,
-   "rot": 3.081
+   "k": "p:picket",
+   "x": 72.5,
+   "y": 17.14,
+   "rot": 1.5708
   },
   {
-   "k": "p:jlamp",
-   "x": 6.17,
-   "y": 55.24,
-   "rot": 0.234
+   "k": "p:picket",
+   "x": 86.78,
+   "y": 17.14,
+   "rot": 1.5708
   },
   {
-   "k": "p:jlamp",
-   "x": 23.47,
-   "y": 62.79,
-   "rot": -2.977
+   "k": "p:picket",
+   "x": 72.5,
+   "y": 21.9,
+   "rot": 1.5708
   },
   {
-   "k": "p:jlamp",
-   "x": 38.87,
-   "y": 51.55,
-   "rot": -0.164
+   "k": "p:picket",
+   "x": 72.5,
+   "y": 26.66,
+   "rot": 1.5708
   },
   {
-   "k": "p:jlamp",
-   "x": 51.65,
-   "y": 66.32,
-   "rot": 2.905
-  },
-  {
-   "k": "p:jlamp",
-   "x": 67.96,
-   "y": 56.73,
-   "rot": 0.061
-  },
-  {
-   "k": "p:jlamp",
-   "x": 84.94,
-   "y": 65.01,
-   "rot": -2.882
-  },
-  {
-   "k": "p:jlamp",
-   "x": 98.3,
-   "y": 50.89,
-   "rot": 0.061
-  },
-  {
-   "k": "p:jlamp",
-   "x": 129.95,
-   "y": 56.2,
-   "rot": -0.164
-  },
-  {
-   "k": "p:jlamp",
-   "x": 145.35,
-   "y": 67.46,
-   "rot": -2.977
-  },
-  {
-   "k": "p:jlamp",
-   "x": 158.13,
-   "y": 52.68,
-   "rot": 0.237
-  },
-  {
-   "k": "p:jlamp",
-   "x": 219.14,
-   "y": 55.25,
-   "rot": 0.234
-  },
-  {
-   "k": "p:jlamp",
-   "x": 251.84,
-   "y": 51.54,
-   "rot": -0.164
-  },
-  {
-   "k": "p:jlamp",
-   "x": 109.63,
-   "y": 19.81,
-   "rot": 0.428
-  },
-  {
-   "k": "p:jlamp",
-   "x": 125.63,
-   "y": 25.05,
-   "rot": -2.714
-  },
-  {
-   "k": "p:jlamp",
-   "x": 132.16,
-   "y": 9.54,
-   "rot": 0.428
-  },
-  {
-   "k": "p:jlamp",
-   "x": 48.35,
-   "y": 61.47,
-   "rot": -1.924
-  },
-  {
-   "k": "p:jlamp",
-   "x": 34.32,
-   "y": 71.23,
-   "rot": 1.531
-  },
-  {
-   "k": "p:jlamp",
-   "x": 47.8,
-   "y": 81.58,
-   "rot": -1.224
-  },
-  {
-   "k": "p:jlamp",
-   "x": 40.2,
-   "y": 95.98,
-   "rot": 1.677
-  },
-  {
-   "k": "p:jlamp",
-   "x": 145.78,
-   "y": 174.62
-  },
-  {
-   "k": "p:jlamp",
-   "x": 151.2,
-   "y": 152.72
-  },
-  {
-   "k": "p:jlamp",
-   "x": 163.2,
-   "y": 132.51
-  },
-  {
-   "k": "p:jlamp",
-   "x": 190.28,
-   "y": 108.9
-  },
-  {
-   "k": "p:jlamp",
-   "x": 214.62,
-   "y": 97.41
-  },
-  {
-   "k": "p:jlamp",
-   "x": 245.79,
-   "y": 90.39
-  },
-  {
-   "k": "p:jlamp",
-   "x": 142.19,
-   "y": 2.61
-  },
-  {
-   "k": "p:jlamp",
-   "x": 162.5,
-   "y": 10
+   "k": "p:picket",
+   "x": 86.78,
+   "y": 26.66,
+   "rot": 1.5708
   }
  ],
  "pathWidth": 7.2,
  "homes": {
   "donut": [
-   152.93,
-   -110.3,
+   101.06,
+   -74.6,
    5,
    "bodega"
   ],
   "number80": [
-   -31.27,
-   -110.3,
+   12.21,
+   -74.6,
    5,
    "bar"
   ],
   "origamifox": [
-   221.33,
-   -110.3,
+   122.94,
+   -74.6,
    5,
    "arcade"
   ],
   "manatee": [
-   -15.2,
-   -110.3,
+   148.3,
+   -74.6,
    5,
    "theatre"
   ],
@@ -4597,6 +4377,24 @@
    118,
    44,
    0
+  ],
+  "hanga_roa_fisherman": [
+   161.38,
+   -104.2,
+   0,
+   null
+  ],
+  "trucker": [
+   124.6,
+   -103,
+   0,
+   null
+  ],
+  "railway_carter": [
+   174,
+   -110.3,
+   9,
+   null
   ]
  },
  "editor": {
@@ -6353,7 +6151,7 @@
  },
  "bigTrees": [
   {
-   "note": "THE BIG TREES (owner, 7 Nov 2026): giants in the middle of the park, map tiles; kind A level branch, B rising, C low and sagging; face: where the big branch reaches, degrees; climb: SPACE next to it climbs it"
+   "note": "THE BIG TREES (owner, 7 Nov 2026): giants in the middle of the park, map tiles; kind A level branch, B rising, C low and sagging; face: where the big branch reaches, degrees; climb: SPACE next to it climbs it; s: its size against those (owner, 8 Nov 2026: \"add 12 more large trees ranging from 25-50% smaller as they get further [from the] middle. tallest tree in middle\")"
   },
   {
    "kind": "A",
@@ -6396,6 +6194,102 @@
    "y": 31.4,
    "face": 106,
    "climb": true
+  },
+  {
+   "kind": "A",
+   "x": 120,
+   "y": 72,
+   "face": 0,
+   "climb": true,
+   "s": 1.2
+  },
+  {
+   "kind": "B",
+   "x": 127.8,
+   "y": 96.6,
+   "face": 137,
+   "climb": true,
+   "s": 0.9
+  },
+  {
+   "kind": "C",
+   "x": 91,
+   "y": 78.6,
+   "face": 274,
+   "climb": true,
+   "s": 0.884
+  },
+  {
+   "kind": "A",
+   "x": 135,
+   "y": 49.9,
+   "face": 51,
+   "climb": true,
+   "s": 0.897
+  },
+  {
+   "kind": "B",
+   "x": 149,
+   "y": 65.4,
+   "face": 188,
+   "climb": true,
+   "s": 0.884
+  },
+  {
+   "kind": "C",
+   "x": 82.5,
+   "y": 127.2,
+   "face": 325,
+   "climb": true,
+   "s": 0.723
+  },
+  {
+   "kind": "A",
+   "x": 42.1,
+   "y": 33.8,
+   "face": 102,
+   "climb": true,
+   "s": 0.636
+  },
+  {
+   "kind": "B",
+   "x": 197.9,
+   "y": 110.2,
+   "face": 239,
+   "climb": true,
+   "s": 0.636
+  },
+  {
+   "kind": "C",
+   "x": 143.3,
+   "y": 145.9,
+   "face": 16,
+   "climb": true,
+   "s": 0.676
+  },
+  {
+   "kind": "A",
+   "x": 96.7,
+   "y": -1.9,
+   "face": 153,
+   "climb": true,
+   "s": 0.676
+  },
+  {
+   "kind": "B",
+   "x": 165,
+   "y": 5.7,
+   "face": 290,
+   "climb": true,
+   "s": 0.665
+  },
+  {
+   "kind": "C",
+   "x": 195,
+   "y": 72,
+   "face": 67,
+   "climb": true,
+   "s": 0.687
   }
  ],
  "cloudTrees": [],
@@ -6431,69 +6325,60 @@
     -38,
     252,
     -231.5
+   ],
+   [
+    -52.5,
+    -38,
+    -24.5,
+    -38
+   ],
+   [
+    -24.5,
+    -38,
+    -24.5,
+    181
    ]
   ],
   "runs": [
    [
     "x",
-    -100,
-    -330,
+    -204.5,
+    -3000,
     -92.4,
     -77
    ],
    [
     "x",
-    -72,
-    -330,
-    -37,
-    -22
-   ],
-   [
-    "x",
-    -100,
-    -330,
+    -101.2,
+    -3000,
     -107.9,
     -95.9
    ],
    [
     "x",
-    254,
-    520,
+    404,
+    3000,
     -92.4,
     -77
    ],
    [
     "x",
     254,
-    520,
+    3000,
     -107.9,
     -95.9
-   ],
-   [
-    "x",
-    266,
-    520,
-    -37,
-    -22
-   ],
-   [
-    "y",
-    181.5,
-    520,
-    -66.8,
-    -52.5
    ]
   ],
   "near": 60,
   "ground": {
-   "note": "the land past the edges (owner, 7 Nov 2026: \"set a base color for far off distance things like grass\"): one low-res grass ground under everything outside the section, the big lake's whole shore in it (box x0, y0, x1, y1 in tiles; tiles a pixel; grass and water colours)",
+   "note": "the land past the edges (owner, 7 Nov 2026: \"set a base color for far off distance things like grass\"; 8 Nov 2026: the whole of Central Park, the city round it): one low-res picture under everything outside the section: grass in park (the far park's box, twice the ring's park each way, owner 10 Nov 2026), outer (its streets' outer edge) road, the city past them in blocks (city, its streets every block tiles); the park's waters and lawns (x, y, rx, ry, turn in degrees) and paths ([x,y] points, the drive and the cross roads); the big lake's whole shore in it (box x0, y0, x1, y1 in tiles; tiles a pixel; colours)",
    "box": [
-    -600,
+    -2300,
     -130.1,
-    900,
-    800
+    2540,
+    2160
    ],
-   "px": 2,
+   "px": 4,
    "grass": [
     62,
     96,
@@ -6503,111 +6388,874 @@
     164,
     198,
     236
-   ]
+   ],
+   "city": [
+    88,
+    86,
+    84
+   ],
+   "street": [
+    50,
+    51,
+    56
+   ],
+   "block": [
+    64,
+    28
+   ],
+   "lawn": [
+    96,
+    138,
+    58
+   ],
+   "path": [
+    178,
+    170,
+    148
+   ],
+   "waters": [
+    [
+     1060,
+     250,
+     170,
+     120,
+     0
+    ],
+    [
+     470,
+     90,
+     60,
+     25,
+     8
+    ],
+    [
+     1260,
+     80,
+     60,
+     45,
+     0
+    ],
+    [
+     -822,
+     250,
+     170,
+     120,
+     0
+    ],
+    [
+     -232,
+     90,
+     60,
+     25,
+     -8
+    ],
+    [
+     -1022,
+     80,
+     60,
+     45,
+     0
+    ],
+    [
+     1060,
+     662,
+     170,
+     120,
+     0
+    ],
+    [
+     470,
+     822,
+     60,
+     25,
+     -8
+    ],
+    [
+     1260,
+     832,
+     60,
+     45,
+     0
+    ],
+    [
+     -822,
+     662,
+     170,
+     120,
+     0
+    ],
+    [
+     -232,
+     822,
+     60,
+     25,
+     8
+    ],
+    [
+     -1022,
+     832,
+     60,
+     45,
+     0
+    ]
+   ],
+   "lawns": [
+    [
+     760,
+     230,
+     130,
+     85,
+     0
+    ],
+    [
+     470,
+     260,
+     90,
+     55,
+     0
+    ],
+    [
+     -522,
+     230,
+     130,
+     85,
+     0
+    ],
+    [
+     -232,
+     260,
+     90,
+     55,
+     0
+    ],
+    [
+     760,
+     682,
+     130,
+     85,
+     0
+    ],
+    [
+     470,
+     652,
+     90,
+     55,
+     0
+    ],
+    [
+     -522,
+     682,
+     130,
+     85,
+     0
+    ],
+    [
+     -232,
+     652,
+     90,
+     55,
+     0
+    ]
+   ],
+   "paths": [
+    [
+     [
+      1242,
+      -8
+     ],
+     [
+      1265,
+      -3
+     ],
+     [
+      1284,
+      10
+     ],
+     [
+      1297,
+      29
+     ],
+     [
+      1302,
+      52
+     ],
+     [
+      1302,
+      366
+     ],
+     [
+      1297,
+      389
+     ],
+     [
+      1284,
+      408
+     ],
+     [
+      1265,
+      421
+     ],
+     [
+      1242,
+      426
+     ],
+     [
+      66,
+      426
+     ],
+     [
+      43,
+      421
+     ],
+     [
+      24,
+      408
+     ],
+     [
+      11,
+      389
+     ],
+     [
+      6,
+      366
+     ],
+     [
+      6,
+      52
+     ],
+     [
+      11,
+      29
+     ],
+     [
+      24,
+      10
+     ],
+     [
+      43,
+      -3
+     ],
+     [
+      66,
+      -8
+     ],
+     [
+      1242,
+      -8
+     ]
+    ],
+    [
+     [
+      330,
+      -38
+     ],
+     [
+      350,
+      100
+     ],
+     [
+      310,
+      300
+     ],
+     [
+      330,
+      456
+     ]
+    ],
+    [
+     [
+      640,
+      -38
+     ],
+     [
+      660,
+      100
+     ],
+     [
+      620,
+      300
+     ],
+     [
+      640,
+      456
+     ]
+    ],
+    [
+     [
+      960,
+      -38
+     ],
+     [
+      980,
+      100
+     ],
+     [
+      940,
+      300
+     ],
+     [
+      960,
+      456
+     ]
+    ],
+    [
+     [
+      -1004,
+      -8
+     ],
+     [
+      -1027,
+      -3
+     ],
+     [
+      -1046,
+      10
+     ],
+     [
+      -1059,
+      29
+     ],
+     [
+      -1064,
+      52
+     ],
+     [
+      -1064,
+      366
+     ],
+     [
+      -1059,
+      389
+     ],
+     [
+      -1046,
+      408
+     ],
+     [
+      -1027,
+      421
+     ],
+     [
+      -1004,
+      426
+     ],
+     [
+      172,
+      426
+     ],
+     [
+      195,
+      421
+     ],
+     [
+      214,
+      408
+     ],
+     [
+      227,
+      389
+     ],
+     [
+      232,
+      366
+     ],
+     [
+      232,
+      52
+     ],
+     [
+      227,
+      29
+     ],
+     [
+      214,
+      10
+     ],
+     [
+      195,
+      -3
+     ],
+     [
+      172,
+      -8
+     ],
+     [
+      -1004,
+      -8
+     ]
+    ],
+    [
+     [
+      -92,
+      -38
+     ],
+     [
+      -112,
+      100
+     ],
+     [
+      -72,
+      300
+     ],
+     [
+      -92,
+      456
+     ]
+    ],
+    [
+     [
+      -402,
+      -38
+     ],
+     [
+      -422,
+      100
+     ],
+     [
+      -382,
+      300
+     ],
+     [
+      -402,
+      456
+     ]
+    ],
+    [
+     [
+      -722,
+      -38
+     ],
+     [
+      -742,
+      100
+     ],
+     [
+      -702,
+      300
+     ],
+     [
+      -722,
+      456
+     ]
+    ],
+    [
+     [
+      1242,
+      920
+     ],
+     [
+      1265,
+      915
+     ],
+     [
+      1284,
+      902
+     ],
+     [
+      1297,
+      883
+     ],
+     [
+      1302,
+      860
+     ],
+     [
+      1302,
+      546
+     ],
+     [
+      1297,
+      523
+     ],
+     [
+      1284,
+      504
+     ],
+     [
+      1265,
+      491
+     ],
+     [
+      1242,
+      486
+     ],
+     [
+      66,
+      486
+     ],
+     [
+      43,
+      491
+     ],
+     [
+      24,
+      504
+     ],
+     [
+      11,
+      523
+     ],
+     [
+      6,
+      546
+     ],
+     [
+      6,
+      860
+     ],
+     [
+      11,
+      883
+     ],
+     [
+      24,
+      902
+     ],
+     [
+      43,
+      915
+     ],
+     [
+      66,
+      920
+     ],
+     [
+      1242,
+      920
+     ]
+    ],
+    [
+     [
+      330,
+      950
+     ],
+     [
+      350,
+      812
+     ],
+     [
+      310,
+      612
+     ],
+     [
+      330,
+      456
+     ]
+    ],
+    [
+     [
+      640,
+      950
+     ],
+     [
+      660,
+      812
+     ],
+     [
+      620,
+      612
+     ],
+     [
+      640,
+      456
+     ]
+    ],
+    [
+     [
+      960,
+      950
+     ],
+     [
+      980,
+      812
+     ],
+     [
+      940,
+      612
+     ],
+     [
+      960,
+      456
+     ]
+    ],
+    [
+     [
+      -1004,
+      920
+     ],
+     [
+      -1027,
+      915
+     ],
+     [
+      -1046,
+      902
+     ],
+     [
+      -1059,
+      883
+     ],
+     [
+      -1064,
+      860
+     ],
+     [
+      -1064,
+      546
+     ],
+     [
+      -1059,
+      523
+     ],
+     [
+      -1046,
+      504
+     ],
+     [
+      -1027,
+      491
+     ],
+     [
+      -1004,
+      486
+     ],
+     [
+      172,
+      486
+     ],
+     [
+      195,
+      491
+     ],
+     [
+      214,
+      504
+     ],
+     [
+      227,
+      523
+     ],
+     [
+      232,
+      546
+     ],
+     [
+      232,
+      860
+     ],
+     [
+      227,
+      883
+     ],
+     [
+      214,
+      902
+     ],
+     [
+      195,
+      915
+     ],
+     [
+      172,
+      920
+     ],
+     [
+      -1004,
+      920
+     ]
+    ],
+    [
+     [
+      -92,
+      950
+     ],
+     [
+      -112,
+      812
+     ],
+     [
+      -72,
+      612
+     ],
+     [
+      -92,
+      456
+     ]
+    ],
+    [
+     [
+      -402,
+      950
+     ],
+     [
+      -422,
+      812
+     ],
+     [
+      -382,
+      612
+     ],
+     [
+      -402,
+      456
+     ]
+    ],
+    [
+     [
+      -722,
+      950
+     ],
+     [
+      -742,
+      812
+     ],
+     [
+      -702,
+      612
+     ],
+     [
+      -722,
+      456
+     ]
+    ]
+   ],
+   "park": {
+    "x0": -1094,
+    "y0": -38,
+    "x1": 1332,
+    "y1": 950
+   },
+   "outer": {
+    "x0": -1122.5,
+    "y0": -77,
+    "x1": 1360.5,
+    "y1": 978.5
+   }
   },
   "strips": {
    "note": "the streets carried on past the edges, low-res ground (x0, y0, x1, y1, kind)",
    "list": [
     [
-     -330,
+     -3000,
      -77,
-     -130,
+     -202.5,
      -70,
      "walk"
     ],
     [
-     -330,
+     -202.5,
+     -77,
+     -50,
      -70,
-     -130,
+     "walk"
+    ],
+    [
+     -3000,
+     -70,
+     -202.5,
      -50,
      "road"
     ],
     [
-     -330,
+     -202.5,
+     -70,
      -50,
-     -130,
+     -50,
+     "road"
+    ],
+    [
+     -3000,
+     -50,
+     -202.5,
      -38,
      "walk"
     ],
     [
-     -330,
+     -202.5,
+     -50,
+     -50,
+     -38,
+     "walk"
+    ],
+    [
+     -3000,
      -95.9,
      -52.5,
      -92.4,
      "alley"
     ],
     [
-     -330,
+     -3000,
      -130.1,
      -52.5,
      -107.9,
      "prom"
     ],
     [
-     262,
+     250,
      -77,
-     520,
+     402,
      -70,
      "walk"
     ],
     [
-     262,
+     402,
+     -77,
+     3000,
      -70,
-     520,
+     "walk"
+    ],
+    [
+     250,
+     -70,
+     402,
      -50,
      "road"
     ],
     [
-     262,
+     402,
+     -70,
+     3000,
      -50,
-     520,
+     "road"
+    ],
+    [
+     250,
+     -50,
+     402,
      -38,
      "walk"
     ],
     [
-     262,
+     402,
+     -50,
+     3000,
+     -38,
+     "walk"
+    ],
+    [
+     250,
      -95.9,
-     520,
+     3000,
      -92.4,
      "alley"
     ],
     [
-     262,
+     250,
      -130.1,
-     520,
+     3000,
      -107.9,
      "prom"
-    ],
-    [
-     -52.5,
-     212,
-     -49.3,
-     520,
-     "walk"
-    ],
-    [
-     -49.3,
-     212,
-     -27.2,
-     520,
-     "road"
-    ],
-    [
-     -27.2,
-     212,
-     -24,
-     520,
-     "walk"
     ]
    ]
   },
   "park": {
-   "note": "Central Park's edge along West St drawn the whole way, past the draw distance and past the map's edge: a wall just inside the real one and bands of plain low trees (x0, y0, x1, y1 in tiles)",
+   "note": "Central Park past the forcefield, the whole of it (owner, 8 Nov 2026: Manhattan): a wall just inside West St and plain low trees in bands (x0, y0, x1, y1 in tiles) inside edge.ground.park (n of them, and clumps: bunches of bigger trees), none in the clearings (x, y, rx, ry: the reservoir, the lawns, the ponds) or on the paths (edge.ground.paths)",
    "wall": [
     -23.9,
     -38,
     -23.3,
-    520
+    181
    ],
    "bands": [
     [
@@ -6620,59 +7268,551 @@
      -20,
      185,
      262,
-     420
+     452
+    ],
+    [
+     266,
+     -34,
+     1328,
+     452
+    ],
+    [
+     -1090,
+     -34,
+     -56,
+     946
+    ],
+    [
+     -52,
+     460,
+     1328,
+     946
     ]
    ],
-   "n": 620
-  },
-  "far": {
-   "note": "the far city past the backdrop, hazed: (axis, from, to, across from, across to, lowest, highest storeys in tiles)",
-   "list": [
+   "n": 6400,
+   "clumps": 1200,
+   "clear": [
     [
-     "x",
-     -520,
-     820,
-     -372,
-     -352,
-     8,
-     34
+     1060,
+     250,
+     180,
+     130
     ],
     [
-     "x",
-     -520,
-     820,
-     -340,
-     -332,
-     5,
-     14
+     760,
+     230,
+     135,
+     90
     ],
     [
-     "x",
-     -420,
-     820,
-     600,
-     640,
-     18,
+     470,
+     260,
+     95,
      60
     ],
     [
-     "y",
-     -520,
-     600,
-     -420,
-     -380,
-     14,
-     44
+     470,
+     90,
+     66,
+     32
     ],
     [
-     "y",
-     -520,
-     600,
-     600,
-     640,
-     14,
+     1260,
+     80,
+     66,
+     50
+    ],
+    [
+     -822,
+     250,
+     180,
+     130
+    ],
+    [
+     -522,
+     230,
+     135,
+     90
+    ],
+    [
+     -232,
+     260,
+     95,
+     60
+    ],
+    [
+     -232,
+     90,
+     66,
+     32
+    ],
+    [
+     -1022,
+     80,
+     66,
+     50
+    ],
+    [
+     1060,
+     662,
+     180,
+     130
+    ],
+    [
+     760,
+     682,
+     135,
+     90
+    ],
+    [
+     470,
+     652,
+     95,
+     60
+    ],
+    [
+     470,
+     822,
+     66,
+     32
+    ],
+    [
+     1260,
+     832,
+     66,
+     50
+    ],
+    [
+     -822,
+     662,
+     180,
+     130
+    ],
+    [
+     -522,
+     682,
+     135,
+     90
+    ],
+    [
+     -232,
+     652,
+     95,
+     60
+    ],
+    [
+     -232,
+     822,
+     66,
+     32
+    ],
+    [
+     -1022,
+     832,
+     66,
      50
     ]
+   ]
+  },
+  "city": {
+   "note": "the far city (owner, 8 Nov 2026: Manhattan, the whole island; only the outline past what the view reaches, no shapes): a painted ring all round. In tiles: center, water (the Hudson, a y band), lowY/lowK (past this y the far shore, lower), east (the East River: its near bank as [x,y] points along the island, its width; past the island's ends all water; across it the far shore, lowK), base (lowest, highest), clusters (x, y, peak, radius: downtown, midtown, uptown, the far shore's), ring (the outline's layers, the first just past the view; a direction that meets the Hudson at the last one is water all the way), panorama (the ring's radius)",
+   "center": [
+    105,
+    -25
+   ],
+   "water": [
+    [
+     -725.8,
+     -122
+    ]
+   ],
+   "lowY": -725.8,
+   "lowK": 0.35,
+   "base": [
+    10,
+    34
+   ],
+   "clusters": [
+    [
+     -2950,
+     300,
+     260,
+     500
+    ],
+    [
+     -900,
+     500,
+     300,
+     700
+    ],
+    [
+     700,
+     900,
+     120,
+     900
+    ],
+    [
+     -330,
+     -956,
+     110,
+     110
+    ]
+   ],
+   "ring": [
+    560,
+    1000,
+    1700,
+    2900
+   ],
+   "panorama": 1200,
+   "seed": 7,
+   "east": {
+    "bank": [
+     [
+      -3400,
+      19
+     ],
+     [
+      -3300,
+      128
+     ],
+     [
+      -3200,
+      225
+     ],
+     [
+      -3100,
+      319
+     ],
+     [
+      -3000,
+      412
+     ],
+     [
+      -2900,
+      507
+     ],
+     [
+      -2800,
+      602
+     ],
+     [
+      -2700,
+      699
+     ],
+     [
+      -2600,
+      795
+     ],
+     [
+      -2500,
+      892
+     ],
+     [
+      -2400,
+      988
+     ],
+     [
+      -2300,
+      1022
+     ],
+     [
+      -2200,
+      1053
+     ],
+     [
+      -2100,
+      1081
+     ],
+     [
+      -2000,
+      1105
+     ],
+     [
+      -1900,
+      1125
+     ],
+     [
+      -1800,
+      1140
+     ],
+     [
+      -1700,
+      1151
+     ],
+     [
+      -1600,
+      1159
+     ],
+     [
+      -1500,
+      1163
+     ],
+     [
+      -1400,
+      1165
+     ],
+     [
+      -1300,
+      1164
+     ],
+     [
+      -1200,
+      1163
+     ],
+     [
+      -1100,
+      1161
+     ],
+     [
+      -1000,
+      1160
+     ],
+     [
+      -900,
+      1160
+     ],
+     [
+      -800,
+      1162
+     ],
+     [
+      -700,
+      1166
+     ],
+     [
+      -600,
+      1173
+     ],
+     [
+      -500,
+      1182
+     ],
+     [
+      -400,
+      1193
+     ],
+     [
+      -300,
+      1206
+     ],
+     [
+      -200,
+      1221
+     ],
+     [
+      -100,
+      1235
+     ],
+     [
+      0,
+      1250
+     ],
+     [
+      100,
+      1263
+     ],
+     [
+      200,
+      1275
+     ],
+     [
+      300,
+      1283
+     ],
+     [
+      400,
+      1288
+     ],
+     [
+      500,
+      1289
+     ],
+     [
+      600,
+      1285
+     ],
+     [
+      700,
+      1277
+     ],
+     [
+      800,
+      1265
+     ],
+     [
+      900,
+      1248
+     ],
+     [
+      1000,
+      1226
+     ],
+     [
+      1100,
+      1202
+     ],
+     [
+      1200,
+      1175
+     ],
+     [
+      1300,
+      1147
+     ],
+     [
+      1400,
+      1117
+     ],
+     [
+      1500,
+      1088
+     ],
+     [
+      1600,
+      1059
+     ],
+     [
+      1700,
+      1032
+     ],
+     [
+      1800,
+      1008
+     ],
+     [
+      1900,
+      986
+     ],
+     [
+      2000,
+      967
+     ],
+     [
+      2100,
+      950
+     ],
+     [
+      2200,
+      937
+     ],
+     [
+      2300,
+      925
+     ],
+     [
+      2400,
+      915
+     ],
+     [
+      2500,
+      907
+     ],
+     [
+      2600,
+      898
+     ],
+     [
+      2700,
+      889
+     ],
+     [
+      2800,
+      792
+     ],
+     [
+      2900,
+      692
+     ],
+     [
+      3000,
+      586
+     ],
+     [
+      3100,
+      472
+     ],
+     [
+      3200,
+      345
+     ],
+     [
+      3300,
+      195
+     ]
+    ],
+    "w": 180
+   },
+   "blocks": {
+    "note": "the city's buildings past the park (owner, 10 Nov 2026: \"fill it out logical with the rest of the buildings in NYC\"): plain boxes on every block of edge.ground's city within depth tiles of the park's streets, one draw; lots across a block (two rows, each lot min to max tiles wide), a storey's height (px, as the rows'), storeys low then tall on a block's ends (avenue), the row facing the park (park: how often, storeys), towers further out (how often near and far, storeys, how much taller far); past them the painted skyline",
+    "depth": 460,
+    "lot": [
+     12,
+     26
+    ],
+    "storey": 90,
+    "low": [
+     3,
+     6
+    ],
+    "avenue": [
+     6,
+     11
+    ],
+    "park": [
+     0.35,
+     8,
+     14
+    ],
+    "tower": [
+     0.012,
+     0.04,
+     14,
+     24,
+     0.5
+    ],
+    "far": 900,
+    "seed": 11
+   }
+  },
+  "far": {
+   "note": "the water past the river: shore, where it ends (the far bank, a map y); ends: how far the far water and its shore run (map x); list: rows of shapes on the far shore, none (owner, 8 Nov 2026: only the outline past the view)",
+   "list": [],
+   "shore": -723.8,
+   "ends": [
+    -6000,
+    6000
+   ]
+  },
+  "mirror": {
+   "note": "Market St past its ends (owner, 8 Nov 2026: \"lets make the street look the same all the way down\"): the street's band (y0, y1 in tiles) drawn again mirrored at the forcefields (x: west, east), reach tiles out, from these builders' groups; each side drawn while you are within show tiles of it; the lawn and the far grass leave the street's ground (y0, y1) to it",
+   "x": [
+    -52.5,
+    252
+   ],
+   "band": [
+    -92.4,
+    -22
+   ],
+   "reach": 150,
+   "show": 220,
+   "ground": [
+    -77,
+    -38
+   ],
+   "groups": [
+    "bodega",
+    "mainstreet",
+    "mshops",
+    "bank",
+    "art",
+    "apts",
+    "block",
+    "parkwall",
+    "park",
+    "pole",
+    "rail",
+    "store"
    ]
   }
  }

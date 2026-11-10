@@ -1,6 +1,6 @@
 // THE LOOKS: LOOKS keeps the player's name and shoes, and YOU, the window you change your look in (the avatar's lines join it: 111c).
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, FIRSTDAY, LEVELS, LOOKS, pos, st, UI, W3} from './003b-systems.js';
+import {CLOCK, DOLL, FIRSTDAY, LEVELS, LOOKS, pos, st, UI, W3} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
@@ -51,7 +51,7 @@ LOOKS.over={};
     #looks .ltab{display:grid;grid-template-columns:150px minmax(0,1fr);gap:6px 12px;align-items:center} #looks .ltab[hidden]{display:none}
     #looks .lr{display:contents} #looks .lr[hidden]{display:none} #looks .lk{color:var(--dim,#8a8f9c);letter-spacing:1px;white-space:nowrap} #looks .lr.full>.lv{grid-column:1/-1}
     #looks .lv{min-width:0} #looks .lv>.row{gap:2px 4px}
-    #looks .ltab[data-t=wear]{grid-template-columns:110px minmax(0,1fr) 110px minmax(0,1fr)}
+    #looks .ltab[data-t=wear]{grid-template-columns:120px minmax(0,1fr)}
     @media (max-width:640px){ #looks .ltab,#looks .ltab[data-t=wear]{grid-template-columns:110px minmax(0,1fr)} #looks .ltabs{margin-left:0} }
 `;
   document.head.appendChild(css);
@@ -66,15 +66,17 @@ LOOKS.over={};
     const after=[...T.children].find(x=>+x.dataset.o>+r.dataset.o); T.insertBefore(r,after||null); LOOKS.layout(); return r; };
   LOOKS.layout=()=>{ const who=LOOKS.who();
     for(const r of P.querySelectorAll('.lr'))r.hidden=!!(r.dataset.who&&r.dataset.who!==who)||r.dataset.off==='1';
-    for(const b of P.querySelectorAll('.ltabs [data-t]')){ const T=P.querySelector(`.ltab[data-t="${b.dataset.t}"]`); b.hidden=![...T.children].some(r=>!r.hidden); }
-    if(P.querySelector(`.ltabs [data-t="${tab}"]`).hidden)tab='look';
+    const only=!P.classList.contains('inmenu')&&LOOKS.only;   // (the paper doll's WEAR and WORDS: no LOOK; owner, 9 Nov 2026)
+    for(const b of P.querySelectorAll('.ltabs [data-t]')){ const T=P.querySelector(`.ltab[data-t="${b.dataset.t}"]`); b.hidden=![...T.children].some(r=>!r.hidden)||!!(only&&!only.has(b.dataset.t)); }
+    $('#lname').hidden=!!(only&&!only.has('look'));
+    if(P.querySelector(`.ltabs [data-t="${tab}"]`).hidden){ const f=[...P.querySelectorAll('.ltabs [data-t]')].find(b=>!b.hidden); tab=f?f.dataset.t:'look'; }
     for(const T of P.querySelectorAll('.ltab'))T.hidden=T.dataset.t!==tab;
     for(const b of P.querySelectorAll('.ltabs [data-t]')){ const on=String(b.dataset.t===tab); b.setAttribute('aria-pressed',on); b.setAttribute('aria-selected',on); } };
   LOOKS.tab=t=>{ tab=t; LOOKS.layout(); };
   P.querySelector('.ltabs').onclick=e=>{ const b=e.target.closest('[data-t]'); if(b)LOOKS.tab(b.dataset.t); };
   const line=(id,html)=>{ const d=document.createElement('div'); d.className='row'; d.id=id; if(html)d.innerHTML=html; return d; };
   // (the Walker's own build, hair and beard are gone from YOU: the avatar is the only body you play, owner 5 Nov 2026; barefoot stays, it matters for foraging)
-  LOOKS.add('shoes','SHOES',line('lshoes','<button id="lshoe1">SHOES ON</button><button id="lshoe0">BAREFOOT</button><span id="lshoek" style="color:var(--dim,#8a8f9c)"></span>'),{order:7});
+  LOOKS.add('shoes','SHOES',line('lshoes','<button id="lshoe1">SHOES ON</button><button id="lshoe0">BAREFOOT</button><span id="lshoek" style="color:var(--dim,#8a8f9c)"></span>'),{tab:'wear',order:99});
   const draw=()=>{ $('#lname').value=L.name; LOOKS.layout(); $('#lshoe1').setAttribute('aria-pressed',String(!L.bare)); $('#lshoe0').setAttribute('aria-pressed',String(L.bare)); $('#lshoek').textContent='KEY '+UI.keyOf('shoes').toUpperCase(); };
   $('#lshoe1').onclick=()=>LOOKS.shoes(true); $('#lshoe0').onclick=()=>LOOKS.shoes(false);
   $('#lname').oninput=e=>{ if(!FIRSTDAY.claim){ L.name=e.target.value; save(); } };
@@ -87,7 +89,7 @@ LOOKS.over={};
   LOOKS.open=()=>{ draw(); LOOKS.layout(); P.hidden=false; }; LOOKS.L=L; LOOKS.COL=COL;
   const hit=new THREE.Mesh(new THREE.BoxGeometry(.8*TILE,2.2*TILE,.8*TILE),new THREE.MeshBasicMaterial({visible:false})); scene.add(LEVELS.own(hit,'*'));
   renderer.domElement.addEventListener('pointerdown',()=>{ hit.position.set(pos.x,SHARED.py+1.1*TILE,pos.z); hit.updateMatrixWorld(); },true);
-  UI.thing({name:'YOU',ghost:1,quiet:1,obj:hit,reach:99,tall:2,act:()=>UI.menuTab('you')});
+  UI.thing({name:'YOU',ghost:1,quiet:1,obj:hit,reach:99,tall:2,act:()=>DOLL.me()});
   SYS.add('life',()=>{ hit.visible=UI.view!=='first'; },'102-looks you');   // through your own eyes you are not a thing in front of you
   W3.E=W3.pcs.map(()=>null); W3.pcs.forEach((P,i)=>{ const v=MALE[P.under||P.n]; if(v)W3.E[i]={s:v.slice(),o:[0,0,0],q:[0,0,0,1]}; });
   E0=W3.E.map(e=>e&&{...e,s:e.s.slice()}); EF=W3.pcs.map(P=>{ const v=FEMALE[P.under||P.n]; return v?{s:v.slice(),o:[0,0,0],q:[0,0,0,1]}:null; });

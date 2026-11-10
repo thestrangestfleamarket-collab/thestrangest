@@ -5,6 +5,7 @@ import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {BLDK, BLOCK, FIX, grab, SOL, STORE, SYS} from './006-map-pre.js';
 import {dgnRoom} from './038z-dungeon.js';
+import {FACADES} from './038zc-facades.js';
 await grab('bank',async()=>{ const K=STORE.kit, {room,rec,STEPS}=K, SK=SHARED.BOD.STOREK, {CATALOG,LAMPS,T,sh}=SK, MK=SK.museum, M=MK.MUS, MB=M.b, P=BLOCK.lots.bank, OX=SHARED.BOD.OX, OY=SHARED.BOD.OY, DEP=14;
   const x0=OX+(P[0]-OX)/BLDK, y1=OY, B={id:'lbank',x0,x1:Math.min(x0+(MB.x1-MB.x0),OX+(P[1]-OX)/BLDK-.1),y0:y1-DEP,y1,h:MB.h};   // its own lot's width, the museum's front centred on it
   const SX=MB.x0+MB.x1, SY=MB.y0+MB.y1, dx=(B.x0+B.x1)/2-SX/2, dy=B.y1-MB.y1, FW=[[0,1],[-1,0],[0,-1],[1,0]], stone=[226,220,204], OB={...MB,plain:1,id:'lmusfront'};
@@ -28,6 +29,7 @@ await grab('bank',async()=>{ const K=STORE.kit, {room,rec,STEPS}=K, SK=SHARED.BO
   const mp=(k,x,y,rot=0)=>{ const f=CATALOG[k]; SHARED.BOD.K.STUDIO.face(FW[rot]); let p; try{ p=f(+x.toFixed(3),+y.toFixed(3)); }finally{ SHARED.BOD.K.STUDIO.face(null); } if(!p)return null; p.kind=k; const cx=(p.x0+p.x1)/2, cy=(p.y0+p.y1)/2; SHARED.BOD.placeAt(p,2,cx,cy,SX-cx+dx,SY-cy+dy,true); return p; };
   const at=(x,y)=>[SX-x+dx,SY-y+dy];   // a spot in the bank, written in the museum's frame for mp
   rec('bank','THE BANK',B,D,true); STORE.bank={B};
+  STORE.bank.out=FACADES.make({id:'bank',L:{x0:B.x0-.08,x1:B.x1+.08,y0:B.y0-.08,y1:B.y1+.08},z1:B.h+10,wall:stone,trim:[240,234,220],frame:[48,44,40],seed:23,ground:150,door:{u:D.a,w:DW/2,h:DH},glass:true});   // modelled over the painted stone (owner, 8 Nov 2026)
   STEPS.push(()=>{ '@later'; room('bank','THE BANK',B,look,D,()=>{ const py=MB.y0-3;
     mp('museum portico steps',M.mid,(py+MB.y0)/2); for(const d of [-4,-2.8,2.8,4])mp('museum column',M.mid+d,py+.7); mp('bank entablature',M.mid,py+.7,2);
     for(const [x,y,k] of [[mx-5.4,B.y0+3.2,'bone pile'],[mx+6.2,B.y0+5,'skull'],[mx-7,B.y1-4,'bones'],[mx+7,B.y1-3,'bones'],[mx+3.4,B.y0+2.4,'skull']])mp(k,...at(x,y));

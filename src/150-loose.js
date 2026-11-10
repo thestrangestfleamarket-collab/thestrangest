@@ -1,6 +1,6 @@
 // THE LOOSE THINGS: GPH lets the light furniture and goods be pushed, kicked, picked up and carried.
 import {SHARED, THREE} from './003-shx.js';
-import {DRESS, ED, GPH, keys, MOTION, PB, PERFX, PHYS, pos, RIDE, ROOMS, SFX, st, UI, USE, VIT, W3, WX} from './003b-systems.js';
+import {DRESS, ED, GPH, keys, MOTION, NPCS, ONLINE, PB, PERFX, PHYS, pos, RIDE, ROOMS, SFX, st, UI, USE, VIT, W3, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FIX, MODS, QS, SOL, SYS, TILE} from './006-map-pre.js';
 import {OBJS} from './008-batch.js';
@@ -86,9 +86,17 @@ import {BVH} from './137-bvh.js';
     const B4=4*T; for(let i=Math.floor((px-Rr)/B4);i<=Math.floor((px+Rr)/B4);i++)for(let j=Math.floor((pz-Rr)/B4);j<=Math.floor((pz+Rr)/B4);j++){ const key='g'+i+':'+j; if(far(i*B4,j*B4,(i+1)*B4,(j+1)*B4))continue; if(stat.has(key)){ W.set(key,stat.get(key).b); continue; }
       const L=[]; for(let u=0;u<4;u++)for(let v=0;v<4;v++){ const x=(i*4+u)*T, z=(j*4+v)*T, g=SHARED.groundY(x+T/2,z+T/2); if(isFinite(g)&&Math.abs(g-SHARED.py)<3*T)L.push([x,g-.5*T,z,x+T,g,z+T]); }
       if(L.length===16&&L.every(q=>Math.abs(q[4]-L[0][4])<.01*T))W.set(key,[[i*B4,L[0][1],j*B4,(i+1)*B4,L[0][4],(j+1)*B4]]); else if(L.length)W.set(key,L); }
+    // the kerb (owner, 10 Nov 2026: "Just the kerb"): a slope over the step on the road side of each straight kerb near you, from where the ground's boxes step (they follow the tiles, not the kerb line), so a car's wheels roll up onto it instead of the step shoving it
+    if(SHARED.LVL==='up'&&SHARED.BOD.kerbs){ const B=SHARED.BOD, KW=.6; B.kerbs.forEach((kb,i)=>{ const O=kb.ax==='x'?B.OY:B.OX, n=kb.n, v=kb.at, lo0=Math.floor(v-O)+O, b=(lo0+.5-v)*n>0?(n>0?lo0:lo0+1):(n>0?lo0+1:lo0), pm=n>0?Math.min(v,b):Math.max(v,b), rm=n>0?Math.max(v,b):Math.min(v,b);
+      const P=(u,w)=>kb.ax==='x'?[B.XS(u),B.ZS(w)]:[B.XS(w),B.ZS(u)];
+      for(let a=Math.floor(kb.a0/2)*2;a<kb.a1;a+=2){ const u0=Math.max(a,kb.a0), u1=Math.min(a+2,kb.a1); if(u1-u0<.2)continue; const [mx,mz]=P((u0+u1)/2,v); if(far(mx-T,mz-T,mx+T,mz+T))continue;
+        const key='kerb'+i+':'+a; if(stat.has(key)){ W.set(key,stat.get(key).b); continue; } const pts=[]; let ok=true;
+        for(const u of [u0,u1]){ const hi=SHARED.groundY(...P(u,v-n*.15)), lo=SHARED.groundY(...P(u,rm+n*(KW+.2))); if(!(hi-lo>.12*T&&hi-lo<.6*T)){ ok=false; break; }
+          for(const [w,y] of [[pm,hi],[rm,hi],[rm+n*KW,lo],[pm,lo-.1*T],[rm+n*KW,lo-.1*T]]){ const [x,z]=P(u,w); pts.push(x,y,z); } }
+        if(ok)W.set(key,{hull:new Float32Array(pts)}); } }); }
     for(const it of act)if(it.rest)add(it,[it.a[0],it.a[1]-.06*T,it.a[2],it.b[0],it.a[1],it.b[2]],true);
     for(const [key,s] of stat)if(!W.has(key)){ for(const c of s.cs)world.removeCollider(c,false); stat.delete(key); }
-    for(const [key,b] of W)if(!stat.has(key))stat.set(key,{b,cs:(Array.isArray(b[0])?b:[b]).map(q=>world.createCollider(R.ColliderDesc.cuboid((q[3]-q[0])/2,(q[4]-q[1])/2,(q[5]-q[2])/2).setTranslation((q[0]+q[3])/2,(q[1]+q[4])/2,(q[2]+q[5])/2).setFriction(.8).setCollisionGroups(G0),fb))}); };
+    for(const [key,b] of W)if(!stat.has(key))stat.set(key,{b,cs:(Array.isArray(b[0])?b:[b]).map(q=>{ const d=q.hull?R.ColliderDesc.convexHull(q.hull):R.ColliderDesc.cuboid((q[3]-q[0])/2,(q[4]-q[1])/2,(q[5]-q[2])/2).setTranslation((q[0]+q[3])/2,(q[1]+q[4])/2,(q[2]+q[5])/2); return d?world.createCollider(d.setFriction(.8).setCollisionGroups(G0),fb):null; }).filter(Boolean)}); };
   const pickList=(A=act)=>{ const S=new Set(); for(const it of A){ if(it.k==='v')S.add(gm); else if(it.k==='i')for(const q of it.inst)S.add(q[0]); else if(it.k==='o')it.obj.traverse(c=>{ if(c.isMesh)S.add(c); }); else for(const p of it.parts)S.add(p.me); } picks=[...S]; };
   const zone=()=>{ '@later'; if(++zn%40===0)LIGHTS=null; if(!cg||!cc)catalog(); more(); const lo=SHARED.py-1.1*T, hi=SHARED.py+2.4*T;
     for(const it of items){ const t=it.rb?it.rb.translation():it.t, d=Math.hypot(t.x-pos.x,t.z-pos.z), b=t.y-it.h[1], inL=b>lo&&b<hi;
@@ -152,9 +160,9 @@ import {BVH} from './137-bvh.js';
     if((zt-=dt)<=0){ zt=.25; zone(); } strike(); if(want&&want.rb){ grab(want); want=null; }
     if(held){ const h=holdAt(held); held.rb.setNextKinematicTranslation(h); held.rb.setNextKinematicRotation({x:0,y:Math.sin(SHARED.heading/2),z:0,w:Math.cos(SHARED.heading/2)}); }
     const I=intent(), mv=I[0]||I[1]||Math.abs(pos.x-lx)+Math.abs(pos.z-lz)+Math.abs(SHARED.py-ly)>1e-4; lx=pos.x; lz=pos.z; ly=SHARED.py;
-    gust(dt); ctl(dt);
+    gust(dt); ctl(dt); crowd();
     const ext=GPH.ext.some(f=>f());
-    if(mv||held||live||ext){ acc=Math.min(acc+dt,3*DT); while(acc>=DT){ drive(I,DT); for(const f of GPH.pre)f(DT); world.step(eq,hooks||undefined); for(const f of GPH.post)f(DT); acc-=DT; } } else acc=0;
+    if(mv||held||live||ext||cbMove){ acc=Math.min(acc+dt,3*DT); while(acc>=DT){ drive(I,DT); for(const f of GPH.pre)f(DT); world.step(eq,hooks||undefined); for(const f of GPH.post)f(DT); acc-=DT; } } else acc=0;
     events();
     live=0; for(const it of act){ if(it!==held&&it.rb.isSleeping())continue; draw(it); if(it===held)continue; live++;
       const p=it.rb.translation(); if(p.y<SHARED.py-8*T){ it.rb.setTranslation({x:it.c[0],y:it.c[1],z:it.c[2]},true); it.rb.setRotation({x:0,y:0,z:0,w:1},true); it.rb.setLinvel({x:0,y:0,z:0},true); it.rb.setAngvel({x:0,y:0,z:0},true); draw(it); it.rb.sleep(); continue; }
@@ -173,9 +181,9 @@ import {BVH} from './137-bvh.js';
   GPH.bin=it=>{ it.gone=1; const p=it.rb?it.rb.translation():it.t; if(SFX.play)SFX.play('clunk',{vol:.5,pitch:.8,at:p}); if(it.rb)off(it); hideMesh(it); };
   GPH.smash=it=>{ it.gone=1; const p=it.rb?it.rb.translation():it.t; if(SFX.play){ SFX.play('click',{vol:.8,pitch:2.4,vary:.3,at:p}); SFX.play('clunk',{vol:.4,pitch:1.9,at:p}); } if(it.rb)off(it); hideMesh(it); };
   // what the other physics extras use: the engine, the world, the fixed body, a body's loose thing, and hooks into each step (pre/post), its events (coll) and whether to keep stepping (ext)
-  Object.assign(GPH,{pre:[],post:[],coll:[],ext:[],phys:()=>ready?{R,world,fb,you}:null,ofCollider:h=>byC.get(h),active:()=>act,heldNow:()=>held});
+  Object.assign(GPH,{kerbs:()=>[...stat.keys()].filter(k=>typeof k==='string'&&k.startsWith('kerb')).length,pre:[],post:[],coll:[],ext:[],phys:()=>ready?{R,world,fb,you}:null,ofCollider:h=>byC.get(h),active:()=>act,heldNow:()=>held});
   // hanging things on a joint at their top: wind and bumps swing them, SWAYING THINGS sets how freely
-  let gt=0; const gust=dt=>{ '@later'; const k=PHYS.lv('joints'); if(!k||(gt-=dt)>0)return; gt=1.5+Math.random()*3; const w=(window.WX&&WX.now&&WX.now.wind)||.2, out=!(ROOMS&&ROOMS.cur);
+  let gt=0; const gust=dt=>{ '@later'; const k=PHYS.lv('joints'); if(!k||(gt-=dt)>0)return; gt=1.5+Math.random()*3; const w=(WX&&WX.now&&WX.now.wind)||.2, out=!(ROOMS&&ROOMS.cur);
     for(const it of act)if(it.hang&&it!==held){ const j=it.m*(out?w*1.4:.08)*k*.05*(.5+Math.random()); it.rb.wakeUp(); it.rb.applyImpulse({x:(Math.random()-.5)*j,y:0,z:(Math.random()-.5)*j},true); } };
   // standing on things: Rapier's character controller as your body here; it steps up onto low loose things (STAND ON THINGS: how high), stands on them, and shoves the rest
   const CH=.45, CR=.38, HH=CH+CR+.01; let kcc=null, kb=null, kco=null, kfoot=null;
@@ -190,6 +198,21 @@ import {BVH} from './137-bvh.js';
     if(onIt&&Math.hypot(n.x-pos.x,n.z-pos.z)>.005*T){ pos.x=n.x; pos.z=n.z; } else { n.x=pos.x; n.z=pos.z; }
     kb.setTranslation(n,true); const f=n.y-HH; kfoot=f>g+.03*T&&f<g+1.3*T?f:null; };
   GPH.floor=g=>kfoot!=null&&kfoot>g?kfoot:g;
+  // the characters near you in the physics (8 Nov 2026): each a moving body its own size (a capsule, a long animal a box along its heading), so loose things are shoved by and stop at people, animals and the other players
+  const CB=new Map(), CBN=24; let cbMove=false;
+  const crowd=()=>{ '@later'; const L=[], lv=SHARED.LVL, R2=RS*RS, put=(k,x,y,z,r,l,lz,h)=>{ const dx=x-pos.x, dz=z-pos.z, d=dx*dx+dz*dz; if(d<R2&&isFinite(y))L.push({k,x,y,z,r,l,lz,h,d}); };
+    for(const N of NPCS){ const s=N.st; if(!s||N.far||N.fly||N.tiny||N.lv!==lv||N.mode==='hidden'||s.inT!=null||!N.g||!N.g.visible&&!N._cv)continue; put(N,s.x,N.g.position.y,s.z,s.R,s.L||0,s.LZ||0,s.h||0); }
+    for(const X of NPCS.extra||[]){ const s=X.st; if(!s||X.on===false||X.mode==='hidden'||X.rag||!X.g||!X.g.visible&&!X._cv||(X.lv||'up')!==lv)continue; put(X,s.x,SHARED.groundY(s.x,s.z),s.z,s.R||.3,0,0,0); }
+    if(ONLINE.others)for(const o of ONLINE.others.values()){ if(o.why!=='near you'||!o.p||o.dead)continue; put(o,o.p.x,SHARED.groundY(o.p.x,o.p.z),o.p.z,.3,0,0,0); }
+    L.sort((a,b)=>a.d-b.d); if(L.length>CBN)L.length=CBN; const keep=new Set(); cbMove=false;
+    for(const c of L){ keep.add(c.k); const tall=Math.max(.4*T,Math.min(4*T,c.k.tall||1.7*M1)), hh=tall/2, r=Math.max(.05*T,Math.min(2*T,c.r)); let B=CB.get(c.k);
+      const q={x:0,y:Math.sin(c.h/2),z:0,w:Math.cos(c.h/2)}, at={x:c.x,y:c.y+hh,z:c.z};
+      if(!B){ const rb=world.createRigidBody(R.RigidBodyDesc.kinematicPositionBased().setTranslation(at.x,at.y,at.z).setRotation(q)); const cd=c.l?R.ColliderDesc.cuboid(r,hh,r+c.l).setTranslation(0,0,c.lz):R.ColliderDesc.capsule(Math.max(.01,hh-r),r);
+        world.createCollider(cd.setFriction(.4).setCollisionGroups(GY),rb); CB.set(c.k,B={rb,x:c.x,z:c.z}); continue; }
+      const mvd=Math.hypot(c.x-B.x,c.z-B.z); if(mvd>T){ B.rb.setTranslation(at,true); B.rb.setRotation(q,true); } else if(mvd>1e-4){ B.rb.setNextKinematicTranslation(at); B.rb.setNextKinematicRotation(q);
+        if(!cbMove)for(const it of act){ const p=it.rb.translation(); if(Math.hypot(p.x-c.x,p.z-c.z)<r+c.l+Math.max(it.h[0],it.h[2])+.3*T){ cbMove=true; break; } } } B.x=c.x; B.z=c.z; }
+    for(const [k,B] of CB)if(!keep.has(k)){ world.removeRigidBody(B.rb); CB.delete(k); } };
+  GPH.crowd=()=>[...CB.keys()].map(k=>k.key||k.name||'player');
   const at=it=>it.rb?it.rb.translation():it.t;
   const itemOf=(h,A=act)=>{ '@later'; const m=h.object; if(m===gm){ const v=h.face.a; return items.find(q=>q.k==='v'&&v>=q.v0&&v<q.v1); } if(m.userData.loose)return m.userData.loose;
     if(h.instanceId!=null)return [...A].find(q=>q.k==='i'&&q.inst.some(z=>z[0]===m&&z[1]===h.instanceId));
@@ -204,7 +227,9 @@ import {BVH} from './137-bvh.js';
     return {d:h.distance,th:{name:(it.name||'').replace(/^cottage: /,'').toUpperCase(),pick:true,obj:o,reach:.85*T+r,near:1.6*T+r,tall:Math.max(.4*T,it.h[1]*2),act:()=>grab(it)}}; };
   GPH.loose=()=>items;
   // what the inspect window shows: the thing in your hands, else the loose thing under the pointer; its look copied (shared buffers marked, never freed)
-  GPH.inspectable=ray=>{ '@later'; let it=held; if(!it&&ray&&picks.length){ const h=ray.intersectObjects(picks,false)[0]; it=h&&itemOf(h,ready?act:pre); } if(!it)return null;
+  GPH.inspectable=ray=>{ '@later'; let it=held; if(!it&&ray&&picks.length){ const h=ray.intersectObjects(picks,false)[0]; it=h&&itemOf(h,ready?act:pre); } if(!it)return null; const L=GPH.look(it);
+    return {obj:L.obj,mine:L.mine,name:(it.name||'').replace(/^cottage: /,''),info:[it===held?'IN YOUR HANDS':'ON THE GROUND',Math.round((it.m||1)*10)/10+' KG']}; };
+  GPH.look=it=>{ '@later';
     const sub=(g,rs,mat)=>{ const G=new THREE.BufferGeometry(); let n=0; for(const [a,b] of rs)n+=b-a; for(const k in g.attributes){ const A=g.attributes[k], s=A.itemSize, d=new A.array.constructor(n*s); let j=0; for(const [a,b] of rs){ d.set(A.array.subarray(a*s,b*s),j*s); j+=b-a; } G.setAttribute(k,new THREE.BufferAttribute(d,s,A.normalized)); } return new THREE.Mesh(G,mat); };
     let obj, mine=true;
     if(it.k==='o'){ obj=it.obj; mine=false; }
@@ -212,7 +237,7 @@ import {BVH} from './137-bvh.js';
     else if(it.k==='i'){ obj=new THREE.Group(); for(const [me,i] of it.inst){ const m=new THREE.InstancedMesh(me.geometry,me.material,1); me.getMatrixAt(i,M4); m.setMatrixAt(0,M4); if(me.instanceColor){ const c=new THREE.Color(); me.getColorAt(i,c); m.setColorAt(0,c); } m.userData.shared=true; obj.add(m); } }
     else if(it.dm){ obj=new THREE.Group(); for(const D of it.dm)obj.add(new THREE.Mesh(D.me.geometry.clone(),D.me.material)); }
     else { const by=new Map(); for(const p of it.parts)(by.get(p.me)||by.set(p.me,[]).get(p.me)).push([p.v0,p.v0+6]); obj=new THREE.Group(); for(const [me,rs] of by)obj.add(sub(me.geometry,rs,me.material)); }
-    return {obj,mine,name:(it.name||'').replace(/^cottage: /,''),info:[it===held?'IN YOUR HANDS':'ON THE GROUND',Math.round((it.m||1)*10)/10+' KG']}; };
+    return {obj,mine}; };
   // a whole object (its own meshes, any shape) as a loose thing: pushed, knocked over, picked up and thrown like the rest; GPH.drop takes it out again
   GPH.add=(obj,{name,m=1}={})=>{ '@later'; obj.updateMatrixWorld(true); const B=new THREE.Box3(); obj.traverse(q=>{ if(q.isMesh&&!q.userData.soft)B.expandByObject(q,true); }); if(B.isEmpty())B.setFromObject(obj); const c=B.getCenter(new THREE.Vector3());   // soft parts (hanging leaves) stay out of the body's box
     const it=mk(null,'o',B.min.toArray(),B.max.toArray(),{name:name||obj.name||'',obj,m,q0:obj.quaternion.clone(),off:obj.position.clone().sub(c)}); obj.traverse(q=>{ if(q.isMesh)q.userData.loose=it; }); items.push(it); fin([it]); return it; };
@@ -227,7 +252,7 @@ import {BVH} from './137-bvh.js';
   window.GOODSPUT=(dx,dz)=>{ if(!held)return false; const it=held; putAt(it,new THREE.Vector3(pos.x+dx,SHARED.py,pos.z+dz)); const p=it.rb.translation(); return [p.x-pos.x,p.z-pos.z]; };
   window.GOODSAT=i=>{ const it=items.filter(q=>q.k==='v')[i]; const p=it.rb?it.rb.translation():it.t; return [p.x,p.y,p.z]; };
   window.GOODSDBG=()=>({built:ready,pre:pre.size,n:items.length,active:act.size,awake:[...act].filter(it=>!it.rb.isSleeping()).length,moved:items.filter(it=>it.moved).length,held:held&&held.name,statics:[...stat.values()].reduce((s,q)=>s+q.cs.length,0),ms:+GPH.ms.toFixed(3),hooks:!!hooks});
-  window.GOODSHIT=(k=4,r=3,n)=>{ let c=0; for(const it of act){ const p=it.rb.translation(); if(Math.hypot(p.x-pos.x,p.z-pos.z)<r*T&&(!n||rx(n).test(it.name))){ c++; it.rb.wakeUp(); it.rb.applyImpulse({x:(Math.random()-.5)*k*it.rb.mass(),y:k*.5*it.rb.mass(),z:(Math.random()-.5)*k*it.rb.mass()},true); } } return c; };
+  window.GOODSHIT=MODS.goodsHit=(k=4,r=3,n)=>{ let c=0; for(const it of act){ const p=it.rb.translation(); if(Math.hypot(p.x-pos.x,p.z-pos.z)<r*T&&(!n||rx(n).test(it.name))){ c++; it.rb.wakeUp(); it.rb.applyImpulse({x:(Math.random()-.5)*k*it.rb.mass(),y:k*.5*it.rb.mass(),z:(Math.random()-.5)*k*it.rb.mass()},true); } } return c; };
   window.LOOSE={list:(all)=>(all?items:[...act]).map(it=>({name:it.name,k:it.k,m:+it.m.toFixed(1),heavy:it.heavy,sol:it.sol.length,active:!!it.rb,awake:!!it.rb&&!it.rb.isSleeping(),at:(it.rb?[it.rb.translation()]:[it.t]).map(p=>[p.x,p.y,p.z].map(v=>+v.toFixed(3)))[0],c:it.c.map(v=>+v.toFixed(3)),h:it.h.map(v=>+v.toFixed(3)),sols:it.sol.map(([r])=>r.slice())})),
     push:(n,x,y,z)=>{ const it=nearest(q=>rx(n).test(q.name)); if(!it)return null; it.rb.wakeUp(); it.rb.applyImpulse({x:x*it.rb.mass(),y:y*it.rb.mass(),z:z*it.rb.mass()},true); return it.name; },
     nearest:n=>{ const it=nearest(q=>rx(n).test(q.name)); return it&&{name:it.name,m:it.m,heavy:it.heavy,awake:it===held||!!it.rb&&!it.rb.isSleeping(),at:(p=>[p.x,p.y,p.z])(at(it)),h:it.h,sols:it.sol.map(([r])=>r.slice()),dm:!!it.dm}; },

@@ -1,12 +1,12 @@
 // THE BODEGA: the bodega's kits (dungeon, museum, lounge, theatre, castle), its layout, solids and build (grab('bodega')).
 import {SHARED, THREE} from './003-shx.js';
 import {B64, U16} from './003a-skin.js';
-import {CLOCK, DRESS, LITE, pos, ROOMS, SFX, UI, WINDOWS} from './003b-systems.js';
+import {BATCH, CLOCK, DRESS, FORAGE, LITE, pos, ROOMS, SFX, UI, WINDOWS} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {BF, BLDK, BLOCK, CASTLE, cutWalls, EASTX, FIX, grab, lamps, LAY, LOTX, LOTY, MAPG, MAPSTAIR, MODS, NEONS, NORTHX, OFFDX, ORIGIN, OVERHEAD, PARKGX, RING, SECTIONS, SOL, STORE, SYS, TILE, TURN, WESTX, WP, WROW, ZU} from './006-map-pre.js';
 import {PAINTC} from './006a-paintc.js';
-import {BATCH, OBJ} from './008-batch.js';
+import {OBJ} from './008-batch.js';
 import {BRICKS, CAT_DEPTS, CAT_INFO, CATALOG, COPE, cvNoise, DTBRICK, FP, grain, grassCol, hash, kerbCol, kerbFace, KIND_OF, LAMPS, lawnCol, LBLD, LIFE, LSEED, mt, prop, PROPL, rlf, roadCol, sh, sided, slabCol, speck, STORY, T, zShift} from './014-gamekit.js';
 import {bodegaFloorCol, bodegaWall} from './015-game-w-bodega-shop.js';
 import {MKS} from './016-street-kit.js';
@@ -1144,10 +1144,10 @@ SHARED.BOD.KC={KMK,KPP,DGN,DGP,LAMPS,CATALOG,dungeonWall,dungeonFloorCol,castleA
 await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BOUND, groundY; const c0=cutWalls.length;
 
 {
-  const B0=LBLD[0], B00={...B0}, W=LSEED.walk, CURB=LSEED.street, FAR=LSEED.grass, RD=-4;
+  const B0=LBLD[0], B00={...B0}, W=LSEED.walk, CURB=LSEED.street, FAR=LSEED.grass, RD=-8;
   const OX=(B00.x0+B00.x1)/2, OY=B00.y1, K=BLDK, X=x=>(x-OX)*TILE*K, Z=y=>(y-OY)*TILE*K, Y=z=>z*ZU*K, XS=x=>(x-OX)*TILE, ZS=y=>(y-OY)*TILE, YS=z=>z*ZU, MX=x=>x/TILE+OX, MY=z=>z/TILE+OY; if(OX!==ORIGIN[0]||OY!==ORIGIN[1])console.warn('the bodega lot is not on the level file\'s origin',OX,OY,ORIGIN); Object.assign(SHARED.BOD,{X,Z,Y,XS,ZS,YS,MX,MY,OX,OY,B0});
   const MAP={x0:WESTX,x1:EASTX,y0:B00.y0,y1:FAR+12}, RG=RING, WEND=RING.wy1;
-  const HUD=SHARED.BOD.HUD=WP.bodega.row===2; if(!HUD){ B0.x0=LOTX(WP.bodega.x0); B0.x1=LOTX(WP.bodega.x1); }   // on the Hudson row (owner, 7 Nov 2026) the old front is not built: the inside keeps its own size
+  const HUD=SHARED.BOD.HUD=WP.bodega.row===2||!!WP.bodega.pf; if(!HUD){ B0.x0=LOTX(WP.bodega.x0); B0.x1=LOTX(WP.bodega.x1); }   // on the Hudson row (owner, 7 Nov 2026) the old front is not built: the inside keeps its own size
   const BODOFF=B0.y0+3.75; SHARED.BOD.BODOFF=BODOFF;
   const SB={...B0,x0:1330+OFFDX/BLDK,x1:1330+OFFDX/BLDK+(B0.x1-B0.x0)}; SHARED.BOD.SB=SB; SHARED.BOD.SHOPDX=X(SB.x0)-X(B0.x0);
   const holed=f=>(x,y)=>[MAPSTAIR,...RING.stairs].some(S=>x>=S.x0&&x<S.x1&&y>=S.y0&&y<S.y1)?null:f(x,y);
@@ -1217,9 +1217,9 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
   put('wr1','shop shelf',B.x1-.36,B.y0+2.2,1); put('wm1','shop shelf',m-.3,B.y0+3.3,3); put('win1','shop shelf',(B.x0+.35+m-.95)/2-1,B.y1-.62); put('win2','shop shelf',(m+.95+B.x1-.35)/2-1,B.y1-.62);   // each display centred on its window
   put('counter','long counter',B.x1-1.05,B.y0+5.4,1); put('cigs','cigarette rack',B.x1-.22,B.y0+5.0,1,1); O.cigs.boxes=O.cigs.boxes.map(b=>b.foot?b:zShift(b,42));
   put('radio','radio',B.x1-.24,B.y0+4.0,1,1);
-  put('lotto','lottery machine',B.x1-1.05,B.y0+4.15,1); put('jar','candy jar',B.x1-1.05,B.y0+4.62);
+  put('jar','candy jar',B.x1-1.05,B.y0+4.62);
   { const top=Math.max(...O.counter.boxes.map(b=>b.z1)), drop=top*.25; O.counter.boxes=O.counter.boxes.map(b=>Object.assign({},b,{z0:b.z0*.75,z1:b.z1*.75}));
-    for(const k of ['lotto','jar'])if(O[k])O[k].boxes=O[k].boxes.map(b=>b.z0>=top*.8?zShift(b,-drop):b); } put('bags','paper bags',B.x1-.5,B.y0+7.3); put('phone','wall phone',B.x1-.15,B.y0+7.3,0,1);
+    for(const k of ['jar'])if(O[k])O[k].boxes=O[k].boxes.map(b=>b.z0>=top*.8?zShift(b,-drop):b); } put('bags','paper bags',B.x1-.5,B.y0+7.3); put('phone','wall phone',B.x1-.15,B.y0+7.3,0,1);
   put('clock','wall clock',B.x0+3.1,B.y0+.14,0,1); put('mirror','convex mirror',B.x0+.42,B.y0+.15,0,1); put('calendar','calendar',B.x0+.11,B.y0+1.95,0,1); put('cord','extension cord',B.x0+.11,B.y0+.12,0,1);
   put('tube1','fluorescent tube',m,B.y0+2.5); put('tube2','fluorescent tube',m,B.y0+6.5);
   put('fan','box fan',B.x0+5.1,B.y0+.36); put('fly','fly strip',m-.8,B.y0+4.5); put('bell','door bell',m,B.y1-.24);
@@ -1242,7 +1242,7 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
       M.milkcrates(bo.x0+.25,bo.y1+.18,3); M.milkcrates(bo.x1-1.05,bo.y1+.18,2); }
     M.gatebox(bo.x0+.2,bo.x1-.2,bo.y1,114); M.bell(bm,bo.y1,98); M.meterbox(bo.x0+.9,bo.y1,30); M.number(bo.x0+1.6,bo.y1,82,'66');
     for(const p of PROPL.slice(n0))FRONT.push(p); }
-    { const K=SHARED.GHOSTK.GSK, s=K.s; { const o=LAY.o('ghost'); K.o=[131+o.x/BLDK,W-8.3*s+o.y/BLDK]; } const n3=PROPL.length;
+    { const K=SHARED.GHOSTK.GSK, BP=WP.bath&&WP.bath.park?WP.bath:null; if(BP)K.s=K.s*.75; const s=K.s; { const o=LAY.o('ghost'); K.o=BP?[LOTX((BP.x0+BP.x1)/2)-4*s,LOTY(BP.y0)]:[131+o.x/BLDK,W-8.3*s+o.y/BLDK]; K.HOME=[K.o[0]+.4*s,K.o[1]+4.1*s,K.o[0]+7.8*s,K.o[1]+9.1*s]; } const n3=PROPL.length;   // in Central Park three quarters of its size (owner, 8 Nov 2026: "lets put the bathhouse inside central park, 25% smaller")
       for(const [k,dx,dy] of PRESETS['Preset Ghost Street 1'])if(!/row house|utility pole/.test(k))CATALOG[k](K.o[0]-3.5*s+dx,K.o[1]-.45*s+dy);
       for(const p of PROPL.slice(n3))GHOSTST.push(p); SHARED.BOD.GHOSTST=GHOSTST; SHARED.BOD.GSK=K; gdShape(GHOSTST,K,LAMPS);
     }
@@ -1266,7 +1266,7 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
   const TCL=(list,bb)=>{ const M=new Map(); return (x,y)=>{ const tx=Math.floor(x), ty=Math.floor(y), k=tx*1048576+ty; let L=M.get(k); if(!L){ L=list.filter(it=>{ const b=bb(it); return b[2]>=tx-.01&&b[0]<=tx+1.01&&b[3]>=ty-.01&&b[1]<=ty+1.01; }); M.set(k,L); } return L; }; };
   const RRt=TCL(RR,b=>b), CORNt=TCL(CORN,c=>[Math.min(c.x,c.x+c.sx*KR),Math.min(c.y,c.y+c.sy*KR),Math.max(c.x,c.x+c.sx*KR),Math.max(c.y,c.y+c.sy*KR)]);
   const ROADAT=(x,y)=>{ let r=false; for(const b of RRt(x,y))if(x>b[0]&&x<b[2]&&y>b[1]&&y<b[3]){ r=true; break; } for(const c of CORNt(x,y))if(inQ(c,x,y)&&Math.hypot(x-c.cx,y-c.cy)>KR)return !!c.cv; return r; };
-  const KB=.16, NR=RR.map(b=>[b[0]-KR-.3,b[1]-KR-.3,b[2]+KR+.3,b[3]+KR+.3]), KX=kerbCol('x'), KY=kerbCol('y');
+  const KB=.24, NR=RR.map(b=>[b[0]-KR-.3,b[1]-KR-.3,b[2]+KR+.3,b[3]+KR+.3]), KX=kerbCol('x'), KY=kerbCol('y');
   const kerbAt=(x,y)=>{ if(!NR.some(b=>x>b[0]&&x<b[2]&&y>b[1]&&y<b[3]))return null;
     for(const c of CORN)if(inQ(c,x,y)){ const d=Math.hypot(x-c.cx,y-c.cy); if(c.cv?d>KR-KB:d<KR+KB)return KX(Math.atan2(y-c.cy,x-c.cx)*KR+c.x*7,y); return null; }
     if(ROADAT(x+KB,y)||ROADAT(x-KB,y))return KY(x,y); if(ROADAT(x,y+KB)||ROADAT(x,y-KB))return KX(x,y); return null; };
@@ -1357,26 +1357,26 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
   { let q=0; for(const k of SHARED.BOD.kerbs){ if(k.at===MAP.x0||k.at===MAP.x1)continue; for(let a=k.a0+6;a<k.a1-4;a+=24){ if(inX(k.ax,k.at,a,2)||inJ(k.ax==='x'?a:k.at,k.ax==='x'?k.at:a,2))continue;
       const kind=q++%3===2?'speed':'nopark', p=k.at-k.n*.8; if(kind!=='speed')SG.push({kind,x:k.ax==='x'?a:p,y:k.ax==='x'?p:a,n:k.ax==='x'?[1,0]:[0,1]}); } } }
   SHARED.BOD.signs=[];
-  SHARED.BOD.road={KR,CORN,RR,at:ROADAT,MH,DR,LN}; window.STREETQ=()=>({...SHARED.BOD.road,XS:SHARED.BOD.XS,ZS:SHARED.BOD.ZS,CURB,FAR,MAP,RG,corner:DRESS.corner});
+  SHARED.BOD.road={KR,CORN,RR,at:ROADAT,MH,DR,LN,xw:XW.map(([a0,a1,ax,l0,h0],i)=>({a0,a1,ax,l0,h0,lit:i===0}))}; window.STREETQ=()=>({...SHARED.BOD.road,XS:SHARED.BOD.XS,ZS:SHARED.BOD.ZS,CURB,FAR,MAP,RG,corner:DRESS.corner});
   SHARED.BOD.grounds=[
     {id:'shop',bld:true,x0:SB.x0,y0:SB.y0,x1:SB.x1,y1:SB.y1,z:.15,col:(x,y)=>bodegaFloorCol(x,y),tex:'concrete_floor_worn_001',tint:[112,116,124],rep:3},
-    {id:'walk',x0:MAP.x0,y0:W,x1:MAP.x1,y1:CURB-.16,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},
-    {id:'kerb',x0:MAP.x0,y0:CURB-.16,x1:MAP.x1,y1:CURB,z:0,col:kerbCol('x'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
+    {id:'walk',x0:MAP.x0,y0:W,x1:MAP.x1,y1:CURB-KB,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},
+    {id:'kerb',x0:MAP.x0,y0:CURB-KB,x1:MAP.x1,y1:CURB,z:0,col:kerbCol('x'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
     {id:'road',x0:MAP.x0,y0:CURB,x1:MAP.x1,y1:FAR,z:RD,col:RW,tex:'asphalt_02',tint:[62,64,68],rep:3},
     {id:'alley',x0:MAP.x0,y0:BLOCK.alley[0],x1:MAP.x1,y1:BLOCK.alley[1],z:0,col:(x,y)=>roadCol(x,y,1),tex:'asphalt_02',tint:[86,87,90],rep:3},
-    {id:'prom',x0:MAP.x0,y0:BLOCK.prom[0],x1:MAP.x1,y1:BLOCK.prom[1],z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
-    {id:'kerb2',x0:RG.wr1,y0:FAR,x1:MAP.x1,y1:FAR+.16,z:0,col:kerbCol('x'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
-    {id:'walk2',x0:RG.wr1,y0:FAR+.16,x1:MAP.x1,y1:MAP.y1,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
-    {id:'kerb2w',x0:MAP.x0,y0:FAR,x1:RG.wr0,y1:FAR+.16,z:0,col:kerbCol('x'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
-    {id:'wstW',x0:RG.wx0,y0:FAR+.16,x1:RG.wr0-.16,y1:WEND,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},
-    {id:'wstKW',x0:RG.wr0-.16,y0:FAR+.16,x1:RG.wr0,y1:WEND,z:0,col:kerbCol('y'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
+    {id:'prom',x0:MAP.x0,y0:BLOCK.prom[0],x1:MAP.x1,y1:BLOCK.prom[1],z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},
+    {id:'kerb2',x0:RG.wr1,y0:FAR,x1:MAP.x1,y1:FAR+KB,z:0,col:kerbCol('x'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
+    {id:'walk2',x0:RG.wr1,y0:FAR+KB,x1:MAP.x1,y1:MAP.y1,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
+    {id:'kerb2w',x0:MAP.x0,y0:FAR,x1:RG.wr0,y1:FAR+KB,z:0,col:kerbCol('x'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
+    {id:'wstW',x0:RG.wx0,y0:FAR+KB,x1:RG.wr0-KB,y1:WEND,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},
+    {id:'wstKW',x0:RG.wr0-KB,y0:FAR+KB,x1:RG.wr0,y1:WEND,z:0,col:kerbCol('y'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
     {id:'wstRoad',x0:RG.wr0,y0:FAR,x1:RG.wr1,y1:WEND,z:RD,col:RW,tex:'asphalt_02',tint:[62,64,68],rep:3},
-    {id:'wstKE',x0:RG.wr1,y0:MAP.y1,x1:RG.wr1+.16,y1:WEND,z:0,col:kerbCol('y'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
-    {id:'wstE',x0:RG.wr1+.16,y0:MAP.y1,x1:RG.wx1,y1:WEND,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
+    {id:'wstKE',x0:RG.wr1,y0:MAP.y1,x1:RG.wr1+KB,y1:WEND,z:0,col:kerbCol('y'),tex:'concrete_pavement',tint:[178,174,164],rep:2},
+    {id:'wstE',x0:RG.wr1+KB,y0:MAP.y1,x1:RG.wx1,y1:WEND,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
     {id:'wstEnd',x0:RG.wx0,y0:WEND,x1:RG.wx1,y1:WEND+3,z:0,col:slabCol,tex:'concrete_pavement',tint:[166,161,148],rep:2},
-    {id:'ghostst',bld:true,x0:SHARED.BOD.GDK.ground.x0,y0:SHARED.BOD.GDK.Y0-1.2,x1:SHARED.BOD.GDK.ground.x1,y1:SHARED.BOD.GDK.y1e,z:.1,col:SHARED.BOD.GDK.court,tex:null,rep:2},
-    {id:'grassW',x0:MAP.x0,y0:B00.y0,x1:B0.x0,y1:W,z:0,col:holed((x,y)=>x>MAPSTAIR.x0-8&&x<MAPSTAIR.x1+8?slabCol(x,y):lawnCol(x,y)),tex:null,rep:2},
-    {id:'hudson',x0:BLOCK.hudson[0],y0:BLOCK.alley[1],x1:BLOCK.hudson[1],y1:CURB-.16,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},...PATCH].map(g=>g.id==='corner'||g.bld||g.id==='alley'||g.id==='prom'||g.id==='grassW'||g.col===RW?g:{...g,col:SW(g.col)});
+    (G=>({id:'ghostst',bld:true,x0:G.u(G.ground.x0),y0:G.v(G.Y0-1.2),x1:G.u(G.ground.x1),y1:G.y1e,z:.1,col:(x,y)=>G.court(G.iu(x),y>G.y1e-.25?y:G.iv(y)),tex:null,rep:2}))(SHARED.BOD.GDK),
+    {id:'grassW',x0:MAP.x0,y0:B00.y0,x1:B0.x0,y1:W,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},   // concrete behind the rows, no grass (owner, 9 Nov 2026)
+    {id:'hudson',x0:BLOCK.hudson[0],y0:BLOCK.alley[1],x1:BLOCK.hudson[1],y1:CURB-KB,z:0,col:holed(slabCol),tex:'concrete_pavement',tint:[166,161,148],rep:2},...PATCH].map(g=>g.id==='corner'||g.bld||g.id==='alley'||g.id==='prom'||g.col===RW?g:{...g,col:SW(g.col)});
   // a ground leaves out what a later one at its height covers: two painted in one place fight for the same pixels (the way through to the Hudson over the lawn and the walk)
   { const G=SHARED.BOD.grounds; G.forEach((g,i)=>{ if(g.bld)return; const over=G.slice(i+1).filter(q=>!q.bld&&q.z===g.z&&q.x0<g.x1&&q.x1>g.x0&&q.y0<g.y1&&q.y1>g.y0); if(!over.length)return; const f=g.col; g.col=(x,y)=>over.some(q=>x>=q.x0&&x<q.x1&&y>=q.y0&&y<q.y1)?null:f(x,y); }); }
   SHARED.BOD.LAMPS=LAMPS.filter(l=>!l.off&&l.r>0);
@@ -1471,7 +1471,7 @@ const GLAY={
     const bs=p.boxes.filter(b=>!b.nb&&b.z0<30&&b.z1-b.z0>3); if(!bs.length)continue; const r={x0:Math.min(...bs.map(b=>b.x0)),y0:Math.min(...bs.map(b=>b.y0)),x1:Math.max(...bs.map(b=>b.x1)),y1:Math.max(...bs.map(b=>b.y1))};
     sol(r.x0,r.y0,r.x1,r.y1,Math.max(...bs.map(b=>b.z1))); }
   BOUND={x0:XS(MAP.x0),x1:XS(MAP.x1),z0:Z(B00.y0),z1:ZS(MAP.y1)};
-  groundY=(x,z)=>{ const gx=x/TILE+OX, gy=z/TILE+OY, rw=rampAt(gx,gy); if(rw!=null)return YS(RD*(1-rw/RPD)); return ROADAT(gx,gy)?YS(RD):(window.HILL?HILL(x,z):0); };
+  groundY=(x,z)=>{ const gx=x/TILE+OX, gy=z/TILE+OY, rw=rampAt(gx,gy); if(rw!=null)return YS(RD*(1-rw/RPD)); return ROADAT(gx,gy)?YS(RD):(MODS.hill?MODS.hill(x,z):0); };
   if(!SHARED.BOD.HUD)sol(B0.x0,B0.y0,B0.x1,B0.y1,B0.h);
   SHARED.BOD.inside=(x,z)=>{ const gx=x/TILE/K+OX, gy=z/TILE/K+OY; return gx>SB.x0&&gx<SB.x1&&gy>SB.y0&&gy<SB.y1; };
 }
@@ -1644,7 +1644,7 @@ SHARED.BODB={};
   const post=M=>{ for(const me of BATCH.all(M,'G'))me.castShadow=false; };
   BATCH.cast=true; BATCH.build(MK); BATCH.cast=false; Object.assign(KINDS,BATCH.meshes); BATCH.meshes={}; post(KINDS);
   SHARED.BODB.roof=BATCH.all(KINDS,'R');
-  { window.BODB=SHARED.BODB; const Q=BATCH.queue({make:MK,cast:false,group:()=>MAPG.bodega||scene,post,done:()=>{ if(window.PAINTC)PAINTC.save(); }}); for(const g of GQ)Q.jobs.push(g); GQ.length=0; SHARED.BODB.GQ=Q.jobs; }
+  { window.BODB=SHARED.BODB; const Q=BATCH.queue({make:MK,cast:false,group:()=>MAPG.bodega||scene,post,done:()=>{ if(PAINTC)PAINTC.save(); }}); for(const g of GQ)Q.jobs.push(g); GQ.length=0; SHARED.BODB.GQ=Q.jobs; }
   const goods=()=>{ const {GOOD,GLAY}=SHARED.BOD, O=SHARED.BOD.O, list=[];
     const row=(p,f,zpx,items)=>{ const along=f[0]?1:0, a1=along?p.y1:p.x1, yaw=Math.atan2(-f[0],f[1]); let a=(along?p.y0:p.x0)+.08, last=null;
       for(const [k,n,...args] of items){ if(k!=='catfood'&&k!=='fishfood')continue; if(last&&last!==k)a+=.04; last=k;   // only the cat's and the fish's food stay (owner, 5 Nov 2026)
@@ -1718,7 +1718,7 @@ SHARED.BODB={};
       if(g)flat(g.x0,BODOFF,g.x1,g.y1,g.z,g.col,'G',!g.bld);
       SHARED.BODB.glow=[]; SHARED.BOD.paintProps(O.filter(p=>!backOf(p))); goods(); lampsOf(true,false); moodLights(); if(STORE.furnish&&STORE.furnish.bodega)STORE.furnish.bodega();
       const L=SHARED.BOD.WALLS.find(w=>w.id==='office'), dh=L.holes.find(h=>h.locked), hb=new THREE.Mesh(new THREE.BoxGeometry((dh.a1-dh.a0)*TILE,Y(dh.z1),.3*TILE),new THREE.MeshBasicMaterial({visible:false}));
-      hb.position.set(X((dh.a0+dh.a1)/2),Y(dh.z1)/2,Z(BODOFF)); scene.add(hb); UI.thing({name:'A LOCKED DOOR',obj:hb,reach:1.4*TILE,near:2.4*TILE,tall:Y(dh.z1),act:()=>{ SFX.play('latch',{vol:.5}); if(window.FORAGE)SAY('IT IS LOCKED. ONLY THE FOX HAS THE KEY.','#c8a090'); }}); },MK);
+      hb.position.set(X((dh.a0+dh.a1)/2),Y(dh.z1)/2,Z(BODOFF)); scene.add(hb); UI.thing({name:'A LOCKED DOOR',obj:hb,reach:1.4*TILE,near:2.4*TILE,tall:Y(dh.z1),act:()=>{ SFX.play('latch',{vol:.5}); if(FORAGE)SAY('IT IS LOCKED. ONLY THE FOX HAS THE KEY.','#c8a090'); }}); },MK);
     const P2=ROOMS.part(BG,()=>{ if(g)flat(g.x0,g.y0,g.x1,BODOFF,g.z,g.col,'G',!g.bld); SHARED.BOD.paintProps(O.filter(backOf)); lampsOf(true,true); },MK);
     const cap=new THREE.Mesh(new THREE.PlaneGeometry(Math.abs(X(SB.x1)-X(SB.x0)),Math.abs(Z(BODOFF)-Z(SB.y0))),new THREE.MeshBasicMaterial({color:0x0b0c10})); cap.rotation.x=-Math.PI/2;
     cap.position.set((X(SB.x0)+X(SB.x1))/2,Y(SB.h-4)+.01,(Z(SB.y0)+Z(BODOFF))/2); SG.add(cap); SHARED.BODB.cap=cap;
@@ -1731,7 +1731,7 @@ SHARED.BODB={};
   { const SB=SHARED.BOD.SB, m0=(B0.x0+B0.x1)/2, mS=(SB.x0+SB.x1)/2, bx=(x0,y0,x1,y1)=>[Math.min(X(x0),X(x1)),Math.min(Z(y0),Z(y1)),Math.max(X(x0),X(x1)),Math.max(Z(y0),Z(y1))], wb=bx(SB.x0-.2,SB.y0-.2,SB.x1+.2,SB.y1+.2);
     ROOMS.off.bodega={name:'THE BODEGA',box:{x0:wb[0],z0:wb[1],x1:wb[2],z1:wb[3],y0:-1,y1:Y(SB.h)},need:()=>LOAD(SHARED.BODB.build.chunk),build:SHARED.BODB.build,unbuild:SHARED.BODB.unbuild,
       spawn:[X(mS),Z(SB.y1-1.3),0,Math.PI],out:[X(m0),Z(B0.y1+.7),0,0],door:[X(m0),Y(0),Z(B0.y1+.25)],exit:[X(mS),0,Z(SB.y1-.25)],exitName:'OUT TO THE STREET',shift:[X(m0)-X(mS),Z(B0.y1)-Z(SB.y1)]};
-    if(SHARED.BOD.HUD){ const P=WP.bodega, hx=LOTX((P.x0+P.x1)/2), hy=LOTY(P.y0); Object.assign(ROOMS.off.bodega,{out:[X(hx),Z(hy-.7),0,Math.PI],door:[X(hx),Y(0),Z(hy-.25)],shift:null}); } }   // its door on the Hudson lot, on the promenade
+    if(SHARED.BOD.HUD){ const P=WP.bodega, N=P.face==='n', hx=LOTX((P.x0+P.x1)/2), hy=LOTY(N?P.y1:P.y0), o=N?1:-1; Object.assign(ROOMS.off.bodega,{out:[X(hx),Z(hy+.7*o),0,N?0:Math.PI],door:[X(hx),Y(0),Z(hy+.25*o)],shift:null}); } }   // its door on its lot's street side (Market St or the promenade)   // its door on the Hudson lot, on the promenade
 }
 { const {BF_KINDS,bfPic}=SHARED.BOD.STOREK.bf, PICS=new Map(), hash=SHARED.BOD.g.hash;
   const tex=(k,pose)=>{ '@later'; const key=k+':'+pose; let t=PICS.get(key); if(t)return t; const Q=bfPic(k,16,pose), c=document.createElement('canvas'); c.width=Q.w; c.height=Q.h; const g=c.getContext('2d'), im=g.createImageData(Q.w,Q.h);
@@ -1780,6 +1780,7 @@ const PROPS=__DATA__("data/props.json");
 function gdShape(GS,K,LAMPS){ const s=K.s, o=K.o, SC=1.5, cx=o[0]+4*s, Y1=o[1]+3.2*s, W=6.8*s*SC, D=3*s*SC, X0=cx-W/2, X1=cx+W/2, Y0=Y1-D, dx=(W-6.8*s)/2;
   for(let i=GS.length-1;i>=0;i--){ const p=GS[i]; for(let j=LAMPS.length-1;j>=0;j--)if(LAMPS[j].prop===p)LAMPS.splice(j,1); GS.splice(i,1); }
   const G=SHARED.BOD.GDK={o,s,SC,X0,X1,Y0,Y1,W,D,cx,y1e:o[1]+8.3*s};
+  G.S=1.5; G.u=x=>cx+(x-cx)*G.S; G.v=y=>Y1+(y-Y1)*G.S; G.iu=x=>cx+(x-cx)/G.S; G.iv=y=>Y1+(y-Y1)/G.S;   // the whole bath house 1.5x about the middle of its front (owner, 8 Nov 2026); its court still ends at the street
   G.ground={x0:X0-1.6,x1:X1+1.6};
   G.pool=[X0+.22,Y0+.22,X1-.22,(Y0+Y1)/2+.15];
   G.court=(x,y)=>{ const {hash,grain}=SHARED.BOD.g, sh=SHARED.BOD.K.sh, px=Math.floor(x*24), py=Math.floor(y*24);

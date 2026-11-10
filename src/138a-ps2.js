@@ -29,6 +29,13 @@ PS2.keepAlpha=on=>{ PS2.sp.uniforms.uA.value=on?1:0; };
 const hh=(x,y)=>{ const v=Math.sin(x*12.9898+y*78.233)*43758.5453; return v-Math.floor(v); }, ss=(a,b,x)=>{ const t=Math.min(1,Math.max(0,(x-a)/(b-a))); return t*t*(3-2*t); };
 const vn=(x,y)=>{ const i=Math.floor(x), j=Math.floor(y); let fx=x-i, fy=y-j; fx=fx*fx*(3-2*fx); fy=fy*fy*(3-2*fy); const a=hh(i,j)+(hh(i+1,j)-hh(i,j))*fx, b=hh(i,j+1)+(hh(i+1,j+1)-hh(i,j+1))*fx; return a+(b-a)*fy; };
 const gr=(i,j,Y)=>((hh(i,j)*.55+hh(Math.floor(i*.5)+71,Math.floor(j*.5)+71)*.45)-.5)*.034*(.2+1.5*vn(i/9,j/9))*ss(.03,.28,Y);
+// a picture shown cssH tall on the page: the lines to give PS2.img so its pixels are the game's own size (the character page, the designer)
+PS2.linesFor=cssH=>(SHARED.cellLines||PS2.lines()||240)*cssH/innerHeight*PS2.tune().k;
+// a picture at the game's own resolution (each of its pixels pxS of the screen's), its PS2 look after: px read back W x H (bottom row first), shown cssH tall
+PS2.page=(px,W,H,cssH,pxS)=>{ const L=Math.round(cssH*(devicePixelRatio||1)/pxS);
+  if(L>=8&&L<H){ const Lx=Math.max(1,Math.round(W*L/H)), o=new Uint8Array(px);
+    for(let y=0;y<H;y++){ const sy=Math.min(H-1,Math.floor((Math.floor(y*L/H)+.5)*H/L)); for(let x=0;x<W;x++){ const sx=Math.min(W-1,Math.floor((Math.floor(x*Lx/W)+.5)*W/Lx)), a=(y*W+x)*4, b=(sy*W+sx)*4; px[a]=o[b]; px[a+1]=o[b+1]; px[a+2]=o[b+2]; px[a+3]=o[b+3]; } } }
+  if(PS2.on)PS2.img(px,W,H,PS2.linesFor(cssH)); };
 PS2.img=(px,W,H,lines)=>{ const T=PS2.tune(), L=Math.max(8,Math.round(T.pix?Math.min(H,lines/T.k):H)), Lx=Math.max(8,Math.round(W*L/H)), N=Lx*L, Y=new Float32Array(N), I=new Float32Array(N), Q=new Float32Array(N), A=new Uint8Array(N), q=v=>T.Q>=1?Math.floor(v/T.Q)*T.Q/255:v/255;
   for(let j=0;j<L;j++)for(let i=0;i<Lx;i++){ const k=(Math.floor((j+.5)*H/L)*W+Math.floor((i+.5)*W/Lx))*4, r=q(px[k]), g=q(px[k+1]), b=q(px[k+2]), n=j*Lx+i;
     A[n]=px[k+3]>=24?px[k+3]:0; Y[n]=.299*r+.587*g+.114*b; I[n]=.596*r-.274*g-.322*b; Q[n]=.211*r-.523*g+.312*b; }
@@ -39,13 +46,13 @@ PS2.img=(px,W,H,lines)=>{ const T=PS2.tune(), L=Math.max(8,Math.round(T.pix?Math
     for(let yy=Math.floor(j*H/L);yy<Math.floor((j+1)*H/L);yy++)for(let xx=Math.floor(i*W/Lx);xx<Math.floor((i+1)*W/Lx);xx++){ const k=(yy*W+xx)*4; px[k]=R; px[k+1]=G; px[k+2]=B; px[k+3]=A[n]; } }
   return px; };   // the same look on a small picture (the menu's portrait): its pixels the size of the game's on screen
 // its five parts, each on or off (PIXELS, COLOURS, SMEAR, FRINGES, GRAIN), and one STRENGTH for them all (1 is the look as made, 0 none, 2 twice)
-PS2.parts={pix:false,col:true,smear:true,fringe:true,grain:true}; PS2.k=1;   // always on, the defaults, no chunky pixels (owner, 7 Nov 2026)
-if(0)try{ const v=SAVE.get('ps2p'); if(v&&v.length===5)['pix','col','smear','fringe','grain'].forEach((n,i)=>{ PS2.parts[n]=v[i]==='1'; }); const k=parseFloat(SAVE.get('ps2k')); if(k>=0&&k<=2)PS2.k=k; }catch(e){}
+PS2.parts={pix:false,col:true,smear:true,fringe:true,grain:true}; PS2.k=1;   // the defaults: no chunky pixels (owner, 7 Nov 2026); the switches back in the menu (8 Nov 2026)
+try{ const v=SAVE.get('ps2p'); if(v&&v.length===5)['pix','col','smear','fringe','grain'].forEach((n,i)=>{ PS2.parts[n]=v[i]==='1'; }); const k=parseFloat(SAVE.get('ps2k')); if(k>=0&&k<=2)PS2.k=k; }catch(e){}
 PS2.tune=()=>{ const P=PS2.parts, k=PS2.k; return {pix:P.pix&&k>.05,k:Math.max(.25,k),Q:P.col?Math.round(8*k):0,K:[P.smear?k:0,P.fringe?k:0,P.grain?k:0]}; };
 PS2.lines=()=>{ const T=PS2.tune(); return T.pix?Math.round(240/T.k):0; };
 PS2.save=()=>{ try{ SAVE.set('ps2p',['pix','col','smear','fringe','grain'].map(n=>PS2.parts[n]?'1':'0').join('')); SAVE.set('ps2k',String(PS2.k)); }catch(e){} };
 PS2.set=on=>{ PS2.on=!!on; PS2.sp.enabled=PS2.on; try{ SAVE.set('ps2',PS2.on?'1':'0'); }catch(e){} };
-PS2.on=true; PS2.sp.enabled=true;
+PS2.on=(()=>{ try{ return SAVE.get('ps2')!=='0'; }catch(e){ return true; } })(); PS2.sp.enabled=PS2.on;
 SYS.add('sky',()=>{ const P=SHARED.composer.passes; if(P[P.length-1]!==PS2.sp){ P.splice(P.indexOf(PS2.sp),1); P.push(PS2.sp); }
   const Ln=PS2.lines(), cap=PS2.on&&Ln?Math.min(480,2*Ln):0; if(cap!==PS2.cap){ PS2.cap=cap; if(SHARED.resize)SHARED.resize(); } const ck=Ln?Math.max(1,Math.round(RH/Ln)):1; SHARED.cellLines=PS2.on&&Ln?RH/ck:0; if(!PS2.on)return; const u=PS2.sp.uniforms, T=PS2.tune();
   u.uL.value.set(RW/ck,RH/ck); u.uQ.value=T.Q; u.uK.value.set(T.K[0],T.K[1],T.K[2]); },'138a-ps2');   // each cell a whole number of the picture's pixels (6 Nov 2026)

@@ -18,7 +18,7 @@ import {DRAGON} from './077-npc-skel.js';
   const B0=SHARED.BOD.B0, TI=TILE, PER=[
     {x:SHARED.BOD.X(MODS.apts.A.x0+3.7),z:SHARED.BOD.Z(MODS.apts.A.y1)-.6*TI,y:SHARED.BOD.Y(650),h:0},{x:SHARED.BOD.X((B0.x0+B0.x1)/2),z:SHARED.BOD.Z(B0.y1)-.6*TI,y:SHARED.BOD.Y(B0.h),h:0},
     ...WIRES.perch];
-  const gy=(x,z)=>{ const t=window.WEEDS&&WEEDS.top&&WEEDS.top(x,z); return typeof t==='number'?t:MODS.bodega.ground(x,z); };
+  const gy=(x,z)=>{ const t=WEEDS&&WEEDS.top&&WEEDS.top(x,z); return typeof t==='number'?t:MODS.bodega.ground(x,z); };
   const TREES=[PARK.trees,DRESS.trees].filter(Boolean).flatMap(m=>m.userData.items||[]).filter(o=>o.top-o.y>2*TI&&o.r>.5*TI);
   const spot=(o,a,k)=>({x:o.x+Math.sin(a)*o.r*k,z:o.z+Math.cos(a)*o.r*k,y:o.y+(o.top-o.y)*(k>.8?.58:.64),h:a,tree:o});
   const HOMES=TREES.map((o,i)=>[Math.sin(i*91.7+o.x)*43758.5%1,o]).sort((a,b)=>a[0]-b[0]).map(q=>q[1]);
@@ -37,7 +37,7 @@ import {DRAGON} from './077-npc-skel.js';
   const spark=(p,v,life)=>FLAME.part(4,p.x,p.y,p.z,v.x,v.y,v.z,life,.11*TI,undefined,G*1.6);
   const burst=p=>{ '@later'; SFX.play('boom',{at:p,far:40*TI,vol:.9,vary:.2}); for(let k=0;k<18;k++){ const a=Math.random()*Math.PI*2, u=Math.random(); spark(p,new THREE.Vector3(Math.cos(a)*u*3*TI,(1+Math.random()*2.5)*TI,Math.sin(a)*u*3*TI),.6+Math.random()*.6); }
     for(let k=0;k<4;k++)FLAME.puff(p.x+(Math.random()-.5)*.5*TI,p.y+.2*TI,p.z+(Math.random()-.5)*.5*TI,2.2);
-    if(window.BLAZE)BLAZE.land(p); const hit=(x,z)=>Math.hypot(x-p.x,z-p.z)<1.3*TI; if(SHARED.LVL==='up'&&hit(pos.x,pos.z))VIT.hurt(.25); for(const N of NPCS)if(N.lv==='up'&&N.key!=='dragon'&&N.g.visible&&hit(N.st.x,N.st.z))N.hp=Math.max(0,N.hp-.25); };
+    if(BLAZE)BLAZE.land(p); const hit=(x,z)=>Math.hypot(x-p.x,z-p.z)<1.3*TI; if(SHARED.LVL==='up'&&hit(pos.x,pos.z)&&VIT.burns('dragon'))VIT.hurt(.25); for(const N of NPCS)if(N.lv==='up'&&N.key!=='dragon'&&N.g.visible&&hit(N.st.x,N.st.z))N.hp=Math.max(0,N.hp-.25); };
   const G=9.8/.84*TI*.35;
   SHARED.FIRE={tick:dt=>{ let li=0;
     for(const f of FB){ if(!f.on)continue; f.t+=dt; f.v.y-=G*dt; f.g.position.addScaledVector(f.v,dt); const q=f.g.position; f.fl.x=q.x; f.fl.y=q.y; f.fl.z=q.z;

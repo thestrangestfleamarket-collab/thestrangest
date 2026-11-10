@@ -1,8 +1,8 @@
 // THE STALLS: STALL builds the market stalls and the mushrooms and goods laid out on them.
 import {THREE} from './003-shx.js';
-import {CLOCK, NPCS, WEEDS} from './003b-systems.js';
+import {CLOCK, NPCS, PARK, WEEDS} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {FIX, MAPG, SOL, TILE, ZU} from './006-map-pre.js';
+import {FIX, LEVEL, MAPG, SOL, STORE, TILE, ZU} from './006-map-pre.js';
 const STALL=(()=>{ const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS;
   const MUSH={
     button:{s:.035,h:1.2,f:(p,s)=>{ p('cyl',0xe8e2d4,0,s*.4,0,s*.35,s*.8,s*.35); p('cap',0xf2ede2,0,s*.7,0,s,s*.7,s); }},
@@ -31,12 +31,24 @@ const STALL=(()=>{ const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS;
     onion:{s:.035,h:2,f:(p,s,r,R)=>{ p('ball',R()<.3?0x8a3a5a:0xd8b88a,0,s,0,s,s,s); p('cone',0xa8884a,0,s*2.1,0,s*.3,s*.5,s*.3); }},
     greens:{s:.06,h:.8,f:(p,s)=>{ for(let k=0;k<3;k++)p('ball',k?0x4a9a3a:0x3a7a2a,(k-1)*s*.4,s*.4,0,s*.7,s*.35,s*.9); }},
     pumpkin:{s:.12,h:1.4,f:(p,s)=>{ p('ball',0xe0782a,0,s*.7,0,s,s*.7,s); p('cyl',0x5a4a24,0,s*1.4,0,s*.1,s*.3,s*.1); }}};
+  // the park-wall stalls' goods (owner, 8 Nov 2026): butterflies in jars, honey and hives, birds in cages, seed, gems
+  const GOODS={
+    bjar:{s:.05,h:2.4,f:(p,s,r,R)=>{ p('cyl',0xcfe4ec,0,s*1.1,0,s*.8,s*2.2,s*.8); p('cyl',0x8a6a3e,0,s*2.3,0,s*.85,s*.2,s*.85); p('cap',[0xe0782a,0x4a8ad8,0xe8c84a,0xa858c8][R()*4|0],0,s*1.2,0,s*.6,s*.25,s*.3,Math.PI/2); }},
+    net:{s:.05,h:1,f:(p,s)=>{ p('cyl',0x9a7044,0,s*.3,0,s*.2,s*6,s*.2,Math.PI/2); p('cap',0xe8e4d8,0,s*.6,s*3.4,s*1.4,s*1.6,s*1.4,Math.PI/2); }},
+    honey:{s:.045,h:2.2,f:(p,s)=>{ p('cyl',0xd8962a,0,s*1,0,s*.8,s*2,s*.8); p('cap',0xc8b088,0,s*2,0,s*.85,s*.4,s*.85); }},
+    comb:{s:.07,h:.6,f:(p,s)=>{ p('box',0xe8b040,0,s*.2,0,s*1.6,s*.4,s); }},
+    hive:{s:.2,h:1.3,f:(p,s)=>{ p('box',0xe8d08a,0,s*.45,0,s*1.2,s*.9,s); p('box',0xd8b868,0,s*1.05,0,s*1.2,s*.3,s); p('box',0x8a6a3e,0,s*1.25,0,s*1.35,s*.1,s*1.15); }},
+    cage:{s:.1,h:2,f:(p,s,r,R)=>{ p('cyl',0xc8a84a,0,s*.9,0,s*.8,s*1.6,s*.8); p('cap',0xc8a84a,0,s*1.7,0,s*.8,s*.5,s*.8); p('box',0x6a5434,0,s*.08,0,s*1.7,s*.16,s*1.7); p('ball',[0xe8c84a,0x4a9ad8,0xd84a3a,0x5ab84a][R()*4|0],0,s*.75,0,s*.3,s*.3,s*.36); }},
+    seed:{s:.05,h:1.4,f:(p,s)=>{ p('box',0xb89a6a,0,s*.7,0,s*1.2,s*1.4,s*.7); p('ball',0xd8c080,0,s*1.45,0,s*.5,s*.2,s*.3); }},
+    crystal:{s:.04,h:2.4,f:(p,s,r,R)=>{ p('cone',[0x9a6ad8,0x4ad8c8,0xe84a8a,0xe8e8f0][R()*4|0],0,s*1.2,0,s*.6,s*2.4,s*.6,0,0,1); }},
+    geode:{s:.06,h:1.2,f:(p,s)=>{ p('cap',0x8a8278,0,s*.5,0,s,s*.6,s); p('cap',0x8a58c8,0,s*.56,0,s*.7,s*.4,s*.7,0,0,1); }},
+    stone:{s:.035,h:1.2,f:(p,s,r,R)=>{ p('ball',[0x3a8ad8,0xd83a4a,0x3ac87a,0xe8c84a][R()*4|0],0,s*.6,0,s*.7,s*.6,s*.7); }}};
   const G={ball:new THREE.IcosahedronGeometry(1,0),cap:new THREE.SphereGeometry(1,5,2,0,Math.PI*2,0,Math.PI/2),cone:new THREE.ConeGeometry(1,1,6),cyl:new THREE.CylinderGeometry(1,1,1,5,1,true),box:new THREE.BoxGeometry(1,1,1)};
   const zones=[], Z0=new THREE.Matrix4().makeScale(0,0,0);
   const face=(X,Z,xa,xb,y)=>{ const a=Math.min(X(xa),X(xb)), b=Math.max(X(xa),X(xb)), z0=Z(y), k=Z(y+1)-z0, s=Math.sign(k); let f=null;
     for(const B of FIX.up){ if(B[0]>a||B[3]<b||B[3]-B[0]<6*Math.abs(k))continue; const e=s>0?B[1]:B[4]; if(Math.abs(e-z0)<5*Math.abs(k)&&(f==null||e*s<f*s))f=e; }
     return f==null?y:y+(f-z0)/k; };
-  const build=o=>{ const {X,Z,veg,gate=1}=o, KS=veg?VEG:MUSH, I={ball:[],cap:[],cone:[],cyl:[],box:[],glow:[]}, TG=[];
+  const build=o=>{ const {X,Z,gate=1}=o, tab=!!o.goods, veg=o.veg||tab, KS=tab?GOODS:o.veg?VEG:MUSH, I={ball:[],cap:[],cone:[],cyl:[],box:[],glow:[]}, TG=[];
     const x0=Math.min(o.x0,o.x1), x1=Math.max(o.x0,o.x1), wy=face(X,Z,x0,x1,o.y)-.03, xm=(x0+x1)/2, xg=gate>0?x1:x0, xo=gate>0?x0:x1, fo=-gate, CY1=wy-2.85, CY0=wy-3.65, ya=wy-.78, yb=wy-.02, xa=x0+.4, xb=x1-.4;
     let t=o.seed||7; const R=()=>{ t=(t*16807)%2147483647; return t/2147483647; }, RR=(a,b)=>a+R()*(b-a), BX=[1e9,1e9,-1e9,-1e9];
     const e=new THREE.Euler(), q=new THREE.Quaternion(), m4=new THREE.Matrix4(), V3=THREE.Vector3;
@@ -53,16 +65,16 @@ const STALL=(()=>{ const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS;
     const crate=(a,b,c,d,h0,h1,col=0x9a7044)=>{ box(a,b,c,d,h0,h1,col); box(a-.005,b+.005,c-.005,d+.005,(h0+h1)/2-.012,(h0+h1)/2+.012,0x6e4e2c); };
     const H=.8, WOOD=0x9e7a4c, LEG=0x6e5434, DARK=0x7a5c38, ki={i:0};
     const legs=(a,b,c,d,h)=>{ const L=.1; for(const [u,v] of [[a+.05,c+.05],[b-.05-L,c+.05],[a+.05,d-.05-L],[b-.05-L,d-.05-L]])box(u,u+L,v,v+L,0,h,LEG); };
-    const RW=veg?[KS.potato,KS.cabbage,KS.tomato,KS.eggplant]:[KS.puffball,KS.chanterelle,KS.redcap,KS.moonglow], RH=[.24,H,1.2,1.6];
+    const RW=tab?o.goods.map(k=>GOODS[k]):veg?[KS.potato,KS.cabbage,KS.tomato,KS.eggplant]:[KS.puffball,KS.chanterelle,KS.redcap,KS.moonglow], RH=[.24,H,1.2,1.6];
     const TOP=veg?1.78:2.58; legs(xa,xb,ya,yb,H-.05); box(xa,xb,ya,yb,H-.05,H,WOOD); box(xa+.04,xb-.04,ya+.04,yb-.04,.2,.24,DARK); box(xa,xb,yb-.035,yb,H,TOP,DARK);
     box(xa,xb,yb-.5,yb,1.15,1.2,WOOD); box(xa,xb,yb-.3,yb,1.55,1.6,WOOD);
     for(const u of [xa,(xa+xb)/2-.04,xb-.08]){ box(u,u+.08,yb-.5,yb-.42,H,1.15,LEG); box(u,u+.08,yb-.3,yb-.22,1.2,1.55,LEG); box(u,u+.08,yb-.1,yb-.02,H,TOP,LEG); if(!veg){ box(u,u+.08,yb-.24,yb-.16,1.6,1.95,LEG); box(u,u+.08,yb-.18,yb-.1,2,2.35,LEG); } }
     if(!veg){ box(xa,xb,yb-.24,yb,1.95,2,WOOD); box(xa,xb,yb-.18,yb,2.35,2.4,WOOD); }
     row(RW[0],xa+.08,xb-.08,ya+.06,yb-.06,RH[0],.45); row(RW[1],xa+.04,xb-.04,ya+.03,yb-.52,RH[1],.8); row(RW[2],xa+.04,xb-.04,yb-.48,yb-.04,RH[2],.8); row(RW[3],xa+.04,xb-.04,yb-.28,yb-.04,RH[3],.9); if(!veg){ row(KS.ghostcap,xa+.04,(xa+xb)/2,yb-.22,yb-.04,2,.9); row(KS.violet,(xa+xb)/2,xb-.04,yb-.22,yb-.04,2,.9); row(KS.ember,xa+.04,(xa+xb)/2,yb-.16,yb-.04,2.4,.9); row(KS.oyster,(xa+xb)/2,xb-.04,yb-.16,yb-.04,2.4,.9); row(KS.sulphur,xa+.04,xb-.04,yb-.16,yb-.04,2.4,.3); }
     solid(xa,xb,ya,yb,veg?1.8:2.6);
-    const CK=veg?[KS.carrot,KS.pepper,KS.corn,KS.onion,KS.greens,KS.tomato]:[KS.button,KS.bolete,KS.inkcap,KS.morel,KS.redcap,KS.chanterelle];
+    const CK=tab?RW:veg?[KS.carrot,KS.pepper,KS.corn,KS.onion,KS.greens,KS.tomato]:[KS.button,KS.bolete,KS.inkcap,KS.morel,KS.redcap,KS.chanterelle];
     const fx=(u0,u1)=>[Math.min(xo+fo*u0,xo+fo*u1),Math.max(xo+fo*u0,xo+fo*u1)];
-    if(veg){ const SK=[KS.tomato,KS.cabbage,KS.pepper,KS.onion,KS.potato,KS.eggplant,KS.carrot,KS.corn]; let n=0;
+    if(veg&&!tab){ const SK=[KS.tomato,KS.cabbage,KS.pepper,KS.onion,KS.potato,KS.eggplant,KS.carrot,KS.corn]; let n=0;
       for(const [u0,u1] of [[.12,.66],[.7,1.24]])for(const [c,d,hi] of [[wy-.5,yb,3],[wy-.98,wy-.52,2],[wy-1.46,wy-1,1]]){ const [a,b]=fx(u0,u1), dh=.28+RR(-.02,.02), sh=RR(-.02,.02);
         for(let k=0;k<hi;k++)crate(a+sh,b+sh,c,d,k*.29,k*.29+dh,[0x9a7044,0x8a6238,0xa47a4a][(n+k)%3]); heap(SK[n++%SK.length],(a+b)/2+sh,(c+d)/2,(hi-1)*.29+dh-.08,(b-a)*.82,(d-c)*.8,9); solid(a,b,c,d,hi*.29); }
       }
@@ -74,13 +86,14 @@ const STALL=(()=>{ const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS;
       L.forEach(([m,col],i)=>{ me.setMatrixAt(i,m); me.setColorAt(i,c.setHex(col)); }); me.computeBoundingSphere&&me.computeBoundingSphere(); me.castShadow=g!=='glow'; me.receiveShadow=true; if(g==='glow')me.onBeforeRender=()=>{ glow.color.setScalar(CLOCK.dark&&CLOCK.dark()?1.25:.55); }; grp.add(me);
       tris+=L.length*(geo.index?geo.index.count:geo.attributes.position.count)/3; }
     const W=(x,y)=>({x:X(x),z:Z(y)}), HY=(CY1+ya)/2, sg=gate, far=wy-9, zone=[BX[0]-.7*TILE,Math.min(Z(CY0-1.4),Z(wy+.5)),BX[2]+.7*TILE,Math.max(Z(CY0-1.4),Z(wy+.5))];
-    zones.push(zone); if(window.WEEDS&&WEEDS.clear)WEEDS.clear(zone);
-    const S={x0,x1,y0:CY0,y1:yb,wy,veg,hx:X(xm),hz:Z(HY),fz:Z(far),tris:Math.round(tris),items:Object.values(I).reduce((a,L)=>a+L.length,0),zone,
+    zones.push(zone); if(WEEDS&&WEEDS.clear)WEEDS.clear(zone);
+    const S={name:o.name,bx:BX.slice(),x0,x1,y0:CY0,y1:yb,wy,veg,hx:X(xm),hz:Z(HY),fz:Z(far),tris:Math.round(tris),items:Object.values(I).reduce((a,L)=>a+L.length,0),zone,
       home:W(xm,ya-.75), face:W(xm,far), shelf:[xa+.9,xm,xb-.9].map(x=>W(x,ya-.72)), shelfF:[xa+.9,xm,xb-.9].map(x=>W(x,wy+4)), counter:[x0+1.25,xm,x1-1.25].map(x=>W(x,CY1+.7)),
       wing:[[x0+1.45,-1],[x1-1.45,1]].map(([x,s])=>({p:W(x,CY1+.5),f:W(x+s*5,CY1+.5)})), broom:{p:W(xg-sg*.85,wy-1.35),f:W(xg+sg*.3,wy)},
       sweepIn:[W(xm+.9,HY+.1),W(xm-.9,HY+.1),W(xm,HY-.25),W(xg-sg*.85,wy-1.35)],
       sweepOut:[W(xg-sg*.85,wy-1.35),W(xg+sg*.85,wy-1.35),W(xg+sg*.85,CY0-.9),W(xm,CY0-.9),W(xo-sg*.3,CY0-.9),W(xm+sg*.4,CY0-.95),W(xg+sg*.85,CY0-.9),W(xg+sg*.85,wy-1.35),W(xg-sg*.85,wy-1.35)],
       broomOn:v=>{ for(const [g,i] of TG)ME[g].setMatrixAt(i,v?I[g][i][0]:Z0); for(const g of new Set(TG.map(a=>a[0])))ME[g].instanceMatrix.needsUpdate=true; }};
+    if(o.name)STORE.places.push([o.name,S.home.x,S.home.z,'up']);   // GO TO and the map list it
     made.push(S); return S; };
   const wrap=a=>((a+Math.PI*3)%(Math.PI*2))-Math.PI;
   const work=(N,S,o={})=>{ const st=N.st, c=N.rig, J={k:'stand',t:0,d:1,row:1,tray:o.tray?1:0,broom:0,item:0}, v0=st.v; c.job=J;
@@ -124,6 +137,9 @@ const STALL=(()=>{ const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS;
     if(J.item&&J.k==='walk'){ R.rotation.x=L.rotation.x=(A.drop||0)-A.put; }
     if(J.broom&&(J.k==='sweep'||J.k==='walk')){ const k=J.k==='sweep'?1:0; R.rotation.set(A.sw[0],s*.3*k,A.sw[1]); L.rotation.set(A.sw[2],s*.3*k,A.sw[3]); B.broom.rotation.set(k?0:-.45,s*.5*k,0); Hp.rotation.y+=s*.12*k; Hp.rotation.x+=.08*k; }
     B.broom.scale.setScalar(J.broom?1:1e-4); B.held.scale.setScalar(J.item?1:1e-4); if(B.tray)B.tray.scale.setScalar(J.tray?1:1e-4); };
-  const made=[]; return {build,made,MUSH,VEG,zones,work,pose,face}; })();
+  // where each park-wall stall stands (data/world.json parkPlaces.stalls): its side of the gate and its place out from it
+  const at=id=>{ const L=(LEVEL.parkPlaces&&LEVEL.parkPlaces.stalls)||[], s=L.find(q=>q.id===id); if(!s)return null; const g=PARK.gate, W=4.8, step=5.4, k=s.slot||0;
+    return s.side==='w'?{...s,x0:g[0]-3-k*step-W,x1:g[0]-3-k*step,gate:1}:{...s,x0:g[1]+3+k*step,x1:g[1]+3+k*step+W,gate:-1}; };
+  const made=[]; return {build,made,MUSH,VEG,GOODS,zones,work,pose,face,at}; })();
 window.STALL=STALL;
 export {STALL};

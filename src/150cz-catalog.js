@@ -1,7 +1,8 @@
 // THE GAME'S ITEMS FOR YOUR APARTMENT: every kind in the game's catalog is a thing DECORATE sells, its mesh painted the first time it is shown or bought; the small ones loose (real physics), the big ones solid.
 import {SHARED, THREE} from './003-shx.js';
+import {BATCH} from './003b-systems.js';
 import {MODS} from './006-map-pre.js';
-import {BATCH, PEEK} from './008-batch.js';
+import {PEEK} from './008-batch.js';
 import {CAT_DEPTS, CAT_INFO, CATALOG, LAMPS, PROPL} from './014-gamekit.js';
 import {ROOMK} from './150a-bedroom.js';
 { const cost=I=>{ const n=parseInt(String(I.price??'').replace(/[^0-9]/g,''),10); return n>0?n:20; };

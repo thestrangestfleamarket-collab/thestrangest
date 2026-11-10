@@ -1,6 +1,6 @@
 // THE DRONE & BBS: the menu's BBS (or double-click the computer in your apartment): order bodega essentials or apartment furniture, follow the delivery under YOUR ORDERS, and a drone drops the parcel on your front fire escape — you bring it in (furniture goes into your apartment). THE ARCADE's games play from it too.
 import {SHARED, THREE} from './003-shx.js';
-import {DRONE, FORAGE, INV, UI} from './003b-systems.js';
+import {DRONE, FORAGE, INV, ONLINE, pos, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {MODS, STORE, SYS, TILE} from './006-map-pre.js';
@@ -31,21 +31,28 @@ DRONE.init=()=>{ const APTS=MODS.apts; if(!APTS||!APTS.R)return; const T=TILE, X
   const bringFurn=kind=>{ const l=ownedFurn(), [u,v]=SLOTS[l.length%SLOTS.length]; l.push({kind,u,v,r:0}); saveFurn(l); placeFurn(kind,u,v,0); };
 
   const mkDrone=()=>DRONE.mk();
-  const dropPoint=()=>{ const F=window.FIREV; return F&&F.spot?F.spot(.5):null; };
+  const dropPoint=()=>{ const F=MODS.firev; return F&&F.spot?F.spot(.5):null; };
 
   const flights=[], parcels=[]; const V=new THREE.Vector3();
-  const landParcel=(label,onIn,dp)=>{ '@later'; const p=bx(.32*T,.24*T,.32*T,lam(0xc89a5a)); p.position.set(dp.x+(Math.random()-.5)*.5*T,dp.y+.12*T,dp.z); scene.add(p); parcels.push(p);
+  const landParcel=(label,onIn,dp,here)=>{ '@later'; const p=bx(.32*T,.24*T,.32*T,lam(0xc89a5a)); p.position.set(dp.x+(Math.random()-.5)*.5*T,dp.y+.12*T,dp.z); scene.add(p); parcels.push(p);
     const th={name:'A PARCEL: '+label,pick:true,obj:p,reach:1.3*T,near:2.6*T,tall:.7*T,act:()=>{ if(!p.parent)return; scene.remove(p); const i=parcels.indexOf(p); if(i>=0)parcels.splice(i,1); onIn(); toast('YOU BRING IN: '+label); }};
-    UI.thing(th); toast('THE DRONE DROPPED '+label+' ON YOUR FIRE ESCAPE'); };
-  const deliver=(label,onIn)=>{ const dp=dropPoint(); if(!dp){ onIn(); toast('DELIVERED: '+label); return; }
-    const {D,parcel}=mkDrone(); scene.add(D); D.position.set(dp.x,dp.y+8*T,dp.z-6*T); DRONE.state='out'; flights.push({D,parcel,label,onIn,dp,ph:'in'}); };
+    UI.thing(th); toast('THE DRONE DROPPED '+label+(here?' BY YOU':' ON YOUR FIRE ESCAPE')); };
+  // o.follow: a spot read every frame (the phone's orders: the drone comes to you wherever you are)
+  const deliver=(label,onIn,o={})=>{ const dp=o.follow?o.follow():dropPoint(); if(!dp){ onIn(); toast('DELIVERED: '+label); return; }
+    const {D,parcel}=mkDrone(); scene.add(D); D.position.set(dp.x,dp.y+8*T,dp.z-6*T); DRONE.state='out'; flights.push({D,parcel,label,onIn,dp,follow:o.follow,ph:'in'});
+    if(ONLINE.on)ONLINE.send({t:'drone',lb:String(label).slice(0,40),f:o.follow?1:0,x:+dp.x.toFixed(2),y:+dp.y.toFixed(2),z:+dp.z.toFixed(2)}); };   // everyone near sees it fly (owner, 8 Nov 2026: "make the drone shared so everyone sees it")
+  // someone else's delivery: the same drone flying to them (or their fire escape) and the parcel left by them a while; theirs to take, not yours
+  const seen=[]; ONLINE.hear.drone=m=>{ if(!m||!isFinite(m.x)||!isFinite(m.z)||Math.hypot(m.x-pos.x,m.z-pos.z)>80*T||SHARED.LVL!=='up')return;
+    const id=m.id, at=()=>{ const q=m.f&&ONLINE.others.get(id); if(!q||!q.p)return null; const g=SHARED.groundY?SHARED.groundY(q.p.x,q.p.z):m.y; return {x:q.p.x+.9*T,y:g,z:q.p.z}; };
+    const dp={x:+m.x,y:+m.y||0,z:+m.z}, {D,parcel}=mkDrone(); scene.add(D); D.position.set(dp.x,dp.y+8*T,dp.z-6*T); seen.push({D,parcel,dp,follow:m.f?at:null,ph:'in',theirs:1}); };
   DRONE.go=deliver;
   SYS.add('life',dt=>{ if(!dt)return;
-    for(const f of flights){
-      if(f.ph==='in'){ V.set(f.dp.x,f.dp.y+1.4*T,f.dp.z); f.D.position.lerp(V,Math.min(1,dt*2.2)); if(f.D.position.distanceTo(V)<.18*T)f.ph='drop'; }
-      else if(f.ph==='drop'){ f.parcel.visible=false; landParcel(f.label,f.onIn,f.dp); f.away=new THREE.Vector3(f.dp.x,f.dp.y+9*T,f.dp.z-7*T); f.ph='away'; }
+    for(const f of [...flights,...seen]){ if(f.left&&(f.lt-=dt)<=0){ scene.remove(f.left); f.left=null; }
+      if(f.ph==='in'){ if(f.follow){ const q=f.follow(); if(q)f.dp=q; } V.set(f.dp.x,f.dp.y+1.4*T,f.dp.z); f.D.position.lerp(V,Math.min(1,dt*2.2)); if(f.D.position.distanceTo(V)<.18*T)f.ph='drop'; }
+      else if(f.ph==='drop'&&f.theirs){ f.parcel.visible=false; const p=bx(.32*T,.24*T,.32*T,lam(0xc89a5a)); p.position.set(f.dp.x,f.dp.y+.12*T,f.dp.z); scene.add(p); f.left=p; f.lt=45; f.away=new THREE.Vector3(f.dp.x,f.dp.y+9*T,f.dp.z-7*T); f.ph='away'; }
+      else if(f.ph==='drop'){ f.parcel.visible=false; landParcel(f.label,f.onIn,f.dp,!!f.follow); f.away=new THREE.Vector3(f.dp.x,f.dp.y+9*T,f.dp.z-7*T); f.ph='away'; }
       else if(f.ph==='away'){ f.D.position.lerp(f.away,Math.min(1,dt*2)); if(f.D.position.distanceTo(f.away)<.4*T){ scene.remove(f.D); f.done=true; } } }
-    for(let i=flights.length-1;i>=0;i--)if(flights[i].done)flights.splice(i,1); if(!flights.length&&DRONE.state!=='home')DRONE.state='home'; },'146-drone');
+    for(let i=flights.length-1;i>=0;i--)if(flights[i].done)flights.splice(i,1); for(let i=seen.length-1;i>=0;i--)if(seen[i].done&&!seen[i].left)seen.splice(i,1); if(!flights.length&&DRONE.state!=='home')DRONE.state='home'; },'146-drone');
 
   const purse={get:()=>INV.cash,add:v=>{ INV.cash+=v; }}; DRONE.purse=purse;
   const toast=msg=>{ '@later'; let el=document.getElementById('dtoast'); if(!el){ el=document.createElement('div'); el.id='dtoast'; el.style.cssText='position:fixed;left:50%;bottom:64px;transform:translateX(-50%);font:12px var(--pixel,monospace);color:#e8f4dc;background:#14161a;border:2px solid #3a4a3a;padding:6px 10px;z-index:15;pointer-events:none'; document.body.appendChild(el); } el.textContent=msg; el.hidden=false; clearTimeout(el.t); el.t=setTimeout(()=>{ el.hidden=true; },3600); };

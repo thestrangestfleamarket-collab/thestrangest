@@ -1,17 +1,19 @@
 // THE BATH HOUSE (the ghost street's dojo until 19 Oct 2026): gdShape lays its lot; its own builder for the outside and, off the map, its inside (an empty dojo hall full of steam).
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, pos, ROOMS, UI, VIT} from './003b-systems.js';
+import {BATCH, CLOCK, pos, ROOMS, UI, VIT} from './003b-systems.js';
 import {PPU, renderer, scene} from './004-main.js';
-import {BLDK, cutWalls, FIX, grab, LOTX, LOTY, SEEN, SOL, STORE, TILE, WP} from './006-map-pre.js';
+import {BLDK, cutWalls, FIX, grab, LOTX, LOTY, MODS, SEEN, SOL, STORE, SYS, TILE, WP} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
-import {BATCH, OBJ} from './008-batch.js';
+import {OBJ} from './008-batch.js';
 
-await grab('ghostdojo',async()=>{ const {X,Y,Z,gbox,faceTex,bq,C}=SHARED.BOD, J=SHARED.BOD.GDJ, GK=SHARED.BOD.GDK, {hash,grain}=SHARED.BOD.g, sh=SHARED.BOD.K.sh;
-  if(GK){ const {X0,X1,Y0,Y1,W,D}=GK, T=.22, H=168, H2=300, DH=118, hs=hash;
+await grab('ghostdojo',async()=>{ const {X:BX,Y:BY,Z:BZ,gbox:GB,faceTex,bq,C}=SHARED.BOD, J=SHARED.BOD.GDJ, GK=SHARED.BOD.GDK, {hash,grain}=SHARED.BOD.g, sh=SHARED.BOD.K.sh;
+  if(GK){ const S=GK.S||1, {u,v,iu,iv}=GK, X=x=>BX(u(x)), Z=y=>BZ(v(y)), Y=z=>BY(z*S);   // drawn 1.5x about the middle of its front (owner, 8 Nov 2026): built and painted at its old size, every point scaled
+    const gbox=(b,k)=>{ const o={...b,x0:u(b.x0),x1:u(b.x1),y0:v(b.y0),y1:v(b.y1),z0:b.z0*S,z1:b.z1*S}; if(b.fs)o.fs=(nx,ny,P,Q,z,f)=>b.fs(nx,ny,iu(P),iv(Q),z/S,f); if(b.fi)o.fi=(Q,z)=>b.fi(iv(Q),z/S); if(b.fj)o.fj=(P,z)=>b.fj(iu(P),z/S); if(b.top)o.top=(x,y)=>b.top(iu(x),iv(y)); return GB(o,k); };
+    const {X0,X1,Y0,Y1,W,D}=GK, T=.22, H=168, H2=300, DH=118, hs=hash;
     const xi0=X0+T, xi1=X1-T, yi0=Y0+T, yi1=Y1-T, cx=(xi0+xi1)/2, cy=(yi0+yi1)/2, WD=J.DJWOOD;
     const lit=c=>Object.assign([Math.min(255,c[0]),Math.min(255,c[1]),Math.min(255,c[2])],{e:1});
     J.setDJ({H:160});
-    const BAY={a0:1.4,a1:5.2,z0:36,z1:124,out:.14}, DOOR={a0:W/2-1.2,a1:W/2+1.2,z0:0,z1:DH}, EW={a0:9.4,a1:12.4,z0:40,z1:124};
+    const KW=Math.min(1,W/14.6), BAY={a0:1.4*KW,a1:5.2*KW,z0:36,z1:124,out:.14}, DOOR={a0:W/2-1.2,a1:W/2+1.2,z0:0,z1:DH}, EW={a0:9.4*KW,a1:12.4*KW,z0:40,z1:124};   // the windows laid out for a 14.6-tile front, kept clear of the door on a narrower one
     const RND={back:[3.3],west:[D/2]}, RZc=76, RR=27;
     const UW=[{a0:2.0,a1:4.6},{a0:W-4.6,a1:W-2.0}], UZ0=H+42, UZ1=H+104, SIGN={a0:W/2-1.45,a1:W/2+1.45,z0:H+46,z1:H+100};
     const IVY={front:[[.25,262,1.3],[W-.3,150,.7]],west:[[.9,290,1.5],[3.5,210,1.3],[5.6,130,.9]],back:[[1.6,190,1.4],[8.6,250,1.7],[13.2,150,.8]],east:[[4.6,120,.8]]};
@@ -192,7 +194,7 @@ await grab('ghostdojo',async()=>{ const {X,Y,Z,gbox,faceTex,bq,C}=SHARED.BOD, J=
     for(const p of ITEMS){ const bs=p.boxes.filter(b=>b.z0<30&&b.z1-b.z0>3); if(!bs.length||/incense/.test(p.name))continue;
       sol(Math.min(...bs.map(b=>b.x0)),Math.min(...bs.map(b=>b.y0)),Math.max(...bs.map(b=>b.x1)),Math.max(...bs.map(b=>b.y1)),Math.max(...bs.map(b=>b.z1))); }
     const NEARB=30*TILE, LT=[], STEAM={k:.05,c:new THREE.Color(),day:new THREE.Color(.86,.85,.82),fog:new THREE.Fog(0xdcdad2,0,9*TILE),was:null};
-    const light=(x,y,z,c,r,fl)=>{ const cm=Math.max(...c), L=new THREE.PointLight(new THREE.Color(c[0]/cm,c[1]/cm,c[2]/cm),0,r*TILE*1.25,1.6); L.position.set(X(x),Y(z),Z(y)); scene.add(L); LT.push({L,i:7*cm*Math.min(1.2,r/5),fl,s:Math.round(x*7+y*13)}); return LT[LT.length-1]; };
+    const light=(x,y,z,c,r,fl)=>{ const cm=Math.max(...c), L=new THREE.PointLight(new THREE.Color(c[0]/cm,c[1]/cm,c[2]/cm),0,r*TILE*1.25*S,1.6); L.position.set(X(x),Y(z),Z(y)); scene.add(L); LT.push({L,i:7*cm*Math.min(1.2,r/5),fl,s:Math.round(x*7+y*13)}); return LT[LT.length-1]; };
     let built=false, BG=null, P=null, busy=false; const build=()=>{ '@bath'; built=true; LT.length=0;   // the dojo hall, empty but for its steam, built where it stands (owner, 4 Nov 2026)
       const RW={front:[],back:[cx-xi0-5.6,cx-xi0+5.6],west:[(yi1-yi0)/2],east:[(yi1-yi0)/2]};
       const OPEN=[[DOOR.a0-T,DOOR.a1-T,0,DH]];
@@ -209,7 +211,7 @@ await grab('ghostdojo',async()=>{ const {X,Y,Z,gbox,faceTex,bq,C}=SHARED.BOD, J=
       if(STORE.furnish&&STORE.furnish.bath)STORE.furnish.bath({r:[xi0,yi0,xi1,yi1]});
       was=null; };
     const OUTL=[[X0+(BAY.a0+BAY.a1)/2,Y1+1.4,70,[1,.74,.5],7],[X0+(EW.a0+EW.a1)/2,Y1+1.3,74,[1,.74,.5],7],[X0+W/2,Y1+1.2,90,[1,.66,.4],6],[X0+W/2,Y1+.9,H+60,[1,.72,.44],6],[X0-1.1,Y0+D/2,80,[1,.76,.5],5]];
-    for(const [x,y,z,c,r] of OUTL){ const cm=Math.max(...c), L=new THREE.PointLight(new THREE.Color(c[0]/cm,c[1]/cm,c[2]/cm),9*cm*Math.min(1.3,r/5),r*TILE*1.25,1.6); L.position.set(X(x),Y(z),Z(y)); L.userData.i0=L.intensity; scene.add(L); }
+    for(const [x,y,z,c,r] of OUTL){ const cm=Math.max(...c), L=new THREE.PointLight(new THREE.Color(c[0]/cm,c[1]/cm,c[2]/cm),9*cm*Math.min(1.3,r/5),r*TILE*1.25*S,1.6); L.position.set(X(x),Y(z),Z(y)); L.userData.i0=L.intensity; scene.add(L); }
     const SH=[]; { const V=THREE.Vector3, g0=Y(.6);
       const add=(P,col,gaps,a0w,a1w,z0,z1,yf)=>{ for(const [u0,u1] of gaps){ const Q=[[u0,z0],[u1,z0],[u1,z1],[u0,z1]].map(([a,z])=>new V(X(X0+a),Y(z),Z(yf)));
           const G=Q.map(q=>{ const f=(q.y-g0)/(Y(122)-g0); return new V(q.x,g0,q.z+(Z(Y1+1)-Z(Y1))*P*f); });
@@ -228,9 +230,9 @@ await grab('ghostdojo',async()=>{ const {X,Y,Z,gbox,faceTex,bq,C}=SHARED.BOD, J=
       const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.computeBoundingSphere();
       const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:0xffc890,transparent:true,opacity:.2,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,fog:false})); m.renderOrder=3; m.userData.k=2.4; scene.add(m); SHX.push(m); }
     let was=null, hid=null, step=-1, wIn=false;
-    const PW={uT:{value:0},uP:{value:new THREE.Vector4()},me:null}, KT=TILE*BLDK, tx=x=>x/KT+SHARED.BOD.OX, ty=z=>z/KT+SHARED.BOD.OY, inPool=(x,z)=>{ const a=tx(x), b=ty(z); return a>xi0&&a<xi1&&b>yi0&&b<yR-.1; };
+    const PW={uT:{value:0},uP:{value:new THREE.Vector4()},me:null}, KT=TILE*BLDK, tx=x=>iu(x/KT+SHARED.BOD.OX), ty=z=>iv(z/KT+SHARED.BOD.OY), inPool=(x,z)=>{ const a=tx(x), b=ty(z); return a>xi0&&a<xi1&&b>yi0&&b<yR-.1; };
     const poke=(x,z,k=1)=>{ PW.uP.value.set(x,z,Math.max(PW.uP.value.z,k),0); };
-    SHARED.BOD.GD={r:[xi0,yi0,xi1,yi1],floor:[xi0,yi0+.3,xi1,yi1],door:[X0+W/2,Y1],dw:DOOR.a1-DOOR.a0,H:H+2,eave:H,inside:inBox,built:()=>built,here:true,   // here: a ghost comes back where it stands, in the steam
+    SHARED.BOD.GD={r:[u(xi0),v(yi0),u(xi1),v(yi1)],floor:[u(xi0),v(yi0+.3),u(xi1),v(yi1)],door:[u(X0+W/2),Y1],dw:(DOOR.a1-DOOR.a0)*S,H:(H+2)*S,eave:H*S,inside:inBox,built:()=>built,here:true,   // here: a ghost comes back where it stands, in the steam
       tick(){ const t=performance.now()/1000, inn=inside(); if(inn){ PW.uT.value+=Math.min(.1,t-(PW.t||t)); } PW.t=t;
       near();
       SHARED.steam=built&&(inn||Math.hypot(pos.x-X(X0+W/2),pos.z-Z(Y1))<12*TILE)?STEAM.v||(STEAM.v={b:[Math.min(ix0,ix1),0,Math.min(iz0,iz1),Math.max(ix0,ix1),Y(H+2),Math.max(iz0,iz1)],k:STEAM.k,c:STEAM.c}):null;   // half the steam it had (owner, 4 Nov 2026), drawn by the fog pass; seen through the open door too
@@ -241,7 +243,7 @@ await grab('ghostdojo',async()=>{ const {X,Y,Z,gbox,faceTex,bq,C}=SHARED.BOD, J=
       if(st!==step){ step=st; for(const m of SHX){ m.visible=st>=0; m.material.opacity=[.05,.08,.12,.16][Math.max(0,st)]*(m.userData.k||1); } } }};
     VIT.mends.push(()=>built&&!VIT.dead&&SHARED.LVL==='up'&&inside()?1/45:0);   // the steam mends you slowly
     function near(){ const d=Math.hypot(pos.x-(ix0+ix1)/2,pos.z-(iz0+iz1)/2);   // the inside is built while you are near (it shows through the open door), dropped once you are far
-      if(!built&&!busy&&d<NEARB&&SHARED.LVL==='up'&&window.__started){ busy=true; Promise.all([LOAD('later'),LOAD(build.chunk)]).then(()=>{ BG=new THREE.Group(); BG.name='bath-in'; scene.add(BG); P=ROOMS.part(BG,build,MKG); BG.traverse(o=>{ if(o.isMesh){ o.userData.intr=false; if(o.material&&o.material.isMeshBasicMaterial)o.castShadow=false; } }); }).finally(()=>{ busy=false; }); }
+      if(!built&&!busy&&d<NEARB&&SHARED.LVL==='up'&&SYS.started){ busy=true; Promise.all([LOAD('later'),LOAD(build.chunk)]).then(()=>{ BG=new THREE.Group(); BG.name='bath-in'; scene.add(BG); P=ROOMS.part(BG,build,MKG); BG.traverse(o=>{ if(o.isMesh){ o.userData.intr=false; if(o.material&&o.material.isMeshBasicMaterial)o.castShadow=false; } }); }).finally(()=>{ busy=false; }); }
       else if(built&&d>NEARB+12*TILE){ ROOMS.unpart(P); P=null; if(BG)BG.removeFromParent(); BG=null; built=false; LT.length=0; SHARED.steam=null; if(scene.fog===STEAM.fog)scene.fog=null; STEAM.was=null; } }
     window.GSDBG=()=>({X0,X1,Y0,Y1,door:SHARED.BOD.GD.door,step,shafts:SHX.length,tris:SH.length});
     if(WP.bath&&WP.bath.row===2){ const P=WP.bath, hx=LOTX((P.x0+P.x1)/2), hy=LOTY(P.y0), dX=X(X0+W/2);   // on the Hudson row (owner, 7 Nov 2026) the whole bath house stands off the map; its door is on its Hudson lot (a Polyfork building, 059i)
@@ -250,4 +252,4 @@ await grab('ghostdojo',async()=>{ const {X,Y,Z,gbox,faceTex,bq,C}=SHARED.BOD, J=
     window.LOOKAT=(x,z,k=1,y=0)=>{ UI.setFree(true); UI.camT.set(x,y,z); SHARED.ppu=SHARED.ppuTo=PPU*k; return [x,z]; };
     window.LOOKYAW=d=>{ SHARED.yaw=SHARED.yawTo=d*Math.PI/180; }; window.LOOKPITCH=d=>{ SHARED.pitch=SHARED.pitchTo=d*Math.PI/180; return SHARED.pitch; };
     window.GSLOOK=(dx=0,dy=0,k=.5,d)=>{ if(d!=null)LOOKYAW(d); return LOOKAT(X(X0+W/2+dx),Z(Y1+dy),k); };
-    window.GSGO=(dx=0,dy=4)=>{ if(window.SUBGO)SUBGO(X(X0+W/2+dx),Z(Y1+dy),'up'); return [X(X0+W/2+dx),Z(Y1+dy)]; }; } });
+    window.GSGO=(dx=0,dy=4)=>{ if(MODS.subGo)MODS.subGo(X(X0+W/2+dx),Z(Y1+dy),'up'); return [X(X0+W/2+dx),Z(Y1+dy)]; }; } });

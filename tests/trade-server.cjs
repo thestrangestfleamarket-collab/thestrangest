@@ -15,6 +15,8 @@ const run=async()=>{
   r=await art('alice',{del:id}); ok(r.j.ok===false,'nor deletes it');
   r=await art('alice',{put:{id:'../x',d:pic}}); ok(r.s===400,'a bad id is refused '+r.s);
 
+  const own=(who,body)=>fetch(BASE+'/owned',{method:'POST',headers:{cookie:'tsfm-pass=dev:'+who,origin:BASE,'content-type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json());
+  await own('alice',{put:{inv:JSON.stringify({v:1,items:{pt_abcdef12:1},cash:100})}}); await own('bob',{put:{inv:JSON.stringify({v:1,items:{},cash:500})}});   // (a trade pays from the server's copy of each pack)
   const a=await open('alice'), b=await open('bob'), c=await open('carol'); await wait(400);
   for(const [w,x] of [[a,0],[b,1],[c,400]])w.send(JSON.stringify({t:'mv',at:[x,0,0,0,'up','']})); await wait(300);
   c.send(JSON.stringify({t:'tr',op:'ask',to:'dev-alice'})); await wait(300);
@@ -31,8 +33,15 @@ const run=async()=>{
   a.send(JSON.stringify({t:'tr',op:'offer',o:{items:{pt_abcdef12:1},cash:5,art:{abcdef12:{t:'RED',w:512,h:512}}}})); await wait(300);
   ok(tr(a,'st').pop().okThem===false,'alice changes her offer: bob\'s accept is taken back');
   b.send(JSON.stringify({t:'tr',op:'ok',v:true})); await wait(200); a.send(JSON.stringify({t:'tr',op:'ok',v:true})); await wait(400);
+  const pa=tr(a,'pay').pop(), pb=tr(b,'pay').pop();
+  ok(pa&&pb&&pa.give.items.pt_abcdef12===1&&pb.give.cash===120&&!tr(a,'done').length,'both accept: each is asked to pay what it put in, nothing is handed over yet');
+  a.send(JSON.stringify({t:'tr',op:'paid',o:{items:{pt_abcdef12:1},cash:999,art:{abcdef12:{t:'RED',w:512,h:512}}}})); b.send(JSON.stringify({t:'tr',op:'paid',o:{items:{},cash:40}})); await wait(400);
   const da=tr(a,'done').pop(), db=tr(b,'done').pop();
-  ok(da&&db&&da.give.items.pt_abcdef12===1&&da.get.cash===120&&db.get.items.pt_abcdef12===1&&db.give.cash===120&&db.get.art.abcdef12,'both accept: each is told what to give and what to get');
+  ok(da&&db&&da.get.cash===40&&db.get.items.pt_abcdef12===1&&db.get.cash===5&&db.get.art.abcdef12,'both paid: each gets only what the other really paid, never more than offered: '+JSON.stringify([da&&da.get,db&&db.get]));
+  a.send(JSON.stringify({t:'tr',op:'ask',to:'dev-bob'})); await wait(200); b.send(JSON.stringify({t:'tr',op:'yes',to:'dev-alice'})); await wait(200);
+  a.send(JSON.stringify({t:'tr',op:'offer',o:{cash:7}})); await wait(200); a.send(JSON.stringify({t:'tr',op:'ok',v:true})); b.send(JSON.stringify({t:'tr',op:'ok',v:true})); await wait(300);
+  a.send(JSON.stringify({t:'tr',op:'paid',o:{cash:7}})); await wait(10800);
+  ok(tr(a,'x').some(m=>m.back&&m.back.cash===7)&&!tr(b,'done').some(m=>m.get&&m.get.cash===7),'one side never pays: the other gets back what it paid, nothing is handed over');
   a.send(JSON.stringify({t:'tr',op:'ask',to:'dev-bob'})); await wait(200); b.send(JSON.stringify({t:'tr',op:'yes',to:'dev-alice'})); await wait(200);
   b.send(JSON.stringify({t:'mv',at:[300,0,0,0,'up','']})); await wait(200); a.send(JSON.stringify({t:'tr',op:'offer',o:{cash:1}})); await wait(300);
   ok(tr(a,'x').some(m=>/far/.test(m.why))&&tr(b,'x').some(m=>/far/.test(m.why)),'walking apart calls it off for both');

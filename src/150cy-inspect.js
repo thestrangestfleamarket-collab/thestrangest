@@ -80,12 +80,19 @@ import {SYS} from './006-map-pre.js';
     else if(kind==='lamp'){ B(g,'tor',0x2a2a2e,0,0,0,.12,.12,.04,Math.PI/2,0,0,{kind:'metal',metal:1,rough:.4}); B(g,'cyl',0x3a3a40,0,0,.1,.055,.04,.055,Math.PI/2,0,0,{kind:'metal',metal:1,rough:.3}); B(g,'cap',0xcfe8ff,0,0,.14,.05,.05,.05,-Math.PI/2,0,0,{glass:1}); B(g,'ball',c2,0,0,.13,.03,.03,.03,0,0,1); }
     else if(kind==='coat'){ for(let i=0;i<9;i++){ const a=i*2.1, y=.05+i*.04; B(g,'ball',c,Math.cos(a)*.1,y,Math.sin(a)*.06,.095,.075,.085,0,0,0,{kind:'cloth'}); } for(let i=0;i<4;i++)B(g,'ball',0xe8e2d4,Math.cos(i*2.1)*.1,.08+i*.09,Math.sin(i*2.1)*.06+.06,.016,.016,.016,0,0,0,{kind:'metal',metal:1,rough:.25}); }
     else if(kind==='plate'){ B(g,'box',c,0,.1,0,.3,.2,.14,0,0,0,{kind:'meat'}); B(g,'cap',c,0,.2,0,.17,.12,.11,0,0,0,{kind:'meat'}); for(const s of [-1,1])B(g,'cap',c2,s*.19,.22,0,.08,.06,.08,0,0,0,{kind:'bread'}); }
+    else if(kind==='brickphone'){ const P={kind:'plastic'}, K=0xb8b4aa; B(g,'box',c,0,.12,0,.082,.24,.046,0,0,0,P); B(g,'box',c,0,.248,-.004,.07,.018,.036,0,0,0,P); B(g,'cyl',0x1a1a1c,.024,.32,-.006,.007,.13,.007,0,0,0,{kind:'rubber'}); B(g,'ball',0x1a1a1c,.024,.388,-.006,.011,.011,.011,0,0,0,{kind:'rubber'});
+      B(g,'box',0x14161a,0,.226,.0235,.03,.008,.003,0,0,0,P); B(g,'box',0x1a2a1a,0,.19,.0235,.062,.03,.003,0,0,0,{kind:'glass'}); B(g,'box',0x8ce07a,0,.19,.025,.052,.022,.002,0,0,1);
+      B(g,'box',0x3a9a4a,-.02,.158,.025,.02,.01,.006,0,0,0,P); B(g,'box',0xc83a2a,.02,.158,.025,.02,.01,.006,0,0,0,P); for(let r=0;r<4;r++)for(let q=-1;q<=1;q++)B(g,'box',K,q*.022,.135-r*.02,.025,.016,.011,.006,0,0,0,P); B(g,'box',0x14161a,0,.022,.0235,.024,.004,.003,0,0,0,P); }
     else if(kind==='lump'){ B(g,'ball',c,0,0,0,.1,.08,.09,0,0,0,{kind:'food'}); B(g,'ball',c,.04,.03,.02,.05,.045,.05,0,0,0,{kind:'food'}); }
     else { B(g,'box',c,0,0,0,.3,.18,.22,0,0,0,{kind:'paper'}); for(const [w,d] of [[.31,.025],[.025,.23]])B(g,'box',0x8a6a44,0,0,0,w,.188,d,0,0,0,{kind:'leather'}); B(g,'tor',0x8a6a44,0,.095,0,.04,.04,.02,0,0,0,{kind:'leather'}); }
     return g; };
   const parcel=()=>INSPECT.shape('parcel',0xb08a5a,0x6a4a2a);
   // a pack item: the first kind that knows its id makes it (each family registers in its own file); one that none knows is shown as a wrapped parcel
   INSPECT.model=id=>{ for(const k of INSPECT.kinds){ if(!k.is(id))continue; try{ const o=k.make(id); if(o)return o; }catch(e){ console.warn('INSPECT '+id,e); } } return parcel(); };
+  INSPECT.has=id=>INSPECT.kinds.some(k=>{ try{ return !!k.is(id); }catch(e){ return false; } });   // a model of its own (not the parcel)
+  // a loose thing of the world (furniture and goods you push or carry) found by its name: its own look
+  const looseOf=id=>{ try{ return GPH.loose&&GPH.loose().find(it=>it&&it.name&&String(it.name).toLowerCase().replace(/\s+/g,'_')===id); }catch(e){ return null; } };
+  INSPECT.kinds.push({is:id=>!!looseOf(id),make:id=>{ const it=looseOf(id), L=it&&GPH.look&&GPH.look(it); if(!L)return null; if(L.mine)return L.obj; const o=L.obj.clone(); o.position.set(0,0,0); o.quaternion.identity(); o.traverse(c=>{ c.visible=true; if(c.isMesh)c.userData.shared=true; }); return o; }});
   INSPECT.item=id=>INSPECT.open(INSPECT.model(id),{id,mine:true});
   const ray=new THREE.Raycaster(), NDC=new THREE.Vector2(); let mx=-1, my=-1; addEventListener('pointermove',e=>{ mx=e.clientX; my=e.clientY; },{passive:true});
   INSPECT.key=()=>{ '@later'; if(INSPECT.on)return INSPECT.close(); let r=null; if(mx>=0&&SHARED.cam){ const b=renderer.domElement.getBoundingClientRect(); NDC.set((mx-b.left)/b.width*2-1,-((my-b.top)/b.height*2-1)); ray.setFromCamera(NDC,SHARED.cam); r=ray; }

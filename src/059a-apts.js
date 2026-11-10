@@ -1,21 +1,21 @@
 // THE APARTMENTS: the brownstone apartment house on the street as one painted block (brick, windows, flower boxes, ivy; the back blank: the halls), its 3D fire escapes with plants, its stoop and the stair head on the roof; YOUR APARTMENT and its hall (stairs, elevator) inside are built off the map when you go in (their own builders).
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, FORAGE, pos, ROOMS, st, UI} from './003b-systems.js';
+import {BATCH, CLOCK, FAR3, FORAGE, pos, ROOMS, st, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {BLDK, FADE, FIX, grab, LEVEL, LOTX, LOTY, MODS, OFFDX, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
-import {BATCH} from './008-batch.js';
 import {BLOCKS} from './038zb-blocks.js';
+import {FACADES} from './038zc-facades.js';
 const APTS={EMPTY:true};
-// the flats (owner, 6 Nov 2026: "Free flat at first login"): a flat number maps to a house up the apartment street, a floor and a side; floors 1-10 two flats each, floor 11 the whole-floor penthouse
-APTS.PER=21; APTS.flatOf=n=>{ n=Math.floor(+n); if(!(n>0))return {house:0,floor:null,side:0,pent:false}; const i=(n-1)%APTS.PER; return {house:Math.floor((n-1)/APTS.PER),floor:i===20?11:1+Math.floor(i/2),side:i===20?0:i%2,pent:i===20}; };
+// the flats (owner, 6 Nov 2026: "Free flat at first login"; 8 Nov 2026: "1 large apartment that has any many floors as we need"): a flat number maps to a floor and a side of the one tower, two flats a floor, no top floor
+APTS.PER=Infinity; APTS.flatOf=n=>{ n=Math.floor(+n); if(!(n>0))return {house:0,floor:null,side:0,pent:false}; return {house:0,floor:1+Math.floor((n-1)/2),side:(n-1)%2,pent:false}; };
 APTS.num=OWNED.me&&OWNED.me.apt!=null?String(OWNED.me.apt):null;   // the number the server gave you (/owned), none on the single-file page
 await grab('apts',async()=>{ const HOUSES=[WP.apts,...LEVEL.places.filter(p=>/^house\d+$/.test(p.id)).sort((a,b)=>a.x0-b.x0||a.y0-b.y0)].filter(Boolean), FL=APTS.flatOf(APTS.num), MINE=HOUSES[Math.min(FL.house,HOUSES.length-1)];
   APTS.houses=HOUSES.map(p=>p.id); APTS.mine=MINE.id; APTS.flat=FL;
   for(let hi=0;hi<HOUSES.length;hi++){ await house(HOUSES[hi],HOUSES[hi]===MINE,FL,hi); }
   MODS.apts=APTS; });
 async function house(HP,mine,FL,HI){ const APTS0=APTS; { const APTS=mine?APTS0:{}; const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.Y,
-  RZ=APTS.RZ=28, Y=z=>Yr(z+RZ), gbox=(b,k)=>tgbox({...b,z0:b.z0+RZ,z1:b.z1+RZ},k), R0=APTS.R0=Yr(RZ)-Yr(0), {hash}=SHARED.BOD.g, {LSEED,STORY,sh}=SHARED.BOD.K, S=STORY*1.25, ST=12, AH=ST*S, TOP=RZ+AH, W=LSEED.walk, T=.1, HALL=APTS.HALL=2.75;
+  RZ=APTS.RZ=28, Y=z=>Yr(z+RZ), gbox=(b,k)=>tgbox({...b,z0:b.z0+RZ,z1:b.z1+RZ},k), R0=APTS.R0=Yr(RZ)-Yr(0), {hash}=SHARED.BOD.g, {LSEED,STORY,sh}=SHARED.BOD.K, S=STORY*1.25, ST=10, AH=ST*S, TOP=RZ+AH, W=LSEED.walk, T=.1, HALL=APTS.HALL=2.75;
   const AY=HP.y1!=null?LOTY(HP.y1):W, AW=HP.y1!=null?{x0:LOTX(HP.x0),x1:LOTX(HP.x1),y0:LOTY(HP.y0),y1:AY}:{x0:LOTX(HP.x0),x1:LOTX(HP.x1),y0:AY-14,y1:AY}, TA=TURN(AW,HP.face), A=TA.L, m=(A.x0+A.x1)/2, H={y0:A.y0+5.6,y1:A.y0+8.4}, DW=.78, DH=94;
   const XZ=(x,y)=>{ const p=TA.pt(x,y); return [X(p[0]),Z(p[1])]; }, loc=(x,z)=>TA.back(x/(TILE*BLDK)+SHARED.BOD.OX,z/(TILE*BLDK)+SHARED.BOD.OY);
   let FLAT=false;   // the fire escape view builds the house unturned
@@ -37,7 +37,7 @@ async function house(HP,mine,FL,HI){ const APTS0=APTS; { const APTS=mine?APTS0:{
   for(const side of ['w','e'])for(let lv=1;lv<ST;lv++)for(const k of SIDE)win(side,sideAt(k),RZ+lv*S+WZ[0],RZ+lv*S+WZ[1],{box:false,hw:WHW});
   const ivy=[{side:'f',a0:A.x0,a1:A.x0+2.4,h:RZ+S*1.7,seed:5,fall:.6},{side:'f',a0:A.x1-2,a1:A.x1,h:RZ+S*2.4,seed:7,fall:.6},{side:'w',a0:A.y1-4.5,a1:A.y1,h:RZ+S*2.2,seed:9,fall:.8},{side:'e',a0:A.y0+4,a1:A.y1-.4,h:RZ+S*2.1,seed:11},{side:'b',a0:A.x0+10,a1:A.x1,h:RZ+S*1.4,seed:13,fall:.6}];
   const roofCol=(x,y)=>{ const n=hash(Math.floor(x*4),Math.floor(y*4),61), e=Math.min(x-A.x0,A.x1-x,y-A.y0,A.y1-y); return e<.25?sh([118,50,38],e<.1?.8:1.05):n<.3?[50,50,52]:n>.7?[66,64,62]:[58,57,57]; };
-  const PAINT=APTS.paint=BLOCKS.facade({feats,ivy,top:TOP,wall:BLOCKS.brick([138,60,44]),trim:[118,50,38],base:{z1:RZ,paint:BLOCKS.brick([120,52,40])}}), BB=BLOCKS.make({...AW,z0:0,z1:TOP,kind:'A',turn:TA,paint:PAINT});   // the house on the street is a solid painted block (floors 1-9 just a block); your floor-10 apartment is built off the map
+  const PAINT=APTS.paint=BLOCKS.facade({feats,ivy,top:TOP,wall:BLOCKS.brick([138,60,44]),trim:[118,50,38],base:{z1:RZ,paint:BLOCKS.brick([120,52,40])}}), BB=(FACADES.make({id:'apts',L:A,pt:TA.pt,z1:TOP,wall:[138,60,44],trim:[200,170,150],frame:[40,34,32],seed:61,ground:RZ,door:{u:m,w:1.1,h:100},glass:true,sign:{text:'THE TOWER',color:[255,226,170],bg:[30,22,20],u:m}}),{x0:X(AW.x0),z0:Z(AW.y0),x1:X(AW.x1),z1:Z(AW.y1)});   // the house on the street is a solid painted block (floors 1-9 just a block); your floor-10 apartment is built off the map
   { const CN=[118,50,38]; tgbox({x0:A.x0-.3,x1:A.x1+.3,y0:A.y0-.3,y1:A.y1+.3,z0:TOP-12,z1:TOP,c:CN,...rock(CN,61,.9,14),top:roofCol},'A');
     const tk=loc(X(AW.x0+5),Z(AW.y0+2.4)), bx_=m+(tk[0]<m?3.2:-3.2), BH=APTS.BH={x0:bx_-1.4,x1:bx_+1.4,y0:A.y0+.5,y1:A.y0+3.3,cx:bx_}, rk=rock(CN,69,.9,14); tgbox({...BH,z0:TOP,z1:TOP+72,c:CN,fs:(nx,ny,X_,Y_,z,f)=>!nx&&Math.abs(X_-bx_)<.45&&z<TOP+62?sh([44,32,26],f):rk.fs(nx,ny,X_,Y_,z,f),top:rk.top},'A'); }   // the stair head at the back of the roof, clear of the roof kit's water tank (148)
 
@@ -108,7 +108,7 @@ async function house(HP,mine,FL,HI){ const APTS0=APTS; { const APTS=mine?APTS0:{
   if(!mine){ const d=XZ(m,A.y1+.25), o=new THREE.Mesh(new THREE.BoxGeometry(1.3*TILE,2.4*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false})); o.position.set(d[0],Yr(RZ)+1.2*TILE,d[1]); scene.add(o);   // another house's door: its lobby is for its own tenants
     const nm='APARTMENTS '+(HI+1), mineNo=APTS0.houses?APTS0.houses.indexOf(APTS0.mine)+1:1, reg2=()=>{ try{ UI.thing({name:nm,ghost:1,obj:o,reach:1.4*TILE,near:2.6*TILE,tall:2.4*TILE,act:()=>UI.log(nm+': A TENANT\'S KEY OPENS THIS LOBBY. YOUR FLAT IS IN APARTMENTS '+mineNo+'.','#c8a090')}); }catch(e){ setTimeout(reg2,400); } }; setTimeout(reg2,0); return; }
   const LAD={F:null,y:0}, LV=38, LAND=Array.from({length:ST-1},(_,i)=>(i+1)*S), LS_=[-RZ,...LAND,AH], RFY=R0+SY*(ST-.3);
-  const EG=(x,z)=>{ if(!window.POSOK||Math.abs(x-pos.x)+Math.abs(z-pos.z)>.5*TILE)return null; if(LAD.F)return Y(LAD.y); const [lx,ly]=loc(x,z), u=lx-U(0);
+  const EG=(x,z)=>{ if(!MODS.posok||Math.abs(x-pos.x)+Math.abs(z-pos.z)>.5*TILE)return null; if(LAD.F)return Y(LAD.y); const [lx,ly]=loc(x,z), u=lx-U(0);
     for(const F of ESC){ const d=(ly-F.yf)*F.o; if(d<0||d>DO||u<F.ua||u>F.ub)continue; let b=null; for(const c of LAND)if(Y(c)<=SHARED.py+TOL&&(b==null||c>b))b=c; return b==null?null:Y(b); }
     return null; };
   APTS.stoop=(x,z)=>{ const [u,v]=loc(x,z); if(u<ST0.x0||u>ST0.x1||v<ST0.y0||v>=ST0.y1)return EG(x,z); const t=v-ST0.y0; if(t<ST0.land)return Y(1);
@@ -120,11 +120,11 @@ async function house(HP,mine,FL,HI){ const APTS0=APTS; { const APTS=mine?APTS0:{
     reg({name:'FIRE ESCAPE LADDER',obj:hb,reach:.6*TILE,near:2.2*TILE,tall:1*TILE,act:()=>{ if(!LAD.F&&Math.abs(SHARED.py-Y(y))<SY*.3)lgo(F,y); }}); }
   APTS.inside=(x,z)=>x>BLK[0]&&x<BLK[2]&&z>BLK[1]&&z<BLK[3];
   APTS.lvY=lv=>R0+lv*SY; APTS.lvOf=y=>Math.max(0,Math.min(ST-1,Math.floor((y-R0)/SY+.08)));
-  APTS.floor=()=>window.POSOK?APTS.lvOf(SHARED.py):0;
+  APTS.floor=()=>MODS.posok?APTS.lvOf(SHARED.py):0;
   const lpos=F=>{ const [x,z]=lpt(F,1.3); pos.x=x; pos.z=z; SHARED.heading=TA.hd(F.o>0?Math.PI:0); };
   const lgo=(F,y)=>{ LAD.F=F; LAD.y=y; lpos(F); st.climb={z:0,ph:y}; SHARED.target=null; };
   const loff=top=>{ const F=LAD.F, [x,z]=lpt(F,top?-1:.45); LAD.F=null; st.climb=null; pos.x=x; pos.z=z; };
-  APTS.lad=(dt,up,dn,off)=>{ if(!window.POSOK||SHARED.LVL!=='up')return false;
+  APTS.lad=(dt,up,dn,off)=>{ if(!MODS.posok||SHARED.LVL!=='up')return false;
     if(!LAD.F){ if(!(up||dn))return false; for(const F of ESC){ const [lx,ly]=loc(pos.x,pos.z), u=lx-U(0), d=(ly-F.yf)*F.o; if(Math.abs(u-F.lx)>.5)continue;
         if(d>DI&&d<DO)for(const y of [-RZ,...LAND])if(Math.abs(SHARED.py-Y(y))<SY*.25&&(up||y>S)){ lgo(F,y); return true; }
         if(dn&&d<0&&d>-1.5&&SHARED.py>RFY){ lgo(F,AH); return true; } } return false; }
@@ -138,10 +138,10 @@ async function house(HP,mine,FL,HI){ const APTS0=APTS; { const APTS=mine?APTS0:{
     if(st.climb)st.climb.ph=LAD.y;
     else { const n=LS_.reduce((p,q)=>Math.abs(q-LAD.y)<Math.abs(p-LAD.y)?q:p); if(Math.abs(n-LAD.y)<10)LAD.y+=(n-LAD.y)*Math.min(1,dt*8); }
     lpos(LAD.F); return true; };
-  APTS.ground=(x,z)=>!window.POSOK?R0:SHARED.py>RFY?R0+SY*ST:R0;
+  APTS.ground=(x,z)=>!MODS.posok?R0:SHARED.py>RFY?R0+SY*ST:R0;
   const EB=ESC.map(F=>tbox4(U(F.ua-.05),F.yf,U(F.ub+.05),F.yf+F.o*(DO+.05))), ovl=(s,b)=>s[0]<b[2]&&s[2]>b[0]&&s[1]<b[3]&&s[3]>b[1];
   APTS.in=false; APTS.esc=false; let was=-1;
-  APTS.tick=()=>{ const ib=APTS.inside(pos.x,pos.z), roof=ib&&window.POSOK&&SHARED.py>RFY, eg=!ib&&SHARED.LVL==='up'&&EG(pos.x,pos.z)!=null, lv=APTS.floor();
+  APTS.tick=()=>{ const ib=APTS.inside(pos.x,pos.z), roof=ib&&MODS.posok&&SHARED.py>RFY, eg=!ib&&SHARED.LVL==='up'&&EG(pos.x,pos.z)!=null, lv=APTS.floor();
     APTS.in=!!APTS.inReal; APTS.esc=eg;
     const key=(eg?2:0)+(roof?16:0)+lv*4; if(key!==was){ was=key; return eg?SOL.up.filter(s=>s===BLK||!EB.some(b=>ovl(s,b))).concat(SOLS[lv]):roof?SOL.up.filter(s=>s!==BLK).concat(EDGE,[BHR]):SOL[SHARED.LVL]||SOL.up; } return null; };
   window.HOUSEAT=(dy=0)=>XZ(m,A.y1+dy); APTS.doorAt=XZ(m,A.y1); APTS.doorHd=TA.hd(0);
@@ -155,6 +155,7 @@ async function house(HP,mine,FL,HI){ const APTS0=APTS; { const APTS=mine?APTS0:{
   const FURN=[], DYN={win:[],bar:[],cur:[],flame:[]}; let PA=null, AS=[], AF=[], AG=null;
   const DG=.5, ED=APTS.escDoor={open:false,sol:null,set:o=>{ ED.open=!!o; if(!APTS.solid)return; if(ED.open&&ED.sol){ APTS.unsolid(ED.sol); ED.sol=null; } else if(!ED.open&&!ED.sol)ED.sol=APTS.solid(DC-DG,AR.y0-.4,DC+DG,AR.y0,WH); }};   // the door to the fire escape: open, you walk through; shut, it is wall
   const FD=APTS.frontDoor={open:false,sol:null,set:o=>{ FD.open=!!o; if(!APTS.solid)return; if(FD.open&&FD.sol){ APTS.unsolid(FD.sol); FD.sol=null; } else if(!FD.open&&!FD.sol)FD.sol=APTS.solid(DC-DG,AR.y1,DC+DG,AR.y1+.4,WH); }}; APTS.floorY=Yh(0);   // your front door, onto the hall
+  APTS.inside=()=>APTS.inReal&&AG?{x0:Math.min(X(AR.x0),X(AR.x1)),x1:Math.max(X(AR.x0),X(AR.x1)),z0:Math.min(Z(AR.y0),Z(AR.y1)),z1:Math.max(Z(AR.y0),Z(AR.y1)),y:Yh(0),sol:AS,fix:AF}:null;   // your room's floor, its solids and the tops of what stands in it (your pets at home)
   APTS.furnish=(lv,fn)=>{ FURN.push(fn); if(PA){ const Q=ROOMS.part(AG,fn); for(const k of ['objs','things','cuts','lights'])PA[k].push(...Q[k]); } };
   const build=()=>{ '@apts'; const K=SHARED.BOD.K, n0=K.PROPS.length, l0=SHARED.BOD.STOREK.LAMPS.length; AG=new THREE.Group(); AG.name='apts-in'; scene.add(AG); AS=[];
     const sol=(x0,y0,x1,y1,h)=>{ const r=box4(x0,y0,x1,y1); AS.push(r); SOL.up.push(r); let f=null; if(h!=null){ f=[r[0],r[1],Yh(0),r[2],r[3],Yh(h)]; AF.push(f); FIX.up.push(f); } return {r,f}; }; APTS.solid=sol;
@@ -184,8 +185,8 @@ async function house(HP,mine,FL,HI){ const APTS0=APTS; { const APTS=mine?APTS0:{
   APTS.doorW=(d=>[d[0],Y(0),d[1]])(XZ(m,A.y1+.25));
   // YOUR APARTMENT: entered off the map (the street never draws here), the live sky showing through the open windows with the far city hidden, so you look out on nothing but sky and clouds (owner, 23 Oct 2026)
   { APTS.inReal=false;
-    const hideFar=()=>{ const F=window.FAR3; if(F){ if(F.mesh)F.mesh.visible=false; if(F.panels)F.panels.visible=false; if(F.trees)F.trees.visible=false; if(F.FU)F.FU.uMK.value=0; if(F.fog&&scene.fog===F.fog)scene.fog=null; } };
-    APTS.enterReal=async(at,label)=>{ if(FADE.busy)return; await FADE.run(label||'YOUR APARTMENT',async()=>{ if(!PA){ if(window.LOAD)await LOAD('apts','later'); build(); } if(window.FIREV&&STORE.offGo)await STORE.offGo(FIREV.name); if(AG)AG.visible=true; APTS.inReal=true; hideFar(); if(typeof at==='function')at=at(); if(at){ UI.goTo(at[0],at[1],at[2]); SHARED.heading=at[3]; } else { UI.goTo(X((AR.x0+AR.x1)/2),Z((AR.y0+AR.y1)/2),Yh(0)); SHARED.heading=0; } },{hold:200}); };   // your rooms and their fire escape are one place, built together
+    const hideFar=()=>{ const F=FAR3; if(F){ if(F.mesh)F.mesh.visible=false; if(F.panels)F.panels.visible=false; if(F.trees)F.trees.visible=false; if(F.FU)F.FU.uMK.value=0; if(F.fog&&scene.fog===F.fog)scene.fog=null; } };
+    APTS.enterReal=async(at,label)=>{ if(FADE.busy)return; await FADE.run(label||'YOUR APARTMENT',async()=>{ if(!PA){ if(window.LOAD)await LOAD('apts','later'); build(); } if(MODS.firev&&STORE.offGo)await STORE.offGo(MODS.firev.name); if(AG)AG.visible=true; APTS.inReal=true; hideFar(); if(typeof at==='function')at=at(); if(at){ UI.goTo(at[0],at[1],at[2]); SHARED.heading=at[3]; } else { UI.goTo(X((AR.x0+AR.x1)/2),Z((AR.y0+AR.y1)/2),Yh(0)); SHARED.heading=0; } },{hold:200}); };   // your rooms and their fire escape are one place, built together
     APTS.exitReal=async(label='OUT TO THE STREET')=>{ if(FADE.busy)return; await FADE.run(label,async()=>{ APTS.inReal=false; if(AG)AG.visible=false; const d=XZ(m,A.y1+.9); UI.goTo(d[0],d[1],Yr(1)); SHARED.heading=TA.hd(0); },{hold:200}); };   // the elevator and the stairs down land you at the stoop (the lobby and the other floors are not built)
     APTS.roofGo=async()=>{ if(FADE.busy)return; await FADE.run('UP TO THE ROOF',async()=>{ APTS.inReal=false; if(AG)AG.visible=false; const d=XZ(APTS.BH.cx,APTS.BH.y1+1.2); UI.goTo(d[0],d[1],Yr(TOP)); SHARED.heading=TA.hd(0); },{hold:200}); };   // the stairs up come out of the stair head on the roof
     let hbMade=false; const mkHB=()=>{ if(hbMade||!UI.thing)return; hbMade=true; const hb=(p,name,act)=>{ const o=new THREE.Mesh(new THREE.BoxGeometry(1.3*TILE,2.4*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false})); o.position.set(p[0],p[1]+1.2*TILE,p[2]); scene.add(o); UI.thing({name,ghost:1,obj:o,reach:1.4*TILE,near:2.6*TILE,tall:2.4*TILE,act}); };
@@ -193,10 +194,10 @@ async function house(HP,mine,FL,HI){ const APTS0=APTS; { const APTS=mine?APTS0:{
     const inR=(x,z)=>{ const a=X(AR.x0),b=X(AR.x1),c=Z(AR.y0),d=Z(HR.y1); return x>Math.min(a,b)-3&&x<Math.max(a,b)+3&&z>Math.min(c,d)-4&&z<Math.max(c,d)+3; };
     APTS.inR=inR; APTS.bound=()=>{ const a=X(AR.x0),b=X(AR.x1),c=Z(AR.y0),d=Z(HR.y1); return {x0:Math.min(a,b)-8,x1:Math.max(a,b)+8,z0:Math.min(c,d)-8,z1:Math.max(c,d)+8}; };   // walking in your rooms is bounded by them, not by the street's edge   // a saved spot inside the apartment (off the map): rebuild and re-enter it on reload, else you land in the empty sky
     const inH=(x,z)=>{ const a=X(HR.x0),b=X(HR.x1),c=Z(HR.y0),d=Z(HR.y1); return x>Math.min(a,b)&&x<Math.max(a,b)&&z>Math.min(c,d)&&z<Math.max(c,d); }; APTS.inHall=()=>!!APTS.inReal&&inH(pos.x,pos.z); APTS.HPL=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6); APTS.CUTH=Yh(0)+Yr(45)-Yr(0);   // in the hall the isometric view cuts the hall's walls to waist height (your rooms' walls stay whole)
-    APTS.offAt=async(x,z,lv)=>{ if(lv==='down')return false; const F=window.FIREV, u=x/(TILE*BLDK)+SHARED.BOD.OX, v=z/(TILE*BLDK)+SHARED.BOD.OY; if(inR(x,z)){ if(!APTS.inReal)await APTS.enterReal(); return [x,z,Yh(0)]; }   // your rooms and their fire escape are all on one floor
+    APTS.offAt=async(x,z,lv)=>{ if(lv==='down')return false; const F=MODS.firev, u=x/(TILE*BLDK)+SHARED.BOD.OX, v=z/(TILE*BLDK)+SHARED.BOD.OY; if(inR(x,z)){ if(!APTS.inReal)await APTS.enterReal(); return [x,z,Yh(0)]; }   // your rooms and their fire escape are all on one floor
       if(F&&F.out&&Math.abs(u-F.CX)<10&&Math.abs(v-F.WY-1)<4){ await F.out(); return [pos.x,pos.z,SHARED.py]; } return false; };   // a spot saved where the fire escape used to stand: your landing
     const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>APTS.inReal&&inR(x,z)?((APTS.hallY&&APTS.hallY(x,z))??Yh(0)):sg0?sg0(x,z):null;   // the hall's stairs step you down and up
-    SYS.add('places',()=>{ mkHB(); if(APTS.inReal&&(SHARED.LVL!=='up'||!inR(pos.x,pos.z)&&!(window.FIREV&&FIREV.onL&&FIREV.onL(pos.x,pos.z)))){ APTS.inReal=false; if(AG)AG.visible=false; }   // left by any way (menu, stairs, a door, a saved spot), not only your own door
+    SYS.add('places',()=>{ mkHB(); if(APTS.inReal&&(SHARED.LVL!=='up'||!inR(pos.x,pos.z)&&!(MODS.firev&&MODS.firev.onL&&MODS.firev.onL(pos.x,pos.z)))){ APTS.inReal=false; if(AG)AG.visible=false; }   // left by any way (menu, stairs, a door, a saved spot), not only your own door
       if(APTS.inReal)hideFar(); if(APTS.ceil)APTS.ceil.visible=APTS.inReal&&!!UI.persp; const hc=APTS.inHall()&&!UI.persp?APTS.CUTH:1e6; APTS.HPL.constant=hc; WPL.Wb.constant=hc; },'059a-aptsky');   // ceiling only in first person; gone when you view the room from outside
     window.ENTERAPT=()=>APTS.enterReal(); window.EXITAPT=()=>APTS.exitReal();
     APTS.REALDBG=()=>({inReal:APTS.inReal,built:!!PA}); }

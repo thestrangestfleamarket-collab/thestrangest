@@ -90,7 +90,7 @@ function gripIK(st,P,G=st.climb.grip){ const W=st.world,c=Math.cos(W.hd),s=Math.
   const toL=p=>{ const dx=(p.x-W.x)*W.kx,dz=(p.z-W.z)*W.kx; return V(dx*c-dz*s,(p.y-W.y)*W.ky,dx*s+dz*c); }, nL=p=>nrm(V(p.nx*c-p.nz*s,p.ny,p.nx*s+p.nz*c));
   for(const n of 'LR'){ const g=G[n],sd=n=='L'?1:-1; if(!g) continue;
     if(g.f){ const A=add(add(toL(g.f),mul(nL(g.f),2.6)),V(0,1.2,0)); P[n].ik=A; P[n].kp=V(sd*.8,.3,1); legIK(P,n,sd,A,P[n].kp); P[n].foot=-35*D; }   // knees out round the trunk, soles flat on the bark
-    if(g.h){ armIK(P,n,sd,add(add(toL(g.h),mul(nL(g.h),1.3)),V(0,-1.6,0))); P[n].fist=1; } } }
+    if(g.h){ armIK(P,n,sd,add(add(toL(g.h),mul(nL(g.h),1.3)),V(0,-1.6,0))); P[n].fist=g.hf??1; } } }
 function footLock(st,P,AK,LK,w){ const W=st.world,c=Math.cos(W.hd),s=Math.sin(W.hd),
     toW=b=>({x:W.x+(b.x*c+b.z*s)/W.kx,z:W.z+(-b.x*s+b.z*c)/W.kx}), toL=p=>{ const dx=(p.x-W.x)*W.kx,dz=(p.z-W.z)*W.kx; return V(dx*c-dz*s,0,dx*s+dz*c); },
     up=p=>Math.max(-8,((p.y??W.gnd(p.x,p.z))-W.y)*W.ky), at=b=>{ const p=toW(b); p.y=Math.max(...[-1.1,0,3].map(dz=>{ const q=toW(add(b,V(0,0,dz))); return W.gnd(q.x,q.z); })); p.hd=W.hd; return p; },
@@ -460,11 +460,29 @@ const grabMove=n=>{ const s=n=='R'?1:-1; return move({keys:[[0,{}],[0.24,{bend:5
 MOVES.grab=grabMove('R'); MOVES.grabL=grabMove('L');
 MOVES.carry=move({hold:0.24,keys:[[0,{}],[0.24,{R:{ua:[104,6],fa:[108,2],fist:1}},'out'],[0.5,{R:{ua:[9,8],fa:[19,8],fist:0}}]]});
 MOVES.mantle=(()=>{ const m=climbOut(); m.deck=false; return m; })();
-function climbPose(st){ const z=st.climb.z,u=st.climb.slide?0.5:0.5-0.5*Math.cos(2*Math.PI*(st.climb.ph??z)/(st.climb.per||28)),P=neutral(),Q=neutral();
-  for(const [A,hi,lo] of [[P,'L','R'],[Q,'R','L']]){ A.root=V(0,z+STAND-1,-1.5); A.bend=8*D; A.nod=-18*D;
-    A[hi].ua=[168*D,12*D]; A[hi].fa=[176*D,8*D]; A[lo].ua=[118*D,16*D]; A[lo].fa=[158*D,10*D]; A.L.fist=A.R.fist=1;
-    A[lo].th=[64*D,8*D]; A[lo].sh=[-14*D,8*D]; A[hi].th=[8*D,6*D]; A[hi].sh=[-4*D,6*D]; A.L.foot=A.R.foot=0; }
-  const M=mix(P,Q,u), k=st.climb.slide?0:Math.sin(Math.PI*u); M.root=V(M.root.x+1.2*(u-.5),M.root.y-2.2*k,M.root.z-.8*k); M.bend=(8+6*k)*D; if(st.climb.grip&&st.world){ M.bend=-3*D; M.nod=-34*D; M.root=V(M.root.x,M.root.y,M.root.z-1.5); gripIK(st,M); } return M; }   // on bark: hang back from it, looking up the trunk   // each pull: sag on the arms, then heave up close to the trunk
+// THE CLIMB FROM MOTION CAPTURE (owner, 8 Nov 2026: "lets redo the climbing animation, based it on real climbing animations"; his pick CMU: data/moves.json climb):
+// a ladder climber's cycle, one cycle a rise of height climbed (up or down), its second half the first mirrored; on bark each hand and foot holds where climbHolds put it
+const CLIMB=MOCAP&&MOCAP.climb?(()=>{ const C=MOCAP.climb, mir=c=>{ const m={...c,root:[-c.root[0],c.root[1],c.root[2]],L:c.R,R:c.L}; for(const k of ['yaw','roll','side','cyaw']) m[k]=-c[k]; return m; };
+  const P=[...C.keys,...C.keys.map(mir)].map(c=>apply(neutral(),c)), up=Math.max(0,...P.map(p=>{ const J=build(p,null).J; return Math.max(...FLOOR.map(([k,r])=>J[k]?r-J[k].y:0)); }));   // (raised so no foot dips under his floor)
+  for(const p of P) p.root=V(p.root.x,p.root.y+up,p.root.z); const at={}; for(const k in C.at) at[k]={...C.at[k],lo:C.at[k].lo+up,hi:C.at[k].hi+up};
+  return {...C,at,P,gap:(at.hL.z+1.3+at.fL.z+2.6)/2}; })():null;   // gap: how far ahead the bark is, between where his hands and his feet hold (gripIK's offsets)
+const reaching=(a,f)=>((f-a.t0)%1+1)%1<((a.t1-a.t0)%1+1)%1;
+function climbPose(st){ const C=st.climb,per=C.per||CLIMB.rise,f=(((C.ph??C.z)/per)%1+1)%1,n=CLIMB.P.length,x=f*n,i=Math.floor(x),M=mix(CLIMB.P[i],CLIMB.P[(i+1)%n],x-i);
+  M.root=V(M.root.x,M.root.y+C.z,M.root.z); M.L.fist=reaching(CLIMB.at.hL,f)?.2:1; M.R.fist=reaching(CLIMB.at.hR,f)?.2:1;
+  if(C.grip&&st.world) gripIK(st,M); return M; }
+// the holds on bark, from the height climbed: a limb's n-th hold is where the recording has it as its n-th reach ends (hold(x, y): the page finds the bark
+// there, x out and y up from the body); between its reach's t0 and t1 it goes from one hold to the next, arcing out from the bark, the hand open. Kept
+// still part way, it finishes the reach (or goes back), and takes it up again as the climb goes on
+function climbHolds(st,dt,hold){ const C=st.climb,A=CLIMB.at,per=C.per||CLIMB.rise,P=C.ph/per,G=C.gs||(C.gs={P,L:{},ov:0}),ov0=G.ov;
+  G.ov=clamp(G.ov+(P!==G.P?-dt/.15:dt/.3),0,1); G.P=P;
+  for(const k in A){ const a=A[k],S=G.L[k]||(G.L[k]={H:{}}),h=k[0]=='h',w=((a.t1-a.t0)%1+1)%1,u=P-a.t1,m=Math.floor(u),q=u-m;
+    const at=j=>S.H[j]||(S.H[j]=hold(a.x,(j+a.t1)*per+a.hi+(h?1.6:-1.2)-C.ph));
+    let e=q>1-w?(q-1+w)/w:0; if(!ov0) S.end=Math.round(e); e+=(S.end-e)*G.ov; const F=at(m); let p=F;
+    if(e>0){ const T=at(m+1),s=e*e*(3-2*e),r=Math.sin(Math.PI*e)*Math.min(1.5,.15*Math.hypot(T.x-F.x,T.y-F.y,T.z-F.z)),l=(x,y)=>x+(y-x)*s;
+      p=e>=1?T:{x:l(F.x,T.x)+T.nx*r,y:l(F.y,T.y),z:l(F.z,T.z)+T.nz*r,nx:T.nx,ny:T.ny,nz:T.nz}; }
+    for(const j in S.H) if(+j!==m&&+j!==m+1) delete S.H[j];
+    S.p=p; S.e=e; S.hf=h?1-.8*Math.sin(Math.PI*e):1; }
+  C.grip={L:{h:G.L.hL.p,f:G.L.fL.p,hf:G.L.hL.hf},R:{h:G.L.hR.p,f:G.L.fR.p,hf:G.L.hR.hf}}; return C.grip; }
 const PICKS={};
 function pickMove(h,z){ const k=clamp(Math.round(h/2)*2,0,50),q=clamp(Math.round(z/2)*2,4,16),key=k+','+q; if(PICKS[key]) return PICKS[key];
   const G=(d,a)=>({root:[0,STAND-7*d,-1.5*d],bend:44*d,nod:12*d,L:{ik:[FOOTX,ANKLE,2.5*d],ua:[9+30*d,14],fa:[19+60*d,10]},R:{ik:[-FOOTX,ANKLE,-2.5*d],ua:[a,-6],fa:[a+8,-8],fist:0}});
@@ -552,6 +570,12 @@ function ridePose(st){ const R=st.ride,P=neutral(),z=R.z||0;
   else if(R.k==='car'){
     P.root=V(0,RIDEG.sit,0); P.bend=-30*D; P.nod=4*D;
     for(const [n,k] of [['L',1],['R',-1]]){ P[n].th=[84*D,6*D]; P[n].sh=[22*D,2*D]; P[n].foot=-8*D; P[n].ua=[58*D,14*D]; P[n].fa=[50*D,(6+(R.steer||0)*26*k)*D]; P[n].fist=1; } }
+  else if(R.k==='carpet'){   // a magic carpet: sitting cross-legged, the hands on the knees, leaning into the way it flies
+    const f=R.fwd||0; P.root=V(0,RIDEG.deck+3.6+z,0); P.bend=(6+f*12+Math.abs(R.lean||0)*4)*D; P.nod=-(4+f*6)*D; P.cyaw=-(R.lean||0)*6*D;
+    for(const [n,k] of [['L',1],['R',-1]]){ P[n].th=[84*D,52*D]; P[n].sh=[84*D,-64*D]; P[n].foot=-30*D; P[n].ua=[34*D,18*D]; P[n].fa=[58*D,10*D]; P[n].fist=0; } }
+  else if(R.k==='horse'){   // astride a saddle: thighs round the barrel, heels down in the stirrups, the reins in both hands over the horn; forward with the pace (lean), a hand up to stop (R.lean <0: leaning back)
+    const L=R.lean||0; P.root=V(0,RIDEG.sit,0); P.bend=(4+L*16)*D; P.nod=(-4-L*6)*D;
+    for(const [n,k] of [['L',1],['R',-1]]){ P[n].th=[R.th0*D,R.th1*D]; P[n].sh=[R.sh0*D,R.sh1*D]; P[n].foot=R.ft*D; P[n].ua=[(R.ua0+L*12)*D,R.ua1*D]; P[n].fa=[(R.fa0+L*10)*D,(R.fa1+(R.steer||0)*14*k)*D]; P[n].fist=1; } }
   else if(R.k==='zip'){
     P.root=V(0,z+STAND,0); P.nod=-10*D; P.pitch=(R.sway||0); P.bend=6*D;
     for(const n of 'LR'){ P[n].ua=[174*D,14*D]; P[n].fa=[178*D,6*D]; P[n].fist=1; P[n].th=[26*D,4*D]; P[n].sh=[18*D,4*D]; P[n].foot=-14*D; } }
@@ -584,7 +608,7 @@ const moveAt=st=>moveAtOf(st.move);
 function moveAtOf(mv){ const def=mv.def,t=Math.min(mv.t,def.dur),ks=def.kl&&t>def.air.t0+def.air.T?def.kl:def.k; let i=1; while(i<ks.length-1&&ks[i].t<t) i++;
   const A=ks[i-1],B=ks[i],x=B.t>A.t?clamp((t-A.t)/(B.t-A.t),0,1):1; let P=B.e===smooth?flow(ks,i,x):mix(A.P,B.P,B.e(x));
   const a=def.air; if(a&&t>=a.t0&&t<=a.t0+a.T){ const tau=t-a.t0,i2=Math.min(240,Math.round(tau/a.T*240));
-    P.root=V(P.root.x,P.root.y+a.v0*tau-a.g*tau*tau/2,P.root.z); P.pv=a.c; if(a.spin) P.pitch+=a.spin[i2];
+    P.root=V(P.root.x,P.root.y+(a.v0*tau-a.g*tau*tau/2)*(mv.hi||1),P.root.z); P.pv=a.c; if(a.spin) P.pitch+=a.spin[i2];
     if(mv.variant){ const v=mv.variant,w=Math.min(1,(t-v.t)/0.08)*(1-smooth(clamp((tau/a.T-0.8)/0.17,0,1))); if(w>0){ const Q=apply(P,AIRV[v.name]); P=mix(P,Q,w); } }
     for(const n of 'LR') delete P[n].ik; }
   const tp=def.topple; if(tp&&t<tp.T){ const th=tp.tab[Math.min(tp.tab.length-1,Math.round(t*240))]; P.pitch=th; P.root=V(0,STAND*Math.cos(th),STAND*Math.sin(th)); for(const n of 'LR') if(P[n].ik) legIK(P,n,n=='L'?1:-1,P[n].ik,P[n].kp); }
@@ -600,7 +624,7 @@ function upLayer(st,P){ const u=st.up; if(!u)return P; if(st.water&&st.water.in|
   const d=u.def, U=moveAtOf(u), k=smooth(clamp(u.t/0.08,0,1))*(1-smooth(clamp((u.t-(d.dur-0.14))/0.14,0,1))); if(k<=0)return P; const arms=d.arms||(d.arms=armsOf(d));
   for(const n of 'LR')if(arms[n]){ const a=P[n],b=U[n]; a.ua=lerp2(a.ua,b.ua,k); a.fa=lerp2(a.fa,b.fa,k); a.fist=lerp(a.fist,b.fist,k); }
   for(const f of ['cyaw','nod','look'])P[f]=lerp(P[f],U[f],k); return P; }
-function aimLayer(st,P){ const A=st.aim; if(!A||!(A.w>0)||st.water&&st.water.in||st.climb||st.hang||st.ride||st.sit) return P;
+function aimLayer(st,P){ const A=st.aim; if(!A||!(A.w>0)||st.water&&st.water.in||st.climb||st.hang||st.ride||st.sit&&!st.sit.hold) return P;   // (a seat with hold: the hands free to hold a tool, the rowboat's)
   const R=cat(turn(P.yaw,P.roll,P.pitch),turn(0,P.side,P.bend)),v=nrm(A.v),x=dot(v,R.x),y=dot(v,R.y),z=dot(v,R.z),n=st.hand==='L'?'L':'R',a=Math.atan2(z,-y),b=Math.asin(clamp(n==='L'?x:-x,-1,1)),w=A.w,H=P[n];
   H.ua=lerp2(H.ua,[a,b],w); H.fa=lerp2(H.fa,[a+.2,b],w); H.fist=lerp(H.fist,1,w); P.cyaw=lerp(P.cyaw,clamp(Math.atan2(x,z)*.3,-.5,.5),w); return P; }
 function gripLayer(st,P){ const G=st.grip; if(!G||st.water&&st.water.in||st.climb||st.hang||st.ride||st.sit)return P;   // one hand on a hold (a train's pole or rail), given in the body's own frame
@@ -678,7 +702,7 @@ function handed(st,def){ if(!def||!def.lead||(st.hand||'R')===def.lead) return d
 const pace=st=>gaitOf(st.run).speed*((st.wk||1)+((st.rk||1)-(st.wk||1))*st.run);
 function begin(st,name,dd){ const def=handed(st,dd||MOVES[name]),from=JSON.parse(JSON.stringify(st.out&&!(st.out.t>0)?st.out.pose:st.last||rawPose(st))),om=st.move;   // (straight after a move ends: from its last pose, its travel already taken into the step)
   if(om){ const z=from.root.z; st.dist+=z-(om.zc||0); from.root=V(from.root.x,from.root.y,0); }
-  st.move={def,name,t:0,from,held:true,variant:null,floor:def.deck?0:floorOf(st)}; st.out=null; st.next=null;
+  st.move={def,name,t:0,from,held:true,variant:null,floor:def.deck?0:floorOf(st),hi:def.air&&!def.src.drop?st.hi||1:1}; st.out=null; st.next=null;
   if(def.below!=null) st.move.base=Math.min(floorOf(st)-def.below,from.root.y-STAND);
   st.mvw=Math.max(pace(st)*st.w,om?.9*st.mv:0); st.mv=def.air?st.mvw+def.air.vz:st.mvw*0.9; }
 const ARMMOVES=new Set(['jab','cross','uppercut','block','wave']);
@@ -760,7 +784,7 @@ function pose(st,inPlace){ const busy=st.move||st.out,P=JSON.parse(JSON.stringif
   if(!busy&&!swimming&&!st.up&&!st.sit) B.walkF=st.w>0.05&&st.target>0?Math.floor((st.wd||0)/WSTEP)%8:-1;
   const m=st.move; B.anim=swimming||st.sit?null:m?(!m.variant&&STUDIO.includes(m.name)?m.name+'/'+Math.floor(m.t*10):null):st.up&&!st.out?(st.w<0.05&&STUDIO.includes(st.up.name)?st.up.name+'/'+Math.floor(st.up.t*10):null):B.walkF!=null?(B.walkF<0?'stand/0':'walk/'+B.walkF):null;
   if(st.sign)B.anim=null; st.B=B;
-  B.seat=!!(st.sit||st.ride&&/^(kart|car|bike)$/.test(st.ride.k));   // seated: a body of other proportions sits where the rig sits (111a)
+  B.seat=!!(st.sit||st.ride&&/^(kart|car|bike|horse|carpet)$/.test(st.ride.k));   // seated: a body of other proportions sits where the rig sits (111a)
   return B; }
 
 const PIECES=['head','hair','beard','neck','torso','hips'].concat(...['L','R'].map(n=>['sleeve','upperArm','forearm','hand','thigh','shin','shoe'].map(k=>k+n)),
@@ -974,7 +998,7 @@ function tune(o){ G=o.g;
 return {rbox,ell,rcone,box,OVL,LOOK,begin,beginUp,legIK,START,mkMove:move,ARMMOVES,fine:v=>{ FINEHAND=!!v; },farOnly:v=>{ FAR=!!v; },restOf,IDF,viewPitch:v=>{ VPITCH=v; },far:v=>{ FAR=!!v; DIGC.clear(); },create,step,pose,act,release,beginUp,tune,WPX,V8,wpal,wpxGet,wpxPack,studioAnims,studioBase,RIGT,WALK,RUN,G:()=>G,water,travel,handed,bake,baker,draw,depth:N=>BUF[N]&&BUF[N].dep,pid:N=>BUF[N]&&BUF[N].id,tint,ramp32,project,overlaps,build,walkPose,shell,MOVES,GAITV,KEYMOVE,gaitOf,BONES,PIECES,RAMP,SPEED,CYCLE,PX,V,D,
   apply,STANDK,RIDEG,mix,clearPose,settle,rcone,ell,box,rbox,add,sub,mul,nrm,cross,dot,len,STAND,ANKLE,FOOTX,frameOf,MATS,
   DIG,digitBase,digitFK,fgOf,hand,yaw,get THIGH(){ return THIGH; },get SHIN(){ return SHIN; },get UPPER(){ return UPPER; },get FORE(){ return FORE; },get HIPX(){ return HIPX; },
-  get RIGP(){ return RIGP; },get RIGGEN(){ return RIGGEN; },rigSet,rigGet,rigDefault,refit,fitPts,frameAt,rawBake:v=>{ RAWBAKE=!!v; },cam,K,shade:n=>{ if(n!=null)SHADE=n; return SHADE; },style:s=>{ const o=STY; if(s!==undefined)STY=s||{}; return o; },soft:v=>{ if(v!==undefined)SOFT=v; return SOFT; },outline:o=>{ if(o){ Object.assign(OUTS,o); OUTL=OUTS.w>0; try{ localStorage.setItem('isowalk-outline2',JSON.stringify(OUTS)); }catch(e){} } return OUTS; }};
+  get RIGP(){ return RIGP; },get RIGGEN(){ return RIGGEN; },rigSet,rigGet,rigDefault,refit,CLIMB,climbHolds,fitPts,frameAt,rawBake:v=>{ RAWBAKE=!!v; },cam,K,shade:n=>{ if(n!=null)SHADE=n; return SHADE; },style:s=>{ const o=STY; if(s!==undefined)STY=s||{}; return o; },soft:v=>{ if(v!==undefined)SOFT=v; return SOFT; },outline:o=>{ if(o){ Object.assign(OUTS,o); OUTL=OUTS.w>0; try{ localStorage.setItem('isowalk-outline2',JSON.stringify(OUTS)); }catch(e){} } return OUTS; }};
 })();
 if(typeof module!=='undefined') module.exports=RIG;
 

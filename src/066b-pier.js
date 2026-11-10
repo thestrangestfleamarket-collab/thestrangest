@@ -120,3 +120,4 @@ RIVER.onBuild.push(()=>{ const T=TILE, V3=THREE.Vector3, RB=RIVER.box, Q=RB.z1, 
   function mergeG(list){ const pos=[], nor=[], uv=[]; for(const g of list){ const n=g.index?g.toNonIndexed():g; pos.push(...n.attributes.position.array); nor.push(...n.attributes.normal.array); uv.push(...n.attributes.uv.array); }
     const o=new THREE.BufferGeometry(); o.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); o.setAttribute('normal',new THREE.Float32BufferAttribute(nor,3)); o.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2)); return o; }
 });
+export {PIER};

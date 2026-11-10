@@ -11,6 +11,7 @@ const MINI={on:null}; window.MINI=MINI;
   CV.addEventListener('mousedown',e=>{ if(!S)return; [S.mx,S.my]=pos(e); S.down=true; S.press=true; e.preventDefault(); e.stopPropagation(); });
   addEventListener('mouseup',()=>{ if(S&&S.down){ S.down=false; S.release=true; } });
   CV.addEventListener('dblclick',e=>e.stopPropagation());
+  CV.addEventListener('wheel',e=>{ if(!S)return; S.wheel=(S.wheel||0)+e.deltaY; e.preventDefault(); e.stopPropagation(); },{passive:false});   // a game's window that scrolls reads S.wheel
   // the game's keys are its own while the window is open; Escape closes it
   addEventListener('keydown',e=>{ if(!MINI.on)return; if(e.key==='Escape'){ MINI.close(); } else if(S){ S.keys.add(e.key.toLowerCase()); if(e.key===' ')S.press=true; } e.stopImmediatePropagation(); if(/^(arrow|\s)/i.test(e.key))e.preventDefault(); },true);
   addEventListener('keyup',e=>{ if(!MINI.on)return; if(S)S.keys.delete(e.key.toLowerCase()); e.stopImmediatePropagation(); },true);

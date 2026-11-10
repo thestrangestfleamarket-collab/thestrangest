@@ -90,8 +90,8 @@ const FILE=process.argv[2]||'dist/market.html', SHOTS=process.argv[3]||'';
   ok(Sh.k&&Sh.k[0]==='pt_'&&Sh.sells&&Sh.buys,'THE TRADER sells canvases and buys paintings ('+JSON.stringify(Sh)+')');
 
   // trade through the block: ask, open, put the painting in, accept, done
-  const T0=await pg.evaluate(()=>{ window.__sent=[]; ONLINE.on=true; ONLINE.send=m=>__sent.push(JSON.parse(JSON.stringify(m))); ONLINE.use({id:'a',name:'ROSA'}); return __sent.slice(); });
-  ok(T0.some(m=>m.t==='tr'&&m.op==='ask'&&m.to==='a'),'double-clicking a player who is standing asks them to trade');
+  const T0=await pg.evaluate(()=>{ window.__sent=[]; ONLINE.on=true; ONLINE.send=m=>__sent.push(JSON.parse(JSON.stringify(m))); ONLINE.use({id:'a',name:'ROSA'}); const card=document.getElementById('passportw'), shown=card&&card.style.display==='flex'&&/ROSA/.test(card.textContent); const bt=card&&card.querySelector('.pT'); if(bt)bt.click(); return {sent:__sent.slice(),shown}; });
+  ok(T0.shown&&T0.sent.some(m=>m.t==='tr'&&m.op==='ask'&&m.to==='a'),'double-clicking a player who is standing shows their ID card, and its ASK TO TRADE asks them to trade (owner, 8 Nov 2026)');
   await pg.evaluate(()=>ONLINE.feed({t:'tr',op:'open',with:'a',name:'ROSA'}));
   ok(await pg.evaluate(()=>!document.getElementById('tradep').hidden),'they said yes: the trade window opens');
   await pg.evaluate(id=>{ [...document.querySelectorAll('#tradep [data-add]')].find(b=>b.dataset.add==='pt_'+id).click(); },F.id); await pg.waitForFunction(()=>__sent.some(m=>m.op==='offer'),null,{timeout:20000}).catch(()=>{});

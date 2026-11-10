@@ -48,12 +48,21 @@ def from_pdf(f):
             if head or (len(l) < full * .72 and re.search(r'[.?!:"”)]$', s)) or (nxt and re.match(r'(chapter|part|section|appendix)\b', nxt, re.I)): out.append('')   # a paragraph or a heading ends here
         out.append('')
     return '\n'.join(out), len(pages)
+def heads(t):   # "Chapter 2" over its short title "Training": one heading, "Chapter 2: Training"
+    P = t.split('\n\n')
+    for i in range(len(P) - 1):
+        a, b = P[i].strip(), P[i + 1].strip()
+        if re.fullmatch(r'(chapter|part|section|appendix)\s+[\w-]{1,6}', a, re.I) and b and len(b) < 60 and '\n' not in b and not re.search(r'[.,;:]$', b) and not b.isupper(): P[i] = a + ': ' + b; P[i + 1] = ''   # (an all-capitals line there is a box's label, EXAMPLE, NOTE)
+    return '\n\n'.join(p for p in P if p.strip())
 def tidy(t):
     t = t.replace('\r', '').replace('­', ''); t = re.sub(r'(\w)-\n(\w)', r'\1\2', t)   # words broken over a line
     t = re.sub(r'[ \t]+', ' ', t); t = re.sub(r'\n{3,}', '\n\n', t)
     return '\n'.join(l.strip() for l in t.split('\n')).strip() + '\n'
 def cover(f, fmt, id_):
     o = f'data/books/covers/bk-{id_}.jpg'
+    if M_.get('cover_url'):   # a scan's own cover (archive.org)
+        try: im = Image.open(fetch(M_['cover_url'])).convert('RGB'); im = im.resize((300, round(im.height * 300 / im.width)), Image.LANCZOS); im.save(o, 'JPEG', quality=80); return o[5:]
+        except Exception: pass
     if fmt != 'pdf': return None
     pg = 1
     for k in range(1, 5):   # the first page that is not a library's "historic, archived document" notice
@@ -75,17 +84,19 @@ def slug(t, ids):
     ids.add(s2); return s2
 L = json.load(open('data/library.json')); M = json.load(open('data/full/books-modern.json'))
 RANK = json.load(open(os.environ['RANK'])) if os.environ.get('RANK') else {}   # Gutenberg number -> downloads, to choose which old books stay
+M_ = {}
 ids = {b['id'] for c in L['cases'] for b in c['books'] if not b.get('txt')}; cases = {c['id']: c for c in L['cases']}; done = {}
 for sk, books in M.items():
     if sk not in cases: continue
     new = []
     for m in books:
+        M_ = m
         try:
             f = fetch(m['url']); raw = open(f, 'rb').read(); fmt = 'pdf' if raw[:5] == b'%PDF-' else 'html' if b'<html' in raw[:3000].lower() or b'<!doctype' in raw[:200].lower() else 'txt'
             if fmt == 'pdf': txt, np_ = from_pdf(f)
             elif fmt == 'html': p = Text(); p.feed(raw.decode('utf8', 'replace')); txt, np_ = html.unescape(''.join(p.out)), None
             else: txt, np_ = raw.decode('utf8', 'replace'), None
-            txt = tidy(txt)
+            txt = heads(tidy(txt))
             if len(txt) < 15000: raise Exception(f'only {len(txt)} characters of text')
             id_ = slug(short_t(m['t']), ids); gz = f'data/books/text/{id_}.txt.gz'; open(gz, 'wb').write(gzip.compress(txt.encode(), 9, mtime=0))
             b = {'id': id_, 't': short_t(m['t']), 'a': short_a(m['a']), 'y': m.get('y'), 'pg': None, 'txt': gz[5:], 'pages': m.get('pages') or np_ or max(10, round(len(txt) / 2000 / 10) * 10),

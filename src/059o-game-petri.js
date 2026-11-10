@@ -1,6 +1,6 @@
 // THE ARCADE'S PETRI: the dish for its cabinet (in the line of agar.io; docs/arcade/petri.md): cells in one dish eating pellets and each other, split and eject, viruses, bots filling the dish; its own chunk, fetched the first time you play it. The simulation (DISH) is one path for the client, its bots and, later, the worker's shared dish.
 import {STORE} from './006-map-pre.js';
-STORE.cabs.add({name:'PETRI',skill:'alch',hold:1,lore:{maker:'NODE 9',place:'BERLIN',year:2015,col:'#7aff6a',tag:"EAT. SPLIT. DON'T GET EATEN.",story:['ONE DISH FOR THE WHOLE MARKET.','THE BIGGEST CELL WEARS THE CROWN.']},
+STORE.cabs.add({name:'PETRI',skill:'myco',hold:1,lore:{maker:'NODE 9',place:'BERLIN',year:2015,col:'#7aff6a',tag:"EAT. SPLIT. DON'T GET EATEN.",story:['ONE DISH FOR THE WHOLE MARKET.','THE BIGGEST CELL WEARS THE CROWN.']},
   game:L=>{ '@petri'; const {W,H,R,tx,beep,pops,popTick}=L;
   __CODE__("worker/dish.js")
   const petri={help:['ARROWS OR THE MOUSE STEER · SPACE SPLIT','C EJECT MASS · EAT THE SMALL, FLEE THE BIG'],grade:[200,1000,3000],insert:212,make:()=>{

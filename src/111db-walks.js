@@ -2,17 +2,18 @@
 import {SHARED} from './003-shx.js';
 import {CITY, NPCS, ONLINE, VIS, WALKS} from './003b-systems.js';
 import {QS, SYS, TILE} from './006-map-pre.js';
-import {HOMES, ROAM, stfree} from './076-npc-map.js';
+import {HOMES, pedfree, ROAM} from './076-npc-map.js';
 __CODE__("worker/folk.js")
 Object.assign(WALKS,{on:QS.get('folk')==='1',remote:false,by:new Map(),S:null,sim:FOLKSIM,sent:0}); window.WALKS=WALKS;
-{ const T=TILE, R0=.3*T, TELE=2.5*T, NUDGE=.6*T, S=WALKS.S=FOLKSIM.make(); S.T=T; S.freeFn=(x,z)=>stfree(x,z,R0); S.routeFn=(a,b)=>{ const r=CITY.route&&CITY.route('up',a,b,stfree); return r?r.pts:null; };
+{ const T=TILE, R0=.3*T, TELE=2.5*T, NUDGE=.6*T, S=WALKS.S=FOLKSIM.make(); S.T=T; S.freeFn=(x,z)=>pedfree(x,z,R0); S.routeFn=(a,b)=>{ const r=CITY.route&&CITY.route('up',a,b,pedfree); return r?r.pts:null; };   // off the road but on a crosswalk (076)
+  S.walk=()=>!SHARED.BOD.road||!SHARED.BOD.road.walk||SHARED.BOD.road.walk();
   const stamp=()=>String(__BUILDV__)+':'+((SHARED.MAPLIVE&&SHARED.MAPLIVE.at)||''); WALKS.stamp=stamp;
   let batch=[], gateSet=false, bake=null, scanT=0, ready=false, castHave='', castSent='';
   SYS.onStart(()=>{ (typeof LOAD==='function'?LOAD('later'):Promise.resolve()).then(()=>{ ready=true; },()=>{ ready=true; }); },'111db-walks');   // the scan reads the homes' doors (in the later chunk)
-  const gate=()=>{ if(gateSet||!ROAM.gate)return; gateSet=true; S.gate={z:ROAM.wallZ,x0:ROAM.gate[0],x1:ROAM.gate[1]}; };
+  const gate=()=>{ if(gateSet||!ROAM.gate)return; gateSet=true; S.gate={z:ROAM.wallZ,x0:ROAM.gate[0],x1:ROAM.gate[1]}; const R=SHARED.BOD.road, w=R&&R.xw&&R.xw.find(q=>q.lit), X=SHARED.BOD.XS, Z=SHARED.BOD.ZS; if(w)S.xl={x0:X(w.a0),x1:X(w.a1),z0:Math.min(Z(w.l0),Z(w.h0)),z1:Math.max(Z(w.l0),Z(w.h0))}; };
   const send=(k,m)=>{ FOLKSIM.set(S,k,m); if(WALKS.remote)batch.push([k,m]); };
   const flush=()=>{ if(batch.length&&WALKS.remote&&ONLINE.on){ ONLINE.send({t:'folk',set:batch}); WALKS.sent+=batch.length; } batch=[]; };
-  WALKS.key=N=>(N.st&&N.st.home&&N.st.home.id)||N.key;
+  WALKS.key=N=>N.wkey||(N.st&&N.st.home&&N.st.home.id)||N.key;
   // a walker joins the walks: where it stands now, its pace, its mode (worker/folk.js: a home range, an area, free roaming, a shop door, standing)
   WALKS.reg=(N,m)=>{ '@later'; const k=WALKS.key(N); let r=WALKS.by.get(k); if(r){ if(m.mode)WALKS.mode(N,m.mode); return r; } const st=N.st;
     r={k,N,E:null,t:0,v:m.v||.3*T,auto:m.auto?1:0,mode:JSON.stringify(m.mode||null),goal:null,then:null,gid:'',t0:0,hid:false}; WALKS.by.set(k,r); st.folk=r;
@@ -42,8 +43,8 @@ Object.assign(WALKS,{on:QS.get('folk')==='1',remote:false,by:new Map(),S:null,si
     if(e.st===1){ if(!st.to||st.to.x!==e.tx||st.to.z!==e.tz){ st.to={x:e.tx,z:e.tz}; st.next=null; } st.wait=0; }
     else { if(st.to&&Math.hypot(st.to.x-e.x,st.to.z-e.z)<.5*T)return; st.to=gap>.3*T?{x:e.x,z:e.z}:null; st.next=null; } };
   // the walk grid for the server: the street's free ground in half-tile cells (as the city's pathfinder sees it), baked a few rows a frame when the server's is from another build or map, then sent
-  WALKS.bake=()=>{ gate(); const b=CITY.bounds('up'), c=T/2, w=Math.ceil((b[2]-b[0])/c), h=Math.ceil((b[3]-b[1])/c), m=new Uint8Array(w*h); return {b,c,w,h,m,j:0,done(){ return {v:stamp(),x0:b[0],z0:b[1],c,w,h,rle:FOLKSIM.pack(m,w*h),T,gate:S.gate}; }}; };
-  const bakeSome=()=>{ const B=bake, {b,c,w,h,m}=B; const j1=Math.min(h,B.j+16); for(let j=B.j;j<j1;j++)for(let i=0;i<w;i++)if(stfree(b[0]+(i+.5)*c,b[1]+(j+.5)*c,R0))m[j*w+i]=1; B.j=j1; if(j1>=h){ const G=B.done(); bake=null; if(ONLINE.on)ONLINE.send({t:'folk',grid:G}); WALKS.grid=G; } };
+  WALKS.bake=()=>{ gate(); const b=CITY.bounds('up'), c=T/2, w=Math.ceil((b[2]-b[0])/c), h=Math.ceil((b[3]-b[1])/c), m=new Uint8Array(w*h); return {b,c,w,h,m,j:0,done(){ return {v:stamp(),x0:b[0],z0:b[1],c,w,h,rle:FOLKSIM.pack(m,w*h),T,gate:S.gate,xl:S.xl}; }}; };
+  const bakeSome=()=>{ const B=bake, {b,c,w,h,m}=B; const j1=Math.min(h,B.j+16); for(let j=B.j;j<j1;j++)for(let i=0;i<w;i++)if(pedfree(b[0]+(i+.5)*c,b[1]+(j+.5)*c,R0))m[j*w+i]=1; B.j=j1; if(j1>=h){ const G=B.done(); bake=null; if(ONLINE.on)ONLINE.send({t:'folk',grid:G}); WALKS.grid=G; } };
   ONLINE.hear.folk=m=>{ '@later'; if(!WALKS.on)return; if(m.need&&!bake)bake=WALKS.bake(); if(!Array.isArray(m.n))return; const now=performance.now();
     for(const a of m.n){ if(!Array.isArray(a))continue; const k=String(a[0]), r=WALKS.by.get(k), e={x:+a[1]||0,z:+a[2]||0,tx:a[3]===''||a[3]==null?null:+a[3],tz:a[4]===''||a[4]==null?null:+a[4],hd:+a[5]||0,st:a[6]|0,done:String(a[7]||''),in:+a[8]||0}; if(r){ r.E=e; r.t=now; }
       const L=S.by[k]; if(L){ L.x=e.x; L.z=e.z; L.hd=e.hd; L.to=e.tx!=null?{x:e.tx,z:e.tz}:null; L.next=null; L.path=null; if(e.st===2){ if(!L.in)L.in=e.in||-1; } else L.in=0; } } };

@@ -16,6 +16,10 @@ const fails=[], ok=(c,m)=>{ if(!c){ fails.push(m); console.log((process.env.GITH
     for(let i=0;i<1300;i++)S0.step(S,.1,[{id:'a',x:25,z:5,ok:true}],rnd); ok(!S.m.some(q=>q.i===m.i)&&by(2)===3,'out of sight, the dead come back after their respawn time');
     const d0=S.m.find(q=>q.r===1), x0=d0.x; for(let i=0;i<30;i++)S0.step(S,.1,[{id:'a',x:x0+1,z:d0.z,ok:true}],rnd); ok(d0.x<x0,'a shy creature keeps away from you ('+x0+' → '+d0.x.toFixed(2)+')');
     let gh=0; for(let i=0;i<200;i++)for(const e of S0.step(S,.1,[{id:'a',x:40,z:5,ok:true}],rnd))gh++; ok(S.m.filter(q=>q.r===3).every(q=>Math.hypot(q.x-25,q.z-5)<8),'guards stay by their post');
+    { const B=S0.make(); S0.grid(B,{...g,rooms:[...g.rooms,{k:64,n:3,lv:'up',keep:1,rally:[100,100],lane:[90,90,110,110],block:[]}]}); S0.design(B,{mobs:[{id:'r',r:2,kind:'s',key:'red',x:5,z:5,n:3,hp:7}]});
+      const n=S0.breakout(B,2,rnd), up=B.m.filter(m=>m.r===64&&!m.dead); for(let i=0;i<600;i++)S0.step(B,.1,[],rnd);
+      ok(n===2&&up.length===2&&up.every(m=>m.key==='red')&&S0.roomAt(B,100,100,'up')===64&&!S0.roomAt(B,100,100),'a breakout brings the design\'s creatures up into the keep, on the street level ('+n+')');
+      ok(!B.m.some(m=>m.r===64),'the keep\'s guardians wear them down'); }
     const S2=S0.load(JSON.parse(JSON.stringify(S0.save(S)))); ok(S2.m.length===S.m.length&&S2.g.v==='t'&&S2.dm&&S2.dm.mobs.length===3,'kept and loaded whole, with its design'); }
   const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']}); const pg=await b.newPage({viewport:{width:960,height:600}}), errs=[];
   pg.on('pageerror',e=>errs.push(e.message.slice(0,300)));

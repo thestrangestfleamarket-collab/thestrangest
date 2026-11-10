@@ -16,6 +16,7 @@ import {SYS, TILE} from './006-map-pre.js';
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C,3)); g.computeVertexNormals(); g.computeBoundingSphere(); return g; };
   WE.pfGeo=k=>GEO[k]||(RAW[k]?(GEO[k]=geo(k)):null);
   WE.pfTree=k=>CI[k]===0;   // the TREES category
+  WE.pfList=()=>list();   // every thing and its category (the ITEM editor's PLACE list)
   WE.pfFoot=k=>{ const f=RAW[k]&&RAW[k].f; return f?f.map(v=>v*M):null; };
   WE.pfLoad=k=>list().then(j=>{ const e=j.by[k]; if(!e)throw new Error('no '+k); return cat(e.ci); });
   // the tab: a category, a search, the things in it; one armed follows the mouse until you click the ground

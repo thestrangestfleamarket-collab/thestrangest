@@ -1,6 +1,6 @@
 // THE HUD: HUD draws the round minimap top right (from the MAP's plan), the message log bottom left (the game's lines and the chat, UI.log) and the quick bar (ten slots on keys 1 to 0, filled by dragging from the pack).
 import {SHARED} from './003-shx.js';
-import {BAG, ED, FORAGE, HUD, INV, MOTION, ONLINE, PASSPORT, pos, ROOMS, TEXT, UI, WE, WIELD, WX, ZONES} from './003b-systems.js';
+import {BAG, ED, FORAGE, HUD, INV, LEVELS, MARKS, MOTION, ONLINE, PASSPORT, pos, ROOMS, TEXT, UI, WE, WIELD, WX, ZONES} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {MODS, SECTION, SYS, TILE} from './006-map-pre.js';
@@ -26,23 +26,25 @@ import {QUESTS} from './160a-quests.js';
   /* ---------- the minimap ---------- */
   const MP=document.createElement('div'); MP.id='hmap'; MP.hidden=true; MP.innerHTML=`<canvas width="${MW}" height="${MW}"></canvas><div class="f"><span id="hmz"></span><span id="hmxy"></span><span id="hmwx"></span></div>`; document.body.appendChild(MP);
   const cv=MP.firstChild, g=cv.getContext('2d'), zN=MP.querySelector('#hmz'), xyN=MP.querySelector('#hmxy'), wxN=MP.querySelector('#hmwx'); let Q=null, qTried=0;
-  cv.onclick=()=>{ if(UI.mapWindow)UI.mapWindow(); };
+  cv.onclick=()=>{ if(dun()&&MODS.dunMap){ MODS.dunMap.open(); return; } if(UI.mapWindow)UI.mapWindow(); };
+  const dun=()=>SHARED.LVL==='down'&&MODS.dungeon&&MODS.dungeon.inside&&MODS.dungeon.inside(pos.x,pos.z);   // below ground in the dungeon the corner map is the dungeon's (owner, 8 Nov 2026)
   const plan=()=>{ if(Q||qTried)return Q; qTried=1; try{ Q=UI.mapPlan&&UI.mapPlan(); }catch(e){ console.warn('HUD map',e); } return Q; };
-  const paint=()=>{ const K=4, Q=plan(); if(!Q){ cv.hidden=true; return; } cv.hidden=false; const B=SHARED.BOD, mx=Q.sx(B.OX+pos.x/T), my=Q.sy(B.OY+pos.z/T), r=MW/2, w=MW/K*Q.S;
+  const paint=()=>{ const K=4, D=dun()&&MODS.dunMap?MODS.dunMap.plan():null, Q=D||plan(); if(!Q){ cv.hidden=true; return; } cv.hidden=false; const B=SHARED.BOD, mx=D?D.wx(pos.x):Q.sx(B.OX+pos.x/T), my=D?D.wz(pos.z):Q.sy(B.OY+pos.z/T), r=MW/2, w=MW/K*Q.S;
     g.imageSmoothingEnabled=false; g.clearRect(0,0,MW,MW); g.save(); g.beginPath(); g.arc(r,r,r,0,Math.PI*2); g.clip(); g.fillStyle='#0b0d12'; g.fillRect(0,0,MW,MW); g.drawImage(Q.cv,mx-w/2,my-w/2,w,w,0,0,MW,MW);
     const sx=x=>r+(x-mx)*K/Q.S, sy=y=>r+(y-my)*K/Q.S;
-    for(const o of ONLINE.others.values()){ if(!o.p)continue; const a=sx(Q.sx(B.OX+o.p.x/T)), b=sy(Q.sy(B.OY+o.p.z/T)); if(Math.hypot(a-r,b-r)>r-3)continue; g.fillStyle='#000'; g.fillRect(a-3,b-3,6,6); g.fillStyle='#ffd27a'; g.fillRect(a-2,b-2,4,4); }
-    { const A=window.QUESTS&&QUESTS.anchor&&QUESTS.anchor(); if(A){ const a=sx(Q.sx(B.OX+A.x/T)), b=sy(Q.sy(B.OY+A.z/T)), d=Math.hypot(a-r,b-r), k=d>r-6?(r-6)/d:1, x=r+(a-r)*k, y=r+(b-r)*k; g.save(); g.translate(x,y); g.rotate(Math.PI/4); g.fillStyle='#000'; g.fillRect(-4,-4,8,8); g.fillStyle='#7ad3ff'; g.fillRect(-3,-3,6,6); g.restore(); } }   // the quest's step: a blue diamond, held at the rim when it is off the map
+    for(const o of ONLINE.others.values()){ if(!o.p)continue; if(D&&!MODS.dungeon.inside(o.p.x,o.p.z))continue; const a=sx(D?D.wx(o.p.x):Q.sx(B.OX+o.p.x/T)), b=sy(D?D.wz(o.p.z):Q.sy(B.OY+o.p.z/T)); if(Math.hypot(a-r,b-r)>r-3)continue; g.fillStyle='#000'; g.fillRect(a-3,b-3,6,6); g.fillStyle='#ffd27a'; g.fillRect(a-2,b-2,4,4); }
+    { const A=!D&&QUESTS&&QUESTS.anchor&&QUESTS.anchor(); if(A){ const a=sx(Q.sx(B.OX+A.x/T)), b=sy(Q.sy(B.OY+A.z/T)), d=Math.hypot(a-r,b-r), k=d>r-6?(r-6)/d:1, x=r+(a-r)*k, y=r+(b-r)*k; g.save(); g.translate(x,y); g.rotate(Math.PI/4); g.fillStyle='#000'; g.fillRect(-4,-4,8,8); g.fillStyle='#7ad3ff'; g.fillRect(-3,-3,6,6); g.restore(); } }   // the quest's step: a blue diamond, held at the rim when it is off the map
+    if(!D)for(const M of MARKS){ const a=sx(Q.sx(B.OX+M.x/T)), b=sy(Q.sy(B.OY+M.z/T)), d=Math.hypot(a-r,b-r), k=d>r-6?(r-6)/d:1, x=r+(a-r)*k, y=r+(b-r)*k; g.fillStyle='#000'; g.fillRect(x-5,y-5,10,10); g.fillStyle='#7dffa8'; g.fillRect(x-4,y-4,8,8); g.fillStyle='#000'; g.fillRect(x-1,y-1,2,2); }   // an invitation's place: a green square
     const h=SHARED.heading||0, dx=Math.sin(h), dy=-Math.cos(h); g.translate(r,r); g.rotate(Math.atan2(dy,dx)+Math.PI/2); g.beginPath(); g.moveTo(0,-7); g.lineTo(5,6); g.lineTo(0,3); g.lineTo(-5,6); g.closePath(); g.fillStyle='#fff'; g.fill(); g.lineWidth=1; g.strokeStyle='#000'; g.stroke(); g.restore();
     g.fillStyle='#fff'; g.strokeStyle='#000'; g.lineWidth=2; g.font='8px Silkscreen,monospace'; g.textAlign='center'; g.strokeText('N',r,10); g.fillText('N',r,10); };
   let mt=0, ot=0;
-  const tickMap=dt=>{ if(!window.__started)return; const on=SHARED.LVL==='up'&&!ROOMS.cur&&!(ROOMS.offIn&&ROOMS.offIn())&&!(MODS.apts&&MODS.apts.in); if(MP.hidden===on)MP.hidden=!on; if(!on)return;
-    if((mt+=dt)<.2)return; mt=0; paint(); const z=ZONES.cur, sec=SECTION.id; zN.textContent=(sec?sec+' · ':'')+(z&&z.name?String(z.name).toUpperCase():''); xyN.textContent='x '+Math.round(pos.x/T)+' z '+Math.round(pos.z/T); if(WX.forecast){ const F=WX.forecast(); wxN.textContent=F.now.kind+' '+F.now.temp+'°'+(F.next?' · '+F.next.kind+' IN '+(F.next.inMin>=60?Math.round(F.next.inMin/60)+'H':F.next.inMin+'M'):''); } };   // the forecast (4 Nov 2026): the weather now, the temperature, and the next change when the weather runs free
+  const tickMap=dt=>{ if(!SYS.started)return; const dn=dun(), on=dn||SHARED.LVL==='up'&&!ROOMS.cur&&!(ROOMS.offIn&&ROOMS.offIn())&&!(MODS.apts&&MODS.apts.in); if(MP.hidden===on)MP.hidden=!on; if(!on)return;
+    if((mt+=dt)<.2)return; mt=0; paint(); const z=ZONES.cur, sec=SECTION.id; zN.textContent=dn?String(LEVELS.of.dungeon.label()).toUpperCase().replace(/^THE DUNGEON — /,''):(sec?sec+' · ':'')+(z&&z.name?String(z.name).toUpperCase():''); xyN.textContent=dn?'':'x '+Math.round(pos.x/T)+' z '+Math.round(pos.z/T); if(dn)wxN.textContent=''; else if(WX.forecast){ const F=WX.forecast(); wxN.textContent=F.now.kind+' '+F.now.temp+'°'+(F.next?' · '+F.next.kind+' IN '+(F.next.inMin>=60?Math.round(F.next.inMin/60)+'H':F.next.inMin+'M'):''); } };   // the forecast (4 Nov 2026): the weather now, the temperature, and the next change when the weather runs free
 
   /* ---------- the quick bar ---------- */
   const QB=document.createElement('div'); QB.id='hqb'; document.body.appendChild(QB); let S=[]; try{ S=JSON.parse(OWNED.get('quick')||'[]')||[]; }catch(e){ S=[]; } S.length=N; HUD.slots=S;
   const save=()=>{ try{ OWNED.set('quick',JSON.stringify(S)); }catch(e){} };
-  const has=id=>!!(id&&FORAGE.has&&FORAGE.has(id)), count=id=>(window.INV&&INV.items&&INV.items[id])||0;
+  const has=id=>!!(id&&FORAGE.has&&FORAGE.has(id)), count=id=>(INV&&INV.items&&INV.items[id])||0;
   // the things you do most, as quick slots of their own (owner, 7 Nov 2026: "add most common used things in quickbar"): open the map, the bag, the passport, the emotes
   const ACTS={map:['MAP',()=>{ const B=UI.brochure; if(B)B.up()?B.close():B.open(); }],bag:['BAG',()=>BAG.toggle&&BAG.toggle()],passport:['PASSPORT',()=>PASSPORT.open&&PASSPORT.open()],emotes:['EMOTES',()=>MOTION.toggle&&MOTION.toggle()]};
   const AC=id=>typeof id==='string'&&id.startsWith('act:')&&ACTS[id.slice(4)]?id.slice(4):null; HUD.acts=Object.keys(ACTS);
@@ -69,8 +71,8 @@ import {QUESTS} from './160a-quests.js';
     save(); draw(); });
   QB.addEventListener('dragend',e=>{ QB.querySelectorAll('.over').forEach(x=>x.classList.remove('over')); const s=e.target.closest('.qs'); if(s&&e.dataTransfer.dropEffect==='none')HUD.set(+s.dataset.i,null); });   // dragged off the bar: the slot empties
   addEventListener('keydown',e=>{ if(e.repeat||e.ctrlKey||e.metaKey||e.altKey||e.shiftKey||!/^Digit[0-9]$/.test(e.code))return; if(e.target&&e.target.closest&&e.target.closest('input,textarea,select,[contenteditable="true"]'))return;
-    if(UI.menuOpen||ED.on||WE.on||!window.__started)return; const i=(+e.code.slice(5)+9)%10; if(i>=N||!S[i])return; e.preventDefault(); e.stopImmediatePropagation(); HUD.use(i); },true);   // a filled slot takes its key; an empty one leaves it to the moves
-  let qt=0, lt=0; const tickBar=dt=>{ if(!window.__started)return; if((qt+=dt)>.5){ qt=0; draw(); } if((lt+=dt)>1){ lt=0; const now=performance.now(); for(const d of LN.children)d.classList.toggle('old',now-+d.dataset.t>20000); } };
+    if(UI.menuOpen||ED.on||WE.on||!SYS.started)return; const i=(+e.code.slice(5)+9)%10; if(i>=N||!S[i])return; e.preventDefault(); e.stopImmediatePropagation(); HUD.use(i); },true);   // a filled slot takes its key; an empty one leaves it to the moves
+  let qt=0, lt=0; const tickBar=dt=>{ if(!SYS.started)return; if((qt+=dt)>.5){ qt=0; draw(); } if((lt+=dt)>1){ lt=0; const now=performance.now(); for(const d of LN.children)d.classList.toggle('old',now-+d.dataset.t>20000); } };
   // the common things on every player's bar once, from slot 3 (1 and 2 keep a new player's apples and rod)
   if(!OWNED.get('qcommon')){ let j=2; for(const k of Object.keys(ACTS)){ const id='act:'+k; if(S.includes(id))continue; while(j<N&&S[j])j++; if(j<N)S[j++]=id; } save(); try{ OWNED.set('qcommon','1'); }catch(e){} }
   // SETTINGS, CONTROLS: how many quick slots, and the common things to drag onto the bar
@@ -87,6 +89,6 @@ import {QUESTS} from './160a-quests.js';
   let liftT=0; const lift=dt=>{ if((liftT-=dt)>0)return; liftT=.5; const L=document.getElementById('hlog'), Q=document.getElementById('hqb'); if(!L||!Q)return;   // the log never under the quick bar: on a narrow window it sits just above it (unless you moved either)
     let up=0; if(!L.style.top&&!Q.style.top&&!Q.hidden){ const a=L.getBoundingClientRect(), b=Q.getBoundingClientRect(); if(b.height>0&&a.right>b.left+2&&a.left<b.right-2)up=Math.round(b.height+8); }
     if(L.style.getPropertyValue('--logup')!==up+'px')L.style.setProperty('--logup',up+'px'); };
-  SYS.add('vitals',dt=>{ tickMap(dt); tickBar(dt); lift(dt); if(window.__started&&nmN&&(named-=dt)<=0){ named=1; const n=ONLINE.myName?ONLINE.myName():''; if(nmN.textContent!==n)nmN.textContent=n; } },'162d-hud');   // the name as it is now, looked at once a second
+  SYS.add('vitals',dt=>{ tickMap(dt); tickBar(dt); lift(dt); if(SYS.started&&nmN&&(named-=dt)<=0){ named=1; const n=ONLINE.myName?ONLINE.myName():''; if(nmN.textContent!==n)nmN.textContent=n; } },'162d-hud');   // the name as it is now, looked at once a second
   window.HUDDBG=()=>({map:!MP.hidden,plan:!!Q,slots:[...S],lines:LN.children.length});
 }

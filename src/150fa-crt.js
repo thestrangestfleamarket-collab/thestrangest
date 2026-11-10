@@ -50,7 +50,7 @@ import {ROOMK} from './150a-bedroom.js';
   /* ---------- the set and its stand, in your apartment by the living room's wall ---------- */
   for(const k of ['CRT TV'])ROOMK.always.add(k);   // in every apartment from the start (owner, 7 Nov 2026)
   ROOMK.parts.push(c=>{ '@apts'; const {part,mat,rbox,cap,cur,solid}=c, p=(geo,m,u,h,v,ry=0,par=cur(),cast=true)=>part(geo,m,u,h,v,ry,par,cast), keep=me=>{ me.userData.keep=1; return me; };
-    const U0=c.Lx-.56, V0=c.Ly*.62, RY=-Math.PI/2;   // against the living room's far wall, facing into the room
+    const U0=c.Lx-.64, V0=c.Ly-.34, RY=Math.PI;   // in the back corner of the living room's far wall, facing into the room (owner, 9 Nov 2026)
     const wood=mat([92,58,34]), woodD=mat([60,38,22]), black=mat([28,28,30]), grey=mat([58,58,62]), chrome=mat([176,178,184]), grille=mat([40,40,42]);
     cap('CRT TV',()=>{ const g=new THREE.Group(); g.position.set(U0,0,V0); g.rotation.y=RY; cur().add(g);
       // the stand: a low walnut cabinet, an open shelf with the tape deck, two doors below
@@ -68,7 +68,7 @@ import {ROOMK} from './150a-bedroom.js';
       p(rbox(.66,.09,.012,.004),grille,-.02,.1,.245,0,T); for(let i=0;i<6;i++)p(rbox(.6,.004,.004,.001),grey,-.02,.065+i*.014,.252,0,T);
       for(let i=0;i<4;i++)p(new THREE.CylinderGeometry(.013,.013,.016,10).rotateX(Math.PI/2),chrome,.22+i*.034,.1,.25,0,T); keep(p(new THREE.CircleGeometry(.007,10),new THREE.MeshBasicMaterial({color:0xff3a2a}),.36,.1,.252,0,T,false)).userData.led=1;
       const L=new THREE.PointLight(0x9ab8e0,0,2.8*c.M,2); L.position.set(0,BH*.58,.6); L.userData.tv=1; L.userData.flame=1; T.add(L);
-      solid(U0-SD/2,V0-SW/2,U0+SD/2,V0+SW/2,SH+BH+.02); },{wire:'crt',bake:true}); });
+      solid(U0-SW/2,V0-SD/2,U0+SW/2,V0+SD/2,SH+BH+.02); },{wire:'crt',bake:true}); });
 
   ROOMK.wires.crt=(un,c)=>{ '@later'; let G=null, L=null, led=null; un.obj.traverse(o=>{ if(o.userData.screen){ o.material=o.material.clone(); G=o; } if(o.isLight&&o.userData.tv)L=o; if(o.userData.led){ o.material=o.material.clone(); led=o; } }); if(!G)return;
     screens.add(G.material); CRT.unit=un; look();

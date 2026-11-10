@@ -12,7 +12,7 @@ import {AVATAR} from './111c-avatar.js';
   const DEF={move:'stick',turn:'snap30',view:'first',hand:'right',vig:true,height:0,body:true,hands:true,ctl:true,scale:.75,rate:72,shadow:'light',water:false,far:300,panw:1.5,pand:1.1,panel:'normal'};
   const opt=Object.assign({},DEF); try{ const o=JSON.parse(SAVE.get('vr')||'{}'); for(const k in o)if(k in DEF&&typeof o[k]===typeof DEF[k])opt[k]=o[k]; }catch(e){}
   const PT={fast:[300,150,1000],normal:[800,300,1500],slow:[2000,500,3000]};
-  Object.assign(VR,{joints:{L:null,R:null},grips:[],opt,s:null,busy:false,cal:false,pose:null,rt:null,yaw:0,eye:0,y0:0,px:0,pz:0,view:'',fov:60,tip:0,m:'',win:false,ct:0,bt:0,sn:0,err:0,hands:0,ctl:0,wt:0,l3:0,r3:0,fn:0,blink:0,tpa:false,tpWas:false,tp:null,want:null,notes:[],nh:false,sh0:null,pane:null,pass:{shadow:true,water:true}});
+  Object.assign(VR,{joints:{L:null,R:null},jp:{L:new Float32Array(75),R:new Float32Array(75)},grips:[],opt,s:null,busy:false,cal:false,pose:null,rt:null,yaw:0,eye:0,y0:0,px:0,pz:0,view:'',fov:60,tip:0,m:'',win:false,ct:0,bt:0,sn:0,err:0,hands:0,ctl:0,wt:0,l3:0,r3:0,fn:0,blink:0,tpa:false,tpWas:false,tp:null,want:null,notes:[],nh:false,sh0:null,pane:null,pass:{shadow:true,water:true}});
   const O=new V3(), HL=new V3(), HQ=new THREE.Quaternion(), FW=new V3(), EV=new V3();
   const DOLLY=new THREE.Group(), CAM=new THREE.PerspectiveCamera(70,1,.05,450); DOLLY.add(CAM); VR.cam=CAM; VR.dolly=DOLLY;
   const HUD=new THREE.Scene(), HG=new THREE.Group(), TRK=new THREE.Group(); HG.matrixAutoUpdate=TRK.matrixAutoUpdate=false; HUD.add(HG,TRK);
@@ -128,7 +128,9 @@ import {AVATAR} from './111c-avatar.js';
   const realHands=()=>{ if(VR.rh||!HANDS.vr)return VR.rh; VR.rh=HANDS.vr(AVATAR.L?AVATAR.L().skin:undefined); JM.parent.add(VR.rh.mesh); return VR.rh; };
   const hands=(xf,ref)=>{ '@later'; let n=0, nh=0, tip=false; wrist.visible=false; VR.joints.L=VR.joints.R=null; const RH=realHands(), got={L:0,R:0};
     for(const s of xf.session.inputSources){ if(!s.hand)continue; nh++; const J={wrist:null,index:null,thumb:null,q:null,pinch:false}; VR.joints[s.handedness==='left'?'L':'R']=J;
+      const jp=VR.jp[s.handedness==='left'?'L':'R']; J.jp=jp;
       for(const [name,js] of s.hand.entries()){ const p=n<50&&xf.getJointPose(js,ref); if(!p)continue; const T=p.transform; P4.set(T.position.x,T.position.y,T.position.z); Q4.set(T.orientation.x,T.orientation.y,T.orientation.z,T.orientation.w);
+        { const j=HANDS.NAME[name]; if(j!=null){ jp[j*3]=P4.x; jp[j*3+1]=P4.y; jp[j*3+2]=P4.z; } }   // (every joint where it is, for your body's fingers: 162cb)
         if(name==='wrist'){ J.wrist=P4.clone().applyMatrix4(DOLLY.matrixWorld); J.q=DOLLY.getWorldQuaternion(new THREE.Quaternion()).multiply(Q4); } else if(name==='index-finger-tip')J.index=P4.clone().applyMatrix4(DOLLY.matrixWorld); else if(name==='thumb-tip')J.thumb=P4.clone().applyMatrix4(DOLLY.matrixWorld);
         if(RH){ const sd=s.handedness==='left'?'L':'R'; RH.set(sd,name,M4.compose(P4,Q4,S4.setScalar(1))); got[sd]=1; }
         JM.setMatrixAt(n++,M4.compose(P4,Q4,S4.setScalar(p.radius||.008)));
@@ -160,7 +162,7 @@ import {AVATAR} from './111c-avatar.js';
   const calib=()=>{ VR.yaw=SHARED.heading+Math.PI-yawOf(HQ); rot(HL.x*FEEL.MH,HL.z*FEEL.MH,VR.yaw,O); O.set(pos.x-O.x,0,pos.z-O.z); VR.y0=HL.y;
     VR.eye=W3.eyeAt&&W3.eyeAt(EV)?Math.max(.5*TILE,EV.y-SHARED.py):1.62/.84*TILE*(W3.SZ||1); VR.px=pos.x; VR.pz=pos.z; VR.cal=true; };
   const vw=()=>VR.want&&VR.want.view||opt.view, turns=()=>!SHARED.drive&&!(VR.want&&VR.want.turn===false);
-  const free=()=>!SHARED.drive&&!RAG.on&&!VIT.dead&&!(VIT.out>0)&&!(window.BOAT&&BOAT.on)&&!st.sit&&!UI.fly&&!UI.freeCam&&!ED.on&&!(st.water&&st.water.in);
+  const free=()=>!SHARED.drive&&!RAG.on&&!VIT.dead&&!(VIT.out>0)&&!(BOAT&&BOAT.on)&&!st.sit&&!UI.fly&&!UI.freeCam&&!ED.on&&!(st.water&&st.water.in);
 
   SYS.add('xr',(dt,xf)=>{ '@later'; const P=VR.pose; if(!P)return; const T=P.transform; HL.set(T.position.x,T.position.y,T.position.z); HQ.set(T.orientation.x,T.orientation.y,T.orientation.z,T.orientation.w);
     O.x+=pos.x-VR.px; O.z+=pos.z-VR.pz; VR.px=pos.x; VR.pz=pos.z;   // a move since the last frame (a door, a fade, a teleport) carries the room with you
@@ -168,7 +170,7 @@ import {AVATAR} from './111c-avatar.js';
     VR.pass.shadow=opt.shadow==='full'||(opt.shadow==='light'&&(VR.fn&3)===0); VR.pass.water=opt.water;
     const B=VP.buttons, rx=VP.axes[2], ref=renderer.xr.getReferenceSpace();
     if(UI.gamewin||!turns()){ VR.sn=0; } else if(opt.turn==='smooth'){ if(Math.abs(rx)>.3)turn(-rx*dt*2.2); } else if(Math.abs(rx)<.3)VR.sn=0; else if(!VR.sn&&Math.abs(rx)>.65){ VR.sn=1; turn(rx>0?-snap():snap()); }
-    if(edge('q',keys.has('q'))&&turns())turn(snap()); if(edge('e',keys.has('e'))&&turns())turn(-snap());
+    if(edge('q',keys.has('q'))&&turns())turn(snap()); if(edge('e',!!UI.rotHeld)&&turns())turn(-snap());
     if(edge('rc',VR.r3)){ VR.cal=false; if(SHARED.drive&&SHARED.drive.recentre)SHARED.drive.recentre(); } if(edge('lc',VR.l3))tap('Escape');
     if(B[1].value>.5){ const n=performance.now(); if(!VR.bt)VR.bt=n; else if(n-VR.bt>1500){ VR.bt=Infinity; return VR.leave(); } } else VR.bt=0;
     if(vw()==='first'){ head(EV); let dx=EV.x-pos.x, dz=EV.z-pos.z, d=Math.hypot(dx,dz); const L=LEASH*FEEL.MH;
@@ -228,7 +230,7 @@ import {AVATAR} from './111c-avatar.js';
   VR.aim=(x,y)=>{ const p=new V3((x/PN.W-.5)*panel.scale.x,(.5-y/PN.H)*panel.scale.y,0).applyQuaternion(panel.quaternion).add(panel.position); return {x:p.x,y:p.y,z:p.z}; };
   VR.dbg=()=>({rays:PTR.filter(P=>P.src).map(P=>({h:P.src.handedness,hand:!!P.src.hand,o:P.o,d:P.d,hit:P.hit,x:P.x,y:P.y})),wrist:wrist.visible?wrist.position.toArray():null,finger:TIPR.toArray()});
 
-  const btn=document.createElement('button'); btn.type='button'; btn.id='vrbtn'; btn.hidden=true; btn.textContent='ENTER VR'; btn.title='Play in your headset (hold B to leave)';
+  const btn=document.createElement('button'); btn.type='button'; btn.id='vrbtn'; btn.className='mlb'; btn.hidden=true; btn.textContent='ENTER VR'; btn.title='Play in your headset (hold B to leave)';
   btn.style.cssText='position:fixed;left:calc(12px + env(safe-area-inset-left,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:5;font:12px var(--pixel);color:var(--key);background:var(--panel);border:2px solid var(--line);padding:8px 12px;cursor:pointer';
   btn.onclick=()=>{ btn.blur(); if(VR.on)VR.leave(); else VR.enter(); }; document.body.appendChild(btn);
   if(xr&&xr.isSessionSupported)xr.isSessionSupported('immersive-vr').then(ok=>{ btn.hidden=!ok; }).catch(()=>{});

@@ -15,7 +15,9 @@ on:
         default: false
 jobs:
   # runs only when it is worth it (owner, 7 Nov 2026): never on a draft; on a push only when it is new work, not a merge of main; on a label only for go, full or measure
+  # (judged in the jobs' own if, with no machine; only a push starts one, to see whether it is a merge)
   gate:
+    if: github.event_name == 'pull_request' && github.event.action == 'synchronize' && !github.event.pull_request.draft
     runs-on: ubuntu-latest
     timeout-minutes: 2
     outputs:
@@ -24,22 +26,13 @@ jobs:
       - id: g
         env:
           GH_TOKEN: ${{ github.token }}
-          EV: ${{ github.event_name }}
-          ACT: ${{ github.event.action }}
-          DRAFT: ${{ github.event.pull_request.draft }}
-          LABEL: ${{ github.event.label.name }}
           SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          go=true
-          if [ "$EV" = pull_request ]; then
-            if [ "$DRAFT" = true ]; then go=false
-            elif [ "$ACT" = labeled ]; then case "$LABEL" in go|full|measure) ;; *) go=false;; esac
-            elif [ "$ACT" = synchronize ]; then n=$(gh api "repos/${{ github.repository }}/commits/$SHA" --jq '.parents|length' || echo 1); [ "$n" -gt 1 ] && go=false; fi
-          fi
-          echo "go=$go" >> "$GITHUB_OUTPUT"; echo "go=$go ($EV $ACT)"
+          n=$(gh api "repos/${{ github.repository }}/commits/$SHA" --jq '.parents|length' || echo 1); go=true; [ "$n" -gt 1 ] && go=false
+          echo "go=$go" >> "$GITHUB_OUTPUT"; echo "go=$go"
   build-check:
     needs: gate
-    if: needs.gate.outputs.go == 'true'
+    if: ${{ !cancelled() && (github.event_name == 'workflow_dispatch' || (!github.event.pull_request.draft && ((github.event.action == 'synchronize' && needs.gate.outputs.go == 'true') || (github.event.action == 'labeled' && contains(fromJSON('["go","full","measure"]'), github.event.label.name)) || contains(fromJSON('["opened","reopened","ready_for_review"]'), github.event.action)))) }}
     concurrency:
       group: site-${{ github.head_ref || github.ref_name }}
       cancel-in-progress: true
@@ -60,23 +53,36 @@ jobs:
           k grass   'src/014a|src/14[0-4]|src/064|grasskinds'
           k online  'src/111d|worker/|online'
           k drops   'src/162[de]|src/150cy|worker/door|drops'
+          k photog  'src/146m|src/160b|photog'
+          k earn    'src/140c|src/160b|data/trainers|earn'
+          k register 'src/146ze|src/038zd|register'
           k brawl   'src/146h|src/146a|src/103|brawl'
           k physx   'src/090|src/150-loose|src/150o|physx'
           k vr      'src/162[a-c]|vr\.cjs'
+          k vrbody  'src/162c|src/111a|src/111b|src/111d|worker/door|vrbody\.cjs'
           k riders  'src/117a|src/009c|riders\.cjs'
+          k twin    'src/162g|src/159i|src/111d|worker/twin|worker/door|twin\.cjs'
           k loopmap 'src/159c|src/009b|loopmap\.cjs'
           k spiders 'src/146b|src/087-npc-creatures|data/creatures|spiders\.cjs'
           k dunshare 'src/062a|src/146b|src/111d|worker/door|worker/dunmobs|dunshare\.cjs'
           k dunsrv 'worker/door|worker/dunmobs|dunmobs-server\.cjs'
+          k phone 'src/146-drone|src/146zeb|src/146ze-|phone\.cjs'
           k dm 'src/062a|src/146b|src/087|src/088|worker/dunmobs|dm\.cjs'
+          k animals 'src/087|src/111db|worker/folk|animals\.cjs'
           k parksolid 'src/111fe|src/100-use|data/world|parksolid\.cjs'
-          k guardians 'src/146ja|src/146k|src/103a|data/guardians|guardians\.cjs'
+          k guardians 'src/146ja|src/146k|src/146b|worker/dunmobs|src/103a|src/059e|data/guardians|guardians\.cjs|body\.cjs'
           k faunarest 'src/087-npc-creatures|data/fauna|fauna-rest\.cjs'
+          k itempics 'src/162e-bag|src/162d-hud|src/162fa-shopinsides|src/150cy|itempics\.cjs'
+          k ground  'src/162e-bag|src/150cy-inspect|src/140b-items|data/items|grounditems\.cjs'
+          k avdesign 'src/111a-bodies|src/111c-avatar|src/111cb-designer|src/102b-designer|avdesigner\.cjs'
+          k space   'src/075-main|src/076-npc|src/087-npc-creatures|src/139-clip|src/150-loose|worker/folk|space\.cjs'
           k motion  'src/001-rig|src/111d|src/100-use|data/moves2|tools/m2m-moves|motion\.cjs'
           k passport 'src/159d|passport\.cjs'
           k scanner 'src/159e|src/146-|scanner\.cjs'
           k cafe    'src/144c[a-z]|src/038zd|data/bookstore|worker/door|cafe\.cjs|tgames\.cjs'
+          k invites 'src/144c[a-z]|src/111d-online|src/141e-map|src/162d-hud|worker/door|invites'
           k spray   'src/159f|src/146-|spray\.cjs'
+          k money   'src/159(ba|[ij])|src/005-save|src/101-gems|src/103a|src/140c|worker/door|economy\.cjs'
           k paint   'src/159[g-i]|src/150a|src/150d|src/140b|src/146h|data/characters|worker/|paint\.cjs|trade-server\.cjs'
           k bodega80 'src/039-bodega|src/016-street-kit|bodega80s\.cjs'
           k bedroom 'src/150[a-c]|src/150ea|src/059a|bedroom'
@@ -93,13 +99,12 @@ jobs:
           k arcade  'src/059[b,g-o]|arcade-torch|arcade-petri'
           k bbs     'src/146-drone|src/059a|bbs\.cjs'
           k layout 'src/094-ui|src/162d-hud|src/103-vitals|layout\.cjs'
+          k use 'src/094-ui|src/100-use|src/001-rig|src/111da-motion|tests/use\.cjs'
           k insides 'src/059-store|src/059-street|src/059h|src/059p|src/008-batch|insides\.cjs'
-          k underway 'src/066-river|src/066a-caverns|src/066ba-wreck|src/065a-flow|src/146ga-swim|src/094-ui|src/102-looks|src/009-down|underway\.cjs'
           k roofq 'src/148c-roofquests|src/144a-garden|roof-quests\.cjs'
           k riverq 'src/066-river|src/066b-pier|src/066ba-wreck|src/142-fishing|src/146d-gear|src/146gb-hudson|src/150q-hudtrophies|river-quests\.cjs'
           k libquests 'src/144c|src/146zh|lib-quests\.cjs'
-          k underquests 'src/066a-caverns|src/062a-dungeon|src/147d-under|src/146zca-lounge|under-quests\.cjs'
-          k skillshops 'src/059i|src/162fa|src/159b|src/111fb|data/characters|data/world|skillshops\.cjs'
+          k skillshops 'src/059i|src/159b|src/111fb|data/characters|data/world|skillshops\.cjs'
           k stow 'src/130-rooms|src/130a|src/130b|src/008-batch|stow\.cjs'
           k playhouse 'src/151[a-z]|src/059-street|playhouse'
           k menus 'src/146-drone|src/094|src/102-looks|src/136a-bugs|src/141-forage|src/162b|menus\.cjs'
@@ -111,6 +116,8 @@ jobs:
           k swim    'src/146ga-swim|src/066-river|src/065a|swim\.cjs'
           k visit   'src/150d|src/146z|src/059a|src/111d|visit\.cjs'
           k aptfixed 'src/150a|src/150d|src/150f|src/150k|aptfixed\.cjs'
+          k aptradio 'src/150fb|src/150p-cars|src/150a|src/150d|data/radio|aptradio\.cjs'
+          k sound   'src/091-sfx|src/093-|src/100-use|src/146zo-|src/150p-cars|sound\.cjs'
           k clock   'src/134b|worker/clock|worker/door|clock\.cjs'
           k westst  'src/023|src/05[89]-|src/059[e-h]|westst'
           k pfrow   'src/068a|src/059i|src/069a|data/street|data/world|tools/row-lay|pfrow'
@@ -122,13 +129,18 @@ jobs:
           k interiors 'src/038z[cd]|src/059p-art|src/059i|src/146j-board|src/146l-fixer|src/146n-scanner|src/039-bodega|src/059-street|src/058-store|src/146z[5b-z]|src/059b-arcade|src/150p-cars|src/059-store|src/027-rooms-kits|src/111fb|src/159-jobs|data/characters|data/items|interiors\.cjs'
           k lounge 'src/146zca|src/127-drummer|src/128-bandstand|src/059i|src/146zb-workers|data/bar\.json|lounge\.cjs'
           k interiors2 'src/038z[cd]|src/146z5|src/146z[j-n]|src/151z|src/151c-ph-house|src/060-cave|src/146e-golems|src/059e-ghostdojo|src/059h-bank|src/150n-hall|src/063-tower|src/136c-tenants|interiors2\.cjs'
-          k skate   'src/146i|src/111fd|src/001-rig|data/skate|skate\.cjs'
+          k skate   'src/146i|src/111fd|src/001-rig|src/069a-block|data/skate|data/world\.json|skate\.cjs|skatepit\.cjs'
           k mmo     'src/111d-online|src/111da-motion|src/146h-brawl|src/146i|worker/door|mmo\.cjs|workflows/site'
-          k kit     'src/141-forage|src/111fd|src/146i-ride|src/003b|data/items|kit\.cjs'
+          k kit     'src/141-forage|src/111fd|src/146i-ride|src/003b|data/items|kit\.cjs|src/136c-tenants'
+          k browser 'src/162ac-mouselook|src/162ad-awake|src/091-sfx|src/094-ui|browser\.cjs'
           k guitar  'src/111b-hands|src/106-game-play-3-guitar|src/108-game-play-3-guitar|src/146zo|src/111a-bodies|src/111c-avatar|data/pfhand|data/pfguitar|worker/door|guitar\.cjs'
           k firstday 'src/162g-firstday|src/102-looks|src/141-forage|src/101-gems|worker/door\.js|firstday\.cjs'
           k avatar  'src/111c-avatar|src/111a-bodies|src/102-looks|src/001-rig|src/111da-motion|data/pfavatar|data/pfanim|avatar\.cjs|avatarmoves\.cjs|pfclips\.cjs'
           k wild    'src/087-npc-creatures|src/144[f-h]|src/076-npc-map|wild\.cjs'
+          k brochures 'src/159k-brochures|data/brochures|brochures\.cjs'
+          k places  'build\.py|tools/(chunks|later|yields|minify|imports)|worker/|src/(000|002|end)|\.html$|package|wrangler|places\.cjs|workflows/site'
+          D=$(git diff -U0 "origin/$BASE"...HEAD -- 'src/*.js' 2>/dev/null | grep -E '^[-+][^-+]' || true)
+          if grep -qE "'@[a-z]|LOAD(ED)?\(" <<<"$D"; then case "$R" in *' places'*) ;; *) R="$R places";; esac; fi
           echo "run=$R" >> "$GITHUB_OUTPUT"; echo "extra checks:$R"
       - uses: actions/setup-node@v4
         with:
@@ -154,18 +166,10 @@ jobs:
       - name: The core's own logic (imports, level file, SYS, ZONES, VIS, FADE, collision)
         timeout-minutes: 20
         run: node tests/core.cjs dist/market.html
-      - name: The map editor (its page, the published map, the game laying it)
-        timeout-minutes: 15
-        if: contains(steps.f.outputs.run, ' mapeditor')
-        run: node tests/mapeditor.cjs dist/market.html
       - name: The grass kinds (their looks, flowers, mushrooms, butterflies)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' grass')
         run: node tests/grasskinds.cjs dist/market.html
-      - name: The townspeople's lives (homes, days, records)
-        timeout-minutes: 15
-        if: contains(steps.f.outputs.run, ' lives')
-        run: node tests/lives.cjs dist/market.html
       - name: The other players (bodies, name tags, the list, chat)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' online')
@@ -174,13 +178,26 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' drops')
         run: node tests/drops.cjs dist/market.html
+      - name: Photography (the subject in frame, its price, sold prints train the skill)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' photog')
+        run: node tests/photog.cjs dist/market.html
+      - name: Earning (known kinds sell for more, the trainer ladders, loot buyers, the bounties)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' earn')
+        run: node tests/earn.cjs dist/market.html
+      - name: The bodega's register (everything sold there in one list, supplies and pet food, scroll, basket, pay)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' register')
+        run: node tests/register.cjs dist/market.html
       - name: The ground drops' server (kept, told, first to take, expiry, the cap)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' drops')
         run: node tests/drops-server.cjs
-      - name: The folk's walks (the walks alone, the page following them, the walk grid)
-        if: contains(steps.f.outputs.run, ' folk')
-        run: node tests/folk.cjs dist/market.html
+      - name: The AI double (its mind with a stand-in Claude, its moves in the game)
+        timeout-minutes: 20
+        if: contains(steps.f.outputs.run, ' twin')
+        run: node tests/twin.cjs dist/market.html
       - name: Fights between players (hitboxes, blows, knockdown)
         timeout-minutes: 20
         if: contains(steps.f.outputs.run, ' brawl')
@@ -193,22 +210,34 @@ jobs:
         timeout-minutes: 45
         if: contains(steps.f.outputs.run, ' vr')
         run: node tests/vr.cjs dist/market.html
-      - name: THE CATACOMB RUN (the start, the lessons, every control on the keyboard and in the headset)
-        timeout-minutes: 45
-        if: contains(steps.f.outputs.run, ' catrun')
-        run: node tests/catrun.cjs dist/market.html
+      - name: Your real moves in the headset (head, arms and fingers, seen by the others)
+        timeout-minutes: 30
+        if: contains(steps.f.outputs.run, ' vrbody')
+        run: node tests/vrbody.cjs dist/market.html
       - name: riders
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' riders')
         run: node tests/riders.cjs dist/market.html
-      - name: bins
-        timeout-minutes: 15
-        if: contains(steps.f.outputs.run, ' bins')
-        run: node tests/bins.cjs dist/market.html
       - name: loopmap
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' loopmap')
         run: node tests/loopmap.cjs dist/market.html
+      - name: things take room
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' space')
+        run: node tests/space.cjs dist/market.html
+      - name: the avatar designer
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' avdesign')
+        run: node tests/avdesigner.cjs dist/market.html
+      - name: things on the ground
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' ground')
+        run: node tests/grounditems.cjs dist/market.html
+      - name: the things' pictures
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' itempics')
+        run: node tests/itempics.cjs dist/market.html
       - name: fauna rests
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' faunarest')
@@ -225,10 +254,18 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' dunshare')
         run: node tests/dunshare.cjs dist/market.html
+      - name: The brick phone (every player has one, an order paid, the drone brings it to you)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' phone')
+        run: node tests/phone.cjs dist/market.html
       - name: The dungeon master (an empty dungeon, creatures put in and set up, a room laid out)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' dm')
         run: node tests/dm.cjs dist/market.html
+      - name: The park's animals walk by the shared walks
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' animals')
+        run: node tests/animals.cjs dist/market.html
       - name: The park's things solid, its benches seats
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' parksolid')
@@ -237,7 +274,7 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' guardians')
         run: node tests/guardians.cjs dist/market.html
-      - name: Your body (dying leaves it; the Herbalist raises you; you take it all back)
+      - name: Your body (dying leaves it; the bath house's steam wakes you at it, all back)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' guardians')
         run: node tests/body.cjs dist/market.html
@@ -260,18 +297,6 @@ jobs:
       - name: The interiors, part two (the playhouse's foyer, the golems' cave, the bath house, your hall, the bank, the squirrel's tower)
         if: contains(steps.f.outputs.run, ' interiors2')
         run: node tests/interiors2.cjs
-      - name: The diner (its seats, the octopus chef, the swing doors, the staff's spots)
-        timeout-minutes: 15
-        if: contains(steps.f.outputs.run, ' diner')
-        run: node tests/diner.cjs
-      - name: The cast (the flea market, a day at work, the playable Merchant)
-        timeout-minutes: 15
-        if: contains(steps.f.outputs.run, ' cast')
-        run: node tests/flea.cjs && node tests/merchant.cjs && node tests/jobsim.cjs
-      - name: Summoning a character (the owner's ADMIN window)
-        timeout-minutes: 15
-        if: contains(steps.f.outputs.run, ' summon')
-        run: node tests/summon.cjs dist/market.html
       - name: scanner
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' scanner')
@@ -300,10 +325,6 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' insides')
         run: node tests/insides.cjs dist/market.html
-      - name: The Underway and the wreck (in from the river, the dry gallery, out through the lake; the sunken chests)
-        timeout-minutes: 30
-        if: contains(steps.f.outputs.run, ' underway')
-        run: node tests/underway.cjs dist/market.html
       - name: The rooftops (the greenhouse, the water tower, the night run and its master)
         timeout-minutes: 30
         if: contains(steps.f.outputs.run, ' roofq')
@@ -320,10 +341,6 @@ jobs:
         timeout-minutes: 30
         if: contains(steps.f.outputs.run, ' libquests')
         run: node tests/lib-quests.cjs dist/market.html
-      - name: The underground set pieces (the Fairy Ring, the Crystal Grotto, the Drowned Apothecary, the Knight's Tomb, the Smugglers' Tunnel)
-        timeout-minutes: 40
-        if: contains(steps.f.outputs.run, ' underquests')
-        run: node tests/under-quests.cjs dist/market.html
       - name: The merchants' shops (every one furnished, its keeper inside, the counter opens the shop)
         timeout-minutes: 30
         if: contains(steps.f.outputs.run, ' skillshops')
@@ -334,6 +351,9 @@ jobs:
       - name: The screen's layout (drag the HUD and windows, saved, back after a reload)
         if: contains(steps.f.outputs.run, ' layout')
         run: node tests/layout.cjs dist/market.html
+      - name: Use (E uses what is in reach, no walk; a double click walks up, stops dead, no slide)
+        if: contains(steps.f.outputs.run, ' use')
+        run: node tests/use.cjs
       - name: The computer's BBS (dial-in, order, drone delivery, drone view)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' bbs')
@@ -370,6 +390,14 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' aptfixed')
         run: node tests/aptfixed.cjs dist/market.html
+      - name: The apartment's radio (in a fresh apartment, its panel, it plays, quieter away, kept in the layout)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' aptradio')
+        run: node tests/aptradio.cjs dist/market.html
+      - name: The sound (on by default, one audio context and volume, every effect plays)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' sound')
+        run: node tests/sound.cjs dist/market.html
       - name: The clock's buttons (set, pause, run, real time) reach the server
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' clock')
@@ -402,6 +430,14 @@ jobs:
         timeout-minutes: 10
         if: contains(steps.f.outputs.run, ' kit')
         run: node tests/kit.cjs dist/market.html
+      - name: The full kit (sent from TENANTS, lands in the bag once)
+        timeout-minutes: 10
+        if: contains(steps.f.outputs.run, ' kit')
+        run: node tests/fullkit.cjs dist/market.html
+      - name: The browser's extras (the mouse look in first person, a sound's place in 3D, the screen kept awake)
+        timeout-minutes: 10
+        if: contains(steps.f.outputs.run, ' browser')
+        run: node tests/browser.cjs dist/market.html
       - name: The guitar and the hands (jointed hands worn, the bodega sells it, chords land, a song plays, the strings' pitches, another player's guitar, the park's)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' guitar')
@@ -426,15 +462,24 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' skate')
         run: node tests/skate.cjs
+      - name: The skate pit (its bowl ridden, coping thrown off, tube lamps after dark)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' skate')
+        run: node tests/skatepit.cjs
       - name: The park's creatures (real sizes, how each lives, the wildlife journal)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' wild')
         run: node tests/wild.cjs
+      - name: The brochures (the racks, buying, reading, GO THERE, the full set)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' brochures')
+        run: node tests/brochures.cjs
       - name: Check the site opens (door, then THE MARKET)
         timeout-minutes: 15
         run: node tests/site.cjs
       - name: Every place's code comes when you go there
         timeout-minutes: 20
+        if: contains(steps.f.outputs.run, ' places')
         run: node tests/places.cjs out
       - name: Two players (each sees the other's walking, emotes, dances, flying, blows, jumps, skateboard and tricks)
         timeout-minutes: 20
@@ -476,6 +521,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' dunsrv')
         run: node tests/dunmobs-server.cjs
+      - name: The invitations (a card, the map's mark, ACCEPT sits you at the table; the server hands them on across sections)
+        timeout-minutes: 20
+        if: contains(steps.f.outputs.run, ' invites')
+        run: node tests/invites.cjs dist/market.html && node tests/invites-server.cjs
       - name: The cars' server (one driver a car, parking kept and heard)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' cars')
@@ -488,6 +537,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' paint')
         run: node tests/trade-server.cjs
+      - name: The money's server (the bucket, the body's drops, the stalls, the pawn shop)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' money')
+        run: node tests/economy.cjs
       - name: The guide book (Shift+G, every chapter's steps and pictures)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' guide')
@@ -496,10 +549,6 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' water')
         run: node tests/water.cjs dist/market.html
-      - name: Every editor opens and its controls work
-        timeout-minutes: 15
-        if: contains(steps.f.outputs.run, ' editors')
-        run: node tests/editors.cjs dist/market.html
       - name: The arcade's high-score table (a run that makes the top ten, the initials, the table)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' scores')
@@ -512,31 +561,16 @@ jobs:
         timeout-minutes: 15
         if: failure()
         run: MIN=0 python3 build.py && node tests/pageerr.cjs dist/market.html
-  game:
-    needs: gate
-    if: needs.gate.outputs.go == 'true'
-    runs-on: ubuntu-latest
-    outputs:
-      tests: ${{ steps.c.outputs.tests }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - id: c
-        name: Measure only when asked (the measure label on the pull request, or the measure box when started by hand)
-        env:
-          ASKED: ${{ (github.event_name == 'workflow_dispatch' && inputs.measure) || contains(github.event.pull_request.labels.*.name, 'measure') }}
-        run: |
-          if [ "$ASKED" = "true" ]; then T='["budget","samepic","texhash"]'; else T='[]'; fi; echo "tests=$T" >> "$GITHUB_OUTPUT"; echo "$T"
+  # measure only when asked (the measure label on the pull request, or the measure box when started by hand)
   check:
-    needs: game
-    if: needs.game.outputs.tests != '[]'
+    needs: gate
+    if: ${{ !cancelled() && (github.event_name == 'workflow_dispatch' || (!github.event.pull_request.draft && ((github.event.action == 'synchronize' && needs.gate.outputs.go == 'true') || (github.event.action == 'labeled' && contains(fromJSON('["go","full","measure"]'), github.event.label.name)) || contains(fromJSON('["opened","reopened","ready_for_review"]'), github.event.action)))) && ((github.event_name == 'workflow_dispatch' && inputs.measure) || contains(github.event.pull_request.labels.*.name, 'measure')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
-        test: ${{ fromJSON(needs.game.outputs.tests) }}
+        test: [budget, samepic, texhash]
     name: ${{ matrix.test }}
     steps:
       - uses: actions/checkout@v4

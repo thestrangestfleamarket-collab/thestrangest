@@ -26,6 +26,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     }
     ok(tally.tufts > 1000 && tally.off / tally.tufts < .03, 'the grass near you stands in its own kind\'s shape (' + tally.off + ' of ' + tally.tufts + ' off, at the kinds\' edges)');
     ok(tally.flatTufts / Math.max(1, tally.tufts) < .03, 'none stands in the flat kinds (pixel meadow, mown lawn): ' + tally.flatTufts);
+    const ht = await pg.evaluate(() => { const lv = new Set(), P = __dbg.you(); for (let i = -8; i <= 8; i += .5) for (let j = -8; j <= 8; j += .5) lv.add(TUFTS.lv(P.x + i, P.z + j)); let bend = 0, flat = 0; for (const me of TUFTS.meshes) { const B = me.geometry.attributes.aBend; for (let i = 0; i < me.count; i++)B.array[i] ? bend++ : flat++; } return { lv: [...lv].sort().join(), bend, flat, press: TUFTS.pressing().length }; });
+    ok(ht.lv.split(',').length >= 3 && ht.bend > 0 && ht.flat > 0 && ht.press >= 1, 'the grass in patches of five heights (8 Nov 2026), 3 and up parting round whoever walks through: ' + JSON.stringify(ht));
     const share = a => a.length ? a.filter(Boolean).length / a.length : 1;
     ok(tally.fl.length > 0 && share(tally.fl) >= .95, 'wild flowers come up in the park, each its grass\'s own (' + tally.fl.filter(Boolean).length + ' of ' + tally.fl.length + ')');
     ok(share(tally.mu) >= .95, 'mushrooms come up by their grass\'s odds (' + tally.mu.filter(Boolean).length + ' of ' + tally.mu.length + ')');

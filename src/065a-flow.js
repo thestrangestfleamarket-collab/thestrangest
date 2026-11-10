@@ -9,6 +9,8 @@ import {SYS, TILE} from './006-map-pre.js';
   window.FLOW=FLOW; Object.assign(FLOW,{waters,rect:uRect,on:uOn,tex:uTex,wa:uWA,wb:uWB,nw:uNW,G,SW,CELL,MPU,WU,drops:[],cur:{x:0,z:0,h:0,u:0,w:0,ok:false},stats:{steps:0,rows:0}});
   // a water: {name, box:[x0,z0,x1,z1], has(x,z), bed(x,z) and rest(x,z) its bed and still surface (world heights), swell (the sea's waves come in at the window's edge), solid(x,z) (posts)}
   FLOW.add=w=>{ waters.push(w); x0=1e9; return w; };
+  // how deep the still water is at x,z (world units; 0 on land): the deepest shown water there
+  FLOW.depth=(x,z)=>{ let d=0; for(const w of waters)if((!w.shown||w.shown())&&w.has(x,z))d=Math.max(d,w.rest(x,z)-w.bed(x,z)); return d; };
   FLOW.drop=(x,z,r,s)=>{ if(FLOW.drops.length<8)FLOW.drops.push([x,z,r,s*MPU]); };
   const V='varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position.xy*2.,0.,1.); }';
   const U={uH:{value:null},uF:{value:null},uBed:{value:bedTex},uTx:{value:1/G},uDt:{value:1/60},uL:{value:L},uCap:{value:CAP},uShift:{value:new THREE.Vector2()},uE:{value:EDGE/G},
@@ -46,6 +48,7 @@ import {SYS, TILE} from './006-map-pre.js';
   // the bed and rest surface under every cell, from the waters' own shapes; a cell no water claims is a wall
   const fill=(ws,j0,j1,i0,i1)=>{ '@later'; for(let j=j0;j<j1;j++){ const z=z0+(j+.5)*CELL; for(let i=i0;i<i1;i++){ const x=x0+(i+.5)*CELL, o=(j*G+i)*4; let w=null; for(const q of ws)if(q.has(x,z)){ w=q; break; }
         if(!w||w.solid&&w.solid(x,z)){ bed[o]=1e3; bed[o+1]=0; bed[o+2]=0; bed[o+3]=0; continue; } bed[o]=Math.max(w.bed(x,z),w.rest(x,z)-DMAX*WU)*MPU; bed[o+1]=w.rest(x,z)*MPU; bed[o+2]=w.swell?1:0; bed[o+3]=1; } } };
+  let reading=false;
   FLOW.step=(renderer,dt,pos)=>{ FLOW.under=false; if(SHARED.LVL!=='up'||!waters.length){ uOn.value=0; live=false; return; }
     const ws=near(pos.x,pos.z); if(!ws.length){ uOn.value=0; live=false; return; } init(renderer);
     const nx=Math.round((pos.x-SW/2)/SNAP)*SNAP, nz=Math.round((pos.z-SW/2)/SNAP)*SNAP;
@@ -63,8 +66,12 @@ import {SYS, TILE} from './006-map-pre.js';
       U.uF.value=RT.F[0].texture; draw(renderer,HGT,RT.H[1]); RT.H.reverse(); FLOW.stats.steps++; }
     U.uH.value=RT.H[0].texture; U.uF.value=RT.F[0].texture; draw(renderer,OUT,RT.O); renderer.setRenderTarget(null); uOn.value=1;
     // the water where you are, for swimming: its rise and its flow (one pixel read back, only while you are in water)
-    const c=FLOW.cur; c.ok=false; if(FLOW.need){ const i=Math.floor((pos.x-x0)/CELL), j=Math.floor((pos.z-z0)/CELL); if(i>=0&&j>=0&&i<G&&j<G){ const b=ty===THREE.FloatType?new Float32Array(4):new Uint16Array(4);
-        renderer.readRenderTargetPixels(RT.O,i,j,1,1,b); const v=ty===THREE.FloatType?b:Array.from(b,THREE.DataUtils.fromHalfFloat); c.h=v[0]; c.u=v[1]*WU; c.w=v[2]*WU; c.d=v[3]; c.ok=true; } } FLOW.need=false; };
+    // asked without waiting for the graphics card (a wait here stalled the whole frame): swimming uses the latest answer, a frame or two old, for up to half a second
+    const c=FLOW.cur, now=performance.now(); if(c.ok&&now-c.t>500)c.ok=false;
+    if(FLOW.need&&!reading){ const i=Math.floor((pos.x-x0)/CELL), j=Math.floor((pos.z-z0)/CELL); if(i>=0&&j>=0&&i<G&&j<G){ const b=ty===THREE.FloatType?new Float32Array(4):new Uint16Array(4); reading=true;
+        const got=()=>{ const v=ty===THREE.FloatType?b:Array.from(b,THREE.DataUtils.fromHalfFloat); c.h=v[0]; c.u=v[1]*WU; c.w=v[2]*WU; c.d=v[3]; c.ok=true; c.t=performance.now(); };
+        if(renderer.readRenderTargetPixelsAsync)renderer.readRenderTargetPixelsAsync(RT.O,i,j,1,1,b).then(got,()=>{}).finally(()=>{ reading=false; });
+        else { renderer.readRenderTargetPixels(RT.O,i,j,1,1,b); got(); reading=false; } } } FLOW.need=false; };
   // for the checks: the whole window read back once (the largest rise and flow, the wet cells)
   FLOW.peek=renderer=>{ '@later'; if(!RT)return null; const n=G*G*4, b=ty===THREE.FloatType?new Float32Array(n):new Uint16Array(n); renderer.readRenderTargetPixels(RT.O,0,0,G,G,b); const v=ty===THREE.FloatType?b:Float32Array.from(b,THREE.DataUtils.fromHalfFloat);
     let rise=0, sp=0, wet=0, at=null; for(let k=0;k<G*G;k++){ if(v[k*4+3]<1e-3)continue; wet++; rise=Math.max(rise,Math.abs(v[k*4])*MPU); const s=Math.hypot(v[k*4+1],v[k*4+2]); if(s>sp){ sp=s; at=[x0+(k%G+.5)*CELL,z0+((k/G|0)+.5)*CELL]; } }

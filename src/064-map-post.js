@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {LEVELS, LITE, NPCS, PARK, pos, ROOMS, UI, VIS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
-import {CASTLE, FIX, grab, lamps, LAY, MAPG, MAPSTAIR, MODS, RING, SECTIONS, SEEN, SHL, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
+import {CASTLE, FIX, grab, lamps, LAY, LEVEL, MAPG, MAPSTAIR, MODS, RING, SECTIONS, SEEN, SHL, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {GRASS} from './014a-grass.js';
 import {FOUNT} from './060a-fount.js';
 await grab('stairs',async()=>SHARED.METRO.exit());
@@ -23,13 +23,13 @@ SHARED.groundY=(x,z)=>{ for(const g of ROOMS.grounds)if(x>g.x0&&x<g.x1&&z>g.z0&&
   if(G)g('ghost',SHARED.BOD.X(G.x0),SHARED.BOD.Z(G.y0),SHARED.BOD.X(G.x1),SHARED.BOD.Z(G.y1)); for(const R of STORE.rooms)g(R.id,R.x0,R.z0,R.x1,R.z1); }
 const HEMI=new THREE.HemisphereLight(0x55607a,0x14110e,.3); scene.add(HEMI);
 Object.assign(LITE,{N:8,pool:[],recs:[],sel:[],t:0,f:0,at:null,V:new THREE.Vector3()}); window.LITE=LITE;
-for(let i=0;i<LITE.N;i++){ const L=new THREE.PointLight(0xffffff,0,8*TILE,1.6); L.userData.pool=true; if(!i){ L.castShadow=true; L.shadow.mapSize.set(1024,1024); L.shadow.camera.near=.1; L.shadow.camera.far=14; L.shadow.bias=-.002; L.shadow.normalBias=.06; L.shadow.autoUpdate=false; } scene.add(L); LITE.pool.push(L); }
-{ let t=0; SYS.add('life',dt=>{ if((t-=dt)>0)return; t=.2; if(LITE.pool[0].intensity>0)LITE.pool[0].shadow.needsUpdate=true; },'064-lampshadow'); }   // a dark lamp's shadow is never seen: not redrawn
+for(let i=0;i<LITE.N;i++){ const L=new THREE.PointLight(0xffffff,0,8*TILE,1.6); L.userData.pool=true; if(!i){ L.castShadow=false; L.shadow.mapSize.set(1024,1024); L.shadow.camera.near=.1; L.shadow.camera.far=14; L.shadow.bias=-.002; L.shadow.normalBias=.06; L.shadow.autoUpdate=false; } scene.add(L); LITE.pool.push(L); }
+{ let t=0; SYS.add('life',dt=>{ if((t-=dt)>0)return; t=.2; if(LITE.pool[0].castShadow&&LITE.pool[0].intensity>0)LITE.pool[0].shadow.needsUpdate=true; },'064-lampshadow'); }   // a dark lamp's shadow is never seen: not redrawn
 SHL.push(LITE.pool[0],LITE.pool[1]);
 const LITE_init0=()=>{ const top=o=>{ while(o.parent&&o.parent!==scene)o=o.parent; return o; };
   scene.traverse(o=>{ if(o.isPointLight&&!o.userData.pool)LITE.recs.push(o); });
   for(const L of LITE.recs){ const g=top(L); L.userData.grp=g===L?null:g; L.castShadow=false; L.removeFromParent(); } };
-LITE.init=(...a)=>{ const r=LITE_init0(...a); SYS.run('liteInit'); return r; };
+LITE.init=(...a)=>{ const r=LITE_init0(...a); LITE.ready=true; SYS.run('liteInit'); return r; };
 LITE.dim=p=>{ const c=SHARED.cam; if(!c||!UI.persp)return 1; const t=Math.min(1,Math.max(0,(c.position.distanceTo(p)/TILE-10)/30)); return 1-.85*t*t*(3-2*t); };   // far lamps light the ground less
 LITE.tick=(dt,x,y,z)=>{ const P=LITE.pool;
   LITE.t=Math.min(LITE.t-dt,.25); if(!(LITE.t>0)){ LITE.t=.25; const R=typeof ROOMS!=='undefined'?ROOMS:null, RB=R&&R.boxes?R.boxes():[], cur=R?R.cur:null, e=.5*TILE;
@@ -91,19 +91,21 @@ window.MAPDBG=()=>({LVL:SHARED.LVL,cut:MODS.stairCut.constant,vis:Object.fromEnt
   const XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS, M=SHARED.BOD.MAP, tt=v=>v/TILE, R=320, cx=tt(XS((M.x0+M.x1)/2)), cz=tt(ZS(M.y0));
   const LO=LAY.o('land'), LE=LAY.e('land'), LR=MODS.landR={x0:cx-R+LO.x+LE[0],z0:cz-R+LO.y+LE[1],x1:cx+R+LO.x+LE[2],z1:cz+R+LO.y+LE[3]};
   const LZ0=Math.max(LR.z0,tt(Math.max(ZS(RING.river.y0),ZS(RING.river.y1))));   // the land ends at the Hudson's near bank: past it only water, out to the far skyline
-  const sh=new THREE.Shape([[LR.x0,-LZ0],[LR.x1,-LZ0],[LR.x1,-LR.z1],[LR.x0,-LR.z1]].map(p=>new THREE.Vector2(...p)));
-  const hole=(x0,z0,x1,z1)=>x0>LR.x0&&x1<LR.x1&&z0>LZ0&&z1<LR.z1&&sh.holes.push(new THREE.Path([[x0,-z0],[x0,-z1],[x1,-z1],[x1,-z0]].map(p=>new THREE.Vector2(...p))));
-  const clip=(Q,e)=>{ const m=.5, inside=([x,z])=>e===0?x>LR.x0+m:e===1?x<LR.x1-m:e===2?z>LZ0+m:z<LR.z1-m, cross=(a,b)=>{ const k=e<2?(e===0?LR.x0+m:LR.x1-m):(e===2?LZ0+m:LR.z1-m), t=e<2?(k-a[0])/(b[0]-a[0]):(k-a[1])/(b[1]-a[1]); return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]; };
+  const EL=(LEVEL.edge&&LEVEL.edge.lines)||[], EX=EL.length?Math.max(...EL.flatMap(l=>[l[0],l[2]])):null, EY=EL.length?Math.max(...EL.flatMap(l=>[l[1],l[3]])):null, ES=EL.find(l=>l[1]===l[3]&&l[1]<EY), ZT=EL.length?Math.min(LR.z1,tt(ZS(EY))):LR.z1, XE=EL.length?Math.min(LR.x1,tt(XS(EX))):LR.x1, ZA=ES?Math.max(LZ0,tt(ZS(ES[1]))):ZT, notch=(x,z)=>x>XE+.01&&z>ZA+.01;   // the land stops at the section's north and east lines past the park (owner, 8 Nov 2026: "fix glitchse in water"): the land past them is 069a's, the big lake open in it
+  const sh=new THREE.Shape([[LR.x0,-LZ0],[LR.x1,-LZ0],[LR.x1,-ZA],[XE,-ZA],[XE,-ZT],[LR.x0,-ZT]].map(p=>new THREE.Vector2(...p)));
+  const hole=(x0,z0,x1,z1)=>x0>LR.x0&&x1<LR.x1&&z0>LZ0&&z1<ZT&&!notch(x1,z1)&&sh.holes.push(new THREE.Path([[x0,-z0],[x0,-z1],[x1,-z1],[x1,-z0]].map(p=>new THREE.Vector2(...p))));
+  const clip=(Q,e)=>{ const m=.5, inside=([x,z])=>e===0?x>LR.x0+m:e===1?x<LR.x1-m:e===2?z>LZ0+m:z<ZT-m, cross=(a,b)=>{ const k=e<2?(e===0?LR.x0+m:LR.x1-m):(e===2?LZ0+m:ZT-m), t=e<2?(k-a[0])/(b[0]-a[0]):(k-a[1])/(b[1]-a[1]); return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]; };
     const out=[]; for(let i=0;i<Q.length;i++){ const a=Q[i], b=Q[(i+1)%Q.length], ia=inside(a), ib=inside(b); if(ia&&ib)out.push(b); else if(ia&&!ib)out.push(cross(a,b)); else if(!ia&&ib){ out.push(cross(a,b)); out.push(b); } } return out; };
-  for(const P of SHARED.BOD.roadPolys){ let Q=P.map(([x,y])=>[tt(XS(x)),tt(ZS(y))]); for(let e=0;e<4&&Q.length;e++)Q=clip(Q,e); if(Q.length>=3)sh.holes.push(new THREE.Path(Q.map(([x,z])=>new THREE.Vector2(x,-z)))); }
+  for(const P of SHARED.BOD.roadPolys){ let Q=P.map(([x,y])=>[tt(XS(x)),tt(ZS(y))]); for(let e=0;e<4&&Q.length;e++)Q=clip(Q,e); if(Q.length>=3&&!Q.some(([x,z])=>notch(x,z)))sh.holes.push(new THREE.Path(Q.map(([x,z])=>new THREE.Vector2(x,-z)))); }
   for(const r of SHARED.BOD.ramps.RP){ const a=r.e+r.dir*.01, b=r.e+r.dir*SHARED.BOD.ramps.D, P=r.ax==='x'?[r.u0,Math.min(a,b),r.u1,Math.max(a,b)]:[Math.min(a,b),r.u0,Math.max(a,b),r.u1]; hole(tt(XS(P[0])),tt(ZS(P[1])),tt(XS(P[2])),tt(ZS(P[3]))); }
   hole(tt(XS(MAPSTAIR.x0)),tt(ZS(MAPSTAIR.y0)),tt(XS(MAPSTAIR.x1)),tt(ZS(MAPSTAIR.y1)));
   for(const S of RING.stairs)hole(tt(XS(S.x0)),tt(ZS(S.y0)),tt(XS(S.x1)),tt(ZS(S.y1)));
   { const S=CASTLE.stair; hole(tt(XS(S.x0)),tt(ZS(S.y0)),tt(XS(S.x1)),tt(ZS(S.y1))); }
   const mk=()=>{ const geo=new THREE.ShapeGeometry(sh); geo.rotateX(-Math.PI/2); geo.scale(TILE,1,TILE); geo.translate(0,-.5*ZU,0); return geo; }, geo=mk(); let geoH=null;
-  MODS.landHoles=on=>{ if(on&&!geoH&&window.PARK&&PARK.brook&&FOUNT.S){ for(const H of PARK.wetHole())sh.holes.push(new THREE.Path(H.map(([x,y])=>new THREE.Vector2(tt(XS(x+(PARK.ox||0))),-tt(ZS(y+(PARK.oy||0))))))); geoH=mk(); } m.geometry=on&&geoH?geoH:geo; };
-  const lm=new THREE.MeshLambertMaterial({map:t}); lm.onBeforeCompile=sh=>{ sh.uniforms.tGK={value:gt}; sh.uniforms.tKM={value:KM.m}; sh.uniforms.uKM={value:KM.v};
-    sh.fragmentShader='uniform highp sampler2DArray tGK; uniform sampler2D tKM; uniform vec4 uKM;\n'+sh.fragmentShader.replace('#include <map_fragment>',`{ highp vec2 gt=vMapUv*${K}.; highp vec2 gq=floor(gt*24.)/24.; vec2 gj=vec2(fract(sin(dot(gq,vec2(12.9898,78.233)))*43758.5453),fract(sin(dot(gq,vec2(39.3468,11.135)))*24634.6345))-.5;
+  MODS.landHoles=on=>{ if(on&&!geoH&&PARK&&PARK.brook&&FOUNT.S){ for(const H of PARK.wetHole())sh.holes.push(new THREE.Path(H.map(([x,y])=>{ let a=tt(XS(x+(PARK.ox||0))), z=Math.min(ZT-.3,tt(ZS(y+(PARK.oy||0)))); if(z>ZA)a=Math.min(a,XE-.3); return new THREE.Vector2(a,-z); }))); geoH=mk(); } m.geometry=on&&geoH?geoH:geo; };
+  const MR=LEVEL.edge&&LEVEL.edge.mirror, MB=[0,1].map(i=>{ if(!MR)return new THREE.Vector4(1e9,1e9,1e9,1e9); const a=i?MR.x[1]:MR.x[0]-MR.reach, b=i?MR.x[1]+MR.reach:MR.x[0], za=tt(ZS(MR.ground[0])), zb=tt(ZS(MR.ground[1])); return new THREE.Vector4(tt(XS(a)),Math.min(za,zb),tt(XS(b)),Math.max(za,zb)); });   // the street's mirror past its ends (161d) brings its own lawn
+  const lm=new THREE.MeshLambertMaterial({map:t}); lm.onBeforeCompile=sh=>{ sh.uniforms.tGK={value:gt}; sh.uniforms.tKM={value:KM.m}; sh.uniforms.uKM={value:KM.v}; sh.uniforms.uMB={value:MB};
+    sh.fragmentShader='uniform highp sampler2DArray tGK; uniform sampler2D tKM; uniform vec4 uKM, uMB[2];\n'+sh.fragmentShader.replace('#include <map_fragment>',`{ highp vec2 gt=vMapUv*${K}.; for(int i=0;i<2;i++)if(gt.x>uMB[i].x&&gt.x<uMB[i].z&&-gt.y>uMB[i].y&&-gt.y<uMB[i].w)discard; highp vec2 gq=floor(gt*24.)/24.; vec2 gj=vec2(fract(sin(dot(gq,vec2(12.9898,78.233)))*43758.5453),fract(sin(dot(gq,vec2(39.3468,11.135)))*24634.6345))-.5;
       float gk=floor(texture2D(tKM,(vec2(gt.x,-gt.y)+gj*1.1-uKM.xy)*uKM.zw).r*255.+.5); diffuseColor*=texture(tGK,vec3(vMapUv,gk)); }`); };
   lm.customProgramCacheKey=()=>'grasskinds';
   const m=new THREE.Mesh(geo,lm); m.receiveShadow=true; MAPG.bodega.add(m); MODS.land=m; }

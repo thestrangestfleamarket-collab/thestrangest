@@ -1,19 +1,19 @@
 // THE OTHER PLAYERS: ONLINE, everyone on your block (one server a section, worker/door.js Block): their bodies and name tags, who's online, and the chat.
 import {SHARED, THREE} from './003-shx.js';
 import {BUGS, EQUIP, keys, LEVELS, LOOKS, MOTION, ONLINE, pos, ROOMS, st, TEXT, UI, VAULT, VIT, VR, W3} from './003b-systems.js';
+import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {ASTEP, MODS, QS, SECTIONS, SYS, TILE} from './006-map-pre.js';
 import {GARB} from './072b-garb.js';
 import {qMat, ragPoseOf, TL} from './073-main-12.js';
-import {DESIGN} from './102b-designer.js';
 import {LABELS} from './104-labels.js';
 import {figureMesh, musBody, MUSGEO, musScale} from './110-musician.js';
 import {BODIES} from './111a-bodies.js';
 Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{},puts:{}}); window.ONLINE=ONLINE;
 // things players set down (hives, crab pots...): each kind registers {set(id,name,list), clear(), share()}; the section sends them all on joining, then each change
 ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.puts[k]; H.clear(); for(const r of m.all)if(r&&r.k===k)H.set(r.id,r.name,r.list); H.share(); } return; } const H=ONLINE.puts[m.k]; if(H)H.set(m.id,m.name,m.list); };
-{ const R=RIG, PI4=Math.PI/4, LAG=160, SEND=1/6, FAR=60*TILE, MAXN=20, FADE_S=15000;
+{ const R=RIG, PI4=Math.PI/4, LAG=160, SEND=1/6, FAR=1e9, MAXN=20, FADE_S=15000;
   // your words over heads: FONTS and COLS to pick from, SIZES in canvas px; SP is your own style (sent with each say), ONLINE.sayFor how long anyone's words stay (your setting)
   const FONTS=[['Silkscreen, monospace','PIXEL'],["'Press Start 2P', monospace",'ARCADE'],["'Share Tech Mono', monospace",'MONO'],['sans-serif','PLAIN'],['serif','SERIF'],['cursive','SCRIPT']], COLS=['#f4f2ea','#ffd27a','#7dffa8','#8fd0ff','#ff8ad8','#ff8a1f','#ff5a5a','#c8b0ff'], SIZES=[22,28,36];
   const SP={f:0,c:COLS[0],s:1}; try{ Object.assign(SP,style(JSON.parse(SAVE.get('speech')||'{}'))); }catch(e){}
@@ -24,7 +24,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
   let sock=null, last=null, acc=0, keep=0, meAcc=1, meSent='', EL=null;
 
   const roomKey=()=>{ if(MODS.apts&&MODS.apts.inReal)return 'apt:'+(MODS.apts.host||ONLINE.me||MODS.apts.num||''); const c=ROOMS.cur; return c&&c.off?c.off:''; };   // your apartment is off the map (not a ROOMS room); scope players to it by its number
-  const lookKey=()=>{ '@later'; const b=BODIES.pick(), L=LOOKS.L||{}, body=BODIES.by[b]; return b!=='walker'&&body?'b:'+b+(body.look?':'+body.look():''):(wn=>'w'+(L.bare?1:0)+(wn?'.'+DESIGN.code()+'.'+LOOKS.code()+'.'+wn:(DESIGN.code()||LOOKS.code()!=='M00'?'.'+DESIGN.code():'')+(LOOKS.code()!=='M00'?'.'+LOOKS.code():'')))(EQUIP.code?EQUIP.code():''); };   // the fourth part is what you wear (EQUIP.code): it dyes their copy of you and puts your gear on it   // (a body with a look of its own, your avatar, sends it: b:avatar:<code>)
+  const lookKey=()=>{ '@later'; const b=BODIES.pick(), L=LOOKS.L||{}, body=BODIES.by[b]; return b!=='walker'&&body?'b:'+b+(body.look?':'+body.look():''):(wn=>'w'+(L.bare?1:0)+(wn?'..'+LOOKS.code()+'.'+wn:(LOOKS.code()!=='M00'?'.':'')+(LOOKS.code()!=='M00'?'.'+LOOKS.code():'')))(EQUIP.code?EQUIP.code():''); };   // the fourth part is what you wear (EQUIP.code): it dyes their copy of you and puts your gear on it   // (a body with a look of its own, your avatar, sends it: b:avatar:<code>)
   const myName=()=>((LOOKS.L&&LOOKS.L.name)||'').trim()||('TENANT'+(MODS.apts&&MODS.apts.num?' '+MODS.apts.num:'')); ONLINE.myName=myName;
   const send=m=>{ if(sock&&sock.readyState===1)sock.send(JSON.stringify(m)); }; ONLINE.send=m=>send(m);
   /* ---------- other players are solid: you are pushed out of them as out of a character ---------- */
@@ -32,13 +32,13 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
   SYS.add('act',(k,on)=>ONLINE.send(k==='flinch'?{t:'act',m:k}:k&&typeof k==='object'?{t:'act',...k}:{t:'act',k,on:on?1:0}),'111d-online');
 
   /* ---------- where someone is: their last moves, drawn a little behind so the steps between them are smooth ---------- */
-  const place=(o,now)=>{ '@later'; const s=o.s, n=s.length-1; if(n<0)return null; const t=now-LAG; if(t<=s[0].t)return s[0]; if(t>=s[n].t)return s[n];
+  const place=(o,now)=>{ '@later'; const s=o.s, n=s.length-1; if(n<0)return null; const t=now-Math.max(LAG,(o.gap||0)*1.4); if(t<=s[0].t)return s[0]; if(t>=s[n].t)return s[n];
     for(let i=n;i>0;i--)if(s[i-1].t<=t){ const a=s[i-1], b=s[i]; if(Math.hypot(b.x-a.x,b.z-a.z)>4*TILE||a.lv!==b.lv||a.rm!==b.rm)return b;
       const k=(t-a.t)/(b.t-a.t||1), dh=Math.atan2(Math.sin(b.hd-a.hd),Math.cos(b.hd-a.hd)); return {x:a.x+(b.x-a.x)*k,z:a.z+(b.z-a.z)*k,y:a.y+(b.y-a.y)*k,hd:a.hd+dh*k,lv:b.lv,rm:b.rm}; }
     return s[n]; };
   ONLINE.at=(o,now)=>{ const p=place(o,now)||{x:0,z:0}; return [p.x/TL,-p.z/TL]; }; ONLINE.V=V8;
 
-  const push=(o,a)=>{ o.s.push({t:performance.now(),x:+a[0]||0,z:+a[1]||0,y:+a[2]||0,hd:+a[3]||0,lv:a[4]||'up',rm:a[5]||''}); if(o.s.length>8)o.s.shift(); };
+  const push=(o,a)=>{ const t0=performance.now(), L=o.s[o.s.length-1]; if(L)o.gap=(o.gap||SEND*1000)*.8+Math.min(3000,t0-L.t)*.2; o.s.push({t:t0,x:+a[0]||0,z:+a[1]||0,y:+a[2]||0,hd:+a[3]||0,lv:a[4]||'up',rm:a[5]||''}); if(o.s.length>8)o.s.shift(); };
   const up=(id,p)=>{ '@later'; let o=ONLINE.others.get(id); if(!o){ o={id,name:'',look:'',s:[],S:R.create(),fig:null,key:'',say:'',sayT:0,tag:null,tagS:'',d:0}; ONLINE.others.set(id,o); }
     if(p){ if(p.name!=null)o.name=String(p.name); if(p.look!=null)o.look=String(p.look); if(p.dead!=null)o.dead=!!p.dead; if(p.hp!=null)o.hp=Math.max(0,Math.min(1,+p.hp||0)); if(p.x&&typeof p.x==='object')o.x={...p.x}; if(p.at)push(o,p.at); } return o; };
   const drop=id=>{ const o=ONLINE.others.get(id); if(o){ unfig(o); ONLINE.others.delete(id); } };
@@ -58,7 +58,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
     else if(m.t==='rag'&&m.id&&Array.isArray(m.b)){ const o=ONLINE.others.get(m.id); if(!o||!o.rag)return; const r=o.rag; r.b=m.b.map((v,i)=>({name:r.n[i],x:[+v[0],+v[1],+v[2]],m3:qMat([+v[3],+v[4],+v[5],+v[6]]),jl:r.jl[i]||{}})); r.o=[+m.o[0],+m.o[1]]; r.hd=+m.hd||0; r.t=performance.now(); return; }
     else if(m.t==='ragoff'&&m.id){ const o=ONLINE.others.get(m.id); if(o){ o.rag=null; o.B=null; } return; }
     else if(ONLINE.hear[m.t]){ ONLINE.hear[m.t](m); return; }
-    else if(m.t==='say'&&m.text){ const o=m.id&&ONLINE.others.get(m.id); if(o){ o.say=String(m.text); o.sayT=performance.now(); o.st=style(m.st); } line(m.name||(o&&o.name)||'TENANT',m.text); }
+    else if(m.t==='say'&&m.text){ const o=m.id&&ONLINE.others.get(m.id); if(o){ o.say=String(m.text); o.sayT=performance.now(); o.st=style(m.st); } line(m.name||(o&&o.name)||'TENANT',m.text); if(m.id)SYS.run('said',String(m.id),String(m.text)); }
     list(); };
 
   /* ---------- their bodies: one built body per look (the Walker in clothes, shod or barefoot, or a body of its own), shared by everyone wearing it ---------- */
@@ -69,15 +69,15 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
   const built=k=>{ '@later'; let b=BUILT.get(k); if(b)return b;
     if(k.startsWith('b:')){ const [key,c]=k.slice(2).split(':'), base=BODIES.by[key], body=base&&c&&base.variant?base.variant(c):base; if(!body)return base&&base.failed&&!base.failed(c)?null:built('w00'); b={body};   // (a body still coming: none yet, never the Walker first; one that failed: the Walker)
     BUILT.set(k,b); return b; }
-    const bare=k[1]==='1', MI=n=>R.MATS.indexOf(n), SK=MI('skin'), PA=MI('pants'), ST=LOOKS.decode(k.split('.')[2]||'M00'), E=LOOKS.shape(ST.form), PCS=musBody(Object.assign({},ST,{worn:GARB.worn()})).PCS, D=DESIGN.decode(k.split('.')[1]||'');
+    const bare=k[1]==='1', MI=n=>R.MATS.indexOf(n), SK=MI('skin'), PA=MI('pants'), ST=LOOKS.decode(k.split('.')[2]||'M00'), E=LOOKS.shape(ST.form), PCS=musBody(Object.assign({},ST,{worn:GARB.worn()})).PCS;
     const by=EQUIP.decode?EQUIP.decode(k.split('.')[3]):{}, dc=EQUIP.colours?EQUIP.colours(by):{}, SH=MI('shirt'), SHX=dc.shirt?dyeMat(dc.shirt):-1, PAX=dc.pants?dyeMat(dc.pants):-1;
-    for(const p of PCS){ if(p.e!=null)p.E=DESIGN.mix(E[p.e]||null,p.e,D);
+    for(const p of PCS){ if(p.e!=null)p.E=E[p.e]||null;
       if(bare&&/^shoe/.test(p.n))p.recol=()=>SK;
       if(SHX>=0||PAX>=0){ const r0=p.recol; p.recol=m=>{ const r=r0?r0(m):undefined, q=r??m; return q===SH&&SHX>=0?SHX:q===PA&&PAX>=0?PAX:r; }; } }
     for(const P of PCS)if(!P.box&&!MUSGEO.has(P.share)){ const fine=W3.fine(P); W3.warm(P,P.step||(fine?.5:1),fine,null); }
-    b={PCS,bh:D.h,by,garb:GARB.spec(bare,dc,ST.form),garbE:GARB.of(ST.form,i=>DESIGN.mix(E[i]||null,i,D))}; BUILT.set(k,b); return b; };
+    b={PCS,bh:1,by,garb:GARB.spec(bare,dc,ST.form),garbE:GARB.of(ST.form,i=>E[i]||null)}; BUILT.set(k,b); return b; };
   const fig=o=>{ '@later'; unfig(o); const k=o.look||'w00', b=built(k); o.key=k; if(!b)return; const g=new THREE.Group();
-    if(b.body){ const M=BODIES.mesh(b.body); g.add(M.me); o.fig={g,me:M.me,body:b.body,PM:M.PM}; }
+    if(b.body){ const M=BODIES.mesh(b.body); g.add(M.me); o.fig={g,me:M.me,body:b.body,PM:M.PM}; if(M.PM.pl)M.PM.pl.value=1; }
     else{ const FM=figureMesh(b.PCS,'online'); g.add(FM.me); o.fig={g,me:FM.me,FM,PCS:b.PCS,bh:b.bh}; }
     const hb=new THREE.Mesh(new THREE.BoxGeometry(22,58,24),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(0,29,2); g.add(hb);
     o.fig.th={player:o,name:o.name||'TENANT',obj:hb,reach:1.6,tall:1.9,act:()=>{ if(ONLINE.use)ONLINE.use(o); }}; UI.thing(o.fig.th);
@@ -112,10 +112,11 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
     for(const o of ONLINE.others.values()){ const p=o.p=place(o,now), d=p?Math.hypot(p.x-pos.x,p.z-pos.z):1e9; o.why=o.x&&o.x.invis?'unseen':!p?'no position yet':p.rm!==rk?'in another room':p.lv!==lv?'on another level':d>=FAR?'far away':'near you'; if(o.why==='near you'){ o.dd=d; C.push(o); } else hide(o); }
     C.sort((a,b)=>a.dd-b.dd); for(const o of C.slice(MAXN))hide(o);
     for(const o of C.slice(0,MAXN)){ try{ const rg=o.rag&&o.rag.b&&now-o.rag.t<3000?o.rag:null, p=o.p=rg?{...o.p,x:rg.o[0]*TL,z:-rg.o[1]*TL,hd:rg.hd}:o.p; if(o.key!==(o.look||'w00'))fig(o); const F=o.fig; if(!F)continue; const g=F.g;
-      const sp=o.q?Math.hypot(p.x-o.q.x,p.z-o.q.z)/Math.max(dt,1e-3):0; o.q={x:p.x,z:p.z}; o.S.target=sp>.4*TILE?1:0; R.step(o.S,dt);
-      const M=F.me.material, gh=!!o.dead, fl=o.flashT>now; if(F.ghost!==gh){ F.ghost=gh; M.transparent=gh; M.opacity=gh?.35:1; M.depthWrite=!gh; M.color.set(gh?0xcfe0ff:0xffffff); M.needsUpdate=true; F.me.castShadow=!gh; }
+      const sp=o.q?Math.hypot(p.x-o.q.x,p.z-o.q.z)/Math.max(dt,1e-3):0; o.q={x:p.x,z:p.z}; o.S.target=sp>.4*TILE?1:0; R.step(o.S,o.frozen>0?0:dt);
+      const M=F.me.material, gh=!!o.dead, op=gh?.35:o.x&&o.x.twin?.5:1, fl=o.flashT>now; if(F.ghost!==gh||F.op!==op){ F.ghost=gh; F.op=op; M.transparent=op<1; M.opacity=op; M.depthWrite=op===1; M.color.set(gh?0xcfe0ff:0xffffff); M.needsUpdate=true; F.me.castShadow=op===1; }   // a ghost, or someone's AI double (162gb) half see-through
       if(F.fl!==fl&&M.emissive){ F.fl=fl; M.emissive.setScalar(fl?.55:0); }
-      g.visible=true; g.position.set(p.x,p.y,p.z); g.rotation.y=p.hd; if(F.body)musScale(g,1); else musScale(g,F.bh||1); o.d=((Math.round(p.hd/PI4)%8)+8)%8;
+      g.visible=true; g.position.set(p.x,p.y,p.z); g.rotation.y=p.hd; if(F.body)musScale(g,1); else musScale(g,F.bh||1); const sz=o.x&&+o.x.sz; if(sz>0)g.scale.multiplyScalar(sz); o.S.hi=o.x&&+o.x.hi||1; o.d=((Math.round(p.hd/PI4)%8)+8)%8;
+      if(F.PM){ const v=!rg&&o.vr&&now-o.vr.t<3000?o.vr:null; if(v||F.PM.vr){ o.wantPose=true; if(!v&&F.PM.hands)F.PM.hands.fg=null; F.PM.vr=v; } }   // (a headset player: their own head, arms and fingers every frame, 162cb)
       if(rg||!o.B||o.wantPose||ASTEP.gate(o,dt)){ o.wantPose=false; R.farOnly(false); const B=o.B=rg?ragPoseOf(rg.b,{x:rg.o[0],y:rg.o[1]},rg.hd):R.pose(o.S,true); if(F.body){ BODIES.pose(B,F.PM,F.body,rg?null:o.S); const W=o.S.water; if(!rg&&o.S._pfHead&&W&&W.in&&W.level!=null&&F.body.binv&&BODIES.headUp)BODIES.headUp(F.PM,F.body,o.S,F.g,F.me); } else F.PCS.forEach((pc,i)=>F.FM.set(i,R.frameOf(pc.on||pc.n,B))); }
       if(!F.body){ const b=BUILT.get(o.key)||{}, H=F.wornH||(F.wornH={}); GARB.draw(g,o.B,gh?null:b.garb,H,F.me,b.garbE); if(EQUIP.draw&&b.by&&Object.keys(b.by).length)EQUIP.draw(g,o.B,b.by,H); }
       if(VR.on){ if(o.lab)o.lab.show(false); tag(o); o.tag.visible=true; o.tag.position.set(p.x,p.y+2.65*TILE,p.z); fit(o.tag); } else { if(o.tag)o.tag.visible=false; lab(o); o.lab.at(p.x,p.y+2.15*TILE,p.z); } }catch(e){ hide(o); if(!o.err){ o.err=1; console.warn('ONLINE: could not draw '+(o.name||o.id),e); } } } };
@@ -143,6 +144,9 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
   const shut=()=>{ if(!EL)return; const I=EL.querySelector('#onlin'); I.value=''; I.hidden=true; EL.classList.remove('open'); I.blur(); };
   ONLINE.open=()=>{ if(!EL||EL.hidden)return; keys.clear(); const I=EL.querySelector('#onlin'); EL.classList.add('open'); I.hidden=false; I.focus(); };
   const line=(name,text)=>{ '@later'; ui(); const d=document.createElement('div'); d.dataset.t=String(performance.now()); d.innerHTML='<b>'+esc(name)+'</b> '+esc(text); const G=EL.querySelector('#onllog'); G.appendChild(d); while(G.children.length>30)G.firstChild.remove(); if(UI.log)UI.log(text,null,name); ONLINE.log.push([name,text]); if(ONLINE.log.length>30)ONLINE.log.shift(); };
+  // a message to one player near you (owner, 9 Nov 2026, the paper doll's MESSAGE): only they see it, in their chat
+  ONLINE.pm=(o,text)=>{ if(!(ONLINE.on&&ONLINE.send)){ SAY('MESSAGES NEED THE BLOCK: YOU ARE NOT ONLINE.','#c8a090'); return false; } ONLINE.send({t:'pm',to:o.id,text}); line('TO '+(o.name||'TENANT')+':',text); return true; };
+  ONLINE.hear.pm=m=>{ if(m.op==='gone')return line('','THEY ARE NOT HERE ANY MORE.'); line('FROM '+(m.name||'A PLAYER')+':',String(m.text||'')); };
   let BN=null; const banner=(from,text)=>{ '@later'; if(!BN){ BN=document.createElement('div'); BN.id='onltell'; BN.setAttribute('role','status'); BN.style.cssText='position:fixed;left:50%;top:14%;transform:translateX(-50%);max-width:min(60ch,90vw);padding:10px 16px;background:#0b0d13f0;border:2px solid #ffd27a;color:#f4f2ea;font:12px/1.6 Silkscreen,monospace;letter-spacing:1px;text-align:center;z-index:41;pointer-events:none;white-space:pre-wrap'; document.body.appendChild(BN); }
     BN.innerHTML='<div style="color:#ffd27a">'+esc(from)+'</div>'+esc(text); BN.hidden=false; clearTimeout(BN.t); BN.t=setTimeout(()=>{ BN.hidden=true; },12000); };
   const list=()=>{ '@later'; if(!EL)return; const all=[...ONLINE.others.values()], who=EL.querySelector('#onlwho'), L=EL.querySelector('#onllist');
@@ -162,7 +166,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
   addEventListener('pageshow',e=>{ if(e.persisted&&sock&&sock.reconnect)sock.reconnect(); });
   ONLINE.tick=dt=>{ const now=performance.now();
     if(ONLINE.on){ acc+=dt; meAcc+=dt;
-      if(meAcc>1){ meAcc=0; const n=myName(), k=lookKey(), dead=VIT.dead?1:0, hp=Math.round(VIT.hp*20)/20, x={}; for(const f in ONLINE.mine){ try{ const v=ONLINE.mine[f](); if(v!=null)x[f]=v; }catch(e){} } const s=n+'|'+k+'|'+dead+'|'+hp+'|'+JSON.stringify(x); if(s!==meSent){ meSent=s; send({t:'me',name:n,look:k,dead,hp,x}); } }
+      if(meAcc>1){ meAcc=0; const n=myName(), k=(ONLINE.lookAs&&ONLINE.lookAs())||lookKey(), dead=VIT.dead?1:0, hp=Math.round(VIT.hp*20)/20, x={}; for(const f in ONLINE.mine){ try{ const v=ONLINE.mine[f](); if(v!=null)x[f]=v; }catch(e){} } const s=n+'|'+k+'|'+dead+'|'+hp+'|'+JSON.stringify(x); if(s!==meSent){ meSent=s; send({t:'me',name:n,look:k,dead,hp,x}); } }
       keep+=dt; if(acc>=SEND){ acc=0; const a=[+pos.x.toFixed(2),+pos.z.toFixed(2),+SHARED.py.toFixed(2),+Math.atan2(Math.sin(SHARED.heading),Math.cos(SHARED.heading)).toFixed(2),SHARED.LVL||'up',roomKey()];
         if(!last||Math.abs(a[0]-last[0])+Math.abs(a[1]-last[1])+Math.abs(a[2]-last[2])>.01||Math.abs(a[3]-last[3])>.04||a[4]!==last[4]||a[5]!==last[5]||keep>4){ last=a; keep=0; send({t:'mv',at:a}); } } }
     if(ONLINE.others.size)draw(dt,now); fade(dt);
@@ -188,8 +192,8 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
         const pv=B.querySelector('#lsayp'); pv.style.cssText='margin-left:8px;text-shadow:1px 1px 0 #000'; pv.style.setProperty('color',SP.c,'important'); pv.style.setProperty('font-family',FONTS[SP.f][0],'important'); pv.style.setProperty('font-size',[13,17,22][SP.s]+'px','important'); };
       B.onclick=e=>{ const b=e.target.closest('button'); if(!b)return; const d=b.dataset; if(d.f!=null)SP.f=+d.f; else if(d.c)SP.c=d.c; else if(d.s!=null)SP.s=+d.s; saveSP(); show(); ME.tagS=''; }; show(); };
     you();
-    const disp=()=>{ const P=document.querySelector('#menu [data-p="display"]'); if(!P)return setTimeout(disp,1000); if(P.querySelector('#dsayfor'))return;
-      const R=document.createElement('div'); R.className='row'; R.innerHTML='<span>WORDS STAY</span><input type="range" id="dsayfor" min="2" max="30" step="1"><span id="dsayforv"></span>'; P.querySelector('.row').before(R);
+    const disp=()=>{ const P=document.querySelector('#menu [data-p="chat"]'); if(!P)return setTimeout(disp,1000); if(P.querySelector('#dsayfor'))return;
+      const R=document.createElement('div'); R.className='row'; R.innerHTML='<span>WORDS STAY</span><input type="range" id="dsayfor" min="2" max="30" step="1"><span id="dsayforv"></span>'; P.prepend(R);
       const I=R.querySelector('#dsayfor'), V=R.querySelector('#dsayforv'), show=()=>{ I.value=ONLINE.sayFor; V.textContent=ONLINE.sayFor+' S'; }; I.oninput=e=>{ ONLINE.sayFor=+e.target.value; try{ SAVE.set('sayfor',String(ONLINE.sayFor)); }catch(err){} show(); }; show(); };
     disp(); }
   SYS.onStart(go,'111d-online'); }

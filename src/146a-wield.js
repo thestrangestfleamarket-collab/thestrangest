@@ -1,18 +1,17 @@
 // THE WIELD: WIELD lets the player hold and swing a sword (any blade on the item model), a butterfly net or a bird net, or hold a tool another system registers (the fishing rod) in the passport's hand, the mouse taking the arm round in full circles: swings chain into a heavy third, cost stamina, and P held raises the blade to block.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INSPECT, ITEMS, keys, LEVELS, MOTION, ONLINE, RAG, SFX, st, VIT, VR, W3, WEEDS, WIELD} from './003b-systems.js';
+import {BIRDS, FORAGE, INSPECT, ITEMS, keys, LEVELS, MOTION, ONLINE, RAG, SFX, st, UI, VIT, VR, W3, WEEDS, WIELD} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {BF, SYS, TILE} from './006-map-pre.js';
 import {BODIES} from './111a-bodies.js';
 import {BFLY} from './143-bfly.js';
-import {BIRDS} from './144b-birds.js';
 Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); window.WIELD=WIELD; Object.defineProperty(WIELD,'sword',{get:()=>!!WIELD.on&&ITEMS.prop(WIELD.on,'grants')==='fight'}); Object.defineProperty(WIELD,'hand',{get:()=>st.hand==='L'?'L':'R'});
 { const T=TILE, V3=THREE.Vector3, NM={sword:'SWORD',sword_wood:'WOODEN SWORD',sword_steel:'STEEL SWORD',sword_ench:'ENCHANTED BLADE',net:'BUTTERFLY NET',bnet:'BIRD NET'}, say=SAY;
   const SWC={sword_wood:[0xa88a60,0x6a4a2a,0x4a3020],sword:[0xd8dce2,0x9a8450,0x4a3426],sword_steel:[0xeef2f8,0xb0b8c8,0x24242e],sword_ench:[0x9ad8ff,0xd8b060,0x3a2a5a]};
   const LIST=[...Object.keys(SWC).filter(id=>ITEMS.prop(id,'slot')==='hand'),'net','bnet']; WIELD.LIST=LIST;
   // other held tools register here: WIELD.kind(id,{name,make,aim(dt,aim,mouse) -> true when it moves the arm itself,use() -> true when a click is its own}); make() returns a group with .tipL (its tip, local) when something hangs off it
-  const KIND={}; WIELD.kinds=KIND; WIELD.tip=new THREE.Vector3(); WIELD.ray=null; WIELD.kind=(id,k)=>{ KIND[id]=k; NM[id]=k.name; if(!LIST.includes(id))LIST.push(id); }; for(const [id,k] of WIELD.pend||[])WIELD.kind(id,k);
+  const KIND={}; WIELD.kinds=KIND; WIELD.useHeld=()=>{ const k=WIELD.on&&KIND[WIELD.on]; if(!k||!k.use)return false; k.use(); return true; }; WIELD.tip=new THREE.Vector3(); WIELD.ray=null; WIELD.kind=(id,k)=>{ KIND[id]=k; NM[id]=k.name; if(!LIST.includes(id))LIST.push(id); }; for(const [id,k] of WIELD.pend||[])WIELD.kind(id,k);
   FORAGE.add({names:{sword:'SWORD',sword_wood:'WOODEN SWORD',sword_steel:'STEEL SWORD',sword_ench:'ENCHANTED BLADE'},prices:{sword:15,sword_wood:8,sword_steel:40,sword_ench:120}});
   // the sword is bought from the swordsmith now, not given free (owner, 22 Oct 2026).
   const lam=c=>new THREE.MeshLambertMaterial({color:c}), bx=(w,h,d,m,y)=>{ const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m); o.position.y=y; return o; };
@@ -28,20 +27,20 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
   const J_=(J,n)=>J[n+WIELD.hand];
   // a slash across: round the world's up, or round the camera's forward when the arm is raised or dropped (so a lifted arm still cuts across the screen)
   const slash=(v,S,dt)=>{ S.t+=dt; const u=Math.min(1,S.t/S.T), e=u*u*(3-2*u); sax.copy(UP).addScaledVector(v,-v.y); if(sax.lengthSq()<.1)sax.copy(cz); sax.normalize(); v.applyAxisAngle(sax,S.s*(1.5-3*e)*(S.h?1.4:1)).setY(v.y-(S.h?.45:.25)*Math.sin(Math.PI*u)).normalize(); return S.t>=S.T; };
-  let phOk=false, sw=null, side=1, spd=0, cutT=0, combo=0, lastSw=0;
+  let phOk=false, sw=null, side=1, spd=0, cutT=0, combo=0, lastSw=0, heavy=false;
   // the arm swings only in front of the body (owner, 2 Nov 2026): an aim going behind is held at the body's sides; the keys turn the body, never the swing
   const front=v=>{ const fx=Math.sin(SHARED.heading), fz=Math.cos(SHARED.heading), k=v.x*fx+v.z*fz; if(k<.05)v.x+=fx*(.05-k),v.z+=fz*(.05-k); return v.normalize(); };
-  renderer.domElement.addEventListener('pointermove',e=>{ ms.x=e.clientX; ms.y=e.clientY; });
+  renderer.domElement.addEventListener('pointermove',e=>{ if(UI.locked&&UI.locked()){ const r=renderer.domElement.getBoundingClientRect(); ms.x=r.left+r.width/2; ms.y=r.top+r.height/2; return; } ms.x=e.clientX; ms.y=e.clientY; });
   WIELD.set=id=>{ '@later'; if(MESH[WIELD.on])MESH[WIELD.on].visible=false; WIELD.on=null; if(!id||!FORAGE.has(id)){ if(id)say('YOU HAVE NO '+NM[id]+'.','#c8a090'); return; }
     const m=MESH[id]||(MESH[id]=mk(id)); if(!m.parent){ m.matrixAutoUpdate=false; m.userData.anyRoom=1; scene.add(m); } /* what you hold comes into every room with you: the room cull leaves it be */ WIELD.on=id; SHARED.target=null; if(/^sword/.test(id))MOTION.play('draw'); say('YOU HOLD THE '+NM[id]+'. '+(KIND[id]&&KIND[id].hint||'THE MOUSE SWINGS IT ROUND YOU, A CLICK SLASHES.'),'#e8e2cc'); FORAGE.draw(); };
   WIELD.next=()=>{ const own=LIST.filter(k=>FORAGE.has(k)), i=own.indexOf(WIELD.on); WIELD.set(i+1<own.length?own[i+1]:null); if(!WIELD.on)say('YOUR HANDS ARE FREE.','#e8e2cc'); };
-  const WIELD_strike0=()=>{ '@later'; if(!WIELD.on||WIELD.block||sw&&sw.t<.18||VIT.dead||VIT.out>0||RAG.on)return false; if(KIND[WIELD.on]&&KIND[WIELD.on].use){ KIND[WIELD.on].use(); return false; } let heavy=false;
-    if(WIELD.sword){ const now=performance.now(); combo=now-lastSw<900?combo+1:0; lastSw=now; heavy=combo>=2; if(heavy)combo=-1; const winded=VIT.sta<.08;
+  const WIELD_strike0=()=>{ '@later'; if(!WIELD.on||WIELD.block||sw&&sw.t<.18||VIT.dead||VIT.out>0||RAG.on)return false; if(KIND[WIELD.on]&&KIND[WIELD.on].use){ if(!KIND[WIELD.on].ekey)KIND[WIELD.on].use(); return false; }   // what you ride is used with E, not a click (owner, 8 Nov 2026) let heavy=false;
+    heavy=false; if(WIELD.sword){ const now=performance.now(); combo=now-lastSw<900?combo+1:0; lastSw=now; heavy=combo>=2; if(heavy)combo=-1; const winded=VIT.sta<.08;
       VIT.spend(heavy?.12:.06); VIT.inFight(5); WIELD.swing={heavy,winded,t:now,ax:aim0.x,az:aim0.z}; sw={t:0,T:winded?.55:heavy?.42:.3,s:side,h:heavy}; ONLINE.send({t:'swing',s:side,h:heavy?1:0}); }
     else sw={t:0,T:.3,s:side}; MOTION.play(heavy?'swingHeavy':side>0?'swingA':'swingB'); side=-side; SFX.play('step',{vol:.3,pitch:heavy?1.5:2.2}); return true; };
   WIELD.strike=(...a)=>{ const r=WIELD_strike0(...a); if(r)SYS.run('strike'); return r; };
   FORAGE.ROWB.push(id=>LIST.includes(id)?[[WIELD.on===id?'PUT AWAY':'HOLD','wield']]:[]); FORAGE.ACT.wield=id=>WIELD.set(WIELD.on===id?null:id);
-  const free=()=>!(RAG.on||st.water&&st.water.in||st.ride||st.climb||st.hang||st.sit||VIT.dead);
+  const free=()=>!(RAG.on||st.water&&st.water.in||st.ride||st.climb||st.hang||st.sit&&!st.sit.hold||VIT.dead);
   WIELD.pre=dt=>{ const on=!!WIELD.on&&free();
     const bare=!WIELD.on&&free()&&!(VIT.out>0)&&keys.has('p')&&VIT.sta>.03&&!(st.up&&st.up.name!=='block');   // bare hands: the arms come up
     const bk=bare||on&&WIELD.sword&&!sw&&keys.has('p')&&VIT.sta>.03; if(bk!==WIELD.block){ const was=WIELD.bare; WIELD.block=bk; WIELD.bare=bk&&bare; if(bk){ WIELD.blockT=performance.now(); SFX.play('step',{vol:.25,pitch:1.4}); }
@@ -93,6 +92,7 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
       F.g.updateMatrixWorld(true); const G=F.g.matrixWorld, J=o.B.J, P=(p,q)=>q.set(p.x,p.y,p.z).applyMatrix4(G), b=new V3(), e=new V3(), w=new V3(), x=new V3(), z=new V3();
       const AH=F.PM&&F.body&&BODIES.hand(t.h,F.PM,F.body,o.B); P(AH?AH.elbow:J['elbow'+t.h],e); P(AH?AH.palm:J['palm'+t.h],b); w.subVectors(P(AH?AH.wrist:J['wrist'+t.h],w),e).normalize(); x.crossVectors(w,UP); if(x.lengthSq()<1e-4)x.set(1,0,0); x.normalize(); z.crossVectors(x,w);
       t.m.matrix.makeBasis(x,w,z).setPosition(b); t.m.matrixWorld.copy(t.m.matrix); if(t.m.tipL)(t.tip||(t.tip=new V3())).copy(t.m.tipL).applyMatrix4(t.m.matrix); } };
+  WIELD.held=()=>MESH[WIELD.on]||null; WIELD.theirG=id=>{ const t=theirs.get(id); return t&&t.m.visible?t.m:null; };   // the thing in your hand, and in theirs (its matrix is where it is)
   WIELD.theirTip=id=>{ const t=theirs.get(id); return t&&t.m.visible&&t.tip||null; };   // another player's held rod or kite: where its line starts
   WIELD.head=head; window.WIELDDBG=()=>[...theirs].map(([id,t])=>({id,w:t.w,shown:t.m.visible,sw:!!t.sw}));
   SYS.add('life',dt=>{ share(dt||0); if(theirs.size)draw(dt||0); },'146a-wield'); }

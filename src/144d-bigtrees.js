@@ -1,8 +1,9 @@
-// THE BIG TREES: data/world.json's bigTrees (owner, 7 Nov 2026), giants of 55 to 62 m in the middle of the park, each with one massive branch (kind A level, B rising, C low and sagging) and 4 to 8 smaller ones, leafy puffs on the outside; a tree with climb:true joins PARK.climbable, the only trees TREES lets you climb.
+// THE BIG TREES: data/world.json's bigTrees (owner, 7 Nov 2026), giants of 55 to 62 m in the middle of the park (s: a tree's size against those), each with one massive branch (kind A level, B rising, C low and sagging) and 4 to 8 smaller ones, leafy puffs on the outside; a tree with climb:true joins PARK.climbable, the only trees TREES lets you climb.
 import {SHARED, THREE} from './003-shx.js';
-import {PARK} from './003b-systems.js';
+import {PARK, pos, WEEDS} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {FIX, LEVEL, MAPG, SOL, TILE} from './006-map-pre.js';
+import {FIX, LEVEL, SOL, SYS, TILE} from './006-map-pre.js';
+import {PEEK} from './008-batch.js';
 PARK.climbable=[];
 { const T=TILE, M=T/.84, hs=(a,b)=>{ const s=Math.sin(a*127.1+b*311.7)*43758.5453; return s-Math.floor(s); };
   const KIND={ A:{h:62,r0:3.2,r1:.5,br:[[13,0,1.9],[14,7,1.5],[15,14,1.1],[15.5,20,.8],[16.5,26,.5]]},
@@ -15,26 +16,56 @@ PARK.climbable=[];
     for(let i=0;i<=n;i++){ const u=i/n, f=u*(pts.length-1), k=Math.min(pts.length-2,Math.floor(f)), r=rad[k]+(rad[k+1]-rad[k])*(f-k), cp=c.getPointAt(u);
       for(let j=0;j<=12;j++){ const a=i*13+j, w=1+.08*Math.sin(j*2.1+i*.7)+.05*Math.sin(j*5.3); ps.setXYZ(a,cp.x+nr.getX(a)*r*w,cp.y+nr.getY(a)*r*w,cp.z+nr.getZ(a)*r*w); } }
     const A=geo.toNonIndexed().attributes.position.array; for(let i=0;i<A.length;i++)P.push(A[i]); geo.dispose(); };
-  const make=(o,i,puffs)=>{ const S=KIND[o.kind]||KIND.A, x=SHARED.BOD.XS(o.x), z=SHARED.BOD.ZS(o.y), y=SHARED.groundY?SHARED.groundY(x,z):0, face=(o.face||0)*Math.PI/180, dx=Math.cos(face), dz=Math.sin(face), P=[], lb=[];
+  const make=(o,i,puffs)=>{ const sz=o.s||1, M=T/.84*sz, PK=Math.pow(sz,-.45), S=KIND[o.kind]||KIND.A, x=SHARED.BOD.XS(o.x), z=SHARED.BOD.ZS(o.y), y=SHARED.groundY?SHARED.groundY(x,z):0, face=(o.face||0)*Math.PI/180, dx=Math.cos(face), dz=Math.sin(face), P=[], lb=[];
     const rAt=h=>S.r0+(S.r1-S.r0)*Math.pow(Math.max(0,h)/S.h,.7), at=(h,a,d)=>[x+Math.cos(a)*d,y+h*M,z+Math.sin(a)*d];
     const puff=(px,py,pz,r)=>{ const q=Math.hypot(px-x,pz-z), need=(rAt((py-y)/M)+1.5)*M+r*.5; if(q<need){ const k=need/(q||1); px=x+(px-x)*k; pz=z+(pz-z)*k; } puffs.push([px,py,pz,r,Math.floor(hs(i,puffs.length)*4)]); };   // the middle round the trunk stays open to climb
     const trunk=[]; for(let k=0;k<=8;k++){ const u=k/8; trunk.push([x+Math.sin(u*3+face)*.4*M*u,y+u*S.h*M-.5*M,z+Math.cos(u*2.3+face)*.3*M*u,rAt(u*S.h)*M*(k?1:1.35)]); } tube(trunk,P);
     const branch=(pts,big)=>{ tube(pts,P); for(let k=0;k+1<pts.length;k++){ const A=pts[k], B=pts[k+1]; lb.push([A[0],A[1],A[2],B[0],B[1],B[2],A[3],B[3]]); }
-      const c=new THREE.CatmullRomCurve3(pts.map(q=>new THREE.Vector3(q[0],q[1],q[2]))), L=c.getLength(), n=Math.max(2,Math.round(L/(3*M)));
-      for(let k=0;k<n;k++){ const u=.35+.65*(k+.5)/n, p=c.getPointAt(u), s=i*31+lb.length*7+k, r=(1.3+1.1*hs(s,1))*M*(big?1.25:1), a=hs(s,2)*6.28, d=(.8+1.6*hs(s,3))*M;
-        puff(p.x+Math.cos(a)*d,p.y+(1+1.4*hs(s,4))*M,p.z+Math.sin(a)*d,r); } };
+      const c=new THREE.CatmullRomCurve3(pts.map(q=>new THREE.Vector3(q[0],q[1],q[2]))), L=c.getLength(), n=Math.max(3,Math.round(L/(1.2*M)*sz));   // (a smaller tree: fewer puffs, each a little bigger, as full for less)   // thick (owner, 8 Nov 2026: "5x as much greenery leaves, like the old school trees, thick"): a dense mass of puffs along each branch, over and round it
+      for(let k=0;k<n;k++){ const u=.25+.75*(k+.5)/n, p=c.getPointAt(u), s=i*31+lb.length*7+k; for(let j=0;j<4;j++){ const t=s*5+j, r=(1.6+1.4*hs(t,1))*M*(big?1.3:1)*PK, a=hs(t,2)*6.28, d=(.6+2.6*hs(t,3))*M;
+        puff(p.x+Math.cos(a)*d,p.y+(.4+2.4*hs(t,4))*M-(j===3?1.2*M:0),p.z+Math.sin(a)*d,r); } } };
     branch(S.br.map(([h,d,r])=>[x+dx*d*M-dz*Math.sin(d*.25)*1.2*M,y+h*M,z+dz*d*M+dx*Math.sin(d*.25)*1.2*M,r*M]),true);
     const L0=S.br[S.br.length-1][1], R0=S.br[0][2], nb=4+Math.floor(hs(i,9)*5);   // the smaller branches: 25 to 50% of the big one, round the trunk and up it
     for(let k=0;k<nb;k++){ const s=.25+.25*hs(i,20+k), a=face+.9+k/nb*(6.28-1.8)+(hs(i,40+k)-.5)*.5, h=S.h*(.18+.55*(k+hs(i,60+k))/nb), L=L0*s, r=Math.min(R0*s*1.1,rAt(h)*.8), up=.25+.55*hs(i,80+k), pts=[];
       for(let q=0;q<=4;q++){ const u=q/4; pts.push([...at(h+L*up*u*(.6+.4*u),a,L*u*M),Math.max(.12,r*(1-.75*u))*M]); } branch(pts,false); }
     for(let k=0;k<6;k++){ const a=k/6*6.28+.4+face; tube([[x,y+2.5*M,z,1.6*M],[...at(.3,a,4*M),.9*M],[...at(-.3,a,6.5*M),.25*M]],P); }   // roots flaring at the foot
-    for(let h=S.h*.66;h<S.h+2;h+=3.2){ const n=3+Math.floor(hs(i,h)*2); for(let k=0;k<n;k++){ const a=hs(i,h+k)*6.28; puff(...at(h,a,(rAt(h)+2+2*hs(h,k))*M),(1.6+1.2*hs(k,h))*M); } }   // the crown up the top of the trunk
-    const tr=rAt(1.5)*M, sol=[x-tr*.8,z-tr*.8,x+tr*.8,z+tr*.8], fix=[x-tr*.8,z-tr*.8,0,x+tr*.8,z+tr*.8,S.h*M]; SOL.up.push(sol); FIX.up.push(fix);
-    return {k:'BIG'+(o.kind||'A'),x,y,z,top:y+S.h*M,r:30*M,tr,fork:0,v0:0,v1:P.length/3,P:new Float32Array(P),LF:[],lb,sol,fix,climb:!!o.climb}; };
-  PARK.later(()=>{ '@park'; const L=(LEVEL.bigTrees||[]).filter(o=>o.kind); if(!L.length)return; const g=MAPG.park||scene, puffs=[], bark=new THREE.MeshLambertMaterial({color:0x6a5040,flatShading:true});
-    const items=L.map((o,i)=>make(o,i,puffs)); PARK.big=items;
-    for(const it of items){ const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(it.P,3)); geo.computeVertexNormals(); const me=new THREE.Mesh(geo,bark); me.castShadow=me.receiveShadow=true; g.add(me); it.mesh=me; if(it.climb)PARK.climbable.push(it); }
-    const IM=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,1),new THREE.MeshLambertMaterial({color:0xffffff}),puffs.length), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), v=new THREE.Vector3(), s=new THREE.Vector3(), c=new THREE.Color();
-    puffs.forEach(([x,y,z,r,k],i)=>{ IM.setMatrixAt(i,m4.compose(v.set(x,y,z),q,s.setScalar(r))); const G=GREEN[k]; IM.setColorAt(i,c.setRGB(G[0],G[1],G[2],THREE.SRGBColorSpace)); });
-    IM.castShadow=IM.receiveShadow=true; IM.computeBoundingSphere(); g.add(IM); PARK.bigLeaves=IM; });
-  window.BIGTREESDBG=()=>({trees:(PARK.big||[]).length,climbable:PARK.climbable.length,puffs:PARK.bigLeaves?PARK.bigLeaves.count:0,branches:(PARK.big||[]).map(t=>t.lb.length),tris:(PARK.big||[]).reduce((a,t)=>a+t.v1/3,0)}); }
+    for(let h=S.h*.55;h<S.h+4;h+=1.4/sz){ const w=1-Math.max(0,(h-S.h*.9)/(S.h*.1+4))*.6, n=9+Math.floor(hs(i,h)*4); for(let k=0;k<n;k++){ const a=hs(i,h+k)*6.28; puff(...at(h,a,(rAt(h)+1.5+6*w*hs(h,k))*M),(2+1.8*hs(k,h))*M*PK); } }   // the crown up the top of the trunk: full and round
+    const tr=rAt(1.5)*M, rb=S.r0*1.35*M, sol=[x-tr*.8,z-tr*.8,x+tr*.8,z+tr*.8], fix=[x-tr*.8,z-tr*.8,0,x+tr*.8,z+tr*.8,S.h*M]; FIX.up.push(fix);
+    for(const [a,b] of [[.72,.72],[1,.42],[.42,1]])SOL.up.push([x-rb*a,z-rb*b,x+rb*a,z+rb*b]);   // the foot is solid as wide as its bark at the ground (an octagon of three boxes), and each root as far as it shows (owner, 9 Nov 2026: "i can still walk into the base of the tree")
+    for(let k=0;k<6;k++){ const a=k/6*6.28+.4+face; for(const [d,w,hh] of [[4.2,.85,1.2],[5,.65,.7],[5.7,.45,.35]]){ if(d+w<=S.r0*1.35)continue; const cx=x+Math.cos(a)*d*M, cz=z+Math.sin(a)*d*M, h=w*M; SOL.up.push([cx-h,cz-h,cx+h,cz+h]); FIX.up.push([cx-h,cz-h,y,cx+h,cz+h,y+hh*M]); } }
+    if(WEEDS.addFeet)WEEDS.addFeet([[x,z,rb,2.5*M]]);   // tufts and weeds round its foot and among its roots
+    return {k:'BIG'+(o.kind||'A'),x,y,z,top:y+S.h*M,r:30*M,tr,rf:rb,fork:0,v0:0,v1:P.length/3,P:new Float32Array(P),LF:[],lb,sol,fix,climb:!!o.climb}; };
+  SYS.onStart(()=>{ const L=(LEVEL.bigTrees||[]).filter(o=>o.kind); if(!L.length)return; const g=new THREE.Group(), puffs=[];   // seen from the whole map, not only once the park is up (owner, 8 Nov 2026: "render entire map")
+    scene.add(g); SYS.every(()=>{ g.visible=SHARED.LVL==='up'; },500,'144d-bigtrees shown on the street level'); const bark=new THREE.MeshLambertMaterial({color:0x6a5040,flatShading:true}), leaf=new THREE.MeshLambertMaterial({color:0xffffff});
+    const items=L.map((o,i)=>{ const n=puffs.length, it=make(o,i,puffs); it.p0=n; it.p1=puffs.length; return it; }); PARK.big=items;
+    const PG=new THREE.IcosahedronGeometry(1,1), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), v=new THREE.Vector3(), s=new THREE.Vector3(), c=new THREE.Color();
+    PEEK.mark(PG,new Uint8Array(PG.attributes.position.count).fill(5));   // seen through round you like the park's other big trees (PEEK)
+    // the leaves cast no shadow, only the bark (owner, 9 Nov 2026)
+    // each tree whole (its bark, every leaf puff) drawn only near the eye (owner, 8 Nov 2026: "i want to simplify trees bigtime, they shouldnt cost much from far off at all")
+    for(const it of items){ const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(it.P,3)); geo.computeVertexNormals(); const me=new THREE.Mesh(geo,bark); me.castShadow=me.receiveShadow=true; g.add(me); it.mesh=me; if(it.climb)PARK.climbable.push(it);
+      const IM=new THREE.InstancedMesh(PG,leaf,it.p1-it.p0); for(let i=it.p0;i<it.p1;i++){ const [x,y,z,r,k]=puffs[i], G=GREEN[k]; IM.setMatrixAt(i-it.p0,m4.compose(v.set(x,y,z),q,s.setScalar(r))); IM.setColorAt(i-it.p0,c.setRGB(G[0],G[1],G[2],THREE.SRGBColorSpace)); }
+      IM.castShadow=false; IM.receiveShadow=true; IM.computeBoundingSphere(); g.add(IM); it.leaves=IM;
+      PEEK.mark(geo,new Uint8Array(it.P.length/3).fill(5)); const B=new THREE.Box3(); geo.computeBoundingBox(); B.copy(geo.boundingBox);
+      for(let i=it.p0;i<it.p1;i++){ const [x,y,z,r]=puffs[i]; B.expandByPoint(v.set(x-r,y-r,z-r)); B.expandByPoint(v.set(x+r,y+r,z+r)); } PEEK.box(IM,B.min.x,B.min.y,B.min.z,B.max.x,B.max.y,B.max.z); }
+    // from further off, each tree its plain shape: its leaves gathered into a few big blobs (twenty triangles each), its trunk and big branch six-sided tubes; a few hundred triangles a tree, all of them one draw each
+    const FB=[], CELL=9*T/.84;
+    for(const it of items){ it.f0=FB.length; const cells=new Map(); for(let i=it.p0;i<it.p1;i++){ const P=puffs[i], kk=Math.floor(P[0]/CELL)+','+Math.floor(P[1]/CELL)+','+Math.floor(P[2]/CELL); (cells.get(kk)||cells.set(kk,[]).get(kk)).push(P); }
+      for(const L_ of cells.values()){ let x=0,y=0,z=0,w=0; for(const P of L_){ const a=P[3]**3; x+=P[0]*a; y+=P[1]*a; z+=P[2]*a; w+=a; } x/=w; y/=w; z/=w; let r=0; for(const P of L_)r=Math.max(r,Math.hypot(P[0]-x,P[1]-y,P[2]-z)*.6+P[3]); FB.push([x,y,z,r,L_[0][4]]); }
+      it.f1=FB.length; }
+    const FL=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshLambertMaterial({color:0xffffff,flatShading:true}),FB.length);
+    FB.forEach(([x,y,z,r,k],i)=>{ FL.setMatrixAt(i,m4.compose(v.set(x,y,z),q,s.setScalar(r))); const G=GREEN[k]; FL.setColorAt(i,c.setRGB(G[0],G[1],G[2],THREE.SRGBColorSpace)); });
+    const TG=new THREE.CylinderGeometry(.35,1,1,6,1,true).translate(0,.5,0), FT=new THREE.InstancedMesh(TG,bark,items.length*2), UP=new THREE.Vector3(0,1,0), D=new THREE.Vector3();
+    const tubeAt=(i,a,b,r)=>{ D.set(b[0]-a[0],b[1]-a[1],b[2]-a[2]); const L_=D.length(); q.setFromUnitVectors(UP,D.normalize()); FT.setMatrixAt(i,m4.compose(v.set(a[0],a[1],a[2]),q,s.set(r,L_,r))); q.identity(); };
+    items.forEach((it,i)=>{ it.T0=[[it.x,it.y-.5*T,it.z],[it.x,it.top,it.z],it.tr*1.15]; const lb=it.lb, b0=lb[0]; let e=0; while(e+1<lb.length&&lb[e+1][0]===lb[e][3]&&lb[e+1][2]===lb[e][5])e++; const be=lb[e];   // (the big branch: its segments come first, end to end)
+      it.T1=[[b0[0],b0[1],b0[2]],[be[3],be[4],be[5]],b0[6]]; tubeAt(i*2,...it.T0); tubeAt(i*2+1,...it.T1); });
+    for(const M_ of [FL,FT]){ M_.castShadow=M_===FT; M_.receiveShadow=true; M_.frustumCulled=false; g.add(M_); } PARK.bigFar=FL;
+    // which trees are near: whole within NEAR tiles of the eye (along the ground), their plain shapes away; the rest the other way round
+    const NEAR=45*T, Z=new THREE.Matrix4().makeScale(0,0,0); let tk=0;
+    const swap=(it,i,near)=>{ it.near=near; it.mesh.visible=it.leaves.visible=near;
+      for(let j=it.f0;j<it.f1;j++){ if(near)FL.setMatrixAt(j,Z); else { const [x,y,z,r]=FB[j]; FL.setMatrixAt(j,m4.compose(v.set(x,y,z),q,s.setScalar(r))); } } FL.instanceMatrix.needsUpdate=true;
+      if(near){ FT.setMatrixAt(i*2,Z); FT.setMatrixAt(i*2+1,Z); } else { tubeAt(i*2,...it.T0); tubeAt(i*2+1,...it.T1); } FT.instanceMatrix.needsUpdate=true; };
+    items.forEach((it,i)=>swap(it,i,false));
+    SYS.add('cam',dt=>{ if((tk-=dt||0)>0)return; tk=.25; const cam=SHARED.cam; if(!cam)return; const cx=cam.position.x, cz=cam.position.z, persp=!cam.isOrthographicCamera;
+      items.forEach((it,i)=>{ const near=persp?Math.hypot(it.x-cx,it.z-cz)<NEAR:Math.hypot(it.x-pos.x,it.z-pos.z)<NEAR; if(near!==it.near)swap(it,i,near); }); },'144d-bigtrees near or far');
+    PARK.bigLeaves={get count(){ return items.reduce((a,it)=>a+(it.near?it.p1-it.p0:0),0); }}; },'144d-bigtrees');
+  window.BIGTREESDBG=()=>({trees:(PARK.big||[]).length,climbable:PARK.climbable.length,puffs:PARK.bigLeaves?PARK.bigLeaves.count:0,near:(PARK.big||[]).filter(t=>t.near).length,farBlobs:PARK.bigFar?PARK.bigFar.count:0,branches:(PARK.big||[]).map(t=>t.lb.length),tris:(PARK.big||[]).reduce((a,t)=>a+t.v1/3,0)}); }

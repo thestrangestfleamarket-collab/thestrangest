@@ -1,11 +1,11 @@
 // THE PARK: its layout, the forest (instanced trees with sway in the shader), paths and the park wall.
 import {SHARED, THREE} from './003-shx.js';
 import {B64, F32} from './003a-skin.js';
-import {CLIP, CLOCK, CULL, DN, LEVELS, LITE, NPCS, PARK, PERFX, pos, ROOMS, UI, VIS, WED, WEEDS} from './003b-systems.js';
+import {BATCH, CLIP, CLOCK, CULL, DN, LEVELS, LITE, NPCS, PARK, PERFX, pos, ROOMS, UI, VIS, WED, WEEDS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {CASTLE, CLIPX, EASTX, FADE, FIX, grab, lamps, LAY, LEVEL, MAINX, MAPG, MODS, NORTHX, NORTHY, PARKGX, PARKLAKE, PARKRY, QS, SOL, SYS, TILE, ZU} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
-import {BATCH, OBJ, PEEK} from './008-batch.js';
+import {OBJ, PEEK} from './008-batch.js';
 import {BRICKS} from './014-gamekit.js';
 import {BLOCKS} from './038zb-blocks.js';
 import {FOREST, PROPS} from './039-bodega.js';
@@ -67,7 +67,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     P.camp0=best||{x:S.C.x+S.R+6,y:S.C.y,nx:1,ny:0}; S.oaks=S.oaks.filter(o=>Math.hypot(o[1]-P.camp0.x,o[2]-P.camp0.y)>10); return P.camp0; };
   { const c=P.campAt(); HK.push([c.x-5,c.y-5,c.x+5,c.y+5]); }
   { const h0=P.hill; P.hill=(x,y)=>{ const r=BK.q(x,y); if(!r)return h0(x,y); const e=r[0]-BK.W(r[1])-BK.B; if(path(x,y))return BK.hump(x,y)*TILE/.84; if(e>=0)return h0(x,y)*ss(0,5,e); return BK.h(x,y)*TILE/.84; }; }
-  window.HILL=(wx,wz)=>{ const g=window.PARK; return g&&g.hill?g.hill(SHARED.BOD.MX(wx)-(g.ox||0),SHARED.BOD.MY(wz)-(g.oy||0)):0; };
+  window.HILL=MODS.hill=(wx,wz)=>{ const g=window.PARK; return g&&g.hill?g.hill(SHARED.BOD.MX(wx)-(g.ox||0),SHARED.BOD.MY(wz)-(g.oy||0)):0; };
   const [rcx,rcy,rr]=P.round, smx=(a,b,k)=>{ const h=Math.max(k-Math.abs(a-b),0)/k; return Math.max(a,b)+h*h*k/4; };
   const dep=(x,y)=>smx(3.6-segD(x,y),rr-Math.hypot(x-rcx,y-rcy),2), eo=(x,y)=>{ const n=1.3*(cvn(x/4.5,y/4.5,421)-.5)+.6*(cvn(x/1.4,y/1.4,423)-.5)-.12; return n>.12?.12+(n-.12)*.35:n; }, vis=P.vis=(x,y)=>dep(x,y)+eo(x,y);
   const SC=.36, GR=.05, STN=[[112,109,102],[126,122,113],[140,135,124],[102,104,104],[134,124,108]], TF=[[40,72,32],[54,92,40],[72,114,50],[96,138,62]], SOIL=[[78,66,50],[66,56,44]], KC=new Map();
@@ -148,6 +148,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
   LEAVES.push([g0,P.y0+T+.85,-1,'x',(g1-g0)/2],[g1,P.y0+T+.85,1,'x',(g1-g0)/2]);
   PARK.look=[X(g1+1.8),Z(P.y0-1.6)];
   const EL=(LEVEL.edge&&LEVEL.edge.lines)||[], onEdge=(ax,v)=>EL.some(l=>ax==='x'?l[0]===l[2]&&Math.abs(l[0]-v-PO.x)<1:l[1]===l[3]&&Math.abs(l[1]-v-PO.y)<1), openE=PARK.openE=onEdge('x',P.x1), openN=PARK.openN=onEdge('y',P.y1);   // a side on the map's edge has no wall, only the forcefield (owner, 7 Nov 2026)
+  if(openE)PARK.wallOn=[P.x1+PO.x,P.y0+PO.y,P.y0+T+PO.y];   // Market St's wall carries on past the mirror's reach (069a) (owner, 8 Nov 2026: "i dont see the parkwall out of bounds")
   const EG=PARK.egate=[P.round[1]-1.5,P.round[1]+1.5], ex=P.x1-T;
   if(!openE){ wall(ex,P.y0+T,P.x1,EG[0]-PW,31); wall(ex,EG[1]+PW,P.x1,P.y1,35);
   pier(ex-.6,EG[0]-PW,P.x1+.3,EG[0],41); pier(ex-.6,EG[1],P.x1+.3,EG[1]+PW,45);
@@ -190,7 +191,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     // running track, the whole shore inside the park; open where the brook leaves the lake, where a path reaches the water, and at three gates for swimmers
     { const S=FOUNT.S, RO=FOUNT.TRACK[0]-FOUNT.TRACK[1]-.55, L=[]; let acc=0, prev=null;
       for(let i=0;i<S.shore.length;i++){ const [sx,sy]=S.shore[i], n=S.nrm(sx,sy), x=sx+n[0]*RO, y=sy+n[1]*RO; if(x>S.wx1+2.5||y>S.wy1+2.5)continue; if(prev)acc+=Math.hypot(x-prev[0],y-prev[1]); prev=[x,y]; L.push([x,y,acc]); }
-      const TOT=acc, GATES=[.25,.5,.75].map(f=>f*TOT), open_=(x,y,s)=>BK.wet(x,y,1.4)||segD(x,y)<4.6||GATES.some(g=>Math.abs(s-g)<1.6), at_=s=>{ let j=0; while(j<L.length-1&&L[j+1][2]<s)j++; const a=L[j], b=L[Math.min(L.length-1,j+1)], t=b[2]>a[2]?(s-a[2])/(b[2]-a[2]):0; return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]; };
+      const TOT=acc, GATES=[.25,.5,.75].map(f=>f*TOT), open_=(x,y,s)=>BK.wet(x,y,1.4)||segD(x,y)<4.6||GATES.some(g=>Math.abs(s-g)<1.6)||FOUNT.bridgeD(x,y)<1.2, at_=s=>{ let j=0; while(j<L.length-1&&L[j+1][2]<s)j++; const a=L[j], b=L[Math.min(L.length-1,j+1)], t=b[2]>a[2]?(s-a[2])/(b[2]-a[2]):0; return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]; };
       const H=mv(1.2), Pk=[], Bx=[], POST=2.4, RB=.055*M; let posts=0;
       for(let s0=0;s0+POST<=TOT+.01;s0+=POST){ const s1=s0+POST, [ax,ay]=at_(s0), [bx,by]=at_(s1), [mx,my]=at_((s0+s1)/2); if(open_(mx,my,(s0+s1)/2)){ if(!open_(...at_(s0-.1),s0-.1))Bx.push([X(ax),H*.52,Z(ay),.1*M,H*1.06,.1*M,IR[1]],[X(ax),H*1.08,Z(ay),.14*M,.14*M*VS*1.3,.14*M,IR[1]]); continue; }
         const wx0=X(ax), wz0=Z(ay), wx1=X(bx), wz1=Z(by), yaw=-Math.atan2(wz1-wz0,wx1-wx0), len=Math.hypot(wx1-wx0,wz1-wz0);
@@ -229,7 +230,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       const hm=new THREE.SpriteMaterial({map:HT,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false}), SPR=[], LL=[];
       for(const [x,y,z] of HL){ const s=new THREE.Sprite(hm); s.position.set(x,y,z); s.scale.set(2.6*M,2.6*M,1); s.renderOrder=2; s.visible=false; SPR.push(s);
         const L=new THREE.PointLight(new THREE.Color(1,.8,.52),24,12*TILE,1.6); L.position.set(x,y,z); L.userData.i0=24; L.intensity=0; scene.add(L); lamps.push(L); LL.push(L); LGP[LL.length-1].follow=[L,s]; }
-      const lit=()=>{ let d=false; try{ d=CLOCK.dark(); }catch(_){ } glass.color.setHex(d?0xffc978:0x6e6656); core.color.setHex(d?0xfff6dc:0x8a7e66); for(const s of SPR)s.visible=d; for(const L of LL.concat(PARK.hoods||[]))L.intensity=d?L.userData.i0*(window.DN?DN.lk:1):0; }; lit(); SYS.every(lit,2000,'061-park lamps'); PARK.lampLit=lit; } }
+      const lit=()=>{ let d=false; try{ d=CLOCK.dark(); }catch(_){ } glass.color.setHex(d?0xffc978:0x6e6656); core.color.setHex(d?0xfff6dc:0x8a7e66); for(const s of SPR)s.visible=d; for(const L of LL.concat(PARK.hoods||[]))L.intensity=d?L.userData.i0*(DN?DN.lk:1):0; }; lit(); SYS.every(lit,2000,'061-park lamps'); PARK.lampLit=lit; } }
   const TL=[0,1,2,3].includes(+QS.get('treelook'))&&QS.get('treelook')!==null?+QS.get('treelook'):2;
   const treeLook=sh=>{ sh.vertexShader='attribute vec3 aTr; varying vec3 vTr; varying vec3 vLw;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vTr=aTr; vLw=transformed;')
       .replace('#include <shadowmap_vertex>',THREE.ShaderChunk.shadowmap_vertex.replace(/(directional|point)LightShadows\[ i \]\.shadowNormalBias/g,'($&+aTr.z*.35)'));
@@ -270,7 +271,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     const lodH=sh=>{ '@later'; sh.uniforms.uLodAt=PARK.lodAt; sh.uniforms.uLodBand=PARK.lodBand; sh.vertexShader='uniform vec3 uLodAt; varying float vLodD;\n'+sh.vertexShader.replace('#include <project_vertex>','vLodD=distance((modelMatrix*vec4(transformed,1.)).xz,uLodAt.xz);\n#include <project_vertex>');
       sh.fragmentShader='uniform vec2 uLodBand; varying float vLodD;\n'+sh.fragmentShader.replace('#include <clipping_planes_fragment>','#include <clipping_planes_fragment>\n{ vec2 q=floor(gl_FragCoord.xy*.5), h=mod(q,2.), l=mod(floor(q*.5),2.); float by=(4.*mod(h.x*2.+h.y*3.,4.)+mod(l.x*2.+l.y*3.,4.)+.5)/16., lf=smoothstep(uLodBand.x,uLodBand.y,vLodD); if('+(opt.lod==='far'?'by>=lf':'by<lf')+')discard; }'); };
     if(sway||TL||leafy||opt.lod){ mat.onBeforeCompile=sh=>{ if(TL)treeLook(sh); if(sway)swayV(sh); if(leafy)leafN(sh); if(opt.lod)lodH(sh); }; mat.customProgramCacheKey=()=>'oaksway'+sway+'tl'+TL+'lf'+!!leafy+'lod'+(opt.lod||''); }
-    if(leafy)PEEK.mark(g,new Uint8Array(g.attributes.position.count).fill(4)); RG.push(P3.length/3); const me=BATCHED(g,RG,mat); if(leafy||opt.cards)me.userData.tall=1; if(leafy)for(const o of IT)PEEK.box(me,o.x-o.r,o.y,o.z-o.r,o.x+o.r,o.top,o.z+o.r); me.userData.P=P3; me.userData.LF=LF; me.userData.items=IT; me.castShadow=true; me.receiveShadow=TL!==2;
+    if(leafy)PEEK.mark(g,new Uint8Array(g.attributes.position.count).fill(5)); RG.push(P3.length/3); const me=BATCHED(g,RG,mat); if(leafy||opt.cards)me.userData.tall=1; if(leafy)for(const o of IT)PEEK.box(me,o.x-o.r,o.y,o.z-o.r,o.x+o.r,o.top,o.z+o.r); me.userData.P=P3; me.userData.LF=LF; me.userData.items=IT; me.castShadow=true; me.receiveShadow=TL!==2;
     if(opt.map){ const M=new THREE.MeshDepthMaterial({depthPacking:THREE.RGBADepthPacking,map:opt.map,alphaTest:.5}); if(sway||opt.lod){ M.onBeforeCompile=sh=>{ if(sway)swayV(sh); if(opt.lod)lodH(sh); }; M.customProgramCacheKey=()=>'leafd'+sway+'lod'+(opt.lod||''); } me.customDepthMaterial=M; }
     if(sway&&TL)for(const [k,M] of [['customDepthMaterial',new THREE.MeshDepthMaterial({depthPacking:THREE.RGBADepthPacking})],['customDistanceMaterial',new THREE.MeshDistanceMaterial()]]){ M.onBeforeCompile=swayV; M.customProgramCacheKey=()=>'oakswayd'+sway; me[k]=M; }
     // a shadow-only stand-in: drawn into the shadow maps by its own depth materials, never into the picture (its own material fails every depth test)
@@ -282,26 +283,32 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
   const TREEY=12+4.6; PARK.mesh=mesh; PARK.lodAt={value:pos}; PARK.lodBand={value:new THREE.Vector2(1e9,1e9+1)};
   for(const S of ['A','C','AL','CL','E','K'])for(let i=0;i<TREEGEN.count(S);i++)F['G'+S+i]=TREEGEN.get(S,i);
   for(const k in TREEGEN.old)if(F[k])F[k].sum=TREEGEN.old[k];
-  // the park's trees are elms (owner, 2 Nov 2026, his picture of the Mall: "this large compared to avatars and shaped exactly the same"): 26 to 31 m; the rows past the north wall half the old pack's, half grown
-  const ELM=(a,b,c)=>OLD[Math.floor(hash(a,b,c)*OLD.length)], EM=(a,b,c)=>9+hash(a,b,c)*4;
   const gk=(x,y,sd,low)=>{ const h=k=>hash(Math.round(x*3),Math.round(y*3),sd+k); if(h(0)<.5)return null; const S=(h(1)<.5?'A':'C')+(low?'L':''); return 'G'+S+Math.floor(h(2)*TREEGEN.count(S)); };
   const TREES=(()=>{ const out=[], RR=[], KEEP=[[LX-LR-2,LY-LR-2,LX+LR+2,LY+LR+2],[CL[0]-1.5,CL[1]-1.5,CL[2]+1.5,CL[3]+1.5],[P.gate[0]-16,P.y0,P.gate[1]+8,P.y0+12],(c=>[c.x-7,c.y-7,c.x+7,c.y+7])(P.campAt()),[RX(90)-3,RY(-41.5)-3,RX(102)+3,RY(-41.5)+3],...(typeof GCAVE!=='undefined'?GCAVE.keep(P):[]),...(LEVEL.parkPlaces.sites||[]).map(q=>[q.x-q.w/2-2,q.y-q.d/2-2,q.x+q.w/2+2,q.y+q.d/2+2])];
     const [cx,cy]=P.round, W=k=>/^Oak/.test(k)?.42:F[k].wide*.45, add=(k,x,y,m,t)=>{ out.push([k,+x.toFixed(1),+y.toFixed(1),+m.toFixed(1),+t.toFixed(2)]); RR.push(m*W(k)); }, near=(x,y,r,f,g)=>out.some((o,j)=>Math.hypot(o[1]-x,o[2]-y)<Math.max(g,(RR[j]+r)*f)),
       ok=(x,y,r)=>!(pd(x,y)<3+r||y<P.y0+TREEY+4||y>P.y1-r-8||x<P.x0+r+10||x>P.x1-r-10||Math.hypot(x-cx,y-cy)<P.round[2]+r+6||KEEP.some(b=>x>b[0]-r&&x<b[2]+r&&y>b[1]-r&&y<b[3]+r)||BK.wet(x,y,r)||FOUNT.lake(x,y)<r*.35+1.5||FOUNT.ter(x,y)<r+.5);
-    // the entrance (owner, 2 Nov 2026: "make the entrance full of trees that go over like this"): the Mall's double rows of elms along both sides of the
-    // walk from the main gate to the plaza, the inner row just off the path, the outer row staggered behind it, their crowns meeting over the walk
-    { const ya=P.y0+T+5, yb=cy-P.round[2]-5, STEP=13, OFF=[3.6+3.2,3.6+3.2+10.5]; let n=0; PARK.alley=[];
-      for(const [ri,off] of OFF.entries())for(let y=ya+ri*STEP/2;y<yb;y+=STEP)for(const sd of [-1,1]){ n++; const x=P.armX(y)+sd*off, k=ELM(n,sd+5,169), m=EM(n,sd+7,171);
-        if(FOUNT.lake(x,y)<m*W(k)*.35+1.5||BK.wet(x,y,m*.03)||FOUNT.ter(x,y)<2||pd(x,y)<1.2)continue; add(k,x,y,m,hash(n,sd+9,173)*6.28); PARK.alley.push([x,y]); } }
-    let nm=0; for(let i=0;i<2400&&nm<40;i++){ const k=ELM(i,61,7), m=EM(i,47,11), r=m*W(k), hy=hash(i,43,9)<.5, y0=hy?Math.max(P.y0+TREEY+4,P.y0+r+8):cy, y1=hy?cy:P.y1, x=P.x0+(P.x1-P.x0)*(.12+.76*hash(i,41,7)), y=(y0+y1)/2+(hash(i,49,5)-.5)*(y1-y0)*.8;
-      if(!ok(x,y,r)||near(x,y,r,.5,9))continue; add(k,x,y,m,hash(i,63,3)*6.28); nm++;
-      if(hash(i,65,9)<.65)for(let j=0,nb=1+Math.floor(hash(i,67,5)*2);j<nb;j++){ const a=hash(i,69+j,3)*6.28, mm=m*(.75+.2*hash(i,79+j,5)), kk=ELM(i,81+j,7), rr=mm*W(kk), d=r*.55+rr*.6+2, x2=x+Math.cos(a)*d, y2=y+Math.sin(a)*d;
-        if(ok(x2,y2,rr)&&!near(x2,y2,rr,.5,4.5))add(kk,x2,y2,mm,hash(i,83+j,9)*6.28); } }
-    for(const [k0,x,y,m0] of FOUNT.S.oaks){ const k=ELM(Math.round(x),Math.round(y),87), m=m0*1.6; if(!near(x,y,m*W(k),.6,8)&&!BK.wet(x,y,m*.42))add(k,x,y,m,hash(Math.round(x),Math.round(y),89)*6.28); }
-    // the great cherry by the lake (owner, 2 Nov 2026, his picture: "a super large cherry blossom tree by the lake"): past the track at the lake's end nearest the plaza, leaning out over the track, the rail and the water
-    { const S=FOUNT.S, [tx,ty]=P.round; let best=null, bd=1e9; for(let i=0;i<S.shore.length;i+=8){ const [x,y]=S.shore[i], n=S.nrm(x,y), k=FOUNT.TRACK[0]+FOUNT.TRACK[1]+5.5, ox=x+n[0]*k, oy=y+n[1]*k;
-        if(BK.wet(ox,oy,6)||pd(ox,oy)<2||ox<P.x0+8||oy<P.y0+8||ox>P.x1-8||oy>P.y1-8)continue; const d=Math.hypot(ox-tx,oy-ty); if(d<bd){ bd=d; best=[ox,oy,n]; } }
-      if(best){ const [ox,oy,n]=best, k='GK0', m=18, dx=X(ox-n[0])-X(ox), dz=Z(oy-n[1])-Z(oy); for(let i=out.length-1;i>=0;i--)if(Math.hypot(out[i][1]-ox,out[i][2]-oy)<22){ out.splice(i,1); RR.splice(i,1); } add(k,ox,oy,m,Math.atan2(dz,dx)); PARK.cherry=[ox,oy]; } }
+    // as thick as Central Park (owner, 8 Nov 2026, his photos of the Mall, the Gapstow pond and the park from the air): rows down both sides of every path, their crowns meeting over it; trees along the lake's track and the brook; woods between, crowns touching, in drifts; open lawns round the giants and where the woods thin
+    { const BIG=(LEVEL.bigTrees||[]).filter(o=>o.kind).map(o=>[o.x-PO.x,o.y-PO.y]), PF={greenhouse:9,torii:5,zen:9,archbridge:8,creekbridge:7,woodbridge:7,logbridge:6,trestle:8,redbarn:7,picket:2.6,picnictable:3,canoe:3,kayak:3,skiff:3};
+      const C=8, GR=new Map(), cell=(x,y)=>Math.floor(x/C)+','+Math.floor(y/C), put=(x,y,r)=>{ const q=cell(x,y); if(!GR.has(q))GR.set(q,[]); GR.get(q).push([x,y,r]); }, around=(x,y,R,f)=>{ const n=Math.ceil(R/C); for(let i=-n;i<=n;i++)for(let j=-n;j<=n;j++)for(const e of GR.get(cell(x+i*C,y+j*C))||[])if(f(e))return true; return false; };
+      const TH=new Map(); for(const o of LEVEL.things||[]){ const k=String(o.k||''); if(!/^p:/.test(k))continue; const r=PF[k.slice(2)]||.5, x=o.x-PO.x, y=o.y-PO.y, q=cell(x,y); if(!TH.has(q))TH.set(q,[]); TH.get(q).push([x,y,r]); }
+      const onThing=(x,y,r)=>{ for(let i=-2;i<=2;i++)for(let j=-2;j<=2;j++)for(const [a,b,s] of TH.get(cell(x+i*C,y+j*C))||[])if(Math.hypot(a-x,b-y)<s+r)return true; return false; };
+      const giant=(x,y,r,g=22)=>BIG.some(([a,b])=>Math.hypot(a-x,b-y)<g+r), crowd=(x,y,r,f,g)=>around(x,y,16,([a,b,s])=>Math.hypot(a-x,b-y)<Math.max(g,(s+r)*f));
+      const keep=(x,y,r)=>KEEP.some(b=>x>b[0]-r&&x<b[2]+r&&y>b[1]-r&&y<b[3]+r)||x<P.x0+8||x>P.x1-8||y<P.y0+TREEY||y>P.y1-6||Math.hypot(x-cx,y-cy)<P.round[2]+r+4;
+      const place=(k,x,y,m,t)=>{ add(k,x,y,m,t); put(x,y,m*W(k)); };
+      const vn=(x,y,c,sd)=>{ const gx=Math.floor(x/c), gy=Math.floor(y/c), u0=x/c-gx, v0=y/c-gy, u=u0*u0*(3-2*u0), v=v0*v0*(3-2*v0), h=(i,j)=>hash(gx+i+500,gy+j+500,sd), a=h(0,0), b=h(1,0), c2=h(0,1), d=h(1,1); return a+(b-a)*u+(c2-a)*v+(a-b-c2+d)*u*v; };
+      const wood=(x,y)=>.65*vn(x,y,40,401)+.35*vn(x,y,15,409), OAK=['OakTree1','OakTree2','OakTree3','Elder1'], kind=(a,b,c)=>OAK[Math.floor(hash(a,b,c)*OAK.length)%OAK.length];
+      const row=(x,y,k,m,n)=>{ const r=m*W(k); if(pd(x,y)<1.6||FOUNT.lake(x,y)<2||BK.wet(x,y,1)||FOUNT.ter(x,y)<2||keep(x,y,0)||giant(x,y,0,15)||onThing(x,y,.6)||crowd(x,y,r,.45,6))return; place(k,x,y,m,hash(n,7,231)*6.28); };
+      // the paths' rows: the Mall's trees, the trunk just off the path's edge, one each side every 9 tiles
+      let n=0; for(const [ax,ay,bx,by] of P.segs){ const L=Math.hypot(bx-ax,by-ay), ux=(bx-ax)/L, uy=(by-ay)/L, NW=Math.round(L/70);
+        for(let s=4;s<L-2;s+=9)for(const sd of [-1,1]){ n++; const w=WA*Math.sin(2*Math.PI*NW*s/L), off=sd*8.5+w+(hash(n,3,233)-.5), x=ax+ux*s-uy*off, y=ay+uy*s+ux*off; row(x,y,kind(n,5,235),5.25*(2+.4*hash(n,9,237)),n); } }
+      // the lake's track: oaks behind it and willows leaning to the water
+      { const S=FOUNT.S; for(let i=0;i<S.shore.length;i+=5){ n++; const [x,y]=S.shore[i], q=S.nrm(x,y), d=FOUNT.TRACK[0]+FOUNT.TRACK[1]+3+hash(n,11,239)*2.5, wl=hash(n,13,241)<.4; row(x+q[0]*d,y+q[1]*d,wl?'Willow1':kind(n,15,243),5.25*(wl?1.3+.3*hash(n,17,245):1.5+.5*hash(n,17,245)),n); } }
+      // the brook's banks
+      { const B=(LEVEL.parkPlaces.brook&&LEVEL.parkPlaces.brook.pts)||[]; for(let i=0;i+1<B.length;i++){ const [ax,ay]=[B[i][0]-PO.x,B[i][1]-PO.y], [bx,by]=[B[i+1][0]-PO.x,B[i+1][1]-PO.y], L=Math.hypot(bx-ax,by-ay)||1, ux=(bx-ax)/L, uy=(by-ay)/L;
+        for(let s=0;s<L;s+=7)for(const sd of [-1,1]){ n++; const off=sd*(5+hash(n,19,247)*3), x=ax+ux*s-uy*off, y=ay+uy*s+ux*off; row(x,y,hash(n,21,249)<.5?'Willow1':kind(n,23,251),5.25*(1.3+.4*hash(n,25,253)),n); } } }
+      // the woods: thick where the drift is high, thinning to open lawn; never a crown over a path
+      for(let i=0;i<40000;i++){ const x=P.x0+(P.x1-P.x0)*hash(i,31,261), y=P.y0+(P.y1-P.y0)*hash(i,33,263), w=wood(x,y); if(w<.4||hash(i,35,265)>Math.min(1,(w-.4)*6))continue;
+        const k=kind(i,37,267), m=5.25*(1.4+.8*hash(i,39,269)), r=m*W(k); if(!ok(x,y,r*.7)||keep(x,y,r*.5)||giant(x,y,r)||onThing(x,y,r*.4)||crowd(x,y,r,.72,4))continue; place(k,x,y,m,hash(i,41,271)*6.28); } }
     { const FY=[P.y1+6,P.y1+20,P.y1+36], XA=P.x0-16, XB=P.x1+16, BACK=out.back=[]; let n=0; for(const [ri,fy] of FY.entries())for(let x=XA+9*ri+6;x<XB;x+=18,n++){ const k=hash(n,201,3)<.3?'Elder'+(1+n%2):'OakTree'+(1+n%3), m=5.25*(1.1+.25*hash(n,203,5)), xx=x+(hash(n,205,7)-.5)*9, yy=fy+(hash(n,207,9)-.5)*8; BACK.push([k,+xx.toFixed(1),+yy.toFixed(1),+m.toFixed(1),+(hash(n,209,11)*6.28).toFixed(2)]); } }
     const R0=out.length; let edgeOK;
     // a dense ring of tall trees just inside the wall, right round the park, so from outside only trees show at the edge
@@ -311,7 +318,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       // one row along the wall, each crown just clear of the next (owner: "this size and distance from each other")
       const lowR=k=>{ const q=k+'.low'; if(!F[q])F[q]=TREEGEN.low(F[k].sum,F[k].trunk); return F[q].rad/.84; }; let s=5000;
       const row=(a0,a1,at,g)=>{ let u=a0, prev=0; for(;;){ const k=TK[Math.floor(hash(s,1,11)*TK.length)%TK.length], m=5.25*(1.6+.6*hash(s,2,13)), r=lowR(k)*m; u+=(prev+r)/2+.3; if(u>a1-r)break; prev=r;
-        const [x,y]=at(u,r+1.1), sd=s++; if(gap(u,g,PAD+r)||!edgeOK(x,y))continue; add(k,x,y,m,hash(sd,4,19)*6.28); } };
+        const [x,y]=at(u,r+1.1), sd=s++; if(gap(u,g,PAD+r)||!edgeOK(x,y)||KEEP.some(b=>x>b[0]&&x<b[2]&&y>b[1]&&y<b[3]))continue; add(k,x,y,m,hash(sd,4,19)*6.28); } };
       row(P.x0+1,P.x1-1,(u,o)=>[u,P.y0+o],P.gate); if(!PARK.openN)row(P.x0+1,P.x1-1,(u,o)=>[u,P.y1-o],PARK.ngate);
       const RM=Math.max(...TK.map(k=>lowR(k)*9))*2;   // the side rows leave the corners to the end rows
       row(P.y0+RM,P.y1-RM,(u,o)=>[P.x0+o,u],PARK.wgate); if(!PARK.openE)row(P.y0+RM,P.y1-RM,(u,o)=>[P.x1-o,u],PARK.egate); }
@@ -378,8 +385,22 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
   const NOTREES=QS.get('trees')==='0';   // no trees placed yet (owner, 5 Nov 2026); ?trees=1 shows them
   PARK.trunksOf=trunks;
   const NI=TREES.length-PARK.ringN, INO=[], INC=[]; PARK.later(()=>{ PARK.trees=NOTREES||!INO.length?null:mesh(INO,true,true,true,{lod:'near'}); PARK.cards=NOTREES||!INC.length?null:mesh(INC,true,true,true,{noTrunk:1,cards:1}); PARK.trunks=INC.length?trunks(INC):null; PARK.feet=INO.length+INC.length?feet(INO.concat(INC)):null;   // only the ring along the wall, no trees inside (owner, 7 Nov 2026)
-    if(PARK.trees&&window.WEEDS){ const F=WEEDS.feet=WEEDS.feet||[]; for(const it of PARK.trees.userData.items||[])if(it.sol)F.push([it.x,it.z,(it.sol[2]-it.sol[0])/2]); } if(window.WEEDS&&WEEDS.lawnDrop)WEEDS.lawnDrop(P.rect()); });
-  PARK.ring=NOTREES?null:mesh(TREES.slice(NI),true,true,false,{}); PARK.ringTrunks=null;   // the old trees in their own leaves, the cherry by the lake in cards (owner, 7 Nov 2026)
+    if(PARK.trees&&WEEDS){ const F=WEEDS.feet=WEEDS.feet||[]; for(const it of PARK.trees.userData.items||[])if(it.sol)F.push([it.x,it.z,(it.sol[2]-it.sol[0])/2]); } if(WEEDS&&WEEDS.lawnDrop)WEEDS.lawnDrop(P.rect()); });
+  PARK.ring=NOTREES?null:mesh(TREES,true,true,false,{}); PARK.ringTrunks=null;   // the old trees in their own leaves, the ring and the park's woods in one mesh
+  // the ring cheap from far off (owner, 8 Nov 2026: "simplify the other park trees too"): each tree whole within 30 tiles of you; further off its plain shape, a round crown (twenty triangles) on a six-sided trunk, all of them one draw; a tree moved in the world editor stays whole
+  if(PARK.ring&&PARK.ring.isBatchedMesh){ const R=PARK.ring, IT=R.userData.items||[], ID=R.userData.ids||[], n=IT.length, GR=[[.29,.47,.24],[.35,.53,.28],[.25,.42,.22],[.4,.58,.3]];
+    const crown=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshLambertMaterial({color:0xffffff,flatShading:true}),n), trunk=new THREE.InstancedMesh(new THREE.CylinderGeometry(.7,1,1,6,1,true).translate(0,.5,0),new THREE.MeshLambertMaterial({color:0x5b4636}),n);
+    const M4=new THREE.Matrix4(), Q=new THREE.Quaternion(), V=new THREE.Vector3(), S3=new THREE.Vector3(), Z=new THREE.Matrix4().makeScale(0,0,0), c=new THREE.Color(), shape=[];
+    IT.forEach((it,i)=>{ const h=Math.max(1,(it.top||it.y+4*TILE)-it.y), r=Math.max(.6*TILE,it.r||2*TILE), g=GR[Math.floor(hash(Math.round(it.x*3),Math.round(it.z*3),77)*4)];
+      shape[i]=[M4.compose(V.set(it.x,it.y+h*.62,it.z),Q,S3.set(r*.95,h*.42,r*.95)).clone(),M4.compose(V.set(it.x,it.y-.2*TILE,it.z),Q,S3.set(Math.max(.18*TILE,(it.tr||r*.08)),h*.5,Math.max(.18*TILE,(it.tr||r*.08)))).clone()];
+      crown.setColorAt(i,c.setRGB(g[0],g[1],g[2],THREE.SRGBColorSpace)); crown.setMatrixAt(i,Z); trunk.setMatrixAt(i,Z); });
+    for(const m of [crown,trunk]){ m.userData.noSmallCull=1; m.castShadow=true; m.receiveShadow=true; m.frustumCulled=false; (R.parent||scene).add(m); } PARK.ringFar=crown;
+    const NEAR=30*TILE, near=new Uint8Array(n).fill(2); let lx=1e9, lz=1e9;
+    PARK.ringLod=()=>{ if(Math.hypot(pos.x-lx,pos.z-lz)<TILE)return; lx=pos.x; lz=pos.z; const ed=R.userData.edited, gone=R.userData.gone; let ch=false;
+      for(let i=0;i<n;i++){ const id=ID[i]; if(id==null||id<0)continue; const it=IT[i], nr=(ed&&ed.has(id))||Math.hypot(it.x-pos.x,it.z-pos.z)-(it.r||0)<NEAR?1:0; if(nr===near[i])continue; near[i]=nr; ch=true;
+        if(!(gone&&gone.has(id)))R.setVisibleAt(id,!!nr); crown.setMatrixAt(i,nr||(gone&&gone.has(id))?Z:shape[i][0]); trunk.setMatrixAt(i,nr||(gone&&gone.has(id))?Z:shape[i][1]); }
+      if(ch){ crown.instanceMatrix.needsUpdate=trunk.instanceMatrix.needsUpdate=true; } };
+    SYS.every(()=>PARK.ringLod(),300,'061-park the ring near or far'); }
   { let c0={}, L=[]; PARK.treeItems=()=>{ if(c0!==PARK.trees){ c0=PARK.trees; L=[PARK.trees,PARK.ring,PARK.cards].filter(Boolean).flatMap(m=>m.userData.items||[]); } return L; }; }
   PARK.oaks=NOTREES?[]:TREES.slice(NI).map(([k,x,y,m])=>[X(x),Z(y),m]);
   // seen from outside the park, and the rows past its north wall: the same leaf-card trees, the fewer bigger cards, still
@@ -394,6 +415,18 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       for(const M of [R,P.standFar])if(M&&M.isBatchedMesh)M.userData.items.forEach((it,i)=>set(M,M.userData.ids[i],Math.hypot(it.x-pos.x,it.z-pos.z)-it.r<=far));
       for(const G of [PARK.trunks,PARK.ringTrunks])if(G&&G.userData.cull)G.userData.cull(far,pos.x,pos.z); };
     PARK.lodReset=()=>{ lx=1e9; }; SYS.add('life',()=>PARK.lod(),'061-treelod'); }
+  // the park's small things only near (owner, 8 Nov 2026: "yes drop the small props past 70 tiles"): every repeated small thing in the park (tufts, flowers, mushrooms, posts, lamps: each under 1.5 tiles) drawn only within 70 tiles of you; the trees and the big pieces always
+  { const R=70*TILE, Z=new THREE.Matrix4().makeScale(0,0,0), M=new THREE.Matrix4(), V=new THREE.Vector3(), Q=new THREE.Quaternion(), SC=new THREE.Vector3(), L=[], seen=new WeakSet(); let lx=1e9, lz=1e9, scanT=0;
+    const take=im=>{ if(seen.has(im))return; seen.add(im); if(im.userData.noSmallCull||im.count<20)return; const g=im.geometry; if(!g.boundingSphere)g.computeBoundingSphere(); let big=0; const n=im.count, cx=new Float32Array(n), cz=new Float32Array(n), m0=new Float32Array(n*16);
+      for(let i=0;i<n;i++){ im.getMatrixAt(i,M); M.premultiply(im.matrixWorld); M.decompose(V,Q,SC); cx[i]=V.x; cz[i]=V.z; if(g.boundingSphere.radius*Math.max(SC.x,SC.y,SC.z)>1.5*TILE)big++; im.getMatrixAt(i,M); M.toArray(m0,i*16); }
+      if(big>n*.1)return; L.push({im,n,cx,cz,m0,vis:new Uint8Array(n).fill(1),ver:im.instanceMatrix.version}); };
+    PARK.smallCull=()=>{ if((scanT-=1)<=0){ scanT=15; for(const G of new Set([MAPG.parkwall,MAPG.park,...scene.children.filter(c=>/^park(wall)?$/.test(c.name))]))if(G)G.traverse(o=>{ if(o.isInstancedMesh)take(o); }); }
+      if(Math.hypot(pos.x-lx,pos.z-lz)<2*TILE)return; lx=pos.x; lz=pos.z;
+      for(const e of L){ const im=e.im; if(im.instanceMatrix.version!==e.ver){ for(let i=0;i<e.n&&i<im.count;i++)if(e.vis[i]){ im.getMatrixAt(i,M); M.toArray(e.m0,i*16); } }   // (someone else moved them: their places kept)
+        let ch=false; for(let i=0;i<e.n&&i<im.count;i++){ const on=Math.hypot(e.cx[i]-pos.x,e.cz[i]-pos.z)<R?1:0; if(on===e.vis[i])continue; e.vis[i]=on; ch=true; im.setMatrixAt(i,on?M.fromArray(e.m0,i*16):Z); }
+        if(ch)im.instanceMatrix.needsUpdate=true; e.ver=im.instanceMatrix.version; } };
+    SYS.every(()=>PARK.smallCull(),300,'061-park the small things only near');
+    window.SMALLCULLDBG=()=>({meshes:L.length,all:L.reduce((a,e)=>a+e.n,0),shown:L.reduce((a,e)=>a+e.vis.reduce((x,v)=>x+v,0),0)}); }
   window.PARKDBG=()=>({oaks:PARK.oaks,trees:TREES,back:TREES.back,TL,progs:renderer.info.programs.length});
   PARK.later(()=>{ '@park'; PARK.rocks=mesh([['BigRock3',87.5,-37,2.6,1.8],['BigRock5',126,-41,2.4,.2],['Rock_12',55.5,-41,1,1],['Rock1',111,-41,.6,2],['BigRock1',66,-35,2,1.1]].map(([k,x,y,...r])=>[k,RX(x),RY(y),...r]),false);
   { const UG=[['bush1',1.1],['bush2',1.2],['bush3',1.3],['bush4',1.5],['bush5',1.1],['flower1',.5],['flower2',.7],['flower3',.3],['flower4',.7],['flower5',.35],['flower6',.8],['grass1',.5],['grass2',.6],['grass1',.45],['grass2',.55],['mushroom1',.3],['mushroom2',.35],['mushroom3',.3],['mushroom4',.25],['stone2',.5],['stone3',.2],['stones1',.25]];
@@ -447,7 +480,9 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     for(const q of LP){ const [x,y]=snap(q[0],q[1]), d=pd(x,y); if(d<.5||d>2.6||BK.wet(x,y,.8)||FOUNT.lake(x,y)<1||inCL(x,y,1)||x<P.x0+2||x>P.x1-2||y<P.y0+2||y>P.y1-2)continue;
       if(TREES.some(t=>Math.hypot(t[1]-x,t[2]-y)<1.6)||ok.some(o=>Math.hypot(o[0]-x,o[1]-y)<9))continue; ok.push([x,y]); }
     // a pair at the drawbridge's foot, either side of the way up to the gate
-    for(const sd of [-1,1]){ const [x,y]=snap(CASTLE.gate-PO.x+sd*2.4,CL[1]-1.8); if(inCL(x,y,.2)||pd(x,y)<.5)continue; for(let i=ok.length-1;i>=0;i--)if(Math.hypot(ok[i][0]-x,ok[i][1]-y)<6)ok.splice(i,1); ok.push([x,y]); }
+    for(const sd of [-1,1]){ const [x,y]=snap(CASTLE.gate-PO.x+sd*2.4,CL[1]-1.8); if(inCL(x,y,.2)||pd(x,y)<.5)continue; for(let i=ok.length-1;i>=0;i--)if(Math.hypot(ok[i][0]-x,ok[i][1]-y)<6)ok.splice(i,1); ok.push(Object.assign([x,y],{gate:1})); }
+    // the park's one kind of lamp post, a third fewer (owner, 9 Nov 2026: "more sparse by 33%"): the most crowded one goes, until two in three are left
+    { const nn=o=>ok.reduce((m,q)=>q===o?m:Math.min(m,Math.hypot(q[0]-o[0],q[1]-o[1])),1e9); for(let want=Math.round(ok.length*2/3);ok.length>want;){ let bi=0, bd=1e9; ok.forEach((o,i)=>{ const d=nn(o); if(d<bd&&!o.gate){ bd=d; bi=i; } }); ok.splice(bi,1); } }
     LP.length=0; LP.push(...ok); }
   // the park lamp (owner, 28 Oct 2026): a dark metal post and a metal hood; the bulb hides under the hood, so only its light on the ground shows
   const MET=(c0,c1)=>(i,j)=>{ const t=(i*7+j*3)%11<2?1.12:1; return [c0*t|0,c1*t|0,(c1+6)*t|0]; };
@@ -455,7 +490,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     for(const [w,z0,z1,c] of [[.07,h0-4,h0,52],[.3,h0,h0+2,62],[.25,h0+2,h0+4,74],[.17,h0+4,h0+6,86],[.07,h0+6,h0+9,70]])block(x-w,y-w,x+w,y+w,z0,z1,35,()=>[c+30,c+34,c+40],0,z1-z0,MET(c,c+4));
     { const w=.2, yb=Y(h0-.2), tx=SHARED.BOD.faceTex(6,6,(i,j)=>i<1||i>4||j<1||j>4?[90,88,84]:[255,236,190,1]); SHARED.BOD.bq([X(x-w),yb,Z(y-w)],[X(x+w),yb,Z(y-w)],[X(x+w),yb,Z(y+w)],[X(x-w),yb,Z(y+w)],tx,'G'); SHARED.BOD.bq([X(x-w),yb,Z(y+w)],[X(x+w),yb,Z(y+w)],[X(x+w),yb,Z(y-w)],[X(x-w),yb,Z(y-w)],tx,'G'); }
     const L=new THREE.PointLight(new THREE.Color(1,.86,.62),70,12*TILE,1.6); L.position.set(X(x),Y(h0-6),Z(y)); L.userData.i0=L.intensity; L.userData.near=.3*TILE; L.intensity=0; (PARK.hoods||(PARK.hoods=[])).push(L); scene.add(L); lamps.push(L);   // lit by night only, with the path lamps (lampLit)
-    o.sol=[X(x-.1),Z(y-.1),X(x+.1),Z(y+.1)]; o.fix=[X(x-.1),Z(y-.1),0,X(x+.1),Z(y+.1),Y(h0)]; o.follow=[L]; SOL.up.push(o.sol); FIX.up.push(o.fix); } BATCH.tag=null; });
+    o.sol=[X(x-.1),Z(y-.1),X(x+.1),Z(y+.1)]; o.fix=[X(x-.1),Z(y-.1),0,X(x+.1),Z(y+.1),Y(h0)]; o.follow=[L]; SOL.up.push(o.sol); FIX.up.push(o.fix); } BATCH.tag=null; if(WEEDS.addFeet)WEEDS.addFeet(LP.map(([x,y])=>[X(x),Z(y),.15*TILE,.6*TILE])); });
   const sol=(x0,y0,x1,y1,h)=>{ SOL.up.push([X(x0),Z(y0),X(x1),Z(y1)]); FIX.up.push([X(x0),Z(y0),0,X(x1),Z(y1),Y(h)]); };
   for(const [x0,y0,x1,y1] of RUNS)sol(x0,y0,x1,y1,WH); for(const [,,x0,y0,x1,y1] of PIERS)sol(x0-.14,y0-.14,x1+.14,y1+.14,PH+18);
   const BM=(k,map,emap)=>new THREE.MeshLambertMaterial({map,emissiveMap:emap||null,emissive:emap?new THREE.Color(1,1,1):new THREE.Color(0,0,0),alphaTest:.5,side:THREE.DoubleSide});
@@ -475,10 +510,12 @@ await grab('park',async()=>{});
   P.box=()=>{ const r=P.rect(), b=CASTLE.b, B=SHARED.BOD, xs=[B.XS(b[0]),B.XS(b[1])], zs=[B.ZS(b[2]),B.ZS(b[3])]; return [Math.min(r[0],...xs),Math.min(r[1],...zs),Math.max(r[2],...xs),Math.max(r[3],...zs)]; };   // the park and the castle, in the world
   P.steps=[]; P.load=async()=>{ FADE.note('DOWNLOADING THE PARK'); await LOAD('park'); const t0=performance.now(), N0=P.Q.length; while(P.Q.length){ FADE.note('BUILDING THE PARK',N0-P.Q.length,N0); const t=performance.now(); P.run(P.Q.shift()); P.steps.push(Math.round(performance.now()-t)); await brk(); } P.ready=true; FADE.note(null); scene.updateMatrixWorld();
     for(const f of [()=>ROOMS.reset(),()=>CLIP.run(),()=>PERFX.chunk(),()=>CULL.scan()])try{ f(); }catch(e){ console.warn('PARK',e); } P.ms=Math.round(performance.now()-t0); };
-  P.show=on=>{ '@later'; P.in=on; VIS.hide(G,'park',true); VIS.hide(G,'park',!(on&&SHARED.LVL==='up')); if(P.stand)P.stand.visible=!on||!!(PARK.trees&&PARK.trees.isBatchedMesh&&P.stand.isBatchedMesh); if(PARK.lodReset)PARK.lodReset(); if(MODS.landHoles)MODS.landHoles(on); if(window.WEEDS&&WEEDS.lawnDrop)WEEDS.lawnDrop(P.rect()); for(const f of P.onShow)try{ f(on); }catch(e){ console.warn('PARK',e); } };
+  P.show=on=>{ '@later'; P.in=on; VIS.hide(G,'park',true); VIS.hide(G,'park',!(on&&SHARED.LVL==='up')); if(P.stand)P.stand.visible=!on||!!(PARK.trees&&PARK.trees.isBatchedMesh&&P.stand.isBatchedMesh); if(PARK.lodReset)PARK.lodReset(); if(MODS.landHoles)MODS.landHoles(on); if(WEEDS&&WEEDS.lawnDrop)WEEDS.lawnDrop(P.rect()); for(const f of P.onShow)try{ f(on); }catch(e){ console.warn('PARK',e); } };
   const go=async(on,jump)=>{ busy=true; await FADE.run(on?'ENTERING CENTRAL PARK':'LEAVING CENTRAL PARK',async()=>{ P.hold=true; try{ if(on&&!P.ready)await P.load(); } finally{ P.hold=false; } P.show(on); },{cut:jump,hold:140}); busy=false; };
+  { const load0=P.load; let once=null; P.load=()=>once||(once=load0()); }
+  P.due=()=>!P.ready&&SHARED.floor==='up'&&!(MODS.apts&&MODS.apts.inReal)&&P.within(pos.x,pos.z,-20); FADE.arrive.push(async()=>{ if(P.due()&&!P.hold){ P.hold=true; try{ await P.load(); } finally{ P.hold=false; } } });
   let bg=false; const NEAR=14;   // the park is drawn (and loaded quietly first) from this many tiles outside its wall, so its gates show the real inside
-  P.door=(py,p)=>{ if(busy||!window.__started||SHARED.LVL!=='up'||LEVELS.way||UI.freeCam)return; const jump=lx!=null&&Math.hypot(p.x-lx,p.z-lz)>2*TILE; lx=p.x; lz=p.z;
+  P.door=(py,p)=>{ if(busy||!SYS.started||SHARED.LVL!=='up'||SHARED.floor!=='up'||LEVELS.way||UI.freeCam)return; const jump=lx!=null&&Math.hypot(p.x-lx,p.z-lz)>2*TILE; lx=p.x; lz=p.z;
     if(!P.ready&&!bg&&P.within(p.x,p.z,-NEAR-6)){ bg=true; P.load().finally(()=>{ bg=false; }); }
     const w=P.within(p.x,p.z,P.in?-NEAR-.35:-NEAR+.35); if(w===P.in)return; if(w&&!P.ready&&!bg||jump)go(w,jump); else if(!w||P.ready)P.show(w); };
   window.PARKPLACE=()=>({in:P.in,ready:P.ready,busy,ms:P.ms,steps:P.steps,left:P.Q.length,kids:G.children.length}); }

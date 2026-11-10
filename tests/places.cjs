@@ -56,10 +56,10 @@ const TOUR=[
   const st=await pg.evaluate(()=>performance.getEntriesByType('resource').filter(e=>e.startTime<window.__t0).map(e=>new URL(e.name).pathname).filter(p=>p.startsWith('/g/')).map(p=>p.slice(3)));
   ok(st.every(f=>fs.existsSync(path.join('dist/g',f))),'the start\'s files are all in dist/g');
   console.log('     first frame after '+Math.round(await pg.evaluate(()=>window.__t0))+' ms of the page; the start fetched '+st.length+' files, '+Math.round(st.reduce((a,f)=>a+gz(f),0)/1024)+' KB gzipped; code: '+st.filter(f=>/\.js$/.test(f)).map(f=>f+' '+Math.round(gz(f)/1024)+' KB').join(', '));
-  ok(!st.some(f=>/^x-/.test(f)),'no chunk at the start');
+  ok(!st.some(f=>/^x-/.test(f)&&!/^x-later\./.test(f)),'no place\'s chunk at the start (the later code comes before the first frame: owner, 9 Nov 2026)');
   console.log('     chunks: '+fs.readdirSync('dist/g').filter(f=>/^x-/.test(f)).map(f=>f.split('.')[0].slice(2)+' '+Math.round(gz(f)/1024)+' KB').join(', '));
   phase='after'; await wait(8000);
-  for(const [name,file,go,back] of TOUR){ phase=name; await pg.evaluate(async()=>{ for(const t=Date.now();Date.now()-t<300000&&window.FADE&&FADE.busy;)await new Promise(r=>setTimeout(r,250)); }).catch(()=>{}); const e0=errs.length, l0=late.length;   // a slow place's fade must end before the next place starts
+  for(const [name,file,go,back] of TOUR){ if(await pg.evaluate(n=>window.AWAY&&AWAY.has(n),name))continue; phase=name; await pg.evaluate(async()=>{ for(const t=Date.now();Date.now()-t<300000&&window.FADE&&FADE.busy;)await new Promise(r=>setTimeout(r,250)); }).catch(()=>{}); const e0=errs.length, l0=late.length;   // a slow place's fade must end before the next place starts
     const r=await pg.evaluate(`(${go})()`).catch(e=>'ERR '+e.message);
     await pg.screenshot({path:path.join(OUT,'place-'+name.replace(/ /g,'-')+'.png')});
     ok(r===true,name+': built and shown'+(r===true?'':' ('+String(r).slice(0,200)+')'));

@@ -1,9 +1,8 @@
 // THE RENDER INSPECTOR: RINSP, the panel showing what is drawn, its triangles, materials and cost.
 import {SHARED, THREE} from './003-shx.js';
-import {CULL, INTERIORS, LEVELS, LOOK, NPCS, pos, PS2, RINSP, ROOMS, TEXT, UI, W3} from './003b-systems.js';
+import {BATCH, CULL, INTERIORS, LEVELS, LOOK, NPCS, pos, PS2, RINSP, ROOMS, TEXT, UI, W3} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {MAPG, STORE, SYS, TILE} from './006-map-pre.js';
-import {BATCH} from './008-batch.js';
 import {OUTL} from './072-walker3d.js';
 Object.assign(RINSP,{on:false,sel:null,f:''}); window.RINSP=RINSP;
 { const T=TILE, V=new THREE.Vector3(), P3=new THREE.Vector3(), V2=new THREE.Vector3(), M4=new THREE.Matrix4(), F=new THREE.Frustum(), BX=new THREE.Box3(), BU=new THREE.Box3();
@@ -21,18 +20,18 @@ Object.assign(RINSP,{on:false,sel:null,f:''}); window.RINSP=RINSP;
   const names=()=>{ '@later'; NM=new Map(); RN=new Map(); for(const k in MAPG)NM.set(MAPG[k],'MAP '+k); for(const k in BATCH.meshes||{})NM.set(BATCH.meshes[k],'BATCH '+k);
     for(const N of NPCS)if(N.g)NM.set(N.g,'NPC '+(N.name||N.key)); for(const X of NPCS.extra||[])if(X&&X.g)NM.set(X.g,'NPC '+(X.name||X.key||'extra')); NM.set(W3.group,'YOU');
     for(const R of STORE.rooms||[])RN.set('store:'+R.id,R.name||R.id); };
-  const objOf=o=>{ '@later'; const A=o.userData.objOf; if(!A)return null; let r=OP.get(o); if(r&&r.A===A)return r; const c=new Map(), w=new Map();
+  const objOf=o=>{ '@later'; const A=(o.userData||{}).objOf; if(!A)return null; let r=OP.get(o); if(r&&r.A===A)return r; const c=new Map(), w=new Map();
     for(const q of A)if(q){ c.set(q.place,(c.get(q.place)||0)+1); w.set(q,(w.get(q)||0)+1); } const pl=[...c.entries()].sort((a,b)=>b[1]-a[1]);
     r={A,top:pl.length?(RN.get(pl[0][0])||pl[0][0])+(pl.length>1?' +'+(pl.length-1):''):'',objs:[...w.entries()].sort((a,b)=>b[1]-a[1]).slice(0,8).map(([q,k])=>(RN.get(q.place)||q.place)+':'+q.name+' '+k*2)}; OP.set(o,r); return r; };
-  const label=o0=>{ '@later'; let o=o0.userData.cullOf||o0, leaf=null, top=null, bt=null; for(let q=o;q&&q!==scene;q=q.parent){ const k=NM.get(q); if(k){ if(k[0]==='M')top=top||k; else if(k[0]==='B')bt=bt||k; else leaf=leaf||k; } else if(!leaf&&q.name)leaf=q.name; }
+  const label=o0=>{ '@later'; let o=(o0.userData||{}).cullOf||o0, leaf=null, top=null, bt=null; for(let q=o;q&&q!==scene;q=q.parent){ const k=NM.get(q); if(k){ if(k[0]==='M')top=top||k; else if(k[0]==='B')bt=bt||k; else leaf=leaf||k; } else if(!leaf&&q.name)leaf=q.name; }
     const r=objOf(o)||(o.parent&&objOf(o.parent)); if(!leaf&&(bt||r))leaf=(bt||'BATCH')+(r&&r.top?' · '+r.top:''); if(!leaf){ const m=mats(o)[0]; leaf=(o.parent&&o.parent!==scene&&o.parent.name?o.parent.name+' › ':'')+(o.geometry?o.geometry.type.replace('Geometry',''):o.type)+(m?' '+m.type.replace('Material',''):''); }
-    if(o.userData.inner)leaf+=' (room part)'; return (top?top.slice(4)+' / ':'')+leaf; };
+    if((o.userData||{}).inner)leaf+=' (room part)'; return (top?top.slice(4)+' / ':'')+leaf; };
   const youIn=b=>pos.x>b.x0&&pos.x<b.x1&&pos.z>b.z0&&pos.z<b.z1&&SHARED.py>b.y0-.3&&SHARED.py<b.y1;
   const wbox=o=>{ if(o.isInstancedMesh||o.isBatchedMesh){ if(!o.boundingBox)o.computeBoundingBox(); return BX.copy(o.boundingBox).applyMatrix4(o.matrixWorld); } const g=o.geometry; if(!g)return BX.makeEmpty(); if(!g.boundingBox)g.computeBoundingBox(); return BX.copy(g.boundingBox).applyMatrix4(o.matrixWorld); };
   const collect0=full=>{ '@later'; names(); M4.multiplyMatrices(SHARED.cam.projectionMatrix,SHARED.cam.matrixWorldInverse); F.setFromProjectionMatrix(M4); P3.set(pos.x,SHARED.py,pos.z);
     const HG=new Set([...NPCS,...(NPCS.extra||[])].filter(N=>N.hid&&N.g).map(N=>N.g)), npcHid=o=>{ for(let q=o;q;q=q.parent)if(HG.has(q))return true; return false; }, RB=ROOMS.boxes(), fg=scene.fog&&scene.fog.isFog?scene.fog:null, seen=new Set(), drawn=new Set(), rows=new Map(), progs=new Set(), lights=[];
     const TH=(UI.things||[]).filter(th=>th.obj&&th.obj.visible&&(!th.obj.parent||th.obj.parent.visible)&&LEVELS.drawn(th.obj)).map(th=>[th.name,th.obj.getWorldPosition(new THREE.Vector3()),th.near||th.reach||T]);
-    scene.traverseVisible(o=>{ seen.add(o); if(o.isLight){ lights.push(o); return; } if(o.userData.rin||!(o.isMesh||o.isPoints||o.isLine||o.isSprite)||HG.size&&npcHid(o))return;
+    scene.traverseVisible(o=>{ seen.add(o); if(o.isLight){ lights.push(o); return; } if((o.userData||{}).rin||!(o.isMesh||o.isPoints||o.isLine||o.isSprite)||HG.size&&npcHid(o))return;
       const ms=mats(o); if(!ms.some(m=>m.visible)||!o.layers.test(SHARED.cam.layers))return; const R=CULL.M&&CULL.M.get(o); let tr=0, inV;
       if(R&&!R.off&&R.px.length){ const t=CULL.view(R,F); inV=t>=0; tr=Math.max(0,t); } else { inV=o.isSprite||!o.geometry?true:F.intersectsObject(o); tr=tris(o); }
       if(o.frustumCulled&&!inV)return; drawn.add(o); for(const m of ms)progs.add(prog(m));
@@ -49,7 +48,7 @@ Object.assign(RINSP,{on:false,sel:null,f:''}); window.RINSP=RINSP;
       geometries:I.memory.geometries,textures:I.memory.textures,lightsInScene:0,lightsLit:lit.length,shadows:lights.filter(l=>l.castShadow).map(l=>l.type.replace('Light','')+' '+(l.shadow&&l.shadow.mapSize?l.shadow.mapSize.x:'?')+(l.isPointLight?'x6':'')),
       lvl:SHARED.LVL,place:ROOMS.cur?(ROOMS.cur.name||ROOMS.cur.id||'room'):'',at:[+(pos.x/T).toFixed(1),+(pos.z/T).toFixed(1)],drawnObjs:drawn.size,drawnTris:out.reduce((a,w)=>a+w.tris,0),fog:fg?+(fg.far/T).toFixed(0):null};
     let hid=lastH; if(full){ const H=new Map(), gs=new Set(), ts=new Set(); let all=0, gB=0, tB=0;
-      scene.traverse(o=>{ if(o.isLight){ head.lightsInScene++; return; } if(!(o.isMesh||o.isPoints||o.isLine)||o.userData.rin||o.userData.cullOf)return; const ms=mats(o), t=tris(o); all+=t;
+      scene.traverse(o=>{ if(o.isLight){ head.lightsInScene++; return; } if(!(o.isMesh||o.isPoints||o.isLine)||(o.userData||{}).rin||(o.userData||{}).cullOf)return; const ms=mats(o), t=tris(o); all+=t;
         let g0=0, t0=0; if(o.geometry&&!gs.has(o.geometry)){ gs.add(o.geometry); g0=gb(o.geometry); gB+=g0; } for(const m of ms)for(const x of texs(m))if(!ts.has(x)){ ts.add(x); t0+=tsz(x)[2]; } tB+=t0;
         const CR=CULL.M&&CULL.M.get(o); if(drawn.has(o)||CR&&!CR.off&&CR.px.some(p=>drawn.has(p))||!ms.some(m=>m.visible))return; const why=!seen.has(o)?'HIDDEN':!o.layers.test(SHARED.cam.layers)?(o.castShadow?'LAYER OFF, STILL CASTS SHADOW':'LAYER OFF'):'OUT OF VIEW';
         const k=label(o); let w=H.get(k); if(!w)H.set(k,w={name:k,tris:0,n:0,geoB:0,texB:0,why:new Set(),objs:[]}); w.tris+=t; w.n++; if(w.objs.length<40)w.objs.push(o); w.geoB+=g0; w.texB+=t0; w.why.add(why); });
@@ -58,7 +57,7 @@ Object.assign(RINSP,{on:false,sel:null,f:''}); window.RINSP=RINSP;
     return last={head,drawn:out,hidden:hid}; };
   // counted as the frame draws it: the same hiding the main loop does round its render (NPCs, interiors, other levels, the cull and the haze)
   const collect=full=>{ NPCS.cull(true); INTERIORS.cull(true); const H=LEVELS.hide(); CULL.begin(); try{ return collect0(full); } finally{ CULL.end(); LEVELS.show(H); INTERIORS.cull(false); NPCS.cull(false); } };
-  const detail=w=>{ '@later'; if(!w)return ''; return w.objs.slice(0,6).map(o=>{ const ms=mats(o), r=objOf(o.userData.cullOf||o)||(o.parent&&objOf(o.parent));
+  const detail=w=>{ '@later'; if(!w)return ''; return w.objs.slice(0,6).map(o=>{ const ms=mats(o), r=objOf((o.userData||{}).cullOf||o)||(o.parent&&objOf(o.parent));
       return '<div class="o">'+esc(o.type+(o.name?' "'+o.name+'"':'')+' · '+tris(o)+' tris'+(o.isInstancedMesh?' ('+o.count+' copies)':'')+' · shadow '+(o.castShadow?'CAST':'-')+'/'+(o.receiveShadow?'RECV':'-')+(o.frustumCulled?'':' · NEVER CULLED')+' · layers '+o.layers.mask+' · geo '+kb(gb(o.geometry)))+
         ms.map(m=>'<br>&nbsp;'+esc(m.type+(m.name?' "'+m.name+'"':'')+' · '+prog(m)+(m.customProgramCacheKey&&m.customProgramCacheKey()?' · key '+m.customProgramCacheKey().slice(0,60):'')+(m.transparent?' · transparent':''))+texs(m).map(t=>{ const [a,b,c]=tsz(t); return '<br>&nbsp;&nbsp;'+esc('texture '+a+'x'+b+' '+kb(c)); }).join('')).join('')+
         (r?'<br>&nbsp;'+esc('holds: '+r.objs.join(', ')):'')+'</div>'; }).join('')+(w.objs.length>6?'<div class="o">… '+(w.n-6)+' more</div>':''); };
@@ -92,7 +91,7 @@ Object.assign(RINSP,{on:false,sel:null,f:''}); window.RINSP=RINSP;
   const loop=now=>{ if(!RINSP.on)return; fc++; RINSP.tf=(RINSP.tf||0)+1; if(GT.on)GT.poll(); if(!f0)f0=now; if(now-f0>=500){ RINSP.fps=fc*1000/(now-f0); RINSP.ms=(now-f0)/fc; fc=0; f0=now; } };
   // the GPU's own time for each full-screen pass and each picture drawn outside them (EXT_disjoint_timer_query_webgl2; where the browser has it), so the slow part shows
   const GT={on:false,q:[],ms:{},cur:0}; RINSP.gpu=GT.ms;
-  const gtName=(p,i)=>p===SHARED.RPASS?'SCENE':window.OUTL&&p===OUTL.sp?'OUTLINE':window.PS2&&p===PS2.sp?'PS2':window.LOOK&&p===LOOK.sp?'LOOK':p.constructor&&p.constructor.name==='OutputPass'?'OUTPUT':'PASS '+i;
+  const gtName=(p,i)=>p===SHARED.RPASS?'SCENE':window.OUTL&&p===OUTL.sp?'OUTLINE':PS2&&p===PS2.sp?'PS2':LOOK&&p===LOOK.sp?'LOOK':p.constructor&&p.constructor.name==='OutputPass'?'OUTPUT':'PASS '+i;
   const gtWrap=(o,k,nm)=>{ '@later'; const f=o[k]; if(!f||f.__gt)return; const w=function(...a){ const gl=renderer.getContext(), X=GT.X; if(!GT.on||!X||GT.cur)return f.apply(this,a); const q=gl.createQuery(); gl.beginQuery(X.TIME_ELAPSED_EXT,q); GT.cur=1;
       try{ return f.apply(this,a); } finally{ gl.endQuery(X.TIME_ELAPSED_EXT); GT.cur=0; GT.q.push([q,typeof nm==='function'?nm.apply(this,a):nm]); } }; w.__gt=1; o[k]=w; };
   GT.poll=()=>{ '@later'; const gl=renderer.getContext(), X=GT.X; if(!X)return; const bad=gl.getParameter(X.GPU_DISJOINT_EXT), frame={};

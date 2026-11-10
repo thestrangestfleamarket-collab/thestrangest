@@ -37,11 +37,11 @@ const BOARDS={designs:{}}; window.BOARDS=BOARDS;
     const gc=document.createElement('canvas'); gc.width=gc.height=32; const gg=gc.getContext('2d'), rg=gg.createRadialGradient(16,16,1,16,16,16); rg.addColorStop(0,'rgba(255,255,255,.9)'); rg.addColorStop(1,'rgba(255,255,255,0)'); gg.fillStyle=rg; gg.fillRect(0,0,32,32);
     const glow=new THREE.Mesh(new THREE.PlaneGeometry(W*2.4,L*1.25),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(gc),color:d.glow,transparent:true,opacity:.5,blending:THREE.AdditiveBlending,depthWrite:false})); glow.rotation.x=-Math.PI/2; glow.position.y=-.05; G.add(glow); G.userData.glow=glow;
     G.scale.setScalar(T); return G; };
-  if(window.INSPECT&&INSPECT.kinds)INSPECT.kinds.push({is:id=>!!D[id],make:id=>{ const g=BOARDS.mesh(id); g.scale.setScalar(1); g.traverse(c=>{ c.userData.ownMat=true; }); return g; }});
+  if(INSPECT&&INSPECT.kinds)INSPECT.kinds.push({is:id=>!!D[id],make:id=>{ const g=BOARDS.mesh(id); g.scale.setScalar(1); g.traverse(c=>{ c.userData.ownMat=true; }); return g; }});
 
   // riding one: it hovers a hand's width up, keeps its speed, carves; you stand sideways on it
   const POSE={k:'skate',push:-1,brake:false,goofy:false,z:0};
-  RIDE.kind('ride',{name:'HOVERBOARD',hint:'A CLICK DROPS IT AND YOU STEP ON. WASD RIDES, SPACE HOPS, A CLICK STEPS OFF.',onSay:'YOU DROP THE BOARD; IT HANGS IN THE AIR. YOU STEP ON.',held:.55,
+  RIDE.kind('ride',{name:'HOVERBOARD',cat:'boards',hint:'E DROPS IT AND YOU STEP ON. WASD RIDES, SPACE HOPS, E STEPS OFF.',onSay:'YOU DROP THE BOARD; IT HANGS IN THE AIR. YOU STEP ON.',held:.55,
     make:id=>BOARDS.mesh(id), lift:.32, acc:2.4, turn:2.8, drag:.35, knock:6, hop:3.2,
     pose:R=>{ POSE.brake=R.v<.2*T; return POSE; },
     place:(m,R,t)=>{ m.rotation.z=Math.max(-.35,Math.min(.35,-R.lean*.35)); m.rotation.x=R.vz?-Math.max(-.3,Math.min(.3,R.vz/T*.06)):0; const g=m.userData.glow; if(g)g.material.opacity=.35+.15*Math.sin(t*5)+Math.min(.3,R.v/T*.03); },

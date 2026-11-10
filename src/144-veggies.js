@@ -1,13 +1,12 @@
 // THE VEGGIES: VEG, the vegetables the player can grow, pick and sell.
 import {SHARED} from './003-shx.js';
-import {CIVIC, FORAGE, INSPECT, INV, LINES, PARK, SFX, TALK, UI, VIT} from './003b-systems.js';
+import {CIVIC, FORAGE, INSPECT, INV, LINES, PARK, SFX, TALK, UI, VIT, WORTH} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {TILE} from './006-map-pre.js';
 import {HOMES} from './076-npc-map.js';
 import {STALL} from './081-stalls.js';
 import {MUSH} from './083a-npc-mushroom.js';
 import {TOONS} from './084-npc-toons.js';
-import {WORTH} from './140c-worth.js';
 const VEG={}; window.VEG=VEG;
 { const T=TILE;
   const V=[['v_tomato','TOMATO',3,2,.06,0xc8321e,[.07,.07],1],['v_pepper','BELL PEPPER',4,2,.06,0x2f8a2a,[.07,.08],1],['v_carrot','CARROT',2,1,.05,0xe0742a,[.035,.16],0],
@@ -24,8 +23,8 @@ const VEG={}; window.VEG=VEG;
     recipes:[['f_corn','ROAST CORN','cooking',[0,40],{v_corn:1},'fills a fifth'],['f_vstew','VEGETABLE STEW','cooking',[15,60],{v_potato:1,v_carrot:1,v_onion:1},'fills two fifths, some health'],
       ['f_stuffpep','STUFFED PEPPER','cooking',[25,70],{v_pepper:1,m_button:2},'fills two fifths, mends you a minute'],['f_psoup','PUMPKIN SOUP','cooking',[40,85],{v_pumpkin:1,v_onion:1},'fills more than half, strong 2 min']],
     does:{f_corn:()=>FORAGE.feed(.2),f_vstew:()=>{ FORAGE.feed(.4); VIT.heal(.2); },f_stuffpep:()=>{ FORAGE.feed(.4); FORAGE.buff('regen',60); },f_psoup:()=>{ FORAGE.feed(.6); FORAGE.buff('str',120); }}});
-  const STAND=()=>{ const P=PARK, X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0)), g1=P.gate[1];
-    VEG.stand=STALL.build({X,Z,x0:g1+3,x1:g1+7.8,y:P.y0,veg:true,seed:11,gate:-1});
+  const STAND=()=>{ const P=PARK, X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0)), A=STALL.at('tomato');
+    VEG.stand=STALL.build({X,Z,x0:A.x0,x1:A.x1,y:P.y0,veg:true,seed:11,gate:A.gate,name:A.name});
     const N=TOONS.tomato; if(!N)return; N.life=null; N.roam=false; if(!N.sheet&&!HOMES.keeper(N))STALL.work(N,VEG.stand,{jobs:['look'],wait:()=>2+Math.random()*3});
     TALK.shops.set(N,()=>SHOP.open()); for(const th of UI.things)if(th.npc&&th.npc===N){ th.act=()=>TALK.open(N); th.reach=2.2*T; th.near=3*T; }
   };
@@ -37,12 +36,12 @@ const VEG={}; window.VEG=VEG;
   SHOP.draw=()=>{ '@later'; if(sp.hidden)return; const mine=[...V.map(v=>v[0]),...XB].filter(id=>FORAGE.has(id)>0);
     let o=`<h3 style="margin:0 0 4px;color:#f2c14e;font:12px Silkscreen,monospace">THE TOMATO'S VEGGIES</h3><div style="color:#9b9584;margin-bottom:8px">Fresh today. Seeds too. He buys back what you don't want, and flowers.</div><div style="margin-bottom:8px">YOU HAVE <b style="color:#f2c14e">$${Math.round(INV.cash)}</b></div>`;
     o+='<table style="border-collapse:collapse;width:100%">'+FORAGE.trainRows(['garden'])+(FORAGE.askRows?FORAGE.askRows('tomato'):'')+'</table>'; o+=`<div style="margin:6px 0 4px;color:#9b9584">HE SELLS</div><table style="border-collapse:collapse;width:100%">`+[...V.map(v=>v[0]),...XS].map(id=>{ const p=SELL[id]; return row(NMV(id),'$'+p,FORAGE.has(id)?'x'+FORAGE.has(id):'',`<button ${B} data-buy="${id}">BUY</button><button ${B} data-buy="${id}" data-n="5">5 $${p*5}</button>`); }).join('')+'</table>';
-    o+=`<div style="margin:10px 0 4px;color:#9b9584">HE BUYS</div><table style="border-collapse:collapse;width:100%">`+mine.map(id=>{ const n=FORAGE.has(id), v=BUY[id]; return row(NMV(id),'$'+v,'x'+n,`<button ${B} data-sell="${id}">SELL</button>${n>1?`<button ${B} data-sell="${id}" data-n="all">ALL $${v*n}</button>`:''}`); }).join('')+'</table>';
+    o+=`<div style="margin:10px 0 4px;color:#9b9584">HE BUYS</div><table style="border-collapse:collapse;width:100%">`+mine.map(id=>{ const n=FORAGE.has(id), v=WORTH.sell(id,1,BUY[id]), va=WORTH.sell(id,n,BUY[id]); return row(NMV(id),'$'+v,'x'+n,`<button ${B} data-sell="${id}">SELL</button>${n>1?`<button ${B} data-sell="${id}" data-n="all">ALL $${va}</button>`:''}`); }).join('')+'</table>';
     if(!mine.length)o+='<div style="color:#7d7a70;margin-top:6px">No vegetables on you. Cook them by a flame: roast corn, a stew, a stuffed pepper, pumpkin soup.</div>';
     const x=sp.querySelector(':scope>.pX'); sp.innerHTML=o; if(x)sp.appendChild(x); };
   sp.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||b.classList.contains('pX'))return; const d=b.dataset;
     if(d.ask){ if(FORAGE.hand)FORAGE.hand(d.ask); SHOP.draw(); return; } if(d.train){ FORAGE.train(d.train,+d.cap); SHOP.draw(); return; } if(d.buy){ const n=+d.n||1, c=SELL[d.buy]*n; if(INV.cash<c)say('YOU CANNOT AFFORD THAT.','#c8a090'); else { INV.cash-=c; FORAGE.give(d.buy,n); say(`YOU BUY ${n} ${NMV(d.buy)} FOR $${c}.`); if(window.CIVIC&&CIVIC.note)CIVIC.note('you bought '+n+' '+NMV(d.buy).toLowerCase()+' from the tomato','park'); } }
-    if(d.sell){ const n=d.n==='all'?FORAGE.has(d.sell):1, v=WORTH.of(d.sell,n,BUY[d.sell]); FORAGE.take(d.sell,n); INV.cash+=v; say(`YOU SELL ${n} ${NMV(d.sell)} FOR $${v}.`,'#f2c14e'); SFX.play('clunk',{vol:.5}); }
+    if(d.sell){ const n=d.n==='all'?FORAGE.has(d.sell):1, v=WORTH.sell(d.sell,n,BUY[d.sell]); FORAGE.take(d.sell,n); INV.cash+=v; say(`YOU SELL ${n} ${NMV(d.sell)} FOR $${v}.`,'#f2c14e'); SFX.play('clunk',{vol:.5}); }
     INV.add('x',0); delete INV.items.x; SHOP.draw(); FORAGE.draw(); });
   SHOP.open=()=>{ sp.hidden=false; SHOP.draw(); if(TOONS.tomato)LINES.say(TOONS.tomato,'greet'); };
   window.VEGDBG=()=>({stand:!!VEG.stand,wx:TOONS.tomato&&TOONS.tomato.st.x,wz:TOONS.tomato&&TOONS.tomato.st.z,x:TOONS.tomato&&+(TOONS.tomato.st.x/T).toFixed(1),z:TOONS.tomato&&+(TOONS.tomato.st.z/T).toFixed(1),held:TOONS.tomato&&TOONS.tomato.st.hold,mine:V.map(v=>[v[0],FORAGE.has(v[0])]).filter(a=>a[1])}); }

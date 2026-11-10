@@ -2322,14 +2322,11 @@
  "junkman": {
   "name": "THE JUNK DEALER",
   "trade": {
-   "sells": [
-    "tv_small",
-    "phone_home",
-    "modem",
-    "binoc",
-    "shades"
+   "sells": [],
+   "buys": [
+    "pawn"
    ],
-   "line": "It all works. Some of it on purpose."
+   "line": "Anything with a value, I'll take it. Half now. Someone pays full later."
   },
   "talk": {
    "start": "hi",
@@ -2754,14 +2751,17 @@
     "stack_key"
    ],
    "buys": [
-    "books",
     "paintings",
-    "antiquities"
+    "antiquities",
+    "photos",
+    "slime",
+    "plates"
    ],
    "teaches": [
-    "bind"
+    "guitar",
+    "astro"
    ],
-   "line": "Old books, mending things, canvases. I buy the mended ones and good paintings."
+   "line": "Canvases and paper. I buy good paintings and old things."
   }
  },
  "tour_guide": {
@@ -2843,10 +2843,12 @@
   "name": "THE PET STORE KEEPER",
   "trade": {
    "sells": [
+    "g_dogfood",
     "g_catfood",
+    "fr_apple",
     "g_fishfood"
    ],
-   "line": "Cat food, fish food. Feed them a little every day."
+   "line": "Dog food, cat food, apples for the grazers. Feed them a little every day."
   }
  },
  "clean_room_technician": {
@@ -2934,16 +2936,7 @@
     24
    ]
   },
-  "name": "THE GAME MASTER",
-  "trade": {
-   "sells": [
-    "putter"
-   ],
-   "teaches": [
-    "golf"
-   ],
-   "line": "Putters by the holodeck. Mind the koi."
-  }
+  "name": "THE GAME MASTER"
  },
  "teen_player": {
   "pf": "teen-player-37865e",
@@ -3257,16 +3250,18 @@
  },
  "railway_carter": {
   "pf": "railway-carter-971897",
-  "group": "loop",
+  "group": "hudson",
   "job": {
-   "at": "subway",
-   "title": "FREIGHT",
+   "at": "fishmarket",
+   "title": "JOURNEYMAN, HAND TRUCK",
    "hours": [
-    6,
+    4,
     14
-   ]
+   ],
+   "r": 10,
+   "home": "house"
   },
-  "name": "THE RAILWAY CARTER"
+  "name": "THE JOURNEYMAN"
  },
  "trainspotter": {
   "pf": "trainspotter-ffd141",
@@ -3555,16 +3550,18 @@
  },
  "trucker": {
   "pf": "trucker-9266a8",
-  "group": "depot",
+  "group": "hudson",
   "job": {
-   "at": "depot",
-   "title": "DRIVES THE TRUCK",
+   "at": "fishmarket",
+   "title": "DRIVES THE FISH TRUCK",
    "hours": [
-    6,
+    4,
     14
-   ]
+   ],
+   "r": 3,
+   "home": "house"
   },
-  "name": "THE TRUCKER"
+  "name": "THE FISH TRUCKER"
  },
  "village_engineer": {
   "pf": "village-engineer-a44949",
@@ -3641,7 +3638,8 @@
     "kite"
    ],
    "buys": [
-    "butterflies"
+    "butterflies",
+    "photos"
    ],
    "teaches": [
     "ento"
@@ -3666,7 +3664,8 @@
   "trade": {
    "teaches": [
     "bird",
-    "climb"
+    "climb",
+    "photo"
    ],
    "line": "Nets, seed, feeders and glasses; I buy the birds you bring me. Climbing? Three points on the rungs: practise on the fire escapes.",
    "sells": [
@@ -3678,7 +3677,8 @@
     "camera"
    ],
    "buys": [
-    "birds"
+    "birds",
+    "photos"
    ]
   }
  },
@@ -4150,16 +4150,16 @@
   "pf": "hanga-roa-fisherman-e56812",
   "group": "hudson",
   "job": {
-   "at": "hudson",
-   "title": "FISHES OFF THE PIER",
+   "at": "fishmarket",
+   "title": "FISHMONGER, BLUEWATER FISH CO.",
    "hours": [
-    6,
+    4,
     14
    ],
-   "r": 8,
+   "r": 0,
    "home": "house"
   },
-  "name": "THE HANGA ROA FISHERMAN"
+  "name": "THE FISHMONGER"
  },
  "scuba_diver": {
   "pf": "scuba-diver-bdd1c8",
@@ -4178,7 +4178,8 @@
   "trade": {
    "sells": [
     "gem_wheel",
-    "headlight"
+    "headlight",
+    "g_fishfood"
    ],
    "line": "The wheel and a good light. Cut your stones on the wheel; I buy every one you bring me, cut or rough.",
    "buys": [
@@ -5916,6 +5917,183 @@
     "fight"
    ],
    "line": "Fists up. Again."
+  },
+  "talk": {
+   "start": "hi",
+   "lines": {
+    "hi": {
+     "say": [
+      "Fists up, {name}. The golems and what crawls below need thinning.",
+      "Take a bounty, or a lesson."
+     ],
+     "opts": [
+      {
+       "t": "WHAT WORK IS THERE?",
+       "go": "board",
+       "if": "!bounty:on"
+      },
+      {
+       "t": "HOW GOES MY HUNT?",
+       "go": "hunt",
+       "if": "bounty:on !bounty:done"
+      },
+      {
+       "t": "IT IS DONE.",
+       "do": "bounty",
+       "arg": "pay",
+       "go": "paid",
+       "if": "bounty:done"
+      },
+      {
+       "t": "LESSONS.",
+       "do": "shop",
+       "go": ""
+      },
+      {
+       "t": "GOODBYE.",
+       "go": ""
+      }
+     ]
+    },
+    "board": {
+     "say": "Pick one. I keep the count from my tower; I pay on the count.",
+     "opts": [
+      {
+       "t": "BURST 6 SLIMES ($30)",
+       "do": "bounty",
+       "arg": "take slimes",
+       "go": "took"
+      },
+      {
+       "t": "KILL 3 SPIDERS ($45)",
+       "do": "bounty",
+       "arg": "take spiders",
+       "go": "took"
+      },
+      {
+       "t": "PUT DOWN 2 GUARDS ($70)",
+       "do": "bounty",
+       "arg": "take guards",
+       "go": "took"
+      },
+      {
+       "t": "4 KILLS, LEVEL 3 OR DEEPER ($90)",
+       "do": "bounty",
+       "arg": "take deep",
+       "go": "took"
+      },
+      {
+       "t": "FELL THE GOLDEN ONE ($150)",
+       "do": "bounty",
+       "arg": "take gold",
+       "go": "took"
+      },
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "took": {
+     "say": "Then go. The stair is that way. Come back up when it's done.",
+     "opts": [
+      {
+       "t": "I WILL.",
+       "go": ""
+      }
+     ]
+    },
+    "hunt": {
+     "say": "{bounty}.",
+     "opts": [
+      {
+       "t": "I GIVE IT UP.",
+       "do": "bounty",
+       "arg": "drop",
+       "go": "hi"
+      },
+      {
+       "t": "BACK.",
+       "go": "hi"
+      }
+     ]
+    },
+    "paid": {
+     "say": "Well struck. Here, as promised.",
+     "opts": [
+      {
+       "t": "THANK YOU.",
+       "go": ""
+      }
+     ]
+    }
+   }
+  }
+ },
+ "fm_bluewater": {
+  "name": "BLUEWATER FISH CO.",
+  "trade": {
+   "sells": [
+    "x_flounder",
+    "x_bluefish",
+    "x_bass",
+    "x_shad",
+    "bait_cut"
+   ],
+   "buys": [
+    "fish"
+   ],
+   "pays": 1.25,
+   "line": "Flounder, blues, bass, off the boats this morning. Bring me what you land, I pay better than the shed."
+  }
+ },
+ "fm_carmelo": {
+  "name": "CARMELO & SONS",
+  "trade": {
+   "sells": [
+    "x_perch",
+    "x_sunfish",
+    "x_catfish",
+    "x_eel",
+    "bait_cut"
+   ],
+   "buys": [
+    "fish"
+   ],
+   "pays": 1.25,
+   "line": "Pan fish, cats and eels, by the piece. You fish? I buy, and I pay market price."
+  }
+ },
+ "fm_oldslip": {
+  "name": "OLD SLIP SHELLFISH",
+  "trade": {
+   "sells": [
+    "x_crab",
+    "x_eel",
+    "crabpot",
+    "cooler_s"
+   ],
+   "buys": [
+    "fish"
+   ],
+   "pays": 1.25,
+   "line": "Blue crabs by the bushel, live. Got crabs of your own? Put them on the scale."
+  }
+ },
+ "fm_lightning": {
+  "name": "LIGHTNING FILLET CO.",
+  "trade": {
+   "sells": [
+    "x_sturgeon",
+    "x_bass",
+    "x_bluefish",
+    "cooler_m"
+   ],
+   "buys": [
+    "fish"
+   ],
+   "pays": 1.25,
+   "line": "The big fish get cut here. Sturgeon, bass: I take all you can carry."
   }
  }
 }

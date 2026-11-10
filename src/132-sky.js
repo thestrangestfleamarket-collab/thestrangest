@@ -20,7 +20,7 @@ import {HEMI} from './064-map-post.js';
   const SUN=[[-2,0xff4a20],[0,0xff6428],[3,0xff8c3a],[8,0xffc070],[20,0xfff0d0],[90,0xfff8ee]];
   const U={uH:{value:new THREE.Color()},uM:{value:new THREE.Color()},uZ:{value:new THREE.Color()},uS:{value:new THREE.Color()},uA:{value:new THREE.Color()},
     uSunDir:{value:new THREE.Vector3(0,1,0)},uSunCol:{value:new THREE.Color()},uSunK:{value:0},uSunR:{value:.04},uSideK:{value:1},
-    uMoonDir:{value:new THREE.Vector3(0,1,0)},uMoonK:{value:0},uMoonR:{value:.03},uMoonPh:{value:.5},uMoonCol:{value:new THREE.Color(.86,.89,.95)},uBlood:{value:0},uGap:{value:0},uSkyK:{value:0},uStar:{value:0},uFogC:{value:new THREE.Color()},uFogK:{value:0},uGrey:{value:new THREE.Color()},uGreyK:{value:0},
+    uMoonDir:{value:new THREE.Vector3(0,1,0)},uMoonK:{value:0},uMoonR:{value:.03},uMoonPh:{value:.5},uMoonCol:{value:new THREE.Color(.86,.89,.95)},uBlood:{value:0},uGap:{value:0},uSkyK:{value:0},uStar:{value:0},uStOn:{value:0},uStC:{value:null},uMwC:{value:null},uEq:{value:new THREE.Matrix3()},uSt:{value:new THREE.Vector3(0,1,1)},uMw:{value:new THREE.Vector2(1,1)},uMw1:{value:new THREE.Color(.74,.8,1)},uMw2:{value:new THREE.Color(1,.87,.64)},uFogC:{value:new THREE.Color()},uFogK:{value:0},uGrey:{value:new THREE.Color()},uGreyK:{value:0},
     uBands:{value:CEL?8:SMOOTH?0:24},uMistK:{value:0},uMistC:{value:new THREE.Color()},uT:{value:0},uCov:{value:.2},uCL:{value:1.16},uZk:{value:.62},uHk:{value:.5},uCldC:{value:new THREE.Color(.5,.49,.47)},uCldK:{value:.9},uCD:{value:1},uCumA:{value:0},uGr:{value:new THREE.Color(1,1,1)},uLift:{value:new THREE.Color()},uCool:{value:0},uLiftK:{value:0}};
   // THE CUMULUS: a field of lumpy 3D clouds (puffs heaped on a flat base) baked once into a cube the dome reads (each pixel its normal, its height in the cloud, its cover), lit live by the sun in cel steps; the field turns very slowly. SKY.cumulus makes the same clouds as meshes (the clouds below your landing, 141c).
   const CUMD='uniform vec3 uSunDir,uSunCol,uCldC,uZ,uGrey,uGr,uLift; uniform float uSunK,uCldK,uCL,uCD,uGreyK,uCool,uLiftK;';
@@ -28,6 +28,8 @@ import {HEMI} from './064-map-post.js';
       vec3 lit=mix(vec3(1.),uCldC,uCldK)*(.62+.3*uCL)*mix(vec3(1.),uSunCol,.3*uSunK), sh=lit*vec3(.64,.65,.68)+uZ*.06, c=mix(sh,lit,k);
       c=mix(uZ*1.5+vec3(.035,.04,.055),c,uCD); return mix(c,uGrey,uGreyK*.6); }
     vec3 ungrade(vec3 c){ vec3 s=pow(max(c,0.),vec3(1./2.2)); s=(s-uLift*uLiftK)/max(1.-uLiftK,.05)/max(uGr,vec3(.05)); float l=dot(s,vec3(.3,.59,.11)); return pow(max(s/mix(vec3(1.),mix(vec3(.84,.92,1.16),vec3(1.08,1.,.88),smoothstep(.18,.62,l)),uCool),0.),vec3(2.2)); }`;   // the sky is not lit: the look's grades for lit things (138, after the screen colour: COLOUR OF EVERYTHING, HAZE OVER EVERYTHING, warm sun / cool shade) are taken back out, so it shows its own colours
+  // the see-through circle in a cloud (pk): a cloud in front of you thins to a dither round where you stand on the screen, as the walls do (PEEK)
+  const CUMPEEK='uniform vec3 uP; uniform vec2 uRes; float cpB(vec2 a){ a=floor(a); return fract(dot(a,vec2(.5,a.y*.75))); } void cumPeek(){ vec2 n=gl_FragCoord.xy/uRes*2.-1., d=n-uP.xy; d.x*=uRes.x/uRes.y; float r=length(d)/.34; if(r<1.&&gl_FragCoord.z*2.-1.<uP.z&&cpB(gl_FragCoord.xy*.5)*.25+cpB(gl_FragCoord.xy)<(1.-r*r)*1.25)discard; }\n';
   const CUMV=`attribute vec4 aC; attribute float aV; uniform float uDr,uSpan; uniform vec3 uIso; uniform vec2 uCC; varying vec3 vN,vW; varying float vH;
     void main(){ vec4 w=instanceMatrix*vec4(position,1.); vec3 n=normalize(mat3(instanceMatrix)*normal); float fl=step(w.y,aC.y); w.y=max(w.y,aC.y); n=normalize(mix(n,vec3(0.,-1.,0.),fl*.8)); vH=clamp((w.y-aC.y)/(aC.w*.9),0.,1.);
       if(uSpan>0.){ float x=mod(aC.x-uCC.x+uDr*aV+uSpan*.5,uSpan)-uSpan*.5+uCC.x; w.x+=x-aC.x; w.y-=((x-uCC.x)*uIso.x+(aC.z-uCC.y)*uIso.y)*uIso.z; }
@@ -45,7 +47,7 @@ import {HEMI} from './064-map-post.js';
     L.forEach(([c,x,y,z,r],i)=>{ const ca=Math.cos(c.a||0), sa=Math.sin(c.a||0), W=c.W; m.setMatrixAt(i,m4.makeScale(r*W,r*W,r*W).setPosition(c.x+(x*ca-z*sa)*W,c.y+y*W,c.z+(x*sa+z*ca)*W)); A.set([c.x,c.y,c.z,W],i*4); V[i]=c.v||0; });
     g.setAttribute('aC',new THREE.InstancedBufferAttribute(A,4)); g.setAttribute('aV',new THREE.InstancedBufferAttribute(V,1)); m.frustumCulled=false; m.userData.ends=ends; return m; };
   SKY.cumMat=(U2,frag)=>new THREE.ShaderMaterial({uniforms:Object.assign({uDr:{value:0},uSpan:{value:0},uIso:{value:new THREE.Vector3()},uCC:{value:new THREE.Vector2()}},U2),vertexShader:CUMV,fragmentShader:frag});
-  SKY.cumLive=()=>SKY.cumMat({uSunDir:U.uSunDir,uSunCol:U.uSunCol,uCldC:U.uCldC,uZ:U.uZ,uGrey:U.uGrey,uSunK:U.uSunK,uCldK:U.uCldK,uCL:U.uCL,uCD:U.uCD,uGreyK:U.uGreyK,uGr:U.uGr,uLift:U.uLift,uCool:U.uCool,uLiftK:U.uLiftK},CUMD+CUMG+'varying vec3 vN; varying float vH; varying vec3 vW; void main(){ gl_FragColor=vec4(ungrade(cumShade(normalize(vN),vH,normalize(cameraPosition-vW))),1.); }');   // lit as the sky's are
+  SKY.cumLive=pk=>SKY.cumMat({uSunDir:U.uSunDir,uSunCol:U.uSunCol,uCldC:U.uCldC,uZ:U.uZ,uGrey:U.uGrey,uSunK:U.uSunK,uCldK:U.uCldK,uCL:U.uCL,uCD:U.uCD,uGreyK:U.uGreyK,uGr:U.uGr,uLift:U.uLift,uCool:U.uCool,uLiftK:U.uLiftK,...(pk?{uP:{value:new THREE.Vector3(0,0,2)},uRes:{value:new THREE.Vector2(1,1)}}:{})},CUMD+CUMG+(pk?CUMPEEK:'')+'varying vec3 vN; varying float vH; varying vec3 vW; void main(){ '+(pk?'cumPeek(); ':'')+'gl_FragColor=vec4(ungrade(cumShade(normalize(vN),vH,normalize(cameraPosition-vW))),1.); }');   // lit as the sky's are
   const CU={N:180,n:-1,F:[]}; for(let i=0;i<CU.N;i++){ const a=hsh(i,11)*6.2832, r=Math.sqrt(hsh(i,12)*289); CU.F.push({x:Math.cos(a)*r,y:1+hsh(i,14)*.3,z:Math.sin(a)*r,W:1.2+hsh(i,13)*1.3,s:i+1,a:hsh(i,16)*6.28}); }   // a deck of clouds 1 up, out to 17 round you, heaped over each other so the whole sky is cloud
   CU.rt=new THREE.WebGLCubeRenderTarget(512,{generateMipmaps:false,minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter}); CU.cam=new THREE.CubeCamera(.05,60,CU.rt); CU.scene=new THREE.Scene(); CU.scene.add(CU.cam);
   CU.mesh=SKY.cumulus(CU.F,SKY.lump(16,12),SKY.cumMat({},'varying vec3 vN; varying float vH; void main(){ gl_FragColor=vec4(.5+.5*normalize(vN)*(.3+.7*vH),1.); }')); CU.scene.add(CU.mesh);
@@ -56,7 +58,7 @@ import {HEMI} from './064-map-post.js';
   U.uCum={value:CU.rt.texture}; SKY.CU=CU;
   const mat=new THREE.ShaderMaterial({uniforms:U,side:THREE.BackSide,depthWrite:false,depthTest:true,
     vertexShader:'varying vec3 vD; void main(){ vD=position; vec4 p=projectionMatrix*modelViewMatrix*vec4(position,1.); gl_Position=p.xyww; }',
-    fragmentShader:`uniform vec3 uH,uM,uS,uA,uMoonDir,uFogC; uniform float uSunR,uSideK,uMoonK,uMoonR,uMoonPh,uStar,uFogK,uBands,uMistK,uZk,uHk,uCumA,uT; uniform vec3 uMistC,uMoonCol; uniform float uBlood,uSkyK; uniform samplerCube uCum; varying vec3 vD;
+    fragmentShader:`uniform vec3 uH,uM,uS,uA,uMoonDir,uFogC; uniform float uSunR,uSideK,uMoonK,uMoonR,uMoonPh,uStar,uFogK,uBands,uMistK,uZk,uHk,uCumA,uT; uniform vec3 uMistC,uMoonCol; uniform float uBlood,uSkyK,uStOn; uniform vec3 uSt,uMw1,uMw2; uniform vec2 uMw; uniform mat3 uEq; uniform samplerCube uCum,uStC,uMwC; varying vec3 vD;
       ${CUMD}
       float hs(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
       float vn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); vec2 m=mod(i,256.); return mix(mix(hs(m),hs(mod(m+vec2(1,0),256.)),f.x),mix(hs(mod(m+vec2(0,1),256.)),hs(mod(m+vec2(1,1),256.)),f.x),f.y); }
@@ -68,12 +70,9 @@ import {HEMI} from './064-map-post.js';
         vec3 c=mix(uH,uM,smoothstep(0.,.3,el)); c=mix(c,uZ,smoothstep(.2,.85,el));
         c=mix(c,uS,pow(max(cs,0.),3.)*exp(-el*5.)*uSideK); c=mix(c,uA,pow(max(-cs,0.),2.)*exp(-el*6.)*uSideK*.7);
         c*=1.-clamp(-d.y*2.,0.,1.)*.5; vec3 mwc=vec3(0.), st=vec3(0.);
-        if(uStar>0.){ vec3 a=abs(d); vec2 uv; float f; if(a.x>=a.y&&a.x>=a.z){ uv=d.yz/a.x; f=d.x>0.?0.:1.; } else if(a.y>=a.z){ uv=d.xz/a.y; f=d.y>0.?2.:3.; } else { uv=d.xy/a.z; f=d.z>0.?4.:5.; }
-          float gb=dot(d,normalize(vec3(.42,.55,-.72))), nw=.5*vn(d.xy*4.+3.)+.5*vn(d.zx*4.+11.), nc=.5*vn(d.yz*2.6+5.)+.5*vn(d.xy*2.6+17.);
-          float w=exp(-gb*gb/(.008+.008*nw)), mw=w*(.55+.9*nw)*(1.-.8*step(.62,nc)*step(abs(gb),.06));
-          mwc=vec3(.011,.013,.022)*(step(.38,mw)+step(.7,mw)+step(1.,mw))*step(.5,uStar)*step(.08,el);
-          vec2 g=(uv*.5+.5)*44.; vec2 id=floor(g)+f*100.; float h=hs(id); if(h<.14*(.25+1.6*nc*nc)+.16*w){ vec2 o=vec2(hs(id+3.1),hs(id+7.3))*.6+.2; float r=length(fract(g)-o);
-            float br=(.35+.65*hs(id+1.7))*step(r,.05+.07*hs(id+9.1)); st=vec3(.82,.88,1.)*br*uStar*smoothstep(0.,.12,el); } }
+        if(uStar>0.&&uStOn>.5){ vec3 q=uEq*d; float ex=smoothstep(-.01,.3,d.y), tw=1.+(vn(q.xy*140.+uT*5.)+vn(q.zx*140.-uT*4.)-1.)*.5*uSt.y*(1.-.7*el);   // the real sky (134ba): dimmer low down through more air, where it twinkles more
+          vec3 s=textureCube(uStC,q).rgb; vec4 m=textureCube(uMwC,q); s*=smoothstep(uSt.x-.06,uSt.x,max(s.r,max(s.g,s.b))); s*=s; s=max(mix(vec3(dot(s,vec3(.3333))),s,uSt.z),0.); st=s*2.2*uStar*(.25+.75*ex)*max(tw,0.);
+          mwc=mix(uMw1,uMw2,m.g)*m.r*m.r*.5*uMw.x*min(uStar,1.2)*ex*mix(1.,.35+1.3*hs(floor(q.xy*420.)+floor(q.z*420.)*37.),uMw.y); }   // grained like the countless faint stars it is, so the picture's 15-bit colour never steps it into flat patches
         c=moon(c,d,uMoonK);
         { float ang=acos(clamp(dot(d,uSunDir),-1.,1.)); float disc=1.-step(uSunR,ang); float halo=(1.-smoothstep(uSunR,uSunR*4.,ang))*.45; if(uBands>0.)halo=floor(halo*3.)/3.*.45;
           c=mix(c,mix(uSunCol,vec3(1.,.96,.9),.45),halo*uSunK); c=mix(c,uSunCol,disc*uSunK); }
@@ -86,9 +85,9 @@ import {HEMI} from './064-map-post.js';
             cc=mix(cc,c,(1.-smoothstep(0.,.22,el))*.5); c=mix(c,cc,D); } }   // the far ones low down fade into the sky
         { float sp=dot(d,uSunDir); if(sp>0.&&uSunK>0.){ vec3 ax=normalize(cross(uSunDir,vec3(0.,1.,.001))), ay=cross(uSunDir,ax); float an=atan(dot(d,ay),dot(d,ax)), r=vn(vec2(an*7.,uT*.015))*.6+vn(vec2(an*19.,uT*.01+5.))*.4;   // rays from the sun behind the clouds, through the gaps most
             c+=mix(uSunCol,vec3(1.,.97,.9),.5)*smoothstep(.45,.95,r)*pow(sp,3.)*(.1+.16*(1.-D))*uSunK; } }
-        c+=st*(1.-D); c=bt(c,el);
+        c=bt(c,el);
         if(uMistK>0.){ vec3 q=pow(max(c,0.),vec3(1./2.2)); float y=max(dot(q,vec3(.299,.587,.114)),1e-4); c=pow(q*(floor(y*16.+.5)/16./y),vec3(2.2)); } else if(uBands>0.){ float y=max(dot(c,vec3(.299,.587,.114)),1e-4); c*=floor(y*uBands+.5)/uBands/y; }   // bands of brightness, each its own hue: rounding each colour apart striped the blue with lilac
-        c+=mwc*(1.-uGreyK)*(1.-uFogK)*(1.-D);
+        c+=(st+mwc)*(1.-uGreyK)*(1.-uFogK)*(1.-D)*(1.-.85*uMoonK*smoothstep(uMoonR*1.05,uMoonR,acos(clamp(dot(d,uMoonDir),-1.,1.))));   // the stars and the Milky Way, smooth over the banded sky, never through the moon
         gl_FragColor=vec4(ungrade(c),1.); }`});
   const dome=new THREE.Mesh(new THREE.BoxGeometry(2000,2000,2000),mat); dome.frustumCulled=false; dome.renderOrder=900; dome.matrixAutoUpdate=true; scene.add(dome); SKY.dome=dome; SKY.on=()=>dome.visible||!!(SKY.cumOn&&SKY.cumOn()); OUT.add(dome,'open');
   dome.onBeforeRender=(r,s,c)=>{ dome.position.copy(c.position); dome.scale.setScalar(c.isOrthographicCamera?Math.max(1,(c.right-c.left)*1.2/2000):1); dome.updateMatrixWorld(); };

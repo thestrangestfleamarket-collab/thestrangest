@@ -1,10 +1,10 @@
 // THE CITY: CITY lists the town's places and keeps the day, jobs and schedules of its people.
 import {SHARED} from './003-shx.js';
-import {CITY, CLIP, CLOCK, MAPED, NPCS, PARK} from './003b-systems.js';
+import {CITY, CLIP, CLOCK, DN, MAPED, NPCS, PARK} from './003b-systems.js';
 import {CASTLE, MAPSTAIR, MODS, QS, SOL, STORE, TILE} from './006-map-pre.js';
 import {STHOLE} from './076-npc-map.js';
-Object.assign(CITY,{on:QS.get('city')==='1',jobs:[],sched:[],day:0,nj:0,extra:[]}); window.CITY=CITY;
-{ const T=TILE, R0=.3*T, C=T/2;
+Object.assign(CITY,{on:QS.get('city')==='1',jobs:[],sched:[],day:DN.day?DN.day():0,nj:0,extra:[]}); window.CITY=CITY;
+{ const T=TILE, R0=.3*T, C0=T/2;
   CITY.places=()=>{ const P=[], add=(id,name,x,z,dz,lv='up',o={})=>P.push(Object.assign({id,name,lv,at:{x,z},door:{x,z:z+dz}},o));
     { const B=SHARED.BOD.B0; add('bodega','THE BODEGA',SHARED.BOD.X((B.x0+B.x1)/2),SHARED.BOD.Z(B.y1),T); }
     
@@ -23,13 +23,14 @@ Object.assign(CITY,{on:QS.get('city')==='1',jobs:[],sched:[],day:0,nj:0,extra:[]
     let x0=1e9,z0=1e9,x1=-1e9,z1=-1e9; for(const k of ['bodega','house','apartments','ghost','park','castle','subway']){ const b=MAPED.box&&MAPED.box(k); if(!b)continue; x0=Math.min(x0,b[0]); z0=Math.min(z0,b[1]); x1=Math.max(x1,b[2]); z1=Math.max(z1,b[3]); }
     for(const e of CITY.extra)if(e.box){ x0=Math.min(x0,e.box[0]); z0=Math.min(z0,e.box[1]); x1=Math.max(x1,e.box[2]); z1=Math.max(z1,e.box[3]); }
     return [x0-4*T,z0-4*T,x1+4*T,z1+4*T]; };
-  const grid=(lv,free)=>{ '@later'; const L=SOL[lv], gk=lv+':'+(free?free.name||'f':''); let g=GRID.get(free||lv); if(g&&g.n===L.length)return g; const b=bounds(lv), w=Math.ceil((b[2]-b[0])/C), h=Math.ceil((b[3]-b[1])/C);
-    g={n:L.length,lv,free,x0:b[0],z0:b[1],w,h,m:new Uint8Array(w*h),cell:(x,z)=>[Math.floor((x-b[0])/C),Math.floor((z-b[1])/C)],at:(i,j)=>({x:b[0]+(i+.5)*C,z:b[1]+(j+.5)*C})};
-    g.free=(i,j)=>{ if(i<0||j<0||i>=w||j>=h)return false; const k=j*w+i; let v=g.m[k]; if(!v){ const p=g.at(i,j); v=g.m[k]=CITY.blocked(lv,p.x,p.z,free)?2:1; } return v===1; }; g.mark=(x,z)=>{ const [i,j]=g.cell(x,z); if(i>=0&&j>=0&&i<w&&j<h)g.m[j*w+i]=2; }; GRID.set(free||lv,g); return g; };
-  CITY.blocked=(lv,x,z,free)=>{ if(free)return !free(x,z,R0); if(lv==='up'&&typeof STHOLE!=='undefined'){ const H=STHOLE, R=R0; if(x>H[0]-R&&x<H[2]+R&&z>H[1]-R&&z<H[3]+R)return true; } return !!CLIP.hit(SOL[lv],x,z,R0); };
+  const grid=(lv,free,part)=>{ '@later'; const L=SOL[lv], NL=L.length+((CITY.extra&&CITY.extra[lv])||[]).length, FB=free&&free.box, gk=lv+':'+(free?free.name||'f':''), GK=FB?'box:'+lv:part?(free?free.name||'f':'')+lv+':'+part:free||lv; let g=GRID.get(GK); if(g&&g.n===NL&&(!FB||g.fn===free))return g; const b=FB||(part==='dun'?dunB():bounds(lv)), C=FB&&free.cell||C0, w=Math.ceil((b[2]-b[0])/C), h=Math.ceil((b[3]-b[1])/C);   // free.box: a grid over that box alone, free.cell its cells (a room off the map)
+    g={n:NL,lv,free,fn:free,x0:b[0],z0:b[1],w,h,m:new Uint8Array(w*h),cell:(x,z)=>[Math.floor((x-b[0])/C),Math.floor((z-b[1])/C)],at:(i,j)=>({x:b[0]+(i+.5)*C,z:b[1]+(j+.5)*C})};
+    g.free=(i,j)=>{ if(i<0||j<0||i>=w||j>=h)return false; const k=j*w+i; let v=g.m[k]; if(!v){ const p=g.at(i,j); v=g.m[k]=CITY.blocked(lv,p.x,p.z,free)?2:1; } return v===1; }; g.mark=(x,z)=>{ const [i,j]=g.cell(x,z); if(i>=0&&j>=0&&i<w&&j<h)g.m[j*w+i]=2; }; GRID.set(GK,g); return g; };
+  const dunB=()=>{ const q=MODS.dungeon.bound(), x0=Math.min(q.x0,q.x1), x1=Math.max(q.x0,q.x1), z0=Math.min(q.z0,q.z1), z1=Math.max(q.z0,q.z1); return [x0-2*T,z0-2*T,x1+2*T,z1+2*T]; };   // the dungeon's own grid, not one over the whole of the underground
+  CITY.blocked=(lv,x,z,free)=>{ if(free)return !free(x,z,R0); if(lv==='up'&&typeof STHOLE!=='undefined'){ const H=STHOLE, R=R0; if(x>H[0]-R&&x<H[2]+R&&z>H[1]-R&&z<H[3]+R)return true; } return !!CLIP.hit(SOL[lv],x,z,R0)||!!(CITY.extra&&CITY.extra[lv]&&CITY.extra[lv].length&&CLIP.hit(CITY.extra[lv],x,z,R0)); };   // CITY.extra: places a route keeps out of but you can still walk (a dungeon's cliff edges)
   const clear=(lv,a,b,free)=>{ const d=Math.hypot(b.x-a.x,b.z-a.z), n=Math.max(1,Math.ceil(d/(T/8))); for(let k=1;k<n;k++){ const t=k/n; if(CITY.blocked(lv,a.x+(b.x-a.x)*t,a.z+(b.z-a.z)*t,free))return false; } return true; };
   const nearFree=(g,x,z)=>{ const [i0,j0]=g.cell(x,z); for(let r=0;r<=4;r++)for(let i=i0-r;i<=i0+r;i++)for(let j=j0-r;j<=j0+r;j++)if((Math.abs(i-i0)===r||Math.abs(j-j0)===r)&&g.free(i,j))return [i,j]; return null; };
-  CITY.route=(lv,a,b,free)=>{ '@later'; const t0=performance.now(), g=grid(lv,free), s=nearFree(g,a.x,a.z), e=nearFree(g,b.x,b.z); if(!s||!e)return null;
+  CITY.route=(lv,a,b,free)=>{ '@later'; const D=MODS.dungeon, inD=p=>{ const q=D.bound(), m=3*T; return p.x>Math.min(q.x0,q.x1)-m&&p.x<Math.max(q.x0,q.x1)+m&&p.z>Math.min(q.z0,q.z1)-m&&p.z<Math.max(q.z0,q.z1)+m; }, part=lv==='down'&&D&&D.bound&&(inD(a)||inD(b))?'dun':'', t0=performance.now(), g=grid(lv,free,part), s=nearFree(g,a.x,a.z), e=nearFree(g,b.x,b.z); if(!s||!e)return null;
     const W=g.w, key=(i,j)=>j*W+i, ks=key(s[0],s[1]), ke=key(e[0],e[1]), G=new Map([[ks,0]]), F=new Map(), from=new Map(), open=[ks], inO=new Set([ks]), closed=new Set();
     const h=k=>{ const di=Math.abs(k%W-e[0]), dj=Math.abs(Math.floor(k/W)-e[1]); return Math.max(di,dj)+.4142*Math.min(di,dj); }; F.set(ks,h(ks));
     const up=k=>{ let i=open.length-1; while(i>0){ const p=(i-1)>>1; if(F.get(open[p])<=F.get(open[i]))break; [open[p],open[i]]=[open[i],open[p]]; i=p; } };
@@ -52,7 +53,7 @@ Object.assign(CITY,{on:QS.get('city')==='1',jobs:[],sched:[],day:0,nj:0,extra:[]
       if(st.to&&st.held>.6&&(E.side=(E.side||0))<6){ const dx=p.x-st.x, dz=p.z-st.z, d=Math.hypot(dx,dz)||1, px=-dz/d, pz=dx/d; for(const k of [1,-1,1.8,-1.8]){ const q={x:st.x+px*k*T+dx/d*.4*T,z:st.z+pz*k*T+dz/d*.4*T}; if(N.free(q.x,q.z,st.R)&&!NPCS.some(o=>o!==N&&o.lv===N.lv&&o.mode!=='hidden'&&o.blocks(q.x,q.z,st.R*1.5))){ E.r.pts.splice(E.i,0,q); E.side++; st.to={x:q.x,z:q.z}; st.held=0; break; } } }
       if(!st.to){ if(++E.stuck>8){ E.stuck=0; if(++E.re>5){ CITY.stop(N); E.then&&E.then(false); continue; } const dx=p.x-st.x, dz=p.z-st.z, d=Math.hypot(dx,dz)||1; grid(N.lv||'up',N.free).mark(st.x+dx/d*.5*T,st.z+dz/d*.5*T); const r=CITY.route(N.lv||'up',{x:st.x,z:st.z},E.to,N.free,true); if(!r){ CITY.stop(N); E.then&&E.then(false); continue; } E.r=r; E.i=1; }
         st.to={x:p.x,z:p.z}; st.wait=0; st.hold=false; if(E.v)st.v=E.v; } }
-    const h=CLOCK.h, l=CITY.lastH??h; if(h<l-12)CITY.day++;
+    const h=CLOCK.h, l=CITY.lastH??h; if(DN.day)CITY.day=DN.day(); else if(h<l-12)CITY.day++;
     for(const e of CITY.sched){ const hit=h>=l?(e.h>l&&e.h<=h):(e.h>l||e.h<=h); if(hit&&e.fired!==CITY.day+':'+e.h){ e.fired=CITY.day+':'+e.h; try{ e.fn(e); }catch(err){ console.warn('CITY.at',e.name,err); } } }
     CITY.lastH=h; };
   CITY.setHour=h=>CLOCK.set(h); CITY.hour=()=>CLOCK.h;

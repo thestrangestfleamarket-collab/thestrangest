@@ -32,5 +32,5 @@ import {SYS} from './006-map-pre.js';
   const auto=()=>{ '@later'; if(own){ clearTimeout(timer); push(); return; } const s0=WE.getState&&WE.getState(); if(!s0)return; const st=diff(s0), j=JSON.stringify(st); if(j===last||!Object.keys(st).length)return; last=j; try{ SAVE.set('we-sent',j); }catch(e){}
     post(st,true).catch(()=>{ last=null; try{ SAVE.del('we-sent'); }catch(e){} }); };
   { let was=false; SYS.every(()=>{ const on=!!WE.on; if(was&&!on)auto(); was=on; },1000,'136b-worldpub'); addEventListener('pagehide',()=>{ if(WE.on||own&&(timer||sending))auto(); }); }
-  const w=()=>{ if(!window.__started||!document.getElementById('wsend')){ setTimeout(w,500); return; } (window.LOAD?LOAD('later'):Promise.resolve()).then(wire).catch(()=>{}); }; w();
+  const w=()=>{ if(!SYS.started||!document.getElementById('wsend')){ setTimeout(w,500); return; } (window.LOAD?LOAD('later'):Promise.resolve()).then(wire).catch(()=>{}); }; w();
 }

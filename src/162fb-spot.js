@@ -13,7 +13,7 @@ const SPOT={};
   const put=o=>{ if(!o)return; if(o.v&&UI.view!==o.v)UI.setView(o.v); if(Number.isFinite(o.yw))SHARED.yaw=SHARED.yawTo=o.yw; if(Number.isFinite(o.pt))SHARED.pitch=SHARED.pitchTo=o.pt;
     if(o.pp>0)SHARED.ppu=SHARED.ppuTo=o.pp; if(o.d>0)UI.dist=UI.distTo=o.d; if(o.fz>0)UI.fz=o.fz; if(Array.isArray(o.of))UI.off.set(o.of[0]||0,o.of[1]||0,o.of[2]||0); UI.hold=o.v==='iso'; };
   SPOT.put=put;
-  if(SPOT0)SYS.onStart(()=>{ let n=0; const go=()=>{ if(window.FADE&&FADE.busy&&n++<40)return setTimeout(go,250); put(SPOT0); setTimeout(()=>put(SPOT0),600); }; setTimeout(go,800); },'162fb-spot');
+  if(SPOT0)SYS.onStart(()=>{ let n=0; const go=()=>{ if(FADE&&FADE.busy&&n++<40)return setTimeout(go,250); put(SPOT0); setTimeout(()=>put(SPOT0),600); }; setTimeout(go,800); },'162fb-spot');
   const b=document.createElement('button'); b.id='hspot'; b.textContent='#'; b.title='copy this exact spot and view (paste it to Claude)';
   const css=document.createElement('style'); css.textContent='#hspot{font:11px Silkscreen,monospace;color:#7de0a4;background:#00000066;border:1px solid #2d5a40;padding:1px 6px;margin-left:6px;cursor:pointer;pointer-events:auto} #hspot:hover{color:#f2c14e;border-color:#f2c14e}';
   document.head.appendChild(css);
@@ -22,3 +22,4 @@ const SPOT={};
   const place=()=>{ const xy=document.getElementById('hmxy'); if(!xy){ setTimeout(place,500); return; } xy.parentNode.insertBefore(b,xy.nextSibling); };
   place();
   window.SPOT=SPOT; }
+export {SPOT};

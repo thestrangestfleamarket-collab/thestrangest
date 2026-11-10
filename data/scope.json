@@ -498,5 +498,79 @@
    "about": "Zebrafish scales overlapping like roof tiles, lit up with coloured dyes.",
    "credit": "Daniel Castranova, NICHD / NIH"
   }
- ]
+ ],
+ "life": {
+  "paramecium": {
+   "sci": "Paramecium",
+   "rank": "genus",
+   "common": "PARAMECIUM",
+   "about": "Paramecium (also Paramoecium) is a genus of unicellular ciliates, commonly studied as a representative of the ciliate group. Paramecia are widespread in freshwater, brackish, and marine environments and are often very abundant in stagnant basins and ponds.",
+   "kingdom": "Chromista",
+   "phylum": "Ciliophora",
+   "credit": "iNaturalist (Wikipedia, CC BY-SA) · GBIF"
+  },
+  "euglena": {
+   "sci": "Euglena",
+   "rank": "genus",
+   "common": "",
+   "about": "Euglena is a genus of single-celled flagellate eukaryotes. It is the best known and most widely studied member of the class Euglenoidea, a diverse group containing some 54 genera and at least 800 species. Species of Euglena are found in fresh and salt waters.",
+   "kingdom": "Protozoa",
+   "phylum": "Euglenozoa",
+   "credit": "iNaturalist (Wikipedia, CC BY-SA) · GBIF"
+  },
+  "amoeba": {
+   "sci": "Amoeba proteus",
+   "rank": "species",
+   "common": "",
+   "about": "Amoeba, alternatively Chaos diffluens, is an amoeba closely related to the giant amoebae and a species commonly bought at science supply stores.",
+   "kingdom": "Protozoa",
+   "phylum": "Amoebozoa",
+   "credit": "iNaturalist (Wikipedia, CC BY-SA) · GBIF"
+  },
+  "rotifer": {
+   "sci": "Rotifera",
+   "rank": "phylum",
+   "common": "ROTIFERS",
+   "about": "The rotifers (Rotifera, commonly called wheel animals) make up a phylum of microscopic and near-microscopic pseudocoelomate animals.",
+   "kingdom": "Animalia",
+   "phylum": "Rotifera",
+   "credit": "iNaturalist (Wikipedia, CC BY-SA) · GBIF"
+  },
+  "volvox": {
+   "sci": "Volvox",
+   "rank": "genus",
+   "common": "",
+   "about": "Volvox is a polyphyletic genus of chlorophyte green algae in the family Volvocaceae. It forms spherical colonies of up to 50,000 cells. They live in a variety of freshwater habitats, and were first reported by Antonie van Leeuwenhoek in 1700.",
+   "kingdom": "Plantae",
+   "phylum": "Chlorophyta",
+   "credit": "iNaturalist (Wikipedia, CC BY-SA) · GBIF"
+  },
+  "diatom": {
+   "sci": "Bacillariophyceae",
+   "rank": "class",
+   "common": "DIATOMS",
+   "about": "Diatoms are a major group of microalgae, and are among the most common types of phytoplankton.",
+   "kingdom": "Chromista",
+   "phylum": "Ochrophyta",
+   "credit": "iNaturalist (Wikipedia, CC BY-SA) · GBIF"
+  },
+  "daphnia": {
+   "sci": "Daphnia",
+   "rank": "genus",
+   "common": "WATER-FLEAS",
+   "about": "Daphnia, a genus of small planktonic crustaceans, are 0.2–5 millimetres (0.01–0.20 in) in length.",
+   "kingdom": "Animalia",
+   "phylum": "Arthropoda",
+   "credit": "iNaturalist (Wikipedia, CC BY-SA) · GBIF"
+  },
+  "tardigrade": {
+   "sci": "Tardigrada",
+   "rank": "phylum",
+   "common": "TARDIGRADES",
+   "about": "Tardigrades are water-dwelling, eight-legged, segmented micro-animals. They were first discovered by the German zoologist Johann August Ephraim Goeze in 1773.",
+   "kingdom": "Animalia",
+   "phylum": "Tardigrada",
+   "credit": "iNaturalist (Wikipedia, CC BY-SA) · GBIF"
+  }
+ }
 }

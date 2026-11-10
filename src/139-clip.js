@@ -4,7 +4,7 @@ import {CLIP, NPCS} from './003b-systems.js';
 import {CLIPX, FIX, MODS, QS, SOL, STORE, TILE, ZU} from './006-map-pre.js';
 import {OBJS} from './008-batch.js';
 Object.assign(CLIP,{moved:[],found:[],added:0,boxes:new Map(),done:new Set(),ms:0}); window.CLIP=CLIP;
-{ const MH=24*ZU/.84, KNEE=.45*MH, CHEST=1.2*MH, G=TILE/4, E=.04*TILE, GC=2*TILE;
+{ const MH=24*ZU/.84, STEP=.25*TILE/.84, CHEST=1.2*MH, G=TILE/4, E=.04*TILE, GC=2*TILE;
   const GR=new Map(), key=(i,j)=>i*131072+j;
   const grid=L=>{ let g=GR.get(L); if(g&&g.n===L.length)return g; g={n:L.length,m:new Map()};
     for(const b of L)for(let i=Math.floor(b[0]/GC);i<=Math.floor(b[2]/GC);i++)for(let j=Math.floor(b[1]/GC);j<=Math.floor(b[3]/GC);j++){ const k=key(i,j); let c=g.m.get(k); if(!c)g.m.set(k,c=[]); c.push(b); }
@@ -20,7 +20,7 @@ Object.assign(CLIP,{moved:[],found:[],added:0,boxes:new Map(),done:new Set(),ms:
   const OPEN=/\bsteps?\b|stairs|\bmat\b|rug\b|carpet|dust in the air/;
   const scan=(o,miss)=>{ let x0=1e9,x1=-1e9,z0=1e9,z1=-1e9,ylo=1e9; if(OPEN.test(o.name||''))return o.clip={tot:0,miss:0,open:true};
     for(const {me,v0} of o.parts){ const P=me.geometry.attributes.position.array; for(let q=v0*3;q<v0*3+18;q+=3){ x0=Math.min(x0,P[q]); x1=Math.max(x1,P[q]); z0=Math.min(z0,P[q+2]); z1=Math.max(z1,P[q+2]); ylo=Math.min(ylo,P[q+1]); } }
-    const W=where(o,(x0+x1)/2,(z0+z1)/2,ylo), lo=W.y0+KNEE, hi=W.y0+CHEST; let tot=0, n=0;
+    const W=where(o,(x0+x1)/2,(z0+z1)/2,ylo), lo=W.y0+STEP, hi=W.y0+CHEST; let tot=0, n=0;
     for(const {me,v0} of o.parts){ const P=me.geometry.attributes.position.array, i=v0*3, a=i, b=i+3, c=i+6, d=i+15;
       const yl=Math.min(P[a+1],P[b+1],P[c+1],P[d+1]), yh=Math.max(P[a+1],P[b+1],P[c+1],P[d+1]); if(yh<=lo||yl>=hi)continue;
       const nu=Math.max(1,Math.ceil(Math.hypot(P[b]-P[a],P[b+2]-P[a+2])/G)), nv=Math.max(1,Math.ceil(Math.hypot(P[d]-P[a],P[d+2]-P[a+2])/G));
@@ -30,19 +30,21 @@ Object.assign(CLIP,{moved:[],found:[],added:0,boxes:new Map(),done:new Set(),ms:
   const WADE=/grass|flower|daisy|tulip|rose|lily|sunflower|mushroom/, V=new THREE.Vector3();
   const tris=t=>{ if(t.P)return t.P; const P=[]; t.obj.updateMatrixWorld(true); t.obj.traverse(m=>{ if(!m.isMesh)return; const a=m.geometry.attributes.position, ix=m.geometry.index;
       const n=ix?ix.count:a.count; for(let k=0;k<n;k++){ V.fromBufferAttribute(a,ix?ix.getX(k):k).applyMatrix4(m.matrixWorld); P.push(V.x,V.y,V.z); } }); return t.P=P; };
-  const scanX=(t,add)=>{ if(WADE.test(t.name))return t.clip={tot:0,miss:0,open:true}; const P=tris(t); let x0=1e9,x1=-1e9,z0=1e9,z1=-1e9,cx=0,cz=0,top=-1e9;
-    for(let q=0;q<P.length;q+=3){ cx+=P[q]; cz+=P[q+2]; } cx/=P.length/3; cz/=P.length/3; const y0=MODS.bodega.ground(cx,cz), lo=y0+KNEE, hi=y0+CHEST; let tot=0, n=0;
+  const scanX=(t,miss)=>{ if(WADE.test(t.name))return t.clip={tot:0,miss:0,open:true}; const P=tris(t); let cx=0,cz=0;
+    for(let q=0;q<P.length;q+=3){ cx+=P[q]; cz+=P[q+2]; } cx/=P.length/3; cz/=P.length/3; const y0=MODS.bodega.ground(cx,cz), lo=y0+STEP, hi=y0+CHEST, W={L:SOL.up,F:FIX.up,y0}; let tot=0, n=0;
     for(let q=0;q<P.length;q+=9){ const yl=Math.min(P[q+1],P[q+4],P[q+7]), yh=Math.max(P[q+1],P[q+4],P[q+7]); if(yh<=lo||yl>=hi)continue;
-      for(let v=q;v<q+9;v+=3){ tot++; x0=Math.min(x0,P[v]); x1=Math.max(x1,P[v]); z0=Math.min(z0,P[v+2]); z1=Math.max(z1,P[v+2]); top=Math.max(top,P[v+1]); if(!CLIP.hit(SOL.up,P[v],P[v+2],E))n++; } }
-    if(n&&add){ const p=.02*TILE, b=[x0-p,z0-p,x1+p,z1+p]; SOL.up.push(b); FIX.up.push([b[0],b[1],y0,b[2],b[3],top]); CLIP.boxes.set(b,[t.place+' '+t.name]); CLIP.added++; }
+      const nu=Math.max(1,Math.ceil(Math.max(Math.hypot(P[q+3]-P[q],P[q+5]-P[q+2]),Math.hypot(P[q+6]-P[q],P[q+8]-P[q+2]))/G));
+      for(let u=0;u<=nu;u++)for(let v=0;u+v<=nu;v++){ const a=u/nu, b=v/nu, x=P[q]+(P[q+3]-P[q])*a+(P[q+6]-P[q])*b, z=P[q+2]+(P[q+5]-P[q+2])*a+(P[q+8]-P[q+2])*b; tot++;
+        if(CLIP.hit(SOL.up,x,z,E))continue; n++; if(miss)miss(W,x,z,yh); } }
     return t.clip={tot,miss:n,lvl:'up',y0}; };
   CLIP.run=()=>{ if(QS.get('clip')==='0')return;
     const t0=performance.now(), C=new Map();
+    const cell=nm=>(W,x,z,top)=>{ let m=C.get(W.L); if(!m)C.set(W.L,m={W,c:new Map()}); const i=Math.floor(x/G), j=Math.floor(z/G), k=key(i,j); let e=m.c.get(k);
+      if(!e)m.c.set(k,e={i,j,x0:x,x1:x,z0:z,z1:z,top,of:new Set([nm])}); else{ e.of.add(nm); e.x0=Math.min(e.x0,x); e.x1=Math.max(e.x1,x); e.z0=Math.min(e.z0,z); e.z1=Math.max(e.z1,z); e.top=Math.max(e.top,top); } };
     for(const o of OBJS){ if(CLIP.done.has(o)||!o.parts.length)continue; CLIP.done.add(o);
-      const nm=o.id+' '+o.name, c=scan(o,(W,x,z,top)=>{ let m=C.get(W.L); if(!m)C.set(W.L,m={W,c:new Map()}); const i=Math.floor(x/G), j=Math.floor(z/G), k=key(i,j); let e=m.c.get(k);
-        if(!e)m.c.set(k,e={i,j,x0:x,x1:x,z0:z,z1:z,top,of:new Set([nm])}); else{ e.of.add(nm); e.x0=Math.min(e.x0,x); e.x1=Math.max(e.x1,x); e.z0=Math.min(e.z0,z); e.z1=Math.max(e.z1,z); e.top=Math.max(e.top,top); } });
+      const nm=o.id+' '+o.name, c=scan(o,cell(nm));
       if(c.miss)CLIP.found.push({id:o.id,name:o.name,lvl:c.lvl,miss:c.miss,of:c.tot}); }
-    for(const t of CLIPX){ if(CLIP.done.has(t))continue; CLIP.done.add(t); const c=scanX(t,true); if(c.miss)CLIP.found.push({id:t.place,name:t.name,lvl:'up',miss:c.miss,of:c.tot}); }
+    for(const t of CLIPX){ if(CLIP.done.has(t))continue; CLIP.done.add(t); const c=scanX(t,cell(t.place+' '+t.name)); if(c.miss)CLIP.found.push({id:t.place,name:t.name,lvl:'up',miss:c.miss,of:c.tot}); }
     for(const [L,{W,c}] of C){ const rows=new Map(); for(const e of c.values()){ let r=rows.get(e.j); if(!r)rows.set(e.j,r=[]); r.push(e); }
       let open=new Map(); const out=[], close=bx=>out.push(bx);
       for(const j of [...rows.keys()].sort((p,q)=>p-q)){ const r=rows.get(j).sort((p,q)=>p.i-q.i), now=new Map();
@@ -66,7 +68,7 @@ Object.assign(CLIP,{moved:[],found:[],added:0,boxes:new Map(),done:new Set(),ms:
       ok.push(N); } };
   CLIP.audit=()=>{ '@later'; const things=[], chars=[];
     for(const o of OBJS){ if(!o.parts.length)continue; const c=scan(o,null); if(c.miss)things.push({id:o.id,name:o.name,lvl:c.lvl,miss:c.miss,of:c.tot}); }
-    for(const t of CLIPX){ const c=scanX(t,false); if(c.miss)things.push({id:t.place,name:t.name,lvl:'up',miss:c.miss,of:c.tot}); }
+    for(const t of CLIPX){ const c=scanX(t,null); if(c.miss)things.push({id:t.place,name:t.name,lvl:'up',miss:c.miss,of:c.tot}); }
     const live=NPCS.filter(N=>!fly(N));
     for(const N of live){ const st=N.st, b=CLIP.hit(SOL[N.lv]||SOL.up,st.x,st.z,st.R*.98), q=live.find(q=>q!==N&&q.lv===N.lv&&Math.hypot(q.st.x-st.x,q.st.z-st.z)<(q.st.R+st.R)*.98);
       if(b||q)chars.push({key:N.key,at:[+st.x.toFixed(2),+st.z.toFixed(2)],R:+st.R.toFixed(2),solid:b?b.map(v=>+v.toFixed(2)):null,other:q?q.key:null}); }

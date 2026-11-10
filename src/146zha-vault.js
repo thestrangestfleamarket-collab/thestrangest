@@ -10,15 +10,15 @@ import {MINI} from './038zd-mini.js';
 import {LIB} from './144ca-library.js';
 const MVAULT={}; window.MVAULT=MVAULT;
 { const say=(t,c)=>SAY(t,c||'#e8dcb0'), T=TILE, MW=TILE/.84, TM=.924, KEY='vault', OX=()=>SHARED.BOD.XS(-3280), OZ=()=>SHARED.BOD.ZS(0), RW=7, RD=7, H=3.2;
-  const day=()=>window.MAIL&&MAIL.ready?MAIL.day():window.CITY?CITY.day||0:0;
+  const day=()=>window.MAIL&&MAIL.ready?MAIL.day():CITY?CITY.day||0:0;
   const hs=(a,b)=>{ let h=Math.imul(a|0,374761393)+Math.imul(b|0,668265263); h=Math.imul(h^(h>>>13),1274126177); return ((h^(h>>>16))>>>0)/4294967296; };
   // the antiquities: found in the vault, donated to the museum (the first of each pays twice its worth and goes on show), the Professor buys the rest
   const ART=[['va_astrolabe','A BRASS ASTROLABE',90],['va_scarab','A LAPIS SCARAB',60],['va_coin','A GOLD COIN OF ROME',70],['va_lamp','A CLAY OIL LAMP',40],['va_seal','A JADE SEAL',80],['va_globe','A CELESTIAL GLOBE',120],['va_chart','A SEA CHART ON VELLUM',75],['va_idol','A STONE IDOL',100]];
   const NM=Object.fromEntries(ART.map(a=>[a[0],a[1]])), PR=Object.fromEntries(ART.map(a=>[a[0],a[2]]));
-  FORAGE.add({names:NM,prices:PR,sellable:true}); FORAGE.BUYK.antiquities=['va_'];
+  FORAGE.add({names:NM,prices:PR,sellable:true}); (FORAGE.BUYK.antiquities=FORAGE.BUYK.antiquities||[]).push('va_');
   FORAGE.GIFTS.push({is:id=>/^va_/.test(id),place:'art',pay:id=>(PR[id]||20)*2,thanks:(id,p)=>`THE CURATOR SETS YOUR ${NM[id]} IN THE MUSEUM'S CASE AND PAYS $${p}.`});
   FORAGE.BOOK.push({id:'vault',title:'THE VAULT',rows:()=>ART.map(a=>[a[1],FORAGE.has(a[0])>0||FORAGE.gave('art',a[0]),FORAGE.gave('art',a[0])?'IN THE MUSEUM':'',a[2]>=100]),foot:'The art museum\'s sealed vault opens to the night\'s combination; its parts are hidden round the city. Donate what you find there.'});
-  FORAGE.HELP.push("THE MUSEUM'S VAULT: a hatch in the art museum's floor. Three dials and a star, new each night; the cornerstone, the founder's statue, a note in the bookstore and the theatre's sky poster hold the parts.");
+  FORAGE.HELP.push("THE MUSEUM'S VAULT: a hatch in the art museum's floor. Three dials and a star, new each night; the cornerstone, the founder's statue, a note in the bookstore and the sky poster hold the parts.");
   const LOOK={va_astrolabe:P=>[P('tor',0xc8a040,0,.12,0,.11,.11,.02,Math.PI/2,0,0,{metal:1,rough:.3}),P('cyl',0xb08a30,0,.12,0,.1,.01,.1,Math.PI/2,0,0,{metal:1,rough:.3}),P('box',0x8a6a20,0,.12,.012,.2,.012,.006,0,.6,0,{metal:1})],
     va_scarab:P=>[P('sph',0x2a4aa0,0,.03,0,.07,.035,.09,0,0,0,{rough:.2}),P('sph',0x22408a,0,.035,.07,.035,.025,.03)],va_coin:P=>[P('cyl',0xe8c040,0,.006,0,.05,.012,.05,0,0,0,{metal:1,rough:.25})],
     va_lamp:P=>[P('sph',0xa86a40,0,.04,0,.08,.04,.06),P('cone',0xa86a40,.08,.045,0,.03,.06,.03,0,Math.PI/2)],va_seal:P=>[P('box',0x4a8a5a,0,.04,0,.07,.08,.07,0,0,0,{rough:.25}),P('sph',0x4a8a5a,0,.1,0,.035,.03,.035)],
@@ -39,7 +39,6 @@ const MVAULT={}; window.MVAULT=MVAULT;
   const riddle=(b,d)=>{ const k=Math.floor(hs(d,89)*3), x=1+Math.floor(hs(d,97)*8); return k===0?`HALF OF ${2*b}`:k===1?`${b+x} TAKE AWAY ${x}`:b%3===0?`THREE TIMES ${b/3}`:`ONE MORE THAN ${b-1}`; };
   MVAULT.code=()=>code(lock());
   // INTELLIGENCE grows by reading the city (a stat, 141-forage; capped at its most)
-  if(!FORAGE.stats.gain)FORAGE.stats.gain=(k,n=1)=>{ const st_=FORAGE.ST, mx=FORAGE.stats.MAX; if(st_[k]==null||st_[k]>=mx)return 0; const v=Math.min(mx,st_[k]+n), g=v-st_[k]; st_[k]=v; FORAGE.save(); if(FORAGE.draw)FORAGE.draw(); return g; };
   const smart=(n,why)=>{ const g=FORAGE.stats.gain('int',n); if(g)say(`${why} YOUR INTELLIGENCE RISES TO ${FORAGE.ST.int}.`,'#7fd0ff'); };
   const clue=(id,title,draw,cap)=>{ const d=lock(); MINI.look(title,draw,cap); if(S.read[id]!==d){ S.read[id]=d; save(); smart(1,'YOU WORK IT OUT.'); } MVAULT.reads=(MVAULT.reads||0)+1; };
   const paper=(g,w,h,bg='#e8dcb8')=>{ g.fillStyle=bg; g.fillRect(0,0,w,h); g.strokeStyle='#8a6a3a'; g.lineWidth=2; g.strokeRect(10,10,w-20,h-20); g.fillStyle='#2a2420'; g.textAlign='center'; };
@@ -86,7 +85,7 @@ const MVAULT={}; window.MVAULT=MVAULT;
       K.flush(); const gm=new THREE.Mesh(new THREE.BoxGeometry(2.6*MW,.6*MW,.6*MW),new THREE.MeshLambertMaterial({color:0xcfe3ea,transparent:true,opacity:.18,depthWrite:false})), p=F.pw(cu,cv); gm.position.set(p[0],1.25*MW,p[1]); gm.rotation.y=F.hd(0,1); scene.add(gm);
       DISP.g=new THREE.Group(); DISP.g.position.set(p[0],.96*MW,p[1]); DISP.g.rotation.y=F.hd(0,1); scene.add(DISP.g); fill(); }; }
   { let t=0; SYS.add('life',dt=>{ if((t+=dt||0)<1)return; t=0; if(DISP.g&&DISP.g.parent&&gave().length!==DISP.n)fill(); if(DISP.g&&!DISP.g.parent)DISP.g=null; },'146zha-vault-case'); }
-  // the clues round the city, made once you come near: the cornerstone and the founder by the art museum's door, the sky poster by the theatre's, the note on the bookstore's lectern
+  // the clues round the city, made once you come near: the cornerstone and the founder by the art museum's door, the sky poster by the theatre's (by the art museum's while the theatre is away), the note on the bookstore's lectern
   LIB.inside.push(({K,W})=>{ '@later'; const u=W-.9, v=6.2; K.box(u-.12,v-.08,u+.02,v+.08,1.12,1.13,0xe8dcb8); K.use('A FOLDED NOTE (ON THE LECTERN)',u,v,.6,1.3,()=>MVAULT.clues.note(),1.4); });
   const ON=[]; let made=false, chk=0;
   const at=(SD,a,b)=>{ const X=SHARED.BOD.X, Z=SHARED.BOD.Z, d=[X(SD.door[0]),Z(SD.door[1])], o=[X(SD.out[0]),Z(SD.out[1])], n0=[o[0]-d[0],o[1]-d[1]], l=Math.hypot(n0[0],n0[1])||1, n=[n0[0]/l,n0[1]/l], tg=[n[1],-n[0]];
@@ -102,7 +101,7 @@ const MVAULT={}; window.MVAULT=MVAULT;
       add(new THREE.CylinderGeometry(.04*MW,.04*MW,.5*MW,6),bronze,.2,2.4,.12,-.6,-.4); add(new THREE.BoxGeometry(.18*MW,.24*MW,.05*MW),bronze,.26,2.62,.25,-.3);
       G.position.set(p.x,p.y,p.z); G.rotation.y=p.ry; scene.add(G); ON.push(G); SOL.up.push([p.x-.5*MW,p.z-.5*MW,p.x+.5*MW,p.z+.5*MW]);
       mk(p,"THE FOUNDER'S STATUE (AN INSCRIPTION)",()=>MVAULT.clues.statue(),1.2,2.8); }
-    if(Th){ const p=at(Th,-.3,2.2); plate(p,.7,1,1.0,IKIT.tex(28,40,(g,w,h)=>{ g.fillStyle='#0e1428'; g.fillRect(0,0,w,h); g.fillStyle='#f2c14e'; g.fillRect(3,3,w-6,3); g.fillStyle='#f4ecd0'; for(let i=0;i<14;i++)g.fillRect(3+Math.floor(hs(i,5)*(w-6)),9+Math.floor(hs(i,9)*(h-16)),1,1); g.fillRect(3,h-6,w-6,2); }));
+    { const p=Th?at(Th,-.3,2.2):at(A,-.3,-4.4); plate(p,.7,1,1.0,IKIT.tex(28,40,(g,w,h)=>{ g.fillStyle='#0e1428'; g.fillRect(0,0,w,h); g.fillStyle='#f2c14e'; g.fillRect(3,3,w-6,3); g.fillStyle='#f4ecd0'; for(let i=0;i<14;i++)g.fillRect(3+Math.floor(hs(i,5)*(w-6)),9+Math.floor(hs(i,9)*(h-16)),1,1); g.fillRect(3,h-6,w-6,2); }));
       mk(p,"TONIGHT'S SKY (A POSTER)",()=>MVAULT.clues.sky(),.9,1.6,.4); } };
   SYS.add('places',dt=>{ if((chk-=dt||0)>0)return; chk=1; if(!made){ const A=STORE.streetDoor&&STORE.streetDoor.art; if(!A)return; const X=SHARED.BOD.X, Z=SHARED.BOD.Z, Th=STORE.streetDoor.theatre;
       const near=SD=>SD&&Math.hypot(pos.x-X(SD.door[0]),pos.z-Z(SD.door[1]))<70*MW; if(!near(A)&&!near(Th))return; made=true; make(); }
@@ -133,7 +132,7 @@ const MVAULT={}; window.MVAULT=MVAULT;
     try{ await FADE.run('',async()=>{ if(!R.done){ await STORE.ensure(); if(STORE.pre.art)await STORE.pre.art(); } ROOMS.goOut('vault'); if(!R.done)STORE.inGo('art'); },{cut:true}); } finally{ IV.busy=false; } };
   const reg=()=>{ if(ROOMS.off.vault)return true; const o=outAt(); if(!o)return false; const F=frame(), sp=F.pw(RW/2,RD-1.4), a=F.pw(0,0), b=F.pw(RW,RD);
     ROOMS.off.vault={name:'THE SEALED VAULT',box:{x0:Math.min(a[0],b[0])-.3*T,z0:Math.min(a[1],b[1])-.3*T,x1:Math.max(a[0],b[0])+.3*T,z1:Math.max(a[1],b[1])+.3*T,y0:-1,y1:(H+.5)*MW},noCeil:true,need:()=>LOAD('later'),
-      build:()=>ROOMS.part(G=Object.assign(new THREE.Group(),{name:'vault-in'}),()=>{ scene.add(G); furnish(); }),unbuild:()=>{ if(G)G.removeFromParent(); G=null; MVAULT.cases=null; },spawn:[sp[0],sp[1],0,F.hd(0,-1)],out:o};
+      build:()=>{ const P=ROOMS.part(G=Object.assign(new THREE.Group(),{name:'vault-in'}),furnish); scene.add(G); return P; },unbuild:()=>{ if(G)G.removeFromParent(); G=null; MVAULT.cases=null; },spawn:[sp[0],sp[1],0,F.hd(0,-1)],out:o};
     if(ROOMS.reset)ROOMS.reset(); return true; };
   { let done=false; SYS.add('life',()=>{ if(!done)done=reg(); },'146zha-vault-reg'); }
   window.MVAULTDBG=()=>({reg:!!ROOMS.off.vault,inside:ROOMS.offIn&&ROOMS.offIn()==='vault',open:MVAULT.isOpen(),dials:S.dials.slice(),star:S.star,read:Object.keys(S.read),clues:ON.length,int:FORAGE.ST.int,cases:(MVAULT.cases||[]).map(c=>c.th.name),shown:DISP.n,code:code(day())});

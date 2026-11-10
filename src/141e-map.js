@@ -1,13 +1,14 @@
 // THE MAP: a folded 1986 visitor's brochure. MAP in the menu (or Shift+M, or a click on the minimap) brings it up, unfolded over the screen at once (no motion, owner 4 Nov 2026): the street level painted flat, every place numbered in its own colour, a guide column; F flips it to THE SUBWAY on the back; a click on a place or a station goes there; ESC puts it away.
 import {SHARED} from './003-shx.js';
-import {FORAGE, keys, ONLINE, PARK, pos, ROOMS, TEXT, UI} from './003b-systems.js';
+import {FORAGE, keys, MARKS, ONLINE, PARK, pos, ROOMS, TEXT, UI} from './003b-systems.js';
 import {LEVEL, MODS, SECTION, SECTIONS, SYS, TILE} from './006-map-pre.js';
 import {LOOP} from './009b-loop.js';
+import {STALL} from './081-stalls.js';
 { SYS.onStart(async()=>{ await LOAD('later'); if(FORAGE.has('map'))FORAGE.take('map',FORAGE.has('map')); },'141e-map');
   for(const [k,d] of Object.entries({'bro.title1':'THE STRANGEST','bro.title2':'FLEA MARKET','bro.sub':"VISITOR'S MAP & GUIDE · NEW YORK",'bro.sec':'SECTION {id} · {a} · {b}','bro.poi':'POINTS OF INTEREST',
     'bro.here':'YOU ARE HERE','bro.hours':'THE HOURS','bro.hours2':'the sky keeps real Central time, one clock for everyone','bro.foot':'FREE · TAKE ONE · PRINTED AT THE BODEGA · 1986','bro.loop':'THE SUBWAY','bro.loop2':'THE SUBWAY UNDER THE RING STREETS · {n} STATIONS · TWO TRAINS','bro.loop3':'one station a section: its letter is the section it serves',
     'bro.train':'TRAIN {n} · TO {next}','bro.track1':'TRAIN 1 · the outer track','bro.track2':'TRAIN 2 · the inner track','bro.stop':'A STOP AT EVERY STATION · a click on one rides there','bro.quiet':'the grey stations are sections not built yet','bro.back':'F FLIPS BACK TO THE MAP','bro.hint':'CLICK A PLACE TO GO THERE · WHEEL ZOOMS · F FLIPS IT · ESC PUTS IT AWAY',
-    'bro.cover3':"VISITOR'S MAP\n& GUIDE",'bro.cover4':'THE MAP ON ONE SIDE\nTHE SUBWAY ON THE OTHER','bro.free':'FREE · TAKE ONE','bro.ny':'NEW YORK','bro.ed':'1986 EDITION','bro.under':'underground','bro.water':'THE HUDSON','bro.goto':'GO TO','bro.choose':'CHOOSE A PLACE...','bro.lake':'THE LAKE','bro.alley':'THE ALLEY','bro.prom':'THE PROMENADE','bro.ff':'FORCEFIELD · THE EDGE OF THE SECTION','bro.g.outside':'OUTSIDE','bro.g.inside':'INSIDE','bro.g.underground':'UNDERGROUND','bro.g.else':'ELSEWHERE'}))TEXT.t(k,d);
+    'bro.cover3':"VISITOR'S MAP\n& GUIDE",'bro.cover4':'THE MAP ON ONE SIDE\nTHE SUBWAY ON THE OTHER','bro.free':'FREE · TAKE ONE','bro.ny':'NEW YORK','bro.ed':'1986 EDITION','bro.under':'underground','bro.water':'THE HUDSON','bro.goto':'GO TO','bro.choose':'CHOOSE A PLACE...','bro.lake':'THE LAKE','bro.alley':'THE ALLEY','bro.prom':'THE PROMENADE','bro.ff':'FORCEFIELD · THE EDGE OF THE SECTION','bro.g.outside':'OUTSIDE','bro.g.inside':'INSIDE','bro.g.underground':'UNDERGROUND','bro.g.else':'ELSEWHERE','bro.find':'TYPE A NAME...','bro.neighbours':'NEIGHBOURS ONLINE','bro.online':'online'}))TEXT.t(k,d);
   const css=document.createElement('style'); css.textContent=`#bro{position:fixed;inset:0;z-index:30;perspective:1600px;background:rgba(6,8,14,.55);overflow:hidden;user-select:none;touch-action:none} #bro[hidden]{display:none}
     #bro .sh{position:absolute;left:0;top:0;width:320px;height:720px;transform-style:preserve-3d;transform-origin:0 0;will-change:transform}
     #bro .pn{position:absolute;left:0;top:0;width:320px;height:720px;transform-style:preserve-3d;transform-origin:0 50%} #bro .pn .pn{left:100%}
@@ -15,7 +16,12 @@ import {LOOP} from './009b-loop.js';
     #bro .fc i{position:absolute;top:0;bottom:0;width:22px;pointer-events:none} #bro .fc i.l{left:0;background:linear-gradient(90deg,rgba(0,0,0,.16),rgba(0,0,0,0))} #bro .fc i.r{right:0;background:linear-gradient(270deg,rgba(0,0,0,.1),rgba(0,0,0,0))}
     #bro .fc u{position:absolute;left:0;right:0;top:50%;height:14px;margin-top:-7px;background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.09) 50%,rgba(255,255,255,.12) 60%,rgba(0,0,0,0));pointer-events:none}
     #bro svg{fill:#111} #bro svg text{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-weight:900;letter-spacing:.4px} #bro svg [data-go],#bro svg [data-st]{cursor:pointer} #bro svg [data-go]:hover,#bro svg [data-st]:hover{opacity:.75}
-    #bro select.go{position:absolute;transform:translateZ(2px);backface-visibility:hidden;font:900 9px 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.4px;color:#111;background:#f6f4ec;border:1.5px solid #111;border-radius:0;padding:0 4px;cursor:pointer} #bro select.go[hidden]{display:none}
+    #bro .gob{position:absolute;transform:translateZ(2px);backface-visibility:hidden;font:900 9px 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.6px;color:#111} #bro .gob[hidden]{display:none}
+    #bro .gob>button{all:unset;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;width:100%;height:100%;padding:0 7px;background:#111;color:#f6f4ec;cursor:pointer;letter-spacing:2px} #bro .gob>button:hover{background:#e21b1b}
+    #bro .gol{position:absolute;left:0;right:0;top:100%;margin-top:3px;max-height:470px;overflow:auto;background:#f6f4ec;border:2px solid #111;box-shadow:3px 3px 0 rgba(0,0,0,.25)} #bro .gol[hidden]{display:none}
+    #bro .gol input{all:unset;box-sizing:border-box;display:block;width:100%;padding:4px 7px;border-bottom:1.5px solid #111;background:#ece9df;color:#111;font:inherit;letter-spacing:1px} #bro .gol input::placeholder{color:#777}
+    #bro .gor{display:flex;align-items:center;gap:7px;padding:2px 7px;cursor:pointer;white-space:nowrap} #bro .gor:hover,#bro .gor.on{background:#111;color:#f6f4ec} #bro .gor i{flex:none;width:13px;height:13px;border-radius:50%;border:1.3px solid #111;font:900 7px 'Helvetica Neue',Arial,sans-serif;font-style:normal;display:flex;align-items:center;justify-content:center;color:#fff} #bro .gor span{opacity:.6;font-weight:600;margin-left:auto}
+    #bro .gol h6{margin:0;padding:3px 7px 1px;font:inherit;letter-spacing:2px;opacity:.55}
     #bro .hint{position:absolute;z-index:2;left:50%;bottom:10px;transform:translateX(-50%) translateZ(2px);font:9px Silkscreen,monospace;letter-spacing:1px;color:#f2c14e;text-shadow:1px 1px 0 #000;white-space:nowrap;pointer-events:none}`;
   document.head.appendChild(css);
   const W=document.createElement('div'); W.id='bro'; W.hidden=true; W.setAttribute('role','dialog'); W.setAttribute('aria-label','Map'); document.body.appendChild(W);
@@ -29,22 +35,24 @@ import {LOOP} from './009b-loop.js';
   /* ---------- the front: the map on the left, the guide column on the right ---------- */
   const front=()=>{ '@later'; const Q=UI.mapPlan(), T=TILE, OX=SHARED.BOD.OX, OY=SHARED.BOD.OY, E=(LEVEL.edge&&LEVEL.edge.lines)||[], F=Q.F;
     // the map cropped to the section (its forcefields and the houses on them), a little of the backdrop round it
-    const ex=E.flatMap(l=>[l[0],l[2]]), ey=E.flatMap(l=>[l[1],l[3]]), vx0=Math.max(F.x0,(ex.length?Math.min(...ex):F.x0)-22), vx1=Math.min(F.x1,(ex.length?Math.max(...ex):F.x1)+4), vy0=F.y0, vy1=Math.min(F.y1,(ey.length?Math.max(...ey):F.y1)+5);
+    const ex=E.flatMap(l=>[l[0],l[2]]), ey=E.flatMap(l=>[l[1],l[3]]), vx0=Math.max(F.x0,(ex.length?Math.min(...ex):F.x0)-22), vx1=Math.min(F.x1,(ex.length?Math.max(...ex):F.x1)+4), vy0=Math.max(F.y0,(LEVEL.block&&LEVEL.block.walk?Math.min(...LEVEL.block.walk):F.y0)-16), vy1=Math.min(F.y1,(ey.length?Math.max(...ey):F.y1)+5);
     const f=Math.min(720/(vx1-vx0),720/(vy1-vy0)), mw=(vx1-vx0)*f, mh=720, my=0, TX=tx=>(tx-vx0)*f, TY=ty=>(vy1-ty)*f, WX=x=>TX(OX+x/T), WY=z=>TY(OY+z/T);
     G={Q,f,mw,mh,my,toWorld:(sx,sy)=>[(vx0+sx/f-OX)*T,(vy1-sy/f-OY)*T]};
     const cv=document.createElement('canvas'); cv.width=Q.W; cv.height=Q.H; const g=cv.getContext('2d'), im=g.createImageData(Q.W,Q.H), RGB=Q.KN.map(k=>{ const c=KC[k]||PAPER; return [parseInt(c.slice(1,3),16),parseInt(c.slice(3,5),16),parseInt(c.slice(5,7),16)]; });
     for(let i=0,n=Q.W*Q.H;i<n;i++){ const c=RGB[Q.K[i]]; im.data[i*4]=c[0]; im.data[i*4+1]=c[1]; im.data[i*4+2]=c[2]; im.data[i*4+3]=255; } g.putImageData(im,0,0);
     const S=[]; S.push(`<rect width="1280" height="720" fill="${PAPER}"/><image href="${cv.toDataURL()}" x="${TX(F.x0).toFixed(1)}" y="${TY(F.y1).toFixed(1)}" width="${(Q.W/Q.S*f).toFixed(1)}" height="${(Q.H/Q.S*f).toFixed(1)}" style="image-rendering:pixelated" preserveAspectRatio="none"/>`);
     // past the forcefields: washed out (seen, never walked)
-    const ring=E.length?E.map((l,i)=>(i?'L':'M')+TX(l[0]).toFixed(1)+' '+TY(l[1]).toFixed(1)+' L'+TX(l[2]).toFixed(1)+' '+TY(l[3]).toFixed(1)).join(' '):'';
-    if(ring)S.push(`<path d="M0 0H${mw.toFixed(1)}V720H0Z ${ring} L${TX(E[0][0]).toFixed(1)} ${TY(vy0).toFixed(1)}Z" fill="${PAPER}" fill-opacity=".62" fill-rule="evenodd"/>`);
+    const CH=[]; if(E.length){ CH.push(E[0]); for(let k=1;k<E.length;k++){ const q=CH[CH.length-1], n=E.find(l=>!CH.includes(l)&&Math.abs(l[0]-q[2])<.01&&Math.abs(l[1]-q[3])<.01); if(!n)break; CH.push(n); } }   // the outer loop of the edges (lines that join end to end from the first); any others stand inside it
+    const ring=CH.length?CH.map((l,i)=>(i?'L':'M')+TX(l[0]).toFixed(1)+' '+TY(l[1]).toFixed(1)+' L'+TX(l[2]).toFixed(1)+' '+TY(l[3]).toFixed(1)).join(' '):'', lines=E.map(l=>'M'+TX(l[0]).toFixed(1)+' '+TY(l[1]).toFixed(1)+' L'+TX(l[2]).toFixed(1)+' '+TY(l[3]).toFixed(1)).join(' ');
+    if(ring)S.push(`<path d="M0 0H${mw.toFixed(1)}V720H0Z ${ring} L${TX(CH[0][0]).toFixed(1)} ${TY(CH[0][1]).toFixed(1)}Z" fill="${PAPER}" fill-opacity=".62" fill-rule="evenodd"/>`);
     const SM=MODS.sections; if(SM&&SM.road&&SM.inner)for(const r of [SM.road,SM.inner])S.push(`<rect x="${TX(r.x0)}" y="${TY(r.y1)}" width="${TX(r.x1)-TX(r.x0)}" height="${TY(r.y0)-TY(r.y1)}" fill="none" stroke="${INK}" stroke-width="1.5" opacity=".5"/>`);
     // the buildings: the level file's places, then the plan's other boxes where none stands
-    const B=LEVEL.places.filter(p=>p.kind!=='passage').map(p=>({x0:p.x0,y0:p.y1!=null?p.y0:LEVEL.block.back,x1:p.x1,y1:p.y1!=null?p.y1:LEVEL.block.front,n:p.name||'',k:p.kind==='fair'||p.kind==='lot'?'lot':p.kind==='stairs'?'stairs':'bld',place:null}));
+    const B=LEVEL.places.filter(p=>p.kind!=='passage'&&!p.away).map(p=>({x0:p.x0,y0:p.y1!=null?p.y0:LEVEL.block.back,x1:p.x1,y1:p.y1!=null?p.y1:LEVEL.block.front,n:p.name||'',k:p.kind==='fair'||p.kind==='lot'?'lot':p.kind==='stairs'?'stairs':'bld',place:null}));
+    for(const s of STALL.made)if(s.name){ const a=OX+s.bx[0]/T, b=OX+s.bx[2]/T, c=OY+s.bx[1]/T, d=OY+s.bx[3]/T; B.push({x0:Math.min(a,b),x1:Math.max(a,b),y0:Math.min(c,d)-.6,y1:Math.max(c,d)+.6,n:s.name,k:'bld',place:null}); }   // the park wall's stalls
     for(const b of Q.B){ if(b.k==='bld'&&!B.some(q=>q.x0<b.x1-.5&&b.x0<q.x1-.5&&q.y0<b.y1-.5&&b.y0<q.y1-.5))B.push({...b,place:null}); }
     // the places: every one GO TO lists; an inside stands at its door on the street; places in one building (or at one door) share its number, which sits on the building
     const AP=MODS.apts&&MODS.apts.doorW, P=PARK, BL=LEVEL.block||{}, ST=SECTIONS.streets||{};
-    const spotOf=p=>{ let [name,x,z,lv]=p; if(lv==='down')return {x,z,lv:'down'}; if(AP&&(name==='YOUR APARTMENT'||(window.FIREV&&name===FIREV.name)))return {x:AP[0],z:AP[2],lv:'up'}; const id=ROOMS.boxAt?ROOMS.boxAt(x,z):null, o=id&&ROOMS.off[id]&&ROOMS.off[id].out; if(o){ x=o[0]; z=o[1]; } else if(id)return null; return {x,z,lv:'up',rid:id||null}; };
+    const spotOf=p=>{ let [name,x,z,lv]=p; if(lv==='down')return {x,z,lv:'down'}; if(AP&&(name==='YOUR APARTMENT'||(MODS.firev&&name===MODS.firev.name)))return {x:AP[0],z:AP[2],lv:'up'}; const id=ROOMS.boxAt?ROOMS.boxAt(x,z):null, o=id&&ROOMS.off[id]&&ROOMS.off[id].out; if(o){ x=o[0]; z=o[1]; } else if(id)return null; return {x,z,lv:'up',rid:id||null}; };
     const bldOf=(name,sp)=>{ if(sp.lv==='down')return null; const tx=OX+sp.x/T, ty=OY+sp.z/T; return B.find(b=>b.n&&b.n.toUpperCase()===name.toUpperCase())||B.find(b=>b.k!=='stairs'&&tx>b.x0-2.5&&tx<b.x1+2.5&&ty>b.y0-2.5&&ty<b.y1+2.5)||null; };
     const area=s=>{ if(s.lv==='down')return 'UNDERGROUND'; const tx=s.b?(s.b.x0+s.b.x1)/2:OX+s.x/T, ty=s.b?(s.b.y0+s.b.y1)/2:OY+s.z/T; if(BL.alley&&ty<BL.alley[1])return 'HUDSON'; if(P.y0!=null&&ty<P.y0+P.oy)return 'MARKET'; if(P.x0!=null&&tx<P.x0+P.ox)return 'WEST'; return 'PARK'; };
     const seen=new Set(), all=[]; for(const p of UI.places()){ const name=p[0]; if(seen.has(name))continue; seen.add(name); const sp=spotOf(p); if(!sp){ all.push({name,s:null}); continue; } const b=bldOf(name,sp);
@@ -69,8 +77,9 @@ import {LOOP} from './009b-loop.js';
     for(const [n,x,y] of Q.L2)lab(n,x,y,11,{ls:3,r:-90});
     if(SM&&SM.road&&SM.inner){ const ST=SECTIONS.streets||{}, rd=SM.road, inn=SM.inner, cx=(Math.max(vx0,inn.x0)+Math.min(vx1,inn.x1))/2, cy=(Math.max(vy0,inn.y0)+Math.min(vy1,inn.y1))/2;   // the ring streets' names where their bands cross this section
       for(const [n,x,y,r] of [[ST.south,cx,(rd.y0+inn.y0)/2,0],[ST.north,cx,(rd.y1+inn.y1)/2,0],[ST.west,(rd.x0+inn.x0)/2,cy,-90],[ST.east,(rd.x1+inn.x1)/2,cy,-90]])if(!Q.L2.some(l=>l[0]===n))lab(n,x,y,12,{ls:3,r}); }
-    if(ring)S.push(`<path d="${ring}" fill="none" stroke="#12b5cf" stroke-width="2.5" stroke-dasharray="7 4"/>`);
+    if(lines)S.push(`<path d="${lines}" fill="none" stroke="#12b5cf" stroke-width="2.5" stroke-dasharray="7 4"/>`);
     for(const o of (ONLINE.others?[...ONLINE.others.values()]:[])){ if(!o.p)continue; S.push(`<circle cx="${WX(o.p.x).toFixed(1)}" cy="${WY(o.p.z).toFixed(1)}" r="4" fill="${BLUE}" stroke="${PAPER}" stroke-width="1.2"/>${txt(o.name||'',WX(o.p.x),WY(o.p.z)-7,7,{a:'middle'})}`); }
+    for(const M of MARKS){ const x=WX(M.x), y=WY(M.z); if(x<0||x>mw||y<0||y>720)continue; S.push(`<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><path d="M0 0 L-7 -12 A8 8 0 1 1 7 -12 Z" fill="#1fa35a" stroke="${PAPER}" stroke-width="1.5"/><circle cy="-16" r="3" fill="${PAPER}"/></g>`+txt('INVITED: '+(M.name||''),x,y-28,8,{a:'middle',f:'#1fa35a'})); }   // an invitation's place: a green pin
     for(const p of PL){ if(p.lv==='down')continue; const b=B.find(q=>q.place===p), x=b?(TX(b.x0)+TX(b.x1))/2:WX(p.x), y=b?(TY(b.y0)+TY(b.y1))/2:WY(p.z), r=b?Math.max(4.5,Math.min(8.5,(TX(b.x1)-TX(b.x0))/2-.5,(TY(b.y0)-TY(b.y1))/2-.5)):8.5; if(x<0||x>mw||y<0||y>720)continue; S.push(bullet(p.n,x.toFixed(1),y.toFixed(1),r.toFixed(1),p.col,r*(p.n>9?1.05:1.2),` data-go="${esc(p.name)}"`)); }   // a narrow shop's number shrinks to fit it
     { const C=ROOMS.cur, R=C&&ROOMS.off[C.off||C.lz||C.id], o=R&&R.out, at=o?((o[2]||'up')==='up'?[o[0],o[1]]:null):SHARED.LVL==='up'&&!(C&&C.off)?[pos.x,pos.z]:null;
       if(at){ const x=WX(at[0]), y=WY(at[1]); if(x>0&&x<mw&&y>0&&y<720){ S.push(star(x,y,10)); S.push(txt(TEXT.t('bro.here'),x,y+21,8,{a:'middle',f:RED})); } } }
@@ -82,11 +91,11 @@ import {LOOP} from './009b-loop.js';
     S.push(`<line x1="${gx}" y1="132" x2="${gx+gw}" y2="132" stroke="${INK}" stroke-width="2"/>`+txt(TEXT.t('bro.goto'),gx,152,11,{ls:2}));
     G.sel={x:gx+62,y:139,w:gw-62,h:18};
     S.push(`<line x1="${gx}" y1="168" x2="${gx+gw}" y2="168" stroke="${INK}" stroke-width="1" opacity=".4"/>`+txt(TEXT.t('bro.poi'),gx,185,11,{ls:2}));
-    const HH=1.5, gh=LS.map(([,L])=>L.length+HH), tot=gh.reduce((a,b)=>a+b,0); let cut=0, best=tot; for(let i=0,a=0;i<gh.length;i++){ a+=gh[i]; const m=Math.max(a,tot-a); if(m<best){ best=m; cut=i+1; } }   // two columns, split between groups
-    const cw=gw/2, rh=Math.min(14,440/best);
-    LS.forEach(([k,L],i)=>{ const c=i<cut?0:1, r0=gh.slice(c?cut:0,i).reduce((a,b)=>a+b,0), x=gx+c*cw; let y=202+r0*rh;
+    const HH=1.5, gh=LS.map(([,L])=>L.length+HH), tot=gh.reduce((a,b)=>a+b,0); let CM=gh.map(()=>0), best=tot; for(let m=0;m<1<<gh.length;m+=2){ let a=0; gh.forEach((h,i)=>{ if(m>>i&1)a+=h; }); const w=Math.max(a,tot-a); if(w<best-1e-9){ best=w; CM=gh.map((_,i)=>m>>i&1); } }   // two columns, the groups shared between them so neither runs long (owner, 8 Nov 2026: "too much empty space")
+    const cw=gw/2, rh=Math.min(21,430/best), fz=Math.min(12,Math.max(9,rh*.62));
+    LS.forEach(([k,L],i)=>{ const c=CM[i], r0=gh.slice(0,i).reduce((a,b,j)=>a+(CM[j]===c?b:0),0), x=gx+c*cw; let y=202+r0*rh;
       S.push(`<rect x="${x}" y="${(y-8).toFixed(1)}" width="${cw-14}" height="11" fill="${INK}"/>`+txt(k,x+4,(y+.5).toFixed(1),8,{f:PAPER,ls:2})); y+=HH*rh;
-      for(const {name,s} of L){ S.push(`<g data-go="${esc(name)}">`+(s?bullet(s.n,x+9,(y-3.5).toFixed(1),6,s.col,7.5):'')+`<text x="${x+21}" y="${y.toFixed(1)}" font-size="9">${esc(name)}</text></g>`); y+=rh; } });
+      for(const {name,s} of L){ S.push(`<g data-go="${esc(name)}">`+(s?bullet(s.n,x+9,(y-fz*.38).toFixed(1),fz*.66,s.col,fz*.82):'')+`<text x="${x+23}" y="${y.toFixed(1)}" font-size="${fz.toFixed(1)}">${esc(name)}</text></g>`); y+=rh; } });
     S.push(`<line x1="${gx}" y1="652" x2="${gx+40}" y2="652" stroke="#12b5cf" stroke-width="2.5" stroke-dasharray="7 4"/>`+txt(TEXT.t('bro.ff'),gx+48,655,8,{w:'600'}));
     S.push(txt(TEXT.t('bro.hours'),gx,676,9.5,{ls:2})+txt(TEXT.t('bro.hours2'),gx,690,8,{w:'600'})+txt(TEXT.t('bro.foot'),cx,712,7,{a:'middle',w:'600',ls:1}));
     return S.join(''); };
@@ -124,13 +133,26 @@ import {LOOP} from './009b-loop.js';
     SH.querySelectorAll('.pn').forEach((p,i)=>{ if(i)p.style.transform=`rotateY(${(i%2?-1:1)*th}deg)`; }); };
   const build=()=>{ '@later'; const F=front(), K=back(); SH=document.createElement('div'); SH.className='sh'; let parent=SH;
     for(let i=0;i<4;i++){ const p=document.createElement('div'); p.className='pn'; p.innerHTML=`<div class="fc"><svg viewBox="${i*320} 0 320 720">${F}</svg><u></u>${i?'<i class="l"></i>':''}${i<3?'<i class="r"></i>':''}</div><div class="fc bk"><svg viewBox="${(3-i)*320} 0 320 720">${K}</svg>${i<3?'<u></u><i class="l"></i>':''}</div>`; parent.appendChild(p); parent=p; }
-    if(G&&G.sel){ const q=G.sel, sel=document.createElement('select'); sel.className='go'; sel.setAttribute('aria-label',TEXT.t('bro.goto')); Object.assign(sel.style,{left:q.x+'px',top:q.y+'px',width:q.w+'px',height:q.h+'px'});   // GO TO: every place on the guide, in its groups and with its number
-      sel.innerHTML=`<option value="">${esc(TEXT.t('bro.choose'))}</option>`+LG.map(([k,L])=>`<optgroup label="${esc(k)}">${L.map(o=>`<option value="${esc(o.name)}">${o.s?o.s.n+' · ':''}${esc(o.name)}</option>`).join('')}</optgroup>`).join('');
-      sel.onchange=()=>{ const n=sel.value; if(n)go(()=>UI.goName(n)); }; SH.appendChild(sel); }
+    if(G&&G.sel){ const q=G.sel, box=document.createElement('div'); box.className='gob'; Object.assign(box.style,{left:q.x+'px',top:q.y+'px',width:q.w+'px',height:q.h+'px'});   // GO TO: every place the game registers, A to Z, with its number on the map, and your neighbours' apartments (owner, 8 Nov 2026)
+      const key=n=>n.replace(/^THE /,''), items=LG.flatMap(([,L])=>L.map(o=>({name:o.name,n:o.s?o.s.n:null,col:o.s?o.s.col:null}))).sort((a,b)=>key(a.name).localeCompare(key(b.name)));
+      // every tenant's apartment: those online now (marked) and the rest from the server's list
+      let TL=[]; const apts=[], ALL=[...items], mkApts=()=>{ if(!ONLINE.visit)return; const on=ONLINE.others?[...ONLINE.others.values()].filter(o=>o&&o.id&&o.name):[], seen=new Set(on.map(o=>o.id));
+        apts.length=0; for(const o of on)apts.push({name:o.name.toUpperCase()+"'S APARTMENT",visit:o,on:1}); for(const t of TL)if(!seen.has(t.id)){ seen.add(t.id); apts.push({name:String(t.name).toUpperCase()+"'S APARTMENT",visit:t}); }
+        apts.sort((a,b)=>a.name.localeCompare(b.name)); ALL.length=items.length; ALL.push(...apts); }; mkApts();
+      const row=(o,i)=>`<div class="gor" data-goto="${esc(o.name)}" data-i="${i}">${o.n!=null?`<i style="background:${o.col};${DARK[o.col]?'color:#111':''}">${o.n}</i>`:'<i style="background:#fff"></i>'}${esc(o.name)}${o.on?'<span>'+esc(TEXT.t('bro.online'))+'</span>':''}</div>`;
+      box.innerHTML=`<button type="button" aria-haspopup="listbox"><b>${esc(TEXT.t('bro.choose'))}</b><b>▾</b></button><div class="gol" hidden role="listbox"><input type="text" placeholder="${esc(TEXT.t('bro.find'))}" aria-label="${esc(TEXT.t('bro.find'))}"><div class="gox"></div></div>`;
+      const L=box.querySelector('.gol'), F=box.querySelector('input'), X=box.querySelector('.gox');
+      const fill=()=>{ mkApts(); const f=F.value.trim().toUpperCase(), pick=o=>!f||o.name.includes(f); X.innerHTML=items.map((o,i)=>[o,i]).filter(([o])=>pick(o)).map(([o,i])=>row(o,i)).join('')+(apts.some(pick)?`<h6>${esc(TEXT.t('bro.neighbours'))}</h6>`+apts.map((o,i)=>[o,items.length+i]).filter(([o])=>pick(o)).map(([o,i])=>row(o,i)).join(''):''); };
+      const toggle=()=>{ L.hidden=!L.hidden; if(!L.hidden){ F.value=''; fill(); F.focus(); if(ONLINE.tenants)ONLINE.tenants().then(l=>{ TL=l||[]; if(!L.hidden)fill(); }); } };
+      box.querySelector('button').onclick=e=>{ e.stopPropagation(); toggle(); };
+      F.oninput=fill;
+      X.onclick=e=>{ e.stopPropagation(); const r=e.target.closest('.gor'); if(!r)return; const o=ALL[+r.dataset.i]; if(!o)return; go(()=>o.visit?ONLINE.visit(o.visit.id,o.visit.name):UI.goName(o.name)); };
+      for(const ev of ['pointerdown','click','wheel'])box.addEventListener(ev,e=>e.stopPropagation(),{passive:true});
+      SH.appendChild(box); }
     W.innerHTML=''; W.appendChild(SH); W.insertAdjacentHTML('beforeend',`<div class="hint">${esc(TEXT.t('bro.hint'))}</div>`); };
   const open=()=>{ if(up)return close(); up=true; flipped=false; z=1; px=py=0; keys.clear(); fit(); build(); W.hidden=false; pose(1,0); };
   const close=()=>{ if(!up)return; W.hidden=true; W.innerHTML=''; SH=null; up=false; };
-  const flip=()=>{ if(!up)return; flipped=!flipped; pose(1,flipped?180:0); const sel=SH&&SH.querySelector('select.go'); if(sel)sel.hidden=flipped; };
+  const flip=()=>{ if(!up)return; flipped=!flipped; pose(1,flipped?180:0); const sel=SH&&SH.querySelector('.gob'); if(sel){ sel.hidden=flipped; const l=sel.querySelector('.gol'); if(l)l.hidden=true; } };
   const go=f=>{ close(); f(); };
   { let dr=null, moved=false; W.addEventListener('pointerdown',e=>{ dr={x:e.clientX,y:e.clientY,px,py}; moved=false; });
     W.addEventListener('pointermove',e=>{ if(!dr)return; if(Math.abs(e.clientX-dr.x)+Math.abs(e.clientY-dr.y)>5)moved=true; if(moved&&z>1){ px=dr.px+e.clientX-dr.x; py=dr.py+e.clientY-dr.y; pose(1,flipped?180:0); } });
@@ -145,10 +167,10 @@ import {LOOP} from './009b-loop.js';
       const [x,zz]=G.toWorld(sx,sy); go(()=>UI.goTo(x,zz,'up')); }); }
   addEventListener('keydown',e=>{ const key=(e.key||'').toLowerCase(), sm=e.shiftKey&&key==='m'&&!e.ctrlKey&&!e.metaKey&&!e.altKey;
     if(sm){ if(e.repeat||(e.target&&e.target.closest&&e.target.closest('input,textarea,select,[contenteditable="true"]')))return; e.preventDefault(); e.stopImmediatePropagation(); if(up)return close(); if(UI.menuOpen)UI.toggleMenu(); return open(); }
-    if(!up)return; e.stopImmediatePropagation(); if(e.target&&e.target.matches&&e.target.matches('#bro select')&&key!=='escape')return; e.preventDefault(); if(e.repeat)return;   // the drop-down keeps its own keys
+    if(!up)return; e.stopImmediatePropagation(); if(e.target&&e.target.matches&&e.target.matches('#bro input')&&key!=='escape'){ if(key==='enter'){ const r=W.querySelector('.gor'); if(r)r.click(); } return; } e.preventDefault(); if(e.repeat)return;   // the drop-down keeps its own keys
     if(key==='escape'){ close(); } else if(key==='f')flip(); },true);
   addEventListener('keyup',e=>{ if(up)e.stopImmediatePropagation(); },true);
   addEventListener('resize',()=>{ if(up){ fit(); pose(1,flipped?180:0); } });
   UI.mapWindow=()=>{ if(!up)open(); };
   UI.brochure={open,close,flip,up:()=>up,flipped:()=>flipped,places:()=>LN.slice()};
-  window.BRODBG=()=>({up,flipped,places:LN.length,spots:PL.length,sel:document.querySelectorAll('#bro select.go option[value]:not([value=""])').length,go:document.querySelectorAll('#bro [data-go]').length,st:document.querySelectorAll('#bro [data-st]').length}); }
+  window.BRODBG=()=>({up,flipped,places:LN.length,spots:PL.length,sel:(()=>{ const b=document.querySelector('#bro .gob'); if(!b)return 0; const l=b.querySelector('.gol'), h=l.hidden; l.hidden=false; b.querySelector('input').dispatchEvent(new Event('input')); const n=b.querySelectorAll('.gor').length; l.hidden=h; return n; })(),go:document.querySelectorAll('#bro [data-go]').length,st:document.querySelectorAll('#bro [data-st]').length}); }

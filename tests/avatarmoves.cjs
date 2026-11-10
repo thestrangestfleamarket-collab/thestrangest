@@ -29,7 +29,7 @@ const {chromium}=require('playwright'); const OUT=process.argv[2], TOL=+(process
     window.__play=async name=>{ for(let i=0;i<20;i++)await raf(); const s0=__low(); if(window.__c==null)window.__c=s0.off; R.begin(st,name); const out={name,max:0,at:0,n:0}; let t0=performance.now();
       let shot=!window.__nm;
       while(st.move&&st.move.name===name&&performance.now()-t0<12000){ await raf(); if(!shot&&st.move&&st.move.t>=st.move.def.dur*.4){ shot=true; __tile(name); } const l=__low(); if(!l||l.blend)continue;   // (not while it crossfades from its clips)
-      out.n++; const e=Math.abs(l.av-Math.max(l.rig+__c,l.floor-.3)); if(e>out.max){ out.max=e; out.at=st.move?st.move.t:0; out.l=l; } }
+      out.n++; const e=Math.abs(l.av-(st.move&&st.move.def.below!=null/*a pull-up from below a ledge: with the rig*/?l.rig+__c:Math.max(l.rig+__c,l.floor-.3))); if(e>out.max){ out.max=e; out.at=st.move?st.move.t:0; out.l=l; } }
       if(st.move&&st.move.name===name)st.move.t=st.move.def.dur; for(let i=0;i<30;i++)await raf(); out.max=+out.max.toFixed(2); return out; }; });
   const moves=(await pg.evaluate(()=>__moves())).filter(n=>n!=='mantle'); console.log(moves.length+' moves');   // (not the mantle: it pulls you up a ledge, begun only at one: a ladder's top, a tree)
   if(OUT)await pg.evaluate(n=>{ window.__nm=n; const THREE=__dbg.THREE, g=W3.group; g.updateMatrixWorld(true); window.__hh=(W3.eyeAt(new THREE.Vector3()).y-g.getWorldPosition(new THREE.Vector3()).y)*1.5; },moves.length);

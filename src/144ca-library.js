@@ -13,8 +13,8 @@ const LIB={data:null,max:5,inside:[]}; window.LIB=LIB;   // inside: what else fu
 { const BJ=__LAZY__("data/library.json"), say=(t,c)=>SAY(t,c||'#e8d6a8'), TM=.924;
   LIB.files={};   // id -> the cover's file (and spine's, id+'~s'), filled below from the baked list
   const load=()=>LIB.data?Promise.resolve(LIB.data):BJ().then(d=>{ d.books=[]; for(const c of d.cases)for(const b of c.books){ b.genre=c.name; b.case=c.id; d.books.push(b); } LIB.data=d; LIB.by=Object.fromEntries(d.books.map(b=>[b.id,b])); names(); gone(); return d; });   // the shop's cases, each one genre of forty
-  const S={v:1,b:[],p:{}}; try{ const D=JSON.parse(OWNED.get('library')||'null'); if(D&&D.v===1)Object.assign(S,D); }catch(e){} const save=()=>OWNED.set('library',JSON.stringify(S));
-  LIB.S=S;
+  const S={v:1,b:[],p:{},h:[]}; try{ const D=JSON.parse(OWNED.get('library')||'null'); if(D&&D.v===1)Object.assign(S,D); }catch(e){} const save=()=>OWNED.set('library',JSON.stringify(S));
+  LIB.S=S; LIB.load=load; LIB.save=save;   // S.h: your own books (your bookcase's, 150fh) off their shelf and in your pack
   const spineF=id=>LIB.files[id+'~s']||'';
   // a book's cover: its edition's scan when there is a public-domain one, else a cloth binding drawn from its title and author, as plain books were bound
   const DRAWN={}, drawn=b=>DRAWN[b.id]||(DRAWN[b.id]=(()=>{ const c=document.createElement('canvas'); c.width=300; c.height=450; const g=c.getContext('2d'); g.fillStyle=b.col||'#5a3a24'; g.fillRect(0,0,300,450);
@@ -24,11 +24,11 @@ const LIB={data:null,max:5,inside:[]}; window.LIB=LIB;   // inside: what else fu
     const y=words(String(b.t).toUpperCase(),150,26,220); g.fillRect(110,y+26,80,2); words(String(b.a).toUpperCase(),y+64,15,220); return c.toDataURL('image/jpeg',.85); })());
   const cover=id=>LIB.files[id]||(LIB.by&&LIB.by[id]?drawn(LIB.by[id]):'');
   // a borrowed book is a thing in your pack you can open anywhere
-  const names=()=>{ if(!LIB.data)return; FORAGE.add({names:Object.fromEntries(LIB.data.books.map(b=>['lb_'+b.id,'LIBRARY BOOK: '+b.t]))}); };
-  FORAGE.ROWB.push(id=>/^lb_/.test(id)?[['READ','lread']]:[]);
+  const names=()=>{ if(!LIB.data)return; FORAGE.add({names:Object.fromEntries(LIB.data.books.flatMap(b=>[['lb_'+b.id,'LIBRARY BOOK: '+b.t],['hb_'+b.id,'YOUR BOOK: '+b.t]]))}); };
+  FORAGE.ROWB.push(id=>/^[lh]b_/.test(id)?[['READ','lread']]:[]);
   FORAGE.ACT.lread=id=>LIB.read(id.slice(3));
-  if(window.INSPECT&&INSPECT.kinds)INSPECT.kinds.push({is:id=>/^lb_/.test(id),make:id=>{ const b=LIB.by&&LIB.by[id.slice(3)]; const c=b&&b.col?parseInt(b.col.slice(1),16):0x6a3a2a; return INSPECT.shape('book',c,0xf2ead6); }});
-  if(S.b.length)load().catch(()=>{});
+  if(INSPECT&&INSPECT.kinds)INSPECT.kinds.push({is:id=>/^[lh]b_/.test(id),make:id=>{ const b=LIB.by&&LIB.by[id.slice(3)]; const c=b&&b.col?parseInt(b.col.slice(1),16):0x6a3a2a; return INSPECT.shape('book',c,0xf2ead6); }});
+  if(S.b.length||S.h.length)load().catch(()=>{});
   const borrowed=id=>S.b.includes(id);
   // a borrowed book no longer on the shelves goes back by itself
   const gone=()=>{ const g=S.b.filter(id=>!LIB.by[id]); if(!g.length)return; S.b=S.b.filter(id=>LIB.by[id]); for(const id of g)if(FORAGE.has('lb_'+id))FORAGE.take('lb_'+id,FORAGE.has('lb_'+id)); save(); };
@@ -42,27 +42,28 @@ const LIB={data:null,max:5,inside:[]}; window.LIB=LIB;   // inside: what else fu
   P.style.cssText='position:fixed;left:50%;top:6%;transform:translateX(-50%);width:min(760px,94vw);max-height:84vh;overflow:auto;z-index:24;padding:12px 14px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#3b2a1e;background:#ece5d3;border:3px solid #3b2a1e;zoom:var(--uiz,1)';
   const css=document.createElement('style'); css.textContent='#libr[hidden],#libp[hidden]{display:none!important} #libp .btn,#libr .btn{font:inherit;padding:4px 8px;background:#ece5d3;color:#3b2a1e;border:2px solid #3b2a1e;cursor:pointer} #libp .btn.on{background:#3b2a1e;color:#ece5d3} #libp .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px;margin-top:10px} #libp .bk{cursor:pointer;text-align:center} #libp .bk img{width:88px;height:128px;object-fit:cover;border:1px solid #3b2a1e;background:#cfc4ae;box-shadow:2px 2px 0 #3b2a1e55} #libp .bk div{font-size:9px;margin-top:3px;line-height:1.2} #libp input{font:inherit;padding:4px;border:2px solid #3b2a1e;background:#f6f0e2;width:180px} #libp .mine{outline:3px solid #b8862a}';
   document.head.appendChild(css); document.body.appendChild(P);
-  let tab='ALL', q='';
-  const list=()=>{ const B=LIB.data.books; return B.filter(b=>(tab==='ALL'||(tab==='BORROWED'?borrowed(b.id):String(b.genre).toUpperCase()===tab))&&(!q||(b.t+' '+b.a).toLowerCase().includes(q.toLowerCase()))); };
-  const drawCat=()=>{ '@later'; const G=['ALL','BORROWED',...[...new Set(LIB.data.books.map(b=>String(b.genre).toUpperCase()))]];
-    P.innerHTML=`<div><b>THE BOOKSTORE · A LENDING LIBRARY</b> <button class="btn" data-a="x" style="float:right">DONE</button></div>
-      <div style="margin:6px 0;color:#6a4a32">${LIB.data.books.length} BOOKS, ALL FREE TO BORROW. YOU HAVE ${S.b.length} OF ${LIB.max}.</div>
+  let tab='ALL', q='', home=null;   // home: a shelf of your own (150fh) {name, ids(), off(id), take(id), put(id)}, browsed in the same windows
+  const books=()=>home?home.ids().map(i=>LIB.by[i]).filter(Boolean):LIB.data.books, mine=id=>home?home.off(id):borrowed(id);
+  const list=()=>books().filter(b=>(tab==='ALL'||(tab==='BORROWED'||tab==='OFF THE SHELF'?mine(b.id):String(b.genre).toUpperCase()===tab))&&(!q||(b.t+' '+b.a).toLowerCase().includes(q.toLowerCase())));
+  const drawCat=()=>{ '@later'; const B=books(), G=['ALL',home?'OFF THE SHELF':'BORROWED',...[...new Set(B.map(b=>String(b.genre).toUpperCase()))]];
+    P.innerHTML=`<div><b>${home?esc(home.name):'THE BOOKSTORE · A LENDING LIBRARY'}</b> <button class="btn" data-a="x" style="float:right">DONE</button></div>
+      <div style="margin:6px 0;color:#6a4a32">${home?`${B.length} BOOKS, A FEW FROM EVERY CASE OF THE BOOKSTORE. ${B.filter(b=>mine(b.id)).length} OFF THE SHELF, IN YOUR PACK.`:`${LIB.data.books.length} BOOKS, ALL FREE TO BORROW. YOU HAVE ${S.b.length} OF ${LIB.max}.`}</div>
       <div>${G.map(g=>`<button class="btn ${g===tab?'on':''}" data-t="${esc(g)}">${esc(g)}</button>`).join(' ')} <input data-q placeholder="TITLE OR AUTHOR" value="${esc(q)}"></div>
-      <div class="grid">${list().map(b=>`<div class="bk ${borrowed(b.id)?'mine':''}" data-b="${b.id}"><img loading="lazy" alt="" src="${esc(cover(b.id))}"><div>${esc(b.t)}<br><span style="color:#7a5a40">${esc(b.a)}</span></div></div>`).join('')||'<div>NOTHING ON THE SHELF BY THAT NAME.</div>'}</div>`; };
-  const drawCard=id=>{ '@later'; const b=LIB.by[id], m=borrowed(id), pg=S.p[id];
+      <div class="grid">${list().map(b=>`<div class="bk ${mine(b.id)?'mine':''}" data-b="${b.id}"><img loading="lazy" alt="" src="${esc(cover(b.id))}"><div>${esc(b.t)}<br><span style="color:#7a5a40">${esc(b.a)}</span></div></div>`).join('')||'<div>NOTHING ON THE SHELF BY THAT NAME.</div>'}</div>`; };
+  const drawCard=id=>{ '@later'; const b=LIB.by[id], m=mine(id), pg=S.p[id];
     P.innerHTML=`<div><button class="btn" data-a="back">&lt; THE SHELVES</button> <button class="btn" data-a="x" style="float:right">DONE</button></div>
       <div style="display:flex;gap:14px;margin-top:10px;flex-wrap:wrap"><img src="${esc(cover(id))}" alt="" style="width:200px;border:2px solid #3b2a1e;background:#cfc4ae">
       <div style="flex:1;min-width:220px"><div style="font-size:14px"><b>${esc(b.t)}</b></div><div style="margin:4px 0 8px">${esc(b.a)}${b.y?' · '+b.y:''}</div>
       <div style="color:#6a4a32">${LIB.files[id]?(b.txt?'THE COVER: ITS OWN FIRST PAGE':'THE COVER: '+esc(b.ed||'an early edition')):'A PLAIN CLOTH BINDING'}</div><div style="color:#6a4a32;margin-top:4px">${b.pages?'ABOUT '+b.pages+' PAGES · ':''}${b.y?b.y+' · ':''}${esc(String(b.genre).toUpperCase())}</div>
       <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap"><button class="btn" data-a="read" data-b="${id}">${pg?'READ ON':'READ HERE'}</button>
-      ${m?`<button class="btn" data-a="ret" data-b="${id}">GIVE IT BACK</button>`:`<button class="btn" data-a="bor" data-b="${id}">BORROW IT (FREE)</button>`}</div>
+      ${home?(m?`<button class="btn" data-a="put" data-b="${id}">PUT IT BACK ON THE SHELF</button>`:`<button class="btn" data-a="take" data-b="${id}">TAKE IT OFF THE SHELF</button>`):m?`<button class="btn" data-a="ret" data-b="${id}">GIVE IT BACK</button>`:`<button class="btn" data-a="bor" data-b="${id}">BORROW IT (FREE)</button>`}</div>
       <div style="margin-top:10px;color:#8a6a50;font-size:9px">${b.txt?`THE TEXT: ${esc(b.src)} · ${esc(b.lic)} · ${esc(String(b.page).replace(/^https?:\/\/(www\.)?/,'').split('/')[0])} · DOWNLOADED WHEN YOU OPEN IT.`:"THE TEXT: PROJECT GUTENBERG'S EDITION, DOWNLOADED WHEN YOU OPEN IT."}</div></div></div>`; };
   let atShop=false;
-  LIB.open=(id,shop=true)=>load().then(()=>{ atShop=shop; P.hidden=false; if(id&&LIB.by[id])drawCard(id); else drawCat(); }).catch(e=>{ console.warn('LIB: the list did not load',e); say('THE CATALOGUE IS STUCK. TRY AGAIN.','#c8a090'); });
+  LIB.open=(id,shop=true,h=null)=>load().then(()=>{ atShop=shop; if(h!==home){ home=h; tab='ALL'; q=''; } P.hidden=false; if(id&&LIB.by[id])drawCard(id); else drawCat(); }).catch(e=>{ console.warn('LIB: the list did not load',e); say('THE CATALOGUE IS STUCK. TRY AGAIN.','#c8a090'); });
   LIB.close=()=>{ P.hidden=true; };
   P.addEventListener('click',e=>{ '@later'; const t=e.target.closest('[data-a],[data-t],[data-b]'); if(!t)return; const a=t.dataset.a;
     if(a==='x')return LIB.close(); if(a==='back')return drawCat(); if(t.dataset.t){ tab=t.dataset.t; return drawCat(); }
-    const id=t.dataset.b; if(a==='read'){ LIB.close(); return LIB.read(id); } if(a==='bor'){ if(!atShop)return say('BORROW IT AT THE BOOKSTORE.'); LIB.borrow(id); return drawCard(id); } if(a==='ret'){ LIB.giveBack(id); return drawCard(id); }
+    const id=t.dataset.b; if(a==='read'){ LIB.close(); return LIB.read(id); } if(a==='bor'){ if(!atShop)return say('BORROW IT AT THE BOOKSTORE.'); LIB.borrow(id); return drawCard(id); } if(a==='ret'){ LIB.giveBack(id); return drawCard(id); } if(home&&(a==='take'||a==='put')){ home[a](id); return drawCard(id); }
     if(id)drawCard(id); });
   P.addEventListener('input',e=>{ if(e.target.dataset.q==null)return; q=e.target.value; const c=e.target.selectionStart; drawCat(); const i=P.querySelector('[data-q]'); i.focus(); i.setSelectionRange(c,c); });
   for(const ev of ['keydown','keyup','keypress'])P.addEventListener(ev,e=>{ if(e.key==='Escape'&&ev==='keydown')LIB.close(); e.stopPropagation(); });
@@ -87,10 +88,10 @@ const LIB={data:null,max:5,inside:[]}; window.LIB=LIB;   // inside: what else fu
     return txt.split(/\n\s*\n/).map(p=>p.replace(/\s*\n\s*/g,' ').replace(/_/g,'').trim()).filter(Boolean); };
   // its chapters: the headings the book itself uses (a contents list at the front, its headings close together, is left in the text); a book without any, in parts of sixty paragraphs
   const HEAD=/^(chapter|book|part|act|scene|stave|canto|letter|section|volume)\b[\s.:—-]*([0-9ivxlcdm]+|the |one|two|three|four|five|six|seven|eight|nine|ten|first|second|third|[a-z]+)?/i, PROSE=/^\w+\s+[a-z]+\s+[a-z]/, ROMAN=/^[ivxlcdm]+\.?$/i;
-  const chapters=P=>{ '@later'; const c=[]; P.forEach((p,i)=>{ if(p.length<=90&&((HEAD.test(p)&&!PROSE.test(p))||ROMAN.test(p)))c.push(i); });
+  const chapters=(P,modern)=>{ '@later'; const c=[]; P.forEach((p,i)=>{ if(p.length<=90&&((HEAD.test(p)&&!PROSE.test(p))||ROMAN.test(p)))c.push(i); });
     const nm=i=>P[i].toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,40), later=new Map(); c.forEach(i=>later.set(nm(i),i));
     let prevToc=false; const keep=c.filter((i,k)=>{ const nx=c[k+1], dup=later.get(nm(i))!==i, adj=nx!=null&&nx-i<=2, run=nx!=null&&P.slice(i+1,nx).every(q=>q.length<100), toc=dup&&(run||prevToc); prevToc=toc; return !(toc||adj); }); const out=[];   // a heading met again further on was the contents list's
-    for(const i of keep){ let t=P[i], sk=1; if(P[i+1]&&P[i+1].length<=80&&!HEAD.test(P[i+1])&&P[i+1]===P[i+1].toUpperCase()&&/[A-Z]/.test(P[i+1])){ t+=': '+P[i+1]; sk=2; } out.push({t:t.replace(/[.\]\[]+$/,'').replace(/^\[/,''),i,sk}); }
+    for(const i of keep){ let t=P[i], sk=1; if(!modern&&!/:/.test(t)&&P[i+1]&&P[i+1].length<=80&&!HEAD.test(P[i+1])&&P[i+1]===P[i+1].toUpperCase()&&/[A-Z]/.test(P[i+1])){ t+=': '+P[i+1]; sk=2; } out.push({t:t.replace(/[.\]\[]+$/,'').replace(/^\[/,''),i,sk}); }
     if(out.length<2){ out.length=0; for(let i=0;i<P.length;i+=60)out.push({t:'PART '+(out.length+1),i,sk:0}); }
     if(out[0].i>0)out.unshift({t:'THE BEGINNING',i:0,sk:0}); return out; };   // sk: how many of its first paragraphs are its own heading
   let cur=null, side=null;   // the book open: {b, P paragraphs, ch chapters, c chapter}
@@ -124,7 +125,7 @@ const LIB={data:null,max:5,inside:[]}; window.LIB=LIB;   // inside: what else fu
       d.querySelector('[data-res]').innerHTML=w.length<3?'':out.length?out.map(([i,t])=>`<div class="it" data-hit="${i}">…${esc(t)}…</div>`).join(''):'<div class="it">NOTHING FOUND.</div>'; }); } };
   const goPara=i=>{ let c=0; for(let k=0;k<cur.ch.length;k++)if(cur.ch[k].i<=i)c=k; show(c,i); const el=R.querySelector(`p[data-i="${i}"]`); if(el){ el.classList.add('hit'); setTimeout(()=>el.classList.remove('hit'),2400); } };
   LIB.read=id=>load().then(async()=>{ const b=LIB.by[id]; if(!b)return; theme(); R.hidden=false; side=null; R.innerHTML='<div class="bar"><span class="t">OPENING '+esc(b.t)+'…</span><button data-a="x">CLOSE</button></div>'; R.focus();
-    try{ if(!TX[id]){ const r=await fetch(url(b)); if(!r.ok)throw new Error(r.status); const P=clean(b.txt?await new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).text():await r.text()); TX[id]={P,ch:chapters(P)}; }   // a modern book's own words come packed (gzip)
+    try{ if(!TX[id]){ const r=await fetch(url(b)); if(!r.ok)throw new Error(r.status); const P=clean(b.txt?await new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).text():await r.text()); TX[id]={P,ch:chapters(P,!!b.txt)}; }   // a modern book's own words come packed (gzip)
       cur={b,P:TX[id].P,ch:TX[id].ch,c:0}; frame(); R.querySelector('.scroll').focus(); }
     catch(e){ console.warn('LIB: the text did not come',e); R.innerHTML='<div class="bar"><span class="t">THE PAGES WILL NOT OPEN RIGHT NOW.</span><button data-a="x">CLOSE</button></div>'; } });
   LIB.closeBook=()=>{ if(cur)keep(); R.hidden=true; R.innerHTML=''; cur=null; side=null; };
@@ -147,15 +148,18 @@ const LIB={data:null,max:5,inside:[]}; window.LIB=LIB;   // inside: what else fu
 
   /* ---------- the furniture is polyfork's (data/bookstore.json, baked in metres): chairs, rugs, lamps, the radiator and curtains, the clock; loaded behind the fade on the way in ---------- */
   const PJ=__LAZY__("data/bookstore.json"); let PG=null, GEO=null; const pfGeo=()=>PG||(PG=PJ().then(D=>{ const G={}; for(const k in D){ const g=KIT.decode(D[k]); g.computeBoundingBox(); G[k]=g; } return GEO=G; }));
-  { let wrapped=false; SYS.add('places',()=>{ if(wrapped)return; const o=ROOMS.off&&ROOMS.off.books; if(!o)return; wrapped=true; const n0=o.need; o.need=()=>Promise.all([n0?n0():null,pfGeo(),load().catch(()=>null),typeof LOAD==='function'?LOAD('tables'):null,arts()]); },'144ca-library'); }
+  { let wrapped=false; const wrap=()=>{ if(wrapped)return; const o=ROOMS.off&&ROOMS.off.books; if(!o)return; wrapped=true; const n0=o.need; o.need=()=>Promise.all([n0?n0():null,pfGeo(),load().catch(()=>null),typeof LOAD==='function'?LOAD('tables'):null,arts()]); };
+    wrap(); SYS.add('places',wrap,'144ca-library'); }   // at once: the shops' insides are built during the start (owner, 9 Nov 2026: "put the books back into the bookstore")
   let DUST=null;
   /* ---------- a bookcase: Polyfork's alcove bookcase, empty, its four open shelves holding ten real books each, each a spine painted from the book (its cloth, gold bands, title and author; the real spine where one survives), thick or thin by its length ---------- */
   const BC={W:1,H:2.2,D:.355,Z0:-.15,FZ:.15,SH:[.65,1.04,1.415,1.79],TOPS:[1.01,1.385,1.76,2.15],IN:.94,BW:.03};   // metres: the case (its back at Z0, its shelves' front at FZ), its shelves' tops and the boards over them, the room inside a shelf, the boards
   const hsh=s=>{ let h=7; for(const c of String(s))h=(h*31+c.charCodeAt(0))>>>0; return (h%1000)/1000; };
   const bookDims=b=>({th:.012+(b.pages||300)*.00007,h:.25+hsh(b.id)*.07,d:.2+hsh(b.t)*.05});
   // a case reads from its top shelf down (row 0 is the bottom shelf)
-  LIB.shelfOf=C=>{ '@later'; const rows=[0,1,2,3].map(r=>C.books.slice((3-r)*10,(3-r)*10+10)); return rows.map(row=>{ const L=row.map(bookDims), sum=L.reduce((a,q)=>a+q.th,0), k=(BC.IN-.012)/sum; let x=-BC.IN/2+.006;   // ten to a shelf, filling it left to right: thick or thin by length
-    return row.map((b,i)=>{ const q=L[i], th=q.th*k, o={b,x:x+th/2,th,h:q.h,d:q.d}; x+=th; return o; }); }); };
+  // a shelf's books side by side, filling its width IN left to right: thick or thin by length
+  LIB.layRow=(row,IN)=>{ const L=row.map(bookDims), sum=L.reduce((a,q)=>a+q.th,0), k=(IN-.012)/sum; let x=-IN/2+.006;
+    return row.map((b,i)=>{ const q=L[i], th=q.th*k, o={b,x:x+th/2,th,h:q.h,d:q.d}; x+=th; return o; }); };
+  LIB.shelfOf=C=>{ '@later'; return [0,1,2,3].map(r=>LIB.layRow(C.books.slice((3-r)*10,(3-r)*10+10),BC.IN)); };   // ten to a shelf
   // one spine on a canvas: w x h px, x/y its corner
   const paintSpine=(g,x,y,w,h,b,im)=>{ '@later'; g.save(); g.beginPath(); g.rect(x,y,w,h); g.clip(); g.fillStyle=b.col||'#5a3a24'; g.fillRect(x,y,w,h);
     if(im){ g.drawImage(im,x,y,w,h); g.restore(); return; }
@@ -171,21 +175,24 @@ const LIB={data:null,max:5,inside:[]}; window.LIB=LIB;   // inside: what else fu
     const A=String(b.a).split(' ').pop().toUpperCase(), a0=y+h*.75, a1=y+h*.885; let afs=Math.min(w*.4,h*.045); g.font=`${afs}px Georgia,serif`; const aw=g.measureText(A).width; if(aw>a1-a0){ afs*= (a1-a0)/aw; }
     g.save(); g.translate(x+w/2,(a0+a1)/2); g.rotate(Math.PI/2); g.font=`${afs}px Georgia,serif`; g.fillText(A,0,0); g.restore(); g.restore(); };
   const IMS={}, spineIm=id=>{ const f=spineF(id); if(!f)return null; if(!IMS[id]){ const im=new Image(); im.src=f; IMS[id]=im; } return IMS[id].complete&&IMS[id].naturalWidth?IMS[id]:null; };
-  // the case's mesh, in metres (x across, y up, z out toward the room)
-  const caseMesh=C=>{ '@later'; const G=new THREE.Group();
+  // the books of a case as one mesh: each a box, its spine painted on one sheet (a cell a book), the real spine laid over where one survives; rows[r] stand on SH[r], their fronts at FZ; skip(ids) takes those off the shelf
+  LIB.spines=(rows,SH,FZ)=>{ '@later';
     const mg=(L,mat)=>{ let n=0; for(const g of L)n+=g.attributes.position.count; const P=new Float32Array(n*3),N=new Float32Array(n*3),U=new Float32Array(n*2),I=[]; let o=0;
       for(const g of L){ P.set(g.attributes.position.array,o*3); N.set(g.attributes.normal.array,o*3); U.set(g.attributes.uv.array,o*2); for(const i of g.index.array)I.push(i+o); o+=g.attributes.position.count; g.dispose(); }
       const b=new THREE.BufferGeometry(); b.setAttribute('position',new THREE.BufferAttribute(P,3)); b.setAttribute('normal',new THREE.BufferAttribute(N,3)); b.setAttribute('uv',new THREE.BufferAttribute(U,2)); b.setIndex(I); const me=new THREE.Mesh(b,mat); me.castShadow=me.receiveShadow=true; return me; };
-    if(GEO&&GEO.alcove){ const me=new THREE.Mesh(GEO.alcove,KIT.mat); me.castShadow=me.receiveShadow=true; G.add(me); }
-    // the spines' sheet: ten columns, four rows, each cell one book
-    const CW=48, CH=320, cv=document.createElement('canvas'); cv.width=CW*10; cv.height=CH*4; const g=cv.getContext('2d'), tex=new THREE.CanvasTexture(cv); tex.colorSpace=THREE.SRGBColorSpace; tex.anisotropy=4;
-    const rows=LIB.shelfOf(C), books=[];
-    rows.forEach((row,r)=>row.forEach((q,i)=>{ const cx=i*CW, cy=r*CH; paintSpine(g,cx,cy,CW,CH,q.b,spineIm(q.b.id));
+    const CW=48, CH=320, NC=Math.max(1,...rows.map(r=>r.length)), cv=document.createElement('canvas'); cv.width=CW*NC; cv.height=CH*rows.length; const g=cv.getContext('2d'), tex=new THREE.CanvasTexture(cv); tex.colorSpace=THREE.SRGBColorSpace; tex.anisotropy=4;
+    rows.forEach((row,r)=>row.forEach((q,i)=>paintSpine(g,i*CW,r*CH,CW,CH,q.b,spineIm(q.b.id))));
+    const geos=out=>{ const L=[]; rows.forEach((row,r)=>row.forEach((q,i)=>{ if(out&&out.has(q.b.id))return; const cx=i*CW, cy=r*CH;
       const geo=new THREE.BoxGeometry(q.th,q.h,q.d), uv=geo.attributes.uv, u0=cx/cv.width, u1=(cx+CW)/cv.width, v0=1-(cy+CH)/cv.height, v1=1-cy/cv.height;
       for(let k=0;k<uv.count;k++){ const face=Math.floor(k/4); if(face===4){ const a=uv.getX(k), c=uv.getY(k); uv.setXY(k,u0+(u1-u0)*a,v0+(v1-v0)*c); } else uv.setXY(k,u0+(u1-u0)*.5,v0+(v1-v0)*.5); }
-      geo.translate(q.x,BC.SH[r]+q.h/2,BC.FZ-q.d/2-.01); books.push(geo); }));
-    const bm=mg(books,new THREE.MeshLambertMaterial({map:tex})); G.add(bm);
-    for(const id of C.books.map(b=>b.id))if(spineF(id)){ const im=new Image(); im.onload=()=>{ rows.forEach((row,r)=>row.forEach((q,i)=>{ if(q.b.id===id){ paintSpine(g,i*CW,r*CH,CW,CH,q.b,im); tex.needsUpdate=true; } })); }; im.src=spineF(id); }
+      geo.translate(q.x,SH[r]+q.h/2,FZ-q.d/2-.01); L.push(geo); })); return L; };
+    const mesh=mg(geos(null),new THREE.MeshLambertMaterial({map:tex}));
+    for(const row of rows)for(const q of row)if(spineF(q.b.id)){ const im=new Image(); im.onload=()=>{ rows.forEach((rw,r)=>rw.forEach((z,i)=>{ if(z.b.id===q.b.id){ paintSpine(g,i*CW,r*CH,CW,CH,z.b,im); tex.needsUpdate=true; } })); }; im.src=spineF(q.b.id); }
+    return {mesh,tex,skip:ids=>{ const m=mg(geos(new Set(ids)),mesh.material); mesh.geometry.dispose(); mesh.geometry=m.geometry; }}; };
+  // the case's mesh, in metres (x across, y up, z out toward the room)
+  const caseMesh=C=>{ '@later'; const G=new THREE.Group();
+    if(GEO&&GEO.alcove){ const me=new THREE.Mesh(GEO.alcove,KIT.mat); me.castShadow=me.receiveShadow=true; G.add(me); }
+    G.add(LIB.spines(LIB.shelfOf(C),BC.SH,BC.FZ).mesh);
     // its brass plate: the genre
     const pc=document.createElement('canvas'); pc.width=256; pc.height=40; const pg=pc.getContext('2d'); pg.fillStyle='#b8923a'; pg.fillRect(0,0,256,40); pg.fillStyle='#2a1a10'; let pfs=19; pg.font=`600 ${pfs}px Georgia,serif`; const pww=pg.measureText(C.name).width; if(pww>240){ pfs*=240/pww; pg.font=`600 ${pfs}px Georgia,serif`; } pg.textAlign='center'; pg.textBaseline='middle'; pg.fillText(C.name,128,21);
     const pt=new THREE.CanvasTexture(pc); pt.colorSpace=THREE.SRGBColorSpace; const plate=new THREE.Mesh(new THREE.PlaneGeometry(.46,.072),new THREE.MeshLambertMaterial({map:pt})); plate.position.set(0,.5,BC.FZ+.03); G.add(plate);
@@ -195,7 +202,7 @@ const LIB={data:null,max:5,inside:[]}; window.LIB=LIB;   // inside: what else fu
   const VW=document.createElement('div'); VW.id='libv'; VW.hidden=true; VW.style.cssText='position:fixed;inset:0;z-index:22;background:#120c08;touch-action:none';
   document.body.appendChild(VW); const VC=document.createElement('canvas'); VC.style.cssText='position:absolute;inset:0;width:100%;height:100%;cursor:grab'; VW.appendChild(VC);
   const VB=document.createElement('div'); VB.style.cssText='position:absolute;left:50%;bottom:max(14px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:flex;gap:6px;font:11px Silkscreen,monospace;zoom:var(--uiz,1)';
-  VB.innerHTML='<button class="btn" data-v="prev">&lt; CASE</button><button class="btn" data-v="out">−</button><button class="btn" data-v="fit">FIT</button><button class="btn" data-v="in">+</button><button class="btn" data-v="next">CASE &gt;</button><button class="btn" data-v="up">▲ SHELF</button><button class="btn" data-v="down">▼ SHELF</button><button class="btn" data-v="rot">ROTATE</button><button class="btn" data-v="x">CLOSE</button>';
+  VB.className='mlb'; VB.innerHTML='<button class="btn" data-v="prev">&lt; CASE</button><button class="btn" data-v="out">−</button><button class="btn" data-v="fit">FIT</button><button class="btn" data-v="in">+</button><button class="btn" data-v="next">CASE &gt;</button><button class="btn" data-v="up">▲ SHELF</button><button class="btn" data-v="down">▼ SHELF</button><button class="btn" data-v="rot">ROTATE</button><button class="btn" data-v="x">CLOSE</button>';
   VW.appendChild(VB); { const st=document.createElement('style'); st.textContent='#libv .btn{font:inherit;padding:6px 10px;background:#ece5d3;color:#3b2a1e;border:2px solid #3b2a1e;cursor:pointer} #libv[hidden]{display:none!important}'; document.head.appendChild(st); }
   const V={ci:0,s:1,x:0,y:0,fit:1,rows:null,hit:[],row:null,rot:0};
   let vpend=false; const vdraw=()=>{ if(vpend)return; vpend=true; requestAnimationFrame(()=>{ vpend=false; if(!VW.hidden)vpaint(); }); };   // one redraw a frame: the filter is a pass over every pixel
@@ -288,7 +295,7 @@ const LIB={data:null,max:5,inside:[]}; window.LIB=LIB;   // inside: what else fu
     use('THE GAME CUPBOARD: EVERY GAME WE HAVE',W-.4,7.6,1.5,1,()=>TABLES.list(),1.4);
     TUSE.length=0; CAFE.forEach(([du,v],n)=>{ const u=Wb+du; put(G,'bistrotable',u,v,0,1); sol(u-.36,v-.36,u+.36,v+.36);
       const top=TABLES.top(n,.62*MW); if(top){ const p=F.pw(u,v); top.position.set(p[0],.757*MW,p[1]); top.rotation.z=F.hd(0,1); A.add(top); }
-      SEATS.forEach(([a,b,fu,fv],i)=>{ put(G,'bistrochair',u+a,v+b,fu,fv); const th=use(TABLES.label(n),u+a,v+b,.5,.9,()=>{ const p=F.pw(u+a*.85,v+b*.85); USE.sitAt(p[0],p[1],.46*MW,F.hd(fu,fv)); setTimeout(()=>TABLES.sit(n,i),600); },1.1); TUSE.push([th,n]); }); });
+      SEATS.forEach(([a,b,fu,fv],i)=>{ put(G,'bistrochair',u+a,v+b,fu,fv); const go=()=>{ const p=F.pw(u+a*.85,v+b*.85); USE.sitAt(p[0],p[1],.46*MW,F.hd(fu,fv)); setTimeout(()=>TABLES.sit(n,i),600); }; TABLES.chairs[n*4+i]=go; const th=use(TABLES.label(n),u+a,v+b,.5,.9,go,1.1); TUSE.push([th,n]); }); });
     warm(Wb+3.7,2.6,2.3,1.5,6.5,0xffd29a); warm(Wb+3.7,6.35,2.3,1.3,6,0xffd29a);
     for(const t of ARTS||[]){ const a=t.at, e=.005; if(t.wall==='b')hang(A,use,F,t,Wb+a,e,0,1,1.75); else if(t.wall==='e')hang(A,use,F,t,W-e,a,-1,0,t.hc||1.75); else if(t.wall==='p')hang(A,use,F,t,Wb+.06+e,a,1,0,1.7); else hang(A,use,F,t,Wb+a,D-e,0,-1,1.75); } };
   SYS.every(()=>{ for(const [th,n] of TUSE)th.name=TABLES.label(n); },1000,'144ca-cafe');

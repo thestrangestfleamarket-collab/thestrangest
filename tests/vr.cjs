@@ -99,14 +99,14 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const sh0 = await pg.evaluate(() => VR.state().shots); await pg.waitForTimeout(10000); const sh1 = await pg.evaluate(() => VR.state().shots);
     ok(sh1 - sh0 <= 1, 'a still menu is not pictured over and over (' + (sh1 - sh0) + ' pictures in 10 s)');
     await shot('menu-panel');
-    const a1 = await aim('controllers', 'right', 'SET');
-    ok(!a1, 'the right controller points at SET in the menu' + (a1 ? ' (' + a1 + ')' : ''));
+    const a1 = await aim('controllers', 'right', 'PETS');   // the menu opens at SETTINGS (no PROFILE, 9 Nov 2026), so the first press goes to another section
+    ok(!a1, 'the right controller points at PETS in the menu' + (a1 ? ' (' + a1 + ')' : ''));
     await shot('controller-points');
     const m0 = await menuText();
     await pg.evaluate(() => __xrd.controllers.right.updateButtonValue('trigger', 1)); await frames(2);
     await pg.evaluate(() => __xrd.controllers.right.updateButtonValue('trigger', 0)); await frames(2);
-    ok(await changed(m0), 'the trigger presses SET (' + (await menuText()).split('\n')[0] + ')');
-    ok(await until(() => VR.state().fresh, 90000), 'the panel shows the SETTINGS page');
+    ok(await changed(m0), 'the trigger presses PETS (' + (await menuText()).split('\n')[0] + ')');
+    ok(await until(() => VR.state().fresh, 90000), 'the panel shows the PETS page');
     await shot('controller-pressed');
     // a cabinet in the headset: the game's canvas lives on the panel, the stick and the buttons play it, the sticks do not turn you meanwhile
     for (let i = 0; i < 2 && await pg.evaluate(() => VR.state().menu); i++) { await pg.keyboard.press('Escape'); await pg.waitForTimeout(500); } await until(() => !VR.state().menu, 8000);   // the menu shuts
@@ -125,7 +125,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.evaluate(() => { window.__keys = []; }); await pg.evaluate(() => __xrd.controllers.left.updateButtonValue('thumbstick', 1)); await frames(2); await pg.evaluate(() => __xrd.controllers.left.updateButtonValue('thumbstick', 0)); await frames(1);
     ok(await until(() => VR.state().menu, 8000), 'the menu opens again after the cabinet (' + JSON.stringify(await pg.evaluate(() => { const s = VR.state(); return { menu: s.menu, panel: s.panel, win: s.win, gamewin: s.gamewin, cab: STORE.cabs.on, keys: __keys.splice(0) }; })) + ')');
     ok(await until(() => VR.state().panel && VR.state().fresh, 90000), 'and shows on the panel');
-    ok(await until(() => VR.state().fresh, 90000), 'its picture is fresh'); const a3 = await aim('controllers', 'right', 'SET'); ok(!a3, 'the right controller points at SET again' + (a3 ? ' (' + a3 + ')' : ''));   // back where the hands' part of this check began
+    ok(await until(() => VR.state().fresh, 90000), 'its picture is fresh'); const a3 = await aim('controllers', 'right', 'SETTINGS'); ok(!a3, 'the right controller points at SETTINGS again' + (a3 ? ' (' + a3 + ')' : ''));   // back where the hands' part of this check began
     await pg.evaluate(() => __xrd.controllers.right.updateButtonValue('trigger', 1)); await frames(2); await pg.evaluate(() => __xrd.controllers.right.updateButtonValue('trigger', 0)); await frames(2);
     ok(await until(() => VR.state().fresh, 90000), 'the panel shows the settings again');
     await pg.evaluate(() => { __xrd.primaryInputMode = 'hand'; });

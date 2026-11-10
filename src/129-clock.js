@@ -1,12 +1,12 @@
 // THE CLOCK: CLOCK keeps the day's hour (CLOCK.h: shops, lamps, the NPCs' routines) and the sun's own hour (CLOCK.sunH, the look's, when set), and moves the sun and moon, their light and their shadows.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, NPCS, PARK, pos, ROOMS, W3} from './003b-systems.js';
+import {CLOCK, NPCS, ONLINE, PARK, pos, ROOMS, W3} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {QS, RING, TILE} from './006-map-pre.js';
 import {WATER} from './009-down.js';
 import {HEMI} from './064-map-post.js';
 import {CREATS} from './087-npc-creatures.js';
-Object.assign(CLOCK,{h:17.4,sunH:null,run:false,speed:1,shadeH:16,sunV:new THREE.Vector3(0,1,0),moonV:new THREE.Vector3(0,1,0),
+Object.assign(CLOCK,{movers:[],h:17.4,sunH:null,run:false,speed:1,shadeH:16,sunV:new THREE.Vector3(0,1,0),moonV:new THREE.Vector3(0,1,0),
   // the calendar: the day (the same for everyone), its season (north; ?season= or the owner's SEASON pick in ATMOSPHERE to preview one) and the moon's phase on an 8-day cycle (0 new, .5 full)
   day:()=>Math.floor(Date.now()/86400000),seasonOf:day=>{ const m=new Date(day*86400000).getUTCMonth(); return m<2||m===11?'winter':m<5?'spring':m<8?'summer':'autumn'; },
   SEASONS:{spring:{tint:0x9fd08a,mix:0,desat:0,amb:0,snow:0,temp:14},summer:{tint:0xd9b35a,mix:.1,desat:.02,amb:.03,snow:0,temp:26},autumn:{tint:0xc8763a,mix:.26,desat:.08,amb:.05,snow:0,temp:12},winter:{tint:0xcfe0f0,mix:.24,desat:.5,amb:.08,snow:.6,temp:1}},
@@ -16,6 +16,7 @@ Object.assign(CLOCK,{h:17.4,sunH:null,run:false,speed:1,shadeH:16,sunV:new THREE
 { const D=Math.PI/180, sunL=new THREE.DirectionalLight(0xffffff,0), sunD=new THREE.DirectionalLight(0xffffff,0), sunF=new THREE.DirectionalLight(0xffffff,0), R=32*TILE, RD=20*TILE, FM=Math.min(+(QS.get('fmap')||1024),renderer.capabilities.maxTextureSize);
   for(const [L,r,m] of [[sunL,R,1536],[sunD,RD,1024],[sunF,R,FM]]){ L.castShadow=true; L.shadow.mapSize.set(m,m); Object.assign(L.shadow.camera,{left:-r,right:r,top:r,bottom:-r,near:.5,far:260*TILE}); L.shadow.camera.updateProjectionMatrix();
     L.shadow.bias=-.06/260; L.shadow.normalBias=+(QS.get("snb")||.12); L.shadow.autoUpdate=false; scene.add(L,L.target); }
+  sunF.castShadow=false;   // no far shadow map: shadows within the near one's reach only (owner, 9 Nov 2026)
   const SC={c:new THREE.Vector3(1e9,0,0),d:new THREE.Vector3(),fd:new THREE.Vector3(),lv:'',flv:'',st:0,g:0,dirty:0,fdirty:0,ft:0,root:{visible:true,layers:new THREE.Layers(),children:[]},n:0,nd:0,nf:0,fb:null};
   const SNM=new THREE.Matrix4(), SR=new THREE.Vector3(), SU=new THREE.Vector3(), SP=new THREE.Vector3(), ORG=new THREE.Vector3(), UPV=new THREE.Vector3(0,1,0);
   const elev=h=>50*Math.cos(2*Math.PI*(h-12.7)/24)-8, azim=h=>2*Math.PI*(h-12.7)/24;
@@ -59,14 +60,14 @@ Object.assign(CLOCK,{h:17.4,sunH:null,run:false,speed:1,shadeH:16,sunV:new THREE
   const sig=()=>{ const dy=DYN(); let g=0; const f=o=>{ if(!o.visible||dy.has(o))return; if(o.isMesh&&o.castShadow)g=(g*31+o.id+(o.isInstancedMesh?o.count*7919:0))|0; for(const c of o.children)f(c); }; f(scene); return g; };
   CLOCK.set=h=>{ CLOCK.h=((h%24)+24)%24; };
   CLOCK.dark=()=>elev(CLOCK.h)<-2;
-  const DYN=()=>{ const out=new Set(); if(window.W3&&W3.group)out.add(W3.group); for(const N of NPCS)if(N.g)out.add(N.g); for(const x of NPCS.extra||[])if(x&&x.g)out.add(x.g);
-    if(window.CREATS)for(const N of CREATS)if(N.g)out.add(N.g); for(const k of ['BOAT','DRONE'])if(window[k]&&window[k].g)out.add(window[k].g); return out; };
+  const DYN=()=>{ const out=new Set(); if(W3&&W3.group)out.add(W3.group); for(const N of NPCS)if(N.g)out.add(N.g); for(const x of NPCS.extra||[])if(x&&x.g)out.add(x.g);
+    if(CREATS)for(const N of CREATS)if(N.g)out.add(N.g); for(const k of ['BOAT','DRONE'])if(window[k]&&window[k].g)out.add(window[k].g); for(const o of ONLINE.others?.values()||[])if(o.fig&&o.fig.g)out.add(o.fig.g); for(const f of CLOCK.movers)for(const o of f())if(o)out.add(o); return out; };
   { const SM=renderer.shadowMap, orig=SM.render;
-    SM.render=(lights,sc,camera)=>{ if(sc!==scene)return orig.call(SM,lights,sc,camera); const rest=lights.filter(L=>L!==sunL&&L!==sunD&&L!==sunF); if(!CLOCK.main){ SM.needsUpdate=true; return orig.call(SM,rest,sc,camera); } const m0=camera.layers.mask, dk=!!(window.ROOMS&&ROOMS.dark&&ROOMS.dark()); camera.layers.enable(3);
+    SM.render=(lights,sc,camera)=>{ if(sc!==scene)return orig.call(SM,lights,sc,camera); const rest=lights.filter(L=>L!==sunL&&L!==sunD&&L!==sunF); if(!CLOCK.main){ SM.needsUpdate=true; return orig.call(SM,rest,sc,camera); } const m0=camera.layers.mask, dk=!!(ROOMS&&ROOMS.dark&&ROOMS.dark()); camera.layers.enable(3);
       const st=dk?[]:[sunL,sunF].filter(L=>lights.includes(L)&&L.shadow.needsUpdate);
       if(st.length){ const t0=performance.now(), hid=[]; for(const o of DYN())if(o.visible){ o.visible=false; hid.push(o); } SM.needsUpdate=true; orig.call(SM,st,sc,camera); for(const o of hid)o.visible=true; const ms=+(performance.now()-t0).toFixed(1); if(st.includes(sunL))SC.n++; if(st.includes(sunF))SC.nf++;
         if(window.SUNLOG){ let c=0; sc.traverseVisible(o=>{ if(o.isMesh&&o.castShadow)c++; }); SUNLOG.push([+(performance.now()/1000).toFixed(2),c,ms,st.map(L=>L===sunL?'n':'f').join('')]); } }
-      if(!dk&&lights.includes(sunD)&&sunD.shadow.needsUpdate){ const ch=SC.root.children; ch.length=0; for(const o of DYN())if(o.visible&&o.parent)ch.push(o); SM.needsUpdate=true; orig.call(SM,[sunD],SC.root,camera); SC.nd++; }
+      if(!dk&&lights.includes(sunD)&&sunD.shadow.needsUpdate){ const ch=SC.root.children; ch.length=0; for(const o of DYN())if(o.visible&&o.parent)ch.push(o); SC.root.traverse=f=>sc.traverse(f); SM.needsUpdate=true; orig.call(SM,[sunD],SC.root,camera); SC.nd++; }
       SM.needsUpdate=true; orig.call(SM,rest,sc,camera); camera.layers.mask=m0; }; }
   window.SUNDBG=()=>({still:SC.n,moving:SC.nd,far:SC.nf,box:SC.fb&&SC.fb.map(v=>+(v/TILE).toFixed(1)),fcam:[sunF.shadow.camera.right/TILE,sunF.shadow.camera.top/TILE,sunF.shadow.camera.far/TILE,sunF.shadow.normalBias].map(v=>+v.toFixed(2)),dyn:DYN().size,maps:[sunL.shadow.mapSize.x,sunD.shadow.mapSize.x,sunF.shadow.mapSize.x],patch:THREE.ShaderChunk.lights_fragment_begin.includes('NUM_DIR_LIGHT_SHADOWS > 2')});
   CLOCK.sun=sunL; CLOCK.sunD=sunD; CLOCK.sunF=sunF; CLOCK.dyn=DYN; window.CLOCK=CLOCK; CLOCK.elev=()=>elev(CLOCK.sunH??CLOCK.h); CLOCK.dayElev=()=>elev(CLOCK.h); CLOCK.SKYV=SKYV;

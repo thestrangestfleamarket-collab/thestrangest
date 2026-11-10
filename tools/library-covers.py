@@ -19,14 +19,14 @@ def surname(a):
     a = re.sub(r'\(.*?\)|\b(jr|sr)\.?', '', a.split(' and ')[0].split(',')[0]).strip()
     return a.split()[-1].lower() if a and a.lower() not in ('anonymous', 'various', 'unknown') else ''
 def find(b):
-    tw = words(b['t'])[:4]; sn = surname(b['a'])
+    tw = words(b['t'])[:3]; sn = surname(b['a'])
     if not tw: return None
     q = 'title:(' + ' '.join(tw) + ')' + (' AND creator:(' + sn + ')' if sn else '') + ' AND mediatype:texts AND date:[1000-01-01 TO 1930-12-31]'
     u = 'https://archive.org/advancedsearch.php?' + urllib.parse.urlencode([('q', q), ('fl[]', 'identifier'), ('fl[]', 'title'), ('fl[]', 'date'), ('fl[]', 'creator'), ('fl[]', 'collection'), ('fl[]', 'publisher'), ('fl[]', 'downloads'), ('fl[]', 'imagecount'), ('rows', '60'), ('output', 'json')])
     docs = json.loads(get(u))['response']['docs']; out = []
     for d in docs:
         col = d.get('collection', []); col = col if isinstance(col, list) else [col]
-        if any(c in SKIPC for c in col) or not d.get('imagecount') or d['identifier'].endswith('goog'): continue   # (Google's scans open on its notice, not the board)
+        if any(c in SKIPC for c in col) or not d.get('imagecount') or re.match(r'(bwb_|isbn_)', d['identifier']) or '0000' in d['identifier']: continue   # (modern lending copies: a modern printing's cover)
         at = words(d.get('title', '') if isinstance(d.get('title'), str) else d.get('title', [''])[0])
         if at[:len(tw)] != tw: continue   # the same title, word for word at its start
         cr = ' '.join(d.get('creator', [])) if isinstance(d.get('creator'), list) else d.get('creator', '')
@@ -39,8 +39,14 @@ def one(b):
     try:
         best = None
         for y, _, d in find(b) or []:   # the earliest decorated board (a plain rebound board says nothing; a title page only if no board will do)
-            try: im = Image.open(io.BytesIO(get('https://archive.org/download/' + d['identifier'] + '/page/cover_w800.jpg', 120))).convert('RGB')
-            except Exception: continue
+            pages = ['n1', 'n2'] if d['identifier'].endswith('goog') else ['cover']   # (Google's scans open on its notice; the board follows)
+            im = None
+            for pgn in pages:
+                try: im = Image.open(io.BytesIO(get('https://archive.org/download/' + d['identifier'] + '/page/' + pgn + '_w800.jpg', 120))).convert('RGB')
+                except Exception: continue
+                g0 = im.convert('L').resize((60, 90)); m0 = ImageStat.Stat(g0).mean[0]
+                if m0 < 225: break
+            if im is None: continue
             if im.width < 200: continue
             g = im.convert('L').resize((150, 225)); m = ImageStat.Stat(g).mean[0]; e = ImageStat.Stat(g.filter(ImageFilter.FIND_EDGES)).mean[0]
             if e >= 12 and m < 140: best = (y, d, im); break

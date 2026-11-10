@@ -36,6 +36,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   await pg.evaluate(() => { SHARED.pitch = SHARED.pitchTo = .05; }); await pg.waitForTimeout(1200);
   const look = await pg.evaluate(() => ({ s: SWIMDBG(), far: RIVER.U && 1 }));
   ok(fp.dep > 1.8 && fp.s.arms && look.s.uw, 'in first person you swim down where you look, your arms in view, the murk round you: ' + JSON.stringify({ dep: fp.dep, arms: fp.s.arms, uw: look.s.uw }));
+  ok(look.s.view > 0 && look.s.view <= look.s.murk * 1.31 + 1e-6, 'under water nothing past the murk is drawn (the view ends just beyond it): ' + JSON.stringify({ view: look.s.view, murk: look.s.murk }));
   await shot('under-first');
   await pg.keyboard.down('w'); await pg.waitForTimeout(1500); await shot('under-stroke'); await pg.keyboard.up('w');
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));

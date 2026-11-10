@@ -9,7 +9,7 @@ const FISHES={list:[],ready:false}; window.FISHES=FISHES;
 { const T=TILE, MPU=.84/T, WU=1/MPU, DATA=__LAZY__("data/fishes.json"), PACK=__LAZY__("data/fish.json"), IP=(id,k)=>ITEMS.prop(id,k);
   const B=s=>{ const t=atob(s), u=new Uint8Array(t.length); for(let i=0;i<t.length;i++)u[i]=t.charCodeAt(i); return u; }, F=s=>new Float32Array(B(s).buffer), U16=s=>new Uint16Array(B(s).buffer);
   // length in metres for a weight (kg): a fish a third of a metre at a third of a kilo, longer for the long ones; the reef shoal by the pack's sizes
-  const LONG={x_eel:3.2,x_sturgeon:1.5,x_pike:1.6,x_crab:.55,x_flounder:1.1,x_trout:1.1,x_catfish:1.1,x_sunfish:.85,x_bluegill:.85}, PACKL={clownfish:.42,bluetang:.46,koi:.75,koi_gold:.75,koi_showa:.75,koi_sanke:.75,koi_platinum:.75,koi_asagi:.75,koi_orange:.75,koi_black:.75,goldfish:.3,puffer:.5,lionfish:.5,mandarinfish:.34,moorishidol:.44,butterflyfish:.4,shark:2.4,yellowtang:.44,firefish:.36,cardinalfish:.36,chromis:.3,cleanerwrasse:.34,foxface:.46,dolphin:2.4,stingray:1.4,seaturtle:1.2,moray:1.6,jellyfish:.5,octopus:1,coelacanth:1.7,barracuda:1.5,angelfish:.3,plesiosaur:4,chromisshoal:.3,shrimp:.2,
+  const LONG={x_eel:3.2,x_sturgeon:1.5,x_pike:1.6,x_crab:.55,x_flounder:1.1,x_trout:1.1,x_catfish:1.1,x_sunfish:.85,x_bluegill:.85}, PACKL={clownfish:.42,bluetang:.46,koi:.75,koi_gold:.75,koi_showa:.75,koi_sanke:.75,koi_platinum:.75,koi_asagi:.75,koi_orange:.75,koi_black:.75,pfkoi:.75,pfclown:.42,pfbluetang:.46,goldfish:.3,puffer:.5,lionfish:.5,mandarinfish:.34,moorishidol:.44,butterflyfish:.4,shark:2.4,yellowtang:.44,firefish:.36,cardinalfish:.36,chromis:.3,cleanerwrasse:.34,foxface:.46,dolphin:2.4,stingray:1.4,seaturtle:1.2,moray:1.6,jellyfish:.5,octopus:1,coelacanth:1.7,barracuda:1.5,angelfish:.3,plesiosaur:4,chromisshoal:.3,shrimp:.2,
     sockeye:.8,goatfish:.45,seabream:.55,wrasse:.45,stripedpuffer:.45,trevally:.7,dace:.3,knifejaw:.5};
   const lenM=(id,kg)=>PACKL[id]?PACKL[id]*.84:.45*Math.cbrt(kg)*(LONG[id]||1);
   // how each swims: the body's wave across (most fish), up and down (the flounder lying flat), the eel's long wave, the crab not at all
@@ -38,6 +38,10 @@ const FISHES={list:[],ready:false}; window.FISHES=FISHES;
   FISHES.model=(id,kg=1)=>{ const m=M[id]; if(!m)return null; let mt=mats[id]; if(!mt){ mt=mats[id]=new THREE.MeshLambertMaterial({map:m.map,vertexColors:m.vc,side:THREE.DoubleSide}); }
     const o=new THREE.Mesh(m.g,mt); const L=lenM(id,kg)*WU; o.scale.setScalar(L); o.userData.shared=true; return o; };
   FISHES.len=(id,kg)=>lenM(id,kg)*WU;
+  // a school of one kind somewhere of its own (the apartment's tank): the same model and swim, its owner places each (userData.sw: a fish's phase, beat, style)
+  FISHES.school=(id,n)=>{ const m=M[id]; if(!m)return null; const g=new THREE.BufferGeometry(); for(const k in m.g.attributes){ if(k==='aSw')continue; const a=m.g.attributes[k]; g.setAttribute(k,new THREE.BufferAttribute(a.array,a.itemSize,a.normalized)); }
+    if(m.g.index)g.setIndex(new THREE.BufferAttribute(m.g.index.array,1)); g.boundingSphere=m.g.boundingSphere; const sw=new THREE.InstancedBufferAttribute(new Float32Array(n*3),3); sw.setUsage(THREE.DynamicDrawUsage); g.setAttribute('aSw',sw);
+    const im=new THREE.InstancedMesh(g,m.im.material,n); im.count=0; im.frustumCulled=false; im.instanceMatrix.setUsage(THREE.DynamicDrawUsage); Object.assign(im.userData,{sw,style:STYLE[id]||0}); return im; };
 
   // who swims where: the catch of each water (the item model's LIVES IN and DEPTH), a few of each near you, more of the common ones; the Hudson's reef shoal when its water shows it
   const catchOf=kind=>Object.keys(ITEMS.defs||{}).filter(id=>IP(id,'water')===kind&&M[id]);
@@ -62,7 +66,7 @@ const FISHES={list:[],ready:false}; window.FISHES=FISHES;
       const deco=DECO[w.kind].filter(k=>M[k]), dn=list.filter(f=>f.w===w&&f.deco).length; if(deco.length&&dn<WANTD[w.kind]){ const q=spot(w,dn<4?R0:R0*2,null); if(q)spawnIn(w,deco[Math.floor(Math.random()*deco.length)],q[0],q[1],null).deco=true; } } };
   // the swim: each wanders its water between the bed and the surface, turns smoothly, flees a swimmer, beats its tail as fast as it goes; a lured one heads for the hook
   const Mx=new THREE.Matrix4(), Q=new THREE.Quaternion(), E=new THREE.Euler(), Pv=new THREE.Vector3(), Sv=new THREE.Vector3();
-  const swim=dt=>{ '@later'; const sw=window.RIVER&&RIVER.swim||window.FOUNT&&FOUNT.swim||window.BROOK&&BROOK.swim;
+  const swim=dt=>{ '@later'; const sw=RIVER&&RIVER.swim||FOUNT&&FOUNT.swim||BROOK&&BROOK.swim;
     for(const f of list){ if(f.hooked)continue; const w=f.w; f.t-=dt; let sp=(.25+.25*Math.min(1,f.kg/3))*WU;
       if(f.lure){ const l=f.lure, d=Math.hypot(l.x-f.x,l.z-f.z); f.tx=l.x; f.tz=l.z; f.ty=w.rest(l.x,l.z)-.3*WU; sp=Math.max(.2*WU,d/Math.max(.4,l.at-performance.now()/1000)); }
       else if(f.t<=0||Math.hypot(f.tx-f.x,f.tz-f.z)<.4*T){ f.t=3+Math.random()*6; for(let k=0;k<6;k++){ const a=Math.random()*6.28, d=(1+Math.random()*6)*T, x=f.x+Math.cos(a)*d, z=f.z+Math.sin(a)*d; if(!w.has(x,z)||depth(w,x,z)<.4)continue; f.tx=x; f.tz=z; const r=w.rest(x,z), b=Math.max(w.bed(x,z),r-14*WU); f.ty=f.id==='x_flounder'||f.id==='x_crab'?b+.05*WU:b+(r-b)*(.2+.6*Math.random()); break; } }
@@ -85,6 +89,6 @@ const FISHES={list:[],ready:false}; window.FISHES=FISHES;
   FISHES.free=f=>{ if(!f)return; f.lure=null; f.hooked=false; f.t=0; f.tx=f.x+(Math.random()-.5)*8*T; f.tz=f.z+(Math.random()-.5)*8*T; };
   FISHES.hook=f=>{ if(f)f.hooked=true; };
   FISHES.gone=f=>{ const i=list.indexOf(f); if(i>=0)list.splice(i,1); };
-  SYS.add('life',dt=>{ const up=SHARED.LVL==='up', act=SHARED.fishing||(window.RIVER&&RIVER.swim)||(window.FOUNT&&FOUNT.swim)||(window.BROOK&&BROOK.swim);   // fish exist only while you swim or fish (owner, 5 Nov 2026)
+  SYS.add('life',dt=>{ const up=SHARED.LVL==='up', act=SHARED.fishing||(RIVER&&RIVER.swim)||(FOUNT&&FOUNT.swim)||(BROOK&&BROOK.swim);   // fish exist only while you swim or fish (owner, 5 Nov 2026)
     if(!up||!act||!near().length){ if(FISHES.ready)for(const id in M)M[id].im.visible=false; if(!act)list.length=0; return; } if(!FISHES.ready){ FISHES.load(); return; } populate(dt); swim(dt); draw(); },'141f-fishes'); }
 export {FISHES};

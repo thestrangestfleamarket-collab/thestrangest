@@ -19,7 +19,7 @@ SHARED.composer=null;
 const PPU=30;
 let PXS=Math.max(2,Math.round(2*(devicePixelRatio||1)));
 let RW=0,RH=0;
-SHARED.cam=new THREE.OrthographicCamera(-1,1,1,-1,0.1,800); const OCAM=SHARED.cam, PCAM=new THREE.PerspectiveCamera(60,1,.05,600);
+SHARED.cam=new THREE.OrthographicCamera(-1,1,1,-1,0.1,800); const OCAM=SHARED.cam, PCAM=new THREE.PerspectiveCamera(60,1,.05,1500);
 const FRAMEK=(()=>{ const q=+new URLSearchParams(location.search).get('frame'); return q>0&&q<=1?q:.866; })();
 function resize(){ const dpr=devicePixelRatio||1, pw=innerWidth*FRAMEK*dpr, ph=innerHeight*FRAMEK*dpr; document.body.style.background=document.documentElement.style.background='#000';
   const S=pxS(); SCL=S; RW=Math.ceil(pw/S/2)*2; RH=Math.ceil(ph/S/2)*2;
@@ -53,4 +53,4 @@ function M(color,map=grainT,o={}){ const k=color+'|'+(map?map.id:0)+'|'+JSON.str
 
 const TEXTURES=__DATA__("data/textures.json");
 const KITD=__DATA__("data/kit.json");
-export {EffectComposer, frustum, hash3, KITD, M, OCAM, OutputPass, PCAM, PPU, pxS, Reflector, renderer, RenderPass, resize, RESN, RH, rppu, RW, scene, SCL, ShaderPass, statEl, V0};
+export {EffectComposer, frustum, hash3, KITD, OCAM, OutputPass, PCAM, PPU, pxS, Reflector, renderer, RenderPass, resize, RESN, RH, rppu, RW, scene, SCL, ShaderPass, statEl, V0};

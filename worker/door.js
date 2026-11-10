@@ -660,12 +660,12 @@ const blockAsk = async (env, room, path, body) => { const s = await getServerByN
   return r.json(); };
 const newCode = () => { const A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", b = crypto.getRandomValues(new Uint8Array(8)); let s = ""; for (const x of b) s += A[x % 32]; return "MARKET-" + s.slice(0, 4) + "-" + s.slice(4); };
 // one request per 100 emails (Resend's batch), so a message to everyone stays under the worker's subrequest limit
-async function email(env, to, subject, text) {
+async function email(env, to, subject, text, why = {}) {
   const from = env.MAIL_FROM || "THE MARKET <market@auth.thestrangestfleamarket.com>"; let n = 0;
   for (let i = 0; i < to.length; i += 100) { const part = to.slice(i, i + 100);
     const r = await fetch("https://api.resend.com/emails/batch", { method: "POST", headers: { Authorization: "Bearer " + env.RESEND_API_KEY, "content-type": "application/json" },
       body: JSON.stringify(part.map(x => ({ from, to: [x], subject, text }))) });
-    if (r.ok) n += part.length; }
+    if (r.ok) n += part.length; else why.t = r.status + " " + (await r.text()).slice(0, 200); }
   return n;
 }
 async function admin(env, b, origin) {
@@ -693,8 +693,8 @@ async function admin(env, b, origin) {
     if (b.do === "askoff") return { ok: await postOf(env).askOff(m) };
     if (!env.RESEND_API_KEY) return { why: "email is not set up" };
     const code = newCode(), r = await call("/rest/v1/invite_codes", { method: "POST", body: JSON.stringify({ code, uses: 0, max_uses: 1 }) }); if (!r.ok) return res(r);
-    const n = await email(env, [m], "YOUR INVITE TO THE STRANGEST FLEA MARKET", "Your invite code: " + code + "\n\nEnter it at " + origin + "/ to make your account.");
-    if (!n) return { why: "the email did not go out (code " + code + ")" };
+    const w = {}, n = await email(env, [m], "YOUR INVITE TO THE STRANGEST FLEA MARKET", "Your invite code: " + code + "\n\nEnter it at " + origin + "/ to make your account.", w);
+    if (!n) return { why: "the email did not go out (code " + code + "): " + (w.t || "?") };
     await postOf(env).askSent(m); return { ok: true, code }; }
   if (b.do === "tell") {
     const to = b.to === "*" ? "*" : id, subject = String(b.subject || "A LETTER FROM THE MARKET").slice(0, 120), text = String(b.text || "").slice(0, 4000).trim(), out = { ok: true };

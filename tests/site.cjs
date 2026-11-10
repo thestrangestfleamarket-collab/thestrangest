@@ -6,10 +6,11 @@ const {chromium}=require('playwright'), {spawn}=require('child_process');
 const PORT=8799, BASE='http://127.0.0.1:'+PORT;
 let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
 (async()=>{
-  const w=spawn('npx',['wrangler','dev','--port',String(PORT),'--ip','127.0.0.1','--var','DEV_AUTH:1','--show-interactive-dev-session=false'],{stdio:['ignore','pipe','pipe'],env:{...process.env,WRANGLER_SEND_METRICS:'false'}});
+  const w=spawn('npx',['wrangler','dev','--port',String(PORT),'--ip','127.0.0.1','--var','DEV_AUTH:1','--show-interactive-dev-session=false'],{stdio:['ignore','pipe','pipe'],detached:true,env:{...process.env,WRANGLER_SEND_METRICS:'false'}});
+  const stop=()=>{ try{ process.kill(-w.pid,'SIGKILL'); }catch(e){ try{ w.kill('SIGKILL'); }catch(_){} } };   // the worker's whole group: wrangler leaves workerd on the port otherwise, and the next test on it talks to this one
   let log=''; w.stdout.on('data',d=>log+=d); w.stderr.on('data',d=>log+=d);
   let up=false; for(let i=0;i<120&&!up;i++){ await new Promise(r=>setTimeout(r,1000)); up=await fetch(BASE+'/').then(r=>r.ok).catch(()=>false); }
-  if(!up){ console.log('FAIL: the worker never started\n'+log); w.kill(); process.exit(1); }
+  if(!up){ console.log('FAIL: the worker never started\n'+log); stop(); process.exit(1); }
   const fs=require('fs'), gf=fs.readdirSync('dist/g').filter(f=>f!=='market.html');
   for(const p of ['/market.html','/market','/door.html','/avatar.html','/g/market.html','/g/market','/g/'+gf[0]])ok((await fetch(BASE+p)).status===404,p+' is not handed out by itself');
   ok((await fetch(BASE+'/g/'+gf[0],{headers:{cookie:'tsfm-pass=dev:site-check'}})).status===200,'/g/'+gf[0]+' with a login');
@@ -125,6 +126,6 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
         return {ctl:true,ok:r.ok,n,m,n2,page:!!(await c.match('/'))}; },gf.find(f=>/^m\.[0-9a-f]+\.js$/.test(f))||gf[0]).catch(e=>({err:String(e)}));
     ok(sw.ctl&&sw.ok&&sw.n>0&&sw.m===sw.n&&sw.n2===sw.n&&!sw.page,'the service worker keeps the game\'s files on the device, and never the page: '+JSON.stringify(sw)); }
   ok(!gerr.length,'THE MARKET: no page errors '+[...new Set(gerr)].join(' | '));
-  await b.close(); w.kill();
+  await b.close(); stop();
   console.log(bad?bad+' FAILED':'all good'); process.exit(bad?1:0);
 })();

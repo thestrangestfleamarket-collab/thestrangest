@@ -1,4 +1,4 @@
-// THE CRT TV CHECK: node tests/crt.cjs dist/market.html (owner, 10 Nov 2026): the set in a fresh apartment opens its panel; eight channels with THE GUIDE; the guide lists cartoons, shows and films and plays a pick; the state is told to the room, heard from it and kept in the layout; ZOOM IN and FULL SCREEN show the picture close up.
+// THE CRT TV CHECK: node tests/crt.cjs dist/market.html (owner, 10 Nov 2026): the set in a fresh apartment opens its panel; nine channels with THE GUIDE; the guide lists cartoons, shows and films and plays a pick; the state is told to the room, heard from it and kept in the layout; ZOOM IN and FULL SCREEN show the picture close up.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=crt::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -20,7 +20,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.evaluate(() => __dbg.UI.things.find(t => /^CRT TV/.test(t.name)).act());
     for (let i = 0; i < 30 && !(await pg.evaluate(() => CRTDBG().panel && CRTDBG().data)); i++) await pg.waitForTimeout(500);
     const C = { noWaitAfter: true, timeout: 90000 };
-    ok(await pg.$$eval('#crtp [data-c]', e => e.map(x => x.dataset.c).join()) === '2,3,4,6,7,9,11,13', 'a double click opens its panel: channels 2, 3 (THE GUIDE), 4, 6, 7, 9, 11, 13');
+    ok(await pg.$$eval('#crtp [data-c]', e => e.map(x => x.dataset.c).join()) === '2,3,4,5,6,7,9,11,13', 'a double click opens its panel: channels 2, 3 (THE GUIDE), 4, 5, 6, 7, 9, 11, 13');
     await pg.click('#crtp [data-c="3"]', C); await pg.waitForTimeout(1500);
     const g = await pg.evaluate(() => CRTDBG());
     ok(g.on && g.ch === 3 && g.lists && g.lists.cartoons >= 60 && g.lists.shows >= 30 && g.lists.movies >= 10 && g.pic === 'guide', 'THE GUIDE: its page on the screen, cartoons, shows and films to pick (' + JSON.stringify({ lists: g.lists, pic: g.pic }) + ')');

@@ -200,6 +200,7 @@ import {ROOMK} from './150a-bedroom.js';
       h+=s?`<div class="lab">PICKED UP</div><div style="color:var(--key)">${name(s)}</div><div class="row"><button class="btn" data-a="turnl">⟲ TURN</button><button class="btn" data-a="turnr">TURN ⟳</button><button class="btn" data-a="small">SMALLER</button><button class="btn" data-a="big">BIGGER</button></div>
         <div class="row"><button class="btn" data-a="down">LOWER</button><button class="btn" data-a="up">RAISE</button><button class="btn" data-a="copy">COPY $${price(s.kind)}</button><button class="btn" data-a="away">PUT AWAY</button>${s.added?`<button class="btn" data-a="sell">SELL $${Math.floor((s.paid||0)/2)}</button>`:''}${A.lightsAll().some(q=>q.un===s)?'<button class="btn" data-a2="light">LIGHT SETTINGS</button>':''}</div>`
         :`<div class="hint">CLICK A THING TO PICK IT UP, DRAG TO MOVE IT: GREEN FITS, RED DOESN'T.<br>Q / E TURN · ALT FOR FREE PLACING · SHIFT+WHEEL RESIZES · [ ] LOWER / RAISE · DEL PUTS IT AWAY · G GRID · CTRL+Z UNDO</div>`;
+      { const C=clips(); if(C.length)h+=`<div class="lab" style="color:#e0503c">STANDING IN ONE ANOTHER</div><div class="hint">${C.map(([x,y])=>name(x)+' / '+name(y)).join('<br>')}</div><div class="row"><button class="btn" data-a="unclip">MOVE CLEAR</button></div>`; }
       const gone=A.units().filter(u=>u.gone);
       if(gone.length)h+=`<div class="lab">PUT AWAY</div><div class="row">${gone.map(u=>`<button class="btn" data-back="${u.id}">${name(u)}</button>`).join('')}</div>`; }
     const sw=(set,k,D,on)=>{ const t=A.thumb(set,k); return `<div class="sw ${on?'on':''}" data-${set}="${k}" style="background:${hexs(D.c)}${t?` url(${t}) center/cover`:''}"><span>${D.n}</span></div>`; };
@@ -231,7 +232,7 @@ import {ROOMK} from './150a-bedroom.js';
     if(d.a2==='light'&&ED.sel){ const q=A.lightsAll().find(x=>x.un===ED.sel); if(q){ tab='lights'; ED.open=q.id; } return ED.panel(); }
     const lid=d.lon||d.ltype||d.lclear||d.lreset; if(lid){ const prev=A.lightGet(lid); if(!prev)return;
       if(d.lon)A.light(lid,{on:!prev.on}); else if(d.ltype)A.light(lid,{type:d.v}); else if(d.lclear)A.light(lid,{col:null,tint:null,tone:null}); else A.lightReset(lid); did({t:'light',id:lid,prev}); return ED.panel(); }
-    ({turnl:()=>turn(RQ),turnr:()=>turn(-RQ),small:()=>size(1/1.1),big:()=>size(1.1),down:()=>lift(-.05),up:()=>lift(.05),copy,away:putAway,sell,undo:ED.back,reset:ED.reset,done:ED.toggle,grid:()=>{ ED.grid=!ED.grid; ED.panel(); }}[d.a]||(()=>{}))(); });
+    ({turnl:()=>turn(RQ),turnr:()=>turn(-RQ),small:()=>size(1/1.1),big:()=>size(1.1),down:()=>lift(-.05),up:()=>lift(.05),copy,away:putAway,sell,unclip:()=>{ const m=unclip(); if(m.length){ HOME.save(snapshot(A_())); say('MOVED CLEAR'); } ED.panel(); },undo:ED.back,reset:ED.reset,done:ED.toggle,grid:()=>{ ED.grid=!ED.grid; ED.panel(); }}[d.a]||(()=>{}))(); });
   let slid=null;
   P.addEventListener('input',e=>{ '@later'; const t=e.target, A=A_(); if(!A)return;
     if(t.dataset.lcol){ const id=t.dataset.lcol; if(!slid)slid={t:'light',id,prev:A.lightGet(id)}; const L=A.lightGet(id); A.light(id,{col:t.value,tint:L.tint??1}); return; }

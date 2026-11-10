@@ -127,6 +127,9 @@
      "https://opengameart.org/content/door-open-door-close-set",
      "https://opengameart.org/content/door-lock-sounds",
      "https://opengameart.org/content/car-sound-effects-pack-low-quality",
+     "https://opengameart.org/content/amb-rain-loop-1",
+     "https://opengameart.org/content/rain-long-thunder",
+     "https://opengameart.org/content/100-cc0-sfx-2",
      "https://opengameart.org/content/stream-sounds",
      "https://opengameart.org/content/40-cc0-water-splash-slime-sfx"
     ],
@@ -136,6 +139,8 @@
      "dooropen, door": "qubodup",
      "latch": "Cough-E",
      "car_engine, car_start, car_stop, car_door_open, car_door_close, horn": "GGBotNet",
+     "rain": "Kresiek The Furry",
+     "thunder": "rubberduck; WuxiaScrub",
      "falls": "kurt (OpenGameArt, Stream Sounds: loudstream), CC-BY 3.0: credit kurt",
      "splash": "rubberduck"
     }

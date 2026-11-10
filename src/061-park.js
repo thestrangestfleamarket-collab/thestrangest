@@ -388,12 +388,12 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     if(PARK.trees&&WEEDS){ const F=WEEDS.feet=WEEDS.feet||[]; for(const it of PARK.trees.userData.items||[])if(it.sol)F.push([it.x,it.z,(it.sol[2]-it.sol[0])/2]); } if(WEEDS&&WEEDS.lawnDrop)WEEDS.lawnDrop(P.rect()); });
   PARK.ring=NOTREES?null:mesh(TREES,true,true,false,{}); PARK.ringTrunks=null;   // the old trees in their own leaves, the ring and the park's woods in one mesh
   // the ring cheap from far off (owner, 8 Nov 2026: "simplify the other park trees too"): each tree whole within 30 tiles of you; further off its plain shape, a round crown (twenty triangles) on a six-sided trunk, all of them one draw; a tree moved in the world editor stays whole
-  if(PARK.ring&&PARK.ring.isBatchedMesh){ const R=PARK.ring, IT=R.userData.items||[], ID=R.userData.ids||[], n=IT.length, GR=[[.29,.47,.24],[.35,.53,.28],[.25,.42,.22],[.4,.58,.3]];
+  if(PARK.ring&&PARK.ring.isBatchedMesh){ const R=PARK.ring, IT=R.userData.items||[], ID=R.userData.ids||[], n=IT.length;
     const crown=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshLambertMaterial({color:0xffffff,flatShading:true}),n), trunk=new THREE.InstancedMesh(new THREE.CylinderGeometry(.7,1,1,6,1,true).translate(0,.5,0),new THREE.MeshLambertMaterial({color:0x5b4636}),n);
     const M4=new THREE.Matrix4(), Q=new THREE.Quaternion(), V=new THREE.Vector3(), S3=new THREE.Vector3(), Z=new THREE.Matrix4().makeScale(0,0,0), c=new THREE.Color(), shape=[];
-    IT.forEach((it,i)=>{ const h=Math.max(1,(it.top||it.y+4*TILE)-it.y), r=Math.max(.6*TILE,it.r||2*TILE), g=GR[Math.floor(hash(Math.round(it.x*3),Math.round(it.z*3),77)*4)];
+    IT.forEach((it,i)=>{ const h=Math.max(1,(it.top||it.y+4*TILE)-it.y), r=Math.max(.6*TILE,it.r||2*TILE);
       shape[i]=[M4.compose(V.set(it.x,it.y+h*.62,it.z),Q,S3.set(r*.95,h*.42,r*.95)).clone(),M4.compose(V.set(it.x,it.y-.2*TILE,it.z),Q,S3.set(Math.max(.18*TILE,(it.tr||r*.08)),h*.5,Math.max(.18*TILE,(it.tr||r*.08)))).clone()];
-      crown.setColorAt(i,c.setRGB(g[0],g[1],g[2],THREE.SRGBColorSpace)); crown.setMatrixAt(i,Z); trunk.setMatrixAt(i,Z); });
+      crown.setColorAt(i,c.setRGB(.32,.5,.26,THREE.SRGBColorSpace)); crown.setMatrixAt(i,Z); trunk.setMatrixAt(i,Z); });
     for(const m of [crown,trunk]){ m.userData.noSmallCull=1; m.userData.pieceCull=1; m.castShadow=true; m.receiveShadow=true; m.frustumCulled=false; (R.parent||scene).add(m); } PARK.ringFar=crown;
     const NEAR=30*TILE, near=new Uint8Array(n).fill(2); let lx=1e9, lz=1e9;
     PARK.ringLod=()=>{ if(Math.hypot(pos.x-lx,pos.z-lz)<TILE)return; lx=pos.x; lz=pos.z; const ed=R.userData.edited, gone=R.userData.gone; let ch=false;

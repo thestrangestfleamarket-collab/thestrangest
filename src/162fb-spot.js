@@ -22,4 +22,3 @@ const SPOT={};
   const place=()=>{ const xy=document.getElementById('hmxy'); if(!xy){ setTimeout(place,500); return; } xy.parentNode.insertBefore(b,xy.nextSibling); };
   place();
   window.SPOT=SPOT; }
-export {SPOT};

@@ -28,20 +28,27 @@ float agF(vec3 p){ return agN(p)*.55+agN(p*2.3)*.3+agN(p*5.1)*.15; }
 `, AGM=`{ vec3 p=(vAgP-uAgC)/uAgM, q=floor(p*10.)/10.+.05, n=normalize(vAgN); vec3 c=diffuseColor.rgb; float L=dot(c,vec3(.3,.59,.11)), b=agF(q*.6), b2=agF(q*1.9+7.), sp=agH(floor(p*10.));
 #if defined(AG_IRON)
  c=mix(vec3(.15,.085,.05),vec3(.33,.16,.07),b); c=mix(c,vec3(.07,.06,.05),smoothstep(.55,.8,b2)); c=mix(c,vec3(.34,.33,.27),smoothstep(.52,.75,agF(q*1.3+3.))*.85);
+#elif defined(AG_PAINT)
+ c=c*vec3(.78,.72,.7)*(.78+.3*b); c=mix(c,mix(vec3(.17,.08,.05),vec3(.36,.17,.07),b2),smoothstep(.46,.64,agF(q*2.4+5.))*.9);
 #elif defined(AG_BRONZE)
  c=mix(vec3(.13,.25,.2),vec3(.3,.43,.33),b); c=mix(c,vec3(.2,.13,.07),smoothstep(.6,.8,b2)*.6);
 #else
  c=mix(c,vec3(L*1.1)*vec3(.92,1.,.88),.62); c*=.78+.34*agN(vec3((q.x+q.z)*.7,q.y*13.,0.)); c=mix(c,vec3(.15,.2,.11),smoothstep(.5,.8,b)*.6); if(sp>.95)c*=.3;
 #endif
  float enc=smoothstep(.56,.7,agF(q*1.6+11.)); if(sp>.7)c=mix(c,vec3(.56,.55,.48),enc*.85); else if(b2>.55)c=mix(c,vec3(.04,.05,.06),enc*.85);
- float si=clamp(smoothstep(.25,.75,n.y)*(.55+.45*b2)+(1.-smoothstep(-.6,1.8,p.y))*.6*b*step(-.3,n.y),0.,1.); c=mix(c,vec3(.37,.35,.27)*(.82+.3*agH(floor(p*18.))),si*.92);
+ float si=clamp(smoothstep(.25,.75,n.y)*(.55+.45*b2)+(1.-smoothstep(-.6,1.8,p.y))*.6*b*step(-.3,n.y),0.,1.);
+#if defined(AG_PAINT)
+ si*=.4;
+#endif
+c=mix(c,vec3(.37,.35,.27)*(.82+.3*agH(floor(p*18.))),si*.92);
  if(n.y<-.4)c*=.5; diffuseColor.rgb=c; }
 `;
+  // (paint: a painted hull faded and flaked to rust, its own colours under it: the lake wreck, 066bb)
   const aged=(kind,o={})=>{ const m=new THREE.MeshLambertMaterial(o); if(kind!=='wood')m.defines={['AG_'+kind.toUpperCase()]:1};
     m.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,AU); sh.vertexShader='varying vec3 vAgP; varying vec3 vAgN;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vAgP=(modelMatrix*vec4(transformed,1.)).xyz; vAgN=normalize(mat3(modelMatrix)*objectNormal);');
       sh.fragmentShader=AGF+sh.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n'+AGM); };
     m.customProgramCacheKey=()=>'aged-'+kind; return m; };
-  const WOOD=aged('wood',{vertexColors:true}), IRON=aged('iron'); WRECK.aged=aged;
+  const WOOD=aged('wood',{vertexColors:true}), IRON=aged('iron'); WRECK.aged=aged; WRECK.AU=AU;
   // loose pieces in the world (rotated): a bag of triangles made one mesh
   const bag=()=>({p:[],n:[],c:[]}), COL=new THREE.Color(), M4=new THREE.Matrix4(), QQ=new THREE.Quaternion(), EU=new THREE.Euler(), V=new THREE.Vector3(), ONE=new THREE.Vector3(1,1,1);
   const put=(b,g,c,x,y,z,rx=0,ry=0,rz=0)=>{ COL.set(c); M4.compose(V.set(x,y,z),QQ.setFromEuler(EU.set(rx,ry,rz)),ONE); g.applyMatrix4(M4); const q=g.index?g.toNonIndexed():g, P=q.attributes.position.array, N=q.attributes.normal.array;
@@ -57,6 +64,7 @@ float agF(vec3 p){ return agN(p)*.55+agN(p*2.3)*.3+agN(p*5.1)*.15; }
     G.position.set(x,y-.05*MW,z); G.rotation.y=hs(k.length,x|0)*6.28; scene.add(G);
     const C={k,G,lid,gold,th:null}; C.th={name:'A SUNKEN CHEST',obj:G,reach:1.4*T,near:2.6*T,tall:.6*T,act:()=>open(C)}; UI.thing(C.th); WRECK.chests.push(C); return C; };
   const open=C=>{ if(!INV.ready(C.k))return say('EMPTY. THE RIVER BRINGS MORE IN BY TOMORROW.','#c8a090'); const c=10+Math.floor(Math.random()*31); INV.cash+=c; INV.pick(C.k); say('THE LID GIVES. $'+c+' IN OLD COINS, AND A STONE AMONG THEM.'); if(SFX.play)SFX.play('chirp',{vol:.5,pitch:.8}); };
+  WRECK.chest=(x,z,k,y)=>chest(x,z,k,y);   // a sunken chest anywhere (the lake wreck's, 066bb): its own daily find
   // the ship, three times a real sloop's size (owner, 7 Nov 2026: "make the ship 3x bigger ... you can go inside and swim around, plenty of room"): drawn in its old metres (u along, bow at 0; v across; h from the keel) times S; hollow, its back broken open in the middle, a hollow stern cabin, a hold with cargo
   const S=3, LEN=16, BM=5, mid=BM/2, half=u=>BM/2*Math.pow(Math.max(0,Math.sin(Math.PI*Math.min(1,Math.max(0,(u+.6)/(LEN+1.2))))),.6);
   const ship=(cx,cz)=>{ const B=SHARED.BOD, tx=w=>(w-B.XS(0))/(B.XS(1)-B.XS(0)), tz=w=>(w-B.ZS(0))/(B.ZS(1)-B.ZS(0)), lt=LEN*S/.84, bt=BM*S/.84;

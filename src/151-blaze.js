@@ -57,7 +57,7 @@ import {FOUNT} from './060a-fount.js';
     if(ch)mk.aA.needsUpdate=true; let n=0; BM.forEach((m,i)=>{ if(m)n=i+1; }); mk.me.count=n; mk.me.visible=n>0;
     let b=null, bd=(30*T)**2; for(const f of F){ const d=(f.x-pos.x)**2+(f.z-pos.z)**2; if(d<bd){ bd=d; b=f; } }
     if(b){ L.position.set(b.x,b.y+.5*T,b.z); L.intensity=16*Math.min(1,b.s.w/(.62*T))*FLAME.flick(b.s.sd); } else L.intensity=0; };
-  const CN=SHARED.BOD.road.CORN.filter(c=>c.cv&&c.x===RING.wr1), PH=2.8*M, ST=CN.map(c=>{ const x=SHARED.BOD.XS(c.cx), z=SHARED.BOD.ZS(c.cy); return {x,z,y:G(x,z)}; });
+  const KR=SHARED.BOD.road.KR, CN0=SHARED.BOD.road.CORN.filter(c=>c.cv&&c.x===RING.wr1), CN=CN0.length?CN0:[{cx:RING.wr1+KR,cy:SHARED.BOD.FAR+KR}], PH=2.8*M, ST=CN.map(c=>{ const x=SHARED.BOD.XS(c.cx), z=SHARED.BOD.ZS(c.cy); return {x,z,y:G(x,z)}; });
   for(const s of ST){ SOL.up.push([s.x-.12*M,s.z-.12*M,s.x+.12*M,s.z+.12*M]); FIX.up.push([s.x-.12*M,s.z-.12*M,s.y,s.x+.12*M,s.z+.12*M,s.y+PH]); }
   { const g=geo(add=>{ for(const s of ST){ const a=(w,h,d,c,x,y,z)=>add(w*M,h*M,d*M,c,s.x+x*M,s.y+y*M,s.z+z*M);
       a(.55,.12,.55,0x8a8a84,0,.06,0); a(.13,2.7,.13,0xa8261e,0,1.4,0); a(.22,.06,.22,0x2a2c30,0,2.72,0); a(1.05,.07,1.05,0x2c2e32,0,2.8,0);

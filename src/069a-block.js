@@ -135,8 +135,8 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
         for(let q=0;q<uv.count;q++)uv.setXY(q,uv.getX(q)?u1:u0,uv.getY(q)?v0:v1);
         const me=new THREE.Mesh(ge,m); me.rotation.x=-Math.PI/2; me.position.set((XS(x0)+XS(x1))/2,.004,(ZS(y0)+ZS(y1))/2); me.receiveShadow=true; me.raycast=()=>{}; me.userData.cullOf=1; G.add(me); const w2=new THREE.Mesh(ge,m2); w2.rotation.x=-Math.PI/2; w2.position.copy(me.position); w2.raycast=()=>{}; G.add(w2); SUB.push(w2); }
       SYS.add('places',()=>{ const on=!(FOUNT&&FOUNT.waters&&FOUNT.waters.length); for(const o of SUB)o.visible=on; },'069a-lakesub'); } }
-    const P=E.park; if(P){ const [a0,b0,a1,b1]=P.wall, wl=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(XS(a1)-XS(a0)),YP(90),Math.abs(ZS(b1)-ZS(b0))),new THREE.MeshLambertMaterial({color:0x5c5a55}));
-      wl.position.set((XS(a0)+XS(a1))/2,YP(45),(ZS(b0)+ZS(b1))/2); wl.raycast=()=>{}; wl.userData.cullOf=1; wl.userData.haze=1; G.add(wl);
+    const P=E.park; if(P){ if(P.wall){ const [a0,b0,a1,b1]=P.wall, wl=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(XS(a1)-XS(a0)),YP(90),Math.abs(ZS(b1)-ZS(b0))),new THREE.MeshLambertMaterial({color:0x5c5a55}));
+      wl.position.set((XS(a0)+XS(a1))/2,YP(45),(ZS(b0)+ZS(b1))/2); wl.raycast=()=>{}; wl.userData.cullOf=1; wl.userData.haze=1; G.add(wl); }
       // Market St's park wall past the mirror's reach (161d): plain stone and a railing of bars, to the end of the strips
       if(PARK.wallOn){ const [,w0,w1]=PARK.wallOn, wa=E.mirror?E.mirror.x[1]+E.mirror.reach:PARK.wallOn[0], we=Math.max(...((E.strips&&E.strips.list)||[]).map(q=>q[2]),wa), L=XS(we)-XS(wa); if(L>0){ const cx=(XS(wa)+XS(we))/2, cz=(ZS(w0)+ZS(w1))/2, d=Math.abs(ZS(w1)-ZS(w0));
         // (in pieces, each sunk away before the end of the view, so the far plane never leaves a dark line of railing on the horizon: owner, 9 Nov 2026, "im seeing that dark line")

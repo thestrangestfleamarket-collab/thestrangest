@@ -1,4 +1,4 @@
-// THE FIRE SIM: FIRESIM is real fire as a fluid on the GPU: a 64x32x64 grid (12.5 cm cells, 8 x 4 x 8 m) that follows the fire it is given, stepping velocity, heat, fuel and smoke (fuel burns into heat and soot, heat rises, the swirl is kept, the air is made incompressible), drawn as one glowing volume in slices facing the camera so walls and people hide it.
+// THE FIRE SIM: FIRESIM is real fire as a fluid on the GPU: a 64x32x64 grid (12.5 cm cells, 8 x 4 x 8 m) that follows the fire it is given, stepping velocity, heat, fuel and smoke (fuel burns into heat and soot, heat rises, the swirl is kept, the air is made incompressible), drawn as one volume in hard cel bands (an outline of flame, orange, yellow, white at the hottest) in slices facing the camera so walls and people hide it.
 import {SHARED, THREE} from './003-shx.js';
 import {LEVELS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
@@ -11,6 +11,8 @@ ivec2 at(ivec3 c){ return ivec2((c.y%${TX})*${NX}+c.x,(c.y/${TX})*${NZ}+c.z); }
 vec4 F(sampler2D t,ivec3 c){ c=clamp(c,ivec3(0),ivec3(${NX-1},${NY-1},${NZ-1})); return texelFetch(t,at(c),0); }
 vec2 uvOf(vec2 xz,float s){ return (vec2(mod(s,TX),floor(s/TX))*vec2(NX,NZ)+xz)/AT; }
 vec4 S(sampler2D t,vec3 c){ c=clamp(c,vec3(.5),vec3(NX-.5,NY-.5,NZ-.5)); float y=c.y-.5, y0=floor(y), f=y-y0, y1=min(y0+1.,NY-1.); return mix(texture(t,uvOf(c.xz,y0)),texture(t,uvOf(c.xz,y1)),f); }
+float rim(vec3 c){ return smoothstep(0.,6.,min(min(min(c.x,NX-c.x),min(c.z,NZ-c.z)),NY-c.y)); }
+float inB(vec3 q){ return q.x<0.||q.z<0.||q.x>NX||q.z>NZ||q.y>NY?0.:1.; }
 ivec3 cellI(){ ivec2 p=ivec2(gl_FragCoord.xy); return ivec3(p.x%${NX},p.x/${NX}+(p.y/${NZ})*${TX},p.y%${NZ}); }
 `;
   const VS='void main(){ gl_Position=vec4(position.xy*2.,0.,1.); }';
@@ -22,8 +24,8 @@ ivec3 cellI(){ ivec2 p=ivec2(gl_FragCoord.xy); return ivec3(p.x%${NX},p.x/${NX}+
   // velocity (xyz, cells a second) and heat (w): carried by the flow; fuel burning heats it; hot air rises, smoke sinks; the swirl kept; the jets of fuel push it
   const EMIT=`for(int i=0;i<${NE};i++){ if(i>=uN)break; vec3 e=uE[i].xyz; float rr=uE[i].w, dd=length(p-e); if(dd<rr){ float k=1.-dd/rr;`;
   const mVel=pass(`uniform sampler2D uV,uD,uC; uniform float uDt; uniform vec3 uShift; uniform vec4 uE[${NE}], uEV[${NE}]; uniform int uN;
-void main(){ ivec3 c=cellI(); vec3 p=vec3(c)+.5; vec4 v0=F(uV,c); vec3 q=p+uShift-v0.xyz*uDt; vec4 v=S(uV,q), d=S(uD,q);
-  float burn=min(d.r,7.*uDt), T=v.w+burn*.9; T-=uDt*T*(.55+.35*T); T=max(T,0.); vec3 vel=v.xyz;
+void main(){ ivec3 c=cellI(); vec3 p=vec3(c)+.5; vec4 v0=F(uV,c); vec3 q=p+uShift-v0.xyz*uDt; float ib=inB(q); vec4 v=S(uV,q)*ib, d=S(uD,q)*ib; float sp=1.-(1.-rim(p))*4.*uDt;
+  float burn=min(d.r,7.*uDt), T=v.w+burn*.9; T-=uDt*T*(.55+.35*T); T=max(T,0.)*sp; vec3 vel=v.xyz;
   vel.y+=(42.*T-3.*d.g)*uDt;
   float l=F(uC,c-ivec3(1,0,0)).w, r=F(uC,c+ivec3(1,0,0)).w, dn=F(uC,c-ivec3(0,1,0)).w, up=F(uC,c+ivec3(0,1,0)).w, b=F(uC,c-ivec3(0,0,1)).w, f=F(uC,c+ivec3(0,0,1)).w;
   vec3 g=vec3(r-l,up-dn,f-b); float gl=length(g); if(gl>1e-5)vel+=7.*cross(g/gl,F(uC,c).xyz)*uDt;
@@ -32,8 +34,8 @@ void main(){ ivec3 c=cellI(); vec3 p=vec3(c)+.5; vec4 v0=F(uV,c); vec3 q=p+uShif
   fragOut=vec4(vel,T); }`);
   // fuel (r), soot (g) and how fast it burns here (b): carried by the new flow; fuel burns to soot; the jets lay fuel
   const mDen=pass(`uniform sampler2D uV,uD; uniform float uDt; uniform vec3 uShift; uniform vec4 uE[${NE}], uEV[${NE}]; uniform int uN;
-void main(){ ivec3 c=cellI(); vec3 p=vec3(c)+.5; vec4 v=F(uV,c); vec3 q=p+uShift-v.xyz*uDt; vec4 d=S(uD,q);
-  float burn=min(d.r,7.*uDt); d.r-=burn; d.g+=burn*.22; d.g*=1.-.7*uDt; d.b=mix(d.b,burn/max(uDt,1e-4),.6);
+void main(){ ivec3 c=cellI(); vec3 p=vec3(c)+.5; vec4 v=F(uV,c); vec3 q=p+uShift-v.xyz*uDt; vec4 d=S(uD,q)*inB(q); float sp=1.-(1.-rim(p))*4.*uDt;
+  float burn=min(d.r,7.*uDt); d.r-=burn; d.g+=burn*.22; d.g*=(1.-.7*uDt)*sp; d.r*=sp; d.b=mix(d.b,burn/max(uDt,1e-4),.6);
   ${EMIT} d.r+=uEV[i].w*k*uDt; } } d.r=min(d.r,3.); fragOut=d; }`);
   // incompressible air: the divergence, the pressure that cancels it (Jacobi), its gradient taken off
   const mDiv=pass(`uniform sampler2D uV; void main(){ ivec3 c=cellI(); float d=.5*((F(uV,c+ivec3(1,0,0)).x-F(uV,c-ivec3(1,0,0)).x)+(F(uV,c+ivec3(0,1,0)).y-F(uV,c-ivec3(0,1,0)).y)+(F(uV,c+ivec3(0,0,1)).z-F(uV,c-ivec3(0,0,1)).z)); fragOut=vec4(d,0.,0.,1.); }`);
@@ -51,9 +53,9 @@ void main(){ ivec3 c=cellI(); vec3 p=vec3(c)+.5; vec4 v=F(uV,c); vec3 q=p+uShift
     vertexShader:'out vec3 vW; void main(){ vec4 w=modelMatrix*vec4(position,1.); vW=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }',
     fragmentShader:HEAD+`uniform sampler2D uV,uD; uniform vec3 uO; uniform float uH; in vec3 vW;
 vec3 ramp(float h){ vec3 c=mix(vec3(.42,.035,.01),vec3(1.,.26,.03),smoothstep(.02,.32,h)); c=mix(c,vec3(1.,.62,.12),smoothstep(.28,.6,h)); return mix(c,vec3(1.,.93,.66),smoothstep(.62,.92,h)); }
-void main(){ vec3 c=(vW-uO)/uH; if(any(lessThan(c,vec3(0.)))||any(greaterThan(c,vec3(NX,NY,NZ))))discard; float T=S(uV,c).w; vec4 d=S(uD,c); float fire=T+d.b*.05, sm=d.g;
-  float a=1.-exp(-(fire*.55+sm*.35)*${(Math.sqrt(NX*NX+NY*NY+NZ*NZ)/NS).toFixed(3)}); if(a<.004)discard;
-  vec3 e=ramp(clamp(fire*.55,0.,1.))*(.6+1.6*min(fire,1.6)), s=vec3(.06,.055,.05); vec3 col=mix(s,e,clamp(fire/(fire+sm*.8+1e-3),0.,1.));
+void main(){ vec3 c=(vW-uO)/uH; if(any(lessThan(c,vec3(0.)))||any(greaterThan(c,vec3(NX,NY,NZ))))discard; float T=S(uV,c).w; vec4 d=S(uD,c); float rm=rim(c), fire=(T+d.b*.05)*rm, sm=d.g*rm;
+  float fb=fire>1.2?.95:fire>.6?.62:fire>.25?.4:fire>.1?.2:0., sb=sm>.35?.6:sm>.15?.3:0., a=fb>0.?.45:sb>0.?.06+.08*sb:0.; if(a<.004)discard;
+  vec3 e=ramp(fb)*(.8+1.2*fb), s=vec3(.06,.055,.05); vec3 col=fb>0.?e:s;
   fragOut=vec4(col*a,a); }`});
   const sg=new THREE.BufferGeometry(); sg.setAttribute('position',new THREE.BufferAttribute(new Float32Array(NS*4*3),3)); sg.attributes.position.setUsage(THREE.DynamicDrawUsage);
   { const I=[]; for(let i=0;i<NS;i++){ const a=i*4; I.push(a,a+1,a+2,a,a+2,a+3); } sg.setIndex(I); }

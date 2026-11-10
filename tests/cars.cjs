@@ -47,6 +47,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   await pg.evaluate(() => __dbg.UI.goTo(78.2, -62, 'up')); await pg.waitForTimeout(3000);
   await pg.evaluate(() => { const C = CARS.cars.get('c1'); C.x = SHARED.BOD.XS(78.2); C.z = SHARED.BOD.ZS(-66.5); C.hd = Math.PI; CARS.getIn('c1'); }); await pg.waitForTimeout(2500);
   await pg.evaluate(() => VLOOK.set('car:muscle-car-60s', null)); await until(() => CARS.kinds['muscle-car-60s'].V.next || !CARS.driving); const r2 = await half();
+  await until(() => { const r = CARS.dbg().rb; return r && r.p[1] > -.3; }).catch(() => {});   // (the car resting on the road before it drives)
   const k0 = await pg.evaluate(() => CARS.dbg().rb); await pg.keyboard.down('w'); let k1 = k0, kn = 0;
   for (let i = 0; i < 40; i++) { await pg.waitForTimeout(400); const q = await pg.evaluate(() => ({ rb: CARS.dbg().rb, n: GPH.kerbs() })); if (q.rb) k1 = q.rb; kn = Math.max(kn, q.n); if (k1.p[2] < -69.5) break; } await pg.keyboard.up('w');
   ok(kn > 0 && k0 && k1.p[2] < -69.5 && k1.p[1] - k0.p[1] > .15, 'the kerb is a slope to the physics: the car rolls up onto the pavement, not shoved along it: ' + JSON.stringify({ kerbs: kn, from: k0 && k0.p, to: k1.p }));

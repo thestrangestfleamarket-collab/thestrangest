@@ -4177,11 +4177,18 @@
   "name": "THE SCUBA DIVER",
   "trade": {
    "sells": [
-    "gem_wheel",
-    "headlight",
     "g_fishfood"
    ],
-   "line": "The wheel and a good light. Cut your stones on the wheel; I buy every one you bring me, cut or rough.",
+   "line": "Fish food for the tanks."
+  }
+ },
+ "rock_golem": {
+  "name": "THE ROCK GOLEM",
+  "trade": {
+   "sells": [
+    "headlight"
+   ],
+   "line": "Stones? We buy stones. Every one you bring. And a good light for the dark.",
    "buys": [
     "gems"
    ],

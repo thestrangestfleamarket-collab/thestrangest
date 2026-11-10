@@ -22,8 +22,10 @@ const HORSE={}; window.HORSE=HORSE;
   const look=c=>PETS.idx().then(I=>{ const K=I.by[BREED]; return {k:BREED,n:'',c:zones(K,c),s:(K.s0||[]).slice(),z:100,h:false}; });
   // a horse's body wears that look: sized about its feet, repainted (its coat c); the saddle and the seat ride on its back, so they follow
   const dress=(g,c,paint)=>{ g.userData.vlApply=L=>{ g.scale.setScalar(+L.s>0?+L.s:1); PETS.idx().then(I=>paint(zones(I.by[BREED],c))); }; return VLOOK.dress(LID,g); };
-  VLOOK.kind(LID,{name:'THE HORSE',grp:'RIDES',noParts:true,pal:()=>[...new Set(COATS.flatMap(C=>C.slice(1).map(qk)))],
-    make:()=>look(COAT).then(P=>PETS.still(P)).then(me=>{ if(!me)return null; const g=new THREE.Group(); g.add(me); g.userData.vlDrop=()=>{ me.geometry.dispose(); me.material.dispose(); }; return dress(g,COAT,c=>me.repaint(c)); })});
+  // (the editor shows any coat, yours first, and only that coat's colours)
+  const coat=v=>v>=0&&v<COATS.length?v:COAT;
+  VLOOK.kind(LID,{name:'THE HORSE',grp:'RIDES',noParts:true,vname:'COAT',variants:()=>COATS.map(C=>C[0]),variant:()=>COAT,pal:v=>[...new Set(COATS[coat(v)].slice(1).map(qk))],
+    make:v=>{ const c=coat(v); return look(c).then(P=>PETS.still(P)).then(me=>{ if(!me)return null; const g=new THREE.Group(); g.add(me); g.userData.vlDrop=()=>{ me.geometry.dispose(); me.material.dispose(); }; return dress(g,c,k=>me.repaint(k)); }); }});
 
   /* ---------- the saddle, in metres (x across, y up, z toward the head; its seat at 0): a western saddle on a striped blanket, horn, cantle, fenders, stirrups, the cinch ---------- */
   const lam=c=>new THREE.MeshLambertMaterial({color:c}), LEA=lam(0x6a3c1e), LEAD=lam(0x3e2210), BLK=lam(0x9a2a22), BLC=lam(0xe2d2a8), IRON=lam(0x8a8478);

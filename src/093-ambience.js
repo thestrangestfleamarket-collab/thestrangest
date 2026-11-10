@@ -16,11 +16,14 @@ Object.assign(AMB,{on:true});
   let loops=null, next=0, lastK='', mul=1;
   const bus=c=>{ if(!AMB.g||AMB.g.context!==c){ AMB.g=c.createGain(); AMB.g.gain.value=0; AMB.g.connect(SFX.out(c)); } return AMB.g; };
   const mk=(c,k,f0)=>{ const s=c.createBufferSource(), F=c.createBiquadFilter(), G=c.createGain(); s.buffer=SFX.buffer(k,c); s.loop=true; F.type='lowpass'; F.frequency.value=f0; G.gain.value=0; s.connect(F).connect(G).connect(bus(c)); s.start(); return {s,F,G}; };
+  // the recorded rain (tools/sfx-bake.py) in place of the made one once it is in: the same filter and level
+  const rec=(c,L,k)=>{ if(L.rec)return; const v=SFX.voice(k,{bus:L.F}); if(!v)return; v.set(1,1); try{ L.s.stop(); L.s.disconnect(); }catch(e){} L.s=v; L.rec=true; };
   const where=()=>SHARED.LVL==='down'?'down':(ROOMS.cur)?'inside':CLOCK.dark()?'night':'day';
   const tgt=(p,v,c,k=.4)=>p.setTargetAtTime(v,c.currentTime,k);
   AMB.set=on=>{ AMB.on=on; SAVE.set('amb',on?'1':'0'); };
   AMB.tick=dt=>{ const c=SFX.live(); if(!c)return; const B=bus(c); B.gain.value=AMB.on&&SFX.on?1:0; if(!AMB.on||!SFX.on)return;
     if(!loops||loops.hum.s.context!==c)loops={hum:mk(c,'hum',500),rain:mk(c,'rain',3200),wind:mk(c,'wind',600),fount:mk(c,'rain',1400)};
+    if(!loops.rain.rec&&(loops.rain.G.gain.value>.001||loops.fount.G.gain.value>.001)){ rec(c,loops.rain,'rain'); rec(c,loops.fount,'rain'); }
     const w=where(), W=WX.now, out=w==='day'||w==='night', ins=w==='inside';
     const LM=k=>SFX.mix.loops[k]==null?1:+SFX.mix.loops[k]; tgt(loops.hum.G.gain,(w==='down'?.05:ins?.02:.035)*LM('hum'),c); tgt(loops.hum.F.frequency,w==='down'?160:ins?260:500,c);
     const rain=W&&w!=='down'?(W.rain+W.snow*.15)*WX_RAIN.vol*(ins?WX_RAIN.inside:1):0, wind=(W&&w!=='down'?W.wind*WX_WIND.vol*(ins?WX_WIND.inside:1):0)+(AMB.breeze||0)*.035;   // AMB.breeze: an open window at home (150a)
@@ -31,5 +34,5 @@ Object.assign(AMB,{on:true});
     const set=SETS[w].filter(e=>e[0]!==lastK&&!(W&&W.rain>.3&&e[0]==='chirp')); let tot=0; for(const e of set)tot+=e[1]; let r=Math.random()*tot, pick=set[set.length-1]; for(const e of set){ r-=e[1]; if(r<=0){ pick=e; break; } }
     lastK=pick[0]; SFX.play(pick[0],{vol:dB(pick[2]+Math.random()*-3),vary:pick[3],pan:Math.random()*1.4-.7,bus:B});
     next=now+(7+Math.random()*9)*mul*(SFX.mix.gap==null?1:+SFX.mix.gap)*(next?1:(.3+Math.random()*.4)); };
-  AMB.sets=SETS;
+  AMB.sets=SETS; AMB.dbg=()=>({rain:!!(loops&&loops.rain.rec),rainG:loops?+loops.rain.G.gain.value.toFixed(3):0});
 }

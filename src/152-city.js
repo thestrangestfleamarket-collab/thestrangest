@@ -11,7 +11,7 @@ Object.assign(CITY,{on:QS.get('city')==='1',jobs:[],sched:[],day:DN.day?DN.day()
     if(MODS.apts&&MODS.apts.A){ const A=MODS.apts.A; add('house','APARTMENT HOUSE',SHARED.BOD.X(MODS.apts.DX),SHARED.BOD.Z(A.y1),T); }
     if(SHARED.BOD.GD)add('dojo','THE BATH HOUSE',SHARED.BOD.X(SHARED.BOD.GD.door[0]),SHARED.BOD.Z(SHARED.BOD.GD.door[1]),T);
     add('park','CENTRAL PARK',SHARED.BOD.XS((PARK.gate[0]+PARK.gate[1])/2+PARK.ox),SHARED.BOD.ZS(PARK.y0+PARK.oy),-T);
-    add('castle','THE CASTLE',SHARED.BOD.XS(CASTLE.gate),SHARED.BOD.ZS(CASTLE.b[2]),-1.5*T);
+    add('castle','THE DUNGEON STAIR',SHARED.BOD.XS((CASTLE.stair.x0+CASTLE.stair.x1)/2),SHARED.BOD.ZS(CASTLE.stair.y0),-1.5*T);
     add('subway','THE SUBWAY',SHARED.BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),SHARED.BOD.ZS(MAPSTAIR.y1),.8*T);
     add('platform','THE PLATFORM',MODS.station.plat.x,MODS.station.plat.z,0,'down');
     for(const [n,x,z,lv,off] of STORE.places)if((x||z)&&!off)add('store:'+n.toLowerCase().replace(/^the /,'').replace(/\s+/g,'-'),n,x,z,0,lv,{inside:true,stacked:typeof lv==='number'});

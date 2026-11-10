@@ -210,12 +210,12 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     const k=L.map(c=>c.name).join('|'); if(k!==pickKey){ pickKey=k; UI.pickI=0; } if(UI.pickI>=L.length)UI.pickI=0; return L; };
   let pickT=0; UI.pickStep=d=>{ const L=UI.choices(); if(L.length<2)return false; const t=performance.now(); if(t-pickT<160)return true; pickT=t; UI.pickI=(UI.pickI+(d>0?1:L.length-1))%L.length; if(PROMPT)PROMPT.tick(); return true; };
   UI.useKey=()=>{ if(UI.menuOpen||UI.gamewin||SHARED.covered||TALK.on)return; if(RIDE.on&&WIELD.useHeld&&WIELD.useHeld())return; const L=UI.choices(), c=L[UI.pickI];
-    if(!c){ if(WIELD.useHeld)WIELD.useHeld(); return; } if(c.held){ WIELD.useHeld(); return; } useNow(c.sub?{...c.th,name:c.sub.name,act:c.sub.act}:c.th); };
-  UI.useNear=()=>{ const best=UI.nearThing(); if(!best)return false; useNow(best); return true; };
+    if(!c){ if(WIELD.useHeld)WIELD.useHeld(); return; } if(c.held){ WIELD.useHeld(); return; } walkUp(c.sub?{...c.th,name:c.sub.name,act:c.sub.act}:c.th); };
+  UI.useNear=()=>{ const best=UI.nearThing(); if(!best)return false; walkUp(best); return true; };
   UI.go=d=>{ UI.clickGo=true; UI.clickRun=d>6; };
   const GAITR=[0,.5,1]; UI.gaitRun=()=>VIT.tired?0:GAITR[SHARED.gait||0];   // walk or run (owner, 9 Nov 2026: "get rid of the jog and only use run (shift once)")
   UI.runTick=()=>{ st.jog=(SHARED.gait||0)===1&&!VIT.tired; if(!UI.clickGo){ if(!UI.menuOpen)st.runTarget=UI.gaitRun(); return; } if(!SHARED.target){ UI.clickGo=false; st.runTarget=UI.gaitRun(); return; } st.runTarget=Math.max(UI.gaitRun(),!VIT.tired&&UI.clickRun&&Math.hypot(SHARED.target.x-pos.x,SHARED.target.z-pos.z)>1.6?1:0); };
-  // E uses what is in reach from where you stand, never a walk; a double click walks up first, then the same (owner, 10 Nov 2026: "redo it completely")
+  // E and the double click: in reach, used from where you stand; a little out of reach, a walk up first; there you stop dead and use it (owner, 10 Nov 2026)
   const gap=th=>{ const p=thAt(th); return Math.max(0,Math.hypot(p.x-pos.x,p.z-pos.z)-(th.r||0)); }, reachOf=th=>th.pick?Math.min(th.reach||1,.5*TILE):th.reach||1, nearOf=th=>th.near||reachOf(th)+1.2*TILE;
   const halt=()=>{ goal=null; SHARED.target=null; UI.clickGo=false; st.target=0; st.w=0; st.mv=st.mvw=0; st.stop=null; };   // stopped dead: no stride carried into what comes next
   const useNow=g=>{ const p=thAt(g), d=gap(g), up=p.clone().setY(p.y+(g.tall||1.6)); halt(); SHARED.heading=Math.atan2(p.x-pos.x,p.z-pos.z);

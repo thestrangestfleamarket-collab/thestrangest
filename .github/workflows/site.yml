@@ -347,7 +347,7 @@ jobs:
       - name: The screen's layout (drag the HUD and windows, saved, back after a reload)
         if: contains(steps.f.outputs.run, ' layout')
         run: node tests/layout.cjs dist/market.html
-      - name: Use (E uses what is in reach, no walk; a double click walks up, stops dead, no slide)
+      - name: Use (E and the double click walk up to a thing a little out of reach, stop dead, no slide)
         if: contains(steps.f.outputs.run, ' use')
         run: node tests/use.cjs
       - name: The computer's BBS (dial-in, order, drone delivery, drone view)

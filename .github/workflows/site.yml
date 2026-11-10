@@ -143,6 +143,7 @@ jobs:
           k firstday 'src/162g-firstday|src/102-looks|src/141-forage|src/101-gems|worker/door\.js|firstday\.cjs'
           k avatar  'src/111c-avatar|src/111a-bodies|src/102-looks|src/001-rig|src/111da-motion|data/pfavatar|data/pfanim|avatar\.cjs|avatarmoves\.cjs|pfclips\.cjs'
           k wild    'src/087-npc-creatures|src/144[f-h]|src/076-npc-map|wild\.cjs'
+          k taming  'src/146zj|src/144b-birds|src/146b-dunmobs|src/146i-ride|worker/dunmobs|data/pets\.json|tools/pets-tame|taming\.cjs'
           k brochures 'src/159k-brochures|data/brochures|brochures\.cjs'
           k places  'build\.py|tools/(chunks|later|yields|minify|imports)|worker/|src/(000|002|end)|\.html$|package|wrangler|places\.cjs|workflows/site'
           D=$(git diff -U0 "origin/$BASE"...HEAD -- 'src/*.js' 2>/dev/null | grep -E '^[-+][^-+]' || true)
@@ -176,6 +177,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' grass')
         run: node tests/grasskinds.cjs dist/market.html
+      - name: Taming (TAMING from 0, its three tiers, a pet, a fighter, a mount, others see them)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' taming')
+        run: node tests/taming.cjs dist/market.html
       - name: The other players (bodies, name tags, the list, chat)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' online')

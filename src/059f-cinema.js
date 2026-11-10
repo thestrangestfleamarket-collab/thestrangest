@@ -183,7 +183,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
   const tick=()=>{ if(STORE.gate&&!STORE.gate.theatre)STORE.gate.theatre=gate; const mt=STORE.main&&STORE.main.theatre; CINEMA.on=false; if(lastMe)lastMe.visible=false; B=null; lentOk=false; const lb=lent&&lent.age++<3&&!FADE.busy?lent:null; if(lent&&lent.age>3)lent=null; if(!mt||!mt.fm){ if(lb)lendTick(lb); else idle(); return; } if(performance.now()-signT>5000){ signT=performance.now(); sign(); } fox();
     if(!named&&FORAGE.add){ named=true; FORAGE.add({names:{ticket:'MOVIE TICKET'},prices:{ticket:5}}); }
     const up=SHARED.LVL==='up'; if(canopy){ canopy.box.visible=up; } if(post){ post.group.visible=up; if(post.front)post.front.visible=up&&!mt.R.inside(pos.x,pos.z); } if(box_o)box_o.G.visible=up;
-    if(neon){ neon.me.visible=neon.rail.visible=up; const t=performance.now(); if(up&&t>neon.t){ neon.on=!neon.on&&Math.random()<.45; neon.t=t+(neon.on?40+Math.random()*140:250+Math.random()*2800); neonDraw(); } }
+    if(neon){ neon.me.visible=neon.rail.visible=up; const t=performance.now(); if(up&&t>neon.t){ neon.on=!neon.on&&Math.random()<.45; neon.t=t+(neon.on?40+Math.random()*140:250+Math.random()*2800); neonShow(); } }
     if(CINEMA.admin&&!adminThings&&canopy&&post){ adminThings=true;
       UI.thing({name:'THE MARQUEE',ghost:1,obj:canopy.box,reach:2.2*TILE,near:6*TILE,tall:1,act:()=>editMarquee()});
       UI.thing({name:'THE POSTER',ghost:1,obj:post.group,reach:1.6*TILE,near:5*TILE,tall:1,act:()=>editPoster()}); }
@@ -321,12 +321,13 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     G.updateMatrixWorld(); const lamp=new THREE.PointLight(0xffc88a,4,3*tw,1.6); lamp.position.set(0,H*.8,0).applyMatrix4(G.matrixWorld); LITE.recs.push(lamp);
     G.traverse(o=>{ o.userData.seenOut=true; }); return {G,sc,key:'',x:kc.x,z:kc.z,ox,oz}; };
   // the neon on top of the marquee: FLEA PIT in pink tubes, its I gone dark (it catches now and then)
-  const neonDraw=()=>{ '@later'; const {c,on}=neon, g=c.g, W=c.cv.width, H=c.cv.height, T='FLEA PIT'; g.clearRect(0,0,W,H); g.font='900 '+Math.round(H*.74)+'px '+HAND; g.textBaseline='middle'; g.lineJoin='round';
+  const neonDraw=(c,on)=>{ '@later'; const g=c.g, W=c.cv.width, H=c.cv.height, T='FLEA PIT'; g.clearRect(0,0,W,H); g.font='900 '+Math.round(H*.74)+'px '+HAND; g.textBaseline='middle'; g.lineJoin='round';
     const w=g.measureText(T).width, sc=Math.min(1,(W-60)/w); g.save(); g.translate(W/2,H/2+4); g.scale(sc,1); let x=-w/2;
     for(let i=0;i<T.length;i++){ const ch=T[i], cw=g.measureText(ch).width, dead=i===6&&!on; g.textAlign='center';
       if(ch!==' '){ if(!dead){ g.shadowColor='#ff3c7c'; g.shadowBlur=26; g.strokeStyle='#ff4f8a'; g.lineWidth=13; g.strokeText(ch,x+cw/2,0); g.shadowBlur=8; g.strokeStyle='#ffd0e0'; g.lineWidth=4; g.strokeText(ch,x+cw/2,0); }
         else { g.shadowBlur=0; g.strokeStyle='#5a2a3c'; g.lineWidth=11; g.strokeText(ch,x+cw/2,0); g.strokeStyle='#7a4a5a'; g.lineWidth=3; g.strokeText(ch,x+cw/2,0); } }
-      x+=cw; } g.restore(); c.tex.needsUpdate=true; if(neon.light)neon.light.intensity=on?3.2:2.6; };
+      x+=cw; } g.restore(); c.tex.needsUpdate=true; };
+  const neonShow=()=>{ neon.me.material.map=(neon.on?neon.lit:neon.dead).tex; if(neon.light)neon.light.intensity=neon.on?3.2:2.6; };   // the sign is drawn once each way and swapped, never redrawn
   const buildSigns=()=>{ '@later'; if(canopy)return; const SD=STORE.streetDoor&&STORE.streetDoor.theatre, LT=STORE.main&&STORE.main.lot&&STORE.main.lot('theatre',300); if(!SD||!LT)return;
     const B=SHARED.BOD, Yb=B.Y, tw=Math.abs(B.X(1)-B.X(0)), bx=B.X(SD.door[0]), bz=B.Z(SD.door[1]); let ox=B.X(SD.out[0])-bx, oz=B.Z(SD.out[1])-bz; const l=Math.hypot(ox,oz)||1; ox/=l; oz/=l;
     const alongX=Math.abs(oz)>=Math.abs(ox), ry=Math.atan2(ox,oz), e=alongX?[B.Z(LT.y0),B.Z(LT.y1)]:[B.X(LT.x0),B.X(LT.x1)], oc=alongX?B.Z(SD.out[1]):B.X(SD.out[0]), f0=Math.abs(e[0]-oc)<Math.abs(e[1]-oc)?e[0]:e[1];
@@ -342,7 +343,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
       me.position.copy(at(cS,EXT+cd*.55,Yb(138)+nh/2+.05*tw)); me.rotation.y=ry; scene.add(me);
       const rail=new THREE.Mesh(new THREE.BoxGeometry(nw*.9,.06*tw,.08*tw),dark); rail.position.copy(at(cS,EXT+cd*.5,Yb(138)+.05*tw)); rail.rotation.y=ry; scene.add(rail);
       const light=new THREE.PointLight(0xff4f8a,3,7*tw,1.6); light.position.copy(at(cS,EXT+cd+1.2*tw,Yb(150))); LITE.recs.push(light);
-      neon={c,me,rail,light,on:false,t:0}; neonDraw(); }
+      const lit=c, dead=canv(lit.cv.width,lit.cv.height); neonDraw(lit,true); neonDraw(dead,false); neon={lit,dead,me,rail,light,on:false,t:0}; neonShow(); }
     post={...canv(270,400),key:''}; const fr=storefront({at,ry,tw,Yb,Wb,cS,dS,dir,EXT,lo,hi,post}); post.front=fr.F;
     box_o=boxOffice({at,ry,tw,Yb,EXT,bS:fr.bS,BW:fr.BW,win:fr.win,ox,oz});
     SIGNS.list.push({me:box,name:'THEATRE MARQUEE',place:'street',get:()=>({text:ovr.text,bri:ovr.bri,col:ovr.col}),

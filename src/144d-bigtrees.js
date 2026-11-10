@@ -1,4 +1,4 @@
-// THE BIG TREES: data/world.json's bigTrees (owner, 7 Nov 2026), giants of 55 to 62 m in the middle of the park (s: a tree's size against those), each with one massive branch (kind A level, B rising, C low and sagging) and 4 to 8 smaller ones, leafy puffs on the outside; a tree with climb:true joins PARK.climbable, the only trees TREES lets you climb.
+// THE BIG TREES: data/world.json's bigTrees (owner, 7 Nov 2026; redone 10 Nov 2026), across the middle of the park (s: a tree's size against a 62 m one), one hollow giant (kind G), each with one massive branch (kind A level, B rising, C low and sagging) and 4 to 8 smaller ones, leafy puffs on the outside; a tree with climb:true joins PARK.climbable, the only trees TREES lets you climb.
 import {SHARED, THREE} from './003-shx.js';
 import {PARK, pos, WEEDS} from './003b-systems.js';
 import {scene} from './004-main.js';
@@ -16,7 +16,24 @@ PARK.climbable=[];
     for(let i=0;i<=n;i++){ const u=i/n, f=u*(pts.length-1), k=Math.min(pts.length-2,Math.floor(f)), r=rad[k]+(rad[k+1]-rad[k])*(f-k), cp=c.getPointAt(u);
       for(let j=0;j<=12;j++){ const a=i*13+j, w=1+.08*Math.sin(j*2.1+i*.7)+.05*Math.sin(j*5.3); ps.setXYZ(a,cp.x+nr.getX(a)*r*w,cp.y+nr.getY(a)*r*w,cp.z+nr.getZ(a)*r*w); } }
     const A=geo.toNonIndexed().attributes.position.array; for(let i=0;i<A.length;i++)P.push(A[i]); geo.dispose(); };
-  const make=(o,i,puffs)=>{ const sz=o.s||1, M=T/.84*sz, PK=Math.pow(sz,-.45), S=KIND[o.kind]||KIND.A, x=SHARED.BOD.XS(o.x), z=SHARED.BOD.ZS(o.y), y=SHARED.groundY?SHARED.groundY(x,z):0, face=(o.face||0)*Math.PI/180, dx=Math.cos(face), dz=Math.sin(face), P=[], lb=[];
+  // THE GIANT (owner, 10 Nov 2026): a bare trunk, a round shell of leaves only on the outside and open underneath round the trunk, hollow inside but for thick limbs climbing round the trunk to the top
+  const giant=(o,i,puffs)=>{ const k=(o.s||2.4)/2.4, M=T/.84*k, x=SHARED.BOD.XS(o.x), z=SHARED.BOD.ZS(o.y), y=SHARED.groundY?SHARED.groundY(x,z):0, H=148, TH=H*.92, r0=8.5, P=[], lb=[];
+    const rAt=h=>r0+(1.2-r0)*Math.pow(Math.min(1,Math.max(0,h)/TH),.65), CY=H*.68, RX=40, RY=48;
+    const trunk=[]; for(let q=0;q<=10;q++){ const u=q/10; trunk.push([x+Math.sin(u*2.4)*2*u*M,y+(u*TH-1)*M,z+Math.cos(u*1.9)*1.6*u*M,rAt(u*TH)*M*(q?1:1.3)]); } tube(trunk,P);
+    for(let q=0;q<8;q++){ const a=q/8*6.28+.3; tube([[x,y+6*M,z,4.5*M],[x+Math.cos(a)*10.5*M,y+.8*M,z+Math.sin(a)*10.5*M,2.4*M],[x+Math.cos(a)*14*M,y-.6*M,z+Math.sin(a)*14*M,.7*M]],P); }   // roots, short so they keep off the paths
+    const limb=pts=>{ tube(pts,P); for(let q=0;q+1<pts.length;q++){ const A=pts[q], B=pts[q+1]; lb.push([A[0],A[1],A[2],B[0],B[1],B[2],A[3],B[3]]); } };
+    const NL=11; for(let q=0;q<NL;q++){ const u=q/(NL-1), h=50+u*(H*.86-50), a=q*2.39+(o.face||0)*Math.PI/180, r=Math.max(.9,2.6-1.6*u), reach=Math.sqrt(Math.max(.05,1-((h+8-CY)/RY)**2))*RX*.86, p0=rAt(h)*.6, pts=[];
+      for(let t5=0;t5<=5;t5++){ const t=t5/5, d=p0+reach*t, b=a+t*.35; pts.push([x+Math.cos(b)*d*M,y+(h+t*t*14-Math.sin(t*3.1)*2)*M,z+Math.sin(b)*d*M,r*(1-.6*t)*M]); } limb(pts);
+      for(let sd=0;sd<3;sd++){ const sa=a+(sd-1)*.7, st=.35+.2*sd, d0=p0+reach*st, b0=a+st*.35, q0=[x+Math.cos(b0)*d0*M,y+(h+st*st*14)*M,z+Math.sin(b0)*d0*M], L=reach*.45, sp=[];
+        for(let t3=0;t3<=3;t3++){ const t=t3/3; sp.push([q0[0]+Math.cos(sa)*L*t*M,q0[1]+t*9*M,q0[2]+Math.sin(sa)*L*t*M,r*.45*(1-.7*t)*M]); } limb(sp); } }
+    for(let q=0;q<2600;q++){ const v=-1+2*((q+.5)/2600); if(v<-.8)continue; const th=q*2.39996, rr=Math.sqrt(1-v*v), w=1+.06*Math.sin(th*3+v*7)+.05*Math.sin(th*7-v*4);
+      for(let j=0;j<2;j++){ const d=(1-j*.07)*w; puffs.push([x+Math.cos(th)*rr*RX*d*M,y+(CY+v*RY*d)*M,z+Math.sin(th)*rr*RX*d*M,(4.2+2.2*hs(q,j))*(j?1.1:1)*M,Math.floor(hs(q,j+3)*4)]); } }
+    const tr=rAt(1.5)*M, rb=r0*1.3*M, sol=[x-tr*.8,z-tr*.8,x+tr*.8,z+tr*.8], fix=[x-tr*.8,z-tr*.8,y,x+tr*.8,z+tr*.8,y+30*M]; FIX.up.push(fix);
+    for(let q=1;q<4;q++){ const rr=rAt(q*TH/4)*M*.8; FIX.up.push([x-rr,z-rr,y+q*TH/4*M-15*M,x+rr,z+rr,y+q*TH/4*M+20*M]); }   // the trunk for loose things, narrowing up it
+    for(const [a,b] of [[.72,.72],[1,.42],[.42,1]])SOL.up.push([x-rb*a,z-rb*b,x+rb*a,z+rb*b]);
+    if(WEEDS.addFeet)WEEDS.addFeet([[x,z,rb,4*M]]);
+    return {k:'BIGG',x,y,z,top:y+TH*M,r:(RX+6)*M,nr:(RX+20)*M,tr,rf:rb,fork:0,v0:0,v1:P.length/3,P:new Float32Array(P),LF:[],lb,sol,fix,climb:!!o.climb}; };
+  const make=(o,i,puffs)=>{ if(o.kind==='G')return giant(o,i,puffs); const sz=o.s||1, M=T/.84*sz, PK=Math.pow(sz,-.45), S=KIND[o.kind]||KIND.A, x=SHARED.BOD.XS(o.x), z=SHARED.BOD.ZS(o.y), y=SHARED.groundY?SHARED.groundY(x,z):0, face=(o.face||0)*Math.PI/180, dx=Math.cos(face), dz=Math.sin(face), P=[], lb=[];
     const rAt=h=>S.r0+(S.r1-S.r0)*Math.pow(Math.max(0,h)/S.h,.7), at=(h,a,d)=>[x+Math.cos(a)*d,y+h*M,z+Math.sin(a)*d];
     const puff=(px,py,pz,r)=>{ const q=Math.hypot(px-x,pz-z), need=(rAt((py-y)/M)+1.5)*M+r*.5; if(q<need){ const k=need/(q||1); px=x+(px-x)*k; pz=z+(pz-z)*k; } puffs.push([px,py,pz,r,Math.floor(hs(i,puffs.length)*4)]); };   // the middle round the trunk stays open to climb
     const trunk=[]; for(let k=0;k<=8;k++){ const u=k/8; trunk.push([x+Math.sin(u*3+face)*.4*M*u,y+u*S.h*M-.5*M,z+Math.cos(u*2.3+face)*.3*M*u,rAt(u*S.h)*M*(k?1:1.35)]); } tube(trunk,P);
@@ -66,6 +83,6 @@ PARK.climbable=[];
       if(near){ FT.setMatrixAt(i*2,Z); FT.setMatrixAt(i*2+1,Z); } else { tubeAt(i*2,...it.T0); tubeAt(i*2+1,...it.T1); } FT.instanceMatrix.needsUpdate=true; };
     items.forEach((it,i)=>swap(it,i,false));
     SYS.add('cam',dt=>{ if((tk-=dt||0)>0)return; tk=.25; const cam=SHARED.cam; if(!cam)return; const cx=cam.position.x, cz=cam.position.z, persp=!cam.isOrthographicCamera;
-      items.forEach((it,i)=>{ const near=persp?Math.hypot(it.x-cx,it.z-cz)<NEAR:Math.hypot(it.x-pos.x,it.z-pos.z)<NEAR; if(near!==it.near)swap(it,i,near); }); },'144d-bigtrees near or far');
+      items.forEach((it,i)=>{ const N=Math.max(NEAR,it.nr||0), near=persp?Math.hypot(it.x-cx,it.z-cz)<N:Math.hypot(it.x-pos.x,it.z-pos.z)<N; if(near!==it.near)swap(it,i,near); }); },'144d-bigtrees near or far');
     PARK.bigLeaves={get count(){ return items.reduce((a,it)=>a+(it.near?it.p1-it.p0:0),0); }}; },'144d-bigtrees');
   window.BIGTREESDBG=()=>({trees:(PARK.big||[]).length,climbable:PARK.climbable.length,puffs:PARK.bigLeaves?PARK.bigLeaves.count:0,near:(PARK.big||[]).filter(t=>t.near).length,farBlobs:PARK.bigFar?PARK.bigFar.count:0,branches:(PARK.big||[]).map(t=>t.lb.length),tris:(PARK.big||[]).reduce((a,t)=>a+t.v1/3,0)}); }

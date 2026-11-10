@@ -10,6 +10,10 @@ const {chromium}=require('playwright'), out=process.argv[2];
   ok(d.branches.every(n=>n>=9),'each has its big branch and 4 to 8 more ('+d.branches.join(', ')+' limb pieces)');
   ok(d.puffs>200||d.farBlobs>d.trees*10,'leaves on them ('+d.puffs+' puffs near, '+d.farBlobs+' far blobs)');
   ok(d.others===0,'no other tree is climbable');
+  const G=await pg.evaluate(()=>{ const it=PARK.big.find(t=>t.k==='BIGG'); if(!it)return null; const TH=__dbg.THREE, m=new TH.Matrix4(), p=new TH.Vector3(), q=new TH.Quaternion(), s=new TH.Vector3(); let n=0, inside=0, top=0; const H=it.top-it.y, cy=it.y+H*.68/.92, RX=40*TREES.T/.84, RY=48*TREES.T/.84;
+    for(let i=0;i<it.leaves.count;i++){ it.leaves.getMatrixAt(i,m); m.decompose(p,q,s); n++; if(((p.x-it.x)**2+(p.z-it.z)**2)/RX**2+((p.y-cy)/RY)**2<.7)inside++; top=Math.max(top,p.y-it.y); }
+    return {n,inside,h:(top/TREES.T*.84)|0,limbs:it.lb.length}; });
+  ok(G&&G.n>2000&&!G.inside&&G.h>140,'the giant (owner, 10 Nov 2026): '+(G?G.h+' m tall, '+G.n+' leaf puffs all on its outside shell ('+G.inside+' inside), '+G.limbs+' limb pieces to climb':'missing'));
   ok(d.farTris<20000,'cheap from far off (owner, 8 Nov 2026: "they shouldnt cost much from far off at all"): '+d.farTris+' triangles for every big tree as its plain shape; whole only near ('+d.near+' near now)');
   const w=await pg.evaluate(()=>{ const B=SHARED.BOD, ax=B.XS(0), bx=B.XS(1)-ax, az=B.ZS(0), bz=B.ZS(1)-az, L=PARK.treeItems().map(o=>[(o.x-ax)/bx-PARK.ox,(o.z-az)/bz-PARK.oy]); return {n:L.length,onPath:L.filter(([x,y])=>PARK.pd(x,y)<0).length,tris:PARK.ring.userData.P.length/9}; });
   ok(w.n>=300,'the park as thick with trees as Central Park ('+w.n+' trees, 8 Nov 2026)'); ok(!w.onPath,'no trunk on a path ('+w.onPath+')'); ok(w.tris<150000,'cheap: '+w.tris+' tree triangles, one draw');

@@ -8,7 +8,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   await pg.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=13&physics=1', { waitUntil: 'commit' });
   await pg.waitForFunction(() => window.__started && window.CARS && CARS.dbg().loaded, null, { timeout: 400000, polling: 500 });
   const d0 = await pg.evaluate(() => CARS.dbg());
-  ok(d0.cars.length === 10 && d0.cars.slice(7).every(c => /taxi|ambulance/.test(c.model) && c.shown) && d0.cars.slice(0, 6).every(c => c.shown && c.z < -60 && c.z > -72) && d0.cars[6].model === 'police-cruiser-80s' && d0.cars[6].shown && d0.cars[6].x < -24.5 && d0.cars[6].x > -52.5, 'six cars parked along Market St\'s kerb, the police cruiser on West St: ' + JSON.stringify(d0.cars.map(c => [c.id, c.model, c.x, c.z])));
+  ok(d0.cars.length === 11 && d0.cars.slice(7).every(c => /taxi|ambulance|flier/.test(c.model) && c.shown) && d0.cars.slice(0, 6).every(c => c.shown && c.z < -60 && c.z > -72) && d0.cars[6].model === 'police-cruiser-80s' && d0.cars[6].shown && d0.cars[6].x < -24.5 && d0.cars[6].x > -52.5, 'six cars parked along Market St\'s kerb, the police cruiser on West St: ' + JSON.stringify(d0.cars.map(c => [c.id, c.model, c.x, c.z])));
   const past = await pg.evaluate(async () => { CARS.getIn('c1'); await new Promise(r => setTimeout(r, 800)); return CARS.driving; });
   ok(!past, 'a car parked past the map\'s edge is only seen: no one gets in (owner, 8 Nov 2026)');
   await pg.evaluate(() => { const C = CARS.cars.get('c1'); C.x = SHARED.BOD.XS(78.2); C.z = SHARED.BOD.ZS(-67); });   // the rest drives one brought back onto Market St

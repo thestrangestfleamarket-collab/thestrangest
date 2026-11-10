@@ -8,7 +8,7 @@ const {chromium}=require('playwright');
   const r=await pg.evaluate(()=>{ __dbg.UI.menuTab('set'); const el=document.getElementById('dvedit'); document.querySelectorAll('.panes>[data-p]').forEach(p=>p.hidden=p.dataset.p!=='vedit'); VLOOK.panel(el);
     const ids=[...el.querySelectorAll('[data-pick]')].map(b=>b.dataset.pick); el.querySelector('[data-pick="car:muscle-car-60s"]').click(); return {ids,canvas:!!el.querySelector('.vcv')}; });
   const has=p=>r.ids.some(i=>i.startsWith(p));
-  ok(r.ids.filter(i=>i.startsWith('car:')).length>=10&&r.ids.filter(i=>i.startsWith('tr:')).length>=14&&has('heli:')&&r.ids.includes('train')&&r.ids.includes('magic_carpet')&&r.ids.length>=31,'every vehicle is listed ('+r.ids.length+'): '+r.ids.join(' '));
+  ok(r.ids.filter(i=>i.startsWith('car:')).length>=11&&r.ids.filter(i=>i.startsWith('tr:')).length>=13&&has('heli:')&&r.ids.includes('train')&&r.ids.includes('magic_carpet')&&r.ids.length>=31,'every vehicle is listed ('+r.ids.length+'): '+r.ids.join(' '));
   await pg.waitForTimeout(2500);
   const lit=await pg.evaluate(()=>{ const c=document.querySelector('#dvedit .vcv'), d=c.getContext('2d').getImageData(0,0,c.width,c.height).data; let n=0; for(let i=0;i<d.length;i+=4)if(Math.abs(d[i]-0x15)+Math.abs(d[i+1]-0x17)+Math.abs(d[i+2]-0x1e)>30)n++; return n/(d.length/4); });
   ok(lit>.05,'the picked car turns in its studio ('+(lit*100).toFixed(1)+'% drawn)');

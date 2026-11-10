@@ -86,14 +86,14 @@ def car(spec):
     zn=P[0][0]; zt=P[-1][0]
     # the nose: round lamps in chrome rings, a chrome bumper bar, a hood spear; the tail: fins, round jet lamps, a bumper bar
     S=at(zn-.12); hy=S[2]+(S[3]-S[2])*.62
-    for sd in (1,-1):
+    for sd in (() if spec.get('plain') else (1,-1)):
         x=sd*S[1]*.62; body.cyl([x,hy,zn-.1],'z',.1,.13,CHROME,14,capcol=DARK); body.cyl([x,hy,zn+.03],'z',.082,.012,LENS,14,tag='head',e=LENS)
         body.cyl([sd*S[1]*.28,hy,zn-.05],'z',.045,.07,CHROME,10,capcol=DARK); body.cyl([sd*S[1]*.28,hy,zn+.02],'z',.036,.008,AMBER,10,tag='turn',e=AMBER)
-    body.cyl([-S[1]*.98,S[2]+.05,zn-.06],'x',.045,S[1]*1.96,CHROME,10)
+    if not spec.get('plain'): body.cyl([-S[1]*.98,S[2]+.05,zn-.06],'x',.045,S[1]*1.96,CHROME,10)
     for z in spec.get('spear',()):
         q=at(z); body.box([-.02,q[3]+.046,z-.16],[.02,q[3]+.066,z+.16],CHROME)
     T=at(zt+.14); ty=T[2]+(T[3]-T[2])*.6
-    for sd in (1,-1):
+    for sd in (() if spec.get('plain') else (1,-1)):
         x=sd*T[1]*.66; body.cyl([x,ty,zt+.2],'z',.105,-.2,CHROME,14,capcol=DARK); body.cyl([x,ty,zt-.002],'z',.085,-.012,RED,14,tag='tail',e=RED); body.cyl([x,ty,zt-.014],'z',.03,-.03,CHROME,8)
         if spec.get('fin'):
             f0,f1,fh=spec['fin']; a=at(f0); b=at(f1); xa=a[1]*.9; xb=b[1]*.86
@@ -101,7 +101,7 @@ def car(spec):
                 body.poly([[sd*(xa+dx*0),a[3]+.01,f0],[sd*xb+sd*dx,b[3]+.01,f1],[sd*xb+sd*dx,b[3]+fh,f1-.06],[sd*(xb+.0)+sd*dx,b[3]+fh*.55,f1+.28]],spec['paint'],[sd*o,0,0])
             body.poly([[sd*xb-.018*sd,b[3]+.01,f1],[sd*xb+.018*sd,b[3]+.01,f1],[sd*xb+.018*sd,b[3]+fh,f1-.06],[sd*xb-.018*sd,b[3]+fh,f1-.06]],CHROME,[0,0,-1])
             body.cyl([sd*xb,b[3]+fh*.45,f1-.01],'z',.035,-.02,RED,10,tag='tail',e=RED)
-    body.cyl([-T[1]*.98,T[2]+.05,zt+.05],'x',.045,T[1]*1.96,CHROME,10)
+    if not spec.get('plain'): body.cyl([-T[1]*.98,T[2]+.05,zt+.05],'x',.045,T[1]*1.96,CHROME,10)
     # the floor inside, the walls fore and aft of the cabin
     cab=spec['cab']; fl=.30+spec.get('floor',0)
     # the doors: each its strips of skin, an inner panel, hinged along the roof's edge (a gull wing) or on a post (ax y)
@@ -127,9 +127,11 @@ def car(spec):
 MAT={CHROME:'chrome',cz['CHROME']:'chrome',DARK:'rubber',UNDER:'rubber',BLACK:'rubber'}
 pack2=lambda g,move=(0,0,0):cz['pack2'](g,move,MAT)
 def make(spec):
-    body,glass,parts,tris=car(spec); W=pod(); P=[v for g in body.g.values() for v in g['p']]
+    body,glass,parts,tris=car(spec); W=pod()
     wx,wz0,wz1=spec['pods']; wy=.045; wheels=[[-wx,wy,wz0],[wx,wy,wz0],[-wx,wy,wz1],[wx,wy,wz1]]
     for bx in spec.get('boxes',()): body.box(bx[0],bx[1],bx[2])
+    if spec.get('extra'): spec['extra'](body)
+    P=[v for g in body.g.values() for v in g['p']]
     return {'name':spec['name'],'fly':1,'size':[round(max(P[k::3])-min(P[k::3]),3) for k in range(3)],'low':round(min(P[1::3]),3),'wheels':wheels,'r':.045,'body':pack2(body.g),'glass':pack2(glass.g),
             'cab':spec['cab'],'wheel':pack2(W.g),'parts':parts,'marks':spec['marks'],'tris':[tris+body.tris()+glass.tris(),W.tris()]}
 YEL=(244,184,14); ORANGE=(232,96,28); WHITE=(242,242,238); TR=(58,52,44); TR2=(36,32,28)
@@ -153,6 +155,29 @@ SPECS={
    'cab':{'hw':1.08,'belt':1.12,'z0':-2.3,'z1':1.75,'roof':2.13,'dd':.7,'seat':.3,'doors':1,'rows':1,'fl':.38},
    'marks':{'bar':[0,2.3,.0,1.0],'barcols':[0xff2416,0xf4f6ff,0xff2416],'kit':'amb','decals':[{'k':'plate','at':[0,.62,-2.762],'f':'b','w':.305,'h':.155},{'k':'star','at':[1.256,.62,-1.2],'f':'l','w':.32,'h':.32,'on':'DOOR RL'},{'k':'star','at':[-1.256,.62,-1.2],'f':'r','w':.32,'h':.32,'on':'DOOR RR'}]}},
 }
+PBLUE=(92,158,206)
+def fighter(m):
+    # the starfighter's own: swept wings with white tips and a lamp pod at each, two canted fins, the engine's nozzle and its glow, a round lamp in the nose, skids
+    for sd in (1,-1):
+        W=[[sd*.5,.62,.35],[sd*2.05,.56,-1.25],[sd*2.05,.56,-1.75],[sd*.5,.6,-1.85]]; t=.05
+        m.poly([[p[0],p[1]+t,p[2]] for p in W],PBLUE,[0,1,0]); m.poly([[p[0],p[1]-t,p[2]] for p in W],PBLUE,[0,-1,0])
+        for a,b in zip(W,W[1:]+W[:1]): m.poly([[a[0],a[1]+t,a[2]],[b[0],b[1]+t,b[2]],[b[0],b[1]-t,b[2]],[a[0],a[1]-t,a[2]]],CHROME,[sd,0,1 if a[2]>-1.5 else -1])
+        m.poly([[sd*1.7,.612,-.98],[sd*2.04,.612,-1.27],[sd*2.04,.612,-1.74],[sd*1.7,.612,-1.78]],WHITE,[0,1,0])
+        m.cyl([sd*2.09,.56,-1.9],'z',.07,1.0,CHROME,10,capcol=DARK); m.cyl([sd*2.09,.56,-.9],'z',.055,.012,RED if sd>0 else (40,90,255),10,tag='tail' if sd>0 else 'turn',e=RED if sd>0 else (40,90,255))
+        F=[[sd*.42,.9,-1.2],[sd*.42,.9,-2.1],[sd*.78,1.72,-2.2],[sd*.7,1.72,-1.85]]
+        for dx,o in ((.02,1),(-.02,-1)): m.poly([[p[0]+sd*dx,p[1],p[2]] for p in F],PBLUE,[sd*o,.3*o,0])
+        m.poly([[F[0][0]+.02*sd,F[0][1],F[0][2]],[F[3][0]+.02*sd,F[3][1],F[3][2]],[F[3][0]-.02*sd,F[3][1],F[3][2]],[F[0][0]-.02*sd,F[0][1],F[0][2]]],CHROME,[0,.3,1])
+        m.poly([[F[1][0]+.02*sd,F[1][1],F[1][2]],[F[2][0]+.02*sd,F[2][1],F[2][2]],[F[2][0]-.02*sd,F[2][1],F[2][2]],[F[1][0]-.02*sd,F[1][1],F[1][2]]],CHROME,[0,0,-1])
+        m.poly([[sd*.705,1.5,-1.93],[sd*.775,1.5,-2.17],[sd*.80,1.7,-2.2],[sd*.72,1.7,-1.87]],WHITE,[sd,.3,0])
+        m.box([min(sd*.3,sd*.36),.06,-.9],[max(sd*.3,sd*.36),.1,.9],CHROME)
+        for z in (-.6,.6): m.box([min(sd*.31,sd*.35),.1,z-.03],[max(sd*.31,sd*.35),.36,z+.03],CHROME)
+    m.cyl([0,.66,-2.25],'z',.4,-.42,CHROME,16,r2=.33,capcol=DARK); m.cyl([0,.66,-2.6],'z',.27,-.012,JET,14,tag='jet',e=JET)
+    m.cyl([0,.5,2.2],'z',.1,.12,CHROME,12,capcol=DARK); m.cyl([0,.5,2.325],'z',.08,.012,LENS,12,tag='head',e=LENS)
+SPECS['police-flier']={'name':'POLICE FLIER','paint':PBLUE,'trim':(70,98,132),'trim2':(44,62,88),'band':WHITE,'plain':1,'pods':(.33,.75,-.75),'extra':fighter,
+   'st':[[2.3,.16,.4,.52,.52,.1],[1.7,.36,.33,.6,.62,.2],[1.0,.5,.3,.68,.74,.3],[.45,.56,.3,.72,1.1,.34],[-.35,.58,.3,.74,1.12,.34],[-1.0,.56,.32,.78,.92,.34],[-1.8,.5,.36,.82,.9,.3],[-2.25,.42,.4,.8,.86,.28]],
+   'cowl':1.0,'a':.45,'b':-.35,'deck':-1.0,'doors':[{'n':'DOOR F','z':(.43,-.33),'segs':(5,8),'seat':1}],
+   'cab':{'hw':.5,'belt':.74,'z0':-.75,'z1':.95,'roof':1.12,'dd':.34,'seat':-.2,'doors':1,'rows':1,'fl':.34},
+   'marks':{'bar':[0,.93,-1.2,.62],'decals':[]}}
 if __name__=='__main__':
     f=os.path.join(ROOT,'data/cars.json'); J=json.load(open(f))
     for k,s in SPECS.items(): c=make(s); J['cars'][k]=c; print(k,c['size'],'triangles',c['tris'],'parts',[p['n'] for p in c['parts']],len(json.dumps(c))//1024,'KB')

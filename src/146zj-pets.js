@@ -163,7 +163,7 @@ window.PETS=PETS;
     // pet it: a word and a sit, now and then
     const hb=new THREE.Mesh(new THREE.BoxGeometry(long*WU,Math.max(.3,metres)*WU,long*WU),new THREE.MeshBasicMaterial({visible:false})); hb.position.y=metres*WU/2; N.g.add(hb);
     N.th={name:o.mine?'PET '+(P.n||'YOUR '+K.name).toUpperCase():(o.owner?o.owner+"'S ":'')+(P.n||K.name).toUpperCase(),obj:hb,reach:1.6*TILE,near:2.6*TILE,tall:Math.max(.4,metres)*WU,act:()=>{ const r=o.rec||o.mine&&!o.preview&&out(); if(r&&now()-(r.pet||0)>5*60e3){ r.pet=now(); r.lo=cl(r.lo+2); keep(); } SAY(o.mine?(P.n||'YOUR '+K.name).toUpperCase()+(r&&r.hu>60?' NUZZLES YOUR POCKETS. IT IS HUNGRY.':' IS HAPPY TO SEE YOU.'):'IT SNIFFS YOUR HAND.','#9fe07f'); },
-      acts:o.mine&&!o.preview&&!o.stay?[{name:'TELL '+(P.n||'YOUR '+K.name).toUpperCase()+' TO GO HOME',act:()=>PETS.goHome&&PETS.goHome()}]:null};
+      get acts(){ return o.mine&&!o.preview&&!o.stay?[{name:'TELL '+(P.n||'YOUR '+K.name).toUpperCase()+' TO GO HOME',act:()=>PETS.goHome&&PETS.goHome()},...PETS.acts.flatMap(f=>f(P,K)||[])]:null; }};
     N.repaint=c=>paint(D,{...P,c},geo);   // (other zone colours on the same body: the owner's coats for the horse)
     UI.thing(N.th); return N; };
   const drop=N=>{ if(!N)return; const i=NPCS.indexOf(N); if(i>=0)NPCS.splice(i,1); N.g.removeFromParent(); if(N.th){ const j=UI.things.indexOf(N.th); if(j>=0)UI.things.splice(j,1); } N.me.geometry.dispose(); N.mixer&&N.mixer.stopAllAction(); };
@@ -204,12 +204,12 @@ window.PETS=PETS;
   let foot=null; const meLead=()=>{ if(VIT.dead)return null; if(st.climb||st.hang||TREES.h!=null||TREES.stand){ if(!foot)foot={x:pos.x,z:pos.z,y:SHARED.groundY?SHARED.groundY(pos.x,pos.z):0,hd:SHARED.heading}; return foot; } foot=null; return {x:pos.x,z:pos.z,y:SHARED.py,hd:SHARED.heading,me:true}; };   // up a tree, your pet waits at its foot
   const atHome=()=>!!(MODS.apts&&MODS.apts.inReal);
   let mine=null, mineCode='', homeSpot=null;
-  const refresh=()=>{ const P=shown(), want=P&&(inShop||!fainted(out()))&&(!P.h||inShop||atHome())?code(P)+(P.h&&!inShop?'@h':'')+(inShop?'@s':''):''; if(want===mineCode)return; mineCode=want; const my=++gen;
+  const refresh=()=>{ const P=shown(), want=P&&(inShop||!fainted(out()))&&!(!inShop&&PETS.away&&PETS.away())&&(!P.h||inShop||atHome())?code(P)+(P.h&&!inShop?'@h':'')+(inShop?'@s':''):''; if(want===mineCode)return; mineCode=want; const my=++gen;
     drop(mine); mine=null; if(!want)return; homeSpot=P.h&&!inShop?{x:pos.x,z:pos.z}:null;
-    make('mine',P,meLead,{mine:true,stay:homeSpot,preview:inShop,room:()=>!inShop&&atHome()&&!MODS.apts.host?roomNow():null}).then(N=>{ if(my!==gen){ drop(N); return; } mine=N; }).catch(e=>console.warn('PET',e)); };
+    make('mine',P,()=>PETS.lead&&PETS.lead()||meLead(),{mine:true,stay:homeSpot,preview:inShop,room:()=>!inShop&&atHome()&&!MODS.apts.host?roomNow():null}).then(N=>{ if(my!==gen){ drop(N); return; } mine=N; }).catch(e=>console.warn('PET',e)); };
   PETS.WU=WU; PETS.dbg={UI,OWNED,pos,ROOMS}; PETS.make=make; PETS.drop=drop; PETS.idx=idx;
   PETS.mine=()=>mine; PETS.my=()=>MY; PETS.code=code; PETS.decode=decode;
-  ONLINE.mine.pf=()=>MY&&!MY.h?code(MY):null;
+  ONLINE.mine.pf=()=>MY&&!MY.h&&!(PETS.away&&PETS.away())?code(MY):null;
   // theirs: a pet beside every player near you who has one with them
   const theirs=()=>{ const want=new Map(); if(ONLINE.on&&ONLINE.others)for(const o of ONLINE.others.values()){ const c=o.x&&o.x.pf; if(c&&o.why==='near you'&&o.fig)want.set(o.id,[o,c]); }
     for(const [id,r] of THEIRS)if(!want.has(id)||want.get(id)[1]!==r.c){ drop(r.N); r.dead=1; THEIRS.delete(id); }
@@ -249,8 +249,8 @@ window.PETS=PETS;
   function adopt(){ const P=DRAFT; if(!P||!inShop)return; const c=price(P); if(INV.cash<c)return SAY('THAT ONE IS $'+c+'. YOU HAVE $'+INV.cash+'.','#c8a090'); INV.cash-=c; if(INV.save)INV.save();
     const K=I.by[P.k]; add({...P,c:P.c.slice(),s:P.s.slice(),h:false},false); SAY((P.n||'YOUR '+K.name).toUpperCase()+' IS YOURS: $'+c+'. SEE ALL YOUR PETS IN THE MENU (ESC, PETS).','#9fe07f'); draw(); }
   // a new pet in your list and out with you (the one out before goes home to wait)
-  function add(P,perma){ for(const r of LIST)r.out=false; const id=LIST.reduce((m,r)=>Math.max(m,r.id||0),0)+1; LIST.push({id,c:code(P),perma:!!perma,born:now(),at:now(),hu:10,lo:perma?70:40,hp:100,out:true}); MY=decode(code(P)); keep(); refresh(); }
-  PETS.add=add; PETS.list=()=>LIST; PETS.perma=()=>LIST.find(r=>r.perma)||null; PETS.feed=feed; PETS.tick=tickAll;
+  function add(P,perma,more){ for(const r of LIST)r.out=false; const id=LIST.reduce((m,r)=>Math.max(m,r.id||0),0)+1, r={id,c:code(P),perma:!!perma,born:now(),at:now(),hu:10,lo:perma?70:40,hp:100,out:true,...more}; LIST.push(r); MY=decode(code(P)); keep(); refresh(); return r; }
+  PETS.add=add; PETS.out=out; PETS.acts=[]; PETS.refresh=()=>refresh(); PETS.list=()=>LIST; PETS.perma=()=>LIST.find(r=>r.perma)||null; PETS.feed=feed; PETS.tick=tickAll;
   PETS.setPerma=P=>{ if(LIST.some(r=>r.perma))return false; add(P,true); return true; };
   PETS.takeOut=id=>{ const r=LIST.find(x=>x.id===id); if(!r)return; for(const x of LIST)x.out=x===r; MY=decode(r.c); keep(); draw(); };
   PETS.letGo=id=>{ const r=LIST.find(x=>x.id===id); if(!r||r.perma)return false; LIST.splice(LIST.indexOf(r),1); if(r.out&&LIST.length)LIST[0].out=true; MY=out()?decode(out().c):null; keep(); draw(); return true; };

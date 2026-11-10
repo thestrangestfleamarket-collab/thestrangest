@@ -44,7 +44,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
   const offset=()=>{ if(B)return B.live?0:Math.max(0,+B.off()||0); const s=startMs(); return s?Math.max(0,(Date.now()-s)/1000):0; };
   // another screen borrowing the player (the CRT TV): {id, live, off(), vol 0..1, me (a plane) or box {el, rect, radius}}, renewed each frame while it shows
   let B=null, lent=null, lentOk=false, lastMe=null, scan=null, sndK='';
-  CINEMA.lend=r=>{ lent={...r,t:performance.now()}; return {ok:lentOk,fail:!!vFail}; };
+  CINEMA.lend=r=>{ lent={...r,age:0}; return {ok:lentOk,fail:!!vFail}; };
 
   // sound is each viewer's own (browsers only let it on after a tap)
   let snd={on:false,vol:80}; try{ const s=JSON.parse(SAVE.get('cinema')||'null'); if(s)snd={on:!!s.on,vol:Math.max(0,Math.min(100,+s.vol||80))}; }catch(e){}
@@ -180,7 +180,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
   const gate=()=>{ '@later'; const n=INV.items&&INV.items.ticket|0, say=t=>FORAGE.say&&FORAGE.say(t);
     if(n>0){ INV.add('ticket',-1); if(FORAGE.draw)FORAGE.draw(); const P=CINEMA.playing(); say('YOU HAND OVER A TICKET'+(P&&P.title?' FOR '+P.title:'')+'.'); return true; }
     say('YOU NEED A TICKET. THE FOX AT THE BOX OFFICE SELLS THEM.'); return false; };
-  const tick=()=>{ if(STORE.gate&&!STORE.gate.theatre)STORE.gate.theatre=gate; const mt=STORE.main&&STORE.main.theatre; CINEMA.on=false; if(lastMe)lastMe.visible=false; B=null; lentOk=false; const lb=lent&&performance.now()-lent.t<1500&&!FADE.busy?lent:null; if(!mt||!mt.fm){ if(lb)lendTick(lb); else idle(); return; } if(performance.now()-signT>5000){ signT=performance.now(); sign(); } fox();
+  const tick=()=>{ if(STORE.gate&&!STORE.gate.theatre)STORE.gate.theatre=gate; const mt=STORE.main&&STORE.main.theatre; CINEMA.on=false; if(lastMe)lastMe.visible=false; B=null; lentOk=false; const lb=lent&&lent.age++<3&&!FADE.busy?lent:null; if(lent&&lent.age>3)lent=null; if(!mt||!mt.fm){ if(lb)lendTick(lb); else idle(); return; } if(performance.now()-signT>5000){ signT=performance.now(); sign(); } fox();
     if(!named&&FORAGE.add){ named=true; FORAGE.add({names:{ticket:'MOVIE TICKET'},prices:{ticket:5}}); }
     const up=SHARED.LVL==='up'; if(canopy){ canopy.box.visible=up; } if(post){ post.group.visible=up; if(post.front)post.front.visible=up&&!mt.R.inside(pos.x,pos.z); } if(box_o)box_o.G.visible=up;
     if(neon){ neon.me.visible=neon.rail.visible=up; const t=performance.now(); if(up&&t>neon.t){ neon.on=!neon.on&&Math.random()<.45; neon.t=t+(neon.on?40+Math.random()*140:250+Math.random()*2800); neonDraw(); } }

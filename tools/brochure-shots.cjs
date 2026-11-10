@@ -1,6 +1,6 @@
 // THE BROCHURES' PHOTOGRAPHS (data/brochures/<id>-<n>.jpg; n 0 the cover, 1 and 2 inside, 3 the place): taken in the built game, the HUD hidden, cut clear of the minimap.
 // MIN=0 SKIP=g python3 build.py, then PW_CHROMIUM=/opt/pw-browsers/chromium node tools/brochure-shots.cjs [out dir] [only, as art-0,books]; slow under software rendering (about 15 s a picture).
-// The game's hour is HOUR (13 unless set); the sky's cover (stars-0) is taken at dusk: HOUR=20 ... stars-0, then brightened 1.7x.
+// The game's hour is HOUR (13 unless set); the sky's photographs are taken at dusk: HOUR=20 ... stars, the cover and the room then brightened 1.7x (the Moon is wherever it really is that evening).
 // Re-shoot a brochure when its place changes. Each picture: [stop, view, yaw, pitch, cut (x0,y0,x1,y1 of the game's frame)]; a stop is how you get there and what you hold.
 const { chromium } = require('playwright'), path = require('path'), fs = require('fs');
 const OUT = path.resolve(process.argv[2] || 'data/brochures'), ONLY = process.argv[3] && process.argv[3].split(','), PI = Math.PI, W = 720, H = 480;
@@ -15,7 +15,7 @@ const PICS = {
   books: [['books', 'third', 0, .12, [0, .08, 1, .72]], ['books', 'third', -PI / 2, .12, [0, .15, 1, 1]], ['books', 'third', PI / 2, .12, [.1, .15, 1, 1]], ['books', 'third', 0, .12, [.05, .2, .6, .75]]],
   arcade: [['arcade', 'third', 0, .12, [0, .08, 1, .72]], ['arcade', 'third', -PI / 2, .12, [0, .22, 1, 1]], ['arcade', 'third', PI / 2, .12, [.22, .2, 1, 1]], ['arcade', 'third', PI, .12, [0, .25, 1, 1]]],
   music: [['guitar', 'third', 0, .2, [0, 0, .72, 1]], ['guitar', 'third', PI, .2, [0, .08, .72, 1]], ['bar', 'third', 0, .12, [0, .08, 1, .72]], ['bodega', 'third', 0, .12, [0, .08, 1, .68]]],
-  stars: [['scope', 'third', PI / 6, .12, [0, 0, .62, 1]], ['apt', 'third', -PI / 2, .12, [0, .1, 1, 1]], ['mic', 'hud', null, null, [.15, .1, .86, .72]], ['apt', 'third', PI, .12, [0, .1, 1, 1]]],
+  stars: [['scope', 'third', PI / 6, .12, [0, 0, .62, 1]], ['moon', 'hud', null, null, [.01, .125, .61, .875]], ['mic', 'hud', null, null, [.15, .1, .86, .72]], ['scopefar', 'third', .55, .1, [0, .08, 1, 1]]],
   gems: [['dungeon', 'third', PI / 2, .12, [0, .15, .72, 1]], ['dungeon', 'third', 0, .12, [0, .25, .74, 1]], ['deep', 'third', -PI / 2, .35, [0, .45, 1, 1]], ['gstall', 'third', PI, .12, [0, .35, .74, 1]]],
 };
 (async () => {
@@ -48,6 +48,10 @@ const PICS = {
     deep: [async () => { await dive(); await pg.keyboard.down(' '); await pg.waitForTimeout(3000); await ev(() => { const W = __dbg.ST.water; W.dive = true; W.y = W.level + (W.floor - W.level) * .95; }); await pg.waitForTimeout(3500); await pg.keyboard.up(' '); }],
     scope: [async () => { await goN('YOUR APARTMENT'); const p = await ev(() => { const t = __dbg.UI.things.find(t => t.name === 'TELESCOPE'), q = t.obj.getWorldPosition(t.obj.position.clone()), y = __dbg.you(), d = Math.hypot(y.x - q.x, y.z - q.z) || 1, T = __dbg.cv().TILE; return [q.x + (y.x - q.x) / d * .9 * T, q.z + (y.z - q.z) / d * .9 * T]; });
       await goW(...p); await ev(() => { __dbg.UI.dist *= .5; }); }, () => ev(() => { __dbg.UI.dist /= .5; })],
+    moon: [async () => { await goN('YOUR APARTMENT'); await ev(async () => { await SCOPE.open(); for (const k in FORAGE.S.sk) FORAGE.S.sk[k] = Math.max(FORAGE.S.sk[k], 1000); }); await pg.waitForTimeout(5000);
+      await ev(() => { const b = [...document.querySelectorAll('[data-m]')].find(b => b.dataset.m === '50'); if (b) b.click(); SCOPE.fixJD = SCOPE.jdAt(20); SCOPE.goTo('moon'); }); await pg.waitForTimeout(25000); }, () => ev(() => { SCOPE.fixJD = null; SCOPE.close(); })],
+    scopefar: [async () => { await goN('YOUR APARTMENT'); const p = await ev(() => { const t = __dbg.UI.things.find(t => t.name === 'TELESCOPE'), q = t.obj.getWorldPosition(t.obj.position.clone()), y = __dbg.you(), d = Math.hypot(y.x - q.x, y.z - q.z) || 1, T = __dbg.cv().TILE; return [q.x + (y.x - q.x) / d * 3 * T, q.z + (y.z - q.z) / d * 3 * T]; });
+      await goW(...p); await ev(() => { __dbg.UI.dist *= .6; }); }, () => ev(() => { __dbg.UI.dist /= .6; })],
     mic: [async () => { await goN('YOUR APARTMENT'); await ev(() => __dbg.UI.things.find(t => /MICROSCOPE/.test(t.name)).act()); await pg.waitForTimeout(12000); }, () => ev(() => MIC.close && MIC.close())],
   };
   const hud = on => ev(on => { if (!on) { window.__hid = []; document.querySelectorAll('body *').forEach(e => { if (e.tagName !== 'CANVAS' && !e.querySelector('canvas') && e.tagName !== 'SCRIPT' && e.tagName !== 'STYLE' && e.style.visibility !== 'hidden') { window.__hid.push([e, e.style.visibility]); e.style.visibility = 'hidden'; } }); } else for (const [e, v] of window.__hid || []) e.style.visibility = v; }, on);

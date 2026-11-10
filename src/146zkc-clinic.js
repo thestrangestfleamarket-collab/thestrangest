@@ -45,7 +45,7 @@ const CLINIC={}; window.CLINIC=CLINIC;
   P.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; if(b.dataset.x)return CLINIC.close(); if(b.dataset.fit)CLINIC.fit(b.dataset.fit); else if(b.dataset.out)CLINIC.remove(b.dataset.out); });
   CLINIC.open=()=>{ if(!here())return; P.hidden=false; draw(); };
   CLINIC.close=()=>{ P.hidden=true; };
-  SYS.add('life',()=>{ if(!P.hidden&&!here())P.hidden=true; },'146zkb-clinic');
+  SYS.add('life',()=>{ if(!P.hidden&&!here())P.hidden=true; },'146zkc-clinic');
 
   // its inside: the shared shop (the doctor's counter, the shelves of implants), and the operating chair, a monitor and a screen
   MSHOP.kit.clinic=A=>{ '@later'; MSHOP.kit._(A); built=true; const R=A.R, F=IKIT.frame(R), Km=IKIT.room(F,o=>A.add(o),()=>{}), {box,cyl,ball,glow,use}=Km, W=F.W, D=F.D, tm=D/(R.y1-R.y0);

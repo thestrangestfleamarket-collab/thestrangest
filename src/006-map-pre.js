@@ -113,7 +113,7 @@ try{ LEVEL.homes=Object.assign(LEVEL.homes||{},__DATA__("data/behaviour.json"));
 try{ LEVEL.chars=__DATA__("data/characters.json")||{}; }catch(e){ LEVEL.chars={}; }
 for(const id in LEVEL.chars){ const r=LEVEL.chars[id]; if(r&&r.home)LEVEL.homes[id]=r.home; }
 const LAYOUT0={bodega:{x:WP.bodega.x1-76.4},diner:{x:-24.75},ghost:{x:WP.bath.row===2?(1240-2000/BLDK-131)*BLDK:(LOTX((WP.bath.x0+WP.bath.x1)/2)-4*4/3-131)*BLDK},house:{x:WP.apts.x0-48.24},subway:{x:WP.subway.x0-60.01,y:WP.subway.y0!=null?WP.subway.y0+82.9:0},apartments:{x:59},park:{e:[0,0,0,0]},castle:{x:WPP.castle.x0-46,y:WPP.castle.y0+21}};
-const AWAY0=['diner','aquarium','garden','avenue','keep','civic','power','museum','theatre','playhouse'], AWAYLOT=1000, OFFDX=-2000;
+const AWAY0=['diner','aquarium','garden','avenue','keep','civic','power','museum','playhouse'], AWAYLOT=1000, OFFDX=-2000;
 const AWAY=(()=>{ const s=new Set(AWAY0), q=QS.get('bring'); if(q==='all')s.clear(); else if(q)for(const k of q.split(','))s.delete(k.trim()); return s; })(); window.AWAY=AWAY;
 for(const [id,k] of [['theatre','theatre'],['play','playhouse']])if(WP[id]&&AWAY.has(k))WP[id].away=true;   // a building put away leaves its lot empty: the maps draw no building there
 for(const k in LEVEL.chars){ const j=LEVEL.chars[k]&&LEVEL.chars[k].job; if(j&&AWAY.has({theatre:'theatre',play:'playhouse'}[j.at]))delete LEVEL.chars[k].job; }   // a job at a place that is away is no job

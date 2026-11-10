@@ -110,6 +110,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       { const V = __dbg.VIT, h0 = V.hp; V.heal(-1, .05); const lo = V.hp; V.heal(.5); const mid = V.hp; V.heal(1); o.heal = [Math.abs(lo - .05) < 1e-9, Math.abs(mid - .55) < 1e-9, V.hp === 1].join(); V.hp = h0; }
       o.fade = FADE.busy;
       const Bd = SHARED.BOUND, c = __dbg.collide(Bd.x1 + 500, Bd.z1 + 500); o.clamp = c[0] <= Bd.x1 + 1e-6 && c[1] <= Bd.z1 + 1e-6;
+      o.ledges = (__dbg.MAPK.MODS.ledges || []).map(l => (typeof l.tooHigh === 'function' ? '' : '!') + l.lv);
       o.shared = Object.keys(SHARED).length;
       o.lazy = [Object.keys(ROOMS.lazy).length, Object.keys(ROOMS.lazy).filter(k => ROOMS.lazy[k].done)];
       o.queues = BATCH.queues.length;
@@ -206,6 +207,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.heal === 'true,true,true', 'VIT.heal mends up to full and a slow drain stops at its floor (' + r.heal + ')');
     ok(r.fade === 0, 'no fade is left running after the start');
     ok(r.clamp, 'collision keeps you inside the world');
+    ok(r.ledges.includes('up') && r.ledges.every(l => l === 'up' || l === 'down'), 'a ledge too high to step up is one list for every level (MODS.ledges: ' + r.ledges + ')');
     ok(r.queues >= 2, 'the far painting queues are there (bodega ground, park wall): ' + r.queues);
     ok(r.lazy[0] >= 3 && !r.lazy[1].length, 'no inside of a building is built at the start (' + r.lazy[0] + ' insides wait; built: ' + r.lazy[1].join(',') + ')');
     ok(r.offAPI && r.off.length >= 1 && r.off.every(q => q[1] && q[2] && !q[3]), 'insides off the map: each one waits (box, spawn, way out, builder) and none is built at the start (' + r.off.map(q => q[0]).join(',') + ')');
@@ -375,8 +377,8 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
   { const av = await pg.evaluate(() => { const P = document.querySelector('#looks'), has = s => !!P.querySelector(s); return { avatar: BODIES.pick() === 'avatar', noBody: !has('[data-k=body]'), noWalker: !has('#lform,#lhair,#lbeard,#ldesign'), lines: ['avf', 'avb', 'avh', 'avs', 'avc', 'shoes'].every(k => has(`[data-k=${k}]`)), wear: P.querySelectorAll('.ltab[data-t=wear] select[id^=lav-]').length, outfit: !!P.querySelector('#lavog'), lean: !/BATHROBE|WEARING|STATS|CLOTHES/.test(P.innerText) }; }).catch(e => ({ err: e.message }));
     ok(av.avatar && av.noBody && av.noWalker && av.lines && av.wear === 12 && av.outfit && av.lean, 'YOU: you are the avatar, the only body; no Walker options; its figure, build, height, skin, hair colour and shoes, 12 slots to wear (the 11 garments and the back; no hand props, 8 Nov 2026) and OUTFIT: ' + JSON.stringify(av)); }
   { const cn = await pg.evaluate(() => { const U = CINEMA.upcoming(4), t = Date.now(), a = CINEMA.showAt(t), b = CINEMA.showAt(t + 1);
-      return { n: CINEMA.films.length, same: a.f.id === b.f.id && a.start === b.start, order: U.every((f, i) => !i || f.start > U[i - 1].start), starts: U.every(f => f.start % 900000 === 0), gate: !(STORE.gate || {}).theatre, noBooth: !(ROOMS.off || {}).booth }; }).catch(e => ({ err: e.message }));
-    ok(cn.n >= 10 && cn.same && cn.order && cn.starts && cn.gate && cn.noBooth, 'the cinema runs one shared schedule of films on the quarter hour, the theatre door asks for no ticket, and there is no projection booth: ' + JSON.stringify(cn)); }
+      return { n: CINEMA.films.length, same: a.f.id === b.f.id && a.start === b.start, order: U.every((f, i) => !i || f.start > U[i - 1].start), starts: U.every(f => f.start % 900000 === 0), gate: typeof (STORE.gate || {}).theatre === 'function', noBooth: !(ROOMS.off || {}).booth }; }).catch(e => ({ err: e.message }));
+    ok(cn.n >= 10 && cn.same && cn.order && cn.starts && cn.gate && cn.noBooth, 'the cinema runs one shared schedule of films on the quarter hour, the theatre door asks for a ticket, and there is no projection booth: ' + JSON.stringify(cn)); }
   { const tx = await pg.evaluate(() => { const a = TEXT.t('core.x', 'A {b}', { b: 'C' }); TEXT.set('core.x', 'Z {b}'); const z = TEXT.t('core.x', null, { b: 'C' }); TEXT.set('core.x', ''); return { a, z, back: TEXT.t('core.x'), loop: TEXT.list().some(t => t.id === 'loop.track'), n: TEXT.list().length }; }).catch(e => ({ err: e.message }));
     ok(tx.a === 'A C' && tx.z === 'Z C' && tx.back === 'A {b}' && tx.loop, 'TEXT: the game\'s words with a {part}, the owner\'s words over them, back again; the Loop\'s signs registered ' + JSON.stringify(tx)); }
   { const r = await pg.evaluate(() => { const o = { was: PASSPORT.hand }; PASSPORT.open(); o.shown = document.querySelector('#passportw').textContent.includes('HAND'); PASSPORT.setHand('L'); o.hand = PASSPORT.hand; o.wield = WIELD.hand; o.saved = localStorage.getItem('market-save').includes('"hand":"L"'); PASSPORT.setHand('R'); o.back = PASSPORT.hand; PASSPORT.close(); return o; });

@@ -5992,3 +5992,4 @@ Owner: "what polyfork animations do we have for our character", then "yes lets u
 - 10 Nov 2026, the fishing guide (same ask): its tables list every fish, the ice fish under the big lake's ice and the one-of-a-kind ones too.
 - 10 Nov 2026, the big lake's deep hole (same ask): the 25 m hole moved off the bath house island's edge (the island had filled it), out into open water.
 - 10 Nov 2026, fishing from the rowboat (same ask; TODO): sat in the boat you hold the rod and swing it to cast and reel, as on the pier.
+- 10 Nov 2026, gem cutting removed (owner: "lets also remoev the gem cutting from game"): no gem wheel, no cut stones (archived: kept in saves, never shown or sold); the Scuba Diver sells the headlight and fish food and buys raw stones. Reverses 5 Nov "gem cutting kept".

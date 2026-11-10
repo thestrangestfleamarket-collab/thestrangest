@@ -140,7 +140,7 @@
       "THE MUSHROOM SHOP (the Mushroom Seller): buys mushrooms. Teaches FORAGING and MYCOLOGY.",
       "THE BATH HOUSE: ghosts come back to life in its steam.",
       "THE BODEGA: pay yourself at the register.",
-      "THE GEM SHOP (the Scuba Diver): gem wheel, headlight. Buys gems and cut gems. Teaches GEMS.",
+      "THE GEM SHOP (the Scuba Diver): headlight. Buys gems. Teaches GEMS.",
       "THE ARMOURY (the Samurai Warrior): four swords. Buys swords. Teaches SWORDSMANSHIP.",
       "THE SKATE SHOP: skateboard, hover boards, go-kart."
      ]
@@ -216,7 +216,6 @@
     {
      "head": "MAKING THINGS",
      "steps": [
-      "Buy a GEM WHEEL at THE GEM SHOP, then cut a gem from your pack's MAKE list: a cut gem sells for more.",
       "Mend old books with a binder’s kit from the Professor (BOOKBINDING). A feather QUILL helps you mend."
      ]
     }

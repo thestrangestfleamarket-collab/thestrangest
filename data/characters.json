@@ -4180,11 +4180,10 @@
   "name": "THE SCUBA DIVER",
   "trade": {
    "sells": [
-    "gem_wheel",
     "headlight",
     "g_fishfood"
    ],
-   "line": "The wheel and a good light. Cut your stones on the wheel; I buy every one you bring me, cut or rough.",
+   "line": "A good light for down below. I buy every stone you bring me.",
    "buys": [
     "gems"
    ],

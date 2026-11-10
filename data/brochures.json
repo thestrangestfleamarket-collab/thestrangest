@@ -690,7 +690,7 @@
     "The Art",
     "Museum"
    ],
-   "s": "53 paintings. Admission free.",
+   "s": "20 paintings. Admission free.",
    "burst": null,
    "panels": [
     [
@@ -704,15 +704,15 @@
      ],
      [
       "p",
-      "Fifty-three paintings in one room under a skylight, hung close, two high, the way the old salons hung them."
+       "Twenty paintings people call life-changing in one room under a skylight, hung close, two high, the way the old salons hung them."
      ],
      [
       "p",
-      "The Night Watch. The Milkmaid. The Great Wave. Washington Crossing the Delaware. Madame X."
+      "The Night Watch. The Starry Night. The Raft of the Medusa. Las Meninas. The Garden of Earthly Delights. Each has its own guided tour."
      ],
      [
       "p",
-      "Double-click any painting to see it full screen, at the full resolution of the museum that owns it."
+      "Double-click any painting to see it full screen at full resolution, then press GUIDED TOUR."
      ]
     ],
     [
@@ -726,7 +726,7 @@
        "Walk in. Admission is free.",
        "THE FLOOR PLAN by the door lists every painting.",
        "Double-click a painting to look closely.",
-       "Press GUIDED TOUR on a painting that has one."
+       "Press GUIDED TOUR: every painting has one."
       ]
      ],
      [

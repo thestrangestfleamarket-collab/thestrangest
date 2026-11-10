@@ -1060,6 +1060,14 @@
      "y": 21.9,
      "rot": 1.5708
     }
+   },
+   {
+    "id": "orchard",
+    "x": 72,
+    "y": -10,
+    "w": 30,
+    "d": 22,
+    "note": "the park orchard (owner, 10 Nov 2026): eight plots, one a player, for the fruit trees (src/147d); no trees or paths here"
    }
   ],
   "stalls": [

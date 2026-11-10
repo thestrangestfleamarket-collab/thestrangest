@@ -36,7 +36,7 @@ the HUD margin on his screen · the bath house on the island and a ghost's reviv
 VR on the Quest 3 (and the painter in it), last.
 
 **To pick** (one batch; each line is in its area below):
-whole-map layouts A–F · the broken set piece · the companion drone · the economy's sinks and loops · keepers for the pet shops and barn ·
+whole-map layouts A–F · the broken set piece · the companion drone · the economy's sinks and loops · keepers for the pet shops ·
 tree crowns (A–F) and trees by distance · the castle's torches · the jets follow-ups · the avatar follow-ups · the `Home` split (which
 objects, the live migration).
 After the beta: photos in trade · the bow · birds, dragons' clips and more human clips · VR hand-walking, hand models, filters in the
@@ -148,7 +148,8 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 
 ## Characters and the street
 
-- [ ] **Keepers for the new pet shops and the barn** · P3 · S · pick. Every unarchived character fitting is working elsewhere.
+- [ ] **Keepers for the new pet shops** · P3 · S · pick. Every unarchived character fitting is working elsewhere.
+- [ ] **Where the barn's kinds are sold** · P3 · S · pick. The barn is gone (10 Nov 2026); farm, zoo and wild animals, horses, chickens and ducks are pets in the data but sold nowhere.
 - [ ] **The gym, next if wanted** · P4 · pick. A sparring bot in the ring, a trainer, bets on fights.
 - [ ] **The owner's nine (9 Nov 2026: "Violin, flute, trumpet, Dances CMU motion-capture library, Painting copies, sign language, juggling, ade animal taming as skill, fossil digs, bar games, implants")** · one pull request each, in this order:
   - [x] **Violin, flute, trumpet** · P2 · L · code. [taking: claude/blissful-goodall-udydlj, 9 Nov]
@@ -183,7 +184,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [x] **The farm deeper in the park, gate shut, its animals living** (owner, 9 Nov 2026; done 9 Nov) · P2 · M · code. `src/086a-farm.js`, `tests/farm.cjs`. Waits for his look and yes.
 - [x] **The rules of the street: bots and walkers off the road, across at crosswalks, on WALK; a wandering bot visits real things** (owner, 9 Nov 2026; done 9 Nov) · P2 · M · code. `src/076-npc-map.js`, `src/162g-bots.js`, `worker/folk.js`. Next: the bots' goals (options given to the owner).
 - [x] **Flying pets flap and perch; ground pets wait below** (owner, 9 Nov 2026: "winged creatures should always be flapping wings. birds and flying creatuers can land on your shoulder or head depending on size"; "pets that cant fly should not fly up with you"; "you can choose in pet properties where they sit"; done 9 Nov) · P2 · S · code. `src/146zj-pets.js`, `tests/perch.cjs`. Waits for his look and yes.
-- [ ] **Keepers for the new pet shops and the barn** · P3 · S · pick. Every unarchived character fitting is working elsewhere; the owner names who (from the archive or new).
+- [ ] **Keepers for the new pet shops** · P3 · S · pick. Every unarchived character fitting is working elsewhere; the owner names who (from the archive or new).
 - [x] **Your pet at home** (owner, 9 Nov 2026: "in your apartment's living room and bedroom, wandering by findPath, jumping or flying up onto things, idling, asleep"; done 9 Nov) · P2 · M · code. `src/146zj-pets.js`, `tests/pethome.cjs`. Waits for his look and yes.
 
 - [ ] **Start in your apartment after logout, faster load** (#891): ready, not merged; the whole street still builds before you appear ·

@@ -661,7 +661,7 @@ const blockAsk = async (env, room, path, body) => { const s = await getServerByN
 const newCode = () => { const A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", b = crypto.getRandomValues(new Uint8Array(8)); let s = ""; for (const x of b) s += A[x % 32]; return "MARKET-" + s.slice(0, 4) + "-" + s.slice(4); };
 // one request per 100 emails (Resend's batch), so a message to everyone stays under the worker's subrequest limit
 async function email(env, to, subject, text) {
-  const from = env.MAIL_FROM || "THE MARKET <market@thestrangestfleamarket.com>"; let n = 0;
+  const from = env.MAIL_FROM || "THE MARKET <market@auth.thestrangestfleamarket.com>"; let n = 0;
   for (let i = 0; i < to.length; i += 100) { const part = to.slice(i, i + 100);
     const r = await fetch("https://api.resend.com/emails/batch", { method: "POST", headers: { Authorization: "Bearer " + env.RESEND_API_KEY, "content-type": "application/json" },
       body: JSON.stringify(part.map(x => ({ from, to: [x], subject, text }))) });

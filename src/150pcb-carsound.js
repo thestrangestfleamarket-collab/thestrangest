@@ -2,8 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {CARLAMPS, ONLINE, pos, RIDE, ROOMS, SFX} from './003b-systems.js';
 import {SYS, TILE} from './006-map-pre.js';
-{ const M=TILE/.84, VMAX=20*M, FAR=30*TILE, N=4, V=[], list=[], last=new Map(), P=new THREE.Vector3(); let tk=0;
-  const pan=(x,z)=>{ if(!SHARED.cam)return 0; P.set(x,SHARED.py+1,z).project(SHARED.cam); return Math.max(-.8,Math.min(.8,P.x*.8)); };
+{ const M=TILE/.84, VMAX=20*M, FAR=30*TILE, N=4, V=[], list=[], last=new Map(), AT={x:0,y:0,z:0}; let tk=0;
   const quiet=()=>{ for(const v of V)v.stop(); V.length=0; };
   SYS.add('life',dt=>{ if((tk-=dt||0)>0)return; tk=.1; const c=SFX.live();
     if(!c||!SFX.on||SHARED.LVL!=='up'||ROOMS.cur||(ROOMS.offIn&&ROOMS.offIn())){ if(V.length)quiet(); return; }
@@ -14,6 +13,7 @@ import {SYS, TILE} from './006-map-pre.js';
     while(V.length>near.length)V.pop().stop();
     for(let i=0;i<near.length;i++){ const e=near[i]; if(!V[i]){ const v=SFX.voice('car_engine'); if(!v)break; V[i]=v; }
       const s=Math.min(1,Math.max(0,e.sp)/VMAX), k=e.me?1:Math.pow(1-e.d/FAR,2);
-      V[i].set((e.me?.32:.45)*k*(.55+.45*s),.75+.85*s,e.me?0:pan(e.x,e.z)); } },'150pcb-carsound');
+      AT.x=e.x; AT.z=e.z; AT.y=e.y!=null?e.y+TILE*.6:SHARED.py+TILE*.6;
+      V[i].set((e.me?.32:.45)*k*(.55+.45*s),.75+.85*s,e.me?null:{...AT}); } },'150pcb-carsound');
   window.CARSND={voices:()=>V.length};
 }

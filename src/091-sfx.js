@@ -1,8 +1,8 @@
 // THE SOUNDS: SFX makes every sound effect and loop in code, with the volume and the sound mix.
 import {SHARED, THREE} from './003-shx.js';
-import {PARK, pos, ROOMS, SFX} from './003b-systems.js';
+import {PARK, pos, ROOMS, SFX, UI} from './003b-systems.js';
 import {SAVE} from './005-save.js';
-import {QS, TILE} from './006-map-pre.js';
+import {QS, SYS, TILE} from './006-map-pre.js';
 const SOUND=QS.get('sound')!=='0';
 const SNDMIX0={fx:{},loops:{},gap:1,blip:1};
 Object.assign(SFX,{on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}});
@@ -57,21 +57,32 @@ Object.assign(SFX,{on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}});
   SFX.names=()=>Object.keys(R); SFX.recipe=k=>R[k]; SFX.add=(k,r)=>{ R[k]=r; };
   const BUF={}; SFX.buffer=(k,c)=>{ const r=R[k]; if(!r)return null; const key=k+(r.loop?'':''); if(BUF[key]&&BUF[key].sampleRate===c.sampleRate)return BUF[key];
     const S=c.sampleRate, n=Math.max(1,Math.round(r.len*S)), b=c.createBuffer(1,n,S); r.f(b.getChannelData(0),n,S); return BUF[key]=b; };
-  const V=new THREE.Vector3(); const place=(o,G,P)=>{ '@later'; if(!o.at)return 1; const x=o.at.x, z=o.at.z!=null?o.at.z:o.at.y, d=Math.hypot(x-pos.x,z-pos.z), far=o.far||9*TILE, k=Math.max(0,1-d/far); if(k<=0)return 0;
-    if(P){ V.set(x,o.at.y!=null&&o.at.z!=null?o.at.y:SHARED.py+1,z).project(SHARED.cam); P.pan.value=Math.max(-.8,Math.min(.8,V.x*.8)); } return k; };
+  // a sound's place in 3D: one panner a source, the ears on your head and turned the way the view looks; how loud by distance stays each sound's own
+  const EARS=new Set(), HEAD=new Set(), EP=new THREE.Vector3(), EF=new THREE.Vector3(), EU=new THREE.Vector3(), put=(P,x,y,z,t)=>{ if(P.positionX){ if(t){ P.positionX.setTargetAtTime(x,t,.05); P.positionY.setTargetAtTime(y,t,.05); P.positionZ.setTargetAtTime(z,t,.05); } else { P.positionX.value=x; P.positionY.value=y; P.positionZ.value=z; } } else P.setPosition(x,y,z); };
+  SFX.spot=(c,hrtf)=>{ EARS.add(c); const P=c.createPanner(); P.panningModel=hrtf?'HRTF':'equalpower'; P.rolloffFactor=0; let set=false; put(P,EP.x,EP.y,EP.z);
+    P.to=(x,y,z)=>{ if(x==null){ if(!HEAD.has(P)){ HEAD.add(P); if(P.positionX)for(const a of [P.positionX,P.positionY,P.positionZ])a.cancelScheduledValues(0); put(P,EP.x,EP.y,EP.z); } return; } HEAD.delete(P); put(P,x,y,z,set?c.currentTime:0); set=true; };
+    P.end=()=>{ HEAD.delete(P); try{ P.disconnect(); }catch(e){} }; return P; };
+  SFX.ears=()=>{ const cam=SHARED.cam; if(!cam||!EARS.size)return; const m=cam.matrixWorld.elements, first=UI.view==='first'; EF.set(-m[8],-m[9],-m[10]); EU.set(m[4],m[5],m[6]);
+    if(!UI.persp){ if(Math.abs(EF.y)>.98)EF.copy(EU); EF.y=0; EF.normalize(); EU.set(0,1,0); }
+    if(first)EP.copy(cam.position); else EP.set(pos.x,SHARED.py+1.9*TILE,pos.z);
+    for(const c of EARS){ if(c.state!=='running')continue; const L=c.listener; if(L.positionX){ L.positionX.value=EP.x; L.positionY.value=EP.y; L.positionZ.value=EP.z; L.forwardX.value=EF.x; L.forwardY.value=EF.y; L.forwardZ.value=EF.z; L.upX.value=EU.x; L.upY.value=EU.y; L.upZ.value=EU.z; } else { L.setPosition(EP.x,EP.y,EP.z); L.setOrientation(EF.x,EF.y,EF.z,EU.x,EU.y,EU.z); } }
+    for(const P of HEAD)put(P,EP.x,EP.y,EP.z); };
+  SYS.add('cam',SFX.ears,'091-sfx ears');
+  const place=(o,G,P)=>{ '@later'; if(!o.at)return 1; const x=o.at.x, z=o.at.z!=null?o.at.z:o.at.y, d=Math.hypot(x-pos.x,z-pos.z), far=o.far||9*TILE, k=Math.max(0,1-d/far); if(k<=0)return 0;
+    if(P)P.to(x,o.at.y!=null&&o.at.z!=null?o.at.y:SHARED.py+TILE,z); return k; };
   // the recorded takes (tools/sfx-bake.py): fetched and decoded once the sound is on; till they come, and for a name with no takes, the recipe plays
   const TK=__DATA__("data/sfx.json"), TKF=__FILE__("data/sfx.mp3"), ALT={step_stone:'step',step_grass:'step',step_wood:'step',dooropen:'latch'}, BANK={buf:null,busy:false,retry:0,sh:0};
   const bank=c=>{ if(BANK.buf)return BANK; if(BANK.busy||performance.now()<BANK.retry)return null; BANK.busy=true;
     fetch(TKF).then(r=>{ if(!r.ok)throw new Error(r.status); return r.arrayBuffer(); }).then(b=>c.decodeAudioData(b)).then(buf=>{ const x=buf.getChannelData(0), sr=buf.sampleRate, t0=TK[Object.keys(TK)[0]][0][0], i0=Math.floor(Math.max(0,t0-.06)*sr); let pk=0; for(let i=i0;i<(t0+.15)*sr;i++)pk=Math.max(pk,Math.abs(x[i])); let i=i0; while(i<(t0+.15)*sr&&Math.abs(x[i])<pk*.03)i++; BANK.sh=Math.max(-.05,Math.min(.08,i/sr-t0-.004)); BANK.buf=buf; }).catch(e=>{ console.warn('the recorded sounds',e); BANK.retry=performance.now()+(location.protocol==='file:'?1e12:15000); }).finally(()=>{ BANK.busy=false; }); return null; };
-  // a recorded loop held as a voice (an engine): its level, speed and side set as it goes; null till the recordings are in
-  SFX.voice=(k,o={})=>{ const c=SFX.live(), T=TK[k], B=c&&T&&bank(c); if(!B)return null; const v=T[0], s=c.createBufferSource(), G=c.createGain(), P=c.createStereoPanner?c.createStereoPanner():null;
-    s.buffer=B.buf; s.loop=true; s.loopStart=v[0]+B.sh; s.loopEnd=v[0]+B.sh+v[1]; G.gain.value=0; if(P)s.connect(P).connect(G); else s.connect(G); G.connect(o.bus||bus(c)); s.start(0,s.loopStart+Math.random()*v[1]*.9);
-    return {set:(vol,rate,pan)=>{ const t=c.currentTime; G.gain.setTargetAtTime(Math.max(0,vol)*SFX.fxLevel(k),t,.08); s.playbackRate.setTargetAtTime(rate,t,.1); if(P&&pan!=null)P.pan.setTargetAtTime(pan,t,.1); },
-      stop:()=>{ try{ G.gain.setTargetAtTime(0,c.currentTime,.05); s.stop(c.currentTime+.3); }catch(e){} },ctx:c}; };
+  // a recorded loop held as a voice (an engine): its level, speed and place (at, or on your head when none) set as it goes; null till the recordings are in
+  SFX.voice=(k,o={})=>{ const c=SFX.live(), T=TK[k], B=c&&T&&bank(c); if(!B)return null; const v=T[0], s=c.createBufferSource(), G=c.createGain(), P=SFX.spot(c);
+    s.buffer=B.buf; s.loop=true; s.loopStart=v[0]+B.sh; s.loopEnd=v[0]+B.sh+v[1]; G.gain.value=0; s.connect(P).connect(G).connect(o.bus||bus(c)); s.start(0,s.loopStart+Math.random()*v[1]*.9);
+    return {set:(vol,rate,at)=>{ const t=c.currentTime; G.gain.setTargetAtTime(Math.max(0,vol)*SFX.fxLevel(k),t,.08); s.playbackRate.setTargetAtTime(rate,t,.1); if(at)P.to(at.x,at.y,at.z); else P.to(); },
+      stop:()=>{ try{ G.gain.setTargetAtTime(0,c.currentTime,.05); s.stop(c.currentTime+.3); setTimeout(()=>P.end(),400); }catch(e){} },ctx:c}; };
   SFX.has=k=>!!(R[k]||TK[k]); SFX.takes=k=>TK[k]; SFX.bank=BANK;
   SFX.play=(k,o={})=>{ const c=SFX.live(); if(!c||!SFX.on)return null; const T=TK[k], B=T&&bank(c), rk=B?null:R[k]?k:ALT[k]; if(!B&&!rk)return null; const b=B?B.buf:SFX.buffer(rk,c); if(!b)return null;
     const s=c.createBufferSource(), G=c.createGain(); s.buffer=b; s.loop=!B&&!!R[rk].loop; s.playbackRate.value=(o.pitch||1)*(o.vary?1+(Math.random()-.5)*o.vary:1);
-    let P=null; if(o.at&&c.createStereoPanner){ P=c.createStereoPanner(); } else if(o.pan!=null&&c.createStereoPanner){ P=c.createStereoPanner(); P.pan.value=o.pan; }
+    let P=null; if(o.at){ P=SFX.spot(c); } else if(o.pan!=null&&c.createStereoPanner){ P=c.createStereoPanner(); P.pan.value=o.pan; }
     const kd=place(o,G,o.at?P:null); if(kd<=0)return null; G.gain.value=(o.vol==null?1:o.vol)*kd*(o.raw?1:SFX.fxLevel(k)); const out=o.bus||bus(c); if(P)s.connect(P).connect(G).connect(out); else s.connect(G).connect(out); const t0=c.currentTime+(o.delay||0); if(B){ const v=T[Math.floor(Math.random()*T.length)]; s.start(t0,Math.max(0,v[0]+BANK.sh-.012),v[1]+.03); } else s.start(t0); return {s,G,P}; };
   // what is underfoot (wood inside, grass in the park, stone elsewhere) and a door gone through
   SFX.ground=()=>ROOMS.cur||(ROOMS.offIn&&ROOMS.offIn())?'wood':SHARED.LVL==='up'&&PARK.within&&PARK.within(pos.x,pos.z)?'grass':'stone';
@@ -82,6 +93,6 @@ Object.assign(SFX,{on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}});
   const VB={}; const vbuf=(c,bank,i)=>{ '@later'; const key=bank+i; if(VB[key]&&VB[key].sampleRate===c.sampleRate)return VB[key]; const S=c.sampleRate, n=S*.07|0, b=c.createBuffer(1,n,S), D=b.getChannelData(0), f0=(bank==='high'?230:140)*(1+(i%4)*.06), fm=[1.5,2.2,2.8,3.6][(i>>2)%4];
     for(let j=0;j<n;j++){ const s=j/S, t=j/n, e=Math.min(t*18,1)*env(t,1.4); D[j]=(Math.sin(TAU*f0*s)*.6+Math.sin(TAU*f0*2*s)*.3*Math.sin(TAU*fm*s*20)+Math.sin(TAU*f0*3*s)*.12)*e*.35; } return VB[key]=b; };
   SFX.blip=(v,o={})=>{ '@later'; const c=SFX.live(); if(!c||!SFX.on)return; const s=c.createBufferSource(), G=c.createGain(); s.buffer=vbuf(c,v.bank||'low',Math.floor(Math.random()*16)); s.playbackRate.value=(v.pitch||1)*(.96+Math.random()*.08);
-    let P=null; if(o.at&&c.createStereoPanner)P=c.createStereoPanner(); const kd=place(o,G,P); if(kd<=0)return; G.gain.value=.22*kd*(SFX.mix.blip==null?1:+SFX.mix.blip); if(P)s.connect(P).connect(G).connect(bus(c)); else s.connect(G).connect(bus(c)); s.start(); };
+    let P=null; if(o.at)P=SFX.spot(c); const kd=place(o,G,P); if(kd<=0)return; G.gain.value=.22*kd*(SFX.mix.blip==null?1:+SFX.mix.blip); if(P)s.connect(P).connect(G).connect(bus(c)); else s.connect(G).connect(bus(c)); s.start(); };
 }
 export {SOUND};

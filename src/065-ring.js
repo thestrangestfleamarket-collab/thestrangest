@@ -29,7 +29,7 @@ const RINGX={};
     const step=E.find(l=>l[1]===l[3]&&l[0]!==l[2]&&l[1]>Y0&&l[1]<Y1), XA=Math.max(...xs), XB=step?Math.min(step[0],step[2]):XA, YS=step?step[1]:Y0;
     RINGX.inEdge=(x,z)=>{ const a=tx(x), b=ty(z); return a>X0&&b<Y1&&b>Y0&&a<(b>YS?XA:XB); };
     const W=LEVEL.places.find(p=>p.kind==='passage');
-    SYS.onStart(()=>{ if(SHARED.LVL==='up'&&SHARED.floor==='up'&&!ROOMS.cur&&!RINGX.inEdge(pos.x,pos.z)&&W){ pos.x=XS((W.x0+W.x1)/2); pos.z=ZS(LEVEL.block.front+3); } },'065-ring'); } }
+    SYS.onStart(()=>{ if(SHARED.LVL==='up'&&SHARED.floor==='up'&&!ROOMS.cur&&!(MODS.apts&&MODS.apts.inReal)&&!RINGX.inEdge(pos.x,pos.z)&&W){ pos.x=XS((W.x0+W.x1)/2); pos.z=ZS(LEVEL.block.front+3); } },'065-ring'); } }
   RINGX.tick=()=>{ if(SHARED.LVL==='down')scene.background.setRGB(0,0,0); if(RINGX.fieldTick)RINGX.fieldTick(pos.x,pos.z); };
   window.RINGX=RINGX; }
 export {RINGX};

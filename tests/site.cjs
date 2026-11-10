@@ -13,6 +13,8 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
   const fs=require('fs'), gf=fs.readdirSync('dist/g').filter(f=>f!=='market.html');
   for(const p of ['/market.html','/market','/door.html','/avatar.html','/g/market.html','/g/market','/g/'+gf[0]])ok((await fetch(BASE+p)).status===404,p+' is not handed out by itself');
   ok((await fetch(BASE+'/g/'+gf[0],{headers:{cookie:'tsfm-pass=dev:site-check'}})).status===200,'/g/'+gf[0]+' with a login');
+  { const m=await fetch(BASE+'/app.webmanifest'), j=m.ok?await m.json().catch(()=>null):null, ic=j&&j.icons?await Promise.all(j.icons.map(i=>fetch(BASE+i.src).then(r=>r.ok&&/image\/png/.test(r.headers.get('content-type')||'')))):[];
+    ok(!!j&&/manifest\+json/.test(m.headers.get('content-type')||'')&&j.start_url==='/'&&ic.length>=2&&ic.every(Boolean),'the installable app: its manifest and icons are handed to anyone'); }
   { const home=body=>fetch(BASE+'/home',{method:'POST',headers:{cookie:'tsfm-pass=dev:site-check',origin:BASE,'content-type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()).catch(e=>({why:String(e)}));
     ok((await fetch(BASE+'/home',{method:'POST',headers:{origin:BASE},body:'{}'})).status===401,'/home without a login is refused');
     const put=await home({put:{v:1,wall:'brick',things:{}}}), got=await home({});
@@ -122,6 +124,11 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
     ok(keys.includes('forage')&&keys.includes('inv'),'what you own in THE MARKET is kept on the server ('+keys.slice(0,8).join(' ')+')'); }
   if(started){ let st=null; for(let i=0;i<10&&!(st&&st['park|rock|1,2,3']);i++){ await g.waitForTimeout(1000); st=await g.evaluate(()=>window.WE&&WE.getState&&WE.getState()).catch(()=>null); }
     ok(st&&st['park|rock|1,2,3']&&st['park|rock|1,2,3'].t[1]===1,'the owner\'s world edits reach a player\'s page at start ('+Object.keys(st||{}).join(' ').slice(0,60)+')'); }
+  ok((await fetch(BASE+'/sw.js')).status===404,'/sw.js without a login is not handed out');
+  if(started){ const sw=await g.evaluate(async f=>{ if(!navigator.serviceWorker)return {no:1}; for(let i=0;i<60&&!navigator.serviceWorker.controller;i++)await new Promise(r=>setTimeout(r,500)); if(!navigator.serviceWorker.controller)return {ctl:false};
+        const r=await fetch('/g/'+f), n=(await r.arrayBuffer()).byteLength; await new Promise(r=>setTimeout(r,800)); const c=await caches.open('g'), hit=await c.match('/g/'+f), m=hit?(await hit.arrayBuffer()).byteLength:-1, r2=await fetch('/g/'+f), n2=(await r2.arrayBuffer()).byteLength;
+        return {ctl:true,ok:r.ok,n,m,n2,page:!!(await c.match('/'))}; },gf.find(f=>/^m\.[0-9a-f]+\.js$/.test(f))||gf[0]).catch(e=>({err:String(e)}));
+    ok(sw.ctl&&sw.ok&&sw.n>0&&sw.m===sw.n&&sw.n2===sw.n&&!sw.page,'the service worker keeps the game\'s files on the device, and never the page: '+JSON.stringify(sw)); }
   ok(!gerr.length,'THE MARKET: no page errors '+[...new Set(gerr)].join(' | '));
   await b.close(); w.kill();
   console.log(bad?bad+' FAILED':'all good'); process.exit(bad?1:0);

@@ -223,7 +223,7 @@ await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL
         if(Math.abs(q.v)>=HW+R)continue; const w=wrl(c.p,q.a,Math.sign(q.v||1)*(HW+R)); pos.x=w.x; pos.z=w.z; } }
     for(const tn of TRAINS.list)edges(tn);
     const first=UI.view==='first', cam=SHARED.cam&&SHARED.cam.position;
-    for(const tn of TRAINS.list)for(const c of tn.cars){ const on=ride.tn===tn&&!first, near=down&&Math.hypot(c.p.x-pos.x,c.p.z-pos.z)<60*T; c.G.visible=!(L.tunHid&&!L.inStation(c.p.x,c.p.z)); c.ext.visible=true; c.inner.visible=near; c.strips.visible=true; c.upper['-1'].visible=c.upper['1'].visible=true; }
+    for(const tn of TRAINS.list)for(const c of tn.cars){ const on=ride.tn===tn&&!first, near=down&&Math.hypot(c.p.x-pos.x,c.p.z-pos.z)<60*T; c.G.visible=down&&!(L.tunHid&&!L.inStation(c.p.x,c.p.z)); c.ext.visible=true; c.inner.visible=near; c.strips.visible=true; c.upper['-1'].visible=c.upper['1'].visible=true; }
     const ms=performance.now(); if(ms<bt)return; bt=ms+500; if(!down)return;
     if(ride.tn)signText(ride.tn);
     const h=L.here(pos.x,pos.z); if(h.d<40*T){ const st=h.st;

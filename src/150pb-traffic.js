@@ -41,7 +41,7 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
       UI.thing({name:'CROSSING BUTTON',obj:g,reach:1.2*T,near:3*T,tall:.4*M0,act:()=>TRAFFIC.press()}); } }
 
   /* ---------- the vehicles: the game's own cars (150p) and Polyfork's (data/traffic.json), one model made once and copied ---------- */
-  let D=null; const TPL={}, POOL={}, GRP=new THREE.Group(); scene.add(GRP); CLOCK.movers.push(()=>[GRP]);
+  let D=null; const TPL={}, POOL={}, GRP=new THREE.Group(); GRP.userData.parkFar=true; scene.add(GRP); CLOCK.movers.push(()=>[GRP]);
   const MAT=new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide});
   const geo=Q=>{ const q=new Int16Array(Uint8Array.from(atob(Q.p),c=>c.charCodeAt(0)).buffer), col=Uint8Array.from(atob(Q.c),c=>c.charCodeAt(0)), b=Q.b, P=new Float32Array(q.length), C=new Float32Array(col.length), c=new THREE.Color();
     for(let i=0;i<q.length;i++){ const a=i%3; P[i]=b[a]+(q[i]+32768)/65535*(b[a+3]-b[a]); }

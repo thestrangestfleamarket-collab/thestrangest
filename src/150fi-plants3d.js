@@ -7,7 +7,7 @@ import {ROOMK} from './150a-bedroom.js';
 import {PFI} from './150cyb-pfitems.js';
 const PLANT3={}; window.PLANT3=PLANT3;
 { const LZ=__LAZY__("data/pfplants.json"); let D=null, P=null;
-  const KINDS=['FLOOR PLANT','OLIVE TREE','FERN STAND','HANGING PLANT','FLOWERING PLANT','HERB POT','BASIL POT']; for(const k of KINDS)ROOMK.always.add(k);
+  const KINDS=['FLOOR PLANT','OLIVE TREE','FERN STAND','HANGING PLANT','FLOWERING PLANT','HERB POT','BASIL POT','POTTED SHRUB','FLOWER PLANTER','LAWN CHAIR','BISTRO TABLE','WOODEN CRATE','CANDLE LANTERN','WATERING CAN','CACTUS POT']; for(const k of KINDS)ROOMK.always.add(k);
   const HIDE=new THREE.MeshBasicMaterial({visible:false}), GEO=new Map();
   const load=()=>P||(P=LZ().then(j=>{ D=j; fillAll(); }).catch(e=>{ P=null; console.warn('PLANT3',e); }));
   // a plant's model bends from its pot up (b: the tip's push over its height) and its leaves flutter (f) while something moves it; still, it is drawn as baked
@@ -49,7 +49,13 @@ const PLANT3={}; window.PLANT3=PLANT3;
     basket(.45,6.3,1); basket(1.75,.45,2); basket(Lx-1.1,6.62,3);
     // the little pots, loose: you can pick them up, knock them over
     const pot=(u,h,v,key,name,H,r,m)=>{ const g=thing(u,h,v); slot(g,key,H,r,0,0,0,{y0:H*.3}); R.loose.push([g,name,m,false,'plant3']); };
-    pot(2.98,.745,9.8,'flower','FLOWERING PLANT',.34,.12,.9); pot(3.86,.745,9.84,'herb','HERB POT',.24,.08,.5); pot(11.2,1.29,9.8,'basil','BASIL POT',.36,.13,1.1); });
+    pot(2.98,.745,9.8,'flower','FLOWERING PLANT',.34,.12,.9); pot(3.86,.745,9.84,'herb','HERB POT',.24,.08,.5); pot(11.2,1.29,9.8,'basil','BASIL POT',.36,.13,1.1);
+    // out on your fire escape's landing (owner, 10 Nov 2026): a table and two chairs, a shrub, a planter along the rail, a crate by the wall; a lantern, a cactus and a watering can loose
+    { const AP=MODS.apts, F=AP&&AP.ESC&&AP.ESC[0]; if(F){ const MPU=.907, uE=(AP.R.x1-AP.R.x0-F.ua)*MPU, D=AP.DO*MPU, V=d=>-(.245+d);
+      const put=(name,key,H,r,u,d,o={})=>cap(name,g=>{ const s=slot(g,key,H,r,u,0,V(d),{bend:!!o.bend,y0:o.y0||0}); s.rotation.y=o.ry||0; const a=o.a||r, b=o.b||r; solid(u-a,V(d)-b,u+a,V(d)+b,o.h||H); },{wire:'plant3'});
+      put('BISTRO TABLE','bistro',.75,.35,uE-2.4,D-.9); put('LAWN CHAIR','lawnchair',.78,.3,uE-3.3,D-.9,{ry:Math.PI/2,h:.45}); put('LAWN CHAIR','lawnchair',.78,.3,uE-1.5,D-.9,{ry:-Math.PI/2,h:.45});
+      put('POTTED SHRUB','shrub',1.38,.42,uE-.6,D-.5,{bend:true,y0:.45,a:.25,b:.25,h:.45}); put('FLOWER PLANTER','planter',.48,.5,uE-6.6,D-.3,{b:.2}); put('WOODEN CRATE','crate',.6,.3,uE-7.6,.45);
+      pot(uE-2.4,.75,V(D-.9),'lantern','CANDLE LANTERN',.25,.07,.4); pot(uE-7.6,.6,V(.45),'cactus','CACTUS POT',.18,.07,.3); pot(uE-6.9,0,V(.5),'wcan','WATERING CAN',.3,.2,.6); } } });
 
   /* ---------- the vines: a few strands from the rim, each a chain of points (DRAPE) with a leaf at each ---------- */
   const leafGeo=(()=>{ let G=null; return ()=>{ if(G)return G; const s=new THREE.Shape(); s.moveTo(0,0); s.bezierCurveTo(.03,.005,.045,.04,.03,.065); s.bezierCurveTo(.02,.08,.006,.088,0,.1); s.bezierCurveTo(-.006,.088,-.02,.08,-.03,.065); s.bezierCurveTo(-.045,.04,-.03,.005,0,0);

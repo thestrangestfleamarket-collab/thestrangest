@@ -1,10 +1,11 @@
-// THE GUARDIANS: GUARD — the woodland folk who keep the castle over the dungeon (data/guardians.json): every body from one maker (a species head, a coat, a weapon), their posts and rounds round the castle, the welcome up the stair, and the keep's bounties on what you slay below.
+// THE GUARDIANS: GUARD — the woodland folk who keep the park's watchtowers (data/guardians.json; owner, 10 Nov 2026: they live in the towers and watch on top): every body from one maker (a species head, a coat, a weapon), their posts on each tower's roof or at the dungeon stair's tower foot, the welcome up the stair, and the keep's bounties on what you slay below.
 import {SHARED, THREE} from './003-shx.js';
 import {CHARS, CLOCK, FORAGE, GUARD, INV, LINES, MAIL, NPCS, PARK, pos, SFX, TALK, VIS, VIT} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {CASTLE, MAPG, MODS, SYS, TILE, ZU} from './006-map-pre.js';
+import {GTOWER} from './063-tower.js';
 import {RIGNPC} from './083-npc-rig.js';
 import {GEMS} from './101-gems.js';
 import {BODIES} from './111a-bodies.js';
@@ -92,14 +93,15 @@ GUARD.list=[];
           const M=A.mv; if(M){ const q=MOVE[M.k], u=Math.min(1,M.t/q.T); let f=0, i=0; for(;i<q.K.length-1&&u>q.K[i+1][0];i++); const k0=q.K[i], k1=q.K[Math.min(i+1,q.K.length-1)], w=k1[0]>k0[0]?(u-k0[0])/(k1[0]-k0[0]):1, e=k1[2]==='fast'?1-Math.pow(1-w,3):w*w*(3-2*w);
             const L=(j)=>k0[1][j]+(k1[1][j]-k0[1][j])*e, v=[0,1,2,3,4,5].map(L); B.armR.rotation.x=v[0]; B.armR.rotation.z=v[1]; B.armR.rotation.y=v[2]; B.hips.rotation.y+=v[3]; B.armL.rotation.x=v[4]; B.hips.position.z+=v[5]; if(q.lean)B.hips.rotation.x+=q.lean*Math.sin(u*Math.PI); } } };
       const at=R.at, site=R.site&&SITES.at[R.site], IN=R.inside&&SITES.inside[R.inside], MH=T/.84;
-      let wx, wz; if(IN){ wx=IN.cx+at[0]*MH; wz=IN.cz+at[1]*MH; } else if(R.perch==='pillar'&&site&&site.pillar){ wx=site.pillar[0]; wz=site.pillar[2]; } else if(R.perch==='deck'&&site&&site.deck){ const dk=site.deck[at[1]<0?0:1]; wx=(dk[0][0]+dk[1][0])/2; wz=(dk[0][2]+dk[1][2])/2; }
+      const TW=R.tower&&GTOWER.at&&GTOWER.at(R.tower), TOP=TW&&R.top;   // a tower's guard: on its roof (top) or at its foot, at [out in tiles, along in tiles] from its middle; on the roof at [out, 0, 0, the way it looks in degrees], standing out that way
+      let wx, wz; if(TW){ const a=((at[3]||0)-90)*PI/180, o=TOP?Math.min(at[0],TW.r*.6):at[0]; wx=X(TW.tx+PARK.ox+(TOP?Math.cos(a)*o:at[0])); wz=Z(TW.ty+PARK.oy+(TOP?Math.sin(a)*o:at[1])); } else if(IN){ wx=IN.cx+at[0]*MH; wz=IN.cz+at[1]*MH; } else if(R.perch==='pillar'&&site&&site.pillar){ wx=site.pillar[0]; wz=site.pillar[2]; } else if(R.perch==='deck'&&site&&site.deck){ const dk=site.deck[at[1]<0?0:1]; wx=(dk[0][0]+dk[1][0])/2; wz=(dk[0][2]+dk[1][2])/2; }
       else{ const tx=site?site.x+at[0]:bx0+at[0], ty=site?site.y+at[1]:by0+at[1]; wx=X(tx); wz=Z(ty); }
-      const post=R.role==='post'||R.role==='drill'||!!R.perch, night=R.role==='night', big=b>1.15||R.m>.8, face=at[3]!=null?at[3]*PI/180:0;
-      const homeAt=()=>{ const h=R.home; if(!h||IN||R.perch)return null; if(h==='castle')return {x:X(CASTLE.gate),z:Z(by0-.6)}; const q=SITES.homes[h]; return q?{x:q[0],z:q[2]}:null; };
-      const always=IN||R.perch||!R.home||R.home==='castle'&&R.role==='post'&&!site, jit=(R.k.length*37%120)/60;
+      const post=R.role==='post'||R.role==='drill'||!!R.perch||!!TW, night=R.role==='night', big=b>1.15||R.m>.8, face=at[3]!=null?at[3]*PI/180:0;
+      const homeAt=()=>{ const h=R.home; if(!h||IN||R.perch||TW)return null; if(h==='castle')return {x:X(CASTLE.gate),z:Z(by0-.6)}; const q=SITES.homes[h]; return q?{x:q[0],z:q[2]}:null; };
+      const always=IN||R.perch||TW||!R.home||R.home==='castle'&&R.role==='post'&&!site, jit=(R.k.length*37%120)/60;
       const onShift=()=>{ if(always)return true; const h=CLOCK.h??12; return night?(h>=19+jit*.5||h<5.5):(h>=6.5+jit&&h<19.5+jit*.5); };
       let BRN=null; const N=RIGNPC.make(def,{key:R.k,name:R.n,eye:-1,metres:R.m,tall:1,radius:big?.26:.18,speed:R.role==='wander'?.45:.35,stride:7,lv:'up',group:'park',x:wx,z:wz,
-        home:{x:wx,z:wz,r:(post?0:at[2])*T},range:post?0:at[2],ground:IN?(()=>0):(x,z)=>A.sit?0:R.perch==='wall'?MODS.bodega.ground(x,z)+SHARED.BOD.YS(100):SITES.ground?SITES.ground(x,z,MODS.bodega.ground(x,z)):MODS.bodega.ground(x,z),
+        home:{x:wx,z:wz,r:(post?0:at[2])*T},range:post?0:at[2],ground:IN?(()=>0):TOP?(()=>TW.top):(x,z)=>A.sit?0:R.perch==='wall'?MODS.bodega.ground(x,z)+SHARED.BOD.YS(100):SITES.ground?SITES.ground(x,z,MODS.bodega.ground(x,z)):MODS.bodega.ground(x,z),
         brain:BRN=(dt,you,s,N)=>{ if(N.sheet)return; A.t+=dt; if(A.mv)A.mv.t+=dt; const now=performance.now(), gap=now-(N.lastT||0)>2000; N.lastT=now;
           // the day: out on watch, then home to bed (or the other way round for the night watch); seen from far, it is where it should be
           const on=onShift(), H=homeAt();

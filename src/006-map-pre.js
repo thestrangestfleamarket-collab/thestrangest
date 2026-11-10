@@ -58,9 +58,9 @@ const NEONS=[], SHL=[], cutWalls=[], lamps=[], shopGroups=[]; let nightTo=1; SHA
 const ZU=1/(PPU*Math.cos(Math.PI/6)), TILE=33.9/PPU, QS=new URLSearchParams(location.search), LAMPI=8, LAMPD=1.6;
 const SEEN=(o,show)=>{ if(!SEEN.L){ SEEN.L=1; scene.traverse(c=>{ if(c.isLight&&c.shadow)c.shadow.camera.layers.enable(3); }); }
   if(o.userData.seen===show)return; o.userData.seen=show; o.traverse(c=>{ if(c.isMesh||c.isLine||c.isPoints){ if(show)c.layers.enable(0); else c.layers.disable(0); c.layers.enable(3); } }); };
-const OUT=window.OUT={L:[],open:true,world:true,up:true,add(o,k='open'){ OUT.L.push({o,k}); SEEN(o,OUT[k]); return o; },
-  tick(){ const up=SHARED.LVL!=='down', ins=!!ROOMS.cur, open=up&&!ins, world=up&&(FREE||!ins); OUT.up=up; if(open===OUT.open&&world===OUT.world)return;
-    OUT.open=open; OUT.world=world; for(const e of OUT.L)SEEN(e.o,OUT[e.k]); }};
+const OUT=window.OUT={L:[],open:true,world:true,sky:true,up:true,add(o,k='open'){ OUT.L.push({o,k}); SEEN(o,OUT[k]); return o; },
+  tick(){ const up=SHARED.LVL!=='down', ins=!!ROOMS.cur, open=up&&!ins, world=up&&(FREE||!ins), sky=up&&(!ins||!!ROOMS.cur.sky); OUT.up=up; if(open===OUT.open&&world===OUT.world&&sky===OUT.sky)return;   // sky: the sky over an inside open to it (the playhouse's yard)
+    OUT.open=open; OUT.world=world; OUT.sky=sky; for(const e of OUT.L)SEEN(e.o,OUT[e.k]); }};
 const FREE=QS.get('free')!=='0';
 const SOL={up:[],down:[]}, FIX={up:[],down:[]}, CLIPX=[];
 SHARED.solids=SOL.up; SHARED.fixed=FIX.up; SHARED.BOUND=undefined; SHARED.groundY=undefined; SHARED.LVL='up'; SHARED.BOD=undefined; SHARED.BODB=undefined; SHARED.METRO=undefined;
@@ -113,7 +113,7 @@ try{ LEVEL.homes=Object.assign(LEVEL.homes||{},__DATA__("data/behaviour.json"));
 try{ LEVEL.chars=__DATA__("data/characters.json")||{}; }catch(e){ LEVEL.chars={}; }
 for(const id in LEVEL.chars){ const r=LEVEL.chars[id]; if(r&&r.home)LEVEL.homes[id]=r.home; }
 const LAYOUT0={bodega:{x:WP.bodega.x1-76.4},diner:{x:-24.75},ghost:{x:WP.bath.row===2?(1240-2000/BLDK-131)*BLDK:(LOTX((WP.bath.x0+WP.bath.x1)/2)-4*4/3-131)*BLDK},house:{x:WP.apts.x0-48.24},subway:{x:WP.subway.x0-60.01,y:WP.subway.y0!=null?WP.subway.y0+82.9:0},apartments:{x:59},park:{e:[0,0,0,0]},castle:{x:WPP.castle.x0-46,y:WPP.castle.y0+21}};
-const AWAY0=['diner','aquarium','garden','avenue','keep','civic','power','museum','playhouse'], AWAYLOT=1000, OFFDX=-2000;
+const AWAY0=['diner','aquarium','garden','avenue','keep','civic','power','museum'], AWAYLOT=1000, OFFDX=-2000;
 const AWAY=(()=>{ const s=new Set(AWAY0), q=QS.get('bring'); if(q==='all')s.clear(); else if(q)for(const k of q.split(','))s.delete(k.trim()); return s; })(); window.AWAY=AWAY;
 for(const [id,k] of [['theatre','theatre'],['play','playhouse']])if(WP[id]&&AWAY.has(k))WP[id].away=true;   // a building put away leaves its lot empty: the maps draw no building there
 for(const k in LEVEL.chars){ const j=LEVEL.chars[k]&&LEVEL.chars[k].job; if(j&&AWAY.has({theatre:'theatre',play:'playhouse'}[j.at]))delete LEVEL.chars[k].job; }   // a job at a place that is away is no job

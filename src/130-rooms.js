@@ -1,6 +1,6 @@
 // ROOMS: which room you are in, the insides off the map (ROOMS.off, the lazy rooms) and the way in and out behind the fade, peek, roofs hidden when inside, and roofAt.
 import {SHARED, THREE} from './003-shx.js';
-import {BATCH, BLK, CIVIC, CULL, DRM, DRONE, ED, LEVELS, LITE, LOOKS, MAPED, MUS, NPCS, ONLINE, PNM, pos, ROOMS, SFX, SGM, UI, VIS, W3, WINDOWS} from './003b-systems.js';
+import {BATCH, BLK, CIVIC, CULL, DRM, DRONE, ED, LEVELS, LITE, LOOKS, MAPED, MUS, NPCS, ONLINE, PNM, pos, ROOMS, SFX, SGM, SKY, UI, VIS, W3, WINDOWS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {cutWalls, FADE, FREE, MAPG, MODS, OUT, OVERHEAD, SEEN, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
@@ -30,7 +30,7 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
   const build=()=>{ RL=[];
     for(const R of STORE.rooms)if(R.walls){ if(R.dw&&R.B&&!R.band)R.band=sband(R); RL.push(R); }
     if(window.CIVIC&&CIVIC.tower){ const t=CIVIC.tower; RL.push({id:'civic',x0:t.x0,x1:t.x1,z0:t.z0,z1:t.z1,y0:t.y-1,y1:t.y+t.H}); }
-    for(const id in ROOMS.off){ const o=ROOMS.off[id]; o.bs=(o.rooms||[o.box]).map(r=>({...o.box,...r,lz:id,off:id})); o.b=o.bs[0]; RL.push(...o.bs); offL(id); offThings(id); } };
+    for(const id in ROOMS.off){ const o=ROOMS.off[id]; o.bs=(o.rooms||[o.box]).map(r=>({...o.box,...r,lz:id,off:id,sky:!!o.sky})); o.b=o.bs[0]; RL.push(...o.bs); offL(id); offThings(id); } };
   ROOMS.boxes=()=>{ if(!RL)build(); return RL; };
   // inside a room the third person's camera stays within its walls and under its ceiling, pulled in along the line to you
   UI.camKeeps.push((c,t)=>{ const B=ROOMS.cur; if(!B||!(B.x1>B.x0)||!UI.persp)return; const e=.3*TILE; let k=1;
@@ -91,7 +91,7 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
   const pin=(r,x,y,z)=>x>r.x0&&x<r.x1&&z>r.z0&&z<r.z1&&y>r.y0&&y<r.y1;
   const scan=(b,roots)=>{ '@later'; const e=.15*TILE, R={x0:b.x0-e,x1:b.x1+e,z0:b.z0-e,z1:b.z1+e,y0:b.y0-.3,y1:b.y1+.1*TILE}, D=b.band?{x0:b.band.x0,x1:b.band.x1,z0:b.band.z0,z1:b.band.z1,y0:R.y0,y1:R.y1}:null;
     const inn=(x,y,z)=>pin(R,x,y,z)||!!D&&pin(D,x,y,z), T={H:[],L:[],S:[],top:new Set(roots)};
-    const skip=new Set([W3.group,...NPCS.map(N=>N.g),...(NPCS.extra||[]).map(q=>q&&q.g),FLAME.me,WATER.mesh,...(WATER.extra||[]).map(w=>w.mesh),
+    const skip=new Set([W3.group,...(b.sky&&SKY.dome?[SKY.dome]:[]),...NPCS.map(N=>N.g),...(NPCS.extra||[]).map(q=>q&&q.g),FLAME.me,WATER.mesh,...(WATER.extra||[]).map(w=>w.mesh),
       MUS.g,PNM.g,SGM.g,DRM.g].filter(Boolean));
     const batch=o=>o.isMesh&&!o.isInstancedMesh&&!o.isSkinnedMesh&&!!o.geometry.attributes.aOp&&!o.geometry.index&&!(CULL.M.has(o))&&!(o.userData.intr&&typeof o.userData.intr==='object');
     const st=o=>{ const g=o.geometry; BX.makeEmpty(); if(o.isInstancedMesh){ o.computeBoundingBox(); if(o.boundingBox)BX.copy(o.boundingBox); } else if(g&&!o.isSprite){ if(!g.boundingBox)g.computeBoundingBox(); BX.copy(g.boundingBox); }

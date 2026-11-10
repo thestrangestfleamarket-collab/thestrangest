@@ -114,7 +114,10 @@ const TWINP={}; window.TWINP=TWINP;
         const results=[]; for(const c of r.calls){ doing=c.name.replace(/_/g,' ')+' '+Object.values(c.input||{}).map(v=>typeof v==='object'?JSON.stringify(v):v).join(' ').slice(0,60); K.doing(doing); results.push(await run(c)); if(my!==seq)return; }
         body={results,key}; }
       if(my===seq){ doing='ready'; K.doing(doing); } };
-    SYS.add('said',(id,text)=>{ const c=C(); if(!c.ai||id!==c.who)return; const t=heard(text); if(t)think(t); },'162gb-twin');
-    Object.assign(TWINP,{TOOL,heard,look,brief,think,things,dist:th=>thDist(th)/T,sells:N=>!!(CHARS.trade&&CHARS.trade(N)),state:()=>({doing,FOLLOW,busy:!!cur})});
+    // its owner's message, or anything they say within 20 m, is for it; from further off, "@..." or its name first
+    const close=()=>{ const o=owner(); return !!(o&&o.why==='near you'&&o.p&&d2(o.p.x,o.p.z)<20*T); };
+    const order=(text,pm)=>heard(text)||((pm||close())&&String(text||'').trim())||null;
+    SYS.add('said',(id,text,pm)=>{ const c=C(); if(!c.ai||id!==c.who)return; const t=order(text,pm); if(t)think(t); },'162gb-twin');
+    Object.assign(TWINP,{TOOL,heard,order,look,brief,think,things,dist:th=>thDist(th)/T,sells:N=>!!(CHARS.trade&&CHARS.trade(N)),state:()=>({doing,FOLLOW,busy:!!cur})});
   }
 }

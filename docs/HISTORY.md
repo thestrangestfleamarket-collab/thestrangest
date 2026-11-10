@@ -5996,3 +5996,4 @@ Owner: "what polyfork animations do we have for our character", then "yes lets u
 - 10 Nov 2026, the big lake's deep hole (same ask): the 25 m hole moved off the bath house island's edge (the island had filled it), out into open water.
 - 10 Nov 2026, fishing from the rowboat (same ask; TODO): sat in the boat you hold the rod and swing it to cast and reel, as on the pier.
 - 10 Nov 2026, shrink and grow mushrooms (owner: "why when i shrink or grow every npc does too?"): a bug; they change only you, every other body stays its size.
+- 10 Nov 2026, talking to your AI double (owner: "i should be able to talk to the AI bot in game"): it hears anything its owner says in the chat within 20 m of it, and any MESSAGE its owner sends it from anywhere, no "@" or name needed; from further off, "@..." or its name first as before. Rule: still only its owner's words are orders.

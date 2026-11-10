@@ -68,5 +68,7 @@ async function page(file){
   r=await run('give_owner',{items:[],cash:5}); ok(r&&r.err&&/not near you/.test(r.out),'give_owner with its owner away says so');
   const h=await p.evaluate(()=>[TWINP.heard('@ go to the park'),TWINP.heard('BOSS AI, sit down'),TWINP.heard('hello everyone'),TWINP.heard('twin: stop')]);
   ok(h[0]==='go to the park'&&h[1]==='sit down'&&h[2]===null&&h[3]==='stop','orders: "@...", its name first, or "twin" first; other chat is not an order');
+  const o2=await p.evaluate(()=>[TWINP.order('hey','pm'),TWINP.order('hey')]);
+  ok(o2[0]==='hey'&&o2[1]===null,'a message to it is an order as it is; plain chat only when its owner is within 20 m');
   await b.close();
 }

@@ -69,7 +69,7 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
 - [ ] **The Hudson row** · P2 · L · pick + code. Its buildings, corner grass, sparse trees, townsfolk routes; a second fishing shop west
   of the west flea lot (owner asked for both sides; only Fishing & Scuba stands); stall keepers; the lost shrubs and small trees.
 - [ ] **The apartment house** · P2 · L · code. The lobbies and the other floors (only your own flat is built).
-- [ ] **West St out of our section** · P1 · L · code · risk high. Owner, 10 Nov: "No roads in park at all". Its road, kerbs, traffic turn and wall become park; the forcefield, the walkers' grid, the cars' routes and the Tower's corner follow.
+- [x] **West St out of our section** (10 Nov, claude/fervent-hawking-wkq7zv). Left: the brochure's subtitle still says WEST ST (with the sections re-plan).
 - [ ] **The eight sections on the new ring** · P1 · XL · code · risk high. Owner, 10 Nov ("Yes go" of the lettered mockup): A mid-Hudson side with C and E, B and G on the ends, D F H along the back. `sections.grid`/`ring`, the Loop's tracks and stations (end stations need a west/east side), the subway map, section B's skate park and pit.
 - [ ] **Whole-map layouts A–F** · pick. Mocked up (A Ring + F Stack recommended), waiting on the owner.
 - [ ] **One set piece broken after the lanyard/shop removals**: bring its two items back, or archive it too? · pick.

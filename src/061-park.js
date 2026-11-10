@@ -147,17 +147,17 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
   pier(g0-PW,P.y0-.3,g0,P.y0+T+.6,21); pier(g1,P.y0-.3,g1+PW,P.y0+T+.6,25);
   LEAVES.push([g0,P.y0+T+.85,-1,'x',(g1-g0)/2],[g1,P.y0+T+.85,1,'x',(g1-g0)/2]);
   PARK.look=[X(g1+1.8),Z(P.y0-1.6)];
-  const EL=(LEVEL.edge&&LEVEL.edge.lines)||[], onEdge=(ax,v)=>EL.some(l=>ax==='x'?l[0]===l[2]&&Math.abs(l[0]-v-PO.x)<1:l[1]===l[3]&&Math.abs(l[1]-v-PO.y)<1), openE=PARK.openE=onEdge('x',P.x1), openN=PARK.openN=onEdge('y',P.y1);   // a side on the map's edge has no wall, only the forcefield (owner, 7 Nov 2026)
+  const EL=(LEVEL.edge&&LEVEL.edge.lines)||[], onEdge=(ax,v)=>EL.some(l=>ax==='x'?l[0]===l[2]&&Math.abs(l[0]-v-PO.x)<1:l[1]===l[3]&&Math.abs(l[1]-v-PO.y)<1), openE=PARK.openE=onEdge('x',P.x1), openN=PARK.openN=onEdge('y',P.y1), openW=PARK.openW=onEdge('x',P.x0);   // a side on the map's edge has no wall, only the forcefield (owner, 7 Nov 2026)
   if(openE)PARK.wallOn=[P.x1+PO.x,P.y0+PO.y,P.y0+T+PO.y];   // Market St's wall carries on past the mirror's reach (069a) (owner, 8 Nov 2026: "i dont see the parkwall out of bounds")
   const EG=PARK.egate=[P.round[1]-1.5,P.round[1]+1.5], ex=P.x1-T;
   if(!openE){ wall(ex,P.y0+T,P.x1,EG[0]-PW,31); wall(ex,EG[1]+PW,P.x1,P.y1,35);
   pier(ex-.6,EG[0]-PW,P.x1+.3,EG[0],41); pier(ex-.6,EG[1],P.x1+.3,EG[1]+PW,45);
   LEAVES.push([ex-.85,EG[0],-1,'y',1.5],[ex-.85,EG[1],1,'y',1.5]); }
-  const CB=[CASTLE.b[0]-PO.x,CASTLE.b[1]-PO.x,CASTLE.b[2]-PO.y,CASTLE.b[3]-PO.y], wx=P.x0, ny=P.y1-T, WG=PARK.wgate=[P.round[1]-(g1-g0)/2,P.round[1]+(g1-g0)/2], NG=PARK.ngate=[P.round[0]-3.5,P.round[0]+3.5];
+  const CB=[CASTLE.b[0]-PO.x,CASTLE.b[1]-PO.x,CASTLE.b[2]-PO.y,CASTLE.b[3]-PO.y], wx=P.x0, ny=P.y1-T, WG=PARK.wgate=openW?null:[P.round[1]-(g1-g0)/2,P.round[1]+(g1-g0)/2], NG=PARK.ngate=[P.round[0]-3.5,P.round[0]+3.5];
   const cw=CB[0]<=wx+T+.5, wTop=cw?Math.min(P.y1,CB[2]):ny, nLeft=CB[3]<P.y1-T-1?P.x0:Math.max(P.x0,CB[1]);   // the west wall breaks for the castle only where the castle stands on it
-  wall(wx,P.y0+T,wx+T,WG[0]-PW,51); wall(wx,WG[1]+PW,wx+T,wTop,55); if(cw&&CB[3]<P.y1-T-1)wall(wx,CB[3],wx+T,ny,59);
+  if(!openW){ wall(wx,P.y0+T,wx+T,WG[0]-PW,51); wall(wx,WG[1]+PW,wx+T,wTop,55); if(cw&&CB[3]<P.y1-T-1)wall(wx,CB[3],wx+T,ny,59);
   pier(wx-.3,WG[0]-PW,wx+T+.6,WG[0],57); pier(wx-.3,WG[1],wx+T+.6,WG[1]+PW,61);
-  LEAVES.push([wx+T+.85,WG[0],-1,'y',(WG[1]-WG[0])/2],[wx+T+.85,WG[1],1,'y',(WG[1]-WG[0])/2]);
+  LEAVES.push([wx+T+.85,WG[0],-1,'y',(WG[1]-WG[0])/2],[wx+T+.85,WG[1],1,'y',(WG[1]-WG[0])/2]); }
   if(!openN){ wall(nLeft,ny,NG[0]-PW,P.y1,65); wall(NG[1]+PW,ny,openE?P.x1:P.x1-T,P.y1,69);
   pier(NG[0]-PW,ny-.6,NG[0],P.y1+.3,71); pier(NG[1],ny-.6,NG[1]+PW,P.y1+.3,75);
   LEAVES.push([NG[0],ny-.85,-1,'x',3.5],[NG[1],ny-.85,1,'x',3.5]); }
@@ -215,7 +215,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
           for(let k=0;k<4;k++){ const a0=td*(m-(q0+.12+k*.18))*TILE, n=4+Math.floor(lr(k,13)*6); for(let i=0;i<n;i++){ const s=(.06+.05*lr(k*9+i,15))*M; at(a0+(lr(k*9+i,17)-.5)*.08*M,hb-i*s*VS*1.6,(lr(k*9+i,19)-.5)*pz*2,s,s*VS,s,LV[(k+i)%3]); } } }
         if(main)PARK.sign={x:X(m),y:hb+ah*.5,z:Z(c0),top:hb+ah+py*5,out:[X(m),Z(c0-4)]}; (PARK.arches=PARK.arches||[]).push([X(ax==='x'?m:c0),Z(ax==='x'?c0:m),ax]); }
       put([],B); };
-    arch(g0,g1,P.y0+.42,'x',-1,true); arch(WG[0],WG[1],wx+.42,'y',1,false);   // the west gate as the main one, turned to face West St
+    arch(g0,g1,P.y0+.42,'x',-1,true); if(WG)arch(WG[0],WG[1],wx+.42,'y',1,false);   // the west gate as the main one, turned to face West St
     const LB=[], LG=[], LC_=[], HL=[], LBP=[], LGP=[];
     for(const [x,y] of PIERS){ const wx_=X(x), wz_=Z(y), t=Y(PH+18), K=1.4, b=(h0,h,w,c=IR[0])=>LB.push([wx_,t+mv((h0+h/2)*K),wz_,w*M*K,mv(h*K),w*M*K,c]);
       b(0,.22,.62,IR[1]); b(.22,.05,.5); b(.27,.05,.4); b(.32,.62,.07);
@@ -321,7 +321,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
         const [x,y]=at(u,r+1.1), sd=s++; if(gap(u,g,PAD+r)||!edgeOK(x,y)||KEEP.some(b=>x>b[0]&&x<b[2]&&y>b[1]&&y<b[3]))continue; add(k,x,y,m,hash(sd,4,19)*6.28); } };
       row(P.x0+1,P.x1-1,(u,o)=>[u,P.y0+o],P.gate); if(!PARK.openN)row(P.x0+1,P.x1-1,(u,o)=>[u,P.y1-o],PARK.ngate);
       const RM=Math.max(...TK.map(k=>lowR(k)*9))*2;   // the side rows leave the corners to the end rows
-      row(P.y0+RM,P.y1-RM,(u,o)=>[P.x0+o,u],PARK.wgate); if(!PARK.openE)row(P.y0+RM,P.y1-RM,(u,o)=>[P.x1-o,u],PARK.egate); }
+      if(!PARK.openW)row(P.y0+RM,P.y1-RM,(u,o)=>[P.x0+o,u],PARK.wgate); if(!PARK.openE)row(P.y0+RM,P.y1-RM,(u,o)=>[P.x1-o,u],PARK.egate); }
     // the edge ring baked low, its crowns kept inside the wall and clear of the gateways: moved in or along, else shrunk to fit, else left out
     { const low=k=>{ const q=k+'.low'; if(!F[q])F[q]=TREEGEN.low(F[k].sum,F[k].trunk); return q; }, M=.6, w0=[P.x0+T,P.x1-T,P.y0+T,P.y1-T], D=7;
       const GB=[[P.gate,0,w0[2],1],[PARK.ngate,0,w0[3],-1],[PARK.wgate,1,w0[0],1],[PARK.egate,1,w0[1],-1]].filter(g=>g[0]).map(([g,ax,f,sg])=>{ const a=Math.min(f,f+D*sg), b=Math.max(f,f+D*sg); return ax?[a,g[0]-PW,b,g[1]+PW,1]:[g[0]-PW,a,g[1]+PW,b,0]; });

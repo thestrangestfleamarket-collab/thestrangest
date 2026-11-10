@@ -108,7 +108,7 @@ export default {
         if (MAPPATCH.NAME.test(sh[1])) { let m = null; try { m = JSON.parse(new TextDecoder().decode(buf)); } catch (e) {} if (!m || m.v !== MAPPATCH.v || !m.set || typeof m.set !== "object") return json({ why: "not a map editor file" }, 400); }
         return json({ ok: await postOf(env).putFile(sh[1], word(request.headers.get("content-type") || "application/octet-stream", 60), buf), size: buf.byteLength }); }
       return new Response("not found", { status: 404 }); }
-    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art")) {
+    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art" || p === "/orchard")) {
       if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401);
       let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
@@ -120,6 +120,7 @@ export default {
         return json({ ok: await homeOf(env).put(id, t) }); }
       // what you own (cash, pack, skills, logs...): one copy a player, read at the start, written back key by key
       if (p === "/owned") { if (body.put === undefined) { const H = homeOf(env), [owned, no, name] = await Promise.all([H.ownedGet(id), H.passport(id), H.nameGet(id)]); return json({ owned, me: { ...meOf(request, id), no, name } }); }
+        if (body.kit !== undefined) { if (await owner(env, id, dev) !== true) return json({ why: "owners only" }, 403); await homeOf(env).econAllow(id, 0, Math.min(20000, Math.max(0, Math.floor(+body.kit || 0))), "owners' kit"); return json({ ok: true }); }   // an owner's own kit, each start (141-forage)
         const put = body.put; if (!put || typeof put !== "object" || Array.isArray(put)) return json({ why: "bad save" }, 400);
         const ks = Object.keys(put); if (ks.length > 80 || ks.some(k => !/^[a-z0-9_.-]{1,40}$/i.test(k) || (put[k] !== null && (typeof put[k] !== "string" || put[k].length > 262144)))) return json({ why: "bad save" }, 400);
         if (tooMany("owned:" + id, 120)) return json({ why: "too many saves, wait a minute" }, 429);
@@ -138,6 +139,14 @@ export default {
         if (!k || typeof put.d !== "string" || !/^data:image\/(png|webp|jpeg);base64,|^\{/.test(put.d) || put.d.length > 12 << 20) return json({ why: "bad picture" }, 400);
         if (tooMany("art:" + id, 60)) return json({ why: "too many saves, wait a minute" }, 429);
         const r = await H.artPut(k, id, put.d, put.fin ? 1 : 0); return r === true ? json({ ok: true }) : json({ why: r, full: r === "full" }, r === "full" ? 413 : 409); }
+      // the park orchard's plots (src/147d): one a player a section, its trees in it; anyone reads them all, only its keeper writes one; a plot left untouched for 60 days can be taken
+      if (p === "/orchard") { const sec = word(body.sec, 8).toUpperCase(), H = homeOf(env); if (!/^[A-Z0-9]{1,8}$/.test(sec)) return json({ why: "bad section" }, 400);
+        if (body.put === undefined && body.claim === undefined && body.leave === undefined) return json({ plots: await H.orchList(sec), me: id });
+        if (tooMany("orchard:" + id, 120)) return json({ why: "too many saves, wait a minute" }, 429);
+        if (body.claim !== undefined) return json(await H.orchClaim(sec, id, Math.floor(+body.claim)));
+        if (body.leave !== undefined) return json({ ok: await H.orchLeave(sec, id) });
+        const t = JSON.stringify(body.put); if (!body.put || typeof body.put !== "object" || Array.isArray(body.put) || t.length > 16384) return json({ why: "bad plot" }, 400);
+        return json({ ok: await H.orchPut(sec, id, t) }); }
       // the arcade's high scores: a top ten a cabinet with three initials, shared by everyone; {cab} reads one ("*" all), {cab, put} adds a run
       if (p === "/scores") { const cab = word(body.cab, 20); if (!/^[A-Z0-9 *]{1,20}$/.test(cab)) return json({ why: "bad cabinet" }, 400);
         if (body.put === undefined) return json({ top: await postOf(env).top(cab) });
@@ -874,6 +883,16 @@ export class Home extends DurableObject {
     if (n > 2 << 20) return false;
     for (const k in put) { if (put[k] === null) this.sql.exec("delete from owned where who = ? and k = ?", id, k); else this.sql.exec("insert into owned(who, k, v, at) values(?, ?, ?, ?) on conflict(who, k) do update set v = excluded.v, at = excluded.at", id, k, put[k], now); }
     return true; }
+  // the park orchard: eight plots a section (plot 0 to 7), one a player
+  orchT() { this.sql.exec("create table if not exists orchard(sec text, plot integer, who text, d text, at integer, primary key(sec, plot))"); }
+  orchList(sec) { this.orchT(); this.nameT(); return this.sql.exec("select o.plot as plot, o.who as who, n.name as name, o.d as d, o.at as at from orchard o left join names n on n.who = o.who where o.sec = ?", sec).toArray().map(r => { let d = null; try { d = JSON.parse(r.d); } catch (e) {} return { plot: r.plot, who: r.who, name: r.name || null, d, at: r.at }; }); }
+  orchClaim(sec, who, want) { this.orchT(); const mine = this.sql.exec("select plot from orchard where sec = ? and who = ?", sec, who).toArray()[0]; if (mine) return { plot: mine.plot };
+    const old = Date.now() - 60 * 864e5, rows = this.sql.exec("select plot, at from orchard where sec = ?", sec).toArray(), free = i => { const r = rows.find(x => x.plot === i); return !r || r.at < old; };
+    const i = want >= 0 && want < 8 && free(want) ? want : [0, 1, 2, 3, 4, 5, 6, 7].find(free); if (i == null) return { why: "every plot is taken" };
+    this.sql.exec("insert into orchard(sec, plot, who, d, at) values(?, ?, ?, ?, ?) on conflict(sec, plot) do update set who = excluded.who, d = excluded.d, at = excluded.at", sec, i, who, "{}", Date.now()); return { plot: i }; }
+  orchPut(sec, who, d) { this.orchT(); const r = this.sql.exec("select plot from orchard where sec = ? and who = ?", sec, who).toArray()[0]; if (!r) return false;
+    this.sql.exec("update orchard set d = ?, at = ? where sec = ? and plot = ?", d, Date.now(), sec, r.plot); return true; }
+  orchLeave(sec, who) { this.orchT(); this.sql.exec("delete from orchard where sec = ? and who = ?", sec, who); return true; }
   // paintings: a picture in 1 MB parts; its painter alone writes it while it is unfinished, nobody once it is finished; 96 MB a painter
   artT() { this.sql.exec("create table if not exists art(id text, part integer, who text, fin integer, d text, at integer, primary key(id, part))"); }
   artGet(k, who) { this.artT(); if (!k) return null; const r = this.sql.exec("select who, fin, d from art where id = ? order by part", k).toArray(); if (!r.length || r[0].fin === 2 || (!r[0].fin && r[0].who !== who)) return null;

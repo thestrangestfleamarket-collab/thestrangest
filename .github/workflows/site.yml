@@ -87,7 +87,7 @@ jobs:
           k bodega80 'src/039-bodega|src/016-street-kit|bodega80s\.cjs'
           k bedroom 'src/150[a-c]|src/150ea|src/059a|bedroom'
           k roomedit 'src/150[c-e]|src/150cz|src/059a|roomedit'
-          k fishing 'src/142-|src/142b|src/066|src/141f|fishing'
+          k fishing 'src/142-|src/066|src/141f|fishing'
           k guide   'src/136d|data/guide|guide'
           k bank    'src/059h|src/058-store|src/161-perf|bank'
           k art     'src/059p-art|data/art|art\.cjs'
@@ -121,7 +121,7 @@ jobs:
           k firetown 'src/141c|src/059[ad]|src/130a|src/161a|src/150[ad]|src/150fi|firetown\.cjs'
           k aptradio 'src/150fb|src/150a|src/150d|data/radio|aptradio\.cjs'
           k crt     'src/150fa|src/150a|src/150d|data/tv\.json|crt\.cjs'
-          k sound   'src/091-sfx|src/093-|src/100-use|src/146zo-|sound\.cjs'
+          k sound   'src/091-sfx|src/093-|src/100-use|src/146zo-|src/150p-cars|src/150pb-|src/150pcb-|data/sfx|sound\.cjs'
           k clock   'src/134b|worker/clock|clock\.cjs'
           k westst  'src/023|src/05[89]-|src/059[e-h]|westst'
           k pfrow   'src/068a|src/059i|src/069a|data/street|tools/row-lay|pfrow'
@@ -130,6 +130,7 @@ jobs:
           k zones   'src/129a|src/066-river|src/065a|src/065-ring|zones\.cjs'
           k bees    'src/147a|bees\.cjs'
           k fossils 'src/150cyc|src/141-forage|data/pffossils|data/trainers|worker/door|fossils\.cjs'
+          k fruittrees 'src/144j|src/147d|src/150hb|fruittrees\.cjs'
           k parkq   'src/147b|src/060a-fount|src/142-fishing|src/144a-garden|park-quests\.cjs'
           k interiors 'src/038z[cd]|src/059p-art|src/059i|src/146j-board|src/146l-fixer|src/146n-scanner|src/039-bodega|src/059-street|src/058-store|src/146z[5b-n]|src/059b-arcade|src/059-store|src/027-rooms-kits|src/111fb|src/159-jobs|data/characters|data/items|interiors\.cjs'
           k bowling 'src/146zkb-bowling|src/059i|data/world|worker/lanes|bowling\.cjs'
@@ -461,6 +462,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' bees')
         run: node tests/bees.cjs dist/market.html
+      - name: The fruit trees (57 real trees, their rules, the park orchard's plots, a big pot at home)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' fruittrees')
+        run: node tests/fruittrees.cjs dist/market.html
       - name: The starter kit and the BMX (every player starts with the kit, once; the BMX rides)
         timeout-minutes: 10
         if: contains(steps.f.outputs.run, ' kit')
@@ -469,6 +474,10 @@ jobs:
         timeout-minutes: 10
         if: contains(steps.f.outputs.run, ' kit')
         run: node tests/fullkit.cjs dist/market.html
+      - name: The owners' kit (every usable carried thing, the carried telescope and microscope)
+        timeout-minutes: 10
+        if: contains(steps.f.outputs.run, ' kit')
+        run: node tests/ownerkit.cjs dist/market.html
       - name: The browser's extras (the mouse look in first person, a sound's place in 3D, the screen kept awake)
         timeout-minutes: 10
         if: contains(steps.f.outputs.run, ' browser')

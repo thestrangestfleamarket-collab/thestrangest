@@ -22,7 +22,7 @@ Object.assign(USE,{seat:null}); window.USE=USE;
     const cx=(S.min.x+S.max.x)/2, cz=(S.min.z+S.max.z)/2; let bx=0, bz=0, bw=0; for(const f of F)if(f.cy>sy/sw+.3*T){ bx+=f.cx*f.A; bz+=f.cz*f.A; bw+=f.A; }
     let fx=0, fz=0; if(bw){ fx=cx-bx/bw; fz=cz-bz/bw; const l=Math.hypot(fx,fz); if(l>.05*T){ fx/=l; fz/=l; } else fx=fz=0; }
     if(fx&&Math.abs(fx)<.35){ fx=0; fz=Math.sign(fz); } else if(fz&&Math.abs(fz)<.35){ fz=0; fx=Math.sign(fx); }
-    return {y:sy/sw,S,fx,fz,b}; };
+    return {y:sy/sw,S,fx,fz,b,mid:bw&&!fx&&!fz?[bx/bw,bz/bw]:null}; };
   const near=(S,m)=>{ const x0=Math.min(S.min.x+m,(S.min.x+S.max.x)/2), x1=Math.max(S.max.x-m,(S.min.x+S.max.x)/2), z0=Math.min(S.min.z+m,(S.min.z+S.max.z)/2), z1=Math.max(S.max.z-m,(S.min.z+S.max.z)/2);
     return [Math.max(x0,Math.min(x1,pos.x)),Math.max(z0,Math.min(z1,pos.z))]; };
   VIT.mends.push(()=>USE.seat&&st.sit?1/150:0);   // resting on a seat or a bed mends you slowly
@@ -30,7 +30,10 @@ Object.assign(USE,{seat:null}); window.USE=USE;
   USE.stand=()=>stand(true);
   USE.sitAt=(x,z,y,hd,more)=>{ '@later'; SFX.play('creak',{vol:.5,vary:.3,delay:.4}); const g=SHARED.groundY(x,z);   // sit at a point: a chair's top, a train's seat (more: what carries the seat)
     USE.seat={back:pos.clone(),x,z,...more}; pos.x=x; pos.z=z; SHARED.target=null; SHARED.heading=hd; st.sit={z:Math.max(2,(y-g)/(ZU*W3.SZ*(W3.BH||1)))}; st.target=0; st.w=0; MOTION.play('sitDown'); st.mv=st.mvw=0; };   // (no stride carried onto the seat: it slid you off a bench, owner 9 Nov 2026)
-  const sitOn=(se,th)=>{ const [x,z]=near(se.S,.4*T); let fx=se.fx, fz=se.fz; if(!fx&&!fz){ fx=pos.x-x; fz=pos.z-z; const l=Math.hypot(fx,fz)||1; fx/=l; fz/=l; }
+  const sitOn=(se,th)=>{ let [x,z]=near(se.S,.4*T), fx=se.fx, fz=se.fz;
+    if(se.mid){ const S=se.S, wx=S.max.x-S.min.x, wz=S.max.z-S.min.z;   // a back down the middle: sit on your side of it, facing out
+      if(wx<wz){ fx=pos.x<se.mid[0]?-1:1; x=se.mid[0]+fx*wx/4; } else { fz=pos.z<se.mid[1]?-1:1; z=se.mid[1]+fz*wz/4; } }
+    else if(!fx&&!fz){ fx=pos.x-x; fz=pos.z-z; const l=Math.hypot(fx,fz)||1; fx/=l; fz/=l; }
     USE.sitAt(x-fx*.06*T,z-fz*.06*T,se.y,Math.atan2(fx,fz)); };
   const lightsOf=b=>{ const e=.8*T; return LITE.recs.filter(L=>{ const p=L.position; return p.x>b.min.x-e&&p.x<b.max.x+e&&p.y>b.min.y-e&&p.y<b.max.y+e&&p.z>b.min.z-e&&p.z<b.max.z+e; }); };
   const tint=(o,c,which)=>{ for(const p of o.parts){ if(!which(p))continue; const g=p.me.geometry, C=g.attributes.aCol; for(let i=0;i<18;i++)C.array[p.v0*3+i]=c[i%3]; C.needsUpdate=true; } };

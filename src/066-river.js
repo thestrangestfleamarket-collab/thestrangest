@@ -284,12 +284,33 @@ RIVER.build=()=>{ if(RIVER.on)return; const n0=scene.children.length; const R=RI
   const RQ=[[-1,-1],[1,-1],[1,1],[-1,1]], V8=new THREE.Vector3(), SEE=()=>{ if(!SHARED.cam.isOrthographicCamera)return F.intersectsBox(bb); const Q=[]; for(let k=0;k<8;k++){ V8.set(k&1?bb.max.x:bb.min.x,k&2?bb.max.y:bb.min.y,k&4?bb.max.z:bb.min.z).applyMatrix4(M4); Q.push([V8.x,V8.y]); }
     for(let i=0;i<8;i++)for(let j=i+1;j<8;j++){ const nx=Q[j][1]-Q[i][1], ny=Q[i][0]-Q[j][0]; if(!nx&&!ny)continue; const d=p=>p[0]*nx+p[1]*ny, a=Q.map(d), lo=Math.min(...a), hi=Math.max(...a), r=RQ.map(d); if(r.every(x=>x<lo)||r.every(x=>x>hi))return false; }
     return !(Q.every(p=>p[0]>1)||Q.every(p=>p[0]<-1)||Q.every(p=>p[1]>1)||Q.every(p=>p[1]<-1)); };
+  // the picture behind the water is drawn only when water was seen (A: the graphics card's word on last frame's water) and holds only what is in or by the river (B: the town far from it is left out; anything that moved since the last look is kept)
+  const RXM=8*T, RXO=[], RXB=new THREE.Box3(), RXH=[], RXQ={gl:null,q:[],miss:0,ok:true}; let rxT=0, rxCx=1e9;
+  const rxScan=()=>{ RXO.length=0; rxCx=RIVER.cx; const x0=RIVER.cx-WIN/2-RXM, x1=RIVER.cx+WIN/2+RXM, z0=rz0-RXM, z1=rz1+RXM;
+    const iv=o=>o.isInstancedMesh?o.instanceMatrix.version+'/'+o.count:'';
+    scene.traverse(o=>{ if(!(o.isMesh||o.isPoints||o.isLine)||o.isBatchedMesh||o.isSkinnedMesh||o===surf||o===surfF||!o.geometry||!o.geometry.attributes.position)return; const g=o.geometry; if(!g.boundingBox||g.userData.rxV!==g.attributes.position.version){ g.computeBoundingBox(); g.userData.rxV=g.attributes.position.version; }
+      if(o.isInstancedMesh){ if(!o.count)return; if(!o.boundingBox||o.userData.rxV!==iv(o)){ o.computeBoundingBox(); o.userData.rxV=iv(o); } RXB.copy(o.boundingBox); } else RXB.copy(g.boundingBox);
+      RXB.applyMatrix4(o.matrixWorld); if(RXB.isEmpty()||RXB.max.x>x0&&RXB.min.x<x1&&RXB.max.z>z0&&RXB.min.z<z1)return; const e=o.matrixWorld.elements; RXO.push(o,e[12],e[13],e[14],e[0]+'|'+iv(o)); }); };
+  const rxHide=()=>{ RXH.length=0; for(let i=0;i<RXO.length;i+=5){ const o=RXO[i], e=o.matrixWorld.elements; if(o.visible&&e[12]===RXO[i+1]&&e[13]===RXO[i+2]&&e[14]===RXO[i+3]&&e[0]+'|'+(o.isInstancedMesh?o.instanceMatrix.version+'/'+o.count:'')===RXO[i+4]){ o.visible=false; RXH.push(o); } } };
+  const rxShow=()=>{ for(const o of RXH)o.visible=true; RXH.length=0; };
+  // A: a query round the surface's own draw in the main picture; a few frames with no water pixel and the picture behind it is skipped
+  const rxQ=renderer=>{ if(RXQ.gl)return; const gl=renderer.getContext(); RXQ.gl=gl; RXQ.ok=!!(gl.createQuery&&gl.ANY_SAMPLES_PASSED_CONSERVATIVE); RXQ.q=[];
+    for(const m of [surf,surfF]){ const on=m.onBeforeRender, off=m.onAfterRender; let open=null;
+      m.onBeforeRender=function(r,sc,c){ if(RXQ.ok&&c===SHARED.cam&&r.getRenderTarget()!==RT&&!(r.xr&&r.xr.isPresenting)&&RXQ.q.length<8){ open=gl.createQuery(); gl.beginQuery(gl.ANY_SAMPLES_PASSED_CONSERVATIVE,open); } return on.apply(this,arguments); };
+      m.onAfterRender=function(){ if(open){ gl.endQuery(gl.ANY_SAMPLES_PASSED_CONSERVATIVE); RXQ.q.push(open); open=null; } return off.apply(this,arguments); }; } };
+  const rxSeen=()=>{ const gl=RXQ.gl; if(!RXQ.ok)return true; let n=0, any=false; for(const q of RXQ.q){ if(!gl.getQueryParameter(q,gl.QUERY_RESULT_AVAILABLE))break; n++; if(gl.getQueryParameter(q,gl.QUERY_RESULT)>0)any=true; gl.deleteQuery(q); }
+    if(n){ RXQ.q.splice(0,n); RXQ.miss=any?0:RXQ.miss+n; } return RXQ.miss<6; };
+  RIVER.rx={get hidden(){ return RXO.length/5; },get miss(){ return RXQ.miss; },get ok(){ return RXQ.ok; },skips:0,runs:0};
   RIVER.pre=(renderer,scene,cam,dt,pos)=>{ const up=OUT.world;
     const fl=RIVER.way==='fluid'; uRipOn.value=(RIVER.way==='full'||fl)&&FLOW.on.value?1:0; FLOW.wa.value=WA; FLOW.wb.value=WB; FLOW.nw.value=fl?WV.length:0; FLOW.time=RIVER.t;   // the sea's swell comes in at FLOW's rim
     if(surf.visible){ M4.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse); F.setFromProjectionMatrix(M4); bb.min.set(RIVER.cx-WIN/2,LV-WU,rz0); bb.max.set(RIVER.cx+WIN/2,LV+2*WU,rz1); if(cam.position.y>LV+2*WU&&!SEE()){ surf.visible=bed.visible=junk.visible=grass.visible=false; } }
     if((RIVER.way==='full'||fl)&&surf.visible){
-      if(cam.position.y<=LV+2*WU||SEE()){ const w=renderer.domElement.width, h=renderer.domElement.height; if(RT.width!==w||RT.height!==h)RT.setSize(w,h); SU.uRes.value.set(w,h); SU.uNear.value=cam.near; SU.uFar.value=cam.far; cam.getWorldDirection(SU.uCamD.value);
-        surf.visible=false; spm.visible=false; renderer.setRenderTarget(RT); renderer.render(scene,cam); renderer.setRenderTarget(null); surf.visible=true; spm.visible=true; } }
+      if(cam.position.y<=LV+2*WU||SEE()){ rxQ(renderer); const seen=rxSeen(), under=cam.position.y<=LV+2*WU, fresh=!RIVER.rxIn; RIVER.rxIn=true;
+        if(!under&&!fresh&&!seen){ SU.uMode.value=3; RIVER.rx.skips++; }   // (no water was drawn lately: if some shows this frame, its plain colour, never a stale picture)
+        else { const w=renderer.domElement.width, h=renderer.domElement.height; if(RT.width!==w||RT.height!==h)RT.setSize(w,h); SU.uRes.value.set(w,h); SU.uNear.value=cam.near; SU.uFar.value=cam.far; cam.getWorldDirection(SU.uCamD.value);
+          const now=performance.now(); if(now>rxT||Math.abs(RIVER.cx-rxCx)>RXM/2){ rxT=now+1000; rxScan(); } if(!RIVER.rxAll&&!under)rxHide(); RIVER.rx.runs++;
+          surf.visible=false; spm.visible=false; renderer.setRenderTarget(RT); renderer.render(scene,cam); renderer.setRenderTarget(null); surf.visible=true; spm.visible=true; rxShow(); } }
+      else RIVER.rxIn=false; }
     else cam.getWorldDirection(SU.uCamD.value);
     const cp=cam.position; uw=up&&RIVER.over(cp.x,cp.z)&&cp.y<LV+hAt(cp.x,cp.z); if(uw){ const Wt=WATERS[RIVER.wi], k=SU.uScat.value, a=SU.uAmb.value, s=SU.uSunC.value, dm=Math.max(0,(LV-cp.y)*MPU), see=FLOW.see(dm,.8/Math.min(...Wt.sig.slice(1))), dk=see.k;   // darker the deeper you go
       UF.color.setRGB(Math.min(.62,k.x*(a.r+s.r*.7)*9*dk),Math.min(.78,k.y*(a.g+s.g*.7)*9*dk),Math.min(.8,k.z*(a.b+s.b*.7)*9*dk));   // twice as bright near the top as it was; still dark deep down (owner, 7 Nov 2026: "its way too dark under the water")

@@ -23,13 +23,13 @@ import {AVATAR} from './111c-avatar.js';
   PASSPORT.stamp=id=>{ if(!id||P.stamps[id])return; P.stamps[id]=new Date().toISOString().slice(0,10); save(); say('YOUR PASSPORT IS STAMPED: SECTION '+id+'.','#7dffa8'); };
   const sp=document.createElement('div'); sp.id='passportw'; sp.hidden=true;
   sp.style.cssText='position:fixed;inset:0;z-index:22;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);zoom:var(--uiz,1)';
-  sp.addEventListener('click',e=>{ if(e.target===sp)PASSPORT.close(); }); sp.addEventListener('keydown',e=>{ if(e.key==='Escape')PASSPORT.close(); e.stopPropagation(); }); sp.addEventListener('keyup',e=>e.stopPropagation()); document.body.appendChild(sp);
-  // the card (owner, 7 Nov 2026: "C, no stamps, include other details like height, hair color, eye color, etc. address, etc. all passport/dl style info"): the map's look; your photo from your look as it is; every line from what you are
+  sp.addEventListener('click',e=>{ if(e.target===sp)PASSPORT.close(); }); sp.addEventListener('keydown',e=>{ if(e.key==='Escape')PASSPORT.close(); e.stopPropagation(); }); sp.addEventListener('keyup',e=>e.stopPropagation()); document.body.appendChild(sp); { const st=document.createElement('style'); st.textContent=`#passportw .pX{font:13px 'Share Tech Mono',ui-monospace,monospace;color:#7dffa8;background:#010805;border:2px solid #3aa866;width:28px;height:28px;cursor:pointer}#passportw .pX:hover{background:#7dffa8;color:#020a06}`; document.head.appendChild(st); }
+  // the card (owner, 7 Nov 2026: "C, no stamps, include other details like height, hair color, eye color, etc. address, etc. all passport/dl style info"): the menus' green look (10 Nov 2026); your photo from your look as it is; every line from what you are
   const HAIRN=[['1d1712','BLK'],['3b2a1e','BRO'],['5a3a24','BRO'],['8a5a32','AUB'],['b98a4e','BLN'],['d8c28a','BLN'],['8c8c8c','GRY'],['e8e4dc','WHI']];
   const rgb=h=>[0,2,4].map(i=>parseInt(String(h||'000000').slice(i,i+2),16)), near=(h,L)=>{ const a=rgb(h); let b=L[0], d=1e9; for(const e of L){ const c=rgb(e[0]), q=(a[0]-c[0])**2+(a[1]-c[1])**2+(a[2]-c[2])**2; if(q<d){ d=q; b=e; } } return b[1]; };
   const usd=d=>/^\d{4}-\d\d-\d\d$/.test(d||'')?d.slice(5,7)+'/'+d.slice(8,10)+'/'+d.slice(0,4):'—';
   const addr=()=>{ const F=APTS.flatOf&&APTS.flatOf(APTS.num); if(!APTS.num||!F||!(F.floor>0))return 'NO FLAT YET'; return 'APT '+F.floor+(F.side?'B':'A')+' · THE TOWER, MARKET ST'; };
-  const lb=(n,k)=>`<div style="font-size:8.5px;font-weight:900;letter-spacing:1.1px;color:#666">${n?`<span style="color:#e53935;margin-right:3px">${n}</span>`:''}${k}</div>`;
+  const lb=(n,k)=>`<div style="font-size:8.5px;font-weight:900;letter-spacing:1.1px;color:#3aa866">${n?`<span style="color:#ffd27a;margin-right:3px">${n}</span>`:''}${k}</div>`;
   const K=(n,k,v,x='')=>`<div style="${x}">${lb(n,k)}<div style="font-size:14px;font-weight:900;letter-spacing:.4px;line-height:1.15">${v}</div></div>`;
   const IN=(f,v,x='',t='text')=>`<input class="pE" data-f="${f}" type="${t}" value="${esc(v)}" spellcheck="false" autocomplete="off" style="${x}">`;
   const SEL=(f,v,L)=>`<select class="pE" data-f="${f}">${L.map(([k,t])=>`<option value="${esc(k)}"${String(k)===String(v)?' selected':''}>${esc(t)}</option>`).join('')}</select>`;
@@ -51,14 +51,14 @@ import {AVATAR} from './111c-avatar.js';
     if(f==='pose'){ P.pose=POSES.some(p=>p[0]===v)?v:''; save(); return draw(); } };
   const draw=()=>{ '@later'; const name=((LOOKS.L&&LOOKS.L.name)||'').trim().toUpperCase()||'A TENANT', L=AVATAR.L?AVATAR.L():{}, sex=L.f==='f'?'F':'M', dob=P.dob||'', hand=st.hand==='L'?'L':'R';
     const EY=uniq(AVATAR.EYES||[['2a2019','BRN']]), HR=uniq(HAIRN), ey=near(L.eye||'2a2019',EY), hr=near(L.hair,HR);
-    const hb=h=>`<button class="pH" data-h="${h}" style="font:900 11px 'Helvetica Neue',Helvetica,Arial,sans-serif;padding:3px 9px;cursor:pointer;border:2px solid #111;margin-right:4px;background:${hand===h?'#111':'#f6f4ec'};color:${hand===h?'#f6f4ec':'#111'}">${h}</button>`;
+    const hb=h=>`<button class="pH" data-h="${h}" style="font:11px 'Share Tech Mono',ui-monospace,monospace;padding:3px 9px;cursor:pointer;border:2px solid #3aa866;margin-right:4px;background:${hand===h?'#7dffa8':'transparent'};color:${hand===h?'#020a06':'#7dffa8'}">${h}</button>`;
     const ce='text-align:center;text-transform:uppercase';
-    sp.innerHTML=`<style>#passportw .pE{font:inherit;font-weight:900;color:inherit;background:transparent;border:0;border-bottom:1.5px dashed transparent;padding:0;margin:0;width:100%;box-sizing:border-box;outline:none;border-radius:0;-webkit-appearance:none;appearance:none;cursor:text}#passportw select.pE{cursor:pointer}#passportw input[type=number].pE{-moz-appearance:textfield}#passportw .pE::-webkit-inner-spin-button{-webkit-appearance:none}#passportw .pE:hover,#passportw .pE:focus{border-bottom-color:#999;background:#ebe7da}</style><div style="position:relative"><div style="width:360px;background:#f6f4ec;color:#111;border-radius:18px;overflow:hidden;position:relative;box-shadow:0 20px 60px #000;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif">
-      <div style="background:#ffd400;color:#111;font-weight:900;letter-spacing:1px;font-size:17px;padding:12px 18px;text-align:center">THE STRANGEST FLEA MARKET</div>
+    sp.innerHTML=`<style>#passportw .pE{color-scheme:dark;font:inherit;font-weight:900;color:inherit;background:transparent;border:0;border-bottom:1.5px dashed transparent;padding:0;margin:0;width:100%;box-sizing:border-box;outline:none;border-radius:0;-webkit-appearance:none;appearance:none;cursor:text}#passportw select.pE{cursor:pointer}#passportw input[type=number].pE{-moz-appearance:textfield}#passportw .pE::-webkit-inner-spin-button{-webkit-appearance:none}#passportw .pE:hover,#passportw .pE:focus{border-bottom-color:#3aa866;background:#0d3a1f}#passportw select.pE option{background:#031a0d;color:#7dffa8}</style><div style="position:relative"><div style="width:360px;background:#031a0d;color:#7dffa8;overflow:hidden;position:relative;box-shadow:inset 0 0 0 2px #3aa866,0 20px 60px #000;font-family:'Share Tech Mono',ui-monospace,monospace;letter-spacing:1px">
+      <div style="background:#7dffa8;color:#020a06;font-weight:400;letter-spacing:3px;font-size:17px;padding:12px 18px;text-align:center">THE STRANGEST FLEA MARKET</div>
       <div style="padding:22px 26px;display:flex;flex-direction:column;align-items:center;gap:12px">
-        <canvas class="pPh" width="150" height="200" style="border:3px solid #111;background:#d6e2e8;image-rendering:pixelated;display:block"></canvas>
+        <canvas class="pPh" width="150" height="200" style="border:2px solid #3aa866;background:#0d3a1f;image-rendering:pixelated;display:block"></canvas>
         <div style="width:100%;font-size:30px;font-weight:900;letter-spacing:.4px">${IN('name',name,ce)}</div>
-        <div style="font-size:15px;font-weight:900;color:#e53935">CITIZEN ${esc(P.no)} · TENANT</div>
+        <div style="font-size:15px;font-weight:900;color:#ffd27a">CITIZEN ${esc(P.no)} · TENANT</div>
         <div style="width:100%;font-size:13px;font-weight:900;line-height:1.4">${IN('a1',P.a1||addr(),ce)}${IN('a2',P.a2||'SECTION '+P.home+', NEW YORK',ce)}</div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px 18px;width:100%;margin-top:8px">
           ${K(5,'DOB',IN('dob',dob,'font-size:12px','date'))}${K(15,'SEX',SEL('f',sex,[['M','M'],['F','F']]))}${K(16,'HGT',SEL('h',inch(L),HTS))}
@@ -66,7 +66,7 @@ import {AVATAR} from './111c-avatar.js';
           ${K('','BUILD',SEL('b',L.b==null?1:L.b,(AVATAR.BUILDN||['SLIM','MEDIUM','BROAD']).map((t,i)=>[i,t])))}${K(3,'ISSUED',usd(P.issued))}${K(4,'EXPIRES','NEVER')}
         </div>
         <div style="display:flex;justify-content:space-between;align-items:flex-end;width:100%;margin-top:6px"><div>${lb('','HAND')}${hb('R')}${hb('L')}</div><div style="min-width:110px">${lb('','PHOTO POSE')}${SEL('pose',P.pose||'',POSES)}</div>
-          <div style="font-family:'Brush Script MT','Segoe Script','Snell Roundhand',cursive;font-size:${Math.min(30,Math.round(320/Math.max(4,name.length)))}px;line-height:1;color:#1a2a6c;white-space:nowrap">${esc(name.charAt(0)+name.slice(1).toLowerCase())}</div></div>
+          <div style="font-family:'Brush Script MT','Segoe Script','Snell Roundhand',cursive;font-size:${Math.min(30,Math.round(320/Math.max(4,name.length)))}px;line-height:1;color:#d8ffe4;white-space:nowrap">${esc(name.charAt(0)+name.slice(1).toLowerCase())}</div></div>
       </div></div><button class="pX" style="position:absolute;right:-6px;top:-38px">X</button></div>`;
     sp.querySelector('.pX').onclick=()=>PASSPORT.close(); sp.querySelectorAll('.pH').forEach(b=>{ b.onclick=()=>PASSPORT.setHand(b.dataset.h); });
     sp.querySelectorAll('.pE').forEach(e=>{ e.onchange=()=>edit(e.dataset.f,e.value); if(e.tagName==='INPUT')e.onkeydown=k=>{ if(k.key==='Enter')e.blur(); }; });
@@ -77,11 +77,15 @@ import {AVATAR} from './111c-avatar.js';
   const POSES=[['','STANDING'],['greet','WAVE'],['foldArms','ARMS FOLDED'],['cheer','CHEER'],['fistPump','FIST PUMP',.65],['dab','DAB'],['powerUp','POWER UP'],['confused','CONFUSED'],['angry','ANGRY',.35],['guard','GUARD']];   // (each held at the moment of its move that reads best: the middle unless given)
   PASSPORT.POSES=POSES; PASSPORT.photo=(c,look,pose)=>photo(c,look,pose,null);
   const photo=async(c,look,pose,live)=>{ '@later'; if(!c)return; const g2=c.getContext('2d'), m=/^b:avatar:(.*)$/.exec(String(look||'')), base=BODIES.by.avatar, body=m&&base&&base.variant?base.variant(m[1]):null;
-    if(!body){ if(live&&DESIGN.snapOf)DESIGN.snapOf(g2,c.width,c.height,live); return; }
+    if(!body){ if(live&&DESIGN.snapOf){ DESIGN.snapOf(g2,c.width,c.height,live); fitPic(c); } return; }
     const S=RIG.create(); S.target=0; if(pose&&POSES.some(p=>p[0]===pose)){ const I=await MOTION.ensure(); if(RIG.MOVES['mc_'+pose]){ RIG.begin(S,'mc_'+pose); const d=(I[pose]&&I[pose].dur)||1; const k=PASSPORT.poseAt!=null?PASSPORT.poseAt:(POSES.find(p=>p[0]===pose)[2]??.5); for(let t=0;t<d*k;t+=1/30)RIG.step(S,1/30); } } else for(let i=0;i<10;i++)RIG.step(S,1/30);
     const M=BODIES.mesh(body), G=new THREE.Group(); G.add(M.me); M.me.frustumCulled=false; BODIES.pose(RIG.pose(S,true),M.PM,body,S); G.updateMatrixWorld(true);
-    const bx=new THREE.Box3(), v=new V3(); const IV=new THREE.Matrix4(); M.PM.value.forEach((m4,i)=>bx.expandByPoint(body.binv?v.setFromMatrixPosition(IV.copy(body.binv[i]).invert()).applyMatrix4(m4):v.setFromMatrixPosition(m4))); const h=bx.max.y-bx.min.y; bx.max.y+=.16*h; bx.min.y-=.05*h; bx.expandByVector(v.set(.1*h,0,.1*h));   // (framed on the posed bones: the head's top and the soles past them)
-    try{ DESIGN.snapOf(g2,c.width,c.height,G,{box:bx}); } finally{ G.remove(M.me); } };
+    const bx=new THREE.Box3(), v=new V3(); const IV=new THREE.Matrix4(); M.PM.value.forEach((m4,i)=>bx.expandByPoint(body.binv?v.setFromMatrixPosition(IV.copy(body.binv[i]).invert()).applyMatrix4(m4):v.setFromMatrixPosition(m4))); const h=bx.max.y-bx.min.y; bx.max.y+=.4*h; bx.min.y-=.07*h; bx.expandByVector(v.set(.2*h,0,.2*h));   // (framed on the posed bones, with room for the whole head above the head bone and the soles below)
+    try{ DESIGN.snapOf(g2,c.width,c.height,G,{box:bx}); } finally{ G.remove(M.me); } fitPic(c); };
+  const fitPic=c=>{ const W=c.width, H=c.height, g=c.getContext('2d'), d=g.getImageData(0,0,W,H).data; let x0=W,y0=H,x1=-1,y1=-1;   // the whole figure in the frame: cropped to what was drawn, scaled to fit with a margin
+    for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(d[(y*W+x)*4+3]>8){ if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; } if(x1<0)return;
+    const w=x1-x0+1, h=y1-y0+1, k=Math.min(W*.86/w,H*.84/h), t=document.createElement('canvas'); t.width=w; t.height=h; t.getContext('2d').drawImage(c,x0,y0,w,h,0,0,w,h);
+    g.clearRect(0,0,W,H); g.imageSmoothingEnabled=false; g.drawImage(t,0,0,w,h,Math.round((W-w*k)/2),Math.round(H-H*.06-h*k),Math.round(w*k),Math.round(h*k)); };
   // in your pack, never leaves you (no dropping, no trading); the lanyard is gone (owner, 8 Nov 2026)
   FORAGE.ACT.passport=()=>PASSPORT.open(); FORAGE.ROWB.push(id=>id==='passport'?[['SHOW','passport']]:[]);
   // another player's card (owner, 8 Nov 2026: "if you double click on another player it shows their id on your screen"): what their card says travels with them (ONLINE.mine.id), the rest is read from their look
@@ -91,17 +95,17 @@ import {AVATAR} from './111c-avatar.js';
     const name=(o.name||'A TENANT').toUpperCase(), v=t=>esc(t||'—');
     const EY=uniq(AVATAR.EYES||[['2a2019','BRN']]), HR=uniq(HAIRN);
     const sex=L?(L.f==='f'?'F':'M'):'—', hgt=L?(HTS.find(e=>e[0]===inch(L))||[0,'—'])[1]:'—', w=a[4]||(L?Math.round(155*((L.h||100)/100)**2*[.85,1,1.2][L.b==null?1:L.b]):''), ey=L?near(L.eye||'2a2019',EY):'—', hr=L?near(L.hair,HR):'—', bd=L?(AVATAR.BUILDN||['SLIM','MEDIUM','BROAD'])[L.b==null?1:L.b]:'—';
-    sp.innerHTML=`<div style="position:relative"><div style="width:360px;background:#f6f4ec;color:#111;border-radius:18px;overflow:hidden;position:relative;box-shadow:0 20px 60px #000;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;text-transform:uppercase">
-      <div style="background:#ffd400;color:#111;font-weight:900;letter-spacing:1px;font-size:17px;padding:12px 18px;text-align:center">THE STRANGEST FLEA MARKET</div>
+    sp.innerHTML=`<div style="position:relative"><div style="width:360px;background:#031a0d;color:#7dffa8;overflow:hidden;position:relative;box-shadow:inset 0 0 0 2px #3aa866,0 20px 60px #000;font-family:'Share Tech Mono',ui-monospace,monospace;letter-spacing:1px;text-transform:uppercase">
+      <div style="background:#7dffa8;color:#020a06;font-weight:400;letter-spacing:3px;font-size:17px;padding:12px 18px;text-align:center">THE STRANGEST FLEA MARKET</div>
       <div style="padding:22px 26px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center">
-        <canvas class="pPh" width="150" height="200" style="border:3px solid #111;background:#d6e2e8;image-rendering:pixelated;display:block"></canvas>
+        <canvas class="pPh" width="150" height="200" style="border:2px solid #3aa866;background:#0d3a1f;image-rendering:pixelated;display:block"></canvas>
         <div style="font-size:30px;font-weight:900;letter-spacing:.4px">${esc(name)}</div>
-        <div style="font-size:15px;font-weight:900;color:#e53935">CITIZEN ${v(a[0])} · TENANT</div>
+        <div style="font-size:15px;font-weight:900;color:#ffd27a">CITIZEN ${v(a[0])} · TENANT</div>
         <div style="font-size:13px;font-weight:900;line-height:1.4">${v(a[1])}<br>${v(a[2])}</div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px 18px;width:100%;margin-top:8px;text-align:left">
           ${K(5,'DOB',esc(usd(a[3])))}${K(15,'SEX',sex)}${K(16,'HGT',esc(hgt))}${K(17,'WGT',w?esc(w)+' LB':'—')}${K(18,'EYES',ey)}${K(19,'HAIR',hr)}${K('','BUILD',esc(bd))}${K(3,'ISSUED',esc(usd(a[5])))}${K(4,'EXPIRES','NEVER')}
         </div>
-        <div style="display:flex;gap:8px;margin-top:6px"><button class="pT" style="font:900 12px 'Helvetica Neue',Helvetica,Arial,sans-serif;padding:5px 12px;cursor:pointer;border:2px solid #111;background:#111;color:#f6f4ec">ASK TO TRADE</button></div>
+        <div style="display:flex;gap:8px;margin-top:6px"><button class="pT" style="font:12px 'Share Tech Mono',ui-monospace,monospace;letter-spacing:2px;padding:5px 12px;cursor:pointer;border:2px solid #3aa866;background:transparent;color:#7dffa8">ASK TO TRADE</button></div>
       </div></div><button class="pX" style="position:absolute;right:-6px;top:-38px">X</button></div>`;
     sp.hidden=false; sp.style.display='flex'; sp.querySelector('.pX').onclick=()=>PASSPORT.close(); sp.querySelector('.pT').onclick=()=>{ PASSPORT.close(); if(PASSPORT.trade)PASSPORT.trade(o); };
     photo(sp.querySelector('.pPh'),lk,a[6]||'',o.fig&&o.fig.g).catch(e=>console.warn('PASSPORT their photo',e)); };

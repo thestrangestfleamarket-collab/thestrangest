@@ -19,7 +19,8 @@ FOUNT.held=(x,z)=>FOUNT.holds.some(f=>f(x,z));
   FOUNT.bedM=d=>Math.min(3.5,Math.max(0,d)*.42);
   FOUNT.away=(x,y)=>Math.min(lake(x,y)-1,ter(x,y)-1);
   // the running track round the lake (owner, 2 Nov 2026, his picture of the reservoir's path and rail): a band TRACK[1] either side of TRACK[0] tiles off the water, along the whole shore inside the park
-  const TRACK=FOUNT.TRACK=[4.2,1.9]; FOUNT.trackD=(x,y)=>{ const S=FOUNT.S; if(!S||x>S.wx1+2.5||y>S.wy1+2.5)return 1e9; return Math.abs(shoreL(x,y)-TRACK[0])-TRACK[1]; };
+  const CARRY=(LEVEL.edge&&LEVEL.edge.carry)||0;   // the park carried on past the section's north and east edges (data/world.json edge.carry): the shore and its track go on through it
+  const TRACK=FOUNT.TRACK=[4.2,1.9]; FOUNT.trackD=(x,y)=>{ const S=FOUNT.S; if(!S||x>S.wx1+2.5+CARRY||y>S.wy1+2.5+CARRY)return 1e9; return Math.abs(shoreL(x,y)-TRACK[0])-TRACK[1]; };
   FOUNT.at=P=>{ if(FOUNT.S)return FOUNT.S; const wx1=P.x1-8, wy1=P.y1-8, R=23, cx=wx1-R-8; let yS=P.round[1]+4.2+3;
     const C={x:cx,y:Math.ceil(yS+3.5+R)}, BL=LEVEL.parkPlaces.bigLake||{}, L={x:BL.x??P.x1,y:BL.y??P.y1,rx:BL.rx||110,ry:BL.ry||85}; L.cx=L.x+L.rx+6; L.cy=L.y+L.ry+6;
     // the lake's deep holes (owner, 28 Oct 2026: "make the lake and hudson go very deep in certain spots"): two, 25 and 40 m down, black without a light; [x, y, radius, depth], clear of the islands
@@ -34,13 +35,13 @@ FOUNT.held=(x,z)=>FOUNT.holds.some(f=>f(x,z));
     for(let x=Math.floor(S.x0);x<L.cx;x+=2){ const x2=Math.min(x+2,L.cx-.01), w=y=>lake(x,y)<0||lake(x+1,y)<0||lake(x2,y)<0; let y0=null; for(let y=S.y0-1;y<=L.cy+.5;y+=.5){ const i_=y<L.cy&&w(y); if(i_&&y0===null)y0=y; if(!i_&&y0!==null){ strips.push([X(x),Z(y0),X(x2),Z(Math.min(y,L.cy))]); y0=null; } } }
     S.strips=strips;
     const nrm=(x,y)=>{ const e=.25, gx=lake(x+e,y)-lake(x-e,y), gy=lake(x,y+e)-lake(x,y-e), n=Math.hypot(gx,gy)||1; return [gx/n,gy/n]; };
-    const shore=[]; for(let i=1;i<poly.length;i++){ const [ax,ay]=poly[i-1], [bx,by]=poly[i], l=Math.hypot(bx-ax,by-ay); for(let s=0;s<l;s+=.25){ const x=ax+(bx-ax)*s/l, y=ay+(by-ay)*s/l; if(x<L.cx-.5&&y<L.cy-.5&&x<wx1+6&&y<wy1+6)shore.push([x,y]); } }
+    const shore=[]; for(let i=1;i<poly.length;i++){ const [ax,ay]=poly[i-1], [bx,by]=poly[i], l=Math.hypot(bx-ax,by-ay); for(let s=0;s<l;s+=.25){ const x=ax+(bx-ax)*s/l, y=ay+(by-ay)*s/l; if(x<L.cx-.5&&y<L.cy-.5&&x<wx1+6+CARRY&&y<wy1+6+CARRY)shore.push([x,y]); } }
     const rocks=[]; let acc=0; for(let i=0;i<shore.length;i++){ acc+=.25; const gap=1.3+.8*hs(i,3,1); if(acc<gap)continue; acc=0; const [x,y]=shore[i], n=nrm(x,y), k=.15+.5*hs(i,5,2), s=.24+.5*Math.pow(hs(i,7,3),1.5);
       const rx=x-n[0]*k, ry=y-n[1]*k; if(ter(rx,ry)<.25)continue; rocks.push([rx,ry,s,hs(i,9,4)]); }
     S.rocks=rocks;
     S.shore=shore; S.nrm=nrm;
     // the shore's trees stand past the running track (owner, 2 Nov 2026), their crowns over it and the water
-    const oaks=[]; acc=0; for(let i=0;i<shore.length;i++){ acc+=.25; if(acc<14+4*hs(i,11,5))continue; const [x,y]=shore[i]; if(x>wx1+2||y>wy1+2)continue; const n=nrm(x,y), k=TRACK[0]+TRACK[1]+2.6+3*hs(i,13,6), ox=x+n[0]*k, oy=y+n[1]*k, m=12+hs(i,17,8)*6, r=m*.42, [rx,ry]=P.round;
+    const oaks=[]; acc=0; for(let i=0;i<shore.length;i++){ acc+=.25; if(acc<14+4*hs(i,11,5))continue; const [x,y]=shore[i]; if(x>wx1+2+CARRY||y>wy1+2+CARRY)continue; const n=nrm(x,y), k=TRACK[0]+TRACK[1]+2.6+3*hs(i,13,6), ox=x+n[0]*k, oy=y+n[1]*k, m=12+hs(i,17,8)*6, r=m*.42, [rx,ry]=P.round;
       if(ter(ox,oy)<r+.5||P.pd(ox,oy)<2.2||oy<P.y0+18)continue; acc=0; oaks.push(['OakTree'+(1+Math.floor(hs(i,15,7)*3)),+ox.toFixed(1),+oy.toFixed(1),+m.toFixed(1)]); }
     S.oaks=oaks; S.lamps=!FOUNT.on?[]:[200,228,256,284,312,340].map(a=>[C.x+Math.cos(a*Math.PI/180)*(R-.6),C.y+Math.sin(a*Math.PI/180)*(R-.6)]);
     if(FOUNT.on&&STORE.places)STORE.places.push(['THE FOUNTAIN',X(C.x),Z(C.y-R-1.6),'up']);

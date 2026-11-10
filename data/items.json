@@ -928,6 +928,16 @@
   "value": 9,
   "size": 0.3
  },
+ "telescope": {
+  "value": 150,
+  "weight": 4,
+  "size": 1.2
+ },
+ "microscope": {
+  "value": 150,
+  "weight": 3,
+  "size": 0.4
+ },
  "bee_hive": {
   "value": 40,
   "size": 0.5

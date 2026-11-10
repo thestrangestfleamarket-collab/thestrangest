@@ -5,7 +5,7 @@ const {chromium}=require('playwright'), page=process.argv[2]||'dist/market.html'
   await pg.goto('file://'+require('path').resolve(page)+'?fresh=1&npcwait=99&hour=12&place=the dungeon stair',{waitUntil:'commit',timeout:180000});
   for(let i=0;i<300;i++){ await pg.waitForTimeout(1000); if(await pg.evaluate(()=>!!window.__started&&window.GTOWER&&GTOWER.ready&&window.GUARD&&GUARD.list&&GUARD.list.length).catch(()=>false))break; } await pg.waitForTimeout(6000);
   const R=await pg.evaluate(()=>{ const ids=GTOWER.IDS, at=ids.map(k=>GTOWER.at(k)), T=__dbg.cv().TILE, names=[]; __scene.traverse(o=>{ if(/castle (spires|torches)/.test(o.name))names.push(o.name); });
-    const ways=window.LEVELS?LEVELS.ways.find(w=>w.id==='castle stairs'):null, G=GUARD.list.map(N=>{ const t=GTOWER.at(N.gd.tower); return {k:N.key,tower:N.gd.tower,top:!!N.gd.top,d:t?Math.hypot(N.st.x-t.x,N.st.z-t.z)/T:null,y:N.g.position.y,roof:t?t.top:null}; });
+    const ways=window.LEVELS?LEVELS.ways.find(w=>w.id==='castle stairs'):null, G=GUARD.list.map(N=>{ const t=GTOWER.at(N.gd.tower); return {k:N.key,tower:N.gd.tower,top:!!N.gd.top,d:t?Math.hypot(N.st.x-t.x,N.st.z-t.z)/T:null,y:N.ground?N.ground(N.st.x,N.st.z):N.g.position.y,roof:t?t.top:null}; });
     return {at:at.map(a=>!!a),names,ways:!!ways,torches:__dbg.MAPK.MODS.castleTorches||0,G}; });
   const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)errs.push(m); };
   ok(R.at.every(Boolean)&&R.at.length===6,'six watchtowers stand ('+R.at.filter(Boolean).length+')');

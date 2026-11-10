@@ -46,7 +46,9 @@ raw, page = page, data(page[:i] + art + body + page[j:])
 open('dist/market.html', 'w').write(page)
 
 open('dist/door.html', 'w').write(read('src/door/door.html'))
-for f in ['app.webmanifest', 'icon-192.png', 'icon-512.png']: shutil.copy('src/door/' + f, 'dist/' + f)   # the installable app: its manifest and icon, handed to anyone
+for f in ['app.webmanifest', 'icon-192.png', 'icon-512.png']:
+    if os.path.exists('src/door/' + f): shutil.copy('src/door/' + f, 'dist/' + f)
+    else: print('build: src/door/' + f + ' is missing (not in git), left out')   # the installable app: its manifest and icon, handed to anyone
 # the owners' map editor: its own light page (no game), the ground picture beside it (tools/topmap.cjs)
 EDITOR = False  # the map editor is archived (owner, 5 Nov 2026)
 shutil.rmtree('dist/edmap', ignore_errors=True)

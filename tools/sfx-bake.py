@@ -2,7 +2,9 @@
 # levelled and laid end to end in one mp3 (data/sfx.mp3, fetched once the sound is on) with a table of where each take starts (data/sfx.json: name -> [[start, seconds], ...]).
 # SFX.play(name) plays a take at random; a name with no takes plays its code-made recipe (src/091-sfx.js). A new batch: add its lines to PACKS and SETS, run, add its record to data/full/sounds.json.
 # The downloads go to data/full/sfx/ (not kept in git). Run: pip install py7zr; python3 tools/sfx-bake.py (needs ffmpeg)
-import os, json, struct, subprocess, urllib.request, zipfile
+# The owner's SOUND EDITOR: python3 tools/sfx-bake.py --shared sounds-export.json keeps its uploads in data/full/sfx/shared/ and its set in
+# data/full/sfx/shared.json (both in git), laid over SETS on every bake: a name's takes (a baked one or an upload, trimmed), its level and pitch (sfx.json's ~set).
+import os, sys, json, struct, base64, subprocess, urllib.request, zipfile
 SR=32000; GAP=.08; D='data/full/sfx/'
 PACKS={   # folder: the pack's file (its page and author are in data/full/sounds.json)
  'fantozzi':'https://opengameart.org/sites/default/files/Fantozzi-footsteps.7z',
@@ -58,12 +60,35 @@ def loop(f):
     x=list(struct.unpack('<%df'%(len(out)//4),out)); x=x[int(.25*SR):len(x)-int(.2*SR)]; pk=max(abs(v) for v in x) or 1; c=int(.3*SR); n=len(x)-c
     return [(x[i]*(i/c)+x[n+i]*(1-i/c) if i<c else x[i])/pk for i in range(n)]
 for k,u in PACKS.items(): get(k,u)
+SJ=D+'shared.json'
+if '--shared' in sys.argv:
+    ex=json.load(open(sys.argv[sys.argv.index('--shared')+1])); os.makedirs(D+'shared',exist_ok=True)
+    for f,b in (ex.get('files') or {}).items():
+        if not all(ch.isalnum() or ch in '.-' for ch in f): continue
+        open(D+'shared/'+f,'wb').write(base64.b64decode(b))
+    json.dump({'v':1,'set':ex.get('set') or {}},open(SJ,'w'),indent=1)
+SHARED=json.load(open(SJ))['set'] if os.path.exists(SJ) else {}
+TRIM={}; SETX={}
+base={k:list(v[0]) for k,v in SETS.items()}
+for k,o in SHARED.items():
+    if 'lvl' in o or 'pitch' in o: SETX[k]={x:o[x] for x in ('lvl','pitch') if x in o}
+    if 'takes' not in o: continue
+    items=[]
+    for i,q in enumerate(o['takes']):
+        src=('shared/'+q['f']) if q.get('f') else base.get(q['b'][0],[None]*99)[q['b'][1]] if q.get('b') and q['b'][1]<len(base.get(q['b'][0],[])) else None
+        if src is None: continue
+        items.append(src); TRIM[(k,len(items)-1)]=(q.get('a',0),q.get('z',0))
+    old=SETS.get(k)
+    if items: SETS[k]=(items,old[1] if old else 1.0,*old[2:]) if old else (items,1.0)
+    elif k in SETS: del SETS[k]
 data=[]; table={}; t=0
 for name,(files,lvl,*kind) in SETS.items():
     table[name]=[]
-    for f in files:
-        x=[v*lvl*.89 for v in (loop if kind else pcm)(f)]; table[name].append([round(t+GAP,4),round(len(x)/SR,3)]); data+=[0.]*int(GAP*SR)+x; t+=GAP+len(x)/SR
+    for j,f in enumerate(files):
+        x=[v*lvl*.89 for v in (loop if kind else pcm)(f)]
+        a,z=TRIM.get((name,j),(0,0)); x=x[int(a*SR):len(x)-int(z*SR)] if a or z else x; table[name].append([round(t+GAP,4),round(len(x)/SR,3)]); data+=[0.]*int(GAP*SR)+x; t+=GAP+len(x)/SR
 data+=[0.]*int(GAP*SR)
 subprocess.run(['ffmpeg','-v','error','-y','-f','f32le','-ar',str(SR),'-ac','1','-i','-','-c:a','libmp3lame','-b:a','96k','data/sfx.mp3'],input=struct.pack('<%df'%len(data),*data),check=True)
+if SETX: table['~set']=SETX
 json.dump(table,open('data/sfx.json','w'),separators=(',',':'))
 print({k:len(v) for k,v in table.items()},round(t,1),'s',os.path.getsize('data/sfx.mp3'),'bytes')

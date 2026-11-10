@@ -327,7 +327,8 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     <div class="pane" data-p="editors" id="deditors"></div>
     <div class="pane" data-p="tools" id="dtools"></div>
     <div class="pane" data-p="vehicles" id="dveh"></div>
-    <div class="pane" data-p="vedit" id="dvedit"></div></div></div>`;
+    <div class="pane" data-p="vedit" id="dvedit"></div>
+    <div class="pane" data-p="snded" id="dsnded"></div></div></div>`;
   document.body.appendChild(M);
   const $=s=>M.querySelector(s); let mapLv='up';
   // the one menu (owner, 5 Nov 2026: "B"): its sections down the left, each section's parts as tabs along the top; [id, name, key, parts or null, what a section without parts does]; a part is [id, name, its panes, or what it does]
@@ -338,7 +339,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     ['pack','INVENTORY','I',[['bag','BAG',()=>{ shut(); if(BAG.toggle)BAG.toggle(true); }],['skills','SKILLS',['pack']],['book','BOOK',['pack']],['fishing','FISHING',['pack']],['journal','JOURNAL',['pack']]]],
     ['bbs','BBS','',[['shop','THE BODEGA',['bbs']],['furn','FURNITURE',['bbs']],['games','THE ARCADE',['bbs']],['orders','YOUR ORDERS',['bbs']]]],   // only from your computer, never in the menu's list
     ['tenants','TENANTS','',[['players','TENANTS',['tenants']]]],   // owners only, each its own (owner, 8 Nov 2026)
-    ['admin','★ ADMIN','',[['queue','BUG QUEUE',['queue']],['text','TEXT',['text']],['editors','EDITORS',['editors']],['look','AVATAR',['home']],['veh','VEHICLES',['vehicles']],['vedit','VEHICLE EDITOR',['vedit']],['tools','TOOLS',['tools']]]]];   // AVATAR: your look, owners only (owner, 9 Nov 2026: "the avatar editor should only be in the admin menu (since players cant edit themselves after they start)")   // TEXT its own tab (owner, 7 Nov 2026); no TESTS (owner, 8 Nov 2026)
+    ['admin','★ ADMIN','',[['queue','BUG QUEUE',['queue']],['text','TEXT',['text']],['editors','EDITORS',['editors']],['look','AVATAR',['home']],['veh','VEHICLES',['vehicles']],['vedit','VEHICLE EDITOR',['vedit']],['snded','SOUND EDITOR',['snded']],['tools','TOOLS',['tools']]]]];   // AVATAR: your look, owners only (owner, 9 Nov 2026: "the avatar editor should only be in the admin menu (since players cant edit themselves after they start)")   // TEXT its own tab (owner, 7 Nov 2026); no TESTS (owner, 8 Nov 2026)
   const OLD={home:['admin','look'],display:['set','view'],camera:['set','camera'],screen:['set','screen'],graphics:['set','res'],ps2:['set','ps2'],atmo:['set','time'],weather:['set','weather'],light:['set','light'],sound:['set','sound'],keys:['set','keys'],vr:['set','vr'],bug:['set','bug'],tenants:['tenants','players'],city:['set']};
   let cur='set', own=false; const last={}, OWN=new Set(['tenants','admin']);
   const mount=(id,host,on)=>{ const el=document.getElementById(id); if(!el)return null; if(on){ if(el.parentNode!==host)host.appendChild(el); el.classList.add('ml','inmenu'); el.hidden=false; } else if(el.parentNode!==document.body){ el.classList.remove('inmenu'); el.hidden=true; document.body.appendChild(el); } return el; };
@@ -361,7 +362,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     if(on.has('moves'))$('#dmoves').innerHTML=UI.movesHTML();
     if(on.has('bug'))BUGS.open($('#dbug')); if(on.has('queue'))BUGS.open($('#dqueue'),'queue');
     if(['display','camera','screen','graphics','ps2','sound','atmo','light'].some(k=>on.has(k)))drawDisplay(); if(on.has('sound'))SNDED.into($('#dsndin')); if(on.has('keys'))drawKeys(); if(on.has('vr')&&VR.open)VR.open($('#dvr')); if(on.has('padset')&&UI.padPage)UI.padPage($('#dpad'));
-    if(on.has('atmo'))DN&&DN.draw(); if(on.has('tenants')&&TENANTS.open)TENANTS.open($('#dten')); if(on.has('text')&&TENANTS.text)TENANTS.text($('#dtext')); if(on.has('tools')&&CHARP.tools)CHARP.tools($('#dtools')); if(on.has('editors')&&CHARP.editors)CHARP.editors($('#deditors')); if(on.has('vehicles')&&SPEED.panel)SPEED.panel($('#dveh')); if(on.has('vedit')&&VLOOK.panel)VLOOK.panel($('#dvedit'));
+    if(on.has('atmo'))DN&&DN.draw(); if(on.has('tenants')&&TENANTS.open)TENANTS.open($('#dten')); if(on.has('text')&&TENANTS.text)TENANTS.text($('#dtext')); if(on.has('tools')&&CHARP.tools)CHARP.tools($('#dtools')); if(on.has('editors')&&CHARP.editors)CHARP.editors($('#deditors')); if(on.has('vehicles')&&SPEED.panel)SPEED.panel($('#dveh')); if(on.has('vedit')&&VLOOK.panel)VLOOK.panel($('#dvedit')); if(on.has('snded')&&SNDED.panel)SNDED.panel($('#dsnded'));
     bars(); };
   $('#mnav').addEventListener('click',e=>{ const b=e.target.closest('[data-sec]'); if(b)show(b.dataset.sec); });
   $('#msub').addEventListener('click',e=>{ const b=e.target.closest('[data-sub]'); if(b)show(cur,b.dataset.sub); });

@@ -1,4 +1,4 @@
-// THE SOUND CHECK: node tests/sound.cjs dist/market.html. Sound is on by default; the effects, the radio and the instruments share one audio context and one master volume; every effect the code asks for has a recipe or recorded takes and plays; the recorded takes (data/sfx.mp3) load and are audible; footsteps follow the ground; a car you drive hums its engine, H honks (not the emotes), getting out stops it; in a storm the recorded rain plays and thunder follows the lightning; the SOUND tab shows.
+// THE SOUND CHECK: node tests/sound.cjs dist/market.html. Sound is on by default; the effects, the radio and the instruments share one audio context and one master volume; every effect the code asks for has a recipe or recorded takes and plays; the recorded takes (data/sfx.mp3) load and are audible; footsteps follow the ground; a car you drive hums its engine, H honks (not the emotes), getting out stops it; in a storm the recorded rain plays and thunder follows the lightning; the owner's SOUND EDITOR uploads a take, sets a level, deletes and trims, saves for everyone (the shared store stood in here) and a new page hears it; the SOUND tab shows.
 const { chromium } = require('playwright'), path = require('path'), fs = require('fs');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=sound::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 const asked = new Set(); for (const f of fs.readdirSync('src')) if (f.endsWith('.js')) for (const m of fs.readFileSync('src/' + f, 'utf8').matchAll(/SFX\.play\('(\w+)'/g)) asked.add(m[1]);
@@ -9,6 +9,11 @@ const http = require('http'), PAGE = path.resolve(process.argv[2] || 'dist/marke
   pg.on('pageerror', e => errs.push(e.message.slice(0, 300)));
   await pg.addInitScript(() => { window.__acs = 0; for (const k of ['AudioContext', 'webkitAudioContext']) { const A = window[k]; if (A) window[k] = class extends A { constructor(...a) { super(...a); window.__acs++; } }; } });
   const srv = http.createServer((q, r) => { const f = path.join(ROOT, decodeURIComponent(new URL(q.url, 'http://x').pathname)); if (!f.startsWith(ROOT) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { r.writeHead(404); return r.end(); } r.writeHead(200, { 'content-type': TYPES[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(r); });
+  const STORE = {};   // the website's /shared store, stood in: anyone reads, the editor writes
+  const srv0 = srv.listeners('request')[0]; srv.removeAllListeners('request');
+  srv.on('request', (q, r) => { const m = /^\/shared\/([a-z0-9.-]{1,40})$/.exec(q.url); if (!m) return srv0(q, r);
+    if (q.method === 'POST') { const ch = []; q.on('data', c => ch.push(c)); q.on('end', () => { STORE[m[1]] = { type: q.headers['content-type'], data: Buffer.concat(ch) }; r.writeHead(200, { 'content-type': 'application/json' }); r.end('{"ok":true}'); }); return; }
+    const f = STORE[m[1]]; if (!f) { r.writeHead(204); return r.end(); } r.writeHead(200, { 'content-type': f.type }); r.end(f.data); });
   await new Promise(r => srv.listen(0, '127.0.0.1', r));
   await pg.goto('http://127.0.0.1:' + srv.address().port + '/' + path.relative(ROOT, PAGE) + '?fresh=1&hour=13&physics=1&scanin=9999&at=25,10', { waitUntil: 'commit' });
   await pg.waitForFunction(() => window.__started, null, { timeout: 400000, polling: 500 });
@@ -47,6 +52,25 @@ const http = require('http'), PAGE = path.resolve(process.argv[2] || 'dist/marke
   const w1 = await pg.evaluate(() => ({ ...__dbg.AMB.dbg(), thunder: window.__played.includes('thunder') }));
   ok(w1.rain && w1.rainG > 0 && w1.thunder, 'in a storm the recorded rain plays and thunder follows the lightning: ' + JSON.stringify(w1));
   await pg.evaluate(() => { WX.hold = null; WX.flashK = 0; });
+  // the owner's sound editor
+  const wav = (() => { const sr = 22050, n = sr / 2, b = Buffer.alloc(44 + n * 2); b.write('RIFF', 0); b.writeUInt32LE(36 + n * 2, 4); b.write('WAVEfmt ', 8); b.writeUInt32LE(16, 16); b.writeUInt16LE(1, 20); b.writeUInt16LE(1, 22); b.writeUInt32LE(sr, 24); b.writeUInt32LE(sr * 2, 28); b.writeUInt16LE(2, 32); b.writeUInt16LE(16, 34); b.write('data', 36); b.writeUInt32LE(n * 2, 40); for (let i = 0; i < n; i++) b.writeInt16LE(Math.round(Math.sin(i / sr * 2 * Math.PI * 440) * 12000), 44 + i * 2); return b; })();
+  await pg.evaluate(() => { const d = document.createElement('div'); d.id = 'sedt'; d.style.cssText = 'position:fixed;left:0;top:0;width:700px;background:#000;z-index:99999'; document.body.appendChild(d); SNDED.panel(d); });
+  await pg.waitForTimeout(800); await pg.click('#sedt [data-pick="horn"]'); await pg.waitForTimeout(500);
+  const [fc] = await Promise.all([pg.waitForEvent('filechooser'), pg.click('#sedt [data-act="upload"]')]); await fc.setFiles({ name: 'beep.wav', mimeType: 'audio/wav', buffer: wav });
+  await pg.waitForFunction(() => { const o = __dbg.SFX.shared.set.horn; return o && o.takes && o.takes.length === 2; }, null, { timeout: 15000 }).catch(() => {});
+  await pg.evaluate(() => { const s = document.querySelector('#sedt [data-f="lvl"]'); s.value = '0.5'; s.dispatchEvent(new Event('input', { bubbles: true })); });
+  await pg.click('#sedt [data-take="0"][data-do="del"]'); await pg.waitForTimeout(300);
+  await pg.waitForFunction(() => { const c = document.querySelector('#sedt [data-wave="0"]'); return c && +c.dataset.len > 0; }, null, { timeout: 15000 }).catch(() => {});
+  { const bb = await pg.locator('#sedt [data-wave="0"]').boundingBox(); await pg.mouse.move(bb.x + 2, bb.y + bb.height / 2); await pg.mouse.down(); await pg.mouse.move(bb.x + bb.width * .2, bb.y + bb.height / 2, { steps: 5 }); await pg.mouse.up(); await pg.waitForTimeout(300); }   // drag the start in to a fifth
+  await pg.click('#sedt [data-act="save"]'); await pg.waitForTimeout(1200);
+  const e1 = await pg.evaluate(async () => { const S = __dbg.SFX, o = S.shared.set.horn, c = S.live(); await new Promise(r => setTimeout(r, 1500)); const v = S.take(c, o.takes[0]); return { takes: o.takes.length, up: !!o.takes[0].f, lvl: o.lvl, level: S.fxLevel('horn'), len: v && +v.L.toFixed(2), played: !!S.play('horn', { vol: .01 }), say: document.querySelector('#sedt .ssay').textContent }; });
+  const kept = STORE['sounds.json'] && JSON.parse(STORE['sounds.json'].data.toString());
+  ok(e1.takes === 1 && e1.up && e1.lvl === .5 && Math.abs(e1.level - .5) < .01 && e1.len > .35 && e1.len < .42 && e1.played && /SAVED FOR EVERYONE/.test(e1.say) && kept && kept.set.horn.takes[0].f && Object.keys(STORE).some(k => /^snd-.*\.wav$/.test(k)),
+    'the sound editor: upload a take, delete the old one, trim, level 0.5, saved for everyone: ' + JSON.stringify({ ...e1, kept: kept && kept.set }));
+  const pg2 = await b.newPage(); await pg2.goto(pg.url(), { waitUntil: 'commit' }); await pg2.waitForFunction(() => window.__started, null, { timeout: 400000, polling: 500 });
+  const e2 = await pg2.evaluate(async () => { await __dbg.SFX.loadShared(); const o = __dbg.SFX.shared.set.horn; return { takes: o && o.takes.length, lvl: __dbg.SFX.fxLevel('horn') }; }); await pg2.close();
+  ok(e2.takes === 1 && Math.abs(e2.lvl - .5) < .01, 'another player\'s page gets the saved sounds: ' + JSON.stringify(e2));
+  await pg.evaluate(() => document.getElementById('sedt').remove());
   await pg.evaluate(() => { __dbg.UI.toggleMenu(); }); await pg.waitForTimeout(600);
   const tab = await pg.evaluate(() => { const p = document.querySelector('.panes>[data-p="sound"]'); return !!p && !!document.querySelector('#dvol'); });
   ok(tab, 'the menu has its SOUND pane');

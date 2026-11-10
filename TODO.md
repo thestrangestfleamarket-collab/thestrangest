@@ -259,8 +259,9 @@ One tree pass (more leaves mean more shadow triangles).
 ## Sound
 
 Owner, 9 Nov 2026: "real sounds". Each batch is named by the owner first.
-- [ ] **P2 M pick** Real recordings in place of the code-made effects, a batch at a time (footsteps and doors done, 10 Nov): cars, the fair's rides, fights, weather, the day and night ambience.
-- [ ] **P3 S look** Listen to the footsteps and doors live: the takes were picked by measurement, not by ear.
+- [ ] **P2 M pick** Real recordings in place of the code-made effects, a batch at a time (footsteps, doors and cars done, 10 Nov): the fair's rides, fights, weather, the day and night ambience.
+- [ ] **P3 S look** Listen to the footsteps, doors and cars live: the takes were picked by measurement, not by ear (the car pack is phone-recorded, low quality).
+- [ ] **P3 S code** No crash or skid sound for the cars yet, and the karts, helicopter and flying traffic are silent (no CC0 recordings found yet).
 - [ ] **P3 M code** Footsteps know only stone, grass and wood: the park's paths, sand, water's edge, metal stairs and carpet still sound as those three.
 - [ ] **P2 M code** Other players heard: their footsteps, hits and doors from where they stand, fading with distance.
 - [ ] **P3 S pick** The bodega's counter radio still plays its code-made tune: give it the market's stations like the apartments'?

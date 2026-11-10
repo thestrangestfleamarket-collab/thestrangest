@@ -9,6 +9,7 @@ PACKS={   # folder: the pack's file (its page and author are in data/full/sounds
  'tinyworlds':'https://opengameart.org/sites/default/files/%5Bkdd%5DDifferentSteps_0.zip',
  'qubodup':'https://opengameart.org/sites/default/files/qubodup-DoorSet.7z',
  'coughe':'https://opengameart.org/sites/default/files/DoorLockSounds.zip',
+ 'ggbotnet':['https://opengameart.org/sites/default/files/'+f+'.ogg' for f in ('car_door_close_0','car_door_open_0','car_engine_loop_1','car_engine_start_up_0','car_engine_turning_off_0','car_horn_0')],
  'kurt':'https://opengameart.org/sites/default/files/stream-waterfall.zip',   # CC-BY 3.0: kurt (credit in data/full/sounds.json)
  'rubberduck':'https://opengameart.org/sites/default/files/water-splash-slime-sfx.zip'}
 F='fantozzi/Fantozzi-footsteps/flac/Fantozzi-'; Q='qubodup/qubodup-DoorSet/flac/qubodup-Door'
@@ -19,12 +20,22 @@ SETS={   # name: (its takes, how loud next to the others)
  'dooropen':([Q+f'Open{n}.flac' for n in ('01','05','07','08')],.9),
  'door':([Q+f'Close{n}.flac' for n in ('04','07','08','10')],.9),
  'latch':(['coughe/DoorLockSounds/DoorLock.wav','coughe/DoorLockSounds/UnlockDoor.wav'],.6),
- 'splash':([f'rubberduck/splash_{n:02d}.ogg' for n in (1,4,7,11)],.8)}
-LOOPS={'falls':('kurt/stream-waterfall/loudstream.ogg',8.,.7)}   # a long take laid in whole, its end faded into its start so it loops (SFX.play(name,{loop:true}))
+ 'car_engine':(['ggbotnet/car_engine_loop_1.ogg'],.7,'loop'),
+ 'car_start':(['ggbotnet/car_engine_start_up_0.ogg'],.7),
+ 'car_stop':(['ggbotnet/car_engine_turning_off_0.ogg'],.8),
+ 'car_door_open':(['ggbotnet/car_door_open_0.ogg'],.8),
+ 'car_door_close':(['ggbotnet/car_door_close_0.ogg'],.9),
+ 'horn':(['ggbotnet/car_horn_0.ogg'],.6),
+ 'splash':([f'rubberduck/splash_{n:02d}.ogg' for n in (1,4,7,11)],.8),
+ 'falls':(['kurt/stream-waterfall/loudstream.ogg'],.7,'loop')}
 def get(k,url):
     d=D+k
     if os.path.isdir(d) and os.listdir(d): return
-    os.makedirs(d,exist_ok=True); f=d+'.pack'
+    os.makedirs(d,exist_ok=True)
+    if isinstance(url,list):
+        for u in url: open(d+'/'+u.rsplit('/',1)[1],'wb').write(urllib.request.urlopen(urllib.request.Request(u,headers={'User-Agent':'sfx-bake/1.0'}),timeout=300).read())
+        return
+    f=d+'.pack'
     open(f,'wb').write(urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'sfx-bake/1.0'}),timeout=300).read())
     if url.endswith('.zip'): zipfile.ZipFile(f).extractall(d)
     else:
@@ -36,17 +47,17 @@ def pcm(f):
     a=next(i for i,v in enumerate(x) if abs(v)>pk*.03); b=len(x)-next(i for i,v in enumerate(reversed(x)) if abs(v)>pk*.015)
     a=max(0,a-int(.004*SR)); b=min(len(x),b+int(.03*SR)); x=x[a:b]; n=len(x); fi=int(.002*SR); fo=min(n//3,int(.03*SR))
     return [v/pk*(min(1,i/fi))*(min(1,(n-i)/fo)) for i,v in enumerate(x)]
+def loop(f):
+    # a loop: its steady middle, the end crossfaded into the start so it repeats without a seam
+    out=subprocess.run(['ffmpeg','-v','error','-i',f,'-ac','1','-ar',str(SR),'-f','f32le','-'],capture_output=True,check=True).stdout
+    x=list(struct.unpack('<%df'%(len(out)//4),out)); x=x[int(.25*SR):len(x)-int(.2*SR)]; pk=max(abs(v) for v in x) or 1; c=int(.3*SR); n=len(x)-c
+    return [(x[i]*(i/c)+x[n+i]*(1-i/c) if i<c else x[i])/pk for i in range(n)]
 for k,u in PACKS.items(): get(k,u)
 data=[]; table={}; t=0
-for name,(files,lvl) in SETS.items():
+for name,(files,lvl,*kind) in SETS.items():
     table[name]=[]
     for f in files:
-        x=[v*lvl*.89 for v in pcm(D+f)]; table[name].append([round(t+GAP,4),round(len(x)/SR,3)]); data+=[0.]*int(GAP*SR)+x; t+=GAP+len(x)/SR
-for name,(f,secs,lvl) in LOOPS.items():
-    out=subprocess.run(['ffmpeg','-v','error','-i',D+f,'-ac','1','-ar',str(SR),'-f','f32le','-'],capture_output=True,check=True).stdout
-    x=list(struct.unpack('<%df'%(len(out)//4),out)); n=int(secs*SR); xf=int(.6*SR); a=min(len(x)-n-xf,int(.5*SR)); seg=x[a:a+n+xf]; pk=max(abs(v) for v in seg) or 1
-    y=[(seg[i]*(1 if i>=xf else i/xf)+(seg[n+i]*(1-i/xf) if i<xf else 0))/pk*lvl*.89 for i in range(n)]
-    table[name]=[[round(t+GAP,4),round(n/SR,3)]]; data+=[0.]*int(GAP*SR)+y; t+=GAP+n/SR
+        x=[v*lvl*.89 for v in (loop if kind else pcm)(D+f)]; table[name].append([round(t+GAP,4),round(len(x)/SR,3)]); data+=[0.]*int(GAP*SR)+x; t+=GAP+len(x)/SR
 data+=[0.]*int(GAP*SR)
 subprocess.run(['ffmpeg','-v','error','-y','-f','f32le','-ar',str(SR),'-ac','1','-i','-','-c:a','libmp3lame','-b:a','96k','data/sfx.mp3'],input=struct.pack('<%df'%len(data),*data),check=True)
 json.dump(table,open('data/sfx.json','w'),separators=(',',':'))

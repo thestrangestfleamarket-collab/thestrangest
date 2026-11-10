@@ -43,7 +43,7 @@ Object.assign(RIDE,{on:null,kind:null,v:0,hd:0,lift:0,z:0,vz:0,dry:false,ease:20
   const share=()=>{ if(ONLINE.on&&ONLINE.send)ONLINE.send({t:'ride',b:RIDE.on||null}); shT=4; };
   ONLINE.hear.ride=msg=>{ '@later'; const o=ONLINE.others&&ONLINE.others.get(msg.id), id=typeof msg.b==='string'&&kindOf(msg.b)?msg.b:null, was=theirs.get(msg.id);
     if(was&&(!id||was.id!==id)){ was.m.removeFromParent(); VLOOK.live.delete(was.m); theirs.delete(msg.id); if(o&&o.S)o.S.ride=null; }
-    if(id&&o&&!theirs.has(msg.id)){ const k=kindOf(id), m=made(id); m.userData.anyRoom=true; scene.add(LEVELS.own(m,'*')); theirs.set(msg.id,{id,k,m,R:{v:0,z:0,lean:0,hd:0,lift:(k.lift||.3)*T,pid:msg.id}}); } };
+    if(id&&o&&!theirs.has(msg.id)){ const k=kindOf(id), m=made(id); m.userData.anyRoom=true; scene.add(LEVELS.own(m,'*')); theirs.set(msg.id,{id,k,m,R:{v:0,z:0,lean:0,hd:0,lift:(k.lift||.3)*T,pid:msg.id,id}}); } };
   RIDE.their=id=>{ const o=theirs.get(id); return o&&o.R; };   // another rider's board state (their tricks land on it, 146ib)
   const deck=()=>RIG.RIDEG.deck*(W3.group.scale.y||.046);
   SYS.add('life',dt=>{ const t=performance.now()/1000;

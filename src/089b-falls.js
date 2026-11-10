@@ -229,10 +229,9 @@ window.FALLS=FALLS;
     /* toss a coin: a dollar into the pool for a wish */
     { const hb=new THREE.Mesh(new THREE.BoxGeometry(1.2*T,.6*T,1.2*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(X(C[0]+R-1.2),WY,Z(C[1]-1)); root.add(hb);
       UI.thing({name:'TOSS A COIN',obj:hb,reach:3*T,near:4*T,tall:.6*T,act:()=>{ if(!INV||INV.cash<1)return SAY('YOU HAVE NO COIN TO TOSS.','#c8a090'); INV.cash-=1; if(SFX.play)SFX.play('splash',{vol:.25,pitch:1.8}); SAY('YOU TOSS A DOLLAR IN AND MAKE A WISH.','#9fd6dc'); }}); }
-    /* the roar: one placed sound at the foot of the falls, louder as you come near */
-    let roar=null; const sound=()=>{ const c=SFX.live&&SFX.live(); if(!c||!SFX.on||!SFX.has('falls')){ if(roar){ try{ roar.s.stop(); }catch(_){ } roar=null; } return; }
-      const d=Math.hypot(pos.x-X(FZ),pos.z-WZ0)/M; if(d>90||!root.visible){ if(roar){ try{ roar.s.stop(); }catch(_){ } roar=null; } return; }
-      if(!roar)roar=SFX.play('falls',{at:{x:X(FZ),y:WY+3*M,z:WZ0},far:200*T,loop:true,vol:0,raw:true}); if(roar)roar.G.gain.setTargetAtTime(Math.min(.9,14/(d+8))*SFX.fxLevel('falls'),c.currentTime,.3); };
+    /* the roar: one placed sound at the foot of the falls (a recorded loop held as a voice), louder as you come near */
+    let roar=null; const sound=()=>{ const c=SFX.live&&SFX.live(), d=Math.hypot(pos.x-X(FZ),pos.z-WZ0)/M, on=!!c&&SFX.on&&d<90&&root.visible;
+      if(!on){ if(roar){ roar.set(0,1); } return; } if(!roar)roar=SFX.voice('falls'); if(roar)roar.set(Math.min(.9,14/(d+8)),1,{x:X(FZ),y:WY+3*M,z:WZ0}); };
     /* each frame near: the water's light, the spray, near only */
     let cullT=0, sT=0;
     SYS.add('places',dt=>{ if(!FALLS.ready)return; const up=SHARED.LVL==='up'&&P.in!==false, d=Math.hypot(pos.x-X(C[0]),pos.z-Z(C[1]))/T; if((cullT-=dt)<=0){ cullT=.4; root.visible=up&&d<300; near.visible=root.visible&&d<90; }

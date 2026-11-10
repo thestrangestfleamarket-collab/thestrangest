@@ -126,6 +126,7 @@
      "https://opengameart.org/content/different-steps-on-wood-stone-leaves-gravel-and-mud",
      "https://opengameart.org/content/door-open-door-close-set",
      "https://opengameart.org/content/door-lock-sounds",
+     "https://opengameart.org/content/car-sound-effects-pack-low-quality",
      "https://opengameart.org/content/stream-sounds",
      "https://opengameart.org/content/40-cc0-water-splash-slime-sfx"
     ],
@@ -134,6 +135,7 @@
      "step_wood": "TinyWorlds",
      "dooropen, door": "qubodup",
      "latch": "Cough-E",
+     "car_engine, car_start, car_stop, car_door_open, car_door_close, horn": "GGBotNet",
      "falls": "kurt (OpenGameArt, Stream Sounds: loudstream), CC-BY 3.0: credit kurt",
      "splash": "rubberduck"
     }

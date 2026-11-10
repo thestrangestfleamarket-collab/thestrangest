@@ -71,7 +71,7 @@ jobs:
           k animals 'src/087|src/111db|worker/folk|animals\.cjs'
           k parksolid 'src/111fe|src/100-use|data/world|parksolid\.cjs'
           k guardians 'src/146ja|src/146k|src/146b|worker/dunmobs|src/103a|src/059e|data/guardians|guardians\.cjs|body\.cjs'
-          k faunarest 'src/087-npc-creatures|data/fauna|fauna-rest\.cjs'
+          k faunarest 'src/087-npc-creatures|src/086a-farm|data/fauna|fauna-rest\.cjs'
           k itempics 'src/162e-bag|src/162d-hud|src/162fa-shopinsides|src/150cy|itempics\.cjs'
           k ground  'src/162e-bag|src/150cy-inspect|src/140b-items|data/items|grounditems\.cjs'
           k avdesign 'src/111c-avatar|src/111cb-designer|src/102b-designer|avdesigner\.cjs'
@@ -137,6 +137,7 @@ jobs:
           k firstday 'src/162g-firstday|src/102-looks|src/101-gems|firstday\.cjs'
           k avatar  'src/111c-avatar|src/111a-bodies|src/102-looks|src/001-rig|src/111da-motion|data/pfavatar|data/pfanim|avatar\.cjs|avatarmoves\.cjs|pfclips\.cjs'
           k wild    'src/087-npc-creatures|src/144[f-h]|src/076-npc-map|wild\.cjs'
+          k brochures 'src/159k-brochures|data/brochures|brochures\.cjs'
           k places  'build\.py|tools/(chunks|later|yields|minify|imports)|worker/|src/(000|002|end)|\.html$|package|wrangler|places\.cjs|workflows/site'
           D=$(git diff -U0 "origin/$BASE"...HEAD -- 'src/*.js' 2>/dev/null | grep -E '^[-+][^-+]' || true)
           if grep -qE "'@[a-z]|LOAD(ED)?\(" <<<"$D"; then case "$R" in *' places'*) ;; *) R="$R places";; esac; fi
@@ -469,6 +470,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' wild')
         run: node tests/wild.cjs
+      - name: The brochures (the racks, buying, reading, GO THERE, the full set)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' brochures')
+        run: node tests/brochures.cjs
       - name: Check the site opens (door, then THE MARKET)
         timeout-minutes: 15
         run: node tests/site.cjs

@@ -5992,3 +5992,4 @@ Owner: "what polyfork animations do we have for our character", then "yes lets u
 - 10 Nov 2026, the fishing guide (same ask): its tables list every fish, the ice fish under the big lake's ice and the one-of-a-kind ones too.
 - 10 Nov 2026, the big lake's deep hole (same ask): the 25 m hole moved off the bath house island's edge (the island had filled it), out into open water.
 - 10 Nov 2026, fishing from the rowboat (same ask; TODO): sat in the boat you hold the rod and swing it to cast and reel, as on the pier.
+- 10 Nov 2026, using things (owner: "if you press E to pick something up or use it, your character will move towards it and start sliding after they use it, look at the way this works and redo it completely"): E uses what is in reach from where you stand, never a walk; a double click on a thing still walks you up (17 Oct 2026). At the thing you stop dead, face it and use it in place: no slide after. Walking away calls a walk-up off. `tests/use.cjs`.

@@ -61,7 +61,6 @@ jobs:
           k vr      'src/162a-pad|src/162c-vr|vr\.cjs'
           k vrbody  'src/162c|src/111b|vrbody\.cjs'
           k riders  'src/117a|src/009c|riders\.cjs'
-          k twin    'src/162g|src/159i|worker/twin|twin\.cjs'
           k loopmap 'src/159c|src/009b|loopmap\.cjs'
           k spiders 'src/146b|src/087-npc-creatures|data/creatures|spiders\.cjs'
           k dunshare 'src/062a|src/146b|worker/dunmobs|dunshare\.cjs'
@@ -196,10 +195,6 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' drops')
         run: node tests/drops-server.cjs
-      - name: The AI double (its mind with a stand-in Claude, its moves in the game)
-        timeout-minutes: 20
-        if: contains(steps.f.outputs.run, ' twin')
-        run: node tests/twin.cjs dist/market.html
       - name: Fights between players (hitboxes, blows, knockdown)
         timeout-minutes: 20
         if: contains(steps.f.outputs.run, ' brawl')

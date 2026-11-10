@@ -44,7 +44,7 @@ ok(L.paths.every(p => p.a && p.b), 'every park path has two ends');
   ok(L.paths.some(p => Math.abs(p.b[0] - gx) < .01 && Math.abs(p.b[1] - y0) < .01 && Math.abs(p.a[1] - e.a[1]) < .01), 'a way runs from the cross path to the dungeon stair\'s clearing'); }
 { const PP = L.parkPlaces, P = L.park, ids = ['tower', 'tower2', 'tower3', 'tower4', 'tower5', 'tower6'], segd = (x, y, p) => { const dx = p.b[0] - p.a[0], dy = p.b[1] - p.a[1], t = Math.max(0, Math.min(1, ((x - p.a[0]) * dx + (y - p.a[1]) * dy) / (dx * dx + dy * dy))); return Math.hypot(x - p.a[0] - t * dx, y - p.a[1] - t * dy); };
   ok(ids.every(k => PP[k] && PP[k].x > P.x0 - 20 && PP[k].x < P.x1 && PP[k].y > P.y0 - 20 && PP[k].y < P.y1), 'six watchtowers in the park (owner, 10 Nov 2026)');
-  ok(ids.slice(1).every(k => L.paths.every(p => segd(PP[k].x, PP[k].y, p) > 4)), 'no watchtower stands on a path');
+  ok(ids.slice(3).every(k => L.paths.every(p => segd(PP[k].x, PP[k].y, p) > 4)), 'the three new watchtowers stand off the paths (the border two end the north and east paths, as before)');
   const G = JSON.parse(fs.readFileSync(ROOT + '/data/guardians.json', 'utf8')), crew = G.list.filter(r => G.crew.includes(r.k));
   ok(crew.length === 14 && crew.every(r => ids.includes(r.tower)) && ids.every(k => crew.some(r => r.tower === k)), 'every guard lives at a watchtower, and every tower has its guards (' + ids.map(k => crew.filter(r => r.tower === k).length).join(', ') + ')'); }
 { const C = JSON.parse(fs.readFileSync(ROOT + '/data/cars.json', 'utf8')).cars, P = L.cars || [];

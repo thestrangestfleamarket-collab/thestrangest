@@ -69,7 +69,7 @@ const ROOMS={lazy:{},off:{},grounds:[]},
   BOAT={},
   CARLAMPS={src:[]},   // vehicles that carry lamps (150pc-carlamps): each src(out) adds {x,y,z,r,dim:[w,h,l,y0],fly} for a vehicle driving now
   SPEED=window.SPEED={k:{},fn:[],of:c=>{ const K=SPEED.k, a=+K.all>0?+K.all:1, v=+K[c]>0?+K[c]:1; return a*v; },on:f=>{ SPEED.fn.push(f); }},   // the owner's vehicle speeds (136cb-vehicles, ADMIN > VEHICLES): SPEED.of(kind) times a kind's own speed, on(f) hears a change
-  VLOOK=window.VLOOK={kinds:{},live:new Set(),fn:[],kind:(id,o)=>{ VLOOK.kinds[id]=o; },dress:(id,o)=>{ if(o){ o.userData.vlook=id; VLOOK.live.add(o); if(VLOOK.apply)VLOOK.apply(o); } return o; },on:f=>{ VLOOK.fn.push(f); },scaleOf:id=>{ const L=VLOOK.looks&&VLOOK.looks[id]; return L&&+L.s>0?+L.s:1; }},   // the vehicles' looks (150pd-vedit, ADMIN > VEHICLE EDITOR): a maker passes what it makes through dress(id, mesh); kind(id, {name, grp, make}) lists it in the editor; on(f) hears a change
+  VLOOK=window.VLOOK={kinds:{},live:new Set(),fn:[],kind:(id,o)=>{ VLOOK.kinds[id]=o; },dress:(id,o)=>{ if(o){ o.userData.vlook=id; VLOOK.live.add(o); if(VLOOK.apply)VLOOK.apply(o); } return o; },on:f=>{ VLOOK.fn.push(f); },scaleOf:id=>{ const L=VLOOK.looks&&VLOOK.looks[id]; return L&&+L.s>0?+L.s:1; }},   // the vehicles' looks (150pd-vedit, ADMIN > VEHICLE EDITOR): a maker passes what it makes through dress(id, mesh); kind(id, {name, grp, make, variants?}) lists it in the editor (variants() names its kinds, e.g. coats; make(i) makes one); on(f) hears a change
   RIDE={on:null,lift:0},   // what you are riding (146i-ride): a hoverboard, a balloon
   TRICKS={},   // the skateboard's tricks (146ib-tricks): its kind asks them how to move, stand and score
   PB={},

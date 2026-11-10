@@ -79,14 +79,14 @@ import {MAPFILE, MODS, SYS, TILE} from './006-map-pre.js';
   const W=360, Hh=240, ROOM=new THREE.Scene(), PIV=new THREE.Group(), cam=new THREE.PerspectiveCamera(30,W/Hh,.01,500), SP=new THREE.Sphere(), BX=new THREE.Box3();
   { const k=new THREE.DirectionalLight(0xfff4e2,2.2), f=new THREE.DirectionalLight(0xbcd0ff,.8); k.position.set(-3,4,4); f.position.set(4,1,-3); ROOM.add(new THREE.AmbientLight(0xffffff,.9),k,f,PIV); }
   const HL=new THREE.Box3Helper(new THREE.Box3(),0xffd04a); HL.visible=false; ROOM.add(HL);
-  let host=null, cur=null, obj=null, part='', say='', rt=null, px=null, g2=null, im=null, yaw=-.7, pitch=.3, drag=null, last=0, R=1;
+  let host=null, cur=null, vi=0, seq=0, obj=null, part='', say='', rt=null, px=null, g2=null, im=null, yaw=-.7, pitch=.3, drag=null, last=0, R=1;
   const ridesIn=()=>{ for(const id of (ITEMS.ids?ITEMS.ids():[])){ const g=ITEMS.prop(id,'grants'), k=g&&RIDE.kinds[g]; if(!k||k.world||k.noLook||VLOOK.kinds[id])continue;
     VLOOK.kind(id,{name:(FORAGE.NM&&FORAGE.NM[id])||String(ITEMS.prop(id,'name')||id).toUpperCase(),grp:'RIDES',make:()=>VLOOK.dress(id,k.make(id))}); } };
   const drop=()=>{ if(!obj)return; PIV.remove(obj); VLOOK.live.delete(obj); if(obj.userData.vlDrop)obj.userData.vlDrop(); obj.traverse(c=>{ if(c.isMesh&&OWN.has(c)){ c.geometry.dispose(); for(const m of [].concat(c.material))m.dispose(); } }); obj=null; HL.visible=false; };
   const frame=()=>{ if(!obj)return; PIV.rotation.set(0,0,0); obj.position.set(0,0,0); obj.updateMatrixWorld(true); BX.setFromObject(obj); if(BX.isEmpty())return; BX.getBoundingSphere(SP); obj.position.sub(SP.center); R=Math.max(.01,SP.radius); };
-  // (a maker may answer later: make() -> a promise of it)
-  const pick=id=>{ drop(); cur=id; part=''; const K=VLOOK.kinds[id]; let o=null; try{ o=K&&K.make(); }catch(e){ console.warn('VLOOK make',id,e); }
-    const show=o=>{ if(!o||cur!==id||obj){ if(o&&o.userData.vlDrop)o.userData.vlDrop(); return; } obj=o; obj.position.set(0,0,0); obj.rotation.set(0,0,0); obj.traverse(c=>{ c.frustumCulled=false; }); PIV.add(obj); frame(); draw(); };
+  // (a maker may answer later: make() -> a promise of it; a kind with variants(), e.g. the horse's coats, is made as the one picked: make(i), its first variant())
+  const pick=(id,v)=>{ drop(); cur=id; part=''; const K=VLOOK.kinds[id]; vi=v!=null?v:K&&K.variant?K.variant():0; const my=++seq; let o=null; try{ o=K&&K.make(vi); }catch(e){ console.warn('VLOOK make',id,e); }
+    const show=o=>{ if(!o||my!==seq||obj){ if(o){ VLOOK.live.delete(o); if(o.userData.vlDrop)o.userData.vlDrop(); } return; } obj=o; obj.position.set(0,0,0); obj.rotation.set(0,0,0); obj.traverse(c=>{ c.frustumCulled=false; }); PIV.add(obj); frame(); draw(); };
     if(o&&o.then)o.then(show,e=>console.warn('VLOOK make',id,e)); else show(o); draw(); };
   const look=()=>VLOOK.looks[cur]||(VLOOK.looks[cur]={});
   const edit=f=>{ const L=look(); f(L); if(L.pal&&!Object.keys(L.pal).length)delete L.pal; if(L.parts){ for(const k in L.parts)if(!Object.keys(L.parts[k]).length)delete L.parts[k]; if(!Object.keys(L.parts).length)delete L.parts; }
@@ -99,9 +99,10 @@ import {MAPFILE, MODS, SYS, TILE} from './006-map-pre.js';
     let right='<div class="dim">PICK A VEHICLE</div>';
     if(cur&&K[cur]){ const k=K[cur], L=VLOOK.looks[cur]||{}, only=!!k.colour;
       right='<b style="color:#f2c14e">'+esc(k.name)+'</b><canvas class="vcv" width="'+W+'" height="'+Hh+'" style="display:block;width:100%;max-width:'+W+'px;aspect-ratio:3/2;margin:6px 0;background:#15171e;cursor:grab;touch-action:none"></canvas><div class="dim">DRAG TO TURN IT</div>';
+      if(k.variants)right+='<div class="row"><span>'+esc(k.vname||'KIND')+'</span><select data-var style="'+S+'">'+k.variants().map((n,i)=>'<option value="'+i+'"'+(i===vi?' selected':'')+'>'+esc(n)+'</option>').join('')+'</select></div>';
       if(!obj)right+='<div class="dim">IT IS NOT IN THE GAME YET HERE (GO NEAR IT ONCE)</div>';
       if(!only)right+=slider('s',.5,2,.05,L.s||1,'SIZE');
-      if(obj){ const pal=k.pal?k.pal():VLOOK.palette(obj), P=L.pal||{};
+      if(obj){ const pal=k.pal?k.pal(vi):VLOOK.palette(obj), P=L.pal||{};
         right+='<h3>COLOURS</h3><div style="display:flex;flex-wrap:wrap;gap:6px">'+pal.map(h=>'<label title="#'+h+'" style="display:flex;flex-direction:column;align-items:center;gap:2px"><input type="color" data-pal="'+h+'" value="#'+(P[h]||h)+'" style="width:34px;height:26px;padding:0;border:2px solid '+(P[h]?'#f2c14e':'#3a3f4e')+';background:none"></label>').join('')+'</div>';
         if(!only&&!k.noParts){ const ps=parts(obj), q=(L.parts||{})[part]||{};
           right+='<h3>PARTS</h3><select data-part style="'+S+';max-width:100%"><option value="">PICK A PART ('+ps.length+')</option>'+ps.map(p=>'<option value="'+esc(p.key)+'"'+(p.key===part?' selected':'')+'>'+esc(p.key.replace(/\//g,' · '))+((L.parts||{})[p.key]?' ✎':'')+'</option>').join('')+'</select>';
@@ -131,7 +132,7 @@ import {MAPFILE, MODS, SYS, TILE} from './006-map-pre.js';
         edit(L=>{ if(f==='s'){ if(v===1)delete L.s; else L.s=v; return; } if(!part)return; const P=L.parts=L.parts||{}, q=P[part]=P[part]||{}, k=f==='ps'?'s':f; if(v===(k==='s'?1:0))delete q[k]; else q[k]=v; }); }
       else if(t.dataset.pal){ const f=t.dataset.pal, v=t.value.slice(1); edit(L=>{ const P=L.pal=L.pal||{}; if(v===f)delete P[f]; else P[f]=v; }); t.style.borderColor='#f2c14e'; }
       else if(t.matches('[data-tint]')){ const v=t.value.slice(1); edit(L=>{ const P=L.parts=L.parts||{}, q=P[part]=P[part]||{}; if(v==='ffffff')delete q.c; else q.c=v; }); } });
-    el.addEventListener('change',e=>{ const t=e.target; if(t.matches('[data-part]')){ part=t.value; draw(); } });
+    el.addEventListener('change',e=>{ const t=e.target; if(t.matches('[data-part]')){ part=t.value; draw(); } else if(t.matches('[data-var]')&&cur)pick(cur,+t.value); });
     el.addEventListener('click',e=>{ const b=e.target.closest('[data-pick],[data-act],[data-unpark]'); if(!b)return;
       if(b.dataset.pick){ pick(b.dataset.pick); return; }
       if(b.dataset.unpark){ say='TAKING IT AWAY...'; tell(VLOOK.unpark(b.dataset.unpark)); return; }

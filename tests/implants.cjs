@@ -1,0 +1,50 @@
+// THE IMPLANTS' CHECK: node tests/implants.cjs dist/market.html. THE CLINIC on Market St is built only when you go in; the doctor sells implants; fitting one at the operating chair takes a body slot and gives its stat points or ability, a second in that slot is refused, removing it takes the effect away and puts it back in your pack; what is fitted stays after a reload.
+const { chromium } = require('playwright'), path = require('path');
+const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=implants::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
+(async () => {
+  const exe = process.env.PWCHROME || process.env.PW_CHROMIUM;
+  const b = await chromium.launch({ ...(exe ? { executablePath: exe } : {}), args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+  const pg = await b.newPage({ viewport: { width: 960, height: 600 } }), errs = [];
+  pg.on('pageerror', e => errs.push(e.message.slice(0, 300)));
+  const URL = 'file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=13';
+  const start = async () => { let st = false; for (let i = 0; i < 80 && !st; i++) { await pg.waitForTimeout(3000); st = await pg.evaluate(() => !!window.__started).catch(() => false); } return st; };
+  const until = async (f, a, ms = 30000) => { for (let t = 0; t < ms; t += 250) { if (await pg.evaluate(f, a).catch(() => false)) return true; await pg.waitForTimeout(250); } return false; };
+  await pg.goto(URL, { waitUntil: 'commit' });
+  const st = await start(); ok(st, 'the page starts');
+  if (st) {
+    const r0 = await pg.evaluate(() => { const C = window.CHARS && CHARS.trade ? CHARS.trade({ key: 'doctor' }) : null, IM = ITEMS.ids().filter(id => EQUIP.slotOf(id));
+      return { reg: !!ROOMS.off.clinic, built: CLINICDBG().built, sells: C ? C.sells.filter(id => EQUIP.slotOf(id)).length : 0, n: IM.length, slots: [...new Set(IM.map(EQUIP.slotOf))].length, arch: ARCH.has('doctor'), models: IM.filter(id => !INSPECT.has(id)) }; });
+    ok(r0.reg && !r0.built, 'THE CLINIC is on the street and not built before you go in: ' + JSON.stringify(r0));
+    ok(r0.n === 12 && r0.sells === 12 && r0.slots === 6 && !r0.arch && !r0.models.length, 'twelve implants in six body slots, each with a model, all sold by the doctor (not archived): ' + JSON.stringify(r0));
+    await pg.evaluate(() => { FORAGE.stats.set({ str: 30, int: 30, sta: 30 }); INV.cash = 3000; for (const s of EQUIP.IMS) delete EQUIP.im[s]; });
+    const away = await pg.evaluate(async () => { SHOPS.buy('im_myo'); return [await CLINIC.fit('im_myo'), EQUIP.im.arms || null]; });
+    ok(away[0] === 'away' && !away[1], 'an implant is fitted only at the clinic: ' + JSON.stringify(away));
+    await pg.evaluate(() => ROOMS.enter('clinic'));
+    ok(await until(() => CLINICDBG().built && CLINICDBG().inside, null, 90000), 'going in builds it');
+    await pg.waitForTimeout(1500);
+    const f1 = await pg.evaluate(async () => { const s0 = FORAGE.ST.str, c0 = INV.cash, hp = __dbg.VIT.hpPlus; const r = await CLINIC.fit('im_myo'); return { r, arms: EQUIP.im.arms, str: [s0, FORAGE.ST.str], pack: INV.items.im_myo || 0, cash: c0 === INV.cash }; });
+    ok(f1.r === 'ok' && f1.arms === 'im_myo' && f1.str[1] === f1.str[0] + 10 && !f1.pack && f1.cash, 'the doctor fits MYOFIBRE ARMS in your arms: +10 STRENGTH, out of your pack: ' + JSON.stringify(f1));
+    const f2 = await pg.evaluate(async () => { const c0 = INV.cash; SHOPS.buy('im_spring'); const paid = c0 - INV.cash; const r = await CLINIC.fit('im_spring'); return { paid, r, hi: EQUIP.hi, legs: EQUIP.im.legs }; });
+    ok(f2.paid === 500 && f2.r === 'ok' && f2.legs === 'im_spring' && f2.hi === 1.4, 'SPRING TENDONS ($500) give a higher jump: ' + JSON.stringify(f2));
+    const f3 = await pg.evaluate(async () => { SHOPS.buy('im_twitch'); const r = await CLINIC.fit('im_twitch'); return { r, legs: EQUIP.im.legs, pack: INV.items.im_twitch || 0, pace: EQUIP.pace }; });
+    ok(f3.r === 'full' && f3.legs === 'im_spring' && f3.pack === 1 && f3.pace === 1, 'a second implant in the same slot is refused: ' + JSON.stringify(f3));
+    const f4 = await pg.evaluate(async () => { SHOPS.buy('im_cateye'); const r = await CLINIC.fit('im_cateye'); return { r, night: EQUIP.night, code: EQUIP.code(), back: EQUIP.decode(EQUIP.code()).imeyes }; });
+    ok(f4.r === 'ok' && f4.night && f4.back === 'im_cateye', 'CAT\'S EYES give night vision and show to other players (the look code): ' + JSON.stringify(f4));
+    const glint = await pg.evaluate(() => { let n = 0; W3.group.traverse(o => { if (o.name === 'eye-implant' && o.visible) n++; }); return n; });
+    ok(glint === 1, 'a glint shows in your eyes: ' + glint);
+    await pg.evaluate(() => CLINIC.open()); ok(await pg.evaluate(() => CLINICDBG().open && /OPERATING CHAIR/.test(document.getElementById('clinicg').textContent)), 'the operating chair\'s window opens');
+    await pg.evaluate(() => CLINIC.close());
+    const r1 = await pg.evaluate(async () => { const c0 = INV.cash; const id = await CLINIC.remove('legs'); return { id, legs: EQUIP.im.legs || null, hi: EQUIP.hi, pack: INV.items.im_spring || 0, fee: c0 - INV.cash }; });
+    ok(r1.id === 'im_spring' && !r1.legs && r1.hi === 1 && r1.pack === 1 && r1.fee === 25, 'removing it ($25) takes the effect away and puts it back in your pack: ' + JSON.stringify(r1));
+    await pg.waitForTimeout(3000);
+    await pg.evaluate(() => ROOMS.exit('clinic'));
+    ok(await until(() => !CLINICDBG().built, null, 60000), 'leaving drops it');
+    await pg.waitForTimeout(1500);
+    await pg.goto(URL, { waitUntil: 'commit' });
+    ok(await start(), 'the page starts again');
+    const s = await pg.evaluate(() => ({ im: { ...EQUIP.im }, str: FORAGE.ST.str, base: FORAGE.stats.get().str, night: EQUIP.night, hi: EQUIP.hi }));
+    ok(s.im.arms === 'im_myo' && s.im.eyes === 'im_cateye' && !s.im.legs && s.str === s.base + 10 && s.night && s.hi === 1, 'what is fitted is saved with you (after a reload): ' + JSON.stringify(s));
+  }
+  ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
+  await b.close(); console.log(fails.length ? fails.length + ' FAILED' : 'ALL OK'); process.exit(fails.length ? 1 : 0);
+})();

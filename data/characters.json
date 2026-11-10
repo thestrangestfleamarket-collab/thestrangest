@@ -3305,7 +3305,24 @@
     18
    ]
   },
-  "name": "THE DOCTOR"
+  "name": "THE DOCTOR",
+  "trade": {
+   "sells": [
+    "im_lace",
+    "im_luck",
+    "im_cateye",
+    "im_hawk",
+    "im_myo",
+    "im_heart",
+    "im_gill",
+    "im_plate",
+    "im_spring",
+    "im_twitch",
+    "im_adrenal",
+    "im_marrow"
+   ],
+   "line": "Buy an implant here, then sit in the chair and I fit it. One to a slot; I take them out too."
+  }
  },
  "ward_nurse": {
   "pf": "ward-nurse-84b61d",

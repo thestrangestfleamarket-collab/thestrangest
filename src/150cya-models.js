@@ -17,6 +17,7 @@ import {GHOLD} from './146zoa-guitar-hold.js';
     card:(a,b)=>{ const g=G(); add(g,'box',a,0,.002,0,.15,.003,.1,0,0,0,M('paper')); add(g,'box',b,.03,.004,0,.06,.001,.07,0,0,0,M('paper')); return g; },
     board:(a,b)=>{ const g=G(); add(g,'box',0x6a4a2a,0,.3,0,.62,.62,.03,0,0,0,M('wood')); add(g,'box',b,0,.3,.016,.56,.56,.004,0,0,0,M('cloth')); add(g,'ball',a,-.08,.34,.02,.1,.08,.01); return g; },
     bottle:(a,b)=>INSPECT.shape('bottle',a,b), jar:(a,b)=>INSPECT.shape('jar',a,b), sack:(a)=>INSPECT.shape('sack',a), packet:(a,b)=>INSPECT.shape('packet',a,b),
+    implant:(a,b)=>{ const g=G(); add(g,'box',0xe8ecee,0,.006,0,.12,.012,.08,0,0,0,M('plastic')); add(g,'cyl',0xc8ccd2,0,.022,0,.012,.07,.012,0,Math.PI/2,0,METAL); add(g,'ball',a,0,.022,0,.016,.016,.016,0,0,1); return g; },   // an implant in its sterile tray: a steel capsule, its core glowing
     tub:(a,b)=>{ const g=G(); add(g,'cyl',a,0,.06,0,.06,.12,.06,0,0,0,M('plastic')); add(g,'cyl',b,0,.122,0,.064,.01,.064,0,0,0,M('plastic')); return g; },
     jug:(a,b)=>{ const g=G(); add(g,'box',a,0,.14,0,.14,.26,.1,0,0,0,M('plastic')); add(g,'cyl',b,0,.29,0,.025,.04,.025,0,0,0,M('plastic')); add(g,'tor',a,.05,.22,0,.04,.05,.04,Math.PI/2,0,0,M('plastic')); return g; },
     carton:(a,b)=>{ const g=G(); add(g,'box',a,0,.1,0,.09,.2,.09,0,0,0,M('paper')); add(g,'cone',b,0,.225,0,.065,.05,.065,0,0,0,M('paper')); return g; },
@@ -85,7 +86,7 @@ import {GHOLD} from './146zoa-guitar-hold.js';
     [/^(coat_|jacket_)/,'coat'],[/^jeans$/,'jeans'],[/^bee_veil$/,'hat'],[/^(shades|nv_goggles)$/,'goggles'],[/^(plush_|mus_plush$)/,'plush'],[/^prize_ring$/,'ring'],[/^prize_yoyo$/,'yoyo'],[/^cube\d$/,'cube'],[/^arc_token$/,'coin'],
     [/^(handheld|junk_handheld|pockettv|junk_pockettv|walkman|junk_walkman)$/,'gadget'],[/^phone_/,'phone'],[/^radio_scanner$/,'radio'],[/^reel_/,'reel'],[/^rod_/,'rod'],[/^lure_spoon$/,'lure'],[/^lure_worm$/,'worm'],[/^crabpot$/,'crab'],[/^auger$/,'auger'],[/^cooler_/,'cooler'],
     [/^bee_hive$/,'hive'],[/^bee_smoker$/,'smoker'],[/^bee_wax$/,'block'],[/^gb_/,'ball'],[/^gem_wheel$/,'wheel'],[/^orchard_key$/,'key'],[/^quill_pen$/,'pen'],[/^bird_feather$/,'feather'],[/^nut_acorn$/,'acorns'],[/^pouch$/,'pouch'],[/^scuba$/,'tank'],
-    [/^fair_pennant$/,'flag'],[/^(bonsai)$/,'plant'],[/^cactus/,'cactus'],[/^pot$/,'pot'],[/^feeder$/,'feeder'],[/^(bs_kit)$/,'kit'],[/^mus_replica$/,'frame']];
+    [/^fair_pennant$/,'flag'],[/^(bonsai)$/,'plant'],[/^im_/,'implant'],[/^cactus/,'cactus'],[/^pot$/,'pot'],[/^feeder$/,'feeder'],[/^(bs_kit)$/,'kit'],[/^mus_replica$/,'frame']];
   const shapeOf=id=>{ const k=String(id).split('~')[0]; for(const [re,s] of BY)if(re.test(k))return s; return null; };
   INSPECT.kinds.push({is:id=>!!shapeOf(id),make:id=>{ '@later'; const [a,b]=cols(String(id).split('~')[0]), g=S[shapeOf(id)](a,b); g.userData.made=1; return g; }});
   INSPECT.shapeOf=shapeOf; }

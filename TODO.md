@@ -161,7 +161,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
   - [ ] **Animal taming, a skill** · P2 · XL · pick + code. Owner: "everything" (wildlife as pets, monsters that fight beside you, mounts): options first.
   - [ ] **Fossil digs** · P3 · L · code. Dig bones, assemble skeletons for the museum.
   - [ ] **Bar games** · P2 · XL · pick + code. Owner's picks: darts (the archived 301), pool, bowling (needs its own place: options first).
-  - [ ] **Implants** · P3 · L · pick + code. Owner: "Both" (stat boosts and new abilities), fitted at a clinic.
+  - [x] **Implants** · P3 · L · pick + code. Owner: "Both" (stat boosts and new abilities), fitted at a clinic. Done 10 Nov: THE CLINIC (`src/146zkb-clinic.js`, EQUIP's implants in `src/146c-equip.js`), `tests/implants.cjs`.
 - [ ] **The instruments, the rest** · P3 · S · code. The bar's piano and kit playable in place; a bandstand for the park guitar.
 - [ ] **Companion drone NPC**: mockup done, waiting on "go" · pick.
 - [x] **Your AI double** (owner, 9 Nov 2026; done 9 Nov) · P2 · M · code. `src/162gb-twin.js`, `worker/twin.js`, `tests/twin.cjs`. Needs the `ANTHROPIC_API_KEY` secret on the worker.

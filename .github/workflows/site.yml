@@ -106,6 +106,7 @@ jobs:
           k riverq 'src/066-river|src/066b-pier|src/066ba-wreck|src/142-fishing|src/146d-gear|src/146gb-hudson|src/150q-hudtrophies|river-quests\.cjs'
           k libquests 'src/144c|src/146zh|lib-quests\.cjs'
           k skillshops 'src/059i|src/159b|src/111fb|data/characters|skillshops\.cjs'
+          k implants 'src/146c-equip|src/146zkb|src/103-vitals|implants\.cjs'
           k stow 'src/130-rooms|src/130a|src/130b|src/008-batch|stow\.cjs'
           k playhouse 'src/151[a-z]|src/059-street|playhouse'
           k menus 'src/146-drone|src/094|src/102-looks|src/136a-bugs|src/162b|menus\.cjs'
@@ -118,6 +119,7 @@ jobs:
           k visit   'src/150d|src/059a|visit\.cjs'
           k aptfixed 'src/150a|src/150d|src/150f|src/150k|aptfixed\.cjs'
           k aptradio 'src/150fb|src/150a|src/150d|data/radio|aptradio\.cjs'
+          k crt     'src/150fa|src/150a|src/150d|data/tv\.json|crt\.cjs'
           k sound   'src/091-sfx|src/093-|src/100-use|src/146zo-|sound\.cjs'
           k clock   'src/134b|worker/clock|clock\.cjs'
           k westst  'src/023|src/05[89]-|src/059[e-h]|westst'
@@ -356,6 +358,10 @@ jobs:
         timeout-minutes: 30
         if: contains(steps.f.outputs.run, ' skillshops')
         run: node tests/skillshops.cjs dist/market.html
+      - name: The implants (the clinic built on the way in, the doctor sells, one to a slot, fitted and removed, saved)
+        timeout-minutes: 30
+        if: contains(steps.f.outputs.run, ' implants')
+        run: node tests/implants.cjs dist/market.html
       - name: The street let go while you are in a room off the map (pictures back as they were on the way out)
         if: contains(steps.f.outputs.run, ' stow')
         run: node tests/stow.cjs dist/market.html
@@ -405,6 +411,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' aptradio')
         run: node tests/aptradio.cjs dist/market.html
+      - name: The CRT TV (its panel, THE GUIDE plays a pick, shared with the room, kept in the layout, close up and full screen)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' crt')
+        run: node tests/crt.cjs dist/market.html
       - name: The sound (on by default, one audio context and volume, every effect plays)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' sound')

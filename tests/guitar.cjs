@@ -70,6 +70,12 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
     FORAGE.S.sk.guitar=100; for(let i=0;i<600;i++)GUITAR.play('pluck',1+i%6); const after=FORAGE.sk('guitar'); GUITAR.stop(); GUITAR.stow();
     return {book:B.length,downloaded:B.filter(b=>b.notes).length,skill:lv,inSkills:FORAGE.SK.some(s=>s[0]==='guitar'),refused,playing,notes,after}; });
   rec('the song book has the downloaded pieces; GUITAR is a skill (10 to start), a piece above yours is refused, at 100 it plays, practice raises it',sg.downloaded>=150&&sg.inSkills&&sg.skill===10&&sg.refused&&sg.playing&&sg.notes>3&&sg.after>10,JSON.stringify(sg));
+  // full hands can't play; your skill sets how often a note goes wrong; playing raises it as the piece goes on
+  const sk=await pg.evaluate(()=>{ FORAGE.give('net',1); WIELD.set('net'); GUITAR.start('own'); const full=!GUITAR.on(); WIELD.set(null); if(GUITAR.on())GUITAR.stop();
+    const B=GUITAR.BOOK, T=B.find(b=>b&&!b.kept&&(b.lvl||1)<=5); FORAGE.S.sk.guitar=0; const r=SONGBK.start('guitar',T), P=SONGBK.read(SONGBK.code(0,r,40)); let w=0; for(let n=0;n<2000;n++)if(SONGBK.wrong(P,n))w++;
+    FORAGE.S.sk.guitar=1000; const r2=SONGBK.start('guitar',T); FORAGE.S.sk.guitar=0; const Q={s0:7,fail:0}; SONGBK.tick('guitar',T,Q,61); const grew=FORAGE.sk('guitar');
+    return {full,miss:r.miss,wrong:w/2000,miss1000:r2.miss,grew}; });
+  rec('a full hand is told to put its thing away first; at skill 0 notes go wrong, at 100 none; a minute of a piece raises the skill',sk.full&&sk.miss>.1&&Math.abs(sk.wrong-sk.miss)<.05&&sk.miss1000===0&&sk.grew>0,JSON.stringify(sk));
   // the headset's tracked hands as the jointed hands: every WebXR joint name is one of the hand's bones
   const vr=await pg.evaluate(()=>{ const R=HANDS.vr(), names=['wrist','thumb-tip','index-finger-phalanx-intermediate','pinky-finger-tip']; let ok=true; for(const n of names){ const before=R.U.value[HANDS.NAME[n]*3].x; R.set('L',n,new (__dbg.THREE.Matrix4)().makeTranslation(.5,0,0)); ok=ok&&HANDS.NAME[n]!=null&&R.U.value[HANDS.NAME[n]*3].w===.5; } return {ok,joints:Object.keys(HANDS.NAME).length}; });
   rec('the headset\'s tracked hands drive the jointed hands joint for joint (25 WebXR joints)',vr.ok&&vr.joints===25,JSON.stringify(vr));

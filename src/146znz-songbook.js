@@ -13,9 +13,17 @@ const SONGBK={}; window.SONGBK=SONGBK;
   const can=(k,B,T)=>{ const s=state(k,B).get(T); return s==='open'||s==='learnt'; };
   const chance=(k,T)=>learnt(k,T)?1:Math.max(.05,Math.min(1,(sk(k)-(T.lvl||1)+30)/50));
   // a try: clean, or a stumble somewhere in the middle of it (at: the part played, 0 to 1)
-  const start=(k,T)=>Math.random()<chance(k,T)?{ok:true,at:1}:{ok:false,at:.25+Math.random()*.5};
-  // the try over: the skill's rolls for what was played (a pass gains far likelier than a stumble), a clean play counted
-  const done=(k,T,ok,at=1)=>{ const was=learnt(k,T), n=1+Math.floor((T.secs||40)*at/30), l=T.lvl||1; for(let i=0;i<n;i++)FORAGE.use(k,l-30,l+20,0,{ok,win:was?1:WIN});
+  const start=(k,T)=>{ const c=chance(k,T), miss=learnt(k,T)?0:+Math.min(.35,(1-c)*.5).toFixed(2), seed=1+Math.floor(Math.random()*1e6); return Math.random()<c?{ok:true,at:1,miss,seed}:{ok:false,at:.25+Math.random()*.5,miss,seed}; };
+  // the try as sent to the others (the piece, where it stumbles, how often a note goes wrong, the dice), and read back
+  const code=(i,r,len)=>`${i}:${r.ok?0:+(len*r.at).toFixed(1)}:${r.miss||0}:${r.seed||0}`;
+  const read=v=>{ const a=String(v).split(':'); return {i:parseInt(a[0]),fail:+a[1]||0,miss:+a[2]||0,seed:+a[3]||0}; };
+  // a wrong note in the middle of a piece, as often as your skill falls short of it; the same notes for everyone who hears it
+  const wrong=(P,n)=>{ if(!P.miss)return false; let h=(P.seed*2654435761+n*40503)>>>0; h=Math.imul(h^h>>>15,2246822507)>>>0; h^=h>>>13; return (h>>>0)/4294967296<P.miss; };
+  // playing teaches: a roll of the skill every so often while the piece goes on
+  const EVERY=15, tick=(k,T,P,t)=>{ if(P.rk!==P.s0){ P.rk=P.s0; P.rl=0; } const l=T.lvl||1, was=learnt(k,T), s0=sk(k);
+    while(P.rl<Math.floor(t/EVERY)){ P.rl++; FORAGE.use(k,l-30,l+20,0,{ok:!(P.fail&&t>P.fail),win:was?1:WIN}); } return sk(k)!==s0; };
+  // the try over: one last roll (a pass gains far likelier than a stumble), a clean play counted
+  const done=(k,T,ok)=>{ const was=learnt(k,T), l=T.lvl||1; FORAGE.use(k,l-30,l+20,0,{ok,win:was?1:WIN});
     if(!ok){ SAY(`YOU STUMBLE IN ${T.name.toUpperCase()}. TRY IT AGAIN.`,'#c8a090'); return; }
     if(was)return; const G=got(k), c=G[key(T)]=(G[key(T)]||0)+1; FORAGE.save();
     SAY(c>=CLEAN?`YOU HAVE LEARNT ${T.name.toUpperCase()}: IT IS YOURS NOW, AND A NEW PIECE OPENS IN THE BOOK.`:`${T.name.toUpperCase()} PLAYED CLEAN (${c} OF ${CLEAN} TO LEARN IT).`,'#7fd0ff'); };
@@ -28,5 +36,5 @@ const SONGBK={}; window.SONGBK=SONGBK;
     return o; };
   // a stumbling note: now and then dropped, else a neighbour of the right one
   const slip=()=>Math.random()<.45?(Math.random()<.4?0:Math.random()<.5?-1:1):null;
-  Object.assign(SONGBK,{NEW,CLEAN,band,mine,learnt,state,can,chance,start,done,options,slip,LEAD:2.5}); }
+  Object.assign(SONGBK,{NEW,CLEAN,band,mine,learnt,state,can,chance,start,code,read,wrong,tick,done,options,slip,LEAD:2.5}); }
 export {SONGBK};

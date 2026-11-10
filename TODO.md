@@ -163,6 +163,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
   - [ ] **Fossil digs** · P3 · L · code. Dig bones, assemble skeletons for the museum.
   - [ ] **Bar games** · P2 · XL · pick + code. Owner's picks: darts (the archived 301), pool, bowling (needs its own place: options first).
   - [ ] **Implants** · P3 · L · pick + code. Owner: "Both" (stat boosts and new abilities), fitted at a clinic.
+- [x] **Hands full stops an instrument; skill sets wrong notes, playing raises it** (owner, 10 Nov 2026; done 10 Nov) · P2 · S · code. `src/146znz-songbook.js`, `tests/guitar.cjs`. Waits for his look and yes.
 - [ ] **The instruments, the rest** · P3 · S · code. The bar's piano and kit playable in place; a bandstand for the park guitar.
 - [ ] **Companion drone NPC**: mockup done, waiting on "go" · pick.
 - [x] **Your AI double** (owner, 9 Nov 2026; done 9 Nov) · P2 · M · code. `src/162gb-twin.js`, `worker/twin.js`, `tests/twin.cjs`. Removed 10 Nov 2026 with all the bots.
@@ -252,6 +253,7 @@ One tree pass (more leaves mean more shadow triangles).
   unfinished painting.
 
 ## Menus, map, HUD and phones
+- [ ] **The map fills its window** · pick. Mocked up (`mockups/map-fill.html`, A/B/C), waiting on the owner.
 
 - [ ] **Try live** · P2 · S · look. The menus, where you start, the map and GO TO.
 - [x] **The map in the menus' green look** (owner, 10 Nov 2026: "B, go"; done 10 Nov) · P2 · M · code. `src/141e-map.js`, `tests/brochure.cjs`. Waits for his look and yes.

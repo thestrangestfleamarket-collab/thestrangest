@@ -62,7 +62,8 @@ const http = require('http'), PAGE = path.resolve(process.argv[2] || 'dist/marke
   await pg.evaluate(() => document.querySelector('#sedt [data-take="0"][data-do="del"]').click()); await pg.waitForTimeout(300);
   await pg.waitForFunction(() => { const c = document.querySelector('#sedt [data-wave="0"]'); return c && +c.dataset.len > 0; }, null, { timeout: 15000 }).catch(() => {});
   { const bb = await pg.locator('#sedt [data-wave="0"]').boundingBox(); await pg.mouse.move(bb.x + 2, bb.y + bb.height / 2); await pg.mouse.down(); await pg.mouse.move(bb.x + bb.width * .2, bb.y + bb.height / 2, { steps: 5 }); await pg.mouse.up(); await pg.waitForTimeout(300); }   // drag the start in to a fifth
-  await pg.evaluate(() => document.querySelector('#sedt [data-act="save"]').click()); await pg.waitForTimeout(1200);
+  await pg.evaluate(() => document.querySelector('#sedt [data-act="save"]').click());
+  await pg.waitForFunction(() => /SAVED FOR EVERYONE|NOT SAVED/.test(document.querySelector('#sedt .ssay').textContent), null, { timeout: 15000, polling: 200 }).catch(() => {});
   const e1 = await pg.evaluate(async () => { const S = __dbg.SFX, o = S.shared.set.horn, c = S.live(); await new Promise(r => setTimeout(r, 1500)); const v = S.take(c, o.takes[0]); return { takes: o.takes.length, up: !!o.takes[0].f, lvl: o.lvl, level: S.fxLevel('horn'), len: v && +v.L.toFixed(2), played: !!S.play('horn', { vol: .01 }), say: document.querySelector('#sedt .ssay').textContent }; });
   const kept = STORE['sounds.json'] && JSON.parse(STORE['sounds.json'].data.toString());
   ok(e1.takes === 1 && e1.up && e1.lvl === .5 && Math.abs(e1.level - .5) < .01 && e1.len > .35 && e1.len < .42 && e1.played && /SAVED FOR EVERYONE/.test(e1.say) && kept && kept.set.horn.takes[0].f && Object.keys(STORE).some(k => /^snd-.*\.wav$/.test(k)),

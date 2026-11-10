@@ -62,7 +62,7 @@ window.PETS=PETS;
   const groundAt=(x,z,y0)=>{ let g=typeof SHARED.groundY!=='undefined'?SHARED.groundY(x,z):y0; if(!(Math.abs(g-y0)<1.2*WU))g=y0; return g; };
   // your room as a pet sees it (MODS.apts.inside): the free floor for the pathfinder (clear of the walls and furniture), and the tops it can hop onto (a hand's height to a little over head height, room on them)
   let RM=null;
-  const roomNow=()=>{ const t=performance.now(); if(RM&&t-RM.t<500)return RM; const I=MODS.apts&&MODS.apts.inside&&MODS.apts.inside(); if(!I)return RM=null; let sig=I.sol.length*7+I.fix.length; for(const r of I.sol)sig+=r[0]*3+r[1]*5+r[2]*7+r[3]*11; for(const f of I.fix)sig+=f[0]*3+f[1]*5+f[5]*13;
+  const roomNow=()=>{ const t=performance.now(); if(RM&&t-RM.t<500)return RM; const I=MODS.apts&&MODS.apts.room&&MODS.apts.room(); if(!I)return RM=null; let sig=I.sol.length*7+I.fix.length; for(const r of I.sol)sig+=r[0]*3+r[1]*5+r[2]*7+r[3]*11; for(const f of I.fix)sig+=f[0]*3+f[1]*5+f[5]*13;
     if(RM&&RM.sig===sig&&RM.I.x0===I.x0){ RM.t=t; return RM; } const m=.14*WU, inR=r=>r[2]>I.x0&&r[0]<I.x1&&r[3]>I.z0&&r[1]<I.z1, S=I.sol.filter(inR);
     const free=(x,z)=>x>I.x0+m&&x<I.x1-m&&z>I.z0+m&&z<I.z1-m&&!S.some(r=>x>r[0]-m&&x<r[2]+m&&z>r[1]-m&&z<r[3]+m); free.box=[I.x0,I.z0,I.x1,I.z1]; free.cell=.18*WU;
     const F=I.fix.filter(f=>inR([f[0],f[1],f[3],f[4]])), tops=[];
@@ -379,7 +379,7 @@ window.PETS=PETS;
   PETS.home=()=>HOME;
   SYS.every(homePets,700,'pets at home');
   SYS.onStart(()=>{ idx().then(()=>tickAll(true)).catch(()=>{}); },'146zj-pets hours');
-  // THE PET SHOPS (owner, 8 Nov 2026): DOGS & CATS, LIZARDS & DRAGONS, THE BIRD SHOP, THE BUTTERFLY SHOP on Market St and THE BARN at the park's farm. Each is the shops' shared inside
+  // THE PET SHOPS (owner, 8 Nov 2026): DOGS & CATS, LIZARDS & DRAGONS, THE BIRD SHOP, THE BUTTERFLY SHOP on Market St (the barn's kinds, shop 'barn' in data/pets.json, are sold nowhere for now). Each is the shops' shared inside
   // (162fa: the keeper's counter) with cages floor to ceiling down the left, back and right walls (the barn: wooden stalls), each furnished for what lives in it, every caged kind
   // (K.cage in data/pets.json) alive in its own (awake, looking round, pacing, asleep, hovering), more of them in the shop windows; the adoption book by the counter has the shop's kinds only
   const CORDER=['pets','dogs','cats','rabbits','farm','horses','livestock','poultry','zoo','wild','reptiles','dino','dragons','creatures','birds','parrots','bugs','shore'];
@@ -491,5 +491,5 @@ window.PETS=PETS;
     kit.drop=()=>{ const d=MSHOP.kit._&&MSHOP.kit._.drop; if(d)d(); }; return kit; };
   const PEND=new Map(); SYS.every(()=>{ for(const [id,q] of PEND){ if(q.A.gen!==q.gen||!q.A.live()){ PEND.delete(id); continue; } if((ROOMS.offIn&&ROOMS.offIn()===id)||WINDOWS.held.has(id)){ PEND.delete(id); q.fill(); } } },300,'pet shops filled');
   const CAGE={CW:1.4,CH:.72,CD:.6,ROWS:4}, STALL={CW:1.7,CH:1.4,CD:1.0,ROWS:1,stall:true};
-  for(const id of ['pets','birdshop','reptiles','butterflies'])MSHOP.kit[id]=cageKit(id,CAGE); MSHOP.kit.barn=cageKit('barn',STALL);
+  for(const id of ['pets','birdshop','reptiles','butterflies'])MSHOP.kit[id]=cageKit(id,CAGE);
 }

@@ -13,7 +13,7 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
   await U(()=>LOUNGEDBG().geo,120000);   // its Polyfork pieces come after the room itself (slower on a busy runner)
   rec('you go in; the lounge is built',inn,JSON.stringify(await pg.evaluate(()=>LOUNGEDBG())));
   const live=n=>pg.evaluate(n=>__dbg.UI.things.filter(t=>t.obj&&t.obj.parent&&t.name===n).length,n);
-  const L=await pg.evaluate(()=>{ const s=new Set(); scene.traverse(o=>{ if(o.isMesh&&o.geometry&&o.material&&o.material===KIT.mat)s.add(o.geometry.uuid); }); return s.size; }).catch(()=>-1);
+  let L=-1; for(let i=0;i<60&&L<15;i++){ L=await pg.evaluate(()=>{ const s=new Set(); scene.traverse(o=>{ if(o.isMesh&&o.geometry&&o.material&&o.material===KIT.mat)s.add(o.geometry.uuid); }); return s.size; }).catch(()=>-1); if(L<15)await pg.waitForTimeout(500); }   // (the pieces come with their data, a moment after the room)
   rec('its Polyfork pieces stand (back bar, counter, stools, booths, stage, piano, pool table, jukebox ...)',L>=15,'kinds '+L);
   await U(()=>LOUNGEDBG().drum&&DRM.on,30000); await wait(3000);
   const o=await pg.evaluate(()=>{ const b=ROOMS.off.bar.box, a=DRM.at, d=LOUNGEDBG(); return {d,inside:!!a&&a.x>b.x0&&a.x<b.x1&&a.z>b.z0&&a.z<b.z1,vis:!!(DRM.g&&DRM.g.parent)&&VIS.why(DRM.g).every(w=>w==='perf'),drawn:DRM.g?DRM.g.children[0].count:0}; });

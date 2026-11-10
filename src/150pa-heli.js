@@ -36,9 +36,9 @@ const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
   const padAt=()=>{ const h={obj:STORE.bank&&STORE.bank.out}; if(!h.obj)return null; h.obj.updateMatrixWorld(true); const bb=new THREE.Box3().setFromObject(h.obj), c=bb.getCenter(new THREE.Vector3());
     const base=bb.max.y-.2*MV, top=base+3*DECK.v*MV; return {x:c.x,z:c.z,base,top,rot:h.obj.rotation.y,front:h.obj.rotation.y,hb:bb}; };
   const deckPt=(P,u,v)=>{ const c=Math.cos(P.rot), s=Math.sin(P.rot); return {x:P.x+(u*c+v*s)*M0,z:P.z+(-u*s+v*c)*M0}; };
-  const buildPad=P=>{ const deck=model('deck',DECK.s*M0,DECK.v*MV); deck.position.set(P.x,P.base,P.z); deck.rotation.y=P.rot; deck.userData.anyRoom=false; scene.add(deck);
+  const buildPad=P=>{ const deck=model('deck',DECK.s*M0,DECK.v*MV); deck.position.set(P.x,P.base,P.z); deck.rotation.y=P.rot; deck.userData.anyRoom=false; deck.userData.parkFar=true; scene.add(deck);
     const w=6*DECK.s*M0; FIX.up.push([P.x-w,P.z-w,P.base,P.x+w,P.z+w,P.top]);
-    const sk=model('sock',.5*M0,.5*MV), sp=sk.userData.parts.sock, q=deckPt(P,4.1,-4.1); sk.position.set(q.x,P.top,q.z); sk.children.forEach(c=>c.position.z-=D.sock.parts.sock.at[2]); sk.userData.anyRoom=false; scene.add(sk);
+    const sk=model('sock',.5*M0,.5*MV), sp=sk.userData.parts.sock, q=deckPt(P,4.1,-4.1); sk.position.set(q.x,P.top,q.z); sk.children.forEach(c=>c.position.z-=D.sock.parts.sock.at[2]); sk.userData.anyRoom=false; sk.userData.parkFar=true; scene.add(sk);
     HELI.pad={...P,deck,sock:sk,sp}; };
   // the street below: where you come down the bank's stairs, by its front door
   const street=()=>{ const P=HELI.pad, d=(P.hb.max.z-P.hb.min.z)/2+1.2*M0, q=deckPt(P,0,0); const fz=P.z+Math.cos(P.rot)*d, fx=P.x+Math.sin(P.rot)*d+3*M0; return {x:fx,z:fz,hd:P.rot}; };

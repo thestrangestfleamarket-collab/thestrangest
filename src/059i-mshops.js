@@ -5,7 +5,7 @@ import {scene} from './004-main.js';
 import {AWAY, FIX, grab, LEVEL, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
 import {BLOCKS} from './038zb-blocks.js';
 import {FACADES} from './038zc-facades.js';
-const MSHOP={kit:{},at:{},defs:{},fronts:[],need:{}};   // need[id]: what a shop's inside fetches before it is built (the bar's pieces)
+const MSHOP={kit:{},at:{},defs:{},fronts:[]};
 // the real signs' pictures: gold leaf letters (a dark edge, a lighter face), a painted blade sign's name, a neon OPEN
 const SHOPSIGN=(()=>{ const C={}, mk=(k,w,h,f)=>C[k]||(C[k]=(()=>{ const cv=document.createElement('canvas'); cv.width=w; cv.height=h; const g=cv.getContext('2d'); f(g,w,h); const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return t; })());
   const fit=(g,t,w,h,font)=>{ let s=h; do{ g.font=font.replace('S',s+'px'); s-=2; }while(g.measureText(t).width>w*.94&&s>8); };
@@ -42,8 +42,8 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
       ['gems','THE GEM SHOP','GEMS',[92,86,90],[140,255,230]],['armor','THE ARMOURY','ARMS',[84,78,76],[255,120,90]],['clothes','THE CLOTHES SHOP','CLOTHES',[126,68,56],[255,220,160]],
       ['skate','THE SKATE SHOP','SKATE',[104,64,52],[255,170,60]],['fishing','FISHING & SCUBA','TACKLE',[90,84,82],[130,210,255]],['tailor','THE TAILOR','TAILOR',[120,72,60],[240,220,190]],
       ['barber','THE BARBER','BARBER',[116,66,58],[255,120,120]],['aquarium','THE AQUARIUM','AQUARIUM',[70,92,104],[120,220,255]],['hotel','THE HOTEL','HOTEL',[110,78,62],[255,230,170]],['antiques','ANTIQUES & PAWN','PAWN',[110,84,64],[255,200,120]],['outfitter','THE OUTFITTER','GEAR',[90,92,80],[180,255,140]]].map(([id,name,sign,w,c])=>[id,{name,sign,signC:c,neon:true,signBg:[30,26,28],wall:BLOCKS.brick(w),trim:[200,190,170],frame:[44,40,42],door:.5,h:id==='hotel'?300:170}])),
-    barn:{name:'THE BARN',sign:'BARN',signC:[240,230,200],neon:false,signBg:[120,30,26],wall:BLOCKS.brick([150,40,34]),trim:[230,220,200],frame:[60,40,30],door:.5,h:200,none:true}};   // (none: its outside is a modelled thing of its own, the park's Polyfork red barn)
-  for(const id of ['pets','reptiles','birdshop','butterflies','aquarium','barn'])DEF[id].blank=true;   // brick fronts, no windows: the inside is built only when you go in (owner, 9 Nov 2026)
+    observatory:{name:'THE OBSERVATORY',sign:'OBSERVATORY',signC:[230,226,214],neon:false,signBg:[40,44,54],wall:BLOCKS.brick([170,166,158]),trim:[220,216,206],frame:[50,54,62],door:.5,h:170,none:true}};   // (none: its outside is a modelled thing of its own, 059ia)
+  for(const id of ['pets','reptiles','birdshop','butterflies','aquarium','observatory'])DEF[id].blank=true;   // brick fronts, no windows: the inside is built only when you go in (owner, 9 Nov 2026)
   Object.assign(DEF.pets,{real:'PUPPIES · KITTENS · RABBITS'}); Object.assign(DEF.reptiles,{real:'LIZARDS · DRAGONS · DINOSAURS'}); Object.assign(DEF.birdshop,{real:'SONGBIRDS · PARROTS · HAWKS'}); Object.assign(DEF.butterflies,{real:'BUTTERFLIES · BEES · BEETLES'});   // their real signs (owner, 9 Nov 2026): a blade sign
 
   /* ---------- the outside: a shopfront painted on the block's street face ---------- */
@@ -112,7 +112,7 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
       api.sol(R.x0-.1,R.y0,R.x0+.1,R.y1); api.sol(R.x1-.1,R.y0,R.x1+.1,R.y1); api.sol(R.x0,R.y0-.1,R.x1,R.y0+.1); api.sol(R.x0,R.y1-.1,cx-.9,R.y1+.1); api.sol(cx+.9,R.y1-.1,R.x1,R.y1+.1); return PA; };
     const unbuild=()=>{ for(const r of S){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } S=[]; if(G){ G.removeFromParent(); G=null; } PA=null; const k=MSHOP.kit[id]||MSHOP.kit._; if(k&&k.drop)k.drop(); };
     const wb=box4(R.x0-.2,R.y0-.2,R.x1+.2,R.y1+.2);
-    ROOMS.off[id]={name:D.name,box:{x0:wb[0],z0:wb[1],x1:wb[2],z1:wb[3],y0:-1,y1:Y(WH+30)},need:()=>Promise.all([LOAD('later'),MSHOP.need[id]?MSHOP.need[id]():null]),build,unbuild,keep:!D.blank,
+    ROOMS.off[id]={name:D.name,box:{x0:wb[0],z0:wb[1],x1:wb[2],z1:wb[3],y0:-1,y1:Y(WH+30)},need:()=>LOAD('later'),build,unbuild,keep:!D.blank,
       spawn:[X(cx),Z(R.y1-1.3),0,Math.PI],out:[...at(lcx,L.y1+.9),0,TA.hd(0)],door:(d=>[d[0],Y(0),d[1]])(at(lcx,L.y1+.25)),exit:[X(cx),0,Z(R.y1-.25)],exitName:'OUT TO THE STREET'};
     { // its window, real both ways (130a): the street front and the inside's front wall are matched at the door (M: street to inside, turned and moved), the glass the part of the painted window that lies along the inside's wall
       const V3=THREE.Vector3, P2=(q,y=0)=>new V3(q[0],y,q[1]), S0=P2(at(lcx,L.y1)), us=P2(at(lcx+1,L.y1)).sub(S0).normalize(), ns=P2(at(lcx,L.y1+1)).sub(S0).normalize(), I0=new V3(X(cx),0,Z(R.y1)), ui=new V3(Math.sign(X(cx+1)-X(cx)),0,0), ni=new V3(0,0,Math.sign(Z(R.y1+1)-Z(R.y1))), up=new V3(0,1,0);
@@ -124,7 +124,7 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
         const pout=new THREE.Mesh(new THREE.PlaneGeometry(w,h)); pout.position.copy(new V3(X(cx+mid),yc,Z(R.y1-.04))); pout.rotation.y=Math.atan2(ni.x,ni.z); scene.add(pout); WINDOWS.pane(pout,id,'out',false,true); };
       if(D.pf||D.none||D.blank){} else if(D.both){ const hf=D.half, wz=D.wz||[19,89]; pane(-hf+.08,-dw-.28,wz[0],wz[1]); pane(dw+.28,hf-.08,wz[0],wz[1]); pane(-dw+.12,-.06,12,86); pane(.06,dw-.12,12,86); }   // both windows and the two glass doors, real through
       else pane((du>W/2?.35:du+dw+.15)-du,(du>W/2?du-dw-.15:W-.35)-du,16,92); }
-    MSHOP.at[id]={R,cx,door:at(lcx,L.y1+.25)};
+    MSHOP.at[id]={R,cx,door:at(lcx,L.y1+.25),mid:at((L.x0+L.x1)/2,(L.y0+L.y1)/2),half:[Math.abs(X(LW.x1)-X(LW.x0))/2,Math.abs(Z(LW.y1)-Z(LW.y0))/2]};
     STORE.places.push([D.name,X(cx),Z(R.y1-1.3),'up','off',Math.PI]);
     // its merchant stands inside, behind the counter, unless the level file or the character editor put them elsewhere
     const who=p.merchant, B=SHARED.BOD, tx=w=>(w-B.XS(0))/(B.XS(1)-B.XS(0)), tz=w=>(w-B.ZS(0))/(B.ZS(1)-B.ZS(0));   // (homes are in the street's tiles)

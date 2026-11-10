@@ -132,7 +132,7 @@ const WRE=()=>MODS.roomed||{};   // the room editor (150d, later in the page): i
   ROOMK.keep.push({ out:(L,A)=>{ L.win=(A.R.wins||[]).map(W=>({...(W.d||D0())})); },
     in:(L,A)=>{ const ws=A.R.wins||[]; ws.forEach((W,i)=>{ const s=L&&L.win&&L.win[i]; W.d={...D0(),...(s&&typeof s==='object'?s:{})}; if(!CUR[W.d.c])W.d.c='none'; if(!BLI[W.d.b])W.d.b='none'; if(W.g)dress(W); }); } });
 
-  /* ---------- each frame: the rays follow the sun; the curtains sway in the breeze and part as you pass ---------- */
+  /* ---------- each frame: the rays follow the sun; the curtains part as you pass, then hang still ---------- */
   const TV=new THREE.Vector3(), TP=new THREE.Vector3(), IM=new THREE.Matrix4();
   const clothStep=(c,h,br,t,pl)=>{ const o=c.o||(c.o={g:-4,dm:.97,ks:.006,col:[],cyl:{cy:1,x:0,z:0,r:.28,y0:0,y1:0},
       push:(i,a,F)=>{ const X0=c.X0, fr=(i/c.nx|0)/(c.ny-1), gust=c.br*(1.6+1.2*Math.sin(c.t*.9+X0[a]*2.1)+.6*Math.sin(c.t*2.3+X0[a+1]*3+X0[a]))*(.3+.7*fr);
@@ -146,8 +146,9 @@ const WRE=()=>MODS.roomed||{};   // the room editor (150d, later in the page): i
       if(I>0){ W.g.updateWorldMatrix(true,false); IM.copy(W.g.matrixWorld).invert(); TV.copy(dir).negate().transformDirection(IM); }
       const ok=I>0&&TV.z>.04&&TV.y<-.04; u.uI.value=ok?.04*I*Math.min(1,TV.z*3):0; if(ok)u.uD.value.copy(TV);
       for(const m of W.rm)m.visible=ok;
-      if(W.cloth&&W.cloth.length&&h){ TP.set(pos.x,SHARED.py+.9*((ROOMK.api&&ROOMK.api.R.M)||1),pos.z); W.g.worldToLocal(TP); const near=Math.hypot(TP.x,TP.z-.1)<1.4;
-        for(const c of W.cloth){ if(W.br<.01&&!near&&c.still>30)continue; clothStep(c,h,W.br||0,t,near?TP:null); } } } },'150ab-windress');
-  window.WINDRDBG=()=>({n:WINDR.wins.length,open:!P.hidden,d:WINDR.wins.map(W=>({...W.d})),lit:WINDR.wins.filter(W=>W.ru&&W.ru.uI.value>0).length,cloth:WINDR.wins.reduce((a,W)=>a+(W.cloth?W.cloth.length:0),0),
+      if(W.cloth&&W.cloth.length&&h){ TP.set(pos.x,SHARED.py+.9*((ROOMK.api&&ROOMK.api.R.M)||1),pos.z); W.g.worldToLocal(TP); const near=Math.hypot(TP.x,TP.z-.1)<1.4, mv=W.pp?Math.hypot(TP.x-W.pp[0],TP.z-W.pp[1])>h*.05:false; W.pp=[TP.x,TP.z];
+        if(W.cl!==W.cloth){ W.cl=W.cloth; W.aw=5; } if(near&&mv)W.aw=5;   // awake while it falls into place or you walk through it, then at rest
+        if(W.aw>0){ W.aw-=h; for(const c of W.cloth)clothStep(c,h,0,t,near?TP:null); } } } },'150ab-windress');
+  window.WINDRDBG=()=>({awake:WINDR.wins.filter(W=>W.aw>0).length,n:WINDR.wins.length,open:!P.hidden,d:WINDR.wins.map(W=>({...W.d})),lit:WINDR.wins.filter(W=>W.ru&&W.ru.uI.value>0).length,cloth:WINDR.wins.reduce((a,W)=>a+(W.cloth?W.cloth.length:0),0),
     pick:i=>WINDR.open(WINDR.wins[i]),saved:()=>{ const L=WRE().snapshot&&WRE().snapshot(); return L&&L.win; },set:(i,o)=>{ const W=WINDR.wins[i]; Object.assign(W.d,o); dress(W); },click:(k,v)=>{ const b=P.querySelector(`button[data-k="${k}"]${v!=null?`[data-v="${v}"]`:''}`); if(b)b.click(); return !!b; }});
 }

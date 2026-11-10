@@ -168,7 +168,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
         return { ok: true, street, bound, borrowed, back }; } catch (e) { return { ok: false, err: String(e).slice(0, 200) }; } })();
       o.charp = await (async () => { try { const U = window.__UI; if (!U || typeof U.toggleMenu !== 'function') return { ok: false };
         U.toggleMenu(); const home = document.querySelector('#dhome'), secs = [...document.querySelectorAll('#mnav [data-sec]')].map(b => b.dataset.sec).join();
-        const tabsHidden = /^set,pets,pack,map(,tenants,admin)?$/.test(secs) && U.menuNow()[0] === 'set', open = U.menuOpen === true;   // no PROFILE: the paper doll (9 Nov 2026)
+        const tabsHidden = /^set,moves,pets,pack,map(,tenants,admin)?$/.test(secs) && U.menuNow()[0] === 'set', open = U.menuOpen === true;   // no PROFILE: the paper doll (9 Nov 2026)
         U.menuTab('pets', 'pet'); const built = !!(home && home.querySelector('#cpav') && home.querySelector('#cpbtns button'));
         const pick = !home.querySelector('#cpslots') && !home.querySelector('#cphp');   // the paperdoll and the bars left the page (2 Nov 2026)
         U.toggleMenu();
@@ -425,6 +425,10 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.up && r.tab === 'street' && r.sec && r.places >= 15 && r.go >= r.spots && r.st >= 1 && r.f && r.names.includes('THE BODEGA') && r.missing && !r.missing.length && r.sel === r.names.length && r.after === false, 'MAP is a section of the menu (owner, 10 Nov 2026: "B"): STREET with every GO TO place numbered, SUBWAY with its stations, GO TO lists them all, it closes: ' + JSON.stringify({ ...r, names: r.names && r.names.length })); }
   { const r = await pg.evaluate(async () => { const w = ms => new Promise(r => setTimeout(r, ms)); BROCH.rack(); for (let i = 0; i < 60 && BROCHDBG().panels !== 12; i++) await w(100); const a = BROCHDBG(), P = new Set(window.__UI.places().map(p => p[0])), bad = BROCH.D.list.filter(q => !P.has(q.place)).map(q => q.id); BROCH.close(); return { ...a, bad, shut: !BROCH.up() }; });
     ok(r.panels === 12 && r.racks.length >= 1 && !r.bad.length && r.shut, 'the brochures (owner, 10 Nov 2026): racks on the street, twelve covers in the rack window, each one\'s place one of GO TO\'s: ' + JSON.stringify({ racks: r.racks.length, panels: r.panels, bad: r.bad })); }
+  { const r = await pg.evaluate(async () => { const U = window.__UI, w = ms => new Promise(r => setTimeout(r, ms)), el = document.getElementById('dmoves'); U.moves(); await w(300); const subs = [...document.querySelectorAll('#msub button')].map(b => b.dataset.sub), out = {};
+      for (const k of subs) { U.menuTab('moves', k); await w(50); out[k] = el.querySelectorAll('.mvc').length; }
+      const f = el.querySelector('.mvf'); f.value = 'ROAM'; f.dispatchEvent(new Event('input')); const roam = [...el.querySelectorAll('.mvc h3')].map(h => h.textContent); U.moves(); await w(200); return { subs, out, roam, shut: !U.menuOpen }; });
+    ok(r.subs.length === 9 && Object.values(r.out).every(n => n >= 1) && r.roam.includes('ROAM (THE HOLODECK)') && r.shut, 'WHAT YOU CAN DO (? key, owner 10 Nov 2026): every category lists its activities, FIND searches them all, ? again closes: ' + JSON.stringify(r)); }
   await b.close();
   console.log(fails.length ? fails.length + ' failed' : 'all core checks passed');
   process.exit(fails.length ? 1 : 0);

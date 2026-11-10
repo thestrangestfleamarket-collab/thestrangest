@@ -1,5 +1,5 @@
 {
- "note": "Public-domain cartoons streamed from the Internet Archive (classic_cartoons and others; archive.org/details/<id>); each channel one loop on the real clock, so every TV shows the same moment. src/150fa-crt.js.",
+ "note": "Public-domain cartoons and TV shows streamed from the Internet Archive (archive.org/details/<id>); each channel one loop on the real clock, so every TV shows the same moment; THE GUIDE (guide) plays anything on demand. src/150fa-crt.js.",
  "channels": [
   {
    "ch": 2,
@@ -238,6 +238,13 @@
      "len": 416.6
     }
    ]
+  },
+  {
+   "ch": 3,
+   "name": "THE GUIDE",
+   "sub": "every cartoon, show and film, on demand",
+   "guide": true,
+   "shows": []
   },
   {
    "ch": 4,
@@ -504,6 +511,268 @@
      "len": 122.5
     }
    ]
+  },
+  {
+   "ch": 11,
+   "name": "PRIME TIME",
+   "sub": "Golden-age television, 1949-1963",
+   "shows": [
+    {
+     "id": "Beverly_Hillbillies_Ep01_The_Clampetts_Strike_Oil",
+     "file": "BH01_The_Clampetts_Strike_Oil_512kb.mp4",
+     "title": "THE BEVERLY HILLBILLIES: THE CLAMPETTS STRIKE OIL",
+     "series": "THE BEVERLY HILLBILLIES",
+     "year": 1962,
+     "len": 1492.3
+    },
+    {
+     "id": "DragnetTheHumanBomb",
+     "file": "Dragnet-theHumanBomb_512kb.mp4",
+     "title": "DRAGNET: THE HUMAN BOMB",
+     "series": "DRAGNET",
+     "len": 1559.0
+    },
+    {
+     "id": "OneStepBeyondTheDream",
+     "file": "OneStepBeyondTheDream_512kb.mp4",
+     "title": "ONE STEP BEYOND: THE DREAM",
+     "series": "ONE STEP BEYOND",
+     "year": 1959,
+     "len": 1478.2
+    },
+    {
+     "id": "LegionOfOldTimers1949",
+     "file": "LegionOfOldTimers1949.mp4",
+     "title": "THE LONE RANGER: THE LEGION OF OLD TIMERS",
+     "series": "THE LONE RANGER",
+     "year": 1949,
+     "len": 1466.9
+    },
+    {
+     "id": "Bonanza-TheFearMerchants",
+     "file": "Bonanza_-_The_Fear_Merchants_S01-E20_512kb.mp4",
+     "title": "BONANZA: THE FEAR MERCHANTS",
+     "series": "BONANZA",
+     "year": 1960,
+     "len": 2939.4
+    },
+    {
+     "id": "Beverly_Hillbillies_Ep02_Getting_Settled",
+     "file": "BH02_Getting_Settled_512kb.mp4",
+     "title": "THE BEVERLY HILLBILLIES: GETTING SETTLED",
+     "series": "THE BEVERLY HILLBILLIES",
+     "year": 1962,
+     "len": 1494.2
+    },
+    {
+     "id": "DragnetTheBigActor",
+     "file": "Dragnet-bigActor_512kb.mp4",
+     "title": "DRAGNET: THE BIG ACTOR",
+     "series": "DRAGNET",
+     "len": 1536.0
+    },
+    {
+     "id": "OneStepBeyondTheRiddle",
+     "file": "OneStepBeyondTheRiddle_512kb.mp4",
+     "title": "ONE STEP BEYOND: THE RIDDLE",
+     "series": "ONE STEP BEYOND",
+     "year": 1959,
+     "len": 1297.0
+    },
+    {
+     "id": "OldJoeSister",
+     "file": "OldJoeSister1949.mp4",
+     "title": "THE LONE RANGER: OLD JOE'S SISTER",
+     "series": "THE LONE RANGER",
+     "year": 1949,
+     "len": 1335.6
+    },
+    {
+     "id": "Bonanza-BloodOnTheLand",
+     "file": "Bonanza_-_Blood_On_The_Land_S01-E22_512kb.mp4",
+     "title": "BONANZA: BLOOD ON THE LAND",
+     "series": "BONANZA",
+     "year": 1960,
+     "len": 2963.0
+    },
+    {
+     "id": "Beverly_Hillbillies_Ep06_Trick_Or_Treat",
+     "file": "BH06_Trick_Or_Treat_512kb.mp4",
+     "title": "THE BEVERLY HILLBILLIES: TRICK OR TREAT",
+     "series": "THE BEVERLY HILLBILLIES",
+     "year": 1962,
+     "len": 1512.9
+    },
+    {
+     "id": "Dragnet_The_Big_Oskar",
+     "file": "S08E04_The_Big_Oskar_512kb.mp4",
+     "title": "DRAGNET: THE BIG OSKAR",
+     "series": "DRAGNET",
+     "len": 1552.2
+    },
+    {
+     "id": "OneStepBeyondEarthquake",
+     "file": "OneStepBeyondEarthquake_512kb.mp4",
+     "title": "ONE STEP BEYOND: EARTHQUAKE",
+     "series": "ONE STEP BEYOND",
+     "year": 1960,
+     "len": 1490.8
+    },
+    {
+     "id": "TheLoneRanger-CannonballMcKay",
+     "file": "CannonballMcKay1949.mp4",
+     "title": "THE LONE RANGER: CANNONBALL MCKAY",
+     "series": "THE LONE RANGER",
+     "year": 1949,
+     "len": 1350.6
+    },
+    {
+     "id": "Bonanza-TheStranger",
+     "file": "Bonanza_-_The_Stranger_S01-E24_512kb.mp4",
+     "title": "BONANZA: THE STRANGER",
+     "series": "BONANZA",
+     "year": 1960,
+     "len": 2964.4
+    },
+    {
+     "id": "Beverly_Hillbillies_Ep07_The_Servants",
+     "file": "BH07_The_Servants_512kb.mp4",
+     "title": "THE BEVERLY HILLBILLIES: THE SERVANTS",
+     "series": "THE BEVERLY HILLBILLIES",
+     "year": 1962,
+     "len": 1500.0
+    },
+    {
+     "id": "DragnetTheBigChildren",
+     "file": "Dragnet-theBigChildren_512kb.mp4",
+     "title": "DRAGNET: THE BIG CHILDREN",
+     "series": "DRAGNET",
+     "len": 1571.3
+    },
+    {
+     "id": "OSB-TheBridePossessed",
+     "file": "The_Bride_Possessed_512kb.mp4",
+     "title": "ONE STEP BEYOND: THE BRIDE POSSESSED",
+     "series": "ONE STEP BEYOND",
+     "year": 1959,
+     "len": 1494.0
+    },
+    {
+     "id": "Bonanza-BitterWater",
+     "file": "Bonanza_Bitter_Water_S01-E29_512kb.mp4",
+     "title": "BONANZA: BITTER WATER",
+     "series": "BONANZA",
+     "year": 1960,
+     "len": 2964.2
+    },
+    {
+     "id": "Beverly_Hillbillies_Ep13_Home_For_Christmas",
+     "file": "BH13_Home_For_Christmas_512kb.mp4",
+     "title": "THE BEVERLY HILLBILLIES: HOME FOR CHRISTMAS",
+     "series": "THE BEVERLY HILLBILLIES",
+     "year": 1962,
+     "len": 1507.5
+    },
+    {
+     "id": "DragnetTheBigLamp",
+     "file": "Dragnet-theBigLamp_512kb.mp4",
+     "title": "DRAGNET: THE BIG LAMP",
+     "series": "DRAGNET",
+     "len": 1540.0
+    },
+    {
+     "id": "OneStepBeyond-AnniversaryOfMurder",
+     "file": "OneStepBeyond-AnniversaryOfMurder_512kb.mp4",
+     "title": "ONE STEP BEYOND: ANNIVERSARY OF MURDER",
+     "series": "ONE STEP BEYOND",
+     "len": 1326.5
+    },
+    {
+     "id": "Bonanza_-_The_Trail_Gang",
+     "file": "Bonanza_-_The_Trail_Gang_512kb.mp4",
+     "title": "BONANZA: THE TRAIL GANG",
+     "series": "BONANZA",
+     "year": 1960,
+     "len": 2957.3
+    },
+    {
+     "id": "TheBeverlyHillbillies-GrannysSpringTonic-Ep1x27",
+     "file": "TheBeverlyHillbillies127-GrannysSpringTonic_512kb.mp4",
+     "title": "THE BEVERLY HILLBILLIES: GRANNY'S SPRING TONIC",
+     "series": "THE BEVERLY HILLBILLIES",
+     "year": 1963,
+     "len": 1527.5
+    },
+    {
+     "id": "DragnetTheBigMother",
+     "file": "Dragnet-theBigMother_512kb.mp4",
+     "title": "DRAGNET: THE BIG MOTHER",
+     "series": "DRAGNET",
+     "len": 1532.0
+    },
+    {
+     "id": "OSB-77_The_Last_Round",
+     "file": "OSB-77_The_Last_Round_512kb.mp4",
+     "title": "ONE STEP BEYOND: THE LAST ROUND",
+     "series": "ONE STEP BEYOND",
+     "len": 1497.1
+    },
+    {
+     "id": "Bonanza_-_Day_Of_Reckoning",
+     "file": "Bonanza_-_Day_Of_Reckoning_512kb.mp4",
+     "title": "BONANZA: DAY OF RECKONING",
+     "series": "BONANZA",
+     "year": 1960,
+     "len": 2965.8
+    },
+    {
+     "id": "DragnetTheBigWill",
+     "file": "Dragnet-theBigWill.mp4",
+     "title": "DRAGNET: THE BIG WILL",
+     "series": "DRAGNET",
+     "len": 1562.0
+    },
+    {
+     "id": "Bonanza_-_The_Spitfire",
+     "file": "Bonanza_-_The_Spitfire_512kb.mp4",
+     "title": "BONANZA: THE SPITFIRE",
+     "series": "BONANZA",
+     "year": 1961,
+     "len": 2963.6
+    },
+    {
+     "id": "DragnetTheBigWar",
+     "file": "Dragnet-theBigWar_512kb.mp4",
+     "title": "DRAGNET: THE BIG WAR",
+     "series": "DRAGNET",
+     "len": 1554.0
+    },
+    {
+     "id": "Bonanza_-_Silent_Thunder",
+     "file": "Bonanza_-_Silent_Thunder_512kb.mp4",
+     "title": "BONANZA: SILENT THUNDER",
+     "series": "BONANZA",
+     "year": 1960,
+     "len": 2960.5
+    },
+    {
+     "id": "Bonanza_-_The_Savage",
+     "file": "Bonanza_-_The_Savage_512kb.mp4",
+     "title": "BONANZA: THE SAVAGE",
+     "series": "BONANZA",
+     "year": 1960,
+     "len": 2964.0
+    },
+    {
+     "id": "Bonanza_-_The_Courtship",
+     "file": "Bonanza_-_The_Courtship_512kb.mp4",
+     "title": "BONANZA: THE COURTSHIP",
+     "series": "BONANZA",
+     "year": 1961,
+     "len": 2960.9
+    }
+   ],
+   "kind": "shows"
   }
  ]
 }

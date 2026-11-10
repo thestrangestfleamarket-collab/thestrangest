@@ -192,7 +192,7 @@ const MIC={open:false,data:null,ext:[]}; window.MIC=MIC;   // ext: what later fi
   MIC.dbg=()=>V.el?{open:MIC.open,obj:V.obj,mag:OBJ[V.obj].m*10,fov:fov(),bar:V.bar,barPx:V.barPx,S:V.cv.width,slide:V.slide&&V.slide.id,img:!!V.img,W:V.W,H:V.H,sx:V.sx,sy:V.sy,zf:V.zf,blur:+blurOf(-V.zf).toFixed(2),loads:V.loads,
     org:V.org?V.org.map(o=>({k:o.k,x:+o.x.toFixed(1),y:+o.y.toFixed(1),len:o.len})):null,pxPerUm:V.cv.width/fov()}:{open:false};
   MIC.K.DRAW=DRAW; MIC.blurAt=dz=>V.el?blurOf(dz):null; MIC.setFocus=z=>{ if(V.el)V.zf=z; };
-  SYS.add('places',dt=>{ if(MIC.open&&MIC.frame)MIC.frame(dt||0); if(MIC.open&&!(MODS.apts&&MODS.apts.inReal))MIC.close(); },'150ff-microscope');
+  SYS.add('places',dt=>{ if(MIC.open&&MIC.frame)MIC.frame(dt||0); if(MIC.open&&!MIC.carried&&!(MODS.apts&&MODS.apts.inReal))MIC.close(); },'150ff-microscope');
   window.MICDBG=()=>MIC.dbg();
 }
 export {MIC};

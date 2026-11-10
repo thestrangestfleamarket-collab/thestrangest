@@ -33,7 +33,7 @@ const PROV=JSON.parse(fs.readFileSync('data/full/sounds.json','utf8')).sounds;
     // the sounds: every recipe a finite, audible buffer; the ambience's names recipes
     const c=SFX.wake(); if(c&&c.state!=='running')await c.resume().catch(()=>{}); out.ctx=c&&c.state;
     out.sfx={}; for(const k of SFX.names()){ const B=SFX.buffer(k,c), D=B.getChannelData(0); let mx=0, fin=true; for(let i=0;i<D.length;i++){ const v=Math.abs(D[i]); if(!isFinite(v)){ fin=false; break; } if(v>mx)mx=v; } out.sfx[k]={n:D.length,mx:+mx.toFixed(3),fin,len:SFX.recipe(k).len}; }
-    out.ambNames=[...new Set(Object.values(AMB.sets).flat().map(e=>e[0]))].filter(k=>!SFX.recipe(k));
+    out.ambNames=[...new Set(Object.values(AMB.sets).flat().map(e=>e[0]))].filter(k=>!SFX.has(k));
     SFX.mix.fx.click=.5; SFX.saveMix(); out.mix=JSON.parse(JSON.parse(localStorage.getItem('market-save')).sndmix).fx.click; out.mixLvl=SFX.fxLevel('click'); SFX.resetMix(); out.mixReset=SFX.fxLevel('click'); await __dbg.SNDED.open(); out.edRows=document.querySelectorAll('#snded .tp-sldv').length; __dbg.SNDED.close();
     out.playing=!!SFX.play('click'); out.blipped=(SFX.blip(SFX.voiceOf('tester')),true);
     // the lines: pools, blanks, freshness, a line shown and logged
@@ -50,7 +50,7 @@ const PROV=JSON.parse(fs.readFileSync('data/full/sounds.json','utf8')).sounds;
   ok(r.save.probe==='x'&&r.save.gone===null,'a write goes to the one key at once and a delete takes it out');
   console.log('audio context: '+r.ctx);
   for(const k in r.sfx){ const s=r.sfx[k]; ok(s.fin&&s.mx>.02&&s.mx<=1.01&&s.n>0,'sound '+k+': '+s.len+' s, peak '+s.mx); }
-  ok(r.ambNames.length===0,'every ambience sound is a recipe'+(r.ambNames.length?' (missing '+r.ambNames.join(', ')+')':''));
+  ok(r.ambNames.length===0,'every ambience sound is a recipe or a recording'+(r.ambNames.length?' (missing '+r.ambNames.join(', ')+')':''));
   ok(r.playing||r.ctx!=='running','a sound plays when the context runs');
   ok(r.mix===.5&&r.mixLvl===.5&&r.mixReset===1,'the sound editor\'s level is saved, used and reset ('+r.mix+', '+r.mixLvl+', '+r.mixReset+')');
   ok(r.edRows>=24,'the sound editor shows a row for every sound ('+r.edRows+')');

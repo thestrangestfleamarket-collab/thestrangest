@@ -16,7 +16,11 @@ PACKS={   # folder: the pack's file (its page and author are in data/full/sounds
  'wuxiascrub':['https://opengameart.org/sites/default/files/rain-thunder.ogg'],
  'rubberduck100':'https://opengameart.org/sites/default/files/sfx_100_v2.zip',
  'kurt':'https://opengameart.org/sites/default/files/stream-waterfall.zip',   # CC-BY 3.0: kurt (credit in data/full/sounds.json)
- 'rubberduck':'https://opengameart.org/sites/default/files/water-splash-slime-sfx.zip'}
+ 'rubberduck':'https://opengameart.org/sites/default/files/water-splash-slime-sfx.zip',
+ 'isaiah658':['https://opengameart.org/sites/default/files/birds-isaiah658.ogg'],
+ 'wolfgang':['https://opengameart.org/sites/default/files/crickets_1.mp3'],
+ 'bmorris':['https://opengameart.org/sites/default/files/dog_barking_mono.wav'],
+ 'aquinn':['https://opengameart.org/sites/default/files/siren.mp3']}
 F='fantozzi/Fantozzi-footsteps/flac/Fantozzi-'; Q='qubodup/qubodup-DoorSet/flac/qubodup-Door'
 SETS={   # name: (its takes, how loud next to the others)
  'step_stone':([F+f'Stone{s}{i}.flac' for s in 'LR' for i in (1,2,3)],.8),
@@ -35,6 +39,12 @@ SETS={   # name: (its takes, how loud next to the others)
  'thunder':(['rubberduck100/sfx100v2_thunder_01.ogg',('wuxiascrub/rain-thunder.ogg',20.6,8)],.9),
  'splash':([f'rubberduck/splash_{n:02d}.ogg' for n in (1,4,7,11)],.8),
  'falls':(['kurt/stream-waterfall/loudstream.ogg'],.7,'loop')}
+AMB={   # the day and night around you (data/amb.mp3, its own file, fetched when the ambience first plays)
+ 'amb_city':([('rubberduck100/sfx100v2_loop_highway.ogg',0,14)],.7,'loop'),
+ 'amb_crickets':(['wolfgang/crickets_1.mp3'],.8,'loop'),
+ 'amb_birds':([('isaiah658/birds-isaiah658.ogg',1.5,3.5),('isaiah658/birds-isaiah658.ogg',11,3),('isaiah658/birds-isaiah658.ogg',24.5,3.5)],.8),
+ 'amb_dog':(['bmorris/dog_barking_mono.wav'],.8),
+ 'amb_siren':([('aquinn/siren.mp3',3.5,3.2),('aquinn/siren.mp3',26,3)],.6)}
 def get(k,url):
     d=D+k
     if os.path.isdir(d) and os.listdir(d): return
@@ -73,7 +83,7 @@ if '--shared' in sys.argv:
     json.dump({'v':1,'set':ex.get('set') or {}},open(SJ,'w'),indent=1)
 SHARED=json.load(open(SJ))['set'] if os.path.exists(SJ) else {}
 TRIM={}; SETX={}
-base={k:list(v[0]) for k,v in SETS.items()}
+base={k:list(v[0]) for k,v in {**SETS,**AMB}.items()}
 for k,o in SHARED.items():
     if 'lvl' in o or 'pitch' in o: SETX[k]={x:o[x] for x in ('lvl','pitch') if x in o}
     if 'takes' not in o: continue
@@ -82,17 +92,20 @@ for k,o in SHARED.items():
         src=('shared/'+q['f']) if q.get('f') else base.get(q['b'][0],[None]*99)[q['b'][1]] if q.get('b') and q['b'][1]<len(base.get(q['b'][0],[])) else None
         if src is None: continue
         items.append(src); TRIM[(k,len(items)-1)]=(q.get('a',0),q.get('z',0))
-    old=SETS.get(k)
-    if items: SETS[k]=(items,old[1] if old else 1.0,*old[2:]) if old else (items,1.0)
-    elif k in SETS: del SETS[k]
-data=[]; table={}; t=0
-for name,(files,lvl,*kind) in SETS.items():
-    table[name]=[]
-    for j,f in enumerate(files):
-        x=[v*lvl*.89 for v in (loop if kind else pcm)(f)]
-        a,z=TRIM.get((name,j),(0,0)); x=x[int(a*SR):len(x)-int(z*SR)] if a or z else x; table[name].append([round(t+GAP,4),round(len(x)/SR,3)]); data+=[0.]*int(GAP*SR)+x; t+=GAP+len(x)/SR
-data+=[0.]*int(GAP*SR)
-subprocess.run(['ffmpeg','-v','error','-y','-f','f32le','-ar',str(SR),'-ac','1','-i','-','-c:a','libmp3lame','-b:a','96k','data/sfx.mp3'],input=struct.pack('<%df'%len(data),*data),check=True)
-if SETX: table['~set']=SETX
-json.dump(table,open('data/sfx.json','w'),separators=(',',':'))
-print({k:len(v) for k,v in table.items()},round(t,1),'s',os.path.getsize('data/sfx.mp3'),'bytes')
+    G=AMB if k in AMB else SETS; old=G.get(k)
+    if items: G[k]=(items,old[1] if old else 1.0,*old[2:]) if old else (items,1.0)
+    elif k in G: del G[k]
+def bake(sets,out,rate='96k',extra=None):
+    data=[]; table={}; t=0
+    for name,(files,lvl,*kind) in sets.items():
+        table[name]=[]
+        for j,f in enumerate(files):
+            x=[v*lvl*.89 for v in (loop if kind else pcm)(f)]
+            a,z=TRIM.get((name,j),(0,0)); x=x[int(a*SR):len(x)-int(z*SR)] if a or z else x; table[name].append([round(t+GAP,4),round(len(x)/SR,3)]); data+=[0.]*int(GAP*SR)+x; t+=GAP+len(x)/SR
+    data+=[0.]*int(GAP*SR)
+    subprocess.run(['ffmpeg','-v','error','-y','-f','f32le','-ar',str(SR),'-ac','1','-i','-','-c:a','libmp3lame','-b:a',rate,'data/'+out+'.mp3'],input=struct.pack('<%df'%len(data),*data),check=True)
+    if extra: table['~set']=extra
+    json.dump(table,open('data/'+out+'.json','w'),separators=(',',':'))
+    print(out,{k:len(v) for k,v in table.items()},round(t,1),'s',os.path.getsize('data/'+out+'.mp3'),'bytes')
+bake(SETS,'sfx',extra=SETX or None)
+bake(AMB,'amb','64k')

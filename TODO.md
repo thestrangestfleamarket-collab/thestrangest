@@ -267,11 +267,11 @@ One tree pass (more leaves mean more shadow triangles).
 ## Sound
 
 Owner, 9 Nov 2026: "real sounds". Each batch is named by the owner first.
-- [ ] **P2 M pick** Real recordings in place of the code-made effects, a batch at a time (footsteps, doors, cars and weather done, 10 Nov): the fair's rides, fights, the day and night ambience.
+- [ ] **P2 M pick** Real recordings in place of the code-made effects, a batch at a time (footsteps, doors, cars, weather, day and night done, 10 Nov): fights, animals, other vehicles, fire, the places' own sounds.
 - [ ] **P3 S look** Listen to the footsteps, doors and cars live: the takes were picked by measurement, not by ear (the car pack is phone-recorded, low quality).
 - [ ] **P3 S code** The sound editor's uploads stay in the shared store after their takes are deleted (the server has no delete yet).
 - [ ] **P3 S code** After baking the editor's export into the code, clear the live set (or it keeps overriding the next bake's changes).
-- [ ] **P3 S find** The wind is still made in code: the only CC0 wind found (OpenGameArt) is mostly low rumble. The recordings file is 520 KB now, all fetched at the first click: split it by place if it grows.
+- [ ] **P3 S find** The wind is still made in code: the only CC0 wind found (OpenGameArt) is mostly low rumble. The effects file is 750 KB, all fetched at the first click (the ambience is its own file): split it further by place if it grows.
 - [ ] **P3 S code** No crash or skid sound for the cars yet, and the karts, helicopter and flying traffic are silent (no CC0 recordings found yet).
 - [ ] **P3 M code** Footsteps know only stone, grass and wood: the park's paths, sand, water's edge, metal stairs and carpet still sound as those three.
 - [ ] **P2 M code** Other players heard: their footsteps, hits and doors from where they stand, fading with distance.

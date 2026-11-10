@@ -7,6 +7,7 @@ import { FOLKSIM } from "./folk.js";
 import { MOBSIM } from "./dunmobs.js";
 import { lvBrief, lvGoal, lvH, lvMeet, lvRun } from "./lives.js";
 import { CLK } from "./clock.js";
+import { BOWLS } from "./lanes.js";
 import { TWIN } from "./twin.js";
 import LIVESDATA from "../data/lives.json";
 import ITEMDATA from "../data/items.json";
@@ -420,7 +421,7 @@ export class Block extends Server {
   onMessage(c, raw) {
     const s = c.state; if (!s || typeof raw !== "string" || raw.length > (raw.startsWith('{"t":"folk"') ? 400000 : raw.startsWith('{"t":"mobgrid"') || raw.startsWith('{"t":"dmset"') ? 200000 : 2500)) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
     const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0, at: {} }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 60) return;
-    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, sky: 200, skyw: 100, ride: 300, car: 300, curse: 1500, puff: 800, drone: 3000, ps: 150, fish: 200, world: 120, puts: 1000, lives: 3000, met: 1000, tr: 100, gtr: 25, ins: 20, jug: 200, mobgrid: 3000, dmset: 3000, breakout: 5000, mobhit: 60, mobpar: 200, vr: 60, body: 1000, st: 150, jet: 150, zap: 120 , mobtame: 1000, tame: 500, tv: 200}[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
+    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, sky: 200, skyw: 100, ride: 300, car: 300, curse: 1500, puff: 800, drone: 3000, ps: 150, fish: 200, world: 120, puts: 1000, lives: 3000, met: 1000, tr: 100, gtr: 25, ins: 20, jug: 200, mobgrid: 3000, dmset: 3000, breakout: 5000, mobhit: 60, mobpar: 200, vr: 60, body: 1000, st: 150, jet: 150, zap: 120 , mobtame: 1000, tame: 500, tv: 200, bowl: 80}[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
     if (m.t === "bye") { this.onClose(c); c.setState({ ...s, id: "" }); try { c.close(1000, "bye"); } catch (e) {} return; }   // leaving: out for everyone now, not when the socket times out
     if (m.t === "mv" && Array.isArray(m.at)) {
       const a = m.at, at = [num(a[0], -1e5, 1e5), num(a[1], -1e5, 1e5), num(a[2], -1e4, 1e4), num(a[3], -10, 10), word(a[4], 8), word(a[5], 60)];
@@ -568,6 +569,7 @@ export class Block extends Server {
       if (v) { try { const o = JSON.parse(v); if (String(o.by || "").startsWith("body:")) homeOf(this.env).econAllow(s.id, o.id === "cash" ? o.n : 0, o.id === "cash" ? 0 : o.n, "a body's drop").catch(() => {}); } catch (e) {} }
     } else if (m.t === "sky") {   // a telescope shared at a star party (src/150fh): where it points, to everyone in the section
       this.broadcast(JSON.stringify({ t: "sky", id: s.id, name: word(s.name, 24), on: m.on ? 1 : 0, alt: num(m.alt, -90, 90), az: num(m.az, 0, 360), mag: num(m.mag, 1, 400), f: num(m.f, -1, 1), fl: m.fl ? 1 : 0, jd: num(m.jd, 2.4e6, 2.6e6), ctl: word(m.ctl, 60) }), [c.id]);
+    } else if (m.t === "bowl") { this.bowl(c, s, m);   // the bowling alley's lanes (src/146zkb, worker/lanes.js)
     } else if (m.t === "tv") {   // an apartment's CRT TV (src/150fa): power, channel and what THE GUIDE plays, to everyone else in that apartment
       const rm = s.at && s.at[5]; if (!rm || !rm.startsWith("apt:")) return;
       const q = m.p && typeof m.p === "object" ? m.p : null, p = q && /^[A-Za-z0-9_.-]{1,80}$/.test(q.id || "") && /^[A-Za-z0-9_.-]{1,120}\.mp4$/.test(q.file || "") ? { id: q.id, file: q.file, title: word(q.title, 90), year: num(q.year, 0, 3000) | 0, len: num(q.len, 1, 20000) } : null;
@@ -590,6 +592,18 @@ export class Block extends Server {
         W[k] = v; this.ctx.storage.put("world", W); this.broadcast(JSON.stringify({ t: "world", k, v })); });
     }
   }
+  // the bowling alley: one bowler a lane; a throw (where, which way, how hard, the spin, the ball, its seed) and its result go to everyone in the alley, who roll it themselves
+  bowl(c, s, m) {
+    const L = this.lanes || (this.lanes = BOWLS.lanes()), op = String(m.op || ""), ln = Math.floor(num(m.ln, -1, BOWLS.N - 1)), inAlley = o => o.state && o.state.at && o.state.at[5] === "bowling";
+    const all = () => JSON.stringify({ t: "bowl", op: "lanes", lanes: L }), tell = () => { const x = all(); for (const o of this.getConnections()) if (inAlley(o)) o.send(x); };
+    if (op === "ask") return c.send(all());
+    if (op === "take") { if (BOWLS.take(L, s.id, word(s.name, 24), ln)) tell(); else c.send(all()); return; }
+    if (op === "free") { if (BOWLS.free(L, s.id, ln)) tell(); return; }
+    const h = L[ln]; if (!h || h.id !== s.id) return; let x;
+    if (op === "throw" && Array.isArray(m.v)) x = { t: "bowl", op, id: s.id, name: h.name, ln, v: [num(m.v[0], -1, 1), num(m.v[1], -.5, .5), num(m.v[2], 0, 15), num(m.v[3], -1, 1), num(m.v[4], 6, 16), Math.floor(num(m.v[5], 0, 4294967295))], st: Math.floor(num(m.st, 0, 1023)) };
+    else if (op === "res" && Array.isArray(m.rolls)) { const R = m.rolls.slice(0, 21).map(v => Math.floor(num(v, 0, 10))); if (!BOWLS.roll(L, s.id, ln, R)) return; x = { t: "bowl", op, id: s.id, name: h.name, ln, out: Math.floor(num(m.out, 0, 1023)), rolls: R }; }
+    else if (op === "new") { h.rolls = []; x = { t: "bowl", op, id: s.id, name: h.name, ln }; }
+    if (!x) return; const j = JSON.stringify(x); for (const o of this.getConnections()) if (o !== c && inAlley(o)) o.send(j); }
   // a trade between two players: one asks, the other says yes; each puts things in (an offer resets both ACCEPTs); when both accept, each is told what to give and what to get
   trade(c, s, m) {
     const T = this.trades || (this.trades = new Map()), A = this.asks || (this.asks = new Map()), conn = id => [...this.getConnections()].find(x => x.state && x.state.id === id), say = (o, x) => o && o.send(JSON.stringify({ t: "tr", ...x }));
@@ -643,6 +657,7 @@ export class Block extends Server {
   onClose(c) { if (this.dev) this.dev.delete(c.id); const s = c.state; if (s && s.id && !this.roster(c.id).some(p => p.id === s.id)) { this.broadcast(JSON.stringify({ t: "out", id: s.id }));
       if (this.held) for (const [k, v] of this.held) if (k === s.id || v === s.id) this.held.delete(k);
       if (this.asks) this.asks.delete(s.id);
+      if (this.lanes && BOWLS.leave(this.lanes, s.id)) { const x = JSON.stringify({ t: "bowl", op: "lanes", lanes: this.lanes }); for (const o of this.getConnections()) if (o !== c && o.state && o.state.at && o.state.at[5] === "bowling") o.send(x); }
       const tr = this.trades && this.trades.get(s.id); if (tr && tr.pay) this.tradeEnd(tr, "they left", s.id); else if (tr) { this.trades.delete(tr.a); this.trades.delete(tr.b); const o = [...this.getConnections()].find(x => x.state && x.state.id === (tr.a === s.id ? tr.b : tr.a)); if (o) o.send(JSON.stringify({ t: "tr", op: "x", why: "they left" })); }
       if (this.cars) for (const [k, v] of this.cars) if (v === s.id) { this.cars.delete(k); const a = s.at, v2 = a ? [a[0], a[1], a[3]].map(x => +(+x || 0).toFixed(3)).join(",") : null;
         if (v2) this.world().then(W => { W["car:" + k] = v2; this.ctx.storage.put("world", W); this.broadcast(JSON.stringify({ t: "car", k, by: null, at: v2 })); }); else this.broadcast(JSON.stringify({ t: "car", k, by: null })); } } }

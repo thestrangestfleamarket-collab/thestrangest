@@ -5,18 +5,18 @@
 const { chromium } = require('playwright'), path = require('path'), fs = require('fs');
 const OUT = path.resolve(process.argv[2] || 'data/brochures'), ONLY = process.argv[3] && process.argv[3].split(','), PI = Math.PI, W = 720, H = 480;
 const PICS = process.env.PICS ? require(path.resolve(process.env.PICS)) : {
-  wreck: [['dive', 'third', 0, .1, [0, .27, .78, 1]], ['deep', 'third', PI, .35, [0, .4, 1, 1]], ['deep', 'third', 0, .35, [0, .45, .9, 1]], ['fs', 'third', PI, .12, [0, .22, .72, 1]]],
+  wreck: [['dive', 'third', 0, .1, [0, .27, .78, 1]], ['deep', 'third', PI, .35, [0, .4, 1, 1]], ['deep', 'third', 0, .35, [0, .45, .9, 1]], ['artfront', 'third', PI, .1, [0, .12, .72, 1], "STORE.goTo(SHARED.BOD.XS(-24.5), SHARED.BOD.ZS(-112), 'up')"]],
   fish: [['pier', 'third', 0, .12, [0, .36, 1, 1]], ['pier', 'third', PI, .12, [0, .3, .74, 1]], ['cast', 'third', null, null, [0, .05, .72, 1]], ['pier', 'third', -PI / 2, .12, [0, .3, .74, 1]]],
-  pets: [['pets', 'third', 0, .12, [.12, .12, .88, .66]], ['rept', 'third', 0, .12, [0, .12, 1, .62]], ['aqua', 'third', PI / 2, .12, [0, .3, .72, 1]], ['pets', 'third', PI / 2, .12, [.1, .2, 1, 1]]],
+  pets: [['pets', 'third', 0, .2, [0, .05, 1, .62]], ['rept', 'third', 0, .15, [0, .05, 1, .62]], ['aqua', 'third', PI / 2, .12, [0, .3, .72, 1]], ['pets', 'third', -PI / 2, .15, [0, .12, .74, 1]]],
   nature: [['lake', 'third', PI / 2, .12, [0, .3, .72, 1]], ['lawn', 'third', PI / 2, .12, [0, .3, .72, 1]], ['lake', 'third', -PI / 2, .12, [0, .3, .72, 1]], ['gate', 'third', 0, .12, [0, 0, .72, 1]]],
-  shroom: [['fly60', 'third', PI / 2, .35, [0, .1, .72, 1]], ['fly60', 'third', PI, .7, [0, .1, .72, 1]], ['fly130', 'third', PI / 2, .2, [0, .12, .72, 1]], ['mstall', 'third', PI, .12, [0, .3, .74, 1]]],
+  shroom: [['fly60', 'third', PI / 2, .35, [0, .1, .72, 1]], ['fly60', 'third', PI, .7, [0, .1, .72, 1]], ['fly130', 'third', -PI / 2, .6, [0, .12, .72, 1]], ['mstall', 'third', PI, .12, [0, .3, .74, 1]]],
   bees: [['hive', 'third', 0, .2, [.1, .1, .72, 1]], ['bstall', 'third', PI, .12, [0, .4, 1, 1]], ['hive', 'third', PI, .2, [0, .35, .72, 1]], ['bstall', 'third', -PI / 2, .12, [0, .3, .72, 1]]],
-  art: [['artfront', 'third', 0, .1, [.03, 0, .72, .82]], ['mus', 'first', 0, .05, [0, .05, 1, 1]], ['mus', 'third', 3 * PI / 4, .2, [0, .15, 1, 1]], ['artside', 'third', .5, .1, [0, .18, .74, 1]]],
-  books: [['books', 'third', 0, .12, [0, .08, 1, .72]], ['books', 'third', -PI / 2, .12, [0, .15, 1, 1]], ['books', 'third', PI / 2, .12, [.1, .15, 1, 1]], ['books', 'third', 0, .12, [.05, .2, .6, .75]]],
-  arcade: [['arcade', 'third', 0, .12, [0, .08, 1, .72]], ['arcade', 'third', -PI / 2, .12, [0, .22, 1, 1]], ['arcade', 'third', PI / 2, .12, [.22, .2, 1, 1]], ['arcade', 'third', PI, .12, [0, .25, 1, 1]]],
-  music: [['guitar', 'third', 0, .2, [0, 0, .72, 1]], ['guitar', 'third', PI, .2, [0, .08, .72, 1]], ['bar', 'third', 0, .12, [0, .08, 1, .72]], ['bodega', 'third', 0, .12, [0, .08, 1, .68]]],
+  art: [['artfront', 'third', 0, .1, [.03, 0, .72, .82]], ['mus', 'first', 0, .05, [0, .05, 1, 1]], ['mus', 'third', 3 * PI / 4, .2, [0, .15, 1, 1]], ['artside', 'third', PI / 4, .1, [0, .05, .66, 1]]],
+  books: [['books', 'third', 0, .12, [0, .08, 1, .72]], ['books', 'third', -PI / 2, .1, [0, .12, .62, 1]], ['books', 'third', PI / 2, .12, [.3, .15, 1, 1]], ['books', 'third', 0, .12, [.05, .2, .6, .75]]],
+  arcade: [['arcade', 'third', -PI / 3, .1, [0, .1, .72, 1]], ['arcade', 'third', PI / 3, .1, [0, .15, .72, 1]], ['arcade', 'third', -2 * PI / 3, .1, [0, .15, .72, 1]], ['arcade', 'third', PI, .12, [0, .25, 1, 1]]],
+  music: [['guitar', 'third', 0, .2, [0, 0, .72, 1]], ['guitar', 'third', PI / 2, .2, [0, .08, .72, 1]], ['bar', 'third', 0, .12, [0, .08, 1, .72]], ['artfront', 'third', -PI, .1, [0, 0, .7, 1], "STORE.goTo(SHARED.BOD.XS(101), SHARED.BOD.ZS(-71), 'up')"]],
   stars: [['scope', 'third', PI / 6, .12, [0, 0, .62, 1]], ['moon', 'hud', null, null, [.01, .125, .61, .875]], ['mic', 'hud', null, null, [.15, .1, .86, .72]], ['scopefar', 'third', .55, .1, [0, .08, 1, 1]]],
-  gems: [['dungeon', 'third', PI / 2, .12, [0, .15, .72, 1]], ['dungeon', 'third', 0, .12, [0, .25, .74, 1]], ['deep', 'third', -PI / 2, .35, [0, .45, 1, 1]], ['gstall', 'third', PI, .12, [0, .35, .74, 1]]],
+  gems: [['dungeon', 'third', 0, .12, [0, .1, .72, 1]], ['dungeon', 'third', -PI, .12, [0, .15, .72, 1]], ['deep', 'third', -PI / 2, .35, [0, .45, 1, 1]], ['gstall', 'third', PI, .12, [0, .35, .74, 1]]],
 };
 (async () => {
   fs.mkdirSync(OUT, { recursive: true });

@@ -37,7 +37,7 @@ jobs:
       group: site-${{ github.head_ref || github.ref_name }}
       cancel-in-progress: true
     runs-on: ubuntu-latest
-    timeout-minutes: ${{ ((github.event_name == 'workflow_dispatch' && inputs.full) || contains(github.event.pull_request.labels.*.name, 'full')) && 300 || 75 }}
+    timeout-minutes: ${{ ((github.event_name == 'workflow_dispatch' && inputs.full) || contains(github.event.pull_request.labels.*.name, 'full')) && 300 || 150 }}
     steps:
       - uses: actions/checkout@v4
         with:

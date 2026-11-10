@@ -71,9 +71,9 @@ Object.assign(SFX,{on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}});
   const place=(o,G,P)=>{ '@later'; if(!o.at)return 1; const x=o.at.x, z=o.at.z!=null?o.at.z:o.at.y, d=Math.hypot(x-pos.x,z-pos.z), far=o.far||9*TILE, k=Math.max(0,1-d/far); if(k<=0)return 0;
     if(P)P.to(x,o.at.y!=null&&o.at.z!=null?o.at.y:SHARED.py+TILE,z); return k; };
   // the recorded takes (tools/sfx-bake.py): fetched and decoded once the sound is on; till they come, and for a name with no takes, the recipe plays
-  // two files: the effects, and the day and night around you (fetched when the ambience first plays)
-  const BANKS=[{tk:__DATA__("data/sfx.json"),f:__FILE__("data/sfx.mp3"),buf:null,busy:false,retry:0,sh:0},{tk:__DATA__("data/amb.json"),f:__FILE__("data/amb.mp3"),buf:null,busy:false,retry:0,sh:0}], BANK=BANKS[0];
-  const TK=Object.assign({},...BANKS.map(B=>B.tk)), ALT={step_stone:'step',step_grass:'step',step_wood:'step',dooropen:'latch',amb_birds:'chirp',amb_dog:'bark',amb_siren:'siren'};
+  // three files: the effects, the day and night around you (fetched when the ambience first plays), the fights (at the first fight sound)
+  const BANKS=[{tk:__DATA__("data/sfx.json"),f:__FILE__("data/sfx.mp3"),buf:null,busy:false,retry:0,sh:0},{tk:__DATA__("data/amb.json"),f:__FILE__("data/amb.mp3"),buf:null,busy:false,retry:0,sh:0},{tk:__DATA__("data/fight.json"),f:__FILE__("data/fight.mp3"),buf:null,busy:false,retry:0,sh:0}], BANK=BANKS[0];
+  const TK=Object.assign({},...BANKS.map(B=>B.tk)), ALT={step_stone:'step',step_grass:'step',step_wood:'step',dooropen:'latch',amb_birds:'chirp',amb_dog:'bark',amb_siren:'siren',punch:'thud',hurt:'thud',swing:'whoosh',blade:'clunk',clash:'clunk',block:'thud'};
   const bankOf=k=>BANKS.find(B=>B.tk[k])||BANK;
   const bank=(c,B=BANK)=>{ if(B.buf)return B; if(B.busy||performance.now()<B.retry)return null; B.busy=true; const TB=B.tk;
     fetch(B.f).then(r=>{ if(!r.ok)throw new Error(r.status); return r.arrayBuffer(); }).then(b=>c.decodeAudioData(b)).then(buf=>{ const x=buf.getChannelData(0), sr=buf.sampleRate, t0=TB[Object.keys(TB).find(k=>k[0]!=='~')][0][0], i0=Math.floor(Math.max(0,t0-.06)*sr); let pk=0; for(let i=i0;i<(t0+.15)*sr;i++)pk=Math.max(pk,Math.abs(x[i])); let i=i0; while(i<(t0+.15)*sr&&Math.abs(x[i])<pk*.03)i++; B.sh=Math.max(-.05,Math.min(.08,i/sr-t0-.004)); B.buf=buf; }).catch(e=>{ console.warn('the recorded sounds',e); B.retry=performance.now()+(location.protocol==='file:'?1e12:15000); }).finally(()=>{ B.busy=false; }); return null; };

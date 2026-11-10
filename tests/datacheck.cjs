@@ -7,7 +7,7 @@
 const {chromium}=require('playwright'), fs=require('fs');
 // the code's references, checked against the tables before the page runs: every SFX.play('x') a recipe in sfx.js, every LINES.say(N,'x') a pool in lines.js
 const SRC=fs.readdirSync('src').filter(f=>f.endsWith('.js')).map(f=>[f,fs.readFileSync('src/'+f,'utf8')]), one=n=>fs.readFileSync('src/'+fs.readdirSync('src').find(f=>new RegExp('^\\d{3}-'+n+'\\.js$').test(f)),'utf8'), sfxSrc=one('sfx'), linesSrc=one('lines');
-const RECIPES=[...sfxSrc.matchAll(/^\s{4}(\w+):\{len:/gm)].map(m=>m[1]).concat(Object.keys(JSON.parse(fs.readFileSync('data/sfx.json','utf8')))), POOLS=[...linesSrc.matchAll(/^\s{4}(\w+):\[/gm)].map(m=>m[1]);
+const RECIPES=[...sfxSrc.matchAll(/^\s{4}(\w+):\{len:/gm)].map(m=>m[1]).concat(...['sfx','amb','fight'].map(f=>Object.keys(JSON.parse(fs.readFileSync('data/'+f+'.json','utf8'))))), POOLS=[...linesSrc.matchAll(/^\s{4}(\w+):\[/gm)].map(m=>m[1]);
 const refs=[]; for(const [f,s] of SRC){ for(const m of s.matchAll(/SFX\.play\('(\w+)'/g))refs.push(['sound',m[1],f]); for(const m of s.matchAll(/LINES\.say\(\w+,'(\w+)'/g))refs.push(['pool',m[1],f]); }
 // every sound file the page plays has a provenance record in data/full/sounds.json (runtime path, source, licence and its snapshot), and every record's files exist
 const SND=(()=>{ const out=[], ext=/\.(mp3|ogg|wav|m4a|opus|webm)$/i, walk=d=>{ for(const f of fs.readdirSync(d)){ const p=d+'/'+f; if(fs.statSync(p).isDirectory()){ if(p!=='data/full')walk(p); } else if(ext.test(f))out.push(p); } }; walk('data'); for(const [f,s] of SRC)for(const m of s.matchAll(/__FILE__\("(data\/[^"]+\.(?:mp3|ogg|wav|m4a|opus|webm))"\)/g))out.push(m[1]); return [...new Set(out)]; })();

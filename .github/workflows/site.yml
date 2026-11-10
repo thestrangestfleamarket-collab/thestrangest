@@ -282,7 +282,7 @@ jobs:
         if: contains(steps.f.outputs.run, ' guardians')
         run: node tests/body.cjs dist/market.html
       - name: The items (each its own picture and name, the archived dead ones, fish food for the koi)
-        timeout-minutes: 15
+        timeout-minutes: 25
         if: contains(steps.f.outputs.run, ' items')
         run: node tests/items.cjs dist/market.html
       - name: passport

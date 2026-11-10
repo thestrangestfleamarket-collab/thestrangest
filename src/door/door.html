@@ -24,6 +24,7 @@ input{font:inherit;letter-spacing:inherit;background:rgba(0,0,0,.35);color:var(-
 const SB_URL='https://jvcetttmqseoteidfggn.supabase.co', SB_KEY='sb_publishable_UkzD8hOizW1hPr6hm3duQQ_07ZodPik';
 const T={name:'The Strangest Flea Market',login:'log in',have:'already have an account? log in',back:'back',
   'code.title':'your invitation','code.body':'the market is invite only for now','code.ph':'invite code','code.go':'next','code.bad':'that invite code is not valid or already used',
+  'ask':'no code? ask for one','ask.title':'ask for an invite','ask.body':'leave your email and we\'ll send you a code when a spot opens','ask.go':'ask','ask.sent':'thanks: we\'ll email {email} when your code is ready.',
   'make.ok':'code accepted ✓','make.body':'your email and a password, to log in again later','make.go':'start day 1','make.exists':'that email already has an account: log in instead',
   email:'email',password:'password',password2:'password again',short:'the password needs at least 8 characters',match:'the two passwords are different',bademail:'enter your email',
   'login.title':'welcome back','login.bad':'wrong email or password','login.forgot':'forgot password?','login.link':'email me a login link instead',
@@ -50,7 +51,9 @@ function draw(){ const s=S, e=esc, b=(a,t,cls='')=>'<button type="button" class=
   const step=s.step; let h='';
   if(step==='title')h='<div class="box title"><h1 class="logo">'+e(tx('name')).replace(/^(the)\s+(strangest)\s+/i,'$1<br>$2<br>')+'</h1>'+
     ('<input id="dcode" type="text" maxlength="32" autocomplete="off" spellcheck="false" placeholder="'+e(tx('code.ph'))+'"'+(s.code?' value="'+e(s.code)+'"':'')+'>'+
-    '<div>'+b('docode','code.go','on')+'</div>'+err+'<div>'+b('login','have','link')+'</div>')+'</div>';
+    '<div>'+b('docode','code.go','on')+'</div>'+err+'<div>'+b('ask','ask','link')+'</div><div>'+b('login','have','link')+'</div>')+'</div>';
+  else if(step==='ask')h=box('<h2>'+e(tx('ask.title'))+'</h2><div class="k">'+e(tx('ask.body'))+'</div>'+inp('dmail','email','email','email',s.email)+'<div>'+b('doask','ask.go','on')+'</div>'+err+'<div>'+b('home','back','link')+'</div>');
+  else if(step==='asked')h=box('<div class="k">'+e(tx('ask.sent',{email:s.email}))+'</div><div>'+b('home','back','link')+'</div>');
   else if(step==='opening')h=box('<div class="k blink">'+e(tx('opening'))+'</div>');
   else if(step==='nocode')h=box('<h2>'+e(tx('code.title'))+'</h2><div class="k">'+e(tx('nocode.body'))+'</div><input id="dcode" type="text" maxlength="32" autocomplete="off" placeholder="'+e(tx('code.ph'))+'"'+(s.code?' value="'+e(s.code)+'"':'')+'>'+
     '<div>'+b('dojoin','code.go','on')+'</div>'+err+'<div>'+b('out','back','link')+'</div>');
@@ -71,6 +74,8 @@ function draw(){ const s=S, e=esc, b=(a,t,cls='')=>'<button type="button" class=
   const back=location.origin+'/';
   on('login',async()=>{ const c=await sb(), {data}=await c.auth.getSession(); if(data&&data.session)return enter(); s.step='login'; });
   on('home',()=>{ s.step='title'; });
+  on('ask',()=>{ s.step='ask'; });
+  on('doask',async()=>{ const m=mail(), j=await post('/ask',{email:m}); if(!j.ok)throw new Error(j.why==='email'?tx('bademail'):j.why); s.step='asked'; });
   on('forgot',()=>{ s.step='forgot'; }); on('link',()=>{ s.step='link'; });
   on('docode',async()=>{ const c=val('dcode').trim().toUpperCase(); s.code=c; const j=await post('/join/check',{code:c}); if(!j.ok)throw new Error(j.why==='code'?tx('code.bad'):j.why); s.step='make'; });
   on('domake',async()=>{ const m=mail(), pw=pw2(), j=await post('/join',{code:s.code,email:m,password:pw});

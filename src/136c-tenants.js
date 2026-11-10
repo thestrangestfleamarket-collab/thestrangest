@@ -8,7 +8,7 @@ import {SYS} from './006-map-pre.js';
   const room=()=>ONLINE.room;
   let el=null, D=null, open=null, say='';
   // each part folds; which are folded is kept in this browser
-  const SECS=['codes','players'], SEC=(()=>{ try{ return JSON.parse(localStorage.getItem('tenants-folds')||'{}')||{}; }catch(e){ return {}; } })();
+  const SECS=['asks','codes','players'], SEC=(()=>{ try{ return JSON.parse(localStorage.getItem('tenants-folds')||'{}')||{}; }catch(e){ return {}; } })();
   const keep=()=>{ try{ localStorage.setItem('tenants-folds',JSON.stringify(SEC)); }catch(e){} };
   const sec=(k,t,body)=>`<details data-sec="${k}"${SEC[k]?'':' open'}><summary style="cursor:pointer;list-style:none"><h3 style="display:inline">${SEC[k]?'▸':'▾'} ${t}</h3></summary>${body}</details>`;
 
@@ -17,6 +17,7 @@ import {SYS} from './006-map-pre.js';
     const U=D.users.slice().sort((a,b)=>((a.player&&a.player.apt)||1e9)-((b.player&&b.player.apt)||1e9)), on=U.filter(u=>u.online).length;
     const live=D.codes.filter(c=>c.uses<c.max_uses), done=D.codes.length-live.length;
     el.innerHTML=`<h3>TENANTS</h3><div class="row"><span class="dim">${U.length} players · ${on} online now${say?' · '+esc(say):''}</span><button class="btn" id="tfold">${Object.keys(SEC).length&&SECS.every(k=>SEC[k])?'OPEN ALL':'COLLAPSE ALL'}</button></div>
+      ${sec('asks','ASKED FOR AN INVITE',(D.asks||[]).map(a=>`<div class="row" data-ask="${esc(a.email)}"><span>${esc(a.email)}</span><span class="dim">${esc(day(a.at))}${a.sent?' · code sent '+esc(day(a.sent)):''}</span><button class="btn" data-a="send">${a.sent?'SEND AGAIN':'SEND CODE'}</button><button class="btn" data-a="drop">DROP</button></div>`).join('')||'<div class="dim">nobody waiting</div>')}
       ${sec('codes','INVITE CODES',`<div class="row"><span>USES</span><input id="tuses" type="number" min="1" max="1000" value="1" style="width:60px;font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;padding:4px"><button class="btn" id="tcode">NEW CODE</button></div>
       ${live.slice().reverse().map(c=>`<div class="row"><code>${esc(c.code)}</code><span class="dim">${esc(c.uses)}/${esc(c.max_uses)}</span><button class="btn" data-off="${esc(c.code)}">TURN OFF</button></div>`).join('')||'<div class="dim">no codes open</div>'}${done?`<div class="dim">${done} used up</div>`:''}`)}
       ${sec('players','PLAYERS',U.map(u=>{ const p=u.player||{}; return `<div data-u="${esc(u.id)}" style="border:2px solid var(--line);padding:6px 8px;margin:6px 0">
@@ -30,6 +31,7 @@ import {SYS} from './006-map-pre.js';
     const $=s=>el.querySelector(s); for(const f of el.querySelectorAll('input,textarea,select'))for(const ev of ['keydown','keyup'])f.addEventListener(ev,e=>e.stopPropagation());
     const act=async(b,body,ok)=>{ if(b)b.disabled=true; const r=await api('/admin',{room:room(),...body}); say=r.why?'not done: '+r.why:ok(r); await load(); };
     $('#tcode').onclick=e=>act(e.target,{do:'code',uses:+$('#tuses').value||1},r=>{ try{ navigator.clipboard.writeText(r.code); }catch(x){} return 'new code '+r.code+' (copied)'; });
+    el.querySelectorAll('[data-ask] [data-a]').forEach(b=>b.onclick=()=>{ const m=b.closest('[data-ask]').dataset.ask; act(b,{do:b.dataset.a==='send'?'askcode':'askoff',email:m},r=>b.dataset.a==='send'?'code '+r.code+' emailed to '+m:'dropped '+m); });
     el.querySelectorAll('[data-off]').forEach(b=>b.onclick=()=>act(b,{do:'codeoff',code:b.dataset.off},()=>'code turned off'));
     el.querySelectorAll('[data-u]').forEach(box=>box.onclick=e=>{ const b=e.target.closest('[data-a]'); if(!b)return; const id=box.dataset.u, u=D.users.find(x=>x.id===id), a=b.dataset.a;
       if(a==='more'){ open=open===id?null:id; draw(); return; }

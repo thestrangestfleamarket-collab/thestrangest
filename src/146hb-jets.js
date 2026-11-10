@@ -134,8 +134,8 @@ import {RIVER} from './066-river.js';
   /* ---------- the streams: yours from your nozzle, theirs from theirs as they say they fire ---------- */
   const mk=(id,k)=>({id,k,tip:new V3(),dir:new V3(0,0,1),R:k==='f'?RF:RI,P:[],len:0,end:null,what:'',cT:0,eA:0,lT:0,zT:{},at:now(),bm:null});
   const tipOf=(g,S)=>{ if(!g||!g.visible||!g.parent)return false; S.tip.copy(g.tipL).applyMatrix4(g.matrix); const e=g.matrix.elements; S.dir.set(e[4],e[5],e[6]).normalize(); return true; };
-  // where you aim: the point under the mouse (on your ground, or out along the ray), from the nozzle; no mouse (the headset): the way the tool points
-  const AIMP=new V3(), aimMine=S=>{ if(JET.aim){ S.dir.copy(JET.aim); return; } const r=WIELD.ray; if(!r||VR.on)return; const c=r.origin, d=r.direction, far=c.distanceTo(S.tip)+S.R;
+  // where you aim: the point under the mouse (WIELD's, or on your ground, or out along the ray), from the nozzle; no mouse (the headset): the way the tool points
+  const AIMP=new V3(), aimMine=S=>{ if(JET.aim){ S.dir.copy(JET.aim); return; } if(WIELD.pt&&!VR.on){ AIMP.copy(WIELD.pt).sub(S.tip); if(AIMP.lengthSq()>.01*M*M)S.dir.copy(AIMP.normalize()); return; } const r=WIELD.ray; if(!r||VR.on)return; const c=r.origin, d=r.direction, far=c.distanceTo(S.tip)+S.R;
     let t=d.y<-1e-3?(SHARED.py-c.y)/d.y:far; if(!(t>0)||t>far)t=far; AIMP.copy(c).addScaledVector(d,t).sub(S.tip); if(AIMP.lengthSq()>.01*M*M)S.dir.copy(AIMP.normalize()); };
   const drop=S=>{ if(S.bm)S.bm.visible=false; JET.S.delete(S.id); };
   ONLINE.hear.jet=m=>{ '@later'; const S=JET.S.get(m.id); if(m.k==='f'||m.k==='i'){ let T=S; if(!T||T.k!==m.k){ if(T)drop(T); JET.S.set(m.id,T=mk(m.id,m.k)); } else T.at=now(); if(Array.isArray(m.v)){ T.rv=(T.rv||new V3()).set(+m.v[0]||0,+m.v[1]||0,+m.v[2]||1); if(T.rv.lengthSq()<1e-4)T.rv=null; else T.rv.normalize(); } } else if(S)drop(S); };

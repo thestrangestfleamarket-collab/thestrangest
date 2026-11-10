@@ -5995,5 +5995,7 @@ Owner: "what polyfork animations do we have for our character", then "yes lets u
 - 10 Nov 2026, the fishing guide (same ask): its tables list every fish, the ice fish under the big lake's ice and the one-of-a-kind ones too.
 - 10 Nov 2026, the big lake's deep hole (same ask): the 25 m hole moved off the bath house island's edge (the island had filled it), out into open water.
 - 10 Nov 2026, fishing from the rowboat (same ask; TODO): sat in the boat you hold the rod and swing it to cast and reel, as on the pier.
+- 10 Nov 2026, car shadows smooth (owner: "the shadows on cars are delayed and not moving smoothly"): the road's cars and whatever you ride cast in the moving shadow map, redrawn with the characters, not the still one (`CLOCK.movers`).
+- 10 Nov 2026, players out of the night look (owner: "its the night one, remove it on players"): at night the picture's dark-blue night tint no longer falls on players (you and other players' avatars); the street's characters keep it.
 - 10 Nov 2026, shrink and grow mushrooms (owner: "why when i shrink or grow every npc does too?"): a bug; they change only you, every other body stays its size.
 - 10 Nov 2026, fewer Actions minutes (owner: "make the checks use fewer minutes"): the places check runs only when a pull request touches code splitting (`'@name'`, `LOAD`), the build, the worker or the page's HTML; no machine is started just to decide whether to check or measure.

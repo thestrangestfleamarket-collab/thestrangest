@@ -1,6 +1,6 @@
 // THE TRAFFIC: cars driving both ways along Market St and flying cars and small spacecraft above them, from the shared clock so every player sees the same ones; the park gate's crossing light (built in 069-dress) turns on a timer or its button, the cars stop at its line and for anyone in the road.
 import {SHARED, THREE} from './003-shx.js';
-import {CARLAMPS, CULL, DRESS, ONLINE, PARK, pos, SPEED, UI, VLOOK, WALKS} from './003b-systems.js';
+import {CARLAMPS, CLOCK, CULL, DRESS, ONLINE, PARK, pos, SPEED, UI, VLOOK, WALKS} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {MODS, OUT, SOL, SYS, TILE} from './006-map-pre.js';
@@ -41,7 +41,7 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
       UI.thing({name:'CROSSING BUTTON',obj:g,reach:1.2*T,near:3*T,tall:.4*M0,act:()=>TRAFFIC.press()}); } }
 
   /* ---------- the vehicles: the game's own cars (150p) and Polyfork's (data/traffic.json), one model made once and copied ---------- */
-  let D=null; const TPL={}, POOL={}, GRP=new THREE.Group(); scene.add(GRP);
+  let D=null; const TPL={}, POOL={}, GRP=new THREE.Group(); scene.add(GRP); CLOCK.movers.push(()=>[GRP]);
   const MAT=new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide});
   const geo=Q=>{ const q=new Int16Array(Uint8Array.from(atob(Q.p),c=>c.charCodeAt(0)).buffer), col=Uint8Array.from(atob(Q.c),c=>c.charCodeAt(0)), b=Q.b, P=new Float32Array(q.length), C=new Float32Array(col.length), c=new THREE.Color();
     for(let i=0;i<q.length;i++){ const a=i%3; P[i]=b[a]+(q[i]+32768)/65535*(b[a+3]-b[a]); }

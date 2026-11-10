@@ -6006,3 +6006,4 @@ Owner: "what polyfork animations do we have for our character", then "yes lets u
 - 10 Nov 2026, players out of the night look (owner: "its the night one, remove it on players"): at night the picture's dark-blue night tint no longer falls on players (you and other players' avatars); the street's characters keep it.
 - 10 Nov 2026, shrink and grow mushrooms (owner: "why when i shrink or grow every npc does too?"): a bug; they change only you, every other body stays its size.
 - 10 Nov 2026, fewer Actions minutes (owner: "make the checks use fewer minutes"): the places check runs only when a pull request touches code splitting (`'@name'`, `LOAD`), the build, the worker or the page's HTML; no machine is started just to decide whether to check or measure.
+- 10 Nov 2026, the build skips the app icons when they are missing (main had stopped building: `src/door/icon-192.png` and `icon-512.png` are kept out of git by `*.png` in .gitignore).

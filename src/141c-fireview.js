@@ -78,6 +78,7 @@ import {BLOCKS} from './038zb-blocks.js';
     G.traverse(o=>{ if(o.material&&!o.userData.sky)for(const m of [].concat(o.material)){ m.clippingPlanes=house.has(o)?[BOT]:[TOP,APTS.WPL.Wf]; m.needsUpdate=true; } });
     G.updateMatrixWorld(true); for(const me of house)PEEK.whole(me);   // the see-through circle shows you behind the house's brick from your rooms, as in every inside (owner, 28 Oct 2026: "only circle transparency")
     F.built=true; };
+  const WALLP=new THREE.Plane(new THREE.Vector3(0,0,-1),1e6), RWP=new THREE.Plane(); let cutOn=false;
   const TOP=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6), BOT=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6), upV=new THREE.Vector3(), cd=new THREE.Vector3();
   const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>F.built&&APTS.inReal&&onL(x,z)?Y(HZ):sg0?sg0(x,z):null;
   const WMAX=12*T, cb=new THREE.Box3(), BLUE=new THREE.Color(0x6a9fe0); let skyOff=false;
@@ -86,9 +87,10 @@ import {BLOCKS} from './038zb-blocks.js';
     cb.min.set(Math.min(X(IN.x0),X(IN.x1))+m,-1e9,Math.min(Z(IN.y0),Z(IN.y1))+m); cb.max.set(Math.max(X(IN.x0),X(IN.x1))-m,Y(HZ+S)-m,Math.max(Z(IN.y0),Z(IN.y1))-m); if(cb.containsPoint(c))return;   // in your rooms: in front of the walls, under the ceiling
     let k=1; const L=c.distanceTo(t); for(const a of ['x','y','z']){ const d=c[a]-t[a]; if(c[a]>cb.max[a]&&d>1e-6)k=Math.min(k,(cb.max[a]-t[a])/d); if(c[a]<cb.min[a]&&d<-1e-6)k=Math.min(k,(cb.min[a]-t[a])/d); } k=Math.max(k,Math.min(1,.9*T/(L||1))); c.set(t.x+(c.x-t.x)*k,t.y+(c.y-t.y)*k,t.z+(c.z-t.z)*k); });
   SYS.add('places',()=>{ const home=F.built&&!!APTS.inReal, on=home&&SHARED.LVL==='up'&&outL(pos.x,pos.z);
-    if(on!==F.on){ F.on=on; APTS.onEsc=on; if(!UI.persp)UI.isoTurn(on?Math.PI*3/4:-Math.PI/4); }   // through the door: the isometric view turns to look at the house from outside, or into your rooms
+    if(on!==F.on){ F.on=on; APTS.onEsc=on; }   // the isometric view keeps facing out from your rooms: out on the landing it looks over the town (owner, 10 Nov 2026)
     UI.distMax=home?WMAX:null; if(home&&UI.dist>WMAX)UI.dist=WMAX;   // on your fire escape you can't zoom out past the landings round yours
-    const iso=home&&!UI.persp; TOP.constant=iso?Y(on?HZ+3*S:HZ+45):1e6; BOT.constant=iso?Y(on?HZ+3*S:APTS.inHall&&APTS.inHall()?HZ+45:HZ+S-.1):1e6; G.visible=home;   // out on your landing the two floors above you show; inside, nothing above your floor
+    const iso=home&&!UI.persp; cutOn=iso&&on&&!UI.freeCam; if(cutOn)WALLP.constant=Z(FY)-.03*T;   // out on the landing in the isometric view, the house, your rooms and the hall behind its wall are cut away (set after the rooms' own clipping, below)
+    TOP.constant=iso?Y(on?HZ+3*S:HZ+45):1e6; BOT.constant=iso?Y(on?HZ+3*S:APTS.inHall&&APTS.inHall()?HZ+45:HZ+S-.1):1e6; G.visible=home;   // out on your landing the two floors above you show; inside, nothing above your floor
     if(home&&!UI.persp&&!UI.freeCam){ upV.setFromMatrixColumn(SHARED.cam.matrixWorld,1); const u=UI.off.dot(upV), lo=(Y(HZ-2.5*S)-SHARED.py)*upV.y; let hi=lo;
       for(const x of [IN.x0,IN.x1])for(const z of [IN.y0,IN.y1])hi=Math.max(hi,(X(x)-pos.x)*upV.x+(Y(HZ+(on?3:1)*S)-SHARED.py)*upV.y+(Z(z)-pos.z)*upV.z);
       const c=SHARED.cam; hi=Math.max(lo,hi-.85*(c.top-c.bottom)/2/(c.zoom||1)); const k=Math.max(lo,Math.min(hi,u)); if(k!==u)UI.off.addScaledVector(upV,k-u); }   // the view drags between the clouds' top and your ceiling's far corner at the top of the screen
@@ -109,7 +111,7 @@ import {BLOCKS} from './038zb-blocks.js';
     const FU=FAR3.FU, RG=FARCITY.ring, fg=scene.fog, mk=FU&&FU.uMK.value, mx=MISTE.x, my=MISTE.y, mz=MISTE.z, fv=[FAR3.mesh,FAR3.panels,FAR3.trees].map(o=>o&&o.visible); if(FU&&FAR3.fog){ FU.uMK.value=.8; FU.uMP.value.set(rx,0,rz); MISTE.x=1; MISTE.y=my*TW.air; MISTE.z=mz*TW.air; scene.fog=FAR3.fog;   // from up here you see further: the ground mist starts further off
       for(const o of [FAR3.mesh,FAR3.panels,FAR3.trees])if(o)o.visible=true; } if(RG)RG.visible=!cam.isOrthographicCamera; VIS.hide(MAPG.block,'fire',false);
     const own=(APTS.meshes||[]).filter(o=>o.visible), dm=SKY.dome, dv=dm&&dm.visible, mu=SKY.U.uMistK, mv=mu&&mu.value; for(const o of own)o.visible=false; if(dm)dm.visible=true; if(mu&&FAR3.fog)mu.value=1;   // your own house is the one round you; the sky is the hour's
-    try{ pos.x=rx; pos.z=rz; CULL.begin(); ROOMS.peek(()=>{ renderer.setRenderTarget(rt,face||0); renderer.clear(); renderer.render(scene,cam); }); }
+    try{ pos.x=rx; pos.z=rz; CULL.begin(); ROOMS.peek(()=>{ if(cutOn&&cam.isOrthographicCamera)renderer.clippingPlanes=[RWP.copy(WALLP).applyMatrix4(G.matrix)]; renderer.setRenderTarget(rt,face||0); renderer.clear(); renderer.render(scene,cam); }); }
     finally{ for(const o of own)o.visible=true; if(dm)dm.visible=dv; if(mu)mu.value=mv; VIS.hide(MAPG.block,'fire',true); if(RG)RG.visible=false; if(FU&&FAR3.fog){ FU.uMK.value=mk; FU.uMP.value.copy(pos); MISTE.x=mx; MISTE.y=my; MISTE.z=mz; scene.fog=fg; [FAR3.mesh,FAR3.panels,FAR3.trees].forEach((o,i)=>{ if(o)o.visible=fv[i]; }); } CULL.end(); pos.x=px; pos.z=pz; renderer.setRenderTarget(null); renderer.shadowMap.autoUpdate=sb; tq.visible=true; TW.n++; } };
   const RS={x:0,z:0}; ROOMS.away=()=>{ if(!F.built||!APTS.inReal)return null; ov.set(X(DX),0,Z(V(.9))).applyMatrix4(G.matrix); RS.x=ov.x; RS.z=ov.z; return RS; };   // at home you are on the street where your house stands: its ground stays painted for the picture
   tq.onBeforeRender=(r,s,cam)=>{ if(cam.isOrthographicCamera){ if(!ocam)return; ov.copy(cam.position).sub(oc0); const w=(cam.right-cam.left)/cam.zoom, h=(cam.top-cam.bottom)/cam.zoom, k=1/TW.pad; tU.uUV.value.set(k,k,.5-k/2+ov.dot(ox)/w*k,.5-k/2+ov.dot(oy)/h*k); }
@@ -125,5 +127,6 @@ import {BLOCKS} from './038zb-blocks.js';
     tU.uO.value=0; ocam=null; if(!tc){ const rt=new THREE.WebGLCubeRenderTarget(TW.px,{type:THREE.HalfFloatType}); tc=new THREE.CubeCamera(.5*T,TW.far*T,rt); tc.coordinateSystem=renderer.coordinateSystem; tc.updateCoordinateSystem(); tU.uC.value=rt.texture; }
     if(tn>5&&!due)return; tc.position.set(X(DX),Y(HZ+45),Z(V(.9))).applyMatrix4(G.matrix); tc.updateMatrixWorld(true);
     const f=tn<6?tn:CYC[tf++%CYC.length]; shoot(tc.children[f],tc.renderTarget,f); tn++; tt=now; tw=0; },'141c-town');
-  window.FIREDBG=()=>({town:{n:TW.n,on:tq.visible,flat:tU.uO.value>.5},built:F.built,on:F.on,door:!!(APTS.escDoor&&APTS.escDoor.open),dist:+(UI.dist/T).toFixed(2),meshes:G.children.length,pos:[+ix(pos.x).toFixed(2),+iy(pos.z).toFixed(2)],py:+SHARED.py.toFixed(2),apt:{in:APTS.in,floor:APTS.floor()}});
+  SYS.add('water',()=>{ if(cutOn)renderer.clippingPlanes=[WALLP]; else if(renderer.clippingPlanes.length===1&&renderer.clippingPlanes[0]===WALLP)renderer.clippingPlanes=[]; },'141c-cut');
+  window.FIREDBG=()=>({cut:cutOn,town:{n:TW.n,on:tq.visible,flat:tU.uO.value>.5},built:F.built,on:F.on,door:!!(APTS.escDoor&&APTS.escDoor.open),dist:+(UI.dist/T).toFixed(2),meshes:G.children.length,pos:[+ix(pos.x).toFixed(2),+iy(pos.z).toFixed(2)],py:+SHARED.py.toFixed(2),apt:{in:APTS.in,floor:APTS.floor()}});
 }

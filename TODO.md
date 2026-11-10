@@ -126,6 +126,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 
 ## Places and insides
 
+- [x] **The playhouse as THE WOODEN O** (owner, 10 Nov 2026: "redesign it", picked B) · P2 · M · code + look [taking: claude/laughing-curie-ui41fc, 10 Nov]
 - [x] **The movie theatre as THE FLEA PIT** (owner, 10 Nov 2026: "i want to redsesign the movie theater", picked B) · P2 · M · code + look. Front, dark inside, box office, seats [taking: claude/laughing-curie-ui41fc, 10 Nov]
 - [ ] **The fish market** · P2 · M · look. Owner, 9 Nov 2026: waits for his look and yes. Not yet: the workers keep no hours (the jobs system is archived), the editor's ground picture (`tools/topmap.cjs`) not re-made, the minimap does not draw the sheds.
 - [ ] **The fish market's sheds** · P3 · S · pick. The two sheds stand on the row, not on the water side as the real ones did (the quay stays open for fishing); say if they should cross the street.
@@ -181,6 +182,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
   today's cast's bodies get a ragdoll; `tests/physx.cjs` checks them again then. When they come: stand up where they fell, not where they were.
 
 ## Apartments
+- [ ] **DECORATE's catalog lamps give no light; seven restored books share one name** (found in the 10 Nov 2026 audit) · P3 · S · code. The catalog's floor lamp, desk lamp, bare bulb, neon signs and lanterns are painted without their light; the books all read A RESTORED BOOK.
 - [x] **Pets** (owner, 7 Nov 2026: "use polyfork cats and dogs and birds, let people choose one as pet (choose color, style) use the base models"; done 7 Nov) · P2 · L · code. `src/146zj-pets.js`, `tools/pets-bake.py`, `tests/pets.cjs`. Waits for his look and yes.
 - [x] **Every breed, the permapet, PETS in the menu** (owner, 8 Nov 2026: "try to add every breed possible"; "player can pick their main pet when they start"; "add PETS menu in esc menu"; done 8 Nov) · P2 · L · code. `tools/breeds-bake.py`, `tools/breeds_list.py`, `src/146zj-pets.js`, `src/162g-firstday.js`, `tests/pets.cjs`. Waits for his look and yes.
 - [x] **Pets, the rest** (owner, 8 Nov 2026: "1-6"; done 8 Nov) · P2 · L · code. Breeds for every farm and pet animal, better dog bases, dog food back, pets at home, stats at work. Waits for his look and yes.
@@ -274,11 +276,13 @@ One tree pass (more leaves mean more shadow triangles).
 ## Sound
 
 Owner, 9 Nov 2026: "real sounds". Each batch is named by the owner first.
-- [ ] **P2 M pick** Real recordings in place of the code-made effects, a batch at a time (footsteps, doors, cars and weather done, 10 Nov): the fair's rides, fights, the day and night ambience.
+- [ ] **P2 M pick** Real recordings in place of the code-made effects, a batch at a time (footsteps, doors, cars, weather, day and night, fights done, 10 Nov): animals, other vehicles, fire, the places' own sounds.
 - [ ] **P3 S look** Listen to the footsteps, doors and cars live: the takes were picked by measurement, not by ear (the car pack is phone-recorded, low quality).
 - [ ] **P3 S code** The sound editor's uploads stay in the shared store after their takes are deleted (the server has no delete yet).
 - [ ] **P3 S code** After baking the editor's export into the code, clear the live set (or it keeps overriding the next bake's changes).
-- [ ] **P3 S find** The wind is still made in code: the only CC0 wind found (OpenGameArt) is mostly low rumble. The recordings file is 520 KB now, all fetched at the first click: split it by place if it grows.
+- [ ] **P3 S find** The wind is still made in code: the only CC0 wind found (OpenGameArt) is mostly low rumble. The effects file is 750 KB, all fetched at the first click (the ambience is its own file): split it further by place if it grows.
+- [ ] **P3 S code** Fights: no bow twang or arrow hit yet (the guardians' arrows still blip), golems and dungeon creatures still use the made sounds; other players don't hear your blows, only their own.
+- [ ] **P2 S check** `tests/datacheck.cjs` is broken on main: it calls the archived `SNDED.open`, the Hudson's `bell` has no recipe in its table, `data/drums-samples.mp3` has no provenance record.
 - [ ] **P3 S code** No crash or skid sound for the cars yet, and the karts, helicopter and flying traffic are silent (no CC0 recordings found yet).
 - [ ] **P3 M code** Footsteps know only stone, grass and wood: the park's paths, sand, water's edge, metal stairs and carpet still sound as those three.
 - [ ] **P2 M code** Other players heard: their footsteps, hits and doors from where they stand, fading with distance.

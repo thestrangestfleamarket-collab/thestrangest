@@ -25,9 +25,11 @@ const arg=k=>{ const i=process.argv.indexOf(k); return i>0?process.argv[i+1]:nul
       D.scene.fog=fog; R.setPixelRatio(pr); R.setSize(s.x,s.y,false); return c.toDataURL('image/jpeg',.82); },[cx,cz,C,PX,JPX]);
     fs.writeFileSync(path.join(OUT,name),Buffer.from(url.split(',')[1],'base64')); console.log('piece',i,j); }
   // the things the editor moves, as the game builds them (the old editor's list: map tiles, x east, y as the game's z)
-  const items=await pg.evaluate(async()=>{ const P=__dbg.MAPK.PARK; if(P.load&&!P.ready){ await P.load(); } await GAMEED.ensure(); const r2=v=>v==null?v:Math.round(v*1000)/1000;
+  const JS=path.join(path.dirname(OUT),'topmap.json'), OLD=fs.existsSync(JS)?JSON.parse(fs.readFileSync(JS,'utf8')):{};
+  // (the old editor is archived: without it in the page, the things already in the file are kept)
+  const items=await pg.evaluate(async()=>{ if(typeof GAMEED==='undefined')return null; const P=__dbg.MAPK.PARK; if(P.load&&!P.ready){ await P.load(); } await GAMEED.ensure(); const r2=v=>v==null?v:Math.round(v*1000)/1000;
     const B=__dbg.MAPK.BOD, T=__dbg.cv().TILE, ht=h=>r2(Math.max(0,B.YS(h||0))/T);
-    return MAPED.base().filter(o=>o.gid).map(o=>({gid:o.gid,n:o.n,ly:o.ly,sh:o.sh,x:r2(o.x),y:r2(o.y),w:r2(o.w),d:r2(o.d),r:r2(o.r),rot:r2(o.rot||0),h:ht(o.h),ox:r2(P.ox||0),oy:r2(P.oy||0)})); });
+    return MAPED.base().filter(o=>o.gid).map(o=>({gid:o.gid,n:o.n,ly:o.ly,sh:o.sh,x:r2(o.x),y:r2(o.y),w:r2(o.w),d:r2(o.d),r:r2(o.r),rot:r2(o.rot||0),h:ht(o.h),ox:r2(P.ox||0),oy:r2(P.oy||0)})); })||OLD.items||[];
   // under the street: each underground level's area, the stairs between levels, the Loop's stations (map tiles)
   const down=await pg.evaluate(()=>{ const D=__dbg, B=D.MAPK.BOD, T=D.cv().TILE, TH=D.THREE, r2=v=>Math.round(v*100)/100, L=window.LEVELS, LP=window.LOOP, F=D.MAPK.RING.cf;
     const box=b=>[r2(B.OX+b.min.x/T),r2(B.OY+b.min.z/T),r2(B.OX+b.max.x/T),r2(B.OY+b.max.z/T)], near=a=>a[2]>F.x0-40&&a[0]<F.x1+40&&a[3]>F.y0-40&&a[1]<F.y1+40;
@@ -36,11 +38,11 @@ const arg=k=>{ const i=process.argv.indexOf(k); return i>0?process.argv[i+1]:nul
     const stations=(LP.STA||[]).map(s=>{ const a=s.my(0), b=s.my(LP.XW); return {id:s.id,name:s.name,box:[r2(s.x0),r2(Math.min(a,b)),r2(s.x0+LP.LEN),r2(Math.max(a,b))]}; }).filter(s=>near(s.box));
     return {levels,ways,stations}; });
   // what can be put down: every placed model's size at scale 1 (map tiles: across, deep, high) and its usual scale; the drivable cars
-  const kit=await pg.evaluate(async()=>{ const L=__dbg.LAND; await L.pfReady(); const r=v=>Math.round(v*100)/100, models={}; for(const k of L.kinds()){ const z=L.size(k); if(z)models[k]=[r(z[0]),r(z[1]),r(z[2]),r(L.dft(k))]; } return {models,groups:L.groups()}; });
+  const kit=await pg.evaluate(async()=>{ const L=__dbg.LAND; if(!L||!L.pfReady)return null; await L.pfReady(); const r=v=>Math.round(v*100)/100, models={}; for(const k of L.kinds()){ const z=L.size(k); if(z)models[k]=[r(z[0]),r(z[1]),r(z[2]),r(L.dft(k))]; } return {models,groups:L.groups()}; })||OLD.kit||{};
   // this section's lamp posts as the game spaces them (map tiles)
-  kit.lamps=await pg.evaluate(()=>{ const B=__dbg.MAPK.BOD, T=__dbg.cv().TILE, r=v=>Math.round(v*100)/100, D=window.DRESS; return (D.lampposts||[]).slice(0,D.own||0).map(p=>({x:r(B.OX+p.x/T),y:r(B.OY+p.z/T)})); });
+  kit.lamps=await pg.evaluate(()=>{ const B=__dbg.MAPK.BOD, T=__dbg.cv().TILE, r=v=>Math.round(v*100)/100, D=window.DRESS; if(!D)return null; return (D.lampposts||[]).slice(0,D.own||0).map(p=>({x:r(B.OX+p.x/T),y:r(B.OY+p.z/T)})); })||kit.lamps||[];
   { const C=require(path.resolve('data/cars.json')).cars; kit.cars=Object.keys(C).map(k=>[k,String(C[k].name||k)]); }
   const at=new Date().toISOString().slice(0,10);
   if(ONLY){ console.log('pieces only, to',OUT); await b.close(); return; }
-  fs.writeFileSync('data/topmap.json',JSON.stringify({about:'the map editor\'s ground picture and things (tools/topmap.cjs): pieces of C world units from B.x0,B.z0, NX across; map tiles = O + world / T',at,C,NX,NZ,PX:JPX,O:[G.OX,G.OY],T:G.T,F:G.F,B:G.B,tiles,items,down,kit}));
+  fs.writeFileSync(JS,JSON.stringify({about:'the map editor\'s ground picture and things (tools/topmap.cjs): pieces of C world units from B.x0,B.z0, NX across; map tiles = O + world / T',at,C,NX,NZ,PX:JPX,O:[G.OX,G.OY],T:G.T,F:G.F,B:G.B,tiles,items,down,kit}));
   console.log('topmap',NX+'x'+NZ,'pieces,',items.length,'things,',JSON.stringify(down),'errors',JSON.stringify(Object.keys(errs))); await b.close(); })();

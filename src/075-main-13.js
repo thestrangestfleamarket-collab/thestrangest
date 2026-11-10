@@ -58,7 +58,7 @@ function frame(now,xf){ if(!xf){ requestAnimationFrame(frame); if(VR.on)return; 
   const FT=FEEL.take(), ease=FT?1-Math.exp(-dt*FEEL.cfg.camDamp):Math.min(1,dt*12); SHARED.yaw=Math.abs(SHARED.yawTo-SHARED.yaw)<1e-4?SHARED.yawTo:SHARED.yaw+(SHARED.yawTo-SHARED.yaw)*ease; SHARED.pitch=Math.abs(SHARED.pitchTo-SHARED.pitch)<1e-4?SHARED.pitchTo:SHARED.pitch+(SHARED.pitchTo-SHARED.pitch)*ease; const zk0=UI.zk(); SHARED.ppu=Math.abs(SHARED.ppuTo/SHARED.ppu-1)<1e-4?SHARED.ppuTo:SHARED.ppu*Math.pow(SHARED.ppuTo/SHARED.ppu,ease); if(pxS()!==SCL)resize(); else frustum(); UI.zoomStep(zk0);
   const a=SHARED.yaw, fx=-Math.sin(a), fz=-Math.cos(a);
   let mx=0,mz=0, up=keys.has('w')||keys.has('arrowup'), dn=keys.has('s')||keys.has('arrowdown'), lf=keys.has('a')||keys.has('arrowleft'), rt=keys.has('d')||keys.has('arrowright');
-  UI.camStep(dt,a,up,dn,lf,rt); if(UI.freeCam||ED.on||SHARED.fishing)up=dn=lf=rt=false; if(SHARED.frozen>0){ up=dn=lf=rt=false; SHARED.target=null; }
+  UI.camStep(dt,a,up,dn,lf,rt); if(UI.freeCam||ED.on||SHARED.fishing)up=dn=lf=rt=false; if(SHARED.frozen>0||SHARED.stuck>0){ up=dn=lf=rt=false; SHARED.target=null; }
   if(up){mx+=fx;mz+=fz;} if(dn){mx-=fx;mz-=fz;} if(rt){mx+=-fz;mz+=fx;} if(lf){mx-=-fz;mz-=fx;}
   if(PAD.mv&&(up||dn||lf||rt)){ const [lx,ly]=PAD.mv; mx=-ly*fx-lx*fz; mz=-ly*fz+lx*fx; }
   if(!RAG.on&&!UI.fly&&(MODS.apts.lad&&MODS.apts.lad(dt,up,dn,lf||rt||!!SHARED.target)||(MODS.climbs||[]).some(c=>c(dt,up,dn,lf,rt,!!SHARED.target)))){ up=dn=lf=rt=false; mx=mz=0; SHARED.target=null; }

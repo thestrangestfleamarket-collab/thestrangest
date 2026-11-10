@@ -71,17 +71,20 @@ Object.assign(SFX,{on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}});
   const place=(o,G,P)=>{ '@later'; if(!o.at)return 1; const x=o.at.x, z=o.at.z!=null?o.at.z:o.at.y, d=Math.hypot(x-pos.x,z-pos.z), far=o.far||9*TILE, k=Math.max(0,1-d/far); if(k<=0)return 0;
     if(P)P.to(x,o.at.y!=null&&o.at.z!=null?o.at.y:SHARED.py+TILE,z); return k; };
   // the recorded takes (tools/sfx-bake.py): fetched and decoded once the sound is on; till they come, and for a name with no takes, the recipe plays
-  const TK=__DATA__("data/sfx.json"), TKF=__FILE__("data/sfx.mp3"), ALT={step_stone:'step',step_grass:'step',step_wood:'step',dooropen:'latch'}, BANK={buf:null,busy:false,retry:0,sh:0};
-  const bank=c=>{ if(BANK.buf)return BANK; if(BANK.busy||performance.now()<BANK.retry)return null; BANK.busy=true;
-    fetch(TKF).then(r=>{ if(!r.ok)throw new Error(r.status); return r.arrayBuffer(); }).then(b=>c.decodeAudioData(b)).then(buf=>{ const x=buf.getChannelData(0), sr=buf.sampleRate, t0=TK[Object.keys(TK).find(k=>k[0]!=='~')][0][0], i0=Math.floor(Math.max(0,t0-.06)*sr); let pk=0; for(let i=i0;i<(t0+.15)*sr;i++)pk=Math.max(pk,Math.abs(x[i])); let i=i0; while(i<(t0+.15)*sr&&Math.abs(x[i])<pk*.03)i++; BANK.sh=Math.max(-.05,Math.min(.08,i/sr-t0-.004)); BANK.buf=buf; }).catch(e=>{ console.warn('the recorded sounds',e); BANK.retry=performance.now()+(location.protocol==='file:'?1e12:15000); }).finally(()=>{ BANK.busy=false; }); return null; };
+  // three files: the effects, the day and night around you (fetched when the ambience first plays), the fights (at the first fight sound)
+  const BANKS=[{tk:__DATA__("data/sfx.json"),f:__FILE__("data/sfx.mp3"),buf:null,busy:false,retry:0,sh:0},{tk:__DATA__("data/amb.json"),f:__FILE__("data/amb.mp3"),buf:null,busy:false,retry:0,sh:0},{tk:__DATA__("data/fight.json"),f:__FILE__("data/fight.mp3"),buf:null,busy:false,retry:0,sh:0}], BANK=BANKS[0];
+  const TK=Object.assign({},...BANKS.map(B=>B.tk)), ALT={step_stone:'step',step_grass:'step',step_wood:'step',dooropen:'latch',amb_birds:'chirp',amb_dog:'bark',amb_siren:'siren',punch:'thud',hurt:'thud',swing:'whoosh',blade:'clunk',clash:'clunk',block:'thud'};
+  const bankOf=k=>BANKS.find(B=>B.tk[k])||BANK;
+  const bank=(c,B=BANK)=>{ if(B.buf)return B; if(B.busy||performance.now()<B.retry)return null; B.busy=true; const TB=B.tk;
+    fetch(B.f).then(r=>{ if(!r.ok)throw new Error(r.status); return r.arrayBuffer(); }).then(b=>c.decodeAudioData(b)).then(buf=>{ const x=buf.getChannelData(0), sr=buf.sampleRate, t0=TB[Object.keys(TB).find(k=>k[0]!=='~')][0][0], i0=Math.floor(Math.max(0,t0-.06)*sr); let pk=0; for(let i=i0;i<(t0+.15)*sr;i++)pk=Math.max(pk,Math.abs(x[i])); let i=i0; while(i<(t0+.15)*sr&&Math.abs(x[i])<pk*.03)i++; B.sh=Math.max(-.05,Math.min(.08,i/sr-t0-.004)); B.buf=buf; }).catch(e=>{ console.warn('the recorded sounds',e); B.retry=performance.now()+(location.protocol==='file:'?1e12:15000); }).finally(()=>{ B.busy=false; }); return null; };
   // the owner's sounds (ADMIN > SOUND EDITOR, /shared/sounds.json): for a name, its takes (a baked one {b:[name,i]} or an uploaded file {f}, each trimmed by a and z seconds), level and pitch, over the baked ones; heard by everyone
-  const SET=TK['~set']||{}, SH={set:{}}, FILES={}, web=/^https?:$/.test(location.protocol);
+  const SET=Object.assign({},...BANKS.map(B=>B.tk['~set']||{})), SH={set:{}}, FILES={}, web=/^https?:$/.test(location.protocol);
   const file=(c,f)=>{ const F=FILES[f]||(FILES[f]={buf:null,busy:false}); if(F.buf||F.busy)return F.buf; F.busy=true;
     fetch('/shared/'+f,{credentials:'same-origin'}).then(r=>{ if(!r.ok||r.status===204)throw new Error(r.status); return r.arrayBuffer(); }).then(b=>c.decodeAudioData(b)).then(b=>{ F.buf=b; }).catch(e=>console.warn('the sound '+f,e)); return null; };
   SFX.shared=SH; SFX.files=FILES; SFX.setOf=k=>Object.assign({},SET[k],SH.set[k]);
   SFX.takeList=k=>{ const o=SH.set[k]; return o&&o.takes?o.takes:(TK[k]||[]).map((v,i)=>({b:[k,i]})); };
   // a take's buffer and where it plays (t, L); null while it loads
-  SFX.take=(c,q)=>{ if(q.f){ const b=file(c,q.f); return b?{buf:b,t:q.a||0,L:b.duration-(q.a||0)-(q.z||0)}:null; } const T=TK[q.b[0]], v=T&&T[q.b[1]], B=v&&bank(c); return B?{buf:B.buf,t:v[0]+B.sh+(q.a||0),L:v[1]-(q.a||0)-(q.z||0)}:null; };
+  SFX.take=(c,q)=>{ if(q.f){ const b=file(c,q.f); return b?{buf:b,t:q.a||0,L:b.duration-(q.a||0)-(q.z||0)}:null; } const T=TK[q.b[0]], v=T&&T[q.b[1]], B=v&&bank(c,bankOf(q.b[0])); return B?{buf:B.buf,t:v[0]+B.sh+(q.a||0),L:v[1]-(q.a||0)-(q.z||0)}:null; };
   const takes=(c,k)=>SFX.takeList(k).map(q=>SFX.take(c,q)).filter(x=>x&&x.L>.01);
   SFX.loadShared=()=>!web?Promise.resolve(SH):fetch('/shared/sounds.json',{credentials:'same-origin'}).then(r=>r.status===200?r.json():null).then(j=>{ SH.set=j&&j.v===1&&j.set&&typeof j.set==='object'?j.set:{}; return SH; }).catch(()=>SH);
   SFX.loadShared(); { let lastV=null; SYS.add('world',(k,v)=>{ if(k==='snd'&&v!==lastV){ lastV=v; SFX.loadShared(); } },'091-sfx shared'); }
@@ -90,7 +93,7 @@ Object.assign(SFX,{on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}});
     s.buffer=v.buf; s.loop=true; s.loopStart=v.t; s.loopEnd=v.t+v.L; G.gain.value=0; s.connect(P).connect(G).connect(o.bus||bus(c)); s.start(0,s.loopStart+Math.random()*v.L*.9);
     return {set:(vol,rate,at)=>{ const t=c.currentTime; G.gain.setTargetAtTime(Math.max(0,vol)*SFX.fxLevel(k),t,.08); s.playbackRate.setTargetAtTime(rate*pt,t,.1); if(at)P.to(at.x,at.y,at.z); else P.to(); },
       stop:()=>{ try{ G.gain.setTargetAtTime(0,c.currentTime,.05); s.stop(c.currentTime+.3); setTimeout(()=>P.end(),400); }catch(e){} },ctx:c}; };
-  SFX.has=k=>!!(R[k]||TK[k]||SH.set[k]); SFX.takes=k=>TK[k]; SFX.bank=BANK; SFX.bankLoad=c=>bank(c);
+  SFX.has=k=>!!(R[k]||TK[k]||SH.set[k]); SFX.takes=k=>TK[k]; SFX.bank=BANK; SFX.bankLoad=c=>BANKS.map(B=>bank(c,B)); SFX.banks=BANKS;
   SFX.all=()=>[...new Set([...Object.keys(R),...Object.keys(TK).filter(k=>k[0]!=='~'),...Object.keys(SH.set)])].sort();
   SFX.play=(k,o={})=>{ const c=SFX.live(); if(!c||!SFX.on)return null; const TT=takes(c,k), B=TT.length?TT[Math.floor(Math.random()*TT.length)]:null, rk=B?null:R[k]?k:ALT[k]; if(!B&&!rk)return null; const b=B?B.buf:SFX.buffer(rk,c); if(!b)return null;
     const s=c.createBufferSource(), G=c.createGain(); s.buffer=b; s.loop=!B&&!!R[rk].loop; s.playbackRate.value=(o.pitch||1)*(SFX.setOf(k).pitch||1)*(o.vary?1+(Math.random()-.5)*o.vary:1);

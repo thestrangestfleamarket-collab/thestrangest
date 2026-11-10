@@ -95,7 +95,7 @@ import {HEMI} from './064-map-post.js';
         if(uMistK>0.){ vec3 q=pow(max(c,0.),vec3(1./2.2)); float y=max(dot(q,vec3(.299,.587,.114)),1e-4); c=pow(q*(floor(y*16.+.5)/16./y),vec3(2.2)); } else if(uBands>0.){ float y=max(dot(c,vec3(.299,.587,.114)),1e-4); c*=floor(y*uBands+.5)/uBands/y; }   // bands of brightness, each its own hue: rounding each colour apart striped the blue with lilac
         c+=(st+mwc)*(1.-uGreyK)*(1.-uFogK)*(1.-D)*(1.-.85*uMoonK*smoothstep(uMoonR*1.05,uMoonR,acos(clamp(dot(d,uMoonDir),-1.,1.))));   // the stars and the Milky Way, smooth over the banded sky, never through the moon
         gl_FragColor=vec4(ungrade(c),1.); }`});
-  const dome=new THREE.Mesh(new THREE.BoxGeometry(2000,2000,2000),mat); dome.frustumCulled=false; dome.renderOrder=900; dome.matrixAutoUpdate=true; scene.add(dome); SKY.dome=dome; SKY.on=()=>dome.visible||!!(SKY.cumOn&&SKY.cumOn()); OUT.add(dome,'open');
+  const dome=new THREE.Mesh(new THREE.BoxGeometry(2000,2000,2000),mat); dome.frustumCulled=false; dome.renderOrder=900; dome.matrixAutoUpdate=true; scene.add(dome); SKY.dome=dome; SKY.on=()=>dome.visible||!!(SKY.cumOn&&SKY.cumOn()); OUT.add(dome,'sky');
   dome.onBeforeRender=(r,s,c)=>{ dome.position.copy(c.position); dome.scale.setScalar(c.isOrthographicCamera?Math.max(1,(c.right-c.left)*1.2/2000):1); dome.updateMatrixWorld(); };
   {
     SKY.sunCover=0; }

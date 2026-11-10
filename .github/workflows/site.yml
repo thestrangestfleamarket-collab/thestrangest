@@ -84,6 +84,7 @@ jobs:
           k spray   'src/159f|src/146-|spray\.cjs'
           k money   'src/159(ba|[ij])|src/101-gems|src/103a|src/140c|worker/door|economy\.cjs'
           k paint   'src/159[g-i]|src/150d|data/characters|paint\.cjs|trade-server\.cjs'
+          k copies  'src/159[gh]|src/141-forage|src/146znz|data/copies|copies\.cjs'
           k bodega80 'src/039-bodega|src/016-street-kit|bodega80s\.cjs'
           k bedroom 'src/150[a-c]|src/150ea|src/059a|bedroom'
           k roomedit 'src/150[c-e]|src/150cz|src/059a|roomedit'
@@ -547,6 +548,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' paint')
         run: node tests/trade-server.cjs
+      - name: Painting copies (the masterworks by band, the guide over the canvas, a copy scored, passed or failed, a painting you own)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' copies')
+        run: node tests/copies.cjs dist/market.html
       - name: The money's server (the bucket, the body's drops, the stalls, the pawn shop)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' money')

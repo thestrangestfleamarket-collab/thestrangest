@@ -244,6 +244,9 @@ One tree pass (more leaves mean more shadow triangles).
   `Home` split, into the art store.
 - [ ] **The painter, not yet tried for real** · P3 · S · look. Pinch to zoom and pen pressure, in VR, the easel showing your latest
   unfinished painting.
+- [x] **Painting copies** (10 Nov 2026) · the masterworks by band, the guide over the canvas, a copy scored; `tests/copies.cjs`.
+- [ ] **Painting copies: the owner's look** · P3 · S · look. The 50 works' order (measured from the pictures: dark plain-ground portraits
+  come out easy, Bruegel and engravings hard), the pass marks (40% to 85%), what a copy is worth; the score is the player's own browser's.
 
 ## Menus, map, HUD and phones
 

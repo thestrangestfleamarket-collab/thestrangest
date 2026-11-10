@@ -114,3 +114,4 @@ const BEES={list:[]}; window.BEES=BEES;
   { NPCS.when('beekeeper',N=>{ const x=N.st.x, z=N.st.z; SOL.up.push([x-.25*T,z-.25*T,x+.25*T,z+.25*T]); }); }
   window.BEEDBG=()=>({hives:S.hives.map(h=>({f:+frames(h).toFixed(2),fl:flowers(h.x,h.z).t,k:kindOf(h,false)})),got:{...S.got},bee:FORAGE.sk('bee'),shown:BEE.count});
 }
+export {BEES};

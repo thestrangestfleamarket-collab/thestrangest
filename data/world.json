@@ -866,6 +866,52 @@
    "x": 315.6,
    "y": -67,
    "hd": 90
+  },
+  {
+   "id": "c7",
+   "model": "police-cruiser-80s",
+   "x": -27.5,
+   "y": -8,
+   "hd": 0
+  },
+  {
+   "id": "c8",
+   "model": "taxi-coupe",
+   "x": -27.5,
+   "y": 4,
+   "hd": 0
+  },
+  {
+   "id": "c9",
+   "model": "taxi-pod",
+   "x": -27.5,
+   "y": 16,
+   "hd": 0
+  },
+  {
+   "id": "c10",
+   "model": "ambulance",
+   "x": -27.5,
+   "y": 29,
+   "hd": 0
+  },
+  {
+   "id": "c11",
+   "model": "police-flier",
+   "x": -29,
+   "y": 44,
+   "hd": 0
+  },
+  {
+   "id": "c12",
+   "model": "submersible",
+   "x": 20,
+   "y": -80,
+   "hd": 180,
+   "moor": [
+    9,
+    45
+   ]
   }
  ],
  "parkPlaces": {

@@ -110,6 +110,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       { const V = __dbg.VIT, h0 = V.hp; V.heal(-1, .05); const lo = V.hp; V.heal(.5); const mid = V.hp; V.heal(1); o.heal = [Math.abs(lo - .05) < 1e-9, Math.abs(mid - .55) < 1e-9, V.hp === 1].join(); V.hp = h0; }
       o.fade = FADE.busy;
       const Bd = SHARED.BOUND, c = __dbg.collide(Bd.x1 + 500, Bd.z1 + 500); o.clamp = c[0] <= Bd.x1 + 1e-6 && c[1] <= Bd.z1 + 1e-6;
+      o.ledges = (__dbg.MAPK.MODS.ledges || []).map(l => (typeof l.tooHigh === 'function' ? '' : '!') + l.lv);
       o.shared = Object.keys(SHARED).length;
       o.lazy = [Object.keys(ROOMS.lazy).length, Object.keys(ROOMS.lazy).filter(k => ROOMS.lazy[k].done)];
       o.queues = BATCH.queues.length;
@@ -206,6 +207,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.heal === 'true,true,true', 'VIT.heal mends up to full and a slow drain stops at its floor (' + r.heal + ')');
     ok(r.fade === 0, 'no fade is left running after the start');
     ok(r.clamp, 'collision keeps you inside the world');
+    ok(r.ledges.includes('up') && r.ledges.every(l => l === 'up' || l === 'down'), 'a ledge too high to step up is one list for every level (MODS.ledges: ' + r.ledges + ')');
     ok(r.queues >= 2, 'the far painting queues are there (bodega ground, park wall): ' + r.queues);
     ok(r.lazy[0] >= 3 && !r.lazy[1].length, 'no inside of a building is built at the start (' + r.lazy[0] + ' insides wait; built: ' + r.lazy[1].join(',') + ')');
     ok(r.offAPI && r.off.length >= 1 && r.off.every(q => q[1] && q[2] && !q[3]), 'insides off the map: each one waits (box, spawn, way out, builder) and none is built at the start (' + r.off.map(q => q[0]).join(',') + ')');

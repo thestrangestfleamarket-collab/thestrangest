@@ -96,3 +96,4 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
   CARLAMPS.src.push(out=>{ for(const L of LANES)for(const C of L.cars){ if(!C.m||!C.m.visible)continue; const d=dimOf(C.model); if(d)out.push({x:C.m.position.x,y:C.m.position.y,z:C.m.position.z,r:C.m.rotation.y,dim:d,fly:!!L.fly,own:!!(MODS.cars&&MODS.cars.own&&MODS.cars.own(C.model)),sp:C.sp}); } });
   TRAFFIC.dbg=()=>({loaded:!!D,light:light(now()),cross:[gx0,gx1],lanes:LANES.map(L=>({dir:L.dir,fly:!!L.fly,z:L.z,stop:xOf(L,L.stop),cars:L.cars.map(C=>({model:C.model,x:xOf(L,((C.u%LC)+LC)%LC),on:(((C.u%LC)+LC)%LC)<SPAN,len:size(C.model)[2]*M1/2,s:+((((C.u%LC)+LC)%LC)/T).toFixed(1),sp:+(C.sp/M0).toFixed(1),shown:!!(C.m&&C.m.visible)}))}))});
 }
+export {TRAFFIC};

@@ -62,6 +62,8 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
   thing). The apartment and dungeon parts weren't reached. Not run by CI (add it to the physx step once it passes).
 
 ## The map and the park
+- [ ] **The falls, the owner's look** · P2 · S · look. Owner, 10 Nov ("1 yes 2 all no name just a spot on map"): try the falls live (swim, the jump rock, the stairs, the rope swing, night); its spot is west of the brook's mouth, not east (no room there).
+- [ ] **The falls' leftovers** · P3 · M · code. Building a cairn on the lip (shared, saved on the server), bats over the pool at night, the falls in the map editor.
 
 - [ ] **The fronts, for his look** · P2 · look. Built 8–9 Nov (the rows modelled, `src/038zc-facades.js`; brick, shopfronts, pet shop
   signs). Left: his look and yes.
@@ -84,6 +86,7 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
 - [x] **"undefined ×16" in the render inspector**, about 129k triangles in the park: find what it is · P1 · S · find. Found 9 Nov (claude/beautiful-einstein-i82dp0): the backdrop park trees, four instanced meshes drawn whole; now drawn by cell.
 - [x] **The street walkers' cost ("dress", 15 ms a frame in the render inspector, 10 Nov)** · P1 · S · code. Their rig step and pose worked out every finger (they have no finger bones), at 120 steps a second; now without fingers, and where they stand checked only when they move.
 - [x] **Far trees drawn when off screen** (10 Nov) · P2 · S · code. The park ring's and the big trees' far shapes were never culled; now culled tree by tree like the rest. The render inspector also counted every piece of a culled batch as drawn (fixed). Cloud trees: none placed yet.
+- [x] **The river drew the whole town a second time** (10 Nov) · P1 · S · code. Its see-through picture now skipped when no water was drawn lately, and drawn with only what is in or by the river.
 - [ ] **The subway station is built and painted at the start** (15 MB): build it on the way down · P2 · M · code.
 - [ ] **The park shop animals**: all 179 download at the start; measure the start on a real connection · P2 · S · check.
 - [ ] **The start-up and frame-time comparison** · P1 · M · check. Never finished (2 Nov, `tests/startprof.cjs`). Redo it on today's main
@@ -196,7 +199,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [x] **The go-kart** · set down in front of you and got in there; a wall at speed throws you out (owner, 10 Nov 2026: "Throw you out"). Left: held, it shows as a little kart in your hands (owner: keep or change?); the Boardwright's wall is archived (the Skate Shop's shelves show it).
 - [ ] **The hover cars and the police flier, for the owner** (10 Nov 2026) · P2 · S · look. Two taxis, the ambulance, the police flier: their shapes against Polyfork's, the shine by day and night, flying them (SPACE, SHIFT), where they park (West St).
 - [ ] **The submersible, for the owner** (10 Nov 2026) · P2 · S · look. How it reads deep in the dark Hudson (its lamps, the hull), where it is moored; it passes through the pirate wreck (no walls for it yet); no dive check in `tests/cars.cjs` (the river is not built at the test's start).
-- [ ] **The lake wreck, for the owner** (10 Nov 2026) · P2 · S · look. Its look under water by day and night, the way in, the hold; the follow camera crowds it in its narrow basin. Still to build of his 9 Nov list: a new captain aboard the airship.
+- [ ] **The lake wreck, for the owner** (10 Nov 2026) · P2 · S · look. Its look under water by day and night, the way in, the hold; the follow camera crowds it in its narrow basin. (The airship's captain built 10 Nov; he can be seen only from far below.)
 - [ ] **The police cruiser, for the owner** (9 Nov 2026) · P2 · S · look. Its shape and paint against real 80s photos, the roof lights by night, the siren and horn by ear, where it is parked (West St); the other six cars have no opening parts yet.
 - [ ] **The cars, in game, for the owner** · P2 · S · look. The insides, the cars 40% bigger next to the buildings, the radio by ear
   (loudness, the muffle outside, the four stations, starting at the shared moment).

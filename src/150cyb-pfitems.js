@@ -2,6 +2,7 @@
 import {THREE} from './003-shx.js';
 import {INSPECT} from './003b-systems.js';
 import {SYS} from './006-map-pre.js';
+import {INSTR} from './146zp-instruments.js';
 const PFI={on:[]}; window.PFI=PFI;
 { const LZ=__LAZY__("data/pfitems.json"), GEO=new Map(), MAT=new THREE.MeshStandardMaterial({vertexColors:true,flatShading:true,roughness:.85}); let D=null, P=null;
   PFI.load=()=>P||(P=LZ().then(j=>{ D=j; for(const f of PFI.on)try{ f(); }catch(e){ console.warn('PFI',e); } }).catch(e=>{ P=null; console.warn('PFI',e); }));
@@ -13,6 +14,8 @@ const PFI={on:[]}; window.PFI=PFI;
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(Pp,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C,3)); g.computeVertexNormals(); g.computeBoundingSphere(); g.userData.keep=true; return g; };
   const geo=k=>{ let g=GEO.get(k); if(!g)GEO.set(k,g=decode(D.m[k])); return g; }; PFI.decode=decode;
   PFI.has=id=>!!key(id);
+  PFI.mesh=id=>{ if(!key(id))return null; const m=new THREE.Mesh(geo(key(id)),LMAT||(LMAT=new THREE.MeshLambertMaterial({vertexColors:true,flatShading:true}))); m.castShadow=m.receiveShadow=true; m.userData.shared=true; return m; }; let LMAT=null;
+  PFI.on.push(()=>INSTR.dressMel(PFI.mesh));
   INSPECT.kinds.unshift({is:id=>!!key(id),make:id=>{ const m=new THREE.Mesh(geo(key(id)),MAT), g=new THREE.Group(); m.castShadow=m.receiveShadow=true; m.userData.shared=true; g.add(m); g.userData.pf=key(id); return g; }});
   SYS.onStart(()=>setTimeout(()=>PFI.load(),3000),'150cyb-pfitems'); }
 export {PFI};

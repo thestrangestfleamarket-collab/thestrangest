@@ -140,6 +140,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [ ] **The bots' goals** · pick. Options given to the owner (9 Nov).
 - [ ] **The owner's nine (9 Nov 2026: "Violin, flute, trumpet, Dances CMU motion-capture library, Painting copies, sign language, juggling, ade animal taming as skill, fossil digs, bar games, implants")** · one pull request each, in this order:
   - [x] **Violin, flute, trumpet** · P2 · L · code. [taking: claude/blissful-goodall-udydlj, 9 Nov]
+  - [ ] **The piano, harp and drums as Polyfork models** · P3 · M · code. Owner, 10 Nov: "Use very realistic instruments models and textures" (his pick: Polyfork); their keys, strings and heads move, so each needs fitting.
   - [ ] **Violin, flute, trumpet, seen live** · look. How each is held and sounds; the tunes are the piano pieces' top line.
   - [ ] **Dances** · P2 · L · code. Learnt by band like songs, from the CMU motion-capture library; performed for tips.
   - [ ] **Painting copies** · P2 · L · code. Copy open-collection masterworks by difficulty; hang or sell them.

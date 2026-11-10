@@ -29,8 +29,7 @@
        "A 48 m pirate ship, broken in two, her black flag still on the mast.",
        "Swim INSIDE: the stern cabin and a hold full of barrels.",
        "SEVEN chests of old coins and gems, full again every day.",
-       "FOUR sharks on guard. They bite!",
-       "Raise the ship's bell with a SALVAGE WINCH: it pays $150."
+       "FOUR sharks on guard. They bite!"
       ]
      ]
     ],
@@ -84,10 +83,6 @@
        [
         "HEADLIGHT",
         "$45"
-       ],
-       [
-        "SALVAGE WINCH",
-        "$120"
        ]
       ]
      ],
@@ -102,8 +97,7 @@
     "kit": {
      "scuba": 1,
      "goggles": 1,
-     "headlight": 1,
-     "winch": 1
+     "headlight": 1
     },
     "wear": [
      "scuba",
@@ -171,10 +165,6 @@
      [
       "pic",
       2
-     ],
-     [
-      "p",
-      "Crab pot: press P facing the water. Come back for the buoy."
      ]
     ],
     [
@@ -206,10 +196,6 @@
         "$1"
        ],
        [
-        "CRAB POT",
-        "$25"
-       ],
-       [
         "CARBON ROD",
         "$60"
        ],
@@ -237,8 +223,7 @@
     "spot": "pier",
     "kit": {
      "rod": 1,
-     "bait_cut": 10,
-     "crabpot": 1
+     "bait_cut": 10
     },
     "hold": "rod",
     "R": 60

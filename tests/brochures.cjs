@@ -40,10 +40,10 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   // START the wreck: in the water by the ship, the scuba set on; the gems' loan goes back first
   await pg.evaluate(() => BROCH.start('wreck')); await wait(() => BROCH.loan() && BROCH.loan().id === 'wreck', null, 120000); await pg.waitForTimeout(3000);
   const w = await pg.evaluate(() => { const [x, z] = WRECK.at, p = __dbg.pos(); return { d: +(Math.hypot(p[0] - x, p[2] - z) / __dbg.cv().TILE).toFixed(1), swim: !!RIVER.swim, worn: Object.values(EQUIP.by), wheel: FORAGE.has('gem_wheel') || 0, kit: BROCH.loan().kit }; });
-  ok(w.d < 12 && w.swim && ['scuba', 'goggles', 'headlight'].every(k => w.worn.includes(k)) && !w.wheel && w.kit.winch === 1, 'START the wreck: in the water by the ship, dressed to dive, the last loan given back: ' + JSON.stringify(w));
+  ok(w.d < 12 && w.swim && ['scuba', 'goggles', 'headlight'].every(k => w.worn.includes(k)) && !w.wheel && w.kit.scuba === 1 && !w.kit.winch, 'START the wreck: in the water by the ship, dressed to dive, the last loan given back: ' + JSON.stringify(w));
   // walk off (the bodega, far away): the loan goes back
   await pg.evaluate(() => __dbg.UI.goName('THE BODEGA')); await wait(() => !BROCH.loan(), null, 60000);
-  const r = await pg.evaluate(() => ({ loan: BROCH.loan(), worn: Object.values(EQUIP.by), has: ['scuba', 'goggles', 'headlight', 'winch'].map(k => FORAGE.has(k) || 0) }));
+  const r = await pg.evaluate(() => ({ loan: BROCH.loan(), worn: Object.values(EQUIP.by), has: ['scuba', 'goggles', 'headlight'].map(k => FORAGE.has(k) || 0) }));
   ok(!r.loan && !r.worn.includes('scuba') && r.has.every(n => !n), 'leave, and the loaned gear goes back: ' + JSON.stringify(r));
   const f = await pg.evaluate(() => { INV.cash = 100; for (const id of BROCH.ids) { FORAGE.take('bq_' + id, FORAGE.has('bq_' + id) || 0); } for (const id of BROCH.ids) BROCH.buy(id); const a = { cash: INV.cash, paid: BROCH.paid(), got: BROCHDBG().got };
     FORAGE.take('bq_fish', 1); BROCH.buy('fish'); a.again = INV.cash; return a; });

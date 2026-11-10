@@ -14,7 +14,7 @@ const HUDSON={}; window.HUDSON=HUDSON;
   const day=()=>window.MAIL&&MAIL.ready?MAIL.day():CITY?CITY.day||0:0, done=k=>{ INV.picked[k]=day(); INV.save(); };
   const S={v:1,book:0,read:0,tries:0,dug:0,digs:0,best:0,medal:0,spook:-1,bell:0,safe:{d:-1,n:0}};
   try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1&&!(QS.get('fresh')&&QS.get('keepinv')!=='1'))Object.assign(S,D); }catch(e){} const save=()=>OWNED.set(KEY,JSON.stringify(S)); HUDSON.S=S;
-  const str=()=>FORAGE.ST.str*(FORAGE.S.fx&&FORAGE.S.fx.str?1.5:1), int=()=>FORAGE.ST.int;
+  const str=()=>FORAGE.ST.str*FORAGE.fxv('str',1), int=()=>FORAGE.ST.int;
   const air=s=>{ if(EQUIP.breathe&&SWIM.tankS>0)SWIM.tankS=Math.max(0,SWIM.tankS-s); else VIT.air=Math.max(0,VIT.air-s); };   // heaving and cranking under water costs breath
   const sy=HUDSON.sy=()=>st.water&&st.water.in&&st.water.level!=null?st.water.y*ZU:SHARED.py;   // your height, a swimmer's own
   const bedY=(x,z)=>RIVER.box.lv-RIVER.depthAt(x,z)*MW, d2=(o,x,z)=>Math.hypot(o.x-x,o.z-z);

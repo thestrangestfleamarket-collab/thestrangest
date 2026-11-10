@@ -43,7 +43,9 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const P = () => pg.evaluate(() => { const d = CARX.dbg(); return { st: d.cars.c7, parts: d.parts }; }), p0 = await P();
   ok(p0.parts.length >= 1 && Object.keys(p0.parts[0].open).length === 6 && p0.parts[0].marks === 4 && p0.st.b === 0, 'the cruiser is made with six parts on hinges its shields and blank plates (no words): ' + JSON.stringify(p0.parts[0]));
   const things = await pg.evaluate(() => __dbg.UI.things.filter(t => t.car && t.car.id === 'c7').map(t => t.name));
-  await pg.evaluate(() => { const t = __dbg.UI.things.find(t => t.car && t.car.id === 'c7' && t.name === 'TRUNK'); t.act(); ONLINE.feed({ t: 'world', k: 'cst:c7', v: (CARX.parts.bits(CARS.cars.get('c7')) | 64 | 4) + '.3' }); }); await pg.waitForTimeout(2500); const p1 = await P();
+  await pg.evaluate(() => { const t = __dbg.UI.things.find(t => t.car && t.car.id === 'c7' && t.name === 'TRUNK'); t.act(); ONLINE.feed({ t: 'world', k: 'cst:c7', v: (CARX.parts.bits(CARS.cars.get('c7')) | 64 | 4) + '.3' }); });
+  await pg.waitForFunction(() => { const o = CARX.dbg().parts[0].open; return o.TRUNK > .9 && o['DOOR RL'] > .9; }, null, { timeout: 10000, polling: 200 }).catch(() => {});   // (the lid swings at its own pace: a slow machine draws fewer frames)
+  const p1 = await P();
   ok(things.length === 6 && things.includes('DRIVER\'S DOOR') && p1.st.b === 84 && p1.st.h === 3 && p1.parts[0].open.TRUNK > .9 && p1.parts[0].open['DOOR RL'] > .9 && p1.parts[0].open.HOOD === 0 && p1.parts[0].bar, 'double-clicking the trunk opens it; what another player does (a door, the roof lights) shows on the parked car: ' + JSON.stringify({ things, p1 }));
   await pg.evaluate(() => __dbg.UI.things.find(t => t.car && t.car.id === 'c7' && t.name === 'DRIVER\'S DOOR').act()); await pg.waitForTimeout(1800);
   const h0 = await pg.evaluate(() => ({ driving: CARS.dbg().driving, st: CARX.dbg().cars.c7, hud: document.getElementById('carhud').innerText.replace(/\s+/g, ' ') }));

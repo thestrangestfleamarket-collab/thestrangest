@@ -92,8 +92,8 @@ jobs:
           k bank    'src/059h|src/058-store|src/161-perf|bank'
           k art     'src/059p-art|data/art|art\.cjs'
           k weplay  'src/099-|src/136b|weplayers\.cjs'
-          k cars    'src/150p-cars|src/150o-physmore|src/146i-ride|data/cars|data/radio|cars\.cjs|radio\.cjs'
-          k heli    'src/150pa-heli|src/146i-ride|src/068a-pfrow|data/heli|heli\.cjs'
+          k cars    'src/150p-cars|src/150pe-carparts|src/150o-physmore|src/146i-ride|data/cars|data/radio|cars\.cjs|radio\.cjs'
+          k heli    'src/150pa-heli|src/150o-physmore|src/146i-ride|src/068a-pfrow|data/heli|heli\.cjs'
           k water   'src/065a|src/066-|src/060a|src/089a|src/141f|water'
           k scores  'src/059g|arcade-scores'
           k arcade  'src/059[b,g-o]|arcade-torch|arcade-petri'
@@ -117,6 +117,7 @@ jobs:
           k visit   'src/150d|src/059a|visit\.cjs'
           k aptfixed 'src/150a|src/150d|src/150f|src/150k|aptfixed\.cjs'
           k aptradio 'src/150fb|src/150a|src/150d|data/radio|aptradio\.cjs'
+          k crt     'src/150fa|src/150a|src/150d|data/tv\.json|crt\.cjs'
           k sound   'src/091-sfx|src/093-|src/100-use|src/146zo-|sound\.cjs'
           k clock   'src/134b|worker/clock|clock\.cjs'
           k westst  'src/023|src/05[89]-|src/059[e-h]|westst'
@@ -395,6 +396,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' aptradio')
         run: node tests/aptradio.cjs dist/market.html
+      - name: The CRT TV (its panel, THE GUIDE plays a pick, shared with the room, kept in the layout, close up and full screen)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' crt')
+        run: node tests/crt.cjs dist/market.html
       - name: The sound (on by default, one audio context and volume, every effect plays)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' sound')

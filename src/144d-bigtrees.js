@@ -58,7 +58,7 @@ PARK.climbable=[];
     const tubeAt=(i,a,b,r)=>{ D.set(b[0]-a[0],b[1]-a[1],b[2]-a[2]); const L_=D.length(); q.setFromUnitVectors(UP,D.normalize()); FT.setMatrixAt(i,m4.compose(v.set(a[0],a[1],a[2]),q,s.set(r,L_,r))); q.identity(); };
     items.forEach((it,i)=>{ it.T0=[[it.x,it.y-.5*T,it.z],[it.x,it.top,it.z],it.tr*1.15]; const lb=it.lb, b0=lb[0]; let e=0; while(e+1<lb.length&&lb[e+1][0]===lb[e][3]&&lb[e+1][2]===lb[e][5])e++; const be=lb[e];   // (the big branch: its segments come first, end to end)
       it.T1=[[b0[0],b0[1],b0[2]],[be[3],be[4],be[5]],b0[6]]; tubeAt(i*2,...it.T0); tubeAt(i*2+1,...it.T1); });
-    for(const M_ of [FL,FT]){ M_.castShadow=M_===FT; M_.receiveShadow=true; M_.frustumCulled=false; g.add(M_); } PARK.bigFar=FL;
+    for(const M_ of [FL,FT]){ M_.castShadow=M_===FT; M_.receiveShadow=true; M_.frustumCulled=false; M_.userData.pieceCull=1; g.add(M_); } PARK.bigFar=FL;
     // which trees are near: whole within NEAR tiles of the eye (along the ground), their plain shapes away; the rest the other way round
     const NEAR=45*T, Z=new THREE.Matrix4().makeScale(0,0,0); let tk=0;
     const swap=(it,i,near)=>{ it.near=near; it.mesh.visible=it.leaves.visible=near;

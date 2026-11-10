@@ -119,6 +119,7 @@ export default {
         return json({ ok: await homeOf(env).put(id, t) }); }
       // what you own (cash, pack, skills, logs...): one copy a player, read at the start, written back key by key
       if (p === "/owned") { if (body.put === undefined) { const H = homeOf(env), [owned, no, name] = await Promise.all([H.ownedGet(id), H.passport(id), H.nameGet(id)]); return json({ owned, me: { ...meOf(request, id), no, name } }); }
+        if (body.kit !== undefined) { if (await owner(env, id, dev) !== true) return json({ why: "owners only" }, 403); await homeOf(env).econAllow(id, 0, Math.min(20000, Math.max(0, Math.floor(+body.kit || 0))), "owners' kit"); return json({ ok: true }); }   // an owner's own kit, each start (141-forage)
         const put = body.put; if (!put || typeof put !== "object" || Array.isArray(put)) return json({ why: "bad save" }, 400);
         const ks = Object.keys(put); if (ks.length > 80 || ks.some(k => !/^[a-z0-9_.-]{1,40}$/i.test(k) || (put[k] !== null && (typeof put[k] !== "string" || put[k].length > 262144)))) return json({ why: "bad save" }, 400);
         if (tooMany("owned:" + id, 120)) return json({ why: "too many saves, wait a minute" }, 429);

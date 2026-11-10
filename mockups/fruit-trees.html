@@ -1,0 +1,289 @@
+<title>Growable Fruit Trees</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* layout: one long column like the other mockups: the tree's life on top, then where, how fast, the real rules, every tree, and the questions */
+:root{--bg:#1c1915;--panel:#15130f;--sky:#0f0d0b;--line:#3a342a;--fg:#e8e2cc;--dim:#9a927c;--gold:#e0b060;--leaf:#9fe07f;--warn:#ffb07a;--blue:#8ac8ff;--mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,"Liberation Mono",monospace;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:14px/1.45 var(--mono)}
+.w{max-width:1240px;margin:0 auto;padding-block:16px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1{font-size:20px;margin:4px 0 2px;letter-spacing:2px;text-wrap:balance}
+h2{font-size:15px;margin:26px 0 8px;color:var(--gold);letter-spacing:1px;text-wrap:balance}
+h3{margin:0 0 4px;font-size:13px;letter-spacing:.5px}
+.dim{color:var(--dim)}.q{color:var(--gold)}.ok{color:var(--leaf)}.wn{color:var(--warn)}
+p{max-width:75ch;margin:6px 0}
+.box{border:1px solid var(--line);padding:10px 12px;background:var(--panel);min-width:0}
+.g3{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}
+.box ul{margin:4px 0;padding-left:16px}.box li{margin:2px 0}
+.scene{width:100%;height:auto;display:block;background:var(--sky);border:1px solid var(--line);margin-bottom:8px}
+.stages{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px}
+.st{flex:0 0 150px;border:1px solid var(--line);background:var(--panel);padding:6px}
+.st svg{width:100%;height:auto;display:block;background:var(--sky)}
+.st b{display:block;font-size:12px;margin-top:4px;color:var(--gold);letter-spacing:.5px}
+.st span{font-size:11.5px;color:var(--dim);display:block}
+.lifehead{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:baseline;margin-bottom:8px}
+.lifehead h3{font-size:16px;color:var(--leaf)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 12px}
+.chip{font:12px var(--mono);letter-spacing:.5px;background:var(--panel);color:var(--fg);border:1px solid var(--line);padding:5px 9px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--gold);color:#1c1915;border-color:var(--gold)}
+.chip:focus-visible,.card:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(228px,1fr));gap:10px}
+.card{border:1px solid var(--line);background:var(--panel);padding:8px;cursor:pointer;display:flex;flex-direction:column;gap:5px;min-width:0;text-align:left;color:var(--fg);font:inherit}
+.card:hover{border-color:var(--gold)}.card.sel{border-color:var(--leaf)}
+.card svg{width:100%;height:130px;display:block;background:var(--sky)}
+.card .nm{font-weight:bold;letter-spacing:.5px}
+.card .gr{font-size:11px;color:var(--dim);letter-spacing:1px}
+.mo{display:grid;grid-template-columns:repeat(12,1fr);gap:2px}
+.mo i{font-style:normal;font-size:9px;text-align:center;padding:1px 0;background:#26221b;color:#6a6252}
+.mo i.on{background:#6a8a3a;color:#f0f0d0}.mo i.sap{background:#8a6a3a;color:#f0e8d0}
+.facts{font-size:12px;display:grid;grid-template-columns:auto 1fr;gap:1px 8px}
+.facts dt{color:var(--dim)}.facts dd{margin:0}
+.x{font-size:12px;color:#cfc6a8;border-top:1px dashed var(--line);padding-top:5px}
+table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{color:var(--gold);font-weight:normal;letter-spacing:.5px;background:var(--panel)}
+.tw{overflow-x:auto}
+ol li{margin:6px 0;max-width:95ch}
+.now{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12.5px}
+@media (prefers-reduced-motion:no-preference){.card{transition:border-color .15s}}
+</style>
+<div class="w">
+<h1>GROWABLE TREES</h1>
+<div class="dim">Mockup. Real trees you plant, look after and pick from. Every tree, timing, season and rule here is the real one; New York is USDA zone 7b, so a tree marked zone 8 or warmer lives in a pot and comes indoors for winter. Click any tree further down to see its life at the top.</div>
+
+<h2>A TREE'S LIFE</h2>
+<div class="lifehead"><h3 id="lifeName">APPLE</h3><span class="dim" id="lifeSub"></span></div>
+<div class="stages" id="stages"></div>
+
+<h2>WHERE THEY GROW (PICK ONE OR A MIX)</h2>
+<div class="g3">
+<div class="box"><h3 class="q">A. YOUR APARTMENT</h3><svg class="scene" viewBox="0 0 400 220" id="scA"></svg>
+<ul><li>Big pots by the window, the way the clay pots work now (146s/150h).</li><li>Dwarf and warm trees: lemon, lime, kumquat, fig, olive, coffee, cacao, dwarf apple.</li><li>Room for 3–6. Only you pick.</li></ul></div>
+<div class="box"><h3 class="q">B. A PLOT IN THE PARK ORCHARD</h3><svg class="scene" viewBox="0 0 400 220" id="scB"></svg>
+<ul><li>A walled orchard near the farm, like the Lost Orchard, split into plots.</li><li>Each player gets one plot with room for about 4 trees, in the ground and full size.</li><li>Neighbours' trees pollinate yours. Others can walk through but only you pick.</li></ul></div>
+<div class="box"><h3 class="q">C. ANYWHERE</h3><svg class="scene" viewBox="0 0 400 220" id="scC"></svg>
+<ul><li>Street tree pits, the park's open ground, rooftops.</li><li>Anyone can pick, like New York's real mulberries and serviceberries.</li><li>The most to save and draw. Trees can crowd the street.</li></ul></div>
+</div>
+
+<h2>HOW FAST THEY GROW</h2>
+<div class="tw"><table id="speed"></table></div>
+
+<h2>THE REAL RULES (EACH ONE CAN BE ON OR OFF)</h2>
+<div class="g3">
+<div class="box"><h3 class="ok">POLLINATION</h3><p>Apples, sweet cherries, pears, pecans, chestnuts, hazels and pawpaws need a second tree of another kind nearby. Pistachio, date, papaya, ginkgo and American persimmon need a male and a female. Bees and wind carry the pollen; pawpaws use flies.</p></div>
+<div class="box"><h3 class="ok">PIPS DON'T COME TRUE</h3><p>A seed from an apple, pear, avocado or mango grows a random new tree that may fruit badly, or only after ten years. A named kind is a grafted sapling (bought). That makes every pip a lottery, and a good one is worth grafting.</p></div>
+<div class="box"><h3 class="ok">FROST AND WINTER</h3><p>Zone 7 or colder trees live outside. A fig makes it through winter wrapped in burlap with a bucket on top, as Brooklyn's old Italian gardens do. Citrus and tropicals come in, or die on the first hard frost. A late frost on early blossom (apricot, almond) loses that year's crop.</p></div>
+<div class="box"><h3 class="ok">BIRDS, SQUIRRELS, WASPS</h3><p>Birds take ripe cherries and serviceberries, and the park's squirrels take nuts. Fruit left on the ground rots and brings wasps. A net or a quick pick saves it.</p></div>
+<div class="box"><h3 class="ok">THINNING AND PRUNING</h3><p>Leave every peach on and the branch snaps. You thin to one per hand-width. Prune in winter while the tree is bare, and you get a bigger crop next year.</p></div>
+<div class="box"><h3 class="ok">NEIGHBOURS</h3><p>Black walnut roots poison tomatoes and most plants under them (juglone). Linden and fruit blossom feed bees. A tree shades the plot beside it.</p></div>
+</div>
+
+<h2>WHAT YOU DO WITH IT</h2>
+<div class="g3">
+<div class="box"><h3>NOW (SYSTEMS THAT EXIST)</h3><ul><li><b>Eat</b> it: hunger and health (VIT).</li><li><b>Sell</b> it: the Tomato's shop already buys what pots grow.</li><li><b>Give or trade</b> it to other players.</li><li><b>Plant</b> its pit or nut.</li><li><b>Climb</b> the tree for the top fruit (tree climbing exists).</li><li>Cut a dead tree for <b>firewood</b> (the fire).</li></ul></div>
+<div class="box"><h3>NEEDS A PLACE (THE KITCHEN IS ARCHIVED)</h3><ul><li>A cider press: apple and pear juice, cider, perry.</li><li>An olive press: oil.</li><li>A sugar shack: boil maple and birch sap to syrup (40 to 1, 100 to 1).</li><li>Drying racks: prunes, dried apricots, figs, dates.</li><li>Cacao and coffee: ferment, dry and roast the beans.</li></ul></div>
+<div class="box"><h3>COST</h3><ul><li>One tree is about 300–600 triangles, and its fruit is one instanced mesh. Far trees use the park's tree cards.</li><li>Only trees near you are drawn.</li><li>Each tree is one small server row (kind, owner, spot, planted, last watered, last picked), so everyone sees the same tree.</li></ul></div>
+</div>
+
+<h2>IN SEASON NOW (<span id="nowMonth"></span>)</h2>
+<div class="now" id="nowList"></div>
+
+<h2>EVERY TREE (<span id="count"></span>)</h2>
+<div class="chips" id="chips"></div>
+<div class="cards" id="cards"></div>
+
+<h2>TO DECIDE</h2>
+<ol>
+<li><b>Where:</b> A your apartment, B a plot in a park orchard, C anywhere, or a mix. <span class="q">Recommended: A + B. Warm trees in pots at home, hardy ones in your plot.</span></li>
+<li><b>How fast:</b> 1 real time, 2 one real day per tree year with fruit in its real months, or 3 each tree's own short year. <span class="q">Recommended: 2, because the season system and the real calendar exist already, and pots at home cover the winter.</span></li>
+<li><b>Which trees:</b> all of them, or a first set (apple, pear, peach, cherry, plum, fig, mulberry, lemon, orange, walnut, chestnut, maple), with the rest later.</li>
+<li><b>Which real rules:</b> pollination, random pips and grafting, frost and winter, birds and squirrels, thinning, neighbours.</li>
+<li><b>Making things:</b> a cider press, olive press and sugar shack (where?), or only eat and sell for now.</li>
+<li><b>Who picks:</b> only the owner, the owner and friends, or anyone.</li>
+<li><b>Where saplings come from:</b> the Radish (it already sells pots and seeds) or a new nursery stall.</li>
+</ol>
+</div>
+<script>
+const MN=['J','F','M','A','M','J','J','A','S','O','N','D'], MONTH=['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+const ALL=[1,2,3,4,5,6,7,8,9,10,11,12];
+// n name, g group, c crown, l leaf, f fruit, fs fruit size, fl flower, y years to first fruit, m months picked, z coldest USDA zone, p pollination, ev evergreen
+const T=[
+{n:'APPLE',g:'POME',c:'round',l:'#4f7f3a',f:'#c8321e',fs:1,fl:'#f6d8de',y:'2–5',m:[8,9,10],z:3,p:'two',u:'Eat, pie, sauce, cider, juice',x:'Seeds don\'t come true: every named apple is grafted. The tree needs a second apple or a crabapple near it.'},
+{n:'PEAR',g:'POME',c:'pyramid',l:'#4a7a36',f:'#b8c050',fs:1.1,fl:'#f4f0ea',y:'3–6',m:[8,9,10],z:4,p:'two',u:'Eat, perry, poached',x:'Picked hard and ripened off the tree. Left on, they go mealy at the core.'},
+{n:'ASIAN PEAR',g:'POME',c:'round',l:'#4a7a36',f:'#d0a050',fs:1.1,fl:'#f4f0ea',y:'3–5',m:[8,9],z:5,p:'two',u:'Eat crisp like an apple',x:'Ripens on the tree, unlike a European pear. Each one is often wrapped in a paper bag on the branch.'},
+{n:'QUINCE',g:'POME',c:'spread',l:'#5a8a40',f:'#e0c840',fs:1.3,fl:'#f8d8e0',y:'4–6',m:[10],z:5,p:'self',u:'Jam, membrillo, perfume a room',x:'Rock hard and sour raw, it turns pink when it\'s cooked long. One in a bowl scents the whole room.'},
+{n:'MEDLAR',g:'POME',c:'spread',l:'#4f7a38',f:'#8a5a32',fs:.9,fl:'#f4f0ea',y:'3–4',m:[10,11],z:5,p:'self',u:'Eat bletted, jelly',x:'Eaten "bletted": picked hard, then left until soft and brown inside, when it tastes like apple butter.'},
+{n:'CRABAPPLE',g:'POME',c:'round',l:'#4a6a34',f:'#c03040',fs:.45,fl:'#f0a0b8',y:'2–4',m:[9,10],z:3,p:'self',u:'Jelly, pollinates every apple near it',x:'Too sour to eat, but full of pectin, so its jelly sets. Orchards plant one among the apples just for pollen.'},
+{n:'LOQUAT',g:'POME',c:'round',l:'#3e6a30',f:'#f0a030',fs:.6,fl:'#f6f0e0',y:'3–5',m:[4,5],z:8,p:'self',ev:1,u:'Eat, jam',x:'Flowers in autumn and fruits in spring, the opposite of almost every other tree.'},
+{n:'PEACH',g:'STONE',c:'vase',l:'#5a8a3a',f:'#f0905a',fs:1,fl:'#f4a0b8',y:'2–4',m:[7,8],z:5,p:'self',u:'Eat, cobbler, preserves',x:'Thin the young fruit to one every hand-width, or the branches snap under them.'},
+{n:'NECTARINE',g:'STONE',c:'vase',l:'#5a8a3a',f:'#d84a3a',fs:1,fl:'#f4a0b8',y:'2–4',m:[7,8],z:5,p:'self',u:'Eat, preserves',x:'A peach with one gene changed, so it has no fuzz. Peach trees sometimes grow a nectarine on their own.'},
+{n:'APRICOT',g:'STONE',c:'vase',l:'#5a8a3a',f:'#f0a040',fs:.8,fl:'#f8e0e8',y:'3–4',m:[6,7],z:5,p:'self',u:'Eat, dried apricots, jam',x:'Blooms very early. One late frost kills the blossom and the whole year\'s crop.'},
+{n:'SWEET CHERRY',g:'STONE',c:'round',l:'#4a7a34',f:'#8a1020',fs:.4,fl:'#f8f4f4',y:'4–7',m:[6,7],z:5,p:'two',hs:1.1,u:'Eat',x:'Most kinds need a second cherry. Birds take half the crop, and rain on ripe cherries splits them.'},
+{n:'SOUR CHERRY',g:'STONE',c:'round',l:'#4a7a34',f:'#d02030',fs:.4,fl:'#f8f4f4',y:'3–5',m:[6,7],z:4,p:'self',hs:.8,u:'Pie, jam, dried',x:'The pie cherry: too sour to eat from the tree, but self-fertile and hardy.'},
+{n:'GREENGAGE PLUM',g:'STONE',c:'round',l:'#4f7f3a',f:'#9ac048',fs:.7,fl:'#f8f8f0',y:'3–6',m:[8,9],z:5,p:'self',u:'Eat, jam',x:'The sweetest plum, green even when ripe. It is in the Lost Orchard already.'},
+{n:'EUROPEAN PLUM',g:'STONE',c:'round',l:'#4f7f3a',f:'#6a3a7a',fs:.7,fl:'#f8f8f0',y:'3–6',m:[8,9],z:4,p:'self',u:'Eat, prunes, plum brandy',x:'Prunes are this plum dried. Its stone comes away clean from the flesh.'},
+{n:'MANGO',g:'STONE',c:'round',l:'#2e5a2a',f:'#f0a030',fs:1.3,fl:'#e8d8a0',y:'3–5',m:[5,6,7,8,9],z:10,p:'self',ev:1,hs:1.1,u:'Eat, chutney, lassi',x:'A mango grown from its stone may never fruit well. A grafted tree fruits in 3 to 5 years.'},
+{n:'MEYER LEMON',g:'CITRUS',c:'shrub',l:'#2e6a2e',f:'#f0e040',fs:.9,fl:'#ffffff',y:'2–3',m:[12,1,2,3],z:9,p:'self',ev:1,u:'Lemonade, zest, curd',x:'Flowers and fruits at the same time. In bloom it scents the whole room.'},
+{n:'KEY LIME',g:'CITRUS',c:'shrub',l:'#2e6a2e',f:'#9ac040',fs:.5,fl:'#ffffff',y:'2–3',m:[6,7,8,9,10],z:10,p:'self',ev:1,u:'Juice, key lime pie',x:'Thorny. It turns yellow when fully ripe and is usually picked green.'},
+{n:'NAVEL ORANGE',g:'CITRUS',c:'round',l:'#2a5e2a',f:'#f08a20',fs:1,fl:'#ffffff',y:'3–5',m:[11,12,1,2,3],z:9,p:'self',ev:1,u:'Eat, juice',x:'Seedless, from one 1820 mutant tree. Every navel orange is a graft of it. It keeps on the tree for months.'},
+{n:'MANDARIN',g:'CITRUS',c:'round',l:'#2a5e2a',f:'#f07a10',fs:.7,fl:'#ffffff',y:'3–4',m:[11,12,1],z:8,p:'self',ev:1,u:'Eat',x:'The satsuma kind is the hardiest sweet citrus. It survives a light frost.'},
+{n:'GRAPEFRUIT',g:'CITRUS',c:'round',l:'#2a5e2a',f:'#f0b060',fs:1.5,fl:'#ffffff',y:'3–6',m:[11,12,1,2,3],z:9,p:'self',ev:1,hs:1.1,u:'Eat, juice',x:'It grows in clusters like grapes, which is where the name comes from.'},
+{n:'KUMQUAT',g:'CITRUS',c:'shrub',l:'#2e6a2e',f:'#f09020',fs:.35,fl:'#ffffff',y:'2–3',m:[12,1,2,3],z:8,p:'self',ev:1,u:'Eat whole, skin and all; marmalade',x:'Eaten whole: the skin is sweet and the inside is sour.'},
+{n:'YUZU',g:'CITRUS',c:'shrub',l:'#2e6a2e',f:'#e8d030',fs:.7,fl:'#ffffff',y:'3–4',m:[10,11,12],z:7,p:'self',ev:1,u:'Zest, ponzu, juice',x:'The hardiest true citrus. It lives outside in New York, with long thorns.'},
+{n:'ENGLISH WALNUT',g:'NUTS',c:'spread',l:'#4a7a36',f:'#5a7a30',fs:.9,fl:'#c8c890',y:'4–7',m:[9,10],z:5,p:'self',hs:1.15,u:'Nuts, oil, dye from husks',x:'The green husk stains hands black for days. It was used as a brown dye.'},
+{n:'BLACK WALNUT',g:'NUTS',c:'spread',l:'#4a7a36',f:'#4a6a2a',fs:1,fl:'#c8c890',y:'7–10',m:[9,10],z:4,p:'self',hs:1.2,u:'Nuts, prized wood',x:'Its roots release juglone, which kills tomatoes and most plants under it. The shell takes a hammer to crack.'},
+{n:'PECAN',g:'NUTS',c:'round',l:'#4a7a36',f:'#7a5a32',fs:.5,fl:'#c8c890',y:'6–10',m:[10,11],z:6,p:'two',hs:1.25,u:'Nuts, pie',x:'Needs two kinds that shed pollen at different times of day.'},
+{n:'HAZELNUT',g:'NUTS',c:'shrub',l:'#4f7f3a',f:'#a07a40',fs:.45,fl:'#d8c860',y:'3–4',m:[8,9],z:4,p:'two',u:'Nuts, spread, flour',x:'Wind-pollinated. Its catkins open in February, before any leaf.'},
+{n:'CHESTNUT',g:'NUTS',c:'round',l:'#3e6e30',f:'#9aa040',fs:1,fl:'#f0e8b0',y:'3–5',m:[9,10],z:4,p:'two',hs:1.2,u:'Roast, flour, stuffing',x:'The nuts sit in a spiky husk. New York\'s street carts roast them all winter.'},
+{n:'ALMOND',g:'NUTS',c:'vase',l:'#5a8a3a',f:'#8a9a5a',fs:.6,fl:'#f8e0ea',y:'3–4',m:[8,9],z:7,p:'two',u:'Nuts, milk, marzipan',x:'One of the first trees to flower, in February. It is a cousin of the peach, eaten for its stone.'},
+{n:'PISTACHIO',g:'NUTS',c:'spread',l:'#6a8a50',f:'#c8a0a0',fs:.4,fl:'#a08060',y:'5–8',m:[9],z:7,p:'mf',u:'Nuts',x:'One male tree pollinates up to ten females. The shell splits open by itself when the nut is ripe.'},
+{n:'WHITE OAK',g:'NUTS',c:'round',l:'#3e6a30',f:'#8a6a3a',fs:.4,fl:'#c8c890',y:'20–50',m:[9,10],z:3,p:'self',hs:1.3,u:'Acorn flour (leached), squirrels, wood',x:'Acorns are bitter until soaked to wash the tannin out. The park\'s squirrels already bury them.'},
+{n:'GINKGO',g:'NUTS',c:'pyramid',l:'#7a9a3a',f:'#e0c060',fs:.5,fl:'#c8c890',y:'20+',m:[10,11],z:3,p:'mf',hs:1.2,u:'Roasted nuts',x:'A real New York street tree. The female\'s fallen fruit smells of rancid butter every October. The nut inside is a delicacy.'},
+{n:'FIG',g:'MORE TEMPERATE',c:'spread',l:'#4a7a36',f:'#6a3a5a',fs:.8,fl:'#4a7a36',y:'2–3',m:[7,8,9],z:7,p:'self',wrap:1,hs:.75,u:'Eat, dried, jam',x:'Wrapped in burlap and a bucket every winter, as in Brooklyn\'s old Italian backyards. The flower is inside the fruit.'},
+{n:'MULBERRY',g:'MORE TEMPERATE',c:'round',l:'#4f7f3a',f:'#3a1a3a',fs:.4,fl:'#c8d890',y:'2–3',m:[6,7],z:4,p:'self',u:'Eat, jam; leaves feed silkworms',x:'It stains every sidewalk under it purple in June. Silkworms eat nothing but its leaves.'},
+{n:'SERVICEBERRY',g:'MORE TEMPERATE',c:'vase',l:'#4a7a3a',f:'#5a2a6a',fs:.35,fl:'#ffffff',y:'2–4',m:[6],z:4,p:'self',u:'Eat, pie',x:'A New York street tree, also called juneberry. It is ripe in June, and birds strip it in a day.'},
+{n:'AMERICAN PERSIMMON',g:'MORE TEMPERATE',c:'pyramid',l:'#4a7a36',f:'#e07020',fs:.6,fl:'#f0e8c0',y:'4–6',m:[10,11],z:4,p:'mf',u:'Eat soft, pudding',x:'Puckering until it is soft as jelly, often after frost. It needs a male tree near the female.'},
+{n:'FUYU PERSIMMON',g:'MORE TEMPERATE',c:'round',l:'#4a7a36',f:'#f08020',fs:1.1,fl:'#f0e8c0',y:'3–5',m:[10,11],z:7,p:'self',u:'Eat crisp, dried (hoshigaki)',x:'Fruit hangs like orange lanterns on bare branches after the leaves drop.'},
+{n:'PAWPAW',g:'MORE TEMPERATE',c:'pyramid',l:'#3e6a2e',f:'#8aa040',fs:1.3,fl:'#7a2030',y:'4–8',m:[9],z:5,p:'two',u:'Eat, custard, ice cream',x:'America\'s biggest native fruit. It tastes of banana and mango. Flies pollinate its dark red flowers.'},
+{n:'ELDERBERRY',g:'MORE TEMPERATE',c:'shrub',l:'#4f7f3a',f:'#2a1a3a',fs:.25,fl:'#f8f4e0',y:'2–3',m:[8,9],z:4,p:'self',u:'Syrup, wine; flowers for cordial',x:'Raw berries make you sick, but cooked ones are fine. Its June flowers make elderflower cordial.'},
+{n:'JUJUBE',g:'MORE TEMPERATE',c:'spread',l:'#4a7a36',f:'#8a3020',fs:.5,fl:'#e0e0a0',y:'1–2',m:[9,10],z:6,p:'self',u:'Eat fresh or dried like dates',x:'Fruits the year after it is planted. Crisp like an apple fresh, and like a date dried.'},
+{n:'POMEGRANATE',g:'MORE TEMPERATE',c:'shrub',l:'#4a7a36',f:'#b02030',fs:1.2,fl:'#e04020',y:'2–3',m:[10,11],z:8,p:'self',u:'Eat seeds, juice, molasses',x:'One fruit holds 600 or more juicy seeds.'},
+{n:'OLIVE',g:'MORE TEMPERATE',c:'round',l:'#8a9a78',f:'#3a3a2a',fs:.4,fl:'#f0f0d8',y:'3–5',m:[10,11],z:8,p:'self',ev:1,u:'Cure in brine, press for oil',x:'Too bitter to eat raw. Olives are cured for weeks first. A tree can live 2,000 years.'},
+{n:'AVOCADO',g:'TROPICAL',c:'round',l:'#2e5a2a',f:'#3a5a2a',fs:1.1,fl:'#d8d8a0',y:'3–4',m:[2,3,4,5,6,7,8,9],z:9,p:'self',ev:1,hs:1.15,u:'Eat, guacamole',x:'Ripens only after it is picked, so the tree is its own store for months. A tree grown from a pit takes up to 13 years.'},
+{n:'BANANA',g:'TROPICAL',c:'palm',ban:1,l:'#4a8a3a',f:'#e8d040',fs:.6,fl:'#8a3050',y:'9–12 mo',m:ALL,z:9,p:'self',ev:1,u:'Eat, bread, leaves to wrap food',x:'Not a tree but a giant herb. Each stalk fruits once and is replaced by a pup.'},
+{n:'PAPAYA',g:'TROPICAL',c:'palm',ban:1,l:'#4a8a3a',f:'#f09030',fs:1.1,fl:'#f8f0d0',y:'9–11 mo',m:ALL,z:10,p:'mf',ev:1,u:'Eat, salad (green)',x:'Fruit grows straight from the trunk under the leaves. Some trees are male, some female, some both.'},
+{n:'COCONUT PALM',g:'TROPICAL',c:'palm',l:'#4a7a36',f:'#6a4a2a',fs:1.4,fl:'#e8e0b0',y:'6–10',m:ALL,z:10,p:'self',ev:1,hs:1.2,u:'Water, meat, milk, coir rope',x:'Fruits all year, up to 75 coconuts a year. The husk makes rope and doormats.'},
+{n:'DATE PALM',g:'TROPICAL',c:'palm',l:'#6a8a50',f:'#a0602a',fs:.4,fl:'#e8e0b0',y:'4–8',m:[9,10,11],z:9,p:'mf',ev:1,hs:1.2,u:'Eat, dried, syrup',x:'Pollinated by hand: a strand of male flowers is tied into each female bunch.'},
+{n:'CACAO',g:'TROPICAL',c:'round',cauli:1,l:'#2e5a2a',f:'#c08030',fs:1.2,fl:'#f0e0e0',y:'3–5',m:[10,11,12,1,2,3],z:11,p:'self',ev:1,u:'Ferment, dry, roast: chocolate',x:'Pods grow straight out of the trunk. Tiny midges pollinate it. One pod holds 30 to 50 beans.'},
+{n:'COFFEE',g:'TROPICAL',c:'shrub',l:'#2a5a2a',f:'#c0202a',fs:.35,fl:'#ffffff',y:'3–4',m:[10,11,12,1],z:10,p:'self',ev:1,u:'Dry, roast, grind: coffee',x:'Each red cherry holds two beans. A tree gives about a pound of roasted coffee a year.'},
+{n:'GUAVA',g:'TROPICAL',c:'spread',l:'#3e6a30',f:'#c8d070',fs:.8,fl:'#ffffff',y:'2–4',m:[8,9,10,11,12],z:9,p:'self',ev:1,hs:.85,u:'Eat, paste, juice',x:'Pink or white inside. Guava paste with cheese is a classic Caribbean snack.'},
+{n:'SUGAR MAPLE',g:'USEFUL',c:'round',sap:1,l:'#3e6e30',aut:'#d84a20',f:'#c8a050',fs:.4,fl:'#c8d060',y:'30–40',m:[2,3],z:3,p:'self',hs:1.3,u:'Sap boiled to syrup, wood',x:'Tapped once its trunk is 10 inches thick. Sap runs when nights freeze and days thaw. 40 gallons of sap boil down to 1 of syrup.'},
+{n:'BIRCH',g:'USEFUL',c:'column',sap:1,l:'#6a9a40',f:'#c8a050',fs:.3,fl:'#c8c870',y:'15–20',m:[3,4],z:2,p:'self',hs:1.2,u:'Sap (drink or syrup), bark kindling',x:'Its sap is drunk fresh, or boiled 100 to 1 for syrup. The papery bark lights even when wet.'},
+{n:'TEA',g:'USEFUL',c:'shrub',l:'#2e5e2a',f:'#9ad060',fs:.3,fl:'#ffffff',y:'3',m:[4,5,6,7,8,9],z:7,p:'self',ev:1,u:'Leaves: green, black, oolong tea',x:'Pick "two leaves and a bud". Green, black and oolong tea come from the same leaf, made differently.'},
+{n:'BAY LAUREL',g:'USEFUL',c:'pyramid',l:'#2e5a2a',f:'#4a7a3a',fs:.3,fl:'#e8e0a0',y:'1–2',m:ALL,z:8,p:'self',ev:1,hs:.8,u:'Bay leaves for cooking',x:'Leaves can be picked any day of the year. In old Greece its wreaths crowned winners.'},
+{n:'CINNAMON',g:'USEFUL',c:'shrub',bark:1,l:'#3e6a30',f:'#b0603a',fs:.3,fl:'#f0f0d0',y:'2–3',m:[5,6,7,8,9,10,11],z:10,p:'self',ev:1,u:'Bark curled into sticks',x:'Cut to the ground every couple of years. The inner bark of the new shoots curls into sticks as it dries.'},
+{n:'LINDEN',g:'USEFUL',c:'pyramid',l:'#4f7f3a',f:'#f0e080',fs:.3,fl:'#f0e080',y:'10–15',m:[6,7],z:3,p:'self',hs:1.2,u:'Flower tea, bees\' honey, carving wood',x:'In June the whole tree hums with bees. Its flowers make tea, and its soft wood is the carver\'s favourite.'},
+{n:'CORK OAK',g:'USEFUL',c:'spread',bark:1,l:'#4a6a3a',f:'#b0603a',fs:.3,fl:'#c8c890',y:'25',m:[6,7,8],z:8,p:'self',ev:1,u:'Cork every 9 years',x:'The bark is stripped by hand, first at about 25 years, then every 9. The tree lives on, and the bare trunk glows red.'},
+{n:'BASKET WILLOW',g:'USEFUL',c:'weep',l:'#7a9a50',f:'#b08a40',fs:.3,fl:'#e0e0a0',y:'1',m:[12,1,2],z:4,p:'self',u:'Whips for baskets; bark',x:'Cut back every winter, it grows long whips for weaving. Its bark is where aspirin came from.'}
+];
+const GROUPS=['ALL','POME','STONE','CITRUS','NUTS','MORE TEMPERATE','TROPICAL','USEFUL','OUTSIDE IN NYC'];
+const yn=t=>{ const a=t.y.match(/[\d.]+/g).map(Number), v=(a[0]+(a[1]||a[0]))/2; return /mo/.test(t.y)?v/12:v; };
+const nyc=t=>t.wrap?'OUTSIDE, WRAPPED IN WINTER':t.z<=7?'OUTSIDE':t.z<=9?'IN A POT, INDOORS IN WINTER':'INDOORS ALL YEAR (POT)';
+const PL={self:'ONE TREE IS ENOUGH',two:'NEEDS A SECOND KIND NEAR',mf:'NEEDS A MALE AND A FEMALE'};
+function rnd(s){ let h=2166136261; for(const ch of s)h=Math.imul(h^ch.charCodeAt(0),16777619); return ()=>{ h=Math.imul(h^h>>>15,2246822507); h=Math.imul(h^h>>>13,3266489909); return ((h^=h>>>16)>>>0)/4294967296; }; }
+function shade(hex,k){ const n=parseInt(hex.slice(1),16), f=v=>Math.max(0,Math.min(255,Math.round(k>1?v+(255-v)*(k-1):v*k))); return `rgb(${f(n>>16)},${f(n>>8&255)},${f(n&255)})`; }
+const f1=v=>Math.round(v*10)/10;
+// stage: 0 seed, 1 seedling, 2 sapling, 3 young, 4 blossom, 5 fruit, 6 winter
+function tree(t,st,o={}){
+  const R=rnd(t.n+'|'+st), G=110, out=[], add=s=>out.push(s), pot=t.z>=8&&!o.ground;
+  if(o.ground!==false)add(`<rect x="0" y="${G}" width="100" height="10" fill="#3a2c1e"/>`);
+  const B=pot?G-13:G;
+  if(pot&&st>0){ add(`<path d="M37,${B} L63,${B} L60,${G} L40,${G} Z" fill="#b0603a"/><rect x="35" y="${B-2}" width="30" height="4" fill="#c87048"/>`); }
+  if(st===0){ add(`<ellipse cx="50" cy="${G+1}" rx="16" ry="4" fill="#4a3826"/><ellipse cx="50" cy="${G+4}" rx="${f1(2+t.fs*1.4)}" ry="${f1(1.5+t.fs)}" fill="${t.c==='palm'?'#7a5a34':'#8a6a44'}"/>`); return out.join(''); }
+  if(st===1){ add(`<path d="M50,${B} L50,${B-13}" stroke="#6a8a3a" stroke-width="1.4"/><ellipse cx="45.5" cy="${B-13}" rx="5" ry="2.2" fill="${t.l}" transform="rotate(-25 45.5 ${B-13})"/><ellipse cx="54.5" cy="${B-14}" rx="5" ry="2.2" fill="${t.l}" transform="rotate(25 54.5 ${B-14})"/>`); return out.join(''); }
+  const sc=(t.hs||1)*(pot?.82:1), H=[0,0,36,62,94,94,94][st]*sc*(t.c==='shrub'?.72:1);
+  const bare=(st===6&&!t.ev)||(t.sap&&st===5);
+  const lf=(t.aut&&st===6)?t.aut:t.l, lt=shade(lf,1.22), dk=shade(lf,.7), bark='#5a4232', tw=Math.max(1.4,H*.055);
+  const dots=(n,r,fill,stroke)=>{ for(let i=0;i<n;i++){ const [x,y]=pt(); add(`<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(r)}" fill="${fill}"${stroke?` stroke="${stroke}" stroke-width=".5"`:''}/>`); } };
+  if(t.c==='palm'){
+    const tx=50+(t.ban?0:5), ty=B-H, wd=t.ban?Math.max(2,H*.07):Math.max(1.6,H*.04);
+    add(`<path d="M50,${B} Q${t.ban?50:46},${B-H*.5} ${tx},${f1(ty)}" stroke="${t.ban?'#6a7a3a':bark}" stroke-width="${f1(wd)}" fill="none"/>`);
+    if(!t.ban)for(let i=1;i<6;i++)add(`<path d="M${f1(48+i*.4)},${f1(B-H*i/6)} l${f1(wd)},0" stroke="#3a2a1e" stroke-width=".6"/>`);
+    const fr=[-150,-120,-95,-70,-40,-15,-165,-5];
+    fr.forEach((a,i)=>{ const L=(t.ban?H*.34:H*.42)*(.8+R()*.3), r=a*Math.PI/180, ex=tx+Math.cos(r)*L, ey=ty+Math.sin(r)*L*.55+L*.35;
+      if(t.ban)add(`<ellipse cx="${f1((tx+ex)/2)}" cy="${f1((ty+ey)/2-2)}" rx="${f1(L*.55)}" ry="${f1(L*.13)}" fill="${i%2?lf:dk}" transform="rotate(${f1(Math.atan2(ey-ty,ex-tx)*180/Math.PI)} ${f1((tx+ex)/2)} ${f1((ty+ey)/2-2)})"/>`);
+      else add(`<path d="M${tx},${f1(ty)} Q${f1((tx+ex)/2)},${f1(ty-L*.25)} ${f1(ex)},${f1(ey)}" stroke="${i%2?lf:dk}" stroke-width="${f1(Math.max(1.2,H*.03))}" fill="none"/>`); });
+    if(st===4)for(let i=0;i<7;i++)add(`<circle cx="${f1(tx-4+R()*8)}" cy="${f1(ty+2+R()*6)}" r="${f1(H*.016+.6)}" fill="${t.fl}"/>`);
+    if(st===5||st===6&&t.m.includes(12)){ const r=Math.max(1.2,2.3*Math.sqrt(t.fs)*H/94); for(let i=0;i<(t.fs>1?6:10);i++)add(`<circle cx="${f1(tx-r*2+R()*r*4)}" cy="${f1(ty+r+R()*r*3)}" r="${f1(r)}" fill="${t.f}" stroke="${shade(t.f,.6)}" stroke-width=".5"/>`); }
+    return out.join('');
+  }
+  let cx=50,cy,rx,ry,top;
+  ({round:()=>{cy=B-H*.64;rx=H*.36;ry=H*.33;top=B-H*.48},vase:()=>{cy=B-H*.7;rx=H*.46;ry=H*.25;top=B-H*.4},spread:()=>{cy=B-H*.58;rx=H*.52;ry=H*.3;top=B-H*.34},
+    pyramid:()=>{cy=B-H*.56;rx=H*.3;ry=H*.42;top=B-H*.25},column:()=>{cy=B-H*.6;rx=H*.17;ry=H*.38;top=B-H*.4},shrub:()=>{cy=B-H*.5;rx=H*.5;ry=H*.42;top=B-H*.2},
+    weep:()=>{cy=B-H*.64;rx=H*.42;ry=H*.3;top=B-H*.55}})[t.c]();
+  rx=Math.min(rx,47);
+  function pt(){ for(let k=0;k<60;k++){ const u=R()*2-1, v=R()*2-1; if(u*u+v*v>1)continue;
+    if(t.c==='pyramid'){ const frac=(v+1)/2; if(Math.abs(u)>frac*.95)continue; } return [cx+u*rx*.88, cy+v*ry*.86]; } return [cx,cy]; }
+  // trunk
+  if(t.c==='shrub'){ [-.45,0,.45].forEach(d=>add(`<path d="M${50+d*3},${B} L${f1(50+d*rx*.6)},${f1(cy)}" stroke="${bark}" stroke-width="${f1(tw*.6)}"/>`)); }
+  else{ add(`<path d="M${f1(50-tw/2)},${B} L${f1(50-tw*.3)},${f1(top)} L${f1(50+tw*.3)},${f1(top)} L${f1(50+tw/2)},${B} Z" fill="${t.c==='column'?'#d8d4c8':bark}"/>`);
+    if(t.c==='column')for(let i=0;i<5;i++)add(`<rect x="${f1(50-tw/2)}" y="${f1(B-(i+.5)*(B-top)/5)}" width="${f1(tw*.6)}" height="1" fill="#3a3a3a"/>`);
+    if(t.c==='vase'||t.c==='spread'||bare)[-.6,0,.6].forEach(d=>add(`<path d="M50,${f1(top)} L${f1(cx+d*rx*.7)},${f1(cy+(d?0:-ry*.4))}" stroke="${bark}" stroke-width="${f1(tw*.55)}"/>`)); }
+  if(t.bark&&st===5)add(`<rect x="${f1(50-tw/2)}" y="${f1(top+(B-top)*.25)}" width="${f1(tw)}" height="${f1((B-top)*.6)}" fill="#c0603a"/>`);
+  if(bare){
+    for(let i=0;i<9;i++){ const a=Math.PI*(1.05+R()*.9), r=.6+R()*.4, x=cx+Math.cos(a)*rx*r, y=cy+Math.sin(a)*ry*r*1.1;
+      const sx=cx+(R()-.5)*rx*.5, sy=cy+ry*.2; add(`<path d="M${f1(sx)},${f1(sy)} L${f1(x)},${f1(y)}" stroke="${bark}" stroke-width="${f1(Math.max(.6,tw*.28))}"/>`); }
+    if(t.wrap&&st===6){ const wx=cx-rx*.7, wy=cy-ry*1.05; add(`<rect x="${f1(wx)}" y="${f1(wy)}" width="${f1(rx*1.4)}" height="${f1(B-wy)}" rx="5" fill="#a0804a"/>`);
+      for(let i=1;i<5;i++)add(`<path d="M${f1(wx)},${f1(wy+(B-wy)*i/5)} l${f1(rx*1.4)},2" stroke="#6a5030" stroke-width=".7"/>`);
+      add(`<path d="M${f1(cx-rx*.45)},${f1(wy)} L${f1(cx+rx*.45)},${f1(wy)} L${f1(cx+rx*.35)},${f1(wy-9)} L${f1(cx-rx*.35)},${f1(wy-9)} Z" fill="#8a8a92"/>`); }
+    if(t.sap&&st===5){ const by=B-(B-top)*.55; add(`<path d="M${f1(50+tw/2)},${f1(by-3)} l4,0" stroke="#aaa" stroke-width="1"/><path d="M${f1(50+tw/2+1)},${f1(by-1)} l7,0 l-1,9 l-5,0 Z" fill="#9aa0a8" stroke="#6a7078" stroke-width=".5"/><circle cx="${f1(50+tw/2+4.4)}" cy="${f1(by+1)}" r=".9" fill="#d8b860"/>`); }
+    return out.join('');
+  }
+  // crown
+  if(t.c==='pyramid')add(`<path d="M${cx},${f1(cy-ry*1.1)} L${f1(cx+rx)},${f1(cy+ry)} L${f1(cx-rx)},${f1(cy+ry)} Z" fill="${dk}"/>`);
+  else add(`<ellipse cx="${cx}" cy="${f1(cy)}" rx="${f1(rx)}" ry="${f1(ry)}" fill="${dk}"/>`);
+  for(let i=0;i<7;i++){ const [x,y]=pt(); add(`<circle cx="${f1(x)}" cy="${f1(y)}" r="${f1(Math.min(rx,ry)*(.3+R()*.25))}" fill="${i<5?lf:lt}"/>`); }
+  if(t.c==='weep')for(let i=0;i<14;i++){ const x=cx-rx*.9+i*rx*1.8/13; add(`<path d="M${f1(x)},${f1(cy)} q${f1((R()-.5)*3)},${f1(ry*.8)} ${f1((R()-.5)*2)},${f1(ry*1.4+R()*ry*.4)}" stroke="${i%2?lf:lt}" stroke-width="1.1" fill="none"/>`); }
+  if(st===4)dots(26,.9+H*.012,t.fl);
+  const winterFruit=st===6&&t.ev&&(t.m.includes(12)||t.m.includes(1));
+  if(st===5||winterFruit){ const r=Math.max(1,2.4*Math.sqrt(t.fs)*H/94), n=Math.round(13/Math.sqrt(t.fs));
+    if(t.cauli){ for(let i=0;i<5;i++)add(`<ellipse cx="${f1(50+(i%2?1:-1)*(tw/2+r*.6))}" cy="${f1(B-(B-top)*(.25+i*.15))}" rx="${f1(r*.7)}" ry="${f1(r*1.2)}" fill="${t.f}" stroke="${shade(t.f,.6)}" stroke-width=".5"/>`); }
+    else dots(n,r,t.f,shade(t.f,.6)); }
+  return out.join('');
+}
+const svg=(inner,vb='0 0 100 120')=>`<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" role="img">${inner}</svg>`;
+const byName=n=>T.find(t=>t.n===n);
+const STG=[['SEED / PIT','Plant a pip, a nut, or a grafted sapling bought at the stall.'],['SEEDLING','Water it. Keep frost off it.'],['SAPLING','Stake it and prune it to shape in winter.'],['YOUNG TREE',''],['BLOSSOM',''],['FRUIT',''],['WINTER','']];
+let sel='APPLE';
+function life(){
+  const t=byName(sel); document.getElementById('lifeName').textContent=t.n;
+  document.getElementById('lifeSub').textContent=`${t.g} · first fruit in ${t.y}${/mo/.test(t.y)?'':' years'} · ${nyc(t)} · ${PL[t.p]}`;
+  const txt=[...STG.map(s=>s[1])];
+  txt[3]=`First ${t.sap?'sap':t.c==='palm'||t.n==='TEA'||t.n==='BAY LAUREL'||t.bark?'harvest':'fruit'} after ${t.y}${/mo/.test(t.y)?'':' years'} (real life).`;
+  txt[4]=t.p==='self'?'Bees or wind. One tree is enough.':t.p==='two'?'Needs a second kind in bloom nearby.':'A male tree must flower near the female.';
+  txt[5]=(t.sap?'Tap it: ':'Pick it: ')+t.m.map(m=>MONTH[m-1].slice(0,3)).join(' ')+(t.sap?'.':'. Climb for the top ones.');
+  txt[6]=t.wrap?'Wrap it in burlap with a bucket on top, or it dies back.':t.z>=8?(t.z>=10?'Indoors all year by a sunny window.':'Bring it inside before the first frost.'):t.ev?'Stays green. Rest.':'Bare. Prune now for a bigger crop next year.';
+  const lab=[...STG.map(s=>s[0])]; if(t.sap)lab[5]='SAP RUN'; if(t.bark)lab[5]='HARVEST BARK';
+  document.getElementById('stages').innerHTML=lab.map((l,i)=>`<div class="st">${svg(tree(t,i))}<b>${l}</b><span>${txt[i]}</span></div>`).join('');
+  speed();
+}
+function speed(){
+  const t=byName(sel), y=yn(t), mo=t.m.map(m=>MONTH[m-1].slice(0,3)).join(', ');
+  const d=y<1?Math.max(1,Math.round(y*7))+' real days':(Math.round(y*10)/10)+' real days';
+  const yrs=y<1?Math.round(y*12)+' months':`about ${Math.round(y*10)/10} years`;
+  document.getElementById('speed').innerHTML=`<tr><th></th><th>HOW IT WORKS</th><th>${t.n}: FIRST CROP</th><th>THEN</th><th>GOOD / BAD</th></tr>
+<tr><td class="q">1. REAL TIME</td><td>A tree year is a real year.</td><td>${yrs}</td><td>Once a year, in ${mo}</td><td>True to life. Most players never see fruit.</td></tr>
+<tr><td class="q">2. A DAY A YEAR</td><td>The tree ages a year each real day. Once grown it fruits in its real months by the game's calendar (the season system follows the date already).</td><td>Grown in ${d}, then its first ${mo}</td><td>Once a year, in ${mo}</td><td>Real seasons: something is always in season, and the stalls sell what is ripe. A fresh planting can wait months for its season.</td></tr>
+<tr><td class="q">3. ITS OWN YEAR</td><td>The tree ages a year each real day, and each tree runs its own short year of blossom, fruit and rest in about a week.</td><td>${d}</td><td>Every week or so</td><td>Fruit any time. Seasons mean nothing, and an apple in March looks wrong.</td></tr>`;
+}
+let filt='ALL';
+function cards(){
+  const list=T.filter(t=>filt==='ALL'||(filt==='OUTSIDE IN NYC'?t.z<=7:t.g===filt));
+  document.getElementById('count').textContent=list.length+(filt==='ALL'?' REAL TREES':'');
+  document.getElementById('cards').innerHTML=list.map(t=>`<button class="card${t.n===sel?' sel':''}" data-n="${t.n}" aria-label="Show the life of ${t.n}">
+${svg(tree(t,5))}<div class="nm">${t.n}</div><div class="gr">${t.g}</div>
+<div class="mo">${MN.map((m,i)=>`<i class="${t.m.includes(i+1)?(t.sap?'sap':'on'):''}">${m}</i>`).join('')}</div>
+<dl class="facts"><dt>FIRST CROP</dt><dd>${t.y}${/mo/.test(t.y)?'':' yrs'}</dd><dt>NEW YORK</dt><dd class="${t.z<=7?'ok':'wn'}">${nyc(t)}</dd><dt>POLLEN</dt><dd>${PL[t.p]}</dd><dt>GIVES</dt><dd>${t.u}</dd></dl>
+<div class="x">${t.x}</div></button>`).join('');
+}
+document.getElementById('chips').innerHTML=GROUPS.map(g=>`<button class="chip" aria-pressed="${g===filt}" data-g="${g}">${g}</button>`).join('');
+document.getElementById('chips').addEventListener('click',e=>{ const b=e.target.closest('.chip'); if(!b)return; filt=b.dataset.g; document.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',c===b)); cards(); });
+document.getElementById('cards').addEventListener('click',e=>{ const b=e.target.closest('.card'); if(!b)return; sel=b.dataset.n; life(); cards(); window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'}); });
+// in season now
+const now=new Date().getMonth()+1; document.getElementById('nowMonth').textContent=MONTH[now-1];
+document.getElementById('nowList').innerHTML=T.filter(t=>t.m.includes(now)).map(t=>`<span class="${t.z<=7?'ok':'wn'}">${t.n}</span>`).join('')+'<span class="dim">(green: outside in New York; orange: a pot indoors)</span>';
+// the three scenes
+const nest=(t,st,x,y,w,h)=>`<svg x="${x}" y="${y}" width="${w}" height="${h}" viewBox="0 0 100 120">${tree(t,st,{ground:false})}</svg>`;
+document.getElementById('scA').innerHTML=`<rect width="400" height="220" fill="#3a2e28"/><rect y="178" width="400" height="42" fill="#5a4030"/>
+<rect x="140" y="26" width="120" height="110" fill="#2a3a5a" stroke="#d8d0c0" stroke-width="5"/><path d="M200,26 V136 M140,81 H260" stroke="#d8d0c0" stroke-width="3"/><circle cx="235" cy="50" r="10" fill="#f0e0a0" opacity=".8"/>
+${nest(byName('MEYER LEMON'),5,10,64,110,132)}${nest(byName('FIG'),5,126,70,100,120)}${nest(byName('OLIVE'),5,206,64,100,120)}${nest(byName('COFFEE'),5,290,72,100,120)}
+<text x="10" y="212" fill="#e8e2cc" font-size="11" font-family="monospace">LEMON · FIG · OLIVE · COFFEE, BY THE WINDOW</text>`;
+let b='<rect width="400" height="220" fill="#3e5a2e"/><rect x="0" y="100" width="400" height="20" fill="#b8a888"/>';
+[['YOU',20,10],['MARA',150,10],['DEX',280,10],['JO',20,126],['FOR RENT',150,126],['KIT',280,126]].forEach(([n,x,y],i)=>{ b+=`<rect x="${x}" y="${y}" width="110" height="84" fill="#4a3826" stroke="#c8b080" stroke-width="2" stroke-dasharray="4 2"/>`;
+  if(n!=='FOR RENT')for(let k=0;k<3;k++){ const R=rnd(n+k), tx=x+22+k*33, ty=y+30+(k%2)*24, tt=T[(i*5+k*7)%T.length], c=tt.z<=7?tt.l:'#5a7a3a'; b+=`<circle cx="${tx}" cy="${ty}" r="15" fill="${shade(c,.75)}"/><circle cx="${tx-3}" cy="${ty-3}" r="10" fill="${c}"/>`; for(let j=0;j<5;j++)b+=`<circle cx="${f1(tx-9+R()*18)}" cy="${f1(ty-9+R()*18)}" r="2" fill="${tt.f}"/>`; }
+  b+=`<text x="${x+4}" y="${y+80}" fill="${n==='YOU'?'#e0b060':'#e8e2cc'}" font-size="10" font-family="monospace">${n}</text>`; });
+document.getElementById('scB').innerHTML=b+'<text x="200" y="114" fill="#3a2c1e" font-size="10" text-anchor="middle" font-family="monospace">PATH · FROM ABOVE</text>';
+document.getElementById('scC').innerHTML=`<rect width="400" height="220" fill="#6a3a2e"/>${[0,1,2,3,4,5,6,7].map(i=>`<rect x="${14+i*50}" y="16" width="28" height="40" fill="#2a3a5a"/><rect x="${14+i*50}" y="76" width="28" height="40" fill="#2a3a5a"/>`).join('')}
+<rect y="150" width="400" height="44" fill="#9a968e"/><rect y="194" width="400" height="6" fill="#bdb8ae"/><rect y="200" width="400" height="20" fill="#2e2e32"/>
+${[['MULBERRY',20],['SERVICEBERRY',150],['GINKGO',280]].map(([n,x])=>`<rect x="${x+30}" y="168" width="40" height="8" fill="#4a3826"/>${nest(byName(n),5,x,62,100,120)}`).join('')}
+<text x="10" y="214" fill="#e8e2cc" font-size="11" font-family="monospace">STREET PITS: MULBERRY · SERVICEBERRY · GINKGO</text>`;
+life(); cards();
+</script>

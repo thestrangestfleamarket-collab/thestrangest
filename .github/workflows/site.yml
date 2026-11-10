@@ -133,6 +133,7 @@ jobs:
           k mmo     'src/111d-online|src/111da-motion|src/146h-brawl|src/146i|worker/door|mmo\.cjs|workflows/site'
           k kit     'src/141-forage|src/111fd|src/146i-ride|src/003b|data/items|kit\.cjs|src/136c-tenants'
           k guitar  'src/111b-hands|src/106-game-play-3-guitar|src/108-game-play-3-guitar|src/146zo|src/111a-bodies|src/111c-avatar|data/pfhand|data/pfguitar|worker/door|guitar\.cjs'
+          k instruments 'src/146zp|src/150cyb-pfitems|src/146znz|src/111b-hands|data/pfitems|tools/pfitems|instruments\.cjs'
           k firstday 'src/162g-firstday|src/102-looks|src/141-forage|src/101-gems|worker/door\.js|firstday\.cjs'
           k avatar  'src/111c-avatar|src/111a-bodies|src/102-looks|src/001-rig|src/111da-motion|data/pfavatar|data/pfanim|avatar\.cjs|avatarmoves\.cjs|pfclips\.cjs'
           k wild    'src/087-npc-creatures|src/144[f-h]|src/076-npc-map|wild\.cjs'
@@ -436,6 +437,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' guitar')
         run: node tests/guitar.cjs dist/market.html
+      - name: The instruments (piano, harp, drums, violin, flute, trumpet on their Polyfork models; fingers and sticks land, the trumpet's valves move, their sounds)
+        timeout-minutes: 25
+        if: contains(steps.f.outputs.run, ' instruments')
+        run: node tests/instruments.cjs dist/market.html
       - name: The Polyfork avatar (worn, dressed, clothes hide the body, the look's code, another player's copy)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' avatar')

@@ -6,10 +6,11 @@ const {chromium}=require('playwright'), page=process.argv[2]||'dist/market.html'
   for(let i=0;i<300;i++){ await pg.waitForTimeout(1000); if(await pg.evaluate(()=>!!window.__started&&window.GTOWER&&GTOWER.ready&&window.GUARD&&GUARD.list&&GUARD.list.length).catch(()=>false))break; } await pg.waitForTimeout(6000);
   const R=await pg.evaluate(()=>{ const ids=GTOWER.IDS, at=ids.map(k=>GTOWER.at(k)), T=__dbg.cv().TILE, names=[]; __scene.traverse(o=>{ if(/castle (spires|torches)/.test(o.name))names.push(o.name); });
     const ways=window.LEVELS?LEVELS.ways.find(w=>w.id==='castle stairs'):null, G=GUARD.list.map(N=>{ const t=GTOWER.at(N.gd.tower); return {k:N.key,tower:N.gd.tower,top:!!N.gd.top,d:t?Math.hypot(N.st.x-t.x,N.st.z-t.z)/T:null,y:N.ground?N.ground(N.st.x,N.st.z):N.g.position.y,roof:t?t.top:null}; });
-    return {at:at.map(a=>!!a),names,ways:!!ways,torches:__dbg.MAPK.MODS.castleTorches||0,G}; });
+    return {torches:GTOWER.torches||0,at:at.map(a=>!!a),names,ways:!!ways,castle:__dbg.MAPK.MODS.castleTorches||0,G}; });
   const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)errs.push(m); };
   ok(R.at.every(Boolean)&&R.at.length===6,'six watchtowers stand ('+R.at.filter(Boolean).length+')');
-  ok(!R.names.length&&!R.torches,'the castle is gone: no spires, no torches ('+R.names.join(', ')+')');
+  ok(R.torches===6,'a torch on every roof (owner, 10 Nov 2026: "add a torch on each roof"): '+R.torches);
+  ok(!R.names.length&&!R.castle,'the castle is gone: no spires, no torches ('+R.names.join(', ')+')');
   ok(R.ways,'the stair down to the dungeon is still a way between the park and the dungeon');
   const top=R.G.filter(g=>g.top), foot=R.G.filter(g=>!g.top);
   ok(R.G.length===14&&R.G.every(g=>g.d!=null&&g.d<6),'every guard is at its tower ('+R.G.map(g=>g.k.replace('gd_','')+':'+g.tower+(g.d!=null?'@'+g.d.toFixed(1):'')).join(' ')+')');

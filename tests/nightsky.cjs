@@ -62,7 +62,7 @@ const SHOTS = process.env.SHOTS;
     await shot('nightsky-double');
     ok(db.centre === db.id && db.hold && db.seen, db.name + ' parts into two at 100X and goes in the logbook');
     const gl = await pg.evaluate(() => ({ goals: ASTRO.goals(), tn: ASTRO.tonight().map(r => r[0]), panel: document.getElementById('scopev').innerText }));
-    ok(gl.goals.length === 9 && gl.goals.find(g => g.id === 'm10').n === 1 && gl.tn.length >= 7 && /TONIGHT'S SKY/.test(gl.panel) && /GOALS/.test(gl.panel), 'the logbook has its goals and tonight\'s sky (' + gl.tn.length + ' lines)');
+    ok(gl.goals.length === 11 && gl.goals.find(g => g.id === 'm10').n === 1 && gl.tn.length >= 7 && /TONIGHT'S SKY/.test(gl.panel) && /GOALS/.test(gl.panel), 'the logbook has its goals and tonight\'s sky (' + gl.tn.length + ' lines)');
     const pay = await pg.evaluate(async () => { const c0 = INV.cash; for (let i = 0; i < 9; i++) ASTRO.log('con:T' + i, { g: 'con', tier: 'c', name: 'TEST ' + i }); return { d: INV.cash - c0, paid: ASTRO.goals().find(g => g.id === 'con10').paid }; });
     ok(pay.d === 40 && pay.paid, 'ten constellations pay the goal once ($' + pay.d + ')');
     const pk = await pg.evaluate(async () => { FIELD.at = { x: 1e6, z: 0 }; await new Promise(r => setTimeout(r, 800)); return { on: FIELD.on, open: SCOPE.isOpen(), ap: SCOPE.site.ap }; });

@@ -525,14 +525,14 @@ export class Block extends Server {
       if (r) this.dropGone(k); c.send(JSON.stringify({ t: "took", k, v }));
       if (v) { try { const o = JSON.parse(v); if (String(o.by || "").startsWith("body:")) homeOf(this.env).econAllow(s.id, o.id === "cash" ? o.n : 0, o.id === "cash" ? 0 : o.n, "a body's drop").catch(() => {}); } catch (e) {} }
     } else if (m.t === "sky") {   // a telescope shared at a star party (src/150fh): where it points, to everyone in the section
-      this.broadcast(JSON.stringify({ t: "sky", id: s.id, name: word(s.name, 24), on: m.on ? 1 : 0, alt: num(m.alt, -90, 90), az: num(m.az, 0, 360), mag: num(m.mag, 1, 400), f: num(m.f, -1, 1), fl: m.fl ? 1 : 0, jd: num(m.jd, 2.4e6, 2.6e6), ctl: word(m.ctl, 60) }), [c.id]);
+      this.broadcast(JSON.stringify({ t: "sky", id: s.id, name: word(s.name, 24), on: m.on ? 1 : 0, alt: num(m.alt, -90, 90), az: num(m.az, 0, 360), mag: num(m.mag, 1, 400), f: num(m.f, -1, 1), fl: m.fl ? 1 : 0, jd: num(m.jd, 2.4e6, 2.6e6), ctl: word(m.ctl, 60), obs: m.obs ? 1 : 0, n: num(m.n, 0, 99) | 0 }), [c.id]);
     } else if (m.t === "tv") {   // an apartment's CRT TV (src/150fa): power, channel and what THE GUIDE plays, to everyone else in that apartment
       const rm = s.at && s.at[5]; if (!rm || !rm.startsWith("apt:")) return;
       const q = m.p && typeof m.p === "object" ? m.p : null, p = q && /^[A-Za-z0-9_.-]{1,80}$/.test(q.id || "") && /^[A-Za-z0-9_.-]{1,120}\.mp4$/.test(q.file || "") ? { id: q.id, file: q.file, title: word(q.title, 90), year: num(q.year, 0, 3000) | 0, len: num(q.len, 1, 20000) } : null;
       const x = JSON.stringify({ t: "tv", id: s.id, on: m.on ? 1 : 0, ch: num(m.ch, 0, 99) | 0, p, t0: num(m.t0, 0, 1e14) });
       for (const o of this.getConnections()) if (o !== c && o.state && o.state.at && o.state.at[5] === rm) o.send(x);
     } else if (m.t === "skyw") {   // a watcher joining, leaving or (handed the tube) steering someone's telescope: to that one player
-      const to = String(m.to || ""), op = /^(join|leave|steer)$/.test(m.op) ? m.op : ""; if (!to || to === s.id || !op) return;
+      const to = String(m.to || ""), op = /^(join|leave|steer|ask)$/.test(m.op) ? m.op : ""; if (!to || to === s.id || !op) return;
       for (const o of this.getConnections()) if (o.state && o.state.id === to) { o.send(JSON.stringify({ t: "skyw", id: s.id, name: word(s.name, 24), op, alt: num(m.alt, -90, 90), az: num(m.az, 0, 360) })); break; }
     } else if (m.t === "world") {
       const k = word(m.k, 40); if (!k) return; if (k === "time") this.clkAt = 0;

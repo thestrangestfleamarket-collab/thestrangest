@@ -823,6 +823,20 @@
    "inW": 26,
    "inD": 22,
    "inH": 173
+  },
+  {
+   "id": "observatory",
+   "name": "THE OBSERVATORY",
+   "kind": "front",
+   "x0": 136,
+   "x1": 144,
+   "y0": 116,
+   "y1": 124,
+   "face": "w",
+   "park": true,
+   "inW": 16,
+   "inD": 16,
+   "inH": 200
   }
  ],
  "shells": [],
@@ -1089,6 +1103,14 @@
     "w": 6,
     "d": 8,
     "note": "where the island's footbridge lands: no trees here"
+   },
+   {
+    "id": "observatory",
+    "x": 140,
+    "y": 120,
+    "w": 32,
+    "d": 32,
+    "note": "the public observatory (owner, 10 Nov 2026): the dome and the lawn round it; no trees or paths here"
    },
    {
     "id": "farm",

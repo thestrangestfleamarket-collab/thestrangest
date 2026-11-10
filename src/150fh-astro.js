@@ -14,7 +14,7 @@ const ASTRO={}; window.ASTRO=ASTRO;
   const sk=k=>FORAGE.sk?FORAGE.sk(k):0;
 
   /* ---------- the skill: what each eyepiece asks of you ---------- */
-  const NEED={100:40,200:70};
+  const NEED={100:40,200:70,400:70};
   SCOPE.magOK=m=>sk('astro')>=(NEED[m]||0); SCOPE.magNote=m=>'SKILL '+NEED[m];
   FORAGE.HELP.push('ASTRONOMY: the telescope in your apartment, the field telescope in your pack and your own eyes (EMOTES · STARGAZE on a clear night). Each new thing you find and hold in the middle of the eyepiece goes in your logbook and teaches the skill (the rarer, the more); 100X needs 40, 200X needs 70. The Professor gives lessons. A camera on the eyepiece takes prints of what you see, sold like any photograph.');
 
@@ -38,7 +38,8 @@ const ASTRO={}; window.ASTRO=ASTRO;
   const cats=L=>L.filter(c=>Object.keys(S.seen).some(k=>k.startsWith(c+':'))).length;
   const GOALS=[['pl5','THE FIVE BRIGHT PLANETS',60,()=>['me','ve','ma','ju','sa'].filter(k=>S.seen[k]).length,5],['con10','TEN CONSTELLATIONS',40,()=>count('con'),10],['con30','THIRTY CONSTELLATIONS',150,()=>count('con'),30],
     ['m10','TEN MESSIER OBJECTS',80,()=>count('deep'),10],['m50','FIFTY MESSIER OBJECTS',400,()=>count('deep'),50],['m110','THE WHOLE MESSIER CATALOGUE',1500,()=>count('deep'),110],
-    ['dbl10','TEN DOUBLE STARS PARTED',100,()=>count('dbl'),10],['moon10','TEN PLACES ON THE MOON',60,()=>count('moonf'),10],['move3','A SATELLITE, A SHOOTING STAR AND A COMET',150,()=>cats(['sat','meteor','comet']),3]];
+    ['dbl10','TEN DOUBLE STARS PARTED',100,()=>count('dbl'),10],['moon10','TEN PLACES ON THE MOON',60,()=>count('moonf'),10],['move3','A SATELLITE, A SHOOTING STAR AND A COMET',150,()=>cats(['sat','meteor','comet']),3],
+    ['obs10','TEN FAINT MESSIER OBJECTS AT THE OBSERVATORY',250,()=>Object.values(S.obs||{}).filter(v=>v==='deepr').length,10],['obsparty','A STAR PARTY OF THREE AT THE OBSERVATORY',120,()=>S.obsP?1:0,1]];
   const prizes=()=>{ for(const [id,nm,pay,n,need] of GOALS)if(!S.paid[id]&&n()>=need){ S.paid[id]=1; save(); INV.cash+=pay; INV.save(); SAY('LOGBOOK GOAL: '+nm+'. THE ASTRONOMICAL SOCIETY SENDS $'+pay+'.','#f2c14e'); if(SFX)SFX.play('click',{vol:.6,vary:.1}); } };
   ASTRO.goals=()=>GOALS.map(([id,name,pay,n,need])=>({id,name,pay,n:Math.min(need,n()),need,paid:!!S.paid[id]}));
   ASTRO.log=(key,W)=>{ if(S.seen[key])return false; log(key,W); return true; }; ASTRO.has=key=>!!S.seen[key]; ASTRO.count=g=>count(g);
@@ -65,7 +66,7 @@ const ASTRO={}; window.ASTRO=ASTRO;
     if(!ok){ cur=''; hold=0; return; } if(cur===id)hold+=step; else { cur=id; hold=0; }
     if(hold<1.5)return;
     if(id==='sa'&&SCOPE.mag>=50)FIRSTS.mark('rings'); if(id==='ju'&&SCOPE.mag>=25&&C.cover<.3)FIRSTS.mark('moons'); if(W.g==='deep')FIRSTS.mark('deep'); if(W.g==='dbl')FIRSTS.mark('double');
-    const key=W.cat?W.cat+':'+W.name:id; if(!S.seen[key])log(key,W); };
+    const key=W.cat?W.cat+':'+W.name:id; if(SCOPE.site.obs&&!(S.obs&&S.obs[key])){ (S.obs=S.obs||{})[key]=W.g+(W.tier||''); save(); prizes(); } if(!S.seen[key])log(key,W); };
 
   /* ---------- the camera on the eyepiece: short exposures stacked (the air's tremble averages out), long ones gathered (faint things come up; without the clock drive, stars trail) ---------- */
   const EXPS=[['1/250',.004],['1/60',1/60],['1 S',1],['30 S',30]]; let expI=1, busy=false;
@@ -89,22 +90,25 @@ const ASTRO={}; window.ASTRO=ASTRO;
 
   /* ---------- the star party: your eyepiece shared, theirs followed ---------- */
   const party={on:false,w:new Map(),ctl:''}; let watch=null, steer=null, sendT=0, keepJD=null;
-  const me=()=>ONLINE.me||'';
-  SCOPE.lead=()=>{ if(watch&&watch.st&&watch.st.ctl!==me())return {alt:watch.st.alt,az:watch.st.az};
+  const me=()=>ONLINE.me||''; const mine=()=>!!(watch&&watch.st&&me()&&watch.st.ctl===me());   // you were handed the tube you are watching through
+  SCOPE.lead=()=>{ if(watch&&watch.st&&!mine())return {alt:watch.st.alt,az:watch.st.az};
     if(party.on&&party.ctl&&steer&&performance.now()-steer.t<2500)return {alt:steer.alt,az:steer.az}; return null; };
-  ONLINE.hear.sky=m=>{ if(!watch||m.id!==watch.id)return; if(!m.on){ ASTRO.leave(true); return; } watch.st=m; SCOPE.mag=m.mag; SCOPE.focus=m.f; SCOPE.filter=!!m.fl; SCOPE.fixJD=m.jd; };
+  ONLINE.hear.sky=m=>{ if(m.obs||ASTRO.obsOp&&ASTRO.obsOp.id===m.id)ASTRO.obsOp=m.on&&m.obs?{id:m.id,name:m.name||'A TENANT',t:performance.now()}:null;   // who has the observatory's telescope (150fk)
+    if(!watch||m.id!==watch.id)return; if(!m.on){ ASTRO.leave(true); return; } const ch=!watch.st||watch.st.ctl!==m.ctl; watch.st=m; if(ch&&SCOPE.isOpen())SCOPE.view.panel(); SCOPE.mag=m.mag; SCOPE.focus=m.f; SCOPE.filter=!!m.fl; SCOPE.fixJD=m.jd; };
   ONLINE.hear.skyw=m=>{ if(!party.on)return; if(m.op==='join'){ party.w.set(m.id,m.name||'A TENANT'); SAY((m.name||'A TENANT')+' IS LOOKING THROUGH YOUR TELESCOPE.','#c8e0ff'); }
-    else if(m.op==='leave'){ party.w.delete(m.id); if(party.ctl===m.id)party.ctl=''; } else if(m.op==='steer'&&party.ctl===m.id)steer={alt:m.alt,az:m.az,t:performance.now()};
+    else if(m.op==='leave'){ party.w.delete(m.id); if(party.ctl===m.id)party.ctl=''; if(party.ask===m.id)party.ask=''; } else if(m.op==='ask'&&party.w.has(m.id)){ party.ask=m.id; SAY((m.name||'A TENANT')+' ASKS FOR THE TUBE.','#c8e0ff'); } else if(m.op==='steer'&&party.ctl===m.id)steer={alt:m.alt,az:m.az,t:performance.now()};
     if(SCOPE.isOpen())SCOPE.view.panel(); };
-  const tick=dt=>{ if((sendT-=dt)>0||!ONLINE.on)return; sendT=.25;
-    if(party.on)ONLINE.send({t:'sky',on:1,alt:SCOPE.alt,az:SCOPE.az,mag:SCOPE.mag,f:SCOPE.focus,fl:SCOPE.filter?1:0,jd:SCOPE.jd(),ctl:party.ctl});
-    if(watch&&watch.st&&watch.st.ctl===me())ONLINE.send({t:'skyw',to:watch.id,op:'steer',alt:SCOPE.alt,az:SCOPE.az}); };
-  ASTRO.share=on=>{ party.on=on; if(!on){ if(ONLINE.on)ONLINE.send({t:'sky',on:0,alt:0,az:0,mag:25,f:0,jd:2.46e6,ctl:''}); party.w.clear(); party.ctl=''; } };
-  ASTRO.watch=async(id,name)=>{ if(!(MODS.apts&&MODS.apts.inReal)&&MODS.apts&&MODS.apts.enterReal)await MODS.apts.enterReal(); keepJD=SCOPE.fixJD||null; watch={id,name:name||'A TENANT',st:null};
+  const tick=dt=>{ if(!S.obsP&&(party.on&&SCOPE.site.obs&&party.w.size>=2||watch&&watch.st&&watch.st.obs&&watch.st.n>=2)){ S.obsP=1; save(); prizes(); }   // three at the observatory's eyepiece: its goal
+    if((sendT-=dt)>0||!ONLINE.on)return; sendT=.25;
+    if(party.on)ONLINE.send({t:'sky',on:1,alt:SCOPE.alt,az:SCOPE.az,mag:SCOPE.mag,f:SCOPE.focus,fl:SCOPE.filter?1:0,jd:SCOPE.jd(),ctl:party.ctl,obs:SCOPE.site.obs?1:0,n:party.w.size});
+    if(mine())ONLINE.send({t:'skyw',to:watch.id,op:'steer',alt:SCOPE.alt,az:SCOPE.az}); };
+  ASTRO.share=on=>{ party.on=on; if(!on){ if(ONLINE.on)ONLINE.send({t:'sky',on:0,alt:0,az:0,mag:25,f:0,jd:2.46e6,ctl:''}); party.w.clear(); party.ctl=''; party.ask=''; } };
+  ASTRO.watch=async(id,name,here)=>{ if(!here&&!(MODS.apts&&MODS.apts.inReal)&&MODS.apts&&MODS.apts.enterReal)await MODS.apts.enterReal();   // (here: at a telescope where you stand, the observatory's)
+    keepJD=SCOPE.fixJD||null; watch={id,name:name||'A TENANT',st:null};
     await SCOPE.open(); if(ONLINE.send)ONLINE.send({t:'skyw',to:id,op:'join',alt:0,az:0}); SAY('YOU ARE LOOKING THROUGH '+watch.name+"'S TELESCOPE.",'#c8e0ff'); SCOPE.view.panel(); };
   ASTRO.leave=gone=>{ if(!watch)return; if(!gone&&ONLINE.send)ONLINE.send({t:'skyw',to:watch.id,op:'leave',alt:0,az:0}); if(gone)SAY(watch.name+' PUT THEIR TELESCOPE AWAY.','#c8e0ff'); watch=null; SCOPE.fixJD=keepJD; keepJD=null; if(SCOPE.isOpen())SCOPE.view.panel(); };
   INVITES.kinds.sky={what:()=>'TO A STAR PARTY AT THE TELESCOPE',go:(d,v)=>ASTRO.watch(v.from,v.name)};
-  ASTRO.party=()=>({on:party.on,watchers:[...party.w.values()],ctl:party.ctl,watching:watch&&{id:watch.id,name:watch.name,got:!!watch.st}});
+  ASTRO.party=()=>({on:party.on,watchers:[...party.w.values()],ctl:party.ctl,ask:party.ask||'',watching:watch&&{id:watch.id,name:watch.name,got:!!watch.st}});
 
   /* ---------- the panel: the skill and logbook, the camera, the party, tonight's firsts ---------- */
   let inviting=false, showT=false, showG=false;
@@ -113,9 +117,9 @@ const ASTRO={}; window.ASTRO=ASTRO;
       let h=`<div class="row"><b>ASTRONOMY ${v.toFixed(1)}</b><div style="height:7px;background:#cdbf9f"><i style="display:block;height:100%;width:${Math.min(100,v)}%;background:#3b2a1e"></i></div>
         <div class="info" style="margin-top:4px">${Object.keys(GRP).map(g=>`<div style="display:flex;justify-content:space-between"><span>${GRP[g]}</span><span>${count(g)}${total(g)?' / '+total(g):''}</span></div>`).join('')}</div></div>`;
       h+=`<div class="row"><b>CAMERA</b>${EXPS.map(([n],i)=>`<button class="btn ${i===expI?'on':''}" data-x="astro-exp" data-i="${i}">${n}</button>`).join('')}<button class="btn" data-x="astro-shot"${busy?' disabled':''}>TAKE PHOTO</button></div>`;
-      if(watch)h+=`<div class="row"><b>STAR PARTY</b><div class="info">LOOKING THROUGH ${esc(watch.name)}'S TELESCOPE${watch.st&&watch.st.ctl===me()?' · YOU HAVE THE TUBE':''}${watch.st?'':' · WAITING FOR THEM…'}</div><button class="btn" data-x="astro-leave">LEAVE</button></div>`;
+      if(watch)h+=`<div class="row"><b>STAR PARTY</b><div class="info">LOOKING THROUGH ${esc(watch.name)}'S TELESCOPE${mine()?' · YOU HAVE THE TUBE':''}${watch.st?'':' · WAITING FOR THEM…'}</div>${watch.st&&!mine()?'<button class="btn" data-x="astro-ask">ASK FOR THE TUBE</button>':''}<button class="btn" data-x="astro-leave">LEAVE</button></div>`;
       else { const L=party.on?[...party.w].map(([id,n])=>`<div style="display:flex;justify-content:space-between"><span>● ${esc(n)}</span><span>${party.ctl===id?'HAS THE TUBE':'WATCHING'}</span></div>`).join(''):'';
-        h+=`<div class="row"><b>STAR PARTY</b>${L?`<div class="info">${L}</div>`:''}<button class="btn ${party.on?'on':''}" data-x="astro-share">${party.on?'SHARING':'SHARE'}</button><button class="btn" data-x="astro-invite">INVITE</button>${party.on&&party.w.size?`<button class="btn" data-x="astro-give">${party.ctl?'TAKE IT BACK':'HAND IT OVER'}</button>`:''}`;
+        h+=`<div class="row"><b>STAR PARTY</b>${L?`<div class="info">${L}</div>`:''}<button class="btn ${party.on?'on':''}" data-x="astro-share">${party.on?'SHARING':'SHARE'}</button><button class="btn" data-x="astro-invite">INVITE</button>${party.on&&party.w.size?`<button class="btn" data-x="astro-give">${party.ctl?'TAKE IT BACK':party.ask&&party.w.has(party.ask)?'HAND IT TO '+esc(party.w.get(party.ask)):'HAND IT OVER'}</button>`:''}`;
         if(inviting){ const E=INVITES.everyone?INVITES.everyone():[]; h+=`<div class="info" style="max-height:120px;overflow:auto;border:2px solid #3b2a1e;background:#f6f1e4;padding:2px 4px;margin-top:4px">${E.length?E.map(p=>`<div data-x="astro-to" data-id="${esc(p.id)}" data-n="${esc(p.name)}" style="cursor:pointer;padding:2px 0">${esc(p.name)}</div>`).join(''):'NOBODY ELSE IS ONLINE.'}</div>`; }
         h+='</div>'; }
       h+=`<div class="row"><button class="btn ${showT?'on':''}" data-x="astro-tonight">TONIGHT'S SKY</button><button class="btn ${showG?'on':''}" data-x="astro-goals">GOALS</button><button class="btn" data-x="astro-firsts">TONIGHT'S FIRSTS</button>${showT?`<div class="info" style="margin-top:4px">${ASTRO.tonightHtml(true)}</div>`:''}${showG?`<div class="info" style="margin-top:4px">${goalsHtml()}</div>`:''}</div>`; return h; },
@@ -123,10 +127,11 @@ const ASTRO={}; window.ASTRO=ASTRO;
       if(x==='astro-exp')expI=+b.dataset.i; else if(x==='astro-shot'){ ASTRO.shoot(); }
       else if(x==='astro-share')ASTRO.share(!party.on); else if(x==='astro-leave')ASTRO.leave();
       else if(x==='astro-invite')inviting=!inviting; else if(x==='astro-to'){ if(!party.on)ASTRO.share(true); INVITES.send(b.dataset.id,b.dataset.n,'sky',{}); inviting=false; }
-      else if(x==='astro-give'){ const ids=[...party.w.keys()]; party.ctl=party.ctl?'':ids[0]||''; steer=null; } else if(x==='astro-firsts')FIRSTS.show(); else if(x==='astro-tonight')showT=!showT; else if(x==='astro-goals')showG=!showG; else if(x==='astro-go')SCOPE.goTo(b.dataset.id); return true; },
+      else if(x==='astro-give'){ const ids=[...party.w.keys()]; party.ctl=party.ctl?'':party.ask&&party.w.has(party.ask)?party.ask:ids[0]||''; party.ask=''; steer=null; }
+      else if(x==='astro-ask'){ if(watch&&ONLINE.send)ONLINE.send({t:'skyw',to:watch.id,op:'ask',alt:0,az:0}); SAY('YOU ASK FOR THE TUBE.','#c8e0ff'); } else if(x==='astro-firsts')FIRSTS.show(); else if(x==='astro-tonight')showT=!showT; else if(x==='astro-goals')showG=!showG; else if(x==='astro-go')SCOPE.goTo(b.dataset.id); return true; },
     draw:C=>{ look(C,C.dt||0); tick(C.dt||0); },
     close:()=>{ if(watch)ASTRO.leave(); if(party.on)ASTRO.share(false); inviting=false; } });
-  ASTRO.dbg=()=>({skill:sk('astro'),seen:{...S.seen},n:{...S.n},party:ASTRO.party(),exp:EXPS[expI][0]});
+  ASTRO.dbg=()=>({skill:sk('astro'),seen:{...S.seen},obs:{...(S.obs||{})},n:{...S.n},party:ASTRO.party(),exp:EXPS[expI][0]});
   ASTRO.exp=i=>{ expI=Math.max(0,Math.min(EXPS.length-1,i)); };
 }
 export {ASTRO};

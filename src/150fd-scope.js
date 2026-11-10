@@ -25,7 +25,7 @@ const SCOPE={alt:35,az:270,va:0,vz:0,mag:25,focus:.18,track:true,lines:true,filt
     const P=document.createElement('div'); P.className='ml'; P.style.cssText='width:min(250px,40vw);overflow:auto;padding:12px;background:#ece5d3;border-left:3px solid #3b2a1e;zoom:var(--uiz,1)'; O.appendChild(P);
     const css=document.createElement('style'); css.textContent='#scopev .row{margin:8px 0} #scopev .row>b{display:block;margin-bottom:4px} #scopev .btn{font:inherit;padding:4px 7px;margin:0 3px 3px 0;background:#ece5d3;color:#3b2a1e;border:2px solid #3b2a1e;cursor:pointer} #scopev .btn.on{background:#3b2a1e;color:#ece5d3} #scopev select,#scopev input[type=range]{width:100%;font:inherit} #scopev .info{color:#6a4a32;line-height:1.5}';
     document.head.appendChild(css); document.body.appendChild(O);
-    const MAGS=[[1,'NAKED EYE'],[6,'FINDER 6X'],[25,'25X'],[50,'50X'],[100,'100X'],[200,'200X']], FOV=m=>m===1?100:m===6?7:50/m;
+    const MAGS=[[1,'NAKED EYE'],[6,'FINDER 6X'],[25,'25X'],[50,'50X'],[100,'100X'],[200,'200X'],[400,'400X']], FOV=m=>m===1?100:m===6?7:50/m;
     const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
     const targets=()=>{ const D=SCOPE.data||{}, sky=(D.sky||[]).filter(t=>t.ra!=null); return [['SOLAR SYSTEM',['moon','me','ve','ma','ju','sa','ur','ne','sun'].map(k=>({id:k,name:BODY[k].name}))],['DEEP SKY (MESSIER)',sky.map(t=>({id:t.id,name:t.name}))],['DOUBLE STARS',(D.doubles||[]).map((d,i)=>({id:'dbl:'+i,name:d.name}))],['STARS',(SCOPE.stars.named||[]).map((n,i)=>({id:'star:'+i,name:n[2]}))]]; };
     const panel=()=>{ P.innerHTML=`<div><b>${esc(SCOPE.site.name)}</b> <button class="btn" data-a="close" style="float:right">DONE</button></div>

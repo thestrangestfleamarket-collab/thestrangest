@@ -211,6 +211,6 @@ const SCOPE={alt:35,az:270,va:0,vz:0,mag:25,focus:.18,track:true,lines:true,filt
   ROOMK.wires.scope=(un,c)=>{ '@later'; let Y=null, A=null; un.obj.traverse(o=>{ if(o.userData.yaw)Y=o; if(o.userData.alt)A=o; });
     c.hit(un,()=>'TELESCOPE',()=>{ SCOPE.open(); if(SFX)SFX.play('click',{vol:.5,vary:.2}); });
     un.tick=()=>{ if(Y)Y.rotation.y=-Math.PI/2-(SCOPE.az-270)*Math.PI/180; if(A)A.rotation.x=-Math.max(-5,SCOPE.alt)*Math.PI/180; }; };
-  SYS.add('places',()=>{ if(SCOPE.view&&SCOPE.isOpen()&&!(MODS.apts&&MODS.apts.inReal))SCOPE.close(); },'150fd-scope');
+  SYS.add('places',()=>{ if(SCOPE.view&&SCOPE.isOpen()&&!SCOPE.carried&&!(MODS.apts&&MODS.apts.inReal))SCOPE.close(); },'150fd-scope');
 }
 export {SCOPE};

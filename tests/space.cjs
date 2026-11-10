@@ -20,6 +20,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   // no horse walks the map now: the check stands one by you
   await pg.evaluate(async () => { if (__dbg.NPCS.find(n => n.key === 'horse')) return; if (window.LOAD) await LOAD('later'); for (let i = 0; i < 100 && !(window.CREATURES && CREATURES.Horse); i++) await new Promise(r => setTimeout(r, 300)); const h = CREATNEW('Horse', 'horse', 1.6); h.st.x = STORE.pos.x + 4; h.st.z = STORE.pos.z; });
   await pg.waitForTimeout(15000);
+  // (the cast is built over the start's first seconds: wait till the tomato and a second character who blocks are standing, or two minutes)
+  for (let i = 0; i < 120 && !(await pg.evaluate(() => { const N = __dbg.NPCS, a = N.find(n => n.key === 'tomato'); return !!a && N.some(n => n !== a && n.st && n.blocks && (n.lv || 'up') === (a.lv || 'up') && !n.fly && !n.tiny && n.key !== 'dragon'); }).catch(() => false)); i++) await pg.waitForTimeout(1000);
   const r = await pg.evaluate(() => { const N = __dbg.NPCS, by = k => N.find(n => n.key === k), o = {};
     for (const k of ['elephant', 'horse', 'cat', 'tomato', 'bat', 'rat']) { const n = by(k); if (n) o[k] = { R: n.st.R, L: n.st.L || 0, fly: !!n.fly, tiny: !!n.tiny }; }
     // you walk into the horse's flank and the elephant's trunk end: kept out of the body itself, not just its middle

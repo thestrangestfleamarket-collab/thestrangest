@@ -1,4 +1,4 @@
-// THE ITEMS CHECK: node tests/items.cjs dist/market.html. Every live item has its own 16-pixel picture (data/icons.json) and a name; the dead tools and the gift shop's prints are archived; the BMX, kite and camera are sold; in your apartment fish food feeds the koi (they rise).
+// THE ITEMS CHECK: node tests/items.cjs dist/market.html. Every live item has its own 3D model for its picture (owner, 8 Nov 2026) and a name; the dead tools and the gift shop's prints are archived; the BMX, kite and camera are sold; in your apartment fish food feeds the koi (they rise).
 const { chromium } = require('playwright'), path = require('path'), fs = require('fs');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=items::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -11,12 +11,12 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   if (st) {
     const C = JSON.parse(fs.readFileSync(path.join(__dirname, '../data/characters.json'), 'utf8')), sold = new Set(Object.values(C).flatMap(c => c && c.trade && c.trade.sells || []));
     ok(['bmx', 'kite', 'camera'].every(id => sold.has(id)), 'the BMX, the kite and the camera have a shop');
-    for (let i = 0; i < 20 && !(await pg.evaluate(() => BAG.icon('fl_rose').length > 0 && new Promise(r => { const im = new Image(); im.onload = () => r(im.width === 16); im.src = BAG.icon('fl_rose'); }))); i++) await pg.waitForTimeout(500);
-    const r = await pg.evaluate(async () => { const sz = u => new Promise(r => { const im = new Image(); im.onload = () => r(im.width); im.src = u; });
+    // (a thing's picture is its own 3D model photographed, owner 8 Nov 2026: "no more icons"; so every live item needs a model with something in it)
+    const r = await pg.evaluate(async () => { const T = window.THREE || (window.__dbg && __dbg.THREE);
       const live = ITEMS.ids().filter(id => !ARCHI(id)), small = [], noname = [];
-      const W = await Promise.all(live.map(id => sz(BAG.icon(id)))); live.forEach((id, i) => { if (W[i] !== 16) small.push(id); const n = FORAGE.name(id); if (!n || n === id) noname.push(id); });
+      live.forEach(id => { let m = null; try { m = INSPECT.model(id); } catch (e) {} let ok = false; if (m) { let n = 0; m.traverse(o => { if (o.isMesh && o.geometry && o.geometry.attributes.position && o.geometry.attributes.position.count) n++; }); ok = n > 0; } if (!ok) small.push(id); const nm = FORAGE.name(id); if (!nm || nm === id) noname.push(id); });
       return { n: live.length, small, noname, arch: ['scanner', 'extractor', 'cutter', 'art_print', 'art_postcard'].filter(id => !ARCHI(id)) }; });
-    ok(r.n > 300 && !r.small.length, 'every live item (' + r.n + ') has its own 16-pixel picture' + (r.small.length ? ': not ' + r.small.slice(0, 12) : ''));
+    ok(r.n > 300 && !r.small.length, 'every live item (' + r.n + ') has its own 3D model for its picture' + (r.small.length ? ': not ' + r.small.slice(0, 12) : ''));
     ok(!r.noname.length, 'every live item has a name' + (r.noname.length ? ': not ' + r.noname : ''));
     ok(!r.arch.length, 'the scanner, extractor, cutter and the painting print and postcard are archived' + (r.arch.length ? ': not ' + r.arch : ''));
     for (let i = 0; i < 40 && !(await pg.evaluate(() => window.TANKDBG && TANKDBG().some(t => t.fish > 0 && t.vis))); i++) await pg.waitForTimeout(1000);

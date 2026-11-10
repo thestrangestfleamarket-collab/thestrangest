@@ -434,7 +434,8 @@ export class Block extends Server {
       const v = Array.isArray(m.v) ? [num(m.v[0], -2, 2), num(m.v[1], -2, 2)] : null; o.send(JSON.stringify(m.t === "toss" ? { t: "toss", id: s.id, v } : { t: m.t, id: s.id }));
     } else if (m.t === "jet") {   // a flamethrower or freeze ray firing (146hb), or stopping
       const k = m.k === "f" || m.k === "i" ? m.k : "", v = k && Array.isArray(m.v) ? [num(m.v[0], -1, 1), num(m.v[1], -1, 1), num(m.v[2], -1, 1)] : null;
-      this.broadcast(JSON.stringify(v ? { t: "jet", id: s.id, k, v } : { t: "jet", id: s.id, k }), [c.id]);
+      const md = Number.isInteger(m.m) && m.m >= 0 && m.m < 8 ? m.m : 0;
+      this.broadcast(JSON.stringify(v ? { t: "jet", id: s.id, k, v, m: md } : { t: "jet", id: s.id, k }), [c.id]);
     } else if (m.t === "zap") {   // its stream on a player near the shooter: they burn or freeze
       const to = String(m.to || ""); if (!to || to === s.id) return; const o = this.near(s, to, 12); if (!o) return;
       o.send(JSON.stringify({ t: "zap", id: s.id, k: m.k === "i" ? "i" : "f", from: [s.at[0], s.at[1]] }));
@@ -659,12 +660,12 @@ const blockAsk = async (env, room, path, body) => { const s = await getServerByN
   return r.json(); };
 const newCode = () => { const A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", b = crypto.getRandomValues(new Uint8Array(8)); let s = ""; for (const x of b) s += A[x % 32]; return "MARKET-" + s.slice(0, 4) + "-" + s.slice(4); };
 // one request per 100 emails (Resend's batch), so a message to everyone stays under the worker's subrequest limit
-async function email(env, to, subject, text) {
-  const from = env.MAIL_FROM || "THE MARKET <market@thestrangestfleamarket.com>"; let n = 0;
+async function email(env, to, subject, text, why = {}) {
+  const from = env.MAIL_FROM || "THE MARKET <market@auth.thestrangestfleamarket.com>"; let n = 0;
   for (let i = 0; i < to.length; i += 100) { const part = to.slice(i, i + 100);
     const r = await fetch("https://api.resend.com/emails/batch", { method: "POST", headers: { Authorization: "Bearer " + env.RESEND_API_KEY, "content-type": "application/json" },
       body: JSON.stringify(part.map(x => ({ from, to: [x], subject, text }))) });
-    if (r.ok) n += part.length; }
+    if (r.ok) n += part.length; else why.t = r.status + " " + (await r.text()).slice(0, 200); }
   return n;
 }
 async function admin(env, b, origin) {
@@ -692,8 +693,8 @@ async function admin(env, b, origin) {
     if (b.do === "askoff") return { ok: await postOf(env).askOff(m) };
     if (!env.RESEND_API_KEY) return { why: "email is not set up" };
     const code = newCode(), r = await call("/rest/v1/invite_codes", { method: "POST", body: JSON.stringify({ code, uses: 0, max_uses: 1 }) }); if (!r.ok) return res(r);
-    const n = await email(env, [m], "YOUR INVITE TO THE STRANGEST FLEA MARKET", "Your invite code: " + code + "\n\nEnter it at " + origin + "/ to make your account.");
-    if (!n) return { why: "the email did not go out (code " + code + ")" };
+    const w = {}, n = await email(env, [m], "YOUR INVITE TO THE STRANGEST FLEA MARKET", "Your invite code: " + code + "\n\nEnter it at " + origin + "/ to make your account.", w);
+    if (!n) return { why: "the email did not go out (code " + code + "): " + (w.t || "?") };
     await postOf(env).askSent(m); return { ok: true, code }; }
   if (b.do === "tell") {
     const to = b.to === "*" ? "*" : id, subject = String(b.subject || "A LETTER FROM THE MARKET").slice(0, 120), text = String(b.text || "").slice(0, 4000).trim(), out = { ok: true };

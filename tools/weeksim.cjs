@@ -42,7 +42,7 @@ const ACT = {
 // what the live shops sell, by habit (one-time; nothing wears) and the open-ended sinks
 const WANTS = { fish: [['lure_spoon', 14], ['cooler_m', 50], ['rod_carbon', 60], ['reel_fast', 40], ['cooler_l', 120], ['rod_surf', 180], ['reel_pro', 120], ['crabpot', 75], ['goggles', 30]],
   dungeon: [['sword_steel', 40], ['sword_ench', 120]], forage: [['pouch', 12], ['chest', 60]], bugs: [['jar_l', 25], ['feeder', 14], ['cages', 50]], busk: [], paint: [], photo: [],
-  any: [['clothes', 150], ['hives', 147], ['gem_wheel', 35], ['pets', 120], ['aquarium', 400], ['garden', 120], ['lessons', 600]] };
+  any: [['clothes', 150], ['hives', 147], ['pets', 120], ['aquarium', 400], ['garden', 120], ['lessons', 600]] };
 const ARCH = { // habit weights, minutes a day, how likely to optimise (learns loops), spend urge
   explorer: { w: { fish: 2, forage: 2, bugs: 2, photo: 1, social: 3, dungeon: 1, decorate: 1 }, min: 70, opt: .2, spend: .7 },
   fisher: { w: { fish: 7, social: 1, forage: 1, decorate: 1 }, min: 90, opt: .1, spend: .6 },

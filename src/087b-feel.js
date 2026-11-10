@@ -94,7 +94,7 @@ window.FEEL=FEEL;
     if(fl>.05){ let d=Math.atan2(fx,fz)-S.face; d=Math.atan2(Math.sin(d),Math.cos(d)); const m=c.turn*D2R*dt*(S.gnd?1:c.airTurn); S.face+=Math.max(-m,Math.min(m,d)); S.face=Math.atan2(Math.sin(S.face),Math.cos(S.face)); } };
   const W={x:0,y:0,z:0,h:0};
   FEEL.sync=()=>{ S.p.set(pos.x/MH,SHARED.py/MV,pos.z/MH); S.prev.copy(S.p); S.v.set(0,0,0); S.face=S.facePrev=SHARED.heading; S.acc=0; S.air=0; S.gnd=true; S.lastG=S.t; S.jumped=false; S.buf=-1; S.sync=false; };
-  FEEL.take=()=>(FEEL.on||!!(FEEL.yard&&FEEL.yard.in(pos.x/MH,pos.z/MH)))&&!RAG.on&&!(window.BOAT&&BOAT.on)&&!(st.water&&st.water.in)&&!UI.fly&&!UI.freeCam&&!st.sit&&!st.climb&&!ED.on;
+  FEEL.take=()=>(FEEL.on||!!(FEEL.yard&&FEEL.yard.in(pos.x/MH,pos.z/MH)))&&!RAG.on&&!(BOAT&&BOAT.on)&&!(st.water&&st.water.in)&&!UI.fly&&!UI.freeCam&&!st.sit&&!st.climb&&!ED.on;
   FEEL.input=(mx,mz,run,held)=>{ IN.x=mx; IN.z=mz; IN.run=run; S.held=held; };
   FEEL.step=(dt,mx,mz)=>{ '@later'; if(!FEEL.lib)FEEL.load(); FEEL.go=0; if(!FEEL.ready||FEEL.hold)return;
     if(FEEL.yard&&!FEEL.yard.bvh)FEEL.yard.build();

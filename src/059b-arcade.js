@@ -1,10 +1,9 @@
 // THE ARCADE: the arcade on Main Street as one painted block (its neon ARCADE front); its inside is built off the map when you go in: black walls, four cabinets along each side wall (double-click one to play its game; the games register in 059g), and the holodeck behind the back wall (double-click its door): an empty green grid with a panel on its far wall (double-click it for the list of adventures, each a program in STORE.holo.programs).
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INV, ROOMS, TEXT, UI, WIELD} from './003b-systems.js';
+import {BATCH, FORAGE, INV, ROOMS, TEXT, UI, WIELD} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {BLDK, FADE, FIX, grab, LEVEL, OFFDX, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
-import {BATCH} from './008-batch.js';
 import {LAMPS} from './014-gamekit.js';
 import {BLOCKS} from './038zb-blocks.js';
 import {FACADES} from './038zc-facades.js';

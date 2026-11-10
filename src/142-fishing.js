@@ -1,16 +1,15 @@
 // THE FISHING: FISHING and BOAT let the player fish the river and the lakes with a rod (bait, cast, bite, fight, land) and row the river.
 import {SHARED, THREE} from './003-shx.js';
-import {BOAT, BOOKS, CLOCK, FORAGE, INSPECT, INV, ITEMS, LEVELS, MOTION, ONLINE, pos, SFX, st, UI, VIT, VLOOK, W3, WIELD} from './003b-systems.js';
+import {BOAT, BOOKS, CLOCK, FORAGE, INSPECT, INV, ITEMS, LEVELS, MOTION, ONLINE, pos, SFX, st, UI, VIT, VLOOK, W3, WIELD, WORTH} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
-import {FIX, MAPG, SOL, SYS, TILE, ZU} from './006-map-pre.js';
+import {FIX, MAPG, MODS, SOL, SYS, TILE, ZU} from './006-map-pre.js';
 import {RARITY} from './013a-rarity.js';
 import {FOUNT} from './060a-fount.js';
 import {RIVER} from './066-river.js';
 import {KIT} from './068-kit.js';
 import {GEMS} from './101-gems.js';
-import {WORTH} from './140c-worth.js';
 import {FISHES} from './141f-fishes.js';
 import {ANCHORS} from './141fb-anchors.js';
 const FISHING={reeling:false,auto:false,force:null,mode:false,waters:[]}; Object.assign(BOAT,{on:false}); window.FISHING=FISHING; window.BOAT=BOAT;
@@ -161,7 +160,7 @@ const fishInit=()=>{ if(FISHING.at)return; const T=TILE, RB={get lv(){ return RI
   /* ---------- the catch: who bites where, when and on what (the odds), and how hard they fight ---------- */
   const S=FORAGE.S; S.fishkg=S.fishkg||{};
   const period=h=>h>=7&&h<17?'day':h>=21||h<5?'night':'dusk';
-  const lakeAt=(x,z)=>{ const b=FOUNT.bedAt&&FOUNT.bedAt(x,z); if(b!=null)return FOUNT.LV; const h=window.HILL?HILL(x,z):0; return h<-.35*T?-.25*T:null; };   // still water: the big lake, the stream and THE LAKE
+  const lakeAt=(x,z)=>{ const b=FOUNT.bedAt&&FOUNT.bedAt(x,z); if(b!=null)return FOUNT.LV; const h=MODS.hill?MODS.hill(x,z):0; return h<-.35*T?-.25*T:null; };   // still water: the big lake, the stream and THE LAKE
   FISHING.at=(x,z)=>{ for(const f of FISHING.waters){ const w=f(x,z); if(w!==undefined)return w; } if(RIVER.over(x,z)&&!RIVER.onPier(x,z,.15*T))return {kind:'river',lv:RB.lv,depth:RIVER.depthAt(x,z)}; const l=lakeAt(x,z); return l==null?null:{kind:'lake',lv:l,depth:2.5}; };
   const SOAK=25, K=.0022, rests=[];   // a bite's rate per second is K x the sum of the weights below; a spot just bitten rests 40 s
   FISHING.odds=(x,z,bait=S.hook,h=CLOCK.h)=>{ '@later'; const w=FISHING.at(x,z); if(!w)return null; const bk=bait?IP(bait,'bait'):null, pd=period(h), per={}; let sum=0;

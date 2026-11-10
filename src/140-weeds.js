@@ -1,9 +1,8 @@
 // THE LAWNS: WEEDS knows where the lawns are, chunk by chunk round you (for the tufts, foragers, birds, butterflies, gardens and fire), and who walks near (the tufts and flower beds part round them).
 import {SHARED, THREE} from './003-shx.js';
-import {NPCS, ONLINE, PARK, POND, pos, ROOMS, W3, WED, WEEDS} from './003b-systems.js';
+import {BATCH, NPCS, ONLINE, PARK, POND, pos, ROOMS, W3, WED, WEEDS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {MODS, STORE, SYS, TILE} from './006-map-pre.js';
-import {BATCH} from './008-batch.js';
 import {GRASS} from './014a-grass.js';
 import {CREATS} from './087-npc-creatures.js';
 
@@ -16,7 +15,7 @@ WEEDS.PART=(T,k)=>'{ vec4 w0=modelMatrix*instanceMatrix*vec4(transformed,1.); ve
 WEEDS.clear=r=>{ (WEEDS.clr=WEEDS.clr||[]).push(r); if(WEEDS.lawnDrop)WEEDS.lawnDrop(r); };
 WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, MV=WEEDS.movers, hsh=(a,b,s)=>{ let h=(Math.floor(a*97)*374761393+Math.floor(b*89)*668265263+s*1442695041)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; };
   // who walks near: you and the nearest walkers, for the things that part round them
-  const near=[]; WEEDS.moveTick=()=>{ near.length=0; near.push([pos.x,pos.z,0]); for(const N of NPCS){ if(N.lv!=='up'||N.far||!N.st||!N.g.visible)continue; const small=!!(window.CREATS&&CREATS.includes(N)), gy=N.ground?N.ground(N.st.x,N.st.z):0; if(N.g.position.y-gy>.35*T)continue; const d=Math.hypot(N.st.x-pos.x,N.st.z-pos.z); if(d<14*T)near.push([N.st.x,N.st.z,d,small]); }
+  const near=[]; WEEDS.moveTick=()=>{ near.length=0; near.push([pos.x,pos.z,0]); for(const N of NPCS){ if(N.lv!=='up'||N.far||!N.st||!N.g.visible)continue; const small=!!(CREATS&&CREATS.includes(N)), gy=N.ground?N.ground(N.st.x,N.st.z):0; if(N.g.position.y-gy>.35*T)continue; const d=Math.hypot(N.st.x-pos.x,N.st.z-pos.z); if(d<14*T)near.push([N.st.x,N.st.z,d,small]); }
     if(ONLINE.others)for(const o of ONLINE.others.values()){ const g=o.fig&&o.fig.g; if(!g||!g.visible||!g.parent)continue; const d=Math.hypot(g.position.x-pos.x,g.position.z-pos.z); if(d<14*T)near.push([g.position.x,g.position.z,d,false]); }
     near.sort((a,b)=>a[2]-b[2]); for(let i=0;i<8;i++){ const n=near[i]; if(n)MV[i].set(n[0],n[1],n[3]?.3*T:.55*T,n[3]?.6:1); else MV[i].w=0; }
     SYS.run('weedsMove'); };

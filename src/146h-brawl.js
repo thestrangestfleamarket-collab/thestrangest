@@ -3,7 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {ONLINE, pos, RAG, SFX, st, VIT, W3, WIELD} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {PPU} from './004-main.js';
-import {ASTEP, SYS, TILE, ZU} from './006-map-pre.js';
+import {ASTEP, MODS, SYS, TILE, ZU} from './006-map-pre.js';
 import {P, PHYOU, TL} from './073-main-12.js';
 import {collide} from './075-main-13.js';
 { const T=TILE, A=new THREE.Vector3(), B=new THREE.Vector3(), C=new THREE.Vector3(), E=new THREE.Vector3(), Q=new THREE.Vector3();
@@ -23,7 +23,7 @@ import {collide} from './075-main-13.js';
     if(kind==='blade'){ const h=st.hand==='L'?'L':'R'; if(!J['wrist'+h]||!J['elbow'+h])return out; toW(J['wrist'+h],me,undefined,A); toW(J['elbow'+h],me,undefined,B); C.subVectors(A,B).normalize();
       for(let i=1;i<=5;i++)out.push([A.clone().addScaledVector(C,i*.19*T),.07]); return out; }
     for(const [j,r] of LIMBS[kind])if(J[j])out.push([toW(J[j],me,undefined,new THREE.Vector3()),r*sh()]); return out; };
-  const swing=dt=>{ const now=performance.now(), S=window.STRIKES; if(!S||!ONLINE.others.size)return;
+  const swing=dt=>{ const now=performance.now(), S=MODS.strikes; if(!S||!ONLINE.others.size)return;
     for(const s of S.strikes())live.push({s,kind:s.sk==='sword'?'blade':s.r>1.05*T?'foot':'fist',until:now+(s.sk==='sword'?220:320),n:0,hit:new Set()});
     if(RAG.on||VIT.out>0||VIT.dead){ live=[]; return; } live=live.filter(l=>l.until>now||l.n<3); if(!live.length)return; const J=ASTEP.you.B&&ASTEP.you.B.J; if(!J)return;
     for(const l of live){ l.n++; const pts=mine(l.kind,J);

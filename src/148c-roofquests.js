@@ -12,7 +12,7 @@ const ROOFQ={built:false}; window.ROOFQ=ROOFQ;
 { const T=TILE, say=(t,c)=>SAY(t,c||'#e8e2cc'), KEY='rooftops', hs=(a,b)=>{ let h=(Math.imul(a|0,374761393)+Math.imul(b|0,668265263))|0; h=Math.imul(h^(h>>>13),1274126177); return ((h^(h>>>16))>>>0)/4294967296; };
   const S={v:1,gh:0,owl:0,belt:0,wins:0,flag:null}; try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1)Object.assign(S,D); }catch(e){}
   const save=()=>OWNED.set(KEY,JSON.stringify(S)); ROOFQ.S=S;
-  const day=()=>window.MAIL&&MAIL.ready?MAIL.day():window.CITY?CITY.day||0:0, mark=k=>{ INV.picked[k]=day(); if(INV.save)INV.save(); };
+  const day=()=>window.MAIL&&MAIL.ready?MAIL.day():CITY?CITY.day||0:0, mark=k=>{ INV.picked[k]=day(); if(INV.save)INV.save(); };
   const night=()=>{ const h=CLOCK.h??12; return h>=20||h<6; }, sk=k=>FORAGE.sk?FORAGE.sk(k):10;
   const BELT=['WHITE','YELLOW','ORANGE','GREEN','BLUE','BROWN','BLACK'];
   FORAGE.add({names:{rf_scroll:"A NIGHT MASTER'S SCROLL"},prices:{rf_scroll:40}});
@@ -85,17 +85,17 @@ const ROOFQ={built:false}; window.ROOFQ=ROOFQ;
     TW.viewTh=thing({name:'THE VIEW',act:()=>viewAct()},tx+Math.cos(1.2)*(r+.5*MH),deck,tz+Math.sin(1.2)*(r+.5*MH),.5*MH,1.2*MV);
     TW.flagTh=thing({name:'THE FLAGPOLE',act:()=>flagAct()},fx,deck,fz,.5*MH,2*MV); for(const th of [TW.downTh,TW.nestTh,TW.viewTh,TW.flagTh]){ th.reach=1*T; th.near=1.8*T; }
     flagShow(); };
-  const flagOf=()=>{ const w=window.ONLINE&&ONLINE.world&&ONLINE.world['flag:wtower']; return w&&w.n?w:S.flag; };
+  const flagOf=()=>{ const w=ONLINE&&ONLINE.world&&ONLINE.world['flag:wtower']; return w&&w.n?w:S.flag; };
   const flagShow=()=>{ const f=flagOf(); TW.cloth.visible=!!f; if(!f)return; const g=TW.cv.getContext('2d'), c=f.c||'#c83a3a'; g.fillStyle=c; g.fillRect(0,0,64,40); g.fillStyle='#f4efe6'; g.fillRect(0,0,64,6); g.fillRect(0,34,64,6);
     g.font='bold 20px monospace'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(String(f.n||'?').slice(0,2).toUpperCase(),32,21); TW.tex.needsUpdate=true; TW.flagTh.name='THE FLAG OF '+String(f.n||'SOMEONE').toUpperCase(); };
-  const flagAct=()=>{ '@later'; const n=(window.ONLINE&&ONLINE.myName?ONLINE.myName():'YOU')||'YOU', cs=['#c83a3a','#3a6ac8','#e0b030','#3a9a5a','#8a4ac0','#e07030'], c=cs[Math.floor(hs(n.length*31+n.charCodeAt(0),5)*cs.length)];
-    const f={n,c,t:Date.now()}; S.flag=f; save(); if(window.ONLINE&&ONLINE.put&&ONLINE.on)ONLINE.put('flag:wtower',f); flagShow(); SFX.play('clunk',{vol:.4,pitch:1.4}); say('YOU RUN YOUR FLAG UP THE POLE. IT SNAPS OUT OVER THE STREET.','#f2c14e'); };
+  const flagAct=()=>{ '@later'; const n=(ONLINE&&ONLINE.myName?ONLINE.myName():'YOU')||'YOU', cs=['#c83a3a','#3a6ac8','#e0b030','#3a9a5a','#8a4ac0','#e07030'], c=cs[Math.floor(hs(n.length*31+n.charCodeAt(0),5)*cs.length)];
+    const f={n,c,t:Date.now()}; S.flag=f; save(); if(ONLINE&&ONLINE.put&&ONLINE.on)ONLINE.put('flag:wtower',f); flagShow(); SFX.play('clunk',{vol:.4,pitch:1.4}); say('YOU RUN YOUR FLAG UP THE POLE. IT SNAPS OUT OVER THE STREET.','#f2c14e'); };
   const nestAct=()=>{ '@later'; if(!INV.ready('wtower:nest'))return say('THE NEST IS EMPTY. THE HAWK BRINGS ANOTHER SHINY THING BY TOMORROW.','#c8a090');
     if(!FORAGE.use('bird',-30,70)&&VIT.hurt){ VIT.hurt(.04); say('THE HAWK STOOPS AND RAKES YOUR ARM! YOU GRAB THE STONE ANYWAY.','#ff9a8a'); } else say('YOU KEEP STILL AND SLOW. THE HAWK LETS YOU TAKE THE STONE.','#9fd8ff');
     INV.pick('wtower:nest'); TW.gem.visible=false; };
   const viewAct=()=>{ '@later'; const d=INV.ready('wtower:view'); if(d){ mark('wtower:view'); FORAGE.use('bird',-20,80); FORAGE.use('climb',-50,150); }
     say('THE WHOLE MARKET LIES UNDER YOU: THE STREET, THE ROOFS, THE PARK\'S TREES, THE RIVER BEYOND.'+(d?' YOU SPOT BIRDS YOU NEVER SAW FROM BELOW.':''),'#9fd8ff'); };
-  const risk=()=>{ const W=window.WX&&WX.now||{}; return (W.rain||0)*.6+(W.snow||0)*.6+(W.storm||0)*.8+Math.max(0,(W.wind||0)-.25)*.8; };
+  const risk=()=>{ const W=WX&&WX.now||{}; return (W.rain||0)*.6+(W.snow||0)*.6+(W.storm||0)*.8+Math.max(0,(W.wind||0)-.25)*.8; };
   const lpos=()=>{ pos.x=TW.lx+.3*MH; pos.z=TW.tz; SHARED.heading=-Math.PI/2; };
   const onLad=h=>{ TW.c={h,r0:Math.floor(h/(.3*MV))}; TW.on=false; st.climb={z:0,ph:h/ZU}; SHARED.target=null; lpos(); if(risk()>.25)say('THE RUNGS ARE WET AND THE WIND PULLS AT YOU. CAREFUL.','#ffb070'); };
   const down=()=>onLad(TW.H-.05*MV);
@@ -159,7 +159,7 @@ const ROOFQ={built:false}; window.ROOFQ=ROOFQ;
     else say(why||'OLD MIDNIGHT STEPS BACK. "ENOUGH FOR TONIGHT." COME BACK TOMORROW NIGHT.','#c8a090'); };
   const bout=dt=>{ const N=B.N, s=N.st, d=Math.hypot(pos.x-C.mat.x,pos.z-C.mat.z);
     if(VIT.dead||VIT.out>0||VIT.hp<.2)return boutEnd(false); if(d>3*MH)return boutEnd(false,'YOU STEP OFF THE MAT. THE BOUT IS FORFEIT. COME BACK TOMORROW NIGHT.'); if(!night())return boutEnd(false,'DAWN BREAKS. OLD MIDNIGHT IS GONE WITH THE DARK.');
-    const ST=window.STRIKES; if(ST)for(const k of ST.strikes())if(ST.inCone(k,s.x,s.z,N.g.position.y,.3*T)){ B.hp-=k.d*ST.strength(k); ST.landed(k); const dx=s.x-pos.x, dz=s.z-pos.z, l=Math.hypot(dx,dz)||1; s.sx=dx/l*.8*T; s.sz=dz/l*.8*T; SFX.play('thud',{vol:.5,pitch:1.1,vary:.2}); }
+    const ST=MODS.strikes; if(ST)for(const k of ST.strikes())if(ST.inCone(k,s.x,s.z,N.g.position.y,.3*T)){ B.hp-=k.d*ST.strength(k); ST.landed(k); const dx=s.x-pos.x, dz=s.z-pos.z, l=Math.hypot(dx,dz)||1; s.sx=dx/l*.8*T; s.sz=dz/l*.8*T; SFX.play('thud',{vol:.5,pitch:1.1,vary:.2}); }
     if(B.hp<=0)return boutEnd(true);
     if((B.cd-=dt)<=0&&Math.hypot(pos.x-s.x,pos.z-s.z)<1.3*T){ B.cd=Math.max(.9,2-.15*S.belt); B.A.hit=.3; const r=VIT.hurt?VIT.hurt(.04+.012*S.belt,s):1; if(r!==2)SFX.play('thud',{vol:.6,pitch:.8}); } };
 
@@ -175,7 +175,7 @@ const ROOFQ={built:false}; window.ROOFQ=ROOFQ;
   const build=()=>{ '@later'; const A=MODS.apts.A, X=SHARED.BOD.X, Z=SHARED.BOD.Z, mine=(MODS.apts.blocks||[]).find(b=>b.mine); MH=T/.84; MV=SHARED.BOD.YS(24)/.84;
     R={A,W:Math.abs(A.x1-A.x0),U:u=>X(A.x0+u),V:v=>Z(A.y0+v),top:MODS.apts.lvY(MODS.apts.floors||3),box:mine?mine.box:[X(A.x0),Z(A.y0),X(A.x1),Z(A.y1)]};
     G=new THREE.Group(); G.name='roofquests'; scene.add(G); ghBuild(); twBuild(); runBuild(); ROOFQ.built=true; };
-  let far=true; SYS.add('places',dt=>{ if(!ROOFQ.built){ if(MODS.apts&&MODS.apts.A&&MODS.apts.blocks&&SHARED.BOD&&window.__started){ const A=MODS.apts.A, x=SHARED.BOD.X((A.x0+A.x1)/2), z=SHARED.BOD.Z((A.y0+A.y1)/2); if(Math.hypot(pos.x-x,pos.z-z)<60*T)build(); } return; }
+  let far=true; SYS.add('places',dt=>{ if(!ROOFQ.built){ if(MODS.apts&&MODS.apts.A&&MODS.apts.blocks&&SHARED.BOD&&SYS.started){ const A=MODS.apts.A, x=SHARED.BOD.X((A.x0+A.x1)/2), z=SHARED.BOD.Z((A.y0+A.y1)/2); if(Math.hypot(pos.x-x,pos.z-z)<60*T)build(); } return; }
     dt=Math.min(.1,dt||0); const cx=(R.box[0]+R.box[2])/2, cz=(R.box[1]+R.box[3])/2, near=SHARED.LVL==='up'&&!ROOMS.cur&&Math.hypot(pos.x-cx,pos.z-cz)<70*T; if(near===far){ far=!near; G.visible=near; }
     if(!near){ if(B.on)boutEnd(false); if(B.N)VIS.hide(B.N.g,'roofq',true); return; }
     const nt=night(); for(const m of M)if(m.lamp)m.lamp.visible=nt; if(C.th)C.th.name=nt?'THE NIGHT RUN (A CHALK MARK)':'A CHALK ARROW';

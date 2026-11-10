@@ -1,6 +1,6 @@
 // THE GOLEMS' CAVE: GCAVE builds the golems' cave in the park (a great boulder mountain, moss on its shoulders and grass on top, a wide arched mouth) and sets out the squirrel's tower site.
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, CLOCK, INV, LITE, MAIL, PARK, ROOMS, TRADE, UI, WEEDS} from './003b-systems.js';
+import {CITY, CLOCK, INV, LITE, MAIL, PARK, PAWNL, ROOMS, TRADE, UI, WEEDS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FIX, MAPG, MODS, PARKCAVE, PARKTOWER, SOL, STORE, SYS, TILE} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
@@ -70,13 +70,13 @@ const GCAVE={ready:false}; window.GCAVE=GCAVE;
       for(let k=0;k<20;k++){ const a=Math.random()*Math.PI*2, r=1+Math.random()*2.6, x=CX+Math.cos(a)*r*T, z=CZ+Math.sin(a)*r*T; if(k===19||Math.hypot(x-CX-2.2*T,z-CZ)>1.2*T)return {x,z}; } };
     GCAVE.haunt=()=>{ return 'cave'; const h=CLOCK.h; if(h>=21||h<7)return 'cave'; const r=hs(Math.floor(h),(window.MAIL&&MAIL.ready?MAIL.day():0),21); return r<.22?'mouth':r<.34?'cave':'round'; };
     const hit=(x,z,w,h,o)=>{ const hb=new THREE.Mesh(new THREE.BoxGeometry(w,h,w),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(x,h/2,z); grp.add(hb); o.obj=hb; UI.thing(o); return o; };
-    hit(CX+TS[0]*T,CZ,1.4*T,Y(40),{name:'THE TRADING STONE',reach:1.3*T,near:2.4*T,tall:Y(50),act:()=>{ if(window.TRADE)TRADE.open(); }});
+    hit(CX+TS[0]*T,CZ,1.4*T,Y(40),{name:'THE TRADING STONE',reach:1.3*T,near:2.4*T,tall:Y(50),act:()=>{ if(TRADE)TRADE.open(); }});
     GCAVE.lift={x:CX,z:CZ-3.4*T}; hit(GCAVE.lift.x,GCAVE.lift.z,1.1*T,Y(6),{name:'A CRACK IN THE FLOOR',reach:1.2*T,near:2.2*T,tall:Y(14),act:()=>{ if(MODS.gemcave)MODS.gemcave.go(1); }});
-    GCAVE.glints=GL.map(([dx,dy],i)=>{ const th=hit(CX+dx*T,CZ+dy*T,.6*T,Y(12),{name:'A GLINT',reach:.7*T,near:1.6*T,tall:Y(20),act:()=>{ if(!window.INV||!INV.pick('cave'+i))return; th.obj.visible=false; glint(i,false); }}); return th; });
-    GCAVE.regrow=()=>{ GCAVE.glints.forEach((th,i)=>{ const up=!window.INV||INV.ready('cave'+i); if(up!==th.obj.visible){ th.obj.visible=up; glint(i,up); } }); };
+    GCAVE.glints=GL.map(([dx,dy],i)=>{ const th=hit(CX+dx*T,CZ+dy*T,.6*T,Y(12),{name:'A GLINT',reach:.7*T,near:1.6*T,tall:Y(20),act:()=>{ if(!INV||!INV.pick('cave'+i))return; th.obj.visible=false; glint(i,false); }}); return th; });
+    GCAVE.regrow=()=>{ GCAVE.glints.forEach((th,i)=>{ const up=!INV||INV.ready('cave'+i); if(up!==th.obj.visible){ th.obj.visible=up; glint(i,up); } }); };
     GCAVE.regrow(); SYS.every(GCAVE.regrow,5000,'060-cave regrow');
     if(STORE.furnish&&STORE.furnish.cave)STORE.furnish.cave({c:S.c,R,X,Z,T,grp});
     GCAVE.tris=dg.attributes.position.count/3; GCAVE.ready=true;
-    for(const N of (window.PAWNL||[]))if(/_\d$/.test(N.key)&&!N.sheet){ const p=GCAVE.spot('cave'); if(!p)continue; try{ CITY.stop(N); }catch(e){} N.st.x=p.x; N.st.z=p.z; N.st.to=null; N.g.position.x=p.x; N.g.position.z=p.z; } };
+    for(const N of (PAWNL||[]))if(/_\d$/.test(N.key)&&!N.sheet){ const p=GCAVE.spot('cave'); if(!p)continue; try{ CITY.stop(N); }catch(e){} N.st.x=p.x; N.st.z=p.z; N.st.to=null; N.g.position.x=p.x; N.g.position.z=p.z; } };
   GCAVE.build=()=>{}; }   // the cave is archived (owner, 4 Nov 2026); its build stays for a restore
 export {GCAVE};

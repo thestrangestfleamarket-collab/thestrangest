@@ -16,6 +16,7 @@
     "wrangler": "^4.42.0"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "1.6.0",
     "@cloudflare/puppeteer": "^1.4.0",
     "partyserver": "0.5.10"
   }

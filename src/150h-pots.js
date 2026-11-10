@@ -8,7 +8,7 @@ import {VEG} from './144-veggies.js';
 import {RADISH} from './146s-radish.js';
 import {ROOMK} from './150a-bedroom.js';
 { const P=RADISH.PLANTS, say=(t,c)=>SAY(t,c||'#e8e2cc'), WET=12, MAXF=3;
-  const hour=()=>((window.MAIL&&MAIL.ready?MAIL.day():window.CITY&&CITY.day||0)*24+(CLOCK.h||0));
+  const hour=()=>((window.MAIL&&MAIL.ready?MAIL.day():CITY&&CITY.day||0)*24+(CLOCK.h||0));
   let S={}; try{ S=JSON.parse(OWNED.get('pots')||'{}')||{}; }catch(e){ S={}; } const save=()=>{ try{ OWNED.set('pots',JSON.stringify(S)); }catch(e){} };
   // growth is the wet hours since planting, counted up to now (or to when the dirt dried)
   const grow=s=>{ const h=hour(); if(s.k&&s.wet>s.at){ const end=Math.min(h,s.wet); if(end>s.at)s.g+=end-s.at; } s.at=h; const p=P[s.k]; if(p&&s.g>=p.first){ const n=1+Math.floor((s.g-p.first)/p.next); s.fr=Math.min(MAXF,Math.max(s.fr||0,n-(s.picked||0))); } return s; };

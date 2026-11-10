@@ -10,7 +10,7 @@ const FAIRY={list:[]}; window.FAIRY=FAIRY;
   const COL=[[0xd8402a,0xf0e6d0],[0xf2ecdc,0xd8c8a8],[0x9a6a3a,0xc89a5a],[0x7ad8e8,0x4ab8d8]], m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color(); let next=20+Math.random()*40;
   const gy=(x,z)=>(typeof SHARED.groundY==='function'?SHARED.groundY(x,z):0);
   const spawn=()=>{ '@later'; for(let k=0;k<24;k++){ const a=Math.random()*6.283, d=(8+Math.random()*16)*T, x=pos.x+Math.cos(a)*d, z=pos.z+Math.sin(a)*d;
-      if(window.WEEDS&&WEEDS.inPark&&!WEEDS.inPark(x,z))continue; if(SOL.up.some(b=>x>b[0]-2*T&&x<b[2]+2*T&&z>b[1]-2*T&&z<b[3]+2*T))continue; if(FAIRY.list.some(r=>Math.hypot(r.x-x,r.z-z)<5*T))continue;
+      if(WEEDS&&WEEDS.inPark&&!WEEDS.inPark(x,z))continue; if(SOL.up.some(b=>x>b[0]-2*T&&x<b[2]+2*T&&z>b[1]-2*T&&z<b[3]+2*T))continue; if(FAIRY.list.some(r=>Math.hypot(r.x-x,r.z-z)<5*T))continue;
       const n=9+Math.floor(Math.random()*6), R=(.8+Math.random()*.6)*T, kind=Math.floor(Math.random()*COL.length), M=[];
       for(let i=0;i<n;i++){ const t=i/n*6.283+Math.random()*.3, rr=R*(.9+Math.random()*.2); M.push([x+Math.cos(t)*rr,z+Math.sin(t)*rr,(.09+Math.random()*.07)*T,Math.random()]); }
       const r={x,z,R,M,kind,t:0,life:240+Math.random()*120,th:null}, hb=new THREE.Mesh(new THREE.CylinderGeometry(R,R,.3*T,10),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(x,gy(x,z)+.15*T,z); g.add(hb);

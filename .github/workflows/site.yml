@@ -70,7 +70,6 @@ jobs:
           k animals 'src/087|src/111db|worker/folk|animals\.cjs'
           k parksolid 'src/111fe|src/100-use|data/world|parksolid\.cjs'
           k guardians 'src/146ja|src/146k|src/146b|worker/dunmobs|src/103a|src/059e|data/guardians|guardians\.cjs|body\.cjs'
-          k faunarest 'src/087-npc-creatures|src/086a-farm|data/fauna|fauna-rest\.cjs'
           k itempics 'src/162e-bag|src/162d-hud|src/162fa-shopinsides|src/150cy|itempics\.cjs'
           k ground  'src/162e-bag|src/150cy-inspect|src/140b-items|data/items|grounditems\.cjs'
           k avdesign 'src/111c-avatar|src/111cb-designer|src/102b-designer|avdesigner\.cjs'
@@ -236,10 +235,6 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' itempics')
         run: node tests/itempics.cjs dist/market.html
-      - name: fauna rests
-        timeout-minutes: 15
-        if: contains(steps.f.outputs.run, ' faunarest')
-        run: node tests/fauna-rest.cjs dist/market.html
       - name: motion
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' motion')

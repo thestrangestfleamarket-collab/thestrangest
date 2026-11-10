@@ -16,14 +16,14 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
   await U(()=>CREATS.length>0,60000); await wait(4000);
   const park=await pg.evaluate(()=>{ const K=new Set(); for(const N of CREATS)K.add(String(N.key).replace(/#\d+$/,'').replace(/\d+$/,'').toLowerCase()); return [...K]; });
   const ANIMALS=['snake','spider','bat','wasp','slime','fox','deer','wolf','bear','cat','blackcat','dog','wildhorse','ibex','lion','elephant','giraffe','zebra','camel','raptor','stego','brachio','ptera','frog','ant','beetle','mantis','snail','slug','crab'];
-  rec('the park keeps no animals but its birds, bees, fireflies and the farm\'s',!park.some(k=>ANIMALS.some(a=>k===a||k.startsWith(a+' ')||k===a.toUpperCase())),park.join(','));
+  rec('the park keeps no animals but its birds, bees, fireflies',!park.some(k=>ANIMALS.some(a=>k===a||k.startsWith(a+' ')||k===a.toUpperCase())),park.join(','));
   // every new kind builds a pet body no bigger than a pet
   const NEW=['snake','bat','slime','pitsnake','cavebat','greenslime','robin','bluejay','cardinal','oriole','starling','sparrow','mockingbird','redwing','redtail','heron','squirrel','giantrat','cavefrog','radspider','giantwasp'];
   const nk=await pg.evaluate(async NEW=>{ const I=await PETS.idx(), out=[]; for(const k of NEW){ const K=I.by[k]; if(!K){ out.push(k+':none'); continue; } const P=PETS.decode(k+'|||'+'|100|0'); P.c=K.zones.map(z=>z[1]);
     try{ const N=await PETS.make('t'+k,P,()=>({x:pos.x,z:pos.z,y:0,hd:0}),{}); if(!N)out.push(k+':nobody'); else { if(N.H>1.3*PETS.WU)out.push(k+':too big'); PETS.drop(N); } }catch(e){ out.push(k+':'+e.message); } } return out; },NEW);
   rec('every new kind (snake, bat, slime, songbirds, cave creatures) builds a pet',!nk.length,nk.join(' '));
-  // the pet shops and the barn: each its own kinds in its cages, its book only its kinds, a cage opens the book on its kind
-  const SH=[['pets','beagle',30],['reptiles','bigliz',30],['birdshop','cardinal',20],['butterflies','butterfly',20],['barn','cow',25]];
+  // the pet shops: each its own kinds in its cages, its book only its kinds, a cage opens the book on its kind
+  const SH=[['pets','beagle',30],['reptiles','bigliz',30],['birdshop','cardinal',20],['butterflies','butterfly',20]];
   for(const [id,key,min] of SH){ const st=await pg.evaluate(async([id,key])=>{ await ROOMS.enter(id); for(let i=0;i<300&&!(PETS.caged&&PETS.caged[id]);i++)await new Promise(r=>setTimeout(r,200)); const I=await PETS.idx();
       const t=UI.things.find(t=>t.name==='A '+I.by[key].name+' ($'+/\$(\d+)\)$/.exec(t.name||'')?.[1]+')')||UI.things.find(t=>t.name.startsWith('A '+I.by[key].name+' ($')); if(!t)return {caged:PETS.caged&&PETS.caged[id],cage:false};
       t.act(t); for(let i=0;i<50&&!(PETS.inShop()&&document.querySelector('#lptk').value===key);i++)await new Promise(r=>setTimeout(r,100));
@@ -33,8 +33,8 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
     rec('the '+id+' shop: its cages, its animals alive in them, a cage opens its book on its kind, the book only its kinds',st.caged>=min&&st.cage&&st.kind===key&&st.only&&st.live>=5,JSON.stringify(st));
     if(OUT){ await pg.evaluate(()=>{ document.querySelector('#lclose')&&document.querySelector('#lclose').click(); UI.setView&&UI.setView('third'); }); await wait(2500); await shot('shop-'+id); }
     await pg.evaluate(id=>{ document.querySelector('#lclose')&&document.querySelector('#lclose').click(); ROOMS.goOut(id); },id); await wait(3000); }
-  const fm=await pg.evaluate(()=>{ const n={}; for(const N of CREATS){ const k=String(N.key).replace(/#\d+$/,'').replace(/\d+$/,'').toLowerCase(); n[k]=(n[k]||0)+1; } const B=MSHOP.at.barn; return {cows:n.cow||0,pigs:n.pig||0,horses:n.horse||0,barn:!!(B&&B.door),door:B&&B.door}; });
-  rec('the park\'s farm: the barn to go into, cows, pigs and horses in the paddock',fm.barn&&fm.cows>0&&fm.pigs>0&&fm.horses>0,JSON.stringify(fm));
+  const fm=await pg.evaluate(async()=>{ const I=await PETS.idx(), k=new Set(); for(const N of CREATS)k.add(String(N.key).replace(/#\d+$/,'').replace(/\d+$/,'').toLowerCase()); return {barn:!!MSHOP.at.barn,herd:['cow','pig','horse','mule'].filter(a=>k.has(a)),kinds:I.kinds.filter(q=>q.shop==='barn').length,cow:!!I.by.cow}; });
+  rec('no barn and no paddock herd in the park; the barn\'s kinds are still pets in the data',!fm.barn&&!fm.herd.length&&fm.kinds>50&&fm.cow,JSON.stringify(fm));
   // the aquarium
   const aq=await pg.evaluate(async()=>{ for(let i=0;i<200&&!(window.AQUA&&AQUA.tanks.length);i++)await new Promise(r=>setTimeout(r,300)); const d=MSHOP.at.aquarium&&MSHOP.at.aquarium.door; return {tanks:AQUA.tanks.length,kinds:AQUA.kinds.length,door:d}; });
   rec('THE AQUARIUM on the Hudson: a tank for every fish and sea animal',aq.tanks>=50&&aq.tanks===aq.kinds,JSON.stringify(aq));

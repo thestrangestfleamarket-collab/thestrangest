@@ -365,7 +365,7 @@ window.PETS=PETS;
   PETS.home=()=>HOME;
   SYS.every(homePets,700,'pets at home');
   SYS.onStart(()=>{ idx().then(()=>tickAll(true)).catch(()=>{}); },'146zj-pets hours');
-  // THE PET SHOPS (owner, 8 Nov 2026): DOGS & CATS, LIZARDS & DRAGONS, THE BIRD SHOP, THE BUTTERFLY SHOP on Market St and THE BARN at the park's farm. Each is the shops' shared inside
+  // THE PET SHOPS (owner, 8 Nov 2026): DOGS & CATS, LIZARDS & DRAGONS, THE BIRD SHOP, THE BUTTERFLY SHOP on Market St (the barn's kinds, shop 'barn' in data/pets.json, are sold nowhere for now). Each is the shops' shared inside
   // (162fa: the keeper's counter) with cages floor to ceiling down the left, back and right walls (the barn: wooden stalls), each furnished for what lives in it, every caged kind
   // (K.cage in data/pets.json) alive in its own (awake, looking round, pacing, asleep, hovering), more of them in the shop windows; the adoption book by the counter has the shop's kinds only
   const CORDER=['pets','dogs','cats','rabbits','farm','horses','livestock','poultry','zoo','wild','reptiles','dino','dragons','creatures','birds','parrots','bugs','shore'];
@@ -477,5 +477,5 @@ window.PETS=PETS;
     kit.drop=()=>{ const d=MSHOP.kit._&&MSHOP.kit._.drop; if(d)d(); }; return kit; };
   const PEND=new Map(); SYS.every(()=>{ for(const [id,q] of PEND){ if(q.A.gen!==q.gen||!q.A.live()){ PEND.delete(id); continue; } if((ROOMS.offIn&&ROOMS.offIn()===id)||WINDOWS.held.has(id)){ PEND.delete(id); q.fill(); } } },300,'pet shops filled');
   const CAGE={CW:1.4,CH:.72,CD:.6,ROWS:4}, STALL={CW:1.7,CH:1.4,CD:1.0,ROWS:1,stall:true};
-  for(const id of ['pets','birdshop','reptiles','butterflies'])MSHOP.kit[id]=cageKit(id,CAGE); MSHOP.kit.barn=cageKit('barn',STALL);
+  for(const id of ['pets','birdshop','reptiles','butterflies'])MSHOP.kit[id]=cageKit(id,CAGE);
 }

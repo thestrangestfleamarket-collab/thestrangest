@@ -4,8 +4,9 @@ import {PARK, pos} from './003b-systems.js';
 import {MODS, QS, TILE} from './006-map-pre.js';
 import {HOMES} from './076-npc-map.js';
 import {STALL} from './081-stalls.js';
+import {BODIES} from './111a-bodies.js';
 import {MERCH} from './111e-merch.js';
-const MUSH={};
+const MUSH={}; let swing=null;
 { const {SPH,CYL,TOR,grp,mk,paint,hash3}=MERCH.K, PI=Math.PI, T=TILE, V3=THREE.Vector3;
   const hex=c=>'#'+c.getHexString(), C=h=>new THREE.Color(h), mix=(a,b,t)=>a.clone().lerp(b,Math.max(0,Math.min(1,t)));
   const vn=(x,y,z)=>{ const xi=Math.floor(x), yi=Math.floor(y), zi=Math.floor(z), f=v=>v*v*(3-2*v), u=f(x-xi), v=f(y-yi), w=f(z-zi), h=(a,b,c)=>hash3(xi+a,yi+b,zi+c), l=(a,b,t)=>a+(b-a)*t;
@@ -41,7 +42,7 @@ const MUSH={};
   const EARTH=C('#7a5b3e'), LOAM=C('#5a4130'), SAND=C('#b39877'), SPORE=C('#e8dfcc');
   const CAPS=['plain:#ece4d4','plain:#e4d8c2','plain:#f0e9dc','plain:#d9c8a8','plain:#ddd0b8'], TANS=['plain:#c8aa82','plain:#b8956a','plain:#c4a47c'];
 
-  const model=()=>{ const sk=MERCH.skel({hipY:.95,waist:.06,neck:.5,shX:.19,shY:.42,upper:.29,fore:.27,hipX:.1,thigh:.45,shin:.46}), {B}=sk;
+  const HAIRM=[], model=()=>{ const sk=MERCH.skel({hipY:.95,waist:.06,neck:.5,shX:.19,shY:.42,upper:.29,fore:.27,hipX:.1,thigh:.45,shin:.46}), {B}=sk;
     /* the skull: carved bone, deep black sockets, the heart-shaped nose, the cheekbones, two rows of teeth and the jaw */
     const H=grp(B.head,[0,.2,0]), bone=g=>paint(g,boneC), BN='wood:vc', BLK='plain:#070504', TOOTH='ivory:#ece2cb';
     H.scale.setScalar(1.28);
@@ -67,10 +68,10 @@ const MUSH={};
       const p=g.attributes.position, cl=new Float32Array(p.count*3);
       for(let i=0;i<p.count;i++){ const x=p.getX(i), y=p.getY(i), z=p.getZ(i), a=Math.atan2(x,z), r=Math.hypot(x,z/.86)||1, d=.004*Math.sin(a*70+fbm(a*9,y*4,1)*6)+.012*(fbm(a*7,y*2.5,2)-.5), e=y<-.4?(fbm(a*26,1,5)*.08+hash3(Math.round(a*90),3,1)*.012)*((-.4-y)/.12):0;
         p.setXYZ(i,x*(1+d/r),y-e,z*(1+d/r)); const c=hairC(a,y); cl.set([c.r,c.g,c.b],i*3); }
-      g.setAttribute('color',new THREE.BufferAttribute(cl,3)); mk(H,g,'fur:vc'); }
+      g.setAttribute('color',new THREE.BufferAttribute(cl,3)); HAIRM.push(mk(H,g,'fur:vc')); }
     for(const s of [1,-1])for(const [k,dx,dz,len] of [[0,0,0,.58],[1,.028,.012,.54],[2,-.02,.02,.5]]){
       const pts=[[s*(.104+dx*.3),.05,.05+dz],[s*(.12+dx),-.1,.09+dz],[s*(.148+dx),-.22,.14+dz],[s*(.152+dx),-.33,.165+dz],[s*(.145+dx),-.04-len,.17+dz]];
-      mk(H,ribbon(pts,.066,22,6,(u,v)=>hairC(u*.4+s*k,v*-.5),{lift:.004,taper:.45,wave:(u,v)=>.004*Math.sin(u*40+k),ragged:(u,v)=>v>.9?hash3(Math.round(u*30),k,s)*.05*(v-.9)*10:0}),'fur:vc'); }
+      HAIRM.push(mk(H,ribbon(pts,.066,22,6,(u,v)=>hairC(u*.4+s*k,v*-.5),{lift:.004,taper:.45,wave:(u,v)=>.004*Math.sin(u*40+k),ragged:(u,v)=>v>.9?hash3(Math.round(u*30),k,s)*.05*(v-.9)*10:0}),'fur:vc')); }
     /* the hat: a wide mound of earth and mycelium, its top crowded with button mushrooms, a few tall ones, the big one on top */
     const HT=grp(H,[0,.0,0]), top=r=>.185-.12*Math.pow(r/.25,1.6);
     { const g=lathe([[.001,.104],[.06,.097],[.1,.07],[.14,.046],[.2,.04],[.24,.046],[.257,.062],[.252,.08],...[.24,.2,.16,.12,.08,.04,.001].map(r=>[r,top(r)])],36,56);
@@ -121,19 +122,43 @@ const MUSH={};
       if(k<.4)shroom(TR,at,[(rnd()-.5)*.6,rnd()*PI*2,(rnd()-.5)*.6],o);
       else if(k<.8){ at[1]+=cr*.6; const b=rnd()*PI*2; shroom(TR,at,[Math.cos(b)*1.45,b,Math.sin(b)*1.45],o); }
       else { at[1]+=h+cr*.4; shroom(TR,at,[PI+(rnd()-.5)*.7,rnd()*PI*2,(rnd()-.5)*.5],o); } }
+    // the hair leaves the baked body: its own mesh on the head bone, so it can swing (MUSH.hairGeo, in the head bone's frame)
+    sk.root.updateMatrixWorld(true); const inv=B.head.matrixWorld.clone().invert(), P=[], Nn=[], Cc=[], I=[];
+    for(const m of HAIRM){ const g=m.geometry.clone().applyMatrix4(new THREE.Matrix4().multiplyMatrices(inv,m.matrixWorld)); g.computeVertexNormals(); const o=P.length/3;
+      for(const [A,L] of [['position',P],['normal',Nn],['color',Cc]])for(const v of g.attributes[A].array)L.push(v); for(const i of g.index.array)I.push(i+o); m.parent.remove(m); }
+    const hg=MUSH.hairGeo=new THREE.BufferGeometry(); hg.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); hg.setAttribute('normal',new THREE.Float32BufferAttribute(Nn,3)); hg.setAttribute('color',new THREE.Float32BufferAttribute(Cc,3)); hg.setIndex(I);
     return sk; };
   MUSH.model=model;
 
   /* ---------- on the street: held at his booth, turning his head to you; the tray held still out in front ---------- */
   const HOLD={ua:[17,4],fa:[78,-15]}, look=N=>{ const s=N.st, d=Math.hypot(pos.x-s.x,pos.z-s.z); let a=0; if(d<7*T&&d>.2*T){ a=Math.atan2(pos.x-s.x,pos.z-s.z)-s.hd; a=Math.atan2(Math.sin(a),Math.cos(a)); a=Math.max(-.9,Math.min(.9,a)); }
     const now=performance.now()/1000, dt=Math.min(.2,now-(N._lt||now)); N._lt=now; N._lk=(N._lk||0)+(a-(N._lk||0))*Math.min(1,dt*2.5); if(Math.abs(N._lk-a)<.004)N._lk=a; return N._lk*180/PI; };
-  const body=MERCH.add({key:'mushroom',label:'THE MUSHROOM SELLER',height:1.75,model,size:11.5,hd:0,idle:(t,N)=>MERCH.pose({nod:-5,bend:3,look:N?look(N):0,L:HOLD,R:HOLD})});
+  const body=MERCH.add({key:'mushroom',label:'THE MUSHROOM SELLER',height:1.75,model,size:11.5,hd:0,idle:(t,N)=>MERCH.pose({nod:-5,bend:3,look:N?look(N):0,L:HOLD,R:HOLD}),after:(B,N)=>{ if(swing)swing(N); }});
   const N=MUSH.N=body&&body.npc;
+  /* ---------- his hair swings: a pendulum from under the hat, pushed by how his head moves (a turn, a nod, a step) and by the wind's gusts, settling still ---------- */
+  if(N&&MUSH.hairGeo){ const HI=BODIES.BONES.indexOf('head'), HM={value:N.PM.value[HI]}, SW={value:new THREE.Vector2()};
+    const bendV=sh=>{ sh.uniforms.uHead=HM; sh.uniforms.uSw=SW; sh.vertexShader='uniform mat4 uHead; uniform vec2 uSw;\n'+sh.vertexShader.replace('#include <begin_vertex>','vec3 hp=position; float hw=pow(clamp((.2-hp.y)/.75,0.,1.),1.6); hp.xz+=uSw*hw; hp.y+=.5*dot(uSw,uSw)*hw/.75; vec3 transformed=(uHead*vec4(hp,1.)).xyz;'); };
+    const mat=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.9,metalness:0,side:THREE.DoubleSide});
+    mat.onBeforeCompile=sh=>{ bendV(sh); sh.vertexShader=sh.vertexShader.replace('#include <beginnormal_vertex>','vec3 objectNormal=mat3(uHead)*normal;'); sh.fragmentShader=sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*.06;'); };
+    mat.customProgramCacheKey=()=>'mushhair';
+    const dep=new THREE.MeshDepthMaterial({side:THREE.DoubleSide,depthPacking:THREE.RGBADepthPacking}), dis=new THREE.MeshDistanceMaterial({side:THREE.DoubleSide}); dep.onBeforeCompile=bendV; dis.onBeforeCompile=bendV; dep.customProgramCacheKey=()=>'mushhaird'; dis.customProgramCacheKey=()=>'mushhairx';
+    const hm=new THREE.Mesh(MUSH.hairGeo,mat); hm.customDepthMaterial=dep; hm.customDistanceMaterial=dis; hm.castShadow=hm.receiveShadow=true;
+    Object.defineProperty(hm,'boundingSphere',{configurable:true,get(){ return N.g.children[0].boundingSphere; },set(){}}); N.g.add(hm); MUSH.hair=hm; MUSH.sw=SW.value;
+    const o=new THREE.Vector2(), v=new THREE.Vector2(), M=new THREE.Matrix4(), tip=new V3(), p0=new V3(), v0=new V3(), vp=new V3(), a=new V3(), ex=new V3(), ez=new V3(); let t0=0, primed=false;
+    swing=N=>{ const now=performance.now()/1000, dt=now-t0; t0=now; M.multiplyMatrices(N.g.matrixWorld,N.PM.value[HI]); tip.set(0,-.38,-.16).applyMatrix4(M);
+      if(!primed||dt>1||dt<=0){ p0.copy(tip); v0.set(0,0,0); primed=true; return; }
+      vp.subVectors(tip,p0).divideScalar(dt); a.subVectors(vp,v0).divideScalar(dt); p0.copy(tip); v0.copy(vp);
+      ex.setFromMatrixColumn(M,0); const sc=ex.length()||1; ex.divideScalar(sc); ez.setFromMatrixColumn(M,2).normalize();
+      let ax=-a.dot(ex)/sc*3, az=-a.dot(ez)/sc*3; const am=Math.hypot(ax,az); if(am>30){ ax*=30/am; az*=30/am; }
+      const w=Math.max(0,(PARK.windK?PARK.windK.value:0)-.6); if(w>0){ const g=w*(.5+.5*Math.sin(now*.8))*(.5+.5*Math.sin(now*.31+1))*2.2; ax+=g*ex.x; az+=g*ez.x; }
+      const n=Math.min(24,Math.ceil(dt*120)), h=dt/n; for(let i=0;i<n;i++){ v.x+=(-20*o.x-2.2*v.x+ax)*h; v.y+=(-20*o.y-2.2*v.y+az)*h; o.addScaledVector(v,h); }
+      if(Math.abs(o.x)>.11){ o.x=Math.sign(o.x)*.11; v.x=0; } if(o.y<-.05||o.y>.07){ o.y=Math.max(-.05,Math.min(.07,o.y)); v.y=0; }
+      if(o.lengthSq()<2.5e-7&&v.lengthSq()<4e-6&&!w){ o.set(0,0); v.set(0,0); } SW.value.copy(o); }; }
   if(N){ const st=N.st; st.hold=true; st.to=st.next=null; N.H=2.3*T;
     const wait=()=>{ if(!MODS.park)return setTimeout(wait,500); const P=PARK, X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0)), A=STALL.at('mush');
       MUSH.booth=STALL.build({X,Z,x0:A.x0,x1:A.x1,y:P.y0,veg:false,seed:7,gate:A.gate,name:A.name});
       if(QS.get('sheet')==='mushroom'||QS.get('npcat')||HOMES.keeper(N))return; const S=MUSH.booth; S.N=N; N.free=()=>true;
       Object.assign(st,{x:S.home.x,z:S.home.z,to:null,next:null,hold:true,pin:true,hd:Math.atan2(S.face.x-S.home.x,S.face.z-S.home.z)}); };
     wait(); }
-  window.SELLERDBG=()=>({booth:!!MUSH.booth,key:N&&N.key,x:N&&+N.st.x.toFixed(2),z:N&&+N.st.z.toFixed(2),y:N&&+N.g.position.y.toFixed(2),vis:N&&N.g.visible,tris:body&&body.tris()}); }
+  window.SELLERDBG=()=>({swing:!!swing,sw:MUSH.sw?[+MUSH.sw.x.toFixed(4),+MUSH.sw.y.toFixed(4)]:null,booth:!!MUSH.booth,key:N&&N.key,x:N&&+N.st.x.toFixed(2),z:N&&+N.st.z.toFixed(2),y:N&&+N.g.position.y.toFixed(2),vis:N&&N.g.visible,tris:body&&body.tris()}); }
 export {MUSH};

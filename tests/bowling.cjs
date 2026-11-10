@@ -28,6 +28,8 @@ const OUT = process.argv[3];
     const d0 = await pg.evaluate(() => ({ ...BOWL.where(), built: !!(BOWL.K && BOWL.K()), lazy: !(ROOMS.lazy.bowling && ROOMS.lazy.bowling.done), skill: FORAGE.SK.some(s => s[0] === 'bowl' && s[1] === 'BOWLING') && FORAGE.sk('bowl') === 0 }));
     ok(d0.reg && !d0.built && d0.lazy && d0.off && d0.door && d0.door[0] > d0.lot[0] && d0.door[0] < d0.lot[1] && Math.abs(d0.door[1] - d0.lot[2]) < 1.5, 'THE STRANGEST LANES: its door on Market St\'s row, its inside off the map, not built before you go in: ' + JSON.stringify(d0));
     ok(d0.skill, 'BOWLING is a skill, starting at 0');
+    // (a way in is refused while a fade runs, as a player's click would be: wait for the start's fades to finish)
+    await until(() => !FADE.busy, null, 60000);
     await pg.evaluate(() => ROOMS.enter('bowling'));
     ok(await until(() => BOWL.dbg().built && BOWL.dbg().inside, null, 120000), 'going in builds it and puts you inside');
     ok(await until(() => BOWL.dbg().phys, null, 60000), 'the physics (Rapier) is ready in the alley');

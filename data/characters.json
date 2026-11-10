@@ -3943,6 +3943,7 @@
   "name": "THE CHINCHINERO"
  },
  "village_gardener": {
+  "signs": true,
   "pf": "village-gardener-9f7af6",
   "group": "park",
   "job": {
@@ -4321,6 +4322,7 @@
   "name": "THE CHILD WITH A PAINTED FACE"
  },
  "diner_waitress": {
+  "signs": true,
   "pf": "diner-waitress-60f6a1",
   "group": "diner",
   "job": {

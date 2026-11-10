@@ -232,6 +232,9 @@ One tree pass (more leaves mean more shadow triangles).
 - [x] **More animals rest** (done 10 Nov 2026) · P3 · M · code. Done: dog, fox, wolf, horse, wild horse, mule, cow, pig (the fox's Sleep, `tools/m2m-bake.cjs farm`); the other fox-rig animals are not in the game.
 - [x] **Dances and juggling** (owner, 9 Nov 2026: "Dances CMU motion-capture library", "juggling") · done 10 Nov: two PERFORMANCE skills, each a book of 50.
 - [ ] **The owner tries dancing and juggling live** · P2 · S · look. The dance book (EMOTES > DANCE BOOK), juggling from a ball or club in the bag; the CMU loops' look.
+- [x] **Sign language** (owner, 9 Nov 2026: "sign language", "Both") · done 10 Nov: a SIGN LANGUAGE skill (LANGUAGE), signed chat, two townsfolk who only sign.
+- [ ] **The owner looks at the signs** · P2 · S · look. The handshapes and motions are hand-authored and simplified; which townsfolk sign (the diner waitress, the village gardener); the 60% gate.
+- [ ] **More animals rest** · P3 · M · code. Done: dog, fox, wolf, horse, wild horse, mule; the others on the fox's rig (`tools/m2m-bake.cjs`).
 - [ ] **Standing up from a seat** · P3 · M · code · risk med. `stand()` in `src/100-use.js` puts you off the seat at once: play the
   stand-up first, then move you off, without blocking movement.
 - [x] **Fishing from the rowboat has no body move** · done 10 Nov: sat in the boat the rod is held and swung to cast and reel (a seat with `hold`).

@@ -1,81 +1,4 @@
 {
- "Self-Portrait|Vincent van Gogh": {
-  "name": "GUIDED TOUR",
-  "steps": [
-   {
-    "title": "SELF-PORTRAIT, PARIS, 1887",
-    "text": "Vincent van Gogh painted this in Paris in 1887. He had moved there the year before to live with his brother Theo, an art dealer, after Theo wrote to him about the new, colourful French painting.\nIt is small: 42 by 34 centimetres, painted in oil on cardboard rather than canvas."
-   },
-   {
-    "at": [
-     0.0,
-     0.0,
-     0.34,
-     0.36
-    ],
-    "title": "THE BACKGROUND",
-    "text": "The blue behind him is not one flat colour. It is hundreds of short, slanting strokes of blue, green and grey laid side by side.\nAround his head the strokes change direction and follow its outline, so the background seems to vibrate and the head stands out against it."
-   },
-   {
-    "at": [
-     0.08,
-     0.02,
-     0.8,
-     0.36
-    ],
-    "title": "THE GREY FELT HAT",
-    "text": "The Rijksmuseum describes him here as a fashionably dressed Parisian: felt hat, jacket, a blue cravat.\nThe hat is built from pale, thick strokes of grey, green and pink, with the dark band dashed in on top. Zoom in and you can see the ridges of paint standing up off the board."
-   },
-   {
-    "at": [
-     0.26,
-     0.3,
-     0.5,
-     0.17
-    ],
-    "title": "THE EYES",
-    "text": "His eyes are green, and the face around them is not smoothly shaded. It is made of separate touches of orange, pink, green and blue.\nUp close it is a patchwork of colour. Step back and it reads as skin in light and shadow."
-   },
-   {
-    "at": [
-     0.32,
-     0.46,
-     0.38,
-     0.26
-    ],
-    "title": "THE BEARD: COMPLEMENTARY COLOURS",
-    "text": "The red-orange beard sits right against the blue background. Orange and blue are complementary colours, opposite each other on the colour wheel, and side by side each makes the other look stronger.\nVan Gogh had read about these contrasts in colour theory before he came to Paris. Here he puts them to work in bright colour."
-   },
-   {
-    "at": [
-     0.32,
-     0.6,
-     0.32,
-     0.23
-    ],
-    "title": "THE CRAVAT AND THE RED LINE",
-    "text": "At his throat are a blue cravat and a thin red stroke running down beside the white shirt.\nSmall accents like these pull the eye to the centre of the picture and echo the reds and blues used everywhere else in it."
-   },
-   {
-    "at": [
-     0.0,
-     0.64,
-     0.62,
-     0.36
-    ],
-    "title": "THE COAT: DASHES OF COLOUR",
-    "text": "His brown jacket is not painted brown. It is made of short dashes of orange, blue, green and red.\nIn Paris Van Gogh came to know the work of Georges Seurat and Paul Signac, who built pictures from small dots of pure colour that mix in the viewer's eye. He painted alongside Signac in 1887. He borrowed the idea and loosened it into his own rhythmic strokes."
-   },
-   {
-    "title": "WHY SO MANY SELF-PORTRAITS?",
-    "text": "In Paris he painted himself again and again, trying out the new French style.\nAs the Rijksmuseum notes, he did it mostly to avoid paying for a model. A mirror cost nothing."
-   },
-   {
-    "title": "WHERE IT WENT",
-    "text": "Van Gogh gave this painting to Andries Bonger, the brother of Theo's wife, Jo. After Andries died, his widow, Françoise Bonger, gave it to the Rijksmuseum in 1936.\nIt hangs there today among the Hague School, the Amsterdam Impressionists and Van Gogh's contemporaries."
-   }
-  ]
- },
  "Woman Reading|Édouard Manet": {
   "name": "GUIDED TOUR",
   "steps": [
@@ -497,6 +420,1172 @@
    {
     "title": "A RESTFUL ROOM",
     "text": "The lines rush into the distance and the paint is thick and broken, but Van Gogh meant the picture to be calm and restful. He made a third, smaller version as a gift for his mother and sister.\nThis one is in the Art Institute of Chicago."
+   }
+  ]
+ },
+ "Landscape with Charon Crossing the Styx|Joachim Patinir": {
+  "name": "GUIDED TOUR",
+  "steps": [
+   {
+    "title": "LANDSCAPE WITH CHARON CROSSING THE STYX",
+    "text": "Joachim Patinir painted this in Antwerp, around 1520 to 1524. It hangs in the Prado in Madrid.\nIt is small, about 64 by 103 centimetres, and visitors are often surprised by it. One wrote that it is small, \"but boy I wasn't ready for that blue.\""
+   },
+   {
+    "at": [
+     0.44,
+     0.48,
+     0.14,
+     0.22
+    ],
+    "title": "CHARON AND HIS PASSENGER",
+    "text": "In the middle of the river is Charon, the ferryman of the dead from Greek myth, rowing a small boat. His passenger is a naked soul, a person who has just died.\nThe river is the Styx. Everything else in the painting is the choice that soul has to make."
+   },
+   {
+    "at": [
+     0.0,
+     0.3,
+     0.42,
+     0.42
+    ],
+    "title": "THE WAY TO PARADISE",
+    "text": "On the left bank is paradise: green meadows, clear streams, a crystal fountain and angels walking with souls.\nBut look at the shore nearest the boat. The way in is narrow, through a thicket, and hard to see."
+   },
+   {
+    "at": [
+     0.62,
+     0.18,
+     0.38,
+     0.5
+    ],
+    "title": "THE WAY TO HELL",
+    "text": "On the right bank the trees are gentle and the shore is open, an easy, pleasant landing. It leads straight to the gate of hell, guarded by the three-headed dog Cerberus.\nBehind it the sky burns red and the buildings are on fire."
+   },
+   {
+    "at": [
+     0.36,
+     0.48,
+     0.24,
+     0.25
+    ],
+    "title": "WHERE IS THE SOUL LOOKING?",
+    "text": "The soul in the boat turns towards hell, towards the easy way.\nPatinir is showing a Christian idea from the Gospel of Matthew: the gate to life is narrow and few find it; the road to destruction is wide."
+   },
+   {
+    "at": [
+     0.0,
+     0.12,
+     0.6,
+     0.25
+    ],
+    "title": "THE FIRST LANDSCAPE PAINTER",
+    "text": "The tiny figures are almost an excuse. Patinir made the world itself the subject: a high horizon, far blue hills, a river running into the distance.\nThe German artist Albrecht Dürer, who met him in Antwerp in 1521, called him \"the good landscape painter\". He is often named as the first painter of landscapes."
+   },
+   {
+    "title": "THE BLUE",
+    "text": "The far distance turns blue and pale. Painters call this aerial perspective: air makes faraway things look bluer and fainter.\nPatinir pushed it further than anyone before him. The blue of the river and the hills is what people remember when they leave."
+   }
+  ]
+ },
+ "The Dog|Francisco de Goya": {
+  "name": "GUIDED TOUR",
+  "steps": [
+   {
+    "title": "THE DOG, 1819–23",
+    "text": "Francisco de Goya painted this between 1819 and 1823, straight onto the plaster wall of his house outside Madrid. It is now in the Prado.\nOne visitor said: \"Saw Goya's Dog in person and I could barely breathe. Devastating.\""
+   },
+   {
+    "at": [
+     0.28,
+     0.74,
+     0.22,
+     0.14
+    ],
+    "title": "THE HEAD",
+    "text": "Near the bottom, a dog's head looks up from behind a dark slope. That is all we see of it.\nIs it sinking in sand, drowning, hiding? Its body is gone. Its eyes are open, looking up."
+   },
+   {
+    "at": [
+     0.0,
+     0.0,
+     1.0,
+     0.75
+    ],
+    "title": "THE EMPTY SPACE",
+    "text": "Almost all the rest is empty: a huge field of ochre and grey, with no horizon, no sky you can name.\nNo painting before it left so much space empty. It looks forward to abstract painting a hundred years later."
+   },
+   {
+    "at": [
+     0.0,
+     0.65,
+     1.0,
+     0.35
+    ],
+    "title": "THE SLOPE",
+    "text": "The dark brown shape rising from left to right could be a hill, a wave of earth, or mud.\nThe dog is too small for the world around it, and alone."
+   },
+   {
+    "at": [
+     0.55,
+     0.0,
+     0.45,
+     0.25
+    ],
+    "title": "THE SHADOW AT THE TOP",
+    "text": "Look at the upper right. There is a faint darker shape there. Some think the dog was once looking up at something painted there, a rock or birds, that was lost when the murals were moved.\nNo one is sure what was intended."
+   },
+   {
+    "title": "THE BLACK PAINTINGS",
+    "text": "The Dog is one of fourteen murals Goya painted on the walls of his house, the Quinta del Sordo, the 'Deaf Man's Villa'. He was over seventy, deaf, and had lived through war and illness.\nThey were never meant to be seen. Today they are called the Black Paintings. Saturn Devouring His Son is one of them."
+   },
+   {
+    "title": "OFF THE WALLS",
+    "text": "Around 1874 the paintings were peeled off the walls and moved onto canvas, and they were given to the Prado in 1881.\nThe name 'The Dog' was given later. Goya himself left no titles and no explanation."
+   }
+  ]
+ },
+ "Supper at Emmaus|Caravaggio": {
+  "name": "GUIDED TOUR",
+  "steps": [
+   {
+    "title": "SUPPER AT EMMAUS, 1601",
+    "text": "Michelangelo Merisi da Caravaggio painted this in Rome in 1601. It hangs in the National Gallery, London.\nThe figures are life-size, and they seem to lean right out of the picture into your space."
+   },
+   {
+    "title": "THE STORY",
+    "text": "In the Gospel of Luke, two of Jesus's followers walk to the village of Emmaus on the day of the Resurrection. A stranger joins them on the road and they invite him to supper.\nWhen he blesses and breaks the bread, they suddenly recognise him: it is Jesus, risen from the dead. Then he vanishes."
+   },
+   {
+    "at": [
+     0.36,
+     0.18,
+     0.34,
+     0.48
+    ],
+    "title": "CHRIST WITHOUT A BEARD",
+    "text": "In the centre Christ raises his hand in blessing. He is young, round-faced and beardless, not the bearded Jesus everyone knew.\nLuke says the disciples did not recognise him at first. Caravaggio makes sure we nearly don't either."
+   },
+   {
+    "at": [
+     0.68,
+     0.3,
+     0.32,
+     0.32
+    ],
+    "title": "THE ARMS FLUNG WIDE",
+    "text": "On the right, a disciple flings his arms out in shock, one hand reaching towards us and the other back into the dark.\nHis arms make the shape of the cross. The scallop shell on his coat is the badge of a pilgrim."
+   },
+   {
+    "at": [
+     0.0,
+     0.32,
+     0.36,
+     0.4
+    ],
+    "title": "THE CHAIR",
+    "text": "On the left, the other disciple grips his chair, about to jump up. His elbow pokes out at us, and his jacket is torn at the elbow.\nThese are poor working men, painted from real people in the streets of Rome."
+   },
+   {
+    "at": [
+     0.3,
+     0.6,
+     0.45,
+     0.2
+    ],
+    "title": "THE BASKET ON THE EDGE",
+    "text": "The fruit basket hangs over the edge of the table, about to fall into our space. Its shadow falls on the cloth.\nLook closely at the fruit: some of it is going bad. Caravaggio painted still life as carefully as faces."
+   },
+   {
+    "at": [
+     0.24,
+     0.0,
+     0.16,
+     0.4
+    ],
+    "title": "THE INNKEEPER",
+    "text": "The innkeeper stands with his cap on, puzzled. He sees only a guest, not a miracle.\nChrist has no halo. The only sign of something holy is the light on his face, and the innkeeper's shadow on the wall behind him."
+   },
+   {
+    "title": "LIGHT AND DARK",
+    "text": "The light falls hard from the upper left, and everything else sinks into black. Painters call this chiaroscuro, light-dark; Caravaggio pushed it so far it got its own name, tenebrism.\nFive years later he killed a man in a fight and fled Rome. He died in 1610, at 38."
+   }
+  ]
+ },
+ "The Entombment|Michelangelo": {
+  "name": "GUIDED TOUR",
+  "steps": [
+   {
+    "title": "THE ENTOMBMENT, c. 1500–01",
+    "text": "Michelangelo Buonarroti painted this in Rome around 1500 to 1501, when he was about 25, just after he carved the Pietà in St Peter's. It hangs in the National Gallery, London.\nIt is unfinished. It shows how he built a painting, layer by layer."
+   },
+   {
+    "at": [
+     0.36,
+     0.15,
+     0.24,
+     0.75
+    ],
+    "title": "THE BODY OF CHRIST",
+    "text": "In the centre, the dead Christ is carried towards his tomb, held up by a strip of linen under his arms.\nHis body is painted like a statue: pale, smooth, heroic, more like carved marble than flesh. Michelangelo always thought of himself first as a sculptor."
+   },
+   {
+    "at": [
+     0.06,
+     0.06,
+     0.33,
+     0.75
+    ],
+    "title": "THE MAN IN RED",
+    "text": "On the left, a young man in a red robe leans back, straining to hold the weight. He is probably John the Evangelist.\nHis pose twists, his feet braced on the step. You can feel how heavy the body is."
+   },
+   {
+    "at": [
+     0.55,
+     0.06,
+     0.25,
+     0.8
+    ],
+    "title": "THE WOMAN IN GREEN",
+    "text": "On the right a woman, one of the followers of Jesus, helps with the other end of the cloth, turning to look back.\nNotice how the three figures make an arch around the body, like a doorway."
+   },
+   {
+    "at": [
+     0.0,
+     0.45,
+     0.24,
+     0.5
+    ],
+    "title": "THE KNEELING WOMAN",
+    "text": "In the lower left corner, a woman kneels. Her hands and the cloth by her are only sketched in.\nShe is probably Mary Magdalene, looking at the crown of thorns and the nails, which were never painted."
+   },
+   {
+    "at": [
+     0.74,
+     0.42,
+     0.26,
+     0.58
+    ],
+    "title": "THE EMPTY CORNER",
+    "text": "The lower right is bare: just the brownish ground layer, with a figure only outlined.\nThis was probably meant for Mary, his mother. Michelangelo may have been waiting for expensive ultramarine blue for her robe, the colour always used for Mary. It never came: he left Rome for Florence in 1501 to carve the David."
+   },
+   {
+    "title": "WHY NOT THE SISTINE CHAPEL?",
+    "text": "Michelangelo's great paintings, the Sistine Chapel ceiling and The Last Judgment, are in the Vatican, on walls you cannot move.\nThis museum shows one of the very few paintings on panel by him that survive, in London."
+   }
+  ]
+ },
+ "The Garden of Earthly Delights|Hieronymus Bosch": {
+  "name": "GUIDED TOUR",
+  "steps": [
+   {
+    "title": "THE GARDEN OF EARTHLY DELIGHTS",
+    "text": "Hieronymus Bosch painted this triptych, three hinged panels, in the Netherlands sometime between 1490 and 1510. It hangs in the Prado in Madrid.\nOpen, it is about 2.2 by 3.9 metres. People say you can spend an hour in front of it and still find new things."
+   },
+   {
+    "at": [
+     0.0,
+     0.0,
+     0.24,
+     1.0
+    ],
+    "title": "LEFT: EDEN",
+    "text": "The left panel is the Garden of Eden. God, in pink, presents Eve to a just-woken Adam.\nBut look around them: a cat walks off with a mouse, strange animals eat one another, and an owl, a bird of darkness, peers out of the fountain. Trouble is already in paradise."
+   },
+   {
+    "at": [
+     0.24,
+     0.0,
+     0.52,
+     1.0
+    ],
+    "title": "MIDDLE: THE GARDEN",
+    "text": "The big middle panel is crowded with hundreds of naked people playing, riding animals, swimming, picking giant fruit.\nIt looks like a party. Most scholars read it as a warning: the world given over to pleasure and lust, everyone too busy to notice where it is going."
+   },
+   {
+    "at": [
+     0.36,
+     0.25,
+     0.3,
+     0.25
+    ],
+    "title": "THE RIDERS",
+    "text": "Round a pool a parade of men ride horses, camels, pigs and griffins, circling a pool of women.\nGiant strawberries, cherries and birds are everywhere. Fruit, in the Dutch sayings of the time, stood for pleasures that do not last."
+   },
+   {
+    "at": [
+     0.3,
+     0.55,
+     0.4,
+     0.35
+    ],
+    "title": "STRANGE THINGS",
+    "text": "Zoom in: lovers inside a glass bubble, people in a mussel shell, a man carrying a giant fruit, birds feeding people berries.\nNo one fully understands it. Bosch left no writing about it."
+   },
+   {
+    "at": [
+     0.76,
+     0.0,
+     0.24,
+     1.0
+    ],
+    "title": "RIGHT: HELL",
+    "text": "The right panel is hell, dark and burning. Musical instruments become instruments of torture: a man stretched on a harp, another with music written on his backside.\nA bird-headed monster on a chair eats people and drops them through a hole."
+   },
+   {
+    "at": [
+     0.8,
+     0.25,
+     0.15,
+     0.25
+    ],
+    "title": "THE TREE MAN",
+    "text": "In the middle of hell stands the Tree Man: a body like a cracked eggshell on legs like tree trunks, with a face that turns to look at you.\nIt may be Bosch's own face."
+   },
+   {
+    "title": "THE OUTSIDE",
+    "text": "When the wings are closed, they show the world on the third day of creation, in grey: a clear globe holding the flat earth, with God tiny at the top.\nPhilip II of Spain loved Bosch and bought it; it has been in Spain since 1593."
+   }
+  ]
+ },
+ "The Ghent Altarpiece|Hubert and Jan van Eyck": {
+  "name": "GUIDED TOUR",
+  "steps": [
+   {
+    "title": "THE GHENT ALTARPIECE, 1432",
+    "text": "Hubert and Jan van Eyck made this altarpiece for St Bavo's Cathedral in Ghent, Belgium, where it still stands. An inscription says Hubert began it and Jan finished it in 1432.\nOpen, it is twelve panels of oak, about 3.5 by 4.6 metres. It is one of the most stolen artworks in history."
+   },
+   {
+    "at": [
+     0.26,
+     0.6,
+     0.48,
+     0.4
+    ],
+    "title": "THE ADORATION OF THE MYSTIC LAMB",
+    "text": "The great lower panel gives the altarpiece its name. In a meadow full of flowers, crowds of saints, prophets, popes, martyrs and pilgrims come from every side to worship a lamb on an altar.\nThe lamb stands for Christ, who in Christian belief was sacrificed like a lamb."
+   },
+   {
+    "at": [
+     0.42,
+     0.62,
+     0.16,
+     0.14
+    ],
+    "title": "THE LAMB AND THE FOUNTAIN",
+    "text": "Blood pours from the lamb's chest into a golden chalice. Below, the Fountain of Life flows towards the viewer.\nIn the 1500s someone painted over the lamb's face. When restorers removed that paint in 2019 the original came back: a strangely human face with eyes that look straight at you. The internet was not ready."
+   },
+   {
+    "at": [
+     0.4,
+     0.0,
+     0.2,
+     0.57
+    ],
+    "title": "GOD ENTHRONED",
+    "text": "At the top centre sits a figure in red with a jewelled crown at his feet, God or Christ as king.\nZoom in on the jewels and the embroidered hems. Each pearl has its own highlight and shadow."
+   },
+   {
+    "at": [
+     0.26,
+     0.08,
+     0.15,
+     0.5
+    ],
+    "title": "MARY, READING",
+    "text": "To the left of God sits the Virgin Mary, crowned, reading a book. On the right is John the Baptist.\nThe van Eycks did not invent oil paint, but they mastered it. Thin transparent layers, called glazes, give the robes a glow no one had seen before."
+   },
+   {
+    "at": [
+     0.0,
+     0.0,
+     0.1,
+     0.58
+    ],
+    "title": "ADAM",
+    "text": "On the far left stands Adam, the first man, almost life-size and fully naked: among the first nudes this real in northern European art.\nHe stands in a niche high above you, and his right foot seems to step out of it towards you."
+   },
+   {
+    "at": [
+     0.91,
+     0.0,
+     0.09,
+     0.58
+    ],
+    "title": "EVE",
+    "text": "Eve faces him from the far right, holding a fruit. Above them, small grey scenes show their sons Cain and Abel and the first murder.\nThe two were so shocking to later viewers that in the 1800s they were swapped for copies wearing clothes."
+   },
+   {
+    "at": [
+     0.76,
+     0.13,
+     0.15,
+     0.45
+    ],
+    "title": "THE ANGEL MUSICIANS",
+    "text": "On this side angels play an organ, a harp and a viol; on the other side angels sing.\nLook at the singers' faces. You can almost tell which part each one is singing from how wide their mouths are open."
+   },
+   {
+    "at": [
+     0.0,
+     0.6,
+     0.26,
+     0.4
+    ],
+    "title": "THE STOLEN PANEL",
+    "text": "In 1934 the lower-left panel, the Just Judges, was stolen. A ransom note came; it was never found. What you see there is a copy made in 1945.\nThe whole altarpiece was also taken by Napoleon's armies and by the Nazis, who hid it in a salt mine in Austria, where the Allied 'Monuments Men' found it in 1945."
+   }
+  ]
+ },
+ "The Body of the Dead Christ in the Tomb|Hans Holbein the Younger": {
+  "name": "GUIDED TOUR",
+  "steps": [
+   {
+    "title": "THE BODY OF THE DEAD CHRIST IN THE TOMB, 1520–22",
+    "text": "Hans Holbein the Younger painted this in Basel, Switzerland, around 1520 to 1522, when he was in his early twenties. It hangs in the Kunstmuseum Basel.\nIt is only 30.5 centimetres high but two metres long: life-size, the length of a man lying down."
+   },
+   {
+    "title": "A BOX FOR A BODY",
+    "text": "Christ lies alone in a narrow stone tomb, seen from the side, as if the lid has been lifted. There are no angels, no mourners, no light from heaven.\nThe painting is the shape of the tomb itself. Standing in front of it you are looking into a coffin."
+   },
+   {
+    "at": [
+     0.0,
+     0.0,
+     0.24,
+     1.0
+    ],
+    "title": "THE FACE",
+    "text": "His eyes are half open and rolled back, his mouth hangs open. The skin around the face has started to turn grey-green.\nThis is not a sleeping saint. It is a dead man, three days in the tomb, and Holbein does not look away."
+   },
+   {
+    "at": [
+     0.18,
+     0.0,
+     0.36,
+     1.0
+    ],
+    "title": "THE WOUNDS",
+    "text": "The wound in his side and the wounds in his hand and feet are painted plainly, like a doctor's record.\nHolbein may have painted from a real corpse; one story says it was a body pulled from the Rhine."
+   },
+   {
+    "at": [
+     0.48,
+     0.25,
+     0.16,
+     0.6
+    ],
+    "title": "THE HAND",
+    "text": "His right hand lies at his side, the middle finger stretched out, almost touching the edge of the frame, the wound dark and open.\nIt reaches towards us, out of the tomb."
+   },
+   {
+    "at": [
+     0.85,
+     0.0,
+     0.15,
+     1.0
+    ],
+    "title": "THE FEET",
+    "text": "His feet break past the line of the stone, almost out of the box. His hair spills over the edge at the other end.\nThe body is too long for the space it is in, which makes the tomb feel even tighter."
+   },
+   {
+    "title": "DOSTOEVSKY",
+    "text": "In 1867 the Russian novelist Fyodor Dostoevsky stood in front of it in Basel for so long that his wife feared he was having an epileptic fit.\nIn his novel The Idiot a character says a man could lose his faith from looking at this painting. Above it, in Latin, the frame reads: Jesus of Nazareth, King of the Jews."
+   }
+  ]
+ },
+ "The Kiss|Gustav Klimt": {
+  "name": "GUIDED TOUR",
+  "steps": [
+   {
+    "title": "THE KISS, 1907–08",
+    "text": "Gustav Klimt painted this in Vienna in 1907 and 1908. It hangs in the Belvedere in Vienna.\nIt is square, 180 by 180 centimetres, and covered in real gold leaf. People often say they did not expect it to glow like it does."
+   },
+   {
+    "title": "THE GOLDEN PERIOD",
+    "text": "Klimt's father was a gold engraver. In 1903 Klimt saw the golden Byzantine mosaics in the churches of Ravenna, in Italy, and they changed his work.\nThis is the high point of what is called his Golden Period. The Austrian state bought it before it was even finished."
+   },
+   {
+    "at": [
+     0.4,
+     0.0,
+     0.3,
+     0.25
+    ],
+    "title": "THE FACES",
+    "text": "The man bends his head down to kiss the woman's cheek. Her eyes are closed, her face turned up towards us.\nWe never see his face. Whether she is giving in to him or holding back is left for you to decide."
+   },
+   {
+    "at": [
+     0.26,
+     0.08,
+     0.24,
+     0.68
+    ],
+    "title": "HIS ROBE",
+    "text": "His robe is covered in black, white and silver rectangles, hard and upright."
+   },
+   {
+    "at": [
+     0.46,
+     0.2,
+     0.24,
+     0.55
+    ],
+    "title": "HER DRESS",
+    "text": "Hers is full of circles and flowers in red, blue and violet.\nSquare for the man, round for the woman: two patterns that meet and melt into one golden shape."
+   },
+   {
+    "at": [
+     0.52,
+     0.62,
+     0.26,
+     0.24
+    ],
+    "title": "HER FEET AND THE EDGE",
+    "text": "They kneel at the very edge of a flowery meadow. Her bare feet curl over the edge, and vines trail from her ankles into nothing.\nOne more step and they would fall. The love is held at the edge of a drop."
+   },
+   {
+    "at": [
+     0.0,
+     0.0,
+     0.3,
+     0.6
+    ],
+    "title": "THE GOLD BACKGROUND",
+    "text": "The background is not a place. It is a shimmering field of gold and bronze, scattered with flecks like stars or dust.\nIt takes the couple out of time, the way a gold background lifts a saint out of the world in an old icon."
+   },
+   {
+    "title": "THE COUPLE",
+    "text": "No one knows for certain who posed. Many think the woman is Emilie Flöge, a fashion designer and Klimt's lifelong companion, and the man Klimt himself.\nKlimt died in 1918. The Kiss is now one of the best-known paintings in the world."
+   }
+  ]
+ },
+ "Water Lilies (Agapanthus)|Claude Monet": {
+  "name": "GUIDED TOUR",
+  "steps": [
+   {
+    "title": "WATER LILIES (AGAPANTHUS), c. 1915–26",
+    "text": "Claude Monet painted this in his garden at Giverny, in France, late in his life. It hangs in the Cleveland Museum of Art.\nIt is about two metres high and over four metres wide. Monet's water lilies are the paintings people say you have to stand in front of to understand."
+   },
+   {
+    "title": "THE POND",
+    "text": "In 1893 Monet bought land next to his house, dug a pond, and planted it with water lilies. He built a Japanese bridge over it.\nFor his last thirty years he painted almost nothing else: about 250 paintings of the pond."
+   },
+   {
+    "at": [
+     0.3,
+     0.0,
+     0.5,
+     0.35
+    ],
+    "title": "LILY PADS",
+    "text": "Across the top float clusters of lily pads, green and yellow, with pink touches where the flowers open.\nThere is no shore, no horizon and no sky. You are looking straight down into the water."
+   },
+   {
+    "at": [
+     0.0,
+     0.3,
+     0.6,
+     0.4
+    ],
+    "title": "THE SKY IN THE WATER",
+    "text": "The blues and violets are the sky and clouds reflected in the pond.\nMonet paints three layers at once: the surface with its lilies, the reflection of the sky on it, and the plants under the water."
+   },
+   {
+    "at": [
+     0.0,
+     0.6,
+     1.0,
+     0.4
+    ],
+    "title": "THE REEDS",
+    "text": "At the bottom, long strokes of green rise like grasses and reeds growing at the water's edge, or under the surface.\nUp close it is only paint, scraped and dragged. Step back and it becomes water."
+   },
+   {
+    "at": [
+     0.8,
+     0.75,
+     0.2,
+     0.25
+    ],
+    "title": "THE FLOWERS",
+    "text": "Small red and yellow blooms glow in the lower right.\nThe title's other flower, agapanthus, was once on this canvas too: Monet painted the tall blue flowers along the bank and later painted them out."
+   },
+   {
+    "title": "OLD AND NEARLY BLIND",
+    "text": "Monet was in his seventies and losing his sight to cataracts while he painted these. Colours went muddy and brown to him.\nThis canvas is one part of a huge three-part work. The other two parts are in Saint Louis and Kansas City. Monet's largest water lilies fill two oval rooms in the Musée de l'Orangerie in Paris."
+   }
+  ]
+ },
+ "Massacre of the Innocents|Peter Paul Rubens": {
+  "name": "GUIDED TOUR",
+  "steps": [
+   {
+    "title": "MASSACRE OF THE INNOCENTS, c. 1611–12",
+    "text": "Peter Paul Rubens painted this in Antwerp around 1611 to 1612, soon after he came home from eight years in Italy. It hangs in the Art Gallery of Ontario in Toronto.\nIt is a terrible subject, and people who see it say it stays with them."
+   },
+   {
+    "title": "THE STORY",
+    "text": "In the Gospel of Matthew, King Herod hears that a king of the Jews has been born in Bethlehem. Afraid, he orders his soldiers to kill every boy there under two years old.\nRubens shows the moment the soldiers reach the mothers."
+   },
+   {
+    "at": [
+     0.62,
+     0.0,
+     0.3,
+     0.6
+    ],
+    "title": "THE SOLDIER WITH THE CHILD",
+    "text": "At the top right a huge, muscled soldier lifts a baby by its legs over his head, about to throw it to the ground.\nRubens had studied ancient Roman statues in Italy, and these bodies are built like them: twisting, straining, full of force."
+   },
+   {
+    "at": [
+     0.38,
+     0.2,
+     0.3,
+     0.45
+    ],
+    "title": "THE MOTHERS FIGHT BACK",
+    "text": "In the centre the mothers do not just weep. They claw at the soldiers' faces, pull their hair, and grab their arms.\nOne woman digs her nails into a soldier's face while he pulls her down."
+   },
+   {
+    "at": [
+     0.18,
+     0.48,
+     0.35,
+     0.52
+    ],
+    "title": "THE RED CLOTH",
+    "text": "A woman in a blazing red dress sweeps across the bottom of the scene, her child torn from her.\nThe red leads your eye down to the floor, where the worst of it lies."
+   },
+   {
+    "at": [
+     0.0,
+     0.8,
+     1.0,
+     0.2
+    ],
+    "title": "THE FLOOR",
+    "text": "Along the ground lie the dead babies, pale and soft, painted with great tenderness. A little blood runs between the stones.\nRubens makes them beautiful, which makes it harder to look at."
+   },
+   {
+    "at": [
+     0.0,
+     0.0,
+     0.32,
+     0.45
+    ],
+    "title": "THE CALM CITY",
+    "text": "Behind it all, in the upper left, a calm city of temples and columns under a blue sky. Tiny figures there are still running.\nThe world goes on while this happens."
+   },
+   {
+    "title": "LOST AND FOUND",
+    "text": "For centuries the painting was thought to be by one of Rubens's pupils. In 2002 it was recognised as his own work and sold at auction for £49.5 million, then the highest price ever paid for an Old Master.\nThe buyer, the Canadian Ken Thomson, gave it to the Art Gallery of Ontario."
+   }
+  ]
+ },
+ "Las Meninas|Diego Velázquez": {
+  "name": "GUIDED TOUR",
+  "steps": [
+   {
+    "title": "LAS MENINAS, 1656",
+    "text": "Diego Velázquez painted this in Madrid in 1656, as court painter to King Philip IV of Spain. It hangs in the Prado.\nIt is over three metres tall. Painters and writers have argued about it for 350 years; the painter Luca Giordano called it \"the theology of painting\"."
+   },
+   {
+    "at": [
+     0.38,
+     0.58,
+     0.24,
+     0.34
+    ],
+    "title": "THE PRINCESS",
+    "text": "In the middle, lit up, stands the five-year-old Infanta Margarita Teresa, the king's daughter, in a wide silver dress.\nThe Spanish title means 'the ladies-in-waiting': the two young women at her side, who are tending to her."
+   },
+   {
+    "at": [
+     0.16,
+     0.48,
+     0.16,
+     0.3
+    ],
+    "title": "THE PAINTER",
+    "text": "On the left Velázquez paints himself at a huge canvas, brush in hand, looking out at us.\nWe cannot see what he is painting. On his chest is the red cross of the Order of Santiago, a high honour. It was added after he received it in 1659, three years after the picture was done, probably by order of the king."
+   },
+   {
+    "at": [
+     0.36,
+     0.5,
+     0.1,
+     0.12
+    ],
+    "title": "THE MIRROR",
+    "text": "On the back wall hangs a mirror. In it are two faces: King Philip IV and Queen Mariana.\nSo they are standing where you are standing. Everyone in the room is looking at them, which means at you. The picture turns you into the king."
+   },
+   {
+    "at": [
+     0.5,
+     0.5,
+     0.14,
+     0.2
+    ],
+    "title": "THE MAN IN THE DOORWAY",
+    "text": "At the back, a man stands on the stairs in an open door, light behind him: José Nieto, the queen's chamberlain.\nHe could be coming or going. He gives the room its depth, pulling your eye all the way through it."
+   },
+   {
+    "at": [
+     0.62,
+     0.6,
+     0.38,
+     0.4
+    ],
+    "title": "THE DWARFS AND THE DOG",
+    "text": "On the right are two court dwarfs, Mari Bárbola and Nicolasito Pertusato, who is resting his foot on a big sleepy mastiff.\nVelázquez paints them with the same seriousness and dignity as the princess."
+   },
+   {
+    "at": [
+     0.3,
+     0.62,
+     0.3,
+     0.2
+    ],
+    "title": "THE BRUSHWORK",
+    "text": "Zoom in on the princess's dress or hair. Close up it falls apart into loose dabs and smears of paint. From a distance it becomes silk and light.\nTwo hundred years later Édouard Manet saw it in Madrid and called Velázquez \"the painter of painters\"."
+   },
+   {
+    "title": "PICASSO'S MENINAS",
+    "text": "In 1957 Pablo Picasso shut himself away and painted 58 versions of Las Meninas.\nIt hangs in the Prado's main hall today and is often called the greatest painting in the museum."
+   }
+  ]
+ },
+ "The Night Watch|Rembrandt": {
+  "name": "GUIDED TOUR",
+  "steps": [
+   {
+    "title": "THE NIGHT WATCH, 1642",
+    "text": "Rembrandt van Rijn finished this in Amsterdam in 1642. It hangs in its own hall in the Rijksmuseum.\nIt is huge, about 3.8 by 4.5 metres, and the figures are life-size. It was once even bigger: in 1715 strips were cut off all four sides to fit it on a wall in the town hall."
+   },
+   {
+    "title": "NOT A NIGHT",
+    "text": "It is not a night scene. Its real title is Militia Company of District II under the Command of Captain Frans Banninck Cocq.\nOver centuries its varnish darkened so much that people thought it was set at night, and the nickname stuck. It is a daytime scene."
+   },
+   {
+    "at": [
+     0.4,
+     0.42,
+     0.18,
+     0.55
+    ],
+    "title": "THE CAPTAIN",
+    "text": "In the centre, in black with a red sash, Captain Frans Banninck Cocq strides towards us, his hand reaching out as he gives the order to march.\nLook at his hand: its shadow falls across his lieutenant's yellow coat."
+   },
+   {
+    "at": [
+     0.56,
+     0.45,
+     0.16,
+     0.52
+    ],
+    "title": "THE LIEUTENANT",
+    "text": "Beside him in pale yellow is Lieutenant Willem van Ruytenburch. The pale coat and the black one set each other off.\nZoom in on his coat: it is embroidered with the lion of Amsterdam, and his spear seems to poke out of the picture."
+   },
+   {
+    "at": [
+     0.26,
+     0.55,
+     0.14,
+     0.35
+    ],
+    "title": "THE GIRL IN GOLD",
+    "text": "Behind them, in a pool of light, is a strange small girl in gold with a dead chicken hanging from her belt.\nThe chicken's claws are the emblem of the militia company, the arquebusiers. She is a living mascot."
+   },
+   {
+    "at": [
+     0.0,
+     0.32,
+     0.34,
+     0.62
+    ],
+    "title": "MOVEMENT",
+    "text": "Group portraits of militia companies usually lined everyone up in rows, like a team photo.\nRembrandt shows them in action instead: loading guns, raising flags, a dog barking, a drummer beating. The company is just starting to march out."
+   },
+   {
+    "at": [
+     0.86,
+     0.6,
+     0.14,
+     0.3
+    ],
+    "title": "THE DRUMMER",
+    "text": "On the right a drummer beats his drum, and a dog barks at him underneath.\nYou can almost hear it."
+   },
+   {
+    "title": "OPERATION NIGHT WATCH",
+    "text": "The eighteen men named on the shield by the arch each paid to be in it. The painting has been attacked three times, cut with knives in 1911 and 1975 and sprayed with acid in 1990, and it was hidden in a cave during the Second World War.\nSince 2019 it has been studied and restored in a glass room in the museum, in front of visitors."
+   }
+  ]
+ },
+ "Girl with a Pearl Earring|Johannes Vermeer": {
+  "name": "GUIDED TOUR",
+  "steps": [
+   {
+    "title": "GIRL WITH A PEARL EARRING, c. 1665",
+    "text": "Johannes Vermeer painted this in Delft around 1665. It hangs in the Mauritshuis in The Hague.\nIt is only 44.5 by 39 centimetres. People who have seen it are often surprised how small it is, and how alive."
+   },
+   {
+    "title": "NOT A PORTRAIT",
+    "text": "She is not a known person. This is a tronie, the Dutch word for a study of a face, an expression or a costume, sold as a picture in itself.\nNo one knows who sat for it. The novel and film about a maid in Vermeer's house are invented."
+   },
+   {
+    "at": [
+     0.3,
+     0.12,
+     0.5,
+     0.25
+    ],
+    "title": "THE TURBAN",
+    "text": "The blue of her turban is ultramarine, made from ground lapis lazuli, a stone mined in Afghanistan. It cost more than gold.\nVermeer used it even though he was often in debt. The turban is exotic dress, not something a Dutch girl wore."
+   },
+   {
+    "at": [
+     0.56,
+     0.48,
+     0.12,
+     0.12
+    ],
+    "title": "THE PEARL",
+    "text": "Zoom in on the pearl. It has no outline and no hook to hang from the ear. It is two strokes: a bright highlight at the top and a soft reflection of her white collar at the bottom.\nIt is so big that it may not be a pearl at all, but polished glass or tin."
+   },
+   {
+    "at": [
+     0.3,
+     0.3,
+     0.32,
+     0.28
+    ],
+    "title": "THE EYES AND MOUTH",
+    "text": "She turns over her shoulder as if you just spoke to her. Her lips are parted and wet, with a tiny white highlight.\nA study of the painting in 2018 found she once had eyelashes, now gone."
+   },
+   {
+    "at": [
+     0.0,
+     0.0,
+     0.32,
+     1.0
+    ],
+    "title": "THE DARK BACKGROUND",
+    "text": "The background looks black and flat. It was once a deep green curtain, painted with a glaze that has faded over 350 years.\nWithout the curtain she seems to float, closer than anyone in a painting should be."
+   },
+   {
+    "title": "HOW HE PAINTED",
+    "text": "Vermeer painted slowly, maybe three pictures a year, and fewer than 40 survive.\nHe died in 1675, poor, and was nearly forgotten for two hundred years. This painting sold at auction in 1881 for two guilders and thirty cents."
+   }
+  ]
+ },
+ "The Raft of the Medusa|Théodore Géricault": {
+  "name": "GUIDED TOUR",
+  "steps": [
+   {
+    "title": "THE RAFT OF THE MEDUSA, 1818–19",
+    "text": "Théodore Géricault painted this in Paris when he was 27. It hangs in the Louvre.\nIt is enormous: about 4.9 by 7.2 metres, the figures at the front larger than life. One visitor said it was \"the only painting I remember from the Louvre... like you could have stepped into it.\""
+   },
+   {
+    "title": "WHAT HAPPENED",
+    "text": "In July 1816 the French navy frigate Méduse ran aground off the coast of West Africa. Its captain was a nobleman with almost no time at sea, given the post for his politics.\nThere were not enough lifeboats. About 147 people were put on a raft that was meant to be towed. The ropes were cut, and the raft was left to drift."
+   },
+   {
+    "at": [
+     0.62,
+     0.08,
+     0.36,
+     0.42
+    ],
+    "title": "THE SIGNAL",
+    "text": "At the top right a man is held up by the others, waving a cloth at a ship on the horizon.\nOn the thirteenth day the brig Argus came. Only fifteen of the 147 were still alive. Géricault chose the moment of hope, when they do not yet know if they will be seen."
+   },
+   {
+    "at": [
+     0.75,
+     0.33,
+     0.14,
+     0.1
+    ],
+    "title": "THE SHIP",
+    "text": "Look for the tiny ship on the horizon, just right of the waving cloth. It is almost nothing, a speck.\nThe whole picture strains towards it."
+   },
+   {
+    "at": [
+     0.12,
+     0.48,
+     0.3,
+     0.36
+    ],
+    "title": "THE FATHER",
+    "text": "On the left an older man sits holding a dead young man across his lap, turned away from the hope.\nOn the raft the survivors had fought, starved, and some had eaten the dead. Géricault leaves that out but shows despair beside hope."
+   },
+   {
+    "at": [
+     0.0,
+     0.0,
+     1.0,
+     1.0
+    ],
+    "title": "THE PYRAMID",
+    "text": "The bodies are built into two pyramids: one up the mast and the sail on the left, a bigger one rising from the dead at the front to the man waving at the top right.\nYour eye climbs from death at the bottom to hope at the top."
+   },
+   {
+    "title": "HOW HE MADE IT",
+    "text": "Géricault interviewed two survivors and had a model of the raft built. He studied the dead and dying in hospitals and kept body parts in his studio to paint from.\nIt caused a scandal at the Salon of 1819: a real disaster and a government's failure, painted at the size of a history painting meant for kings and gods."
+   }
+  ]
+ },
+ "The Starry Night|Vincent van Gogh": {
+  "name": "GUIDED TOUR",
+  "steps": [
+   {
+    "title": "THE STARRY NIGHT, JUNE 1889",
+    "text": "Vincent van Gogh painted this in June 1889 at the asylum of Saint-Paul-de-Mausole in Saint-Rémy, in the south of France. He had admitted himself there after a breakdown.\nIt hangs in the Museum of Modern Art in New York. It is 74 by 92 centimetres, smaller than most people expect."
+   },
+   {
+    "at": [
+     0.78,
+     0.04,
+     0.2,
+     0.25
+    ],
+    "title": "THE MOON",
+    "text": "Top right is a crescent moon wrapped in a huge glowing halo, painted as one bright orange and yellow shape.\nThe moon is glowing like a sun. Nothing in the sky is painted the way it really looks."
+   },
+   {
+    "at": [
+     0.28,
+     0.12,
+     0.5,
+     0.32
+    ],
+    "title": "THE SWIRL",
+    "text": "Across the middle of the sky rolls a great spiral, like a wave or a wind you can see.\nPeople have compared it to drawings of spiral galaxies and to the way turbulent air and water move."
+   },
+   {
+    "at": [
+     0.27,
+     0.42,
+     0.18,
+     0.18
+    ],
+    "title": "THE STARS",
+    "text": "Eleven stars, each with rings of light around it.\nVan Gogh wrote to his brother Theo that the countryside at night was \"even more richly coloured than the day\", and that the sight of the stars always made him dream.\nThe bright one by the cypress is likely Venus, the morning star, which shone just before dawn that month."
+   },
+   {
+    "at": [
+     0.12,
+     0.04,
+     0.3,
+     0.96
+    ],
+    "title": "THE CYPRESS",
+    "text": "In front rises a dark cypress tree, like a flame, tying the ground to the sky.\nCypresses grow in cemeteries in the south of France and were linked with death. Van Gogh also wrote that they were \"beautiful as an Egyptian obelisk\"."
+   },
+   {
+    "at": [
+     0.38,
+     0.6,
+     0.62,
+     0.4
+    ],
+    "title": "THE VILLAGE",
+    "text": "Below sits a quiet village under the hills, its windows lit, the church spire pointing up.\nHis window had bars and looked over fields, not a village. He painted the view partly from memory and imagination, and the spire looks more Dutch than French, like the churches of his childhood."
+   },
+   {
+    "at": [
+     0.1,
+     0.1,
+     0.5,
+     0.5
+    ],
+    "title": "THE BRUSHSTROKES",
+    "text": "Zoom in: the paint is thick, laid down in short curved strokes that all flow in one direction, like iron filings around a magnet.\nYou can follow the movement of his hand across the whole sky."
+   },
+   {
+    "title": "A FAILURE, HE THOUGHT",
+    "text": "Van Gogh was not happy with it. He called it a failure in a letter to Theo.\nHe died a year later, in July 1890. The painting went to MoMA in 1941 and is now among the most famous pictures in the world."
+   }
+  ]
+ },
+ "The Fighting Temeraire|J. M. W. Turner": {
+  "name": "GUIDED TOUR",
+  "steps": [
+   {
+    "title": "THE FIGHTING TEMERAIRE, 1839",
+    "text": "J. M. W. Turner painted this in 1839. Its full title is The Fighting Temeraire, tugged to her last berth to be broken up, 1838. It hangs in the National Gallery, London.\nOne visitor wrote that it is \"the only painting that has ever brought me to tears\". In 2005 the British public voted it the greatest painting in Britain."
+   },
+   {
+    "at": [
+     0.12,
+     0.18,
+     0.24,
+     0.6
+    ],
+    "title": "THE OLD WARSHIP",
+    "text": "The ghostly ship on the left is HMS Temeraire, a 98-gun warship. In 1805 she fought at the Battle of Trafalgar, where the British fleet beat the French and Spanish and Admiral Nelson was killed.\nTurner paints her pale gold and white, almost like a spirit."
+   },
+   {
+    "at": [
+     0.24,
+     0.42,
+     0.18,
+     0.42
+    ],
+    "title": "THE TUG",
+    "text": "Pulling her is a small, dark steam tug, its tall funnel pouring smoke and fire.\nThe old sailing world is being towed away by the new world of steam and industry. The tug is ugly next to her, and it is in charge."
+   },
+   {
+    "at": [
+     0.15,
+     0.18,
+     0.12,
+     0.25
+    ],
+    "title": "THE MASTS",
+    "text": "In real life her masts and sails had already been taken off before this journey.\nTurner gives her back her tall masts. He was not painting a report, he was painting a farewell."
+   },
+   {
+    "at": [
+     0.45,
+     0.2,
+     0.55,
+     0.55
+    ],
+    "title": "THE SUNSET",
+    "text": "On the right the sun goes down in a blaze of orange, red and yellow, laid on thickly with a palette knife.\nA setting sun for a ship going to her death, and for an age that was ending. The pale moon rises on the left over the ship."
+   },
+   {
+    "at": [
+     0.75,
+     0.72,
+     0.15,
+     0.18
+    ],
+    "title": "THE BUOY",
+    "text": "Low on the right, a dark buoy floats in the water, a small black mark that steadies all that light.\nUp close the sky is almost abstract: smears and scrapes of paint. Step back and it becomes air and fire."
+   },
+   {
+    "title": "TURNER'S DARLING",
+    "text": "Turner called it his \"darling\". He refused every offer to buy it and left it to the nation when he died in 1851.\nSince 2020 it has been on the Bank of England's twenty-pound note, with Turner's self-portrait."
+   }
+  ]
+ },
+ "Venus and Mars|Sandro Botticelli": {
+  "name": "GUIDED TOUR",
+  "steps": [
+   {
+    "title": "VENUS AND MARS, c. 1485",
+    "text": "Sandro Botticelli painted this in Florence around 1485, a few years before The Birth of Venus. It hangs in the National Gallery, London.\nIt is long and low, about 69 by 173 centimetres, the shape of a panel set into a bed's headboard or a chest, probably made for a wedding."
+   },
+   {
+    "at": [
+     0.0,
+     0.0,
+     0.38,
+     1.0
+    ],
+    "title": "VENUS, AWAKE",
+    "text": "On the left lies Venus, goddess of love, fully dressed in a white gown edged with gold, sitting up and watching.\nShe looks calm and in control. Her face is the same type Botticelli gives Venus in The Birth of Venus."
+   },
+   {
+    "at": [
+     0.56,
+     0.0,
+     0.44,
+     0.8
+    ],
+    "title": "MARS, ASLEEP",
+    "text": "On the right sprawls Mars, god of war, naked and in a deep sleep, his head thrown back and his mouth open.\nThe god of war has been disarmed by love. The message is old and simple: love conquers war."
+   },
+   {
+    "at": [
+     0.24,
+     0.0,
+     0.45,
+     0.5
+    ],
+    "title": "THE LITTLE SATYRS",
+    "text": "Baby satyrs, half child and half goat, play with his weapons: one wears his huge helmet, another carries his lance, another crawls through his armour.\nOne blows a conch shell right into his ear. He does not wake."
+   },
+   {
+    "at": [
+     0.88,
+     0.0,
+     0.12,
+     0.25
+    ],
+    "title": "THE WASPS",
+    "text": "Look at the top right corner, by Mars's head: a swarm of wasps flies out of a tree.\nIn Italian a wasp is a vespa. This may be a joke on the Vespucci, a Florentine family whose coat of arms showed wasps; they may have ordered the painting."
+   },
+   {
+    "at": [
+     0.0,
+     0.6,
+     1.0,
+     0.4
+    ],
+    "title": "THE DETAIL",
+    "text": "Zoom in on the folds of Venus's dress, the gold edging, the curls of her hair.\nBotticelli drew with a fine, flowing line, and painted in egg tempera and oil on wood, which keeps the colours sharp and clear."
+   },
+   {
+    "title": "WHY NOT THE BIRTH OF VENUS?",
+    "text": "The Birth of Venus hangs in the Uffizi in Florence. Italy's state museums control how pictures of their works are used, so this museum shows Botticelli's Venus from London instead.\nThe two were painted in the same years by the same hand."
+   }
+  ]
+ },
+ "Wanderer above the Sea of Fog|Caspar David Friedrich": {
+  "name": "GUIDED TOUR",
+  "steps": [
+   {
+    "title": "WANDERER ABOVE THE SEA OF FOG",
+    "text": "Caspar David Friedrich, the German Romantic painter, made this around 1818. It hangs in the Hamburger Kunsthalle in Hamburg.\nIt is about 95 by 75 centimetres, and it has become the picture of the whole Romantic age."
+   },
+   {
+    "at": [
+     0.36,
+     0.32,
+     0.28,
+     0.4
+    ],
+    "title": "THE MAN FROM BEHIND",
+    "text": "A man in a dark green coat stands on a rock with a walking stick, his back to us. We never see his face.\nPainters call this a Rückenfigur, a figure seen from behind. We look over his shoulder, so we stand where he stands and feel what he feels."
+   },
+   {
+    "at": [
+     0.0,
+     0.45,
+     1.0,
+     0.35
+    ],
+    "title": "THE SEA OF FOG",
+    "text": "Below him the valleys are drowned in fog. Only the tops of rocks and trees stick out like islands.\nThe place is real: the sandstone mountains of Saxon Switzerland, near Dresden. Friedrich sketched the rocks on walks and put them together in the studio. The view as a whole never existed."
+   },
+   {
+    "at": [
+     0.2,
+     0.25,
+     0.7,
+     0.15
+    ],
+    "title": "THE FAR MOUNTAINS",
+    "text": "Far away, mountains rise out of the haze and fade into the sky.\nThe Romantics called this feeling the sublime: beauty mixed with awe, even fear, at something far bigger than you."
+   },
+   {
+    "at": [
+     0.0,
+     0.65,
+     1.0,
+     0.35
+    ],
+    "title": "THE DARK ROCK",
+    "text": "The rock he stands on is nearly black, solid and heavy, against the pale world beyond. There is no middle ground between him and the distance.\nOne step and he would be part of it."
+   },
+   {
+    "title": "WHO IS HE?",
+    "text": "No one knows. He may be Friedrich himself, or a fallen soldier of the wars against Napoleon; he wears an old German style of dress that patriots wore then.\nAfter Friedrich died in 1840 he was almost forgotten. He was rediscovered around 1900, and today this is one of the most copied images in the world."
    }
   ]
  }

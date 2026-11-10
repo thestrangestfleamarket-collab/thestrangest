@@ -66,6 +66,9 @@ import {GHOLD} from './146zoa-guitar-hold.js';
     pen:(a,b)=>{ const g=S.feather(a,b); add(g,'cone',0x2a2a2e,0,.004,-.13,.003,.02,.003,-Math.PI/2,0,0,METAL); return g; },
     auger:(a)=>{ const g=G(); add(g,'cyl',0xc8ccd2,0,.03,0,.02,1.1,.02,Math.PI/2,0,0,METAL); for(let i=0;i<8;i++)add(g,'tor',0xc8ccd2,0,.03,.15+i*.05,.06,.06,.05,0,0,0,METAL); add(g,'cyl',a,0,.03,-.55,.02,.3,.02,0,Math.PI/2,0,M('rubber')); return g; },
     crab:()=>INSPECT.shape('cage',0x5a4a3a),
+    violin:()=>{ const g=G(); add(g,'ball',0x8a3a14,0,.04,-.08,.1,.04,.12,0,0,0,M('wood')); add(g,'ball',0x8a3a14,0,.04,.07,.085,.04,.1,0,0,0,M('wood')); add(g,'box',0x1a1410,0,.06,.22,.025,.015,.22,0,0,0,M('wood')); add(g,'sph',0x6a2a10,0,.06,.34,.02,.02,.02,0,0,0,M('wood')); return g; },
+    flute:()=>{ const g=G(); add(g,'cyl',0xd8dce2,0,.012,0,.01,.66,.01,Math.PI/2,0,0,METAL); for(let i=0;i<6;i++)add(g,'cyl',0xb8bcc2,0,.022,-.05+i*.05,.008,.003,.008,0,0,0,METAL); return g; },
+    trumpet:()=>{ const g=G(); add(g,'cyl',0xd8b040,0,.04,0,.012,.4,.012,Math.PI/2,0,0,METAL); add(g,'cone',0xd8b040,0,.04,-.25,.06,.12,.06,-Math.PI/2,0,0,METAL); for(let i=0;i<3;i++)add(g,'cyl',0xc8a030,.03*(i-1),.07,.05,.01,.07,.01,0,0,0,METAL); return g; },
     guitar:()=>{ const g=G(); if(GHOLD.model)g.add(GHOLD.model()); return g; },
     harp:(a,b)=>{ const g=G(); add(g,'box',a,0,.05,0,.5,.1,.3,0,0,0,M('wood')); add(g,'box',a,-.2,.85,0,.08,1.6,.08,0,0,0,M('wood')); add(g,'box',a,.05,1.55,0,.55,.08,.08,0,-.35,0,M('wood')); for(let i=0;i<12;i++)add(g,'cyl',0xe8d8a0,-.16+i*.03,.6+i*.07,0,.002,1-.07*i,.002,0,0,0,METAL); return g; },
     piano:(a,b)=>{ const g=G(); add(g,'box',a,0,.65,0,1.5,1.3,.6,0,0,0,M('wood')); add(g,'box',0xf4efe4,0,.75,.32,1.3,.03,.15,0,0,0,M('ivory')); for(let i=0;i<20;i++)if(i%7!==2&&i%7!==6)add(g,'box',0x16161a,-.6+i*.064,.77,.3,.025,.02,.09,0,0,0,M('wood')); for(const s of [-1,1])add(g,'box',a,s*.7,.3,.25,.08,.6,.12,0,0,0,M('wood')); return g; },
@@ -76,7 +79,7 @@ import {GHOLD} from './146zoa-guitar-hold.js';
     cotton:(a)=>S.cloud(a), popcorn:(a,b)=>{ const g=S.tub(0xd83a3a,0xf4efe4); for(let i=0;i<9;i++)add(g,'ball',0xf4e8c0,Math.cos(i*2.3)*.035,.13+(i%3)*.01,Math.sin(i*2.3)*.035,.014,.012,.014,0,0,0,M('food')); return g; },
   };
   // which shape each item is (by its id), first match
-  const BY=[[/^guitar$/,'guitar'],[/^jugball$/,'ball'],[/^jugclub$/,'club'],[/^harp$/,'harp'],[/^piano$/,'piano'],[/^drums$/,'drums'],[/^kazoo$/,'kazoo'],
+  const BY=[[/^guitar$/,'guitar'],[/^jugball$/,'ball'],[/^jugclub$/,'club'],[/^harp$/,'harp'],[/^violin$/,'violin'],[/^tf_/,'fruit'],[/^sp_/,'plant'],[/^pp_/,'acorns'],[/^treepot$/,'pot'],[/^(birdnet|burlap)$/,'flat'],[/^spile$/,'auger'],[/^flute$/,'flute'],[/^trumpet$/,'trumpet'],[/^piano$/,'piano'],[/^drums$/,'drums'],[/^kazoo$/,'kazoo'],
     [/^spray_/,'spray'],[/^g_(beans|soup|tuna|spam|catfood|vienna|soda|beer|coffee|cleanser)$/,'can'],[/^g_(juice|water|shampoo|dishsoap|aspirin)$|^soda_|^lemonade$|^p_royal$|^curse_stink$/,'bottle'],[/^g_bleach$|^water$/,'jug'],[/^g_milk$/,'carton'],
     [/^g_(fishfood|oats|yogurt|noodles|vaseline)$/,'tub'],[/^(honey_|jar_)|^curse_(cloud|rats)$/,'jar'],[/^g_(chips|bagels|dogfood|rice|diapers|tp|towels|bananas|plantains)$|^dirt$|^fix_parts$/,'sack'],[/^g_(koolaid|gum|batteries|candy)$|^seed_/,'packet'],
     [/^g_(cereal|detergent|pasta|tea|qtips|matches|eggs|bread|cheese|butter)$|^f_(bonbons|candybox)$/,'box'],[/^g_(candle|bulb)$|^wax_candle$/,'candle'],[/^g_(toothbrush|toothpaste|deodorant|lighter|sponge|soap)$/,'block'],

@@ -24,7 +24,7 @@ const SHOTS = process.argv[3];
     if (D.orch) {
       const r = await ev(() => { const o = []; PQ.gate(false); o.push(PQ.ORCH.trees.length, FORAGE.has('orchard_key')); return o; });
       ok(r[0] === 6 && !r[1], 'six old trees behind a locked gate: ' + JSON.stringify(r));
-      const k = await ev(() => { const W = __dbg.UI.things.find(t => t.name === 'THE CASTLE WELL'); W.act(); const a = FORAGE.has('orchard_key'); W.act(); return [a, FORAGE.has('orchard_key')]; });
+      const k = await ev(() => { const W = __dbg.UI.things.find(t => t.name === 'THE OLD WELL'); W.act(); const a = FORAGE.has('orchard_key'); W.act(); return [a, FORAGE.has('orchard_key')]; });
       ok(k[0] === 1 && k[1] === 1, 'the castle well gives the orchard\'s key, once: ' + JSON.stringify(k));
       await ev(() => { const O = PQ.ORCH; STORE.goTo(O.x, O.z - O.d - 1.4 * __dbg.cv().TILE, 'up'); }); await pg.waitForTimeout(1500);
       const inn = await ev(() => { PQ.gate(false); const O = PQ.ORCH, y = __dbg.you(); return Math.abs(y.x - O.x) < O.w && Math.abs(y.z - O.z) < O.d; });

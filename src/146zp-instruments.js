@@ -1,6 +1,6 @@
 // THE INSTRUMENTS YOU SIT AT (owner, 7 Nov 2026: "lets do piano and drums and harp ... play like the guitar"; "start me with every instrument and 100 skill in each"): INSTR, one way to own, set down, sit at and play the piano, the drum kit and the harp (146zpa-c fill in each): the instrument before you, your body seated with its arms, hands and every finger (or stick) on what it plays, its sound from the music engine's strings, heads and hammers, a song book by skill, the close-up, and everyone near seeing and hearing it.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, ONLINE, pos, st, UI, W3} from './003b-systems.js';
+import {FORAGE, INSTR, ONLINE, pos, st, UI, W3} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {SYS} from './006-map-pre.js';
 import {BODIES} from './111a-bodies.js';
@@ -9,7 +9,7 @@ import {BODEGA} from './146ze-bodega.js';
 import {GSND} from './146zo-guitar-sound.js';
 import {GHOLD} from './146zoa-guitar-hold.js';
 import {GUITAR} from './146zob-guitar.js';
-const INSTR={KINDS:{}}; window.INSTR=INSTR;
+ window.INSTR=INSTR;
 { const say=(t,c)=>SAY(t,c||'#e8e2cc'), now=()=>performance.now()/1000, V3=THREE.Vector3, M4=THREE.Matrix4, Q4=THREE.Quaternion;
   const esc=t=>String(t).replace(/[&<>"]/g,c=>'&#'+c.charCodeAt(0)+';');
   // a kind: {id, name, skill, model(), seat:{y,z}, lean, look, feet(P,t), hands(P,t,H), act(P,k,v), anim(P,H,t,dt), keys(e,down), panel(), click(b,down), draw(PN), book(), cam}
@@ -108,7 +108,7 @@ const INSTR={KINDS:{}}; window.INSTR=INSTR;
   INSTR.tell=tell;
   INSTR.start=id=>{ const K=INSTR.KINDS[id]; if(!K)return; if(on){ if(ME.K===K)return; INSTR.stop(); }
     if(st.water&&st.water.in||st.ride||st.climb||st.hang||st.sit)return say('NOT HERE: STAND SOMEWHERE STEADY AND OPEN TO SET IT DOWN.','#c8a090');
-    if(window.GUITAR&&GUITAR.on())GUITAR.stop(); GSND.wake(); on=true; ME.K=K; setTimeout(()=>smp(K),400); ME.song=-1; ME.live={ev:[]}; ME.st={}; ME.cur=0;
+    if(GUITAR&&GUITAR.on())GUITAR.stop(); GSND.wake(); on=true; ME.K=K; setTimeout(()=>smp(K),400); ME.song=-1; ME.live={ev:[]}; ME.st={}; ME.cur=0;
     prevView=UI.view; if(CU.on&&!UI.persp)UI.setView('third'); panel(true); tell('on'); K.loadBook&&K.loadBook();
     say('YOU SET DOWN '+K.name+' AND SIT AT IT. PICK A PIECE FROM THE BOOK · ` PLAYS IT · TAB THE CLOSE-UP · ESC TO PUT IT AWAY.'); };
   INSTR.stop=()=>{ if(!on)return; on=false; songStop(ME); if(ME.K&&ME.K.hush&&ME.V)rel(ME,ME.K.hush(ME),GSND.now()+.01); unhold(ME); panel(false); tell('off'); if(prevView&&prevView!==UI.view&&!/third/.test(prevView))UI.setView(prevView); prevView=''; };
@@ -198,4 +198,3 @@ const INSTR={KINDS:{}}; window.INSTR=INSTR;
   INSTR.shelf=(id,mk,sc)=>{ if(!BODEGA.MAKE)return; BODEGA.MAKE[id]=()=>{ const g=new THREE.Group(), m=mk(); m.scale.setScalar(sc); g.add(m); return g; }; const row=BODEGA.LAYOUT.find(r=>r[0]==='wr1'&&r[1]===0); if(row)row[2].push(id); else BODEGA.LAYOUT.push(['wr1',0,[id]]); };
   // a song book loaded the first time someone near plays (data/<id>-songs.json): each piece its notes compiled by the kind
   INSTR.lazyBook=(K,load)=>{ let p=null; K.loadBook=()=>p||(p=load().then(J=>{ for(const g of J.songs)K.BOOK.push(g); fillSongs(); }).catch(e=>{ p=null; console.warn(K.id+' songs',e); })); }; }
-export {INSTR};

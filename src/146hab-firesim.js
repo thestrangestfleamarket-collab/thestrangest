@@ -2,9 +2,9 @@
 import {SHARED, THREE} from './003-shx.js';
 import {LEVELS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
-import {TILE} from './006-map-pre.js';
+import {MODS, TILE} from './006-map-pre.js';
 { const NX=64, NY=32, NZ=64, TX=8, AW=NX*TX, AH=NZ*(NY/TX), HM=.125, M=TILE/.84, H=HM*M, NE=24, V3=THREE.Vector3;
-  const FS={on:false,idle:9,O:new V3(),ci:[0,0,0]}; window.FIRESIM=FS;
+  const FS={on:false,idle:9,O:new V3(),ci:[0,0,0]}; window.FIRESIM=MODS.firesim=FS;
   const HEAD=`precision highp float; precision highp sampler2D; out vec4 fragOut;
 const float NX=${NX}., NY=${NY}., NZ=${NZ}., TX=${TX}.; const vec2 AT=vec2(${AW}.,${AH}.);
 ivec2 at(ivec3 c){ return ivec2((c.y%${TX})*${NX}+c.x,(c.y/${TX})*${NZ}+c.z); }

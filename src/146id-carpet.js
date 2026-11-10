@@ -68,7 +68,7 @@ const CARPET={}; window.CARPET=CARPET;
     for(let i=1;i<x.length;i+=3){ lo=Math.min(lo,x[i]); hi=Math.max(hi,x[i]); } for(let j=0;j<NZ;j++){ const a=j*NX*3, c=(j*NX+NX-1)*3; span=Math.max(span,Math.hypot(x[a]-x[c],x[a+2]-x[c+2])); }
     return {fin,rough:+((hi-lo)/T).toFixed(3),span:+(span/T).toFixed(2),x:pos.x/T,z:pos.z/T,lift:+((RIDE.lift||0)/T).toFixed(2),v:+((RIDE.v||0)/T).toFixed(2)}; };
   CARPET.make=make; CARPET.place=place; CARPET.rolled=rolled;
-  if(window.INSPECT&&INSPECT.kinds)INSPECT.kinds.push({is:id=>id==='magic_carpet',make:()=>{ const g=make(); g.traverse(c=>{ c.userData.ownMat=true; }); g.scale.setScalar(1/T); return g; }});
+  if(INSPECT&&INSPECT.kinds)INSPECT.kinds.push({is:id=>id==='magic_carpet',make:()=>{ const g=make(); g.traverse(c=>{ c.userData.ownMat=true; }); g.scale.setScalar(1/T); return g; }});
 
   /* ---------- flying it as you fly (G): it floats a hand above the ground, W A S D turns and flies it on, SPACE climbs and SHIFT sinks as fast as flying does, up through the clouds to the same 300 m; low down walls stop you, up high it goes over everything ---------- */
   const WM=T/.84, TOP=300*WM, LOW=.35*T, POSE={k:'carpet',z:0,lean:0};

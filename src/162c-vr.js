@@ -162,7 +162,7 @@ import {AVATAR} from './111c-avatar.js';
   const calib=()=>{ VR.yaw=SHARED.heading+Math.PI-yawOf(HQ); rot(HL.x*FEEL.MH,HL.z*FEEL.MH,VR.yaw,O); O.set(pos.x-O.x,0,pos.z-O.z); VR.y0=HL.y;
     VR.eye=W3.eyeAt&&W3.eyeAt(EV)?Math.max(.5*TILE,EV.y-SHARED.py):1.62/.84*TILE*(W3.SZ||1); VR.px=pos.x; VR.pz=pos.z; VR.cal=true; };
   const vw=()=>VR.want&&VR.want.view||opt.view, turns=()=>!SHARED.drive&&!(VR.want&&VR.want.turn===false);
-  const free=()=>!SHARED.drive&&!RAG.on&&!VIT.dead&&!(VIT.out>0)&&!(window.BOAT&&BOAT.on)&&!st.sit&&!UI.fly&&!UI.freeCam&&!ED.on&&!(st.water&&st.water.in);
+  const free=()=>!SHARED.drive&&!RAG.on&&!VIT.dead&&!(VIT.out>0)&&!(BOAT&&BOAT.on)&&!st.sit&&!UI.fly&&!UI.freeCam&&!ED.on&&!(st.water&&st.water.in);
 
   SYS.add('xr',(dt,xf)=>{ '@later'; const P=VR.pose; if(!P)return; const T=P.transform; HL.set(T.position.x,T.position.y,T.position.z); HQ.set(T.orientation.x,T.orientation.y,T.orientation.z,T.orientation.w);
     O.x+=pos.x-VR.px; O.z+=pos.z-VR.pz; VR.px=pos.x; VR.pz=pos.z;   // a move since the last frame (a door, a fade, a teleport) carries the room with you

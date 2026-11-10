@@ -16,7 +16,7 @@ Risk is noted only when it isn't low.
 
 ## The order of work
 
-1. **Keep the checks honest**: the tests failing on `main`, then a full run that finishes (core passes on `main`, 9 Nov).
+1. **Keep the checks honest**: a full run that finishes (core, loop, riders and skills pass, 9 Nov).
 2. **The owner's look session** (one sitting on the live site): every **look** line, listed under "For the owner" below.
 3. **The owner's picks** (one batch of questions): every **pick** line, listed under "For the owner" below.
 4. **Performance, measured first**: the render inspector's "undefined ×16", the subway station at the start, the start-up and frame-time
@@ -45,8 +45,10 @@ headset · NPC voices (lifts the 19 Oct "no sound" rule).
 ## CI, checks and tools
 
 CI runs only on pull requests and by hand (the workflow has no push trigger), so `main` itself is checked only when someone starts it.
-- [ ] **Tests failing on `main`** · P2 · S · check. `tests/skills.cjs` waits for archived daily asks and can't pass; `tests/loop.cjs` and
-  `tests/riders.cjs` (the trains never stand at A with doors open).
+- [x] **Tests failing on `main`** · P2 · S · check. Done 9 Nov: the loop's station A followed the subway's move (trains stop at the platform
+  again: `loop.cjs`, `riders.cjs`); `skills.cjs` checks only what isn't archived.
+- [x] **Core fails on `main`: the overhead view** · done 9 Nov: the check now follows the 8 Nov rule (some part of you, feet to head,
+  on screen), not your middle inside the screen; the game was right.
 - [ ] **The full GitHub run doesn't finish inside 75 minutes** · P2 · S · check. No full run on `main` has passed since 4 Nov.
 - [ ] **Bodega register test**: clicking dog food doesn't add it to the basket (live game) · P2 · S · find.
 - [ ] **Merged without a green check or re-run, look at them live** · P2 · look. Skate pit #877, floating eyes #869, haze #858, shop
@@ -76,14 +78,14 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
 
 ## Performance
 
-- [ ] **"undefined ×16" in the render inspector**, about 129k triangles in the park: find what it is · P1 · S · find.
+- [x] **"undefined ×16" in the render inspector**, about 129k triangles in the park: find what it is · P1 · S · find. Found 9 Nov (claude/beautiful-einstein-i82dp0): the backdrop park trees, four instanced meshes drawn whole; now drawn by cell.
 - [ ] **The subway station is built and painted at the start** (15 MB): build it on the way down · P2 · M · code.
 - [ ] **The park shop animals**: all 179 download at the start; measure the start on a real connection · P2 · S · check.
 - [ ] **The start-up and frame-time comparison** · P1 · M · check. Never finished (2 Nov, `tests/startprof.cjs`). Redo it on today's main
   with `tests/budget.cjs` (CI "measure" check). Feeds every line in this area.
 - [ ] **Two more stalls at the start** · P1 · M · find. Measured 4 Nov in the test browser (`?fresh=1`): about 8 s as the start ends and
   3.7–4.5 s about 10 s later (shader compiles, `BATCH` painting, the first lights?). Re-measure: the shops' insides are built at the start
-  since 9 Nov.
+  since 9 Nov. (9 Nov: the first is the shader warm-up, behind the loading screen; it now waits without blocking where the browser can. The shops are no longer built at the start.)
 - [ ] **Does the wind bring the lag back?** · P2 · S · check. Wind on for trees, plants and grass (owner, 2 Nov: "Both, with wind"); not
   measured (`TUFTS.wind`, `PARK.windK`). Measure with the comparison; if it costs, a WIND row in GRAPHICS, with the owner's yes.
 
@@ -138,6 +140,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [ ] **The bots' goals** · pick. Options given to the owner (9 Nov).
 - [ ] **The instruments, the rest** · P3 · S · code. The bar's piano and kit playable in place; a bandstand for the park guitar.
 - [ ] **Companion drone NPC**: mockup done, waiting on "go" · pick.
+- [x] **Your AI double** (owner, 9 Nov 2026; done 9 Nov) · P2 · M · code. `src/162gb-twin.js`, `worker/twin.js`, `tests/twin.cjs`. Needs the `ANTHROPIC_API_KEY` secret on the worker.
 - [ ] **Flight with the cape** · P2 · M · look + code. Its moves check times out, the cape isn't cloth, clouds hide you; DRIFTCAP lasts 5 min.
 - [ ] **Not seen** · look. The floating-eyes fix side on, the paper doll live, clothing layers at night under lamps (#654), the delivery
   drone with two real players.

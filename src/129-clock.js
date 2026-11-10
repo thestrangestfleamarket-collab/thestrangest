@@ -60,10 +60,10 @@ Object.assign(CLOCK,{h:17.4,sunH:null,run:false,speed:1,shadeH:16,sunV:new THREE
   const sig=()=>{ const dy=DYN(); let g=0; const f=o=>{ if(!o.visible||dy.has(o))return; if(o.isMesh&&o.castShadow)g=(g*31+o.id+(o.isInstancedMesh?o.count*7919:0))|0; for(const c of o.children)f(c); }; f(scene); return g; };
   CLOCK.set=h=>{ CLOCK.h=((h%24)+24)%24; };
   CLOCK.dark=()=>elev(CLOCK.h)<-2;
-  const DYN=()=>{ const out=new Set(); if(window.W3&&W3.group)out.add(W3.group); for(const N of NPCS)if(N.g)out.add(N.g); for(const x of NPCS.extra||[])if(x&&x.g)out.add(x.g);
-    if(window.CREATS)for(const N of CREATS)if(N.g)out.add(N.g); for(const k of ['BOAT','DRONE'])if(window[k]&&window[k].g)out.add(window[k].g); for(const o of ONLINE.others?.values()||[])if(o.fig&&o.fig.g)out.add(o.fig.g); return out; };
+  const DYN=()=>{ const out=new Set(); if(W3&&W3.group)out.add(W3.group); for(const N of NPCS)if(N.g)out.add(N.g); for(const x of NPCS.extra||[])if(x&&x.g)out.add(x.g);
+    if(CREATS)for(const N of CREATS)if(N.g)out.add(N.g); for(const k of ['BOAT','DRONE'])if(window[k]&&window[k].g)out.add(window[k].g); for(const o of ONLINE.others?.values()||[])if(o.fig&&o.fig.g)out.add(o.fig.g); return out; };
   { const SM=renderer.shadowMap, orig=SM.render;
-    SM.render=(lights,sc,camera)=>{ if(sc!==scene)return orig.call(SM,lights,sc,camera); const rest=lights.filter(L=>L!==sunL&&L!==sunD&&L!==sunF); if(!CLOCK.main){ SM.needsUpdate=true; return orig.call(SM,rest,sc,camera); } const m0=camera.layers.mask, dk=!!(window.ROOMS&&ROOMS.dark&&ROOMS.dark()); camera.layers.enable(3);
+    SM.render=(lights,sc,camera)=>{ if(sc!==scene)return orig.call(SM,lights,sc,camera); const rest=lights.filter(L=>L!==sunL&&L!==sunD&&L!==sunF); if(!CLOCK.main){ SM.needsUpdate=true; return orig.call(SM,rest,sc,camera); } const m0=camera.layers.mask, dk=!!(ROOMS&&ROOMS.dark&&ROOMS.dark()); camera.layers.enable(3);
       const st=dk?[]:[sunL,sunF].filter(L=>lights.includes(L)&&L.shadow.needsUpdate);
       if(st.length){ const t0=performance.now(), hid=[]; for(const o of DYN())if(o.visible){ o.visible=false; hid.push(o); } SM.needsUpdate=true; orig.call(SM,st,sc,camera); for(const o of hid)o.visible=true; const ms=+(performance.now()-t0).toFixed(1); if(st.includes(sunL))SC.n++; if(st.includes(sunF))SC.nf++;
         if(window.SUNLOG){ let c=0; sc.traverseVisible(o=>{ if(o.isMesh&&o.castShadow)c++; }); SUNLOG.push([+(performance.now()/1000).toFixed(2),c,ms,st.map(L=>L===sunL?'n':'f').join('')]); } }

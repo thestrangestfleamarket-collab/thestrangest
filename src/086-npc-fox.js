@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {LINES} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {LAY, MODS, TILE} from './006-map-pre.js';
+import {LAY, MODS, SYS, TILE} from './006-map-pre.js';
 import {PARTSNPC} from './080-npc-parts.js';
 const FOX={};
 if(0){ const {shape,limb,sph,cyl,box,blob,noise,D2R}=PARTSNPC.T;
@@ -34,5 +34,5 @@ if(0){ const {shape,limb,sph,cyl,box,blob,noise,D2R}=PARTSNPC.T;
   scene.add(N.g); FOX.N=N; window.FOXDBG=()=>{ const w=N.g.getWorldPosition(new THREE.Vector3()), bb=new THREE.Box3().setFromObject(N.g); return {x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),vis:N.g.visible,pvis:N.g.parent&&N.g.parent.visible,far:!!N.far,w:[w.x,w.y,w.z].map(v=>+v.toFixed(2)),size:[bb.max.x-bb.min.x,bb.max.y-bb.min.y].map(v=>+v.toFixed(2)),tris:N.tris}; }; }
 
 const CREATURES={};   // the creature makers (data/creatures.json); filled by the lazy load just after the start
-const CREATURESREADY=new Promise(res=>{ const L=__LAZY__("data/creatures.json"), go=()=>window.__started?L().then(J=>{ Object.assign(CREATURES,J); res(CREATURES); }).catch(e=>{ console.warn('CREATURES',e); res(CREATURES); }):setTimeout(go,600); go(); });
+const CREATURESREADY=new Promise(res=>{ const L=__LAZY__("data/creatures.json"), go=()=>SYS.started?L().then(J=>{ Object.assign(CREATURES,J); res(CREATURES); }).catch(e=>{ console.warn('CREATURES',e); res(CREATURES); }):setTimeout(go,600); go(); });
 export {CREATURES, CREATURESREADY};

@@ -5,7 +5,7 @@ import {MODS, SYS} from './006-map-pre.js';
 import {DRAPE} from './072a-cloth.js';
 import {ROOMK} from './150a-bedroom.js';
 const WINDR={wins:[],cur:null}; window.WINDR=WINDR;
-const WRE=()=>window.ROOMED||{};   // the room editor (150d, later in the page): its saving and who is visiting
+const WRE=()=>MODS.roomed||{};   // the room editor (150d, later in the page): its saving and who is visiting
 { const CUR={none:{n:'NONE'},sheer:{n:'SHEER',c:'#f4f1ea',op:.55,t:.6},linen:{n:'LINEN',c:'#d9ccb4',op:.93,t:.22},velvet:{n:'VELVET',c:'#6e1f2c',op:1,t:.03},cafe:{n:'CAFÉ',c:'#e8e0cc',op:.9,t:.25,half:1}};
   const BLI={none:{n:'NONE'},venetian:{n:'VENETIAN',c:'#ece6da',slat:1},roller:{n:'ROLLER',c:'#e2dccd',t:.14},roman:{n:'ROMAN',c:'#c9b79a',t:.12},bamboo:{n:'BAMBOO',c:'#b8955e',t:.38},shutters:{n:'SHUTTERS',c:'#f2efe6',slat:1}};
   const D0=()=>({c:'none',cd:0,cc:null,b:'none',bl:1,bt:.25,bc:null});

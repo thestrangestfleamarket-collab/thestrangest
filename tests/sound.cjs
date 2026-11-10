@@ -55,14 +55,14 @@ const http = require('http'), PAGE = path.resolve(process.argv[2] || 'dist/marke
   // the owner's sound editor
   const wav = (() => { const sr = 22050, n = sr / 2, b = Buffer.alloc(44 + n * 2); b.write('RIFF', 0); b.writeUInt32LE(36 + n * 2, 4); b.write('WAVEfmt ', 8); b.writeUInt32LE(16, 16); b.writeUInt16LE(1, 20); b.writeUInt16LE(1, 22); b.writeUInt32LE(sr, 24); b.writeUInt32LE(sr * 2, 28); b.writeUInt16LE(2, 32); b.writeUInt16LE(16, 34); b.write('data', 36); b.writeUInt32LE(n * 2, 40); for (let i = 0; i < n; i++) b.writeInt16LE(Math.round(Math.sin(i / sr * 2 * Math.PI * 440) * 12000), 44 + i * 2); return b; })();
   await pg.evaluate(() => { const d = document.createElement('div'); d.id = 'sedt'; d.style.cssText = 'position:fixed;left:0;top:0;width:700px;background:#000;z-index:99999'; document.body.appendChild(d); SNDED.panel(d); });
-  await pg.waitForTimeout(800); await pg.click('#sedt [data-pick="horn"]'); await pg.waitForTimeout(500);
-  const [fc] = await Promise.all([pg.waitForEvent('filechooser'), pg.click('#sedt [data-act="upload"]')]); await fc.setFiles({ name: 'beep.wav', mimeType: 'audio/wav', buffer: wav });
+  await pg.waitForTimeout(800); await pg.evaluate(() => document.querySelector('#sedt [data-pick="horn"]').click()); await pg.waitForTimeout(500);
+  const [fc] = await Promise.all([pg.waitForEvent('filechooser'), pg.evaluate(() => document.querySelector('#sedt [data-act="upload"]').click())]); await fc.setFiles({ name: 'beep.wav', mimeType: 'audio/wav', buffer: wav });
   await pg.waitForFunction(() => { const o = __dbg.SFX.shared.set.horn; return o && o.takes && o.takes.length === 2; }, null, { timeout: 15000 }).catch(() => {});
   await pg.evaluate(() => { const s = document.querySelector('#sedt [data-f="lvl"]'); s.value = '0.5'; s.dispatchEvent(new Event('input', { bubbles: true })); });
-  await pg.click('#sedt [data-take="0"][data-do="del"]'); await pg.waitForTimeout(300);
+  await pg.evaluate(() => document.querySelector('#sedt [data-take="0"][data-do="del"]').click()); await pg.waitForTimeout(300);
   await pg.waitForFunction(() => { const c = document.querySelector('#sedt [data-wave="0"]'); return c && +c.dataset.len > 0; }, null, { timeout: 15000 }).catch(() => {});
   { const bb = await pg.locator('#sedt [data-wave="0"]').boundingBox(); await pg.mouse.move(bb.x + 2, bb.y + bb.height / 2); await pg.mouse.down(); await pg.mouse.move(bb.x + bb.width * .2, bb.y + bb.height / 2, { steps: 5 }); await pg.mouse.up(); await pg.waitForTimeout(300); }   // drag the start in to a fifth
-  await pg.click('#sedt [data-act="save"]'); await pg.waitForTimeout(1200);
+  await pg.evaluate(() => document.querySelector('#sedt [data-act="save"]').click()); await pg.waitForTimeout(1200);
   const e1 = await pg.evaluate(async () => { const S = __dbg.SFX, o = S.shared.set.horn, c = S.live(); await new Promise(r => setTimeout(r, 1500)); const v = S.take(c, o.takes[0]); return { takes: o.takes.length, up: !!o.takes[0].f, lvl: o.lvl, level: S.fxLevel('horn'), len: v && +v.L.toFixed(2), played: !!S.play('horn', { vol: .01 }), say: document.querySelector('#sedt .ssay').textContent }; });
   const kept = STORE['sounds.json'] && JSON.parse(STORE['sounds.json'].data.toString());
   ok(e1.takes === 1 && e1.up && e1.lvl === .5 && Math.abs(e1.level - .5) < .01 && e1.len > .35 && e1.len < .42 && e1.played && /SAVED FOR EVERYONE/.test(e1.say) && kept && kept.set.horn.takes[0].f && Object.keys(STORE).some(k => /^snd-.*\.wav$/.test(k)),

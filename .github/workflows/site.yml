@@ -15,7 +15,9 @@ on:
         default: false
 jobs:
   # runs only when it is worth it (owner, 7 Nov 2026): never on a draft; on a push only when it is new work, not a merge of main; on a label only for go, full or measure
+  # (judged in the jobs' own if, with no machine; only a push starts one, to see whether it is a merge)
   gate:
+    if: github.event_name == 'pull_request' && github.event.action == 'synchronize' && !github.event.pull_request.draft
     runs-on: ubuntu-latest
     timeout-minutes: 2
     outputs:
@@ -24,22 +26,13 @@ jobs:
       - id: g
         env:
           GH_TOKEN: ${{ github.token }}
-          EV: ${{ github.event_name }}
-          ACT: ${{ github.event.action }}
-          DRAFT: ${{ github.event.pull_request.draft }}
-          LABEL: ${{ github.event.label.name }}
           SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          go=true
-          if [ "$EV" = pull_request ]; then
-            if [ "$DRAFT" = true ]; then go=false
-            elif [ "$ACT" = labeled ]; then case "$LABEL" in go|full|measure) ;; *) go=false;; esac
-            elif [ "$ACT" = synchronize ]; then n=$(gh api "repos/${{ github.repository }}/commits/$SHA" --jq '.parents|length' || echo 1); [ "$n" -gt 1 ] && go=false; fi
-          fi
-          echo "go=$go" >> "$GITHUB_OUTPUT"; echo "go=$go ($EV $ACT)"
+          n=$(gh api "repos/${{ github.repository }}/commits/$SHA" --jq '.parents|length' || echo 1); go=true; [ "$n" -gt 1 ] && go=false
+          echo "go=$go" >> "$GITHUB_OUTPUT"; echo "go=$go"
   build-check:
     needs: gate
-    if: needs.gate.outputs.go == 'true'
+    if: ${{ !cancelled() && (github.event_name == 'workflow_dispatch' || (!github.event.pull_request.draft && ((github.event.action == 'synchronize' && needs.gate.outputs.go == 'true') || (github.event.action == 'labeled' && contains(fromJSON('["go","full","measure"]'), github.event.label.name)) || contains(fromJSON('["opened","reopened","ready_for_review"]'), github.event.action)))) }}
     concurrency:
       group: site-${{ github.head_ref || github.ref_name }}
       cancel-in-progress: true
@@ -89,7 +82,7 @@ jobs:
           k cafe    'src/144c[a-z]|src/038zd|data/bookstore|worker/door|cafe\.cjs|tgames\.cjs'
           k invites 'src/144c[a-z]|src/111d-online|src/141e-map|src/162d-hud|worker/door|invites'
           k spray   'src/159f|src/146-|spray\.cjs'
-          k money   'src/159[ij]|src/005-save|src/101-gems|src/103a|src/140c|worker/door|economy\.cjs'
+          k money   'src/159(ba|[ij])|src/005-save|src/101-gems|src/103a|src/140c|worker/door|economy\.cjs'
           k paint   'src/159[g-i]|src/150a|src/150d|src/140b|src/146h|data/characters|worker/|paint\.cjs|trade-server\.cjs'
           k bodega80 'src/039-bodega|src/016-street-kit|bodega80s\.cjs'
           k bedroom 'src/150[a-c]|src/150ea|src/059a|bedroom'
@@ -142,6 +135,9 @@ jobs:
           k firstday 'src/162g-firstday|src/102-looks|src/141-forage|src/101-gems|worker/door\.js|firstday\.cjs'
           k avatar  'src/111c-avatar|src/111a-bodies|src/102-looks|src/001-rig|src/111da-motion|data/pfavatar|data/pfanim|avatar\.cjs|avatarmoves\.cjs|pfclips\.cjs'
           k wild    'src/087-npc-creatures|src/144[f-h]|src/076-npc-map|wild\.cjs'
+          k places  'build\.py|tools/(chunks|later|yields|minify|imports)|worker/|src/(000|002|end)|\.html$|package|wrangler|places\.cjs|workflows/site'
+          D=$(git diff -U0 "origin/$BASE"...HEAD -- 'src/*.js' 2>/dev/null | grep -E '^[-+][^-+]' || true)
+          if grep -qE "'@[a-z]|LOAD(ED)?\(" <<<"$D"; then case "$R" in *' places'*) ;; *) R="$R places";; esac; fi
           echo "run=$R" >> "$GITHUB_OUTPUT"; echo "extra checks:$R"
       - uses: actions/setup-node@v4
         with:
@@ -468,6 +464,7 @@ jobs:
         run: node tests/site.cjs
       - name: Every place's code comes when you go there
         timeout-minutes: 20
+        if: contains(steps.f.outputs.run, ' places')
         run: node tests/places.cjs out
       - name: Two players (each sees the other's walking, emotes, dances, flying, blows, jumps, skateboard and tricks)
         timeout-minutes: 20
@@ -525,7 +522,7 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' paint')
         run: node tests/trade-server.cjs
-      - name: The money's server (the bucket, the body's drops, the stalls)
+      - name: The money's server (the bucket, the body's drops, the stalls, the pawn shop)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' money')
         run: node tests/economy.cjs
@@ -549,31 +546,16 @@ jobs:
         timeout-minutes: 15
         if: failure()
         run: MIN=0 python3 build.py && node tests/pageerr.cjs dist/market.html
-  game:
-    needs: gate
-    if: needs.gate.outputs.go == 'true'
-    runs-on: ubuntu-latest
-    outputs:
-      tests: ${{ steps.c.outputs.tests }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - id: c
-        name: Measure only when asked (the measure label on the pull request, or the measure box when started by hand)
-        env:
-          ASKED: ${{ (github.event_name == 'workflow_dispatch' && inputs.measure) || contains(github.event.pull_request.labels.*.name, 'measure') }}
-        run: |
-          if [ "$ASKED" = "true" ]; then T='["budget","samepic","texhash"]'; else T='[]'; fi; echo "tests=$T" >> "$GITHUB_OUTPUT"; echo "$T"
+  # measure only when asked (the measure label on the pull request, or the measure box when started by hand)
   check:
-    needs: game
-    if: needs.game.outputs.tests != '[]'
+    needs: gate
+    if: ${{ !cancelled() && (github.event_name == 'workflow_dispatch' || (!github.event.pull_request.draft && ((github.event.action == 'synchronize' && needs.gate.outputs.go == 'true') || (github.event.action == 'labeled' && contains(fromJSON('["go","full","measure"]'), github.event.label.name)) || contains(fromJSON('["opened","reopened","ready_for_review"]'), github.event.action)))) && ((github.event_name == 'workflow_dispatch' && inputs.measure) || contains(github.event.pull_request.labels.*.name, 'measure')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
-        test: ${{ fromJSON(needs.game.outputs.tests) }}
+        test: [budget, samepic, texhash]
     name: ${{ matrix.test }}
     steps:
       - uses: actions/checkout@v4

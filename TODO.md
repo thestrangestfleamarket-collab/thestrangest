@@ -86,6 +86,7 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
 - [x] **"undefined ×16" in the render inspector**, about 129k triangles in the park: find what it is · P1 · S · find. Found 9 Nov (claude/beautiful-einstein-i82dp0): the backdrop park trees, four instanced meshes drawn whole; now drawn by cell.
 - [x] **The street walkers' cost ("dress", 15 ms a frame in the render inspector, 10 Nov)** · P1 · S · code. Their rig step and pose worked out every finger (they have no finger bones), at 120 steps a second; now without fingers, and where they stand checked only when they move.
 - [x] **Far trees drawn when off screen** (10 Nov) · P2 · S · code. The park ring's and the big trees' far shapes were never culled; now culled tree by tree like the rest. The render inspector also counted every piece of a culled batch as drawn (fixed). Cloud trees: none placed yet.
+- [x] **The far bodega, falls and wall drawn from inside the park** (10 Nov) · P1 · S · code. In the park they, and the cars, are not drawn past 100 tiles from you.
 - [x] **The river drew the whole town a second time** (10 Nov) · P1 · S · code. Its see-through picture now skipped when no water was drawn lately, and drawn with only what is in or by the river.
 - [x] **The far backdrop drawn when unseen** (10 Nov) · P2 · S · code. The far city was never culled; backdrop pieces its own shader shrinks away were still drawn. Now culled piece by piece and left out past that distance.
 - [x] **Too many draw calls** (10 Nov) · P1 · S · code. Far cars (traffic and parked) in a few merged pieces; the lake and its bed in 3×3 chunks. Up the street about 1,070 → 850 draws; facing the park 557 → 304.
@@ -255,6 +256,7 @@ One tree pass (more leaves mean more shadow triangles).
 ## Menus, map, HUD and phones
 
 - [ ] **Try live** · P2 · S · look. The menus, where you start, the map and GO TO.
+- [x] **The ? menu redone** (owner, 10 Nov 2026: "list every single thing you can do in game caterogized so you can see the specific moves for each"; merged 10 Nov) · P2 · M · code.
 - [x] **The map in the menus' green look** (owner, 10 Nov 2026: "B, go"; done 10 Nov) · P2 · M · code. `src/141e-map.js`, `tests/brochure.cjs`. Waits for his look and yes.
 - [ ] **The brochures** · P2 · S · look. Twelve, each in its own style, from three street racks (10 Nov): the styles, the photographs, where the racks stand, $2 and the $50 full set. Re-shoot a brochure's photographs and fix its words when its activity changes (`tools/brochure-shots.cjs`). START lends each kit (10 Nov): which items, where it starts you, when the loan goes back.
 - [ ] **The HUD's 24px margin on the owner's own screen** · P3 · S · look. His pick A (4 Nov); checked locally only.

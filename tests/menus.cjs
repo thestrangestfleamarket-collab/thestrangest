@@ -1,4 +1,4 @@
-// THE MENU CHECK: node tests/menus.cjs dist/market.html [folder for screenshots]. ESC opens the one menu: its sections down the left (SETTINGS, PETS, INVENTORY; ADMIN for owners, 7 Nov 2026; your look in ADMIN > AVATAR, you the paper doll, 9 Nov 2026), each section's parts as tabs along the top; MAP and BAG open their own windows; ESC shuts it.
+// THE MENU CHECK: node tests/menus.cjs dist/market.html [folder for screenshots]. ESC opens the one menu: its sections down the left (SETTINGS, PETS, INVENTORY, MAP; ADMIN for owners, 7 Nov 2026; your look in ADMIN > AVATAR, you the paper doll, 9 Nov 2026), each section's parts as tabs along the top; MAP and BAG open their own windows; ESC shuts it.
 const { chromium } = require('playwright'), path = require('path'), fs = require('fs');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=menus::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -20,7 +20,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(!(await pg.evaluate(() => !!document.getElementById('hh'))), 'the pager is gone');
     await pg.keyboard.press('Escape');
     ok(await until(() => __UI.menuOpen && __UI.menuNow()[0] === 'set'), 'ESC opens the menu at SETTINGS');
-    ok(await texts('#mnav [data-sec]') === 'SETTINGS,PETS,INVENTORY', 'the sections down the left: SETTINGS, PETS, INVENTORY (no PROFILE: the paper doll, 9 Nov 2026; no ADMIN for a player; no MAP, PEOPLE, BBS or GUIDE)');
+    ok(await texts('#mnav [data-sec]') === 'SETTINGS,PETS,INVENTORY,MAP', 'the sections down the left: SETTINGS, PETS, INVENTORY, MAP (MAP a section, 10 Nov 2026; no PROFILE: the paper doll, 9 Nov 2026; no ADMIN for a player; no PEOPLE, BBS or GUIDE)');
     await pg.keyboard.press('Escape'); await until(() => !__UI.menuOpen);
     await pg.evaluate(() => DOLL.me()); ok(await until(() => !document.getElementById('doll').hidden), 'double-clicking yourself opens your paper doll');
     ok(await pg.evaluate(() => [...document.querySelectorAll('#doll [data-b]')].map(x => x.textContent).join() === 'EDIT,WEAR,WORDS,SKILLS,JOURNAL,EMOTES,PASSPORT,LOG OUT'), 'the doll has EDIT, WEAR, WORDS, SKILLS, JOURNAL, EMOTES, PASSPORT and LOG OUT');
@@ -28,7 +28,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.evaluate(() => document.querySelector('#doll [data-b="1"]').click()); ok(await until(() => !document.getElementById('looks').hidden && document.querySelector('#looks .ltabs [data-t=look]').hidden), 'its WEAR opens what you wear, with no LOOK');
     await shot('wear'); await pg.evaluate(() => { document.getElementById('looks').hidden = true; DOLL.me(); });
     await pg.keyboard.press('Escape'); await until(() => __UI.menuOpen);
-    await sec('pack'); ok(await until(() => FORAGE.PACK.open && document.querySelector('#dpack #packp')), 'INVENTORY shows your skills in the menu');
+    await sec('pack'); ok(await until(() => BAG.inMenu() && document.querySelector('#dbag #bagp .bgr')), 'INVENTORY opens at BAG, your things in the menu (10 Nov 2026)'); await pg.evaluate(() => document.querySelector('#msub [data-sub="skills"]').click()); ok(await until(() => FORAGE.PACK.open && document.querySelector('#dpack #packp')), 'INVENTORY shows your skills in the menu');
     ok(await texts('#msub [data-sub]') === 'BAG,SKILLS,BOOK,FISHING,JOURNAL', 'INVENTORY: BAG, SKILLS, BOOK, FISHING, JOURNAL');
     await shot('pack');
     await sub('book'); ok(await pg.evaluate(() => FORAGE.PACK.tab === 'book'), 'BOOK');
@@ -52,7 +52,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.evaluate(() => __UI.toggleMenu());
     await pg.evaluate(() => { CINEMA.isAdmin = async () => true; });   // an owner
     await pg.keyboard.press('Escape'); ok(await until(() => !!document.querySelector('#mnav [data-sec="admin"]')), 'an owner sees ADMIN');
-    await sec('admin'); ok(await texts('#msub [data-sub]') === 'BUG QUEUE,TEXT,EDITORS,AVATAR,VEHICLES,VEHICLE EDITOR,TOOLS', 'ADMIN: BUG QUEUE, TEXT, EDITORS, AVATAR, VEHICLES, VEHICLE EDITOR, TOOLS (9 Nov 2026)');
+    await sec('admin'); ok(await texts('#msub [data-sub]') === 'BUG QUEUE,TEXT,EDITORS,AVATAR,VEHICLES,VEHICLE EDITOR,SOUND EDITOR,TOOLS', 'ADMIN: BUG QUEUE, TEXT, EDITORS, AVATAR, VEHICLES, VEHICLE EDITOR, SOUND EDITOR, TOOLS (10 Nov 2026)');
     await sub('look'); ok(await until(() => document.querySelector('#dlooks #looks') && !document.querySelector('#looks').hidden && !!document.querySelector('#dhome #cpav')), 'ADMIN > AVATAR: your look beside your live avatar'); await shot('admin-avatar');
     await sub('tools'); ok(await until(() => !!document.querySelector('#dtools #cpstat')), 'TOOLS: stats and the render inspector (no game log, 8 Nov 2026)');
     await shot('admin');

@@ -6,7 +6,7 @@ const {chromium}=require('playwright'), {spawn}=require('child_process');
 const PORT=8799, BASE='http://127.0.0.1:'+PORT;
 let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
 (async()=>{
-  const w=spawn('npx',['wrangler','dev','--port',String(PORT),'--ip','127.0.0.1','--var','DEV_AUTH:1','--show-interactive-dev-session=false'],{stdio:['ignore','pipe','pipe'],detached:true,env:{...process.env,WRANGLER_SEND_METRICS:'false'}});
+  const w=spawn('npx',['wrangler','dev','--port',String(PORT),'--ip','127.0.0.1','--var','DEV_AUTH:1','--show-interactive-dev-session=false','--persist-to',require('fs').mkdtempSync(require('path').join(require('os').tmpdir(),'site-'))],{stdio:['ignore','pipe','pipe'],detached:true,env:{...process.env,WRANGLER_SEND_METRICS:'false'}});
   const stop=()=>{ try{ process.kill(-w.pid,'SIGKILL'); }catch(e){ try{ w.kill('SIGKILL'); }catch(_){} } };   // the worker's whole group: wrangler leaves workerd on the port otherwise, and the next test on it talks to this one
   let log=''; w.stdout.on('data',d=>log+=d); w.stderr.on('data',d=>log+=d);
   let up=false; for(let i=0;i<120&&!up;i++){ await new Promise(r=>setTimeout(r,1000)); up=await fetch(BASE+'/').then(r=>r.ok).catch(()=>false); }
@@ -26,6 +26,9 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
     ok((await fetch(BASE+'/owned',{method:'POST',headers:{origin:BASE},body:'{}'})).status===401,'/owned without a login is refused');
     const p1=await own({put:{inv:'{"v":1}',birds:'x'}}), p2=await own({put:{birds:null}}), got=await own({}), bad=await own({put:{'no way':'x'}});
     ok(p1.ok===true&&p2.ok===true&&got.owned&&got.owned.inv==='{"v":1}'&&!('birds' in got.owned)&&!bad.ok,'/owned keeps what you own, key by key ('+JSON.stringify(got).slice(0,80)+')'); }
+  { const orch=(who,body)=>fetch(BASE+'/orchard',{method:'POST',headers:{cookie:'tsfm-pass=dev:'+who,origin:BASE,'content-type':'application/json'},body:JSON.stringify({sec:'A',...body})}).then(r=>r.json()).catch(e=>({why:String(e)}));
+    const c1=await orch('orch-a',{claim:2}), c2=await orch('orch-b',{claim:2}), p1=await orch('orch-a',{put:{v:1,trees:[{id:'x',k:'apple'},null,null,null]}}), p3=await orch('orch-c',{put:{v:1,trees:[]}}), L=await orch('orch-b',{}), a=L.plots&&L.plots.find(p=>p.plot===c1.plot);
+    ok(c1.plot===2&&c2.plot!=null&&c2.plot!==2&&p1.ok===true&&p3.ok===false&&a&&a.d&&a.d.trees[0].k==='apple','/orchard: one plot a player, only its keeper writes it, everyone reads them ('+JSON.stringify(L).slice(0,90)+')'); }
   { const me=who=>fetch(BASE+'/owned',{method:'POST',headers:{cookie:'tsfm-pass='+who,origin:BASE,'content-type':'application/json'},body:'{}'}).then(r=>r.json()).then(j=>j.me&&j.me.no).catch(()=>null);
     const a1=await me('dev:pass-a'), a2=await me('dev:pass-a'), b1=await me('dev:pass-b');
     ok(Number.isInteger(a1)&&a1>=1000&&a1===a2&&Number.isInteger(b1)&&b1!==a1,'/owned issues each player one passport number, in order, and keeps it ('+a1+', '+b1+')'); }
@@ -102,11 +105,13 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
       ok(back&&hi2&&!('sum:dragon#3' in hi2.world),'SUMMON: SEND BACK reaches everyone and is forgotten'); }
     catch(e){ ok(false,'SUMMON: two players reach the block ('+e.message+')'); }
     finally{ if(P)P.w.close(); if(O)O.w.close(); } }
-  const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
+  const b=await chromium.launch({...(process.env.PWCHROME?{executablePath:process.env.PWCHROME}:{}),args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
   const door=await b.newPage(), derr=[]; door.on('pageerror',e=>derr.push(e.message));
   await door.goto(BASE+'/',{waitUntil:'load'}); await door.waitForTimeout(1500);
   ok(await door.locator('#dcode').isVisible().catch(()=>false),'/ without a login: the door, with its invite code box');
   ok(!derr.length,'the door: no page errors '+derr.join(' | '));
+  await door.click('[data-a="ask"]'); await door.fill('#dmail','asker@example.com'); await door.click('[data-a="doask"]'); await door.waitForTimeout(1000);
+  ok(/asker@example\.com/.test(await door.locator('#door').innerText()),'the door: asking for an invite takes an email');
   { const pc=await b.newContext({viewport:{width:412,height:915},isMobile:true,hasTouch:true}), ph=await pc.newPage(); await ph.goto(BASE+'/',{waitUntil:'load'}); await ph.waitForTimeout(1500);
     ok(await ph.locator('#dcode').isVisible().catch(()=>false),'the door on a phone: the invite code box, not turned away'); await pc.close(); }
   const ctx=await b.newContext(); await ctx.addCookies([{name:'tsfm-pass',value:'dev:site-check',url:BASE}]);

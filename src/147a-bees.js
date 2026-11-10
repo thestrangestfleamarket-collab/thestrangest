@@ -72,7 +72,8 @@ const BEES={list:[]}; window.BEES=BEES;
     const id=kindOf(h,!!(CLOCK&&CLOCK.dark())), nest=CREATS.nest, raid=nest&&Math.hypot(nest.x-h.x,nest.z-h.z)<30*WU?Math.max(0,.35-FORAGE.sk('bee')/300):0, n0=Math.max(1,Math.round((Math.floor(f/2)+(FORAGE.sk('bee')>60&&Math.random()<.5?1:0))*(1-raid))), n=Math.min(jars,n0), wax=Math.max(1,Math.floor(f/3));
     FORAGE.take('jar_honey',n); FORAGE.give(id,n); FORAGE.give('bee_wax',wax); S.got[id]=(S.got[id]||0)+n; use('bee',10,80); if(raid>.05)say('WASPS FROM THE PARK\'S NEST HAVE BEEN AT THIS HIVE: SOME HONEY IS GONE. A BETTER BEEKEEPER LOSES LESS.','#e0b070');
     h.f=Math.max(0,f-n*2); h.t=Date.now(); save(); share(); FORAGE.draw(); SFX.play('drip',{vol:.5}); say(`YOU TAKE ${n} JAR${n>1?'S':''} OF ${HONEY[id][0]} AND ${wax} BEESWAX.`,id==='honey_moon'?'#c8d8ff':'#f2c14e'); BEES.last={id,n,wax}; };
-  BEES.lift=h=>{ if(Math.floor(frames(h))>=2)return say('TAKE THE HONEY FIRST.','#c8a090'); S.hives.splice(S.hives.indexOf(h),1); unbox(h); share(); FORAGE.give('bee_hive',1); save(); FORAGE.draw(); say('YOU LIFT THE HIVE BACK INTO YOUR PACK. THE BEES FOLLOW IT IN.','#e8e2cc'); };
+  BEES.unset=h=>{ const i=S.hives.indexOf(h); if(i<0)return false; S.hives.splice(i,1); unbox(h); share(); save(); return true; };
+  BEES.lift=h=>{ if(Math.floor(frames(h))>=2)return say('TAKE THE HONEY FIRST.','#c8a090'); BEES.unset(h); FORAGE.give('bee_hive',1); save(); FORAGE.draw(); say('YOU LIFT THE HIVE BACK INTO YOUR PACK. THE BEES FOLLOW IT IN.','#e8e2cc'); };
   const B='style="margin:0 4px 0 0;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:3px 8px;cursor:pointer"';
   const P=document.createElement('div'); P.id='hivep'; P.hidden=true; P.style.cssText='position:fixed;left:50%;top:14%;transform:translateX(-50%);width:min(380px,92vw);z-index:21;padding:12px 14px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
   document.body.appendChild(P); P.addEventListener('keydown',e=>{ if(e.key==='Escape')P.hidden=true; e.stopPropagation(); }); let cur=null;
@@ -114,3 +115,4 @@ const BEES={list:[]}; window.BEES=BEES;
   { NPCS.when('beekeeper',N=>{ const x=N.st.x, z=N.st.z; SOL.up.push([x-.25*T,z-.25*T,x+.25*T,z+.25*T]); }); }
   window.BEEDBG=()=>({hives:S.hives.map(h=>({f:+frames(h).toFixed(2),fl:flowers(h.x,h.z).t,k:kindOf(h,false)})),got:{...S.got},bee:FORAGE.sk('bee'),shown:BEE.count});
 }
+export {BEES};

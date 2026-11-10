@@ -42,5 +42,7 @@ const MERGE={builds:0}; window.MERGE=MERGE; const SG=new Map();
     for(const g of scene.children)if(g.userData.mergeStatic&&!SG.has(g))SG.set(g,{group:g,things:[]});   // (still groups a builder marks: the view out of your windows)
     for(const [g,P] of SG)if(!g.parent){ ROOMS.unmerge(P); SG.delete(g); }
     for(const P of [...(ROOMS.built||[]),...SG.values()]){ if(ed){ ROOMS.unmerge(P); continue; } let shown=true; for(let q=P.group;q;q=q.parent)if(!q.visible){ shown=false; break; } if(shown)mergeRoom(P); } },'161c-merge');
+  MERGE.geo=merge;   // (pieces into one geometry in G's own space, each piece's colour in its corners: the far cars, 161ca)
   ROOMS.mergeNow=P=>mergeRoom(P); window.MERGEDBG=()=>[...DONE].map(([P,d])=>({room:P.group.name,merged:d.made.length,pieces:d.hid.length}));
 }
+export {MERGE};

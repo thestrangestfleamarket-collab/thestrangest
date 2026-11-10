@@ -107,7 +107,7 @@ export default {
         if (MAPPATCH.NAME.test(sh[1])) { let m = null; try { m = JSON.parse(new TextDecoder().decode(buf)); } catch (e) {} if (!m || m.v !== MAPPATCH.v || !m.set || typeof m.set !== "object") return json({ why: "not a map editor file" }, 400); }
         return json({ ok: await postOf(env).putFile(sh[1], word(request.headers.get("content-type") || "application/octet-stream", 60), buf), size: buf.byteLength }); }
       return new Response("not found", { status: 404 }); }
-    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art")) {
+    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art" || p === "/orchard")) {
       if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401);
       let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
@@ -119,6 +119,7 @@ export default {
         return json({ ok: await homeOf(env).put(id, t) }); }
       // what you own (cash, pack, skills, logs...): one copy a player, read at the start, written back key by key
       if (p === "/owned") { if (body.put === undefined) { const H = homeOf(env), [owned, no, name] = await Promise.all([H.ownedGet(id), H.passport(id), H.nameGet(id)]); return json({ owned, me: { ...meOf(request, id), no, name } }); }
+        if (body.kit !== undefined) { if (await owner(env, id, dev) !== true) return json({ why: "owners only" }, 403); await homeOf(env).econAllow(id, 0, Math.min(20000, Math.max(0, Math.floor(+body.kit || 0))), "owners' kit"); return json({ ok: true }); }   // an owner's own kit, each start (141-forage)
         const put = body.put; if (!put || typeof put !== "object" || Array.isArray(put)) return json({ why: "bad save" }, 400);
         const ks = Object.keys(put); if (ks.length > 80 || ks.some(k => !/^[a-z0-9_.-]{1,40}$/i.test(k) || (put[k] !== null && (typeof put[k] !== "string" || put[k].length > 262144)))) return json({ why: "bad save" }, 400);
         if (tooMany("owned:" + id, 120)) return json({ why: "too many saves, wait a minute" }, 429);
@@ -137,6 +138,14 @@ export default {
         if (!k || typeof put.d !== "string" || !/^data:image\/(png|webp|jpeg);base64,|^\{/.test(put.d) || put.d.length > 12 << 20) return json({ why: "bad picture" }, 400);
         if (tooMany("art:" + id, 60)) return json({ why: "too many saves, wait a minute" }, 429);
         const r = await H.artPut(k, id, put.d, put.fin ? 1 : 0); return r === true ? json({ ok: true }) : json({ why: r, full: r === "full" }, r === "full" ? 413 : 409); }
+      // the park orchard's plots (src/147d): one a player a section, its trees in it; anyone reads them all, only its keeper writes one; a plot left untouched for 60 days can be taken
+      if (p === "/orchard") { const sec = word(body.sec, 8).toUpperCase(), H = homeOf(env); if (!/^[A-Z0-9]{1,8}$/.test(sec)) return json({ why: "bad section" }, 400);
+        if (body.put === undefined && body.claim === undefined && body.leave === undefined) return json({ plots: await H.orchList(sec), me: id });
+        if (tooMany("orchard:" + id, 120)) return json({ why: "too many saves, wait a minute" }, 429);
+        if (body.claim !== undefined) return json(await H.orchClaim(sec, id, Math.floor(+body.claim)));
+        if (body.leave !== undefined) return json({ ok: await H.orchLeave(sec, id) });
+        const t = JSON.stringify(body.put); if (!body.put || typeof body.put !== "object" || Array.isArray(body.put) || t.length > 16384) return json({ why: "bad plot" }, 400);
+        return json({ ok: await H.orchPut(sec, id, t) }); }
       // the arcade's high scores: a top ten a cabinet with three initials, shared by everyone; {cab} reads one ("*" all), {cab, put} adds a run
       if (p === "/scores") { const cab = word(body.cab, 20); if (!/^[A-Z0-9 *]{1,20}$/.test(cab)) return json({ why: "bad cabinet" }, 400);
         if (body.put === undefined) return json({ top: await postOf(env).top(cab) });
@@ -148,11 +157,13 @@ export default {
       const own = await owner(env, id, dev); if (own !== true) return json({ why: "only the owner (" + own + ")" }, 403);
       if (body.do === "text") { const key = String(body.key || ""), text = String(body.text || ""); if (!/^[a-z0-9_.\- ]{1,80}$/i.test(key) || text.length > 400) return json({ why: "bad text" }, 400); return json({ ok: await postOf(env).putText(key, text) }); }
       return json(await admin(env, body, url.origin)); }
-    if (request.method !== "POST" || !["/enter", "/join/check", "/join"].includes(p)) return new Response("not found", { status: 404 });
+    if (request.method !== "POST" || !["/enter", "/join/check", "/join", "/ask"].includes(p)) return new Response("not found", { status: 404 });
     if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
     if (tooMany(request.headers.get("CF-Connecting-IP") || "local")) return json({ why: "too many tries, wait a minute" }, 429);
     if (p === "/enter") { const t = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, ""); return json(t && t.length < 5000 ? await pass(env, t, dev) : { why: "login" }); }
     let body; try { body = await request.json(); } catch (e) { body = null; } if (!body || typeof body !== "object") return json({ why: "bad message" }, 400);
+    // asking for an invite (owner, 10 Nov 2026): the email waits in TENANTS until the owner sends it a code
+    if (p === "/ask") { const m = String(body.email || "").trim().toLowerCase(); if (!MAIL.test(m) || m.length > 200) return json({ why: "email" }); return json({ ok: await postOf(env).ask(m) }); }
     const k = svc(env); if (!k) return json({ why: "the market can't take new tenants yet (the server has no key to make accounts)" });
     const code = String(body.code || "").trim().toUpperCase(); if (!CODE.test(code) || !(await codeOk(env, k, code))) return json({ why: "code" });
     return p === "/join/check" ? json({ ok: true }) : json(await join(env, k, code, body));
@@ -620,7 +631,7 @@ async function owner(env, id, dev) {
 const postOf = env => env.Post.get(env.Post.idFromName("post"));
 // a trade's offer, cleaned: at most 16 kinds of things (1 to 9999 each), cash, and a painting's description for each painting in it
 // the kinds of shared things a player may set on the block (the rest are refused): owner: only an owner (they tell everyone to read again); add: a counter, one at a time
-const WORLD_KEYS = [{ re: /^time$/, owner: 1 }, { re: /^looks$/, owner: 1 }, { re: /^veh$/, owner: 1 }, { re: /^we$/, owner: 1 }, { re: /^riverbell$/ }, { re: /^riverbell:rung$/, add: 1 },
+const WORLD_KEYS = [{ re: /^time$/, owner: 1 }, { re: /^looks$/, owner: 1 }, { re: /^veh$/, owner: 1 }, { re: /^snd$/, owner: 1 }, { re: /^we$/, owner: 1 }, { re: /^riverbell$/ }, { re: /^riverbell:rung$/, add: 1 },
   { re: /^car:[\w-]{1,32}$/ }, { re: /^radio:[\w-]{1,32}$/ }, { re: /^cst:[\w-]{1,32}$/ }, { re: /^gate:[\w-]{1,32}$/ }, { re: /^flag:[\w-]{1,32}$/ }, { re: /^tbl:[\w:-]{1,34}$/ }, { re: /^tag:[\w:.-]{1,34}$/ }];
 // the stalls: their names, the rent a day, how many days ahead, the market's cut of a sale, how many kinds a stall shows
 const STALL = { ids: ["s1", "s2", "s3", "s4", "s5"], rent: 15, days: 7, cut: .05, kinds: 12 };
@@ -668,7 +679,7 @@ async function admin(env, b, origin) {
       if (gone.length && all) await P.botsDrop(gone); }
     const [us, pl, ad, co, on] = await Promise.all([users(), call("/rest/v1/players?select=*").then(r => r.ok ? r.json() : []), call("/rest/v1/admins?select=*").then(r => r.ok ? r.json() : []),
       call("/rest/v1/invite_codes?select=*").then(r => r.ok ? r.json() : []), blockAsk(env, room, "who").catch(() => [])]), nm = await homeOf(env).namesAll().catch(() => ({}));
-    return { ok: true, email: !!env.RESEND_API_KEY, codes: co, letters: await postOf(env).list(),
+    return { ok: true, email: !!env.RESEND_API_KEY, codes: co, letters: await postOf(env).list(), asks: await postOf(env).asks(),
       users: us.map(x => ({ id: x.id, email: x.email, name: nm[x.id] || "", phone: x.phone || "", joined: x.created_at, last: x.last_sign_in_at, confirmed: x.email_confirmed_at, provider: x.app_metadata && x.app_metadata.provider,
         banned: x.banned_until && Date.parse(x.banned_until) > Date.now() ? x.banned_until : null, player: pl.find(p => p.id === x.id) || null, admin: ad.some(a => a.user_id === x.id), online: on.includes(x.id) })) };
   }
@@ -677,6 +688,13 @@ async function admin(env, b, origin) {
   if (b.do === "codeoff") { const code = String(b.code || ""); if (!CODE.test(code)) return { why: "no such code" };
     const r = await call("/rest/v1/invite_codes?select=uses&code=eq." + encodeURIComponent(code)), c = r.ok ? (await r.json())[0] : null; if (!c) return { why: "no such code" };
     return res(await call("/rest/v1/invite_codes?code=eq." + encodeURIComponent(code), { method: "PATCH", body: JSON.stringify({ max_uses: c.uses }) })); }
+  if (b.do === "askcode" || b.do === "askoff") { const m = String(b.email || "").trim().toLowerCase(); if (!MAIL.test(m)) return { why: "no such email" };
+    if (b.do === "askoff") return { ok: await postOf(env).askOff(m) };
+    if (!env.RESEND_API_KEY) return { why: "email is not set up" };
+    const code = newCode(), r = await call("/rest/v1/invite_codes", { method: "POST", body: JSON.stringify({ code, uses: 0, max_uses: 1 }) }); if (!r.ok) return res(r);
+    const n = await email(env, [m], "YOUR INVITE TO THE STRANGEST FLEA MARKET", "Your invite code: " + code + "\n\nEnter it at " + origin + "/ to make your account.");
+    if (!n) return { why: "the email did not go out (code " + code + ")" };
+    await postOf(env).askSent(m); return { ok: true, code }; }
   if (b.do === "tell") {
     const to = b.to === "*" ? "*" : id, subject = String(b.subject || "A LETTER FROM THE MARKET").slice(0, 120), text = String(b.text || "").slice(0, 4000).trim(), out = { ok: true };
     if (!text || (to !== "*" && !user())) return { why: "who to, and what?" };
@@ -767,6 +785,13 @@ export class Post extends DurableObject {
   botIds() { return this.sql.exec("select name from sqlite_master where type = 'table' and name = 'bots'").toArray().length ? this.sql.exec("select id from bots").toArray().map(r => r.id) : []; }
   async botsDrop(ids) { for (const id of ids) await this.ctx.storage.delete("twin:" + id); await this.ctx.storage.delete("botkey"); this.sql.exec("drop table if exists bots"); this.sql.exec("drop table if exists tests");
     if (this.sql.exec("select name from sqlite_master where type = 'table' and name = 'files'").toArray().length) this.sql.exec("delete from files where k like 'bs-%'"); return true; }
+  // who asked for an invite at the door (at most 2000 waiting)
+  askT() { this.sql.exec("create table if not exists asks(email text primary key, at integer, sent integer)"); }
+  ask(m) { this.askT(); if (this.sql.exec("select count(*) as n from asks where sent is null").toArray()[0].n >= 2000) return true;
+    this.sql.exec("insert or ignore into asks(email, at) values(?, ?)", m, Date.now()); return true; }
+  asks() { this.askT(); return this.sql.exec("select email, at, sent from asks order by at desc limit 500").toArray(); }
+  askSent(m) { this.askT(); this.sql.exec("update asks set sent = ? where email = ?", Date.now(), m); return true; }
+  askOff(m) { this.askT(); this.sql.exec("delete from asks where email = ?", m); return true; }
   // shared files, kept in 1 MB parts
   putFile(k, type, buf) { this.sql.exec("create table if not exists files(k text, part integer, type text, data blob, at integer, primary key(k, part))"); this.sql.exec("delete from files where k = ?", k);
     for (let i = 0, n = 0; i < buf.byteLength; i += 1 << 20, n++) this.sql.exec("insert into files(k, part, type, data, at) values(?, ?, ?, ?, ?)", k, n, type, buf.slice(i, i + (1 << 20)), Date.now()); return true; }
@@ -836,6 +861,16 @@ export class Home extends DurableObject {
     if (n > 2 << 20) return false;
     for (const k in put) { if (put[k] === null) this.sql.exec("delete from owned where who = ? and k = ?", id, k); else this.sql.exec("insert into owned(who, k, v, at) values(?, ?, ?, ?) on conflict(who, k) do update set v = excluded.v, at = excluded.at", id, k, put[k], now); }
     return true; }
+  // the park orchard: eight plots a section (plot 0 to 7), one a player
+  orchT() { this.sql.exec("create table if not exists orchard(sec text, plot integer, who text, d text, at integer, primary key(sec, plot))"); }
+  orchList(sec) { this.orchT(); this.nameT(); return this.sql.exec("select o.plot as plot, o.who as who, n.name as name, o.d as d, o.at as at from orchard o left join names n on n.who = o.who where o.sec = ?", sec).toArray().map(r => { let d = null; try { d = JSON.parse(r.d); } catch (e) {} return { plot: r.plot, who: r.who, name: r.name || null, d, at: r.at }; }); }
+  orchClaim(sec, who, want) { this.orchT(); const mine = this.sql.exec("select plot from orchard where sec = ? and who = ?", sec, who).toArray()[0]; if (mine) return { plot: mine.plot };
+    const old = Date.now() - 60 * 864e5, rows = this.sql.exec("select plot, at from orchard where sec = ?", sec).toArray(), free = i => { const r = rows.find(x => x.plot === i); return !r || r.at < old; };
+    const i = want >= 0 && want < 8 && free(want) ? want : [0, 1, 2, 3, 4, 5, 6, 7].find(free); if (i == null) return { why: "every plot is taken" };
+    this.sql.exec("insert into orchard(sec, plot, who, d, at) values(?, ?, ?, ?, ?) on conflict(sec, plot) do update set who = excluded.who, d = excluded.d, at = excluded.at", sec, i, who, "{}", Date.now()); return { plot: i }; }
+  orchPut(sec, who, d) { this.orchT(); const r = this.sql.exec("select plot from orchard where sec = ? and who = ?", sec, who).toArray()[0]; if (!r) return false;
+    this.sql.exec("update orchard set d = ?, at = ? where sec = ? and plot = ?", d, Date.now(), sec, r.plot); return true; }
+  orchLeave(sec, who) { this.orchT(); this.sql.exec("delete from orchard where sec = ? and who = ?", sec, who); return true; }
   // paintings: a picture in 1 MB parts; its painter alone writes it while it is unfinished, nobody once it is finished; 96 MB a painter
   artT() { this.sql.exec("create table if not exists art(id text, part integer, who text, fin integer, d text, at integer, primary key(id, part))"); }
   artGet(k, who) { this.artT(); if (!k) return null; const r = this.sql.exec("select who, fin, d from art where id = ? order by part", k).toArray(); if (!r.length || r[0].fin === 2 || (!r[0].fin && r[0].who !== who)) return null;

@@ -1,4 +1,4 @@
-// THE PARK'S CREATURES (087-npc-creatures, 144f-wild): real sizes, the squirrels, the fireflies at night. The wasps, spiders, frogs and bats went to the pet shops (8 Nov 2026); their lines are in archive/tests/wild-archived.cjs.   node tests/wild.cjs
+// THE PARK'S CREATURES (087-npc-creatures, 144f-wild): real sizes, none of the pet store's kinds loose in the park, watching one logs it in the journal, squirrels by day, fireflies at night.   node tests/wild.cjs
 const {chromium}=require('playwright');
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:900,height:600}});
   const errs={}; pg.on('pageerror',e=>{ errs[e.message]=(errs[e.message]||0)+1; if(errs[e.message]===1)console.log('pageerror:',e.message); });
@@ -6,13 +6,19 @@ const {chromium}=require('playwright');
   await pg.goto('file://'+process.cwd()+'/dist/market.html?hour=14&fresh=1',{timeout:180000});
   await pg.waitForFunction(()=>window.__started&&window.CREATS&&CREATS.length>20,null,{timeout:180000});
   await pg.evaluate(async()=>{ const U=async(f,ms=200000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; }; const B=__dbg.MAPK.BOD, P=PARK; STORE.goTo(B.XS(P.round[0]+(P.ox||0)+3),B.ZS(P.round[1]+(P.oy||0)+3),'up'); await U(()=>PARK.ready&&PARK.in&&!(window.FADE&&FADE.busy)); WX.hold='CLEAR'; DN.set('day'); });
-  await pg.waitForFunction(()=>CREATS.nest&&CREATS.filter(N=>N.wild&&N.wild.set).length>=27,null,{timeout:120000,polling:1000}).catch(()=>{});
+  await pg.waitForFunction(()=>CREATS.nest&&CREATS.filter(N=>N.wild&&N.wild.set).length>=5,null,{timeout:120000,polling:1000}).catch(()=>{});
   const E=f=>pg.evaluate(f), go=(x,z)=>E(`STORE.goTo(${x},${z},'up')`);
   const size=await E(()=>{ const WU=__dbg.cv().TILE/.84, o={}; for(const N of CREATS){ const k=N.key.replace(/#?\d+$/,''); o[k]=Math.max(o[k]||0,N.H/WU); } return o; });
   console.log('heights (m)',JSON.stringify(size));
-  ok(size.rat<.12&&size.bee<.03&&size.firefly<.03&&size.horse>1&&size.horse<2,'every creature at its real size');
-  const trees=await E(()=>((window.PARK&&PARK.trees)||[]).length);
-  const sq=await E(()=>SQDBG2()); ok(sq.built&&sq.n===6&&sq.shown||!trees,'six grey squirrels about the park trees by day: '+JSON.stringify(sq));
+  ok(size.bee<.03&&size.bumblebee<.03&&size.firefly<.03&&size.crow<.5&&size.owl<.6&&size.duck<.7&&size.rat<.12,'every creature at its real size');
+  const gone=await E(()=>{ const P=PARK, X=__dbg.MAPK.BOD.XS, Z=__dbg.MAPK.BOD.ZS, x0=X(P.x0+P.ox), x1=X(P.x1+P.ox), z0=Z(P.y0+P.oy), z1=Z(P.y1+P.oy);
+    return CREATS.filter(N=>/^(wasp|spider|frog|bat|snake|slime)/i.test(N.key)&&N.st&&N.st.x>x0&&N.st.x<x1&&N.st.z>z0&&N.st.z<z1&&!N.lv).map(N=>N.key); });
+  ok(!gone.length,'no wasps, spiders, frogs, bats, snake or slime in the park; they are pets at the pet store (owner, 8 Nov 2026) '+JSON.stringify(gone));
+  const watched=await E(async()=>{ const T=__dbg.cv().TILE; let N=null; for(let t=0;t<40&&!N;t++){ const C=CREATS.filter(N=>/^(bee|bumblebee|duck|crow)/i.test(N.key)&&N.st); const c=C[t%Math.max(1,C.length)]; if(!c){ await new Promise(r=>setTimeout(r,500)); continue; } STORE.goTo(c.st.x+1.5*T,c.st.z,'up'); await new Promise(r=>setTimeout(r,1000)); if(c.body.visible&&!c.far)N=c; } if(!N)return 'none in sight';
+    const k=N.key.replace(/#?\d+$/,'').toLowerCase(); STORE.goTo(N.st.x+1.5*T,N.st.z,'up'); for(let t=0;t<40&&WILDDBG().spd>.05;t++)await new Promise(r=>setTimeout(r,250)); WILD.watch(N);
+    for(let t=0;t<12;t++){ WILD.ff(1); if(WILDDBG().seen[k])return true; await new Promise(r=>setTimeout(r,1000)); } return JSON.stringify(WILDDBG()); });
+  ok(watched===true,'watching a creature logs it in the journal ('+watched+')');
+  const trees=await E(()=>((window.PARK&&PARK.trees)||[]).length); const sq=await E(()=>SQDBG2()); ok(sq.built&&sq.n===6&&sq.shown||!trees,'six grey squirrels about the park trees by day: '+JSON.stringify(sq));
   await E(()=>{ DN.set('night'); });
   const ff=await E(async()=>{ for(let t=0;t<30&&!(FFLYDBG().built&&FFLYDBG().shown);t++)await new Promise(r=>setTimeout(r,500)); const o={d:FFLYDBG()}; FORAGE.S.sk.ento=1000; FORAGE.give('jar_s',1);
     const th=__dbg.UI.things.find(t=>t.name==='FIREFLIES'); STORE.goTo(th.obj.position.x+T0(),th.obj.position.z,'up'); await new Promise(r=>setTimeout(r,2500)); th.act(); o.jar=FORAGE.has('jar_fly'); o.seen=WILD.seen('firefly');

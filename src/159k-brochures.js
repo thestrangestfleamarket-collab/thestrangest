@@ -1,10 +1,13 @@
-// THE BROCHURES: the folded leaflets in the street racks (world.json racks), one for each thing to do, each printed in its own style: buy one at a rack, read it from your pack, GO THERE takes you to its place; a full set pays once.
+// THE BROCHURES: the folded leaflets in the street racks (world.json racks), one for each thing to do, each printed in its own style: buy one at a rack, read it from your pack, START takes you there and lends what it needs; a full set pays once.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INSPECT, INV, SFX, TEXT, UI} from './003b-systems.js';
+import {EQUIP, FORAGE, INSPECT, INV, pos, SFX, TEXT, UI, WIELD} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
-import {FIX, LEVEL, MAPG, SOL, TILE} from './006-map-pre.js';
+import {FADE, FIX, LEVEL, MAPG, SOL, STORE, SYS, TILE} from './006-map-pre.js';
+import {PIER} from './066b-pier.js';
+import {WRECK} from './066ba-wreck.js';
+import {BEES} from './147a-bees.js';
 const BROCH={}; window.BROCH=BROCH;
 { const T=TILE, M=T/.84, esc=TEXT.esc, KEY='broch', PRE='bq_', say=(t,c)=>SAY(t,c||'#e8d6a8');
   const DATA=__LAZY__("data/brochures.json");
@@ -131,7 +134,7 @@ const BROCH={}; window.BROCH=BROCH;
   let L=null, V=null;   // the look once fetched; what is up: {mode:'rack'|'cover'|'open', id, from}
   const W=document.createElement('div'); W.id='bq'; W.hidden=true; W.tabIndex=-1; W.setAttribute('role','dialog'); W.setAttribute('aria-label','Brochures'); document.body.appendChild(W);
   const ready=async()=>{ if(window.LOAD)await LOAD('brochures'); if(!BROCH.D){ const D=await DATA(); BROCH.D=D; BROCH.by=Object.fromEntries(D.list.map(b=>[b.id,b])); }
-    if(!L){ L=LOOK(); const st=document.createElement('style'); st.id='bqcss'; st.textContent=`#bq{position:fixed;inset:0;z-index:40;background:#07080ce6;display:flex;flex-direction:column;align-items:center;gap:10px;padding:10px;overflow:auto;outline:0}
+    if(!L){ L=LOOK(); const st=document.createElement('style'); st.id='bqcss'; st.textContent=`#bq[hidden]{display:none}#bq{position:fixed;inset:0;z-index:40;background:#07080ce6;display:flex;flex-direction:column;align-items:center;gap:10px;padding:10px;overflow:auto;outline:0}
 #bq .bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;font:11px Silkscreen,monospace;letter-spacing:.5px;color:#f2c14e;zoom:var(--uiz,1)}#bq .bar b{color:#ece5d3;font-weight:400}
 #bq .bar button{font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:3px 9px;cursor:pointer}#bq .bar button:focus-visible{outline:2px solid #f2c14e}
 #bq .sheet{display:flex;margin:auto;box-shadow:0 18px 50px #000c;flex:none}#bq .sheet.col{flex-direction:column}
@@ -145,7 +148,7 @@ const BROCH={}; window.BROCH=BROCH;
       +`<div class="grid">${D.list.map(b=>`<div class="slot${S.got[b.id]?' got':''}"><div class="c">${L.cover(b,pics(b.id)[0])}</div><span>${have(b.id)?'IN YOUR PACK · READ':S.got[b.id]?'COLLECTED · $'+PRICE:'$'+PRICE}</span></div>`).join('')}</div>`;
     else{ const b=BROCH.by[V.id], go=UI.places().some(p=>p[0]===b.place);
       W.innerHTML=bar(`<span>${esc(B[b.id][0])}</span>${V.mode==='open'?'<button data-a="fold">FOLD</button>':'<button data-a="open">OPEN</button>'}<button data-a="x">${V.from?'BACK TO THE RACK':'CLOSE'}</button>`)
-        +`<div class="sheet">${V.mode==='open'?L.inside(b,pics(b.id),n,go?'GO THERE':''):L.cover(b,pics(b.id)[0])}</div>`; }
+        +`<div class="sheet">${V.mode==='open'?L.inside(b,pics(b.id),n,go?'START':''):L.cover(b,pics(b.id)[0])}</div>`; }
     fit(); };
   const show=async v=>{ V=v; W.hidden=false; if(!L)W.innerHTML='<div style="margin:auto;font:11px Silkscreen,monospace;color:#f2c14e">UNFOLDING...</div>'; W.focus(); await ready(); if(V===v)draw(); };
   const close=()=>{ W.hidden=true; W.innerHTML=''; V=null; };
@@ -154,13 +157,28 @@ const BROCH={}; window.BROCH=BROCH;
     INV.cash-=PRICE; FORAGE.give(PRE+id,1); const first=!S.got[id]; S.got[id]=1; if(SFX)SFX.play('page',{vol:.5}); say('YOU TAKE '+B[id][0]+'. READ IT ANYWHERE FROM YOUR PACK.');
     if(first&&!S.paid&&IDS.every(k=>S.got[k])){ S.paid=1; INV.cash+=FULL; say('YOU HAVE EVERY BROCHURE. THE VISITORS\' BUREAU PAYS $'+FULL+'.','#f2c14e'); }
     save(); if(FORAGE.draw)FORAGE.draw(); show({mode:'cover',id,from:1}); };
+  // START: takes you to the thing to do and lends what it needs; the loan goes back once you are far from where it began, or after an hour
+  const wait=ms=>new Promise(r=>setTimeout(r,ms)), until=async(f,ms=60000)=>{ const t0=performance.now(); while(!f()&&performance.now()-t0<ms)await wait(200); return f(); };
+  const idle=async()=>{ await until(()=>FADE.busy,1500); let calm=0; const t0=performance.now(); while(calm<600&&performance.now()-t0<40000){ await wait(100); calm=FADE.busy?0:calm+100; } };
+  const SPOT={ wreck:async()=>await until(()=>WRECK.built&&WRECK.at)&&[WRECK.at[0]+4*T,WRECK.at[1]+3*T], pier:async()=>await until(()=>PIER&&PIER.x!=null)&&[PIER.x+3.2*T,PIER.zE+1.6*T] };
+  const giveBack=quiet=>{ const L=S.loan; if(!L)return; const back=[];
+    for(const [k,n] of Object.entries(L.kit)){ for(const s in EQUIP.by)if(EQUIP.by[s]===k)EQUIP.off(s); if(WIELD.on===k)WIELD.set(null); const m=Math.min(n,FORAGE.has(k)||0); if(m>0){ FORAGE.take(k,m); back.push(FORAGE.name(k)); }
+      if(k==='bee_hive'&&m<n&&BEES.S)for(const h of BEES.S.hives.filter(h=>h.t>=L.t).sort((a,b)=>b.t-a.t).slice(0,n-m))if(BEES.unset(h))back.push('THE HIVE YOU SET DOWN'); }
+    S.loan=null; save(); if(FORAGE.draw)FORAGE.draw(); if(!quiet&&back.length)say('THE LOANED GEAR GOES BACK: '+back.join(', ')+'.','#c8a090'); };
+  const start=async id=>{ await ready(); const b=BROCH.by[id], st=b.start||{}; giveBack(true); (UI.goName||UI.goPlace)(st.via||b.place); await idle();
+    const at=st.spot?await SPOT[st.spot]():st.at?[SHARED.BOD.XS(st.at[0]),SHARED.BOD.ZS(st.at[1])]:null; if(at){ STORE.goTo(at[0],at[1],'up'); await idle(); }
+    if(!st.kit)return; const kit={}; for(const [k,n] of Object.entries(st.kit)){ const m=Math.max(0,n-(FORAGE.has(k)||0)); if(m){ FORAGE.give(k,m); kit[k]=m; } }
+    for(const k of st.wear||[])if(FORAGE.has(k))EQUIP.wear(k,true); if(st.hold&&FORAGE.has(st.hold))WIELD.set(st.hold);
+    if(Object.keys(kit).length){ S.loan={id,kit,at:[pos.x,pos.z],R:st.R||100,t:Date.now()}; save(); say('THE VISITORS\' BUREAU LENDS YOU '+Object.keys(kit).map(k=>FORAGE.name(k)).join(', ')+'. IT GOES BACK WHEN YOU LEAVE.','#f2c14e'); }
+    if(FORAGE.draw)FORAGE.draw(); };
+  let lt=0; SYS.add('places',dt=>{ const L=S.loan; if(!L||(lt+=dt)<2)return; lt=0; if(Date.now()-L.t>3600e3||Math.hypot(pos.x-L.at[0],pos.z-L.at[1])>L.R*T)giveBack(); });
   W.addEventListener('click',e=>{ const t=e.target.closest('[data-a],[data-go],[data-o]'); if(!t||!V)return;
     if(t.dataset.a==='x')return back(); if(t.dataset.a==='open')return show({...V,mode:'open'}); if(t.dataset.a==='fold')return show({...V,mode:'cover'});
-    if(t.dataset.go){ const p=BROCH.by[t.dataset.go].place; close(); return (UI.goName||UI.goPlace)(p); }
+    if(t.dataset.go){ const g=t.dataset.go; close(); return start(g); }
     if(t.dataset.o)return V.mode==='rack'?buy(t.dataset.o):show({...V,mode:'open'}); });
   for(const ev of ['keydown','keyup','keypress'])W.addEventListener(ev,e=>{ if(ev==='keydown'&&e.key==='Escape')back(); e.stopPropagation(); });
   addEventListener('resize',()=>{ if(!W.hidden)fit(); });
-  Object.assign(BROCH,{ids:IDS,read:id=>B[id]&&show({mode:'cover',id}),rack:()=>show({mode:'rack'}),buy,close,up:()=>V&&{...V},got:()=>({...S.got}),paid:()=>S.paid});
+  Object.assign(BROCH,{ids:IDS,read:id=>B[id]&&show({mode:'cover',id}),rack:()=>show({mode:'rack'}),buy,start,giveBack,loan:()=>S.loan&&{...S.loan},close,up:()=>V&&{...V},got:()=>({...S.got}),paid:()=>S.paid});
   // the racks: a wire stand of twelve pockets under a sign, the covers in their own colours
   const racks=(LEVEL.racks&&LEVEL.racks.at)||[]; BROCH.racks=[];
   if(racks.length){ const cv=document.createElement('canvas'); cv.width=256; cv.height=256; const g=cv.getContext('2d'); g.fillStyle='#22252b'; g.fillRect(0,0,256,256);
@@ -174,5 +192,5 @@ const BROCH={}; window.BROCH=BROCH;
       for(const s of [-1,1]){ const p=new THREE.Mesh(new THREE.PlaneGeometry(.7*M,1.44*M),face); p.position.set(0,.95*M,s*.034*M); if(s<0)p.rotation.y=Math.PI; G.add(p); }
       const hb=box(.8,1.7,.4,0,.85,0,hid); hb.castShadow=hb.receiveShadow=false; root.add(G); const r=.42*M; SOL.up.push([x-r,z-r,x+r,z+r]); FIX.up.push([x-r,z-r,y,x+r,z+r,y+1.7*M]);
       UI.thing({name:'BROCHURES ($'+PRICE+' EACH)',obj:hb,reach:1.5*T,near:2.4*T,tall:1.8*M,act:()=>BROCH.rack()}); BROCH.racks.push({x,z,G}); } }
-  FORAGE.HELP.push('BROCHURES: a rack on the street sells one for each thing to do ($'+PRICE+'). READ it from your pack; GO THERE takes you to the place. A full set pays $'+FULL+'.');
+  FORAGE.HELP.push('BROCHURES: a rack on the street sells one for each thing to do ($'+PRICE+'). READ it from your pack; START takes you to the place and lends you what it needs. A full set pays $'+FULL+'.');
   window.BROCHDBG=()=>({up:BROCH.up(),got:count(),paid:S.paid,racks:BROCH.racks.map(r=>[+(r.x/T).toFixed(1),+(r.z/T).toFixed(1)]),panels:W.querySelectorAll('.bqp').length,over:[...W.querySelectorAll('.bqp')].filter(p=>[...p.children].some(c=>!/foot|no/.test(c.className)&&getComputedStyle(c).position!=='absolute'&&c.getBoundingClientRect().bottom>p.getBoundingClientRect().bottom+1)).length}); }

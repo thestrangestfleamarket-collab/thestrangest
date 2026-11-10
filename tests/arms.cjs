@@ -27,7 +27,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     for (const id of ['w_revolver', 'w_shotgun', 'w_sniper', 'w_laser']) {
       await place(4); await hold(id); await pg.waitForTimeout(id === 'w_revolver' ? 3000 : 500); await aim(.06); await pg.evaluate(() => { __sent.length = 0; });
       let r = null; for (let i = 0; i < 4 && !r; i++) { await fire(id); await pg.waitForTimeout(300); r = await pg.evaluate(id => { const s = __sent.filter(m => m.t === 'shot' && m.to === 'a' && m.w === id), a = __sent.find(m => m.t === 'arm' && m.k === 'shot'); return s.length && a ? { d: s[0].d, kb: s[0].kb, dn: s[0].dn, ends: a.e.length } : null; }, id); }
-      ok(!!r, 'the ' + id.slice(2) + ' hits the player in front (' + JSON.stringify(r) + ')');
+      if (!r) r = { miss: await pg.evaluate(() => { const o = ONLINE.others.get('a'), g = WIELD.held(); return { last: ARMS.last, sent: __sent.slice(0, 4), a: o && o.p, fig: !!(o && o.fig && o.fig.g), me: __dbg.you(), py: SHARED.py, on: WIELD.on, g: !!g, rag: RAGON(), stuck: SHARED.stuck, out: __dbg.VIT.out, dead: __dbg.VIT.dead, frozen: SHARED.frozen }; }) };
+      ok(r && !r.miss, 'the ' + id.slice(2) + ' hits the player in front (' + JSON.stringify(r) + ')');
       if (id === 'w_shotgun') await shot('shotgun');
     }
     await hold('w_laser'); await aim(.06); await pg.evaluate(() => { ARMS.cd = {}; ARMS.fire('w_laser'); ARMS.hold = false; }); await pg.waitForTimeout(60); await shot('laser'); await pg.evaluate(() => { ARMS.hold = false; });

@@ -85,11 +85,12 @@ import {RIVER} from './066-river.js';
   const trace=(o,d,far)=>{ let t=far, what='air', n=null; if(up()){ const s=.4*M; for(let u=s;u<=far;u+=s){ const x=o.x+d.x*u, z=o.z+d.z*u; if(o.y+d.y*u<gy(x,z)){ t=u-s/2; what=wl(x,z)!=null&&wl(x,z)>=SHARED.groundY(x,z)?'water':'ground'; n=UP; break; } } }
     ray.set(o,d); ray.far=t; ray.camera=SHARED.cam; let h=null; try{ h=ray.intersectObjects(scene.children,true).find(h=>h.distance>.15*M&&seen(h.object)); }catch(e){}
     if(h){ t=h.distance; what='wall'; n=h.face?h.face.normal.clone().transformDirection(h.object.matrixWorld):null; if(n&&n.y>.7&&Math.abs(h.point.y-gy(h.point.x,h.point.z))<.3*M)what='ground'; }
-    return {t,what,n,p:o.clone().addScaledVector(d,t)}; };
+    return {t,what,n,p:o.clone().addScaledVector(d,t),obj:h&&h.object}; };
 
   /* ---------- who a weapon hits: you, the other players near you, the characters (the jets' list) ---------- */
   const bodies=()=>MODS.bodies?MODS.bodies():[{id:'me',x:pos.x,y:SHARED.py,z:pos.z,root:W3.group}], BH=1.85*M, BR=.38*M;
   const rayBody=(o,d,b,far)=>{ const h2=d.x*d.x+d.z*d.z; if(h2<1e-4)return null; const t=((b.x-o.x)*d.x+(b.z-o.z)*d.z)/h2; if(t<0||t>far)return null; const x=o.x+d.x*t-b.x, z=o.z+d.z*t-b.z, y=o.y+d.y*t; if(Math.hypot(x,z)>BR||y<b.y-.05*M||y>b.y+BH)return null; return t; };
+  const bodyOf=(o,L)=>{ if(!o||!L)return null; for(let q=o;q;q=q.parent)for(const b of L)if(b.root===q&&b.id!=='me')return b; return null; };   // a figure the ray met is that body
   const near=(b,x,y,z,r)=>Math.hypot(b.x-x,b.z-z)<r+BR*.5&&y>b.y-r-.2*M&&y<b.y+BH+r;
   const mob=(x,y,z,r,d,kb)=>{ const S=MODS.strikes; if(S&&S.hitAt)S.hitAt(x,y,z,r,d,kb); };
   const goods=(x,y,z,r,k,dir)=>{ if(MODS.goodsBlast)MODS.goodsBlast(x,y,z,r,k,dir); };
@@ -109,7 +110,7 @@ import {RIVER} from './066-river.js';
   const impact=(p,what,col)=>{ if(what==='water'){ bits(p.x,p.y,p.z,8,[0xd8ecf4,0xa8cce0],2,.6,{bo:0}); return; } if(what==='air')return; sparks(p.x,p.y,p.z,6,col||0xffd080,2.5,.25); bits(p.x,p.y,p.z,5,[0x6a6458,0x8a8272],1.6,.6); FLAME.puff(p.x,p.y+.05*M,p.z,.5,2); };
   const shoot=(id,S,mine)=>{ '@later'; const w=W[id], far=w.rng*M, L=mine?bodies():[], got=new Map(), ends=[], j=new V3();
     for(let i=0;i<w.pel;i++){ const d=S.dir.clone(); if(w.spr){ j.set(rnd()-.5,rnd()-.5,rnd()-.5).multiplyScalar(w.spr*2); d.add(j).normalize(); }
-      const h=trace(S.tip,d,far); let bt=h.t, bb=null; for(const b of L){ if(b.id==='me')continue; const t=rayBody(S.tip,d,b,bt); if(t!=null&&t<bt){ bt=t; bb=b; } }
+      const h=trace(S.tip,d,far); let bt=h.t, bb=bodyOf(h.obj,L); for(const b of L){ if(b.id==='me')continue; const t=rayBody(S.tip,d,b,bt); if(t!=null&&t<bt){ bt=t; bb=b; } }
       const e=S.tip.clone().addScaledVector(d,bt); ends.push(e);
       if(bb){ const g=got.get(bb)||{n:0}; g.n++; g.t=bt; got.set(bb,g); bits(e.x,e.y,e.z,3,[0x9a2a24,0x7a1a18],1.5,.5); }
       else{ impact(e,h.what,w.beam?0xff5040:0); if(mine){ mob(e.x,e.y,e.z,.45*T,w.md,w.kb); goods(e.x,e.y,e.z,.6*M,(w.kb+.5)*4*M,d); if(w.beam&&h.what!=='water'&&h.what!=='air'&&out()&&BLAZE.start&&rnd()<.12){ const b=BLAZE.start(e.x,e.z,true); if(b&&!BLAZE.burnable(e.x,e.z)){ b.life=6+rnd()*4; b.sp=1e9; } } } } }
@@ -156,7 +157,7 @@ import {RIVER} from './066-river.js';
       if(L){ for(const b of L){ if(b.id===P.who&&P.t<.35||b.id==='me'&&P.who==='me'&&P.t<.6)continue; if(near(b,P.p.x,P.p.y,P.p.z,P.id==='w_bubble'?.3*M:.08*M)){ hit=!contact(P,P.p,'body',null,b)?false:true; if(hit)break; } } }
       if(!hit){ const g=gy(P.p.x,P.p.z); if(P.p.y<g){ const what=wl(P.p.x,P.p.z)!=null&&wl(P.p.x,P.p.z)>=SHARED.groundY(P.p.x,P.p.z)?'water':'ground'; P.p.y=g; hit=contact(P,P.p.clone(),what,UP,null); } }
       if(!hit&&(P.rT-=dt)<=0){ P.rT=.05; const d=new V3().subVectors(P.p,P.lp), l=d.length(); if(l>1e-4){ ray.set(P.lp,d.divideScalar(l)); ray.far=l; ray.camera=SHARED.cam; let h=null; try{ h=ray.intersectObjects(scene.children,true).find(h=>seen(h.object)&&!(h.distance<.3*M&&P.t<.15)); }catch(e){}
-          if(h){ const n=h.face?h.face.normal.clone().transformDirection(h.object.matrixWorld):UP; hit=contact(P,h.point.clone().addScaledVector(n,.03*M),n.y>.7?'ground':'wall',n,null); } } P.lp.copy(P.p); }
+          const hb=h&&P.mine?bodyOf(h.object,L):null; if(hb)hit=contact(P,h.point.clone(),'body',null,hb); else if(h){ const n=h.face?h.face.normal.clone().transformDirection(h.object.matrixWorld):UP; hit=contact(P,h.point.clone().addScaledVector(n,.03*M),n.y>.7?'ground':'wall',n,null); } } P.lp.copy(P.p); }
       if(hit){ done(P,i); continue; }
       P.m.position.copy(P.p); if(P.id==='w_rocket'||P.id==='w_fireworks'){ const v=P.v.clone().normalize(); P.m.quaternion.setFromUnitVectors(UP,v); } else if(P.id!=='w_bubble'){ P.m.rotation.x+=dt*9; P.m.rotation.z+=dt*5; } else { const s=1+Math.sin(P.t*6)*.04; P.m.scale.set(s,1/s,s); } } };
 

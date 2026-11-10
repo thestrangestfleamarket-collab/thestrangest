@@ -1,6 +1,6 @@
 // THE BEEKEEPER AND YOUR HIVES: a beekeeper in a white suit on the park path sells hives, a smoker, a veil and honey jars, buys honey and wax and teaches BEEKEEPING; a hive you set on the lawn fills over real time, faster among flowers, and the flowers near it decide the honey.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, FORAGE, ITEMS, NPCS, ONLINE, pos, ROOMS, SFX, UI, VIT, WEEDS} from './003b-systems.js';
+import {CLOCK, FLORA, FORAGE, ITEMS, NPCS, ONLINE, pos, ROOMS, SFX, UI, VIT, WEEDS} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
@@ -8,7 +8,6 @@ import {SOL, SYS, TILE} from './006-map-pre.js';
 import {RARITY} from './013a-rarity.js';
 import {CREATS} from './087-npc-creatures.js';
 import {MERCH} from './111e-merch.js';
-import {FLORA} from './142a-flora.js';
 import {GARDEN} from './144a-garden.js';
 import {SMOKE} from './146x-bluehour.js';
 const BEES={list:[]}; window.BEES=BEES;
@@ -34,7 +33,7 @@ const BEES={list:[]}; window.BEES=BEES;
   const flowers=(x,z)=>{ '@later'; const n={}; let t=0; const add=(k,w=1)=>{ n[k]=(n[k]||0)+w; t+=w; };
     for(const [k,fx,fz] of GARDEN.spots?GARDEN.spots():[])if(Math.hypot(fx-x,fz-z)<R)add(k);
     for(const p of GARDEN.plots?GARDEN.plots():[])if(Math.hypot(p.x-x,p.z-z)<R)add(p.k,2);
-    if(window.FLORA&&FLORA.beds)for(const b of FLORA.beds)if(Math.hypot(b.x-x,b.z-z)<R)for(const k of b.k||[])add(k,Math.max(1,b.n/(b.k.length||1)));
+    if(FLORA&&FLORA.beds)for(const b of FLORA.beds)if(Math.hypot(b.x-x,b.z-z)<R)for(const k of b.k||[])add(k,Math.max(1,b.n/(b.k.length||1)));
     return {n,t}; };
   const kindOf=(h,night,n=flowers(h.x,h.z).n)=>{ '@later'; if(night&&WEEDS.inPark&&WEEDS.inPark(h.x,h.z,10)&&Math.random()<.15&&RARITY.open('bee'))return 'honey_moon'; let best='honey_wild', bv=0;
     for(const id in HONEY){ const L=HONEY[id][1]; if(!L)continue; const v=L.reduce((a,k)=>a+(n[k]||0),0); if(v>bv){ bv=v; best=id; } } return bv>=3?best:'honey_wild'; };
@@ -59,7 +58,7 @@ const BEES={list:[]}; window.BEES=BEES;
     const L=list.map(a=>({x:+a[0],y:+a[1],z:+a[2],f:+a[3]||0,who:String(name||'A NEIGHBOUR').toUpperCase()})).filter(h=>isFinite(h.x)&&isFinite(h.z)); if(ready)for(const h of L)box(h); THEIRS.set(id,L); };
   ONLINE.puts.hive={set:theirs,clear:()=>{ for(const id of [...THEIRS.keys()])theirs(id); },share};
   BEES.set=()=>{ '@later'; if(!FORAGE.has('bee_hive'))return say('YOU HAVE NO HIVE. THE BEEKEEPER ON MARKET ST SELLS THEM.','#c8a090'); if(S.hives.length>=MAX)return say('YOU KEEP THREE HIVES ALREADY.','#c8a090');
-    if(SHARED.LVL!=='up'||(window.ROOMS&&ROOMS.cur)||!(WEEDS.inPark&&WEEDS.inPark(pos.x,pos.z)))return say('SET A HIVE ON THE PARK LAWN, AMONG FLOWERS.','#c8a090');
+    if(SHARED.LVL!=='up'||(ROOMS&&ROOMS.cur)||!(WEEDS.inPark&&WEEDS.inPark(pos.x,pos.z)))return say('SET A HIVE ON THE PARK LAWN, AMONG FLOWERS.','#c8a090');
     const h0=SHARED.heading, x=pos.x+Math.sin(h0)*1.2*T, z=pos.z+Math.cos(h0)*1.2*T; if(S.hives.some(h=>Math.hypot(h.x-x,h.z-z)<2*T))return say('TOO CLOSE TO ANOTHER HIVE.','#c8a090');
     FORAGE.take('bee_hive',1); const h={x,z,y:ground(x,z),t:Date.now(),f:0}; S.hives.push(h); box(h); save(); share(); FORAGE.draw(); const f=flowers(x,z).t;
     say(f>=6?'YOU SET THE HIVE AMONG THE FLOWERS. THE BEES SETTLE IN.':f?'YOU SET THE HIVE. A FEW FLOWERS NEAR: IT WILL FILL SLOWLY.':'YOU SET THE HIVE. NO FLOWERS NEAR: IT WILL FILL VERY SLOWLY.','#b8f0a0'); return h; };
@@ -70,7 +69,7 @@ const BEES={list:[]}; window.BEES=BEES;
   BEES.take=h=>{ '@later'; const f=Math.floor(frames(h)); if(f<2)return say('THE FRAMES ARE NEARLY EMPTY. COME BACK LATER.','#c8a090'); const jars=FORAGE.has('jar_honey'); if(!jars)return say('YOU NEED EMPTY HONEY JARS. THE BEEKEEPER ON MARKET ST SELLS THEM.','#c8a090');
     const smoke=FORAGE.has('bee_smoker')&&use('bee',0,70); SFX.play('step',{vol:.3,pitch:.6}); if(!smoke){ const n=1+Math.floor(Math.random()*3*(1-Math.min(.8,FORAGE.sk('bee')/120))); sting(n); if(!FORAGE.has('bee_veil')&&Math.random()<.5){ say('YOU BACK OFF BEFORE YOU GET ANY HONEY.','#c8a090'); return; } }
     else say('A PUFF OF SMOKE AND THE BEES GO QUIET.','#9fe07f');
-    const id=kindOf(h,!!(window.CLOCK&&CLOCK.dark())), nest=CREATS.nest, raid=nest&&Math.hypot(nest.x-h.x,nest.z-h.z)<30*WU?Math.max(0,.35-FORAGE.sk('bee')/300):0, n0=Math.max(1,Math.round((Math.floor(f/2)+(FORAGE.sk('bee')>60&&Math.random()<.5?1:0))*(1-raid))), n=Math.min(jars,n0), wax=Math.max(1,Math.floor(f/3));
+    const id=kindOf(h,!!(CLOCK&&CLOCK.dark())), nest=CREATS.nest, raid=nest&&Math.hypot(nest.x-h.x,nest.z-h.z)<30*WU?Math.max(0,.35-FORAGE.sk('bee')/300):0, n0=Math.max(1,Math.round((Math.floor(f/2)+(FORAGE.sk('bee')>60&&Math.random()<.5?1:0))*(1-raid))), n=Math.min(jars,n0), wax=Math.max(1,Math.floor(f/3));
     FORAGE.take('jar_honey',n); FORAGE.give(id,n); FORAGE.give('bee_wax',wax); S.got[id]=(S.got[id]||0)+n; use('bee',10,80); if(raid>.05)say('WASPS FROM THE PARK\'S NEST HAVE BEEN AT THIS HIVE: SOME HONEY IS GONE. A BETTER BEEKEEPER LOSES LESS.','#e0b070');
     h.f=Math.max(0,f-n*2); h.t=Date.now(); save(); share(); FORAGE.draw(); SFX.play('drip',{vol:.5}); say(`YOU TAKE ${n} JAR${n>1?'S':''} OF ${HONEY[id][0]} AND ${wax} BEESWAX.`,id==='honey_moon'?'#c8d8ff':'#f2c14e'); BEES.last={id,n,wax}; };
   BEES.lift=h=>{ if(Math.floor(frames(h))>=2)return say('TAKE THE HONEY FIRST.','#c8a090'); S.hives.splice(S.hives.indexOf(h),1); unbox(h); share(); FORAGE.give('bee_hive',1); save(); FORAGE.draw(); say('YOU LIFT THE HIVE BACK INTO YOUR PACK. THE BEES FOLLOW IT IN.','#e8e2cc'); };
@@ -86,12 +85,12 @@ const BEES={list:[]}; window.BEES=BEES;
 
   /* ---------- your hives stand where you left them; their bees buzz about while you are near ---------- */
   let ready=false, tt=0; const m4=new THREE.Matrix4();
-  SYS.add('life',dt=>{ if(!ready){ if(!window.__started)return; ready=true; for(const h of S.hives)box(h); for(const L of THEIRS.values())for(const h of L)box(h); }
-    if((tt+=dt||0)<.05)return; tt=0; const now=performance.now()/1000, out=SHARED.LVL==='up'&&!(window.ROOMS&&ROOMS.cur), day=!(window.CLOCK&&CLOCK.dark()); let n=0;
+  SYS.add('life',dt=>{ if(!ready){ if(!SYS.started)return; ready=true; for(const h of S.hives)box(h); for(const L of THEIRS.values())for(const h of L)box(h); }
+    if((tt+=dt||0)<.05)return; tt=0; const now=performance.now()/1000, out=SHARED.LVL==='up'&&!(ROOMS&&ROOMS.cur), day=!(CLOCK&&CLOCK.dark()); let n=0;
     const all=[...S.hives]; if(ONLINE.on)for(const L of THEIRS.values())all.push(...L); for(const L of THEIRS.values())for(const h of L)if(h.g&&!ONLINE.on)h.g.visible=false;
     for(const h of all){ if(!h.g)continue; if(n>=BEE.instanceMatrix.count-NB)break; const near=Math.hypot(h.x-pos.x,h.z-pos.z); h.g.visible=out&&near<60*T; if(!h.g.visible||near>20*T||!day)continue; const busy=Math.min(1,.3+(h.who?h.f:frames(h))/FULL);
       if(!h.fl||now-h.flT>10){ h.flT=now; h.fl=[]; for(const [,fx,fz] of GARDEN.spots?GARDEN.spots():[])if(Math.hypot(fx-h.x,fz-h.z)<R)h.fl.push([fx,ground(fx,fz)+.35*WU,fz]); for(const p of GARDEN.plots?GARDEN.plots():[])if(Math.hypot(p.x-h.x,p.z-h.z)<R)h.fl.push([p.x,ground(p.x,p.z)+.35*WU,p.z]);
-        if(window.FLORA&&FLORA.beds)for(const b of FLORA.beds)if(Math.hypot(b.x-h.x,b.z-h.z)<R)for(const q of b.p||[])h.fl.push(q); }
+        if(FLORA&&FLORA.beds)for(const b of FLORA.beds)if(Math.hypot(b.x-h.x,b.z-h.z)<R)for(const q of b.p||[])h.fl.push(q); }
       for(let i=0;i<NB*busy;i++){ if(i%3===0&&h.fl.length){ const q=h.fl[(i*7)%h.fl.length], u=(now*.09+i*.137)%1, w=u<.45?u/.45:u<.55?1:(1-u)/.45, hy=h.y+.7*WU;
           m4.makeTranslation(h.x+(q[0]-h.x)*w+Math.sin(now*9+i)*.04*WU,hy+(q[1]-hy)*w+Math.sin(Math.PI*w)*.8*WU,h.z+(q[2]-h.z)*w+Math.cos(now*8+i)*.04*WU); BEE.setMatrixAt(n++,m4); continue; }
         const a=now*(1.3+i*.17)+i*2.1, r=(.3+.4*((i*37)%10)/10)*WU; m4.makeTranslation(h.x+Math.cos(a)*r,h.y+(.6+.35*Math.sin(now*2.3+i))*WU,h.z+Math.sin(a*1.3)*r); BEE.setMatrixAt(n++,m4); } }
@@ -111,7 +110,7 @@ const BEES={list:[]}; window.BEES=BEES;
   const V=new THREE.Vector3(); let pt=0;
   MERCH.add({key:'beekeeper',label:'THE BEEKEEPER',height:1.7,model,size:10,hd:0,
     idle:t=>MERCH.pose({nod:Math.sin(t*.6)*4,yaw:Math.sin(t*.3)*14,L:{ua:[20,14],fa:[40,0]},R:{ua:[30,-10],fa:[70,-20]}}),
-    after:(Bd,N)=>{ if(!N.g.visible||!window.SMOKE||Math.hypot(pos.x-N.st.x,pos.z-N.st.z)>20*T)return; const t=performance.now()/1000; if(t-pt<2.2)return; pt=t; MERCH.at(N,'handR',[0,.1,.04],V); SMOKE.puff(V.x,V.y,V.z,2,0xd8d8d0,.6); }});
+    after:(Bd,N)=>{ if(!N.g.visible||!SMOKE||Math.hypot(pos.x-N.st.x,pos.z-N.st.z)>20*T)return; const t=performance.now()/1000; if(t-pt<2.2)return; pt=t; MERCH.at(N,'handR',[0,.1,.04],V); SMOKE.puff(V.x,V.y,V.z,2,0xd8d8d0,.6); }});
   { NPCS.when('beekeeper',N=>{ const x=N.st.x, z=N.st.z; SOL.up.push([x-.25*T,z-.25*T,x+.25*T,z+.25*T]); }); }
   window.BEEDBG=()=>({hives:S.hives.map(h=>({f:+frames(h).toFixed(2),fl:flowers(h.x,h.z).t,k:kindOf(h,false)})),got:{...S.got},bee:FORAGE.sk('bee'),shown:BEE.count});
 }

@@ -1,9 +1,8 @@
 // THE RENDER INSPECTOR: RINSP, the panel showing what is drawn, its triangles, materials and cost.
 import {SHARED, THREE} from './003-shx.js';
-import {CULL, INTERIORS, LEVELS, LOOK, NPCS, pos, PS2, RINSP, ROOMS, TEXT, UI, W3} from './003b-systems.js';
+import {BATCH, CULL, INTERIORS, LEVELS, LOOK, NPCS, pos, PS2, RINSP, ROOMS, TEXT, UI, W3} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {MAPG, STORE, SYS, TILE} from './006-map-pre.js';
-import {BATCH} from './008-batch.js';
 import {OUTL} from './072-walker3d.js';
 Object.assign(RINSP,{on:false,sel:null,f:''}); window.RINSP=RINSP;
 { const T=TILE, V=new THREE.Vector3(), P3=new THREE.Vector3(), V2=new THREE.Vector3(), M4=new THREE.Matrix4(), F=new THREE.Frustum(), BX=new THREE.Box3(), BU=new THREE.Box3();
@@ -92,7 +91,7 @@ Object.assign(RINSP,{on:false,sel:null,f:''}); window.RINSP=RINSP;
   const loop=now=>{ if(!RINSP.on)return; fc++; RINSP.tf=(RINSP.tf||0)+1; if(GT.on)GT.poll(); if(!f0)f0=now; if(now-f0>=500){ RINSP.fps=fc*1000/(now-f0); RINSP.ms=(now-f0)/fc; fc=0; f0=now; } };
   // the GPU's own time for each full-screen pass and each picture drawn outside them (EXT_disjoint_timer_query_webgl2; where the browser has it), so the slow part shows
   const GT={on:false,q:[],ms:{},cur:0}; RINSP.gpu=GT.ms;
-  const gtName=(p,i)=>p===SHARED.RPASS?'SCENE':window.OUTL&&p===OUTL.sp?'OUTLINE':window.PS2&&p===PS2.sp?'PS2':window.LOOK&&p===LOOK.sp?'LOOK':p.constructor&&p.constructor.name==='OutputPass'?'OUTPUT':'PASS '+i;
+  const gtName=(p,i)=>p===SHARED.RPASS?'SCENE':window.OUTL&&p===OUTL.sp?'OUTLINE':PS2&&p===PS2.sp?'PS2':LOOK&&p===LOOK.sp?'LOOK':p.constructor&&p.constructor.name==='OutputPass'?'OUTPUT':'PASS '+i;
   const gtWrap=(o,k,nm)=>{ '@later'; const f=o[k]; if(!f||f.__gt)return; const w=function(...a){ const gl=renderer.getContext(), X=GT.X; if(!GT.on||!X||GT.cur)return f.apply(this,a); const q=gl.createQuery(); gl.beginQuery(X.TIME_ELAPSED_EXT,q); GT.cur=1;
       try{ return f.apply(this,a); } finally{ gl.endQuery(X.TIME_ELAPSED_EXT); GT.cur=0; GT.q.push([q,typeof nm==='function'?nm.apply(this,a):nm]); } }; w.__gt=1; o[k]=w; };
   GT.poll=()=>{ '@later'; const gl=renderer.getContext(), X=GT.X; if(!X)return; const bad=gl.getParameter(X.GPU_DISJOINT_EXT), frame={};

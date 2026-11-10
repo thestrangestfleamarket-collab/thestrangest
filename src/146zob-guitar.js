@@ -1,6 +1,6 @@
 // THE GUITAR (owner, 7 Nov 2026: "i want to add the guitar back into game. use the polyfork assets ... hand 3d model, physics, real string acoustics, sounds, closeup, fingers"; his picks: own one and play it anywhere, and the park's is anyone's; play it yourself or a song from the book; the strings' physics): GUITAR, the item (the bodega sells it), the park's guitar on its stand, playing (keys and the panel), the close-up, and everyone near hearing and seeing it.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INV, NPCS, ONLINE, PARK, pos, st, UI, W3} from './003b-systems.js';
+import {FORAGE, INSTR, INV, NPCS, ONLINE, PARK, pos, st, UI, W3} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {LEVEL, MAPG, SYS, TILE} from './006-map-pre.js';
 import {GTBOOK, GTCHORD, gtCompile} from './108-game-play-3-guitar-2-tunes.js';
@@ -61,7 +61,7 @@ const GUITAR={}; window.GUITAR=GUITAR;
   const myMesh=()=>W3.group.children.find(m=>m.userData&&m.userData.hands&&m.userData.PM&&m.visible!==undefined);
   const tell=(k,v)=>{ if(ONLINE.send)ONLINE.send({t:'gtr',k,v:v==null?'':v}); };
   GUITAR.start=(src='own')=>{ if(on)return; if(st.water&&st.water.in||st.ride||st.climb||st.hang)return say('NOT HERE: STAND SOMEWHERE STEADY TO PLAY.','#c8a090');
-    if(window.INSTR&&window.INSTR.on())window.INSTR.stop(); GSND.wake(); on=true; from=src; GUITAR.stow(); ME.song=-1; ME.chord=''; ME.live={tune:[],strum:[],lh:[],pos:[{t:0,p:1}]}; ACT.chord(ME,'');
+    if(INSTR&&INSTR.on())INSTR.stop(); GSND.wake(); on=true; from=src; GUITAR.stow(); ME.song=-1; ME.chord=''; ME.live={tune:[],strum:[],lh:[],pos:[{t:0,p:1}]}; ACT.chord(ME,'');
     prevView=UI.view; if(CU.on&&!UI.persp)UI.setView('third'); panel(true); tell('on',src==='park'?'k':'f'); if(src==='park'&&STAND.g)STAND.gm.visible=false;
     say('YOU TAKE UP THE GUITAR. PICK A PIECE FROM THE BOOK · P PLAYS IT · TAB THE CLOSE-UP · ESC TO STOP.'); };
   // put down, your own guitar goes on your back (others see it) till you stow it in the bag

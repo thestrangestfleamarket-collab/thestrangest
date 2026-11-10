@@ -12,7 +12,7 @@ import {FOUNT} from './060a-fount.js';
   const top=(x,z)=>WEEDS.top?WEEDS.top(x,z):undefined, surf=(x,z)=>{ const t=top(x,z); return typeof t==='number'?t:G(x,z); };
   const lawn=(x,z)=>{ if(!PARK.in||!WEEDS.inPark||!WEEDS.inPark(x,z,1))return false; const a=x/T+SHARED.BOD.OX-PARK.ox, b=z/T+SHARED.BOD.OY-PARK.oy; return !PARK.path(a,b)&&!(PARK.brook&&PARK.brook.wet(a,b,.6))&&!(FOUNT.lake&&FOUNT.lake(a,b)<1.5); };
   const brush=(x,z)=>ITEMS.some(o=>Math.hypot(o.x-x,o.z-z)<Math.max(.5*T,o.r*.6));
-  const burnable=BLAZE.burnable=(x,z)=>{ if(G(x,z)<-.01||[PARK.fire,window.GCAVE&&GCAVE.fire].some(c=>c&&Math.hypot(c.x-x,c.z-z)<2*T))return false; const t=top(x,z); return typeof t==='number'||t===undefined&&lawn(x,z)||brush(x,z); };
+  const burnable=BLAZE.burnable=(x,z)=>{ if(G(x,z)<-.01||[PARK.fire,GCAVE&&GCAVE.fire].some(c=>c&&Math.hypot(c.x-x,c.z-z)<2*T))return false; const t=top(x,z); return typeof t==='number'||t===undefined&&lawn(x,z)||brush(x,z); };
   const cc=new THREE.Color(), geo=(fn)=>{ const P=[], N=[], C=[]; fn((w,h,d,c,x,y,z,ry=0)=>{ const g=new THREE.BoxGeometry(w,h,d).rotateY(ry).translate(x,y,z).toNonIndexed(); P.push(...g.attributes.position.array); N.push(...g.attributes.normal.array); cc.setHex(c); for(let i=0;i<g.attributes.position.count;i++)C.push(cc.r,cc.g,cc.b); });
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('normal',new THREE.Float32BufferAttribute(N,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C,3)); return g; };
   const VC=new THREE.MeshLambertMaterial({vertexColors:true}), BAS=new THREE.MeshBasicMaterial({color:0xffffff}), m4=new THREE.Matrix4(), q4=new THREE.Quaternion(), e3=new THREE.Euler(0,0,0,'YXZ'), s3=new V3(), p3=new V3(), Z0=new THREE.Matrix4().makeScale(0,0,0);
@@ -40,7 +40,7 @@ import {FOUNT} from './060a-fount.js';
     const y=surf(x,z), s=src(); s.x=x; s.y=y; s.z=z; s.a.position.set(x,y,z); s.w=s.h=0; s.sd=rnd()*50; s.steam=5;
     const f={x,z,y,s,age:0,life:70+rnd()*60,sp:20+rnd()*20,wet:0,by:null,m:mark(x,z,y),sz:.85+rnd()*.35,fix:top(x,z)===undefined,out:false}; F.push(f); return f; };
   BLAZE.land=p=>{ if(burnable(p.x,p.z)&&rnd()<.6)start(p.x,p.z); };
-  const norm=s=>String(s||'').toLowerCase().replace(/\s+/g,'_'), burns=BLAZE.burns=id=>!!(window.ITEMS&&ITEMS.prop&&ITEMS.prop(norm(id),'burnable'));
+  const norm=s=>String(s||'').toLowerCase().replace(/\s+/g,'_'), burns=BLAZE.burns=id=>!!(ITEMS&&ITEMS.prop&&ITEMS.prop(norm(id),'burnable'));
   const end=f=>{ f.out=true; f.s.on=false; f.s.free=true; f.m.t=0; f.m.a0=Math.max(.6,f.m.a); for(let k=0;k<4;k++)FLAME.puff(f.x+(rnd()-.5)*.4*T,f.y+.2*T,f.z+(rnd()-.5)*.4*T,1.3,f.wet>=WET?6:5); };
   let fixT=0;
   const fireTick=dt=>{ fixT-=dt; const fx=fixT<=0; if(fx)fixT=2;
@@ -50,7 +50,7 @@ import {FOUNT} from './060a-fount.js';
       f.m.a=Math.max(f.m.a,.1+.9*Math.min(1,f.age/30));
       if((f.sp-=dt)<=0&&f.wet<=0){ f.sp=20+rnd()*20; if(rnd()<.75){ const a=rnd()*6.28, d=(.8+rnd()*.45)*T; start(f.x+Math.cos(a)*d,f.z+Math.sin(a)*d); } }
       if(f.age>=f.life||f.wet>=WET){ end(f); F.splice(i,1); } }
-    if(fx&&F.length&&window.GPH&&GPH.loose){ try{ for(const it of GPH.loose()){ if(!it||it._burnt)continue; const p=it.t||(it.c&&{x:it.c[0],z:it.c[2]}); if(!p||!burns(it.name))continue; if(F.some(f=>!f.out&&Math.hypot(f.x-p.x,f.z-p.z)<1.2*T)){ it._burnt=1; start(p.x,p.z,true); if(GPH.burn)GPH.burn(it); } } }catch(e){} }
+    if(fx&&F.length&&GPH&&GPH.loose){ try{ for(const it of GPH.loose()){ if(!it||it._burnt)continue; const p=it.t||(it.c&&{x:it.c[0],z:it.c[2]}); if(!p||!burns(it.name))continue; if(F.some(f=>!f.out&&Math.hypot(f.x-p.x,f.z-p.z)<1.2*T)){ it._burnt=1; start(p.x,p.z,true); if(GPH.burn)GPH.burn(it); } } }catch(e){} }
     let ch=false; for(const m of BM){ if(!m)continue; if(fx&&m.fix&&top(m.x,m.z)!==undefined){ m.fix=false; m.y=surf(m.x,m.z); remark(m); }
       const a=m.t<0?m.a:(m.t+=dt)<HOLD?m.a0:m.a0*(1-(m.t-HOLD)/FADE); if(a<=0){ BM[m.i]=null; mk.me.setMatrixAt(m.i,Z0); mk.me.instanceMatrix.needsUpdate=true; mk.aA.array[m.i]=0; ch=true; continue; }
       if(Math.abs(mk.aA.array[m.i]-a)>.004){ mk.aA.array[m.i]=a; ch=true; } }

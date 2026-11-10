@@ -1,6 +1,6 @@
 // THE PIANO (owner, 7 Nov 2026: "lets do piano and drums and harp"): an upright of 88 keys, set down and sat at (INSTR, 146zp): each key a lever that dips under its finger, the sustain pedal under the right foot; its sound each string struck by a felt hammer (the strings' partials a little sharp as real stiff strings are, two strings a note beating, a damper on every key below the top two octaves); the book is Mutopia's solo piano pieces (data/piano-songs.json).
 import {THREE} from './003-shx.js';
-import {INSTR} from './146zp-instruments.js';
+import {INSTR} from './003b-systems.js';
 { const {box,cyl,mat,sm}=INSTR, V3=THREE.Vector3, M4=THREE.Matrix4, Q4=THREE.Quaternion;
   // the keyboard (metres, the player at the origin facing +z, +x their left): white keys 20.5 mm (an upright sized for the Walker), the low notes on the left
   const WK=.0205, KF=.27, KL=.135, BL=.085, BW=.011, KY=.65, LO=21, HI=108;

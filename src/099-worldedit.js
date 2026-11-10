@@ -24,14 +24,14 @@ Object.assign(WE,{on:false}); window.WE=WE;
     if(f&&f0){ if(e.del){ f[0]=f[3]=f[1]=f[4]=1e9; } else { f[0]=b[0]; f[3]=b[2]; f[1]=b[1]; f[4]=b[3]; f[5]=f0[5]*Math.abs(e.s[1]); } }
     for(const q of it.more||[]){ const [s,g]=q, s0=q[2]||(q[2]=s.slice()), g0=q[3]||(q[3]=g.slice()), dx=e.del?1e9:cx-(b0[0]+b0[2])/2, dz=e.del?1e9:cz-(b0[1]+b0[3])/2;   // a long thing's other boxes go with it
       s[0]=s0[0]+dx; s[2]=s0[2]+dx; s[1]=s0[1]+dz; s[3]=s0[3]+dz; g[0]=s[0]; g[3]=s[2]; g[1]=s[1]; g[4]=s[3]; }
-    if(window.WEEDS&&WEEDS.lawnDrop&&was.some((v,i)=>v!==b[i])){ for(const r of [was,b])if(r[0]<1e8)WEEDS.lawnDrop([r[0]-TILE,r[1]-TILE,r[2]+TILE,r[3]+TILE]); } };
+    if(WEEDS&&WEEDS.lawnDrop&&was.some((v,i)=>v!==b[i])){ for(const r of [was,b])if(r[0]<1e8)WEEDS.lawnDrop([r[0]-TILE,r[1]-TILE,r[2]+TILE,r[3]+TILE]); } };
   // what goes with a thing: its lights (dark while it is removed) and glows
   const follow=(it,e,pv)=>{ '@later'; if(!it||!it.follow)return; Ex.set((e.rx||0)*D2R,(e.r||0)*D2R,(e.rz||0)*D2R,'YXZ');
     for(const L of it.follow){ const u=L.userData; if(!u.wePos0){ u.wePos0=L.position.clone(); u.weS0=L.scale.clone(); }
       if(L.isLight){ if(e.del){ if(u.weI0==null){ u.weI0=u.i0!=null?u.i0:L.intensity; u.i0=0; L.intensity=0; } } else if(u.weI0!=null){ u.i0=u.weI0; L.intensity=u.weI0; delete u.weI0; } }
       else L.scale.copy(u.weS0).multiplyScalar(e.del?0:1);
       v.set(pv[0],pv[1],pv[2]); L.position.copy(u.wePos0).sub(v).multiply(vv.fromArray(e.s)).applyEuler(Ex).add(v).add(vv.fromArray(e.t)); }
-    if(window.LITE)LITE.t=0; };
+    if(LITE)LITE.t=0; };
   const Bx=new THREE.Matrix4(), cx=new THREE.Color();
   // a BatchedMesh item moves by its own matrix; an InstancedMesh item by the edit times its first matrix (removed: shrunk to nothing)
   function applyProp(o){ '@later'; const e=stOf(o), me=o.me, id=o.id, pv=o.pivot, en=o.en, inst=!!(me&&me.isInstancedMesh); if(!me||!me.setMatrixAt)return;
@@ -130,7 +130,7 @@ Object.assign(WE,{on:false}); window.WE=WE;
   const hexOf=n=>'#'+(n>>>0&0xffffff).toString(16).padStart(6,'0');
   const litKey=L=>{ const p=L.userData.wePos0||L.position; return 'L|'+rp(p.x)+'_'+rp(p.y)+'_'+rp(p.z); };
   const litOrig=L=>{ const u=L.userData; if(u.i0Orig==null)u.i0Orig=(u.i0!=null?u.i0:L.intensity); if(u.colOrig==null)u.colOrig=L.color.getHex(); if(u.distOrig==null)u.distOrig=L.distance; return u; };
-  const sceneLights=()=>{ const out=[]; scene.traverse(o=>{ if(o.isLight&&o.intensity!==undefined&&o.type!=='AmbientLight'&&o.type!=='HemisphereLight'&&!o.userData.pool)out.push(o); }); if(window.LITE&&LITE.recs)for(const L of LITE.recs)if(!out.includes(L))out.push(L); return out; };
+  const sceneLights=()=>{ const out=[]; scene.traverse(o=>{ if(o.isLight&&o.intensity!==undefined&&o.type!=='AmbientLight'&&o.type!=='HemisphereLight'&&!o.userData.pool)out.push(o); }); if(LITE&&LITE.recs)for(const L of LITE.recs)if(!out.includes(L))out.push(L); return out; };
   const nearLight=(pt,R)=>{ let best=null, bd=R*R; for(const L of sceneLights()){ const d=L.position.distanceToSquared(pt); if(d<bd){ bd=d; best=L; } } return best; };
   const applyLight=(L,s)=>{ const u=litOrig(L), li=s.li==null?1:s.li, nb=u.i0Orig*li;
     if(u.i0!=null){ const f=u.i0?L.intensity/u.i0:1; u.i0=nb; L.intensity=nb*f; } else L.intensity=nb;

@@ -99,6 +99,7 @@ jobs:
           k arcade  'src/059[b,g-o]|arcade-torch|arcade-petri'
           k bbs     'src/146-drone|src/059a|bbs\.cjs'
           k layout 'src/094-ui|src/162d-hud|src/103-vitals|layout\.cjs'
+          k use 'src/094-ui|src/100-use|src/001-rig|src/111da-motion|tests/use\.cjs'
           k insides 'src/059-store|src/059-street|src/059h|src/059p|src/008-batch|insides\.cjs'
           k roofq 'src/148c-roofquests|src/144a-garden|roof-quests\.cjs'
           k riverq 'src/066-river|src/066b-pier|src/066ba-wreck|src/142-fishing|src/146d-gear|src/146gb-hudson|src/150q-hudtrophies|river-quests\.cjs'
@@ -348,6 +349,9 @@ jobs:
       - name: The screen's layout (drag the HUD and windows, saved, back after a reload)
         if: contains(steps.f.outputs.run, ' layout')
         run: node tests/layout.cjs dist/market.html
+      - name: Use (E uses what is in reach, no walk; a double click walks up, stops dead, no slide)
+        if: contains(steps.f.outputs.run, ' use')
+        run: node tests/use.cjs
       - name: The computer's BBS (dial-in, order, drone delivery, drone view)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' bbs')

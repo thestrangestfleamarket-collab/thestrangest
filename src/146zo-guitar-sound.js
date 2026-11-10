@@ -1,6 +1,6 @@
 // THE GUITAR'S SOUND: GSND, six strings and the hollow body simulated on the audio thread (tsfm's, owner 14 Oct 2026: "real acoustic strings that vibrate ... empty body ... acoustics matching"), one voice a player, heard from where they stand; the guitar's own audio, as the car radio's (the game's other sounds stay off, 19 Oct 2026).
 import {SHARED} from './003-shx.js';
-import {pos} from './003b-systems.js';
+import {pos, SFX} from './003b-systems.js';
 import {SAVE} from './005-save.js';
 import {TILE} from './006-map-pre.js';
 import {gtHz} from './106-game-play-3-guitar-1-body.js';
@@ -37,9 +37,9 @@ registerProcessor('guitar',Guitar);`;
   const PM=[{g:.995,a:.62,ap:0},{g:.9955,a:.58,ap:0},{g:.996,a:.55,ap:0},{g:.9965,a:.5,ap:.08},{g:.997,a:.46,ap:.12},{g:.9975,a:.42,ap:.16}];
   let room=null;
   // the guitar's audio, made the first time someone plays (a click or a key: the browser lets sound start then)
-  GSND.wake=()=>{ if(GSND.ctx){ if(GSND.ctx.state!=='running')GSND.ctx.resume().catch(()=>{}); return GSND.ok; } if(GSND.busy)return false;
-    try{ GSND.ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return false; } const c=GSND.ctx; if(!c.audioWorklet)return false; GSND.busy=true;
-    GSND.out=c.createGain(); GSND.out.gain.value=GSND.vol; GSND.out.connect(c.destination);
+  GSND.wake=()=>{ if(GSND.ctx){ SFX.wake(); return GSND.ok; } if(GSND.busy)return false;
+    const c=GSND.ctx=SFX.wake(); if(!c||!c.audioWorklet)return false; GSND.busy=true;
+    GSND.out=c.createGain(); GSND.out.gain.value=GSND.vol; GSND.out.connect(SFX.out(c));
     // a little air round it: early reflections and a short tail (outdoors mostly; an inside's walls would add more)
     const len=Math.floor(c.sampleRate*.6), ir=c.createBuffer(2,len,c.sampleRate); for(let ch=0;ch<2;ch++){ const q=ir.getChannelData(ch); for(let i=0;i<len;i++){ const t=i/c.sampleRate; q[i]=(Math.random()*2-1)*Math.exp(-t*13.8/.45)*(t<.004?0:1); } for(const ms of [9,14,21,28])q[Math.floor(c.sampleRate*ms/1000)+ch*13]+=.5; }
     const cv=c.createConvolver(), wet=c.createGain(); cv.buffer=ir; wet.gain.value=.16; cv.connect(wet); wet.connect(GSND.out); room=cv;

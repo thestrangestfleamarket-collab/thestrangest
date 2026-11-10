@@ -2,7 +2,7 @@ __pycache__/
 dist/
 *.png
 .claude/worktrees/
-node_modules/
+node_modules
 mod.mjs
 .wrangler/
 *.gif
@@ -11,3 +11,4 @@ docs/MAP.md
 data/full/covers-progress.jsonl
 .cache/
 data/full/samples/
+data/full/sfx/*/

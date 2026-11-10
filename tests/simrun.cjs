@@ -18,7 +18,7 @@ const MIN=+(process.argv[2]||3), OUT=process.argv[3], TRIS=+(process.env.SIM_TRI
   if(!up){ console.log('FAIL: the page never started',JSON.stringify(errs)); await b.close(); process.exit(1); }
   const loadS=((Date.now()-t0)/1000).toFixed(0); console.log('started in '+loadS+' s');
   const startedAt=await pg.evaluate(()=>performance.now()), GL=await pg.evaluate(()=>__dbg.gl()), SOFT=/swiftshader|llvmpipe|software/i.test(GL); console.log('renderer: '+GL+(SOFT?' (software: freezes reported, not failed)':''));
-  await pg.evaluate(async()=>{ const c=__dbg.SFX.ctx(); if(c&&c.state!=='running')await c.resume().catch(()=>{}); __dbg.CLOCK.run=true; __dbg.CLOCK.speed=1440/60; if(window.STORE&&STORE.ensure)STORE.ensure(); window.__long.length=0; });   /* (the stacked rooms built at once here: not the game's freeze) */
+  await pg.evaluate(async()=>{ const c=__dbg.SFX.wake(); if(c&&c.state!=='running')await c.resume().catch(()=>{}); __dbg.CLOCK.run=true; __dbg.CLOCK.speed=1440/60; if(window.STORE&&STORE.ensure)STORE.ensure(); window.__long.length=0; });   /* (the stacked rooms built at once here: not the game's freeze) */
   const places=await pg.evaluate(()=>__dbg.UI.places().map(p=>p[0])); console.log('places: '+places.length);
   const WX=['CLEAR','CLOUDY','RAIN','STORM','SNOW','FOG',null];
   const fails=[], notes=[], S={longs:[],samples:0,maxTris:0,maxLights:0,minFps:1e9,maxLong:0,clipChars:0,audits:0,lines:0,sounds:0}, seen={};

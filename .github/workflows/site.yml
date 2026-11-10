@@ -15,7 +15,9 @@ on:
         default: false
 jobs:
   # runs only when it is worth it (owner, 7 Nov 2026): never on a draft; on a push only when it is new work, not a merge of main; on a label only for go, full or measure
+  # (judged in the jobs' own if, with no machine; only a push starts one, to see whether it is a merge)
   gate:
+    if: github.event_name == 'pull_request' && github.event.action == 'synchronize' && !github.event.pull_request.draft
     runs-on: ubuntu-latest
     timeout-minutes: 2
     outputs:
@@ -24,22 +26,13 @@ jobs:
       - id: g
         env:
           GH_TOKEN: ${{ github.token }}
-          EV: ${{ github.event_name }}
-          ACT: ${{ github.event.action }}
-          DRAFT: ${{ github.event.pull_request.draft }}
-          LABEL: ${{ github.event.label.name }}
           SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          go=true
-          if [ "$EV" = pull_request ]; then
-            if [ "$DRAFT" = true ]; then go=false
-            elif [ "$ACT" = labeled ]; then case "$LABEL" in go|full|measure) ;; *) go=false;; esac
-            elif [ "$ACT" = synchronize ]; then n=$(gh api "repos/${{ github.repository }}/commits/$SHA" --jq '.parents|length' || echo 1); [ "$n" -gt 1 ] && go=false; fi
-          fi
-          echo "go=$go" >> "$GITHUB_OUTPUT"; echo "go=$go ($EV $ACT)"
+          n=$(gh api "repos/${{ github.repository }}/commits/$SHA" --jq '.parents|length' || echo 1); go=true; [ "$n" -gt 1 ] && go=false
+          echo "go=$go" >> "$GITHUB_OUTPUT"; echo "go=$go"
   build-check:
     needs: gate
-    if: needs.gate.outputs.go == 'true'
+    if: ${{ !cancelled() && (github.event_name == 'workflow_dispatch' || (!github.event.pull_request.draft && ((github.event.action == 'synchronize' && needs.gate.outputs.go == 'true') || (github.event.action == 'labeled' && contains(fromJSON('["go","full","measure"]'), github.event.label.name)) || contains(fromJSON('["opened","reopened","ready_for_review"]'), github.event.action)))) }}
     concurrency:
       group: site-${{ github.head_ref || github.ref_name }}
       cancel-in-progress: true
@@ -106,6 +99,7 @@ jobs:
           k arcade  'src/059[b,g-o]|arcade-torch|arcade-petri'
           k bbs     'src/146-drone|src/059a|bbs\.cjs'
           k layout 'src/094-ui|src/162d-hud|src/103-vitals|layout\.cjs'
+          k use 'src/094-ui|src/100-use|src/001-rig|src/111da-motion|tests/use\.cjs'
           k insides 'src/059-store|src/059-street|src/059h|src/059p|src/008-batch|insides\.cjs'
           k roofq 'src/148c-roofquests|src/144a-garden|roof-quests\.cjs'
           k riverq 'src/066-river|src/066b-pier|src/066ba-wreck|src/142-fishing|src/146d-gear|src/146gb-hudson|src/150q-hudtrophies|river-quests\.cjs'
@@ -123,6 +117,7 @@ jobs:
           k visit   'src/150d|src/146z|src/059a|src/111d|visit\.cjs'
           k aptfixed 'src/150a|src/150d|src/150f|src/150k|aptfixed\.cjs'
           k aptradio 'src/150fb|src/150p-cars|src/150a|src/150d|data/radio|aptradio\.cjs'
+          k sound   'src/091-sfx|src/093-|src/100-use|src/146zo-|src/150p-cars|sound\.cjs'
           k clock   'src/134b|worker/clock|worker/door|clock\.cjs'
           k westst  'src/023|src/05[89]-|src/059[e-h]|westst'
           k pfrow   'src/068a|src/059i|src/069a|data/street|data/world|tools/row-lay|pfrow'
@@ -137,10 +132,15 @@ jobs:
           k skate   'src/146i|src/111fd|src/001-rig|src/069a-block|data/skate|data/world\.json|skate\.cjs|skatepit\.cjs'
           k mmo     'src/111d-online|src/111da-motion|src/146h-brawl|src/146i|worker/door|mmo\.cjs|workflows/site'
           k kit     'src/141-forage|src/111fd|src/146i-ride|src/003b|data/items|kit\.cjs|src/136c-tenants'
+          k browser 'src/162ac-mouselook|src/162ad-awake|src/091-sfx|src/094-ui|browser\.cjs'
           k guitar  'src/111b-hands|src/106-game-play-3-guitar|src/108-game-play-3-guitar|src/146zo|src/111a-bodies|src/111c-avatar|data/pfhand|data/pfguitar|worker/door|guitar\.cjs'
           k firstday 'src/162g-firstday|src/102-looks|src/141-forage|src/101-gems|worker/door\.js|firstday\.cjs'
           k avatar  'src/111c-avatar|src/111a-bodies|src/102-looks|src/001-rig|src/111da-motion|data/pfavatar|data/pfanim|avatar\.cjs|avatarmoves\.cjs|pfclips\.cjs'
           k wild    'src/087-npc-creatures|src/144[f-h]|src/076-npc-map|wild\.cjs'
+          k brochures 'src/159k-brochures|data/brochures|brochures\.cjs'
+          k places  'build\.py|tools/(chunks|later|yields|minify|imports)|worker/|src/(000|002|end)|\.html$|package|wrangler|places\.cjs|workflows/site'
+          D=$(git diff -U0 "origin/$BASE"...HEAD -- 'src/*.js' 2>/dev/null | grep -E '^[-+][^-+]' || true)
+          if grep -qE "'@[a-z]|LOAD(ED)?\(" <<<"$D"; then case "$R" in *' places'*) ;; *) R="$R places";; esac; fi
           echo "run=$R" >> "$GITHUB_OUTPUT"; echo "extra checks:$R"
       - uses: actions/setup-node@v4
         with:
@@ -351,6 +351,9 @@ jobs:
       - name: The screen's layout (drag the HUD and windows, saved, back after a reload)
         if: contains(steps.f.outputs.run, ' layout')
         run: node tests/layout.cjs dist/market.html
+      - name: Use (E uses what is in reach, no walk; a double click walks up, stops dead, no slide)
+        if: contains(steps.f.outputs.run, ' use')
+        run: node tests/use.cjs
       - name: The computer's BBS (dial-in, order, drone delivery, drone view)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' bbs')
@@ -391,6 +394,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' aptradio')
         run: node tests/aptradio.cjs dist/market.html
+      - name: The sound (on by default, one audio context and volume, every effect plays)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' sound')
+        run: node tests/sound.cjs dist/market.html
       - name: The clock's buttons (set, pause, run, real time) reach the server
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' clock')
@@ -427,6 +434,10 @@ jobs:
         timeout-minutes: 10
         if: contains(steps.f.outputs.run, ' kit')
         run: node tests/fullkit.cjs dist/market.html
+      - name: The browser's extras (the mouse look in first person, a sound's place in 3D, the screen kept awake)
+        timeout-minutes: 10
+        if: contains(steps.f.outputs.run, ' browser')
+        run: node tests/browser.cjs dist/market.html
       - name: The guitar and the hands (jointed hands worn, the bodega sells it, chords land, a song plays, the strings' pitches, another player's guitar, the park's)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' guitar')
@@ -459,11 +470,16 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' wild')
         run: node tests/wild.cjs
+      - name: The brochures (the racks, buying, reading, GO THERE, the full set)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' brochures')
+        run: node tests/brochures.cjs
       - name: Check the site opens (door, then THE MARKET)
         timeout-minutes: 15
         run: node tests/site.cjs
       - name: Every place's code comes when you go there
         timeout-minutes: 20
+        if: contains(steps.f.outputs.run, ' places')
         run: node tests/places.cjs out
       - name: Two players (each sees the other's walking, emotes, dances, flying, blows, jumps, skateboard and tricks)
         timeout-minutes: 20
@@ -545,31 +561,16 @@ jobs:
         timeout-minutes: 15
         if: failure()
         run: MIN=0 python3 build.py && node tests/pageerr.cjs dist/market.html
-  game:
-    needs: gate
-    if: needs.gate.outputs.go == 'true'
-    runs-on: ubuntu-latest
-    outputs:
-      tests: ${{ steps.c.outputs.tests }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - id: c
-        name: Measure only when asked (the measure label on the pull request, or the measure box when started by hand)
-        env:
-          ASKED: ${{ (github.event_name == 'workflow_dispatch' && inputs.measure) || contains(github.event.pull_request.labels.*.name, 'measure') }}
-        run: |
-          if [ "$ASKED" = "true" ]; then T='["budget","samepic","texhash"]'; else T='[]'; fi; echo "tests=$T" >> "$GITHUB_OUTPUT"; echo "$T"
+  # measure only when asked (the measure label on the pull request, or the measure box when started by hand)
   check:
-    needs: game
-    if: needs.game.outputs.tests != '[]'
+    needs: gate
+    if: ${{ !cancelled() && (github.event_name == 'workflow_dispatch' || (!github.event.pull_request.draft && ((github.event.action == 'synchronize' && needs.gate.outputs.go == 'true') || (github.event.action == 'labeled' && contains(fromJSON('["go","full","measure"]'), github.event.label.name)) || contains(fromJSON('["opened","reopened","ready_for_review"]'), github.event.action)))) && ((github.event_name == 'workflow_dispatch' && inputs.measure) || contains(github.event.pull_request.labels.*.name, 'measure')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
-        test: ${{ fromJSON(needs.game.outputs.tests) }}
+        test: [budget, samepic, texhash]
     name: ${{ matrix.test }}
     steps:
       - uses: actions/checkout@v4

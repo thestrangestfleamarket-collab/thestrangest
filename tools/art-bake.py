@@ -1,4 +1,4 @@
-# THE ART MUSEUM'S PAINTINGS: reads data/full/art/list.json (the curated works: the Met, Cleveland and the Rijksmuseum, all CC0 / public domain),
+# THE ART MUSEUM'S PAINTINGS: reads data/full/art/list.json (the curated works: the Met, Cleveland, the Rijksmuseum and Chicago CC0; the rest Wikimedia Commons public-domain scans),
 # resolves each one's image through its museum's open-access API, keeps a 640px copy in data/full/art/ (never shipped), and bakes
 # data/art.json: title, artist, date, museum, source, its full-resolution image's link (fetched only in the viewer), aspect and a small JPEG data URL each.
 # python3 -I tools/art-bake.py [--size 208] [--quality 72] [--full: look up every full-resolution link again]
@@ -13,7 +13,12 @@ def get(u,hdr=None):
 def js(u,hdr=None):
     try: return json.loads(get(u,hdr))
     except Exception: return None
-MUS={'met':'The Met, New York','cma':'Cleveland Museum of Art','rijks':'Rijksmuseum, Amsterdam'}
+MUS={'met':'The Met, New York','cma':'Cleveland Museum of Art','rijks':'Rijksmuseum, Amsterdam','aic':'Art Institute of Chicago'}
+UA='User-Agent: TSFM-art-bake/1.0 (one-off museum bake)'
+def wthumb(fn,w):
+    import hashlib
+    n=fn.replace(' ','_'); h=hashlib.md5(n.encode()).hexdigest(); q=urllib.parse.quote(n)
+    return 'https://upload.wikimedia.org/wikipedia/commons/thumb/%s/%s/%s/%dpx-%s'%(h[0],h[:2],q,w,q), 'https://upload.wikimedia.org/wikipedia/commons/%s/%s/%s'%(h[0],h[:2],q)
 def resolve(w):
     s=w['src']
     if s=='met':
@@ -46,6 +51,15 @@ def resolve(w):
         if not img: raise Exception('no IIIF image at the Rijksmuseum')
         w['f']=re.sub(r'/full/[^/]+/0/','/full/max/0/',img)
         return re.sub(r'/full/[^/]+/0/',"/full/640,/0/",img), items[0]['id'], 'CC0'
+    if s=='aic':
+        o=js('https://api.artic.edu/api/v1/artworks/%d?fields=id,image_id,is_public_domain'%w['id'])
+        d=(o or {}).get('data') or {}
+        if not d.get('is_public_domain'): raise Exception('not public domain at Chicago')
+        b='https://www.artic.edu/iiif/2/%s/full/'%d['image_id']; w['f']=b+'1686,/0/default.jpg'
+        return b+'843,/0/default.jpg', 'https://www.artic.edu/artworks/%d'%w['id'], 'CC0'
+    if s=='wiki':
+        th,orig=wthumb(w['file'],960); w['f']=wthumb(w['file'],3840)[0] if w.get('ow',0)>3840 else orig
+        return th, 'https://commons.wikimedia.org/wiki/File:'+urllib.parse.quote(w['file'].replace(' ','_')), 'public domain'
     raise Exception('unknown source '+s)
 def slug(t): return re.sub(r'[^a-z0-9]+','-',t.lower()).strip('-')[:40]
 L=json.load(open(os.path.join(FULL,'list.json'))); out=[]; os.makedirs(FULL,exist_ok=True)
@@ -55,12 +69,12 @@ for i,w in enumerate(L):
         if os.path.exists(fn):
             resolve(w); print('full',w['t'],w.get('f')); 
         else:
-            url,src,lic=resolve(w); raw=get(url)
+            url,src,lic=resolve(w); raw=get(url,UA)
             im=Image.open(io.BytesIO(raw)).convert('RGB'); im.thumbnail((640,640),Image.LANCZOS); im.save(fn,'JPEG',quality=88,optimize=True)
             w['img']=url; w['url']=src; w['lic']=lic
             print('got ',fn,im.size,len(raw)//1024,'KB from',url)
     im=Image.open(fn).convert('RGB'); im.thumbnail((SIZE,SIZE),Image.LANCZOS); b=io.BytesIO(); im.save(b,'JPEG',quality=Q,optimize=True)
-    out.append({'t':w['t'],'a':w['a'],'d':w['d'],'m':MUS[w['src']],'u':w.get('url',''),'f':w.get('f',''),'w':im.size[0],'h':im.size[1],'i':'data:image/jpeg;base64,'+base64.b64encode(b.getvalue()).decode()})
+    out.append({'t':w['t'],'a':w['a'],'d':w['d'],'m':w.get('m') or MUS[w['src']],'u':w.get('url',''),'f':w.get('f',''),'w':im.size[0],'h':im.size[1],'i':'data:image/jpeg;base64,'+base64.b64encode(b.getvalue()).decode()})
 json.dump(L,open(os.path.join(FULL,'list.json'),'w'),ensure_ascii=False,indent=1)
 s=json.dumps(out,ensure_ascii=False,separators=(',',':')); open(os.path.join(ROOT,'data','art.json'),'w').write(s)
 print(len(out),'paintings;',len(s)//1024,'KB in data/art.json')

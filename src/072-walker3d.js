@@ -269,7 +269,9 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
   { let s0={steps:4,depth:.78}; try{ const v=SAVE.get('shade'); if(v)s0=JSON.parse(v); }catch(e){} const P=new URLSearchParams(location.search); let bd=null; try{ bd=+SAVE.get('bands'); }catch(e){} if(!s0.cel){ s0={steps:Math.max(3,Math.min(5,+(P.get('cel')||bd||4))),depth:.72,cel:1}; } W3.setShade(s0.steps,s0.depth,false); }
   W3.PAT={value:[0,1,2].map(()=>new THREE.Vector4(0,1,-9,0))}; W3.PB={value:[0,1,2].map(()=>new THREE.Vector3(1,1,1))}; W3.uRim={value:0}; W3.uFl={value:0}; W3.moon={value:0}; W3.moonC={value:new THREE.Color(.45,.62,1)};
   // the moon's edge on every body at night (owner, 9 Nov 2026): one snippet each body's shader adds; no body lights itself
-  W3.rim=sh=>{ sh.uniforms.uMoon=W3.moon; sh.uniforms.uMoonC=W3.moonC; sh.fragmentShader='uniform float uMoon; uniform vec3 uMoonC;\n'+sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n if(uMoon>0.){ vec3 vdM=isOrthographic?vec3(0.,0.,1.):normalize(vViewPosition); totalEmissiveRadiance+=uMoonC*uMoon*pow(1.-abs(dot(normalize(normal),vdM)),2.2); }'); }; W3.uHatCut={value:1e9};
+  W3.mark={value:0}; W3.YES={value:1};
+// pl: a player's body, its pixels marked (alpha .5) so the night look (138) leaves it as lit; W3.mark is on only while the main picture is drawn
+W3.rim=(sh,pl)=>{ sh.uniforms.uMoon=W3.moon; sh.uniforms.uMoonC=W3.moonC; if(pl){ sh.uniforms.uPl=pl; sh.uniforms.uMark=W3.mark; sh.fragmentShader='uniform float uPl,uMark;\n'+sh.fragmentShader.replace('#include <dithering_fragment>','#include <dithering_fragment>\n if(uPl*uMark>.5)gl_FragColor.a=.5;'); } sh.fragmentShader='uniform float uMoon; uniform vec3 uMoonC;\n'+sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n if(uMoon>0.){ vec3 vdM=isOrthographic?vec3(0.,0.,1.):normalize(vViewPosition); totalEmissiveRadiance+=uMoonC*uMoon*pow(1.-abs(dot(normalize(normal),vdM)),2.2); }'); }; W3.uHatCut={value:1e9};
   const HMI=['hair','hairHi','hairLo'].map(n=>MATS.indexOf(n)), HAIRF='('+HMI.map(i=>'abs(vMt-'+i+'.)<.5').join('||')+')';
   const PATG=`uniform vec4 uPat[3]; uniform vec3 uPB[3]; uniform float uRim,uHatCut; varying float vMt; varying vec3 vPL;
   float pH(vec3 q){ return fract(sin(dot(q,vec3(12.9898,78.233,37.719)))*43758.5453); }
@@ -289,12 +291,12 @@ W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THRE
     sh.uniforms.uLv=W3.lv; sh.uniforms.uLVP=W3.LVP; sh.uniforms.uSM={value:W3.sm.depthTexture}; sh.uniforms.uSelf=W3.uSelf;
     sh.vertexShader='varying vec3 vWW;\n'+sh.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\n vWW=(modelMatrix*vec4(transformed,1.)).xyz;').replace('#include <shadowmap_vertex>',THREE.ShaderChunk.shadowmap_vertex.replace(/(directional|point|spot)LightShadows\[ i \]\.shadowNormalBias/g,'($&+.18)'));
     sh.uniforms.uFl=W3.uFl; sh.fragmentShader='uniform float uLv,uSelf,uFl; uniform mat4 uLVP; uniform sampler2D uSM; varying vec3 vWW;\n'+sh.fragmentShader.replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(vNormal); vec3 nonPerturbedNormal=normal;')
-      .replace('#include <opaque_fragment>','#include <opaque_fragment>\n if(uLv>1.5){ vec4 sp=uLVP*vec4(vWW,1.); vec3 q=sp.xyz/sp.w*0.5+0.5; if(q.x>0.&&q.x<1.&&q.y>0.&&q.y<1.&&q.z-0.006>texture2D(uSM,q.xy).r) gl_FragColor.rgb*=uSelf; }\n { float ld=max(dot(diffuseColor.rgb,vec3(.3,.5,.2)),.001), r=dot(gl_FragColor.rgb,vec3(.3,.5,.2))/ld, q=r<1.?max(uFl,floor(r*4.+.35)/4.):r; gl_FragColor.rgb=r<.02?diffuseColor.rgb*q:gl_FragColor.rgb*q/r; }'); W3.rim(sh); };
+      .replace('#include <opaque_fragment>','#include <opaque_fragment>\n if(uLv>1.5){ vec4 sp=uLVP*vec4(vWW,1.); vec3 q=sp.xyz/sp.w*0.5+0.5; if(q.x>0.&&q.x<1.&&q.y>0.&&q.y<1.&&q.z-0.006>texture2D(uSM,q.xy).r) gl_FragColor.rgb*=uSelf; }\n { float ld=max(dot(diffuseColor.rgb,vec3(.3,.5,.2)),.001), r=dot(gl_FragColor.rgb,vec3(.3,.5,.2))/ld, q=r<1.?max(uFl,floor(r*4.+.35)/4.):r; gl_FragColor.rgb=r<.02?diffuseColor.rgb*q:gl_FragColor.rgb*q/r; }'); W3.rim(sh,W3.YES); };
   toon.customProgramCacheKey=()=>'w3toon'+NP; W3.flat=m.material; W3.toon=toon; m.receiveShadow=true;
   W3.group.add(m); W3.meshes.push(m); W3.mesh=m;
   scene.add(LEVELS.own(W3.group,'*'));
   const LIGHT=nrm(V(-0.55,0.75,0.5)), m4=new THREE.Matrix4();
-  W3.SZ=1.2; W3.rest=rest;
+  W3.SZ=W3.BASE=1.2; W3.rest=rest;   // BASE: every body's size; SZ: yours (a shrink or grow mushroom changes only it)
   { const H0=PCS.findIndex(P=>P.n==='head'), HF=PCS.findIndex(P=>P.n==='headF'), EYEL=new THREE.Vector3(); W3.headIdx=()=>W3.HIDE[H0]&&HF>=0?HF:H0; W3.eyeAt=out=>{ const HI=W3.headIdx(); if(HI<0||!W3.mesh)return null; W3.mesh.updateWorldMatrix(true,false); return out.copy(EYEL.set(0,2,7)).applyMatrix4(W3.PM.value[HI]).applyMatrix4(W3.mesh.matrixWorld); }; }
   W3.hideMe=W3.hideMeQ=!!QS.get('hideme');
   W3.body={place:()=>{}};

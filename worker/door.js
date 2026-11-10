@@ -9,6 +9,7 @@ import { lvBrief, lvGoal, lvH, lvMeet, lvRun } from "./lives.js";
 import { CLK } from "./clock.js";
 import { TWIN } from "./twin.js";
 import LIVESDATA from "../data/lives.json";
+import ITEMDATA from "../data/items.json";
 import WORLD from "../data/world.json";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, CODE = /^[A-Z0-9-]{6,32}$/, MAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 const json = (o, status = 200) => Response.json(o, { status, headers: { "cache-control": "no-store" } });
@@ -329,6 +330,23 @@ export class Block extends Server {
       const rec = this.dropAdd(k, JSON.stringify({ id, n, x: at.x + Math.cos(a) * d * 40, y: at.y, z: at.z + Math.sin(a) * d * 40, lv: at.lv, rm: at.rm }), "body:" + who, 0); if (rec) this.broadcast(JSON.stringify({ t: "world", k, v: rec })); }
     this.broadcast(JSON.stringify({ t: "world", k: "body:" + who, v: "" })); return L.length; }
   // the market's stalls (src/159j-stalls.js): a player rents one for days, sets out things at their own prices; they sell while the renter is away; the till, less the market's cut, is theirs to collect; when the days run out what is left and the till go home (OWNED 'tradein')
+  pawnT() { if (this.pawnOk) return; this.pawnOk = 1; this.ctx.storage.sql.exec("create table if not exists pawn(id text primary key, n integer)"); }
+  pawnAll() { this.pawnT(); const o = {}; for (const r of this.ctx.storage.sql.exec("select id, n from pawn where n > 0").toArray()) o[r.id] = r.n; return o; }
+  pawnAdd(id, k) { this.pawnT(); const r = this.ctx.storage.sql.exec("select n from pawn where id = ?", id).toArray()[0], n = Math.max(0, Math.min(PAWN.most, (r ? r.n : 0) + k));
+    if (n) this.ctx.storage.sql.exec("insert into pawn(id, n) values(?, ?) on conflict(id) do update set n = excluded.n", id, n); else this.ctx.storage.sql.exec("delete from pawn where id = ?", id);
+    this.broadcast(JSON.stringify({ t: "pw", op: "one", id, n })); return n; }
+  pawn(c, s, m) { const op = String(m.op || ""), item = word(m.item, 48), n = Math.max(0, Math.min(9999, Math.floor(+m.n || 0))), say = x => c.send(JSON.stringify({ t: "pw", ...x })), H = homeOf(this.env);
+    if (op === "list") return say({ op: "list", all: this.pawnAll() });
+    if (!/^[a-z0-9_]{1,48}$/.test(item) || n < 1) return; const v = pawnVal(item);
+    if (op === "sell") { const back = why => say({ op: "back", why, items: { [item]: n }, cash: 0 }); if (!v) return back("it is worth nothing here");
+      const have = this.pawnAll(); if (!have[item] && Object.keys(have).length >= PAWN.kinds) return back("the shop is full");
+      const pay = Math.max(1, Math.floor(v * PAWN.buy)) * n;
+      H.econPay(s.id, 0, { [item]: n }, "pawned").then(r => { if (!r.ok) return back(r.why); this.pawnAdd(item, n); H.econAllow(s.id, pay, 0, "pawned").catch(() => {}); say({ op: "paid", item, n, cash: pay }); }).catch(() => back("try again")); return; }
+    if (op === "buy") { const have = this.pawnAll()[item] || 0; if (!v || !have) return say({ op: "no", why: "it is gone" }); const k = Math.min(n, have), cost = Math.ceil(v) * k;
+      if (Math.floor(+m.p || 0) !== Math.ceil(v)) return say({ op: "no", why: "the price changed" });
+      H.econPay(s.id, cost, {}, "bought at the pawn shop").then(r => { if (!r.ok) return say({ op: "no", why: r.why });
+        if ((this.pawnAll()[item] || 0) < k) { H.econGive(s.id, cost, {}, "pawn sale lost").catch(() => {}); return say({ op: "no", why: "it is gone" }); }
+        this.pawnAdd(item, -k); H.econAllow(s.id, 0, k, "bought at the pawn shop").catch(() => {}); say({ op: "bought", item, n: k, cost }); }).catch(() => say({ op: "no", why: "try again" })); } }
   stallT() { if (this.stallOk) return; this.stallOk = 1; this.ctx.storage.sql.exec("create table if not exists stalls(id text primary key, rec text)"); }
   stallGet(id) { this.stallT(); const r = this.ctx.storage.sql.exec("select rec from stalls where id = ?", id).toArray()[0]; try { return r ? JSON.parse(r.rec) : null; } catch (e) { return null; } }
   stallSet(id, o) { if (o) this.ctx.storage.sql.exec("insert into stalls(id, rec) values(?, ?) on conflict(id) do update set rec = excluded.rec", id, JSON.stringify(o)); else this.ctx.storage.sql.exec("delete from stalls where id = ?", id);
@@ -518,6 +536,7 @@ export class Block extends Server {
     } else if (m.t === "everyone") {   // who is online in every section, for an invitation
       Promise.all(SECROOMS.map(r => r === this.name ? Promise.resolve(this.names()) : blockAsk(this.env, r, "names").catch(() => []))).then(L => c.send(JSON.stringify({ t: "everyone", all: L.flat().filter(p => p.id !== s.id).slice(0, 200) })));
     } else if (m.t === "st") { this.stall(c, s, m);
+    } else if (m.t === "pw") { this.pawn(c, s, m);
     } else if (m.t === "body") {   // you died here (v), or took your body back (take)
       if (m.take) { this.bodyOff(s.id); this.broadcast(JSON.stringify({ t: "world", k: "body:" + s.id, v: "" })); } else if (m.v && typeof m.v === "object") this.bodyAt(s.id, m.v, this.dev && this.dev.has(c.id) && m.life ? num(m.life, 500, BODY_LIFE) : 0);
     } else if (m.t === "take") {   // a loose thing on the ground: whoever asks first gets it, told with its record; the rest see it go
@@ -619,6 +638,8 @@ const WORLD_KEYS = [{ re: /^time$/, owner: 1 }, { re: /^looks$/, owner: 1 }, { r
   { re: /^car:[\w-]{1,32}$/ }, { re: /^radio:[\w-]{1,32}$/ }, { re: /^gate:[\w-]{1,32}$/ }, { re: /^flag:[\w-]{1,32}$/ }, { re: /^tbl:[\w:-]{1,34}$/ }, { re: /^tag:[\w:.-]{1,34}$/ }];
 // the stalls: their names, the rent a day, how many days ahead, the market's cut of a sale, how many kinds a stall shows
 const STALL = { ids: ["s1", "s2", "s3", "s4", "s5"], rent: 15, days: 7, cut: .05, kinds: 12 };
+// the pawn shop (src/159ba-pawn.js): it pays half an item's value (data/items.json) and sells what it took at the full value, one stock for the section
+const PAWN = { buy: .5, kinds: 120, most: 999 }, pawnVal = id => { const d = ITEMDATA[id]; const v = d && +d.value; return v > 0 && !(d && d.archived) ? v : 0; };
 const stallPub = o => ({ who: o.who, name: o.name, until: o.until, goods: o.goods });
 const BODY_LIFE = 3600000;   // an hour, then a body's things fall to the ground
 const tradeNone = () => ({ items: {}, cash: 0, art: {} });

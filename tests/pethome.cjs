@@ -1,4 +1,4 @@
-// YOUR PETS AT HOME (src/146zj-pets.js, MODS.apts.inside, CITY.route over a room): node tests/pethome.cjs. In your apartment the pet out with you and the ones waiting at home
+// YOUR PETS AT HOME (src/146zj-pets.js, MODS.apts.room, CITY.route over a room): node tests/pethome.cjs. In your apartment the pet out with you and the ones waiting at home
 // live there: they show, wander over time by the pathfinder, stay inside the room and out of the furniture (hopping onto tops is allowed), and sleep.
 const {chromium}=require('playwright');
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader'],...(process.env.PW_CHROMIUM?{executablePath:process.env.PW_CHROMIUM}:{})}); const pg=await b.newPage({viewport:{width:960,height:640}}); const errs={}; let bad=0;
@@ -9,7 +9,7 @@ const {chromium}=require('playwright');
   const rec=(n,ok,i)=>{ if(!ok)bad++; console.log((ok?'PASS ':'FAIL ')+n+(i?'  · '+i:'')); };
   const wait=ms=>new Promise(r=>setTimeout(r,ms)), U=async(f,ms=120000)=>{ for(const t=Date.now();Date.now()-t<ms;await wait(400))if(await (typeof f==='function'&&f.length===0&&/^async/.test(String(f))?f():pg.evaluate(f)))return true; return false; };
   await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&hour=2&place=your%20apartment',{timeout:240000}); await pg.waitForFunction(()=>window.__started,null,{timeout:300000});
-  rec('in your apartment',await U(()=>!!(__dbg.MAPK.MODS.apts&&__dbg.MAPK.MODS.apts.inReal&&__dbg.MAPK.MODS.apts.inside&&__dbg.MAPK.MODS.apts.inside()),120000));
+  rec('in your apartment',await U(()=>!!(__dbg.MAPK.MODS.apts&&__dbg.MAPK.MODS.apts.inReal&&__dbg.MAPK.MODS.apts.room&&__dbg.MAPK.MODS.apts.room()),120000));
   // two pets: a cat, then a dog (the cat goes home to wait, the dog is out with you)
   await pg.evaluate(async()=>{ const I=await PETS.idx(), P=k=>{ const K=I.by[k]; return {k,n:k==='cat'?'Tom':'Rex',c:K.zones.map(z=>z[1]),s:K.knobs.map(()=>50),z:100,h:false}; }; PETS.add(P('cat'),true); PETS.add(P('dog'),false); });
   const all=()=>pg.evaluate(()=>{ const L=[]; const m=PETS.mine(); if(m)L.push(['out',m]); for(const [id,h] of PETS.home())if(h.N)L.push(['home'+id,h.N]); return L.map(([k,N])=>({k,on:!!(N.atHome&&N.atHome.on),vis:N.g.visible&&!!N.g.parent,x:N.st.x,z:N.st.z,y:N.g.position.y,mode:N.atHome&&N.atHome.mode,top:!!(N.atHome&&N.atHome.top)})); });

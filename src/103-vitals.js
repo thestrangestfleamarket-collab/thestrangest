@@ -22,7 +22,7 @@ VIT.breathe=s=>{ VIT.air=Math.min(AIRCEIL,VIT.air+(+s||0)); };   // a breathing 
   VIT.HEAT={lava:50,dragon:100}; VIT.heatProof=0; VIT.burns=k=>(VIT.HEAT[k]??100)>VIT.heatProof;   // heat 0-100 (owner, 9 Nov 2026): you are covered up to VIT.heatProof
   VIT.hurt=(d,from)=>{ '@later'; if(VIT.dead)return 0; if(VIT.out>0){ if(VIT.fainted&&d>=.03)VIT.die(); return 0; }
     let parry=false; if(VIT.guard&&from){ const g=VIT.guard(d,from); d=g.d; parry=!!g.parry; }
-    if(d>0){ const now=performance.now(); if(now-thudAt>250){ thudAt=now; SFX.play('thud',{vol:.7,vary:.2}); } VIT.hp=Math.max(0,VIT.hp-d*(30/ST('str'))*(1-Math.max(0,Math.min(.9,VIT.def||0)))); } VIT.inFight(5); if(VIT.hp<=0&&VIT.bouts.some(f=>f())){ VIT.hp=.02; SYS.run('knockout',from); } else if(VIT.hp<=0)VIT.faint(); else if(d>0&&!parry)SYS.run('hurt',d,from); return parry?2:1; };
+    if(d>0){ const now=performance.now(); if(now-thudAt>250){ thudAt=now; SFX.play('hurt',{vol:.7,vary:.12}); } VIT.hp=Math.max(0,VIT.hp-d*(30/ST('str'))*(1-Math.max(0,Math.min(.9,VIT.def||0)))); } VIT.inFight(5); if(VIT.hp<=0&&VIT.bouts.some(f=>f())){ VIT.hp=.02; SYS.run('knockout',from); } else if(VIT.hp<=0)VIT.faint(); else if(d>0&&!parry)SYS.run('hurt',d,from); return parry?2:1; };
   VIT.spend=x=>{ VIT.sta=Math.max(0,VIT.sta-x*(VIT.spendK||1)); rest=0; };   // effort: stamina comes back only after a rest
   VIT.tick=dt=>{ if(VIT.sta<=0)VIT.tired=true; else if(VIT.tired&&VIT.sta>=1/3){ VIT.tired=false; }   // empty: no running till a third is back
     if(VIT.tired)st.runTarget=0;

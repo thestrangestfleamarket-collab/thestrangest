@@ -5,8 +5,8 @@ import {SAY} from './003d-say.js';
 import {TILE} from './006-map-pre.js';
 import {HOMES} from './076-npc-map.js';
 import {STALL} from './081-stalls.js';
-import {MUSH} from './083a-npc-mushroom.js';
 import {TOONS} from './084-npc-toons.js';
+import {MUSH} from './111ec-mushseller.js';
 const VEG={}; window.VEG=VEG;
 { const T=TILE;
   const V=[['v_tomato','TOMATO',3,2,.06,0xc8321e,[.07,.07],1],['v_pepper','BELL PEPPER',4,2,.06,0x2f8a2a,[.07,.08],1],['v_carrot','CARROT',2,1,.05,0xe0742a,[.035,.16],0],

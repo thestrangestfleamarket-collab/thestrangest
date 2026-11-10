@@ -4,7 +4,7 @@ const SRC = path.join(__dirname, '..', 'src');
 const strip = s => s.split('\n').filter(l => !/^(import |export )/.test(l)).join('\n');
 const noop = () => {};
 const ctx = { console, Math, JSON, Date, Object, Array, String, Number, Set, Map, Promise, setTimeout: noop, performance: { now: () => Date.now() },
-  SYS: { add: noop }, ONLINE: {}, TABLES: {}, MINI: {}, THREE: {}, ROOMS: {}, st: {}, SAY: noop };
+  SYS: { add: noop }, ONLINE: {}, TABLES: {}, MINI: {}, THREE: {}, ROOMS: {}, st: {}, SAY: noop, INVITES: { kinds: {} } };
 ctx.window = ctx; vm.createContext(ctx);
 const files = fs.readdirSync(SRC).filter(f => (f === '144cc-tables.js' || /^144c[d-z]-tg-.*\.js$/.test(f)) && (f.startsWith('144cc') || !process.env.TGF || f.startsWith(process.env.TGF))).sort();
 for (const f of files) vm.runInContext(strip(fs.readFileSync(path.join(SRC, f), 'utf8')) + (f.startsWith('144cc') ? '\nglobalThis.TG=TG;' : ''), ctx, { filename: f });

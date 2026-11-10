@@ -1,6 +1,5 @@
 // NPCs: makeNPC builds a body with self-shading and its cel material; the NPC list, culling and the street lane.
 import {SHARED, THREE} from './003-shx.js';
-import {B64} from './003a-skin.js';
 import {ARCH, CHARS, CLIP, CULL, LEVELS, NPCS, ONLINE, PARK, PONDS, pos, ROOMS, SELFSH, UI, VIT, W3, WALKS, WINDOWS} from './003b-systems.js';
 import {PPU, renderer, scene} from './004-main.js';
 import {ASTEP, CASTLE, LEVEL, MAPG, MAPSTAIR, MODS, RING, SKINCULL, SOL, STN, STORE, SYS, TILE, ZU} from './006-map-pre.js';
@@ -21,8 +20,7 @@ vec3 rock(vec3 c,vec3 p0,float sd){ vec3 p=p0*3.+sd*17.3, i=floor(p), f=fract(p)
   if(edge<.07)o=c*(edge<.035?.3:.5);
   return o; }`;
 const NPCMID=new THREE.Vector3();
-function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'down',hp:1,sta:1}; const b=B64, geo=o.geo||new THREE.BufferGeometry();
-  if(!o.geo){ const P=new Float32Array(b(D.p).buffer); geo.setAttribute('position',new THREE.BufferAttribute(P,3)); geo.setAttribute('color',new THREE.BufferAttribute(b(D.c),3,true)); geo.setAttribute('reg',new THREE.BufferAttribute(Float32Array.from(b(D.r)),1)); }
+function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'down',hp:1,sta:1}; const geo=o.geo;
   const RG=geo.attributes.reg.array; geo.computeVertexNormals();
   N.renorm=()=>{ geo.computeVertexNormals(); const P=geo.attributes.position.array, Nn=geo.attributes.normal.array, acc=new Map(); let mx=0; for(let i=0;i<P.length;i++)mx=Math.max(mx,Math.abs(P[i]));
     const key=mx*2e3<65000?i=>((Math.round(P[i]*2e3)+65536)*131072+Math.round(P[i+1]*2e3)+65536)*131072+Math.round(P[i+2]*2e3)+65536:i=>Math.round(P[i]*2e3)+','+Math.round(P[i+1]*2e3)+','+Math.round(P[i+2]*2e3);
@@ -133,7 +131,7 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
     N.LVP.value.multiplyMatrices(N.smCam.projectionMatrix,N.smCam.matrixWorldInverse); const ms=[]; g.traverse(o=>{ if(o.isMesh){ ms.push([o,o.material]); o.material=N.depthMat; } });
     renderer.setRenderTarget(smOf()); renderer.clear(); renderer.render(g,N.smCam); renderer.setRenderTarget(null); for(const [o,m] of ms)o.material=m; };
   N.selfSh=!o.noSelf;
-  N.g=g; N.st=st; N.body=body; N.H=H; if(CHARS.apply)CHARS.apply(N); if(ARCH.has(N.key)){ g.visible=false; N.archived=true; return N; } NPCS.push(N); return N; }
+  N.g=g; N.st=st; N.body=body; N.H=H; if(CHARS.apply)CHARS.apply(N); if(ARCH.has(N.key)){ g.visible=false; N.archived=true; (ARCH.built=ARCH.built||[]).push(N.key); return N; } NPCS.push(N); return N; }
 SYS.add('shadow',r=>{ for(const N of NPCS)if(N.selfSh)try{ N.shadowPass(r); }catch(e){ if(!N.shErr){ N.shErr=1; console.warn('NPC shadow',N.key,e); } } },'npc shadows');
 const STLANE={x0:SHARED.BOD.XS(SHARED.BOD.MAP.x0+2),x1:Math.min(SHARED.BOD.XS(SHARED.BOD.MAP.x1-2),RINGX.bound.x1-TILE),z0:SHARED.BOD.ZS(-76.3),z1:Math.min(SHARED.BOD.ZS(RING.wy1-1),RINGX.bound.z1-TILE)}, STHOLE=[SHARED.BOD.XS(MAPSTAIR.x0-.6),SHARED.BOD.ZS(MAPSTAIR.y0),SHARED.BOD.XS(MAPSTAIR.x1+.6),SHARED.BOD.ZS(MAPSTAIR.y1+.6)],
   CSHOLE=[SHARED.BOD.XS(CASTLE.stair.x0-.6),SHARED.BOD.ZS(CASTLE.stair.y0-.6),SHARED.BOD.XS(CASTLE.stair.x1+.6),SHARED.BOD.ZS(CASTLE.stair.y1+.6)], CSB=[SHARED.BOD.XS(CASTLE.b[0]-.5),SHARED.BOD.ZS(CASTLE.b[2]-.5),SHARED.BOD.XS(CASTLE.b[1]+.5),SHARED.BOD.ZS(CASTLE.b[3]+.5)],

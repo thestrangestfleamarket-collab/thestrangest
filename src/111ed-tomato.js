@@ -62,7 +62,7 @@ const TOONS={};
   TOONS.model=model;
   const L={ua:[6,12],fa:[22,4]}, Rr={ua:[34,6],fa:[72,-8]}, look=N=>{ const s=N.st, d=Math.hypot(pos.x-s.x,pos.z-s.z); let a=0; if(d<7*TILE&&d>.2*TILE){ a=Math.atan2(pos.x-s.x,pos.z-s.z)-s.hd; a=Math.atan2(Math.sin(a),Math.cos(a)); a=Math.max(-.8,Math.min(.8,a)); }
     const now=performance.now()/1000, dt=Math.min(.2,now-(N._lt||now)); N._lt=now; N._lk=(N._lk||0)+(a-(N._lk||0))*Math.min(1,dt*2.5); if(Math.abs(N._lk-a)<.004)N._lk=a; return N._lk*180/PI; };
-  const body=MERCH.add({key:'tomato',label:'THE TOMATO',height:2.2,model,size:11.5,hd:0,idle:(t,N)=>MERCH.pose({nod:-3,look:N&&!N.sheetOn?look(N):0,L,R:Rr})});
+  const body=MERCH.add({key:'tomato',q:.3,label:'THE TOMATO',height:2.2,model,size:11.5,hd:0,idle:(t,N)=>MERCH.pose({nod:-3,look:N&&!N.sheetOn?look(N):0,L,R:Rr})});
   const N=TOONS.tomato=body&&body.npc; if(N){ N.st.hold=true; N.st.to=N.st.next=null; N.H=2.4*TILE; }
   window.TOONSDBG=()=>Object.fromEntries(Object.entries(TOONS).filter(([k,N])=>N&&N.st).map(([k,N])=>[k,{key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),tris:N.body&&N.body.tris(),vis:N.g.visible}])); }
 export {TOONS};

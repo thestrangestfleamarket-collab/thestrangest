@@ -78,9 +78,9 @@ const MERCH={list:[],SURF:{plain:0,knit:1,cloth:2,denim:3,leather:4,metal:5,skin
     geo.setAttribute('color',new THREE.Float32BufferAttribute(C2,3)); geo.setAttribute('bi',new THREE.Float32BufferAttribute(I2,2)); geo.setAttribute('bw',new THREE.Float32BufferAttribute(W2,1)); geo.computeBoundingSphere(); return geo; };
 
   /* ---------- a merchant: def {key, label, height (m), model()->skel with parts, at, size (x/10 of a person, the owner's scale), idle(t,N)->rig pose, after(B,N,dt), lift(t)} ---------- */
-  MERCH.add=def=>{ if(ARCH.has(def.key))return null; K.Q=def.q??MERCH.LOD; const S=def.model(); K.Q=1;   // an archived character gets no body
+  MERCH.add=def=>{ if(ARCH.has(def.key))return null; K.Q=MERCH.LOD!==1?MERCH.LOD:def.q??1; const S=def.model(); K.Q=1;   // an archived character gets no body
     const body={key:def.key,label:def.label,height:def.height,hipY:S.q.hipY,off:offOf(S.B),binv:null,at:def.at??0,geo:()=>MERCH.bake(S),
-      size:(def.size||10)/10,smooth:true,idle:def.idle,after:def.after,lift:def.lift,hd:def.hd,root:def.inside?scene:null};
+      size:(def.size||10)/10,smooth:true,idle:def.idle,after:def.after,lift:def.lift,hd:def.hd,ride:def.ride,rideSpeed:def.rideSpeed,root:def.inside?scene:null};
     BODIES.add(body); MERCH.list.push(body); return body; };
   // where a point on one of a body's bones (metres, in the bone's own frame) is in the world, as posed this frame: for things held or worn
   MERCH.at=(N,bone,p,out)=>out.set(p[0],p[1],p[2]).applyMatrix4(N.PM.value[BONES.indexOf(bone)]).applyMatrix4(N.g.matrixWorld);

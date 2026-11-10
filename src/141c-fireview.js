@@ -1,6 +1,6 @@
 // THE FIRE ESCAPE VIEW: your landing on the apartment house's fire escape, with the landings above and below, built from the house's own facade and landings round your apartment (one place, off the map): its door opens and you walk out.
 import {SHARED, THREE} from './003-shx.js';
-import {BATCH, CLOCK, CULL, FAR3, GPH, pos, ROOMS, SFX, SKY, UI, VIS, VR, WINDOWS} from './003b-systems.js';
+import {BATCH, CLOCK, CULL, FAR3, FARCITY, GPH, pos, ROOMS, SFX, SKY, UI, VIS, VR, WINDOWS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {BLDK, FADE, MAPG, MISTE, MODS, STORE, SYS, TILE} from './006-map-pre.js';
 import {PEEK} from './008-batch.js';
@@ -106,7 +106,7 @@ import {BLOCKS} from './038zb-blocks.js';
   let tc=null, tr=null, tn=0, tt=0, tf=0, tw=0; const oc0=new THREE.Vector3(), oq=new THREE.Quaternion(), ov=new THREE.Vector3(), ox=new THREE.Vector3(), oy=new THREE.Vector3(), CYC=[4,0,1,3,2,4,0,1,3,5]; let oz=0, ocam=null;
   // one picture: you stand in the town for it (what is drawn there goes by where you are), the town's own cut by distance kept
   const shoot=(cam,rt,face)=>{ const sb=renderer.shadowMap.autoUpdate, px=pos.x, pz=pos.z; renderer.shadowMap.autoUpdate=false; tq.visible=false; const rx=ov.set(px,0,pz).applyMatrix4(G.matrix).x, rz=ov.z;
-    const FU=FAR3.FU, RG=window.FARCITY&&FARCITY.ring, fg=scene.fog, mk=FU&&FU.uMK.value, mx=MISTE.x, my=MISTE.y, mz=MISTE.z, fv=[FAR3.mesh,FAR3.panels,FAR3.trees].map(o=>o&&o.visible); if(FU&&FAR3.fog){ FU.uMK.value=.8; FU.uMP.value.set(rx,0,rz); MISTE.x=1; MISTE.y=my*TW.air; MISTE.z=mz*TW.air; scene.fog=FAR3.fog;   // from up here you see further: the ground mist starts further off
+    const FU=FAR3.FU, RG=FARCITY.ring, fg=scene.fog, mk=FU&&FU.uMK.value, mx=MISTE.x, my=MISTE.y, mz=MISTE.z, fv=[FAR3.mesh,FAR3.panels,FAR3.trees].map(o=>o&&o.visible); if(FU&&FAR3.fog){ FU.uMK.value=.8; FU.uMP.value.set(rx,0,rz); MISTE.x=1; MISTE.y=my*TW.air; MISTE.z=mz*TW.air; scene.fog=FAR3.fog;   // from up here you see further: the ground mist starts further off
       for(const o of [FAR3.mesh,FAR3.panels,FAR3.trees])if(o)o.visible=true; } if(RG)RG.visible=!cam.isOrthographicCamera; VIS.hide(MAPG.block,'fire',false);
     const own=(APTS.meshes||[]).filter(o=>o.visible), dm=SKY.dome, dv=dm&&dm.visible, mu=SKY.U.uMistK, mv=mu&&mu.value; for(const o of own)o.visible=false; if(dm)dm.visible=true; if(mu&&FAR3.fog)mu.value=1;   // your own house is the one round you; the sky is the hour's
     try{ pos.x=rx; pos.z=rz; CULL.begin(); ROOMS.peek(()=>{ renderer.setRenderTarget(rt,face||0); renderer.clear(); renderer.render(scene,cam); }); }
@@ -115,7 +115,8 @@ import {BLOCKS} from './038zb-blocks.js';
   tq.onBeforeRender=(r,s,cam)=>{ if(cam.isOrthographicCamera){ if(!ocam)return; ov.copy(cam.position).sub(oc0); const w=(cam.right-cam.left)/cam.zoom, h=(cam.top-cam.bottom)/cam.zoom, k=1/TW.pad; tU.uUV.value.set(k,k,.5-k/2+ov.dot(ox)/w*k,.5-k/2+ov.dot(oy)/h*k); }
     else { tU.uPI.value.copy(cam.projectionMatrixInverse); tU.uCW.value.copy(cam.matrixWorld); } };
   SYS.add('places',()=>{ const on=F.on&&!VR.on&&!FADE.busy&&!WINDOWS.busy; if(F.cum)F.cum.visible=!on; if(on!==tq.visible)VIS.hide(MAPG.block,'fire',on);   // the map's ground carried on past its edges runs under this lot: out here it is in the town's picture only
-    if(!on){ tq.visible=false; tn=0; ocam=null; return; } const cam=SHARED.cam, now=performance.now(), due=now-tt>=TW.ms&&++tw>=TW.gap;   // seldom by the clock, and never more than a frame in a few on a slow machine if(window.FARCITY&&FARCITY.ring)FARCITY.ring.visible=false;   // the far skyline goes round the eye: here it belongs to the town's picture, not to the landing
+    if(!on){ tq.visible=false; tn=0; ocam=null; return; } const cam=SHARED.cam, now=performance.now(), due=now-tt>=TW.ms&&++tw>=TW.gap;   // seldom by the clock, and never more than a frame in a few on a slow machine
+    if(FARCITY.ring)FARCITY.ring.visible=false;   // the far skyline goes round the eye: here it belongs to the town's picture, not to the landing
     if(cam.isOrthographicCamera){ tU.uO.value=1; const W=Math.round(TW.px*cam.right/cam.top), sh=ov.copy(cam.position).sub(oc0), w=(cam.right-cam.left)/cam.zoom, h=(cam.top-cam.bottom)/cam.zoom, m=(TW.pad-1)/2;
       if(ocam&&cam.zoom===oz&&cam.quaternion.angleTo(oq)<1e-4&&Math.abs(sh.dot(ox))<m*w&&Math.abs(sh.dot(oy))<m*h&&!due)return;
       if(!tr)tr=new THREE.WebGLRenderTarget(W,TW.px,{type:THREE.HalfFloatType}); else if(tr.width!==W)tr.setSize(W,TW.px); if(!ocam)ocam=cam.clone(); ocam.copy(cam); for(const k of ['left','right','top','bottom'])ocam[k]=cam[k]*TW.pad; ocam.updateProjectionMatrix();

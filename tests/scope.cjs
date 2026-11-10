@@ -56,6 +56,7 @@ const SHOTS = process.env.SHOTS;
     if (SHOTS) { await pg.waitForTimeout(800); await pg.screenshot({ path: SHOTS + '/globe-earth.png' }); await pg.evaluate(() => GLOBE.view.show('mars')); await pg.waitForTimeout(1500); await pg.screenshot({ path: SHOTS + '/globe-mars.png' }); await pg.evaluate(() => GLOBE.view.show('moon')); await pg.waitForTimeout(1500); await pg.screenshot({ path: SHOTS + '/globe-moon.png' }); }
     const gc = await pg.evaluate(() => { GLOBE.close(); return GLOBEDBG().view; });
     ok(!gc.open && !gc.gl, 'closing lets its renderer go');
+    ok(await pg.evaluate(() => ['globev', 'scopev'].every(id => { const e = document.getElementById(id); return !e || getComputedStyle(e).display === 'none'; })), 'closed, neither the globe\'s nor the telescope\'s screen is left over the game');
     const err = await pg.evaluate(() => Object.entries(SYS.P).flatMap(([k, v]) => v.filter(s => s.err).map(s => k + ':' + s.name)));
     ok(!err.length, 'no SYS errors (' + err.join(',') + ')');
   }

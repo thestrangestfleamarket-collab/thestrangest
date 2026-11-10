@@ -24,7 +24,7 @@ import {SCOPE} from './150fd-scope.js';
     const box=document.createElement('div'); box.style.cssText='flex:1;min-width:0;position:relative;cursor:grab;touch-action:none'; O.appendChild(box);
     const lab=document.createElement('canvas'); lab.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none'; box.appendChild(lab);
     const P=document.createElement('div'); P.className='ml'; P.style.cssText='width:min(240px,40vw);overflow:auto;padding:12px;background:#ece5d3;border-left:3px solid #3b2a1e;zoom:var(--uiz,1)'; O.appendChild(P);
-    const css=document.createElement('style'); css.textContent='#globev .row{margin:8px 0} #globev .btn{font:inherit;padding:4px 7px;margin:0 3px 3px 0;background:#ece5d3;color:#3b2a1e;border:2px solid #3b2a1e;cursor:pointer} #globev .btn.on{background:#3b2a1e;color:#ece5d3} #globev .info{color:#6a4a32;line-height:1.5}';
+    const css=document.createElement('style'); css.textContent='#globev[hidden]{display:none!important} #globev .row{margin:8px 0} #globev .btn{font:inherit;padding:4px 7px;margin:0 3px 3px 0;background:#ece5d3;color:#3b2a1e;border:2px solid #3b2a1e;cursor:pointer} #globev .btn.on{background:#3b2a1e;color:#ece5d3} #globev .info{color:#6a4a32;line-height:1.5}';
     document.head.appendChild(css); document.body.appendChild(O);
     let full=false, phase='', R=null, cv=null, S=null, cam=null, ball=null, tiltG=null, mat=null, light=null, k='earth', labels=true, lights=true, pitch=12, dist=4.3, drag=null, hover='', last=0, sun=null;
     const panel=()=>{ const D=GLOBE.data||{}, cr=((D.globes||[]).find(g=>g.id===k)||{}).credit||'NASA';

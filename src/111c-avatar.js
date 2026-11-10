@@ -264,13 +264,14 @@ const AVATAR={}; window.AVATAR=AVATAR;
   // and a tool in your hand (WIELD) puts down what that hand held
   const CAPE=nOf('neck','HERO CAPE'), flying=()=>!!(st.fly&&st.fly.on);   // flying (G, 094): the wardrobe's hero cape goes on over what you wear at the neck
   const mine=()=>{ const o=LOOKS.over||{}, w={...L.w}; if(WIELD.on)delete w[WIELD.hand==='L'?'lefthand':'righthand']; if(CAPE!=null&&flying())w.neck=[CAPE,'']; const up=w.coat?'coat':w.top?'top':null; if(o.shirt&&up)w[up]=[w[up][0],o.shirt.replace('#','')]; if(o.pants&&w.bottom)w.bottom=[w.bottom[0],o.pants.replace('#','')]; return {...L,w,bare:!!(LOOKS.L&&LOOKS.L.bare)}; };
+  // (AVATAR.codeOf: the code of a look of its own, not yours: the airship's captain's, 150pbb)
   const VAR=new Map(), BAD=new Set();
   const onMesh=(me,PM,b)=>{ const h=me.geometry.userData.hands; if(h)HANDS.add(me,PM,b,h); };
   const body={key:'avatar',label:'AVATAR',playable:true,flap:true,geo:empty,onMesh:(me,PM)=>onMesh(me,PM,body),look:()=>code(mine()),clip:n=>clip(L.f,n),act:S=>AVATAR.act(S),
     failed:c=>BAD.has(String(c)),variant:c=>{ '@later'; const k=String(c); let b=VAR.get(k); if(b)return b; const M=decode(k), J=D[M.f];
       if(!has(M.f,M.w)){ if(BAD.has(k))return null; need(M.f,M.w).then(()=>{ if(ONLINE.refig)ONLINE.refig('b:avatar'); }).catch(e=>{ BAD.add(k); console.warn('AVATAR',e); if(ONLINE.refig)ONLINE.refig('b:avatar'); }); return null; }
       b=fitTo({key:'avatar~'+k,flap:true,geo:()=>geoFor(J,M,M.bare),anim:J.anim||null,clip:n=>clip(M.f,n),act:AVATAR.act,onMesh:(me,PM)=>onMesh(me,PM,b)},M); VAR.set(k,b); return b; }};
-  AVATAR.code=()=>code(L); AVATAR.worn=()=>mine().w; AVATAR.decode=decode; AVATAR.L=()=>L; AVATAR.ready=()=>has(L.f,L.w);
+  AVATAR.code=()=>code(L); AVATAR.codeOf=M=>code({...DEF(),...M}); AVATAR.worn=()=>mine().w; AVATAR.decode=decode; AVATAR.L=()=>L; AVATAR.ready=()=>has(L.f,L.w);
   let gen=0;
   const refresh=()=>{ const my=++gen, M0=mine(); return need(L.f,M0.w).then(J=>{ if(my!==gen)return; fitTo(body,L); const M=mine(); body.GEO=geoFor(J,M,M.bare); body.anim=J.anim||null; draw(); }).catch(e=>console.warn('AVATAR',e)); };
   AVATAR.set=o=>{ L=Object.assign(L,o); if(o.f){ for(const s in L.w)if(L.w[s]&&!byN.get(L.w[s][0]).figs.includes(L.f))delete L.w[s]; } save(); return refresh(); };

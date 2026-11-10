@@ -17,6 +17,7 @@ let bad = 0; const ok = (c, m) => { console.log((c ? 'ok   ' : 'FAIL ') + m); if
   ok(r.it.shroom_fly >= 99 && r.it.bait >= 20, '99 of a power mushroom, 20 of what stacks');
   ok(!r.arch.length, 'nothing archived: ' + r.arch.join(','));
   ok(r.rows.every(x => x.includes('SET IT HERE')), 'both instruments have SET IT HERE');
+  ok(await pg.evaluate(() => INSPECT.has('telescope') && INSPECT.has('microscope')), 'both have a model of their own');
   await pg.evaluate(() => FORAGE.ACT.scopeset()); let o = false; for (let i = 0; i < 20 && !o; i++) { await pg.waitForTimeout(1500); o = await pg.evaluate(() => SCOPE.isOpen()); }
   ok(o, 'the telescope opens on the street'); await pg.evaluate(() => SCOPE.close());
   await pg.evaluate(() => FORAGE.ACT.micset()); o = false; for (let i = 0; i < 20 && !o; i++) { await pg.waitForTimeout(1500); o = await pg.evaluate(() => MIC.open === true); }

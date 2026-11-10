@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {BROOK, CLOCK, FLOW, PARK, ROOMS, SKY, VIT, WED} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {FIX, LEVEL, MAPG, SOL, STORE, TILE, ZU} from './006-map-pre.js';
+import {FIX, LEVEL, MAPG, MODS, SOL, STORE, TILE, ZU} from './006-map-pre.js';
 const FOUNT={ready:false,swim:false,on:false,holds:[]}; window.FOUNT=FOUNT;   // holds: what holds you up over the lake (the ice, the footbridges), each (x,z)=>bool
 FOUNT.held=(x,z)=>FOUNT.holds.some(f=>f(x,z));
 { const ss=(a,b,v)=>{ const t=Math.max(0,Math.min(1,(v-a)/(b-a))); return t*t*(3-2*t); }, hs=(a,b,c=0)=>{ const s=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return s-Math.floor(s); };
@@ -14,7 +14,7 @@ FOUNT.held=(x,z)=>FOUNT.holds.some(f=>f(x,z));
   const lake=FOUNT.lake=(x,y)=>ISL.length?Math.max(shoreL(x,y),isl(x,y)):shoreL(x,y); FOUNT.islands=ISL;
   // the footbridges (parkPlaces.bridges): a plank walk over the water from an island to the shore; how far a map point is from the nearest one's deck
   const BRG=(LEVEL.parkPlaces&&LEVEL.parkPlaces.bridges)||[], brD=FOUNT.bridgeD=(x,y)=>{ let m=1e9; for(const B of BRG){ const dx=B.x1-B.x0, dy=B.y1-B.y0, l2=dx*dx+dy*dy||1, t=Math.max(0,Math.min(1,((x-B.x0)*dx+(y-B.y0)*dy)/l2)); m=Math.min(m,Math.hypot(x-B.x0-dx*t,y-B.y0-dy*t)-B.w/2); } return m; };
-  if(BRG.length)FOUNT.holds.push((x,z)=>brD(x/TILE+SHARED.BOD.OX-((window.PARK&&PARK.ox)||0),z/TILE+SHARED.BOD.OY-((window.PARK&&PARK.oy)||0))<0);
+  if(BRG.length)FOUNT.holds.push((x,z)=>brD(x/TILE+SHARED.BOD.OX-((PARK&&PARK.ox)||0),z/TILE+SHARED.BOD.OY-((PARK&&PARK.oy)||0))<0);
   const ter=FOUNT.ter=(x,y)=>FOUNT.S&&FOUNT.on?Math.hypot(x-FOUNT.S.C.x,y-FOUNT.S.C.y)-FOUNT.S.R:1e9;
   FOUNT.bedM=d=>Math.min(3.5,Math.max(0,d)*.42);
   FOUNT.away=(x,y)=>Math.min(lake(x,y)-1,ter(x,y)-1);
@@ -22,6 +22,8 @@ FOUNT.held=(x,z)=>FOUNT.holds.some(f=>f(x,z));
   const TRACK=FOUNT.TRACK=[4.2,1.9]; FOUNT.trackD=(x,y)=>{ const S=FOUNT.S; if(!S||x>S.wx1+2.5||y>S.wy1+2.5)return 1e9; return Math.abs(shoreL(x,y)-TRACK[0])-TRACK[1]; };
   FOUNT.at=P=>{ if(FOUNT.S)return FOUNT.S; const wx1=P.x1-8, wy1=P.y1-8, R=23, cx=wx1-R-8; let yS=P.round[1]+4.2+3;
     const C={x:cx,y:Math.ceil(yS+3.5+R)}, BL=LEVEL.parkPlaces.bigLake||{}, L={x:BL.x??P.x1,y:BL.y??P.y1,rx:BL.rx||110,ry:BL.ry||85}; L.cx=L.x+L.rx+6; L.cy=L.y+L.ry+6;
+    // the lake's deep holes (owner, 28 Oct 2026: "make the lake and hudson go very deep in certain spots"): two, 25 and 40 m down, black without a light; [x, y, radius, depth], clear of the islands
+    FOUNT.HOLES=[[L.x-L.rx*.62,L.y-L.ry*.12,7,25],[L.x+L.rx*.2,L.y-L.ry*.35,9,40]];
     FOUNT.S={C,R,L,wx1,wy1}; const S=FOUNT.S, pts=[];
     for(let i=0;i<600;i++){ const a=Math.PI*2*i/600, cx=Math.cos(a), cy=Math.sin(a); let t=0; while(t<220&&raw(L.x+cx*t,L.y+cy*t)<0)t+=.2; let t0=Math.max(0,t-.2), t1=t; for(let k=0;k<16;k++){ const t=(t0+t1)/2; if(raw(L.x+cx*t,L.y+cy*t)<0)t0=t; else t1=t; } pts.push([L.x+cx*t0,L.y+cy*t0]); }
     // the whole shore (owner, 7 Nov 2026: "the stream should lead to the actual large lake in corner ... not all fitting in this section"): most of it lies past the forcefield, seen, never walked
@@ -64,8 +66,7 @@ FOUNT.held=(x,z)=>FOUNT.holds.some(f=>f(x,z));
     PARK.later(()=>{ try{ build(); }catch(e){ console.warn('FOUNT: not built',e); } }); };
   const build=()=>{ '@park'; const P=PARK, S=FOUNT.S, {C,R,L}=S, X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0)), Y=SHARED.BOD.YS, T=TILE, WU=T/.84, V3=THREE.Vector3, grp=MAPG.park||scene, CX=X(C.x), CZ=Z(C.y);
     const LV=-.22*WU, bedM=FOUNT.bedM, BK=P.brook, bk=(a,b)=>{ const h=BK&&BK.h(a,b); return h==null?1e9:h*WU-.5*ZU; }, bedY0=d=>-bedM(d)*WU-.04; FOUNT.LV=LV;
-    // the lake's deep holes (owner, 28 Oct 2026: "make the lake and hudson go very deep in certain spots"): two, 25 and 40 m down, black without a light
-    const HOLE=[[L.x-L.rx*.45,L.y-L.ry*.15,7,25],[L.x+L.rx*.2,L.y-L.ry*.35,9,40]], pit=(x,y)=>HOLE.reduce((a,[hx,hy,r,dd])=>a+dd*Math.exp(-((x-hx)**2+(y-hy)**2)/(r*r)),0);
+    const HOLE=FOUNT.HOLES, pit=(x,y)=>HOLE.reduce((a,[hx,hy,r,dd])=>a+dd*Math.exp(-((x-hx)**2+(y-hy)**2)/(r*r)),0);
     const bedY=(d,x,y)=>bedY0(d)-(x!=null&&d>1.5?pit(x,y)*Math.min(1,(d-1.5)/3)*WU:0); FOUNT.bedY=bedY;
     FOUNT.bedAt=(x,z)=>{ if(SHARED.LVL!=='up')return null; const d=-lake(x/T+SHARED.BOD.OX-(P.ox||0),z/T+SHARED.BOD.OY-(P.oy||0)); const px=x/T+SHARED.BOD.OX-(P.ox||0), py=z/T+SHARED.BOD.OY-(P.oy||0); return d>-1?bedY(d,px,py):null; };
     { const mx=x=>x/T+SHARED.BOD.OX-(P.ox||0), mz=z=>z/T+SHARED.BOD.OY-(P.oy||0), a=[X(S.x0-3),X(L.cx+3)], b=[Z(S.y0-3),Z(L.cy+3)];   // the big lake in the one water (065a): its bed, a bank that rises past the shore
@@ -131,7 +132,7 @@ FOUNT.held=(x,z)=>FOUNT.holds.some(f=>f(x,z));
     const wTris=chunks(2,(d,a,b)=>{ if(Math.max(...d)>-1)return true; const r=BK&&BK.q(a,b); return !!r&&r[1]<BK.m+1&&r[0]<BK.W(r[1])+BK.B+1; },(q,d,pos,ad)=>{ const v=q.map(([a,b])=>[X(a),LV,Z(b)]); for(const t of [[0,2,1],[0,3,2]])for(const k of t){ pos.push(...v[k]); ad.push(Math.max(0,Math.min(25,(bedM(d[k])+pit(q[k][0],q[k][1])-.22)/2.4))); } });
     for(const [pos,ad] of FOUNT.parts.splice(0)){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('aD',new THREE.Float32BufferAttribute(ad,1)); g.computeVertexNormals(); g.computeBoundingSphere(); const me=new THREE.Mesh(g,lakeM); (FOUNT.waters=FOUNT.waters||[]).push(me); me.receiveShadow=true; me.renderOrder=1; grp.add(me); }
     // the lake's water is the Hudson's (owner, 2 Nov 2026: "calm, real water, clear, like hudson same options"): the river's surface shader over the lake's own depth picture, no swell; the river's panel (a double click on the water) sets it
-    const RV=window.RIVER; let swap; { const N=128, ax=Math.min(X(S.x0-3),X(L.cx+1)), az=Math.min(Z(S.y0-3),Z(L.cy+1)), wx=Math.abs(X(L.cx+1)-X(S.x0-3)), wz=Math.abs(Z(L.cy+1)-Z(S.y0-3)), img=new Uint8Array(N*N*4), mx=x=>x/T+SHARED.BOD.OX-(P.ox||0), mz=z=>z/T+SHARED.BOD.OY-(P.oy||0);
+    const RV=MODS.river; let swap; { const N=128, ax=Math.min(X(S.x0-3),X(L.cx+1)), az=Math.min(Z(S.y0-3),Z(L.cy+1)), wx=Math.abs(X(L.cx+1)-X(S.x0-3)), wz=Math.abs(Z(L.cy+1)-Z(S.y0-3)), img=new Uint8Array(N*N*4), mx=x=>x/T+SHARED.BOD.OX-(P.ox||0), mz=z=>z/T+SHARED.BOD.OY-(P.oy||0);
       for(let j=0;j<N;j++)for(let i=0;i<N;i++){ const px=mx(ax+wx*(i+.5)/N), py=mz(az+wz*(j+.5)/N), d=-lake(px,py), m=d>0?bedM(d)+pit(px,py)*Math.min(1,Math.max(0,(d-1.5)/3)):0, k=(j*N+i)*4; img[k]=Math.min(255,Math.round(m*20)); img[k+3]=255; }
       const bt=new THREE.DataTexture(img,N,N); bt.magFilter=bt.minFilter=THREE.LinearFilter; bt.needsUpdate=true;
       swap=()=>{ if(!RV||!RV.surface)return; const m=RV.surface({bed:bt,bedR:new THREE.Vector4(ax,az,wx,wz),lv:LV}); for(const me of FOUNT.waters||[])me.material=m; FOUNT.lakeM=m; };
@@ -202,9 +203,9 @@ FOUNT.held=(x,z)=>FOUNT.holds.some(f=>f(x,z));
     FOUNT.pre=(scene,cam)=>{ const c=cam.position; uw=!cam.isOrthographicCamera&&grp.visible&&c.y<LV&&FOUNT.bedAt(c.x,c.z)!=null&&!!(scene.background&&scene.background.isColor); if(!uw)return;
       let k=1; try{ k=.3+.7*Math.max(0,Math.min(1,(CLOCK.elev()+4)/14)); }catch(e){}
       const see=FLOW.see(Math.max(0,(LV-c.y)*.84/T),9); UF.color.setRGB(.2,.4,.36,THREE.SRGBColorSpace).multiplyScalar(k*see.k); UF.near=0; UF.far=see.far/.84*T; UF.uw=true; fog0=scene.fog; bg0.copy(scene.background); scene.fog=UF; scene.background.copy(UF.color);
-      if(window.SKY&&SKY.dome){ dome=SKY.dome.visible; SKY.dome.visible=false; } };
-    FOUNT.post=scene=>{ if(!uw)return; scene.fog=fog0; scene.background.copy(bg0); if(window.SKY&&SKY.dome)SKY.dome.visible=dome; uw=false; };
-    if(window.BROOK&&BROOK.still)BROOK.still(FOUNT.waters||[]);
+      if(SKY&&SKY.dome){ dome=SKY.dome.visible; SKY.dome.visible=false; } };
+    FOUNT.post=scene=>{ if(!uw)return; scene.fog=fog0; scene.background.copy(bg0); if(SKY&&SKY.dome)SKY.dome.visible=dome; uw=false; };
+    if(BROOK&&BROOK.still)BROOK.still(FOUNT.waters||[]);
     FOUNT.ready=true; };
 }
 export {FOUNT};

@@ -9,7 +9,7 @@ const DUMMY={}; window.DUMMY=DUMMY;
   const make=()=>{ '@later'; const G=new THREE.Group(), std=c=>new THREE.MeshStandardMaterial({color:c,roughness:.9}), add=(geo,m,x,y,z)=>{ const o=new THREE.Mesh(geo,m); o.position.set(x,y,z); o.castShadow=o.receiveShadow=true; G.add(o); return o; };
     add(new THREE.CylinderGeometry(.05,.06,1.6,8),std(0x5a4434),0,.8,0); add(new THREE.CylinderGeometry(.2,.17,.6,12),std(0xd8c078),0,1.2,0); add(new THREE.SphereGeometry(.14,12,10),std(0xd8c078),0,1.66,0);
     const arm=add(new THREE.CylinderGeometry(.04,.04,.8,8),std(0x5a4434),0,1.35,0); arm.rotation.z=Math.PI/2; add(new THREE.BoxGeometry(.32,.06,.32),std(0x4a3a2a),0,.03,0); G.scale.setScalar(T/1.19); return G; };
-  DUMMY.spar=()=>{ '@later'; const blade=!!(WIELD.on&&window.ITEMS&&+ITEMS.prop(WIELD.on,'damage')>0), k=blade?'sword':'fight', nm=blade?'SWORDSMANSHIP':'MARTIAL ARTS';
+  DUMMY.spar=()=>{ '@later'; const blade=!!(WIELD.on&&ITEMS&&+ITEMS.prop(WIELD.on,'damage')>0), k=blade?'sword':'fight', nm=blade?'SWORDSMANSHIP':'MARTIAL ARTS';
     if(VIT.sta<.15)return say('YOU ARE TOO TIRED TO SPAR. CATCH YOUR BREATH.','#c8a090'); VIT.sta=Math.max(0,VIT.sta-.12); SFX.play('clunk',{vol:.4,pitch:blade?1.3:.8});
     if(FORAGE.sk(k)>=CAP)return say(`THE DUMMY HAS NOTHING MORE TO TEACH YOU IN ${nm}. FIND A REAL FOE, OR A MASTER.`,'#c8a090');
     FORAGE.use(k,-10,CAP+10); say(blade?'YOU CUT AT THE DUMMY. STRAW FLIES.':'YOU STRIKE THE DUMMY. IT ROCKS ON ITS POST.','#e8e2cc'); DUMMY.last=k; };

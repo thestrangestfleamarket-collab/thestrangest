@@ -5,7 +5,7 @@ const {chromium}=require('playwright');
   await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&hour=13&at=45,4',{timeout:300000});
   await pg.waitForFunction(()=>window.__started,null,{timeout:400000}); await pg.waitForFunction(()=>window.TRAFFIC&&TRAFFIC.dbg().loaded&&TRAFFIC.dbg().lanes.every(L=>L.cars.every(c=>c.model)),null,{timeout:120000,polling:1000}).catch(()=>{});
   const T=()=>pg.evaluate(()=>TRAFFIC.dbg()); let d=await T();
-  ok(d.lanes.length===4&&d.lanes.every(L=>L.cars.every(c=>c.model)),'four lanes, every vehicle has a model');
+  ok(d.lanes.length===4&&d.lanes.every(L=>L.cars.every(c=>c.model)),'four lanes, every vehicle has a model'+(d.lanes.every(L=>L.cars.every(c=>c.model))?'':': '+JSON.stringify(d.lanes.map(L=>L.cars.map(c=>c.model)))));
   ok(new Set(d.lanes.flatMap(L=>L.cars.map(c=>c.model))).size>=8,'many kinds of vehicle');
   ok(d.lanes.filter(L=>L.fly).every(L=>L.cars.every(c=>c.model!=='rover')),'nothing with wheels flies');
   const sp=await pg.evaluate(()=>{ const v0=TRAFFIC.lanes.map(L=>L.v); SPEED.set({traffic:2,fliers:.5}); const v1=TRAFFIC.lanes.map(L=>L.v); SPEED.set({}); return {v0,v1,v2:TRAFFIC.lanes.map(L=>L.v)}; });
@@ -38,7 +38,7 @@ const {chromium}=require('playwright');
   ok(cl.on&&cl.lens===(cl.cars-cl.own)*4&&cl.lit>0&&cl.spots.some(v=>v>0),'after dark the cars show their lamps and the nearest light the road: '+JSON.stringify(cl));
   // the patrol: a police cruiser sets out once a minute, one way then the other; the airship rides high, seven times its size
   const pt=await pg.evaluate(()=>{ const L=TRAFFIC.lanes, out=[];
-    for(let li=0;li<2;li++)for(let i=0;i<L[li].n;i++)for(let lap=1000;lap<1100;lap++)if(TRAFFIC.patrol(li,i,lap))out.push([li,i,lap]); const b=TRAFFIC.blimp; return {n:out.length,ways:[out.filter(o=>o[0]===0).length,out.filter(o=>o[0]===1).length],pat:L.slice(0,2).map(l=>!!l.pat),random:L[0].GR.includes('police-cruiser-80s'),fl:L[2].FL.includes('sky-tender'),blimp:!!b.m&&{s:+(b.m.scale.x/(__dbg.cv().TILE/.84*1.4)).toFixed(1),y:+(b.m.position.y/(__dbg.cv().TILE/.84)).toFixed(0)}}; });
+    for(let li=0;li<2;li++)for(let i=0;i<L[li].n;i++)for(let lap=1000;lap<1100;lap++)if(TRAFFIC.patrol(li,i,lap))out.push([li,i,lap]); const b=TRAFFIC.blimp; return {n:out.length,ways:[out.filter(o=>o[0]===0).length,out.filter(o=>o[0]===1).length],pat:L.slice(0,2).map(l=>!!l.pat),random:L[0].GR.includes('police-cruiser-80s'),fl:L[2].FL.includes('sky-tender'),blimp:!!b.m&&{s:+(b.m.scale.x*b.m.children[0].scale.x/(__dbg.cv().TILE/.84*1.4)).toFixed(1),y:+(b.m.position.y/(__dbg.cv().TILE/.84)).toFixed(0)}}; });
   ok(pt.n>20&&Math.abs(pt.ways[0]-pt.ways[1])<=2&&pt.pat.every(Boolean)&&!pt.random,'the police cruiser is the patrol only: once a minute, the two ways in turn: '+JSON.stringify(pt));
   ok(!pt.fl&&pt.blimp&&pt.blimp.s===7&&pt.blimp.y>60,'the airship is out of the lanes, seven times its size, high over the section: '+JSON.stringify(pt.blimp));
   ok(!errs.length,'no page errors '+errs.slice(0,3).join(' | ')); await b.close(); process.exit(bad?1:0); })();

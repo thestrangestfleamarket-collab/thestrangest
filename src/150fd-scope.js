@@ -124,7 +124,7 @@ const SCOPE={alt:35,az:270,va:0,vz:0,mag:25,focus:.18,track:true,lines:true,filt
       const eqv=(ra,dec)=>hv(cs(dec)*cs(ra),cs(dec)*sn(ra),sn(dec));
       // the light: the Sun's height sets the sky (New York's glow keeps it from black), the weather covers it
       const sun=where('sun',jd), sunH=eq2hor(sun.ra,sun.dec,lst), sv=eqv(sun.ra,sun.dec), sunOff=Math.acos(cl(sv[0]*t[0]+sv[1]*t[1]+sv[2]*t[2],-1,1))*R2D;
-      const day=cl((sunH.alt+12)/12,0,1), Wx=(SCOPE.wx&&SCOPE.wx(jd))||(window.WX&&WX.now)||{cloud:0,rain:0,snow:0,fog:0}, wet=Math.max(Wx.rain||0,Wx.snow||0), cover=cl(((Wx.cloud||0)-.2)/.7,0,1), filt=SCOPE.filter?1e-5:1;
+      const day=cl((sunH.alt+12)/12,0,1), Wx=(SCOPE.wx&&SCOPE.wx(jd))||(WX&&WX.now)||{cloud:0,rain:0,snow:0,fog:0}, wet=Math.max(Wx.rain||0,Wx.snow||0), cover=cl(((Wx.cloud||0)-.2)/.7,0,1), filt=SCOPE.filter?1e-5:1;
       let lim=cl(8.3-11*day,-4,8.3)-2*cover-3*(Wx.fog||0); if(SCOPE.mag===1)lim-=3; if(SCOPE.filter)lim=-30;   // the eye's 7 mm against the tube's 80
       const sky=day*filt*(1-.4*cover); g.fillStyle='#000'; g.fillRect(0,0,w,h); g.save(); g.beginPath(); g.arc(cx,cy,R,0,7); g.clip();
       g.fillStyle=`rgb(${Math.round(10+120*sky)},${Math.round(13+160*sky)},${Math.round(26+210*sky)})`; g.fillRect(cx-R,cy-R,2*R,2*R);

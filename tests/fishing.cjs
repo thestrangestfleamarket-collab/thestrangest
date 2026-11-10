@@ -114,6 +114,15 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     while (!document.querySelector('#fishmode>.pX') && performance.now() - t0 < 5000) await new Promise(r => setTimeout(r, 100)); const x = document.querySelector('#fishmode>.pX'); if (!x) return { x: false };
     x.click(); await new Promise(r => setTimeout(r, 300)); return { x: true, mode: FISHING.mode, bar: getComputedStyle(document.getElementById('fishmode')).display }; });
   ok(lx.x && lx.mode === false && lx.bar === 'none', "the fishing bar's X leaves fishing: " + JSON.stringify(lx));
+  // from the rowboat: sat on the thwart, the rod in his hand out over the bow, the arm swinging it back to cast as on the pier (TODO, 10 Nov 2026)
+  const rb = await pg.evaluate(async () => { const T = __dbg.cv().TILE, fr = async n => { for (let i = 0; i < n; i++) await new Promise(r => requestAnimationFrame(r)); };
+    if (FISHING.mode) FISHING.leave(); if (FISHING.state()) FISHING.reel(); FORAGE.give('rod', 1); FORAGE.give('bait', 2); BOAT.launch(); await fr(10); WIELD.set('rod'); if (!FORAGE.S.hook) FORAGE.ACT.fhook('bait'); WIELD.tip.set(0, -1e4, 0); await fr(25);
+    const p = __dbg.pos(), h = SHARED.heading, ahead = () => +(((WIELD.tip.x - p[0]) * Math.sin(h) + (WIELD.tip.z - p[2]) * Math.cos(h)) / T).toFixed(2), up = () => +((WIELD.tip.y - SHARED.py) / T).toFixed(2), rest = { a: ahead(), u: up() };
+    const seen = new Set(), tk = FISHING.tick; let wind = null; FISHING.tick = dt => { tk(dt); const q = FISHING.state(); if (q) seen.add(q.st); if (q && q.st === 'wind') { const w = { a: ahead(), u: up() }; if (!wind || w.u > wind.u) wind = w; } };
+    FISHING.speed = 1; const cx = PIER.x + 3.2 * T, cz = PIER.zE - 7 * T, at = (FISHING.at(cx, cz) || {}).kind || null; FISHING.cast(cx, cz); const cast0 = (FISHING.state() || {}).st || null, t0 = performance.now();
+    while (performance.now() - t0 < 10000 && !seen.has('wait')) await fr(1); FISHING.tick = tk;
+    const o = { boat: BOAT.on, sat: !!document.getElementById('boathud') && !document.getElementById('boathud').hidden, held: WIELD.on, rest, wind, at, cast0, seen: [...seen], st: (FISHING.state() || {}).st }; FISHING.reel(); return o; });
+  ok(rb.boat && rb.held === 'rod' && rb.rest.a > .5 && rb.rest.u > -1 && rb.wind && rb.wind.u > rb.rest.u + .3, 'in the rowboat he holds the rod out in front, sat, and swings it up and back to cast: ' + JSON.stringify(rb));
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close(); console.log(fails.length ? fails.length + ' failed' : 'all fishing checks passed'); process.exit(fails.length ? 1 : 0);
 })();

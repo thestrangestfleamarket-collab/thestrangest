@@ -2,15 +2,15 @@
 import {SHARED} from './003-shx.js';
 import {CLIP, LEVELS, PH, pos, RAG, ROOMS, WHERE} from './003b-systems.js';
 import {OWNED, SAVE} from './005-save.js';
-import {MODS, QS, SOL, STORE, TILE} from './006-map-pre.js';
+import {MODS, QS, SOL, STORE, SYS, TILE} from './006-map-pre.js';
 import {SAVED} from './071-main-11.js';
 
 { const KEY='where', test=['at','place','sheet','npcat','spot'].some(k=>QS.get(k)!=null);   // KEY on the server (for another device), 'here' in this browser (always the latest here)
   if(QS.get('fresh')!=null){ SAVE.del(KEY); SAVE.del('here'); }
   // saved here every few seconds you move (and each minute you don't), on the server every 30 s and as the page closes: the time says whether you come back to it (071)
-  let last='', lt=0, sv='', up=0, t=0; const save=end=>{ if(test||RAG.on||!window.__started)return; const w={x:+pos.x.toFixed(3),z:+pos.z.toFixed(3),y:+SHARED.py.toFixed(3),hd:+SHARED.heading.toFixed(3),lv:SHARED.floor}, at=JSON.stringify(w), now=Date.now(); w.t=now; w.u=OWNED.me&&OWNED.me.id||''; const j=JSON.stringify(w);
+  let last='', lt=0, sv='', up=0, t=0; const save=end=>{ if(test||RAG.on||!SYS.started)return; const w={x:+pos.x.toFixed(3),z:+pos.z.toFixed(3),y:+SHARED.py.toFixed(3),hd:+SHARED.heading.toFixed(3),lv:SHARED.floor}, at=JSON.stringify(w), now=Date.now(); w.t=now; w.u=OWNED.me&&OWNED.me.id||''; const j=JSON.stringify(w);
     try{ if(end===true||at!==last||now-lt>60e3){ last=at; lt=now; SAVE.set('here',j); } if(end===true||now-up>30e3&&(at!==sv||now-up>300e3)){ up=now; sv=at; OWNED.set(KEY,j); if(end===true)OWNED.flush(); } }catch(e){} };
-  WHERE.tick=dt=>{ if(!window.__started)return; t+=dt; if(t>2){ t=0; save(); if(STORE.offAt)STORE.offAt(pos.x,pos.z); } };
+  WHERE.tick=dt=>{ if(!SYS.started)return; t+=dt; if(t>2){ t=0; save(); if(STORE.offAt)STORE.offAt(pos.x,pos.z); } };
   addEventListener('pagehide',()=>save(true)); addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden')save(true); });
   // put you back where you left off (071 set a spot on the street before the first frame): rebuild the inside you were in, or the platform if the spot is not sound
   WHERE.restore=async()=>{ let w=SAVED; if(!w)return false; await LOAD('later'); const lv=w.lv||LEVELS.below(w.y);

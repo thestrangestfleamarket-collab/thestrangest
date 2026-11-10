@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, ITEMS, ONLINE, pos, RIDE, TEXT, VLOOK} from './003b-systems.js';
 import {renderer} from './004-main.js';
-import {MAPFILE, SYS, TILE} from './006-map-pre.js';
+import {MAPFILE, MODS, SYS, TILE} from './006-map-pre.js';
 { const FILE='/shared/vlooks.json', V3=THREE.Vector3, esc=TEXT.esc, web=/^https?:$/.test(location.protocol);
   VLOOK.looks={}; VLOOK.more={};
   const BASE=new WeakMap(), ORIG=new WeakMap(), KEYS=new WeakMap(), OWN=new WeakSet(), CC=new THREE.Color(), V=new V3();
@@ -22,7 +22,8 @@ import {MAPFILE, SYS, TILE} from './006-map-pre.js';
   const own=m=>{ if(OWN.has(m))return; OWN.add(m); const one=x=>{ origCol(x); const c=x.clone(); ORIG.set(c,ORIG.get(x)); return c; };
     m.material=Array.isArray(m.material)?m.material.map(one):one(m.material);
     const a=m.geometry&&m.geometry.attributes.color; if(a){ const o0=origArr(a), k0=keysOf(a); m.geometry=m.geometry.clone(); const b=m.geometry.attributes.color; ORIG.set(b,o0); KEYS.set(b,k0); } };
-  VLOOK.apply=o=>{ const id=o.userData.vlook, L=VLOOK.looks[id]||{}, B=base(o), pal=L.pal||{}, P=L.parts||{}, np=Object.keys(pal).length;
+  // a body that paints itself (the horse, one animated body): its maker's vlApply(look) takes the size and the colours
+  VLOOK.apply=o=>{ const id=o.userData.vlook, L=VLOOK.looks[id]||{}; if(o.userData.vlApply)return o.userData.vlApply(L); const B=base(o), pal=L.pal||{}, P=L.parts||{}, np=Object.keys(pal).length;
     o.scale.copy(B.s).multiplyScalar(+L.s>0?+L.s:1);
     for(const p of B.parts){ const m=p.m, q=P[p.key]||{}, U=m.userData;
       if(q.h){ m.visible=false; U.vlH=1; } else if(U.vlH){ m.visible=true; delete U.vlH; }
@@ -61,15 +62,15 @@ import {MAPFILE, SYS, TILE} from './006-map-pre.js';
 
   /* ---------- parked copies: new cars in the map's live edits (newcars), where the map keeps its cars ---------- */
   const patch=()=>fetch(MAPFILE,{credentials:'same-origin'}).then(r=>r.status===200?r.json():null).then(j=>j&&j.v===1&&j.set&&typeof j.set==='object'?j:{v:1,set:{}});
-  const copies=()=>[...((window.CARS&&CARS.cars)||new Map()).values()].filter(C=>/^m\d+$/.test(C.id));
-  VLOOK.park=model=>{ const C0=window.CARS; if(!C0||!C0.add)return Promise.reject(new Error('the cars are not here yet'));
+  const copies=()=>[...((MODS.cars&&MODS.cars.cars)||new Map()).values()].filter(C=>/^m\d+$/.test(C.id));
+  VLOOK.park=model=>{ const C0=MODS.cars; if(!C0||!C0.add)return Promise.reject(new Error('the cars are not here yet'));
     const B=SHARED.BOD, h=SHARED.heading, d=7*TILE, x=pos.x+Math.sin(h)*d, z=pos.z+Math.cos(h)*d, n=Math.max(0,...[...C0.cars.keys()].map(k=>/^m(\d+)$/.test(k)?+k.slice(1):0))+1;
     const c={id:'m'+n,model,x:+B.MX(x).toFixed(2),y:+B.MY(z).toFixed(2),hd:Math.round(h*180/Math.PI)}; C0.add(c);
     if(!web)return Promise.resolve(c);
     return patch().then(P=>{ const L=Array.isArray(P.set.newcars)?P.set.newcars:[]; L.push(c); P.set.newcars=L; return post(MAPFILE,P); }).then(()=>{ told(); return c; }); };
-  VLOOK.unpark=id=>{ if(window.CARS&&CARS.remove)CARS.remove(id); if(!web)return Promise.resolve();
+  VLOOK.unpark=id=>{ if(MODS.cars&&MODS.cars.remove)MODS.cars.remove(id); if(!web)return Promise.resolve();
     return patch().then(P=>{ P.set.newcars=(P.set.newcars||[]).filter(c=>c&&c.id!==id); return post(MAPFILE,P); }).then(told); };
-  const syncCars=()=>patch().then(P=>{ const C0=window.CARS; if(!C0||!C0.add)return; const L=(P.set.newcars||[]).filter(c=>c&&/^m\d+$/.test(c.id)), ids=new Set(L.map(c=>c.id));
+  const syncCars=()=>patch().then(P=>{ const C0=MODS.cars; if(!C0||!C0.add)return; const L=(P.set.newcars||[]).filter(c=>c&&/^m\d+$/.test(c.id)), ids=new Set(L.map(c=>c.id));
     for(const c of L)C0.add(c); for(const C of copies())if(!ids.has(C.id))C0.remove(C.id); }).catch(()=>{});
   if(web)SYS.onStart(get,'150pd-vedit');
   let lastV=null; SYS.add('world',(k,v)=>{ if(k==='veh'&&v!==lastV){ lastV=v; if(web){ get(); syncCars(); } } },'150pd-vedit');
@@ -81,10 +82,12 @@ import {MAPFILE, SYS, TILE} from './006-map-pre.js';
   let host=null, cur=null, obj=null, part='', say='', rt=null, px=null, g2=null, im=null, yaw=-.7, pitch=.3, drag=null, last=0, R=1;
   const ridesIn=()=>{ for(const id of (ITEMS.ids?ITEMS.ids():[])){ const g=ITEMS.prop(id,'grants'), k=g&&RIDE.kinds[g]; if(!k||k.world||k.noLook||VLOOK.kinds[id])continue;
     VLOOK.kind(id,{name:(FORAGE.NM&&FORAGE.NM[id])||String(ITEMS.prop(id,'name')||id).toUpperCase(),grp:'RIDES',make:()=>VLOOK.dress(id,k.make(id))}); } };
-  const drop=()=>{ if(!obj)return; PIV.remove(obj); VLOOK.live.delete(obj); obj.traverse(c=>{ if(c.isMesh&&OWN.has(c)){ c.geometry.dispose(); for(const m of [].concat(c.material))m.dispose(); } }); obj=null; HL.visible=false; };
+  const drop=()=>{ if(!obj)return; PIV.remove(obj); VLOOK.live.delete(obj); if(obj.userData.vlDrop)obj.userData.vlDrop(); obj.traverse(c=>{ if(c.isMesh&&OWN.has(c)){ c.geometry.dispose(); for(const m of [].concat(c.material))m.dispose(); } }); obj=null; HL.visible=false; };
   const frame=()=>{ if(!obj)return; PIV.rotation.set(0,0,0); obj.position.set(0,0,0); obj.updateMatrixWorld(true); BX.setFromObject(obj); if(BX.isEmpty())return; BX.getBoundingSphere(SP); obj.position.sub(SP.center); R=Math.max(.01,SP.radius); };
+  // (a maker may answer later: make() -> a promise of it)
   const pick=id=>{ drop(); cur=id; part=''; const K=VLOOK.kinds[id]; let o=null; try{ o=K&&K.make(); }catch(e){ console.warn('VLOOK make',id,e); }
-    if(o){ obj=o; obj.position.set(0,0,0); obj.rotation.set(0,0,0); obj.traverse(c=>{ c.frustumCulled=false; }); PIV.add(obj); frame(); } draw(); };
+    const show=o=>{ if(!o||cur!==id||obj){ if(o&&o.userData.vlDrop)o.userData.vlDrop(); return; } obj=o; obj.position.set(0,0,0); obj.rotation.set(0,0,0); obj.traverse(c=>{ c.frustumCulled=false; }); PIV.add(obj); frame(); draw(); };
+    if(o&&o.then)o.then(show,e=>console.warn('VLOOK make',id,e)); else show(o); draw(); };
   const look=()=>VLOOK.looks[cur]||(VLOOK.looks[cur]={});
   const edit=f=>{ const L=look(); f(L); if(L.pal&&!Object.keys(L.pal).length)delete L.pal; if(L.parts){ for(const k in L.parts)if(!Object.keys(L.parts[k]).length)delete L.parts[k]; if(!Object.keys(L.parts).length)delete L.parts; }
     VLOOK.set(cur,Object.keys(L).length?L:null); frame(); say='NOT SAVED YET'; const s=host&&host.querySelector('.vsay'); if(s)s.textContent=say; };
@@ -98,9 +101,9 @@ import {MAPFILE, SYS, TILE} from './006-map-pre.js';
       right='<b style="color:#f2c14e">'+esc(k.name)+'</b><canvas class="vcv" width="'+W+'" height="'+Hh+'" style="display:block;width:100%;max-width:'+W+'px;aspect-ratio:3/2;margin:6px 0;background:#15171e;cursor:grab;touch-action:none"></canvas><div class="dim">DRAG TO TURN IT</div>';
       if(!obj)right+='<div class="dim">IT IS NOT IN THE GAME YET HERE (GO NEAR IT ONCE)</div>';
       if(!only)right+=slider('s',.5,2,.05,L.s||1,'SIZE');
-      if(obj){ const pal=VLOOK.palette(obj), P=L.pal||{};
+      if(obj){ const pal=k.pal?k.pal():VLOOK.palette(obj), P=L.pal||{};
         right+='<h3>COLOURS</h3><div style="display:flex;flex-wrap:wrap;gap:6px">'+pal.map(h=>'<label title="#'+h+'" style="display:flex;flex-direction:column;align-items:center;gap:2px"><input type="color" data-pal="'+h+'" value="#'+(P[h]||h)+'" style="width:34px;height:26px;padding:0;border:2px solid '+(P[h]?'#f2c14e':'#3a3f4e')+';background:none"></label>').join('')+'</div>';
-        if(!only){ const ps=parts(obj), q=(L.parts||{})[part]||{};
+        if(!only&&!k.noParts){ const ps=parts(obj), q=(L.parts||{})[part]||{};
           right+='<h3>PARTS</h3><select data-part style="'+S+';max-width:100%"><option value="">PICK A PART ('+ps.length+')</option>'+ps.map(p=>'<option value="'+esc(p.key)+'"'+(p.key===part?' selected':'')+'>'+esc(p.key.replace(/\//g,' · '))+((L.parts||{})[p.key]?' ✎':'')+'</option>').join('')+'</select>';
           if(part)right+='<div style="display:flex;flex-wrap:wrap;gap:6px;margin:6px 0"><button class="btn" data-act="hide" aria-pressed="'+!!q.h+'">'+(q.h?'HIDDEN':'SHOWN')+'</button><label class="row" style="gap:6px"><span>TINT</span><input type="color" data-tint value="#'+(q.c||'ffffff')+'" style="width:34px;height:26px;padding:0;background:none;border:2px solid #3a3f4e"></label><button class="btn" data-act="untint">NO TINT</button></div>'
             +slider('ps',.2,3,.05,q.s||1,'PART SIZE')+slider('x',-.5,.5,.01,q.x||0,'MOVE ACROSS')+slider('y',-.5,.5,.01,q.y||0,'MOVE UP')+slider('z',-.5,.5,.01,q.z||0,'MOVE ALONG')+'<div style="display:flex;flex-wrap:wrap;gap:6px;margin:6px 0"><button class="btn" data-act="unpart">RESET THIS PART</button></div>'; } }

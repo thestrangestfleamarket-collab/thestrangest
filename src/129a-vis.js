@@ -2,7 +2,7 @@
 import {SHARED} from './003-shx.js';
 import {LEVELS, PARK, pos, ROOMS, VIS, ZONES} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {LEVEL, SECTION, SECTIONS, TILE} from './006-map-pre.js';
+import {LEVEL, SECTION, SECTIONS, SYS, TILE} from './006-map-pre.js';
 { const M=new Map();
   const apply=(o,r)=>{ const h=r.why.size>0&&!VIS.all; if(r.self)o.layers.mask=h?0:r.mask; else o.visible=!h; };
   VIS.hide=(o,why,on=true,self=false)=>{ if(!o)return; let r=M.get(o); if(!r){ if(!on)return; r={why:new Set(),self,mask:self?(o.layers.mask||1):0}; M.set(o,r); }
@@ -37,6 +37,6 @@ Object.assign(ZONES,{cur:null,list:[['market',SECTIONS.streets.south],['fair','T
     { const F=FAIRP, mx=SHARED.BOD.MX(x), my=SHARED.BOD.MY(z); if(F&&mx>=F.x0&&mx<F.x1&&my>=F.y0&&my<F.y1)return {id:'fair',name:F.name}; }
     return {id:'market',name:SECTIONS.streets.south}; };
   ZONES.on=f=>ZONES.fns.push(f);
-  ZONES.tick=()=>{ if(!window.__started)return; const r=typeof ROOMS!=='undefined'?ROOMS.cur:null, z=ZONES.at(pos.x,pos.z,SHARED.LVL,r), k=z.id+'|'+z.name;
+  ZONES.tick=()=>{ if(!SYS.started)return; const r=typeof ROOMS!=='undefined'?ROOMS.cur:null, z=ZONES.at(pos.x,pos.z,SHARED.LVL,r), k=z.id+'|'+z.name;
     if(!ZONES.cur||ZONES.cur.k!==k){ const was=ZONES.cur; ZONES.cur={...z,k}; for(const f of ZONES.fns)try{ f(ZONES.cur,was); }catch(e){ console.warn('ZONES',e); } } };
   window.ZONES=ZONES; }

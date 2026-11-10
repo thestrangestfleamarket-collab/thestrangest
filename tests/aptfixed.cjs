@@ -9,7 +9,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   let st = false; for (let i = 0; i < 60 && !st; i++) { await pg.waitForTimeout(3000); st = await pg.evaluate(() => !!window.__started).catch(() => false); }
   ok(st, 'the page starts');
   if (st) {
-    const want = ['CRT TV', 'WRITING DESK', 'TELESCOPE', 'EARTH GLOBE', 'GLOBE TABLE', 'LAB DESK', 'LAB STOOL', 'FISH TANK', 'TABLE RADIO'];
+    const want = ['CRT TV', 'WRITING DESK', 'TELESCOPE', 'EARTH GLOBE', 'GLOBE TABLE', 'LAB DESK', 'LAB STOOL', 'FISH TANK', 'TABLE RADIO', 'ROUND RUG', 'RECLINER', 'BOOKSHELF', 'FLOOR PLANT', 'OLIVE TREE', 'FERN STAND', 'HANGING PLANT', 'FLOWERING PLANT', 'HERB POT', 'BASIL POT'];
     let d = null; for (let i = 0; i < 40; i++) { d = await pg.evaluate(() => window.BEDROOMDBG && BEDROOMDBG()); if (d && d.built && want.every(k => d.kinds.includes(k))) break; await pg.waitForTimeout(1000); }
     ok(d && want.every(k => d.kinds.includes(k)), 'a fresh apartment has its own pieces: ' + JSON.stringify(d && d.kinds));
     ok(d && d.kinds.every(k => want.includes(k)), 'and nothing else until you buy it');

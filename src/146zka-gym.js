@@ -3,7 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, keys, PB, pos, RAG, ROOMS, SFX, st, USE, VIT, W3} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {Reflector} from './004-main.js';
-import {SYS, TILE} from './006-map-pre.js';
+import {MODS, SYS, TILE} from './006-map-pre.js';
 import {IKIT} from './038zc-ikit.js';
 import {MSHOP} from './059i-mshops.js';
 const GYM={}; window.GYM=GYM;
@@ -81,19 +81,19 @@ const GYM={}; window.GYM=GYM;
   /* ---------- THE TREADMILL: you run in place (RUNNER), the belt at its pace; W faster, S slower, A or D steps off; empty and you are thrown off the back ---------- */
   let TM=null, paceT=0;
   const lcd=t=>{ const m=t.lcd; if(!m)return; const tx=IKIT.tex(48,20,(g,w,h)=>{ g.fillStyle='#0c2014'; g.fillRect(0,0,w,h); g.fillStyle='#7cf0a4'; g.font='8px monospace'; g.textAlign='center'; g.textBaseline='top'; g.fillText('PACE '+t.pace,24,6); }); if(m.material.map)m.material.map.dispose(); m.material.map=tx; m.material.needsUpdate=true; };
-  const offTread=(fall)=>{ if(!TM)return; const t=TM.t, F=K&&K.F; TM=null; window.RUNNER=null; t.pace=0; lcd(t); if(!F)return; const p=F.pw(t.u,t.v+(fall?1.9:1.4)); pos.x=p[0]; pos.z=p[1];
+  const offTread=(fall)=>{ if(!TM)return; const t=TM.t, F=K&&K.F; TM=null; window.RUNNER=MODS.runner=null; t.pace=0; lcd(t); if(!F)return; const p=F.pw(t.u,t.v+(fall?1.9:1.4)); pos.x=p[0]; pos.z=p[1];
     if(fall){ SHARED.trip=true; say('YOU CAN\'T KEEP UP. THE BELT THROWS YOU OFF THE BACK.','#ff9a7a'); } else say('YOU STEP OFF THE TREADMILL.'); };
   GYM.tread=t=>{ '@later'; if(TM&&TM.t===t)return offTread(false); if(TM)offTread(false); if(REPS)GYM.stop(); if(RAG.on||VIT.out>0)return; const F=K.F, p=F.pw(t.u,t.v), hd=F.hd(0,-1);
-    t.pace=3; lcd(t); TM={t,x:p[0],z:p[1],hd}; SHARED.heading=hd; window.RUNNER={on:true,steer:()=>{ pos.x=TM.x; pos.z=TM.z; SHARED.heading=TM.hd; return [Math.sin(TM.hd),Math.cos(TM.hd),TM.t.pace>=7?1:0]; }};
+    t.pace=3; lcd(t); TM={t,x:p[0],z:p[1],hd}; SHARED.heading=hd; window.RUNNER=MODS.runner={on:true,steer:()=>{ pos.x=TM.x; pos.z=TM.z; SHARED.heading=TM.hd; return [Math.sin(TM.hd),Math.cos(TM.hd),TM.t.pace>=7?1:0]; }};
     say('YOU STEP ON. W FASTER, S SLOWER, A OR D TO STEP OFF. PACE 3.'); };
-  const treadStep=dt=>{ if(!TM)return; if(!inGym()||RAG.on||VIT.out>0||VIT.dead){ TM=null; window.RUNNER=null; return; } const t=TM.t;
+  const treadStep=dt=>{ if(!TM)return; if(!inGym()||RAG.on||VIT.out>0||VIT.dead){ TM=null; window.RUNNER=MODS.runner=null; return; } const t=TM.t;
     if(keys.has('a')||keys.has('d')||keys.has('arrowleft')||keys.has('arrowright'))return offTread(false);
     if((paceT-=dt)<=0){ const up=keys.has('w')||keys.has('arrowup'), dn=keys.has('s')||keys.has('arrowdown'); if(up||dn){ paceT=.3; t.pace=Math.max(0,Math.min(12,t.pace+(up?1:-1))); lcd(t); if(!t.pace)return offTread(false); } }
     const k=t.pace/12; VIT.spend(dt*k*k/45); FORAGE.stats.work('sta',dt*Math.pow(k,1.5)/600);
     if(VIT.sta<=0&&t.pace>=5)offTread(true); };
 
   /* ---------- THE BAGS: your strikes (STRIKES, one list a frame for every reader) on a bag swing it and train you; a bag swinging back into you shoves you ---------- */
-  const bagStep=dt=>{ if(!inGym())return; const S=window.STRIKES, now=performance.now(), F=K.F;
+  const bagStep=dt=>{ if(!inGym())return; const S=MODS.strikes, now=performance.now(), F=K.F;
     for(const B of K.bags){ B.av+=(-9.8/1.0*Math.sin(B.a))*dt; B.av*=Math.pow(.6,dt); B.a+=B.av*dt; B.bv+=(-9.8*Math.sin(B.b))*dt; B.bv*=Math.pow(.6,dt); B.b+=B.bv*dt;
       B.piv.rotation.set(0,0,0); const ax=new THREE.Vector3(F.ev[0],0,F.ev[1]), az=new THREE.Vector3(F.eu[0],0,F.eu[1]); B.piv.rotateOnWorldAxis(ax,B.a); B.piv.rotateOnWorldAxis(az,-B.b);
       const p=F.pw(B.u+Math.sin(B.a)*.9,B.v+Math.sin(B.b)*.9), dx=pos.x-p[0], dz=pos.z-p[1], d=Math.hypot(dx,dz);
@@ -133,10 +133,10 @@ const GYM={}; window.GYM=GYM;
   addEventListener('keydown',e=>{ if(!REPS||e.key!==' ')return; e.preventDefault(); e.stopImmediatePropagation(); if(!e.repeat)press(); },true);
   GYM.reps=(kind,at)=>{ '@later'; if(TM)offTread(false); if(RAG.on||VIT.out>0||VIT.dead)return; const Kd=KIND[kind]; if(REPS)GYM.stop(true);
     if(kind!=='bench'){ const F=K.F, q=at||(kind==='squat'?[K.rack[0],K.rack[1]+.05]:[17.4,9.8]), p=F.pw(q[0],q[1]), hd=kind==='squat'?F.hd(0,1):kind==='curl'?F.hd(-1,0):F.hd(0,-1); pos.x=p[0]; pos.z=p[1]; SHARED.heading=hd;
-      window.RUNNER={on:true,steer:()=>{ pos.x=p[0]; pos.z=p[1]; SHARED.heading=hd; return [0,0,0]; }}; }
+      window.RUNNER=MODS.runner={on:true,steer:()=>{ pos.x=p[0]; pos.z=p[1]; SHARED.heading=hd; return [0,0,0]; }}; }
     else if(!st.sit){ const F=K.F, p=F.pw(16.2,2.45); USE.sitAt(p[0],p[1],.5*IKIT.MW,F.hd(0,-1)); }
     REPS={kind,kg:Kd.kg?Kd.kg[Math.max(0,Kd.kg.findIndex(k=>k>=FORAGE.ST.str*(Kd.cap||1)*.6))]:0,x:0,dir:1,n:0,miss:0,pinned:0}; P.hidden=false; draw(); say(Kd.name+': '+(kind==='rope'?'SPACE AS THE ROPE PASSES.':'PICK THE WEIGHT, THEN SPACE IN THE GREEN.')); };
-  GYM.stop=quiet=>{ if(TM)offTread(false); if(!REPS)return; const n=REPS.n, nm=KIND[REPS.kind].name; REPS=null; P.hidden=true; window.RUNNER=null; if(!quiet&&n)say(nm+': '+n+' REPS.'); };
+  GYM.stop=quiet=>{ if(TM)offTread(false); if(!REPS)return; const n=REPS.n, nm=KIND[REPS.kind].name; REPS=null; P.hidden=true; window.RUNNER=MODS.runner=null; if(!quiet&&n)say(nm+': '+n+' REPS.'); };
   const repStep=dt=>{ const R=REPS; if(!R)return; if(!inGym()||RAG.on||VIT.out>0||VIT.dead||(R.kind==='bench'&&!st.sit)){ GYM.stop(); return; }
     if(R.kind!=='bench'&&['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'].some(k=>keys.has(k))&&!R.pinned)return GYM.stop();
     if(R.pinned)return; const sp=R.kind==='rope'?.7+R.n*.02:.55+(KIND[R.kind].kg?R.kg/(Math.max(5,FORAGE.ST.str*KIND[R.kind].cap))*.5:0); R.x+=R.dir*sp*dt; if(R.x>1){ R.x=1; R.dir=-1; } if(R.x<0){ R.x=0; R.dir=1; } $('grm').style.left=(R.x*100)+'%'; };

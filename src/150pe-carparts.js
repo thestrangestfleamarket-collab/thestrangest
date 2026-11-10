@@ -2,12 +2,12 @@
 import {SHARED, THREE} from './003-shx.js';
 import {CARX, CLOCK, keys, ONLINE, pos, RIDE, SFX, UI} from './003b-systems.js';
 import {SAY} from './003d-say.js';
-import {SYS, TILE} from './006-map-pre.js';
+import {MODS, SYS, TILE} from './006-map-pre.js';
 { const T=TILE, M0=T/.84, say=(t,c)=>SAY(t,c||'#e8e2cc');
   const BIT={'DOOR FL':1,'DOOR FR':2,'DOOR RL':4,'DOOR RR':8,TRUNK:16,HATCH:16,HOOD:32,bar:64,siren:128,head:256}, DOORS=15;
   const NAME={'DOOR FL':'DRIVER\'S DOOR','DOOR FR':'PASSENGER DOOR','DOOR RL':'REAR DOOR','DOOR RR':'REAR DOOR',TRUNK:'TRUNK',HOOD:'HOOD',HATCH:'HATCH'};
   const PX=new WeakMap(), ALL=[], CP={};
-  const cars=()=>window.CARS, mineC=()=>(cars()&&cars().driving)||null, dataOf=m=>{ const d=cars()&&cars().data&&cars().data(); return d&&d.cars[m]; };
+  const cars=()=>MODS.cars, mineC=()=>(cars()&&cars().driving)||null, dataOf=m=>{ const d=cars()&&cars().data&&cars().data(); return d&&d.cars[m]; };
   const read=C=>{ const v=String((ONLINE.world||{})['cst:'+C.id]||'0').split('.'); return {b:+v[0]|0,h:+v[1]|0}; };
   const write=(C,b,h)=>ONLINE.put('cst:'+C.id,(b|0)+'.'+(h|0));
   const where=C=>{ if(C===mineC())return null; const o=C.by&&ONLINE.others&&ONLINE.others.get(C.by), g=o&&o.fig&&o.fig.g; return g?{x:g.position.x,z:g.position.z}:{x:C.x,z:C.z}; };

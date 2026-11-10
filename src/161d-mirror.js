@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {CULL, pos} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {LEVEL, MAPG, SYS, TILE} from './006-map-pre.js';
+import {LEVEL, MAPG, START, SYS, TILE} from './006-map-pre.js';
 const MIRROR={n:0,on:false}; window.MIRROR=MIRROR;
 SYS.onStart(()=>{ const C=LEVEL.edge&&LEVEL.edge.mirror; if(!C)return; MIRROR.on=true;
   const XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS, T=TILE, R=(C.reach||150)*T, SHOW=(C.show||220)*T, za=Math.min(ZS(C.band[0]),ZS(C.band[1])), zb=Math.max(ZS(C.band[0]),ZS(C.band[1]));
@@ -36,7 +36,8 @@ SYS.onStart(()=>{ const C=LEVEL.edge&&LEVEL.edge.mirror; if(!C)return; MIRROR.on
   MIRROR.foreign=()=>G.children.filter(c=>!c.userData.side).map(c=>c.type+' '+c.name);
   const shown=o=>{ for(let p=o;p;p=p.parent){ if(!p.visible)return false; if(p===scene)return true; } return false; };
   const near=S=>S.s>0?B.min.x<S.X&&B.max.x>S.X-R:B.max.x>S.X&&B.min.x<S.X+R;
-  const scan=()=>{ const seen=new Set();
+  let looked=false; START.wait('THE FAR STREETS',()=>looked);
+  const scan=()=>{ looked=true; const seen=new Set();
     for(const k of C.groups||[]){ const g=MAPG[k]; if(!g)continue; g.updateMatrixWorld(); g.traverse(o=>{ if(!fit(o))return; for(const S of SIDES){ if(!near(S))continue; const key=o.uuid+S.s; seen.add(key); let c=clones.get(key); if(!c)clones.set(key,c=make(o,S)); c.matrix.multiplyMatrices(S.M,o.matrixWorld); c.matrixWorld.copy(c.matrix); if(o.isInstancedMesh)c.count=o.count; else trim(c,o,S);
       const bx=c.userData.box||(c.userData.box=new THREE.Box3()), x0=2*S.X-B.max.x, x1=2*S.X-B.min.x; bx.min.set(Math.max(x0,S.s>0?S.X:S.X-R),B.min.y,Math.max(B.min.z,za)); bx.max.set(Math.min(x1,S.s>0?S.X+R:S.X),B.max.y,Math.min(B.max.z,zb)); } }); }
     let gone=false; for(const [k,c] of clones)if(!seen.has(k)){ G.remove(c); drop(c); clones.delete(k); MIRROR.n--; gone=true; }

@@ -1,5 +1,5 @@
 // The owner's .glb toons: the teddy bear, fetched after the start (the donut, origami fox, bear in the coat, Mr. Blocks, ember knight, Number 80, rain fish, manatee and ticket fox are archived, owner 5 Nov 2026).
-import {CINEMA} from './003b-systems.js';
+import {CINEMA, SHOPS} from './003b-systems.js';
 import {QS, SYS} from './006-map-pre.js';
 import {PARTSNPC} from './080-npc-parts.js';
 import {RIGNPC} from './083-npc-rig.js';
@@ -21,5 +21,5 @@ const GLBTOONS={list:[]}; window.GLBTOONS=GLBTOONS;
       pose:c=>{ RIGNPC.limbs(c,K.o); if(sk)sk(c); } };
     const N=RIGNPC.make(def,Object.assign({key,name:D.name,eye:-1,metres:K.metres,radius:K.radius,speed:K.speed,stride:K.stride},PARTSNPC.street(K.at,-70)));
     GLBTOONS.list.push(N); GLBTOONS[key]=N; if(CINEMA.toon)CINEMA.toon(key,N); return N; };
-  GLBTOONS.load=()=>GLBTOONS.wait||(GLBTOONS.wait=DATA().then(J=>{ for(const k in KIND){ const D=J.chars[KIND[k].data||k]; if(D)make(k,D); } if(window.SHOPS&&window.SHOPS.sync)window.SHOPS.sync(); return GLBTOONS.list; }));
+  GLBTOONS.load=()=>GLBTOONS.wait||(GLBTOONS.wait=DATA().then(J=>{ for(const k in KIND){ const D=J.chars[KIND[k].data||k]; if(D)make(k,D); } if(SHOPS&&SHOPS.sync)SHOPS.sync(); return GLBTOONS.list; }));
   const SH=QS.get('sheet'), go=()=>GLBTOONS.load().catch(e=>console.warn('GLBTOONS',e)); if(SH&&KIND[SH])go(); else SYS.onStart(go,'084b-npc-glbtoons'); }

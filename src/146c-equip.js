@@ -7,7 +7,7 @@ import {GARB} from './072b-garb.js';
 import {BODIES} from './111a-bodies.js';
 import {AVATAR} from './111c-avatar.js';
 Object.assign(EQUIP,{fit:[1.3,1.55,1.1,-.2,.04],by:{},float:false,light:false,sight:false,breathe:false,night:false}); window.EQUIP=EQUIP; Object.defineProperty(EQUIP,'worn',{get:()=>EQUIP.by.body||null});
-{ const say=SAY, prop=(id,k)=>window.ITEMS&&ITEMS.prop?ITEMS.prop(id,k):undefined, name=id=>(FORAGE.NM&&FORAGE.NM[id])||id, SLOTS=['body','legs','head','eyes','back'];
+{ const say=SAY, prop=(id,k)=>ITEMS&&ITEMS.prop?ITEMS.prop(id,k):undefined, name=id=>(FORAGE.NM&&FORAGE.NM[id])||id, SLOTS=['body','legs','head','eyes','back'];
   FORAGE.add({names:{armor:'ARMOUR',cloudcoat:'CLOUD COAT'},prices:{armor:40,cloudcoat:60}});
   // one grant -> one effect, resolved the same way for every worn item (a property is schema-wide, not special-cased per item)
   const ABIL={ guard:{on:()=>VIT.def=.5, off:()=>VIT.def=0}, float:{on:()=>EQUIP.float=true, off:()=>EQUIP.float=false}, light:{on:()=>EQUIP.light=true, off:()=>EQUIP.light=false}, sight:{on:()=>EQUIP.sight=true, off:()=>EQUIP.sight=false}, breathe:{on:()=>EQUIP.breathe=true, off:()=>EQUIP.breathe=false}, night:{on:()=>EQUIP.night=true, off:()=>EQUIP.night=false} };

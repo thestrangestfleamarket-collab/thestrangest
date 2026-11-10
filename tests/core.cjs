@@ -7,6 +7,12 @@ try { execFileSync('node', ['--stack-size=8000', ROOT + '/tools/imports.cjs', '-
 catch (e) { ok(false, 'imports: ' + String(e.stdout || '') + String(e.stderr || '')); }
 { const fs = require('fs'), bad = fs.readdirSync(ROOT + '/src').filter(f => /\.js$/.test(f) && /CLOCKWISE/.test(fs.readFileSync(ROOT + '/src/' + f, 'utf8'))); ok(!bad.length, 'the Loop\'s signs name streets, not directions (no CLOCKWISE in src' + (bad.length ? ': ' + bad.join(', ') : '') + ')'); }
 
+{ const gone = [...new Set(['/.github/workflows/site.yml', '/CLAUDE.md'].flatMap(f => fs.readFileSync(ROOT + f, 'utf8').match(/tests\/[\w-]+\.cjs/g) || []))].filter(t => !fs.existsSync(ROOT + '/' + t)); ok(!gone.length, 'every test the workflow and CLAUDE.md name exists' + (gone.length ? ': ' + gone.join(', ') : '')); }
+// a file reads another file's thing by its name (the imports see it), not through window: only these old ones are left, and the list only shrinks
+{ const OLD = new Set('__started __dbg'.split(' ')), S = fs.readdirSync(ROOT + '/src').filter(f => /\.js$/.test(f)).map(f => [f, fs.readFileSync(ROOT + '/src/' + f, 'utf8')]), def = {};
+  for (const [f, t] of S) for (const m of t.matchAll(/\bwindow\.([A-Za-z_$][\w$]*)\s*=(?!=)/g)) (def[m[1]] = def[m[1]] || new Set()).add(f);
+  const bad = []; for (const [f, t] of S) for (const m of t.matchAll(/\bwindow\.([A-Za-z_$][\w$]*)\b(?!\s*=(?!=))/g)) if (def[m[1]] && !def[m[1]].has(f) && !OLD.has(m[1])) bad.push(f + ': window.' + m[1]);
+  ok(!bad.length, 'no file reads another file\'s thing through window (import it, or declare it in 003b-systems.js)' + (bad.length ? ': ' + [...new Set(bad)].slice(0, 8).join(', ') : '')); }
 const L = JSON.parse(fs.readFileSync(ROOT + '/data/world.json', 'utf8'));
 ok(L.places.every(p => p.x0 < p.x1), 'every place in the level file has x0 < x1');
 // the asset contract (data/full/contract.json): every baked record has its pieces, every reference between files resolves
@@ -25,7 +31,11 @@ ok(L.paths.every(p => p.a && p.b), 'every park path has two ends');
   const M = L.places.filter(p => !p.row && (p.kind === 'front' || p.kind === 'lot') && (p.y1 == null || p.y0 === L.block.back && p.y1 === L.block.front)).sort((a, b) => a.x0 - b.x0), H = L.places.filter(p => p.row === 2).sort((a, b) => a.x0 - b.x0);
   ok(M.length >= 5 && apart(M) && M.every(clear), 'Market St\'s row (whatever stands on it, from the level file): its buildings side by side, none over another, none across the way through to the Hudson: ' + M.map(p => p.id).join());
   ok(Math.abs((wy.x1 - wy.x0) * .84 * 3 - 22) < .1 && Math.abs((wy.x0 + wy.x1) / 2 - gx) < .1, 'the way through to the Hudson is a third of its old 22 m, straight across from the park gate (7 Nov 2026)');
-  ok(H.length >= 8 && apart(H) && H.every(clear) && H.every(p => p.face === 's' && p.y0 === L.block.backrow[0] && p.y1 === L.block.backrow[1] && (p.kind === 'lot' || p.kind === 'front' && (!p.pf || K[p.pf]))), 'the Hudson row faces the river (from the level file): each a building (a Polyfork one has its model) or an open lot, side by side, none across the way through: ' + H.filter(p => !(p.kind === 'lot' || p.kind === 'front' && (!p.pf || K[p.pf]))).map(p => p.id).join()); }
+  ok(H.length >= 8 && apart(H) && H.every(clear) && H.every(p => p.face === 's' && p.y0 === L.block.backrow[0] && p.y1 === L.block.backrow[1] && (p.kind === 'lot' || p.kind === 'market' || p.kind === 'front' && (!p.pf || K[p.pf]))), 'the Hudson row faces the river (from the level file): each a building (a Polyfork one has its model) or an open lot, side by side, none across the way through: ' + H.filter(p => !(p.kind === 'lot' || p.kind === 'market' || p.kind === 'front' && (!p.pf || K[p.pf]))).map(p => p.id).join()); }
+  { const by = id => L.places.find(p => p.id === id), wy = by('hudson'), F = by('fishmarket'), C = JSON.parse(fs.readFileSync(ROOT + '/data/characters.json', 'utf8')), W = ['fishing', 'armor', 'skate', 'books'].map(by);
+    ok(F && F.x0 >= wy.x1 - .01 && [F.yard, F.tin, F.brick].every(s => s && s[0] >= F.x0 && s[1] <= F.x1 && s[0] < s[1]) && F.yard[1] <= F.tin[0] && F.tin[1] <= F.brick[0] && (F.stalls || []).length >= 4 && F.stalls.every(s => C[s.who] && C[s.who].trade && (C[s.who].trade.buys || []).includes('fish') && s.x > F.tin[0] && s.x < F.brick[1]), 'the fish market (9 Nov 2026) is the Hudson row east of the way through: yard, tin shed, brick shed in order, each stall a wholesaler in characters.json who buys fish');
+    ok(W.every(p => p && p.x1 <= wy.x0 + .01), 'Fishing & Scuba, the Armoury, the Skate Shop and the Bookstore stand west of the way through (9 Nov 2026)');
+    ok(['hanga_roa_fisherman', 'trucker', 'railway_carter'].every(k => L.homes[k] && L.homes[k][0] > F.x0 && L.homes[k][0] < F.x1), 'the fish market\'s three workers have their posts on it'); }
   { const E = L.edge || {}, ln = E.lines || [], xs = ln.flatMap(l => [l[0], l[2]]), ys = ln.flatMap(l => [l[1], l[3]]);
     ok(ln.length >= 4 && ln.every(l => l[0] === l[2] || l[1] === l[3]) && Math.min(...xs) === L.streets.west.x0 && Math.max(...ys) === L.park.y1 && L.places.filter(p => p.y1 == null && p.kind === 'front' || p.row === 2).every(p => p.x0 >= Math.min(...xs) - .01 && p.x1 <= Math.max(...xs) + .01) && (E.runs || []).length >= 4, 'the new map\'s edges (6 Nov 2026): straight lines from the West St corner round the top of the park, every place inside, the backdrop runs past them'); }
 { const AP = L.places.filter(p => p.id === 'apts' || /^house\d+$/.test(p.id)); { const wy = L.places.find(p => p.id === 'hudson'); ok(AP.length === 1 && AP[0].id === 'apts' && AP[0].face === 'n' && AP[0].y0 === L.block.back && AP[0].y1 === L.block.front && wy && L.places.filter(p => p.y0 === L.block.back && p.y1 === L.block.front && p.row !== 2).every(p => p.x0 >= AP[0].x0), 'one apartment house, THE TOWER, on Market St\'s row facing the park, at its west end (8 Nov 2026: the new layout)'); } }
@@ -72,7 +82,6 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     await pg.waitForTimeout(3000);
     for (let i = 0; i < 40; i++) { if (await pg.evaluate(() => !!(window.SHAFTS && SHAFTS.occ === 1)).catch(() => false)) break; await pg.waitForTimeout(500); }   // the sun's first shadow pass (slow under software GL)
     await pg.waitForFunction(() => window.RPGNPC && RPGNPC.list && RPGNPC.list.length >= 6 && window.BODIES && BODIES.by.hero && BODIES.by.poacher, { timeout: 30000 }).catch(() => {});   // the deferred street walkers
-    await pg.waitForFunction(() => window.WINDOWS && WINDOWS.firstDone && !(WINDOWS.taking && WINDOWS.taking.size), { timeout: 120000 }).catch(() => {});   // the bodega's window pictures (begun a few seconds after the start, a pane at a time) build its inside meanwhile
     await pg.waitForFunction(() => window.CLOCK && CLOCK.sunH === 13 && CLOCK.h === 13, { timeout: 60000 }).catch(() => {});   // the test's ?hour=13 set by a frame of the clock
     const r = await pg.evaluate(async () => {
       const o = {}, B = SHARED.BOD, X = B.XS, Z = B.ZS;
@@ -80,7 +89,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       o.inspect = !!(window.INSPECT && INSPECT.kinds.length >= 10 && typeof INSPECT.item === 'function' && __dbg.ui().keyOf('inspect') && FORAGE.ROWB.some(f => (f('m_button') || []).some(b => b[1] === 'inspect')));
       o.talk = !!(window.TALK && typeof TALK.open === 'function' && TALK.shops instanceof Map && TALK.script && (() => { const N = __dbg.npcs().find(n => n.key === 'teddy'); const t = N && TALK.script(N); return !!(t && t.lines && t.lines[t.start]); })());
       o.fair = !!(window.FAIR && Object.keys(FAIR.rides).length >= 13 && window.MIDWAY && Object.keys(MIDWAY.booths).length >= 12 && window.CREW && typeof CREW.spots.fair === 'function' && window.ZONES && ZONES.list.some(z => z[0] === 'fair') && !FAIR.built);
-      o.phases = Object.keys(SYS.P); o.sysErr = Object.entries(SYS.P).flatMap(([k, v]) => v.filter(s => s.err).map(s => k + ':' + s.name));
+      o.phases = Object.keys(SYS.P); o.sysErr = SYS.errs.slice();
       o.hud = (() => { try { try { const ok = {}; ok.vit = !document.getElementById('vit').hidden && getComputedStyle(document.getElementById('vit')).top !== 'auto' && /^\d+ \/ \d+$/.test(document.getElementById('vhpn').textContent) && /^\d+ \/ \d+$/.test(document.getElementById('vinn').textContent);
         ok.slots = document.querySelectorAll('#hqb .qs').length === 10; HUD.set(1, 'mortar'); ok.setOk = HUD.slots[1] === 'mortar' && /^MORTAR/.test(document.querySelectorAll('#hqb .qs')[1].title) && !!document.querySelectorAll('#hqb .qs')[1].querySelector('img'); HUD.set(1, null);
         __dbg.ui().log('a test line', null, 'MEL'); SAY('A SAID LINE'); ok.log = HUD.lines().slice(-2).join('|') === 'MEL a test line|A SAID LINE'; ok.map = !!HUDDBG().map && !!HUDDBG().plan && document.getElementById('hmz').textContent.startsWith('A') && !FORAGE.has('map');
@@ -101,10 +110,9 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       o.fade = FADE.busy;
       const Bd = SHARED.BOUND, c = __dbg.collide(Bd.x1 + 500, Bd.z1 + 500); o.clamp = c[0] <= Bd.x1 + 1e-6 && c[1] <= Bd.z1 + 1e-6;
       o.shared = Object.keys(SHARED).length;
-      const shop = k => !!(ROOMS.off[k] && ROOMS.off[k].keep && window.MSHOP && MSHOP.at[k]);   // the shops' insides are built at the start (owner, 9 Nov 2026)
-      o.lazy = [Object.keys(ROOMS.lazy).length, Object.keys(ROOMS.lazy).filter(k => ROOMS.lazy[k].done && !shop(k))];
+      o.lazy = [Object.keys(ROOMS.lazy).length, Object.keys(ROOMS.lazy).filter(k => ROOMS.lazy[k].done)];
       o.queues = BATCH.queues.length;
-      o.off = Object.keys(ROOMS.off).map(k => [k, !!ROOMS.lazy[k], !!(ROOMS.off[k].box && ROOMS.off[k].spawn && ROOMS.off[k].out && ROOMS.off[k].build), !!ROOMS.off[k].P, shop(k)]);
+      o.off = Object.keys(ROOMS.off).map(k => [k, !!ROOMS.lazy[k], !!(ROOMS.off[k].box && ROOMS.off[k].spawn && ROOMS.off[k].out && ROOMS.off[k].build), !!ROOMS.off[k].P]);
       o.doors = HOMES.doors().map(d => d.id); o.shops = HOMESDBG().filter(r => r[1] && r[1] !== '?').length;
       o.offAPI = ['enter', 'enterAt', 'exit', 'goIn', 'goOut', 'offIn', 'boxAt', 'real', 'unstow', 'stowed'].every(k => typeof ROOMS[k] === 'function');
       o.offGround = (() => { try { const g = { x0: 1e7, x1: 1e7 + 10, z0: 1e7, z1: 1e7 + 10, ground: () => 42 }; ROOMS.grounds.push(g); const v = SHARED.groundY(1e7 + 5, 1e7 + 5), w = SHARED.groundY(1e7 + 50, 1e7 + 5); ROOMS.grounds.splice(ROOMS.grounds.indexOf(g), 1); return v === 42 && w !== 42; } catch (e) { return { ok: false, err: String(e).slice(0, 200) }; } })();
@@ -136,7 +144,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       o.walks = !!(window.WALKS && WALKS.by instanceof Map && typeof WALKS.reg === 'function' && typeof WALKS.pick === 'function' && SYS.P.city.some(s => s.name === '111db-walks') && SYS.P.hi.some(s => s.name === '111db-walks') && WALKS.S && typeof WALKS.S.freeFn === 'function' && WALKS.remote === false);
       o.tenants = !document.querySelector('[data-t="tenants"]') && !!document.getElementById('dten');
       o.gym = (() => { try { const F = window.FORAGE, V = __dbg.VIT; if (!F || !F.stats.work || !window.GYM || !V.bouts) return { ok: false }; const st0 = { ...F.ST }, tr0 = F.stats.trained('sta'); F.ST.sta = 99; const g = F.stats.work('sta', 300), top = F.ST.sta; F.ST.sta = st0.sta; F.stats.gain('sta', 0);
-        return { ok: true, capped: g === 1 && top === 100, reg: !!ROOMS.off.gym, lazy: !GYMDBG().built || !!(ROOMS.off.gym && ROOMS.off.gym.keep && window.MSHOP && MSHOP.at.gym), bout: V.bouts.length > 0 && GYM.inRing() === false }; } catch (e) { return { ok: false, err: String(e).slice(0, 200) }; } })();
+        return { ok: true, capped: g === 1 && top === 100, reg: !!ROOMS.off.gym, lazy: !GYMDBG().built, bout: V.bouts.length > 0 && GYM.inRing() === false }; } catch (e) { return { ok: false, err: String(e).slice(0, 200) }; } })();
       o.equip = (() => { try { const E = window.EQUIP, I = window.ITEMS, V = __dbg.VIT, F = window.FORAGE; if (!E || !I || !V || !F || typeof E.wear !== 'function') return { ok: false };
         const slots = I.prop('armor', 'slot') === 'body' && I.prop('armor', 'grants') === 'guard' && I.prop('cloudcoat', 'slot') === 'body' && I.prop('cloudcoat', 'grants') === 'float';
         const d0 = V.def === 0 && E.float === false; F.give('armor', 1); E.wear('armor'); const guard = V.def > 0 && E.worn === 'armor';
@@ -184,7 +192,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.inspect, 'INSPECT is wired: its families, the key, LOOK in the pack');
     ok(r.talk, 'TALK is wired: a character\'s script reads from characters.json, the shops hand over to it');
     ok(r.sway, 'CAMERA SWAY and its level (1-10) are in the menu, a SYS cam entry, off by default');
-    ok(!r.sysErr.length, 'no system has thrown' + (r.sysErr.length ? ': ' + r.sysErr.join(', ') : ''));
+    ok(!r.sysErr.length, 'no system has thrown and no page error is on the ledger (SYS.errs)' + (r.sysErr.length ? ': ' + r.sysErr.join(' | ') : ''));
     ok(r.zoneHere === 'market', 'at 53,10 you are on Market St (' + r.zoneHere + ')');
     ok(r.zoneDown === 'station', 'down at 0,0 is the subway station (' + r.zoneDown + ')');
     ok(r.zoneRoom === 'inside', 'in a room is inside (' + r.zoneRoom + ')');
@@ -198,8 +206,8 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.fade === 0, 'no fade is left running after the start');
     ok(r.clamp, 'collision keeps you inside the world');
     ok(r.queues >= 2, 'the far painting queues are there (bodega ground, park wall): ' + r.queues);
-    ok(r.lazy[0] >= 3 && !r.lazy[1].length, 'no inside of a building but the shops is built at the start (' + r.lazy[0] + ' insides wait; built: ' + r.lazy[1].join(',') + ')');
-    ok(r.offAPI && r.off.length >= 1 && r.off.every(q => q[1] && q[2] && (!q[3] || q[4])), 'insides off the map: each one waits (box, spawn, way out, builder) and none but the shops is built at the start (' + r.off.map(q => q[0]).join(',') + ')');
+    ok(r.lazy[0] >= 3 && !r.lazy[1].length, 'no inside of a building is built at the start (' + r.lazy[0] + ' insides wait; built: ' + r.lazy[1].join(',') + ')');
+    ok(r.offAPI && r.off.length >= 1 && r.off.every(q => q[1] && q[2] && !q[3]), 'insides off the map: each one waits (box, spawn, way out, builder) and none is built at the start (' + r.off.map(q => q[0]).join(',') + ')');
     ok(r.offGround, 'an off-map place in ROOMS.grounds says the ground inside its box, and only there (SHARED.groundY)');
     ok(r.offSpawn, 'every off-map inside has enterAt/boxAt and its spawn falls inside its own box (GO TO enters it, never teleports onto its footprint)');
     if (r.goto) { r.goto.unnamed = L.places.filter(p => p.name && p.kind !== 'gate' && !r.goto.map.includes(p.name)).map(p => p.name); delete r.goto.map; }
@@ -223,7 +231,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.windows, 'WINDOWS is wired (the bodega\'s street panes registered while its own front stands on Market St; none for its Polyfork front on the Hudson, 7 Nov 2026)');
     ok(r.cinema, 'CINEMA is wired (shared screen: tick, push, admin, now; idle off the street)');
     ok(r.tenants, 'the owner\'s TENANTS page is there and not a settings tab (it opens from ADMIN)');
-    ok(r.gym && r.gym.ok && r.gym.capped && r.gym.reg && r.gym.lazy && r.gym.bout, 'the gym: training stops a stat at 100, its inside is off the map (a shop: built at the start, 9 Nov 2026), the ring is a fight not to the death: ' + JSON.stringify(r.gym));
+    ok(r.gym && r.gym.ok && r.gym.capped && r.gym.reg && r.gym.lazy && r.gym.bout, 'the gym: training stops a stat at 100, its inside is off the map and built only when you go in, the ring is a fight not to the death: ' + JSON.stringify(r.gym));
     ok(r.online, 'ONLINE is wired (other players: feed, at/V for the ragdoll, chat key, a SYS life entry; alone off the website)');
     ok(r.walks, 'WALKS is wired (the folk\'s walks: register, the pick hook, city and hi entries; run here off the website)');
     ok(r.layers.ok && r.layers.hid && r.layers.off && r.layers.back && r.layers.briefs, 'the Walker is a base body in underwear with shirt, pants, shoes and hair as layers on top: ' + JSON.stringify(r.layers));
@@ -273,8 +281,10 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
         return { mine: true, a, b, back: c, ok: a.head > .1 && b.head < a.head * .01 && Math.abs(b.torso - a.torso) < a.torso * .01 && c > a.head * .9 }; });
       ok(nh.ok, 'in the headset your own head, hair and hat are drawn to a point at the neck (W3.noHead), the rest of you as it was, the head back after (owner, 9 Nov 2026: "i can see my own head while in vr"): ' + JSON.stringify(nh)); }
     { const cv = await pg.evaluate(async () => { const U = window.__dbg.UI, S = window.SHARED, raf = () => new Promise(r => requestAnimationFrame(r)); U.setView('iso'); await raf(); await raf(); S.pitchTo = 1; U.orbit(0, 300); await raf(); await raf(); const tilt = Math.abs(S.pitch - Math.PI / 6) < 1e-3;
-        U.pan(-6000, 4000); await raf(); await raf(); const [x, , z] = window.__dbg.pos(), v = new window.__dbg.THREE.Vector3(x, S.py + .9, z).project(S.cam), on = Math.abs(v.x) <= .92 && Math.abs(v.y) <= .92; U.home(); return { tilt, on, x: +v.x.toFixed(2), y: +v.y.toFixed(2) }; }).catch(e => ({ err: e.message }));
-      ok(cv.tilt && cv.on, 'the overhead view never tilts, and dragging it stops while you are still on screen (7 Nov 2026): ' + JSON.stringify(cv)); }
+        U.pan(-6000, 4000); await raf(); await raf(); const [x, , z] = window.__dbg.pos(), V3 = window.__dbg.THREE.Vector3, R = new V3().setFromMatrixColumn(S.cam.matrixWorld, 0), h = 2 * U.mid(), w = .4 * h / 2 * .84 / .9, pts = [];
+        for (const a of [-w, 0, w]) for (const b of [0, h / 2, h]) pts.push(new V3(x + R.x * a, S.py + b, z + R.z * a).project(S.cam));
+        const on = pts.some(v => Math.abs(v.x) <= 1 && Math.abs(v.y) <= 1), m = pts[4]; U.home(); return { tilt, on, x: +m.x.toFixed(2), y: +m.y.toFixed(2) }; }).catch(e => ({ err: e.message }));
+      ok(cv.tilt && cv.on, 'the overhead view never tilts, and dragging it stops while some part of you, feet to head, is still on screen (7 and 8 Nov 2026): ' + JSON.stringify(cv)); }
     { const fb = await pg.evaluate(async () => { const U = window.__dbg.UI, S = window.SHARED, raf = () => new Promise(r => requestAnimationFrame(r)), was = U.viewsHere; U.viewsHere = () => ['iso']; U.setView('third'); for (let i = 0; i < 6; i++) await raf(); U.viewsHere = was;
         const o = U.off.toArray(), p = S.cam.position.toArray(); U.home(); return { view: U.view, off: o.every(Number.isFinite), cam: p.every(Number.isFinite) }; }).catch(e => ({ err: e.message }));
       ok(fb.view === 'iso' && fb.off && fb.cam, 'a view not allowed here falls back to the overhead one with the camera whole (no NaN from its one frame in the other camera, 7 Nov 2026): ' + JSON.stringify(fb)); }
@@ -382,6 +392,12 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       R.spots = { BARKEEP: { x: 1, z: 2, hd: 0 } }; R.seats = [{ x: 3, z: 4, hd: 0, y: .5 }]; const s = CREW.inside('bank', 'k', { title: 'BARKEEP' }), p = CREW.inside('bank', 'p1'), full = CREW.inside('bank', 'p2'); CREW.out('p1'); const again = CREW.inside('bank', 'p2'); CREW.out('p2'); R.spots = keep[0]; R.seats = keep[1];
       return { spot: !!s && s.x === 1 && s.off === false, seat: !!p && p.sit === .5, full: full === null, again: !!again }; });
     ok(q.spot && q.seat && q.full && q.again, 'insides list where people go: a street inside (the bank; the theatre is away, 8 Nov 2026) gives its work spots and seats like an off-map one, none when full, freed when they leave: ' + JSON.stringify(q)); }
+  { const rr = await pg.evaluate(async () => { const log = [], o = { name: 'TEST', busy: false, gate: () => o.ok, built: () => o.b, need: async () => { log.push('need'); }, pre: async () => { log.push('pre'); }, make: () => { log.push('make'); o.b = true; }, arrive: async () => { log.push('arrive'); }, depart: async () => { log.push('depart'); } };
+      o.ok = false; o.b = false; const no = ROOMS.run(o, true); o.ok = true; await ROOMS.run(o, true); await ROOMS.run(o, true); await ROOMS.run(o, false); o.busy = true; const held = ROOMS.run(o, true); o.busy = false;
+      return { no: no === undefined, held: held === undefined, log: log.join(','), leave: ROOMS.leave === ROOMS.exit }; }).catch(e => ({ err: e.message }));
+    ok(rr.no && rr.held && rr.leave && rr.log === 'need,pre,make,arrive,arrive,depart', 'one way in and out of an inside (ROOMS.run, 9 Nov 2026): its code, what it fetches first and the build only when not built, then where you stand; nothing when its gate or its lock says no: ' + JSON.stringify(rr)); }
+  { const ab = await pg.evaluate(() => ({ npc: (ARCH.built || []).slice(), body: BODIES.list.filter(b => ARCH.has(b.key)).map(b => b.key) })).catch(e => ({ err: e.message }));
+    ok(ab.npc && !ab.npc.length && !ab.body.length, 'no archived character is built (10 Nov 2026): ' + JSON.stringify(ab)); }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   { const r = await pg.evaluate(async () => { const U = window.__UI, w = ms => new Promise(r => setTimeout(r, ms)); U.mapWindow(); await w(3000); const a = BRODBG(); U.brochure.flip(); await w(2000); const f = BRODBG().flipped; const names = U.brochure.places(), all = [...new Set(U.places().map(p => p[0]))], sel = BRODBG().sel; U.brochure.close(); for (let i = 0; i < 40 && BRODBG().up; i++) await w(250); return { ...a, f, names, missing: all.filter(n => !names.includes(n)), sel, after: BRODBG().up }; }).catch(e => ({ err: e.message }));
     ok(r.up && !r.busy && r.places >= 15 && r.go > r.places && r.st >= 1 && r.f && r.names.includes('THE BODEGA') && r.missing && !r.missing.length && r.sel === r.names.length && r.after === false, 'MAP is the folded brochure (owner, 4 Nov 2026): it unfolds, every GO TO place listed and in its drop-down (7 Nov 2026), F flips it to THE LOOP, it folds away: ' + JSON.stringify({ ...r, names: r.names && r.names.length })); }

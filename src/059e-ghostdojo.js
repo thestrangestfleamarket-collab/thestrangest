@@ -1,10 +1,10 @@
 // THE BATH HOUSE (the ghost street's dojo until 19 Oct 2026): gdShape lays its lot; its own builder for the outside and, off the map, its inside (an empty dojo hall full of steam).
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, pos, ROOMS, UI, VIT} from './003b-systems.js';
+import {BATCH, CLOCK, pos, ROOMS, UI, VIT} from './003b-systems.js';
 import {PPU, renderer, scene} from './004-main.js';
-import {BLDK, cutWalls, FIX, grab, LOTX, LOTY, SEEN, SOL, STORE, TILE, WP} from './006-map-pre.js';
+import {BLDK, cutWalls, FIX, grab, LOTX, LOTY, MODS, SEEN, SOL, STORE, SYS, TILE, WP} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
-import {BATCH, OBJ} from './008-batch.js';
+import {OBJ} from './008-batch.js';
 
 await grab('ghostdojo',async()=>{ const {X:BX,Y:BY,Z:BZ,gbox:GB,faceTex,bq,C}=SHARED.BOD, J=SHARED.BOD.GDJ, GK=SHARED.BOD.GDK, {hash,grain}=SHARED.BOD.g, sh=SHARED.BOD.K.sh;
   if(GK){ const S=GK.S||1, {u,v,iu,iv}=GK, X=x=>BX(u(x)), Z=y=>BZ(v(y)), Y=z=>BY(z*S);   // drawn 1.5x about the middle of its front (owner, 8 Nov 2026): built and painted at its old size, every point scaled
@@ -13,7 +13,7 @@ await grab('ghostdojo',async()=>{ const {X:BX,Y:BY,Z:BZ,gbox:GB,faceTex,bq,C}=SH
     const xi0=X0+T, xi1=X1-T, yi0=Y0+T, yi1=Y1-T, cx=(xi0+xi1)/2, cy=(yi0+yi1)/2, WD=J.DJWOOD;
     const lit=c=>Object.assign([Math.min(255,c[0]),Math.min(255,c[1]),Math.min(255,c[2])],{e:1});
     J.setDJ({H:160});
-    const BAY={a0:1.4,a1:5.2,z0:36,z1:124,out:.14}, DOOR={a0:W/2-1.2,a1:W/2+1.2,z0:0,z1:DH}, EW={a0:9.4,a1:12.4,z0:40,z1:124};
+    const KW=Math.min(1,W/14.6), BAY={a0:1.4*KW,a1:5.2*KW,z0:36,z1:124,out:.14}, DOOR={a0:W/2-1.2,a1:W/2+1.2,z0:0,z1:DH}, EW={a0:9.4*KW,a1:12.4*KW,z0:40,z1:124};   // the windows laid out for a 14.6-tile front, kept clear of the door on a narrower one
     const RND={back:[3.3],west:[D/2]}, RZc=76, RR=27;
     const UW=[{a0:2.0,a1:4.6},{a0:W-4.6,a1:W-2.0}], UZ0=H+42, UZ1=H+104, SIGN={a0:W/2-1.45,a1:W/2+1.45,z0:H+46,z1:H+100};
     const IVY={front:[[.25,262,1.3],[W-.3,150,.7]],west:[[.9,290,1.5],[3.5,210,1.3],[5.6,130,.9]],back:[[1.6,190,1.4],[8.6,250,1.7],[13.2,150,.8]],east:[[4.6,120,.8]]};
@@ -243,7 +243,7 @@ await grab('ghostdojo',async()=>{ const {X:BX,Y:BY,Z:BZ,gbox:GB,faceTex,bq,C}=SH
       if(st!==step){ step=st; for(const m of SHX){ m.visible=st>=0; m.material.opacity=[.05,.08,.12,.16][Math.max(0,st)]*(m.userData.k||1); } } }};
     VIT.mends.push(()=>built&&!VIT.dead&&SHARED.LVL==='up'&&inside()?1/45:0);   // the steam mends you slowly
     function near(){ const d=Math.hypot(pos.x-(ix0+ix1)/2,pos.z-(iz0+iz1)/2);   // the inside is built while you are near (it shows through the open door), dropped once you are far
-      if(!built&&!busy&&d<NEARB&&SHARED.LVL==='up'&&window.__started){ busy=true; Promise.all([LOAD('later'),LOAD(build.chunk)]).then(()=>{ BG=new THREE.Group(); BG.name='bath-in'; scene.add(BG); P=ROOMS.part(BG,build,MKG); BG.traverse(o=>{ if(o.isMesh){ o.userData.intr=false; if(o.material&&o.material.isMeshBasicMaterial)o.castShadow=false; } }); }).finally(()=>{ busy=false; }); }
+      if(!built&&!busy&&d<NEARB&&SHARED.LVL==='up'&&SYS.started){ busy=true; Promise.all([LOAD('later'),LOAD(build.chunk)]).then(()=>{ BG=new THREE.Group(); BG.name='bath-in'; scene.add(BG); P=ROOMS.part(BG,build,MKG); BG.traverse(o=>{ if(o.isMesh){ o.userData.intr=false; if(o.material&&o.material.isMeshBasicMaterial)o.castShadow=false; } }); }).finally(()=>{ busy=false; }); }
       else if(built&&d>NEARB+12*TILE){ ROOMS.unpart(P); P=null; if(BG)BG.removeFromParent(); BG=null; built=false; LT.length=0; SHARED.steam=null; if(scene.fog===STEAM.fog)scene.fog=null; STEAM.was=null; } }
     window.GSDBG=()=>({X0,X1,Y0,Y1,door:SHARED.BOD.GD.door,step,shafts:SHX.length,tris:SH.length});
     if(WP.bath&&WP.bath.row===2){ const P=WP.bath, hx=LOTX((P.x0+P.x1)/2), hy=LOTY(P.y0), dX=X(X0+W/2);   // on the Hudson row (owner, 7 Nov 2026) the whole bath house stands off the map; its door is on its Hudson lot (a Polyfork building, 059i)
@@ -252,4 +252,4 @@ await grab('ghostdojo',async()=>{ const {X:BX,Y:BY,Z:BZ,gbox:GB,faceTex,bq,C}=SH
     window.LOOKAT=(x,z,k=1,y=0)=>{ UI.setFree(true); UI.camT.set(x,y,z); SHARED.ppu=SHARED.ppuTo=PPU*k; return [x,z]; };
     window.LOOKYAW=d=>{ SHARED.yaw=SHARED.yawTo=d*Math.PI/180; }; window.LOOKPITCH=d=>{ SHARED.pitch=SHARED.pitchTo=d*Math.PI/180; return SHARED.pitch; };
     window.GSLOOK=(dx=0,dy=0,k=.5,d)=>{ if(d!=null)LOOKYAW(d); return LOOKAT(X(X0+W/2+dx),Z(Y1+dy),k); };
-    window.GSGO=(dx=0,dy=4)=>{ if(window.SUBGO)SUBGO(X(X0+W/2+dx),Z(Y1+dy),'up'); return [X(X0+W/2+dx),Z(Y1+dy)]; }; } });
+    window.GSGO=(dx=0,dy=4)=>{ if(MODS.subGo)MODS.subGo(X(X0+W/2+dx),Z(Y1+dy),'up'); return [X(X0+W/2+dx),Z(Y1+dy)]; }; } });

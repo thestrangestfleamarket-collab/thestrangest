@@ -1,6 +1,6 @@
 // THE FORAGE: FORAGE lets the player gather mushrooms and things, keeps their pack, and sells them.
 import {SHARED, THREE} from './003-shx.js';
-import {ARCH, ARCHI, BAG, BUGS, CHARS, CITY, CIVIC, CLOCK, ED, EQUIP, FIRSTDAY, FORAGE, INSPECT, INV, ITEMS, LINES, LOOKS, MAIL, MOTION, NPCS, ONLINE, pos, SFX, st, TALK, TEXT, TRICKS, UI, VIT, W3, WE, WEEDS, WX} from './003b-systems.js';
+import {ARCH, ARCHI, BAG, BUGS, CHARS, CITY, CIVIC, CLOCK, ED, EQUIP, FIRSTDAY, FORAGE, INSPECT, INV, ITEMS, LINES, LOOKS, MAIL, MOTION, NPCS, ONLINE, pos, SFX, st, TALK, TEXT, TRICKS, UI, VIT, W3, WE, WEEDS, WORTH, WX} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
@@ -11,7 +11,6 @@ import {GRASS} from './014a-grass.js';
 import {STALL} from './081-stalls.js';
 import {MUSH} from './083a-npc-mushroom.js';
 import {GEMS} from './101-gems.js';
-import {WORTH} from './140c-worth.js';
  window.FORAGE=FORAGE;
 { const PACK={tab:'skills'}; FORAGE.PACK=PACK; const T=TILE, KEY='forage', esc=TEXT.esc;
   // three tiers (RARITY): common 0-15 and a few dollars, rare 30-45, super-rare 70-90 and a fortune; each grass grows one of each
@@ -23,7 +22,7 @@ import {WORTH} from './140c-worth.js';
     sulphur:['CHICKEN OF THE WOODS',72,70,.12,0,0xf0b828,0xe8781e,[1.4,.3,.3,1]],elfcup:['SCARLET ELF CUP',78,90,.05,0,0xe02a1a,0xd8c8a0,[1,.3,.5,.8]],lionsmane:["LION'S MANE",88,140,.14,0,0xf4f0e8,0xece6da,[1.2,1.1,1.1,1]]};
   // when a kind shows: after rain, at dawn, by night; DEEP ones only grow deep in the park
   const WHEN={inkcap:'rain',trumpet:'rain',oyster:'dawn',ghostcap:'night'}, DEEP={ghostcap:1};
-  const wetAgo=()=>performance.now()/1e3-(FORAGE.wetT||-1e9), now=k=>{ const w=WHEN[k], h=window.CLOCK?CLOCK.h:12; return !w||(w==='rain'?wetAgo()<1200:w==='dawn'?h>=4.5&&h<10:w==='night'?!!(window.CLOCK&&CLOCK.dark()):true); };
+  const wetAgo=()=>performance.now()/1e3-(FORAGE.wetT||-1e9), now=k=>{ const w=WHEN[k], h=CLOCK?CLOCK.h:12; return !w||(w==='rain'?wetAgo()<1200:w==='dawn'?h>=4.5&&h<10:w==='night'?!!(CLOCK&&CLOCK.dark()):true); };
   const MK=Object.keys(MU);
   const GROWS=Object.fromEntries(GRASS.K.map(k=>[k.id,{...k.mush}])), MTIER={}; for(const k of GRASS.K)for(const t of RARITY.TIERS)MTIER[k.mush[t]]=t; FORAGE.MTIER=MTIER; for(const k in MTIER)ITEMS.reg('m_'+k,{tier:{c:'common',r:'rare',s:'super'}[MTIER[k]],heals:MU[k][4]?0:{c:.1,r:.2,s:.4}[MTIER[k]]});
   // one grass everywhere (GRASS.only): it grows every grass's mushrooms, so none go missing
@@ -53,17 +52,17 @@ import {WORTH} from './140c-worth.js';
   const SK=[['forage','FORAGING'],['myco','MYCOLOGY'],['fish','FISHING'],['ento','ENTOMOLOGY'],['garden','GARDENING'],['bird','BIRDING'],['sword','SWORDSMANSHIP'],['fight','MARTIAL ARTS'],['bee','BEEKEEPING'],['climb','CLIMBING'],['gem','GEMS'],['guitar','GUITAR'],['piano','PIANO'],['drums','DRUMS'],['harp','HARP'],['photo','PHOTOGRAPHY'],['astro','ASTRONOMY']], CAP=6000;
   // the skills by kind, MUSIC first (owner, 7 Nov 2026: "music is main category of skill tree"); a skill in none is listed under OTHER
   const SKC=[['MUSIC',['guitar','piano','drums','harp']],['THE WILD',['forage','myco','fish','ento','garden','bird','bee']],['CRAFT',['gem','photo']],['SCIENCE',['astro']],['BODY',['sword','fight','climb']]];
-  const S={v:1,sk:{forage:200,alchemy:200,cooking:200,myco:150,fish:150,prosp:100,ento:150,garden:100,bird:100,bind:100,sword:100,fight:100,bee:100,golf:100,climb:100,games:100,gem:100,guitar:100,piano:100,drums:100,harp:100,photo:100,astro:100},lock:{forage:'up',alchemy:'up',cooking:'up',myco:'up',fish:'up',prosp:'up',ento:'up',garden:'up',bird:'up',bind:'up',sword:'up',fight:'up',bee:'up',golf:'up',climb:'up',games:'up',guitar:'up',piano:'up',drums:'up',harp:'up',photo:'up',astro:'up'},food:.8,fx:{},picked:{},pd:-1,log:{},made:{},gave:{},st:{str:30,int:30,sta:30},stPick:0,tr:{str:0,int:0,sta:0},tp:{str:0,int:0,sta:0}};
+  const S={v:1,sk:{forage:0,alchemy:0,cooking:0,myco:0,fish:0,prosp:0,ento:0,garden:0,bird:0,bind:0,sword:0,fight:0,bee:0,golf:0,climb:0,games:0,gem:0,guitar:0,piano:0,drums:0,harp:0,photo:0,astro:0},lock:{forage:'up',alchemy:'up',cooking:'up',myco:'up',fish:'up',prosp:'up',ento:'up',garden:'up',bird:'up',bind:'up',sword:'up',fight:'up',bee:'up',golf:'up',climb:'up',games:'up',guitar:'up',piano:'up',drums:'up',harp:'up',photo:'up',astro:'up'},food:.8,fx:{},picked:{},pd:-1,log:{},made:{},gave:{},st:{str:30,int:30,sta:30},stPick:0,tr:{str:0,int:0,sta:0},tp:{str:0,int:0,sta:0}};
   try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1){ const sk0={...S.sk}, lk0={...S.lock}; Object.assign(S,D); S.sk={...sk0,...S.sk}; S.lock={...lk0,...S.lock}; S.log=S.log||{}; S.made=S.made||{}; S.gave=S.gave||{}; S.st={str:30,int:30,sta:30,...S.st}; S.tr={str:0,int:0,sta:0,...S.tr}; S.tp={str:0,int:0,sta:0,...S.tp}; } }catch(e){} if(QS.get('fresh')&&QS.get('keepinv')!=='1'){ S.picked={}; }
-  for(const [k] of SK)S.sk[k]=1000;   // the beta: every player at 100 in every skill (owner, 9 Nov 2026: "give all players 100 at all skills for now (its beta)")
   let saveT=0; const save=()=>{ OWNED.set(KEY,JSON.stringify(S)); }, saveSoon=()=>{ clearTimeout(saveT); saveT=setTimeout(save,800); };
+  if(!S.zero1){ for(const k in S.sk)S.sk[k]=0; S.zero1=1; saveSoon(); }   // every skill from 0, once (owner, 9 Nov 2026: "start skills at 0 for now (like real game will be)")
   if(!INV.items.mortar&&!S.given){ INV.items.mortar=1; INV.items.bottle=(INV.items.bottle||0)+3; S.given=1; INV.save(); saveSoon(); }   // the starter kit saves itself at the start (the MAP gift used to; not INV.add: its trade window is later code)
   // the starter kit (owner, 7 Nov 2026: "make all players start with aircap mushrooms x99, hoverboard, bicycle, bird net, butterfly net, other stuff in game that is fun to use"; his picks (20 of each since 9 Nov): every power
   // mushroom 99, the fastest board, the BMX, skateboard, go-kart, balloon, kite, guitar, rod, camera, binoculars; "everyone, once"): given once to every player, new and old, kept with the account
   FORAGE.KIT={airshroom:20,glowcap:20,shroom_invis:20,shroom_str:20,shroom_swift:20,shroom_fly:20,shroom_keen:20,shroom_heal:20,shroom_cure:20,shroom_jump:20,shroom_luck:20,shroom_fire:20,shroom_small:20,shroom_big:20,board_teal:1,bmx:1,bnet:1,net:1,skateboard:1,kart:1,balloon:1,kite:1,guitar:1,rod:1,camera:1,binoc:1,magic_carpet:1};
   if(!S.kit1){ for(const [id,n] of Object.entries(FORAGE.KIT))INV.items[id]=Math.max(INV.items[id]||0,n); S.kit1=1; INV.save(); saveSoon(); }
   if(!S.carpet1){ INV.items.magic_carpet=Math.max(INV.items.magic_carpet||0,1); S.carpet1=1; INV.save(); saveSoon(); }   // the magic carpet for every player, new and old (owner, 9 Nov 2026: "add to all palyers"), once
-  FORAGE.S=S; FORAGE.MU=MU; const day=()=>window.MAIL&&MAIL.ready?MAIL.day():window.CITY?CITY.day||0:0;
+  FORAGE.S=S; FORAGE.MU=MU; const day=()=>window.MAIL&&MAIL.ready?MAIL.day():CITY?CITY.day||0:0;
   INV.count=()=>GEMS.reduce((a,g)=>a+(g[0].startsWith('m_')?0:INV.items[g[0]]||0),0);
   const have=id=>INV.items[id]||0, take=(id,n)=>{ INV.items[id]=have(id)-n; if(INV.items[id]<=0)delete INV.items[id]; }, give=(id,n=1)=>INV.add(id,n);
   GEMS.push(['m_morel','MOREL (MUSHROOM)',34,0],['m_moonglow','MOONGLOW (MUSHROOM)',90,0]);
@@ -81,13 +80,13 @@ import {WORTH} from './140c-worth.js';
   // a gift: a place (STORE.here) takes the first of each kind you bring it and pays for it ({is, place, pay, key, thanks})
   const giftOf=id=>FORAGE.GIFTS.find(g=>g.is(id)), giftKey=(g,id)=>g.place+':'+(g.key?g.key(id):id);
   FORAGE.gave=(place,k)=>!!S.gave[place+':'+k];
-  FORAGE.ROWB.push(id=>{ const g=giftOf(id); return g&&!S.gave[giftKey(g,id)]&&window.STORE&&STORE.here&&STORE.here(g.place)?[['DONATE','gift']]:[]; });
+  FORAGE.ROWB.push(id=>{ const g=giftOf(id); return g&&!S.gave[giftKey(g,id)]&&STORE&&STORE.here&&STORE.here(g.place)?[['DONATE','gift']]:[]; });
   FORAGE.ACT.gift=id=>{ '@later'; const g=giftOf(id); if(!g||!have(id)||S.gave[giftKey(g,id)]||!(STORE.here&&STORE.here(g.place)))return; take(id,1); S.gave[giftKey(g,id)]=1; const pay=Math.round(g.pay(id)); INV.cash+=pay; saveSoon(); SFX.play('clunk',{vol:.5});
     say(g.thanks?g.thanks(id,pay):`THE ${g.place.toUpperCase()} THANKS YOU FOR ITS FIRST ${NAME(id)} AND PAYS $${pay}.`,'#f2c14e'); };
   FORAGE.feed=f=>feed(f); FORAGE.buff=(k,s)=>buff(k,s);
-  const sk=k=>S.sk[k]/10, tot=()=>Object.values(S.sk).reduce((a,b)=>a+(+b||0),0);
-  const use=(k,min,max,bonus=0)=>{ '@later'; const v=sk(k)+bonus, c=Math.max(0,Math.min(1,(v-min)/(max-min))), ok=Math.random()<c;
-    if(c>0&&c<1&&SK.some(s=>s[0]===k)&&S.lock[k]==='up'&&S.sk[k]<1000){ let g=(1000-S.sk[k])/1000*.5*(.4+2.4*c*(1-c))*(ok?1.2:1)+(S.sk[k]<300?.3:0); g*=1+(S.st.int-30)/60;
+  let MAXED=false; const sk=k=>MAXED?100:S.sk[k]/10, tot=()=>Object.values(S.sk).reduce((a,b)=>a+(+b||0),0);
+  const use=(k,min,max,bonus=0,o)=>{ '@later'; const v=sk(k)+bonus, c=Math.max(0,Math.min(1,(v-min)/(max-min))), ok=o&&o.ok!=null?!!o.ok:Math.random()<c;
+    if(!MAXED&&c>0&&c<1&&SK.some(s=>s[0]===k)&&S.lock[k]==='up'&&S.sk[k]<1000){ let g=(1000-S.sk[k])/1000*.5*(.4+2.4*c*(1-c))*(ok?o&&o.win||1.2:1)+(S.sk[k]<300?.3:0); g*=1+(S.st.int-30)/60;
       if(Math.random()<g){ let n=S.sk[k]<300?1+Math.floor(Math.random()*2):1;
         while(n>0&&tot()>=CAP){ const dn=SK.map(s=>s[0]).find(o=>o!==k&&S.lock[o]==='down'&&S.sk[o]>0); if(!dn){ n=0; break; } S.sk[dn]--; n--; S.sk[k]++; }
         if(n>0)S.sk[k]=Math.min(1000,S.sk[k]+n); say(`YOUR SKILL IN ${SK.find(s=>s[0]===k)[1]} HAS INCREASED. IT IS NOW ${(S.sk[k]/10).toFixed(1)}.`,'#7fd0ff'); saveSoon(); PACK.draw(); if(k==='forage')FORAGE.sync(); } }
@@ -95,7 +94,7 @@ import {WORTH} from './140c-worth.js';
   FORAGE.use=use; FORAGE.SK=SK; FORAGE.save=saveSoon; FORAGE.dmgK=()=>(1+(S.st.str-30)/100)*(S.fx.str?1.5:1); FORAGE.ST=S.st;
   const STN=[['str','STRENGTH','hits harder'],['int','INTELLIGENCE','skills grow faster, mushrooms and potions last longer'],['sta','STAMINA','tires slower']], STMIN=10, STMAX=60, STSUM=90, TRMAX=100, stBase=k=>S.st[k]-(S.tr[k]||0), stLeft=()=>STSUM-stBase('str')-stBase('int')-stBase('sta');   // (training lifts a stat past its pick, up to TRMAX: S.tr what it added, S.tp the way to the next point)
   ONLINE.mine.invis=()=>S.fx.invis?1:null; ONLINE.mine.hi=()=>S.fx.jump?2.5:null; ONLINE.mine.sz=()=>SZ0&&Math.abs(W3.SZ/SZ0-1)>.01?Math.round(W3.SZ/SZ0*100)/100:null;
-  if(!S.stPick&&!QS.get('fresh')){ const ask=()=>{ if(!window.__started||FIRSTDAY.on)return setTimeout(ask,1000); if(!S.stPick)setTimeout(()=>{ PACK.tab='skills'; UI.menuTab('pack','skills'); },1500); }; ask(); }   // (the first day's setup asks them itself)
+  if(!S.stPick&&!QS.get('fresh')){ const ask=()=>{ if(!SYS.started||FIRSTDAY.on)return setTimeout(ask,1000); if(!S.stPick)setTimeout(()=>{ PACK.tab='skills'; UI.menuTab('pack','skills'); },1500); }; ask(); }   // (the first day's setup asks them itself)
   FORAGE.stats={N:STN,MIN:STMIN,MAX:STMAX,SUM:STSUM,get:()=>({str:stBase('str'),int:stBase('int'),sta:stBase('sta')}),picked:()=>!!S.stPick,set:o=>{ const v={}; for(const [k] of STN)v[k]=Math.max(STMIN,Math.min(STMAX,Math.round(+o[k]||STMIN))); if(v.str+v.int+v.sta>STSUM)return false; for(const [k] of STN)S.st[k]=Math.min(TRMAX,v[k]+(S.tr[k]||0)); S.stPick=1; saveSoon(); return true; },
     TRAIN:TRMAX,base:stBase,trained:k=>S.tr[k]||0,toward:k=>S.tp[k]||0,
     gain:(k,n=1)=>{ if(S.st[k]==null||S.st[k]>=TRMAX)return 0; const g=Math.min(TRMAX,S.st[k]+n)-S.st[k]; S.st[k]+=g; S.tr[k]=(S.tr[k]||0)+g; saveSoon(); PACK.draw(); return g; },
@@ -106,7 +105,7 @@ import {WORTH} from './140c-worth.js';
   FORAGE.train=(k,cap=300,cost,amt=10)=>{ '@later'; if(!SK.some(s=>s[0]===k))return; const nm=(SK.find(s=>s[0]===k)||[0,k])[1], c=cost??(8+Math.round(S.sk[k]/20)); if(S.sk[k]>=cap)return say('THERE IS NOTHING MORE TO TEACH YOU IN '+nm+' HERE.','#c8a090');
     if(INV.cash<c)return say('YOU CANNOT AFFORD THE LESSON ($'+c+').','#c8a090'); if(tot()+amt>CAP)return say('YOU KNOW ALL YOU CAN HOLD. LOWER A SKILL FIRST.','#c8a090');
     INV.cash-=c; S.sk[k]=Math.min(cap,S.sk[k]+amt); saveSoon(); SFX.play('clunk',{vol:.4}); say(`A LESSON IN ${nm}: IT IS NOW ${(S.sk[k]/10).toFixed(1)}.`,'#7fd0ff'); PACK.draw(); };
-  FORAGE.trainRows=(ks,cap=300)=>ks.map(k=>{ const nm=(SK.find(s=>s[0]===k)||[0,k])[1], c=8+Math.round(S.sk[k]/20); return `<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">TRAIN ${nm}</td><td style="text-align:right;padding:4px 6px">$${c}</td><td style="text-align:right">${(S.sk[k]/10).toFixed(1)}</td><td style="text-align:right"><button ${B} data-train="${k}" data-cap="${cap}">LESSON</button></td></tr>`; }).join('');
+  FORAGE.trainRows=(ks,cap=300)=>ks.map(k=>{ const nm=(SK.find(s=>s[0]===k)||[0,k])[1], c=8+Math.round(S.sk[k]/20); return `<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">TRAIN ${nm}</td><td style="text-align:right;padding:4px 6px">$${c}</td><td style="text-align:right">${sk(k).toFixed(1)}</td><td style="text-align:right"><button ${B} data-train="${k}" data-cap="${cap}">LESSON</button></td></tr>`; }).join('');
   const feed=f=>{ S.food=Math.min(1,S.food+f); saveSoon(); }, buff=(k,s)=>{ if(k!=='poison')s*=1+(S.st.int-30)/100; if(k==='small')delete S.fx.big; if(k==='big')delete S.fx.small; S.fx[k]=Math.max(S.fx[k]||0,s); if(k==='swift')swift(); if(k==='invis')unseen(); };
   const unseen=()=>{ const on=!!S.fx.invis; SHARED.unseen=on; if(W3.mesh)W3.mesh.traverse(m=>{ const M=m.material; if(M&&!Array.isArray(M)){ if(M.op0==null)M.op0=[M.transparent,M.opacity]; M.transparent=on||M.op0[0]; M.opacity=on?.25:M.op0[1]; M.needsUpdate=true; } }); };
   let base=null, SZ0=null; const swift=()=>{ if(base==null)base=[st.wk||1,st.rk||1]; st.wk=base[0]*1.25; st.rk=base[1]*1.25; };
@@ -114,7 +113,7 @@ import {WORTH} from './140c-worth.js';
   { let sta0=1, acc=0; SYS.add('vitalsPre',()=>{ sta0=VIT.sta; },'141-forage'); SYS.add('vitals',dt=>{ if(!!S.fx.invis!==!!SHARED.unseen)unseen(); VIT.spendK=1-(S.st.sta-30)/150; if(S.fx.str&&VIT.sta<sta0)VIT.sta=sta0;
       if(S.fx.poison)VIT.heal(-dt/50,.05); if(S.fx.regen)VIT.heal(dt/30);
       VIT.heatProof=S.fx.fire?50:0; SHARED.luck=S.fx.luck?2:1; st.hi=S.fx.jump?2.5:1; if(W3.SZ){ if(SZ0==null)SZ0=W3.SZ; const to=SZ0*(S.fx.small?.4:S.fx.big?2:1); W3.SZ=Math.abs(to-W3.SZ)<1e-3?to:W3.SZ+(to-W3.SZ)*Math.min(1,dt*3); }
-      S.food=1; if(window.WX&&WX.now&&WX.now.rain>.25)FORAGE.wetT=performance.now()/1e3;
+      S.food=1; if(WX&&WX.now&&WX.now.rain>.25)FORAGE.wetT=performance.now()/1e3;
       for(const k in S.fx){ S.fx[k]-=dt; if(S.fx[k]<=0){ delete S.fx[k]; say({str:'YOUR STRENGTH FADES.',keen:'YOUR EYE IS ORDINARY AGAIN.',swift:'YOUR STEP SLOWS.',invis:'YOU CAN BE SEEN AGAIN.',fly:'THE FLIGHT MUSHROOM WEARS OFF. YOU COME DOWN.',jump:'YOUR LEGS ARE ORDINARY AGAIN.',luck:'YOUR LUCK RUNS OUT.',fire:'FIRE CAN HURT YOU AGAIN.',small:'YOU GROW BACK TO YOUR OWN SIZE.',big:'YOU SHRINK BACK TO YOUR OWN SIZE.',regen:'THE MENDING STOPS.',dark:'THE DARK CLOSES IN AGAIN.',poison:'THE POISON HAS WORN OFF.'}[k]||'',k==='poison'?'#9fe07f':'#c8c2b0'); if(k==='swift'&&base){ st.wk=base[0]; st.rk=base[1]; base=null; } if(k==='keen')FORAGE.sync(); if(k==='invis')unseen(); } }
       if((acc+=dt)>5){ acc=0; saveSoon(); } if(PACK.open&&(PACK.t=(PACK.t||0)+dt)>1){ PACK.t=0; PACK.bars(); } },'141-forage'); }
   const CH=new Map(), capG=new THREE.SphereGeometry(1,8,4,0,Math.PI*2,0,Math.PI/2), stemG=new THREE.CylinderGeometry(.32,.38,1,6).translate(0,.5,0), NMX=420;
@@ -144,8 +143,10 @@ import {WORTH} from './140c-worth.js';
   // owners start with 99 of every mushroom that gives something extra (owner, 7 Nov 2026), and GUITAR at 100 (owner, 7 Nov 2026: "my player is 100 skill level and can play all the songs")
   // the owners' kit, each start: every power mushroom to 99, every instrument in the bag and its skill at 100
   FORAGE.POWER=['airshroom','glowcap','shroom_invis','shroom_str','shroom_swift','shroom_fly','shroom_keen','shroom_heal','shroom_cure','shroom_jump','shroom_luck','shroom_fire','shroom_small','shroom_big'];
-  FORAGE.ownerKit=()=>{ for(const id of FORAGE.POWER){ const n=99-have(id); if(n>0)give(id,n); } for(const k of ['guitar','piano','drums','harp']){ S.sk[k]=1000; if(!have(k))give(k,1); } saveSoon(); FORAGE.draw(); };
-  SYS.onStart(()=>{ if(BUGS.owner)BUGS.owner().then(o=>{ if(o)FORAGE.ownerKit(); }).catch(()=>{}); },'141-forage owners');
+  FORAGE.ownerKit=()=>{ for(const id of FORAGE.POWER){ const n=99-have(id); if(n>0)give(id,n); } for(const k of ['guitar','piano','drums','harp'])if(!have(k))give(k,1); saveSoon(); FORAGE.draw(); };
+  // the owner's ALL SKILLS 100 (ADMIN > TOOLS): every skill reads 100 while it is on, nothing is gained, and the real levels are untouched under it
+  FORAGE.maxed=v=>{ if(v==null)return MAXED; MAXED=!!v; S.max=MAXED?1:0; saveSoon(); FORAGE.draw(); FORAGE.sync(); for(const f of FORAGE.MAXFN)f(); return MAXED; }; FORAGE.MAXFN=[];
+  SYS.onStart(()=>{ if(BUGS.owner)BUGS.owner().then(o=>{ if(o){ FORAGE.ownerKit(); if(S.max)FORAGE.maxed(true); } }).catch(()=>{}); },'141-forage owners');
   // the full kit, sent to a player from TENANTS (OWNED 'gift'): one of everything a live shop sells (20 of what stacks, 99 of each power mushroom), every instrument; rentals stay rented
   FORAGE.fullKit=()=>{ const P=FORAGE.POWER, ids=new Set([...P,'guitar','piano','drums','harp']);
     for(const c in CHARS.store){ const t=!ARCH.has(c)&&CHARS.store[c]&&CHARS.store[c].trade; for(const x of (t&&Array.isArray(t.sells)&&t.sells)||[])ids.add(x); } for(const [x] of FORAGE.SELLS)ids.add(x);
@@ -161,7 +162,7 @@ import {WORTH} from './140c-worth.js';
       const shod=shod0(), cro=st.move&&st.move.name==='crouch', pc=cro||(st.w||0)<.4?.1:st.run>.5?.7:.35; let ch=false, near=false;
       for(const arr of CH.values())for(const m of arr){ if(m.cr&&m.cr<=now){ m.cr=0; ch=true; } if(S.picked[m.id])continue; const v0=m.pk||m.rv>now;
         if(up&&pressed(m.x,m.z,now)>.3)m.rv=now+20; if(v0!==(m.pk||m.rv>now))ch=true; const d=Math.hypot(pos.x-m.x,pos.z-m.z); if(d<8*T)near=true;
-        if(d>.55*T){ m.st=0; continue; } if(m.st||!up||d>.35*T)continue; m.st=1; if(shod&&!(window.EQUIP&&EQUIP.float)&&mv>.2*T&&Math.random()<pc){ S.picked[m.id]=1; m.cr=now+90; m.rv=now+20; say('SQUISH.','#c8a090'); saveSoon(); ch=true; } }
+        if(d>.55*T){ m.st=0; continue; } if(m.st||!up||d>.35*T)continue; m.st=1; if(shod&&!(EQUIP&&EQUIP.float)&&mv>.2*T&&Math.random()<pc){ S.picked[m.id]=1; m.cr=now+90; m.rv=now+20; say('SQUISH.','#c8a090'); saveSoon(); ch=true; } }
       if(near&&shod&&up&&!UI.fly&&!S.shoeHint&&WEEDS.inPark&&WEEDS.inPark(pos.x,pos.z)){ S.shoeHint=1; say('TAKE OFF YOUR SHOES TO FORAGE SAFELY.','#f2c14e'); saveSoon(); }
       if(ch)FORAGE.sync(); },'141-forage');
     window.MUSHDBG=()=>{ '@later'; const now=performance.now()/1e3, o={hidden:0,revealed:0,peek:0,crushed:0,picked:0,barefoot:!shod0(),lawn:{}}; for(const arr of CH.values())for(const m of arr){ o.lawn[m.k]=(o.lawn[m.k]||0)+1; if(m.cr>now)o.crushed++; else if(S.picked[m.id])o.picked++; else if(m.pk)o.peek++; else if(m.rv>now)o.revealed++; else o.hidden++; } return o; }; }
@@ -173,12 +174,12 @@ import {WORTH} from './140c-worth.js';
     saveSoon(); FORAGE.sync(); PACK.draw(); };
   const THE=id=>'THE '+String(NAME(id)).replace(/^(A|AN|THE|SOME) /,'');   // (an item's name may start with its own article: A JAR OF HONEY)
   FORAGE.eat=id=>{ '@later'; if(!have(id))return; take(id,1); MOTION.play(/^(p|d)_|^soda/.test(id)?'pf_Drink':'eat'); let k=id.slice(2);
-    if(window.ITEMS&&ITEMS.prop&&ITEMS.prop(id,'darksight')){ const s=+ITEMS.prop(id,'darksight')||0; buff('dark',s); say('YOU EAT '+THE(id)+'. YOUR EYES OPEN TO THE DARK FOR '+Math.round(s/60)+' MINUTES.','#9fffb0'); }
-    if(window.ITEMS&&ITEMS.prop&&ITEMS.prop(id,'breath')){ const s=+ITEMS.prop(id,'breath')||0; if(VIT.breathe)VIT.breathe(s); say('YOU EAT '+THE(id)+'. YOU CAN HOLD YOUR BREATH '+s+'S LONGER UNDERWATER.','#9fd8ff'); SFX.play('chirp',{vol:.4}); }
+    if(ITEMS&&ITEMS.prop&&ITEMS.prop(id,'darksight')){ const s=+ITEMS.prop(id,'darksight')||0; buff('dark',s); say('YOU EAT '+THE(id)+'. YOUR EYES OPEN TO THE DARK FOR '+Math.round(s/60)+' MINUTES.','#9fffb0'); }
+    if(ITEMS&&ITEMS.prop&&ITEMS.prop(id,'breath')){ const s=+ITEMS.prop(id,'breath')||0; if(VIT.breathe)VIT.breathe(s); say('YOU EAT '+THE(id)+'. YOU CAN HOLD YOUR BREATH '+s+'S LONGER UNDERWATER.','#9fd8ff'); SFX.play('chirp',{vol:.4}); }
     else if(id.startsWith('m_')||id.startsWith('u_')){ const [, , , food,harm]=MU[k]; if(harm){ S.fx.poison=Math.max(S.fx.poison||0,40); say('YOU FEEL VERY ILL. YOU HAVE BEEN POISONED!','#9fe07f'); SFX.play('cough',{vol:.6}); } else { feed(food); const h=+ITEMS.prop('m_'+k,'heals')||0; if(h>0){ VIT.heal(h); say('YOU EAT THE '+MU[k][0]+'. YOU FEEL MENDED.','#b8f0a0'); } else say('YOU EAT IT. NOT BAD.'); } }
     else if(FORAGE.RAW[id]){ const [food,harm]=FORAGE.RAW[id]; if(harm&&Math.random()<harm){ S.fx.poison=Math.max(S.fx.poison||0,25); say('IT DISAGREES WITH YOU. YOU HAVE BEEN POISONED!','#9fe07f'); } else { feed(food); say('YOU EAT IT RAW. CHEWY.'); } }
     else if(DO[id]){ DO[id](); say(id[0]==='p'?'YOU DRINK '+THE(id)+'.':'YOU EAT '+THE(id)+'.','#b8f0a0'); if(id[0]==='p')give('bottle',1); }
-    else if(window.ITEMS&&ITEMS.prop&&ITEMS.prop(id,'edible')){ const h=+ITEMS.prop(id,'heals')||0, bk=ITEMS.prop(id,'boost'), bs=+ITEMS.prop(id,'boostS')||0; feed(.25); if(bk&&bk!=='none'&&bs>0){ buff(bk,bs); say('YOU EAT '+THE(id)+'. '+({swift:'YOUR LEGS FIZZ.',str:'YOUR ARMS FIZZ.',invis:'YOU FADE FROM SIGHT.',fly:'YOU FEEL LIGHT AS AIR. PRESS G TO FLY.',regen:'YOU FEEL YOURSELF MENDING.',keen:'EVERYTHING IS SHARP.',jump:'YOUR LEGS COIL LIKE SPRINGS.',luck:'YOU FEEL LUCKY.',fire:'YOUR SKIN TURNS COOL. FIRE CANNOT HURT YOU.',small:'YOU SHRINK!',big:'YOU GROW!'}[bk]||''),'#b8f0a0'); }
+    else if(ITEMS&&ITEMS.prop&&ITEMS.prop(id,'edible')){ const h=+ITEMS.prop(id,'heals')||0, bk=ITEMS.prop(id,'boost'), bs=+ITEMS.prop(id,'boostS')||0; feed(.25); if(bk&&bk!=='none'&&bs>0){ buff(bk,bs); say('YOU EAT '+THE(id)+'. '+({swift:'YOUR LEGS FIZZ.',str:'YOUR ARMS FIZZ.',invis:'YOU FADE FROM SIGHT.',fly:'YOU FEEL LIGHT AS AIR. PRESS G TO FLY.',regen:'YOU FEEL YOURSELF MENDING.',keen:'EVERYTHING IS SHARP.',jump:'YOUR LEGS COIL LIKE SPRINGS.',luck:'YOU FEEL LUCKY.',fire:'YOUR SKIN TURNS COOL. FIRE CANNOT HURT YOU.',small:'YOU SHRINK!',big:'YOU GROW!'}[bk]||''),'#b8f0a0'); }
       else if(ITEMS.prop(id,'cures')){ const was=!!S.fx.poison; delete S.fx.poison; say('YOU EAT '+THE(id)+'. '+(was?'THE POISON LEAVES YOU.':'YOU WERE NOT POISONED.'),'#b8f0a0'); } else if(h>0){ VIT.heal(h); say('YOU EAT '+THE(id)+'. YOU FEEL MENDED.','#b8f0a0'); } else say('YOU EAT '+THE(id)+'.'); }
     saveSoon(); INV.add('x',0); delete INV.items.x; PACK.draw(); };
   FORAGE.ident=id=>{ const k=id.slice(2), d=MU[k][1]; if(use('myco',d-30,d+20)){ const n=have(id); take(id,n); give('m_'+k,n); S.log[k]=(S.log[k]||0)+n; say(`IT IS A ${MU[k][0]}.`,'#c8b0ff'); } else say('YOU CANNOT TELL WHAT IT IS.','#c8a090'); PACK.draw(); };
@@ -212,7 +213,7 @@ import {WORTH} from './140c-worth.js';
     else if(PACK.tab==='skills'){ o+=`<div style="margin-bottom:10px;padding:8px;border:1px solid ${S.stPick?'#2a2d38':'#f2c14e'}">${S.stPick?'':'<div style="color:#f2c14e;margin-bottom:6px">CHOOSE YOUR STATS</div>'}`+STN.map(([k,n,w])=>`<div style="display:flex;align-items:center;gap:6px;padding:3px 0"><div style="flex:1">${n}<div style="color:#8a8676;font-size:10px">${w}</div></div><button ${B} data-st="${k}" data-sd="-5">-</button><b style="color:#f2c14e;width:26px;text-align:center">${stBase(k)}</b><button ${B} data-st="${k}" data-sd="5">+</button>${S.tr[k]?`<span style="color:#7fd0ff;width:40px">+${S.tr[k]} = ${S.st[k]}</span>`:''}</div>`).join('')+`<div style="color:#9b9584;margin-top:4px">POINTS LEFT ${stLeft()} · EACH ${STMIN} TO ${STMAX} · TRAINING TAKES THEM TO ${TRMAX}</div>${S.stPick?'':`<button ${B} data-stdone="1" style="margin-top:6px">DONE</button>`}</div><table style="border-collapse:collapse;width:100%">`;
       const grp=[...SKC.map(([c,ks])=>[c,SK.filter(s=>ks.includes(s[0]))]),['OTHER',SK.filter(s=>!SKC.some(([,ks])=>ks.includes(s[0])))]].filter(g=>g[1].length);
       for(const [c,ks] of grp){ o+=`<tr><td colspan="3" style="padding:${c===grp[0][0]?2:10}px 2px 3px;color:#f2c14e;border-bottom:2px solid #3a3f4e">${c}</td></tr>`;
-      for(const [k,n] of ks){ const L=S.lock[k], g=L==='up'?'▲':L==='down'?'▼':'■'; o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:5px 2px">${n}<div style="color:#8a8676;font-size:10px">${FORAGE.rank(k)}</div></td><td style="text-align:right;padding:5px 8px;color:#f2c14e">${(S.sk[k]/10).toFixed(1)}</td><td style="text-align:right"><button ${B} data-lock="${k}" title="raise, lower, locked">${g}</button></td></tr>`; } }
+      for(const [k,n] of ks){ const L=S.lock[k], g=L==='up'?'▲':L==='down'?'▼':'■'; o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:5px 2px">${n}<div style="color:#8a8676;font-size:10px">${FORAGE.rank(k)}</div></td><td style="text-align:right;padding:5px 8px;color:#f2c14e">${sk(k).toFixed(1)}</td><td style="text-align:right"><button ${B} data-lock="${k}" title="raise, lower, locked">${g}</button></td></tr>`; } }
       o+=`</table><div style="margin-top:8px">TOTAL ${(tot()/10).toFixed(1)} / ${CAP/10}</div><div style="color:#9b9584;margin-top:8px">▲ RAISE · ▼ LOWER · ■ LOCK · A SKILL RISES AS YOU USE IT</div><details style="margin-top:6px;color:#9b9584;line-height:1.5"><summary style="cursor:pointer">ABOUT THE SKILLS</summary>At the cap, rising skills take from the lowered ones. FORAGING finds and picks (and sees the rarer ones). MYCOLOGY knows them. ALCHEMY: potions, anywhere (a mortar, a bottle each). COOKING: by a flame. ENTOMOLOGY catches butterflies (a net for one on the wing), knows them and mounts them. ${FORAGE.HELP.join(' ')}</details>`; }
     else { const fl=fire(); o+=`<div style="color:#9b9584;margin-bottom:6px">${have('mortar')?'MORTAR AND PESTLE':'NO MORTAR'} · ${have('bottle')} BOTTLE${have('bottle')===1?'':'S'} · ${fl?'<span style="color:#f2a04e">BY A FLAME</span>':'NO FLAME NEAR (COOKING NEEDS ONE)'}${Object.values(FORAGE.CK).map(c=>c.status?' · '+c.status():'').join('')}</div><table style="border-collapse:collapse;width:100%">`;
       for(const [id,nm,k,[mn,mx],ins,txt] of RC.filter(r=>!ARCHI(r[0]))){ const can=Object.entries(ins).every(([m,n])=>have(iid(m))>=n), c=Math.max(0,Math.min(1,(sk(k)-mn)/(mx-mn)));

@@ -3,13 +3,13 @@ import {SHARED, THREE} from './003-shx.js';
 import {CARLAMPS, CARX, FLOW, keys, ONLINE, PB, pos, RADIO, RIDE, ROOMS, SKY, SPEED, st, UI, VLOOK} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
-import {LEVEL, SOL, SYS, TILE, ZU} from './006-map-pre.js';
+import {LEVEL, MODS, SOL, SYS, TILE, ZU} from './006-map-pre.js';
 import {RIVER} from './066-river.js';
 import {VEH} from './150o-physmore.js';
 const CARD=__LAZY__("data/cars.json"), RADJ=__LAZY__("data/radio.json"), RFILE={jazz:__FILE__("data/radio/jazz.mp3"),dance:__FILE__("data/radio/dance.mp3"),rag:__FILE__("data/radio/rag.mp3"),opera:__FILE__("data/radio/opera.mp3")};
 { const T=TILE, M0=T/.84, BIG=1.4, M1=M0*BIG, say=(t,c)=>SAY(t,c||'#e8e2cc'), X=SHARED.BOD.XS, Z=SHARED.BOD.ZS;
   const CARS=new Map(), KINDS={}; let DATA=null, mine=null, want=null;
-  const CAR={cars:CARS,kinds:KINDS,get driving(){ return mine; }}; window.CARS=CAR;
+  const CAR={cars:CARS,kinds:KINDS,get driving(){ return mine; }}; window.CARS=MODS.cars=CAR;
   // a car parked past the map's edges (owner, 8 Nov 2026: "move all the cars past the edge of forcefield on street, parked") is only seen: no one gets in where no one can walk
   const EB=(()=>{ const L=(LEVEL.edge&&LEVEL.edge.lines)||[]; if(!L.length)return null; const xs=L.flatMap(l=>[l[0],l[2]]), ys=L.flatMap(l=>[l[1],l[3]]); return [Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys)]; })();
   const inMap=C=>{ if(!EB||C.moor)return true; const gx=SHARED.BOD.MX(C.x), gy=SHARED.BOD.MY(C.z); return gx>EB[0]&&gx<EB[2]&&gy>EB[1]&&gy<EB[3]; };
@@ -80,7 +80,7 @@ const CARD=__LAZY__("data/cars.json"), RADJ=__LAZY__("data/radio.json"), RFILE={
   const build=model=>{ const D=DATA.cars[model], G=new THREE.Group(), B=part(D.body); B.name='BODY'; B.traverse(o=>{ if(o.isMesh)o.material.side=THREE.DoubleSide; }); G.add(B); if(D.glass&&D.glass.length){ const GL=glassPart(D.glass); GL.name='GLASS'; G.add(GL); const I=cabin(model,D.cab,D.size[0]); if(I){ I.name='INSIDE'; G.add(I); G.userData.cab=I.userData; } }
     const PT={}; for(const p of D.parts||[]){ const o=new THREE.Group(), b=part(p.g); o.name=p.n; o.position.set(p.at[0],p.at[1],p.at[2]); b.traverse(q=>{ if(q.isMesh)q.material.side=THREE.DoubleSide; }); o.add(b); if(p.gl&&p.gl.length)o.add(glassPart(p.gl)); G.add(o); PT[p.n]=o; }
     if(CARX.build)CARX.build(model,D,G,PT); const W=part(D.wheel), wh=D.wheels.map((w,i)=>{ const o=new THREE.Group(); o.name='WHEEL '+['FL','FR','RL','RR'][i]; o.position.set(w[0],w[1],w[2]); const inner=i?W.clone():W; if(i===1||i===3)inner.rotation.y=Math.PI; o.add(inner); G.add(o); return o; });
-    G.userData.wh=wh; G.scale.setScalar(M1); return VLOOK.dress('car:'+model,G); };
+    G.userData.wh=wh; G.scale.setScalar(M1); CAR.cab(G); return VLOOK.dress('car:'+model,G); };
 
   /* ---------- each model a RIDE kind boarded where it stands, on VEH ---------- */
   const POSE={k:'car',steer:0,z:0};
@@ -107,9 +107,11 @@ const CARD=__LAZY__("data/cars.json"), RADJ=__LAZY__("data/radio.json"), RFILE={
         if((hT-=dt)<=0){ hT=.4; HUD.querySelector('span').textContent=k.name+' · DEPTH '+Math.round(k.depth)+' M · '+k.hint; } return true; },
       place:(m,R,t)=>{ if(R===RIDE){ k.m=m; m.rotation.set(-F.vy/(2.2*M0)*.12,F.hd,-F.turn*.08); const w=m.userData.wh; for(let i=0;i<4;i++)w[i].children[0].rotation.z+=(i<2?F.vf/(4.5*M0):F.vy/(2.2*M0)+F.vf/(9*M0))*.5+.02; } if(CARX.place)CARX.place(model,m,R===RIDE?mine:null); } };
     RIDE.kind('car:'+model,k); return k; };
-  const kindFor=model=>{ if(KINDS[model])return KINDS[model]; if(DATA.cars[model].dive)return diveKind(model); if(DATA.cars[model].fly)return flyKind(model); const D=DATA.cars[model], [w,h,L]=D.size, r=D.r, rest=.15, top=D.low+h;
-    const V=VEH.make({half:[w*.46*M1,(top-.25)/2*M1,L*.47*M1],cy:((top+.25)/2-r)*M1,lift:(r+.05)*M1,mass:1200,wheels:D.wheels.map(q=>[q[0]*M1,(q[1]-r+rest)*M1,q[2]*M1]),r:r*M1,rest:rest*M1,travel:.12*M1,stiff:30,grip:3,
-      engine:2400*M0,reverse:1200*M0,vmax:20*M0,vback:4*M0,brake:50*M0,idle:5*M0,steer:.55,steerFade:8*M0,knockR:1.6*M1,down:r*M1,wy:D.wheels[0][1],unit:M1});
+  // its vehicle at the size the owner gave its look (VLOOK 'car:<model>'): the body, wheels and springs grow with it
+  const specFor=model=>{ const D=DATA.cars[model], [w,h,L]=D.size, r=D.r, rest=.15, top=D.low+h, S=M1*VLOOK.scaleOf('car:'+model);
+    return {half:[w*.46*S,(top-.25)/2*S,L*.47*S],cy:((top+.25)/2-r)*S,lift:(r+.05)*S,mass:1200,wheels:D.wheels.map(q=>[q[0]*S,(q[1]-r+rest)*S,q[2]*S]),r:r*S,rest:rest*S,travel:.12*S,stiff:30,grip:3,
+      engine:2400*M0,reverse:1200*M0,vmax:20*M0,vback:4*M0,brake:50*M0,idle:5*M0,steer:.55,steerFade:8*M0,knockR:1.6*S,down:r*S,wy:D.wheels[0][1],unit:S}; };
+  const kindFor=model=>{ if(KINDS[model])return KINDS[model]; if(DATA.cars[model].dive)return diveKind(model); if(DATA.cars[model].fly)return flyKind(model); const D=DATA.cars[model], V=VEH.make(specFor(model));
     const k=KINDS[model]={name:D.name,world:true,cat:'cars',V,seat:(m,o)=>{ const c=m.userData.cab; return c?o.copy(c.seat):o.set(0,.5,0); }, fit:m=>{ const c=m.userData.cab; return c?c.fit:1; },make:()=>build(model),lift:.001,acc:4,turn:1.4,drag:1.2,knock:99,hop:false,ease:20,
       on:()=>{ if(!PB.R)PB.load(); }, off:()=>V.drop(),
       pose:R=>{ POSE.steer=V.on?V.steer*2:0; return POSE; },
@@ -139,7 +141,7 @@ const CARD=__LAZY__("data/cars.json"), RADJ=__LAZY__("data/radio.json"), RFILE={
   const getIn=id=>{ '@later'; const C=CARS.get(id); if(!C||!DATA||!inMap(C))return; if(DATA.cars[C.model].dive&&!RIVER.box)return; if(mine)return; if(RIDE.on)return say('GET OFF WHAT YOU ARE RIDING FIRST.','#c8a090'); if(C.by&&C.by!==ONLINE.me)return say('SOMEONE IS DRIVING IT.','#c8a090');
     if(ONLINE.on&&ONLINE.me){ want=id; ONLINE.send({t:'car',k:id,on:1}); setTimeout(()=>{ if(want===id){ want=null; say('THE CAR DID NOT ANSWER. TRY AGAIN.','#c8a090'); } },4000); } else board(id); };
   const getOut=()=>{ '@later'; const C=mine; if(!C)return; { const k=KINDS[C.model]; if(k&&k.fly&&!(k.F.down&&k.F.y<=SHARED.groundY(pos.x,pos.z)+.1*MV))return say('LAND ON THE STREET FIRST: SHIFT TAKES YOU DOWN.','#c8a090'); if(k&&k.dive&&!k.F.down)return say('COME UP FIRST: SPACE TAKES YOU TO THE SURFACE.','#c8a090'); } RAD.tune(C,0); mine=null; UI.distMin=null; HUD.style.display='none'; C.x=pos.x; C.z=pos.z; C.hd=SHARED.heading; C.by=null; RIDE.off('YOU GET OUT AND LEAVE IT PARKED.'); if(CAR.v0&&CAR.v0!==UI.view)UI.setView(CAR.v0); CAR.v0=null; if(ONLINE.on)ONLINE.send({t:'car',k:C.id,on:0,at:[C.x,C.z,C.hd]}); at(C);
-    const D=DATA.cars[C.model], s=(D.size[0]/2+.7)*M1; pos.x=C.x-Math.cos(C.hd)*s; pos.z=C.z+Math.sin(C.hd)*s; SHARED.py=SHARED.groundY(pos.x,pos.z); };
+    const D=DATA.cars[C.model], s=(D.size[0]/2*VLOOK.scaleOf('car:'+C.model)+.7)*M1; pos.x=C.x-Math.cos(C.hd)*s; pos.z=C.z+Math.sin(C.hd)*s; SHARED.py=SHARED.groundY(pos.x,pos.z); };
   // the car you drive carries its lamps (150pc), measured once from its model standing straight
   const DIMS={}; CARLAMPS.src.push(out=>{ const C=mine; if(!C||!C.mesh)return; const m=C.mesh; let d=DIMS[C.model]; if(!d){ const r=m.rotation.y, p=m.position.clone(); m.rotation.set(0,0,0); m.position.set(0,0,0); const b=new THREE.Box3().setFromObject(m); m.rotation.set(0,r,0); m.position.copy(p); m.updateMatrixWorld(); d=DIMS[C.model]=[b.max.x-b.min.x,b.max.y-b.min.y,b.max.z-b.min.z,b.min.y]; }
     if(DATA.cars[C.model].dive){ if(CARX.parts&&CARX.parts.bits(C)&256)out.push({x:pos.x,y:SHARED.py,z:pos.z,r:SHARED.heading,dim:d,own:true,fly:true,always:true}); return; } out.push({x:pos.x,y:SHARED.py,z:pos.z,r:SHARED.heading,dim:d,own:!!DATA.cars[C.model].marks}); });
@@ -196,12 +198,16 @@ const CARD=__LAZY__("data/cars.json"), RADJ=__LAZY__("data/radio.json"), RFILE={
   SYS.add('life',()=>{ if(mine&&!(RIDE.on&&RIDE.on==='car:'+mine.model)){ const C=mine; RAD.tune(C,0); mine=null; UI.distMin=null; HUD.style.display='none'; C.x=pos.x; C.z=pos.z; C.hd=SHARED.heading; C.by=null; if(ONLINE.on)ONLINE.send({t:'car',k:C.id,on:0,at:[C.x,C.z,C.hd]}); if(DATA)at(C); } },'150p-cars');
 
   // the ground's height is only true near you: a parked car within reach is set on it again now and then
+  // a car's inside (seats, dash, belts) is drawn only near you or the camera, in the world (not in a studio or a template)
+  const CABS=new Set(), CW=new THREE.Vector3(), NEAR=12*M0; CAR.cab=m=>{ const I=m.getObjectByName('INSIDE'); if(I)CABS.add(I); };
+  let cT=0; SYS.add('life',dt=>{ if(!CABS.size||(cT-=dt||0)>0)return; cT=.25; const c=SHARED.cam&&SHARED.cam.position;
+    for(const I of CABS){ let r=I; while(r.parent)r=r.parent; if(r!==scene)continue; I.parent.getWorldPosition(CW); I.visible=Math.hypot(CW.x-pos.x,CW.z-pos.z)<NEAR||!!c&&CW.distanceTo(c)<NEAR; } },'150p-carcabs');
   let gT=0; SYS.add('life',dt=>{ if(!DATA||(gT-=dt||0)>0)return; gT=.5; for(const C of CARS.values())if(moorAt(C))at(C); for(const C of CARS.values())if(C.mesh&&C.mesh.visible&&Math.hypot(C.x-pos.x,C.z-pos.z)<60*T)C.mesh.position.y=yOf(C); },'150p-cars');
   /* ---------- the kit fetched after the start ---------- */
   // copies the owner parks (ADMIN > VEHICLE EDITOR, the map's newcars): added and taken away while you play
   CAR.add=c=>{ if(!c||CARS.has(c.id))return; CARS.set(c.id,{id:c.id,model:c.model,x:X(c.x),z:Z(c.y),hd:(c.hd||0)*Math.PI/180,by:null,mesh:null,sol:null,copy:true}); if(DATA)show(); };
   CAR.remove=id=>{ const C=CARS.get(id); if(!C||C.by)return; CARS.delete(id); if(C.mesh){ scene.remove(C.mesh); for(let i=UI.things.length-1;i>=0;i--)if(UI.things[i].obj===C.mesh||UI.things[i].car===C)UI.things.splice(i,1); } if(C.sol)C.sol[0]=C.sol[1]=C.sol[2]=C.sol[3]=-1e7; };
-  VLOOK.on(id=>{ if(DATA&&(!id||id.startsWith('car:')))for(const C of CARS.values())at(C); });
-  let asked=false; SYS.add('life',()=>{ if(asked||!window.__started)return; asked=true; CARD().then(d=>{ DATA=d; for(const m in d.cars)VLOOK.kind('car:'+m,{name:d.cars[m].name,grp:'CARS YOU DRIVE',make:()=>build(m),park:m,traffic:m}); show(); }).catch(e=>console.warn('CARS: the kit did not load',e)); },'150p-cars');
+  VLOOK.on(id=>{ if(DATA&&(!id||id.startsWith('car:'))){ for(const C of CARS.values())at(C); for(const m in KINDS)if((!id||id==='car:'+m)&&KINDS[m].V.size)KINDS[m].V.size(specFor(m)); } });
+  let asked=false; SYS.add('life',()=>{ if(asked||!SYS.started)return; asked=true; CARD().then(d=>{ DATA=d; for(const m in d.cars)VLOOK.kind('car:'+m,{name:d.cars[m].name,grp:'CARS YOU DRIVE',make:()=>build(m),park:m,traffic:m}); show(); }).catch(e=>console.warn('CARS: the kit did not load',e)); },'150p-cars');
   CAR.dbg=()=>({loaded:!!DATA,cars:[...CARS.values()].map(C=>({id:C.id,model:C.model,x:+(C.x/T+SHARED.BOD.OX).toFixed(1),z:+(C.z/T+SHARED.BOD.OY).toFixed(1),hd:+C.hd.toFixed(2),by:C.by,shown:!!(C.mesh&&C.mesh.visible)})),driving:mine&&mine.id,veh:mine?!!KINDS[mine.model].V.on:false,rb:mine&&KINDS[mine.model].V.rb?(()=>{ const V=KINDS[mine.model].V, p=V.rb.translation(), r=V.rb.rotation(); return {p:[p.x/T+SHARED.BOD.OX,p.y/T,p.z/T+SHARED.BOD.OY].map(v=>+v.toFixed(2)),r:[r.x,r.y,r.z,r.w].map(v=>+v.toFixed(2)),sp:+(V.sp/T).toFixed(2)}; })():null,v:+((RIDE.v||0)/T).toFixed(2)});
 }

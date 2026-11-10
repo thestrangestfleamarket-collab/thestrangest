@@ -86,9 +86,17 @@ import {BVH} from './137-bvh.js';
     const B4=4*T; for(let i=Math.floor((px-Rr)/B4);i<=Math.floor((px+Rr)/B4);i++)for(let j=Math.floor((pz-Rr)/B4);j<=Math.floor((pz+Rr)/B4);j++){ const key='g'+i+':'+j; if(far(i*B4,j*B4,(i+1)*B4,(j+1)*B4))continue; if(stat.has(key)){ W.set(key,stat.get(key).b); continue; }
       const L=[]; for(let u=0;u<4;u++)for(let v=0;v<4;v++){ const x=(i*4+u)*T, z=(j*4+v)*T, g=SHARED.groundY(x+T/2,z+T/2); if(isFinite(g)&&Math.abs(g-SHARED.py)<3*T)L.push([x,g-.5*T,z,x+T,g,z+T]); }
       if(L.length===16&&L.every(q=>Math.abs(q[4]-L[0][4])<.01*T))W.set(key,[[i*B4,L[0][1],j*B4,(i+1)*B4,L[0][4],(j+1)*B4]]); else if(L.length)W.set(key,L); }
+    // the kerb (owner, 10 Nov 2026: "Just the kerb"): a slope over the step on the road side of each straight kerb near you, from where the ground's boxes step (they follow the tiles, not the kerb line), so a car's wheels roll up onto it instead of the step shoving it
+    if(SHARED.LVL==='up'&&SHARED.BOD.kerbs){ const B=SHARED.BOD, KW=.6; B.kerbs.forEach((kb,i)=>{ const O=kb.ax==='x'?B.OY:B.OX, n=kb.n, v=kb.at, lo0=Math.floor(v-O)+O, b=(lo0+.5-v)*n>0?(n>0?lo0:lo0+1):(n>0?lo0+1:lo0), pm=n>0?Math.min(v,b):Math.max(v,b), rm=n>0?Math.max(v,b):Math.min(v,b);
+      const P=(u,w)=>kb.ax==='x'?[B.XS(u),B.ZS(w)]:[B.XS(w),B.ZS(u)];
+      for(let a=Math.floor(kb.a0/2)*2;a<kb.a1;a+=2){ const u0=Math.max(a,kb.a0), u1=Math.min(a+2,kb.a1); if(u1-u0<.2)continue; const [mx,mz]=P((u0+u1)/2,v); if(far(mx-T,mz-T,mx+T,mz+T))continue;
+        const key='kerb'+i+':'+a; if(stat.has(key)){ W.set(key,stat.get(key).b); continue; } const pts=[]; let ok=true;
+        for(const u of [u0,u1]){ const hi=SHARED.groundY(...P(u,v-n*.15)), lo=SHARED.groundY(...P(u,rm+n*(KW+.2))); if(!(hi-lo>.12*T&&hi-lo<.6*T)){ ok=false; break; }
+          for(const [w,y] of [[pm,hi],[rm,hi],[rm+n*KW,lo],[pm,lo-.1*T],[rm+n*KW,lo-.1*T]]){ const [x,z]=P(u,w); pts.push(x,y,z); } }
+        if(ok)W.set(key,{hull:new Float32Array(pts)}); } }); }
     for(const it of act)if(it.rest)add(it,[it.a[0],it.a[1]-.06*T,it.a[2],it.b[0],it.a[1],it.b[2]],true);
     for(const [key,s] of stat)if(!W.has(key)){ for(const c of s.cs)world.removeCollider(c,false); stat.delete(key); }
-    for(const [key,b] of W)if(!stat.has(key))stat.set(key,{b,cs:(Array.isArray(b[0])?b:[b]).map(q=>world.createCollider(R.ColliderDesc.cuboid((q[3]-q[0])/2,(q[4]-q[1])/2,(q[5]-q[2])/2).setTranslation((q[0]+q[3])/2,(q[1]+q[4])/2,(q[2]+q[5])/2).setFriction(.8).setCollisionGroups(G0),fb))}); };
+    for(const [key,b] of W)if(!stat.has(key))stat.set(key,{b,cs:(Array.isArray(b[0])?b:[b]).map(q=>{ const d=q.hull?R.ColliderDesc.convexHull(q.hull):R.ColliderDesc.cuboid((q[3]-q[0])/2,(q[4]-q[1])/2,(q[5]-q[2])/2).setTranslation((q[0]+q[3])/2,(q[1]+q[4])/2,(q[2]+q[5])/2); return d?world.createCollider(d.setFriction(.8).setCollisionGroups(G0),fb):null; }).filter(Boolean)}); };
   const pickList=(A=act)=>{ const S=new Set(); for(const it of A){ if(it.k==='v')S.add(gm); else if(it.k==='i')for(const q of it.inst)S.add(q[0]); else if(it.k==='o')it.obj.traverse(c=>{ if(c.isMesh)S.add(c); }); else for(const p of it.parts)S.add(p.me); } picks=[...S]; };
   const zone=()=>{ '@later'; if(++zn%40===0)LIGHTS=null; if(!cg||!cc)catalog(); more(); const lo=SHARED.py-1.1*T, hi=SHARED.py+2.4*T;
     for(const it of items){ const t=it.rb?it.rb.translation():it.t, d=Math.hypot(t.x-pos.x,t.z-pos.z), b=t.y-it.h[1], inL=b>lo&&b<hi;
@@ -173,7 +181,7 @@ import {BVH} from './137-bvh.js';
   GPH.bin=it=>{ it.gone=1; const p=it.rb?it.rb.translation():it.t; if(SFX.play)SFX.play('clunk',{vol:.5,pitch:.8,at:p}); if(it.rb)off(it); hideMesh(it); };
   GPH.smash=it=>{ it.gone=1; const p=it.rb?it.rb.translation():it.t; if(SFX.play){ SFX.play('click',{vol:.8,pitch:2.4,vary:.3,at:p}); SFX.play('clunk',{vol:.4,pitch:1.9,at:p}); } if(it.rb)off(it); hideMesh(it); };
   // what the other physics extras use: the engine, the world, the fixed body, a body's loose thing, and hooks into each step (pre/post), its events (coll) and whether to keep stepping (ext)
-  Object.assign(GPH,{pre:[],post:[],coll:[],ext:[],phys:()=>ready?{R,world,fb,you}:null,ofCollider:h=>byC.get(h),active:()=>act,heldNow:()=>held});
+  Object.assign(GPH,{kerbs:()=>[...stat.keys()].filter(k=>typeof k==='string'&&k.startsWith('kerb')).length,pre:[],post:[],coll:[],ext:[],phys:()=>ready?{R,world,fb,you}:null,ofCollider:h=>byC.get(h),active:()=>act,heldNow:()=>held});
   // hanging things on a joint at their top: wind and bumps swing them, SWAYING THINGS sets how freely
   let gt=0; const gust=dt=>{ '@later'; const k=PHYS.lv('joints'); if(!k||(gt-=dt)>0)return; gt=1.5+Math.random()*3; const w=(WX&&WX.now&&WX.now.wind)||.2, out=!(ROOMS&&ROOMS.cur);
     for(const it of act)if(it.hang&&it!==held){ const j=it.m*(out?w*1.4:.08)*k*.05*(.5+Math.random()); it.rb.wakeUp(); it.rb.applyImpulse({x:(Math.random()-.5)*j,y:0,z:(Math.random()-.5)*j},true); } };

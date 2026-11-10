@@ -170,7 +170,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [ ] **The car radio unconfirmed** (cars parked past the map edge) · look.
 
 ## Physics and vehicles
-- [ ] **Vehicle editor follow-ups** · P3 · M · pick + code. A car's size changes its look and where it stands, not how it drives (the driving body keeps its size); the traffic's Polyfork models are one painted piece (their colours change, parts only as a whole: re-bake with parts in `tools/traffic-bake.py`); the horse is a pet's body, not in the editor; the train shows once you have been down to a platform.
+- [ ] **Vehicle editor follow-ups** · P3 · S · look. Done 10 Nov: a resized car or kart drives at its size, the traffic's models have their parts, the horse is in (colours and size). Left: the train shows once you have been down to a platform; the horse's preview shows your own coat only.
 
 - [ ] **Jets follow-ups** · P3 · S · pick. Fires and ice are worked out on each player's page (where a stream lands matches, how a fire
   spreads may not); characters burn and freeze but do not run from the fire.
@@ -178,14 +178,12 @@ steps go in one window, after the checks run on `main`, and end with the owner t
   ask whether the physics one stays), an upright trash can taking small things, hanging plants and lanterns swaying, glass breaking.
   Add cases to `tests/physx.cjs`.
 - [ ] **STAND ON THINGS only rose halfway in the test** · P3 · S-M · check. 0.10 of a 0.20 block; the test's bar was lowered to pass.
-- [ ] **The go-kart** · P3 · M · code + pick. Gets in where you stand, not where you set it down; held, it shows as a little kart in your
-  hands; a wall at speed just stops it (owner: should it throw you out?). Run `tests/cars.cjs`.
+- [x] **The go-kart** · set down in front of you and got in there; a wall at speed throws you out (owner, 10 Nov 2026: "Throw you out"). Left: held, it shows as a little kart in your hands (owner: keep or change?); the Boardwright's wall is archived (the Skate Shop's shelves show it).
 - [ ] **The cars, in game, for the owner** · P2 · S · look. The insides, the cars 40% bigger next to the buildings, the radio by ear
   (loudness, the muffle outside, the four stations, starting at the shared moment).
 - [ ] **Physics is only on your own screen** · P4 · XL · pick + code · risk high. Other players don't see karts, flying loose things or
   broken glass; broken and binned things come back on reload. The shared ground (`drop:<key>` records) is the pattern.
-- [ ] **Walls and ground are still boxes to the physics** · P4 · L / XL · code · risk high. A kerb as a box is why cars get shoved onto
-  the pavement; Rapier's deterministic build waits for shared physics.
+- [ ] **Walls and ground are still boxes to the physics** · P4 · L / XL · code · risk high. The kerb is done (a slope, owner 10 Nov 2026: "Just the kerb"; corners' arcs still boxes); the rest stays boxes; Rapier's deterministic build waits for shared physics.
 
 ## Trees and grass
 
@@ -209,7 +207,7 @@ One tree pass (more leaves mean more shadow triangles).
 - [ ] **More animals rest** · P3 · M · code. Done: dog, fox, wolf, horse, wild horse, mule; the others on the fox's rig (`tools/m2m-bake.cjs`).
 - [ ] **Standing up from a seat** · P3 · M · code · risk med. `stand()` in `src/100-use.js` puts you off the seat at once: play the
   stand-up first, then move you off, without blocking movement.
-- [ ] **Fishing from the rowboat has no body move** · P3 · M · code. The rod and arm are hidden while seated (`src/146a-wield.js`).
+- [x] **Fishing from the rowboat has no body move** · done 10 Nov: sat in the boat the rod is held and swung to cast and reel (a seat with `hold`).
 - [ ] **Birds glide** (after the beta) · P4 · M-L · pick + code. Mesh2Motion's `bird` rig onto the crows and owls.
 - [ ] **The dragons' unused clips** (after the beta) · P4 · S-M · pick. Land, Roar, Walk (Glide stays unused: always flapping).
 - [ ] **Bow draw and shoot** (after the beta) · P4 · M / L · pick. No bow in the game: the owner decides on one first.

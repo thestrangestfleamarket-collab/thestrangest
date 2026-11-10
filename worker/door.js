@@ -431,7 +431,8 @@ export class Block extends Server {
       const v = Array.isArray(m.v) ? [num(m.v[0], -2, 2), num(m.v[1], -2, 2)] : null; o.send(JSON.stringify(m.t === "toss" ? { t: "toss", id: s.id, v } : { t: m.t, id: s.id }));
     } else if (m.t === "jet") {   // a flamethrower or freeze ray firing (146hb), or stopping
       const k = m.k === "f" || m.k === "i" ? m.k : "", v = k && Array.isArray(m.v) ? [num(m.v[0], -1, 1), num(m.v[1], -1, 1), num(m.v[2], -1, 1)] : null;
-      this.broadcast(JSON.stringify(v ? { t: "jet", id: s.id, k, v } : { t: "jet", id: s.id, k }), [c.id]);
+      const md = Number.isInteger(m.m) && m.m >= 0 && m.m < 8 ? m.m : 0;
+      this.broadcast(JSON.stringify(v ? { t: "jet", id: s.id, k, v, m: md } : { t: "jet", id: s.id, k }), [c.id]);
     } else if (m.t === "zap") {   // its stream on a player near the shooter: they burn or freeze
       const to = String(m.to || ""); if (!to || to === s.id) return; const o = this.near(s, to, 12); if (!o) return;
       o.send(JSON.stringify({ t: "zap", id: s.id, k: m.k === "i" ? "i" : "f", from: [s.at[0], s.at[1]] }));

@@ -1,4 +1,4 @@
-// THE FIRE SIM: FIRESIM is real fire as a fluid on the GPU: a 64x32x64 grid (12.5 cm cells, 8 x 4 x 8 m) that follows the fire it is given, stepping velocity, heat, fuel and smoke (fuel burns into heat and soot, heat rises, the swirl is kept, the air is made incompressible), drawn as one glowing volume in slices facing the camera so walls and people hide it.
+// THE FIRE SIM: FIRESIM is real fire as a fluid on the GPU: a 64x32x64 grid (12.5 cm cells, 8 x 4 x 8 m) that follows the fire it is given, stepping velocity, heat, fuel and smoke (fuel burns into heat and soot, heat rises, the swirl is kept, the air is made incompressible), drawn as one volume in hard cel bands (an outline of flame, orange, yellow, white at the hottest) in slices facing the camera so walls and people hide it.
 import {SHARED, THREE} from './003-shx.js';
 import {LEVELS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
@@ -54,8 +54,8 @@ void main(){ ivec3 c=cellI(); vec3 p=vec3(c)+.5; vec4 v=F(uV,c); vec3 q=p+uShift
     fragmentShader:HEAD+`uniform sampler2D uV,uD; uniform vec3 uO; uniform float uH; in vec3 vW;
 vec3 ramp(float h){ vec3 c=mix(vec3(.42,.035,.01),vec3(1.,.26,.03),smoothstep(.02,.32,h)); c=mix(c,vec3(1.,.62,.12),smoothstep(.28,.6,h)); return mix(c,vec3(1.,.93,.66),smoothstep(.62,.92,h)); }
 void main(){ vec3 c=(vW-uO)/uH; if(any(lessThan(c,vec3(0.)))||any(greaterThan(c,vec3(NX,NY,NZ))))discard; float T=S(uV,c).w; vec4 d=S(uD,c); float rm=rim(c), fire=(T+d.b*.05)*rm, sm=d.g*rm;
-  float a=1.-exp(-(fire*.55+sm*.35)*${(Math.sqrt(NX*NX+NY*NY+NZ*NZ)/NS).toFixed(3)}); if(a<.004)discard;
-  vec3 e=ramp(clamp(fire*.55,0.,1.))*(.6+1.6*min(fire,1.6)), s=vec3(.06,.055,.05); vec3 col=mix(s,e,clamp(fire/(fire+sm*.8+1e-3),0.,1.));
+  float fb=fire>1.2?.95:fire>.6?.62:fire>.25?.4:fire>.1?.2:0., sb=sm>.35?.6:sm>.15?.3:0., a=fb>0.?.45:sb>0.?.06+.08*sb:0.; if(a<.004)discard;
+  vec3 e=ramp(fb)*(.8+1.2*fb), s=vec3(.06,.055,.05); vec3 col=fb>0.?e:s;
   fragOut=vec4(col*a,a); }`});
   const sg=new THREE.BufferGeometry(); sg.setAttribute('position',new THREE.BufferAttribute(new Float32Array(NS*4*3),3)); sg.attributes.position.setUsage(THREE.DynamicDrawUsage);
   { const I=[]; for(let i=0;i<NS;i++){ const a=i*4; I.push(a,a+1,a+2,a,a+2,a+3); } sg.setIndex(I); }

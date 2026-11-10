@@ -65,8 +65,8 @@ Object.assign(CULL,{L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0',FL:[],H:
   const hazeHide=()=>{ if(!(CULL.R>0||CULL.keep))return;
     for(const o of CULL.FL){ if(!o.visible||!o.parent)continue; const F=foot(box(o),o.matrixWorld.elements);
       if(CULL.pastBox(F[0],F[1],F[2],F[3])){ if(o.children.length){ const g=o.geometry; if(g.drawRange.count){ CULL.D.push([g,g.drawRange.count]); g.drawRange.count=0; } } else { o.visible=false; CULL.H.push(o); } } } };
-  // in the park its trees hide the far street, falls and wall (owner, 10 Nov 2026: "stop drawing the far bodega, falls and wall"): in first and third person, what in these groups lies wholly past CULL.PS from you is not drawn
-  CULL.PS=100*TILE; const PG=()=>[MAPG.bodega,MAPG.park,MAPG.parkwall]; let PL=[], pt=0, px=1e9, pz=1e9;
+  // in the park its trees hide the far street, falls, wall and cars (owner, 10 Nov 2026: "stop drawing the far bodega, falls and wall", then the cars by the bank): in first and third person, what in these groups (and in what is marked userData.parkFar) lies wholly past CULL.PS from you is not drawn
+  CULL.PS=100*TILE; const PG=()=>[MAPG.bodega,MAPG.park,MAPG.parkwall,...scene.children.filter(o=>o.userData.parkFar)]; let PL=[], pt=0, px=1e9, pz=1e9;
   const parkFar=()=>{ if(!(UI.persp&&!UI.freeCam&&!ED.on&&!MAPED.on&&!ROOMS.cur&&SHARED.LVL==='up'&&!renderer.xr.isPresenting&&PARK.within&&PARK.within(pos.x,pos.z))){ PL=[]; px=1e9; return; }
     const now=performance.now(); if(now-pt>1000||Math.hypot(pos.x-px,pos.z-pz)>TILE/2){ pt=now; px=pos.x; pz=pos.z; PL=[]; const R=CULL.PS;
       for(const G of PG())if(G)G.traverse(o=>{ if(!(o.isMesh||o.isPoints||o.isLine)||!o.geometry||!o.geometry.attributes.position||(o.userData||{}).rin)return; const F=foot(box(o),o.matrixWorld.elements);
@@ -87,4 +87,4 @@ Object.assign(CULL,{L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0',FL:[],H:
       R.vis=s.visible; tie(R); s.visible=false; if(moved||R.fresh){ far(R); R.fresh=false; } } hazeHide(); parkFar(); };
   CULL.end=()=>{ for(const o of CULL.H)o.visible=true; for(const [g,n] of CULL.D)g.drawRange.count=n; CULL.D.length=0; CULL.hn=CULL.H.length; CULL.H.length=0; for(const R of CULL.L){ if(R.off||!R.bm)continue; R.s.visible=R.vis; R.bm.visible=false; } };
   SYS.add('perfBounds',()=>CULL.scan(),'161a-cull');
-  window.CULLDBG=()=>({on:CULL.on,keep:CULL.keep,hazeR:CULL.R,hazeList:CULL.FL.length,hazeHid:CULL.hn||0,src:CULL.L.length,live:CULL.L.filter(R=>!R.off&&R.bm).length,wait:WAIT.size,pieces:CULL.L.reduce((a,R)=>a+(R.off||!R.bm?0:R.n),0)}); }
+  window.CULLDBG=()=>({on:CULL.on,keep:CULL.keep,hazeR:CULL.R,hazeList:CULL.FL.length,hazeHid:CULL.hn||0,parkHid:PL.length,src:CULL.L.length,live:CULL.L.filter(R=>!R.off&&R.bm).length,wait:WAIT.size,pieces:CULL.L.reduce((a,R)=>a+(R.off||!R.bm?0:R.n),0)}); }

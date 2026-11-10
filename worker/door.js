@@ -625,7 +625,7 @@ async function owner(env, id, dev) {
   owners.set(id, { until: now + 60000 }); return true;
 }
 const postOf = env => env.Post.get(env.Post.idFromName("post"));
-// a trade's offer, cleaned: at most 16 kinds of things (1 to 9999 each), cash, and a painting's description for each painting in it
+// a trade's offer, cleaned: at most 16 kinds of things (1 to 9999 each), cash, and a painting's description for each painting in it (a copy keeps its mark: the masterwork, its score)
 // the kinds of shared things a player may set on the block (the rest are refused): owner: only an owner (they tell everyone to read again); add: a counter, one at a time
 const WORLD_KEYS = [{ re: /^time$/, owner: 1 }, { re: /^looks$/, owner: 1 }, { re: /^veh$/, owner: 1 }, { re: /^we$/, owner: 1 }, { re: /^riverbell$/ }, { re: /^riverbell:rung$/, add: 1 },
   { re: /^car:[\w-]{1,32}$/ }, { re: /^radio:[\w-]{1,32}$/ }, { re: /^gate:[\w-]{1,32}$/ }, { re: /^flag:[\w-]{1,32}$/ }, { re: /^tbl:[\w:-]{1,34}$/ }, { re: /^tag:[\w:.-]{1,34}$/ }];
@@ -638,7 +638,7 @@ const BODY_LIFE = 3600000;   // an hour, then a body's things fall to the ground
 const tradeNone = () => ({ items: {}, cash: 0, art: {} });
 const tradeClean = o => { o = o && typeof o === "object" ? o : {}; const items = {}, art = {};
   for (const k of Object.keys(o.items || {}).slice(0, 16)) { const n = Math.floor(+o.items[k]); if (/^[a-z0-9_]{1,48}$/.test(k) && n >= 1 && n <= 9999) items[k] = n; }
-  for (const k of Object.keys(o.art || {}).slice(0, 6)) { const a = o.art[k]; if (/^[a-z0-9]{6,40}$/.test(k) && a && typeof a === "object" && items["pt_" + k]) art[k] = { t: word(a.t, 40), by: word(a.by, 24), w: num(+a.w || 0, 1, 4096), h: num(+a.h || 0, 1, 4096), c: word(a.c, 16), fr: word(a.fr, 8), d: word(a.d, 16), e: num(+a.e || 0, 0, 1) }; }
+  for (const k of Object.keys(o.art || {}).slice(0, 6)) { const a = o.art[k]; if (/^[a-z0-9]{6,40}$/.test(k) && a && typeof a === "object" && items["pt_" + k]) art[k] = { t: word(a.t, 40), by: word(a.by, 24), w: num(+a.w || 0, 1, 4096), h: num(+a.h || 0, 1, 4096), c: word(a.c, 16), fr: word(a.fr, 8), d: word(a.d, 16), e: num(+a.e || 0, 0, 1) }; const cp = a.cp; if (cp && typeof cp === "object") art[k].cp = { i: word(cp.i, 24), s: Math.round(num(+cp.s || 0, 0, 100)), b: Math.floor(num(+cp.b || 0, 0, 9)), a: word(cp.a, 40) }; }
   return { items, cash: Math.floor(num(+o.cash || 0, 0, 1e9)), art }; };
 // what a game says it paid, never more than it offered
 const tradeAtMost = (p, o) => { const r = { items: {}, cash: Math.min(p.cash, o.cash), art: {} }; for (const k in p.items) if (o.items[k]) r.items[k] = Math.min(p.items[k], o.items[k]); for (const k in p.art) if (r.items["pt_" + k]) r.art[k] = p.art[k]; return r; };

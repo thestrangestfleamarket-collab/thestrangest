@@ -1,4 +1,4 @@
-// THE PAINTINGS: canvases to paint on (the painter, 159g), your unfinished and finished paintings in the pack, their pictures kept on the server (/art), an easel and every painting as a thing for your wall (DECORATE) that visitors see too.
+// THE PAINTINGS: canvases to paint on (the painter, 159g) or to copy a masterwork on (PAINTINGS.copy, 159ha), your unfinished and finished paintings in the pack, their pictures kept on the server (/art), an easel and every painting as a thing for your wall (DECORATE) that visitors see too.
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, INV, ITEMS, ONLINE, TEXT, UI} from './003b-systems.js';
 import {SAY} from './003d-say.js';
@@ -28,7 +28,8 @@ const PAINTINGS={}; window.PAINTINGS=PAINTINGS;
   const names=()=>{ const n={}; for(const id in M.wip)n['wip_'+id]='UNFINISHED: '+(M.wip[id].t||CAN[M.wip[id].c].n); for(const id in M.art)n['pt_'+id]='PAINTING: “'+M.art[id].t+'”'; FORAGE.add({names:n}); };
   names();
   const worth=(id,def)=>{ const a=M.art[id]; const base=+(def&&def.value)||30; if(!a)return Math.round(base); const e=a.e==null?.5:a.e;
-    return e<.02?1:Math.max(1,Math.round(base*Math.sqrt(a.w*a.h/(512*512))*(.2+.8*Math.min(1,e/.5)))); };
+    const sz=Math.sqrt(a.w*a.h/(512*512)); if(a.cp)return Math.max(1,Math.round(base*sz*(.1+.9*Math.pow(a.cp.s/100,1.5))*(1+.35*a.cp.b)));
+    return e<.02?1:Math.max(1,Math.round(base*sz*(.2+.8*Math.min(1,e/.5)))); };
   ITEMS.cls.push({is:id=>id.startsWith('pt_'),as:'painting',calc:{value:(id,d)=>worth(id.slice(3),d)}},{is:id=>id.startsWith('wip_'),as:'unfinished'});
   FORAGE.BUYK.paintings=['pt_'];
 
@@ -54,20 +55,24 @@ const PAINTINGS={}; window.PAINTINGS=PAINTINGS;
 
   /* ---------- painting: start on a canvas, carry on, finish ---------- */
   const opened=()=>{ const P=FORAGE.PACK; if(P&&P.open&&P.toggle)try{ P.toggle(); }catch(e){} };
-  PAINTINGS.start=can=>{ const c=CAN[can]; if(!c)return; if(!FORAGE.has(can))return say('YOU HAVE NO '+c.n+'.','#c8a090'); FORAGE.take(can,1);
-    const id=uid(); M.wip[id]={c:can,w:c.w,h:c.h,t:'',at:Date.now()}; save(); names(); FORAGE.give('wip_'+id,1); if(INV.save)INV.save(); return open(id,true); };
+  // cp (a copy): {i: the masterwork, t: the copy's title, w, h: the masterwork's shape, fitted to the canvas's longer side}
+  PAINTINGS.start=(can,cp)=>{ const c=CAN[can]; if(!c)return; if(!FORAGE.has(can))return say('YOU HAVE NO '+c.n+'.','#c8a090'); FORAGE.take(can,1);
+    let w=c.w, h=c.h; if(cp){ const L=Math.max(c.w,c.h), r=cp.w/cp.h; if(r>=1){ w=L; h=Math.round(L/r); } else { h=L; w=Math.round(L*r); } }
+    const id=uid(); M.wip[id]={c:can,w,h,t:cp?cp.t:'',at:Date.now()}; if(cp)M.wip[id].cp={i:cp.i}; save(); names(); FORAGE.give('wip_'+id,1); if(INV.save)INV.save(); return open(id,true); };
   const open=async(id,fresh)=>{ '@later'; const w=M.wip[id]; if(!w)return; if(PAINTER.isOpen)return; let layers=null;
     if(!fresh){ try{ layers=JSON.parse(await ART.get('w'+id)||'null'); layers=layers&&layers.layers; }catch(e){ layers=null; } if(!layers)say('ITS PICTURE IS NOT ON THIS DEVICE YET: A FRESH START ON IT.','#e8a23a'); }
+    const C=w.cp&&PAINTINGS.copy, guide=C?await C.guide(w.cp.i):null;
     opened(); UI.gamewin='paint';
-    await PAINTER.open({w:w.w,h:w.h,title:w.t,bg:CAN[w.c].bg,layers,frames:Object.entries(FR).map(([k,v])=>[k,v[0]]),
+    await PAINTER.open({w:w.w,h:w.h,title:w.t,bg:CAN[w.c].bg,layers,frames:Object.entries(FR).map(([k,v])=>[k,v[0]]),guide,fixTitle:w.cp?w.t:null,note:C?C.note(w.cp.i):null,
       onSave:(L,flat)=>{ w.th=thumb(flat); w.at=Date.now(); save(); ART.put('w'+id,JSON.stringify({w:w.w,h:w.h,layers:L})); easel(); },
       onFinish:o=>finish(id,o), onClose:()=>{ if(UI.gamewin==='paint')UI.gamewin=null; }});
     return id; };
   PAINTINGS.open=id=>open(id,false);
   const finish=async(id,{title,frame,img})=>{ '@later'; const w=M.wip[id]; if(!w)return; const d=img.toDataURL('image/webp',.92), by=(ONLINE.myName&&ONLINE.myName())||'A TENANT';
-    M.art[id]={t:title,by:String(by).toUpperCase().slice(0,24),w:w.w,h:w.h,c:w.c,fr:frame||'',d:today(),e:+effort(img,CAN[w.c].bg).toFixed(3),th:thumb(img)}; delete M.wip[id]; save(); names();
+    const C=w.cp&&PAINTINGS.copy, cp=C?await C.judge(w.cp.i,img,CAN[w.c].bg):null; if(cp)title=w.t;
+    M.art[id]={t:title,by:String(by).toUpperCase().slice(0,24),w:w.w,h:w.h,c:w.c,fr:frame||'',d:today(),e:+effort(img,CAN[w.c].bg).toFixed(3),th:thumb(img)}; if(cp)M.art[id].cp={i:cp.i,s:cp.s,b:cp.b,a:cp.a}; delete M.wip[id]; save(); names();
     FORAGE.take('wip_'+id,1); FORAGE.give('pt_'+id,1); if(INV.save)INV.save(); kind(id); easel();
-    say(`SIGNED: “${title}”. IT IS IN YOUR PACK: HANG IT AT HOME (DECORATE), GIVE IT OR SELL IT.`,'#b8f0a0'); if(FORAGE.draw)FORAGE.draw();
+    say(cp?cp.said:`SIGNED: “${title}”. IT IS IN YOUR PACK: HANG IT AT HOME (DECORATE), GIVE IT OR SELL IT.`,cp&&!cp.pass?'#e8c27a':'#b8f0a0'); if(FORAGE.draw)FORAGE.draw();
     await ART.put('a'+id,d,true); ART.del('w'+id); };
   PAINTINGS.atEasel=()=>{ '@later'; const ids=Object.keys(M.wip).filter(id=>FORAGE.has('wip_'+id)).sort((a,b)=>(M.wip[b].at||0)-(M.wip[a].at||0)); if(ids.length)return open(ids[0],false);
     const can=['canvas_m','canvas_s','canvas_w','canvas_t','paper'].find(k=>FORAGE.has(k)); if(can)return PAINTINGS.start(can);
@@ -75,10 +80,11 @@ const PAINTINGS={}; window.PAINTINGS=PAINTINGS;
 
   /* ---------- the pack: PAINT a canvas or an unfinished painting, VIEW a finished one ---------- */
   FORAGE.ACT.paint=id=>{ if(CAN[id])return PAINTINGS.start(id); if(id.startsWith('wip_'))return open(id.slice(4),false); };
-  FORAGE.ACT.artview=id=>PAINTINGS.view(id.slice(3));
-  FORAGE.ROWB.push(id=>CAN[id]||id.startsWith('wip_')?[['PAINT','paint']]:id.startsWith('pt_')?[['VIEW','artview']]:[]);
-  FORAGE.NOTE.push(id=>{ if(id.startsWith('pt_')){ const a=M.art[id.slice(3)]; return a?`BY ${a.by} · ${a.w}×${a.h}${a.fr?' · '+FR[a.fr][0]+' FRAME':''}`:''; } if(CAN[id])return `${CAN[id].w}×${CAN[id].h}: PAINT ON IT`; if(id.startsWith('wip_'))return 'PAINT TO CARRY ON'; return ''; });
-  FORAGE.HELP.push('PAINTING: PAINT on a canvas from your pack, or double-click your easel at home. FINISH signs it: one of a kind, to hang (DECORATE), give or sell (the Professor at the bookstore buys them).');
+  FORAGE.ACT.artview=id=>PAINTINGS.view(id.slice(3)); FORAGE.ACT.paintcopy=id=>PAINTINGS.copy&&PAINTINGS.copy.list(id);
+  FORAGE.ROWB.push(id=>CAN[id]?[['PAINT','paint'],['COPY','paintcopy']]:id.startsWith('wip_')?[['PAINT','paint']]:id.startsWith('pt_')?[['VIEW','artview']]:[]);
+  const cpOf=a=>a&&a.cp?`A COPY AFTER ${a.cp.a} · SCORED ${a.cp.s}% · `:'';
+  FORAGE.NOTE.push(id=>{ if(id.startsWith('pt_')){ const a=M.art[id.slice(3)]; return a?`${cpOf(a)}BY ${a.by} · ${a.w}×${a.h}${a.fr?' · '+FR[a.fr][0]+' FRAME':''}`:''; } if(CAN[id])return `${CAN[id].w}×${CAN[id].h}: PAINT ON IT`; if(id.startsWith('wip_'))return 'PAINT TO CARRY ON'; return ''; });
+  FORAGE.HELP.push('PAINTING: PAINT on a canvas from your pack, or double-click your easel at home; COPY paints over a masterwork, scored when you finish (your PAINTING skill opens harder ones and shows the guide stronger). FINISH signs it: one of a kind, to hang (DECORATE), give or sell (the Professor at the bookstore buys them).');
 
   /* ---------- looking at a painting, full screen ---------- */
   const V=document.createElement('div'); V.id='artview'; V.hidden=true; V.setAttribute('role','dialog');
@@ -88,7 +94,7 @@ const PAINTINGS={}; window.PAINTINGS=PAINTINGS;
   V.addEventListener('click',e=>{ if(e.target===V||e.target.dataset.x)closeV(); });
   addEventListener('keydown',e=>{ if(!V.hidden&&e.key==='Escape'){ e.stopImmediatePropagation(); closeV(); } },true);
   PAINTINGS.view=async(id,a)=>{ '@later'; a=a||M.art[id]; if(!a)return; V.innerHTML=`<div style="display:grid;place-items:center;min-height:0"><img alt="" style="max-width:100%;max-height:100%;object-fit:contain;box-shadow:0 0 0 ${a.fr?10:2}px #${(FR[a.fr||'']&&FR[a.fr][1]!=null?FR[a.fr][1]:0x3a3f4e).toString(16).padStart(6,'0')},0 8px 30px #000;image-rendering:auto"></div>
-      <div><div style="color:#f2c14e;font-size:14px">“${TEXT.esc(a.t)}”</div><div style="color:#9b9584;margin-top:4px">BY ${TEXT.esc(a.by)} · ${TEXT.esc(a.d||'')} · ${a.w}×${a.h}</div><button data-x="1" style="margin-top:10px;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:4px 10px;cursor:pointer">CLOSE</button></div>`;
+      <div><div style="color:#f2c14e;font-size:14px">“${TEXT.esc(a.t)}”</div><div style="color:#9b9584;margin-top:4px">${TEXT.esc(cpOf(a))}BY ${TEXT.esc(a.by)} · ${TEXT.esc(a.d||'')} · ${a.w}×${a.h}</div><button data-x="1" style="margin-top:10px;font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:4px 10px;cursor:pointer">CLOSE</button></div>`;
     V.hidden=false; V.style.display='grid'; if(!UI.gamewin)UI.gamewin='paintv'; SHARED.covered=true; const im=V.querySelector('img'); if(!(await ART.ok('a'+id))){ im.alt='TAKEN DOWN'; return; } if(a.th&&!V.hidden)im.src=a.th; const d=await ART.get('a'+id); if(d&&!V.hidden)im.src=d; };
 
   /* ---------- on the wall: a painting is a DECORATE thing of its own (as a photo is), framed; its picture loads from ART ---------- */
@@ -103,7 +109,7 @@ const PAINTINGS={}; window.PAINTINGS=PAINTINGS;
     return G; };
   const lazy=(D,make)=>Object.defineProperty(D,'tpl',{configurable:true,enumerable:true,get(){ const t=make(); Object.defineProperty(D,'tpl',{value:t,enumerable:true}); return t; }});
   const kind=(id,a,R)=>{ '@later'; R=R||(ROOMK.api&&ROOMK.api.R); a=a||M.art[id]; if(!R||!a)return; const k='pt:'+id; if(R.kinds[k])return;
-    const D={kind:k,name:'PAINTING: '+a.t,own:'pt_'+id,loose:false,m:0,wire:null,sol:[],shf:[],mount:'wall',dept:'art',deptName:'ART',art:{id,t:a.t,by:a.by,w:a.w,h:a.h,fr:a.fr||'',d:a.d||''}}; lazy(D,()=>framed(id,a)); R.kinds[k]=D; };
+    const D={kind:k,name:'PAINTING: '+a.t,own:'pt_'+id,loose:false,m:0,wire:null,sol:[],shf:[],mount:'wall',dept:'art',deptName:'ART',art:{id,t:a.t,by:a.by,w:a.w,h:a.h,fr:a.fr||'',d:a.d||'',...(a.cp?{cp:a.cp}:{})}}; lazy(D,()=>framed(id,a)); R.kinds[k]=D; };
 
   /* ---------- the easel: a DECORATE thing ($40); double-click it to paint; your latest unfinished painting stands on it ---------- */
   const ec=mk(128,128), ex=ec.getContext('2d'), etex=new THREE.CanvasTexture(ec); etex.colorSpace=THREE.SRGBColorSpace;
@@ -115,17 +121,18 @@ const PAINTINGS={}; window.PAINTINGS=PAINTINGS;
     bx(.04,1.75,.04,-.26,.86,.08,-.05,-.12); bx(.04,1.75,.04,.26,.86,.08,-.05,.12); bx(.04,1.7,.04,0,.8,-.24,.3,0); bx(.22,.05,.05,0,1.7,.03); bx(.74,.04,.11,0,.74,.15); bx(.74,.035,.015,0,.775,.2);
     const cv=new THREE.Mesh(new THREE.PlaneGeometry(.62,.62),emat); cv.position.set(0,1.08,.17); cv.rotation.x=-.06; G.add(cv);
     return G; };
-  ROOMK.wires.easel=(un,c)=>c.hit(un,()=>'THE EASEL: PAINT',()=>PAINTINGS.atEasel());
+  ROOMK.wires.easel=(un,c)=>c.hit(un,()=>'THE EASEL: PAINT OR COPY',()=>PAINTINGS.copy?PAINTINGS.copy.list():PAINTINGS.atEasel());
   ROOMK.parts.push(ctx=>{ const R=ctx.R; for(const id in M.art)kind(id,M.art[id],R);
     if(!R.kinds['pt:easel']){ const D={kind:'pt:easel',name:'EASEL',loose:false,m:0,wire:'easel',sol:[[-.36,-.3,.36,.3,1.75]],shf:[],dept:'art',deptName:'ART',price:40}; lazy(D,makeEasel); R.kinds['pt:easel']=D; } });
   // the layout carries each hung painting's title and size, so a visitor's game can hang it too (its picture comes from the server)
   ROOMK.keep.push({ out:(L,A)=>{ const art={}; for(const un of A.units()){ const K=A.R.kinds[un.kind]; if(un.added&&!un.gone&&K&&K.art)art[K.art.id]=K.art; } if(Object.keys(art).length)L.art=art; },
-    in:(L,A)=>{ for(const id in L.art||{}){ const a=L.art[id]; if(a&&/^[a-z0-9]{6,40}$/.test(id))kind(id,{t:String(a.t||''),by:String(a.by||''),w:+a.w||512,h:+a.h||512,fr:FR[a.fr]?a.fr:'',d:String(a.d||'')},A.R); } } });
+    in:(L,A)=>{ for(const id in L.art||{}){ const a=L.art[id]; if(a&&/^[a-z0-9]{6,40}$/.test(id))kind(id,{t:String(a.t||''),by:String(a.by||''),w:+a.w||512,h:+a.h||512,fr:FR[a.fr]?a.fr:'',d:String(a.d||''),cp:cpIn(a.cp)},A.R); } } });
 
   /* ---------- giving and getting (TRADE, 159i) ---------- */
-  PAINTINGS.meta=id=>{ const a=M.art[id]; return a?{t:a.t,by:a.by,w:a.w,h:a.h,c:a.c,fr:a.fr,d:a.d,e:a.e}:null; };
+  function cpIn(c){ return c&&typeof c==='object'?{i:String(c.i||'').slice(0,24),s:Math.max(0,Math.min(100,Math.round(+c.s||0))),b:Math.max(0,Math.min(9,Math.floor(+c.b||0))),a:String(c.a||'').toUpperCase().slice(0,40)}:undefined; }
+  PAINTINGS.meta=id=>{ const a=M.art[id]; return a?{t:a.t,by:a.by,w:a.w,h:a.h,c:a.c,fr:a.fr,d:a.d,e:a.e,...(a.cp?{cp:a.cp}:{})}:null; };
   PAINTINGS.gave=id=>{ if(M.art[id]&&!FORAGE.has('pt_'+id)){ delete M.art[id]; save(); } };
-  PAINTINGS.got=(id,a)=>{ if(!/^[a-z0-9]{6,40}$/.test(id)||!a)return; M.art[id]={t:String(a.t||'UNTITLED'),by:String(a.by||''),w:+a.w||512,h:+a.h||512,c:CAN[a.c]?a.c:'canvas_m',fr:FR[a.fr]?a.fr:'',d:String(a.d||''),e:+a.e||0}; save(); names(); kind(id); };
+  PAINTINGS.got=(id,a)=>{ if(!/^[a-z0-9]{6,40}$/.test(id)||!a)return; M.art[id]={t:String(a.t||'UNTITLED'),by:String(a.by||''),w:+a.w||512,h:+a.h||512,c:CAN[a.c]?a.c:'canvas_m',fr:FR[a.fr]?a.fr:'',d:String(a.d||''),e:+a.e||0}; const cp=cpIn(a.cp); if(cp)M.art[id].cp=cp; save(); names(); kind(id); };
   PAINTINGS.mine=()=>M;
   window.PAINTDBG=()=>({wip:Object.keys(M.wip).length,art:Object.keys(M.art).length,painter:PAINTER.state(),gamewin:UI.gamewin});
 }

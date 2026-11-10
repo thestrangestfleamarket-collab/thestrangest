@@ -1,29 +1,14 @@
 // THE MUSHROOM SELLER: MUSH, his body on the player's rig (a smooth MERCH body: carved skull, long hair, the hat grown over with mushrooms, the mottled robe, the woven shawl and strap, the tray heaped with mushrooms), and his booth at the park wall.
 import {SHARED, THREE} from './003-shx.js';
 import {PARK, pos} from './003b-systems.js';
-import {MODS, QS, TILE} from './006-map-pre.js';
+import {MODS, TILE} from './006-map-pre.js';
 import {HOMES} from './076-npc-map.js';
 import {STALL} from './081-stalls.js';
 import {BODIES} from './111a-bodies.js';
 import {MERCH} from './111e-merch.js';
 const MUSH={}; let swing=null;
-{ const {SPH,CYL,TOR,grp,mk,paint,hash3}=MERCH.K, PI=Math.PI, T=TILE, V3=THREE.Vector3;
-  const hex=c=>'#'+c.getHexString(), C=h=>new THREE.Color(h), mix=(a,b,t)=>a.clone().lerp(b,Math.max(0,Math.min(1,t)));
-  const vn=(x,y,z)=>{ const xi=Math.floor(x), yi=Math.floor(y), zi=Math.floor(z), f=v=>v*v*(3-2*v), u=f(x-xi), v=f(y-yi), w=f(z-zi), h=(a,b,c)=>hash3(xi+a,yi+b,zi+c), l=(a,b,t)=>a+(b-a)*t;
-    return l(l(l(h(0,0,0),h(1,0,0),u),l(h(0,1,0),h(1,1,0),u),v),l(l(h(0,0,1),h(1,0,1),u),l(h(0,1,1),h(1,1,1),u),v),w); };
-  const fbm=(x,y,z)=>vn(x,y,z)*.55+vn(x*2.1+5.3,y*2.1,z*2.1)*.3+vn(x*4.3,y*4.3+9.1,z*4.3)*.15;
+{ const {SPH,CYL,TOR,grp,mk,paint,hash3,C,mix,fbm,lathe,bend,ribbon}=MERCH.K, PI=Math.PI, T=TILE, V3=THREE.Vector3;
   let seed=11; const rnd=()=>{ seed=(seed*16807)%2147483647; return seed/2147483647; };
-  // a turned shape from [radius, height] pairs made finer (n rows) so painted colours and folds have points to land on
-  const dense=(pts,n)=>{ const L=[0]; for(let i=1;i<pts.length;i++)L.push(L[i-1]+Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1])); const out=[];
-    for(let k=0;k<=n;k++){ const s=k/n*L[L.length-1]; let i=1; while(i<L.length-1&&L[i]<s)i++; const t=(s-L[i-1])/((L[i]-L[i-1])||1); out.push(new THREE.Vector2(pts[i-1][0]+(pts[i][0]-pts[i-1][0])*t,pts[i-1][1]+(pts[i][1]-pts[i-1][1])*t)); } return out; };
-  const lathe=(pts,n,seg,fz=1,p0=0,pl=PI*2)=>{ const g=new THREE.LatheGeometry(dense(pts,n),seg,p0,pl); if(fz!==1){ const p=g.attributes.position; for(let i=0;i<p.count;i++)p.setZ(i,p.getZ(i)*fz); } return g; };
-  const bend=(g,fn)=>{ const p=g.attributes.position, v=new V3(); for(let i=0;i<p.count;i++){ v.fromBufferAttribute(p,i); fn(v); p.setXYZ(i,v.x,v.y,v.z); } return g; };
-  // a strip laid along a curve (cloth, a strap, a lock of hair): across it by its width, out from the body's axis by its lift; col(u,v) its colour
-  const ribbon=(pts,w,nv,nu,col,o={})=>{ const cv=new THREE.CatmullRomCurve3(pts.map(p=>new V3(...p))), P=[], Cc=[], I=[], c=new THREE.Color(), up=new V3(), out=new V3(), side=new V3();
-    for(let j=0;j<=nv;j++){ const v=j/nv, p=cv.getPoint(v), t=cv.getTangent(v); out.set(p.x,0,p.z/(o.fz||1)).normalize(); if(o.out)out.set(...o.out(v)).normalize(); side.crossVectors(t,out).normalize(); const ww=w*(o.taper?1-o.taper*v:1);
-      for(let i=0;i<=nu;i++){ const u=i/nu-.5, q=p.clone().addScaledVector(side,u*ww).addScaledVector(out,(o.lift||0)+(o.wave?o.wave(u,v):0)); P.push(q.x,q.y-(o.ragged?o.ragged(u,v):0),q.z); c.set(col(u,v)); Cc.push(c.r,c.g,c.b); } }
-    for(let j=0;j<nv;j++)for(let i=0;i<nu;i++){ const a=j*(nu+1)+i, b=a+nu+1; I.push(a,b,a+1,a+1,b,b+1); }
-    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(Cc,3)); g.setIndex(I); return g; };
   // a mushroom: its stem, the cap's dome and rolled rim, the gills under it; o {r cap, h stem, s stem radius, cap, stem, gill colours, k cap height, seg}
   const shroom=(par,at,rot,o)=>{ const g=grp(par,at,rot), r=o.r, h=o.h, s=o.s||r*.32, n=o.seg||12, k=o.k||.58;
     if(h>.002)mk(g,CYL(s*.92,s*1.12,h,Math.max(6,n>>1)),o.stem||'plain:#efe8da',[0,h/2,0]);
@@ -157,8 +142,7 @@ const MUSH={}; let swing=null;
   if(N){ const st=N.st; st.hold=true; st.to=st.next=null; N.H=2.3*T;
     const wait=()=>{ if(!MODS.park)return setTimeout(wait,500); const P=PARK, X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0)), A=STALL.at('mush');
       MUSH.booth=STALL.build({X,Z,x0:A.x0,x1:A.x1,y:P.y0,veg:false,seed:7,gate:A.gate,name:A.name});
-      if(QS.get('sheet')==='mushroom'||QS.get('npcat')||HOMES.keeper(N))return; const S=MUSH.booth; S.N=N; N.free=()=>true;
-      Object.assign(st,{x:S.home.x,z:S.home.z,to:null,next:null,hold:true,pin:true,hd:Math.atan2(S.face.x-S.home.x,S.face.z-S.home.z)}); };
+      if(!HOMES.keeper(N))MERCH.stand(N,MUSH.booth); };
     wait(); }
   window.SELLERDBG=()=>({swing:!!swing,sw:MUSH.sw?[+MUSH.sw.x.toFixed(4),+MUSH.sw.y.toFixed(4)]:null,booth:!!MUSH.booth,key:N&&N.key,x:N&&+N.st.x.toFixed(2),z:N&&+N.st.z.toFixed(2),y:N&&+N.g.position.y.toFixed(2),vis:N&&N.g.visible,tris:body&&body.tris()}); }
 export {MUSH};

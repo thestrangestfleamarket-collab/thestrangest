@@ -4,7 +4,8 @@ import {CLOCK, FORAGE, PARK, pos, UI, WX} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {MAPG, SYS, TILE} from './006-map-pre.js';
 import {WILD} from './144f-wild.js';
-{ const T=TILE, WU=T/.84, say=(t,c)=>SAY(t,c||'#e8e2cc'), rnd=(a,b)=>a+Math.random()*(b-a), NS=0, MAXC=6;   // (none: squirrels are pets at the pet store)
+{ const T=TILE, WU=T/.84, say=(t,c)=>SAY(t,c||'#e8e2cc'), rnd=(a,b)=>a+Math.random()*(b-a), NS=6, MAXC=6;
+  WILD.add('squirrel',['EASTERN GREY SQUIRREL','Sciurus carolinensis','forage',15,0]);
   FORAGE.add({names:{nut_acorn:'ACORNS (A HANDFUL)'},prices:{nut_acorn:2}}); FORAGE.sell('nut_acorn');
   const geo=(()=>{ let G=null; return ()=>{ '@later'; if(G)return G; const P=[], C=[], put=(g,m,c)=>{ g=g.toNonIndexed(); g.applyMatrix4(m); const a=g.attributes.position.array; for(let i=0;i<a.length;i++)P.push(a[i]); for(let i=0;i<a.length/3;i++)C.push(...c); };
     const M=(x,y,z,sx=1,sy=1,sz=1,rx=0)=>new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,0,0)),new THREE.Vector3(sx,sy,sz)), g1=[.52,.5,.48], g2=[.66,.63,.6], b=[.86,.82,.76], e=[.08,.07,.07];
@@ -20,7 +21,7 @@ import {WILD} from './144f-wild.js';
   const gy=(x,z)=>SHARED.groundY?SHARED.groundY(x,z):0;
   const build=()=>{ if(!PARK.ready||!PARK.treeItems)return false; const TR=PARK.treeItems().filter(t=>t.top-t.y>3*WU&&PARK.within&&PARK.within(t.x,t.z)); if(!TR.length)return false;
     SQ=[]; for(let i=0;i<NS;i++){ const tr=TR[Math.floor((i*.618+.13)%1*TR.length)], g=new THREE.Group(), me=new THREE.Mesh(geo(),MAT); me.castShadow=true; g.add(me); const hb=new THREE.Mesh(HB,HM); hb.position.y=.1*T; g.add(hb); MAPG.park.add(g);
-      const q={tr,g,me,st:{x:tr.x+rnd(1,4)*WU,z:tr.z+rnd(-3,3)*WU},body:me,mode:'forage',wait:rnd(0,3),to:null,u:0,h:Math.random()*6,y:0,ph:0};
+      const q={key:'squirrel',tr,g,me,st:{x:tr.x+rnd(1,4)*WU,z:tr.z+rnd(-3,3)*WU},body:me,mode:'forage',wait:rnd(0,3),to:null,u:0,h:Math.random()*6,y:0,ph:0};
       q.th={name:'A GREY SQUIRREL',obj:hb,reach:2.6*T,near:3*T,tall:.3*T,act:()=>WILD.watch(q)}; UI.thing(q.th); SQ.push(q); } return true; };
   const trunk=q=>{ const r=Math.min(q.tr.tr||.25*WU,.6*WU)+.03*WU, a=Math.atan2(q.st.z-q.tr.z,q.st.x-q.tr.x); return {x:q.tr.x+Math.cos(a)*r,z:q.tr.z+Math.sin(a)*r}; };
   const cache=q=>{ if(CACHES.length>=MAXC)return; const x=q.st.x, z=q.st.z, me=new THREE.Mesh(MOUND,MM); me.position.set(x,gy(x,z),z); MAPG.park.add(me);

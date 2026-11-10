@@ -14,5 +14,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ok(r.every && r.cloth >= 2 * r.n, 'velvet curtains (as cloth) and venetian blinds on every window (' + r.cloth + ' panels)');
   ok(r.lit > 0, 'the morning sun throws rays through ' + r.lit + ' windows');
   ok(r.saved && r.saved.c === 'velvet' && r.saved.b === 'venetian' && r.cleared && r.back, 'the dressing is saved with the apartment and comes back from it');
+  { await pg.evaluate(() => { for (const W of WINDR.wins) W.open = true; }); let aw = 1; for (let i = 0; i < 100 && aw; i++) { await pg.waitForTimeout(3000); aw = await pg.evaluate(() => WINDRDBG().awake); }
+    ok(aw === 0, 'windows open and you standing still, every curtain comes to rest and stays (owner, 10 Nov 2026: nothing in the apartment moves on its own but fish, animals and water)'); }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs[0] : ''));
   await b.close(); console.log(fails.length ? fails.length + ' failed' : 'windress: all good'); process.exit(fails.length ? 1 : 0); })();

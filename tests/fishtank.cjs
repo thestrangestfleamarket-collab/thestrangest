@@ -13,6 +13,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     let t = null; for (let i = 0; i < 90; i++) { t = await T(); if (t && t.vis && t.fish > 0 && t.kinds.length) break; await pg.waitForTimeout(1000); }
     ok(t && t.vis && t.size[0] >= 3 && t.size[2] >= 1.2, 'the tank builds, large: ' + JSON.stringify(t && t.size));
     ok(t && t.kinds.includes('pfkoi'), 'the Polyfork koi is in it: ' + JSON.stringify(t && t.kinds));
+    ok(t && t.kinds.filter(k => /koi/.test(k)).length >= 4 && t.kinds.includes('goldfish') && t.ways.length >= 2 && t.koiL < .2, 'koi of several colourings, half the size, with a shoal of goldfish, each kind swimming its own way (owner, 10 Nov 2026): ' + JSON.stringify([t && t.kinds, t && t.ways, t && t.koiL]));
     const a = await T(); await pg.waitForTimeout(12000); const c = await T();
     ok(c.steps > a.steps && c.wave > 0 && (c.sy !== a.sy || c.wave !== a.wave), 'the water surface moves (' + a.steps + ' -> ' + c.steps + ' steps, middle height ' + a.sy + ' -> ' + c.sy + ', highest wave ' + a.wave + ' -> ' + c.wave + ' mm)');
     ok(a.f0 && c.f0 && Math.hypot(c.f0[1] - a.f0[1], c.f0[3] - a.f0[3]) > .01, 'the koi swims: ' + JSON.stringify([a.f0, c.f0]));

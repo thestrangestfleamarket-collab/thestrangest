@@ -157,6 +157,59 @@
      }
     }
    }
+  },
+  {
+   "id": "amb",
+   "kind": "file",
+   "runtime": "data/amb.mp3",
+   "made": "tools/sfx-bake.py",
+   "source": {
+    "site": "OpenGameArt",
+    "urls": [
+     "https://opengameart.org/content/100-cc0-sfx-2",
+     "https://opengameart.org/content/crickets-ambient-noise-loopable",
+     "https://opengameart.org/content/ambient-bird-sounds",
+     "https://opengameart.org/content/dog-barking-mono",
+     "https://opengameart.org/content/sirens-and-alarm-noise"
+    ],
+    "authors": {
+     "amb_city": "rubberduck",
+     "amb_crickets": "Wolfgang_",
+     "amb_birds": "isaiah658",
+     "amb_dog": "Brandon Morris",
+     "amb_siren": "aquinn"
+    }
+   },
+   "licence": {
+    "name": "CC0 1.0",
+    "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "snapshot": "data/full/sfx/licence.txt"
+   }
+  },
+  {
+   "id": "fight",
+   "kind": "file",
+   "runtime": "data/fight.mp3",
+   "made": "tools/sfx-bake.py",
+   "source": {
+    "site": "OpenGameArt",
+    "urls": [
+     "https://opengameart.org/content/37-hitspunches",
+     "https://opengameart.org/content/swishes-sound-pack",
+     "https://opengameart.org/content/20-sword-sound-effects-attacks-and-clashes",
+     "https://opengameart.org/content/10-impactshield-blocks"
+    ],
+    "authors": {
+     "punch, hurt": "Independent.nu",
+     "swing": "artisticdude",
+     "blade, clash, block": "StarNinjas"
+    }
+   },
+   "licence": {
+    "name": "CC0 1.0",
+    "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "snapshot": "data/full/sfx/licence.txt"
+   }
   }
  ]
 }

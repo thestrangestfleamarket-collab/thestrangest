@@ -12,8 +12,10 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
   const click=async sel=>{ await pg.click('#fday '+sel); await wait(700); };
   await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&firstday=1&hour=12',{timeout:240000}); await pg.waitForFunction(()=>window.__started,null,{timeout:300000});
   rec('a new player sees the first day before the world, at the name',await U(()=>{ const r=document.getElementById('fday'); return r&&!r.hidden&&FIRSTDAY.on&&!!document.getElementById('fdn'); }));
-  await U(()=>AVATAR.ready()); await wait(1500);
-  const lit=await pg.evaluate(()=>{ const c=document.querySelector('#fday canvas'), d=c.getContext('2d').getImageData(0,0,c.width,c.height).data; let n=0; for(let i=3;i<d.length;i+=4)if(d[i]>0)n++; return n; });
+  await U(()=>AVATAR.ready());
+  // (the stage paints every frame; in software rendering its first picture can take a few seconds to come)
+  const litN=()=>pg.evaluate(()=>{ const c=document.querySelector('#fday canvas'), d=c.getContext('2d').getImageData(0,0,c.width,c.height).data; let n=0; for(let i=3;i<d.length;i+=4)if(d[i]>0)n++; return n; });
+  let lit=0; for(const t=Date.now();Date.now()-t<30000&&(lit=await litN())<=3000;await wait(500));
   rec('your avatar stands on the stage',lit>3000,'pixels '+lit); await shot('1-name');
   await pg.fill('#fdn','rosa'); await click('[data-nav="1"]');
   rec('no date of birth: you stay on the first step',await pg.evaluate(()=>!!document.getElementById('fdn')&&/DATE OF BIRTH/.test(document.querySelector('#fday .why').textContent)));

@@ -1,4 +1,4 @@
-// THE PETRI CHECK: node tests/arcade-petri.cjs [dist/market.html]. Enters THE ARCADE, plays PETRI (the dish with bots only, off the website): the coin starts you at mass 10 among eleven others; eating pellets grows you; SPACE splits you in two and the pieces merge back; C ejects a blob and costs mass; a virus bursts a big cell; a bot made big eats you and it is GAME OVER with the best mass; the attract bot steers on its own. Exits 1 if anything fails.
+// THE PETRI CHECK: node tests/arcade-petri.cjs [dist/market.html]. Enters THE ARCADE, plays PETRI (alone in the dish off the website, no bots): the coin starts you at mass 10, the only one in it; eating pellets grows you; SPACE splits you in two and the pieces merge back; C ejects a blob and costs mass; a virus bursts a big cell; a big cell eats you and it is GAME OVER with the best mass. Exits 1 if anything fails.
 const {chromium}=require('playwright'), path=require('path');
 let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c){ bad++; if(process.env.GITHUB_ACTIONS)console.log('::error title=arcade-petri::'+String(m).replace(/\n/g,' ').slice(0,900)); } };
 (async()=>{
@@ -12,20 +12,17 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c){ bad++; 
   ok(await pg.waitForFunction(()=>STORE.cabs.on&&STORE.cabs.dbg().loaded,null,{timeout:90000}).then(()=>true,()=>false),"PETRI's code loads when the cabinet is played");
   const D=()=>pg.evaluate(()=>STORE.cabs.dbg()), G=()=>pg.evaluate(()=>PETRIDBG());
   const gwait=async(sec,until)=>{ const t0=(await G()).t, w0=Date.now(); for(;;){ const g=await G(); if(g.t-t0>=sec||(until&&until(g))||Date.now()-w0>60000)return g; await pg.waitForTimeout(50); } };
-  await pg.keyboard.press('Space'); await pg.waitForTimeout(400); let d=await D(), g=await G(); ok(d.mode==='play'&&g.players===12&&g.mass>=10&&g.mass<14&&g.pellets===1000,'the coin drops you in the dish at mass 10 among eleven others ('+JSON.stringify({mode:d.mode,players:g.players,mass:g.mass,pellets:g.pellets})+')');
-  await pg.evaluate(()=>{ const C=PETRIDBG().cheat; C.still(); for(let i=1;i<=6;i++)C.pellet(i*30,0); }); await pg.keyboard.down('ArrowRight'); g=await gwait(3,g=>g.mass>=14); await pg.keyboard.up('ArrowRight');
+  await pg.keyboard.press('Space'); await pg.waitForTimeout(400); let d=await D(), g=await G(); ok(d.mode==='play'&&g.players===1&&g.mass>=10&&g.mass<14&&g.pellets===1000,'the coin drops you in the dish at mass 10, alone: no bots ('+JSON.stringify({mode:d.mode,players:g.players,mass:g.mass,pellets:g.pellets})+')');
+  await pg.evaluate(()=>{ const C=PETRIDBG().cheat; for(let i=1;i<=6;i++)C.pellet(i*30,0); }); await pg.keyboard.down('ArrowRight'); g=await gwait(3,g=>g.mass>=14); await pg.keyboard.up('ArrowRight');
   ok(g.mass>=14,'steering right over pellets eats them and grows you (mass '+g.mass.toFixed(1)+')');
   await pg.evaluate(()=>PETRIDBG().cheat.grow(120)); await gwait(.1); await pg.keyboard.press('Space'); g=await gwait(1,g=>g.cells===2); ok(g.cells===2,'SPACE splits you in two ('+g.cells+' cells)');
   await pg.evaluate(()=>PETRIDBG().cheat.merge()); g=await gwait(4,g=>g.cells===1); ok(g.cells===1,'the pieces merge back when their clock allows ('+g.cells+' cell)');
   const m0=(await G()).mass, b0=(await G()).blobs; await pg.keyboard.press('c'); g=await gwait(.5,g=>g.blobs>b0); ok(g.blobs>b0&&g.mass<m0-10,'C ejects a blob and costs mass ('+m0.toFixed(0)+' → '+g.mass.toFixed(0)+', blobs '+b0+' → '+g.blobs+')');
   await pg.evaluate(()=>{ const C=PETRIDBG().cheat; C.grow(400); C.virus(40,0); }); await pg.keyboard.down('ArrowRight'); g=await gwait(3,g=>g.cells>=3); await pg.keyboard.up('ArrowRight'); ok(g.cells>=3,'a big cell bursts on a virus ('+g.cells+' cells)');
   await pg.evaluate(()=>{ const C=PETRIDBG().cheat; C.merge(); }); await gwait(4,g=>g.cells===1);
-  await pg.evaluate(()=>{ const C=PETRIDBG().cheat; C.grow(50); C.bot(0,4000,60,0); }); await pg.keyboard.down('ArrowRight'); g=await gwait(4,g=>g.dead); await pg.keyboard.up('ArrowRight'); await pg.waitForTimeout(300); d=await D();
+  await pg.evaluate(()=>{ const C=PETRIDBG().cheat; C.grow(50); C.big(4000,60,0); }); await pg.keyboard.down('ArrowRight'); g=await gwait(4,g=>g.dead); await pg.keyboard.up('ArrowRight'); await pg.waitForTimeout(300); d=await D();
   ok(g.dead&&d.over&&d.mode!=='play'&&/MASS \d+ · \d+ EATEN/.test(d.g&&d.g.sub||''),'a cell five times your mass eats you: GAME OVER with the best mass ('+JSON.stringify({dead:g.dead,over:d.over,mode:d.mode,sub:d.g&&d.g.sub})+')');
   await pg.keyboard.press('Escape'); await pg.waitForTimeout(300); ok(!(await pg.evaluate(()=>STORE.cabs.on)),'ESC leaves the cabinet');
-  await pg.evaluate(()=>{ STORE.cabs.play('PETRI'); }); await pg.waitForFunction(()=>STORE.cabs.on&&STORE.cabs.dbg().loaded,null,{timeout:90000}); await pg.keyboard.press('Space'); await pg.waitForTimeout(300);
-  const p0=await G(); await pg.evaluate(()=>PETRIDBG().cheat.auto(1)); g=await gwait(6,g=>Math.hypot(g.x-p0.x,g.y-p0.y)>60); ok(Math.hypot(g.x-p0.x,g.y-p0.y)>60,'the attract bot steers you by itself ('+Math.hypot(g.x-p0.x,g.y-p0.y).toFixed(0)+' units)');
-  await pg.keyboard.press('Escape'); await pg.waitForTimeout(200);
   ok(!errs.length&&!late.length,'no page errors, no slow chunk fetch '+errs.concat(late).slice(0,3).join(' | '));
   await b.close(); console.log(bad?bad+' FAILED':'all ok'); process.exit(bad?1:0);
 })().catch(e=>{ console.error(e); process.exit(1); });

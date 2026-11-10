@@ -21,7 +21,7 @@ const TREES={h:null,want:null}; window.TREES=TREES;
   const near=(l,x,z)=>{ const dx=l[3]-l[0], dz=l[5]-l[2], L=dx*dx+dz*dz; return L<1e-6?0:Math.max(0,Math.min(1,((x-l[0])*dx+(z-l[2])*dz)/L)); };
   const limbs=it=>it.lbs||(it.lbs=(it.lb||[]).filter(l=>Math.abs(l[4]-l[1])<.7*Math.hypot(l[3]-l[0],l[4]-l[1],l[5]-l[2])&&Math.max(l[6],l[7])>=RH&&llen(l)>.3*T));
   const sols=it=>it.sols||(it.sols=SHARED.solids.filter(s=>s[0]<it.x+it.r+T&&s[2]>it.x-it.r-T&&s[1]<it.z+it.r+T&&s[3]>it.z-it.r-T));
-  const outside=(it,p)=>sols(it).every(s=>Math.hypot(Math.max(s[0]-p.x,0,p.x-s[2]),Math.max(s[1]-p.z,0,p.z-s[3]))>=.42);   // clear of every solid (the trunk's, a hut's) by the walker's own radius, or the walk would shove you off
+  const outside=(it,p)=>p.y>it.y+4*MH||sols(it).every(s=>Math.hypot(Math.max(s[0]-p.x,0,p.x-s[2]),Math.max(s[1]-p.z,0,p.z-s[3]))>=.42);   // clear of every solid (the trunk's foot, a hut's) by the walker's own radius, or the walk would shove you off; high up there are none
   const limbTop=(it,x,z,py)=>{ let best=null; for(const l of limbs(it)){ const u=near(l,x,z), p=at(l,u); if(p.r<RS||!outside(it,p)||Math.hypot(p.x-x,p.z-z)>p.r+.25*T)continue; const top=p.y+p.r; if(top<=py+.6*T&&(best==null||top>best))best=top; } return best; };
   STORE.stackGround=(x,z)=>{ if(C.it&&TREES.h!=null&&Math.hypot(x-pos.x,z-pos.z)<.6*T)return TREES.h; const it=TREES.stand; if(it){ const y=limbTop(it,x,z,SHARED.py); if(y!=null)return y; } return sg0?sg0(x,z):null; };
   const grabAt=(it,x,z,py,far)=>{ let best=null; for(const l of limbs(it)){ const u=near(l,x,z), p=at(l,u), d=Math.hypot(p.x-x,p.z-z); if(d>far||!outside(it,p))continue; const h=p.y+p.r-py; if(h<1.6*T||h>REACH())continue; if(!best||d<best.d)best={l,u,d}; } return best; };   // the branch a jump from here catches
@@ -73,7 +73,7 @@ const TREES={h:null,want:null}; window.TREES=TREES;
     const gap=RIG.CLIMB.gap/kx(); let d=0; for(const ly of HTS){ const h=cast(it,dx/l,dz/l,SHARED.py+ly/ky()); d=Math.max(d,h?Math.hypot(h.x-it.x,h.z-it.z):0); } if(!d)d=rT(it); C.d=C.d==null?d:C.d+(d-C.d)*Math.min(1,dt*4); d=C.d;   // the body hangs back an arm's length from the widest bark between its feet and hands, eased so one bulge doesn't jerk it out
     pos.x=it.x+dx/l*(d+gap); pos.z=it.z+dz/l*(d+gap); SHARED.heading=Math.atan2(-dx,-dz);
     const cap=Math.min(HMAX(it),forkCap(it)); let dir=up?1:dn?-1:0;
-    if(jump&&!C.leap){ leapOff(it,dx/l,dz/l); return true; }
+    if(jump&&!C.leap){ const g=grabAt(it,pos.x,pos.z,SHARED.py,1.5*T); if(g){ onLimb(it,g); return true; } leapOff(it,dx/l,dz/l); return true; }   // SPACE catches a branch within reach, or jumps you off (owner, 10 Nov 2026: the giant's limbs "you can climb all the way up")
     if(C.leap){ const L=C.leap; L.t+=dt; const e=Math.min(1,L.t/L.T); C.h=L.h0+(L.h1-L.h0)*e*(2-e); dir=1; if(e>=1)C.leap=null; }
     else { C.h=Math.max(0,Math.min(cap,C.h+dir*dt*SPD())); if(up&&C.h>=cap-1e-6)tell(); }
     const cyc=Math.floor(C.h/(PER*ZU)); if(cyc!==C.cyc){ C.cyc=cyc; roll(); }   // each reach up or down works the skill

@@ -1,0 +1,206 @@
+<title>Big Trees Redo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+/* layout: a field guide page, plan on the left of each section, notes beside it, stacked on phones */
+:root{--bg:#f3f5ef;--fg:#1f2a1d;--mute:#5b6a57;--line:#cfd8c8;--card:#ffffff;--leaf:#4f8a3f;--new:#d9822b;--giant:#7a4fb8;--water:#8fb9d6;--grass:#cfe3b6;--path:#e8dcc2;
+--disp:'Fraunces',Georgia,serif;--body:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',ui-monospace,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141a13;--fg:#e4ecdf;--mute:#9aab94;--line:#2e3a2b;--card:#1b231a;--leaf:#79b864;--new:#f0a04d;--giant:#b48ce8;--water:#3d6380;--grass:#2c3f24;--path:#5a5040;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141a13;--fg:#e4ecdf;--mute:#9aab94;--line:#2e3a2b;--card:#1b231a;--leaf:#79b864;--new:#f0a04d;--giant:#b48ce8;--water:#3d6380;--grass:#2c3f24;--path:#5a5040;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.55 var(--body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 60px}
+main{max-width:1080px;margin:0 auto;display:grid;gap:40px}
+h1{font:600 clamp(28px,5vw,42px)/1.1 var(--disp);margin:0;text-wrap:balance}
+h2{font:600 24px/1.2 var(--disp);margin:0 0 4px;text-wrap:balance}
+.lede{color:var(--mute);max-width:65ch;margin:8px 0 0}
+.eyebrow{font:500 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+section{display:grid;gap:14px}
+.row{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:760px){.row{grid-template-columns:1fr}}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tabs button{font:500 13px var(--body);padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.tabs button:focus-visible{outline:2px solid var(--giant);outline-offset:2px}
+canvas{display:block;width:100%;max-width:100%;border-radius:10px;border:1px solid var(--line);background:var(--card)}
+#plan{aspect-ratio:286/219}
+#view{aspect-ratio:16/10;cursor:grab}
+.notes{display:grid;gap:12px;min-width:0}
+.notes p{margin:0}
+.legend{display:grid;gap:6px;font-size:13px}
+.legend span{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:8px;vertical-align:-1px}
+dl{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:0;font-size:13px}
+dt{color:var(--mute)}dd{margin:0;font-variant-numeric:tabular-nums}
+.pick{border-top:1px solid var(--line);padding-top:18px;display:grid;gap:8px}
+.pick ol{margin:0;padding-left:20px;display:grid;gap:6px;max-width:70ch}
+code{font:13px var(--mono)}
+</style>
+<main>
+<header>
+<div class="eyebrow">Central Park · Section A · mockup</div>
+<h1>The big climbing trees, redone</h1>
+<p class="lede">The 18 big trees come in toward the park's middle and shrink by 25 to 50 percent. Twenty more of the same kinds are scattered across the park. One giant, twice today's tallest, stands as a hollow green shell with thick limbs inside that you can climb to the top.</p>
+</header>
+
+<section>
+<div class="eyebrow">1 · Where they stand</div>
+<h2>Park plan</h2>
+<div class="tabs" id="lay" role="group" aria-label="Layout">
+<button id="l0" aria-pressed="false" data-k="now">Today</button>
+<button id="l1" aria-pressed="true" data-k="L1">Layout 1: pulled in</button>
+<button id="l2" aria-pressed="false" data-k="L2">Layout 2: same spots</button>
+</div>
+<div class="tabs" id="gsp" role="group" aria-label="Giant's spot">
+<button id="g0" aria-pressed="true" data-k="0">Giant at A: by the plaza</button>
+<button id="g1" aria-pressed="false" data-k="1">Giant at B: west lawn</button>
+</div>
+<div class="row">
+<canvas id="plan" width="1144" height="876"></canvas>
+<div class="notes">
+<div class="legend">
+<div><span style="background:var(--leaf)"></span>Today's 18 trees, made smaller</div>
+<div><span style="background:var(--new)"></span>20 new trees</div>
+<div><span style="background:var(--giant)"></span>The giant</div>
+<div><span style="border:1.5px dashed var(--mute)"></span>Where a tree stands today</div>
+</div>
+<p id="ldesc"></p>
+<dl id="stats"></dl>
+<p style="color:var(--mute);font-size:13px">Circles are crowns to scale. North is up; Market St and the park gate are at the bottom. The big lake fills the top right. No trunk stands on a path, in the farm, the castle, the plaza or the water.</p>
+</div>
+</div>
+</section>
+
+<section>
+<div class="eyebrow">2 · How big</div>
+<h2>Trees in 3D</h2>
+<div class="tabs" id="sc" role="group" aria-label="View">
+<button id="v0" aria-pressed="true" data-k="size">Before and after</button>
+<button id="v1" aria-pressed="false" data-k="giant">The giant</button>
+<button id="v2" aria-pressed="false" data-k="cut">The giant, cut open</button>
+<button id="v3" aria-pressed="false" data-k="inside">Inside, on a limb</button>
+</div>
+<div class="row">
+<canvas id="view"></canvas>
+<div class="notes"><p id="vdesc"></p><dl id="vstats"></dl><p style="color:var(--mute);font-size:13px">Drag to turn, scroll or pinch to zoom. The orange figure is a 1.8 m player.</p></div>
+</div>
+</section>
+
+<section class="pick">
+<div class="eyebrow">Your picks</div>
+<ol>
+<li>Layout: <b>1</b> (pulled in toward the plaza) or <b>2</b> (same spots, only smaller)?</li>
+<li>Giant's spot: <b>A</b> (by the plaza, where today's tallest is) or <b>B</b> (west lawn)?</li>
+<li>Giant's height: 2× today's tallest, about 148 m as shown, or 2× a regular big tree, about 124 m?</li>
+<li>The giant's way in: shown here as an opening under the shell round the trunk, so you climb the bare trunk up into it. Keep that, or also cut a gap in the side?</li>
+</ol>
+</section>
+</main>
+
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+const PLAN={"old": [{"kind": "A", "x": 176.7, "y": 85.7, "face": 166, "s": 1}, {"kind": "B", "x": 136.2, "y": 129.3, "face": 226, "s": 1}, {"kind": "C", "x": 76.2, "y": 104.1, "face": 286, "s": 1}, {"kind": "A", "x": 49.3, "y": 54.3, "face": 346, "s": 1}, {"kind": "B", "x": 106.4, "y": 25.3, "face": 46, "s": 1}, {"kind": "C", "x": 173.8, "y": 31.4, "face": 106, "s": 1}, {"kind": "A", "x": 120, "y": 72, "face": 0, "s": 1.2}, {"kind": "B", "x": 127.8, "y": 96.6, "face": 137, "s": 0.9}, {"kind": "C", "x": 91, "y": 78.6, "face": 274, "s": 0.884}, {"kind": "A", "x": 135, "y": 49.9, "face": 51, "s": 0.897}, {"kind": "B", "x": 149, "y": 65.4, "face": 188, "s": 0.884}, {"kind": "C", "x": 82.5, "y": 127.2, "face": 325, "s": 0.723}, {"kind": "A", "x": 42.1, "y": 33.8, "face": 102, "s": 0.636}, {"kind": "B", "x": 197.9, "y": 110.2, "face": 239, "s": 0.636}, {"kind": "C", "x": 143.3, "y": 145.9, "face": 16, "s": 0.676}, {"kind": "A", "x": 96.7, "y": -1.9, "face": 153, "s": 0.676}, {"kind": "B", "x": 165, "y": 5.7, "face": 290, "s": 0.665}, {"kind": "C", "x": 195, "y": 72, "face": 67, "s": 0.687}], "park": [-24, -38, 262, 181], "paths": [[[112, -37], [112, 180]], [[-23, 59.5], [261, 59.5]], [[112, 25], [140.5, 12]], [[43, 59.5], [43, 110.6]]], "giants": [{"id": "A", "x": 118, "y": 66, "label": "the middle, arching over the plaza and the crossing paths"}, {"id": "B", "x": 108, "y": 134, "label": "the north lawn, between the castle and the big lake"}], "L1_0": [{"kind": "A", "x": 173.8, "y": 85.7, "face": 166, "s": 0.613, "old": [176.7, 85.7, 1], "new": false}, {"kind": "B", "x": 132.0, "y": 120.9, "face": 226, "s": 0.654, "old": [136.2, 129.3, 1], "new": false}, {"kind": "C", "x": 73.1, "y": 105.9, "face": 286, "s": 0.5, "old": [76.2, 104.1, 1], "new": false}, {"kind": "A", "x": 59.9, "y": 48.9, "face": 346, "s": 0.69, "old": [49.3, 54.3, 1], "new": false}, {"kind": "B", "x": 103.1, "y": -10.3, "face": 46, "s": 0.699, "old": [106.4, 25.3, 1], "new": false}, {"kind": "C", "x": 170.5, "y": 41.7, "face": 106, "s": 0.646, "old": [173.8, 31.4, 1], "new": false}, {"kind": "A", "x": 176.8, "y": 24.1, "face": 0, "s": 0.612, "old": [120, 72, 1.2], "new": false}, {"kind": "B", "x": 131.6, "y": 139.6, "face": 137, "s": 0.594, "old": [127.8, 96.6, 0.9], "new": false}, {"kind": "C", "x": 56.4, "y": 68.1, "face": 274, "s": 0.599, "old": [91, 78.6, 0.884], "new": false}, {"kind": "A", "x": 186.3, "y": 69.0, "face": 51, "s": 0.549, "old": [135, 49.9, 0.897], "new": false}, {"kind": "B", "x": 147.8, "y": 123.9, "face": 188, "s": 0.46, "old": [149, 65.4, 0.884], "new": false}, {"kind": "C", "x": 58.5, "y": 102.8, "face": 325, "s": 0.524, "old": [82.5, 127.2, 0.723], "new": false}, {"kind": "A", "x": 39.2, "y": 48.4, "face": 102, "s": 0.42, "old": [42.1, 33.8, 0.636], "new": false}, {"kind": "B", "x": 179.4, "y": 99.6, "face": 239, "s": 0.35, "old": [197.9, 110.2, 0.636], "new": false}, {"kind": "C", "x": 119.2, "y": 158.4, "face": 16, "s": 0.423, "old": [143.3, 145.9, 0.676], "new": false}, {"kind": "A", "x": 119.1, "y": 10.2, "face": 153, "s": 0.483, "old": [96.7, -1.9, 0.676], "new": false}, {"kind": "B", "x": 161.6, "y": 27.1, "face": 290, "s": 0.371, "old": [165, 5.7, 0.665], "new": false}, {"kind": "C", "x": 172.5, "y": 70.2, "face": 67, "s": 0.377, "old": [195, 72, 0.687], "new": false}, {"kind": "A", "x": -2.2, "y": 92.9, "face": 23, "s": 0.557, "new": true}, {"kind": "B", "x": -8.9, "y": 31.0, "face": 297, "s": 0.463, "new": true}, {"kind": "C", "x": 96.0, "y": 132.4, "face": 70, "s": 0.498, "new": true}, {"kind": "A", "x": 8.6, "y": 157.5, "face": 319, "s": 0.564, "new": true}, {"kind": "B", "x": 218.1, "y": 22.2, "face": 289, "s": 0.519, "new": true}, {"kind": "C", "x": 175.9, "y": 3.6, "face": 122, "s": 0.432, "new": true}, {"kind": "A", "x": 30.3, "y": 16.5, "face": 100, "s": 0.615, "new": true}, {"kind": "B", "x": 0.7, "y": 110.1, "face": 323, "s": 0.503, "new": true}, {"kind": "C", "x": 19.1, "y": -4.4, "face": 305, "s": 0.577, "new": true}, {"kind": "A", "x": -2.2, "y": 8.7, "face": 41, "s": 0.532, "new": true}, {"kind": "B", "x": 123.6, "y": -19.5, "face": 12, "s": 0.575, "new": true}, {"kind": "C", "x": 31.8, "y": 85.5, "face": 276, "s": 0.567, "new": true}, {"kind": "A", "x": 54.3, "y": -14.9, "face": 13, "s": 0.442, "new": true}, {"kind": "B", "x": 157.4, "y": -6.5, "face": 332, "s": 0.554, "new": true}, {"kind": "C", "x": 235.6, "y": 36.1, "face": 179, "s": 0.479, "new": true}, {"kind": "A", "x": 143.0, "y": 161.1, "face": 55, "s": 0.369, "new": true}, {"kind": "B", "x": 102.4, "y": 157.9, "face": 159, "s": 0.465, "new": true}, {"kind": "C", "x": 220.1, "y": 68.2, "face": 175, "s": 0.465, "new": true}, {"kind": "A", "x": 164.8, "y": 131.0, "face": 113, "s": 0.384, "new": true}, {"kind": "B", "x": 90.2, "y": 9.6, "face": 197, "s": 0.395, "new": true}], "L2_0": [{"kind": "A", "x": 176.7, "y": 85.7, "face": 166, "s": 0.613, "old": [176.7, 85.7, 1], "new": false}, {"kind": "B", "x": 136.2, "y": 129.3, "face": 226, "s": 0.64, "old": [136.2, 129.3, 1], "new": false}, {"kind": "C", "x": 76.2, "y": 104.1, "face": 286, "s": 0.731, "old": [76.2, 104.1, 1], "new": false}, {"kind": "A", "x": 20.5, "y": 52.4, "face": 346, "s": 0.616, "old": [49.3, 54.3, 1], "new": false}, {"kind": "B", "x": 97.1, "y": 4.9, "face": 46, "s": 0.746, "old": [106.4, 25.3, 1], "new": false}, {"kind": "C", "x": 173.8, "y": 31.4, "face": 106, "s": 0.616, "old": [173.8, 31.4, 1], "new": false}, {"kind": "A", "x": 156.1, "y": 126.8, "face": 0, "s": 0.732, "old": [120, 72, 1.2], "new": false}, {"kind": "B", "x": 102.6, "y": 132.1, "face": 137, "s": 0.516, "old": [127.8, 96.6, 0.9], "new": false}, {"kind": "C", "x": 130.9, "y": 148.1, "face": 274, "s": 0.605, "old": [91, 78.6, 0.884], "new": false}, {"kind": "A", "x": 135.8, "y": 1.5, "face": 51, "s": 0.662, "old": [135, 49.9, 0.897], "new": false}, {"kind": "B", "x": 192.0, "y": 98.6, "face": 188, "s": 0.581, "old": [149, 65.4, 0.884], "new": false}, {"kind": "C", "x": 82.5, "y": 127.2, "face": 325, "s": 0.491, "old": [82.5, 127.2, 0.723], "new": false}, {"kind": "A", "x": 42.1, "y": 33.8, "face": 102, "s": 0.352, "old": [42.1, 33.8, 0.636], "new": false}, {"kind": "B", "x": 645744737.5, "y": 299675779.8, "face": 239, "s": 0.461, "old": [197.9, 110.2, 0.636], "new": false}, {"kind": "C", "x": 147.8, "y": 147.6, "face": 16, "s": 0.45, "old": [143.3, 145.9, 0.676], "new": false}, {"kind": "A", "x": 89.9, "y": -11.0, "face": 153, "s": 0.45, "old": [96.7, -1.9, 0.676], "new": false}, {"kind": "B", "x": 165.9, "y": -8.6, "face": 290, "s": 0.421, "old": [165, 5.7, 0.665], "new": false}, {"kind": "C", "x": 195, "y": 72, "face": 67, "s": 0.392, "old": [195, 72, 0.687], "new": false}, {"kind": "A", "x": 192.1, "y": 15.9, "face": 280, "s": 0.433, "new": true}, {"kind": "B", "x": 232.8, "y": 98.2, "face": 299, "s": 0.598, "new": true}, {"kind": "C", "x": 86.0, "y": 165.5, "face": 92, "s": 0.49, "new": true}, {"kind": "A", "x": -5.7, "y": 132.1, "face": 164, "s": 0.597, "new": true}, {"kind": "B", "x": 199.0, "y": -1.8, "face": 120, "s": 0.518, "new": true}, {"kind": "C", "x": 180.8, "y": 120.0, "face": 278, "s": 0.428, "new": true}, {"kind": "A", "x": 204.4, "y": -22.1, "face": 291, "s": 0.596, "new": true}, {"kind": "B", "x": 10.0, "y": 149.3, "face": 44, "s": 0.469, "new": true}, {"kind": "C", "x": 242.7, "y": 41.7, "face": 312, "s": 0.448, "new": true}, {"kind": "A", "x": 38.4, "y": -2.9, "face": 29, "s": 0.512, "new": true}, {"kind": "B", "x": 12.5, "y": 7.7, "face": 245, "s": 0.467, "new": true}, {"kind": "C", "x": 179.9, "y": 50.8, "face": 182, "s": 0.46, "new": true}, {"kind": "A", "x": 238.9, "y": 9.3, "face": 341, "s": 0.539, "new": true}, {"kind": "B", "x": 10.9, "y": 131.7, "face": 323, "s": 0.457, "new": true}, {"kind": "C", "x": 64.2, "y": 162.3, "face": 61, "s": 0.595, "new": true}, {"kind": "A", "x": -8.4, "y": 70.5, "face": 240, "s": 0.512, "new": true}, {"kind": "B", "x": 37.9, "y": -21.5, "face": 277, "s": 0.372, "new": true}, {"kind": "C", "x": 68.9, "y": 0.9, "face": 64, "s": 0.494, "new": true}, {"kind": "A", "x": 229.3, "y": 29.9, "face": 262, "s": 0.581, "new": true}, {"kind": "B", "x": 14.3, "y": 112.6, "face": 323, "s": 0.469, "new": true}], "L1_1": [{"kind": "A", "x": 152.1, "y": 77.5, "face": 166, "s": 0.613, "old": [176.7, 85.7, 1], "new": false}, {"kind": "B", "x": 129.8, "y": 78.2, "face": 226, "s": 0.64, "old": [136.2, 129.3, 1], "new": false}, {"kind": "C", "x": 90.7, "y": 81.6, "face": 286, "s": 0.61, "old": [76.2, 104.1, 1], "new": false}, {"kind": "A", "x": 73.0, "y": 47.9, "face": 346, "s": 0.6, "old": [49.3, 54.3, 1], "new": false}, {"kind": "B", "x": 103.6, "y": 24.7, "face": 46, "s": 0.728, "old": [106.4, 25.3, 1], "new": false}, {"kind": "C", "x": 150.3, "y": 43.8, "face": 106, "s": 0.69, "old": [173.8, 31.4, 1], "new": false}, {"kind": "A", "x": 120.5, "y": -0.8, "face": 0, "s": 0.635, "old": [120, 72, 1.2], "new": false}, {"kind": "B", "x": 128.6, "y": 47.6, "face": 137, "s": 0.508, "old": [127.8, 96.6, 0.9], "new": false}, {"kind": "C", "x": 90.3, "y": 8.4, "face": 274, "s": 0.451, "old": [91, 78.6, 0.884], "new": false}, {"kind": "A", "x": 156.9, "y": 25.6, "face": 51, "s": 0.648, "old": [135, 49.9, 0.897], "new": false}, {"kind": "B", "x": 168.6, "y": -5.4, "face": 188, "s": 0.604, "old": [149, 65.4, 0.884], "new": false}, {"kind": "C", "x": 88.2, "y": 46.0, "face": 325, "s": 0.439, "old": [82.5, 127.2, 0.723], "new": false}, {"kind": "A", "x": 54.5, "y": 22.1, "face": 102, "s": 0.418, "old": [42.1, 33.8, 0.636], "new": false}, {"kind": "B", "x": 165.3, "y": 92.6, "face": 239, "s": 0.373, "old": [197.9, 110.2, 0.636], "new": false}, {"kind": "C", "x": 162.0, "y": 129.5, "face": 16, "s": 0.456, "old": [143.3, 145.9, 0.676], "new": false}, {"kind": "A", "x": 101.1, "y": 0.7, "face": 153, "s": 0.459, "old": [96.7, -1.9, 0.676], "new": false}, {"kind": "B", "x": 138.5, "y": 21.0, "face": 290, "s": 0.467, "old": [165, 5.7, 0.665], "new": false}, {"kind": "C", "x": 186.0, "y": 50.4, "face": 67, "s": 0.479, "old": [195, 72, 0.687], "new": false}, {"kind": "A", "x": 184.4, "y": 101.9, "face": 286, "s": 0.496, "new": true}, {"kind": "B", "x": 224.8, "y": 95.5, "face": 72, "s": 0.439, "new": true}, {"kind": "C", "x": 33.5, "y": 79.4, "face": 309, "s": 0.491, "new": true}, {"kind": "A", "x": 238.4, "y": 81.1, "face": 62, "s": 0.617, "new": true}, {"kind": "B", "x": 240.1, "y": 21.0, "face": 65, "s": 0.483, "new": true}, {"kind": "C", "x": 183.0, "y": 15.5, "face": 255, "s": 0.49, "new": true}, {"kind": "A", "x": 185.0, "y": -11.1, "face": 128, "s": 0.493, "new": true}, {"kind": "B", "x": 3.7, "y": 156.7, "face": 45, "s": 0.394, "new": true}, {"kind": "C", "x": 50.2, "y": -16.8, "face": 215, "s": 0.576, "new": true}, {"kind": "A", "x": 205.6, "y": 67.6, "face": 282, "s": 0.366, "new": true}, {"kind": "B", "x": 30.2, "y": -12.8, "face": 80, "s": 0.405, "new": true}, {"kind": "C", "x": 194.7, "y": 33.6, "face": 263, "s": 0.481, "new": true}, {"kind": "A", "x": 21.8, "y": 166.5, "face": 168, "s": 0.395, "new": true}, {"kind": "B", "x": -3.8, "y": 36.8, "face": 5, "s": 0.482, "new": true}, {"kind": "C", "x": 6.9, "y": 13.9, "face": 258, "s": 0.475, "new": true}, {"kind": "A", "x": -9.6, "y": 4.8, "face": 50, "s": 0.458, "new": true}, {"kind": "B", "x": 218.1, "y": -16.2, "face": 330, "s": 0.476, "new": true}, {"kind": "C", "x": -2.2, "y": 92.9, "face": 23, "s": 0.557, "new": true}, {"kind": "A", "x": 204.1, "y": 11.0, "face": 128, "s": 0.547, "new": true}, {"kind": "B", "x": 200.3, "y": 98.9, "face": 139, "s": 0.453, "new": true}], "L2_1": [{"kind": "A", "x": 176.7, "y": 85.7, "face": 166, "s": 0.613, "old": [176.7, 85.7, 1], "new": false}, {"kind": "B", "x": 164.1, "y": 130.7, "face": 226, "s": 0.64, "old": [136.2, 129.3, 1], "new": false}, {"kind": "C", "x": 59.0, "y": 109.5, "face": 286, "s": 0.579, "old": [76.2, 104.1, 1], "new": false}, {"kind": "A", "x": 41.0, "y": 47.6, "face": 346, "s": 0.712, "old": [49.3, 54.3, 1], "new": false}, {"kind": "B", "x": 104.7, "y": 17.3, "face": 46, "s": 0.728, "old": [106.4, 25.3, 1], "new": false}, {"kind": "C", "x": 173.8, "y": 31.4, "face": 106, "s": 0.657, "old": [173.8, 31.4, 1], "new": false}, {"kind": "A", "x": 124.8, "y": -15.5, "face": 0, "s": 0.834, "old": [120, 72, 1.2], "new": false}, {"kind": "B", "x": 123.1, "y": 82.1, "face": 137, "s": 0.508, "old": [127.8, 96.6, 0.9], "new": false}, {"kind": "C", "x": 91, "y": 78.6, "face": 274, "s": 0.654, "old": [91, 78.6, 0.884], "new": false}, {"kind": "A", "x": 135, "y": 49.9, "face": 51, "s": 0.557, "old": [135, 49.9, 0.897], "new": false}, {"kind": "B", "x": 163.9, "y": 47.7, "face": 188, "s": 0.569, "old": [149, 65.4, 0.884], "new": false}, {"kind": "C", "x": 19.6, "y": 116.7, "face": 325, "s": 0.533, "old": [82.5, 127.2, 0.723], "new": false}, {"kind": "A", "x": 45.0, "y": 24.0, "face": 102, "s": 0.429, "old": [42.1, 33.8, 0.636], "new": false}, {"kind": "B", "x": 197.9, "y": 110.2, "face": 239, "s": 0.419, "old": [197.9, 110.2, 0.636], "new": false}, {"kind": "C", "x": 444869050.9, "y": 128863628.7, "face": 16, "s": 0.419, "old": [143.3, 145.9, 0.676], "new": false}, {"kind": "A", "x": 96.7, "y": -1.9, "face": 153, "s": 0.49, "old": [96.7, -1.9, 0.676], "new": false}, {"kind": "B", "x": 168.2, "y": 4.5, "face": 290, "s": 0.373, "old": [165, 5.7, 0.665], "new": false}, {"kind": "C", "x": 195, "y": 72, "face": 67, "s": 0.375, "old": [195, 72, 0.687], "new": false}, {"kind": "A", "x": 187.0, "y": 45.6, "face": 8, "s": 0.514, "new": true}, {"kind": "B", "x": 21.3, "y": 52.2, "face": 270, "s": 0.369, "new": true}, {"kind": "C", "x": 234.6, "y": 32.2, "face": 315, "s": 0.374, "new": true}, {"kind": "A", "x": -4.0, "y": -10.7, "face": 257, "s": 0.476, "new": true}, {"kind": "B", "x": 6.1, "y": 161.3, "face": 336, "s": 0.502, "new": true}, {"kind": "C", "x": 234.4, "y": -16.4, "face": 63, "s": 0.566, "new": true}, {"kind": "A", "x": 228.3, "y": 88.1, "face": 151, "s": 0.478, "new": true}, {"kind": "B", "x": 89.6, "y": 40.1, "face": 23, "s": 0.512, "new": true}, {"kind": "C", "x": 68.8, "y": -6.6, "face": 241, "s": 0.562, "new": true}, {"kind": "A", "x": 227.3, "y": 6.4, "face": 354, "s": 0.583, "new": true}, {"kind": "B", "x": 180.0, "y": -8.5, "face": 227, "s": 0.541, "new": true}, {"kind": "C", "x": 9.1, "y": 75.0, "face": 92, "s": 0.614, "new": true}, {"kind": "A", "x": 205.7, "y": -18.9, "face": 97, "s": 0.434, "new": true}, {"kind": "B", "x": 29.3, "y": 158.4, "face": 17, "s": 0.617, "new": true}, {"kind": "C", "x": 153.9, "y": 162.7, "face": 1, "s": 0.512, "new": true}, {"kind": "A", "x": 241.8, "y": 71.5, "face": 284, "s": 0.407, "new": true}, {"kind": "B", "x": 212.5, "y": 101.0, "face": 272, "s": 0.616, "new": true}, {"kind": "C", "x": 25.7, "y": 132.7, "face": 311, "s": 0.403, "new": true}, {"kind": "A", "x": 50.3, "y": 81.2, "face": 308, "s": 0.582, "new": true}, {"kind": "B", "x": 27.5, "y": -4.8, "face": 254, "s": 0.365, "new": true}]};
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const TM=.84, CR=s=>22/TM*s, GS=2.4, GRT=40/TM;
+let lay='L1', gi=0;
+const pc=document.getElementById('plan'), g=pc.getContext('2d');
+const [X0,Y0,X1,Y1]=PLAN.park, K=pc.width/(X1-X0), px=x=>(x-X0)*K, py=y=>(Y1-y)*K;
+function drawPlan(){
+  g.clearRect(0,0,pc.width,pc.height); g.fillStyle=css('--grass'); g.fillRect(0,0,pc.width,pc.height);
+  g.save(); g.beginPath(); g.rect(0,0,pc.width,pc.height); g.clip();
+  g.fillStyle=css('--water'); g.beginPath(); g.ellipse(px(262),py(181),110*K,85*K,0,0,7); g.fill(); g.beginPath(); g.arc(px(151),py(10),9*K,0,7); g.fill();
+  g.strokeStyle=css('--water'); g.lineWidth=3; g.beginPath(); [[201,102],[203,90],[205,76],[187.5,68],[189,59],[190.5,50],[178,42],[165,34],[155,20]].forEach(([x,y],i)=>i?g.lineTo(px(x),py(y)):g.moveTo(px(x),py(y))); g.stroke();
+  g.strokeStyle=css('--path'); g.lineWidth=3*K; g.lineCap='round'; for(const [a,b] of PLAN.paths){ g.beginPath(); g.moveTo(px(a[0]),py(a[1])); g.lineTo(px(b[0]),py(b[1])); g.stroke(); }
+  g.fillStyle=css('--path'); g.beginPath(); g.arc(px(112),py(59.5),7*K,0,7); g.fill();
+  const box=(x0,y0,x1,y1,t)=>{ g.fillStyle=css('--card'); g.globalAlpha=.75; g.fillRect(px(x0),py(y1),(x1-x0)*K,(y1-y0)*K); g.globalAlpha=1; g.fillStyle=css('--mute'); g.font='600 22px Inter,sans-serif'; g.fillText(t,px(x0)+8,py(y1)+26); };
+  box(55,8,89,32,'FARM'); box(30,114,70,156,'CASTLE');
+  g.fillStyle=css('--mute'); g.font='600 22px Inter,sans-serif'; g.fillText('BIG LAKE',px(205),py(160)); g.fillText('PLAZA',px(112)+22,py(59.5)-14);
+  g.font='600 20px Inter,sans-serif'; g.textAlign='center'; g.fillText('MARKET ST · PARK GATE',px(112),pc.height-12); g.textAlign='left';
+  const tree=(t,col,dashed)=>{ const r=CR(t.s)*K, x=px(t.x), y=py(t.y);
+    if(dashed){ g.setLineDash([6,5]); g.strokeStyle=css('--mute'); g.lineWidth=1.5; g.beginPath(); g.arc(x,y,r,0,7); g.stroke(); g.setLineDash([]); return; }
+    g.fillStyle=col; g.globalAlpha=.32; g.beginPath(); g.arc(x,y,r,0,7); g.fill(); g.globalAlpha=1; g.strokeStyle=col; g.lineWidth=2; g.stroke();
+    g.fillStyle='#5a3e2b'; g.beginPath(); g.arc(x,y,Math.max(3,1.2*t.s/TM*K*2),0,7); g.fill(); };
+  const leaf=css('--leaf'), nw=css('--new'), gt=css('--giant');
+  if(lay==='now'){ PLAN.old.forEach(t=>tree(t,leaf)); }
+  else { const L=PLAN[lay+'_'+gi]; if(lay==='L1'){ g.strokeStyle=css('--mute'); g.lineWidth=1.2; L.filter(t=>!t.new).forEach(t=>{ g.beginPath(); g.moveTo(px(t.old[0]),py(t.old[1])); g.lineTo(px(t.x),py(t.y)); g.stroke(); tree({x:t.old[0],y:t.old[1],s:t.old[2]},0,true); }); }
+    L.forEach(t=>tree(t,t.new?nw:leaf)); const G=PLAN.giants[gi]; g.fillStyle=gt; g.globalAlpha=.22; g.beginPath(); g.arc(px(G.x),py(G.y),GRT*K,0,7); g.fill(); g.globalAlpha=1; g.strokeStyle=gt; g.lineWidth=3; g.stroke(); g.fillStyle='#5a3e2b'; g.beginPath(); g.arc(px(G.x),py(G.y),8.5/TM*K,0,7); g.fill(); g.fillStyle=gt; g.font='700 24px Inter,sans-serif'; g.fillText('GIANT '+G.id,px(G.x)+GRT*K*.72,py(G.y)-GRT*K*.72); }
+  g.restore();
+  const D={now:'Today: 18 big trees, 46 to 74 m tall, crowns overlapping across the middle of the park.',L1:'Layout 1: today\'s 18 pulled about 40 percent closer to the plaza (lines show the move), each 25 to 50 percent smaller. The 20 new ones fill the open lawns around them.',L2:'Layout 2: today\'s 18 stay where they stand, each 25 to 50 percent smaller. The 20 new ones fill the open lawns between them.'};
+  document.getElementById('ldesc').textContent=D[lay]+(lay==='now'?'':' The giant takes the tallest tree\'s place and stands at '+PLAN.giants[gi].label+'.');
+  const L=lay==='now'?PLAN.old:PLAN[lay+'_'+gi], hs=L.map(t=>62*t.s);
+  document.getElementById('stats').innerHTML=`<dt>Big trees</dt><dd>${L.length}${lay==='now'?'':' + 1 giant'}</dd><dt>Heights</dt><dd>${Math.min(...hs).toFixed(0)} to ${Math.max(...hs).toFixed(0)} m</dd><dt>Giant</dt><dd>${lay==='now'?'none':'148 m tall, crown 80 m across'}</dd><dt>Climbable</dt><dd>all of them</dd>`;
+}
+const group=(id,cb)=>{ const el=document.getElementById(id); el.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; el.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b)); cb(b.dataset.k); }); };
+group('lay',k=>{lay=k;drawPlan();}); group('gsp',k=>{gi=+k;drawPlan();});
+drawPlan(); matchMedia('(prefers-color-scheme: dark)').addEventListener('change',drawPlan);
+
+// ---- 3D ----
+const cv=document.getElementById('view'), R=new THREE.WebGLRenderer({canvas:cv,antialias:true}); R.setPixelRatio(Math.min(2,devicePixelRatio));
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0xbcd8ec); scene.fog=new THREE.Fog(0xbcd8ec,300,900);
+const cam=new THREE.PerspectiveCamera(50,1.6,.1,3000), ctl=new OrbitControls(cam,cv); ctl.enableDamping=true;
+scene.add(new THREE.HemisphereLight(0xeaf4ff,0x5b6e3a,1.6)); const sun=new THREE.DirectionalLight(0xfff2d8,2.2); sun.position.set(120,200,80); scene.add(sun);
+const ground=new THREE.Mesh(new THREE.CircleGeometry(900,48).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({color:0x7da55a})); scene.add(ground);
+const bark=new THREE.MeshLambertMaterial({color:0x6a5040,flatShading:true}), leafM=new THREE.MeshLambertMaterial({color:0xffffff});
+const GREEN=[[.37,.6,.32],[.43,.67,.36],[.5,.72,.4],[.31,.54,.28]].map(a=>new THREE.Color().setRGB(...a,THREE.SRGBColorSpace));
+const hs=(a,b)=>{ const s=Math.sin(a*127.1+b*311.7)*43758.5453; return s-Math.floor(s); };
+const KIND={A:{h:62,r0:3.2,r1:.5,br:[[13,0,1.9],[14,7,1.5],[15,14,1.1],[15.5,20,.8],[16.5,26,.5]]},B:{h:58,r0:3,r1:.5,br:[[8,0,2],[11.5,6,1.6],[15.5,12,1.25],[20,18,.9],[24.5,24,.55]]},C:{h:55,r0:3.6,r1:.55,br:[[6,0,2.1],[5.2,7,1.7],[4.4,14,1.35],[4.8,20,1],[6.5,25,.7],[9,29,.45]]}};
+const tube=(pts,grp)=>{ const c=new THREE.CatmullRomCurve3(pts.map(q=>new THREE.Vector3(q[0],q[1],q[2]))), n=Math.max(8,pts.length*6), rad=pts.map(q=>q[3]);
+  const geo=new THREE.TubeGeometry(c,n,1,10,false), ps=geo.attributes.position, nr=geo.attributes.normal;
+  for(let i=0;i<=n;i++){ const u=i/n,f=u*(pts.length-1),k=Math.min(pts.length-2,Math.floor(f)),r=rad[k]+(rad[k+1]-rad[k])*(f-k),cp=c.getPointAt(u);
+    for(let j=0;j<=10;j++){ const a=i*11+j,w=1+.08*Math.sin(j*2.1+i*.7); ps.setXYZ(a,cp.x+nr.getX(a)*r*w,cp.y+nr.getY(a)*r*w,cp.z+nr.getZ(a)*r*w); } }
+  geo.computeVertexNormals(); grp.add(new THREE.Mesh(geo,bark)); return c; };
+const puffMesh=(P,grp)=>{ const IM=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,1),leafM,P.length), m=new THREE.Matrix4(), q=new THREE.Quaternion(), v=new THREE.Vector3(), s=new THREE.Vector3();
+  P.forEach((p,i)=>{ IM.setMatrixAt(i,m.compose(v.set(p[0],p[1],p[2]),q,s.setScalar(p[3]))); IM.setColorAt(i,GREEN[p[4]]); }); grp.add(IM); return IM; };
+function bigTree(kind,sz,face,seed){ const grp=new THREE.Group(), S=KIND[kind], M=sz, P=[], dx=Math.cos(face), dz=Math.sin(face), PK=Math.pow(sz,-.45);
+  const rAt=h=>S.r0+(S.r1-S.r0)*Math.pow(Math.max(0,h)/S.h,.7), at=(h,a,d)=>[Math.cos(a)*d,h*M,Math.sin(a)*d];
+  const puff=(x,y,z,r)=>{ const q=Math.hypot(x,z),need=(rAt(y/M)+1.5)*M+r*.5; if(q<need){const k=need/(q||1);x*=k;z*=k;} P.push([x,y,z,r,Math.floor(hs(seed,P.length)*4)]); };
+  const tr=[]; for(let k=0;k<=8;k++){const u=k/8; tr.push([Math.sin(u*3+face)*.4*M*u,u*S.h*M-.5*M,Math.cos(u*2.3+face)*.3*M*u,rAt(u*S.h)*M*(k?1:1.35)]);} tube(tr,grp);
+  const branch=(pts,big)=>{ const c=tube(pts,grp),L=c.getLength(),n=Math.max(3,Math.round(L/(1.6*M)*sz));
+    for(let k=0;k<n;k++){const u=.25+.75*(k+.5)/n,p=c.getPointAt(u),s=seed*31+k*7+pts.length; for(let j=0;j<3;j++){const t=s*5+j,r=(1.6+1.4*hs(t,1))*M*(big?1.3:1)*PK,a=hs(t,2)*6.28,d=(.6+2.6*hs(t,3))*M; puff(p.x+Math.cos(a)*d,p.y+(.4+2.4*hs(t,4))*M,p.z+Math.sin(a)*d,r);}} };
+  branch(S.br.map(([h,d,r])=>[dx*d*M,h*M,dz*d*M,r*M]),true);
+  const L0=S.br[S.br.length-1][1],R0=S.br[0][2],nb=4+Math.floor(hs(seed,9)*5);
+  for(let k=0;k<nb;k++){const s=.25+.25*hs(seed,20+k),a=face+.9+k/nb*(6.28-1.8),h=S.h*(.18+.55*(k+hs(seed,60+k))/nb),L=L0*s,r=Math.min(R0*s*1.1,rAt(h)*.8),up=.25+.55*hs(seed,80+k),pts=[];
+    for(let q=0;q<=4;q++){const u=q/4; pts.push([...at(h+L*up*u*(.6+.4*u),a,L*u*M),Math.max(.12,r*(1-.75*u))*M]);} branch(pts,false);}
+  for(let k=0;k<6;k++){const a=k/6*6.28+.4+face; tube([[0,2.5*M,0,1.6*M],[...at(.3,a,4*M),.9*M],[...at(-.3,a,6.5*M),.25*M]],grp);}
+  for(let h=S.h*.55;h<S.h+4;h+=2/sz){const w=1-Math.max(0,(h-S.h*.9)/(S.h*.1+4))*.6,n=8+Math.floor(hs(seed,h)*4); for(let k=0;k<n;k++){const a=hs(seed,h+k)*6.28; puff(...at(h,a,(rAt(h)+1.5+6*w*hs(h,k))*M),(2+1.8*hs(k,h))*M*PK);}}
+  puffMesh(P,grp); return grp; }
+// the giant: a hollow shell of leaves round thick limbs that climb to the top
+let giantLeaves=null;
+function giant(){ const grp=new THREE.Group(), H=148, r0=8.5, rAt=h=>r0+(1.2-r0)*Math.pow(Math.min(1,h/(H*.92)),.65);
+  const tr=[]; for(let k=0;k<=10;k++){const u=k/10; tr.push([Math.sin(u*2.4)*2*u,u*H*.92-1,Math.cos(u*1.9)*1.6*u,rAt(u*H*.92)*(k?1:1.4)]);} tube(tr,grp);
+  for(let k=0;k<8;k++){const a=k/8*6.28+.3; tube([[0,6,0,4.5],[Math.cos(a)*11,.8,Math.sin(a)*11,2.4],[Math.cos(a)*18,-.6,Math.sin(a)*18,.7]],grp);}
+  const CY=H*.68, RX=40, RY=48, inShell=(x,y,z)=>(x*x+z*z)/(RX*RX)+((y-CY)/RY)**2;
+  // thick limbs on a spiral from 52 m up to just under the crown, each rising out to the shell: a climb from limb to limb
+  const NL=11; for(let k=0;k<NL;k++){ const u=k/(NL-1), h=50+u*(H*.86-50), a=k*2.39, r=Math.max(.9,2.6-1.6*u), reach=Math.sqrt(Math.max(.05,1-((h+8-CY)/RY)**2))*RX*.86, pts=[];
+    for(let q=0;q<=5;q++){const t=q/5; pts.push([Math.cos(a+t*.35)*(rAt(h)*.6+reach*t),h+t*t*14-Math.sin(t*3.1)*2,Math.sin(a+t*.35)*(rAt(h)*.6+reach*t),r*(1-.6*t)]);} tube(pts,grp);
+    for(let s=0;s<3;s++){ const sa=a+(s-1)*.7, st=.35+.2*s, b=[]; const p0=[Math.cos(a+st*.35)*(rAt(h)*.6+reach*st),h+st*st*14,Math.sin(a+st*.35)*(rAt(h)*.6+reach*st)];
+      for(let q=0;q<=3;q++){const t=q/3, L=reach*.45*t; b.push([p0[0]+Math.cos(sa)*L,p0[1]+t*9,p0[2]+Math.sin(sa)*L,r*.45*(1-.7*t)]);} tube(b,grp);} }
+  const P=[]; let n=0;
+  for(let i=0;i<2600;i++){ const y=-1+2*((i+.5)/2600), th=i*2.39996, rr=Math.sqrt(1-y*y), wob=1+.06*Math.sin(th*3+y*7)+.05*Math.sin(th*7-y*4);
+    const x=Math.cos(th)*rr*RX*wob, z=Math.sin(th)*rr*RX*wob, yy=CY+y*RY*wob; if(y<-.8)continue;   // open underneath round the trunk: the way in
+    for(let j=0;j<2;j++){ const d=1-j*.07; P.push([x*d,CY+(yy-CY)*d,z*d,(4.2+2.2*hs(i,j))*(j?1.1:1),Math.floor(hs(i,j+3)*4)]); } }
+  giantLeaves={P,grp}; grp.userData.leaves=puffMesh(P,grp); return grp; }
+const person=()=>{ const g2=new THREE.Group(), m=new THREE.MeshLambertMaterial({color:0xff7a1a}); const b=new THREE.Mesh(new THREE.CapsuleGeometry(.25,1.1,4,8),m); b.position.y=.8; g2.add(b); const h=new THREE.Mesh(new THREE.SphereGeometry(.17,12,8),m); h.position.y=1.62; g2.add(h); return g2; };
+const big=(o,sc)=>{ o.scale.setScalar(sc||1); return o; };
+let cur=new THREE.Group(); scene.add(cur);
+const cache={};
+function show(k){ scene.remove(cur); cur=new THREE.Group(); scene.add(cur);
+  const D=document.getElementById('vdesc'), S=document.getElementById('vstats');
+  if(k==='size'){ const a=bigTree('A',1.2,0,7); a.position.set(-60,0,0); cur.add(a); const b=bigTree('A',.72,0,7); b.position.set(30,0,0); cur.add(b); const c=bigTree('B',.45,2,9); c.position.set(85,0,15); cur.add(c);
+    [[-52,0,6],[37,0,4],[90,0,19]].forEach(p=>{ const m=big(person(),3); m.position.set(...p); cur.add(m); });
+    cam.position.set(10,45,200); ctl.target.set(10,30,0);
+    D.textContent='Left: today\'s tallest, 74 m. Middle: the same tree 40 percent smaller, 45 m. Right: one of the new ones at its smallest, 28 m. The orange figures are drawn three times life size so they show at this distance.';
+    S.innerHTML='<dt>Today</dt><dd>46 to 74 m</dd><dt>After</dt><dd>about 20 to 55 m</dd><dt>New 20</dt><dd>22 to 38 m</dd>'; }
+  else { const G=cache.g||(cache.g=giant()); cur.add(G); const p=person(); cur.add(p);
+    const lv=G.userData.leaves, P=giantLeaves.P, m4=new THREE.Matrix4(), q=new THREE.Quaternion(), v=new THREE.Vector3(), s=new THREE.Vector3();
+    P.forEach((pp,i)=>{ const hide=(k==='cut'&&pp[2]>0); lv.setMatrixAt(i,m4.compose(v.set(pp[0],pp[1],pp[2]),q,s.setScalar(hide?0:pp[3]))); }); lv.instanceMatrix.needsUpdate=true;
+    if(k==='giant'){ p.position.set(14,0,14); cam.position.set(120,60,210); ctl.target.set(0,75,0); D.textContent='From outside the giant is one round mass of leaves on a bare trunk, about 148 m tall and 80 m across. Underneath, the shell is open round the trunk: you climb the bare trunk up into it.'; }
+    if(k==='cut'){ p.position.set(12,0,12); cam.position.set(0,95,190); ctl.target.set(0,90,0); D.textContent='Cut open (the front half of the shell hidden). Inside it is empty: no leaves, only the trunk and eleven thick limbs climbing round it on a spiral from 50 m to near the top, each with a few side branches to stand on. You go up limb to limb all the way to the crown.'; }
+    if(k==='inside'){ const h=50+3/10*(148*.86-50), a=3*2.39, r=8.5+(1.2-8.5)*Math.pow(h/136,.65); p.position.set(Math.cos(a+.07)*(r*.6+9),h+.8,Math.sin(a+.07)*(r*.6+9)); p.scale.setScalar(1);
+      cam.position.set(p.position.x*1.25,h+3.2,p.position.z*1.25); ctl.target.set(p.position.x*.45,h+5,p.position.z*.45);
+      D.textContent='Standing on a limb about 79 m up, looking in at the trunk and up to the limbs above. Light comes through the shell; the leaves are only on the outside.'; }
+    S.innerHTML='<dt>Height</dt><dd>148 m (2× today\'s tallest)</dd><dt>Crown</dt><dd>80 m across, shell from 61 m up, open underneath</dd><dt>Trunk</dt><dd>17 m wide at the foot</dd><dt>Limbs</dt><dd>11 to climb, 50 m to 127 m</dd>'; }
+  ctl.update(); }
+group('sc',k=>show(k)); show('size');
+const fit=()=>{ const w=cv.clientWidth,h=cv.clientHeight; R.setSize(w,h,false); cam.aspect=w/h; cam.updateProjectionMatrix(); }; new ResizeObserver(fit).observe(cv); fit();
+R.setAnimationLoop(()=>{ ctl.update(); R.render(scene,cam); });
+</script>

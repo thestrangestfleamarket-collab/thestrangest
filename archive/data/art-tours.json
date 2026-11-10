@@ -1,0 +1,79 @@
+{
+ "Self-Portrait|Vincent van Gogh": {
+  "name": "GUIDED TOUR",
+  "steps": [
+   {
+    "title": "SELF-PORTRAIT, PARIS, 1887",
+    "text": "Vincent van Gogh painted this in Paris in 1887. He had moved there the year before to live with his brother Theo, an art dealer, after Theo wrote to him about the new, colourful French painting.\nIt is small: 42 by 34 centimetres, painted in oil on cardboard rather than canvas."
+   },
+   {
+    "at": [
+     0.0,
+     0.0,
+     0.34,
+     0.36
+    ],
+    "title": "THE BACKGROUND",
+    "text": "The blue behind him is not one flat colour. It is hundreds of short, slanting strokes of blue, green and grey laid side by side.\nAround his head the strokes change direction and follow its outline, so the background seems to vibrate and the head stands out against it."
+   },
+   {
+    "at": [
+     0.08,
+     0.02,
+     0.8,
+     0.36
+    ],
+    "title": "THE GREY FELT HAT",
+    "text": "The Rijksmuseum describes him here as a fashionably dressed Parisian: felt hat, jacket, a blue cravat.\nThe hat is built from pale, thick strokes of grey, green and pink, with the dark band dashed in on top. Zoom in and you can see the ridges of paint standing up off the board."
+   },
+   {
+    "at": [
+     0.26,
+     0.3,
+     0.5,
+     0.17
+    ],
+    "title": "THE EYES",
+    "text": "His eyes are green, and the face around them is not smoothly shaded. It is made of separate touches of orange, pink, green and blue.\nUp close it is a patchwork of colour. Step back and it reads as skin in light and shadow."
+   },
+   {
+    "at": [
+     0.32,
+     0.46,
+     0.38,
+     0.26
+    ],
+    "title": "THE BEARD: COMPLEMENTARY COLOURS",
+    "text": "The red-orange beard sits right against the blue background. Orange and blue are complementary colours, opposite each other on the colour wheel, and side by side each makes the other look stronger.\nVan Gogh had read about these contrasts in colour theory before he came to Paris. Here he puts them to work in bright colour."
+   },
+   {
+    "at": [
+     0.32,
+     0.6,
+     0.32,
+     0.23
+    ],
+    "title": "THE CRAVAT AND THE RED LINE",
+    "text": "At his throat are a blue cravat and a thin red stroke running down beside the white shirt.\nSmall accents like these pull the eye to the centre of the picture and echo the reds and blues used everywhere else in it."
+   },
+   {
+    "at": [
+     0.0,
+     0.64,
+     0.62,
+     0.36
+    ],
+    "title": "THE COAT: DASHES OF COLOUR",
+    "text": "His brown jacket is not painted brown. It is made of short dashes of orange, blue, green and red.\nIn Paris Van Gogh came to know the work of Georges Seurat and Paul Signac, who built pictures from small dots of pure colour that mix in the viewer's eye. He painted alongside Signac in 1887. He borrowed the idea and loosened it into his own rhythmic strokes."
+   },
+   {
+    "title": "WHY SO MANY SELF-PORTRAITS?",
+    "text": "In Paris he painted himself again and again, trying out the new French style.\nAs the Rijksmuseum notes, he did it mostly to avoid paying for a model. A mirror cost nothing."
+   },
+   {
+    "title": "WHERE IT WENT",
+    "text": "Van Gogh gave this painting to Andries Bonger, the brother of Theo's wife, Jo. After Andries died, his widow, Françoise Bonger, gave it to the Rijksmuseum in 1936.\nIt hangs there today among the Hague School, the Amsterdam Impressionists and Van Gogh's contemporaries."
+   }
+  ]
+ }
+}

@@ -44,7 +44,7 @@ const {chromium}=require('playwright'), path=require('path');
   ok(r.sap,'the Tomato sells saplings');
   // the orchard: by the farm, eight plots; claim one, plant two apples, see them grow and fruit
   const site=await pg.evaluate(()=>{ const B=__dbg.MAPK.BOD; return [B.XS(72),B.ZS(-10)]; });
-  await pg.evaluate(([x,z])=>__dbg.ui().goTo(x,z+6*ORCHARD.T,'up',Math.PI),site);
+  await pg.evaluate(async([x,z])=>{ __dbg.ui().goTo(x,z+6*ORCHARD.T,'up',Math.PI); await PARK.load(); },site);   // (a jump into the park: it is built as when you walk in)
   await pg.waitForFunction(()=>window.ORCHDBG&&ORCHDBG().built&&ORCHDBG().loaded,null,{timeout:200000,polling:2000}).catch(()=>{});
   const o1=await pg.evaluate(()=>ORCHDBG()); ok(o1.built&&o1.plots.length===8,'the orchard is built when you come near, eight plots: '+JSON.stringify({built:o1.built,c:o1.center}));
   const o2=await pg.evaluate(async()=>{ await ORCHARD.claim(0); const F=FTREES, D=864e5; FORAGE.give('sp_apple',1); FORAGE.give('sp_crabapple',1); FORAGE.give('sp_lemon',1); ORCHARD.tap(0,0); ORCHARD.tap(0,1); ORCHARD.tap(0,2);
@@ -62,7 +62,7 @@ const {chromium}=require('playwright'), path=require('path');
   // a big pot at home: dirt, a lemon, water, and in winter its fruit
   const p=await pg.evaluate(()=>{ const W=TREEPOTDBG.wire, THREE=TREEPOTDBG.THREE, G=new THREE.Group(), d=new THREE.Mesh(new THREE.CircleGeometry(.2,8),new THREE.MeshBasicMaterial()); d.name='tpdirt'; G.add(d); const t=new THREE.Group(); t.name='tptree'; G.add(t);
     let th=null; const un={obj:G,id:'testpot',th:[]}; W(un,{hit:(u,name,act)=>{ th={name:name(),act:()=>{ act(th); th.name=name(); }}; return th; }});
-    FORAGE.give('dirt',1); FORAGE.give('sp_lemon',1); FORAGE.give('water',2); th.act(); const a=th.name; th.act(); const b=th.name; const s=TREEPOTDBG().S.testpot.t; s.g=5; s.at=FTREES.now(); s.wet=FTREES.now()+9e9;
+    for(const k of FTREES.ids)for(const id of [FTREES.CAT[k].sapling,FTREES.CAT[k].pipItem]){ const n=FORAGE.has(id); if(n)FORAGE.take(id,n); } FORAGE.give('dirt',1); FORAGE.give('sp_lemon',1); FORAGE.give('water',2); th.act(); const a=th.name; th.act(); const b=th.name; const s=TREEPOTDBG().S.testpot.t; s.g=5; s.at=FTREES.now(); s.wet=FTREES.now()+9e9;
     const Y=new Date().getUTCFullYear()+1; FTREES.shift=Date.UTC(Y,0,20,12)-Date.now(); const n0=FORAGE.has('tf_lemon'); th.act(); const got=FORAGE.has('tf_lemon')-n0; FTREES.shift=0; return {a,b,got,k:s.k}; });
   ok(/DIRT/.test(p.a)&&p.k==='lemon'&&p.got>0,'a big pot at home: dirt, a lemon planted, and lemons in January: '+JSON.stringify(p));
   ok(!errs.length,'no page errors '+errs.slice(0,3).join(' | '));

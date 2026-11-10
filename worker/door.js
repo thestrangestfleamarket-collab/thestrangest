@@ -330,6 +330,16 @@ export class Block extends Server {
       const rec = this.dropAdd(k, JSON.stringify({ id, n, x: at.x + Math.cos(a) * d * 40, y: at.y, z: at.z + Math.sin(a) * d * 40, lv: at.lv, rm: at.rm }), "body:" + who, 0); if (rec) this.broadcast(JSON.stringify({ t: "world", k, v: rec })); }
     this.broadcast(JSON.stringify({ t: "world", k: "body:" + who, v: "" })); return L.length; }
   // the market's stalls (src/159j-stalls.js): a player rents one for days, sets out things at their own prices; they sell while the renter is away; the till, less the market's cut, is theirs to collect; when the days run out what is left and the till go home (OWNED 'tradein')
+  // the museum's fossil hall (src/150cyc-fossils.js): a skeleton a player gives stands there for everyone in the section, one of each kind, the giver named on its plaque
+  fosT() { if (this.fosOk) return; this.fosOk = 1; this.ctx.storage.sql.exec("create table if not exists fossils(k text primary key, by text, at integer)"); }
+  fosAll() { this.fosT(); const o = {}; for (const r of this.ctx.storage.sql.exec("select k, by, at from fossils").toArray()) o[r.k] = { by: r.by, at: r.at }; return o; }
+  fos(c, s, m) { const op = String(m.op || ""), say = x => c.send(JSON.stringify({ t: "fos", ...x })), k = /^[a-z]{1,16}$/.test(String(m.k || "")) ? String(m.k) : "", H = homeOf(this.env);
+    if (op === "list") return say({ op: "list", all: this.fosAll() });
+    if (op !== "give" || !k) return; const all = this.fosAll(); if (all[k]) return say({ op: "no", k, why: "the museum already has one" }); if (Object.keys(all).length >= 32) return say({ op: "no", k, why: "the hall is full" });
+    H.econPay(s.id, 0, { ["skel_" + k]: 1 }, "given to the museum").then(r => { if (!r.ok) return say({ op: "no", k, why: r.why });
+      if (this.fosAll()[k]) { H.econGive(s.id, 0, { ["skel_" + k]: 1 }, "the museum had one").catch(() => {}); return say({ op: "no", k, why: "the museum already has one" }); }
+      const o = { by: word(s.name, 24) || "A TENANT", at: Date.now() }; this.ctx.storage.sql.exec("insert into fossils(k, by, at) values(?, ?, ?)", k, o.by, o.at);
+      say({ op: "took", k }); this.broadcast(JSON.stringify({ t: "fos", op: "one", k, o })); }).catch(() => say({ op: "no", k, why: "try again" })); }
   pawnT() { if (this.pawnOk) return; this.pawnOk = 1; this.ctx.storage.sql.exec("create table if not exists pawn(id text primary key, n integer)"); }
   pawnAll() { this.pawnT(); const o = {}; for (const r of this.ctx.storage.sql.exec("select id, n from pawn where n > 0").toArray()) o[r.id] = r.n; return o; }
   pawnAdd(id, k) { this.pawnT(); const r = this.ctx.storage.sql.exec("select n from pawn where id = ?", id).toArray()[0], n = Math.max(0, Math.min(PAWN.most, (r ? r.n : 0) + k));
@@ -541,6 +551,7 @@ export class Block extends Server {
       Promise.all(SECROOMS.map(r => r === this.name ? Promise.resolve(this.names()) : blockAsk(this.env, r, "names").catch(() => []))).then(L => c.send(JSON.stringify({ t: "everyone", all: L.flat().filter(p => p.id !== s.id).slice(0, 200) })));
     } else if (m.t === "st") { this.stall(c, s, m);
     } else if (m.t === "pw") { this.pawn(c, s, m);
+    } else if (m.t === "fos") { this.fos(c, s, m);
     } else if (m.t === "body") {   // you died here (v), or took your body back (take)
       if (m.take) { this.bodyOff(s.id); this.broadcast(JSON.stringify({ t: "world", k: "body:" + s.id, v: "" })); } else if (m.v && typeof m.v === "object") this.bodyAt(s.id, m.v, this.dev && this.dev.has(c.id) && m.life ? num(m.life, 500, BODY_LIFE) : 0);
     } else if (m.t === "take") {   // a loose thing on the ground: whoever asks first gets it, told with its record; the rest see it go

@@ -122,6 +122,11 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 
 - [ ] **The fish market** · P2 · M · look. Owner, 9 Nov 2026: waits for his look and yes. Not yet: the workers keep no hours (the jobs system is archived), the editor's ground picture (`tools/topmap.cjs`) not re-made, the minimap does not draw the sheds.
 - [ ] **The fish market's sheds** · P3 · S · pick. The two sheds stand on the row, not on the water side as the real ones did (the quay stays open for fishing); say if they should cross the street.
+- [x] **Fossil digs** (owner, 10 Nov 2026: "do 1-8") · code. [done: worktree-agent-a66213ee845b8a10a, 10 Nov]
+- [ ] **Fossil digs, for his look** · P2 · look. The three sites in the park, the bones and skeletons (simple shapes, Polyfork's brush and the
+  bones lying at the sites), the hall in the Art Museum's atrium.
+- [ ] **Where the fossil hall stands** · P3 · S · pick. In the Art Museum's atrium (the Professor curates there) while the Museum of Earth is
+  away; one line moves it once that museum is back.
 - [ ] **The telescope** · P3 · S · code. The firsts board on no wall; satellite passes follow the game hour, not the real one; GO TO
   Betelgeuse failed once; the aurora in the street's own sky.
 - [ ] **The shop insides: walk in and out** · P2 · S (check) · find. Owner, 3 Nov: "you get sent to a middle area where you cant walk in

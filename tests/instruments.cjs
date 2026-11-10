@@ -1,4 +1,4 @@
-// THE INSTRUMENTS YOU SIT AT (src/146zp-instruments.js, 146zpa-piano.js, 146zpb-drums.js, 146zpc-harp.js): node tests/instruments.cjs [dist/market.html] [out folder].
+// THE INSTRUMENTS YOU SIT AT (src/146zp-instruments.js, 146zpa-piano.js, 146zpb-drums.js, 146zpc-harp.js, 146zpd-melody.js): node tests/instruments.cjs [dist/market.html] [out folder].
 // The skills list MUSIC first (guitar, piano, drums, harp); the bodega sells each; playing one sets it before you and seats you at it, each finger on its key or string
 // (each stick on its drum when it strikes), its sound at its real pitch (the music engine rendered offline and measured), the piano's dampers stopping a released key;
 // a song from its book plays (and one past your skill is refused); another player's instrument is drawn on them and heard; ESC puts it away. With an out folder, pictures.
@@ -50,6 +50,16 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
     rec(`the ${K} book: five pieces open at 0-10, ten by 20-30, a stumble stops the piece, three clean plays learn it and the next opens`,lb.at5.open===5&&!lb.at5.learnt&&lb.at25.open===15&&lb.ch[0]===1&&lb.ch[1]>.3&&lb.ch[1]<.7&&lb.stumbled&&lb.learnt&&lb.after.learnt===1&&lb.after.open===5,JSON.stringify(lb));
     rec(`a ${K} song from the book plays (its notes go out, the hands move${K==='piano'?', keys go down':''}), and one past your skill is refused`,s.song&&s.notes>5&&s.poses>=5&&(K!=='piano'||s.keys>=3)&&s.refused,JSON.stringify(s));
     await pg.evaluate(()=>INSTR.stop()); await wait(300); }
+  // the violin, the flute and the trumpet: held as you sit, a tune from the one book plays in the instrument's range, the hands move, its recordings come
+  for(const K of ['violin','flute','trumpet']){
+    const m=await pg.evaluate(async K=>{ const S=FORAGE.S; S.songs={}; S.sk[K]=1000; FORAGE.give(K,1); FORAGE.ACT[K](K); await new Promise(r=>setTimeout(r,700)); const P=INSTR.ME, o={on:INSTR.kindOn()===K,held:!!P.H,skill:FORAGE.SK.some(s=>s[0]===K),price:ITEMS.prop(K,'value'),shelf:BODEGA.LAYOUT.some(r=>r[2].includes(K))};
+      await P.K.loadBook(); o.book=P.K.BOOK.length; const i=P.K.BOOK.findIndex(T=>T.lvl===1); INSTR.play('song',i); const seen=new Set();
+      for(let k=0;k<16;k++){ await new Promise(r=>setTimeout(r,300)); seen.add(JSON.stringify([P.H.wr.L,P.H.wr.R,P.H.fg.L,P.H.fg.R].map(v=>(v.toArray?v.toArray():v.flat()).map(x=>+x.toFixed(2))))); }
+      const ev=P.K.BOOK[i].c.ev, R=P.K.slip; o.notes=P.cur; o.poses=seen.size; o.inRange=ev.every(e=>e.n>=R[0]&&e.n<=R[1]); o.one=ev.every((e,j)=>!j||e.t>ev[j-1].t); INSTR.play('stop');
+      S.sk[K]=50; const st={}; for(const v of SONGBK.state(K,P.K.BOOK).values())st[v]=(st[v]||0)+1; o.open=st.open; let Q=INSTR.loadSounds(P.K); for(let n=0;n<120&&!Q.ok;n++){ await new Promise(r=>setTimeout(r,250)); Q=INSTR.loadSounds(P.K); } o.sounds=Q.ok&&Object.keys(Q.at).length;
+      S.sk[K]=0; INSTR.stop(); return o; },K);
+    rec(`the ${K}: a skill, sold at the bodega, held as you sit; a tune from the book plays one note at a time in its range, the hands move, five pieces open at 0-10, its recordings come`,m.on&&m.held&&m.skill&&m.price>0&&m.shelf&&m.book>150&&m.notes>3&&m.poses>=4&&m.inRange&&m.one&&m.open===5&&m.sounds>=10,JSON.stringify(m));
+    await wait(300); }
   // the sound: each rings out loud through the instruments' own audio; each at its real pitch, rendered offline
   const a=await pg.evaluate(async()=>{ const G=INSTR.ME&&window.GUITAR.GSND; G.wake(); for(let i=0;i<40&&!G.imx;i++)await new Promise(r=>setTimeout(r,250)); if(!G.imx)return {ok:false};
     const an=G.ctx.createAnalyser(); an.fftSize=2048; G.out.connect(an); const buf=new Float32Array(an.fftSize), peak={};

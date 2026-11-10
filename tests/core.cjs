@@ -51,7 +51,7 @@ ok(L.paths.every(p => p.a && p.b), 'every park path has two ends');
   const Z = C['police-cruiser-80s'], pn = Z && (Z.parts || []).map(p => p.n).sort().join();
   ok(Z && pn === 'DOOR FL,DOOR FR,DOOR RL,DOOR RR,HOOD,TRUNK' && Z.parts.every(p => p.g.length && Math.abs(p.open) > .5 && /^[xy]$/.test(p.ax)) && Z.marks && Z.marks.bar && Z.marks.decals.length === 4 && Z.marks.decals.every(d => d.k === 'plate' || d.k === 'door') && ['head', 'tail', 'turn', 'rev'].every(t => Z.body.some(g => g.t === t)) && Z.size[2] > 5 && Z.size[2] < 5.4 && Z.size[0] < 2.2, 'the police cruiser (tools/cruiser-bake.py): a Gran Fury\'s size, four doors, a hood and a trunk lid on hinges, its lamps named, marks for the light bar, the plates and the door shields (no words)'); }
 { const A = JSON.parse(fs.readFileSync(ROOT + '/data/art.json', 'utf8')), bad = A.filter(t => !(t.t && t.a && t.d && t.m && t.w > 0 && t.h > 0 && /^data:image\/jpeg;base64,/.test(t.i)));
-  ok(A.length >= 50 && !bad.length && new Set(A.map(t => t.t + t.a)).size === A.length, 'the art museum\'s ' + A.length + ' paintings each have a title, artist, date, museum, size and picture, none twice'); }
+  ok(A.length >= 20 && !bad.length && new Set(A.map(t => t.t + t.a)).size === A.length, 'the art museum\'s ' + A.length + ' paintings each have a title, artist, date, museum, size and picture, none twice'); }
 { const S = L.sections, G = S.grid, ids = S.ids.flat(), box = id => { const c = S.ids.findIndex(r => r.includes(id)), r = S.ids[c].indexOf(id); return [G.x0 + c * G.w, G.x0 + (c + 1) * G.w, G.y0 + r * G.h, G.y0 + (r + 1) * G.h]; };
   ok(ids.length === G.cols * G.rows && new Set(ids).size === ids.length && ids.includes(L.section.id), 'the section grid names each of its ' + ids.length + ' sections once, this one among them');
   ok(ids.every(id => L.loop.stations.filter(s => s.id === id).length === 1) && L.loop.stations.every(s => { const [x0, x1] = box(s.id); return s.x - 29 > x0 && s.x + 29 < x1; }), 'every section has one loop station, inside it'); }
@@ -162,7 +162,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
         return { ok: true, street, bound, borrowed, back }; } catch (e) { return { ok: false, err: String(e).slice(0, 200) }; } })();
       o.charp = await (async () => { try { const U = window.__UI; if (!U || typeof U.toggleMenu !== 'function') return { ok: false };
         U.toggleMenu(); const home = document.querySelector('#dhome'), secs = [...document.querySelectorAll('#mnav [data-sec]')].map(b => b.dataset.sec).join();
-        const tabsHidden = /^set,pets,pack(,tenants,bots,admin)?$/.test(secs) && U.menuNow()[0] === 'set', open = U.menuOpen === true;   // no PROFILE: the paper doll (9 Nov 2026)
+        const tabsHidden = /^set,pets,pack(,tenants,admin)?$/.test(secs) && U.menuNow()[0] === 'set', open = U.menuOpen === true;   // no PROFILE: the paper doll (9 Nov 2026)
         U.menuTab('pets', 'pet'); const built = !!(home && home.querySelector('#cpav') && home.querySelector('#cpbtns button'));
         const pick = !home.querySelector('#cpslots') && !home.querySelector('#cphp');   // the paperdoll and the bars left the page (2 Nov 2026)
         U.toggleMenu();

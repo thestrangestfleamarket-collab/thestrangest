@@ -14,12 +14,12 @@ await grab('art',async()=>{ if(AWAY.has('art')||!WP.art)return;
   const B={id:'lart',x0:cx-IW/2,x1:cx+IW/2,y0:L.y1-DEP,y1:L.y1,h:FZ+40}, DOORY=B.y1-1.3;
   const SX=MB.x0+MB.x1, SY=MB.y0+MB.y1, dx=cx-(MB.x0+MB.x1)/2, dy=B.y1-MB.y1, OB={...MB,plain:1,id:'lmusfront'}, mus=(x,y)=>[SX-x+dx,SY-y+dy];
   const STONE=[214,206,188], STONEL=[226,220,204], STONED=[186,178,160], OAK=[118,82,50], OAKL=[134,96,58], OAKD=[98,66,40];
-  const GAL=[['DUTCH MASTERS',[104,124,106]],['OLD MASTERS',[150,78,70]],['VAN GOGH AND HIS TIME',[110,128,152]],['FRENCH PAINTING',[204,194,174]],['AMERICAN PAINTING',[162,146,118]],['ROMANTICS AND VISIONARIES',[124,110,134]]];
+  const GAL=[['THE NORTHERN MASTERS',[104,124,106]],['THE SOUTHERN MASTERS',[150,78,70]],['THE ROMANTICS',[124,110,134]],['PARIS AND AFTER',[110,128,152]]];
   const D={w:'f',a:cx,wd:3,h:82};
   const fk=(nx,ny,at,k)=>nx+','+ny+','+at.toFixed(2)+'@'+k;
-  const GROUP=t=>{ '@later'; const a=t.a, n=t.t; if(/Delaware|Andes|Twilight|Oxbow|Schroon|Gulf Stream|Madame X|George Washington|Stag at/.test(n))return 4; if(/Turner|Blake|Hokusai|Vedder|Redon|Bosch/.test(a))return 5;
-    if(/Gogh|Gauguin|Seurat|Klimt|Hammersh/.test(a))return 2; if(/Monet|Cézanne|Degas|Rousseau|Bastien/.test(a))return 3; if(/Caravaggio|Botticelli|El Greco|Goya|David|Bruegel/.test(a)||/Aristotle/.test(n))return 1; return 0; };
-  const size=t=>{ const ar=t.w/t.h, big=/Delaware|Andes|Night Watch/.test(t.t); let h=big?2.4:ar<.8?1.7:1.35, w=h*ar; if(!big&&w>2.6){ w=2.6; h=w/ar; } return [w,h]; };
+  const GROUP=t=>{ '@later'; const a=t.a; if(/Friedrich|Turner|Géricault/.test(a))return 2; if(/Seurat|Caillebotte|Monet|Gogh|Klimt/.test(a))return 3;
+    if(/Botticelli|Michelangelo|Caravaggio|Velázquez|Goya/.test(a))return 1; return 0; };
+  const size=t=>{ const ar=t.w/t.h; if(ar>4)return [4.6,4.6/ar]; const big=/Night Watch|Medusa|Meninas|Earthly Delights|Ghent|Grande Jatte|Rainy Day|Innocents/.test(t.t); let h=big?2.4:ar<.8?1.7:1.35, w=h*ar; if(!big&&w>2.6){ w=2.6; h=w/ar; } return [w,h]; };
   let DATA=null, LAY=null;
   // the hang (owner, 10 Nov 2026: salon, frames close): by school, the big ones alone, the rest in pairs one above the other; round the walls from the door, one even gap as wide as fits
   const layout=()=>{ '@later'; LAY=[]; const sz=i=>size(DATA[i]), cols=[];
@@ -88,7 +88,7 @@ await grab('art',async()=>{ if(AWAY.has('art')||!WP.art)return;
     for(let i=1;i<6;i++){ const x=SK.x0+(SK.x1-SK.x0)*i/6; box(x-.05,SK.y0,x+.05,SK.y1,FZ,FZ+2,brass,false); } for(let i=1;i<3;i++){ const y=SK.y0+(SK.y1-SK.y0)*i/3; box(SK.x0,y-.05,SK.x1,y+.05,FZ,FZ+2,brass,false); }
     // the paintings: each a framed canvas (its picture a small JPEG from data/art.json) on the wall, its plaque under it, a thing to look at
     const TL=new THREE.TextureLoader(), gilt=M({color:0x9a7a34}), dark=M({color:0x2a1c14});
-    for(const p of LAY){ const t=DATA[p.i], f=p.f, g=new THREE.Group(), w=p.w*U, h=p.h*U, k=f.rm.k, old=[0,1,5].includes(f.rm.g)||/Stuart|Cole|Church|Leutze/.test(t.a);
+    for(const p of LAY){ const t=DATA[p.i], f=p.f, g=new THREE.Group(), w=p.w*U, h=p.h*U, k=f.rm.k, old=[0,1,2].includes(f.rm.g);
       const fr=new THREE.Mesh(new THREE.BoxGeometry(w+.12*U,h+.12*U,.05*U),old?gilt:dark); fr.position.z=.025*U; g.add(fr);
       const tx=TL.load(t.i); tx.colorSpace=THREE.SRGBColorSpace; tx.anisotropy=4; const cv=new THREE.Mesh(new THREE.PlaneGeometry(w,h),M({map:tx})); cv.position.z=.052*U; g.add(cv);
       const pq2=plaque(t); pq2.position.set(0,-h/2-.16*U,.008*U); g.add(pq2);
@@ -169,7 +169,7 @@ await grab('art',async()=>{ if(AWAY.has('art')||!WP.art)return;
         else if(/^Arrow/.test(k)){ V.x+=k==='ArrowLeft'?80:k==='ArrowRight'?-80:0; V.y+=k==='ArrowUp'?80:k==='ArrowDown'?-80:0; clamp(); } },true);
       addEventListener('keyup',e=>{ if(!el.hidden){ e.stopImmediatePropagation(); } },true);
       V.cap=q('cap'); V.st=q('st'); V.q=q; }
-    const {el,im}=V; V.close(); V.t=t; V.look=p?{col:p.f.rm.col,gilt:[0,1,5].includes(p.f.rm.g)||/Stuart|Cole|Church|Leutze/.test(t.a),h:p.h}:null; el.hidden=false; if(!UI.gamewin)UI.gamewin='art'; V.q('tour').hidden=!TOURS[tkey(t)];
+    const {el,im}=V; V.close(); V.t=t; V.look=p?{col:p.f.rm.col,gilt:[0,1,2].includes(p.f.rm.g),h:p.h}:null; el.hidden=false; if(!UI.gamewin)UI.gamewin='art'; V.q('tour').hidden=!TOURS[tkey(t)];
     V.cap.innerHTML='<div style="font-size:15px;color:#f4ecd4">'+esc(t.t.toUpperCase())+'</div><div style="margin-top:4px">'+esc(t.a.toUpperCase())+', '+esc(t.d)+'</div><div style="margin-top:4px;color:#a89c84">'+esc(t.m.toUpperCase())+' · PUBLIC DOMAIN (CC0)</div>';
     im.onload=null; im.src=t.i; V.size(t.w*4,t.h*4); V.st.textContent=t.f?'LOADING FULL RESOLUTION…':'';
     if(t.f){ const F=V.full=new Image(); F.decoding='async'; F.onload=()=>{ if(V.full!==F||V.t!==t)return; im.src=F.src; V.got=true; V.size(F.naturalWidth,F.naturalHeight,true); V.st.textContent='FULL RESOLUTION · '+F.naturalWidth+' × '+F.naturalHeight; };

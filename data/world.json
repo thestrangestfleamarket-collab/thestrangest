@@ -6634,6 +6634,8 @@
    ]
   ],
   "near": 60,
+  "carry": 60,
+  "carryNote": "the park carried on past the north and east edges (owner, 10 Nov 2026: \"the cut off for rest of the park should seem seamless\"; of the options: \"Carry the real park on\"): this many tiles of its own grass, the big lake's shore, track, rocks and trees, then the far picture",
   "ground": {
    "note": "the land past the edges (owner, 7 Nov 2026: \"set a base color for far off distance things like grass\"; 8 Nov 2026: the whole of Central Park, the city round it): one low-res picture under everything outside the section: grass in park (the far park's box, twice the ring's park each way, owner 10 Nov 2026), outer (its streets' outer edge) road, the city past them in blocks (city, its streets every block tiles); the park's waters and lawns (x, y, rx, ry, turn in degrees) and paths ([x,y] points, the drive and the cross roads); the big lake's whole shore in it (box x0, y0, x1, y1 in tiles; tiles a pixel; colours)",
    "box": [

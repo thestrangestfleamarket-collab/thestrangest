@@ -18,6 +18,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   let up = false; for (let i = 0; i < 400 && !(up = await pg.evaluate(() => !!window.__started).catch(() => false)); i++) await pg.waitForTimeout(1000);
   if (!up) { ok(false, 'the page started'); await b.close(); process.exit(1); }
   await pg.waitForTimeout(15000);
+  // (the cast is built over the start's first seconds: wait till the tomato and a second character who blocks are standing, or two minutes)
+  for (let i = 0; i < 120 && !(await pg.evaluate(() => { const N = __dbg.NPCS, a = N.find(n => n.key === 'tomato'); return !!a && N.some(n => n !== a && n.st && n.blocks && (n.lv || 'up') === (a.lv || 'up') && !n.fly && !n.tiny && n.key !== 'dragon'); }).catch(() => false)); i++) await pg.waitForTimeout(1000);
   const r = await pg.evaluate(() => { const N = __dbg.NPCS, by = k => N.find(n => n.key === k), o = {};
     for (const k of ['elephant', 'horse', 'cat', 'tomato', 'bat', 'rat']) { const n = by(k); if (n) o[k] = { R: n.st.R, L: n.st.L || 0, fly: !!n.fly, tiny: !!n.tiny }; }
     // you walk into the horse's flank and the elephant's trunk end: kept out of the body itself, not just its middle

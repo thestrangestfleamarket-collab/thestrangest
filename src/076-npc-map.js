@@ -143,7 +143,9 @@ const RDX=x=>(x-SHARED.BOD.XS(0))/(SHARED.BOD.XS(1)-SHARED.BOD.XS(0)), RDZ=z=>(z
   xingAt=(x,y)=>{ const R=SHARED.BOD.road; return R&&R.xw?R.xw.find(w=>{ const u=w.ax==='x'?x:y, v=w.ax==='x'?y:x; return u>=w.a0&&u<=w.a1&&v>=w.l0-.5&&v<=w.h0+.5; }):null; },
   inRoad=(x,z)=>{ const R=SHARED.BOD.road; return !!(R&&R.at(RDX(x),RDZ(z))); },
   stroad=(x,z)=>inRoad(x,z)&&!xingAt(RDX(x),RDZ(z)),
-  pedfree=(x,z,R)=>stfree(x,z,R)&&!stroad(x,z);
+  pedfree=(x,z,R)=>stfree(x,z,R)&&!stroad(x,z),
+  // stepping off the kerb onto the lit crossing while it does not say WALK: wait
+  pedHold=(x0,z0,x1,z1)=>{ if(inRoad(x0,z0)||!inRoad(x1,z1))return false; const w=xingAt(RDX(x1),RDZ(z1)), R=SHARED.BOD.road; return !!(w&&w.lit&&R.walk&&!R.walk()); };
 window.PEDFREE=pedfree; window.STROAD=stroad;
 const ROAM={L:STLANE,wallZ:SHARED.BOD.ZS(PARK.y0+PARK.oy),gate:[SHARED.BOD.XS(PARK.gate[0]+PARK.ox+.8),SHARED.BOD.XS(PARK.gate[1]+PARK.ox-.8)]};
 window.ROAMDBG=()=>ROAM;

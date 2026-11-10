@@ -100,7 +100,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const p = (POTS.theirs.get('q') || [])[0], o = { shown: !!(p && p.g && p.g.visible), name: p && p.th && p.th.name, mine: !!sent.find(m => m.t === 'puts' && m.k === 'pot') };
     ONLINE.hear.puts({ id: 'q', k: 'pot', name: 'Otto', list: [] }); o.gone = !POTS.theirs.has('q') && !(p && p.g); ONLINE.on = on; ONLINE.send = send; return o; });
   ok(tp.shown && tp.name === "OTTO'S CRAB POT" && tp.mine && tp.gone, "another player's crab pot floats where they dropped it, with their name, and goes when they haul it; yours go to the section: " + JSON.stringify(tp));
-  const gd = await pg.evaluate(() => { FISHING.guide(); const P = document.getElementById('packp'), t = P ? P.innerText : ''; const r = { open: FORAGE.PACK.open, tab: FORAGE.PACK.tab, fish: Object.values(FISHING.NAMES).filter(n => t.includes(n)).length, all: Object.keys(FISHING.NAMES).length }; FORAGE.PACK.toggle(); return r; });
+  const gd = await pg.evaluate(() => { FISHING.guide(); const P = document.getElementById('packp'), t = P ? P.innerText : ''; const r = { open: FORAGE.PACK.open, tab: FORAGE.PACK.tab, fish: Object.values(FISHING.NAMES).filter(n => t.includes(n)).length, all: Object.keys(FISHING.NAMES).length, missing: Object.values(FISHING.NAMES).filter(n => !t.includes(n)) }; FORAGE.PACK.toggle(); return r; });
   ok(gd.open && gd.tab === 'fishing' && gd.fish === gd.all, 'the fishing guide opens in the pack and lists every fish: ' + JSON.stringify(gd));
   // another player fishing beside you: the rod in her hand, her line from its tip to her float
   const rf = await pg.evaluate(async () => { const T = __dbg.cv().TILE, x = PIER.x + 1.5 * T, z = PIER.zE + 2 * T, on = ONLINE.on; ONLINE.on = true;

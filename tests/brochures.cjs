@@ -35,8 +35,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   // START on the last one opened (the gems): to the dungeon with a headlight lent and on
   const p0 = await pg.evaluate(() => { const p = __dbg.pos(); document.querySelector('#bq [data-go]').click(); return p; });
   await wait(() => BROCH.loan(), null, 90000); await wait(() => !FADE.busy);
-  const g = await pg.evaluate(() => ({ up: BROCH.up(), p: __dbg.pos(), loan: BROCH.loan(), wheel: FORAGE.has('gem_wheel'), lamp: Object.values(EQUIP.by).includes('headlight') }));
-  ok(!g.up && Math.hypot(g.p[0] - p0[0], g.p[2] - p0[2]) > 1 && g.lamp && g.loan && g.loan.kit.headlight === 1, 'START folds it away, takes you to the place and lends its gear: ' + JSON.stringify({ kit: g.loan && g.loan.kit, lamp: g.lamp }));
+  const g = await pg.evaluate(() => ({ gone: getComputedStyle(document.getElementById('bq')).display === 'none', up: BROCH.up(), p: __dbg.pos(), loan: BROCH.loan(), wheel: FORAGE.has('gem_wheel'), lamp: Object.values(EQUIP.by).includes('headlight') }));
+  ok(g.gone && !g.up && Math.hypot(g.p[0] - p0[0], g.p[2] - p0[2]) > 1 && g.lamp && g.loan && g.loan.kit.headlight === 1, 'START folds it away, takes you to the place and lends its gear: ' + JSON.stringify({ kit: g.loan && g.loan.kit, lamp: g.lamp }));
   // START the wreck: in the water by the ship, the scuba set on; the gems' loan goes back first
   await pg.evaluate(() => BROCH.start('wreck')); await wait(() => BROCH.loan() && BROCH.loan().id === 'wreck', null, 120000); await pg.waitForTimeout(3000);
   const w = await pg.evaluate(() => { const [x, z] = WRECK.at, p = __dbg.pos(); return { d: +(Math.hypot(p[0] - x, p[2] - z) / __dbg.cv().TILE).toFixed(1), swim: !!RIVER.swim, worn: Object.values(EQUIP.by), wheel: FORAGE.has('gem_wheel') || 0, kit: BROCH.loan().kit }; });
@@ -49,7 +49,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     FORAGE.take('bq_fish', 1); BROCH.buy('fish'); a.again = INV.cash; return a; });
   ok(f.got === 12 && f.paid === 1 && f.cash === 100 - 24 + 50 && f.again === f.cash - 2, 'a full set pays $50, once: ' + JSON.stringify(f));
   await pg.evaluate(() => BROCH.rack()); await wait(() => BROCH.up() && BROCH.up().mode === 'rack'); await pg.evaluate(() => document.getElementById('bq').focus()); await pg.keyboard.press('Escape'); await pg.waitForTimeout(300);
-  ok(await pg.evaluate(() => !BROCH.up() && document.getElementById('bq').hidden), 'ESC closes it');
+  ok(await pg.evaluate(() => !BROCH.up() && getComputedStyle(document.getElementById('bq')).display === 'none' && !document.elementsFromPoint(innerWidth / 2, innerHeight / 2).some(e => e.closest('#bq'))), 'ESC closes it, nothing of it left over the game');
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close(); console.log(fails.length ? fails.length + ' failed' : 'all brochure checks passed'); process.exit(fails.length ? 1 : 0);
 })();

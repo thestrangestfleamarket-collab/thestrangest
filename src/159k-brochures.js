@@ -133,7 +133,7 @@ const BROCH={}; window.BROCH=BROCH;
   let L=null, V=null;   // the look once fetched; what is up: {mode:'rack'|'cover'|'open', id, from}
   const W=document.createElement('div'); W.id='bq'; W.hidden=true; W.tabIndex=-1; W.setAttribute('role','dialog'); W.setAttribute('aria-label','Brochures'); document.body.appendChild(W);
   const ready=async()=>{ if(window.LOAD)await LOAD('brochures'); if(!BROCH.D){ const D=await DATA(); BROCH.D=D; BROCH.by=Object.fromEntries(D.list.map(b=>[b.id,b])); }
-    if(!L){ L=LOOK(); const st=document.createElement('style'); st.id='bqcss'; st.textContent=`#bq{position:fixed;inset:0;z-index:40;background:#07080ce6;display:flex;flex-direction:column;align-items:center;gap:10px;padding:10px;overflow:auto;outline:0}
+    if(!L){ L=LOOK(); const st=document.createElement('style'); st.id='bqcss'; st.textContent=`#bq[hidden]{display:none}#bq{position:fixed;inset:0;z-index:40;background:#07080ce6;display:flex;flex-direction:column;align-items:center;gap:10px;padding:10px;overflow:auto;outline:0}
 #bq .bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;font:11px Silkscreen,monospace;letter-spacing:.5px;color:#f2c14e;zoom:var(--uiz,1)}#bq .bar b{color:#ece5d3;font-weight:400}
 #bq .bar button{font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:3px 9px;cursor:pointer}#bq .bar button:focus-visible{outline:2px solid #f2c14e}
 #bq .sheet{display:flex;margin:auto;box-shadow:0 18px 50px #000c;flex:none}#bq .sheet.col{flex-direction:column}

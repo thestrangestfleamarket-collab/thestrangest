@@ -24,7 +24,7 @@ import {RIVER} from './066-river.js';
     w_mine:{n:'MINE',k:'mine',cd:1,boom:{r:3.6,d:.5,md:9,kb:2.4},hint:'A CLICK SETS A MINE ON THE GROUND IN FRONT OF YOU. IT GOES OFF WHEN SOMEONE STEPS ON IT.'},
     w_blower:{n:'LEAF BLOWER',k:'blow',rng:7,auto:1,hint:'HOLD THE MOUSE DOWN TO BLOW. IT PUSHES PEOPLE AND LOOSE THINGS AWAY.'},
     w_portal:{n:'PORTAL GUN',k:'portal',cd:.4,rng:40,hint:'A CLICK OPENS A PORTAL ON THE GROUND, BLUE THEN ORANGE. STEP INTO ONE TO COME OUT OF THE OTHER.'}};
-  const IDS=Object.keys(W); FORAGE.add({names:Object.fromEntries(IDS.map(id=>[id,W[id].n]))});
+  const IDS=Object.keys(W); FORAGE.add({names:Object.fromEntries(IDS.map(id=>[id,W[id].n]))}); if(FORAGE.OWNERS)FORAGE.OWNERS.push(...IDS);   // the owners' kit tops them up too (owner, 10 Nov 2026)
   if(!OWNED.get('arms')||QS.get('fresh')){ for(const id of IDS)if(!INV.items[id])INV.items[id]=1; INV.save(); OWNED.set('arms','1'); }
   const A={hold:false,aim:null,cd:{},P:[],mines:[],portals:new Map(),traps:new Map(),blows:new Map(),pc:0,inP:false,mi:0,sent:'',sentT:0,last:null}; window.ARMS=A;
   addEventListener('pointerup',e=>{ if(e.button===0)A.hold=false; }); addEventListener('blur',()=>{ A.hold=false; });

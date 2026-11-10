@@ -117,6 +117,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   UI.view3b=(a,dt)=>{ W3.group.visible=UI.view!=='first'; if(!UI.persp)return; const sk=W3.SZ||1;
     if(UI.distTo==null||UI.dist!==UI._dl)UI.distTo=UI.dist; else UI.dist=Math.abs(UI.distTo-UI.dist)<1e-3?UI.distTo:UI.dist+(UI.distTo-UI.dist)*Math.min(1,(dt||.016)*12); UI._dl=UI.dist;   // a wheel step eases there; anything else that sets the distance is taken as it is
     if(UI.view==='first'&&!UI.owned()){ const f=2*Math.atan(Math.tan(UI.FOV0*Math.PI/360)/UI.fz)*180/Math.PI; if(Math.abs(PCAM.fov-f)>.01){ PCAM.fov+=(f-PCAM.fov)*Math.min(1,(dt||.016)*12); PCAM.updateProjectionMatrix(); } }   // first person's zoom narrows the eye's view
+    if(UI.view==='first'&&RIDE.cur&&RIDE.cur.eye&&RIDE.cur.eye(SHARED.cam.position)){ UI._fpo=null; SHARED.cam.updateMatrixWorld(); return; }   // in a car's seat: its driver's eye, fixed to the car
     if(UI.view==='first'){ if(!(W3.eyeAt&&W3.eyeAt(SHARED.cam.position))){ SHARED.cam.position.set(pos.x,SHARED.py+EYE*sk,pos.z); SHARED.cam.position.addScaledVector(new THREE.Vector3(-Math.sin(a),0,-Math.cos(a)),.12*TILE); }
       { const c=SHARED.cam.position, ox=c.x-pos.x, oy=c.y-SHARED.py, oz=c.z-pos.z, k=1-Math.exp(-(dt||.016)/.2), F=UI._fpo;
         if(!F||UI._fpy==null||Math.abs(SHARED.py-UI._fpy)>TILE){ UI._fpo=[ox,oy,oz,ox,oy,oz]; UI._fpy=SHARED.py; }
@@ -145,7 +146,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     if(UI.persp){ if(UI.view!=='third'&&UI.view!=='follow')return; const lo=UI.distMin||1.2*TILE, hi=UI.distMax||22*TILE, sk=W3.SZ||1, now=SHARED.cam.position.distanceTo(tv.set(pos.x,SHARED.py+HEAD*sk,pos.z)), held=now<UI.dist*.9; if(d>0&&held)return; const c=held?now:UI.distTo??UI.dist, L=[...new Set(UI.DL.map(v=>Math.max(lo,Math.min(hi,v))))];
       const n=d>0?[...L].reverse().find(v=>v>c*1.02):L.find(v=>v<c*.98); if(n==null)return; last=t; UI.distTo=n; return; }
     const c=SHARED.ppuTo; if(d>0&&RW/rppu()>=UI.MAXW*.995)return; const n=d<0?UI.ZL.find(v=>v>c*1.02):[...UI.ZL].reverse().find(v=>v<c*.98); if(n==null)return; last=t; SHARED.ppuTo=n; zAt=null; }; }   // each step zooms round the middle of the screen, wherever you have dragged the view (owner, 7 Nov 2026)
-  UI.viewsHere=()=>MODS.cars&&MODS.cars.driving?['third']:['iso','third','first'];   // every view everywhere (owner, 7 Nov 2026: "all views from all locations in map, no restrictions"); driving keeps behind the car
+  UI.viewsHere=()=>MODS.cars&&MODS.cars.driving?['third','first']:['iso','third','first'];   // every view everywhere (owner, 7 Nov 2026: "all views from all locations in map, no restrictions"); driving: behind the car or from the driver's seat (owner, 10 Nov 2026)
   { const W=window, own=UI.owned=()=>!!((W.FISHING&&W.FISHING.mode)||(W.OPTIC&&W.OPTIC.up)||(W.TOWERK&&W.TOWERK.spy)||(W.VR&&W.VR.s)||(W.ROAM&&W.ROAM.on)||UI.freeCam||UI.holdCam);
     SYS.add('cam',()=>{ if(!SYS.started||own())return; { const V=UI.viewsHere(); if(!V.includes(UI.view))UI.setView(V[0]); } if(!UI.persp&&SHARED.ppuTo<UI.ZOUT)SHARED.ppuTo=UI.ZOUT; if(UI.view==='iso'&&!UI.hold)SHARED.pitchTo=SHARED.pitch=VIEW0.pitch; if(!UI.persp)UI.keepOn(); },'094-views'); }
   UI.keepOn=()=>{ const c=SHARED.cam; if(!c||!c.isOrthographicCamera)return; const z=c.zoom||1, R=tv.setFromMatrixColumn(c.matrixWorld,0), hw=(c.right-c.left)/2/z*.85, hh=(c.top-c.bottom)/2/z*.8;   // the view drags only as far as keeps you on screen (owner, 7 Nov 2026)
@@ -494,7 +495,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   $('#dps2mk').oninput=e=>{ if(!PS2.menu)return; PS2.menu.k=+e.target.value; PS2.menu.save(); drawDisplay(); };
   $('#dlook').onclick=()=>{ LOOK.on=!LOOK.on; try{ SAVE.set('look',LOOK.on?'1':'0'); }catch(e){} drawDisplay(); };
   $('#dzoom').oninput=e=>{ SHARED.ppuTo=r2z(+e.target.value); }; $('#dtilt').oninput=e=>{ SHARED.pitchTo=clampP(PMIN+(+e.target.value)*(PMAX-PMIN)); };
-  M.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{ if(!UI.viewsHere().includes(b.dataset.view)){ UI.log('DRIVING, THE VIEW STAYS BEHIND THE CAR.','#c8a090'); return; } UI.switchView(b.dataset.view).then(drawDisplay); drawDisplay(); });
+  M.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{ if(!UI.viewsHere().includes(b.dataset.view)){ UI.log('DRIVING, THE VIEW IS BEHIND THE CAR OR FROM THE SEAT.','#c8a090'); return; } UI.switchView(b.dataset.view).then(drawDisplay); drawDisplay(); });
   $('#dsteps').oninput=e=>W3.setShade(+e.target.value,W3.shade.depth); $('#ddepth').oninput=e=>W3.setShade(W3.shade.steps,+e.target.value);
   $('#dreset').onclick=()=>{ SHARED.yawTo=VIEW0.yaw; SHARED.pitchTo=VIEW0.pitch; SHARED.ppuTo=VIEW0.ppu; UI.home(); drawDisplay(); };
   const UIS={small:.9,medium:1,large:1.1}; UI.setScale=k=>{ if(!UIS[k])k='medium'; UI.scale=k; document.documentElement.style.setProperty('--uiz',UIS[k]); SAVE.set('uiscale',k); M.querySelectorAll('[data-ui]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ui===k))); };

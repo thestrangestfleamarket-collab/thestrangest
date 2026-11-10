@@ -5,8 +5,9 @@ import {SAY} from './003d-say.js';
 import {TILE} from './006-map-pre.js';
 import {HOMES} from './076-npc-map.js';
 import {STALL} from './081-stalls.js';
-import {TOONS} from './084-npc-toons.js';
+import {MERCH} from './111e-merch.js';
 import {MUSH} from './111ec-mushseller.js';
+import {TOONS} from './111ed-tomato.js';
 const VEG={}; window.VEG=VEG;
 { const T=TILE;
   const V=[['v_tomato','TOMATO',3,2,.06,0xc8321e,[.07,.07],1],['v_pepper','BELL PEPPER',4,2,.06,0x2f8a2a,[.07,.08],1],['v_carrot','CARROT',2,1,.05,0xe0742a,[.035,.16],0],
@@ -25,7 +26,7 @@ const VEG={}; window.VEG=VEG;
     does:{f_corn:()=>FORAGE.feed(.2),f_vstew:()=>{ FORAGE.feed(.4); VIT.heal(.2); },f_stuffpep:()=>{ FORAGE.feed(.4); FORAGE.buff('regen',60); },f_psoup:()=>{ FORAGE.feed(.6); FORAGE.buff('str',120); }}});
   const STAND=()=>{ const P=PARK, X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0)), A=STALL.at('tomato');
     VEG.stand=STALL.build({X,Z,x0:A.x0,x1:A.x1,y:P.y0,veg:true,seed:11,gate:A.gate,name:A.name});
-    const N=TOONS.tomato; if(!N)return; N.life=null; N.roam=false; if(!N.sheet&&!HOMES.keeper(N))STALL.work(N,VEG.stand,{jobs:['look'],wait:()=>2+Math.random()*3});
+    const N=TOONS.tomato; if(!N)return; if(!HOMES.keeper(N))MERCH.stand(N,VEG.stand);
     TALK.shops.set(N,()=>SHOP.open()); for(const th of UI.things)if(th.npc&&th.npc===N){ th.act=()=>TALK.open(N); th.reach=2.2*T; th.near=3*T; }
   };
   { const wait=()=>{ if(typeof MUSH==='undefined'||!MUSH.booth||typeof TOONS==='undefined'||!TOONS.tomato)return setTimeout(wait,500); STAND(); }; wait(); }

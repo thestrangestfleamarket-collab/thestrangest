@@ -125,13 +125,15 @@
      "https://opengameart.org/content/fantozzis-footsteps-grasssand-stone",
      "https://opengameart.org/content/different-steps-on-wood-stone-leaves-gravel-and-mud",
      "https://opengameart.org/content/door-open-door-close-set",
-     "https://opengameart.org/content/door-lock-sounds"
+     "https://opengameart.org/content/door-lock-sounds",
+     "https://opengameart.org/content/car-sound-effects-pack-low-quality"
     ],
     "authors": {
      "step_stone, step_grass": "Fantozzi (freesound.org pack 10338), cut by qubodup",
      "step_wood": "TinyWorlds",
      "dooropen, door": "qubodup",
-     "latch": "Cough-E"
+     "latch": "Cough-E",
+     "car_engine, car_start, car_stop, car_door_open, car_door_close, horn": "GGBotNet"
     }
    },
    "licence": {

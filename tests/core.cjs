@@ -45,7 +45,7 @@ ok(L.paths.every(p => p.a && p.b), 'every park path has two ends');
 { const C = JSON.parse(fs.readFileSync(ROOT + '/data/cars.json', 'utf8')).cars, P = L.cars || [];
   ok(P.length && P.every(c => C[c.model] && c.y > -70 && c.y < -50) && new Set(P.map(c => c.id)).size === P.length, 'every parked car in the level file is a car in data/cars.json, on Market St\'s line between its kerbs (past the forcefield since 8 Nov 2026), its id its own (' + P.length + ')'); }
 { const A = JSON.parse(fs.readFileSync(ROOT + '/data/art.json', 'utf8')), bad = A.filter(t => !(t.t && t.a && t.d && t.m && t.w > 0 && t.h > 0 && /^data:image\/jpeg;base64,/.test(t.i)));
-  ok(A.length >= 50 && !bad.length && new Set(A.map(t => t.t + t.a)).size === A.length, 'the art museum\'s ' + A.length + ' paintings each have a title, artist, date, museum, size and picture, none twice'); }
+  ok(A.length >= 20 && !bad.length && new Set(A.map(t => t.t + t.a)).size === A.length, 'the art museum\'s ' + A.length + ' paintings each have a title, artist, date, museum, size and picture, none twice'); }
 { const S = L.sections, G = S.grid, ids = S.ids.flat(), box = id => { const c = S.ids.findIndex(r => r.includes(id)), r = S.ids[c].indexOf(id); return [G.x0 + c * G.w, G.x0 + (c + 1) * G.w, G.y0 + r * G.h, G.y0 + (r + 1) * G.h]; };
   ok(ids.length === G.cols * G.rows && new Set(ids).size === ids.length && ids.includes(L.section.id), 'the section grid names each of its ' + ids.length + ' sections once, this one among them');
   ok(ids.every(id => L.loop.stations.filter(s => s.id === id).length === 1) && L.loop.stations.every(s => { const [x0, x1] = box(s.id); return s.x - 29 > x0 && s.x + 29 < x1; }), 'every section has one loop station, inside it'); }

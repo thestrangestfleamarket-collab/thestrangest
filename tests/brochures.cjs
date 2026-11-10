@@ -45,6 +45,12 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   await pg.evaluate(() => __dbg.UI.goName('THE BODEGA')); await wait(() => !BROCH.loan(), null, 60000);
   const r = await pg.evaluate(() => ({ loan: BROCH.loan(), worn: Object.values(EQUIP.by), has: ['scuba', 'goggles', 'headlight'].map(k => FORAGE.has(k) || 0) }));
   ok(!r.loan && !r.worn.includes('scuba') && r.has.every(n => !n), 'leave, and the loaned gear goes back: ' + JSON.stringify(r));
+  // START the bees, set the lent hive down on the lawn, leave: the placed hive is picked up with the loan
+  await pg.evaluate(() => { FORAGE.take('bee_hive', FORAGE.has('bee_hive') || 0); BROCH.start('bees'); }); await wait(() => BROCH.loan() && BROCH.loan().id === 'bees', null, 120000); await pg.waitForTimeout(2000);
+  const hv = await pg.evaluate(() => { const n0 = BEES.S.hives.length; BEES.set(); return { n0, n1: BEES.S.hives.length, pack: FORAGE.has('bee_hive') || 0 }; });
+  await pg.evaluate(() => __dbg.UI.goName('THE BODEGA')); await wait(() => !BROCH.loan(), null, 60000);
+  const hv2 = await pg.evaluate(() => ({ n: BEES.S.hives.length, pack: FORAGE.has('bee_hive') || 0 }));
+  ok(hv.n1 === hv.n0 + 1 && !hv.pack && hv2.n === hv.n0 && !hv2.pack, 'a lent hive set down on the lawn is picked up when the loan goes back: ' + JSON.stringify({ hv, hv2 }));
   const f = await pg.evaluate(() => { INV.cash = 100; for (const id of BROCH.ids) { FORAGE.take('bq_' + id, FORAGE.has('bq_' + id) || 0); } for (const id of BROCH.ids) BROCH.buy(id); const a = { cash: INV.cash, paid: BROCH.paid(), got: BROCHDBG().got };
     FORAGE.take('bq_fish', 1); BROCH.buy('fish'); a.again = INV.cash; return a; });
   ok(f.got === 12 && f.paid === 1 && f.cash === 100 - 24 + 50 && f.again === f.cash - 2, 'a full set pays $50, once: ' + JSON.stringify(f));

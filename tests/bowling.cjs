@@ -14,7 +14,7 @@ const OUT = process.argv[3];
   pg.on('pageerror', e => errs.push(e.message.slice(0, 300)));
   { const DIR = path.join(__dirname, '../node_modules/@dimforge/rapier3d-compat');   // Rapier from the packages, as the CDN would hand it
     await pg.route(/\/@dimforge\/rapier3d-compat@[^/]+\/(.+)$/, r => { const f = path.join(DIR, new URL(r.request().url()).pathname.split(/rapier3d-compat@[^/]+\//)[1] || ''); if (!fs.existsSync(f)) return r.continue(); r.fulfill({ path: f, contentType: /\.wasm$/.test(f) ? 'application/wasm' : 'text/javascript' }); }); }
-  await pg.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=13&at=-7,-74', { waitUntil: 'commit' });
+  await pg.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=13&at=-2,-73', { waitUntil: 'commit' });
   let st = false; for (let i = 0; i < 80 && !st; i++) { await pg.waitForTimeout(3000); st = await pg.evaluate(() => !!window.__started).catch(() => false); }
   ok(st, 'the page starts');
   const until = async (f, a, ms = 30000) => { for (let t = 0; t < ms; t += 250) { if (await pg.evaluate(f, a).catch(() => false)) return true; await pg.waitForTimeout(250); } return false; };

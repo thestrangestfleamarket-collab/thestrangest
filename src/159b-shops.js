@@ -12,7 +12,7 @@ Object.assign(SHOPS,{bound:new Set(),cur:null});
   const say=t=>{ const F=window.FORAGE; if(F&&F.say)F.say(t); };
   // trade.buys names groups of goods (FORAGE.BUYK: butterflies, birds, ...); paid at the price the game already gives each
   const buying=tr=>{ const F=window.FORAGE, P=(tr.buys||[]).flatMap(g=>F&&F.BUYK&&F.BUYK[g]||[]); return P.length?Object.keys(INV.items).filter(id=>INV.items[id]>0&&P.some(p=>id.startsWith(p))).sort():[]; };
-  const worth=id=>Math.max(1,Math.round(+ITEMS.prop(id,'value')||1));
+  const worth=id=>{ const N=SHOPS.cur, tr=N&&CHARS.trade&&CHARS.trade(N); return Math.max(1,Math.round((+ITEMS.prop(id,'value')||1)*((tr&&+tr.pays)||1))); };   // trade.pays: what this buyer pays over the usual (a wholesaler's 1.25)
   const esc=TEXT.esc;
 
   // the wares window (owner, 8 Nov 2026: "when you double click a merchant you just see their wares (looks like inventory menu but has price, double click to buy (has confirmation before buying))"): the bag's green list, each thing with its picture, name and price

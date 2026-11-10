@@ -31,7 +31,7 @@ const CREW={list:[],loaded:{},hd:{},alias:{play:'playhouse',bath:'dojo',feel:'st
     if(at==='street')return W(72,-72.5);
     try{ const p=CITY.place(a); if(p)return {x:p.door.x,z:p.door.z}; }catch(e){}
     return null; };
-  for(const [id,nm] of [['hudson','TO THE HUDSON (THE PIER)'],['fishtables','THE FISH MARKET']]){ const d=CREW.door(id); if(d)STORE.places.push([nm,d.x,d.z,'up','see']); }   // GO TO: the way through to the river and its pier, the fish market's tables
+  for(const [id,nm] of [['hudson','TO THE HUDSON (THE PIER)'],['fishtables','THE FISH TABLES']]){ const d=CREW.door(id); if(d)STORE.places.push([nm,d.x,d.z,'up','see']); }   // GO TO: the way through to the river and its pier, the fish market's tables
   // an inside's own list of where people go: ROOMS.off[id] (rooms off the map) or STORE.rooms (the street's insides), each with spots (by job title) and seats ({x,z,hd,y}: y the seat's height, none to stand) and whether it lies off the map
   const insideOf=a=>ROOMS.off[a]||(STORE.rooms||[]).find(r=>r.id===a)||null, offOf=a=>!!ROOMS.off[a]||!!(insideOf(a)||{}).offmap;
   CREW.out=key=>{ for(const R of [...Object.values(ROOMS.off),...(STORE.rooms||[])]){ const t=R.taken; if(t)t.delete(key); } };   // their seat is free again

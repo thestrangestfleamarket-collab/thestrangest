@@ -85,9 +85,8 @@ await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL
   const M_=(c,o={})=>new THREE.MeshLambertMaterial({color:c,side:THREE.DoubleSide,...o});
   const MLOW=M_(0xc4c7c3), MWALL=M_(0xe2dfd5), MCEIL=M_(0xe9e7df,{side:THREE.FrontSide}), MSTEEL=M_(0xb9bdc0), MDARK=M_(0x2a2c2f), MSEAT=[M_(0xe0842a),M_(0xe8bf3e)], MPOLE=M_(0xd3d6d9), MFLOOR=M_(0xffffff,{map:floorTex}), MSTRIP=new THREE.MeshBasicMaterial({color:0xf4f8ff}),
     MGLASS=new THREE.MeshBasicMaterial({color:0x9db3c2,transparent:true,opacity:.14,depthWrite:false,side:THREE.DoubleSide}), MLEAF=new THREE.MeshLambertMaterial({map:leafPic,alphaTest:.5,side:THREE.DoubleSide}), MYEL=M_(0xd9b93a);
-  const makeCar=(tn,c)=>{ const G=new THREE.Group(), ext=new THREE.Group(), inner=new THREE.Group(), roof=new THREE.Group(), strips=new THREE.Group(), upper={'-1':new THREE.Group(),'1':new THREE.Group()}, seats=[], leaves=[], lights=[];
-    G.rotation.order='YXZ'; G.add(ext,inner); inner.add(roof,strips,upper['-1'],upper['1']); const HL=HL0, Y=zz=>z(zz);
-    // outside
+  // a car's outside alone (the vehicle editor's preview makes one too, in no scene, no lights)
+  const outside=(tn,c)=>{ const ext=new THREE.Group(), HL=HL0, Y=zz=>z(zz);
     for(const s of [-1,1]){ const m=new THREE.MeshLambertMaterial({map:ctex(sidePic(tn.i*17+c*5+(s>0?3:0))),alphaTest:.5,side:THREE.DoubleSide}), zz=s*W0, a=s>0?-HL:HL, b=-a;
       quad(ext,[a,Y(Y0),zz],[b,Y(Y0),zz],[b,Y(FZ+TOP+12),zz],[a,Y(FZ+TOP+12),zz],m,s>0?[0,0,1,0,1,1,0,1]:[1,0,0,0,0,1,1,1]); }
     for(const e of [-1,1]){ const front=(c===0&&e>0), back=(c===NCAR-1&&e<0), m=new THREE.MeshLambertMaterial({map:ctex(endPic(front,tn)),alphaTest:.5,side:THREE.DoubleSide,...(front||back?{emissive:0x111111}:{})});
@@ -97,6 +96,9 @@ await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL
     { const sh=new THREE.Shape(); sh.moveTo(-W0,0); sh.lineTo(W0,0); sh.lineTo(W0-.35*T,z(8)); sh.lineTo(-W0+.35*T,z(8)); sh.closePath(); const g=new THREE.ExtrudeGeometry(sh,{depth:CARL*T,bevelEnabled:false}); g.rotateY(Math.PI/2); g.translate(-HL,Y(FZ+TOP+12),0);
       const r=new THREE.Mesh(g,M_(0x6e7276)); ext.add(r); for(let k=-2;k<=2;k++)box(ext,1.4*T,z(4),1.2*T,k*5*T,Y(FZ+TOP+21),0,MDARK); }
     box(ext,CARL*T-.4,z(12),W0*1.7,0,Y(FZ-6),0,MDARK); for(const k of [-1,1])box(ext,3.4*T,z(16),W0*1.6,k*(HL-3.4*T),Y(FZ-20),0,M_(0x1e2022));
+    return ext; };
+  const makeCar=(tn,c)=>{ const G=new THREE.Group(), ext=outside(tn,c), inner=new THREE.Group(), roof=new THREE.Group(), strips=new THREE.Group(), upper={'-1':new THREE.Group(),'1':new THREE.Group()}, seats=[], leaves=[], lights=[];
+    G.rotation.order='YXZ'; G.add(ext,inner); inner.add(roof,strips,upper['-1'],upper['1']); const HL=HL0, Y=zz=>z(zz);
     // doors: two leaves each, sliding between the skins
     for(const s of [-1,1])for(const m of DOORS)for(const sg of [-1,1]){ const me=box(G,DWH*T,z(DOORH),.06*T,(m+sg*DWH/2)*T,Y(FZ+DOORH/2),s*(CW-.14)*T,MLEAF); leaves.push({me,x0:me.position.x,s:sg}); }
     // glass in every window
@@ -132,7 +134,9 @@ await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL
     for(const k of [-1,1]){ const Lp=new THREE.PointLight(new THREE.Color(.93,.97,1),LAMPI*.25,8*T,LAMPD); Lp.userData.i0=Lp.intensity; Lp.userData.at=new THREE.Vector3(k*HL/2,Y(FZ+CEIL-6),0); scene.add(Lp); lamps.push(Lp); lights.push(Lp); }
     VLOOK.dress('train',ext); scene.add(G); return {G,ext,inner,roof,strips,upper,leaves,lights,seats,c,door:0,poles:poles.map(([x,zz])=>({a:x*T,v:zz*T})),straps:straps.map(([x,zz])=>({a:x*T,v:zz*T}))}; };
   // the trains in the vehicle editor: their colours only (their size and parts are the stations' and the riders')
-  VLOOK.kind('train',{name:'THE LOOP TRAIN',grp:'TRAINS',colour:true,make:()=>{ const c=TRAINS.list[0]&&TRAINS.list[0].cars[0]; return c?VLOOK.dress('train',c.ext.clone()):null; }});
+  // (a car's outside of its own, so it shows before the trains are built; dropped with its pictures)
+  VLOOK.kind('train',{name:'THE LOOP TRAIN',grp:'TRAINS',colour:true,make:()=>{ const tn=TRAINS.list[0]; if(!tn)return null; const ext=outside(tn,0);
+    ext.userData.vlDrop=()=>ext.traverse(o=>{ if(!o.isMesh)return; o.geometry.dispose(); for(const m of [].concat(o.material))if(m!==MDARK){ if(m.map)m.map.dispose(); m.dispose(); } }); return VLOOK.dress('train',ext); }});
   // the cars built only the first time you are down on the platforms (owner, 9 Nov 2026: "dont load the train unless you go into subway platform"); the timetable runs from the start without them
   TRAINS.ensure=()=>{ if(TRAINS.built)return; TRAINS.built=true;
   for(const tn of TRAINS.list){ const cv=document.createElement('canvas'); cv.width=512; cv.height=64; const tx=new THREE.CanvasTexture(cv); tx.colorSpace=THREE.SRGBColorSpace; tn.sign={cv,tx,last:''}; tn.signM=new THREE.MeshBasicMaterial({map:tx});

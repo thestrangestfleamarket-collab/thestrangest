@@ -216,6 +216,8 @@ One tree pass (more leaves mean more shadow triangles).
 - [ ] **Trees by distance** · P2 · L · pick + code. The nine looks at https://claude.ai/artifact/TQ1obJhoEbEzv3cquPxwfC. The park's trees
   became whole only near you, a crown on a trunk far off (8 Nov): check what's left to pick.
 - [ ] **Look at the fluffy grass in game** · P3 · S · look. The tufts and the grass in five heights (8 Nov).
+- [ ] **Fruit trees: the picks left open** · P3 · S · pick. Of `mockups/fruit-trees.html` (10 Nov): making things (a cider press, an olive press, a sugar shack: where?) and who may pick (only the keeper for now).
+- [ ] **Fruit trees: look at them in game** · P3 · S · look. The orchard by the farm and a big pot at home (10 Nov).
 
 ## Clothes and the avatar
 

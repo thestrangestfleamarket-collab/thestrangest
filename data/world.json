@@ -490,6 +490,20 @@
    "face": "n"
   },
   {
+   "id": "bowling",
+   "name": "THE STRANGEST LANES",
+   "kind": "front",
+   "x0": -16.5,
+   "x1": 2.71,
+   "lot": true,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n",
+   "inW": 16,
+   "inD": 38,
+   "inH": 110
+  },
+  {
    "id": "bar",
    "name": "THE BAR",
    "kind": "front",

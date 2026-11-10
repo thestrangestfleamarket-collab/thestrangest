@@ -3007,14 +3007,12 @@
   "pf": "longboarder-0ea806",
   "group": "boards",
   "job": {
-   "at": "boards",
-   "title": "REGULAR",
+   "at": "bowling",
+   "title": "RUNS THE LANES",
    "hours": [
-    14,
-    20
-   ],
-   "r": 4,
-   "home": "house"
+    12,
+    24
+   ]
   },
   "name": "THE LONGBOARDER"
  },

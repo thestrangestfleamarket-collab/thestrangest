@@ -12,6 +12,14 @@ const {chromium}=require('playwright');
   await pg.waitForTimeout(2500);
   const lit=await pg.evaluate(()=>{ const c=document.querySelector('#dvedit .vcv'), d=c.getContext('2d').getImageData(0,0,c.width,c.height).data; let n=0; for(let i=0;i<d.length;i+=4)if(Math.abs(d[i]-0x15)+Math.abs(d[i+1]-0x17)+Math.abs(d[i+2]-0x1e)>30)n++; return n/(d.length/4); });
   ok(lit>.05,'the picked car turns in its studio ('+(lit*100).toFixed(1)+'% drawn)');
+  // the horse (10 Nov 2026, the owner's pick "Colours and size"): under RIDES, its coats' colours and its size, no parts; it turns in the studio like the rest
+  const hz=await pg.evaluate(async()=>{ const el=document.getElementById('dvedit'); el.querySelector('[data-pick="horse"]').click(); const t0=performance.now(); while(!el.querySelector('input[data-pal]')&&performance.now()-t0<60000)await new Promise(r=>setTimeout(r,300));
+    await new Promise(r=>setTimeout(r,2500)); const c=el.querySelector('.vcv'), d=c&&c.getContext('2d').getImageData(0,0,c.width,c.height).data; let n=0; if(d)for(let i=0;i<d.length;i+=4)if(Math.abs(d[i]-0x15)+Math.abs(d[i+1]-0x17)+Math.abs(d[i+2]-0x1e)>30)n++;
+    let h=el.querySelector('[data-pick="horse"]'); while(h&&h.tagName!=='H3')h=h.previousElementSibling; const grp=h&&h.textContent==='RIDES';
+    const r={rides:!!grp,pals:el.querySelectorAll('input[data-pal]').length,size:!!el.querySelector('input[data-f="s"]'),parts:!!el.querySelector('[data-part]'),drawn:d?+(n/(d.length/4)*100).toFixed(1):0};
+    el.querySelector('[data-pick="car:muscle-car-60s"]').click(); return r; });
+  ok(hz.rides&&hz.pals>=8&&hz.size&&!hz.parts&&hz.drawn>3,'the horse is in the editor under RIDES: its coat colours and its size, no parts, turning in the studio '+JSON.stringify(hz));
+  await pg.waitForTimeout(1500);
   const e=await pg.evaluate(async()=>{ const C=CARS.cars.get('c1'), m=C.mesh, P=VLOOK.palette(m), s0=m.scale.x, ps=VLOOK.parts(m), w=ps.find(p=>p.key.startsWith('WHEEL FL'));
     VLOOK.set('car:muscle-car-60s',{s:1.5,pal:{[P[0]]:'ff00ff'},parts:{[w.key]:{h:1}}}); await new Promise(r=>setTimeout(r,400));
     let pink=0; for(const p of VLOOK.parts(m)){ const a=p.m.geometry.attributes.color; if(a)for(let i=0;i<a.array.length;i+=3)if(a.array[i]>.95&&a.array[i+1]<.05&&a.array[i+2]>.95)pink++; }

@@ -9,6 +9,8 @@ import {SYS, TILE} from './006-map-pre.js';
   window.FLOW=FLOW; Object.assign(FLOW,{waters,rect:uRect,on:uOn,tex:uTex,wa:uWA,wb:uWB,nw:uNW,G,SW,CELL,MPU,WU,drops:[],cur:{x:0,z:0,h:0,u:0,w:0,ok:false},stats:{steps:0,rows:0}});
   // a water: {name, box:[x0,z0,x1,z1], has(x,z), bed(x,z) and rest(x,z) its bed and still surface (world heights), swell (the sea's waves come in at the window's edge), solid(x,z) (posts)}
   FLOW.add=w=>{ waters.push(w); x0=1e9; return w; };
+  // how deep the still water is at x,z (world units; 0 on land): the deepest shown water there
+  FLOW.depth=(x,z)=>{ let d=0; for(const w of waters)if((!w.shown||w.shown())&&w.has(x,z))d=Math.max(d,w.rest(x,z)-w.bed(x,z)); return d; };
   FLOW.drop=(x,z,r,s)=>{ if(FLOW.drops.length<8)FLOW.drops.push([x,z,r,s*MPU]); };
   const V='varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position.xy*2.,0.,1.); }';
   const U={uH:{value:null},uF:{value:null},uBed:{value:bedTex},uTx:{value:1/G},uDt:{value:1/60},uL:{value:L},uCap:{value:CAP},uShift:{value:new THREE.Vector2()},uE:{value:EDGE/G},

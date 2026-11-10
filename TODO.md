@@ -167,7 +167,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [ ] **The car radio unconfirmed** (cars parked past the map edge) · look.
 
 ## Physics and vehicles
-- [ ] **Vehicle editor follow-ups** · P3 · M · pick + code. A car's size changes its look and where it stands, not how it drives (the driving body keeps its size); the traffic's Polyfork models have their parts (10 Nov 2026); the horse is a pet's body, not in the editor; the train shows once you have been down to a platform.
+- [ ] **Vehicle editor follow-ups** · P3 · S · look. Done 10 Nov: a resized car or kart drives at its size, the traffic's models have their parts, the horse is in (colours and size). Left: the train shows once you have been down to a platform; the horse's preview shows your own coat only.
 
 - [ ] **Jets follow-ups** · P3 · S · pick. Fires and ice are worked out on each player's page (where a stream lands matches, how a fire
   spreads may not); characters burn and freeze but do not run from the fire.
@@ -204,7 +204,7 @@ One tree pass (more leaves mean more shadow triangles).
 - [ ] **More animals rest** · P3 · M · code. Done: dog, fox, wolf, horse, wild horse, mule; the others on the fox's rig (`tools/m2m-bake.cjs`).
 - [ ] **Standing up from a seat** · P3 · M · code · risk med. `stand()` in `src/100-use.js` puts you off the seat at once: play the
   stand-up first, then move you off, without blocking movement.
-- [ ] **Fishing from the rowboat has no body move** · P3 · M · code. The rod and arm are hidden while seated (`src/146a-wield.js`).
+- [x] **Fishing from the rowboat has no body move** · done 10 Nov: sat in the boat the rod is held and swung to cast and reel (a seat with `hold`).
 - [ ] **Birds glide** (after the beta) · P4 · M-L · pick + code. Mesh2Motion's `bird` rig onto the crows and owls.
 - [ ] **The dragons' unused clips** (after the beta) · P4 · S-M · pick. Land, Roar, Walk (Glide stays unused: always flapping).
 - [ ] **Bow draw and shoot** (after the beta) · P4 · M / L · pick. No bow in the game: the owner decides on one first.

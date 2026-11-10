@@ -34,10 +34,10 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     for (const d of [5, 40, 150]) { rc.set(new THREE.Vector3(PIER.x, 300 * T, B.z0 - d * T), new THREE.Vector3(0, -1, 0)); const h = rc.intersectObjects(__dbg.scene.children, true).find(h => { for (let p = h.object; p; p = p.parent) if (!p.visible) return false; return true; }); out.push(h && h.object === __dbg.MAPK.MODS.land ? 'land' : h ? 'other' : 'none'); } return out; });
   ok(!r6.includes('land'), 'no land past the Hudson: open water out to the skyline: ' + JSON.stringify(r6));
   // the big lake: its deep holes, its fish (koi and goldfish among them)
-  await pg.evaluate(() => { const M = __dbg.MAPK, P = M.PARK, S = FOUNT.S, L = S.L; STORE.goTo(M.BOD.XS(L.x - L.rx * .45 + (P.ox || 0)), M.BOD.ZS(L.y - L.ry * .15 + 6 + (P.oy || 0)), 'up'); });
+  await pg.evaluate(() => { const M = __dbg.MAPK, P = M.PARK, S = FOUNT.S, L = S.L; const H = FOUNT.HOLES[0]; STORE.goTo(M.BOD.XS(H[0] + (P.ox || 0)), M.BOD.ZS(H[1] + 6 + (P.oy || 0)), 'up'); });
   await wait(() => !FADE.busy).catch(() => {}); await wait(() => window.FOUNT && FOUNT.ready && FISHES.list.some(f => f.w.name !== 'hudson'), null, 300000).catch(() => {});
   await wait(() => FLOW.on.value, null, 60000).catch(() => {});
-  const r5 = await pg.evaluate(() => { const M = __dbg.MAPK, P = M.PARK, S = FOUNT.S, L = S.L, x = M.BOD.XS(L.x - L.rx * .45 + (P.ox || 0)), z = M.BOD.ZS(L.y - L.ry * .15 + (P.oy || 0)), T = __dbg.cv().TILE;
+  const r5 = await pg.evaluate(() => { const M = __dbg.MAPK, P = M.PARK, S = FOUNT.S, L = S.L, H = FOUNT.HOLES[0], x = M.BOD.XS(H[0] + (P.ox || 0)), z = M.BOD.ZS(H[1] + (P.oy || 0)), T = __dbg.cv().TILE;
     const b = FOUNT.bedAt(x, z); const lake = [...new Set(FISHES.list.filter(f => f.w.kind === 'lake').map(f => f.id))]; return { deep: b == null ? null : +((FOUNT.LV - b) * .84 / T).toFixed(1), lake, own: lake.every(i => !i.startsWith('x_') || ITEMS.prop(i, 'water') === 'lake'), names: FLOW.waters.map(w => w.name), on: FLOW.on.value }; });
   ok(r5.deep > 15, 'the big lake has a very deep hole: ' + r5.deep + ' m');
   ok(['hudson', 'lake', 'brook'].every(n => r5.names.includes(n)) && r5.on, 'the big lake and the stream join the same one water: ' + JSON.stringify(r5.names));

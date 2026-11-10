@@ -5993,3 +5993,4 @@ Owner: "what polyfork animations do we have for our character", then "yes lets u
 - 10 Nov 2026, the big lake's deep hole (same ask): the 25 m hole moved off the bath house island's edge (the island had filled it), out into open water.
 - 10 Nov 2026, fishing from the rowboat (same ask; TODO): sat in the boat you hold the rod and swing it to cast and reel, as on the pier.
 - 10 Nov 2026, more animals rest (owner: "fix the small leftovers"; TODO): the farm's cows and pigs lie down to rest and sleep on Mesh2Motion's fox Sleep clip, retold on their own rigs (was a folded-legs pose). The other fox-rig animals in data/fauna.json are no longer in the game (pets use their own bodies), so they get none.
+- 10 Nov 2026, the vehicle editor's leftovers (owner: "fix the small leftovers"): THE LOOP TRAIN shows in the editor before anyone has been underground (the trains still built only on the platforms); THE HORSE has a COAT picker, the preview in that coat with its colours.

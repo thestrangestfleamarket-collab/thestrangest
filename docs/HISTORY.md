@@ -6104,3 +6104,4 @@ Owner: "what polyfork animations do we have for our character", then "yes lets u
 - 10 Nov 2026, the sender (owner: "yes change the sender"): the worker's emails come from market@auth.thestrangestfleamarket.com, the domain verified in Resend.
 - 10 Nov 2026, three road cars out (owner: "remove these cars from game", the boxy sedan and the 80s hatchback; "remevo normal taxis from game too"): BOXY SEDAN, 80S HATCHBACK and YELLOW CAB no longer drive in the traffic (the hover taxis stay).
 - 10 Nov 2026, the train on the street (owner: "this vehicle is glitched", "riding on the sidewalk"): the subway trains are drawn only underground; under Market St the loop is shallower than a train is tall, so from the street its roof slid along the kerb.
+- 10 Nov 2026, quieter footsteps (owner: "the footsteps sounds are way too loud, need to drop down 75%"): footsteps play at a quarter of their old volume.

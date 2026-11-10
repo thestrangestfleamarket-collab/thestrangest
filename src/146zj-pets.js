@@ -125,7 +125,8 @@ window.PETS=PETS;
             const k=PR.k=Math.min(1,PR.k+dt/.8), e=k*k*(3-2*k), nx=PR.fx+(S.x-PR.fx)*e, nz=PR.fz+(S.z-PR.fz)*e;
             st.h=k<1&&Math.hypot(nx-st.x,nz-st.z)>1e-4?Math.atan2(nx-st.x,nz-st.z):L.hd; st.x=nx; st.z=nz; PR.y=PR.fy+(S.y-PR.fy)*e+Math.sin(Math.PI*k)*.35*WU; st.to=null; st.face=null; return; } }
         const R=o.rec||o.mine&&out(), far=R?(R.lo<25?3.4:R.lo>=80?1.4:1.7):1.7, sp=pace(R);   // (its loyalty keeps it close, a shy one lags; hungry or ill, it is slow)
-        if(d>far){ const k=(far-.65)/d; st.to={x:L.x+dx*k,z:L.z+dz*k}; st.v=(d>far+1.8?Math.max(runV*sp,v/WU*1.15):walkV*sp)*WU; } else if(d<far-.4){ st.to=null; st.face={x:L.x,z:L.z}; } },
+        if(o.side&&d>far){ const sx=Math.cos(L.hd)*o.side*WU, sz=-Math.sin(L.hd)*o.side*WU, k=(far-.65)/d; st.to={x:L.x+dx*k+sx,z:L.z+dz*k+sz}; st.v=(d>far+1.8?Math.max(runV*sp,v/WU*1.15):walkV*sp)*WU; }
+        else if(d>far){ const k=(far-.65)/d; st.to={x:L.x+dx*k,z:L.z+dz*k}; st.v=(d>far+1.8?Math.max(runV*sp,v/WU*1.15):walkV*sp)*WU; } else if(d<far-.4){ st.to=null; st.face={x:L.x,z:L.z}; } },
       anim:(dt,moving,st)=>{ const fast=moving&&st.v>walkV*WU*1.2; air=PR.on?PR.k<1:onlyFly||flies&&H.on&&H.mode==='hop'||!H.on&&seat==='fly'||flies&&!grounded&&!H.on&&(moving&&(st.v>walkV*WU*1.2||hover>.05)||PR.lift>.1*WU||lastL&&(lastL.y-groundAt(lastL.x,lastL.z,lastL.y)>.3*WU||SHARED.groundY&&groundAt(st.x,st.z,lastL.y)-SHARED.groundY(st.x,st.z)>.3*WU));
         hover+=((air&&!PR.on?(onlyFly?.9:1.3):0)-hover)*Math.min(1,dt*2.5);
         if(o.drive){ const G=o.gait(N.dv/WU), w=pickClip(CL,G.c); if(w!==cur){ act(w).reset().fadeIn(.25).play(); if(cur)act(cur).fadeOut(.25); cur=w; } act(cur).timeScale=G.f?G.f*CL[cur].duration:1; mixer.update(dt); return; }
@@ -133,7 +134,7 @@ window.PETS=PETS;
         if(want!==cur){ act(want).reset().fadeIn(.2).play(); if(cur)act(cur).fadeOut(.2); cur=want; } act(cur).timeScale=zz?.15:moving&&!air?Math.max(.6,Math.min(1.8,st.v/(fast?runV:walkV)/WU)):1; mixer.update(dt); if(WG)WG(dt,air);
         H.sq+=((zz?1:0)-H.sq)*Math.min(1,dt*2); N.g.scale.set(1+.1*H.sq,1-.4*H.sq,1+.1*H.sq); }});   // (asleep: curled low, breathing slow)
     const gap=(.25+long*.6)*WU, clear=(x,z)=>!(SHARED.solids||[]).some(b=>x>b[0]-gap&&x<b[2]+gap&&z>b[1]-gap&&z<b[3]+gap);   // (room for its whole body)
-    const place=L=>{ const st=N.st, r=o.preview?1.6:1.1; let a=L.hd+Math.PI*.8; if(o.preview){ a=L.hd; for(const d of [.5,-.5,.9,-.9,1.3,-1.3,1.8,-1.8,0]){ const x=L.x+Math.sin(L.hd+d)*r*WU, z=L.z+Math.cos(L.hd+d)*r*WU; if(clear(x,z)){ a=L.hd+d; break; } } } st.x=L.x+Math.sin(a)*r*WU; st.z=L.z+Math.cos(a)*r*WU; st.h=o.preview?L.hd+Math.PI:L.hd; st.to=null; N.placed=true; };   // (preview: in front of you, facing you, while you choose it)
+    const place=L=>{ const st=N.st, r=o.preview?1.6:1.1; let a=L.hd+Math.PI*(o.side?-.8:.8); if(o.preview){ a=L.hd; for(const d of [.5,-.5,.9,-.9,1.3,-1.3,1.8,-1.8,0]){ const x=L.x+Math.sin(L.hd+d)*r*WU, z=L.z+Math.cos(L.hd+d)*r*WU; if(clear(x,z)){ a=L.hd+d; break; } } } st.x=L.x+Math.sin(a)*r*WU; st.z=L.z+Math.cos(a)*r*WU; st.h=o.preview?L.hd+Math.PI:L.hd; st.to=null; N.placed=true; };   // (preview: in front of you, facing you, while you choose it)
     /* at home (owner, 9 Nov 2026: "in your apartment's living room and bedroom, wandering by findPath, jumping or flying up onto things, idling, asleep"): the city's pathfinder over the room's
        free floor, a hop up onto a bed, couch, chair or table top it can reach (a flyer to high things too), a while there, and sleep, more by night */
     const reach=flies?2.4:Math.min(1.1,.45+metres*2), lap=(.12+long*.3)*WU, rnd=(a,b)=>a+Math.random()*(b-a);
@@ -163,7 +164,7 @@ window.PETS=PETS;
     // pet it: a word and a sit, now and then
     const hb=new THREE.Mesh(new THREE.BoxGeometry(long*WU,Math.max(.3,metres)*WU,long*WU),new THREE.MeshBasicMaterial({visible:false})); hb.position.y=metres*WU/2; N.g.add(hb);
     N.th={name:o.mine?'PET '+(P.n||'YOUR '+K.name).toUpperCase():(o.owner?o.owner+"'S ":'')+(P.n||K.name).toUpperCase(),obj:hb,reach:1.6*TILE,near:2.6*TILE,tall:Math.max(.4,metres)*WU,act:()=>{ const r=o.rec||o.mine&&!o.preview&&out(); if(r&&now()-(r.pet||0)>5*60e3){ r.pet=now(); r.lo=cl(r.lo+2); keep(); } SAY(o.mine?(P.n||'YOUR '+K.name).toUpperCase()+(r&&r.hu>60?' NUZZLES YOUR POCKETS. IT IS HUNGRY.':' IS HAPPY TO SEE YOU.'):'IT SNIFFS YOUR HAND.','#9fe07f'); },
-      acts:o.mine&&!o.preview&&!o.stay?[{name:'TELL '+(P.n||'YOUR '+K.name).toUpperCase()+' TO GO HOME',act:()=>PETS.goHome&&PETS.goHome()}]:null};
+      acts:o.mine&&!o.preview&&!o.stay?[{name:'TELL '+(P.n||'YOUR '+K.name).toUpperCase()+' TO GO HOME',act:()=>o.rec?PETS.sendHome(o.rec.id):PETS.goHome&&PETS.goHome()}]:null};
     N.repaint=c=>paint(D,{...P,c},geo);   // (other zone colours on the same body: the owner's coats for the horse)
     UI.thing(N.th); return N; };
   const drop=N=>{ if(!N)return; const i=NPCS.indexOf(N); if(i>=0)NPCS.splice(i,1); N.g.removeFromParent(); if(N.th){ const j=UI.things.indexOf(N.th); if(j>=0)UI.things.splice(j,1); } N.me.geometry.dispose(); N.mixer&&N.mixer.stopAllAction(); };
@@ -174,7 +175,8 @@ window.PETS=PETS;
   const recs=()=>{ try{ const j=JSON.parse(OWNED.get('pets')||'null'); if(Array.isArray(j))return j.filter(r=>r&&decode(r.c)); }catch(e){} const o=OWNED.get('pet'); return o&&decode(o)?[{id:1,c:o,born:now(),at:now(),hu:20,lo:50,hp:100,out:true}]:[]; };
   let LIST=recs(), DRAFT=null, inShop=false, gen=0;
   let SHOPK=null, shopAt=null; const sells=K=>!SHOPK||K.shop===SHOPK;   // (the shop whose adoption book is open: its kinds only)
-  const out=()=>LIST.find(r=>r.out)||null;
+  const MAXP=10, MAXOUT=2, outs=()=>LIST.filter(r=>r.out).sort((a,b)=>(b.pri||0)-(a.pri||0)), out=()=>outs()[0]||null, second=()=>outs()[1]||null;   // ten pets, two out with you (owner, 10 Nov 2026); the first is the one YOU's PET tab changes
+  const top=()=>LIST.reduce((m,x)=>Math.max(m,x.pri||0),0)+1, lead=r=>{ r.out=true; r.pri=top(); for(const x of outs().slice(MAXOUT))x.out=false; };
   let MY=out()?decode(out().c):null;
   const keep=()=>{ try{ OWNED.set('pets',JSON.stringify(LIST)); const o=out(); if(o)OWNED.set('pet',o.c); else OWNED.del('pet'); }catch(e){} };
   const save=()=>{ const o=out(); if(o&&MY)o.c=code(MY); keep(); };
@@ -207,15 +209,20 @@ window.PETS=PETS;
   const refresh=()=>{ const P=shown(), want=P&&(inShop||!fainted(out()))&&(!P.h||inShop||atHome())?code(P)+(P.h&&!inShop?'@h':'')+(inShop?'@s':''):''; if(want===mineCode)return; mineCode=want; const my=++gen;
     drop(mine); mine=null; if(!want)return; homeSpot=P.h&&!inShop?{x:pos.x,z:pos.z}:null;
     make('mine',P,meLead,{mine:true,stay:homeSpot,preview:inShop,room:()=>!inShop&&atHome()&&!MODS.apts.host?roomNow():null}).then(N=>{ if(my!==gen){ drop(N); return; } mine=N; }).catch(e=>console.warn('PET',e)); };
+  let mine2=null, mine2Code='', gen2=0;
+  const refresh2=()=>{ const r=second(), P=r&&decode(r.c), want=P&&!inShop&&!fainted(r)&&(!P.h||atHome())?r.id+':'+r.c:''; if(want===mine2Code)return; mine2Code=want; const my=++gen2;
+    drop(mine2); mine2=null; if(!want)return;
+    make('mine2',P,meLead,{mine:true,rec:r,side:.9,stay:P.h?{x:pos.x,z:pos.z}:null,room:()=>atHome()&&!MODS.apts.host?roomNow():null}).then(N=>{ if(my!==gen2){ drop(N); return; } mine2=N; }).catch(e=>console.warn('PET',e)); };
+  PETS.mine2=()=>mine2;
   PETS.WU=WU; PETS.dbg={UI,OWNED,pos,ROOMS}; PETS.make=make; PETS.drop=drop; PETS.idx=idx;
   PETS.mine=()=>mine; PETS.my=()=>MY; PETS.code=code; PETS.decode=decode;
-  ONLINE.mine.pf=()=>MY&&!MY.h?code(MY):null;
+  ONLINE.mine.pf=()=>MY&&!MY.h?code(MY):null; ONLINE.mine.pf2=()=>{ const r=second(), P=r&&decode(r.c); return P&&!P.h&&!fainted(r)?r.c:null; };
   // theirs: a pet beside every player near you who has one with them
-  const theirs=()=>{ const want=new Map(); if(ONLINE.on&&ONLINE.others)for(const o of ONLINE.others.values()){ const c=o.x&&o.x.pf; if(c&&o.why==='near you'&&o.fig)want.set(o.id,[o,c]); }
+  const theirs=()=>{ const want=new Map(); if(ONLINE.on&&ONLINE.others)for(const o of ONLINE.others.values())for(const [f,sfx] of [['pf',''],['pf2','#2']]){ const c=o.x&&o.x[f]; if(c&&o.why==='near you'&&o.fig)want.set(o.id+sfx,[o,c,sfx]); }
     for(const [id,r] of THEIRS)if(!want.has(id)||want.get(id)[1]!==r.c){ drop(r.N); r.dead=1; THEIRS.delete(id); }
-    for(const [id,[o,c]] of want)if(!THEIRS.has(id)){ const P=decode(c); if(!P)continue; const r={c,N:null}; THEIRS.set(id,r);
-      make('o'+id,P,()=>{ const g=o.fig&&o.fig.g; return g&&o.why==='near you'?{x:g.position.x,z:g.position.z,y:g.position.y,hd:g.rotation.y}:null; },{owner:o.name}).then(N=>{ if(r.dead)drop(N); else r.N=N; }).catch(e=>console.warn('PET',e)); } };
-  SYS.every(()=>{ refresh(); theirs(); },500,'pets');
+    for(const [id,[o,c,sfx]] of want)if(!THEIRS.has(id)){ const P=decode(c); if(!P)continue; const r={c,N:null}; THEIRS.set(id,r);
+      make('o'+id,P,()=>{ const g=o.fig&&o.fig.g; return g&&o.why==='near you'?{x:g.position.x,z:g.position.z,y:g.position.y,hd:g.rotation.y}:null; },{owner:o.name,side:sfx?.9:0}).then(N=>{ if(r.dead)drop(N); else r.N=N; }).catch(e=>console.warn('PET',e)); } };
+  SYS.every(()=>{ refresh(); refresh2(); theirs(); },500,'pets');
   /* ---------- YOU: the PET tab (and THE PET STORE's counter: the same lines, with the kinds and ADOPT) ---------- */
   const $=s=>document.querySelector(s), esc=t=>String(t).replace(/[&<>"]/g,c=>'&#'+c.charCodeAt(0)+';'), stop=e=>e.addEventListener('keydown',ev=>ev.stopPropagation());
   const el=(html,cls='row')=>{ const d=document.createElement('div'); d.className=cls; d.innerHTML=html; return d; };
@@ -246,13 +253,18 @@ window.PETS=PETS;
   const set=o=>{ const P=cur(); if(!P)return; Object.assign(P,o); if(!inShop)save(); draw(); };
   const choose=key=>{ const K=I&&I.by[key]; if(!K)return; DRAFT=Object.assign(fresh(K),{n:DRAFT&&DRAFT.n||''}); draw(); };
   const price=P=>P&&I&&I.by[P.k]?PRICE[I.by[P.k].group]||30:0;
-  function adopt(){ const P=DRAFT; if(!P||!inShop)return; const c=price(P); if(INV.cash<c)return SAY('THAT ONE IS $'+c+'. YOU HAVE $'+INV.cash+'.','#c8a090'); INV.cash-=c; if(INV.save)INV.save();
-    const K=I.by[P.k]; add({...P,c:P.c.slice(),s:P.s.slice(),h:false},false); SAY((P.n||'YOUR '+K.name).toUpperCase()+' IS YOURS: $'+c+'. SEE ALL YOUR PETS IN THE MENU (ESC, PETS).','#9fe07f'); draw(); }
+  function adopt(){ const P=DRAFT; if(!P||!inShop)return; if(LIST.length>=MAXP)return SAY('YOU HAVE TEN PETS: THAT IS THE MOST. LET ONE GO FIRST (ESC, PETS).','#c8a090'); const c=price(P); if(INV.cash<c)return SAY('THAT ONE IS $'+c+'. YOU HAVE $'+INV.cash+'.','#c8a090'); INV.cash-=c; if(INV.save)INV.save();
+    const K=I.by[P.k]; add({...P,c:P.c.slice(),s:P.s.slice(),h:false},false); SAY((P.n||'YOUR '+K.name).toUpperCase()+' IS YOURS: $'+c+'. SEE ALL YOUR PETS, AND WHICH TWO FOLLOW YOU, IN THE MENU (ESC, PETS).','#9fe07f'); draw(); }
   // a new pet in your list and out with you (the one out before goes home to wait)
-  function add(P,perma){ for(const r of LIST)r.out=false; const id=LIST.reduce((m,r)=>Math.max(m,r.id||0),0)+1; LIST.push({id,c:code(P),perma:!!perma,born:now(),at:now(),hu:10,lo:perma?70:40,hp:100,out:true}); MY=decode(code(P)); keep(); refresh(); }
+  function add(P,perma){ if(LIST.length>=MAXP)return false; const id=LIST.reduce((m,r)=>Math.max(m,r.id||0),0)+1, r={id,c:code(P),perma:!!perma,born:now(),at:now(),hu:10,lo:perma?70:40,hp:100,out:false}; LIST.push(r); lead(r); MY=decode(r.c); keep(); refresh(); refresh2(); return true; }
   PETS.add=add; PETS.list=()=>LIST; PETS.perma=()=>LIST.find(r=>r.perma)||null; PETS.feed=feed; PETS.tick=tickAll;
-  PETS.setPerma=P=>{ if(LIST.some(r=>r.perma))return false; add(P,true); return true; };
-  PETS.takeOut=id=>{ const r=LIST.find(x=>x.id===id); if(!r)return; for(const x of LIST)x.out=x===r; MY=decode(r.c); keep(); draw(); };
+  PETS.setPerma=P=>{ if(LIST.some(r=>r.perma))return false; return add(P,true); };
+  PETS.takeOut=id=>{ const r=LIST.find(x=>x.id===id); if(!r)return; lead(r); MY=decode(r.c); keep(); draw(); refresh2(); };
+  const unhome=r=>{ const P=decode(r.c); if(P.h){ P.h=false; r.c=code(P); } };
+  PETS.follow=id=>{ const r=LIST.find(x=>x.id===id); if(!r)return false; for(const x of LIST)if(x!==r&&x.out&&decode(x.c).h){ x.out=false; unhome(x); }
+    if(!r.out&&outs().length>=MAXOUT){ SAY('ONLY TWO PETS CAN FOLLOW YOU. SEND ONE HOME FIRST.','#c8a090'); return false; } unhome(r); if(!r.out){ r.out=true; r.pri=out()?Math.min(...outs().map(x=>x.pri||0))-1:top(); } MY=out()?decode(out().c):null; keep(); draw(); refresh2(); return true; };
+  PETS.sendHome=id=>{ const r=LIST.find(x=>x.id===id); if(!r||!r.out)return; r.out=false; unhome(r); MY=out()?decode(out().c):null; keep(); draw(); refresh2(); SAY((decode(r.c).n||'YOUR PET').toUpperCase()+' GOES HOME TO YOUR APARTMENT.','#9fe07f'); };
+  PETS.swap=(id,P)=>{ const r=LIST.find(x=>x.id===id), O=r&&decode(r.c); if(!r||!P)return false; r.c=code({...P,n:P.n||O&&O.n||'',h:!!(O&&O.h)}); MY=out()?decode(out().c):null; keep(); draw(); refresh2(); return true; };
   PETS.letGo=id=>{ const r=LIST.find(x=>x.id===id); if(!r||r.perma)return false; LIST.splice(LIST.indexOf(r),1); if(r.out&&LIST.length)LIST[0].out=true; MY=out()?decode(out().c):null; keep(); draw(); return true; };
   const on=(b,v)=>{ b.setAttribute('aria-pressed',String(v)); b.setAttribute('aria-selected',String(v)); };
   function draw(){ if(!I){ idx().then(draw).catch(e=>console.warn('PET',e)); return; } if(!panel())return; const P=cur(), K=P&&I.by[P.k], rows=k=>$('#looks .lr[data-k="'+k+'"]');
@@ -267,7 +279,7 @@ window.PETS=PETS;
       $('#lptp').innerHTML='<button data-p="">NATURAL</button>'+Object.keys(K.presets).map(p=>`<button data-p="${esc(p)}">${esc(p)}</button>`).join('');
       $('#lpts').innerHTML=K.knobs.map(([k,l],i)=>`<span class="dim">${esc(l)}</span><input type="range" min="0" max="100" step="5" data-i="${i}" aria-label="${esc(l)}">`).join('')||'<span class="dim">NONE FOR THIS ONE</span>'; }
     for(const i of $('#lptc').querySelectorAll('input'))i.value=P.c[+i.dataset.i]||K.zones[+i.dataset.i][1]; for(const i of $('#lpts').querySelectorAll('input'))i.value=P.s[+i.dataset.i]??50;
-    $('#lpta').textContent='ADOPT THIS '+K.name+' FOR $'+price(P); $('#lptam').textContent=MY?'(YOUR '+(MY.n||I.by[MY.k].name).toUpperCase()+' GOES HOME TO WAIT)':'';
+    $('#lpta').textContent='ADOPT THIS '+K.name+' FOR $'+price(P); $('#lptam').textContent=outs().length>=MAXOUT?'(TWO FOLLOW YOU AT MOST: ONE GOES HOME TO WAIT)':'';
     LOOKS.layout(); refresh(); }
   PETS.draw=draw; PETS.choose=k=>choose(k); PETS.set=set; PETS.adopt=()=>adopt(); PETS.inShop=()=>inShop;
   // the counter: the YOU window on its PET tab, the kinds open, the one you are choosing beside you; leaving the shop puts yours back
@@ -317,30 +329,32 @@ window.PETS=PETS;
   const ageOf=r=>{ const d=Math.floor((now()-(r.born||now()))/864e5); return d<1?'NEW TODAY':d===1?'1 DAY':d+' DAYS'; };
   const moodOf=r=>fainted(r)?'FAINTED: FEED IT TO WAKE IT':r.hp<40?'ILL':r.hu>80?'HUNGRY':r.lo>80?'DEVOTED':r.lo>50?'HAPPY':r.lo>25?'SETTLING IN':'SHY';
   const bar=(v,bad)=>`<span style="display:inline-block;width:110px;height:9px;box-shadow:inset 0 0 0 1px currentColor;vertical-align:middle"><i style="display:block;height:100%;width:${Math.round(v)}%;background:${bad?'#e0a080':'#7dffa8'}"></i></span> ${Math.round(v)}`;
-  let MEL=null, choosing=null, pa=0, pcv=null, praf=0;
+  let MEL=null, choosing=null, chMode='perma', chId=0, pa=0, pcv=null, praf=0;
   const spin=()=>{ cancelAnimationFrame(praf); if(!MEL||!MEL.isConnected||MEL.closest('[hidden]')||!pcv||!pcv.isConnected)return; praf=requestAnimationFrame(spin); try{ PETS.portrait(pcv,choosing?choosing.get():MY,pa+=.008); }catch(e){ console.warn('PET',e); } };
   const menuDraw=()=>{ const el=MEL; if(!el)return; if(!I){ idx().then(menuDraw); return; } tickAll(false);
-    const perma=LIST.find(r=>r.perma); let o='<h3>YOUR PETS</h3>';
+    const perma=LIST.find(r=>r.perma); let o='<h3>YOUR PETS</h3>'+(LIST.length?`<div class="dim">${LIST.length} OF ${MAXP} · ${outs().length} OF ${MAXOUT} FOLLOWING YOU</div>`:'');
+    if(!choosing&&LIST.length<MAXP)o+='<div class="row"><button class="btn" data-pa="new">ADD A PET: ANY ANIMAL</button></div>';
     if(!perma&&!choosing)o+='<div style="white-space:normal;line-height:1.5;margin:6px 0">CHOOSE YOUR PERMAPET: ANY ANIMAL, FREE, AND IT CAN NEVER BE LOST.</div><div class="row"><button class="btn" data-pa="perma">CHOOSE</button></div>';
-    if(choosing)o+='<div class="row" style="align-items:flex-start;gap:14px"><canvas width="220" height="190" style="width:220px;height:190px;flex:none"></canvas><div id="dpetpick" style="flex:1;min-width:0"></div></div><div class="row"><button class="btn" data-pa="keep">KEEP THIS ONE AS MY PERMAPET</button><button class="btn" data-pa="cancel">NOT NOW</button></div>';
+    if(choosing)o+='<div class="row" style="align-items:flex-start;gap:14px"><canvas width="220" height="190" style="width:220px;height:190px;flex:none"></canvas><div id="dpetpick" style="flex:1;min-width:0"></div></div><div class="row"><button class="btn" data-pa="keep">'+(chMode==='new'?'ADD THIS PET':chMode==='swap'?'CHANGE TO THIS ONE':'KEEP THIS ONE AS MY PERMAPET')+'</button><button class="btn" data-pa="cancel">NOT NOW</button></div>';
     else if(LIST.length)o+='<div class="row"><canvas width="220" height="170" style="width:220px;height:170px"></canvas></div>';
     if(!LIST.length&&!choosing)o+='<div class="dim">NO PETS YET. ADOPT ONE AT THE PET STORE ON MARKET ST, OR A FISH AT THE AQUARIUM ON THE HUDSON.</div>';
     const ord=LIST.slice().sort((a,b)=>(b.out-a.out)||(b.perma-a.perma)||(a.id-b.id));
     for(const r of ord){ const P=decode(r.c), K=I.by[P.k]; if(!K)continue; const long=K.long*P.z/100, tall=K.size[1]*long/Math.max(...K.size), run=Math.max(1.4,Math.min(4.5,3.6*tall));
       const rows=[['KIND',typeOf(K)],['BREED',K.of||K.key==='xolo'?K.name:K.key==='cat'||K.key==='dog'?'MIXED':K.name],['PERMAPET',r.perma?'YES: IT CAN NEVER BE LOST':'NO'],['AGE',ageOf(r)],['ADOPTED',new Date(r.born||now()).toLocaleDateString()],
-        ['WHERE',r.out?(P.h?'WAITING AT HOME':'WITH YOU'):'RESTING AT HOME'],...(seats(K).length?[['SITS',seats(K).map(w=>`<button class="btn"${seatOf(K,P)===w?' style="border-color:#7dffa8;color:#7dffa8"':''} data-pa="seat" data-w="${w}" data-id="${r.id}">${SEATW[w]}</button>`).join(' ')]]:[]),['MOOD',moodOf(r)],['HEALTH',bar(r.hp,r.hp<40)],['HUNGER',bar(r.hu,r.hu>80)],['LOYALTY',bar(r.lo,r.lo<25)],
+        ['WHERE',r.out?(P.h?'WAITING AT HOME':'FOLLOWING YOU'):'RESTING AT HOME'],...(seats(K).length?[['SITS',seats(K).map(w=>`<button class="btn"${seatOf(K,P)===w?' style="border-color:#7dffa8;color:#7dffa8"':''} data-pa="seat" data-w="${w}" data-id="${r.id}">${SEATW[w]}</button>`).join(' ')]]:[]),['MOOD',moodOf(r)],['HEALTH',bar(r.hp,r.hp<40)],['HUNGER',bar(r.hu,r.hu>80)],['LOYALTY',bar(r.lo,r.lo<25)],
         ['EATS',FOODS[dietOf(K)]],['SIZE',tall.toFixed(2)+' M TALL, '+long.toFixed(2)+' M LONG'],['SPEED',(run*pace(r)).toFixed(1)+' M/S AT A RUN'+(pace(r)<1?' (SLOWED: '+(r.hp<40?'ILL':'HUNGRY')+')':'')],['FINDS',(r.finds||0)+' THINGS SO FAR'+(r.lo<50?' (FINDS THINGS ONCE LOYAL)':'')]];
       o+=`<div style="margin:12px 0 4px;color:#d8ffe4">${esc((P.n||K.name).toUpperCase())}${r.perma?' ★':''}</div><table>${rows.map(([a,b])=>`<tr><td class="dim" style="padding-right:12px">${a}</td><td>${b}</td></tr>`).join('')}</table>`
-        +`<div class="row">${r.out?'':`<button class="btn" data-pa="out" data-id="${r.id}">TAKE WITH YOU</button>`}<button class="btn" data-pa="feed" data-id="${r.id}">FEED</button><button class="btn" data-pa="look" data-id="${r.id}">CHANGE ITS LOOK</button>${r.perma?'':`<button class="btn" data-pa="go" data-id="${r.id}">LET IT GO</button>`}</div>`; }
+        +`<div class="row">${r.out&&!P.h?`<button class="btn" data-pa="home" data-id="${r.id}">SEND HOME</button>`:`<button class="btn" data-pa="out" data-id="${r.id}">FOLLOW ME</button>`}<button class="btn" data-pa="feed" data-id="${r.id}">FEED</button><button class="btn" data-pa="look" data-id="${r.id}">CHANGE ITS LOOK</button><button class="btn" data-pa="swap" data-id="${r.id}">CHANGE ANIMAL</button>${r.perma?'':`<button class="btn" data-pa="go" data-id="${r.id}">LET IT GO</button>`}</div>`; }
     if(PETS.seaMenu)o+=PETS.seaMenu();
-    o+='<div class="dim" style="margin-top:10px">PETS GET HUNGRY: HUNTERS EAT DOG OR CAT FOOD, GRAZERS AND BIRDS FRUIT (THE PET STORE). PET YOURS NOW AND THEN (DOUBLE-CLICK IT). A LOYAL PET STAYS CLOSE AND FINDS THINGS FOR YOU; A SHY ONE LAGS BEHIND; A HUNGRY OR ILL ONE IS SLOW. PETS NOT WITH YOU WAIT IN YOUR APARTMENT. A PET STARVED TOO LONG RUNS AWAY; YOUR PERMAPET ONLY FAINTS.</div>';
+    o+='<div class="dim" style="margin-top:10px">PETS GET HUNGRY: HUNTERS EAT DOG OR CAT FOOD, GRAZERS AND BIRDS FRUIT (THE PET STORE). PET YOURS NOW AND THEN (DOUBLE-CLICK IT). A LOYAL PET STAYS CLOSE AND FINDS THINGS FOR YOU; A SHY ONE LAGS BEHIND; A HUNGRY OR ILL ONE IS SLOW. YOU CAN KEEP TEN PETS; TWO CAN FOLLOW YOU, THE REST WAIT IN YOUR APARTMENT. A PET STARVED TOO LONG RUNS AWAY; YOUR PERMAPET ONLY FAINTS.</div>';
     el.innerHTML=o; pcv=el.querySelector('canvas'); if(choosing){ const pk=el.querySelector('#dpetpick'); choosing=PETS.picker(pk,choosing.get()); } spin(); };
   PETS.menu=el=>{ MEL=el; if(!el.dataset.on){ el.dataset.on='1'; el.addEventListener('click',e=>{ const sb=e.target.closest('[data-sea]'); if(sb&&PETS.seaAct)return PETS.seaAct(sb.dataset.sea,sb); const b=e.target.closest('[data-pa]'); if(!b)return; const a=b.dataset.pa, r=LIST.find(x=>x.id===+b.dataset.id);
-      if(a==='perma'){ choosing={get:()=>null}; menuDraw(); return; }
+      if(a==='perma'||a==='new'||a==='swap'&&r){ chMode=a; chId=r?r.id:0; const P0=a==='swap'?decode(r.c):null; choosing={get:()=>P0}; menuDraw(); return; }
+      if(a==='keep'&&choosing&&chMode!=='perma'){ const P=choosing.get(); choosing=null; if(P&&(chMode==='swap'?PETS.swap(chId,P):add({...P,h:false},false)))SAY(chMode==='swap'?'YOUR PET IS NOW A '+I.by[P.k].name.toUpperCase()+'.':(P.n||'YOUR '+I.by[P.k].name).toUpperCase()+' JOINS YOU.','#9fe07f'); menuDraw(); return; }
       if(a==='keep'&&choosing){ const P=choosing.get(); choosing=null; if(P&&PETS.setPerma(P))SAY((P.n||'YOUR '+I.by[P.k].name).toUpperCase()+' IS YOUR PERMAPET. IT WILL ALWAYS FIND ITS WAY BACK TO YOU.','#9fe07f'); menuDraw(); return; }
       if(a==='cancel'){ choosing=null; menuDraw(); return; }
       if(!r)return; if(a==='seat'){ const P=decode(r.c); P.w=b.dataset.w; r.c=code(P); if(r.out)MY=decode(r.c); keep(); refresh(); menuDraw(); return; }
-      if(a==='out'){ PETS.takeOut(r.id); menuDraw(); } else if(a==='feed')feed(r); else if(a==='look'){ PETS.takeOut(r.id); if(UI.menuTab)UI.menuTab('pets','pet'); }
+      if(a==='out'){ PETS.follow(r.id); menuDraw(); } else if(a==='home'){ PETS.sendHome(r.id); menuDraw(); } else if(a==='feed')feed(r); else if(a==='look'){ PETS.takeOut(r.id); if(UI.menuTab)UI.menuTab('pets','pet'); }
       else if(a==='go'){ const P=decode(r.c); if(b.dataset.sure){ PETS.letGo(r.id); SAY((P.n||'YOUR PET').toUpperCase()+' WANDERS OFF TO A NEW HOME.','#c8d8e0'); menuDraw(); } else { b.dataset.sure='1'; b.textContent='SURE? CLICK AGAIN'; } } }); }
     menuDraw(); };
   PETS.menuDraw=()=>{ if(MEL&&MEL.isConnected&&!MEL.closest('[hidden]'))menuDraw(); };
@@ -358,14 +372,14 @@ window.PETS=PETS;
   const homePets=()=>{ const on=atHome()&&!inShop, want=new Map(), host=on&&MODS.apts.host, G=host&&PETS.guestOf?PETS.guestOf():null;
     if(on){ if(!homeAt)homeAt={x:pos.x,z:pos.z};
       if(host){ const T=THEIRS.get(host); (G&&G.pets||[]).forEach((c,i)=>{ if(want.size<6&&decode(c)&&!(T&&T.c===c))want.set('g'+host+i,{c,guest:G.name}); }); }   // a visit: your host's pets live here (one out with them, if they are in, is beside them)
-      else for(const r of LIST)if((!r.out||fainted(r)||decode(r.c).h)&&want.size<6&&!(r.out&&mine))want.set(r.id,r); } else homeAt=null;
+      else for(const r of LIST)if((!r.out||fainted(r)||decode(r.c).h)&&want.size<6&&!(r.out&&(r===out()?mine:mine2)))want.set(r.id,r); } else homeAt=null;
     for(const [id,h] of HOME)if(!want.has(id)||want.get(id).c!==h.c){ drop(h.N); h.dead=1; HOME.delete(id); }
     let i=0; for(const [id,r] of want){ i++; if(HOME.has(id))continue; const h={c:r.c,N:null}; HOME.set(id,h); const a=i*1.3, spot={x:homeAt.x+Math.sin(a)*1.6*WU,z:homeAt.z+Math.cos(a)*1.6*WU};
       make('home'+id,decode(r.c),meLead,r.guest?{stay:spot,owner:r.guest,room:()=>atHome()?roomNow():null}:{stay:spot,mine:true,rec:r,room:()=>atHome()&&!MODS.apts.host?roomNow():null}).then(N=>{ if(h.dead)drop(N); else h.N=N; }).catch(e=>console.warn('PET',e)); } };
   PETS.home=()=>HOME;
   SYS.every(homePets,700,'pets at home');
   SYS.onStart(()=>{ idx().then(()=>tickAll(true)).catch(()=>{}); },'146zj-pets hours');
-  // THE PET SHOPS (owner, 8 Nov 2026): DOGS & CATS, LIZARDS & DRAGONS, THE BIRD SHOP, THE BUTTERFLY SHOP on Market St and THE BARN at the park's farm. Each is the shops' shared inside
+  // THE PET SHOPS (owner, 8 Nov 2026): DOGS & CATS, LIZARDS & DRAGONS, THE BIRD SHOP, THE BUTTERFLY SHOP on Market St (the barn's kinds, shop 'barn' in data/pets.json, are sold nowhere for now). Each is the shops' shared inside
   // (162fa: the keeper's counter) with cages floor to ceiling down the left, back and right walls (the barn: wooden stalls), each furnished for what lives in it, every caged kind
   // (K.cage in data/pets.json) alive in its own (awake, looking round, pacing, asleep, hovering), more of them in the shop windows; the adoption book by the counter has the shop's kinds only
   const CORDER=['pets','dogs','cats','rabbits','farm','horses','livestock','poultry','zoo','wild','reptiles','dino','dragons','creatures','birds','parrots','bugs','shore'];
@@ -477,5 +491,5 @@ window.PETS=PETS;
     kit.drop=()=>{ const d=MSHOP.kit._&&MSHOP.kit._.drop; if(d)d(); }; return kit; };
   const PEND=new Map(); SYS.every(()=>{ for(const [id,q] of PEND){ if(q.A.gen!==q.gen||!q.A.live()){ PEND.delete(id); continue; } if((ROOMS.offIn&&ROOMS.offIn()===id)||WINDOWS.held.has(id)){ PEND.delete(id); q.fill(); } } },300,'pet shops filled');
   const CAGE={CW:1.4,CH:.72,CD:.6,ROWS:4}, STALL={CW:1.7,CH:1.4,CD:1.0,ROWS:1,stall:true};
-  for(const id of ['pets','birdshop','reptiles','butterflies'])MSHOP.kit[id]=cageKit(id,CAGE); MSHOP.kit.barn=cageKit('barn',STALL);
+  for(const id of ['pets','birdshop','reptiles','butterflies'])MSHOP.kit[id]=cageKit(id,CAGE);
 }

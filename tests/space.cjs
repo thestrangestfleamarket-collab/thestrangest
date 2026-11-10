@@ -17,7 +17,11 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   await pg.goto('file://' + PAGE + '?hour=12&physics=1', { waitUntil: 'commit', timeout: 300000 });
   let up = false; for (let i = 0; i < 400 && !(up = await pg.evaluate(() => !!window.__started).catch(() => false)); i++) await pg.waitForTimeout(1000);
   if (!up) { ok(false, 'the page started'); await b.close(); process.exit(1); }
+  // no horse walks the map now: the check stands one by you
+  await pg.evaluate(async () => { if (__dbg.NPCS.find(n => n.key === 'horse')) return; if (window.LOAD) await LOAD('later'); for (let i = 0; i < 100 && !(window.CREATURES && CREATURES.Horse); i++) await new Promise(r => setTimeout(r, 300)); const h = CREATNEW('Horse', 'horse', 1.6); h.st.x = STORE.pos.x + 4; h.st.z = STORE.pos.z; });
   await pg.waitForTimeout(15000);
+  // (the cast is built over the start's first seconds: wait till the tomato and a second character who blocks are standing, or two minutes)
+  for (let i = 0; i < 120 && !(await pg.evaluate(() => { const N = __dbg.NPCS, a = N.find(n => n.key === 'tomato'); return !!a && N.some(n => n !== a && n.st && n.blocks && (n.lv || 'up') === (a.lv || 'up') && !n.fly && !n.tiny && n.key !== 'dragon'); }).catch(() => false)); i++) await pg.waitForTimeout(1000);
   const r = await pg.evaluate(() => { const N = __dbg.NPCS, by = k => N.find(n => n.key === k), o = {};
     for (const k of ['elephant', 'horse', 'cat', 'tomato', 'bat', 'rat']) { const n = by(k); if (n) o[k] = { R: n.st.R, L: n.st.L || 0, fly: !!n.fly, tiny: !!n.tiny }; }
     // you walk into the horse's flank and the elephant's trunk end: kept out of the body itself, not just its middle
@@ -28,7 +32,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     // a standing body (the cast's, NPCS.extra) keeps you out too
     const X = N.extra.find(x => x.on && x.st && x.g && x.mode !== 'hidden' && (x.lv || 'up') === SHARED.LVL); if (X) { const vis = X.g.visible, s = X.st, p = { x: s.x + .02, z: s.z }; X.g.visible = true; N.pushX(p); X.g.visible = vis; o.extra = { key: X.key, d: Math.hypot(p.x - s.x, p.z - s.z), need: (s.R || .3) + .3 }; }
     // two characters: the second is told to walk through the first, it waits instead
-    const a = by('tomato'), m = by('mushroom'); if (a && m) { const f = [a.far, m.far]; a.far = m.far = false; o.inway = N.inway(m, a.st.x + .05, a.st.z) && !N.inway(m, a.st.x + 50, a.st.z); [a.far, m.far] = f; }
+    const a = by('tomato'), m = a && N.find(n => n !== a && n.st && n.blocks && (n.lv || 'up') === (a.lv || 'up') && !n.fly && !n.tiny && n.key !== 'dragon'); if (a && m) { const f = [a.far, m.far]; a.far = m.far = false; o.inway = N.inway(m, a.st.x + .05, a.st.z) && !N.inway(m, a.st.x + 50, a.st.z); [a.far, m.far] = f; }
     o.clip = { added: CLIP.added, found: CLIP.found.length };
     return o; });
   console.log(JSON.stringify(r));

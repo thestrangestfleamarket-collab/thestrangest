@@ -8,14 +8,16 @@ import {OBJ} from './008-batch.js';
 
 await grab('ghostdojo',async()=>{ const {X:BX,Y:BY,Z:BZ,gbox:GB,faceTex,bq,C}=SHARED.BOD, J=SHARED.BOD.GDJ, GK=SHARED.BOD.GDK, {hash,grain}=SHARED.BOD.g, sh=SHARED.BOD.K.sh;
   if(GK){ const S=GK.S||1, {u,v,iu,iv}=GK, X=x=>BX(u(x)), Z=y=>BZ(v(y)), Y=z=>BY(z*S);   // drawn 1.5x about the middle of its front (owner, 8 Nov 2026): built and painted at its old size, every point scaled
-    const gbox=(b,k)=>{ const o={...b,x0:u(b.x0),x1:u(b.x1),y0:v(b.y0),y1:v(b.y1),z0:b.z0*S,z1:b.z1*S}; if(b.fs)o.fs=(nx,ny,P,Q,z,f)=>b.fs(nx,ny,iu(P),iv(Q),z/S,f); if(b.fi)o.fi=(Q,z)=>b.fi(iv(Q),z/S); if(b.fj)o.fj=(P,z)=>b.fj(iu(P),z/S); if(b.top)o.top=(x,y)=>b.top(iu(x),iv(y)); return GB(o,k); };
-    const {X0,X1,Y0,Y1,W,D}=GK, T=.22, H=168, H2=300, DH=118, hs=hash;
+    const F=GK.flip?-1:1, mm=(a,b)=>[Math.min(a,b),Math.max(a,b)];
+    const gbox=(b,k)=>{ const [x0,x1]=mm(u(b.x0),u(b.x1)), [y0,y1]=mm(v(b.y0),v(b.y1)), o={...b,x0,x1,y0,y1,z0:b.z0*S,z1:b.z1*S}; if(b.fs)o.fs=(nx,ny,P,Q,z,f)=>b.fs(nx*F,ny*F,iu(P),iv(Q),z/S,f); if(b.skf)o.skf=(nx,ny,...r)=>b.skf(nx*F,ny*F,...r); if(b.fi)o.fi=(Q,z)=>b.fi(iv(Q),z/S); if(b.fj)o.fj=(P,z)=>b.fj(iu(P),z/S); if(b.top)o.top=(x,y)=>b.top(iu(x),iv(y)); return GB(o,k); };
+    const {X0,X1,Y0,Y1,W,D}=GK, T=.22, H=168, H2=H, DH=118,   // one storey (owner, 10 Nov 2026: "remove the 2nd story from bathouse"): the roof sits on the ground floor
+    hs=hash;
     const xi0=X0+T, xi1=X1-T, yi0=Y0+T, yi1=Y1-T, cx=(xi0+xi1)/2, cy=(yi0+yi1)/2, WD=J.DJWOOD;
     const lit=c=>Object.assign([Math.min(255,c[0]),Math.min(255,c[1]),Math.min(255,c[2])],{e:1});
     J.setDJ({H:160});
     const KW=Math.min(1,W/14.6), BAY={a0:1.4*KW,a1:5.2*KW,z0:36,z1:124,out:.14}, DOOR={a0:W/2-1.2,a1:W/2+1.2,z0:0,z1:DH}, EW={a0:9.4*KW,a1:12.4*KW,z0:40,z1:124};   // the windows laid out for a 14.6-tile front, kept clear of the door on a narrower one
     const RND={back:[3.3],west:[D/2]}, RZc=76, RR=27;
-    const UW=[{a0:2.0,a1:4.6},{a0:W-4.6,a1:W-2.0}], UZ0=H+42, UZ1=H+104, SIGN={a0:W/2-1.45,a1:W/2+1.45,z0:H+46,z1:H+100};
+    const UW=[{a0:2.0,a1:4.6},{a0:W-4.6,a1:W-2.0}], UZ0=H+42, UZ1=H+104, SIGN={a0:W/2-1.45,a1:W/2+1.45,z0:DH+2,z1:H};
     const IVY={front:[[.25,262,1.3],[W-.3,150,.7]],west:[[.9,290,1.5],[3.5,210,1.3],[5.6,130,.9]],back:[[1.6,190,1.4],[8.6,250,1.7],[13.2,150,.8]],east:[[4.6,120,.8]]};
     const LEAF=[[30,56,36],[42,78,44],[60,102,52],[88,132,64]];
     const holesOf={front:[BAY,DOOR,EW],back:[],west:[],east:[]};
@@ -108,25 +110,25 @@ await grab('ghostdojo',async()=>{ const {X:BX,Y:BY,Z:BZ,gbox:GB,faceTex,bq,C}=SH
     {
       DEP.push({id:'front',x0:X0+EW.a0,x1:X0+EW.a1,y0:Y1-.12,y1:Y1-.1,z0:EW.z0,z1:EW.z1,c:AMBER,fs:(nx,ny,x,y,z,k)=>lit(Math.floor(z+EW.z0)%16===0||Math.floor((x-X0-EW.a0)*24)%14===0?sh(AMBER,.86):AMBER),top:()=>lit(AMBER)});
       DEP.push(onWall('front',EW.a0-.1,EW.a1+.1,EW.z0-6,EW.z0,.14,[86,54,42])); }
-    for(const u of UW){ const L=u.a1-u.a0, n=Math.round(L/.21); for(let i=1;i<n;i++){ const a=u.a0+i*L/n; DEP.push({...onWall('front',a-.025,a+.025,UZ0,UZ1,.05,[68,42,32]),id:'U'}); } DEP.push({...onWall('front',u.a0-.12,u.a1+.12,UZ0-6,UZ0,.12,[86,54,42]),id:'U'}); }
+    if(H2>H)for(const u of UW){ const L=u.a1-u.a0, n=Math.round(L/.21); for(let i=1;i<n;i++){ const a=u.a0+i*L/n; DEP.push({...onWall('front',a-.025,a+.025,UZ0,UZ1,.05,[68,42,32]),id:'U'}); } DEP.push({...onWall('front',u.a0-.12,u.a1+.12,UZ0-6,UZ0,.12,[86,54,42]),id:'U'}); }
     { const S=SIGN, F5={B:'uhhuhhu',A:'ehhvhhh',T:'v444444',H:'hhhvhhh',O:'ehhhhhe',U:'hhhhhhe',S:'fgge11u',E:'vgguggv'}, txt=(t,i,j)=>{ const c=Math.floor(i/12), g=F5[t[c]], gi=Math.floor((i-c*12)/2), gj=Math.floor(j/2); return !!g&&j>=0&&gi<5&&gj<7&&!!(parseInt(g[gj],32)>>(4-gi)&1); };
       const gl=(a,z)=>{ const L=S.a1-S.a0, u=(a-S.a0)/L, v=(z-S.z0)/(S.z1-S.z0); if(u<.04||u>.96||v<.07||v>.93)return [52,34,28];
         const px=(a-S.a0)*24, pz=S.z1-z, W=L*24; if(txt('BATH',Math.floor(px-(W-46)/2),Math.floor(pz-10))||txt('HOUSE',Math.floor(px-(W-58)/2),Math.floor(pz-30)))return hs(Math.floor(a*24),Math.floor(z),684)<.12?[150,116,62]:[214,168,82];
         return sh([36,52,84],.92+.1*hs(Math.floor(a*12),Math.floor(z/3),685)); };
       DEP.push({...onWall('front',S.a0,S.a1,S.z0,S.z1,.16,[36,52,84],{fs:(nx,ny,x,y,z,k)=>ny>0?sh(gl(x-X0,z+S.z0),k):sh([52,34,28],k),top:()=>[60,40,32]}),id:'U'}); }
-    for(const f in IVY){ const w=WALLS[f]; for(let i=0;i<70;i++){ const a=hs(i,f.length,690)*w.L, z=4+hs(i,f.length,691)*290; if(ivyK(f,a,z)<.55||inOpen(f,a,z))continue;
+    for(const f in IVY){ const w=WALLS[f]; for(let i=0;i<70;i++){ const a=hs(i,f.length,690)*w.L, z=4+hs(i,f.length,691)*290; if(ivyK(f,a,z)<.55||inOpen(f,a,z)||z+9>H2)continue;
         const wd=.06+hs(i,1,692)*.09, ht=4+hs(i,2,693)*5, d=.04+hs(i,3,694)*.07, c=LEAF[1+Math.floor(hs(i,4,695)*3)];
         DEP.push({...onWall(f,a-wd,a+wd,z,z+ht,d,c,{fs:(nx,ny,x,y,zz,k)=>sh(LEAF[Math.floor(hs(Math.floor((nx?y:x)*48),Math.floor(zz),696)*3)],k),top:()=>c}),id:z<H?f:'U'}); } }
     for(const b of DEP)gbox(b,b.id==='U'?'GDU':'GD'+b.id);
-    const UP=[]; for(const f in WALLS){ const w=WALLS[f]; UP.push(box3(w,w.s0||0,w.s1||w.L,H,H2,w.at0,w.at1,(nx,ny,x,y,zr,k)=>{ const z=zr+H, a=(w.ax==='x'?x:y)-w.o; return nx===-w.n[0]&&ny===-w.n[1]?outside(f,a,z,k):sh([180,170,150],k); },()=>[90,86,80],f)); }
+    const UP=[]; if(H2>H)for(const f in WALLS){ const w=WALLS[f]; UP.push(box3(w,w.s0||0,w.s1||w.L,H,H2,w.at0,w.at1,(nx,ny,x,y,zr,k)=>{ const z=zr+H, a=(w.ax==='x'?x:y)-w.o; return nx===-w.n[0]&&ny===-w.n[1]?outside(f,a,z,k):sh([180,170,150],k); },()=>[90,86,80],f)); }
     for(const b of UP)gbox(b,'GDU');
     const tileTop=(x,y,row)=>{ const p=Math.floor(x*24), m=((p%6)+6)%6, cI=Math.floor(p/6), t=hs(cI,row,700);
       let c=m===0?[46,32,42]:m<3?[124,74,76]:m<5?[96,60,72]:[74,48,62]; if(t<.025)c=[64,44,40];
       const mo=grain(x*1.5,y*1.5+row*.3,701,.7); if(mo>.7&&m)c=mo>.78?[82,98,58]:[96,104,66]; if(hs(p,Math.floor(y*24),702)<.012)c=[170,168,130]; return c; };
     const tileEnd=(x,z,k,row)=>{ const p=Math.floor(x*24), m=((p%6)+6)%6; return sh(m===0||z<1.5?[40,28,36]:z>5?[150,90,86]:[118,72,76],k); };
     const ROOF=[]; const strip=(x0,x1,y0,y1,z0,z1,row,kind)=>{ const b={x0,x1,y0,y1,z0,z1,c:[92,58,72],top:(x,y)=>tileTop(x,y,row),fs:(nx,ny,x,y,z,k)=>ny?tileEnd(x,z,k,row):sh(nx?(z<3?[40,28,36]:[64,42,44]):[64,42,60],k)}; ROOF.push(b); gbox(b,kind); };
-    for(let i=0;i<4;i++)strip(X0-.35,X1+.35,Y1+.32*i,Y1+.32*(i+1),H+26-i*7,H+33-i*7,i,'GDU');
-    for(let a=.2;a<W;a+=.45){ const rb={x0:X0+a-.035,x1:X0+a+.035,y0:Y1+.85,y1:Y1+1.3,z0:H+1,z1:H+5,c:[70,44,36]}; gbox(rb,'GDU'); }
+    if(H2>H)for(let i=0;i<4;i++)strip(X0-.35,X1+.35,Y1+.32*i,Y1+.32*(i+1),H+26-i*7,H+33-i*7,i,'GDU');
+    if(H2>H)for(let a=.2;a<W;a+=.45){ const rb={x0:X0+a-.035,x1:X0+a+.035,y0:Y1+.85,y1:Y1+1.3,z0:H+1,z1:H+5,c:[70,44,36]}; gbox(rb,'GDU'); }
     const ov=.9, N=13, half=D/2+ov, q=half/N, ym=(Y0+Y1)/2, RX0=X0-.7, RX1=X1+.7;
     for(let i=0;i<N;i++){ const z0=H2+i*8, z1=z0+8; strip(RX0,RX1,Y1+ov-(i+1)*q,Y1+ov-i*q,z0,z1,i,'GDR'); strip(RX0,RX1,Y0-ov+i*q,Y0-ov+(i+1)*q,z0,z1,i+20,'GDR');
       const gy0=Math.max(Y0,Y0-ov+(i+1)*q), gy1=Math.min(Y1,Y1+ov-(i+1)*q); if(gy1>gy0)for(const gx of [[X0,X0+T],[X1-T,X1]]){ const g={x0:gx[0],x1:gx[1],y0:gy0,y1:gy1,z0,z1,c:[190,180,158],fs:(nx,ny,x,y,z,k)=>sh(plaster('west',y-Y0,z+z0),k*.88),top:()=>[150,140,124]}; gbox(g,'GDR'); } }
@@ -175,18 +177,18 @@ await grab('ghostdojo',async()=>{ const {X:BX,Y:BY,Z:BZ,gbox:GB,faceTex,bq,C}=SH
     BATCH.build(MKG);
     BATCH.cast=false; const KM=BATCH.meshes; BATCH.meshes={}; for(const me of BATCH.all(KM,'B'))me.castShadow=false;
     const ix0=X(xi0), ix1=X(xi1), iz0=Z(yi0), iz1=Z(yi1), inBox=()=>pos.x>Math.min(ix0,ix1)&&pos.x<Math.max(ix0,ix1)&&pos.z>Math.min(iz0,iz1)&&pos.z<Math.max(iz0,iz1), inside=inBox;
-    const cuts=M=>{ for(const id in WALLS)for(const me of BATCH.all(M,'GD'+id))cutWalls.push({pl:PLN[id],nx:WALLS[id].n[0],nz:WALLS[id].n[1],foot:Y(8),me,when:inside}); }; cuts(KM);
+    const cuts=M=>{ for(const id in WALLS)for(const me of BATCH.all(M,'GD'+id))cutWalls.push({pl:PLN[id],nx:WALLS[id].n[0]*F,nz:WALLS[id].n[1]*F,foot:Y(8),me,when:inside}); }; cuts(KM);
     const HIDE=[...BATCH.all(KM,'GDU'),...BATCH.all(KM,'GDR')];
     { const pane=(h,yf,fn,glow)=>{ const W=Math.max(1,Math.round((h.a1-h.a0)*24)), Hh=Math.max(1,Math.round(h.z1-h.z0)), cv=document.createElement('canvas'), ce=document.createElement('canvas'); cv.width=ce.width=W; cv.height=ce.height=Hh;
         const g=cv.getContext('2d'), ge=ce.getContext('2d'), im=g.createImageData(W,Hh), ie=ge.createImageData(W,Hh);
         for(let j=0;j<Hh;j++)for(let i=0;i<W;i++){ const c=fn(h.a0+(i+.5)/24,h.z1-(j+.5)), k=(j*W+i)*4; im.data.set([c[0],c[1],c[2],255],k); ie.data.set(c.e?[c[0],c[1],c[2],255]:[0,0,0,255],k); }
         g.putImageData(im,0,0); ge.putImageData(ie,0,0); const tex=x=>{ const t=new THREE.CanvasTexture(x); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; return t; };
-        const m=new THREE.Mesh(new THREE.PlaneGeometry(X(X0+h.a1)-X(X0+h.a0),Y(h.z1)-Y(h.z0)),new THREE.MeshLambertMaterial({map:tex(cv),emissiveMap:tex(ce),emissive:0xffffff,emissiveIntensity:glow?1.2:0}));
-        m.position.set((X(X0+h.a0)+X(X0+h.a1))/2,(Y(h.z0)+Y(h.z1))/2,Z(yf)); m.raycast=()=>{}; scene.add(m); HIDE.push(m); return m; };
+        const m=new THREE.Mesh(new THREE.PlaneGeometry(Math.abs(X(X0+h.a1)-X(X0+h.a0)),Y(h.z1)-Y(h.z0)),new THREE.MeshLambertMaterial({map:tex(cv),emissiveMap:tex(ce),emissive:0xffffff,emissiveIntensity:glow?1.2:0}));
+        m.position.set((X(X0+h.a0)+X(X0+h.a1))/2,(Y(h.z0)+Y(h.z1))/2,Z(yf)); if(GK.flip)m.rotation.y=Math.PI; m.raycast=()=>{}; scene.add(m); HIDE.push(m); return m; };
       pane(BAY,Y1+BAY.out+.02,(a,z)=>lattice(a,BAY.a0,BAY.a1,z,BAY.z0,BAY.z1,PINK),1); pane(EW,Y1+.02,(a,z)=>lattice(a,EW.a0,EW.a1,z,EW.z0,EW.z1,WARM),1);
     }
     if(SHARED.BOD.GHOSTST)SHARED.BOD.GHOSTST.push({name:'ghost street shop roof',boxes:ROOF.filter(b=>b.z0>=H2).map(b=>({...b,x0:Math.max(b.x0,X0),x1:Math.min(b.x1,X1)})),high:1});
-    const sol=(x0,y0,x1,y1,zt)=>{ SOL.up.push([X(x0),Z(y0),X(x1),Z(y1)]); FIX.up.push([X(x0),Z(y0),0,X(x1),Z(y1),Math.max(.05,Y(zt))]); };
+    const sol=(x0,y0,x1,y1,zt)=>{ const [a0,a1]=mm(X(x0),X(x1)), [b0,b1]=mm(Z(y0),Z(y1)); SOL.up.push([a0,b0,a1,b1]); FIX.up.push([a0,b0,0,a1,b1,Math.max(.05,Y(zt))]); };
     for(const b of WB)if(b.z0===0)sol(b.x0,b.y0,b.x1,b.y1,H);
     sol(X0+BAY.a0,Y1,X0+BAY.a1,Y1+BAY.out,BAY.z0);
     for(const [a,b,c_,d] of BEDS)sol(a,b,c_,d,8);
@@ -232,7 +234,8 @@ await grab('ghostdojo',async()=>{ const {X:BX,Y:BY,Z:BZ,gbox:GB,faceTex,bq,C}=SH
     let was=null, hid=null, step=-1, wIn=false;
     const PW={uT:{value:0},uP:{value:new THREE.Vector4()},me:null}, KT=TILE*BLDK, tx=x=>iu(x/KT+SHARED.BOD.OX), ty=z=>iv(z/KT+SHARED.BOD.OY), inPool=(x,z)=>{ const a=tx(x), b=ty(z); return a>xi0&&a<xi1&&b>yi0&&b<yR-.1; };
     const poke=(x,z,k=1)=>{ PW.uP.value.set(x,z,Math.max(PW.uP.value.z,k),0); };
-    SHARED.BOD.GD={r:[u(xi0),v(yi0),u(xi1),v(yi1)],floor:[u(xi0),v(yi0+.3),u(xi1),v(yi1)],door:[u(X0+W/2),Y1],dw:(DOOR.a1-DOOR.a0)*S,H:(H+2)*S,eave:H*S,inside:inBox,built:()=>built,here:true,   // here: a ghost comes back where it stands, in the steam
+    const R4=(a,b,c,d)=>[Math.min(a,c),Math.min(b,d),Math.max(a,c),Math.max(b,d)];
+    SHARED.BOD.GD={r:R4(u(xi0),v(yi0),u(xi1),v(yi1)),floor:R4(u(xi0),v(yi0+.3),u(xi1),v(yi1)),door:[u(X0+W/2),v(Y1)],dw:(DOOR.a1-DOOR.a0)*S,H:(H+2)*S,eave:H*S,inside:inBox,built:()=>built,here:true,   // here: a ghost comes back where it stands, in the steam
       tick(){ const t=performance.now()/1000, inn=inside(); if(inn){ PW.uT.value+=Math.min(.1,t-(PW.t||t)); } PW.t=t;
       near();
       SHARED.steam=built&&(inn||Math.hypot(pos.x-X(X0+W/2),pos.z-Z(Y1))<12*TILE)?STEAM.v||(STEAM.v={b:[Math.min(ix0,ix1),0,Math.min(iz0,iz1),Math.max(ix0,ix1),Y(H+2),Math.max(iz0,iz1)],k:STEAM.k,c:STEAM.c}):null;   // half the steam it had (owner, 4 Nov 2026), drawn by the fog pass; seen through the open door too

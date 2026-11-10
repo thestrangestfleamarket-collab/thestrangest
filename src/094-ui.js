@@ -50,7 +50,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
       o+=row('ARROWS','MOVE (SAME AS W A S D)')+row('SHIFT + M','THE MAP')+row('SHIFT + N','THE NEXT LOOK')+row('SHIFT + G','THE GUIDE: HOW TO DO EVERYTHING')+row('I','YOUR BAG')+row('1 TO 0','THE QUICK BAR')+row('ESC','THE MENU')+row('?','THIS LIST')+row('F8','REPORT A BUG');
       const M=RIG.MOVES||{}, fights=Object.keys(M).filter(n=>M[n]&&M[n].combo);
       if(fights.length){ o+=h('FIGHTING: J PUNCH, K KICK; PRESS AGAIN IN TIME TO CHAIN'); for(const n of fights){ const c=M[n].combo; o+=row(n.replace(/([A-Z])/g,' $1').toUpperCase(),Object.entries(c).map(([k,v])=>k+' → '+v.replace(/([A-Z])/g,' $1').toUpperCase()).join(' · ')); } }
-      o+=h('FISHING (BY THE WATER)')+row('F','START FISHING · F OR ESC STOPS')+row('SPACE','HOLD, LET GO TO CAST · ON A BITE: STRIKE · HOLD TO REEL A FISH IN · LANDED: UNHOOK')+row('B','NEXT BAIT')+row('A D','IN A FIGHT: PULL THE ROD LEFT / RIGHT, AGAINST THE FISH\'S RUN')+row('W S','DRAG UP / DOWN')+row('P','DROP A CRAB POT')+row('V','CHANGE THE VIEW');
+      o+=h('FISHING (BY THE WATER)')+row('F','START FISHING · F OR ESC STOPS')+row('SPACE','HOLD, LET GO TO CAST · ON A BITE: STRIKE · HOLD TO REEL A FISH IN · LANDED: UNHOOK')+row('B','NEXT BAIT')+row('A D','IN A FIGHT: PULL THE ROD LEFT / RIGHT, AGAINST THE FISH\'S RUN')+row('W S','DRAG UP / DOWN')+row('V','CHANGE THE VIEW');
       o+=h('ON A SKATEBOARD (HOLD IT, CLICK TO STEP ON, CLICK TO STEP OFF)')+row('W A S D','PUSH, CARVE, BRAKE · IN THE AIR: A D SPIN')+row('SPACE','HOLD TO CROUCH, LET GO TO OLLIE (LONGER, HIGHER) · ON A RAIL: OLLIE OFF')+row('J','IN THE AIR: A FLIP TRICK · NONE OR A KICKFLIP · D HEELFLIP · W HARDFLIP · S POP SHOVE-IT')
         +row('K','IN THE AIR, HOLD: A GRAB · NONE INDY · A MELON · D STALEFISH · W NOSEGRAB · S TAILGRAB')+row('L','BY A RAIL, LEDGE OR COPING: GRIND · NONE 50-50 · W NOSEGRIND · S 5-0 · A BOARDSLIDE · D LIPSLIDE · A D KEEP YOUR BALANCE · AS YOU LAND: REVERT')
         +row('I','MANUAL (W WITH IT: NOSE MANUAL) · W S KEEP YOUR BALANCE · I AGAIN ENDS IT')+row('QUARTER PIPES','RIDE UP ONE FAST: STRAIGHT UP INTO THE AIR, DOWN AGAIN BACKWARDS')+row('COMBOS','EVERY TRICK ADDS ITS POINTS AND ONE TO THE MULTIPLIER; LAND CLEAN AND ROLL AWAY (OR MANUAL, OR REVERT) TO KEEP IT GOING · LAND SIDEWAYS OR MID-FLIP AND YOU BAIL')
@@ -326,16 +326,18 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     <div class="pane" data-p="text" id="dtext"></div>
     <div class="pane" data-p="editors" id="deditors"></div>
     <div class="pane" data-p="tools" id="dtools"></div>
+    <div class="pane" data-p="bro" id="dbro"></div>
     <div class="pane" data-p="vehicles" id="dveh"></div>
     <div class="pane" data-p="vedit" id="dvedit"></div></div></div>`;
   document.body.appendChild(M);
   const $=s=>M.querySelector(s); let mapLv='up';
   // the one menu (owner, 5 Nov 2026: "B"): its sections down the left, each section's parts as tabs along the top; [id, name, key, parts or null, what a section without parts does]; a part is [id, name, its panes, or what it does]
   const shut=()=>{ if(UI.menuOpen)toggleMenu(); };
-  const SEC=[   // SETTINGS, PETS, INVENTORY for every player, ADMIN for the owners (owner, 7 Nov 2026); the map stays on Shift+M; no PROFILE: you are your paper doll, double-click yourself (owner, 9 Nov 2026)
+  const SEC=[   // SETTINGS, PETS, INVENTORY, MAP for every player, ADMIN for the owners (owner, 7 Nov 2026); no PROFILE: you are your paper doll, double-click yourself (owner, 9 Nov 2026)
     ['set','SETTINGS','ESC',[['view','VIEW',['display']],['camera','CAMERA',['camera']],['screen','SCREEN',['screen']],['chat','CHAT',['chat']],['res','RESOLUTION',['graphics']],['ps2','PS2 FILTER',['ps2']],['time','TIME',['atmo']],['weather','WEATHER',['weather']],['light','LIGHT',['light']],['sound','SOUND',['sound']],['keys','KEYS',['keys']],['pad','CONTROLLER',['padset']],['vr','VR',['vr']],['bug','REPORT A BUG',['bug']]]],   // every setting its own tab (owner, 8 Nov 2026: "everything needs its own tab, easier to find")   // no PEOPLE, BBS or GUIDE (owner, 7 Nov 2026); the chat stays in the corner
     ['pets','PETS','',[['mine','YOUR PETS',['pets']],['pet','THEIR LOOK',['home']]]],   // every player's pets (owner, 8 Nov 2026)
     ['pack','INVENTORY','I',[['bag','BAG',()=>{ shut(); if(BAG.toggle)BAG.toggle(true); }],['skills','SKILLS',['pack']],['book','BOOK',['pack']],['fishing','FISHING',['pack']],['journal','JOURNAL',['pack']]]],
+    ['map','MAP','SHIFT+M',[['street','STREET',['bro']],['subway','SUBWAY',['bro']],['under','UNDERGROUND',['bro']],['goto','GO TO',['bro']]]],   // the map a section of the menu (owner, 10 Nov 2026: "B")
     ['bbs','BBS','',[['shop','THE BODEGA',['bbs']],['furn','FURNITURE',['bbs']],['games','THE ARCADE',['bbs']],['orders','YOUR ORDERS',['bbs']]]],   // only from your computer, never in the menu's list
     ['tenants','TENANTS','',[['players','TENANTS',['tenants']]]],   // owners only, each its own (owner, 8 Nov 2026)
     ['admin','★ ADMIN','',[['queue','BUG QUEUE',['queue']],['text','TEXT',['text']],['editors','EDITORS',['editors']],['look','AVATAR',['home']],['veh','VEHICLES',['vehicles']],['vedit','VEHICLE EDITOR',['vedit']],['tools','TOOLS',['tools']]]]];   // AVATAR: your look, owners only (owner, 9 Nov 2026: "the avatar editor should only be in the admin menu (since players cant edit themselves after they start)")   // TEXT its own tab (owner, 7 Nov 2026); no TESTS (owner, 8 Nov 2026)
@@ -355,6 +357,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     const on=new Set(pt[2].filter(p=>p!=='sound'||SOUND)); M.querySelectorAll('.panes>[data-p]').forEach(p=>p.hidden=!on.has(p.dataset.p)); $('.panes').scrollTop=0;
     if(on.has('home')){ if(CHARP.show)CHARP.show($('#dhome')); if(LOOKS.open){ LOOKS.only=null; LOOKS.open(); mount('looks',$('#dlooks'),true); LOOKS.tab(pt[0]); } } else { if(CHARP.hide)CHARP.hide(); mount('looks',null,false); }
     if(on.has('pack')&&FORAGE.PACK){ mount('packp',$('#dpack'),true); FORAGE.PACK.tab=pt[0]; FORAGE.PACK.open=true; FORAGE.PACK.draw(); } else { if(mount('packp',null,false)&&FORAGE.PACK)FORAGE.PACK.open=false; }
+    if(on.has('bro')&&UI.brochure)UI.brochure.into($('#dbro'),pt[0]);
     if(on.has('people'))people(); if(on.has('pets')&&PETS.menu)PETS.menu($('#dpets'));
     if(on.has('bbs')){ if(DRONE.menu)DRONE.menu($('#dbbs'),pt[0]); else $('#dbbs').innerHTML='<div class="dim">the BBS answers once your apartment is built</div>'; }
     if(on.has('guide')&&GUIDE.open)GUIDE.open($('#dguide'));
@@ -460,7 +463,8 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   window.__UI=UI;
   const goTo=(x,z,lv,hd,fl)=>{ pos.set(x,0,z); SHARED.target=null; if(hd!=null)SHARED.heading=hd; SHARED.floor=fl||(typeof lv==='number'?LEVELS.below(lv):lv==='down'?'down':'up'); SHARED.py=typeof lv==='number'?lv:lv==='down'?(L=>L&&L.ground?L.ground(x,z):MODS.station.ground(x,z))(LEVELS.at?LEVELS.of[LEVELS.at(x,z,'down')]:null):0; if(UI.freeCam)UI.camT.set(x,SHARED.py+.9,z); else UI.off.set(0,0,0); if(UI.menuOpen)toggleMenu(); };
   UI.goTo=goTo;
-  const toPlace=(x,z,lv,hd)=>{ const id=(lv==null||lv==='up')&&ROOMS.boxAt?ROOMS.boxAt(x,z):null; if(id)ROOMS.enterAt(id,[x,z,0,hd!=null?hd:0]); else goTo(x,z,lv,hd); };   // a GO TO destination inside an off-map inside enters it, not teleport onto its footprint (which the next step would eject you from)
+  const toPlace=(x,z,lv,hd)=>{ const up=lv==null||lv==='up', id=up&&ROOMS.boxAt?ROOMS.boxAt(x,z):null; if(id)return ROOMS.enterAt(id,[x,z,0,hd!=null?hd:0]);
+    const sr=up&&STORE.enter&&STORE.inside&&(STORE.rooms||[]).find(R=>STORE.inside[R.id]&&x>R.x0&&x<R.x1&&z>R.z0&&z<R.z1); if(sr)return STORE.enter(sr.id,true); goTo(x,z,lv,hd); };   // a GO TO destination inside an off-map inside enters it, not teleport onto its footprint (which the next step would eject you from)
   { let dr=null, moved=false; mcv.addEventListener('pointerdown',e=>{ dr={x:e.clientX,y:e.clientY,cx:V.cx,cy:V.cy}; moved=false; mcv.setPointerCapture(e.pointerId); });
     mcv.addEventListener('pointermove',e=>{ if(!dr)return; const r=mcv.getBoundingClientRect(), v=view(), dx=(e.clientX-dr.x)/r.width*DW/v.k, dy=(e.clientY-dr.y)/r.height*mcv.height/v.k; if(Math.abs(e.clientX-dr.x)+Math.abs(e.clientY-dr.y)>5)moved=true; if(moved){ V.cx=dr.cx-dx; V.cy=dr.cy-dy; drawMap(); } });
     mcv.addEventListener('pointerup',()=>{ dr=null; }); mcv.addEventListener('pointercancel',()=>{ dr=null; });

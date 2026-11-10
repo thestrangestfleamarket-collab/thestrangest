@@ -91,9 +91,9 @@ import {MUSH} from './111ec-mushseller.js';
         while(n>0&&tot()>=CAP){ const dn=SK.map(s=>s[0]).find(o=>o!==k&&S.lock[o]==='down'&&S.sk[o]>0); if(!dn){ n=0; break; } S.sk[dn]--; n--; S.sk[k]++; }
         if(n>0)S.sk[k]=Math.min(1000,S.sk[k]+n); say(`YOUR SKILL IN ${SK.find(s=>s[0]===k)[1]} HAS INCREASED. IT IS NOW ${(S.sk[k]/10).toFixed(1)}.`,'#7fd0ff'); saveSoon(); PACK.draw(); if(k==='forage')FORAGE.sync(); } }
     return ok; };
-  FORAGE.use=use; FORAGE.SK=SK; FORAGE.save=saveSoon; FORAGE.dmgK=()=>(1+(S.st.str-30)/100)*(S.fx.str?1.5:1); FORAGE.ST=S.st;
+  FORAGE.use=use; FORAGE.SK=SK; FORAGE.save=saveSoon; FORAGE.dmgK=()=>(1+(S.st.str-30)/100)*fxv('str',1); FORAGE.ST=S.st;
   const STN=[['str','STRENGTH','hits harder'],['int','INTELLIGENCE','skills grow faster, mushrooms and potions last longer'],['sta','STAMINA','tires slower']], STMIN=10, STMAX=60, STSUM=90, TRMAX=100, stBase=k=>S.st[k]-(S.tr[k]||0), stLeft=()=>STSUM-stBase('str')-stBase('int')-stBase('sta');   // (training lifts a stat past its pick, up to TRMAX: S.tr what it added, S.tp the way to the next point)
-  ONLINE.mine.invis=()=>S.fx.invis?1:null; ONLINE.mine.hi=()=>S.fx.jump?2.5:null; ONLINE.mine.sz=()=>SZ0&&Math.abs(W3.SZ/SZ0-1)>.01?Math.round(W3.SZ/SZ0*100)/100:null;
+  ONLINE.mine.invis=()=>S.fx.invis?1:null; ONLINE.mine.hi=()=>S.fx.jump?fxv('jump',1):null; ONLINE.mine.sz=()=>SZ0&&Math.abs(W3.SZ/SZ0-1)>.01?Math.round(W3.SZ/SZ0*100)/100:null;
   if(!S.stPick&&!QS.get('fresh')){ const ask=()=>{ if(!SYS.started||FIRSTDAY.on)return setTimeout(ask,1000); if(!S.stPick)setTimeout(()=>{ PACK.tab='skills'; UI.menuTab('pack','skills'); },1500); }; ask(); }   // (the first day's setup asks them itself)
   FORAGE.stats={N:STN,MIN:STMIN,MAX:STMAX,SUM:STSUM,get:()=>({str:stBase('str'),int:stBase('int'),sta:stBase('sta')}),picked:()=>!!S.stPick,set:o=>{ const v={}; for(const [k] of STN)v[k]=Math.max(STMIN,Math.min(STMAX,Math.round(+o[k]||STMIN))); if(v.str+v.int+v.sta>STSUM)return false; for(const [k] of STN)S.st[k]=Math.min(TRMAX,v[k]+(S.tr[k]||0)); S.stPick=1; saveSoon(); return true; },
     TRAIN:TRMAX,base:stBase,trained:k=>S.tr[k]||0,toward:k=>S.tp[k]||0,
@@ -106,15 +106,17 @@ import {MUSH} from './111ec-mushseller.js';
     if(INV.cash<c)return say('YOU CANNOT AFFORD THE LESSON ($'+c+').','#c8a090'); if(tot()+amt>CAP)return say('YOU KNOW ALL YOU CAN HOLD. LOWER A SKILL FIRST.','#c8a090');
     INV.cash-=c; S.sk[k]=Math.min(cap,S.sk[k]+amt); saveSoon(); SFX.play('clunk',{vol:.4}); say(`A LESSON IN ${nm}: IT IS NOW ${(S.sk[k]/10).toFixed(1)}.`,'#7fd0ff'); PACK.draw(); };
   FORAGE.trainRows=(ks,cap=300)=>ks.map(k=>{ const nm=(SK.find(s=>s[0]===k)||[0,k])[1], c=8+Math.round(S.sk[k]/20); return `<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">TRAIN ${nm}</td><td style="text-align:right;padding:4px 6px">$${c}</td><td style="text-align:right">${sk(k).toFixed(1)}</td><td style="text-align:right"><button ${B} data-train="${k}" data-cap="${cap}">LESSON</button></td></tr>`; }).join('');
-  const feed=f=>{ S.food=Math.min(1,S.food+f); saveSoon(); }, buff=(k,s)=>{ if(k!=='poison')s*=1+(S.st.int-30)/100; if(k==='small')delete S.fx.big; if(k==='big')delete S.fx.small; S.fx[k]=Math.max(S.fx[k]||0,s); if(k==='swift')swift(); if(k==='invis')unseen(); };
+  const LVK={small:[.4,.28,.2],big:[2,2.75,3.5],swift:[1.25,1.5,1.75],jump:[2.5,3.25,4],luck:[2,3,4],regen:[1,2,3],str:[1.5,1.75,2],keen:[20,30,40]}, lv=k=>S.fx[k]?Math.min(3,Math.max(1,(S.lv&&S.lv[k])||1)):0, fxv=(k,off)=>S.fx[k]?LVK[k][lv(k)-1]:off;   // an effect eaten again while it lasts works harder, three at most (owner, 10 Nov 2026)
+  FORAGE.fxv=fxv;
+  const feed=f=>{ S.food=Math.min(1,S.food+f); saveSoon(); }, buff=(k,s)=>{ if(k!=='poison')s*=1+(S.st.int-30)/100; if(k==='small')delete S.fx.big; if(k==='big')delete S.fx.small; S.lv=S.lv||{}; if(LVK[k]){ const was=lv(k); S.lv[k]=Math.min(3,was+1); if(was)say(was>2?'THREE AT ONCE IS THE MOST THAT WORKS. IT ONLY LASTS LONGER.':was>1?'A THIRD: IT WORKS THREE TIMES OVER.':'A SECOND: IT WORKS TWICE OVER.','#b8f0a0'); } S.fx[k]=Math.max(S.fx[k]||0,s); if(k==='swift')swift(); if(k==='invis')unseen(); };
   const unseen=()=>{ const on=!!S.fx.invis; SHARED.unseen=on; if(W3.mesh)W3.mesh.traverse(m=>{ const M=m.material; if(M&&!Array.isArray(M)){ if(M.op0==null)M.op0=[M.transparent,M.opacity]; M.transparent=on||M.op0[0]; M.opacity=on?.25:M.op0[1]; M.needsUpdate=true; } }); };
-  let base=null, SZ0=null; const swift=()=>{ if(base==null)base=[st.wk||1,st.rk||1]; st.wk=base[0]*1.25; st.rk=base[1]*1.25; };
-  FORAGE.keen=()=>S.fx.keen?20:0;
+  let base=null, SZ0=null; const swift=()=>{ if(base==null)base=[st.wk||1,st.rk||1]; const m=fxv('swift',1.25); st.wk=base[0]*m; st.rk=base[1]*m; };
+  FORAGE.keen=()=>fxv('keen',0);
   { let sta0=1, acc=0; SYS.add('vitalsPre',()=>{ sta0=VIT.sta; },'141-forage'); SYS.add('vitals',dt=>{ if(!!S.fx.invis!==!!SHARED.unseen)unseen(); VIT.spendK=1-(S.st.sta-30)/150; if(S.fx.str&&VIT.sta<sta0)VIT.sta=sta0;
-      if(S.fx.poison)VIT.heal(-dt/50,.05); if(S.fx.regen)VIT.heal(dt/30);
-      VIT.heatProof=S.fx.fire?50:0; SHARED.luck=S.fx.luck?2:1; st.hi=S.fx.jump?2.5:1; if(W3.SZ){ if(SZ0==null)SZ0=W3.SZ; const to=SZ0*(S.fx.small?.4:S.fx.big?2:1); W3.SZ=Math.abs(to-W3.SZ)<1e-3?to:W3.SZ+(to-W3.SZ)*Math.min(1,dt*3); }
+      if(S.fx.poison)VIT.heal(-dt/50,.05); if(S.fx.regen)VIT.heal(dt/30*fxv('regen',1));
+      VIT.heatProof=S.fx.fire?50:0; SHARED.luck=fxv('luck',1); st.hi=fxv('jump',1); if(W3.SZ){ if(SZ0==null)SZ0=W3.SZ; const to=SZ0*(S.fx.small?fxv('small',1):fxv('big',1)); W3.SZ=Math.abs(to-W3.SZ)<1e-3?to:W3.SZ+(to-W3.SZ)*Math.min(1,dt*3); }
       S.food=1; if(WX&&WX.now&&WX.now.rain>.25)FORAGE.wetT=performance.now()/1e3;
-      for(const k in S.fx){ S.fx[k]-=dt; if(S.fx[k]<=0){ delete S.fx[k]; say({str:'YOUR STRENGTH FADES.',keen:'YOUR EYE IS ORDINARY AGAIN.',swift:'YOUR STEP SLOWS.',invis:'YOU CAN BE SEEN AGAIN.',fly:'THE FLIGHT MUSHROOM WEARS OFF. YOU COME DOWN.',jump:'YOUR LEGS ARE ORDINARY AGAIN.',luck:'YOUR LUCK RUNS OUT.',fire:'FIRE CAN HURT YOU AGAIN.',small:'YOU GROW BACK TO YOUR OWN SIZE.',big:'YOU SHRINK BACK TO YOUR OWN SIZE.',regen:'THE MENDING STOPS.',dark:'THE DARK CLOSES IN AGAIN.',poison:'THE POISON HAS WORN OFF.'}[k]||'',k==='poison'?'#9fe07f':'#c8c2b0'); if(k==='swift'&&base){ st.wk=base[0]; st.rk=base[1]; base=null; } if(k==='keen')FORAGE.sync(); if(k==='invis')unseen(); } }
+      for(const k in S.fx){ S.fx[k]-=dt; if(S.fx[k]<=0){ delete S.fx[k]; if(S.lv)delete S.lv[k]; say({str:'YOUR STRENGTH FADES.',keen:'YOUR EYE IS ORDINARY AGAIN.',swift:'YOUR STEP SLOWS.',invis:'YOU CAN BE SEEN AGAIN.',fly:'THE FLIGHT MUSHROOM WEARS OFF. YOU COME DOWN.',jump:'YOUR LEGS ARE ORDINARY AGAIN.',luck:'YOUR LUCK RUNS OUT.',fire:'FIRE CAN HURT YOU AGAIN.',small:'YOU GROW BACK TO YOUR OWN SIZE.',big:'YOU SHRINK BACK TO YOUR OWN SIZE.',regen:'THE MENDING STOPS.',dark:'THE DARK CLOSES IN AGAIN.',poison:'THE POISON HAS WORN OFF.'}[k]||'',k==='poison'?'#9fe07f':'#c8c2b0'); if(k==='swift'&&base){ st.wk=base[0]; st.rk=base[1]; base=null; } if(k==='keen')FORAGE.sync(); if(k==='invis')unseen(); } }
       if((acc+=dt)>5){ acc=0; saveSoon(); } if(PACK.open&&(PACK.t=(PACK.t||0)+dt)>1){ PACK.t=0; PACK.bars(); } },'141-forage'); }
   const CH=new Map(), capG=new THREE.SphereGeometry(1,8,4,0,Math.PI*2,0,Math.PI/2), stemG=new THREE.CylinderGeometry(.32,.38,1,6).translate(0,.5,0), NMX=420;
   const mk=(g,m)=>{ const me=new THREE.InstancedMesh(g,m,NMX); me.instanceColor=new THREE.InstancedBufferAttribute(new Float32Array(NMX*3),3); me.count=0; me.frustumCulled=false; me.castShadow=true; me.receiveShadow=true; me.raycast=()=>{}; (MAPG.park||scene).add(me); return me; };
@@ -141,17 +143,20 @@ import {MUSH} from './111ec-mushseller.js';
   FORAGE.things=()=>things; SYS.add('weedsAdd',(key,grp)=>{ CH.set(key,spawns(key,grp)); FORAGE.sync(); },'141-forage'); SYS.add('weedsDrop',key=>{ if(CH.delete(key))FORAGE.sync(); },'141-forage');
   if(WEEDS.chunks)for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); FORAGE.sync();
   // owners start with 99 of every mushroom that gives something extra (owner, 7 Nov 2026), and GUITAR at 100 (owner, 7 Nov 2026: "my player is 100 skill level and can play all the songs")
-  // the owners' kit, each start: every power mushroom to 99, every instrument in the bag and its skill at 100
+  // the owners' kit, each start: everything in the full kit and what no shop sells (FORAGE.OWNERS), the server told first so its money check keeps it
   FORAGE.POWER=['airshroom','glowcap','shroom_invis','shroom_str','shroom_swift','shroom_fly','shroom_keen','shroom_heal','shroom_cure','shroom_jump','shroom_luck','shroom_fire','shroom_small','shroom_big'];
-  FORAGE.ownerKit=()=>{ for(const id of FORAGE.POWER){ const n=99-have(id); if(n>0)give(id,n); } for(const k of ['guitar','piano','drums','harp','violin','flute','trumpet'])if(!have(k))give(k,1); saveSoon(); FORAGE.draw(); };
+  FORAGE.OWNERS=['flamer','frost','magic_carpet','balloon','saddle','brickphone','cigar','cigar_blue','nv_goggles','cowboyhat','spray_gold','spray_silver','jar_fly','logbook_capt','spyglass','spile','wax_candle','treepot','bottle'];
+  const kitIds=()=>{ const ids=new Set([...FORAGE.POWER,'guitar','piano','drums','harp','violin','flute','trumpet']);
+    for(const c in CHARS.store){ const t=!ARCH.has(c)&&CHARS.store[c]&&CHARS.store[c].trade; for(const x of (t&&Array.isArray(t.sells)&&t.sells)||[])ids.add(x); } for(const [x] of FORAGE.SELLS)ids.add(x); return ids; };
+  const kitGive=(ids,rent)=>{ const P=FORAGE.POWER, G={}; for(const id of ids){ if(ARCHI(id)||!ITEMS.def(id)||!rent&&ITEMS.prop(id,'rental'))continue; const n=(P.includes(id)?99:ITEMS.prop(id,'stackable')||ITEMS.prop(id,'edible')?20:1)-have(id); if(n>0)G[id]=n; } return G; };
+  FORAGE.ownerKit=async()=>{ const G=kitGive([...kitIds(),...FORAGE.OWNERS],true), u=Object.values(G).reduce((a,b)=>a+b,0); if(!u)return 0;
+    if(/^https?:$/.test(location.protocol)){ try{ const r=await fetch('/owned',{method:'POST',headers:{'content-type':'application/json'},credentials:'same-origin',body:JSON.stringify({kit:u})}); if(!r.ok)return 0; }catch(e){ return 0; } }
+    for(const id in G)give(id,G[id]); saveSoon(); FORAGE.draw(); return Object.keys(G).length; };
   // the owner's ALL SKILLS 100 (ADMIN > TOOLS): every skill reads 100 while it is on, nothing is gained, and the real levels are untouched under it
   FORAGE.maxed=v=>{ if(v==null)return MAXED; MAXED=!!v; S.max=MAXED?1:0; saveSoon(); FORAGE.draw(); FORAGE.sync(); for(const f of FORAGE.MAXFN)f(); return MAXED; }; FORAGE.MAXFN=[];
   SYS.onStart(()=>{ if(BUGS.owner)BUGS.owner().then(o=>{ if(o){ FORAGE.ownerKit(); if(S.max)FORAGE.maxed(true); } }).catch(()=>{}); },'141-forage owners');
   // the full kit, sent to a player from TENANTS (OWNED 'gift'): one of everything a live shop sells (20 of what stacks, 99 of each power mushroom), every instrument; rentals stay rented
-  FORAGE.fullKit=()=>{ const P=FORAGE.POWER, ids=new Set([...P,'guitar','piano','drums','harp','violin','flute','trumpet']);
-    for(const c in CHARS.store){ const t=!ARCH.has(c)&&CHARS.store[c]&&CHARS.store[c].trade; for(const x of (t&&Array.isArray(t.sells)&&t.sells)||[])ids.add(x); } for(const [x] of FORAGE.SELLS)ids.add(x);
-    let g=0; for(const id of ids){ if(ARCHI(id)||!ITEMS.def(id)||ITEMS.prop(id,'rental'))continue; const n=(P.includes(id)?99:ITEMS.prop(id,'stackable')||ITEMS.prop(id,'edible')?20:1)-have(id); if(n>0){ give(id,n); g++; } }
-    saveSoon(); FORAGE.draw(); return g; };
+  FORAGE.fullKit=()=>{ const G=kitGive(kitIds()); for(const id in G)give(id,G[id]); saveSoon(); FORAGE.draw(); return Object.keys(G).length; };
   SYS.onStart(()=>{ if(OWNED.get('gift')!=='kit')return; const g=FORAGE.fullKit(); OWNED.del('gift'); say('THE OWNERS SENT YOU A FULL KIT: '+g+' KINDS OF THINGS ARE IN YOUR BAG.','#7fdc8a'); },'141-forage gift');
   SYS.every(()=>{ const d=day(); if(d!==S.pd){ const old=S.pd; S.pd=d; for(const k in S.picked)if(!k.startsWith(d+':'))delete S.picked[k]; if(old!==-1&&WEEDS.chunks){ CH.clear(); for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); FORAGE.sync(); } save(); } },1000);
   { const TRL=[], shod0=()=>LOOKS.L&&!LOOKS.L.bare; let acc=0, lx=pos.x, lz=pos.z;
@@ -201,7 +206,7 @@ import {MUSH} from './111ec-mushseller.js';
     document.body.appendChild(P); P.addEventListener('keydown',e=>e.stopPropagation()); P.addEventListener('keyup',e=>e.stopPropagation()); return P; };
   PACK.bars=()=>{ const P=document.getElementById('packp'); const b=P&&P.querySelector('#pbars'); if(b)b.innerHTML=bars(); };
   const bars=()=>''+
-    (Object.keys(S.fx).length?`<div style="color:#9fe07f">${Object.entries(S.fx).map(([k,s])=>({poison:'POISONED',str:'STRONG',keen:'KEEN EYE',swift:'SWIFT',regen:'MENDING',invis:'INVISIBLE',fly:'FLYING',dark:'NIGHT VISION',jump:'SPRINGY',luck:'LUCKY',fire:'FIREPROOF',small:'SMALL',big:'BIG'}[k]||k)+' '+Math.ceil(s)+'s').join(' · ')}</div>`:'');
+    (Object.keys(S.fx).length?`<div style="color:#9fe07f">${Object.entries(S.fx).map(([k,s])=>({poison:'POISONED',str:'STRONG',keen:'KEEN EYE',swift:'SWIFT',regen:'MENDING',invis:'INVISIBLE',fly:'FLYING',dark:'NIGHT VISION',jump:'SPRINGY',luck:'LUCKY',fire:'FIREPROOF',small:'SMALL',big:'BIG'}[k]||k)+(lv(k)>1?' x'+lv(k):'')+' '+Math.ceil(s)+'s').join(' · ')}</div>`:'');
   PACK.draw=()=>{ '@later'; const P=document.getElementById('packp'); if(!P||P.hidden)return; const tab=t=>`<button ${B} data-tab="${t}" style="${PACK.tab===t?'color:#f2c14e;':''}margin-right:4px;font:inherit;background:#0e1016;border:2px solid ${PACK.tab===t?'#f2c14e':'#3a3f4e'};padding:3px 9px;cursor:pointer">${t.toUpperCase()}</button>`;
     let o=`<div style="margin-bottom:10px">${BAG.toggle?'':tab('pack')}${tab('skills')}${tab('book')}${FORAGE.TABS.map(t=>tab(t.id)).join('')}</div>`; const xt=FORAGE.TABS.find(t=>t.id===PACK.tab);
     if(xt)o+=xt.draw(); else if(PACK.tab==='book')o+=book(); else if(PACK.tab==='pack'){ o+=`<div id="pbars" style="display:grid;gap:3px;margin-bottom:8px">${bars()}</div><div style="margin-bottom:6px">$${Math.round(INV.cash)}</div><table style="border-collapse:collapse;width:100%">`;

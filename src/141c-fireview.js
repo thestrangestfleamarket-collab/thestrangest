@@ -1,8 +1,8 @@
 // THE FIRE ESCAPE VIEW: your landing on the apartment house's fire escape, with the landings above and below, built from the house's own facade and landings round your apartment (one place, off the map): its door opens and you walk out.
 import {SHARED, THREE} from './003-shx.js';
-import {BATCH, CLOCK, FAR3, GPH, pos, SFX, SKY, UI} from './003b-systems.js';
-import {scene} from './004-main.js';
-import {BLDK, MISTE, MODS, STORE, SYS, TILE} from './006-map-pre.js';
+import {BATCH, CLOCK, CULL, FAR3, FARCITY, GPH, pos, ROOMS, SFX, SKY, UI, VIS, VR, WINDOWS} from './003b-systems.js';
+import {renderer, scene} from './004-main.js';
+import {BLDK, FADE, MAPG, MISTE, MODS, STORE, SYS, TILE} from './006-map-pre.js';
 import {PEEK} from './008-batch.js';
 import {BLOCKS} from './038zb-blocks.js';
 { const APTS=MODS.apts, F=MODS.firev, T=TILE, KK=BLDK, {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, {HZ,S}=F, A=APTS.AL, FE=APTS.ESC[0], DU=APTS.DU, DO=APTS.DO, LV=F.lv;
@@ -35,7 +35,8 @@ import {BLOCKS} from './038zb-blocks.js';
     G.rotation.y=Math.PI; G.position.set(X(AR.x1)+X(A.x0),0,Z(FY)+Z(A.y1)); G.updateMatrix(); G.updateMatrixWorld(true);
     // the pots and plants are real: on your landing each one a thing you can pick up, push or knock off; the landings above and below keep theirs in place
     const LW=T*KK, YH=h=>Y(h)-Y(0); F.loose=[]; F.pots=[];
-    for(const sp of APTS.escPlants||[]){ const lvP=Math.floor((sp.z-APTS.RZ+6)/S), o=APTS.plant3D(sp.kind,sp.seed,sp.w*LW,YH(sp.h)); o.rotation.y=(sp.seed*2.39)%6.28; o.position.set(X(sp.x),Y(sp.z),Z(sp.y));
+    for(const sp of APTS.escPlants||[]){ const lvP=Math.floor((sp.z-APTS.RZ+6)/S); if(lvP===LV)continue;   // your own landing's things are your rooms' (150fi), placed in DECORATE
+      const o=APTS.plant3D(sp.kind,sp.seed,sp.w*LW,YH(sp.h)); o.rotation.y=(sp.seed*2.39)%6.28; o.position.set(X(sp.x),Y(sp.z),Z(sp.y));
       if(lvP===LV&&sp.kind!=='hang'&&GPH.add){ o.position.applyMatrix4(G.matrix); o.rotation.y+=Math.PI; o.traverse(q=>{ if(q.isMesh)q.material=q.material.clone(); }); scene.add(o); F.pots.push({o,on:false}); F.loose.push(GPH.add(o,{name:APTS.plantName[sp.kind]||'PLANT',m:{pot:3,flower:2,fern:3,tall:6,box:8}[sp.kind]||3})); } else G.add(o); }
     // the windows and doors onto the landings are real: a deep painted frame, a stone head, sashes of real glass that catch the light, a panelled door with glass and a brass knob (the stone sills, deep enough to set things on, are the house's own)
     { const Mm=LW/.907, mm=v=>v*Mm, MT={}, mt=(k,c,o={})=>MT[k]||(MT[k]=new THREE.MeshLambertMaterial({color:new THREE.Color('rgb('+c.join(',')+')'),...(o.x||{})}));   // cel: flat steps of light
@@ -97,5 +98,32 @@ import {BLOCKS} from './038zb-blocks.js';
     light.intensity=on?2.4*nk():0;
     if(F.cum){ const u=F.cum.material.uniforms; u.uDr.value=performance.now()/1000;
       SHARED.cam.getWorldDirection(cd); const h=Math.hypot(cd.x,cd.z)||1; u.uIso.value.set(-cd.x/h,-cd.z/h,iso?-cd.y/h:0); } },'141c-fireview');   // G is turned half round; in the isometric view each cloud is moved up or down by its depth, so the layer stays one band at the bottom of the screen
-  window.FIREDBG=()=>({built:F.built,on:F.on,door:!!(APTS.escDoor&&APTS.escDoor.open),dist:+(UI.dist/T).toFixed(2),meshes:G.children.length,pos:[+ix(pos.x).toFixed(2),+iy(pos.z).toFixed(2)],py:+SHARED.py.toFixed(2),apt:{in:APTS.in,floor:APTS.floor()}});
+  // the town from your landing: the real town round your house, drawn small and seldom from where your flat really stands (the glass's way, 130a) and shown behind everything: a cube of pictures in the behind and first-person views, one wide flat picture in the isometric
+  const TW=F.town={ms:250,gap:6,air:6,px:512,pad:1.5,far:900,n:0}, tU={uC:{value:null},uT:{value:null},uO:{value:0},uPI:{value:new THREE.Matrix4()},uCW:{value:new THREE.Matrix4()},uUV:{value:new THREE.Vector4(1,1,0,0)}};
+  const tq=new THREE.Mesh(new THREE.PlaneGeometry(2,2),new THREE.ShaderMaterial({uniforms:tU,depthWrite:false,vertexShader:'varying vec2 vU; void main(){ vU=uv; gl_Position=vec4(position.xy,1.,1.); }',
+    fragmentShader:'uniform samplerCube uC; uniform sampler2D uT; uniform float uO; uniform mat4 uPI, uCW; uniform vec4 uUV; varying vec2 vU; void main(){ vec3 c; if(uO>.5)c=texture2D(uT,vU*uUV.xy+uUV.zw).rgb; else { vec4 v=uPI*vec4(vU*2.-1.,1.,1.); vec3 d=mat3(uCW)*(v.xyz/v.w); c=textureCube(uC,vec3(-d.x,d.y,-d.z)).rgb; } gl_FragColor=vec4(c,1.); }'}));
+  tq.frustumCulled=false; tq.renderOrder=900; tq.visible=false; tq.raycast=()=>{}; tq.userData.sky=1; scene.add(tq);
+  let tc=null, tr=null, tn=0, tt=0, tf=0, tw=0; const oc0=new THREE.Vector3(), oq=new THREE.Quaternion(), ov=new THREE.Vector3(), ox=new THREE.Vector3(), oy=new THREE.Vector3(), CYC=[4,0,1,3,2,4,0,1,3,5]; let oz=0, ocam=null;
+  // one picture: you stand in the town for it (what is drawn there goes by where you are), the town's own cut by distance kept
+  const shoot=(cam,rt,face)=>{ const sb=renderer.shadowMap.autoUpdate, px=pos.x, pz=pos.z; renderer.shadowMap.autoUpdate=false; tq.visible=false; const rx=ov.set(px,0,pz).applyMatrix4(G.matrix).x, rz=ov.z;
+    const FU=FAR3.FU, RG=FARCITY.ring, fg=scene.fog, mk=FU&&FU.uMK.value, mx=MISTE.x, my=MISTE.y, mz=MISTE.z, fv=[FAR3.mesh,FAR3.panels,FAR3.trees].map(o=>o&&o.visible); if(FU&&FAR3.fog){ FU.uMK.value=.8; FU.uMP.value.set(rx,0,rz); MISTE.x=1; MISTE.y=my*TW.air; MISTE.z=mz*TW.air; scene.fog=FAR3.fog;   // from up here you see further: the ground mist starts further off
+      for(const o of [FAR3.mesh,FAR3.panels,FAR3.trees])if(o)o.visible=true; } if(RG)RG.visible=!cam.isOrthographicCamera; VIS.hide(MAPG.block,'fire',false);
+    const own=(APTS.meshes||[]).filter(o=>o.visible), dm=SKY.dome, dv=dm&&dm.visible, mu=SKY.U.uMistK, mv=mu&&mu.value; for(const o of own)o.visible=false; if(dm)dm.visible=true; if(mu&&FAR3.fog)mu.value=1;   // your own house is the one round you; the sky is the hour's
+    try{ pos.x=rx; pos.z=rz; CULL.begin(); ROOMS.peek(()=>{ renderer.setRenderTarget(rt,face||0); renderer.clear(); renderer.render(scene,cam); }); }
+    finally{ for(const o of own)o.visible=true; if(dm)dm.visible=dv; if(mu)mu.value=mv; VIS.hide(MAPG.block,'fire',true); if(RG)RG.visible=false; if(FU&&FAR3.fog){ FU.uMK.value=mk; FU.uMP.value.copy(pos); MISTE.x=mx; MISTE.y=my; MISTE.z=mz; scene.fog=fg; [FAR3.mesh,FAR3.panels,FAR3.trees].forEach((o,i)=>{ if(o)o.visible=fv[i]; }); } CULL.end(); pos.x=px; pos.z=pz; renderer.setRenderTarget(null); renderer.shadowMap.autoUpdate=sb; tq.visible=true; TW.n++; } };
+  const RS={x:0,z:0}; ROOMS.away=()=>{ if(!F.built||!APTS.inReal)return null; ov.set(X(DX),0,Z(V(.9))).applyMatrix4(G.matrix); RS.x=ov.x; RS.z=ov.z; return RS; };   // at home you are on the street where your house stands: its ground stays painted for the picture
+  tq.onBeforeRender=(r,s,cam)=>{ if(cam.isOrthographicCamera){ if(!ocam)return; ov.copy(cam.position).sub(oc0); const w=(cam.right-cam.left)/cam.zoom, h=(cam.top-cam.bottom)/cam.zoom, k=1/TW.pad; tU.uUV.value.set(k,k,.5-k/2+ov.dot(ox)/w*k,.5-k/2+ov.dot(oy)/h*k); }
+    else { tU.uPI.value.copy(cam.projectionMatrixInverse); tU.uCW.value.copy(cam.matrixWorld); } };
+  SYS.add('places',()=>{ const on=F.on&&!VR.on&&!FADE.busy&&!WINDOWS.busy; if(F.cum)F.cum.visible=!on; if(on!==tq.visible)VIS.hide(MAPG.block,'fire',on);   // the map's ground carried on past its edges runs under this lot: out here it is in the town's picture only
+    if(!on){ tq.visible=false; tn=0; ocam=null; return; } const cam=SHARED.cam, now=performance.now(), due=now-tt>=TW.ms&&++tw>=TW.gap;   // seldom by the clock, and never more than a frame in a few on a slow machine
+    if(FARCITY.ring)FARCITY.ring.visible=false;   // the far skyline goes round the eye: here it belongs to the town's picture, not to the landing
+    if(cam.isOrthographicCamera){ tU.uO.value=1; const W=Math.round(TW.px*cam.right/cam.top), sh=ov.copy(cam.position).sub(oc0), w=(cam.right-cam.left)/cam.zoom, h=(cam.top-cam.bottom)/cam.zoom, m=(TW.pad-1)/2;
+      if(ocam&&cam.zoom===oz&&cam.quaternion.angleTo(oq)<1e-4&&Math.abs(sh.dot(ox))<m*w&&Math.abs(sh.dot(oy))<m*h&&!due)return;
+      if(!tr)tr=new THREE.WebGLRenderTarget(W,TW.px,{type:THREE.HalfFloatType}); else if(tr.width!==W)tr.setSize(W,TW.px); if(!ocam)ocam=cam.clone(); ocam.copy(cam); for(const k of ['left','right','top','bottom'])ocam[k]=cam[k]*TW.pad; ocam.updateProjectionMatrix();
+      ocam.matrixWorld.multiplyMatrices(G.matrix,cam.matrixWorld); ocam.matrixWorld.decompose(ocam.position,ocam.quaternion,ocam.scale); ocam.updateMatrixWorld(true); shoot(ocam,tr); tw=0;
+      oc0.copy(cam.position); oq.copy(cam.quaternion); oz=cam.zoom; ox.setFromMatrixColumn(cam.matrixWorld,0); oy.setFromMatrixColumn(cam.matrixWorld,1); tU.uT.value=tr.texture; tt=now; return; }
+    tU.uO.value=0; ocam=null; if(!tc){ const rt=new THREE.WebGLCubeRenderTarget(TW.px,{type:THREE.HalfFloatType}); tc=new THREE.CubeCamera(.5*T,TW.far*T,rt); tc.coordinateSystem=renderer.coordinateSystem; tc.updateCoordinateSystem(); tU.uC.value=rt.texture; }
+    if(tn>5&&!due)return; tc.position.set(X(DX),Y(HZ+45),Z(V(.9))).applyMatrix4(G.matrix); tc.updateMatrixWorld(true);
+    const f=tn<6?tn:CYC[tf++%CYC.length]; shoot(tc.children[f],tc.renderTarget,f); tn++; tt=now; tw=0; },'141c-town');
+  window.FIREDBG=()=>({town:{n:TW.n,on:tq.visible,flat:tU.uO.value>.5},built:F.built,on:F.on,door:!!(APTS.escDoor&&APTS.escDoor.open),dist:+(UI.dist/T).toFixed(2),meshes:G.children.length,pos:[+ix(pos.x).toFixed(2),+iy(pos.z).toFixed(2)],py:+SHARED.py.toFixed(2),apt:{in:APTS.in,floor:APTS.floor()}});
 }

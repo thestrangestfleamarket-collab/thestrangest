@@ -61,7 +61,6 @@ jobs:
           k vr      'src/162a-pad|src/162c-vr|vr\.cjs'
           k vrbody  'src/162c|src/111b|vrbody\.cjs'
           k riders  'src/117a|src/009c|riders\.cjs'
-          k twin    'src/162g|src/159i|worker/twin|twin\.cjs'
           k loopmap 'src/159c|src/009b|loopmap\.cjs'
           k spiders 'src/146b|src/087-npc-creatures|data/creatures|spiders\.cjs'
           k dunshare 'src/062a|src/146b|worker/dunmobs|dunshare\.cjs'
@@ -116,8 +115,10 @@ jobs:
           k holodeck 'src/059b-arcade|src/146bb|src/146b[cd]|holodeck'
           k kite    'src/146g-kite|src/093|kite\.cjs'
           k swim    'src/146ga-swim|src/066-river|src/065a|swim\.cjs'
+          k lakewreck 'src/066bb|src/066ba-wreck|src/060a-fount|data/lakewreck|tools/lakewreck|lakewreck\.cjs'
           k visit   'src/150d|src/059a|visit\.cjs'
           k aptfixed 'src/150a|src/150d|src/150f|src/150k|aptfixed\.cjs'
+          k firetown 'src/141c|src/059[ad]|src/130a|src/161a|src/150[ad]|src/150fi|firetown\.cjs'
           k aptradio 'src/150fb|src/150a|src/150d|data/radio|aptradio\.cjs'
           k crt     'src/150fa|src/150a|src/150d|data/tv\.json|crt\.cjs'
           k sound   'src/091-sfx|src/093-|src/100-use|src/146zo-|sound\.cjs'
@@ -208,10 +209,6 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' drops')
         run: node tests/drops-server.cjs
-      - name: The AI double (its mind with a stand-in Claude, its moves in the game)
-        timeout-minutes: 20
-        if: contains(steps.f.outputs.run, ' twin')
-        run: node tests/twin.cjs dist/market.html
       - name: Fights between players (hitboxes, blows, knockdown)
         timeout-minutes: 20
         if: contains(steps.f.outputs.run, ' brawl')
@@ -373,7 +370,7 @@ jobs:
       - name: The screen's layout (drag the HUD and windows, saved, back after a reload)
         if: contains(steps.f.outputs.run, ' layout')
         run: node tests/layout.cjs dist/market.html
-      - name: Use (E uses what is in reach, no walk; a double click walks up, stops dead, no slide)
+      - name: Use (E and the double click walk up to a thing a little out of reach, stop dead, no slide)
         if: contains(steps.f.outputs.run, ' use')
         run: node tests/use.cjs
       - name: The computer's BBS (dial-in, order, drone delivery, drone view)
@@ -404,6 +401,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' swim')
         run: node tests/swim.cjs dist/market.html
+      - name: The lake wreck (its basin, built near, solid to a swimmer among it, its chests; the lake deeper in spots)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' lakewreck')
+        run: node tests/lakewreck.cjs dist/market.html
       - name: Visiting another player's apartment
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' visit')
@@ -412,6 +413,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' aptfixed')
         run: node tests/aptfixed.cjs dist/market.html
+      - name: The town from your fire escape (pictured on the landing, not in your rooms)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' firetown')
+        run: node tests/firetown.cjs dist/market.html
       - name: The apartment's radio (in a fresh apartment, its panel, it plays, quieter away, kept in the layout)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' aptradio')

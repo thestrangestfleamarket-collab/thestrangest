@@ -42,10 +42,11 @@ const TOUR=[
 ];
 (async()=>{
   fs.mkdirSync(OUT,{recursive:true});
-  const w=spawn('npx',['wrangler','dev','--port',String(PORT),'--ip','127.0.0.1','--var','DEV_AUTH:1','--show-interactive-dev-session=false'],{stdio:['ignore','pipe','pipe'],env:{...process.env,WRANGLER_SEND_METRICS:'false'}});
+  const w=spawn('npx',['wrangler','dev','--port',String(PORT),'--ip','127.0.0.1','--var','DEV_AUTH:1','--show-interactive-dev-session=false'],{stdio:['ignore','pipe','pipe'],detached:true,env:{...process.env,WRANGLER_SEND_METRICS:'false'}});
+  const stop=()=>{ try{ process.kill(-w.pid,'SIGKILL'); }catch(e){ try{ w.kill('SIGKILL'); }catch(_){} } };   // the worker's whole group: wrangler leaves workerd on the port otherwise, and the next test on it talks to this one
   let log=''; w.stdout.on('data',d=>log+=d); w.stderr.on('data',d=>log+=d);
   let up=false; for(let i=0;i<120&&!up;i++){ await wait(1000); up=await fetch(BASE+'/').then(r=>r.ok).catch(()=>false); }
-  if(!up){ console.log('FAIL: the worker never started\n'+log); w.kill(); process.exit(1); }
+  if(!up){ console.log('FAIL: the worker never started\n'+log); stop(); process.exit(1); }
   const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
   const ctx=await b.newContext({viewport:{width:640,height:360}}); await ctx.addCookies([{name:'tsfm-pass',value:'dev:site-check',url:BASE}]);
   await ctx.addInitScript(()=>{ let s; Object.defineProperty(window,'__started',{configurable:true,get(){ return s; },set(v){ s=v; if(v&&!window.__t0)window.__t0=performance.now(); }}); });
@@ -81,5 +82,5 @@ const TOUR=[
   const lp=await pg.evaluate(()=>{ const p=__dbg.MAPK.MODS.station.plat, y=__dbg.you(); return {lvl:__dbg.lvl(),dist:Math.hypot(y.x-p.x,y.z-p.z),you:y}; }).catch(e=>'ERR '+e.message);
   ok(lp&&lp.lvl==='down'&&lp.dist<2,'a login after an hour or more starts on the subway platform ('+JSON.stringify(lp).slice(0,400)+')');
   ok(!late.length,'no slow fetch anywhere '+late.join(' | '));
-  await b.close(); w.kill(); console.log(bad?bad+' FAILED':'all good'); process.exit(bad?1:0);
+  await b.close(); stop(); console.log(bad?bad+' FAILED':'all good'); process.exit(bad?1:0);
 })().catch(e=>{ console.log('FAIL '+e.message); process.exit(1); });

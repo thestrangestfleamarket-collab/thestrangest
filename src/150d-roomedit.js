@@ -49,19 +49,21 @@ import {ROOMK} from './150a-bedroom.js';
   const DEPT={BENCH:'seating',CHAIR:'seating','KITCHEN CHAIR':'seating',BED:'beds',PILLOW:'beds',BLANKETS:'beds',DESK:'surfaces','CORNER DESK':'surfaces',TABLE:'surfaces',PENINSULA:'surfaces',
     DRAWERS:'storage',HUTCH:'storage','CUBBY SHELF':'storage','RECORD CABINET':'storage',BOOKCASE:'storage',BOOKSHELF:'storage','WALL SHELF':'storage','OPEN SHELVES':'storage','WALL CABINET':'storage',
     COUNTER:'kitchen','CORNER COUNTER':'kitchen','SIDE COUNTER':'kitchen','SHORT COUNTER':'kitchen',SINK:'kitchen',STOVE:'kitchen',HOOD:'kitchen',FRIDGE:'kitchen',MICROWAVE:'kitchen',TOASTER:'kitchen','COFFEE MACHINE':'kitchen',
-    'DISH RACK':'kitchen','DISH SOAP':'kitchen','PAPER TOWELS':'kitchen',CANISTER:'kitchen',POT:'kitchen',PLATES:'kitchen',MUG:'kitchen',CUP:'kitchen',MILL:'kitchen','DUTCH OVEN':'kitchen',UTENSILS:'kitchen',OIL:'kitchen',ORANGES:'kitchen','CUTTING BOARD':'kitchen',KNIFE:'kitchen',DONUTS:'kitchen',
+    'DISH RACK':'kitchen','DISH SOAP':'kitchen','PAPER TOWELS':'kitchen',CANISTER:'kitchen',POT:'kitchen',PLATES:'kitchen',MILL:'kitchen','DUTCH OVEN':'kitchen',UTENSILS:'kitchen',OIL:'kitchen',ORANGES:'kitchen','CUTTING BOARD':'kitchen',KNIFE:'kitchen',DONUTS:'kitchen',
     PLANT:'plants','TRAILING PLANT':'plants',LAMP:'lights'};
   const PRICE={BED:150,BENCH:40,DRAWERS:60,DESK:80,HUTCH:70,'CORNER DESK':110,'CUBBY SHELF':45,BLIND:15,'HALF WALL':60,TV:120,'RECORD CABINET':70,BOOKCASE:50,COUNTER:60,'CORNER COUNTER':140,'SIDE COUNTER':80,'SHORT COUNTER':35,
     PENINSULA:120,SINK:90,'OPEN SHELVES':30,STOVE:110,HOOD:60,'WALL CABINET':50,FRIDGE:160,PICTURE:20,TABLE:60,'TERRAZZO RUG':40,'MAUVE RUG':30,CHAIR:35,'KITCHEN CHAIR':25,MONITOR:60,'RECORD PLAYER':50,SPEAKER:30,
     MICROWAVE:40,'COFFEE MACHINE':30,TOASTER:15,LAMP:15,PLANT:8,'TRAILING PLANT':10,PILLOW:6,BLANKETS:10,'DUTCH OVEN':12,
+    'WALL SHELF':25,'EARTH GLOBE':60,'GLOBE TABLE':40,'MOON GLOBE':60,'MARS GLOBE':60,'ROUND RUG':50,RECLINER:300,'FLOOR PLANT':30,'OLIVE TREE':60,'FERN STAND':35,'HANGING PLANT':20,'BISTRO TABLE':60,'LAWN CHAIR':30,'POTTED SHRUB':30,'FLOWER PLANTER':25,'WOODEN CRATE':10,
+    KEYBOARD:15,MOUSE:8,BOOKS:6,PHOTO:5,RECORDS:8,'LAB STOOL':25,'FLOWERING PLANT':12,'HERB POT':8,'BASIL POT':8,'CANDLE LANTERN':12,'CACTUS POT':8,'WATERING CAN':10,
     PENDANT:25,CHANDELIER:60,'FLUSH DOME':20,'TRACK SPOTS':35,'PAPER LANTERN':15,SCONCE:18,'PICTURE LIGHT':15,'WALL LANTERN':22,'NEON SIGN':45,'LED STRIP':20};
-  const NOSALE=new Set(['CAT']);   // a pet, not furniture
+  const NOSALE=new Set(['CAT','BLIND','COFFEE MACHINE','CRT TV','TABLE RADIO','FISH TANK','TELESCOPE','BOOKSHELF','WRITING DESK','LAB DESK']);   // a pet; cut from sale; the pieces every flat has one of
   const kindOf=k=>{ const A=A_(); return A&&A.kinds()[k]; };
   // a kind that needs an item (own: bought from a merchant) costs nothing here: placing it uses the item up, putting it away gives it back
   const owned=K=>K&&K.own?(FORAGE.has?FORAGE.has(K.own):0):0;
   const price=k=>{ const K=kindOf(k); return K&&K.own?0:K&&K.price!=null?K.price:PRICE[k]??4; }, deptOf=(k,K)=>K&&K.dept?K.dept:K&&K.cat==='light'?'lights':DEPT[k]||'decor';
   // the room's own departments, then the game's (street, laundry, music, ...)
-  const depts=A=>{ const L=DEPTS0.slice(), K=A.kinds(), seen=new Set(); for(const k in K){ const D=K[k]; if(D.dept&&!seen.has(D.dept)){ seen.add(D.dept); L.push([D.dept,D.deptName]); } } return L; };
+  const depts=A=>{ const K=A.kinds(), has=new Set(forSale(A).map(k=>deptOf(k,K[k]))), L=DEPTS0.slice(), seen=new Set(); for(const k in K){ const D=K[k]; if(D.dept&&!seen.has(D.dept)){ seen.add(D.dept); L.push([D.dept,D.deptName]); } } return L.filter(d=>has.has(d[0])); };
   // how a kind is carried: 'big' on the floor with a fit check, 'rug' flat on the floor, 'small' onto any surface, 'wall' flat on the wall you point at, 'ceil' under the ceiling
   const sortAs=(D,k,sy,h)=>D.mount==='ceil'||D.mount==='wall'?D.mount:D.sol&&D.sol.length?'big':D.loose?(sy<.9?'small':'big'):sy<.03?'rug':k==='CAT'?'small':h>.5?'wall':D.game?'small':'big';
   const sortKinds=A=>{ const K=A.kinds(); for(const k in K){ const D=K[k]; if(D.game||SORT[k])continue; const un=A.units().find(u=>u.kind===k); let sy=.3, h=0; if(un){ const B=A.unitBox(un.obj); sy=(B.max.y-B.min.y)/A.M; h=A.getT(un).h; } SORT[k]=sortAs(D,k,sy,h); } };
@@ -148,10 +150,10 @@ import {ROOMK} from './150a-bedroom.js';
     const P=A.porch, out=P&&me.v<-.15&&!K.mount, t=at||{u:out?Math.max(P.u0+.4,Math.min(P.u1-.4,me.u+.6)):Math.max(.4,Math.min(A.Lx-.4,me.u+.6)),h:K.mount==='ceil'?A.HW:K.mount==='wall'?1.8:K.loose?Math.max(.05,base.h):base.h,v:out?(P.v0+P.v1)/2:Math.max(.4,Math.min(A.Ly-.4,me.v+.6)),ry:0,s:1}; const un=A.spawn(kind,t); if(!un)return null;
     un.paid=paid||0; const q=findSpot(un,A.getT(un)); if(q!==t)A.setT(un,q); did({t:'add',un}); select(un); return un; };
   // buying: paid from your cash, carried under the pointer until you click it down
-  ED.buy=kind=>{ '@later'; const A=A_(), K=A&&A.kinds()[kind]; if(!K||NOSALE.has(kind)||(K.tpl&&K.bad))return null; if(ED.carry)placeCarry(true); const p=price(kind); if(K.own&&!owned(K)){ say('BUY ONE FIRST'); return null; } if(cash()<p){ say('NOT ENOUGH MONEY: $'+p); return null; }
+  ED.buy=kind=>{ '@later'; const A=A_(), K=A&&A.kinds()[kind]; if(!K||NOSALE.has(kind)||K.off||(K.tpl&&K.bad))return null; if(ED.carry)placeCarry(true); const p=price(kind); if(K.own&&!owned(K)){ say('BUY ONE FIRST'); return null; } if(cash()<p){ say('NOT ENOUGH MONEY: $'+p); return null; }
     INV.cash-=p; if(K.own)FORAGE.take(K.own,1); const un=add(kind,null,p); if(!un){ INV.cash+=p; if(K.own)FORAGE.give(K.own,1); return null; } startCarry(un); drawBuy(); return un; };
   const sell=()=>{ '@later'; const un=ED.sel, A=A_(); if(!un||!un.added)return; if(ED.carry)endCarry(); const KO=kindOf(un.kind); if(KO&&KO.own){ FORAGE.give(KO.own,1); A.drop(un); select(null); say('BACK IN YOUR PACK'); drawBuy(); return; } const got=Math.floor((un.paid||0)/2), at=A.getT(un); INV.cash+=got; A.drop(un); did({t:'sell',kind:un.kind,at,id:un.id,paid:un.paid||0,got}); select(null); say('SOLD FOR $'+got); drawBuy(); };
-  const copy=()=>{ const un=ED.sel, A=A_(); if(!un)return; const k=un.kind; if(NOSALE.has(k))return; const p=price(k); if(cash()<p){ say('NOT ENOUGH MONEY: $'+p); return; } const t=A.getT(un); INV.cash-=p; add(k,{...t,u:t.u+.3,v:t.v+.3},p); drawBuy(); };
+  const copy=()=>{ const un=ED.sel, A=A_(); if(!un)return; const k=un.kind; if(NOSALE.has(k)||(kindOf(k)||{}).off)return; const p=price(k); if(cash()<p){ say('NOT ENOUGH MONEY: $'+p); return; } const t=A.getT(un); INV.cash-=p; add(k,{...t,u:t.u+.3,v:t.v+.3},p); drawBuy(); };
 
   /* ---------- little pictures of each kind for the buy bar (drawn once each, a couple a frame, with the game's own renderer) ---------- */
   const PICS={}, PQ=[]; let picRT=null, picBuf=null;
@@ -170,7 +172,7 @@ import {ROOMK} from './150a-bedroom.js';
     g.putImageData(im,0,0); PICS[kind]=cv.toDataURL(); for(const el of BUY.querySelectorAll('[data-pic]'))if(el.dataset.pic===kind)el.outerHTML=`<img alt="" src="${PICS[kind]}">`; for(const el of BUY.querySelectorAll('[data-sz]'))if(el.dataset.sz===kind)el.textContent=SZ[kind]; };
 
   /* ---------- the buy bar ---------- */
-  const forSale=A=>{ const K=A.kinds(); return Object.keys(K).filter(k=>!NOSALE.has(k)&&!K[k].bad&&(!K[k].own||owned(K[k]))).sort((a,b)=>K[a].name<K[b].name?-1:1); };
+  const forSale=A=>{ const K=A.kinds(); return Object.keys(K).filter(k=>!NOSALE.has(k)&&!K[k].bad&&!K[k].off&&(!K[k].own||owned(K[k]))).sort((a,b)=>K[a].name<K[b].name?-1:1); };
   let find='';
   const drawBuy=()=>{ '@later'; const A=A_(); if(!ED.on||!A){ BUY.hidden=true; return; } BUY.hidden=false; const K=A.kinds(), q=find.trim().toUpperCase(), ks=forSale(A).filter(k=>q?K[k].name.includes(q):deptOf(k,K[k])===dept).slice(0,q?120:1e9), have=cash();
     let h=`<div class="top"><b>BUY</b><span>YOU HAVE $${have.toLocaleString('en-US')}</span><input id="roomfind" placeholder="FIND" value="${find.replace(/"/g,'')}"><span style="margin-left:auto;color:var(--dim);font-size:10px">${ED.carry?'CLICK TO PUT IT DOWN · ESC TAKES IT BACK':'CLICK A THING TO BUY IT'}</span></div>`;

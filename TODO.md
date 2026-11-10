@@ -62,6 +62,8 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
   thing). The apartment and dungeon parts weren't reached. Not run by CI (add it to the physx step once it passes).
 
 ## The map and the park
+- [ ] **The falls, the owner's look** · P2 · S · look. Owner, 10 Nov ("1 yes 2 all no name just a spot on map"): try the falls live (swim, the jump rock, the stairs, the rope swing, night); its spot is west of the brook's mouth, not east (no room there).
+- [ ] **The falls' leftovers** · P3 · M · code. Building a cairn on the lip (shared, saved on the server), bats over the pool at night, the falls in the map editor.
 
 - [ ] **The fronts, for his look** · P2 · look. Built 8–9 Nov (the rows modelled, `src/038zc-facades.js`; brick, shopfronts, pet shop
   signs). Left: his look and yes.
@@ -84,6 +86,7 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
 - [x] **"undefined ×16" in the render inspector**, about 129k triangles in the park: find what it is · P1 · S · find. Found 9 Nov (claude/beautiful-einstein-i82dp0): the backdrop park trees, four instanced meshes drawn whole; now drawn by cell.
 - [x] **The street walkers' cost ("dress", 15 ms a frame in the render inspector, 10 Nov)** · P1 · S · code. Their rig step and pose worked out every finger (they have no finger bones), at 120 steps a second; now without fingers, and where they stand checked only when they move.
 - [x] **Far trees drawn when off screen** (10 Nov) · P2 · S · code. The park ring's and the big trees' far shapes were never culled; now culled tree by tree like the rest. The render inspector also counted every piece of a culled batch as drawn (fixed). Cloud trees: none placed yet.
+- [x] **The river drew the whole town a second time** (10 Nov) · P1 · S · code. Its see-through picture now skipped when no water was drawn lately, and drawn with only what is in or by the river.
 - [ ] **The subway station is built and painted at the start** (15 MB): build it on the way down · P2 · M · code.
 - [ ] **The park shop animals**: all 179 download at the start; measure the start on a real connection · P2 · S · check.
 - [ ] **The start-up and frame-time comparison** · P1 · M · check. Never finished (2 Nov, `tests/startprof.cjs`). Redo it on today's main
@@ -257,8 +260,9 @@ One tree pass (more leaves mean more shadow triangles).
 ## Sound
 
 Owner, 9 Nov 2026: "real sounds". Each batch is named by the owner first.
-- [ ] **P2 M pick** Real recordings in place of the code-made effects, a batch at a time (footsteps and doors done, 10 Nov): cars, the fair's rides, fights, weather, the day and night ambience.
-- [ ] **P3 S look** Listen to the footsteps and doors live: the takes were picked by measurement, not by ear.
+- [ ] **P2 M pick** Real recordings in place of the code-made effects, a batch at a time (footsteps, doors and cars done, 10 Nov): the fair's rides, fights, weather, the day and night ambience.
+- [ ] **P3 S look** Listen to the footsteps, doors and cars live: the takes were picked by measurement, not by ear (the car pack is phone-recorded, low quality).
+- [ ] **P3 S code** No crash or skid sound for the cars yet, and the karts, helicopter and flying traffic are silent (no CC0 recordings found yet).
 - [ ] **P3 M code** Footsteps know only stone, grass and wood: the park's paths, sand, water's edge, metal stairs and carpet still sound as those three.
 - [ ] **P2 M code** Other players heard: their footsteps, hits and doors from where they stand, fading with distance.
 - [ ] **P3 S pick** The bodega's counter radio still plays its code-made tune: give it the market's stations like the apartments'?

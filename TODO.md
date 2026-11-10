@@ -175,14 +175,12 @@ steps go in one window, after the checks run on `main`, and end with the owner t
   ask whether the physics one stays), an upright trash can taking small things, hanging plants and lanterns swaying, glass breaking.
   Add cases to `tests/physx.cjs`.
 - [ ] **STAND ON THINGS only rose halfway in the test** · P3 · S-M · check. 0.10 of a 0.20 block; the test's bar was lowered to pass.
-- [ ] **The go-kart** · P3 · M · code + pick. Gets in where you stand, not where you set it down; held, it shows as a little kart in your
-  hands; a wall at speed just stops it (owner: should it throw you out?). Run `tests/cars.cjs`.
+- [x] **The go-kart** · set down in front of you and got in there; a wall at speed throws you out (owner, 10 Nov 2026: "Throw you out"). Left: held, it shows as a little kart in your hands (owner: keep or change?); the Boardwright's wall is archived (the Skate Shop's shelves show it).
 - [ ] **The cars, in game, for the owner** · P2 · S · look. The insides, the cars 40% bigger next to the buildings, the radio by ear
   (loudness, the muffle outside, the four stations, starting at the shared moment).
 - [ ] **Physics is only on your own screen** · P4 · XL · pick + code · risk high. Other players don't see karts, flying loose things or
   broken glass; broken and binned things come back on reload. The shared ground (`drop:<key>` records) is the pattern.
-- [ ] **Walls and ground are still boxes to the physics** · P4 · L / XL · code · risk high. A kerb as a box is why cars get shoved onto
-  the pavement; Rapier's deterministic build waits for shared physics.
+- [ ] **Walls and ground are still boxes to the physics** · P4 · L / XL · code · risk high. The kerb is done (a slope, owner 10 Nov 2026: "Just the kerb"; corners' arcs still boxes); the rest stays boxes; Rapier's deterministic build waits for shared physics.
 
 ## Trees and grass
 

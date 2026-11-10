@@ -1,4 +1,4 @@
-// THE CARS CHECK: node tests/cars.cjs dist/market.html. The six parked cars on Market St; get in one and W drives it on Rapier's wheels; F gets out and it stays parked where it stopped; a car someone else drives (as the section's server says) is not drawn parked and cannot be taken, and shows where they park it. No page errors.
+// THE CARS CHECK: node tests/cars.cjs dist/market.html. The six parked cars on Market St; get in one and W drives it on Rapier's wheels; F gets out and it stays parked where it stopped; a resized car drives at its size; the kerb is rolled over; the go-kart is set down in front of you and throws you out at a wall; a car someone else drives (as the section's server says) is not drawn parked and cannot be taken, and shows where they park it. No page errors.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=cars::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -38,6 +38,30 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const d3 = await pg.evaluate(() => { ONLINE.feed({ t: 'car', k: 'c2', by: 'a' }); const s = CARS.dbg().cars[1]; CARS.getIn('c2'); return { shown: s.shown, by: s.by, driving: CARS.dbg().driving }; });
   const d4 = await pg.evaluate(() => { ONLINE.feed({ t: 'car', k: 'c2', by: null, at: [SHARED.BOD.XS(60), SHARED.BOD.ZS(-60), 1.2].join(',') }); return CARS.dbg().cars[1]; });
   ok(d3.by === 'a' && !d3.shown && !d3.driving && d4.shown && !d4.by && Math.abs(d4.x - 60) < .2 && Math.abs(d4.z + 60) < .2, 'a car someone else drives is not drawn parked and cannot be taken; it shows where they park it: ' + JSON.stringify({ d3, d4 }));
+  // a car resized in the VEHICLE EDITOR drives at that size; while someone drives it, on their next boarding (owner, 10 Nov 2026)
+  const half = () => pg.evaluate(() => { const V = CARS.kinds['muscle-car-60s'].V; return { h: V.S.half[0], next: !!V.next, kart: RIDE.kinds.kart.V.S.half[0] }; }), near = (a, b) => Math.abs(a / b - 1) < .01;
+  const r0 = await half(); await pg.evaluate(() => { VLOOK.set('car:muscle-car-60s', { s: 1.3 }); VLOOK.set('kart', { s: 1.5 }); });
+  await until(new Function('return Math.abs(CARS.kinds["muscle-car-60s"].V.S.half[0] / ' + r0.h + ' - 1.3) < .01 && Math.abs(RIDE.kinds.kart.V.S.half[0] / ' + r0.kart + ' - 1.5) < .01')); const r1 = await half();
+  ok(near(r1.h, r0.h * 1.3) && near(r1.kart, r0.kart * 1.5), 'resized in the VEHICLE EDITOR, a car and the go-kart drive at that size: ' + JSON.stringify({ r0, r1 }));
+  // the kerb (owner, 10 Nov 2026: "Just the kerb"): driven at it from the road, a car rolls up onto the pavement
+  await pg.evaluate(() => __dbg.UI.goTo(78.2, -62, 'up')); await pg.waitForTimeout(3000);
+  await pg.evaluate(() => { const C = CARS.cars.get('c1'); C.x = SHARED.BOD.XS(78.2); C.z = SHARED.BOD.ZS(-66.5); C.hd = Math.PI; CARS.getIn('c1'); }); await pg.waitForTimeout(2500);
+  await pg.evaluate(() => VLOOK.set('car:muscle-car-60s', null)); await until(() => CARS.kinds['muscle-car-60s'].V.next || !CARS.driving); const r2 = await half();
+  const k0 = await pg.evaluate(() => CARS.dbg().rb); await pg.keyboard.down('w'); let k1 = k0, kn = 0;
+  for (let i = 0; i < 40; i++) { await pg.waitForTimeout(400); const q = await pg.evaluate(() => ({ rb: CARS.dbg().rb, n: GPH.kerbs() })); if (q.rb) k1 = q.rb; kn = Math.max(kn, q.n); if (k1.p[2] < -69.5) break; } await pg.keyboard.up('w');
+  ok(kn > 0 && k0 && k1.p[2] < -69.5 && k1.p[1] - k0.p[1] > .15, 'the kerb is a slope to the physics: the car rolls up onto the pavement, not shoved along it: ' + JSON.stringify({ kerbs: kn, from: k0 && k0.p, to: k1.p }));
+  await pg.waitForTimeout(1500); await pg.keyboard.press('f'); await pg.waitForTimeout(1200); const r3 = await half();
+  ok(near(r2.h, r0.h * 1.3) && r2.next && near(r3.h, r0.h) && !r3.next, 'a resize while it is driven waits for the next boarding: ' + JSON.stringify({ driving: r2, out: r3 }));
+  await pg.evaluate(() => VLOOK.set('kart', null)); await until(new Function('return Math.abs(RIDE.kinds.kart.V.S.half[0] / ' + r0.kart + ' - 1) < .01'));
+  // the go-kart (owner, 10 Nov 2026: "Throw you out"): E sets it down in front of you and you get in there; a wall at speed throws you out over the front, the kart left where it hit
+  await pg.evaluate(() => __dbg.UI.goTo(100, -60, 'up')); await pg.waitForTimeout(3000);
+  const g0 = await pg.evaluate(() => { const B = SHARED.BOD; STORE.pos.x = B.XS(100); STORE.pos.z = B.ZS(-60); SHARED.heading = Math.PI / 2; FORAGE.give('kart', 1); WIELD.set('kart'); const x0 = STORE.pos.x, z0 = STORE.pos.z, m = RIDE.mount('kart'); return { m, dx: (STORE.pos.x - x0) / __dbg.cv().TILE, dz: (STORE.pos.z - z0) / __dbg.cv().TILE, n: FORAGE.has('kart') }; });
+  ok(g0.m && g0.dx > .5 && Math.abs(g0.dz) < .05, 'E sets the kart down in front of you and you get in there: ' + JSON.stringify(g0));
+  await pg.evaluate(() => { const B = SHARED.BOD, x = B.XS(112), z = B.ZS(-60); window.__wall = [x, z - 3, x + 1, z + 3]; SHARED.solids.push(__wall); }); await pg.waitForTimeout(1500);
+  await pg.keyboard.down('w'); let g1 = null; for (let i = 0; i < 50; i++) { await pg.waitForTimeout(300); g1 = await pg.evaluate(() => ({ on: RIDE.on, x: STORE.pos.x / __dbg.cv().TILE + SHARED.BOD.OX, top: Math.max(window.__top || 0, window.__top = (PHYSDBG().kart || { sp: 0 }).sp / __dbg.cv().TILE) })); if (!g1.on) break; } await pg.keyboard.up('w');
+  await pg.waitForTimeout(2000);
+  const g2 = await pg.evaluate(() => { SHARED.solids.splice(SHARED.solids.indexOf(__wall), 1); const k = (BAG.ground || []).filter(g => g.id === 'kart').map(g => +(g.x / __dbg.cv().TILE + SHARED.BOD.OX).toFixed(2)); return { on: RIDE.on, kart: k, x: +(STORE.pos.x / __dbg.cv().TILE + SHARED.BOD.OX).toFixed(2), n: FORAGE.has('kart') }; });
+  ok(g1 && !g1.on && g1.top > 4 && g2.kart.length === 1 && g2.kart[0] > 108 && g2.kart[0] < 112 && g2.x > g2.kart[0] && g2.n === g0.n - 1, 'a wall at speed throws you out over the front; the kart stays where it hit, on the ground: ' + JSON.stringify({ g1, g2 }));
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close(); console.log(fails.length ? fails.length + ' failed' : 'all car checks passed'); process.exit(fails.length ? 1 : 0);
 })();

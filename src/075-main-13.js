@@ -66,7 +66,7 @@ function frame(now,xf){ if(!xf){ requestAnimationFrame(frame); if(VR.on)return; 
   view0.a=a; P.x=pos.x/TL; P.y=-pos.z/TL; PH.hd=SHARED.heading;
   const hit=PHYOU.hit||0, hn=PHYOU.hitN; PHYOU.hit=0;
   if(!RAG.on&&!(st.water&&st.water.level!=null)&&(SHARED.trip||hit>12)){ const [u,v]=[(Math.sin(PH.hd)+Math.cos(PH.hd))/2,(Math.cos(PH.hd)-Math.sin(PH.hd))/2], [fx2,fy2]=wvV(u,v), n=Math.hypot(fx2,fy2), k=Math.min(3,hit/30);
-    ragStart(RIG.pose(st,false),J0,J0t?(now-J0t)/1000:0,SHARED.trip||!hn?[fx2/n*1.6,fy2/n*1.6,.3]:[-hn[0]*k,-hn[1]*k,.2]); SHARED.target=null; }
+    const fk=+SHARED.trip||1; ragStart(RIG.pose(st,false),J0,J0t?(now-J0t)/1000:0,SHARED.trip||!hn?[fx2/n*1.6*fk,fy2/n*1.6*fk,.3*fk*fk]:[-hn[0]*k,-hn[1]*k,.2]); SHARED.target=null; }   // SHARED.trip a number: thrown that much harder (out of a kart)
   SHARED.trip=false; let B;
   if(RAG.on){ ragStep(dt); st.target=0; pos.x=P.x*TL; pos.z=-P.y*TL; SHARED.py=0; if(!RAG.on){ SHARED.heading=PH.hd; pos.x=P.x*TL; pos.z=-P.y*TL; } }
   if(RAG.on)B=ragPose();

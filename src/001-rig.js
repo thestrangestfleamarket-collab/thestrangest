@@ -624,7 +624,7 @@ function upLayer(st,P){ const u=st.up; if(!u)return P; if(st.water&&st.water.in|
   const d=u.def, U=moveAtOf(u), k=smooth(clamp(u.t/0.08,0,1))*(1-smooth(clamp((u.t-(d.dur-0.14))/0.14,0,1))); if(k<=0)return P; const arms=d.arms||(d.arms=armsOf(d));
   for(const n of 'LR')if(arms[n]){ const a=P[n],b=U[n]; a.ua=lerp2(a.ua,b.ua,k); a.fa=lerp2(a.fa,b.fa,k); a.fist=lerp(a.fist,b.fist,k); }
   for(const f of ['cyaw','nod','look'])P[f]=lerp(P[f],U[f],k); return P; }
-function aimLayer(st,P){ const A=st.aim; if(!A||!(A.w>0)||st.water&&st.water.in||st.climb||st.hang||st.ride||st.sit) return P;
+function aimLayer(st,P){ const A=st.aim; if(!A||!(A.w>0)||st.water&&st.water.in||st.climb||st.hang||st.ride||st.sit&&!st.sit.hold) return P;   // (a seat with hold: the hands free to hold a tool, the rowboat's)
   const R=cat(turn(P.yaw,P.roll,P.pitch),turn(0,P.side,P.bend)),v=nrm(A.v),x=dot(v,R.x),y=dot(v,R.y),z=dot(v,R.z),n=st.hand==='L'?'L':'R',a=Math.atan2(z,-y),b=Math.asin(clamp(n==='L'?x:-x,-1,1)),w=A.w,H=P[n];
   H.ua=lerp2(H.ua,[a,b],w); H.fa=lerp2(H.fa,[a+.2,b],w); H.fist=lerp(H.fist,1,w); P.cyaw=lerp(P.cyaw,clamp(Math.atan2(x,z)*.3,-.5,.5),w); return P; }
 function gripLayer(st,P){ const G=st.grip; if(!G||st.water&&st.water.in||st.climb||st.hang||st.ride||st.sit)return P;   // one hand on a hold (a train's pole or rail), given in the body's own frame

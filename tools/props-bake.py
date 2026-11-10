@@ -22,7 +22,7 @@ def trs(n):
 b64=lambda a:base64.b64encode(np.ascontiguousarray(a).tobytes()).decode()
 def sample(img,uv):   # (the palette's colour under each texture point; v runs down from the top in glTF and in an image, up in an .obj)
     H,W=img.shape[:2]; u=np.clip((uv[:,0]%1)*W,0,W-1).astype(int); v=np.clip((uv[:,1]%1)*H,0,H-1).astype(int); return img[v,u,:3]
-def from_glb(f):
+def from_glb(f,only=None):   # (only: one node's own mesh, in place)
     j,b=glb(f); par={c:i for i,n in enumerate(j['nodes']) for c in n.get('children',[])}; G={}
     def glob_(i):
         if i in G: return G[i]
@@ -35,7 +35,7 @@ def from_glb(f):
         imgs.append(np.array(Image.open(io.BytesIO(raw)).convert('RGB')))
     T=[]; C=[]
     for ni,n in enumerate(j['nodes']):
-        if 'mesh' not in n: continue
+        if 'mesh' not in n or only is not None and ni!=only: continue
         M=glob_(ni)
         for p in j['meshes'][n['mesh']]['primitives']:
             A=p['attributes']; P=acc(j,b,A['POSITION']).astype(float); idx=acc(j,b,p['indices']).reshape(-1).astype(int); mat=j['materials'][p['material']]; pbr=mat.get('pbrMetallicRoughness',{})

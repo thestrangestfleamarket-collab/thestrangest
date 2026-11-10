@@ -29,7 +29,8 @@ await grab('loop',async()=>{ const M=SHARED.METRO, D=LEVEL.loop, T=TILE, SZ=-98,
 
   // the stations: A's is the old one in 009-down; B to H are made here the same size as A's (29 along, 21.8 across: track, platform, track)
   const LEN=M.SL.L, XW=21.8, P0=4.4, P1=17.4, MID=(P0+P1)/2, EX0=10.9, EX1=13.9, ED=3, COLX=[P0+1.5,P1-2.2], COLY=M.SL.COLY, STEPU=[[.6,1.8],[LEN-1.6,LEN-.4]];
-  const STA=D.stations.filter(d=>SECTIONS.loaded.some(b=>b.id===d.id)).map((d,i)=>{ const sg=d.side==='south'?-1:1, yi=D.tracks.inner[d.side], st={...d,i,sg,x0:d.x-LEN/2,my:a=>yi-sg*2.2+sg*a,old:d.id===((SHARED.SECTION&&SHARED.SECTION.id)||'A')};
+  const OLD=(SHARED.SECTION&&SHARED.SECTION.id)||'A';
+  const STA=D.stations.filter(d=>SECTIONS.loaded.some(b=>b.id===d.id)).map(d=>d.id===OLD?{...d,x:MX(M.at(0,LEN/2).x)}:d).map((d,i)=>{ const sg=d.side==='south'?-1:1, yi=D.tracks.inner[d.side], st={...d,i,sg,x0:d.x-LEN/2,my:a=>yi-sg*2.2+sg*a,old:d.id===((SHARED.SECTION&&SHARED.SECTION.id)||'A')};
     st.s={}; for(const k in TRK)st.s[k]=TRK[k].near(d.x,D.tracks[k][d.side]).s;
     st.P=(u,a,h)=>[WX(st.x0+u),H(h),WZ(st.my(a))]; st.ua=(x,z)=>({u:MX(x)-st.x0,a:(MZ=>sg>0?MZ-(yi-2.2):(yi+2.2)-MZ)(MY(z))});
     const sec=SECTIONS.of(d.id); st.street=d.side==='south'?SECTIONS.streets.south:SECTIONS.streets.north; st.sec=sec;

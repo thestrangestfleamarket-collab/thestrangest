@@ -3,11 +3,11 @@ import {SHARED, THREE} from './003-shx.js';
 import {B64, F32} from './003a-skin.js';
 import {ARCH, CITY, PARK, pos, ROOMS, SHOPS, WED} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {FIX, LEVEL, MAPG, QS, SOL, STORE, SYS, TILE} from './006-map-pre.js';
+import {FIX, LEVEL, MAPG, MODS, QS, SOL, STORE, SYS, TILE} from './006-map-pre.js';
 import {stfree} from './076-npc-map.js';
 import {BODIES} from './111a-bodies.js';
 const CREW={list:[],loaded:{},hd:{},alias:{play:'playhouse',bath:'dojo',feel:'store:feel-lab'}};
-{ const PF=__LAZY__("data/polyfork.json"), FM=window.FLEA={made:[],want:(LEVEL.things||[]).length}; window.CREW=CREW;
+{ const PF=__LAZY__("data/polyfork.json"), FM=window.FLEA=MODS.flea={made:[],want:(LEVEL.things||[]).length}; window.CREW=CREW;
   const G={arcade:__LAZY__("data/cast/arcade.json"),art:__LAZY__("data/cast/art.json"),bank:__LAZY__("data/cast/bank.json"),bar:__LAZY__("data/cast/bar.json"),bath:__LAZY__("data/cast/bath.json"),
     boards:__LAZY__("data/cast/boards.json"),bodega:__LAZY__("data/cast/bodega.json"),castle:__LAZY__("data/cast/castle.json"),clinic:__LAZY__("data/cast/clinic.json"),commute:__LAZY__("data/cast/commute.json"),
     depot:__LAZY__("data/cast/depot.json"),diner:__LAZY__("data/cast/diner.json"),feel:__LAZY__("data/cast/feel.json"),firehouse:__LAZY__("data/cast/firehouse.json"),fixit:__LAZY__("data/cast/fixit.json"),
@@ -31,7 +31,7 @@ const CREW={list:[],loaded:{},hd:{},alias:{play:'playhouse',bath:'dojo',feel:'st
     if(at==='street')return W(72,-72.5);
     try{ const p=CITY.place(a); if(p)return {x:p.door.x,z:p.door.z}; }catch(e){}
     return null; };
-  for(const [id,nm] of [['hudson','TO THE HUDSON (THE PIER)'],['fishtables','THE FISH MARKET']]){ const d=CREW.door(id); if(d)STORE.places.push([nm,d.x,d.z,'up','see']); }   // GO TO: the way through to the river and its pier, the fish market's tables
+  for(const [id,nm] of [['hudson','TO THE HUDSON (THE PIER)'],['fishtables','THE FISH TABLES']]){ const d=CREW.door(id); if(d)STORE.places.push([nm,d.x,d.z,'up','see']); }   // GO TO: the way through to the river and its pier, the fish market's tables
   // an inside's own list of where people go: ROOMS.off[id] (rooms off the map) or STORE.rooms (the street's insides), each with spots (by job title) and seats ({x,z,hd,y}: y the seat's height, none to stand) and whether it lies off the map
   const insideOf=a=>ROOMS.off[a]||(STORE.rooms||[]).find(r=>r.id===a)||null, offOf=a=>!!ROOMS.off[a]||!!(insideOf(a)||{}).offmap;
   CREW.out=key=>{ for(const R of [...Object.values(ROOMS.off),...(STORE.rooms||[])]){ const t=R.taken; if(t)t.delete(key); } };   // their seat is free again

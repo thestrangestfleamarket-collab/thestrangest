@@ -232,7 +232,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null,keep:[],always:new Set(),save:(
       const snapWall=(un,t)=>{ const d=[[t.u,'Ww',0,null,Math.PI/2],[Lx-t.u,'We',Lx,null,-Math.PI/2],[t.v,'Wf',null,0,0],[Ly-t.v,'Wb',null,Ly,Math.PI]].sort((a,b)=>a[0]-b[0])[0];
         if(d[2]!=null)t.u=d[2]?d[2]-.01:.01; if(d[3]!=null)t.v=d[3]?d[3]-.01:.01; t.ry=d[4]; clipUnit(un,d[1]); return t; };
       const setT=(un,t)=>{ const o=un.obj, s=cl(t.s||1,.3,3); if(un.mount==='wall')snapWall(un,t); if(!un.loose){ o.position.set(t.u,t.h,t.v); o.rotation.set(0,t.ry||0,0); o.scale.setScalar(s); place(un); }
-        else { o.position.copy(W(t.u,t.h,t.v)); o.rotation.set(0,t.ry||0,0); o.scale.setScalar(M*s); o.updateMatrixWorld(true); body(un); } if(window.GOODSHIT)GOODSHIT(0,4); };
+        else { o.position.copy(W(t.u,t.h,t.v)); o.rotation.set(0,t.ry||0,0); o.scale.setScalar(M*s); o.updateMatrixWorld(true); body(un); } if(MODS.goodsHit)MODS.goodsHit(0,4); };
       const thingsOn=(un,on)=>{ for(const t of un.th){ const i=UI.things.indexOf(t); if(on&&i<0)UI.things.push(t); if(!on&&i>=0)UI.things.splice(i,1); } };
       const remove=un=>{ un.gone=true; un.obj.visible=false; thingsOn(un,false); body(un); place(un); R.LL=null; };
       const restore=un=>{ un.gone=false; un.obj.visible=true; thingsOn(un,true); body(un); place(un); R.LL=null; };

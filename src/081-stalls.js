@@ -86,7 +86,7 @@ const STALL=(()=>{ const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS;
       L.forEach(([m,col],i)=>{ me.setMatrixAt(i,m); me.setColorAt(i,c.setHex(col)); }); me.computeBoundingSphere&&me.computeBoundingSphere(); me.castShadow=g!=='glow'; me.receiveShadow=true; if(g==='glow')me.onBeforeRender=()=>{ glow.color.setScalar(CLOCK.dark&&CLOCK.dark()?1.25:.55); }; grp.add(me);
       tris+=L.length*(geo.index?geo.index.count:geo.attributes.position.count)/3; }
     const W=(x,y)=>({x:X(x),z:Z(y)}), HY=(CY1+ya)/2, sg=gate, far=wy-9, zone=[BX[0]-.7*TILE,Math.min(Z(CY0-1.4),Z(wy+.5)),BX[2]+.7*TILE,Math.max(Z(CY0-1.4),Z(wy+.5))];
-    zones.push(zone); if(window.WEEDS&&WEEDS.clear)WEEDS.clear(zone);
+    zones.push(zone); if(WEEDS&&WEEDS.clear)WEEDS.clear(zone);
     const S={name:o.name,bx:BX.slice(),x0,x1,y0:CY0,y1:yb,wy,veg,hx:X(xm),hz:Z(HY),fz:Z(far),tris:Math.round(tris),items:Object.values(I).reduce((a,L)=>a+L.length,0),zone,
       home:W(xm,ya-.75), face:W(xm,far), shelf:[xa+.9,xm,xb-.9].map(x=>W(x,ya-.72)), shelfF:[xa+.9,xm,xb-.9].map(x=>W(x,wy+4)), counter:[x0+1.25,xm,x1-1.25].map(x=>W(x,CY1+.7)),
       wing:[[x0+1.45,-1],[x1-1.45,1]].map(([x,s])=>({p:W(x,CY1+.5),f:W(x+s*5,CY1+.5)})), broom:{p:W(xg-sg*.85,wy-1.35),f:W(xg+sg*.3,wy)},

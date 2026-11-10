@@ -7,7 +7,9 @@ import { FOLKSIM } from "./folk.js";
 import { MOBSIM } from "./dunmobs.js";
 import { lvBrief, lvGoal, lvH, lvMeet, lvRun } from "./lives.js";
 import { CLK } from "./clock.js";
+import { TWIN } from "./twin.js";
 import LIVESDATA from "../data/lives.json";
+import ITEMDATA from "../data/items.json";
 import WORLD from "../data/world.json";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, CODE = /^[A-Z0-9-]{6,32}$/, MAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 const json = (o, status = 200) => Response.json(o, { status, headers: { "cache-control": "no-store" } });
@@ -106,7 +108,7 @@ export default {
       const P = postOf(env); if (!key || key.length > 80 || key !== (await P.botKey())) return json({ why: "wrong runner key (copy it from ADMIN > TENANTS > BOTS)" }, 403);
       let body; try { body = await request.json(); } catch (e) { body = {}; } if (body && body.status && typeof body.status === "object") await P.botStatus(body.status); if (body && body.tests && typeof body.tests === "object") await P.botTests(body.tests);
       return json({ bots: await Promise.all((await P.botList()).filter(b => b.on).map(async b => ({ ...botOut(b), login: await botLogin(env, b) }))) }); }
-    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art" || p === "/botshot")) {
+    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art" || p === "/botshot" || p === "/twin")) {
       if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401);
       let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
@@ -128,6 +130,12 @@ export default {
         const m = /^data:image\/jpeg;base64,([A-Za-z0-9+/=]+)$/.exec(String(body.jpg || "")); if (!m || m[1].length > 400000) return json({ why: "a jpeg under 300 KB" }, 400);
         const bin = atob(m[1]), buf = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
         return json({ ok: true, k: await P.shotPut(id, buf.buffer) }); }
+      // an owner's AI double asks its mind (worker/twin.js) what to do next: only a bot made an AI double, whose owner is still an owner
+      if (p === "/twin") { const P = postOf(env), b = (await P.botList()).find(x => x.id === id); if (!b || !b.ai) return json({ why: "only an AI double thinks here" }, 403);
+        if (!b.who || (await owner(env, b.who, dev)) !== true) return json({ why: "its owner is not an owner" }, 403);
+        if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
+        if (tooMany("twin:" + id, 40)) return json({ why: "too much at once, wait a minute" }, 429);
+        return json(await TWIN.step(env, { get: () => P.twinGet(id), put: v => P.twinPut(id, v) }, body)); }
       if (p === "/name") { const n = String(body.claim || "").toUpperCase().replace(/\s+/g, " ").trim();
         if (!/^[A-Z0-9][A-Z0-9 '-]{1,14}[A-Z0-9]$/.test(n) || /^(TENANT|ADMIN|OWNER|MODERATOR|SYSTEM|GUEST)\b/.test(n)) return json({ why: "3 to 16 letters or digits" }, 400);
         if (tooMany("name:" + id, 30)) return json({ why: "too many tries, wait a minute" }, 429);
@@ -315,6 +323,23 @@ export class Block extends Server {
       const rec = this.dropAdd(k, JSON.stringify({ id, n, x: at.x + Math.cos(a) * d * 40, y: at.y, z: at.z + Math.sin(a) * d * 40, lv: at.lv, rm: at.rm }), "body:" + who, 0); if (rec) this.broadcast(JSON.stringify({ t: "world", k, v: rec })); }
     this.broadcast(JSON.stringify({ t: "world", k: "body:" + who, v: "" })); return L.length; }
   // the market's stalls (src/159j-stalls.js): a player rents one for days, sets out things at their own prices; they sell while the renter is away; the till, less the market's cut, is theirs to collect; when the days run out what is left and the till go home (OWNED 'tradein')
+  pawnT() { if (this.pawnOk) return; this.pawnOk = 1; this.ctx.storage.sql.exec("create table if not exists pawn(id text primary key, n integer)"); }
+  pawnAll() { this.pawnT(); const o = {}; for (const r of this.ctx.storage.sql.exec("select id, n from pawn where n > 0").toArray()) o[r.id] = r.n; return o; }
+  pawnAdd(id, k) { this.pawnT(); const r = this.ctx.storage.sql.exec("select n from pawn where id = ?", id).toArray()[0], n = Math.max(0, Math.min(PAWN.most, (r ? r.n : 0) + k));
+    if (n) this.ctx.storage.sql.exec("insert into pawn(id, n) values(?, ?) on conflict(id) do update set n = excluded.n", id, n); else this.ctx.storage.sql.exec("delete from pawn where id = ?", id);
+    this.broadcast(JSON.stringify({ t: "pw", op: "one", id, n })); return n; }
+  pawn(c, s, m) { const op = String(m.op || ""), item = word(m.item, 48), n = Math.max(0, Math.min(9999, Math.floor(+m.n || 0))), say = x => c.send(JSON.stringify({ t: "pw", ...x })), H = homeOf(this.env);
+    if (op === "list") return say({ op: "list", all: this.pawnAll() });
+    if (!/^[a-z0-9_]{1,48}$/.test(item) || n < 1) return; const v = pawnVal(item);
+    if (op === "sell") { const back = why => say({ op: "back", why, items: { [item]: n }, cash: 0 }); if (!v) return back("it is worth nothing here");
+      const have = this.pawnAll(); if (!have[item] && Object.keys(have).length >= PAWN.kinds) return back("the shop is full");
+      const pay = Math.max(1, Math.floor(v * PAWN.buy)) * n;
+      H.econPay(s.id, 0, { [item]: n }, "pawned").then(r => { if (!r.ok) return back(r.why); this.pawnAdd(item, n); H.econAllow(s.id, pay, 0, "pawned").catch(() => {}); say({ op: "paid", item, n, cash: pay }); }).catch(() => back("try again")); return; }
+    if (op === "buy") { const have = this.pawnAll()[item] || 0; if (!v || !have) return say({ op: "no", why: "it is gone" }); const k = Math.min(n, have), cost = Math.ceil(v) * k;
+      if (Math.floor(+m.p || 0) !== Math.ceil(v)) return say({ op: "no", why: "the price changed" });
+      H.econPay(s.id, cost, {}, "bought at the pawn shop").then(r => { if (!r.ok) return say({ op: "no", why: r.why });
+        if ((this.pawnAll()[item] || 0) < k) { H.econGive(s.id, cost, {}, "pawn sale lost").catch(() => {}); return say({ op: "no", why: "it is gone" }); }
+        this.pawnAdd(item, -k); H.econAllow(s.id, 0, k, "bought at the pawn shop").catch(() => {}); say({ op: "bought", item, n: k, cost }); }).catch(() => say({ op: "no", why: "try again" })); } }
   stallT() { if (this.stallOk) return; this.stallOk = 1; this.ctx.storage.sql.exec("create table if not exists stalls(id text primary key, rec text)"); }
   stallGet(id) { this.stallT(); const r = this.ctx.storage.sql.exec("select rec from stalls where id = ?", id).toArray()[0]; try { return r ? JSON.parse(r.rec) : null; } catch (e) { return null; } }
   stallSet(id, o) { if (o) this.ctx.storage.sql.exec("insert into stalls(id, rec) values(?, ?) on conflict(id) do update set rec = excluded.rec", id, JSON.stringify(o)); else this.ctx.storage.sql.exec("delete from stalls where id = ?", id);
@@ -504,6 +529,7 @@ export class Block extends Server {
     } else if (m.t === "everyone") {   // who is online in every section, for an invitation
       Promise.all(SECROOMS.map(r => r === this.name ? Promise.resolve(this.names()) : blockAsk(this.env, r, "names").catch(() => []))).then(L => c.send(JSON.stringify({ t: "everyone", all: L.flat().filter(p => p.id !== s.id).slice(0, 200) })));
     } else if (m.t === "st") { this.stall(c, s, m);
+    } else if (m.t === "pw") { this.pawn(c, s, m);
     } else if (m.t === "body") {   // you died here (v), or took your body back (take)
       if (m.take) { this.bodyOff(s.id); this.broadcast(JSON.stringify({ t: "world", k: "body:" + s.id, v: "" })); } else if (m.v && typeof m.v === "object") this.bodyAt(s.id, m.v, this.dev && this.dev.has(c.id) && m.life ? num(m.life, 500, BODY_LIFE) : 0);
     } else if (m.t === "take") {   // a loose thing on the ground: whoever asks first gets it, told with its record; the rest see it go
@@ -605,6 +631,8 @@ const WORLD_KEYS = [{ re: /^time$/, owner: 1 }, { re: /^looks$/, owner: 1 }, { r
   { re: /^car:[\w-]{1,32}$/ }, { re: /^radio:[\w-]{1,32}$/ }, { re: /^gate:[\w-]{1,32}$/ }, { re: /^flag:[\w-]{1,32}$/ }, { re: /^tbl:[\w:-]{1,34}$/ }, { re: /^tag:[\w:.-]{1,34}$/ }];
 // the stalls: their names, the rent a day, how many days ahead, the market's cut of a sale, how many kinds a stall shows
 const STALL = { ids: ["s1", "s2", "s3", "s4", "s5"], rent: 15, days: 7, cut: .05, kinds: 12 };
+// the pawn shop (src/159ba-pawn.js): it pays half an item's value (data/items.json) and sells what it took at the full value, one stock for the section
+const PAWN = { buy: .5, kinds: 120, most: 999 }, pawnVal = id => { const d = ITEMDATA[id]; const v = d && +d.value; return v > 0 && !(d && d.archived) ? v : 0; };
 const stallPub = o => ({ who: o.who, name: o.name, until: o.until, goods: o.goods });
 const BODY_LIFE = 3600000;   // an hour, then a body's things fall to the ground
 const tradeNone = () => ({ items: {}, cash: 0, art: {} });
@@ -710,9 +738,9 @@ const botRec = (o, set) => { const r = { ...o }, v = set && typeof set === "obje
   if ("name" in v) r.name = word(v.name, 24) || r.name; if ("look" in v) r.look = word(v.look, 400); if ("on" in v) r.on = v.on ? 1 : 0;
   if ("job" in v && JOBS.includes(v.job)) r.job = v.job; if ("who" in v) r.who = word(v.who, 40); if ("say" in v) r.say = word(v.say, 400);
   if ("at" in v) r.at = Array.isArray(v.at) && v.at.length >= 2 ? [num(+v.at[0], -1e4, 1e4), num(+v.at[1], -1e4, 1e4), v.at[2] ? 1 : 0] : null; if ("call" in v) r.call = Math.floor(num(+v.call, 0, 1e13)); if ("place" in v) r.place = word(v.place, 40);
-  if ("hp" in v) r.hp = num(+v.hp, .05, 1); if ("fight" in v) r.fight = v.fight ? 1 : 0; if ("god" in v) r.god = v.god ? 1 : 0; if ("apt" in v) r.apt = v.apt ? 1 : 0; if ("shots" in v) r.shots = v.shots ? 1 : 0; if ("report" in v) r.report = v.report ? 1 : 0; if ("goal" in v) r.goal = Math.max(0, Math.min(1e6, Math.floor(+v.goal || 0)));
+  if ("ai" in v) r.ai = v.ai ? 1 : 0; if ("hp" in v) r.hp = num(+v.hp, .05, 1); if ("fight" in v) r.fight = v.fight ? 1 : 0; if ("god" in v) r.god = v.god ? 1 : 0; if ("apt" in v) r.apt = v.apt ? 1 : 0; if ("shots" in v) r.shots = v.shots ? 1 : 0; if ("report" in v) r.report = v.report ? 1 : 0; if ("goal" in v) r.goal = Math.max(0, Math.min(1e6, Math.floor(+v.goal || 0)));
   if ("tests" in v) r.tests = Array.isArray(v.tests) ? v.tests.slice(0, 800).map(t => word(t, 100)).filter(Boolean) : []; if ("run" in v) r.run = Math.floor(num(+v.run, 0, 1e13)); return r; };
-const botOut = b => ({ id: b.id, name: b.name, look: b.look || "", on: b.on, job: b.job, who: b.who || "", say: b.say || "", at: b.at || null, place: b.place || "", hp: b.hp ?? 1, fight: b.fight ?? 1, god: b.god || 0, goal: b.goal || 0, call: b.call || 0, tests: b.tests || [], run: b.run || 0, apt: b.apt || 0, shots: b.shots ?? 1, report: b.report ?? 1 });
+const botOut = b => ({ id: b.id, name: b.name, look: b.look || "", on: b.on, job: b.job, who: b.who || "", say: b.say || "", at: b.at || null, place: b.place || "", hp: b.hp ?? 1, fight: b.fight ?? 1, god: b.god || 0, goal: b.goal || 0, call: b.call || 0, tests: b.tests || [], run: b.run || 0, apt: b.apt || 0, shots: b.shots ?? 1, report: b.report ?? 1, ai: b.ai || 0 });
 const bots = new Map();   // each bot's login, kept 50 minutes
 async function botLogin(env, b) { if (!UUID.test(b.id)) return { access_token: "dev:" + b.id.slice(4), refresh_token: "" };
   const c = bots.get(b.id); if (c && c.until > Date.now()) return c.s;
@@ -813,7 +841,10 @@ export class Post extends DurableObject {
   botT() { this.sql.exec("create table if not exists bots(id text primary key, rec text, status text, at integer)"); }
   botList() { this.botT(); return this.sql.exec("select rec, status from bots order by at").toArray().map(r => { const b = JSON.parse(r.rec); try { b.status = r.status ? JSON.parse(r.status) : null; } catch (e) {} return b; }); }
   botPut(b) { this.botT(); const { status, ...rec } = b; this.sql.exec("insert into bots(id, rec, at) values(?, ?, ?) on conflict(id) do update set rec = excluded.rec", b.id, JSON.stringify(rec), b.at0 || Date.now()); return true; }
-  botDel(id) { this.botT(); this.sql.exec("delete from bots where id = ?", id); return true; }
+  botDel(id) { this.botT(); this.sql.exec("delete from bots where id = ?", id); this.ctx.storage.delete("twin:" + id); return true; }
+  // an AI double's memory (worker/twin.js): what it was asked and answered, and the order it is on
+  async twinGet(id) { return (await this.ctx.storage.get("twin:" + id)) || null; }
+  async twinPut(id, v) { const o = await this.ctx.storage.get("twin:" + id); if (o && (o.at || 0) > (v.at || 0)) return false; await this.ctx.storage.put("twin:" + id, v); return true; }
   botStatus(all) { this.botT(); let n = 0; for (const id of Object.keys(all).slice(0, 20)) { const v = all[id]; if (!v || typeof v !== "object" || Array.isArray(v) || JSON.stringify(v).length > 2000) continue; this.sql.exec("update bots set status = ? where id = ?", JSON.stringify({ ...v, seen: Date.now() }), id); n++; } return n; }
   // the bots' test results: the latest of each test (a bot sends [test, result, why, when] as it finishes each)
   testT() { this.sql.exec("create table if not exists tests(id text primary key, r text, why text, bot text, at integer)"); if (!this.tx) { this.tx = 1; try { this.sql.exec("alter table tests add column x text"); } catch (e) {} } }   // x: a play-through's steps, shots and spot codes (JSON)

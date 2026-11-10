@@ -1,10 +1,10 @@
 // ROOMS: which room you are in, the insides off the map (ROOMS.off, the lazy rooms) and the way in and out behind the fade, peek, roofs hidden when inside, and roofAt.
 import {SHARED, THREE} from './003-shx.js';
-import {BLK, CIVIC, CULL, DRM, DRONE, ED, LEVELS, LITE, LOOKS, MAPED, MUS, NPCS, ONLINE, PNM, pos, ROOMS, SGM, UI, VIS, W3, WINDOWS} from './003b-systems.js';
+import {BATCH, BLK, CIVIC, CULL, DRM, DRONE, ED, LEVELS, LITE, LOOKS, MAPED, MUS, NPCS, ONLINE, PNM, pos, ROOMS, SFX, SGM, UI, VIS, W3, WINDOWS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {cutWalls, FADE, FREE, MAPG, MODS, OUT, OVERHEAD, SEEN, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
-import {BATCH, PEEK} from './008-batch.js';
+import {PEEK} from './008-batch.js';
 import {WATER} from './009-down.js';
 import {CREATS} from './087-npc-creatures.js';
 Object.assign(ROOMS,{cur:null}); window.ROOMS=ROOMS;
@@ -60,17 +60,24 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
     for(const b of o.bs){ if(!(b.y1<1e5))continue; const m=new THREE.Mesh(new THREE.PlaneGeometry(b.x1-b.x0,b.z1-b.z0),M); m.rotation.x=Math.PI/2; m.position.set((b.x0+b.x1)/2,b.y1-.03,(b.z0+b.z1)/2); m.receiveShadow=true; o.ceilG.add(m); }
     scene.add(o.ceilG); };
   ROOMS.ceilOf=id=>{ if(!RL)build(); ceil(ROOMS.off[id]); };   // an inside's ceiling made without going in (seen through its windows from the street)
-  ROOMS.goIn=async(id,at)=>{ const o=ROOMS.off[id], L=offL(id); if(!RL)build(); if(!L.done){ await L.need(); if(!L.done)L.go(); } const s=at||o.spawn; UI.goTo(s[0],s[1],s[2],s[3]); ceil(o);
+  const offMake=async id=>{ const o=ROOMS.off[id], L=offL(id); if(!RL)build(); if(!L.done){ await L.need(); if(o.pre)await o.pre(); if(!L.done)L.go(); } };
+  const offPlace=(id,at)=>{ const o=ROOMS.off[id]; if(!RL)build(); const s=at||o.spawn; UI.goTo(s[0],s[1],s[2],s[3]); ceil(o);
     scene.updateMatrixWorld(); const bb=o.bs.find(b=>within(b,s[0],s[1]))||o.b, w={key:kOf(bb),b:bb}; ROOMS.cur=bb; IV.want=w; apply(w); if(!at&&UI.inIso)UI.inIso(); };
+  ROOMS.goIn=async(id,at)=>{ await offMake(id); offPlace(id,at); };
   ROOMS.goOut=id=>{ const o=ROOMS.off[id]; UI.goTo(o.out[0],o.out[1],o.out[2],o.out[3]); ROOMS.cur=null; IV.want=null; apply(null); return ROOMS.unstow&&ROOMS.unstow(); };
-  const offRun=(id,txt,fn)=>{ if(!ROOMS.off[id]||FADE.busy||IV.busy)return; IV.busy=true; return FADE.run(txt,fn,{cut:true}).finally(()=>{ IV.busy=false; }); };
-  ROOMS.enter=id=>offRun(id,ROOMS.lazy[id]&&ROOMS.lazy[id].done?'':'ENTERING '+ROOMS.off[id].name,()=>ROOMS.goIn(id));
-  ROOMS.enterAt=(id,at)=>offRun(id,ROOMS.lazy[id]&&ROOMS.lazy[id].done?'':'ENTERING '+ROOMS.off[id].name,()=>ROOMS.goIn(id,at));   // enter and spawn at a chosen spot inside (the GO TO menu, a saved spot)
+  // ONE WAY IN AND OUT OF AN INSIDE (ROOMS.run): a record says what differs. busy (its own lock), gate(on) (may it go now), built(), need() (its code), pre() (what it fetches first), make() (the build), arrive(opt) and depart(opt) (where you stand), text(on,built,opt) and fade(on,built,opt) (the fade's words and way; 'ENTERING name' on the way into one not yet built, a cut). Nothing is returned when it does not go.
+  ROOMS.run=(o,on,opt={})=>{ if(!o||o.busy||(o.gate&&!o.gate(on)))return; o.busy=true; const built=o.built();
+    return FADE.run(o.text?o.text(on,built,opt):on&&!built?'ENTERING '+o.name:'',async()=>{ if(!(on&&(opt.at||opt.walk===false)))SFX.door(); if(on){ if(!o.built()){ await o.need(); if(o.pre)await o.pre(); o.make(); } await o.arrive(opt); } else await o.depart(opt); },{cut:true,...(o.fade?o.fade(on,built,opt):null)}).finally(()=>{ o.busy=false; }); };
+  // an inside off the map as such a record: its own gate, words and fade from ROOMS.off[id] when it has them
+  const REC={}, offRec=id=>{ const o=ROOMS.off[id]; if(!o)return null; return REC[id]||(REC[id]={get name(){ return o.name; },get busy(){ return IV.busy; },set busy(v){ IV.busy=v; },gate:on=>!FADE.busy&&(!on||!o.gate||o.gate()),built:()=>!!(ROOMS.lazy[id]&&ROOMS.lazy[id].done),
+    need:()=>{},make:()=>{},arrive:opt=>ROOMS.goIn(id,opt.at),depart:()=>ROOMS.goOut(id),text:o.text,fade:o.fade}); };
+  ROOMS.enter=(id,opt)=>ROOMS.run(offRec(id),true,opt);   // opt.at: a chosen spot inside (the GO TO menu, a saved spot)
+  ROOMS.enterAt=(id,at)=>ROOMS.enter(id,{at});
   ROOMS.boxAt=(x,z)=>{ for(const id in ROOMS.off){ const b=ROOMS.off[id].box; if(b&&x>=b.x0&&x<=b.x1&&z>=b.z0&&z<=b.z1)return id; } return null; };   // which off-map inside, if any, holds this point
-  ROOMS.exit=id=>ROOMS.off[id]&&IV.b&&IV.b.off===id?offRun(id,'',()=>ROOMS.goOut(id)):null;
+  ROOMS.exit=id=>ROOMS.off[id]&&IV.b&&IV.b.off===id?ROOMS.run(offRec(id),false):null; ROOMS.leave=ROOMS.exit;
   ROOMS.offIn=()=>IV.b&&IV.b.off||IV.reOff||null;
-  { let t0=0; SYS.add('places',()=>{ if(SHARED.LVL!=='up'||FADE.busy||IV.busy||ROOMS.offIn()||!window.__started){ t0=0; return; } let id=null; for(const k in ROOMS.off){ const o=ROOMS.off[k]; if(o.out&&o.box&&within(o.box,pos.x,pos.z,6)&&!within(o.box,o.out[0],o.out[1],6)){ id=k; break; } }
-    if(!id){ t0=0; return; } const now=performance.now(); if(!t0)t0=now; if(now-t0<1000)return; t0=0; const o=ROOMS.off[id]; offRun(id,'',()=>{ UI.goTo(o.out[0],o.out[1],o.out[2],o.out[3]); }); },'130-rooms stray'); }   // on an inside's spot off the map without being in it (a reset, an old saved spot): out at its door, never left on the bare ground out there   // (between a reset and the room put back you are still in it)
+  { let t0=0; SYS.add('places',()=>{ if(SHARED.LVL!=='up'||FADE.busy||IV.busy||ROOMS.offIn()||!SYS.started){ t0=0; return; } let id=null; for(const k in ROOMS.off){ const o=ROOMS.off[k]; if(o.out&&o.box&&within(o.box,pos.x,pos.z,6)&&!within(o.box,o.out[0],o.out[1],6)){ id=k; break; } }
+    if(!id){ t0=0; return; } const now=performance.now(); if(!t0)t0=now; if(now-t0<1000)return; t0=0; const o=ROOMS.off[id]; IV.busy=true; FADE.run('',()=>{ UI.goTo(o.out[0],o.out[1],o.out[2],o.out[3]); },{cut:true}).finally(()=>{ IV.busy=false; }); },'130-rooms stray'); }   // on an inside's spot off the map without being in it (a reset, an old saved spot): out at its door, never left on the bare ground out there   // (between a reset and the room put back you are still in it)
   ROOMS.real=()=>{ const id=ROOMS.offIn(); return id?(WINDOWS.from&&WINDOWS.from(id)):ROOMS.away&&ROOMS.away()||pos; };   // where you are on the street: in a room off the map, where it stands if its windows look out at the street live, else null
   BATCH.at=ROOMS.real;   // in a room off the map with no window out the street's painted ground and walls are dropped, painted again on the way out
   ROOMS.offBuild=async id=>{ const L=offL(id); if(!L.done){ await L.need(); if(!L.done)L.go(); } return L; };   // an inside built without going in (for its windows' first picture)
@@ -105,7 +112,7 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
   const apply=w=>{ leave(); drop(w); if(!w)return; let T=IV.C.get(w.key); if(!T){ scene.updateMatrixWorld(); T=scan(w.b,scene.children.slice()); IV.C.set(w.key,T); } put(T); NEARIN=false; if(w.b.off)offHide(true); IV.top=new Set(T.top); IV.nc=-1; IV.key=w.key; IV.b=w.b; IV.reOff=null; };
   const swap=async()=>{ const w=IV.want, lz=w&&lazyOf(w.b), walk=b=>!!(b&&b.id&&STORE.held&&STORE.held.has(b.id)&&STORE.inside[b.id]);
     if(!lz&&(walk(w&&w.b)||!w&&walk(IV.b))){ apply(w); return; }   // walked in or out through a street shop's door: no fade
-    if(!window.__started||FADE.busy){ if(lz){ await lz.need(); lz.go(); } apply(IV.want); return; }
+    if(!SYS.started||FADE.busy){ if(lz){ await lz.need(); lz.go(); } apply(IV.want); return; }
     IV.busy=true; try{ await FADE.run(lz?'ENTERING '+lz.name:'',async()=>{ if(lz){ if(lz.S)lz.S.busy=true; await lz.need(); lz.go(); }
       const l2=IV.want&&lazyOf(IV.want.b); if(l2){ await l2.need(); l2.go(); } apply(IV.want); },{cut:true}); } finally{ IV.busy=false; } };
   ROOMS.hold=()=>{ if(!IV.key)return; if(scene.children.length!==IV.nc){ IV.nc=scene.children.length; const nw=scene.children.filter(c=>!IV.top.has(c)); if(nw.length){ for(const c of nw)IV.top.add(c); put(scan(IV.b,nw)); } }
@@ -114,7 +121,7 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
   window.INTDBG=()=>({inside:IV.key?IV.b.lz||IV.b.id||IV.key:null,built:[...Object.keys(ROOMS.lazy).filter(k=>ROOMS.lazy[k].done),...Object.keys(STORE.inside||{}).filter(k=>STORE.inside[k].done)],hidden:IV.H.length+IV.L.length+IV.S.length,busy:IV.busy});
   const unclip=g=>{ if(g)g.traverse(c=>{ if(c.material)for(const mt of [].concat(c.material))if(mt.clippingPlanes===NEAR){ mt.clippingPlanes=null; mt.needsUpdate=true; } }); };
   ROOMS.tick=()=>{ if(!RL)build(); let hit=null, bnd=null; if(NEARON)unclip(W3.group); if(LOOKS.light)LOOKS.light();
-    if(SHARED.LVL==='up'&&!UI.freeCam&&!ED.on&&!MAPED.on&&!(window.DRONE&&DRONE.cam)){
+    if(SHARED.LVL==='up'&&!UI.freeCam&&!ED.on&&!MAPED.on&&!(DRONE&&DRONE.cam)){
       hit=RL.find(b=>(within(b,pos.x,pos.z,0)||!!b.band&&!b.id&&within(b.band,pos.x,pos.z,0))&&SHARED.py>b.y0-.3&&SHARED.py<b.y1)||null; }
     if(!hit&&!IV.key&&!IV.busy)drop(null);
     ROOMS.cur=hit; { const w=hit&&!(hit.id&&STORE.open&&STORE.open(hit.id))?{key:kOf(hit),b:hit}:null; IV.want=w; const wk=w?w.key:null; if(wk!==IV.key&&!IV.busy){ if(wk&&wk===IV.re&&!lazyOf(hit))apply(w); else swap().catch(()=>{ IV.busy=false; }); } IV.re=null; if(!IV.b)IV.reOff=null; }
@@ -127,7 +134,7 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
       NEAR[0].normal.set(0,-1,0); NEAR[0].constant=SHARED.py+.45*ZU*24/.84;
       if(Math.abs(ux)>.2){ if(ux>0){ NEAR[1].normal.set(-1,0,0); NEAR[1].constant=hit.x1-BAND; } else { NEAR[1].normal.set(1,0,0); NEAR[1].constant=-(hit.x0+BAND); } } else NEAR[1].set(new V(-1,0,0),1e6);
       if(Math.abs(uz)>.2){ if(uz>0){ NEAR[2].normal.set(0,0,-1); NEAR[2].constant=hit.z1-BAND; } else { NEAR[2].normal.set(0,0,1); NEAR[2].constant=-(hit.z0+BAND); } } else NEAR[2].set(new V(0,0,-1),1e6); }
-    else if(!hit&&!UI.persp&&(UI.view==='iso'||UI.view==='map')&&window.BLK&&SHARED.LVL!=='down'&&(bnd=BLK.band(pos.x,pos.z))&&Math.abs(SHARED.cam.position.z-pos.z)>.2*Math.hypot(SHARED.cam.position.x-pos.x,SHARED.cam.position.z-pos.z)){
+    else if(!hit&&!UI.persp&&(UI.view==='iso'||UI.view==='map')&&BLK&&SHARED.LVL!=='down'&&(bnd=BLK.band(pos.x,pos.z))&&Math.abs(SHARED.cam.position.z-pos.z)>.2*Math.hypot(SHARED.cam.position.x-pos.x,SHARED.cam.position.z-pos.z)){
       if(!NEARON||!NEARIN)ROOMS.nearAll(); NEARIN=true; NEAR[0].normal.set(0,-1,0); NEAR[0].constant=SHARED.py+.45*ZU*24/.84; NEAR[1].set(new V(-1,0,0),1e6);
       if(SHARED.cam.position.z>pos.z){ NEAR[2].normal.set(0,0,-1); NEAR[2].constant=bnd.z1-.05*TILE; } else { NEAR[2].normal.set(0,0,1); NEAR[2].constant=-(bnd.z0+.05*TILE); } }
     else { NEARIN=false; if(NEARON&&NEAR[0].constant<1e5){ NEAR[0].constant=NEAR[1].constant=NEAR[2].constant=1e6; } }
@@ -141,7 +148,7 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
     const HB=IV.key?IV.b:FREE?null:hit, show=(g,x,z,o,y)=>{ const sh=!HB||within(HB,x,z,.4*TILE)&&(y==null||y>HB.y0-.3&&y<HB.y1); VIS.hide(g,'roof',!sh); };
     for(const N of NPCS){ if(N.lv!=='up'||N.mode==='hidden'||N.hid)continue; show(N.g,N.g.position.x,N.g.position.z,N,N.g.position.y); }
     if(ONLINE.others)for(const o of ONLINE.others.values()){ const g=o.fig&&o.fig.g; if(g&&g.parent)show(g,g.position.x,g.position.z,o,g.position.y); }
-    if(window.CREATS)for(const N of CREATS)if(N.g)show(N.g,N.g.position.x,N.g.position.z,N,N.g.position.y);
+    if(CREATS)for(const N of CREATS)if(N.g)show(N.g,N.g.position.x,N.g.position.z,N,N.g.position.y);
     if(MUS.g)show(MUS.g,MUS.at.x,MUS.at.z,MUS,MUS.at.y); if(PNM.g)show(PNM.g,PNM.at.x,PNM.at.z,PNM); if(SGM.g)show(SGM.g,SGM.at.x,SGM.at.z,SGM); if(DRM.g)show(DRM.g,DRM.at.x,DRM.at.z,DRM);
     if(WATER.mesh){ show(WATER.mesh,WATER.mesh.position.x,WATER.mesh.position.z,WATER); for(const w of WATER.extra)if(w.mesh)show(w.mesh,w.mesh.position.x,w.mesh.position.z,w); } };
 }

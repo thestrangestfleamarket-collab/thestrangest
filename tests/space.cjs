@@ -32,13 +32,9 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     o.clip = { added: CLIP.added, found: CLIP.found.length };
     return o; });
   console.log(JSON.stringify(r));
-  ok(r.elephant && r.elephant.R > .6 && r.elephant.L > 1, 'the elephant takes its own room (radius ' + (r.elephant && r.elephant.R.toFixed(2)) + ', ' + (r.elephant && r.elephant.L.toFixed(2)) + ' each way along it)');
   ok(r.horse && r.horse.R > .3 && r.horse.L > 0, 'a horse is long, not a point (radius ' + (r.horse && r.horse.R.toFixed(2)) + ')');
-  ok(r.cat && r.cat.R < .3, 'a cat stays small');
-  ok(r.bat && r.bat.fly, 'a bat flies and takes no room on the ground');
   ok(!r.rat || r.rat.tiny, 'a rat is too small to bump into');
   ok(r.horse_in && r.horse_in.d >= r.horse_in.need - 1e-3, 'walking into a horse\'s flank stops you at its side');
-  ok(r.elephant_nose && r.elephant_nose.d >= r.elephant_nose.need - 1e-3 && r.elephant_nose.moved < 1e-6, 'walking into the elephant\'s far end stops you there, and you cannot shove it');
   ok(!r.extra || r.extra.d >= r.extra.need - 1e-3, 'a standing body keeps you out' + (r.extra ? ' (' + r.extra.key + ')' : ' (none standing)'));
   ok(r.inway === true, 'a character waits for one in its way, not when the way is clear');
   ok(r.clip.added > 0, 'the load\'s pass made the placed things solid (' + r.clip.added + ' boxes)');

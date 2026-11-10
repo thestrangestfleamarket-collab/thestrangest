@@ -68,7 +68,7 @@ import {ROOMK} from './150a-bedroom.js';
   const sortOf=un=>{ if(SORT[un.kind])return SORT[un.kind]; const D=kindOf(un.kind); if(D&&D.game){ const f=own(un); return SORT[un.kind]=sortAs(D,un.kind,f[5]-f[4],f[4]); } return un.loose?'small':'big'; };
 
   /* ---------- the editor ---------- */
-  const ED={on:false,sel:null,undo:[],grid:true}; window.ROOMED=ED;
+  const ED={on:false,sel:null,undo:[],grid:true}; window.ROOMED=MODS.roomed=ED;
   const A_=()=>ROOMK.api, inHome=()=>!!(MODS.apts&&MODS.apts.inReal&&ROOMK.api);
   const css=document.createElement('style'); css.textContent=`
   #roomed{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));top:12px;width:300px;max-height:calc(100vh - 210px);display:flex;flex-direction:column;background:color-mix(in srgb,var(--bg) 97%,transparent);border:2px solid var(--line);font:12px var(--pixel);color:var(--fg);z-index:20}

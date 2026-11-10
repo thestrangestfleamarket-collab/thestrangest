@@ -66,7 +66,7 @@ const FISHES={list:[],ready:false}; window.FISHES=FISHES;
       const deco=DECO[w.kind].filter(k=>M[k]), dn=list.filter(f=>f.w===w&&f.deco).length; if(deco.length&&dn<WANTD[w.kind]){ const q=spot(w,dn<4?R0:R0*2,null); if(q)spawnIn(w,deco[Math.floor(Math.random()*deco.length)],q[0],q[1],null).deco=true; } } };
   // the swim: each wanders its water between the bed and the surface, turns smoothly, flees a swimmer, beats its tail as fast as it goes; a lured one heads for the hook
   const Mx=new THREE.Matrix4(), Q=new THREE.Quaternion(), E=new THREE.Euler(), Pv=new THREE.Vector3(), Sv=new THREE.Vector3();
-  const swim=dt=>{ '@later'; const sw=window.RIVER&&RIVER.swim||window.FOUNT&&FOUNT.swim||window.BROOK&&BROOK.swim;
+  const swim=dt=>{ '@later'; const sw=RIVER&&RIVER.swim||FOUNT&&FOUNT.swim||BROOK&&BROOK.swim;
     for(const f of list){ if(f.hooked)continue; const w=f.w; f.t-=dt; let sp=(.25+.25*Math.min(1,f.kg/3))*WU;
       if(f.lure){ const l=f.lure, d=Math.hypot(l.x-f.x,l.z-f.z); f.tx=l.x; f.tz=l.z; f.ty=w.rest(l.x,l.z)-.3*WU; sp=Math.max(.2*WU,d/Math.max(.4,l.at-performance.now()/1000)); }
       else if(f.t<=0||Math.hypot(f.tx-f.x,f.tz-f.z)<.4*T){ f.t=3+Math.random()*6; for(let k=0;k<6;k++){ const a=Math.random()*6.28, d=(1+Math.random()*6)*T, x=f.x+Math.cos(a)*d, z=f.z+Math.sin(a)*d; if(!w.has(x,z)||depth(w,x,z)<.4)continue; f.tx=x; f.tz=z; const r=w.rest(x,z), b=Math.max(w.bed(x,z),r-14*WU); f.ty=f.id==='x_flounder'||f.id==='x_crab'?b+.05*WU:b+(r-b)*(.2+.6*Math.random()); break; } }
@@ -89,6 +89,6 @@ const FISHES={list:[],ready:false}; window.FISHES=FISHES;
   FISHES.free=f=>{ if(!f)return; f.lure=null; f.hooked=false; f.t=0; f.tx=f.x+(Math.random()-.5)*8*T; f.tz=f.z+(Math.random()-.5)*8*T; };
   FISHES.hook=f=>{ if(f)f.hooked=true; };
   FISHES.gone=f=>{ const i=list.indexOf(f); if(i>=0)list.splice(i,1); };
-  SYS.add('life',dt=>{ const up=SHARED.LVL==='up', act=SHARED.fishing||(window.RIVER&&RIVER.swim)||(window.FOUNT&&FOUNT.swim)||(window.BROOK&&BROOK.swim);   // fish exist only while you swim or fish (owner, 5 Nov 2026)
+  SYS.add('life',dt=>{ const up=SHARED.LVL==='up', act=SHARED.fishing||(RIVER&&RIVER.swim)||(FOUNT&&FOUNT.swim)||(BROOK&&BROOK.swim);   // fish exist only while you swim or fish (owner, 5 Nov 2026)
     if(!up||!act||!near().length){ if(FISHES.ready)for(const id in M)M[id].im.visible=false; if(!act)list.length=0; return; } if(!FISHES.ready){ FISHES.load(); return; } populate(dt); swim(dt); draw(); },'141f-fishes'); }
 export {FISHES};

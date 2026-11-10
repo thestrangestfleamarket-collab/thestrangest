@@ -14,7 +14,7 @@ let bad = 0; const ok = (c, m) => { console.log((c ? 'ok   ' : 'FAIL ') + m); if
   for (const id of ['guitar', 'piano', 'drums', 'harp', 'kart', 'board_pine', 'board_teal', 'bmx', 'skateboard', 'rod', 'bait', 'sword', 'sword_ench', 'net', 'bnet', 'cage', 'bseed', 'kite', 'binoc', 'camera', 'headlight', 'goggles', 'gem_wheel', 'cloudcoat', 'balloon', 'bee_smoker'])
     ok(r.it[id] >= 1, 'in the bag: ' + id);
   ok(['shroom_fly', 'shroom_invis', 'airshroom'].every(id => r.it[id] >= 99) && r.it.m_button >= 20, '99 of each power mushroom, 20 of the healing ones');
-  ok(!r.it.scuba, 'the scuba set stays a rental');
+  ok(r.it.scuba >= 1, 'the scuba set is in the kit (bought, no longer rented)');
   ok(!r.arch.length, 'nothing archived: ' + r.arch.join(','));
   console.log(Object.keys(r.it).length + ' kinds: ' + Object.keys(r.it).join(' '));
   ok(!errs.length, 'no page errors ' + errs.join(' | '));

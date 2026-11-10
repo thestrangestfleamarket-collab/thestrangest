@@ -1,4 +1,4 @@
-// THE HOUSEPLANTS: real Polyfork plants in every apartment from the start (owner, 9 Nov 2026: "add plants in your house from polyfork. realistic, real physics, hanging, dangling, leaves"; data/pfplants.json, tools/pfitems-bake.py): two floor plants, a fern on a stand, three baskets hanging from the ceiling with long vines (072a DRAPE) that hang, sway in an open window's draught and swing as you walk through them, the leafy ones bend and spring back; three little pots loose on the desk and the TV.
+// THE HOUSEPLANTS: real Polyfork plants in every apartment from the start (owner, 9 Nov 2026: "add plants in your house from polyfork. realistic, real physics, hanging, dangling, leaves"; data/pfplants.json, tools/pfitems-bake.py): two floor plants, a fern on a stand, three baskets hanging from the ceiling with long vines (072a DRAPE) that hang still and swing as you walk through them, the leafy ones bend and spring back; three little pots loose on the desk and the TV.
 import {SHARED, THREE} from './003-shx.js';
 import {pos} from './003b-systems.js';
 import {MODS} from './006-map-pre.js';
@@ -76,16 +76,17 @@ const PLANT3={}; window.PLANT3=PLANT3;
     let nl=0; for(const s of str)nl+=s.n-2; const lm=new THREE.InstancedMesh(leafGeo(),new THREE.MeshStandardMaterial({roughness:.65,side:THREE.DoubleSide}),nl), col=new THREE.Color();
     for(let i=0;i<nl;i++){ const r=rnd(seed+i,3); col.setRGB(.16+.12*r,.38+.16*r+(r>.8?.14:0),.12+.05*r,THREE.SRGBColorSpace); lm.setColorAt(i,col); }
     lm.castShadow=true; lm.receiveShadow=true; lm.userData.soft=lm.userData.keep=1; lm.frustumCulled=false; un.obj.add(lm);
-    S.vine={c,stem,lm,sw,o:{g:-9.8,dm:.985,ks:0,it:4,col:[{a:[0,0,0],b:[0,0,0],r:.26},{a:[0,0,0],b:[0,0,0],r:.2}],push:null},pen:[0,0,0,0]};
-    draw(S.vine); };
+    S.vine={c,stem,lm,sw,o:{g:-9.8,dm:.95,ks:0,it:4,col:[{a:[0,0,0],b:[0,0,0],r:.26},{a:[0,0,0],b:[0,0,0],r:.2}],push:null},pen:[0,0,0,0]};
+    // it finds its hanging shape before it is seen, so it starts at rest
+    for(let k=0;k<400&&c.calm<=20;k++)c.calm=DRAPE.step(c,1/30,{...S.vine.o,col:[]})<4e-4?c.calm+1:0; c.X0.set(c.X); draw(S.vine); };
   const T=new THREE.Vector3(), O=new THREE.Vector3(), SD=new THREE.Vector3(), Dd=new THREE.Vector3(), Z=new THREE.Vector3(), XA=new THREE.Vector3(), M4=new THREE.Matrix4();
   const draw=Vn=>{ const {c,stem,lm,sw}=Vn, X=c.X, P=stem.geometry.attributes.position.array, cx=X[3], cz=X[5]; let L=0, ax=0, az=0;
     for(const s of c.str){ ax+=X[(s.i0+1)*3]; az+=X[(s.i0+1)*3+2]; } ax/=c.str.length; az/=c.str.length;
     for(const s of c.str)for(let j=0;j<s.n;j++){ const i=s.i0+j, a=i*3, w=.0045*(1-.5*j/s.n), b=i*12;
       P[b]=X[a]-w; P[b+1]=X[a+1]; P[b+2]=X[a+2]; P[b+3]=X[a]+w; P[b+4]=X[a+1]; P[b+5]=X[a+2]; P[b+6]=X[a]; P[b+7]=X[a+1]; P[b+8]=X[a+2]-w; P[b+9]=X[a]; P[b+10]=X[a+1]; P[b+11]=X[a+2]+w;
       if(j<2)continue; const n=Math.min(j+1,s.n-1)*3+s.i0*3, m=(i-1)*3; T.set(X[n]-X[m],X[n+1]-X[m+1],X[n+2]-X[m+2]).normalize(); O.set(X[a]-ax,0,X[a+2]-az); if(O.lengthSq()<1e-8)O.set(1,0,0); O.normalize();
-      SD.crossVectors(T,O).normalize(); const alt=j%2?1:-1, tw=Vn.fl?Math.sin(Vn.t*11+i*1.7)*Vn.fl:0;
-      Dd.copy(T).multiplyScalar(.5).addScaledVector(O,.7).addScaledVector(SD,alt*.55+tw).normalize(); Z.copy(O).addScaledVector(Dd,-Dd.dot(O)).normalize(); XA.crossVectors(Dd,Z);
+      SD.crossVectors(T,O).normalize(); const alt=j%2?1:-1;
+      Dd.copy(T).multiplyScalar(.5).addScaledVector(O,.7).addScaledVector(SD,alt*.55).normalize(); Z.copy(O).addScaledVector(Dd,-Dd.dot(O)).normalize(); XA.crossVectors(Dd,Z);
       const k=(1.15-.45*j/s.n)*(.85+.3*rnd(i,5)); M4.makeBasis(XA.multiplyScalar(k),Dd.multiplyScalar(k),Z.multiplyScalar(k)).setPosition(X[a],X[a+1],X[a+2]); lm.setMatrixAt(L++,M4); }
     stem.geometry.attributes.position.needsUpdate=true; stem.geometry.computeVertexNormals(); stem.geometry.computeBoundingSphere(); lm.instanceMatrix.needsUpdate=true; lm.computeBoundingSphere(); };
 
@@ -93,36 +94,32 @@ const PLANT3={}; window.PLANT3=PLANT3;
   ROOMK.wires.plant3=un=>{ '@apts'; un.st.p3={mats:new Set(),bends:[],pp:null,pv:[0,0,0],sw:null}; fill(un.obj); own(un); load();
     un.obj.traverse(q=>{ if(q.userData.sw)un.st.p3.sw={g:q,ax:0,az:0,vx:0,vz:0,L:q.userData.sw.L,bot:q.userData.sw.bot,rest:1}; }); if(un.st.p3.sw)vines(un,un.st.p3.sw.g);
     un.tick=dt=>tick(un,dt); };
-  const IM=new THREE.Matrix4(), PA=new THREE.Vector3(), PB=new THREE.Vector3(), WV=new THREE.Vector3(), WN=new THREE.Vector3(), PV=new THREE.Vector3();
-  const gust=(t,s)=>Math.max(0,.55+.45*Math.sin(t*.83+s)+.3*Math.sin(t*2.17+s*1.7)+.15*Math.sin(t*5.3+s*3.1));
+  const IM=new THREE.Matrix4(), PA=new THREE.Vector3(), PB=new THREE.Vector3(), PV=new THREE.Vector3();
   const tick=(un,dt)=>{ const A=MODS.apts; if(!A||!A.inReal||un.gone)return; const S=un.st.p3, h=Math.min(.033,dt||0); if(!h||!S)return; const t=performance.now()/1000, o=un.obj, M=(ROOMK.api&&ROOMK.api.R.M)||1;
     // you, and how fast you go, in the piece's own metres
     o.updateWorldMatrix(true,false); IM.copy(o.matrixWorld).invert(); PA.set(pos.x,SHARED.py,pos.z).applyMatrix4(IM); PB.set(pos.x,SHARED.py+1.75*M,pos.z).applyMatrix4(IM);
     if(S.pp){ S.pv[0]=(PA.x-S.pp[0])/h; S.pv[2]=(PA.z-S.pp[2])/h; if(Math.hypot(S.pv[0],S.pv[2])>8)S.pv[0]=S.pv[2]=0; } S.pp=[PA.x,PA.y,PA.z];
-    // the draught from each open window, weaker the further it has to come
-    let wx=0, wz=0; const W=ROOMK.api&&ROOMK.api.R.wins||[]; for(const w of W){ if(!(w.br>.01))continue; w.g.updateWorldMatrix(true,false); WV.setFromMatrixPosition(w.g.matrixWorld).applyMatrix4(IM); WN.set(0,0,1).transformDirection(w.g.matrixWorld).transformDirection(IM);
-      const d2=WV.x*WV.x+WV.z*WV.z, k=w.br*gust(t,WV.x*.7+WV.z*.3)/(1+d2*.12); wx+=WN.x*k; wz+=WN.z*k; }
-    const wind=Math.hypot(wx,wz);
     // the leafy ones: a spring from the pot up, pushed by you and the draught
-    for(const B of S.bends){ const f=B.f, sp=B.s.position, y0=sp.y+f.y0, y1=sp.y+f.H, rr=f.r+.25; let Fx=wx*.6*f.H, Fz=wz*.6*f.H;
+    for(const B of S.bends){ const f=B.f, sp=B.s.position, y0=sp.y+f.y0, y1=sp.y+f.H, rr=f.r+.25; let Fx=0, Fz=0;
       if(PB.y>y0&&PA.y<y1){ const dx=sp.x-PA.x, dz=sp.z-PA.z, d=Math.hypot(dx,dz); if(d<rr&&d>1e-4){ const pen=(rr-d)/rr; Fx+=dx/d*pen*6+S.pv[0]*pen*2; Fz+=dz/d*pen*6+S.pv[2]*pen*2; } }
       const K=28/Math.max(.4,f.H), Cd=4; B.v[0]+=(-K*B.b[0]-Cd*B.v[0]+Fx)*h; B.v[1]+=(-K*B.b[1]-Cd*B.v[1]+Fz)*h; B.b[0]+=B.v[0]*h; B.b[1]+=B.v[1]*h;
       const lim=.22; for(const i of [0,1])B.b[i]=Math.max(-lim,Math.min(lim,B.b[i]));
       const mv=Math.abs(B.v[0])+Math.abs(B.v[1]), F=Math.abs(Fx)+Math.abs(Fz);
       if(F<1e-4&&mv<2e-4&&Math.abs(B.b[0])+Math.abs(B.b[1])<2e-4){ if(!B.rest){ B.b[0]=B.b[1]=B.v[0]=B.v[1]=0; B.u.uB.value.set(0,0); B.u.uF.value=0; B.rest=1; } continue; }
-      B.rest=0; B.u.uB.value.set(B.b[0],B.b[1]); B.u.uF.value=Math.min(1,mv*3+wind*.5); B.u.uT.value=t; }
+      B.rest=0; B.u.uB.value.set(B.b[0],B.b[1]); B.u.uF.value=Math.min(1,mv*3); B.u.uT.value=t; }
     // the baskets: a pendulum on its cord, tugged by its vines; the vines a chain each, falling, swinging, pushed by the draught and out of your way
     const Q=S.sw, Vn=S.vine; if(!Q||!Vn)return; const c=Vn.c, X=c.X, sw=Q.g;
     const near=Math.hypot(PA.x-sw.position.x,PA.z-sw.position.z)<1.4&&PB.y>Q.bot-1.1;
-    if(Q.rest&&c.calm>40&&wind<.01&&!near)return;
+    if(Q.rest&&c.calm>20&&!near)return;
     let tx=0, tz=0; for(const s of c.str){ const a=(s.i0+1)*3, b=(s.i0+3)*3; tx+=X[b]-X[a]; tz+=X[b+2]-X[a+2]; }
-    const g0=9.8/Q.L; Q.vx+=(-g0*Q.ax-.5*Q.vx-(tz*.6+wz*.03)/Q.L)*h; Q.vz+=(-g0*Q.az-.5*Q.vz+(tx*.6+wx*.03)/Q.L)*h; Q.ax+=Q.vx*h; Q.az+=Q.vz*h;
+    const g0=9.8/Q.L; Q.vx+=(-g0*Q.ax-.5*Q.vx-tz*.6/Q.L)*h; Q.vz+=(-g0*Q.az-.5*Q.vz+tx*.6/Q.L)*h; Q.ax+=Q.vx*h; Q.az+=Q.vz*h;
     sw.rotation.set(Q.ax,0,Q.az); sw.updateMatrix(); const qm=Math.abs(Q.vx)+Math.abs(Q.vz)+Math.abs(Q.ax)+Math.abs(Q.az); Q.rest=Math.abs(Q.vx)+Math.abs(Q.vz)<1.5e-4&&qm<3e-3?1:0;
+    { const s=c.str[0], a=s.i0*3; PV.set(...s.loc[0]).applyMatrix4(sw.matrix); const dx=PV.x-X[a], dy=PV.y-X[a+1], dz=PV.z-X[a+2];
+      if(dx*dx+dy*dy+dz*dz>.0025)for(const A of [X,c.Xp,c.X0])for(let i=0;i<A.length;i+=3){ A[i]+=dx; A[i+1]+=dy; A[i+2]+=dz; } }
     for(const s of c.str)for(let j=0;j<2;j++){ PV.set(...s.loc[j]).applyMatrix4(sw.matrix); const a=(s.i0+j)*3; X[a]=PV.x; X[a+1]=PV.y; X[a+2]=PV.z; }
     const col=Vn.o.col; col.length=0; if(near){ const y=Vn.cy||(Vn.cy={a:[0,0,0],b:[0,0,0],r:.3}); y.a[0]=y.b[0]=PA.x; y.a[2]=y.b[2]=PA.z; y.a[1]=PA.y+.3; y.b[1]=PB.y-.05; col.push(y); }
     const bb=Vn.bb||(Vn.bb={a:[0,0,0],b:[0,0,0],r:.2}); PV.set(0,Q.bot+.55,0).applyMatrix4(sw.matrix); bb.a[0]=bb.b[0]=PV.x; bb.a[2]=bb.b[2]=PV.z; bb.a[1]=PV.y-.1; bb.b[1]=PV.y+.12; col.push(bb);
-    const h2=h*h; Vn.o.push=wind>.01?(i,a,F)=>{ const e=gust(t*1.7,i*.37); F[0]+=wx*1.4*e*h2; F[2]+=wz*1.4*e*h2; F[1]+=Math.sin(t*3.1+i)*.2*wind*h2; }:null;
-    const mv=DRAPE.step(c,h,Vn.o); c.calm=mv<1e-4?c.calm+1:0; Vn.fl=Math.min(.6,mv*25+wind*.25); Vn.t=t; draw(Vn); };
+    const mv=DRAPE.step(c,h,Vn.o); c.calm=mv<4e-4?c.calm+1:0; draw(Vn); };
 
   window.PLANT3DBG=()=>{ const A=ROOMK.api; if(!A)return null; const us=A.units().filter(u=>KINDS.includes(u.kind));
     return {loaded:!!D,units:us.map(u=>{ const S=u.st.p3, V=S&&S.vine; let tip=null; if(V){ const s=V.c.str[0], a=(s.i0+s.n-1)*3; tip=[V.c.X[a],V.c.X[a+1],V.c.X[a+2]]; }

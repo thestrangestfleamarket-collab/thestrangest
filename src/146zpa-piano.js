@@ -1,6 +1,6 @@
 // THE PIANO (owner, 7 Nov 2026: "lets do piano and drums and harp"): an upright of 88 keys, set down and sat at (INSTR, 146zp): each key a lever that dips under its finger, the sustain pedal under the right foot; its sound each string struck by a felt hammer (the strings' partials a little sharp as real stiff strings are, two strings a note beating, a damper on every key below the top two octaves); the book is Mutopia's solo piano pieces (data/piano-songs.json).
 import {THREE} from './003-shx.js';
-import {INSTR} from './146zp-instruments.js';
+import {INSTR} from './003b-systems.js';
 { const {box,cyl,mat,sm}=INSTR, V3=THREE.Vector3, M4=THREE.Matrix4, Q4=THREE.Quaternion;
   // the keyboard (metres, the player at the origin facing +z, +x their left): white keys 20.5 mm (an upright sized for the Walker), the low notes on the left
   const WK=.0205, KF=.27, KL=.135, BL=.085, BW=.011, KY=.65, LO=21, HI=108;
@@ -8,7 +8,7 @@ import {INSTR} from './146zp-instruments.js';
   { let w=0; for(let m=LO;m<=HI;m++){ if(BLACK(m)){ WI[m]=w-.5; } else { WI[m]=w; w++; } KX[m]=(25.5-WI[m])*WK; } }
   const top=(m,o=new V3())=>BLACK(m)?o.set(KX[m],KY+.022,KF+.06):o.set(KX[m],KY,KF+.03);
   const imHz=m=>440*Math.pow(2,(m-69)/12);
-  const K={id:'piano',name:'A PIANO',skill:'piano',seat:{y:.46,z:0},lean:.16,look:.42,BOOK:[],cam:{p:[-1.5,1.3,.12],t:[0,.64,.28]},
+  const K={id:'piano',name:'A PIANO',skill:'piano',seat:{y:.46,z:0},lean:.16,look:.42,BOOK:[],slip:[21,108],cam:{p:[-1.5,1.3,.12],t:[0,.64,.28]},
     help:'Z S X D C… AND Q 2 W 3 E… THE KEYS · ← → THE OCTAVE · SPACE THE PEDAL · SHIFT LOUDER · ` A SONG'};
 
   /* ---------- the sound: a struck string's partials (n f0 √(1+Bn²), B the string's stiffness, rising up the keyboard), the hammer's felt softer when played soft, struck an eighth along the string (so the 8th partial is missing), each partial's ring shorter the higher it is; the lowest five on two strings a hair apart (the beat and the long second decay) ---------- */

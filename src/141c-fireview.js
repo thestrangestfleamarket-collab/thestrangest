@@ -1,11 +1,11 @@
 // THE FIRE ESCAPE VIEW: your landing on the apartment house's fire escape, with the landings above and below, built from the house's own facade and landings round your apartment (one place, off the map): its door opens and you walk out.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, CULL, FAR3, GPH, pos, ROOMS, SFX, SKY, UI, VIS, VR, WINDOWS} from './003b-systems.js';
+import {BATCH, CLOCK, CULL, FAR3, GPH, pos, ROOMS, SFX, SKY, UI, VIS, VR, WINDOWS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {BLDK, FADE, MAPG, MISTE, MODS, STORE, SYS, TILE} from './006-map-pre.js';
-import {BATCH, PEEK} from './008-batch.js';
+import {PEEK} from './008-batch.js';
 import {BLOCKS} from './038zb-blocks.js';
-{ const APTS=MODS.apts, F=window.FIREV, T=TILE, KK=BLDK, {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, {HZ,S}=F, A=APTS.AL, FE=APTS.ESC[0], DU=APTS.DU, DO=APTS.DO, LV=F.lv;
+{ const APTS=MODS.apts, F=MODS.firev, T=TILE, KK=BLDK, {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, {HZ,S}=F, A=APTS.AL, FE=APTS.ESC[0], DU=APTS.DU, DO=APTS.DO, LV=F.lv;
   const ix=x=>x/(T*KK)+SHARED.BOD.OX, iy=z=>z/(T*KK)+SHARED.BOD.OY, cl=v=>Math.max(0,Math.min(1,v)), nk=()=>cl((4-CLOCK.elev())/8);
   const AR=APTS.R, IN=APTS.IN||AR, FY=AR.y0-.24/.907-.006, U=u=>AR.x1-u, V=d=>FY-d, L0=U(FE.ub), L1=U(FE.ua), DX=U(DU);   // the house turned half round your rooms: its front face on their fire-escape wall, your landing level with their floor
   const onL=(x,z)=>{ const u=ix(x), v=iy(z); return u>L0-.3&&u<L1+.3&&v<FY+.4&&v>V(DO+.4); }, outL=(x,z)=>onL(x,z)&&iy(z)<AR.y0-.13; F.onL=onL;

@@ -3,7 +3,7 @@ import {THREE} from './003-shx.js';
 import {SFX, UI} from './003b-systems.js';
 import {MODS, SYS} from './006-map-pre.js';
 import {ROOMK} from './150a-bedroom.js';
-const CRE=()=>window.ROOMED||{};   // the room editor (150d, later in the page): its saving and who is visiting
+const CRE=()=>MODS.roomed||{};   // the room editor (150d, later in the page): its saving and who is visiting
 const CEIL={ids:['ceil1','ceil2','ceil3','ceil4'],shells:[],th:null}; window.CEIL=CEIL;
 { const P=document.createElement('div'); P.id='ceilp'; P.hidden=true;
   P.style.cssText='position:fixed;left:50%;top:16%;transform:translateX(-50%);width:min(340px,92vw);z-index:21;padding:12px 14px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#3b2a1e;background:#ece5d3;border:3px solid #3b2a1e;zoom:var(--uiz,1)';

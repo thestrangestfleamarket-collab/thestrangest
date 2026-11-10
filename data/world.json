@@ -475,11 +475,9 @@
    "id": "subway",
    "name": "SUBWAY STAIRS",
    "kind": "stairs",
-   "x0": 219.75,
-   "x1": 223.75,
-   "y0": -116.5,
-   "y1": -110.5,
-   "note": "on the Hudson promenade in front of the garage by the Bookstore (owner, 8 Nov 2026)"
+   "x0": 131.9,
+   "x1": 135.9,
+   "note": "on Market St between the arcade and the theatre, over the loop's straight (owner, 10 Nov 2026: back from the Hudson promenade)"
   },
   {
    "id": "apts",

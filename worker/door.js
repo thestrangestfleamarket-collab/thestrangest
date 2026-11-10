@@ -7,6 +7,7 @@ import { FOLKSIM } from "./folk.js";
 import { MOBSIM } from "./dunmobs.js";
 import { lvBrief, lvGoal, lvH, lvMeet, lvRun } from "./lives.js";
 import { CLK } from "./clock.js";
+import { TWIN } from "./twin.js";
 import LIVESDATA from "../data/lives.json";
 import WORLD from "../data/world.json";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, CODE = /^[A-Z0-9-]{6,32}$/, MAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -113,7 +114,7 @@ export default {
       const P = postOf(env); if (!key || key.length > 80 || key !== (await P.botKey())) return json({ why: "wrong runner key (copy it from ADMIN > TENANTS > BOTS)" }, 403);
       let body; try { body = await request.json(); } catch (e) { body = {}; } if (body && body.status && typeof body.status === "object") await P.botStatus(body.status); if (body && body.tests && typeof body.tests === "object") await P.botTests(body.tests);
       return json({ bots: await Promise.all((await P.botList()).filter(b => b.on).map(async b => ({ ...botOut(b), login: await botLogin(env, b) }))) }); }
-    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art" || p === "/botshot")) {
+    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art" || p === "/botshot" || p === "/twin")) {
       if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401);
       let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
@@ -135,6 +136,12 @@ export default {
         const m = /^data:image\/jpeg;base64,([A-Za-z0-9+/=]+)$/.exec(String(body.jpg || "")); if (!m || m[1].length > 400000) return json({ why: "a jpeg under 300 KB" }, 400);
         const bin = atob(m[1]), buf = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
         return json({ ok: true, k: await P.shotPut(id, buf.buffer) }); }
+      // an owner's AI double asks its mind (worker/twin.js) what to do next: only a bot made an AI double, whose owner is still an owner
+      if (p === "/twin") { const P = postOf(env), b = (await P.botList()).find(x => x.id === id); if (!b || !b.ai) return json({ why: "only an AI double thinks here" }, 403);
+        if (!b.who || (await owner(env, b.who, dev)) !== true) return json({ why: "its owner is not an owner" }, 403);
+        if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
+        if (tooMany("twin:" + id, 40)) return json({ why: "too much at once, wait a minute" }, 429);
+        return json(await TWIN.step(env, { get: () => P.twinGet(id), put: v => P.twinPut(id, v) }, body)); }
       if (p === "/name") { const n = String(body.claim || "").toUpperCase().replace(/\s+/g, " ").trim();
         if (!/^[A-Z0-9][A-Z0-9 '-]{1,14}[A-Z0-9]$/.test(n) || /^(TENANT|ADMIN|OWNER|MODERATOR|SYSTEM|GUEST)\b/.test(n)) return json({ why: "3 to 16 letters or digits" }, 400);
         if (tooMany("name:" + id, 30)) return json({ why: "too many tries, wait a minute" }, 429);
@@ -717,9 +724,9 @@ const botRec = (o, set) => { const r = { ...o }, v = set && typeof set === "obje
   if ("name" in v) r.name = word(v.name, 24) || r.name; if ("look" in v) r.look = word(v.look, 400); if ("on" in v) r.on = v.on ? 1 : 0;
   if ("job" in v && JOBS.includes(v.job)) r.job = v.job; if ("who" in v) r.who = word(v.who, 40); if ("say" in v) r.say = word(v.say, 400);
   if ("at" in v) r.at = Array.isArray(v.at) && v.at.length >= 2 ? [num(+v.at[0], -1e4, 1e4), num(+v.at[1], -1e4, 1e4), v.at[2] ? 1 : 0] : null; if ("call" in v) r.call = Math.floor(num(+v.call, 0, 1e13)); if ("place" in v) r.place = word(v.place, 40);
-  if ("hp" in v) r.hp = num(+v.hp, .05, 1); if ("fight" in v) r.fight = v.fight ? 1 : 0; if ("god" in v) r.god = v.god ? 1 : 0; if ("apt" in v) r.apt = v.apt ? 1 : 0; if ("shots" in v) r.shots = v.shots ? 1 : 0; if ("report" in v) r.report = v.report ? 1 : 0; if ("goal" in v) r.goal = Math.max(0, Math.min(1e6, Math.floor(+v.goal || 0)));
+  if ("ai" in v) r.ai = v.ai ? 1 : 0; if ("hp" in v) r.hp = num(+v.hp, .05, 1); if ("fight" in v) r.fight = v.fight ? 1 : 0; if ("god" in v) r.god = v.god ? 1 : 0; if ("apt" in v) r.apt = v.apt ? 1 : 0; if ("shots" in v) r.shots = v.shots ? 1 : 0; if ("report" in v) r.report = v.report ? 1 : 0; if ("goal" in v) r.goal = Math.max(0, Math.min(1e6, Math.floor(+v.goal || 0)));
   if ("tests" in v) r.tests = Array.isArray(v.tests) ? v.tests.slice(0, 800).map(t => word(t, 100)).filter(Boolean) : []; if ("run" in v) r.run = Math.floor(num(+v.run, 0, 1e13)); return r; };
-const botOut = b => ({ id: b.id, name: b.name, look: b.look || "", on: b.on, job: b.job, who: b.who || "", say: b.say || "", at: b.at || null, place: b.place || "", hp: b.hp ?? 1, fight: b.fight ?? 1, god: b.god || 0, goal: b.goal || 0, call: b.call || 0, tests: b.tests || [], run: b.run || 0, apt: b.apt || 0, shots: b.shots ?? 1, report: b.report ?? 1 });
+const botOut = b => ({ id: b.id, name: b.name, look: b.look || "", on: b.on, job: b.job, who: b.who || "", say: b.say || "", at: b.at || null, place: b.place || "", hp: b.hp ?? 1, fight: b.fight ?? 1, god: b.god || 0, goal: b.goal || 0, call: b.call || 0, tests: b.tests || [], run: b.run || 0, apt: b.apt || 0, shots: b.shots ?? 1, report: b.report ?? 1, ai: b.ai || 0 });
 const bots = new Map();   // each bot's login, kept 50 minutes
 async function botLogin(env, b) { if (!UUID.test(b.id)) return { access_token: "dev:" + b.id.slice(4), refresh_token: "" };
   const c = bots.get(b.id); if (c && c.until > Date.now()) return c.s;
@@ -820,7 +827,10 @@ export class Post extends DurableObject {
   botT() { this.sql.exec("create table if not exists bots(id text primary key, rec text, status text, at integer)"); }
   botList() { this.botT(); return this.sql.exec("select rec, status from bots order by at").toArray().map(r => { const b = JSON.parse(r.rec); try { b.status = r.status ? JSON.parse(r.status) : null; } catch (e) {} return b; }); }
   botPut(b) { this.botT(); const { status, ...rec } = b; this.sql.exec("insert into bots(id, rec, at) values(?, ?, ?) on conflict(id) do update set rec = excluded.rec", b.id, JSON.stringify(rec), b.at0 || Date.now()); return true; }
-  botDel(id) { this.botT(); this.sql.exec("delete from bots where id = ?", id); return true; }
+  botDel(id) { this.botT(); this.sql.exec("delete from bots where id = ?", id); this.ctx.storage.delete("twin:" + id); return true; }
+  // an AI double's memory (worker/twin.js): what it was asked and answered, and the order it is on
+  async twinGet(id) { return (await this.ctx.storage.get("twin:" + id)) || null; }
+  async twinPut(id, v) { const o = await this.ctx.storage.get("twin:" + id); if (o && (o.at || 0) > (v.at || 0)) return false; await this.ctx.storage.put("twin:" + id, v); return true; }
   botStatus(all) { this.botT(); let n = 0; for (const id of Object.keys(all).slice(0, 20)) { const v = all[id]; if (!v || typeof v !== "object" || Array.isArray(v) || JSON.stringify(v).length > 2000) continue; this.sql.exec("update bots set status = ? where id = ?", JSON.stringify({ ...v, seen: Date.now() }), id); n++; } return n; }
   // the bots' test results: the latest of each test (a bot sends [test, result, why, when] as it finishes each)
   testT() { this.sql.exec("create table if not exists tests(id text primary key, r text, why text, bot text, at integer)"); if (!this.tx) { this.tx = 1; try { this.sql.exec("alter table tests add column x text"); } catch (e) {} } }   // x: a play-through's steps, shots and spot codes (JSON)

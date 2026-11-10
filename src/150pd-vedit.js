@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, ITEMS, ONLINE, pos, RIDE, TEXT, VLOOK} from './003b-systems.js';
 import {renderer} from './004-main.js';
-import {MAPFILE, SYS, TILE} from './006-map-pre.js';
+import {MAPFILE, MODS, SYS, TILE} from './006-map-pre.js';
 { const FILE='/shared/vlooks.json', V3=THREE.Vector3, esc=TEXT.esc, web=/^https?:$/.test(location.protocol);
   VLOOK.looks={}; VLOOK.more={};
   const BASE=new WeakMap(), ORIG=new WeakMap(), KEYS=new WeakMap(), OWN=new WeakSet(), CC=new THREE.Color(), V=new V3();
@@ -61,15 +61,15 @@ import {MAPFILE, SYS, TILE} from './006-map-pre.js';
 
   /* ---------- parked copies: new cars in the map's live edits (newcars), where the map keeps its cars ---------- */
   const patch=()=>fetch(MAPFILE,{credentials:'same-origin'}).then(r=>r.status===200?r.json():null).then(j=>j&&j.v===1&&j.set&&typeof j.set==='object'?j:{v:1,set:{}});
-  const copies=()=>[...((window.CARS&&CARS.cars)||new Map()).values()].filter(C=>/^m\d+$/.test(C.id));
-  VLOOK.park=model=>{ const C0=window.CARS; if(!C0||!C0.add)return Promise.reject(new Error('the cars are not here yet'));
+  const copies=()=>[...((MODS.cars&&MODS.cars.cars)||new Map()).values()].filter(C=>/^m\d+$/.test(C.id));
+  VLOOK.park=model=>{ const C0=MODS.cars; if(!C0||!C0.add)return Promise.reject(new Error('the cars are not here yet'));
     const B=SHARED.BOD, h=SHARED.heading, d=7*TILE, x=pos.x+Math.sin(h)*d, z=pos.z+Math.cos(h)*d, n=Math.max(0,...[...C0.cars.keys()].map(k=>/^m(\d+)$/.test(k)?+k.slice(1):0))+1;
     const c={id:'m'+n,model,x:+B.MX(x).toFixed(2),y:+B.MY(z).toFixed(2),hd:Math.round(h*180/Math.PI)}; C0.add(c);
     if(!web)return Promise.resolve(c);
     return patch().then(P=>{ const L=Array.isArray(P.set.newcars)?P.set.newcars:[]; L.push(c); P.set.newcars=L; return post(MAPFILE,P); }).then(()=>{ told(); return c; }); };
-  VLOOK.unpark=id=>{ if(window.CARS&&CARS.remove)CARS.remove(id); if(!web)return Promise.resolve();
+  VLOOK.unpark=id=>{ if(MODS.cars&&MODS.cars.remove)MODS.cars.remove(id); if(!web)return Promise.resolve();
     return patch().then(P=>{ P.set.newcars=(P.set.newcars||[]).filter(c=>c&&c.id!==id); return post(MAPFILE,P); }).then(told); };
-  const syncCars=()=>patch().then(P=>{ const C0=window.CARS; if(!C0||!C0.add)return; const L=(P.set.newcars||[]).filter(c=>c&&/^m\d+$/.test(c.id)), ids=new Set(L.map(c=>c.id));
+  const syncCars=()=>patch().then(P=>{ const C0=MODS.cars; if(!C0||!C0.add)return; const L=(P.set.newcars||[]).filter(c=>c&&/^m\d+$/.test(c.id)), ids=new Set(L.map(c=>c.id));
     for(const c of L)C0.add(c); for(const C of copies())if(!ids.has(C.id))C0.remove(C.id); }).catch(()=>{});
   if(web)SYS.onStart(get,'150pd-vedit');
   let lastV=null; SYS.add('world',(k,v)=>{ if(k==='veh'&&v!==lastV){ lastV=v; if(web){ get(); syncCars(); } } },'150pd-vedit');

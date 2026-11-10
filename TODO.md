@@ -16,7 +16,7 @@ Risk is noted only when it isn't low.
 
 ## The order of work
 
-1. **Keep the checks honest**: the tests failing on `main`, then a full run that finishes (core passes on `main`, 9 Nov).
+1. **Keep the checks honest**: a full run that finishes (core, loop, riders and skills pass, 9 Nov).
 2. **The owner's look session** (one sitting on the live site): every **look** line, listed under "For the owner" below.
 3. **The owner's picks** (one batch of questions): every **pick** line, listed under "For the owner" below.
 4. **Performance, measured first**: the render inspector's "undefined ×16", the subway station at the start, the start-up and frame-time
@@ -30,7 +30,7 @@ Risk is noted only when it isn't low.
 
 **To try on the live site** (one sitting; each line is in its area below):
 everything merged since 7 Nov that "waits for his look and yes" (the new layout and fronts, the bar, the gym, the pets and pet shops, the
-farm, the guitar and instruments, the traffic, the skate pit, the telescope and microscope, the far view) · the merges without a green
+fish market (9 Nov), the farm, the guitar and instruments, the traffic, the skate pit, the telescope and microscope, the far view) · the merges without a green
 check (below) · phones and tablets · the moves · the cars, their insides and the radio · the menus, the start spot, the map and GO TO ·
 the HUD margin on his screen · the bath house on the island and a ghost's revival · the fluffy grass · the castle at night ·
 VR on the Quest 3 (and the painter in it), last.
@@ -45,8 +45,11 @@ headset · NPC voices (lifts the 19 Oct "no sound" rule).
 ## CI, checks and tools
 
 CI runs only on pull requests and by hand (the workflow has no push trigger), so `main` itself is checked only when someone starts it.
-- [ ] **Tests failing on `main`** · P2 · S · check. `tests/skills.cjs` waits for archived daily asks and can't pass; `tests/loop.cjs` and
-  `tests/riders.cjs` (the trains never stand at A with doors open).
+- [ ] **`tools/row-lay.cjs` is stale** · P2 · S · code. Its place list is the 8 Nov layout; running it writes that over `data/world.json` (found 9 Nov). Bring it up to date or remove it.
+- [x] **Tests failing on `main`** · P2 · S · check. Done 9 Nov: the loop's station A followed the subway's move (trains stop at the platform
+  again: `loop.cjs`, `riders.cjs`); `skills.cjs` checks only what isn't archived.
+- [x] **Core fails on `main`: the overhead view** · done 9 Nov: the check now follows the 8 Nov rule (some part of you, feet to head,
+  on screen), not your middle inside the screen; the game was right.
 - [ ] **The full GitHub run doesn't finish inside 75 minutes** · P2 · S · check. No full run on `main` has passed since 4 Nov.
 - [ ] **Bodega register test**: clicking dog food doesn't add it to the basket (live game) · P2 · S · find.
 - [ ] **Merged without a green check or re-run, look at them live** · P2 · look. Skate pit #877, floating eyes #869, haze #858, shop
@@ -113,6 +116,8 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 
 ## Places and insides
 
+- [ ] **The fish market** · P2 · M · look. Owner, 9 Nov 2026: waits for his look and yes. Not yet: the workers keep no hours (the jobs system is archived), the editor's ground picture (`tools/topmap.cjs`) not re-made, the minimap does not draw the sheds.
+- [ ] **The fish market's sheds** · P3 · S · pick. The two sheds stand on the row, not on the water side as the real ones did (the quay stays open for fishing); say if they should cross the street.
 - [ ] **The telescope** · P3 · S · code. The firsts board on no wall; satellite passes follow the game hour, not the real one; GO TO
   Betelgeuse failed once; the aurora in the street's own sky.
 - [ ] **The shop insides: walk in and out** · P2 · S (check) · find. Owner, 3 Nov: "you get sent to a middle area where you cant walk in
@@ -138,6 +143,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [ ] **The bots' goals** · pick. Options given to the owner (9 Nov).
 - [ ] **The instruments, the rest** · P3 · S · code. The bar's piano and kit playable in place; a bandstand for the park guitar.
 - [ ] **Companion drone NPC**: mockup done, waiting on "go" · pick.
+- [x] **Your AI double** (owner, 9 Nov 2026; done 9 Nov) · P2 · M · code. `src/162gb-twin.js`, `worker/twin.js`, `tests/twin.cjs`. Needs the `ANTHROPIC_API_KEY` secret on the worker.
 - [ ] **Flight with the cape** · P2 · M · look + code. Its moves check times out, the cape isn't cloth, clouds hide you; DRIFTCAP lasts 5 min.
 - [ ] **Not seen** · look. The floating-eyes fix side on, the paper doll live, clothing layers at night under lamps (#654), the delivery
   drone with two real players.

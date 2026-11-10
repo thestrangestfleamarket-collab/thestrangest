@@ -1,11 +1,10 @@
 // THE DUNGEON: the dungeon under the castle, its rooms, stairs, torches and walls (closes its own builder).
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, LEVELS, LITE, PH, pos, RAG, UI, VIT} from './003b-systems.js';
+import {BATCH, CITY, LEVELS, LITE, PH, pos, RAG, UI, VIT} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {CASTLE, cutWalls, FADE, FIX, grab, MAPG, MODS, OFFDX, SOL, STN, SYS, TILE} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
-import {BATCH} from './008-batch.js';
 import {castleMat, gboxS} from './062-castle.js';
 await grab('dungeon',async()=>{});
 { const K=SHARED.BOD.KC, KP=SHARED.BOD.K.PROPS, Kc=K.CATALOG, sh=SHARED.BOD.K.sh, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, Y=SHARED.BOD.YS, {faceTex,bq,C}=SHARED.BOD, P0=K.DGP, D0=K.DGN, dy=STN.DY, T=.1, NL=5, G=MAPG.dungeon;
@@ -148,6 +147,6 @@ await grab('dungeon',async()=>{});
     MAP.splice(0,MAP.length,...W.map(r=>r.slice())); RM.splice(0,RM.length,...rmOf()); Object.assign(BB,bbOf()); for(const k in LC)delete LC[k];
     if(mine){ clear(); build(); SHARED.BOUND=bnd(); const r=roomAt(iX(pos.x),iZ(pos.z)); if(!r){ const a=lay(1).atUp; UI.goTo(a.x,a.z,'down'); } cur=0; enter(r&&!r.c?r.k:1); } return true; };
   MODS.dungeon={tooHigh:(x,z,py)=>!!mine&&lotAt(x,z)>0&&ground(x,z)-py>Y(MODS.dunTerr?MODS.dunTerr.STEP:14),get B(){ return lay(cur||1).B; },get level(){ return mine?band():0; },get room(){ return cur; },traps:()=>mine?RM.flatMap(r=>lay(r.k).hz):[],lavaR,inLava,ground,inside:(x,z)=>lotAt(x,z)>0,bound:()=>bnd(),arrive:n=>lay(pick(n)).atUp,lay,rooms:RM,roomOf:(x,z)=>{ const r=roomAt(iX(x),iZ(z)); return r&&!r.c?r.k:0; },hook:f=>HK.push(f),tick(){},setMap,map:()=>MAP.map(r=>r.slice()),map0:()=>MAP0.map(r=>r.slice()),OX,OY};
-  window.DUNGEON={get level(){ return mine?band():0; },get room(){ return cur&&RM[cur-1].nm; },at:(gx,gy)=>UI.goTo(X(gx),Z(gy),'down'),to:(f,gx)=>{ const R=lay(cur||1).R; UI.goTo(X(gx??(R.x0+R.x1)/2),Z(R.y0+f*(R.y1-R.y0)),'down'); },traps:()=>MODS.dungeon.traps(),go:n=>go(Math.max(0,Math.min(NL,n|0)),'top'),spawn:async n=>{ if(n&&(!mine||band()!==n))await go(n,'top'); return MODS.skel(); },levels:NL};
+  window.DUNGEON=MODS.dunPlay={get level(){ return mine?band():0; },get room(){ return cur&&RM[cur-1].nm; },at:(gx,gy)=>UI.goTo(X(gx),Z(gy),'down'),to:(f,gx)=>{ const R=lay(cur||1).R; UI.goTo(X(gx??(R.x0+R.x1)/2),Z(R.y0+f*(R.y1-R.y0)),'down'); },traps:()=>MODS.dungeon.traps(),go:n=>go(Math.max(0,Math.min(NL,n|0)),'top'),spawn:async n=>{ if(n&&(!mine||band()!==n))await go(n,'top'); return MODS.skel(); },levels:NL};
   window.DUNDBG=()=>({level:mine?band():0,room:cur,hp:+VIT.hp.toFixed(3),drag:SHARED.drag,lv:SHARED.LVL,busy,lot:typeof pos!=='undefined'?lotAt(pos.x,pos.z):0,objs:mine?mine.objs.length:0,lights:mine?mine.lights.length:0,sol:mine?mine.sol.length:0,
     tris:mine?mine.objs.reduce((a,o)=>{ let t=0; o.traverse(c=>{ if(c.geometry&&c.geometry.attributes.position)t+=(c.geometry.index?c.geometry.index.count:c.geometry.attributes.position.count)/3; }); return a+t; },0):0,skel:!!(MODS.skel&&MODS.skel.p)}); }

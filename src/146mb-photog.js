@@ -1,13 +1,12 @@
 // THE PHOTOGRAPHER: PHOTOGRAPHY, a skill and a living: the camera knows the subject in its frame (a bird, a butterfly, a park creature, a dungeon monster, a golem, a townsperson); a print is worth more the rarer the subject, the higher or deeper the spot, the nearer the danger, the sharper and fuller the frame and the better the photographer, and less for the same kind again that day; the rangers and the Professor buy them; taking and selling them trains the skill.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, ITEMS, NPCS} from './003b-systems.js';
+import {BIRDS, FORAGE, ITEMS, NPCS} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
-import {TILE} from './006-map-pre.js';
+import {MODS, TILE} from './006-map-pre.js';
 import {CREATS} from './087-npc-creatures.js';
 import {BFLY} from './143-bfly.js';
-import {BIRDS} from './144b-birds.js';
 import {TREES} from './144e-trees.js';
 import {WILD} from './144f-wild.js';
 import {GOLEMS} from './146e-golems.js';
@@ -25,7 +24,7 @@ const PHOTOG={}; window.PHOTOG=PHOTOG;
     for(const b of (BFLY.list&&BFLY.list())||[]){ if(!b.g||!b.g.visible)continue; const id='b_'+b.k; L.push({p:wp(b.g).clone(),r:.06*M,name:String(BFK[b.k][0]).toUpperCase(),kind:id,base:val(id,3)/TK[tOf(ITEMS.prop(id,'tier'))],tier:tOf(ITEMS.prop(id,'tier'))}); }
     for(const N of CREATS){ if(!N.g||!N.body||!N.body.visible)continue; const k=kindOf(N), q=WILD.SP[k]; if(!q)continue; const p=wp(N.g).clone(); p.y+=.25*T;
       L.push({p,r:(k==='bear'||k==='deer'||k==='wolf'?.6:.2)*M,name:q[0],kind:'w_'+k,base:2+q[3]/5,tier:q[3]>=45?'s':q[3]>=30?'r':'c',danger:DANGER[k]||0}); }
-    const DM=window.DUNMOBS; if(DM&&SHARED.LVL==='down'){ for(const s of DM.slimes||[])if(!s.dead&&!s.gone)L.push({p:new THREE.Vector3(s.x,(SHARED.py||0)+(s.h||0)+.2*T,s.z),r:.3*M,name:String(s.k).toUpperCase()+' SLIME',kind:'d_slime_'+s.k,base:10,tier:'r',danger:1});
+    const DM=MODS.dunmobs; if(DM&&SHARED.LVL==='down'){ for(const s of DM.slimes||[])if(!s.dead&&!s.gone)L.push({p:new THREE.Vector3(s.x,(SHARED.py||0)+(s.h||0)+.2*T,s.z),r:.3*M,name:String(s.k).toUpperCase()+' SLIME',kind:'d_slime_'+s.k,base:10,tier:'r',danger:1});
       for(const r of DM.res||[])if(r.on&&!r.dead&&r.N&&r.N.g){ const p=wp(r.N.g).clone(); p.y+=.8*T; L.push({p,r:.5*M,name:String(r.N.name||r.key).toUpperCase().replace(/_/g,' '),kind:'d_'+r.key,base:14,tier:'r',danger:1.5}); } }
     for(const r of GOLEMS.list||[])if(!r.dead&&r.N&&r.N.g&&r.N.g.visible){ const p=wp(r.N.g).clone(); p.y+=1*T; L.push({p,r:.9*M,name:'ROCK GOLEM',kind:'d_golem',base:16,tier:'r',danger:1.5}); }
     for(const c of BREAK.list||[])if(!c.dead&&c.g&&c.g.visible){ const p=wp(c.g).clone(); p.y+=.2*T; L.push({p,r:.35*M,name:c.kind==='slime'?'CASTLE SLIME':'RADIOACTIVE SPIDER',kind:'d_brk_'+c.kind,base:12,tier:c.kind==='slime'?'r':'s',danger:1}); }

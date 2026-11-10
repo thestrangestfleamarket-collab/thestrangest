@@ -1,18 +1,17 @@
 // THE SHOPS: any character the character editor marks a shopkeeper (trade.sells in characters.json) sells those item types to the player, priced by each item's shared VALUE, teaches the skills in trade.teaches and buys the groups of goods in trade.buys. Double-click a merchant and their wares open (no talk); double-click a thing to buy it, after a confirmation; goods go into your pack and behave by their item properties (edible → eat, sellable → resell). The mushroom and tomato sellers keep their own hand-built shops.
 import {THREE} from './003-shx.js';
-import {ARCHI, BAG, CHARS, FORAGE, INV, ITEMS, LINES, NPCS, SFX, SHOPS, TEXT, UI} from './003b-systems.js';
+import {ARCHI, BAG, CHARS, FORAGE, INV, ITEMS, LINES, NPCS, SFX, SHOPS, TEXT, UI, WORTH} from './003b-systems.js';
 import {SYS, TILE} from './006-map-pre.js';
-import {WORTH} from './140c-worth.js';
 Object.assign(SHOPS,{bound:new Set(),cur:null});
 { const T=TILE;
-  const name=id=>(window.FORAGE&&window.FORAGE.NM&&window.FORAGE.NM[id])||String(id).toUpperCase().replace(/_/g,' ');
+  const name=id=>(FORAGE&&FORAGE.NM&&FORAGE.NM[id])||String(id).toUpperCase().replace(/_/g,' ');
   const price=id=>{ const v=ITEMS&&ITEMS.prop?ITEMS.prop(id,'value'):0; return +v>0?Math.round(+v):1; };
-  const cash=()=>window.INV?INV.cash:0;
-  const give=(id,n)=>{ const F=window.FORAGE; if(F&&F.give)F.give(id,n); else if(window.INV)INV.add(id,n); if(F&&F.draw)F.draw(); };
-  const say=t=>{ const F=window.FORAGE; if(F&&F.say)F.say(t); };
+  const cash=()=>INV?INV.cash:0;
+  const give=(id,n)=>{ const F=FORAGE; if(F&&F.give)F.give(id,n); else if(INV)INV.add(id,n); if(F&&F.draw)F.draw(); };
+  const say=t=>{ const F=FORAGE; if(F&&F.say)F.say(t); };
   // trade.buys names groups of goods (FORAGE.BUYK: butterflies, birds, ...); paid at the price the game already gives each
-  const buying=tr=>{ const F=window.FORAGE, P=(tr.buys||[]).flatMap(g=>F&&F.BUYK&&F.BUYK[g]||[]); return P.length?Object.keys(INV.items).filter(id=>INV.items[id]>0&&P.some(p=>id.startsWith(p))).sort():[]; };
-  const worth=id=>Math.max(1,Math.round(+ITEMS.prop(id,'value')||1));
+  const buying=tr=>{ const F=FORAGE, P=(tr.buys||[]).flatMap(g=>F&&F.BUYK&&F.BUYK[g]||[]); return P.length?Object.keys(INV.items).filter(id=>INV.items[id]>0&&P.some(p=>id.startsWith(p))).sort():[]; };
+  const worth=id=>{ const N=SHOPS.cur, tr=N&&CHARS.trade&&CHARS.trade(N); return Math.max(1,Math.round((+ITEMS.prop(id,'value')||1)*((tr&&+tr.pays)||1))); };   // trade.pays: what this buyer pays over the usual (a wholesaler's 1.25)
   const esc=TEXT.esc;
 
   // the wares window (owner, 8 Nov 2026: "when you double click a merchant you just see their wares (looks like inventory menu but has price, double click to buy (has confirmation before buying))"): the bag's green list, each thing with its picture, name and price
@@ -28,7 +27,7 @@ Object.assign(SHOPS,{bound:new Set(),cur:null});
   const sp=document.createElement('div'); sp.id='shopg'; sp.hidden=true; document.body.appendChild(sp);
   sp.addEventListener('keyup',e=>e.stopPropagation());
   sp.addEventListener('keydown',e=>{ if(e.key==='Escape'){ if(Q)ask(null); else SHOPS.close(); } else if(e.key==='Enter'&&Q)ask(true); e.stopPropagation(); });
-  const pic=id=>{ try{ return window.BAG&&BAG.icon?BAG.icon(id):''; }catch(e){ return ''; } };
+  const pic=id=>{ try{ return BAG&&BAG.icon?BAG.icon(id):''; }catch(e){ return ''; } };
   const row=(id,right,data,tag)=>`<div class="shr${tag||''}" ${data} title="${esc(name(id))}"><img alt="" draggable="false" src="${pic(id)}"><b>${esc(name(id))}</b>${right}</div>`;
   let Q=null;   // the confirmation open: its answer
   const ask=v=>{ const q=Q; Q=null; const el=sp.querySelector('.shq'); if(el)el.hidden=true; if(q)q(v); };
@@ -37,24 +36,24 @@ Object.assign(SHOPS,{bound:new Set(),cur:null});
   const draw=()=>{ '@later'; const N=SHOPS.cur; if(!N||sp.hidden)return; const tr=CHARS.trade&&CHARS.trade(N); if(!tr){ SHOPS.close(); return; }
     const sc=(sp.querySelector('.shm')||{}).scrollTop||0, have=cash();
     let o=`<div class="sht"><b>${esc(N.name||'A MERCHANT')}</b><i>$${Math.round(have)}</i><button class="shx" type="button" title="close">X</button></div><div class="shm">`;
-    o+=tr.sells.filter(id=>!ARCHI(id)).map(id=>{ const p=price(id), rent=ITEMS.prop&&ITEMS.prop(id,'rental'); return row(id,`${rent?`<u>${window.FORAGE&&FORAGE.has(id)?'REFILL':'RENT'}</u>`:''}<i>$${p}</i>`,`data-buy="${esc(id)}"${rent?' data-rent="1"':''}`,p>have?' no':''); }).join('');
+    o+=tr.sells.filter(id=>!ARCHI(id)).map(id=>{ const p=price(id), rent=ITEMS.prop&&ITEMS.prop(id,'rental'); return row(id,`${rent?`<u>${FORAGE&&FORAGE.has(id)?'REFILL':'RENT'}</u>`:''}<i>$${p}</i>`,`data-buy="${esc(id)}"${rent?' data-rent="1"':''}`,p>have?' no':''); }).join('');
     const bid=buying(tr); if(bid.length)o+=`<div class="shh">THEY BUY</div>`+bid.map(id=>row(id,`<u>x${INV.items[id]}</u><i>$${WORTH.sell(id,1,worth(id))}</i>`,`data-sold="${esc(id)}"`)).join('');
-    const F=window.FORAGE; let extra=''; if(tr.teaches&&tr.teaches.length&&F&&F.trainRows)extra+=F.trainRows(tr.teaches); if(F&&F.askRows)extra+=F.askRows(CHARS.id(N)); if(extra)o+=`<div class="shx2"><table style="border-collapse:collapse;width:100%">${extra}</table></div>`;
+    const F=FORAGE; let extra=''; if(tr.teaches&&tr.teaches.length&&F&&F.trainRows)extra+=F.trainRows(tr.teaches); if(F&&F.askRows)extra+=F.askRows(CHARS.id(N)); if(extra)o+=`<div class="shx2"><table style="border-collapse:collapse;width:100%">${extra}</table></div>`;
     o+=`</div><div class="shf">DOUBLE CLICK TO ${bid.length?'BUY OR SELL':'BUY'}</div><div class="shq" hidden><div><p></p><button type="button" data-q="y">YES</button><button type="button" data-q="n">NO</button></div></div>`;
     sp.innerHTML=o; if(sc)sp.querySelector('.shm').scrollTop=sc; };
 
   // buying and selling, the one way (the window's double click after its confirmation, and the checks)
   SHOPS.buy=(id,n=1,rent=false)=>{ const c=price(id)*n; if(cash()<c){ say('YOU CANNOT AFFORD THAT.'); return false; } INV.cash-=c;
-    if(rent){ if(!(window.FORAGE&&FORAGE.has(id)))give(id,1); SYS.run('rent',id); } else { give(id,n); say(`YOU BUY ${n} ${name(id)} FOR $${c}.`); }   // a rental: one at a time, paid each time it is filled
+    if(rent){ if(!(FORAGE&&FORAGE.has(id)))give(id,1); SYS.run('rent',id); } else { give(id,n); say(`YOU BUY ${n} ${name(id)} FOR $${c}.`); }   // a rental: one at a time, paid each time it is filled
     if(window.SFX)SFX.play('clunk',{vol:.5}); draw(); return true; };
-  SHOPS.sell=(id,n)=>{ const F=window.FORAGE; n=Math.min(n,INV.items[id]||0); if(!n)return false; const v=WORTH.sell(id,n,worth(id)); if(F&&F.take)F.take(id,n); INV.cash+=v; INV.add('x',0); delete INV.items.x; say(`YOU SELL ${n} ${name(id)} FOR $${v}.`); for(const f of (F&&F.SOLD)||[])f(id,n,v); if(window.SFX)SFX.play('clunk',{vol:.5}); if(F&&F.draw)F.draw(); draw(); return true; };
+  SHOPS.sell=(id,n)=>{ const F=FORAGE; n=Math.min(n,INV.items[id]||0); if(!n)return false; const v=WORTH.sell(id,n,worth(id)); if(F&&F.take)F.take(id,n); INV.cash+=v; INV.add('x',0); delete INV.items.x; say(`YOU SELL ${n} ${name(id)} FOR $${v}.`); for(const f of (F&&F.SOLD)||[])f(id,n,v); if(window.SFX)SFX.play('clunk',{vol:.5}); if(F&&F.draw)F.draw(); draw(); return true; };
   sp.addEventListener('click',e=>{ '@later'; const b=e.target.closest('button'); if(!b||!SHOPS.cur)return;
     if(b.classList.contains('shx'))return SHOPS.close(); if(b.dataset.q)return ask(b.dataset.q==='y');
-    if(b.dataset.train){ window.FORAGE.train(b.dataset.train,+b.dataset.cap); draw(); return; } if(b.dataset.ask){ if(FORAGE.hand)FORAGE.hand(+b.dataset.ask); draw(); } });
+    if(b.dataset.train){ FORAGE.train(b.dataset.train,+b.dataset.cap); draw(); return; } if(b.dataset.ask){ if(FORAGE.hand)FORAGE.hand(+b.dataset.ask); draw(); } });
   sp.addEventListener('dblclick',async e=>{ '@later'; const r=e.target.closest('.shr'); if(!r||!SHOPS.cur||Q)return; e.preventDefault();
     if(r.dataset.buy){ const id=r.dataset.buy, rent=!!r.dataset.rent, p=price(id); if(cash()<p){ say('YOU CANNOT AFFORD THAT.'); return; }
-      if(await confirm(`${rent?(window.FORAGE&&FORAGE.has(id)?'REFILL':'RENT'):'BUY'} ${name(id)} FOR $${p}?`))SHOPS.buy(id,1,rent); return; }
-    if(r.dataset.sold){ const id=r.dataset.sold, have=INV.items[id]||0, n=have>1&&window.BAG&&BAG.ask?await BAG.ask(have,e.clientX,e.clientY):Math.min(1,have); if(!n)return;
+      if(await confirm(`${rent?(FORAGE&&FORAGE.has(id)?'REFILL':'RENT'):'BUY'} ${name(id)} FOR $${p}?`))SHOPS.buy(id,1,rent); return; }
+    if(r.dataset.sold){ const id=r.dataset.sold, have=INV.items[id]||0, n=have>1&&BAG&&BAG.ask?await BAG.ask(have,e.clientX,e.clientY):Math.min(1,have); if(!n)return;
       if(await confirm(`SELL ${n>1?n+' ':''}${name(id)} FOR $${WORTH.sell(id,n,worth(id))}?`))SHOPS.sell(id,n); } });
 
   SHOPS.open=N=>{ if(!N||!(CHARS.trade&&CHARS.trade(N)))return; { const tr=CHARS.trade(N); if(!(tr.sells||[]).some(id=>!ARCHI(id))&&!(tr.buys||[]).length&&!(tr.teaches||[]).length){ say('CLOSED.'); return; } } SHOPS.cur=N; sp.hidden=false; draw(); if(window.LINES&&N.g)LINES.say(N,'greet'); };
@@ -69,4 +68,4 @@ Object.assign(SHOPS,{bound:new Set(),cur:null});
   SHOPS.sync=()=>{ for(const N of NPCS.concat(NPCS.extra||[]))try{ bind(N); }catch(e){} };
   SYS.onStart(()=>SHOPS.sync(),'159b-shops');
   window.SHOPS=SHOPS;
-  window.SHOPDBG=()=>({bound:[...SHOPS.bound],cur:SHOPS.cur&&SHOPS.cur.name,cash:window.INV&&INV.cash,things:(UI.things||[]).filter(t=>t.npc&&SHOPS.bound.has(CHARS.id(t.npc))).map(t=>t.name)}); }
+  window.SHOPDBG=()=>({bound:[...SHOPS.bound],cur:SHOPS.cur&&SHOPS.cur.name,cash:INV&&INV.cash,things:(UI.things||[]).filter(t=>t.npc&&SHOPS.bound.has(CHARS.id(t.npc))).map(t=>t.name)}); }

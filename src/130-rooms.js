@@ -1,6 +1,6 @@
 // ROOMS: which room you are in, the insides off the map (ROOMS.off, the lazy rooms) and the way in and out behind the fade, peek, roofs hidden when inside, and roofAt.
 import {SHARED, THREE} from './003-shx.js';
-import {BATCH, BLK, CIVIC, CULL, DRM, DRONE, ED, LEVELS, LITE, LOOKS, MAPED, MUS, NPCS, ONLINE, PNM, pos, ROOMS, SGM, UI, VIS, W3, WINDOWS} from './003b-systems.js';
+import {BATCH, BLK, CIVIC, CULL, DRM, DRONE, ED, LEVELS, LITE, LOOKS, MAPED, MUS, NPCS, ONLINE, PNM, pos, ROOMS, SFX, SGM, UI, VIS, W3, WINDOWS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {cutWalls, FADE, FREE, MAPG, MODS, OUT, OVERHEAD, SEEN, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
@@ -67,7 +67,7 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
   ROOMS.goOut=id=>{ const o=ROOMS.off[id]; UI.goTo(o.out[0],o.out[1],o.out[2],o.out[3]); ROOMS.cur=null; IV.want=null; apply(null); return ROOMS.unstow&&ROOMS.unstow(); };
   // ONE WAY IN AND OUT OF AN INSIDE (ROOMS.run): a record says what differs. busy (its own lock), gate(on) (may it go now), built(), need() (its code), pre() (what it fetches first), make() (the build), arrive(opt) and depart(opt) (where you stand), text(on,built,opt) and fade(on,built,opt) (the fade's words and way; 'ENTERING name' on the way into one not yet built, a cut). Nothing is returned when it does not go.
   ROOMS.run=(o,on,opt={})=>{ if(!o||o.busy||(o.gate&&!o.gate(on)))return; o.busy=true; const built=o.built();
-    return FADE.run(o.text?o.text(on,built,opt):on&&!built?'ENTERING '+o.name:'',async()=>{ if(on){ if(!o.built()){ await o.need(); if(o.pre)await o.pre(); o.make(); } await o.arrive(opt); } else await o.depart(opt); },{cut:true,...(o.fade?o.fade(on,built,opt):null)}).finally(()=>{ o.busy=false; }); };
+    return FADE.run(o.text?o.text(on,built,opt):on&&!built?'ENTERING '+o.name:'',async()=>{ if(!(on&&(opt.at||opt.walk===false)))SFX.door(); if(on){ if(!o.built()){ await o.need(); if(o.pre)await o.pre(); o.make(); } await o.arrive(opt); } else await o.depart(opt); },{cut:true,...(o.fade?o.fade(on,built,opt):null)}).finally(()=>{ o.busy=false; }); };
   // an inside off the map as such a record: its own gate, words and fade from ROOMS.off[id] when it has them
   const REC={}, offRec=id=>{ const o=ROOMS.off[id]; if(!o)return null; return REC[id]||(REC[id]={get name(){ return o.name; },get busy(){ return IV.busy; },set busy(v){ IV.busy=v; },gate:on=>!FADE.busy&&(!on||!o.gate||o.gate()),built:()=>!!(ROOMS.lazy[id]&&ROOMS.lazy[id].done),
     need:()=>{},make:()=>{},arrive:opt=>ROOMS.goIn(id,opt.at),depart:()=>ROOMS.goOut(id),text:o.text,fade:o.fade}); };

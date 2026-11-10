@@ -113,6 +113,32 @@
     "url": "https://www.loc.gov/collections/national-jukebox/about-this-collection/rights-and-access/",
     "snapshot": "data/full/radio/licence.txt"
    }
+  },
+  {
+   "id": "sfx",
+   "kind": "file",
+   "runtime": "data/sfx.mp3",
+   "made": "tools/sfx-bake.py",
+   "source": {
+    "site": "OpenGameArt",
+    "urls": [
+     "https://opengameart.org/content/fantozzis-footsteps-grasssand-stone",
+     "https://opengameart.org/content/different-steps-on-wood-stone-leaves-gravel-and-mud",
+     "https://opengameart.org/content/door-open-door-close-set",
+     "https://opengameart.org/content/door-lock-sounds"
+    ],
+    "authors": {
+     "step_stone, step_grass": "Fantozzi (freesound.org pack 10338), cut by qubodup",
+     "step_wood": "TinyWorlds",
+     "dooropen, door": "qubodup",
+     "latch": "Cough-E"
+    }
+   },
+   "licence": {
+    "name": "CC0 1.0",
+    "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "snapshot": "data/full/sfx/licence.txt"
+   }
   }
  ]
 }

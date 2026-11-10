@@ -6,7 +6,7 @@
 const fs=require('fs'), path=require('path'), H=fs.readFileSync(__dirname+'/../dist/market.html','utf8'), a0=H.indexOf('const RIG=(()=>{'), src=H.slice(a0,H.indexOf('\n})();',a0)+6);
 global.window=global; global.location={search:''}; global.document={createElement:()=>({getContext:()=>({})})}; global.localStorage={getItem:()=>null,setItem(){}};
 const R=new Function(src+'\nreturn RIG;')();
-const [DIR,SPEC,FPSA='10']=process.argv.slice(2), KF=+FPSA, D=Math.PI/180, SPECS=JSON.parse(fs.readFileSync(SPEC));
+const MAIN=require.main===module, [DIR,SPEC,FPSA='10']=MAIN?process.argv.slice(2):[], KF=+FPSA, D=Math.PI/180;
 const v=a=>({x:a[0],y:a[1],z:a[2]}), sub=(a,b)=>({x:a.x-b.x,y:a.y-b.y,z:a.z-b.z}), add=(a,b)=>({x:a.x+b.x,y:a.y+b.y,z:a.z+b.z}), mul=(a,k)=>({x:a.x*k,y:a.y*k,z:a.z*k}),
   dot=(a,b)=>a.x*b.x+a.y*b.y+a.z*b.z, cross=(a,b)=>({x:a.y*b.z-a.z*b.y,y:a.z*b.x-a.x*b.z,z:a.x*b.y-a.y*b.x}), len=a=>Math.sqrt(dot(a,a)), nrm=a=>mul(a,1/len(a));
 const Y=(p,t)=>({x:p.x*Math.cos(t)+p.z*Math.sin(t),y:p.y,z:-p.x*Math.sin(t)+p.z*Math.cos(t)}), Zr=(p,t)=>({x:p.x*Math.cos(t)+p.y*Math.sin(t),y:-p.x*Math.sin(t)+p.y*Math.cos(t),z:p.z}),
@@ -39,10 +39,12 @@ const fit=(M,o)=>{ const F=M.frames, fps=M.fps, i0=Math.round((o.from||0)*fps), 
     if(f===F[i0]||f.__err){ const B2=R.build(R.mkMove({keys:[[0,{}],[0.1,c,'lin']]}).k.slice(-1)[0].P,null).J; for(const [x,y] of [['pelvis','chest'],['chest','head'],['hipL','kneeL'],['kneeL','ankleL'],['hipR','kneeR'],['kneeR','ankleR'],['shoulderL','elbowL'],['elbowL','wristL'],['shoulderR','elbowR'],['elbowR','wristR']]){ const e=Math.acos(Math.max(-1,Math.min(1,dot(nrm(sub(B2[y],B2[x])),nrm(sub(J[y],J[x]))))))/D; if(process.env.DIAG)console.log('   ',(x+'>'+y).padEnd(18),e.toFixed(0)); ER.s+=e; ER.n++; ER.w=Math.max(ER.w,e); } }
     return c; };
   const ER={s:0,n:0,w:0}; for(let i=i0;i<=i1;i+=Math.max(1,Math.round((i1-i0)/6)))F[i].__err=1;
-  const keys=[], dur=(i1-i0)/fps, step=Math.max(1,Math.round(fps/KF));
+  const keys=[], dur=(i1-i0)/fps, step=Math.max(1,Math.round(fps/(o.kf||KF)));
   for(let i=i0;i<=i1;i+=step) keys.push([+((i-i0)/fps).toFixed(3),keyOf(F[i]),'lin']);
   if((i1-i0)%step) keys.push([+dur.toFixed(3),keyOf(F[i1]),'lin']);
-  console.log('  fit: bones off by',(ER.s/ER.n).toFixed(0),'deg on average, worst',ER.w.toFixed(0)); return {src:M.src,dur:+dur.toFixed(3),loop:!!o.loop,keys,...(o.drift?{opts:{...(o.opts||{}),drift:+(o.drift*K).toFixed(2)}}:{})}; };   // drift: an in-place recording's glide (m/s along the facing, e.g. the moonwalk's sliding foot), as rig units a second
+  if(!o.quiet)console.log('  fit: bones off by',(ER.s/ER.n).toFixed(0),'deg on average, worst',ER.w.toFixed(0)); return {src:M.src,dur:+dur.toFixed(3),loop:!!o.loop,keys,...(o.drift?{opts:{...(o.opts||{}),drift:+(o.drift*K).toFixed(2)}}:{})}; };   // drift: an in-place recording's glide (m/s along the facing, e.g. the moonwalk's sliding foot), as rig units a second
+module.exports={fit,R};   // (tools/dances-bake.cjs fits its recordings the same way)
+if(MAIN){ const SPECS=JSON.parse(fs.readFileSync(SPEC));
 const OUT=path.join(__dirname,'../data/moves2.json'), all={};   // (the spec is the whole list)
 for(const [name,o] of Object.entries(SPECS)){ const M=JSON.parse(fs.readFileSync(path.join(DIR,o.clip+'.json'))); all[name]={...(o.opts?{opts:o.opts}:{}),...fit(M,o)}; console.log(name,'<-',o.clip,all[name].dur+'s',all[name].keys.length,'keys',JSON.stringify(all[name]).length,'bytes'); }
-fs.writeFileSync(OUT,JSON.stringify(all)); console.log(OUT,fs.statSync(OUT).size,'bytes,',Object.keys(all).length,'moves');
+fs.writeFileSync(OUT,JSON.stringify(all)); console.log(OUT,fs.statSync(OUT).size,'bytes,',Object.keys(all).length,'moves'); }

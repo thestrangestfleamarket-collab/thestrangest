@@ -1823,6 +1823,20 @@
   "sellable": true,
   "size": 1.7
  },
+ "jugball": {
+  "value": 4,
+  "weight": 0.12,
+  "stackable": true,
+  "sellable": true,
+  "size": 0.1
+ },
+ "jugclub": {
+  "value": 9,
+  "weight": 0.25,
+  "stackable": true,
+  "sellable": true,
+  "size": 0.5
+ },
  "bmx": {
   "slot": "hand",
   "grants": "bmx",

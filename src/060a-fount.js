@@ -93,8 +93,10 @@ FOUNT.held=(x,z)=>FOUNT.holds.some(f=>f(x,z));
           .replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=vec3(.7,.82,.78)*wg;'); };
       m.customProgramCacheKey=()=>'fwater'; return m; };
     const lakeM=wmat([.13,.25,.18],[.24,.33,.21],[0,0,0,0]); FOUNT.lakeM=lakeM;
-    const chunks=(cell,keep,make)=>{ const x0=Math.floor(S.x0)-6, y0=Math.floor(S.y0)-6, CH=16; let tris=0;
-      for(let cx=x0;cx<L.cx;cx+=CH)for(let cy=y0;cy<L.cy;cy+=CH){ const pos=[], ex=[], cl=cx>=P.x1||cy>=P.y1?cell*4:cell; for(let x=cx;x<Math.min(cx+CH,L.cx+cl);x+=cl)for(let y=cy;y<Math.min(cy+CH,L.cy+cl);y+=cl){ const cell=cl; const q=[[x,y],[x+cell,y],[x+cell,y+cell],[x,y+cell]], d=q.map(([a,b])=>-lake(a,b)); if(!keep(d,x+cell/2,y+cell/2))continue; make(q,d,pos,ex); }
+    // laid out in 16-cell chunks as ever, three by three of them drawn as one mesh (10 Nov 2026: the lake was 145 draws of one material)
+    const chunks=(cell,keep,make)=>{ const x0=Math.floor(S.x0)-6, y0=Math.floor(S.y0)-6, CH=16, BG=3*CH; let tris=0;
+      for(let bx=x0;bx<L.cx;bx+=BG)for(let by=y0;by<L.cy;by+=BG){ const pos=[], ex=[];
+        for(let cx=bx;cx<Math.min(bx+BG,L.cx);cx+=CH)for(let cy=by;cy<Math.min(by+BG,L.cy);cy+=CH){ const cl=cx>=P.x1||cy>=P.y1?cell*4:cell; for(let x=cx;x<Math.min(cx+CH,L.cx+cl);x+=cl)for(let y=cy;y<Math.min(cy+CH,L.cy+cl);y+=cl){ const cell=cl; const q=[[x,y],[x+cell,y],[x+cell,y+cell],[x,y+cell]], d=q.map(([a,b])=>-lake(a,b)); if(!keep(d,x+cell/2,y+cell/2))continue; make(q,d,pos,ex); } }
         if(!pos.length)continue; tris+=pos.length/9; FOUNT.parts.push([pos,ex]); }
       return tris; };
     FOUNT.parts=[]; const BD=[[.36,.32,.22],[.29,.28,.19],[.21,.23,.15],[.14,.18,.12]], lin=new THREE.Color();

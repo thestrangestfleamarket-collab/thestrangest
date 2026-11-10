@@ -62,9 +62,9 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
     ok(await new Promise(r=>{ const w=new WS(BASE.replace(/^http/,'ws')+'/parties/dish/petri',{headers:{origin:BASE}}); w.on('unexpected-response',(q,res)=>r(res.statusCode===401||res.statusCode===404)); w.on('open',()=>r(false)); w.on('error',()=>r(true)); }),'the dish without a login is refused');
     let a=null, bb=null; try{ a=await dish('dev:dish-a'); bb=await dish('dev:dish-b'); }catch(e){ ok(false,'two players reach the dish ('+e.message+')'); }
     if(a&&bb){ const hiA=await wait(a,g=>g.find(m=>m.t==='hi')), hiB=await wait(bb,g=>g.find(m=>m.t==='hi'));
-      const A=hiA&&hiA.you; ok(hiA&&hiB&&A&&A!==hiB.you&&hiB.S.players.some(p=>p[0]===A)&&hiB.S.players.filter(p=>p[3]).length===11&&hiA.S.pellets.length===1000,'two players reach the dish and see each other among eleven bots ('+(hiB&&hiB.S.players.length)+' in it, you '+A+')');
+      const A=hiA&&hiA.you; ok(hiA&&hiB&&A&&A!==hiB.you&&hiB.S.players.some(p=>p[0]===A)&&hiB.S.players.length===2&&hiA.S.pellets.length===1000,'two players reach the dish and see each other, no bots ('+(hiB&&hiB.S.players.length)+' in it, you '+A+')');
       a.w.send(JSON.stringify({t:'in',dx:1,dy:0})); const tk=await wait(a,g=>g.filter(m=>m.t==='tk').length>=5&&g.filter(m=>m.t==='tk').slice(-1)[0]); const mv=tk&&tk.cells.find(c=>c[1]===A), first=hiA&&hiA.S.cells.find(c=>c[1]===A);
-      ok(mv&&first&&mv[2]>first[2]+5&&tk.who.length>=13&&tk.board.length>0,'the dish ticks ten times a second and steering moves your cell ('+(first&&first[2])+' → '+(mv&&mv[2])+')');
+      ok(mv&&first&&mv[2]>first[2]+5&&tk.who.length===2&&tk.board.length>0,'the dish ticks ten times a second and steering moves your cell ('+(first&&first[2])+' → '+(mv&&mv[2])+')');
       a.w.close(); bb.w.close(); }
     // the section's room (the Block): a login reaches it, the second player hears the first is there, a move and a name go across
     const blk=who=>new Promise((res,rej)=>{ const w=new WS(BASE.replace(/^http/,'ws')+'/parties/block/s-a',{headers:{cookie:'tsfm-pass='+who,origin:BASE}}); const got=[]; w.on('message',d=>{ try{ got.push(JSON.parse(d)); }catch(e){} }); w.on('open',()=>res({w,got})); w.on('error',rej); setTimeout(()=>rej(new Error('no block')),20000); });

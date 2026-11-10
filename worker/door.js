@@ -699,12 +699,12 @@ async function admin(env, b, origin) {
 }
 
 // THE DISH: PETRI's arena for the whole market, the simulation (worker/dish.js) run here twenty times a second while anyone is in it;
-// each player sends only how they steer, and gets back what is in their view ten times a second; bots fill the dish
+// each player sends only how they steer, and gets back what is in their view ten times a second
 export class Dish extends Server {
   static options = { hibernate: false };
-  dish() { if (!this.S) { this.S = DISH.make(Math.floor(Math.random() * 1e9) + 1); this.S.ev = []; for (let i = 0; i < DISHK.FILL - 1; i++) DISH.join(this.S, "bot" + i, DISHK.BOTS[i % DISHK.BOTS.length], DISHK.COLS[(i * 5 + 3) % DISHK.COLS.length], true); } return this.S; }
+  dish() { if (!this.S) { this.S = DISH.make(Math.floor(Math.random() * 1e9) + 1); this.S.ev = []; } return this.S; }
   snap(S) { return { t: S.t, cells: S.cells.map(c => [c.id, c.o, Math.round(c.x), Math.round(c.y), +c.m.toFixed(1), Math.round(c.vx), Math.round(c.vy), +(c.mt - S.t).toFixed(1)]), pellets: S.pellets.map(q => [q.id, Math.round(q.x), Math.round(q.y), q.c]), vir: S.viruses.map(v => [Math.round(v.x), Math.round(v.y), v.m, Math.round(v.vx), Math.round(v.vy)]),
-    blobs: S.blobs.map(b => [Math.round(b.x), Math.round(b.y), b.m, b.c, Math.round(b.vx), Math.round(b.vy)]), players: Object.values(S.players).map(p => [p.id, p.name, p.col, p.bot ? 1 : 0, p.dead, Math.round(p.best), p.eaten]), board: S.board }; }
+    blobs: S.blobs.map(b => [Math.round(b.x), Math.round(b.y), b.m, b.c, Math.round(b.vx), Math.round(b.vy)]), players: Object.values(S.players).map(p => [p.id, p.name, p.col, p.dead, Math.round(p.best), p.eaten]), board: S.board }; }
   async onConnect(c, ctx) {
     const id = ctx.request.headers.get("x-tsfm-id") || ""; if (!id) return c.close(4001, "login");
     for (const o of this.getConnections()) if (o.id !== c.id && o.state && o.state.id === id) o.close(4000, "joined again");
@@ -724,7 +724,7 @@ export class Dish extends Server {
   }
   tick() { const S = this.S; if (!S) return; const now = Date.now(), dt = Math.min(.1, (now - this.last) / 1000); this.last = now; DISH.step(S, dt); if (++this.n % 2) return;
     const ev = S.ev.splice(0), vir = S.viruses.map(v => [Math.round(v.x), Math.round(v.y), v.m, Math.round(v.vx), Math.round(v.vy)]), blobs = S.blobs.map(b => [Math.round(b.x), Math.round(b.y), b.m, b.c, Math.round(b.vx), Math.round(b.vy)]);
-    const who = Object.values(S.players).map(p => [p.id, p.name, p.col, p.bot ? 1 : 0, p.dead, Math.round(p.best), p.eaten]);
+    const who = Object.values(S.players).map(p => [p.id, p.name, p.col, p.dead, Math.round(p.best), p.eaten]);
     for (const c of this.getConnections()) { const s = c.state; if (!s) continue; const p = S.players[s.id]; if (!p) continue;
       let cx = 0, cy = 0, w = 0, mass = 0; for (const q of S.cells) if (q.o === s.id) { cx += q.x * q.m; cy += q.y * q.m; w += q.m; mass += q.m; } if (w) { s.cx = cx / w; s.cy = cy / w; }
       const z = 1 / (1 + Math.sqrt(Math.max(mass, 10)) / 20), rx = 256 / z, ry = 224 / z, cells = [];

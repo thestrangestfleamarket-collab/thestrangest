@@ -1,14 +1,14 @@
 # PETRI — the ninth cabinet, in the line of agar.io
 
 Owner, 1 Nov 2026: "lets create an agar.io style clone in arcade", then "build petri". Not an 80s machine: the one new cabinet
-wheeled into the room. *Where it stands (1 Nov 2026): built. §11.1 the dish with bots, the cabinet, the check; §11.2 the whole market in one dish:
+wheeled into the room. *Where it stands (1 Nov 2026): built. §11.1 the dish, the cabinet, the check; §11.2 the whole market in one dish:
 the simulation lives in `worker/dish.js` (the page gets it by the build's `__CODE__`), the `Dish` Durable Object runs it, every
-player on the website is in it, bots fill it, the site check reaches it with two players.*
+player on the website is in it, the site check reaches it with two players.*
 
 ## 1. The game in a sentence
 
 You are a cell in a dish. Eat the pellets and the cells smaller than you, split and squirt mass to catch or escape, and never let
-a bigger one touch you. Everyone in the market who plays is in the same dish at the same time; bots fill it when few are.
+a bigger one touch you. Everyone in the market who plays is in the same dish at the same time. No bots (owner, 10 Nov 2026): only players.
 
 ## 2. The cabinet
 
@@ -49,22 +49,20 @@ follows the pointer, as the original.
   with only the changes, the leaderboard) 20 times a second. The client draws between updates by interpolation.
 - **Fair by construction**: the server decides every eat, split and death; a client cannot cheat its mass. The login cookie is
   checked as for `Block`.
-- **Bots** fill the dish to 12 cells: they wander toward the nearest pellet, flee anything bigger within 600 units, chase anything
-  smaller than 0.7× themselves, split when a prey is close and small enough. Named after the market (the Radish, the Operator, …).
 - **Cost**: a server tick over ≤ 60 cells + 1000 pellets is well under a millisecond; one message a client a tick, about 2 KB when
   busy. The DO costs nothing while asleep. The client: one 2D canvas at 256×224 like the other cabinets, zoomed out as you grow.
-- Off the website (the single-file page the checks drive) the dish runs locally with bots only, the same code (`DISH.step` shared
+- Off the website (the single-file page the checks drive) the dish runs locally with you alone in it, the same code (`DISH.step` shared
   by server and client: one simulation, one path).
 
 ## 6. The screen
 
 The 256×224 canvas of every cabinet: the dish scrolls with you, zoom = 1 / (1 + √mass / 20); your cells in your colour with your
-initials (the high-score initials) on them, others with theirs or the bot's name; the leaderboard at the right; your mass and the
+initials (the high-score initials) on them, others with theirs; the leaderboard at the right; your mass and the
 count of players at the top; a thin minimap bottom left.
 
 ## 7. Attract mode
 
-A bot plays your cabinet's screen in the room with the live dish (the card, the top ten, then the dish as seen by one of the bots).
+The cabinet's screen plays itself in the room (the card, the top ten, then a cell steered by the attract mode).
 
 ## 8. Scoring and the table
 
@@ -78,15 +76,15 @@ start.
 
 ## 10. The check
 
-`tests/arcade-petri.cjs`: enters the arcade, plays PETRI (bots only off the website), eats pellets and grows (mass rises), SPACE
-splits (cell count 2), the pieces merge back (a cheat shortens the clock), C ejects (a blob appears, mass drops), a bot eats you
-when a cheat makes it big → GAME OVER with the score. `tests/online.cjs` gains the `Dish` round trip: two clients in one dish see
+`tests/arcade-petri.cjs`: enters the arcade, plays PETRI (alone off the website), eats pellets and grows (mass rises), SPACE
+splits (cell count 2), the pieces merge back (a cheat shortens the clock), C ejects (a blob appears, mass drops), a big cell a cheat puts in
+eats you → GAME OVER with the score. `tests/online.cjs` gains the `Dish` round trip: two clients in one dish see
 each other's cells, the server eats the smaller one.
 
 ## 11. The build, in two pull requests
 
-1. **The dish**: the shared simulation, the client with bots, the cabinet, the check. Playable alone.
-2. **The whole market in it**: the `Dish` Durable Object, the client's wiring to it, the online check, the attract bot in the live
+1. **The dish**: the shared simulation, the client, the cabinet, the check. Playable alone.
+2. **The whole market in it**: the `Dish` Durable Object, the client's wiring to it, the online check, the attract mode in the live
    dish.
 
 ## 12. Open for the owner

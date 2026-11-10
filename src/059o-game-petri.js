@@ -1,17 +1,17 @@
-// THE ARCADE'S PETRI: the dish for its cabinet (in the line of agar.io; docs/arcade/petri.md): cells in one dish eating pellets and each other, split and eject, viruses, bots filling the dish; its own chunk, fetched the first time you play it. The simulation (DISH) is one path for the client, its bots and, later, the worker's shared dish.
+// THE ARCADE'S PETRI: the dish for its cabinet (in the line of agar.io; docs/arcade/petri.md): cells in one dish eating pellets and each other, split and eject, viruses; its own chunk, fetched the first time you play it. The simulation (DISH) is one path for the client and the worker's shared dish.
 import {STORE} from './006-map-pre.js';
 STORE.cabs.add({name:'PETRI',skill:'myco',hold:1,lore:{maker:'NODE 9',place:'BERLIN',year:2015,col:'#7aff6a',tag:"EAT. SPLIT. DON'T GET EATEN.",story:['ONE DISH FOR THE WHOLE MARKET.','THE BIGGEST CELL WEARS THE CROWN.']},
   game:L=>{ '@petri'; const {W,H,R,tx,beep,pops,popTick}=L;
   __CODE__("worker/dish.js")
   const petri={help:['ARROWS OR THE MOUSE STEER · SPACE SPLIT','C EJECT MASS · EAT THE SMALL, FLEE THE BIG'],grade:[200,1000,3000],insert:212,make:()=>{
     const s={mode:'play',score:0,over:false,t:0,pops:[],auto:0,sub:''}, cam={x:DW/2,y:DH/2,z:.8}, srv=/^http/.test(location.protocol); let ME='you', S=DISH.make(Math.floor(R()*1e9)+1), me=null, sock=null, net=false, inT=0, lastIn='', th=0;
-    me=DISH.join(S,ME,'YOU',COLS[Math.floor(R()*COLS.length)]); for(let i=0;i<FILL-1;i++)DISH.join(S,'bot'+i,BOTS[i%BOTS.length],COLS[(i*5+3)%COLS.length],true);
+    me=DISH.join(S,ME,'YOU',COLS[Math.floor(R()*COLS.length)]);
     // on the website the dish is the worker's: everyone in the market in one; the local dish plays until it answers
-    const load=sn=>{ const N=DISH.make(1); N.t=sn.t; N.players={}; for(const [id,name,col,bot,dead,best,eaten] of sn.players)N.players[id]={id,name,col,bot:false,dir:[0,0],split:0,eject:0,best,eaten,dead,n:0,think:0};
+    const load=sn=>{ const N=DISH.make(1); N.t=sn.t; N.players={}; for(const [id,name,col,dead,best,eaten] of sn.players)N.players[id]={id,name,col,dir:[0,0],split:0,eject:0,best,eaten,dead,n:0,think:0};
       N.pellets=sn.pellets.map(([id,x,y,c])=>({id,x,y,c})); N.viruses=sn.vir.map(([x,y,m,vx,vy])=>({x,y,m,fed:0,vx,vy})); N.blobs=sn.blobs.map(([x,y,m,c,vx,vy])=>({x,y,m,c,vx,vy,dx:0,dy:0})); N.cells=cells(N,sn.cells); N.board=sn.board||[]; S=N; me=S.players[ME]||DISH.join(S,ME,'YOU',COLS[0]); };
     const cells=(N,l)=>{ for(const id in N.players)N.players[id].n=0; return l.map(([id,o,x,y,m,vx,vy,mt])=>{ if(N.players[o])N.players[o].n++; return {id,o,m,r:rad(m),x,y,vx,vy,mt:N.t+mt}; }).filter(c=>N.players[c.o]); };
     const feed=m=>{ if(m.t==='hi'){ ME=m.you; load(m.S); net=true; sock.send(JSON.stringify({t:'name',n:(STORE.cabs.ini?STORE.cabs.ini():'')||'YOU',c:me.col})); }
-      else if(m.t==='tk'&&net){ const was=me.eaten; S.t=m.t2; for(const [id,name,col,bot,dead,best,eaten] of m.who){ const p=S.players[id]||(S.players[id]={id,name,col,bot:false,dir:[0,0],split:0,eject:0,n:0,think:0}); p.name=name; p.col=col; p.dead=dead; p.best=best; p.eaten=eaten; } for(const id in S.players)if(!m.who.some(w=>w[0]===id))delete S.players[id];
+      else if(m.t==='tk'&&net){ const was=me.eaten; S.t=m.t2; for(const [id,name,col,dead,best,eaten] of m.who){ const p=S.players[id]||(S.players[id]={id,name,col,dir:[0,0],split:0,eject:0,n:0,think:0}); p.name=name; p.col=col; p.dead=dead; p.best=best; p.eaten=eaten; } for(const id in S.players)if(!m.who.some(w=>w[0]===id))delete S.players[id];
         S.cells=cells(S,m.cells); S.viruses=m.vir.map(([x,y,mm,vx,vy])=>({x,y,m:mm,fed:0,vx,vy})); S.blobs=m.blobs.map(([x,y,mm,c,vx,vy])=>({x,y,m:mm,c,vx,vy,dx:0,dy:0}));
         for(const e of m.ev){ if(e.length===1){ const i=S.pellets.findIndex(q=>q.id===e[0]); if(i>=0){ S.pellets[i]=S.pellets[S.pellets.length-1]; S.pellets.pop(); } } else S.pellets.push({id:e[0],x:e[1],y:e[2],c:e[3]}); }
         S.board=m.board||[]; me=S.players[ME]||me; const [dead,best,eaten,n,ate]=m.me; me.dead=dead; me.best=best; me.eaten=eaten; me.n=n; me.ate=ate; if(eaten>was)ate_(); } };
@@ -43,7 +43,7 @@ STORE.cabs.add({name:'PETRI',skill:'myco',hold:1,lore:{maker:'NODE 9',place:'BER
       if(s.over){ c.fillStyle='rgba(0,0,0,.5)'; c.fillRect(0,16,W,H-16); } };
     s.dbg=()=>({t:s.t,sub:s.sub,net,mass:DISH.mass(S,ME),best:me.best,cells:me.n,eaten:me.eaten,dead:me.dead,over:s.over,pellets:S.pellets.length,blobs:S.blobs.length,viruses:S.viruses.length,players:Object.keys(S.players).length,board:S.board.slice(0,3).map(e=>e.name+' '+e.m),x:centre()[0],y:centre()[1],auto:s.auto});
     s.cheat={grow:m=>{ const c=mine()[0]; if(c){ c.m=m; c.r=rad(m); } },merge:()=>{ for(const c of mine())c.mt=0; },pellet:(dx,dy)=>{ const [x,y]=centre(); DISH.pellet(S,x+dx,y+dy,0); },virus:(dx,dy)=>{ const [x,y]=centre(); DISH.virus(S,x+dx,y+dy); },
-      bot:(i,m,dx,dy)=>{ const p=S.players['bot'+i]; const [x,y]=centre(); for(const c of S.cells)if(c.o===p.id)c.m=0; S.cells=S.cells.filter(c=>c.m>0); p.n=0; p.dead=0; const c=DISH.cell(S,p,m,x+dx,y+dy,0,0); return c.id; },still:()=>{ for(const id in S.players)if(id!==ME){ S.players[id].bot=false; S.players[id].dir=[0,0]; } },auto:on=>{ s.auto=on?1:0; }};
+      big:(m,dx,dy)=>{ const p=S.players.big||DISH.join(S,'big','BIG','#e8e8f0'); const [x,y]=centre(); for(const c of S.cells)if(c.o==='big')c.m=0; S.cells=S.cells.filter(c=>c.m>0); p.n=0; p.dead=0; return DISH.cell(S,p,m,x+dx,y+dy,0,0).id; },auto:on=>{ s.auto=on?1:0; }};
     window.PETRIDBG=()=>Object.assign(s.dbg(),{cheat:s.cheat}); return s; } };
   petri.attract=(K,g)=>{ g.cheat.auto(1); };
   return petri; }});

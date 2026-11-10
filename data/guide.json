@@ -434,7 +434,7 @@
     "Find a brochure rack on the street: by the park gate, on Market St, or on the Hudson walk.",
     "Double-click the rack and click a cover to buy it ($2).",
     "Read it any time from your pack: READ.",
-    "Click the cover to open it. GO THERE takes you to the place.",
+    "Click the cover to open it. START takes you to the place and lends you what it needs (the scuba set, the rod, the nets...); the loan goes back when you leave.",
     "Collect all twelve: a full set pays $50."
    ]
   },

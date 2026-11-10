@@ -1,5 +1,5 @@
 // THE BROCHURES (owner, 10 Nov 2026): node tests/brochures.cjs dist/market.html [shots dir]. A rack on the street sells one for each thing to do: every one names a GO TO place,
-// buying takes $2 and puts it in your pack, READ from the pack opens it, its three panels fit their paper, GO THERE goes to its place, a full set pays once, ESC closes.
+// buying takes $2 and puts it in your pack, READ from the pack opens it, its three panels fit their paper, START goes to its place and lends its gear (back when you leave), a full set pays once, ESC closes.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=brochures::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -31,10 +31,20 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.evaluate(() => document.querySelector('#bq .cv').click()); await wait(() => BROCHDBG().panels === 3 && [...document.querySelectorAll('#bq img')].every(i => i.complete), null, 20000);
     const d = await pg.evaluate(() => ({ ...BROCHDBG(), pics: [...document.querySelectorAll('#bq img')].filter(i => i.naturalWidth > 0).length, go: !!document.querySelector('#bq [data-go]') }));
     if (d.panels !== 3 || d.over || d.pics < 3 || !d.go) over.push(id + ':' + JSON.stringify(d)); if (shots) await pg.screenshot({ path: `${shots}/${id}.png` }); }
-  ok(!over.length, 'READ from the pack opens each one: three panels that fit, its photographs, GO THERE' + (over.length ? ' (' + over.join(' ') + ')' : ''));
-  const p0 = await pg.evaluate(() => { const p = __dbg.pos(); document.querySelector('#bq [data-go]').click(); return p; }); await pg.waitForTimeout(1500); await wait(() => !FADE.busy);
-  const g = await pg.evaluate(() => ({ up: BROCH.up(), p: __dbg.pos() }));
-  ok(!g.up && Math.hypot(g.p[0] - p0[0], g.p[2] - p0[2]) > 1, 'GO THERE folds it away and takes you to the place');
+  ok(!over.length, 'READ from the pack opens each one: three panels that fit, its photographs, START' + (over.length ? ' (' + over.join(' ') + ')' : ''));
+  // START on the last one opened (the gems): to the dungeon with a headlight lent and on
+  const p0 = await pg.evaluate(() => { const p = __dbg.pos(); document.querySelector('#bq [data-go]').click(); return p; });
+  await wait(() => BROCH.loan(), null, 90000); await wait(() => !FADE.busy);
+  const g = await pg.evaluate(() => ({ up: BROCH.up(), p: __dbg.pos(), loan: BROCH.loan(), wheel: FORAGE.has('gem_wheel'), lamp: Object.values(EQUIP.by).includes('headlight') }));
+  ok(!g.up && Math.hypot(g.p[0] - p0[0], g.p[2] - p0[2]) > 1 && g.lamp && g.loan && g.loan.kit.headlight === 1, 'START folds it away, takes you to the place and lends its gear: ' + JSON.stringify({ kit: g.loan && g.loan.kit, lamp: g.lamp }));
+  // START the wreck: in the water by the ship, the scuba set on; the gems' loan goes back first
+  await pg.evaluate(() => BROCH.start('wreck')); await wait(() => BROCH.loan() && BROCH.loan().id === 'wreck', null, 120000); await pg.waitForTimeout(3000);
+  const w = await pg.evaluate(() => { const [x, z] = WRECK.at, p = __dbg.pos(); return { d: +(Math.hypot(p[0] - x, p[2] - z) / __dbg.cv().TILE).toFixed(1), swim: !!RIVER.swim, worn: Object.values(EQUIP.by), wheel: FORAGE.has('gem_wheel') || 0, kit: BROCH.loan().kit }; });
+  ok(w.d < 12 && w.swim && ['scuba', 'goggles', 'headlight'].every(k => w.worn.includes(k)) && !w.wheel && w.kit.winch === 1, 'START the wreck: in the water by the ship, dressed to dive, the last loan given back: ' + JSON.stringify(w));
+  // walk off (the bodega, far away): the loan goes back
+  await pg.evaluate(() => __dbg.UI.goName('THE BODEGA')); await wait(() => !BROCH.loan(), null, 60000);
+  const r = await pg.evaluate(() => ({ loan: BROCH.loan(), worn: Object.values(EQUIP.by), has: ['scuba', 'goggles', 'headlight', 'winch'].map(k => FORAGE.has(k) || 0) }));
+  ok(!r.loan && !r.worn.includes('scuba') && r.has.every(n => !n), 'leave, and the loaned gear goes back: ' + JSON.stringify(r));
   const f = await pg.evaluate(() => { INV.cash = 100; for (const id of BROCH.ids) { FORAGE.take('bq_' + id, FORAGE.has('bq_' + id) || 0); } for (const id of BROCH.ids) BROCH.buy(id); const a = { cash: INV.cash, paid: BROCH.paid(), got: BROCHDBG().got };
     FORAGE.take('bq_fish', 1); BROCH.buy('fish'); a.again = INV.cash; return a; });
   ok(f.got === 12 && f.paid === 1 && f.cash === 100 - 24 + 50 && f.again === f.cash - 2, 'a full set pays $50, once: ' + JSON.stringify(f));

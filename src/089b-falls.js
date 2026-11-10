@@ -68,7 +68,7 @@ window.FALLS=FALLS;
   /* ---------- what you see: built with the park, drawn near ---------- */
   const DATA=__LAZY__("data/fallspf.json");
   const go=async()=>{ '@park'; if(!P.G||!BROOK.ready||!MODS.land)return setTimeout(go,500);
-    const D=await DATA, root=new THREE.Group(), near=new THREE.Group(); root.name='falls'; near.name='falls near'; (MAPG.park||P.G).add(root); root.add(near);
+    const D=await DATA(), root=new THREE.Group(), near=new THREE.Group(); root.name='falls'; near.name='falls near'; (MAPG.park||P.G).add(root); root.add(near);
     const hs=(i,s)=>{ const v=Math.sin(i*12.9898+s*78.233)*43758.5453; return v-Math.floor(v); };
     let seed=9; const rnd=()=>{ seed=(seed*16807)%2147483647; return (seed-1)/2147483646; };
     const col=(r,g,b)=>new THREE.Color().setRGB(r/255,g/255,b/255,THREE.SRGBColorSpace);

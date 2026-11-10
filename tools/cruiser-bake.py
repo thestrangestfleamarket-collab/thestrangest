@@ -2,7 +2,7 @@
 # modelled here in code, in the cars' own form (tools/cars-bake.py: metres, forward +z, the driver at +x) and put into data/cars.json as
 # cars['police-cruiser-80s']. Beyond a kit car it has parts that open on a hinge (parts: the four doors, the hood, the trunk lid, each with
 # its own glass), lamps the game lights by name (a group's t: head, tail, turn, rev), and marks: where the roof's light bar, the plates and
-# the lettering go (src/150pe-carparts.js paints those). Colours are sRGB here. python3 -I tools/cruiser-bake.py
+# the door shields go (src/150pe-carparts.js paints those). Colours are sRGB here. python3 -I tools/cruiser-bake.py
 import json, struct, base64, os, math
 ROOT=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BLUE=(92,158,206); WHITE=(238,238,232); CHROME=(198,203,210); DARK=(24,26,30); RUBBER=(18,18,20); STEEL=(58,62,70); UNDER=(30,32,36)
@@ -295,26 +295,39 @@ def pack(groups,move=(0,0,0)):
         if g.get('t'): o['t']=g['t']
         out.append(o)
     return out
+MAT={CHROME:'chrome',DARK:'rubber',RUBBER:'rubber',UNDER:'rubber',STEEL:'chrome'}
+def pack2(groups,move=(0,0,0),mat=None):
+    # the groups packed, split again by what a colour is made of (m: paint, chrome, rubber; a lit group lamp), so the game can give each its own material
+    out={}; mat=mat or MAT
+    for tag,g in groups.items():
+        for t in range(0,len(g['i']),3):
+            v=g['i'][t]; c=tuple(round((x**(1/2.2))*255) for x in g['c'][v*3:v*3+3]); mt='jet' if tag=='jet' else 'lamp' if g['e'] else mat.get(c,'paint')
+            o=out.setdefault((tag,mt),{'e':g['e'],'k':1,'t':tag,'p':[],'n':[],'c':[],'i':[],'ix':{}})
+            for q in g['i'][t:t+3]:
+                if q not in o['ix']: o['ix'][q]=len(o['p'])//3; o['p'].extend(g['p'][q*3:q*3+3]); o['n'].extend(g['n'][q*3:q*3+3]); o['c'].extend(g['c'][q*3:q*3+3])
+                o['i'].append(o['ix'][q])
+    res=[]
+    for (tag,mt),o in out.items():
+        for x in pack({0:o},move): x['m']=mt; res.append(x)
+    return res
 def make():
     B=body(); G=glass(); W=wheel(); parts=[]; tris=B.tris()+G.tris()
     for sd,nm in ((1,'L'),(-1,'R')):
         for (zf,zr),tf,tr,fr in ((FD,.47,FD[1]+.006,'F'),(RD,RD[0]-.006,-.90,'R')):
             m,g=door(sd,zf,zr,tf,tr,fr=='F'); h=[sd*.875,0,zf-.006]; tris+=m.tris()+g.tris()
-            parts.append({'n':'DOOR '+fr+nm,'use':'door','seat':fr=='F' and sd>0,'at':[round(x,4) for x in h],'ax':'y','open':round(-sd*1.15,3),'g':pack(m.g,h),'gl':pack(g.g,h)})
+            parts.append({'n':'DOOR '+fr+nm,'use':'door','seat':fr=='F' and sd>0,'at':[round(x,4) for x in h],'ax':'y','open':round(-sd*1.15,3),'g':pack2(m.g,h),'gl':pack2(g.g,h)})
     for nm,m,h,op,bx in (('HOOD',lid(1.10,2.46,.952,.925,2.50,DARK),[0,.952,1.10],-.95,0),('TRUNK',lid(-1.42,-2.46,.952,.93,-2.50,(52,55,60)),[0,.952,-1.42],1.0,0)):
         if nm=='TRUNK': m.cyl([0,.89,-2.485],'z',.016,-.012,CHROME,8)
-        tris+=m.tris(); parts.append({'n':nm,'use':nm.lower(),'at':h,'ax':'x','open':op,'g':pack(m.g,h),'gl':[]})
+        tris+=m.tris(); parts.append({'n':nm,'use':nm.lower(),'at':h,'ax':'x','open':op,'g':pack2(m.g,h),'gl':[]})
     P=[v for g in B.g.values() for v in g['p']]+[1.05,.5,0,-1.05,.5,0]; P[1::3]=[min(y,1.46) for y in P[1::3]]   # the body with its mirrors and light bar, not the aerials
     wy=WR; wheels=[[-TRACK,wy,AXF],[TRACK,wy,AXF],[-TRACK,wy,AXR],[TRACK,wy,AXR]]
     # where the game puts what it paints (150pe-carparts): the light bar, the plates, the lettering (on: the part it rides on; at, the way it faces, its size)
     S=lambda y:xs(y)+.005
     marks={'bar':[0,1.40,.06,1.24],'head':[.67,.78,ZF+.02],'tail':[.60,.74,ZB-.02],
       'decals':[{'k':'plate','at':[0,.43,ZF+.112],'f':'f','w':.305,'h':.155},{'k':'plate','at':[0,.74,ZB-.0085],'f':'b','w':.305,'h':.155},
-        {'k':'roof','at':[0,1.403,-.28],'f':'u','w':.9,'h':.42},{'k':'trunk','at':[0,.957,-1.95],'f':'u','w':.62,'h':.2,'on':'TRUNK'},
-        *[d for sd,s in ((1,'l'),(-1,'r')) for d in ({'k':'door','at':[sd*S(.79),.795,.40],'f':s,'w':.92,'h':.225,'on':'DOOR F'+s.upper()},{'k':'pct','at':[sd*S(.79),.79,-1.9],'f':s,'w':.44,'h':.11},
-          {'k':'unit','at':[sd*S(.79),.79,1.02+.98],'f':s,'w':.34,'h':.11},{'k':'unit','at':[sd*.70,1.345,-1.12],'f':s,'w':.2,'h':.07,'tilt':.45})]]}
-    return {'name':'POLICE CRUISER','size':[round(max(P[k::3])-min(P[k::3]),3) for k in range(3)],'low':round(min(P[1::3]),3),'wheels':wheels,'r':WR,'body':pack(B.g),'glass':pack(G.g),
-            'cab':{'hw':.80,'belt':BELT,'z0':-1.30,'z1':.95,'roof':1.40,'dd':.42,'seat':-.12,'rear':-.98,'doors':1},'wheel':pack(W.g),'parts':parts,'marks':marks,'tris':[tris,W.tris()]}
+        *[{'k':'door','at':[sd*S(.79),.795,.40],'f':s,'w':.225,'h':.225,'on':'DOOR F'+s.upper()} for sd,s in ((1,'l'),(-1,'r'))]]}
+    return {'name':'POLICE CRUISER','size':[round(max(P[k::3])-min(P[k::3]),3) for k in range(3)],'low':round(min(P[1::3]),3),'wheels':wheels,'r':WR,'body':pack2(B.g),'glass':pack(G.g),
+            'cab':{'hw':.80,'belt':BELT,'z0':-1.30,'z1':.95,'roof':1.40,'dd':.42,'seat':-.12,'rear':-.98,'doors':1},'wheel':pack2(W.g),'parts':parts,'marks':marks,'tris':[tris,W.tris()]}
 if __name__=='__main__':
     f=os.path.join(ROOT,'data/cars.json'); J=json.load(open(f)); c=make(); J['cars']['police-cruiser-80s']=c
     s=json.dumps(J,separators=(',',':')); open(f,'w').write(s); print('police-cruiser-80s',c['size'],'triangles',c['tris'],'parts',[p['n'] for p in c['parts']],len(json.dumps(c))//1024,'KB of',len(s)//1024,'KB')

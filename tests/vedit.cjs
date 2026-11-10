@@ -8,7 +8,7 @@ const {chromium}=require('playwright');
   const r=await pg.evaluate(()=>{ __dbg.UI.menuTab('set'); const el=document.getElementById('dvedit'); document.querySelectorAll('.panes>[data-p]').forEach(p=>p.hidden=p.dataset.p!=='vedit'); VLOOK.panel(el);
     const ids=[...el.querySelectorAll('[data-pick]')].map(b=>b.dataset.pick); el.querySelector('[data-pick="car:muscle-car-60s"]').click(); return {ids,canvas:!!el.querySelector('.vcv')}; });
   const has=p=>r.ids.some(i=>i.startsWith(p));
-  ok(r.ids.filter(i=>i.startsWith('car:')).length>=7&&r.ids.filter(i=>i.startsWith('tr:')).length>=17&&has('heli:')&&r.ids.includes('train')&&r.ids.includes('magic_carpet')&&r.ids.length>=31,'every vehicle is listed ('+r.ids.length+'): '+r.ids.join(' '));
+  ok(r.ids.filter(i=>i.startsWith('car:')).length>=10&&r.ids.filter(i=>i.startsWith('tr:')).length>=14&&has('heli:')&&r.ids.includes('train')&&r.ids.includes('magic_carpet')&&r.ids.length>=31,'every vehicle is listed ('+r.ids.length+'): '+r.ids.join(' '));
   await pg.waitForTimeout(2500);
   const lit=await pg.evaluate(()=>{ const c=document.querySelector('#dvedit .vcv'), d=c.getContext('2d').getImageData(0,0,c.width,c.height).data; let n=0; for(let i=0;i<d.length;i+=4)if(Math.abs(d[i]-0x15)+Math.abs(d[i+1]-0x17)+Math.abs(d[i+2]-0x1e)>30)n++; return n/(d.length/4); });
   ok(lit>.05,'the picked car turns in its studio ('+(lit*100).toFixed(1)+'% drawn)');
@@ -19,13 +19,13 @@ const {chromium}=require('playwright');
     VLOOK.set('car:muscle-car-60s',null); await new Promise(r=>setTimeout(r,400)); let back=0; for(const p of VLOOK.parts(m)){ const a=p.m.geometry.attributes.color; if(a)for(let i=0;i<a.array.length;i+=3)if(a.array[i]>.95&&a.array[i+1]<.05&&a.array[i+2]>.95)back++; }
     got.reset=back===0&&w.m.visible&&Math.abs(m.scale.x-s0)<1e-9; return got; });
   ok(e.pal>=3&&e.pink>0&&e.scale===1.5&&e.wheel&&e.other===1&&e.reset,'a colour, the size and a hidden wheel change that car (only that model), and RESET takes them off '+JSON.stringify(e));
-  const t=await pg.evaluate(async()=>{ const n0=TRAFFIC.dbg().lanes.map(L=>L.cars.length); VLOOK.more={hatchback:2,'hover-pod':1}; VLOOK.set('tr:hatchback',null); await new Promise(r=>setTimeout(r,500));
-    const d=TRAFFIC.dbg(), n1=d.lanes.map(L=>L.cars.length), road=d.lanes.filter(L=>!L.fly).flatMap(L=>L.cars).filter(c=>c.model==='hatchback').length, air=d.lanes.filter(L=>L.fly).flatMap(L=>L.cars).filter(c=>c.model==='hover-pod').length;
+  const t=await pg.evaluate(async()=>{ const n0=TRAFFIC.dbg().lanes.map(L=>L.cars.length); VLOOK.more={hatchback:2,'taxi-pod':1}; VLOOK.set('tr:hatchback',null); await new Promise(r=>setTimeout(r,500));
+    const d=TRAFFIC.dbg(), n1=d.lanes.map(L=>L.cars.length), road=d.lanes.filter(L=>!L.fly).flatMap(L=>L.cars).filter(c=>c.model==='hatchback').length, air=d.lanes.filter(L=>L.fly).flatMap(L=>L.cars).filter(c=>c.model==='taxi-pod').length;
     VLOOK.more={}; VLOOK.set('tr:hatchback',null); await new Promise(r=>setTimeout(r,500)); return {n0,n1,road,air,n2:TRAFFIC.dbg().lanes.map(L=>L.cars.length)}; });
   ok(t.n1.reduce((a,b)=>a+b)===t.n0.reduce((a,b)=>a+b)+3&&t.road>=2&&t.air>=1&&t.n2.join()===t.n0.join(),'more of a model joins the traffic in its own lanes, and goes again '+JSON.stringify(t));
   const p=await pg.evaluate(async()=>{ const c=await VLOOK.park('camper-van'), C=CARS.cars.get(c.id); const had=!!(C&&C.model==='camper-van'); await new Promise(r=>setTimeout(r,1500)); const shown=!!(C.mesh&&C.mesh.visible), near=Math.hypot(C.x-STORE.pos.x,C.z-STORE.pos.z);
     await VLOOK.unpark(c.id); return {id:c.id,had,shown,near:+near.toFixed(1),gone:!CARS.cars.has(c.id)}; });
   ok(p.had&&p.shown&&p.near<12&&p.gone,'a copy parks in front of you and is taken away '+JSON.stringify(p));
-  if(out){ await pg.evaluate(()=>{ __dbg.UI.toggleMenu(); __dbg.UI.toggleMenu(); __dbg.UI.menuTab('set'); document.querySelectorAll('.panes>[data-p]').forEach(p=>p.hidden=p.dataset.p!=='vedit'); const el=document.getElementById('dvedit'); VLOOK.panel(el); el.querySelector('[data-pick="tr:hover-coupe"]').click(); });
+  if(out){ await pg.evaluate(()=>{ __dbg.UI.toggleMenu(); __dbg.UI.toggleMenu(); __dbg.UI.menuTab('set'); document.querySelectorAll('.panes>[data-p]').forEach(p=>p.hidden=p.dataset.p!=='vedit'); const el=document.getElementById('dvedit'); VLOOK.panel(el); el.querySelector('[data-pick="car:taxi-coupe"]').click(); });
     await pg.waitForTimeout(2500); await pg.screenshot({path:out+'.png'}); }
   ok(!errs.length,'no page errors '+errs.slice(0,3).join(' | ')); await b.close(); process.exit(bad?1:0); })();

@@ -18,7 +18,7 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
   TRAFFIC.lanes=LANES;
   // the owner's extra vehicles (VLOOK.more: model -> how many more, ADMIN > VEHICLE EDITOR), each one more in a lane of its kind, its model kept; the lanes spaced again
   for(const L of LANES)L.n0=L.n;
-  const fleet=()=>{ const M=VLOOK.more||{}, fly=k=>!!(D&&D[k]&&D[k].fly), add=LANES.map(()=>[]);
+  const fleet=()=>{ const M=VLOOK.more||{}, fly=k=>!!(D&&D[k]&&D[k].fly)||!!(window.CARS&&CARS.flies&&CARS.flies(k)), add=LANES.map(()=>[]);
     for(const k in M){ const ls=LANES.map((L,i)=>i).filter(i=>!!LANES[i].fly===fly(k)); for(let j=0;j<Math.min(20,M[k]|0);j++)add[ls[j%ls.length]].push(k); }
     LANES.forEach((L,i)=>{ const want=add[i].join(), had=L.cars.filter(C=>C.fixed).map(C=>C.fixed).join(); if(want===had)return; for(const C of L.cars){ give(C); if(C.sol)C.sol[0]=C.sol[1]=C.sol[2]=C.sol[3]=-1e7; }
       L.cars=L.cars.filter(C=>!C.fixed); for(const k of add[i])L.cars.push({i:0,u:null,sp:L.v,model:k,fixed:k,m:null,lap:-1,sol:null}); L.n=L.cars.length; L.cars.forEach((C,j)=>{ C.i=j; C.u=null; }); }); };
@@ -85,7 +85,7 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
   /* ---------- the kit fetched after the start, the game's cars once theirs are in ---------- */
   const carsIn=()=>!!(window.CARS&&CARS.dbg&&CARS.build&&CARS.dbg().loaded);
   let asked=false; SYS.add('life',()=>{ if(asked||!window.__started)return; asked=true; TD().then(d=>{ D=d; const ks=Object.keys(d).filter(k=>d[k]&&d[k].parts);
-      const fl=ks.filter(k=>d[k].fly&&k!==BLIMP.k), gr=ks.filter(k=>!d[k].fly), ready=()=>{ const g=carsIn()?gr.concat(GAME.filter(k=>k!==PAT)):gr; LANES.forEach((L,i)=>{ L.FL=fl; L.GR=g; L.pat=!L.fly&&i<2&&carsIn(); }); };
+      const fl=ks.filter(k=>d[k].fly&&k!==BLIMP.k), gr=ks.filter(k=>!d[k].fly), ready=()=>{ const g=carsIn()?gr.concat(GAME.filter(k=>k!==PAT)):gr; const f=carsIn()&&CARS.fliers?fl.concat(CARS.fliers()):fl; LANES.forEach((L,i)=>{ L.FL=f; L.GR=g; L.pat=!L.fly&&i<2&&carsIn(); }); };
       for(const k of ks)VLOOK.kind('tr:'+k,{name:d[k].name,grp:d[k].fly?'FLYING TRAFFIC':'ROAD TRAFFIC',make:()=>{ const g=new THREE.Group(), me=new THREE.Mesh(geo(d[k].parts.body),MAT); me.name='BODY'; g.add(me); g.scale.setScalar(M1); return VLOOK.dress('tr:'+k,g); },traffic:k});
       ready(); fleet(); let n=0; const again=()=>{ if(carsIn()){ for(const L of LANES)for(const C of L.cars){ give(C); C.lap=-1; C.model=null; } ready(); } else if(++n<30)setTimeout(again,2000); }; setTimeout(again,2000);
     }).catch(e=>console.warn('TRAFFIC: the vehicles did not load',e)); },'150pb-traffic');

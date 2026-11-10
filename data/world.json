@@ -837,6 +837,27 @@
    "x": -27.5,
    "y": -8,
    "hd": 0
+  },
+  {
+   "id": "c8",
+   "model": "taxi-coupe",
+   "x": -27.5,
+   "y": 4,
+   "hd": 0
+  },
+  {
+   "id": "c9",
+   "model": "taxi-pod",
+   "x": -27.5,
+   "y": 16,
+   "hd": 0
+  },
+  {
+   "id": "c10",
+   "model": "ambulance",
+   "x": -27.5,
+   "y": 29,
+   "hd": 0
   }
  ],
  "parkPlaces": {

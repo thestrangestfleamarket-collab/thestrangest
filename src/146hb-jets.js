@@ -137,9 +137,18 @@ import {RIVER} from './066-river.js';
   /* ---------- the streams: yours from your nozzle, theirs from theirs as they say they fire ---------- */
   const mk=(id,k,mode)=>({id,k,mode:mode||'fluid',tip:new V3(),dir:new V3(0,0,1),R:k==='f'?RF:RI,P:[],len:0,end:null,what:'',cT:0,eA:0,lT:0,zT:{},at:now(),bm:null});
   const tipOf=(g,S)=>{ if(!g||!g.visible||!g.parent)return false; S.tip.copy(g.tipL).applyMatrix4(g.matrix); const e=g.matrix.elements; S.dir.set(e[4],e[5],e[6]).normalize(); return true; };
-  // where you aim: the point under the mouse (on your ground, or out along the ray), from the nozzle; no mouse (the headset): the way the tool points
-  const AIMP=new V3(), aimMine=S=>{ if(JET.aim){ S.dir.copy(JET.aim); return; } const r=WIELD.ray; if(!r||VR.on)return; const c=r.origin, d=r.direction, far=c.distanceTo(S.tip)+S.R;
-    let t=d.y<-1e-3?(SHARED.py-c.y)/d.y:far; if(!(t>0)||t>far)t=far; AIMP.copy(c).addScaledVector(d,t).sub(S.tip); if(AIMP.lengthSq()>.01*M*M)S.dir.copy(AIMP.normalize()); };
+  // where you aim: a body the mouse is on (another player, a character), else the point on your ground under it, else out along the ray; the fuel's drop allowed for. No mouse (the headset): the way the tool points
+  const AIMP=new V3(), onBody=(c,d)=>{ let bt=Infinity, hit=null; for(const b of bodies()){ if(b.id==='me')continue; const wx=c.x-b.x, wy=c.y-b.y, wz=c.z-b.z, dd=d.x*wx+d.y*wy+d.z*wz, den=1-d.y*d.y;
+      let s=den>1e-6?(wy-d.y*dd)/den:wy; s=Math.min(1.8*M,Math.max(.1*M,s)); const t=d.x*(b.x-c.x)+d.y*(b.y+s-c.y)+d.z*(b.z-c.z); if(t<=0||t>=bt)continue;
+      if(Math.hypot(c.x+d.x*t-b.x,c.y+d.y*t-b.y-s,c.z+d.z*t-b.z)<.45*M){ bt=t; hit=AIMP.set(b.x,b.y+Math.min(1.5*M,Math.max(.5*M,s)),b.z); } } return hit; };
+  const reach=(S,th,hx,hz,dh)=>{ const p=S.tip.clone(), v=new V3(hx*Math.cos(th),Math.sin(th),hz*Math.cos(th)).multiplyScalar(14*M); let s=0, h0=0; const h=.02;
+    for(let t=0;t<FUEL*3&&s<S.R;t+=h){ const y0=p.y; v.y-=G*h; v.multiplyScalar(1/(1+KD*v.length()*h)); p.addScaledVector(v,h); s+=v.length()*h; const h1=Math.hypot(p.x-S.tip.x,p.z-S.tip.z); if(h1>=dh){ const u=(dh-h0)/Math.max(1e-6,h1-h0); return y0+(p.y-y0)*u; } h0=h1; } return null; };
+  const lob=(S,T)=>{ const dx=T.x-S.tip.x, dz=T.z-S.tip.z, dh=Math.hypot(dx,dz); if(dh<.3*M)return; const hx=dx/dh, hz=dz/dh; let lo=Math.atan2(T.y-S.tip.y,dh), y=reach(S,lo,hx,hz,dh); if(y==null||y>=T.y)return;
+    let hi=lo; for(let i=0;i<20;i++){ hi=Math.min(1.2,hi+.06); y=reach(S,hi,hx,hz,dh); if(y==null){ hi=null; break; } if(y>=T.y)break; lo=hi; if(hi>=1.2){ hi=null; break; } }
+    if(hi!=null)for(let i=0;i<8;i++){ const m=(lo+hi)/2, ym=reach(S,m,hx,hz,dh); if(ym!=null&&ym<T.y)lo=m; else hi=m; } S.dir.set(hx*Math.cos(lo),Math.sin(lo),hz*Math.cos(lo)); };
+  const aimMine=S=>{ if(JET.aim){ S.dir.copy(JET.aim); return; } const r=WIELD.ray; if(!r||VR.on)return; const c=r.origin, d=r.direction, far=c.distanceTo(S.tip)+S.R;
+    let T=onBody(c,d); if(!T){ let t=d.y<-1e-3?(SHARED.py-c.y)/d.y:far; if(!(t>0)||t>far)t=far; T=AIMP.copy(c).addScaledVector(d,t); }
+    const D=T.clone().sub(S.tip); if(D.lengthSq()<=.01*M*M)return; S.dir.copy(D.normalize()); if(S.k==='f'&&S.mode!=='plasma')lob(S,T); };
   const drop=S=>{ if(S.bm)S.bm.visible=false; JET.S.delete(S.id); };
   ONLINE.hear.jet=m=>{ '@later'; const S=JET.S.get(m.id); if(m.k==='f'||m.k==='i'){ let T=S; if(!T||T.k!==m.k){ if(T)drop(T); JET.S.set(m.id,T=mk(m.id,m.k)); } else T.at=now(); const ML=MODS.flames?MODS.flames.MODES:['fluid']; T.mode=ML[m.m|0]||'fluid'; if(Array.isArray(m.v)){ T.rv=(T.rv||new V3()).set(+m.v[0]||0,+m.v[1]||0,+m.v[2]||1); if(T.rv.lengthSq()<1e-4)T.rv=null; else T.rv.normalize(); } } else if(S)drop(S); };
   const PL=[];

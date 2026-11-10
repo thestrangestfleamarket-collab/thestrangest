@@ -8,7 +8,9 @@ PACKS={   # folder: the pack's file (its page and author are in data/full/sounds
  'fantozzi':'https://opengameart.org/sites/default/files/Fantozzi-footsteps.7z',
  'tinyworlds':'https://opengameart.org/sites/default/files/%5Bkdd%5DDifferentSteps_0.zip',
  'qubodup':'https://opengameart.org/sites/default/files/qubodup-DoorSet.7z',
- 'coughe':'https://opengameart.org/sites/default/files/DoorLockSounds.zip'}
+ 'coughe':'https://opengameart.org/sites/default/files/DoorLockSounds.zip',
+ 'kurt':'https://opengameart.org/sites/default/files/stream-waterfall.zip',   # CC-BY 3.0: kurt (credit in data/full/sounds.json)
+ 'rubberduck':'https://opengameart.org/sites/default/files/water-splash-slime-sfx.zip'}
 F='fantozzi/Fantozzi-footsteps/flac/Fantozzi-'; Q='qubodup/qubodup-DoorSet/flac/qubodup-Door'
 SETS={   # name: (its takes, how loud next to the others)
  'step_stone':([F+f'Stone{s}{i}.flac' for s in 'LR' for i in (1,2,3)],.8),
@@ -16,7 +18,9 @@ SETS={   # name: (its takes, how loud next to the others)
  'step_wood':([f'tinyworlds/wood0{i}.ogg' for i in (1,2,3)],.8),
  'dooropen':([Q+f'Open{n}.flac' for n in ('01','05','07','08')],.9),
  'door':([Q+f'Close{n}.flac' for n in ('04','07','08','10')],.9),
- 'latch':(['coughe/DoorLockSounds/DoorLock.wav','coughe/DoorLockSounds/UnlockDoor.wav'],.6)}
+ 'latch':(['coughe/DoorLockSounds/DoorLock.wav','coughe/DoorLockSounds/UnlockDoor.wav'],.6),
+ 'splash':([f'rubberduck/splash_{n:02d}.ogg' for n in (1,4,7,11)],.8)}
+LOOPS={'falls':('kurt/stream-waterfall/loudstream.ogg',8.,.7)}   # a long take laid in whole, its end faded into its start so it loops (SFX.play(name,{loop:true}))
 def get(k,url):
     d=D+k
     if os.path.isdir(d) and os.listdir(d): return
@@ -38,6 +42,11 @@ for name,(files,lvl) in SETS.items():
     table[name]=[]
     for f in files:
         x=[v*lvl*.89 for v in pcm(D+f)]; table[name].append([round(t+GAP,4),round(len(x)/SR,3)]); data+=[0.]*int(GAP*SR)+x; t+=GAP+len(x)/SR
+for name,(f,secs,lvl) in LOOPS.items():
+    out=subprocess.run(['ffmpeg','-v','error','-i',D+f,'-ac','1','-ar',str(SR),'-f','f32le','-'],capture_output=True,check=True).stdout
+    x=list(struct.unpack('<%df'%(len(out)//4),out)); n=int(secs*SR); xf=int(.6*SR); a=min(len(x)-n-xf,int(.5*SR)); seg=x[a:a+n+xf]; pk=max(abs(v) for v in seg) or 1
+    y=[(seg[i]*(1 if i>=xf else i/xf)+(seg[n+i]*(1-i/xf) if i<xf else 0))/pk*lvl*.89 for i in range(n)]
+    table[name]=[[round(t+GAP,4),round(n/SR,3)]]; data+=[0.]*int(GAP*SR)+y; t+=GAP+n/SR
 data+=[0.]*int(GAP*SR)
 subprocess.run(['ffmpeg','-v','error','-y','-f','f32le','-ar',str(SR),'-ac','1','-i','-','-c:a','libmp3lame','-b:a','96k','data/sfx.mp3'],input=struct.pack('<%df'%len(data),*data),check=True)
 json.dump(table,open('data/sfx.json','w'),separators=(',',':'))

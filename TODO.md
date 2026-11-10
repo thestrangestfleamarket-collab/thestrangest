@@ -62,6 +62,8 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
   thing). The apartment and dungeon parts weren't reached. Not run by CI (add it to the physx step once it passes).
 
 ## The map and the park
+- [ ] **The falls, the owner's look** · P2 · S · look. Owner, 10 Nov ("1 yes 2 all no name just a spot on map"): try the falls live (swim, the jump rock, the stairs, the rope swing, night); its spot is west of the brook's mouth, not east (no room there).
+- [ ] **The falls' leftovers** · P3 · M · code. Building a cairn on the lip (shared, saved on the server), bats over the pool at night, the falls in the map editor.
 
 - [ ] **The fronts, for his look** · P2 · look. Built 8–9 Nov (the rows modelled, `src/038zc-facades.js`; brick, shopfronts, pet shop
   signs). Left: his look and yes.

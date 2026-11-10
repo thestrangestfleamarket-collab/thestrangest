@@ -268,7 +268,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     if(body.ride){ NPC.board=body.ride.make(); NPC.board.visible=false; NPC.board.userData.anyRoom=true; (body.root||MAPG.bodega).add(NPC.board); NPC.RS={v:0,z:0,vz:0,lean:0,push:-1,pt:0}; }   // a rider: a RIDE kind's board under its feet
     NPC.tick=dt=>{ if(NPC.rag&&NPC.mode==='hidden')NPC.rag(dt);
       if((!NPC.on||NPC.mode==='hidden'||ARCH.has(body.key))&&!SHEET){ g.visible=false; if(NPC.board)NPC.board.visible=false; return; } g.visible=true;
-      if(SHEET){ R.farOnly(false); const B=R.settle(R.build(spreadPose(),null),0); st.y=MODS.bodega.ground(st.x,st.z); g.position.set(st.x,st.y,st.z); g.rotation.y=st.hd; musScale(g,1); pose(B,FIG.PM,body);
+      if(SHEET){ R.farOnly(false); const B=R.settle(R.build(QS.has('sheetidle')&&body.idle?body.idle(performance.now()/1000,NPC):spreadPose(),null),0); st.y=MODS.bodega.ground(st.x,st.z); g.position.set(st.x,st.y,st.z); g.rotation.y=st.hd; musScale(g,1); pose(B,FIG.PM,body);
         if(!NPC.sheetOn){ NPC.sheetOn=true; sheetView(g,st.y+g.scale.y*27); } return; }
       if(NPC.rag){ const B=NPC.rag(dt); if(B){ NPC.B=B; pose(B,FIG.PM,body); return; } }
       const near=Math.hypot(pos.x-st.x,pos.z-st.z)<40;

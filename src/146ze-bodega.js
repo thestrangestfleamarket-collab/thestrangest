@@ -49,7 +49,7 @@ const BODEGA={basket:new Map()}; window.BODEGA=BODEGA;
   const reg0=()=>12;
   BODEGA.openShelf=key=>MINI.open(list('THE SHELF',()=>BODEGA.shelf(key)));
   // everyday supplies the skills and pets use up (owner, 8 Nov 2026: "make sure the bodega has supplies players need (like pet food)"); a line shows once its item is in the game
-  BODEGA.SUPPLIES=['g_catfood','g_dogfood','g_fishfood','bseed','feeder','cage','bottle','jar_s','jar_m','jar_l','jar_honey','net','bait','bait_cut','crabpot','pot','dirt','water','seed_star','seed_sun','seed_hum','canvas_s','canvas_m','spray'];
+  BODEGA.SUPPLIES=['g_catfood','g_dogfood','g_fishfood','bseed','feeder','cage','bottle','jar_s','jar_m','jar_l','jar_honey','net','bait','bait_cut','pot','dirt','water','seed_star','seed_sun','seed_hum','canvas_s','canvas_m','spray'];
   const sold=id=>{ const v=+ITEMS.prop(id,'value'), nm=FORAGE.name(id); return !ARCHI(id)&&nm&&nm!==id&&v>0?{id,name:nm,price:Math.round(v)}:null; };
   // the register (owner, 8 Nov 2026: "double click on the front desk or register and it will show every item in the bodega ... you dont have to walk around"): your basket, then everything sold here
   BODEGA.all=()=>{ const seen=new Set(), add=(L,r)=>{ if(r&&r.id&&!seen.has(r.id)){ seen.add(r.id); L.push(r); } }, S=[], G=[], U=[];

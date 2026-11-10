@@ -177,7 +177,7 @@ HOMES.keeper=N=>{ const H=LEVEL.homes&&LEVEL.homes[N.key], R=H&&H[3]&&ROOMS.off[
 HOMES.IN=.3; HOMES.NEAR=4;
 HOMES.doors=()=>{ '@later'; const B=SHARED.BOD, L=[]; for(const id in ROOMS.off){ const o=ROOMS.off[id]; if(o.door&&!o.mine)L.push({id,x:o.door[0],z:o.door[2]}); }
   for(const id in STORE.inside||{}){ const R=STORE.inside[id]; if(R.th)L.push({id,x:R.th.obj.position.x,z:R.th.obj.position.z}); }
-  if(B.GD&&B.GD.door)L.push({id:'bath',x:B.X(B.GD.door[0]),z:B.Z(B.GD.door[1]+.35)}); return L; };
+  if(B.GD&&B.GD.door)L.push({id:'bath',x:B.X(B.GD.door[0]),z:B.Z(B.GD.door[1]+(B.GDK&&B.GDK.flip?-.35:.35))}); return L; };
 HOMES.door=h=>{ '@later'; if(h.shop===null)return null; const L=HOMES.doors(); if(!L.length)return null;
   if(h.shop===undefined){ let b=null, bd=h.r+HOMES.NEAR*TILE; for(const d of L){ const k=Math.hypot(d.x-h.x,d.z-h.z); if(k<bd){ bd=k; b=d; } } h.shop=b?b.id:null; return b; }
   return L.find(d=>d.id===h.shop)||null; };

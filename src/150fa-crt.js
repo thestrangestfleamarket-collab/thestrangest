@@ -99,7 +99,7 @@ import {ROOMK} from './150a-bedroom.js';
   /* ---------- the control panel ---------- */
   const P=document.createElement('div'); P.id='crtp'; P.hidden=true;
   P.style.cssText='position:fixed;left:50%;top:10%;transform:translateX(-50%);width:min(400px,92vw);z-index:21;padding:12px 14px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#3b2a1e;background:#ece5d3;border:3px solid #3b2a1e;zoom:var(--uiz,1)';
-  const css=document.createElement('style'); css.textContent=`#crtp .row{display:flex;align-items:center;gap:6px;margin:8px 0;flex-wrap:wrap} #crtp .row>span:first-child{width:74px} #crtp input[type=range]{flex:1} #crtp .btn{font:inherit;padding:5px 8px;background:#ece5d3;color:#3b2a1e;border:2px solid #3b2a1e;cursor:pointer} #crtp .btn.on{background:#3b2a1e;color:#ece5d3} #crtp .mclose{float:right} #crtp .now{margin-top:6px;min-height:28px;color:#6a4a32}
+  const css=document.createElement('style'); css.textContent=`#crtp .row{display:flex;align-items:center;gap:6px;margin:8px 0;flex-wrap:wrap} #crtp .row>span:first-child{width:74px} #crtp input[type=range]{flex:1} #crtp .btn{font:inherit;padding:5px 8px;background:#ece5d3;color:#3b2a1e;border:2px solid #3b2a1e;cursor:pointer} #crtp .btn.on{background:#3b2a1e;color:#ece5d3} #crtp .mclose{float:right} #crtp .now{margin-top:6px;min-height:28px;color:inherit;opacity:.85}
     #crtp .gl{max-height:34vh;overflow-y:auto;border:1px solid currentColor;padding:4px;margin-top:6px} #crtp .gl h4{margin:8px 2px 3px;font:inherit;opacity:.7} #crtp .gl .it{display:block;width:100%;text-align:left;margin:2px 0;padding:4px 6px} #crtp .gl .it small{float:right;opacity:.7}
     #crtw{position:fixed;inset:0;z-index:60;background:radial-gradient(ellipse at 50% 46%,#1c2433 0%,#07080b 62%,#000 100%);display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:default}
     #crtw .tv{position:relative;flex:none;background:linear-gradient(180deg,#3c3a3e,#1c1b1e 55%,#121113);border-radius:5%/6.5%;box-shadow:0 40px 120px #000,0 0 160px rgba(120,160,220,.12),inset 0 2px 0 #5b595e,inset 0 -4px 10px #000}
@@ -154,7 +154,7 @@ import {ROOMK} from './150a-bedroom.js';
     addEventListener('resize',()=>{ if(W.open){ if(W.full)W.z=fill(); place(); } }); };
   const loop=()=>{ if(!W.open)return; W.raf=requestAnimationFrame(loop); W.R.render(W.sc,W.cam); };
   CRT.watch=on=>{ '@later'; on=on==null?!W.open:!!on; if(on===W.open)return draw(1);
-    if(on){ wbuild(); W.open=true; W.z=1; W.el.hidden=false; W.el.appendChild(P); place(); loop(); if(!CRT.on)CRT.power(true); }
+    if(on){ wbuild(); W.open=true; W.z=1; W.el.hidden=false; W.el.appendChild(P); P.hidden=true; place(); loop(); if(!CRT.on)CRT.power(true); }
     else { W.open=false; W.full=false; cancelAnimationFrame(W.raf); if(document.fullscreenElement)document.exitFullscreen().catch(()=>{}); W.el.hidden=true; document.body.appendChild(P); }
     draw(1); };
   CRT.full=on=>{ '@later'; on=on==null?!W.full:!!on; if(on&&!W.open)CRT.watch(true); W.full=on;

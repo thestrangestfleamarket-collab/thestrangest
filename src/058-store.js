@@ -1,6 +1,6 @@
 // THE STORE: rooms with doors (diner, bar, museum, keep, cottage, aquarium, avenue) and their places in the menu. Its own builder.
 import {SHARED, THREE} from './003-shx.js';
-import {INTERIORS, LITE, NPCS, pos, ROOMS, SHAD, UI, WEEDS, WINDOWS} from './003b-systems.js';
+import {INTERIORS, LITE, NPCS, pos, ROOMS, SFX, SHAD, UI, WEEDS, WINDOWS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {AWAY, BF, BLDK, cutWalls, EASTX, FADE, FIX, grab, lamps, LAY, OFFDX, QS, SOL, START, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
@@ -216,10 +216,10 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
     STORE.gate={};   // a door that asks something first (the theatre: a ticket): id -> () => true to go in
     STORE.pre={};   // a door that fetches something first (the art museum: its paintings): id -> async () => done, run behind the fade before the inside is built
     STORE.enter=async(id,walk)=>{ const R=STORE.inside[id]; if(!R||R.busy)return; if(STORE.gate[id]&&!STORE.gate[id]())return; R.busy=true; const name=/^THE /.test(R.name)?R.name:'THE '+R.name;
-      await FADE.run(R.done?'':'ENTERING '+name,async()=>{ if(!R.done){ await LOAD(...need()); if(STORE.pre[id])await STORE.pre[id](); STORE.inGo(id); }
+      await FADE.run(R.done?'':'ENTERING '+name,async()=>{ if(walk)SFX.door(); if(!R.done){ await LOAD(...need()); if(STORE.pre[id])await STORE.pre[id](); STORE.inGo(id); }
         if(walk){ const [x,y]=DOORP(R,-1.4), d=R.door; STORE.goTo(X(x),Z(y),'up',d.w==='f'?Math.PI:d.w==='b'?0:d.w==='w'?Math.PI/2:-Math.PI/2); } if(UI.inIso)UI.inIso(); },{cut:true,silent:R.done&&!walk}); R.busy=false; };
     STORE.exit=async id=>{ '@later'; const R=STORE.inside[id]; if(!R||R.busy||FADE.busy)return; R.busy=true; const d=R.door, SD=STORE.streetDoor[id], [x,y]=SD?SD.out:DOORP(R,1.4);
-      await FADE.run('',async()=>{ STORE.goTo(X(x),Z(y),'up',SD?SD.out[2]:d.w==='f'?0:d.w==='b'?Math.PI:d.w==='w'?-Math.PI/2:Math.PI/2); },{cut:true}); R.busy=false; };
+      await FADE.run('',async()=>{ SFX.door(); STORE.goTo(X(x),Z(y),'up',SD?SD.out[2]:d.w==='f'?0:d.w==='b'?Math.PI:d.w==='w'?-Math.PI/2:Math.PI/2); },{cut:true}); R.busy=false; };
     STORE.doorThings=()=>{ '@later'; if(typeof UI==='undefined'||!UI.thing)return; for(const id in STORE.inside){ const R=STORE.inside[id]; if(R.th)continue; if(WALKIN[id]){ STORE.door(id); continue; } const SD=STORE.streetDoor[id], [x,y]=SD?SD.door:DOORP(R,.35), hb=new THREE.Mesh(new THREE.BoxGeometry(1.4*TILE,2.6*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false}));
       hb.position.set(X(x),1.3*TILE,Z(y)); scene.add(hb); R.th={name:/^THE /.test(R.name)?R.name:'THE '+R.name,ghost:1,obj:hb,reach:1.4*TILE,near:2.4*TILE,tall:2.6*TILE,act:()=>STORE.enter(id,true)}; UI.thing(R.th);
         const [ex,ey]=DOORP(R,-.35), he=new THREE.Mesh(new THREE.BoxGeometry(1.4*TILE,2.6*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false})); he.position.set(X(ex),1.3*TILE,Z(ey)); scene.add(he);

@@ -1,6 +1,6 @@
 // THE SOUNDS: SFX makes every sound effect and loop in code, with the volume and the sound mix.
 import {SHARED, THREE} from './003-shx.js';
-import {pos, SFX} from './003b-systems.js';
+import {PARK, pos, ROOMS, SFX} from './003b-systems.js';
 import {SAVE} from './005-save.js';
 import {QS, TILE} from './006-map-pre.js';
 const SOUND=QS.get('sound')!=='0';
@@ -59,11 +59,19 @@ Object.assign(SFX,{on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}});
     const S=c.sampleRate, n=Math.max(1,Math.round(r.len*S)), b=c.createBuffer(1,n,S); r.f(b.getChannelData(0),n,S); return BUF[key]=b; };
   const V=new THREE.Vector3(); const place=(o,G,P)=>{ '@later'; if(!o.at)return 1; const x=o.at.x, z=o.at.z!=null?o.at.z:o.at.y, d=Math.hypot(x-pos.x,z-pos.z), far=o.far||9*TILE, k=Math.max(0,1-d/far); if(k<=0)return 0;
     if(P){ V.set(x,o.at.y!=null&&o.at.z!=null?o.at.y:SHARED.py+1,z).project(SHARED.cam); P.pan.value=Math.max(-.8,Math.min(.8,V.x*.8)); } return k; };
-  SFX.play=(k,o={})=>{ const c=SFX.live(); if(!c||!SFX.on||!R[k])return null; const b=SFX.buffer(k,c); if(!b)return null;
-    const s=c.createBufferSource(), G=c.createGain(); s.buffer=b; s.loop=!!R[k].loop; s.playbackRate.value=(o.pitch||1)*(o.vary?1+(Math.random()-.5)*o.vary:1);
+  // the recorded takes (tools/sfx-bake.py): fetched and decoded once the sound is on; till they come, and for a name with no takes, the recipe plays
+  const TK=__DATA__("data/sfx.json"), TKF=__FILE__("data/sfx.mp3"), ALT={step_stone:'step',step_grass:'step',step_wood:'step',dooropen:'latch'}, BANK={buf:null,busy:false,retry:0};
+  const bank=c=>{ if(BANK.buf)return BANK; if(BANK.busy||performance.now()<BANK.retry)return null; BANK.busy=true;
+    fetch(TKF).then(r=>{ if(!r.ok)throw new Error(r.status); return r.arrayBuffer(); }).then(b=>c.decodeAudioData(b)).then(buf=>{ BANK.buf=buf; }).catch(e=>{ console.warn('the recorded sounds',e); BANK.retry=performance.now()+(location.protocol==='file:'?1e12:15000); }).finally(()=>{ BANK.busy=false; }); return null; };
+  SFX.has=k=>!!(R[k]||TK[k]); SFX.takes=k=>TK[k]; SFX.bank=BANK;
+  SFX.play=(k,o={})=>{ const c=SFX.live(); if(!c||!SFX.on)return null; const T=TK[k], B=T&&bank(c), rk=B?null:R[k]?k:ALT[k]; if(!B&&!rk)return null; const b=B?B.buf:SFX.buffer(rk,c); if(!b)return null;
+    const s=c.createBufferSource(), G=c.createGain(); s.buffer=b; s.loop=!B&&!!R[rk].loop; s.playbackRate.value=(o.pitch||1)*(o.vary?1+(Math.random()-.5)*o.vary:1);
     let P=null; if(o.at&&c.createStereoPanner){ P=c.createStereoPanner(); } else if(o.pan!=null&&c.createStereoPanner){ P=c.createStereoPanner(); P.pan.value=o.pan; }
-    const kd=place(o,G,o.at?P:null); if(kd<=0)return null; G.gain.value=(o.vol==null?1:o.vol)*kd*(o.raw?1:SFX.fxLevel(k)); const out=o.bus||bus(c); if(P)s.connect(P).connect(G).connect(out); else s.connect(G).connect(out); s.start(c.currentTime+(o.delay||0)); return {s,G,P}; };
-  let ph0=0; SFX.steps=(st,go)=>{ const ph=st.ph||0; const down=Math.floor(ph*2)!==Math.floor(ph0*2); ph0=ph; if(!down||!(go>0)||st.w<.3||st.move||!SFX.on)return; SFX.play('step',{vol:.18+.3*(st.run||0),vary:.25,pitch:.9+Math.random()*.2}); };
+    const kd=place(o,G,o.at?P:null); if(kd<=0)return null; G.gain.value=(o.vol==null?1:o.vol)*kd*(o.raw?1:SFX.fxLevel(k)); const out=o.bus||bus(c); if(P)s.connect(P).connect(G).connect(out); else s.connect(G).connect(out); const t0=c.currentTime+(o.delay||0); if(B){ const v=T[Math.floor(Math.random()*T.length)]; s.start(t0,Math.max(0,v[0]-.012),v[1]+.03); } else s.start(t0); return {s,G,P}; };
+  // what is underfoot (wood inside, grass in the park, stone elsewhere) and a door gone through
+  SFX.ground=()=>ROOMS.cur||(ROOMS.offIn&&ROOMS.offIn())?'wood':SHARED.LVL==='up'&&PARK.within&&PARK.within(pos.x,pos.z)?'grass':'stone';
+  SFX.door=()=>{ SFX.play('dooropen',{vol:.7}); SFX.play('door',{vol:.7,delay:.9}); };
+  const STEP={stone:'step_stone',grass:'step_grass',wood:'step_wood'}; let ph0=0; SFX.steps=(st,go)=>{ const ph=st.ph||0; const down=Math.floor(ph*2)!==Math.floor(ph0*2); ph0=ph; if(!down||!(go>0)||st.w<.3||st.move||!SFX.on)return; SFX.play(STEP[SFX.ground()],{vol:.18+.3*(st.run||0),vary:.12}); };
   const hashS=s=>{ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; };
   SFX.voiceOf=(key,bank)=>{ const h=hashS(String(key||'')); return {bank:bank||(h&1?'high':'low'),pitch:.92+((h>>>8)%1000)/1000*.16}; };
   const VB={}; const vbuf=(c,bank,i)=>{ '@later'; const key=bank+i; if(VB[key]&&VB[key].sampleRate===c.sampleRate)return VB[key]; const S=c.sampleRate, n=S*.07|0, b=c.createBuffer(1,n,S), D=b.getChannelData(0), f0=(bank==='high'?230:140)*(1+(i%4)*.06), fm=[1.5,2.2,2.8,3.6][(i>>2)%4];

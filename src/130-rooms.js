@@ -1,6 +1,6 @@
 // ROOMS: which room you are in, the insides off the map (ROOMS.off, the lazy rooms) and the way in and out behind the fade, peek, roofs hidden when inside, and roofAt.
 import {SHARED, THREE} from './003-shx.js';
-import {BLK, CIVIC, CULL, DRM, DRONE, ED, LEVELS, LITE, LOOKS, MAPED, MUS, NPCS, ONLINE, PNM, pos, ROOMS, SGM, UI, VIS, W3, WINDOWS} from './003b-systems.js';
+import {BLK, CIVIC, CULL, DRM, DRONE, ED, LEVELS, LITE, LOOKS, MAPED, MUS, NPCS, ONLINE, PNM, pos, ROOMS, SFX, SGM, UI, VIS, W3, WINDOWS} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {cutWalls, FADE, FREE, MAPG, MODS, OUT, OVERHEAD, SEEN, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
@@ -64,10 +64,10 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
     scene.updateMatrixWorld(); const bb=o.bs.find(b=>within(b,s[0],s[1]))||o.b, w={key:kOf(bb),b:bb}; ROOMS.cur=bb; IV.want=w; apply(w); if(!at&&UI.inIso)UI.inIso(); };
   ROOMS.goOut=id=>{ const o=ROOMS.off[id]; UI.goTo(o.out[0],o.out[1],o.out[2],o.out[3]); ROOMS.cur=null; IV.want=null; apply(null); return ROOMS.unstow&&ROOMS.unstow(); };
   const offRun=(id,txt,fn)=>{ if(!ROOMS.off[id]||FADE.busy||IV.busy)return; IV.busy=true; return FADE.run(txt,fn,{cut:true}).finally(()=>{ IV.busy=false; }); };
-  ROOMS.enter=id=>offRun(id,ROOMS.lazy[id]&&ROOMS.lazy[id].done?'':'ENTERING '+ROOMS.off[id].name,()=>ROOMS.goIn(id));
+  ROOMS.enter=id=>offRun(id,ROOMS.lazy[id]&&ROOMS.lazy[id].done?'':'ENTERING '+ROOMS.off[id].name,()=>{ SFX.door(); return ROOMS.goIn(id); });
   ROOMS.enterAt=(id,at)=>offRun(id,ROOMS.lazy[id]&&ROOMS.lazy[id].done?'':'ENTERING '+ROOMS.off[id].name,()=>ROOMS.goIn(id,at));   // enter and spawn at a chosen spot inside (the GO TO menu, a saved spot)
   ROOMS.boxAt=(x,z)=>{ for(const id in ROOMS.off){ const b=ROOMS.off[id].box; if(b&&x>=b.x0&&x<=b.x1&&z>=b.z0&&z<=b.z1)return id; } return null; };   // which off-map inside, if any, holds this point
-  ROOMS.exit=id=>ROOMS.off[id]&&IV.b&&IV.b.off===id?offRun(id,'',()=>ROOMS.goOut(id)):null;
+  ROOMS.exit=id=>ROOMS.off[id]&&IV.b&&IV.b.off===id?offRun(id,'',()=>{ SFX.door(); return ROOMS.goOut(id); }):null;
   ROOMS.offIn=()=>IV.b&&IV.b.off||IV.reOff||null;
   { let t0=0; SYS.add('places',()=>{ if(SHARED.LVL!=='up'||FADE.busy||IV.busy||ROOMS.offIn()||!window.__started){ t0=0; return; } let id=null; for(const k in ROOMS.off){ const o=ROOMS.off[k]; if(o.out&&o.box&&within(o.box,pos.x,pos.z,6)&&!within(o.box,o.out[0],o.out[1],6)){ id=k; break; } }
     if(!id){ t0=0; return; } const now=performance.now(); if(!t0)t0=now; if(now-t0<1000)return; t0=0; const o=ROOMS.off[id]; offRun(id,'',()=>{ UI.goTo(o.out[0],o.out[1],o.out[2],o.out[3]); }); },'130-rooms stray'); }   // on an inside's spot off the map without being in it (a reset, an old saved spot): out at its door, never left on the bare ground out there   // (between a reset and the room put back you are still in it)

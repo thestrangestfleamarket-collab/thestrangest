@@ -6198,3 +6198,4 @@ Owner: "what polyfork animations do we have for our character", then "yes lets u
 - 11 Nov 2026, portals on any solid ground (owner: "allow the portal to work on any solid ground"): they open on any floor, roof or platform, inside or out, above or below; a pair carries you only when both are in the place you are in.
 - 11 Nov 2026, the freeze ray's ice shows again (owner: "fix the ice too"): it was never drawn on the street; same fix as the portals.
 - 11 Nov 2026, the shade under a hat (owner, of his avatar in the brimmed hat with a dark band across the eyes: "shadow under hat isnt covering entire face"): under a brimmed hat (wider than the head) the whole face, chin up, is in the brim's shade, whatever the sun's height.
+- 11 Nov 2026, shrink and grow capped at five (owner: "add a cap of 5 to be safe"): five at once is the most that works; more only last longer. Supersedes the same day's no limit.

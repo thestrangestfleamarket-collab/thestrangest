@@ -207,7 +207,7 @@ import {RIVER} from './066-river.js';
       for(const b of L){ const d=Math.hypot(b.x-q.x,b.z-q.z), dy=Math.abs(b.y-q.y); if(b.id==='me'&&!q.clear){ if(d>1.2*M)q.clear=true; continue; } if(d<.6*M&&dy<1*M){ dropMine(q); boom('w_mine',new V3(q.x,q.y+.1*M,q.z),true,'ground'); if(ONLINE.on)ONLINE.send({t:'arm',k:'boom',w:'w_mine',i:q.i,p:[+q.x.toFixed(2),+q.y.toFixed(2),+q.z.toFixed(2)]}); break; } } } };
 
   /* ---------- the portals: blue then orange on any solid ground; anyone who steps in one comes out of the other, if both are where they are ---------- */
-  const PCOL=[0x3aa8ff,0xff8a20], PR=.93, PH=4, PLIFE=30, poG=new THREE.CircleGeometry(PR,40).rotateX(-Math.PI/2), prG=new THREE.TorusGeometry(PR,.08,6,40).rotateX(Math.PI/2), poT={value:0};
+  const PCOL=[0x3aa8ff,0xff8a20], PR=.465, PH=2, PLIFE=30, poG=new THREE.CircleGeometry(PR,40).rotateX(-Math.PI/2), prG=new THREE.TorusGeometry(PR,.04,6,40).rotateX(Math.PI/2), poT={value:0};
   // the hole: the view ray is followed down a well of depth PH under the disc, so the ground looks open; with uOn, the picture seen out of the other portal (uV) fills it instead
   const poVS='varying vec3 vL; varying vec3 vD; varying vec4 vS; void main(){ vL=position; vec4 w=modelMatrix*vec4(position,1.); vD=w.xyz-cameraPosition; gl_Position=projectionMatrix*viewMatrix*w; vS=gl_Position; }';
   const poFS=`uniform vec3 uC; uniform float uT; uniform float uOn; uniform sampler2D uV; varying vec3 vL; varying vec3 vD; varying vec4 vS; const float R=${PR.toFixed(2)}, H=${PH.toFixed(2)};
@@ -224,14 +224,14 @@ import {RIVER} from './066-river.js';
   const portalSet=(who,c,x,y,z,pl)=>{ let pr=A.portals.get(who); if(!pr)A.portals.set(who,pr=[null,null]); if(pr[c])poDrop(pr[c]); pl=typeof pl==='string'?pl.slice(0,80):here(); pr[c]={x,y,z,pl,m:poMesh(c,pl.split('|')[1]||'*'),t:0}; pr[c].m.position.set(x,y+.03*M,z); sparks(x,y+.2*M,z,24,PCOL[c],3,.5); hear('laser',.5,.5,x,z); };
   const portalShot=(S)=>{ '@later'; const h=trace(S.tip,S.dir,W.w_portal.rng*M); tracer(S.tip,h.p,PCOL[A.pc],.02,.15);
     if(!(h.what==='ground'||h.what==='wall'&&h.n&&h.n.y>.7)){ say('A PORTAL ONLY OPENS ON SOLID GROUND.','#c8a090'); return; }
-    const c=A.pc, pl=here(); A.pc^=1; portalSet('me',c,h.p.x,h.p.y,h.p.z,pl); if(ONLINE.on)ONLINE.send({t:'arm',k:'portal',c,pl,p:[+h.p.x.toFixed(2),+h.p.y.toFixed(2),+h.p.z.toFixed(2)]}); };
+    const g=SHARED.groundY&&SHARED.groundY(h.p.x,h.p.z); if(isFinite(g)&&g<h.p.y+.3*M)h.p.y=g; const c=A.pc, pl=here(); A.pc^=1; portalSet('me',c,h.p.x,h.p.y,h.p.z,pl); if(ONLINE.on)ONLINE.send({t:'arm',k:'portal',c,pl,p:[+h.p.x.toFixed(2),+h.p.y.toFixed(2),+h.p.z.toFixed(2)]}); };
   const portalTick=dt=>{ if(!A.portals.size)return; let inAny=false; poT.value=now()/1000%1000;
     for(const [who,pr] of A.portals){ if(who!=='me'&&!ONLINE.others.has(who)){ for(const p of pr)if(p)poDrop(p); A.portals.delete(who); continue; }
       for(let c=0;c<2;c++){ const p=pr[c]; if(!p)continue; p.t+=dt; if(p.t>PLIFE){ poDrop(p); pr[c]=null; sparks(p.x,p.y+.2*M,p.z,20,PCOL[c],2,.4); continue; }
-        p.m.scale.setScalar(M*Math.min(1,p.t/.25,(PLIFE-p.t)/.6)); p.m.children[1].rotation.y+=dt*2; if(rnd()<dt*14)SP.add(p.x+(rnd()-.5)*1.5*M,p.y+.05*M,p.z+(rnd()-.5)*1.5*M,0,(1+rnd())*M,0,PCOL[c],.6,{g:0,dr:0}); }
+        p.m.scale.setScalar(M*Math.min(1,p.t/.25,(PLIFE-p.t)/.6)); p.m.children[1].rotation.y+=dt*2; if(rnd()<dt*14)SP.add(p.x+(rnd()-.5)*PR*1.6*M,p.y+.05*M,p.z+(rnd()-.5)*PR*1.6*M,0,(1+rnd())*M,0,PCOL[c],.6,{g:0,dr:0}); }
       if(!pr[0]&&!pr[1]){ A.portals.delete(who); continue; }
       if(!pr[0]||!pr[1]||pr[0].pl!==pr[1].pl||pr[0].pl!==here()||VIT.dead||RAG.on)continue;
-      for(let c=0;c<2;c++){ const a=pr[c], b=pr[1-c], d=Math.hypot(pos.x-a.x,pos.z-a.z); if(d<1.5*M&&Math.abs(SHARED.py-a.y)<1.2*M)inAny=true;
+      for(let c=0;c<2;c++){ const a=pr[c], b=pr[1-c], d=Math.hypot(pos.x-a.x,pos.z-a.z); if(d<PR*1.6*M&&Math.abs(SHARED.py-a.y)<1.2*M)inAny=true;
         if(d<PR*.8*M&&Math.abs(SHARED.py-a.y)<1.2*M&&!A.inP){ A.inP=true; sparks(a.x,a.y+M,a.z,30,PCOL[c],3,.5); UI.goTo(b.x,b.z,b.y); sparks(b.x,b.y+M,b.z,30,PCOL[1-c],3,.5); hear('whoosh',1.4,.6); return; } } }
     if(!inAny)A.inP=false; };
   // what a portal shows: the scene from under its partner looking up (the way you come out), cut at the partner's ground; small, and only for a pair in your place, near and on screen

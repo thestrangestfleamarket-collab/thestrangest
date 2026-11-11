@@ -59,7 +59,7 @@ const AQUA={tanks:[]}; window.AQUA=AQUA;
     { const g=cv.getContext('2d'); g.fillStyle='#16202a'; g.fillRect(0,0,cv.width,cv.height); g.textAlign='center'; ALL.forEach(([k,nm,pr],i)=>{ const x=(i%cols)*cw, y=Math.floor(i/cols)*chh; g.fillStyle='#e8e0c8'; g.fillRect(x+3,y+3,cw-6,chh-6); g.fillStyle='#1a2a3a';
       const w=nm.split(' '), ln=w.length>1?[w.slice(0,Math.ceil(w.length/2)).join(' '),w.slice(Math.ceil(w.length/2)).join(' ')]:[nm]; let f=15; g.font=`bold ${f}px monospace`; while(f>8&&Math.max(...ln.map(l=>g.measureText(l).width))>cw-12){ f--; g.font=`bold ${f}px monospace`; }
       ln.forEach((l,j)=>g.fillText(l,x+cw/2,y+30+j*(f+3))); g.fillStyle='#a0402a'; g.font='bold 18px monospace'; g.fillText('$'+pr,x+cw/2,y+chh-14); }); }
-    { const tx=new THREE.CanvasTexture(cv); tx.colorSpace=THREE.SRGBColorSpace; tx.anisotropy=4; const q=[W(W0,tv,tz[1]),W(W1,tv,tz[1]),W(W1,tv,tz[0]+th2),W(W0,tv,tz[0]+th2)], pg=new THREE.BufferGeometry();
+    { const tx=new THREE.CanvasTexture(cv); tx.colorSpace=THREE.SRGBColorSpace; const q=[W(W0,tv,tz[1]),W(W1,tv,tz[1]),W(W1,tv,tz[0]+th2),W(W0,tv,tz[0]+th2)], pg=new THREE.BufferGeometry();
       pg.setAttribute('position',new THREE.Float32BufferAttribute(q.flatMap(v=>[v.x,v.y,v.z]),3)); pg.setAttribute('uv',new THREE.Float32BufferAttribute([0,0,1,0,1,1,0,1],2)); pg.setIndex([0,1,2,0,2,3]);
       G.add(new THREE.Mesh(pg,new THREE.MeshBasicMaterial({map:tx,side:THREE.DoubleSide}))); }
     const along=W(W0,V0,0).sub(W(W1,V0,0)).normalize(), yaw=Math.atan2(along.x,along.z)+Math.PI/2;

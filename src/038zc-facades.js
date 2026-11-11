@@ -11,7 +11,7 @@ const FACADES={night:{value:0},made:0,tris:0,near:[]};
       sh.fragmentShader='uniform float uNight; varying float vGlow;\n'+sh.fragmentShader.replace('#include <opaque_fragment>','outgoingLight+=diffuseColor.rgb*vGlow*uNight*1.6;\n#include <opaque_fragment>'); };
     MS.customProgramCacheKey=()=>'facade1';
     MG=new THREE.MeshPhongMaterial({color:0xb8ccd8,specular:0xffffff,shininess:110,transparent:true,opacity:.12,depthWrite:false,side:THREE.DoubleSide}); };
-  SYS.add('life',()=>{ const h=CLOCK.h??12, c=x=>Math.max(0,Math.min(1,x)); FACADES.night.value=1-c((h-6.5)/1.5)*c((19.5-h)/1.5); },'038zc-facades');
+  SYS.add('life',()=>{ FACADES.night.value=CLOCK.elev?Math.max(0,Math.min(1,(1-CLOCK.elev())/8)):0; },'038zc-facades');
   // the rich fronts' carved stone shows only near (o.rich.near tiles); farther the plain front stands alone
   let nt=0; SYS.add('places',dt=>{ if((nt-=dt||0)>0)return; nt=.25; for(const n of FACADES.near){ const v=Math.hypot(pos.x-n.x,pos.z-n.z)<n.r; if(n.g.visible!==v)n.g.visible=v; } },'038zc-facades near');
   // the rich fronts' walls: brick laid in running bond, and rusticated stone for the base, each a tile-able picture (TX tiles across)
@@ -21,7 +21,7 @@ const FACADES={night:{value:0},made:0,tris:0,near:[]};
     else { g.fillStyle='#4e4b46'; g.fillRect(0,0,512,512); const bh=512/9, bw=512/4; for(let r=0;r<9;r++)for(let i=-1;i<5;i++){ const x=i*bw+(r&1)*bw/2, d=.86+.2*R(i,r,11);
         g.fillStyle=`rgb(${148*d|0},${144*d|0},${136*d|0})`; g.fillRect(x+4,r*bh+5,bw-8,bh-9); g.fillStyle=`rgba(255,255,255,.08)`; g.fillRect(x+4,r*bh+5,bw-8,3); } }
     for(let i=0;i<9000;i++){ const x=R(i,1,13)*512, y=R(i,2,13)*512; g.fillStyle=R(i,3,13)<.5?'rgba(0,0,0,.12)':'rgba(255,255,255,.07)'; g.fillRect(x,y,1.5,1.5); }
-    const t=new THREE.CanvasTexture(cv); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return new THREE.MeshLambertMaterial({map:t,side:THREE.DoubleSide}); })());
+    const t=new THREE.CanvasTexture(cv); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.colorSpace=THREE.SRGBColorSpace; return new THREE.MeshLambertMaterial({map:t,side:THREE.DoubleSide}); })());
   // o: L the lot in its own frame (front along L.y1), pt (u,v)->lot tiles (TURN's pt), z1 the height in z-pixels (24 a tile), wall/trim colours,
   // door {u,w} (tiles, its middle and half width), shop [{u0,u1,z0,z1}] openings kept for real glass, glass:true glazes the ground floor's windows itself, seed
   FACADES.make=o=>{ mats(); const {X,Y,Z}=SHARED.BOD, L=o.L, pt=o.pt||((u,v)=>[u,v]), P=[], C=[], G=[], GP=[], seed=o.seed||7;

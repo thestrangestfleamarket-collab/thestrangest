@@ -59,7 +59,7 @@ PARK.climbable=[];
     PEEK.mark(PG,new Uint8Array(PG.attributes.position.count).fill(5));   // seen through round you like the park's other big trees (PEEK)
     // the leaves cast no shadow, only the bark (owner, 9 Nov 2026)
     // each tree whole (its bark, every leaf puff) drawn only near the eye (owner, 8 Nov 2026: "i want to simplify trees bigtime, they shouldnt cost much from far off at all")
-    for(const it of items){ const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(it.P,3)); geo.computeVertexNormals(); const me=new THREE.Mesh(geo,bark); me.castShadow=me.receiveShadow=true; g.add(me); it.mesh=me; if(it.climb)PARK.climbable.push(it);
+    for(const it of items){ const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(it.P,3)); geo.computeVertexNormals(); { const N=geo.attributes.normal.array, n8=new Int8Array(N.length); for(let i=0;i<N.length;i++)n8[i]=Math.round(N[i]*127); geo.setAttribute('normal',new THREE.BufferAttribute(n8,3,true)); } const me=new THREE.Mesh(geo,bark); me.castShadow=me.receiveShadow=true; g.add(me); it.mesh=me; if(it.climb)PARK.climbable.push(it);
       const IM=new THREE.InstancedMesh(PG,leaf,it.p1-it.p0); for(let i=it.p0;i<it.p1;i++){ const [x,y,z,r,k]=puffs[i], G=GREEN[k]; IM.setMatrixAt(i-it.p0,m4.compose(v.set(x,y,z),q.setFromEuler(EU.set(i*2.399%6.283,i*1.618%6.283,i*.737%6.283)),s.setScalar(r))); IM.setColorAt(i-it.p0,c.setRGB(G[0],G[1],G[2],THREE.SRGBColorSpace)); }
       IM.castShadow=false; IM.receiveShadow=true; IM.computeBoundingSphere(); g.add(IM); it.leaves=IM;
       PEEK.mark(geo,new Uint8Array(it.P.length/3).fill(5)); const B=new THREE.Box3(); geo.computeBoundingBox(); B.copy(geo.boundingBox);

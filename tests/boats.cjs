@@ -14,6 +14,7 @@ const {chromium}=require('playwright');
   await pg.waitForFunction(()=>BOAT.on,null,{timeout:30000}).catch(()=>{});
   const a=await pg.evaluate(()=>({on:BOAT.on,c:BOAT.c&&BOAT.c.id,hud:!document.getElementById('boathud').hidden,x:BOAT.x,z:BOAT.z}));
   ok(th&&a.on&&a.c==='kayak0'&&a.hud,'a double-click from the bank puts you in the kayak');
+  if(!a.on){ console.log('1 failed'); await b.close(); process.exit(1); }
   if(process.env.SHOT){ await pg.evaluate(()=>__dbg.UI.setView('third')); await pg.waitForTimeout(2500); await pg.screenshot({path:process.env.SHOT+'-in.png'}); }
   // rowed at each other boat, at the shore and out on the water: never an overlap, and it does go
   const row=(tx,tz,n)=>pg.evaluate(([tx,tz,n])=>{ let bad=0, far=0; const x0=BOAT.x, z0=BOAT.z; for(let i=0;i<n;i++){ const dx=tx-BOAT.x, dz=tz-BOAT.z, l=Math.hypot(dx,dz)||1; BOAT.steer(.05,dx/l,dz/l); const me=BOATDBG().crafts.find(c=>c.id===BOAT.c.id); if(me.clash||!me.fits)bad++; far=Math.max(far,Math.hypot(BOAT.x-x0,BOAT.z-z0)); } return {bad,far:far/(SHARED.BOD.XS(1)-SHARED.BOD.XS(0))}; },[tx,tz,n]);

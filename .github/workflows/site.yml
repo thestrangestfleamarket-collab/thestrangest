@@ -112,6 +112,7 @@ jobs:
           k train   'src/009b|src/009c|src/066c|src/159ca|loop\.cjs'
           k items   'src/162e|src/162d|src/150k|src/076a|src/146zea|src/146d-gear|data/icons|data/items|tools/icons|items\.cjs'
           k hall    'src/150n|src/059a|hall\.cjs'
+          k flats   'src/150n|src/059a|src/150d|src/141c|flats\.cjs'
           k holodeck 'src/059b-arcade|src/146bb|src/146b[cd]|holodeck'
           k kite    'src/146g-kite|src/093|kite\.cjs'
           k swim    'src/146ga-swim|src/066-river|src/065a|swim\.cjs'
@@ -392,6 +393,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' hall')
         run: node tests/hall.cjs
+      - name: The four sizes of flat (small, medium, big; moving in)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' flats')
+        run: node tests/flats.cjs dist/market.html
       - name: The holodeck (its panel, the adventures menu)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' holodeck')

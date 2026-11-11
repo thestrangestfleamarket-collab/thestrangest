@@ -1,0 +1,135 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Welcome Guide Mockups</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{--mf:#7dffa8;--mi:#3aa866;--mt:#7dffa8;--md:#3aa866;--mo:#d8ffe4;--mk:#020a06;--warn:#f2c14e}
+*{box-sizing:border-box}
+body{margin:0;background:#0d0f14;color:#ece5d3;font:15px/1.5 system-ui,sans-serif;padding:24px 16px}
+h1{font:22px 'Share Tech Mono',monospace;letter-spacing:3px;color:var(--mf);margin:0 0 4px}
+.lead{color:#9b9584;margin:0 0 24px;max-width:900px}
+.opt{margin:0 0 40px}
+.opt h2{font:18px 'Share Tech Mono',monospace;letter-spacing:2px;color:#f2c14e;margin:0 0 4px}
+.opt p.what{margin:0 0 10px;color:#9b9584;max-width:900px}
+.scene{position:relative;max-width:1100px;aspect-ratio:16/9;overflow:hidden;border:1px solid #2a2e3a;
+ background:linear-gradient(#3a3f52 0 18%,#2b2f3d 18% 22%,#4a4038 22% 60%,#25262c 60% 64%,#55524c 64% 100%)}
+.scene::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 9%,rgba(0,0,0,.25) 9% 9.4%)}
+.scene .sign{position:absolute;top:6%;left:8%;font:bold 14px system-ui;background:#0b5;color:#fff;padding:3px 8px}
+.scene .chat{position:absolute;left:12px;bottom:12px;width:26%;font:11px 'Share Tech Mono';color:#cfd;background:rgba(0,0,0,.45);padding:6px;line-height:1.4}
+.dim{position:absolute;inset:0;background:rgba(5,6,10,.55)}
+.term{font:16px/1.45 'Share Tech Mono',ui-monospace,monospace;letter-spacing:1.5px;color:var(--mt);
+ background:repeating-linear-gradient(0deg,rgba(125,255,168,.05) 0 1px,transparent 1px 3px),var(--mk);box-shadow:0 0 0 2px var(--mi)}
+.term .ttl{display:flex;justify-content:space-between;padding:8px 14px;font-size:19px;letter-spacing:3px;color:var(--mf);box-shadow:inset 0 0 0 2px var(--mi);background:rgba(3,26,13,.85)}
+.term .ttl span+span{color:var(--md);font-size:13px}
+.term .pane{padding:14px 16px;box-shadow:inset 0 0 0 2px var(--mi);background:rgba(3,26,13,.85)}
+.term h3{font-size:12px;color:var(--md);margin:12px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--mi);font-weight:normal}
+.term h3:first-child{margin-top:0}
+.k{display:inline-block;min-width:22px;padding:0 5px;margin-right:4px;text-align:center;border:1px solid var(--mi);border-bottom-width:3px;color:var(--mo)}
+.btn{color:var(--mk);background:var(--mf);padding:3px 10px}
+.btn.o{color:var(--mt);background:transparent;box-shadow:inset 0 0 0 1px var(--mi)}
+.beta{color:var(--warn)}
+.row{display:flex;gap:10px;align-items:baseline;margin:3px 0}
+.row .l{flex:0 0 150px}
+.foot{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;box-shadow:inset 0 0 0 2px var(--mi);background:rgba(3,26,13,.85)}
+.dots span{display:inline-block;width:10px;height:10px;margin-right:6px;box-shadow:inset 0 0 0 2px var(--mi)}
+.dots span.on{background:var(--mf)}
+/* A */
+.a .card{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(620px,86%)}
+.strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:1100px;margin-top:10px}
+.strip .term{font-size:12px;padding:0}
+.strip .term .ttl{font-size:13px;padding:5px 9px}
+.strip .term .pane{padding:8px 10px;min-height:150px}
+/* B */
+.b .sheet{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(900px,92%);max-height:92%;display:grid;grid-template-rows:auto 1fr auto}
+.b .cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;font-size:14px}
+/* C */
+.c .coach{position:absolute;right:14px;top:14px;width:min(330px,40%);font-size:13px}
+.c .coach .pane{padding:10px 12px}
+.c .task{display:flex;gap:8px;margin:4px 0}
+.c .task b{flex:0 0 18px;font-weight:normal}
+.c .task.done{color:var(--md);text-decoration:line-through}
+.c .task.now{color:var(--mo)}
+.c .hello{position:absolute;left:50%;bottom:8%;transform:translateX(-50%);width:min(560px,70%);font-size:14px}
+@media(max-width:700px){.strip{grid-template-columns:1fr 1fr}.b .cols{grid-template-columns:1fr}}
+</style></head><body>
+<h1>[ WELCOME TO THE MARKET ]</h1>
+<p class="lead">A guide for new players that pops up once, right after THE FIRST DAY when you step onto the subway platform. It explains how the game works and what to expect in the beta. Three ways it could look, all in the menu's green look. Every option can be opened again from SETTINGS (and from <b>?</b>).</p>
+
+<section class="opt">
+<h2>A · FIVE SHORT PAGES</h2>
+<p class="what">A small card in the middle of the screen. NEXT / BACK, with a dot for each page. SKIP closes it. Five pages: WELCOME, MOVING, DOING THINGS, IT'S A BETA, HELP.</p>
+<div class="scene a"><div class="sign">MARKET ST ▲</div><div class="chat">ROSA: hi new person!<br>TEO: platform's this way</div><div class="dim"></div>
+ <div class="card term"><div class="ttl"><span>WELCOME TO THE MARKET</span><span>1 / 5</span></div>
+  <div class="pane">
+   <p style="margin:0 0 10px">THE STRANGEST FLEA MARKET is one city block that everyone shares. The people you see walking around are real players, live.</p>
+   <p style="margin:0 0 10px">You're on the subway platform. Go up the stairs to MARKET ST: there are shops to go into, a park to explore, the Hudson to fish and dive in, and your own apartment.</p>
+   <p style="margin:0">You start with <span class="beta">$1,000</span>, a starter pack and a pet. Your skills start at 0 and get better as you use them.</p>
+  </div>
+  <div class="foot"><span class="dots"><span class="on"></span><span></span><span></span><span></span><span></span></span><span><span class="btn o">SKIP</span> &nbsp;<span class="btn">NEXT ▸</span></span></div>
+ </div></div>
+<div class="strip">
+ <div class="term"><div class="ttl"><span>MOVING</span><span>2/5</span></div><div class="pane">
+  <div class="row"><span class="l"><span class="k">W</span><span class="k">A</span><span class="k">S</span><span class="k">D</span></span>WALK</div>
+  <div class="row"><span class="l"><span class="k">SHIFT</span></span>RUN</div>
+  <div class="row"><span class="l"><span class="k">SPACE</span></span>JUMP</div>
+  <div class="row"><span class="l"><span class="k">V</span></span>CHANGE THE VIEW</div>
+  <div class="row"><span class="l">CLICK GROUND</span>WALK THERE</div></div></div>
+ <div class="term"><div class="ttl"><span>DOING THINGS</span><span>3/5</span></div><div class="pane">
+  <div class="row"><span class="l">DOUBLE CLICK</span>USE IT, OR GO IN A DOOR</div>
+  <div class="row"><span class="l"><span class="k">E</span></span>USE WHAT'S IN FRONT OF YOU</div>
+  <div class="row"><span class="l"><span class="k">I</span></span>YOUR PACK</div>
+  <div class="row"><span class="l"><span class="k">⇧</span><span class="k">M</span></span>MAP · GO TO</div>
+  <div class="row"><span class="l"><span class="k">ESC</span></span>MENU</div></div></div>
+ <div class="term"><div class="ttl"><span class="beta">IT'S A BETA</span><span>4/5</span></div><div class="pane">
+  · A lot of the game is still being built. Some shops say CLOSED or SOLD OUT.<br>
+  · Things change every day: new places, new characters.<br>
+  · Expect bugs. Your progress <span class="beta">may be reset</span> before launch.</div></div>
+ <div class="term"><div class="ttl"><span>HELP</span><span>5/5</span></div><div class="pane">
+  <div class="row"><span class="l"><span class="k">?</span></span>EVERYTHING YOU CAN DO</div>
+  <div class="row"><span class="l"><span class="k">F8</span></span>REPORT A BUG</div>
+  <div class="row"><span class="l">CHAT</span>BOTTOM LEFT: ASK ANYONE</div>
+  <p style="margin:8px 0 0"><span class="btn">LET'S GO ▸</span></p></div></div>
+</div>
+</section>
+
+<section class="opt">
+<h2>B · ONE SHEET</h2>
+<p class="what">Everything on one screen in three columns, so you can see it all at once. One button: GOT IT. A checkbox to stop it showing again.</p>
+<div class="scene b"><div class="sign">MARKET ST ▲</div><div class="dim"></div>
+ <div class="sheet term"><div class="ttl"><span>WELCOME TO THE MARKET</span><span class="beta">BETA · NOV 2026</span></div>
+  <div class="pane"><div class="cols">
+   <div><h3>HOW IT WORKS</h3>One block, shared live with every player. Go up from the platform to MARKET ST. Explore shops, the park, the river, your apartment. Earn money, buy things, train skills from 0. Your pet stays with you.</div>
+   <div><h3>THE KEYS</h3>
+    <div class="row"><span class="l" style="flex-basis:110px"><span class="k">WASD</span></span>WALK</div>
+    <div class="row"><span class="l" style="flex-basis:110px"><span class="k">SHIFT</span></span>RUN</div>
+    <div class="row"><span class="l" style="flex-basis:110px"><span class="k">SPACE</span></span>JUMP</div>
+    <div class="row"><span class="l" style="flex-basis:110px">2× CLICK</span>USE / GO IN</div>
+    <div class="row"><span class="l" style="flex-basis:110px"><span class="k">E</span></span>USE</div>
+    <div class="row"><span class="l" style="flex-basis:110px"><span class="k">V</span></span>VIEW</div>
+    <div class="row"><span class="l" style="flex-basis:110px"><span class="k">I</span></span>PACK</div>
+    <div class="row"><span class="l" style="flex-basis:110px"><span class="k">⇧M</span></span>MAP</div>
+    <div class="row"><span class="l" style="flex-basis:110px"><span class="k">ESC</span></span>MENU</div></div>
+   <div><h3 class="beta">WHAT TO EXPECT</h3>A lot of it is still being built. Shops that aren't ready say CLOSED. New things show up most days. You'll find bugs, and your progress may be reset.
+    <h3>STUCK?</h3><span class="k">?</span> every move &nbsp; <span class="k">F8</span> report a bug &nbsp; chat, bottom left</div>
+  </div></div>
+  <div class="foot"><span>☐ DON'T SHOW THIS AGAIN</span><span class="btn">GOT IT ▸</span></div>
+ </div></div>
+</section>
+
+<section class="opt">
+<h2>C · FIRST STEPS (YOU LEARN BY DOING)</h2>
+<p class="what">A short hello at the bottom of the screen, then a small checklist in the corner. Each step ticks itself off when you do it. Gameplay: finishing all six gives a small reward (say $100) and ends with the beta note. ✕ hides it.</p>
+<div class="scene c"><div class="sign">MARKET ST ▲</div><div class="chat">ROSA: hi new person!</div>
+ <div class="coach term"><div class="ttl"><span>FIRST STEPS</span><span>2 / 6 · ✕</span></div>
+  <div class="pane">
+   <div class="task done"><b>■</b><span>WALK <span class="k">WASD</span>, RUN <span class="k">SHIFT</span></span></div>
+   <div class="task done"><b>■</b><span>CHANGE THE VIEW <span class="k">V</span></span></div>
+   <div class="task now"><b>▸</b><span>GO UP THE STAIRS TO MARKET ST</span></div>
+   <div class="task"><b>□</b><span>DOUBLE CLICK A SHOP DOOR TO GO IN</span></div>
+   <div class="task"><b>□</b><span>OPEN YOUR PACK <span class="k">I</span>, TRY SOMETHING</span></div>
+   <div class="task"><b>□</b><span>FIND A PLACE ON THE MAP <span class="k">⇧M</span></span></div>
+   <h3>REWARD</h3><span class="beta">$100</span> · then: <span class="k">?</span> shows everything you can do
+  </div></div>
+ <div class="hello term"><div class="pane">WELCOME TO THE MARKET. Everyone here is a real player. This is a <span class="beta">BETA</span>: some places are closed, things change daily, and there will be bugs (<span class="k">F8</span> to report them). Try the steps in the corner →</div></div>
+</div>
+</section>
+</body></html>

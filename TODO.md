@@ -127,7 +127,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 
 ## Places and insides
 
-- [ ] **The play on the Wooden O's stage** (owner, 10 Nov 2026: "bring the play back on the stage") · P2 · M · code + look [taking: claude/laughing-curie-ui41fc, 10 Nov]
+- [x] **The play on the Wooden O's stage** (owner, 10 Nov 2026: "bring the play back on the stage") · P2 · M · code + look [taking: claude/laughing-curie-ui41fc, 10 Nov]
 - [x] **The playhouse as THE WOODEN O** (owner, 10 Nov 2026: "redesign it", picked B) · P2 · M · code + look [taking: claude/laughing-curie-ui41fc, 10 Nov]
 - [x] **The movie theatre as THE FLEA PIT** (owner, 10 Nov 2026: "i want to redsesign the movie theater", picked B) · P2 · M · code + look. Front, dark inside, box office, seats [taking: claude/laughing-curie-ui41fc, 10 Nov]
 - [ ] **The fish market** · P2 · M · look. Owner, 9 Nov 2026: waits for his look and yes. Not yet: the workers keep no hours (the jobs system is archived), the editor's ground picture (`tools/topmap.cjs`) not re-made, the minimap does not draw the sheds.

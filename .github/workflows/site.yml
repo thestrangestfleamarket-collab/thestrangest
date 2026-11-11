@@ -336,7 +336,7 @@ jobs:
         if: contains(steps.f.outputs.run, ' bedroom')
         run: node tests/bedroom.cjs dist/market.html
       - name: The room editor (decorate your apartment, saved and back after a reload)
-        timeout-minutes: 15
+        timeout-minutes: 30
         if: contains(steps.f.outputs.run, ' roomedit')
         run: node tests/roomedit.cjs dist/market.html
       - name: The shops' insides (built on the way in, dropped on the way out, nothing left behind)

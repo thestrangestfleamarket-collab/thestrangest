@@ -1,8 +1,7 @@
-// THE PS2 FILTER: PS2, the picture's last pass but the cinema's cut, five parts each on or off with one strength for all (GRAPHICS): 240 lines of chunky pixels, 15-bit colour (no dither), a slight colour bleed, faint rainbow fringes on hard edges and a faint echo, a faint grain (still, patchy, none in the dark).
+// THE PS2 FILTER: PS2, the picture's last pass but the cinema's cut, fixed for every player: 240 lines of chunky pixels, 15-bit colour (no dither), a slight colour bleed, faint rainbow fringes on hard edges and a faint echo, a faint grain (still, patchy, none in the dark).
 import {SHARED, THREE} from './003-shx.js';
 import {PS2} from './003b-systems.js';
 import {RH, RW, ShaderPass} from './004-main.js';
-import {SAVE} from './005-save.js';
 import {SYS} from './006-map-pre.js';
 PS2.shader={uniforms:{tDiffuse:{value:null},uT:{value:0},uL:{value:new THREE.Vector2(427,240)},uA:{value:0},uQ:{value:8},uK:{value:new THREE.Vector3(1,1,1)},uO:{value:new THREE.Vector2()}},
   vertexShader:'varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
@@ -46,13 +45,10 @@ PS2.img=(px,W,H,lines)=>{ const T=PS2.tune(), L=Math.max(8,Math.round(T.pix?Math
     for(let yy=Math.floor(j*H/L);yy<Math.floor((j+1)*H/L);yy++)for(let xx=Math.floor(i*W/Lx);xx<Math.floor((i+1)*W/Lx);xx++){ const k=(yy*W+xx)*4; px[k]=R; px[k+1]=G; px[k+2]=B; px[k+3]=A[n]; } }
   return px; };   // the same look on a small picture (the menu's portrait): its pixels the size of the game's on screen
 // its five parts, each on or off (PIXELS, COLOURS, SMEAR, FRINGES, GRAIN), and one STRENGTH for them all (1 is the look as made, 0 none, 2 twice)
-PS2.parts={pix:false,col:true,smear:true,fringe:true,grain:true}; PS2.k=1;   // the defaults: no chunky pixels (owner, 7 Nov 2026); the switches back in the menu (8 Nov 2026)
-try{ const v=SAVE.get('ps2p'); if(v&&v.length===5)['pix','col','smear','fringe','grain'].forEach((n,i)=>{ PS2.parts[n]=v[i]==='1'; }); const k=parseFloat(SAVE.get('ps2k')); if(k>=0&&k<=2)PS2.k=k; }catch(e){}
+PS2.parts={pix:true,col:true,smear:true,fringe:true,grain:false}; PS2.k=1.2;   // fixed for every player, no settings (owner, 11 Nov 2026)
 PS2.tune=()=>{ const P=PS2.parts, k=PS2.k; return {pix:P.pix&&k>.05,k:Math.max(.25,k),Q:P.col?Math.round(8*k):0,K:[P.smear?k:0,P.fringe?k:0,P.grain?k:0]}; };
 PS2.lines=()=>{ const T=PS2.tune(); return T.pix?Math.round(240/T.k):0; };
-PS2.save=()=>{ try{ SAVE.set('ps2p',['pix','col','smear','fringe','grain'].map(n=>PS2.parts[n]?'1':'0').join('')); SAVE.set('ps2k',String(PS2.k)); }catch(e){} };
-PS2.set=on=>{ PS2.on=!!on; PS2.sp.enabled=PS2.on; try{ SAVE.set('ps2',PS2.on?'1':'0'); }catch(e){} };
-PS2.on=(()=>{ try{ return SAVE.get('ps2')!=='0'; }catch(e){ return true; } })(); PS2.sp.enabled=PS2.on;
+PS2.on=true; PS2.sp.enabled=true;
 SYS.add('sky',()=>{ const P=SHARED.composer.passes; if(P[P.length-1]!==PS2.sp){ P.splice(P.indexOf(PS2.sp),1); P.push(PS2.sp); }
   const Ln=PS2.lines(), cap=PS2.on&&Ln?Math.min(480,2*Ln):0; if(cap!==PS2.cap){ PS2.cap=cap; if(SHARED.resize)SHARED.resize(); } const ck=Ln?Math.max(1,Math.round(RH/Ln)):1; SHARED.cellLines=PS2.on&&Ln?RH/ck:0; if(!PS2.on)return; const u=PS2.sp.uniforms, T=PS2.tune();
   u.uL.value.set(RW/ck,RH/ck); u.uQ.value=T.Q; u.uK.value.set(T.K[0],T.K[1],T.K[2]); },'138a-ps2');   // each cell a whole number of the picture's pixels (6 Nov 2026)

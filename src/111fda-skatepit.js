@@ -18,7 +18,7 @@ const PIT={}; window.PIT=PIT;
   const depth=(u,v)=>{ let h=0; for(const L of LOBES){ const q=lobeH(u,v,L); if(q<h)h=q; } return h; };
   const inside=(u,v,skip)=>LOBES.some((L,i)=>i!==skip&&Math.hypot(u-L[0],v-L[1])<L[2]);
   PIT.ground=(x,z)=>{ const u=(x-WX)/MH, v=(z-WZ)/MH; let h=depth(u,v); if(h===0)for(const b of LEDGES)if(u>b[0]&&u<b[2]&&v>b[1]&&v<b[3])h=b[4]; return Y(h); };
-  const pic=(n,f)=>{ const c=document.createElement('canvas'); c.width=c.height=n; f(c.getContext('2d'),n); const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return t; };
+  const pic=(n,f)=>{ const c=document.createElement('canvas'); c.width=c.height=n; f(c.getContext('2d'),n); const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.colorSpace=THREE.SRGBColorSpace; return t; };
   const rnd=i=>{ const s=Math.sin(i*127.1+311.7)*43758.5453; return s-Math.floor(s); };
   const build=()=>{ '@skatepark';
     G=new THREE.Group(); G.name='skatepit'; scene.add(G); const hu=S.w*.84/2, hv=S.d*.84/2;

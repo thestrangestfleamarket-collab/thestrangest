@@ -128,7 +128,7 @@ const MUSH={}, SKULL=__LAZY__("data/skull.json"); let swing=null;
   if(N&&MUSH.skullAt)SKULL().then(d=>{ if(!d||!d.p)return; const HI=BODIES.BONES.indexOf('head'), HM={value:N.PM.value[HI]}, s=.104;
     const M=MUSH.skullAt.clone().multiply(new THREE.Matrix4().makeTranslation(0,.112-1.0687*s,.006)).multiply(new THREE.Matrix4().makeScale(s,s,s));
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(d.p,3)); g.setAttribute('uv',new THREE.Float32BufferAttribute(d.uv,2)); g.setIndex(d.i); g.applyMatrix4(M); g.computeVertexNormals();
-    const tex=(u,srgb)=>{ const t=new THREE.TextureLoader().load(u); if(srgb)t.colorSpace=THREE.SRGBColorSpace; t.flipY=true; t.anisotropy=4; return t; };
+    const tex=(u,srgb)=>{ const t=new THREE.TextureLoader().load(u); if(srgb)t.colorSpace=THREE.SRGBColorSpace; t.flipY=true; return t; };
     const bendV=sh=>{ sh.uniforms.uHead=HM; sh.vertexShader='uniform mat4 uHead;\n'+sh.vertexShader.replace('#include <begin_vertex>','vec3 transformed=(uHead*vec4(position,1.)).xyz;'); };
     const mat=new THREE.MeshStandardMaterial({map:tex(d.map,true),normalMap:tex(d.nmap,false),normalScale:new THREE.Vector2(.6,.6),roughness:.62,metalness:0});
     mat.onBeforeCompile=sh=>{ bendV(sh); sh.vertexShader=sh.vertexShader.replace('#include <beginnormal_vertex>','vec3 objectNormal=mat3(uHead)*normal;'); sh.fragmentShader=sh.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\n diffuseColor.rgb=mix(vec3(dot(diffuseColor.rgb,vec3(.3,.59,.11))),diffuseColor.rgb,.4)*vec3(1.04,1.,.94);').replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*.08;'); };

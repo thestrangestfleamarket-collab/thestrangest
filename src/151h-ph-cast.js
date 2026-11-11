@@ -1,4 +1,4 @@
-// THE PLAYHOUSE'S COMPANY: the thirteen players of A Midsummer Night's Dream, each a body on the rig's bones (MERCH's kit) in costume: the court of Athens in robes, gowns and armour, the mechanicals in their working clothes; walked, turned, sat and gestured by the play (151i).
+// THE PLAYHOUSE'S COMPANY (back from the archive for the Wooden O, owner, 10 Nov 2026): the thirteen players of A Midsummer Night's Dream, each a body on the rig's bones (MERCH's kit) in costume: the court of Athens in robes, gowns and armour, the mechanicals in their working clothes; walked, turned, sat and gestured by the play (151i).
 import {THREE} from './003-shx.js';
 import {BODIES} from './111a-bodies.js';
 import {MERCH} from './111e-merch.js';

@@ -127,6 +127,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 
 ## Places and insides
 
+- [x] **The play on the Wooden O's stage** (owner, 10 Nov 2026: "bring the play back on the stage") · P2 · M · code + look [taking: claude/laughing-curie-ui41fc, 10 Nov]
 - [x] **The playhouse as THE WOODEN O** (owner, 10 Nov 2026: "redesign it", picked B) · P2 · M · code + look [taking: claude/laughing-curie-ui41fc, 10 Nov]
 - [x] **The movie theatre as THE FLEA PIT** (owner, 10 Nov 2026: "i want to redsesign the movie theater", picked B) · P2 · M · code + look. Front, dark inside, box office, seats [taking: claude/laughing-curie-ui41fc, 10 Nov]
 - [ ] **The fish market** · P2 · M · look. Owner, 9 Nov 2026: waits for his look and yes. Not yet: the workers keep no hours (the jobs system is archived), the editor's ground picture (`tools/topmap.cjs`) not re-made, the minimap does not draw the sheds.
@@ -149,6 +150,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
   from inside must still show the street. Same visit as the insides.
 - [ ] **The bath house on the island** · P3 · S · look. The steam spilling from its door (his mockup B, 4 Nov) not built; the ghosts
   inside (out, 7 Nov) and the revival in its steam never seen live.
+- [x] **The dungeon's baked torchlight** (owner, 11 Nov 2026: "do the baked torchlight", "yes go") · P2 · M · code + look [taking: claude/affectionate-bell-ftu5zz, 11 Nov]. `src/062e-dunlight.js`, `tests/dunground.cjs`. Waits for his look and yes.
 - [ ] **The castle at night** · P3 · S · look + pick. At the night gate it still looked dark (2 Nov): brighter torches? More light costs
   frames at night.
 

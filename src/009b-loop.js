@@ -42,7 +42,7 @@ await grab('loop',async()=>{ const M=SHARED.METRO, D=LEVEL.loop, T=TILE, SZ=-98,
   const tex=(w,h,fn,rep)=>{ const cv=document.createElement('canvas'); cv.width=w; cv.height=h; const g=cv.getContext('2d');
     const im=g.createImageData(w,h); for(let j=0;j<h;j++)for(let i=0;i<w;i++){ const c=fn(i,j), k=(j*w+i)*4; im.data[k]=c[0]; im.data[k+1]=c[1]; im.data[k+2]=c[2]; im.data[k+3]=255; } g.putImageData(im,0,0);
     const t=new THREE.CanvasTexture(cv); t.magFilter=THREE.NearestFilter; t.minFilter=THREE.NearestMipmapNearestFilter; t.colorSpace=THREE.SRGBColorSpace; if(rep)t.wrapS=t.wrapT=THREE.RepeatWrapping; return t; };
-  const draw=(w,h,fn)=>{ const cv=document.createElement('canvas'); cv.width=w; cv.height=h; const g=cv.getContext('2d'); fn(g,w,h); const t=new THREE.CanvasTexture(cv); t.magFilter=THREE.LinearFilter; t.minFilter=THREE.LinearMipmapLinearFilter; t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return t; };
+  const draw=(w,h,fn)=>{ const cv=document.createElement('canvas'); cv.width=w; cv.height=h; const g=cv.getContext('2d'); fn(g,w,h); const t=new THREE.CanvasTexture(cv); t.magFilter=THREE.LinearFilter; t.minFilter=THREE.LinearMipmapLinearFilter; t.colorSpace=THREE.SRGBColorSpace; return t; };
   const PX=12, BED=8.8;
   const bedTex=tex(Math.round(1.1*24),Math.round(BED*24),(i,j)=>{ const y=(i+.5)/24, x=(j+.5)/24-BED/2, ax=Math.abs(x), r=Math.abs(ax-.7);
     if(r<.07)return r<.025?[202,204,208]:sh([116,112,108],.85+.2*vn(y*2,x,7)); if(r<.14&&y<.34)return [70,52,40];
@@ -152,7 +152,10 @@ await grab('loop',async()=>{ const M=SHARED.METRO, D=LEVEL.loop, T=TILE, SZ=-98,
       st.signs.exit=sign((g,W,Hh)=>exitSign(g,W,Hh,st),[P(.05,EX0-2.6,92),P(.05,EX1+2.6,92),P(.05,EX1+2.6,116),P(.05,EX0-2.6,116)],512,72,[pe0],false,IN);
       st.signs.map=sign((g,W,Hh)=>mapSign(g,W,Hh,st),[P(LEN-.05,MID-1,40),P(LEN-.05,MID+1,40),P(LEN-.05,MID+1,99),P(LEN-.05,MID-1,99)],512,512,[pe1],false,IN); }
     else { pe1=cutAt(LEN,-1); pw0=cutAt(0,1); pw1=cutAt(XW,-1);   // gone with their walls when a wall is cut away
-      st.signs.map=sign((g,W,Hh)=>mapSign(g,W,Hh,st),[P(LEN-.05,MID-1,36),P(LEN-.05,MID+1,36),P(LEN-.05,MID+1,95),P(LEN-.05,MID-1,95)],512,512,[pe1],false,IN); }
+      st.signs.map=sign((g,W,Hh)=>mapSign(g,W,Hh,st),[P(LEN-.05,MID-1,36),P(LEN-.05,MID+1,36),P(LEN-.05,MID+1,95),P(LEN-.05,MID-1,95)],512,512,[pe1],false,IN);
+      // the same map at the platform's other end, on the street end's wall beside the way out (owner, 11 Nov 2026)
+      { const pl=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6), n=new THREE.Vector3(...P(1,0,0)).sub(new THREE.Vector3(...P(0,0,0))).normalize(); cutWalls.push({pl,nx:n.x,nz:n.z,foot:H(-24),me:null});
+        st.signs.map0=sign((g,W,Hh)=>mapSign(g,W,Hh,st),[P(.05,EX0-1.4,36),P(.05,EX0-3.4,36),P(.05,EX0-3.4,95),P(.05,EX0-1.4,95)],512,512,[pl],false,IN); } }
     for(const t of D.trains){ const inn=t.track==='inner', a=inn?.04:XW-.04; for(const u0 of [LEN/2-3.5])st.signs['t'+t.id+'_'+u0]=sign((g,W,Hh)=>trackSign(g,W,Hh,st,t),[P(u0,a,100),P(u0+7,a,100),P(u0+7,a,125),P(u0,a,125)],840,150,[inn?pw0:pw1],false,IN); }
     const bz=st.old?100:108, bd=sign((g,w,h)=>{ g.fillStyle='#050505'; g.fillRect(0,0,w,h); },[P(LEN-.05,MID-3,bz),P(LEN-.05,MID+3,bz),P(LEN-.05,MID+3,bz+24),P(LEN-.05,MID-3,bz+24)],512,112,[pe1],false,IN); st.board={t:bd.t,last:''};
     { const steps=st.old?M.SL.STEPS:[STEPU,STEPU]; st.edge={};

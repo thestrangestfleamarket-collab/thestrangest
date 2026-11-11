@@ -1,11 +1,12 @@
-// THE SUBWAY DEMONS: DEMONS, tiny red demons that climb out of the tracks onto the platform and run at you, and blow up when they reach you (it hurts, it never kills); the freeze ray locks one in a block of ice you can carry (it thaws in a minute) to the SECURITY OFFICE at the platform's far end, which pays a bounty for each.
+// THE SUBWAY DEMONS: DEMONS, tiny red demons living down on the subway's track beds and in its tunnels: rare (one in two or three minutes of looking), they run from you within their own stretch of tunnel and blow up only when you corner them (it hurts, it never kills); the freeze ray locks one in a block of ice you can carry (it thaws in a minute) to the SECURITY OFFICE in the platform's far corner, which pays a bounty for each.
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, INV, LEVELS, pos, SFX, UI, VIT} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {FIX, MODS, SOL, SYS, TILE} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
-const DEMONS={list:[],BOUNTY:25,MAX:3};
+import {TRAINS} from './009c-trains.js';
+const DEMONS={list:[],BOUNTY:25};
 { const M=TILE/.84, V3=THREE.Vector3, rnd=Math.random, say=(t,c)=>SAY(t,c||'#ff9a7a'), ICE_S=60, BAGID='demon_ice';
   FORAGE.add({names:{[BAGID]:'A DEMON IN A BLOCK OF ICE'}});
   const MT=()=>SHARED.METRO, SL=()=>MT()&&MT().SL;
@@ -33,17 +34,18 @@ const DEMONS={list:[],BOUNTY:25,MAX:3};
     const blk=new THREE.Mesh(GEO.ice,MAT.ice); blk.renderOrder=4; blk.add(new THREE.LineSegments(GEO.iceEdge,MAT.edge)); blk.visible=false; g.add(blk);
     g.scale.setScalar(M); ROOT.add(g); return {g,B,W,A,L,tail,blk,red}; };
 
-  /* ---------- where they can be: on the platform's floor, clear of its columns, benches and the office ---------- */
-  const onPlat=(x,z,R=.2*M)=>{ const S=SL(); if(!S)return false; const tx=MT().TX(x,z), ty=MT().TY(x,z); if(tx<S.P0+.25||tx>S.P1-.25||ty<.3||ty>S.L-.3)return false;
-    return !SOL.down.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R); };
+  /* ---------- where they can be: down on the track beds and in the tunnels (never up on a platform; a train over the bed is still the bed), clear of what stands there, within their own stretch of tunnel ---------- */
   const ground=(x,z)=>MODS.station.ground(x,z);
+  const onTrack=(x,z,R=.2*M)=>{ const T=MT(); if(!T||!T.inside(x,z)||ground(x,z)>T.DY-.3*M&&!(TRAINS.inCar&&TRAINS.inCar(x,z)))return false; return !SOL.down.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R); };
+  const HOME=25*M, inRange=(d,x,z)=>Math.hypot(x-d.hx,z-d.hz)<HOME;
   let uid=0;
-  const spawn=(x,z,state='climb')=>{ const d={id:'demon:'+(++uid),x,z,y:ground(x,z),hd:rnd()*Math.PI*2,state,t:0,fuse:0,ice:0,frozen:0,ph:rnd()*9,...make()};
+  const spawn=(x,z,state='flee')=>{ const d={id:'demon:'+(++uid),x,z,hx:x,hz:z,y:ground(x,z),hd:rnd()*Math.PI*2,state,t:0,fuse:0,ice:0,frozen:0,ph:rnd()*9,away:0,...make()};
     d.th={name:'A LITTLE RED DEMON',obj:d.g,reach:1.7*M,near:3*M,tall:d.y+.7*M,act:()=>pick(d)}; UI.thing(d.th); DEMONS.list.push(d); return d; };
   const drop=d=>{ const i=DEMONS.list.indexOf(d); if(i>=0)DEMONS.list.splice(i,1); const j=UI.things.indexOf(d.th); if(j>=0)UI.things.splice(j,1); d.g.removeFromParent(); d.red.dispose(); };
-  // up out of the tracks: at the platform's edge, well away from you
-  const fromTracks=()=>{ const S=SL(); for(let k=0;k<12;k++){ const side=rnd()<.5, tx=side?S.P0+.4:S.P1-.4, ty=1+rnd()*(S.L-2), p=MT().at(tx,ty);
-      if(Math.hypot(p.x-pos.x,p.z-pos.z)>8*M&&onPlat(p.x,p.z)){ const d=spawn(p.x,p.z); const o=MT().at(side?S.P0-.6:S.P1+.6,ty); d.from={x:o.x,z:o.z}; return d; } } return null; };
+  // a track spot at distance r0..r1 from you, ahead of you if it can be (or the nearest one when r0 is 0)
+  const trackNear=(r0,r1)=>{ const h=SHARED.heading||0; let best=null, bs=-1e9; for(let k=0;k<60;k++){ const a=h+(rnd()-.5)*(k<30?2.2:6.3), r=r0+rnd()*(r1-r0), x=pos.x+Math.sin(a)*r, z=pos.z+Math.cos(a)*r;
+      if(!onTrack(x,z))continue; const sc=r0?Math.cos(a-h):-r; if(sc>bs){ bs=sc; best={x,z}; } } return best; };
+  const fromDark=()=>{ const p=trackNear(9*M,16*M); return p?spawn(p.x,p.z):null; };
 
   /* ---------- frozen: a block of ice you can lift into your bag; it thaws in a minute, in your hands or on the floor ---------- */
   const BAG=[];   // the thaw times of the blocks you carry
@@ -51,7 +53,7 @@ const DEMONS={list:[],BOUNTY:25,MAX:3};
     FORAGE.give(BAGID,1); BAG.push(d.ice); drop(d); SFX.play('clunk',{vol:.5,pitch:1.4}); say('YOU LIFT THE DEMON IN ITS BLOCK OF ICE. TAKE IT TO THE SECURITY OFFICE BEFORE IT THAWS ('+Math.ceil(BAG[BAG.length-1])+' s).','#9fe6ff'); };
   SYS.onStart(()=>{ const n=FORAGE.has(BAGID)?(INV.items[BAGID]||1):0; for(let i=0;i<n;i++)BAG.push(ICE_S); },'146hbd-demons');
   const bagTick=dt=>{ for(let i=BAG.length-1;i>=0;i--){ if((BAG[i]-=dt)>0)continue; BAG.splice(i,1); if(!FORAGE.has(BAGID))continue; FORAGE.take(BAGID,1);
-      if(inStation()){ const a=rnd()*Math.PI*2; let x=pos.x+Math.sin(a)*1.2*M, z=pos.z+Math.cos(a)*1.2*M; if(!onPlat(x,z)){ x=pos.x; z=pos.z; } const d=spawn(x,z,'run'); d.t=-1.5; say('THE ICE IN YOUR BAG CRACKS. THE DEMON IS OUT!'); }
+      const q=inStation()&&(trackNear(0,1.5*M)||trackNear(0,8*M)); if(q){ const d=spawn(q.x,q.z); d.t=-1; say('THE ICE IN YOUR BAG CRACKS. THE DEMON IS OUT AND DOWN INTO THE TRACKS!'); }
       else say('THE DEMON IN YOUR BAG MELTS AWAY TO A PUFF OF SMOKE.','#c8b0a0'); } };
 
   /* ---------- the blast: fire and smoke, a hard knock for whoever is close, never the last one ---------- */
@@ -63,33 +65,37 @@ const DEMONS={list:[],BOUNTY:25,MAX:3};
     for(const o of DEMONS.list)if(o!==d&&o.state!=='ice'&&Math.hypot(o.x-d.x,o.z-d.z)<1.5*M&&o.state!=='fuse'){ o.state='fuse'; o.fuse=.25+rnd()*.3; }
     drop(d); };
 
-  /* ---------- each frame: they climb up, run at you, light up and blow when they reach you; the ray's ice turns into a block ---------- */
-  const SPEED=2.1*M, NEAR=.85*M; let next=6;
+  /* ---------- each frame: they keep away from you down in the dark, run when you come near, and blow up only when you corner them; the ray's ice turns one into a block ---------- */
+  const SPEED=2.6*M, SCARE=7*M, CORNER=1.6*M, NEAR=.85*M; let seek=0, next=120+rnd()*60;
   const step=(d,dt,now)=>{ d.t+=dt;
     if(d.frozen>0&&d.state!=='ice'){ d.state='ice'; d.ice=ICE_S; d.B.scale.setScalar(1); d.th.name='A DEMON FROZEN IN ICE (PICK IT UP)'; SFX.play('clunk',{vol:.4,pitch:1.8}); }
     if(d.state==='ice'){ d.ice-=dt; const blk=d.blk; blk.visible=true; d.red.emissive.setHex(0x000000);
       if(d.ice<5)blk.position.x=Math.sin(now*40)*.006;
-      if(d.ice<=0){ blk.visible=false; blk.position.x=0; d.state='run'; d.t=-1; d.th.name='A LITTLE RED DEMON'; for(let k=0;k<12;k++)FLAME.part(8,d.x,d.y+rnd()*.6*M,d.z,(rnd()-.5)*2*M,(.4+rnd())*M,(rnd()-.5)*2*M,.8,.04*M,rnd()*9); say('A DEMON BREAKS OUT OF ITS ICE.'); }
+      if(d.ice<=0){ blk.visible=false; blk.position.x=0; d.state='flee'; d.t=-1; d.th.name='A LITTLE RED DEMON'; for(let k=0;k<12;k++)FLAME.part(8,d.x,d.y+rnd()*.6*M,d.z,(rnd()-.5)*2*M,(.4+rnd())*M,(rnd()-.5)*2*M,.8,.04*M,rnd()*9); say('A DEMON BREAKS OUT OF ITS ICE.'); }
       d.g.position.set(d.x,d.y,d.z); return; }
-    if(d.state==='climb'){ const k=Math.min(1,d.t/1.2), f=d.from||d; d.g.position.set(f.x+(d.x-f.x)*k,d.y-(1-k)*.9*M+Math.sin(k*Math.PI)*.35*M,f.z+(d.z-f.z)*k); d.hd=Math.atan2(d.x-f.x,d.z-f.z); d.g.rotation.y=d.hd; if(k>=1){ d.state='run'; d.t=0; } return; }
-    const dx=pos.x-d.x, dz=pos.z-d.z, r=Math.hypot(dx,dz), me=!VIT.dead&&inStation();
+    const dx=pos.x-d.x, dz=pos.z-d.z, r=Math.hypot(dx,dz), me=!VIT.dead&&inStation(); let moving=false;
     if(d.state==='fuse'){ d.fuse-=dt; d.red.emissive.setRGB(Math.sin(now*30)>0?.9:.2,.3,.1); d.B.scale.setScalar(1+(.5-Math.min(.5,d.fuse))*.5); if(d.fuse<=0)return boom(d); }
-    else if(me&&r<NEAR&&d.t>0){ d.state='fuse'; d.fuse=.8; SFX.play('blip',{vol:.6,pitch:2}); }
-    else if(me&&d.t>0){ const a=Math.atan2(dx,dz), e=Math.atan2(Math.sin(a-d.hd),Math.cos(a-d.hd)); d.hd+=Math.sign(e)*Math.min(Math.abs(e),dt*6); const go=Math.min(r-NEAR*.6,SPEED*dt);
-      const nx=d.x+Math.sin(d.hd)*go, nz=d.z+Math.cos(d.hd)*go; if(onPlat(nx,nz)){ d.x=nx; d.z=nz; } else if(onPlat(nx,d.z))d.x=nx; else if(onPlat(d.x,nz))d.z=nz; else d.hd+=1.3; }
-    const run=d.state!=='fuse'&&me&&d.t>0, ph=(d.ph+=dt*(run?14:3)), y=ground(d.x,d.z); d.y=y;
+    else if(me&&d.t>0&&r<SCARE){ d.away=0;
+      // the way that takes it furthest from you, inside its stretch: none that opens the gap, it is cornered
+      let best=null, bd=r+.24*M; for(let k=0;k<16;k++){ const a=k/16*Math.PI*2, nx=d.x+Math.sin(a)*.6*M, nz=d.z+Math.cos(a)*.6*M; if(!onTrack(nx,nz)||!inRange(d,nx,nz))continue; const q=Math.hypot(pos.x-nx,pos.z-nz); if(q>bd){ bd=q; best=a; } }
+      if(best!=null){ const e=Math.atan2(Math.sin(best-d.hd),Math.cos(best-d.hd)); d.hd+=Math.sign(e)*Math.min(Math.abs(e),dt*9); const go=SPEED*dt*(Math.abs(e)<1.2?1:.4), nx=d.x+Math.sin(d.hd)*go, nz=d.z+Math.cos(d.hd)*go;
+        if(onTrack(nx,nz)&&inRange(d,nx,nz)){ d.x=nx; d.z=nz; moving=true; } }
+      else { d.hd=Math.atan2(dx,dz); if(r<CORNER){ d.state='fuse'; d.fuse=.8; SFX.play('blip',{vol:.6,pitch:2}); } } }
+    else if((d.away+=dt)>40&&r>20*M)return drop(d);   // left alone a long while, it slips off into the dark
+    const run=moving, ph=(d.ph+=dt*(run?14:3)), y=ground(d.x,d.z); d.y=y;
     d.g.position.set(d.x,y+(run?Math.abs(Math.sin(ph))*.05*M:0),d.z); d.g.rotation.y=d.hd; d.th.tall=y+.7*M;
     d.L[0].rotation.x=run?Math.sin(ph)*.7:0; d.L[1].rotation.x=run?-Math.sin(ph)*.7:0; d.A[0].rotation.x=run?-Math.sin(ph)*.6:0; d.A[1].rotation.x=run?Math.sin(ph)*.6:0;
     for(const [i,w] of d.W.entries())w.rotation.y=(i?-1:1)*(.3+Math.sin(now*(run?22:6)+i)*.45); d.tail.rotation.y=Math.sin(ph*.5)*.4; };
   SYS.add('places',dt=>{ dt=Math.min(.1,dt||0); if(!SHARED.METRO)return; const now=performance.now()/1000; bagTick(dt);
-    if(!inStation()){ for(const d of [...DEMONS.list])drop(d); next=6; return; }
+    if(!inStation()){ for(const d of [...DEMONS.list])drop(d); return; }
     for(const d of [...DEMONS.list])step(d,dt,now);
-    if((next-=dt)<=0){ next=12+rnd()*10; if(DEMONS.list.length<DEMONS.MAX)fromTracks(); } },'146hbd-demons');
+    // only while you are down on the tracks or in the tunnels, and rarely: one every two or three minutes of looking
+    if(onTrack(pos.x,pos.z,0)&&!DEMONS.list.some(d=>d.state!=='ice')&&(seek+=dt)>=next){ if(fromDark()){ seek=0; next=120+rnd()*60; } } },'146hbd-demons');
   // the freeze ray and the flamethrower reach them as they do people (o.frozen is kept by the ray's ice)
-  (MODS.moreBodies=MODS.moreBodies||[]).push(()=>inStation()?DEMONS.list.filter(d=>d.state!=='climb').map(d=>({id:d.id,x:d.x,y:d.y,z:d.z,o:d,root:d.B})):[]);
+  (MODS.moreBodies=MODS.moreBodies||[]).push(()=>inStation()?DEMONS.list.map(d=>({id:d.id,x:d.x,y:d.y,z:d.z,o:d,root:d.B})):[]);
 
-  /* ---------- the SECURITY OFFICE: a steel and glass booth at the platform's far end; double-click its window to hand in what you carry ---------- */
-  const office=()=>{ const S=SL(), MTT=MT(); if(!S)return; const x0=S.MID-1.25, x1=S.MID+1.25, y0=S.L-2.6, y1=S.L-.55, a=MTT.at(x0,y0), b=MTT.at(x1,y1);
+  /* ---------- the SECURITY OFFICE: a steel and glass booth in the platform's far corner (clear of the route map on the end wall); double-click its window to hand in what you carry ---------- */
+  const office=()=>{ const S=SL(), MTT=MT(); if(!S)return; const x0=S.MID+1.7, x1=S.MID+4.2, y0=S.L-2.6, y1=S.L-.55, a=MTT.at(x0,y0), b=MTT.at(x1,y1);
     const X0=Math.min(a.x,b.x), X1=Math.max(a.x,b.x), Z0=Math.min(a.z,b.z), Z1=Math.max(a.z,b.z), cx=(X0+X1)/2, cz=(Z0+Z1)/2, W=X1-X0, D=Z1-Z0, gy=ground(cx,cz), H=2.5*M;
     const toUs=MTT.at(S.MID,S.L-6), face=Math.atan2(toUs.x-cx,toUs.z-cz);
     const g=new THREE.Group(); g.position.set(cx,gy,cz); g.rotation.y=Math.round(face/(Math.PI/2))*(Math.PI/2); ROOT.parent.add(LEVELS.own(g,'station'));
@@ -117,5 +123,5 @@ const DEMONS={list:[],BOUNTY:25,MAX:3};
       say('YOU HAND IN '+(n>1?n+' FROZEN DEMONS':'A FROZEN DEMON')+'. THE SECURITY OFFICE PAYS YOU $'+pay+'.','#f2c14e'); }});
     DEMONS.office={x:cx,z:cz,g}; };
   SYS.onStart(()=>{ try{ office(); }catch(e){ console.warn('security office',e); } },'146hbd-demons');
-  window.DEMONS=DEMONS; DEMONS.T={spawn,boom,pick,BAG,me:()=>({x:pos.x,z:pos.z,hp:VIT.hp,dead:VIT.dead})};
-  window.DEMONDBG=()=>({n:DEMONS.list.length,list:DEMONS.list.map(d=>({id:d.id,state:d.state,x:+d.x.toFixed(2),z:+d.z.toFixed(2),ice:+(d.ice||0).toFixed(1)})),bag:BAG.map(t=>+t.toFixed(1)),office:DEMONS.office?{x:DEMONS.office.x,z:DEMONS.office.z}:null,spawn:()=>fromTracks(),here:inStation()}); }
+  window.DEMONS=DEMONS; DEMONS.T={M,spawn,boom,pick,BAG,onTrack,trackNear,me:()=>({x:pos.x,z:pos.z,hp:VIT.hp,dead:VIT.dead})};
+  window.DEMONDBG=()=>({n:DEMONS.list.length,list:DEMONS.list.map(d=>({id:d.id,state:d.state,x:+d.x.toFixed(2),z:+d.z.toFixed(2),ice:+(d.ice||0).toFixed(1)})),bag:BAG.map(t=>+t.toFixed(1)),office:DEMONS.office?{x:DEMONS.office.x,z:DEMONS.office.z}:null,spawn:()=>fromDark(),here:inStation()}); }

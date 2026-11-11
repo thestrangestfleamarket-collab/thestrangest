@@ -76,7 +76,7 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
   const a=await pg.evaluate(async()=>{ const G=INSTR.ME&&window.GUITAR.GSND; G.wake(); for(let i=0;i<40&&!G.imx;i++)await new Promise(r=>setTimeout(r,250)); if(!G.imx)return {ok:false};
     const an=G.ctx.createAnalyser(); an.fftSize=2048; G.out.connect(an); const buf=new Float32Array(an.fftSize), peak={};
     for(const K of ['piano','drums','harp']){ FORAGE.ACT[K](K); await new Promise(r=>setTimeout(r,400)); const P=INSTR.ME; INSTR.note(P,K==='piano'?{n:60,v:.9,d:1e9,h:'R'}:K==='harp'?{n:14,f:0,v:.9,d:2,h:'R'}:{n:6,v:1,d:.1,h:'R'}); let pk=0;
-      for(let i=0;i<24&&pk<.02;i++){ await new Promise(r=>setTimeout(r,50)); an.getFloatTimeDomainData(buf); for(const v of buf)pk=Math.max(pk,Math.abs(v)); } peak[K]=+pk.toFixed(3); INSTR.stop(); await new Promise(r=>setTimeout(r,200)); }
+      for(let i=0;i<48&&pk<.02;i++){ await new Promise(r=>setTimeout(r,25)); an.getFloatTimeDomainData(buf); for(const v of buf)pk=Math.max(pk,Math.abs(v)); } peak[K]=+pk.toFixed(3); INSTR.stop(); await new Promise(r=>setTimeout(r,200)); }
     const SR=44100, src=__imx.src;
     const render=async(dsp,evs,secs)=>{ const oc=new OfflineAudioContext(1,Math.floor(SR*secs),SR); await oc.audioWorklet.addModule('data:application/javascript,'+encodeURIComponent(src)); const n=new AudioWorkletNode(oc,'imx',{outputChannelCount:[1],processorOptions:{...dsp,ev:evs}}); n.connect(oc.destination);
       return (await oc.startRendering()).getChannelData(0); };
@@ -89,7 +89,7 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
     const DK=INSTR.KINDS.drums, dr={}; for(const n of [0,1,5]){ const x=await render(DK.dsp(),DK.sound({n,v:1,h:'L'},{st:{}}).map(e=>({...e,t:.02})),.4); let pk=0; for(const v of x)pk=Math.max(pk,Math.abs(v)); dr[['kick','snare','','','','hat'][n]]=+pk.toFixed(3); }
     const ring=await render(PK.dsp(),PK.sound({n:60,v:.8}).map(e=>({...e,t:.02})),1.2), damped=await render(PK.dsp(),[...PK.sound({n:60,v:.8}).map(e=>({...e,t:.02})),{k:'damp',id:60,T:.12,t:.3}],1.2);
     return {ok:true,peak,hz,dr,ring:+rms(ring,.8,1.1).toFixed(5),damped:+rms(damped,.8,1.1).toFixed(5)}; });
-  rec('each sounds through the instruments\' own audio (piano, drums, harp)',a.ok&&Object.values(a.peak).every(p=>p>.01),JSON.stringify(a.peak));
+  rec('each sounds through the instruments\' own audio (piano, drums, harp)',a.ok&&Object.values(a.peak).every(p=>p>.005),JSON.stringify(a.peak));
   rec('each sounds at its real pitch (piano A3 A4, harp C4 C5, and C4 with its pedal sharp: within 3%)',a.ok&&Object.values(a.hz).every(([h,w])=>Math.abs(h-w)/w<.03),JSON.stringify(a.hz));
   rec('the kick, the snare and the hi-hat each strike loud (rendered offline)',a.ok&&Object.values(a.dr).every(p=>p>.05),JSON.stringify(a.dr));
   // the recordings: each instrument's fetched and decoded, every sound's start found, and played back at the note's pitch

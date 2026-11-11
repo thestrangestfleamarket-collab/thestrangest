@@ -1,4 +1,4 @@
-// THE MUSHROOM SELLER: MUSH, his body on the player's rig (a smooth MERCH body: carved skull, long hair, the hat grown over with mushrooms, the mottled robe, the woven shawl and strap, the tray heaped with mushrooms), and his booth at the park wall.
+// THE MUSHROOM SELLER: MUSH, his body on the player's rig (a smooth MERCH body: a real scanned skull, long ash-blond hair, the hat grown over with mushrooms, the mottled rust robe, the woven shawl and grey strap, the tray heaped with mushrooms), and his booth at the park wall.
 import {SHARED, THREE} from './003-shx.js';
 import {PARK, pos} from './003b-systems.js';
 import {MODS, TILE} from './006-map-pre.js';
@@ -6,20 +6,21 @@ import {HOMES} from './076-npc-map.js';
 import {STALL} from './081-stalls.js';
 import {BODIES} from './111a-bodies.js';
 import {MERCH} from './111e-merch.js';
-const MUSH={}; let swing=null;
+const MUSH={}, SKULL=__LAZY__("data/skull.json"); let swing=null;
 { const {SPH,CYL,TOR,grp,mk,paint,hash3,C,mix,fbm,lathe,bend,ribbon}=MERCH.K, PI=Math.PI, T=TILE, V3=THREE.Vector3;
   let seed=11; const rnd=()=>{ seed=(seed*16807)%2147483647; return seed/2147483647; };
-  // a mushroom: its stem, the cap's dome and rolled rim, the gills under it; o {r cap, h stem, s stem radius, cap, stem, gill colours, k cap height, seg}
-  const shroom=(par,at,rot,o)=>{ const g=grp(par,at,rot), r=o.r, h=o.h, s=o.s||r*.32, n=MERCH.K.sq(o.seg||12,6), k=o.k||.58;
-    if(h>.002)mk(g,CYL(s*.92,s*1.12,h,Math.max(6,n>>1)),o.stem||'plain:#efe8da',[0,h/2,0]);
-    mk(g,SPH(r,n,Math.max(3,n>>1),0,PI*2,0,PI*.5),o.cap,[0,h,0],[0,0,0],[1,k,1]);
-    if(n>8){ mk(g,TOR(r*.93,r*.09,4,n),o.cap,[0,h,0],[PI/2,0,0]); mk(g,CYL(r*.9,s*1.05,r*.2,n,true),o.gill||'plain:#a88c76',[0,h-r*.1,0]); }
+  // a mushroom: its stem, the cap's dome (darker at its crown, speckled) and rolled rim, the gills under it; o {r cap, h stem, s stem radius, cap '#hex', stem, gill, k cap height, seg}
+  const capPaint=(hx,r,k)=>{ const c0=C(hx), dk=c0.clone().multiplyScalar(.72), lt=c0.clone().lerp(C('#fff8ec'),.18); return (x,y,z)=>{ const t=Math.min(1,Math.max(0,y/(r*k))), n=fbm(x*260,y*260,z*260); let c=mix(lt,dk,t*t*1.1+(n-.5)*.5); if(hash3(Math.round(x*900),Math.round(y*900),Math.round(z*900))>.93)c=mix(c,C('#fbf3e2'),.5); return c; }; };
+  const shroom=(par,at,rot,o)=>{ const g=grp(par,at,rot), r=o.r, h=o.h, s=o.s||r*.32, n=MERCH.K.sq(o.seg||12,6), k=o.k||.58, cap=o.cap.replace('plain:','');
+    if(h>.002)mk(g,CYL(s*.92,s*1.12,h,Math.max(6,n>>1)),'plain:'+(o.stem||'#ece4d2').replace('plain:',''),[0,h/2,0]);
+    mk(g,paint(SPH(r,n,Math.max(3,n>>1),0,PI*2,0,PI*.5),capPaint(cap,r,1)),'plain:vc',[0,h,0],[0,0,0],[1,k,1]);
+    if(n>8){ mk(g,TOR(r*.93,r*.09,4,n),'plain:'+cap,[0,h,0],[PI/2,0,0]); mk(g,CYL(r*.9,s*1.05,r*.2,n,true),'plain:'+(o.gill||'#a88c76').replace('plain:',''),[0,h-r*.1,0]); }
     return g; };
 
   /* ---------- the colours: the picture's rust robe mottled olive and teal, ash-blond hair, carved bone, the hat's earth ---------- */
   const RUST=C('#b4612b'), BURNT=C('#86401c'), DEEP=C('#4c2512'), OLIVE=C('#6e6a48'), TEAL=C('#56625a'), PALE=C('#d48c4e');
-  const robeC=(ox=0)=>(x,y,z)=>{ x+=ox; const n1=fbm(x*7,y*5+ox,z*7), n2=fbm(x*19+3,y*19,z*19); let c=mix(RUST,BURNT,n1*1.6-.45);
-    const ol=fbm(x*4+11,y*3,z*4), te=fbm(x*5+31,y*4+7,z*5); if(ol>.58)c=mix(c,OLIVE,(ol-.58)*7); if(te>.62)c=mix(c,TEAL,(te-.62)*7);
+  const robeC=(ox=0)=>(x,y,z)=>{ x+=ox; const n1=fbm(x*5,y*3.5+ox,z*5), n2=fbm(x*19+3,y*19,z*19); let c=mix(RUST,BURNT,n1*1.6-.45);
+    const ol=fbm(x*4+11,y*3,z*4), te=fbm(x*5+31,y*4+7,z*5); if(ol>.5)c=mix(c,OLIVE,Math.min(.85,(ol-.5)*6)); if(te>.54)c=mix(c,TEAL,Math.min(.8,(te-.54)*6));
     if(n2>.66)c=mix(c,PALE,(n2-.66)*4); c=mix(c,DEEP,(.42-n2)*2.2); return c; };
   const BONE=C('#e6dcc6'), BONED=C('#b9a685'), boneC=(x,y,z)=>{ const n=fbm(x*30,y*30,z*30); return mix(BONE,BONED,(n-.45)*2.4); };
   const HAIR=[C('#d0b98e'),C('#ab9268'),C('#e2d3ae'),C('#bcae8e'),C('#927b56')];
@@ -28,26 +29,10 @@ const MUSH={}; let swing=null;
   const CAPS=['plain:#ece4d4','plain:#e4d8c2','plain:#f0e9dc','plain:#d9c8a8','plain:#ddd0b8'], TANS=['plain:#c8aa82','plain:#b8956a','plain:#c4a47c'];
 
   const HAIRM=[], model=()=>{ const sk=MERCH.skel({hipY:.95,waist:.06,neck:.5,shX:.19,shY:.42,upper:.29,fore:.27,hipX:.1,thigh:.45,shin:.46}), {B}=sk;
-    /* the skull: carved bone, deep black sockets, the heart-shaped nose, the cheekbones, two rows of teeth and the jaw */
-    const H=grp(B.head,[0,.2,0]), bone=g=>paint(g,boneC), BN='wood:vc', BLK='plain:#070504', TOOTH='ivory:#ece2cb';
+    /* the head: a real skull (data/skull.json, its own mesh, added once fetched), the neck's bones under it */
+    const H=grp(B.head,[0,.2,0]), bone=g=>paint(g,boneC), BN='ivory:vc';
     H.scale.setScalar(1.28);
-    mk(H,bone(SPH(.108,24,16)),BN,[0,.02,-.012],[0,0,0],[.94,1,1]);
-    mk(H,bone(SPH(.1,24,18)),BN,[0,-.035,.032],[0,0,0],[.86,1.12,.76]);
-    for(const s of [1,-1]){ mk(H,SPH(.033,14,10),BLK,[s*.043,-.002,.084],[0,0,s*.25],[1.1,1,.62]);
-      mk(H,bone(SPH(.04,12,8)),BN,[s*.045,.036,.092],[0,0,-s*.12],[1.3,.42,.62]);
-      mk(H,bone(SPH(.03,12,8)),BN,[s*.074,-.045,.068],[0,s*.4,0],[1.15,.75,.85]);
-      mk(H,bone(SPH(.02,10,6)),BN,[s*.092,-.01,.04],[0,0,0],[.8,1.4,1]);
-      mk(H,SPH(.0125,10,6),BLK,[s*.0095,-.047,.1],[0,0,s*.38],[1,2.1,.6]);
-      mk(H,bone(SPH(.028,10,6)),BN,[s*.066,-.13,.02],[0,0,s*.25],[.7,1.9,.8]); }
-    mk(H,bone(SPH(.014,10,6)),BN,[0,.008,.11],[0,0,0],[.9,1.6,.7]);
-    mk(H,bone(SPH(.06,18,12)),BN,[0,-.084,.068],[0,0,0],[1.1,.72,.78]);
-    mk(H,SPH(.052,14,6),BLK,[0,-.116,.074],[0,0,0],[1.05,.2,.72]);
-    for(let i=0;i<10;i++){ const a=(i-4.5)/4.5*.95, r=.054, w=i===4||i===5?.0125:.0105;
-      mk(H,MERCH.K.CAP(w*.5,.012,2,6),TOOTH,[Math.sin(a)*r,-.104,.07+Math.cos(a)*r*.92],[0,a,0],[1,1,.8]); }
-    mk(H,bone(SPH(.052,18,10)),BN,[0,-.145,.052],[0,0,0],[1.08,.55,.8]);
-    for(let i=0;i<8;i++){ const a=(i-3.5)/3.5*.85, r=.047; mk(H,MERCH.K.CAP(.0048,.009,2,6),TOOTH,[Math.sin(a)*r,-.127,.068+Math.cos(a)*r*.92],[0,a,0],[1,1,.8]); }
-    mk(H,bone(SPH(.016,10,6)),BN,[0,-.163,.07],[0,0,0],[1.5,.7,.9]);
-    mk(B.head,CYL(.036,.044,.16,14),BN.replace('vc','#d8cbb0'),[0,.05,-.01]);
+    for(let i=0;i<6;i++){ const y=-.075-i*.024; mk(H,bone(CYL(.015,.016,.014,12)),BN,[0,y,-.03]); mk(H,bone(MERCH.K.CAP(.005,.016,2,6)),BN,[0,y-.002,-.052],[PI/2+.3,0,0]); }
     /* the hair: long, ash-blond, from under the brim down past the shoulders, open round the face; two locks a side over the chest */
     { const g=lathe([[.113,.075],[.117,.03],[.121,-.03],[.126,-.09],[.142,-.16],[.172,-.23],[.2,-.29],[.212,-.36],[.216,-.44],[.212,-.52]],30,72,.86,.95,PI*2-1.9);
       const p=g.attributes.position, cl=new Float32Array(p.count*3);
@@ -58,7 +43,7 @@ const MUSH={}; let swing=null;
       const pts=[[s*(.104+dx*.3),.05,.05+dz],[s*(.12+dx),-.1,.09+dz],[s*(.148+dx),-.22,.14+dz],[s*(.152+dx),-.33,.165+dz],[s*(.145+dx),-.04-len,.17+dz]];
       HAIRM.push(mk(H,ribbon(pts,.066,22,6,(u,v)=>hairC(u*.4+s*k,v*-.5),{lift:.004,taper:.45,wave:(u,v)=>.004*Math.sin(u*40+k),ragged:(u,v)=>v>.9?hash3(Math.round(u*30),k,s)*.05*(v-.9)*10:0}),'fur:vc')); }
     /* the hat: a wide mound of earth and mycelium, its top crowded with button mushrooms, a few tall ones, the big one on top */
-    const HT=grp(H,[0,.0,0]), top=r=>.185-.12*Math.pow(r/.25,1.6);
+    const HT=grp(H,[0,-.055,0]); HT.scale.setScalar(1.12); const top=r=>.185-.12*Math.pow(r/.25,1.6);
     { const g=lathe([[.001,.104],[.06,.097],[.1,.07],[.14,.046],[.2,.04],[.24,.046],[.257,.062],[.252,.08],...[.24,.2,.16,.12,.08,.04,.001].map(r=>[r,top(r)])],36,56);
       const p=g.attributes.position, cl=new Float32Array(p.count*3);
       for(let i=0;i<p.count;i++){ let x=p.getX(i), y=p.getY(i), z=p.getZ(i); const r=Math.hypot(x,z), n=fbm(x*26,z*26,y*26), m=fbm(x*9+4,z*9,y*9), up=y>.07&&r<.252;
@@ -108,7 +93,7 @@ const MUSH={}; let swing=null;
       else if(k<.8){ at[1]+=cr*.6; const b=rnd()*PI*2; shroom(TR,at,[Math.cos(b)*1.45,b,Math.sin(b)*1.45],o); }
       else { at[1]+=h+cr*.4; shroom(TR,at,[PI+(rnd()-.5)*.7,rnd()*PI*2,(rnd()-.5)*.5],o); } }
     // the hair leaves the baked body: its own mesh on the head bone, so it can swing (MUSH.hairGeo, in the head bone's frame)
-    sk.root.updateMatrixWorld(true); MUSH.headY=new V3().setFromMatrixPosition(B.head.matrixWorld).y; const P=[], Nn=[], Cc=[], I=[];
+    sk.root.updateMatrixWorld(true); MUSH.headY=new V3().setFromMatrixPosition(B.head.matrixWorld).y; MUSH.skullAt=H.matrixWorld.clone(); const P=[], Nn=[], Cc=[], I=[];
     for(const m of HAIRM){ const g=m.geometry.clone().applyMatrix4(m.matrixWorld); g.computeVertexNormals(); const o=P.length/3;
       for(const [A,L] of [['position',P],['normal',Nn],['color',Cc]])for(const v of g.attributes[A].array)L.push(v); for(const i of g.index.array)I.push(i+o); m.parent.remove(m); }
     const hg=MUSH.hairGeo=new THREE.BufferGeometry(); hg.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); hg.setAttribute('normal',new THREE.Float32BufferAttribute(Nn,3)); hg.setAttribute('color',new THREE.Float32BufferAttribute(Cc,3)); hg.setIndex(I);
@@ -118,7 +103,7 @@ const MUSH={}; let swing=null;
   /* ---------- on the street: held at his booth, turning his head to you; the tray held still out in front ---------- */
   const HOLD={ua:[17,4],fa:[78,-15]}, look=N=>{ const s=N.st, d=Math.hypot(pos.x-s.x,pos.z-s.z); let a=0; if(d<7*T&&d>.2*T){ a=Math.atan2(pos.x-s.x,pos.z-s.z)-s.hd; a=Math.atan2(Math.sin(a),Math.cos(a)); a=Math.max(-.9,Math.min(.9,a)); }
     const now=performance.now()/1000, dt=Math.min(.2,now-(N._lt||now)); N._lt=now; N._lk=(N._lk||0)+(a-(N._lk||0))*Math.min(1,dt*2.5); if(Math.abs(N._lk-a)<.004)N._lk=a; return N._lk*180/PI; };
-  const body=MERCH.add({key:'mushroom',q:.3,label:'THE MUSHROOM SELLER',height:1.75,model,size:11.5,hd:0,idle:(t,N)=>MERCH.pose({nod:-5,bend:3,look:N?look(N):0,L:HOLD,R:HOLD}),after:(B,N)=>{ if(swing)swing(N); }});
+  const body=MERCH.add({key:'mushroom',q:.55,label:'THE MUSHROOM SELLER',height:1.75,model,size:11.5,hd:0,idle:(t,N)=>MERCH.pose({nod:-5,bend:3,look:N?look(N):0,L:HOLD,R:HOLD}),after:(B,N)=>{ if(swing)swing(N); }});
   const N=MUSH.N=body&&body.npc;
   /* ---------- his hair swings: a pendulum from under the hat, pushed by how his head moves (a turn, a nod, a step) and by the wind's gusts, settling still ---------- */
   if(N&&MUSH.hairGeo){ const HI=BODIES.BONES.indexOf('head'), HM={value:N.PM.value[HI]}, SW={value:new THREE.Vector2()};
@@ -139,10 +124,22 @@ const MUSH={}; let swing=null;
       const n=Math.min(24,Math.ceil(dt*120)), h=dt/n; for(let i=0;i<n;i++){ v.x+=(-20*o.x-2.2*v.x+ax)*h; v.y+=(-20*o.y-2.2*v.y+az)*h; o.addScaledVector(v,h); }
       if(Math.abs(o.x)>.11){ o.x=Math.sign(o.x)*.11; v.x=0; } if(o.y<-.05||o.y>.07){ o.y=Math.max(-.05,Math.min(.07,o.y)); v.y=0; }
       if(o.lengthSq()<2.5e-7&&v.lengthSq()<4e-6&&!w){ o.set(0,0); v.set(0,0); } SW.value.copy(o); }; }
+  /* ---------- his skull: a real one (data/skull.json), its own textured mesh on the head bone, fetched after the start ---------- */
+  if(N&&MUSH.skullAt)SKULL().then(d=>{ if(!d||!d.p)return; const HI=BODIES.BONES.indexOf('head'), HM={value:N.PM.value[HI]}, s=.104;
+    const M=MUSH.skullAt.clone().multiply(new THREE.Matrix4().makeTranslation(0,.112-1.0687*s,.006)).multiply(new THREE.Matrix4().makeScale(s,s,s));
+    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(d.p,3)); g.setAttribute('uv',new THREE.Float32BufferAttribute(d.uv,2)); g.setIndex(d.i); g.applyMatrix4(M); g.computeVertexNormals();
+    const tex=(u,srgb)=>{ const t=new THREE.TextureLoader().load(u); if(srgb)t.colorSpace=THREE.SRGBColorSpace; t.flipY=true; t.anisotropy=4; return t; };
+    const bendV=sh=>{ sh.uniforms.uHead=HM; sh.vertexShader='uniform mat4 uHead;\n'+sh.vertexShader.replace('#include <begin_vertex>','vec3 transformed=(uHead*vec4(position,1.)).xyz;'); };
+    const mat=new THREE.MeshStandardMaterial({map:tex(d.map,true),normalMap:tex(d.nmap,false),normalScale:new THREE.Vector2(.6,.6),roughness:.62,metalness:0});
+    mat.onBeforeCompile=sh=>{ bendV(sh); sh.vertexShader=sh.vertexShader.replace('#include <beginnormal_vertex>','vec3 objectNormal=mat3(uHead)*normal;'); sh.fragmentShader=sh.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\n diffuseColor.rgb=mix(vec3(dot(diffuseColor.rgb,vec3(.3,.59,.11))),diffuseColor.rgb,.4)*vec3(1.04,1.,.94);').replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*.08;'); };
+    mat.customProgramCacheKey=()=>'mushskull';
+    const dep=new THREE.MeshDepthMaterial({depthPacking:THREE.RGBADepthPacking}), dis=new THREE.MeshDistanceMaterial(); dep.onBeforeCompile=bendV; dis.onBeforeCompile=bendV; dep.customProgramCacheKey=()=>'mushskulld'; dis.customProgramCacheKey=()=>'mushskullx';
+    const m=new THREE.Mesh(g,mat); m.customDepthMaterial=dep; m.customDistanceMaterial=dis; m.castShadow=m.receiveShadow=true;
+    Object.defineProperty(m,'boundingSphere',{configurable:true,get(){ return N.g.children[0].boundingSphere; },set(){}}); N.g.add(m); MUSH.skull=m; }).catch(()=>{});
   if(N){ const st=N.st; st.hold=true; st.to=st.next=null; N.H=2.3*T;
     const wait=()=>{ if(!MODS.park)return setTimeout(wait,500); const P=PARK, X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0)), A=STALL.at('mush');
       MUSH.booth=STALL.build({X,Z,x0:A.x0,x1:A.x1,y:P.y0,veg:false,seed:7,gate:A.gate,name:A.name});
       if(!HOMES.keeper(N))MERCH.stand(N,MUSH.booth); };
     wait(); }
-  window.SELLERDBG=()=>({swing:!!swing,sw:MUSH.sw?[+MUSH.sw.x.toFixed(4),+MUSH.sw.y.toFixed(4)]:null,booth:!!MUSH.booth,key:N&&N.key,x:N&&+N.st.x.toFixed(2),z:N&&+N.st.z.toFixed(2),y:N&&+N.g.position.y.toFixed(2),vis:N&&N.g.visible,tris:body&&body.tris()}); }
+  window.SELLERDBG=()=>({swing:!!swing,skull:!!MUSH.skull,sw:MUSH.sw?[+MUSH.sw.x.toFixed(4),+MUSH.sw.y.toFixed(4)]:null,booth:!!MUSH.booth,key:N&&N.key,x:N&&+N.st.x.toFixed(2),z:N&&+N.st.z.toFixed(2),y:N&&+N.g.position.y.toFixed(2),vis:N&&N.g.visible,tris:body&&body.tris()}); }
 export {MUSH};

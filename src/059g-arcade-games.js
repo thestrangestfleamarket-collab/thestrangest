@@ -2,7 +2,7 @@
 import {FORAGE, keys, SFX, UI} from './003b-systems.js';
 import {OWNED} from './005-save.js';
 import {STORE, SYS} from './006-map-pre.js';
-STORE.cabs={tick:null,on:false,K:null,reg:{},add:e=>{ STORE.cabs.reg[e.name]=e; },walls:{e:['RAINBOW RUN','GALAXY RAID','MAZE','DRAGON POP'],w:['ROAD 85','KNUCKLE CITY','TORCHBEARER','MONSTER ROAD'],b:['PETRI']}};   // the cabinets along each wall of the room, door to back; the BBS lists them in this order too
+STORE.cabs={tick:null,on:false,K:null,reg:{},add:e=>{ STORE.cabs.reg[e.name]=e; },walls:{e:['RAINBOW RUN','GALAXY RAID','MAZE'],w:['ROAD 85','TORCHBEARER'],b:['PETRI']}};   // the cabinets along each wall of the room, door to back; the BBS lists them in this order too
 SYS.add('places',dt=>{ if(STORE.cabs.tick)STORE.cabs.tick(dt); },'arcade games');
 STORE.cabs.play=name=>STORE.cabs.kit().open(name);
 STORE.cabs.kit=()=>{ '@arcade'; const C=STORE.cabs; if(C.K)return C.K;
@@ -87,8 +87,3 @@ STORE.cabs.kit=()=>{ '@arcade'; const C=STORE.cabs; if(C.K)return C.K;
         else { tx(c,rank>0?'RANK '+rank+' OF THE TOP TEN':nb?'NEW HIGH SCORE!':'HI-SCORE '+hi(name),128,110,(rank>0||nb)&&bl?'#ffe83c':'#a090c0',8,'center'); tx(c,msg||(bl?'INSERT $2 · PRESS SPACE':''),128,146,msg?'#ff3c5a':'#5aff6a',8,'center'); } } };
     keys.clear(); addEventListener('keydown',kd,true); addEventListener('keyup',ku,true); addEventListener('blur',blur); document.body.append(box); C.on=true; UI.gamewin='cab'; beep(660,.1); };   // gamewin: the pad and the headset drive the game, not the page
   C.ini=()=>OWNED.get('arcade-ini')||''; return C.K={LIB,lore,game,open,demo,crt,top:topOf}; };
-// The four cabinets whose games are still to come (their files register over these when they land): the cards show COMING SOON.
-STORE.cabs.add({name:'TORCHBEARER',skill:'myco',lore:{maker:'HALCYON GAMES',place:'CHICAGO',year:1985,col:'#3cf0ff',tag:'WARRIOR NEEDS FOOD. BADLY.',story:['A HUNDRED FLOORS DOWN. FOUR HEROES.','YOUR HEALTH IS A CLOCK; ONLY FOOD STOPS IT.']}});
-STORE.cabs.add({name:'KNUCKLE CITY',skill:'ento',lore:{maker:'CAPSTONE AMUSEMENTS',place:'OSAKA',year:1991,col:'#ff3c5a',tag:'SIX STAGES. ONE CITY. YOUR FISTS.',story:['FROM THE SLUMS TO THE PENTHOUSE.','EAT THE CHICKEN IN THE TRASH CAN.']}});
-STORE.cabs.add({name:'DRAGON POP',skill:'forage',lore:{maker:'TOYBOX',place:'TOKYO',year:1986,col:'#5aff6a',tag:'A HUNDRED ROUNDS OF BUBBLES',story:['TRAP THEM, POP THEM, EAT THE FRUIT.','THE GOOD ENDING NEEDS THE SECRET ROOMS.']}});
-STORE.cabs.add({name:'MONSTER ROAD',skill:'sword',lore:{maker:'SEABRIGHT',place:'YOKOHAMA',year:1987,col:'#ffe83c',tag:'TWELVE ROUNDS TO THE DRAGON',story:['A BOY, A SWORD, AN HOURGLASS.','EVERY ROUND HIDES A DOOR.']}});

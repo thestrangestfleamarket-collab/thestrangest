@@ -4053,8 +4053,8 @@
   },
   {
    "k": "p:canoe",
-   "x": 181.9,
-   "y": 129.28,
+   "x": 179.57,
+   "y": 131.44,
    "rot": 2.409,
    "float": 1
   },
@@ -4067,8 +4067,8 @@
   },
   {
    "k": "p:skiff",
-   "x": 186.11,
-   "y": 125.71,
+   "x": 187.95,
+   "y": 124.28,
    "rot": 2.409,
    "float": 1
   },
@@ -6309,7 +6309,7 @@
  },
  "bigTrees": [
   {
-   "note": "THE BIG TREES (owner, 7 Nov 2026; redone 10 Nov 2026): map tiles; kind A level branch, B rising, C low and sagging, G the giant (a hollow shell of leaves round thick limbs to climb); face: where the big branch reaches, degrees; climb: SPACE next to it climbs it; s: its size, 1 a 62 m tree (owner, 10 Nov 2026: \"move back towards park area and make them 25-50% smaller, and add 20 more scattered around. i want 1 giant big tree ... its 2x bigger\")"
+   "note": "THE BIG TREES (owner, 7 Nov 2026; redone 10 Nov 2026): map tiles; kind A level branch, B rising, C low and sagging, G the giant (a hollow shell of leaves round thick limbs to climb; look: drawn as that pack tree, Elder2 since 11 Nov 2026); face: where the big branch reaches, degrees; climb: SPACE next to it climbs it; s: its size, 1 a 62 m tree (owner, 10 Nov 2026: \"move back towards park area and make them 25-50% smaller, and add 20 more scattered around. i want 1 giant big tree ... its 2x bigger\")"
   },
   {
    "kind": "A",
@@ -6621,7 +6621,8 @@
    "y": 88,
    "face": 0,
    "climb": true,
-   "s": 2.4
+   "s": 2.4,
+   "look": "Elder2"
   }
  ],
  "cloudTrees": [],

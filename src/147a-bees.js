@@ -1,15 +1,14 @@
-// THE BEEKEEPER AND YOUR HIVES: a beekeeper in a white suit on the park path sells hives, a smoker, a veil and honey jars, buys honey and wax and teaches BEEKEEPING; a hive you set on the lawn fills over real time, faster among flowers, and the flowers near it decide the honey.
+// YOUR HIVES: a hive you set on the lawn (the gardener sells hives, a smoker, a veil and honey jars) fills over real time, faster among flowers, and the flowers near it decide the honey.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, FLORA, FORAGE, ITEMS, NPCS, ONLINE, pos, ROOMS, SFX, UI, VIT, WEEDS} from './003b-systems.js';
+import {CLOCK, FLORA, FORAGE, ITEMS, ONLINE, pos, ROOMS, SFX, UI, VIT, WEEDS} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
-import {SOL, SYS, TILE} from './006-map-pre.js';
+import {SYS, TILE} from './006-map-pre.js';
 import {RARITY} from './013a-rarity.js';
 import {CREATS} from './087-npc-creatures.js';
 import {MERCH} from './111e-merch.js';
 import {GARDEN} from './144a-garden.js';
-import {SMOKE} from './146x-bluehour.js';
 const BEES={list:[]}; window.BEES=BEES;
 { const T=TILE, WU=T/.84, K=MERCH.K, {mk,grp,SPH,LATHE,drape}=K, say=(t,c)=>SAY(t,c||'#e8e2cc'), use=FORAGE.use, KEY='bees', MAX=3, FULL=10, MIN=30, R=8*T;
   // the honeys: what the flowers near a hive make of it (a rare moon honey by night, deep in the park)
@@ -96,23 +95,6 @@ const BEES={list:[]}; window.BEES=BEES;
           m4.makeTranslation(h.x+(q[0]-h.x)*w+Math.sin(now*9+i)*.04*WU,hy+(q[1]-hy)*w+Math.sin(Math.PI*w)*.8*WU,h.z+(q[2]-h.z)*w+Math.cos(now*8+i)*.04*WU); BEE.setMatrixAt(n++,m4); continue; }
         const a=now*(1.3+i*.17)+i*2.1, r=(.3+.4*((i*37)%10)/10)*WU; m4.makeTranslation(h.x+Math.cos(a)*r,h.y+(.6+.35*Math.sin(now*2.3+i))*WU,h.z+Math.sin(a*1.3)*r); BEE.setMatrixAt(n++,m4); } }
     BEE.count=n; BEE.instanceMatrix.needsUpdate=true; },'147a-bees');
-
-  /* ---------- the beekeeper: a round figure in a white suit and a veiled hat, a smoker in one gloved hand ---------- */
-  const SUIT='cloth:#eeeae0', GLOVE='leather:#d8c890', VEIL='tulle:#2a2c30';
-  const model=()=>{ const sk=MERCH.skel({hipY:.9,neck:.52,shX:.22,shY:.42,upper:.28,fore:.26,hipX:.11}), {B}=sk;
-    mk(B.torso,drape(LATHE([[.22,-.08],[.27,.1],[.28,.3],[.25,.44],[.16,.52],[.08,.56]],28,.85),.01),SUIT); mk(B.hips,drape(LATHE([[.22,.04],[.25,-.12],[.22,-.2]],24,.85),.01),SUIT);
-    const H=grp(B.head,[0,.12,0]); mk(H,SPH(.11,20,14),'skin:#c89a78',[0,0,0],[0,0,0],[.95,1.05,1]); mk(H,new THREE.CylinderGeometry(.27,.27,.015,28),'plain:#e8dcb8',[0,.1,0]);
-    mk(H,new THREE.CylinderGeometry(.13,.14,.1,24),'plain:#e8dcb8',[0,.15,0]); mk(H,new THREE.CylinderGeometry(.2,.22,.24,24,1,true),VEIL,[0,-.02,0]);
-    for(const s of [1,-1]){ const n=s>0?'L':'R'; mk(B['upperArm'+n],new THREE.CylinderGeometry(.075,.07,.28,14),SUIT,[0,-.13,0]); mk(B['forearm'+n],new THREE.CylinderGeometry(.07,.065,.26,14),SUIT,[0,-.12,0]);
-      mk(B['hand'+n],SPH(.06,12,9),GLOVE,[0,-.04,0],[0,0,0],[1,1.2,.8]); mk(B['thigh'+n],new THREE.CylinderGeometry(.09,.08,.43,14),SUIT,[0,-.2,0]); mk(B['shin'+n],new THREE.CylinderGeometry(.075,.07,.43,14),SUIT,[0,-.2,0]);
-      mk(B['shoe'+n],new THREE.CapsuleGeometry(.05,.1,6,10),'leather:#5a4434',[0,-.04,.04],[Math.PI/2,0,0]); }
-    const sm=grp(B.handR,[0,-.1,.04]); mk(sm,new THREE.CylinderGeometry(.05,.05,.16,14),'metal:#a8a49a'); mk(sm,new THREE.ConeGeometry(.05,.07,14),'metal:#a8a49a',[0,.11,0]);
-    return sk; };
-  const V=new THREE.Vector3(); let pt=0;
-  MERCH.add({key:'beekeeper',label:'THE BEEKEEPER',height:1.7,model,size:10,hd:0,
-    idle:t=>MERCH.pose({nod:Math.sin(t*.6)*4,yaw:Math.sin(t*.3)*14,L:{ua:[20,14],fa:[40,0]},R:{ua:[30,-10],fa:[70,-20]}}),
-    after:(Bd,N)=>{ if(!N.g.visible||!SMOKE||Math.hypot(pos.x-N.st.x,pos.z-N.st.z)>20*T)return; const t=performance.now()/1000; if(t-pt<2.2)return; pt=t; MERCH.at(N,'handR',[0,.1,.04],V); SMOKE.puff(V.x,V.y,V.z,2,0xd8d8d0,.6); }});
-  { NPCS.when('beekeeper',N=>{ const x=N.st.x, z=N.st.z; SOL.up.push([x-.25*T,z-.25*T,x+.25*T,z+.25*T]); }); }
   window.BEEDBG=()=>({hives:S.hives.map(h=>({f:+frames(h).toFixed(2),fl:flowers(h.x,h.z).t,k:kindOf(h,false)})),got:{...S.got},bee:FORAGE.sk('bee'),shown:BEE.count});
 }
 export {BEES};

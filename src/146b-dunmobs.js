@@ -156,7 +156,7 @@ __CODE__("worker/dunmobs.js")
   const CB=[], SZ={Rat:.3,Frog:.3,Snake:.25,Spider:.55,Wasp:.3,Bat:.4,Slime:.45}; for(const f of CREATS&&CREATS.FA||[])SZ[f[0]]=f[2];
   const entryOf=id=>{ const d=trying||live; return d&&d.mobs.find(e=>e.id===id); };
   const mkC=key=>{ const [src,k]=key.split(':'), o={lv:'down',group:'dungeon',free:(x,z,R)=>free(x,z,R),ground:(x,z)=>D.ground(x,z),speed:1.4,radius:.18}; let N=null;
-    try{ if(src==='pw')N=MODS.pawnNew&&MODS.pawnNew(k==='golem'?'hero_m':k,'dm_'+k,{npc:o,copy:k==='golem'?1:0}); else if(MODS.creatNew&&CREATURES[k])N=MODS.creatNew(k,'dm_'+k,SZ[k]||.6,{npc:o}); }catch(e){ console.warn('dungeon body',key,e); }
+    try{ if(src==='pw')N=MODS.pawnNew&&MODS.pawnNew(k==='golem'?'hero_m':k,'dm_'+k,{npc:o,copy:k==='golem'?1:0}); else if(!CREATURES[k]&&CREATS.fauna)CREATS.fauna(k); else if(MODS.creatNew&&CREATURES[k])N=MODS.creatNew(k,'dm_'+k,SZ[k]||.6,{npc:o}); }catch(e){ console.warn('dungeon body',key,e); }
     if(!N)return null; const C=src==='pw'?null:Object.keys(CREATURES[k].clips||{}), f=re=>C&&C.find(n=>re.test(n));
     const r={N,key,c:true,lv:[],v0:1.4*T,hp:0,style:{reach:.8},cl:C&&{walk:f(/_(Walk|Flying|Jump)$/),idle:f(/_Idle$/)||f(/_Flying$/),hit:f(/Attack/),hurt:f(/_Hit$/),die:f(/Death/)}}; CB.push(r); park(r); return r; };
   const show=dt=>{ const want=new Set(), k=AR===KEEP?KEEP.k:D.room, M_=pic?pic.m.filter(e=>e[1]===k):[]; let g=0, sp=0, sl=0;

@@ -52,6 +52,7 @@ jobs:
           R=""; k(){ if [ "$FULL" = "true" ] || [ "$C" = "ALL" ] || echo "$C" | grep -Eq "$2"; then R="$R $1"; fi; }
           k grass   'src/014a|src/140-weeds|src/140a-tufts|src/141-forage|src/142a-flora|src/143-bfly|src/064|grasskinds'
           k online  'src/111d-online|worker/|online'
+          k voice   'src/111dc-voice|src/111d-online|worker/door|voice\.cjs'
           k drops   'src/162[de]|src/150cy|drops'
           k photog  'src/146m|src/160b|photog'
           k earn    'src/140c|src/160b|data/trainers|earn'
@@ -194,6 +195,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' online')
         run: node tests/online.cjs dist/market.html
+      - name: Voice (two players near each other link, push to talk is heard, unlinked when apart)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' voice')
+        run: node tests/voice.cjs dist/market.html
       - name: The ground drops (off the quick bar onto the world, their 3D look, picked up, gone in time)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' drops')

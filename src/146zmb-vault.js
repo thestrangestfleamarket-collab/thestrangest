@@ -28,9 +28,10 @@ import {BANKK} from './146zm-bank.js';
   W.addEventListener('click',e=>{ '@later'; const b=e.target.closest('button'); if(!b)return; const d=b.dataset;
     if(d.x){ W.hidden=true; return; }
     if(d.c){ const n=d.c==='all'?INV.cash:+d.c, r=BANKK.move?BANKK.move(Math.trunc(n)):null; if(typeof r==='string')say(r,'#c8a090'); draw(); return; }
-    if(d.m){ const id=d.id, V=read(); if(d.m==='in'){ const have=BAG.have?BAG.have(id,'bag'):INV.items[id]||0, n=e.shiftKey?have:Math.min(1,have); if(n<1)return; FORAGE.take(id,n); V.items[id]=(V.items[id]||0)+n; }
-      else { const n=e.shiftKey?V.items[id]:1; if(!(n>0))return; V.items[id]-=n; if(V.items[id]<=0)delete V.items[id]; FORAGE.give(id,n); }
-      write(V); if(FORAGE.save)FORAGE.save(); if(BAG.draw)BAG.draw(); draw(); } });
+    if(d.m){ const id=d.id; if(d.m==='in'){ const have=BAG.have?BAG.have(id,'bag'):INV.items[id]||0; VAULT.put(id,e.shiftKey?have:1); } else VAULT.take(id,e.shiftKey?read().items[id]:1); draw(); } });
+  // a thing (n of it) into the safe from what you carry, or out of the safe to carry; what moved is returned
+  VAULT.put=(id,n=1)=>{ const V=read(), have=BAG.have?BAG.have(id,'bag'):INV.items[id]||0; n=Math.min(n,have); if(!(n>0)||!movable(id))return 0; FORAGE.take(id,n); V.items[id]=(V.items[id]||0)+n; write(V); if(FORAGE.save)FORAGE.save(); if(BAG.draw)BAG.draw(); return n; };
+  VAULT.take=(id,n=1)=>{ const V=read(); n=Math.min(n,V.items[id]||0); if(!(n>0))return 0; V.items[id]-=n; if(V.items[id]<=0)delete V.items[id]; write(V); FORAGE.give(id,n); if(FORAGE.save)FORAGE.save(); if(BAG.draw)BAG.draw(); return n; };
   VAULT.open=()=>{ if(!VAULT.near())return say('YOU NEED TO BE AT THE BANK.','#c8a090'); W.hidden=false; draw(); };
   VAULT.close=()=>{ W.hidden=true; };
   VAULT.items=()=>Object.assign({},read().items);

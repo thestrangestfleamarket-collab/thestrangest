@@ -125,6 +125,8 @@ const FILE=process.argv[2]||'dist/market.html', SHOTS=process.argv[3]||'';
   // at home: hang it, and the easel (the same browser, not fresh: what you own is kept)
   await pg.goto(url+'?hour=15&place=your%20apartment',{waitUntil:'commit'}); await pg.waitForFunction(()=>window.__started,null,{timeout:400000});
   for(let i=0;i<40&&!(await pg.evaluate(()=>window.BEDROOMDBG&&BEDROOMDBG().built&&window.ROOMEDDBG&&ROOMED._api()));i++)await pg.waitForTimeout(1000);
+  for(let i=0;i<20&&!(await pg.evaluate(()=>VAULT.moved()));i++)await pg.waitForTimeout(500);   // a returning player's first start puts what is not a tool in the safe at the bank (11 Nov 2026): take it all back out (the painting, the canvases), as a player would there
+  await pg.evaluate(()=>{ const V=VAULT.items(); for(const id in V)VAULT.take(id,V[id]); });
   const H=await pg.evaluate(()=>{ const M=PAINTINGS.mine(), id=Object.keys(M.art).find(k=>M.art[k].t==='SUN OVER THE PARK'), R=ROOMED._api().R; return {id,kind:!!R.kinds['pt:'+id],easel:!!R.kinds['pt:easel'],has:INV.items['pt_'+id]}; });
   ok(H.id&&H.kind&&H.easel&&H.has===1,'at home the painting and the EASEL are things to put in your room ('+JSON.stringify(H)+')');
   const W=await pg.evaluate(async id=>{ ROOMED.buy('pt:'+id); await new Promise(r=>setTimeout(r,300)); try{ ROOMED.place(); }catch(e){} const A=ROOMED._api(), un=A.units().find(u=>u.kind==='pt:'+id);

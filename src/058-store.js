@@ -228,8 +228,8 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
       hb.position.set(X(x),1.3*TILE,Z(y)); scene.add(hb); R.th={name:/^THE /.test(R.name)?R.name:'THE '+R.name,ghost:1,obj:hb,reach:1.4*TILE,near:2.4*TILE,tall:2.6*TILE,act:()=>STORE.enter(id,true)}; UI.thing(R.th);
         const [ex,ey]=DOORP(R,-.35), he=new THREE.Mesh(new THREE.BoxGeometry(1.4*TILE,2.6*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false})); he.position.set(X(ex),1.3*TILE,Z(ey)); scene.add(he);
         UI.thing({name:'OUT TO THE STREET',exit:1,ghost:1,obj:he,reach:1.4*TILE,near:2.4*TILE,tall:2.6*TILE,act:()=>STORE.exit(id)}); }};
-    // a street shop's door in its own wall (WALKIN, the bank): its inside built when you come within NEAR and held until past FAR; the door stays shut, double-clicked to go in or out (owner, 11 Nov 2026)
-    STORE.held=new Set(); const DOORS={}, NEAR=14*TILE, FAR=18*TILE, REACH=2.4*TILE, building=new Set();
+    // a street shop's door in its own wall (WALKIN, the bank): it stays shut, double-clicked to go in or out (owner, 11 Nov 2026); its inside is built behind the fade like any other
+    STORE.held=new Set(); const DOORS={};
     STORE.open=id=>!!DOORS[id]&&DOORS[id].t>.6;
     STORE.openAt=(x,z)=>{ for(const id in DOORS){ if(DOORS[id].t<.05)continue; const B=STORE.inside[id].B, xa=X(B.x0), xb=X(B.x1), za=Z(B.y0), zb=Z(B.y1); if(x>Math.min(xa,xb)&&x<Math.max(xa,xb)&&z>Math.min(za,zb)&&z<Math.max(za,zb))return true; } return false; };
     STORE.door=id=>{ '@later'; const W=WALKIN[id], R=STORE.inside[id]; if(!W||!R||DOORS[id])return; const P=(a,t)=>W.ax==='x'?new THREE.Vector3(X(a),0,Z(t)):new THREE.Vector3(X(t),0,Z(a)), p0=P(W.a0,W.at), p1=P(W.a1,W.at), wv=p1.clone().sub(p0), len=wv.length(), hgt=Y(W.h)-Y(0);
@@ -244,11 +244,6 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
       DOORS[id]={pv,yaw0,sw,mid,sb,shut:true,t:0};
       const hb=(k,name,act,exit)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(1.4*TILE,2.6*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false})); m.position.copy(mid).addScaledVector(inN,k*TILE); m.position.y=1.3*TILE; m.rotation.y=yaw0; scene.add(m); const t={name,ghost:1,obj:m,reach:1.4*TILE,near:2.4*TILE,tall:2.6*TILE,act,exit}; UI.thing(t); return t; };
       R.th=hb(-.35,/^THE /.test(R.name)?R.name:'THE '+R.name,()=>STORE.enter(id,true)); hb(.35,'OUT TO THE STREET',()=>STORE.exit(id),1); };
-    const build=id=>{ if(building.has(id))return; building.add(id); (async()=>{ await STORE.ensure(); if(STORE.pre[id])await STORE.pre[id](); const R=STORE.inside[id]; if(R&&!R.done)STORE.inGo(id); })().catch(e=>console.warn('STORE walk-in build',e)).finally(()=>building.delete(id)); };
-    SYS.add('life',dt=>{ const up=SHARED.LVL==='up'; for(const id in DOORS){ const D=DOORS[id], R=STORE.inside[id]; if(!R)continue; const d=up?Math.hypot(pos.x-D.mid.x,pos.z-D.mid.z):1e9;
-      if(d<FAR)STORE.held.add(id); else STORE.held.delete(id);
-      if(d<NEAR&&!R.done&&!R.busy&&!FADE.busy)build(id);
-      } },'058-store-doors');
     STORE.offAt=(x,z)=>{ const w=[]; for(const n in OFF){ const [a,b,c,d]=OFF[n].lot; if(!OFF[n].done&&x>X(a)&&x<X(c)&&z>Z(b)&&z<Z(d))w.push(STORE.offGo(n)); } return Promise.all(w); };
     const run=()=>{ if(done)return; const c=need().filter(c=>!LOADED(c)); if(c.length){ LOAD(...c).then(run,()=>setTimeout(run,2000)); return; } if(STEPS.length){ step(); setTimeout(run,60); } else finish(); };
     STORE.later=()=>{ if(QS.get('steps')!=='0')setTimeout(run,1500); }; }

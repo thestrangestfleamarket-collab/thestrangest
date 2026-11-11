@@ -1,5 +1,6 @@
 // THE BIG CAT: BIGCAT, a huge black cat-shaped blob (a rounded block with two horn-like ears, big speckled staring eyes, an open mouth with pink teeth, whiskers, two clawed paws) four and a half times a person's height, now and then walking down Market St's road (a smooth MERCH body on the player's rig).
 import {SHARED, THREE} from './003-shx.js';
+import {pos} from './003b-systems.js';
 import {SYS, TILE} from './006-map-pre.js';
 import {TRAINS} from './009c-trains.js';
 import {BODIES} from './111a-bodies.js';
@@ -41,19 +42,19 @@ const BIGCAT={};
       for(let i=0;i<4;i++){ const a=(i-1.5)*.4; mk(F,sk2(SPH(.09,14,10)),S,[Math.sin(a)*.22,.085,.24+Math.cos(a)*.16],[0,0,0],[.95,.95,1.2]); } }
     return sk; };
   // five times a person's height
-  // his blink (owner, 11 Nov 2026: "make him blink"): every few seconds both lids sweep down over the eyes and up, drawn only while he is posed (near and seen)
+  // his blink (owner, 11 Nov 2026: "make him blink"): every few seconds both lids sweep down over the eyes and up, only near you
   const LIDM=new THREE.MeshStandardMaterial({color:0x17171a,roughness:.85}), MH=new THREE.Matrix4(), MT=new THREE.Matrix4(); let BL=null, bt=0, nb=2;
   const blink=N=>{ if(!BL){ BL=new THREE.Group(); BL.matrixAutoUpdate=false; const g=new THREE.SphereGeometry(.232,24,10,0,PI*2,0,PI/2); for(const s of [1,-1]){ const m=new THREE.Mesh(g,LIDM); m.position.set(s*.3,1,.5); BL.add(m); } N.g.parent.add(BL); }
-    const t=performance.now()/1000; if(t>nb){ bt=t; nb=t+2.5+Math.random()*4.5; } const k=(t-bt)/.18, a=k<1?Math.sin(k*PI):0; BL.visible=N.g.visible&&a>0; if(!BL.visible)return;
+    const t=performance.now()/1000; if(t>nb){ bt=t; nb=t+2.5+Math.random()*4.5; } const k=(t-bt)/.18, a=k<1?Math.sin(k*PI):0; BL.visible=N.g.visible&&!!N.PM&&a>0; if(!BL.visible)return;
     for(const m of BL.children)m.rotation.x=-.6+a*2.15;
     const i=BODIES.BONES.indexOf('hips'), o=N.body.rest.hips; BL.matrix.copy(N.g.matrixWorld).multiply(MH.copy(N.PM.value[i])).multiply(MT.makeTranslation(o.x,o.y,o.z)); BL.matrixWorldNeedsUpdate=true; };
-  const body=MERCH.add({key:'bigcat',label:'THE BIG CAT',height:2.3,model,size:45,q:.75,at:100,idle:()=>MERCH.pose({bend:0,nod:0}),after:(B,N)=>blink(N)});
+  const body=MERCH.add({key:'bigcat',label:'THE BIG CAT',height:2.3,model,size:45,q:.75,at:100,idle:()=>MERCH.pose({bend:0,nod:0})});
   const N=BIGCAT.N=body&&body.npc;
   // his walk (owner, 11 Nov 2026): every 3 to 10 minutes he walks slowly down Market St's road end to end in the lane of his way, one way then the other (the traffic waits behind him), on the shared clock; away between walks
   const B=SHARED.BOD, M0=TILE/.84, xW=B.XS(-129), xE=B.XS(261), zs=B.ZS(B.CURB), zp=B.ZS(B.FAR), zm=(zs+zp)/2, WV=.7*M0, WD=(xE-xW)/WV, WP=390+WD, hs=n=>{ const v=Math.sin(n*12.9898)*43758.5453; return v-Math.floor(v); };
   const walkAt=t=>{ const n=Math.floor(t/WP); for(const k of [n+1,n,n-1]){ const u=t-(k*WP+(hs(k)-.5)*210); if(u>=0&&u<WD)return k&1?{x:xE-u*WV,to:xW,z:(zs+zm)/2,dir:-1}:{x:xW+u*WV,to:xE,z:(zp+zm)/2,dir:1}; } return null; };
   if(N){ N.walk.auto=false; const st=N.st; N.mode='hidden';
-    SYS.add('city',()=>{ if(BL&&BL.visible&&performance.now()/1000-bt>.2)BL.visible=false; const w=walkAt(TRAINS.now()); if(!w){ N.mode='hidden'; st.to=null; return; } delete N.mode; st.x=w.x; st.z=w.z; st.to={x:w.to,z:w.z}; st.next=null; },'111ei-bigcat'); }
+    SYS.add('city',()=>{ const w=walkAt(TRAINS.now()); if(!w){ N.mode='hidden'; st.to=null; if(BL)BL.visible=false; return; } delete N.mode; st.x=w.x; st.z=w.z; st.to={x:w.to,z:w.z}; st.next=null; if(Math.hypot(pos.x-st.x,pos.z-st.z)<40)blink(N); else if(BL)BL.visible=false; },'111ei-bigcat'); }
   BIGCAT.walkAt=walkAt; BIGCAT.lids=()=>BL; BIGCAT.road=()=>N&&N.mode!=='hidden'?walkAt(TRAINS.now()):null;
   window.BIGCATDBG=(x,z)=>{ if(x==='blink'){ nb=0; return; } if(N&&x!=null){ Object.assign(N.st,{x,z,to:null,next:null}); } if(N&&BL&&x==null&&z===undefined){} return N?{x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),vis:N.g.visible,tris:body.tris(),lid:BL&&(()=>{ BL.updateMatrixWorld(true); const v=BL.children[0].getWorldPosition(new THREE.Vector3()), e=MERCH.at(N,'hips',[.3,1,.5],new THREE.Vector3()); return {on:BL.visible,d:+v.distanceTo(e).toFixed(3),y:+v.y.toFixed(1)}; })()}:null; }; }
 export {BIGCAT};

@@ -6227,3 +6227,4 @@ Owner: "what polyfork animations do we have for our character", then "yes lets u
 - 11 Nov 2026, portals show the other side (owner: "make the portal show the other side"; of a live view or a still picture: "Live view"): looking into a portal shows, live, what is above the other one, as if from under it; drawn small, only for a pair in your place, near and on screen; otherwise the hole.
 - 11 Nov 2026, the traffic waits for THE BIG CAT (owner: "make cars wait behind him"): on his walk he keeps to the lane of his way, and the cars in it wait behind him.
 - 11 Nov 2026, THE BIG CAT blinks (owner: "make him blink"): every few seconds both lids sweep down over his eyes and up.
+- 11 Nov 2026, names without THE / A (owner: "remove THE & A from all the items and locations, alphabetical sort without those types of prefix words"): item names, the GO TO lists and the map show places and things without a leading THE, A or AN, sorted A to Z by what is left (`TEXT.bare`).

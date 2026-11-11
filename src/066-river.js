@@ -73,7 +73,7 @@ const SURF=(()=>{ const T=TILE, MPU=.84/T, NW=8, GLN=`float rh(vec2 p){ p=fract(
 const SH={uPier:{value:new THREE.Vector4(1e9,1e9,1e9,1e9)},uMe:{value:new THREE.Vector2()},uT:{value:0},uSunD:{value:new THREE.Vector3()},uSunC:{value:new THREE.Color()},uAmb:{value:new THREE.Color()},uSkyH:{value:new THREE.Color()},uSkyZ:{value:new THREE.Color()},uCamD:{value:new THREE.Vector3()},uLP:{value:Array.from({length:8},()=>new THREE.Vector3())},uLC:{value:Array.from({length:8},()=>new THREE.Vector3())},uStep:{value:0},uRipOn:{value:0},uUW:{value:0},uUWF:{value:1},uUWC:{value:new THREE.Color()}};
 const WATERS=[
  {key:'a',name:'A · HUDSON',desc:'The Hudson by the pier: dark, a slow low swell.',
-  sig:[0.62,0.24,0.26],scat:[0.008,0.026,0.018],deep:7,bed:0,foam:0.06,refr:.7,refl:.2,hi:[.07,.17,.08],tm:.55,fish:false,far:[.014,.03,.02],sky:.16,   // dark: nothing seen down in it (owner, 5 Nov 2026)
+  sig:[0.62,0.24,0.26],scat:[0.02,0.075,0.08],deep:7,bed:0,foam:0.06,refr:.7,refl:.2,hi:[.07,.17,.08],tm:.55,fish:false,far:[.03,.075,.08],sky:.16,   // murky: nothing seen down in it, but a deep green-blue from above
   waves:[[8,0.035,265,.25],[4.6,0.022,250,.3],[2.8,0.012,285,.3],[1.7,0.006,240,.3]],fft:{wind:5,fetch:6,scale:.5,swell:0,chop:.7}},
  {key:'b',name:'B · OPEN SEA',desc:'A long swell under a wind sea: crests a metre high that break white. A rock bed.',
   sig:[0.3,0.06,0.045],scat:[0.03,0.13,0.26],deep:8,bed:1,foam:1,refr:1.2,far:[.06,.16,.2],sky:.32,
@@ -195,6 +195,7 @@ RIVER.build=()=>{ if(RIVER.on)return; const n0=scene.children.length; const R=RI
     { const w=new THREE.Mesh(new THREE.PlaneGeometry(lx1-lx0,H),wm); w.position.set((lx0+lx1)/2,-H/2,rz1); w.rotation.y=Math.PI; w.receiveShadow=true; scene.add(w); RIVER.wallN=w; } RIVER.wallS=null;
     { const CU=new THREE.MeshBasicMaterial({color:new THREE.Color(.03,.08,.1),side:THREE.DoubleSide}), HU=200*WU, cu=(w,x,z,ry)=>{ const m=new THREE.Mesh(new THREE.PlaneGeometry(w,HU),CU); m.position.set(x,LV-.1*T-HU/2,z); m.rotation.y=ry; m.userData.anyRoom=true; scene.add(m); return m; };   // under the surface only: the far edge and both ends closed below, so the clear water never shows the empty space past them
       RIVER.curtain=[cu(lx1-lx0,(lx0+lx1)/2,rz0,0),cu(rz1-rz0,lx0,(rz0+rz1)/2,Math.PI/2),cu(rz1-rz0,lx1,(rz0+rz1)/2,Math.PI/2)]; } }
+  const seal=new THREE.Mesh(new THREE.PlaneGeometry(lx1-lx0,rz1-rz0).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0,fog:false})); seal.position.set((lx0+lx1)/2,LV-60*WU,(rz0+rz1)/2); seal.frustumCulled=false; scene.add(seal); RIVER.seal=seal;   // under the deepest bed: where no bed is drawn the water shows its own colour, never the haze past it
   const selfLit=m=>{ m.onBeforeCompile=sh=>{ sh.fragmentShader=sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*.5;'); }; return m; };
   const cope=new THREE.Mesh(new THREE.BoxGeometry(lx1-lx0,.12*T,.45*T),selfLit(new THREE.MeshLambertMaterial({color:0x8c8a82}))); cope.position.set((lx0+lx1)/2,.06*T-.5*ZU,rz1+.22*T); cope.receiveShadow=true; scene.add(cope);
   const LAD=[]; for(let x=fx0+10*T;x<fx1-4*T;x+=10*T)LAD.push(x); RIVER.ladders=LAD;   // ladders close along the quay so one is always within reach
@@ -280,7 +281,7 @@ RIVER.build=()=>{ if(RIVER.on)return; const n0=scene.children.length; const R=RI
     const cx=snapX(pos.x); if(Math.abs(cx-RIVER.cx)>1){ RIVER.cx=cx; buildBed(); setFlats(); surf.position.set(cx,LV,(rz0+rz1)/2); SU.uWin.value.set(cx-WIN/2,cx+WIN/2,0,0); SU.uBedR.value.set(cx-WIN/2,rz0,WIN,DZ); }
     const real=way!=='flat'; surf.visible=up&&real; bed.visible=up&&real; flatL.visible=flatR.visible=up&&real; flatAll.visible=up&&!real; junk.visible=grass.visible=up&&real;
     if(!RIVER.deep&&up&&RIVER.over(pos.x,pos.z)&&(pos.z<rz1-10*T||RIVER.swim&&RIVER.dep>2.5))RIVER.load();
-    RIVER.wallN.visible=up; if(RIVER.sea)RIVER.sea.visible=up; for(const c of RIVER.curtain)c.visible=up; cope.visible=RIVER.kit.visible=spm.visible=up; for(const B of BUOYS)B.m.visible=B.ln.visible=up;
+    RIVER.wallN.visible=up; seal.visible=up; { const k=SU.uScat.value, a=SU.uAmb.value, c=SU.uSunC.value, sy=Math.max(SU.uSunD.value.y,0)*.6; seal.material.color.setRGB(k.x*(a.r*.8+c.r*sy)*1.25,k.y*(a.g*.8+c.g*sy)*1.25,k.z*(a.b*.8+c.b*sy)*1.25,THREE.SRGBColorSpace); } if(RIVER.sea)RIVER.sea.visible=up; for(const c of RIVER.curtain)c.visible=up; cope.visible=RIVER.kit.visible=spm.visible=up; for(const B of BUOYS)B.m.visible=B.ln.visible=up;
     surfMat.transparent=way==='swell'; surfMat.depthWrite=way!=='swell'; SU.uMode.value=way==='swell'?1:way==='fluid'?2:0; SU.uStep.value=RIVER.step?1:0;
     SU.uAmp.value=1;
     RIVER.shade(); if(SKY&&SKY.U)FU.uSky.value.copy(SKY.U.uH.value);

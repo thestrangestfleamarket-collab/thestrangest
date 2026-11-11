@@ -121,6 +121,11 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       o.shared = Object.keys(SHARED).length;
       o.lazy = [Object.keys(ROOMS.lazy).length, Object.keys(ROOMS.lazy).filter(k => ROOMS.lazy[k].done)];
       o.queues = BATCH.queues.length;
+      { const img = () => { const d = new ImageData(2, 2); d.data.fill(255); return d; }, q = (x0, x1, z0, z1, y) => ({ pos: [x0, y, z1, x1, y, z1, x1, y, z0, x0, y, z1, x1, y, z0, x0, y, z0], uv: [0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1], cv: img(), kind: 'L' }), ext = (o, a) => Math.max(o.pos[a], o.pos[a + 3], o.pos[a + 6], o.pos[a + 15]) - Math.min(o.pos[a], o.pos[a + 3], o.pos[a + 6], o.pos[a + 15]), area = L => L.reduce((s, o) => s + ext(o, 0) * ext(o, 2), 0);
+        const u = BATCH.uncover([q(0, 4, 0, 4, 0), q(1, 2, 1, 2, 0), q(0, 4, 0, 4, 1)]), holed = q(1, 2, 1, 2, 0); holed.cv.data[3] = 0; const h = BATCH.uncover([q(0, 4, 0, 4, 0), holed]);
+        { const sq = (x0, x1, z0, z1) => [x0, 0, z1, x1, 0, z1, x1, 0, z0, x0, 0, z1, x1, 0, z0, x0, 0, z0], P = [...sq(0, 4, 0, 4), ...sq(1, 2, 1, 2), ...sq(1, 2, 1, 2)], C = P.map((v, i) => i % 3 === 0 ? v / 4 : 1), F = BATCH.unfight(P, { C: [C, 3] }), ar = (Q, a, b) => { let s = 0; for (let i = a * 9; i < b * 9; i += 9) s += Math.abs((Q[i + 3] - Q[i]) * (Q[i + 8] - Q[i + 2]) - (Q[i + 5] - Q[i + 2]) * (Q[i + 6] - Q[i])) / 2; return s; };
+          o.unfight = [+ar(F.P, F.at[0], F.at[2]).toFixed(3), F.at[4] - F.at[2], F.at[6] - F.at[4], +ar(F.P, F.at[4], F.at[6]).toFixed(3), [...F.A.C].every((c, i) => i % 3 || Math.abs(c - F.P[i] / 4) < 1e-5)]; const dn = sq(1, 2, 1, 2), rv = []; for (let t = 0; t < 2; t++) rv.push(...dn.slice(t * 9 + 6, t * 9 + 9), ...dn.slice(t * 9 + 3, t * 9 + 6), ...dn.slice(t * 9, t * 9 + 3)); const G = BATCH.unfight([...sq(0, 4, 0, 4), ...rv]); o.unfight.push(+ar(G.P, G.at[0], G.at[2]).toFixed(3), G.at[4] - G.at[2]); }
+        o.uncover = [u.length, +area(u.slice(0, -2)).toFixed(3), h.length, u.every(x => x.uv.every(v => v >= -1e-6 && v <= 1 + 1e-6))]; }
       o.off = Object.keys(ROOMS.off).map(k => [k, !!ROOMS.lazy[k], !!(ROOMS.off[k].box && ROOMS.off[k].spawn && ROOMS.off[k].out && ROOMS.off[k].build), !!ROOMS.off[k].P]);
       o.doors = HOMES.doors().map(d => d.id); o.shops = HOMESDBG().filter(r => r[1] && r[1] !== '?').length;
       o.offAPI = ['enter', 'enterAt', 'exit', 'goIn', 'goOut', 'offIn', 'boxAt', 'real', 'unstow', 'stowed'].every(k => typeof ROOMS[k] === 'function');
@@ -221,6 +226,8 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.fade === 0, 'no fade is left running after the start');
     ok(r.clamp, 'collision keeps you inside the world');
     ok(r.ledges.includes('up') && r.ledges.every(l => l === 'up' || l === 'down'), 'a ledge too high to step up is one list for every level (MODS.ledges: ' + r.ledges + ')');
+    ok(String(r.unfight) === '15,0,2,1,true,15,0', 'loose triangles: a later one cuts itself out of an earlier one in its plane, a doubled one is dropped, the colours carried over; one resting on another facing it: both lose what they share: ' + r.unfight);
+    ok(String(r.uncover) === '6,15,2,true', 'a later flat face cuts its rectangle out of an earlier one in its plane (a hole-free picture only), the rest kept with its picture: ' + r.uncover);
     ok(r.queues >= 2, 'the far painting queues are there (bodega ground, park wall): ' + r.queues);
     ok(r.lazy[0] >= 3 && !r.lazy[1].length, 'no inside of a building is built at the start (' + r.lazy[0] + ' insides wait; built: ' + r.lazy[1].join(',') + ')');
     ok(r.offAPI && r.off.length >= 1 && r.off.every(q => q[1] && q[2] && !q[3]), 'insides off the map: each one waits (box, spawn, way out, builder) and none is built at the start (' + r.off.map(q => q[0]).join(',') + ')');

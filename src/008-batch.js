@@ -7,13 +7,59 @@ window.BATCH=BATCH;
 const OBJS=[]; const OBJ=(place,name)=>{ const o={id:place+':'+OBJS.length,place,name,parts:[]}; OBJS.push(o); return o; };
 BATCH.all=(M,k)=>Object.keys(M||{}).filter(q=>q===k||q.startsWith(k+'~')).map(q=>M[q]);
 BATCH.add=(pos,uv,cv,ecv,kind)=>{ BATCH.items.push({pos,uv,cv,ecv,kind,obj:BATCH.tag}); };
+// no two faces in one place (6 Nov 2026 rule): a later flat face cuts its rectangle out of any earlier one lying in its plane and facing its way, so the two never fight for the same pixels
+BATCH.TOL=.003;
+BATCH.uncover=it=>{ const TOL=BATCH.TOL, R=[], B=new Map();
+  const rect=o=>{ const p=o.pos; let ax=-1; for(let a=0;a<3;a++){ let f=true; for(let i=3;i<18;i+=3)if(Math.abs(p[i+a]-p[a])>1e-5){ f=false; break; } if(f){ ax=a; break; } } if(ax<0)return null;
+    const sa=(ax+1)%3, ta=(ax+2)%3, S=[], T=[]; for(let i=0;i<18;i+=3){ S.push(p[i+sa]); T.push(p[i+ta]); } const s0=Math.min(...S), s1=Math.max(...S), t0=Math.min(...T), t1=Math.max(...T); if(s1-s0<1e-4||t1-t0<1e-4)return null;
+    for(let v=0;v<6;v++)if(Math.min(Math.abs(S[v]-s0),Math.abs(S[v]-s1))>1e-5||Math.min(Math.abs(T[v]-t0),Math.abs(T[v]-t1))>1e-5)return null;
+    const ex=(i,a)=>p[i*3+a], ux=ex(1,sa)-ex(0,sa), uy=ex(1,ta)-ex(0,ta), vx=ex(2,sa)-ex(0,sa), vy=ex(2,ta)-ex(0,ta), sg=Math.sign(ux*vy-uy*vx); if(!sg)return null;
+    const C={}; for(let v=0;v<6;v++)C[(S[v]-s0<(s1-s0)/2?0:1)+2*(T[v]-t0<(t1-t0)/2?0:1)]=[o.uv[v*2],o.uv[v*2+1]]; if(!C[0]||!C[1]||!C[2]||!C[3])return null;
+    const aff=Math.abs(C[3][0]-(C[1][0]+C[2][0]-C[0][0]))<1e-4&&Math.abs(C[3][1]-(C[1][1]+C[2][1]-C[0][1]))<1e-4;
+    return {ax,sa,ta,c:p[ax],sg,s0,s1,t0,t1,S,T,C,aff}; };
+  const key=(r,d)=>r.ax+':'+r.sg+':'+(Math.round(r.c/TOL)+d), OP=new Map(), solid=o=>{ const cv=o.cv; if(OP.has(cv))return OP.get(cv); const D=cv instanceof ImageData?cv.data:cv.getContext('2d').getImageData(0,0,cv.width,cv.height).data; let f=true; for(let q=3;q<D.length;q+=4)if(D[q]<128){ f=false; break; } OP.set(cv,f); return f; };   // a cutter with holes (a railing, a leaf) cuts nothing
+  it.forEach((o,i)=>{ const r=rect(o); R.push(r); if(r){ const k=key(r,0); (B.get(k)||B.set(k,[]).get(k)).push(i); } });
+  const out=[];
+  it.forEach((o,i)=>{ const r=R[i]; if(!r||!r.aff){ out.push(o); return; } let P=[[r.s0,r.s1,r.t0,r.t1]];
+    for(let d=-1;d<=1&&P.length;d++)for(const j of B.get(key(r,d))||[]){ if(j<=i||!P.length)continue; const q=R[j]; if(Math.abs(q.c-r.c)>TOL||q.s1<=r.s0||q.s0>=r.s1||q.t1<=r.t0||q.t0>=r.t1||!solid(it[j]))continue;
+      const N=[]; for(const [a0,a1,b0,b1] of P){ const c0=Math.max(a0,q.s0), c1=Math.min(a1,q.s1), e0=Math.max(b0,q.t0), e1=Math.min(b1,q.t1); if(c1-c0<1e-4||e1-e0<1e-4){ N.push([a0,a1,b0,b1]); continue; }
+        if(c0-a0>1e-4)N.push([a0,c0,b0,b1]); if(a1-c1>1e-4)N.push([c1,a1,b0,b1]); if(e0-b0>1e-4)N.push([c0,c1,b0,e0]); if(b1-e1>1e-4)N.push([c0,c1,e1,b1]); } P=N; }
+    if(P.length===1&&P[0][0]===r.s0&&P[0][1]===r.s1&&P[0][2]===r.t0&&P[0][3]===r.t1){ out.push(o); return; }
+    const uv=(s,t)=>{ const fs=(s-r.s0)/(r.s1-r.s0), ft=(t-r.t0)/(r.t1-r.t0), C=r.C; return [C[0][0]+fs*(C[1][0]-C[0][0])+ft*(C[2][0]-C[0][0]),C[0][1]+fs*(C[1][1]-C[0][1])+ft*(C[2][1]-C[0][1])]; };
+    for(const [a0,a1,b0,b1] of P){ const pos=o.pos.slice(), U=o.uv.slice(); for(let v=0;v<6;v++){ const s=r.S[v]-r.s0<(r.s1-r.s0)/2?a0:a1, t=r.T[v]-r.t0<(r.t1-r.t0)/2?b0:b1; pos[v*3+r.sa]=s; pos[v*3+r.ta]=t; const w=uv(s,t); U[v*2]=w[0]; U[v*2+1]=w[1]; }
+      out.push({...o,pos,uv:U}); } });
+  return out; };
+// the same rule for loose triangles (a builder's own merged soup): P its positions (three a corner, no index), A {name:[array,size]} the other corners' values; a later triangle cuts itself out of any earlier one in its plane facing its way; two facing each other (one solid resting on another) both lose what they share, which is inside; returns {P,A,at} (the same arrays and no at when nothing met)
+BATCH.unfight=(P,A={},opp=true)=>{ const TOL=BATCH.TOL, n=P.length/9, N=[], D=[], B=new Map(), BX=[], drop=new Uint8Array(n), keys=Object.keys(A); let any=false;
+  for(let i=0;i<n;i++){ const o=i*9, ux=P[o+3]-P[o], uy=P[o+4]-P[o+1], uz=P[o+5]-P[o+2], vx=P[o+6]-P[o], vy=P[o+7]-P[o+1], vz=P[o+8]-P[o+2]; let x=uy*vz-uz*vy, y=uz*vx-ux*vz, z=ux*vy-uy*vx; const l=Math.hypot(x,y,z); if(l<1e-9){ N.push(null); D.push(0); BX.push(null); continue; }
+    x/=l; y/=l; z/=l; N.push([x,y,z]); const d=x*P[o]+y*P[o+1]+z*P[o+2]; D.push(d); BX.push([Math.min(P[o],P[o+3],P[o+6]),Math.min(P[o+1],P[o+4],P[o+7]),Math.min(P[o+2],P[o+5],P[o+8]),Math.max(P[o],P[o+3],P[o+6]),Math.max(P[o+1],P[o+4],P[o+7]),Math.max(P[o+2],P[o+5],P[o+8])]);
+    const k=Math.round(x*200)+','+Math.round(y*200)+','+Math.round(z*200)+','+Math.round(d/TOL); (B.get(k)||B.set(k,[]).get(k)).push(i); }
+  const near=(i,s)=>{ const [x,y,z]=N[i].map(v=>v*s), d=D[i]*s, r=[]; for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)for(let dz=-1;dz<=1;dz++)for(let dd=-1;dd<=1;dd++){ const L=B.get((Math.round(x*200)+dx)+','+(Math.round(y*200)+dy)+','+(Math.round(z*200)+dz)+','+(Math.round(d/TOL)+dd)); if(L)for(const j of L)if(s<0||j>i)r.push(j); } return r; };
+  const area=p=>{ let s=0; for(let k=0;k<p.length;k++){ const a=p[k], b=p[(k+1)%p.length]; s+=a[0]*b[1]-b[0]*a[1]; } return s/2; };
+  const clip=(p,a,b,sg,keepIn)=>{ const f=q=>sg*((b[0]-a[0])*(q[1]-a[1])-(b[1]-a[1])*(q[0]-a[0])), out=[]; for(let k=0;k<p.length;k++){ const P0=p[k], P1=p[(k+1)%p.length], f0=f(P0), f1=f(P1), i0=keepIn?f0>=0:f0<0, i1=keepIn?f1>=0:f1<0; if(i0)out.push(P0); if(i0!==i1){ const t=f0/(f0-f1); out.push([P0[0]+t*(P1[0]-P0[0]),P0[1]+t*(P1[1]-P0[1])]); } } return out; };
+  const pieces=new Map(); let np=0;
+  for(let i=0;i<n;i++){ if(!N[i])continue; const [x,y,z]=N[i], ax=Math.abs(x)>=Math.abs(y)&&Math.abs(x)>=Math.abs(z)?0:Math.abs(y)>=Math.abs(z)?1:2, s0=(ax+1)%3, s1=(ax+2)%3, o=i*9, b=BX[i], q=v=>[P[v*3+s0],P[v*3+s1]];
+    let L=null;
+    for(const j of opp?near(i,1).concat(near(i,-1)):near(i,1)){ const nj=N[j], dn=nj[0]*x+nj[1]*y+nj[2]*z; if(Math.abs(dn)<.9999||Math.abs(D[j]-Math.sign(dn)*D[i])>TOL)continue; const c=BX[j]; if(c[0]>b[3]+TOL||c[3]<b[0]-TOL||c[1]>b[4]+TOL||c[4]<b[1]-TOL||c[2]>b[5]+TOL||c[5]<b[2]-TOL)continue;
+      if(!L)L=[[q(i*3),q(i*3+1),q(i*3+2)]]; const C=[q(j*3),q(j*3+1),q(j*3+2)], sg=area(C)>0?1:-1, nl=[];
+      for(const p of L){ let rest=p; const bits=[]; for(let e=0;e<3&&rest.length>2;e++){ const a=C[e], bb=C[(e+1)%3], out=clip(rest,a,bb,sg,false); if(out.length>2&&Math.abs(area(out))>1e-7)bits.push(out); rest=clip(rest,a,bb,sg,true); }
+        if(rest.length<3||Math.abs(area(rest))<1e-6)nl.push(p); else nl.push(...bits); }
+      L=nl; if(!L.length)break; }
+    if(!L)continue; drop[i]=1; any=true; const T=[q(i*3),q(i*3+1),q(i*3+2)], den=(T[1][1]-T[2][1])*(T[0][0]-T[2][0])+(T[2][0]-T[1][0])*(T[0][1]-T[2][1]);
+    const bar=pt=>{ const w0=((T[1][1]-T[2][1])*(pt[0]-T[2][0])+(T[2][0]-T[1][0])*(pt[1]-T[2][1]))/den, w1=((T[2][1]-T[0][1])*(pt[0]-T[2][0])+(T[0][0]-T[2][0])*(pt[1]-T[2][1]))/den; return [w0,w1,1-w0-w1]; };
+    const ps=[]; for(const p of L)for(let k=1;k+1<p.length;k++)ps.push([bar(p[0]),bar(p[k]),bar(p[k+1])]); pieces.set(i,ps); np+=ps.length; }
+  if(!any)return {P,A,at:null};
+  const kept=n-drop.reduce((s,v)=>s+v,0), m=kept+np, at=new Int32Array(n+1), NP=new Float32Array(m*9), NA={}; for(const k of keys)NA[k]=[new Float32Array(m*3*A[k][1]),A[k][1]];
+  let t=0; const put=(i,W)=>{ for(let v=0;v<3;v++){ const w=W[v]; for(let c=0;c<3;c++)NP[(t*3+v)*3+c]=w[0]*P[i*9+c]+w[1]*P[i*9+3+c]+w[2]*P[i*9+6+c]; for(const k of keys){ const [S,sz]=A[k], [O]=NA[k]; for(let c=0;c<sz;c++)O[(t*3+v)*sz+c]=w[0]*S[(i*3)*sz+c]+w[1]*S[(i*3+1)*sz+c]+w[2]*S[(i*3+2)*sz+c]; } } t++; };
+  const I3=[[1,0,0],[0,1,0],[0,0,1]]; for(let i=0;i<n;i++){ at[i]=t; if(!drop[i])put(i,I3); else for(const W of pieces.get(i))put(i,W); } at[n]=t;
+  for(const k of keys)NA[k]=NA[k][0]; return {P:NP,A:NA,at}; };   // at[i]: where the i-th triangle's pieces start now
 BATCH.build=(make)=>{ const it=BATCH.items; if(!it.length)return; const AW=2048;
   for(const o of it)if(o.cv.width+2>AW)console.warn('BATCH: a picture '+o.cv.width+' wide, over the atlas ('+AW+'): split it');
   const MAXH=BATCH.MAXH||8192, KS={}; it.forEach((o,i)=>(KS[o.kind]||(KS[o.kind]=[])).push(i)); let x=0, y=0, sh=0, pg=0; const PH=[];
   const fit=(L,x,y,sh)=>{ for(const i of L){ const w=it[i].cv.width+2, h=it[i].cv.height+2; if(x+w>AW){ x=0; y+=sh; sh=0; } if(y+h>MAXH)return false; x+=w; sh=Math.max(sh,h); } return true; };
   for(const k in KS){ const L=KS[k].sort((a,b)=>it[b].cv.height-it[a].cv.height); if(y+sh>0&&!fit(L,x,y,sh)&&fit(L,0,0,0)){ PH[pg]=y+sh; pg++; x=0; y=0; sh=0; }
     for(const i of L){ const o=it[i], w=o.cv.width+2, h=o.cv.height+2; if(x+w>AW){ x=0; y+=sh; sh=0; } if(y+h>MAXH&&y>0){ PH[pg]=y+sh; pg++; x=0; y=0; sh=0; } o.ax=x; o.ay=y; o.pg=pg; x+=w; sh=Math.max(sh,h); } }
-  PH[pg]=y+sh; let AHs=[];
+  PH[pg]=y+sh; let AHs=[]; { const u=BATCH.uncover(it); it.length=0; for(const o of u)it.push(o); }
   for(let p=0;p<=pg;p++){ const ip=it.filter(o=>o.pg===p); if(!ip.length)continue;
   const AH=PH[p], atlas=document.createElement('canvas'); atlas.width=AW; atlas.height=AH; const AD=new ImageData(AW,AH); AHs.push(AH);
   const anyE=ip.some(o=>o.ecv), eat=anyE?document.createElement('canvas'):null, ED=anyE?new ImageData(AW,AH):null; if(eat){ eat.width=AW; eat.height=AH; for(let q=3;q<ED.data.length;q+=4)ED.data[q]=255; }

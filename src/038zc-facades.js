@@ -1,6 +1,6 @@
 // FACADES: a street building's outside modelled, not painted (owner, 8 Nov 2026): solid walls in plain colours, real window openings with frames, sills, lintels, glass and a drawn shade behind it, the room's dark beyond, lit warm at night; string courses, a cornice and a parapet; a shop window left open for its real glass (WINDOWS.pane) and a door.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, pos} from './003b-systems.js';
+import {BATCH, CLOCK, pos} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {SYS, TILE} from './006-map-pre.js';
 const FACADES={night:{value:0},made:0,tris:0,near:[]};
@@ -119,11 +119,11 @@ const FACADES={night:{value:0},made:0,tris:0,near:[]};
       for(let i=1;i<nb;i++){ const u=b0+i*bay; if(o.door&&Math.abs(u-o.door.u)<dw)continue; box(u-.12,u+.12,y1-.02,y1+.06,RU,TOP,ST,.84); for(const h of holes)if(h.kind==='win'&&Math.abs((h.u0+h.u1)/2-u)<bay)box(u-.08,u+.08,y1+.06,y1+.09,(h.z0+h.z1)/2-4,(h.z0+h.z1)/2+4,ST,.95); }
       for(let u=x0+.25;u<x1-.3;u+=.3)box(u,u+.13,y1-.02,y1+.1,TOP-6,TOP,ST,.9); for(let u=x0+.4;u<x1-.4;u+=1.1)box(u,u+.16,y1-.02,y1+.28,TOP+6,TOP+14,ST,.8);
       box(x0,x1,y1-.02,y1+.12,RU-4,RU,ST,1.04); T={P,C,G}; }
-    const g=new THREE.Group(), geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('color',new THREE.Float32BufferAttribute(C,3)); geo.setAttribute('aGlow',new THREE.Float32BufferAttribute(G,1)); geo.computeVertexNormals();
+    const U=BATCH.unfight(P,{C:[C,3],G:[G,1]}), g=new THREE.Group(), geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(U.P,3)); geo.setAttribute('color',new THREE.Float32BufferAttribute(U.A.C,3)); geo.setAttribute('aGlow',new THREE.Float32BufferAttribute(U.A.G,1)); geo.computeVertexNormals();
     const me=new THREE.Mesh(geo,MS); me.castShadow=me.receiveShadow=true; g.add(me);
     if(GP.length){ const gg=new THREE.BufferGeometry(); gg.setAttribute('position',new THREE.Float32BufferAttribute(GP,3)); gg.computeVertexNormals(); const gm=new THREE.Mesh(gg,MG); gm.renderOrder=2; gm.raycast=()=>{}; g.add(gm); }
     for(const k in TQ){ const q=TQ[k]; if(!q.P.length)continue; const tg=new THREE.BufferGeometry(); tg.setAttribute('position',new THREE.Float32BufferAttribute(q.P,3)); tg.setAttribute('uv',new THREE.Float32BufferAttribute(q.U,2)); tg.computeVertexNormals(); const tm=new THREE.Mesh(tg,tex(k)); tm.castShadow=tm.receiveShadow=true; g.add(tm); FACADES.tris+=q.P.length/9; }
-    if(NEAR.P.length){ const ng=new THREE.BufferGeometry(); ng.setAttribute('position',new THREE.Float32BufferAttribute(NEAR.P,3)); ng.setAttribute('color',new THREE.Float32BufferAttribute(NEAR.C,3)); ng.setAttribute('aGlow',new THREE.Float32BufferAttribute(NEAR.G,1)); ng.computeVertexNormals();
+    if(NEAR.P.length){ const NU=BATCH.unfight(NEAR.P,{C:[NEAR.C,3],G:[NEAR.G,1]}), ng=new THREE.BufferGeometry(); ng.setAttribute('position',new THREE.Float32BufferAttribute(NU.P,3)); ng.setAttribute('color',new THREE.Float32BufferAttribute(NU.A.C,3)); ng.setAttribute('aGlow',new THREE.Float32BufferAttribute(NU.A.G,1)); ng.computeVertexNormals();
       const nm=new THREE.Mesh(ng,MS); nm.castShadow=nm.receiveShadow=true; const ngp=new THREE.Group(); ngp.add(nm); g.add(ngp); const c=W((x0+x1)/2,y1,0); FACADES.near.push({g:ngp,x:c[0],z:c[2],r:(RI.near||40)*TILE+(x1-x0)/2*TILE}); FACADES.tris+=NEAR.P.length/9; }
     g.userData.facade=o.id||1; (o.parent||scene).add(g); FACADES.made++; FACADES.tris+=P.length/9+GP.length/9; return g; };
 }

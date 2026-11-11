@@ -1,6 +1,6 @@
 // THE FISH MARKET (owner, 9 Nov 2026, after New York's Fulton Fish Market of the 1980s): the Hudson row east of the way through, from data/world.json's fishmarket place: the truck yard, the tin shed (1907) and the brick shed (1939), open to the street, their wholesalers' stalls, the elevated highway on its steel bents over the promenade, and Polyfork's things stood about it (data/fishprops.json, tools/fishprops-bake.py); a stall's counter opens its wholesaler's shop (characters.json, trade).
 import {SHARED, THREE} from './003-shx.js';
-import {pos, SHOPS, UI, WEEDS} from './003b-systems.js';
+import {BATCH, pos, SHOPS, UI, WEEDS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {BLOCK, FIX, LEVEL, MAPG, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {FACADES} from './038zc-facades.js';
@@ -110,7 +110,7 @@ const FISHMKT={tris:0,things:[],stalls:[],sol:[],made:false};
           for(let i=0;i<24;i++){ g.fillStyle=`rgba(20,28,34,${.08+.14*rnd(i,5)})`; g.beginPath(); g.ellipse(rnd(i,6)*N,rnd(i,7)*N,10+30*rnd(i,8),6+14*rnd(i,9),0,0,7); g.fill(); } },true);
       const TOPS=FISHMKT.tops={}, MAT={pl:glow(new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide})),tin:glow(new THREE.MeshLambertMaterial({vertexColors:true,map:corr,side:THREE.DoubleSide})),
         brick:glow(new THREE.MeshLambertMaterial({vertexColors:true,map:HUDSHOP.brick()})),cob:glow(new THREE.MeshLambertMaterial({vertexColors:true,map:cob}))};
-      for(const z in ZN)for(const k in ZN[z]){ const A=ZN[z][k], g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(A.P,3)); g.setAttribute('uv',new THREE.Float32BufferAttribute(A.U,2)); g.setAttribute('color',new THREE.Float32BufferAttribute(A.C,3)); g.setAttribute('aGlow',new THREE.Float32BufferAttribute(A.G,1)); g.computeVertexNormals();
+      for(const z in ZN)for(const k in ZN[z]){ const A0=ZN[z][k], F=BATCH.unfight(A0.P,{U:[A0.U,2],C:[A0.C,3],G:[A0.G,1]}), A={P:F.P,...F.A}, g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(A.P,3)); g.setAttribute('uv',new THREE.Float32BufferAttribute(A.U,2)); g.setAttribute('color',new THREE.Float32BufferAttribute(A.C,3)); g.setAttribute('aGlow',new THREE.Float32BufferAttribute(A.G,1)); g.computeVertexNormals();
         const me=new THREE.Mesh(g,MAT[k]); me.name='fishmarket-'+z+'-'+k; me.castShadow=k!=='cob'; me.receiveShadow=true; G.add(me); FISHMKT.tris+=A.P.length/9; delete ZN[z][k];
         if(z.endsWith('^')){ g.computeBoundingBox(); const b=g.boundingBox, t=TOPS[z]||(TOPS[z]={r:[1e9,1e9,-1e9,-1e9],me:[]}); t.r=[Math.min(t.r[0],b.min.x-T),Math.min(t.r[1],b.min.z-T),Math.max(t.r[2],b.max.x+T),Math.max(t.r[3],b.max.z+T)]; t.me.push(me); } }
       // the boards: hand-painted names, one picture for all of them
@@ -130,7 +130,7 @@ const FISHMKT={tris:0,things:[],stalls:[],sol:[],made:false};
     const props=D=>{ const M=T/.84, mt=new THREE.MeshLambertMaterial({vertexColors:true,flatShading:true}), by={}, GEO={}, CH=FISHMKT.chunks={}, CW=34, m4=new THREE.Matrix4(), q=new THREE.Quaternion(), Y=new THREE.Vector3(0,1,0), one=new THREE.Vector3(1,1,1), c=new THREE.Color(); for(const p of PR){ const k=Math.floor((p[1]-P.x0)/CW)+'|'+p[0]; (by[k]=by[k]||[]).push(p); }   // in stretches of 34 tiles, each drawn only while you are near it
       for(const kk in by){ const [ci,k]=kk.split('|'), d=D[k]; if(!d)continue; if(!GEO[k]){ const qv=new Int16Array(Uint8Array.from(atob(d.p),ch=>ch.charCodeAt(0)).buffer), col=Uint8Array.from(atob(d.c),ch=>ch.charCodeAt(0)), b=d.b, Pp=new Float32Array(qv.length), C=new Float32Array(col.length);
         for(let i=0;i<qv.length;i++){ const a=i%3; Pp[i]=(b[a]+(qv[i]+32768)/65535*(b[a+3]-b[a]))*M; } for(let i=0;i<col.length;i+=3){ c.setRGB(col[i]/255,col[i+1]/255,col[i+2]/255,THREE.SRGBColorSpace); C[i]=c.r; C[i+1]=c.g; C[i+2]=c.b; }
-        const g0=new THREE.BufferGeometry(); g0.setAttribute('position',new THREE.Float32BufferAttribute(Pp,3)); g0.setAttribute('color',new THREE.Float32BufferAttribute(C,3)); g0.computeVertexNormals(); GEO[k]=g0; }
+        const F=BATCH.unfight(Pp,{C:[C,3]}), g0=new THREE.BufferGeometry(); g0.setAttribute('position',new THREE.Float32BufferAttribute(F.P,3)); g0.setAttribute('color',new THREE.Float32BufferAttribute(F.A.C,3)); g0.computeVertexNormals(); GEO[k]=g0; }
         const g=GEO[k], me=new THREE.InstancedMesh(g,mt,by[kk].length), cg=CH[ci]||(CH[ci]={g:new THREE.Group(),x:XS(P.x0+(+ci+.5)*CW),z:ZS((P.y0+HW.y0)/2),tris:0}); if(!cg.g.parent){ cg.g.name='fishmarket-props-'+ci; FISHMKT.group.add(cg.g); } by[kk].forEach((p,i)=>me.setMatrixAt(i,m4.compose(new THREE.Vector3(XS(p[1]),p[4],ZS(p[2])),q.setFromAxisAngle(Y,p[3]*Math.PI/180),one))); me.name='fishmarket-'+k; me.castShadow=me.receiveShadow=true; me.computeBoundingSphere(); cg.g.add(me); cg.tris+=g.attributes.position.count/3*by[kk].length; }
       FISHMKT.props=PR.length; FISHMKT.propTris=Object.values(CH).map(c=>Math.round(c.tris)); };
     SYS.onStart(()=>{ try{ build(); }catch(e){ console.warn('FISHMKT',e); } PROPS().then(props).catch(e=>console.warn('FISHMKT props',e)); },'111fc-fishmarket');

@@ -113,7 +113,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   UI.inIso=()=>{ UI.setView('iso'); requestAnimationFrame(()=>requestAnimationFrame(()=>UI.isoTo())); };   // going into an inside starts in the overhead view at the room's angle
   UI.turn4=()=>{ if(UI.view==='first'||UI.view==='follow')return; if(UI.view==='iso'){ UI.isoStep(-1); return; } SHARED.yawTo=Math.round((SHARED.yawTo-Math.PI/4)/(Math.PI/2))*(Math.PI/2)+Math.PI/4-Math.PI/2; };
   UI.view3=a=>{
-    SHARED.cam=UI.persp?PCAM:OCAM; if(SHARED.RPASS)SHARED.RPASS.camera=SHARED.cam; if(UI.persp&&Math.abs(PCAM.aspect-RW/RH)>1e-3){ PCAM.aspect=RW/RH; PCAM.updateProjectionMatrix(); } };
+    SHARED.cam=UI.persp?PCAM:OCAM; if(SHARED.RPASS)SHARED.RPASS.camera=SHARED.cam; if(UI.persp&&Math.abs(PCAM.aspect-RW/RH)>1e-3){ PCAM.aspect=RW/RH; PCAM.updateProjectionMatrix(); } if(UI.persp){ const n=UI.view==='first'?.05:.15; if(PCAM.near!==n){ PCAM.near=n; PCAM.updateProjectionMatrix(); } } };   // behind you the near plane sits further out: three times the depth buffer's grain for far faces
   UI.view3b=(a,dt)=>{ W3.group.visible=UI.view!=='first'; if(!UI.persp)return; const sk=W3.SZ||1;
     if(UI.distTo==null||UI.dist!==UI._dl)UI.distTo=UI.dist; else UI.dist=Math.abs(UI.distTo-UI.dist)<1e-3?UI.distTo:UI.dist+(UI.distTo-UI.dist)*Math.min(1,(dt||.016)*12); UI._dl=UI.dist;   // a wheel step eases there; anything else that sets the distance is taken as it is
     if(UI.view==='first'&&!UI.owned()){ const f=2*Math.atan(Math.tan(UI.FOV0*Math.PI/360)/UI.fz)*180/Math.PI; if(Math.abs(PCAM.fov-f)>.01){ PCAM.fov+=(f-PCAM.fov)*Math.min(1,(dt||.016)*12); PCAM.updateProjectionMatrix(); } }   // first person's zoom narrows the eye's view

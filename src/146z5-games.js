@@ -98,24 +98,26 @@ const GAMES={}; window.GAMES=GAMES;
     g.fillStyle='#141018'; g.beginPath(); g.arc(-r*.32,-r*.15,r*.11,0,7); g.arc(r*.32,-r*.15,r*.11,0,7); g.fill(); g.fillStyle='#fff'; g.fillRect(-r*.35,-r*.22,1.5,1.5); g.fillRect(r*.29,-r*.22,1.5,1.5);
     if(k===3){ g.fillStyle='#f29a2a'; g.beginPath(); g.ellipse(0,r*.12,r*.3,r*.14,0,0,7); g.fill(); } else { g.fillStyle='#2a1a1a'; g.beginPath(); g.arc(0,r*.1,r*.09,0,7); g.fill(); g.fillStyle='rgba(255,90,120,.35)'; g.beginPath(); g.arc(-r*.55,r*.15,r*.14,0,7); g.arc(r*.55,r*.15,r*.14,0,7); g.fill(); }
     g.restore(); };
-  const settle=(T,dt,held)=>{ for(const t of T)if(t!==held){ t.vy+=900*dt; t.y+=t.vy*dt; t.x+=t.vx*dt; t.vx*=Math.pow(.2,dt); }
-    for(let it=0;it<4;it++)for(let i=0;i<T.length;i++){ const a=T[i]; if(a===held)continue; if(a.y>348-a.r){ a.y=348-a.r; a.vy=0; } if(a.x<80+a.r&&!(a.free&&a.x<72)){ a.x=80+a.r; a.vx=0; } if(a.x>340-a.r){ a.x=340-a.r; a.vx=0; }
-      for(let j=0;j<T.length;j++){ const b=T[j]; if(j===i)continue; const dx=a.x-b.x, dy=a.y-b.y, d=Math.hypot(dx,dy), m=a.r+b.r-2; if(d<m&&d>0){ const k=b===held?1:.5; a.x+=dx/d*(m-d)*k; a.y+=dy/d*(m-d)*k; if(dy<0)a.vy=Math.min(a.vy,0); } } } };
+  const settle=(T,dt,held)=>{ const A=T.filter(t=>t!==held&&!t.zz); for(const t of A){ t.vy+=900*dt; t.ox=t.x; t.oy=t.y; t.y+=t.vy*dt; t.x+=t.vx*dt; t.vx*=Math.pow(.2,dt); }
+    for(let it=0;it<4;it++)for(const a of A){ if(a.y>348-a.r){ a.y=348-a.r; a.vy=0; } if(a.x<80+a.r&&!(a.free&&a.x<72)){ a.x=80+a.r; a.vx=0; } if(a.x>340-a.r){ a.x=340-a.r; a.vx=0; }
+      for(const b of T){ if(b===a)continue; const dx=a.x-b.x, dy=a.y-b.y, d=Math.hypot(dx,dy), m=a.r+b.r-2; if(d<m&&d>0){ const k=b===held||b.zz?1:.5; a.x+=dx/d*(m-d)*k; a.y+=dy/d*(m-d)*k; if(dy<0)a.vy=Math.min(a.vy,0); } } }
+    for(const t of A){ t.still=Math.hypot(t.x-t.ox,t.y-t.oy)<.15?(t.still||0)+1:0; if(t.still>20){ t.zz=true; t.vx=t.vy=0; } } };
+  const wake=(T,t)=>{ for(const b of T)if(b!==t&&b.y<t.y&&Math.abs(b.x-t.x)<b.r+t.r){ b.zz=false; b.still=0; } };
   GAMES.claw=(o={})=>({title:'THE CLAW',w:360,h:420,again:true,help:'Move (mouse or arrows); the claw swings, so let it settle. Click or space to drop. The grip is as good as you centre it; carry it gently over the chute and click to let go. 25 seconds.',
     can:o.can,start:S=>{ if(o.pay)o.pay(); S.tx=210; S.hx=210; S.hv=0; S.cy=56; S.ph='move'; S.time=25; S.held=null; S.open=1; S.lastmx=S.mx;
       S.toys=[]; for(let i=0;i<13;i++)S.toys.push({x:100+rnd()*230,y:120+rnd()*200,vx:0,vy:0,r:13+rnd()*6,k:Math.floor(rnd()*4),c:Math.floor(rnd()*TOYC.length),a:(rnd()-.5)*.5});
-      for(let i=0;i<600;i++)settle(S.toys,1/60,null); for(const t of S.toys){ t.vx=t.vy=0; } S.prize=null; },
+      for(let i=0;i<600;i++)settle(S.toys,1/60,null); for(const t of S.toys){ t.vx=t.vy=0; t.zz=true; } S.prize=null; },
     tick:(S,dt)=>{ const k=S.keys, kl=k.has('arrowleft')||k.has('a'), kr=k.has('arrowright')||k.has('d'); if(kl||kr)S.kb=true; if(S.mx!==S.lastmx){ S.kb=false; S.lastmx=S.mx; }
       settle(S.toys,dt,S.held); if(S.ph!=='done')S.time-=dt;
       const steer=S.ph==='move'||S.ph==='carry', goal=steer?(S.kb?S.tx+(kr-kl)*400:S.mx):S.tx; const want=steer?cl((cl(goal,40,330)-S.tx)*4,-150,150):0; S.tv=(S.tv||0)+cl(want-(S.tv||0),-600*dt,600*dt); S.tx=cl(S.tx+S.tv*dt,40,330);
       S.hv+=((S.tx-S.hx)*26-S.hv*2.2)*dt; S.hx+=S.hv*dt; const tipY=S.cy+24;
-      if(S.held){ const h=S.held; h.x=S.hx; h.y=tipY+h.r-6; h.vx=S.hv; h.vy=0; const shake=Math.abs(S.hv-(S.tv||0))/5; if(rnd()<dt*Math.max(0,(1-S.grip)**2*2+(shake>6?(shake-6)*.08*(1.2-S.grip):0))){ S.held=null; h.vy=40; S.line='IT SLIPS OUT.'; } }
+      if(S.held){ const h=S.held; h.x=S.hx; h.y=tipY+h.r-6; h.vx=S.hv; h.vy=0; const shake=Math.abs(S.hv-(S.tv||0))/5; if(rnd()<dt*Math.max(0,(1-S.grip)**2*2+(shake>6?(shake-6)*.08*(1.2-S.grip):0))){ S.held=null; h.vy=40; h.still=0; S.line='IT SLIPS OUT.'; } }
       if(S.ph==='move'){ S.line=`${Math.ceil(S.time)} S`; if(S.press||S.time<=0){ S.ph='down'; S.open=1; } }
       else if(S.ph==='down'){ S.cy+=170*dt; const t=S.toys.find(t=>Math.abs(t.x-S.hx)<t.r*.9&&tipY>=t.y-t.r); if(t||tipY>=344){ S.ph='close'; S.cl=0; S.target=t; S.aim=t?[t.x-S.hx,S.hv]:null; } }
       else if(S.ph==='close'){ S.cl+=dt; S.open=Math.max(0,1-S.cl*2.5); if(S.cl>.45){ const t=S.target; if(t){ const buried=S.toys.filter(b=>b!==t&&b.y<t.y-t.r*.6&&Math.abs(b.x-t.x)<b.r+t.r-4).length;
-          S.grip=cl(1-Math.abs(S.aim[0])/(t.r*.75)-buried*.35-(t.r-13)*.02-Math.min(.4,Math.abs(S.aim[1])/150),0,1); if(S.grip>.2){ S.held=t; S.line=S.grip>.8?'A GOOD GRIP.':S.grip>.5?'IT HOLDS... FOR NOW.':'BARELY GOT IT.'; } else S.line='THE PRONGS SLIDE OFF.'; } else S.line='NOTHING THERE.'; S.ph='up'; } }
+          S.grip=cl(1-Math.abs(S.aim[0])/(t.r*.75)-buried*.35-(t.r-13)*.02-Math.min(.4,Math.abs(S.aim[1])/150),0,1); if(S.grip>.2){ S.held=t; t.zz=false; wake(S.toys,t); S.line=S.grip>.8?'A GOOD GRIP.':S.grip>.5?'IT HOLDS... FOR NOW.':'BARELY GOT IT.'; } else S.line='THE PRONGS SLIDE OFF.'; } else S.line='NOTHING THERE.'; S.ph='up'; } }
       else if(S.ph==='up'){ S.cy-=130*dt; if(S.cy<=56){ S.cy=56; S.ph=S.held?'carry':'home'; } }
-      else if(S.ph==='carry'){ if(!S.held){ S.ph='home'; } else { S.line=`${Math.ceil(S.time)} S · OVER THE CHUTE, CLICK TO LET GO`; if(S.press||S.time<=0){ S.prize=S.held; S.held=null; S.prize.vy=0; S.prize.free=true; S.open=1; S.ph='home'; } } }
+      else if(S.ph==='carry'){ if(!S.held){ S.ph='home'; } else { S.line=`${Math.ceil(S.time)} S · OVER THE CHUTE, CLICK TO LET GO`; if(S.press||S.time<=0){ S.prize=S.held; S.prize.still=0; S.held=null; S.prize.vy=0; S.prize.free=true; S.open=1; S.ph='home'; } } }
       else if(S.ph==='home'){ S.open=Math.min(1,S.open+dt*2); }
       const p=S.prize; if(p&&p.x<72&&p.y>230){ S.toys.splice(S.toys.indexOf(p),1); S.prize=null; S.won=true; S.ph='done'; S.over='IT DROPS DOWN THE CHUTE. YOURS!'; return; }
       if(S.ph==='home'){ S.ht=(S.ht||0)+dt; if(S.ht>1.6){ S.won=false; S.over=S.line==='IT SLIPS OUT.'?'IT SLIPPED. THE CLAW ALWAYS LETS GO.':'NOTHING THIS TIME.'; } } },

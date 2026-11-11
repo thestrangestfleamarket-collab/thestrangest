@@ -51,7 +51,7 @@ const GHOLD={};
       if(prev&&t-prev.t1<.08){ mix(press(prev),hover(prev),sm((t-prev.t1)/.08),out[f]); continue; }
       const a=(prev?prev.t1:t)+.08, b=(next?next.t0:t+1)-.1; mix(hover(prev||next),hover(next||prev),sm((t-a)/Math.max(.05,b-a)),out[f]); }
     // the thumb behind the neck, under the middle of the hand
-    { const y=pressY(Math.max(1,Math.round(p))+1); out[0].set(-.006,y,NBK(-.006,y)-.0015); }
+    { const y=pressY(Math.max(1,Math.round(p))+1); out[0].set(-.006,y,NBK(-.006,y)-GHOLD.TB); }
     return p; };
   const HOME={p:5,i:3,m:2,a:1}, RD=['p','i','m','a'];
   // the right hand's fingertips (thumb, index, middle, ring): each comes onto its string, pulls through it and lifts back; a strum sweeps the index across them all
@@ -144,7 +144,7 @@ const GHOLD={};
   const KA=new V3(), KB=new V3(), KN=[.035,.01]; GHOLD.KN=KN;
   const CR=[[.011,.009,.008],[.0095,.008,.007],[.0095,.008,.007],[.0095,.008,.007],[.009,.0075,.0065]];   // (each digit's half thickness at its first, second and last bone, from the mesh)
   // the fretting hand turned by its own shape: the knuckles from the little finger to the index along the neck toward the nut, the hand from wrist to knuckles up past the board's edge leaning over it (LEAN), the palm toward the neck
-  const LEAN=[.6,0]; GHOLD.LEAN=LEAN; GHOLD.THO=.02;
+  const LEAN=[.6,0]; GHOLD.LEAN=LEAN; GHOLD.THO=.02; GHOLD.TB=.006;
   const fretAim=(W,Gm)=>{ const R=HANDS.REST, N=HANDS.NAME, at=n=>new V3().setFromMatrixPosition(R[N[n]]), km=at('middle-finger-phalanx-proximal');
     const A=at('index-finger-phalanx-proximal').sub(at('pinky-finger-phalanx-proximal')).normalize(), F=km.sub(at('wrist')); F.addScaledVector(A,-F.dot(A)).normalize(); const P=new V3().crossVectors(F,A);
     const Ag=new V3(0,1,LEAN[1]).normalize(), Fg=new V3(-LEAN[0],0,1); Fg.addScaledVector(Ag,-Fg.dot(Ag)).normalize(); const Pg=new V3().crossVectors(Fg,Ag);
@@ -153,6 +153,8 @@ const GHOLD={};
   const DIRS={Rf:new V3(.85,-.1,-.5),Rd:new V3(.15,.25,1),Lpole:new V3(.35,-1,-.15),Rpole:new V3(-.3,-1,-.45)};   // (the elbows' aims in the body's own frame: +x its left, +y up, +z ahead; the left hangs under the neck, the right rests behind the upper bout)
   GHOLD.DIRS=DIRS; GHOLD.stage=4;   // (for checking the hold a stage at a time: 1 the upper arms out, 2 the elbows bent, 3 the hands turned, fingers open, 4 the fingers placed)
   GHOLD.attach=(me,PM,body,src)=>{ if(!body.binv)return null; const gm=GHOLD.model(); gm.matrixAutoUpdate=false; me.add(gm);
+    // (drawn where the chest is when drawn: a step after the pose that moves the whole body (kept above the ground) takes the guitar with it, so the hands stay where they were set on it)
+    gm.onBeforeRender=()=>{ if(!H.on||!gm.parent)return; gm.matrix.multiplyMatrices(PM.value[1],GB); gm.matrixWorld.multiplyMatrices(gm.parent.matrixWorld,gm.matrix); };
     const restM=body.binv.map(m=>m.clone().invert()), W=restM.map(()=>new M4()), Gm=new M4(), tgL=[0,1,2,3,4].map(()=>new V3()), tgR=[0,1,2,3,4].map(()=>new V3());
     const fg={L:HANDS.R0.map(f=>f.slice()),R:HANDS.R0.map(f=>f.slice())}, W0=restM.map(()=>new M4()), H={me,PM,gm,src,fg,on:true,off:{L:new V3(),R:new V3()},tho:new V3(),ang:{lift:.35,bend:1.6,turn:.9},cang:[0,0,0,0]};
     const toG=(v,o)=>o.copy(v).applyMatrix4(Gm), dirG=(v,o)=>o.copy(v).transformDirection(Gm); let PB=null; const dirB=v=>new V3().copy(v).transformDirection(PB);

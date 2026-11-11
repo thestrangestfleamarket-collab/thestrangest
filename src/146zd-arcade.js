@@ -1,4 +1,4 @@
-// THE ARCADE, FURNISHED: round the owner's cabinets and the holodeck door, what a real arcade has: skee-ball, air hockey and a claw machine (each a game, a token a go), the token machine (tickets won at the games traded for market tokens, 10 for 1), a soda machine, stools at the cabinets; where its staff and its crowd stand or sit.
+// THE ARCADE, FURNISHED: round the owner's cabinets and the holodeck door, what a real arcade has: skee-ball, air hockey and a claw machine (each a game, free play), the token machine (tickets won at the games traded for market tokens, 10 for 1), a soda machine, stools at the cabinets; where its staff and its crowd stand or sit.
 import {THREE} from './003-shx.js';
 import {FORAGE, INV, ROOMS, UI, WORKERS} from './003b-systems.js';
 import {SAY} from './003d-say.js';
@@ -6,23 +6,9 @@ import {scene} from './004-main.js';
 import {STORE, TILE} from './006-map-pre.js';
 import {IKIT} from './038zc-ikit.js';
 import {MINI} from './038zd-mini.js';
-import {MERCH} from './111e-merch.js';
 const ARCADE={}; window.ARCADE=ARCADE;
 { FORAGE.add({names:{arc_token:'A MARKET TOKEN',prize_yoyo:'A YO-YO',prize_ring:'A PLASTIC RING'}});   // the prize tickets and plushes are the fair's (ptix, plush_*)
   const say=(t,c)=>SAY(t,c||'#f2c14e');
-  // TOKEN: a boxy robot with a television for a head, a coin slot and a ticket tongue
-  const tokenbot=()=>{ '@later'; const {mk,grp}=MERCH.K, sk=MERCH.skel({hipY:.55,neck:.42,shX:.2,shY:.36,upper:.2,fore:.18,hipX:.09,thigh:.26,shin:.26}), {B}=sk;
-    const BODY='plastic:#5a2a8a', TEAL='plastic:#2ad0c8', STEEL='metal:#8a8c90', DARK='plastic:#18181a';
-    mk(B.torso,new THREE.BoxGeometry(.4,.42,.3),BODY,[0,.21,0]); mk(B.torso,new THREE.BoxGeometry(.07,.014,.01),STEEL,[0,.33,.152]); mk(B.torso,new THREE.BoxGeometry(.16,.04,.01),DARK,[0,.15,.152]); mk(B.torso,new THREE.BoxGeometry(.05,.1,.004),'plain:#f2c14e',[0,.09,.157]);
-    mk(B.hips,new THREE.BoxGeometry(.32,.12,.26),DARK,[0,-.04,0]);
-    const H=grp(B.head,[0,.15,0]); mk(H,new THREE.BoxGeometry(.32,.26,.26),TEAL); mk(H,new THREE.BoxGeometry(.25,.19,.012),'glass:#0a1a14',[0,0,.131]);
-    for(const s of [1,-1])mk(H,new THREE.BoxGeometry(.035,.035,.006),'plain:#60ff90',[.055*s,.03,.139]); for(const [x,y] of [[-.05,-.035],[-.025,-.05],[0,-.055],[.025,-.05],[.05,-.035]])mk(H,new THREE.BoxGeometry(.022,.016,.006),'plain:#60ff90',[x,y,.139]);
-    mk(H,new THREE.CylinderGeometry(.008,.008,.14,8),STEEL,[.08,.2,0]); mk(H,new THREE.SphereGeometry(.025,10,8),'plain:#ff4fa0',[.08,.28,0]);
-    for(const s of [1,-1]){ const n=s>0?'L':'R';
-      mk(B['upperArm'+n],new THREE.BoxGeometry(.09,.2,.09),BODY,[0,-.1,0]); mk(B['forearm'+n],new THREE.BoxGeometry(.08,.18,.08),TEAL,[0,-.09,0]); mk(B['hand'+n],new THREE.BoxGeometry(.08,.07,.05),STEEL,[0,-.04,0]);
-      mk(B['thigh'+n],new THREE.CylinderGeometry(.05,.045,.26,12),DARK,[0,-.13,0]); mk(B['shin'+n],new THREE.CylinderGeometry(.045,.05,.26,12),STEEL,[0,-.13,0]); mk(B['shoe'+n],new THREE.BoxGeometry(.1,.07,.18),DARK,[0,-.04,.03]); }
-    return sk; };
-  WORKERS.models.w_tokenbot={label:'TOKEN',height:1.2,model:tokenbot,size:6,idle:t=>{ const hand=(t%6)<1.4; return MERCH.pose({nod:Math.sin(t*1.6)*6,yaw:Math.sin(t*.5)*16,L:{ua:[20,10],fa:[40,0]},R:{ua:[hand?100:22,-10],fa:[hand?30:40,0]}}); }};
   // free play; tickets come out of the games and the token machine trades them, 10 for a market token
   const tok=()=>INV.items.arc_token||0, needTok=()=>'', payTok=()=>true;   // free play (owner, 5 Nov 2026)
   const win=n=>{ if(n>0){ INV.add('ptix',n); say(`${n} TICKET${n===1?'':'S'} COME OUT.`); } };

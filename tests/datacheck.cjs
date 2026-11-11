@@ -7,7 +7,7 @@
 const {chromium}=require('playwright'), fs=require('fs');
 // the code's references, checked against the tables before the page runs: every SFX.play('x') a recipe in sfx.js, every LINES.say(N,'x') a pool in lines.js
 const SRC=fs.readdirSync('src').filter(f=>f.endsWith('.js')).map(f=>[f,fs.readFileSync('src/'+f,'utf8')]), one=n=>fs.readFileSync('src/'+fs.readdirSync('src').find(f=>new RegExp('^\\d{3}-'+n+'\\.js$').test(f)),'utf8'), sfxSrc=one('sfx'), linesSrc=one('lines');
-const RECIPES=[...sfxSrc.matchAll(/^\s{4}(\w+):\{len:/gm)].map(m=>m[1]).concat(...['sfx','amb','fight'].map(f=>Object.keys(JSON.parse(fs.readFileSync('data/'+f+'.json','utf8'))))), POOLS=[...linesSrc.matchAll(/^\s{4}(\w+):\[/gm)].map(m=>m[1]);
+const RECIPES=[...sfxSrc.matchAll(/^\s{4}(\w+):\{len:/gm)].map(m=>m[1]).concat(SRC.flatMap(([,s])=>[...s.matchAll(/SFX\.add\('(\w+)'/g)].map(m=>m[1])),...['sfx','amb','fight'].map(f=>Object.keys(JSON.parse(fs.readFileSync('data/'+f+'.json','utf8'))))), POOLS=[...linesSrc.matchAll(/^\s{4}(\w+):\[/gm)].map(m=>m[1]);
 const refs=[]; for(const [f,s] of SRC){ for(const m of s.matchAll(/SFX\.play\('(\w+)'/g))refs.push(['sound',m[1],f]); for(const m of s.matchAll(/LINES\.say\(\w+,'(\w+)'/g))refs.push(['pool',m[1],f]); }
 // every sound file the page plays has a provenance record in data/full/sounds.json (runtime path, source, licence and its snapshot), and every record's files exist
 const SND=(()=>{ const out=[], ext=/\.(mp3|ogg|wav|m4a|opus|webm)$/i, walk=d=>{ for(const f of fs.readdirSync(d)){ const p=d+'/'+f; if(fs.statSync(p).isDirectory()){ if(p!=='data/full')walk(p); } else if(ext.test(f))out.push(p); } }; walk('data'); for(const [f,s] of SRC)for(const m of s.matchAll(/__FILE__\("(data\/[^"]+\.(?:mp3|ogg|wav|m4a|opus|webm))"\)/g))out.push(m[1]); return [...new Set(out)]; })();
@@ -25,16 +25,16 @@ const PROV=JSON.parse(fs.readFileSync('data/full/sounds.json','utf8')).sounds;
   for(const [k,n,f] of refs)ok((k==='sound'?RECIPES:POOLS).includes(n),'the code\'s '+k+' '+n+' ('+f+') is in its table');
   for(const p of SND){ const r=PROV.find(r=>r.runtime===p); ok(!!r&&r.licence&&r.licence.url&&fs.existsSync(r.licence.snapshot)&&(r.source||r.made),'the sound file '+p+' has a provenance record with a licence and its snapshot'); }
   for(const r of PROV)ok(fs.existsSync(r.runtime),'the provenance record '+r.id+' names a file that exists');
-  const r=await pg.evaluate(async()=>{ const out={}, {SAVE,SFX,AMB,LINES,LOOKS,OUTL,DITH,UI}=__dbg, groundY=__dbg.ground;
+  const r=await pg.evaluate(async()=>{ const out={}, {SAVE,SFX,AMB,LINES,LOOKS,OUTL,UI}=__dbg, groundY=__dbg.ground;
     // the save: the old keys gathered, read back as they were, a write read back, the version
     const S=SAVE.all(); out.save={v:S.v,V:SAVE.V,raw:JSON.parse(localStorage.getItem('market-save')||'{}'),left:Object.keys(localStorage).filter(k=>/^(market-|isowalk-)/.test(k)&&k!=='market-save')};
     SAVE.set('probe','x'); out.save.probe=JSON.parse(localStorage.getItem('market-save')).probe; SAVE.del('probe'); out.save.gone=SAVE.get('probe');
-    out.name=LOOKS.L.name; out.dith=DITH; out.outl=OUTL.on;
+    out.name=LOOKS.L.name; out.outl=OUTL.on;
     // the sounds: every recipe a finite, audible buffer; the ambience's names recipes
     const c=SFX.wake(); if(c&&c.state!=='running')await c.resume().catch(()=>{}); out.ctx=c&&c.state;
     out.sfx={}; for(const k of SFX.names()){ const B=SFX.buffer(k,c), D=B.getChannelData(0); let mx=0, fin=true; for(let i=0;i<D.length;i++){ const v=Math.abs(D[i]); if(!isFinite(v)){ fin=false; break; } if(v>mx)mx=v; } out.sfx[k]={n:D.length,mx:+mx.toFixed(3),fin,len:SFX.recipe(k).len}; }
     out.ambNames=[...new Set(Object.values(AMB.sets).flat().map(e=>e[0]))].filter(k=>!SFX.has(k));
-    SFX.mix.fx.click=.5; SFX.saveMix(); out.mix=JSON.parse(JSON.parse(localStorage.getItem('market-save')).sndmix).fx.click; out.mixLvl=SFX.fxLevel('click'); SFX.resetMix(); out.mixReset=SFX.fxLevel('click'); await __dbg.SNDED.open(); out.edRows=document.querySelectorAll('#snded .tp-sldv').length; __dbg.SNDED.close();
+    SFX.mix.fx.click=.5; SFX.saveMix(); out.mix=JSON.parse(JSON.parse(localStorage.getItem('market-save')).sndmix).fx.click; out.mixLvl=SFX.fxLevel('click'); SFX.resetMix(); out.mixReset=SFX.fxLevel('click'); { const d=document.createElement('div'); document.body.appendChild(d); SNDED.panel(d); await new Promise(r=>setTimeout(r,800)); out.edRows=new Set([...d.querySelectorAll('[data-pick]')].map(e=>e.dataset.pick)).size; d.remove(); }
     out.playing=!!SFX.play('click'); out.blipped=(SFX.blip(SFX.voiceOf('tester')),true);
     // the lines: pools, blanks, freshness, a line shown and logged
     out.pools={}; for(const k in LINES.pools){ const P=LINES.pools[k]; out.pools[k]={n:P.length,blanks:[...new Set(P.flatMap(s=>(s.match(/\{\{(\w+)\}\}/g)||[])))]}; }
@@ -53,7 +53,7 @@ const PROV=JSON.parse(fs.readFileSync('data/full/sounds.json','utf8')).sounds;
   ok(r.ambNames.length===0,'every ambience sound is a recipe or a recording'+(r.ambNames.length?' (missing '+r.ambNames.join(', ')+')':''));
   ok(r.playing||r.ctx!=='running','a sound plays when the context runs');
   ok(r.mix===.5&&r.mixLvl===.5&&r.mixReset===1,'the sound editor\'s level is saved, used and reset ('+r.mix+', '+r.mixLvl+', '+r.mixReset+')');
-  ok(r.edRows>=24,'the sound editor shows a row for every sound ('+r.edRows+')');
+  ok(r.edRows>=24,'the sound editor (ADMIN > SOUND EDITOR) shows a row for every sound ('+r.edRows+')');
   for(const k in r.pools){ const p=r.pools[k], min=/^gd:/.test(k)?2:5; ok(p.n>=min&&p.blanks.every(b=>b==='{{name}}'),'lines '+k+': '+p.n+' lines (at least '+min+'), blanks '+(p.blanks.join(' ')||'none')); }   // a guardian's own two lines (data/guardians.json) are a pool too; the shared pools keep five
   ok(r.repeats===0&&r.unfilled===0,'ten picks from greet: no repeat, no blank left ('+r.repeats+' repeats, '+r.unfilled+' unfilled)');
   ok(r.recentN<=14,'the recent list holds at most 14 ('+r.recentN+')');

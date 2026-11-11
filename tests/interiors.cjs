@@ -29,7 +29,7 @@ const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv
   /* ---------- THE ARCADE ---------- */
   // since 7 Nov 2026 the token changer, prize counter and soda machine are archived: the games are free
   { await pg.evaluate(()=>ROOMS.enter('arcade')); await U(()=>ROOMS.offIn&&ROOMS.offIn()==='arcade'&&!(window.FADE&&FADE.busy)&&__dbg.UI.things.some(t=>t.name.startsWith('SKEE-BALL')),180000); await U(()=>WORKERSDBG().some(w=>w.k==='w_tokenbot'&&w.made),60000).catch(()=>{});
-    rec('arcade: TOKEN is made',await pg.evaluate(()=>WORKERSDBG().some(w=>w.k==='w_tokenbot'&&w.made)));
+    rec('arcade: TOKEN is archived (11 Nov 2026), never made',await pg.evaluate(()=>!WORKERSDBG().some(w=>w.k==='w_tokenbot'&&w.made)&&!(window.BODIES&&BODIES.by&&BODIES.by.w_tokenbot)));
     const a=await pg.evaluate(async()=>{ const th=n=>__dbg.UI.things.find(t=>t.name.startsWith(n)), play=n=>{ th(n).act(); const ok=!!MINI.on&&MINI.on.title===n; MINI.close(); return ok; };
       return {skee:play('SKEE-BALL'),claw:play('THE CLAW'),hockey:play('AIR HOCKEY'),cabs:__dbg.UI.things.filter(t=>t.name.startsWith('PLAY ')).length}; });
     rec('arcade: skee-ball, the claw and air hockey play; the cabinets stand',a.skee&&a.claw&&a.hockey&&a.cabs>=6,JSON.stringify(a));

@@ -279,7 +279,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `146hab-firesim.js` | 10.5 | top level |  | 003: SHARED THREE; 003b: LEVELS; 004: renderer scene; 006: MODS TILE |
 | `146hac-flames.js` | 9.7 | top level |  | 003: THREE; 003b: LEVELS; 004: scene; 006: MODS TILE |
 | `146hb-jets.js` | 31.2 | top level |  | 003: SHARED THREE; 003b: BLAZE FORAGE ICE INV LEVELS NPCS ONLINE RAG ROOMS VIT VR W3 WIELD pos st; 003d: SAY; 004: scene; 005: OWNED; 006: MODS QS SYS TILE; 007: FLAME; 066: RIVER |
-| `146hc-arms.js` | 39.4 | top level |  | 003: SHARED THREE; 003b: BLAZE FORAGE INV LEVELS ONLINE PHYS RAG ROOMS SFX UI VIT W3 WIELD pos; 003d: SAY; 004: scene; 005: OWNED; 006: MODS QS SYS TILE; 007: FLAME; 066: RIVER |
+| `146hc-arms.js` | 40.9 | top level |  | 003: SHARED THREE; 003b: BLAZE FORAGE INV LEVELS ONLINE PHYS RAG ROOMS SFX UI VIT W3 WIELD pos; 003d: SAY; 004: scene; 005: OWNED; 006: MODS QS SYS TILE; 007: FLAME; 066: RIVER |
 | `146i-ride.js` | 8.5 | top level |  | 003: SHARED THREE; 003b: CLOCK FORAGE ITEMS LEVELS ONLINE RAG RIDE ROOMS SFX SPEED VIT VLOOK W3 WIELD keys pos st; 003d: SAY; 004: scene; 006: SYS TILE; 075: collide |
 | `146ia-folkbody.js` | 25.9 | top level |  | 003: THREE; 003b: GUARD; 111a: BODIES; 146ha: FOLK |
 | `146ib-tricks.js` | 14.8 | top level |  | 003: SHARED; 003b: ITEMS ONLINE RIDE SPEED TRICKS UI keys pos st; 003d: SAY; 005: OWNED; 006: SECTION SYS TILE ZU; 075: collide; 111fd: SKATE |

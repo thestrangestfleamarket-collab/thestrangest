@@ -15,6 +15,16 @@ Object.assign(LINES,{log:[]});
     thanks:['Thanks, {{name}}.','Much obliged.','There you go.','Read it before the rain does.','Come back tomorrow, it\'s all new.','Keep the change. No, wait.'],
     mushroom:['Mushrooms. Fresh picked.','These ones glow a little.','Try one. Or don\'t.','Found them under the bridge.','Only the red ones bite.','For you, {{name}}, half price.'],
     newscat:['Hmph.','I\'m reading.','Bad news. It\'s all bad news.','Don\'t block my light, {{name}}.','The crossword\'s wrong again.','You again.'],
+    hornman:['Stop right there.','I sell second chances. Used.','Don\'t touch the merchandise.','Bronze is forever, {{name}}.'],
+    localfur:['Don\'t hassle me.','I\'m local.','Shirts. One size. Mine.','Born on this block.'],
+    baghead:['Want a spare?','Heads! Fresh heads!','He talks if you ask nice.','Two for one, {{name}}.'],
+    fishmask:['Blub.','Smile! It\'s free.','The pigeon\'s not for sale.','Big grin, small prices.'],
+    birdman:['Carved it myself.','Birds that never fly off.','Look closer, {{name}}.','Each one has a name.'],
+    octoscoot:['Beep beep!','Can\'t stop!','Eight arms, one scooter.','Out of the way!'],
+    woodman:['Spaghetti.','I\'m always hungry.','Want a bite, {{name}}?','The meatball is mine.'],
+    fryman:['Mmph.','Fries. Only fries.','Don\'t look at me while I eat.','Get your own.'],
+    plushman:['They all need glasses.','Adopt one, {{name}}.','Soft as anything.','This one squeaks.'],
+    potatoalien:['Potatoes.','On my planet these are gold.','I trade for water.','You have a strong earth face.'],
     courier:['Parcel for... no, not you.','Coming through!','Sign here. No, here.','Left at the door, {{name}}. As usual.','Can\'t stop, it\'s fragile.','Beep beep.'],
   };
   const RECENT_MAX=14; let recent=[]; try{ recent=JSON.parse(SAVE.get('recent')||'[]')||[]; }catch(e){ recent=[]; }

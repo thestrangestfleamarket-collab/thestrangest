@@ -150,6 +150,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
   from inside must still show the street. Same visit as the insides.
 - [ ] **The bath house on the island** · P3 · S · look. The steam spilling from its door (his mockup B, 4 Nov) not built; the ghosts
   inside (out, 7 Nov) and the revival in its steam never seen live.
+- [x] **The dungeon's baked torchlight** (owner, 11 Nov 2026: "do the baked torchlight", "yes go") · P2 · M · code + look [taking: claude/affectionate-bell-ftu5zz, 11 Nov]. `src/062e-dunlight.js`, `tests/dunground.cjs`. Waits for his look and yes.
 - [ ] **The castle at night** · P3 · S · look + pick. At the night gate it still looked dark (2 Nov): brighter torches? More light costs
   frames at night.
 

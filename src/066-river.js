@@ -5,7 +5,7 @@ import {scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {BLOCK, FADE, FIX, LEVEL, MODS, OUT, RING, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {OCEAN} from './065b-ocean.js';
-const RIVER={way:'ocean',wi:0,step:true,t:0,on:false};
+const RIVER={way:'fluid',wi:0,step:true,t:0,on:false};
 Object.assign(RIVER,{onBuild:[],pickers:[],feed:()=>false,over:()=>false,clamp:()=>{},tick:()=>{},pre:()=>{},post:()=>{},hud:()=>{},pick:()=>false,swim:false,shown:false}); window.RIVER=MODS.river=RIVER;
 const RIVERG=new THREE.Group(); RIVERG.name='river'; RIVERG.visible=false; scene.add(RIVERG);
 // the water surface's shader, every water's (the river's, the lake's), and what every surface shares (the sun, the sky, the lamps, the clock, FLOW's ripples), kept out here so a lake can wear the river's water before the river is built
@@ -82,7 +82,7 @@ const WATERS=[
   sig:[0.36,0.05,0.04],scat:[0.03,0.34,0.38],deep:8,bed:2,foam:0.15,refr:1.4,far:[.06,.16,.2],sky:.32,
   waves:[[9,0.07,268,.3],[3.5,0.016,240,.4],[2.2,0.01,290,.4],[1.4,0.006,255,.4]],fft:{wind:3.5,fetch:4,scale:.6,swell:.25,swellWind:5,chop:.6}}];
 RIVER.WATERS=WATERS;
-try{ const s=JSON.parse(SAVE.get('river')||'null'); if(s&&s.v>=2){ if(s.v===3)RIVER.way=s.way||RIVER.way; RIVER.wi=s.wi|0; } }catch(e){}
+try{ const s=JSON.parse(SAVE.get('river')||'null'); if(s&&s.v>=2){ if(s.v===4)RIVER.way=s.way||RIVER.way; RIVER.wi=s.wi|0; } }catch(e){}
 const setWater=U=>{ const Wt=WATERS[RIVER.wi]; U.uSig.value.set(...Wt.sig); U.uScat.value.set(...Wt.scat); U.uFoam.value=Wt.foam; U.uRefr.value=Wt.refr; U.uRefl.value=Wt.refl||.45; U.uHi.value.setRGB(...(Wt.hi||[.05,.22,.22])); };
 const SURFS=[]; RIVER.surface=o=>{ '@later'; const U={uFft:{value:0},uUW:SH.uUW,uUWF:SH.uUWF,uUWC:SH.uUWC,uT:SH.uT,uMe:SH.uMe,uPier:SH.uPier,uWA:{value:Array.from({length:SURF.NW},()=>new THREE.Vector4(1,0,0,0))},uWB:{value:Array.from({length:SURF.NW},()=>new THREE.Vector4())},uNW:{value:0},uAmp:{value:1},uWin:{value:new THREE.Vector4(-1e7,1e7,0,0)},uRip:FLOW.tex,uRect:FLOW.rect,uRipOn:SH.uRipOn,uRT:{value:1/FLOW.G},uScene:{value:null},uDepth:{value:null},uRes:{value:new THREE.Vector2(4,4)},uNear:{value:.1},uFar:{value:800},uMode:{value:1},uBed:{value:o.bed},uBedR:{value:o.bedR},
     uSig:{value:new THREE.Vector3()},uScat:{value:new THREE.Vector3()},uFoam:{value:0},uRefr:{value:1},uLv:{value:o.lv},uBank:{value:new THREE.Vector2(-1e7,1e7)},uSunD:SH.uSunD,uSunC:SH.uSunC,uAmb:SH.uAmb,uSkyH:SH.uSkyH,uSkyZ:SH.uSkyZ,uCamD:SH.uCamD,uLP:SH.uLP,uLC:SH.uLC,uStep:SH.uStep,uRefl:{value:.45},uHi:{value:new THREE.Color()}};
@@ -267,7 +267,7 @@ RIVER.build=()=>{ if(RIVER.on)return; const n0=scene.children.length; const R=RI
     return true; };
   RIVER.clamp=pos=>{ const m=.35*T; pos.x=cl(pos.x,lx0+m,lx1-m); pos.z=cl(pos.z,rz0+m,rz1-m); for(const [x,z,r] of POSTS){ const dx=pos.x-x, dz=pos.z-z, d=Math.hypot(dx,dz), R0=r+.3*T; if(d<R0&&d>1e-4){ pos.x=x+dx/d*R0; pos.z=z+dz/d*R0; } } };
 
-  const save=()=>{ try{ SAVE.set('river',JSON.stringify({v:3,way:RIVER.way,wi:RIVER.wi,step:RIVER.step})); }catch(e){} };
+  const save=()=>{ try{ SAVE.set('river',JSON.stringify({v:4,way:RIVER.way,wi:RIVER.wi,step:RIVER.step})); }catch(e){} };
   RIVER.step=true;
   if(QSr.get('river'))RIVER.way=QSr.get('river'); if(QSr.get('water'))RIVER.wi=Math.max(0,'abc'.indexOf(QSr.get('water')));
   const applyWater=()=>{ const Wt=WATERS[RIVER.wi]; setWaves(); SU.uNW.value=WV.length; setWater(SU); for(const U of SURFS)setWater(U); uBedK.value=Wt.bed; FU.uDeep.value.setRGB(...Wt.far); FU.uSkyK.value=Wt.sky;

@@ -24,7 +24,7 @@ const SURF=(()=>{ const T=TILE, MPU=.84/T, NW=8, GLN=`float rh(vec2 p){ p=fract(
         d*=fe; vec2 ru=(p-uRect.xy)/uRect.zw; if(uRipOn>0.&&ru.x>0.&&ru.y>0.&&ru.x<1.&&ru.y<1.)d.y+=texture2D(uRip,ru).r;
         w.xyz+=d; vW=w.xyz; vH=d.y; vec4 mv=viewMatrix*w; vVz=mv.z; gl_Position=projectionMatrix*mv; }`,
     fragmentShader:`#include <packing>
-      uniform float uUW,uUWF; uniform vec3 uUWC; uniform vec2 uMe; uniform float uT,uAmp,uRT,uRipOn,uNear,uFar,uMode,uFoam,uRefr,uLv,uStep,uRefl; uniform vec3 uHi; uniform vec4 uWA[${NW}],uWB[${NW}],uWin,uRect,uBedR; uniform int uNW; uniform vec2 uRes,uBank;
+      uniform float uFix; uniform float uUW,uUWF; uniform vec3 uUWC; uniform vec2 uMe; uniform float uT,uAmp,uRT,uRipOn,uNear,uFar,uMode,uFoam,uRefr,uLv,uStep,uRefl; uniform vec3 uHi; uniform vec4 uWA[${NW}],uWB[${NW}],uWin,uRect,uBedR; uniform int uNW; uniform vec2 uRes,uBank;
       uniform sampler2D uRip,uScene,uDepth,uBed,uD0,uD1,uD2,uS0,uS1,uS2; uniform vec3 uFL; uniform float uFft; uniform vec3 uSig,uScat,uSunD,uSunC,uAmb,uSkyH,uSkyZ,uCamD,uLP[8],uLC[8];
       varying vec3 vW; varying vec2 vP0; varying float vVz, vH;
       ${GLN}
@@ -54,7 +54,10 @@ const SURF=(()=>{ const T=TILE, MPU=.84/T, NW=8, GLN=`float rh(vec2 p){ p=fract(
           else if(uMode<.5||uMode>1.5){
             vec2 s=gl_FragCoord.xy/uRes; float th=max(0.,vVz-vz(texture2D(uDepth,s).r));
             vec2 r=clamp(s+n.xz*.035*uRefr*min(th*${MPU.toFixed(4)},2.),.001,.999); float th2=vVz-vz(texture2D(uDepth,r).r); if(th2<0.){ r=s; th2=th; }
-            float m=min(th2*${MPU.toFixed(4)},40.); vec3 Tr=exp(-uSig*m); col=texture2D(uScene,r).rgb*Tr+inC*(1.-Tr); }
+            float m=min(th2*${MPU.toFixed(4)},40.); vec3 Tr=exp(-uSig*m); col=texture2D(uScene,r).rgb*Tr+inC*(1.-Tr);
+            if(uFix>.5&&uFix<1.5)col=inC*1.25;
+            if(uFix>1.5&&uFix!=3.){ float d0=vz(texture2D(uDepth,r).r); col=mix(col,inC*1.25,max(1.-smoothstep(.02,.4,th2*${MPU.toFixed(4)}),step(.9999,texture2D(uDepth,r).r))); }
+            if(uFix>2.5){ float ke=clamp(min(p.x-uWin.x,uWin.y-p.x)/${(25*T).toFixed(3)},0.,1.); col=mix(inC*1.25,col,ke); } }
           else {
             vec2 bu=(p-uBedR.xy)/uBedR.zw; float dm=texture2D(uBed,vec2(bu.x,bu.y)).r*255./20.; float path=dm/max(abs(V.y),.25);
             alpha=1.-exp(-dot(uSig,vec3(.333))*path); col=inC; }
@@ -70,7 +73,7 @@ const SURF=(()=>{ const T=TILE, MPU=.84/T, NW=8, GLN=`float rh(vec2 p){ p=fract(
         if(uStep>0.)col=floor(col*24.+.5)/24.;
         if(uUW>0.)col=mix(col,uUWC,clamp(length(vW-cameraPosition)/uUWF,0.,1.)); if(uUW>0.)alpha=1.;
         gl_FragColor=vec4(col,alpha); }`}; })();
-const SH={uPier:{value:new THREE.Vector4(1e9,1e9,1e9,1e9)},uMe:{value:new THREE.Vector2()},uT:{value:0},uSunD:{value:new THREE.Vector3()},uSunC:{value:new THREE.Color()},uAmb:{value:new THREE.Color()},uSkyH:{value:new THREE.Color()},uSkyZ:{value:new THREE.Color()},uCamD:{value:new THREE.Vector3()},uLP:{value:Array.from({length:8},()=>new THREE.Vector3())},uLC:{value:Array.from({length:8},()=>new THREE.Vector3())},uStep:{value:0},uRipOn:{value:0},uUW:{value:0},uUWF:{value:1},uUWC:{value:new THREE.Color()}};
+const SH={uFix:{value:+(new URLSearchParams(location.search).get('wfix')||0)},uPier:{value:new THREE.Vector4(1e9,1e9,1e9,1e9)},uMe:{value:new THREE.Vector2()},uT:{value:0},uSunD:{value:new THREE.Vector3()},uSunC:{value:new THREE.Color()},uAmb:{value:new THREE.Color()},uSkyH:{value:new THREE.Color()},uSkyZ:{value:new THREE.Color()},uCamD:{value:new THREE.Vector3()},uLP:{value:Array.from({length:8},()=>new THREE.Vector3())},uLC:{value:Array.from({length:8},()=>new THREE.Vector3())},uStep:{value:0},uRipOn:{value:0},uUW:{value:0},uUWF:{value:1},uUWC:{value:new THREE.Color()}};
 const WATERS=[
  {key:'a',name:'A · HUDSON',desc:'The Hudson by the pier: dark, a slow low swell.',
   sig:[0.62,0.24,0.26],scat:[0.008,0.026,0.018],deep:7,bed:0,foam:0.06,refr:.7,refl:.2,hi:[.07,.17,.08],tm:.55,fish:false,far:[.014,.03,.02],sky:.16,   // dark: nothing seen down in it (owner, 5 Nov 2026)
@@ -156,7 +159,7 @@ RIVER.build=()=>{ if(RIVER.on)return; const n0=scene.children.length; const R=RI
     bedTex.needsUpdate=true; bed.position.set(RIVER.cx,0,(rz0+rz1)/2); if(typeof seedGrass!=='undefined')seedGrass(); };
 
   const RT=new THREE.WebGLRenderTarget(4,4,{type:THREE.HalfFloatType}); RT.depthTexture=new THREE.DepthTexture(4,4); RT.depthTexture.type=THREE.FloatType;
-  const SU={...UWU,uT:uT0,uMe:SH.uMe,uPier:SH.uPier,uWA:{value:WA},uWB:{value:WB},uNW:{value:0},uAmp:{value:1},uWin:{value:new THREE.Vector4()},uRip:FLOW.tex,uRect:FLOW.rect,uRipOn:uRipOn,uRT:{value:1/FLOW.G},
+  const SU={uFix:SH.uFix,...UWU,uT:uT0,uMe:SH.uMe,uPier:SH.uPier,uWA:{value:WA},uWB:{value:WB},uNW:{value:0},uAmp:{value:1},uWin:{value:new THREE.Vector4()},uRip:FLOW.tex,uRect:FLOW.rect,uRipOn:uRipOn,uRT:{value:1/FLOW.G},
     uScene:{value:RT.texture},uDepth:{value:RT.depthTexture},uRes:{value:new THREE.Vector2(4,4)},uNear:{value:.1},uFar:{value:800},uMode:{value:0},uBed:{value:bedTex},uBedR:{value:new THREE.Vector4()},
     uSig:{value:new THREE.Vector3()},uScat:{value:new THREE.Vector3()},uFoam:{value:0},uRefr:{value:1},uLv:{value:LV},uBank:{value:new THREE.Vector2(rz0,rz1)},
     uSunD:uSunD,uSunC:SH.uSunC,uAmb:SH.uAmb,uSkyH:SH.uSkyH,uSkyZ:SH.uSkyZ,uCamD:SH.uCamD,

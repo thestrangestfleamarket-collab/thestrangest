@@ -35,7 +35,7 @@ import {RIVER} from './066-river.js';
   /* ---------- the ice on water: patches that grow while the ray is on them, hold you up, and melt ---------- */
   const IN=32, iceMat=new THREE.MeshPhongMaterial({color:0xcfeeff,specular:0xffffff,shininess:90,emissive:0x0c1a24}), iceG=(()=>{ const g=new THREE.CylinderGeometry(1,1,1,22,1), p=g.attributes.position;
       for(let i=0;i<p.count;i++){ const x=p.getX(i), z=p.getZ(i), r=Math.hypot(x,z); if(r>.5){ const a=Math.atan2(z,x), k=.86+.14*Math.sin(a*5.3+1)*Math.sin(a*2.1); p.setX(i,x*k); p.setZ(i,z*k); } } g.computeVertexNormals(); return g; })();
-  const iceMe=new THREE.InstancedMesh(iceG,iceMat,IN); iceMe.count=0; iceMe.name='ice'; iceMe.receiveShadow=true; iceMe.frustumCulled=false; iceMe.userData.anyRoom=1; scene.add(LEVELS.own(iceMe,'up'));
+  const iceMe=new THREE.InstancedMesh(iceG,iceMat,IN); iceMe.count=0; iceMe.name='ice'; iceMe.receiveShadow=true; iceMe.frustumCulled=false; iceMe.userData.anyRoom=1; scene.add(LEVELS.own(iceMe,'*'));
   const IL=[], m4=new THREE.Matrix4(), q4=new THREE.Quaternion(), s3=new V3(), p3=new V3(), TH=.06*M;
   const iceDraw=()=>{ IL.forEach((c,i)=>iceMe.setMatrixAt(i,m4.compose(p3.set(c.x,c.y-TH/2+.01*M,c.z),q4.setFromAxisAngle(s3.set(0,1,0),c.a),s3.set(c.r,TH,c.r)))); iceMe.count=IL.length; iceMe.instanceMatrix.needsUpdate=true; iceMe.visible=IL.length>0; };
   Object.assign(ICE,{list:IL,

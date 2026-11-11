@@ -22,14 +22,16 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const cv = await pg.$('canvas[width="400"][height="440"]'), bx = await cv.boundingBox(), k = bx.width / 400;
     // the dog food's line: find its row and click it
     const row = await pg.evaluate(() => { const R = [{ head: 1 }, ...(BODEGA.basket.size ? [] : [{}])]; const A = BODEGA.all(); R.push({ head: 1 }, ...A.supplies); return R.findIndex(r => r.id === 'g_dogfood'); });
-    await pg.mouse.click(bx.x + 200 * k, bx.y + (12 + row * 22 + 11) * k); await pg.waitForTimeout(300);
+    await pg.mouse.click(bx.x + 200 * k, bx.y + (12 + row * 22 + 11) * k);   // the window reads a click on its next frame: wait for it (a slow machine's frames are long)
+    await pg.waitForFunction(() => (BODEGA.basket.get('g_dogfood') || 0) > 0, null, { timeout: 10000, polling: 100 }).catch(() => {});
     const bag = await pg.evaluate(() => BODEGA.basket.get('g_dogfood') || 0);
     ok(bag === 1, 'a click on the dog food puts one in the basket');
     if (process.argv[3]) await pg.screenshot({ path: process.argv[3], clip: { x: bx.x - 20, y: bx.y - 50, width: bx.width + 40, height: bx.height + 110 } });
     await pg.mouse.move(bx.x + 200 * k, bx.y + 200 * k); for (let i = 0; i < 6; i++) { await pg.mouse.wheel(0, 200); await pg.waitForTimeout(80); }
     await pg.waitForTimeout(300);
     const d0 = await pg.evaluate(() => INV.items.g_dogfood || 0);
-    await pg.mouse.click(bx.x + 100 * k, bx.y + 410 * k); await pg.waitForTimeout(300);
+    await pg.mouse.click(bx.x + 100 * k, bx.y + 410 * k);
+    await pg.waitForFunction(() => BODEGA.basket.size === 0, null, { timeout: 10000, polling: 100 }).catch(() => {});
     const d1 = await pg.evaluate(() => ({ n: INV.items.g_dogfood || 0, left: BODEGA.basket.size }));
     ok(d1.n === d0 + 1 && d1.left === 0, 'PAY buys it: the dog food is yours (' + d0 + ' -> ' + d1.n + ')');
     const err = await pg.evaluate(() => Object.entries(SYS.P).flatMap(([k, v]) => v.filter(s => s.err).map(s => k + ':' + s.name)));

@@ -33,7 +33,7 @@ RIVER.onBuild.push(()=>{ const T=TILE, V3=THREE.Vector3, RB=RIVER.box, Q=RB.z1, 
   let bi=0; for(let z=Q-1.5*T;z>zH+.5*T;z-=3*T,bi++){ const px=hw-.28*T; pile(X-px,z); pile(X+px,z); box(X,-.48*WU,z,2*hw+.2*WU,.3*WU,.32*WU,tone(DK,.3,bi));
     const y0=-.7*WU, y1=LV-1.6*WU, len=Math.hypot(2*px,y0-y1), a=Math.atan2(y0-y1,2*px); for(const s of [-1,1])box(X,(y0+y1)/2,z+s*.2*WU,len,.2*WU,.07*WU,tone(WD,.3,bi+s),0,0,s*a);
     if(bi%2===0&&z-3*T>zH)for(const sx of [-1,1]){ const l2=Math.hypot(3*T,y0-y1), a2=Math.atan2(y0-y1,3*T); box(X+sx*(px+.22*WU),(y0+y1)/2,z-1.5*T,.07*WU,.2*WU,l2,tone(WD,.3,bi+9),-a2,0,0); } }
-  const NI=Math.round(2*HW/(3*T)); for(let i=0;i<=NI;i++)for(let j=0;j<3;j++){ const x=X-HW+.4*T+i*(2*HW-.8*T)/NI, z=zH-.6*T-j*(HD-1.2*T)/2, moor=(i===0||i===NI||i%4===0)&&j!==1; pile(x,z,moor?.55*WU:-.08*WU); if(i<NI)box((x+X-HW+.4*T+(i+1)*(2*HW-.8*T)/NI)/2,-.48*WU,z,(2*HW-.8*T)/3+.3*WU,.3*WU,.32*WU,DK); }
+  const NI=Math.round(2*HW/(3*T)); for(let i=0;i<=NI;i++)for(let j=0;j<3;j++){ const x=X-HW+.4*T+i*(2*HW-.8*T)/NI, z=zH-.6*T-j*(HD-1.2*T)/2, moor=(i===0||i===NI||i%4===0)&&j!==1; pile(x,z,moor?.55*WU:-.08*WU); if(i<NI)box((x+X-HW+.4*T+(i+1)*(2*HW-.8*T)/NI)/2,-.48*WU,z,(2*HW-.8*T)/NI,.3*WU,.32*WU,DK); }
   // rails on the walk out, a low curb round the head; wheel blocks under the curb
   const RH=1.05*WU; for(const s of [-1,1]){ const x=X+s*(hw-.06*WU); let i=0; for(let z=Q-.1*T;z>zH+.3*T;z-=1.5*T,i++)box(x,RH/2,z,.1*WU,RH,.1*WU,tone(GRY,.25,i));
     box(x,RH-.03*WU,(zH+Q)/2,.14*WU,.06*WU,Q-zH,GRY); box(x,RH*.55,(zH+Q)/2,.05*WU,.1*WU,Q-zH,tone(GRY,.2,s+4));

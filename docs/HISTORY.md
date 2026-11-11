@@ -6199,3 +6199,4 @@ Owner: "what polyfork animations do we have for our character", then "yes lets u
 - 11 Nov 2026, the freeze ray's ice shows again (owner: "fix the ice too"): it was never drawn on the street; same fix as the portals.
 - 11 Nov 2026, the shade under a hat (owner, of his avatar in the brimmed hat with a dark band across the eyes: "shadow under hat isnt covering entire face"): under a brimmed hat (wider than the head) the whole face, chin up, is in the brim's shade, whatever the sun's height.
 - 11 Nov 2026, traffic in one place (owner, of a hover taxi inside the ambulance): cars and fliers keep their gap whatever lap of the clock each is on; an unseen one goes back to its place only where the road is clear.
+- 11 Nov 2026, shrink and grow capped at five (owner: "add a cap of 5 to be safe"): five at once is the most that works; more only last longer. Supersedes the same day's no limit.

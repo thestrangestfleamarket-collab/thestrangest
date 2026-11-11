@@ -94,7 +94,7 @@ window.PETS=PETS;
         if(!N.placed||d>14||Math.abs((N.g.position.y-hover*WU)-L.y)>2.5*WU){ place(L); return; }
         if(o.preview){ if(d>3)place(L); st.to=null; st.face={x:L.x,z:L.z}; return; }
         if(o.stay){ if(!st.to&&(idleT-=dt)<0){ idleT=3+Math.random()*5; const a=Math.random()*6.28, r=Math.random()*1.6*WU; st.to={x:o.stay.x+Math.sin(a)*r,z:o.stay.z+Math.cos(a)*r}; st.v=walkV*WU; } return; }
-        const R=o.rec||o.mine&&out(), far=R?(R.lo<25?3.4:R.lo>=80?1.4:1.7):1.7, sp=pace(R);   // (its loyalty keeps it close, a shy one lags; hungry or ill, it is slow)
+        const R=o.rec||o.mine&&out(), far=L.fight?1.2:R?(R.lo<25?3.4:R.lo>=80?1.4:1.7):1.7, sp=pace(R);   // (its loyalty keeps it close, a shy one lags; hungry or ill, it is slow)
         if(seat==='fly'){ const b=(far-.6)*WU, sd=(o.side||0)*WU, tx=L.x-Math.sin(L.hd)*b+Math.cos(L.hd)*sd, tz=L.z-Math.cos(L.hd)*b-Math.sin(L.hd)*sd, e=Math.hypot(st.x-tx,st.z-tz)/WU, low=!(L.me&&UI.fly)&&!(SHARED.groundY&&L.y-SHARED.groundY(L.x,L.z)>.3*WU);   // (behind you; still a moment on the ground, it lands there)
           still=v<.3*WU?still+dt:0; if(!lands||still<1||!low)down=false;
           if(down&&e<1.5){ st.to=null; st.face={x:L.x,z:L.z}; return; }

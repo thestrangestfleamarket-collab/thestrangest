@@ -81,7 +81,7 @@ window.TAMING=TAMING;
     let bd=10*WU; for(const e of mobs()){ if(e[9]||e[13]!==me&&e[13]!=='me')continue; const d=Math.hypot(e[4]-pos.x,e[5]-pos.z); if(d<bd){ bd=d; FT={i:e[0],x:e[4],z:e[5]}; } }
     if(!FT)return; if(cool<=0&&Math.hypot(N.st.x-FT.x,N.st.z-FT.z)<2.2*WU){ cool=1.2; D.smite(FT.i,(.8+(F.t.d-40)/20)*(1+sk()/100)); if(SFX.play)SFX.play('step',{vol:.5,pitch:.8});
       if((trainT-=1.2)<=0){ trainT=5; FORAGE.use('tame',F.t.d-30,F.t.d+30); } } };
-  PETS.lead=()=>FT&&{x:FT.x,z:FT.z,y:SHARED.py,hd:Math.atan2(FT.x-pos.x,FT.z-pos.z)};
+  PETS.lead=()=>FT&&{x:FT.x,z:FT.z,y:SHARED.py,hd:Math.atan2(FT.x-pos.x,FT.z-pos.z),fight:1};   // (fight: it closes in, whatever its loyalty)
 
   /* ---------- a tamed mount (tier 3): ridden as the horse is (HORSE.rider), your pet beside you swung up onto; others see you on it ---------- */
   const my=()=>PETS.my&&PETS.my();

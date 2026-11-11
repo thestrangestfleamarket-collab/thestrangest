@@ -20,6 +20,8 @@ const SHOTS = process.env.SHOTS;
     const jd = (Date.UTC(2026, 10, 5, 5) / 864e5) + 2440587.5;
     const eph = await pg.evaluate(jd => { const A = SCOPE.astro, j = A.where('ju', jd), m = A.where('moon', jd); return { j: [j.ra, j.dec], m: [m.ra, m.dec], open: SCOPE.isOpen(), n: SCOPE.stars.s.length }; }, jd);
     const dd = (a, b) => Math.hypot((a[0] - b[0]) * Math.cos(b[1] * Math.PI / 180), a[1] - b[1]);
+    const re = await pg.evaluate(async () => { const m = SCOPE.mag; SCOPE.filter = true; SCOPE.focus = -1; SCOPE.close(); await SCOPE.open(); return { m, f: SCOPE.focus, fl: SCOPE.filter }; });
+    ok(re.m === 1 && re.f === .18 && !re.fl, 'it opens on the wide view, in focus, the solar filter off, every time (' + JSON.stringify(re) + ')');
     ok(eph.open && eph.n > 8000, 'the eyepiece opens with the Yale Bright Star Catalogue (' + eph.n + ' stars)');
     ok(dd(eph.j, [146.978, 14.039]) < 1, 'Jupiter within a degree of JPL Horizons on 5 Nov 2026 05:00 UT (' + eph.j.map(x => x.toFixed(2)) + ' vs 146.98,14.04)');
     ok(dd(eph.m, [173.894, .073]) < 1, 'the Moon within a degree of JPL Horizons (' + eph.m.map(x => x.toFixed(2)) + ' vs 173.89,0.07)');

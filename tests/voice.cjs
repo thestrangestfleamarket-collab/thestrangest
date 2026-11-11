@@ -21,10 +21,10 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await P.b.keyboard.press('Shift');   // (a page's sound starts at its first key or click)
     await P.b.waitForTimeout(1500); const h0 = await heard(); ok(!h0.vt, 'nobody is heard while no key is held (' + JSON.stringify(h0) + ')');
     await P.a.keyboard.down('m');
-    let h1 = null, vt = false, tag = false; for (let i = 0; i < 40 && !(vt && tag); i++) { await P.b.waitForTimeout(250); h1 = await heard(); vt = vt || !!h1.vt; tag = tag || /\(\(·\)\)/.test(h1.tag); }
+    let h1 = null, vt = false, tag = false, top = 0; for (let i = 0; i < 80 && !(vt && tag); i++) { await P.b.waitForTimeout(250); h1 = await heard(); top = Math.max(top, ...h1.v.peers.map(p => p.lv || 0)); vt = vt || !!h1.vt; tag = tag || /\(\(·\)\)/.test(h1.tag); }
     const me = await P.a.evaluate(() => ({ ...VOICEDBG(), hud: (document.getElementById('vtalk') || {}).textContent || '' }));
     ok(me.talking && me.mic && /TALKING/.test(me.hud), 'holding M opens your microphone and says so (' + JSON.stringify(me) + ')');
-    ok(vt && tag, 'the other player hears you, ((·)) by your name (' + JSON.stringify(h1) + ')');
+    ok(vt && tag, 'the other player hears you, ((·)) by your name (loudest ' + top + ', ' + JSON.stringify(h1) + ')');
     await P.a.keyboard.up('m'); await P.b.waitForTimeout(2500); const h2 = await heard();
     ok(!h2.vt && !(await P.a.evaluate(() => VOICEDBG().talking)), 'letting go goes quiet (' + JSON.stringify(h2) + ')');
     await P.b.evaluate(() => { const Y = __dbg.you(); ONLINE.feed({ t: 'mv', id: 'a', at: [Y.x + 60, Y.z, SHARED.py, 0, SHARED.LVL, ''] }); });

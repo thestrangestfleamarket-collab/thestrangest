@@ -30,7 +30,7 @@ import {SYS, TILE} from './006-map-pre.js';
   const hear=(P,ms)=>{ const C=actx(); if(!C||P.src)return;
     const el=P.el=document.createElement('audio'); el.muted=true; el.autoplay=true; el.srcObject=ms; el.style.display='none'; document.body.appendChild(el); el.play().catch(()=>{});   // (Chrome sends a far stream to Web Audio only while an element plays it)
     P.src=C.createMediaStreamSource(ms); P.g=C.createGain(); P.pan=C.createPanner(); Object.assign(P.pan,{panningModel:'HRTF',distanceModel:'linear',refDistance:1.5,maxDistance:RANGE,rolloffFactor:1});
-    P.an=C.createAnalyser(); P.an.fftSize=256; P.buf=new Uint8Array(P.an.fftSize);
+    P.an=C.createAnalyser(); P.an.fftSize=2048; P.buf=new Uint8Array(P.an.fftSize);
     P.src.connect(P.an); P.src.connect(P.g); P.g.connect(P.pan); P.pan.connect(C.destination); };
   ONLINE.hear.rtc=async m=>{ const id=m.from&&String(m.from), d=m.d, o=id&&ONLINE.others.get(id); if(!id||!d)return;
     if(d.bye||d.no){ cut(id,false); if(o&&d.no)o.vno=performance.now(); return; }
@@ -68,10 +68,12 @@ import {SYS, TILE} from './006-map-pre.js';
     if(L.positionX){ L.positionX.value=lx; L.positionY.value=ly; L.positionZ.value=lz; L.forwardX.value=fw.x; L.forwardY.value=fw.y; L.forwardZ.value=fw.z; L.upX.value=0; L.upY.value=1; L.upZ.value=0; }
     else{ L.setPosition(lx,ly,lz); L.setOrientation(fw.x,fw.y,fw.z,0,1,0); }
     for(const P of V.peers.values()){ const o=ONLINE.others.get(P.id); if(!P.pan||!o||!o.p)continue; const x=o.p.x/M, y=(o.p.y||0)/M+1.6, z=o.p.z/M;
-      if(P.pan.positionX){ P.pan.positionX.value=x; P.pan.positionY.value=y; P.pan.positionZ.value=z; } else P.pan.setPosition(x,y,z);
-      P.an.getByteTimeDomainData(P.buf); let s=0; for(let i=0;i<P.buf.length;i+=4){ const v=P.buf[i]-128; s+=v*v; } if(Math.sqrt(s/(P.buf.length/4))>4)o.vt=now; }   // speaking: the ((·)) by their name (111d)
+      if(P.pan.positionX){ P.pan.positionX.value=x; P.pan.positionY.value=y; P.pan.positionZ.value=z; } else P.pan.setPosition(x,y,z); }
   },'111dc-voice');
-  window.VOICEDBG=()=>({on:V.on,talking:V.talking,mic:!!V.mic,ctx:V.ctx&&V.ctx.state,peers:[...V.peers.values()].map(P=>({id:P.id,state:P.pc.connectionState,sig:P.pc.signalingState,heard:!!P.src}))});
+  // who is speaking (the ((·)) by their name, 111d): 40 ms of their sound read every 150 ms, whatever the frame rate
+  setInterval(()=>{ if(!V.peers.size)return; const now=performance.now(); for(const P of V.peers.values()){ if(!P.an)continue; const o=ONLINE.others.get(P.id); if(!o)continue;
+    P.an.getByteTimeDomainData(P.buf); let s=0; for(let i=0;i<P.buf.length;i+=8){ const v=P.buf[i]-128; s+=v*v; } P.lv=Math.sqrt(s/(P.buf.length/8)); if(P.lv>4)o.vt=now; } },150);
+  window.VOICEDBG=()=>({on:V.on,talking:V.talking,mic:!!V.mic,ctx:V.ctx&&V.ctx.state,peers:[...V.peers.values()].map(P=>({id:P.id,state:P.pc.connectionState,sig:P.pc.signalingState,heard:!!P.src,lv:+(P.lv||0).toFixed(1)}))});
 
   // the setting: VOICE (hear and be heard) in the menu's CHAT, beside WORDS STAY
   const set=()=>{ const P=document.querySelector('#menu [data-p="chat"]'); if(!P)return setTimeout(set,1000); if(P.querySelector('#dvoice'))return;

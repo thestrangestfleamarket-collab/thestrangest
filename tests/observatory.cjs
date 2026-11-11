@@ -26,7 +26,7 @@ const SHOTS = process.argv[3], SITE = (require('../data/world.json').parkPlaces.
       return { was, open: SCOPE.isOpen(), site: { ...SCOPE.site }, party: ASTRO.party(), mags: [...document.querySelectorAll('#scopev [data-m]')].map(b => +b.dataset.m), goals: ASTRO.goals().map(g => g.id) }; });
     ok(u.open && u.site.obs && u.site.ap === 400 && u.was.ap === 80 && u.mags.includes(400) && u.party.on, 'THE GREAT TELESCOPE opens the eyepiece: 400 mm, 400X, and the first to step up shares the view');
     ok(u.goals.includes('obs10') && u.goals.includes('obsparty'), 'the logbook has the observatory\'s two goals');
-    const dz = await pg.evaluate(async () => { SCOPE.wx = () => ({ cloud: 0, rain: 0, snow: 0, fog: 0, wind: .2 }); SCOPE.mag = 50; SCOPE.focus = .18; await new Promise(r => setTimeout(r, 1200)); const lim = SCOPE.lim;
+    const dz = await pg.evaluate(async () => { const clear = () => ({ cloud: 0, rain: 0, snow: 0, fog: 0, wind: .2 }); Object.defineProperty(SCOPE, 'wx', { get: () => clear, set: () => {}, configurable: true }); SCOPE.mag = 50; SCOPE.focus = .18; await new Promise(r => setTimeout(r, 1200)); const lim = SCOPE.lim;
       const L = SCOPE.data.sky.filter(t => t.m && t.kind !== 'cluster' && t.mag > 9 && t.mag < lim).map(t => ({ t, h: SCOPE.altOf(t.id) })).filter(x => x.h.alt > 30).sort((a, b) => b.t.mag - a.t.mag), T = L[0] && L[0].t; if (!T) return { lim, none: true };
       SCOPE.goTo(T.id); for (let k = 0; k < 120 && SCOPE.goto; k++) await new Promise(r => setTimeout(r, 250)); for (let k = 0; k < 40 && !ASTRO.dbg().obs[T.id]; k++) await new Promise(r => setTimeout(r, 300));
       return { lim, id: T.id, name: T.name, mag: T.mag, obs: ASTRO.dbg().obs[T.id], n: ASTRO.goals().find(g => g.id === 'obs10').n, small: 8.3 + 1.2 }; });

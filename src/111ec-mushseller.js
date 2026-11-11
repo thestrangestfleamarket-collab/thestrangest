@@ -1,4 +1,4 @@
-// THE MUSHROOM SELLER: MUSH, his body on the player's rig (a real skeleton: carved skull and jaw, ribs in the robe's open V, bony hands and feet; a torn and patched brown robe, a tan strap across the chest, long dreadlocks, a big crooked witch's hat grown over with mushrooms, the tray heaped with mushrooms), and his booth at the park wall.
+// THE MUSHROOM SELLER: MUSH, his body on the player's rig (a real skeleton: a scanned skull (data/skull.json), ribs in the robe's open V, bony hands and feet; a torn and patched brown robe, a tan strap across the chest, long dreadlocks, a big crooked witch's hat grown over with mushrooms, the tray heaped with mushrooms), and his booth at the park wall.
 import {SHARED, THREE} from './003-shx.js';
 import {PARK, pos} from './003b-systems.js';
 import {MODS, TILE} from './006-map-pre.js';
@@ -6,7 +6,7 @@ import {HOMES} from './076-npc-map.js';
 import {STALL} from './081-stalls.js';
 import {BODIES} from './111a-bodies.js';
 import {MERCH} from './111e-merch.js';
-const MUSH={}; let swing=null;
+const MUSH={}, SKULL=__LAZY__("data/skull.json"); let swing=null;
 { const {SPH,CYL,TOR,grp,mk,paint,hash3,C,mix,fbm,lathe,bend,ribbon}=MERCH.K, PI=Math.PI, T=TILE, V3=THREE.Vector3;
   let seed=11; const rnd=()=>{ seed=(seed*16807)%2147483647; return seed/2147483647; };
   // a mushroom: its stem, the cap's dome (darker at its crown, speckled) and rolled rim, the gills under it; o {r cap, h stem, s stem radius, cap '#hex', stem, gill, k cap height, seg}
@@ -47,24 +47,6 @@ const MUSH={}; let swing=null;
   const LOCK=[C('#c7ab7e'),C('#a88b5f'),C('#d9c39a'),C('#8f7550'),C('#b59a70'),C('#6f5a3e')];
   const CAPS=['#ece4d4','#e4d8c2','#f0e9dc','#d9c8a8','#ddd0b8'], TANS=['#c8aa82','#b8956a','#a47a4e','#c4a47c','#8c6a4a'];
 
-  /* ---------- the skull, carved: a field of shapes (cranium, face, cheekbones, brow, upper jaw; less the sockets, the nose and the temples) found along rays from inside ---------- */
-  const ell=(x,y,z,c,r)=>{ const a=(x-c[0])/r[0], b=(y-c[1])/r[1], d=(z-c[2])/r[2], k0=Math.hypot(a,b,d), k1=Math.hypot(a/r[0],b/r[1],d/r[2]); return k0*(k0-1)/(k1||1e-9); };
-  const smin=(a,b,k)=>{ const h=Math.max(k-Math.abs(a-b),0)/k; return Math.min(a,b)-h*h*k*.25; }, smax=(a,b,k)=>-smin(-a,-b,k);
-  const cap=(x,y,z,a,b,r)=>{ const px=x-a[0],py=y-a[1],pz=z-a[2],bx=b[0]-a[0],by=b[1]-a[1],bz=b[2]-a[2], h=Math.max(0,Math.min(1,(px*bx+py*by+pz*bz)/(bx*bx+by*by+bz*bz))); return Math.hypot(px-bx*h,py-by*h,pz-bz*h)-r; };
-  const skullF=(x,y,z,carve)=>{ let d=ell(x,y,z,[0,.022,-.014],[.074,.079,.097]);
-    d=smin(d,ell(x,y,z,[0,-.044,.034],[.056,.052,.058]),.03);
-    d=smin(d,ell(x,y,z,[0,-.083,.048],[.035,.022,.037]),.02);
-    d=smin(d,ell(x,y,z,[0,.006,.074],[.058,.013,.022]),.014);
-    for(const s of [1,-1]){ d=smin(d,ell(x,y,z,[s*.052,-.036,.046],[.022,.02,.028]),.016); d=smin(d,cap(x,y,z,[s*.058,-.04,.036],[s*.07,-.034,-.022],.008),.01); d=smin(d,ell(x,y,z,[s*.06,-.07,-.03],[.014,.02,.014]),.012); }
-    d=smax(d,-ell(x,y,z,[0,-.112,-.02],[.06,.035,.07]),.02); for(const s of [1,-1])d=smax(d,-ell(x,y,z,[s*.088,.004,.006],[.022,.03,.04]),.02);
-    if(carve){ for(const s of [1,-1]){ d=smax(d,-ell(x,y,z,[s*.031,-.013,.086],[.0215,.019,.03]),.006); }
-      d=smax(d,-Math.min(ell(x,y,z,[0,-.051,.092],[.0115,.016,.03]),ell(x,y,z,[0,-.038,.093],[.006,.014,.03])),.004); }
-    return d; };
-  const C0=new V3(0,-.01,0), ray=(dir,carve)=>{ let t=.01, f0=skullF(C0.x+dir.x*t,C0.y+dir.y*t,C0.z+dir.z*t,carve); while(t<.2){ const t2=t+.0025, f=skullF(C0.x+dir.x*t2,C0.y+dir.y*t2,C0.z+dir.z*t2,carve); if(f>0&&f0<=0){ let a=t,b=t2; for(let i=0;i<10;i++){ const m=(a+b)/2; if(skullF(C0.x+dir.x*m,C0.y+dir.y*m,C0.z+dir.z*m,carve)>0)b=m; else a=m; } return (a+b)/2; } t=t2; f0=f; } return t; };
-  const skullGeo=()=>{ const g=new THREE.SphereGeometry(1,Math.max(72,MERCH.K.sq(84,40)),Math.max(54,MERCH.K.sq(64,30))), P=g.attributes.position, cl=new Float32Array(P.count*3), d=new V3();
-    for(let i=0;i<P.count;i++){ d.fromBufferAttribute(P,i).normalize(); const t=ray(d,true), tb=ray(d,false), deep=Math.min(1,Math.max(0,(tb-t-.004)/.016)); const x=C0.x+d.x*t, y=C0.y+d.y*t, z=C0.z+d.z*t; P.setXYZ(i,x,y,z);
-      let c=boneC(x,y,z); c=mix(c,BONED,Math.min(1,(tb-t)/.004)*.5); c=mix(c,BLK,deep); if(y<-.07)c=mix(c,BONED,(-.07-y)*14); cl.set([c.r,c.g,c.b],i*3); }
-    g.setAttribute('color',new THREE.BufferAttribute(cl,3)); g.computeVertexNormals(); return g; };
 
   // a dreadlock: a lumpy rope along pts (its own radius rising and falling), rounded at the end; its colour from the root's dark to a sun-bleached tip
   const dread=(pts,r,col,k)=>{ const cv=new THREE.CatmullRomCurve3(pts.map(p=>new V3(...p))), ts=Math.max(26,MERCH.K.sq(40,14)), rs=Math.max(5,MERCH.K.sq(7,5)), g=new THREE.TubeGeometry(cv,ts,r,rs,false), P=g.attributes.position, cl=new Float32Array(P.count*3), ce=new V3(), q=new V3();
@@ -75,20 +57,6 @@ const MUSH={}; let swing=null;
   const HAIRM=[], model=()=>{ const sk=MERCH.skel({hipY:.95,waist:.06,neck:.5,shX:.19,shY:.42,upper:.29,fore:.27,hipX:.1,thigh:.45,shin:.46}), {B}=sk;
     const BN='ivory:vc', bone=g=>paint(g,boneC), TOOTH='ivory:#e8dcbc';
     const H=grp(B.head,[0,.2,0]); H.scale.setScalar(1.28);
-    /* the skull: carved in one, black sockets and nose; the lower jaw hinged at the ears, two rows of worn teeth, one gone */
-    mk(H,skullGeo(),BN);
-    mk(H,SPH(.042,14,6),'plain:#050302',[0,-.11,.036],[0,0,0],[1.05,.32,1]);
-    for(const s of [1,-1])mk(H,SPH(.019,14,10),'plain:#040302',[s*.031,-.013,.066],[0,0,0],[1.05,.95,.5]); mk(H,SPH(.011,10,8),'plain:#040302',[0,-.047,.074],[0,0,0],[.9,1.5,.6]);
-    for(let i=0;i<12;i++){ const a=(i-5.5)/5.5*1.15, w=i===5||i===6?.0062:Math.abs(i-5.5)<3?.0054:.0058, l=Math.abs(i-5.5)<2?.013:.011; if(i===3)continue;
-      mk(H,MERCH.K.CAP(w,l,2,6),TOOTH,[Math.sin(a)*.036,-.104,.046+Math.cos(a)*.035],[0,a,0],[1,1,.75]); }
-    { const J=grp(H,[0,-.04,-.012]), pts=[[.056,-.004,0],[.059,-.06,.004],[.046,-.088,.05],[.02,-.098,.078],[0,-.1,.084]], all=[...pts,...pts.slice(0,-1).reverse().map(p=>[-p[0],p[1],p[2]])];
-      const lo=all.map(p=>new V3(...p)), up=all.map((p,i)=>new V3(p[0]*.94,Math.max(p[1]+.026,-.074),p[2]*.97)), cl=new THREE.CatmullRomCurve3(lo), cu=new THREE.CatmullRomCurve3(up);
-      mk(J,bone(MERCH.K.TUBE(cl,44,.0075,7,false)),BN); mk(J,bone(MERCH.K.TUBE(cu,44,.0055,6,false)),BN);
-      { const n=MERCH.K.sq(44,24), Pp=[], I=[]; for(let i=0;i<=n;i++){ const a=cl.getPoint(i/n), b=cu.getPoint(i/n), m=a.clone().lerp(b,.5); for(const [q,o] of [[a,0],[m,.004],[b,0]]){ const out=new V3(q.x,0,q.z-.03).normalize().multiplyScalar(o); Pp.push(q.x+out.x,q.y,q.z+out.z); } }
-        for(let i=0;i<n;i++)for(let j=0;j<2;j++){ const a=i*3+j, b=a+3; I.push(a,b,a+1,a+1,b,b+1); } const pg=new THREE.BufferGeometry(); pg.setAttribute('position',new THREE.Float32BufferAttribute(Pp,3)); pg.setIndex(I); mk(J,bone(pg),BN); }
-      mk(J,bone(SPH(.014,12,8)),BN,[0,-.098,.08],[0,0,0],[1.5,.8,.7]);
-      for(const s of [1,-1]){ mk(J,bone(SPH(.011,10,6)),BN,[s*.056,.002,0],[0,0,0],[1.1,.8,1.4]); mk(J,bone(MERCH.K.CAP(.006,.03,2,6)),BN,[s*.052,-.012,.016],[.5,0,0]); }
-      for(let i=0;i<10;i++){ const a=(i-4.5)/4.5*1.1; if(i===7)continue; mk(J,MERCH.K.CAP(.0052,.009,2,6),TOOTH,[Math.sin(a)*.033,-.076,.046+Math.cos(a)*.03],[0,a,0],[1,1,.75]); } }
     /* the neck: six vertebrae down from the skull's base, each its body and the spine behind */
     for(let i=0;i<6;i++){ const y=-.075-i*.024; mk(H,bone(CYL(.015,.016,.014,12)),BN,[0,y,-.03]); mk(H,bone(MERCH.K.CAP(.005,.016,2,6)),BN,[0,y-.002,-.052],[PI/2+.3,0,0]);
       mk(H,bone(MERCH.K.CAP(.004,.03,2,6)),BN,[0,y,-.036],[0,0,PI/2]); }
@@ -188,7 +156,7 @@ const MUSH={}; let swing=null;
       else if(k<.8){ at[1]+=cr*.6; const b=rnd()*PI*2; shroom(TR,at,[Math.cos(b)*1.45,b,Math.sin(b)*1.45],o); }
       else { at[1]+=h+cr*.4; shroom(TR,at,[PI+(rnd()-.5)*.7,rnd()*PI*2,(rnd()-.5)*.5],o); } }
     // the hair leaves the baked body: its own mesh on the head bone, so it can swing (MUSH.hairGeo, in the head bone's frame)
-    sk.root.updateMatrixWorld(true); MUSH.headY=new V3().setFromMatrixPosition(B.head.matrixWorld).y; const P=[], Nn=[], Cc=[], I=[];
+    sk.root.updateMatrixWorld(true); MUSH.headY=new V3().setFromMatrixPosition(B.head.matrixWorld).y; MUSH.skullAt=H.matrixWorld.clone(); const P=[], Nn=[], Cc=[], I=[];
     for(const m of HAIRM){ const g=m.geometry.clone().applyMatrix4(m.matrixWorld); g.computeVertexNormals(); const o=P.length/3;
       for(const [A,L] of [['position',P],['normal',Nn],['color',Cc]])for(const v of g.attributes[A].array)L.push(v); for(const i of g.index.array)I.push(i+o); m.parent.remove(m); }
     HAIRM.length=0;
@@ -220,10 +188,22 @@ const MUSH={}; let swing=null;
       const n=Math.min(24,Math.ceil(dt*120)), h=dt/n; for(let i=0;i<n;i++){ v.x+=(-20*o.x-2.2*v.x+ax)*h; v.y+=(-20*o.y-2.2*v.y+az)*h; o.addScaledVector(v,h); }
       if(Math.abs(o.x)>.11){ o.x=Math.sign(o.x)*.11; v.x=0; } if(o.y<-.05||o.y>.07){ o.y=Math.max(-.05,Math.min(.07,o.y)); v.y=0; }
       if(o.lengthSq()<2.5e-7&&v.lengthSq()<4e-6&&!w){ o.set(0,0); v.set(0,0); } SW.value.copy(o); }; }
+  /* ---------- his skull: a real one (data/skull.json), its own textured mesh on the head bone, fetched after the start ---------- */
+  if(N&&MUSH.skullAt)SKULL().then(d=>{ if(!d||!d.p)return; const HI=BODIES.BONES.indexOf('head'), HM={value:N.PM.value[HI]}, s=.0842;
+    const M=MUSH.skullAt.clone().multiply(new THREE.Matrix4().makeTranslation(0,.101-1.0687*s,.012)).multiply(new THREE.Matrix4().makeScale(s,s,s));
+    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(d.p,3)); g.setAttribute('uv',new THREE.Float32BufferAttribute(d.uv,2)); g.setIndex(d.i); g.applyMatrix4(M); g.computeVertexNormals();
+    const tex=(u,srgb)=>{ const t=new THREE.TextureLoader().load(u); if(srgb)t.colorSpace=THREE.SRGBColorSpace; t.flipY=true; t.anisotropy=4; return t; };
+    const bendV=sh=>{ sh.uniforms.uHead=HM; sh.vertexShader='uniform mat4 uHead;\n'+sh.vertexShader.replace('#include <begin_vertex>','vec3 transformed=(uHead*vec4(position,1.)).xyz;'); };
+    const mat=new THREE.MeshStandardMaterial({map:tex(d.map,true),normalMap:tex(d.nmap,false),normalScale:new THREE.Vector2(.6,.6),roughness:.62,metalness:0});
+    mat.onBeforeCompile=sh=>{ bendV(sh); sh.vertexShader=sh.vertexShader.replace('#include <beginnormal_vertex>','vec3 objectNormal=mat3(uHead)*normal;'); sh.fragmentShader=sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=diffuseColor.rgb*.08;'); };
+    mat.customProgramCacheKey=()=>'mushskull';
+    const dep=new THREE.MeshDepthMaterial({depthPacking:THREE.RGBADepthPacking}), dis=new THREE.MeshDistanceMaterial(); dep.onBeforeCompile=bendV; dis.onBeforeCompile=bendV; dep.customProgramCacheKey=()=>'mushskulld'; dis.customProgramCacheKey=()=>'mushskullx';
+    const m=new THREE.Mesh(g,mat); m.customDepthMaterial=dep; m.customDistanceMaterial=dis; m.castShadow=m.receiveShadow=true;
+    Object.defineProperty(m,'boundingSphere',{configurable:true,get(){ return N.g.children[0].boundingSphere; },set(){}}); N.g.add(m); MUSH.skull=m; }).catch(()=>{});
   if(N){ const st=N.st; st.hold=true; st.to=st.next=null; N.H=2.3*T;
     const wait=()=>{ if(!MODS.park)return setTimeout(wait,500); const P=PARK, X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0)), A=STALL.at('mush');
       MUSH.booth=STALL.build({X,Z,x0:A.x0,x1:A.x1,y:P.y0,veg:false,seed:7,gate:A.gate,name:A.name});
       if(!HOMES.keeper(N))MERCH.stand(N,MUSH.booth); };
     wait(); }
-  window.SELLERDBG=()=>({swing:!!swing,sw:MUSH.sw?[+MUSH.sw.x.toFixed(4),+MUSH.sw.y.toFixed(4)]:null,booth:!!MUSH.booth,key:N&&N.key,x:N&&+N.st.x.toFixed(2),z:N&&+N.st.z.toFixed(2),y:N&&+N.g.position.y.toFixed(2),vis:N&&N.g.visible,tris:body&&body.tris()}); }
+  window.SELLERDBG=()=>({swing:!!swing,skull:!!MUSH.skull,sw:MUSH.sw?[+MUSH.sw.x.toFixed(4),+MUSH.sw.y.toFixed(4)]:null,booth:!!MUSH.booth,key:N&&N.key,x:N&&+N.st.x.toFixed(2),z:N&&+N.st.z.toFixed(2),y:N&&+N.g.position.y.toFixed(2),vis:N&&N.g.visible,tris:body&&body.tris()}); }
 export {MUSH};

@@ -93,7 +93,7 @@ import {GSND} from './146zo-guitar-sound.js';
   K.anim=(P,H,t,dt)=>{ H.dt=dt*60; const g=H.G, keys=g.userData.keys, down={};
     for(const e of window_(P,H,t)){ const p=press(e,t); if(p>(down[e.n]||0))down[e.n]=p; }
     for(let m=LO;m<=HI;m++){ const k=keys[m], d=down[m]||0; if(d!==k.dip||k.set<0){ k.dip=d; place(g,m,d); } }
-    g.userData.peds[2].rotation.x=-.16*(P.st.pd||0); };
+    g.userData.peds[2].rotation.x=-.16*(P.st.pd||0); if(P===INSTR.ME)lightPlayed(down); };
 
   /* ---------- playing it: the computer's keys as two rows of a piano (as music programs have them), the octave, the pedal; the panel's keys by click ---------- */
   const ROW={KeyZ:0,KeyS:1,KeyX:2,KeyD:3,KeyC:4,KeyV:5,KeyG:6,KeyB:7,KeyH:8,KeyN:9,KeyJ:10,KeyM:11,Comma:12,KeyL:13,Period:14,Semicolon:15,Slash:16,
@@ -120,6 +120,22 @@ import {GSND} from './146zo-guitar-sound.js';
   const NN=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
   K.status=P=>'OCTAVE '+NN[oct()%12]+(oct()/12-1)+(P.st.ped?' · PEDAL DOWN':'');
   K.draw=(PN,P)=>{ const pv=PN.querySelector('#pnvel'); if(pv&&!pv.oninput)pv.oninput=e=>{ vel=+e.target.value; }; const o=PN.querySelector('#pnoct'); if(o)o.textContent=NN[oct()%12]+(oct()/12-1); const pd=PN.querySelector('#pnped'); if(pd)pd.setAttribute('aria-pressed',String(!!P.st.ped)); };
+
+  /* ---------- the panel's keyboard (owner, 11 Nov 2026: "Full 88-key panel", "Keep book-only"): a display under the book, every key lighting as the piece plays it; all 88 or five octaves round the piece; the notes named or not (each viewer's choice, kept in their browser) ---------- */
+  const PREF={view:innerWidth<560?'five':'all',lab:'none'}; try{ Object.assign(PREF,JSON.parse(localStorage.getItem('tsfm.piano.kb')||'{}')); }catch(_){}
+  const save=()=>{ try{ localStorage.setItem('tsfm.piano.kb',JSON.stringify(PREF)); }catch(_){} };
+  const DO=['DO','','RE','','MI','FA','','SOL','','LA','','SI'], lit=new Set(); let shown=null;
+  const span=sc=>{ if(PREF.view==='all')return [LO,HI]; const ev=sc.ev, c=ev.length?Math.round(ev.reduce((a,e)=>a+e.n,0)/ev.length):60, lo=Math.max(LO,Math.min(HI-60,c-30-((c-30)%12+12)%12)); return [lo,lo+60]; };
+  const boardHTML=()=>{ const el=document.querySelector('#inp .kb'); if(!el)return; const sc=INSTR.score(INSTR.ME), [a,b]=span(sc), ws=[]; shown=sc; lit.clear(); for(let m=a;m<=b;m++)if(!BLACK(m))ws.push(m); const w=100/ws.length; let h='';
+    for(let m=a;m<=b;m++){ const nm=PREF.lab==='abc'?NN[m%12]+(m%12===0?(m/12-1):''):PREF.lab==='doremi'?DO[m%12]:'', l=BLACK(m)?(ws.indexOf(m-1)+1)*w-w*.3:ws.indexOf(m)*w, wd=BLACK(m)?w*.6:w;
+      h+=`<b class="${BLACK(m)?'k':'w'}" data-m="${m}" style="left:${l.toFixed(3)}%;width:${wd.toFixed(3)}%">${!BLACK(m)&&nm?nm:''}</b>`; }
+    el.className='kb'+(PREF.view==='all'?' all':''); el.innerHTML=h; };
+  K.board=()=>{ setTimeout(boardHTML,0); return `<div class="kb"></div><div class="r"><span class="d">KEYS</span><button data-kv="all">88</button><button data-kv="five">5 OCTAVES</button><span class="d">NAMES</span><button data-kl="none">NONE</button><button data-kl="abc">C D E</button><button data-kl="doremi">DO RE MI</button></div>`; };
+  K.boardDraw=PN=>{ for(const b of PN.querySelectorAll('[data-kv]'))b.setAttribute('aria-pressed',String(b.dataset.kv===PREF.view)); for(const b of PN.querySelectorAll('[data-kl]'))b.setAttribute('aria-pressed',String(b.dataset.kl===PREF.lab)); };
+  K.boardClick=b=>{ if(b.dataset.kv)PREF.view=b.dataset.kv; else if(b.dataset.kl)PREF.lab=b.dataset.kl; else return; save(); boardHTML(); INSTR.drawPanel(); };
+  const lightPlayed=down=>{ const el=document.querySelector('#inp .kb'); if(!el)return; if(shown!==INSTR.score(INSTR.ME))boardHTML();
+    for(const m of lit)if(!(down[m]>.5)){ lit.delete(m); const b=el.querySelector('b[data-m="'+m+'"]'); if(b)b.classList.remove('pl'); }
+    for(const m in down)if(down[m]>.5&&!lit.has(+m)){ const b=el.querySelector('b[data-m="'+m+'"]'); if(b){ b.classList.add('pl'); lit.add(+m); } } };
 
   /* ---------- the others: their notes ('n' midi.velocity, several by commas), their lifts ('u'), their pedal ('p') ---------- */
   K.hear=(P,k,v)=>{ if(k==='n')for(const s of v.split(',')){ const [m,q]=s.split('.').map(Number); if(m>=LO&&m<=HI)INSTR.note(P,{n:m,v:(q||6)/9,d:1e9,h:m<60?'L':'R'}); }

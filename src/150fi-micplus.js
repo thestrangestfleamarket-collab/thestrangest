@@ -2,6 +2,7 @@
 import {FORAGE, INV, SFX} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
+import {RARITY} from './013a-rarity.js';
 import {STOREK} from './023-west-kits.js';
 import {PHOTOS} from './146m-prints.js';
 import {FIRSTS} from './150fcz-firsts.js';
@@ -93,7 +94,7 @@ const MICX={}; window.MICX=MICX;
   MICX.ident=k=>{ const L=(MIC.data&&MIC.data.life||{})[k]||{}; P.cap={k,name:(L.common||k.toUpperCase()),sci:L.sci||'',about:L.about||'',credit:L.credit||''}; see('pond:'+k); if(RARE[k])FIRSTS.mark(k); MIC.redraw(); };
 
   /* ---------- micrographs: the eyepiece's picture as a print, priced like the camera's ---------- */
-  const TK={c:1,r:2.5,s:6}, TN={c:'COMMON',r:'RARE',s:'SUPER RARE'};
+  const TK={c:1,r:2.5,s:6}, TN=RARITY.NAMES;
   const subject=()=>{ const V=MIC.K.V, s=V.slide; if(!s)return null; const k=V.cv.width/MIC.K.fov();
     if((s.live||s.id==='pond')&&V.org){ let best=null; for(const o of V.org){ const px=(o.x-V.sx)*k, py=(o.y-V.sy)*k, L=o.len*k; if(Math.hypot(px,py)>V.cv.width*.4||L<20)continue; const t=RARE[o.k]||'c', b=MIC.K.blurOf(o.z-50-V.zf); if(b>4)continue;
         if(!best||TK[t]>TK[best.t])best={kind:'mic_'+o.k,name:((MIC.data&&MIC.data.life&&MIC.data.life[o.k]&&MIC.data.life[o.k].common)||o.k.toUpperCase()),t,base:4,blur:b}; } return best||{kind:'mic_water',name:'POND WATER',t:'c',base:1,blur:0}; }

@@ -257,6 +257,11 @@ One tree pass (more leaves mean more shadow triangles).
   Polyfork has them); the 3 MB a figure could shrink if a build were dropped.
 - [ ] **The bench is cut off at the sides in the editor's 360 view** · P3 · S · code.
 
+## Things
+
+- [x] **The ESC wheel, five rarities, the item card, walk-over pickup, appraisal, emote extras, pockets** (owner, 11 Nov 2026: "go with all your picks, build in that order") · done 11 Nov.
+- [ ] **The owner tries them live and approves** · P2 · S · look. The bag's size (60/80/100, not the picked 24/36/48: a new player starts with 49 kinds); what the trainers teach (existing moves: HARVEST, PLANT A SEED, CAST A LINE, WATER THE FLOWERS, HARD LABOUR, BIG SWING, HOOK); the item card's lines (data/examine.json).
+
 ## Moves
 
 - [ ] **The owner tries the moves live and approves** · P2 · S · look. #557, #561 and the Mixamo clips (7 Nov): emotes, kick and dodge,

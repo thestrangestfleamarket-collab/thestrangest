@@ -1,4 +1,6 @@
-// THE BIG CAT: BIGCAT, a huge black cat-shaped blob (a rounded block with two horn-like ears, big speckled staring eyes, an open mouth with pink teeth, whiskers, two clawed paws) walking the street, two and a half times a person's height (a smooth MERCH body on the player's rig).
+// THE BIG CAT: BIGCAT, a huge black cat-shaped blob (a rounded block with two horn-like ears, big speckled staring eyes, an open mouth with pink teeth, whiskers, two clawed paws) walking the street, five times a person's height, walking Market St (a smooth MERCH body on the player's rig).
+import {TILE} from './006-map-pre.js';
+import {HOMES} from './076-npc-map.js';
 import {MERCH} from './111e-merch.js';
 const BIGCAT={};
 { const {SPH,CYL,TOR,CAP,grp,mk,paint,C,mix,fbm,hash3}=MERCH.K, PI=Math.PI;
@@ -34,7 +36,9 @@ const BIGCAT={};
       const F=B['shoe'+n]; mk(F,sk2(SPH(.23,22,14)),S,[0,.14,.1],[0,0,0],[1.15,.68,1.35]);
       for(let i=0;i<4;i++){ const a=(i-1.5)*.4; mk(F,sk2(SPH(.09,14,10)),S,[Math.sin(a)*.22,.085,.24+Math.cos(a)*.16],[0,0,0],[.95,.95,1.2]); } }
     return sk; };
-  // two and a half times a person's height
-  const body=MERCH.add({key:'bigcat',label:'THE BIG CAT',height:2.3,model,size:25,q:.75,at:100,idle:()=>MERCH.pose({bend:0,nod:0})});
+  // five times a person's height
+  const body=MERCH.add({key:'bigcat',label:'THE BIG CAT',height:2.3,model,size:50,q:.75,at:100,idle:()=>MERCH.pose({bend:0,nod:0})});
   const N=BIGCAT.N=body&&body.npc;
+  // his round: Market St, from a little east of its middle
+  if(N&&HOMES.band){ const b=HOMES.band(), st=N.st, x=(b.x0+b.x1)/2+10*TILE, z=b.rows[1]; Object.assign(st.home,{x,z,r:Math.max(b.x1-b.x0,b.z1-b.z0)/2}); Object.assign(st,{x,z,to:null,next:null}); }
   window.BIGCATDBG=(x,z)=>{ if(N&&x!=null){ Object.assign(N.st,{x,z,to:null,next:null}); } return N?{x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),vis:N.g.visible,tris:body.tris()}:null; }; }

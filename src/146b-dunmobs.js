@@ -137,7 +137,7 @@ __CODE__("worker/dunmobs.js")
   ONLINE.hear.mobhurt=m=>{ if(!trying)felt(m); };
   // the dungeon master's design (worker/dunmobs.js M.clean): the published one from the server, or a draft being tried alone
   let live=LIVE, trying=null;
-  const apply=async d=>{ if(window.LOAD)await LOAD('later'); if(D.setMap)D.setMap(d&&d.map); await bake(); MOBSIM.design(MS,d); pic=null; };
+  const apply=async d=>{ if(window.LOAD)await LOAD('later'); if(CREATS.fauna)await Promise.all(((d&&d.mobs)||[]).filter(e=>/^fa:/.test(e.key||'')).map(e=>CREATS.fauna(e.key.slice(3)))).catch(()=>{}); if(D.setMap)D.setMap(d&&d.map); await bake(); MOBSIM.design(MS,d); pic=null; };
   const dm=()=>{ live=LIVE; if(!trying)apply(live); };
   ONLINE.hear.dmres=m=>say(m.ok?'THE DUNGEON IS PUBLISHED: '+(m.n|0)+' CREATURE KINDS.':'NOT PUBLISHED: '+String(m.why||'').toUpperCase(),m.ok?'#b8f0a0':'#e8a090');
   ONLINE.hear.mobkill=m=>{ if(!trying)won(m); };

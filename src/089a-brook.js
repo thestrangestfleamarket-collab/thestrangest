@@ -120,7 +120,7 @@ import {FOUNT} from './060a-fount.js';
         post:scene=>{ if(!uw)return; scene.fog=fog0; scene.background.copy(bg0); if(SKY&&SKY.dome)SKY.dome.visible=dome; uw=false; }}); }
     BROOK.feed=(st,pos,dt,go,keys)=>{ const px=SHARED.BOD.MX(pos.x)-(P.ox||0), py=SHARED.BOD.MY(pos.z)-(P.oy||0), r=SHARED.LVL==='up'?BK.q(px,py):null;
       if(!r||r[0]>=W(r[1])){ if(BROOK.swim&&st.water)st.water.in=false; BROOK.swim=false; return false; }
-      const W1=RIG.water(st,{level:(L(r[1])*WU+G0+(BROOK.swim?FLOW.carry(pos,dt):0))/ZU,floor:SHARED.groundY(pos.x,pos.z)/ZU}); W1.go=!!go; W1.fast=W1.in&&(keys.has('k')||keys.has('shift'))?1:0;
+      const W1=RIG.water(st,{level:(L(r[1])*WU+G0+(BROOK.swim?FLOW.carry(pos,dt):0)-SHARED.py)/ZU,floor:(SHARED.groundY(pos.x,pos.z)-SHARED.py)/ZU}); W1.go=!!go; W1.fast=W1.in&&(keys.has('k')||keys.has('shift'))?1:0;
       if(W1.in&&W1.floor>=W1.level-30&&!st.move&&!W1.dive){ W1.in=false; if(st.last)st.out={pose:JSON.parse(JSON.stringify(st.last)),t:0,T:.4}; }
       W1.events.length=0; BROOK.swim=W1.in; return true; };
     BROOK.ready=true; };

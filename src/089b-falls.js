@@ -60,7 +60,7 @@ window.FALLS=FALLS;
   // the pool: you swim and dive in it; fish and the rod know it as still water (MODS.hill under the water)
   const wet=(x,y)=>cutD(x,y)<0&&drawH(x,y)<WL-.05;
   (MODS.waters=MODS.waters||[]).push({feed:(st,pos,dt,go,keys)=>{ if(SHARED.LVL!=='up')return false; const a=mx(pos.x), b=my(pos.z); if(!inFP(a,b)||!wet(a,b))return false;
-      const W=RIG.water(st,{level:(WL*M+G0)/ZU,floor:SHARED.groundY(pos.x,pos.z)/ZU}); W.go=!!go; W.fast=W.in&&(keys.has('k')||keys.has('shift'))?1:0;
+      const W=RIG.water(st,{level:(WL*M+G0-SHARED.py)/ZU,floor:(SHARED.groundY(pos.x,pos.z)-SHARED.py)/ZU}); W.go=!!go; W.fast=W.in&&(keys.has('k')||keys.has('shift'))?1:0;
       if(W.in&&W.floor>=W.level-30&&!st.move&&!W.dive){ W.in=false; if(st.last)st.out={pose:JSON.parse(JSON.stringify(st.last)),t:0,T:.4}; }
       FALLS.swim=W.in; return true; }});
   FALLS.wet=(wx,wz)=>{ const a=mx(wx), b=my(wz); return inFP(a,b)&&wet(a,b); };

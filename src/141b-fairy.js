@@ -13,7 +13,7 @@ const FAIRY={list:[]}; window.FAIRY=FAIRY;
       if(WEEDS&&WEEDS.inPark&&!WEEDS.inPark(x,z))continue; if(SOL.up.some(b=>x>b[0]-2*T&&x<b[2]+2*T&&z>b[1]-2*T&&z<b[3]+2*T))continue; if(FAIRY.list.some(r=>Math.hypot(r.x-x,r.z-z)<5*T))continue;
       const n=9+Math.floor(Math.random()*6), R=(.8+Math.random()*.6)*T, kind=Math.floor(Math.random()*COL.length), M=[];
       for(let i=0;i<n;i++){ const t=i/n*6.283+Math.random()*.3, rr=R*(.9+Math.random()*.2); M.push([x+Math.cos(t)*rr,z+Math.sin(t)*rr,(.09+Math.random()*.07)*T,Math.random()]); }
-      const r={x,z,R,M,kind,t:0,life:240+Math.random()*120,th:null}, hb=new THREE.Mesh(new THREE.CylinderGeometry(R,R,.3*T,10),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(x,gy(x,z)+.15*T,z); g.add(hb);
+      const r={x,z,R,M,kind,t:0,life:240+Math.random()*120,th:null}, HR=R*1.1+.15*T, hb=new THREE.Mesh(new THREE.CylinderGeometry(HR,HR,.3*T,10),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(x,gy(x,z)+.15*T,z); g.add(hb);
       r.hb=hb; r.th={name:'A FAIRY RING',obj:hb,reach:1.6*T,near:2.4*T,tall:.4*T,act:()=>FAIRY.pick(r)}; UI.thing(r.th); FAIRY.list.push(r); return r; } return null; };
   const drop=r=>{ g.remove(r.hb); const j=UI.things.indexOf(r.th); if(j>=0)UI.things.splice(j,1); const i=FAIRY.list.indexOf(r); if(i>=0)FAIRY.list.splice(i,1); };
   FAIRY.pick=r=>{ if(r.t<2)return; const id=r.kind===3?'m_moonglow':'m_morel', n=Math.max(2,Math.floor(r.M.length/3)); FORAGE.give(id,n); SAY(`YOU GATHER THE FAIRY RING: ${n} MUSHROOMS.`,'#9fe07f'); drop(r); };

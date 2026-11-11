@@ -9,7 +9,7 @@ import {STALL} from './081-stalls.js';
     'bro.train':'TRAIN {n} · TO {next}','bro.track1':'TRAIN 1 · the outer track','bro.track2':'TRAIN 2 · the inner track','bro.stop':'A STOP AT EVERY STATION · click one to ride there','bro.quiet':'the dim stations are sections not built yet',
     'bro.hint':'CLICK A PLACE TO GO THERE · WHEEL ZOOMS · DRAG MOVES','bro.water':'THE HUDSON','bro.lake':'THE LAKE','bro.alley':'THE ALLEY','bro.prom':'THE PROMENADE','bro.g.underground':'UNDERGROUND','bro.g.else':'ELSEWHERE',
     'bro.find':'TYPE A NAME...','bro.neighbours':'NEIGHBOURS','bro.online':'online','bro.dun':'THE DUNGEON','bro.dun2':'its plan shows once you have been down'}))TEXT.t(k,d);
-  const css=document.createElement('style'); css.textContent=`#dbro svg.mv{display:block;margin:0 auto;width:auto;max-width:100%;height:calc(92vh - 215px);min-height:280px;background:#010805;box-shadow:inset 0 0 0 2px #3aa866;cursor:grab;touch-action:none;user-select:none;fill:#7dffa8}
+  const css=document.createElement('style'); css.textContent=`#dbro svg.mv{display:block;margin:0 auto;width:100%;height:calc(92vh - 215px);min-height:280px;background:#010805;box-shadow:inset 0 0 0 2px #3aa866;cursor:grab;touch-action:none;user-select:none;fill:#7dffa8}
     #dbro svg.mv text{font-family:var(--pixel);letter-spacing:1px} #dbro svg [data-go],#dbro svg [data-st]{cursor:pointer} #dbro svg [data-go]:hover,#dbro svg [data-st]:hover{opacity:.7} #dbro svg .nb:hover rect{fill:#7dffa8} #dbro svg .nb:hover text{fill:#020a06}
     #dbro .hint{margin-top:8px;font-size:13px} #dbro .gof{box-sizing:border-box;width:100%;font:inherit;color:var(--mt);background:var(--mb);border:2px solid var(--mi);padding:6px 8px;margin-bottom:8px} #dbro .gof::placeholder{color:var(--md)}
     #dbro .gor{display:flex;gap:10px;align-items:center;padding:4px;cursor:pointer;white-space:nowrap} #dbro .gor i{font-style:normal;flex:none;width:28px;text-align:right;color:var(--md)} #dbro .gor span{margin-left:auto;color:var(--md)}
@@ -74,7 +74,7 @@ import {STALL} from './081-stalls.js';
     { const Cu=ROOMS.cur, R=Cu&&ROOMS.off[Cu.off||Cu.lz||Cu.id], o=R&&R.out, at=o?((o[2]||'up')==='up'?[o[0],o[1]]:null):SHARED.LVL==='up'&&!(Cu&&Cu.off)?[pos.x,pos.z]:null;
       if(at){ const x=WX(at[0]), y=WY(at[1]); if(x>0&&x<mw&&y>0&&y<720){ S.push(star(x,y,10)); S.push(txt(TEXT.t('bro.here'),x,y+21,8,{a:'middle',f:C.y})); } } }
     S.push(`<g transform="translate(${mw-34} 34)"><circle r="20" fill="${C.k}" stroke="${C.i}" stroke-width="1.5"/><polygon points="0,-16 5,0 0,4 -5,0" fill="${C.f}"/><polygon points="0,16 5,0 0,-4 -5,0" fill="${C.i}" opacity=".6"/>${txt('N',0,-24,10,{a:'middle',f:C.i})}</g>`);
-    return `<svg class="mv" viewBox="0 0 ${mw.toFixed(1)} 720" preserveAspectRatio="xMidYMid meet" style="aspect-ratio:${mw.toFixed(1)}/720"><clipPath id="mvc"><rect width="${mw.toFixed(1)}" height="720"/></clipPath><g clip-path="url(#mvc)">${S.join('')}</g></svg>`; };
+    return `<svg class="mv" viewBox="0 0 ${mw.toFixed(1)} 720" preserveAspectRatio="xMidYMid meet"><clipPath id="mvc"><rect width="${mw.toFixed(1)}" height="720"/></clipPath><g clip-path="url(#mvc)">${S.join('')}</g></svg>`; };
   /* ---------- SUBWAY: the section grid, the park, the two tracks, every station ---------- */
   const subway=()=>{ '@later'; const S=[], D=LOOP.D, SE=SECTIONS, gr=SE.grid, cols=gr.cols, rows=gr.rows, x0=400, y0=122, gw=800, gh=476, tw=gw/cols, th=gh/rows, loaded=new Set(SE.loaded.map(b=>b.id)), home=SECTION.id, OFF='#1d5a33';
     S.push(`<rect x="380" y="0" width="840" height="720" fill="${KC.void}"/><rect x="${x0}" y="96" width="${gw}" height="26" fill="${KC.water}"/><rect x="${x0}" y="${y0+gh}" width="${gw}" height="26" fill="${KC.water}"/>`+txt(TEXT.t('bro.water'),x0+gw/2,y0+gh+18,9,{a:'middle',f:C.f,ls:3}));
@@ -92,7 +92,7 @@ import {STALL} from './081-stalls.js';
     S.push(`<line x1="400" y1="640" x2="1200" y2="640" stroke="${C.i}" stroke-width="2"/><line x1="400" y1="662" x2="440" y2="662" stroke="${C.f}" stroke-width="9"/><line x1="400" y1="690" x2="440" y2="690" stroke="${C.i}" stroke-width="9"/>`);
     S.push(txt(next?TEXT.t('bro.train',null,{n:1,next:next[0]}):TEXT.t('bro.track1'),450,666,11,{f:C.f})+txt(next?TEXT.t('bro.train',null,{n:2,next:next[1]}):TEXT.t('bro.track2'),450,694,11,{f:C.f}));
     S.push(txt(TEXT.t('bro.stop'),800,666,11,{f:C.f})+txt(TEXT.t('bro.quiet'),800,684,10,{f:C.i}));
-    return `<svg class="mv" viewBox="380 0 840 720" preserveAspectRatio="xMidYMid meet" style="aspect-ratio:840/720">${S.join('')}</svg>`; };
+    return `<svg class="mv" viewBox="380 0 840 720" preserveAspectRatio="xMidYMid meet">${S.join('')}</svg>`; };
   /* ---------- UNDERGROUND: its places, and the dungeon's plan once it has been built ---------- */
   const under=()=>{ '@later'; const L=(LG.find(([k])=>k===TEXT.t('bro.g.underground'))||[,[]])[1], E=TEXT.esc||esc;
     let h=`<h3>${E(TEXT.t('bro.g.underground'))}</h3>`+L.map(o=>`<div class="gor" data-go="${E(o.name)}"><i>${o.s?o.s.n:''}</i>${E(o.name)}</div>`).join('');
@@ -123,8 +123,12 @@ import {STALL} from './081-stalls.js';
       if(el&&el.dataset.st){ const st=(LOOP.STA||[]).find(q=>q.id===el.dataset.st); if(!st)return; return go(()=>{ if(st.old)return UI.goTo(MODS.station.plat.x,MODS.station.plat.z,'down'); const p=st.P(LOOP.LEN/2,LOOP.MID,0); UI.goTo(p[0],p[2],'down'); }); }
       const s=e.target.closest&&e.target.closest('svg.mv'); if(T!=='street'||!s||!G)return; const p=svgPt(s,e); if(p.x<0||p.x>G.mw||p.y<0||p.y>720)return;   // a plain click on the street: go there
       const [x,zz]=G.toWorld(p.x,p.y); go(()=>UI.goTo(x,zz,'up')); }); };
+  // the picture fills the menu's pane, whatever the window's size
+  const fit=()=>{ const s=H&&H.querySelector('svg.mv'), P=H&&H.closest('.panes'); if(!s||!P||!P.clientHeight)return; const cs=getComputedStyle(P), hint=H.querySelector('.hint');
+    s.style.height=Math.max(280,P.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom)-(hint?hint.offsetHeight+10:0))+'px'; };
+  let RO=null;
   const into=(host,tab)=>{ '@later'; H=host; T=tab||'street'; wire(host); const pic=street(); let h='';
-    if(T==='street'||T==='subway'){ h=(T==='street'?pic:subway())+`<div class="dim hint">${esc(TEXT.t('bro.hint'))}</div>`; host.innerHTML=h; const s=host.querySelector('svg.mv'), v=s.viewBox.baseVal; VB0=[v.x,v.y,v.width,v.height]; VB=VB0.slice(); return; }
+    if(T==='street'||T==='subway'){ h=(T==='street'?pic:subway())+`<div class="dim hint">${esc(TEXT.t('bro.hint'))}</div>`; host.innerHTML=h; const s=host.querySelector('svg.mv'), v=s.viewBox.baseVal; VB0=[v.x,v.y,v.width,v.height]; VB=VB0.slice(); fit(); const P=host.closest('.panes'); if(P&&!RO&&window.ResizeObserver){ RO=new ResizeObserver(()=>fit()); RO.observe(P); } return; }
     VB=VB0=null;
     if(T==='under'){ const [u,P]=under(); host.innerHTML=u; const c=host.querySelector('canvas.dun'); if(c&&P){ c.width=P.cv.width; c.height=P.cv.height; const g=c.getContext('2d'); g.drawImage(P.cv,0,0); g.font='9px "Share Tech Mono",monospace'; g.textAlign='center'; g.fillStyle=C.f; for(const n of P.names)g.fillText(n.nm,n.x,n.y);
       if(SHARED.LVL==='down'&&MODS.dungeon&&MODS.dungeon.in&&MODS.dungeon.in()){ g.fillStyle=C.y; g.fillRect(P.wx(pos.x)-4,P.wz(pos.z)-4,8,8); } } return; }

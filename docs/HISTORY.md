@@ -6151,3 +6151,7 @@ Owner: "what polyfork animations do we have for our character", then "yes lets u
 - 11 Nov 2026, the weeds' blades gone (owner, of the tall thin stalks by a bench: "lets remove the weeds that looks like this in game"): the rings at the feet of things are tufts only.
 - 11 Nov 2026, the campus rails gone (owner: "lets remove all the campusrails from the game completely"): every Polyfork campus railing is out of the park and the game's files. Supersedes 7 Nov's keeping them.
 - 11 Nov 2026, no idle animations (owner: "remoev the idle animations ... keep the swaying, just not th specific idle animations like crossed arms, etc"): standing still, a body only sways; no folded arms, phone or looking about (the emotes stay in the moves list). Supersedes 9 Nov's "standing still".
+- 11 Nov 2026, swimming at the falls (owner: "swimming near waterfall doesnt work right (sink)"): you tread at the falls pool's surface, the brook's waders stand on its bed, and coming up from a dive no longer pulls you down first.
+- 11 Nov 2026, the fairy ring picks where you see it (owner: "why cant i attempt to pick those glowing mushrooms?"): a double click on any of its caps gathers it, not only its middle.
+- 11 Nov 2026, the hover cab's side panel (owner: "fix the look of taxi floating"): the yellow panel on each rear side sits on the body behind the rear door, not standing off it over the door.
+- 11 Nov 2026, the map fits the menu (owner: "make the map fit the menu"): the STREET and SUBWAY maps fill the menu's pane at any window size.

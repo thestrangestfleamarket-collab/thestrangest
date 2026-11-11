@@ -19,7 +19,7 @@ Object.assign(SWIM,{d:null,tankS:0}); window.SWIM=SWIM;
     if(SWIM.d==null&&v>0){ SWIM.d=Math.max(30,now); if(!told){ told=true; say('SPACE SWIMS DOWN, SHIFT UP; IN FIRST PERSON YOU SWIM WHERE YOU LOOK.'); } }
     if(SWIM.d!=null){ if(!v&&!(EQUIP.breathe&&SWIM.tankS>0))v=-.3*MS;   // still, you drift slowly up; a diver's set holds you level
       SWIM.d=Math.max(now-15,Math.min(max,now+30,SWIM.d+v*dt)); if(SWIM.d<28&&v<0)SWIM.d=null; }
-    W.dive=SWIM.d!=null; W.deep=SWIM.d||0; dive(W.dive); },'146ga-swim');
+    W.dive=SWIM.d!=null; W.deep=SWIM.d??Math.max(1,now); dive(W.dive); },'146ga-swim');   // (surfacing: W.deep holds where you are while the dive fades, or the rig pulls you to the bed)
 
   // your arms in first person: two arms in the camera's space, a breaststroke under, a crawl on top, treading or sculling when still
   const skin=new THREE.MeshLambertMaterial({color:0xe6c4b0}), seg=()=>new THREE.Mesh(new THREE.CapsuleGeometry(1,4,3,8),skin), root=LEVELS.own(new THREE.Group(),'*'); root.name='swimarms'; root.visible=false; scene.add(root);

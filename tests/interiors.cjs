@@ -34,8 +34,8 @@ const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv
       const W=ms=>new Promise(r=>setTimeout(r,ms)), view=__dbg.UI.view; th('AIR HOCKEY').act(); const sat=AIRH.on&&__dbg.UI.holdCam==='hockey'; AIRH.start('easy'); AIRH.aim(0,.3); await W(1500); const d=AIRH.dbg(), hit=d.mode==='play'&&d.puck[1]<.3;
       const S=AIRH.sim, s=S.create(), ev=[]; let goals=0, out=0; S.faceoff(s,1); for(let i=0;i<240*120;i++){ S.think(s,s.m[0],S.LEVELS.hard,1/240); S.think(s,s.m[1],S.LEVELS.easy,1/240); S.step(s,1/240,ev); if(Math.abs(s.puck.x)>S.W||Math.abs(s.puck.z)>S.L+.1)out++; if(!s.live){ goals++; S.faceoff(s,1); } }
       AIRH.close(); const hockey=sat&&hit&&goals>0&&!out&&!AIRH.on&&!__dbg.UI.holdCam&&__dbg.UI.view===view;
-      return {skee:play('SKEE-BALL'),claw:play('THE CLAW'),hockey,hk:{sat,hit,goals,out,d},cabs:__dbg.UI.things.filter(t=>t.name.startsWith('PLAY ')).length}; });
-    rec('arcade: skee-ball, the claw and air hockey play; the cabinets stand',a.skee&&a.claw&&a.hockey&&a.cabs>=6,JSON.stringify(a));
+      return {skee:play('SKEE-BALL'),hoops:play('HOOP FEVER'),claw:play('THE CLAW'),hockey,hk:{sat,hit,goals,out,d},cabs:__dbg.UI.things.filter(t=>t.name.startsWith('PLAY ')).length}; });
+    rec('arcade: skee-ball, HOOP FEVER, the claw and air hockey play; the cabinets stand',a.skee&&a.hoops&&a.claw&&a.hockey&&a.cabs>=6,JSON.stringify(a));
     if(OUT){ await pg.screenshot({path:OUT+'/arcade.png'}); }
     await pg.evaluate(()=>ROOMS.exit('arcade')); await pg.waitForTimeout(3000); }
   /* ---------- THE BODEGA ---------- */

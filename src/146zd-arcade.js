@@ -1,4 +1,4 @@
-// THE ARCADE, FURNISHED: round the owner's cabinets and the holodeck booth, what a real arcade has: skee-ball, air hockey, a claw machine and two pinball tables (each a game, free play), the token machine (tickets won at the games traded for market tokens, 10 for 1), a soda machine, stools at the cabinets; where its staff and its crowd stand or sit.
+// THE ARCADE, FURNISHED: round the owner's cabinets and the holodeck booth, what a real arcade has: skee-ball, HOOP FEVER (basketball), air hockey, a claw machine and two pinball tables (each a game, free play), the token machine (tickets won at the games traded for market tokens, 10 for 1), a soda machine, stools at the cabinets; where its staff and its crowd stand or sit.
 import {THREE} from './003-shx.js';
 import {FORAGE, INV, ROOMS, UI, WORKERS} from './003b-systems.js';
 import {SAY} from './003d-say.js';
@@ -7,6 +7,7 @@ import {STORE, TILE} from './006-map-pre.js';
 import {IKIT} from './038zc-ikit.js';
 import {MINI} from './038zd-mini.js';
 import {SKEE} from './146yz-skee.js';
+import {HOOPS} from './146yza-hoops.js';
 import {AIRH} from './146zcz-airhockey.js';
 import {PIN} from './146zcz-pinball.js';
 const ARCADE={}; window.ARCADE=ARCADE;
@@ -16,6 +17,7 @@ const ARCADE={}; window.ARCADE=ARCADE;
   const tok=()=>INV.items.arc_token||0, needTok=()=>'', payTok=()=>true;   // free play (owner, 5 Nov 2026)
   const win=n=>{ if(n>0){ INV.add('ptix',n); say(`${n} TICKET${n===1?'':'S'} COME OUT.`); } };
   ARCADE.skee=()=>MINI.open(SKEE.game({can:needTok,pay:payTok,end:S=>{ ARCADE.last={game:'skee',score:S.score,tickets:S.tickets||0}; win(S.tickets||0); }}));
+  ARCADE.hoops=()=>MINI.open(HOOPS.game({can:needTok,pay:payTok,end:S=>{ ARCADE.last={game:'hoops',score:S.score,tickets:S.tickets||0}; win(S.tickets||0); }}));
   ARCADE.claw=()=>MINI.open(GAMES.claw({can:needTok,pay:payTok,end:S=>{ ARCADE.last={game:'claw',won:!!S.won}; if(S.won){ INV.add('plush_bear',1); say('A PLUSH BEAR. IT IS IN YOUR PACK.'); } }}));
   ARCADE.hockey=()=>AIRH.play({end:S=>{ ARCADE.last={game:'hockey',won:!!S.won,score:S.score,level:S.level}; win(S.score); }});
   ARCADE.trade=()=>{ const have=INV.items.ptix||0, n=Math.floor(have/10); if(!n)return say(`YOU HAVE ${have} TICKET${have===1?'':'S'}. TEN MAKE A TOKEN.`,'#c8a090'); FORAGE.take('ptix',n*10); INV.add('arc_token',n); say(`${n*10} TICKETS IN, ${n} MARKET TOKEN${n===1?'':'S'} OUT. YOU HAVE ${tok()}.`); return n; };
@@ -36,6 +38,15 @@ const ARCADE={}; window.ARCADE=ARCADE;
     // skee-ball: two lanes rising to their rings at the back
     at(0,0); for(const u0 of [3.2,4.1]){ box(u0,3.0,u0+.7,6.6,0,.75,0x6a3a1a); box(u0+.08,3.2,u0+.62,6.5,.75,.78,0xd8b878); box(u0,2.6,u0+.7,3.0,.75,1.6,0x2a2a32); for(const [r,h] of [[.2,1.05],[.13,1.25],[.07,1.42]])cyl(u0+.35,2.99,r,h-.02,h,0xf2c14e,r,16); glow(()=>{ box(u0+.05,2.62,u0+.65,2.64,1.55,1.6,0xff4fa0); for(const e of [u0,u0+.66])box(e,3.0,e+.04,6.6,.74,.78,0x40e0ff); box(u0+.1,6.58,u0+.6,6.61,.5,.6,0xf2c14e); }); sol(u0,2.6,u0+.7,6.6);
       thing('SKEE-BALL (1 TOKEN)',u0+.35,6.3,.7,1.0,ARCADE.skee); }
+    // HOOP FEVER: a netted cage, its ramp rising to the hoop at the back, the console and marquee at the front
+    { const u0=5.15, u1=6.19, uc=(u0+u1)/2, vb=3.3, vf=6.6, R=0xff2233, ICE=0xcfeaff;
+      box(u0,vf-.45,u1,vf,0,.97,C.black); box(u0,vb,u1,vf-.45,0,1.05,0x0e0e12); box(u0+.04,vb,u1-.04,vf-.45,1.05,1.1,0x14151b);
+      for(const e of [u0,u1-.045])for(const v of [vb,vf-.5])box(e,v,e+.045,v+.045,1.05,2.9,0x1a1a20); for(const e of [u0,u1-.04])box(e,vb,e+.04,vf-.45,2.86,2.9,0x1a1a20); box(u0,vb,u1,vb+.04,2.86,2.9,0x1a1a20); box(u0,vf-.5,u1,vf-.46,2.86,2.9,0x1a1a20);
+      box(u0,vb-.04,u1,vb,1.05,2.9,0x22242c); box(uc-.3,vb,uc+.3,vb+.03,1.75,2.4,0xf2f2ee); box(uc-.12,vb+.03,uc+.12,vb+.035,1.83,2.0,R); cyl(uc,vb+.25,.16,1.84,1.86,0xe0431a); cyl(uc,vb+.25,.11,1.73,1.84,0xf4f4f4,.16,10);
+      box(uc-.4,vb,uc+.4,vb+.04,2.48,2.76,C.black); pic(uc,vb+.045,2.62,.76,.24,0,1,words(48,16,'#060508',[['00',24,3,'#ff2d3d',10,'center']]),true);
+      pic(uc,vf+.005,.5,.86,.86,0,1,words(48,48,'#101a36',[['HOOP',24,14,'#ffffff',12,'center'],['FEVER',24,28,'#8fd8ff',10,'center']]),true);
+      glow(()=>{ for(const e of [u0-.01,u1-.004])box(e,vb+.03,e+.014,vb+.044,1.5,2.88,R); box(u0,vb+.03,u1,vb+.044,2.84,2.86,R); box(u0,vf-.45,u1,vf-.44,1.04,1.06,ICE); for(const e of [u0-.02,u1+.006])box(e,vf,e+.014,vf+.014,.05,.95,ICE); box(u0,vf,u1,vf+.014,.94,.96,R); });
+      sol(u0,vb-.04,u1,vf); thing('HOOP FEVER (1 TOKEN)',uc,vf-.2,1.0,1.2,ARCADE.hoops); }
     // air hockey
     at(0,0); AIRH.put(F,K,10.2+du,4.65,m=>scene.add(m)); thing('AIR HOCKEY',10.2+du,4.65,1.2,.9,ARCADE.hockey);
     // stools at the side cabinets

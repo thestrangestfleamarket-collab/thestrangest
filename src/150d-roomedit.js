@@ -20,7 +20,7 @@ import {ROOMK} from './150a-bedroom.js';
   const snapshot=A=>{ '@later'; const things={}, added=[], lights={};
     for(const un of A.units()){ const t=A.getT(un), e={u:r3(t.u),h:r3(t.h),v:r3(t.v),ry:r3(t.ry),s:r3(t.s)}; if(un.gone)e.gone=1; if(un.added)added.push({id:un.id,kind:un.kind,paid:un.paid||0,...e}); else things[un.id]=e; }
     for(const q of A.lightsAll()){ const L=A.lightGet(q.id); delete L.type0; lights[q.id]=L; }
-    const L={v:1,ep:EP,wall:A.R.wall,floor:A.R.floor,kfloor:A.R.kfloorK,glow:A.R.glowK,addN:A.R.addN,things,added,lights}; for(const k of ROOMK.keep)try{ k.out(L,A); }catch(e){} return L; };
+    const L={v:1,ep:EP,tier:A.R.tier??(MODS.apts.tier||0),wall:A.R.wall,floor:A.R.floor,kfloor:A.R.kfloorK,glow:A.R.glowK,addN:A.R.addN,things,added,lights}; for(const k of ROOMK.keep)try{ k.out(L,A); }catch(e){} return L; };
   const apply=(A,L)=>{ '@later'; if(!L||!A)return; if(L.wall)A.wall(L.wall); if(L.floor)A.floor(L.floor); if(L.kfloor)A.kfloor(L.kfloor); if(L.glow!=null)A.glow(L.glow); A.R.addN=Math.max(A.R.addN,L.addN||0); for(const k of ROOMK.keep)try{ k.in(L,A); }catch(e){}
     for(const a of L.added||[]){ if(A.units().some(u=>u.id===a.id))continue; const un=A.spawn(a.kind,a,a.id); if(!un)continue; un.paid=a.paid||0; if(a.gone)A.remove(un); }
     for(const un of A.units())if(!un.added&&L.things&&L.things[un.id]){ const t=L.things[un.id]; A.setT(un,t); if(t.gone)A.remove(un); }   // the pieces every flat has, where you moved them
@@ -29,9 +29,10 @@ import {ROOMK} from './150a-bedroom.js';
   const SORT={};
   ROOMK.built.push(A=>{ '@later'; sortKinds(A); const lt={}; for(const q of A.lightsAll())lt[q.id]=A.lightGet(q.id); A.R.bare={wall:A.R.wall,floor:A.R.floor,kfloor:A.R.kfloorK,glow:A.R.glowK,lights:lt}; if(!QS.has('furnished'))for(const un of A.units().slice())if(!un.added&&!ROOMK.always.has(un.kind))A.drop(un); if(HOME.stale&&!HOME.guest){ const S=HOME.stale, K=A.kinds(); HOME.stale=null; let back=0, n=0; for(const a of S.added||[]){ const KO=K[a.kind]; if(KO&&KO.own){ FORAGE.give(KO.own,1); n++; } else back+=a.paid||0; }
       INV.cash=(INV.cash||0)+back; if(INV.save)INV.save(); HOME.save(snapshot(A)); if(back||n)UI.log('YOUR APARTMENT WAS RESET'+(back?': $'+back+' BACK FOR YOUR FURNITURE':'')+(n?(back?',':':')+' '+n+' THING'+(n>1?'S':'')+' BACK IN YOUR PACK':'')+'.','#c8a090'); }
-    if(HOME.guest)apply(A,HOME.guest.layout); else if(HOME.loaded){ apply(A,HOME.layout); tidy(A); } if(ED.on)ED.panel(); });
+    if(HOME.guest)apply(A,HOME.guest.layout); else { if(HOME.loaded)apply(A,HOME.layout); tidy(A); } if(ED.on)ED.panel(); });
   // a layout that comes back with pieces inside one another is put right once, and says so
-  const tidy=A=>{ '@later'; if(HOME.guest||!HOME.layout)return; const m=unclip(); if(!m.length)return; HOME.save(snapshot(A)); for(const [x,y] of m)UI.log('THE '+x+' WAS STANDING IN THE '+y+': MOVED CLEAR.','#c8a090'); };
+  const tidy=A=>{ '@later'; if(HOME.guest)return; const T=MODS.apts.TIERS[MODS.apts.tier||0]||{}, L=HOME.layout, moved=!L||(L.tier??2)!==(MODS.apts.tier||0), m=settle(moved&&T.start?T.start:null); A.R.tier=MODS.apts.tier||0; if(!m.length&&!moved)return; if(HOME.loaded&&(m.length||L))HOME.save(snapshot(A)); const mv=m.filter(x=>x[1]==='moved').map(x=>x[0]), aw=m.filter(x=>x[1]!=='moved').map(x=>x[0]);
+    if(mv.length)UI.log('MOVED TO FIT: '+mv.join(', ')+'.','#c8a090'); if(aw.length)UI.log('NO ROOM FOR: '+aw.join(', ')+'. PUT AWAY (DECORATE BRINGS THEM BACK).','#c8a090'); };
   // a visit: another player's apartment is your rooms dressed in their layout, to look at, not to change; leaving puts yours back
   const swap=L=>{ const A=ROOMK.api; if(!A)return; for(const un of A.units().slice())if(un.added)A.drop(un); const D=A.R.bare||{}; apply(A,{...D,...(L||{}),lights:{...(D.lights||{}),...((L&&L.lights)||{})}}); };
   HOME.visit=async(id,name,L0)=>{ '@later'; if(!id||(MODS.apts&&MODS.apts.inReal))return; let L=L0; if(L===undefined&&web){ try{ L=(await ask({who:id})).home; }catch(e){ L=null; } }
@@ -151,6 +152,13 @@ import {ROOMK} from './150a-bedroom.js';
   // pieces standing in one another (owner, 10 Nov 2026): every pair of standing pieces whose solids overlap; unclip moves one of each pair to the nearest spot it fits
   const clips=()=>{ '@later'; const A=A_(), out=[]; if(!A)return out; const U=A.units().filter(u=>!u.gone&&!u.loose&&u.sol&&u.sol.length&&sortOf(u)==='big'), e=.03, B=U.map(u=>boxes(u,A.getT(u)));
     for(let i=0;i<U.length;i++)for(let j=i+1;j<U.length;j++)if(B[i].some(p=>B[j].some(q=>p[0]<q[2]-e&&q[0]<p[2]-e&&p[1]<q[3]-e&&q[1]<p[3]-e&&p[4]<q[5]-e&&q[4]<p[5]-e)))out.push([U[i],U[j]]); return out; };
+  // every standing piece in turn, in the order the room was built: kept where it is if it fits there (in the room, clear of those before it), else moved to the nearest spot that does, else put away (owner, 11 Nov 2026: "Comes along")
+  const settle=start=>{ '@later'; const A=A_(), out=[]; if(!A)return out; const P=A.porch, inRoom=t=>(t.u>=-.05&&t.u<=A.Lx+.05&&t.v>=-.05&&t.v<=A.Ly+.05)||(P&&t.u>=P.u0-.3&&t.u<=P.u1+.3&&t.v>=P.v0-.3&&t.v<=P.v1+.3);
+    if(start)for(const u of A.units())if(!u.gone&&!u.added&&ROOMK.always.has(u.kind)&&!start.includes(u.kind)&&!(P&&A.getT(u).v<-.15)){ A.remove(u); out.push([u.name,'start']); }   // a smaller flat starts with fewer of the pieces every flat has; the rest wait in PUT AWAY
+    const U=A.units().filter(u=>!u.gone&&!u.loose&&u.sol&&u.sol.length&&sortOf(u)==='big');
+    for(const u of A.units())if(!u.gone&&!U.includes(u)){ const B=A.unitBox(u.obj); if(B.isEmpty())continue; const c=A.toApt((B.min.x+B.max.x)/2,B.min.y,(B.min.z+B.max.z)/2); if(!inRoom(c)){ A.remove(u); out.push([u.name,'away']); } }   // a rug, a hanging plant, a small thing left outside the walls
+    if(U.every(u=>fits(u,A.getT(u)).ok))return out;
+    for(const u of U)A.remove(u); for(const u of U){ A.restore(u); const t=A.getT(u); if(fits(u,t).ok)continue; const q=findSpot(u,t); if(q!==t&&fits(u,q).ok){ A.setT(u,q); out.push([u.name,'moved']); } else { A.remove(u); out.push([u.name,'away']); } } return out; };
   const unclip=()=>{ '@later'; const A=A_(), moved=[]; for(let n=0;n<12;n++){ const C=clips(); if(!C.length)break; const [a,b]=C[0], area=u=>{ const f=own(u); return (f[2]-f[0])*(f[3]-f[1]); }, m=a.added!==b.added?(a.added?a:b):area(a)<area(b)?a:b, t=A.getT(m);
       const q=findSpot(m,{...t,u:t.u+(n?GS:0)}); if(q===t||!fits(m,q).ok)break; A.setT(m,q); moved.push([m.name,(m===a?b:a).name]); } return moved; };
   const add=(kind,at,paid)=>{ '@later'; const A=A_(), K=A.kinds()[kind]; if(!K)return null; const me=A.toApt(pos.x,SHARED.py,pos.z), base=K.loose?A.getT({loose:true,obj:K.tpl}):{h:K.tpl.position.y};
@@ -362,5 +370,5 @@ import {ROOMK} from './150a-bedroom.js';
   addEventListener('dblclick',e=>{ if(!ED.on||e.target!==renderer.domElement||ED.carry)return; const h=pick(e); if(!h||h.un.loose)return; e.stopImmediatePropagation(); e.preventDefault(); if(drag)finish(); SURF.open(h.un); },true);
   window.ROOMEDDBG=()=>{ '@later'; const A=A_(); return {out:A?A.units().filter(u=>!u.gone&&A.getT(u).v<0).map(u=>u.kind):[],on:ED.on,sel:ED.sel&&ED.sel.id,undo:ED.undo.length,saved:HOME.saved||0,layout:!!HOME.layout,units:A?A.units().length:0,gone:A?A.units().filter(u=>u.gone).length:0,added:A?A.units().filter(u=>u.added).length:0,wall:A&&A.R.wall,floor:A&&A.R.floor,kfloor:A&&A.R.kfloorK,
     carry:!!ED.carry,grid:ED.grid,cash:cash(),pics:Object.keys(PICS).filter(k=>PICS[k]).length,fp:fpG.visible?fpG.children.filter(m=>m.visible).map(m=>m.material===FPM.ok?'ok':'no'):[],said:ED.said||''}; };
-  ED._api=A_; ED.HOME=HOME; ED.snapshot=()=>A_()&&snapshot(A_()); ED.apply=L=>apply(A_(),L); ED.add=add; ED.select=select; ED.putAway=putAway; ED.turn=turn; ED.size=size; ED.fits=(un,t)=>fits(un,t||A_().getT(un)); ED.sortOf=sortOf; ED.price=price; ED.sell=()=>sell(); ED.place=()=>placeCarry(); ED.surf=SURF; ED.tops=un=>tops(un); ED.placeOn=placeOn; ED.packKind=id=>packKind(A_(),id); ED.clips=()=>clips().map(p=>p.map(u=>u.name)); ED.unclip=unclip;
+  ED._api=A_; ED.HOME=HOME; ED.snapshot=()=>A_()&&snapshot(A_()); ED.apply=L=>apply(A_(),L); ED.add=add; ED.select=select; ED.putAway=putAway; ED.turn=turn; ED.size=size; ED.fits=(un,t)=>fits(un,t||A_().getT(un)); ED.sortOf=sortOf; ED.price=price; ED.sell=()=>sell(); ED.place=()=>placeCarry(); ED.surf=SURF; ED.tops=un=>tops(un); ED.placeOn=placeOn; ED.packKind=id=>packKind(A_(),id); ED.clips=()=>clips().map(p=>p.map(u=>u.name)); ED.unclip=unclip; ED.settle=settle;
 }

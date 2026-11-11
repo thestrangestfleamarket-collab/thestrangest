@@ -9,8 +9,11 @@ import {FACADES} from './038zc-facades.js';
 const APTS={EMPTY:true};
 // the flats (owner, 6 Nov 2026: "Free flat at first login"; 8 Nov 2026: "1 large apartment that has any many floors as we need"): a flat number maps to a floor and a side of the one tower, two flats a floor, no top floor
 APTS.PER=Infinity; APTS.flatOf=n=>{ n=Math.floor(+n); if(!(n>0))return {house:0,floor:null,side:0,pent:false}; return {house:0,floor:1+Math.floor((n-1)/2),side:(n-1)%2,pent:false}; };
-APTS.num=OWNED.me&&OWNED.me.apt!=null?String(OWNED.me.apt):null;   // the number the server gave you (/owned), none on the single-file page
-await grab('apts',async()=>{ const HOUSES=[WP.apts,...LEVEL.places.filter(p=>/^house\d+$/.test(p.id)).sort((a,b)=>a.x0-b.x0||a.y0-b.y0)].filter(Boolean), FL=APTS.flatOf(APTS.num), MINE=HOUSES[Math.min(FL.house,HOUSES.length-1)];
+APTS.num=OWNED.me&&OWNED.me.apt!=null?String(OWNED.me.apt):null;
+// the four sizes of flat, one a house (owner, 10-11 Nov 2026: small, medium, big, big with a half floor; "start small, buy up"): width and depth in tiles (none: the house's own), where along the house's front its far edge is (eb: so its window and door are the ones outside), what moving in costs, the pieces it starts with (none: all); which one is yours is kept with what you own
+APTS.TIERS=[{n:'A SMALL ROOM',w:5.3,d:4.4,eb:7.6,side:[],price:0,start:['CRT TV','WRITING DESK','TABLE RADIO','ROUND RUG','FLOOR PLANT']},{n:'A MEDIUM ROOM',w:8.5,d:6.1,eb:10.8,side:[],price:2500,start:['CRT TV','WRITING DESK','TABLE RADIO','ROUND RUG','FLOOR PLANT','RECLINER','BOOKSHELF','EARTH GLOBE','FERN STAND','FISH TANK','HANGING PLANT']},{n:'A BIG ROOM',price:8000},{n:'A BIG ROOM WITH A HALF FLOOR',loft:1,price:20000}];
+APTS.tierOf=()=>{ const q=new URLSearchParams(location.search).get('tier'); let t=q!=null?+q:NaN; if(!(t>=0)){ try{ t=+(JSON.parse(OWNED.get('flat')||'null')||{}).tier; }catch(e){ t=NaN; } } return t>=0?Math.min(APTS.TIERS.length-1,Math.floor(t)):0; };   // the number the server gave you (/owned), none on the single-file page
+await grab('apts',async()=>{ const HOUSES=[WP.apts,...LEVEL.places.filter(p=>/^house\d+$/.test(p.id)).sort((a,b)=>a.x0-b.x0||a.y0-b.y0)].filter(Boolean), FL=APTS.flatOf(APTS.num), TI=APTS.tier=Math.min(APTS.tierOf(),HOUSES.length-1), MINE=HOUSES[TI];
   APTS.houses=HOUSES.map(p=>p.id); APTS.mine=MINE.id; APTS.houseName=MINE.name||''; APTS.flat=FL;
   for(let hi=0;hi<HOUSES.length;hi++){ await house(HOUSES[hi],HOUSES[hi]===MINE,FL,hi); }
   MODS.apts=APTS; });
@@ -147,7 +150,8 @@ async function house(HP,mine,FL,HI){ const APTS0=APTS; { const APTS=mine?APTS0:{
   window.HOUSEAT=(dy=0)=>XZ(m,A.y1+dy); APTS.doorAt=XZ(m,A.y1); APTS.doorHd=TA.hd(0);
   window.APTSDBG=()=>({in:APTS.in,esc:APTS.esc,floor:APTS.floor(),py:SHARED.py,pos:[+pos.x.toFixed(2),+pos.z.toFixed(2)],door:+X(m).toFixed(1),lad:LAD.F?+LAD.y.toFixed(1):null,block:BB});
 
-  const AW_=FWD, AD_=+(A.y1-A.y0-HALL).toFixed(3), AR={x0:994+OFFDX/BLDK,y0:20,x1:994+OFFDX/BLDK+AW_,y1:20+AD_}, HR=APTS.HR={x0:AR.x0,y0:AR.y1,x1:AR.x1,y1:+(AR.y1+HALL).toFixed(3)}, IN=APTS.IN={x0:AR.x0,y0:AR.y0,x1:AR.x1,y1:HR.y1}, AX=(AR.x0+AR.x1)/2, WH=S, MY=APTS.my=FL.floor!=null?Math.min(ST-1,FL.floor):ST-1, RB=APTS.RB=RZ+Math.min(MY,ST-2)*S, Yh=z=>Yr(RB+z), DC=AR.x0+DU; APTS.R=AR; APTS.fw=[DC,AR.y0]; APTS.WIN={FWU,SIDE,WHW,WZ,WINA,WINB,DU,DC,DH};
+  const TR=APTS.TIERS[APTS0.tier||0]||{}, EDG=APTS.EB=TR.eb||FWD, IW=TR.w||FWD, IFW=FWU.map(u=>EDG-u).filter(x=>x>WHW+.15&&x<IW-WHW-.15), IDU=EDG-DU, ISD=TR.side||SIDE;
+  const AW_=TR.w||FWD, AD_=+(TR.d||A.y1-A.y0-HALL).toFixed(3), AR={x0:994+OFFDX/BLDK,y0:20,x1:994+OFFDX/BLDK+AW_,y1:20+AD_}, HR=APTS.HR={x0:AR.x0,y0:AR.y1,x1:AR.x1,y1:+(AR.y1+HALL).toFixed(3)}, IN=APTS.IN={x0:AR.x0,y0:AR.y0,x1:AR.x1,y1:HR.y1}, AX=(AR.x0+AR.x1)/2, WH=S, MY=APTS.my=FL.floor!=null?Math.min(ST-1,FL.floor):ST-1, RB=APTS.RB=RZ+Math.min(MY,ST-2)*S, Yh=z=>Yr(RB+z), DC=AR.x0+IDU; APTS.R=AR; APTS.fw=[DC,AR.y0]; APTS.WIN={FWU:IFW,SIDE:ISD,WHW,WZ,WINA,WINB,DU:IDU,DC,DH};
   // real window glass: clear looked through straight, the sky's sheen at a slant, the sun's glint
   APTS.glassMat=(o={})=>{ '@later'; const m=new THREE.MeshPhongMaterial({color:0xa8bccb,specular:0xffffff,shininess:160,transparent:true,opacity:.14,depthWrite:false,side:THREE.DoubleSide,...o});
     m.onBeforeCompile=sh=>{ sh.fragmentShader=sh.fragmentShader.replace('#include <opaque_fragment>','#include <opaque_fragment>\n float fr=pow(1.-abs(dot(normalize(normal),normalize(vViewPosition))),3.); gl_FragColor.rgb=mix(gl_FragColor.rgb,vec3(.72,.82,.92),fr*.5); gl_FragColor.a=mix(gl_FragColor.a,.55,fr);'); };

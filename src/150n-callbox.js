@@ -12,7 +12,7 @@ import {ROOMK} from './150a-bedroom.js';
     const hitAt=(u,h,v,w,hh,d,name,act)=>{ const hb=new THREE.Mesh(new THREE.BoxGeometry(w*M,hh*M,d*M),new THREE.MeshBasicMaterial({visible:false})); hb.position.copy(W(u,h,v)); scene.add(hb); UI.thing({name,ghost:1,obj:hb,reach:1.6*M,near:2.8*M,tall:hh*M,act}); };
     if(APTS.frontDoor)APTS.frontDoor.set(false);
     hitAt(du,1.15,Ly-.2,1.2,2.3,.8,'FRONT DOOR',()=>{ if(!APTS.inReal)return; SFX.play('latch',{at:W(du,1.1,Ly),vol:.8}); APTS.exitReal('OUT TO THE STREET'); });
-    if(STORE.furnish&&STORE.furnish.hall)STORE.furnish.hall({box,hitAt,mat,v1:Ly,EW:du-2.8,us:2*3.4-1.6-(du-2.8)});   // the mailboxes between the writing desk and the door, the notice board over the desk
+    if(STORE.furnish&&STORE.furnish.hall)STORE.furnish.hall({box,hitAt,mat,v1:Ly,EW:du-2.8,us:2*3.4-1.6-(du-2.8),...(du<3.9?{nc:du-1.6,ny:.85}:{})});   // the mailboxes left of the door, the notice board beside them (over them in a narrow room)
     H.built=true; });
 
   /* ---------- the callbox on the street ---------- */

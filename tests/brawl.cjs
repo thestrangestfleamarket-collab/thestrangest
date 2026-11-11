@@ -31,6 +31,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       await pg.keyboard.press('j'); await pg.waitForTimeout(800);
       hit = await pg.evaluate(() => __sent.filter(m => m.t === 'hit'));
     }
+    for (let w = 0; w < 8 && await pg.evaluate(() => __dbg.VIT.sta >= .99); w++) { if (w === 4) await pg.keyboard.press('j'); await pg.waitForTimeout(500); }   // (a slow runner may not have swung yet)
     const mart = await pg.evaluate(() => ({ sta: __dbg.VIT.sta, sk: FORAGE.sk('fight'), row: FORAGE.SK.some(r => r[0] === 'fight') }));
     ok(mart.sta < .99, 'a punch costs stamina (' + mart.sta.toFixed(3) + ')');
     ok(mart.row && mart.sk >= 0, 'MARTIAL ARTS is a skill (skills start at 0: ' + mart.sk + ')');

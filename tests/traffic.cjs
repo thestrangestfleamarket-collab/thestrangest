@@ -45,4 +45,11 @@ const {chromium}=require('playwright');
   await pg.waitForFunction(()=>window.CAPTAIN&&CAPTAIN.dbg().made,null,{timeout:120000,polling:1000}).catch(()=>{});
   const cap=await pg.evaluate(()=>{ const B=TRAFFIC.blimp, c=CAPTAIN.dbg(), g=B.m.children[0], V=CAPTAIN.N.g.position.clone(); g.worldToLocal(V); return {...c,local:V.toArray().map(v=>+v.toFixed(2))}; });
   ok(cap.made&&Math.abs(cap.local[0])<.4&&cap.local[1]>.6&&cap.local[1]<1.1&&cap.local[2]>-1.2&&cap.local[2]<1&&['hat','eyes','face','coat','neck','feet'].every(k=>cap.slots.includes(k)),'the airship\'s captain stands in its gondola, in his flight cap, goggles, beard, long coat, scarf and boots: '+JSON.stringify({local:cap.local,slots:cap.slots}));
+  // a car you are driving, stopped in the lane: the traffic stops behind its bumper, not in it
+  await pg.evaluate(()=>{ const t=Date.now()/1000, r=((t%90)+90)%90; TRAFFIC.skew=(2-r); }); await pg.waitForTimeout(1500); d=await T();
+  { const L=d.lanes[0], c=L.cars.filter(c=>c.on&&c.x>-100&&c.x<300).sort((a,b)=>a.x-b.x)[0], sx=c?c.x-(c.len+30):0;
+    const id=await pg.evaluate(async([x,z])=>{ const C=CARS.cars.get('c1'); C.x=x; C.z=z; CARS.getIn('c1'); for(let k=0;k<40&&!CARS.driving;k++)await new Promise(r=>setTimeout(r,500)); STORE.pos.set(x,0,z); SHARED.py=SHARED.groundY(x,z); return CARS.dbg().driving; },[sx,L.z]);
+    await pg.waitForTimeout(9000); d=await T(); const me=await pg.evaluate(()=>({x:STORE.pos.x,h:2.4*TRAFFIC.dbg().m1}));
+    const c2=d.lanes[0].cars.filter(q=>q.on&&q.x>me.x).sort((a,b)=>a.x-b.x)[0]; ok(id&&c2&&c2.sp<.5&&c2.x-c2.len>me.x+me.h,'the traffic stops behind the car you drive: '+JSON.stringify({id,me,c:c2&&{x:c2.x,len:c2.len,sp:c2.sp}}));
+ }
   ok(!errs.length,'no page errors '+errs.slice(0,3).join(' | ')); await b.close(); process.exit(bad?1:0); })();

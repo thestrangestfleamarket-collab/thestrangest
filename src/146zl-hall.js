@@ -15,6 +15,6 @@ const HALLK={}; window.HALLK=HALLK;
     const m0=EW+.6, m1=EW+1.8; box(m0,v1-.1,m1,v1,1.0,1.5,brass); for(let i=0;i<4;i++)for(let j=0;j<2;j++)box(m0+.06+i*.29,v1-.11,m0+.3+i*.29,v1-.1,1.06+j*.22,1.24+j*.22,dark);
     hitAt((m0+m1)/2,1.25,v1-.3,1.2,.7,.5,'YOUR MAILBOX',HALLK.mail);
     // the notice board halfway down the hall
-    const nc=(EW+us)/2+.8; box(nc-.6,v1-.04,nc+.6,v1,1.3,2.0,cork); for(let i=0;i<6;i++)box(nc-.52+(i%3)*.36,v1-.05,nc-.24+(i%3)*.36,v1-.04,1.38+Math.floor(i/3)*.3,1.62+Math.floor(i/3)*.3,paper);
-    hitAt(nc,1.65,v1-.3,1.2,.8,.5,'THE NOTICE BOARD',HALLK.notices); };
+    const nc=c.nc??(EW+us)/2+.8, ny=c.ny||0; box(nc-.6,v1-.04,nc+.6,v1,1.3+ny,2.0+ny,cork); for(let i=0;i<6;i++)box(nc-.52+(i%3)*.36,v1-.05,nc-.24+(i%3)*.36,v1-.04,1.38+ny+Math.floor(i/3)*.3,1.62+ny+Math.floor(i/3)*.3,paper);
+    hitAt(nc,1.65+ny,v1-.3,1.2,.8,.5,'THE NOTICE BOARD',HALLK.notices); };
 }

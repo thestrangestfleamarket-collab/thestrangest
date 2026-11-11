@@ -17,9 +17,11 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     ['ThePhantomoftheOpera','Phantom_of_the_Opera_512kb.mp4','THE PHANTOM OF THE OPERA',1925,6389],['DasKabinettdesDoktorCaligariTheCabinetofDrCaligari','The_Cabinet_of_Dr._Caligari_512kb.mp4','THE CABINET OF DR. CALIGARI',1919,3061]]
     .map(([id,file,title,year,len])=>({id,file,title,year,len,slot:Math.ceil((len+600)/900)*900}));
   const EPOCH=Date.UTC(2026,9,28);
+  // showing now, only at the theatre (owner, 11 Nov 2026): NIGHT OF THE LIVING DEAD, kept in our own R2 bucket (worker/door.js /film/); the free films stay on THE GUIDE
+  const SHOW=[{id:'Night.Of.The.Living.Dead_1080p',file:'NightOfTheLivingDead_1080p.mp4',title:'NIGHT OF THE LIVING DEAD',year:1968,len:5753,slot:Math.ceil((5753+600)/900)*900}];
   // the playlist: an admin's own list from the screen's menu (shared, on the screen's record), else the free films above
-  let plK='', PL=FILMS, CYCLE=0; const slotOf=len=>Math.ceil((len+600)/900)*900;
-  const list=()=>{ '@later'; const p=cur().playlist, k=JSON.stringify(p||null); if(k!==plK){ plK=k; PL=Array.isArray(p)&&p.filter(f=>f&&f.id&&f.file&&f.len>0).length?p.filter(f=>f&&f.id&&f.file&&f.len>0).map(f=>({id:f.id,file:f.file,title:String(f.title||f.id).toUpperCase(),year:f.year||'',len:+f.len,slot:slotOf(+f.len)})):FILMS; CYCLE=PL.reduce((a,f)=>a+f.slot,0)*1000; } return PL; };
+  let plK='', PL=SHOW, CYCLE=0; const slotOf=len=>Math.ceil((len+600)/900)*900;
+  const list=()=>{ '@later'; const p=cur().playlist, k=JSON.stringify(p||null); if(k!==plK){ plK=k; PL=Array.isArray(p)&&p.filter(f=>f&&f.id&&f.file&&f.len>0).length?p.filter(f=>f&&f.id&&f.file&&f.len>0).map(f=>({id:f.id,file:f.file,title:String(f.title||f.id).toUpperCase(),year:f.year||'',len:+f.len,slot:slotOf(+f.len)})):SHOW; CYCLE=PL.reduce((a,f)=>a+f.slot,0)*1000; } return PL; };
   const showAt=t=>{ const L=list(), k=Math.floor((t-EPOCH)/CYCLE), r=t-EPOCH-k*CYCLE; let s0=EPOCH+k*CYCLE, a=0; for(let i=0;i<L.length;i++){ const f=L[i]; if(r<a+f.slot*1000)return {i,f,start:s0+a}; a+=f.slot*1000; } return {i:0,f:L[0],start:s0}; };
   CINEMA.films=FILMS; CINEMA.list=()=>list(); CINEMA.showAt=showAt;
   CINEMA.upcoming=(n=6,t=Date.now())=>{ const o=[]; let s=showAt(t); for(let k=0;k<Math.min(n,list().length*2);k++){ o.push({title:s.f.title,year:s.f.year,id:s.f.id,start:s.start,end:s.start+s.f.len*1000}); s=showAt(s.start+s.f.slot*1000+1); } return o; };
@@ -382,7 +384,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
       <div id="cmpl" style="max-height:170px;overflow:auto;margin:4px 0 6px;border:1px solid #3a2130"></div>
       <select id="cmadd" style="${FLD};width:100%;margin-bottom:6px"><option value="">+ add a free film</option>${FILMS.map((f,i)=>`<option value="${i}">${esc(f.title)} (${f.year})</option>`).join('')}</select>
       <div style="display:flex;gap:6px;margin-bottom:6px"><input id="cmia" placeholder="+ a film from archive.org/details/..." style="${FLD};flex:1;min-width:0"><button id="cmiadd" style="${DIM}padding:0 10px">ADD</button></div>
-      <div style="display:flex;gap:6px;margin-bottom:12px"><button id="cmplsave" style="${RED}padding:6px 10px">SAVE THE PLAYLIST</button><button id="cmplfree" style="${DIM}padding:6px 10px">THE FREE FILMS</button></div>
+      <div style="display:flex;gap:6px;margin-bottom:12px"><button id="cmplsave" style="${RED}padding:6px 10px">SAVE THE PLAYLIST</button><button id="cmplfree" style="${DIM}padding:6px 10px">THE SHOWING</button></div>
 `:'')+`
       <div style="display:flex;justify-content:space-between;margin-top:10px"><button id="cmfull" style="${RED}padding:8px 14px">FULL SCREEN</button><button id="cmclose" style="${DIM}padding:8px 14px">CLOSE</button></div>
       <div id="cmsay" style="color:#8f7470;font-size:12px;margin-top:8px"></div>`;
@@ -398,7 +400,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     if(a){ $('#cmb').oninput=e=>$('#cmbv').textContent=e.target.value+'%'; $('#cmb').onchange=e=>push({brightness:+e.target.value/100});
       let pl=list().map(f=>({id:f.id,file:f.file,title:f.title,year:f.year,len:f.len}));
       const hms=s=>Math.floor(s/3600)+':'+String(Math.floor(s%3600/60)).padStart(2,'0');
-      const drawPL=()=>{ $('#cmpl').innerHTML=pl.map((f,i)=>`<div style="display:flex;gap:6px;align-items:center;padding:3px 6px;${i%2?'background:#1a1016':''}"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${i+1}. ${esc(f.title)}${f.year?' ('+f.year+')':''} <span style="color:#8f7470">${hms(f.len)}</span></span><button data-u="${i}" style="${DIM}padding:0 6px">▲</button><button data-d="${i}" style="${DIM}padding:0 6px">▼</button><button data-x="${i}" style="${DIM}padding:0 6px">✕</button></div>`).join('')||'<div style="padding:6px;color:#8f7470">empty: the free films play</div>';
+      const drawPL=()=>{ $('#cmpl').innerHTML=pl.map((f,i)=>`<div style="display:flex;gap:6px;align-items:center;padding:3px 6px;${i%2?'background:#1a1016':''}"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${i+1}. ${esc(f.title)}${f.year?' ('+f.year+')':''} <span style="color:#8f7470">${hms(f.len)}</span></span><button data-u="${i}" style="${DIM}padding:0 6px">▲</button><button data-d="${i}" style="${DIM}padding:0 6px">▼</button><button data-x="${i}" style="${DIM}padding:0 6px">✕</button></div>`).join('')||'<div style="padding:6px;color:#8f7470">empty: NIGHT OF THE LIVING DEAD plays</div>';
         $('#cmpl').querySelectorAll('button').forEach(b=>b.onclick=()=>{ const u=b.dataset.u, d=b.dataset.d, x=b.dataset.x; if(u!=null&&+u>0)pl.splice(+u-1,0,pl.splice(+u,1)[0]); if(d!=null&&+d<pl.length-1)pl.splice(+d+1,0,pl.splice(+d,1)[0]); if(x!=null)pl.splice(+x,1); drawPL(); }); };
       drawPL();
       $('#cmadd').onchange=e=>{ const f=FILMS[+e.target.value]; if(f){ pl.push({id:f.id,file:f.file,title:f.title,year:f.year,len:f.len}); drawPL(); } e.target.value=''; };
@@ -408,7 +410,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
           if(!f||!(len>0)){ say('no film file found there'); return; } const md=j.metadata||{};
           pl.push({id:m[1],file:f.name,title:String([].concat(md.title||m[1])[0]).toUpperCase().slice(0,60),year:(String(md.date||md.year||'').match(/\d{4}/)||[''])[0],len:Math.round(len)}); $('#cmia').value=''; drawPL(); say('added: save to play it'); }catch(x){ say('could not read that film'); } };
       $('#cmplsave').onclick=async()=>{ say('...'); say(await push({playlist:pl})?'the playlist is on, for everyone':SQLHINT); };
-      $('#cmplfree').onclick=async()=>{ say('...'); if(await push({playlist:[]})){ pl=FILMS.map(f=>({id:f.id,file:f.file,title:f.title,year:f.year,len:f.len})); drawPL(); say('back to the free films'); } else say(SQLHINT); };
+      $('#cmplfree').onclick=async()=>{ say('...'); if(await push({playlist:[]})){ pl=SHOW.map(f=>({id:f.id,file:f.file,title:f.title,year:f.year,len:f.len})); drawPL(); say('back to the showing'); } else say(SQLHINT); };
       if($('#cmsched'))$('#cmsched').onclick=async()=>{ say('...'); say(await push({video_id:''})?'back to the schedule':'could not'); };
       $('#cmplay').onclick=async()=>{ const id=vid($('#cmu').value); if(!id){ say('not a YouTube link'); return; } say('...'); say(await push({video_id:id,started_at:new Date(Date.now()+8000).toISOString()})?'playing for everyone':'could not save (log in as admin)'); };
     }

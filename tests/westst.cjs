@@ -10,7 +10,7 @@ const {chromium}=require('playwright');
   const at=()=>pg.evaluate(()=>{ const p=__dbg.pos(), B=__dbg.MAPK.BOD; return {x:p[0]/1.13+B.OX,y:p[2]/1.13+B.OY}; });
   const WJ=JSON.parse(require('fs').readFileSync(process.cwd()+'/data/world.json','utf8')), L={front:WJ.block.front,row2:WJ.block.backrow,wx:WJ.streets.west.x0};
   await pg.evaluate(()=>__dbg.MAPK.MODS.apts.enterReal()); await idle(); await pg.waitForTimeout(800); await pg.evaluate(()=>__dbg.MAPK.MODS.apts.exitReal()); await idle(); await pg.waitForTimeout(500);
-  { const o=await at(); const H=WJ.places.find(p=>p.id==='apts'); ok(o.x>L.wx-.5&&o.x<L.wx+4&&o.y>H.y0-1&&o.y<H.y1+1,'your flat: out onto West St\'s pavement by your house\'s door ('+o.x.toFixed(1)+', '+o.y.toFixed(1)+')'); }
+  { const o=await at(); const mine=await pg.evaluate(()=>__dbg.MAPK.MODS.apts.mine), H=WJ.places.find(p=>p.id===mine); ok(o.x>L.wx-.5&&o.x<L.wx+4&&o.y>H.y0-1&&o.y<H.y1+1,'your flat: out onto West St\'s pavement by your house\'s door ('+o.x.toFixed(1)+', '+o.y.toFixed(1)+')'); }
   if(await pg.evaluate(()=>!!STORE.inside.theatre)){ await pg.evaluate(()=>STORE.enter('theatre',true)); await idle(); await pg.waitForTimeout(800); await pg.evaluate(()=>STORE.exit('theatre')); await idle(); await pg.waitForTimeout(500);
   { const o=await at(); ok(o.y>L.front-.5&&o.y<L.front+8,'the theatre: out onto Market St\'s sidewalk ('+o.x.toFixed(1)+', '+o.y.toFixed(1)+')'); } }
   const g=await pg.evaluate(wx=>{ const B=[...window.BLK.blds,...window.BLK.lots]; return {west:B.filter(q=>q.row===5).length,inside:B.filter(q=>q.row===1&&q.x1>wx+.1).length,pf:PFROWDBG().houses}; },L.wx);

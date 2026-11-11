@@ -1,6 +1,6 @@
 // NPCs: makeNPC builds a body with self-shading and its cel material; the NPC list, culling and the street lane.
 import {SHARED, THREE} from './003-shx.js';
-import {ARCH, CHARS, CLIP, CULL, LEVELS, NPCS, ONLINE, PARK, PONDS, pos, ROOMS, SELFSH, UI, VIT, W3, WALKS, WINDOWS} from './003b-systems.js';
+import {ARCH, CHARS, CLIP, CLOCK, CULL, LEVELS, NPCS, ONLINE, PARK, PONDS, pos, ROOMS, SELFSH, UI, VIT, W3, WALKS, WINDOWS} from './003b-systems.js';
 import {PPU, renderer, scene} from './004-main.js';
 import {ASTEP, CASTLE, LEVEL, MAPG, MAPSTAIR, MODS, RING, SKINCULL, SOL, STN, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
@@ -214,7 +214,7 @@ SYS.add('near',(x,z)=>NPCS.near(x,z),'npc shading');
   { const NB=new THREE.BoxGeometry(1,1,1).translate(0,.5,0), mk=()=>{ const m=new THREE.InstancedMesh(NB,new THREE.MeshLambertMaterial({color:0xffffff}),2048); m.count=0; m.frustumCulled=false; m.castShadow=true; m.name='farfolk'; scene.add(m); return m; };
     let BODY=null, HEAD=null; const M=new THREE.Matrix4(), Q=new THREE.Quaternion(), S3=new THREE.Vector3(), P3=new THREE.Vector3(), C=new THREE.Color(), BX=new THREE.Box3(), CL=[[.18,.2,.26],[.34,.24,.2],[.2,.3,.42],[.4,.38,.34],[.5,.2,.2],[.22,.36,.24],[.6,.55,.45],[.12,.12,.14]];
     NPCS.LOD=90*TILE;
-    NPCS.lodDraw=()=>{ if(!BODY){ BODY=mk(); HEAD=mk(); } let n=0;
+    NPCS.lodDraw=()=>{ if(!BODY){ BODY=mk(); HEAD=mk(); if(CLOCK.movers)CLOCK.movers.push(()=>[BODY,HEAD]); } let n=0;
       for(const N of NPCS){ if(!N.lod||n>=2048)continue; if(!N.lodSz){ const v=N.g.visible; N.g.visible=true; BX.setFromObject(N.g); N.g.visible=v; const sz=BX.isEmpty()?null:BX.getSize(new THREE.Vector3()); N.lodSz=sz&&sz.y>.05?[Math.min(sz.x,sz.z,sz.y*.45),sz.y]:[.5*TILE,1.9*TILE]; }
         const [w,h]=N.lodSz, k=(N.key||'').length*7+(N.key||'').charCodeAt(0), c=CL[k%CL.length], hy=N.g.position.y;
         BODY.setMatrixAt(n,M.compose(P3.set(N.g.position.x,hy,N.g.position.z),Q.setFromAxisAngle(S3.set(0,1,0),N.g.rotation.y||0),S3.set(w,h*.82,w*.6))); BODY.setColorAt(n,C.setRGB(c[0],c[1],c[2]));

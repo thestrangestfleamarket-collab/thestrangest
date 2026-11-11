@@ -201,7 +201,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [ ] **The car radio unconfirmed** (cars parked past the map edge) · look.
 
 ## Physics and vehicles
-- [ ] **The Hudson's OCEAN look** · P3 · M · look. Owner, 11 Nov 2026 ("try 1 and 4 on the hudson"): Ultra-Water's FFT waves as a fifth way on the Hudson, things afloat riding the drawn waves. [taking: claude/determined-albattani-oxu7f1, 11 Nov]
+- [x] **The Hudson's OCEAN look** · P3 · M · look. Owner, 11 Nov 2026 ("try 1 and 4 on the hudson"): Ultra-Water's FFT waves as a fifth way on the Hudson, things afloat riding the drawn waves. done 11 Nov: the default.
 - [x] **Glitched slab on Market St; three road cars out** · P1 · S · fix. Done 10 Nov: the subway train no longer shows on the street; boxy sedan, 80s hatchback and yellow cab gone from the traffic.
 - [x] **Vehicle editor follow-ups** · P3 · S · look. Done 10 Nov: a resized car or kart drives at its size, the traffic's models have their parts, the horse is in (colours and size), the train shows before you go down, the horse's COAT picker.
 

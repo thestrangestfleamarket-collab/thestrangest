@@ -18,9 +18,12 @@ import {imAct} from './120-game-music-2-instruments.js';
   K.sample=e=>{ const v=Math.max(.05,Math.min(1,e.v)); let k=e.h==='P'?'hc':e.n===5?(e.o?'ho':'hc'):e.n===7&&e.b?'rb':e.n===6?'cr':KEY[e.n]; const L=e.h==='P'?0:v<.4?0:v<.85?1:2, r=RR[k]=(RR[k]||0)^1;
     return [{k:k+'.'+L+'.'+r,gain:(e.h==='P'?.45:.55+.45*v)*1.1,id:e.n,ch:e.n===5?'hh':null}]; };
 
-  /* ---------- where a stick strikes each piece: a head a little nearer the drummer than its middle, a cymbal on its edge (crash) or bow (ride) or bell ---------- */
-  const HIT=PART.map(p=>{ const c=new V3(...p.c), toMe=new V3(-c.x,0,-c.z).normalize(); if(p.kick)return c; if(p.cym)return c.clone().addScaledVector(toMe,p.r*(p.n==='CRASH'?.8:p.n==='RIDE'?.55:.6)).add(new V3(0,.012,0)); return c.clone().addScaledVector(toMe,p.r*.3).add(new V3(0,p.r*.3*Math.sin(p.tilt||0)+.004,0)); });
-  const BELL=new V3(...PART[7].c).add(new V3(0,.03,0));
+  /* ---------- where a stick strikes each piece: a head a little nearer the drummer than its middle, a cymbal on its edge (crash) or bow (ride) or bell, on its surface as tilted ---------- */
+  // (a cymbal's top above its rim at each fraction of its radius out, Polyfork's cymbal's for one 0.23 m across: tools/pfitems-list.json drum_cymbal)
+  const CPROF=[[0,.066],[.1,.06],[.2,.04],[.45,.025],[.6,.019],[.8,.011],[1,0]], CR=.23, crown=u=>{ for(let i=1;i<CPROF.length;i++)if(u<=CPROF[i][0]){ const [a,h]=CPROF[i-1], [b,k]=CPROF[i]; return h+(k-h)*(u-a)/(b-a); } return 0; };
+  const onCym=(p,u)=>{ const c=new V3(...p.c), toMe=new V3(-c.x,0,-c.z).normalize(); return toMe.multiplyScalar(p.r*u).add(new V3(0,p.r/CR*crown(u)+.006,0)).applyAxisAngle(new V3(1,0,0),-(p.tilt||0)).add(c); };
+  const HIT=PART.map(p=>{ const c=new V3(...p.c), toMe=new V3(-c.x,0,-c.z).normalize(); if(p.kick)return c; if(p.cym)return onCym(p,p.n==='CRASH'?.8:p.n==='RIDE'?.55:.6); return c.clone().addScaledVector(toMe,p.r*.3).add(new V3(0,p.r*.3*Math.sin(p.tilt||0)+.004,0)); });
+  const BELL=onCym(PART[7],0);
   const at=e=>e.b?BELL:HIT[e.n]; K.at=at;
 
   /* ---------- the book: grooves (steps of a bar: x a hit, X an accent, g a ghost note; o an open hi-hat), each at a few speeds, eight bars with a fill every fourth and a crash after ---------- */
@@ -68,29 +71,43 @@ import {imAct} from './120-game-music-2-instruments.js';
   { const B=[]; for(const g of G)for(const bpm of g[2])B.push(make(g,bpm)); B.sort((a,b)=>a.hard-b.hard); B.forEach((T,i)=>{ T.lvl=Math.round(1+99*i/(B.length-1)); K.BOOK.push(T); }); }
   K.compile=()=>{};
 
-  /* ---------- the model: the shells and heads, the cymbals on their stands, the pedals, the throne, the sticks ---------- */
+  /* ---------- the model: the shells and heads, the cymbals on their stands, the pedals, the throne, the sticks; once Polyfork's come (tools/pfitems-list.json drum_*), its snare drum (on its stand, and again as each tom), its bass drum, its cymbal (on its stand) in place of the first shapes, the game's heads, cymbals' swing and pedals on them ---------- */
   const SHELL=0x7a1a20, HEAD=0xe6e1d4, CHROME=0xb9bdc6, BRONZE=0xc79a3c;
-  K.model=()=>{ const g=new THREE.Group(), U=g.userData; U.parts=[]; U.cym=[];
-    const rod=(a,b,r=.008)=>{ const A=new V3(...a), B_=new V3(...b), m=cyl(r,r,A.distanceTo(B_),CHROME,6); m.position.copy(A).add(B_).multiplyScalar(.5); m.quaternion.setFromUnitVectors(new V3(0,1,0),B_.clone().sub(A).normalize()); g.add(m); return m; };
+  // (Polyfork's snare: its top head 0.172 across at (0, 0.75, 0.0205), tipped 0.172 toward you, 0.208 between heads, its bottom 0.572 up; its bass drum's shell 0.472 across, 0.5 deep, its middle 0.508 up; its cymbal's rim 0.09 out from its stand's plane, its middle 1.0 up)
+  const SN={r:.172,top:new V3(0,.75,.0205),tip:.172,d:.208,foot:.572}, XA=new V3(1,0,0);
+  K.model=()=>{ const g=new THREE.Group(), U=g.userData, first=[]; U.parts=[]; U.cym=[];
+    const rod=(a,b,r=.008,keep)=>{ const A=new V3(...a), B_=new V3(...b), m=cyl(r,r,A.distanceTo(B_),CHROME,6); m.position.copy(A).add(B_).multiplyScalar(.5); m.quaternion.setFromUnitVectors(new V3(0,1,0),B_.clone().sub(A).normalize()); g.add(m); if(!keep)first.push(m); return m; };
+    const fl=m=>(first.push(m),m);
     PART.forEach((p,i)=>{ const c=new V3(...p.c), o=new THREE.Group(); o.position.copy(c); g.add(o); U.parts[i]=o;
-      if(p.kick){ const sh=cyl(p.r,p.r,p.d,SHELL,28); sh.rotation.x=Math.PI/2; o.add(sh); for(const s of [-1,1]){ const hd=cyl(p.r+.006,p.r+.006,.012,HEAD,28,0,0,s*p.d/2); hd.rotation.x=Math.PI/2; o.add(hd); }
-        for(const s of [-1,1])rod([c.x+s*.2,0,c.z-.1],[c.x+s*.18,.06,c.z-.05],.01); return; }
-      if(p.cym){ const cy=new THREE.Group(); cy.rotation.x=-(p.tilt||0); o.add(cy); const plate=cyl(p.r*.13,p.r,.012,BRONZE,32); cy.add(plate); cy.add(cyl(.004,p.r*.13,.022,BRONZE,12,0,.012,0));
-        if(p.n==='HI-HAT'){ const bot=cyl(p.r,p.r*.13,.012,BRONZE,32,0,-.02,0); o.add(bot); rod([c.x,0,c.z],[c.x,c.y+.05,c.z]); for(const a of [0,2.1,-2.1])rod([c.x,.42,c.z],[c.x+Math.sin(a)*.22,0,c.z+Math.cos(a)*.22]); }
+      if(p.kick){ const sh=fl(cyl(p.r,p.r,p.d,SHELL,28)); sh.rotation.x=Math.PI/2; o.add(sh); for(const s of [-1,1]){ const hd=fl(cyl(p.r+.006,p.r+.006,.012,HEAD,28,0,0,s*p.d/2)); hd.rotation.x=Math.PI/2; o.add(hd); }
+        for(const s of [-1,1])rod([c.x+s*.2,0,c.z-.1],[c.x+s*.18,.06,c.z-.05],.01,true); return; }
+      if(p.cym){ const cy=new THREE.Group(); cy.rotation.x=-(p.tilt||0); o.add(cy); const plate=fl(cyl(p.r*.13,p.r,.012,BRONZE,32)); cy.add(plate); cy.add(fl(cyl(.004,p.r*.13,.022,BRONZE,12,0,.012,0)));
+        if(p.n==='HI-HAT'){ const bot=fl(cyl(p.r,p.r*.13,.012,BRONZE,32,0,-.02,0)); o.add(bot); rod([c.x,0,c.z],[c.x,c.y+.05,c.z],.008,true); for(const a of [0,2.1,-2.1])rod([c.x,.42,c.z],[c.x+Math.sin(a)*.22,0,c.z+Math.cos(a)*.22]); }
         else { rod([c.x,c.y-.02,c.z],[c.x*1.15,c.y-.25,c.z*1.12]); rod([c.x*1.15,c.y-.25,c.z*1.12],[c.x*1.15,.35,c.z*1.12]); for(const a of [0,2.1,-2.1])rod([c.x*1.15,.35,c.z*1.12],[c.x*1.15+Math.sin(a)*.25,0,c.z*1.12+Math.cos(a)*.25]); }
         U.cym[i]={g:cy,a:0,w:0,ax:new V3(1,0,0),tilt:p.tilt||0,k:p.n==='HI-HAT'?260:p.n==='RIDE'?60:90}; return; }
-      const dr=new THREE.Group(); dr.rotation.x=-(p.tilt||0); o.add(dr); dr.add(cyl(p.r,p.r,p.d,SHELL,24,0,-p.d/2,0)); const hd=cyl(p.r+.004,p.r+.004,.006,HEAD,24,0,.002,0); dr.add(hd); dr.add(cyl(p.r+.008,p.r+.008,.014,CHROME,24,0,-.002,0,true)); U.parts[i].head=hd;
+      const dr=new THREE.Group(); dr.rotation.x=-(p.tilt||0); o.add(dr); o.userData.dr=dr; dr.add(fl(cyl(p.r,p.r,p.d,SHELL,24,0,-p.d/2,0))); const hd=cyl(p.r+.004,p.r+.004,.006,HEAD,24,0,.002,0); dr.add(hd); dr.add(fl(cyl(p.r+.008,p.r+.008,.014,CHROME,24,0,-.002,0,true))); U.parts[i].head=hd;
       if(p.n==='SNARE'){ rod([c.x,c.y-p.d,c.z],[c.x,.25,c.z]); for(const a of [0,2.1,-2.1])rod([c.x,.25,c.z],[c.x+Math.sin(a)*.2,0,c.z+Math.cos(a)*.2]); }
-      else if(p.n==='FLOOR TOM'){ for(const a of [.6,2.6,-1.5])rod([c.x+Math.sin(a)*p.r,c.y-.1,c.z+Math.cos(a)*p.r],[c.x+Math.sin(a)*(p.r+.04),0,c.z+Math.cos(a)*(p.r+.04)]); }
-      else rod([c.x,c.y-p.d*.8,c.z],[PART[0].c[0]+(c.x>0?.06:-.06),PART[0].c[1]+PART[0].r,PART[0].c[2]-.05],.01); });
+      else if(p.n==='FLOOR TOM'){ for(const a of [.6,2.6,-1.5])rod([c.x+Math.sin(a)*p.r,c.y-.1,c.z+Math.cos(a)*p.r],[c.x+Math.sin(a)*(p.r+.04),0,c.z+Math.cos(a)*(p.r+.04)],.008,true); }
+      else rod([c.x,c.y-p.d*.8,c.z],[PART[0].c[0]+(c.x>0?.06:-.06),PART[0].c[1]+PART[0].r,PART[0].c[2]-.05],.01,true); });
     // the pedals: the kick's (a plate and a beater on its post) under the right foot, the hi-hat's under the left
     const kp=new THREE.Group(); kp.position.set(-.06,.03,.42); kp.add(box(.08,.012,.24,0x2a2c32,0,0,0)); g.add(kp); U.kp=kp; kp.children[0].position.z=-.12;
     const bt=new THREE.Group(); bt.position.set(-.05,.12,PART[0].c[2]-PART[0].d/2-.06); bt.add(cyl(.004,.004,.17,CHROME,6,0,.085,0)); bt.add(cyl(.025,.025,.04,0x3a3a3a,10,0,.17,0)); bt.children[1].rotation.z=Math.PI/2; g.add(bt); U.bt=bt;
     const hp=new THREE.Group(); hp.position.set(.32,.03,.46); hp.add(box(.08,.012,.24,0x2a2c32,0,0,-.12)); g.add(hp); U.hp=hp;
-    // the throne
-    g.add(cyl(.17,.16,.07,0x141416,20,0,K.seat.y-.035,-.02)); rod([0,K.seat.y-.07,-.02],[0,.22,-.02],.014); for(const a of [0,2.1,-2.1])rod([0,.22,-.02],[Math.sin(a)*.24,0,-.02+Math.cos(a)*.24]);
+    INSTR.stool(g,K.seat.y,-.02);
     // the sticks
     U.st={}; for(const sd of ['L','R']){ const s=cyl(.006,.0078,.4,0xd9bc85,8); g.add(s); U.st[sd]=s; }
+    INSTR.pf(mk=>{ const drum=()=>{ const m=mk('drum_snare'); return m&&{stand:m,shell:m.userData.parts.drum}; }, cym=()=>{ const m=mk('drum_cymbal'); return m&&{stand:m,plate:m.userData.parts['cymbal-body']}; };
+      if(!['drum_snare','drum_kick','drum_cymbal'].every(INSTR.PF.has))return; for(const m of first)m.visible=false;
+      PART.forEach((p,i)=>{ const c=new V3(...p.c), o=U.parts[i];
+        if(p.kick){ const m=mk('drum_kick'), s=p.r/.472; INSTR.fit(m,0,[s,s,p.d/.5],[c.x,c.y-.508*s,c.z]); g.add(m); return; }
+        if(p.cym){ const s=p.r/CR, S=cym(), st=S.stand, top=S.plate; st.remove(top); INSTR.fit(st,0,[.8,(c.y-.035)/INSTR.bb(st).max.y,.8],[c.x,0,c.z]); g.add(st);
+          // (its plate laid flat, bell up, its rim on the cymbal's plane)
+          const lay=(m,up)=>{ m.quaternion.setFromAxisAngle(XA,up?-Math.PI/2:Math.PI/2); m.scale.setScalar(s); m.position.set(0,(up?-.09:.09)*s,(up?1:-1)*s); return m; };
+          U.cym[i].g.add(lay(top,true)); if(p.n==='HI-HAT'){ const b=lay(cym().plate,false); b.position.y-=.02; o.add(b); } return; }
+        // a drum: Polyfork's snare its shell, set so its top head is this one's (and on its stand for the snare)
+        const D=drum(), sh=D.shell, s=p.r/SN.r; sh.removeFromParent(); sh.scale.set(s,p.n==='SNARE'?s:s*p.d/SN.d,s); sh.quaternion.setFromAxisAngle(XA,-SN.tip);
+        sh.position.copy(SN.top).multiply(sh.scale).applyQuaternion(sh.quaternion).negate().add(new V3(0,-.003,0)); o.userData.dr.add(sh);
+        if(p.n==='SNARE'){ const st=D.stand; INSTR.fit(st,0,[s,(c.y-SN.d*s)/SN.foot,s],[c.x,0,c.z]); g.add(st); } }); });
     return g; };
 
   /* ---------- the hands: a stick in each fist; for each hit the stick comes up and down onto its piece, rebounds and waits over it ---------- */

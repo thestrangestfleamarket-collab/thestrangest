@@ -3,6 +3,7 @@ import {CHARS, FORAGE, INV, NPCS, pos, TALK, TRAINERS, UI} from './003b-systems.
 import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {QS, SYS, TILE} from './006-map-pre.js';
+import {ASL} from './146zs-signs.js';
 const QUESTS={};
 { const D=__DATA__("data/quests.json")||{quests:[]}, Q=D.quests||[], KEY='quests'; let S={v:1,on:{},done:{},knows:{},homes:{}}; try{ const o=JSON.parse(OWNED.get(KEY)||'null'); if(o&&o.v===1)S=Object.assign(S,o); }catch(e){} if(QS.get('fresh')&&QS.get('keepinv')!=='1')S={v:1,on:{},done:{},knows:{},homes:{}};
   const save=()=>OWNED.set(KEY,JSON.stringify(S)), byId=id=>Q.find(q=>q.id===id)||null, npc=id=>NPCS.all().find(N=>CHARS.id(N)===id)||null, wx=v=>CHARS.wx?CHARS.wx(v):v*TILE, wz=v=>CHARS.wz?CHARS.wz(v):v*TILE;
@@ -10,7 +11,7 @@ const QUESTS={};
   const met=c=>{ if(!c)return true; if(c.flag){ const [n,f]=c.flag.split(/\s+/); return !!(TALK.flags&&TALK.flags(n)[f]); } if(c.has){ const [id,n]=c.has.split(/\s+/); return (INV.items[id]||0)>=(+n||1); } if(c.knows)return !!S.knows[c.knows]; if(c.rank){ const [sk,n]=c.rank.split(/\s+/); return (TRAINERS&&TRAINERS.rank?TRAINERS.rank(sk):0)>=(+n||1); } if(c.at)return Math.hypot(pos.x-wx(c.at.x),pos.z-wz(c.at.z))<=(c.at.r||6)*TILE; return false; };
   const stepOf=q=>{ let i=0; for(let k=q.steps.length-1;k>=0;k--)if(met(q.steps[k])){ i=k+1; break; } return i; };   // a later step done counts the ones before it
   const station=(q,on)=>{ for(const s of q.stations||[]){ const N=npc(s.npc); if(!N)continue; if(on){ if(!S.homes[s.npc]&&N.st&&N.st.home)S.homes[s.npc]={...N.st.home}; N.home={id:s.npc,x:wx(s.x),z:wz(s.z),r:0}; } else if(S.homes[s.npc]){ N.home=S.homes[s.npc]; delete S.homes[s.npc]; } } };
-  QUESTS.start=id=>{ const q=byId(id); if(!q||S.on[id]||S.done[id])return false; S.on[id]={at:Date.now()}; station(q,true); save(); SAY('QUEST: '+q.title,'#f2c14e'); UI.log('QUEST: '+q.title,'#f2c14e'); return true; };
+  QUESTS.start=id=>{ const q=byId(id); if(!q||S.on[id]||S.done[id]||(q.giver&&!ASL.follows(q.giver,true)))return false; S.on[id]={at:Date.now()}; station(q,true); save(); SAY('QUEST: '+q.title,'#f2c14e'); UI.log('QUEST: '+q.title,'#f2c14e'); return true; };
   QUESTS.drop=id=>{ const q=byId(id); if(!q||!S.on[id])return; delete S.on[id]; station(q,false); save(); };
   const finish=q=>{ delete S.on[q.id]; S.done[q.id]=Date.now(); for(const k of q.teaches||[])S.knows[k]=1; station(q,false); save(); SAY('DONE: '+q.title,'#f2c14e'); UI.log('DONE: '+q.title,'#f2c14e'); if(q.next)QUESTS.start(q.next); };
   QUESTS.tick=()=>{ for(const q of Q){ if(S.done[q.id])continue; if(!S.on[q.id]){ if(q.starts&&met(q.starts))QUESTS.start(q.id); continue; } if(stepOf(q)>=q.steps.length)finish(q); } };

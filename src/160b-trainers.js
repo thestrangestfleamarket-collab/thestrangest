@@ -6,6 +6,7 @@ import {OWNED} from './005-save.js';
 import {QS} from './006-map-pre.js';
 import {GEMS} from './101-gems.js';
 import {PHOTOS} from './146m-prints.js';
+import {ASL} from './146zs-signs.js';
 import {QUESTS} from './160a-quests.js';
 { const D=__DATA__("data/trainers.json")||{ranks:[],open:3,titles:{},trainers:{},ladders:{}}, KEY='trainers', {BF_KINDS}=SHARED.BOD.STOREK.bf; let S={v:1,rung:{}}; try{ const o=JSON.parse(OWNED.get(KEY)||'null'); if(o&&o.v===1)S=Object.assign(S,o); }catch(e){} if(QS.get('fresh')&&QS.get('keepinv')!=='1')S={v:1,rung:{}};
   const save=()=>OWNED.set(KEY,JSON.stringify(S)), TK={c:'common',r:'rare',s:'super'};
@@ -32,6 +33,7 @@ import {QUESTS} from './160a-quests.js';
   FORAGE.askRows=TRAINERS.rows; FORAGE.hand=TRAINERS.hand;
   // the journal: one line per trainer
   TRAINERS.journal=()=>'<div style="margin:0 0 4px;color:#9b9584">TRAINERS</div>'+TRAINERS.skills().map(sk=>{ const a=TRAINERS.ask(sk), who=Object.keys(D.trainers).find(k=>D.trainers[k].skills.includes(sk)), T=D.trainers[who]||{name:''}; const id=a&&idOf(a.item);
+      if(a&&who&&!ASL.follows(who,true))return `<div style="margin-bottom:4px"><span style="color:#f2c14e">${esc(skillName(sk))}</span> · ${esc(TRAINERS.rankName(sk))} · ${esc(T.name)} signs what they want; you cannot follow it yet (SIGN LANGUAGE)</div>`;
       return `<div style="margin-bottom:4px"><span style="color:#f2c14e">${esc(skillName(sk))}</span> · ${esc(TRAINERS.rankName(sk))}${a?` · ${esc(T.name)} asks for ${a.n} ${esc(id?nameOf(id):a.item)} <span style="color:#9b9584">(${esc(a.where)}; ${id?have(id):0} of ${a.n})</span>`:' · the ladder is done'}</div>`; }).join('')+'<div style="height:6px"></div>';
   if(QUESTS&&QUESTS.sections)QUESTS.sections.push(TRAINERS.journal);
   ONLINE.mine.title=()=>TRAINERS.title();

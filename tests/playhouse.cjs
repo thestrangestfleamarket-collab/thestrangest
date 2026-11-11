@@ -1,4 +1,4 @@
-// THE PLAYHOUSE, THE WOODEN O: goes in by its gate and checks the round is built (seats, solids, lanterns), the ground (the yard, the stage and its steps, the lower gallery, the stair, the middle gallery only from above), sitting on a gallery bench, the pay hatch, the sky over the yard, the front on Market St, and out again.
+// THE PLAYHOUSE, THE WOODEN O: goes in by its gate and checks the round is built, the play on its stage (scene one, scene two, between shows) (seats, solids, lanterns), the ground (the yard, the stage and its steps, the lower gallery, the stair, the middle gallery only from above), sitting on a gallery bench, the pay hatch, the sky over the yard, the front on Market St, and out again.
 // Run: node tests/playhouse.cjs   (slow: software rendering; PW_EXE=/opt/pw-browsers/chromium where the local playwright has no browser)
 const {chromium}=require('playwright');
 (async()=>{ const b=await chromium.launch({executablePath:process.env.PW_EXE||undefined,args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
@@ -20,6 +20,13 @@ const {chromium}=require('playwright');
   ok(sat,'double-clicking a gallery bench sits you on it');
   ok(await pg.evaluate(()=>__dbg.UI.things.some(t=>/PAY HATCH/.test(t.name))),'the pay hatch sells a ticket');
   ok(await pg.evaluate(()=>!!(OUT.sky&&SKY.dome&&SKY.dome.visible)),'the sky is over the yard');
+  { const pl=async t=>{ await pg.evaluate(t=>PHDBG().run((K,X)=>X.show.at(t)),t); await pg.waitForTimeout(1500); return pg.evaluate(()=>PHDBG().run((K,X)=>{ const A=K.cast, on=Object.entries(A).filter(([k,a])=>a.g.visible).map(([k,a])=>[k,+a.x.toFixed(1),+a.z.toFixed(1),+a.y.toFixed(2)]), cap=document.getElementById('phcap');
+      return {on,court:K.furn.court.visible,shop:K.furn.shop.visible,cap:cap&&cap.style.display!=='none'?cap.textContent.slice(0,40):'',len:X.show.len(),s2:X.show.T.scenes[1]&&X.show.T.scenes[1].t}; })); };
+    const a=await pl(12);
+    ok(a.on.some(p=>p[0]==='theseus')&&a.on.every(p=>Math.abs(p[1])<=5.3&&p[2]<=-1.1&&p[2]>=-7.4&&Math.abs(p[3]-1.4)<.05)&&a.court&&!a.shop&&/THESEUS|HIPPOLYTA/.test(a.cap),'the play: scene one on the thrust stage, the throne and chair out, the line in the caption '+JSON.stringify(a));
+    const b=await pl(a.s2+20);
+    ok(b.on.some(p=>p[0]==='quince')&&b.shop&&!b.court,'the play: scene two, the mechanicals at Quince\'s bench '+JSON.stringify({on:b.on.map(p=>p[0]),shop:b.shop,court:b.court}));
+    const c=await pl(-300); ok(!c.on.length&&!c.court&&!c.shop,'between shows the stage is bare and the company off'); }
   await pg.evaluate(()=>ROOMS.exit('playhouse')); await idle(); await pg.waitForTimeout(800);
   ok(await pg.evaluate(()=>!ROOMS.offIn()),'out again to its street');
   ok(!errs.length,'no page errors'+(errs.length?': '+errs.join(' | '):''));

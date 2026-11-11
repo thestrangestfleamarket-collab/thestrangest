@@ -22,7 +22,7 @@ RIVER.onBuild.push(()=>{ const T=TILE, V3=THREE.Vector3, RB=RIVER.box, Q=RB.z1, 
   const tone=(c,k,i)=>c.map(v=>v*(1-k/2+k*hs(i,c[0]*97))), WD=[.5,.45,.38], GRY=[.56,.54,.5], DK=[.3,.26,.21], IRON=[.16,.17,.18], RUST=[.42,.24,.14], ROPE=[.62,.54,.38];
   // the deck: planks across, with gaps, every one its own tone; a few warped
   const PT=.22*WU, PG=.025*WU, plank=(x0,x1,z0,z1)=>{ let i=0; for(let z=z1-PG;z-PT>z0;z-=PT+PG,i++){ const k=hs(i,x0|0), wv=hs(i,7)>.93?(.012+.012*hs(i,2)):0, sh=(hs(i,11)-.5)*.12*WU;
-      box((x0+x1)/2+sh,-.04*WU+wv*WU*.3,z-PT/2,x1-x0-Math.abs(sh)*2,.08*WU,PT,tone(k>.85?GRY:k<.12?DK:WD,.35,i+(x0|0)),0,0,wv); } };
+      box((x0+x1)/2+sh,-.04*WU+wv*WU*.3,z-PT/2,x1-x0+.03*WU-Math.abs(sh)*2,.08*WU,PT,tone(k>.85?GRY:k<.12?DK:WD,.35,i+(x0|0)),0,0,wv); } };
   plank(X-hw,X+hw,zH,Q); plank(X-HW,X+HW,zE,zH);
   for(const s of [-1,1]){ box(X+s*(hw-.05*WU),-.2*WU,(zH+Q)/2,.1*WU,.26*WU,Q-zH,DK); box(X+s*(HW-.05*WU),-.2*WU,(zE+zH)/2,.1*WU,.26*WU,HD,DK); }
   box(X,-.2*WU,zE+.05*WU,2*HW,.26*WU,.1*WU,DK); for(const s of [-1,1])box(X+s*(HW+hw)/2,-.2*WU,zH-.05*WU,HW-hw,.26*WU,.1*WU,DK);

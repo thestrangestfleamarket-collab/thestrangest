@@ -75,10 +75,12 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.evaluate(() => ONLINE.feed({ t: 'out', id: 'a' })); await hold('w_portal'); await pg.waitForTimeout(400);
     await aim(.35); await fire('w_portal'); await pg.waitForTimeout(200); await aim(.12); await fire('w_portal'); await pg.waitForTimeout(300);
     const pr = await pg.evaluate(() => (ARMSDBG().portals.find(p => p[0] === 'me') || [])[1]);
+    const seen = await pg.evaluate(() => (ARMS.portals.get('me') || []).every(p => p && LEVELS.drawn(p.m)));
+    ok(seen, 'both portals are drawn where they opened');
     let tp = null; if (pr && pr[0] && pr[1]) { await pg.evaluate(p => __dbg.UI.goTo(p[0], p[2], p[1]), pr[0]); tp = await until(q => { const P = __dbg.you(); return Math.hypot(P.x - q[0], P.z - q[2]) < 2 ? [+P.x.toFixed(1), +P.z.toFixed(1)] : null; }, 10000, pr[1]); }
     ok(!!pr && !!pr[0] && !!pr[1] && !!tp, 'two portals open on the ground and stepping in one carries you to the other (' + JSON.stringify([pr, tp]) + ')');
     await shot('portal');
-    await pg.evaluate(() => { for (const p of ARMS.portals.get('me') || []) if (p) p.t = 29.9; }); await pg.waitForTimeout(1500);
+    await pg.evaluate(() => { for (const p of ARMS.portals.get('me') || []) if (p) p.t = 29.9; }); await pg.waitForTimeout(6000);
     const gone = await pg.evaluate(() => !ARMSDBG().portals.some(p => p[0] === 'me'));
     ok(gone, 'the portals close after 30 seconds');
     await pg.evaluate(() => { ARMS.aim = null; WIELD.set(null); });

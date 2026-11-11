@@ -47,7 +47,7 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
     for(let i=0;i<q.length;i++){ const a=i%3; P[i]=b[a]+(q[i]+32768)/65535*(b[a+3]-b[a]); }
     for(let i=0;i<col.length;i+=3){ c.setRGB(col[i]/255,col[i+1]/255,col[i+2]/255,THREE.SRGBColorSpace); C[i]=c.r; C[i+1]=c.g; C[i+2]=c.b; }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C,3)); g.computeVertexNormals(); g.computeBoundingSphere(); return g; };
-  const lid=k=>D&&D[k]?'tr:'+k:'car:'+k, size=k=>{ const s=D&&D[k]?D[k].size:[2,1.4,4.9], l=VLOOK.scaleOf(lid(k)); return l===1?s:s.map(v=>v*l); };
+  const lid=k=>D&&D[k]?'tr:'+k:'car:'+k, size=k=>{ const G=MODS.cars&&MODS.cars.data&&MODS.cars.data(), s=D&&D[k]?D[k].size:G&&G.cars[k]?G.cars[k].size:[2,1.4,4.9], l=VLOOK.scaleOf(lid(k)); return l===1?s:s.map(v=>v*l); };
   const body=(Q,k)=>{ const g=new THREE.Group(); for(const n in Q.parts){ const q=Q.parts[n], me=new THREE.Mesh(geo(q),MAT); me.name=n; me.position.set(...q.at); me.castShadow=true; g.add(me); } g.scale.setScalar(M1); return VLOOK.dress('tr:'+k,g); };
   const tpl=k=>{ if(TPL[k])return TPL[k]; let g=null; if(D[k])g=body(D[k],k); else if(MODS.cars&&MODS.cars.build)g=MODS.cars.build(k); if(g)g.traverse(o=>{ o.userData.anyRoom=false; }); return TPL[k]=g; };
   const take=k=>{ const P=POOL[k]||(POOL[k]=[]); if(P.length)return P.pop(); const t=tpl(k); if(!t)return null; const m=t.clone(); GRP.add(m); if(MODS.cars&&MODS.cars.cab)MODS.cars.cab(m); return m; };
@@ -61,14 +61,15 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
   const xOf=(L,s)=>L.dir>0?xW+s:xE-s;
   const blockers=()=>{ const B=[{x:pos.x,z:pos.z}]; for(const o of (ONLINE.others&&ONLINE.others.values())||[])if(o.p&&!o.dead)B.push({x:o.p.x,z:o.p.z}); if(MODS.cars&&MODS.cars.cars)for(const C of MODS.cars.cars.values()){ if(!C.by){ if(C.mesh)B.push({x:C.x,z:C.z,r:2.4*M1}); continue; } if(MODS.cars.flies(C.model))continue;
       const o=C.by===(ONLINE.me||'me')?pos:(ONLINE.others&&ONLINE.others.get(C.by)||{}).p; if(o)B.push({x:o.x,z:o.z,r:2.4*M1}); } return B; };   // a car being driven is where its driver is
+  const room=(L,C,u)=>{ let r=Infinity; for(const A of L.cars){ if(A===C||A.u==null)continue; const d=(((A.u-u)%LC)+LC)%LC; r=Math.min(r,Math.min(d,LC-d)-(size(C.model)[2]+size(A.model)[2])*M1/2-2*M0); } return r; };
   const step=dt=>{ const t=now(), Lt=light(t), B=LANES[0].GR?blockers():[], R=Math.max(90*T,(window.CULL&&CULL.R)||0), up=OUT.open&&!(PARK.within&&PARK.within(pos.x,pos.z))&&SHARED.LVL==='up';
     for(const L of LANES){ if(!L.GR)continue; const hw=Math.abs(zs-zm)/2+.6*M0;
       const nom=C=>t*L.v+C.i*LC/L.n;
-      for(const C of L.cars){ if(C.u==null||!C.m&&Math.abs(nom(C)-C.u)>LC*.8){ C.u=nom(C); C.sp=L.v; } }
-      const ord=L.cars.slice().sort((a,b)=>b.u-a.u);
-      ord.forEach((C,j)=>{ const s=((C.u%LC)+LC)%LC, len=size(C.model)[2]*M1/2; let lim=Infinity;
+      // an unseen car far off its place goes back to it only where the road is clear (at rest if another car is close)
+      for(const C of L.cars){ if(C.u==null){ C.u=nom(C); C.sp=L.v; continue; } if(C.m||!C.re&&Math.abs(nom(C)-C.u)<=LC*.8)continue; const n=nom(C), r=room(L,C,n); if(r>0){ C.u=n; C.sp=r>L.v*L.v/(8*M0)?L.v:0; C.re=0; } }
+      L.cars.forEach(C=>{ const s=((C.u%LC)+LC)%LC, len=size(C.model)[2]*M1/2; let lim=Infinity;
         if(Lt.m!=='g'&&s+len<=L.stop){ const g=L.stop-(s+len); if(Lt.m==='r'||g>C.sp*C.sp/(2*5*M0))lim=Math.min(lim,g); }
-        { const A=ord[j-1]||ord[ord.length-1]; if(A!==C){ let g=A.u-C.u; if(g<0)g+=LC; g-=len+size(A.model)[2]*M1/2+2*M0; lim=Math.min(lim,g); } }
+        for(const A of L.cars)if(A!==C)lim=Math.min(lim,(((A.u-C.u)%LC)+LC)%LC-len-size(A.model)[2]*M1/2-2*M0);   // the car ahead on the road, whatever lap either is on
         if(!L.fly){ if(s<SPAN){ const x=xOf(L,s); C.blk=false; for(const b of B){ if(Math.abs(b.z-L.z)>hw+(b.r||0))continue; const d=(b.x-x)*L.dir-(b.r||.5*M0); if(d>-len&&d<len+28*M0){ lim=Math.min(lim,d-len-2*M0); if(!b.r&&d<len+8*M0)C.blk=true; } } } }
         const want=Math.min(L.v+Math.max(-.5*L.v,Math.min(.6*L.v,(nom(C)-C.u)*.25)),lim<Infinity?Math.sqrt(2*4*M0*Math.max(0,lim)):1e9);
         C.sp+=Math.max(-9*M0*dt,Math.min(3*M0*dt,want-C.sp)); if(C.sp<0)C.sp=0; if(lim<.05*M0&&lim<Infinity)C.sp=Math.min(C.sp,0); C.u+=C.sp*dt;
@@ -82,7 +83,7 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
   const BLIMP={k:'sky-tender',m:null,T:300,h:75*M0,at:t=>{ const a=t/BLIMP.T*Math.PI*2, cx=(xW+xE)/2, cz=zm+110*T; return {x:cx+Math.cos(a)*150*T,z:cz+Math.sin(a)*120*T,r:Math.atan2(-Math.sin(a)*150,Math.cos(a)*120)}; }}; TRAFFIC.blimp=BLIMP;
   SYS.add('life',()=>{ if(!D||!D[BLIMP.k])return; if(!BLIMP.m){ const g=new THREE.Group(); g.add(body(D[BLIMP.k],BLIMP.k)); g.scale.setScalar(7); g.traverse(o=>{ o.userData.anyRoom=false; o.frustumCulled=false; }); GRP.add(g); BLIMP.m=g; }
     const t=now(), p=BLIMP.at(t), m=BLIMP.m; m.visible=!!OUT.open&&SHARED.LVL==='up'; m.position.set(p.x,BLIMP.h+Math.sin(t*.25)*1.5*M0,p.z); m.rotation.set(0,p.r,Math.sin(t*.2)*.03); },'150pb-traffic');
-  let tP=null; SYS.add('life',()=>{ if(!D)return; const t=now(); let d=tP==null?0:t-tP; tP=t; if(d<0||d>30){ for(const L of LANES)for(const C of L.cars)if(!C.m)C.u=null; d=0; }
+  let tP=null; SYS.add('life',()=>{ if(!D)return; const t=now(); let d=tP==null?0:t-tP; tP=t; if(d<0||d>30){ for(const L of LANES)for(const C of L.cars)if(!C.m)C.re=1; d=0; }
     const n=Math.min(120,Math.max(1,Math.ceil(d/.06))); for(let k=0;k<n;k++)step(d/n); },'150pb-traffic');
 
   /* ---------- the kit fetched after the start, the game's cars once theirs are in ---------- */
@@ -95,6 +96,6 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
   // their lamps (150pc): every car on the road, measured once from its model
   const DIM={}, dimOf=k=>DIM[k]||(DIM[k]=(()=>{ const t=tpl(k); if(!t)return null; const b=new THREE.Box3().setFromObject(t); return [b.max.x-b.min.x,b.max.y-b.min.y,b.max.z-b.min.z,b.min.y]; })());
   CARLAMPS.src.push(out=>{ for(const L of LANES)for(const C of L.cars){ if(!C.m||!C.m.visible)continue; const d=dimOf(C.model); if(d)out.push({x:C.m.position.x,y:C.m.position.y,z:C.m.position.z,r:C.m.rotation.y,dim:d,fly:!!L.fly,own:!!(MODS.cars&&MODS.cars.own&&MODS.cars.own(C.model)),sp:C.sp}); } });
-  TRAFFIC.dbg=()=>({loaded:!!D,m1:M1,light:light(now()),cross:[gx0,gx1],lanes:LANES.map(L=>({dir:L.dir,fly:!!L.fly,z:L.z,stop:xOf(L,L.stop),cars:L.cars.map(C=>({model:C.model,x:xOf(L,((C.u%LC)+LC)%LC),on:(((C.u%LC)+LC)%LC)<SPAN,len:size(C.model)[2]*M1/2,s:+((((C.u%LC)+LC)%LC)/T).toFixed(1),sp:+(C.sp/M0).toFixed(1),shown:!!(C.m&&C.m.visible)}))}))});
+  TRAFFIC.dbg=()=>({loaded:!!D,clip:LANES.reduce((n,L)=>n+L.cars.filter(C=>C.u!=null&&room(L,C,C.u)<-2*M0).length,0),lap:LC,m1:M1,light:light(now()),cross:[gx0,gx1],lanes:LANES.map(L=>({dir:L.dir,fly:!!L.fly,z:L.z,stop:xOf(L,L.stop),cars:L.cars.map(C=>({model:C.model,x:xOf(L,((C.u%LC)+LC)%LC),on:(((C.u%LC)+LC)%LC)<SPAN,len:size(C.model)[2]*M1/2,s:+((((C.u%LC)+LC)%LC)/T).toFixed(1),sp:+(C.sp/M0).toFixed(1),shown:!!(C.m&&C.m.visible)}))}))});
 }
 export {TRAFFIC};

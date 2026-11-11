@@ -45,6 +45,9 @@ const {chromium}=require('playwright');
   await pg.waitForFunction(()=>window.CAPTAIN&&CAPTAIN.dbg().made,null,{timeout:120000,polling:1000}).catch(()=>{});
   const cap=await pg.evaluate(()=>{ const B=TRAFFIC.blimp, c=CAPTAIN.dbg(), g=B.m.children[0], V=CAPTAIN.N.g.position.clone(); g.worldToLocal(V); return {...c,local:V.toArray().map(v=>+v.toFixed(2))}; });
   ok(cap.made&&Math.abs(cap.local[0])<.4&&cap.local[1]>.6&&cap.local[1]<1.1&&cap.local[2]>-1.2&&cap.local[2]<1&&['hat','eyes','face','coat','neck','feet'].every(k=>cap.slots.includes(k)),'the airship\'s captain stands in its gondola, in his flight cap, goggles, beard, long coat, scarf and boots: '+JSON.stringify({local:cap.local,slots:cap.slots}));
+  // cars a lap apart on the clock (one held up while unseen ones went back to their places) still see each other: through a red, no two in one place
+  await pg.evaluate(()=>{ const t=Date.now()/1000, r=((t%90)+90)%90; TRAFFIC.skew+=(20-r); const lap=TRAFFIC.dbg().lap; for(const L of TRAFFIC.lanes)L.cars.forEach((C,i)=>{ if(i%2)C.u+=lap; }); });
+  { let worst=0; for(let k=0;k<45;k++){ await pg.waitForTimeout(2000); worst=Math.max(worst,await pg.evaluate(()=>TRAFFIC.dbg().clip)); } ok(worst===0,'cars a lap apart on the clock keep their gaps through a red: '+worst); }
   // a car you are driving, stopped in the lane: the traffic stops behind its bumper, not in it
   await pg.evaluate(()=>{ const t=Date.now()/1000, r=((t%90)+90)%90; TRAFFIC.skew=(2-r); }); await pg.waitForTimeout(1500); d=await T();
   { const L=d.lanes[0], c=L.cars.filter(c=>c.on&&c.x>-100&&c.x<300).sort((a,b)=>a.x-b.x)[0], sx=c?c.x-(c.len+30):0;

@@ -87,6 +87,6 @@ registerProcessor('guitar',Guitar);`;
   GSND.mute=(V,s,when,v=.25)=>{ if(!V)return; V.node.port.postMessage({ev:[{t:when,k:'mute',s:s-1,v}]}); for(const o of V.on||[])if(o.id==='s'+s)GSND.fade(o,when,v>=.2?.16:.05); };
   GSND.setVol=v=>{ GSND.vol=Math.max(0,Math.min(1,v)); try{ SAVE.set('gtvol',String(GSND.vol)); }catch(e){} if(GSND.out)GSND.out.gain.setTargetAtTime(GSND.vol,GSND.ctx.currentTime,.05); };
   // where a voice is heard from: its player's place against yours and the way the view looks (louder near, gone past about 18 m)
-  GSND.place=(V,x,z)=>{ if(!V||!GSND.ctx)return; const c=GSND.ctx, d=Math.hypot(x-pos.x,z-pos.z)/TILE*.84, k=/^me\b/.test(V.who)?1:Math.max(0,1-d/18)**2;
-    V.g.gain.setTargetAtTime(k,c.currentTime,.08); if(/^me\b/.test(V.who))V.pan.to(); else V.pan.to(x,SHARED.py+TILE,z); }; }
+  GSND.place=(V,x,z,lo=1)=>{ if(!V||!GSND.ctx)return; const c=GSND.ctx, d=Math.hypot(x-pos.x,z-pos.z)/TILE*.84, k=/^me\b/.test(V.who)?1:Math.max(0,1-d/18)**2;
+    V.g.gain.setTargetAtTime(k*lo,c.currentTime,.08); if(/^me\b/.test(V.who))V.pan.to(); else V.pan.to(x,SHARED.py+TILE,z); }; }
 export {GSND};

@@ -11,7 +11,7 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
   const rec=(n,ok,i)=>{ if(!ok)bad++; console.log((ok?'PASS ':'FAIL ')+n+(i?'  · '+i:'')); };
   const wait=ms=>new Promise(r=>setTimeout(r,ms)), U=async(f,ms=120000)=>{ for(const t=Date.now();Date.now()-t<ms;await wait(400))if(await pg.evaluate(f))return true; return false; };
   await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&hour=12&at=80,95',{timeout:240000}); await pg.waitForFunction(()=>window.__started,null,{timeout:300000});
-  rec('you are the avatar from the start, its wardrobe loaded; no other body to pick',await U(()=>AVATAR.ready()&&BODIES.pick()==='avatar'&&!document.querySelector('#looks [data-k=body]')));
+  rec('you are the avatar from the start, its wardrobe loaded; the BODY line offers only the avatar and the knight (10 Nov 2026)',await U(()=>AVATAR.ready()&&BODIES.pick()==='avatar'&&(r=>!r||[...r.querySelectorAll('button')].map(b=>b.dataset.b).join()==='avatar,knight')(document.querySelector('#looks [data-k=body]'))));
   rec('the Walker is never drawn; YOU has none of its options',await pg.evaluate(()=>W3.meshes.every(m=>!m.visible)&&!document.querySelector('#lform,#lhair,#lbeard,#ldesign')));
   const tris=()=>pg.evaluate(()=>{ const g=BODIES.by.avatar.GEO; return g?g.attributes.position.count/3:0; });
   await wait(500); const t0=await tris(); rec('you are the avatar, dressed (hair, tee, trousers, sneakers)',t0>2000&&await pg.evaluate(()=>W3.body.on),'tris '+t0);
@@ -28,6 +28,9 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
   await pg.evaluate(async k=>{ const L=AVATAR.L(); L.w=JSON.parse(k); await AVATAR.set({}); },none);
   const bf=await pg.evaluate(async()=>{ const a=BODIES.by.avatar.GEO.attributes.position.count/3; LOOKS.L.bare=true; await LOOKS.onChange(); const b=BODIES.by.avatar.GEO.attributes.position.count/3, c=BODIES.by.avatar.look(); LOOKS.L.bare=false; await LOOKS.onChange(); return {a,b,c}; });
   rec('barefoot takes your shoes off, and other players see it',bf.b<bf.a&&/\.1$/.test(bf.c),JSON.stringify(bf));
+  const uw=await pg.evaluate(async()=>{ const L=AVATAR.L(), keep=JSON.stringify(L.w); L.w={}; const g=()=>{ const c=BODIES.by.avatar.GEO.attributes.color.array; let n=0; for(let i=0;i<c.length;i+=3)if(Math.abs(c[i]-.4342)<.02&&Math.abs(c[i+1]-.0194)<.02&&Math.abs(c[i+2]-.0409)<.02)n++; return n; };
+    await AVATAR.set({}); const a=g(); await AVATAR.set({under:'b0283a'}); const b=g(), c=BODIES.by.avatar.look(); await AVATAR.set({under:undefined}); L.w=JSON.parse(keep); await AVATAR.set({}); return {a,b,c}; });
+  rec('the underwear takes the colour you pick (owner, 11 Nov 2026), and other players see it',uw.a===0&&uw.b>100&&/\.b0283a$/.test(uw.c),JSON.stringify(uw));
   const dy=await pg.evaluate(async()=>{ LOOKS.over.pants='#34507e'; await LOOKS.onChange(); const c=BODIES.by.avatar.look(); delete LOOKS.over.pants; await LOOKS.onChange(); return c; });
   rec('worn clothes from the rack dye the avatar (jeans: your bottoms), and other players see it',/~34507e/.test(dy),dy);
   // the same moves and physics as the Walker had: the rig poses the avatar, and the physics body (DISPLAY's BODY: Rapier, the rig's 15 parts) moves its bones
@@ -93,6 +96,7 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
     await look('woman',{f:'f',b:0,h:97},[['hair','PONYTAIL'],['top','T-SHIRT','2f6d8c'],['bottom','PLEATED SKIRT','3b3b48'],['feet','SNEAKERS'],['eyes','CAT-EYES']]);
     await look('broad',{f:'m',b:2,h:106,skin:'7e4c2f',hair:'1d1712'},[['hair','AFRO'],['face','FULL BEARD'],['top','WORK SHIRT'],['coat','HI-VIS VEST'],['bottom','DUNGAREES'],['feet','WORK BOOTS'],['hat','HARD HAT']]);
     await look('coat',{f:'f',b:1,h:102,skin:'c08a64',hair:'b98a4e'},[['hair','LONG'],['top','SHIRT'],['coat','LONG COAT','5a2a3a'],['bottom','TROUSERS'],['feet','TALL BOOTS'],['hat','FELT HAT'],['neck','SCARF']]);
+    await look('underwear',{f:'f',b:1,h:100,under:'e58fb0'},[['hair','PONYTAIL']]);
     await pg.evaluate(()=>LOOKS.open()); await wait(800); await pg.screenshot({path:OUT+'/avatar-panel.png'}); }
   const E=Object.entries(errs); rec('no page errors',!E.length,E.map(([k,n])=>n+'× '+k).join(' | '));
   console.log(bad?bad+' FAILED':'ALL PASS'); await b.close(); process.exit(bad?1:0); })();

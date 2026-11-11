@@ -17,18 +17,18 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     ['ThePhantomoftheOpera','Phantom_of_the_Opera_512kb.mp4','THE PHANTOM OF THE OPERA',1925,6389],['DasKabinettdesDoktorCaligariTheCabinetofDrCaligari','The_Cabinet_of_Dr._Caligari_512kb.mp4','THE CABINET OF DR. CALIGARI',1919,3061]]
     .map(([id,file,title,year,len])=>({id,file,title,year,len,slot:Math.ceil((len+600)/900)*900}));
   const EPOCH=Date.UTC(2026,9,28);
-  // showing now, only at the theatre (owner, 11 Nov 2026): NIGHT OF THE LIVING DEAD, kept in our own R2 bucket (worker/door.js /film/); the free films stay on THE GUIDE
-  const SHOW=[{id:'Night.Of.The.Living.Dead_1080p',file:'NightOfTheLivingDead_1080p.mp4',title:'NIGHT OF THE LIVING DEAD',year:1968,len:5753,slot:Math.ceil((5753+600)/900)*900}];
+  // showing now, only at the theatre (owner, 11 Nov 2026): NIGHT OF THE LIVING DEAD, a YouTube upload (yt) on the schedule like a film; it ends 20 s early so YouTube's end screen never shows; the free films stay on THE GUIDE
+  const SHOW=[{id:'H91BxkBXttE',yt:'H91BxkBXttE',file:'',title:'NIGHT OF THE LIVING DEAD',year:1968,len:5697,slot:Math.ceil((5697+600)/900)*900}];
   // the playlist: an admin's own list from the screen's menu (shared, on the screen's record), else the free films above
   let plK='', PL=SHOW, CYCLE=0; const slotOf=len=>Math.ceil((len+600)/900)*900;
-  const list=()=>{ '@later'; const p=cur().playlist, k=JSON.stringify(p||null); if(k!==plK){ plK=k; PL=Array.isArray(p)&&p.filter(f=>f&&f.id&&f.file&&f.len>0).length?p.filter(f=>f&&f.id&&f.file&&f.len>0).map(f=>({id:f.id,file:f.file,title:String(f.title||f.id).toUpperCase(),year:f.year||'',len:+f.len,slot:slotOf(+f.len)})):SHOW; CYCLE=PL.reduce((a,f)=>a+f.slot,0)*1000; } return PL; };
+  const list=()=>{ '@later'; const p=cur().playlist, k=JSON.stringify(p||null); if(k!==plK){ plK=k; PL=Array.isArray(p)&&p.filter(f=>f&&f.id&&(f.file||f.yt)&&f.len>0).length?p.filter(f=>f&&f.id&&(f.file||f.yt)&&f.len>0).map(f=>({id:f.id,file:f.file||'',yt:f.yt||'',title:String(f.title||f.id).toUpperCase(),year:f.year||'',len:+f.len,slot:slotOf(+f.len)})):SHOW; CYCLE=PL.reduce((a,f)=>a+f.slot,0)*1000; } return PL; };
   const showAt=t=>{ const L=list(), k=Math.floor((t-EPOCH)/CYCLE), r=t-EPOCH-k*CYCLE; let s0=EPOCH+k*CYCLE, a=0; for(let i=0;i<L.length;i++){ const f=L[i]; if(r<a+f.slot*1000)return {i,f,start:s0+a}; a+=f.slot*1000; } return {i:0,f:L[0],start:s0}; };
   CINEMA.films=FILMS; CINEMA.list=()=>list(); CINEMA.showAt=showAt;
-  CINEMA.upcoming=(n=6,t=Date.now())=>{ const o=[]; let s=showAt(t); for(let k=0;k<Math.min(n,list().length*2);k++){ o.push({title:s.f.title,year:s.f.year,id:s.f.id,start:s.start,end:s.start+s.f.len*1000}); s=showAt(s.start+s.f.slot*1000+1); } return o; };
+  CINEMA.upcoming=(n=6,t=Date.now())=>{ const o=[]; let s=showAt(t); for(let k=0;k<Math.min(n,list().length*2);k++){ o.push({title:s.f.title,year:s.f.year,id:s.f.id,yt:s.f.yt||'',start:s.start,end:s.start+s.f.len*1000}); s=showAt(s.start+s.f.slot*1000+1); } return o; };
   // a YouTube link an admin plays takes over for up to four hours, then the schedule comes back
   const ytOn=()=>{ const c=cur(); return !!vid(c.video_id)&&!!c.started_at&&Date.now()-Date.parse(c.started_at)<4*3600e3; };
   const film=()=>{ const s=showAt(Date.now()), off=(Date.now()-s.start)/1000; return off<s.f.len?{...s,off}:null; };
-  CINEMA.playing=()=>{ if(ytOn())return {yt:true,title:CINEMA.ytTitle||''}; const f=film(); return f?{title:f.f.title,year:f.f.year,id:f.f.id}:null; };
+  CINEMA.playing=()=>{ if(ytOn())return {yt:true,title:CINEMA.ytTitle||''}; const f=film(); return f?{title:f.f.title,year:f.f.year,id:f.f.id,yt:f.f.yt||''}:null; };
   let rec=null, adm=null, titleId='';
   const DEF={id:ROW,playlist:[],idx:0,video_id:'',started_at:null,size:1,brightness:.8,loop:true,autoplay:true,marquee:'',poster:''};
   const cur=()=>rec||DEF; CINEMA.now=()=>cur(); CINEMA.title=''; CINEMA._set=r=>{ rec=r; onRec(); };
@@ -42,7 +42,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
   const isAdmin=async()=>{ if(adm!=null)return adm; try{ adm=!!(BUGS.owner&&await BUGS.owner()); }catch(e){ adm=false; } return adm; };
   CINEMA.isAdmin=isAdmin;
 
-  const startMs=()=>{ const s=cur().started_at; return s?Date.parse(s):0; };
+  let schedAt=0; const startMs=()=>{ if(schedAt)return schedAt; const s=cur().started_at; return s?Date.parse(s):0; };
   const offset=()=>{ if(B)return B.live?0:Math.max(0,+B.off()||0); const s=startMs(); return s?Math.max(0,(Date.now()-s)/1000):0; };
   // another screen borrowing the player (the CRT TV): {id, live, off(), vol 0..1, me (a plane) or box {el, rect, radius}}, renewed each frame while it shows
   let B=null, lent=null, lentOk=false, lastMe=null, scan=null, sndK='';
@@ -83,16 +83,16 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     const now=performance.now(); if(now-fvSync>1000){ fvSync=now; if(fv.paused)fv.play().catch(()=>{});
       if(fv.readyState>0&&!fv.seeking){ const d=f.off-fv.currentTime; if(Math.abs(d)>5){ fv.playbackRate=1; fv.currentTime=f.off+(fv.readyState<3?3:1); } else fv.playbackRate=Math.abs(d)<.3?1:1+Math.max(-.1,Math.min(.1,d*.05)); } } return fv.readyState>=2; };
   const stopFilm=()=>{ if(fv&&!fv.paused)fv.pause(); if(fv)fv.style.display='none'; if(holder)holder.style.display=''; };
-  let vOK=false, vFail='', tries=0, t0=0; const HOSTS=['https://www.youtube-nocookie.com','https://www.youtube.com'];
+  let vOK=false, vFail='', tries=0, t0=0, ytAt=0; const ytLive=()=>vOK&&ytAt>0&&performance.now()-ytAt>2500; const HOSTS=['https://www.youtube-nocookie.com','https://www.youtube.com'];
   const makePlayer=async id=>{ '@later'; mkWrap();
-    if(player){ if(id!==haveVid){ haveVid=id; vOK=false; vFail=''; tries=0; t0=performance.now(); try{ player.loadVideoById(B&&B.live?{videoId:id}:{videoId:id,startSeconds:offset()}); }catch(e){} }
+    if(player){ if(id!==haveVid){ haveVid=id; vOK=false; ytAt=0; vFail=''; tries=0; t0=performance.now(); try{ player.loadVideoById(B&&B.live?{videoId:id}:{videoId:id,startSeconds:offset()}); }catch(e){} }
       else if(!vOK&&!vFail&&performance.now()-t0>15000)retry(id); return; }
-    if(making)return; making=true; await ensureYT(); haveVid=id; vOK=false; t0=performance.now();
+    if(making)return; making=true; await ensureYT(); haveVid=id; vOK=false; ytAt=0; t0=performance.now();
     player=new window.YT.Player(holder,{videoId:id,host:HOSTS[Math.min(tries,HOSTS.length-1)],width:'100%',height:'100%',
       playerVars:{autoplay:1,mute:1,controls:0,rel:0,playsinline:1,modestbranding:1,disablekb:1,fs:0,iv_load_policy:3,cc_load_policy:0,origin:location.origin},
       events:{onReady:e=>{ try{ e.target.mute(); if(!(B&&B.live))e.target.seekTo(offset(),true); e.target.playVideo(); e.target.unloadModule('captions'); e.target.unloadModule('cc'); }catch(x){} applySnd(); },
-        onStateChange:e=>{ if(e.data===1){ vOK=true; vFail=''; } if(e.data===window.YT.PlayerState.ENDED)onEnded(); },
-        onError:e=>{ if(e.data===101||e.data===150)vFail='this video only plays on YouTube'; else retry(haveVid); }}}); };
+        onStateChange:e=>{ if(e.data===1){ vOK=true; vFail=''; if(!ytAt)ytAt=performance.now(); } else ytAt=0; if(e.data===window.YT.PlayerState.ENDED)onEnded(); },
+        onError:e=>{ if(e.data===101||e.data===150)vFail='this film will not play here'; else retry(haveVid); }}}); };
   const retry=id=>{ '@later'; if(tries>=HOSTS.length-1){ if(!vOK)vFail=vFail||'the video could not load here'; return; } tries++; try{ player.destroy(); }catch(e){} player=null; making=false;
     holder=document.createElement('div'); holder.style.cssText=HCSS; wrap.insertBefore(holder,wrap.firstChild); makePlayer(id); };
   const onEnded=async()=>{ if(adm&&!B)await push({video_id:''}); };   // a YouTube link played to its end: back to the schedule
@@ -189,12 +189,12 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     if(CINEMA.admin&&!adminThings&&canopy&&post){ adminThings=true;
       UI.thing({name:'THE MARQUEE',ghost:1,obj:canopy.box,reach:2.2*TILE,near:6*TILE,tall:1,act:()=>editMarquee()});
       UI.thing({name:'THE POSTER',ghost:1,obj:post.group,reach:1.6*TILE,near:5*TILE,tall:1,act:()=>editPoster()}); }
-    const yt=ytOn(), id=yt?vid(cur().video_id):'', fl=yt?null:film(), now=performance.now();
+    const yt=ytOn(), fy=yt?null:film(), sy=fy&&fy.f.yt?fy:null, id=yt?vid(cur().video_id):sy?sy.f.yt:'', fl=sy?null:fy, now=performance.now(); schedAt=sy?sy.start:0;
     const tgt=up&&holeM&&mt.R.inside(pos.x,pos.z)?holeM:null; if(holeM)holeM.visible=false;
     if((!tgt||!(id||fl))&&lb)return lendTick(lb);
     if(!tgt||!(id||fl)||FADE.busy){ idle(); return; }
     mkWrap(); mkCut(); unseat(); scan.style.display='none'; let ok;
-    if(fl){ ok=playFilm(fl); vFail=''; } else { stopFilm(); makePlayer(id); sniff(id); ok=vOK&&!vFail; }
+    if(fl){ ok=playFilm(fl); vFail=''; } else { stopFilm(); makePlayer(id); sniff(id); ok=ytLive()&&!vFail; }
     CINEMA.on=ok; fitHole(); if(ok)tgt.visible=true;
     glow(ok,fl);
     if(full)fullPlace(); else if(facing(tgt)){ clip.style.display='block'; placeOver(tgt,1,ok); } else { clip.style.display='none'; soundBtn.style.display='none'; if(CUT)CUT.uniforms.uOn.value=0; if(PS2.keepAlpha)PS2.keepAlpha(false); }
@@ -206,7 +206,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     Object.assign(clip.style,{position:'fixed',zIndex:'1',display:ok?'block':'none',left:r.left+'px',top:r.top+'px',width:r.width+'px',height:r.height+'px',borderRadius:bx.radius||'0'});
     wrap.style.transform='translate('+((r.width-V.w*k)/2-V.x*k)+'px,'+((r.height-V.h*k)/2-V.y*k)+'px) scale('+k+')'; wrap.style.filter='contrast(1.08) saturate(1.05) blur(.35px)'; if(CUT)CUT.uniforms.uOn.value=0; if(PS2.keepAlpha)PS2.keepAlpha(false);
     if(vFail||!ok||!snd.on){ soundBtn.textContent=vFail?'NO SIGNAL':!ok?'TUNING IN…':'🔇 tap for sound'; soundBtn.style.pointerEvents=ok&&!vFail?'auto':'none'; Object.assign(soundBtn.style,{display:'block',left:(r.left+r.width/2)+'px',top:(r.top+r.height-10)+'px'}); } else soundBtn.style.display='none'; };
-  const lendTick=b=>{ '@later'; B=b; glow(false); if(full)CINEMA.fullscreen(false); mkWrap(); mkCut(); stopFilm(); makePlayer(b.id); sniff(b.id); const ok=lentOk=vOK&&!vFail, sk=b.vol+'|'+ok+'|'+b.id; if(sk!==sndK){ sndK=sk; applySnd(); } scan.style.display=b.crt?'':'none';
+  const lendTick=b=>{ '@later'; B=b; glow(false); if(full)CINEMA.fullscreen(false); mkWrap(); mkCut(); stopFilm(); makePlayer(b.id); sniff(b.id); const ok=lentOk=ytLive()&&!vFail, sk=b.vol+'|'+ok+'|'+b.id; if(sk!==sndK){ sndK=sk; applySnd(); } scan.style.display=b.crt?'':'none';
     if(b.box)boxPlace(b.box,ok); else { unseat(); lastMe=b.me; if(b.me&&facing(b.me)){ if(ok)b.me.visible=true; clip.style.display='block'; placeOver(b.me,b.dim||1,ok); } else { clip.style.display='none'; soundBtn.style.display='none'; if(CUT)CUT.uniforms.uOn.value=0; if(PS2.keepAlpha)PS2.keepAlpha(false); } }
     if(!b.live)sync(); };
   const sync=()=>{ '@later'; const now=performance.now(); if(now-lastSync>1500&&player&&player.getCurrentTime){ lastSync=now;
@@ -245,7 +245,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     { const {g,cv,tex}=front, W=cv.width, H=cv.height, rh=(H-20)/n; board(g,W,H,R); g.fillStyle='#16110d'; g.textAlign='center'; g.textBaseline='middle';
       L.forEach((t,i)=>{ hand(g,t,W/2,10+rh*(i+.55),W-110,rh*(auto&&n>1&&i===0?.46:.7),R); }); tex.needsUpdate=true; }
     { const {g,cv,tex}=side; board(g,cv.width,cv.height,R); tex.needsUpdate=true; } };
-  const posterSrc=()=>{ const o=own('poster'), y=vid(o); if(o)return y?'/yt/'+y+'.jpg':o; if(ytOn())return '/yt/'+vid(cur().video_id)+'.jpg'; return '/ia/'+nextF().id+'.jpg'; };
+  const posterSrc=()=>{ const o=own('poster'), y=vid(o); if(o)return y?'/yt/'+y+'.jpg':o; if(ytOn())return '/yt/'+vid(cur().video_id)+'.jpg'; const n=nextF(); return n.yt?'/yt/'+n.yt+'.jpg':'/ia/'+n.id+'.jpg'; };
   // the picture without its dark bars or border (a letterboxed thumbnail, a poster scanned with a black edge)
   const trim=img=>{ '@later'; const w=img.width, h=img.height; try{ const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'); g.drawImage(img,0,0); const d=g.getImageData(0,0,w,h).data;
       const dark=(x0,y0,x1,y1)=>{ let n=0, m=0; for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++){ const i=(y*w+x)*4; m++; if(Math.max(d[i],d[i+1],d[i+2])>40)n++; } return n<m*.03; };
@@ -410,7 +410,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
           if(!f||!(len>0)){ say('no film file found there'); return; } const md=j.metadata||{};
           pl.push({id:m[1],file:f.name,title:String([].concat(md.title||m[1])[0]).toUpperCase().slice(0,60),year:(String(md.date||md.year||'').match(/\d{4}/)||[''])[0],len:Math.round(len)}); $('#cmia').value=''; drawPL(); say('added: save to play it'); }catch(x){ say('could not read that film'); } };
       $('#cmplsave').onclick=async()=>{ say('...'); say(await push({playlist:pl})?'the playlist is on, for everyone':SQLHINT); };
-      $('#cmplfree').onclick=async()=>{ say('...'); if(await push({playlist:[]})){ pl=SHOW.map(f=>({id:f.id,file:f.file,title:f.title,year:f.year,len:f.len})); drawPL(); say('back to the showing'); } else say(SQLHINT); };
+      $('#cmplfree').onclick=async()=>{ say('...'); if(await push({playlist:[]})){ pl=SHOW.map(f=>({id:f.id,file:f.file,yt:f.yt,title:f.title,year:f.year,len:f.len})); drawPL(); say('back to the showing'); } else say(SQLHINT); };
       if($('#cmsched'))$('#cmsched').onclick=async()=>{ say('...'); say(await push({video_id:''})?'back to the schedule':'could not'); };
       $('#cmplay').onclick=async()=>{ const id=vid($('#cmu').value); if(!id){ say('not a YouTube link'); return; } say('...'); say(await push({video_id:id,started_at:new Date(Date.now()+8000).toISOString()})?'playing for everyone':'could not save (log in as admin)'); };
     }

@@ -34,23 +34,26 @@ BATCH.uncover=it=>{ const TOL=BATCH.TOL, R=[], B=new Map();
   return out; };
 // the same rule for loose triangles (a builder's own merged soup): P its positions (three a corner, no index), A {name:[array,size]} the other corners' values; a later triangle cuts itself out of any earlier one in its plane facing its way; two facing each other (one solid resting on another) both lose what they share, which is inside; returns {P,A,at} (A the arrays alone; the same arrays and no at when nothing met)
 BATCH.unfight=(P,A={},opp=true,R=null)=>{ const t0=performance.now(), r=BATCH.unfight0(P,A,opp,R); BATCH.unfight.ms=(BATCH.unfight.ms||0)+performance.now()-t0; BATCH.unfight.n=(BATCH.unfight.n||0)+P.length/9; return r; };   // its time and triangles kept for the budget
-// a face's plane and the 2-unit cells its box covers: the keys it is filed under, so a face meets only the faces near it in its plane
-BATCH.unfightKeys=(x,y,z,d,b,f)=>{ const TOL=BATCH.TOL, e=TOL, h0=Math.imul(Math.round(x*200),73856093)^Math.imul(Math.round(y*200),19349663)^Math.imul(Math.round(z*200),83492791)^Math.imul(Math.round(d/TOL),668265263);
-  const i0=Math.floor((b[0]-e)/2), i1=Math.floor((b[3]+e)/2), j0=Math.floor((b[1]-e)/2), j1=Math.floor((b[4]+e)/2), k0=Math.floor((b[2]-e)/2), k1=Math.floor((b[5]+e)/2);
-  for(let i=i0;i<=i1;i++)for(let j=j0;j<=j1;j++)for(let k=k0;k<=k1;k++)f(h0^Math.imul(i,2246822519)^Math.imul(j,3266489917)^Math.imul(k,374761393)); };   // a number, not words: two that meet by chance are told apart by the checks after
-BATCH.unfight0=(P,A={},opp=true,R=null)=>{ const TOL=BATCH.TOL, n=P.length/9, N=[], D=[], B=new Map(), BX=[], drop=new Uint8Array(n), keys=Object.keys(A); let any=false;
-  for(let i=0;i<n;i++){ const o=i*9, ux=P[o+3]-P[o], uy=P[o+4]-P[o+1], uz=P[o+5]-P[o+2], vx=P[o+6]-P[o], vy=P[o+7]-P[o+1], vz=P[o+8]-P[o+2]; let x=uy*vz-uz*vy, y=uz*vx-ux*vz, z=ux*vy-uy*vx; const l=Math.hypot(x,y,z); if(l<1e-9){ N.push(null); D.push(0); BX.push(null); continue; }
-    x/=l; y/=l; z/=l; N.push([x,y,z]); const d=x*P[o]+y*P[o+1]+z*P[o+2]; D.push(d); BX.push([Math.min(P[o],P[o+3],P[o+6]),Math.min(P[o+1],P[o+4],P[o+7]),Math.min(P[o+2],P[o+5],P[o+8]),Math.max(P[o],P[o+3],P[o+6]),Math.max(P[o+1],P[o+4],P[o+7]),Math.max(P[o+2],P[o+5],P[o+8])]);
-    BATCH.unfightKeys(x,y,z,d,BX[i],k=>{ (B.get(k)||B.set(k,[]).get(k)).push(i); }); }
-  const LO={P,N,D,BX,st:new Int32Array(n)}; if(R&&(!R.st||R.st.length<R.N.length))R.st=new Int32Array(R.N.length*2+64);
-  const near=(i,s,G,S,all,r,me)=>{ const [x,y,z]=N[i], st=S.st; for(let dd=-1;dd<=1;dd++)BATCH.unfightKeys(x*s,y*s,z*s,D[i]*s+dd*TOL,BX[i],k=>{ const L=G.get(k); if(L)for(const j of L)if((all||s<0||j>i)&&st[j]!==me){ st[j]=me; r.push([S,j]); } }); return r; };
-  const cands=i=>{ const me=BATCH.unfightKeys.t=((BATCH.unfightKeys.t|0)+1)|0, r=[]; near(i,1,B,LO,false,r,me); if(opp)near(i,-1,B,LO,false,r,me); if(R){ near(i,1,R.B,R,true,r,me); if(opp)near(i,-1,R.B,R,true,r,me); } return r; };
+// a face's plane and the 4-unit cells its box covers: the keys it is filed under (numbers, into K; two that meet by chance are told apart by the checks after), so a face meets only the faces near it in its plane
+BATCH.unfightKeys=(x,y,z,d,b,o,K)=>{ const TOL=BATCH.TOL, e=TOL, h0=Math.imul(Math.round(x*200),73856093)^Math.imul(Math.round(y*200),19349663)^Math.imul(Math.round(z*200),83492791)^Math.imul(Math.round(d/TOL),668265263);
+  const i0=Math.floor((b[o]-e)/4), i1=Math.floor((b[o+3]+e)/4), j0=Math.floor((b[o+1]-e)/4), j1=Math.floor((b[o+4]+e)/4), k0=Math.floor((b[o+2]-e)/4), k1=Math.floor((b[o+5]+e)/4); let n=0; if((i1-i0+1)*(j1-j0+1)*(k1-k0+1)>K.length)return 0;   // (a face too big to file is left as it is)
+  for(let i=i0;i<=i1;i++)for(let j=j0;j<=j1;j++)for(let k=k0;k<=k1;k++)K[n++]=h0^Math.imul(i,2246822519)^Math.imul(j,3266489917)^Math.imul(k,374761393); return n; };
+// one face's plane, depth and box from three corners at Q[o..o+8] into N, D, BX at j; false for a sliver
+BATCH.unfightFace=(Q,o,N,D,BX,j)=>{ const ux=Q[o+3]-Q[o], uy=Q[o+4]-Q[o+1], uz=Q[o+5]-Q[o+2], vx=Q[o+6]-Q[o], vy=Q[o+7]-Q[o+1], vz=Q[o+8]-Q[o+2]; let x=uy*vz-uz*vy, y=uz*vx-ux*vz, z=ux*vy-uy*vx; const l=Math.hypot(x,y,z); if(l<1e-9)return false;
+  x/=l; y/=l; z/=l; N[j*3]=x; N[j*3+1]=y; N[j*3+2]=z; D[j]=x*Q[o]+y*Q[o+1]+z*Q[o+2]; const b=j*6; BX[b]=Math.min(Q[o],Q[o+3],Q[o+6]); BX[b+1]=Math.min(Q[o+1],Q[o+4],Q[o+7]); BX[b+2]=Math.min(Q[o+2],Q[o+5],Q[o+8]); BX[b+3]=Math.max(Q[o],Q[o+3],Q[o+6]); BX[b+4]=Math.max(Q[o+1],Q[o+4],Q[o+7]); BX[b+5]=Math.max(Q[o+2],Q[o+5],Q[o+8]); return true; };
+BATCH.unfight0=(P,A={},opp=true,R=null)=>{ const TOL=BATCH.TOL, n=P.length/9, N=new Float64Array(n*3), D=new Float64Array(n), BX=new Float64Array(n*6), ok=new Uint8Array(n), B=new Map(), drop=new Uint8Array(n), keys=Object.keys(A); let any=false;
+  const K=BATCH.unfightKeys.K||(BATCH.unfightKeys.K=new Int32Array(1<<16)), file=(G,i,x,y,z,d,bx,o)=>{ const c=BATCH.unfightKeys(x,y,z,d,bx,o,K); for(let q=0;q<c;q++){ const k=K[q], L=G.get(k); if(L)L.push(i); else G.set(k,[i]); } };
+  for(let i=0;i<n;i++){ if(!BATCH.unfightFace(P,i*9,N,D,BX,i))continue; ok[i]=1; file(B,i,N[i*3],N[i*3+1],N[i*3+2],D[i],BX,i*6); }
+  const LO={P,N,D,BX,st:new Int32Array(n)}; if(R&&R.st.length<R.n)R.st=new Int32Array(R.n*2+64);
+  const CS=[], CJ=[], near=(i,s,G,S,all,me)=>{ const st=S.st, q=D[i]*s/TOL, nb=q-Math.round(q)>0?1:-1;
+    for(const dd of [0,nb]){ const c=BATCH.unfightKeys(N[i*3]*s,N[i*3+1]*s,N[i*3+2]*s,D[i]*s+dd*TOL,BX,i*6,K); for(let w=0;w<c;w++){ const L=G.get(K[w]); if(L)for(const j of L)if((all||s<0||j>i)&&st[j]!==me){ st[j]=me; CS.push(S); CJ.push(j); } } } };
+  const cands=i=>{ const me=BATCH.unfightKeys.t=((BATCH.unfightKeys.t|0)+1)|0; CS.length=0; CJ.length=0; near(i,1,B,LO,false,me); if(opp)near(i,-1,B,LO,false,me); if(R&&R.n){ near(i,1,R.B,R,true,me); if(opp)near(i,-1,R.B,R,true,me); } return CS.length; };
   const area=p=>{ let s=0; for(let k=0;k<p.length;k++){ const a=p[k], b=p[(k+1)%p.length]; s+=a[0]*b[1]-b[0]*a[1]; } return s/2; };
   const clip=(p,a,b,sg,keepIn)=>{ const f=q=>sg*((b[0]-a[0])*(q[1]-a[1])-(b[1]-a[1])*(q[0]-a[0])), out=[]; for(let k=0;k<p.length;k++){ const P0=p[k], P1=p[(k+1)%p.length], f0=f(P0), f1=f(P1), i0=keepIn?f0>=0:f0<0, i1=keepIn?f1>=0:f1<0; if(i0)out.push(P0); if(i0!==i1){ const t=f0/(f0-f1); out.push([P0[0]+t*(P1[0]-P0[0]),P0[1]+t*(P1[1]-P0[1])]); } } return out; };
   const pieces=new Map(); let np=0;
-  for(let i=0;i<n;i++){ if(!N[i])continue; const C0=cands(i); if(!C0.length)continue; const [x,y,z]=N[i], ax=Math.abs(x)>=Math.abs(y)&&Math.abs(x)>=Math.abs(z)?0:Math.abs(y)>=Math.abs(z)?1:2, s0=(ax+1)%3, s1=(ax+2)%3, o=i*9, b=BX[i], q=v=>[P[v*3+s0],P[v*3+s1]];
-    let L=null;
-    for(const [S,j] of C0){ const nj=S.N[j], dn=nj[0]*x+nj[1]*y+nj[2]*z; if(Math.abs(dn)<.9999||Math.abs(S.D[j]-Math.sign(dn)*D[i])>TOL)continue; const c=S.BX[j]; if(c[0]>b[3]+TOL||c[3]<b[0]-TOL||c[1]>b[4]+TOL||c[4]<b[1]-TOL||c[2]>b[5]+TOL||c[5]<b[2]-TOL)continue;
+  for(let i=0;i<n;i++){ if(!ok[i]||!cands(i))continue; const x=N[i*3], y=N[i*3+1], z=N[i*3+2], ax=Math.abs(x)>=Math.abs(y)&&Math.abs(x)>=Math.abs(z)?0:Math.abs(y)>=Math.abs(z)?1:2, s0=(ax+1)%3, s1=(ax+2)%3, b=i*6, q=v=>[P[v*3+s0],P[v*3+s1]];
+    let L=null; const nc=CS.length, cs=CS.slice(), cj=CJ.slice();
+    for(let w=0;w<nc;w++){ const S=cs[w], j=cj[w], SN=S.N, dn=SN[j*3]*x+SN[j*3+1]*y+SN[j*3+2]*z; if(Math.abs(dn)<.9999||Math.abs(S.D[j]-Math.sign(dn)*D[i])>TOL)continue; const c=S.BX, e=j*6; if(c[e]>BX[b+3]+TOL||c[e+3]<BX[b]-TOL||c[e+1]>BX[b+4]+TOL||c[e+4]<BX[b+1]-TOL||c[e+2]>BX[b+5]+TOL||c[e+5]<BX[b+2]-TOL)continue;
       if(!L)L=[[q(i*3),q(i*3+1),q(i*3+2)]]; const sq=v=>[S.P[v*3+s0],S.P[v*3+s1]], C=[sq(j*3),sq(j*3+1),sq(j*3+2)], sg=area(C)>0?1:-1, nl=[];
       for(const p of L){ let rest=p; const bits=[]; for(let e=0;e<3&&rest.length>2;e++){ const a=C[e], bb=C[(e+1)%3], out=clip(rest,a,bb,sg,false); if(out.length>2&&Math.abs(area(out))>1e-7)bits.push(out); rest=clip(rest,a,bb,sg,true); }
         if(rest.length<3||Math.abs(area(rest))<1e-6)nl.push(p); else nl.push(...bits); }
@@ -68,11 +71,12 @@ BATCH.unfight0=(P,A={},opp=true,R=null)=>{ const TOL=BATCH.TOL, n=P.length/9, N=
 BATCH.unfightGeo=(g,R=null)=>{ const u=g.index?g.toNonIndexed():g, at=u.attributes, A={}; for(const k in at)if(k!=='position')A[k]=[at[k].array,at[k].itemSize]; const F=BATCH.unfight(at.position.array,A,true,R); if(!F.at){ if(u!==g)u.dispose(); return g; }
   const h=new THREE.BufferGeometry(); h.setAttribute('position',new THREE.BufferAttribute(F.P,3)); for(const k in A)h.setAttribute(k,new THREE.BufferAttribute(F.A[k],A[k][1])); if(u!==g)u.dispose(); g.dispose(); return h; };
 // a register of faces already built (R: BATCH.unfight.R()), so one builder's faces also give way to another's built before (whole outsides that stay, never insides that come and go)
-BATCH.unfight.R=()=>({P:[],N:[],D:[],BX:[],B:new Map()});
+BATCH.unfight.R=()=>({n:0,P:new Float32Array(9*1024),N:new Float64Array(3*1024),D:new Float64Array(1024),BX:new Float64Array(6*1024),B:new Map(),st:new Int32Array(1024)});
 BATCH.OUT=BATCH.unfight.R();   // the street's outsides (facades, the Hudson shops)
-BATCH.unfight.reg=(R,Q)=>{ const TOL=BATCH.TOL; for(let o=0;o<Q.length;o+=9){ const ux=Q[o+3]-Q[o], uy=Q[o+4]-Q[o+1], uz=Q[o+5]-Q[o+2], vx=Q[o+6]-Q[o], vy=Q[o+7]-Q[o+1], vz=Q[o+8]-Q[o+2]; let x=uy*vz-uz*vy, y=uz*vx-ux*vz, z=ux*vy-uy*vx; const l=Math.hypot(x,y,z); if(l<1e-9)continue; x/=l; y/=l; z/=l;
-  const j=R.N.length, d=x*Q[o]+y*Q[o+1]+z*Q[o+2]; for(let c=0;c<9;c++)R.P.push(Q[o+c]); R.N.push([x,y,z]); R.D.push(d); R.BX.push([Math.min(Q[o],Q[o+3],Q[o+6]),Math.min(Q[o+1],Q[o+4],Q[o+7]),Math.min(Q[o+2],Q[o+5],Q[o+8]),Math.max(Q[o],Q[o+3],Q[o+6]),Math.max(Q[o+1],Q[o+4],Q[o+7]),Math.max(Q[o+2],Q[o+5],Q[o+8])]);
-  BATCH.unfightKeys(x,y,z,d,R.BX[j],k=>{ (R.B.get(k)||R.B.set(k,[]).get(k)).push(j); }); } };   // at[i]: where the i-th triangle's pieces start now
+BATCH.unfight.reg=(R,Q)=>{ const m=Q.length/9, need=R.n+m; if(need>R.D.length){ const c=Math.max(need,R.D.length*2), g=(a,k)=>{ const b=new a.constructor(c*k); b.set(a); return b; }; R.P=g(R.P,9); R.N=g(R.N,3); R.D=g(R.D,1); R.BX=g(R.BX,6); }
+  const K=BATCH.unfightKeys.K||(BATCH.unfightKeys.K=new Int32Array(1<<16));
+  for(let o=0;o<Q.length;o+=9){ const j=R.n; if(!BATCH.unfightFace(Q,o,R.N,R.D,R.BX,j))continue; for(let c=0;c<9;c++)R.P[j*9+c]=Q[o+c]; R.n++;
+    const c=BATCH.unfightKeys(R.N[j*3],R.N[j*3+1],R.N[j*3+2],R.D[j],R.BX,j*6,K); for(let q=0;q<c;q++){ const k=K[q], L=R.B.get(k); if(L)L.push(j); else R.B.set(k,[j]); } } };
 BATCH.build=(make)=>{ const it=BATCH.items; if(!it.length)return; const AW=2048;
   for(const o of it)if(o.cv.width+2>AW)console.warn('BATCH: a picture '+o.cv.width+' wide, over the atlas ('+AW+'): split it');
   const MAXH=BATCH.MAXH||8192, KS={}; it.forEach((o,i)=>(KS[o.kind]||(KS[o.kind]=[])).push(i)); let x=0, y=0, sh=0, pg=0; const PH=[];

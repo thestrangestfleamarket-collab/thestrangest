@@ -18,7 +18,8 @@ const FISHMKT={tris:0,things:[],stalls:[],sol:[],made:false};
     const box=(u0,u1,v0,v1,h0,h1,col,o={})=>{ const zz=zk+(o.top?'^':''), cur=ZN[zz]||(ZN[zz]={}), A=cur[o.t||'pl']||(cur[o.t||'pl']={P:[],U:[],C:[],G:[]}), k=lin(col), gl=o.glow||0, S={tin:[1.2,2.4],brick:[1.6,.6],cob:[2,2]}[o.t]||[1,1];
       const c=[[u0,v0,h0],[u1,v0,h0],[u1,v1,h0],[u0,v1,h0],[u0,v0,h1],[u1,v0,h1],[u1,v1,h1],[u0,v1,h1]].map(p=>[XS(p[0]),base+p[2]*MV,ZS(p[1])]);
       const F=[[0,1,5,4,u1-u0],[1,2,6,5,v1-v0],[2,3,7,6,u1-u0],[3,0,4,7,v1-v0],[4,5,6,7,u1-u0],[3,2,1,0,u1-u0]];
-      F.forEach(([a,b,cc,d,len],fi)=>{ const wu=Math.abs(len)/m/S[0], wv=(fi>=4?Math.abs(v1-v0)/m:(h1-h0))/S[1];
+      F.forEach(([a,b,cc,d,len],fi)=>{ if(fi===5&&h0<=0)return;   // a bottom on the ground is never seen (and would share the street's ground)
+        const wu=Math.abs(len)/m/S[0], wv=(fi>=4?Math.abs(v1-v0)/m:(h1-h0))/S[1];
         for(const [i,uu,vv] of [[a,0,0],[b,wu,0],[cc,wu,wv],[a,0,0],[cc,wu,wv],[d,0,wv]]){ A.P.push(c[i][0],c[i][1],c[i][2]); A.U.push(uu,vv); A.C.push(k[0],k[1],k[2]); A.G.push(gl); } });
       if(o.sol)solid(u0,v0,u1,v1,h1); };
     const wall=(u0,u1,v0,v1,h,col,t)=>{ box(u0,u1,v0,v1,0,3,col,{t,sol:1}); box(u0,u1,v0,v1,3,h,col,{t,top:1}); };

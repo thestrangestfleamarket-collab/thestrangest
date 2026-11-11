@@ -40,8 +40,8 @@ RIVER.onBuild.push(()=>{ const T=TILE, V3=THREE.Vector3, RB=RIVER.box, Q=RB.z1, 
     SOL.up.push([x-.12*T,zH+.1*T,x+.12*T,Q]); FIX.up.push([x-.12*T,zH+.1*T,0,x+.12*T,Q,RH]);
     const cx=X+s*(HW-.12*WU); box(cx,.08*WU,(zE+zH)/2,.2*WU,.15*WU,HD-.3*WU,DK); for(let k=0;k<6;k++){ const z=zH-.8*T-k*(HD-1.6*T)/5; box(cx,RH/2,z,.1*WU,RH,.1*WU,GRY); } box(cx,RH-.03*WU,(zE+zH)/2,.14*WU,.06*WU,HD-1.2*T,GRY);
     SOL.up.push([cx-.12*T,zE+.6*T,cx+.12*T,zH-.6*T]); FIX.up.push([cx-.12*T,zE+.6*T,0,cx+.12*T,zH-.6*T,RH]);
-    box(X+s*(HW+hw)/2,.08*WU,zH-.12*WU,HW-hw-.2*WU,.15*WU,.2*WU,DK); }
-  for(const o of [-1,-.45,.45,1])box(X+o*(HW-.9*T),.08*WU,zE+.12*WU,1.4*T,.15*WU,.2*WU,DK);
+    box(X+s*(HW+hw)/2,.085*WU,zH-.12*WU,HW-hw-.2*WU,.16*WU,.2*WU,DK); }
+  for(const o of [-1,-.45,.45,1])box(X+o*(HW-.9*T),.085*WU,zE+.12*WU,1.4*T,.16*WU,.2*WU,DK);
   // the ladder down off the head's end
   for(const o of [-.3,.3])box(X+o*WU,(LV-1.4*WU+.9*WU)/2,zE-.08*WU,.05*WU,.9*WU-(LV-1.4*WU),.05*WU,IRON); for(let y=LV-1.2*WU;y<0;y+=.3*WU)box(X,y,zE-.08*WU,.6*WU,.04*WU,.05*WU,IRON);
   // lamps: iron posts with a crook and a hooded light; bollards, cleats, rope, the gear of a working pier

@@ -114,6 +114,8 @@ const FILE=process.argv[2]||'dist/market.html', SHOTS=process.argv[3]||'';
     return {has:INV.items.pt_gift12345,a:PAINTINGS.mine().art.gift12345,name:FORAGE.name('pt_gift12345')}; });
   ok(G.has===1&&G.a&&G.a.by==='BOB'&&G.a.fr==='gilt'&&G.name==='PAINTING: “A GIFT”','a painting given to you is yours, with its painter and frame');
   await pg.evaluate(()=>{ ONLINE.feed({t:'tr',op:'open',with:'a',name:'ROSA'}); ONLINE.feed({t:'tr',op:'x',why:'too far apart'}); });
+  const Sold=await pg.evaluate(()=>{ const ok=SHOPS.sell('pt_gift12345',1); return {ok,has:INV.items.pt_gift12345||0,meta:!!PAINTINGS.mine().art.gift12345}; });
+  ok(Sold.ok&&!Sold.has&&!Sold.meta,'a painting sold to THE TRADER leaves your save, title and thumbnail too ('+JSON.stringify(Sold)+')');
   ok(await pg.evaluate(()=>document.getElementById('tradep').hidden),'a trade called off by the block closes the window');
 
   // a second painting to hang at home

@@ -275,9 +275,9 @@ One tree pass (more leaves mean more shadow triangles).
 
 ## Paintings and trade
 
-- [ ] **Paintings in the item editor** · P3 · S · code. Each painting shows as its own entry; editing one does nothing (class `painting`,
+- [x] **Paintings in the item editor** [done 11 Nov] · P3 · S · code. Each painting shows as its own entry; editing one does nothing (class `painting`,
   `src/140b-items.js`). Hide `pt_`/`wip_` ids from its list. Same pull request as the next.
-- [ ] **A painting sold to THE TRADER leaves its title and thumbnail in your save** · P3 · S · code. Only trade calls `PAINTINGS.gave`.
+- [x] **A painting sold to THE TRADER leaves its title and thumbnail in your save** [done 11 Nov] · P3 · S · code. Only trade calls `PAINTINGS.gave`.
 - [ ] **Trade: photos can't be traded** (after the beta) · P4 · M · pick. "photos and the passport stay yours" (4 Nov); if yes, after the
   `Home` split, into the art store.
 - [ ] **The painter, not yet tried for real** · P3 · S · look. Pinch to zoom and pen pressure, in VR, the easel showing your latest

@@ -47,7 +47,7 @@ const BIGCAT={};
   const blink=N=>{ if(!BL){ BL=new THREE.Group(); BL.matrixAutoUpdate=false; const g=new THREE.SphereGeometry(.232,24,10,0,PI*2,0,PI/2); for(const s of [1,-1]){ const m=new THREE.Mesh(g,LIDM); m.position.set(s*.3,1,.5); BL.add(m); } N.g.parent.add(BL); }
     const t=performance.now()/1000; if(t>nb){ bt=t; nb=t+2.5+Math.random()*4.5; } const k=(t-bt)/.18, a=hold?1:k<1?Math.sin(k*PI):0; BL.visible=N.g.visible&&!!N.PM&&a>0; if(!BL.visible)return;
     for(const m of BL.children)m.rotation.x=-.6+a*2.15;
-    const i=BODIES.BONES.indexOf('hips'), o=N.body.rest.hips; BL.matrix.copy(N.g.matrixWorld).multiply(MH.copy(N.PM.value[i])).multiply(MT.makeTranslation(o.x,o.y,o.z)); BL.matrixWorldNeedsUpdate=true; };
+    const i=BODIES.BONES.indexOf('hips'), o=N.body.rest.hips; N.g.updateMatrix(); BL.matrix.copy(N.g.matrix).multiply(MH.copy(N.PM.value[i])).multiply(MT.makeTranslation(o.x,o.y,o.z)); BL.matrixWorldNeedsUpdate=true; };
   const body=MERCH.add({key:'bigcat',label:'THE BIG CAT',height:2.3,model,size:45,q:.75,at:100,idle:()=>MERCH.pose({bend:0,nod:0})});
   const N=BIGCAT.N=body&&body.npc;
   // his walk (owner, 11 Nov 2026): every 3 to 10 minutes he walks slowly down Market St's road end to end in the lane of his way, one way then the other (the traffic waits behind him), on the shared clock; away between walks

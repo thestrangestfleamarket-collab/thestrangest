@@ -7,9 +7,12 @@ import { MOBSIM } from "./dunmobs.js";
 import { lvBrief, lvGoal, lvH, lvMeet, lvRun } from "./lives.js";
 import { CLK } from "./clock.js";
 import { BOWLS } from "./lanes.js";
+import { FLYBOT } from "./flybot.js";
 import LIVESDATA from "../data/lives.json";
 import ITEMDATA from "../data/items.json";
 import WORLD from "../data/world.json";
+import GUIDEDATA from "../data/guide.json";
+const BOTMIND = FLYBOT.mind(GUIDEDATA);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, CODE = /^[A-Z0-9-]{6,32}$/, MAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 const json = (o, status = 200) => Response.json(o, { status, headers: { "cache-control": "no-store" } });
 const loopback = ip => !ip || ip === "::1" || ip === "localhost" || /^127\./.test(ip) || /^::ffff:127\./.test(ip);
@@ -115,10 +118,14 @@ export default {
         if (MAPPATCH.NAME.test(sh[1])) { let m = null; try { m = JSON.parse(new TextDecoder().decode(buf)); } catch (e) {} if (!m || m.v !== MAPPATCH.v || !m.set || typeof m.set !== "object") return json({ why: "not a map editor file" }, 400); }
         return json({ ok: await postOf(env).putFile(sh[1], word(request.headers.get("content-type") || "application/octet-stream", 60), buf), size: buf.byteLength }); }
       return new Response("not found", { status: 404 }); }
-    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art" || p === "/orchard")) {
+    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art" || p === "/orchard" || p === "/bot")) {
       if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401);
       let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
+      // a player's flying bot asks its mind (worker/flybot.js): the answer to say aloud; its memory and the day's count are the player's, in Home
+      if (p === "/bot") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
+        if (tooMany("bot:" + id, 12)) return json({ why: "too much at once, wait a minute" }, 429);
+        const H = homeOf(env); return json(await BOTMIND.ask(env, { get: () => H.botGet(id), put: v => H.botPut(id, v) }, { say: body.say, state: body.state, name: await H.nameGet(id) })); }
       if (p === "/home") { if (body.list !== undefined) return json({ list: (await homeOf(env).tenants()).filter(t => t.who !== id) });   // every tenant's apartment, for the map's quick jumps
         if (body.who !== undefined) return json({ home: await homeOf(env).get(word(body.who, 64)) });   // a visit: another player's apartment, to look at
         if (body.put === undefined) return json({ home: await homeOf(env).get(id) });
@@ -566,6 +573,8 @@ export class Block extends Server {
     } else if (m.t === "say") {
       const text = word(m.text, 200), st = sayStyle(m.st), sg = typeof m.sg === "string" ? m.sg.replace(/[^wWs]/g, "").slice(0, 200) : "";   // (sg: signed, each word's kind; src/146zs-signs.js)
       if (text) this.broadcast(JSON.stringify(sg ? { t: "say", id: s.id, name: s.name, text, st, sg } : { t: "say", id: s.id, name: s.name, text, st }), [c.id]);
+    } else if (m.t === "bot") {   // what a player's flying bot said (src/111dd-flybot.js), for the players near them to hear
+      const text = word(m.text, 600); if (text) this.broadcast(JSON.stringify({ t: "bot", id: s.id, text }), [c.id]);
     } else if (m.t === "rtc") {   // voice (src/111dc-voice.js): one player's WebRTC handshake handed to another near them; the voices go browser to browser
       const to = word(m.to, 64), d = m.d; if (!to || to === s.id || !d || typeof d !== "object") return; const o = this.near(s, to, 45); let x = null;
       if (d.sdp && (d.sdp.type === "offer" || d.sdp.type === "answer") && typeof d.sdp.sdp === "string" && d.sdp.sdp.length < 10000) x = { sdp: { type: d.sdp.type, sdp: d.sdp.sdp } };
@@ -881,6 +890,10 @@ export class Home extends DurableObject {
   get(id) { const r = this.sql.exec("select room from homes where who = ?", id).toArray()[0]; try { return r ? JSON.parse(r.room) : null; } catch (e) { return null; } }
   tenants() { this.nameT(); return this.sql.exec("select n.who as who, n.name as name from names n union select h.who, null from homes h where h.who not in (select who from names) limit 2000").toArray().map(r => ({ who: r.who, name: r.name || null })); }
   put(id, room) { this.sql.exec("insert into homes(who, room, at) values(?, ?, ?) on conflict(who) do update set room = excluded.room, at = excluded.at", id, room, Date.now()); return true; }
+  // each player's flying bot's memory (worker/flybot.js): the last words both ways and the day's count
+  botT() { this.sql.exec("create table if not exists flybot(who text primary key, v text, at integer)"); }
+  botGet(id) { this.botT(); const r = this.sql.exec("select v from flybot where who = ?", id).toArray()[0]; try { return r ? JSON.parse(r.v) : null; } catch (e) { return null; } }
+  botPut(id, v) { this.botT(); this.sql.exec("insert into flybot(who, v, at) values(?, ?, ?) on conflict(who) do update set v = excluded.v, at = excluded.at", id, JSON.stringify(v).slice(0, 65536), Date.now()); return true; }
   // each player's owned things, a row a key (at most 2 MB a player)
   ownedT() { this.sql.exec("create table if not exists owned(who text, k text, v text, at integer, primary key(who, k))"); }
   // every citizen's passport number, issued in order from 1000 the first time the game asks

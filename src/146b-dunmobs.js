@@ -141,6 +141,7 @@ __CODE__("worker/dunmobs.js")
   const dm=()=>{ live=LIVE; if(!trying)apply(live); };
   ONLINE.hear.dmres=m=>say(m.ok?'THE DUNGEON IS PUBLISHED: '+(m.n|0)+' CREATURE KINDS.':'NOT PUBLISHED: '+String(m.why||'').toUpperCase(),m.ok?'#b8f0a0':'#e8a090');
   ONLINE.hear.mobkill=m=>{ if(!trying)won(m); };
+  const TAMEW=new Map(); ONLINE.hear.mobtamed=m=>{ const r=TAMEW.get(m.i); if(r){ TAMEW.delete(m.i); r(!!m.ok); } };
   ONLINE.hear.mobres=m=>{ if(m.res==='blocked')say('IT BLOCKS YOUR BLOW.','#c8c2b0'); };
   const felt=e=>{ if(VIT.dead)return; if(VIT.hurt(+e.d||0,{x:+e.x||pos.x,z:+e.z||pos.z})===2){ if(remote)ONLINE.send({t:'mobpar',i:e.i}); else MOBSIM.parried(MS,e.i); } };   // parried on the beat: it staggers
   const won=e=>{ const n=e.n|0||lvl; const k=lvl; lvl=n; const x=+e.x||pos.x, z=+e.z||pos.z, lt=e.loot;
@@ -198,7 +199,9 @@ __CODE__("worker/dunmobs.js")
   const breakout=n=>{ if(remote&&ONLINE.on&&!trying){ ONLINE.send({t:'breakout'}); return; } const k=MOBSIM.breakout(MS,n||3+Math.floor(Math.random()*4)); if(k)SYS.run('breakout',k); };
   const tryIt=async d=>{ trying=d?MOBSIM.clean(d):null; await apply(trying||live); };   // play a draft alone (nobody else sees it); null: back to the published dungeon
   const publish=d=>{ if(!remote||!ONLINE.on)return say('PUBLISHING NEEDS THE WEBSITE.','#e8a090'), false; ONLINE.send({t:'dmset',d:MOBSIM.clean(d)}); return true; };
-  window.DUNMOBS=MODS.dunmobs={T,MS,apply,tryIt,publish,get live(){ return live; },get trying(){ return trying; },cb:()=>CB,get slimes(){ return slimes; },get res(){ return RES; },get remote(){ return remote; },get pic(){ return pic; },hit:(i,d=1)=>{ const S=slimes[i]; if(S)strike(S.i,{d},1); },things:()=>things};
+  window.DUNMOBS=MODS.dunmobs={T,MS,apply,tryIt,publish,get live(){ return live; },get trying(){ return trying; },cb:()=>CB,get slimes(){ return slimes; },get res(){ return RES; },get remote(){ return remote; },get pic(){ return pic; },hit:(i,d=1)=>{ const S=slimes[i]; if(S)strike(S.i,{d},1); },things:()=>things,
+    // a tamed one fights beside you (146zjd TAMING): its blow by a monster's id, as yours go; a monster tamed leaves the dungeon (no reward) till it comes back as another
+    smite:(i,d)=>strike(i,{d},1),tame:i=>{ if(remote&&!trying&&ONLINE.on){ ONLINE.send({t:'mobtame',i}); return new Promise(r=>{ TAMEW.set(i,r); setTimeout(()=>{ if(TAMEW.delete(i))r(false); },4000); }); } return Promise.resolve(!!MOBSIM.tame(MS,i)); }};
   window.DUNSPI=()=>SPI;
   window.DUNMOBDBG=()=>({level:lvl,cb:CB.filter(r=>r.on).map(r=>r.key),slimes:slimes.map(S=>({k:S.k,hp:S.hp,dead:S.dead,gone:!!S.gone,x:+(S.x/T).toFixed(1),z:+(S.z/T).toFixed(1)})),
     plan,traps:TR.length,res:[...(RES||[]),...SPI].filter(r=>r.on).map(r=>({k:r.key,hp:r.hp,dead:r.dead,agg:r.agg,x:+(r.N.st.x/T).toFixed(1),z:+(r.N.st.z/T).toFixed(1),in:r.N.g.parent===MAPG.dungeon})),things:things.map(t=>t.name),bolts:bolts.length,tris:slimes.length*(g0.index.count/3+12),arena:!!AR}); if(live)apply(live); return {onLevel,tick,arena,hi,dm,keepList,breakout,wave:()=>{},alive:()=>slimes.filter(S=>!S.dead).length}; };

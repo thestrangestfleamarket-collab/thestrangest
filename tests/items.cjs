@@ -17,6 +17,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       const L = await Promise.all(live.map(id => look(BAG.icon(id)))), bad = [], noname = [];
       live.forEach((id, i) => { if (L[i].w !== 96 || L[i].ink < 30 || !INSPECT.has(id)) bad.push(id + ' ' + L[i].w + '/' + L[i].ink + (INSPECT.has(id) ? '' : ' (the parcel)')); const n = FORAGE.name(id); if (!n || n === id) noname.push(id); });
       return { n: live.length, bad, noname, arch: ['scanner', 'extractor', 'cutter', 'art_print', 'art_postcard'].filter(id => !ARCHI(id)) }; });
+    // (the Polyfork models come a few seconds after the start and every picture taken before is taken again then: ask once they are here)
+    await pg.evaluate(() => window.PFI && PFI.load && PFI.load()).catch(() => {});
     let r = await pics(), last = -1, still = 0;
     for (let i = 0; i < 300 && r.bad.length && still < 10; i++) { await pg.waitForTimeout(2000); r = await pics(); still = r.bad.length === last ? still + 1 : 0; last = r.bad.length; }
     ok(r.n > 300 && !r.bad.length, 'every live item (' + r.n + ') has its own picture, a photograph of its own 3D model (not the parcel)' + (r.bad.length ? ': not ' + r.bad.length + ': ' + r.bad.slice(0, 12) : ''));

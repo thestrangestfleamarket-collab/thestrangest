@@ -94,7 +94,7 @@ window.PETS=PETS;
         if(!N.placed||d>14||Math.abs((N.g.position.y-hover*WU)-L.y)>2.5*WU){ place(L); return; }
         if(o.preview){ if(d>3)place(L); st.to=null; st.face={x:L.x,z:L.z}; return; }
         if(o.stay){ if(!st.to&&(idleT-=dt)<0){ idleT=3+Math.random()*5; const a=Math.random()*6.28, r=Math.random()*1.6*WU; st.to={x:o.stay.x+Math.sin(a)*r,z:o.stay.z+Math.cos(a)*r}; st.v=walkV*WU; } return; }
-        const R=o.rec||o.mine&&out(), far=R?(R.lo<25?3.4:R.lo>=80?1.4:1.7):1.7, sp=pace(R);   // (its loyalty keeps it close, a shy one lags; hungry or ill, it is slow)
+        const R=o.rec||o.mine&&out(), far=L.fight?1.2:R?(R.lo<25?3.4:R.lo>=80?1.4:1.7):1.7, sp=pace(R);   // (its loyalty keeps it close, a shy one lags; hungry or ill, it is slow)
         if(seat==='fly'){ const b=(far-.6)*WU, sd=(o.side||0)*WU, tx=L.x-Math.sin(L.hd)*b+Math.cos(L.hd)*sd, tz=L.z-Math.cos(L.hd)*b-Math.sin(L.hd)*sd, e=Math.hypot(st.x-tx,st.z-tz)/WU, low=!(L.me&&UI.fly)&&!(SHARED.groundY&&L.y-SHARED.groundY(L.x,L.z)>.3*WU);   // (behind you; still a moment on the ground, it lands there)
           still=v<.3*WU?still+dt:0; if(!lands||still<1||!low)down=false;
           if(down&&e<1.5){ st.to=null; st.face={x:L.x,z:L.z}; return; }
@@ -139,7 +139,7 @@ window.PETS=PETS;
     const hb=new THREE.Mesh(new THREE.BoxGeometry(long*WU,Math.max(.3,metres)*WU,long*WU),new THREE.MeshBasicMaterial({visible:false})); hb.position.y=metres*WU/2; N.g.add(hb);
     N.th={get quiet(){ if(!o.mine||o.preview)return false; const p=N.g.position, dx=p.x-pos.x, dz=p.z-pos.z, d=Math.hypot(dx,dz); return air||d>1.6*TILE||dx*Math.sin(SHARED.heading)+dz*Math.cos(SHARED.heading)<.5*d; },   // (your own pet: only when you face it, close: owner, 10 Nov 2026)
       name:o.mine?'PET '+(P.n||'YOUR '+K.name).toUpperCase():(o.owner?o.owner+"'S ":'')+(P.n||K.name).toUpperCase(),obj:hb,reach:1.6*TILE,near:2.6*TILE,tall:Math.max(.4,metres)*WU,act:()=>{ const r=o.rec||o.mine&&!o.preview&&out(); if(r&&now()-(r.pet||0)>5*60e3){ r.pet=now(); r.lo=cl(r.lo+2); keep(); } SAY(o.mine?(P.n||'YOUR '+K.name).toUpperCase()+(r&&r.hu>60?' NUZZLES YOUR POCKETS. IT IS HUNGRY.':' IS HAPPY TO SEE YOU.'):'IT SNIFFS YOUR HAND.','#9fe07f'); },
-      acts:o.mine&&!o.preview&&!o.stay?[{name:'TELL '+(P.n||'YOUR '+K.name).toUpperCase()+' TO GO HOME',act:()=>o.rec?PETS.sendHome(o.rec.id):PETS.goHome&&PETS.goHome()}]:null};
+      get acts(){ return o.mine&&!o.preview&&!o.stay?[{name:'TELL '+(P.n||'YOUR '+K.name).toUpperCase()+' TO GO HOME',act:()=>o.rec?PETS.sendHome(o.rec.id):PETS.goHome&&PETS.goHome()},...PETS.acts.flatMap(f=>f(P,K)||[])]:null; }};
     N.repaint=c=>paint(D,{...P,c},geo);   // (other zone colours on the same body: the owner's coats for the horse)
     UI.thing(N.th); return N; };
   const drop=N=>{ if(!N)return; const i=NPCS.indexOf(N); if(i>=0)NPCS.splice(i,1); N.g.removeFromParent(); if(N.th){ const j=UI.things.indexOf(N.th); if(j>=0)UI.things.splice(j,1); } N.me.geometry.dispose(); N.mixer&&N.mixer.stopAllAction(); };
@@ -181,9 +181,9 @@ window.PETS=PETS;
   let foot=null; const meLead=()=>{ if(VIT.dead)return null; if(st.climb||st.hang||TREES.h!=null||TREES.stand){ if(!foot)foot={x:pos.x,z:pos.z,y:SHARED.groundY?SHARED.groundY(pos.x,pos.z):0,hd:SHARED.heading}; return foot; } foot=null; return {x:pos.x,z:pos.z,y:SHARED.py,hd:SHARED.heading,me:true}; };   // up a tree, your pet waits at its foot
   const atHome=()=>!!(MODS.apts&&MODS.apts.inReal);
   let mine=null, mineCode='', homeSpot=null;
-  const refresh=()=>{ const P=shown(), want=P&&(inShop||!fainted(out()))&&(!P.h||inShop||atHome())?code(P)+(P.h&&!inShop?'@h':'')+(inShop?'@s':''):''; if(want===mineCode)return; mineCode=want; const my=++gen;
+  const refresh=()=>{ const P=shown(), want=P&&(inShop||!fainted(out()))&&!(!inShop&&PETS.away&&PETS.away())&&(!P.h||inShop||atHome())?code(P)+(P.h&&!inShop?'@h':'')+(inShop?'@s':''):''; if(want===mineCode)return; mineCode=want; const my=++gen;
     drop(mine); mine=null; if(!want)return; homeSpot=P.h&&!inShop?{x:pos.x,z:pos.z}:null;
-    make('mine',P,meLead,{mine:true,stay:homeSpot,preview:inShop,room:()=>!inShop&&atHome()&&!MODS.apts.host?roomNow():null}).then(N=>{ if(my!==gen){ drop(N); return; } mine=N; }).catch(e=>console.warn('PET',e)); };
+    make('mine',P,()=>PETS.lead&&PETS.lead()||meLead(),{mine:true,stay:homeSpot,preview:inShop,room:()=>!inShop&&atHome()&&!MODS.apts.host?roomNow():null}).then(N=>{ if(my!==gen){ drop(N); return; } mine=N; }).catch(e=>console.warn('PET',e)); };
   let mine2=null, mine2Code='', gen2=0;
   const refresh2=()=>{ const r=second(), P=r&&decode(r.c), want=P&&!inShop&&!fainted(r)&&(!P.h||atHome())?r.id+':'+r.c:''; if(want===mine2Code)return; mine2Code=want; const my=++gen2;
     drop(mine2); mine2=null; if(!want)return;
@@ -191,7 +191,7 @@ window.PETS=PETS;
   PETS.mine2=()=>mine2;
   PETS.WU=WU; PETS.dbg={UI,OWNED,pos,ROOMS}; PETS.make=make; PETS.drop=drop; PETS.idx=idx;
   PETS.mine=()=>mine; PETS.my=()=>MY; PETS.code=code; PETS.decode=decode;
-  ONLINE.mine.pf=()=>MY&&!MY.h?code(MY):null; ONLINE.mine.pf2=()=>{ const r=second(), P=r&&decode(r.c); return P&&!P.h&&!fainted(r)?r.c:null; };
+  ONLINE.mine.pf=()=>MY&&!MY.h&&!(PETS.away&&PETS.away())?code(MY):null; ONLINE.mine.pf2=()=>{ const r=second(), P=r&&decode(r.c); return P&&!P.h&&!fainted(r)?r.c:null; };
   // theirs: a pet beside every player near you who has one with them
   const theirs=()=>{ const want=new Map(); if(ONLINE.on&&ONLINE.others)for(const o of ONLINE.others.values())for(const [f,sfx] of [['pf',''],['pf2','#2']]){ const c=o.x&&o.x[f]; if(c&&o.why==='near you'&&o.fig)want.set(o.id+sfx,[o,c,sfx]); }
     for(const [id,r] of THEIRS)if(!want.has(id)||want.get(id)[1]!==r.c){ drop(r.N); r.dead=1; THEIRS.delete(id); }
@@ -231,8 +231,8 @@ window.PETS=PETS;
   function adopt(){ const P=DRAFT; if(!P||!inShop)return; if(LIST.length>=MAXP)return SAY('YOU HAVE TEN PETS: THAT IS THE MOST. LET ONE GO FIRST (ESC, PETS).','#c8a090'); const c=price(P); if(INV.cash<c)return SAY('THAT ONE IS $'+c+'. YOU HAVE $'+INV.cash+'.','#c8a090'); INV.cash-=c; if(INV.save)INV.save();
     const K=I.by[P.k]; add({...P,c:P.c.slice(),s:P.s.slice(),h:false},false); SAY((P.n||'YOUR '+K.name).toUpperCase()+' IS YOURS: $'+c+'. SEE ALL YOUR PETS, AND WHICH TWO FOLLOW YOU, IN THE MENU (ESC, PETS).','#9fe07f'); draw(); }
   // a new pet in your list and out with you (the one out before goes home to wait)
-  function add(P,perma){ if(LIST.length>=MAXP)return false; const id=LIST.reduce((m,r)=>Math.max(m,r.id||0),0)+1, r={id,c:code(P),perma:!!perma,born:now(),at:now(),hu:10,lo:perma?70:40,hp:100,out:false}; LIST.push(r); lead(r); MY=decode(r.c); keep(); refresh(); refresh2(); return true; }
-  PETS.add=add; PETS.list=()=>LIST; PETS.perma=()=>LIST.find(r=>r.perma)||null; PETS.feed=feed; PETS.tick=tickAll;
+  function add(P,perma,more){ if(LIST.length>=MAXP)return false; const id=LIST.reduce((m,r)=>Math.max(m,r.id||0),0)+1, r={id,c:code(P),perma:!!perma,born:now(),at:now(),hu:10,lo:perma?70:40,hp:100,out:false,...more}; LIST.push(r); lead(r); MY=decode(r.c); keep(); refresh(); refresh2(); return r; }
+  PETS.add=add; PETS.out=out; PETS.acts=[]; PETS.refresh=()=>refresh(); PETS.list=()=>LIST; PETS.perma=()=>LIST.find(r=>r.perma)||null; PETS.feed=feed; PETS.tick=tickAll;
   PETS.setPerma=P=>{ if(LIST.some(r=>r.perma))return false; return add(P,true); };
   PETS.takeOut=id=>{ const r=LIST.find(x=>x.id===id); if(!r)return; lead(r); MY=decode(r.c); keep(); draw(); refresh2(); };
   const unhome=r=>{ const P=decode(r.c); if(P.h){ P.h=false; r.c=code(P); } };

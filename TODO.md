@@ -131,6 +131,11 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [x] **The movie theatre as THE FLEA PIT** (owner, 10 Nov 2026: "i want to redsesign the movie theater", picked B) · P2 · M · code + look. Front, dark inside, box office, seats [taking: claude/laughing-curie-ui41fc, 10 Nov]
 - [ ] **The fish market** · P2 · M · look. Owner, 9 Nov 2026: waits for his look and yes. Not yet: the workers keep no hours (the jobs system is archived), the editor's ground picture (`tools/topmap.cjs`) not re-made, the minimap does not draw the sheds.
 - [ ] **The fish market's sheds** · P3 · S · pick. The two sheds stand on the row, not on the water side as the real ones did (the quay stays open for fishing); say if they should cross the street.
+- [x] **Fossil digs** (owner, 10 Nov 2026: "do 1-8") · code. [done: worktree-agent-a66213ee845b8a10a, 10 Nov]
+- [ ] **Fossil digs, for his look** · P2 · look. The three sites in the park, the bones and skeletons (simple shapes, Polyfork's brush and the
+  bones lying at the sites), the hall in the Art Museum's atrium.
+- [ ] **Where the fossil hall stands** · P3 · S · pick. In the Art Museum's atrium (the Professor curates there) while the Museum of Earth is
+  away; one line moves it once that museum is back.
 - [ ] **The telescope** · P3 · S · code. The firsts board on no wall; GO TO Betelgeuse failed once. (10 Nov: satellite passes follow the
   real hour and the aurora is in the street's own sky.)
 - [x] **The public observatory** (owner, 10 Nov 2026: "Both") · P2 · L · code. A dome in the park with one big shared telescope, deeper than
@@ -160,7 +165,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [ ] **The gym, next if wanted** · P4 · pick. A sparring bot in the ring, a trainer, bets on fights.
 - [ ] **The owner's nine (9 Nov 2026: "Violin, flute, trumpet, Dances CMU motion-capture library, Painting copies, sign language, juggling, ade animal taming as skill, fossil digs, bar games, implants")** · one pull request each, in this order:
   - [x] **Violin, flute, trumpet** · P2 · L · code. [taking: claude/blissful-goodall-udydlj, 9 Nov]
-  - [ ] **The piano, harp and drums as Polyfork models** · P3 · M · code. Owner, 10 Nov: "Use very realistic instruments models and textures" (his pick: Polyfork); their keys, strings and heads move, so each needs fitting.
+  - [x] **The piano, harp and drums as Polyfork models** · P3 · M · code. [done 10 Nov, with the trumpet's valves moving] Owner, 10 Nov: "Use very realistic instruments models and textures" (his pick: Polyfork); their keys, strings and heads move, so each needs fitting.
   - [ ] **Violin, flute, trumpet, seen live** · look. How each is held and sounds; the tunes are the piano pieces' top line.
   - [ ] **Dances** · P2 · L · code. Learnt by band like songs, from the CMU motion-capture library; performed for tips.
   - [ ] **Painting copies** · P2 · L · code. Copy open-collection masterworks by difficulty; hang or sell them.
@@ -169,6 +174,9 @@ steps go in one window, after the checks run on `main`, and end with the owner t
   - [ ] **Animal taming, a skill** · P2 · XL · pick + code. Owner: "everything" (wildlife as pets, monsters that fight beside you, mounts): options first.
   - [ ] **Fossil digs** · P3 · L · code. Dig bones, assemble skeletons for the museum.
   - [ ] **Bar games** · P2 · XL · pick + code. Owner's picks: darts (the archived 301), pool, bowling (needs its own place: options first).
+  - [x] **Implants** · P3 · L · pick + code. Owner: "Both" (stat boosts and new abilities), fitted at a clinic. Done 10 Nov: THE CLINIC (`src/146zkc-clinic.js`, EQUIP's implants in `src/146c-equip.js`), `tests/implants.cjs`.
+  - [x] **Bar games** · P2 · XL · pick + code. Owner's picks: darts (the archived 301), pool, bowling. Bowling done 10 Nov: THE STRANGEST LANES (`src/146zkb-bowling.js`, `worker/lanes.js`, `tests/bowling.cjs`).
+  - [ ] **The bowling alley, seen live** · look. The lanes, pins and hook in a real browser; the longboarder at the counter; two players on the website.
   - [ ] **Implants** · P3 · L · pick + code. Owner: "Both" (stat boosts and new abilities), fitted at a clinic.
 - [ ] **The instruments, seen and heard live** · look. The 10 Nov feel and fuller recordings (and the recorded guitar): does it still sound like MIDI?
 - [ ] **The instruments, the rest** · P3 · S · code. The bar's piano and kit playable in place; a bandstand for the park guitar.
@@ -191,6 +199,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [x] **The park's animals to the pet store's cages; every living thing a pet; THE AQUARIUM** (owner, 8 Nov 2026: "hudson lot, apartment tank only, birds ok, go"; done 8 Nov) · P2 · L · code. `src/146zj-pets.js`, `src/146zjb-aquarium.js`, `tools/pets-more.py`, `tools/petcages-bake.py`, `tests/petstore.cjs`. Waits for his look and yes.
 - [x] **The pet shops split; the park farm and its barn** (owner, 8 Nov 2026: "separate buildings, recommendations, big liz, A, yes go"; done 8 Nov) · P2 · L · code. `src/146zj-pets.js`, `src/059i-mshops.js`, `tools/pets-more.py`, `tools/petcages-bake.py`, `tests/petstore.cjs`. Waits for his look and yes.
 - [x] **The farm deeper in the park, gate shut, its animals living** (owner, 9 Nov 2026; done 9 Nov) · P2 · M · code. `src/086a-farm.js`, `tests/farm.cjs`. Waits for his look and yes.
+- [x] **Animal taming** (owner, 9-10 Nov 2026: "animal taming as skill", "One skill, three tiers", "do 1-8"; done 10 Nov) · P2 · L · code · look. `src/146zjd-taming.js`, `tests/taming.cjs`. Left: skeletons and ogres are not tameable (people, not creatures); a fighter fights only the dungeon's monsters; the owner's look at the deer back in the woods and the deer under a saddle.
 - [x] **The rules of the street: bots and walkers off the road, across at crosswalks, on WALK; a wandering bot visits real things** (owner, 9 Nov 2026; done 9 Nov) · P2 · M · code. `src/076-npc-map.js`, `src/162g-bots.js`, `worker/folk.js`. Next: the bots' goals (options given to the owner).
 - [x] **Flying pets flap and perch; ground pets wait below** (owner, 9 Nov 2026: "winged creatures should always be flapping wings. birds and flying creatuers can land on your shoulder or head depending on size"; "pets that cant fly should not fly up with you"; "you can choose in pet properties where they sit"; done 9 Nov) · P2 · S · code. `src/146zj-pets.js`, `tests/perch.cjs`. Waits for his look and yes.
 - [x] **Flying pets fly and land behind you; no shoulder perches; your pet's E prompt only when you face it** (owner, 10 Nov 2026; done 10 Nov) · P2 · S · code. `src/146zj-pets.js`, `tests/perch.cjs`. Waits for his look and yes.
@@ -247,6 +256,11 @@ One tree pass (more leaves mean more shadow triangles).
 - [ ] **The owner tries the moves live and approves** · P2 · S · look. #557, #561 and the Mixamo clips (7 Nov): emotes, kick and dodge,
   eating, crafting, planting, mining, sitting down, the fishing cast and pull, the sword or net swing, the dragons' fire breath and naps.
 - [x] **More animals rest** (done 10 Nov 2026) · P3 · M · code. Done: dog, fox, wolf, horse, wild horse, mule, cow, pig (the fox's Sleep, `tools/m2m-bake.cjs farm`); the other fox-rig animals are not in the game.
+- [x] **Dances and juggling** (owner, 9 Nov 2026: "Dances CMU motion-capture library", "juggling") · done 10 Nov: two PERFORMANCE skills, each a book of 50.
+- [ ] **The owner tries dancing and juggling live** · P2 · S · look. The dance book (EMOTES > DANCE BOOK), juggling from a ball or club in the bag; the CMU loops' look.
+- [x] **Sign language** (owner, 9 Nov 2026: "sign language", "Both") · done 10 Nov: a SIGN LANGUAGE skill (LANGUAGE), signed chat, two townsfolk who only sign.
+- [ ] **The owner looks at the signs** · P2 · S · look. The handshapes and motions are hand-authored and simplified; which townsfolk sign (the diner waitress, the village gardener); the 60% gate.
+- [ ] **More animals rest** · P3 · M · code. Done: dog, fox, wolf, horse, wild horse, mule; the others on the fox's rig (`tools/m2m-bake.cjs`).
 - [ ] **Standing up from a seat** · P3 · M · code · risk med. `stand()` in `src/100-use.js` puts you off the seat at once: play the
   stand-up first, then move you off, without blocking movement.
 - [x] **Fishing from the rowboat has no body move** · done 10 Nov: sat in the boat the rod is held and swung to cast and reel (a seat with `hold`).
@@ -264,6 +278,9 @@ One tree pass (more leaves mean more shadow triangles).
   `Home` split, into the art store.
 - [ ] **The painter, not yet tried for real** · P3 · S · look. Pinch to zoom and pen pressure, in VR, the easel showing your latest
   unfinished painting.
+- [x] **Painting copies** (10 Nov 2026) · the masterworks by band, the guide over the canvas, a copy scored; `tests/copies.cjs`.
+- [ ] **Painting copies: the owner's look** · P3 · S · look. The 50 works' order (measured from the pictures: dark plain-ground portraits
+  come out easy, Bruegel and engravings hard), the pass marks (40% to 85%), what a copy is worth; the score is the player's own browser's.
 
 ## Menus, map, HUD and phones
 

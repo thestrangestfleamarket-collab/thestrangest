@@ -178,3 +178,4 @@ for key,pid,name,grp in L:
     except Exception as e: print('FAILED',key,pid,repr(e),flush=True)
 IDX['kinds']=[have[k] for k,*_ in L if k in have]
 json.dump(IDX,open('data/pets.json','w'),separators=(',',':')); print('data/pets.json',len(IDX['kinds']),'kinds')
+import subprocess; subprocess.run(['python3','tools/pets-tame.py'])   # (each kind's tame, TAMING)

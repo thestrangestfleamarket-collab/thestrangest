@@ -50,8 +50,8 @@ const AQUA={tanks:[]}; window.AQUA=AQUA;
     const th=.3*m, W0=L.x0+th, W1=L.x1-th, V0=L.y0+th, TD=.85*m, Z0=.7*zm, ZT=2.3*zm, WOOD=0x3a2a1e, SAND=0xd8c8a0;
     // one long tank across the back wall, every kind swimming in it together (owner, 11 Nov 2026)
     box(OP,W0,W1,V0,V0+TD,0,Z0-.05*zm,WOOD); box(OP,W0,W1,V0,V0+TD,Z0-.05*zm,Z0,0x202224); box(OP,W0+.03*m,W1-.03*m,V0+.03*m,V0+TD-.03*m,Z0,Z0+.08*zm,SAND);
-    box(OP,W0,W1,V0,V0+.04*m,Z0,ZT,0x16405e); box(OP,W0,W1,V0,V0+TD,ZT,ZT+.08*zm,0x202224);
-    box(WA,W0+.03*m,W1-.03*m,V0+.04*m,V0+TD-.03*m,Z0+.08*zm,ZT-.1*zm,0x4aa8d0); box(GL,W0+.05*m,W1-.05*m,V0+.05*m,V0+TD-.05*m,ZT-.1*zm,ZT-.09*zm,0xe8f8ff);
+    box(OP,W0,W1,V0,V0+.04*m,Z0,ZT,0x3a88b0); box(OP,W0,W1,V0,V0+TD,ZT,ZT+.08*zm,0x202224);
+    box(WA,W0+.03*m,W1-.03*m,V0+.04*m,V0+TD-.03*m,Z0+.08*zm,ZT-.1*zm,0x8ad0e8); box(GL,W0+.05*m,W1-.05*m,V0+.05*m,V0+TD-.05*m,ZT-.1*zm,ZT-.09*zm,0xe8f8ff);
     for(const u of [W0,W1-.06*m])box(OP,u,u+.06*m,V0+TD-.06*m,V0+TD,Z0,ZT,0x202224);
     at.sb(W0,V0,W1,V0+TD,ZT+.08*zm);
     // the price tags on the stand's front, one a kind: double-click one to buy that kind
@@ -109,7 +109,7 @@ const AQUA={tanks:[]}; window.AQUA=AQUA;
         const hb=new THREE.Mesh(new THREE.BoxGeometry(.5*WU,.4*WU,.5*WU),new THREE.MeshBasicMaterial({visible:false})); hb.position.copy(c); G.add(hb);
         UI.thing({name:'A '+K.name+' (ADOPT)',obj:hb,reach:1.8*TILE,near:3*TILE,tall:.4*WU,act:()=>{ PETS.shop(ID); PETS.idx().then(()=>setTimeout(()=>PETS.choose(K.key),0)); }}); }); }).catch(e=>console.warn('AQUA CRABS',e)); }
     mesh(OP,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide})).receiveShadow=true;   // (two-sided: the lot's frame may be a mirror's)
-    mesh(WA,new THREE.MeshLambertMaterial({vertexColors:true,transparent:true,opacity:.5,depthWrite:false,emissive:0x1a4a60,side:THREE.DoubleSide})).renderOrder=2;
+    mesh(WA,new THREE.MeshLambertMaterial({vertexColors:true,transparent:true,opacity:.14,depthWrite:false,emissive:0x0a2430,side:THREE.DoubleSide})).renderOrder=2;
     mesh(GL,new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.DoubleSide})).renderOrder=3;
     // the fish, once their models come: small, a goldfish's size up to a small shark's
     // the fish, once their models come: small, and each on its own 30-second loop through the tank, baked once (owner, 11 Nov 2026: "repeat the same loop every 30 seconds but they seem alive")

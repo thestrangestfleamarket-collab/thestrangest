@@ -1,6 +1,6 @@
 // THE HOURS: DN holds the three looks, DAY, DUSK and NIGHT (each sets the sun, sky, mist, clouds and the colour of everything), picked by the game's clock (real Central time; the owner can set it, stop it or hold a look for everyone, /shared/time.json); the looks themselves are the game's or the owner's saved ones (/shared/looks.json); ATMOSPHERE edits them (the owner only).
 import {SHARED, THREE} from './003-shx.js';
-import {BUGS, CLOCK, DN, FAR3, ONLINE, PARK, pos, ROOMS, SKY, VIS, W3, WX} from './003b-systems.js';
+import {BUGS, CLOCK, DN, FAR3, ONLINE, PARK, pos, ROOMS, SKY, VIS, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {MISTE, MISTS, MISTSC, QS, STORE, SYS} from './006-map-pre.js';
 import {HEMI} from './064-map-post.js';
@@ -44,8 +44,7 @@ DN.lookFor=h=>{ const [a,b,f]=DN.mix(h); return f<.5?a:b; };
   SYS.add('sky',()=>{ const P=B, up=SHARED.LVL!=='down';
     CLOCK.sun.intensity*=P.sun; CLOCK.sun.color.multiply(tc.set(P.sunc)); if(up){ HEMI.intensity*=P.amb; if(P.ambc)HEMI.color.multiply(tc.set(P.ambc)); } DN.lk=P.lamp;
     { const F=DN.fillL||(DN.fillL=(()=>{ const L=new THREE.DirectionalLight(0xffffff,0); L.castShadow=false; scene.add(L); scene.add(L.target); return L; })()), sv=CLOCK.sunV, nk=Math.max(0,Math.min(1,(3-CLOCK.dayElev())/8)), k=DN.fill??(.38-.3*nk);   // the fill: a soft light from opposite the sun, no shadows, so shade keeps a body's shape and colours (owner, 6 Nov 2026: "the shadows are too dark ... just 1 solid dark color")
-      F.color.copy(HEMI.color).lerp(CLOCK.sun.color,.3); F.intensity=up?k*(CLOCK.sun.intensity+HEMI.intensity*.8):0; F.position.set(pos.x-sv.x*100,pos.y+Math.max(.35,Math.abs(sv.y))*100,pos.z-sv.z*100); F.target.position.set(pos.x,pos.y,pos.z); F.target.updateMatrixWorld();
-      W3.moon.value=up&&!ROOMS.cur?.32*nk:0; }   // at night the fill falls away and the moon edges every body instead (owner, 9 Nov 2026)
+      F.color.copy(HEMI.color).lerp(CLOCK.sun.color,.3); F.intensity=up?k*(CLOCK.sun.intensity+HEMI.intensity*.8):0; F.position.set(pos.x-sv.x*100,pos.y+Math.max(.35,Math.abs(sv.y))*100,pos.z-sv.z*100); F.target.position.set(pos.x,pos.y,pos.z); F.target.updateMatrixWorld(); }
     DN.U.grade.value.set(P.grade); DN.U.lift.value.set(P.lift); DN.U.liftK.value=up?P.liftk:0;
     if(SKY.on()){ U.uZ.value.set(P.zen); U.uH.value.set(P.hor); U.uM.value.copy(U.uH.value).lerp(U.uZ.value,.45); { const nk=Math.max(0,Math.min(1,(-4-CLOCK.elev())/6)); U.uS.value.lerp(U.uH.value,nk); U.uA.value.lerp(U.uH.value,nk); }   // no glow along the night's horizon: a clear dark sky (owner, 10 Nov 2026)
       U.uCov.value=P.cov; U.uCL.value=P.cl; U.uCldC.value.set(P.cldc||'#ffffff'); U.uCldK.value=P.cldk||0; U.uBands.value=P.bands; U.uMistK.value*=P.skym;

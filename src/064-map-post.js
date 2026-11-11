@@ -61,7 +61,7 @@ LITE.tick=(dt,x,y,z)=>{ const P=LITE.pool;
     F.L.forEach((L,i)=>{ const r=Math.min(L.distance*.38,4.6*TILE), gy=SHARED.groundY?SHARED.groundY(L.position.x,L.position.z):0; M.compose(V.set(L.position.x,(isFinite(gy)?gy:0)+.06,L.position.z),Q,S.set(2*r,1,2*r)); F.me.setMatrixAt(i,M); F.me.setColorAt(i,C.setRGB(0,0,0)); });
     scene.add(F.me); };
   LITE.farTick=dt=>{ if(LITE.recs.length!==F.n)build(); if(!F.me)return; const up=SHARED.LVL==='up'&&!(ROOMS.cur&&ROOMS.cur.off); F.me.visible=up; if(!up)return; const sel=new Set(LITE.sel.map(p=>p[1]||p));
-    F.L.forEach((L,i)=>{ const want=sel.has(L)?0:Math.min(1,(L.intensity||0)/(L.userData.i0||1)); F.a[i]+=(want-F.a[i])*Math.min(1,(dt||.016)*1.5); const k=.55*F.a[i]*LITE.dim(L.position); F.me.setColorAt(i,C.copy(L.color).multiplyScalar(k)); });
+    F.L.forEach((L,i)=>{ const want=sel.has(L)||L.userData.off?0:Math.min(1,(L.intensity||0)/(L.userData.i0||1)); F.a[i]+=(want-F.a[i])*Math.min(1,(dt||.016)*1.5); const k=.55*F.a[i]*LITE.dim(L.position); F.me.setColorAt(i,C.copy(L.color).multiplyScalar(k)); });
     F.me.instanceColor.needsUpdate=true; };
   LITE.far=F; SYS.add('life',dt=>LITE.farTick(dt),'064-farglow'); }
 scene.background=new THREE.Color(0x050507);

@@ -19,6 +19,8 @@ PARK.TRK=1.65; PARK.tick=()=>{ PARK.sway.value=performance.now()/1000; const A=P
 PARK.Q=[]; PARK.in=false; PARK.ready=false; PARK.onShow=[]; PARK.later=f=>PARK.ready?PARK.run(f):PARK.Q.push(f);
 await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.ox=PO.x; PARK.oy=PO.y; PARK.x0=50-MAINX.w+PE[0]; PARK.x1=EASTX+PE[2]; PARK.y0+=PE[1]; PARK.y1+=PE[3]; const X=x=>SHARED.BOD.XS(x+PO.x), Z=y=>SHARED.BOD.ZS(y+PO.y), Y=SHARED.BOD.YS, {hash,grain,speck,grassCol}=SHARED.BOD.g, P=PARK, U=TILE/.84, f32=F32, b8=B64;
   P.round=[PARKGX,PARKRY,7]; P.gate=[PARKGX-5,PARKGX+5]; P.lake=PARKLAKE; const RX=x=>x-96+P.round[0], RY=y=>y+47+P.round[1];
+  // West St's short stretch (owner, 11 Nov 2026) is cut out of the park's south-west corner: no trees or grass on it, the wall runs round it
+  const WS=LEVEL.streets.west, NOTCH=PARK.notch=WS.road!==false&&WS.y1!=null?[WS.x0-PO.x-.5,P.y0-1,WS.x1-PO.x+.6,WS.y1-PO.y+.6]:null;
   const WA=3; P.wobX=y=>P.armX(y)-P.round[0]; P.wobY=x=>P.armY(x)-P.round[1];
   const CF=CASTLE.b[3]-PO.y+1, CGX=CASTLE.gate-PO.x, CL=[CASTLE.lot[0]-PO.x,CASTLE.lot[2]-PO.y,CASTLE.lot[1]-PO.x,CASTLE.lot[3]-PO.y], inCL=(x,y,m=0)=>x>CL[0]-m&&x<CL[2]+m&&y>CL[1]-m&&y<CL[3]+m, [LX,LY,LR]=P.lake, [RX0,RY0]=P.round;
   const SEG=P.segs=LEVEL.paths.map(q=>[q.a[0]-PO.x,q.a[1]-PO.y,q.b[0]-PO.x,q.b[1]-PO.y]);
@@ -27,7 +29,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
   P.armY=x=>{ const [ax,ay,bx]=SEG[1], L=bx-ax; return ay+WA*Math.sin(2*Math.PI*Math.round(L/70)*(x-ax)/L); }; P.armX=y=>{ const [ax,ay,,by]=SEG[0], L=by-ay; return ax+WA*Math.sin(2*Math.PI*Math.round(L/70)*(y-ay)/L); };
   const pd=P.pd=(x,y)=>{ const [cx,cy,r]=P.round; return Math.min(segD(x,y)-3.6,Math.hypot(x-cx,y-cy)-r,FOUNT.trackD(x,y)); };
   const path=(x,y)=>pd(x,y)<0;   P.path=path; FOUNT.at(P);
-  const HK=[[LX-LR-1,LY-LR-1,LX+LR+1,LY+LR+1],[CL[0]-1.5,CL[1]-1.5,CL[2]+1.5,CL[3]+1.5],[RX(90)-3,RY(-41.5)-3,RX(102)+3,RY(-41.5)+3],...(typeof GCAVE!=='undefined'?GCAVE.keep(P):[]),...(LEVEL.parkPlaces.sites||[]).map(q=>[q.x-q.w/2-2,q.y-q.d/2-2,q.x+q.w/2+2,q.y+q.d/2+2])];
+  const HK=[[LX-LR-1,LY-LR-1,LX+LR+1,LY+LR+1],[CL[0]-1.5,CL[1]-1.5,CL[2]+1.5,CL[3]+1.5],[RX(90)-3,RY(-41.5)-3,RX(102)+3,RY(-41.5)+3],...(typeof GCAVE!=='undefined'?GCAVE.keep(P):[]),...(LEVEL.parkPlaces.sites||[]).map(q=>[q.x-q.w/2-2,q.y-q.d/2-2,q.x+q.w/2+2,q.y+q.d/2+2]),...(NOTCH?[NOTCH]:[])];
   const ss=(a,b,v)=>{ const t=Math.max(0,Math.min(1,(v-a)/(b-a))); return t*t*(3-2*t); }, cvn=SHARED.BOD.g.cvNoise;
   P.hill=(x,y)=>{ if(x<P.x0||x>P.x1||y<P.y0||y>P.y1)return 0; const [cx,cy,r]=P.round;
     let d=Math.min(pd(x,y),x-P.x0-1.5,P.x1-x-1.5,y-P.y0-9,P.y1-y-1.5,FOUNT.away(x,y)); if(d<=0)return 0;
@@ -143,7 +145,8 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     B(.14,0,18,k,st,rusI); B(.08,18,22,k+4,'cap'); B(0,22,PH-24,k+8,st,rusI); B(.06,PH-24,PH-20,k+12,'cap'); B(0,PH-20,PH,k+16,st,rusF);
     B(.1,PH,PH+5,k+20,'cap'); B(.2,PH+5,PH+9,k+24,'cap'); B(.32,PH+9,PH+14,k+28,'cap'); B(.18,PH+14,PH+18,k+32,'cap');
     PIERS.push([(x0+x1)/2,(y0+y1)/2,x0,y0,x1,y1]); };
-  wall(P.x0,P.y0,g0-PW,P.y0+T,11); wall(g1+PW,P.y0,P.x1,P.y0+T,15);
+  wall(NOTCH?NOTCH[2]-.6:P.x0,P.y0,g0-PW,P.y0+T,11); wall(g1+PW,P.y0,P.x1,P.y0+T,15);
+  if(NOTCH){ const nx=NOTCH[2]-.6, ny=NOTCH[3]-.6; wall(nx,P.y0+T,nx+T,ny,81); wall(P.x0,ny,nx+T,ny+T,85); }
   pier(g0-PW,P.y0-.3,g0,P.y0+T+.6,21); pier(g1,P.y0-.3,g1+PW,P.y0+T+.6,25);
   LEAVES.push([g0,P.y0+T+.85,-1,'x',(g1-g0)/2],[g1,P.y0+T+.85,1,'x',(g1-g0)/2]);
   PARK.look=[X(g1+1.8),Z(P.y0-1.6)];
@@ -284,7 +287,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
   for(const S of ['A','C','AL','CL','E','K'])for(let i=0;i<TREEGEN.count(S);i++)F['G'+S+i]=TREEGEN.get(S,i);
   for(const k in TREEGEN.old)if(F[k])F[k].sum=TREEGEN.old[k];
   const gk=(x,y,sd,low)=>{ const h=k=>hash(Math.round(x*3),Math.round(y*3),sd+k); if(h(0)<.5)return null; const S=(h(1)<.5?'A':'C')+(low?'L':''); return 'G'+S+Math.floor(h(2)*TREEGEN.count(S)); };
-  const TREES=(()=>{ const out=[], RR=[], KEEP=[[LX-LR-2,LY-LR-2,LX+LR+2,LY+LR+2],[CL[0]-1.5,CL[1]-1.5,CL[2]+1.5,CL[3]+1.5],[P.gate[0]-16,P.y0,P.gate[1]+8,P.y0+12],(c=>[c.x-7,c.y-7,c.x+7,c.y+7])(P.campAt()),[RX(90)-3,RY(-41.5)-3,RX(102)+3,RY(-41.5)+3],...(typeof GCAVE!=='undefined'?GCAVE.keep(P):[]),...(LEVEL.parkPlaces.sites||[]).map(q=>[q.x-q.w/2-2,q.y-q.d/2-2,q.x+q.w/2+2,q.y+q.d/2+2]),...['tower2','tower3','tower4','tower5','tower6'].map(k=>LEVEL.parkPlaces[k]).filter(Boolean).map(t=>[t.x-4,t.y-4,t.x+4,t.y+4])];
+  const TREES=(()=>{ const out=[], RR=[], KEEP=[[LX-LR-2,LY-LR-2,LX+LR+2,LY+LR+2],[CL[0]-1.5,CL[1]-1.5,CL[2]+1.5,CL[3]+1.5],[P.gate[0]-16,P.y0,P.gate[1]+8,P.y0+12],(c=>[c.x-7,c.y-7,c.x+7,c.y+7])(P.campAt()),[RX(90)-3,RY(-41.5)-3,RX(102)+3,RY(-41.5)+3],...(typeof GCAVE!=='undefined'?GCAVE.keep(P):[]),...(NOTCH?[[NOTCH[0]-2,NOTCH[1],NOTCH[2]+2,NOTCH[3]+2]]:[]),...(LEVEL.parkPlaces.sites||[]).map(q=>[q.x-q.w/2-2,q.y-q.d/2-2,q.x+q.w/2+2,q.y+q.d/2+2]),...['tower2','tower3','tower4','tower5','tower6'].map(k=>LEVEL.parkPlaces[k]).filter(Boolean).map(t=>[t.x-4,t.y-4,t.x+4,t.y+4])];
     const [cx,cy]=P.round, W=k=>/^Oak/.test(k)?.42:F[k].wide*.45, add=(k,x,y,m,t)=>{ out.push([k,+x.toFixed(1),+y.toFixed(1),+m.toFixed(1),+t.toFixed(2)]); RR.push(m*W(k)); }, near=(x,y,r,f,g)=>out.some((o,j)=>Math.hypot(o[1]-x,o[2]-y)<Math.max(g,(RR[j]+r)*f)),
       ok=(x,y,r)=>!(pd(x,y)<3+r||y<P.y0+TREEY+4||y>P.y1-r-8||x<P.x0+r+10||x>P.x1-r-10||Math.hypot(x-cx,y-cy)<P.round[2]+r+6||KEEP.some(b=>x>b[0]-r&&x<b[2]+r&&y>b[1]-r&&y<b[3]+r)||BK.wet(x,y,r)||FOUNT.lake(x,y)<r*.35+1.5||FOUNT.ter(x,y)<r+.5);
     // as thick as Central Park (owner, 8 Nov 2026, his photos of the Mall, the Gapstow pond and the park from the air): rows down both sides of every path, their crowns meeting over it; trees along the lake's track and the brook; woods between, crowns touching, in drifts; open lawns round the giants and where the woods thin

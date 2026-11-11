@@ -210,6 +210,132 @@
     "url": "https://creativecommons.org/publicdomain/zero/1.0/",
     "snapshot": "data/full/sfx/licence.txt"
    }
+  },
+  {
+   "id": "samples/piano",
+   "kind": "file",
+   "runtime": "data/piano-samples.mp3",
+   "made": "tools/instrument-samples-bake.py",
+   "source": {
+    "site": "FreePats",
+    "urls": [
+     "https://freepats.zenvoid.org/Piano/SalamanderGrandPiano/SalamanderGrandPiano-SFZ+FLAC-V3+20200602.tar.gz"
+    ],
+    "authors": "Alexander Holm (Salamander Grand Piano)"
+   },
+   "licence": {
+    "name": "CC BY 3.0",
+    "url": "https://creativecommons.org/licenses/by/3.0/",
+    "snapshot": "data/full/samples-licences/cc-by-3.0.txt"
+   }
+  },
+  {
+   "id": "samples/harp",
+   "kind": "file",
+   "runtime": "data/harp-samples.mp3",
+   "made": "tools/instrument-samples-bake.py",
+   "source": {
+    "site": "VS Chamber Orchestra Community Edition (VSCO-2-CE), GitHub",
+    "urls": [
+     "https://github.com/sgossner/VSCO-2-CE"
+    ],
+    "authors": "Versilian Studios"
+   },
+   "licence": {
+    "name": "CC0 1.0",
+    "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "snapshot": "data/full/sfx/licence.txt"
+   }
+  },
+  {
+   "id": "samples/violin",
+   "kind": "file",
+   "runtime": "data/violin-samples.mp3",
+   "made": "tools/instrument-samples-bake.py",
+   "source": {
+    "site": "VS Chamber Orchestra Community Edition (VSCO-2-CE), GitHub",
+    "urls": [
+     "https://github.com/sgossner/VSCO-2-CE"
+    ],
+    "authors": "Versilian Studios"
+   },
+   "licence": {
+    "name": "CC0 1.0",
+    "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "snapshot": "data/full/sfx/licence.txt"
+   }
+  },
+  {
+   "id": "samples/flute",
+   "kind": "file",
+   "runtime": "data/flute-samples.mp3",
+   "made": "tools/instrument-samples-bake.py",
+   "source": {
+    "site": "VS Chamber Orchestra Community Edition (VSCO-2-CE), GitHub",
+    "urls": [
+     "https://github.com/sgossner/VSCO-2-CE"
+    ],
+    "authors": "Versilian Studios"
+   },
+   "licence": {
+    "name": "CC0 1.0",
+    "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "snapshot": "data/full/sfx/licence.txt"
+   }
+  },
+  {
+   "id": "samples/trumpet",
+   "kind": "file",
+   "runtime": "data/trumpet-samples.mp3",
+   "made": "tools/instrument-samples-bake.py",
+   "source": {
+    "site": "VS Chamber Orchestra Community Edition (VSCO-2-CE), GitHub",
+    "urls": [
+     "https://github.com/sgossner/VSCO-2-CE"
+    ],
+    "authors": "Versilian Studios"
+   },
+   "licence": {
+    "name": "CC0 1.0",
+    "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "snapshot": "data/full/sfx/licence.txt"
+   }
+  },
+  {
+   "id": "samples/guitar",
+   "kind": "file",
+   "runtime": "data/guitar-samples.mp3",
+   "made": "tools/instrument-samples-bake.py",
+   "source": {
+    "site": "FreePats",
+    "urls": [
+     "https://freepats.zenvoid.org/Guitar/SpanishClassicalGuitar/SpanishClassicalGuitar-SFZ+FLAC-20190618.7z"
+    ],
+    "authors": "FreePats (Spanish Classical Guitar)"
+   },
+   "licence": {
+    "name": "CC0 1.0",
+    "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "snapshot": "data/full/sfx/licence.txt"
+   }
+  },
+  {
+   "id": "samples/drums",
+   "kind": "file",
+   "runtime": "data/drums-samples.mp3",
+   "made": "tools/instrument-samples-bake.py",
+   "source": {
+    "site": "FreePats",
+    "urls": [
+     "https://github.com/freepats/muldjordkit/releases/download/2020-10-18/MuldjordKit-SFZ+FLAC-20201018.7z"
+    ],
+    "authors": "Lars Muldjord (MuldjordKit), FreePats"
+   },
+   "licence": {
+    "name": "CC BY 4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/",
+    "snapshot": "data/full/samples-licences/cc-by-4.0.txt"
+   }
   }
  ]
 }

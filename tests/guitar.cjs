@@ -77,6 +77,10 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
   const ps=await U(()=>GUITAR.STAND.g,30000);   // (built once you are within 60 tiles of it: the start is)
   const pk=ps?await pg.evaluate(async()=>{ const S=GUITAR.STAND.g.position, P=__dbg.you(), d=Math.hypot(S.x-P.x,S.z-P.z)/__dbg.cv().TILE; S.set(P.x+1.5*__dbg.cv().TILE,S.y,P.z); GUITAR.start('park'); await new Promise(r=>setTimeout(r,600)); const r={d:+d.toFixed(1),on:GUITAR.on(),hidden:!GUITAR.STAND.gm.visible,held:!!GUITAR.ME.H}; GUITAR.stop(); r.back=GUITAR.STAND.gm.visible; return r; }):{};
   rec('the park\'s guitar stands by the round; play it there and it leaves the stand, put it down and it\'s back',ps&&pk.on&&pk.hidden&&pk.held&&pk.back,JSON.stringify({built:ps,...pk}));
+  // its bandstand: the deck round the stand, the park's ground there (you stand on it), its posts solid
+  const bs=ps?await pg.evaluate(()=>{ const B=GUITAR.STAND.band, g=B.g, at=g.position, T=__dbg.cv().TILE, M=T/.84, s=GUITAR.STAND.g, gy=(x,z)=>SHARED.groundY(x,z), ang=g.rotation.y+Math.PI/6, px=at.x+Math.sin(ang)*(B.r-.12)*M, pz=at.z+Math.cos(ang)*(B.r-.12)*M;
+    return {built:!!g.parent,round:+(Math.hypot(GUITAR.STAND.home.x-at.x,GUITAR.STAND.home.z-at.z)/M).toFixed(2),onDeck:+((s.position.y-at.y)/M).toFixed(2),deck:+((gy(at.x+.8*M,at.z)-at.y)/M).toFixed(2),off:+((gy(at.x+(B.r+1.5)*M,at.z)-at.y)/M).toFixed(2),post:SHARED.solids.some(r=>px>r[0]&&px<r[2]&&pz>r[1]&&pz<r[3])}; }):{};
+  rec('the park\'s guitar has a bandstand: a deck round its stand, the ground there its top (you stand on it), off it the grass, its posts solid',bs.built&&bs.round<.01&&Math.abs(bs.onDeck-.3)<.02&&Math.abs(bs.deck-.3)<.02&&bs.off<.2&&bs.post,JSON.stringify(bs));
   if(OUT&&ps){ await pg.evaluate(()=>{ const UI=__dbg.UI; UI.setView('third'); UI.dist*=.5; }); await wait(1500); await pg.screenshot({path:OUT+'/guitar-park.png'}); }
   const E=Object.entries(errs); rec('no page errors',!E.length,E.map(([k,n])=>n+'× '+k).join(' | '));
   await b.close(); console.log(bad?bad+' FAILED':'all passed'); process.exit(bad?1:0); })();

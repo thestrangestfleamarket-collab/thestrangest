@@ -18,7 +18,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   let up = false; for (let i = 0; i < 400 && !(up = await pg.evaluate(() => !!window.__started).catch(() => false)); i++) await pg.waitForTimeout(1000);
   if (!up) { ok(false, 'the page started'); await b.close(); process.exit(1); }
   // no horse walks the map now: the check stands one by you
-  await pg.evaluate(async () => { if (__dbg.NPCS.find(n => n.key === 'horse')) return; if (window.LOAD) await LOAD('later'); for (let i = 0; i < 100 && !(window.CREATURES && CREATURES.Horse); i++) await new Promise(r => setTimeout(r, 300)); const h = CREATNEW('Horse', 'horse', 1.6); h.st.x = STORE.pos.x + 4; h.st.z = STORE.pos.z; });
+  await pg.evaluate(async () => { if (__dbg.NPCS.find(n => n.key === 'horse')) return; if (window.LOAD) await LOAD('later'); for (let i = 0; i < 100 && !(window.CREATS && CREATS.fauna); i++) await new Promise(r => setTimeout(r, 300)); await CREATS.fauna('Horse'); const h = CREATNEW('Horse', 'horse', 1.6); h.st.x = STORE.pos.x + 4; h.st.z = STORE.pos.z; });
   await pg.waitForTimeout(15000);
   // (the tomato is a standing body of the cast now, NPCS.extra, no longer a walker)
   // (the cast is built over the start's first seconds: wait till the tomato and a second character who blocks are standing, or two minutes)

@@ -116,6 +116,8 @@ const FILE=process.argv[2]||'dist/market.html', SHOTS=process.argv[3]||'';
   await pg.evaluate(()=>{ ONLINE.feed({t:'tr',op:'open',with:'a',name:'ROSA'}); ONLINE.feed({t:'tr',op:'x',why:'too far apart'}); });
   const Sold=await pg.evaluate(()=>{ const ok=SHOPS.sell('pt_gift12345',1); return {ok,has:INV.items.pt_gift12345||0,meta:!!PAINTINGS.mine().art.gift12345}; });
   ok(Sold.ok&&!Sold.has&&!Sold.meta,'a painting sold to THE TRADER leaves your save, title and thumbnail too ('+JSON.stringify(Sold)+')');
+  const Pawned=await pg.evaluate(()=>{ const A=PAINTINGS.mine().art; A.pawn777={...(A.gift12345||{t:'A PAWN',by:'BOB',fr:'gilt'})}; INV.items.pt_pawn777=1; const ok=window.PAWN&&PAWN.sell?PAWN.sell('pt_pawn777',1):null; return {ok,has:INV.items.pt_pawn777||0,meta:!!PAINTINGS.mine().art.pawn777}; });
+  ok(Pawned.ok===false||(Pawned.ok&&!Pawned.has&&!Pawned.meta),'a painting pawned leaves your save the same way ('+JSON.stringify(Pawned)+')');
   ok(await pg.evaluate(()=>document.getElementById('tradep').hidden),'a trade called off by the block closes the window');
 
   // a second painting to hang at home

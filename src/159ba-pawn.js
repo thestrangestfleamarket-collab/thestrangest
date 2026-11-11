@@ -16,7 +16,7 @@ const PAWN={stock:{},BUY:.5};
   PAWN.buy=id=>{ const p=costs(id); if(!p||!(PAWN.stock[id]>0))return false; if((INV.cash||0)<p){ say('YOU CANNOT AFFORD THAT.'); return false; }
     if(on()){ send({op:'buy',item:id,n:1,p}); return true; }
     INV.cash-=p; if(!--PAWN.stock[id])delete PAWN.stock[id]; FORAGE.give(id,1); say(`YOU BUY ${nm(id)} FOR $${p}.`); redraw(); return true; };
-  PAWN.sell=(id,n)=>{ n=Math.min(n,INV.items[id]||0); if(n<1||!val(id))return false; FORAGE.take(id,n); if(INV.save)INV.save();
+  PAWN.sell=(id,n)=>{ n=Math.min(n,INV.items[id]||0); if(n<1||!val(id))return false; FORAGE.take(id,n); if(INV.save)INV.save(); for(const f of FORAGE.SOLD||[])f(id,n,pays(id)*n);   // (what a sale clears goes as at any shop: a painting's title, a photo)
     if(on()){ send({op:'sell',item:id,n}); redraw(); return true; }
     const v=pays(id)*n; INV.cash+=v; PAWN.stock[id]=(PAWN.stock[id]||0)+n; say(`YOU PAWN ${n>1?n+' ':''}${nm(id)} FOR $${v}.`); redraw(); return true; };
   SHOPS.pawnDo=(r,n)=>r.dataset.pbuy?PAWN.buy(r.dataset.pbuy):PAWN.sell(r.dataset.pawn,n);

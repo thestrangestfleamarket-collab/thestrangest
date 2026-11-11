@@ -1,6 +1,6 @@
 // THE PET STORE'S CAGES AND THE AQUARIUM (src/146zj-pets.js, src/146zjb-aquarium.js): node tests/petstore.cjs [out folder]. The park keeps only its birds, bees and fireflies (the subway its rats);
 // every kind stands in a cage in THE PET STORE and a cage opens the adoption book on its kind; every new kind (the snake, bat, slime, songbirds, cave creatures) builds a pet;
-// THE AQUARIUM on the Hudson has a tank of every fish and sea animal, buying one keeps it with your account and puts it in your apartment's tank. With an out folder, shots.
+// THE AQUARIUM on the Hudson has every fish and sea animal in one tank with a price tag each, buying one keeps it with your account and puts it in your apartment's tank. With an out folder, shots.
 const {chromium}=require('playwright'); const OUT=process.argv[2];
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader'],...(process.env.PW_CHROMIUM?{executablePath:process.env.PW_CHROMIUM}:{})}); const pg=await b.newPage({viewport:{width:960,height:640}}); const errs={}; let bad=0;
   pg.on('pageerror',e=>{ const k=e.message.slice(0,160); errs[k]=(errs[k]||0)+1; }); pg.on('console',m=>{ if(/PET|AQUA/.test(m.text()))console.log('  console:',m.text().slice(0,200)); });
@@ -37,10 +37,10 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
   rec('no barn and no paddock herd in the park; the barn\'s kinds are still pets in the data',!fm.barn&&!fm.herd.length&&fm.kinds>50&&fm.cow,JSON.stringify(fm));
   // the aquarium
   const aq=await pg.evaluate(async()=>{ for(let i=0;i<200&&!(window.AQUA&&AQUA.tanks.length);i++)await new Promise(r=>setTimeout(r,300)); const d=MSHOP.at.aquarium&&MSHOP.at.aquarium.door; return {tanks:AQUA.tanks.length,kinds:AQUA.kinds.length,door:d}; });
-  rec('THE AQUARIUM on the Hudson: a tank for every fish and sea animal',aq.tanks>=50&&aq.tanks===aq.kinds,JSON.stringify(aq));
+  rec('THE AQUARIUM on the Hudson: a price tag for every fish and sea animal in the one tank',aq.tanks>=50&&aq.tanks===aq.kinds,JSON.stringify(aq));
   const by=await pg.evaluate(async()=>{ INV.cash=500; const c0=INV.cash, n0=PETS.sea().length, t=UI.things.find(t=>/^A CLOWNFISH/.test(t.name)); if(!t)return {tank:false}; t.act(t); t.act(t); await new Promise(r=>setTimeout(r,200));
     return {tank:true,paid:c0-INV.cash,sea:PETS.sea().length-n0,saved:/clownfish/.test(OWNED.get('tank')||'')}; });
-  rec('buying from a tank takes the price and keeps the fish with your account',by.tank&&by.paid>0&&by.sea===1&&by.saved,JSON.stringify(by));
+  rec('buying from a tag takes the price and keeps the fish with your account',by.tank&&by.paid>0&&by.sea===1&&by.saved,JSON.stringify(by));
   const mn=await pg.evaluate(()=>{ const el=document.createElement('div'); document.body.appendChild(el); PETS.menu(el); const ok=/IN YOUR FISH TANK/.test(el.innerHTML)&&/CLOWNFISH/.test(el.innerHTML); el.remove(); return ok; });
   rec('the menu\'s PETS lists it in your fish tank',mn);
   const cr=await pg.evaluate(async()=>{ for(let i=0;i<50&&!UI.things.some(t=>/HERMIT CRAB \(ADOPT\)/.test(t.name));i++)await new Promise(r=>setTimeout(r,200)); const t=UI.things.find(t=>/HERMIT CRAB \(ADOPT\)/.test(t.name)); if(!t)return {crab:false}; t.act(t);

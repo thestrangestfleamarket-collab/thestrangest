@@ -149,13 +149,15 @@ import {MUSH} from './111ec-mushseller.js';
   FORAGE.OWNERS=['flamer','frost','magic_carpet','balloon','saddle','brickphone','cigar','cigar_blue','nv_goggles','cowboyhat','spray_gold','spray_silver','jar_fly','logbook_capt','spyglass','spile','wax_candle','treepot','bottle'];
   const kitIds=()=>{ const ids=new Set([...FORAGE.POWER,'guitar','piano','drums','harp','violin','flute','trumpet']);
     for(const c in CHARS.store){ const t=!ARCH.has(c)&&CHARS.store[c]&&CHARS.store[c].trade; for(const x of (t&&Array.isArray(t.sells)&&t.sells)||[])ids.add(x); } for(const [x] of FORAGE.SELLS)ids.add(x); return ids; };
-  const kitGive=(ids,rent)=>{ const P=FORAGE.POWER, G={}; for(const id of ids){ if(ARCHI(id)||!ITEMS.def(id)||!rent&&ITEMS.prop(id,'rental'))continue; const n=(P.includes(id)?99:ITEMS.prop(id,'stackable')||ITEMS.prop(id,'edible')?20:1)-have(id); if(n>0)G[id]=n; } return G; };
-  FORAGE.ownerKit=async()=>{ const G=kitGive([...kitIds(),...FORAGE.OWNERS],true), u=Object.values(G).reduce((a,b)=>a+b,0); if(!u)return 0;
-    if(/^https?:$/.test(location.protocol)){ try{ const r=await fetch('/owned',{method:'POST',headers:{'content-type':'application/json'},credentials:'same-origin',body:JSON.stringify({kit:u})}); if(!r.ok)return 0; }catch(e){ return 0; } }
+  const kitGive=(ids,rent,pm=99)=>{ const P=FORAGE.POWER, G={}; for(const id of ids){ if(ARCHI(id)||!ITEMS.def(id)||!rent&&ITEMS.prop(id,'rental'))continue; const n=(P.includes(id)?pm:ITEMS.prop(id,'stackable')||ITEMS.prop(id,'edible')?20:1)-have(id); if(n>0)G[id]=n; } return G; };
+  // the beta: every player gets the owners' kit once, 20 of each power mushroom (owner, 11 Nov 2026: "give everyone the full owners kit"); owners still top theirs up each start
+  FORAGE.ownerKit=async(beta)=>{ const G=kitGive([...kitIds(),...FORAGE.OWNERS],!beta,beta?20:99), u=Object.values(G).reduce((a,b)=>a+b,0); if(!u)return 0;
+    if(/^https?:$/.test(location.protocol)){ try{ const r=await fetch('/owned',{method:'POST',headers:{'content-type':'application/json'},credentials:'same-origin',body:JSON.stringify({kit:u,beta:beta?1:0})}); if(!r.ok)return r.status===409?0:null; }catch(e){ return null; } }
     for(const id in G)give(id,G[id]); saveSoon(); FORAGE.draw(); return Object.keys(G).length; };
   // the owner's ALL SKILLS 100 (ADMIN > TOOLS): every skill reads 100 while it is on, nothing is gained, and the real levels are untouched under it
   FORAGE.maxed=v=>{ if(v==null)return MAXED; MAXED=!!v; S.max=MAXED?1:0; saveSoon(); FORAGE.draw(); FORAGE.sync(); for(const f of FORAGE.MAXFN)f(); return MAXED; }; FORAGE.MAXFN=[];
-  SYS.onStart(()=>{ if(BUGS.owner)BUGS.owner().then(o=>{ if(o){ FORAGE.ownerKit(); if(S.max)FORAGE.maxed(true); } }).catch(()=>{}); },'141-forage owners');
+  // the beta's skills: every player reads 100 in every skill (owner, 11 Nov 2026: "give 100 skills to all players"); an owner can still turn his own off in ADMIN > TOOLS
+  SYS.onStart(()=>{ if(BUGS.owner)BUGS.owner().then(o=>{ if(o){ FORAGE.ownerKit(); FORAGE.maxed(S.max!==0); } else if(OWNED.me){ FORAGE.maxed(true); if(!S.betakit&&OWNED.me)FORAGE.ownerKit(true).then(g=>{ if(g==null)return; S.betakit=1; saveSoon(); if(g){ say('THE BETA KIT: '+g+' KINDS OF THINGS ARE IN YOUR BAG.','#7fdc8a'); } }); } }).catch(()=>{}); },'141-forage owners');
   // the full kit, sent to a player from TENANTS (OWNED 'gift'): one of everything a live shop sells (20 of what stacks, 99 of each power mushroom), every instrument; rentals stay rented
   FORAGE.fullKit=()=>{ const G=kitGive(kitIds()); for(const id in G)give(id,G[id]); saveSoon(); FORAGE.draw(); return Object.keys(G).length; };
   SYS.onStart(()=>{ if(OWNED.get('gift')!=='kit')return; const g=FORAGE.fullKit(); OWNED.del('gift'); say('THE OWNERS SENT YOU A FULL KIT: '+g+' KINDS OF THINGS ARE IN YOUR BAG.','#7fdc8a'); },'141-forage gift');

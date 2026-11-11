@@ -58,6 +58,10 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
       g.fillStyle='#d9d6c8'; const sp=2.6*24, len=5*24;
       if(q.side==='e'){ for(let y=sp*.5;y<h-4;y+=sp){ g.fillRect(0,y|0,len,2); g.fillStyle='#8a8478'; g.fillRect(10,(y+sp*.35)|0,8,3); g.fillStyle='#d9d6c8'; } }
       else { const top=q.side==='s'?h-len:0; for(let x=sp*.5;x<w-4;x+=sp){ g.fillRect(x|0,top,2,len); g.fillStyle='#8a8478'; g.fillRect((x+sp*.35)|0,q.side==='s'?h-14:10,10,3); g.fillStyle='#d9d6c8'; } } }
+    else if(q.kind==='plaza'){ g.fillStyle='#8f8a7e'; g.fillRect(0,0,w,h); const sz=36;   // stone flags in two greys, a darker border, a ring at the middle
+      for(let y=0;y<h;y+=sz)for(let x=((y/sz)&1)*sz/2-sz/2;x<w;x+=sz){ const v=150+rnd()*26|0; g.fillStyle=`rgb(${v},${v-3},${v-12})`; g.fillRect(x+1,y+1,sz-2,sz-2); }
+      g.strokeStyle='#5c574e'; g.lineWidth=10; g.strokeRect(5,5,w-10,h-10); g.lineWidth=6; g.beginPath(); g.arc(w/2,h/2,Math.min(w,h)*.3,0,7); g.stroke(); g.fillStyle='#a49c8c'; g.beginPath(); g.arc(w/2,h/2,Math.min(w,h)*.12,0,7); g.fill();
+      for(let k=0;k<w*h/900;k++){ g.fillStyle='rgba(60,56,50,.25)'; g.fillRect(R(0,w)|0,R(0,h)|0,R(2,5)|0,1); } }
     else { g.fillStyle='#5e5040'; g.fillRect(0,0,w,h); for(let k=0;k<w*h/30;k++){ const v=rnd(); g.fillStyle=v<.5?'#6e5e4a':v<.8?'#4e4234':'#7a6a54'; g.fillRect(R(0,w)|0,R(0,h)|0,2,2); }
       for(let k=0;k<w*h/260;k++){ const x=R(2,w-2), y=R(2,h-2), c=['#5a7a32','#6e8e3a','#48682a','#7e9a44'][rnd()*4|0]; g.fillStyle=c; for(let t=0;t<5;t++)g.fillRect(x+R(-3,3),y+R(-4,1),1,R(3,6)); }
       for(let k=0;k<3;k++){ g.fillStyle=['#b8b4a8','#8a3a2a','#3a5a7a'][k]; g.fillRect(R(6,w-12)|0,R(6,h-12)|0,R(3,7)|0,R(2,4)|0); } } };
@@ -75,7 +79,9 @@ Object.assign(BLK,{blds:[],lots:[],signs:[],band:()=>null}); window.BLK=BLK;
   // (the Drive's buildings on the rows, data/world.json block.pf, keep their spans)
   const PASS=LEVEL.places.filter(p=>p.kind==='passage').map(p=>[p.x0,p.x1]), ON1=LEVEL.places.filter(p=>p.y1!=null&&p.y0===B.back&&p.y1===B.front&&p.row!==2).map(p=>[p.x0,p.x1]), ON2=LEVEL.places.filter(p=>p.row===2).map(p=>[p.x0,p.x1]);   // garages fill every gap along both rows, flush to the buildings (owner, 8 Nov 2026: "no gaps in between buildings, garages")
   for(const [a,b] of holes(MAINROW.concat(B.pf[1]||[],ON1,PASS),B.x0,B.x1))fill(a,b,(x0,x1,i)=>spot(1,0,i,{x0,x1,y0:B.back,y1:SHARED.BOD.OY}));
-  for(const p of LEVEL.places)if(p.kind==='lot'&&p.y1==null)lot({x0:p.x0,x1:p.x1,y0:B.back,y1:SHARED.BOD.OY,kind:'empty',row:1,side:'s'});   // a lot the level file keeps open (the flea market's)
+  for(const p of LEVEL.places)if(p.kind==='lot'&&p.y1==null){ lot({x0:p.x0,x1:p.x1,y0:B.back,y1:SHARED.BOD.OY,kind:p.paved?'plaza':'empty',row:1,side:'s'});
+    if(p.paved){ const Hw=YP(64), bw=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(XS(p.x1)-XS(p.x0)),Hw,.4*T),new THREE.MeshLambertMaterial({color:0x7a4234})), cp=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(XS(p.x1)-XS(p.x0))+.1*T,YP(5),.56*T),new THREE.MeshLambertMaterial({color:0xb8b0a0}));   // a paved square's back wall, capped in stone
+      bw.position.set((XS(p.x0)+XS(p.x1))/2,Hw/2,ZS(B.back+.25)); cp.position.set(bw.position.x,Hw+YP(2.5),bw.position.z); for(const m of [bw,cp]){ m.castShadow=m.receiveShadow=true; G.add(m); PEEK.whole(m); } solid(p.x0,B.back,p.x1,B.back+.5,69); } }   // a lot the level file keeps open (the flea market's)
   for(const p of LEVEL.places)if(p.kind==='lot'&&p.row===2)lot({x0:p.x0,x1:p.x1,y0:B.row2[0],y1:B.row2[1],kind:'empty',row:2,side:'s'});   // the Hudson row's open lots (the fish market's tables, the flea market's), 6 Nov 2026
   // a tall barbed-wire fence on an open lot's alley side (the fish market's, owner 6 Nov 2026: "a tall barbed wire gate to the alley"): posts, mesh, and a coil along the top; solid
   for(const p of LEVEL.places)if(p.fence==='barbed'&&p.y1!=null){ const y=p.y1-.15, z=ZS(y), xa=XS(p.x0), xb=XS(p.x1), Hf=YP(70), FG=new THREE.Group(); FG.name='barbed';

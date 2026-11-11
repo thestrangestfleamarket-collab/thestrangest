@@ -550,6 +550,15 @@
    }
   },
   {
+   "id": "plaza",
+   "name": "THE PLAZA",
+   "kind": "lot",
+   "x0": -47,
+   "x1": -17,
+   "paved": true,
+   "note": "where THE TOWER stood (owner, 11 Nov 2026: \"plaza\"): a paved square open to Market St, a brick wall along its back, benches and baskets (things)"
+  },
+  {
    "id": "clinic",
    "name": "THE CLINIC",
    "kind": "front",
@@ -1509,6 +1518,31 @@
    "k": "bench",
    "x": 190,
    "y": -75.8
+  },
+  {
+   "k": "bench",
+   "x": -40,
+   "y": -90.9
+  },
+  {
+   "k": "bench",
+   "x": -32,
+   "y": -90.9
+  },
+  {
+   "k": "bench",
+   "x": -24,
+   "y": -90.9
+  },
+  {
+   "k": "basket",
+   "x": -45.6,
+   "y": -78.4
+  },
+  {
+   "k": "basket",
+   "x": -18.4,
+   "y": -78.4
   },
   {
    "k": "basket",

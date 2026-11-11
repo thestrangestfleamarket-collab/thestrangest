@@ -42,10 +42,11 @@ const BIGCAT={};
   // five times a person's height
   const body=MERCH.add({key:'bigcat',label:'THE BIG CAT',height:2.3,model,size:45,q:.75,at:100,idle:()=>MERCH.pose({bend:0,nod:0})});
   const N=BIGCAT.N=body&&body.npc;
-  // his walk (owner, 11 Nov 2026): every 3 to 10 minutes he walks slowly down Market St's road end to end, one way then the other, on the shared clock; away between walks
-  const B=SHARED.BOD, M0=TILE/.84, xW=B.XS(-129), xE=B.XS(261), wz=B.ZS((B.CURB+B.FAR)/2), WV=.7*M0, WD=(xE-xW)/WV, WP=390+WD, hs=n=>{ const v=Math.sin(n*12.9898)*43758.5453; return v-Math.floor(v); };
-  const walkAt=t=>{ const n=Math.floor(t/WP); for(const k of [n+1,n,n-1]){ const u=t-(k*WP+(hs(k)-.5)*210); if(u>=0&&u<WD)return k&1?{x:xE-u*WV,to:xW}:{x:xW+u*WV,to:xE}; } return null; };
+  // his walk (owner, 11 Nov 2026): every 3 to 10 minutes he walks slowly down Market St's road end to end in the lane of his way, one way then the other (the traffic waits behind him), on the shared clock; away between walks
+  const B=SHARED.BOD, M0=TILE/.84, xW=B.XS(-129), xE=B.XS(261), zs=B.ZS(B.CURB), zp=B.ZS(B.FAR), zm=(zs+zp)/2, WV=.7*M0, WD=(xE-xW)/WV, WP=390+WD, hs=n=>{ const v=Math.sin(n*12.9898)*43758.5453; return v-Math.floor(v); };
+  const walkAt=t=>{ const n=Math.floor(t/WP); for(const k of [n+1,n,n-1]){ const u=t-(k*WP+(hs(k)-.5)*210); if(u>=0&&u<WD)return k&1?{x:xE-u*WV,to:xW,z:(zs+zm)/2,dir:-1}:{x:xW+u*WV,to:xE,z:(zp+zm)/2,dir:1}; } return null; };
   if(N){ N.walk.auto=false; const st=N.st; N.mode='hidden';
-    SYS.add('city',()=>{ const w=walkAt(TRAINS.now()); if(!w){ N.mode='hidden'; st.to=null; return; } delete N.mode; st.x=w.x; st.z=wz; st.to={x:w.to,z:wz}; st.next=null; },'111ei-bigcat'); }
-  BIGCAT.walkAt=walkAt;
+    SYS.add('city',()=>{ const w=walkAt(TRAINS.now()); if(!w){ N.mode='hidden'; st.to=null; return; } delete N.mode; st.x=w.x; st.z=w.z; st.to={x:w.to,z:w.z}; st.next=null; },'111ei-bigcat'); }
+  BIGCAT.walkAt=walkAt; BIGCAT.road=()=>N&&N.mode!=='hidden'?walkAt(TRAINS.now()):null;
   window.BIGCATDBG=(x,z)=>{ if(N&&x!=null){ Object.assign(N.st,{x,z,to:null,next:null}); } return N?{x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),vis:N.g.visible,tris:body.tris()}:null; }; }
+export {BIGCAT};

@@ -1,4 +1,4 @@
-// THE HOURS: DN holds the eight looks (four for day, four for night: each sets the sun, sky, mist, clouds, weather and the colour of everything), one each real hour in turn, the same for everyone (the game's clock, worker/clock.js: the owner can set it, stop it or hold a look, /shared/time.json); the looks themselves are the game's or the owner's saved ones (/shared/looks.json); ATMOSPHERE edits them (the owner only).
+// THE HOURS: DN holds the eight looks (four for day, four for night: each sets the sun, sky, mist, clouds, weather and the colour of everything), one each real half hour in turn, the same for everyone (the game's clock, worker/clock.js: the owner can set it, stop it or hold a look, /shared/time.json); the looks themselves are the game's or the owner's saved ones (/shared/looks.json); ATMOSPHERE edits them (the owner only).
 import {SHARED, THREE} from './003-shx.js';
 import {BUGS, CLOCK, DN, FAR3, ONLINE, PARK, pos, ROOMS, SKY, VIS, W3, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
@@ -11,8 +11,8 @@ Object.assign(DN,{lk:1,mode:'morning',modes:['morning','afternoon','overcast','s
   kind:{morning:'day',afternoon:'day',overcast:'day',sunset:'dusk',bluehour:'dusk',lamplit:'night',moonfog:'night',neonrain:'night'}});
 // the game's hour, the same for everyone: real Central time unless the owner set or stopped it (worker/clock.js, DN.clk); the look follows the real sunrise and sunset there, unless the owner holds one
 DN.clockH=()=>CLK.hour(Date.now(),DN.clk); DN.day=()=>CLK.day(Date.now(),DN.clk); { let tk=-1, tv=null; DN.times=()=>{ const k=Math.floor(Date.now()/60000); if(k!==tk){ tk=k; tv=CLK.sun(Date.now(),DN.clk); } return tv; }; }   // the real sunrise and sunset on the game's date
-// the look by the clock's hour: one each hour, the eight in turn (owner, 11 Nov 2026: no real time); a test's ?hour picks the look whose sun is nearest that hour
-DN.lookFor=h=>DN.modes[((Math.floor(h)%8)+8)%8];
+// the look by the clock's hour: one each half hour, the eight in turn (owner, 11 Nov 2026: no real time); a test's ?hour picks the look whose sun is nearest that hour
+DN.lookFor=h=>DN.modes[((Math.floor(h*2)%8)+8)%8];
 DN.lookAtSky=h=>{ let best=DN.modes[0], bd=99; for(const m of DN.modes){ let d=Math.abs(((DN.D0[m].h-h)%24+24)%24); d=Math.min(d,24-d); if(d<bd){ bd=d; best=m; } } return best; };
 { const U=SKY.U, Q=k=>(QS.get(k)??''),
     BASE={day:{h:9.5,sun:1.3,amb:1.15,sunc:'#fff6e8',ambc:'#e6f0ff',zen:'#2f7ae8',hor:'#b4d6f6',cld:0,cov:.45,cl:1.3,m0:70,m1:100,hz:.8,mist:'#a8cbf0',skym:0,farb:1.15,grade:'#fbfcff',lift:'#000000',liftk:0,lamp:1,star:1,moon:1,cldc:'#f4ecf4',cldk:.9,sunhz:'#ffffff',sunk:0,shaft:.7,glow:1,bands:0,tun:.02,mw:1,mwc1:'#dfe7ff',mwc2:'#fff0d1',mwgr:1,mww:1,mwcore:1,mwdust:1,mwdet:1,stf:1,stw:1,stc:1},
@@ -70,7 +70,7 @@ DN.lookAtSky=h=>{ let best=DN.modes[0], bd=99; for(const m of DN.modes){ let d=M
     { const shop=!!(ROOMS.cur&&!ROOMS.cur.off&&STORE.inside&&STORE.inside[ROOMS.cur.id]&&ROOMS.dark()); if(shop!==DN.shop){ DN.shop=shop; VIS.hide(SKY.dome,'room',shop); } if(shop&&scene.background&&scene.background.isColor)scene.background.setRGB(0,0,0); }   // inside a street shop: a black void past its walls
     if(!up){ SKY.dome.visible=false; if(scene.background&&scene.background.isColor)scene.background.setRGB(0,0,0); } },'134b-daynight');
   const box=document.getElementById('adn'), fmt=h=>String(Math.floor(h)).padStart(2,'0')+':'+String(Math.floor(h%1*60)).padStart(2,'0'); let dirty=false;
-  DN.dayText=()=>'a new look each hour, the same for everyone (the clock '+fmt(DN.clockH())+')'+(DN.clk&&DN.clk.stop!=null?' (stopped by the owner)':DN.clk&&Math.abs(DN.clk.off||0)>=60000?' (set by the owner)':'')+(DN.hold?' (held at '+DN.names[DN.hold]+' by the owner)':'');
+  DN.dayText=()=>'a new look each half hour, the same for everyone (the clock '+fmt(DN.clockH())+')'+(DN.clk&&DN.clk.stop!=null?' (stopped by the owner)':DN.clk&&Math.abs(DN.clk.off||0)>=60000?' (set by the owner)':'')+(DN.hold?' (held at '+DN.names[DN.hold]+' by the owner)':'');
   const clkShow=()=>{ const e=box&&box.querySelector('#dnclkt'), b=box&&box.querySelector('#dnclkp'); if(e)e.textContent=fmt(DN.clockH())+(DN.clk&&DN.clk.stop!=null?' STOPPED':DN.clk&&Math.abs(DN.clk.off||0)>=60000?' SET':' CENTRAL'); if(b)b.textContent=DN.clk&&DN.clk.stop!=null?'RUN':'PAUSE'; };
   setInterval(()=>{ if(DN.owner&&box&&box.offsetParent)clkShow(); },5000);
   const msg=t=>{ const e=box&&box.querySelector('#dnmsg'); if(e)e.textContent=t; };
@@ -87,7 +87,7 @@ DN.lookAtSky=h=>{ let best=DN.modes[0], bd=99; for(const m of DN.modes){ let d=M
     pm=p; pk=m; };
   DN.draw=()=>{ if(!box)return; const m=DN.mode;
     if(!DN.owner){ box.innerHTML=`<h3>THE HOURS</h3><div class="row"><span class="dim" id="dnday">${DN.names[m]}: ${DN.dayText()}</span></div>`; return; }
-    if(!box.querySelector('.dntp')){ box.innerHTML='<h3>THE HOURS</h3><div class="dntp"></div><div class="row"><span class="dim" id="dnday">the clock\'s by default (the eight looks in turn, a new one each hour); hold a look for everyone to edit or keep it (a change fades over a minute)</span><span class="dim" id="dnmsg"></span></div><div class="row" id="dnclk"><b>THE CLOCK</b> <span id="dnclkt"></span> <input id="dnclkh" type="time" style="width:90px"> <button id="dnclkset">SET</button> <button id="dnclkp">PAUSE</button> <button id="dnclkr">REAL TIME</button></div><textarea id="dnout" hidden style="width:100%;height:60px;font:10px monospace"></textarea>'; pm=null;
+    if(!box.querySelector('.dntp')){ box.innerHTML='<h3>THE HOURS</h3><div class="dntp"></div><div class="row"><span class="dim" id="dnday">the clock\'s by default (the eight looks in turn, a new one each half hour); hold a look for everyone to edit or keep it (a change fades over a minute)</span><span class="dim" id="dnmsg"></span></div><div class="row" id="dnclk"><b>THE CLOCK</b> <span id="dnclkt"></span> <input id="dnclkh" type="time" style="width:90px"> <button id="dnclkset">SET</button> <button id="dnclkp">PAUSE</button> <button id="dnclkr">REAL TIME</button></div><textarea id="dnout" hidden style="width:100%;height:60px;font:10px monospace"></textarea>'; pm=null;
       const C=box.querySelector('#dnclk'), go=(f,say)=>{ '@later'; const c=f(Date.now(),DN.clk); msg('setting the clock...'); DN.pushClk(c).then(()=>{ DN.clk=c; clkShow(); msg(say()); }).catch(e=>msg('not set: '+(e.message||'try again'))); };
       C.querySelector('#dnclkset').onclick=()=>{ const v=C.querySelector('#dnclkh').value; if(!/^\d\d:\d\d/.test(v))return msg('pick a time first'); const h=+v.slice(0,2)+v.slice(3,5)/60; go((t,c)=>CLK.setHour(t,c,h),()=>'the clock at '+v+' for everyone'); };
       C.querySelector('#dnclkp').onclick=()=>{ const st=DN.clk&&DN.clk.stop!=null; go(st?CLK.resume:CLK.pause,()=>st?'the clock runs on for everyone':'the clock stopped for everyone'); };

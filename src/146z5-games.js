@@ -1,4 +1,4 @@
-// THE GAMES: the insides' small games for the minigames' window (MINI): darts (301 on a real board), pool (rack, cue ball, pockets), skee-ball (aim, power, the rings), the claw machine (steer, drop, grab, the chute), air hockey (against the house), a shift at the pass (plates to the tables, for tips), soldering a repair, waxing a deck, cutting a gem. Each GAMES.x(opts) gives a game; opts.end(S) gets the result.
+// THE GAMES: the insides' small games for the minigames' window (MINI): darts (301 on a real board), pool (rack, cue ball, pockets), the claw machine (steer, drop, grab, the chute), air hockey (against the house), a shift at the pass (plates to the tables, for tips), soldering a repair, waxing a deck, cutting a gem. Each GAMES.x(opts) gives a game; opts.end(S) gets the result.
 const GAMES={}; window.GAMES=GAMES;
 { const PI=Math.PI, rnd=Math.random, cl=(v,a,b)=>Math.max(a,Math.min(b,v)), font=(g,s,c,al='center')=>{ g.font=s+'px monospace'; g.fillStyle=c; g.textAlign=al; g.textBaseline='middle'; };
   /* ---------- DARTS: 301, three darts a turn; the aim sways, you click to throw ---------- */
@@ -43,21 +43,6 @@ const GAMES={}; window.GAMES=GAMES;
       const cue=S.balls[0]; if(S.aim&&cue){ const dx=cue.x-S.mx, dy=cue.y-S.my, d=Math.hypot(dx,dy)||1; g.strokeStyle='#d8b878'; g.lineWidth=3; g.beginPath(); g.moveTo(cue.x-dx/d*12,cue.y-dy/d*12); g.lineTo(cue.x-dx/d*(12+Math.min(d,140)+60),cue.y-dy/d*(12+Math.min(d,140)+60)); g.stroke();
         g.strokeStyle='rgba(255,255,255,.35)'; g.lineWidth=1; g.setLineDash([4,4]); g.beginPath(); g.moveTo(cue.x,cue.y); g.lineTo(cue.x+dx/d*300,cue.y+dy/d*300); g.stroke(); g.setLineDash([]); }
       font(g,12,'#e8e4d8','left'); g.fillText(`SHOTS ${S.shots}`,18,8); },
-    end:S=>o.end&&o.end(S)});
-  /* ---------- SKEE-BALL: nine balls; the aim swings, hold to build power, let go to roll ---------- */
-  const HOLES=[[78,36,14,100],[222,36,14,100],[150,150,14,50],[150,150,30,40],[150,150,50,30],[150,150,74,20],[150,150,100,10]];   // smallest first: a ball scores the first it is in
-  GAMES.skee=(o={})=>({title:'SKEE-BALL',w:300,h:480,again:true,help:'Hold to build power, let go to roll; the arrow swings, so time it. Every 40 points is a ticket.',
-    can:o.can,start:S=>{ S.left=9; S.sum=0; S.ball=null; S.pw=0; S.marks=[]; if(o.pay)o.pay(); },
-    tick:(S,dt)=>{ S.t+=dt; S.ang=Math.sin(S.t*1.7)*.22;
-      if(!S.ball&&S.left>0){ if(S.down)S.pw=Math.min(1,S.pw+dt*.9); if(S.release&&S.pw>0){ S.ball={x:150,y:440,vx:Math.sin(S.ang),vy:-1,p:S.pw,d:0,end:150+(rnd()-.5)*30}; S.pw=0; } }
-      const b=S.ball; if(b){ b.d+=dt*420; b.x=150+b.vx*b.d*.9; b.y=440-b.d; const reach=250+b.p*220; if(b.d>=reach||b.y<20){ const lx=b.x, ly=Math.max(30,440-reach)+(rnd()-.5)*10; let s=0; for(const [hx,hy,hr,v] of HOLES)if(Math.hypot(lx-hx,ly-hy)<hr){ s=v; break; }
-        S.sum+=s; S.left--; S.marks.push([lx,ly,s]); S.ball=null; S.line=`${s?s:'GUTTER'} · ${S.sum} SO FAR · ${S.left} BALL${S.left===1?'':'S'} LEFT`; if(!S.left){ S.score=S.sum; const n=Math.floor(S.sum/40); S.tickets=n; S.over=`${S.sum} POINTS: ${n} TICKET${n===1?'':'S'}.`; } } } },
-    draw:(S,g)=>{ g.fillStyle='#3a2010'; g.fillRect(0,0,300,480); g.fillStyle='#d8b878'; g.fillRect(40,230,220,250); g.fillStyle='#2a2a32'; g.fillRect(10,10,280,250);
-      for(const [hx,hy,hr,v] of [...HOLES].reverse()){ g.fillStyle=v>=100?'#c02838':v>=50?'#f2c14e':['#4e4e74','#3a3a58','#444466','#30304a'][(v/10)%4]; g.beginPath(); g.arc(hx,hy,hr,0,7); g.fill(); g.strokeStyle='#1a1a24'; g.lineWidth=2; g.stroke(); }
-      for(const [hx,hy,hr,v] of HOLES){ font(g,11,v>=50?'#1a1a24':'#e8e4d8'); g.fillText(v,hx,v>=50?hy:hy-hr+10); }
-      for(const [x,y] of S.marks)if(y){ g.fillStyle='rgba(255,255,255,.4)'; g.beginPath(); g.arc(x,y,4,0,7); g.fill(); }
-      if(S.ball){ g.fillStyle='#8a4a2a'; g.beginPath(); g.arc(S.ball.x,S.ball.y,9,0,7); g.fill(); } else if(S.left){ g.strokeStyle='#7dffa8'; g.lineWidth=3; g.beginPath(); g.moveTo(150,440); g.lineTo(150+Math.sin(S.ang)*70,440-70); g.stroke(); g.fillStyle='#7dffa8'; g.fillRect(20,470-S.pw*200,10,S.pw*200); }
-      font(g,13,'#e8e4d8','left'); g.fillText(`BALLS ${S.left} · ${S.sum}`,46,276); },
     end:S=>o.end&&o.end(S)});
   /* ---------- THE CLAW: steer it over a prize, drop, it grabs if it is right over one (and holds if it holds), carry it to the chute ---------- */
   GAMES.claw=(o={})=>({title:'THE CLAW',w:360,h:420,again:true,help:'Move left and right (mouse or arrows), click or space to drop. 20 seconds. Carry what it grabs to the chute on the left.',

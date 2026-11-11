@@ -30,7 +30,7 @@ const PARKPF={done:false,things:0,patches:[],tris:0,solids:0,moved:0,skipped:[]}
     const CRAFT={canoe:['CANOE',3.4],kayak:['KAYAK',4],skiff:['SKIFF',3]}, mapX=X=>X/T+B.OX-(Pk.ox||0), mapY=Z=>Z/T+B.OY-(Pk.oy||0), rock=(X,Z)=>SOL.up.some(s=>X>s[0]&&X<s[2]&&Z>s[1]&&Z<s[3]);
     const craft=(k,Dk,x,y,z,a)=>{ const m=model(Dk), g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(m.P.map(v=>v*M),3)); g.setAttribute('color',new THREE.BufferAttribute(m.C,3)); g.setIndex(new THREE.BufferAttribute(m.I,1));
       const me=new THREE.Mesh(g,mat); me.castShadow=me.receiveShadow=true; root.add(me);
-      BOAT.moor({k,name:'THE '+CRAFT[k][0],g:me,x,z,hd:a,len:Dk.size[2]*M,beam:Dk.size[0]*M,top:CRAFT[k][1]*T,floor:.12*Dk.size[1]*M,seat:.22*M,lv:()=>y,
+      BOAT.moor({k,name:'THE '+CRAFT[k][0],g:me,x,z,hd:a,len:Dk.size[2]*M,beam:Dk.size[0]*M,top:CRAFT[k][1]*T,floor:.1*Dk.size[1]*M,seat:.08*M,lv:()=>y,
         wet:(X,Z)=>FOUNT.wet(X,Z,-.4*T)&&FOUNT.bridgeD(mapX(X),mapY(Z))>.8&&!rock(X,Z),dry:(X,Z)=>!FOUNT.wet(X,Z,.3*T)&&!rock(X,Z)}); };
     for(const o of LEVEL.things||[]){ if(!String(o.k).startsWith('p:'))continue; const k=o.k.slice(2), Dk=D[k]; if(!Dk){ PARKPF.skipped.push(k); continue; } PARKPF.things++;
       const a=o.rot||0, ca=Math.cos(a), sa=Math.sin(a), [sx,sy,sz]=Dk.size, ex=(Math.abs(ca)*sx+Math.abs(sa)*sz)/2, ez=(Math.abs(sa)*sx+Math.abs(ca)*sz)/2;

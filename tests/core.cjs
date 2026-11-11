@@ -192,6 +192,11 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
         const parts = d.parts.map(p => p.k).sort().join(','), free = d.parts.every(p => p.free > 0 && p.free < p.points), sp = GARBDBG.spec(true), menu = document.querySelector('#looks').innerText;
         return { ok: true, parts, free, held: d.held, shown: d.shown, under: !W3.worn.shirt && !W3.worn.pants && W3.HIDE[W3.idx('torso')], bare: sp.shirt && sp.pants && !sp.shoes && !sp.hat && !sp.jacket, lean: !/BATHROBE|WEARING|STATS|CLOTHES/.test(menu), ms: d.ms, cel: (() => { const G = GARBDBG.G.mine && GARBDBG.G.mine.garb; let n = 0, all = true; if (G) G.root.traverse(q => { if (q.isMesh) for (const m of [].concat(q.material)) { n++; if (!m.isMeshToonMaterial || m.map) all = false; } }); return n > 0 && all; })() }; } catch (e) { return { ok: false, err: String(e).slice(0, 200) }; } })();
       o.wsmooth = (() => { try { const W = window.W3; return { on: !!(W && W.weld === 'dc'), tris: (W && W.tris) || 0 }; } catch (e) { return { ok: false, err: String(e).slice(0, 200) }; } })();
+      o.garbRest = await (async () => { try { let B = null; const op = EQUIP.post; EQUIP.post = b => { B = b; op(b); }; await new Promise(r => setTimeout(r, 300)); EQUIP.post = op; if (!B) return { ok: false };
+        const G = GARBDBG.G, g = W3.group, p0 = g.position.clone(), H = {}, sp = G.spec(false, null, 'M'), E = G.myE(), was = G.mine;
+        const run = (n, mv) => { for (let i = 0; i < n; i++) { if (mv) g.position.x += .02; g.updateMatrixWorld(true); G.draw(g, B, sp, H, null, E); } }, rest = () => H.garb.ws.every(w => w.rest);
+        run(900); const still = rest(); run(5, true); const woke = H.garb.ws.every(w => !w.rest); g.position.copy(p0); g.updateMatrixWorld(true); H.garb.root.removeFromParent(); G.mine = was;
+        return { ok: true, still, woke }; } catch (e) { return { ok: false, err: String(e).slice(0, 200) }; } })();
       o.hatcut = (() => { try { const W = window.W3, G = window.GARB && GARB.mine && GARB.mine.garb; return { hat: !!(G && G.rg && G.rg.some(r => r.head)), cut: W && W.uHatCut ? W.uHatCut.value : null }; } catch (e) { return { ok: false, err: String(e).slice(0, 200) }; } })();
       return o;
     });
@@ -243,6 +248,7 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
     ok(r.online, 'ONLINE is wired (other players: feed, at/V for the ragdoll, chat key, a SYS life entry; alone off the website)');
     ok(r.walks, 'WALKS is wired (the folk\'s walks: register, the pick hook, city and hi entries; run here off the website)');
     ok(r.layers.ok && r.layers.hid && r.layers.off && r.layers.back && r.layers.briefs, 'the Walker is a base body in underwear with shirt, pants, shoes and hair as layers on top: ' + JSON.stringify(r.layers));
+    ok(r.garbRest.ok && r.garbRest.still && r.garbRest.woke, 'clothes on a figure standing still come to rest (not stepped or drawn) and wake when it moves: ' + JSON.stringify(r.garbRest));
     ok(!r.garb.ok || !r.garb.shown, 'the Walker\'s shirt, trousers and shoes are never drawn on you: you are the avatar, in its own clothes (5 Nov 2026): ' + JSON.stringify(r.garb));
     ok(r.hatcut.cut != null && (r.hatcut.hat ? r.hatcut.cut < 10 : r.hatcut.cut > 1e8), 'with a hat on, hair above its band is not drawn (the cut follows the hat): ' + JSON.stringify(r.hatcut));
     ok(r.wsmooth.on && r.wsmooth.tris > 12000 && r.wsmooth.tris < 60000, 'the Walker is welded by dual contouring (straight hems, no ripples) with a sane triangle count (styles not worn are built when picked): ' + JSON.stringify(r.wsmooth));

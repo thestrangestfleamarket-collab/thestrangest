@@ -178,7 +178,7 @@ Object.assign(WE,{on:false}); window.WE=WE;
   const shown=(b,on)=>{ if(b)b.element.style.display=on?'':'none'; };
   const E=()=>sel&&!sel.sign?stOf(sel):E0(), LS=()=>sel&&sel.lite?ST[sel.liteKey]||E0L():E0L(), SS=()=>sel&&sel.sign?ST[signKey(sel)]||{}:{};
   function draw(){ '@later'; const on=!!sel, isSign=on&&!!sel.sign;
-    $('#wtools').hidden=!on; $('#wname').textContent=on?'PICKED: '+sel.name.toUpperCase()+' ('+sel.place+')':'double-click a thing to pick it';
+    $('#wtools').hidden=!on; $('#wname').textContent=on?(!isSign&&E().del?'DELETED: ':'PICKED: ')+sel.name.toUpperCase()+' ('+sel.place+')'+(!isSign&&E().del?' · BACK AS IT WAS BRINGS IT BACK':''):'double-click a thing to pick it';
     P.querySelectorAll('#wtools [data-orow]').forEach(r=>r.style.display=isSign?'none':''); P.querySelectorAll('#wtools [data-srow]').forEach(r=>r.style.display=isSign?'':'none');
     if(isSign){ const st=SS(); $('#wstext').value=st.text!=null?st.text:''; }
     if(!pane)return; const obj=on&&!isSign, pr=k=>obj&&!(sel.prop&&!(sel.tint&&k!=='op'));
@@ -225,7 +225,7 @@ Object.assign(WE,{on:false}); window.WE=WE;
     const sg=BL.sign=hook(pane.addFolder({title:'SIGN'}),null,'data-srow');
     sl(sg,'sbri','GLOW',.2,2.5,.01,'wsbri'); hook(sg.addBinding(V,'scol',{label:'GLOW COLOUR'}),'wscol'); bt(sg,'NO GLOW COLOUR','wscol0',()=>{ changeSign(st=>{ st.scol=null; }); draw(); });
     bt(sg,'BACK AS IT WAS','wsback',()=>{ if(!sel||!sel.sign)return; delete ST[signKey(sel)]; sel.ref.set&&sel.ref.set({text:null,bri:null,col:null}); save(); draw(); });
-    const ac=BL.acts=pane.addFolder({title:'THIS THING'}); bt(ac,'COPY','wcopy',copy); bt(ac,'DELETE','wdel',()=>{ change(e=>{ e.del=true; }); sel=null; frame(); draw(); });
+    const ac=BL.acts=pane.addFolder({title:'THIS THING'}); bt(ac,'COPY','wcopy',copy); bt(ac,'DELETE','wdel',()=>change(e=>{ e.del=true; }));   // it stays picked, so BACK AS IT WAS brings it back
     bt(ac,'BACK AS IT WAS','wback',()=>{ change(e=>{ Object.assign(e,E0()); }); if(sel&&sel.lite){ const k=sel.liteKey; ST[k]=E0L(); applyLight(sel.lite,ST[k]); delete ST[k]; settle(); save(); draw(); } });
     const al=pane.addFolder({title:'EVERY EDIT'}); bt(al,'EVERYTHING BACK','wall',allBack); bt(al,'EXPORT','wexp',exp); bt(al,'IMPORT','wimp',()=>$('#wimpf').click());
     bt(pane,'DONE (SHIFT+E)','wout',()=>WE.toggle()); draw(); };
@@ -249,8 +249,11 @@ Object.assign(WE,{on:false}); window.WE=WE;
   const allBack=()=>{ '@later'; if(!confirm('Put everything back as it was?'))return; for(const k of Object.keys(ST))if(k[0]==='C'&&k[1]==='|'){ ST[k].del=true; applyCopy({key:k}); delete ST[k]; } for(const o of OBJS){ const k=kid(o); if(ST[k]){ ST[k]=E0(); apply(o); delete ST[k]; } }
     for(const en of ents())for(let bid=0;bid<en.ids.length;bid++){ const h=propHandle(en,bid), k=keyOf(h); if(ST[k]){ ST[k]=E0(); applyProp(h); } }
     for(const en of WED.meshes)for(let bid=0;bid<en.ids.length;bid++){ const k=keyOf(propHandle(en,bid)); if(ST[k])delete ST[k]; }
+    scanWorld(); for(const en of objs()){ const h=objHandle(en), k=keyOf(h); if(ST[k]){ ST[k]=E0(); applyObj(h); delete ST[k]; } }
     for(const L of sceneLights()){ const k=litKey(L); if(ST[k]){ ST[k]=E0L(); applyLight(L,ST[k]); delete ST[k]; } }
-    for(const sg of SIGNS.list){ const k='S|'+sg.place+'|'+sg.name; if(ST[k]){ sg.set&&sg.set({text:null,bri:null,col:null}); delete ST[k]; } } settle(); save(); frame(); draw(); };
+    for(const sg of SIGNS.list){ const k='S|'+sg.place+'|'+sg.name; if(ST[k]){ sg.set&&sg.set({text:null,bri:null,col:null}); delete ST[k]; } }
+    for(const k of Object.keys(ST))delete ST[k];   // edits of things not standing now (an inside you are not in) go too
+    sel=null; settle(); save(); frame(); draw(); };
   let busy=null;
   WE.copies=()=>[...CP.keys()];
   // every player who has played before edits, in the isometric view only (owner, 7 Nov 2026)

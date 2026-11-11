@@ -60,6 +60,7 @@ BATCH.unfight=(P,A={},opp=true,R=null)=>{ const TOL=BATCH.TOL, n=P.length/9, N=[
   for(const k of keys)NA[k]=NA[k][0]; return keep(NP,{P:NP,A:NA,at}); };
 // a register of faces already built (R: BATCH.unfight.R()), so one builder's faces also give way to another's built before (whole outsides that stay, never insides that come and go)
 BATCH.unfight.R=()=>({P:[],N:[],D:[],BX:[],B:new Map()});
+BATCH.OUT=BATCH.unfight.R();   // the street's outsides (facades, the Hudson shops)
 BATCH.unfight.reg=(R,Q)=>{ const TOL=BATCH.TOL; for(let o=0;o<Q.length;o+=9){ const ux=Q[o+3]-Q[o], uy=Q[o+4]-Q[o+1], uz=Q[o+5]-Q[o+2], vx=Q[o+6]-Q[o], vy=Q[o+7]-Q[o+1], vz=Q[o+8]-Q[o+2]; let x=uy*vz-uz*vy, y=uz*vx-ux*vz, z=ux*vy-uy*vx; const l=Math.hypot(x,y,z); if(l<1e-9)continue; x/=l; y/=l; z/=l;
   const j=R.N.length, d=x*Q[o]+y*Q[o+1]+z*Q[o+2]; for(let c=0;c<9;c++)R.P.push(Q[o+c]); R.N.push([x,y,z]); R.D.push(d); R.BX.push([Math.min(Q[o],Q[o+3],Q[o+6]),Math.min(Q[o+1],Q[o+4],Q[o+7]),Math.min(Q[o+2],Q[o+5],Q[o+8]),Math.max(Q[o],Q[o+3],Q[o+6]),Math.max(Q[o+1],Q[o+4],Q[o+7]),Math.max(Q[o+2],Q[o+5],Q[o+8])]);
   const k=Math.round(x*200)+','+Math.round(y*200)+','+Math.round(z*200)+','+Math.round(d/TOL); (R.B.get(k)||R.B.set(k,[]).get(k)).push(j); } };   // at[i]: where the i-th triangle's pieces start now

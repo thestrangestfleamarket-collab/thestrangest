@@ -1,6 +1,6 @@
 // THE AQUARIUM: the Hudson row's shop of every fish and sea animal in the game, all swimming together in one long tank across the back wall, small; a price tag under it sells each kind, which lives in your apartment's fish tank (PETS.sea, kept with your account).
 import {SHARED, THREE} from './003-shx.js';
-import {INV, PETS, pos, UI} from './003b-systems.js';
+import {BATCH, INV, PETS, pos, UI} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
@@ -46,7 +46,7 @@ const AQUA={tanks:[]}; window.AQUA=AQUA;
     const OP={p:[],c:[]}, WA={p:[],c:[]}, GL={p:[],c:[]}, col=new THREE.Color();
     const box=(T,u0,u1,v0,v1,z0,z1,c)=>{ col.set(c); const k=[[u0,v0,z0],[u1,v0,z0],[u1,v1,z0],[u0,v1,z0],[u0,v0,z1],[u1,v0,z1],[u1,v1,z1],[u0,v1,z1]].map(q=>W(...q));
       for(const f of [[0,1,5,4],[1,2,6,5],[2,3,7,6],[3,0,4,7],[4,5,6,7],[3,2,1,0]])for(const i of [f[0],f[1],f[2],f[0],f[2],f[3]]){ T.p.push(k[i].x,k[i].y,k[i].z); T.c.push(col.r,col.g,col.b); } };
-    const mesh=(T,mat)=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(T.p,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(T.c,3)); g.computeVertexNormals(); const me=new THREE.Mesh(g,mat); G.add(me); return me; };
+    const mesh=(T,mat)=>{ const F=mat.transparent?{P:T.p,A:{C:T.c}}:BATCH.unfight(T.p,{C:[T.c,3]},true,BATCH.OUT), g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(F.P,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(F.A.C,3)); g.computeVertexNormals(); const me=new THREE.Mesh(g,mat); G.add(me); return me; };
     const th=.3*m, W0=L.x0+th, W1=L.x1-th, V0=L.y0+th, TD=.85*m, Z0=.7*zm, ZT=2.3*zm, WOOD=0x3a2a1e, SAND=0xd8c8a0;
     // one long tank across the back wall, every kind swimming in it together (owner, 11 Nov 2026)
     box(OP,W0,W1,V0,V0+TD,0,Z0-.05*zm,WOOD); box(OP,W0,W1,V0,V0+TD,Z0-.05*zm,Z0,0x202224); box(OP,W0+.03*m,W1-.03*m,V0+.03*m,V0+TD-.03*m,Z0,Z0+.08*zm,SAND);

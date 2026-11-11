@@ -7,7 +7,7 @@ window.BATCH=BATCH;
 const OBJS=[]; const OBJ=(place,name)=>{ const o={id:place+':'+OBJS.length,place,name,parts:[]}; OBJS.push(o); return o; };
 BATCH.all=(M,k)=>Object.keys(M||{}).filter(q=>q===k||q.startsWith(k+'~')).map(q=>M[q]);
 BATCH.add=(pos,uv,cv,ecv,kind)=>{ BATCH.items.push({pos,uv,cv,ecv,kind,obj:BATCH.tag}); };
-// no two faces in one place (6 Nov 2026 rule): a later flat face cuts its rectangle out of any earlier one lying in its plane and facing its way, so the two never fight for the same pixels
+// no two faces in one place (6 Nov 2026 rule): a later flat face cuts its rectangle out of any earlier one lying in its plane and facing its way, so the two never fight for the same pixels; two facing each other (a box against a wall) both lose what they share
 BATCH.TOL=.003;
 BATCH.uncover=it=>{ const TOL=BATCH.TOL, R=[], B=new Map();
   const rect=o=>{ const p=o.pos; let ax=-1; for(let a=0;a<3;a++){ let f=true; for(let i=3;i<18;i+=3)if(Math.abs(p[i+a]-p[a])>1e-5){ f=false; break; } if(f){ ax=a; break; } } if(ax<0)return null;
@@ -17,14 +17,14 @@ BATCH.uncover=it=>{ const TOL=BATCH.TOL, R=[], B=new Map();
     const C={}; for(let v=0;v<6;v++)C[(S[v]-s0<(s1-s0)/2?0:1)+2*(T[v]-t0<(t1-t0)/2?0:1)]=[o.uv[v*2],o.uv[v*2+1]]; if(!C[0]||!C[1]||!C[2]||!C[3])return null;
     const aff=Math.abs(C[3][0]-(C[1][0]+C[2][0]-C[0][0]))<1e-4&&Math.abs(C[3][1]-(C[1][1]+C[2][1]-C[0][1]))<1e-4;
     return {ax,sa,ta,c:p[ax],sg,s0,s1,t0,t1,S,T,C,aff}; };
-  const key=(r,d)=>r.ax+':'+r.sg+':'+(Math.round(r.c/TOL)+d), PX=new Map(), solid=(o,q,a0,a1,b0,b1)=>{ const cv=o.cv; let D=PX.get(cv); if(!D){ D=cv instanceof ImageData?cv.data:cv.getContext('2d').getImageData(0,0,cv.width,cv.height).data; PX.set(cv,D); }
+  const key=(r,d)=>r.ax+':'+(Math.round(r.c/TOL)+d), PX=new Map(), solid=(o,q,a0,a1,b0,b1)=>{ const cv=o.cv; let D=PX.get(cv); if(!D){ D=cv instanceof ImageData?cv.data:cv.getContext('2d').getImageData(0,0,cv.width,cv.height).data; PX.set(cv,D); }
     const uv=(s,t)=>{ const fs=(s-q.s0)/(q.s1-q.s0), ft=(t-q.t0)/(q.t1-q.t0), C=q.C; return [C[0][0]+fs*(C[1][0]-C[0][0])+ft*(C[2][0]-C[0][0]),C[0][1]+fs*(C[1][1]-C[0][1])+ft*(C[2][1]-C[0][1])]; }, A=uv(a0,b0), B=uv(a1,b1), W=cv.width, H=cv.height;
     const x0=Math.max(0,Math.floor(Math.min(A[0],B[0])*W)), x1=Math.min(W,Math.ceil(Math.max(A[0],B[0])*W)), y0=Math.max(0,Math.floor((1-Math.max(A[1],B[1]))*H)), y1=Math.min(H,Math.ceil((1-Math.min(A[1],B[1]))*H));
     for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++)if(D[(y*W+x)*4+3]<128)return false; return true; };   // a cutter with holes where it meets (a railing, a window, a leaf) cuts nothing there
   it.forEach((o,i)=>{ const r=rect(o); R.push(r); if(r){ const k=key(r,0); (B.get(k)||B.set(k,[]).get(k)).push(i); } });
   const out=[];
   it.forEach((o,i)=>{ const r=R[i]; if(!r||!r.aff){ out.push(o); return; } let P=[[r.s0,r.s1,r.t0,r.t1]];
-    for(let d=-1;d<=1&&P.length;d++)for(const j of B.get(key(r,d))||[]){ if(j<=i||!P.length)continue; const q=R[j]; if(Math.abs(q.c-r.c)>TOL||q.s1<=r.s0||q.s0>=r.s1||q.t1<=r.t0||q.t0>=r.t1||!q.aff||!solid(it[j],q,Math.max(r.s0,q.s0),Math.min(r.s1,q.s1),Math.max(r.t0,q.t0),Math.min(r.t1,q.t1)))continue;
+    for(let d=-1;d<=1&&P.length;d++)for(const j of B.get(key(r,d))||[]){ const q=R[j]; if(j===i||!P.length||q.sg===r.sg&&j<i)continue; if(Math.abs(q.c-r.c)>TOL||q.s1<=r.s0||q.s0>=r.s1||q.t1<=r.t0||q.t0>=r.t1||!q.aff||!solid(it[j],q,Math.max(r.s0,q.s0),Math.min(r.s1,q.s1),Math.max(r.t0,q.t0),Math.min(r.t1,q.t1)))continue;
       const N=[]; for(const [a0,a1,b0,b1] of P){ const c0=Math.max(a0,q.s0), c1=Math.min(a1,q.s1), e0=Math.max(b0,q.t0), e1=Math.min(b1,q.t1); if(c1-c0<1e-4||e1-e0<1e-4){ N.push([a0,a1,b0,b1]); continue; }
         if(c0-a0>1e-4)N.push([a0,c0,b0,b1]); if(a1-c1>1e-4)N.push([c1,a1,b0,b1]); if(e0-b0>1e-4)N.push([c0,c1,b0,e0]); if(b1-e1>1e-4)N.push([c0,c1,e1,b1]); } P=N; }
     if(P.length===1&&P[0][0]===r.s0&&P[0][1]===r.s1&&P[0][2]===r.t0&&P[0][3]===r.t1){ out.push(o); return; }
@@ -32,8 +32,9 @@ BATCH.uncover=it=>{ const TOL=BATCH.TOL, R=[], B=new Map();
     for(const [a0,a1,b0,b1] of P){ const pos=o.pos.slice(), U=o.uv.slice(); for(let v=0;v<6;v++){ const s=r.S[v]-r.s0<(r.s1-r.s0)/2?a0:a1, t=r.T[v]-r.t0<(r.t1-r.t0)/2?b0:b1; pos[v*3+r.sa]=s; pos[v*3+r.ta]=t; const w=uv(s,t); U[v*2]=w[0]; U[v*2+1]=w[1]; }
       out.push({...o,pos,uv:U}); } });
   return out; };
-// the same rule for loose triangles (a builder's own merged soup): P its positions (three a corner, no index), A {name:[array,size]} the other corners' values; a later triangle cuts itself out of any earlier one in its plane facing its way; two facing each other (one solid resting on another) both lose what they share, which is inside; returns {P,A,at} (the same arrays and no at when nothing met)
-BATCH.unfight=(P,A={},opp=true,R=null)=>{ const TOL=BATCH.TOL, n=P.length/9, N=[], D=[], B=new Map(), BX=[], drop=new Uint8Array(n), keys=Object.keys(A); let any=false;
+// the same rule for loose triangles (a builder's own merged soup): P its positions (three a corner, no index), A {name:[array,size]} the other corners' values; a later triangle cuts itself out of any earlier one in its plane facing its way; two facing each other (one solid resting on another) both lose what they share, which is inside; returns {P,A,at} (A the arrays alone; the same arrays and no at when nothing met)
+BATCH.unfight=(P,A={},opp=true,R=null)=>{ const t0=performance.now(), r=BATCH.unfight0(P,A,opp,R); BATCH.unfight.ms=(BATCH.unfight.ms||0)+performance.now()-t0; BATCH.unfight.n=(BATCH.unfight.n||0)+P.length/9; return r; };   // its time and triangles kept for the budget
+BATCH.unfight0=(P,A={},opp=true,R=null)=>{ const TOL=BATCH.TOL, n=P.length/9, N=[], D=[], B=new Map(), BX=[], drop=new Uint8Array(n), keys=Object.keys(A); let any=false;
   for(let i=0;i<n;i++){ const o=i*9, ux=P[o+3]-P[o], uy=P[o+4]-P[o+1], uz=P[o+5]-P[o+2], vx=P[o+6]-P[o], vy=P[o+7]-P[o+1], vz=P[o+8]-P[o+2]; let x=uy*vz-uz*vy, y=uz*vx-ux*vz, z=ux*vy-uy*vx; const l=Math.hypot(x,y,z); if(l<1e-9){ N.push(null); D.push(0); BX.push(null); continue; }
     x/=l; y/=l; z/=l; N.push([x,y,z]); const d=x*P[o]+y*P[o+1]+z*P[o+2]; D.push(d); BX.push([Math.min(P[o],P[o+3],P[o+6]),Math.min(P[o+1],P[o+4],P[o+7]),Math.min(P[o+2],P[o+5],P[o+8]),Math.max(P[o],P[o+3],P[o+6]),Math.max(P[o+1],P[o+4],P[o+7]),Math.max(P[o+2],P[o+5],P[o+8])]);
     const k=Math.round(x*200)+','+Math.round(y*200)+','+Math.round(z*200)+','+Math.round(d/TOL); (B.get(k)||B.set(k,[]).get(k)).push(i); }
@@ -53,11 +54,14 @@ BATCH.unfight=(P,A={},opp=true,R=null)=>{ const TOL=BATCH.TOL, n=P.length/9, N=[
     const bar=pt=>{ const w0=((T[1][1]-T[2][1])*(pt[0]-T[2][0])+(T[2][0]-T[1][0])*(pt[1]-T[2][1]))/den, w1=((T[2][1]-T[0][1])*(pt[0]-T[2][0])+(T[0][0]-T[2][0])*(pt[1]-T[2][1]))/den; return [w0,w1,1-w0-w1]; };
     const ps=[]; for(const p of L)for(let k=1;k+1<p.length;k++)ps.push([bar(p[0]),bar(p[k]),bar(p[k+1])]); pieces.set(i,ps); np+=ps.length; }
   const keep=(Q,res)=>{ if(R)BATCH.unfight.reg(R,Q); return res; };
-  if(!any)return keep(P,{P,A,at:null});
+  if(!any){ const UA={}; for(const k of keys)UA[k]=A[k][0]; return keep(P,{P,A:UA,at:null}); }
   const kept=n-drop.reduce((s,v)=>s+v,0), m=kept+np, at=new Int32Array(n+1), NP=new Float32Array(m*9), NA={}; for(const k of keys)NA[k]=[new Float32Array(m*3*A[k][1]),A[k][1]];
   let t=0; const put=(i,W)=>{ for(let v=0;v<3;v++){ const w=W[v]; for(let c=0;c<3;c++)NP[(t*3+v)*3+c]=w[0]*P[i*9+c]+w[1]*P[i*9+3+c]+w[2]*P[i*9+6+c]; for(const k of keys){ const [S,sz]=A[k], [O]=NA[k]; for(let c=0;c<sz;c++)O[(t*3+v)*sz+c]=w[0]*S[(i*3)*sz+c]+w[1]*S[(i*3+1)*sz+c]+w[2]*S[(i*3+2)*sz+c]; } } t++; };
   const I3=[[1,0,0],[0,1,0],[0,0,1]]; for(let i=0;i<n;i++){ at[i]=t; if(!drop[i])put(i,I3); else for(const W of pieces.get(i))put(i,W); } at[n]=t;
   for(const k of keys)NA[k]=NA[k][0]; return keep(NP,{P:NP,A:NA,at}); };
+// the same for a geometry (indexed or not): its own attributes carried over; the geometry itself back when nothing met
+BATCH.unfightGeo=(g,R=null)=>{ const u=g.index?g.toNonIndexed():g, at=u.attributes, A={}; for(const k in at)if(k!=='position')A[k]=[at[k].array,at[k].itemSize]; const F=BATCH.unfight(at.position.array,A,true,R); if(!F.at){ if(u!==g)u.dispose(); return g; }
+  const h=new THREE.BufferGeometry(); h.setAttribute('position',new THREE.BufferAttribute(F.P,3)); for(const k in A)h.setAttribute(k,new THREE.BufferAttribute(F.A[k],A[k][1])); if(u!==g)u.dispose(); g.dispose(); return h; };
 // a register of faces already built (R: BATCH.unfight.R()), so one builder's faces also give way to another's built before (whole outsides that stay, never insides that come and go)
 BATCH.unfight.R=()=>({P:[],N:[],D:[],BX:[],B:new Map()});
 BATCH.OUT=BATCH.unfight.R();   // the street's outsides (facades, the Hudson shops)
@@ -70,7 +74,7 @@ BATCH.build=(make)=>{ const it=BATCH.items; if(!it.length)return; const AW=2048;
   const fit=(L,x,y,sh)=>{ for(const i of L){ const w=it[i].cv.width+2, h=it[i].cv.height+2; if(x+w>AW){ x=0; y+=sh; sh=0; } if(y+h>MAXH)return false; x+=w; sh=Math.max(sh,h); } return true; };
   for(const k in KS){ const L=KS[k].sort((a,b)=>it[b].cv.height-it[a].cv.height); if(y+sh>0&&!fit(L,x,y,sh)&&fit(L,0,0,0)){ PH[pg]=y+sh; pg++; x=0; y=0; sh=0; }
     for(const i of L){ const o=it[i], w=o.cv.width+2, h=o.cv.height+2; if(x+w>AW){ x=0; y+=sh; sh=0; } if(y+h>MAXH&&y>0){ PH[pg]=y+sh; pg++; x=0; y=0; sh=0; } o.ax=x; o.ay=y; o.pg=pg; x+=w; sh=Math.max(sh,h); } }
-  PH[pg]=y+sh; let AHs=[]; { const u=BATCH.uncover(it); it.length=0; for(const o of u)it.push(o); }
+  PH[pg]=y+sh; let AHs=[]; const PGS=it.map(o=>o.pg); { const u=BATCH.uncover(it); it.length=0; for(const o of u)it.push(o); }
   for(let p=0;p<=pg;p++){ const ip=it.filter(o=>o.pg===p); if(!ip.length)continue;
   const AH=PH[p], atlas=document.createElement('canvas'); atlas.width=AW; atlas.height=AH; const AD=new ImageData(AW,AH); AHs.push(AH);
   const anyE=ip.some(o=>o.ecv), eat=anyE?document.createElement('canvas'):null, ED=anyE?new ImageData(AW,AH):null; if(eat){ eat.width=AW; eat.height=AH; for(let q=3;q<ED.data.length;q+=4)ED.data[q]=255; }
@@ -92,7 +96,7 @@ BATCH.build=(make)=>{ const it=BATCH.items; if(!it.length)return; const AW=2048;
     const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(P,3)); geo.setAttribute('uv',new THREE.BufferAttribute(U,2)); geo.computeVertexNormals();
     geo.setAttribute('aCol',new THREE.BufferAttribute(new Float32Array(L.length*18).fill(1),3)); geo.setAttribute('aOp',new THREE.BufferAttribute(new Float32Array(L.length*6).fill(1),1));
     const mat=make(k,map,emap); BATCH.tintable(mat); const me=new THREE.Mesh(geo,mat); PEEK.batch(me,L); me.userData.objOf=L.map(o=>o.obj); L.forEach((o,n)=>{ if(o.obj)o.obj.parts.push({me,v0:n*6,e:!!o.ecv}); }); me.receiveShadow=true; me.castShadow=!!BATCH.cast; scene.add(me); (BATCH.meshes||(BATCH.meshes={}))[p?pk+'~'+p:pk]=me; } }
-  BATCH.stats={faces:it.length,pages:AHs.length,atlas:AHs.map(h=>AW+'x'+h).join(','),split:Object.keys(KS).filter(k=>new Set(KS[k].map(i=>it[i].pg)).size>1)}; (BATCH.log||(BATCH.log=[])).push(BATCH.stats); BATCH.items=[]; };
+  BATCH.stats={faces:it.length,pages:AHs.length,atlas:AHs.map(h=>AW+'x'+h).join(','),split:Object.keys(KS).filter(k=>new Set(KS[k].map(i=>PGS[i])).size>1)}; (BATCH.log||(BATCH.log=[])).push(BATCH.stats); BATCH.items=[]; };
 
 BATCH.tintable=m=>{ const prev=m.onBeforeCompile; m.onBeforeCompile=(sh,r)=>{ if(prev)prev(sh,r);
     sh.vertexShader='attribute vec3 aCol; attribute float aOp; varying vec3 vCol; varying float vOp;\n'+sh.vertexShader.replace('void main() {','void main() { vCol=aCol; vOp=aOp;');

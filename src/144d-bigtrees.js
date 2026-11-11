@@ -55,12 +55,12 @@ PARK.climbable=[];
   SYS.onStart(()=>{ const L=(LEVEL.bigTrees||[]).filter(o=>o.kind); if(!L.length)return; const g=new THREE.Group(), puffs=[];   // seen from the whole map, not only once the park is up (owner, 8 Nov 2026: "render entire map")
     scene.add(g); SYS.every(()=>{ g.visible=SHARED.LVL==='up'; },500,'144d-bigtrees shown on the street level'); const bark=new THREE.MeshLambertMaterial({color:0x6a5040,flatShading:true}), leaf=new THREE.MeshLambertMaterial({color:0xffffff});
     const items=L.map((o,i)=>{ const n=puffs.length, it=make(o,i,puffs); it.p0=n; it.p1=puffs.length; return it; }); PARK.big=items;
-    const PG=new THREE.IcosahedronGeometry(1,1), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), v=new THREE.Vector3(), s=new THREE.Vector3(), c=new THREE.Color();
+    const PG=new THREE.IcosahedronGeometry(1,1), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), v=new THREE.Vector3(), s=new THREE.Vector3(), c=new THREE.Color(), EU=new THREE.Euler();   // each puff turned its own way: two the same size side by side never share a face
     PEEK.mark(PG,new Uint8Array(PG.attributes.position.count).fill(5));   // seen through round you like the park's other big trees (PEEK)
     // the leaves cast no shadow, only the bark (owner, 9 Nov 2026)
     // each tree whole (its bark, every leaf puff) drawn only near the eye (owner, 8 Nov 2026: "i want to simplify trees bigtime, they shouldnt cost much from far off at all")
     for(const it of items){ const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(it.P,3)); geo.computeVertexNormals(); const me=new THREE.Mesh(geo,bark); me.castShadow=me.receiveShadow=true; g.add(me); it.mesh=me; if(it.climb)PARK.climbable.push(it);
-      const IM=new THREE.InstancedMesh(PG,leaf,it.p1-it.p0); for(let i=it.p0;i<it.p1;i++){ const [x,y,z,r,k]=puffs[i], G=GREEN[k]; IM.setMatrixAt(i-it.p0,m4.compose(v.set(x,y,z),q,s.setScalar(r))); IM.setColorAt(i-it.p0,c.setRGB(G[0],G[1],G[2],THREE.SRGBColorSpace)); }
+      const IM=new THREE.InstancedMesh(PG,leaf,it.p1-it.p0); for(let i=it.p0;i<it.p1;i++){ const [x,y,z,r,k]=puffs[i], G=GREEN[k]; IM.setMatrixAt(i-it.p0,m4.compose(v.set(x,y,z),q.setFromEuler(EU.set(i*2.399%6.283,i*1.618%6.283,i*.737%6.283)),s.setScalar(r))); IM.setColorAt(i-it.p0,c.setRGB(G[0],G[1],G[2],THREE.SRGBColorSpace)); }
       IM.castShadow=false; IM.receiveShadow=true; IM.computeBoundingSphere(); g.add(IM); it.leaves=IM;
       PEEK.mark(geo,new Uint8Array(it.P.length/3).fill(5)); const B=new THREE.Box3(); geo.computeBoundingBox(); B.copy(geo.boundingBox);
       for(let i=it.p0;i<it.p1;i++){ const [x,y,z,r]=puffs[i]; B.expandByPoint(v.set(x-r,y-r,z-r)); B.expandByPoint(v.set(x+r,y+r,z+r)); } PEEK.box(IM,B.min.x,B.min.y,B.min.z,B.max.x,B.max.y,B.max.z); }
@@ -70,7 +70,7 @@ PARK.climbable=[];
       for(const L_ of cells.values()){ let x=0,y=0,z=0,w=0; for(const P of L_){ const a=P[3]**3; x+=P[0]*a; y+=P[1]*a; z+=P[2]*a; w+=a; } x/=w; y/=w; z/=w; let r=0; for(const P of L_)r=Math.max(r,Math.hypot(P[0]-x,P[1]-y,P[2]-z)*.6+P[3]); FB.push([x,y,z,r,L_[0][4]]); }
       it.f1=FB.length; }
     const FL=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshLambertMaterial({color:0xffffff,flatShading:true}),FB.length);
-    FB.forEach(([x,y,z,r,k],i)=>{ FL.setMatrixAt(i,m4.compose(v.set(x,y,z),q,s.setScalar(r))); FL.setColorAt(i,c.setRGB(.4,.63,.34,THREE.SRGBColorSpace)); });   // one green from far off (the four greens' patches flickered in the dark)
+    FB.forEach(([x,y,z,r,k],i)=>{ FL.setMatrixAt(i,m4.compose(v.set(x,y,z),q.setFromEuler(EU.set(i*2.399%6.283,i*1.618%6.283,i*.737%6.283)),s.setScalar(r))); FL.setColorAt(i,c.setRGB(.4,.63,.34,THREE.SRGBColorSpace)); });   // one green from far off (the four greens' patches flickered in the dark)
     const TG=new THREE.CylinderGeometry(.35,1,1,6,1,true).translate(0,.5,0), FT=new THREE.InstancedMesh(TG,bark,items.length*2), UP=new THREE.Vector3(0,1,0), D=new THREE.Vector3();
     const tubeAt=(i,a,b,r)=>{ D.set(b[0]-a[0],b[1]-a[1],b[2]-a[2]); const L_=D.length(); q.setFromUnitVectors(UP,D.normalize()); FT.setMatrixAt(i,m4.compose(v.set(a[0],a[1],a[2]),q,s.set(r,L_,r))); q.identity(); };
     items.forEach((it,i)=>{ it.T0=[[it.x,it.y-.5*T,it.z],[it.x,it.top,it.z],it.tr*1.15]; const lb=it.lb, b0=lb[0]; let e=0; while(e+1<lb.length&&lb[e+1][0]===lb[e][3]&&lb[e+1][2]===lb[e][5])e++; const be=lb[e];   // (the big branch: its segments come first, end to end)
@@ -79,7 +79,7 @@ PARK.climbable=[];
     // which trees are near: whole within NEAR tiles of the eye (along the ground), their plain shapes away; the rest the other way round
     const NEAR=45*T, Z=new THREE.Matrix4().makeScale(0,0,0); let tk=0;
     const swap=(it,i,near)=>{ it.near=near; it.mesh.visible=it.leaves.visible=near;
-      for(let j=it.f0;j<it.f1;j++){ if(near)FL.setMatrixAt(j,Z); else { const [x,y,z,r]=FB[j]; FL.setMatrixAt(j,m4.compose(v.set(x,y,z),q,s.setScalar(r))); } } FL.instanceMatrix.needsUpdate=true;
+      for(let j=it.f0;j<it.f1;j++){ if(near)FL.setMatrixAt(j,Z); else { const [x,y,z,r]=FB[j]; FL.setMatrixAt(j,m4.compose(v.set(x,y,z),q.setFromEuler(EU.set(j*2.399%6.283,j*1.618%6.283,j*.737%6.283)),s.setScalar(r))); } } FL.instanceMatrix.needsUpdate=true;
       if(near){ FT.setMatrixAt(i*2,Z); FT.setMatrixAt(i*2+1,Z); } else { tubeAt(i*2,...it.T0); tubeAt(i*2+1,...it.T1); } FT.instanceMatrix.needsUpdate=true; };
     items.forEach((it,i)=>swap(it,i,false));
     SYS.add('cam',dt=>{ if((tk-=dt||0)>0)return; tk=.25; const cam=SHARED.cam; if(!cam)return; const cx=cam.position.x, cz=cam.position.z, persp=!cam.isOrthographicCamera;

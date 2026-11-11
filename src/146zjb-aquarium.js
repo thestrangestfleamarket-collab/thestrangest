@@ -50,9 +50,9 @@ const AQUA={tanks:[]}; window.AQUA=AQUA;
     const th=.3*m, W0=L.x0+th, W1=L.x1-th, V0=L.y0+th, TD=.85*m, Z0=.7*zm, ZT=2.3*zm, WOOD=0x3a2a1e, SAND=0xd8c8a0;
     // one long tank across the back wall, every kind swimming in it together (owner, 11 Nov 2026)
     box(OP,W0,W1,V0,V0+TD,0,Z0-.05*zm,WOOD); box(OP,W0,W1,V0,V0+TD,Z0-.05*zm,Z0,0x202224); box(OP,W0+.03*m,W1-.03*m,V0+.03*m,V0+TD-.03*m,Z0,Z0+.08*zm,SAND);
-    box(OP,W0,W1,V0,V0+.04*m,Z0,ZT,0x3a88b0); box(OP,W0,W1,V0,V0+TD,ZT,ZT+.08*zm,0x202224);
-    box(WA,W0+.03*m,W1-.03*m,V0+.04*m,V0+TD-.03*m,Z0+.08*zm,ZT-.1*zm,0x8ad0e8); box(GL,W0+.05*m,W1-.05*m,V0+.05*m,V0+TD-.05*m,ZT-.1*zm,ZT-.09*zm,0xe8f8ff);
-    for(const u of [W0,W1-.06*m])box(OP,u,u+.06*m,V0+TD-.06*m,V0+TD,Z0,ZT,0x202224);
+    box(OP,W0,W1,V0,V0+.04*m,Z0,ZT-.01*zm,0x3a88b0); box(OP,W0,W1,V0,V0+TD,ZT,ZT+.08*zm,0x202224);
+    box(WA,W0+.04*m,W1-.04*m,V0+.05*m,V0+TD-.04*m,Z0+.09*zm,ZT-.11*zm,0x8ad0e8);   // (the water a little clear of the sand, backing and glass: touching faces flicker) box(GL,W0+.05*m,W1-.05*m,V0+.05*m,V0+TD-.05*m,ZT-.1*zm,ZT-.09*zm,0xe8f8ff);
+    for(const u of [W0,W1-.06*m])box(OP,u,u+.06*m,V0+TD-.06*m,V0+TD,Z0+.08*zm,ZT-.01*zm,0x202224);
     at.sb(W0,V0,W1,V0+TD,ZT+.08*zm);
     // the price tags on the stand's front, one a kind: double-click one to buy that kind
     const N=ALL.length, cols=Math.ceil(N/2), tw=(W1-W0)/cols, tv=V0+TD+.01*m, tz=[.36*zm,.06*zm], th2=.28*zm, cw=96, chh=96, cv=document.createElement('canvas'); cv.width=cw*cols; cv.height=chh*2;

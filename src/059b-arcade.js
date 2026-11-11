@@ -5,7 +5,6 @@ import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {BLDK, FADE, FIX, grab, LEVEL, OFFDX, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
 import {LAMPS} from './014-gamekit.js';
-import {BLOCKS} from './038zb-blocks.js';
 import {FACADES} from './038zc-facades.js';
 await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD.Y, {hash:hs}=SHARED.BOD.g, sh=SHARED.BOD.K.sh, MS=STORE.main;
   const HOLO=STORE.holo={programs:[],run:null,hall:null}, say=(t,c)=>SAY(t,c);
@@ -34,22 +33,12 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
   const box4=(x0,y0,x1,y1)=>{ const a=X(x0), b=X(x1), c=Z(y0), d=Z(y1); return [Math.min(a,b),Math.min(c,d),Math.max(a,b),Math.max(c,d)]; };
   const MKA=(k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{})});
   const LW=MS.lot('arcade',180), TA=TURN(LW,WP.arcade.face), L=TA.L, W=L.x1-L.x0, lcx=(L.x0+L.x1)/2, at=(u,v)=>{ const p=TA.pt(u,v); return [X(p[0]),Z(p[1])]; }, k6=6, c0=Math.floor((W*24-35*k6)/2), on=MS.word('ARCADE',c0,118,k6), litc=c=>Object.assign(c.slice(),{e:1});
-  const front=(u,z,f)=>{ const c=Math.floor(u*24), dd=Math.abs(u-W/2);
-    if(z<8)return sh([44,34,52],f);
-    if(z<96&&dd<.78)return dd>.7||z>90?litc([255,80,200]):z>60?sh([40,24,52],f):sh([30,20,40],f*(Math.floor(u*24)%6===0?.8:1));
-    if(z<96&&u>.5&&u<W-.5){ const m=(u-.5)%2.1; return m<.08||z<11||z>93?sh([58,40,70],f):sh([20,16,32],f); }
-    if(z>=98&&z<102)return litc([236,64,160]); if(z>=104&&z<106)return litc([60,206,230]);
-    if(z>=110&&z<170&&c>=c0-8&&c<c0+35*k6+8)return MS.neon(on,c,z,k6,[255,80,200],f)||sh([24,16,32],f);
-    return null; };
-  const wall=BLOCKS.brick([96,58,80]);
   // Polyfork #12 (the bodega's building, 068a): its only door is the double door on its chamfered front corner; s=-1 when it stands mirrored. Its walls, that door's spot outside and where you come out.
   SHARED.pfDoor=(x,zf,zi,s)=>{ const M=TILE/.84, c=1.29*M, xa=x-5.53*M*s, xb=x+4.41*M*s, za=zf+zi*11.06*M, zb=zf+zi*1.12*M, dx=x+3.12*M*s, dz=zf+zi*2.41*M, nx=s*Math.SQRT1_2, nz=-zi*Math.SQRT1_2, r=(a,b,c_,d)=>[Math.min(a,c_),Math.min(b,d),Math.max(a,c_),Math.max(b,d)];
     return {sol:[r(xa,za,xb-c*s,zb),r(xb-c*s,za,xb,zb-zi*c)],door:[dx+nx*.25*TILE,0,dz+nz*.25*TILE],out:[dx+nx*1.3*TILE,dz+nz*1.3*TILE,0,Math.atan2(nx,nz)]}; };
   const PFA=WP.arcade.pf==='bodega'?SHARED.pfDoor(X((LW.x0+LW.x1)/2),Z(LW.y1),Math.sign(Z(LW.y1-1)-Z(LW.y1)),-1):null;
   if(WP.arcade.pf==='bodega'){ const fy=LW.y1, X=SHARED.BOD.X, Z=SHARED.BOD.Z; (SHARED.PFCORNER=SHARED.PFCORNER||[]).push({id:'arcade',x:X((LW.x0+LW.x1)/2),zf:Z(fy),zi:Math.sign(Z(fy-1)-Z(fy)),rot:TA.hd(0),flip:true}); }   // the Hudson entrance's east corner in the bodega's building, mirrored (owner, 8 Nov 2026)
   else FACADES.make({id:'arcade',L,pt:TA.pt,z1:L.h,wall:[96,58,80],trim:[150,120,170],frame:[58,40,70],seed:53,ground:118,door:{u:lcx,w:.9},glass:true,sign:{text:'ARCADE',color:[255,80,200],bg:[24,16,32]}});
-  if(0)BLOCKS.make({x0:LW.x0,x1:LW.x1,y0:LW.y0,y1:LW.y1,z0:0,z1:L.h,kind:'A',turn:TA,roof:(x,y)=>sh([40,36,44],.92+.12*hs(Math.floor(x*4),Math.floor(y*4),61)),
-    paint:(side,u,z,f)=>(side==='f'&&front(u-L.x0,z,f))||(z>L.h-10?sh([60,44,70],f):wall(u,z,f))});
   BATCH.build(MKA); for(const me of Object.values(BATCH.meshes)){ me.castShadow=true; me.receiveShadow=true; } BATCH.meshes={};
   for(const r of PFA?PFA.sol:[box4(LW.x0,LW.y0,LW.x1,LW.y1)]){ SOL.up.push(r); FIX.up.push([r[0],r[1],0,r[2],r[3],Y(L.h)]); }
   MS.unplace('ARCADE'); MS.unplace('THE ARCADE');
@@ -118,7 +107,7 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
     WALL(PY(HD.x0),PY(HD.x0),HD.y0,HD.y1,(u,z)=>GRID(u,z/24)); WALL(PY(HD.x1),PY(HD.x1),HD.y0,HD.y1,(u,z)=>GRID(u,z/24)); WALL(PX(HD.y0),PX(HD.y0),HD.x0,HD.x1,(u,z)=>panel(u,z)||GRID(u,z/24));
     sol(AR.x0-.1,HD.y0,AR.x0+.1,AR.y1); sol(AR.x1-.1,HD.y0,AR.x1+.1,AR.y1); sol(AR.x0,AR.y1-.1,AR.x1,AR.y1+.1); sol(HD.x0,HD.y0-.1,HD.x1,HD.y0+.1); sol(AR.x0,AR.y0-.1,AR.x1,AR.y0+.1);
     const CW_=Math.abs(X(1)-X(0)), ZW_=Math.abs(Y(1)-Y(0)), KIT=STORE.cabs.kit(), SCRS=[];
-    const ctex=(w,h,f)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'); f(g,w,h); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return t; };
+    const ctex=(w,h,f)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'); f(g,w,h); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return t; };
     const lam=(map,e=.3)=>new THREE.MeshLambertMaterial({map,emissiveMap:map,emissive:new THREE.Color(e,e,e)}), glow=map=>new THREE.MeshBasicMaterial({map});
     const rnd=((sd)=>()=>((sd=(sd*16807)%2147483647)/2147483647))(77);
     const wear=(g,w,h,k=1)=>{ for(let i=0;i<w*h/90*k;i++){ g.fillStyle=`rgba(${rnd()<.5?'255,255,255':'0,0,0'},${.03+rnd()*.06})`; g.fillRect(rnd()*w,rnd()*h,1+rnd()*2,1+rnd()*2); }

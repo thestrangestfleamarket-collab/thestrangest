@@ -210,6 +210,134 @@
     "url": "https://creativecommons.org/publicdomain/zero/1.0/",
     "snapshot": "data/full/sfx/licence.txt"
    }
+  },
+  {
+   "id": "instruments/piano",
+   "kind": "file",
+   "runtime": "data/piano-samples.mp3",
+   "made": "tools/instrument-samples-bake.py",
+   "source": {
+    "site": "FreePats",
+    "urls": [
+     "https://freepats.zenvoid.org/Piano/acoustic-grand-piano.html"
+    ],
+    "authors": "Alexander Holm (Salamander Grand Piano V3+2020-06-02)"
+   },
+   "licence": {
+    "name": "CC BY 3.0",
+    "url": "https://creativecommons.org/licenses/by/3.0/",
+    "credit": "THE SALAMANDER GRAND PIANO, ALEXANDER HOLM (CC BY 3.0)",
+    "snapshot": "data/full/instruments/piano-licence.txt"
+   }
+  },
+  {
+   "id": "instruments/drums",
+   "kind": "file",
+   "runtime": "data/drums-samples.mp3",
+   "made": "tools/instrument-samples-bake.py",
+   "source": {
+    "site": "FreePats",
+    "urls": [
+     "https://freepats.zenvoid.org/Percussion/acoustic-drum-kit.html"
+    ],
+    "authors": "Lars Muldjord (MuldjordKit 2020-10-18), FreePats version by roberto@zenvoid.org"
+   },
+   "licence": {
+    "name": "CC BY 4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/",
+    "credit": "THE MULDJORDKIT, LARS MULDJORD (CC BY 4.0), FREEPATS",
+    "snapshot": "data/full/instruments/drums-licence.txt"
+   }
+  },
+  {
+   "id": "instruments/guitar",
+   "kind": "file",
+   "runtime": "data/guitar-samples.mp3",
+   "made": "tools/instrument-samples-bake.py",
+   "source": {
+    "site": "FreePats",
+    "urls": [
+     "https://freepats.zenvoid.org/Guitar/acoustic-guitar.html"
+    ],
+    "authors": "roberto@zenvoid.org (Spanish classical guitar 2019-06-18)"
+   },
+   "licence": {
+    "name": "CC0 1.0",
+    "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "snapshot": "data/full/instruments/guitar-licence.txt"
+   }
+  },
+  {
+   "id": "instruments/harp",
+   "kind": "file",
+   "runtime": "data/harp-samples.mp3",
+   "made": "tools/instrument-samples-bake.py",
+   "source": {
+    "site": "VS Chamber Orchestra Community Edition (Versilian Studios), GitHub",
+    "urls": [
+     "https://github.com/sgossner/VSCO-2-CE"
+    ],
+    "authors": "Sam Gossner and Simon Dalzell (Versilian Studios)"
+   },
+   "licence": {
+    "name": "CC0 1.0",
+    "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "snapshot": "data/full/instruments/vsco-licence.txt"
+   }
+  },
+  {
+   "id": "instruments/violin",
+   "kind": "file",
+   "runtime": "data/violin-samples.mp3",
+   "made": "tools/instrument-samples-bake.py",
+   "source": {
+    "site": "VS Chamber Orchestra Community Edition (Versilian Studios), GitHub",
+    "urls": [
+     "https://github.com/sgossner/VSCO-2-CE"
+    ],
+    "authors": "Sam Gossner and Simon Dalzell (Versilian Studios)"
+   },
+   "licence": {
+    "name": "CC0 1.0",
+    "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "snapshot": "data/full/instruments/vsco-licence.txt"
+   }
+  },
+  {
+   "id": "instruments/flute",
+   "kind": "file",
+   "runtime": "data/flute-samples.mp3",
+   "made": "tools/instrument-samples-bake.py",
+   "source": {
+    "site": "VS Chamber Orchestra Community Edition (Versilian Studios), GitHub",
+    "urls": [
+     "https://github.com/sgossner/VSCO-2-CE"
+    ],
+    "authors": "Sam Gossner and Simon Dalzell (Versilian Studios)"
+   },
+   "licence": {
+    "name": "CC0 1.0",
+    "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "snapshot": "data/full/instruments/vsco-licence.txt"
+   }
+  },
+  {
+   "id": "instruments/trumpet",
+   "kind": "file",
+   "runtime": "data/trumpet-samples.mp3",
+   "made": "tools/instrument-samples-bake.py",
+   "source": {
+    "site": "VS Chamber Orchestra Community Edition (Versilian Studios), GitHub",
+    "urls": [
+     "https://github.com/sgossner/VSCO-2-CE"
+    ],
+    "authors": "Sam Gossner and Simon Dalzell (Versilian Studios)"
+   },
+   "licence": {
+    "name": "CC0 1.0",
+    "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "snapshot": "data/full/instruments/vsco-licence.txt"
+   }
   }
  ]
 }

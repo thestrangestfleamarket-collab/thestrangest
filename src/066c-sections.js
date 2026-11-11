@@ -19,8 +19,7 @@ await grab('sections',async()=>{ const T=TILE, S=SECTIONS, G=S.ring, home=SECTIO
 
   // signs: each station's entrance (railings, two green globes, its name) and each section's edge
   const font=(g,px,w=800)=>{ g.font=w+' '+px+'px "Helvetica Neue",Helvetica,Arial,sans-serif'; };
-  const sign=(w,h,fn,a,b,z0,z1,one)=>{ '@later'; const cv=document.createElement('canvas'); cv.width=w; cv.height=h; fn(cv.getContext('2d'),w,h); const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4;
-    const m=new THREE.MeshBasicMaterial({map:t}), q=(p,r)=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute([p[0],z0,p[1],r[0],z0,r[1],r[0],z1,r[1],p[0],z0,p[1],r[0],z1,r[1],p[0],z1,p[1]],3)); g.setAttribute('uv',new THREE.Float32BufferAttribute([0,0,1,0,1,1,0,0,1,1,0,1],2)); scene.add(new THREE.Mesh(g,m)); };
+  const sign=(w,h,fn,a,b,z0,z1,one)=>{ '@later'; const cv=document.createElement('canvas'); cv.width=w; cv.height=h; fn(cv.getContext('2d'),w,h); const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace;     const m=new THREE.MeshBasicMaterial({map:t}), q=(p,r)=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute([p[0],z0,p[1],r[0],z0,r[1],r[0],z1,r[1],p[0],z0,p[1],r[0],z1,r[1],p[0],z1,p[1]],3)); g.setAttribute('uv',new THREE.Float32BufferAttribute([0,0,1,0,1,1,0,0,1,1,0,1],2)); scene.add(new THREE.Mesh(g,m)); };
     q(a,b); if(!one)q(b,a); };
   const postM=new THREE.MeshLambertMaterial({color:0x2a2c30}), rail=new THREE.MeshLambertMaterial({color:0x2f6b45}), globe=new THREE.MeshBasicMaterial({color:0xdcf3dc}), hole=new THREE.MeshBasicMaterial({color:0x050506});
   const bx=(x0,y0,x1,y1,h0,h1,m)=>{ const me=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(XS(x1)-XS(x0)),h1-h0,Math.abs(ZS(y1)-ZS(y0))),m); me.position.set((XS(x0)+XS(x1))/2,(h0+h1)/2,(ZS(y0)+ZS(y1))/2); scene.add(me); return me; };

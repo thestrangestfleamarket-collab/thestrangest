@@ -1,7 +1,7 @@
 // THE FIRE ESCAPE VIEW: your landing on the apartment house's fire escape, with the landings above and below, built from the house's own facade and landings round your apartment (one place, off the map): its door opens and you walk out.
 import {SHARED, THREE} from './003-shx.js';
 import {BATCH, CLOCK, CULL, FAR3, FARCITY, GPH, pos, ROOMS, SFX, SKY, UI, VIS, VR, WINDOWS} from './003b-systems.js';
-import {renderer, scene} from './004-main.js';
+import {renderer, RH, scene} from './004-main.js';
 import {BLDK, FADE, MAPG, MISTE, MODS, STORE, SYS, TILE} from './006-map-pre.js';
 import {PEEK} from './008-batch.js';
 import {BLOCKS} from './038zb-blocks.js';
@@ -119,9 +119,9 @@ import {BLOCKS} from './038zb-blocks.js';
   SYS.add('places',()=>{ const on=F.on&&!VR.on&&!FADE.busy&&!WINDOWS.busy; if(F.cum)F.cum.visible=!on; if(on!==tq.visible)VIS.hide(MAPG.block,'fire',on);   // the map's ground carried on past its edges runs under this lot: out here it is in the town's picture only
     if(!on){ tq.visible=false; tn=0; ocam=null; return; } const cam=SHARED.cam, now=performance.now(), due=now-tt>=TW.ms&&++tw>=TW.gap;   // seldom by the clock, and never more than a frame in a few on a slow machine
     if(FARCITY.ring)FARCITY.ring.visible=false;   // the far skyline goes round the eye: here it belongs to the town's picture, not to the landing
-    if(cam.isOrthographicCamera){ tU.uO.value=1; const W=Math.round(TW.px*cam.right/cam.top), sh=ov.copy(cam.position).sub(oc0), w=(cam.right-cam.left)/cam.zoom, h=(cam.top-cam.bottom)/cam.zoom, m=(TW.pad-1)/2;
+    if(cam.isOrthographicCamera){ tU.uO.value=1; const PX=Math.ceil(RH*TW.pad), W=Math.round(PX*cam.right/cam.top), sh=ov.copy(cam.position).sub(oc0), w=(cam.right-cam.left)/cam.zoom, h=(cam.top-cam.bottom)/cam.zoom, m=(TW.pad-1)/2;
       if(ocam&&cam.zoom===oz&&cam.quaternion.angleTo(oq)<1e-4&&Math.abs(sh.dot(ox))<m*w&&Math.abs(sh.dot(oy))<m*h&&!due)return;
-      if(!tr)tr=new THREE.WebGLRenderTarget(W,TW.px,{type:THREE.HalfFloatType}); else if(tr.width!==W)tr.setSize(W,TW.px); if(!ocam)ocam=cam.clone(); ocam.copy(cam); for(const k of ['left','right','top','bottom'])ocam[k]=cam[k]*TW.pad; ocam.updateProjectionMatrix();
+      if(!tr)tr=new THREE.WebGLRenderTarget(W,PX,{type:THREE.HalfFloatType}); else if(tr.width!==W||tr.height!==PX)tr.setSize(W,PX); if(!ocam)ocam=cam.clone(); ocam.copy(cam); for(const k of ['left','right','top','bottom'])ocam[k]=cam[k]*TW.pad; ocam.updateProjectionMatrix();
       ocam.matrixWorld.multiplyMatrices(G.matrix,cam.matrixWorld); ocam.matrixWorld.decompose(ocam.position,ocam.quaternion,ocam.scale); ocam.updateMatrixWorld(true); shoot(ocam,tr); tw=0;
       oc0.copy(cam.position); oq.copy(cam.quaternion); oz=cam.zoom; ox.setFromMatrixColumn(cam.matrixWorld,0); oy.setFromMatrixColumn(cam.matrixWorld,1); tU.uT.value=tr.texture; tt=now; return; }
     tU.uO.value=0; ocam=null; if(!tc){ const rt=new THREE.WebGLCubeRenderTarget(TW.px,{type:THREE.HalfFloatType}); tc=new THREE.CubeCamera(.5*T,TW.far*T,rt); tc.coordinateSystem=renderer.coordinateSystem; tc.updateCoordinateSystem(); tU.uC.value=rt.texture; }

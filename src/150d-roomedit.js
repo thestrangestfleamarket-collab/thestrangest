@@ -31,16 +31,17 @@ import {ROOMK} from './150a-bedroom.js';
       INV.cash=(INV.cash||0)+back; if(INV.save)INV.save(); HOME.save(snapshot(A)); if(back||n)UI.log('YOUR APARTMENT WAS RESET'+(back?': $'+back+' BACK FOR YOUR FURNITURE':'')+(n?(back?',':':')+' '+n+' THING'+(n>1?'S':'')+' BACK IN YOUR PACK':'')+'.','#c8a090'); }
     if(HOME.guest)apply(A,HOME.guest.layout); else { if(HOME.loaded)apply(A,HOME.layout); tidy(A); } if(ED.on)ED.panel(); });
   // a layout that comes back with pieces inside one another is put right once, and says so
-  const tidy=A=>{ '@later'; if(HOME.guest)return; const T=MODS.apts.TIERS[MODS.apts.tier||0]||{}, L=HOME.layout, moved=!L||(L.tier??2)!==(MODS.apts.tier||0), m=settle(moved&&T.start?T.start:null); A.R.tier=MODS.apts.tier||0; if(!m.length&&!moved)return; if(HOME.loaded&&(m.length||L))HOME.save(snapshot(A)); const mv=m.filter(x=>x[1]==='moved').map(x=>x[0]), aw=m.filter(x=>x[1]!=='moved').map(x=>x[0]);
+  const tidy=A=>{ '@later'; if(HOME.guest)return; const T=MODS.apts.TIERS[MODS.apts.tier||0]||{}, L=HOME.layout, moved=!L||(L.tier??2)!==(MODS.apts.tier||0); if(moved&&L)for(const u of A.units())if(u.gone&&!u.added&&ROOMK.always.has(u.kind))A.restore(u);   // a new size of flat: the pieces every flat has come out again, then those it has no room for go back
+    const m=settle(moved&&T.start?T.start:null); A.R.tier=MODS.apts.tier||0; if(!m.length&&!moved)return; if(HOME.loaded&&(m.length||L))HOME.save(snapshot(A)); const mv=m.filter(x=>x[1]==='moved').map(x=>x[0]), aw=m.filter(x=>x[1]!=='moved').map(x=>x[0]);
     if(mv.length)UI.log('MOVED TO FIT: '+mv.join(', ')+'.','#c8a090'); if(aw.length)UI.log('NO ROOM FOR: '+aw.join(', ')+'. PUT AWAY (DECORATE BRINGS THEM BACK).','#c8a090'); };
   // a visit: another player's apartment is your rooms dressed in their layout, to look at, not to change; leaving puts yours back
-  const swap=L=>{ const A=ROOMK.api; if(!A)return; for(const un of A.units().slice())if(un.added)A.drop(un); const D=A.R.bare||{}; apply(A,{...D,...(L||{}),lights:{...(D.lights||{}),...((L&&L.lights)||{})}}); };
+  const swap=L=>{ const A=ROOMK.api; if(!A)return; for(const un of A.units().slice())if(un.added)A.drop(un); else if(un.gone)A.restore(un); const D=A.R.bare||{}; apply(A,{...D,...(L||{}),lights:{...(D.lights||{}),...((L&&L.lights)||{})}}); };
   HOME.visit=async(id,name,L0)=>{ '@later'; if(!id||(MODS.apts&&MODS.apts.inReal))return; let L=L0; if(L===undefined&&web){ try{ L=(await ask({who:id})).home; }catch(e){ L=null; } }
-    HOME.guest={id,name:String(name||'A NEIGHBOUR').toUpperCase(),layout:cur(L)}; MODS.apts.host=id; const G=HOME.guest; await MODS.apts.enterReal(null,G.name+"'S APARTMENT"); if(HOME.guest!==G)return; swap(G.layout); G.in=true; };
+    HOME.guest={id,name:String(name||'A NEIGHBOUR').toUpperCase(),layout:cur(L)}; MODS.apts.host=id; const G=HOME.guest; await MODS.apts.enterReal(null,G.name+"'S APARTMENT"); if(HOME.guest!==G)return; swap(G.layout); settle(); G.in=true; };   // a host's bigger flat shown in yours: what doesn't fit is left out
   ONLINE.visit=(id,name)=>HOME.visit(id,name);
   // every tenant's apartment (not only who is online), for the map's quick jumps; asked at most once a minute
   let TN=null, TT=0; ONLINE.tenants=async()=>{ if(!web)return []; if(TN&&Date.now()-TT<60000)return TN; try{ TN=((await ask({list:1})).list||[]).map(t=>({id:t.who,name:t.name||'A NEIGHBOUR'})); TT=Date.now(); }catch(e){ TN=TN||[]; } return TN; };
-  SYS.add('places',()=>{ if(HOME.guest&&HOME.guest.in&&MODS.apts&&!MODS.apts.inReal){ HOME.guest=null; MODS.apts.host=null; swap(HOME.layout); } },'150d-visit');
+  SYS.add('places',()=>{ if(HOME.guest&&HOME.guest.in&&MODS.apts&&!MODS.apts.inReal){ HOME.guest=null; MODS.apts.host=null; swap(HOME.layout); if(ROOMK.api)tidy(ROOMK.api); } },'150d-visit');
   // your pets at home go with your layout, so a visitor finds them in your rooms (146zj); a change to who is at home is saved the next time you are in
   ROOMK.keep.push({out:L=>{ if(PETS.atHome)L.pets=PETS.atHome(); },in:()=>{}});
   PETS.guestOf=()=>HOME.guest&&{name:HOME.guest.name,pets:(HOME.guest.layout&&HOME.guest.layout.pets)||[]};

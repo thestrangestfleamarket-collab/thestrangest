@@ -14,7 +14,7 @@ const FIELD={on:false,at:null}; window.FIELD=FIELD;
   const tube=(g,len,r,y,z0)=>{ const a=new THREE.Mesh(new THREE.CylinderGeometry(r,r,len,10),lam(0xe8e4d8)); a.rotation.x=Math.PI/2; a.position.set(0,y,z0); const b=new THREE.Mesh(new THREE.CylinderGeometry(r*1.15,r*1.15,len*.16,10),lam(0x1c1d20)); b.rotation.x=Math.PI/2; b.position.set(0,y,z0-len*.5); const e=new THREE.Mesh(new THREE.CylinderGeometry(r*.5,r*.5,len*.2,8),lam(0x1c1d20)); e.rotation.x=Math.PI/2; e.position.set(0,y,z0+len*.58); g.add(a,b,e); };
   const kind={name:'FIELD TELESCOPE',hint:'CLICK TO STAND IT ON ITS TRIPOD UNDER OPEN SKY AND LOOK THROUGH IT. WALK AWAY TO PACK IT UP.',
     make:()=>{ '@later'; const g=new THREE.Group(); tube(g,.4*M,.032*M,.08*M,-.1*M); g.traverse(o=>{ o.userData.wield=1; }); g.tipL=new THREE.Vector3(0,.08*M,-.3*M); g.head=g.tipL; return g; },
-    use:()=>FIELD.toggle() };
+    use:()=>FIELD.toggle(), away:()=>FIELD.on };
   (WIELD.pend=WIELD.pend||[]).push(['fscope',kind]); if(WIELD.kind)WIELD.kind('fscope',kind);
   let prop=null, A=null, keep=null;
   const stand=()=>{ '@later'; const g=new THREE.Group(), wood=lam(0x7e5430), H=1.25*M; for(let i=0;i<3;i++){ const a=i*Math.PI*2/3+.5, L=new THREE.Mesh(new THREE.CylinderGeometry(.014*M,.011*M,H*1.06,6),wood); L.position.set(Math.cos(a)*.2*M,H/2,Math.sin(a)*.2*M); L.rotation.set(-Math.sin(a)*.33,0,Math.cos(a)*.33,'XZY'); L.castShadow=true; g.add(L); }

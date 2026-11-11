@@ -1,6 +1,6 @@
 // THE HELIPAD: Polyfork's rooftop helipad deck and windsock on the bank, and the news helicopter (data/heli.json) that flies a round of the city every five minutes from the shared clock and lands again, its rotor still on the pad, a Polyfork pilot at the controls; ride along in a seat, or take the controls yourself (one pilot, kept by the section's server like a car).
 import {SHARED, THREE} from './003-shx.js';
-import {keys, ONLINE, pos, RIDE, SPEED, st, UI, VLOOK} from './003b-systems.js';
+import {ARCH, keys, ONLINE, pos, RIDE, SPEED, st, UI, VLOOK} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {FIX, LEVEL, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
@@ -103,7 +103,7 @@ const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
 
   /* ---------- the pilot: Polyfork's aircrew pilot, at the controls while it flies, waiting on the deck otherwise ---------- */
   let castAsked=false; const PL={};
-  const bring=()=>{ if(castAsked)return; castAsked=true; CAST().then(J=>{ for(const H of HELI.list){ const b=J.bodies[H.pilot]; if(!b)continue; const k='heli_'+H.pilot, P={y:0};
+  const bring=()=>{ if(castAsked)return; castAsked=true; CAST().then(J=>{ for(const H of HELI.list){ const b=!ARCH.has(H.pilot)&&J.bodies[H.pilot]; if(!b)continue; const k='heli_'+H.pilot, P={y:0};
       BODIES.add({...BODIES.rebakedBody(J,H.pilot,{}),key:k,label:H.label,size:b.height/1.8,hd:0,ground:()=>P.y});
       const N=BODIES.by[k]&&BODIES.by[k].npc; if(!N)continue; N.on=true; N.walk.auto=false; N.free=()=>true; N.st.pin=true; N.st.home={x:HELI.pad.x,z:HELI.pad.z,r:0}; PL[H.id]={N,P}; } }).catch(e=>console.warn('HELI pilots',e)); };
   const CAR={k:'car',steer:0,z:0};

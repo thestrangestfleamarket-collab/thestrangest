@@ -33,7 +33,7 @@ const SCOPE={alt:35,az:270,va:0,vz:0,mag:1,focus:.18,track:true,lines:true,filte
       <div class="row"><b>FOCUS</b><input type="range" min="-100" max="100" value="${Math.round(SCOPE.focus*100)}" data-k="focus"></div>
       <div class="row"><button class="btn ${SCOPE.track?'on':''}" data-a="track">CLOCK DRIVE</button><button class="btn ${SCOPE.lines?'on':''}" data-a="lines">STAR LINES</button><button class="btn ${SCOPE.filter?'on':''}" data-a="filter">SOLAR FILTER</button></div>
       <div class="row"><b>GO TO</b><select data-k="goto">${targets().map(([g,L])=>`<optgroup label="${g}">${L.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('')}</optgroup>`).join('')}</select><button class="btn" data-a="go" style="margin-top:4px">GO</button><button class="btn" data-a="stop">STOP</button></div>
-      ${SCOPE.ext.map(e=>e.panel?e.panel()||'':'').join('')}<div class="row info" id="scoper"></div><div class="info" style="opacity:.75">DRAG TO MOVE THE TUBE · WHEEL TO FOCUS · ARROWS NUDGE</div>`; };
+      ${SCOPE.ext.map(e=>e.panel?e.panel()||'':'').join('')}<div class="row info" id="scoper"></div><div class="info" style="opacity:.75">DRAG TO MOVE THE TUBE · WHEEL TO ZOOM · ARROWS NUDGE</div>`; };
     P.addEventListener('click',e=>{ const b=e.target.closest('button,[data-x]'); if(!b)return; for(const x of SCOPE.ext)if(x.click&&x.click(b)){ panel(); return; } const a=b.dataset.a; if(b.dataset.m){ SCOPE.mag=+b.dataset.m; panel(); return; }
       if(a==='close')return SCOPE.close(); if(a==='track')SCOPE.track=!SCOPE.track; if(a==='lines')SCOPE.lines=!SCOPE.lines; if(a==='filter')SCOPE.filter=!SCOPE.filter;
       if(a==='go')SCOPE.goTo(P.querySelector('[data-k=goto]').value); if(a==='stop'){ SCOPE.goto=null; SCOPE.va=SCOPE.vz=0; } if(a!=='go'&&a!=='stop')panel(); });
@@ -73,7 +73,7 @@ const SCOPE={alt:35,az:270,va:0,vz:0,mag:1,focus:.18,track:true,lines:true,filte
     cv.addEventListener('pointerdown',e=>{ drag={x:e.clientX,y:e.clientY,t:performance.now(),rx:0,ry:0}; cv.setPointerCapture(e.pointerId); cv.style.cursor='grabbing'; SCOPE.goto=null; });
     cv.addEventListener('pointermove',e=>{ if(!drag)return; drag.rx+=e.clientX-drag.x; drag.ry+=e.clientY-drag.y; drag.x=e.clientX; drag.y=e.clientY; });
     const up=()=>{ drag=null; cv.style.cursor='grab'; }; cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
-    cv.addEventListener('wheel',e=>{ e.preventDefault(); SCOPE.focus=cl(SCOPE.focus-Math.sign(e.deltaY)*.03,-1,1); const r=P.querySelector('[data-k=focus]'); if(r)r.value=Math.round(SCOPE.focus*100); },{passive:false});
+    let wheelT=0; cv.addEventListener('wheel',e=>{ e.preventDefault(); const n=performance.now(); if(!e.deltaY||n-wheelT<180)return; wheelT=n; const L=MAGS.map(m=>m[0]).filter(m=>m<=SCOPE.site.max&&(!SCOPE.magOK||SCOPE.magOK(m))), i=L.indexOf(SCOPE.mag), j=cl((i<0?0:i)-Math.sign(e.deltaY),0,L.length-1); if(L[j]!==SCOPE.mag){ SCOPE.mag=L[j]; panel(); } },{passive:false});
     const keys=e=>{ if(O.hidden)return; const k=e.key, d=e.type==='keydown'?1:0; if(k==='Escape'&&d){ SCOPE.close(); } else if(k==='ArrowLeft')keyV[0]=-d; else if(k==='ArrowRight')keyV[0]=d; else if(k==='ArrowUp')keyV[1]=d; else if(k==='ArrowDown')keyV[1]=-d; else return; e.stopImmediatePropagation(); e.preventDefault(); };
     addEventListener('keydown',keys,true); addEventListener('keyup',keys,true);
     const mount=(dt,pxd)=>{ const jd=SCOPE.jd(), lst=SCOPE.astro.lst(jd);

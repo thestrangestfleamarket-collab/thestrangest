@@ -1,6 +1,6 @@
 // THE OCTOPUS BUSKER: OCTOBUSK, a big purple octopus in a cowboy hat and bandana playing the guitar on the subway platform (a MERCH body on the player's rig; GUITAR 100: any piece in the book, never a stumble).
 import {SHARED, THREE} from './003-shx.js';
-import {INV, LEVELS, pos, SFX, UI} from './003b-systems.js';
+import {INV, LEVELS, LINES, pos, SFX, UI} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {MODS, SOL, SYS, TILE} from './006-map-pre.js';
@@ -58,14 +58,14 @@ const OCTOBUSK={};
   // standing on two arms, the guitar across it: the left arm out along the neck, the right across the body strumming
   const L={ua:[52,-28],fa:[58,14]}, R=t=>({ua:[34,22],fa:[96+(PLAY&&PLAY.playing()?Math.sin(t*PI*2*2.4)*9:0),-18]});
   let PLAY=null;
-  const body=MERCH.add({key:'octobusk',label:'THE OCTOPUS IN THE COWBOY HAT',height:2.3,model,size:14,q:.4,at:100,hd:0,
+  const body=MERCH.add({key:'octobusk',label:'THE OCTOPUS IN THE COWBOY HAT',height:2.3,model,size:10.5,q:.4,at:100,hd:0,
     idle:(t,N)=>MERCH.pose({nod:-6,bend:4,look:N&&!N.sheetOn?Math.sin(t*.4)*8:0,L:{...L,ua:[L.ua[0]+Math.sin(t*.7)*3,L.ua[1]]},R:R(t)}),
     root:(()=>{ const g=new THREE.Group(); g.name='octobusk'; scene.add(LEVELS.own(g,'station')); return g; })(),ground:(x,z)=>MODS.station.ground(x,z)});
   const N=OCTOBUSK.N=body&&body.npc;
-  // his spot: the middle of the platform, between the benches, facing the way in from the street
-  if(N&&SHARED.METRO&&new URLSearchParams(location.search).get('sheet')!=='octobusk'){ const MT=SHARED.METRO, p=MT.at(10.9,16.2), f=MT.at(10.9,10), hd=Math.atan2(f.x-p.x,f.z-p.z);
+  // his spot: the platform's far corner beside the route map, facing back down the platform
+  if(N&&SHARED.METRO&&new URLSearchParams(location.search).get('sheet')!=='octobusk'){ const MT=SHARED.METRO, p=MT.at(8.3,MT.SL.L-1.4), f=MT.at(11.5,MT.SL.L-10), hd=Math.atan2(f.x-p.x,f.z-p.z);
     N.lv='down'; Object.assign(N.st,{x:p.x,z:p.z,to:null,next:null,hold:true,pin:true,hd}); Object.assign(N.st.home,{x:p.x,z:p.z,r:0}); N.free=()=>true;
-    SOL.down.push([p.x-.55*M,p.z-.55*M,p.x+.55*M,p.z+.55*M]);
+    SOL.down.push([p.x-.42*M,p.z-.42*M,p.x+.42*M,p.z+.42*M]);
     /* the open guitar case on the floor in front of him for tips, a few gold coins in it; double-click it to tip him */
     { const C=new THREE.Group(), hw=[[0,.12],[.04,.18],[.12,.2],[.22,.19],[.3,.15],[.36,.14],[.42,.155],[.49,.16],[.55,.13],[.6,.075],[1.05,.065]], L=1.05;
       const shape=k=>{ const S=new THREE.Shape(), q=hw.map(([x,w])=>[Math.min(L-k,Math.max(k,x))-L/2,Math.max(.02,w-k)]); S.moveTo(q[0][0],q[0][1]); for(const [x,w] of q.slice(1))S.lineTo(x,w); for(const [x,w] of q.slice().reverse())S.lineTo(x,-w); return S; };
@@ -76,19 +76,21 @@ const OCTOBUSK={};
       const lid=new THREE.Group(); lid.position.set(0,.11,-.2); const lw=wall(.05); lw.position.z=.2; lid.add(lw); for(const [sh,y,m,f] of [[shape(0),.05,shell,0],[shape(.025),.004,plush,1]]){ const me=flat(sh,y,m); C.remove(me); me.position.z=.2; if(f){ me.rotation.x=PI; me.position.y=y; } lid.add(me); } lid.rotation.x=-1.75; C.add(lid);
       const coin=new THREE.CylinderGeometry(.024,.024,.005,16);
       for(const [x,z,y,rx,rz] of [[-.36,.03,0,0,0],[-.29,-.07,0,.2,0],[-.25,.08,.002,0,.15],[-.42,-.06,0,0,0],[-.42,-.06,.005,0,0],[-.42,-.06,.01,.05,0],[-.19,-.02,.002,-.25,.1],[-.33,.12,0,0,0]]){ const c=new THREE.Mesh(coin,gold); c.position.set(x,.024+y,z); c.rotation.set(rx,Math.random(),rz); C.add(c); }
-      const cp=MT.at(10.9,16.2-1.45); C.scale.setScalar(M); C.position.set(cp.x,MODS.station.ground(cp.x,cp.z),cp.z); C.rotation.y=hd; body.root.add(C); OCTOBUSK.case=C;
-      SOL.down.push([cp.x-.45*M,cp.z-.45*M,cp.x+.45*M,cp.z+.45*M]);
+      const cp={x:p.x+Math.sin(hd)*1.1*M,z:p.z+Math.cos(hd)*1.1*M}; C.scale.setScalar(M*.75); C.position.set(cp.x,MODS.station.ground(cp.x,cp.z),cp.z); C.rotation.y=hd; body.root.add(C); OCTOBUSK.case=C;
+      SOL.down.push([cp.x-.34*M,cp.z-.34*M,cp.x+.34*M,cp.z+.34*M]);
       UI.thing({name:'THE OCTOPUS\'S GUITAR CASE (TIP HIM $1)',obj:C,reach:1.8*M,near:3*M,tall:C.position.y+.4*M,act:()=>{ if((INV.cash||0)<1)return SAY('YOU HAVE NO MONEY TO TIP HIM.','#c8a090');
-        INV.cash-=1; if(INV.save)INV.save(); SFX.play('ding',{vol:.4,pitch:1.5}); SAY('YOU DROP A DOLLAR IN THE CASE. THE OCTOPUS TIPS HIS HAT: "MUCH OBLIGED, PARTNER."','#f2c14e'); }}); }
+        INV.cash-=1; if(INV.save)INV.save(); SFX.play('ding',{vol:.4,pitch:1.5}); SAY('YOU DROP A DOLLAR IN THE CASE. THE OCTOPUS TIPS HIS HAT.','#f2c14e'); LINES.say(N,'Gracias.'); }}); }
     /* the guitar: the real one, held across him (posed off his chest each frame), its pieces from the book played through its own voice */
     const G=GUITAR.GHOLD.model(), gg=new THREE.Group(); gg.add(G); G.scale.setScalar(M*1.15); G.rotation.set(-.1,0,-1.22); G.position.set(-.36*M,-.12*M,0); body.root.add(gg);
     const at=new V3(); let wait=4, inn=false;
+    // the hardest piece in the book (the highest GUITAR it asks), played over and over
+    const hardest=()=>{ let b=0; GUITAR.BOOK.forEach((t,i)=>{ const B=GUITAR.BOOK[b]; if((t.lvl||0)>(B.lvl||0)||(t.lvl||0)===(B.lvl||0)&&(t.secs||0)>(B.secs||0))b=i; }); return b; };
     SYS.add('places',dt=>{ dt=dt||0; const here=SHARED.LVL==='down'&&N.g.visible&&Math.hypot(pos.x-N.st.x,pos.z-N.st.z)<30*M; gg.visible=N.g.visible;
       if(N.g.visible&&N.PM){ MERCH.at(N,'torso',[0,.06,.3],at); gg.position.copy(at); gg.rotation.set(0,N.st.hd,0); gg.scale.setScalar(N.size*.82); }
       if(!here){ if(inn&&PLAY){ PLAY.stop(); PLAY.drop(); } inn=false; return; }
       if(!inn){ inn=true; GUITAR.loadSongs(); if(!PLAY)PLAY=GUITAR.npc('octobusk'); }
-      if(!PLAY.playing()&&(wait-=dt)<=0){ const B=GUITAR.BOOK; PLAY.play(Math.floor(Math.random()*B.length)); wait=6+Math.random()*8; }
-      PLAY.tick(N.st.x,N.st.z); },'146zoc-octobusk');
+      if(!PLAY.playing()&&(wait-=dt)<=0){ PLAY.play(hardest()); wait=2.5; }
+      PLAY.tick(N.st.x,N.st.z,.5); },'146zoc-octobusk');
     OCTOBUSK.now=()=>PLAY&&PLAY.playing()?GUITAR.BOOK[PLAY.P.song].name:null; }
   window.OCTOBUSK=OCTOBUSK;
   window.OCTODBG=()=>N?{x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),hd:+N.st.hd.toFixed(2),vis:N.g.visible,tris:body.tris(),song:OCTOBUSK.now?OCTOBUSK.now():null}:null; }

@@ -65,6 +65,13 @@ export default {
       const gz = p.endsWith(".bin"), out = gz ? new Response(r.body, { status: r.status, headers: r.headers, encodeBody: "manual" }) : new Response(r.body, r);
       if (gz) { out.headers.set("content-type", "application/octet-stream"); out.headers.set("content-encoding", "gzip"); }
       out.headers.set("cache-control", "private, max-age=31536000, immutable"); out.headers.set("x-robots-tag", "noindex"); return out; }
+    // voice's relay (src/111dc-voice.js): short-lived Cloudflare TURN logins for a player (TURN_KEY_ID, TURN_KEY_TOKEN); without them only STUN
+    if (request.method === "GET" && p === "/turn") {
+      if (!(await inside(env, request, dev))) return new Response("not found", { status: 404 });
+      let ice = [{ urls: "stun:stun.cloudflare.com:3478" }];
+      if (env.TURN_KEY_ID && env.TURN_KEY_TOKEN) try { const r = await fetch("https://rtc.live.cloudflare.com/v1/turn/keys/" + env.TURN_KEY_ID + "/credentials/generate-ice-servers", { method: "POST", headers: { Authorization: "Bearer " + env.TURN_KEY_TOKEN, "content-type": "application/json" }, body: JSON.stringify({ ttl: 86400 }) });
+        if (r.ok) { const j = await r.json(), L = [].concat(j.iceServers || []).map(v => ({ ...v, urls: [].concat(v.urls || []).filter(u => !/:53(\?|$)/.test(u)) })).filter(v => v.urls.length); if (L.length) ice = L; } } catch (e) {}
+      return new Response(JSON.stringify({ iceServers: ice }), { headers: { "content-type": "application/json", "cache-control": "private, no-store" } }); }
     if (request.method === "GET" && p === "/now") {
       let r = null; try { r = await fetch(env.SUPABASE_URL + "/rest/v1/now_playing?select=*&id=eq.theatre", { headers: { apikey: env.SUPABASE_KEY } }); } catch (e) {}
       const out = new Response(r && r.ok ? r.body : "[]", { status: 200 }); out.headers.set("content-type", "application/json"); out.headers.set("cache-control", "no-store"); return out; }
@@ -416,7 +423,7 @@ export class Block extends Server {
   near(s, to, r) { if (!s.at) return null; for (const o of this.getConnections()) if (o.state && o.state.id === to) { const a = o.state.at;
       return a && a[4] === s.at[4] && a[5] === s.at[5] && Math.hypot(a[0] - s.at[0], a[1] - s.at[1]) < r ? o : null; } return null; }
   onMessage(c, raw) {
-    const s = c.state; if (!s || typeof raw !== "string" || raw.length > (raw.startsWith('{"t":"folk"') ? 400000 : raw.startsWith('{"t":"mobgrid"') || raw.startsWith('{"t":"dmset"') ? 200000 : 2500)) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
+    const s = c.state; if (!s || typeof raw !== "string" || raw.length > (raw.startsWith('{"t":"folk"') ? 400000 : raw.startsWith('{"t":"mobgrid"') || raw.startsWith('{"t":"dmset"') ? 200000 : raw.startsWith('{"t":"rtc"') ? 12000 : 2500)) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
     const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0, at: {} }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 60) return;
     const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, sky: 200, skyw: 100, ride: 300, car: 300, curse: 1500, puff: 800, drone: 3000, ps: 150, fish: 200, craft: 150, world: 120, puts: 1000, lives: 3000, met: 1000, tr: 100, gtr: 25, ins: 20, jug: 200, mobgrid: 3000, dmset: 3000, breakout: 5000, mobhit: 60, mobpar: 200, vr: 60, tv: 200, body: 1000, st: 150, jet: 150, zap: 120, arm: 40, mobtame: 1000, tame: 500, bowl: 80 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
     if (m.t === "bye") { this.onClose(c); c.setState({ ...s, id: "" }); try { c.close(1000, "bye"); } catch (e) {} return; }   // leaving: out for everyone now, not when the socket times out
@@ -559,6 +566,12 @@ export class Block extends Server {
     } else if (m.t === "say") {
       const text = word(m.text, 200), st = sayStyle(m.st), sg = typeof m.sg === "string" ? m.sg.replace(/[^wWs]/g, "").slice(0, 200) : "";   // (sg: signed, each word's kind; src/146zs-signs.js)
       if (text) this.broadcast(JSON.stringify(sg ? { t: "say", id: s.id, name: s.name, text, st, sg } : { t: "say", id: s.id, name: s.name, text, st }), [c.id]);
+    } else if (m.t === "rtc") {   // voice (src/111dc-voice.js): one player's WebRTC handshake handed to another near them; the voices go browser to browser
+      const to = word(m.to, 64), d = m.d; if (!to || to === s.id || !d || typeof d !== "object") return; const o = this.near(s, to, 45); let x = null;
+      if (d.sdp && (d.sdp.type === "offer" || d.sdp.type === "answer") && typeof d.sdp.sdp === "string" && d.sdp.sdp.length < 10000) x = { sdp: { type: d.sdp.type, sdp: d.sdp.sdp } };
+      else if (d.c && typeof d.c.candidate === "string" && d.c.candidate.length < 500) x = { c: { candidate: d.c.candidate, sdpMid: d.c.sdpMid == null ? null : word(d.c.sdpMid, 16), sdpMLineIndex: num(d.c.sdpMLineIndex, 0, 16) | 0 } };
+      else if (d.bye || d.no) x = d.bye ? { bye: 1 } : { no: 1 };
+      if (!x) return; if (!o) { if (!x.bye) c.send(JSON.stringify({ t: "rtc", from: to, d: { bye: 1 } })); return; } o.send(JSON.stringify({ t: "rtc", from: s.id, d: x }));
     } else if (m.t === "pm" && s.name) {   // a message to one player in this section (the paper doll's MESSAGE)
       const to = word(m.to, 64), text = word(m.text, 200); if (!to || to === s.id || !text) return;
       if (!this.hand(to, { t: "pm", from: s.id, name: s.name, text })) c.send(JSON.stringify({ t: "pm", op: "gone", from: to }));

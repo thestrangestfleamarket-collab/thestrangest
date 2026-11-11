@@ -7,7 +7,7 @@ import {PEEK} from './008-batch.js';
 import {BLOCKS} from './038zb-blocks.js';
 { const APTS=MODS.apts, F=MODS.firev, T=TILE, KK=BLDK, {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, {HZ,S}=F, A=APTS.AL, FE=APTS.ESC[0], DU=APTS.DU, DO=APTS.DO, LV=F.lv;
   const ix=x=>x/(T*KK)+SHARED.BOD.OX, iy=z=>z/(T*KK)+SHARED.BOD.OY, cl=v=>Math.max(0,Math.min(1,v)), nk=()=>cl((4-CLOCK.elev())/8);
-  const AR=APTS.R, IN=APTS.IN||AR, FY=AR.y0-.24/.907-.006, U=u=>AR.x1-u, V=d=>FY-d, L0=U(FE.ub), L1=U(FE.ua), DX=U(DU);   // the house turned half round your rooms: its front face on their fire-escape wall, your landing level with their floor
+  const AR=APTS.R, IN=APTS.IN||AR, FY=AR.y0-.24/.907-.006, U=u=>AR.x0+(APTS.EB||AR.x1-AR.x0)-u, V=d=>FY-d, L0=U(FE.ub), L1=U(FE.ua), DX=U(DU);   // the house turned half round your rooms: its front face on their fire-escape wall, your landing level with their floor
   const onL=(x,z)=>{ const u=ix(x), v=iy(z); return u>L0-.3&&u<L1+.3&&v<FY+.4&&v>V(DO+.4); }, outL=(x,z)=>onL(x,z)&&iy(z)<AR.y0-.13; F.onL=onL;
   const sol2=(u0,d0,u1,d1,h)=>STORE.kit.sol(Math.min(U(u0),U(u1)),Math.min(V(d0),V(d1)),Math.max(U(u0),U(u1)),Math.max(V(d0),V(d1)),h);
   const G=new THREE.Group(); G.visible=false; G.userData.mergeStatic=true; scene.add(G); let light=null;
@@ -32,7 +32,7 @@ import {BLOCKS} from './038zb-blocks.js';
     BATCH.build(APTS.MKA); const house=new Set(Object.values(bm)); BATCH.meshes={};
     APTS.escape(FE,Array.from({length:Math.min(LV+2,APTS.ST-1)},(_,i)=>i+1),-APTS.RZ,(LV+3)*S);
     BATCH.build(APTS.MKA); for(const me of house){ me.castShadow=me.receiveShadow=true; G.add(me); } BATCH.cast=kc; for(const me of Object.values(BATCH.meshes||{})){ me.castShadow=me.receiveShadow=true; G.add(me); } BATCH.meshes=km; BATCH.items=keep;
-    G.rotation.y=Math.PI; G.position.set(X(AR.x1)+X(A.x0),0,Z(FY)+Z(A.y1)); G.updateMatrix(); G.updateMatrixWorld(true);
+    G.rotation.y=Math.PI; G.position.set(X(AR.x0+(APTS.EB||AR.x1-AR.x0))+X(A.x0),0,Z(FY)+Z(A.y1)); G.updateMatrix(); G.updateMatrixWorld(true);
     // the pots and plants are real: on your landing each one a thing you can pick up, push or knock off; the landings above and below keep theirs in place
     const LW=T*KK, YH=h=>Y(h)-Y(0); F.loose=[]; F.pots=[];
     for(const sp of APTS.escPlants||[]){ const lvP=Math.floor((sp.z-APTS.RZ+6)/S); if(lvP===LV)continue;   // your own landing's things are your rooms' (150fi), placed in DECORATE

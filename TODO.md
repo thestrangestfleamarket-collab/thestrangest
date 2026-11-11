@@ -106,6 +106,8 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
 In order: catches decided on the server → login cookie with the self-hosted libraries → split `Home` (art in its own object). Live-data
 steps go in one window, after the checks run on `main`, and end with the owner trying it live.
 
+- [ ] **Voice's relay key** (11 Nov 2026) · P2 · S · look. Cloudflare dashboard → Realtime → TURN: make a key, then on the worker
+  `wrangler secret put TURN_KEY_ID` and `TURN_KEY_TOKEN`; without them voice uses STUN only (some networks won't connect). Then try it live with two people.
 - [ ] **A modified client can still add to its own save** (up to $2,400 and 1,800 items an hour) · P1 · L · code · risk high. Money is
   a server bucket with a ledger since 9 Nov, but the game still decides what you catch: decide the catches on the server.
 - [ ] **Login cookie HttpOnly** · P2 · M · code · risk med-high (live auth). `src/door/door.html` sets the Supabase token as a JS-readable

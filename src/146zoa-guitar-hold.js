@@ -17,8 +17,14 @@ const GHOLD={};
   const SAD=F.sad[0], NUT=F.nut[0], L=NUT-SAD, FB=F.fb[1];
   const fretY=k=>NUT-L*(1-Math.pow(2,-k/12));
   const strAt=(s,y,o=new V3())=>{ const u=(y-SAD)/L, x=F.x[s-1]; return o.set(x[1]+(x[0]-x[1])*u,y,F.sad[1]+(F.nut[1]-F.sad[1])*u); };
-  const pressY=k=>k?fretY(k-1)+.7*(fretY(k)-fretY(k-1)):NUT+.01;
+  const pressY=(k,u=.7)=>k?fretY(k-1)+u*(fretY(k)-fretY(k-1)):NUT+.01;
   GHOLD.fretY=fretY; GHOLD.strAt=strAt;
+  // the neck's shape (from the model): its half width, and its rounded back, deeper at the heel
+  const NECK=[.55,NUT+.012], NW=y=>.0305-(y-.55)*.018, NBK=(x,y)=>{ const c=y>=.65?.023:.023-(.65-y)*.115, u=Math.min(1,Math.abs(x)/NW(y)); return c+(.034-c)*u*u; };
+  // a ball (centre p, radius r) out of the neck: the shortest way out (over the board, past its edge, or behind its back; a thumb never over the board), or null
+  const neckOut=(p,r,o,back)=>{ if(p.y<NECK[0]||p.y>NECK[1])return null; const w=NW(p.y), ax=Math.abs(p.x); if(ax>w+r||p.z>FB+r)return null; const zb=NBK(Math.min(ax,w),p.y); if(p.z<zb-r)return null;
+    const up=FB+r-p.z, side=w+r-ax, dn=p.z-zb+r; return !back&&up<=side&&up<=dn?o.set(0,0,up):side<=dn?o.set(Math.sign(p.x)*side,0,0):o.set(0,0,-dn); };
+  GHOLD.neckOut=neckOut;
   // where each finger of the right hand plucks (a share of the string from the bridge: the thumb nearest the soundhole), and the strum
   const PLY={p:.29,i:.255,m:.225,a:.195,s:.3}, plY=r=>SAD+(PLY[r]||.2)*L;
   GHOLD.plFrac=r=>PLY[r]||.2;
@@ -35,7 +41,9 @@ const GHOLD={};
   GHOLD.posAt=posAt;
   const UP=new V3(0,0,1);
   // the left hand's fingertips (index to little finger): a press is the string at its fret, pressed onto the board; free fingers hover over where they go next
-  const left=(sc,t,out,w)=>{ const p=posAt(sc,t), press=q=>strAt(q.s,pressY(q.k)).setZ(FB+.006), hover=q=>q?strAt(q.s,pressY(q.k)).addScaledVector(UP,.016):strAt(3+(w.f>2?1:0),pressY(Math.max(1,Math.round(p)+w.f-1))).addScaledVector(UP,.018);
+  // fingers on one fret share it in their order (the index nearest the nut), so they lie side by side and never cross
+  const share=(q,sc)=>{ const on=new Set(); for(const o of sc.lh)if(o.k===q.k&&o.t0<q.t1&&q.t0<o.t1&&o.f!==q.f)on.add(o.f); let lo=0; for(const f of on)if(f<q.f)lo++; return on.size?.3+.58*lo/on.size:.7; };
+  const left=(sc,t,out,w)=>{ const p=posAt(sc,t), press=q=>strAt(q.s,pressY(q.k,share(q,sc))).setZ(FB+.001), hover=q=>q?strAt(q.s,pressY(q.k,share(q,sc))).addScaledVector(UP,.016):strAt(3+(w.f>2?1:0),pressY(Math.max(1,Math.round(p)+w.f-1))).addScaledVector(UP,.018);
     for(let f=1;f<=4;f++){ let cur=null, prev=null, next=null; w.f=f;
       for(const q of sc.lh){ if(q.f!==f)continue; if(q.t0<=t&&t<q.t1){ if(!cur||q.s>cur.s)cur=q; } else if(q.t1<=t)prev=q; else if(!next&&q.t0>t)next=q; }
       if(cur){ out[f].copy(press(cur)); continue; }
@@ -43,7 +51,7 @@ const GHOLD={};
       if(prev&&t-prev.t1<.08){ mix(press(prev),hover(prev),sm((t-prev.t1)/.08),out[f]); continue; }
       const a=(prev?prev.t1:t)+.08, b=(next?next.t0:t+1)-.1; mix(hover(prev||next),hover(next||prev),sm((t-a)/Math.max(.05,b-a)),out[f]); }
     // the thumb behind the neck, under the middle of the hand
-    out[0].copy(strAt(3,pressY(Math.max(1,Math.round(p))+1))).setX(-.012).setZ(FB-.055);
+    { const y=pressY(Math.max(1,Math.round(p))+1); out[0].set(-.006,y,NBK(-.006,y)-.0015); }
     return p; };
   const HOME={p:5,i:3,m:2,a:1}, RD=['p','i','m','a'];
   // the right hand's fingertips (thumb, index, middle, ring): each comes onto its string, pulls through it and lifts back; a strum sweeps the index across them all
@@ -128,11 +136,25 @@ const GHOLD={};
 
   /* ---------- a body holding it: GHOLD.attach puts the guitar on it and a step on its pose (PM.post, 111a) ---------- */
   GHOLD.IK={reach,aim,untwist,turnAbout,org};   // (the arms' and hands' solvers, shared with the instruments you sit at, 146zp)
-  const DIRS={Lf:new V3(-.5,-.05,.85),Ld:new V3(.85,-.1,.5),Rf:new V3(.85,-.1,-.5),Rd:new V3(.15,.25,1),Lpole:new V3(.35,-1,-.15),Rpole:new V3(-.3,-1,-.45)};   // (the elbows' aims in the body's own frame: +x its left, +y up, +z ahead; the left hangs under the neck, the right rests behind the upper bout)
+  const CJ=[0,1,2,3].map(()=>new V3()), GI=new M4(), NB=new V3(), NT=new V3();
+  // the fretting fingers and thumb kept out of the neck as they reach (HANDS.reach's avoid): along each bone past the knuckle, a ball as thick as the finger there
+  const HB=new M4(), BH=new THREE.Matrix3(), AV=new Array(18).fill(0), AQ=new V3(), AO=new V3();
+  const avoid=(i,pts)=>{ for(let s=0;s<6;s++){ const j=s+1, q=AQ.copy(pts[j>>1]); if(j&1)q.lerp(pts[(j>>1)+1],.5); q.applyMatrix4(HB);   // (a pressing tip a smaller ball: it is meant to touch)
+      const o=neckOut(q,s<5||!i?CR[i][Math.min(2,s>>1)]:.004,AO,!i); if(o)o.applyMatrix3(BH).multiplyScalar(2); for(let c=0;c<3;c++)AV[s*3+c]=o?o.getComponent(c):0; } return AV; };
+  const KA=new V3(), KB=new V3(), KN=[.035,.01]; GHOLD.KN=KN;
+  const CR=[[.011,.009,.008],[.0095,.008,.007],[.0095,.008,.007],[.0095,.008,.007],[.009,.0075,.0065]];   // (each digit's half thickness at its first, second and last bone, from the mesh)
+  // the fretting hand turned by its own shape: the knuckles from the little finger to the index along the neck toward the nut, the hand from wrist to knuckles up past the board's edge leaning over it (LEAN), the palm toward the neck
+  const LEAN=[.6,0]; GHOLD.LEAN=LEAN; GHOLD.THO=.02;
+  const fretAim=(W,Gm)=>{ const R=HANDS.REST, N=HANDS.NAME, at=n=>new V3().setFromMatrixPosition(R[N[n]]), km=at('middle-finger-phalanx-proximal');
+    const A=at('index-finger-phalanx-proximal').sub(at('pinky-finger-phalanx-proximal')).normalize(), F=km.sub(at('wrist')); F.addScaledVector(A,-F.dot(A)).normalize(); const P=new V3().crossVectors(F,A);
+    const Ag=new V3(0,1,LEAN[1]).normalize(), Fg=new V3(-LEAN[0],0,1); Fg.addScaledVector(Ag,-Fg.dot(Ag)).normalize(); const Pg=new V3().crossVectors(Fg,Ag);
+    const Rg=new M4().makeBasis(Ag,Fg,Pg).multiply(new M4().makeBasis(A,F,P).transpose()), p=org(W[5],new V3()), k=VA.setFromMatrixColumn(W[5],0).length();
+    W[5].extractRotation(Gm).multiply(Rg).multiply(HANDS.LOC.L.clone().transpose()).scale(VA.set(k,k,k)).setPosition(p); };
+  const DIRS={Rf:new V3(.85,-.1,-.5),Rd:new V3(.15,.25,1),Lpole:new V3(.35,-1,-.15),Rpole:new V3(-.3,-1,-.45)};   // (the elbows' aims in the body's own frame: +x its left, +y up, +z ahead; the left hangs under the neck, the right rests behind the upper bout)
   GHOLD.DIRS=DIRS; GHOLD.stage=4;   // (for checking the hold a stage at a time: 1 the upper arms out, 2 the elbows bent, 3 the hands turned, fingers open, 4 the fingers placed)
   GHOLD.attach=(me,PM,body,src)=>{ if(!body.binv)return null; const gm=GHOLD.model(); gm.matrixAutoUpdate=false; me.add(gm);
     const restM=body.binv.map(m=>m.clone().invert()), W=restM.map(()=>new M4()), Gm=new M4(), tgL=[0,1,2,3,4].map(()=>new V3()), tgR=[0,1,2,3,4].map(()=>new V3());
-    const fg={L:HANDS.R0.map(f=>f.slice()),R:HANDS.R0.map(f=>f.slice())}, W0=restM.map(()=>new M4()), H={me,PM,gm,src,fg,on:true,off:{L:new V3(),R:new V3()},ang:{lift:.35,bend:1.6,turn:.9},cang:[0,0,0,0]};
+    const fg={L:HANDS.R0.map(f=>f.slice()),R:HANDS.R0.map(f=>f.slice())}, W0=restM.map(()=>new M4()), H={me,PM,gm,src,fg,on:true,off:{L:new V3(),R:new V3()},tho:new V3(),ang:{lift:.35,bend:1.6,turn:.9},cang:[0,0,0,0]};
     const toG=(v,o)=>o.copy(v).applyMatrix4(Gm), dirG=(v,o)=>o.copy(v).transformDirection(Gm); let PB=null; const dirB=v=>new V3().copy(v).transformDirection(PB);
     PM.post=(PMx,b)=>{ if(!H.on)return; const P=PMx.value, sc=src.score(), t=src.time();
       for(let i=0;i<15;i++)W[i].multiplyMatrices(P[i],restM[i]);
@@ -155,14 +177,29 @@ const GHOLD={};
         reach(W,[3,4,5],VA.copy(wL).add(H.off.L),dirB(DIRS.Lpole));
         { const T=VB.copy(wR).add(H.off.R), R=GHOLD.clip!==false&&clipArm(body,H); if(R){ if(GHOLD.stage>=3)clipSolve(P[1],W,restM,R,T,H.cang,VA.setFromMatrixColumn(P[1],0).length()); else clipPose(P[1],W,restM,R,[0,0,0,0]); } else { armSolve(P[1],W,restM,[6,7,8],'R',T,H.ang); armFK(P[1],W,restM,[6,7,8],'R',H.ang,GHOLD.stage); } }
         if(GHOLD.twist!==false)untwist(W,[3,4,5],1);
-        if(GHOLD.stage>=3){ aim(W,5,'L',dirG(DIRS.Lf,new V3()),dirG(DIRS.Ld,new V3())); if(GHOLD.stage>=4)aim(W,8,'R',dirG(DIRS.Rf,new V3()),dirG(DIRS.Rd,new V3())); }
+        if(GHOLD.stage>=3){ fretAim(W,Gm); if(GHOLD.stage>=4)aim(W,8,'R',dirG(DIRS.Rf,new V3()),dirG(DIRS.Rd,new V3())); }
         if(GHOLD.stage>=3&&GHOLD.twist!==false){ untwist(W,[3,4,5],2); untwist(W,[6,7,8],2); }
         if(GHOLD.stage<4){ for(const sd of 'LR')for(let i=0;i<5;i++)fg[sd][i]=[0,0,0,HANDS.R0[i][3]]; break; }
         if(!st||!st.base||!st.near)break; H.err={L:[],R:[]};
         for(const [side,bi,tg] of [['L',5,tgL],['R',8,tgR]]){ const base=MA.multiplyMatrices(W[bi],body.binv[bi]).multiply(st.base[side]), inv=MB.copy(base).invert(), f=fg[side], e=E[side].set(0,0,0); let wsum=0;
-          for(let i=0;i<5;i++){ if(side==='R'&&i===4){ f[4]=[.9,1.2,.85,HANDS.R0[4][3]]; continue; } const tw=toG(tg[i],new V3()), v=VC.copy(tw).applyMatrix4(inv); HANDS.reach(i,v,f[i]);
-            const tip=HANDS.tip(i,f[i],VD).applyMatrix4(base), w=i===0?.5:1; H.err[side][i]=tip.distanceTo(tw)/k; e.addScaledVector(tw.sub(tip),w); wsum+=w; }
-          e.multiplyScalar(1/wsum); H.off[side].add(e); const mx=(side==='R'?.03:.09)*k; if(H.off[side].length()>mx)H.off[side].setLength(mx); } }
+          const fret=side==='L'; GI.copy(Gm).invert();
+          // (the fretting hand's skin rests on the board and the neck's back: each digit's tip held off them by how far its last bone reaches past it)
+          if(fret){ NB.set(0,0,1).transformDirection(Gm).transformDirection(inv); NT.copy(NB).negate(); HB.multiplyMatrices(GI,base); BH.setFromMatrix4(MC.multiplyMatrices(inv,Gm)); }
+          for(let i=0;i<5;i++){ if(side==='R'&&i===4){ f[4]=[.9,1.2,.85,HANDS.R0[4][3]]; continue; } const tw=toG(tg[i],new V3()); let v=VC.copy(tw).applyMatrix4(inv);
+            if(fret){ const n=i?NB:NT; v.addScaledVector(n,HANDS.ext(i,f[i],n)); }   // (from the pose it had: it is kept frame to frame)
+            HANDS.reach(i,v,f[i],fret?avoid:null);
+            // (a thumb at the end of its reach and still in the neck moves the hand away from it, a little more each round, and back as it comes clear)
+            if(fret&&!i){ HANDS.chain(0,f[0],CJ); let dp=null; for(let j=1;j<7;j++){ const q=VB.copy(CJ[j>>1]); if(j&1)q.lerp(CJ[(j>>1)+1],.5); const o=neckOut(q.applyMatrix4(HB),CR[0][Math.min(2,j>>1)],VD,true); if(o&&(!dp||o.lengthSq()>dp.lengthSq()))dp=AO.copy(o); }
+              if(dp)H.tho.addScaledVector(dp,.5).clampLength(0,GHOLD.THO); else H.tho.multiplyScalar(.97); }
+            const tip=HANDS.tip(i,f[i],VD).applyMatrix4(base), w=i===0?.5:1; tw.copy(v).applyMatrix4(base); H.err[side][i]=tip.distanceTo(tw)/k; e.addScaledVector(tw.sub(tip),w); wsum+=w; }
+          e.multiplyScalar(1/wsum);
+          // the fretting hand placed, not pulled: its knuckles in a line just past the neck's edge, a little over the board, along the neck where its fingers go
+          if(fret){ let y=0; for(let i=1;i<5;i++)y+=tg[i].y; y=Math.max(NECK[0],Math.min(NUT,y/4)); KA.set(0,0,0); for(let i=1;i<5;i++)KA.add(HANDS.chain(i,f[i],CJ)[0]); KA.multiplyScalar(.25).applyMatrix4(base).applyMatrix4(GI);
+            const sh=KB.set(NW(y)+KN[0],y,FB+KN[1]).add(H.tho).sub(KA);
+            // (and no knuckle left in the neck's edge by that: the hand moved on by the deepest)
+            let dk=null; for(let i=1;i<5;i++){ const q=VB.copy(HANDS.chain(i,f[i],CJ)[0]).applyMatrix4(base).applyMatrix4(GI).add(sh), o=neckOut(q,.016,VD); if(o&&(!dk||o.lengthSq()>dk.lengthSq()))dk=AO.copy(o); } if(dk)sh.add(dk);
+            e.copy(toG(VB.copy(KA).add(sh),new V3())).sub(toG(KA,new V3())); }
+          H.off[side].add(e); const mx=(side==='R'?.03:.09)*k; if(H.off[side].length()>mx)H.off[side].setLength(mx); } }
       if(st)st.fg=fg;
       if(GHOLD.dbg){ const inv=new M4().copy(P[1]).invert(), k=1/VA.setFromMatrixColumn(P[1],0).length(), j=i=>org(W[i],new V3()).applyMatrix4(inv).toArray().map(v=>+v.toFixed(3)); GHOLD.dbg={R:[j(6),j(7),j(8)],L:[j(3),j(4),j(5)]}; }   // (the arms' joints in the body's rest space, metres, for the checks)
       for(let i=0;i<15;i++)P[i].multiplyMatrices(W[i],body.binv[i]); };

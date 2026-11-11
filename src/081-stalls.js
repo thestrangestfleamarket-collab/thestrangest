@@ -39,7 +39,7 @@ const STALL=(()=>{ const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS;
   // the labels on the boxes: one picture, a strip for each kind (chalk on slate)
   let LAB=null; const labels=()=>{ if(LAB)return LAB; const ks=Object.keys(POWER), cv=document.createElement('canvas'); cv.width=512; cv.height=64*ks.length; const g=cv.getContext('2d');
     ks.forEach((k,i)=>{ const y=i*64; g.fillStyle='#2a2b28'; g.fillRect(0,y,512,64); g.strokeStyle='#8a6a3e'; g.lineWidth=6; g.strokeRect(3,y+3,506,58); g.fillStyle='#ece8dc'; let f=54; g.font=`bold ${f}px Georgia,serif`; while(g.measureText(POWER[k].n).width>490&&f>20){ f-=2; g.font=`bold ${f}px Georgia,serif`; } g.textAlign='center'; g.textBaseline='middle'; g.fillText(POWER[k].n,256,y+35); });
-    const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; LAB={t,ks,mat:new THREE.MeshLambertMaterial({map:t,side:THREE.DoubleSide})}; return LAB; };
+    const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; LAB={t,ks,mat:new THREE.MeshLambertMaterial({map:t,side:THREE.DoubleSide})}; return LAB; };
   const VEG={
     tomato:{s:.04,h:1.7,f:(p,s)=>{ p('ball',0xcc3420,0,s*.85,0,s,s*.85,s); p('ball',0x3e8a2a,0,s*1.6,0,s*.35,s*.15,s*.35); }},
     pepper:{s:.045,h:2,f:(p,s,r,R)=>{ p('ball',[0x2f8a2a,0xd8b028,0xc8321e][Math.floor(R()*3)],0,s,0,s,s*1.1,s); }},

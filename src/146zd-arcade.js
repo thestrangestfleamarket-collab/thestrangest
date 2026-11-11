@@ -6,6 +6,7 @@ import {scene} from './004-main.js';
 import {STORE, TILE} from './006-map-pre.js';
 import {IKIT} from './038zc-ikit.js';
 import {MINI} from './038zd-mini.js';
+import {SKEE} from './146yz-skee.js';
 import {AIRH} from './146zcz-airhockey.js';
 import {PIN} from './146zcz-pinball.js';
 const ARCADE={}; window.ARCADE=ARCADE;
@@ -14,7 +15,7 @@ const ARCADE={}; window.ARCADE=ARCADE;
   // free play; tickets come out of the games and the token machine trades them, 10 for a market token
   const tok=()=>INV.items.arc_token||0, needTok=()=>'', payTok=()=>true;   // free play (owner, 5 Nov 2026)
   const win=n=>{ if(n>0){ INV.add('ptix',n); say(`${n} TICKET${n===1?'':'S'} COME OUT.`); } };
-  ARCADE.skee=()=>MINI.open(GAMES.skee({can:needTok,pay:payTok,end:S=>{ ARCADE.last={game:'skee',score:S.score,tickets:S.tickets||0}; win(S.tickets||0); }}));
+  ARCADE.skee=()=>MINI.open(SKEE.game({can:needTok,pay:payTok,end:S=>{ ARCADE.last={game:'skee',score:S.score,tickets:S.tickets||0}; win(S.tickets||0); }}));
   ARCADE.claw=()=>MINI.open(GAMES.claw({can:needTok,pay:payTok,end:S=>{ ARCADE.last={game:'claw',won:!!S.won}; if(S.won){ INV.add('plush_bear',1); say('A PLUSH BEAR. IT IS IN YOUR PACK.'); } }}));
   ARCADE.hockey=()=>AIRH.play({end:S=>{ ARCADE.last={game:'hockey',won:!!S.won,score:S.score,level:S.level}; win(S.score); }});
   ARCADE.trade=()=>{ const have=INV.items.ptix||0, n=Math.floor(have/10); if(!n)return say(`YOU HAVE ${have} TICKET${have===1?'':'S'}. TEN MAKE A TOKEN.`,'#c8a090'); FORAGE.take('ptix',n*10); INV.add('arc_token',n); say(`${n*10} TICKETS IN, ${n} MARKET TOKEN${n===1?'':'S'} OUT. YOU HAVE ${tok()}.`); return n; };

@@ -80,6 +80,7 @@ Object.assign(EQUIP,{fit:[1.3,1.55,1.1,-.2,.04],by:{},float:false,light:false,si
     m.me.updateMatrix(); const T=HM.copy(m.me.matrix).multiply(m.PM.value[2]), [cx,cy,cz]=R.c;
     HR.set(cx,cy,cz).applyMatrix4(T); HT.set(cx,cy+R.h,cz).applyMatrix4(T); HF.set(cx,cy,cz+R.f).applyMatrix4(T); HQ.set(cx+R.w,cy,cz).applyMatrix4(T);
     const hh=HT.distanceTo(HR); return {hb:HR.clone(),hh,up:HT.sub(HR).normalize().clone(),fwd:HF.sub(HR).normalize().clone(),w:HQ.distanceTo(HR),f:R.f/(R.h||1)*hh}; };
+  EQUIP.headOf=headOf;   // (the cigar in your teeth reads it too)
   const lamp=(g,B,id,H)=>{ const J=B&&B.J, on=!!id&&EQUIP.ability(id)==='light'; let L=H.lamp; if(!on||!g||!J||g.visible===false){ if(L)L.visible=false; return; }
     if(!L){ L=H.lamp=EYES.lamp(); L.name='headlamp'; } if(L.parent!==g)g.add(L); L.visible=true; L.userData.lamp.emissiveIntensity=EQUIP.lampOn()?2.5:.2;
     const A=headOf(g); if(A){ hu.copy(A.up); hf.copy(A.fwd).addScaledVector(hu,-hf.copy(A.fwd).dot(hu)).normalize(); hr.crossVectors(hu,hf).normalize(); HM.makeBasis(hr,hu,hf); const s=A.w*1.1/.56;   // (the band round the head at its widest, the lamp on the forehead)

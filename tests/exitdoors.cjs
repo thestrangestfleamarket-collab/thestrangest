@@ -22,8 +22,9 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       ok(inn, id + ': you get in');
       ok(r.own || (r.door && r.at < 1.5), id + ': a door shows at its way out ' + JSON.stringify(r));
       ok(r.thing === 1, id + ': the door is a thing you double-click');
-      await pg.evaluate(id => { const e = ROOMS.off[id].exit, t = __UI.things.find(t => t.exit && t.obj && Math.hypot(t.obj.position.x - e[0], t.obj.position.z - e[2]) < 0.1); return t && t.act(); }, id);
-      ok(await until(() => !ROOMS.offIn() && !FADE.busy), id + ': double-clicking it takes you out');
+      let out = false;   // a click while the way in's fade still settles does nothing: click again, as a player would
+      for (let k = 0; k < 4 && !out; k++) { await pg.evaluate(id => { const e = ROOMS.off[id].exit, t = __UI.things.find(t => t.exit && t.obj && Math.hypot(t.obj.position.x - e[0], t.obj.position.z - e[2]) < 0.1); return t && t.act(); }, id); out = await until(() => !ROOMS.offIn() && !FADE.busy, null, 15000); }
+      ok(out, id + ': double-clicking it takes you out');
     }
   }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));

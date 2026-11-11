@@ -24,7 +24,7 @@ import {RIVER} from './066-river.js';
     w_bubble:{n:'BUBBLE GUN',k:'proj',cd:.6,sp:4.5,up:0,g:-.03,drag:.25,life:6,hit:{tr:'bubble',tt:4},snd:['blip',.6,.4],hint:'A CLICK BLOWS A BIG BUBBLE. WHO IT TOUCHES IS HELD INSIDE IT FOR A FEW SECONDS.'},
     w_mine:{n:'MINE',k:'mine',cd:1,boom:{r:3.6,d:.5,md:9,kb:2.4},hint:'A CLICK SETS A MINE ON THE GROUND IN FRONT OF YOU. IT GOES OFF WHEN SOMEONE STEPS ON IT.'},
     w_blower:{n:'LEAF BLOWER',k:'blow',rng:7,auto:1,hint:'HOLD THE MOUSE DOWN TO BLOW. IT PUSHES PEOPLE AND LOOSE THINGS AWAY.'},
-    w_portal:{n:'PORTAL GUN',k:'portal',cd:.4,rng:40,hint:'A CLICK OPENS A PORTAL ON THE GROUND, BLUE THEN ORANGE. STEP INTO ONE TO COME OUT OF THE OTHER.'}};
+    w_portal:{n:'PORTAL GUN',k:'portal',cd:.4,rng:40,hint:'A CLICK OPENS A PORTAL ON THE GROUND, BLUE THEN ORANGE. STEP INTO ONE TO COME OUT OF THE OTHER. THEY LAST 30 SECONDS.'}};
   const IDS=Object.keys(W); FORAGE.add({names:Object.fromEntries(IDS.map(id=>[id,W[id].n]))}); if(FORAGE.OWNERS)FORAGE.OWNERS.push(...IDS);   // the owners' kit tops them up too (owner, 10 Nov 2026)
   { const got=String(OWNED.get('arms')||'').split(','), add=QS.get('fresh')?IDS:IDS.filter(id=>!got.includes(id)); if(add.length){ for(const id of add)if(!INV.items[id])INV.items[id]=1; INV.save(); OWNED.set('arms',IDS.join(',')); } }   // a weapon added later reaches everyone once
   const A={hold:false,aim:null,cd:{},P:[],mines:[],portals:new Map(),traps:new Map(),blows:new Map(),pc:0,inP:false,mi:0,sent:'',sentT:0,last:null}; window.ARMS=A;
@@ -207,19 +207,30 @@ import {RIVER} from './066-river.js';
       for(const b of L){ const d=Math.hypot(b.x-q.x,b.z-q.z), dy=Math.abs(b.y-q.y); if(b.id==='me'&&!q.clear){ if(d>1.2*M)q.clear=true; continue; } if(d<.6*M&&dy<1*M){ dropMine(q); boom('w_mine',new V3(q.x,q.y+.1*M,q.z),true,'ground'); if(ONLINE.on)ONLINE.send({t:'arm',k:'boom',w:'w_mine',i:q.i,p:[+q.x.toFixed(2),+q.y.toFixed(2),+q.z.toFixed(2)]}); break; } } } };
 
   /* ---------- the portals: blue then orange on open ground; step in one, come out of the other (anyone's pair) ---------- */
-  const PCOL=[0x3aa8ff,0xff8a20], poG=new THREE.CircleGeometry(.62,32).rotateX(-Math.PI/2), prG=new THREE.TorusGeometry(.62,.06,6,32).rotateX(Math.PI/2);
-  const poMesh=c=>{ const g=new THREE.Group(), d=new THREE.Mesh(poG,new THREE.MeshBasicMaterial({color:PCOL[c],transparent:true,opacity:.55,depthWrite:false,toneMapped:false})), r=new THREE.Mesh(prG,new THREE.MeshBasicMaterial({color:PCOL[c],toneMapped:false}));
+  const PCOL=[0x3aa8ff,0xff8a20], PR=.93, PH=1.6, PLIFE=30, poG=new THREE.CircleGeometry(PR,40).rotateX(-Math.PI/2), prG=new THREE.TorusGeometry(PR,.08,6,40).rotateX(Math.PI/2), poT={value:0};
+  // the hole: the view ray is followed down a well of depth PH under the disc, so the ground looks open
+  const poVS='varying vec3 vL; varying vec3 vD; void main(){ vL=position; vec4 w=modelMatrix*vec4(position,1.); vD=w.xyz-cameraPosition; gl_Position=projectionMatrix*viewMatrix*w; }';
+  const poFS=`uniform vec3 uC; uniform float uT; varying vec3 vL; varying vec3 vD; const float R=${PR.toFixed(2)}, H=${PH.toFixed(2)};
+    void main(){ vec3 d=normalize(vD); vec2 o=vL.xz; if(d.y>-1e-3){ gl_FragColor=vec4(uC*.1,1.); return; }
+      float a=dot(d.xz,d.xz), b=dot(o,d.xz), c=dot(o,o)-R*R, tw=a>1e-5?(-b+sqrt(max(b*b-a*c,0.)))/a:1e9, tb=H/(-d.y), t=min(tw,tb);
+      vec3 h=vec3(o.x,0.,o.y)+t*d; float dep=clamp(-h.y/H,0.,1.), an=atan(h.z,h.x), r=length(h.xz)/R; vec3 col;
+      if(tb<=tw){ float s=sin(an*3.+r*9.-uT*4.); col=uC*(.18+.5*s*s*(1.-r))+uC*.9*pow(1.-r,4.); }
+      else { float s=sin(an*6.+dep*14.-uT*3.); col=mix(uC*1.25,uC*.06,pow(dep,.7))*(.75+.25*s); }
+      col+=uC*.5*smoothstep(.82,1.,length(o)/R); gl_FragColor=vec4(col,1.); }`;
+  const poMesh=c=>{ const g=new THREE.Group(), d=new THREE.Mesh(poG,new THREE.ShaderMaterial({uniforms:{uC:{value:new THREE.Color(PCOL[c])},uT:poT},vertexShader:poVS,fragmentShader:poFS,toneMapped:false})), r=new THREE.Mesh(prG,new THREE.MeshBasicMaterial({color:PCOL[c],toneMapped:false}));
     g.add(d,r); g.scale.setScalar(M); g.traverse(o=>{ o.raycast=()=>{}; o.userData.arms=1; }); g.userData.anyRoom=1; scene.add(LEVELS.own(g,'up')); return g; };
   const portalSet=(who,c,x,y,z)=>{ let pr=A.portals.get(who); if(!pr)A.portals.set(who,pr=[null,null]); if(pr[c])pr[c].m.removeFromParent(); pr[c]={x,y,z,m:poMesh(c),t:0}; pr[c].m.position.set(x,y+.03*M,z); sparks(x,y+.2*M,z,24,PCOL[c],3,.5); hear('laser',.5,.5,x,z); };
   const portalShot=(S)=>{ '@later'; const h=trace(S.tip,S.dir,W.w_portal.rng*M); tracer(S.tip,h.p,PCOL[A.pc],.02,.15);
     if(!out()||h.what!=='ground'){ say('A PORTAL ONLY OPENS ON OPEN GROUND OUTSIDE.','#c8a090'); return; }
     const c=A.pc; A.pc^=1; portalSet('me',c,h.p.x,h.p.y,h.p.z); if(ONLINE.on)ONLINE.send({t:'arm',k:'portal',c,p:[+h.p.x.toFixed(2),+h.p.y.toFixed(2),+h.p.z.toFixed(2)]}); };
-  const portalTick=dt=>{ if(!A.portals.size)return; let inAny=false;
+  const portalTick=dt=>{ if(!A.portals.size)return; let inAny=false; poT.value=now()/1000%1000;
     for(const [who,pr] of A.portals){ if(who!=='me'&&!ONLINE.others.has(who)){ for(const p of pr)if(p)p.m.removeFromParent(); A.portals.delete(who); continue; }
-      for(const p of pr)if(p){ p.t+=dt; p.m.children[1].rotation.y+=dt*2; p.m.children[0].material.opacity=.45+.15*Math.sin(now()/200); if(rnd()<dt*14)SP.add(p.x+(rnd()-.5)*M,p.y+.05*M,p.z+(rnd()-.5)*M,0,(1+rnd())*M,0,PCOL[pr.indexOf(p)],.6,{g:0,dr:0}); }
+      for(let c=0;c<2;c++){ const p=pr[c]; if(!p)continue; p.t+=dt; if(p.t>PLIFE){ p.m.removeFromParent(); pr[c]=null; sparks(p.x,p.y+.2*M,p.z,20,PCOL[c],2,.4); continue; }
+        p.m.scale.setScalar(M*Math.min(1,p.t/.25,(PLIFE-p.t)/.6)); p.m.children[1].rotation.y+=dt*2; if(rnd()<dt*14)SP.add(p.x+(rnd()-.5)*1.5*M,p.y+.05*M,p.z+(rnd()-.5)*1.5*M,0,(1+rnd())*M,0,PCOL[c],.6,{g:0,dr:0}); }
+      if(!pr[0]&&!pr[1]){ A.portals.delete(who); continue; }
       if(!pr[0]||!pr[1]||!out()||VIT.dead||RAG.on)continue;
-      for(let c=0;c<2;c++){ const a=pr[c], b=pr[1-c], d=Math.hypot(pos.x-a.x,pos.z-a.z); if(d<1*M&&Math.abs(SHARED.py-a.y)<1.2*M)inAny=true;
-        if(d<.5*M&&Math.abs(SHARED.py-a.y)<1.2*M&&!A.inP){ A.inP=true; sparks(a.x,a.y+M,a.z,30,PCOL[c],3,.5); UI.goTo(b.x,b.z,b.y); sparks(b.x,b.y+M,b.z,30,PCOL[1-c],3,.5); hear('whoosh',1.4,.6); return; } } }
+      for(let c=0;c<2;c++){ const a=pr[c], b=pr[1-c], d=Math.hypot(pos.x-a.x,pos.z-a.z); if(d<1.5*M&&Math.abs(SHARED.py-a.y)<1.2*M)inAny=true;
+        if(d<PR*.8*M&&Math.abs(SHARED.py-a.y)<1.2*M&&!A.inP){ A.inP=true; sparks(a.x,a.y+M,a.z,30,PCOL[c],3,.5); UI.goTo(b.x,b.z,b.y); sparks(b.x,b.y+M,b.z,30,PCOL[1-c],3,.5); hear('whoosh',1.4,.6); return; } } }
     if(!inAny)A.inP=false; };
 
   /* ---------- the leaf blower: a cone of air with leaves in it; it shoves people, knocks the characters over and blows loose things away ---------- */

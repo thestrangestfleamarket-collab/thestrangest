@@ -6187,3 +6187,4 @@ Owner: "what polyfork animations do we have for our character", then "yes lets u
 - 11 Nov 2026, the aquarium's flicker (owner: "constant flickering of shadows and lights everwhere" at the aquarium): the tank's water, sand, glass and backing no longer touch.
 - 11 Nov 2026, the birds' and far walkers' shadows move (owner: "merge both", of the frozen, jumping shadows): they are drawn with the moving things, not baked into the sun's still shadow.
 - 11 Nov 2026, the telescope's wheel zooms (owner: "make the wheel zoom instead of focus"): the wheel steps the eyepiece in and out; the focus is the slider's only.
+- 11 Nov 2026, the portal gun's portals (owner: "portals need to show a hole too (like portal game), 1.5x bigger, they last 30 seconds, anyone can use them by going over the spot"): each portal looks like a hole down into the ground, is 1.5 times as wide, closes after 30 seconds, and carries any player who walks over it, whoever opened it.

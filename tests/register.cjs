@@ -12,6 +12,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.evaluate(() => ROOMS.enter('bodega'));
     const inB = await pg.waitForFunction(() => ROOMS.offIn && ROOMS.offIn() === 'bodega' && !(window.FADE && FADE.busy), null, { timeout: 180000 }).then(() => true).catch(() => false);
     ok(inB, 'in the bodega');
+    await pg.waitForFunction(() => { const L = document.getElementById('loading'); return !L || getComputedStyle(L).pointerEvents === 'none'; }, null, { timeout: 120000 }).catch(() => {});   // the start's loading screen is gone (a click before then lands on it)
     const reg = await pg.evaluate(() => !!__dbg.UI.things.find(t => /THE REGISTER/.test(t.name)));
     ok(reg, 'the register is a thing to double-click');
     const A = await pg.evaluate(() => { const A = BODEGA.all(); return { sup: A.supplies.map(r => r.id), shelves: A.shelves.length, goods: A.goods.length }; });

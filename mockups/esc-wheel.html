@@ -1,0 +1,94 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ESC Wheel</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{--mf:#7dffa8;--mi:#3aa866;--md:#3aa866;--mk:#020a06;--r:#4fb4ff;--s:#ffcf3f;--a:#f2c14e}
+*{box-sizing:border-box}
+body{margin:0;background:#05070a;font:15px 'Share Tech Mono',ui-monospace,monospace;color:var(--mf);letter-spacing:1.5px;padding:0 16px 60px}
+h1{font-size:22px;letter-spacing:4px;margin:28px auto 6px;max-width:1000px}
+.note{color:#9aa;font-size:13px;line-height:1.6;max-width:1000px;margin:0 auto 10px}
+.opt{max-width:1000px;margin:34px auto 0}
+.lbl{color:var(--a);font-size:17px;margin-bottom:10px}.lbl small{display:block;color:#9aa;font-size:13px;letter-spacing:.6px;margin-top:4px;line-height:1.55}
+.lbl em{font-style:normal;color:#7a8;font-size:12px;display:block;margin-top:3px}
+.scene{position:relative;height:600px;overflow:hidden;background:radial-gradient(ellipse at 50% 120%,#24402c,#0d1a12 55%,#070b09);box-shadow:inset 0 0 0 2px var(--mi)}
+.scene:after{content:'';position:absolute;inset:0;background:rgba(0,0,0,.35);pointer-events:none}
+.pan{background:repeating-linear-gradient(0deg,rgba(125,255,168,.05) 0 1px,transparent 1px 3px),rgba(3,26,13,.92);box-shadow:inset 0 0 0 2px var(--mi)}
+.w{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:560px;height:560px;max-width:96%;z-index:2}
+.w svg{width:100%;height:100%;overflow:visible}
+.w path{fill:rgba(3,26,13,.9);stroke:var(--mi);stroke-width:2;cursor:pointer;transition:fill .12s}
+.w path.hi{fill:var(--mf)}.w path.dim{fill:rgba(3,26,13,.55);stroke:#1d4a2f}
+.w path.adm{stroke:var(--a)}.w path.adm.hi{fill:var(--a)}
+.w text{font-family:'Share Tech Mono',monospace;fill:var(--mf);pointer-events:none;letter-spacing:1px}
+.w text.hi{fill:var(--mk)}.w text.dim{fill:#2d6a45}
+.mid{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:150px;text-align:center;font-size:12px;color:var(--md);pointer-events:none;line-height:1.5;z-index:3}
+.mid b{display:block;color:var(--mf);font-weight:400;font-size:15px}
+.hint{position:absolute;left:12px;bottom:10px;font-size:12px;color:var(--md);z-index:3}
+.win{position:absolute;right:14px;top:14px;width:250px;padding:10px;font-size:12px;line-height:1.7;z-index:3;display:none}
+.win h4{margin:0 0 6px;font-weight:400;font-size:14px;letter-spacing:3px;border-bottom:2px solid var(--mi);padding-bottom:4px}
+.win .t{display:flex;flex-wrap:wrap;gap:4px}.win .t span{padding:1px 6px;box-shadow:inset 0 0 0 1px var(--mi)}.win .t span:first-child{background:var(--mf);color:var(--mk)}
+.bot{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);display:flex;gap:4px;z-index:3;flex-wrap:wrap;justify-content:center}
+.bot div{padding:5px 10px;font-size:12px;cursor:pointer}.bot div.on{background:var(--mf);color:var(--mk)}
+.bot u{text-decoration:none;color:var(--md);margin-left:6px;font-size:10px}.bot div.on u{color:var(--mk)}
+.toast{position:absolute;left:50%;top:14px;transform:translateX(-50%);padding:5px 12px;font-size:13px;z-index:4;opacity:0;transition:opacity .2s}.toast.on{opacity:1}
+table{max-width:1000px;margin:40px auto 0;width:100%;border-collapse:collapse;font-size:13px}td,th{border:1px solid #1d4a2f;padding:7px 8px;text-align:left;vertical-align:top}th{color:var(--a);font-weight:400}
+</style></head><body>
+<h1>ESC · THE WHEEL</h1>
+<p class="note">ESC opens a wheel round the middle of the screen. Everything is in it: SETTINGS, WHAT YOU CAN DO, PETS, the BAG and its tabs, MAP, EMOTES and your things by kind; ADMIN and TENANTS too for owners. A slice that is a menu opens that same window as today. A slice that is a kind of thing puts it in your hands. ESC again, or a click off the wheel, closes it. The game does not pause or slow (other players are there); the screen only dims behind the wheel. The quick bar, I, Shift+M, ? and H still open their own pages straight away. The stick does the same on a controller, and so does pointing in VR.</p>
+
+<div class="opt"><div class="lbl">A · TWO RINGS<small>The inner ring is the menus, the outer ring is your things by kind. Everything is one point away. Point at a kind and the mouse wheel steps through what you have of it (its name in the middle); click holds it.</small><em>Try it: hover either ring, use the mouse wheel on an outer slice, click.</em></div>
+<div class="scene" id="sA"><div class="w" id="wA"></div><div class="mid" id="mA"></div><div class="win pan" id="xA"></div><div class="toast pan" id="tA"></div><div class="hint">ESC · POINT · WHEEL STEPS · CLICK</div></div></div>
+
+<div class="opt"><div class="lbl">B · ONE RING, THINGS ONE STEP IN<small>One ring of 8: the menus plus a THINGS slice. Clicking THINGS turns the ring into the kinds (TOOLS, FOOD, MUSIC, RIDES…); right-click or the middle goes back. Bigger, easier slices; things take one click more.</small><em>Try it: click THINGS, then the middle to go back.</em></div>
+<div class="scene" id="sB"><div class="w" id="wB"></div><div class="mid" id="mB"></div><div class="win pan" id="xB"></div><div class="toast pan" id="tB"></div><div class="hint">ESC · POINT · CLICK · RIGHT-CLICK BACK</div></div></div>
+
+<div class="opt"><div class="lbl">C · THINGS ON THE WHEEL, MENUS UNDER IT<small>The wheel is only your things by kind (like 2B). The menus are a row of buttons under it with their keys. Closest to GTA; picking a thing is fastest, menus are a click on the row.</small><em>Try it: hover the wheel, click a button in the row.</em></div>
+<div class="scene" id="sC"><div class="w" id="wC" style="width:440px;height:440px;top:46%"></div><div class="mid" id="mC" style="top:46%"></div><div class="win pan" id="xC"></div><div class="toast pan" id="tC"></div><div class="bot pan" id="bC" style="padding:4px"></div></div></div>
+
+<table><tr><th></th><th>GOOD</th><th>LESS GOOD</th></tr>
+<tr><td>A TWO RINGS</td><td>Everything one point away; menus and things both on the wheel</td><td>Busiest; small outer slices on a phone</td></tr>
+<tr><td>B ONE RING</td><td>Big slices, clean; good on a phone and with the stick</td><td>Things take one click more</td></tr>
+<tr><td>C ROW UNDER</td><td>Things fastest; menus keep their names and keys in view</td><td>Menus are not really on the wheel</td></tr></table>
+
+<script>
+const $=id=>document.getElementById(id);
+const MENUS=[['SETTINGS','ESC',['VIEW','CAMERA','SOUND','KEYS','CONTROLLER','VR','REPORT A BUG']],['WHAT YOU CAN DO','?',['MOVING','FIGHTING','CLIMBING','RIDING','OUTDOORS']],['PETS','',['YOUR PETS','THEIR LOOK']],['BAG','I',['BAG','SKILLS','BOOK','FISHING','JOURNAL']],['MAP','SHIFT+M',['STREET','SUBWAY','UNDERGROUND','GO TO']],['EMOTES','H',['GREET','MOODS','DANCE','REST','DANCE BOOK']],['TENANTS','',['TENANTS'],1],['ADMIN','',['BUG QUEUE','EDITORS','VEHICLES','TOOLS'],1]];
+const KINDS={TOOLS:['TROWEL','FOSSIL BRUSH','BUTTERFLY NET','TELESCOPE'],FOOD:['MOREL ×3','MOON HONEY','PRETZEL'],MUSIC:['GUITAR','HARP','DRUMS','PIANO'],RIDES:['SADDLE','MAGIC CARPET','BALLOON','SKATEBOARD'],LIGHTS:['FLASHLIGHT','HEADLIGHT','NIGHT-VISION'],WEAPONS:['FLAMETHROWER','FREEZE RAY'],WEAR:['COWBOY HAT','SCUBA SET'],OTHER:['BRICK PHONE','ID CARD','SPRAY CAN']};
+const KN=Object.keys(KINDS);
+const toast=(id,t)=>{const e=$(id);e.textContent=t;e.classList.add('on');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('on'),1500)};
+const win=(id,m)=>{const e=$(id);e.style.display='block';e.innerHTML=`<h4>${m[0]}</h4><div class="t">${m[2].map(t=>`<span>${t}</span>`).join('')}</div><div style="color:var(--md);margin-top:10px">THE SAME WINDOW AS TODAY · ESC BACK TO THE WHEEL</div>`};
+// ring: rings=[{items:[{t,sub,cls,id}],r0,r1,fs}]
+function ring(el,rings,onHi,onClick,onWheel){
+  const C=280;let s='<svg viewBox="0 0 560 560">';
+  rings.forEach((R,ri)=>{const n=R.items.length;R.items.forEach((it,i)=>{const a0=(i-.5)/n*2*Math.PI-Math.PI/2,a1=(i+.5)/n*2*Math.PI-Math.PI/2,g=.5/R.r1+.004;
+    const P=(a,r)=>`${(C+r*Math.cos(a)).toFixed(1)} ${(C+r*Math.sin(a)).toFixed(1)}`;
+    s+=`<path data-k="${ri}-${i}" class="${it.cls||''}" d="M${P(a0+g,R.r0)} L${P(a0+g,R.r1)} A${R.r1} ${R.r1} 0 0 1 ${P(a1-g,R.r1)} L${P(a1-g,R.r0)} A${R.r0} ${R.r0} 0 0 0 ${P(a0+g,R.r0)}Z"/>`;
+    const am=(a0+a1)/2,rm=(R.r0+R.r1)/2,x=C+rm*Math.cos(am),y=C+rm*Math.sin(am),L=it.t.split(' ');
+    const lines=it.t.length>11&&L.length>1?[L.slice(0,Math.ceil(L.length/2)).join(' '),L.slice(Math.ceil(L.length/2)).join(' ')]:[it.t];
+    s+=`<text data-k="${ri}-${i}" x="${x}" y="${y-(lines.length-1)*7+4}" text-anchor="middle" font-size="${R.fs}">${lines.map((l,j)=>`<tspan x="${x}" dy="${j?14:0}">${l}</tspan>`).join('')}</text>`;
+    if(it.sub)s+=`<text data-k="${ri}-${i}" x="${x}" y="${y+(lines.length-1)*7+18}" text-anchor="middle" font-size="9" opacity=".7">${it.sub}</text>`})});
+  el.innerHTML=s+'</svg>';
+  const hi=k=>{el.querySelectorAll('[data-k]').forEach(p=>p.classList.toggle('hi',p.dataset.k===k));onHi(...k.split('-').map(Number))};
+  el.querySelectorAll('path').forEach(p=>{p.onmouseenter=()=>hi(p.dataset.k);p.onclick=()=>onClick(...p.dataset.k.split('-').map(Number));
+    p.addEventListener('wheel',e=>{if(!onWheel)return;e.preventDefault();onWheel(...p.dataset.k.split('-').map(Number),e.deltaY>0?1:-1);hi(p.dataset.k)},{passive:false})});
+  return hi;
+}
+const step={};KN.forEach(k=>step[k]=0);
+const kindMid=k=>`<b>${KINDS[k][step[k]]}</b>${k} · ${step[k]+1} / ${KINDS[k].length}<br>CLICK HOLDS`;
+/* A */
+ring($('wA'),[{r0:70,r1:150,fs:11,items:MENUS.map(m=>({t:m[0],sub:m[1],cls:m[3]?'adm':''}))},{r0:156,r1:270,fs:12,items:KN.map(k=>({t:k,sub:KINDS[k].length+' THINGS'}))}],
+ (r,i)=>$('mA').innerHTML=r?kindMid(KN[i]):`<b>${MENUS[i][0]}</b>${MENUS[i][3]?'OWNERS ONLY':'OPENS THE MENU'}`,
+ (r,i)=>r?toast('tA','HOLDING '+KINDS[KN[i]][step[KN[i]]]):win('xA',MENUS[i]),
+ (r,i,d)=>{if(r){const k=KN[i];step[k]=(step[k]+d+KINDS[k].length)%KINDS[k].length}})('1-0');
+/* B */
+let bIn=false;const B1=MENUS.slice(0,6).concat([['THINGS','TAB',[]]]).concat([MENUS[7]]);
+const drawB=()=>{const items=bIn?KN.map(k=>({t:k,sub:KINDS[k].length+' THINGS'})):B1.map(m=>({t:m[0],sub:m[1],cls:m[3]?'adm':''}));
+  ring($('wB'),[{r0:95,r1:265,fs:14,items}],
+   (r,i)=>$('mB').innerHTML=bIn?kindMid(KN[i])+'<br>· MIDDLE: BACK ·':`<b>${B1[i][0]}</b>${B1[i][0]==='THINGS'?'YOUR THINGS BY KIND':B1[i][3]?'OWNERS ONLY':'OPENS THE MENU'}`,
+   (r,i)=>{if(bIn)toast('tB','HOLDING '+KINDS[KN[i]][step[KN[i]]]);else if(B1[i][0]==='THINGS'){bIn=true;drawB()}else win('xB',B1[i])},
+   bIn?(r,i,d)=>{const k=KN[i];step[k]=(step[k]+d+KINDS[k].length)%KINDS[k].length}:null)(bIn?'0-0':'0-6')};
+drawB();$('mB').style.pointerEvents='auto';$('mB').style.cursor='pointer';$('mB').onclick=()=>{if(bIn){bIn=false;drawB()}};
+$('wB').oncontextmenu=e=>{e.preventDefault();if(bIn){bIn=false;drawB()}};
+/* C */
+ring($('wC'),[{r0:85,r1:265,fs:14,items:KN.map(k=>({t:k,sub:KINDS[k].length+' THINGS'}))}],(r,i)=>$('mC').innerHTML=kindMid(KN[i]),(r,i)=>toast('tC','HOLDING '+KINDS[KN[i]][step[KN[i]]]),(r,i,d)=>{const k=KN[i];step[k]=(step[k]+d+KINDS[k].length)%KINDS[k].length})('0-0');
+$('bC').innerHTML=MENUS.map((m,i)=>`<div data-i="${i}" style="${m[3]?'color:var(--a)':''}">${m[0]}${m[1]?`<u>${m[1]}</u>`:''}</div>`).join('');
+$('bC').querySelectorAll('div').forEach(d=>d.onclick=()=>{$('bC').querySelectorAll('div').forEach(x=>x.classList.toggle('on',x===d));win('xC',MENUS[+d.dataset.i])});
+</script></body></html>

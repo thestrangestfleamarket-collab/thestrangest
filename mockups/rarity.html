@@ -1,0 +1,96 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Five Rarities</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{--mf:#7dffa8;--mi:#3aa866;--md:#3aa866;--mk:#020a06;--a:#f2c14e}
+*{box-sizing:border-box}
+body{margin:0;background:#05070a;font:15px 'Share Tech Mono',ui-monospace,monospace;color:var(--mf);letter-spacing:1.5px;padding:0 16px 60px}
+h1{font-size:22px;letter-spacing:4px;margin:28px auto 6px;max-width:1000px}
+h2{font-size:18px;letter-spacing:4px;margin:46px auto 4px;max-width:1000px;border-bottom:2px solid var(--mi);padding-bottom:6px}
+.note{color:#9aa;font-size:13px;line-height:1.6;max-width:1000px;margin:0 auto 10px}
+.opt{max-width:1000px;margin:26px auto 0}
+.lbl{color:var(--a);font-size:17px;margin-bottom:10px}.lbl small{display:block;color:#9aa;font-size:13px;letter-spacing:.6px;margin-top:4px;line-height:1.55}
+.pan{background:repeating-linear-gradient(0deg,rgba(125,255,168,.05) 0 1px,transparent 1px 3px),rgba(3,26,13,.92);box-shadow:inset 0 0 0 2px var(--mi)}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.tier{flex:1;min-width:150px;padding:10px;font-size:12px;line-height:1.6;cursor:pointer}
+.tier b{display:block;font-weight:400;font-size:15px;letter-spacing:2px}
+.tier .sw{height:8px;margin:6px 0}
+.pick{display:flex;gap:6px;max-width:1000px;margin:10px auto 0;flex-wrap:wrap}.pick div{padding:5px 12px;cursor:pointer;box-shadow:inset 0 0 0 2px var(--mi)}.pick .on{background:var(--mf);color:var(--mk)}
+.scene{position:relative;height:430px;overflow:hidden;background:radial-gradient(ellipse at 50% 120%,#24402c,#0d1a12 55%,#070b09);box-shadow:inset 0 0 0 2px var(--mi)}
+.bag{position:absolute;left:16px;top:16px;width:300px;padding:8px}
+.bag .r{display:flex;align-items:center;gap:8px;padding:4px 6px;margin-bottom:3px;font-size:13px;cursor:pointer;border-left:4px solid}
+.bag .r:hover{background:rgba(125,255,168,.12)}
+.pic{width:26px;height:20px;border-radius:4px;background:linear-gradient(135deg,#2d6a45,#123020);flex:none}
+.card{position:absolute;left:340px;top:16px;width:340px;padding:12px;font-size:12px;line-height:1.55}
+.card h4{margin:0 0 3px;font-weight:400;font-size:16px;letter-spacing:2px}
+.tg{display:inline-block;padding:0 6px;color:var(--mk);font-size:11px;margin-bottom:6px}
+.b2{height:6px;background:#0a2a16;margin:2px 0 6px;box-shadow:inset 0 0 0 1px var(--mi)}.b2 div{height:100%;background:var(--mf)}
+.k{color:var(--md)}
+.spin{width:100px;height:100px;flex:none;border-radius:6px;animation:sp 6s linear infinite}
+@keyframes sp{from{transform:perspective(220px) rotateY(0)}to{transform:perspective(220px) rotateY(360deg)}}
+.feed{position:absolute;right:14px;top:14px;width:250px}
+.feed>div{display:flex;gap:8px;align-items:center;padding:6px 10px;margin-bottom:4px;font-size:12px;transition:opacity .5s;border-left:4px solid}
+.guy{position:absolute;bottom:60px;width:30px;height:84px;margin-left:-15px;border-radius:14px 14px 6px 6px;background:#1b3b28;box-shadow:inset 0 0 0 2px #2d6a45;transition:left 4s linear}
+.guy:before{content:'';position:absolute;left:4px;top:-24px;width:22px;height:22px;border-radius:50%;background:#1b3b28;box-shadow:inset 0 0 0 2px #2d6a45}
+.gnd{position:absolute;bottom:56px;width:22px;height:10px;margin-left:-11px;border-radius:50%;transition:opacity .3s}
+.gb{position:absolute;bottom:62px;width:8px;margin-left:-4px;filter:blur(2px);opacity:.7}
+.lab{position:absolute;bottom:34px;font-size:10px;transform:translateX(-50%);white-space:nowrap;color:#9aa}
+table{max-width:1000px;margin:20px auto 0;width:100%;border-collapse:collapse;font-size:13px}td,th{border:1px solid #1d4a2f;padding:7px 8px;text-align:left;vertical-align:top}th{color:var(--a);font-weight:400}
+@media(max-width:760px){.card{position:relative;left:auto;top:auto;margin:330px 8px 8px;width:auto}.scene.cs{height:auto;min-height:700px}}
+</style></head><body>
+<h1>FIVE RARITIES · THE CARD · PICKING UP</h1>
+<p class="note">Every thing gets one of five rarities, kept on the thing itself, so every item has one. Finds (mushrooms, fish, butterflies, birds, honey, fossils) roll it by the one rule we have now, stretched to five; shop goods take it from what they're worth. The top one shows only once that skill's trainer ranks you high enough (like super-rare now). Pick the names and colours below; the card and the feed under them follow your pick.</p>
+
+<h2>1 · THE FIVE</h2>
+<div class="opt"><div class="lbl">A · THE USUAL NAMES<small>The names and colours most games use (Fortnite's): grey, green, blue, purple, gold. Players know them at once. The green one sits close to the menus' green.</small></div><div class="row" id="rA"></div></div>
+<div class="opt"><div class="lbl">B · THE MARKET'S OWN WORDS<small>The same five colours, named after the game: JUNK, ODD, STRANGE, STRANGER, THE STRANGEST. Its own, and it reads as the place.</small></div><div class="row" id="rB"></div></div>
+<div class="opt"><div class="lbl">C · STARS<small>One to five stars, one warm colour getting brighter, so it never fights the menus' green. Plain; no words to learn.</small></div><div class="row" id="rC"></div></div>
+<p class="note" style="margin-top:14px">THE ODDS OF A FIND, all three: 55 · 25 · 12 · 6 · 2 in a hundred (now 70 · 25 · 5). The top one needs the trainer's EXPERT, the fourth ADEPT; until then the roll gives the one below. Today's COMMON / RARE / SUPER RARE become the 1st, 3rd and 5th.</p>
+
+<div class="pick" id="pk"></div>
+
+<h2>2 · THE CARD (3B)</h2>
+<div class="opt"><div class="lbl">ONE CARD EVERYWHERE<small>Hover a thing in the bag, the quick bar, a shop, a trade, the vault or the wheel: this card. Its own 3D model turning, the name, its rarity, what it does, worth, weight, uses or charge left, the skill it feeds, and the keys. It takes the place of the line under the bag. On a controller it shows for the thing under the cursor; on a phone a long press.</small></div>
+<div class="scene cs"><div class="bag pan" id="bag"></div><div class="card pan" id="card"></div></div></div>
+
+<h2>3 · PICKING UP AND THE FEED (3C)</h2>
+<div class="opt"><div class="lbl">WALK OVER IT, IT'S YOURS<small>Small finds go in your bag when you walk over them: mushrooms, flowers, coins, feathers, shells, raw stones. A thing someone dropped, anything big, and anything of the top two rarities still need E (so nothing rare goes by mistake, and nobody hoovers up another player's drop). Each one slides into the feed top right, in its colour, ×count when it repeats, and fades in 4 s. The log keeps its line too. A setting turns walking-over off.</small></div>
+<div class="scene" id="s3"><div class="feed" id="feed"></div></div></div>
+
+<table><tr><th>WHAT IT TOUCHES</th><th></th></tr>
+<tr><td>Every item</td><td>A rarity on every kind (finds by the roll, goods by worth; the owner can set any in the item editor)</td></tr>
+<tr><td>RARITY</td><td>Five tiers in place of three, the same rule everywhere; a skill trainer gates the top two</td></tr>
+<tr><td>Bag, quick bar, shops, trade, vault, the wheel</td><td>The colour on the edge; the one card</td></tr>
+<tr><td>The ground</td><td>A drop glows its colour; the top two send up a beam (drawn only near you)</td></tr>
+<tr><td>Picking up</td><td>A <i>small</i> property on the item decides walk-over; the server still checks every pickup</td></tr>
+<tr><td>Worth</td><td>Merchants pay more by rarity</td></tr>
+</table>
+
+<script>
+const $=id=>document.getElementById(id);
+const COL=['#b8c0c8','#7dffa8','#4fb4ff','#c57dff','#ffcf3f'];
+const SETS={A:{n:['COMMON','UNCOMMON','RARE','EPIC','LEGENDARY'],c:COL},B:{n:['JUNK','ODD','STRANGE','STRANGER','THE STRANGEST'],c:COL},C:{n:['★','★★','★★★','★★★★','★★★★★'],c:['#8a6a3a','#b08440','#d6a24a','#f2c14e','#fff0a0']}};
+const ODDS=[55,25,12,6,2],EX=[['Pebble','Pretzel'],['Morel','Copper coin'],['Blue morpho','Telescope'],['Freeze ray','Ghost orchid'],['Moon honey','Magic carpet']];
+for(const k in SETS)$('r'+k).innerHTML=SETS[k].n.map((n,i)=>`<div class="tier pan" style="box-shadow:inset 0 0 0 2px ${SETS[k].c[i]}"><b style="color:${SETS[k].c[i]}">${n}</b><div class="sw" style="background:${SETS[k].c[i]}"></div>${ODDS[i]} IN 100${i===4?' · EXPERT':i===3?' · ADEPT':''}<br><span style="color:#9aa">${EX[i].join(', ').toUpperCase()}</span></div>`).join('');
+let S='B';
+const BAG=[['MOON HONEY',4,'Only on a full moon. Heals and calms.',180,'0.4 kg','BEEKEEPING','3 USES'],['FREEZE RAY',3,'Turns water to ice; stops folk for 5 s.',240,'2.1 kg','SCIENCE','CHARGE 18 / 30'],['BLUE MORPHO',2,'A butterfly in a jar. Sells to the collector.',60,'0.2 kg','BUTTERFLIES',''],['TELESCOPE',2,'The 400 mm refractor.',120,'3.2 kg','ASTRONOMY',''],['MOREL ×3',1,'An edible mushroom.',9,'0.1 kg','FORAGING',''],['GUITAR',1,'Plays songs.',45,'4.0 kg','MUSIC',''],['PRETZEL',0,'Food. Fills you a bit.',2,'0.2 kg','',''],['PEBBLE',0,'A pebble. Throw it.',0,'0.1 kg','','']];
+let cur=0;
+const card=()=>{const b=BAG[cur],t=SETS[S],c=t.c[b[1]];$('card').style.boxShadow=`inset 0 0 0 2px ${c}`;
+ $('card').innerHTML=`<div style="display:flex;gap:12px"><div class="spin" style="background:linear-gradient(135deg,${c}55,#123020)"></div><div><h4 style="color:${c}">${b[0]}</h4><span class="tg" style="background:${c}">${t.n[b[1]]}</span><div>${b[2]}</div></div></div>
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;margin-top:12px"><div><span class="k">WORTH</span> $${b[3]}</div><div><span class="k">WEIGHT</span> ${b[4]}</div>${b[6]?`<div>${b[6]}<div class="b2"><div style="width:60%"></div></div></div>`:'<div></div>'}<div>${b[5]?`<span class="k">SKILL</span> ${b[5]}`:''}</div></div>
+ <div class="k" style="margin-top:8px;border-top:2px solid var(--mi);padding-top:8px">2× CLICK HOLDS · DRAG TO DROP OR TRADE · RIGHT-CLICK MORE</div>`};
+const bag=()=>{const t=SETS[S];$('bag').innerHTML='<div style="letter-spacing:3px;margin:2px 4px 8px">BAG</div>'+BAG.map((b,i)=>`<div class="r" data-i="${i}" style="border-color:${t.c[b[1]]};${i===cur?'background:rgba(125,255,168,.12)':''}"><div class="pic"></div><span style="flex:1">${b[0]}</span><span style="color:${t.c[b[1]]};font-size:10px">${t.n[b[1]]}</span></div>`).join('');
+ $('bag').querySelectorAll('.r').forEach(r=>r.onmouseenter=()=>{cur=+r.dataset.i;bag();card()})};
+const pk=()=>{$('pk').innerHTML='<span style="color:#9aa;padding:5px 4px">SHOW THE CARD AND THE FEED IN:</span>'+['A','B','C'].map(k=>`<div class="${k===S?'on':''}" data-k="${k}">${k}</div>`).join('');$('pk').querySelectorAll('[data-k]').forEach(d=>d.onclick=()=>{S=d.dataset.k;pk();bag();card();ground()})};
+/* 3 */
+const G=[[12,'MOREL',1,1],[24,'COPPER COIN',1,1],[36,'MOREL',1,1],[50,'BLUE MORPHO',2,1],[64,"SOMEONE'S HAT",1,0],[78,'GHOST ORCHID',3,0],[90,'PEBBLE',0,1]];
+const ground=()=>{const t=SETS[S];$('s3').querySelectorAll('.gnd,.gb,.lab,.guy').forEach(e=>e.remove());let h='';
+ G.forEach((g,i)=>{const c=t.c[g[2]];h+=`<div class="gnd" id="g${i}" style="left:${g[0]}%;background:${c}"></div>${g[2]>=3?`<div class="gb" id="b${i}" style="left:${g[0]}%;height:150px;background:linear-gradient(transparent,${c})"></div>`:''}<div class="lab" style="left:${g[0]}%">${g[3]?'WALK OVER':'E'}</div>`});
+ $('s3').insertAdjacentHTML('beforeend',h+'<div class="guy" id="guy" style="left:4%"></div>')};
+const feed=(n,i)=>{const t=SETS[S],c=t.c[i],F=$('feed'),old=[...F.children].find(d=>d.dataset.n===n);
+ if(old){old.dataset.c=+old.dataset.c+1;old.querySelector('b').textContent='×'+old.dataset.c;clearTimeout(old._t);old.style.opacity=1;old._t=setTimeout(()=>{old.style.opacity=0;setTimeout(()=>old.remove(),500)},4000);return}
+ const d=document.createElement('div');d.className='pan';d.dataset.n=n;d.dataset.c=1;d.style.borderLeftColor=c;d.innerHTML=`<div class="pic"></div><span style="flex:1;color:${c}">${n}</span><b style="font-weight:400">×1</b>`;F.prepend(d);
+ d._t=setTimeout(()=>{d.style.opacity=0;setTimeout(()=>d.remove(),500)},4000)};
+let tick=0;const run=()=>{ground();const guy=$('guy');let x=4;const iv=setInterval(()=>{x+=1;guy.style.transition='left .12s linear';guy.style.left=x+'%';
+ G.forEach((g,i)=>{if(Math.abs(g[0]-x)<.6&&g[3]){const e=$('g'+i);if(e&&e.style.opacity!=='0'){e.style.opacity=0;feed(g[1],g[2])}}});if(x>=96){clearInterval(iv);setTimeout(run,1500)}},120)};
+pk();bag();card();run();
+</script></body></html>

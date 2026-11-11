@@ -1,4 +1,4 @@
-// THE PS2 FILTER: PS2, the picture's last pass but the cinema's cut, five parts each on or off with one strength for all (GRAPHICS): 240 lines of chunky pixels, 15-bit colour (no dither), a slight colour bleed, faint rainbow fringes on hard edges and a faint echo, a faint grain (still, patchy, none in the dark).
+// THE PS2 FILTER: PS2, the picture's last pass but the cinema's cut, five parts each on or off with its own strength, and one strength over all (PS2 FILTER tab): 240 lines of chunky pixels, 15-bit colour (no dither), a slight colour bleed, faint rainbow fringes on hard edges and a faint echo, a faint grain (still, patchy, none in the dark).
 import {SHARED, THREE} from './003-shx.js';
 import {PS2} from './003b-systems.js';
 import {RH, RW, ShaderPass} from './004-main.js';
@@ -45,12 +45,12 @@ PS2.img=(px,W,H,lines)=>{ const T=PS2.tune(), L=Math.max(8,Math.round(T.pix?Math
     const R=255*Math.min(1,Math.max(0,y+.956*ii+.621*qq+z)), G=255*Math.min(1,Math.max(0,y-.272*ii-.647*qq+z)), B=255*Math.min(1,Math.max(0,y-1.106*ii+1.703*qq+z));
     for(let yy=Math.floor(j*H/L);yy<Math.floor((j+1)*H/L);yy++)for(let xx=Math.floor(i*W/Lx);xx<Math.floor((i+1)*W/Lx);xx++){ const k=(yy*W+xx)*4; px[k]=R; px[k+1]=G; px[k+2]=B; px[k+3]=A[n]; } }
   return px; };   // the same look on a small picture (the menu's portrait): its pixels the size of the game's on screen
-// its five parts, each on or off (PIXELS, COLOURS, SMEAR, FRINGES, GRAIN), and one STRENGTH for them all (1 is the look as made, 0 none, 2 twice)
-PS2.parts={pix:false,col:true,smear:true,fringe:true,grain:true}; PS2.k=1;   // the defaults: no chunky pixels (owner, 7 Nov 2026); the switches back in the menu (8 Nov 2026)
-try{ const v=SAVE.get('ps2p'); if(v&&v.length===5)['pix','col','smear','fringe','grain'].forEach((n,i)=>{ PS2.parts[n]=v[i]==='1'; }); const k=parseFloat(SAVE.get('ps2k')); if(k>=0&&k<=2)PS2.k=k; }catch(e){}
-PS2.tune=()=>{ const P=PS2.parts, k=PS2.k; return {pix:P.pix&&k>.05,k:Math.max(.25,k),Q:P.col?Math.round(8*k):0,K:[P.smear?k:0,P.fringe?k:0,P.grain?k:0]}; };
+// its five parts, each on or off (PIXELS, COLOURS, SMEAR, FRINGES, GRAIN) with its own strength (PS2.ks), times one STRENGTH for them all (1 is the look as made, 0 none, 2 twice)
+PS2.parts={pix:false,col:true,smear:true,fringe:true,grain:true}; PS2.k=1; PS2.ks={pix:1,col:1,smear:1,fringe:1,grain:1};   // the defaults: no chunky pixels (owner, 7 Nov 2026); the switches back in the menu (8 Nov 2026)
+try{ const v=SAVE.get('ps2p'); if(v&&v.length===5)['pix','col','smear','fringe','grain'].forEach((n,i)=>{ PS2.parts[n]=v[i]==='1'; }); const k=parseFloat(SAVE.get('ps2k')); if(k>=0&&k<=2)PS2.k=k; const ks=String(SAVE.get('ps2ks')||'').split(',').map(parseFloat); if(ks.length===5)['pix','col','smear','fringe','grain'].forEach((n,i)=>{ if(ks[i]>=0&&ks[i]<=2)PS2.ks[n]=ks[i]; }); }catch(e){}
+PS2.tune=(k0=PS2.k)=>{ const P=PS2.parts, S=PS2.ks, kp=k0*S.pix; return {pix:P.pix&&kp>.05,k:Math.max(.25,kp),Q:P.col?Math.round(8*k0*S.col):0,K:[P.smear?k0*S.smear:0,P.fringe?k0*S.fringe:0,P.grain?k0*S.grain:0]}; };
 PS2.lines=()=>{ const T=PS2.tune(); return T.pix?Math.round(240/T.k):0; };
-PS2.save=()=>{ try{ SAVE.set('ps2p',['pix','col','smear','fringe','grain'].map(n=>PS2.parts[n]?'1':'0').join('')); SAVE.set('ps2k',String(PS2.k)); }catch(e){} };
+PS2.save=()=>{ try{ SAVE.set('ps2p',['pix','col','smear','fringe','grain'].map(n=>PS2.parts[n]?'1':'0').join('')); SAVE.set('ps2k',String(PS2.k)); SAVE.set('ps2ks',['pix','col','smear','fringe','grain'].map(n=>PS2.ks[n]).join(',')); }catch(e){} };
 PS2.set=on=>{ PS2.on=!!on; PS2.sp.enabled=PS2.on; try{ SAVE.set('ps2',PS2.on?'1':'0'); }catch(e){} };
 PS2.on=(()=>{ try{ return SAVE.get('ps2')!=='0'; }catch(e){ return true; } })(); PS2.sp.enabled=PS2.on;
 SYS.add('sky',()=>{ const P=SHARED.composer.passes; if(P[P.length-1]!==PS2.sp){ P.splice(P.indexOf(PS2.sp),1); P.push(PS2.sp); }

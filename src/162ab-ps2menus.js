@@ -1,4 +1,4 @@
-// THE PS2 FILTER ON MENUS: PS2.menu, the filter's look laid over every open window and the HUD (everything on the page but the game's picture) as an SVG filter, on or off with its own level, and PS2.words, the same over the words in the world (PS2 FILTER tab); the same five parts as the game's.
+// THE PS2 FILTER ON MENUS: PS2.menu, the filter's look laid over every open window and the HUD (everything on the page but the game's picture) as an SVG filter, on or off with its own level, and PS2.words, the same over the words in the world (PS2 FILTER tab); the same five parts as the game's, at their own strengths.
 import {PS2} from './003b-systems.js';
 import {SAVE} from './005-save.js';
 import {SYS} from './006-map-pre.js';
@@ -10,8 +10,8 @@ import {PAD} from './075-main-13.js';
   svg.setAttribute('width','0'); svg.setAttribute('height','0'); svg.setAttribute('aria-hidden','true'); svg.style.cssText='position:absolute;width:0;height:0;pointer-events:none';
   st.textContent='.ps2m{filter:url(#ps2mf)}#wlabels.ps2w>*{filter:url(#ps2wf)}'; document.head.appendChild(st); document.body.appendChild(svg);
   const keys={}, fs={};
-  const build=(name,k)=>{ const P=PS2.parts, c=P.pix&&k>.05?Math.max(2,Math.round(innerHeight/Math.round(240/Math.max(.25,k)))):0, Q=P.col?Math.round(8*k):0, n=Q>=1?Math.max(2,Math.round(256/Q)):0;
-    const K=[P.smear?k:0,P.fringe?k:0,P.grain?k:0], id=[c,n,...K].join(','); if(id===keys[name])return; keys[name]=id; let f='', last='SourceGraphic', i=0; const nx=()=>'r'+(++i);
+  const build=(name,k)=>{ const T=PS2.tune(k), c=T.pix?Math.max(2,Math.round(innerHeight/Math.round(240/T.k))):0, Q=T.Q, n=Q>=1?Math.max(2,Math.round(256/Q)):0;
+    const K=T.K, id=[c,n,...K].join(','); if(id===keys[name])return; keys[name]=id; let f='', last='SourceGraphic', i=0; const nx=()=>'r'+(++i);
     if(c){ const h=Math.floor(c/2), o=nx(); f+=`<feFlood x="${h}" y="${h}" width="1" height="1"/><feComposite width="${c}" height="${c}"/><feTile result="t${i}"/><feComposite in="${last}" in2="t${i}" operator="in"/><feMorphology operator="dilate" radius="${h}" result="${o}"/>`; last=o; }
     if(n){ const tv=Array.from({length:n},(_,j)=>(j/(n-1)).toFixed(4)).join(' '), o=nx(); f+=`<feComponentTransfer in="${last}" result="${o}"><feFuncR type="discrete" tableValues="${tv}"/><feFuncG type="discrete" tableValues="${tv}"/><feFuncB type="discrete" tableValues="${tv}"/></feComponentTransfer>`; last=o; }
     if(K[0]){ const s=Math.max(1,c), b=nx(), e=nx(), o=nx(), w=Math.min(.9,.5*K[0]), we=Math.min(.3,.05*K[0]);

@@ -148,7 +148,7 @@ window.BAG=BAG;
   /* ---------- wearing, holding ---------- */
   BAG.wear=(id,slot)=>{ '@later'; if(!FORAGE.has(id))return say('YOU HAVE NO '+name(id)+'.','#c8a090'); slot=slot||(WIELD.LIST&&WIELD.LIST.includes(id)?'hand':prop(id,'slot'));
     if(slot==='hand'){ if(!(WIELD.LIST&&WIELD.LIST.includes(id)))return say("YOU CAN'T HOLD THAT.",'#c8a090'); if(WIELD.on!==id){ WIELD.set(id); say('YOU HOLD THE '+name(id)+'.','#e8e2cc'); } }
-    else { const s=prop(id,'slot'); if(!s||s==='none')return say("YOU CAN'T WEAR THAT.",'#c8a090'); if(s==='hand')return BAG.wear(id,'hand'); if(s!==slot)return say('THAT GOES ON YOUR '+s.toUpperCase()+'.','#c8a090'); if(EQUIP.by[s]!==id)EQUIP.wear(id); }
+    else { const s=EQUIP.fits(id,slot)?slot:EQUIP.slotOf(id); if(!s)return WIELD.LIST&&WIELD.LIST.includes(id)?BAG.wear(id,'hand'):say("YOU CAN'T WEAR THAT.",'#c8a090'); if(s!==slot)return say('THAT GOES ON YOUR '+s.toUpperCase()+'.','#c8a090'); if(EQUIP.by[s]!==id)EQUIP.wear(id); }
     redraw(); };
   BAG.off=slot=>{ if(slot==='hand'){ if(WIELD.on){ WIELD.set(null); say('YOUR HANDS ARE FREE.','#e8e2cc'); } } else if(EQUIP.by[slot])EQUIP.wear(EQUIP.by[slot]); redraw(); };
 
@@ -240,7 +240,7 @@ window.BAG=BAG;
         if(TILED){ const tl=tiles(key,contents(key)), O=ORD[key], k=Math.max(0,Math.min(O.length-1,Math.floor((y+tl.c/2)/tl.c)*tl.cols+Math.floor((x+tl.c/2)/tl.c))); O.splice(O.indexOf(id),1); O.splice(k,0,id); saveSet(); }
         else { (POS[key]||(POS[key]={}))[id]=[Math.round(Math.max(0,Math.min(MW-IC,x))),Math.round(Math.max(0,Math.min(MH-IC,y)))]; savePos(); } sel=id; selWin=key; redraw(); return; }
       const q=u.closest('#hqb .qs'); if(q){ HUD.set(+q.dataset.i,id); return; }
-      if(u.closest('#doll')&&DOLL.drop){ if(from!=='bag')return say('TAKE IT OUT OF THE '+name(from)+' FIRST.','#c8a090'); DOLL.drop(id); return redraw(); }
+      if(u.closest('#doll')&&DOLL.drop){ if(from!=='bag')return say('TAKE IT OUT OF THE '+name(from)+' FIRST.','#c8a090'); const ds=u.closest('#doll [data-s]'); DOLL.drop(id,ds&&ds.dataset.s); return redraw(); }
       if(u.closest('#dollo')&&DOLL.who&&DOLL.who()){ if(from!=='bag')return say('TAKE IT OUT OF THE '+name(from)+' FIRST.','#c8a090'); const o=DOLL.who(); howMany(id,from,e.clientX,e.clientY).then(n=>{ if(n&&SWAP)SWAP.ask(o,{id,n}); }); return; }
       if(u.closest('.bagw,#hqb'))return redraw();
       const th=who(e.clientX,e.clientY); if(th){ if(inMenu())UI.toggleMenu(); if(th.player){ if(from!=='bag')return say('TAKE IT OUT OF THE '+name(from)+' FIRST.','#c8a090'); howMany(id,from,e.clientX,e.clientY).then(n=>{ if(n&&SWAP)SWAP.ask(th.player,{id,n}); }); return; }

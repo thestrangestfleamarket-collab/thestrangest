@@ -1,6 +1,6 @@
 // THE INSTRUMENTS YOU SIT AT (owner, 7 Nov 2026: "lets do piano and drums and harp ... play like the guitar"; "start me with every instrument and 100 skill in each"): INSTR, one way to own, set down, sit at and play the piano, the drum kit and the harp (146zpa-c fill in each): the instrument before you, your body seated with its arms, hands and every finger (or stick) on what it plays, its sound from the music engine's strings, heads and hammers, a song book by skill, the close-up, and everyone near seeing and hearing it.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INSTR, ONLINE, pos, st, UI, W3} from './003b-systems.js';
+import {EQUIP, FORAGE, INSTR, ONLINE, pos, st, UI, W3} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {SYS} from './006-map-pre.js';
 import {BODIES} from './111a-bodies.js';
@@ -113,10 +113,11 @@ import {GUITAR} from './146zob-guitar.js';
   INSTR.tell=tell;
   INSTR.start=id=>{ const K=INSTR.KINDS[id]; if(!K)return; if(on){ if(ME.K===K)return; INSTR.stop(); }
     if(st.water&&st.water.in||st.ride||st.climb||st.hang||st.sit)return say('NOT HERE: STAND SOMEWHERE STEADY AND OPEN TO SET IT DOWN.','#c8a090');
-    if(GUITAR&&GUITAR.on())GUITAR.stop(); GSND.wake(); on=true; ME.K=K; setTimeout(()=>smp(K),400); ME.song=-1; ME.live={ev:[]}; ME.st={}; ME.cur=0;
+    if(GUITAR&&GUITAR.on())GUITAR.stop(); if(EQUIP.by.back===id)EQUIP.wear(id,true); GSND.wake(); on=true; ME.K=K; setTimeout(()=>smp(K),400); ME.song=-1; ME.live={ev:[]}; ME.st={}; ME.cur=0;
     prevView=UI.view; if(CU.on&&!UI.persp)UI.setView('third'); panel(true); tell('on'); K.loadBook&&K.loadBook();
     say('YOU SET DOWN '+K.name+' AND SIT AT IT. PICK A PIECE FROM THE BOOK · ` PLAYS IT · TAB THE CLOSE-UP · ESC TO PUT IT AWAY.'); };
-  INSTR.stop=()=>{ if(!on)return; on=false; songStop(ME); if(ME.K&&ME.K.hush&&ME.V)rel(ME,ME.K.hush(ME),GSND.now()+.01); unhold(ME); panel(false); tell('off'); if(prevView&&prevView!==UI.view&&!/third/.test(prevView))UI.setView(prevView); prevView=''; };
+  // put away, one you carry goes on your back if it is free
+  INSTR.stop=()=>{ if(!on)return; on=false; songStop(ME); if(FORAGE.has(ME.K.id)&&!EQUIP.by.back&&EQUIP.fits(ME.K.id,'back'))EQUIP.wear(ME.K.id,true); if(ME.K&&ME.K.hush&&ME.V)rel(ME,ME.K.hush(ME),GSND.now()+.01); unhold(ME); panel(false); tell('off'); if(prevView&&prevView!==UI.view&&!/third/.test(prevView))UI.setView(prevView); prevView=''; };
   INSTR.play=(k,v)=>{ if(!on)return; const K=ME.K; if(k==='song'&&v===ME.song)k='stop';
     if(k==='song'){ const T=K.BOOK[v]; if(!T||!SONGBK.can(K.skill,K.BOOK,T))return say(T?`${T.name.toUpperCase()} IS NOT OPEN TO YOU YET (${K.skill.toUpperCase()} ${T.lvl}; YOURS IS ${skill(K).toFixed(1)}). LEARN THE PIECES YOU HAVE.`:'THAT PIECE IS NOT IN THE BOOK.','#c8a090'); if(!T.c)K.compile(T); const r=SONGBK.start(K.skill,T), f=r.ok?0:+(T.c.len*r.at).toFixed(1); songGo(ME,v,f); tell('song',v+(f?':'+f:'')); }
     else if(k==='stop'){ songStop(ME); tell('stop'); }

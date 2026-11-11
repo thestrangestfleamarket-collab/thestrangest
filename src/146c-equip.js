@@ -1,8 +1,9 @@
 // THE WORN LAYER: EQUIP wears gear by slot (body: armour, the cloud coat; head: the headlight; eyes: the goggles) and turns on its granted ability — guard softens blows, float lifts you, light lights the dark, sight sees through murk, night sees in the dark. It also draws body gear on the player: plate armour (the knight's faceted steel) or a coat of drifting clouds. Hand gear stays with WIELD; all read the shared item model (slot, grants).
 import {SHARED, THREE} from './003-shx.js';
-import {EQUIP, FLOW, FORAGE, ITEMS, LOOKS, VIT, W3} from './003b-systems.js';
+import {ARCHI, EQUIP, FLOW, FORAGE, ITEMS, LOOKS, VIT, W3, WIELD} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
+import {SYS} from './006-map-pre.js';
 import {GARB} from './072b-garb.js';
 import {BODIES} from './111a-bodies.js';
 import {AVATAR} from './111c-avatar.js';
@@ -13,6 +14,10 @@ Object.assign(EQUIP,{fit:[1.3,1.55,1.1,-.2,.04],by:{},float:false,light:false,si
   const ABIL={ guard:{on:()=>VIT.def=.5, off:()=>VIT.def=0}, float:{on:()=>EQUIP.float=true, off:()=>EQUIP.float=false}, light:{on:()=>EQUIP.light=true, off:()=>EQUIP.light=false}, sight:{on:()=>EQUIP.sight=true, off:()=>EQUIP.sight=false}, breathe:{on:()=>EQUIP.breathe=true, off:()=>EQUIP.breathe=false}, night:{on:()=>EQUIP.night=true, off:()=>EQUIP.night=false} };
   const save=()=>{ try{ OWNED.set('equip',JSON.stringify(EQUIP.by)); }catch(e){} };
   EQUIP.ability=id=>prop(id,'grants');
+  // where an item goes: its own slot, or your back when it can be slung there (ON THE BACK: an instrument, a blade, a long gun, a rod); an archived thing goes nowhere
+  EQUIP.fits=(id,slot)=>!!id&&!ARCHI(id)&&slot!=='hand'&&SLOTS.includes(slot)&&(prop(id,'slot')===slot||slot==='back'&&!!prop(id,'slung'));
+  EQUIP.slotOf=id=>{ const s=prop(id,'slot'); return EQUIP.fits(id,s)?s:EQUIP.fits(id,'back')?'back':null; };
+  const the=n=>/^(A|AN) /.test(n)?n.replace(/^(A|AN) /,'THE '):/^THE /.test(n)?n:'THE '+n;
   // a worn item with a look ('slot:LABEL', a piece of the wardrobe: the cowboy hat; several joined by '|', a slot left empty taken off, '~colour' after a label) puts those pieces on your figure while worn, and gives back what was there
   const PREV=(()=>{ try{ return JSON.parse(OWNED.get('equip-prev')||'{}')||{}; }catch(e){ return {}; } })();
   const lookOf=id=>{ const v=prop(id,'look'); if(!v||v==='none'||!AVATAR.pieces)return []; return String(v).split('|').map(x=>{ const i=x.indexOf(':'), s=x.slice(0,i), [lb,c]=x.slice(i+1).split('~'); if(!lb)return [s,null,'']; const q=AVATAR.pieces.find(q=>q.slot===s&&q.label===lb); return q?[s,q.n,c||'']:null; }).filter(Boolean); };
@@ -24,15 +29,18 @@ Object.assign(EQUIP,{fit:[1.3,1.55,1.1,-.2,.04],by:{},float:false,light:false,si
   EQUIP.colours=by=>{ const c=s=>{ const id=by[s], v=id&&prop(id,'color'); return v&&v!=='none'?v:null; }; return {shirt:c('body'),pants:c('legs')}; };
   // what you wear, for your look code: the item in each slot, in slot order; and back
   EQUIP.code=()=>{ const c=SLOTS.map(s=>EQUIP.by[s]||'').join('~'); return /[^~]/.test(c)?c:''; };
-  EQUIP.decode=c=>{ const by={}; String(c||'').split('~').forEach((id,i)=>{ if(id&&SLOTS[i]&&ITEMS.defs&&ITEMS.defs[id]&&prop(id,'slot')===SLOTS[i])by[SLOTS[i]]=id; }); return by; };
+  EQUIP.decode=c=>{ const by={}; String(c||'').split('~').forEach((id,i)=>{ if(id&&SLOTS[i]&&ITEMS.defs&&ITEMS.defs[id]&&EQUIP.fits(id,SLOTS[i]))by[SLOTS[i]]=id; }); return by; };
   const dye=()=>{ if(!LOOKS.dye)return; const {shirt:sh,pants:pa}=EQUIP.colours(EQUIP.by); if(LOOKS.over.shirt===(sh||undefined)&&LOOKS.over.pants===(pa||undefined))return; LOOKS.over.shirt=sh||undefined; LOOKS.over.pants=pa||undefined; LOOKS.dye(); };
-  EQUIP.wear=(id,quiet)=>{ '@later'; const slot=prop(id,'slot'); if(!SLOTS.includes(slot))return;
-    if(EQUIP.by[slot]===id){ EQUIP.off(slot); save(); if(!quiet)say('YOU TAKE OFF THE '+name(id)+'.','#e8e2cc'); if(FORAGE.draw)FORAGE.draw(); return; }
-    if(!FORAGE.has(id)){ if(!quiet)say('YOU HAVE NO '+name(id)+'.','#c8a090'); return; }
-    EQUIP.off(slot); EQUIP.by[slot]=id; const a=ABIL[EQUIP.ability(id)]; if(a)a.on(); lookOn(id); dye(); save(); if(!quiet)say('YOU WEAR THE '+name(id)+'.','#e8e2cc'); if(FORAGE.draw)FORAGE.draw(); };
-  FORAGE.ROWB.push(id=>SLOTS.includes(prop(id,'slot'))?[[EQUIP.by[prop(id,'slot')]===id?'TAKE OFF':'WEAR','equip']]:[]);
+  EQUIP.wear=(id,quiet)=>{ '@later'; const slot=Object.keys(EQUIP.by).find(k=>EQUIP.by[k]===id)||EQUIP.slotOf(id); if(!slot)return; const sl=prop(id,'slot')!==slot;   // (slung: on your back, not worn)
+    if(EQUIP.by[slot]===id){ EQUIP.off(slot); save(); if(!quiet)say((sl?'YOU TAKE '+the(name(id))+' OFF YOUR BACK.':'YOU TAKE OFF '+the(name(id))+'.'),'#e8e2cc'); if(FORAGE.draw)FORAGE.draw(); return; }
+    if(!FORAGE.has(id)){ if(!quiet)say('YOU HAVE NO '+name(id).replace(/^(A|AN) /,'')+'.','#c8a090'); return; }
+    if(WIELD.on===id&&WIELD.set)WIELD.set(null);   // out of your hand onto your back
+    EQUIP.off(slot); EQUIP.by[slot]=id; const a=ABIL[EQUIP.ability(id)]; if(a)a.on(); lookOn(id); dye(); save(); if(!quiet)say(sl?'YOU SLING '+the(name(id))+' ON YOUR BACK.':'YOU WEAR '+the(name(id))+'.','#e8e2cc'); if(FORAGE.draw)FORAGE.draw(); };
+  FORAGE.ROWB.push(id=>{ const s=EQUIP.slotOf(id); if(!s)return []; const on=EQUIP.by[s]===id; return [[prop(id,'slot')===s?on?'TAKE OFF':'WEAR':on?'OFF YOUR BACK':'ON YOUR BACK','equip']]; });
   FORAGE.ACT.equip=id=>EQUIP.wear(id);
-  try{ const W=JSON.parse(OWNED.get('equip')||'{}')||{}; for(const s in W)if(W[s]&&FORAGE.has(W[s]))EQUIP.wear(W[s],true); }catch(e){}   // what you wore stays on between visits
+  try{ const W=JSON.parse(OWNED.get('equip')||'{}')||{}; for(const s in W)if(W[s]&&FORAGE.has(W[s])&&EQUIP.fits(W[s],s))EQUIP.wear(W[s],true); }catch(e){}   // what you wore stays on between visits
+  // something worn that leaves your things (sold, traded, eaten, archived) comes off
+  let chk=0; SYS.add('dress',()=>{ const t=performance.now(); if(t-chk<1000)return; chk=t; let ch=false; for(const s in EQUIP.by){ const id=EQUIP.by[s]; if(id&&(!FORAGE.has(id)||!EQUIP.fits(id,s))){ EQUIP.off(s); ch=true; } } if(ch){ save(); if(FORAGE.draw)FORAGE.draw(); } },'146c-equip');
 
   // the body gear drawn on a figure (yours, or another player's from what their look says they wear), built once the first time something is worn; a child of the figure's group, posed each frame from the rig's joints (same local space WIELD uses). H keeps one figure's pieces.
   const V=THREE.Vector3, up=new V(), right=new V(), fwd=new V(), M=new THREE.Matrix4();

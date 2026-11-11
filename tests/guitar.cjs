@@ -59,11 +59,11 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
     const T=GUITAR.THEM().get('g1'); const r={them:!!T,held:!!(T&&T.H&&T.H.gm.parent),chord:T&&T.chord,voice:!!(T&&T.V),miss:T&&T.H&&T.H.err?Math.round(Math.max(...[...new Set(T.live.lh.filter(q=>q.t1>1e8).map(q=>q.f))].map(f=>T.H.err.L[f]||0))*1000):null};   // (the fingers that press the chord, as for yours)
     ONLINE.feed({t:'gtr',id:'g1',k:'off',v:''}); ONLINE.feed({t:'out',id:'g1'}); await new Promise(r=>setTimeout(r,400)); r.gone=!GUITAR.THEM().has('g1'); return r; });
   rec('another player\'s guitar: in their hands, their chord under their fingers, heard from where they stand, gone when they stop',o.them&&o.held&&o.chord==='Am'&&o.voice&&o.miss!=null&&o.miss<=10&&o.gone,JSON.stringify(o));
-  // ESC puts it down: off your hands, onto your back (others see it there), till you stow it in the bag
+  // ESC puts it down: off your hands, onto your back (the BACK slot; others see it there), till you take it off your back
   const e=await pg.evaluate(async()=>{ document.body.dispatchEvent(new KeyboardEvent('keydown',{code:'Escape',key:'Escape',bubbles:true})); await new Promise(r=>setTimeout(r,600)); const me=()=>W3.group.children.find(m=>m.userData&&m.userData.hands);
-    const r={on:GUITAR.on(),slung:GUITAR.slung(),onBody:me().children.some(c=>c.name==='guitar'),fg:!!me().userData.hands.fg,panel:!document.getElementById('gtp').hidden,seen:ONLINE.mine.gtr()};
-    FORAGE.ACT.gstow('guitar'); await new Promise(r=>setTimeout(r,300)); r.stowed=!GUITAR.slung()&&!me().children.some(c=>c.name==='guitar')&&ONLINE.mine.gtr()==null; return r; });
-  rec('ESC puts it down onto your back (your fingers the rig\'s again, the panel gone, others see it slung); STOW IT puts it in the bag',!e.on&&e.slung&&e.onBody&&!e.fg&&!e.panel&&e.seen==='b'&&e.stowed,JSON.stringify(e));
+    const r={on:GUITAR.on(),slung:GUITAR.slung(),onBody:me().children.some(c=>c.name==='guitar'),fg:!!me().userData.hands.fg,panel:!document.getElementById('gtp').hidden,seen:ONLINE.mine.bk()};
+    r.slot=EQUIP.by.back; FORAGE.ACT.equip('guitar'); await new Promise(r=>setTimeout(r,300)); r.stowed=!GUITAR.slung()&&!me().children.some(c=>c.name==='guitar')&&ONLINE.mine.bk()==null; return r; });
+  rec('ESC puts it down onto your back (your fingers the rig\'s again, the panel gone, others see it slung); OFF YOUR BACK puts it in the bag',!e.on&&e.slung&&e.onBody&&!e.fg&&!e.panel&&e.seen==='guitar'&&e.slot==='guitar'&&e.stowed,JSON.stringify(e));
   // the songs: the book's five and the downloaded pieces, each needing its GUITAR level; practice raises it
   const sg=await pg.evaluate(async()=>{ const B=GUITAR.BOOK; FORAGE.S.sk.guitar=100; GUITAR.start('own'); await GUITAR.loadSongs(); const lv=FORAGE.sk('guitar'), hard=B.findIndex(b=>b.lvl>50&&b.lvl<=60&&b.notes&&b.lvl===Math.min(...B.filter(q=>q.lvl>50&&!q.kept).map(q=>q.lvl)));
     GUITAR.play('song',hard); const refused=GUITAR.ME.song!==hard; FORAGE.S.sk.guitar=1000; GUITAR.play('song',hard); await new Promise(r=>setTimeout(r,2500)); const playing=GUITAR.ME.song===hard, notes=GUITAR.ME.cur; GUITAR.play('stop');

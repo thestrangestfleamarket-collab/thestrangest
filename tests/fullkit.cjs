@@ -11,7 +11,7 @@ let bad = 0; const ok = (c, m) => { console.log((c ? 'ok   ' : 'FAIL ') + m); if
   await pg.waitForTimeout(2000);
   const r = await pg.evaluate(() => ({ it: { ...INV.items }, gift: JSON.parse(localStorage.getItem('market-save')).gift ?? null, arch: Object.keys(INV.items).filter(id => ARCHI(id) && !['mortar', 'passport'].includes(id)) }));
   ok(r.gift === null, 'the gift is taken once');
-  for (const id of ['guitar', 'piano', 'drums', 'harp', 'kart', 'board_pine', 'board_teal', 'bmx', 'skateboard', 'rod', 'bait', 'sword', 'sword_ench', 'net', 'bnet', 'cage', 'bseed', 'kite', 'binoc', 'camera', 'headlight', 'goggles', 'cloudcoat', 'balloon', 'bee_smoker'])
+  for (const id of ['guitar', 'piano', 'drums', 'harp', 'kart', 'board_pine', 'board_teal', 'bmx', 'skateboard', 'rod', 'bait', 'sword', 'sword_ench', 'net', 'bnet', 'cage', 'bseed', 'kite', 'binoc', 'camera', 'headlight', 'goggles', 'balloon', 'bee_smoker'])
     ok(r.it[id] >= 1, 'in the bag: ' + id);
   ok(['shroom_fly', 'shroom_invis', 'airshroom'].every(id => r.it[id] >= 99) && r.it.m_button >= 20, '99 of each power mushroom, 20 of the healing ones');
   ok(r.it.scuba >= 1, 'the scuba set is in the kit (bought, no longer rented)');

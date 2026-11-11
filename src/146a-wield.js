@@ -1,6 +1,6 @@
 // THE WIELD: WIELD lets the player hold and swing a sword (any blade on the item model), a butterfly net or a bird net, or hold a tool another system registers (the fishing rod) in the passport's hand, the mouse taking the arm round in full circles: swings chain into a heavy third, cost stamina, and P held raises the blade to block.
 import {SHARED, THREE} from './003-shx.js';
-import {BIRDS, FORAGE, INSPECT, ITEMS, keys, LEVELS, MOTION, ONLINE, RAG, SFX, st, UI, VIT, VR, W3, WEEDS, WIELD} from './003b-systems.js';
+import {BIRDS, EQUIP, FORAGE, INSPECT, ITEMS, keys, LEVELS, MOTION, ONLINE, RAG, SFX, st, UI, VIT, VR, W3, WEEDS, WIELD} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {BF, SYS, TILE} from './006-map-pre.js';
@@ -11,7 +11,7 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
   const SWC={sword_wood:[0xa88a60,0x6a4a2a,0x4a3020],sword:[0xd8dce2,0x9a8450,0x4a3426],sword_steel:[0xeef2f8,0xb0b8c8,0x24242e],sword_ench:[0x9ad8ff,0xd8b060,0x3a2a5a]};
   const LIST=[...Object.keys(SWC).filter(id=>ITEMS.prop(id,'slot')==='hand'),'net','bnet']; WIELD.LIST=LIST;
   // other held tools register here: WIELD.kind(id,{name,make,aim(dt,aim,mouse) -> true when it moves the arm itself,use() -> true when a click is its own}); make() returns a group with .tipL (its tip, local) when something hangs off it
-  const KIND={}; WIELD.kinds=KIND; WIELD.useHeld=()=>{ const k=WIELD.on&&KIND[WIELD.on]; if(!k||!k.use)return false; k.use(); return true; }; WIELD.tip=new THREE.Vector3(); WIELD.ray=null; WIELD.kind=(id,k)=>{ KIND[id]=k; NM[id]=k.name; if(!LIST.includes(id))LIST.push(id); }; for(const [id,k] of WIELD.pend||[])WIELD.kind(id,k);
+  const KIND={}; WIELD.kinds=KIND; WIELD.useHeld=()=>{ const k=WIELD.on&&KIND[WIELD.on]; if(!k||!k.use)return false; k.use(); return true; }; WIELD.tip=new THREE.Vector3(); WIELD.ray=null; WIELD.kind=(id,k)=>{ KIND[id]=k; NM[id]=k.name; if(!LIST.includes(id))LIST.push(id); ITEMS.reg(id,{slot:'hand'}); }; for(const [id,k] of WIELD.pend||[])WIELD.kind(id,k);
   FORAGE.add({names:{sword:'SWORD',sword_wood:'WOODEN SWORD',sword_steel:'STEEL SWORD',sword_ench:'ENCHANTED BLADE'},prices:{sword:15,sword_wood:8,sword_steel:40,sword_ench:120}});
   // the sword is bought from the swordsmith now, not given free (owner, 22 Oct 2026).
   const lam=c=>new THREE.MeshLambertMaterial({color:c}), bx=(w,h,d,m,y)=>{ const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m); o.position.y=y; return o; };
@@ -32,6 +32,7 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
   const front=v=>{ const fx=Math.sin(SHARED.heading), fz=Math.cos(SHARED.heading), k=v.x*fx+v.z*fz; if(k<.05)v.x+=fx*(.05-k),v.z+=fz*(.05-k); return v.normalize(); };
   renderer.domElement.addEventListener('pointermove',e=>{ if(UI.locked&&UI.locked()){ const r=renderer.domElement.getBoundingClientRect(); ms.x=r.left+r.width/2; ms.y=r.top+r.height/2; return; } ms.x=e.clientX; ms.y=e.clientY; });
   WIELD.set=id=>{ '@later'; if(MESH[WIELD.on])MESH[WIELD.on].visible=false; WIELD.on=null; if(!id||!FORAGE.has(id)){ if(id)say('YOU HAVE NO '+NM[id]+'.','#c8a090'); return; }
+    if(EQUIP.by&&EQUIP.by.back===id&&EQUIP.wear)EQUIP.wear(id,true);   // off your back and into your hand
     const m=MESH[id]||(MESH[id]=mk(id)); if(!m.parent){ m.matrixAutoUpdate=false; m.userData.anyRoom=1; scene.add(m); } /* what you hold comes into every room with you: the room cull leaves it be */ WIELD.on=id; SHARED.target=null; if(/^sword/.test(id))MOTION.play('draw'); say('YOU HOLD THE '+NM[id]+'. '+(KIND[id]&&KIND[id].hint||'THE MOUSE SWINGS IT ROUND YOU, A CLICK SLASHES.'),'#e8e2cc'); FORAGE.draw(); };
   WIELD.next=()=>{ const own=LIST.filter(k=>FORAGE.has(k)), i=own.indexOf(WIELD.on); WIELD.set(i+1<own.length?own[i+1]:null); if(!WIELD.on)say('YOUR HANDS ARE FREE.','#e8e2cc'); };
   const WIELD_strike0=()=>{ '@later'; if(!WIELD.on||WIELD.block||sw&&sw.t<.18||VIT.dead||VIT.out>0||RAG.on)return false; if(KIND[WIELD.on]&&KIND[WIELD.on].use){ if(!KIND[WIELD.on].ekey)KIND[WIELD.on].use(); return false; }   // what you ride is used with E, not a click (owner, 8 Nov 2026) let heavy=false;

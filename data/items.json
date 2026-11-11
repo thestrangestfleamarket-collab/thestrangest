@@ -38,7 +38,8 @@
   "grants": "fish",
   "cast": 12,
   "line": 1,
-  "reel": 1
+  "reel": 1,
+  "slung": true
  },
  "bait": {
   "stackable": true,
@@ -69,12 +70,14 @@
   "slot": "hand",
   "grants": "fight",
   "value": 15,
-  "damage": 2
+  "damage": 2,
+  "slung": true
  },
  "net": {
   "slot": "hand",
   "grants": "catch",
-  "value": 8
+  "value": 8,
+  "slung": true
  },
  "kite": {
   "slot": "hand",
@@ -85,7 +88,8 @@
  "bnet": {
   "slot": "hand",
   "grants": "catch",
-  "value": 12
+  "value": 12,
+  "slung": true
  },
  "armor": {
   "slot": "body",
@@ -101,19 +105,22 @@
   "slot": "hand",
   "grants": "fight",
   "value": 8,
-  "damage": 1
+  "damage": 1,
+  "slung": true
  },
  "sword_steel": {
   "slot": "hand",
   "grants": "fight",
   "value": 40,
-  "damage": 3
+  "damage": 3,
+  "slung": true
  },
  "sword_ench": {
   "slot": "hand",
   "grants": "fight",
   "value": 120,
-  "damage": 5
+  "damage": 5,
+  "slung": true
  },
  "bait_cut": {
   "stackable": true,
@@ -1813,7 +1820,8 @@
   "value": 180,
   "weight": 2.5,
   "sellable": true,
-  "size": 1.0
+  "size": 1.0,
+  "slung": true
  },
  "piano": {
   "value": 900,
@@ -2057,7 +2065,7 @@
   "size": 0.12
  },
  "brickphone": {
-  "slot": "hand",
+  "slot": "none",
   "value": 150,
   "weight": 0.9
  },
@@ -2156,18 +2164,39 @@
   "value": 350,
   "weight": 0.6,
   "sellable": true,
-  "size": 0.6
+  "size": 0.6,
+  "slung": true
  },
  "flute": {
   "value": 250,
   "weight": 0.5,
   "sellable": true,
-  "size": 0.66
+  "size": 0.66,
+  "slung": true
  },
  "trumpet": {
   "value": 300,
   "weight": 1.1,
   "sellable": true,
-  "size": 0.5
+  "size": 0.5,
+  "slung": true
+ },
+ "fscope": {
+  "slung": true
+ },
+ "w_shotgun": {
+  "slung": true
+ },
+ "w_sniper": {
+  "slung": true
+ },
+ "w_laser": {
+  "slung": true
+ },
+ "w_mgun": {
+  "slung": true
+ },
+ "w_rocket": {
+  "slung": true
  }
 }

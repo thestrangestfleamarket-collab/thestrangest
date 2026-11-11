@@ -171,6 +171,7 @@ const GHOLD={};
   const BACKP={neck:[.38,.92,0],top:[0,0,-1],at:[-.03,1.02,-.13],back:[0,F.hole[0],-F.d]};
   const GBK=(()=>{ const y=new V3(...BACKP.neck).normalize(), z0=new V3(...BACKP.top), z=z0.sub(y.clone().multiplyScalar(z0.dot(y))).normalize(), x=new V3().crossVectors(y,z), M=new M4().makeBasis(x,y,z);
     const p=new V3(...BACKP.back).applyMatrix4(M); M.setPosition(new V3(...BACKP.at).sub(p)); return M; })();
+  GHOLD.GBK=GBK;
   GHOLD.sling=(me,PM)=>{ const gm=GHOLD.model(); gm.matrixAutoUpdate=false; me.add(gm); const S={me,PM,gm,on:true}; S.upd=()=>{ gm.matrix.multiplyMatrices(PM.value[1],GBK); gm.matrixWorldNeedsUpdate=true; }; S.upd(); return S; };
   GHOLD.unsling=S=>{ if(!S)return; S.on=false; if(S.gm.parent)S.gm.parent.remove(S.gm); };
   GHOLD.detach=H=>{ if(!H)return; H.on=false; if(H.PM.post)H.PM.post=null; if(H.gm.parent)H.gm.parent.remove(H.gm); const st=H.PM.hands; if(st)st.fg=null; }; }

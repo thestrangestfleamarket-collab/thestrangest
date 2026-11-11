@@ -49,8 +49,8 @@ import {SWAP} from './159i-trade.js';
   // yours: you as you are (the studio's picture), your slots, your buttons, the backpack
   const A=win('doll',true); let pick=null;
   const worn=s=>s==='hand'?WIELD.on||null:EQUIP.by[s]||null;
-  const fits=s=>s==='hand'?(WIELD.LIST||[]).filter(id=>FORAGE.has(id)):Object.keys(INV.items||{}).filter(id=>ITEMS.prop&&ITEMS.prop(id,'slot')===s);
-  const put=(s,id)=>{ if(s==='hand')WIELD.set(id); else if(id)EQUIP.wear(id); else EQUIP.off(s); pick=null; draw(); };
+  const fits=s=>s==='hand'?(WIELD.LIST||[]).filter(id=>FORAGE.has(id)):Object.keys(INV.items||{}).filter(id=>FORAGE.has(id)&&EQUIP.fits(id,s));
+  const put=(s,id)=>{ if(s==='hand')WIELD.set(id); else if(id)EQUIP.wear(id); else if(EQUIP.by[s])EQUIP.wear(EQUIP.by[s]); pick=null; draw(); };   // (taking off goes through wear, so it is saved)
   const BT=[['EDIT',()=>DOLL.looks('look')],['WEAR',()=>DOLL.looks('wear')],['WORDS',()=>DOLL.looks('words')],['SKILLS',()=>UI.menuTab('pack','skills')],['JOURNAL',()=>UI.menuTab('pack','journal')],['EMOTES',()=>MOTION.toggle&&MOTION.toggle()],['PASSPORT',()=>PASSPORT.open&&PASSPORT.open()],['RESURRECT',()=>{ if(VIT.revive)VIT.revive(); },()=>VIT.dead],['LOG OUT',()=>CHARP.logout&&CHARP.logout()]];
   const hud=k=>{ const i=document.getElementById('v'+k), n=document.getElementById('v'+k+'n'); return [i&&i.style.width||'100%',n?n.textContent:'']; };
   const bars=()=>{ const h=hud('hp'), t=hud('st'); A.q('.dl-bars').innerHTML=bar('HP',h[0],'#7dffa8',h[1])+bar('STA',t[0],'#d8ff7d',t[1]); };
@@ -100,6 +100,10 @@ import {SWAP} from './159i-trade.js';
     looks:t=>{ LOOKS.only=t==='look'?null:new Set(['wear','words']); LOOKS.open(); LOOKS.tab(t); const P=document.getElementById('looks'); if(!P||P.hidden||P.classList.contains('inmenu'))return;
       P.style.zIndex=33; A.el.inert=true; const free=()=>{ if(!P.hidden&&!A.el.hidden)return; mo.disconnect(); A.el.inert=false; P.style.zIndex=''; };
       const mo=new MutationObserver(free); mo.observe(P,{attributes:true,attributeFilter:['hidden']}); mo.observe(A.el,{attributes:true,attributeFilter:['hidden']}); },
-    // something dragged out of the bag onto your doll is put on, if it is worn or held
-    drop:id=>{ const s=ITEMS.prop&&ITEMS.prop(id,'slot'); if(s&&s!=='hand'&&SL.some(x=>x[0]===s)){ EQUIP.wear(id); draw(); return true; } if((WIELD.LIST||[]).includes(id)){ WIELD.set(id); draw(); return true; } say('THE '+FORAGE.name(id)+' IS NOT SOMETHING YOU WEAR.'); return true; } });
+    // something dragged out of the bag onto your doll is put on, if it is worn or held; onto one of its slots, put there (your BACK takes what can be slung)
+    drop:(id,slot)=>{ const held=(WIELD.LIST||[]).includes(id), own=EQUIP.slotOf(id), nm=FORAGE.name(id).replace(/^(A|AN|THE) /,''), on=s=>{ if(EQUIP.by[s]!==id)EQUIP.wear(id); draw(); return true; }, hold=()=>{ if(WIELD.on!==id)WIELD.set(id); draw(); return true; };
+      if(slot&&slot!=='hand'){ if(EQUIP.fits(id,slot))return on(slot); say(own&&own!==slot?'THE '+nm+' GOES ON YOUR '+own.toUpperCase()+'.':held?'THE '+nm+' GOES IN YOUR HAND.':'THE '+nm+' DOES NOT GO ON YOUR '+slot.toUpperCase()+'.'); return true; }
+      if(held&&(slot==='hand'||ITEMS.prop(id,'slot')==='hand'||!own))return hold();
+      if(slot==='hand'){ say("YOU CAN'T HOLD THE "+nm+'.'); return true; }
+      if(own)return on(own); say('THE '+nm+' IS NOT SOMETHING YOU WEAR.'); return true; } });
   window.DOLL=DOLL; }

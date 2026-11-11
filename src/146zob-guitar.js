@@ -1,6 +1,6 @@
 // THE GUITAR (owner, 7 Nov 2026: "i want to add the guitar back into game. use the polyfork assets ... hand 3d model, physics, real string acoustics, sounds, closeup, fingers"; his picks: own one and play it anywhere, and the park's is anyone's; play it yourself or a song from the book; the strings' physics): GUITAR, the item (the bodega sells it), the park's guitar on its stand, playing (keys and the panel), the close-up, and everyone near hearing and seeing it.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INSTR, INV, NPCS, ONLINE, PARK, pos, st, UI, W3} from './003b-systems.js';
+import {EQUIP, FORAGE, INSTR, INV, NPCS, ONLINE, PARK, pos, st, UI, W3} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {LEVEL, MAPG, SYS, TILE} from './006-map-pre.js';
 import {GTBOOK, GTCHORD, gtCompile} from './108-game-play-3-guitar-2-tunes.js';
@@ -54,19 +54,18 @@ const GUITAR={}; window.GUITAR=GUITAR;
       if(e.n)GSND.pluck(V,e.n.s,Math.max(0,e.n.at+d),when,e.n.amp,e.n.tone>=4000?1:e.n.tone>=3500?.8:.5,GHOLD.plFrac(e.n.r)); else GSND.mute(V,e.s,when); } };
   const hold=(P,me,PM,body)=>{ if(P.H&&P.H.me===me)return; if(P.H)GHOLD.detach(P.H); P.H=me&&PM?GHOLD.attach(me,PM,body,{score:()=>score(P),time:()=>time(P)}):null; };
   const unhold=P=>{ if(P.H)GHOLD.detach(P.H); P.H=null; if(P.V){ GSND.drop(P.id); P.V=null; } };
-  const unsling=P=>{ if(P.B)GHOLD.unsling(P.B); P.B=null; }, sling=(P,me,PM)=>{ if(P.B&&P.B.me===me)return P.B.upd(); unsling(P); if(me&&PM)P.B=GHOLD.sling(me,PM); };
 
   /* ---------- you ---------- */
   const ME=mk('me'); let on=false, from='', prevView='';
   const myMesh=()=>W3.group.children.find(m=>m.userData&&m.userData.hands&&m.userData.PM&&m.visible!==undefined);
   const tell=(k,v)=>{ if(ONLINE.send)ONLINE.send({t:'gtr',k,v:v==null?'':v}); };
   GUITAR.start=(src='own')=>{ if(on)return; if(st.water&&st.water.in||st.ride||st.climb||st.hang)return say('NOT HERE: STAND SOMEWHERE STEADY TO PLAY.','#c8a090');
-    if(INSTR&&INSTR.on())INSTR.stop(); GSND.wake(); on=true; from=src; GUITAR.stow(); ME.song=-1; ME.chord=''; ME.live={tune:[],strum:[],lh:[],pos:[{t:0,p:1}]}; ACT.chord(ME,'');
+    if(INSTR&&INSTR.on())INSTR.stop(); GSND.wake(); on=true; from=src; if(src==='own')GUITAR.stow(); ME.song=-1; ME.chord=''; ME.live={tune:[],strum:[],lh:[],pos:[{t:0,p:1}]}; ACT.chord(ME,'');
     prevView=UI.view; if(CU.on&&!UI.persp)UI.setView('third'); panel(true); tell('on',src==='park'?'k':'f'); if(src==='park'&&STAND.g)STAND.gm.visible=false;
     say('YOU TAKE UP THE GUITAR. PICK A PIECE FROM THE BOOK · P PLAYS IT · TAB THE CLOSE-UP · ESC TO STOP.'); };
-  // put down, your own guitar goes on your back (others see it) till you stow it in the bag
-  let slung=false; GUITAR.slung=()=>slung; GUITAR.stow=()=>{ slung=false; unsling(ME); };
-  GUITAR.stop=()=>{ if(!on)return; on=false; unhold(ME); if(from==='own'&&FORAGE.has('guitar'))slung=true; panel(false); tell('off'); if(STAND.gm)STAND.gm.visible=true; if(prevView&&prevView!==UI.view&&!/third/.test(prevView))UI.setView(prevView); prevView=''; };
+  // put down, your own guitar goes on your back (the BACK slot, EQUIP; others see it) if your back is free, till you take it off
+  GUITAR.slung=()=>EQUIP.by.back==='guitar'; GUITAR.stow=()=>{ if(GUITAR.slung())EQUIP.wear('guitar',true); };
+  GUITAR.stop=()=>{ if(!on)return; on=false; unhold(ME); if(from==='own'&&FORAGE.has('guitar')&&!EQUIP.by.back)EQUIP.wear('guitar',true); panel(false); tell('off'); if(STAND.gm)STAND.gm.visible=true; if(prevView&&prevView!==UI.view&&!/third/.test(prevView))UI.setView(prevView); prevView=''; };
   GUITAR.on=()=>on; GUITAR.ME=ME; GUITAR.ACT=ACT;
   GUITAR.play=(k,v)=>{ if(!on)return; if(k==='song'&&v===ME.song)k='stop';
     if(k==='song'&&!canPlay(v)){ const T=GTBOOK[v]; return say(T?`${T.name.toUpperCase()} IS NOT OPEN TO YOU YET (GUITAR ${T.lvl}; YOURS IS ${skill().toFixed(1)}). LEARN THE PIECES YOU HAVE.`:'THAT PIECE IS NOT IN THE BOOK.','#c8a090'); }
@@ -74,8 +73,7 @@ const GUITAR={}; window.GUITAR=GUITAR;
     if(k==='strum'||k==='pluck')practise(); ACT[k](ME,v); tell(k,v); drawPanel(); };
   FORAGE.ACT.guitar=()=>{ if(on)GUITAR.stop(); else GUITAR.start('own'); };
   FORAGE.ACT.gplay=FORAGE.ACT.guitar;
-  FORAGE.ACT.gstow=()=>{ GUITAR.stow(); say('YOU STOW THE GUITAR IN YOUR BAG.'); };
-  FORAGE.ROWB.push(id=>id==='guitar'?[[on?'PUT IT AWAY':'PLAY','gplay'],...(slung&&!on?[['STOW IT','gstow']]:[])]:[]);
+  FORAGE.ROWB.push(id=>id==='guitar'?[[on?'PUT IT AWAY':'PLAY','gplay']]:[]);
 
   /* ---------- keys while you play (they are the guitar's, not your feet's) ---------- */
   addEventListener('keydown',e=>{ if(!on||e.ctrlKey||e.metaKey||e.altKey)return; if(e.target&&e.target.closest&&e.target.closest('input,textarea,select,[contenteditable="true"]'))return; if(UI.menuOpen)return;
@@ -132,7 +130,7 @@ const GUITAR={}; window.GUITAR=GUITAR;
 
   /* ---------- the others: their guitars from their word ('gtr'), their sound from where they stand ---------- */
   const THEM=new Map();
-  ONLINE.mine.gtr=()=>on?(ME.song>=0?'s':from==='park'?'k':'f'):slung?'b':null;
+  ONLINE.mine.gtr=()=>on?(ME.song>=0?'s':from==='park'?'k':'f'):null;
   ONLINE.hear.gtr=m=>{ if(!m.id)return; let P=THEM.get(m.id); if(!P){ P=mk(m.id); THEM.set(m.id,P); } const k=m.k, v=m.v;
     if(k==='on'||k==='off'){ if(k==='off'){ unhold(P); } return; }
     if(k==='chord'&&(v===''||GTCHORD[v]))ACT.chord(P,v); else if(k==='strum'&&/^[Ddu]$/.test(v))ACT.strum(P,v); else if(k==='pluck'&&+v>=1&&+v<=6)ACT.pluck(P,+v); else if(k==='capo')ACT.capo(P,+v||0);
@@ -143,10 +141,9 @@ const GUITAR={}; window.GUITAR=GUITAR;
     if(on){ if(!FORAGE.has('guitar')&&from==='own'){ GUITAR.stop(); return; } if(st.water&&st.water.in||st.ride){ GUITAR.stop(); return; }
       if(from==='park'&&STAND.g&&Math.hypot(STAND.g.position.x-pos.x,STAND.g.position.z-pos.z)>4*TILE){ GUITAR.stop(); say('YOU LEAVE THE PARK\'S GUITAR ON ITS STAND.'); return; }
       const me=myMesh(), body=BODIES.by[BODIES.pick()]; hold(ME,me,me&&me.userData.PM,body); songTick(ME); if(ME.V)GSND.place(ME.V,pos.x,pos.z); }
-    else if(slung){ if(!FORAGE.has('guitar'))GUITAR.stow(); else { const me=myMesh(); sling(ME,me,me&&me.userData.PM); } }
-    for(const [id,P] of THEM){ const o=ONLINE.others.get(id); if(!o||!o.x||!o.x.gtr){ unhold(P); unsling(P); THEM.delete(id); continue; }
-      const F=o.fig; if(o.x.gtr==='b'){ unhold(P); if(F&&F.body)sling(P,F.me,F.PM); continue; } unsling(P); if(F&&F.body&&F.g.visible){ hold(P,F.me,F.PM,F.body); o.wantPose=true; } else if(P.H){ GHOLD.detach(P.H); P.H=null; }
+    for(const [id,P] of THEM){ const o=ONLINE.others.get(id); if(!o||!o.x||!o.x.gtr||o.x.gtr==='b'){ unhold(P); THEM.delete(id); continue; }
+      const F=o.fig; if(F&&F.body&&F.g.visible){ hold(P,F.me,F.PM,F.body); o.wantPose=true; } else if(P.H){ GHOLD.detach(P.H); P.H=null; }
       songTick(P); if(P.V&&o.p)GSND.place(P.V,o.p.x,o.p.z); }
     // someone already playing when you came: their guitar, open strings till they play
-    for(const o of ONLINE.others.values())if(o.x&&o.x.gtr&&!THEM.has(o.id)&&o.id){ THEM.set(o.id,mk(o.id)); } },'146zob-guitar'); }
+    for(const o of ONLINE.others.values())if(o.x&&o.x.gtr&&o.x.gtr!=='b'&&!THEM.has(o.id)&&o.id){ THEM.set(o.id,mk(o.id)); } },'146zob-guitar'); }
 export {GUITAR};

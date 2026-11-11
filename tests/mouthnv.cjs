@@ -1,4 +1,4 @@
-// THE CIGAR IN YOUR MOUTH AND THE NIGHT-VISION GOGGLES (owner, 11 Nov 2026): a held cigar sits at your mouth, your arm down; worn night-vision goggles turn the picture green and bright. With an out folder, third-person shots in the park's open meadow.
+// THE CIGAR IN YOUR MOUTH AND THE NIGHT-VISION GOGGLES (owner, 11 Nov 2026): a held cigar sits at your mouth, your arm down; worn night-vision goggles, or a night vision mushroom, turn the picture green and bright. With an out folder, third-person shots in the park's open meadow.
 const { chromium } = require('playwright');
 (async()=>{ const OUT=process.argv[2]; const b=await chromium.launch({executablePath:process.env.PW_CHROMIUM,args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:960,height:640}}); const errs={}; let bad=0;
   pg.on('pageerror',e=>{ const k=e.message.slice(0,160); errs[k]=(errs[k]||0)+1; });
@@ -20,5 +20,7 @@ const { chromium } = require('playwright');
   await pg.evaluate(()=>EQUIP.wear('nv_goggles',true)); await pg.waitForFunction(`!((${NV})()||{}).enabled`,null,{timeout:60000}).catch(()=>{});
   const f=await pg.evaluate(()=>SHARED.composer.passes.every(p=>!(p.enabled&&p.uniforms&&p.uniforms.uOn&&/vec3\(\.2,1\.,\.35\)/.test(p.material.fragmentShader))));
   rec('off again when you take them off',f);
+  await pg.evaluate(()=>{ FORAGE.S.fx.dark=30; }); await pg.waitForFunction(`((${NV})()||{}).enabled&&(${NV})().uniforms.uOn.value>.9`,null,{timeout:60000}).catch(()=>{});
+  rec('a night vision mushroom gives the same night vision',await pg.evaluate(`!!((${NV})()||{}).enabled`));
   const E=Object.entries(errs); rec('no page errors',!E.length,E.map(([k,n])=>n+'× '+k).join(' | '));
   console.log(bad?bad+' FAILED':'ALL PASS'); await b.close(); process.exit(bad?1:0); })();

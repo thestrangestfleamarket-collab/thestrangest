@@ -91,9 +91,12 @@ Object.assign(EQUIP,{fit:[1.3,1.55,1.1,-.2,.04],by:{},float:false,light:false,si
   const shades=(g,B,id,H)=>{ const J=B&&B.J, k=eyeKind(id), E=H.eye||(H.eye={}); for(const q in E)if(q!==k||!g||!J||g.visible===false)E[q].visible=false; if(!k||!g||!J||g.visible===false)return;
     const c=prop(id,'color'); let sh=E[k]; if(!sh){ sh=E[k]=EYES[k](c); sh.name='eyes-'+k; }
     if(sh.parent!==g)g.add(sh); sh.visible=true; if(sh.userData.lens&&c&&sh.userData.lens.color.getHexString()!==String(c).replace('#','').toLowerCase())sh.userData.lens.color.set(c);
+    const A=headOf(g); if(A){ hu.copy(A.up); hf.copy(A.fwd).addScaledVector(hu,-hf.copy(A.fwd).dot(hu)).normalize(); hr.crossVectors(hu,hf).normalize(); HM.makeBasis(hr,hu,hf); sh.quaternion.setFromRotationMatrix(HM);   // over your avatar's own eyes (owner, 11 Nov 2026: "the nightvision gogles need to go over the players eyes not on top of head")
+      if(k==='nv'){ const sc=A.w*1.1/.56; sh.position.copy(A.hb).addScaledVector(hu,A.hh*EQUIP.eyY).addScaledVector(hf,A.f+sc*.08); sh.scale.setScalar(sc); }
+      else { const sc=A.w*1.05/.66; sh.position.copy(A.hb).addScaledVector(hu,A.hh*EQUIP.eyY).addScaledVector(hf,A.f+sc*.03); sh.scale.setScalar(sc); } return; }
     const hb=J.head, ht=J.headTop, sl=J.shoulderL, sr=J.shoulderR; hu.set(ht.x-hb.x,ht.y-hb.y,ht.z-hb.z); const hh=hu.length()||6; hu.normalize(); hr.set(sl.x-sr.x,sl.y-sr.y,sl.z-sr.z).normalize(); hf.crossVectors(hr,hu).normalize(); hr.crossVectors(hu,hf).normalize(); HM.makeBasis(hr,hu,hf);
     sh.quaternion.setFromRotationMatrix(HM); sh.position.set(hb.x,hb.y,hb.z).addScaledVector(hu,hh*EQUIP.shY).addScaledVector(hf,hh*EQUIP.shZ); sh.scale.setScalar(hh*EQUIP.shS); };
-  EQUIP.shY=.36; EQUIP.shZ=.8; EQUIP.shS=1.25;
+  EQUIP.shY=.36; EQUIP.shZ=.8; EQUIP.shS=1.25; EQUIP.eyY=.5;
   EQUIP.draw=(g,B,by,H)=>{ const id=by.body, worn0=H.worn; back(g,B,Object.values(by).some(q=>q&&EQUIP.ability(q)==='breathe'&&!prop(q,'look')),H); shades(g,B,by.eyes,H); lamp(g,B,by.head,H);
     if(!g||!B||!B.J||!id){ if(worn0)worn0.root.visible=false; return; }
     const grant=EQUIP.ability(id); if(grant!=='guard'&&grant!=='float'){ if(worn0)worn0.root.visible=false; return; }
@@ -113,11 +116,11 @@ Object.assign(EQUIP,{fit:[1.3,1.55,1.1,-.2,.04],by:{},float:false,light:false,si
       for(let k=0;k<worn.puffs.length;k++){ const p=worn.puffs[k], sd=p.userData.sd, a=k/worn.puffs.length*Math.PI*2, rad=w*(.55+.12*Math.sin(t*.5+sd));
         p.position.set(Math.cos(a)*rad, -w*.2-(k%3)*w*.34+Math.sin(t*.8+sd)*w*.08, -w*.28+Math.sin(a)*rad*.5+Math.sin(t*.6+sd)*w*.06);
         p.scale.setScalar(w*(.42+.12*Math.sin(t*.9+sd*1.3))); } } };
-  // night vision (owner, 11 Nov 2026: "when you wear night vision goggles you need to be able to see in night vision mode"): the picture gained up and green, grainy, dark at the edges, while EQUIP.night; one pass made the first time, off otherwise
+  // night vision (owner, 11 Nov 2026: "when you wear night vision goggles you need to be able to see in night vision mode"): the picture gained up and green, grainy, dark at the edges, while EQUIP.night or a night vision mushroom lasts (owner, same day: "night vision mushrooms should give nightvision too"); one pass made the first time, off otherwise
   let NV=null; const nv=()=>{ '@later'; const C=SHARED.composer; if(NV||!C)return NV; NV=new ShaderPass({uniforms:{tDiffuse:{value:null},uOn:{value:0},uT:{value:0}},vertexShader:'varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
       fragmentShader:`uniform sampler2D tDiffuse; uniform float uOn,uT; varying vec2 vUv; float h(vec2 p){ return fract(sin(dot(p,vec2(12.9898,78.233))+uT)*43758.5453); }
       void main(){ vec4 c=texture2D(tDiffuse,vUv); float l=dot(c.rgb,vec3(.3,.59,.11)); float g=pow(clamp(l*6.,0.,1.),.55)+(h(vUv*700.)-.5)*.12; vec2 d=vUv-.5; float v=1.-smoothstep(.32,.62,length(d*vec2(1.3,1.)));
         gl_FragColor=vec4(mix(c.rgb,vec3(.2,1.,.35)*g*v,uOn),c.a); }`}); NV.enabled=false; const i=C.passes.findIndex(p=>p instanceof OutputPass); C.insertPass(NV,i<0?C.passes.length:i); return NV; };
-  SYS.add('life',dt=>{ const on=!!EQUIP.night&&!VR.on; if(!on&&!NV)return; const P=nv(); if(!P)return; const u=P.uniforms; u.uOn.value+=((on?1:0)-u.uOn.value)*Math.min(1,(dt||0)*6); u.uT.value=(performance.now()/1000)%100; P.enabled=u.uOn.value>.01; },'146c-nightvision');
+  SYS.add('life',dt=>{ const on=(!!EQUIP.night||!!(FORAGE.S&&FORAGE.S.fx&&FORAGE.S.fx.dark>0))&&!VR.on; if(!on&&!NV)return; const P=nv(); if(!P)return; const u=P.uniforms; u.uOn.value+=((on?1:0)-u.uOn.value)*Math.min(1,(dt||0)*6); u.uT.value=(performance.now()/1000)%100; P.enabled=u.uOn.value>.01; },'146c-nightvision');
   const MINE={}; EQUIP.post=B=>{ const L=LOOKS.L||{}; GARB.draw(W3.group,B,GARB.spec(L.bare,LOOKS.over,W3.style&&W3.style.form),MINE,W3.mesh,GARB.myE()); EQUIP.draw(W3.group,B,EQUIP.by,MINE); };
 }

@@ -8,6 +8,9 @@ const GEMS=[['quartz','QUARTZ CRYSTAL',6,30],['amethyst','AMETHYST',14,22],['geo
 Object.assign(INV,{items:{},picked:{}}); window.INV=INV; GEMS.TIER=GTIER; window.GEMS=GEMS;
 { const KEY='inv', W=GEMS.reduce((a,g)=>a+g[3],0), byId=id=>GEMS.find(g=>g[0]===id);
   const day=()=>window.MAIL&&MAIL.ready?MAIL.day():CITY?CITY.day||0:0;
+  // money (owner, 11 Nov 2026, UO's rules): your gold is kept in the bank; INV.cash is what you carry; a price is paid from what you carry, then the rest from the bank (INV.bank, filled in 146zm)
+  INV.bank={bal:()=>0,take:()=>0}; INV.money=()=>Math.max(0,INV.cash||0)+INV.bank.bal(); INV.afford=n=>INV.money()>=(+n||0);
+  INV.pay=n=>{ n=+n||0; if(n<=0)return true; if(!INV.afford(n))return false; const h=Math.min(Math.max(0,INV.cash||0),n); INV.cash=(INV.cash||0)-h; if(n>h)INV.bank.take(n-h); return true; };
   INV.START=1000;   // what a new player starts with (owner, 7 Nov 2026: "$1,000"); a save from before is topped up to it once, and keeps more
   try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1){ INV.items=D.items||{}; INV.picked=D.picked||{}; INV.inside=D.inside||{}; INV.inst=+D.inst||0; INV.cash=D.cash??INV.START; if(!D.g1m)INV.cash=Math.max(INV.cash,INV.START); } }catch(e){} if(QS.get('fresh')&&QS.get('keepinv')!=='1'){ INV.items={}; INV.picked={}; INV.inside={}; } INV.inside=INV.inside||{}; if(INV.cash==null)INV.cash=INV.START;
   const save=()=>{ OWNED.set(KEY,JSON.stringify({v:1,g1m:1,items:INV.items,picked:INV.picked,inside:INV.inside||{},inst:INV.inst||0,cash:INV.cash})); if(window.MAIL&&MAIL.save)MAIL.save(); };

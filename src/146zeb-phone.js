@@ -15,7 +15,7 @@ const PHONE={fee:2}; window.PHONE=PHONE;
   const here=()=>{ const T=TILE, h=SHARED.heading||0, x=pos.x+Math.sin(h)*.9*T, z=pos.z+Math.cos(h)*.9*T; return {x,y:SHARED.groundY?SHARED.groundY(x,z):0,z}; };
   const signal=()=>SHARED.LVL==='up'&&!(ROOMS.offIn&&ROOMS.offIn())&&!(ROOMS.cur&&ROOMS.cur.name);
   PHONE.order=r=>{ if(!r)return 'NOTHING PICKED.'; if(!signal())return 'NO SIGNAL IN HERE. TRY OUTSIDE.'; if(!DRONE.go)return 'NO DRONE ANSWERS.'; if(DRONE.state!=='home')return 'THE DRONE IS OUT. CALL BACK SOON.';
-    const cost=r.price+PHONE.fee; if(INV.cash<cost)return 'NOT ENOUGH CASH ($'+cost+').'; INV.cash-=cost; if(INV.save)INV.save();
+    const cost=r.price+PHONE.fee; if(!INV.afford(cost))return 'NOT ENOUGH CASH ($'+cost+').'; INV.pay(cost); if(INV.save)INV.save();
     DRONE.go(r.name,()=>{ FORAGE.give(r.id,1); if(FORAGE.save)FORAGE.save(); if(FORAGE.draw)FORAGE.draw(); },{follow:here}); return ''; };
   const view={title:'BRICK PHONE',w:W,h:H,help:'Up and down pick a line (or click it), SEND orders it: its price and $'+PHONE.fee+' delivery. The drone brings it to wherever you are outdoors. END hangs up.',
     start:S=>{ S.L=lines(); S.sel=0; S.top=0; S.msg='THE BODEGA · DRONE DELIVERY'; },

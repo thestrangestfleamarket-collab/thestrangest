@@ -7,7 +7,7 @@ Object.assign(SHOPS,{bound:new Set(),cur:null});
 { const T=TILE;
   const name=id=>(FORAGE&&FORAGE.NM&&FORAGE.NM[id])||String(id).toUpperCase().replace(/_/g,' ');
   const price=id=>{ const v=ITEMS&&ITEMS.prop?ITEMS.prop(id,'value'):0; return +v>0?Math.round(+v):1; };
-  const cash=()=>INV?INV.cash:0;
+  const cash=()=>INV?INV.money():0;
   const give=(id,n)=>{ const F=FORAGE; if(F&&F.give)F.give(id,n); else if(INV)INV.add(id,n); if(F&&F.draw)F.draw(); };
   const say=t=>{ const F=FORAGE; if(F&&F.say)F.say(t); };
   // trade.buys names groups of goods (FORAGE.BUYK: butterflies, birds, ...); paid at the price the game already gives each
@@ -45,7 +45,7 @@ Object.assign(SHOPS,{bound:new Set(),cur:null});
     sp.innerHTML=o; if(sc)sp.querySelector('.shm').scrollTop=sc; };
 
   // buying and selling, the one way (the window's double click after its confirmation, and the checks)
-  SHOPS.buy=(id,n=1,rent=false)=>{ const c=price(id)*n; if(cash()<c){ say('YOU CANNOT AFFORD THAT.'); return false; } INV.cash-=c;
+  SHOPS.buy=(id,n=1,rent=false)=>{ const c=price(id)*n; if(!INV.afford(c)){ say('YOU CANNOT AFFORD THAT.'); return false; } INV.pay(c);
     if(rent){ if(!(FORAGE&&FORAGE.has(id)))give(id,1); SYS.run('rent',id); } else { give(id,n); say(`YOU BUY ${n} ${name(id)} FOR $${c}.`); }   // a rental: one at a time, paid each time it is filled
     if(window.SFX)SFX.play('clunk',{vol:.5}); draw(); return true; };
   SHOPS.sell=(id,n)=>{ const F=FORAGE; n=Math.min(n,INV.items[id]||0); if(!n)return false; const v=WORTH.sell(id,n,worth(id)); if(F&&F.take)F.take(id,n); INV.cash+=v; INV.add('x',0); delete INV.items.x; say(`YOU SELL ${n} ${name(id)} FOR $${v}.`); for(const f of (F&&F.SOLD)||[])f(id,n,v); if(window.SFX)SFX.play('clunk',{vol:.5}); if(F&&F.draw)F.draw(); draw(); return true; };
@@ -53,7 +53,7 @@ Object.assign(SHOPS,{bound:new Set(),cur:null});
     if(b.classList.contains('shx'))return SHOPS.close(); if(b.dataset.q)return ask(b.dataset.q==='y');
     if(b.dataset.train){ FORAGE.train(b.dataset.train,+b.dataset.cap); draw(); return; } if(b.dataset.ask){ if(FORAGE.hand)FORAGE.hand(+b.dataset.ask); draw(); } });
   sp.addEventListener('dblclick',async e=>{ '@later'; const r=e.target.closest('.shr'); if(!r||!SHOPS.cur||Q)return; e.preventDefault();
-    if(r.dataset.buy){ const id=r.dataset.buy, rent=!!r.dataset.rent, p=price(id); if(cash()<p){ say('YOU CANNOT AFFORD THAT.'); return; }
+    if(r.dataset.buy){ const id=r.dataset.buy, rent=!!r.dataset.rent, p=price(id); if(!INV.afford(p)){ say('YOU CANNOT AFFORD THAT.'); return; }
       if(await confirm(`${rent?(FORAGE&&FORAGE.has(id)?'REFILL':'RENT'):'BUY'} ${name(id)} FOR $${p}?`))SHOPS.buy(id,1,rent); return; }
     if((r.dataset.pbuy||r.dataset.pawn)&&SHOPS.pawnDo){ const have=r.dataset.pawn?INV.items[r.dataset.pawn]||0:1, n=have>1&&BAG&&BAG.ask?await BAG.ask(have,e.clientX,e.clientY):Math.min(1,have); if(!n)return;
       if(await confirm(SHOPS.pawnAsk(r,n)))SHOPS.pawnDo(r,n); return; }

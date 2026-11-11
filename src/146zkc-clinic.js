@@ -26,8 +26,8 @@ const CLINIC={}; window.CLINIC=CLINIC;
     busy=true; let r='not'; try{ await FADE.run('THE DOCTOR FITS THE '+FORAGE.name(id),()=>{ r=EQUIP.fit(id); },{hold:600}); } finally{ busy=false; }
     if(r==='ok'){ SFX.play('clunk',{vol:.4}); say(`THE ${FORAGE.name(id)} IS FITTED IN YOUR ${SN[s]}: ${what(id)}.`); } draw(); return r; };
   CLINIC.remove=async s=>{ '@later'; const id=EQUIP.im[s]; if(!id||busy)return null; if(!here()){ say('ONLY THE DOCTOR AT THE CLINIC CAN REMOVE AN IMPLANT.','#c8a090'); return null; }
-    if(INV.cash<FEE){ say('TAKING ONE OUT IS $'+FEE+'. YOU HAVE $'+Math.round(INV.cash)+'.','#c8a090'); return null; }
-    busy=true; let r=null; try{ await FADE.run('THE DOCTOR TAKES OUT THE '+FORAGE.name(id),()=>{ r=EQUIP.unfit(s); if(r)INV.cash-=FEE; },{hold:600}); } finally{ busy=false; }
+    if(!INV.afford(FEE)){ say('TAKING ONE OUT IS $'+FEE+'. YOU HAVE $'+Math.round(INV.money())+'.','#c8a090'); return null; }
+    busy=true; let r=null; try{ await FADE.run('THE DOCTOR TAKES OUT THE '+FORAGE.name(id),()=>{ r=EQUIP.unfit(s); if(r)INV.pay(FEE); },{hold:600}); } finally{ busy=false; }
     if(r){ SFX.play('clunk',{vol:.4}); say(`THE ${FORAGE.name(r)} IS OUT ($${FEE}). IT IS BACK IN YOUR PACK.`); } draw(); return r; };
 
   // the operating chair's window: your slots, what is fitted, and the implants in your pack
@@ -38,7 +38,7 @@ const CLINIC={}; window.CLINIC=CLINIC;
   const P=document.createElement('div'); P.id='clinicg'; P.hidden=true; document.body.appendChild(P);
   P.addEventListener('keydown',e=>{ if(e.key==='Escape')CLINIC.close(); e.stopPropagation(); }); P.addEventListener('keyup',e=>e.stopPropagation());
   const mine=()=>Object.keys(INV.items).filter(id=>INV.items[id]>0&&EQUIP.slotOf(id)).sort();
-  const draw=()=>{ if(P.hidden)return; let o=`<h3><b>THE OPERATING CHAIR</b><i>$${Math.round(INV.cash)}</i><button data-x="1" type="button">X</button></h3>`;
+  const draw=()=>{ if(P.hidden)return; let o=`<h3><b>THE OPERATING CHAIR</b><i>$${Math.round(INV.money())}</i><button data-x="1" type="button">X</button></h3>`;
     o+=EQUIP.IMS.map(s=>{ const id=EQUIP.im[s]; return `<div class="cr"><b>${SN[s]}</b><span>${id?esc(FORAGE.name(id))+`<u>${esc(what(id))}</u>`:'<u>EMPTY</u>'}</span>${id?`<button type="button" data-out="${s}">REMOVE $${FEE}</button>`:''}</div>`; }).join('');
     const L=mine(); o+=`<div class="ch">IN YOUR PACK</div>`+(L.length?L.map(id=>{ const s=EQUIP.slotOf(id); return `<div class="cr"><b>${SN[s]}</b><span>${esc(FORAGE.name(id))}<u>${esc(what(id))}</u></span><button type="button" data-fit="${esc(id)}"${EQUIP.im[s]?' title="that slot is taken"':''}>FIT</button></div>`; }).join(''):'<div class="cf">NONE. THE DOCTOR SELLS THEM AT THE COUNTER.</div>');
     o+=`<div class="cf">ONE IMPLANT TO A SLOT. FITTING IS FREE; TAKING ONE OUT IS $${FEE} AND IT GOES BACK IN YOUR PACK.</div>`; P.innerHTML=o; };

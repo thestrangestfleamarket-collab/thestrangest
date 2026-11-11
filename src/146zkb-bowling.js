@@ -167,10 +167,10 @@ const BOWL={BOWLS}; window.BOWL=BOWL;
     const pin=()=>{ window.RUNNER=MODS.runner={on:true,steer:()=>{ if(!P||!K)return [0,0,0]; const [x,z,hd]=stand(); pos.x=x; pos.z=z; SHARED.heading=hd; return [0,0,0]; }}; };
     BOWL.take=i=>{ if(!K)return; const L=K.lanes[i]; if(P&&P.ln===i)return; if(L.who&&!L.who.me)return say('LANE '+(i+1)+' IS '+String(L.who.name||'SOMEONE').toUpperCase()+'\'S. TRY ANOTHER.','#c8a090');
       if(!PB.R)return say('THE PINSETTERS ARE STILL WARMING UP. TRY AGAIN IN A MOMENT.','#c8a090');
-      if(INV.cash<G.PRICE)return say('SHOES AND A GAME ARE $'+G.PRICE+'. YOU HAVE $'+INV.cash+'.','#c8a090');
-      if(P)BOWL.leave(true); INV.cash-=G.PRICE; if(INV.save)INV.save(); L.who={id:me(),name:myName(),me:true}; L.rolls=[]; L.stand=1023; respot(L); send({op:'take',ln:i});
+      if(!INV.afford(G.PRICE))return say('SHOES AND A GAME ARE $'+G.PRICE+'. YOU HAVE $'+INV.money()+'.','#c8a090');
+      if(P)BOWL.leave(true); INV.pay(G.PRICE); if(INV.save)INV.save(); L.who={id:me(),name:myName(),me:true}; L.rolls=[]; L.stand=1023; respot(L); send({op:'take',ln:i});
       P={ln:i,x:.12,a:0,s:.3,lb:L.lb||12,ph:'aim',p:0,pd:1,t:0}; pin(); SFX.play('clunk',{vol:.4}); say('LANE '+(i+1)+': SHOES ON, $'+G.PRICE+'. A/D WHERE, Q/E WHICH WAY, Z/C THE SPIN, THEN SPACE TO SWING AND SPACE TO LET GO.'); board(L); panel(); };
-    BOWL.again=()=>{ if(!P||!K)return; const L=K.lanes[P.ln]; if(INV.cash<G.PRICE)return say('ANOTHER GAME IS $'+G.PRICE+'. YOU HAVE $'+INV.cash+'.','#c8a090'); INV.cash-=G.PRICE; if(INV.save)INV.save();
+    BOWL.again=()=>{ if(!P||!K)return; const L=K.lanes[P.ln]; if(!INV.afford(G.PRICE))return say('ANOTHER GAME IS $'+G.PRICE+'. YOU HAVE $'+INV.money()+'.','#c8a090'); INV.pay(G.PRICE); if(INV.save)INV.save();
       L.rolls=[]; L.stand=1023; respot(L); send({op:'new',ln:L.i}); P.ph='aim'; board(L); panel(); say('A NEW GAME ON LANE '+(L.i+1)+'.'); };
     BOWL.leave=quiet=>{ if(!P)return; const ln=P.ln; P=null; window.RUNNER=MODS.runner=null; UI_.hidden=true; if(K){ const L=K.lanes[ln]; L.aim.visible=false; if(L.who&&L.who.me)L.who=null; board(L); } send({op:'free',ln}); if(!quiet)say('YOU STEP OFF LANE '+(ln+1)+'.'); };
 

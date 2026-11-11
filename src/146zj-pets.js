@@ -228,7 +228,7 @@ window.PETS=PETS;
   const set=o=>{ const P=cur(); if(!P)return; Object.assign(P,o); if(!inShop)save(); draw(); };
   const choose=key=>{ const K=I&&I.by[key]; if(!K)return; DRAFT=Object.assign(fresh(K),{n:DRAFT&&DRAFT.n||''}); draw(); };
   const price=P=>P&&I&&I.by[P.k]?PRICE[I.by[P.k].group]||30:0;
-  function adopt(){ const P=DRAFT; if(!P||!inShop)return; if(LIST.length>=MAXP)return SAY('YOU HAVE TEN PETS: THAT IS THE MOST. LET ONE GO FIRST (ESC, PETS).','#c8a090'); const c=price(P); if(INV.cash<c)return SAY('THAT ONE IS $'+c+'. YOU HAVE $'+INV.cash+'.','#c8a090'); INV.cash-=c; if(INV.save)INV.save();
+  function adopt(){ const P=DRAFT; if(!P||!inShop)return; if(LIST.length>=MAXP)return SAY('YOU HAVE TEN PETS: THAT IS THE MOST. LET ONE GO FIRST (ESC, PETS).','#c8a090'); const c=price(P); if(!INV.afford(c))return SAY('THAT ONE IS $'+c+'. YOU HAVE $'+INV.money()+'.','#c8a090'); INV.pay(c); if(INV.save)INV.save();
     const K=I.by[P.k]; add({...P,c:P.c.slice(),s:P.s.slice(),h:false},false); SAY((P.n||'YOUR '+K.name).toUpperCase()+' IS YOURS: $'+c+'. SEE ALL YOUR PETS, AND WHICH TWO FOLLOW YOU, IN THE MENU (ESC, PETS).','#9fe07f'); draw(); }
   // a new pet in your list and out with you (the one out before goes home to wait)
   function add(P,perma,more){ if(LIST.length>=MAXP)return false; const id=LIST.reduce((m,r)=>Math.max(m,r.id||0),0)+1, r={id,c:code(P),perma:!!perma,born:now(),at:now(),hu:10,lo:perma?70:40,hp:100,out:false,...more}; LIST.push(r); lead(r); MY=decode(r.c); keep(); refresh(); refresh2(); return r; }

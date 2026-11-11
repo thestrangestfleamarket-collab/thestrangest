@@ -31,7 +31,7 @@ const ARCADE={}; window.ARCADE=ARCADE;
   ARCADE.skee=()=>MINI.open(GAMES.skee({can:needTok,pay:payTok,end:S=>{ ARCADE.last={game:'skee',score:S.score,tickets:S.tickets||0}; win(S.tickets||0); }}));
   ARCADE.claw=()=>MINI.open(GAMES.claw({can:needTok,pay:payTok,end:S=>{ ARCADE.last={game:'claw',won:!!S.won}; if(S.won){ INV.add('plush_bear',1); say('A PLUSH BEAR. IT IS IN YOUR PACK.'); } }}));
   ARCADE.hockey=()=>MINI.open(GAMES.hockey({can:needTok,pay:payTok,end:S=>{ ARCADE.last={game:'hockey',won:!!S.won,score:S.score}; win(S.won?5:S.score); }}));
-  ARCADE.change=()=>{ if(INV.cash<1)return say('THE CHANGER TAKES A DOLLAR.','#c8a090'); INV.cash-=1; INV.add('arc_token',4); say(`FOUR TOKENS CLATTER OUT. YOU HAVE ${tok()}.`); };
+  ARCADE.change=()=>{ if(!INV.afford(1))return say('THE CHANGER TAKES A DOLLAR.','#c8a090'); INV.pay(1); INV.add('arc_token',4); say(`FOUR TOKENS CLATTER OUT. YOU HAVE ${tok()}.`); };
   ARCADE.prize=()=>{ const have=INV.items.ptix||0, p=PRIZES.find(([,c])=>have>=c); if(!p)return say(`YOU HAVE ${have} TICKET${have===1?'':'S'}. A RING IS 4.`,'#c8a090'); FORAGE.take('ptix',p[1]); INV.add(p[0],1); say(`TOKEN HANDS YOU ${FORAGE.name(p[0])} FOR ${p[1]} TICKETS.`); return p[0]; };
   // where its people go: the floor man by the middle, TOKEN behind the prize counter; the crowd on stools at the side cabinets, at PETRI, the lanes, the hockey table, the claw
   { const o=ROOMS.off.arcade; if(o&&o.ar){ const F=IKIT.frame(o.ar), W=F.W, sp=(u,v,du,dv,h)=>{ const p=F.pw(u,v); return {x:p[0],z:p[1],hd:F.hd(du,dv),...(h!=null?{y:h*IKIT.MW}:{})}; }, YS=[2.03,4.34,6.66,8.97];

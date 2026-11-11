@@ -32,7 +32,7 @@ const BODEGA={basket:new Map()}; window.BODEGA=BODEGA;
   BODEGA.counterLines=()=>BOD.GLAY?linesOf([BOD.GLAY.counter]):[];
   const total=()=>{ let t=0; for(const [id,n] of BODEGA.basket)t+=ITEMS.prop(id,'value')*n; return t; }, count=()=>{ let c=0; for(const n of BODEGA.basket.values())c+=n; return c; };
   BODEGA.pick=(id,n=1)=>{ BODEGA.basket.set(id,(BODEGA.basket.get(id)||0)+n); };
-  BODEGA.pay=()=>{ const t=total(); if(!count())return 'YOUR BASKET IS EMPTY.'; if(INV.cash<t)return `THAT IS $${t}. YOU HAVE $${INV.cash}.`; INV.cash-=t; for(const [id,n] of BODEGA.basket)INV.add(id,n); BODEGA.basket.clear(); BODEGA.paid=(BODEGA.paid||0)+t; return ''; };
+  BODEGA.pay=()=>{ const t=total(); if(!count())return 'YOUR BASKET IS EMPTY.'; if(!INV.afford(t))return `THAT IS $${t}. YOU HAVE $${INV.money()}.`; INV.pay(t); for(const [id,n] of BODEGA.basket)INV.add(id,n); BODEGA.basket.clear(); BODEGA.paid=(BODEGA.paid||0)+t; return ''; };
   // a list you click: a shelf, or the register (the basket, then what is by the register)
   const list=(title,rows,reg)=>({title,w:400,h:440,help:reg?'Everything the bodega sells: click a line to put one in your basket, the wheel scrolls. PAY takes your cash and the bag is yours.':'Click a line to put one in your basket. Pay yourself at the register on the counter.',
     start:S=>{ S.rows=rows(); },

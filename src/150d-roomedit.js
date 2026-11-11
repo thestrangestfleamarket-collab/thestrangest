@@ -105,7 +105,7 @@ import {ROOMK} from './150a-bedroom.js';
   ROOMK.save=()=>{ if(HOME.guest||!A_())return false; dirty(); return true; }; ROOMK.guest=()=>!!HOME.guest; ROOMK.snap=()=>A_()?snapshot(A_()):null;   // a piece's own settings saved with the layout (the fish tank)
   const hexs=c=>'#'+c.map(x=>x.toString(16).padStart(2,'0')).join('');
   const name=un=>un.name+(un.added?' (NEW)':'');
-  const cash=()=>Math.round(INV.cash||0);
+  const cash=()=>Math.round(INV.money());
 
   // what you did, so UNDO can take it back
   const did=(op)=>{ ED.undo.push(op); if(ED.undo.length>80)ED.undo.shift(); dirty(); };
@@ -166,10 +166,10 @@ import {ROOMK} from './150a-bedroom.js';
     const P=A.porch, out=P&&me.v<-.15&&!K.mount, t=at||{u:out?Math.max(P.u0+.4,Math.min(P.u1-.4,me.u+.6)):Math.max(.4,Math.min(A.Lx-.4,me.u+.6)),h:K.mount==='ceil'?A.HW:K.mount==='wall'?1.8:K.loose?Math.max(.05,base.h):base.h,v:out?(P.v0+P.v1)/2:Math.max(.4,Math.min(A.Ly-.4,me.v+.6)),ry:0,s:1}; const un=A.spawn(kind,t); if(!un)return null;
     un.paid=paid||0; const q=findSpot(un,A.getT(un)); if(q!==t)A.setT(un,q); did({t:'add',un}); select(un); return un; };
   // buying: paid from your cash, carried under the pointer until you click it down
-  ED.buy=kind=>{ '@later'; const A=A_(), K=A&&A.kinds()[kind]; if(!K||NOSALE.has(kind)||K.off||(K.tpl&&K.bad))return null; if(ED.carry)placeCarry(true); const p=price(kind); if(K.own&&!owned(K)){ say('BUY ONE FIRST'); return null; } if(cash()<p){ say('NOT ENOUGH MONEY: $'+p); return null; }
-    INV.cash-=p; if(K.own)FORAGE.take(K.own,1); const un=add(kind,null,p); if(!un){ INV.cash+=p; if(K.own)FORAGE.give(K.own,1); return null; } startCarry(un); drawBuy(); return un; };
+  ED.buy=kind=>{ '@later'; const A=A_(), K=A&&A.kinds()[kind]; if(!K||NOSALE.has(kind)||K.off||(K.tpl&&K.bad))return null; if(ED.carry)placeCarry(true); const p=price(kind); if(K.own&&!owned(K)){ say('BUY ONE FIRST'); return null; } if(!INV.afford(p)){ say('NOT ENOUGH MONEY: $'+p); return null; }
+    INV.pay(p); if(K.own)FORAGE.take(K.own,1); const un=add(kind,null,p); if(!un){ INV.cash+=p; if(K.own)FORAGE.give(K.own,1); return null; } startCarry(un); drawBuy(); return un; };
   const sell=()=>{ '@later'; const un=ED.sel, A=A_(); if(!un||!un.added)return; if(ED.carry)endCarry(); const KO=kindOf(un.kind); if(KO&&KO.own){ FORAGE.give(KO.own,1); A.drop(un); select(null); say('BACK IN YOUR PACK'); drawBuy(); return; } const got=Math.floor((un.paid||0)/2), at=A.getT(un); INV.cash+=got; A.drop(un); did({t:'sell',kind:un.kind,at,id:un.id,paid:un.paid||0,got}); select(null); say('SOLD FOR $'+got); drawBuy(); };
-  const copy=()=>{ const un=ED.sel, A=A_(); if(!un)return; const k=un.kind; if(NOSALE.has(k)||(kindOf(k)||{}).off)return; const p=price(k); if(cash()<p){ say('NOT ENOUGH MONEY: $'+p); return; } const t=A.getT(un); INV.cash-=p; add(k,{...t,u:t.u+.3,v:t.v+.3},p); drawBuy(); };
+  const copy=()=>{ const un=ED.sel, A=A_(); if(!un)return; const k=un.kind; if(NOSALE.has(k)||(kindOf(k)||{}).off)return; const p=price(k); if(!INV.afford(p)){ say('NOT ENOUGH MONEY: $'+p); return; } const t=A.getT(un); INV.pay(p); add(k,{...t,u:t.u+.3,v:t.v+.3},p); drawBuy(); };
 
   /* ---------- little pictures of each kind for the buy bar (drawn once each, a couple a frame, with the game's own renderer) ---------- */
   const PICS={}, PQ=[]; let picRT=null, picBuf=null;
@@ -362,7 +362,7 @@ import {ROOMK} from './150a-bedroom.js';
   const un_name=()=>SURF.un?SURF.un.name:'';
   const placeOn=(u,v,h)=>{ '@later'; const A=A_(), P=SURF.pick; if(!A||!P)return; let un=null;
     if(P.pack){ const k=packKind(A,P.pack); if(!FORAGE.has(P.pack)){ say('NONE LEFT IN YOUR PACK'); return; } FORAGE.take(P.pack,1); un=add(k,{u,v,h:h+.01,ry:0,s:1},0); if(!un){ FORAGE.give(P.pack,1); return; } }
-    else { const p=price(P.buy); if(cash()<p){ say('NOT ENOUGH MONEY: $'+p); return; } INV.cash-=p; un=add(P.buy,{u,v,h:h+.01,ry:0,s:1},p); if(!un){ INV.cash+=p; return; } }
+    else { const p=price(P.buy); if(!INV.afford(p)){ say('NOT ENOUGH MONEY: $'+p); return; } INV.pay(p); un=add(P.buy,{u,v,h:h+.01,ry:0,s:1},p); if(!un){ INV.cash+=p; return; } }
     A.setT(un,{...A.getT(un),u,v,h:h+.01}); select(un); say('ON THE '+un_name()+': THE '+un.name); SURF.pick=null; SP.hidden=true; drawBuy(); };
   SURF.open=un=>{ if(!tops(un).length){ say('NOTHING STANDS ON THE '+un.name); return; } SURF.un=un; SURF.lv=0; SURF.pick=null; SP.hidden=false; drawSurf(); };
   SP.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; const A=A_(); if(b.dataset.a==='close'){ SP.hidden=true; return; } if(b.dataset.a==='back'){ SURF.pick=null; return drawSurf(); }

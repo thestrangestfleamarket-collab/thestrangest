@@ -13,9 +13,9 @@ const PAWN={stock:{},BUY:.5};
     if(mine.length)o+=`<div class="shh">THEY BUY</div>`+mine.map(id=>row(id,`<u>x${INV.items[id]}</u><i>$${pays(id)}</i>`,`data-pawn="${esc(id)}"`)).join('');
     return o; };
   SHOPS.pawnAsk=(r,n)=>{ const id=r.dataset.pbuy||r.dataset.pawn; return r.dataset.pbuy?`BUY ${nm(id)} FOR $${costs(id)}?`:`PAWN ${n>1?n+' ':''}${nm(id)} FOR $${pays(id)*n}?`; };
-  PAWN.buy=id=>{ const p=costs(id); if(!p||!(PAWN.stock[id]>0))return false; if((INV.cash||0)<p){ say('YOU CANNOT AFFORD THAT.'); return false; }
+  PAWN.buy=id=>{ const p=costs(id); if(!p||!(PAWN.stock[id]>0))return false; if(!INV.afford(p)){ say('YOU CANNOT AFFORD THAT.'); return false; }
     if(on()){ send({op:'buy',item:id,n:1,p}); return true; }
-    INV.cash-=p; if(!--PAWN.stock[id])delete PAWN.stock[id]; FORAGE.give(id,1); say(`YOU BUY ${nm(id)} FOR $${p}.`); redraw(); return true; };
+    INV.pay(p); if(!--PAWN.stock[id])delete PAWN.stock[id]; FORAGE.give(id,1); say(`YOU BUY ${nm(id)} FOR $${p}.`); redraw(); return true; };
   PAWN.sell=(id,n)=>{ n=Math.min(n,INV.items[id]||0); if(n<1||!val(id))return false; FORAGE.take(id,n); if(INV.save)INV.save();
     if(on()){ send({op:'sell',item:id,n}); redraw(); return true; }
     const v=pays(id)*n; INV.cash+=v; PAWN.stock[id]=(PAWN.stock[id]||0)+n; say(`YOU PAWN ${n>1?n+' ':''}${nm(id)} FOR $${v}.`); redraw(); return true; };

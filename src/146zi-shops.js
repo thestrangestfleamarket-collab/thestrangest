@@ -21,8 +21,8 @@ const SHOPS3={}; window.SHOPS3=SHOPS3;
   const merch=k=>NPCS.extra&&NPCS.extra.find(q=>q.key===k);
   const look=(title,draw,cap)=>MINI.look(title,draw,cap);
   /* ---------- THE BOARDWRIGHT ---------- */
-  SHOPS3.wax=()=>MINI.open(GAMES.wax({title:'WAX AND GRIP A DECK',can:()=>!Object.keys(INV.items).some(k=>/^board_/.test(k)&&INV.items[k]>0)?'BRING A DECK: THE BOARDWRIGHT SELLS THEM ON THE WALL.':INV.cash<2?'THE WAX IS $2.':'',
-    pay:()=>{ INV.cash-=2; },end:S=>{ SHOPS3.last={wax:S.score}; if(S.score){ FORAGE.buff&&FORAGE.buff('swift',300); say('YOUR DECK IS WAXED: IT RIDES FASTER FOR FIVE MINUTES.'); } }}));
+  SHOPS3.wax=()=>MINI.open(GAMES.wax({title:'WAX AND GRIP A DECK',can:()=>!Object.keys(INV.items).some(k=>/^board_/.test(k)&&INV.items[k]>0)?'BRING A DECK: THE BOARDWRIGHT SELLS THEM ON THE WALL.':!INV.afford(2)?'THE WAX IS $2.':'',
+    pay:()=>{ INV.pay(2); },end:S=>{ SHOPS3.last={wax:S.score}; if(S.score){ FORAGE.buff&&FORAGE.buff('swift',300); say('YOUR DECK IS WAXED: IT RIDES FASTER FOR FIVE MINUTES.'); } }}));
   { const k0=MSHOP.kit.boards; if(k0){ MSHOP.kit.boards=A=>{ '@later'; k0(A); kitOf(A,({box,cyl,ball,glow,pic,words,use,seat,own},t,sol)=>{ const C={wood:0x5a3e28,dark:0x2a1e16,mat:0x2a2a2c,chalk:0x2a2c2a};
       // the wax and grip bench on its rubber mat, a deck clamped on it, a block of wax, a roll of grip
       box(t(2.0),t(3.3),t(4.4),t(4.7),0,.015,C.mat); box(t(2.2),t(3.6),t(4.2),t(4.4),.85,.92,0x6a4a2a); for(const [a,b] of [[2.25,3.65],[4.15,3.65],[2.25,4.35],[4.15,4.35]])box(t(a)-.03,t(b)-.03,t(a)+.03,t(b)+.03,0,.85,C.dark); sol(2.2,3.6,4.2,4.4);
@@ -40,7 +40,7 @@ const SHOPS3={}; window.SHOPS3=SHOPS3;
       const b0=t(6.8), b1=t(8.6), v0=t(8.35), v1=t(8.85); seat('A BENCH',own(()=>{ box(b0,v0,b1,v1,.4,.46,C.wood); for(const u of [b0+.05,b1-.1])box(u,v0+.05,u+.05,v1-.05,0,.4,C.dark); }),[[t(7.3),t(8.6),.46,0,-1],[t(8.1),t(8.6),.46,0,-1]],1.0); sol(6.8,8.35,8.6,8.85); }); };
     MSHOP.kit.boards.drop=k0.drop; } }
   /* ---------- FIX-IT ---------- */
-  SHOPS3.bin=()=>{ if(INV.cash<6)return say('THE BIN IS $6 A GO.','#c8a090'); const ks=Object.keys(FIXES), k=ks[Math.floor(Math.random()*ks.length)]; INV.cash-=6; INV.add(k,1); say(`YOU DIG OUT ${FORAGE.name(k)}. $6. (MEND IT AT THE BENCH.)`); return k; };
+  SHOPS3.bin=()=>{ if(!INV.afford(6))return say('THE BIN IS $6 A GO.','#c8a090'); const ks=Object.keys(FIXES), k=ks[Math.floor(Math.random()*ks.length)]; INV.pay(6); INV.add(k,1); say(`YOU DIG OUT ${FORAGE.name(k)}. $6. (MEND IT AT THE BENCH.)`); return k; };
   SHOPS3.mend=()=>{ '@later'; const k=Object.keys(FIXES).find(j=>(INV.items[j]||0)>0); MINI.open(GAMES.solder({title:'MEND IT: '+(k?FORAGE.name(k):'NOTHING TO MEND'),
     can:()=>!k?'NOTHING BROKEN TO MEND: THE BARGAIN BIN BY THE DOOR HAS SOME.':!(INV.items.fix_parts>0)?'YOU NEED PARTS: THE SCREW JARS ON THE BENCH ($1).':'',
     pay:()=>{ FORAGE.take(k,1); FORAGE.take('fix_parts',1); },end:S=>{ SHOPS3.last={mend:S.score,k}; if(S.score){ INV.add(FIXES[k],1); say(`IT WORKS: ${FORAGE.name(FIXES[k])}. THE FIXER WILL BUY IT.`); } else say('IT IS SCRAP NOW. THE FIXER SHAKES HIS HEAD.','#c8a090'); }})); };

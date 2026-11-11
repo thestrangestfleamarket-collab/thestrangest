@@ -24,7 +24,7 @@ import {ASL} from './146zs-signs.js';
   // a character with no script: hello, what this place is, the shop if it keeps one, goodbye
   const chat=N=>{ '@later'; const shop=TALK.shops.has(N)||CHARS.trade&&CHARS.trade(N), R=[{t:'WHAT IS THIS PLACE?',go:'about'}]; if(shop)R.unshift({t:'WHAT DO YOU SELL?',do:'shop'}); R.push({t:'GOODBYE.',go:'bye'});
     return {start:'hi',lines:{hi:{say:'@greet',opts:R},about:{say:'@about',opts:R.filter(r=>r.go!=='about')},bye:{say:'@bye',opts:[]}}}; };
-  TALK.tests.cash=a=>(INV.cash||0)>=(+a||0);
+  TALK.tests.cash=a=>INV.afford(+a||0);
   TALK.script=N=>{ const t=recOf(N).talk||N.talk, s=t&&t.lines&&t.lines[t.start]?t:chat(N); return s; };   // a townsperson's own life is something to ask about (src/158-lives.js)
 
   const P=document.createElement('div'); P.id='talkp'; P.hidden=true;

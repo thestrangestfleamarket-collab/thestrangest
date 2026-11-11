@@ -78,6 +78,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       const ice = await until(() => { const d = JETDBG(); const big = d.ice.slice().sort((a, b) => b.r - a.r); return big.length && big[0].r > .45 ? { what: d.streams[0] && d.streams[0].what, ice: big } : null; }, 40000);
       if (!ice) console.log('  stream at the river: ' + JSON.stringify(await pg.evaluate(() => JETDBG().streams.map(s => ({ what: s.what, len: s.len, tip: s.tip, dir: s.dir })))));
       ok(!!ice, 'the freeze ray freezes the river where it lands (' + JSON.stringify(ice) + ')');
+      const iceSeen = await pg.evaluate(() => { const m = __dbg.scene.getObjectByName('ice'); return !!m && m.visible && LEVELS.drawn(m); });
+      ok(iceSeen, 'the ice is drawn where it froze');
       await shot('ice');
       await pg.evaluate(() => { JETS.hold = false; WIELD.set(null); });
       if (ice) {

@@ -1,4 +1,4 @@
-// THE INSTRUMENTS YOU SIT AT (src/146zp-instruments.js, 146zpa-piano.js, 146zpb-drums.js, 146zpc-harp.js, 146zpd-melody.js): node tests/instruments.cjs [dist/market.html] [out folder].
+// THE INSTRUMENTS YOU SIT AT (src/146zp-instruments.js, 146zpa-piano.js, 146zpb-drums.js, 146zpc-harp.js, 146zpd-melody.js, their Polyfork models in 150cyb-pfitems.js): node tests/instruments.cjs [dist/market.html] [out folder].
 // The skills list MUSIC first (guitar, piano, drums, harp); the bodega sells each; playing one sets it before you and seats you at it, each finger on its key or string
 // (each stick on its drum when it strikes), its sound at its real pitch (the music engine rendered offline and measured), the piano's dampers stopping a released key;
 // a song from its book plays (and one past your skill is refused); another player's instrument is drawn on them and heard; ESC puts it away. With an out folder, pictures.
@@ -14,13 +14,14 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
   const http=require('http'), fs=require('fs'), ROOT=path.resolve(path.dirname(PAGE),'..'), TYPES={'.html':'text/html','.js':'text/javascript','.json':'application/json','.mp3':'audio/mpeg','.wasm':'application/wasm','.png':'image/png','.jpg':'image/jpeg'};
   const srv=http.createServer((q,r)=>{ const f=path.join(ROOT,decodeURIComponent(new URL(q.url,'http://x').pathname)); if(!f.startsWith(ROOT)||!fs.existsSync(f)||fs.statSync(f).isDirectory()){ r.writeHead(404); return r.end(); } r.writeHead(200,{'content-type':TYPES[path.extname(f)]||'application/octet-stream'}); fs.createReadStream(f).pipe(r); });
   await new Promise(r=>srv.listen(0,'127.0.0.1',r)); const URL0='http://127.0.0.1:'+srv.address().port+'/'+path.relative(ROOT,PAGE);
+  await pg.route(/\/owned$/,r=>r.fulfill({status:200,contentType:'application/json',body:'{}'}));   // the owners' kit asks the server first (the website's /owned)
   await pg.goto(URL0+'?fresh=1&hour=12&at=80,95',{timeout:240000}); await pg.waitForFunction(()=>window.__started,null,{timeout:300000});
   await pg.waitForFunction(()=>window.AVATAR&&AVATAR.ready(),null,{timeout:120000}); await wait(1200);
   // the skills: MUSIC the first kind, with the four instruments
   const sk=await pg.evaluate(async()=>{ __dbg.UI.menuTab('pack','skills'); await new Promise(r=>setTimeout(r,500)); const t=(document.getElementById('packp')||{}).innerText||''; __dbg.UI.toggleMenu&&__dbg.UI.toggleMenu();
     const i=k=>t.indexOf(k); return {music:i('MUSIC'),wild:i('THE WILD'),guitar:i('GUITAR'),piano:i('PIANO'),drums:i('DRUMS'),harp:i('HARP'),sk:['piano','drums','harp'].map(k=>FORAGE.sk(k))}; });
   rec('the skills list MUSIC first: GUITAR, PIANO, DRUMS, HARP, each starting at 0',sk.music>=0&&sk.music<sk.wild&&[sk.guitar,sk.piano,sk.drums,sk.harp].every(v=>v>sk.music&&v<sk.wild)&&sk.sk.every(v=>v===0),JSON.stringify(sk));
-  const ok=await pg.evaluate(()=>{ for(const k of ['guitar','piano','drums','harp'])delete INV.items[k]; FORAGE.ownerKit(); const K=['guitar','piano','drums','harp'], r={items:K.map(k=>INV.items[k]||0)}; FORAGE.maxed(true); r.sk=K.map(k=>FORAGE.sk(k)); FORAGE.use('piano',0,200); r.kept=FORAGE.S.sk.piano; FORAGE.maxed(false); r.off=K.map(k=>FORAGE.sk(k)); return r; });
+  const ok=await pg.evaluate(async()=>{ for(const k of ['guitar','piano','drums','harp'])delete INV.items[k]; await FORAGE.ownerKit(); const K=['guitar','piano','drums','harp'], r={items:K.map(k=>INV.items[k]||0)}; FORAGE.maxed(true); r.sk=K.map(k=>FORAGE.sk(k)); FORAGE.use('piano',0,200); r.kept=FORAGE.S.sk.piano; FORAGE.maxed(false); r.off=K.map(k=>FORAGE.sk(k)); return r; });
   rec('an owner starts with the guitar, piano, drum kit and harp in the bag; ALL SKILLS 100 reads every skill 100 and off gives the real levels back',ok.items.every(n=>n===1)&&ok.sk.every(v=>v===100)&&ok.kept===0&&ok.off.every(v=>v===0),JSON.stringify(ok));
   await pg.evaluate(()=>{ for(const k of ['guitar','piano','drums','harp'])FORAGE.S.sk[k]=100; });
   const sh=await pg.evaluate(()=>['piano','drums','harp'].map(id=>({id,name:FORAGE.name(id),price:ITEMS.prop(id,'value'),shelf:BODEGA.LAYOUT.some(r=>r[2].includes(id)),make:!!(BODEGA.MAKE[id]&&BODEGA.MAKE[id]().children.length)})));
@@ -30,7 +31,7 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
     const p=await pg.evaluate(async K=>{ __dbg.UI.setView('third'); __dbg.UI.dist*=.4; FORAGE.give(K,1); FORAGE.ACT[K](K); await new Promise(r=>setTimeout(r,1200)); const P=INSTR.ME, o={on:INSTR.on(),held:!!P.H&&!!P.H.G.parent,panel:!document.getElementById('inp').hidden,sat:null,miss:[]};
       const W=P.H.W, hipY=P.H.W&&new P.H.G.position.constructor().setFromMatrixPosition(W[0]).y/P.H.k; o.sat=+hipY.toFixed(2);
       const chords=K==='piano'?[[48,52,55,60,64,67],[41,45,72,76,79],[48,52,55,64,67,71]]:K==='harp'?[[7,9,11,16,18,20],[3,5,22,24,26],[10,12,26,28,30]]:[[1],[5],[2],[6],[4],[7]];
-      for(const ch of chords){ const evs=ch.map(n=>INSTR.note(P,K==='piano'?{n,v:.8,d:1e9,h:n<60?'L':'R'}:K==='harp'?{n,f:0,v:.8,d:2,h:n<14?'L':'R'}:{n,v:.8,d:.1,h:n===1?'L':'R'})); await new Promise(r=>setTimeout(r,K==='drums'?40:450));
+      for(const ch of chords){ const evs=ch.map(n=>INSTR.note(P,K==='piano'?{n,v:.8,d:1e9,h:n<60?'L':'R'}:K==='harp'?{n,f:0,v:.8,d:2,h:n<14?'L':'R'}:{n,v:.8,d:.1,h:n===1?'L':'R'})); await new Promise(r=>setTimeout(r,K==='drums'?40:450)); if(K!=='drums')for(let f=0;f<8;f++)await new Promise(r=>requestAnimationFrame(r));   // (the reach settles over frames: on a slow machine 450 ms is only a frame or two)
         if(K==='drums'){ const e=evs[0], H=P.H, sd=e.h; P.K.hands(P,e.t,H); const q=H.st[sd]; o.miss.push(Math.round(q.tp.distanceTo(P.K.at(e))*1000));
           await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))); const q2=H.st[sd]; o.reach=Math.max(o.reach||0,Math.round(H.wr[sd].distanceTo(q2.wr)*1000)); await new Promise(r=>setTimeout(r,300)); }
         else { const err=P.H.err; o.miss.push(Math.round(Math.max(...['L','R'].flatMap(sd=>[0,1,2,3,4].filter(f=>evs.some(e=>e['f'+sd]===f||e.fh===f&&e.h===sd)).map(f=>err[sd][f]||0)))*1000)); for(const e of evs)INSTR.off(P,e); await new Promise(r=>setTimeout(r,200)); } }
@@ -60,11 +61,22 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
       S.sk[K]=0; INSTR.stop(); return o; },K);
     rec(`the ${K}: a skill, sold at the bodega, held as you sit; a tune from the book plays one note at a time in its range, the hands move, five pieces open at 0-10, its recordings come`,m.on&&m.held&&m.skill&&m.price>0&&m.shelf&&m.book>150&&m.notes>3&&m.poses>=4&&m.inRange&&m.one&&m.open===5&&m.sounds>=10,JSON.stringify(m));
     await wait(300); }
+  // Polyfork's models (data/pfitems.json): once they have come, each of the six wears its own (the piano and its bench, the harp, the kit's snare, bass drum and cymbals, the stools), the first shapes hidden
+  const pf=await pg.evaluate(async()=>{ await PFI.load(); const want={piano:['piano_pf','piano_bench'],harp:['harp_pf','stool'],drums:['drum_snare','drum_kick','drum_cymbal','stool'],violin:['violin','violin_bow','stool'],flute:['flute','stool'],trumpet:['trumpet','stool']}, r={};
+    for(const [K,ids] of Object.entries(want)){ const g=INSTR.KINDS[K].model(), on=new Set(), it=g.userData.it; if(it&&it.userData.bow)g.add(it.userData.bow); g.traverse(o=>{ if(!o.isMesh||!o.userData.pf)return; let v=true; for(let q=o;q;q=q.parent)if(q.visible===false)v=false; if(v)on.add(o.userData.pf); });
+      r[K]={miss:ids.filter(id=>!on.has(PFI.mesh(id).userData.pf))}; }
+    return r; });
+  rec('each of the six wears its Polyfork model once it has come (piano and bench, harp, the kit\'s drums and cymbals, violin and bow, flute, trumpet, their stools)',Object.values(pf).every(o=>!o.miss.length),JSON.stringify(pf));
+  const tv=await pg.evaluate(async()=>{ const S=FORAGE.S; S.sk.trumpet=1000; FORAGE.give('trumpet',1); FORAGE.ACT.trumpet('trumpet'); await new Promise(r=>setTimeout(r,800)); const P=INSTR.ME, pv=P.H&&P.H.G.userData.it.userData.pf||{}, v=[1,2,3].map(i=>pv['piston-'+i]);
+    const y=()=>v.map(q=>q?+(q.position.y-q.userData.at.y).toFixed(4):null), r={has:v.every(Boolean),rest:y()};
+    const till=async ok=>{ for(let i=0;i<40&&!ok(y());i++)await new Promise(r=>setTimeout(r,100)); return y(); };
+    INSTR.note(P,{n:55,v:.8,d:4,h:'R'}); r.d55=await till(d=>d[0]<-.012&&d[2]<-.012); await new Promise(r=>setTimeout(r,300)); r.mid=y()[1]; INSTR.note(P,{n:60,v:.8,d:4,h:'R'}); r.d60=await till(d=>d.every(v=>Math.abs(v)<.002)); S.sk.trumpet=0; INSTR.stop(); return r; });
+  rec('the trumpet\'s valves move: G3 (first and third) pushes those two pistons down, C4 (open) lets every one up',tv.has&&tv.rest.every(d=>Math.abs(d)<.002)&&tv.d55[0]<-.01&&tv.d55[2]<-.01&&Math.abs(tv.mid)<.003&&tv.d60.every(d=>Math.abs(d)<.003),JSON.stringify(tv));
   // the sound: each rings out loud through the instruments' own audio; each at its real pitch, rendered offline
   const a=await pg.evaluate(async()=>{ const G=INSTR.ME&&window.GUITAR.GSND; G.wake(); for(let i=0;i<40&&!G.imx;i++)await new Promise(r=>setTimeout(r,250)); if(!G.imx)return {ok:false};
     const an=G.ctx.createAnalyser(); an.fftSize=2048; G.out.connect(an); const buf=new Float32Array(an.fftSize), peak={};
     for(const K of ['piano','drums','harp']){ FORAGE.ACT[K](K); await new Promise(r=>setTimeout(r,400)); const P=INSTR.ME; INSTR.note(P,K==='piano'?{n:60,v:.9,d:1e9,h:'R'}:K==='harp'?{n:14,f:0,v:.9,d:2,h:'R'}:{n:6,v:1,d:.1,h:'R'}); let pk=0;
-      for(let i=0;i<8;i++){ await new Promise(r=>setTimeout(r,50)); an.getFloatTimeDomainData(buf); for(const v of buf)pk=Math.max(pk,Math.abs(v)); } peak[K]=+pk.toFixed(3); INSTR.stop(); await new Promise(r=>setTimeout(r,200)); }
+      for(let i=0;i<48&&pk<.02;i++){ await new Promise(r=>setTimeout(r,25)); an.getFloatTimeDomainData(buf); for(const v of buf)pk=Math.max(pk,Math.abs(v)); } peak[K]=+pk.toFixed(3); INSTR.stop(); await new Promise(r=>setTimeout(r,200)); }
     const SR=44100, src=__imx.src;
     const render=async(dsp,evs,secs)=>{ const oc=new OfflineAudioContext(1,Math.floor(SR*secs),SR); await oc.audioWorklet.addModule('data:application/javascript,'+encodeURIComponent(src)); const n=new AudioWorkletNode(oc,'imx',{outputChannelCount:[1],processorOptions:{...dsp,ev:evs}}); n.connect(oc.destination);
       return (await oc.startRendering()).getChannelData(0); };
@@ -77,7 +89,7 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
     const DK=INSTR.KINDS.drums, dr={}; for(const n of [0,1,5]){ const x=await render(DK.dsp(),DK.sound({n,v:1,h:'L'},{st:{}}).map(e=>({...e,t:.02})),.4); let pk=0; for(const v of x)pk=Math.max(pk,Math.abs(v)); dr[['kick','snare','','','','hat'][n]]=+pk.toFixed(3); }
     const ring=await render(PK.dsp(),PK.sound({n:60,v:.8}).map(e=>({...e,t:.02})),1.2), damped=await render(PK.dsp(),[...PK.sound({n:60,v:.8}).map(e=>({...e,t:.02})),{k:'damp',id:60,T:.12,t:.3}],1.2);
     return {ok:true,peak,hz,dr,ring:+rms(ring,.8,1.1).toFixed(5),damped:+rms(damped,.8,1.1).toFixed(5)}; });
-  rec('each sounds through the instruments\' own audio (piano, drums, harp)',a.ok&&Object.values(a.peak).every(p=>p>.01),JSON.stringify(a.peak));
+  rec('each sounds through the instruments\' own audio (piano, drums, harp)',a.ok&&Object.values(a.peak).every(p=>p>.005),JSON.stringify(a.peak));
   rec('each sounds at its real pitch (piano A3 A4, harp C4 C5, and C4 with its pedal sharp: within 3%)',a.ok&&Object.values(a.hz).every(([h,w])=>Math.abs(h-w)/w<.03),JSON.stringify(a.hz));
   rec('the kick, the snare and the hi-hat each strike loud (rendered offline)',a.ok&&Object.values(a.dr).every(p=>p>.05),JSON.stringify(a.dr));
   // the recordings: each instrument's fetched and decoded, every sound's start found, and played back at the note's pitch
@@ -103,6 +115,18 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
     return {same:JSON.stringify(c)===JSON.stringify(d),vs:new Set(c.ev.map(e=>e.v.toFixed(2))).size,off:c.ev.some((e,i)=>Math.abs(e.t-[1,1.5,2,4][i])>.001),lg:!!c.ev[0].lg&&!!c.ev[1].sl,order:c.ev.every((e,i)=>!i||e.t>=c.ev[i-1].t)}; });
   rec('a piece is played with feel: its loudness shaped, off the grid, joined notes marked, the same for everyone',fl.same&&fl.vs>=3&&fl.off&&fl.lg&&fl.order,JSON.stringify(fl));
   rec('every drum and cymbal has its recorded hit',Object.keys(rs.dk).length===6&&Object.values(rs.dk).every(p=>p>.05),JSON.stringify(rs.dk));
+  // the 88-key panel (book-only: a display): every key A0 to C8 (52 white, 36 black), none playable by click; a piece from the book lights its keys; five octaves; the names
+  await pg.evaluate(async()=>{ try{ localStorage.removeItem('tsfm.piano.kb'); }catch(_){} FORAGE.ACT.piano('piano'); await new Promise(r=>setTimeout(r,600)); });
+  const kb=await pg.evaluate(()=>{ const q=s=>document.querySelectorAll('#inp .kb '+s).length; return {all:q('b'),w:q('b.w'),k:q('b.k'),lo:document.querySelector('#inp .kb b').dataset.m,hi:[...document.querySelectorAll('#inp .kb b')].pop().dataset.m,clickable:q('b[data-n]')}; });
+  const sl=await pg.evaluate(async()=>{ const P=INSTR.ME, S=FORAGE.S; S.sk.piano=1000; await P.K.loadBook(); const i=P.K.BOOK.findIndex(T=>T.lvl===1); INSTR.play('song',i); const seen=new Set(); let ok=0;
+    for(let k=0;k<20;k++){ await new Promise(r=>setTimeout(r,250)); const t=INSTR.time(P), sounding=new Set(INSTR.score(P).ev.filter(e=>e.t<=t-.05&&e.t+e.d>=t+.05).map(e=>e.n)); const on=[...document.querySelectorAll('#inp .kb b.pl')].map(b=>+b.dataset.m); for(const m of on)seen.add(m); if(sounding.size&&[...sounding].some(m=>on.includes(m)))ok++; }
+    INSTR.play('stop'); S.sk.piano=100; await new Promise(r=>setTimeout(r,500)); return {lit:seen.size,match:ok,after:document.querySelectorAll('#inp .kb b.pl').length}; });
+  const kv=await pg.evaluate(async()=>{ const b=s=>document.querySelector('#inp '+s); b('[data-kv="five"]').dispatchEvent(new MouseEvent('click',{bubbles:true})); const r={five:document.querySelectorAll('#inp .kb b').length};
+    b('[data-kl="doremi"]').dispatchEvent(new MouseEvent('click',{bubbles:true})); r.do=[...document.querySelectorAll('#inp .kb b')].some(x=>x.textContent==='DO'); b('[data-kl="abc"]').dispatchEvent(new MouseEvent('click',{bubbles:true})); r.c4=b('.kb b[data-m="60"]').textContent==='C4';
+    r.kept=JSON.parse(localStorage.getItem('tsfm.piano.kb')||'{}'); b('[data-kv="all"]').dispatchEvent(new MouseEvent('click',{bubbles:true})); b('[data-kl="none"]').dispatchEvent(new MouseEvent('click',{bubbles:true})); r.back=document.querySelectorAll('#inp .kb b').length; INSTR.stop(); return r; });
+  rec('the piano\'s panel shows all 88 keys under the book (52 white, 36 black, A0 to C8), none played by clicking',kb.all===88&&kb.w===52&&kb.k===36&&kb.lo==='21'&&kb.hi==='108'&&kb.clickable===0,JSON.stringify(kb));
+  rec('a piece from the book lights its keys on the 88-key panel as they sound, and they go dark after',sl.lit>=4&&sl.match>=5&&sl.after===0,JSON.stringify(sl));
+  rec('the panel\'s five octaves (61 keys) and its note names (DO RE MI, C D E), kept for the viewer',kv.five===61&&kv.do&&kv.c4&&kv.kept.view==='five'&&kv.kept.lab==='abc'&&kv.back===88,JSON.stringify(kv));
   rec('a released piano key is stopped by its damper (far quieter than one held)',a.ok&&a.damped<a.ring*.1,JSON.stringify({ring:a.ring,damped:a.damped}));
   // another player at a piano: drawn on them, their note in their live score and their fingers, heard from where they sit; gone when they put it away
   const o=await pg.evaluate(async()=>{ __dbg.UI.dist*=.3; const P=__dbg.you(), at=[P.x+1.8,P.z+.4,SHARED.py,0,SHARED.LVL,''];

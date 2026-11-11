@@ -13,7 +13,7 @@ import {GUITAR} from './146zob-guitar.js';
  window.INSTR=INSTR;
 { const say=(t,c)=>SAY(t,c||'#e8e2cc'), now=()=>performance.now()/1000, V3=THREE.Vector3, M4=THREE.Matrix4, Q4=THREE.Quaternion;
   const esc=t=>String(t).replace(/[&<>"]/g,c=>'&#'+c.charCodeAt(0)+';');
-  // a kind: {id, name, skill, model(), seat:{y,z}, lean, look, feet(P,t), hands(P,t,H), act(P,k,v), anim(P,H,t,dt), keys(e,down), panel(), click(b,down), draw(PN), book(), cam}
+  // a kind: {id, name, skill, model(), board() (a display under the book: the piano's 88 keys), seat:{y,z}, lean, look, feet(P,t), hands(P,t,H), act(P,k,v), anim(P,H,t,dt), keys(e,down), panel(), click(b,down), draw(PN), book(), cam}
   INSTR.kind=K=>{ INSTR.KINDS[K.id]=K; FORAGE.add({names:{[K.id]:K.name}}); FORAGE.sell(K.id);
     FORAGE.ACT[K.id]=()=>{ if(on&&ME.K===K)INSTR.stop(); else INSTR.start(K.id); }; FORAGE.ACT[K.id+'play']=FORAGE.ACT[K.id];
     FORAGE.ROWB.push(id=>id===K.id?[[on&&ME.K===K?'PUT IT AWAY':'PLAY',K.id+'play']]:[]); };
@@ -25,7 +25,8 @@ import {GUITAR} from './146zob-guitar.js';
   const score=P=>P.song>=0&&P.K.BOOK[P.song]?P.K.BOOK[P.song].c:P.live, time=P=>P.song>=0?now()-P.s0:now();
   INSTR.score=score; INSTR.time=time;
   const voice=P=>{ if(!GSND.imx){ GSND.wake(); return null; } return P.V||(P.V=GSND.inst((P.id==='me'?'me':P.id)+'|'+P.K.id,P.K.dsp())); };
-  const trim=P=>{ const L=P.live.ev, t=now()-12; while(L.length>200||L.length&&L[0].t+(L[0].d>1e6?0:L[0].d)<t&&L[0].d<1e6)L.shift(); };
+  // (the hands keep their place in the score, H.lo: it moves back with what is dropped from the front)
+  const trim=P=>{ const L=P.live.ev, t=now()-12; let n=0; while(L.length>200||L.length&&L[0].t+(L[0].d>1e6?0:L[0].d)<t&&L[0].d<1e6){ L.shift(); n++; } if(n&&P.H&&P.H.lo)P.H.lo=Math.max(0,P.H.lo-n); };
   // a note played now: into the live score (the hands follow it) and to the voice
   /* ---------- the recorded sounds (owner, 8 Nov 2026: "real sounds"; data/<id>-samples.mp3 and .json, tools/instrument-samples-bake.py): fetched and decoded the first time someone near plays; till they come, the music engine's model plays ---------- */
   const SMP=GSND.SETS; INSTR.SMP=SMP; INSTR.GSND=GSND;
@@ -82,7 +83,7 @@ import {GUITAR} from './146zob-guitar.js';
       { const hp=org(W[2],new V3()); turnAbout(W[2],hp,QA.setFromEuler(new THREE.Euler(K.look||.3,(K.lookY?K.lookY(P,t,H):0),0,'YXZ'))); }
       const hd=K.hands(P,t,H), st=PMx.hands, E={L:new V3(),R:new V3()};
       for(let i=0;i<15;i++)W0[i].copy(W[i]);
-      for(let it=0;it<3;it++){ if(it)for(let i=0;i<15;i++)W[i].copy(W0[i]);
+      for(let it=0,worst=1;it<8&&(it<3||worst>.003);it++){ if(it)for(let i=0;i<15;i++)W[i].copy(W0[i]); worst=0;
         for(const [sd,ids] of [['L',[3,4,5]],['R',[6,7,8]]]){ const h=hd[sd]; reach(W,ids,m(h.wr).add(H.off[sd]),dir(h.pole||(sd==='L'?new V3(.9,-.7,-.3):new V3(-.9,-.7,-.3)))); untwist(W,ids,1); }
         for(const [sd,ids] of [['L',[3,4,5]],['R',[6,7,8]]]){ const h=hd[sd]; aim(W,ids[2],sd,dir(h.Fd),dir(h.Dd)); untwist(W,ids,2); }
         if(!st||!st.base)break; let more=false;
@@ -90,7 +91,7 @@ import {GUITAR} from './146zob-guitar.js';
           if(!st.near){ for(let i=0;i<5;i++)f[i]=R0[i].slice(); continue; }
           const base=MA.multiplyMatrices(W[bi],body.binv[bi]).multiply(st.base[sd]), inv=MB.copy(base).invert(), e=E[sd].set(0,0,0); let ws=0;
           for(let i=0;i<5;i++){ const tg=h.tips[i]; if(!tg){ f[i]=h.rest?h.rest[i].slice():[.25,.35,.25,R0[i][3]]; continue; } const tw=m(tg), v=tw.clone().applyMatrix4(inv); HANDS.reach(i,v,f[i]);
-            const tip=HANDS.tip(i,f[i],new V3()).applyMatrix4(base), w=h.w?h.w[i]:1; H.err[sd][i]=tip.distanceTo(tw)/k; e.addScaledVector(tw.sub(tip),w); ws+=w; }
+            const tip=HANDS.tip(i,f[i],new V3()).applyMatrix4(base), w=h.w?h.w[i]:1; H.err[sd][i]=tip.distanceTo(tw)/k; if(h.w&&h.w[i]>1)worst=Math.max(worst,H.err[sd][i]); e.addScaledVector(tw.sub(tip),w); ws+=w; }
           if(ws){ e.multiplyScalar(1/ws); H.off[sd].add(e); const mx=.07*k; if(H.off[sd].length()>mx)H.off[sd].setLength(mx); more=true; } }
         if(!more)break; }
       if(st)st.fg=H.fg;
@@ -139,8 +140,8 @@ import {GUITAR} from './146zob-guitar.js';
   const css=document.createElement('style'); css.textContent=`#inp{position:fixed;left:50%;bottom:calc((84px + env(safe-area-inset-bottom,0px)) / var(--uiz,1));transform:translateX(-50%);z-index:7;zoom:var(--uiz,1);background:#0b0d13e6;border:2px solid #2a3040;padding:6px 8px;color:#e8e2cc;font:9px Silkscreen,monospace;width:min(700px,calc(100vw - 32px));box-sizing:border-box;user-select:none}
     #inp .r{display:flex;flex-wrap:wrap;gap:2px 4px;align-items:center;margin:2px 0} #inp button{font:inherit;color:inherit;background:#161a24;border:2px solid #2a3040;padding:2px 5px;cursor:pointer} #inp button[aria-pressed=true]{background:#2c4a36;border-color:#5fa06e}
     #inp select{font:inherit;color:inherit;background:#0b0d13;border:2px solid #2a3040;padding:2px;max-width:230px} #inp input[type=range]{width:70px} #inp .h{margin-right:8px} #inp .d{opacity:.6;margin:0 2px 0 8px}
-    #inp .kb{position:relative;height:58px;margin:3px 0;touch-action:none} #inp .kb b{position:absolute;top:0;box-sizing:border-box;border:1px solid #2a3040;cursor:pointer;display:flex;align-items:flex-end;justify-content:center;padding-bottom:2px;font-weight:normal;font-size:8px}
-    #inp .kb b.w{height:56px;background:#e8e2cc;color:#555} #inp .kb b.k{height:34px;background:#141418;color:#999;z-index:1} #inp .kb b.on{background:#5fa06e!important;color:#fff}
+    #inp .kb{position:relative;height:62px;margin:6px 0 3px;touch-action:none} #inp .kb b{position:absolute;top:0;box-sizing:border-box;border:1px solid #2a3040;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:2px;font-weight:normal;font-size:8px;line-height:1.15;overflow:hidden}
+    #inp .kb b.w{height:60px;background:#e8e2cc;color:#555} #inp .kb b.k{height:36px;background:#141418;color:#999;z-index:1} #inp .kb b.on,#inp .kb b.pl{background:#5fa06e!important;color:#fff} #inp .kb.all b{font-size:6px}
     #inp .pads{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;margin:3px 0} #inp .pads button{padding:8px 2px} #inp .pads button.hit{background:#5fa06e}`;
   document.head.appendChild(css);
   const panel=show=>{ if(!show){ if(PN)PN.hidden=true; return; } if(!PN){ PN=document.createElement('div'); PN.id='inp'; document.body.appendChild(PN);
@@ -148,9 +149,9 @@ import {GUITAR} from './146zob-guitar.js';
       PN.addEventListener('pointerup',e=>{ const b=e.target.closest('b,button'); if(b&&on&&(b.dataset.n!=null||b.dataset.pad!=null))ME.K.click(b,false); });
       PN.addEventListener('pointercancel',e=>{ const b=e.target.closest('b,button'); if(b&&on&&(b.dataset.n!=null||b.dataset.pad!=null))ME.K.click(b,false); });
       PN.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||!on)return; GSND.wake(); if(b.dataset.n!=null||b.dataset.pad!=null)return;
-        if(b.id==='inplay')INSTR.play(ME.song>=0?'stop':'song',ME.song>=0?null:+PN.querySelector('#insong').value); else if(b.id==='incu')closeUp(!CU.on); else if(b.id==='inoff')INSTR.stop(); else ME.K.click(b,true); b.blur(); }); }
+        if(b.id==='inplay')INSTR.play(ME.song>=0?'stop':'song',ME.song>=0?null:+PN.querySelector('#insong').value); else if(b.id==='incu')closeUp(!CU.on); else if(b.id==='inoff')INSTR.stop(); else if(ME.K.boardClick&&(b.dataset.kv||b.dataset.kl))ME.K.boardClick(b); else ME.K.click(b,true); b.blur(); }); }
     PN.innerHTML=`<div class="r"><span class="h" id="insk"></span><span id="innow"></span></div>
-      <div class="r"><select id="insong" aria-label="song"></select><button id="inplay" title="\`">PLAY</button><button id="incu" title="tab">CLOSE-UP</button><span class="d">VOL</span><input type="range" id="invol" min="0" max="1" step=".05" aria-label="volume"><button id="inoff" title="esc">PUT AWAY</button></div>${ME.K.samples?`<div class="r" style="opacity:.45">SOUND: ${esc(ME.K.samples.credit)}</div>`:''}`;
+      <div class="r"><select id="insong" aria-label="song"></select><button id="inplay" title="\`">PLAY</button><button id="incu" title="tab">CLOSE-UP</button><span class="d">VOL</span><input type="range" id="invol" min="0" max="1" step=".05" aria-label="volume"><button id="inoff" title="esc">PUT AWAY</button></div>${ME.K.board?'<div id="inown">'+ME.K.board()+'</div>':''}${ME.K.samples?`<div class="r" style="opacity:.45">SOUND: ${esc(ME.K.samples.credit)}</div>`:''}`;
     for(const el of PN.querySelectorAll('select,input'))el.addEventListener('keydown',e=>e.stopPropagation());
     PN.querySelector('#invol').oninput=e=>GSND.setVol(+e.target.value);
     PN.hidden=false; fillSongs(); drawPanel(); };
@@ -162,7 +163,7 @@ import {GUITAR} from './146zob-guitar.js';
     PN.querySelector('#insk').textContent=K.skill.toUpperCase()+' '+skill(K).toFixed(1);
     PN.querySelector('#innow').textContent=T?'PLAYING '+T.name.toUpperCase()+(T.credit?' · '+T.credit.split(': ').pop().split(', http')[0]:''):'PICK A PIECE';
     const pl=PN.querySelector('#inplay'); pl.textContent=ME.song>=0?'STOP':'PLAY'; pl.setAttribute('aria-pressed',String(ME.song>=0)); PN.querySelector('#incu').setAttribute('aria-pressed',String(CU.on)); PN.querySelector('#invol').value=GSND.vol;
-  };
+    if(K.board)K.boardDraw(PN,ME); };
   INSTR.drawPanel=drawPanel;
 
   /* ---------- the close-up: the view in close on the hands and what they play (TAB) ---------- */
@@ -198,6 +199,16 @@ import {GUITAR} from './146zob-guitar.js';
   INSTR.mat=lam; INSTR.box=(w,h,d,c,x=0,y=0,z=0)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),typeof c==='number'?lam(c):c); m.position.set(x,y,z); m.castShadow=m.receiveShadow=true; return m; };
   INSTR.cyl=(r0,r1,h,c,seg=16,x=0,y=0,z=0,open=false)=>{ const m=new THREE.Mesh(new THREE.CylinderGeometry(r0,r1,h,seg,1,open),typeof c==='number'?lam(c):c); m.position.set(x,y,z); m.castShadow=m.receiveShadow=true; return m; };
   INSTR.sm=u=>{ u=Math.max(0,Math.min(1,u)); return u*u*(3-2*u); };
+  // Polyfork's models of them (150cyb, fetched after the start): dress(mesh maker) now if they have come, else when they come; dress hides the first shapes and fits the model
+  const PFQ=[]; INSTR.PF=null;
+  INSTR.pf=f=>{ if(INSTR.PF)f(INSTR.PF.mesh); else PFQ.push(f); };
+  INSTR.pfReady=P=>{ INSTR.PF=P; for(const f of PFQ.splice(0))try{ f(P.mesh); }catch(e){ console.warn('instrument model',e); } };
+  // a model fitted: turned by ry about the up axis, scaled (a number or [x,y,z]), set at [x,y,z]
+  INSTR.fit=(m,ry,s,at)=>{ if(!m)return m; m.rotation.y=ry; if(Array.isArray(s))m.scale.set(...s); else m.scale.setScalar(s); m.position.set(...at); return m; };
+  // a stool, its seat's top at y (Polyfork's lab stool once it comes)
+  INSTR.stool=(g,y,z=0)=>{ const o=new THREE.Group(); o.add(INSTR.cyl(.17,.17,.06,0x1a1414,18,0,y-.03,z)); for(const a of [.5,2.6,-1.6])o.add(INSTR.cyl(.012,.012,y-.06,0x1a1414,6,Math.sin(a)*.12,(y-.06)/2,z+Math.cos(a)*.12)); g.add(o);
+    INSTR.pf(mk=>{ const m=mk('stool'); if(!m)return; o.visible=false; g.add(INSTR.fit(m,0,y/INSTR.bb(m).max.y,[0,0,z])); }); };
+  INSTR.bb=m=>{ const G=m.geometry; if(!G.boundingBox)G.computeBoundingBox(); return G.boundingBox; };
   INSTR.FIST=[[.6,.7,.5,0],[1.45,1.7,1.05,-.18],[1.5,1.7,1.05,-.06],[1.55,1.7,1.05,.08],[1.6,1.7,1.05,.22]];
   // the bodega's shelf: each one as a small model of itself on the bottom row of the right wall
   INSTR.shelf=(id,mk,sc)=>{ if(!BODEGA.MAKE)return; BODEGA.MAKE[id]=()=>{ const g=new THREE.Group(), m=mk(); m.scale.setScalar(sc); g.add(m); return g; }; const row=BODEGA.LAYOUT.find(r=>r[0]==='wr1'&&r[1]===0); if(row)row[2].push(id); else BODEGA.LAYOUT.push(['wr1',0,[id]]); };

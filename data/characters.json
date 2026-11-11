@@ -2748,18 +2748,22 @@
     "canvas_t",
     "paper",
     "quill_pen",
-    "stack_key"
+    "stack_key",
+    "trowel",
+    "fos_brush"
    ],
    "buys": [
     "paintings",
     "antiquities",
     "photos",
     "slime",
-    "plates"
+    "plates",
+    "fossils"
    ],
    "teaches": [
     "guitar",
-    "astro"
+    "astro",
+    "paleo"
    ],
    "line": "Canvases and paper. I buy good paintings and old things."
   }
@@ -3007,14 +3011,12 @@
   "pf": "longboarder-0ea806",
   "group": "boards",
   "job": {
-   "at": "boards",
-   "title": "REGULAR",
+   "at": "bowling",
+   "title": "RUNS THE LANES",
    "hours": [
-    14,
-    20
-   ],
-   "r": 4,
-   "home": "house"
+    12,
+    24
+   ]
   },
   "name": "THE LONGBOARDER"
  },
@@ -3301,7 +3303,24 @@
     18
    ]
   },
-  "name": "THE DOCTOR"
+  "name": "THE DOCTOR",
+  "trade": {
+   "sells": [
+    "im_lace",
+    "im_luck",
+    "im_cateye",
+    "im_hawk",
+    "im_myo",
+    "im_heart",
+    "im_gill",
+    "im_plate",
+    "im_spring",
+    "im_twitch",
+    "im_adrenal",
+    "im_marrow"
+   ],
+   "line": "Buy an implant here, then sit in the chair and I fit it. One to a slot; I take them out too."
+  }
  },
  "ward_nurse": {
   "pf": "ward-nurse-84b61d",
@@ -3939,6 +3958,7 @@
   "name": "THE CHINCHINERO"
  },
  "village_gardener": {
+  "signs": true,
   "pf": "village-gardener-9f7af6",
   "group": "park",
   "job": {
@@ -4317,6 +4337,7 @@
   "name": "THE CHILD WITH A PAINTED FACE"
  },
  "diner_waitress": {
+  "signs": true,
   "pf": "diner-waitress-60f6a1",
   "group": "diner",
   "job": {

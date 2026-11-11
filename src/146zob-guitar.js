@@ -1,6 +1,6 @@
 // THE GUITAR (owner, 7 Nov 2026: "i want to add the guitar back into game. use the polyfork assets ... hand 3d model, physics, real string acoustics, sounds, closeup, fingers"; his picks: own one and play it anywhere, and the park's is anyone's; play it yourself or a song from the book; the strings' physics): GUITAR, the item (the bodega sells it), the park's guitar on its stand, playing (keys and the panel), the close-up, and everyone near hearing and seeing it.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INSTR, INV, NPCS, ONLINE, PARK, pos, st, UI, W3} from './003b-systems.js';
+import {FORAGE, INSTR, ONLINE, PARK, pos, st, UI, W3} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {LEVEL, MAPG, SYS, TILE} from './006-map-pre.js';
 import {GTBOOK, GTCHORD, gtCompile} from './108-game-play-3-guitar-2-tunes.js';
@@ -31,8 +31,6 @@ const GUITAR={}; window.GUITAR=GUITAR;
   const fretOf=(P,s)=>{ const c=P.chord&&GTCHORD[P.chord]; const q=c&&c.find(x=>x.s===s); return q?q.k:0; };
   const note=(P,n)=>{ const V=voice(P); if(!V)return; GSND.pluck(V,n.s,n.at,GSND.now()+Math.max(0,n.t-now())+.01,n.amp,BRIGHT[n.r]||1,GHOLD.plFrac(n.r)); };
   // GUITAR rises by playing: a song played through (a try every half minute of it, nearer its level the likelier), and playing freely (a try every 25 notes, worth less past 40)
-  // busking: a song played through near townsfolk earns tips, more for a harder song, a better player and a bigger crowd (at most six count)
-  const busk=T=>{ let k=0; for(const N of NPCS.all())if(N.g&&N.g.visible&&N.st&&Math.hypot(N.st.x-pos.x,N.st.z-pos.z)<12*TILE)k++; k=Math.min(6,k); if(!k)return; const tip=Math.max(1,Math.round(k*(.5+(T.lvl||10)/40)*(.5+FORAGE.sk('guitar')/50)*(.7+Math.random()*.6))); INV.cash+=tip; SAY(`${k} ${k>1?'PEOPLE':'PERSON'} LISTENED. YOU MAKE $${tip} IN TIPS.`,'#f2c14e'); };
   let freeN=0; const practise=()=>{ if(++freeN%25===0)FORAGE.use('guitar',-10,45); };
   const ACT={
     chord:(P,nm)=>{ if(nm&&!GTCHORD[nm])return; const t=now(), L=P.live, old=P.chord&&GTCHORD[P.chord]||[], nw=nm?GTCHORD[nm]:[], V=P.V;
@@ -49,7 +47,7 @@ const GUITAR={}; window.GUITAR=GUITAR;
     stop:P=>{ if(P.song<0)return; P.song=-1; if(P.V)for(let s=1;s<=6;s++)GSND.mute(P.V,s,GSND.now()+.01,.05); ACT.chord(P,P.chord); }};
   // a song's notes go to the strings a little ahead of the clock, and the left hand's lifts mute them
   const songTick=P=>{ if(P.song<0)return; const T=GTBOOK[P.song], c=T.c, t=time(P); if(P.fail&&t>P.fail){ ACT.stop(P); if(P===ME){ tell('stop'); SONGBK.done('guitar',T,false,P.fail/c.len); fillSongs(); drawPanel(); } return; }
-    if(t>c.len){ ACT.stop(P); if(P===ME){ SONGBK.done('guitar',T,true); busk(T); fillSongs(); drawPanel(); } return; } const V=voice(P); if(!V)return;
+    if(t>c.len){ ACT.stop(P); if(P===ME){ SONGBK.done('guitar',T,true); SONGBK.busk('guitar',T); fillSongs(); drawPanel(); } return; } const V=voice(P); if(!V)return;
     while(P.cur<c.ev.length&&c.ev[P.cur].t<=t+.12){ const e=c.ev[P.cur++]; if(e.t<t-.05)continue; const when=GSND.now()+Math.max(0,e.t-t)+.02; let d=0; if(e.n&&P.fail&&e.t>P.fail-SONGBK.LEAD){ d=SONGBK.slip(); if(d===0)continue; d=d||0; }
       if(e.n)GSND.pluck(V,e.n.s,Math.max(0,e.n.at+d),when,e.n.amp,e.n.tone>=4000?1:e.n.tone>=3500?.8:.5,GHOLD.plFrac(e.n.r)); else GSND.mute(V,e.s,when); } };
   const hold=(P,me,PM,body)=>{ if(P.H&&P.H.me===me)return; if(P.H)GHOLD.detach(P.H); P.H=me&&PM?GHOLD.attach(me,PM,body,{score:()=>score(P),time:()=>time(P)}):null; };

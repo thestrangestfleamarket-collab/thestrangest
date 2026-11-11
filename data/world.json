@@ -196,8 +196,8 @@
   "west": {
    "x0": -52.5,
    "x1": -24,
-   "road": false,
-   "note": "no road (owner, 10 Nov 2026: \"No roads in park at all\"): the park runs to the section's west edge; x0/x1 stay as the measures the street's layout is drawn from"
+   "y1": 26,
+   "note": "a short street again (owner, 11 Nov 2026, the apartments' redesign, option B): its road runs from Market St north to y1 for the four apartment houses on its west side; past y1 the park runs to the section's west edge (10 Nov 2026: \"No roads in park at all\")"
   }
  },
  "park": {
@@ -483,13 +483,71 @@
   },
   {
    "id": "apts",
-   "name": "THE TOWER",
+   "name": "No. 1 THE WALK-UP",
    "kind": "front",
-   "x0": -47,
-   "x1": -17,
-   "y0": -92.4,
-   "y1": -77,
-   "face": "n"
+   "x0": -67.9,
+   "x1": -52.5,
+   "y0": -36,
+   "y1": -23,
+   "face": "e",
+   "storeys": 5,
+   "style": {
+    "wall": [138,59,44],
+    "trim": [112,46,36],
+    "base": [120,52,40],
+    "lintel": [217,205,184]
+   }
+  },
+  {
+   "id": "house2",
+   "name": "No. 2 THE BROWNSTONE",
+   "kind": "front",
+   "x0": -67.9,
+   "x1": -52.5,
+   "y0": -22,
+   "y1": -9,
+   "face": "e",
+   "storeys": 4,
+   "style": {
+    "wall": [94,67,52],
+    "trim": [78,56,44],
+    "base": [84,60,46],
+    "lintel": [122,90,72]
+   }
+  },
+  {
+   "id": "house3",
+   "name": "No. 3 THE PARKVIEW",
+   "kind": "front",
+   "x0": -67.9,
+   "x1": -52.5,
+   "y0": -8,
+   "y1": 5,
+   "face": "e",
+   "storeys": 6,
+   "style": {
+    "wall": [201,180,138],
+    "trim": [168,150,116],
+    "base": [216,210,194],
+    "lintel": [238,230,210]
+   }
+  },
+  {
+   "id": "house4",
+   "name": "No. 4 THE FOUNDRY LOFTS",
+   "kind": "front",
+   "x0": -67.9,
+   "x1": -52.5,
+   "y0": 6,
+   "y1": 19,
+   "face": "e",
+   "storeys": 4,
+   "style": {
+    "wall": [61,64,70],
+    "trim": [27,28,32],
+    "base": [48,50,56],
+    "lintel": [40,42,48]
+   }
   },
   {
    "id": "clinic",

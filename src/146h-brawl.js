@@ -29,7 +29,7 @@ import {collide} from './075-main-13.js';
     for(const l of live){ l.n++; const pts=mine(l.kind,J);
       for(const o of ONLINE.others.values()){ if(o.why!=='near you'||!o.p||o.dead||l.hit.has(o.id)||carry&&carry.id===o.id||thrown.id===o.id&&now<thrown.until)continue; let part=null;
         for(const [c,r] of pts)if((part=touch(o,c,r)))break;
-        if(part){ l.hit.add(o.id); const s=l.s; S.landed(s); o.flashT=now+130; SFX.play('thud',{vol:.55,pitch:1.35,vary:.15}); ONLINE.send({t:'hit',to:o.id,d:+(.05*s.d*S.strength(s)*(part==='head'?1.3:1)).toFixed(3),kb:s.kb||(l.kind==='foot'?1.5:1),heavy:!!s.heavy,k:l.kind}); } } } };
+        if(part){ l.hit.add(o.id); const s=l.s; S.landed(s); o.flashT=now+130; SFX.play('punch',{vol:.6,vary:.12}); ONLINE.send({t:'hit',to:o.id,d:+(.05*s.d*S.strength(s)*(part==='head'?1.3:1)).toFixed(3),kb:s.kb||(l.kind==='foot'?1.5:1),heavy:!!s.heavy,k:l.kind}); } } } };
 
   /* ---------- their blows on you: VIT.hurt (guard, parry, armour, death) as from any foe; a shove and a flinch, or down into the ragdoll ---------- */
   let shove=null, recent=[], wasRag=false, parT=0; const last={};
@@ -42,6 +42,8 @@ import {collide} from './075-main-13.js';
     if(busy())return;
     if(!blocked&&(m.heavy||recent.length>=3||(m.k==='foot'&&shove&&now-shove.at<700))){ recent=[]; RAG.ko=now+2500; PHYOU.hitN=[-dx/l,dz/l,0]; PHYOU.hit=30*Math.min(3,1.5+kb*.5); return; }
     shove={x:dx/l*kb*.35*T/.2,z:dz/l*kb*.35*T/.2,t:.2,at:now}; if(!blocked)flinch(); };
+  MODS.blow=(f,kb,down)=>{ if(!f||busy()||VIT.dead||VIT.out>0||RAG.on)return; const now=performance.now(), dx=pos.x-f.x, dz=pos.z-f.z, l=Math.hypot(dx,dz)||1;   // a shot or a blast (146hc): thrown back, or down
+    if(down){ RAG.ko=now+2500; PHYOU.hitN=[-dx/l,dz/l,0]; PHYOU.hit=30*Math.min(3,1.5+kb*.5); return; } shove={x:dx/l*kb*.35*T/.2,z:dz/l*kb*.35*T/.2,t:.2,at:now}; flinch(); };
   SYS.add('hurt',(d,from)=>{ if(!from||busy()||(WIELD.block&&facing(from)))return; const dx=pos.x-from.x, dz=pos.z-from.z, l=Math.hypot(dx,dz)||1;   // any blow from somewhere (a creature, a player) jolts you back a step
     shove={x:dx/l*.25*T/.2,z:dz/l*.25*T/.2,t:.2,at:performance.now()}; flinch(); },'146h-brawl');
   ONLINE.hear.parried=()=>{ const now=performance.now(); if(now-parT<400)return; parT=now; flinch(); SAY('PARRIED!','#ffd27a'); };

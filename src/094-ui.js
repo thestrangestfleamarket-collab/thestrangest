@@ -42,27 +42,8 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     return ACTS.some(([a])=>a===raw)?'':raw; };
   { const K0=UI.key, K=new WeakMap(); UI.key=e=>{ if(K.has(e))return K.get(e); const r=K0(e); K.set(e,r); return r; }; }   // one press acts once: later listeners asking for the same event get the same answer
   {
-    UI.moves=()=>{ const p=document.getElementById('dmoves'); if(UI.menuOpen&&p&&!p.hidden)UI.toggleMenu(); else UI.menuTab('set','keys'); };
-    UI.movesHTML=()=>{ '@later';
-      const row=(k,t)=>'<div class="row"><span style="flex:0 0 170px;color:var(--mo)">'+k+'</span><span style="flex:1;white-space:normal">'+t+'</span></div>', h=t=>'<h3>'+t+'</h3>';
-      let o=h('KEYS (CHANGE THEM IN SETTINGS, CONTROLS)');
-      for(const [a,what] of ACTS)o+=row(NAME(keyOf(a)),what.toUpperCase());
-      o+=row('ARROWS','MOVE (SAME AS W A S D)')+row('SHIFT + M','THE MAP')+row('SHIFT + N','THE NEXT LOOK')+row('SHIFT + G','THE GUIDE: HOW TO DO EVERYTHING')+row('I','YOUR BAG')+row('1 TO 0','THE QUICK BAR')+row('ESC','THE MENU')+row('?','THIS LIST')+row('F8','REPORT A BUG');
-      const M=RIG.MOVES||{}, fights=Object.keys(M).filter(n=>M[n]&&M[n].combo);
-      if(fights.length){ o+=h('FIGHTING: J PUNCH, K KICK; PRESS AGAIN IN TIME TO CHAIN'); for(const n of fights){ const c=M[n].combo; o+=row(n.replace(/([A-Z])/g,' $1').toUpperCase(),Object.entries(c).map(([k,v])=>k+' → '+v.replace(/([A-Z])/g,' $1').toUpperCase()).join(' · ')); } }
-      o+=h('FISHING (BY THE WATER)')+row('F','START FISHING · F OR ESC STOPS')+row('SPACE','HOLD, LET GO TO CAST · ON A BITE: STRIKE · HOLD TO REEL A FISH IN · LANDED: UNHOOK')+row('B','NEXT BAIT')+row('A D','IN A FIGHT: PULL THE ROD LEFT / RIGHT, AGAINST THE FISH\'S RUN')+row('W S','DRAG UP / DOWN')+row('V','CHANGE THE VIEW');
-      o+=h('ON A SKATEBOARD (HOLD IT, CLICK TO STEP ON, CLICK TO STEP OFF)')+row('W A S D','PUSH, CARVE, BRAKE · IN THE AIR: A D SPIN')+row('SPACE','HOLD TO CROUCH, LET GO TO OLLIE (LONGER, HIGHER) · ON A RAIL: OLLIE OFF')+row('J','IN THE AIR: A FLIP TRICK · NONE OR A KICKFLIP · D HEELFLIP · W HARDFLIP · S POP SHOVE-IT')
-        +row('K','IN THE AIR, HOLD: A GRAB · NONE INDY · A MELON · D STALEFISH · W NOSEGRAB · S TAILGRAB')+row('L','BY A RAIL, LEDGE OR COPING: GRIND · NONE 50-50 · W NOSEGRIND · S 5-0 · A BOARDSLIDE · D LIPSLIDE · A D KEEP YOUR BALANCE · AS YOU LAND: REVERT')
-        +row('I','MANUAL (W WITH IT: NOSE MANUAL) · W S KEEP YOUR BALANCE · I AGAIN ENDS IT')+row('QUARTER PIPES','RIDE UP ONE FAST: STRAIGHT UP INTO THE AIR, DOWN AGAIN BACKWARDS')+row('COMBOS','EVERY TRICK ADDS ITS POINTS AND ONE TO THE MULTIPLIER; LAND CLEAN AND ROLL AWAY (OR MANUAL, OR REVERT) TO KEEP IT GOING · LAND SIDEWAYS OR MID-FLIP AND YOU BAIL')
-        +row('GAMEPAD','A OLLIE · X FLIP · Y GRAB · RB GRIND · LB MANUAL · STICK STEERS AND SPINS');
-      o+=h('TALKING TO SOMEONE')+row('W S, ARROWS','PICK AN ANSWER')+row('E, SPACE, ENTER','SAY IT')+row('1 TO 9','SAY THAT ONE')+row('ESC','WALK AWAY');
-      o+=h('SITTING')+row('ANY MOVE KEY','STAND UP');
-      o+=h('YOUR APARTMENT: DECORATING ('+NAME(keyOf('t'))+')')+row('DRAG','MOVE A THING')+row('Q E','TURN IT (ALT: A LITTLE)')+row('[ ]','LOWER / RAISE IT')+row('X, DELETE','PUT IT AWAY')+row('G','GRID ON / OFF')+row('CTRL + Z','UNDO')+row('ESC','DONE');
-      o+=h('THE MOVIE SCREEN (DOUBLE CLICK IT)')+row('SOUND, VOLUME','YOUR OWN')+row('FULL SCREEN','THE FILM OVER THE WHOLE PAGE · ESC OR ✕ GOES BACK');
-      if(UI.padMoves)o+=UI.padMoves(row,h);
-      o+=h('THE MOUSE')+row('DOUBLE CLICK','A THING: GO TO IT AND USE IT · ON A SEAT: SIT · A LAMP: ON / OFF · A FRIDGE: OPEN · THE DRINKS MACHINE: A CAN · THE RADIO: MUSIC · A CHARACTER: GO UP AND GREET · YOURSELF: YOUR NAME, HEALTH AND BODY · THE GUITARIST: WATCH HIS HANDS · A MUSHROOM: PICK IT · THE MUSHROOM SELLER: HIS SHOP')
-        +row('LEFT DRAG','MOVE THE VIEW (ISOMETRIC, MAP) · LOOK ROUND (THIRD PERSON, BEHIND, FIRST)')+row('RIGHT DRAG, SHIFT + DRAG','TURN AND TILT THE VIEW')+row('WHEEL','ZOOM');
-      return o; }; }
+    UI.moves=()=>{ const p=document.getElementById('dmoves'); if(UI.menuOpen&&p&&!p.hidden)UI.toggleMenu(); else UI.menuTab('moves'); };
+  }
   const badge=document.createElement('div'); badge.id='mode'; document.body.appendChild(badge);
   // riding anything, its controls stay up until you close them (owner, 9 Nov 2026: "anytime youre on a device the control should stay on screen unless you close them"); a car has its own bar
   let rideShut=null; const rideHint=()=>RIDE.on&&!/^car:/.test(RIDE.on)&&rideShut!==RIDE.on&&RIDE.cur&&RIDE.cur.hint?String(RIDE.cur.hint):'';
@@ -117,7 +98,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     const T=UI.freeCam?UI.camT:new THREE.Vector3(pos.x,0,pos.z).add(UI.off), m=8*TILE, cx=Math.max(SHARED.BOUND.x0-m,Math.min(SHARED.BOUND.x1+m,T.x))-T.x, cz=Math.max(SHARED.BOUND.z0-m,Math.min(SHARED.BOUND.z1+m,T.z))-T.z; viewV().x+=cx; viewV().z+=cz; };
   UI.view='map'; UI.persp=false; UI.dist=7*TILE; 
   const HEAD=1.5/.84*TILE, EYE=1.62/.84*TILE, LOW=.9/.84*TILE, eyeV=new THREE.Vector3();
-  UI.clampV=v=>UI.view==='first'?Math.max(-1.2,Math.min(1.3,v)):UI.view==='third'||UI.view==='follow'?Math.max(-.6,Math.min(1.5,v)):clampP(v);
+  UI.clampV=v=>UI.view==='first'?Math.max(-(UI.upMax||1.2),Math.min(1.3,v)):UI.view==='third'||UI.view==='follow'?Math.max(-.6,Math.min(1.5,v)):clampP(v);
   UI.isoTo=()=>{ let r=null; try{ r=ROOMS.cur; }catch(e){} const t=r?Math.PI*3/4:-Math.PI/4; SHARED.yawTo+=((((t-SHARED.yawTo)%(2*Math.PI))+3*Math.PI)%(2*Math.PI))-Math.PI; SHARED.yaw=SHARED.yawTo; };
   UI.isoTurn=t=>{ SHARED.yawTo+=((((t-SHARED.yawTo)%(2*Math.PI))+3*Math.PI)%(2*Math.PI))-Math.PI; SHARED.yaw=SHARED.yawTo; };
   UI.isoPlace=()=>{};
@@ -136,6 +117,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   UI.view3b=(a,dt)=>{ W3.group.visible=UI.view!=='first'; if(!UI.persp)return; const sk=W3.SZ||1;
     if(UI.distTo==null||UI.dist!==UI._dl)UI.distTo=UI.dist; else UI.dist=Math.abs(UI.distTo-UI.dist)<1e-3?UI.distTo:UI.dist+(UI.distTo-UI.dist)*Math.min(1,(dt||.016)*12); UI._dl=UI.dist;   // a wheel step eases there; anything else that sets the distance is taken as it is
     if(UI.view==='first'&&!UI.owned()){ const f=2*Math.atan(Math.tan(UI.FOV0*Math.PI/360)/UI.fz)*180/Math.PI; if(Math.abs(PCAM.fov-f)>.01){ PCAM.fov+=(f-PCAM.fov)*Math.min(1,(dt||.016)*12); PCAM.updateProjectionMatrix(); } }   // first person's zoom narrows the eye's view
+    if(UI.view==='first'&&RIDE.cur&&RIDE.cur.eye&&RIDE.cur.eye(SHARED.cam.position)){ UI._fpo=null; SHARED.cam.updateMatrixWorld(); return; }   // in a car's seat: its driver's eye, fixed to the car
     if(UI.view==='first'){ if(!(W3.eyeAt&&W3.eyeAt(SHARED.cam.position))){ SHARED.cam.position.set(pos.x,SHARED.py+EYE*sk,pos.z); SHARED.cam.position.addScaledVector(new THREE.Vector3(-Math.sin(a),0,-Math.cos(a)),.12*TILE); }
       { const c=SHARED.cam.position, ox=c.x-pos.x, oy=c.y-SHARED.py, oz=c.z-pos.z, k=1-Math.exp(-(dt||.016)/.2), F=UI._fpo;
         if(!F||UI._fpy==null||Math.abs(SHARED.py-UI._fpy)>TILE){ UI._fpo=[ox,oy,oz,ox,oy,oz]; UI._fpy=SHARED.py; }
@@ -164,7 +146,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     if(UI.persp){ if(UI.view!=='third'&&UI.view!=='follow')return; const lo=UI.distMin||1.2*TILE, hi=UI.distMax||22*TILE, sk=W3.SZ||1, now=SHARED.cam.position.distanceTo(tv.set(pos.x,SHARED.py+HEAD*sk,pos.z)), held=now<UI.dist*.9; if(d>0&&held)return; const c=held?now:UI.distTo??UI.dist, L=[...new Set(UI.DL.map(v=>Math.max(lo,Math.min(hi,v))))];
       const n=d>0?[...L].reverse().find(v=>v>c*1.02):L.find(v=>v<c*.98); if(n==null)return; last=t; UI.distTo=n; return; }
     const c=SHARED.ppuTo; if(d>0&&RW/rppu()>=UI.MAXW*.995)return; const n=d<0?UI.ZL.find(v=>v>c*1.02):[...UI.ZL].reverse().find(v=>v<c*.98); if(n==null)return; last=t; SHARED.ppuTo=n; zAt=null; }; }   // each step zooms round the middle of the screen, wherever you have dragged the view (owner, 7 Nov 2026)
-  UI.viewsHere=()=>MODS.cars&&MODS.cars.driving?['third']:['iso','third','first'];   // every view everywhere (owner, 7 Nov 2026: "all views from all locations in map, no restrictions"); driving keeps behind the car
+  UI.viewsHere=()=>MODS.cars&&MODS.cars.driving?['third','first']:['iso','third','first'];   // every view everywhere (owner, 7 Nov 2026: "all views from all locations in map, no restrictions"); driving: behind the car or from the driver's seat (owner, 10 Nov 2026)
   { const W=window, own=UI.owned=()=>!!((W.FISHING&&W.FISHING.mode)||(W.OPTIC&&W.OPTIC.up)||(W.TOWERK&&W.TOWERK.spy)||(W.VR&&W.VR.s)||(W.ROAM&&W.ROAM.on)||UI.freeCam||UI.holdCam);
     SYS.add('cam',()=>{ if(!SYS.started||own())return; { const V=UI.viewsHere(); if(!V.includes(UI.view))UI.setView(V[0]); } if(!UI.persp&&SHARED.ppuTo<UI.ZOUT)SHARED.ppuTo=UI.ZOUT; if(UI.view==='iso'&&!UI.hold)SHARED.pitchTo=SHARED.pitch=VIEW0.pitch; if(!UI.persp)UI.keepOn(); },'094-views'); }
   UI.keepOn=()=>{ const c=SHARED.cam; if(!c||!c.isOrthographicCamera)return; const z=c.zoom||1, R=tv.setFromMatrixColumn(c.matrixWorld,0), hw=(c.right-c.left)/2/z*.85, hh=(c.top-c.bottom)/2/z*.8;   // the view drags only as far as keeps you on screen (owner, 7 Nov 2026)
@@ -327,20 +309,23 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     <div class="pane" data-p="editors" id="deditors"></div>
     <div class="pane" data-p="tools" id="dtools"></div>
     <div class="pane" data-p="bro" id="dbro"></div>
+    <div class="pane" data-p="bag" id="dbag"></div>
     <div class="pane" data-p="vehicles" id="dveh"></div>
-    <div class="pane" data-p="vedit" id="dvedit"></div></div></div>`;
+    <div class="pane" data-p="vedit" id="dvedit"></div>
+    <div class="pane" data-p="snded" id="dsnded"></div></div></div>`;
   document.body.appendChild(M);
   const $=s=>M.querySelector(s); let mapLv='up';
   // the one menu (owner, 5 Nov 2026: "B"): its sections down the left, each section's parts as tabs along the top; [id, name, key, parts or null, what a section without parts does]; a part is [id, name, its panes, or what it does]
   const shut=()=>{ if(UI.menuOpen)toggleMenu(); };
   const SEC=[   // SETTINGS, PETS, INVENTORY, MAP for every player, ADMIN for the owners (owner, 7 Nov 2026); no PROFILE: you are your paper doll, double-click yourself (owner, 9 Nov 2026)
     ['set','SETTINGS','ESC',[['view','VIEW',['display']],['camera','CAMERA',['camera']],['screen','SCREEN',['screen']],['chat','CHAT',['chat']],['res','RESOLUTION',['graphics']],['ps2','PS2 FILTER',['ps2']],['time','TIME',['atmo']],['weather','WEATHER',['weather']],['light','LIGHT',['light']],['sound','SOUND',['sound']],['keys','KEYS',['keys']],['pad','CONTROLLER',['padset']],['vr','VR',['vr']],['bug','REPORT A BUG',['bug']]]],   // every setting its own tab (owner, 8 Nov 2026: "everything needs its own tab, easier to find")   // no PEOPLE, BBS or GUIDE (owner, 7 Nov 2026); the chat stays in the corner
+    ['moves','WHAT YOU CAN DO','?',[['move','MOVING'],['fight','FIGHTING'],['climb','CLIMBING & SWIMMING'],['ride','RIDING'],['out','OUTDOORS'],['games','GAMES & PLACES'],['home','YOUR APARTMENT'],['people','PEOPLE & MONEY'],['pad','CONTROLLER, TOUCH & VR']].map(([k,n])=>[k,n,['moves']])],   // every activity by category, its moves (owner, 10 Nov 2026)
     ['pets','PETS','',[['mine','YOUR PETS',['pets']],['pet','THEIR LOOK',['home']]]],   // every player's pets (owner, 8 Nov 2026)
-    ['pack','INVENTORY','I',[['bag','BAG',()=>{ shut(); if(BAG.toggle)BAG.toggle(true); }],['skills','SKILLS',['pack']],['book','BOOK',['pack']],['fishing','FISHING',['pack']],['journal','JOURNAL',['pack']]]],
+    ['pack','INVENTORY','I',[['bag','BAG',['bag']],['skills','SKILLS',['pack']],['book','BOOK',['pack']],['fishing','FISHING',['pack']],['journal','JOURNAL',['pack']]]],
     ['map','MAP','SHIFT+M',[['street','STREET',['bro']],['subway','SUBWAY',['bro']],['under','UNDERGROUND',['bro']],['goto','GO TO',['bro']]]],   // the map a section of the menu (owner, 10 Nov 2026: "B")
     ['bbs','BBS','',[['shop','THE BODEGA',['bbs']],['furn','FURNITURE',['bbs']],['games','THE ARCADE',['bbs']],['orders','YOUR ORDERS',['bbs']]]],   // only from your computer, never in the menu's list
     ['tenants','TENANTS','',[['players','TENANTS',['tenants']]]],   // owners only, each its own (owner, 8 Nov 2026)
-    ['admin','★ ADMIN','',[['queue','BUG QUEUE',['queue']],['text','TEXT',['text']],['editors','EDITORS',['editors']],['look','AVATAR',['home']],['veh','VEHICLES',['vehicles']],['vedit','VEHICLE EDITOR',['vedit']],['tools','TOOLS',['tools']]]]];   // AVATAR: your look, owners only (owner, 9 Nov 2026: "the avatar editor should only be in the admin menu (since players cant edit themselves after they start)")   // TEXT its own tab (owner, 7 Nov 2026); no TESTS (owner, 8 Nov 2026)
+    ['admin','★ ADMIN','',[['queue','BUG QUEUE',['queue']],['text','TEXT',['text']],['editors','EDITORS',['editors']],['look','AVATAR',['home']],['veh','VEHICLES',['vehicles']],['vedit','VEHICLE EDITOR',['vedit']],['snded','SOUND EDITOR',['snded']],['tools','TOOLS',['tools']]]]];   // AVATAR: your look, owners only (owner, 9 Nov 2026: "the avatar editor should only be in the admin menu (since players cant edit themselves after they start)")   // TEXT its own tab (owner, 7 Nov 2026); no TESTS (owner, 8 Nov 2026)
   const OLD={home:['admin','look'],display:['set','view'],camera:['set','camera'],screen:['set','screen'],graphics:['set','res'],ps2:['set','ps2'],atmo:['set','time'],weather:['set','weather'],light:['set','light'],sound:['set','sound'],keys:['set','keys'],vr:['set','vr'],bug:['set','bug'],tenants:['tenants','players'],city:['set']};
   let cur='set', own=false; const last={}, OWN=new Set(['tenants','admin']);
   const mount=(id,host,on)=>{ const el=document.getElementById(id); if(!el)return null; if(on){ if(el.parentNode!==host)host.appendChild(el); el.classList.add('ml','inmenu'); el.hidden=false; } else if(el.parentNode!==document.body){ el.classList.remove('inmenu'); el.hidden=true; document.body.appendChild(el); } return el; };
@@ -358,13 +343,14 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     if(on.has('home')){ if(CHARP.show)CHARP.show($('#dhome')); if(LOOKS.open){ LOOKS.only=null; LOOKS.open(); mount('looks',$('#dlooks'),true); LOOKS.tab(pt[0]); } } else { if(CHARP.hide)CHARP.hide(); mount('looks',null,false); }
     if(on.has('pack')&&FORAGE.PACK){ mount('packp',$('#dpack'),true); FORAGE.PACK.tab=pt[0]; FORAGE.PACK.open=true; FORAGE.PACK.draw(); } else { if(mount('packp',null,false)&&FORAGE.PACK)FORAGE.PACK.open=false; }
     if(on.has('bro')&&UI.brochure)UI.brochure.into($('#dbro'),pt[0]);
+    if(on.has('bag')&&BAG.into)BAG.into($('#dbag')); else if(BAG.out)BAG.out();   // the bag inside the menu (owner, 10 Nov 2026)
     if(on.has('people'))people(); if(on.has('pets')&&PETS.menu)PETS.menu($('#dpets'));
     if(on.has('bbs')){ if(DRONE.menu)DRONE.menu($('#dbbs'),pt[0]); else $('#dbbs').innerHTML='<div class="dim">the BBS answers once your apartment is built</div>'; }
     if(on.has('guide')&&GUIDE.open)GUIDE.open($('#dguide'));
-    if(on.has('moves'))$('#dmoves').innerHTML=UI.movesHTML();
+    if(on.has('moves')&&UI.movesInto)UI.movesInto($('#dmoves'),pt[0]);
     if(on.has('bug'))BUGS.open($('#dbug')); if(on.has('queue'))BUGS.open($('#dqueue'),'queue');
     if(['display','camera','screen','graphics','ps2','sound','atmo','light'].some(k=>on.has(k)))drawDisplay(); if(on.has('sound'))SNDED.into($('#dsndin')); if(on.has('keys'))drawKeys(); if(on.has('vr')&&VR.open)VR.open($('#dvr')); if(on.has('padset')&&UI.padPage)UI.padPage($('#dpad'));
-    if(on.has('atmo'))DN&&DN.draw(); if(on.has('tenants')&&TENANTS.open)TENANTS.open($('#dten')); if(on.has('text')&&TENANTS.text)TENANTS.text($('#dtext')); if(on.has('tools')&&CHARP.tools)CHARP.tools($('#dtools')); if(on.has('editors')&&CHARP.editors)CHARP.editors($('#deditors')); if(on.has('vehicles')&&SPEED.panel)SPEED.panel($('#dveh')); if(on.has('vedit')&&VLOOK.panel)VLOOK.panel($('#dvedit'));
+    if(on.has('atmo'))DN&&DN.draw(); if(on.has('tenants')&&TENANTS.open)TENANTS.open($('#dten')); if(on.has('text')&&TENANTS.text)TENANTS.text($('#dtext')); if(on.has('tools')&&CHARP.tools)CHARP.tools($('#dtools')); if(on.has('editors')&&CHARP.editors)CHARP.editors($('#deditors')); if(on.has('vehicles')&&SPEED.panel)SPEED.panel($('#dveh')); if(on.has('vedit')&&VLOOK.panel)VLOOK.panel($('#dvedit')); if(on.has('snded')&&SNDED.panel)SNDED.panel($('#dsnded'));
     bars(); };
   $('#mnav').addEventListener('click',e=>{ const b=e.target.closest('[data-sec]'); if(b)show(b.dataset.sec); });
   $('#msub').addEventListener('click',e=>{ const b=e.target.closest('[data-sub]'); if(b)show(cur,b.dataset.sub); });
@@ -377,7 +363,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   UI.mapWindow=()=>{ if(!UI.menuOpen)toggleMenu(); M.classList.add('solo'); V.z=1; V.cx=null; document.getElementById('mttl').textContent='MAP'; M.querySelectorAll('.panes>[data-p]').forEach(p=>p.hidden=p.dataset.p!=='map'); drawMap(); };   // the map alone, no settings tabs (Shift+M)
   function toggleMenu(){ UI.menuOpen=!UI.menuOpen; M.hidden=!UI.menuOpen; keys.clear(); st.runTarget=0; M.classList.remove('solo'); document.getElementById('mttl').textContent='THE STRANGEST FLEA MARKET';
     if(UI.menuOpen){ mapLv=SHARED.LVL; show(OWN.has(cur)&&!own?'set':cur); if(!own&&CINEMA.isAdmin)CINEMA.isAdmin().then(o=>{ if(o&&!own){ own=true; if(UI.menuOpen)nav(); } }).catch(()=>{}); }
-    else { if(CHARP.hide)CHARP.hide(); mount('looks',null,false); if(mount('packp',null,false)&&FORAGE.PACK)FORAGE.PACK.open=false; } }
+    else { if(CHARP.hide)CHARP.hide(); if(BAG.out)BAG.out(); mount('looks',null,false); if(mount('packp',null,false)&&FORAGE.PACK)FORAGE.PACK.open=false; } }
   const mcv=$('#mapcv'), mg=mcv.getContext('2d'), rt=new THREE.WebGLRenderTarget(8,8), top=new THREE.OrthographicCamera(-1,1,1,-1,.1,200);
   const mapRect=lv=>{ const B=lv==='down'?MODS.station.BOUND:MODS.bodega.BOUND;
     const w=B.x1-B.x0, d=B.z1-B.z0, k=Math.min(800/w,420/d); return {x0:B.x0,x1:B.x1,z0:B.z0,z1:B.z1,W:Math.round(w*k),H:Math.round(d*k)}; };
@@ -509,7 +495,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   $('#dps2mk').oninput=e=>{ if(!PS2.menu)return; PS2.menu.k=+e.target.value; PS2.menu.save(); drawDisplay(); };
   $('#dlook').onclick=()=>{ LOOK.on=!LOOK.on; try{ SAVE.set('look',LOOK.on?'1':'0'); }catch(e){} drawDisplay(); };
   $('#dzoom').oninput=e=>{ SHARED.ppuTo=r2z(+e.target.value); }; $('#dtilt').oninput=e=>{ SHARED.pitchTo=clampP(PMIN+(+e.target.value)*(PMAX-PMIN)); };
-  M.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{ if(!UI.viewsHere().includes(b.dataset.view)){ UI.log('DRIVING, THE VIEW STAYS BEHIND THE CAR.','#c8a090'); return; } UI.switchView(b.dataset.view).then(drawDisplay); drawDisplay(); });
+  M.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{ if(!UI.viewsHere().includes(b.dataset.view)){ UI.log('DRIVING, THE VIEW IS BEHIND THE CAR OR FROM THE SEAT.','#c8a090'); return; } UI.switchView(b.dataset.view).then(drawDisplay); drawDisplay(); });
   $('#dsteps').oninput=e=>W3.setShade(+e.target.value,W3.shade.depth); $('#ddepth').oninput=e=>W3.setShade(W3.shade.steps,+e.target.value);
   $('#dreset').onclick=()=>{ SHARED.yawTo=VIEW0.yaw; SHARED.pitchTo=VIEW0.pitch; SHARED.ppuTo=VIEW0.ppu; UI.home(); drawDisplay(); };
   const UIS={small:.9,medium:1,large:1.1}; UI.setScale=k=>{ if(!UIS[k])k='medium'; UI.scale=k; document.documentElement.style.setProperty('--uiz',UIS[k]); SAVE.set('uiscale',k); M.querySelectorAll('[data-ui]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ui===k))); };
@@ -533,7 +519,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   $('#kreset').onclick=()=>{ BIND={}; try{ SAVE.del('keys'); }catch(e){} REV=rev(); drawKeys(); drawBadge(); };
   document.getElementById('stat').hidden=true;
   drawBadge(); }
-{ const PANS=[['menu',()=>UI.toggleMenu(),'.box'],['looks',el=>{ el.hidden=true; }],['we',()=>{}],['maped',()=>MAPED.toggle()],['snded',()=>SNDED.close()],['shbar'],['stat'],['gemp'],['packp',el=>{ el.hidden=true; if(FORAGE)FORAGE.PACK.open=false; }],['bagp',el=>{ el.hidden=true; }],['shopp'],['fishp'],['vegp'],['birdp'],['bookp'],['farlook'],['rinsp',()=>RINSP.toggle(false)],['emotes',()=>MOTION.close()]];
+{ const PANS=[['menu',()=>UI.toggleMenu(),'.box'],['looks',el=>{ el.hidden=true; }],['we',()=>{}],['maped',()=>MAPED.toggle()],['snded',()=>SNDED.close()],['shbar'],['stat'],['gemp'],['packp',el=>{ el.hidden=true; if(FORAGE)FORAGE.PACK.open=false; }],['bagp',()=>{ if(BAG.toggle)BAG.toggle(false); }],['shopp'],['fishp'],['vegp'],['birdp'],['bookp'],['farlook'],['rinsp',()=>RINSP.toggle(false)],['emotes',()=>MOTION.close()]];
   const css=document.createElement('style'); css.textContent='.pX{position:absolute;right:4px;top:4px;z-index:2;font:12px Silkscreen,monospace;color:#f2c14e;background:#0e1016;border:2px solid #3a3f4e;width:24px;height:24px;line-height:18px;padding:0;cursor:pointer} .pDrag{cursor:move}'; document.head.appendChild(css);
   { const ML=document.createElement('style'), C='color:#7dffa8!important', DIM='color:#3aa866!important', HI='color:#d8ffe4!important', sel=(k,cs)=>cs.map(c=>`.ml [style*="${k}:${c}"]`).join(',');   // every menu in the ESC menu's look (owner, 30 Oct 2026)
     ML.textContent=`.ml{font-family:'Share Tech Mono',ui-monospace,monospace!important;font-size:18px!important;line-height:1.45;letter-spacing:1px!important;${C};background:repeating-linear-gradient(0deg,rgba(125,255,168,.05) 0 1px,transparent 1px 3px),#020a06!important;border:0!important;border-radius:0!important;box-shadow:0 0 0 2px #3aa866!important}

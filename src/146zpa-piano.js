@@ -1,6 +1,7 @@
 // THE PIANO (owner, 7 Nov 2026: "lets do piano and drums and harp"): an upright of 88 keys, set down and sat at (INSTR, 146zp): each key a lever that dips under its finger, the sustain pedal under the right foot; its sound each string struck by a felt hammer (the strings' partials a little sharp as real stiff strings are, two strings a note beating, a damper on every key below the top two octaves); the book is Mutopia's solo piano pieces (data/piano-songs.json).
 import {THREE} from './003-shx.js';
 import {INSTR} from './003b-systems.js';
+import {GSND} from './146zo-guitar-sound.js';
 { const {box,cyl,mat,sm}=INSTR, V3=THREE.Vector3, M4=THREE.Matrix4, Q4=THREE.Quaternion;
   // the keyboard (metres, the player at the origin facing +z, +x their left): white keys 20.5 mm (an upright sized for the Walker), the low notes on the left; the keys as long as Polyfork's upright's
   const WK=.0205, KF=.27, KL=.172, BL=.112, BW=.011, KY=.65, LO=21, HI=108;
@@ -17,11 +18,12 @@ import {INSTR} from './003b-systems.js';
       if(n<=5){ const dc=.00045*(1+((m*7)%5)*.25); modes.push([f*(1-dc),t*1.15,a*.55],[f*(1+dc),t*.55,a*.5]); } else modes.push([f,t,a]); }
     return {k:'hit',modes,tau:.0008,id:m,ch:200+m,noise:[.035*v,.012,70,1800]}; };
   K.dsp=()=>({fam:'hit',poly:40,body:[],dry:0,wet:0,gain:.72});
-  // the recordings: the Salamander grand, every third note, each played at the nearest one's speed; played soft, darker, as a real hammer's felt is
-  K.samples={...__DATA__("data/piano-samples.json"),file:__FILE__("data/piano-samples.mp3")}; const PS=K.samples.s.map(r=>r[0]);
-  K.sample=e=>{ const m=e.n, v=Math.max(.05,Math.min(1,e.v)); let m0=PS[0]; for(const k of PS)if(Math.abs(k-m)<Math.abs(m0-m))m0=k; return [{k:m0,rate:Math.pow(2,(m-m0)/12),gain:1.1*Math.pow(v,1.5),lp:900+15000*v*v,id:m,re:true}]; };
+  // the recordings: the Salamander grand, every third note (as it was recorded) at three loudnesses, each played at the nearest one's speed, the nearest loudness up or down to the touch; a key let go, its damper heard falling
+  K.samples={...__DATA__("data/piano-samples.json"),file:__FILE__("data/piano-samples.mp3")};
+  const VL=[.3,.6,.95];
+  K.sample=(e,P,S)=>{ const m=e.n, v=Math.max(.05,Math.min(1,e.v)), L=v<.45?0:v<.78?1:2, n=GSND.near(S,'p'+L,m); return n?[{...n,gain:1.25*Math.pow(v/VL[L],1.1),lp:3000+15000*v*v,id:m,re:true}]:[]; };
   K.sound=e=>[hit(e.n,Math.max(.08,Math.min(1,e.v)))];
-  K.release=(e,P)=>{ if(e.n>88)return []; if(P&&P.st.ped){ (P.st.held||(P.st.held=new Set())).add(e.n); return []; } return [{k:'damp',id:e.n,T:.1+(88-e.n)*.004}]; };
+  K.release=(e,P)=>{ if(e.n>88)return []; if(P&&P.st.ped){ (P.st.held||(P.st.held=new Set())).add(e.n); return []; } return [{k:'damp',id:e.n,T:.1+(88-e.n)*.004,rel:.01+.025*Math.max(.1,Math.min(1,e.v))}]; };
   K.hush=P=>{ const o=[]; for(let m=LO;m<=HI;m++)o.push({k:'damp',id:m,T:.25}); if(P.st.held)P.st.held.clear(); return o; };
   const pedal=(P,d)=>{ P.st.ped=d; if(!d&&P.st.held){ const down=new Set(P.live.ev.filter(e=>e.d>1e6).map(e=>e.n)), out=[]; for(const m of P.st.held)if(!down.has(m))out.push({k:'damp',id:m,T:.12+(88-m)*.004}); P.st.held.clear(); INSTR.raw(P,out); } };
 

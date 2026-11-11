@@ -10,6 +10,7 @@ const TOONS={};
   const HR=.33, HC=[0,.31,.015], Z=new V3(0,0,1), face=(o,p)=>{ o.quaternion.setFromUnitVectors(Z,new V3(...p).normalize()); return o; };
   // the tomato's skin at a point of the unit sphere: six soft lobes, a dimple under the calyx, a flatter base
   const lobe=(x,y,z)=>{ const a=Math.atan2(x,z), s=Math.sqrt(Math.max(0,1-y*y)); return 1+.035*Math.cos(a*6)*Math.pow(1-Math.abs(y),1.5)-.06*Math.pow(Math.max(0,y),8)*0-.05*Math.max(0,y-.86)/.14; };
+  const skirt=(...a)=>{ const m=mk(...a); m.userData.skirt=1; return m; };
   const model=()=>{ const sk=MERCH.skel({hipY:.9,waist:.06,neck:.42,shX:.235,shY:.37,upper:.3,fore:.28,hipX:.1,thigh:.43,shin:.44}), {B}=sk;
     /* the head: a big glossy tomato, deep red underneath, bright where the light falls, freckled with little gold dots on one cheek and the brow */
     const H=grp(B.head,HC);
@@ -53,8 +54,8 @@ const TOONS={};
       const Th=grp(Hd,[-s*.03,-.05,.015],[.4,0,s*.7]); mk(Th,MERCH.K.CAP(.009,.04,3,8),GL,[0,-.025,0]); }
     /* the apron: a wide yellow bib and skirt hanging from the chest to the shins, freckled with tiny brown dots, a pale label stitched on at the top */
     { const ap=(u,v)=>{ const n=fbm(u*14,v*14,3), d=hash3(Math.round(u*90),Math.round(v*160),5)>.97; return d?C('#8a6a3a'):mix(APRON,APROND,n*.35-.05+v*.08); };
-      mk(B.torso,ribbon([[0,.34,.175],[0,.22,.195],[0,.08,.2],[0,-.06,.2]],.36,16,16,ap,{out:()=>[0,0,1],lift:.02,wave:(u,v)=>-u*u*.35}),'skin:vc');
-      mk(B.hips,ribbon([[0,.0,.2],[0,-.2,.225],[0,-.42,.255],[0,-.62,.28],[0,-.74,.29]],.6,30,24,(u,v)=>ap(u,v+1),{out:()=>[0,0,1],lift:.004,wave:(u,v)=>-u*u*.55*(1-v*.3)+.008*Math.sin(u*20+v*4)*v}),'skin:vc');
+      mk(B.torso,ribbon([[0,.34,.175],[0,.22,.195],[0,.08,.2],[0,-.06,.2]],.36,16,16,ap,{out:()=>[0,0,1],lift:.02,wave:(u,v)=>-u*u*.6+.006*Math.sin(u*12)}),'skin:vc');
+      skirt(B.hips,ribbon([[0,.0,.2],[0,-.2,.225],[0,-.42,.255],[0,-.62,.28],[0,-.74,.29]],.6,30,24,(u,v)=>ap(u,v+1),{out:()=>[0,0,1],lift:.004,wave:(u,v)=>-u*u*.95*(1-v*.25)+.016*Math.sin(u*13+v*3)*(.3+v)}),'skin:vc');
       mk(B.torso,new THREE.BoxGeometry(.05,.02,.003),'cloth:#bfd6b0',[.07,.3,.21],[-.1,0,.05]);
       for(const s of [1,-1])mk(B.torso,ribbon([[s*.17,.33,.165],[s*.2,.38,.05],[s*.15,.42,-.07]],.022,10,2,()=>APRON,{lift:.006}),'cloth:vc');
       mk(B.hips,MERCH.K.lathe([[.226,.03],[.226,-.01]],2,28,.82),'cloth:#d9ab3c'); }

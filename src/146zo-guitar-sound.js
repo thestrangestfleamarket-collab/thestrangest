@@ -57,8 +57,34 @@ registerProcessor('guitar',Guitar);`;
   GSND.SRC=SRC; GSND.PM=PM;   // (for the check: each string's pitch rendered offline and measured)
   GSND.now=()=>GSND.ctx?GSND.ctx.currentTime:0;
   // a pluck: string s (1 the high E) at fret k, at audio time when, pulled amp (0..1), bright 1 the nail and .5 the thumb's flesh, at a fraction pos of the string from the bridge
-  GSND.pluck=(V,s,k,when,amp,bright,pos)=>{ if(!V)return; const q=PM[s-1]; V.at=performance.now(); V.node.port.postMessage({ev:[{t:when,k:'pluck',s:s-1,hz:gtHz(s,k),g:q.g,a:q.a,ap:q.ap,amp:Math.min(1,amp)*.9,bright,pos:Math.max(.05,Math.min(.5,pos))}]}); };
-  GSND.mute=(V,s,when,v=.25)=>{ if(V)V.node.port.postMessage({ev:[{t:when,k:'mute',s:s-1,v}]}); };
+  /* ---------- recorded sounds (owner, 8 and 10 Nov 2026: "real sounds"): data/<id>-samples.mp3 and .json (tools/instrument-samples-bake.py), fetched and decoded the first time someone near plays; a sound's key a midi number or "group:midi" ---------- */
+  const SETS={}; GSND.SETS=SETS;
+  GSND.set=(id,D)=>{ const S=SETS[id]||(SETS[id]={ok:false,busy:false,retry:0}); if(S.ok||S.busy||!D||!GSND.ctx||performance.now()<S.retry)return S; S.busy=true;
+    fetch(D.file).then(r=>{ if(!r.ok)throw new Error(r.status); return r.arrayBuffer(); }).then(b=>GSND.ctx.decodeAudioData(b)).then(buf=>{ const x=buf.getChannelData(0), sr=buf.sampleRate; S.at={}; S.grp={};
+      // (each sound from where it really begins: an mp3 shifts its contents a little)
+      for(const [k,t,L] of D.s){ const i0=Math.max(0,Math.floor((t-.08)*sr)), i1=Math.min(x.length,Math.floor((t+.1)*sr)); let pk=0; for(let i=i0;i<i1;i++)pk=Math.max(pk,Math.abs(x[i])); let i=i0; while(i<i1&&Math.abs(x[i])<pk*.06)i++; S.at[k]={t:Math.max(0,(i-24)/sr),L};
+        const c=String(k).indexOf(':'), g=c<0?'':String(k).slice(0,c); (S.grp[g]||(S.grp[g]=[])).push(+String(k).slice(c+1)); }
+      S.buf=buf; S.ok=true; }).catch(e=>{ console.warn(id+' sounds',e); S.retry=performance.now()+15000; }).finally(()=>{ S.busy=false; });
+    return S; };
+  // the nearest recording in a group to a note, and how fast to play it to sound that note
+  GSND.near=(S,g,m)=>{ const L=S.grp&&S.grp[g]; if(!L||!L.length)return null; let m0=L[0]; for(const k of L)if(Math.abs(k-m)<Math.abs(m0-m))m0=k; return {k:g?g+':'+m0:m0,rate:Math.pow(2,(m-m0)/12)}; };
+  GSND.fade=(o,when,T)=>{ if(o.end<=when)return; o.g.gain.cancelScheduledValues(when); o.g.gain.setTargetAtTime(0,when,T/3); try{ o.src.stop(when+T*2); if(o.lfo)o.lfo.stop(when+T*2); }catch(_){} o.end=when; };
+  // a recording into a voice: h {k, rate, gain, lp, off (start that far in), fin (fade in), xf (how fast it cuts the one it replaces), vib [cents, hz], sw (a held note's swell), id/re (cuts its own last), ch (cuts its group's)}
+  GSND.play=(V,S,h,when)=>{ const A=S.at[h.k]; if(!A)return null; const c=GSND.ctx, L=V.on||(V.on=[]); V.at=performance.now();
+    for(const o of L)if((h.re&&o.id===h.id)||(h.ch!=null&&o.ch===h.ch))GSND.fade(o,when,h.xf||.04);
+    const src=c.createBufferSource(); src.buffer=S.buf; src.playbackRate.value=h.rate||1; let n=src; if(h.lp){ const f=c.createBiquadFilter(); f.type='lowpass'; f.frequency.value=h.lp; f.Q.value=.4; src.connect(f); n=f; }
+    const g=c.createGain(), G=g.gain, off=Math.min(h.off||0,A.L*.5); n.connect(g); g.connect(V.g);
+    if(h.fin){ G.setValueAtTime(0,when); G.linearRampToValueAtTime(h.gain,when+h.fin); } else G.setValueAtTime(h.gain,when);
+    if(h.sw){ G.setTargetAtTime(h.gain*(1+h.sw),when+(h.fin||0)+.05,h.swT||.4); }
+    let lfo=null; if(h.vib){ lfo=c.createOscillator(); lfo.frequency.value=h.vib[1]; const d=c.createGain(); d.gain.setValueAtTime(0,when); d.gain.linearRampToValueAtTime(0,when+.25); d.gain.linearRampToValueAtTime(h.vib[0],when+.7); lfo.connect(d); d.connect(src.detune); lfo.start(when); lfo.stop(when+A.L+.1); }
+    src.start(when,A.t+off,A.L-off); const o={src,g,lfo,id:h.id,ch:h.ch,end:when+(A.L-off)/(h.rate||1)}; L.push(o);
+    src.onended=()=>{ const i=L.indexOf(o); if(i>=0)L.splice(i,1); try{ g.disconnect(); }catch(_){} }; return o; };
+  // the guitar's recordings: a nylon-string classical, each string's note from the nearest; a string plucked again stops its last ring, a hand on it damps it; the strings' model plays till they come
+  const GS={...__DATA__("data/guitar-samples.json"),file:__FILE__("data/guitar-samples.mp3")}; GSND.GS=GS;
+  GSND.pluck=(V,s,k,when,amp,bright,pos)=>{ if(!V)return; const S=GSND.set('guitar',GS);
+    if(S.ok){ const hz=gtHz(s,k), n=GSND.near(S,'',69+12*Math.log2(hz/440)); if(n){ const a=Math.min(1,amp)*(.93+.14*Math.random()); GSND.play(V,S,{...n,gain:1.5*Math.pow(a,.85),lp:1500+9000*bright*(.45+.55*a)*(1.15-Math.max(.05,Math.min(.5,pos))),id:'s'+s,re:true,xf:.03},when); return; } }
+    const q=PM[s-1]; V.at=performance.now(); V.node.port.postMessage({ev:[{t:when,k:'pluck',s:s-1,hz:gtHz(s,k),g:q.g,a:q.a,ap:q.ap,amp:Math.min(1,amp)*.9,bright,pos:Math.max(.05,Math.min(.5,pos))}]}); };
+  GSND.mute=(V,s,when,v=.25)=>{ if(!V)return; V.node.port.postMessage({ev:[{t:when,k:'mute',s:s-1,v}]}); for(const o of V.on||[])if(o.id==='s'+s)GSND.fade(o,when,v>=.2?.16:.05); };
   GSND.setVol=v=>{ GSND.vol=Math.max(0,Math.min(1,v)); try{ SAVE.set('gtvol',String(GSND.vol)); }catch(e){} if(GSND.out)GSND.out.gain.setTargetAtTime(GSND.vol,GSND.ctx.currentTime,.05); };
   // where a voice is heard from: its player's place against yours and the way the view looks (louder near, gone past about 18 m)
   GSND.place=(V,x,z)=>{ if(!V||!GSND.ctx)return; const c=GSND.ctx, d=Math.hypot(x-pos.x,z-pos.z)/TILE*.84, k=/^me\b/.test(V.who)?1:Math.max(0,1-d/18)**2;

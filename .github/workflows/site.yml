@@ -123,6 +123,8 @@ jobs:
           k crt     'src/150fa|src/150a|src/150d|data/tv\.json|crt\.cjs'
           k sound   'src/091-sfx|src/093-|src/100-use|src/146zo-|src/150p-cars|src/150pb-|src/150pcb-|data/sfx|sound\.cjs'
           k clock   'src/134b|worker/clock|clock\.cjs'
+          k nightsky 'src/132-sky|src/134b[a-c]|src/150f[c-j]|worker/clock|data/scope\.json|nightsky\.cjs'
+          k observatory 'src/059i|src/150f[dhk]|worker/door|observatory\.cjs'
           k westst  'src/023|src/05[89]-|src/059[e-h]|westst'
           k pfrow   'src/068a|src/059i|src/069a|data/street|tools/row-lay|pfrow'
           k loadscreens 'src/006-map-pre|src/008-batch|src/009-down|tools/recover|loadscreens'
@@ -434,6 +436,14 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' clock')
         run: node tests/clock.cjs
+      - name: The night sky (one sky, the planets, stargazing, the Messier catalogue, the field telescope)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' nightsky')
+        run: node tests/nightsky.cjs dist/market.html
+      - name: The observatory (the dome in the park, the shared telescope, its goals)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' observatory')
+        run: node tests/observatory.cjs dist/market.html
       - name: West St faces its street (every door and way out)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' westst')

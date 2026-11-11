@@ -34,9 +34,10 @@ const TOUR=[
     ROOMS.enter('arcade'); if(!await U(()=>ARCDBG().built&&!(window.FADE&&FADE.busy)))return 'the arcade did not build'; const P=STORE.holo.programs.find(p=>p.name==='ROAM'); STORE.holo.start(P); return await U(()=>ROAMDBG().on&&ROAMDBG().chunks>100&&!(window.FADE&&FADE.busy)); },
     async()=>{ STORE.holo.end(); for(const t=Date.now();Date.now()-t<30000&&(ROAMDBG().on||(window.FADE&&FADE.busy));)await new Promise(r=>setTimeout(r,250)); ROOMS.exit('arcade'); for(const t=Date.now();Date.now()-t<30000&&(window.FADE&&FADE.busy);)await new Promise(r=>setTimeout(r,250)); }],
   ['bath house','x-bath',async()=>{ const U=async(f,ms=90000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
-    const G=__dbg.MAPK.BOD.GD, B=__dbg.MAPK.BOD; STORE.goTo(B.X(G.door[0]),B.Z(G.door[1]+2),'up'); if(!await U(()=>G.built()))return 'the bath house\'s inside was not built from the street (its door is open)';
-    STORE.goTo(B.X(G.door[0]),B.Z(G.door[1]-2),'up'); return await U(()=>G.inside(),10000); },
-    async()=>{ const G=__dbg.MAPK.BOD.GD, B=__dbg.MAPK.BOD; STORE.goTo(B.X(G.door[0]),B.Z(G.door[1]+2),'up'); }],
+    const G=__dbg.MAPK.BOD.GD, B=__dbg.MAPK.BOD; STORE.goTo(B.X(G.door[0]),B.Z(G.door[1]+2),'up'); const s=G.inside()?-1:1; window.__bathOut=s;   // which side of its door is the street (the bath house can face either way)
+    STORE.goTo(B.X(G.door[0]),B.Z(G.door[1]+2*s),'up'); if(!await U(()=>G.built()))return 'the bath house\'s inside was not built from the street (its door is open)';
+    STORE.goTo(B.X(G.door[0]),B.Z(G.door[1]-2*s),'up'); return await U(()=>G.inside(),10000); },
+    async()=>{ const G=__dbg.MAPK.BOD.GD, B=__dbg.MAPK.BOD, s=window.__bathOut||1; STORE.goTo(B.X(G.door[0]),B.Z(G.door[1]+2*s),'up'); }],
   ['art museum','x-art',async()=>{ const U=async(f,ms=120000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
     STORE.enter('art',true); return await U(()=>STORE.art&&STORE.art.hung>0&&!(window.FADE&&FADE.busy)); },async()=>{ STORE.exit('art'); for(const t=Date.now();Date.now()-t<30000&&(window.FADE&&FADE.busy);)await new Promise(r=>setTimeout(r,250)); }],
 ];

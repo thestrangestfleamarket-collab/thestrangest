@@ -838,6 +838,20 @@
    "y1": 163.76,
    "face": "s",
    "park": true
+  },
+  {
+   "id": "observatory",
+   "name": "THE OBSERVATORY",
+   "kind": "front",
+   "x0": 136,
+   "x1": 144,
+   "y0": 116,
+   "y1": 124,
+   "face": "w",
+   "park": true,
+   "inW": 16,
+   "inD": 16,
+   "inH": 200
   }
  ],
  "shells": [],
@@ -852,9 +866,9 @@
   {
    "id": "c2",
    "model": "convertible-60s",
-   "x": 279.1,
-   "y": -67,
-   "hd": 90
+   "x": -27.5,
+   "y": 56,
+   "hd": 0
   },
   {
    "id": "c3",
@@ -981,8 +995,8 @@
    "watch": "the dungeon stair (owner, 10 Nov 2026: towers near anything that has monsters or danger in the park)"
   },
   "tower5": {
-   "x": 186,
-   "y": 104,
+   "x": 190,
+   "y": 107,
    "watch": "the big lake's west shore and its ice"
   },
   "tower6": {
@@ -1191,6 +1205,14 @@
     "w": 6,
     "d": 8,
     "note": "where the island's footbridge lands: no trees here"
+   },
+   {
+    "id": "observatory",
+    "x": 140,
+    "y": 120,
+    "w": 32,
+    "d": 32,
+    "note": "the public observatory (owner, 10 Nov 2026): the dome and the lawn round it; no trees or paths here"
    },
    {
     "id": "orchard",

@@ -63,6 +63,13 @@ const SHOTS = process.argv[3];
     await pg.waitForTimeout(1400); await shot('5-swing'); await pg.waitForTimeout(400);
     await hold(' ', 1500); await wait(() => !RIDE.on && !!(__dbg.ST.water && __dbg.ST.water.in), 60000); m = await me();
     ok(!m.ride && m.swim, 'you let go and drop into the pool (' + JSON.stringify(m) + ')');
+    // the bats: the falls' roost has its own, out at dark (the creatures' bats)
+    ok(await wait(() => __dbg.NPCS.filter(n => n.key === 'bat').length >= 4, 120000), 'four bats keep the falls\' roost (' + await ev(() => __dbg.NPCS.filter(n => n.key === 'bat').length) + ')');
+    // a cairn on the lip: double click it and a stone goes on, the same count for everyone (world cairn:0)
+    const c0 = await ev(() => FALLS.cairns[0] && FALLS.cairns[0].h);
+    await ev(() => __dbg.UI.things.find(t => t.name === 'A CAIRN').act());
+    const c1 = await ev(() => ({ h: FALLS.cairns[0].h, n: FALLS.cairns[0].n, w: (ONLINE.world || {})['cairn:0'] }));
+    ok(c1.n === 1 && c1.h > c0 && +c1.w === 1, 'setting a stone raises the cairn and counts it for the section (' + JSON.stringify(c1) + ')');
   }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 4).join(' | ') : ''));
   await b.close(); console.log(fails.length ? fails.length + ' FAILED' : 'all ok'); process.exit(fails.length ? 1 : 0);

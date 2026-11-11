@@ -15,3 +15,4 @@ data/full/sfx/*/
 data/full/cmu/
 data/full/copies/img/
 !src/door/icon-*.png
+!data/full/sfx/shared/

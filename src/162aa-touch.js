@@ -1,6 +1,8 @@
 // THE TOUCH PAD: on a phone or tablet, an on-screen stick and buttons that drive PAD as a controller would; hidden while a real controller plays.
+import {SHARED} from './003-shx.js';
 import {UI, VR} from './003b-systems.js';
-import {renderer} from './004-main.js';
+import {renderer, resize} from './004-main.js';
+import {SAVE} from './005-save.js';
 import {SYS} from './006-map-pre.js';
 import {PAD} from './075-main-13.js';
 {
@@ -72,7 +74,8 @@ body.touch #hqb:not([style*="top:"]){zoom:var(--tq,1)!important;left:calc(var(--
     b.addEventListener('pointerup',up); b.addEventListener('pointercancel',up); }
   addEventListener('contextmenu',e=>{ if(document.body.classList.contains('touch')&&!/^(INPUT|TEXTAREA)$/.test(e.target.tagName))e.preventDefault(); },true);
   let full=false;
-  const first=()=>{ document.body.classList.add('touch'); };
+  const first=()=>{ document.body.classList.add('touch');
+    try{ if(SAVE.get('res')==null&&QS.get('res')==null){ SHARED.RESI=0; SAVE.set('res','0'); resize(); } }catch(e){} };   // a phone or tablet starts at LOW resolution (owner, 8 Nov 2026); DISPLAY raises it
   const goFull=()=>{ if(full||!document.documentElement.requestFullscreen||document.fullscreenElement)return; full=true;   // the first touch takes the whole screen, held sideways, as a phone game does
     document.documentElement.requestFullscreen({navigationUI:'hide'}).then(()=>screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape')).catch(()=>{}); };
   addEventListener('pointerdown',e=>{ if(e.isTrusted&&e.pointerType==='touch'){ if(!document.body.classList.contains('touch'))first(); goFull(); show(true); } },true);

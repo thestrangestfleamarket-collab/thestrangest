@@ -91,7 +91,7 @@ const MERCH={list:[],SURF:{plain:0,knit:1,cloth:2,denim:3,leather:4,metal:5,skin
   /* ---------- a merchant: def {key, label, height (m), model()->skel with parts, at, size (x/10 of a person, the owner's scale), idle(t,N)->rig pose, after(B,N,dt), lift(t)} ---------- */
   MERCH.add=def=>{ if(ARCH.has(def.key))return null; K.Q=MERCH.LOD!==1?MERCH.LOD:def.q??1; const S=def.model(); K.Q=1;   // an archived character gets no body
     const O=restOf(S), body={key:def.key,label:def.label,height:def.height,hipY:S.q.hipY,off:offOf(S.B),binv:BONES.map(n=>new THREE.Matrix4().makeTranslation(-O[n].x,-O[n].y,-O[n].z)),rest:O,at:def.at??0,geo:()=>MERCH.bake(S),
-      size:(def.size||10)/10,smooth:true,idle:def.idle,after:def.after,lift:def.lift,hd:def.hd,ride:def.ride,rideSpeed:def.rideSpeed,root:def.inside?scene:null};
+      size:(def.size||10)/10,smooth:true,idle:def.idle,after:def.after,lift:def.lift,hd:def.hd,ride:def.ride,rideSpeed:def.rideSpeed,root:def.root||(def.inside?scene:null),ground:def.ground};
     BODIES.add(body); MERCH.list.push(body); return body; };
   // where a point on one of a body's bones (metres, in the bone's own frame) is in the world, as posed this frame: for things held or worn
   MERCH.at=(N,bone,p,out)=>{ const o=N.body&&N.body.rest&&N.body.rest[bone]; out.set(p[0]+(o?o.x:0),p[1]+(o?o.y:0),p[2]+(o?o.z:0)).applyMatrix4(N.PM.value[BONES.indexOf(bone)]).applyMatrix4(N.g.matrixWorld); return out; };

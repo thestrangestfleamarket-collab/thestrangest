@@ -11,7 +11,7 @@ const FACADES={night:{value:0},made:0,tris:0,near:[]};
       sh.fragmentShader='uniform float uNight; varying float vGlow;\n'+sh.fragmentShader.replace('#include <opaque_fragment>','outgoingLight+=diffuseColor.rgb*vGlow*uNight*1.6;\n#include <opaque_fragment>'); };
     MS.customProgramCacheKey=()=>'facade1';
     MG=new THREE.MeshPhongMaterial({color:0xb8ccd8,specular:0xffffff,shininess:110,transparent:true,opacity:.12,depthWrite:false,side:THREE.DoubleSide}); };
-  SYS.add('life',()=>{ const h=CLOCK.h??12, c=x=>Math.max(0,Math.min(1,x)); FACADES.night.value=1-c((h-6.5)/1.5)*c((19.5-h)/1.5); },'038zc-facades');
+  SYS.add('life',()=>{ FACADES.night.value=CLOCK.elev?Math.max(0,Math.min(1,(1-CLOCK.elev())/8)):0; },'038zc-facades');
   // the rich fronts' carved stone shows only near (o.rich.near tiles); farther the plain front stands alone
   let nt=0; SYS.add('places',dt=>{ if((nt-=dt||0)>0)return; nt=.25; for(const n of FACADES.near){ const v=Math.hypot(pos.x-n.x,pos.z-n.z)<n.r; if(n.g.visible!==v)n.g.visible=v; } },'038zc-facades near');
   // the rich fronts' walls: brick laid in running bond, and rusticated stone for the base, each a tile-able picture (TX tiles across)

@@ -7,7 +7,7 @@ import {ROOMK} from './150a-bedroom.js';
     const rings=[[1,'#cdb9a0'],[.86,'#b99f84'],[.8,'#d8c8b2'],[.55,'#a88c74'],[.5,'#dccdb8'],[.2,'#b9a189']]; for(const [r,c] of rings){ g.fillStyle=c; g.beginPath(); g.arc(C,C,r*C,0,7); g.fill(); }
     let s=7; const rnd=()=>{ s=(s*16807)%2147483647; return (s-1)/2147483646; };
     for(let i=0;i<26000;i++){ const a=rnd()*6.283, d=Math.sqrt(rnd())*C; g.fillStyle=rnd()<.5?'rgba(255,250,240,.10)':'rgba(70,50,30,.10)'; g.fillRect(C+Math.cos(a)*d,C+Math.sin(a)*d,1.4,1.4); }
-    RT=new THREE.CanvasTexture(cv); RT.colorSpace=THREE.SRGBColorSpace; RT.anisotropy=4; return RT; };
+    RT=new THREE.CanvasTexture(cv); RT.colorSpace=THREE.SRGBColorSpace; return RT; };
   ROOMK.parts.push(c=>{ '@apts'; const {part,mat,rbox,cap,cur,solid,Lx,Ly}=c, p=(geo,m,u,h,v,ry=0,par=cur(),cast=true)=>part(geo,m,u,h,v,ry,par,cast);
     const TU=Lx-.64, TV=Ly-.34, RU=TU, RV=TV-2.7;   // the TV in its corner facing the room; the chair 2.7 m in front of it
     // the round rug between them, a finger thick, its pile soft at the edge

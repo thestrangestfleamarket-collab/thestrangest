@@ -144,7 +144,9 @@ const RDX=x=>(x-SHARED.BOD.XS(0))/(SHARED.BOD.XS(1)-SHARED.BOD.XS(0)), RDZ=z=>(z
   xingAt=(x,y)=>{ const R=SHARED.BOD.road; return R&&R.xw?R.xw.find(w=>{ const u=w.ax==='x'?x:y, v=w.ax==='x'?y:x; return u>=w.a0&&u<=w.a1&&v>=w.l0-.5&&v<=w.h0+.5; }):null; },
   inRoad=(x,z)=>{ const R=SHARED.BOD.road; return !!(R&&R.at(RDX(x),RDZ(z))); },
   stroad=(x,z)=>inRoad(x,z)&&!xingAt(RDX(x),RDZ(z)),
-  pedfree=(x,z,R)=>stfree(x,z,R)&&!stroad(x,z);
+  pedfree=(x,z,R)=>stfree(x,z,R)&&!stroad(x,z),
+  // stepping off the kerb onto the lit crossing while it does not say WALK: wait
+  pedHold=(x0,z0,x1,z1)=>{ if(inRoad(x0,z0)||!inRoad(x1,z1))return false; const w=xingAt(RDX(x1),RDZ(z1)), R=SHARED.BOD.road; return !!(w&&w.lit&&R.walk&&!R.walk()); };
 window.PEDFREE=pedfree; window.STROAD=stroad;
 const ROAM={L:STLANE,wallZ:SHARED.BOD.ZS(PARK.y0+PARK.oy),gate:[SHARED.BOD.XS(PARK.gate[0]+PARK.ox+.8),SHARED.BOD.XS(PARK.gate[1]+PARK.ox-.8)]};
 window.ROAMDBG=()=>ROAM;
@@ -222,7 +224,8 @@ SYS.add('near',(x,z)=>NPCS.near(x,z),'npc shading');
   // someone in the way (8 Nov 2026): would N standing at x,z overlap another character, a standing body or a player near you, and closer than it is now (so two who overlap can always part)
   const live=X=>X.on!==false&&X.st&&X.g&&(X.g.visible||X._cv)&&X.mode!=='hidden'&&!X.rag&&!X.far&&!X.fly&&!X.tiny&&X.st.inT==null;
   NPCS.inway=(N,x,z)=>{ const st=N.st, lv=N.lv||'up', R=st.R, ns=N.nose?N.nose(x,z):null;
-    for(const q of NPCS){ if(q===N||q.far||q.lv!==lv||q.key==='dragon'||q.fly||q.tiny||q.mode==='hidden'||!q.blocks)continue; if((q.blocks(x,z,R)||ns&&q.blocks(ns.x,ns.z,R))&&q.gap(x,z)<q.gap(st.x,st.z))return true; }
+    for(const q of NPCS){ if(q===N||q.far||q.lv!==lv||q.key==='dragon'||q.fly||q.tiny||q.mode==='hidden'||!q.blocks||N.pet&&q.pet)continue;   // (pets never wait for each other)
+      if((q.blocks(x,z,R)||ns&&q.blocks(ns.x,ns.z,R))&&q.gap(x,z)<q.gap(st.x,st.z))return true; }
     for(const X of NPCS.extra){ if(X===N||!live(X)||(X.lv||'up')!==lv)continue; const s=X.st, r=(s.R||.3)+R, d=Math.hypot(s.x-x,s.z-z); if(d<r&&d<Math.hypot(s.x-st.x,s.z-st.z))return true; }
     if(ONLINE.others&&lv===SHARED.LVL)for(const o of ONLINE.others.values()){ if(o.why!=='near you'||!o.p||o.dead)continue; const d=Math.hypot(o.p.x-x,o.p.z-z); if(d<R+.3&&d<Math.hypot(o.p.x-st.x,o.p.z-st.z))return true; }
     return false; };

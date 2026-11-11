@@ -16,16 +16,17 @@ __CODE__("worker/dunmobs.js")
     purple:{c:0xb058ff,hp:5,v:1.3,dmg:.05,s:1.14,loot:.45,sk:[15,65],nm:'PURPLE',p:15,see:3.6},red:{c:0xff4434,hp:7,v:1.5,dmg:.07,s:1.24,loot:.6,sk:[30,80],nm:'RED',p:25,see:4.2}};
   INSPECT.kinds.push({is:id=>/^slime_/.test(id)&&!!TIER[id.slice(6)],make:id=>{ const g=INSPECT.shape('bottle',0xd8e8e0); g.add(INSPECT.part('cyl',TIER[id.slice(6)].c,0,.08,0,.052,.15,.052,0,0,1)); return g; }});
   FORAGE.add({names:Object.fromEntries(Object.keys(TIER).map(k=>['slime_'+k,'BOTTLE OF '+TIER[k].nm+' SLIME'])),prices:Object.fromEntries(Object.keys(TIER).map(k=>['slime_'+k,TIER[k].p]))});
-  const STRIKES=(()=>{ const STR=/jab|cross|upper|hook|slap|punch|kick|sweep|round/i, T=TILE; let last=null, swT=0, swAt=0, swing={}, fr=-1, cache=[];   // your strikes, read by every mob system (the dungeon's, the cave's golems, the sparring ring): one list a frame, the same for every reader
+  const STRIKES=(()=>{ const STR=/jab|cross|upper|hook|slap|punch|kick|sweep|round/i, T=TILE; let last=null, swT=0, swAt=0, swing={}, fr=-1, cache=[], AT=[];   // your strikes, read by every mob system (the dungeon's, the cave's golems, the sparring ring): one list a frame, the same for every reader
     SYS.add('strike',()=>{ const now=performance.now(); if(WIELD.sword&&now-swT>150){ swT=now; swing=WIELD.swing||{}; swAt=now+(swing.heavy?140:90); } },'146b-dunmobs');
     let paid=null; SYS.add('life',()=>{ const s=(st.up&&STR.test(st.up.name)&&st.up)||(st.move&&STR.test(st.move.name)&&st.move); if(!s){ paid=null; return; } if(s===paid)return; paid=s;   // a punch or kick costs stamina; winded, it lands weak
       s.winded=VIT.sta<.08; VIT.spend(/kick|sweep|round/i.test(s.name)?.07:.04); VIT.inFight(5); },'146b-dunmobs');
     const strikes=()=>{ const f=renderer.info.render.frame; if(f===fr)return cache; fr=f; const out=cache=[], s=(st.up&&STR.test(st.up.name)&&st.up)||(st.move&&STR.test(st.move.name)&&st.move);
       if(s&&s!==last&&s.t>=.08){ last=s; const k=/kick|sweep|round/i.test(s.name); out.push({r:(k?1.15:1)*T,d:(k?1.5:1)*(s.winded?.6:1)}); }
-      if(swAt&&performance.now()>=swAt){ swAt=0; if(WIELD.sword){ const h=!!swing.heavy, d=(+ITEMS.prop(WIELD.on,'damage')||2)*(h?1.5:1)*(swing.winded?.6:1); out.push({r:(h?1.8:1.55)*T,d,kb:h?1.8:1,sk:'sword',heavy:h,ax:swing.ax,az:swing.az}); } } return out; };
-    const inCone=(s,x,z,y,rad)=>{ const dx=x-pos.x, dz=z-pos.z, d=Math.hypot(dx,dz); if(Math.abs(y-SHARED.py)>1.4*T||d>s.r+rad)return false; const a=Math.hypot(s.ax||0,s.az||0), fx=a>.1?s.ax/a:Math.sin(SHARED.heading), fz=a>.1?s.az/a:Math.cos(SHARED.heading); return d<.35*T||(dx*fx+dz*fz)/d>.3; };   // a blade cuts where it was aimed
-    const strength=s=>(1+(FORAGE.sk(s&&s.sk||'fight')||0)/100)*FORAGE.dmgK(), landed=s=>{ if(s)FORAGE.use(s.sk||'fight',-10,70); };   // a blow that lands teaches SWORDSMANSHIP or MARTIAL ARTS
-    return {strikes,inCone,strength,landed}; })(); window.STRIKES=MODS.strikes=STRIKES;
+      if(swAt&&performance.now()>=swAt){ swAt=0; if(WIELD.sword){ const h=!!swing.heavy, d=(+ITEMS.prop(WIELD.on,'damage')||2)*(h?1.5:1)*(swing.winded?.6:1); out.push({r:(h?1.8:1.55)*T,d,kb:h?1.8:1,sk:'sword',heavy:h,ax:swing.ax,az:swing.az}); } } if(AT.length){ out.push(...AT); AT.length=0; } return out; };
+    const inCone=(s,x,z,y,rad)=>{ if(s.at)return Math.abs(y-s.at.y)<1.6*T&&Math.hypot(x-s.at.x,z-s.at.z)<s.r+rad; const dx=x-pos.x, dz=z-pos.z, d=Math.hypot(dx,dz); if(Math.abs(y-SHARED.py)>1.4*T||d>s.r+rad)return false; const a=Math.hypot(s.ax||0,s.az||0), fx=a>.1?s.ax/a:Math.sin(SHARED.heading), fz=a>.1?s.az/a:Math.cos(SHARED.heading); return d<.35*T||(dx*fx+dz*fz)/d>.3; };   // a blade cuts where it was aimed
+    const strength=s=>(1+(FORAGE.sk(s&&s.sk||'fight')||0)/100)*FORAGE.dmgK(), landed=s=>{ if(s&&!s.at)FORAGE.use(s.sk||'fight',-10,70); };   // a blow that lands teaches SWORDSMANSHIP or MARTIAL ARTS
+    const hitAt=(x,y,z,r,d,kb)=>{ AT.push({at:{x,y,z},r,d,kb:kb||1,sk:'arms'}); };   // a shot or a blast at a point (146hc): every reader takes it as a blow there
+    return {strikes,inCone,strength,landed,hitAt}; })(); window.STRIKES=MODS.strikes=STRIKES;
   const init=()=>{ '@dungeon'; const T=TILE, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, say=SAY, G=new THREE.Group(), PK=new THREE.Group(); PK.visible=false; MAPG.dungeon.add(G); scene.add(LEVELS.own(PK,'dungeon'));
   const MIX={1:{green:.7,blue:.3},2:{green:.3,blue:.5,purple:.2},3:{blue:.4,purple:.4,red:.2},4:{purple:.5,red:.5},5:{purple:.2,red:.8}};
   const tierAt=n=>{ const W=MIX[Math.min(5,Math.max(1,n))]; let r=Math.random(); for(const k in W)if((r-=W[k])<0)return k; return Object.keys(W).pop(); };
@@ -140,13 +141,14 @@ __CODE__("worker/dunmobs.js")
   const dm=()=>{ live=LIVE; if(!trying)apply(live); };
   ONLINE.hear.dmres=m=>say(m.ok?'THE DUNGEON IS PUBLISHED: '+(m.n|0)+' CREATURE KINDS.':'NOT PUBLISHED: '+String(m.why||'').toUpperCase(),m.ok?'#b8f0a0':'#e8a090');
   ONLINE.hear.mobkill=m=>{ if(!trying)won(m); };
+  const TAMEW=new Map(); ONLINE.hear.mobtamed=m=>{ const r=TAMEW.get(m.i); if(r){ TAMEW.delete(m.i); r(!!m.ok); } };
   ONLINE.hear.mobres=m=>{ if(m.res==='blocked')say('IT BLOCKS YOUR BLOW.','#c8c2b0'); };
   const felt=e=>{ if(VIT.dead)return; if(VIT.hurt(+e.d||0,{x:+e.x||pos.x,z:+e.z||pos.z})===2){ if(remote)ONLINE.send({t:'mobpar',i:e.i}); else MOBSIM.parried(MS,e.i); } };   // parried on the beat: it staggers
   const won=e=>{ const n=e.n|0||lvl; const k=lvl; lvl=n; const x=+e.x||pos.x, z=+e.z||pos.z, lt=e.loot;
     if(e.w==='c'){ if(lt==='none')xp(10+lvl*8,60+lvl*8); else if(lt==='slime')prize('s','green',x,z); else prize('r',lt==='gold'?'Gold':lt==='spider'?'spider':'bone',x,z); }
     else prize(e.w==='s'?'s':'r',e.w==='p'?'spider':e.key,x,z); lvl=k; };
   const strike=(id,s,m)=>{ const o={d:+(s.d*m).toFixed(3),kb:s.kb||1,heavy:!!s.heavy}; sfx(s.heavy?'clunk':'step',{vol:.5,pitch:1.5,vary:.2});
-    if(remote&&!trying){ ONLINE.send({t:'mobhit',i:id,d:o.d,kb:o.kb,hv:o.heavy?1:0}); return; }
+    if(remote&&!trying){ ONLINE.send(s.at?{t:'mobhit',i:id,d:o.d,kb:o.kb,hv:o.heavy?1:0,rg:1}:{t:'mobhit',i:id,d:o.d,kb:o.kb,hv:o.heavy?1:0}); return; }
     const r=MOBSIM.hit(MS,id,{...o,x:pos.x,z:pos.z}); if(r.res==='blocked')say('IT BLOCKS YOUR BLOW.','#c8c2b0'); else if(r.res==='dead')won({w:r.m.kind,key:r.m.key,x:r.m.x,z:r.m.z,n:r.n,loot:r.m.loot}); };
   // the picture: slimes as instances, guards and spiders as the dungeon's bodies, each kept on its monster's id
   const bodies=new Map(), seen={};
@@ -197,7 +199,9 @@ __CODE__("worker/dunmobs.js")
   const breakout=n=>{ if(remote&&ONLINE.on&&!trying){ ONLINE.send({t:'breakout'}); return; } const k=MOBSIM.breakout(MS,n||3+Math.floor(Math.random()*4)); if(k)SYS.run('breakout',k); };
   const tryIt=async d=>{ trying=d?MOBSIM.clean(d):null; await apply(trying||live); };   // play a draft alone (nobody else sees it); null: back to the published dungeon
   const publish=d=>{ if(!remote||!ONLINE.on)return say('PUBLISHING NEEDS THE WEBSITE.','#e8a090'), false; ONLINE.send({t:'dmset',d:MOBSIM.clean(d)}); return true; };
-  window.DUNMOBS=MODS.dunmobs={T,MS,apply,tryIt,publish,get live(){ return live; },get trying(){ return trying; },cb:()=>CB,get slimes(){ return slimes; },get res(){ return RES; },get remote(){ return remote; },get pic(){ return pic; },hit:(i,d=1)=>{ const S=slimes[i]; if(S)strike(S.i,{d},1); },things:()=>things};
+  window.DUNMOBS=MODS.dunmobs={T,MS,apply,tryIt,publish,get live(){ return live; },get trying(){ return trying; },cb:()=>CB,get slimes(){ return slimes; },get res(){ return RES; },get remote(){ return remote; },get pic(){ return pic; },hit:(i,d=1)=>{ const S=slimes[i]; if(S)strike(S.i,{d},1); },things:()=>things,
+    // a tamed one fights beside you (146zjd TAMING): its blow by a monster's id, as yours go; a monster tamed leaves the dungeon (no reward) till it comes back as another
+    smite:(i,d)=>strike(i,{d},1),tame:i=>{ if(remote&&!trying&&ONLINE.on){ ONLINE.send({t:'mobtame',i}); return new Promise(r=>{ TAMEW.set(i,r); setTimeout(()=>{ if(TAMEW.delete(i))r(false); },4000); }); } return Promise.resolve(!!MOBSIM.tame(MS,i)); }};
   window.DUNSPI=()=>SPI;
   window.DUNMOBDBG=()=>({level:lvl,cb:CB.filter(r=>r.on).map(r=>r.key),slimes:slimes.map(S=>({k:S.k,hp:S.hp,dead:S.dead,gone:!!S.gone,x:+(S.x/T).toFixed(1),z:+(S.z/T).toFixed(1)})),
     plan,traps:TR.length,res:[...(RES||[]),...SPI].filter(r=>r.on).map(r=>({k:r.key,hp:r.hp,dead:r.dead,agg:r.agg,x:+(r.N.st.x/T).toFixed(1),z:+(r.N.st.z/T).toFixed(1),in:r.N.g.parent===MAPG.dungeon})),things:things.map(t=>t.name),bolts:bolts.length,tris:slimes.length*(g0.index.count/3+12),arena:!!AR}); if(live)apply(live); return {onLevel,tick,arena,hi,dm,keepList,breakout,wave:()=>{},alive:()=>slimes.filter(S=>!S.dead).length}; };

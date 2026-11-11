@@ -1,4 +1,4 @@
-// THE INTERIORS, PART TWO (docs/INTERIORS.md): node tests/interiors2.cjs [out folder]. The playhouse's foyer, the golems' cave, the bath house, your hall, the bank and the squirrel's tower: their staff spots and places, their new things and what each does. Exits 1 on any failure.
+// THE INTERIORS, PART TWO (docs/INTERIORS.md): node tests/interiors2.cjs [out folder]. The playhouse (the Wooden O), the golems' cave, the bath house, your hall, the bank and the squirrel's tower: their staff spots and places, their new things and what each does. Exits 1 on any failure.
 const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv[2];
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:960,height:640}}); const errs=[]; let bad=0;
   pg.on('pageerror',e=>errs.push(e.message.slice(0,160)));
@@ -12,12 +12,12 @@ const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv
     const inB=p=>p.x>b.x0&&p.x<b.x1&&p.z>b.z0&&p.z<b.z1, free=p=>!sol.some(r=>p.x>r[0]&&p.x<r[2]&&p.z>r[1]&&p.z<r[3]);
     const sp=Object.entries(R.spots||{}), se=R.seats||[]; return {spots:sp.length,seats:se.length,spotsIn:sp.every(([,p])=>inB(p)),seatsIn:se.every(inB),spotsFree:sp.filter(([,p])=>!free(p)).map(([k])=>k),standFree:se.filter(p=>p.y==null&&!free(p)).length}; },at);
   /* ---------- THE PLAYHOUSE ---------- */
-  if(await pg.evaluate(()=>!!ROOMS.off.playhouse)){ await pg.evaluate(()=>ROOMS.enter('playhouse')); await U(()=>ROOMS.offIn&&ROOMS.offIn()==='playhouse'&&!(window.FADE&&FADE.busy)&&__dbg.UI.things.some(t=>t.obj&&t.obj.parent&&t.name.startsWith('THE PROGRAMME')),240000);   // (its box office and foyer bar are archived, 7 Nov 2026)
-    const p=await people('playhouse'); rec('playhouse: the company has its posts in the foyer and the stage manager his at the prompt desk; sixty stalls seats for the audience',p.spots>=7&&p.seats>=60&&p.spotsIn&&p.seatsIn&&!p.spotsFree.length,JSON.stringify(p));
+  if(await pg.evaluate(()=>!!ROOMS.off.playhouse)){ await pg.evaluate(()=>ROOMS.enter('playhouse')); await U(()=>ROOMS.offIn&&ROOMS.offIn()==='playhouse'&&!(window.FADE&&FADE.busy)&&__dbg.UI.things.some(t=>t.obj&&t.obj.parent&&t.name.startsWith('THE PROGRAMME')),240000);   // (the Wooden O, 10 Nov 2026: no foyer; a pay hatch in the gate passage)
+    const p=await people('playhouse'); rec('playhouse (the Wooden O): the gatherer at the pay hatch, the book-holder at the tiring house, a steward in each gallery; gallery seats for the audience',p.spots>=4&&p.seats>=40&&p.spotsIn&&p.seatsIn&&!p.spotsFree.length,JSON.stringify(p));
     const r=await pg.evaluate(()=>{ const live=t=>t.obj&&t.obj.parent, th=n=>__dbg.UI.things.find(t=>live(t)&&t.name.startsWith(n));
       th('THE PROGRAMME').act(); const prog=MINI.on&&MINI.on.title==='THE PROGRAMME'; MINI.close(); const benches=__dbg.UI.things.filter(t=>live(t)&&t.name==='A VELVET BENCH').length;
-      return {prog,benches,gone:!th('THE BOX OFFICE')&&!th('THE FOYER BAR')}; });
-    rec('playhouse: the programme reads, two benches to sit on; the archived box office and foyer bar are gone',r.prog&&r.benches===2&&r.gone,JSON.stringify(r));
+      return {prog,benches,hatch:!!th('THE PAY HATCH'),gone:!th('THE BOX OFFICE')&&!th('THE FOYER BAR')}; });
+    rec('playhouse: the programme reads, the pay hatch sells a ticket; no foyer, its benches, box office or bar',r.prog&&r.hatch&&r.benches===0&&r.gone,JSON.stringify(r));
     await shot('playhouse'); await pg.evaluate(()=>ROOMS.exit('playhouse')); await U(()=>!(ROOMS.offIn&&ROOMS.offIn())&&!(window.FADE&&FADE.busy),120000).catch(()=>{}); await pg.waitForTimeout(1000); }
   /* ---------- THE BANK ---------- */
   { await U(()=>!!STORE.inside.bank,120000); for(let i=0;i<6;i++){ await pg.evaluate(()=>{ if(!(window.FADE&&FADE.busy))STORE.enter('bank',true); }); if(await U(()=>STORE.inside.bank.done,30000).then(()=>1,()=>0))break; }

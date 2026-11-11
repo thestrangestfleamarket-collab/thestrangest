@@ -1,10 +1,10 @@
-// THE CRT TV: a big old set on its wooden stand in every apartment, shared by everyone in the room (data/tv.json: public-domain cartoons and shows from the Internet Archive, each channel on the real clock; THE GUIDE plays any cartoon, show or film on demand); double-click it for power, channel, volume, the guide, a close-up and full screen.
+// THE CRT TV: a big old set on its wooden stand in every apartment, shared by everyone in the room (data/tv.json: public-domain cartoons and shows from the Internet Archive, and streamed channels through the cinema's player (CINEMA.lend), each channel on the real clock; THE GUIDE plays any cartoon, show or film on demand); double-click it for power, channel, volume, the guide, a close-up and full screen.
 import {THREE} from './003-shx.js';
 import {CINEMA, ONLINE, SFX, UI} from './003b-systems.js';
 import {MODS, SYS} from './006-map-pre.js';
 import {ROOMK} from './150a-bedroom.js';
 { const TVJ=__LAZY__("data/tv.json");
-  const CRT={data:null,on:false,chn:2,vol:.5,pick:null,t0:0,snow:0,err:false,unit:null}; window.CRT=CRT;
+  const CRT={data:null,on:false,chn:2,vol:.5,pick:null,t0:0,snow:0,err:false,unit:null,hole:null}; window.CRT=CRT;
   const EPOCH=Date.UTC(2026,10,5);
   const home=()=>!!(MODS.apts&&MODS.apts.inReal);
   const chans=()=>CRT.data?CRT.data.channels:[];
@@ -50,21 +50,23 @@ import {ROOMK} from './150a-bedroom.js';
   const snow=()=>{ '@later'; const g=sc.getContext('2d'), im=g.createImageData(96,72); for(let i=0;i<96*72;i++){ const v=Math.random()*210|0; im.data[i*4]=im.data[i*4+1]=v; im.data[i*4+2]=v+12; im.data[i*4+3]=255; } g.putImageData(im,0,0);
     const C=chan(); g.font='bold 11px monospace'; if(C){ g.fillStyle='rgba(0,0,0,.55)'; g.fillRect(4,4,36,14); g.fillStyle='#7dff8a'; g.fillText('CH '+C.ch,6,15); }
     if(CRT.err){ g.fillStyle='rgba(0,0,0,.6)'; g.fillRect(14,30,68,14); g.fillStyle='#fff'; g.fillText('NO SIGNAL',20,41); } st.needsUpdate=true; };
+  const bc=document.createElement('canvas'); bc.width=bc.height=1; const bt=new THREE.CanvasTexture(bc);
+  const ytOf=sh=>sh&&!sh.guide&&sh.s&&sh.s.yt||''; let ytOk=false;
   let src='';
   const url=s=>(location.protocol==='file:'?'https://archive.org/download/':'/film/')+s.id+'/'+s.file;
   const stop=()=>{ if(src){ V.pause(); V.removeAttribute('src'); V.load(); src=''; } };
-  const tune=()=>{ '@later'; const sh=CRT.on&&home()?showing():null; if(!sh||sh.guide){ stop(); return; } const u=url(sh.s);
+  const tune=()=>{ '@later'; const sh=CRT.on&&home()?showing():null; if(!sh||sh.guide||ytOf(sh)){ stop(); return; } const u=url(sh.s);
     if(u!==src){ src=u; CRT.err=false; V.src=u; V.currentTime=sh.off; CRT.snow=Math.max(CRT.snow,.5); }
     V.volume=CRT.vol; if(V.paused){ const p=V.play(); if(p&&p.catch)p.catch(()=>{ V.muted=true; V.play().catch(()=>{}); addEventListener('pointerdown',()=>{ V.muted=false; },{once:true}); }); }
     if(V.readyState>0&&!V.seeking&&Math.abs(sh.off-V.currentTime)>4)V.currentTime=sh.off; };
   const look=()=>{ const sh=CRT.on&&CRT.data?showing():null; let m=null, lv=0;
-    if(sh&&sh.guide)m=gt; else if(CRT.on){ lv=CRT.snow<=0&&!CRT.err&&V.readyState>=2?1:0; m=lv?vt:st; }
+    if(sh&&sh.guide)m=gt; else if(CRT.on&&ytOf(sh))m=ytOk&&CRT.snow<=0?bt:st; else if(CRT.on){ lv=CRT.snow<=0&&!CRT.err&&V.readyState>=2?1:0; m=lv?vt:st; }
     U.uMap.value=m; U.uLive.value=lv; U.uAsp.value=lv&&V.videoWidth&&V.videoHeight?(V.videoWidth/V.videoHeight)/(4/3):1; };
   const load=()=>CRT.data?Promise.resolve(CRT.data):TVJ().then(d=>{ CRT.data=d; L_=null; return d; });
 
   // everything THE GUIDE can play: every channel's cartoons and shows, and the cinema's films
   let L_=null; const lists=()=>{ if(L_)return L_; const o={cartoons:[],shows:[],movies:[]};
-    for(const c of chans()){ if(c.guide)continue; for(const s of c.shows)(o[c.kind==='shows'?'shows':'cartoons']).push({id:s.id,file:s.file,title:s.title,year:s.year||0,len:s.len,grp:c.kind==='shows'?(s.series||c.name):c.name}); }
+    for(const c of chans()){ if(c.guide)continue; for(const s of c.shows)if(!s.yt)(o[c.kind==='shows'?'shows':'cartoons']).push({id:s.id,file:s.file,title:s.title,year:s.year||0,len:s.len,grp:c.kind==='shows'?(s.series||c.name):c.name}); }
     for(const f of (CINEMA.films||[]))o.movies.push({id:f.id,file:f.file,title:f.title,year:f.year||0,len:f.len,grp:'FEATURE FILMS'});
     o.shows.sort((a,b)=>a.grp<b.grp?-1:a.grp>b.grp?1:0); o.movies.sort((a,b)=>a.title<b.title?-1:1); return L_=o; };
   const fit=(s,g,w)=>{ if(g.measureText(s).width<=w)return s; while(s.length>1&&g.measureText(s+'…').width>w)s=s.slice(0,-1); return s+'…'; };
@@ -112,7 +114,7 @@ import {ROOMK} from './150a-bedroom.js';
   const mins=s=>Math.max(1,Math.round(s/60))+' MIN';
   let tab='cartoons';
   const nowLine=()=>{ const C=chan(), sh=CRT.on&&C?showing():null;
-    return !CRT.on||!C?'THE SET IS OFF.':`CH ${C.ch} · ${esc(C.name)}<br>`+(sh&&sh.guide?'THE GUIDE: PICK SOMETHING BELOW.':sh?`${sh.demand?'ON DEMAND':'NOW'}: ${esc(sh.s.title)}${sh.s.year?' ('+sh.s.year+')':''} · ${Math.floor(sh.off/60)}/${mins(sh.s.len)}`:'')+`<br><span style="opacity:.7">${ROOMK.guest()?'YOUR HOST\'S SET: EVERYONE HERE SEES THE SAME.':'EVERYONE IN YOUR APARTMENT SEES THE SAME.'}</span>`; };
+    return !CRT.on||!C?'THE SET IS OFF.':`CH ${C.ch} · ${esc(C.name)}<br>`+(sh&&sh.guide?'THE GUIDE: PICK SOMETHING BELOW.':sh&&C.live?`LIVE: ${esc(sh.s.title)}`:sh?`${sh.demand?'ON DEMAND':'NOW'}: ${esc(sh.s.title)}${sh.s.year?' ('+sh.s.year+')':''} · ${Math.floor(sh.off/60)}/${mins(sh.s.len)}`:'')+`<br><span style="opacity:.7">${ROOMK.guest()?'YOUR HOST\'S SET: EVERYONE HERE SEES THE SAME.':'EVERYONE IN YOUR APARTMENT SEES THE SAME.'}</span>`; };
   const draw=full=>{ '@later'; if(P.hidden||!CRT.data)return; const C=chan(), nw=P.querySelector('.now');
     if(!full&&nw){ nw.innerHTML=nowLine(); return; }
     const gl=P.querySelector('.gl'), keep=gl?gl.scrollTop:0, A=lists(), L=A[tab]||[], cur=live()!=null&&CRT.pick;
@@ -187,6 +189,7 @@ import {ROOMK} from './150a-bedroom.js';
       const S=rr(new THREE.Shape(),BW-.02,BH-.02,.06,0,BH/2+.02); S.holes.push(rr(new THREE.Path(),SWo,SHo,.05,SX,SY));
       p(new THREE.ExtrudeGeometry(S,{depth:.022,bevelEnabled:true,bevelThickness:.01,bevelSize:.012,bevelSegments:2,curveSegments:6}),black,0,0,FZ+.01,0,T);
       const glass=keep(p(glassGeo(SWo+.03,SHo+.03,.032),MAT,SX,SY,FZ+.004,0,T,false)); glass.userData.screen=1;
+      if(CINEMA.HOLE){ const hw=SWo-.04, hole=keep(p(new THREE.PlaneGeometry(hw,hw*9/16),CINEMA.HOLE,SX,SY,FZ+.04,0,T,false)); hole.userData.hole=1; hole.visible=false; }
       const back=new THREE.CylinderGeometry(.17,.36,.3,4,1).rotateX(-Math.PI/2).rotateZ(Math.PI/4); back.scale(1.18,.95,1); p(back,shell,SX*.4,SY-.02,FZ-BD-.15,0,T);
       const CX=SX+SWo/2+(BW/2-(SX+SWo/2))/2+.005;
       p(new THREE.CylinderGeometry(.05,.054,.03,24).rotateX(Math.PI/2),grey,CX,.56,FZ+.045,0,T); p(rbox(.014,.07,.02,.004),chrome,CX,.56,FZ+.064,0,T);
@@ -199,7 +202,7 @@ import {ROOMK} from './150a-bedroom.js';
       const L=new THREE.PointLight(0x9ab8e0,0,2.8*c.M,2); L.position.set(SX,SY,.6); L.userData.tv=1; L.userData.flame=1; T.add(L);
       solid(U0-SW/2,V0-SD/2,U0+SW/2,V0+SD/2,SH+BH+.02); },{wire:'crt',bake:true}); });
 
-  ROOMK.wires.crt=(un,c)=>{ '@later'; let G=null, L=null, led=null; un.obj.traverse(o=>{ if(o.userData.screen)G=o; if(o.isLight&&o.userData.tv)L=o; if(o.userData.led){ o.material=o.material.clone(); led=o; } }); if(!G)return;
+  ROOMK.wires.crt=(un,c)=>{ '@later'; let G=null, L=null, led=null; un.obj.traverse(o=>{ if(o.userData.screen)G=o; if(o.userData.hole)CRT.hole=o; if(o.isLight&&o.userData.tv)L=o; if(o.userData.led){ o.material=o.material.clone(); led=o; } }); if(!G)return;
     CRT.unit=un; look();
     c.hit(un,()=>{ const C=chan(), sh=CRT.on&&C?showing():null; return 'CRT TV: '+(CRT.on?'CH '+(C?C.ch:'')+(sh&&sh.demand?' · '+sh.s.title:''):'OFF'); },()=>{ CRT.open(); if(SFX)SFX.play('click',{vol:.6,vary:.2}); });
     let fl=0; un.tick=dt=>{ fl+=dt; if(L)L.intensity=U.uOn.value*(.7+.25*Math.sin(fl*9)*Math.sin(fl*2.3)); if(led)led.material.color.setHex(CRT.on?0x5aff7a:0xff3a2a); }; };
@@ -207,7 +210,10 @@ import {ROOMK} from './150a-bedroom.js';
   // each frame while you are home: the tube warms up and collapses, the picture keeps its moment, snow while it tunes; out of the apartment it stops (the state stays)
   let sT=0, gT=0, hT=0, rT=0, ld=false;
   const run=dt=>{ '@later'; if(CRT.snow>0){ CRT.snow-=dt; snow(); if(CRT.snow<=0)look(); } else if(CRT.err||(src&&V.readyState<2)){ if((gT-=dt)<=0){ gT=.08; snow(); } look(); } else if(U.uMap.value===st&&V.readyState>=2)look();
-    const sh=showing(); if(sh&&sh.guide){ gy+=dt*14; if((hT-=dt)<=0){ hT=.12; guidePic(); } if(U.uMap.value!==gt)look(); }
+    const sh=showing(), y=ytOf(sh);
+    if(y&&CINEMA.lend){ const cv=W.open&&W.el.querySelector('canvas'), r=CINEMA.lend({id:y,live:!!chan().live,off:()=>{ const s=showing(); return s&&s.off||0; },vol:CRT.vol,me:CRT.hole,crt:1,box:cv?{el:W.el,rect:cv.getBoundingClientRect(),radius:'2.5%/3.3%'}:null});
+      if(!!r.ok!==ytOk){ ytOk=!!r.ok; look(); } } else if(ytOk){ ytOk=false; look(); }
+    if(sh&&sh.guide){ gy+=dt*14; if((hT-=dt)<=0){ hT=.12; guidePic(); } if(U.uMap.value!==gt)look(); }
     if((sT-=dt)<=0){ sT=1; tune(); look(); draw(); }
     if(W.open&&(W.idle+=dt)>3&&W.full)W.el.classList.add('idle'); };
   SYS.add('places',dt=>{ dt=dt||0; if(!home()){ if(src)stop(); if(!P.hidden)P.hidden=true; if(W.open)CRT.watch(false); U.uOn.value=CRT.on?1:0; return; }
@@ -215,6 +221,6 @@ import {ROOMK} from './150a-bedroom.js';
     if(!ROOMK.guest()&&ONLINE.on&&(rT-=dt)<=0){ rT=6; if(others())ONLINE.send({t:'tv',...wire()}); }
     if(!CRT.on)return; if(!CRT.data){ if(!ld){ ld=true; load().then(()=>{ tune(); look(); draw(1); }).catch(()=>{ ld=false; }); } return; }
     run(dt); },'150fa-crt');
-  window.CRTDBG=()=>({on:CRT.on,ch:CRT.chn,vol:CRT.vol,pick:CRT.pick&&CRT.pick.title,live:live()!=null,src,ready:V.readyState,unit:!!CRT.unit,panel:!P.hidden,data:!!CRT.data,watch:W.open,full:W.full,zoom:W.z,
+  window.CRTDBG=()=>({yt:ytOf(CRT.on&&CRT.data?showing():null),ytOk,hole:!!CRT.hole,on:CRT.on,ch:CRT.chn,vol:CRT.vol,pick:CRT.pick&&CRT.pick.title,live:live()!=null,src,ready:V.readyState,unit:!!CRT.unit,panel:!P.hidden,data:!!CRT.data,watch:W.open,full:W.full,zoom:W.z,
     pic:U.uMap.value===vt?'video':U.uMap.value===gt?'guide':U.uMap.value===st?'snow':'none',pow:U.uOn.value,lists:CRT.data?Object.fromEntries(Object.entries(lists()).map(([k,v])=>[k,v.length])):null,thing:UI.things.some(t=>/^CRT TV/.test(t.name))});
 }

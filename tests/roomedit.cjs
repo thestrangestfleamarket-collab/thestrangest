@@ -79,11 +79,12 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       pic = await buy('WALL SHELF', u, 1.5, v); tp = await T(pic); if (tp && Math.min(tp.u, R.Lx - tp.u, tp.v, R.Ly - tp.v) < .3 && Math.abs(tp.h + .2 - 1.5) < .6) break; }
     ok(tp && Math.min(tp.u, R.Lx - tp.u, tp.v, R.Ly - tp.v) < .3 && tp.h > .6, 'a wall shelf goes onto the wall you point at (' + (tp && [tp.u, tp.h, tp.v].map(x => x.toFixed(2)).join(',')) + ')');
     // a game item found by name
-    await pg.fill('#roomfind', 'bus stop'); await pg.waitForTimeout(500);
-    const bus = await buy('g:bus stop', R.Lx * .2, 0, R.Ly * .8);
-    ok(bus && await pg.evaluate(id => ROOMED._api().units().find(u => u.id === id).obj.children.length > 0, bus), 'a game item (the bus stop) found by name and bought');
+    await pg.fill('#roomfind', 'bicycle'); await pg.waitForTimeout(500);
+    const bus = await buy('g:bicycle', R.Lx * .2, 0, R.Ly * .8);
+    ok(bus && await pg.evaluate(id => ROOMED._api().units().find(u => u.id === id).obj.children.length > 0, bus), 'a game item (the bicycle) found by name and bought');
+    ok(await pg.evaluate(() => { const K = ROOMED._api().kinds(); return ROOMED.buy('g:bus stop') === null && ROOMED.buy('g:crosswalk') === null && ROOMED.buy('CRT TV') === null && K['g:bus stop'].off && !K['g:bicycle'].off && K['g:ceiling fan'].tpl && K['g:ceiling fan'].mount === 'ceil' && ROOMED.price('g:sofa') === 400 && ROOMED.price('RECLINER') === 300; }), 'the cut kinds are off sale, the kept ones priced, the ceiling fan hangs from the ceiling');
     // SELL pays half back
-    await pg.evaluate(id => ROOMED.select(ROOMED._api().units().find(u => u.id === id)), bus); const cs0 = (await db()).cash, pr = await pg.evaluate(() => ROOMED.price('g:bus stop'));
+    await pg.evaluate(id => ROOMED.select(ROOMED._api().units().find(u => u.id === id)), bus); const cs0 = (await db()).cash, pr = await pg.evaluate(() => ROOMED.price('g:bicycle'));
     await pg.click('#roomed [data-a="sell"]'); await pg.waitForTimeout(300);
     ok((await db()).cash === cs0 + Math.floor(pr / 2), 'SELL pays half back ($' + Math.floor(pr / 2) + ')');
     await pg.click('#roomed [data-tab="walls"]'); const hitW = await pick('wall', 'brick');

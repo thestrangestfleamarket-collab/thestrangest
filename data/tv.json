@@ -1,5 +1,5 @@
 {
- "note": "Public-domain cartoons, TV shows, odd old films (the Prelinger Archives) and NASA films streamed from the Internet Archive (archive.org/details/<id>); each channel one loop on the real clock, so every TV shows the same moment; THE GUIDE (guide) plays anything on demand. src/150fa-crt.js.",
+ "note": "Public-domain cartoons, TV shows, odd old films (the Prelinger Archives) and NASA films, and Blender Studio's open movies (CC BY, Blender Foundation) streamed from the Internet Archive (archive.org/details/<id>); each channel one loop on the real clock, so every TV shows the same moment; THE GUIDE (guide) plays anything on demand. src/150fa-crt.js; a channel with live:true streams live cams (shows {yt, title, len: its turn in seconds}) through the cinema's player.",
  "channels": [
   {
    "ch": 2,
@@ -380,6 +380,104 @@
    ]
   },
   {
+   "ch": 5,
+   "name": "BLENDER SHORTS",
+   "sub": "Blender Studio open movies, 2006-2023 · CC BY Blender Foundation",
+   "shows": [
+    {
+     "id": "ElephantsDream",
+     "file": "ed_1024_512kb.mp4",
+     "title": "ELEPHANTS DREAM",
+     "year": 2006,
+     "len": 653.8
+    },
+    {
+     "id": "BigBuckBunny_442",
+     "file": "film0001_512kb.mp4",
+     "title": "BIG BUCK BUNNY",
+     "year": 2008,
+     "len": 599.1
+    },
+    {
+     "id": "Sintel",
+     "file": "sintel-2048-stereo_512kb.mp4",
+     "title": "SINTEL",
+     "year": 2010,
+     "len": 888.1
+    },
+    {
+     "id": "Tears-of-Steel",
+     "file": "tears_of_steel_1080p.mp4",
+     "title": "TEARS OF STEEL",
+     "year": 2012,
+     "len": 734.1
+    },
+    {
+     "id": "Caminandes1LlamaDrama",
+     "file": "01_llama_drama_1080p.mp4",
+     "title": "CAMINANDES: LLAMA DRAMA",
+     "year": 2013,
+     "len": 90.0
+    },
+    {
+     "id": "Caminandes2GranDillama",
+     "file": "02_gran_dillama_1080p.mp4",
+     "title": "CAMINANDES: GRAN DILLAMA",
+     "year": 2013,
+     "len": 146.1
+    },
+    {
+     "id": "caminandes3-llamigos",
+     "file": "caminandes3-llamigos.mp4",
+     "title": "CAMINANDES: LLAMIGOS",
+     "year": 2016,
+     "len": 150.1
+    },
+    {
+     "id": "agent327operationbarbershop",
+     "file": "agent327.mp4",
+     "title": "AGENT 327: OPERATION BARBERSHOP",
+     "year": 2017,
+     "len": 231.6
+    },
+    {
+     "id": "hero_20260106",
+     "file": "hero.ia.mp4",
+     "title": "HERO",
+     "year": 2018,
+     "len": 236.7
+    },
+    {
+     "id": "springopenmovie",
+     "file": "springopenmovie.ia.mp4",
+     "title": "SPRING",
+     "year": 2019,
+     "len": 464.2
+    },
+    {
+     "id": "coffee_202209",
+     "file": "coffee.mp4",
+     "title": "COFFEE RUN",
+     "year": 2020,
+     "len": 138.7
+    },
+    {
+     "id": "charge_202601",
+     "file": "Charge.ia.mp4",
+     "title": "CHARGE",
+     "year": 2022,
+     "len": 262.8
+    },
+    {
+     "id": "wing_it",
+     "file": "wing_it.ia.mp4",
+     "title": "WING IT!",
+     "year": 2023,
+     "len": 237.9
+    }
+   ]
+  },
+  {
    "ch": 6,
    "name": "THE MAN OF STEEL",
    "sub": "Fleischer and Famous Studios, 1941-1943",
@@ -692,6 +790,49 @@
      "title": "ARE YOU POPULAR?",
      "year": 1947,
      "len": 598.1
+    }
+   ]
+  },
+  {
+   "ch": 8,
+   "name": "CRITTER CAM",
+   "sub": "live from around the world, a new place every half hour",
+   "live": true,
+   "shows": [
+    {
+     "yt": "J7ZrIDvqlic",
+     "title": "BROOKS FALLS BEARS · ALASKA",
+     "len": 1800
+    },
+    {
+     "yt": "0P_LBKqVbfs",
+     "title": "ELEPHANTS AT THE WATERHOLE · SOUTH AFRICA",
+     "len": 1800
+    },
+    {
+     "yt": "Fz6sl9YJZE0",
+     "title": "MANATEES · HOMOSASSA SPRINGS, FLORIDA",
+     "len": 1800
+    },
+    {
+     "yt": "GGIE1E-kaMQ",
+     "title": "THE EAGLES' NEST · DECORAH, IOWA",
+     "len": 1800
+    },
+    {
+     "yt": "5e4lsEe4Vew",
+     "title": "THE WOLF PACK · MINNESOTA",
+     "len": 1800
+    },
+    {
+     "yt": "DHUnz4dyb54",
+     "title": "THE TROPICAL REEF",
+     "len": 1800
+    },
+    {
+     "yt": "OOT6YlOYgaU",
+     "title": "THE KITTEN ROOM",
+     "len": 1800
     }
    ]
   },

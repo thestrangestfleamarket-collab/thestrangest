@@ -17,6 +17,7 @@ import {GHOLD} from './146zoa-guitar-hold.js';
     card:(a,b)=>{ const g=G(); add(g,'box',a,0,.002,0,.15,.003,.1,0,0,0,M('paper')); add(g,'box',b,.03,.004,0,.06,.001,.07,0,0,0,M('paper')); return g; },
     board:(a,b)=>{ const g=G(); add(g,'box',0x6a4a2a,0,.3,0,.62,.62,.03,0,0,0,M('wood')); add(g,'box',b,0,.3,.016,.56,.56,.004,0,0,0,M('cloth')); add(g,'ball',a,-.08,.34,.02,.1,.08,.01); return g; },
     bottle:(a,b)=>INSPECT.shape('bottle',a,b), jar:(a,b)=>INSPECT.shape('jar',a,b), sack:(a)=>INSPECT.shape('sack',a), packet:(a,b)=>INSPECT.shape('packet',a,b),
+    implant:(a,b)=>{ const g=G(); add(g,'box',0xe8ecee,0,.006,0,.12,.012,.08,0,0,0,M('plastic')); add(g,'cyl',0xc8ccd2,0,.022,0,.012,.07,.012,0,Math.PI/2,0,METAL); add(g,'ball',a,0,.022,0,.016,.016,.016,0,0,1); return g; },   // an implant in its sterile tray: a steel capsule, its core glowing
     tub:(a,b)=>{ const g=G(); add(g,'cyl',a,0,.06,0,.06,.12,.06,0,0,0,M('plastic')); add(g,'cyl',b,0,.122,0,.064,.01,.064,0,0,0,M('plastic')); return g; },
     jug:(a,b)=>{ const g=G(); add(g,'box',a,0,.14,0,.14,.26,.1,0,0,0,M('plastic')); add(g,'cyl',b,0,.29,0,.025,.04,.025,0,0,0,M('plastic')); add(g,'tor',a,.05,.22,0,.04,.05,.04,Math.PI/2,0,0,M('plastic')); return g; },
     carton:(a,b)=>{ const g=G(); add(g,'box',a,0,.1,0,.09,.2,.09,0,0,0,M('paper')); add(g,'cone',b,0,.225,0,.065,.05,.065,0,0,0,M('paper')); return g; },
@@ -59,11 +60,15 @@ import {GHOLD} from './146zoa-guitar-hold.js';
     pouch:(a)=>{ const g=G(); add(g,'ball',a,0,.05,0,.07,.06,.05,0,0,0,M('leather')); add(g,'cone',a,0,.11,0,.03,.04,.03,0,0,0,M('leather')); add(g,'tor',0x3a2a1a,0,.1,0,.03,.03,.02,Math.PI/2,0,0,M('leather')); return g; },
     tank:(a,b)=>{ const g=G(); add(g,'cyl',a,0,.1,0,.09,.6,.09,Math.PI/2,0,0,METAL); add(g,'cap',a,0,.1,.3,.09,.05,.09,Math.PI/2,0,0,METAL); add(g,'cyl',0x2a2a2e,0,.1,.37,.02,.05,.02,Math.PI/2,0,0,METAL); add(g,'box',b,0,.02,0,.25,.03,.3,0,0,0,M('rubber')); return g; },
     flag:(a,b)=>{ const g=G(); add(g,'cyl',0x6a4a2a,0,.005,0,.005,.5,.005,Math.PI/2,0,0,M('wood')); add(g,'cone',a,0,.005,-.14,.1,.25,.004,Math.PI/2,0,0,M('cloth')); return g; },
+    club:(a)=>{ const g=G(); add(g,'cyl',a,0,.03,-.08,.03,.3,.03,Math.PI/2,0,0,M('plastic')); add(g,'cyl',0xf4efe4,0,.03,.1,.012,.14,.012,Math.PI/2,0,0,M('plastic')); add(g,'sph',0xf4efe4,0,.03,.17,.016,.016,.016,0,0,0,M('plastic')); return g; },
     stick:(a,b)=>{ const g=G(); add(g,'cyl',0xe8d0a0,0,.004,.1,.003,.12,.003,Math.PI/2,0,0,M('wood')); add(g,'ball',a,0,.02,-.02,.025,.022,.07,0,0,0,M('food')); return g; },
     cloud:(a)=>{ const g=G(); add(g,'cyl',0xe8e0cc,0,.004,.15,.004,.2,.004,Math.PI/2,0,0,M('paper')); add(g,'ball',a,0,.06,-.05,.12,.11,.12,0,0,0,M('cloth')); return g; },
     pen:(a,b)=>{ const g=S.feather(a,b); add(g,'cone',0x2a2a2e,0,.004,-.13,.003,.02,.003,-Math.PI/2,0,0,METAL); return g; },
     auger:(a)=>{ const g=G(); add(g,'cyl',0xc8ccd2,0,.03,0,.02,1.1,.02,Math.PI/2,0,0,METAL); for(let i=0;i<8;i++)add(g,'tor',0xc8ccd2,0,.03,.15+i*.05,.06,.06,.05,0,0,0,METAL); add(g,'cyl',a,0,.03,-.55,.02,.3,.02,0,Math.PI/2,0,M('rubber')); return g; },
     crab:()=>INSPECT.shape('cage',0x5a4a3a),
+    violin:()=>{ const g=G(); add(g,'ball',0x8a3a14,0,.04,-.08,.1,.04,.12,0,0,0,M('wood')); add(g,'ball',0x8a3a14,0,.04,.07,.085,.04,.1,0,0,0,M('wood')); add(g,'box',0x1a1410,0,.06,.22,.025,.015,.22,0,0,0,M('wood')); add(g,'sph',0x6a2a10,0,.06,.34,.02,.02,.02,0,0,0,M('wood')); return g; },
+    flute:()=>{ const g=G(); add(g,'cyl',0xd8dce2,0,.012,0,.01,.66,.01,Math.PI/2,0,0,METAL); for(let i=0;i<6;i++)add(g,'cyl',0xb8bcc2,0,.022,-.05+i*.05,.008,.003,.008,0,0,0,METAL); return g; },
+    trumpet:()=>{ const g=G(); add(g,'cyl',0xd8b040,0,.04,0,.012,.4,.012,Math.PI/2,0,0,METAL); add(g,'cone',0xd8b040,0,.04,-.25,.06,.12,.06,-Math.PI/2,0,0,METAL); for(let i=0;i<3;i++)add(g,'cyl',0xc8a030,.03*(i-1),.07,.05,.01,.07,.01,0,0,0,METAL); return g; },
     guitar:()=>{ const g=G(); if(GHOLD.model)g.add(GHOLD.model()); return g; },
     harp:(a,b)=>{ const g=G(); add(g,'box',a,0,.05,0,.5,.1,.3,0,0,0,M('wood')); add(g,'box',a,-.2,.85,0,.08,1.6,.08,0,0,0,M('wood')); add(g,'box',a,.05,1.55,0,.55,.08,.08,0,-.35,0,M('wood')); for(let i=0;i<12;i++)add(g,'cyl',0xe8d8a0,-.16+i*.03,.6+i*.07,0,.002,1-.07*i,.002,0,0,0,METAL); return g; },
     piano:(a,b)=>{ const g=G(); add(g,'box',a,0,.65,0,1.5,1.3,.6,0,0,0,M('wood')); add(g,'box',0xf4efe4,0,.75,.32,1.3,.03,.15,0,0,0,M('ivory')); for(let i=0;i<20;i++)if(i%7!==2&&i%7!==6)add(g,'box',0x16161a,-.6+i*.064,.77,.3,.025,.02,.09,0,0,0,M('wood')); for(const s of [-1,1])add(g,'box',a,s*.7,.3,.25,.08,.6,.12,0,0,0,M('wood')); return g; },
@@ -74,7 +79,7 @@ import {GHOLD} from './146zoa-guitar-hold.js';
     cotton:(a)=>S.cloud(a), popcorn:(a,b)=>{ const g=S.tub(0xd83a3a,0xf4efe4); for(let i=0;i<9;i++)add(g,'ball',0xf4e8c0,Math.cos(i*2.3)*.035,.13+(i%3)*.01,Math.sin(i*2.3)*.035,.014,.012,.014,0,0,0,M('food')); return g; },
   };
   // which shape each item is (by its id), first match
-  const BY=[[/^guitar$/,'guitar'],[/^harp$/,'harp'],[/^piano$/,'piano'],[/^drums$/,'drums'],[/^kazoo$/,'kazoo'],
+  const BY=[[/^guitar$/,'guitar'],[/^jugball$/,'ball'],[/^jugclub$/,'club'],[/^harp$/,'harp'],[/^violin$/,'violin'],[/^tf_/,'fruit'],[/^sp_/,'plant'],[/^pp_/,'acorns'],[/^treepot$/,'pot'],[/^(birdnet|burlap)$/,'flat'],[/^spile$/,'auger'],[/^flute$/,'flute'],[/^trumpet$/,'trumpet'],[/^piano$/,'piano'],[/^drums$/,'drums'],[/^kazoo$/,'kazoo'],
     [/^spray_/,'spray'],[/^g_(beans|soup|tuna|spam|catfood|vienna|soda|beer|coffee|cleanser)$/,'can'],[/^g_(juice|water|shampoo|dishsoap|aspirin)$|^soda_|^lemonade$|^p_royal$|^curse_stink$/,'bottle'],[/^g_bleach$|^water$/,'jug'],[/^g_milk$/,'carton'],
     [/^g_(fishfood|oats|yogurt|noodles|vaseline)$/,'tub'],[/^(honey_|jar_)|^curse_(cloud|rats)$/,'jar'],[/^g_(chips|bagels|dogfood|rice|diapers|tp|towels|bananas|plantains)$|^dirt$|^fix_parts$/,'sack'],[/^g_(koolaid|gum|batteries|candy)$|^seed_/,'packet'],
     [/^g_(cereal|detergent|pasta|tea|qtips|matches|eggs|bread|cheese|butter)$|^f_(bonbons|candybox)$/,'box'],[/^g_(candle|bulb)$|^wax_candle$/,'candle'],[/^g_(toothbrush|toothpaste|deodorant|lighter|sponge|soap)$/,'block'],
@@ -84,7 +89,7 @@ import {GHOLD} from './146zoa-guitar-hold.js';
     [/^(coat_|jacket_)/,'coat'],[/^jeans$/,'jeans'],[/^bee_veil$/,'hat'],[/^(shades|nv_goggles)$/,'goggles'],[/^(plush_|mus_plush$)/,'plush'],[/^prize_ring$/,'ring'],[/^prize_yoyo$/,'yoyo'],[/^cube\d$/,'cube'],[/^arc_token$/,'coin'],
     [/^(handheld|junk_handheld|pockettv|junk_pockettv|walkman|junk_walkman)$/,'gadget'],[/^phone_/,'phone'],[/^radio_scanner$/,'radio'],[/^reel_/,'reel'],[/^rod_/,'rod'],[/^lure_spoon$/,'lure'],[/^lure_worm$/,'worm'],[/^crabpot$/,'crab'],[/^auger$/,'auger'],[/^cooler_/,'cooler'],
     [/^bee_hive$/,'hive'],[/^bee_smoker$/,'smoker'],[/^bee_wax$/,'block'],[/^gb_/,'ball'],[/^gem_wheel$/,'wheel'],[/^orchard_key$/,'key'],[/^quill_pen$/,'pen'],[/^bird_feather$/,'feather'],[/^nut_acorn$/,'acorns'],[/^pouch$/,'pouch'],[/^scuba$/,'tank'],
-    [/^fair_pennant$/,'flag'],[/^(bonsai)$/,'plant'],[/^cactus/,'cactus'],[/^pot$/,'pot'],[/^feeder$/,'feeder'],[/^(bs_kit)$/,'kit'],[/^mus_replica$/,'frame']];
+    [/^fair_pennant$/,'flag'],[/^(bonsai)$/,'plant'],[/^im_/,'implant'],[/^cactus/,'cactus'],[/^pot$/,'pot'],[/^feeder$/,'feeder'],[/^(bs_kit)$/,'kit'],[/^mus_replica$/,'frame']];
   const shapeOf=id=>{ const k=String(id).split('~')[0]; for(const [re,s] of BY)if(re.test(k))return s; return null; };
   INSPECT.kinds.push({is:id=>!!shapeOf(id),make:id=>{ '@later'; const [a,b]=cols(String(id).split('~')[0]), g=S[shapeOf(id)](a,b); g.userData.made=1; return g; }});
   INSPECT.shapeOf=shapeOf; }

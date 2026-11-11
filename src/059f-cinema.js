@@ -41,12 +41,15 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
   CINEMA.isAdmin=isAdmin;
 
   const startMs=()=>{ const s=cur().started_at; return s?Date.parse(s):0; };
-  const offset=()=>{ const s=startMs(); return s?Math.max(0,(Date.now()-s)/1000):0; };
+  const offset=()=>{ if(B)return B.live?0:Math.max(0,+B.off()||0); const s=startMs(); return s?Math.max(0,(Date.now()-s)/1000):0; };
+  // another screen borrowing the player (the CRT TV): {id, live, off(), vol 0..1, me (a plane) or box {el, rect, radius}}, renewed each frame while it shows
+  let B=null, lent=null, lentOk=false, lastMe=null, scan=null, sndK='';
+  CINEMA.lend=r=>{ lent={...r,age:0}; return {ok:lentOk,fail:!!vFail}; };
 
   // sound is each viewer's own (browsers only let it on after a tap)
   let snd={on:false,vol:80}; try{ const s=JSON.parse(SAVE.get('cinema')||'null'); if(s)snd={on:!!s.on,vol:Math.max(0,Math.min(100,+s.vol||80))}; }catch(e){}
   const saveSnd=()=>{ SAVE.set('cinema',JSON.stringify(snd)); };
-  let vf=1, fv=null; const applySnd=()=>{ try{ if(player){ if(snd.on){ player.unMute(); player.setVolume(Math.round(snd.vol*vf)); } else player.mute(); } }catch(e){} if(fv){ fv.muted=!snd.on; fv.volume=Math.min(1,snd.vol*vf/100); } };
+  let vf=1, fv=null; const applySnd=()=>{ try{ if(player){ if(snd.on){ player.unMute(); player.setVolume(Math.round(B?B.vol*100:snd.vol*vf)); } else player.mute(); } }catch(e){} if(fv){ fv.muted=!snd.on; fv.volume=Math.min(1,B?B.vol:snd.vol*vf/100); } };
   CINEMA.sound=(on,vol)=>{ if(on!=null)snd.on=!!on; if(vol!=null)snd.vol=Math.max(0,Math.min(100,+vol)); saveSnd(); applySnd(); };
 
   // the player is a 16:9 page behind the game's picture, seen only through the screen (the picture is see-through there); the clip keeps it inside the game's frame
@@ -65,6 +68,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     lay('background:url('+nz.toDataURL()+') 0 0/384px 384px;mix-blend-mode:overlay;opacity:.07;animation:cmgrain .42s steps(1) infinite');
     lay('background:radial-gradient(ellipse 60% 55% at 50% 47%,rgba(255,246,228,0) 0%,rgba(0,0,0,0) 55%,rgba(0,0,0,.5) 100%);box-shadow:inset 0 0 90px 18px rgba(0,0,0,.6)');
     lay('background:#000;animation:cmflick 2.3s steps(1) infinite');
+    scan=lay('background:repeating-linear-gradient(0deg,rgba(0,0,0,.32) 0 1px,rgba(0,0,0,0) 1px 3px);display:none');
     soundBtn=document.createElement('button'); soundBtn.textContent='🔇 tap for sound';
     soundBtn.style.cssText='position:fixed;left:0;top:0;transform:translate(-50%,-100%);display:none;z-index:62;pointer-events:auto;font:600 13px system-ui;color:#fff;background:rgba(0,0,0,.6);border:2px solid rgba(255,255,255,.4);border-radius:999px;padding:6px 14px;cursor:pointer';
     soundBtn.onclick=()=>CINEMA.sound(true,null); document.body.appendChild(soundBtn);
@@ -79,17 +83,17 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
   const stopFilm=()=>{ if(fv&&!fv.paused)fv.pause(); if(fv)fv.style.display='none'; if(holder)holder.style.display=''; };
   let vOK=false, vFail='', tries=0, t0=0; const HOSTS=['https://www.youtube-nocookie.com','https://www.youtube.com'];
   const makePlayer=async id=>{ '@later'; mkWrap();
-    if(player){ if(id!==haveVid){ haveVid=id; vOK=false; vFail=''; tries=0; t0=performance.now(); try{ player.loadVideoById({videoId:id,startSeconds:offset()}); }catch(e){} }
+    if(player){ if(id!==haveVid){ haveVid=id; vOK=false; vFail=''; tries=0; t0=performance.now(); try{ player.loadVideoById(B&&B.live?{videoId:id}:{videoId:id,startSeconds:offset()}); }catch(e){} }
       else if(!vOK&&!vFail&&performance.now()-t0>15000)retry(id); return; }
     if(making)return; making=true; await ensureYT(); haveVid=id; vOK=false; t0=performance.now();
     player=new window.YT.Player(holder,{videoId:id,host:HOSTS[Math.min(tries,HOSTS.length-1)],width:'100%',height:'100%',
       playerVars:{autoplay:1,mute:1,controls:0,rel:0,playsinline:1,modestbranding:1,disablekb:1,fs:0,iv_load_policy:3,cc_load_policy:0,origin:location.origin},
-      events:{onReady:e=>{ try{ e.target.mute(); e.target.seekTo(offset(),true); e.target.playVideo(); e.target.unloadModule('captions'); e.target.unloadModule('cc'); }catch(x){} applySnd(); },
+      events:{onReady:e=>{ try{ e.target.mute(); if(!(B&&B.live))e.target.seekTo(offset(),true); e.target.playVideo(); e.target.unloadModule('captions'); e.target.unloadModule('cc'); }catch(x){} applySnd(); },
         onStateChange:e=>{ if(e.data===1){ vOK=true; vFail=''; } if(e.data===window.YT.PlayerState.ENDED)onEnded(); },
         onError:e=>{ if(e.data===101||e.data===150)vFail='this video only plays on YouTube'; else retry(haveVid); }}}); };
   const retry=id=>{ '@later'; if(tries>=HOSTS.length-1){ if(!vOK)vFail=vFail||'the video could not load here'; return; } tries++; try{ player.destroy(); }catch(e){} player=null; making=false;
     holder=document.createElement('div'); holder.style.cssText=HCSS; wrap.insertBefore(holder,wrap.firstChild); makePlayer(id); };
-  const onEnded=async()=>{ if(adm)await push({video_id:''}); };   // a YouTube link played to its end: back to the schedule
+  const onEnded=async()=>{ if(adm&&!B)await push({video_id:''}); };   // a YouTube link played to its end: back to the schedule
 
   // the four corners of a plane on the page, and a homography that maps the video's own rectangle (no black bars) onto them
   // an edge of the screen past the camera would fold the picture: only the part in front of the camera is mapped (s: that part of the screen, 0..1 across and down)
@@ -116,14 +120,15 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     const {r,q,s}=cq, cv=renderer.domElement, k0=coef(q[0],q[1],q[2],q[3]), V=fv&&fv.style.display==='block'?{x:0,y:0,w:W0,h:H0}:vrect(), at=(u,v)=>ap(k0,(u-s[0])/(s[1]-s[0]),(v-s[2])/(s[3]-s[2]));
     clip.style.left=r.left+'px'; clip.style.top=r.top+'px'; clip.style.width=r.width+'px'; clip.style.height=r.height+'px'; clip.style.borderRadius=getComputedStyle(cv.parentElement||cv).borderRadius;
     const u0=-V.x/V.w, u1=(W0-V.x)/V.w, v0=-V.y/V.h, v1=(H0-V.y)/V.h;
-    wrap.style.transform=m3d(coef(at(u0,v0),at(u1,v0),at(u1,v1),at(u0,v1))); wrap.style.filter='brightness('+((cur().brightness??.8)*dim)+') contrast(1.08) saturate(1.02) blur(.4px)';
+    wrap.style.transform=m3d(coef(at(u0,v0),at(u1,v0),at(u1,v1),at(u0,v1))); wrap.style.filter='brightness('+((B?1:(cur().brightness??.8))*dim)+') contrast(1.08) saturate(1.02) blur(.4px)';
     if(PS2.keepAlpha)PS2.keepAlpha(ok); if(CUT){ CUT.uniforms.uOn.value=ok?1:0; q.forEach((p,i)=>CUT.uniforms.uQ.value[i].set(p.u,p.v)); }
     const wait=!ok&&!vFail;   // the film still on its way: say so on the screen
-    soundBtn.textContent=vFail?vFail.toUpperCase():wait?'LOADING FILM…':'🔇 tap for sound'; soundBtn.style.pointerEvents=vFail||wait?'none':'auto';
+    soundBtn.textContent=vFail?(B?'NO SIGNAL':vFail.toUpperCase()):wait?(B?'TUNING IN…':'LOADING FILM…'):'🔇 tap for sound'; soundBtn.style.pointerEvents=vFail||wait?'none':'auto';
     if(vFail||wait||ok&&!snd.on){ const b=at(.5,wait?(s[2]+s[3])/2:Math.min(1,s[3])); soundBtn.style.display='block'; soundBtn.style.left=(r.left+b.x)+'px'; soundBtn.style.top=(r.top+b.y-(wait?-16:6))+'px'; } else soundBtn.style.display='none'; };
   // the screen's see-through face (the video shows through it, darker at its edges) and the last pass that keeps the rest of the picture solid
   const HOLE=new THREE.ShaderMaterial({blending:THREE.NoBlending,depthWrite:true,vertexShader:'varying vec2 vU; void main(){ vU=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
     fragmentShader:'varying vec2 vU; void main(){ vec2 d=(vU-.5)*vec2(1.,1.12); float v=smoothstep(.12,.62,length(d)); float a=.04+.45*v*v; gl_FragColor=vec4(0.,0.,0.,a); }'});
+  CINEMA.HOLE=HOLE;
   let CUT=null;
   const CUTH='uniform float uOn; uniform vec2 uQ[4]; float cutS(vec2 a,vec2 b,vec2 p){ return (b.x-a.x)*(p.y-a.y)-(b.y-a.y)*(p.x-a.x); }',
     CUTC='{ vec4 c=gl_FragColor; float a=1.; vec3 rgb=c.rgb; if(uOn>.5){ float s0=cutS(uQ[0],uQ[1],vUv), s1=cutS(uQ[1],uQ[2],vUv), s2=cutS(uQ[2],uQ[3],vUv), s3=cutS(uQ[3],uQ[0],vUv); if((s0>=0.&&s1>=0.&&s2>=0.&&s3>=0.)||(s0<=0.&&s1<=0.&&s2<=0.&&s3<=0.)){ a=c.a; if(a<.99)rgb=vec3(0.); } } gl_FragColor=vec4(rgb,a); }';
@@ -175,25 +180,36 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
   const gate=()=>{ '@later'; const n=INV.items&&INV.items.ticket|0, say=t=>FORAGE.say&&FORAGE.say(t);
     if(n>0){ INV.add('ticket',-1); if(FORAGE.draw)FORAGE.draw(); const P=CINEMA.playing(); say('YOU HAND OVER A TICKET'+(P&&P.title?' FOR '+P.title:'')+'.'); return true; }
     say('YOU NEED A TICKET. THE FOX AT THE BOX OFFICE SELLS THEM.'); return false; };
-  const tick=()=>{ if(STORE.gate&&!STORE.gate.theatre)STORE.gate.theatre=gate; const mt=STORE.main&&STORE.main.theatre; CINEMA.on=false; if(!mt||!mt.fm)return; if(performance.now()-signT>5000){ signT=performance.now(); sign(); } fox();
+  const tick=()=>{ if(STORE.gate&&!STORE.gate.theatre)STORE.gate.theatre=gate; const mt=STORE.main&&STORE.main.theatre; CINEMA.on=false; if(lastMe)lastMe.visible=false; B=null; lentOk=false; const lb=lent&&lent.age++<3&&!FADE.busy?lent:null; if(lent&&lent.age>3)lent=null; if(!mt||!mt.fm){ if(lb)lendTick(lb); else idle(); return; } if(performance.now()-signT>5000){ signT=performance.now(); sign(); } fox();
     if(!named&&FORAGE.add){ named=true; FORAGE.add({names:{ticket:'MOVIE TICKET'},prices:{ticket:5}}); }
     const up=SHARED.LVL==='up'; if(canopy){ canopy.box.visible=up; } if(post){ post.group.visible=up; if(post.front)post.front.visible=up&&!mt.R.inside(pos.x,pos.z); } if(box_o)box_o.G.visible=up;
-    if(neon){ neon.me.visible=neon.rail.visible=up; const t=performance.now(); if(up&&t>neon.t){ neon.on=!neon.on&&Math.random()<.45; neon.t=t+(neon.on?40+Math.random()*140:250+Math.random()*2800); neonDraw(); } }
+    if(neon){ neon.me.visible=neon.rail.visible=up; const t=performance.now(); if(up&&t>neon.t){ neon.on=!neon.on&&Math.random()<.45; neon.t=t+(neon.on?40+Math.random()*140:250+Math.random()*2800); neonShow(); } }
     if(CINEMA.admin&&!adminThings&&canopy&&post){ adminThings=true;
       UI.thing({name:'THE MARQUEE',ghost:1,obj:canopy.box,reach:2.2*TILE,near:6*TILE,tall:1,act:()=>editMarquee()});
       UI.thing({name:'THE POSTER',ghost:1,obj:post.group,reach:1.6*TILE,near:5*TILE,tall:1,act:()=>editPoster()}); }
     const yt=ytOn(), id=yt?vid(cur().video_id):'', fl=yt?null:film(), now=performance.now();
     const tgt=up&&holeM&&mt.R.inside(pos.x,pos.z)?holeM:null; if(holeM)holeM.visible=false;
-    if(!tgt||!(id||fl)||FADE.busy){ if(CUT)CUT.uniforms.uOn.value=0; if(PS2.keepAlpha)PS2.keepAlpha(false); if(soundBtn)soundBtn.style.display='none'; if(full)CINEMA.fullscreen(false); glow(false); if(clip&&clip.style.display!=='none'){ clip.style.display='none'; try{ player&&player.pauseVideo(); }catch(e){} stopFilm(); } return; }
-    mkWrap(); mkCut(); let ok;
+    if((!tgt||!(id||fl))&&lb)return lendTick(lb);
+    if(!tgt||!(id||fl)||FADE.busy){ idle(); return; }
+    mkWrap(); mkCut(); unseat(); scan.style.display='none'; let ok;
     if(fl){ ok=playFilm(fl); vFail=''; } else { stopFilm(); makePlayer(id); sniff(id); ok=vOK&&!vFail; }
     CINEMA.on=ok; fitHole(); if(ok)tgt.visible=true;
     glow(ok,fl);
     if(full)fullPlace(); else if(facing(tgt)){ clip.style.display='block'; placeOver(tgt,1,ok); } else { clip.style.display='none'; soundBtn.style.display='none'; if(CUT)CUT.uniforms.uOn.value=0; if(PS2.keepAlpha)PS2.keepAlpha(false); }
     if(id)    sync(); };
+  const idle=()=>{ if(CUT)CUT.uniforms.uOn.value=0; if(PS2.keepAlpha)PS2.keepAlpha(false); if(soundBtn)soundBtn.style.display='none'; if(full)CINEMA.fullscreen(false); glow(false); if(clip&&clip.style.display!=='none'){ clip.style.display='none'; try{ player&&player.pauseVideo(); }catch(e){} stopFilm(); } };
+  // the player back on the game's page (it sits inside a borrower's close-up while that is open)
+  const unseat=()=>{ if(!clip||full)return; const stg=document.getElementById('stage')||document.body; if(clip.parentNode!==stg){ stg.insertBefore(clip,stg.firstChild); clip.style.position='absolute'; clip.style.zIndex=''; } if(soundBtn.parentNode!==document.body)document.body.appendChild(soundBtn); };
+  const boxPlace=(bx,ok)=>{ '@later'; const r=bx.rect, V=vrect(), k=Math.min(r.width/V.w,r.height/V.h); if(clip.parentNode!==bx.el){ bx.el.appendChild(clip); bx.el.appendChild(soundBtn); }
+    Object.assign(clip.style,{position:'fixed',zIndex:'1',display:ok?'block':'none',left:r.left+'px',top:r.top+'px',width:r.width+'px',height:r.height+'px',borderRadius:bx.radius||'0'});
+    wrap.style.transform='translate('+((r.width-V.w*k)/2-V.x*k)+'px,'+((r.height-V.h*k)/2-V.y*k)+'px) scale('+k+')'; wrap.style.filter='contrast(1.08) saturate(1.05) blur(.35px)'; if(CUT)CUT.uniforms.uOn.value=0; if(PS2.keepAlpha)PS2.keepAlpha(false);
+    if(vFail||!ok||!snd.on){ soundBtn.textContent=vFail?'NO SIGNAL':!ok?'TUNING IN…':'🔇 tap for sound'; soundBtn.style.pointerEvents=ok&&!vFail?'auto':'none'; Object.assign(soundBtn.style,{display:'block',left:(r.left+r.width/2)+'px',top:(r.top+r.height-10)+'px'}); } else soundBtn.style.display='none'; };
+  const lendTick=b=>{ '@later'; B=b; glow(false); if(full)CINEMA.fullscreen(false); mkWrap(); mkCut(); stopFilm(); makePlayer(b.id); sniff(b.id); const ok=lentOk=vOK&&!vFail, sk=b.vol+'|'+ok+'|'+b.id; if(sk!==sndK){ sndK=sk; applySnd(); } scan.style.display=b.crt?'':'none';
+    if(b.box)boxPlace(b.box,ok); else { unseat(); lastMe=b.me; if(b.me&&facing(b.me)){ if(ok)b.me.visible=true; clip.style.display='block'; placeOver(b.me,b.dim||1,ok); } else { clip.style.display='none'; soundBtn.style.display='none'; if(CUT)CUT.uniforms.uOn.value=0; if(PS2.keepAlpha)PS2.keepAlpha(false); } }
+    if(!b.live)sync(); };
   const sync=()=>{ '@later'; const now=performance.now(); if(now-lastSync>1500&&player&&player.getCurrentTime){ lastSync=now;
       try{ const is=player.getCurrentTime(), st=player.getPlayerState?player.getPlayerState():1;
-        if(Date.now()<startMs()){ if(st===1)player.pauseVideo(); if(is>.5)player.seekTo(0,true); return; }
+        if(!B&&Date.now()<startMs()){ if(st===1)player.pauseVideo(); if(is>.5)player.seekTo(0,true); return; }
         if(st===3)return; const d=offset()-is;
         if(Math.abs(d)>6){ player.setPlaybackRate(1); player.seekTo(offset()+2,true); } else player.setPlaybackRate(Math.abs(d)<.6?1:d>0?1.25:.75);
         if(st!==1)player.playVideo(); }catch(e){} } };
@@ -305,12 +321,13 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     G.updateMatrixWorld(); const lamp=new THREE.PointLight(0xffc88a,4,3*tw,1.6); lamp.position.set(0,H*.8,0).applyMatrix4(G.matrixWorld); LITE.recs.push(lamp);
     G.traverse(o=>{ o.userData.seenOut=true; }); return {G,sc,key:'',x:kc.x,z:kc.z,ox,oz}; };
   // the neon on top of the marquee: FLEA PIT in pink tubes, its I gone dark (it catches now and then)
-  const neonDraw=()=>{ '@later'; const {c,on}=neon, g=c.g, W=c.cv.width, H=c.cv.height, T='FLEA PIT'; g.clearRect(0,0,W,H); g.font='900 '+Math.round(H*.74)+'px '+HAND; g.textBaseline='middle'; g.lineJoin='round';
+  const neonDraw=(c,on)=>{ '@later'; const g=c.g, W=c.cv.width, H=c.cv.height, T='FLEA PIT'; g.clearRect(0,0,W,H); g.font='900 '+Math.round(H*.74)+'px '+HAND; g.textBaseline='middle'; g.lineJoin='round';
     const w=g.measureText(T).width, sc=Math.min(1,(W-60)/w); g.save(); g.translate(W/2,H/2+4); g.scale(sc,1); let x=-w/2;
     for(let i=0;i<T.length;i++){ const ch=T[i], cw=g.measureText(ch).width, dead=i===6&&!on; g.textAlign='center';
       if(ch!==' '){ if(!dead){ g.shadowColor='#ff3c7c'; g.shadowBlur=26; g.strokeStyle='#ff4f8a'; g.lineWidth=13; g.strokeText(ch,x+cw/2,0); g.shadowBlur=8; g.strokeStyle='#ffd0e0'; g.lineWidth=4; g.strokeText(ch,x+cw/2,0); }
         else { g.shadowBlur=0; g.strokeStyle='#5a2a3c'; g.lineWidth=11; g.strokeText(ch,x+cw/2,0); g.strokeStyle='#7a4a5a'; g.lineWidth=3; g.strokeText(ch,x+cw/2,0); } }
-      x+=cw; } g.restore(); c.tex.needsUpdate=true; if(neon.light)neon.light.intensity=on?3.2:2.6; };
+      x+=cw; } g.restore(); c.tex.needsUpdate=true; };
+  const neonShow=()=>{ neon.me.material.map=(neon.on?neon.lit:neon.dead).tex; if(neon.light)neon.light.intensity=neon.on?3.2:2.6; };   // the sign is drawn once each way and swapped, never redrawn
   const buildSigns=()=>{ '@later'; if(canopy)return; const SD=STORE.streetDoor&&STORE.streetDoor.theatre, LT=STORE.main&&STORE.main.lot&&STORE.main.lot('theatre',300); if(!SD||!LT)return;
     const B=SHARED.BOD, Yb=B.Y, tw=Math.abs(B.X(1)-B.X(0)), bx=B.X(SD.door[0]), bz=B.Z(SD.door[1]); let ox=B.X(SD.out[0])-bx, oz=B.Z(SD.out[1])-bz; const l=Math.hypot(ox,oz)||1; ox/=l; oz/=l;
     const alongX=Math.abs(oz)>=Math.abs(ox), ry=Math.atan2(ox,oz), e=alongX?[B.Z(LT.y0),B.Z(LT.y1)]:[B.X(LT.x0),B.X(LT.x1)], oc=alongX?B.Z(SD.out[1]):B.X(SD.out[0]), f0=Math.abs(e[0]-oc)<Math.abs(e[1]-oc)?e[0]:e[1];
@@ -326,7 +343,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
       me.position.copy(at(cS,EXT+cd*.55,Yb(138)+nh/2+.05*tw)); me.rotation.y=ry; scene.add(me);
       const rail=new THREE.Mesh(new THREE.BoxGeometry(nw*.9,.06*tw,.08*tw),dark); rail.position.copy(at(cS,EXT+cd*.5,Yb(138)+.05*tw)); rail.rotation.y=ry; scene.add(rail);
       const light=new THREE.PointLight(0xff4f8a,3,7*tw,1.6); light.position.copy(at(cS,EXT+cd+1.2*tw,Yb(150))); LITE.recs.push(light);
-      neon={c,me,rail,light,on:false,t:0}; neonDraw(); }
+      const lit=c, dead=canv(lit.cv.width,lit.cv.height); neonDraw(lit,true); neonDraw(dead,false); neon={lit,dead,me,rail,light,on:false,t:0}; neonShow(); }
     post={...canv(270,400),key:''}; const fr=storefront({at,ry,tw,Yb,Wb,cS,dS,dir,EXT,lo,hi,post}); post.front=fr.F;
     box_o=boxOffice({at,ry,tw,Yb,EXT,bS:fr.bS,BW:fr.BW,win:fr.win,ox,oz});
     SIGNS.list.push({me:box,name:'THEATRE MARQUEE',place:'street',get:()=>({text:ovr.text,bri:ovr.bri,col:ovr.col}),

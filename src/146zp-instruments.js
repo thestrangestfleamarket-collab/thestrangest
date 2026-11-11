@@ -25,32 +25,36 @@ import {GUITAR} from './146zob-guitar.js';
   const score=P=>P.song>=0&&P.K.BOOK[P.song]?P.K.BOOK[P.song].c:P.live, time=P=>P.song>=0?now()-P.s0:now();
   INSTR.score=score; INSTR.time=time;
   const voice=P=>{ if(!GSND.imx){ GSND.wake(); return null; } return P.V||(P.V=GSND.inst((P.id==='me'?'me':P.id)+'|'+P.K.id,P.K.dsp())); };
-  const trim=P=>{ const L=P.live.ev, t=now()-12; while(L.length>200||L.length&&L[0].t+(L[0].d>1e6?0:L[0].d)<t&&L[0].d<1e6)L.shift(); };
+  // (the hands keep their place in the score, H.lo: it moves back with what is dropped from the front)
+  const trim=P=>{ const L=P.live.ev, t=now()-12; let n=0; while(L.length>200||L.length&&L[0].t+(L[0].d>1e6?0:L[0].d)<t&&L[0].d<1e6){ L.shift(); n++; } if(n&&P.H&&P.H.lo)P.H.lo=Math.max(0,P.H.lo-n); };
   // a note played now: into the live score (the hands follow it) and to the voice
   /* ---------- the recorded sounds (owner, 8 Nov 2026: "real sounds"; data/<id>-samples.mp3 and .json, tools/instrument-samples-bake.py): fetched and decoded the first time someone near plays; till they come, the music engine's model plays ---------- */
-  const SMP={}; INSTR.SMP=SMP;
-  const smp=K=>{ const S=SMP[K.id]||(SMP[K.id]={ok:false,busy:false,retry:0}); if(S.ok||S.busy||!K.samples||!GSND.ctx||performance.now()<S.retry)return S; S.busy=true;
-    fetch(K.samples.file).then(r=>{ if(!r.ok)throw new Error(r.status); return r.arrayBuffer(); }).then(b=>GSND.ctx.decodeAudioData(b)).then(buf=>{ const x=buf.getChannelData(0), sr=buf.sampleRate; S.at={};
-      // (each sound from where it really begins: an mp3 shifts its contents a little)
-      for(const [k,t,L] of K.samples.s){ const i0=Math.max(0,Math.floor((t-.08)*sr)), i1=Math.min(x.length,Math.floor((t+.1)*sr)); let pk=0; for(let i=i0;i<i1;i++)pk=Math.max(pk,Math.abs(x[i])); let i=i0; while(i<i1&&Math.abs(x[i])<pk*.06)i++; S.at[k]={t:Math.max(0,(i-24)/sr),L}; }
-      S.buf=buf; S.ok=true; }).catch(e=>{ console.warn(K.id+' sounds',e); S.retry=performance.now()+15000; }).finally(()=>{ S.busy=false; });
-    return S; };
+  const SMP=GSND.SETS; INSTR.SMP=SMP; INSTR.GSND=GSND;
+  const smp=K=>GSND.set(K.id,K.samples);
   INSTR.loadSounds=K=>smp(K);
-  const fade=(o,when,T)=>{ if(o.end<=when)return; o.g.gain.setTargetAtTime(0,when,T/3); try{ o.src.stop(when+T*2); }catch(_){} o.end=when; };
   // a note out: its recordings (K.sample: which sound, how fast, how loud, how bright; a note that cuts off its own last one, or its group's), else the model's events
-  const emit=(P,e,when)=>{ const V=voice(P); if(!V)return; const K=P.K, S=smp(K); if(!(S.ok&&K.sample))return GSND.send(V,K.sound(e,P),when); const c=GSND.ctx, L=V.on||(V.on=[]);
-    for(const h of K.sample(e,P)){ const A=S.at[h.k]; if(!A)continue; for(const o of L)if((h.re&&o.id===h.id)||(h.ch!=null&&o.ch===h.ch))fade(o,when,.04);
-      const src=c.createBufferSource(); src.buffer=S.buf; src.playbackRate.value=h.rate||1; let n=src; if(h.lp){ const f=c.createBiquadFilter(); f.type='lowpass'; f.frequency.value=h.lp; f.Q.value=.4; src.connect(f); n=f; }
-      const g=c.createGain(); g.gain.value=h.gain; n.connect(g); g.connect(V.g); src.start(when,A.t,A.L); const o={src,g,id:h.id,ch:h.ch,end:when+A.L/(h.rate||1)}; L.push(o);
-      src.onended=()=>{ const i=L.indexOf(o); if(i>=0)L.splice(i,1); try{ g.disconnect(); }catch(_){} }; } };
+  const emit=(P,e,when)=>{ const V=voice(P); if(!V)return; const K=P.K, S=smp(K); if(!(S.ok&&K.sample))return GSND.send(V,K.sound(e,P),when);
+    for(const h of K.sample(e,P,S))GSND.play(V,S,h,when); };
   // stopping notes (a damper, a hand on a string): the recordings fade, or the model takes the same events
   const rel=(P,evs,when)=>{ const V=P.V; if(!V||!evs||!evs.length)return; const S=SMP[P.K.id]; if(!(S&&S.ok&&P.K.sample))return GSND.send(V,evs,when);
-    for(const q of evs){ const id=q.k==='mute'?q.s:q.id; for(const o of V.on||[])if(o.id===id)fade(o,when,q.k==='mute'?.12:(q.T||.15)); } };
+    for(const q of evs){ const id=q.k==='mute'?q.s:q.id; for(const o of V.on||[])if(o.id===id&&o.end>when){ GSND.fade(o,when,q.k==='mute'?.12:(q.T||.15)); if(q.rel){ const r=GSND.near(S,'r',id); if(r)GSND.play(V,S,{...r,rate:1,gain:q.rel},when); } } } };
   INSTR.note=(P,e)=>{ e.t=e.t??now(); P.live.ev.push(e); trim(P); emit(P,e,GSND.now()+.01); if(P===ME&&++freeN%25===0)FORAGE.use(P.K.skill,-10,45); return e; };
   INSTR.off=(P,e,t)=>{ if(!e||e.d<1e6)return; e.d=Math.max(.03,(t??now())-e.t); if(P.K.release)rel(P,P.K.release(e,P),GSND.now()+.005); };
   INSTR.raw=(P,evs)=>{ voice(P); rel(P,evs,GSND.now()+.01); };
   let freeN=0;
-  const songGo=(P,i,fail=0)=>{ const T=P.K.BOOK[i]; if(!T)return; if(!T.c)P.K.compile(T); P.song=i; P.s0=now()+.6; P.cur=0; P.fail=fail; };
+  // a piece played as a player plays it (owner, 10 Nov 2026: "sounds like midi"): each onset a little off the grid (a chord's notes together), the tempo breathing and held back at the end; where the book gives every note the same loudness, the line shapes it (higher and longer louder, the tune over its accompaniment, a phrase's end softer); for the one-note instruments, which notes join; the same for everyone who hears it (from each note's place, not chance)
+  const hsh=i=>{ let x=Math.imul(i^0x5bd1e995,0x85ebca6b); x^=x>>>13; x=Math.imul(x,0xc2b2ae35); x^=x>>>16; return (x>>>0)/4294967296; };
+  INSTR.feel=(c,K)=>{ if(!c||c.felt||!c.ev.length)return; c.felt=1; const ev=c.ev, end=c.len, vs=new Set(ev.map(e=>Math.round(e.v*20))), flat=vs.size<=2&&K.id!=='drums';
+    let lo=127, hi=0; for(const e of ev){ lo=Math.min(lo,e.n); hi=Math.max(hi,e.n); } const span=Math.max(1,hi-lo), ex=t=>t+.04*Math.sin(t*.57)+(t>end-4?.02*(t-end+4)**2:0);
+    let on=-1e9, jt=0, top=0;
+    for(let i=0;i<ev.length;i++){ const e=ev[i]; if(e.t-on>.015){ on=e.t; jt=(hsh(i)-.5)*.02; top=e.n; for(let j=i+1;j<ev.length&&ev[j].t-on<=.015;j++)top=Math.max(top,ev[j].n); }
+      let j=i+1; while(j<ev.length&&ev[j].t<=e.t+.015)j++; const nx=ev[j], gap=nx?nx.t-(e.t+e.d):9;
+      let v=e.v; if(flat){ v=.45+.3*(e.n-lo)/span+Math.min(.12,e.d*.12)-(gap>.3?.08:0); if(K.id==='piano'||K.id==='harp')v+=e.n===top&&e.h==='R'?.1:e.h==='L'?-.1:-.04; }
+      e.v=Math.max(.06,Math.min(1,v*(1+(hsh(i+7919)-.5)*.14)));
+      if(K.mel){ e.lg=!!nx&&gap<.06&&nx.t>e.t+.03; if(e.lg)nx.sl=1; }
+      const t0=e.t, t1=ex(t0+e.d); e.t=Math.max(0,ex(t0)+jt+(hsh(i+31)-.5)*.004); e.d=Math.max(.03,t1-ex(t0)); }
+    ev.sort((a,b)=>a.t-b.t); c.len=Math.max(ex(end),ev.reduce((a,e)=>Math.max(a,e.t+e.d),0)); };
+  const songGo=(P,i,fail=0)=>{ const T=P.K.BOOK[i]; if(!T)return; if(!T.c)P.K.compile(T); INSTR.feel(T.c,P.K); P.song=i; P.s0=now()+.6; P.cur=0; P.fail=fail; };
   const songStop=P=>{ if(P.song<0)return; P.song=-1; if(P.V&&P.K.hush)rel(P,P.K.hush(P),GSND.now()+.01); };
   // a song's notes go to the voice a little ahead of the clock
   const songTick=P=>{ if(P.song<0)return; const T=P.K.BOOK[P.song], c=T&&T.c; if(!c)return songStop(P); const t=time(P); if(P.fail&&t>P.fail){ songStop(P); if(P===ME){ tell('stop'); SONGBK.done(P.K.skill,T,false,P.fail/c.len); fillSongs(); drawPanel(); } return; }
@@ -79,7 +83,7 @@ import {GUITAR} from './146zob-guitar.js';
       { const hp=org(W[2],new V3()); turnAbout(W[2],hp,QA.setFromEuler(new THREE.Euler(K.look||.3,(K.lookY?K.lookY(P,t,H):0),0,'YXZ'))); }
       const hd=K.hands(P,t,H), st=PMx.hands, E={L:new V3(),R:new V3()};
       for(let i=0;i<15;i++)W0[i].copy(W[i]);
-      for(let it=0;it<3;it++){ if(it)for(let i=0;i<15;i++)W[i].copy(W0[i]);
+      for(let it=0,worst=1;it<8&&(it<3||worst>.003);it++){ if(it)for(let i=0;i<15;i++)W[i].copy(W0[i]); worst=0;
         for(const [sd,ids] of [['L',[3,4,5]],['R',[6,7,8]]]){ const h=hd[sd]; reach(W,ids,m(h.wr).add(H.off[sd]),dir(h.pole||(sd==='L'?new V3(.9,-.7,-.3):new V3(-.9,-.7,-.3)))); untwist(W,ids,1); }
         for(const [sd,ids] of [['L',[3,4,5]],['R',[6,7,8]]]){ const h=hd[sd]; aim(W,ids[2],sd,dir(h.Fd),dir(h.Dd)); untwist(W,ids,2); }
         if(!st||!st.base)break; let more=false;
@@ -87,7 +91,7 @@ import {GUITAR} from './146zob-guitar.js';
           if(!st.near){ for(let i=0;i<5;i++)f[i]=R0[i].slice(); continue; }
           const base=MA.multiplyMatrices(W[bi],body.binv[bi]).multiply(st.base[sd]), inv=MB.copy(base).invert(), e=E[sd].set(0,0,0); let ws=0;
           for(let i=0;i<5;i++){ const tg=h.tips[i]; if(!tg){ f[i]=h.rest?h.rest[i].slice():[.25,.35,.25,R0[i][3]]; continue; } const tw=m(tg), v=tw.clone().applyMatrix4(inv); HANDS.reach(i,v,f[i]);
-            const tip=HANDS.tip(i,f[i],new V3()).applyMatrix4(base), w=h.w?h.w[i]:1; H.err[sd][i]=tip.distanceTo(tw)/k; e.addScaledVector(tw.sub(tip),w); ws+=w; }
+            const tip=HANDS.tip(i,f[i],new V3()).applyMatrix4(base), w=h.w?h.w[i]:1; H.err[sd][i]=tip.distanceTo(tw)/k; if(h.w&&h.w[i]>1)worst=Math.max(worst,H.err[sd][i]); e.addScaledVector(tw.sub(tip),w); ws+=w; }
           if(ws){ e.multiplyScalar(1/ws); H.off[sd].add(e); const mx=.07*k; if(H.off[sd].length()>mx)H.off[sd].setLength(mx); more=true; } }
         if(!more)break; }
       if(st)st.fg=H.fg;
@@ -195,6 +199,16 @@ import {GUITAR} from './146zob-guitar.js';
   INSTR.mat=lam; INSTR.box=(w,h,d,c,x=0,y=0,z=0)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),typeof c==='number'?lam(c):c); m.position.set(x,y,z); m.castShadow=m.receiveShadow=true; return m; };
   INSTR.cyl=(r0,r1,h,c,seg=16,x=0,y=0,z=0,open=false)=>{ const m=new THREE.Mesh(new THREE.CylinderGeometry(r0,r1,h,seg,1,open),typeof c==='number'?lam(c):c); m.position.set(x,y,z); m.castShadow=m.receiveShadow=true; return m; };
   INSTR.sm=u=>{ u=Math.max(0,Math.min(1,u)); return u*u*(3-2*u); };
+  // Polyfork's models of them (150cyb, fetched after the start): dress(mesh maker) now if they have come, else when they come; dress hides the first shapes and fits the model
+  const PFQ=[]; INSTR.PF=null;
+  INSTR.pf=f=>{ if(INSTR.PF)f(INSTR.PF.mesh); else PFQ.push(f); };
+  INSTR.pfReady=P=>{ INSTR.PF=P; for(const f of PFQ.splice(0))try{ f(P.mesh); }catch(e){ console.warn('instrument model',e); } };
+  // a model fitted: turned by ry about the up axis, scaled (a number or [x,y,z]), set at [x,y,z]
+  INSTR.fit=(m,ry,s,at)=>{ if(!m)return m; m.rotation.y=ry; if(Array.isArray(s))m.scale.set(...s); else m.scale.setScalar(s); m.position.set(...at); return m; };
+  // a stool, its seat's top at y (Polyfork's lab stool once it comes)
+  INSTR.stool=(g,y,z=0)=>{ const o=new THREE.Group(); o.add(INSTR.cyl(.17,.17,.06,0x1a1414,18,0,y-.03,z)); for(const a of [.5,2.6,-1.6])o.add(INSTR.cyl(.012,.012,y-.06,0x1a1414,6,Math.sin(a)*.12,(y-.06)/2,z+Math.cos(a)*.12)); g.add(o);
+    INSTR.pf(mk=>{ const m=mk('stool'); if(!m)return; o.visible=false; g.add(INSTR.fit(m,0,y/INSTR.bb(m).max.y,[0,0,z])); }); };
+  INSTR.bb=m=>{ const G=m.geometry; if(!G.boundingBox)G.computeBoundingBox(); return G.boundingBox; };
   INSTR.FIST=[[.6,.7,.5,0],[1.45,1.7,1.05,-.18],[1.5,1.7,1.05,-.06],[1.55,1.7,1.05,.08],[1.6,1.7,1.05,.22]];
   // the bodega's shelf: each one as a small model of itself on the bottom row of the right wall
   INSTR.shelf=(id,mk,sc)=>{ if(!BODEGA.MAKE)return; BODEGA.MAKE[id]=()=>{ const g=new THREE.Group(), m=mk(); m.scale.setScalar(sc); g.add(m); return g; }; const row=BODEGA.LAYOUT.find(r=>r[0]==='wr1'&&r[1]===0); if(row)row[2].push(id); else BODEGA.LAYOUT.push(['wr1',0,[id]]); };

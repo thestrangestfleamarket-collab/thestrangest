@@ -1,6 +1,6 @@
 // THE BIRDS: BIRDS, the town's birds that hop, walk and fly, and that the player can catch.
 import {SHARED, THREE} from './003-shx.js';
-import {BIRDS, CLOCK, DRESS, FLORA, FORAGE, INSPECT, INV, ITEMS, MAIL, NPCS, ONLINE, PARK, pos, ROOMS, SFX, UI, W3, WEEDS, WX} from './003b-systems.js';
+import {BIRDS, CLOCK, DRESS, FLORA, FORAGE, INSPECT, INV, ITEMS, MAIL, NPCS, ONLINE, PARK, pos, ROOMS, SFX, TAMING, UI, W3, WEEDS, WX} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
@@ -140,7 +140,7 @@ import {GARDEN} from './144a-garden.js';
   const known=k=>!!S.seen[k], nmOf=b=>known(b.k)?K[b.k][0]:'A BIRD YOU DO NOT KNOW';
   const draw=()=>{ '@later'; const b=PANEL.b; if(!b)return close(); const k=b.k, pet=b.st==='pet';
     let o=`<div style="color:#f2c14e;margin-bottom:4px">${pet?'YOUR TAME '+K[k][0]:nmOf(b)}</div><div style="color:#9b9584;margin-bottom:8px">${known(k)?`<i>${K[k][1]}</i> · SEEN ${S.seen[k]} TIME${S.seen[k]===1?'':'S'}`:'NOT IN YOUR JOURNAL YET'}</div><div>`;
-    if(pet)o+=`<button ${B} data-a="free">LET IT GO</button>`; else o+=`<button ${B} data-a="pickup">PICK UP</button><button ${B} data-a="watch">WATCH</button><button ${B} data-a="tame">TAME${FORAGE.has('bseed')?' (SEED x'+FORAGE.has('bseed')+')':' (NO SEED)'}</button><button ${B} data-a="catch">CATCH${FORAGE.has('bnet')?' (CAGES x'+FORAGE.has('cage')+')':' (NO NET)'}</button>`;
+    if(pet)o+=`<button ${B} data-a="free">LET IT GO</button>`; else o+=`<button ${B} data-a="pickup">PICK UP</button><button ${B} data-a="watch">WATCH</button><button ${B} data-a="tame">TAME${FORAGE.has('bseed')?' (SEED x'+FORAGE.has('bseed')+')':''}</button><button ${B} data-a="catch">CATCH${FORAGE.has('bnet')?' (CAGES x'+FORAGE.has('cage')+')':' (NO NET)'}</button>`;
     o+=`</div><div style="color:#7d7a70;margin-top:8px">BIRDING ${FORAGE.sk('bird').toFixed(1)}${binoc()?' · BINOCULARS':''}. Seed, nets, cages, feeders, binoculars: the Nature Merchant.</div>`; const x=P.querySelector(':scope>.pX'); P.innerHTML=o; if(x)P.appendChild(x); };
   BIRDS.menu=b=>{ if(!BIRDS.list.includes(b))return; PANEL.b=b; P.hidden=false; draw(); };
   const gone=b=>!BIRDS.list.includes(b)||b.st==='fly';
@@ -151,8 +151,7 @@ import {GARDEN} from './144a-garden.js';
   const ACT={pickup:b=>{ '@later'; if(b.k===HAWK)return say('A HAWK WILL NOT BE PICKED UP.','#c8a090'); if(Math.hypot(b.x-pos.x,b.z-pos.z)>1.3*T)return say('GET CLOSER, SLOWLY.','#c8a090'); const d=DIFF(b.k)+20;
       if(use('bird',d-25,d+25)){ if(!S.seen[b.k])log(b); feather(b.k,.3); makePet(b.k,b); say('IT SITS CALM IN YOUR HANDS.','#9fe07f'); } else { say('IT STARTLES AND FLIES OFF.','#c8a090'); flush(b); } },
     watch:b=>{ '@later'; const sd=seedAt(), bonus=sd&&Math.hypot(b.x-sd.x,b.z-sd.z)<2*T?10:0, d=DIFF(b.k); if(use('bird',d-25,d+25,bonus)){ log(b); feather(b.k,.1); WS={b,t:0,d,bonus}; say('YOU SETTLE IN TO WATCH IT. STAY CLOSE.','#9fe07f'); } else { say('IT FLIES OFF BEFORE YOU GET A GOOD LOOK.','#c8a090'); flush(b); } },
-    tame:b=>{ '@later'; if(b.k===HAWK)return say('A HAWK WILL NOT TAKE SEED FROM YOUR HAND.','#c8a090'); if(!FORAGE.has('bseed'))return say('YOU NEED BIRDSEED (THE BIRD SHOP HAS IT).','#c8a090');
-      FORAGE.take('bseed',1); const d=DIFF(b.k)+15; if(use('bird',d-20,d+30)){ if(!S.seen[b.k])log(b); makePet(b.k,b); } else { say('IT TAKES THE SEED AND FLIES OFF.','#c8a090'); flush(b); } },
+    tame:b=>{ '@later'; if(!S.seen[b.k])log(b); TAMING.go({bird:b}); },   // by TAMING (146zjd): it joins your pets; birdseed helps
     catch:b=>{ '@later'; if(!FORAGE.has('bnet'))return say('YOU NEED A BIRD NET (THE BIRD SHOP HAS THEM).','#c8a090'); if(b.k===HAWK)return say('A HAWK IS FAR TOO BIG FOR YOUR NET.','#c8a090');
       if(!FORAGE.has('cage'))return say('YOU NEED AN EMPTY CAGE TO PUT IT IN.','#c8a090'); const d=DIFF(b.k)+10; SFX.play('step',{vol:.4});
       if(use('bird',d-25,d+25)){ FORAGE.take('cage',1); FORAGE.give('bd_'+b.k,1); if(!S.seen[b.k])log(b); feather(b.k,.5); say(`YOU NET THE ${K[b.k][0]} AND CAGE IT.`,'#b8f0a0'); drop(b); } else { say('YOUR NET SWISHES THROUGH EMPTY AIR.','#c8a090'); flush(b); } },

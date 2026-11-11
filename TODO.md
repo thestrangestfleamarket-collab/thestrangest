@@ -63,7 +63,7 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
 
 ## The map and the park
 - [ ] **The falls, the owner's look** · P2 · S · look. Owner, 10 Nov ("1 yes 2 all no name just a spot on map"): try the falls live (swim, the jump rock, the stairs, the rope swing, night); its spot is west of the brook's mouth, not east (no room there).
-- [ ] **The falls' leftovers** · P3 · M · code. Building a cairn on the lip (shared, saved on the server), bats over the pool at night, the falls in the map editor.
+- [ ] **The falls in the map editor** · P3 · S · code. Its spot and size from data/world.json parkPlaces.falls (cairns and bats done 10 Nov).
 
 - [ ] **The fronts, for his look** · P2 · look. Built 8–9 Nov (the rows modelled, `src/038zc-facades.js`; brick, shopfronts, pet shop
   signs). Left: his look and yes.
@@ -90,6 +90,7 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
 - [x] **The river drew the whole town a second time** (10 Nov) · P1 · S · code. Its see-through picture now skipped when no water was drawn lately, and drawn with only what is in or by the river.
 - [x] **The far backdrop drawn when unseen** (10 Nov) · P2 · S · code. The far city was never culled; backdrop pieces its own shader shrinks away were still drawn. Now culled piece by piece and left out past that distance.
 - [x] **Too many draw calls** (10 Nov) · P1 · S · code. Far cars (traffic and parked) in a few merged pieces; the lake and its bed in 3×3 chunks. Up the street about 1,070 → 850 draws; facing the park 557 → 304.
+- [x] **Big meshes built after the start drawn whole for ~100 s; the lawn's 5×5 built in one stall** (11 Nov) · P1 · S · code. The cull splits them a few ms a frame, not one a second; the lawn round you is one shot from above, not 25 (same picture, 5–10× faster), and no longer redraws the sun's shadows.
 - [ ] **The subway station is built and painted at the start** (15 MB): build it on the way down · P2 · M · code.
 - [ ] **The park shop animals**: all 179 download at the start; measure the start on a real connection · P2 · S · check.
 - [ ] **The start-up and frame-time comparison** · P1 · M · check. Never finished (2 Nov, `tests/startprof.cjs`). Redo it on today's main
@@ -126,9 +127,15 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 
 ## Places and insides
 
+- [x] **The playhouse as THE WOODEN O** (owner, 10 Nov 2026: "redesign it", picked B) · P2 · M · code + look [taking: claude/laughing-curie-ui41fc, 10 Nov]
 - [x] **The movie theatre as THE FLEA PIT** (owner, 10 Nov 2026: "i want to redsesign the movie theater", picked B) · P2 · M · code + look. Front, dark inside, box office, seats [taking: claude/laughing-curie-ui41fc, 10 Nov]
 - [ ] **The fish market** · P2 · M · look. Owner, 9 Nov 2026: waits for his look and yes. Not yet: the workers keep no hours (the jobs system is archived), the editor's ground picture (`tools/topmap.cjs`) not re-made, the minimap does not draw the sheds.
 - [ ] **The fish market's sheds** · P3 · S · pick. The two sheds stand on the row, not on the water side as the real ones did (the quay stays open for fishing); say if they should cross the street.
+- [x] **Fossil digs** (owner, 10 Nov 2026: "do 1-8") · code. [done: worktree-agent-a66213ee845b8a10a, 10 Nov]
+- [ ] **Fossil digs, for his look** · P2 · look. The three sites in the park, the bones and skeletons (simple shapes, Polyfork's brush and the
+  bones lying at the sites), the hall in the Art Museum's atrium.
+- [ ] **Where the fossil hall stands** · P3 · S · pick. In the Art Museum's atrium (the Professor curates there) while the Museum of Earth is
+  away; one line moves it once that museum is back.
 - [ ] **The telescope** · P3 · S · code. The firsts board on no wall; GO TO Betelgeuse failed once. (10 Nov: satellite passes follow the
   real hour and the aurora is in the street's own sky.)
 - [x] **The public observatory** (owner, 10 Nov 2026: "Both") · P2 · L · code. A dome in the park with one big shared telescope, deeper than
@@ -158,7 +165,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [ ] **The gym, next if wanted** · P4 · pick. A sparring bot in the ring, a trainer, bets on fights.
 - [ ] **The owner's nine (9 Nov 2026: "Violin, flute, trumpet, Dances CMU motion-capture library, Painting copies, sign language, juggling, ade animal taming as skill, fossil digs, bar games, implants")** · one pull request each, in this order:
   - [x] **Violin, flute, trumpet** · P2 · L · code. [taking: claude/blissful-goodall-udydlj, 9 Nov]
-  - [ ] **The piano, harp and drums as Polyfork models** · P3 · M · code. Owner, 10 Nov: "Use very realistic instruments models and textures" (his pick: Polyfork); their keys, strings and heads move, so each needs fitting.
+  - [x] **The piano, harp and drums as Polyfork models** · P3 · M · code. [done 10 Nov, with the trumpet's valves moving] Owner, 10 Nov: "Use very realistic instruments models and textures" (his pick: Polyfork); their keys, strings and heads move, so each needs fitting.
   - [ ] **Violin, flute, trumpet, seen live** · look. How each is held and sounds; the tunes are the piano pieces' top line.
   - [ ] **Dances** · P2 · L · code. Learnt by band like songs, from the CMU motion-capture library; performed for tips.
   - [ ] **Painting copies** · P2 · L · code. Copy open-collection masterworks by difficulty; hang or sell them.
@@ -167,7 +174,11 @@ steps go in one window, after the checks run on `main`, and end with the owner t
   - [ ] **Animal taming, a skill** · P2 · XL · pick + code. Owner: "everything" (wildlife as pets, monsters that fight beside you, mounts): options first.
   - [ ] **Fossil digs** · P3 · L · code. Dig bones, assemble skeletons for the museum.
   - [ ] **Bar games** · P2 · XL · pick + code. Owner's picks: darts (the archived 301), pool, bowling (needs its own place: options first).
+  - [x] **Implants** · P3 · L · pick + code. Owner: "Both" (stat boosts and new abilities), fitted at a clinic. Done 10 Nov: THE CLINIC (`src/146zkc-clinic.js`, EQUIP's implants in `src/146c-equip.js`), `tests/implants.cjs`.
+  - [x] **Bar games** · P2 · XL · pick + code. Owner's picks: darts (the archived 301), pool, bowling. Bowling done 10 Nov: THE STRANGEST LANES (`src/146zkb-bowling.js`, `worker/lanes.js`, `tests/bowling.cjs`).
+  - [ ] **The bowling alley, seen live** · look. The lanes, pins and hook in a real browser; the longboarder at the counter; two players on the website.
   - [ ] **Implants** · P3 · L · pick + code. Owner: "Both" (stat boosts and new abilities), fitted at a clinic.
+- [ ] **The instruments, seen and heard live** · look. The 10 Nov feel and fuller recordings (and the recorded guitar): does it still sound like MIDI?
 - [ ] **The instruments, the rest** · P3 · S · code. The bar's piano and kit playable in place; a bandstand for the park guitar.
 - [ ] **Companion drone NPC**: mockup done, waiting on "go" · pick.
 - [x] **Your AI double** (owner, 9 Nov 2026; done 9 Nov) · P2 · M · code. `src/162gb-twin.js`, `worker/twin.js`, `tests/twin.cjs`. Removed 10 Nov 2026 with all the bots.
@@ -181,14 +192,17 @@ steps go in one window, after the checks run on `main`, and end with the owner t
   today's cast's bodies get a ragdoll; `tests/physx.cjs` checks them again then. When they come: stand up where they fell, not where they were.
 
 ## Apartments
+- [ ] **DECORATE's catalog lamps give no light; seven restored books share one name** (found in the 10 Nov 2026 audit) · P3 · S · code. The catalog's floor lamp, desk lamp, bare bulb, neon signs and lanterns are painted without their light; the books all read A RESTORED BOOK.
 - [x] **Pets** (owner, 7 Nov 2026: "use polyfork cats and dogs and birds, let people choose one as pet (choose color, style) use the base models"; done 7 Nov) · P2 · L · code. `src/146zj-pets.js`, `tools/pets-bake.py`, `tests/pets.cjs`. Waits for his look and yes.
 - [x] **Every breed, the permapet, PETS in the menu** (owner, 8 Nov 2026: "try to add every breed possible"; "player can pick their main pet when they start"; "add PETS menu in esc menu"; done 8 Nov) · P2 · L · code. `tools/breeds-bake.py`, `tools/breeds_list.py`, `src/146zj-pets.js`, `src/162g-firstday.js`, `tests/pets.cjs`. Waits for his look and yes.
 - [x] **Pets, the rest** (owner, 8 Nov 2026: "1-6"; done 8 Nov) · P2 · L · code. Breeds for every farm and pet animal, better dog bases, dog food back, pets at home, stats at work. Waits for his look and yes.
 - [x] **The park's animals to the pet store's cages; every living thing a pet; THE AQUARIUM** (owner, 8 Nov 2026: "hudson lot, apartment tank only, birds ok, go"; done 8 Nov) · P2 · L · code. `src/146zj-pets.js`, `src/146zjb-aquarium.js`, `tools/pets-more.py`, `tools/petcages-bake.py`, `tests/petstore.cjs`. Waits for his look and yes.
 - [x] **The pet shops split; the park farm and its barn** (owner, 8 Nov 2026: "separate buildings, recommendations, big liz, A, yes go"; done 8 Nov) · P2 · L · code. `src/146zj-pets.js`, `src/059i-mshops.js`, `tools/pets-more.py`, `tools/petcages-bake.py`, `tests/petstore.cjs`. Waits for his look and yes.
 - [x] **The farm deeper in the park, gate shut, its animals living** (owner, 9 Nov 2026; done 9 Nov) · P2 · M · code. `src/086a-farm.js`, `tests/farm.cjs`. Waits for his look and yes.
+- [x] **Animal taming** (owner, 9-10 Nov 2026: "animal taming as skill", "One skill, three tiers", "do 1-8"; done 10 Nov) · P2 · L · code · look. `src/146zjd-taming.js`, `tests/taming.cjs`. Left: skeletons and ogres are not tameable (people, not creatures); a fighter fights only the dungeon's monsters; the owner's look at the deer back in the woods and the deer under a saddle.
 - [x] **The rules of the street: bots and walkers off the road, across at crosswalks, on WALK; a wandering bot visits real things** (owner, 9 Nov 2026; done 9 Nov) · P2 · M · code. `src/076-npc-map.js`, `src/162g-bots.js`, `worker/folk.js`. Next: the bots' goals (options given to the owner).
 - [x] **Flying pets flap and perch; ground pets wait below** (owner, 9 Nov 2026: "winged creatures should always be flapping wings. birds and flying creatuers can land on your shoulder or head depending on size"; "pets that cant fly should not fly up with you"; "you can choose in pet properties where they sit"; done 9 Nov) · P2 · S · code. `src/146zj-pets.js`, `tests/perch.cjs`. Waits for his look and yes.
+- [x] **Flying pets fly and land behind you; no shoulder perches; your pet's E prompt only when you face it** (owner, 10 Nov 2026; done 10 Nov) · P2 · S · code. `src/146zj-pets.js`, `tests/perch.cjs`. Waits for his look and yes.
 - [ ] **Keepers for the new pet shops** · P3 · S · pick. Every unarchived character fitting is working elsewhere; the owner names who (from the archive or new).
 - [x] **Your pet at home** (owner, 9 Nov 2026: "in your apartment's living room and bedroom, wandering by findPath, jumping or flying up onto things, idling, asleep"; done 9 Nov) · P2 · M · code. `src/146zj-pets.js`, `tests/pethome.cjs`. Waits for his look and yes.
 
@@ -197,6 +211,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [ ] **The car radio unconfirmed** (cars parked past the map edge) · look.
 
 ## Physics and vehicles
+- [x] **The Hudson's OCEAN look** · P3 · M · look. Owner, 11 Nov 2026 ("try 1 and 4 on the hudson"): Ultra-Water's FFT waves as a fifth way on the Hudson, things afloat riding the drawn waves. done 11 Nov: the default.
 - [x] **Glitched slab on Market St; three road cars out** · P1 · S · fix. Done 10 Nov: the subway train no longer shows on the street; boxy sedan, 80s hatchback and yellow cab gone from the traffic.
 - [x] **Vehicle editor follow-ups** · P3 · S · look. Done 10 Nov: a resized car or kart drives at its size, the traffic's models have their parts, the horse is in (colours and size), the train shows before you go down, the horse's COAT picker.
 
@@ -210,6 +225,8 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [ ] **The hover cars and the police flier, for the owner** (10 Nov 2026) · P2 · S · look. Two taxis, the ambulance, the police flier: their shapes against Polyfork's, the shine by day and night, flying them (SPACE, SHIFT), where they park (West St).
 - [ ] **The submersible, for the owner** (10 Nov 2026) · P2 · S · look. How it reads deep in the dark Hudson (its lamps, the hull), where it is moored; it passes through the pirate wreck (no walls for it yet); no dive check in `tests/cars.cjs` (the river is not built at the test's start).
 - [ ] **The lake wreck, for the owner** (10 Nov 2026) · P2 · S · look. Its look under water by day and night, the way in, the hold; the follow camera crowds it in its narrow basin. (The airship's captain built 10 Nov; he can be seen only from far below.)
+- [x] **The convertible drivable** (owner, 10 Nov 2026: "make this car drivable by players. you can choose the color of interior, exterior ... 1st person view") · P2 · M · code. Parked in the park on West St's line, PAINT outside and in (shared), first person in any car (V).
+- [ ] **The convertible, for the owner** (10 Nov 2026) · P2 · S · look. Its spot (West St's line, x -27.5, y 56), the eight colours each side, the seat and eye in first person; first person in the other cars uses their cabins' eye.
 - [ ] **The police cruiser, for the owner** (9 Nov 2026) · P2 · S · look. Its shape and paint against real 80s photos, the roof lights by night, the siren and horn by ear, where it is parked (West St); the other six cars have no opening parts yet.
 - [ ] **The cars, in game, for the owner** · P2 · S · look. The insides, the cars 40% bigger next to the buildings, the radio by ear
   (loudness, the muffle outside, the four stations, starting at the shared moment).
@@ -239,6 +256,11 @@ One tree pass (more leaves mean more shadow triangles).
 - [ ] **The owner tries the moves live and approves** · P2 · S · look. #557, #561 and the Mixamo clips (7 Nov): emotes, kick and dodge,
   eating, crafting, planting, mining, sitting down, the fishing cast and pull, the sword or net swing, the dragons' fire breath and naps.
 - [x] **More animals rest** (done 10 Nov 2026) · P3 · M · code. Done: dog, fox, wolf, horse, wild horse, mule, cow, pig (the fox's Sleep, `tools/m2m-bake.cjs farm`); the other fox-rig animals are not in the game.
+- [x] **Dances and juggling** (owner, 9 Nov 2026: "Dances CMU motion-capture library", "juggling") · done 10 Nov: two PERFORMANCE skills, each a book of 50.
+- [ ] **The owner tries dancing and juggling live** · P2 · S · look. The dance book (EMOTES > DANCE BOOK), juggling from a ball or club in the bag; the CMU loops' look.
+- [x] **Sign language** (owner, 9 Nov 2026: "sign language", "Both") · done 10 Nov: a SIGN LANGUAGE skill (LANGUAGE), signed chat, two townsfolk who only sign.
+- [ ] **The owner looks at the signs** · P2 · S · look. The handshapes and motions are hand-authored and simplified; which townsfolk sign (the diner waitress, the village gardener); the 60% gate.
+- [ ] **More animals rest** · P3 · M · code. Done: dog, fox, wolf, horse, wild horse, mule; the others on the fox's rig (`tools/m2m-bake.cjs`).
 - [ ] **Standing up from a seat** · P3 · M · code · risk med. `stand()` in `src/100-use.js` puts you off the seat at once: play the
   stand-up first, then move you off, without blocking movement.
 - [x] **Fishing from the rowboat has no body move** · done 10 Nov: sat in the boat the rod is held and swung to cast and reel (a seat with `hold`).
@@ -256,6 +278,9 @@ One tree pass (more leaves mean more shadow triangles).
   `Home` split, into the art store.
 - [ ] **The painter, not yet tried for real** · P3 · S · look. Pinch to zoom and pen pressure, in VR, the easel showing your latest
   unfinished painting.
+- [x] **Painting copies** (10 Nov 2026) · the masterworks by band, the guide over the canvas, a copy scored; `tests/copies.cjs`.
+- [ ] **Painting copies: the owner's look** · P3 · S · look. The 50 works' order (measured from the pictures: dark plain-ground portraits
+  come out easy, Bruegel and engravings hard), the pass marks (40% to 85%), what a copy is worth; the score is the player's own browser's.
 
 ## Menus, map, HUD and phones
 
@@ -274,11 +299,14 @@ One tree pass (more leaves mean more shadow triangles).
 ## Sound
 
 Owner, 9 Nov 2026: "real sounds". Each batch is named by the owner first.
-- [ ] **P2 M pick** Real recordings in place of the code-made effects, a batch at a time (footsteps, doors, cars and weather done, 10 Nov): the fair's rides, fights, the day and night ambience.
+- [ ] **P2 M pick** Real recordings in place of the code-made effects, a batch at a time (footsteps, doors, cars, weather, day and night, fights done, 10 Nov): animals, other vehicles, fire, the places' own sounds.
 - [ ] **P3 S look** Listen to the footsteps, doors and cars live: the takes were picked by measurement, not by ear (the car pack is phone-recorded, low quality).
 - [ ] **P3 S code** The sound editor's uploads stay in the shared store after their takes are deleted (the server has no delete yet).
 - [ ] **P3 S code** After baking the editor's export into the code, clear the live set (or it keeps overriding the next bake's changes).
-- [ ] **P3 S find** The wind is still made in code: the only CC0 wind found (OpenGameArt) is mostly low rumble. The recordings file is 520 KB now, all fetched at the first click: split it by place if it grows.
+- [ ] **P3 S find** The wind is still made in code: the only CC0 wind found (OpenGameArt) is mostly low rumble. The effects file is 750 KB, all fetched at the first click (the ambience is its own file): split it further by place if it grows.
+- [ ] **P3 S code** Fights: no bow twang or arrow hit yet (the guardians' arrows still blip), golems and dungeon creatures still use the made sounds; other players don't hear your blows, only their own.
+- [ ] **P3 S check** `tests/instruments.cjs`' owner-kit line fails on main (the bag gets no instruments from `FORAGE.ownerKit()` there).
+- [ ] **P2 S check** `tests/datacheck.cjs` is broken on main: it calls the archived `SNDED.open`, the Hudson's `bell` has no recipe in its table, `data/drums-samples.mp3` has no provenance record.
 - [ ] **P3 S code** No crash or skid sound for the cars yet, and the karts, helicopter and flying traffic are silent (no CC0 recordings found yet).
 - [ ] **P3 M code** Footsteps know only stone, grass and wood: the park's paths, sand, water's edge, metal stairs and carpet still sound as those three.
 - [ ] **P2 M code** Other players heard: their footsteps, hits and doors from where they stand, fading with distance.

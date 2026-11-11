@@ -1,7 +1,7 @@
 // THE PETS: Polyfork's base animals (data/pets/<kind>.json, tools/pets-bake.py) as a pet that follows you: adopt one at THE PET STORE, its colours, shape and size yours to choose; YOU's PET tab changes its look; other players see it.
 import {SHARED, THREE} from './003-shx.js';
 import {B64, F32, I16, SKIN} from './003a-skin.js';
-import {CITY, CLOCK, FORAGE, INV, LEVELS, LOOKS, NPCS, ONLINE, PETS, pos, ROOMS, SFX, st, UI, VIT, W3, WINDOWS} from './003b-systems.js';
+import {CITY, CLOCK, FORAGE, INV, LEVELS, LOOKS, NPCS, ONLINE, PETS, pos, ROOMS, SFX, st, UI, VIT, WINDOWS} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {OWNED} from './005-save.js';
@@ -9,7 +9,6 @@ import {MAPG, MODS, SKINCULL, SYS, TILE} from './006-map-pre.js';
 import {IKIT} from './038zc-ikit.js';
 import {MSHOP} from './059i-mshops.js';
 import {makeNPC} from './076-npc-map.js';
-import {BODIES} from './111a-bodies.js';
 import {TREES} from './144e-trees.js';
 window.PETS=PETS;
 { const IDX=__LAZY__("data/pets.json"), WU=TILE/.84, V3=THREE.Vector3;
@@ -24,10 +23,10 @@ window.PETS=PETS;
       :PETFILES[key]?PETFILES[key]():Promise.reject(new Error('no pet kind '+key)); };
   const H2=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
   /* ---------- a pet's look: kind, name, a colour a zone, a value a knob (0..100 from least to most), size (50..150), home (1: waits at home) ---------- */
-  /* where a pet goes with you (owner, 9 Nov 2026: "you can choose in pet properties where they sit (head or shoulder or fly behind you or walk behind you)"): '' is by its size */
-  const SEATN=['head','shoulder','fly','walk'], FLYK=/^(parrot|crow|owl|gull|ptera|bee|bumblebee|wasp|butterfly|firefly)$/, BUGK=/^(bee|bumblebee|wasp|butterfly|firefly)$/;
-  const seats=K=>{ const b=K.of||K.key; if(!FLYK.test(b))return []; const L=['fly']; if(K.long<=.9)L.unshift('head','shoulder'); if(!BUGK.test(b))L.push('walk'); return L; };
-  const seatOf=(K,P)=>{ const L=seats(K); if(L.includes(P.w))return P.w; const long=K.long*(P.z||100)/100; return !L.length?'':long<=.35&&L.includes('head')?'head':L.includes('shoulder')?'shoulder':'fly'; };
+  /* where a flying pet goes with you: fly behind you (landing behind you when you stop) or walk behind you; no more head or shoulder (owner, 10 Nov 2026) */
+  const SEATN=['fly','walk'], FLYK=/^(parrot|crow|owl|gull|ptera|bee|bumblebee|wasp|butterfly|firefly)$/, BUGK=/^(bee|bumblebee|wasp|butterfly|firefly)$/;
+  const seats=K=>{ const b=K.of||K.key; if(!FLYK.test(b))return []; const L=['fly']; if(!BUGK.test(b))L.push('walk'); return L; };
+  const seatOf=(K,P)=>{ const L=seats(K); if(L.includes(P.w))return P.w; return L.length?'fly':''; };
   const code=P=>[P.k,encodeURIComponent(P.n||''),(P.c||[]).map(h=>h.replace('#','')).join('_'),(P.s||[]).join('_'),P.z||100,P.h?1:0,P.w||''].join('|');
   const decode=s=>{ const a=String(s||'').split('|'); if(!a[0])return null; return {k:a[0],n:decodeURIComponent(a[1]||''),c:a[2]?a[2].split('_').map(h=>'#'+h):[],s:a[3]?a[3].split('_').map(Number):[],z:+a[4]||100,h:a[5]==='1',w:SEATN.includes(a[6])?a[6]:''}; };
   const fresh=K=>({k:K.key,n:'',c:K.zones.map(z=>z[1]),s:K.s0?K.s0.slice():K.knobs.map(([,, mn,df,mx])=>Math.round((df-mn)/Math.max(1e-6,mx-mn)*100)),z:100,h:false});
@@ -62,7 +61,7 @@ window.PETS=PETS;
   const groundAt=(x,z,y0)=>{ let g=typeof SHARED.groundY!=='undefined'?SHARED.groundY(x,z):y0; if(!(Math.abs(g-y0)<1.2*WU))g=y0; return g; };
   // your room as a pet sees it (MODS.apts.inside): the free floor for the pathfinder (clear of the walls and furniture), and the tops it can hop onto (a hand's height to a little over head height, room on them)
   let RM=null;
-  const roomNow=()=>{ const t=performance.now(); if(RM&&t-RM.t<500)return RM; const I=MODS.apts&&MODS.apts.inside&&MODS.apts.inside(); if(!I)return RM=null; let sig=I.sol.length*7+I.fix.length; for(const r of I.sol)sig+=r[0]*3+r[1]*5+r[2]*7+r[3]*11; for(const f of I.fix)sig+=f[0]*3+f[1]*5+f[5]*13;
+  const roomNow=()=>{ const t=performance.now(); if(RM&&t-RM.t<500)return RM; const I=MODS.apts&&MODS.apts.room&&MODS.apts.room(); if(!I)return RM=null; let sig=I.sol.length*7+I.fix.length; for(const r of I.sol)sig+=r[0]*3+r[1]*5+r[2]*7+r[3]*11; for(const f of I.fix)sig+=f[0]*3+f[1]*5+f[5]*13;
     if(RM&&RM.sig===sig&&RM.I.x0===I.x0){ RM.t=t; return RM; } const m=.14*WU, inR=r=>r[2]>I.x0&&r[0]<I.x1&&r[3]>I.z0&&r[1]<I.z1, S=I.sol.filter(inR);
     const free=(x,z)=>x>I.x0+m&&x<I.x1-m&&z>I.z0+m&&z<I.z1-m&&!S.some(r=>x>r[0]-m&&x<r[2]+m&&z>r[1]-m&&z<r[3]+m); free.box=[I.x0,I.z0,I.x1,I.z1]; free.cell=.18*WU;
     const F=I.fix.filter(f=>inR([f[0],f[1],f[3],f[4]])), tops=[];
@@ -75,38 +74,17 @@ window.PETS=PETS;
     if(!W.length)return null; const q=new THREE.Quaternion(), qr=new THREE.Quaternion(), v=new THREE.Vector3(); let ph=Math.random()*6.28, k=0;
     return (dt,on)=>{ k+=((on?1:0)-k)*Math.min(1,dt*5); if(k<.01)return; ph+=dt*6.28*4.2;
       for(const w of W){ q.identity(); for(let b=w.b;b&&b.isBone;b=b.parent)q.premultiply(b.quaternion); v.copy(w.ax).applyQuaternion(q.invert()); w.b.quaternion.multiply(qr.setFromAxisAngle(v,k*(w.o+w.a*Math.sin(ph-w.l)))); } }; };
-  /* birds and flying creatures land on you when you stand still (owner, 9 Nov 2026): the small ones on your head, the rest on a shoulder; too big, they fly beside you */
-  const PSPOT=new THREE.Vector3(), TV=new THREE.Vector3(), TV2=new THREE.Vector3(), TV3=new THREE.Vector3();
-  // the top of your body as drawn (your avatar's pieces posed as its shader poses them, a hat, the Walker) within r of x,z: where a bird's feet go
-  const topAt=(x,z)=>topsAt([[x,z]])[0];
-  const topsAt=Q=>{ const best=Q.map(()=>-1e9); const M=BODIES.mine&&BODIES.mine(); W3.group.updateMatrixWorld(true);
-    W3.group.traverse(m=>{ if(!m.isMesh||!m.visible)return; for(let q=m;q;q=q.parent)if(!q.visible)return; const g=m.geometry, P=g.attributes.position; if(!P)return; const bi=g.attributes.bi, bw=g.attributes.bw, pi=g.attributes.pidx, PM=bi?M&&m===M.me&&M.PM.value:pi?W3.PM.value:null; if((bi||pi)&&!PM)return; const W=m.matrixWorld, X=new Float32Array(P.count*3);
-      for(let i=0;i<P.count;i++){ TV.fromBufferAttribute(P,i); if(bi){ const w=bw?bw.getX(i):1; TV2.copy(TV).applyMatrix4(PM[Math.round(bi.getX(i))]).multiplyScalar(w); TV3.copy(TV).applyMatrix4(PM[Math.round(bi.getY(i))]).multiplyScalar(1-w); TV.copy(TV2).add(TV3); } else if(pi)TV.applyMatrix4(PM[Math.round(pi.getX(i))]);
-        TV.applyMatrix4(W); X[i*3]=TV.x; X[i*3+1]=TV.y; X[i*3+2]=TV.z; }
-      const I=g.index, n=I?I.count:P.count;
-      for(let t=0;t<n;t+=3){ const a=(I?I.getX(t):t)*3, b=(I?I.getX(t+1):t+1)*3, c=(I?I.getX(t+2):t+2)*3, ax=X[a], az=X[a+2], bx=X[b]-ax, bz=X[b+2]-az, cx=X[c]-ax, cz=X[c+2]-az, d=bx*cz-bz*cx; if(Math.abs(d)<1e-12)continue;
-        for(let k=0;k<Q.length;k++){ const px=Q[k][0]-ax, pz=Q[k][1]-az, u=(px*cz-pz*cx)/d, v=(bx*pz-bz*px)/d; if(u<0||v<0||u+v>1)continue; const y=X[a+1]+u*(X[b+1]-X[a+1])+v*(X[c+1]-X[a+1]); if(y>best[k])best[k]=y; } } }); return best; };
-  // how far out from your middle a bird of half width hw sits on your left shoulder: past your head's side, on the shoulder's top (your body as drawn, any avatar)
-  const shoulderOut=(L,hw)=>{ const rx=Math.cos(L.hd), rz=-Math.sin(L.hd), D=[]; for(let d=0;d<=.42;d+=.02)D.push(d); const T=topsAt(D.map(d=>[L.x+rx*d*WU,L.z+rz*d*WU])); if(!(T[0]>-1e8))return null;
-    let edge=0, last=null; for(let i=0;i<D.length;i++){ if(!(T[i]>-1e8))break; if(T[i]>T[0]-.12*WU)edge=D[i]; else last=D[i]; } if(last==null)return null; return Math.min(last-.06,edge+.02+hw/WU)*WU; };
-  PETS.topAt=topAt; PETS.shoulderOut=shoulderOut;
-  const perchAt=(L,where,hw)=>{ const B=L.me&&W3.lastB, J=B&&B.J, rx=Math.cos(L.hd), rz=-Math.sin(L.hd), out=where==='head'?0:hw;
-    if(J){ const j=where==='head'?J.head:J.shoulderL; PSPOT.set(j.x,j.y+(where==='head'?5.2:2.4),j.z).applyMatrix4(W3.group.matrixWorld); if(where!=='head'){ PSPOT.x=L.x; PSPOT.z=L.z; } }
-    else PSPOT.set(L.x,L.y+(where==='head'?1.86:1.42)*WU,L.z);
-    PSPOT.x+=rx*out; PSPOT.z+=rz*out; return PSPOT; };
   const make=async(id,P,lead,o={})=>{ const K=(await idx()).by[P.k]; if(!K)return null; const D=await kind(P.k), {P:Pp,T}=shape(D,P), R=rig(D,T), CL=clips(D,T);
     const geo=SKIN.geom(D.mesh); geo.attributes.position.array.set(Pp); paint(D,P,geo); let m0=1e9; for(let k=1;k<Pp.length;k+=3)if(Pp[k]<m0)m0=Pp[k];   // (makeNPC lifts the drawn body by -m0 off its bones)
     const long=o.long||K.long*P.z/100, big=Math.max(...D.size), metres=D.tall*long/big, FC=pickClip(CL,'fly'), flies=!!FC, onlyFly=!!FC&&pickClip(CL,'walk')===FC;
     const mixer=new THREE.AnimationMixer(R.bones[0]), A={}, act=n=>A[n]||(A[n]=mixer.clipAction(CL[n])); let cur=null, hover=0, lastL=null, idleT=0;
-    const seat=flies&&!o.drive&&!o.preview?seatOf(K,P):'', rests=pickClip(CL,'idle')!==FC, perch=rests&&(seat==='head'||seat==='shoulder')?seat:null, grounded=!flies||seat==='walk';
-    const hw=Math.min(.05,.08*long)*WU, guess=(.19+hw/WU)*WU;   // (half its body: it sits out past your head's side)
-    let air=false; const PR={on:false,k:0,still:0,lift:0,fx:0,fz:0,fy:0,y:0,tt:0,dy:0,ft:0,fo:0,ox:0,oz:0,side:0}, WG=wings(R,FC), FEET=R.bones.filter(b=>/(Foot|Toe|Leg\dTip)$/.test(b.name)), FP=new THREE.Vector3();
-    const footOff=()=>{ if(!FEET.length)return 0; N.g.updateMatrixWorld(true); let lo=1e9; let n=0; FP.set(0,0,0); for(const b of FEET){ b.getWorldPosition(TV); lo=Math.min(lo,TV.y); FP.add(TV); n++; } FP.divideScalar(n); const sy=N.me.getWorldScale(TV).y; lo-=m0*sy; FP.y=lo; return lo-N.g.position.y; };   // (its feet over its origin: they, not its tail, stand on you)
+    const seat=flies&&!o.drive&&!o.preview?seatOf(K,P):'', lands=seat==='fly'&&!onlyFly&&pickClip(CL,'idle')!==FC, grounded=!flies||seat==='walk';   // (flying behind you, it lands behind you when you stop: owner, 10 Nov 2026)
+    let air=false, down=false, still=0; const WG=wings(R,FC);
     const walkV=Math.max(.5,Math.min(1.6,1.7*metres)), runV=Math.max(1.4,Math.min(4.5,3.6*metres));
     const st0={x:0,z:0}, H={on:false,mode:'idle',t:0,path:null,i:0,hop:null,top:null,y:0,sq:0};
     const N=makeNPC(null,{key:'pet-'+id,name:(P.n||K.name).toUpperCase(),names:['body'],lv:SHARED.LVL||'up',group:'pets',geo,skin:R,tall:D.tall,rank:[0],metres,x:0,z:0,lane:{x0:-1e9,x1:1e9,z0:-1e9,z1:1e9},
       free:()=>true,radius:Math.min(.25,long*.3),speed:walkV/.84,stride:0,rock:0,bob:0,pick:()=>{},noSelf:true,
-      ground:(x,z)=>PR.on?PR.y:(H.on?H.y:groundAt(x,z,lastL?lastL.y:SHARED.py))+hover*WU+PR.lift,
+      ground:(x,z)=>(H.on?H.y:groundAt(x,z,lastL?lastL.y:SHARED.py))+hover*WU,
       brain:(dt,you,st)=>{ if(o.drive){ const Dv=o.drive(N); if(!Dv){ N.g.visible=false; return; } N.g.visible=true; st.x=Dv.x; st.z=Dv.z; st.h=Dv.h; st.to=null; st.face=null; st.hold=true; N.dv=Dv.v||0; N.fly=!!Dv.ghost; N.placed=true; lastL={x:Dv.x,z:Dv.z,y:Dv.y}; return; }   // (ridden: its rider moves it, 146zjc)
         const L=lead(); if(!L){ N.g.visible=false; return; } N.g.visible=true;
         if(grounded&&N.placed&&!(o.room&&o.room())&&(L.me&&UI.fly||SHARED.groundY&&L.y-SHARED.groundY(L.x,L.z)>2*WU)){ st.to=null; st.face={x:L.x,z:L.z}; return; }   // (you fly or go up: one that cannot fly waits on the ground: owner, 9 Nov 2026)
@@ -116,19 +94,15 @@ window.PETS=PETS;
         if(!N.placed||d>14||Math.abs((N.g.position.y-hover*WU)-L.y)>2.5*WU){ place(L); return; }
         if(o.preview){ if(d>3)place(L); st.to=null; st.face={x:L.x,z:L.z}; return; }
         if(o.stay){ if(!st.to&&(idleT-=dt)<0){ idleT=3+Math.random()*5; const a=Math.random()*6.28, r=Math.random()*1.6*WU; st.to={x:o.stay.x+Math.sin(a)*r,z:o.stay.z+Math.cos(a)*r}; st.v=walkV*WU; } return; }
-        PR.lift*=Math.max(0,1-dt*1.2);
-        if(perch){ const run=v>3*WU; PR.still=v<.3*WU?PR.still+dt:run?0:PR.still;
-          if(PR.on&&(run||d>3)){ PR.on=false; hover=1.3; PR.lift=Math.max(0,PR.y-groundAt(st.x,st.z,L.y)-hover*WU); PR.still=-2; }   // (a run shakes it off: flying beside you again)
-          else if(PR.on||PR.still>1.2&&d<5){ if(!PR.on){ PR.on=true; PR.k=0; PR.fx=st.x; PR.fz=st.z; PR.fy=N.g.position.y; PR.tt=PR.ft=0; PR.dy=PR.dt=PR.dz=0; PR.side=0; PR.ox=PR.oz=0; }
-            if(!PR.side){ PR.side=perch==='shoulder'&&L.me&&shoulderOut(L,hw)||guess; } const S=perchAt(L,perch,PR.side); if(PR.k>=1){ S.x-=PR.ox; S.z-=PR.oz; } if(PR.k>=1&&(PR.ft-=dt)<=0){ PR.ft=.5; PR.fo=footOff(); if(FEET.length){ PR.ox=FP.x-N.g.position.x; PR.oz=FP.z-N.g.position.z; } } if(L.me&&(PR.tt-=dt)<=0){ PR.tt=.25; const fx=S.x+PR.ox, fz=S.z+PR.oz, e=.025*WU, T=topsAt([[fx,fz],[fx+e,fz],[fx-e,fz],[fx,fz+e],[fx,fz-e]]), t=T[0]>-1e8?T[0]:Math.max(...T); if(t>-1e8){ PR.dt=t-S.y; if(!PR.dz)PR.dy=PR.dt; PR.dz=1; } }   // (a patch under its feet; nothing there (your arm moved): it keeps the last height)
-            PR.dy+=((PR.dt||0)-PR.dy)*Math.min(1,dt*10); S.y+=PR.dy-PR.fo;
-            const k=PR.k=Math.min(1,PR.k+dt/.8), e=k*k*(3-2*k), nx=PR.fx+(S.x-PR.fx)*e, nz=PR.fz+(S.z-PR.fz)*e;
-            st.h=k<1&&Math.hypot(nx-st.x,nz-st.z)>1e-4?Math.atan2(nx-st.x,nz-st.z):L.hd; st.x=nx; st.z=nz; PR.y=PR.fy+(S.y-PR.fy)*e+Math.sin(Math.PI*k)*.35*WU; st.to=null; st.face=null; return; } }
-        const R=o.rec||o.mine&&out(), far=R?(R.lo<25?3.4:R.lo>=80?1.4:1.7):1.7, sp=pace(R);   // (its loyalty keeps it close, a shy one lags; hungry or ill, it is slow)
+        const R=o.rec||o.mine&&out(), far=L.fight?1.2:R?(R.lo<25?3.4:R.lo>=80?1.4:1.7):1.7, sp=pace(R);   // (its loyalty keeps it close, a shy one lags; hungry or ill, it is slow)
+        if(seat==='fly'){ const b=(far-.6)*WU, sd=(o.side||0)*WU, tx=L.x-Math.sin(L.hd)*b+Math.cos(L.hd)*sd, tz=L.z-Math.cos(L.hd)*b-Math.sin(L.hd)*sd, e=Math.hypot(st.x-tx,st.z-tz)/WU, low=!(L.me&&UI.fly)&&!(SHARED.groundY&&L.y-SHARED.groundY(L.x,L.z)>.3*WU);   // (behind you; still a moment on the ground, it lands there)
+          still=v<.3*WU?still+dt:0; if(!lands||still<1||!low)down=false;
+          if(down&&e<1.5){ st.to=null; st.face={x:L.x,z:L.z}; return; }
+          if(e>.25){ st.to={x:tx,z:tz}; st.v=Math.max(e>2?runV*sp:walkV*sp,v/WU*1.1)*WU; } else { st.to=null; st.face={x:L.x,z:L.z}; if(lands&&still>=1&&low)down=true; } return; }
         if(o.side&&d>far){ const sx=Math.cos(L.hd)*o.side*WU, sz=-Math.sin(L.hd)*o.side*WU, k=(far-.65)/d; st.to={x:L.x+dx*k+sx,z:L.z+dz*k+sz}; st.v=(d>far+1.8?Math.max(runV*sp,v/WU*1.15):walkV*sp)*WU; }
         else if(d>far){ const k=(far-.65)/d; st.to={x:L.x+dx*k,z:L.z+dz*k}; st.v=(d>far+1.8?Math.max(runV*sp,v/WU*1.15):walkV*sp)*WU; } else if(d<far-.4){ st.to=null; st.face={x:L.x,z:L.z}; } },
-      anim:(dt,moving,st)=>{ const fast=moving&&st.v>walkV*WU*1.2; air=PR.on?PR.k<1:onlyFly||flies&&H.on&&H.mode==='hop'||!H.on&&seat==='fly'||flies&&!grounded&&!H.on&&(moving&&(st.v>walkV*WU*1.2||hover>.05)||PR.lift>.1*WU||lastL&&(lastL.y-groundAt(lastL.x,lastL.z,lastL.y)>.3*WU||SHARED.groundY&&groundAt(st.x,st.z,lastL.y)-SHARED.groundY(st.x,st.z)>.3*WU));
-        hover+=((air&&!PR.on?(onlyFly?.9:1.3):0)-hover)*Math.min(1,dt*2.5);
+      anim:(dt,moving,st)=>{ const fast=moving&&st.v>walkV*WU*1.2; air=onlyFly||flies&&H.on&&H.mode==='hop'||!H.on&&seat==='fly'&&!down||flies&&!grounded&&!H.on&&seat!=='fly'&&(moving&&(st.v>walkV*WU*1.2||hover>.05)||lastL&&(lastL.y-groundAt(lastL.x,lastL.z,lastL.y)>.3*WU||SHARED.groundY&&groundAt(st.x,st.z,lastL.y)-SHARED.groundY(st.x,st.z)>.3*WU));
+        hover+=((air?(onlyFly?.9:1.3):0)-hover)*Math.min(1,dt*2.5);
         if(o.drive){ const G=o.gait(N.dv/WU), w=pickClip(CL,G.c); if(w!==cur){ act(w).reset().fadeIn(.25).play(); if(cur)act(cur).fadeOut(.25); cur=w; } act(cur).timeScale=G.f?G.f*CL[cur].duration:1; mixer.update(dt); return; }
         const zz=H.on&&H.mode==='sleep', hop=H.on&&H.mode==='hop', want=air&&FC||(hop?pickClip(CL,'run'):moving?pickClip(CL,fast?'run':'walk'):pickClip(CL,'idle'));
         if(want!==cur){ act(want).reset().fadeIn(.2).play(); if(cur)act(cur).fadeOut(.2); cur=want; } act(cur).timeScale=zz?.15:moving&&!air?Math.max(.6,Math.min(1.8,st.v/(fast?runV:walkV)/WU)):1; mixer.update(dt); if(WG)WG(dt,air);
@@ -160,11 +134,12 @@ window.PETS=PETS;
       rest(RM); };
     const leave=()=>{ H.on=false; H.path=H.hop=H.top=null; H.sq=0; N.g.scale.set(1,1,1); N.st.to=null; N.placed=false; };
     N.atHome=H; N.farMove=()=>{ if(H.on&&!(o.room&&o.room()))leave(); const L=lead(); if(L&&!H.on)place(L); };   // (a pet left far behind, not ticked: back beside its person)
-    PG.add(N.g); N.g.rotation.order='YXZ'; N.mixer=mixer; N.pet=P; N.petKind=K; N.restless=()=>air; N.perched=()=>PR.on&&PR.k>=1?perch:null; N.feet=()=>(footOff(),FP); N.PR=PR;   // (in the air its wings never stop: owner, 9 Nov 2026)
+    PG.add(N.g); N.g.rotation.order='YXZ'; N.mixer=mixer; N.pet=P; N.petKind=K; N.restless=()=>air; N.landed=()=>down;   // (in the air its wings never stop: owner, 9 Nov 2026)
     // pet it: a word and a sit, now and then
     const hb=new THREE.Mesh(new THREE.BoxGeometry(long*WU,Math.max(.3,metres)*WU,long*WU),new THREE.MeshBasicMaterial({visible:false})); hb.position.y=metres*WU/2; N.g.add(hb);
-    N.th={name:o.mine?'PET '+(P.n||'YOUR '+K.name).toUpperCase():(o.owner?o.owner+"'S ":'')+(P.n||K.name).toUpperCase(),obj:hb,reach:1.6*TILE,near:2.6*TILE,tall:Math.max(.4,metres)*WU,act:()=>{ const r=o.rec||o.mine&&!o.preview&&out(); if(r&&now()-(r.pet||0)>5*60e3){ r.pet=now(); r.lo=cl(r.lo+2); keep(); } SAY(o.mine?(P.n||'YOUR '+K.name).toUpperCase()+(r&&r.hu>60?' NUZZLES YOUR POCKETS. IT IS HUNGRY.':' IS HAPPY TO SEE YOU.'):'IT SNIFFS YOUR HAND.','#9fe07f'); },
-      acts:o.mine&&!o.preview&&!o.stay?[{name:'TELL '+(P.n||'YOUR '+K.name).toUpperCase()+' TO GO HOME',act:()=>o.rec?PETS.sendHome(o.rec.id):PETS.goHome&&PETS.goHome()}]:null};
+    N.th={get quiet(){ if(!o.mine||o.preview)return false; const p=N.g.position, dx=p.x-pos.x, dz=p.z-pos.z, d=Math.hypot(dx,dz); return air||d>1.6*TILE||dx*Math.sin(SHARED.heading)+dz*Math.cos(SHARED.heading)<.5*d; },   // (your own pet: only when you face it, close: owner, 10 Nov 2026)
+      name:o.mine?'PET '+(P.n||'YOUR '+K.name).toUpperCase():(o.owner?o.owner+"'S ":'')+(P.n||K.name).toUpperCase(),obj:hb,reach:1.6*TILE,near:2.6*TILE,tall:Math.max(.4,metres)*WU,act:()=>{ const r=o.rec||o.mine&&!o.preview&&out(); if(r&&now()-(r.pet||0)>5*60e3){ r.pet=now(); r.lo=cl(r.lo+2); keep(); } SAY(o.mine?(P.n||'YOUR '+K.name).toUpperCase()+(r&&r.hu>60?' NUZZLES YOUR POCKETS. IT IS HUNGRY.':' IS HAPPY TO SEE YOU.'):'IT SNIFFS YOUR HAND.','#9fe07f'); },
+      get acts(){ return o.mine&&!o.preview&&!o.stay?[{name:'TELL '+(P.n||'YOUR '+K.name).toUpperCase()+' TO GO HOME',act:()=>o.rec?PETS.sendHome(o.rec.id):PETS.goHome&&PETS.goHome()},...PETS.acts.flatMap(f=>f(P,K)||[])]:null; }};
     N.repaint=c=>paint(D,{...P,c},geo);   // (other zone colours on the same body: the owner's coats for the horse)
     UI.thing(N.th); return N; };
   const drop=N=>{ if(!N)return; const i=NPCS.indexOf(N); if(i>=0)NPCS.splice(i,1); N.g.removeFromParent(); if(N.th){ const j=UI.things.indexOf(N.th); if(j>=0)UI.things.splice(j,1); } N.me.geometry.dispose(); N.mixer&&N.mixer.stopAllAction(); };
@@ -206,9 +181,9 @@ window.PETS=PETS;
   let foot=null; const meLead=()=>{ if(VIT.dead)return null; if(st.climb||st.hang||TREES.h!=null||TREES.stand){ if(!foot)foot={x:pos.x,z:pos.z,y:SHARED.groundY?SHARED.groundY(pos.x,pos.z):0,hd:SHARED.heading}; return foot; } foot=null; return {x:pos.x,z:pos.z,y:SHARED.py,hd:SHARED.heading,me:true}; };   // up a tree, your pet waits at its foot
   const atHome=()=>!!(MODS.apts&&MODS.apts.inReal);
   let mine=null, mineCode='', homeSpot=null;
-  const refresh=()=>{ const P=shown(), want=P&&(inShop||!fainted(out()))&&(!P.h||inShop||atHome())?code(P)+(P.h&&!inShop?'@h':'')+(inShop?'@s':''):''; if(want===mineCode)return; mineCode=want; const my=++gen;
+  const refresh=()=>{ const P=shown(), want=P&&(inShop||!fainted(out()))&&!(!inShop&&PETS.away&&PETS.away())&&(!P.h||inShop||atHome())?code(P)+(P.h&&!inShop?'@h':'')+(inShop?'@s':''):''; if(want===mineCode)return; mineCode=want; const my=++gen;
     drop(mine); mine=null; if(!want)return; homeSpot=P.h&&!inShop?{x:pos.x,z:pos.z}:null;
-    make('mine',P,meLead,{mine:true,stay:homeSpot,preview:inShop,room:()=>!inShop&&atHome()&&!MODS.apts.host?roomNow():null}).then(N=>{ if(my!==gen){ drop(N); return; } mine=N; }).catch(e=>console.warn('PET',e)); };
+    make('mine',P,()=>PETS.lead&&PETS.lead()||meLead(),{mine:true,stay:homeSpot,preview:inShop,room:()=>!inShop&&atHome()&&!MODS.apts.host?roomNow():null}).then(N=>{ if(my!==gen){ drop(N); return; } mine=N; }).catch(e=>console.warn('PET',e)); };
   let mine2=null, mine2Code='', gen2=0;
   const refresh2=()=>{ const r=second(), P=r&&decode(r.c), want=P&&!inShop&&!fainted(r)&&(!P.h||atHome())?r.id+':'+r.c:''; if(want===mine2Code)return; mine2Code=want; const my=++gen2;
     drop(mine2); mine2=null; if(!want)return;
@@ -216,7 +191,7 @@ window.PETS=PETS;
   PETS.mine2=()=>mine2;
   PETS.WU=WU; PETS.dbg={UI,OWNED,pos,ROOMS}; PETS.make=make; PETS.drop=drop; PETS.idx=idx;
   PETS.mine=()=>mine; PETS.my=()=>MY; PETS.code=code; PETS.decode=decode;
-  ONLINE.mine.pf=()=>MY&&!MY.h?code(MY):null; ONLINE.mine.pf2=()=>{ const r=second(), P=r&&decode(r.c); return P&&!P.h&&!fainted(r)?r.c:null; };
+  ONLINE.mine.pf=()=>MY&&!MY.h&&!(PETS.away&&PETS.away())?code(MY):null; ONLINE.mine.pf2=()=>{ const r=second(), P=r&&decode(r.c); return P&&!P.h&&!fainted(r)?r.c:null; };
   // theirs: a pet beside every player near you who has one with them
   const theirs=()=>{ const want=new Map(); if(ONLINE.on&&ONLINE.others)for(const o of ONLINE.others.values())for(const [f,sfx] of [['pf',''],['pf2','#2']]){ const c=o.x&&o.x[f]; if(c&&o.why==='near you'&&o.fig)want.set(o.id+sfx,[o,c,sfx]); }
     for(const [id,r] of THEIRS)if(!want.has(id)||want.get(id)[1]!==r.c){ drop(r.N); r.dead=1; THEIRS.delete(id); }
@@ -256,8 +231,8 @@ window.PETS=PETS;
   function adopt(){ const P=DRAFT; if(!P||!inShop)return; if(LIST.length>=MAXP)return SAY('YOU HAVE TEN PETS: THAT IS THE MOST. LET ONE GO FIRST (ESC, PETS).','#c8a090'); const c=price(P); if(INV.cash<c)return SAY('THAT ONE IS $'+c+'. YOU HAVE $'+INV.cash+'.','#c8a090'); INV.cash-=c; if(INV.save)INV.save();
     const K=I.by[P.k]; add({...P,c:P.c.slice(),s:P.s.slice(),h:false},false); SAY((P.n||'YOUR '+K.name).toUpperCase()+' IS YOURS: $'+c+'. SEE ALL YOUR PETS, AND WHICH TWO FOLLOW YOU, IN THE MENU (ESC, PETS).','#9fe07f'); draw(); }
   // a new pet in your list and out with you (the one out before goes home to wait)
-  function add(P,perma){ if(LIST.length>=MAXP)return false; const id=LIST.reduce((m,r)=>Math.max(m,r.id||0),0)+1, r={id,c:code(P),perma:!!perma,born:now(),at:now(),hu:10,lo:perma?70:40,hp:100,out:false}; LIST.push(r); lead(r); MY=decode(r.c); keep(); refresh(); refresh2(); return true; }
-  PETS.add=add; PETS.list=()=>LIST; PETS.perma=()=>LIST.find(r=>r.perma)||null; PETS.feed=feed; PETS.tick=tickAll;
+  function add(P,perma,more){ if(LIST.length>=MAXP)return false; const id=LIST.reduce((m,r)=>Math.max(m,r.id||0),0)+1, r={id,c:code(P),perma:!!perma,born:now(),at:now(),hu:10,lo:perma?70:40,hp:100,out:false,...more}; LIST.push(r); lead(r); MY=decode(r.c); keep(); refresh(); refresh2(); return r; }
+  PETS.add=add; PETS.out=out; PETS.acts=[]; PETS.refresh=()=>refresh(); PETS.list=()=>LIST; PETS.perma=()=>LIST.find(r=>r.perma)||null; PETS.feed=feed; PETS.tick=tickAll;
   PETS.setPerma=P=>{ if(LIST.some(r=>r.perma))return false; return add(P,true); };
   PETS.takeOut=id=>{ const r=LIST.find(x=>x.id===id); if(!r)return; lead(r); MY=decode(r.c); keep(); draw(); refresh2(); };
   const unhome=r=>{ const P=decode(r.c); if(P.h){ P.h=false; r.c=code(P); } };
@@ -323,7 +298,7 @@ window.PETS=PETS;
     el.onclick=e=>{ const b=e.target.closest('[data-pp]'); if(!b)return; const K=I.by[P.k], pr=K.presets[b.dataset.pp]; P.c=K.zones.map(([z,d])=>pr&&pr[z]||d); if(onChange)onChange(P); };
     draw(); return {get:()=>P}; };
   /* ---------- the menu's PETS: every pet you have, all about it ---------- */
-  const SEATW={head:'ON YOUR HEAD',shoulder:'ON YOUR SHOULDER',fly:'FLYING BEHIND YOU',walk:'WALKING BEHIND YOU'};
+  const SEATW={fly:'FLYING BEHIND YOU',walk:'WALKING BEHIND YOU'};
   const TYPE={birds:'BIRD',wild:'WILD ANIMAL',farm:'FARM ANIMAL',zoo:'ZOO ANIMAL',dino:'DINOSAUR',dragons:'DRAGON',bugs:'BUG',shore:'CRAB'};
   const typeOf=K=>K.type?K.type:K.of?K.of.toUpperCase():K.key==='xolo'?'DOG':TYPE[K.group]||K.name;
   const ageOf=r=>{ const d=Math.floor((now()-(r.born||now()))/864e5); return d<1?'NEW TODAY':d===1?'1 DAY':d+' DAYS'; };

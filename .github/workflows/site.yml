@@ -112,6 +112,7 @@ jobs:
           k train   'src/009b|src/009c|src/066c|src/159ca|loop\.cjs'
           k items   'src/162e|src/162d|src/150k|src/076a|src/146zea|src/146d-gear|data/icons|data/items|tools/icons|items\.cjs'
           k hall    'src/150n|src/059a|hall\.cjs'
+          k flats   'src/150n|src/059a|src/150d|src/141c|flats\.cjs'
           k holodeck 'src/059b-arcade|src/146bb|src/146b[cd]|holodeck'
           k kite    'src/146g-kite|src/093|kite\.cjs'
           k swim    'src/146ga-swim|src/066-river|src/065a|swim\.cjs'
@@ -123,6 +124,7 @@ jobs:
           k crt     'src/150fa|src/150a|src/150d|data/tv\.json|crt\.cjs'
           k sound   'src/091-sfx|src/093-|src/100-use|src/146zo-|src/150p-cars|src/150pb-|src/150pcb-|data/sfx|sound\.cjs'
           k clock   'src/134b|worker/clock|clock\.cjs'
+          k indoorlight 'src/134b-|src/138-|src/130-rooms|src/006-map-pre|indoorlight\.cjs'
           k nightsky 'src/132-sky|src/134b[a-c]|src/150f[c-j]|worker/clock|data/scope\.json|nightsky\.cjs'
           k observatory 'src/059i|src/150f[dhk]|worker/door|observatory\.cjs'
           k westst  'src/023|src/05[89]-|src/059[e-h]|westst'
@@ -392,6 +394,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' hall')
         run: node tests/hall.cjs
+      - name: The four sizes of flat (small, medium, big; moving in)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' flats')
+        run: node tests/flats.cjs dist/market.html
       - name: The holodeck (its panel, the adventures menu)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' holodeck')
@@ -436,6 +442,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' clock')
         run: node tests/clock.cjs
+      - name: The insides' light (a roofed public inside keeps the day's light at night; the street, the open air and your apartment keep the hour)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' indoorlight')
+        run: node tests/indoorlight.cjs dist/market.html
       - name: The night sky (one sky, the planets, stargazing, the Messier catalogue, the field telescope)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' nightsky')

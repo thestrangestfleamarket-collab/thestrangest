@@ -16,7 +16,8 @@ const AVATAR={}; window.AVATAR=AVATAR;
   // no lanyards (owner, 9 Nov 2026: "remove lanyard from game totally - doesnt exist"): the wardrobe's LANYARD pieces are never worn or offered
   const GN=new Set(I.pieces.filter(p=>p.k==='LANYARD').map(p=>p.n)), GONE=p=>GN.has(p.n);
   const SKINS=['f3d5bd','e6b892','d9a984','c08a64','a26a45','7e4c2f','5c3622','3e2416'], HAIRC=['1d1712','3b2a1e','5a3a24','8a5a32','b98a4e','d8c28a','8c8c8c','e8e4dc'];
-  const EYES=[['2a2019','BRN'],['4a2c17','BRN'],['6b5a2a','HAZ'],['3f6b3a','GRN'],['3b6ea8','BLU'],['6f7b85','GRY'],['8a5a1a','AMB'],['111111','BLK']], EYE0='2a2019';   // (the eye colours to pick, owner 7 Nov 2026, each with the passport's code)
+  const EYES=[['2a2019','BRN'],['4a2c17','BRN'],['6b5a2a','HAZ'],['3f6b3a','GRN'],['3b6ea8','BLU'],['6f7b85','GRY'],['8a5a1a','AMB'],['111111','BLK']], EYE0='2a2019';
+  const UNDC=['5f76a0','f2efe6','151515','b0283a','e58fb0','3f6b3a','e0b83a','7a4fa0'], UND0='5f76a0';   // the underwear's colours to pick (owner, 11 Nov 2026), the first the body's own   // (the eye colours to pick, owner 7 Nov 2026, each with the passport's code)
   const BUILDN=['SLIM','MEDIUM','BROAD'], byN=new Map(I.pieces.map(p=>[p.n,p])), nOf=(slot,label)=>{ const p=I.pieces.find(q=>q.slot===slot&&q.label===label); return p?p.n:null; };
   const DEF=()=>({f:'m',b:1,h:100,skin:'d9a984',hair:'4b2519',w:{hair:[nOf('hair','SHORT'),''],top:[nOf('top','T-SHIRT'),''],bottom:[nOf('bottom','TROUSERS'),''],feet:[nOf('feet','SNEAKERS'),'']}});
 
@@ -45,11 +46,11 @@ const AVATAR={}; window.AVATAR=AVATAR;
   // the face you picked: eyes-mouth-eye size-mouth size ('' as it came)
   const fxEnc=L=>{ const F=fxOf(L); return F.e||F.m||F.es!==100||F.ms!==100?[F.e,F.m,F.es,F.ms].join('-'):''; };
   const fxDec=v=>{ const m=/^(\d)-(\d)-(\d{2,3})-(\d{2,3})$/.exec(v||''); if(!m)return null; const c=(x,a,b)=>Math.max(a,Math.min(b,+x)); return {e:c(m[1],0,FE.length-1),m:c(m[2],0,FM.length-1),es:c(m[3],50,150),ms:c(m[4],50,150)}; };
-  const code=L=>[L.f,L.b,L.h,L.skin,L.hair,...SLOTS.slice(0,OLD).map(x=>enc(x,L)),L.bare?'1':'',...SLOTS.slice(OLD).map(x=>enc(x,L)),L.eye&&L.eye!==EYE0?L.eye:'','',shEnc(L.sh),'',fxEnc(L)].join('.').replace(/\.+$/,'');   // (then barefoot, then the later slots, then the eyes)
+  const code=L=>[L.f,L.b,L.h,L.skin,L.hair,...SLOTS.slice(0,OLD).map(x=>enc(x,L)),L.bare?'1':'',...SLOTS.slice(OLD).map(x=>enc(x,L)),L.eye&&L.eye!==EYE0?L.eye:'','',shEnc(L.sh),'',fxEnc(L),L.under&&L.under!==UND0?L.under:''].join('.').replace(/\.+$/,'');   // (then barefoot, then the later slots, then the eyes)
   const hex=s=>/^[0-9a-f]{6}$/.test(s||'')?s:null, cols=s=>/^[0-9a-f]{6}$|^(?:[0-9a-f]{6})?(?:_(?:[0-9a-f]{6})?)+$/.test(s||'')?s:null;   // one colour (the piece's main part), or one a part in the piece's zone order, _ between (an empty part keeps its own)
   const decode=c=>{ const a=String(c||'').split('.'), L=DEF(); if(a.length<5)return L;
     L.f=a[0]==='f'?'f':'m'; L.b=Math.min(2,Math.max(0,parseInt(a[1])||0)); L.h=Math.min(110,Math.max(90,parseInt(a[2])||100)); L.skin=hex(a[3])||L.skin; L.hair=hex(a[4])||L.hair; L.w={};
-    if(a[5+OLD]==='1')L.bare=true; { const e=hex(a[6+SLOTS.length]); if(e)L.eye=e; } { const sh=shDec(a[8+SLOTS.length]); if(sh)L.sh=sh; } { const x=fxDec(a[10+SLOTS.length]); if(x)L.fx=x; }
+    if(a[5+OLD]==='1')L.bare=true; { const e=hex(a[6+SLOTS.length]); if(e)L.eye=e; } { const sh=shDec(a[8+SLOTS.length]); if(sh)L.sh=sh; } { const x=fxDec(a[10+SLOTS.length]); if(x)L.fx=x; } { const u=hex(a[11+SLOTS.length]); if(u)L.under=u; }
     SLOTS.forEach(([s],i)=>{ const v=a[at(i)]; if(!v||NOPROP.has(s))return; const [n,col]=v.split('~'), p=byN.get(parseInt(n,36)); if(p&&!GONE(p)&&p.slot===s&&p.figs.includes(L.f))L.w[s]=[p.n,cols(col)||'']; });
     return L; };
 
@@ -227,7 +228,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
     parts.forEach((P,pi)=>{ const d=D_[pi], v=P.v, X=XS[pi], XR=XM[pi], cut=CUT[pi];
       let y0=1e9, y1=-1e9; if(P.cape)for(let i=1;i<X.length;i+=3){ y0=Math.min(y0,X[i]); y1=Math.max(y1,X[i]); }   // a cape: how far down it each point is, and which way is out from the body
       const cz=P.col&&P.col.includes('_')?P.col.split('_'):null;
-      const C=P.zones.map((z,i)=>{ if(z==='skin')return lin(L.skin); if(P.slot==='body'&&z==='brow')return lin(L.hair); if(P.slot==='body'&&z==='eye'&&L.eye)return lin(L.eye);
+      const C=P.zones.map((z,i)=>{ if(z==='skin')return lin(L.skin); if(P.slot==='body'&&z==='brow')return lin(L.hair); if(P.slot==='body'&&z==='eye'&&L.eye)return lin(L.eye); if(P.slot==='body'&&z==='shirt'&&L.under)return lin(L.under);
         if((P.slot==='hair'||P.slot==='face')&&P.main&&i===P.main[0])return lin(L.hair); if(cz){ if(cz[i])return lin(cz[i]); } else if(P.col&&P.main&&i===P.main[0])return lin(P.col); return lin(String(P.pal[i]).slice(1)); });
       // the head's cut faces as moved, each point's normal the mean of the faces round it that turn less than 60 degrees from its own (the box's other edges stay sharp)
       const CF=new Map(); if(cut.size){ const K=p=>Math.round(p[0]*1e5)+','+Math.round(p[1]*1e5)+','+Math.round(p[2]*1e5), AC=new Map(), all=[];
@@ -294,6 +295,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
     LOOKS.add('avc','HAIR COLOUR',el('lavc',HAIRC.map(h=>`<button class="sw" data-c="${h}" aria-label="hair #${h}"><i style="background:#${h}"></i></button>`).join('')+'<input type="color" id="lavcc" aria-label="any hair colour">'),{...A,order:5});
     for(const [k,t,N,o] of [['e','EYES',FEYES,5.1],['m','MOUTH',FMOUTHS,5.2]])LOOKS.add('avx'+k,t,el(null,`<select id="lavx${k}" aria-label="${t.toLowerCase()} style">${N.map((n,i)=>`<option value="${i}">${n}</option>`).join('')}</select><input type="range" id="lavx${k}s" min="50" max="150" step="5" aria-label="${t.toLowerCase()} size"><span id="lavx${k}v" class="dim"></span>`),{...A,order:o});
     LOOKS.add('ave','EYE COLOUR',el('lave',EYES.map(([h,t])=>`<button class="sw" data-c="${h}" aria-label="eyes ${t} #${h}"><i style="background:#${h}"></i></button>`).join('')+'<input type="color" id="lavec" aria-label="any eye colour">'),{...A,order:5.15});
+    LOOKS.add('avu','UNDERWEAR',el('lavu',UNDC.map(h=>`<button class="sw" data-c="${h}" aria-label="underwear #${h}"><i style="background:#${h}"></i></button>`).join('')+'<input type="color" id="lavuc" aria-label="any underwear colour">'),{...A,order:5.16});
     LOOKS.add('avwear','OUTFIT',el(null,'<button id="lavgo">CHOOSE WHAT YOU WEAR</button><span id="lavw" class="dim"></span>'),{...A,order:6});
     LOOKS.add('w-outfit','OUTFIT',el(null,'<select id="lavog" aria-label="outfit theme"></select><select id="lavo" aria-label="outfit"></select><span></span>','avw'),{...A,tab:'wear',order:-1});
     SLOTS.forEach(([s,t],i)=>!NOPROP.has(s)&&LOOKS.add('w-'+s,t,el(null,`<select id="lavt-${s}" aria-label="${t} kind"></select><select id="lav-${s}" aria-label="${t} version"></select><span id="lavk-${s}" class="avk"></span>`,'avw'),{...A,tab:'wear',order:i}));
@@ -305,6 +307,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
     const h=$('#lavh'); stop(h); h.oninput=()=>{ $('#lavhv').textContent=' '+h.value+'%'; }; h.onchange=()=>AVATAR.set({h:+h.value});
     $('#lavs').onclick=e=>{ const b=e.target.closest('button'); if(b)AVATAR.set({skin:b.dataset.c}); }; $('#lavsc').onchange=e=>AVATAR.set({skin:e.target.value.slice(1)});
     $('#lave').onclick=e=>{ const b=e.target.closest('button'); if(b)AVATAR.set({eye:b.dataset.c}); }; $('#lavec').onchange=e=>AVATAR.set({eye:e.target.value.slice(1)});
+    $('#lavu').onclick=e=>{ const b=e.target.closest('button'); if(b)AVATAR.set({under:b.dataset.c}); }; $('#lavuc').onchange=e=>AVATAR.set({under:e.target.value.slice(1)});
     $('#lavc').onclick=e=>{ const b=e.target.closest('button'); if(b)AVATAR.set({hair:b.dataset.c}); }; $('#lavcc').onchange=e=>AVATAR.set({hair:e.target.value.slice(1)});
     // OUTFITS: a theme, then one of the cast in it; their whole look goes on (what your figure can wear of it), their hair colour too
     const og=$('#lavog'), ol=$('#lavo'), OG=[...new Set((I.outfits||[]).map(o=>o.g))].sort(); stop(og); stop(ol);
@@ -322,7 +325,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
   function draw(){ if(!panel())return; if(BODIES.pick()!=='avatar')return LOOKS.layout();
     for(const b of $('#lavf').children)on(b,b.dataset.f===L.f); for(const b of $('#lavb').children)on(b,+b.dataset.b===L.b);
     $('#lavh').value=L.h; $('#lavhv').textContent=' '+L.h+'%'; { const F=fxOf(L); for(const k of 'em'){ $('#lavx'+k).value=String(F[k]); $('#lavx'+k+'s').value=F[k+'s']; $('#lavx'+k+'v').textContent=' '+F[k+'s']+'%'; } } $('#lavsc').value='#'+L.skin; $('#lavcc').value='#'+L.hair;
-    for(const b of $('#lavs').children)if(b.dataset.c)on(b,b.dataset.c===L.skin); for(const b of $('#lavc').children)if(b.dataset.c)on(b,b.dataset.c===L.hair); { const e=L.eye||EYE0; $('#lavec').value='#'+e; for(const b of $('#lave').children)if(b.dataset.c)on(b,b.dataset.c===e); }
+    for(const b of $('#lavs').children)if(b.dataset.c)on(b,b.dataset.c===L.skin); for(const b of $('#lavc').children)if(b.dataset.c)on(b,b.dataset.c===L.hair); { const e=L.eye||EYE0; $('#lavec').value='#'+e; for(const b of $('#lave').children)if(b.dataset.c)on(b,b.dataset.c===e); } { const u=L.under||UND0; $('#lavuc').value='#'+u; for(const b of $('#lavu').children)if(b.dataset.c)on(b,b.dataset.c===u); }
     $('#lavw').textContent=D[L.f]?'':' LOADING…';
     for(const [s] of SLOTS){ if(NOPROP.has(s))continue; const K=kinds(s), sel=$('#lav-'+s), k=$('#lavk-'+s), kd=$('#lavt-'+s), w=L.w[s], J=D[L.f], cur=w&&byN.get(w[0]);
       sel.closest('.lr').dataset.off=K.size?'':'1';

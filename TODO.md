@@ -90,6 +90,7 @@ CI runs only on pull requests and by hand (the workflow has no push trigger), so
 - [x] **The river drew the whole town a second time** (10 Nov) · P1 · S · code. Its see-through picture now skipped when no water was drawn lately, and drawn with only what is in or by the river.
 - [x] **The far backdrop drawn when unseen** (10 Nov) · P2 · S · code. The far city was never culled; backdrop pieces its own shader shrinks away were still drawn. Now culled piece by piece and left out past that distance.
 - [x] **Too many draw calls** (10 Nov) · P1 · S · code. Far cars (traffic and parked) in a few merged pieces; the lake and its bed in 3×3 chunks. Up the street about 1,070 → 850 draws; facing the park 557 → 304.
+- [x] **Big meshes built after the start drawn whole for ~100 s; the lawn's 5×5 built in one stall** (11 Nov) · P1 · S · code. The cull splits them a few ms a frame, not one a second; the lawn round you is one shot from above, not 25 (same picture, 5–10× faster), and no longer redraws the sun's shadows.
 - [ ] **The subway station is built and painted at the start** (15 MB): build it on the way down · P2 · M · code.
 - [ ] **The park shop animals**: all 179 download at the start; measure the start on a real connection · P2 · S · check.
 - [ ] **The start-up and frame-time comparison** · P1 · M · check. Never finished (2 Nov, `tests/startprof.cjs`). Redo it on today's main
@@ -202,6 +203,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [ ] **The car radio unconfirmed** (cars parked past the map edge) · look.
 
 ## Physics and vehicles
+- [x] **The Hudson's OCEAN look** · P3 · M · look. Owner, 11 Nov 2026 ("try 1 and 4 on the hudson"): Ultra-Water's FFT waves as a fifth way on the Hudson, things afloat riding the drawn waves. done 11 Nov: the default.
 - [x] **Glitched slab on Market St; three road cars out** · P1 · S · fix. Done 10 Nov: the subway train no longer shows on the street; boxy sedan, 80s hatchback and yellow cab gone from the traffic.
 - [x] **Vehicle editor follow-ups** · P3 · S · look. Done 10 Nov: a resized car or kart drives at its size, the traffic's models have their parts, the horse is in (colours and size), the train shows before you go down, the horse's COAT picker.
 

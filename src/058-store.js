@@ -202,7 +202,8 @@ await grab('store',async()=>{ const K=SHARED.BOD.STOREK, {X,Y,Z,gbox,faceTex,bq,
       if(ROOMS.reset)ROOMS.reset(); if(CLIP)CLIP.run(); INTERIORS.build(); };
     const REGS=()=>[UI.things,cutWalls,STORE.roofs,LITE.recs,SOL.up,FIX.up,lamps,FLAME.src,PEEK.boxes,...Object.values(SYS.P)];   // every list an inside's build adds to
     const took=()=>({n:scene.children.length,regs:REGS().map(A=>[A,A.length])});
-    STORE.inGo=id=>{ '@later'; finish(); const R=STORE.inside[id]; if(!R||R.done)return; R.done=true; const S=R.drop?took():null; STORE.now=1; R.go(); STORE.now=0; const it=BATCH.items.splice(0); lit(); if(it.length){ BATCH.items=it; Object.assign(STORE.meshes,bake()); }
+    const outDoor=id=>{ const R=STORE.inside[id]; if(!R||R.ownDoor||WALKIN[id]||!ROOMS.door)return; const [x,y]=DOORP(R,0), [ix,iy]=DOORP(R,-1), dx=X(ix)-X(x), dz=Z(iy)-Z(y), l=Math.hypot(dx,dz)||1; scene.add(ROOMS.door(X(x),0,Z(y),[dx/l,dz/l],-.1*TILE)); };   // a shop's way out is a door you see (130-rooms)
+    STORE.inGo=id=>{ '@later'; finish(); const R=STORE.inside[id]; if(!R||R.done)return; R.done=true; const S=R.drop?took():null; STORE.now=1; R.go(); outDoor(id); STORE.now=0; const it=BATCH.items.splice(0); lit(); if(it.length){ BATCH.items=it; Object.assign(STORE.meshes,bake()); }
       if(S){ const seen=new Set(S.regs.map(r=>r[0])); R.P={objs:scene.children.slice(S.n),regs:[...S.regs.map(([A,n])=>[A,A.slice(n)]),...REGS().filter(A=>!seen.has(A)).map(A=>[A,A.slice(0)])]}; }
       if(ROOMS.reset)ROOMS.reset(); if(CLIP)CLIP.run(); INTERIORS.build(); };
     // an inside marked drop (R.drop) is taken down once you are out of it, built again behind the fade next time

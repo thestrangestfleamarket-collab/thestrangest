@@ -44,7 +44,7 @@ const TOWERK={}; window.TOWERK=TOWERK;
     const F=frame(), C=F.pw(4,4), H=3.2*MW, sp=F.pw(4,4+RR-1.0), ex=F.pw(4,4+RR-.15);
     ROOMS.off.sqtower={name:"THE SQUIRREL'S TOWER",box:{x0:C[0]-4*MW,z0:C[1]-4*MW,x1:C[0]+4*MW,z1:C[1]+4*MW,y0:-1,y1:H+1},noCeil:true,need:()=>Promise.resolve(),
       build:()=>{ const P=ROOMS.part(TOWERK.G=Object.assign(new THREE.Group(),{name:'tower-in'}),furnish); scene.add(TOWERK.G); return P; },unbuild:()=>{ if(TOWERK.G)TOWERK.G.removeFromParent(); TOWERK.G=null; },
-      spawn:[sp[0],sp[1],0,Math.PI],out:[s.x+dx*(rr+1.2*T),s.z+dz*(rr+1.2*T),0,a],door:[s.x+dx*(rr+.15*T),0,s.z+dz*(rr+.15*T)],exit:[ex[0],0,ex[1]],exitName:'OUT TO THE PARK'};
+      spawn:[sp[0],sp[1],0,Math.PI],out:[s.x+dx*(rr+1.2*T),s.z+dz*(rr+1.2*T),0,a],door:[s.x+dx*(rr+.15*T),0,s.z+dz*(rr+.15*T)],exit:[ex[0],0,ex[1]],exitName:'OUT TO THE PARK',doorBack:.12*T};
     if(ROOMS.reset)ROOMS.reset(); roofSet(); return true; };
   { let done=false; SYS.add('life',()=>{ if(!done)done=reg(); },'146zn-tower'); }
   const furnish=()=>{ '@later'; const F=frame(), first=!TOWERK.sol; TOWERK.sol=true; const K=IKIT.room(F,o=>TOWERK.G.add(o),first?undefined:()=>{}), {box,cyl,ball,glow,use,seat,own,pic,words}=K, H=3.2, c=4;

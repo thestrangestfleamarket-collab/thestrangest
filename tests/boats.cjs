@@ -2,7 +2,7 @@
 // clear of each other; a double-click puts you in one, W A S D rows it, it never runs into another boat or the shore, and you step out on the bank. Run: node tests/boats.cjs
 const {chromium}=require('playwright');
 (async()=>{ const b=await chromium.launch({executablePath:process.env.PWC||undefined,args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
-  const pg=await b.newPage({viewport:{width:960,height:540}}), errs=[]; let bad=0; pg.on('pageerror',e=>errs.push(e.message));
+  const pg=await b.newPage({viewport:{width:960,height:540}}), errs=[]; let bad=0; pg.on('pageerror',e=>errs.push(e.message)); pg.on('console',m=>{ if(m.type()==='error'&&/THREE|NaN/.test(m.text()))errs.push(m.text().slice(0,200)+' @'+m.location().lineNumber+':'+m.location().columnNumber); });
   const ok=(c,m)=>{ console.log((c?'ok  ':'FAIL')+' '+m); if(!c)bad++; };
   await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&hour=12',{timeout:180000}); await pg.waitForFunction(()=>window.__started,null,{timeout:400000});
   await pg.evaluate(()=>__dbg.UI.goTo(SHARED.BOD.XS(177),SHARED.BOD.ZS(121),'up'));

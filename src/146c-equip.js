@@ -1,8 +1,10 @@
 // THE WORN LAYER: EQUIP wears gear by slot (body: armour, the cloud coat; head: the headlight; eyes: the goggles) and turns on its granted ability — guard softens blows, float lifts you, light lights the dark, sight sees through murk, night sees in the dark. It also draws body gear on the player: plate armour (the knight's faceted steel) or a coat of drifting clouds. Hand gear stays with WIELD; all read the shared item model (slot, grants).
 import {SHARED, THREE} from './003-shx.js';
-import {EQUIP, FLOW, FORAGE, ITEMS, LOOKS, VIT, W3} from './003b-systems.js';
+import {EQUIP, FLOW, FORAGE, ITEMS, LOOKS, VIT, VR, W3} from './003b-systems.js';
 import {SAY} from './003d-say.js';
+import {OutputPass, ShaderPass} from './004-main.js';
 import {OWNED} from './005-save.js';
+import {SYS} from './006-map-pre.js';
 import {GARB} from './072b-garb.js';
 import {BODIES} from './111a-bodies.js';
 import {AVATAR} from './111c-avatar.js';
@@ -110,5 +112,11 @@ Object.assign(EQUIP,{fit:[1.3,1.55,1.1,-.2,.04],by:{},float:false,light:false,si
       for(let k=0;k<worn.puffs.length;k++){ const p=worn.puffs[k], sd=p.userData.sd, a=k/worn.puffs.length*Math.PI*2, rad=w*(.55+.12*Math.sin(t*.5+sd));
         p.position.set(Math.cos(a)*rad, -w*.2-(k%3)*w*.34+Math.sin(t*.8+sd)*w*.08, -w*.28+Math.sin(a)*rad*.5+Math.sin(t*.6+sd)*w*.06);
         p.scale.setScalar(w*(.42+.12*Math.sin(t*.9+sd*1.3))); } } };
+  // night vision (owner, 11 Nov 2026: "when you wear night vision goggles you need to be able to see in night vision mode"): the picture gained up and green, grainy, dark at the edges, while EQUIP.night; one pass made the first time, off otherwise
+  let NV=null; const nv=()=>{ '@later'; const C=SHARED.composer; if(NV||!C)return NV; NV=new ShaderPass({uniforms:{tDiffuse:{value:null},uOn:{value:0},uT:{value:0}},vertexShader:'varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
+      fragmentShader:`uniform sampler2D tDiffuse; uniform float uOn,uT; varying vec2 vUv; float h(vec2 p){ return fract(sin(dot(p,vec2(12.9898,78.233))+uT)*43758.5453); }
+      void main(){ vec4 c=texture2D(tDiffuse,vUv); float l=dot(c.rgb,vec3(.3,.59,.11)); float g=pow(clamp(l*6.,0.,1.),.55)+(h(vUv*700.)-.5)*.12; vec2 d=vUv-.5; float v=1.-smoothstep(.32,.62,length(d*vec2(1.3,1.)));
+        gl_FragColor=vec4(mix(c.rgb,vec3(.2,1.,.35)*g*v,uOn),c.a); }`}); NV.enabled=false; const i=C.passes.findIndex(p=>p instanceof OutputPass); C.insertPass(NV,i<0?C.passes.length:i); return NV; };
+  SYS.add('life',dt=>{ const on=!!EQUIP.night&&!VR.on; if(!on&&!NV)return; const P=nv(); if(!P)return; const u=P.uniforms; u.uOn.value+=((on?1:0)-u.uOn.value)*Math.min(1,(dt||0)*6); u.uT.value=(performance.now()/1000)%100; P.enabled=u.uOn.value>.01; },'146c-nightvision');
   const MINE={}; EQUIP.post=B=>{ const L=LOOKS.L||{}; GARB.draw(W3.group,B,GARB.spec(L.bare,LOOKS.over,W3.style&&W3.style.form),MINE,W3.mesh,GARB.myE()); EQUIP.draw(W3.group,B,EQUIP.by,MINE); };
 }

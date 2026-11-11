@@ -9,7 +9,7 @@ BATCH.all=(M,k)=>Object.keys(M||{}).filter(q=>q===k||q.startsWith(k+'~')).map(q=
 BATCH.add=(pos,uv,cv,ecv,kind)=>{ BATCH.items.push({pos,uv,cv,ecv,kind,obj:BATCH.tag}); };
 // no two faces in one place (6 Nov 2026 rule): a later flat face cuts its rectangle out of any earlier one lying in its plane and facing its way, so the two never fight for the same pixels; two facing each other (a box against a wall) both lose what they share
 BATCH.TOL=.003;
-BATCH.uncover=it=>{ const TOL=BATCH.TOL, R=[], B=new Map();
+BATCH.uncover=(it,REG=null)=>{ const TOL=BATCH.TOL, R=[], B=new Map();
   const rect=o=>{ const p=o.pos; let ax=-1; for(let a=0;a<3;a++){ let f=true; for(let i=3;i<18;i+=3)if(Math.abs(p[i+a]-p[a])>1e-5){ f=false; break; } if(f){ ax=a; break; } } if(ax<0)return null;
     const sa=(ax+1)%3, ta=(ax+2)%3, S=[], T=[]; for(let i=0;i<18;i+=3){ S.push(p[i+sa]); T.push(p[i+ta]); } const s0=Math.min(...S), s1=Math.max(...S), t0=Math.min(...T), t1=Math.max(...T); if(s1-s0<1e-4||t1-t0<1e-4)return null;
     for(let v=0;v<6;v++)if(Math.min(Math.abs(S[v]-s0),Math.abs(S[v]-s1))>1e-5||Math.min(Math.abs(T[v]-t0),Math.abs(T[v]-t1))>1e-5)return null;
@@ -24,6 +24,9 @@ BATCH.uncover=it=>{ const TOL=BATCH.TOL, R=[], B=new Map();
   it.forEach((o,i)=>{ const r=rect(o); R.push(r); if(r){ const k=key(r,0); (B.get(k)||B.set(k,[]).get(k)).push(i); } });
   const out=[];
   it.forEach((o,i)=>{ const r=R[i]; if(!r||!r.aff){ out.push(o); return; } let P=[[r.s0,r.s1,r.t0,r.t1]];
+    if(REG)for(let d=-1;d<=1&&P.length;d++)for(const q of REG.get(key(r,d))||[]){ if(Math.abs(q.c-r.c)>TOL||q.s1<=r.s0||q.s0>=r.s1||q.t1<=r.t0||q.t0>=r.t1)continue;   // a face this queue built before keeps its place
+      const N=[]; for(const [a0,a1,b0,b1] of P){ const c0=Math.max(a0,q.s0), c1=Math.min(a1,q.s1), e0=Math.max(b0,q.t0), e1=Math.min(b1,q.t1); if(c1-c0<1e-4||e1-e0<1e-4){ N.push([a0,a1,b0,b1]); continue; }
+        if(c0-a0>1e-4)N.push([a0,c0,b0,b1]); if(a1-c1>1e-4)N.push([c1,a1,b0,b1]); if(e0-b0>1e-4)N.push([c0,c1,b0,e0]); if(b1-e1>1e-4)N.push([c0,c1,e1,b1]); } P=N; }
     for(let d=-1;d<=1&&P.length;d++)for(const j of B.get(key(r,d))||[]){ const q=R[j]; if(j===i||!P.length||q.sg===r.sg&&j<i)continue; if(Math.abs(q.c-r.c)>TOL||q.s1<=r.s0||q.s0>=r.s1||q.t1<=r.t0||q.t0>=r.t1||!q.aff||!solid(it[j],q,Math.max(r.s0,q.s0),Math.min(r.s1,q.s1),Math.max(r.t0,q.t0),Math.min(r.t1,q.t1)))continue;
       const N=[]; for(const [a0,a1,b0,b1] of P){ const c0=Math.max(a0,q.s0), c1=Math.min(a1,q.s1), e0=Math.max(b0,q.t0), e1=Math.min(b1,q.t1); if(c1-c0<1e-4||e1-e0<1e-4){ N.push([a0,a1,b0,b1]); continue; }
         if(c0-a0>1e-4)N.push([a0,c0,b0,b1]); if(a1-c1>1e-4)N.push([c1,a1,b0,b1]); if(e0-b0>1e-4)N.push([c0,c1,b0,e0]); if(b1-e1>1e-4)N.push([c0,c1,e1,b1]); } P=N; }
@@ -31,6 +34,7 @@ BATCH.uncover=it=>{ const TOL=BATCH.TOL, R=[], B=new Map();
     const uv=(s,t)=>{ const fs=(s-r.s0)/(r.s1-r.s0), ft=(t-r.t0)/(r.t1-r.t0), C=r.C; return [C[0][0]+fs*(C[1][0]-C[0][0])+ft*(C[2][0]-C[0][0]),C[0][1]+fs*(C[1][1]-C[0][1])+ft*(C[2][1]-C[0][1])]; };
     for(const [a0,a1,b0,b1] of P){ const pos=o.pos.slice(), U=o.uv.slice(); for(let v=0;v<6;v++){ const s=r.S[v]-r.s0<(r.s1-r.s0)/2?a0:a1, t=r.T[v]-r.t0<(r.t1-r.t0)/2?b0:b1; pos[v*3+r.sa]=s; pos[v*3+r.ta]=t; const w=uv(s,t); U[v*2]=w[0]; U[v*2+1]=w[1]; }
       out.push({...o,pos,uv:U}); } });
+  if(REG)for(const o of out){ const q=rect(o); if(q&&q.aff&&solid(o,q,q.s0,q.s1,q.t0,q.t1)){ const k=key(q,0), L=REG.get(k), e={ax:q.ax,c:q.c,s0:q.s0,s1:q.s1,t0:q.t0,t1:q.t1}; if(L)L.push(e); else REG.set(k,[e]); if(BATCH.REGADD)BATCH.REGADD.push([k,e]); } }
   return out; };
 // the same rule for loose triangles (a builder's own merged soup): P its positions (three a corner, no index), A {name:[array,size]} the other corners' values; a later triangle cuts itself out of any earlier one in its plane facing its way; two facing each other (one solid resting on another) both lose what they share, which is inside; returns {P,A,at} (A the arrays alone; the same arrays and no at when nothing met)
 BATCH.unfight=(P,A={},opp=true,R=null)=>{ const t0=performance.now(), r=BATCH.unfight0(P,A,opp,R); BATCH.unfight.ms=(BATCH.unfight.ms||0)+performance.now()-t0; BATCH.unfight.n=(BATCH.unfight.n||0)+P.length/9; return r; };   // its time and triangles kept for the budget
@@ -83,7 +87,7 @@ BATCH.build=(make)=>{ const it=BATCH.items; if(!it.length)return; const AW=2048;
   const fit=(L,x,y,sh)=>{ for(const i of L){ const w=it[i].cv.width+2, h=it[i].cv.height+2; if(x+w>AW){ x=0; y+=sh; sh=0; } if(y+h>MAXH)return false; x+=w; sh=Math.max(sh,h); } return true; };
   for(const k in KS){ const L=KS[k].sort((a,b)=>it[b].cv.height-it[a].cv.height); if(y+sh>0&&!fit(L,x,y,sh)&&fit(L,0,0,0)){ PH[pg]=y+sh; pg++; x=0; y=0; sh=0; }
     for(const i of L){ const o=it[i], w=o.cv.width+2, h=o.cv.height+2; if(x+w>AW){ x=0; y+=sh; sh=0; } if(y+h>MAXH&&y>0){ PH[pg]=y+sh; pg++; x=0; y=0; sh=0; } o.ax=x; o.ay=y; o.pg=pg; x+=w; sh=Math.max(sh,h); } }
-  PH[pg]=y+sh; let AHs=[]; const PGS=it.map(o=>o.pg); { const u=BATCH.uncover(it); it.length=0; for(const o of u)it.push(o); }
+  PH[pg]=y+sh; let AHs=[]; const PGS=it.map(o=>o.pg); { const u=BATCH.uncover(it,BATCH.REG); it.length=0; for(const o of u)it.push(o); }
   for(let p=0;p<=pg;p++){ const ip=it.filter(o=>o.pg===p); if(!ip.length)continue;
   const AH=PH[p], atlas=document.createElement('canvas'); atlas.width=AW; atlas.height=AH; const AD=new ImageData(AW,AH); AHs.push(AH);
   const anyE=ip.some(o=>o.ecv), eat=anyE?document.createElement('canvas'):null, ED=anyE?new ImageData(AW,AH):null; if(eat){ eat.width=AW; eat.height=AH; for(let q=3;q<ED.data.length;q+=4)ED.data[q]=255; }
@@ -145,9 +149,10 @@ BATCH.queues=[]; BATCH.VIEW=20*TILE; BATCH.reach=()=>[48*TILE,64*TILE]; BATCH.at
 BATCH.queue=({make,cast=false,group,post,R,done,tile})=>{ const q={jobs:[],R:R||BATCH.VIEW,hold:[],hn:0,gt:0,dt:0,pend:[],groups:[],settled:false}, gd=(j,x,z)=>Math.hypot(Math.max(j.x0-x,0,x-j.x1),Math.max(j.z0-z,0,z-j.z1));
   const paint=L=>{ const keep=BATCH.items.splice(0), tg=BATCH.tag; BATCH.tag=null; for(const j of L){ q.jobs.splice(q.jobs.indexOf(j),1); j.go(); q.pend.push(j); q.hn++; } q.hold.push(...BATCH.items.splice(0)); BATCH.items=keep; BATCH.tag=tg; q.settled=false; };
   const flush=()=>{ if(!q.hold.length)return; const keep=BATCH.items.splice(0), m0=BATCH.meshes, c0=BATCH.cast; BATCH.meshes={}; BATCH.items=q.hold; q.hold=[]; q.hn=0;
-    BATCH.cast=cast; const t0=BATCH.tile; BATCH.tile=tile||0; try{ BATCH.build(make); } finally{ BATCH.tile=t0; } BATCH.cast=c0; const M=BATCH.meshes||{}; BATCH.meshes=m0; BATCH.items=keep; const g=group(); for(const k in M)g.add(M[k]); if(post)post(M); q.groups.push({ms:Object.values(M),jobs:q.pend.splice(0)}); };
+    BATCH.cast=cast; const t0=BATCH.tile, r0=BATCH.REG; BATCH.tile=tile||0; BATCH.REG=q.reg||(q.reg=new Map()); const ra=BATCH.REGADD=[]; try{ BATCH.build(make); } finally{ BATCH.tile=t0; BATCH.REG=r0; BATCH.REGADD=null; } BATCH.cast=c0; const M=BATCH.meshes||{}; BATCH.meshes=m0; BATCH.items=keep; const g=group(); for(const k in M)g.add(M[k]); if(post)post(M); q.groups.push({ms:Object.values(M),jobs:q.pend.splice(0),reg:ra}); };   // each queue's register: its later pieces give way to its earlier ones
   // a dropped group frees its meshes and pictures; its patches go back on the list, painted again when you come near
   const drop=G=>{ '@later'; for(const me of G.ms){ me.removeFromParent(); PEEK.boxes=PEEK.boxes.filter(b=>b.me!==me); me.geometry.dispose(); for(const m of [].concat(me.material)){ for(const k of ['map','emissiveMap'])if(m[k]){ m[k].dispose(); m[k].image=null; } m.dispose(); } }
+    for(const [k,e] of G.reg||[]){ const L=q.reg&&q.reg.get(k), i=L?L.indexOf(e):-1; if(i>=0)L.splice(i,1); }   // a dropped piece's faces leave the register
     q.groups.splice(q.groups.indexOf(G),1); q.jobs.push(...G.jobs); q.dropped=true; };
   q.add=(x0,z0,x1,z1,go)=>q.jobs.push({x0:Math.min(x0,x1),x1:Math.max(x0,x1),z0:Math.min(z0,z1),z1:Math.max(z0,z1),go});
   q.near=(x,z,r=q.R)=>{ if(!BATCH.at())return; const L=q.jobs.filter(j=>gd(j,x,z)<r); if(L.length){ paint(L); flush(); } };

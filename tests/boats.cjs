@@ -4,7 +4,7 @@ const {chromium}=require('playwright');
 (async()=>{ const b=await chromium.launch({executablePath:process.env.PWC||undefined,args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
   const pg=await b.newPage({viewport:{width:960,height:540}}), errs=[]; let bad=0; pg.on('pageerror',e=>errs.push(e.message));
   const ok=(c,m)=>{ console.log((c?'ok  ':'FAIL')+' '+m); if(!c)bad++; };
-  await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&hour=12'); await pg.waitForFunction(()=>window.__started,null,{timeout:400000});
+  await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&hour=12',{timeout:180000}); await pg.waitForFunction(()=>window.__started,null,{timeout:400000});
   await pg.evaluate(()=>__dbg.UI.goTo(SHARED.BOD.XS(177),SHARED.BOD.ZS(121),'up'));
   await pg.waitForFunction(()=>window.BOATDBG&&BOATDBG().crafts.length>=3,null,{timeout:420000,polling:1000}).catch(()=>{}); await pg.waitForTimeout(1500);
   const d=await pg.evaluate(()=>BOATDBG());

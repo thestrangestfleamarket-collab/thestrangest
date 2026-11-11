@@ -83,10 +83,10 @@ import {MODS, SYS, TILE} from './006-map-pre.js';
     live(m,C?read(C).b&~DOORS:0,mine?{brake:mv&&S&&v>.2*T,back:mv&&S&&v<=.2*T&&!W,busy:1}:{busy:1});
     const cb=mine&&m.userData.cab; if(cb&&cb.ped){ cb.ped[0].rotation.x=-.9+(W?.3:0); cb.ped[1].rotation.x=-.9+(S?.3:0); } };
 
-  /* ---------- the parts you double-click on a parked car: the driver's door lets you in, the rest open and shut ---------- */
+  /* ---------- the parts you double-click on a parked car: the driver's door lets you in, an open hatch too (shut behind you), the rest open and shut ---------- */
   CARX.things=(C,D)=>{ const px=PX.get(C.mesh); if(!px)return; const M1=C.mesh.scale.x;
     for(const p of D.parts||[]){ const o=px.PT[p.n]; if(!o)continue; const lid=p.use!=='door';
-      UI.thing({name:NAME[p.n]||p.n,obj:o,car:C,reach:(lid?3:2.3)*M1,near:(lid?4:3.2)*M1,tall:1.2*M1,act:()=>{ if(p.seat&&!(read(C).b&BIT[p.n])){ cars().getIn(C.id); return; } const on=CP.toggle(C,p.n); say('YOU '+(on?'OPEN':'SHUT')+' THE '+(NAME[p.n]||p.n)+'.'); }}); } };
+      UI.thing({name:NAME[p.n]||p.n,obj:o,car:C,reach:(lid?3:2.3)*M1,near:(lid?4:3.2)*M1,tall:1.2*M1,act:()=>{ if(p.seat&&!(read(C).b&BIT[p.n])){ cars().getIn(C.id); return; } if(p.use==='hatch'&&read(C).b&BIT[p.n]){ CP.toggle(C,p.n); cars().getIn(C.id); return; } const on=CP.toggle(C,p.n); say('YOU '+(on?'OPEN':'SHUT')+' THE '+(NAME[p.n]||p.n)+'.'); }}); } };
 
   /* ---------- the radio car's kit inside: the cage behind the front seat, the two-way radio and its microphone, the siren and lights box, a clipboard, the dome lamp ---------- */
   CARX.cabin=(model,g,o)=>{ const D=dataOf(model); if(!D||!D.marks)return;

@@ -7,6 +7,16 @@ import {BLOCK, FADE, FIX, LEVEL, MODS, OUT, RING, SOL, STORE, SYS, TILE, ZU} fro
 import {OCEAN} from './065b-ocean.js';
 const RIVER={way:'ocean',wi:0,step:true,t:0,on:false};
 Object.assign(RIVER,{onBuild:[],pickers:[],feed:()=>false,over:()=>false,clamp:()=>{},tick:()=>{},pre:()=>{},post:()=>{},hud:()=>{},pick:()=>false,swim:false,shown:false}); window.RIVER=MODS.river=RIVER;
+// a hull that keeps the water out (RIVER.dry(root, hull, y): a boat's or a diving car's): an unseen lid inside the hull where the plane y (root's own frame) cuts it, drawn after the boat and before the water, so no water shows inside
+RIVER.dry=(root,hull,y)=>{ root.updateMatrixWorld(true); const inv=root.matrixWorld.clone().invert(), M=new THREE.Matrix4(), a=new THREE.Vector3(), b=new THREE.Vector3(), c=new THREE.Vector3(), P=[];
+  hull.traverse(o=>{ const g=o.isMesh&&o.geometry, A=g&&g.attributes.position; if(!A)return; M.multiplyMatrices(inv,o.matrixWorld); const I=g.index, n=I?I.count:A.count, at=(v,i)=>v.fromBufferAttribute(A,I?I.getX(i):i).applyMatrix4(M);
+    for(let i=0;i+2<n;i+=3){ at(a,i); at(b,i+1); at(c,i+2); for(const [p,q] of [[a,b],[b,c],[c,a]])if((p.y-y)*(q.y-y)<0){ const t=(y-p.y)/(q.y-p.y); P.push(p.x+(q.x-p.x)*t,p.z+(q.z-p.z)*t); } } });
+  if(P.length<12)return null; let cx=0, cz=0; for(let i=0;i<P.length;i+=2){ cx+=P[i]; cz+=P[i+1]; } cx/=P.length/2; cz/=P.length/2;
+  const N=72, R=new Float32Array(N); for(let i=0;i<P.length;i+=2){ const k=Math.round((Math.atan2(P[i+1]-cz,P[i]-cx)/(2*Math.PI)+1)*N)%N; R[k]=Math.max(R[k],Math.hypot(P[i]-cx,P[i+1]-cz)); }
+  for(let k=0;k<N;k++)if(!R[k]){ let l=1; while(l<N&&!R[(k-l+N)%N]&&!R[(k+l)%N])l++; R[k]=Math.max(R[(k-l+N)%N],R[(k+l)%N]); }
+  const v=[cx,y,cz]; for(let k=0;k<=N;k++){ const t=k%N/N*2*Math.PI, r=R[k%N]*.97; v.push(cx+Math.cos(t)*r,y,cz+Math.sin(t)*r); } const ix=[]; for(let k=1;k<=N;k++)ix.push(0,k+1,k);
+  const G=new THREE.BufferGeometry(); G.setAttribute('position',new THREE.Float32BufferAttribute(v,3)); G.setIndex(ix);
+  const lid=new THREE.Mesh(G,new THREE.MeshBasicMaterial({colorWrite:false,side:THREE.DoubleSide})); lid.name='DRY'; lid.renderOrder=1; lid.castShadow=lid.receiveShadow=false; lid.raycast=()=>{}; Object.assign(lid.userData,{noMerge:true,noMirror:true}); root.add(lid); return lid; };
 const RIVERG=new THREE.Group(); RIVERG.name='river'; RIVERG.visible=false; scene.add(RIVERG);
 // the water surface's shader, every water's (the river's, the lake's), and what every surface shares (the sun, the sky, the lamps, the clock, FLOW's ripples), kept out here so a lake can wear the river's water before the river is built
 const SURF=(()=>{ const T=TILE, MPU=.84/T, NW=8, GLN=`float rh(vec2 p){ p=fract(p*vec2(.1031,.1030)); p+=dot(p,p.yx+33.33); return fract((p.x+p.y)*p.x); }
@@ -165,7 +175,7 @@ RIVER.build=()=>{ if(RIVER.on)return; const n0=scene.children.length; const R=RI
     uFL:{value:new THREE.Vector3(...OCEAN.L.map(L=>L*WU))},uFLod:{value:new THREE.Vector3(...OCEAN.L.map(L=>Math.max(0,Math.log2(CELL*MPU*OCEAN.N/L)+1)))}}; SU.uBedO=SU.uBed; SU.uBedRO=SU.uBedR;
   const surfMat=new THREE.ShaderMaterial({uniforms:SU,side:THREE.DoubleSide,fog:false,vertexShader:SURF.vertexShader,fragmentShader:SURF.fragmentShader});
   const farMat=surfMat.clone(); farMat.uniforms={...SU,uMode:{value:3},uScene:{value:bedTex},uDepth:{value:bedTex}}; RIVER.farMat=farMat;   // (it reads neither; not bound to the picture it is drawn into)
-  const surf=new THREE.Mesh(PG(ND,NX,Math.round(ND/CELL),(DZ-ND)/2),surfMat), surfF=new THREE.Mesh(PG(DZ-ND+T,1,1,(T-ND)/2),surfMat); surf.frustumCulled=surfF.frustumCulled=false; surf.add(surfF); scene.add(surf);
+  const surf=new THREE.Mesh(PG(ND,NX,Math.round(ND/CELL),(DZ-ND)/2),surfMat), surfF=new THREE.Mesh(PG(DZ-ND+T,1,1,(T-ND)/2),surfMat); surf.frustumCulled=surfF.frustumCulled=false; surf.renderOrder=surfF.renderOrder=2; surf.add(surfF); scene.add(surf);
   const FU={...UWU,uT:uT0,uMe:SH.uMe,uSky:{value:new THREE.Color(.5,.62,.75)},uDay:{value:1},uDeep:{value:new THREE.Color(.06,.16,.2)},uSkyK:{value:.32}};
   const flatMat=new THREE.ShaderMaterial({uniforms:FU,fog:false,
     vertexShader:'varying vec3 vW; void main(){ vec4 w=modelMatrix*vec4(position,1.); vW=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }',

@@ -24,7 +24,7 @@ const SURF=(()=>{ const T=TILE, MPU=.84/T, NW=8, GLN=`float rh(vec2 p){ p=fract(
         d*=fe; vec2 ru=(p-uRect.xy)/uRect.zw; if(uRipOn>0.&&ru.x>0.&&ru.y>0.&&ru.x<1.&&ru.y<1.)d.y+=texture2D(uRip,ru).r;
         w.xyz+=d; vW=w.xyz; vH=d.y; vec4 mv=viewMatrix*w; vVz=mv.z; gl_Position=projectionMatrix*mv; }`,
     fragmentShader:`#include <packing>
-      uniform float uFix; uniform float uUW,uUWF; uniform vec3 uUWC; uniform vec2 uMe; uniform float uT,uAmp,uRT,uRipOn,uNear,uFar,uMode,uFoam,uRefr,uLv,uStep,uRefl; uniform vec3 uHi; uniform vec4 uWA[${NW}],uWB[${NW}],uWin,uRect,uBedR; uniform int uNW; uniform vec2 uRes,uBank;
+      uniform float uUW,uUWF; uniform vec3 uUWC; uniform vec2 uMe; uniform float uT,uAmp,uRT,uRipOn,uNear,uFar,uMode,uFoam,uRefr,uLv,uStep,uRefl; uniform vec3 uHi; uniform vec4 uWA[${NW}],uWB[${NW}],uWin,uRect,uBedR; uniform int uNW; uniform vec2 uRes,uBank;
       uniform sampler2D uRip,uScene,uDepth,uBed,uD0,uD1,uD2,uS0,uS1,uS2; uniform vec3 uFL; uniform float uFft; uniform vec3 uSig,uScat,uSunD,uSunC,uAmb,uSkyH,uSkyZ,uCamD,uLP[8],uLC[8];
       varying vec3 vW; varying vec2 vP0; varying float vVz, vH;
       ${GLN}
@@ -43,7 +43,7 @@ const SURF=(()=>{ const T=TILE, MPU=.84/T, NW=8, GLN=`float rh(vec2 p){ p=fract(
           n.x-=a.x*wa*c; n.z-=a.y*wa*c; n.y-=b.y*wa*s; jxx-=b.y*wa*a.x*a.x*s; jzz-=b.y*wa*a.y*a.y*s; jxz-=b.y*wa*a.x*a.y*s; } }
         float rip=0.; vec2 ru=(p-uRect.xy)/uRect.zw; if(uRipOn>0.&&ru.x>0.&&ru.y>0.&&ru.x<1.&&ru.y<1.){ rip=texture2D(uRip,ru).r; float e=uRect.z*uRT;
           n.x-=(texture2D(uRip,ru+vec2(uRT,0.)).r-texture2D(uRip,ru-vec2(uRT,0.)).r)/(2.*e); n.z-=(texture2D(uRip,ru+vec2(0.,uRT)).r-texture2D(uRip,ru-vec2(0.,uRT)).r)/(2.*e); }
-        if(uAmp>0.)n.xz+=(vec2(rn(p*${(.9/T).toFixed(4)}+vec2(uT*.35,0.)),rn(p*${(1.3/T).toFixed(4)}+vec2(7.,-uT*.3)))-.5)*.16;
+        if(uAmp>0.)n.xz+=(vec2(rn(p*${(.9/T).toFixed(4)}+vec2(uT*.35,0.)),rn(p*${(1.3/T).toFixed(4)}+vec2(7.,-uT*.3)))-.5)*.06;
         n=normalize(n); bool up=gl_FrontFacing; if(!up)n=-n;
         vec3 V=isOrthographic?-uCamD:normalize(cameraPosition-vW); float vd=max(dot(n,V),0.);
         vec3 inC=uScat*(uAmb*.8+uSunC*max(uSunD.y,0.)*.6);
@@ -54,10 +54,7 @@ const SURF=(()=>{ const T=TILE, MPU=.84/T, NW=8, GLN=`float rh(vec2 p){ p=fract(
           else if(uMode<.5||uMode>1.5){
             vec2 s=gl_FragCoord.xy/uRes; float th=max(0.,vVz-vz(texture2D(uDepth,s).r));
             vec2 r=clamp(s+n.xz*.035*uRefr*min(th*${MPU.toFixed(4)},2.),.001,.999); float th2=vVz-vz(texture2D(uDepth,r).r); if(th2<0.){ r=s; th2=th; }
-            float m=min(th2*${MPU.toFixed(4)},40.); vec3 Tr=exp(-uSig*m); col=texture2D(uScene,r).rgb*Tr+inC*(1.-Tr);
-            if(uFix>.5&&uFix<1.5)col=inC*1.25;
-            if(uFix>1.5&&uFix!=3.){ float d0=vz(texture2D(uDepth,r).r); col=mix(col,inC*1.25,max(1.-smoothstep(.02,.4,th2*${MPU.toFixed(4)}),step(.9999,texture2D(uDepth,r).r))); }
-            if(uFix>2.5){ float ke=clamp(min(p.x-uWin.x,uWin.y-p.x)/${(25*T).toFixed(3)},0.,1.); col=mix(inC*1.25,col,ke); } }
+            float m=min(th2*${MPU.toFixed(4)},40.); vec3 Tr=exp(-uSig*m); col=texture2D(uScene,r).rgb*Tr+inC*(1.-Tr); }
           else {
             vec2 bu=(p-uBedR.xy)/uBedR.zw; float dm=texture2D(uBed,vec2(bu.x,bu.y)).r*255./20.; float path=dm/max(abs(V.y),.25);
             alpha=1.-exp(-dot(uSig,vec3(.333))*path); col=inC; }
@@ -73,7 +70,7 @@ const SURF=(()=>{ const T=TILE, MPU=.84/T, NW=8, GLN=`float rh(vec2 p){ p=fract(
         if(uStep>0.)col=floor(col*24.+.5)/24.;
         if(uUW>0.)col=mix(col,uUWC,clamp(length(vW-cameraPosition)/uUWF,0.,1.)); if(uUW>0.)alpha=1.;
         gl_FragColor=vec4(col,alpha); }`}; })();
-const SH={uFix:{value:+(new URLSearchParams(location.search).get('wfix')||0)},uPier:{value:new THREE.Vector4(1e9,1e9,1e9,1e9)},uMe:{value:new THREE.Vector2()},uT:{value:0},uSunD:{value:new THREE.Vector3()},uSunC:{value:new THREE.Color()},uAmb:{value:new THREE.Color()},uSkyH:{value:new THREE.Color()},uSkyZ:{value:new THREE.Color()},uCamD:{value:new THREE.Vector3()},uLP:{value:Array.from({length:8},()=>new THREE.Vector3())},uLC:{value:Array.from({length:8},()=>new THREE.Vector3())},uStep:{value:0},uRipOn:{value:0},uUW:{value:0},uUWF:{value:1},uUWC:{value:new THREE.Color()}};
+const SH={uPier:{value:new THREE.Vector4(1e9,1e9,1e9,1e9)},uMe:{value:new THREE.Vector2()},uT:{value:0},uSunD:{value:new THREE.Vector3()},uSunC:{value:new THREE.Color()},uAmb:{value:new THREE.Color()},uSkyH:{value:new THREE.Color()},uSkyZ:{value:new THREE.Color()},uCamD:{value:new THREE.Vector3()},uLP:{value:Array.from({length:8},()=>new THREE.Vector3())},uLC:{value:Array.from({length:8},()=>new THREE.Vector3())},uStep:{value:0},uRipOn:{value:0},uUW:{value:0},uUWF:{value:1},uUWC:{value:new THREE.Color()}};
 const WATERS=[
  {key:'a',name:'A · HUDSON',desc:'The Hudson by the pier: dark, a slow low swell.',
   sig:[0.62,0.24,0.26],scat:[0.008,0.026,0.018],deep:7,bed:0,foam:0.06,refr:.7,refl:.2,hi:[.07,.17,.08],tm:.55,fish:false,far:[.014,.03,.02],sky:.16,   // dark: nothing seen down in it (owner, 5 Nov 2026)
@@ -120,7 +117,8 @@ RIVER.build=()=>{ if(RIVER.on)return; const n0=scene.children.length; const R=RI
     return Math.max(1.2,d); };
   RIVER.depthAt=depthAt;
   const NW=8, WA=Array.from({length:NW},()=>new THREE.Vector4()), WB=Array.from({length:NW},()=>new THREE.Vector4()); let WV=[];
-  const setWaves=()=>{ const ws=WATERS[RIVER.wi].waves, n=ws.length, tm=WATERS[RIVER.wi].tm||1; WV=ws.map(([lam,A,deg,st],m)=>{ const k=2*Math.PI/lam, a=deg*Math.PI/180; return {dx:Math.cos(a),dz:-Math.sin(a),k:k*MPU,w:Math.sqrt(9.81*k)*tm,A:A*WU,Q:st/(k*A*n),ph:m*1.7}; });
+  const CALM=.1, calmF=f=>({...f,scale:(f.scale==null?1:f.scale)*CALM});   // every wave a tenth of its height: the water super calm
+  const setWaves=()=>{ const ws=WATERS[RIVER.wi].waves, n=ws.length, tm=WATERS[RIVER.wi].tm||1; WV=ws.map(([lam,A,deg,st],m)=>{ const k=2*Math.PI/lam, a=deg*Math.PI/180; return {dx:Math.cos(a),dz:-Math.sin(a),k:k*MPU,w:Math.sqrt(9.81*k)*tm,A:A*WU*CALM,Q:st/(k*A*n),ph:m*1.7}; });
     for(let i=0;i<NW;i++){ const w=WV[i]; if(w){ WA[i].set(w.dx,w.dz,w.k,w.w); WB[i].set(w.A,w.Q,w.ph,0); } else { WA[i].set(1,0,0,0); WB[i].set(0,0,0,0); } } };
   const ampAt=x=>RIVER.way==='flat'?0:cl(Math.min(x-(RIVER.cx-WIN/2),RIVER.cx+WIN/2-x)/(10*T),0,1);
   let OS=null; const OC=()=>RIVER.way==='ocean'&&OS&&OS.Q.have;   // the OCEAN way's waves (065b), and their heights as drawn
@@ -159,7 +157,7 @@ RIVER.build=()=>{ if(RIVER.on)return; const n0=scene.children.length; const R=RI
     bedTex.needsUpdate=true; bed.position.set(RIVER.cx,0,(rz0+rz1)/2); if(typeof seedGrass!=='undefined')seedGrass(); };
 
   const RT=new THREE.WebGLRenderTarget(4,4,{type:THREE.HalfFloatType}); RT.depthTexture=new THREE.DepthTexture(4,4); RT.depthTexture.type=THREE.FloatType;
-  const SU={uFix:SH.uFix,...UWU,uT:uT0,uMe:SH.uMe,uPier:SH.uPier,uWA:{value:WA},uWB:{value:WB},uNW:{value:0},uAmp:{value:1},uWin:{value:new THREE.Vector4()},uRip:FLOW.tex,uRect:FLOW.rect,uRipOn:uRipOn,uRT:{value:1/FLOW.G},
+  const SU={...UWU,uT:uT0,uMe:SH.uMe,uPier:SH.uPier,uWA:{value:WA},uWB:{value:WB},uNW:{value:0},uAmp:{value:1},uWin:{value:new THREE.Vector4()},uRip:FLOW.tex,uRect:FLOW.rect,uRipOn:uRipOn,uRT:{value:1/FLOW.G},
     uScene:{value:RT.texture},uDepth:{value:RT.depthTexture},uRes:{value:new THREE.Vector2(4,4)},uNear:{value:.1},uFar:{value:800},uMode:{value:0},uBed:{value:bedTex},uBedR:{value:new THREE.Vector4()},
     uSig:{value:new THREE.Vector3()},uScat:{value:new THREE.Vector3()},uFoam:{value:0},uRefr:{value:1},uLv:{value:LV},uBank:{value:new THREE.Vector2(rz0,rz1)},
     uSunD:uSunD,uSunC:SH.uSunC,uAmb:SH.uAmb,uSkyH:SH.uSkyH,uSkyZ:SH.uSkyZ,uCamD:SH.uCamD,
@@ -273,7 +271,7 @@ RIVER.build=()=>{ if(RIVER.on)return; const n0=scene.children.length; const R=RI
   RIVER.step=true;
   if(QSr.get('river'))RIVER.way=QSr.get('river'); if(QSr.get('water'))RIVER.wi=Math.max(0,'abc'.indexOf(QSr.get('water')));
   const applyWater=()=>{ const Wt=WATERS[RIVER.wi]; setWaves(); SU.uNW.value=WV.length; setWater(SU); for(const U of SURFS)setWater(U); uBedK.value=Wt.bed; FU.uDeep.value.setRGB(...Wt.far); FU.uSkyK.value=Wt.sky;
-    uCau.value=Wt.bed===0?.6:Wt.bed===1?.7:1; RIVER.cx=1e9; FLOW.rest(); seedJunk(); if(OS)OS.set(Wt.fft); };
+    uCau.value=Wt.bed===0?.6:Wt.bed===1?.7:1; RIVER.cx=1e9; FLOW.rest(); seedJunk(); if(OS)OS.set(calmF(Wt.fft)); };
   RIVER.set=(o={})=>{ if(o.way)RIVER.way=o.way; if(o.wi!=null){ RIVER.wi=o.wi; applyWater(); } if(o.step!=null)RIVER.step=o.step; save(); RIVER.panel&&RIVER.panel(); };
   applyWater();
 
@@ -314,7 +312,7 @@ RIVER.build=()=>{ if(RIVER.on)return; const n0=scene.children.length; const R=RI
   RIVER.pre=(renderer,scene,cam,dt,pos)=>{ const up=OUT.world;
     const fl=RIVER.way==='fluid', rip=fl||RIVER.way==='full'||RIVER.way==='ocean'; uRipOn.value=rip&&FLOW.on.value?1:0; FLOW.wa.value=WA; FLOW.wb.value=WB; FLOW.nw.value=fl?WV.length:0; FLOW.time=RIVER.t;   // the sea's swell comes in at FLOW's rim
     if(surf.visible){ M4.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse); F.setFromProjectionMatrix(M4); bb.min.set(RIVER.cx-WIN/2,LV-WU,rz0); bb.max.set(RIVER.cx+WIN/2,LV+2*WU,rz1); if(cam.position.y>LV+2*WU&&!SEE()){ surf.visible=bed.visible=junk.visible=grass.visible=false; } }
-    SU.uFft.value=0; if(RIVER.way==='ocean'&&surf.visible){ if(!OS)OS=OCEAN.make(renderer,WATERS[RIVER.wi].fft); OS.update(Math.min(+dt||0,.1)); for(let c=0;c<3;c++){ SU['uD'+c].value=OS.disp[c]; SU['uS'+c].value=OS.slope[c]; } SU.uFft.value=1;
+    SU.uFft.value=0; if(RIVER.way==='ocean'&&surf.visible){ if(!OS)OS=OCEAN.make(renderer,calmF(WATERS[RIVER.wi].fft)); OS.update(Math.min(+dt||0,.1)); for(let c=0;c<3;c++){ SU['uD'+c].value=OS.disp[c]; SU['uS'+c].value=OS.slope[c]; } SU.uFft.value=1;
       const st=WIN/(OS.Q.GX-1); OS.query(SU,RIVER.cx-WIN/2,Math.max(rz0,Math.min(pos.z-st*OS.Q.GZ/2,rz1-st*(OS.Q.GZ-1))),st); }
     if(rip&&surf.visible){
       if(cam.position.y<=LV+2*WU||SEE()){ rxQ(renderer); const seen=rxSeen(), under=cam.position.y<=LV+2*WU, fresh=!RIVER.rxIn; RIVER.rxIn=true;

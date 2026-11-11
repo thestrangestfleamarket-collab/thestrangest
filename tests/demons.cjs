@@ -12,6 +12,8 @@ const until=(fn,arg,ms=120000)=>pg.waitForFunction(fn,arg,{timeout:ms,polling:30
   await pg.evaluate(()=>__dbg.UI.setView('third')); await face(O.x,O.z); await pg.waitForTimeout(4000);
   await until(()=>!!OCTODBG().song); if(shots)await pg.screenshot({path:shots+'/octobusk.png'});
   const S=await pg.evaluate(()=>OCTODBG().song); ok(!!S,'he plays a piece from the book ('+S+')');
+  const C=await pg.evaluate(()=>{ const th=__dbg.UI.things.find(t=>/GUITAR CASE/.test(t.name)), c0=INV.cash; if(th)th.act(); return {case:!!th,paid:c0-INV.cash}; });
+  ok(C.case&&C.paid===1,'his open guitar case takes a $1 tip ('+J(C)+')');
   const D0=await pg.evaluate(()=>{ const d=DEMONDBG().spawn(), m=DEMONS.T.me(); return d?{id:d.id,r:Math.hypot(d.x-m.x,d.z-m.z)}:null; }); ok(!!D0,'a demon climbs out of the tracks ('+J(D0)+')');
   await until(id=>{ const d=DEMONS.list.find(d=>d.id===id); return d&&d.state==='run'&&d.t>1.5; },D0&&D0.id);
   const gd=id=>pg.evaluate(id=>{ const d=DEMONS.list.find(d=>d.id===id), m=DEMONS.T.me(); return d?{state:d.state,r:Math.hypot(d.x-m.x,d.z-m.z),x:d.x,z:d.z,blk:d.blk.visible,name:d.th.name}:null; },id);

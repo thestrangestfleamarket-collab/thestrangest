@@ -25,11 +25,11 @@ const PROV=JSON.parse(fs.readFileSync('data/full/sounds.json','utf8')).sounds;
   for(const [k,n,f] of refs)ok((k==='sound'?RECIPES:POOLS).includes(n),'the code\'s '+k+' '+n+' ('+f+') is in its table');
   for(const p of SND){ const r=PROV.find(r=>r.runtime===p); ok(!!r&&r.licence&&r.licence.url&&fs.existsSync(r.licence.snapshot)&&(r.source||r.made),'the sound file '+p+' has a provenance record with a licence and its snapshot'); }
   for(const r of PROV)ok(fs.existsSync(r.runtime),'the provenance record '+r.id+' names a file that exists');
-  const r=await pg.evaluate(async()=>{ const out={}, {SAVE,SFX,AMB,LINES,LOOKS,OUTL,DITH,UI}=__dbg, groundY=__dbg.ground;
+  const r=await pg.evaluate(async()=>{ const out={}, {SAVE,SFX,AMB,LINES,LOOKS,OUTL,UI}=__dbg, groundY=__dbg.ground;
     // the save: the old keys gathered, read back as they were, a write read back, the version
     const S=SAVE.all(); out.save={v:S.v,V:SAVE.V,raw:JSON.parse(localStorage.getItem('market-save')||'{}'),left:Object.keys(localStorage).filter(k=>/^(market-|isowalk-)/.test(k)&&k!=='market-save')};
     SAVE.set('probe','x'); out.save.probe=JSON.parse(localStorage.getItem('market-save')).probe; SAVE.del('probe'); out.save.gone=SAVE.get('probe');
-    out.name=LOOKS.L.name; out.dith=DITH; out.outl=OUTL.on;
+    out.name=LOOKS.L.name; out.outl=OUTL.on;
     // the sounds: every recipe a finite, audible buffer; the ambience's names recipes
     const c=SFX.wake(); if(c&&c.state!=='running')await c.resume().catch(()=>{}); out.ctx=c&&c.state;
     out.sfx={}; for(const k of SFX.names()){ const B=SFX.buffer(k,c), D=B.getChannelData(0); let mx=0, fin=true; for(let i=0;i<D.length;i++){ const v=Math.abs(D[i]); if(!isFinite(v)){ fin=false; break; } if(v>mx)mx=v; } out.sfx[k]={n:D.length,mx:+mx.toFixed(3),fin,len:SFX.recipe(k).len}; }

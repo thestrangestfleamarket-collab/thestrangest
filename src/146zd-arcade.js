@@ -1,4 +1,4 @@
-// THE ARCADE, FURNISHED: round the owner's cabinets and the holodeck door, what a real arcade has: a prize counter and its wall run by TOKEN (a little robot of the Block's kind), skee-ball, air hockey and a claw machine (each a game, a token a go), the token changer, a soda machine, stools at the cabinets; tickets won at the games traded for prizes; where its staff and its crowd stand or sit.
+// THE ARCADE, FURNISHED: round the owner's cabinets and the holodeck door, what a real arcade has: a prize counter and its wall, skee-ball, air hockey and a claw machine (each a game, free play), a soda machine, stools at the cabinets; where its staff and its crowd stand or sit.
 import {THREE} from './003-shx.js';
 import {FORAGE, INV, ROOMS, UI, WORKERS} from './003b-systems.js';
 import {SAY} from './003d-say.js';
@@ -6,33 +6,15 @@ import {scene} from './004-main.js';
 import {STORE, TILE} from './006-map-pre.js';
 import {IKIT} from './038zc-ikit.js';
 import {MINI} from './038zd-mini.js';
-import {MERCH} from './111e-merch.js';
 const ARCADE={}; window.ARCADE=ARCADE;
 { FORAGE.add({names:{arc_token:'AN ARCADE TOKEN',prize_yoyo:'A YO-YO',prize_ring:'A PLASTIC RING'}});   // the prize tickets and plushes are the fair's (ptix, plush_*)
   const say=(t,c)=>SAY(t,c||'#f2c14e');
-  // TOKEN: a boxy robot with a television for a head, a coin slot and a ticket tongue
-  const tokenbot=()=>{ '@later'; const {mk,grp}=MERCH.K, sk=MERCH.skel({hipY:.55,neck:.42,shX:.2,shY:.36,upper:.2,fore:.18,hipX:.09,thigh:.26,shin:.26}), {B}=sk;
-    const BODY='plastic:#5a2a8a', TEAL='plastic:#2ad0c8', STEEL='metal:#8a8c90', DARK='plastic:#18181a';
-    mk(B.torso,new THREE.BoxGeometry(.4,.42,.3),BODY,[0,.21,0]); mk(B.torso,new THREE.BoxGeometry(.07,.014,.01),STEEL,[0,.33,.152]); mk(B.torso,new THREE.BoxGeometry(.16,.04,.01),DARK,[0,.15,.152]); mk(B.torso,new THREE.BoxGeometry(.05,.1,.004),'plain:#f2c14e',[0,.09,.157]);
-    mk(B.hips,new THREE.BoxGeometry(.32,.12,.26),DARK,[0,-.04,0]);
-    const H=grp(B.head,[0,.15,0]); mk(H,new THREE.BoxGeometry(.32,.26,.26),TEAL); mk(H,new THREE.BoxGeometry(.25,.19,.012),'glass:#0a1a14',[0,0,.131]);
-    for(const s of [1,-1])mk(H,new THREE.BoxGeometry(.035,.035,.006),'plain:#60ff90',[.055*s,.03,.139]); for(const [x,y] of [[-.05,-.035],[-.025,-.05],[0,-.055],[.025,-.05],[.05,-.035]])mk(H,new THREE.BoxGeometry(.022,.016,.006),'plain:#60ff90',[x,y,.139]);
-    mk(H,new THREE.CylinderGeometry(.008,.008,.14,8),STEEL,[.08,.2,0]); mk(H,new THREE.SphereGeometry(.025,10,8),'plain:#ff4fa0',[.08,.28,0]);
-    for(const s of [1,-1]){ const n=s>0?'L':'R';
-      mk(B['upperArm'+n],new THREE.BoxGeometry(.09,.2,.09),BODY,[0,-.1,0]); mk(B['forearm'+n],new THREE.BoxGeometry(.08,.18,.08),TEAL,[0,-.09,0]); mk(B['hand'+n],new THREE.BoxGeometry(.08,.07,.05),STEEL,[0,-.04,0]);
-      mk(B['thigh'+n],new THREE.CylinderGeometry(.05,.045,.26,12),DARK,[0,-.13,0]); mk(B['shin'+n],new THREE.CylinderGeometry(.045,.05,.26,12),STEEL,[0,-.13,0]); mk(B['shoe'+n],new THREE.BoxGeometry(.1,.07,.18),DARK,[0,-.04,.03]); }
-    return sk; };
-  WORKERS.models.w_tokenbot={label:'TOKEN',height:1.2,model:tokenbot,size:6,idle:t=>{ const hand=(t%6)<1.4; return MERCH.pose({nod:Math.sin(t*1.6)*6,yaw:Math.sin(t*.5)*16,L:{ua:[20,10],fa:[40,0]},R:{ua:[hand?100:22,-10],fa:[hand?30:40,0]}}); }};
-  // the prizes and what they cost in tickets, the best you can have first
-  const PRIZES=[['plush_bear',30],['plush_duck',12],['prize_yoyo',8],['kazoo',6],['prize_ring',4]];
-  // a token a go (the changer by the door sells them); tickets come out of the games, prizes off the counter
-  const tok=()=>INV.items.arc_token||0, needTok=()=>'', payTok=()=>true;   // free play (owner, 5 Nov 2026)
+  // tickets come out of the games
+  const needTok=()=>'', payTok=()=>true;   // free play (owner, 5 Nov 2026)
   const win=n=>{ if(n>0){ INV.add('ptix',n); say(`${n} TICKET${n===1?'':'S'} COME OUT.`); } };
   ARCADE.skee=()=>MINI.open(GAMES.skee({can:needTok,pay:payTok,end:S=>{ ARCADE.last={game:'skee',score:S.score,tickets:S.tickets||0}; win(S.tickets||0); }}));
   ARCADE.claw=()=>MINI.open(GAMES.claw({can:needTok,pay:payTok,end:S=>{ ARCADE.last={game:'claw',won:!!S.won}; if(S.won){ INV.add('plush_bear',1); say('A PLUSH BEAR. IT IS IN YOUR PACK.'); } }}));
   ARCADE.hockey=()=>MINI.open(GAMES.hockey({can:needTok,pay:payTok,end:S=>{ ARCADE.last={game:'hockey',won:!!S.won,score:S.score}; win(S.won?5:S.score); }}));
-  ARCADE.change=()=>{ if(INV.cash<1)return say('THE CHANGER TAKES A DOLLAR.','#c8a090'); INV.cash-=1; INV.add('arc_token',4); say(`FOUR TOKENS CLATTER OUT. YOU HAVE ${tok()}.`); };
-  ARCADE.prize=()=>{ const have=INV.items.ptix||0, p=PRIZES.find(([,c])=>have>=c); if(!p)return say(`YOU HAVE ${have} TICKET${have===1?'':'S'}. A RING IS 4.`,'#c8a090'); FORAGE.take('ptix',p[1]); INV.add(p[0],1); say(`TOKEN HANDS YOU ${FORAGE.name(p[0])} FOR ${p[1]} TICKETS.`); return p[0]; };
   // where its people go: the floor man by the middle, TOKEN behind the prize counter; the crowd on stools at the side cabinets, at PETRI, the lanes, the hockey table, the claw
   { const o=ROOMS.off.arcade; if(o&&o.ar){ const F=IKIT.frame(o.ar), W=F.W, sp=(u,v,du,dv,h)=>{ const p=F.pw(u,v); return {x:p[0],z:p[1],hd:F.hd(du,dv),...(h!=null?{y:h*IKIT.MW}:{})}; }, YS=[2.03,4.34,6.66,8.97];
     o.spots={'RUNS THE FLOOR':sp(8.6,8.2,-1,0),PRIZES:sp(2.0,11.5,0,-1)};

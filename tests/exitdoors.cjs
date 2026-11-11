@@ -27,6 +27,21 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       ok(out, id + ': double-clicking it takes you out');
     }
   }
+  if (st) {   // the street shops built in place (the bank's door its own, never swinging): double-click the door inside to leave
+    await pg.evaluate(async () => { await STORE.ensure(); for (const id in STORE.gate) STORE.gate[id] = () => true; });
+    const until = async (f, a, ms = 60000) => { for (let t = 0; t < ms; t += 250) { if (await pg.evaluate(f, a).catch(() => false)) return true; await pg.waitForTimeout(250); } return false; };
+    for (const id of await pg.evaluate(() => Object.keys(STORE.inside))) {
+      await pg.evaluate(id => STORE.enter(id, true), id);
+      const inn = await until(id => ROOMS.cur && ROOMS.cur.id === id && STORE.inside[id].done && !FADE.busy, id);
+      ok(inn, id + ': you get in by its door');
+      const near = () => { const p = __dbg.pos(); return __UI.things.filter(t => t.exit && t.ghost && t.obj && Math.hypot(t.obj.position.x - p[0], t.obj.position.z - p[2]) < 4 * 1.13); };
+      ok(await pg.evaluate(`(${near})().length`) >= 1, id + ': a door inside to double-click');
+      let out = false;
+      for (let k = 0; k < 4 && !out; k++) { await pg.evaluate(`(()=>{ const t=(${near})()[0]; return t&&t.act(); })()`); out = await until(id => !(ROOMS.cur && ROOMS.cur.id === id) && !FADE.busy, id, 15000); }
+      ok(out, id + ': double-clicking it takes you out');
+      ok(await pg.evaluate(() => !STORE.open || Object.keys(STORE.inside).every(id => !STORE.open(id))), id + ': its door never swings open');
+    }
+  }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close(); console.log(fails.length ? fails.length + ' FAILED' : 'ALL OK'); process.exit(fails.length ? 1 : 0);
 })();

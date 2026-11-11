@@ -48,7 +48,7 @@ const {chromium}=require('playwright');
   // a car you are driving, stopped in the lane: the traffic stops behind its bumper, not in it
   await pg.evaluate(()=>{ const t=Date.now()/1000, r=((t%90)+90)%90; TRAFFIC.skew=(2-r); }); await pg.waitForTimeout(1500); d=await T();
   { const L=d.lanes[0], c=L.cars.filter(c=>c.on&&c.x>-100&&c.x<300).sort((a,b)=>a.x-b.x)[0], sx=c?c.x-(c.len+30):0;
-    const id=await pg.evaluate(async([x,z])=>{ const C=CARS.cars.get('c1'); C.x=x; C.z=z; CARS.getIn('c1'); for(let k=0;k<40&&!CARS.driving;k++)await new Promise(r=>setTimeout(r,500)); STORE.pos.set(x,0,z); SHARED.py=SHARED.groundY(x,z); return CARS.driving; },[sx,L.z]);
+    const id=await pg.evaluate(async([x,z])=>{ const C=CARS.cars.get('c1'); C.x=x; C.z=z; CARS.getIn('c1'); for(let k=0;k<40&&!CARS.driving;k++)await new Promise(r=>setTimeout(r,500)); STORE.pos.set(x,0,z); SHARED.py=SHARED.groundY(x,z); return CARS.dbg().driving; },[sx,L.z]);
     await pg.waitForTimeout(9000); d=await T(); const me=await pg.evaluate(()=>({x:STORE.pos.x,h:2.4*TRAFFIC.dbg().m1}));
     const c2=d.lanes[0].cars.filter(q=>q.on&&q.x>me.x).sort((a,b)=>a.x-b.x)[0]; ok(id&&c2&&c2.sp<.5&&c2.x-c2.len>me.x+me.h,'the traffic stops behind the car you drive: '+JSON.stringify({id,me,c:c2&&{x:c2.x,len:c2.len,sp:c2.sp}}));
  }

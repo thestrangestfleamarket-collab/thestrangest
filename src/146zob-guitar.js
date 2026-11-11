@@ -95,7 +95,7 @@ const GUITAR={}; window.GUITAR=GUITAR;
   document.head.appendChild(css);
   const panel=show=>{ if(!show){ if(PN)PN.hidden=true; return; } if(!PN){ PN=document.createElement('div'); PN.id='gtp'; document.body.appendChild(PN);
       PN.innerHTML=`<div class="r"><span class="h" id="gtsk">GUITAR</span><span id="gtnow"></span></div>
-        <div class="r"><select id="gtsong" aria-label="song"></select><button id="gtplay" title="P">PLAY</button><button id="gtcu" title="tab">CLOSE-UP</button><span class="d">VOL</span><input type="range" id="gtvol" min="0" max="1" step=".05" aria-label="volume"><button id="gtoff" title="esc">PUT AWAY</button></div>`;
+        <div class="r"><select id="gtsong" aria-label="song"></select><button id="gtplay" title="P">PLAY</button><button id="gtcu" title="tab">CLOSE-UP</button><span class="d">VOL</span><input type="range" id="gtvol" min="0" max="1" step=".05" aria-label="volume"><button id="gtoff" title="esc">PUT AWAY</button></div><div class="r" style="opacity:.45">SOUND: ${GSND.GS.credit}</div>`;
       PN.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return; GSND.wake();
         if(b.id==='gtplay')GUITAR.play(ME.song>=0?'stop':'song',ME.song>=0?null:+PN.querySelector('#gtsong').value); else if(b.id==='gtcu')closeUp(!CU.on); else if(b.id==='gtoff')GUITAR.stop(); b.blur(); });
       for(const el of PN.querySelectorAll('select,input'))el.addEventListener('keydown',e=>e.stopPropagation());

@@ -1,4 +1,4 @@
-// THE CRT TV CHECK: node tests/crt.cjs dist/market.html (owner, 10 Nov 2026): the set in a fresh apartment opens its panel; eight channels with THE GUIDE; the guide lists cartoons, shows and films and plays a pick; the state is told to the room, heard from it and kept in the layout; ZOOM IN and FULL SCREEN show the picture close up.
+// THE CRT TV CHECK: node tests/crt.cjs dist/market.html (owner, 10 Nov 2026): the set in a fresh apartment opens its panel; ten channels with THE GUIDE; the guide lists cartoons, shows and films and plays a pick; the state is told to the room, heard from it and kept in the layout; ZOOM IN and FULL SCREEN show the picture close up; CRITTER CAM streams through the cinema's player.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=crt::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -20,7 +20,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.evaluate(() => __dbg.UI.things.find(t => /^CRT TV/.test(t.name)).act());
     for (let i = 0; i < 30 && !(await pg.evaluate(() => CRTDBG().panel && CRTDBG().data)); i++) await pg.waitForTimeout(500);
     const C = { noWaitAfter: true, timeout: 90000 };
-    ok(await pg.$$eval('#crtp [data-c]', e => e.map(x => x.dataset.c).join()) === '2,3,4,6,7,9,11,13', 'a double click opens its panel: channels 2, 3 (THE GUIDE), 4, 6, 7, 9, 11, 13');
+    ok(await pg.$$eval('#crtp [data-c]', e => e.map(x => x.dataset.c).join()) === '2,3,4,5,6,7,8,9,11,13', 'a double click opens its panel: channels 2, 3 (THE GUIDE), 4, 5, 6, 7, 8, 9, 11, 13');
     await pg.click('#crtp [data-c="3"]', C); await pg.waitForTimeout(1500);
     const g = await pg.evaluate(() => CRTDBG());
     ok(g.on && g.ch === 3 && g.lists && g.lists.cartoons >= 60 && g.lists.shows >= 30 && g.lists.movies >= 10 && g.pic === 'guide', 'THE GUIDE: its page on the screen, cartoons, shows and films to pick (' + JSON.stringify({ lists: g.lists, pic: g.pic }) + ')');
@@ -36,12 +36,18 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.evaluate(() => ONLINE.hear.tv({ t: 'tv', id: 'x', on: 1, ch: 6, p: null, t0: 0 })); await pg.waitForTimeout(800);
     const h = await pg.evaluate(() => CRTDBG());
     ok(h.on && h.ch === 6 && !h.pick, 'a change from someone else in the room turns this set too (' + JSON.stringify({ ch: h.ch, pick: h.pick }) + ')');
+    await pg.click('#crtp [data-c="8"]', C); for (let i = 0; i < 60 && !(await pg.evaluate(() => !!document.getElementById('cinema'))); i++) await pg.waitForTimeout(500);
+    const y = await pg.evaluate(() => ({ d: CRTDBG(), cl: !!document.getElementById('cinema') }));
+    ok(y.d.ch === 8 && /^[A-Za-z0-9_-]{11}$/.test(y.d.yt || '') && y.d.hole && y.cl && !y.d.src, 'CRITTER CAM: its live stream goes through the cinema\'s player onto the set\'s see-through patch, no file streamed (' + JSON.stringify({ yt: y.d.yt, ok: y.d.ytOk, hole: y.d.hole, player: y.cl }) + ')');
     await pg.evaluate(() => CRT.close()); await pg.waitForTimeout(2500); await pg.screenshot({ path: (process.env.SHOT || '/tmp/crt') + '-room.png' }); await pg.evaluate(() => CRT.open()); await pg.waitForTimeout(800);
     await pg.click('#crtp [data-c="3"]', C); await pg.waitForTimeout(800);
     await pg.click('#crtp [data-a="zoom"]', C); await pg.waitForTimeout(1500);
     const w = await pg.evaluate(() => ({ d: CRTDBG(), c: (() => { const c = document.querySelector('#crtw canvas'); return c && c.width; })(), vis: !document.getElementById('crtw').hidden }));
     ok(w.d.watch && w.vis && w.c > 300, 'ZOOM IN: the set fills the view (' + JSON.stringify({ watch: w.d.watch, w: w.c }) + ')');
     await pg.screenshot({ path: (process.env.SHOT || '/tmp/crt') + '-close.png' });
+    await pg.evaluate(() => CRT.channel(8)); for (let i = 0; i < 60 && !(await pg.evaluate(() => { const c = document.getElementById('cinema'); return !!c && c.parentNode.id === 'crtw'; })); i++) await pg.waitForTimeout(500);
+    ok(await pg.evaluate(() => { const c = document.getElementById('cinema'); return !!c && c.parentNode.id === 'crtw'; }), 'ZOOM IN on CRITTER CAM: the stream sits over the close-up');
+    await pg.evaluate(() => CRT.channel(3)); await pg.waitForTimeout(800);
     const z0 = await pg.evaluate(() => CRTDBG().zoom); await pg.mouse.move(40, 300); await pg.mouse.wheel(0, -300); await pg.waitForTimeout(400);
     ok(await pg.evaluate(() => CRTDBG().zoom) > z0, 'the wheel zooms in closer');
     await pg.click('#crtw [data-w="full"]', C); await pg.waitForTimeout(1200);

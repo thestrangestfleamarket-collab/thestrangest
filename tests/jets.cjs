@@ -43,7 +43,15 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const zi = await until(() => { const z = __sent.filter(m => m.t === 'zap' && m.to === 'a' && m.k === 'i'), e = JETDBG().fx.find(f => f.id === 'a'); return z.length && e && e.ice > 0 ? { zaps: z.length, ice: e.ice } : null; }, 40000);
     ok(!!zi, 'a player in the freezing mist is zapped and frozen in ice (' + JSON.stringify(zi) + ')');
     await shot('frozen');
-    await pg.evaluate(() => { JETS.hold = false; JETS.aim = null; WIELD.set(null); });
+    // the mouse on a player further off: the fire goes to them, not the ground before them
+    await pg.evaluate(() => { JETS.hold = false; JETS.aim = null; WIELD.set(null); const P = __dbg.you(), h = SHARED.heading + .5, M = JETDBG().M; ONLINE.feed({ t: 'in', p: { id: 'b', name: 'TEST', look: 'w00', at: [P.x + Math.sin(h) * 4.5 * M, P.z + Math.cos(h) * 4.5 * M, SHARED.py, h + Math.PI, SHARED.LVL, ''] } }); });
+    await pg.waitForTimeout(1500);
+    const at = await pg.evaluate(() => { const o = ONLINE.others.get('b'), M = JETDBG().M, v = new __dbg.THREE.Vector3(o.p.x, (o.p.y ?? SHARED.py) + 1.1 * M, o.p.z).project(SHARED.cam), r = document.querySelector('canvas').getBoundingClientRect(); return [r.left + (v.x + 1) / 2 * r.width, r.top + (1 - v.y) / 2 * r.height]; });
+    await pg.mouse.move(at[0], at[1]); await pg.evaluate(() => { __sent.length = 0; WIELD.set('flamer'); JETS.hold = true; });
+    const zp = await until(() => { const z = __sent.filter(m => m.t === 'zap' && m.to === 'b'); return z.length ? { zaps: z.length } : null; }, 10000);
+    ok(!!zp, 'the mouse on a player 4.5 tiles off: the fire reaches them (' + JSON.stringify(zp) + ')');
+    await shot('pointed');
+    await pg.evaluate(() => { JETS.hold = false; JETS.aim = null; WIELD.set(null); ONLINE.feed({ t: 'out', id: 'b' }); });
 
     // their zaps on you
     const fr = await pg.evaluate(async () => { for (let i = 0; i < 4; i++) ONLINE.feed({ t: 'zap', id: 'a', k: 'i', from: [0, 0] }); await new Promise(r => setTimeout(r, 200)); const p = __dbg.you(); return { f: SHARED.frozen, x: p.x, z: p.z }; });

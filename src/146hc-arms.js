@@ -1,4 +1,4 @@
-// THE ARMS: fourteen weapons every player owns from the start, held in the hand (WIELD), no ammo: the revolver, shotgun, sniper rifle and laser rifle (shots traced through the world), the grenade, rocket launcher, molotov, fireworks, snowball launcher, net launcher and bubble gun (things thrown or flown under gravity), the mine, the leaf blower and the portal gun; they hit anything (you, other players, the townsfolk, the monsters, loose things), seen and felt online (arm, shot).
+// THE ARMS: fifteen weapons every player owns from the start, held in the hand (WIELD), no ammo: the revolver, shotgun, sniper rifle, machine gun and laser rifle (shots traced through the world), the grenade, rocket launcher, molotov, fireworks, snowball launcher, net launcher and bubble gun (things thrown or flown under gravity), the mine, the leaf blower and the portal gun; they hit anything (you, other players, the townsfolk, the monsters, loose things), seen and felt online (arm, shot).
 import {SHARED, THREE} from './003-shx.js';
 import {BLAZE, FORAGE, INV, LEVELS, ONLINE, PHYS, pos, RAG, ROOMS, SFX, UI, VIT, W3, WIELD} from './003b-systems.js';
 import {SAY} from './003d-say.js';
@@ -13,6 +13,7 @@ import {RIVER} from './066-river.js';
     w_revolver:{n:'REVOLVER',k:'gun',cd:.5,rng:60,pel:1,spr:0,d:.18,md:3,kb:.8,dn:1,snd:['boom',2.6,.5],tr:0xffe6a0,hint:'A CLICK FIRES WHERE YOU AIM.'},
     w_shotgun:{n:'SHOTGUN',k:'gun',cd:1,rng:24,pel:8,spr:.07,d:.05,md:1.1,kb:.3,dn:4,snd:['boom',1.6,.85],tr:0xffd890,hint:'A CLICK FIRES A SPRAY OF SHOT. CLOSE UP IT KNOCKS PEOPLE DOWN.'},
     w_sniper:{n:'SNIPER RIFLE',k:'gun',cd:1.6,rng:120,pel:1,spr:0,d:.45,md:8,kb:2,dn:1,snd:['boom',1.2,1],tr:0xfff4d0,hint:'A CLICK FIRES ONE HEAVY SHOT A LONG WAY.'},
+    w_mgun:{n:'MACHINE GUN',k:'gun',cd:.09,rng:55,pel:1,spr:.025,d:.05,md:1.2,kb:.25,dn:0,auto:1,snd:['boom',3,.35],tr:0xffe0a0,hint:'HOLD THE MOUSE DOWN TO FIRE A STREAM OF BULLETS.'},
     w_laser:{n:'LASER RIFLE',k:'gun',cd:.2,rng:70,pel:1,spr:0,d:.08,md:2,kb:.2,auto:1,beam:1,snd:['laser',1.4,.45],tr:0xff3a3a,hint:'HOLD THE MOUSE DOWN TO FIRE A RED BEAM. IT SCORCHES WHAT IT HITS.'},
     w_grenade:{n:'GRENADE',k:'proj',cd:1,sp:12,up:.25,g:1,fuse:2.2,bounce:.4,boom:{r:4,d:.5,md:9,kb:2.2},snd:['whoosh',1.4,.4],hint:'A CLICK THROWS IT. IT BOUNCES AND GOES OFF A MOMENT LATER.'},
     w_rocket:{n:'ROCKET LAUNCHER',k:'proj',cd:1.5,sp:30,up:0,g:0,life:3,smoke:1,boom:{r:4.5,d:.55,md:10,kb:2.6},snd:['whoosh',.6,.8],hint:'A CLICK FIRES A ROCKET. IT BLOWS UP ON WHAT IT HITS.'},
@@ -25,7 +26,7 @@ import {RIVER} from './066-river.js';
     w_blower:{n:'LEAF BLOWER',k:'blow',rng:7,auto:1,hint:'HOLD THE MOUSE DOWN TO BLOW. IT PUSHES PEOPLE AND LOOSE THINGS AWAY.'},
     w_portal:{n:'PORTAL GUN',k:'portal',cd:.4,rng:40,hint:'A CLICK OPENS A PORTAL ON THE GROUND, BLUE THEN ORANGE. STEP INTO ONE TO COME OUT OF THE OTHER.'}};
   const IDS=Object.keys(W); FORAGE.add({names:Object.fromEntries(IDS.map(id=>[id,W[id].n]))}); if(FORAGE.OWNERS)FORAGE.OWNERS.push(...IDS);   // the owners' kit tops them up too (owner, 10 Nov 2026)
-  if(!OWNED.get('arms')||QS.get('fresh')){ for(const id of IDS)if(!INV.items[id])INV.items[id]=1; INV.save(); OWNED.set('arms','1'); }
+  { const got=String(OWNED.get('arms')||'').split(','), add=QS.get('fresh')?IDS:IDS.filter(id=>!got.includes(id)); if(add.length){ for(const id of add)if(!INV.items[id])INV.items[id]=1; INV.save(); OWNED.set('arms',IDS.join(',')); } }   // a weapon added later reaches everyone once
   const A={hold:false,aim:null,cd:{},P:[],mines:[],portals:new Map(),traps:new Map(),blows:new Map(),pc:0,inP:false,mi:0,sent:'',sentT:0,last:null}; window.ARMS=A;
   addEventListener('pointerup',e=>{ if(e.button===0)A.hold=false; }); addEventListener('blur',()=>{ A.hold=false; });
 
@@ -38,6 +39,7 @@ import {RIVER} from './066-river.js';
     w_revolver:()=>{ const g=new THREE.Group(), st=lam(0x34363c), wd=lam(0x6a4428); g.add(box(.035,.11,.05,wd,-.03,.02),cyl(.03,.03,.06,st,.06),cyl(.011,.011,.2,st,.17),box(.012,.03,.012,st,.25,-.012)); return held(g,'w_revolver',.28); },
     w_shotgun:()=>{ const g=new THREE.Group(), st=lam(0x2c2e33), wd=lam(0x7a4e2a); g.add(box(.05,.26,.06,wd,-.1,.02),box(.045,.1,.05,st,.06),cyl(.014,.014,.6,st,.38,0,-.012),cyl(.014,.014,.6,st,.38,0,.012),box(.04,.16,.045,wd,.22,.02)); return held(g,'w_shotgun',.69); },
     w_sniper:()=>{ const g=new THREE.Group(), st=lam(0x26282c), gr=lam(0x4a5038); g.add(box(.045,.3,.06,gr,-.12,.02),box(.04,.14,.05,st,.08),cyl(.011,.011,.78,st,.5),cyl(.022,.022,.2,st,.14,-.05),cyl(.026,.026,.02,glow(0x7fb0ff),.25,-.05),box(.008,.12,.008,st,.08,.05)); return held(g,'w_sniper',.9); },
+    w_mgun:()=>{ const g=new THREE.Group(), st=lam(0x2a2c30), dk=lam(0x1a1c1e), ol=lam(0x4a5038); g.add(box(.05,.24,.06,ol,-.1,.02),box(.06,.18,.07,st,.08),cyl(.016,.016,.42,dk,.38),cyl(.03,.03,.3,st,.3),box(.03,.1,.12,dk,.08,-.08),box(.008,.06,.008,st,.17,.04)); return held(g,'w_mgun',.6); },
     w_laser:()=>{ const g=new THREE.Group(), wh=lam(0xe4e8ee), dk=lam(0x30343c), rd=glow(0xff3030); g.add(box(.04,.1,.05,dk,-.03,.02),box(.06,.3,.07,wh,.15),cyl(.02,.028,.1,dk,.34),ball(.018,rd,.39),box(.07,.02,.075,rd,.1),box(.07,.02,.075,rd,.2)); return held(g,'w_laser',.41); },
     w_grenade:()=>{ const g=new THREE.Group(), gr=lam(0x4a5a34), st=lam(0x8a8a80); g.add(ball(.045,gr,.06),cyl(.016,.016,.03,st,.115),box(.012,.06,.008,st,.09,.03)); return held(g,'w_grenade',.06); },
     w_rocket:()=>{ const g=new THREE.Group(), ol=lam(0x5a6440), dk=lam(0x2a2c2a), rd=lam(0x9a2a1e); g.add(cyl(.06,.06,.9,ol,.25),cyl(.066,.066,.05,dk,.7),cyl(.066,.066,.05,dk,-.18),box(.03,.1,.04,dk,-.02,.07),box(.04,.08,.04,dk,.1,-.08),new THREE.Mesh(new THREE.ConeGeometry(.05*M,.12*M,10),rd)); g.children[5].position.y=.76*M; return held(g,'w_rocket',.8); },

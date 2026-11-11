@@ -61,13 +61,9 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
   /* ---------- driving: each car keeps to its place on the clock, slowing for the light, the car ahead and anyone in the road, then catching up ---------- */
   const xOf=(L,s)=>L.dir>0?xW+s:xE-s;
   const blockers=()=>{ const B=[{x:pos.x,z:pos.z}]; for(const o of (ONLINE.others&&ONLINE.others.values())||[])if(o.p&&!o.dead)B.push({x:o.p.x,z:o.p.z}); if(MODS.cars&&MODS.cars.cars)for(const C of MODS.cars.cars.values()){ if(!C.by){ if(C.mesh)B.push({x:C.x,z:C.z,r:2.4*M1}); continue; } if(MODS.cars.flies(C.model))continue;
-<<<<<<< HEAD
-      const o=C.by===(ONLINE.me||'me')?pos:(ONLINE.others&&ONLINE.others.get(C.by)||{}).p; if(o)B.push({x:o.x,z:o.z,r:2.4*M1}); } return B; };   // a car being driven is where its driver is
-  const room=(L,C,u)=>{ let r=Infinity; for(const A of L.cars){ if(A===C||A.u==null)continue; const d=(((A.u-u)%LC)+LC)%LC; r=Math.min(r,Math.min(d,LC-d)-(size(C.model)[2]+size(A.model)[2])*M1/2-2*M0); } return r; };
-=======
       const o=C.by===(ONLINE.me||'me')?pos:(ONLINE.others&&ONLINE.others.get(C.by)||{}).p; if(o)B.push({x:o.x,z:o.z,r:2.4*M1}); }
     const cat=BIGCAT.road&&BIGCAT.road(); if(cat)B.push({x:cat.x,z:cat.z,r:3*M0,l:cat.dir}); return B; };   // THE BIG CAT on his walk holds up his own lane   // a car being driven is where its driver is
->>>>>>> origin/main
+  const room=(L,C,u)=>{ let r=Infinity; for(const A of L.cars){ if(A===C||A.u==null)continue; const d=(((A.u-u)%LC)+LC)%LC; r=Math.min(r,Math.min(d,LC-d)-(size(C.model)[2]+size(A.model)[2])*M1/2-2*M0); } return r; };
   const step=dt=>{ const t=now(), Lt=light(t), B=LANES[0].GR?blockers():[], R=Math.max(90*T,(window.CULL&&CULL.R)||0), up=OUT.open&&!(PARK.within&&PARK.within(pos.x,pos.z))&&SHARED.LVL==='up';
     for(const L of LANES){ if(!L.GR)continue; const hw=Math.abs(zs-zm)/2+.6*M0;
       const nom=C=>t*L.v+C.i*LC/L.n;
@@ -75,13 +71,8 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
       for(const C of L.cars){ if(C.u==null){ C.u=nom(C); C.sp=L.v; continue; } if(C.m||!C.re&&Math.abs(nom(C)-C.u)<=LC*.8)continue; const n=nom(C), r=room(L,C,n); if(r>0){ C.u=n; C.sp=r>L.v*L.v/(8*M0)?L.v:0; C.re=0; } }
       L.cars.forEach(C=>{ const s=((C.u%LC)+LC)%LC, len=size(C.model)[2]*M1/2; let lim=Infinity;
         if(Lt.m!=='g'&&s+len<=L.stop){ const g=L.stop-(s+len); if(Lt.m==='r'||g>C.sp*C.sp/(2*5*M0))lim=Math.min(lim,g); }
-<<<<<<< HEAD
         for(const A of L.cars)if(A!==C)lim=Math.min(lim,(((A.u-C.u)%LC)+LC)%LC-len-size(A.model)[2]*M1/2-2*M0);   // the car ahead on the road, whatever lap either is on
-        if(!L.fly){ if(s<SPAN){ const x=xOf(L,s); C.blk=false; for(const b of B){ if(Math.abs(b.z-L.z)>hw+(b.r||0))continue; const d=(b.x-x)*L.dir-(b.r||.5*M0); if(d>-len&&d<len+28*M0){ lim=Math.min(lim,d-len-2*M0); if(!b.r&&d<len+8*M0)C.blk=true; } } } }
-=======
-        { const A=ord[j-1]||ord[ord.length-1]; if(A!==C){ let g=A.u-C.u; if(g<0)g+=LC; g-=len+size(A.model)[2]*M1/2+2*M0; lim=Math.min(lim,g); } }
         if(!L.fly){ if(s<SPAN){ const x=xOf(L,s); C.blk=false; for(const b of B){ if(b.l?b.l!==L.dir:Math.abs(b.z-L.z)>hw+(b.r||0))continue; const d=(b.x-x)*L.dir-(b.r||.5*M0); if(d>-len&&d<len+28*M0){ lim=Math.min(lim,d-len-2*M0); if(!b.r&&d<len+8*M0)C.blk=true; } } } }
->>>>>>> origin/main
         const want=Math.min(L.v+Math.max(-.5*L.v,Math.min(.6*L.v,(nom(C)-C.u)*.25)),lim<Infinity?Math.sqrt(2*4*M0*Math.max(0,lim)):1e9);
         C.sp+=Math.max(-9*M0*dt,Math.min(3*M0*dt,want-C.sp)); if(C.sp<0)C.sp=0; if(lim<.05*M0&&lim<Infinity)C.sp=Math.min(C.sp,0); C.u+=C.sp*dt;
         const s2=((C.u%LC)+LC)%LC, lap=Math.floor(C.u/LC), on=s2<SPAN, x=xOf(L,s2), near=on&&up&&Math.abs(x-pos.x)<R&&Math.abs(L.z-pos.z)<R;

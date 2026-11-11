@@ -13,7 +13,7 @@ import {GUITAR} from './146zob-guitar.js';
  window.INSTR=INSTR;
 { const say=(t,c)=>SAY(t,c||'#e8e2cc'), now=()=>performance.now()/1000, V3=THREE.Vector3, M4=THREE.Matrix4, Q4=THREE.Quaternion;
   const esc=t=>String(t).replace(/[&<>"]/g,c=>'&#'+c.charCodeAt(0)+';');
-  // a kind: {id, name, skill, model(), seat:{y,z}, lean, look, feet(P,t), hands(P,t,H), act(P,k,v), anim(P,H,t,dt), keys(e,down), panel(), click(b,down), draw(PN), book(), cam}
+  // a kind: {id, name, skill, model(), board() (a display under the book: the piano's 88 keys), seat:{y,z}, lean, look, feet(P,t), hands(P,t,H), act(P,k,v), anim(P,H,t,dt), keys(e,down), panel(), click(b,down), draw(PN), book(), cam}
   INSTR.kind=K=>{ INSTR.KINDS[K.id]=K; FORAGE.add({names:{[K.id]:K.name}}); FORAGE.sell(K.id);
     FORAGE.ACT[K.id]=()=>{ if(on&&ME.K===K)INSTR.stop(); else INSTR.start(K.id); }; FORAGE.ACT[K.id+'play']=FORAGE.ACT[K.id];
     FORAGE.ROWB.push(id=>id===K.id?[[on&&ME.K===K?'PUT IT AWAY':'PLAY',K.id+'play']]:[]); };
@@ -140,8 +140,8 @@ import {GUITAR} from './146zob-guitar.js';
   const css=document.createElement('style'); css.textContent=`#inp{position:fixed;left:50%;bottom:calc((84px + env(safe-area-inset-bottom,0px)) / var(--uiz,1));transform:translateX(-50%);z-index:7;zoom:var(--uiz,1);background:#0b0d13e6;border:2px solid #2a3040;padding:6px 8px;color:#e8e2cc;font:9px Silkscreen,monospace;width:min(700px,calc(100vw - 32px));box-sizing:border-box;user-select:none}
     #inp .r{display:flex;flex-wrap:wrap;gap:2px 4px;align-items:center;margin:2px 0} #inp button{font:inherit;color:inherit;background:#161a24;border:2px solid #2a3040;padding:2px 5px;cursor:pointer} #inp button[aria-pressed=true]{background:#2c4a36;border-color:#5fa06e}
     #inp select{font:inherit;color:inherit;background:#0b0d13;border:2px solid #2a3040;padding:2px;max-width:230px} #inp input[type=range]{width:70px} #inp .h{margin-right:8px} #inp .d{opacity:.6;margin:0 2px 0 8px}
-    #inp .kb{position:relative;height:58px;margin:3px 0;touch-action:none} #inp .kb b{position:absolute;top:0;box-sizing:border-box;border:1px solid #2a3040;cursor:pointer;display:flex;align-items:flex-end;justify-content:center;padding-bottom:2px;font-weight:normal;font-size:8px}
-    #inp .kb b.w{height:56px;background:#e8e2cc;color:#555} #inp .kb b.k{height:34px;background:#141418;color:#999;z-index:1} #inp .kb b.on{background:#5fa06e!important;color:#fff}
+    #inp .kb{position:relative;height:62px;margin:6px 0 3px;touch-action:none} #inp .kb b{position:absolute;top:0;box-sizing:border-box;border:1px solid #2a3040;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:2px;font-weight:normal;font-size:8px;line-height:1.15;overflow:hidden}
+    #inp .kb b.w{height:60px;background:#e8e2cc;color:#555} #inp .kb b.k{height:36px;background:#141418;color:#999;z-index:1} #inp .kb b.on,#inp .kb b.pl{background:#5fa06e!important;color:#fff} #inp .kb.all b{font-size:6px}
     #inp .pads{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;margin:3px 0} #inp .pads button{padding:8px 2px} #inp .pads button.hit{background:#5fa06e}`;
   document.head.appendChild(css);
   const panel=show=>{ if(!show){ if(PN)PN.hidden=true; return; } if(!PN){ PN=document.createElement('div'); PN.id='inp'; document.body.appendChild(PN);
@@ -149,9 +149,9 @@ import {GUITAR} from './146zob-guitar.js';
       PN.addEventListener('pointerup',e=>{ const b=e.target.closest('b,button'); if(b&&on&&(b.dataset.n!=null||b.dataset.pad!=null))ME.K.click(b,false); });
       PN.addEventListener('pointercancel',e=>{ const b=e.target.closest('b,button'); if(b&&on&&(b.dataset.n!=null||b.dataset.pad!=null))ME.K.click(b,false); });
       PN.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||!on)return; GSND.wake(); if(b.dataset.n!=null||b.dataset.pad!=null)return;
-        if(b.id==='inplay')INSTR.play(ME.song>=0?'stop':'song',ME.song>=0?null:+PN.querySelector('#insong').value); else if(b.id==='incu')closeUp(!CU.on); else if(b.id==='inoff')INSTR.stop(); else ME.K.click(b,true); b.blur(); }); }
+        if(b.id==='inplay')INSTR.play(ME.song>=0?'stop':'song',ME.song>=0?null:+PN.querySelector('#insong').value); else if(b.id==='incu')closeUp(!CU.on); else if(b.id==='inoff')INSTR.stop(); else if(ME.K.boardClick&&(b.dataset.kv||b.dataset.kl))ME.K.boardClick(b); else ME.K.click(b,true); b.blur(); }); }
     PN.innerHTML=`<div class="r"><span class="h" id="insk"></span><span id="innow"></span></div>
-      <div class="r"><select id="insong" aria-label="song"></select><button id="inplay" title="\`">PLAY</button><button id="incu" title="tab">CLOSE-UP</button><span class="d">VOL</span><input type="range" id="invol" min="0" max="1" step=".05" aria-label="volume"><button id="inoff" title="esc">PUT AWAY</button></div>${ME.K.samples?`<div class="r" style="opacity:.45">SOUND: ${esc(ME.K.samples.credit)}</div>`:''}`;
+      <div class="r"><select id="insong" aria-label="song"></select><button id="inplay" title="\`">PLAY</button><button id="incu" title="tab">CLOSE-UP</button><span class="d">VOL</span><input type="range" id="invol" min="0" max="1" step=".05" aria-label="volume"><button id="inoff" title="esc">PUT AWAY</button></div>${ME.K.board?'<div id="inown">'+ME.K.board()+'</div>':''}${ME.K.samples?`<div class="r" style="opacity:.45">SOUND: ${esc(ME.K.samples.credit)}</div>`:''}`;
     for(const el of PN.querySelectorAll('select,input'))el.addEventListener('keydown',e=>e.stopPropagation());
     PN.querySelector('#invol').oninput=e=>GSND.setVol(+e.target.value);
     PN.hidden=false; fillSongs(); drawPanel(); };
@@ -163,7 +163,7 @@ import {GUITAR} from './146zob-guitar.js';
     PN.querySelector('#insk').textContent=K.skill.toUpperCase()+' '+skill(K).toFixed(1);
     PN.querySelector('#innow').textContent=T?'PLAYING '+T.name.toUpperCase()+(T.credit?' · '+T.credit.split(': ').pop().split(', http')[0]:''):'PICK A PIECE';
     const pl=PN.querySelector('#inplay'); pl.textContent=ME.song>=0?'STOP':'PLAY'; pl.setAttribute('aria-pressed',String(ME.song>=0)); PN.querySelector('#incu').setAttribute('aria-pressed',String(CU.on)); PN.querySelector('#invol').value=GSND.vol;
-  };
+    if(K.board)K.boardDraw(PN,ME); };
   INSTR.drawPanel=drawPanel;
 
   /* ---------- the close-up: the view in close on the hands and what they play (TAB) ---------- */

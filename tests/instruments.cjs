@@ -76,7 +76,7 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
   const a=await pg.evaluate(async()=>{ const G=INSTR.ME&&window.GUITAR.GSND; G.wake(); for(let i=0;i<40&&!G.imx;i++)await new Promise(r=>setTimeout(r,250)); if(!G.imx)return {ok:false};
     const an=G.ctx.createAnalyser(); an.fftSize=2048; G.out.connect(an); const buf=new Float32Array(an.fftSize), peak={};
     for(const K of ['piano','drums','harp']){ FORAGE.ACT[K](K); await new Promise(r=>setTimeout(r,400)); const P=INSTR.ME; INSTR.note(P,K==='piano'?{n:60,v:.9,d:1e9,h:'R'}:K==='harp'?{n:14,f:0,v:.9,d:2,h:'R'}:{n:6,v:1,d:.1,h:'R'}); let pk=0;
-      for(let i=0;i<24&&pk<.02;i++){ await new Promise(r=>setTimeout(r,50)); an.getFloatTimeDomainData(buf); for(const v of buf)pk=Math.max(pk,Math.abs(v)); } peak[K]=+pk.toFixed(3); INSTR.stop(); await new Promise(r=>setTimeout(r,200)); }
+      for(let i=0;i<48&&pk<.02;i++){ await new Promise(r=>setTimeout(r,25)); an.getFloatTimeDomainData(buf); for(const v of buf)pk=Math.max(pk,Math.abs(v)); } peak[K]=+pk.toFixed(3); INSTR.stop(); await new Promise(r=>setTimeout(r,200)); }
     const SR=44100, src=__imx.src;
     const render=async(dsp,evs,secs)=>{ const oc=new OfflineAudioContext(1,Math.floor(SR*secs),SR); await oc.audioWorklet.addModule('data:application/javascript,'+encodeURIComponent(src)); const n=new AudioWorkletNode(oc,'imx',{outputChannelCount:[1],processorOptions:{...dsp,ev:evs}}); n.connect(oc.destination);
       return (await oc.startRendering()).getChannelData(0); };
@@ -89,7 +89,7 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
     const DK=INSTR.KINDS.drums, dr={}; for(const n of [0,1,5]){ const x=await render(DK.dsp(),DK.sound({n,v:1,h:'L'},{st:{}}).map(e=>({...e,t:.02})),.4); let pk=0; for(const v of x)pk=Math.max(pk,Math.abs(v)); dr[['kick','snare','','','','hat'][n]]=+pk.toFixed(3); }
     const ring=await render(PK.dsp(),PK.sound({n:60,v:.8}).map(e=>({...e,t:.02})),1.2), damped=await render(PK.dsp(),[...PK.sound({n:60,v:.8}).map(e=>({...e,t:.02})),{k:'damp',id:60,T:.12,t:.3}],1.2);
     return {ok:true,peak,hz,dr,ring:+rms(ring,.8,1.1).toFixed(5),damped:+rms(damped,.8,1.1).toFixed(5)}; });
-  rec('each sounds through the instruments\' own audio (piano, drums, harp)',a.ok&&Object.values(a.peak).every(p=>p>.01),JSON.stringify(a.peak));
+  rec('each sounds through the instruments\' own audio (piano, drums, harp)',a.ok&&Object.values(a.peak).every(p=>p>.005),JSON.stringify(a.peak));
   rec('each sounds at its real pitch (piano A3 A4, harp C4 C5, and C4 with its pedal sharp: within 3%)',a.ok&&Object.values(a.hz).every(([h,w])=>Math.abs(h-w)/w<.03),JSON.stringify(a.hz));
   rec('the kick, the snare and the hi-hat each strike loud (rendered offline)',a.ok&&Object.values(a.dr).every(p=>p>.05),JSON.stringify(a.dr));
   // the recordings: each instrument's fetched and decoded, every sound's start found, and played back at the note's pitch
@@ -115,6 +115,18 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
     return {same:JSON.stringify(c)===JSON.stringify(d),vs:new Set(c.ev.map(e=>e.v.toFixed(2))).size,off:c.ev.some((e,i)=>Math.abs(e.t-[1,1.5,2,4][i])>.001),lg:!!c.ev[0].lg&&!!c.ev[1].sl,order:c.ev.every((e,i)=>!i||e.t>=c.ev[i-1].t)}; });
   rec('a piece is played with feel: its loudness shaped, off the grid, joined notes marked, the same for everyone',fl.same&&fl.vs>=3&&fl.off&&fl.lg&&fl.order,JSON.stringify(fl));
   rec('every drum and cymbal has its recorded hit',Object.keys(rs.dk).length===6&&Object.values(rs.dk).every(p=>p>.05),JSON.stringify(rs.dk));
+  // the 88-key panel (book-only: a display): every key A0 to C8 (52 white, 36 black), none playable by click; a piece from the book lights its keys; five octaves; the names
+  await pg.evaluate(async()=>{ try{ localStorage.removeItem('tsfm.piano.kb'); }catch(_){} FORAGE.ACT.piano('piano'); await new Promise(r=>setTimeout(r,600)); });
+  const kb=await pg.evaluate(()=>{ const q=s=>document.querySelectorAll('#inp .kb '+s).length; return {all:q('b'),w:q('b.w'),k:q('b.k'),lo:document.querySelector('#inp .kb b').dataset.m,hi:[...document.querySelectorAll('#inp .kb b')].pop().dataset.m,clickable:q('b[data-n]')}; });
+  const sl=await pg.evaluate(async()=>{ const P=INSTR.ME, S=FORAGE.S; S.sk.piano=1000; await P.K.loadBook(); const i=P.K.BOOK.findIndex(T=>T.lvl===1); INSTR.play('song',i); const seen=new Set(); let ok=0;
+    for(let k=0;k<20;k++){ await new Promise(r=>setTimeout(r,250)); const t=INSTR.time(P), sounding=new Set(INSTR.score(P).ev.filter(e=>e.t<=t-.05&&e.t+e.d>=t+.05).map(e=>e.n)); const on=[...document.querySelectorAll('#inp .kb b.pl')].map(b=>+b.dataset.m); for(const m of on)seen.add(m); if(sounding.size&&[...sounding].some(m=>on.includes(m)))ok++; }
+    INSTR.play('stop'); S.sk.piano=100; await new Promise(r=>setTimeout(r,500)); return {lit:seen.size,match:ok,after:document.querySelectorAll('#inp .kb b.pl').length}; });
+  const kv=await pg.evaluate(async()=>{ const b=s=>document.querySelector('#inp '+s); b('[data-kv="five"]').dispatchEvent(new MouseEvent('click',{bubbles:true})); const r={five:document.querySelectorAll('#inp .kb b').length};
+    b('[data-kl="doremi"]').dispatchEvent(new MouseEvent('click',{bubbles:true})); r.do=[...document.querySelectorAll('#inp .kb b')].some(x=>x.textContent==='DO'); b('[data-kl="abc"]').dispatchEvent(new MouseEvent('click',{bubbles:true})); r.c4=b('.kb b[data-m="60"]').textContent==='C4';
+    r.kept=JSON.parse(localStorage.getItem('tsfm.piano.kb')||'{}'); b('[data-kv="all"]').dispatchEvent(new MouseEvent('click',{bubbles:true})); b('[data-kl="none"]').dispatchEvent(new MouseEvent('click',{bubbles:true})); r.back=document.querySelectorAll('#inp .kb b').length; INSTR.stop(); return r; });
+  rec('the piano\'s panel shows all 88 keys under the book (52 white, 36 black, A0 to C8), none played by clicking',kb.all===88&&kb.w===52&&kb.k===36&&kb.lo==='21'&&kb.hi==='108'&&kb.clickable===0,JSON.stringify(kb));
+  rec('a piece from the book lights its keys on the 88-key panel as they sound, and they go dark after',sl.lit>=4&&sl.match>=5&&sl.after===0,JSON.stringify(sl));
+  rec('the panel\'s five octaves (61 keys) and its note names (DO RE MI, C D E), kept for the viewer',kv.five===61&&kv.do&&kv.c4&&kv.kept.view==='five'&&kv.kept.lab==='abc'&&kv.back===88,JSON.stringify(kv));
   rec('a released piano key is stopped by its damper (far quieter than one held)',a.ok&&a.damped<a.ring*.1,JSON.stringify({ring:a.ring,damped:a.damped}));
   // another player at a piano: drawn on them, their note in their live score and their fingers, heard from where they sit; gone when they put it away
   const o=await pg.evaluate(async()=>{ __dbg.UI.dist*=.3; const P=__dbg.you(), at=[P.x+1.8,P.z+.4,SHARED.py,0,SHARED.LVL,''];

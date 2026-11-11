@@ -554,6 +554,9 @@ export class Block extends Server {
     } else if (m.t === "pm" && s.name) {   // a message to one player in this section (the paper doll's MESSAGE)
       const to = word(m.to, 64), text = word(m.text, 200); if (!to || to === s.id || !text) return;
       if (!this.hand(to, { t: "pm", from: s.id, name: s.name, text })) c.send(JSON.stringify({ t: "pm", op: "gone", from: to }));
+    } else if (m.t === "ring" && s.name) {   // the apartment house's callbox (src/150n-callbox.js): one tenant rings another, who lets them in or not
+      const to = word(m.to, 64), op = m.op === "yes" || m.op === "no" ? m.op : "ask"; if (!to || to === s.id) return;
+      if (!this.hand(to, { t: "ring", op, from: s.id, name: s.name }) && op === "ask") c.send(JSON.stringify({ t: "ring", op: "gone", from: to }));
     } else if (m.t === "tr") {
       this.trade(c, s, m);
     } else if ((m.t === "inv" || m.t === "invr") && s.name) {   // an invitation to a player online anywhere (inv), or their answer (invr): handed on by this section's block or another's

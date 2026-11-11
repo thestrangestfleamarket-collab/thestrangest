@@ -11,7 +11,7 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
   const rec=(n,ok,i)=>{ if(!ok)bad++; console.log((ok?'PASS ':'FAIL ')+n+(i?'  · '+i:'')); };
   const wait=ms=>new Promise(r=>setTimeout(r,ms)), U=async(f,ms=120000)=>{ for(const t=Date.now();Date.now()-t<ms;await wait(400))if(await pg.evaluate(f))return true; return false; };
   await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&hour=12&at=80,95',{timeout:240000}); await pg.waitForFunction(()=>window.__started,null,{timeout:300000});
-  rec('you are the avatar from the start, its wardrobe loaded; no other body to pick',await U(()=>AVATAR.ready()&&BODIES.pick()==='avatar'&&!document.querySelector('#looks [data-k=body]')));
+  rec('you are the avatar from the start, its wardrobe loaded; the BODY line offers only the avatar and the knight (10 Nov 2026)',await U(()=>AVATAR.ready()&&BODIES.pick()==='avatar'&&(r=>!r||[...r.querySelectorAll('button')].map(b=>b.dataset.b).join()==='avatar,knight')(document.querySelector('#looks [data-k=body]'))));
   rec('the Walker is never drawn; YOU has none of its options',await pg.evaluate(()=>W3.meshes.every(m=>!m.visible)&&!document.querySelector('#lform,#lhair,#lbeard,#ldesign')));
   const tris=()=>pg.evaluate(()=>{ const g=BODIES.by.avatar.GEO; return g?g.attributes.position.count/3:0; });
   await wait(500); const t0=await tris(); rec('you are the avatar, dressed (hair, tee, trousers, sneakers)',t0>2000&&await pg.evaluate(()=>W3.body.on),'tris '+t0);

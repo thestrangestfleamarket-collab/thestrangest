@@ -5,6 +5,8 @@ import json, struct, base64, os
 ROOT=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # each car's glass: these colours (sRGB, as the kit paints them) above half its height are its windows, baked as their own part so the game can make them see-through
 GLASS={'muscle-car-60s':[(46,49,56)],'wedge-coupe-80s':[(46,49,56)],'station-wagon-70s':[(32,36,42)],'pickup-truck-70s':[(103,107,113)],'convertible-60s':[(79,117,145)],'camper-van':[(63,65,72),(32,36,42)]}
+# an open car's own places (its bake keeps no cabin): where the driver sits and looks from; tint: its colours that are paint and those of its inside (the PAINT choice, 150p)
+OPEN={'convertible-60s':{'seat':[0.42,0.62,0.26],'eye':[0.42,1.24,0.18],'tint':{'paint':[[242,178,165],[242,178,166]],'trim':[[231,216,191],[231,216,192],[198,185,165]]}}}
 CARS={'muscle-car-60s':'MUSCLE CAR','convertible-60s':'CONVERTIBLE','station-wagon-70s':'STATION WAGON','pickup-truck-70s':'PICKUP TRUCK','wedge-coupe-80s':'WEDGE COUPE','camper-van':'CAMPER VAN'}
 b=open(os.path.join(ROOT,'data/full/racing-cars-kit.glb'),'rb').read(); n=struct.unpack('<I',b[12:16])[0]; J=json.loads(b[20:20+n]); BIN=b[20+n+8:]
 N,A,BV,MS,MT=J['nodes'],J['accessors'],J['bufferViews'],J['meshes'],J['materials']
@@ -114,7 +116,7 @@ for i in root['children']:
     tb=sum(len(g['i']) for g in body.values())//3; tw=sum(len(g['i']) for g in wheel.values())//3; tris+=tb+tw*4
     P=[v for g in body.values() for v in g['p']]
     R[nm]={'name':CARS[nm],'size':[round(max(P[k::3])-min(P[k::3]),3) for k in range(3)],'low':round(min(P[1::3]),3),'wheels':[corners[k] for k in ('fl','fr','rl','rr')],
-           'r':round(max(abs(v) for v in [x for g in wheel.values() for x in g['p'][1::3]]),3),'body':pack(body),'glass':pack(glass) if glass else [],'cab':CAB[0],'wheel':pack(wheel),'tris':[tb,tw]}
+           'r':round(max(abs(v) for v in [x for g in wheel.values() for x in g['p'][1::3]]),3),'body':pack(body),'glass':pack(glass) if glass else [],'cab':CAB[0],'wheel':pack(wheel),'tris':[tb,tw]}; R[nm].update(OPEN.get(nm,{}))
 cz={'__file__':os.path.join(ROOT,'tools/cruiser-bake.py'),'__name__':'cruiser'}; exec(compile(open(cz['__file__']).read(),'cruiser-bake','exec'),cz); R['police-cruiser-80s']=cz['make']()
 fz={'__file__':os.path.join(ROOT,'tools/fliers-bake.py'),'__name__':'fliers'}; exec(compile(open(fz['__file__']).read(),'fliers-bake','exec'),fz); R.update({k:fz['make'](v) for k,v in fz['SPECS'].items()}); R['submersible']=fz['make_sub']()   # the hover cars   # the game's own police cruiser, modelled in code
 s=json.dumps({'src':'racing-cars-kit (CC0)','cars':R},separators=(',',':')); open(os.path.join(ROOT,'data/cars.json'),'w').write(s)

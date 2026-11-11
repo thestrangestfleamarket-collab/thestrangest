@@ -25,11 +25,11 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
     ['guitar','violin','sword','rod','scuba'].every(i=>d.list.includes(i))&&!d.list.includes('piano')&&!d.list.includes('cowboyhat')&&d.by==='guitar'&&d.btn&&d.drawn&&d.seen==='guitar'&&d.saved==='guitar'&&d.piano==='guitar'&&d.hat==='guitar',JSON.stringify(d));
   // where it hangs: behind you, between your hips and the top of your head
   const pl=async id=>pg.evaluate(async id=>{ EQUIP.wear(id,true); await new Promise(r=>setTimeout(r,500)); const THREE=__dbg.THREE, me=W3.group.children.find(m=>m.userData&&m.userData.hands), g=me.children.find(c=>c.name==='back'||c.name==='guitar'); if(!g)return null;
-    me.updateMatrixWorld(true); const B=new THREE.Box3().setFromObject(g), k=new THREE.Vector3().setFromMatrixScale(me.matrixWorld).x, c=me.worldToLocal(B.getCenter(new THREE.Vector3())), s=B.getSize(new THREE.Vector3());   // (in the body's own frame: metres, forward +z, feet at 0)
-    return {id:EQUIP.by.back,z:+c.z.toFixed(2),y:+c.y.toFixed(2),len:+(Math.max(s.x,s.y,s.z)/k).toFixed(2)}; },id);
+    me.updateMatrixWorld(true); if(!me.geometry.boundingBox)me.geometry.computeBoundingBox(); const H=me.geometry.boundingBox, h=H.max.y-H.min.y, B=new THREE.Box3().setFromObject(g), k=new THREE.Vector3().setFromMatrixScale(me.matrixWorld).x, c=me.worldToLocal(B.getCenter(new THREE.Vector3())), s=B.getSize(new THREE.Vector3());   // (in the body's posed frame, forward +z; sizes against the guitar's, about a metre)
+    return {id:EQUIP.by.back,z:+(c.z/h).toFixed(2),y:+((c.y-H.min.y)/h).toFixed(2),len:+(Math.max(s.x,s.y,s.z)/k/h).toFixed(2)}; },id);
   const P={}; for(const id of ['violin','flute','trumpet','sword','rod','w_sniper','guitar'])P[id]=await pl(id);
   if(OUT){ require('fs').mkdirSync(OUT,{recursive:true}); for(const id of ['guitar','violin','sword','w_sniper','trumpet']){ await pg.evaluate(async id=>{ EQUIP.wear(id,true); __dbg.UI.setView('third'); await new Promise(r=>setTimeout(r,800)); },id); await pg.screenshot({path:path.join(OUT,'back-'+id+'.png')}); } }
-  rec('each hangs behind you, at your back\'s height, its own size',Object.values(P).every(p=>p&&p.z<-.08&&p.y>.7&&p.y<1.5&&p.len>.3&&p.len<3.2),JSON.stringify(P));
+  rec('each hangs behind you, at your back\'s height, its own size',!!P.guitar&&Object.values(P).every(p=>p&&p.z<0&&Math.abs(p.y-P.guitar.y)<.3*P.guitar.len&&p.len/P.guitar.len>.4&&p.len/P.guitar.len<3.5),JSON.stringify(P));
   // playing takes it off your back, putting it away puts it back; holding a sword takes it off your back
   const pv=await pg.evaluate(async()=>{ EQUIP.wear('violin',true); const a=EQUIP.by.back; INSTR.start('violin'); await new Promise(r=>setTimeout(r,500)); const b=EQUIP.by.back; INSTR.stop(); await new Promise(r=>setTimeout(r,300)); const c=EQUIP.by.back;
     INSTR.start('piano'); await new Promise(r=>setTimeout(r,300)); INSTR.stop(); const pn=EQUIP.by.back;

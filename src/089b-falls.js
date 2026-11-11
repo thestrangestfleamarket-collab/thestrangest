@@ -1,7 +1,7 @@
 // THE FALLS: FALLS is Central Park's waterfall beside the big lake (data/world.json parkPlaces.falls): an 18 m rock face of Polyfork rocks and moss, its plunge pool, the ledge behind the water, the jump rock, the mossy stairs, the lip with its spring, rope bridge and cairns, the rope swing, the rill to the brook; its ground is the park's (PARK.hill).
 import {SHARED, THREE} from './003-shx.js';
 import {B64, I16, U16} from './003a-skin.js';
-import {BROOK, CLOCK, DN, FALLS, FLOW, INV, keys, LITE, PARK, pos, RIDE, SFX, SKY, st, UI, WEEDS} from './003b-systems.js';
+import {BROOK, CLOCK, DN, FALLS, FLOW, INV, keys, LITE, ONLINE, PARK, pos, RIDE, SFX, SKY, st, UI, WEEDS} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {renderer} from './004-main.js';
 import {LEVEL, MAPG, MODS, SYS, TILE, ZU} from './006-map-pre.js';
@@ -47,6 +47,7 @@ window.FALLS=FALLS;
   stTop=(()=>{ let best=0; for(let y=STY-4;y<STY-1;y+=.5)best=Math.max(best,top(STX1-1,y)*mass(STX1-1,y)); return best||HM*.86; })();
   const h0=P.hill; P.hill=(x,y)=>inFP(x,y)?shape(x,y,h0(x,y)/M,true)*M:h0(x,y);
   const drawH=(x,y)=>shape(x,y,h0(x,y)/M,false);
+  (MODS.batRoosts=MODS.batRoosts||[]).push({x:X(C[0]),z:Z(C[1]),r:R*.85*T,n:4});   // bats over the pool at night (owner, 10 Nov 2026: "add bats at night"; the creatures' bats, 087)
   Object.assign(FALLS,{C,R,WL,LIP,TARN,JA,inFP,cutD,drawH,walkH:(x,y)=>shape(x,y,h0(x,y)/M,true),side:(x,y)=>side(polar(x,y)[1]),FP,ready:false});
   // the land is open under the pool and the rill (MODS.landHoles): their outline, from the middle out
   { const w0=P.wetHole; P.wetHole=()=>{ const o=w0(), H=[]; for(let i=0;i<96;i++){ const a=i/96*Math.PI*2, dx=Math.cos(a), dy=Math.sin(a); let r=.5, last=0; while(r<R+12){ const x=C[0]+dx*r, y=C[1]+dy*r; if(drawH(x,y)<WL+.02)last=r; r+=.25; } if(last>0)H.push([C[0]+dx*(last+.2),C[1]+dy*(last+.2)]); }
@@ -67,7 +68,7 @@ window.FALLS=FALLS;
   /* ---------- what you see: built with the park, drawn near ---------- */
   const DATA=__LAZY__("data/fallspf.json");
   const go=async()=>{ '@park'; if(!P.G||!BROOK.ready||!MODS.land)return setTimeout(go,500);
-    const D=await DATA, root=new THREE.Group(), near=new THREE.Group(); root.name='falls'; near.name='falls near'; (MAPG.park||P.G).add(root); root.add(near);
+    const D=await DATA(), root=new THREE.Group(), near=new THREE.Group(); root.name='falls'; near.name='falls near'; (MAPG.park||P.G).add(root); root.add(near);
     const hs=(i,s)=>{ const v=Math.sin(i*12.9898+s*78.233)*43758.5453; return v-Math.floor(v); };
     let seed=9; const rnd=()=>{ seed=(seed*16807)%2147483647; return (seed-1)/2147483646; };
     const col=(r,g,b)=>new THREE.Color().setRGB(r/255,g/255,b/255,THREE.SRGBColorSpace);
@@ -129,7 +130,7 @@ window.FALLS=FALLS;
     // the stairs, the bridge, the cairns
     for(let x=STX0-1;x>STX1;x-=2.6)put('mosssteps',x,STY,drawH(x,STY)-.9,[.95,1,.8],-Math.PI/2);
     put('ropebridge',BRX,LIP[1]+.35*Math.sin(BRX*.9),drawH(BRX,LIP[1]+2.4)-.15,[1.25,1,1],Math.PI/2,'wood');
-    const cairns=[[LIP[0]-4.5,LIP[1]+5],[LIP[0]-6,LIP[1]+6.2],[LIP[0]-5,LIP[1]-5.5]]; for(const [x,y] of cairns)put('cairn',x,y,null,.85,rnd()*6,'rock');
+    const cairns=[[LIP[0]-4.5,LIP[1]+5],[LIP[0]-6,LIP[1]+6.2],[LIP[0]-5,LIP[1]-5.5]];
     // vines down the top edge
     seed=61; for(let i=0;i<12;i++){ const th=(rnd()*2-1)*1.3; if(Math.abs(th)<.25)continue; const [x,y]=onFace(th,top(C[0]-Math.cos(th)*(R+CW),C[1]+Math.sin(th)*(R+CW))-.7); put('vine',x,y,null,[1.2,1.5+rnd()*2,1.2],Math.atan2(Math.sin(th),-Math.cos(th))+Math.PI/2,'plant'); }
     // glowing mushrooms in the rocks (they glow at night), mushrooms on the shore
@@ -226,6 +227,17 @@ window.FALLS=FALLS;
           const o=Math.sin(ang)*L*M; pos.x=piv.x+out.x*o; pos.z=piv.z+out.z*o; R.y=piv.y-Math.cos(ang)*L*M-1.25*M; R.lift=0; SHARED.heading=Math.atan2(out.x,out.z); POSE.sway=ang*.3; st.ride=POSE;
           if(keys.has(' ')||R.t>12){ RIDE.off(o>1.5*M?'YOU LET GO AND DROP INTO THE POOL.':'YOU LET GO.'); if(SFX.play&&o>1.5*M)SFX.play('splash',{vol:.7}); } return true; }});
       UI.thing({name:'THE ROPE SWING',obj:hit,reach:1.6*T,near:2.6*T,tall:1.4*T,act:()=>{ if(!RIDE.on)RIDE.mount('ropeswing'); }}); FALLS.swing={piv,out,L}; }
+    /* the cairns on the lip (owner, 10 Nov 2026: "add ... cairn building"): double click one to set a stone on it; its stones are the section's (world cairn:<n>, kept on the server, the same for everyone); past twelve it tumbles back to its base */
+    { const md=model('smallrock'), sg=new THREE.BufferGeometry(); sg.setAttribute('position',new THREE.BufferAttribute(md.P,3)); sg.setAttribute('color',new THREE.BufferAttribute(md.C,3)); sg.setIndex(new THREE.BufferAttribute(md.I,1));
+      const stoneG=sg.toNonIndexed(); stoneG.computeVertexNormals(); const MAXC=12, CR=FALLS.cairns=[];
+      cairns.forEach(([x,y],i)=>{ const k='cairn:'+i, g=new THREE.Group(); g.position.set(X(x),drawH(x,y)*M+G0,Z(y)); root.add(g);
+        const draw=v=>{ const n=Math.max(0,Math.floor(+v||0))%(MAXC+1); g.clear(); let h=0; for(let j=0;j<3+n;j++){ const f=(1.7-j*.085)*(.9+.2*hs(i*31+j,1)), me=new THREE.Mesh(stoneG,mossM);
+            me.scale.set(f*M,f*M*.9,f*M); me.position.set((hs(i,j)-.5)*.05*M,h*M,(hs(j,i)-.5)*.05*M); me.rotation.y=hs(i*7+j,3)*6.28; me.castShadow=true; me.receiveShadow=true; g.add(me); h+=.22*f*.82; } CR[i]={k,n,h}; };
+        draw((ONLINE.world||{})[k]);
+        const hb=new THREE.Mesh(new THREE.BoxGeometry(.9*M,1.2*M,.9*M),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(g.position.x,g.position.y+.6*M,g.position.z); root.add(hb);
+        UI.thing({name:'A CAIRN',obj:hb,reach:1.4*T,near:2.4*T,tall:1.2*T,act:()=>{ const was=Math.floor(+(ONLINE.world||{})[k]||0)%(MAXC+1); ONLINE.add(k,1); draw((ONLINE.world||{})[k]); if(SFX.play)SFX.play('step_stone',{vol:.5,pitch:.8});
+          SAY(was===MAXC?'THE CAIRN TUMBLES DOWN TO ITS BASE. YOU SET THE FIRST STONE AGAIN.':'YOU SET A STONE ON THE CAIRN. IT STANDS '+(4+was)+' HIGH.','#c8c2b0'); }});
+        SYS.add('world',(kk,v)=>{ if(kk===k)draw(v); },'089b-falls cairn'); }); }
     /* toss a coin: a dollar into the pool for a wish */
     { const hb=new THREE.Mesh(new THREE.BoxGeometry(1.2*T,.6*T,1.2*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(X(C[0]+R-1.2),WY,Z(C[1]-1)); root.add(hb);
       UI.thing({name:'TOSS A COIN',obj:hb,reach:3*T,near:4*T,tall:.6*T,act:()=>{ if(!INV||INV.cash<1)return SAY('YOU HAVE NO COIN TO TOSS.','#c8a090'); INV.cash-=1; if(SFX.play)SFX.play('splash',{vol:.25,pitch:1.8}); SAY('YOU TOSS A DOLLAR IN AND MAKE A WISH.','#9fd6dc'); }}); }

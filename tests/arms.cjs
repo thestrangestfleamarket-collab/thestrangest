@@ -14,7 +14,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.waitForTimeout(4000);
     await pg.evaluate(() => { if (window.WX) WX.hold = 'CLEAR'; __dbg.UI.setView('third'); window.__sent = []; ONLINE.send = m => __sent.push(m); });
     const own = await pg.evaluate(() => { const d = ARMSDBG(); return { n: d.W.length, owned: d.owned.length, held: d.W.every(id => WIELD.LIST.includes(id)) }; });
-    ok(own.n === 14 && own.owned === 14 && own.held, 'every player owns the fourteen weapons, held from the pack (' + JSON.stringify(own) + ')');
+    ok(own.n === 15 && own.owned === 15 && own.held, 'every player owns the fifteen weapons, held from the pack (' + JSON.stringify(own) + ')');
     const aim = dn => pg.evaluate(d => { const h = SHARED.heading, v = { x: Math.sin(h), y: -d, z: Math.cos(h) }, l = Math.hypot(v.x, v.y, v.z); ARMS.aim = new __dbg.THREE.Vector3(v.x / l, v.y / l, v.z / l); }, dn);
     const place = k => pg.evaluate(k => { const P = __dbg.you(), h = SHARED.heading, M = ARMSDBG().M; ONLINE.feed({ t: 'mv', id: 'a', at: [P.x + Math.sin(h) * k * M, P.z + Math.cos(h) * k * M, SHARED.py, h + Math.PI, SHARED.LVL, ''] }); }, k);
     const hold = id => pg.evaluate(id => { WIELD.set(id); }, id);
@@ -24,7 +24,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await until(() => { const o = ONLINE.others.get('a'); return o && o.fig && o.fig.g && o.fig.g.parent; }, 15000); await pg.waitForTimeout(1500);
 
     // the guns
-    for (const id of ['w_revolver', 'w_shotgun', 'w_sniper', 'w_laser']) {
+    for (const id of ['w_revolver', 'w_shotgun', 'w_sniper', 'w_mgun', 'w_laser']) {
       await place(4); await hold(id); await pg.waitForTimeout(id === 'w_revolver' ? 3000 : 500); await aim(.06); await pg.evaluate(() => { __sent.length = 0; });
       let r = null; for (let i = 0; i < 4 && !r; i++) { await fire(id); await pg.waitForTimeout(300); r = await pg.evaluate(id => { const s = __sent.filter(m => m.t === 'shot' && m.to === 'a' && m.w === id), a = __sent.find(m => m.t === 'arm' && m.k === 'shot'); return s.length && a ? { d: s[0].d, kb: s[0].kb, dn: s[0].dn, ends: a.e.length } : null; }, id); }
       if (!r) r = { miss: await pg.evaluate(() => { const o = ONLINE.others.get('a'), g = WIELD.held(); return { last: ARMS.last, sent: __sent.slice(0, 4), a: o && o.p, fig: !!(o && o.fig && o.fig.g), me: __dbg.you(), py: SHARED.py, on: WIELD.on, g: !!g, rag: RAGON(), stuck: SHARED.stuck, out: __dbg.VIT.out, dead: __dbg.VIT.dead, frozen: SHARED.frozen }; }) };

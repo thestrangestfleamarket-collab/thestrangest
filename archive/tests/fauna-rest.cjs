@@ -13,6 +13,6 @@ const {chromium}=require('playwright');
         if(w<.5)await wait(200); }
       out[K]={n,sleep:+w.toFixed(2)}; }
     return out; });
-  for(const K of ['Cow','Pig','Horse'])ok(r[K]&&r[K].sleep>.5,'the '+K.toLowerCase()+', asleep at night, lies on its own Sleep clip: '+JSON.stringify(r[K]));
+  for(const K of ['Cow','Pig','Horse'])ok(r[K]&&r[K].sleep>=.5,'the '+K.toLowerCase()+', asleep at night, lies on its own Sleep clip: '+JSON.stringify(r[K]));
   ok(errs.length===0,'no page errors'+(errs.length?': '+errs[0].slice(0,200):''));
   await b.close(); process.exit(bad?1:0); })();

@@ -1,6 +1,6 @@
 // SWIMMING: SWIM steers you in any water (SPACE down, SHIFT up, or look and swim in first person; still, you drift slowly up), draws your arms swimming in first person, the motes and the dark edge under water, and the rented scuba set's tank.
 import {SHARED, THREE} from './003-shx.js';
-import {EQUIP, FAR3, FORAGE, ITEMS, LEVELS, LOOKS, st, SWIM, UI, VIT} from './003b-systems.js';
+import {EQUIP, FAR3, FARCITY, FORAGE, ITEMS, LEVELS, LOOKS, st, SWIM, UI, VIT} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
@@ -50,7 +50,7 @@ Object.assign(SWIM,{d:null,tankS:0}); window.SWIM=SWIM;
   let uw=false, mt=0, seen=0, dfo=false, cf=null; const far=[], hid=[], P=new V();   // far things that ignore fog (the far city, backdrops): hidden while you are under, the murk would hide them
   (MODS.waters=MODS.waters||[]).push({pre:(scene,cam)=>{ uw=!!(scene.fog&&scene.fog.uw)&&!!cam&&!cam.isOrthographicCamera; motes.visible=uw; if(vig.style.display!==(uw?'':'none'))vig.style.display=uw?'':'none'; if(!uw){ seen=0; return; } if(DFOG.pass){ dfo=!DFOG.pass.enabled; DFOG.pass.enabled=true; DFOG.under={s:scene.fog.near,e:scene.fog.far,c:scene.fog.color}; }   // the distance fog pass becomes the water's fog: nothing past the murk shows
     if(performance.now()-seen>2000){ seen=performance.now(); far.length=0; scene.traverse(o=>{ const m=o.material; if(!(o.isMesh||o.isPoints)||!m||Array.isArray(m)||m.fog!==false||m.uniforms&&m.uniforms.uUW)return; far.push(o); }); }
-    for(const o of [FAR3.mesh,FAR3.farMesh,FAR3.panels,FAR3.trees])if(o&&o.isObject3D&&o.visible){ o.visible=false; hid.push(o); }   // the far city's own mist shader skips the fog
+    for(const o of [FAR3.mesh,FAR3.farMesh,FAR3.panels,FAR3.trees,FARCITY.ring])if(o&&o.isObject3D&&o.visible){ o.visible=false; hid.push(o); } SWIM.ring=!!FARCITY.ring&&!FARCITY.ring.visible;   // the far city's own mist shader skips the fog
     const lim=scene.fog.far*1.3; for(const o of far){ if(!o.visible)continue; o.getWorldPosition(P); if(P.distanceTo(cam.position)>lim){ o.visible=false; hid.push(o); } }
     SWIM.view=0; if(SWIM.cut!==false&&cam.far>lim){ cf={cam,far:cam.far}; cam.far=lim; cam.updateProjectionMatrix(); SWIM.view=lim; SWIM.murk=scene.fog.far; }   // nothing past the murk is drawn at all: the view ends just beyond it
     mt+=1/60; const c=cam.position, a=mg.attributes.position.array, w=2*R;
@@ -68,4 +68,4 @@ Object.assign(SWIM,{d:null,tankS:0}); window.SWIM=SWIM;
   VIT.tankTxt=()=>EQUIP.breathe&&SWIM.tankS>0?' · TANK '+Math.floor(SWIM.tankS/60)+':'+String(Math.floor(SWIM.tankS%60)).padStart(2,'0'):'';
   SYS.add('rent',id=>{ const s=+ITEMS.prop(id,'tank')||0; if(!s)return; SWIM.tankS=s; save(); if(EQUIP.by[ITEMS.prop(id,'slot')]!==id)EQUIP.wear(id,true);
     say('THE FISHERMAN STRAPS ON A FULL TANK: '+Math.round(s/60)+' MINUTES OF AIR UNDER WATER.'); },'146ga-swim');
-  window.SWIMDBG=()=>{ const W=st.water; return {in:!!(W&&W.in),dive:!!(W&&W.dive),d:SWIM.d,y:W&&W.y,level:W&&W.level,floor:W&&W.floor,arms:root.visible,uw,view:SWIM.view,murk:SWIM.murk,tank:SWIM.tankS,breathe:!!EQUIP.breathe,air:VIT.air}; }; }
+  window.SWIMDBG=()=>{ const W=st.water; return {in:!!(W&&W.in),dive:!!(W&&W.dive),d:SWIM.d,y:W&&W.y,level:W&&W.level,floor:W&&W.floor,arms:root.visible,uw,view:SWIM.view,murk:SWIM.murk,tank:SWIM.tankS,breathe:!!EQUIP.breathe,air:VIT.air,ring:SWIM.ring}; }; }

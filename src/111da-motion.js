@@ -26,8 +26,9 @@ import {AVATAR} from './111c-avatar.js';
         if(cost(alt)<cost(a)-20){ a[0]=alt[0]; a[1]=alt[1]; }   // (the same way written past straight up: the arm going over, not swinging round)
         if(Math.abs(a[0]-b[0])<=40||Math.max(Math.abs(a[1]),Math.abs(b[1]))<=70)continue;
       const d1=dir(a[0],a[1]), d2=dir(b[0],a[1]); if(Math.acos(Math.min(1,d1[0]*d2[0]+d1[1]*d2[1]+d1[2]*d2[2]))<.35)A[k]=[b[0],a[1]]; } } };
-  const ensure=()=>ready||(ready=Promise.all([DATA(),TRAV()]).then(([J,TV])=>{ for(const m of Object.values(J))for(let i=1;i<m.keys.length;i++){ unwrap(m.keys[i][1],m.keys[i-1][1]); steady(m.keys[i][1],m.keys[i-1][1]); }
-    for(const [n,m] of Object.entries(J)){ R.MOVES['mc_'+n]=R.mkMove({keys:m.keys,ex:0,...(m.opts||{})}); info[n]={loop:!!m.loop,dur:m.dur}; }
+  // a recording made a move: its keys made continuous and steady, then the rig's (MOTION.add: other books of moves, the dances, 146zq)
+  const add=(n,m)=>{ for(let i=1;i<m.keys.length;i++){ unwrap(m.keys[i][1],m.keys[i-1][1]); steady(m.keys[i][1],m.keys[i-1][1]); } R.MOVES['mc_'+n]=R.mkMove({keys:m.keys,ex:0,...(m.opts||{})}); info[n]={loop:!!m.loop,dur:m.dur}; };
+  const ensure=()=>ready||(ready=Promise.all([DATA(),TRAV()]).then(([J,TV])=>{ for(const [n,m] of Object.entries(J))add(n,m);
     const K0=J.greet.keys[0][1]; for(const [n,[c,a,b,lp]] of Object.entries(AVATAR.PF)){ const tv=TV[c];
       R.MOVES['mc_pf_'+n]=tv?R.mkMove({travel:true,keep:0,ex:0,keys:tv.z.map((z,i)=>[Math.min(i/10,tv.dur),{...K0,root:[0,K0.root[1],+(z*16).toFixed(2)]},'lin'])}):R.mkMove({keys:[[0,K0,'lin'],[b-a,K0,'lin']],ex:0}); info['pf_'+n]={loop:!!lp,dur:b-a}; }
     Object.assign(R.LOOK,{roll:'mc_roll2',frontKick:'mc_kickFront',roundhouse:'mc_kickRound',hook:'mc_hook2',flinch:'mc_hitChest'}); return info; }));   // (the hand-made moves drawn from recordings: their timing, travel and hits kept)
@@ -56,7 +57,8 @@ import {AVATAR} from './111c-avatar.js';
   SYS.onStart(()=>setTimeout(()=>ensure().catch(()=>{}),3000),'111da-motion');   // (the recordings soon after the start: the hand-made moves drawn from them from then on)
   SYS.add('life',dt=>{ if(cur&&!tickOne(cur,dt)){ const lp=cur.loop; cur=null; if(lp)SYS.run('act',{stop:1}); } for(const [S,c] of theirs)if(!tickOne(c,dt))theirs.delete(S); },'111da-motion');
   // what another player plays: fetched first if this page has not yet, then on their body here
-  const their=(S,m)=>{ if(m.stop){ theirs.delete(S); return; } ensure().then(()=>{ if(!R.MOVES[m.m])return; R.begin(S,m.m); theirs.set(S,{S,n:m.m.slice(3),loop:!!m.loop}); }); };
+  const packs=[];   // (other books of moves, fetched when first needed: {pre: their names' start, load()})
+  const their=(S,m)=>{ if(m.stop){ theirs.delete(S); return; } const pk=packs.find(p=>m.m.startsWith('mc_'+p.pre)); Promise.all([ensure(),pk&&pk.load()]).then(()=>{ if(!R.MOVES[m.m])return; R.begin(S,m.m); theirs.set(S,{S,n:m.m.slice(3),loop:!!m.loop}); }); };
   // the emote panel (H), a window like the others (owner, 7 Nov 2026: "make the emote menu look like regular menus. also allow to drag them to the favorites bar"): a button an emote, by kind; drag one onto the quick bar
   const sp=document.createElement('div'); sp.id='emotes'; sp.hidden=true;
   sp.style.cssText='position:fixed;right:16px;top:56px;width:min(880px,96vw);max-height:calc(100vh - 72px);overflow:auto;z-index:21;padding:12px 14px;box-sizing:border-box;background:#0b0d13;zoom:var(--uiz,1)';
@@ -73,7 +75,9 @@ import {AVATAR} from './111c-avatar.js';
     b.onclick=()=>{ play(n); MOTION.close(); }; b.addEventListener('dragstart',e=>{ e.dataTransfer.setData('text/plain','emote:'+n); e.dataTransfer.effectAllowed='copy'; }); return b; };
   { const c=document.createElement('style'); c.textContent='#emotes .emk{color:#3aa866;margin:4px 0 2px;font-size:12px!important;line-height:1.2!important} #emotes h3{margin:0 0 4px} #emotes .emg{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:3px} #emotes .emg button{height:21px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.1;font-size:10px!important;letter-spacing:0!important;padding:2px!important;box-shadow:inset 0 0 0 1px #2d5a40!important;overflow-wrap:anywhere}'; document.head.appendChild(c); }   // (owner, 7 Nov 2026: "every emote as a square with emote inside it"; his pick: just the name)
   const head=document.createElement('h3'); head.textContent='EMOTES'; sp.append(head);
-  for(const [k,ns] of KINDS){ const h=document.createElement('div'); h.textContent=k; h.className='emk'; const g=document.createElement('div'); g.className='emg'; for(const n of ns)if(LABEL[n])g.append(B(LABEL[n],n)); sp.append(h,g); }
+  const GRID={}; for(const [k,ns] of KINDS){ const h=document.createElement('div'); h.textContent=k; h.className='emk'; const g=document.createElement('div'); g.className='emg'; GRID[k]=g; for(const n of ns)if(LABEL[n])g.append(B(LABEL[n],n)); sp.append(h,g); }
+  // a button of another system's in a kind's row (the dance book under DANCE)
+  const more=(k,t,fn)=>{ const g=GRID[k]; if(!g)return; const b=document.createElement('button'); b.type='button'; b.textContent=t; b.onclick=()=>{ MOTION.close(); fn(); }; g.append(b); return b; };
   const tip=document.createElement('div'); tip.textContent='WALK TO STOP ONE THAT LOOPS · DRAG ONE ONTO THE QUICK BAR'; tip.className='emk'; sp.append(tip);
   // the fight keys: L a side kick (again late in it, a spin kick), O a dodge back; kicks land through STRIKES by their names, a dodge lets blows miss
   const can=()=>!SHARED.drive&&!RAG.on&&!VIT.dead&&!(VIT.out>0)&&!UI.freeCam&&!st.sit&&!st.ride&&!st.climb&&!st.hang&&!(st.water&&st.water.in)&&!VIT.tired;
@@ -82,6 +86,6 @@ import {AVATAR} from './111c-avatar.js';
     else if(k==='o'&&(!m||!/^mc_(dodge|kick)/.test(m.name))){ VIT.spend(.06); play('dodge'); } };
   addEventListener('keydown',e=>{ if(e.repeat||e.target&&e.target.closest&&e.target.closest('input,textarea,[contenteditable="true"]'))return; const k=UI.key(e);
     if(k==='h'&&!UI.menuOpen){ MOTION.toggle(); e.preventDefault(); } else if((k==='l'||k==='o')&&!UI.menuOpen)fight(k); });
-  window.MOTION=MOTION; Object.defineProperty(MOTION,'cur',{get:()=>cur&&cur.n}); MOTION.dodging=()=>!!(st.move&&st.move.name==='mc_dodge'&&st.move.t<.55); Object.assign(MOTION,{EMOTES,label:n=>LABEL[n]||null,ensure,play,stop,their,has,info,
+  window.MOTION=MOTION; Object.defineProperty(MOTION,'cur',{get:()=>cur&&cur.n}); MOTION.dodging=()=>!!(st.move&&st.move.name==='mc_dodge'&&st.move.t<.55); Object.assign(MOTION,{EMOTES,label:n=>LABEL[n]||null,ensure,play,stop,their,has,info,add,packs,more,
     open:()=>{ sp.hidden=false; ensure(); }, close:()=>{ sp.hidden=true; }, toggle:()=>{ if(sp.hidden)MOTION.open(); else MOTION.close(); }});
 }

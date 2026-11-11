@@ -1,8 +1,9 @@
-// THE BODIES: bodies moved by the rig (each of its 15 bones takes the turn of the rig piece it stands for); you play as the avatar (111c), the only body you can be; one of each other walks main street.
+// THE BODIES: bodies moved by the rig (each of its 15 bones takes the turn of the rig piece it stands for); you play as the avatar (111c) or another playable body (YOU's BODY line); one of each other walks main street.
 import {SHARED, THREE} from './003-shx.js';
 import {B64, I16, U16} from './003a-skin.js';
-import {ARCH, CHARS, NPCS, pos, RAG, st, VIS, VIT, W3, WINDOWS} from './003b-systems.js';
+import {ARCH, CHARS, LOOKS, NPCS, pos, RAG, st, VIS, VIT, W3, WINDOWS} from './003b-systems.js';
 import {PPU} from './004-main.js';
+import {SAVE} from './005-save.js';
 import {ASTEP, MAPG, MODS, SYS, TILE} from './006-map-pre.js';
 import {HOMES, ROAM, stfree} from './076-npc-map.js';
 import {musScale, sheetView, spreadPose} from './110-musician.js';
@@ -244,6 +245,13 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   BODIES.pick=()=>curKey();
   BODIES.onPick=[];   // told the body you now play as
   BODIES.set=key=>{ pick=playable(BODIES.by[key])?key:'avatar'; for(const f of BODIES.onPick)f(curKey()); };
+  // YOU's BODY line: every body you can be, once there is more than one; your pick is kept with your save
+  { let row=null; if(!QS.get('avatar')){ const k=SAVE.get('body'); if(k)pick=k; }
+    const draw=()=>{ const L=BODIES.list.filter(playable); if(L.length<2||!LOOKS.add||!document.getElementById('looks'))return;
+      if(!row){ row=document.createElement('div'); row.className='row'; row.id='lbody'; row.onclick=e=>{ const b=e.target.closest('button'); if(b)BODIES.set(b.dataset.b); }; LOOKS.add('body','BODY',row,{order:0}); }
+      row.innerHTML=L.map(b=>`<button data-b="${b.key}" aria-pressed="${b.key===curKey()}">${b.label}</button>`).join(''); };
+    BODIES.onPick.push(k=>{ SAVE.set('body',k); draw(); });
+    BODIES.joined=body=>{ if(!playable(body))return; draw(); if(body.key===pick)for(const f of BODIES.onPick)f(curKey()); }; }
   // a borrowed model's licence line, shown under the menu's KEYS
   BODIES.credit=t=>{ const c=document.getElementById('credits'); if(!c)return; const d=document.createElement('div'); d.textContent=t; c.appendChild(d); };
 
@@ -310,6 +318,6 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   BODIES.rebakedBody=(D,key,more)=>BODIES.fit(rebakedObj(D,key,more));   // a body for an overlay (not a street walker)
   BODIES.fit=body=>{ body.S=WALKER_H/body.height; body.KL=body.hipY*body.S/R.STAND; body.tris=()=>{ const g=body.GEO||(body.GEO=body.geo()); return (g.index?g.index.count:g.attributes.position.count)/3; }; return body; };   // (scaled so its height is the Walker's)
   BODIES.add=body=>{ BODIES.fit(body); BODIES.list.push(body); BODIES.by[body.key]=body;
-    walker(body); };
+    walker(body); BODIES.joined(body); };
 }
 export {BODIES};

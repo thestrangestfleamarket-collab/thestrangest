@@ -2,6 +2,7 @@
 import {THREE} from './003-shx.js';
 import {ARCHI, BAG, CHARS, FORAGE, INV, ITEMS, LINES, NPCS, SFX, SHOPS, TEXT, UI, WORTH} from './003b-systems.js';
 import {SYS, TILE} from './006-map-pre.js';
+import {ASL} from './146zs-signs.js';
 Object.assign(SHOPS,{bound:new Set(),cur:null});
 { const T=TILE;
   const name=id=>(FORAGE&&FORAGE.NM&&FORAGE.NM[id])||String(id).toUpperCase().replace(/_/g,' ');
@@ -59,7 +60,7 @@ Object.assign(SHOPS,{bound:new Set(),cur:null});
     if(r.dataset.sold){ const id=r.dataset.sold, have=INV.items[id]||0, n=have>1&&BAG&&BAG.ask?await BAG.ask(have,e.clientX,e.clientY):Math.min(1,have); if(!n)return;
       if(await confirm(`SELL ${n>1?n+' ':''}${name(id)} FOR $${WORTH.sell(id,n,worth(id))}?`))SHOPS.sell(id,n); } });
 
-  SHOPS.open=N=>{ if(!N||!(CHARS.trade&&CHARS.trade(N)))return; { const tr=CHARS.trade(N); if(!(tr.sells||[]).some(id=>!ARCHI(id))&&!(tr.buys||[]).length&&!(tr.teaches||[]).length){ say('CLOSED.'); return; } } SHOPS.cur=N; sp.hidden=false; draw(); if(window.LINES&&N.g)LINES.say(N,'greet'); };
+  SHOPS.open=N=>{ if(!N||!(CHARS.trade&&CHARS.trade(N))||!ASL.follows(N))return; { const tr=CHARS.trade(N); if(!(tr.sells||[]).some(id=>!ARCHI(id))&&!(tr.buys||[]).length&&!(tr.teaches||[]).length){ say('CLOSED.'); return; } } SHOPS.cur=N; sp.hidden=false; draw(); if(window.LINES&&N.g)LINES.say(N,'greet'); };
   SHOPS.close=()=>{ if(Q)ask(null); sp.hidden=true; SHOPS.cur=null; };
   SHOPS.draw=draw;
 

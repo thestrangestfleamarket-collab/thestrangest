@@ -12,7 +12,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   await pg.evaluate(() => LOAD('later')); await pg.waitForTimeout(4000); await pg.evaluate(() => PFI.load());
   const IDS = ['guitar', 'bmx', 'ruby', 'g_catfood', 'fr_apple', 'sword', 'coat_red', 'cooler_m'];
   await pg.evaluate(ids => { for (const id of ids) FORAGE.give(id, 1); ids.slice(0, 4).forEach((id, i) => HUD.set(i, id)); BAG.toggle(true); }, IDS);
-  await pg.waitForTimeout(6000);
+  // (pictures are taken a few a frame: on a slow machine, wait until every one asked for is a photograph, up to 90 s)
+  for (let i = 0; i < 45; i++) { await pg.waitForTimeout(2000); if (await pg.evaluate(ids => ids.every(id => { const u = BAG.icon(id); return u && u.startsWith('data:image/png') && u.length > 400; }) && [...document.querySelectorAll('.bgr img, .bgi img, .qs img')].every(i => (i.getAttribute('src') || '').startsWith('data:image/png')), IDS)) break; }
   const r = await pg.evaluate(async ids => { const out = {}; for (const id of ids) { const u = BAG.icon(id), im = new Image(); im.src = u; await im.decode().catch(() => {}); out[id] = { png: u.startsWith('data:image/png'), w: im.naturalWidth }; }
     const imgs = [...document.querySelectorAll('.bgr img, .bgi img, .qs img')].map(i => i.getAttribute('src') || ''); return { out, shown: imgs.length, photos: imgs.filter(s => s.startsWith('data:image/png') && s.length > 400).length }; }, IDS);
   for (const id of IDS) ok(r.out[id].png && r.out[id].w >= 64, id + ' is pictured from its 3D model (' + r.out[id].w + ' px photograph)');

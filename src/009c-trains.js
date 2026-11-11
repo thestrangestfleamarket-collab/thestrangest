@@ -160,7 +160,7 @@ await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL
   const cars=()=>TRAINS.list.flatMap(tn=>tn.cars.map(c=>({tn,c})));
   const HL=CARL/2*T, HW=CW*T, HWI=CWI*T, R=.36, AISLE=(CWI-.95)*T-R;
   const inCar=(x,z)=>{ for(const {tn,c} of cars()){ if(!c.p)continue; const q=loc(c.p,x,z); if(Math.abs(q.a)<HL-.2&&Math.abs(q.v)<HWI)return {tn,c,q}; } return null; };
-  L.under.push({inside:(x,z)=>!!inCar(x,z),ground:()=>L.H(FLOOR)}); TRAINS.cars=cars;
+  L.under.push({inside:(x,z)=>!!inCar(x,z),ground:()=>L.H(FLOOR)}); TRAINS.cars=cars; TRAINS.inCar=inCar;
   const atDoor=a=>DOORS.some(m=>Math.abs(a-m*T)<DWH*T-.15);
   const ride={c:null,tn:null}, STEP=2.2*T;
   const edges=tn=>{ const S=tn.S, k=tn.track, st=S.doors?S.at:null;

@@ -3,7 +3,7 @@ const {chromium}=require('playwright');
 (async()=>{ const out=process.argv[2]||'/tmp/ocean'; require('fs').mkdirSync(out,{recursive:true});
   const b=await chromium.launch({executablePath:process.env.PW_CHROMIUM||undefined,args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
   const pg=await b.newPage({viewport:{width:1000,height:700}}); const errs={}; pg.on('pageerror',e=>{ errs[e.message]=1; }); pg.on('console',m=>{ if(m.type()==='error')errs[m.text().slice(0,300)]=1; });
-  await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&hour=13&river=ocean',{timeout:180000}); await pg.waitForFunction(()=>window.__started&&window.RIVER,{timeout:300000}); await pg.waitForTimeout(5000);
+  await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&hour=13',{timeout:180000}); await pg.waitForFunction(()=>window.__started&&window.RIVER,{timeout:300000}); await pg.waitForTimeout(5000);
   for(let k=0;k<4;k++){ await pg.waitForFunction(()=>!FADE.busy,{timeout:90000}).catch(()=>{}); await pg.evaluate(()=>{ if(!RIVER.on)STORE.goTo(SHARED.BOD.XS(61),SHARED.BOD.ZS(-118),'up'); });
     if(await pg.waitForFunction(()=>RIVER.on&&!FADE.busy,{timeout:90000}).then(()=>1,()=>0))break; }
   await pg.evaluate(()=>{ __dbg.UI.setView('third'); [...document.querySelectorAll('#rvpan [data-go="1"]')][0].click(); }); await pg.waitForTimeout(4000);

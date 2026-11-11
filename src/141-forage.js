@@ -39,8 +39,8 @@ import {MUSH} from './111ec-mushseller.js';
     ['p_ghost','GHOST POTION','alchemy',[70,115],{ghostcap:1,trumpet:1},'see in the dark 5 min']];
   const PCOL={p_refresh:0x6ad86a,p_heal:0xd8343a,p_str:0xe8862a,p_keen:0x4aa0e8,p_cure:0xeeeae0,p_gheal:0xf2c81e,p_ghost:0xc8a8ff};
   const OWNRC=new Set(RC.map(r=>r[0]));   // only these: other files add their recipes (books, bouquets, dishes) to the same list
-  INSPECT.kinds.push({is:id=>/^[mu]_/.test(id)&&!!MU[id.slice(2)]||id==='airshroom'||id==='glowcap'||!!PCOL[id]||OWNRC.has(id)||id==='bottle'||id==='mortar',make:id=>{ '@later'; const P=INSPECT.part;
-    if(/^[mu]_/.test(id))return INSPECT.recipe(STALL.MUSH[id.slice(2)]); if(id==='airshroom')return INSPECT.recipe({s:.04,f:(p,s)=>{ p('cyl',0xe0f4ff,0,s*.5,0,s*.3,s,s*.3); p('cap',0x9ad8ff,0,s*.95,0,s,s*.7,s); p('ball',0xffffff,0,s*1.2,0,s*.3,s*.2,s*.3); }}); if(id==='glowcap')return INSPECT.recipe({s:.04,f:(p,s)=>{ p('cyl',0xe8ffe0,0,s*.5,0,s*.25,s,s*.25); p('cap',0x7cff9a,0,s*.95,0,s*1.1,s*.6,s*1.1); p('ball',0xd8ffb0,0,s*1.15,0,s*.25,s*.15,s*.25); }});
+  INSPECT.kinds.push({is:id=>/^[mu]_/.test(id)&&!!MU[id.slice(2)]||!!STALL.POWER[id]||!!PCOL[id]||OWNRC.has(id)||id==='bottle'||id==='mortar',make:id=>{ '@later'; const P=INSPECT.part;
+    if(/^[mu]_/.test(id))return INSPECT.recipe(STALL.MUSH[id.slice(2)]); if(STALL.POWER[id])return INSPECT.recipe(STALL.POWER[id]);
     if(PCOL[id])return INSPECT.shape('bottle',PCOL[id]); if(id==='bottle')return INSPECT.shape('bottle',0xcfe6e0);
     if(id==='mortar'){ const g=INSPECT.shape('bowl',0x8a8a84); g.children[0].material=INSPECT.mat(0x9a968c); g.add(P('cyl',0x7a766c,.04,.14,0,.018,.16,.018,0,-.5)); return g; }
     if(id==='f_skewer'){ const g=new THREE.Group(); g.add(P('cyl',0xc8a878,0,0,0,.006,.32,.006,0,Math.PI/2)); for(let i=0;i<4;i++)g.add(P('cap',i%2?0xe08a2a:0xe8dcc0,-.09+i*.06,0,0,.026,.022,.026,0,Math.PI/2)); return g; }

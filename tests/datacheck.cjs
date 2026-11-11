@@ -34,7 +34,7 @@ const PROV=JSON.parse(fs.readFileSync('data/full/sounds.json','utf8')).sounds;
     const c=SFX.wake(); if(c&&c.state!=='running')await c.resume().catch(()=>{}); out.ctx=c&&c.state;
     out.sfx={}; for(const k of SFX.names()){ const B=SFX.buffer(k,c), D=B.getChannelData(0); let mx=0, fin=true; for(let i=0;i<D.length;i++){ const v=Math.abs(D[i]); if(!isFinite(v)){ fin=false; break; } if(v>mx)mx=v; } out.sfx[k]={n:D.length,mx:+mx.toFixed(3),fin,len:SFX.recipe(k).len}; }
     out.ambNames=[...new Set(Object.values(AMB.sets).flat().map(e=>e[0]))].filter(k=>!SFX.has(k));
-    SFX.mix.fx.click=.5; SFX.saveMix(); out.mix=JSON.parse(JSON.parse(localStorage.getItem('market-save')).sndmix).fx.click; out.mixLvl=SFX.fxLevel('click'); SFX.resetMix(); out.mixReset=SFX.fxLevel('click'); await __dbg.SNDED.open(); out.edRows=document.querySelectorAll('#snded .tp-sldv').length; __dbg.SNDED.close();
+    SFX.mix.fx.click=.5; SFX.saveMix(); out.mix=JSON.parse(JSON.parse(localStorage.getItem('market-save')).sndmix).fx.click; out.mixLvl=SFX.fxLevel('click'); SFX.resetMix(); out.mixReset=SFX.fxLevel('click'); { const d=document.body.appendChild(document.createElement('div')); __dbg.SNDED.panel(d); out.edRows=d.querySelectorAll('[data-pick]').length; out.edAll=SFX.all().length; d.remove(); }
     out.playing=!!SFX.play('click'); out.blipped=(SFX.blip(SFX.voiceOf('tester')),true);
     // the lines: pools, blanks, freshness, a line shown and logged
     out.pools={}; for(const k in LINES.pools){ const P=LINES.pools[k]; out.pools[k]={n:P.length,blanks:[...new Set(P.flatMap(s=>(s.match(/\{\{(\w+)\}\}/g)||[])))]}; }
@@ -52,8 +52,8 @@ const PROV=JSON.parse(fs.readFileSync('data/full/sounds.json','utf8')).sounds;
   for(const k in r.sfx){ const s=r.sfx[k]; ok(s.fin&&s.mx>.02&&s.mx<=1.01&&s.n>0,'sound '+k+': '+s.len+' s, peak '+s.mx); }
   ok(r.ambNames.length===0,'every ambience sound is a recipe or a recording'+(r.ambNames.length?' (missing '+r.ambNames.join(', ')+')':''));
   ok(r.playing||r.ctx!=='running','a sound plays when the context runs');
-  ok(r.mix===.5&&r.mixLvl===.5&&r.mixReset===1,'the sound editor\'s level is saved, used and reset ('+r.mix+', '+r.mixLvl+', '+r.mixReset+')');
-  ok(r.edRows>=24,'the sound editor shows a row for every sound ('+r.edRows+')');
+  ok(r.mix===.5&&r.mixLvl===.5&&r.mixReset===1,'the sound mix\'s level is saved, used and reset ('+r.mix+', '+r.mixLvl+', '+r.mixReset+')');
+  ok(r.edRows>=24&&r.edRows===r.edAll,'the sound editor (ADMIN) lists every sound ('+r.edRows+' of '+r.edAll+')');
   for(const k in r.pools){ const p=r.pools[k], min=/^gd:/.test(k)?2:5; ok(p.n>=min&&p.blanks.every(b=>b==='{{name}}'),'lines '+k+': '+p.n+' lines (at least '+min+'), blanks '+(p.blanks.join(' ')||'none')); }   // a guardian's own two lines (data/guardians.json) are a pool too; the shared pools keep five
   ok(r.repeats===0&&r.unfilled===0,'ten picks from greet: no repeat, no blank left ('+r.repeats+' repeats, '+r.unfilled+' unfilled)');
   ok(r.recentN<=14,'the recent list holds at most 14 ('+r.recentN+')');

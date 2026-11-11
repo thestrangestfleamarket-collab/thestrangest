@@ -40,7 +40,7 @@ def get(i):
     return f
 out='data/parkpf.json'
 if os.path.exists(out): os.remove(out)
-KEEP={'parkbench','campusrail','trashcan','picnictable','jlamp','drink','archbridge','creekbridge','woodbridge','logbridge','trestle','canoe','kayak','skiff','zen','greenhouse','torii','duck','pigeon','redbarn','picket'}   # (owner, 7 Nov 2026: "remove all the assets except for: park bench, duck, campusrail, trashcan, picnic table, j lamp, drink, bridges, boats, zen, greenhouse, torii - and animals")
+KEEP={'parkbench','trashcan','picnictable','jlamp','drink','archbridge','creekbridge','woodbridge','logbridge','trestle','canoe','kayak','skiff','zen','greenhouse','torii','duck','pigeon','redbarn','picket'}   # (owner, 7 Nov 2026: "remove all the assets except for: park bench, duck, campusrail, trashcan, picnic table, j lamp, drink, bridges, boats, zen, greenhouse, torii - and animals")
 PARK={k:v for k,v in PARK.items() if k in KEEP}
 L=os.path.join(C,'park.list'); open(L,'w').write(''.join(k+' '+get(i)+'\n' for k,i in PARK.items()))
 subprocess.run([sys.executable,'tools/polyfork-bake.py','props',L,'-'],check=True,env={**os.environ,'OUT':out})

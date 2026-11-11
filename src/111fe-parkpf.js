@@ -9,11 +9,11 @@ const PARKPF={done:false,things:0,patches:[],tris:0,solids:0,moved:0,skipped:[]}
 { const DATA=__LAZY__("data/parkpf.json"), CELL=24, FAR=72, NEAR=36, SHD=28;
   const LAMP={globelamp:1,colonial:1,campuslamp:1,jlamp:1,sealamp:1,stringlights:.6};
   const SOLID=new Set(['boatshed','conservatory','greenhouse','toilet','seatoilet','refresh','coffee','newsstand','icecream','hotdog','founder','plazafountain','campusfountain','zen','trailmap','trailhead','lion','picnictable','library',
-    'ironbench','parkbench','campusbench','logbench','b2bbench','amphi','basket','trashcan','planter','planterbox','bollard','drink','sphere','birdbath','beehive','bikerack','wayfind','campusrail','bowtop','arearail','ironfence','picket']);
+    'ironbench','parkbench','campusbench','logbench','b2bbench','amphi','basket','trashcan','planter','planterbox','bollard','drink','sphere','birdbath','beehive','bikerack','wayfind','bowtop','arearail','ironfence','picket']);
   const POST={colonial:.32,globelamp:.32,sealamp:.32,campuslamp:.3,jlamp:.34,birdhouse:.26};   // a lamp or a pole: only its post is in the way, not its head
   const SEAT=new Set(['ironbench','parkbench','campusbench','logbench','b2bbench','amphi']);
   const WET=new Set(['raft','canoe','kayak','skiff','duck','dock','launch','lifebuoy','archbridge','creekbridge','woodbridge','logbridge','trestle']);
-  const RAIL=new Set(['campusrail','bowtop','arearail','ironfence','picket']);   // (no tufts along the rails and fences: they run beside every path)
+  const RAIL=new Set(['bowtop','arearail','ironfence','picket']);   // (no tufts along the rails and fences: they run beside every path)
   const BRIDGE=new Set(['archbridge','creekbridge','woodbridge','logbridge','trestle']);
   const mat=new THREE.MeshLambertMaterial({vertexColors:true,flatShading:true});
   const model=D=>{ if(D.m)return D.m; const q=I16(D.p), n=D.n, P=new Float32Array(n*3), C=new Float32Array(n*3), col=B64(D.c), c=new THREE.Color();

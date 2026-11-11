@@ -83,7 +83,6 @@ def rail(poly,k,skip):
             x=px+nx*(HW+3.0)*s; y=py+ny*(HW+3.0)*s
             if not skip(x,y): put(k,x,y,math.atan2(-uy,ux))
 rail(mall,'bowtop',lambda x,y:nearRound(x,y) or gates(x,y) or nearJ(x,y))
-rail(cross,'campusrail',lambda x,y:nearRound(x,y) or gates(x,y) or abs(x-43)<5 or abs(x-112)<6 or abs(x-189)<6)
 for a in range(0,360,12):  # area railing round the Round
     t=math.radians(a)
     if min(abs(((a-d+180)%360)-180) for d in (0,90,180,270))>14: put('arearail',RX+(RR+.6)*math.sin(t),RY+(RR+.6)*math.cos(t),t)
@@ -167,7 +166,7 @@ put('toilet',122,165); put('trashcan',105,165)
 st=T(PF['ironfence']['size'][0])
 for i in range(6): put('ironfence',-21.6,140+st*(i+.5),math.pi/2)
 BROOK=[[201,102]]+[p for p in PP['brook']['pts'] if not inBL(p[0],p[1],8) and p!=[190,104]]
-KEEP={'parkbench','campusrail','trashcan','picnictable','drink','archbridge','creekbridge','woodbridge','logbridge','trestle','canoe','kayak','skiff','zen','greenhouse','torii','duck','pigeon','horse'}   # (owner, 7 Nov 2026: "remove all the assets except for: park bench, duck, campusrail, trashcan, picnic table, j lamp, drink, bridges, boats, zen, greenhouse, torii - and animals")
+KEEP={'parkbench','trashcan','picnictable','drink','archbridge','creekbridge','woodbridge','logbridge','trestle','canoe','kayak','skiff','zen','greenhouse','torii','duck','pigeon','horse'}   # (owner, 7 Nov 2026: "remove all the assets except for: park bench, duck, campusrail, trashcan, picnic table, j lamp, drink, bridges, boats, zen, greenhouse, torii - and animals")
 FLOAT={'raft','canoe','kayak','skiff','duck'}
 W=json.load(open('data/world.json'))
 W['things']=[t for t in W['things'] if not str(t['k']).startswith('p:')]

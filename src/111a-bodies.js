@@ -139,14 +139,7 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       else { clipAt(C.Walk,S._mph+C.Walk.contact,i,Q1,P1); clipAt(C.Run,S._mph+C.Run.contact,i,Q2,P2); Q1.slerp(Q2,r); P1.lerp(P2,r);
         clipAt(C.Idle,S._mit,i,Q2,P2); Q2.slerp(Q1,w); P2.lerp(P1,w); }
       if(aw>.001&&S._pc){ clipT(S._pc.c,S._pc.t,S._pc.l,i,Q1,P1); if(S._pf&&S._pf.w>0){ clipT(S._pf.c,S._pf.t,S._pf.l,i,Q4,P4); Q1.slerp(Q4,S._pf.w); P1.lerp(P4,S._pf.w); } Q2.slerp(Q1,aw); P2.lerp(P1,aw); }
-      PM.value[i].compose(P2.multiplyScalar(k),Q2,SC.set(k,k,k)); } look(PM,body,S,dt,w,aw); if(body.O1)relen(PM,body); }
-  // standing still a while, the head looks about (owner, 9 Nov 2026: "more idle animations for players when standing, like looking around"): a glance to a side, down, up at the sky, back ahead, every few seconds
-  const LK=[[0,0],[.55,.05],[-.6,0],[.3,.28],[-.25,-.32],[.1,-.18],[0,.12]], LQ=new THREE.Quaternion(), LP=new THREE.Quaternion(), LE=new THREE.Euler(), LV=new V3(), LM=new THREE.Matrix4(), LT=new THREE.Matrix4();
-  const look=(PM,body,S,dt,w,aw)=>{ if(!body.J0)return; const still=w<.05&&aw<.05; S._ls=still?(S._ls||0)+dt:0; let ty=0, tp=0;
-    if(S._ls>2.5){ if(!(S._lt>0)){ S._lt=2.5+Math.random()*3; S._lk=LK[Math.floor(Math.random()*LK.length)]; } S._lt-=dt; [ty,tp]=S._lk||[0,0]; }
-    const e=Math.min(1,dt*2.2); S._ly=(S._ly||0)+(ty-(S._ly||0))*e; S._lp=(S._lp||0)+(tp-(S._lp||0))*e; if(Math.abs(S._ly)+Math.abs(S._lp)<.004)return;
-    const H=2, M=PM.value[H]; LV.copy(body.J0[H]).applyMatrix4(M); LQ.setFromEuler(LE.set(-S._lp,S._ly,0,'YXZ')); LM.makeRotationFromQuaternion(LQ);
-    M.premultiply(LT.makeTranslation(-LV.x,-LV.y,-LV.z)).premultiply(LM).premultiply(LT.makeTranslation(LV.x,LV.y,LV.z)); };
+      PM.value[i].compose(P2.multiplyScalar(k),Q2,SC.set(k,k,k)); } if(body.O1)relen(PM,body); }
   // a reshaped body (the designer, 111c: O1 the shape's joints) on a recorded clip: every bone turned as the clip has it, each joint where its parent's bone, at the shape's length, puts it
   const RL=BONES.map(()=>new V3()), RM=new THREE.Matrix3(), RV=new V3();
   const relen=(PM,body)=>{ const O1=body.O1; for(let i=0;i<NB;i++){ const n=BONES[i], p=PARENT[n]?BONES.indexOf(PARENT[n]):-1, e=PM.value[i].elements;

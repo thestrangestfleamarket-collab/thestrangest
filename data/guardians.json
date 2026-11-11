@@ -556,8 +556,8 @@
    "cape": "#1a1a1c",
    "w": "greatsword",
    "at": [
-    -4,
-    5.5,
+    0.8,
+    0,
     0,
     0
    ],
@@ -566,7 +566,8 @@
     "The keep stands. As long as I do, it stands.",
     "Report anything that crawls. Anything."
    ],
-   "tower": "tower4"
+   "tower": "tower4",
+   "top": true
   },
   {
    "k": "gd_frogmonk",
@@ -785,10 +786,10 @@
    "c2": "#b8bcc0",
    "w": "axe",
    "at": [
-    -2,
-    6,
+    0.8,
     0,
-    0
+    0,
+    180
    ],
    "role": "post",
    "bulk": 1.4,
@@ -796,7 +797,8 @@
     "Hrm.",
     "Go down. Come up. In that order."
    ],
-   "tower": "tower4"
+   "tower": "tower4",
+   "top": true
   },
   {
    "k": "gd_frogdruid",
@@ -989,17 +991,18 @@
    "hc": "#6a665e",
    "w": "greatsword",
    "at": [
-    -6,
-    5,
+    0.8,
     0,
-    0
+    0,
+    270
    ],
    "role": "post",
    "say": [
     "The gate holds. It always holds.",
     "Mind the blade. It's planted, not sleeping."
    ],
-   "tower": "tower4"
+   "tower": "tower4",
+   "top": true
   },
   {
    "k": "gd_whitecat",

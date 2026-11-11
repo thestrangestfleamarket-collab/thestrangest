@@ -255,7 +255,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
     g.userData.hands=pfh?{skin:L.skin,b:L.b,grip:{L:false,R:false}}:null; return g; }
   const empty=()=>{ const g=new THREE.BufferGeometry(); for(const [k,s] of [['position',3],['normal',3],['color',3],['bi',2],['bw',1],['fl',1],['fd',3],['hh',1],['sm',1],['ov',1]])g.setAttribute(k,new THREE.BufferAttribute(new Float32Array(0),s)); return g; };
   // a body's skeleton for a figure and a height (taller: the same body drawn bigger on the rig)
-  const fitTo=(body,L)=>{ const S=I.skel[L.f], Z=shapeOf(L.f,L.sh), {off,binv}=BODIES.skeleton(Z?Z.O1.map(o=>o.toArray()):S.origin,S.rest); Object.assign(body,{height:S.height*100/L.h,hipY:Z?Z.O1[0].y:S.hipY,off,binv,contact:true,dq:true,rnd:true,O0:Z?Z.O:null,O1:Z?Z.O1:null,J0:Z?Z.O1:S.origin.map(o=>new THREE.Vector3(...o))}); delete body._calG; delete body._bind; return BODIES.fit(body); };   // (contact: rests on what the rig rests on, 111a)
+  const fitTo=(body,L)=>{ const S=I.skel[L.f], Z=shapeOf(L.f,L.sh), {off,binv}=BODIES.skeleton(Z?Z.O1.map(o=>o.toArray()):S.origin,S.rest); Object.assign(body,{height:S.height*100/L.h,hipY:Z?Z.O1[0].y:S.hipY,off,binv,contact:true,dq:true,rnd:true,O0:Z?Z.O:null,O1:Z?Z.O1:null}); delete body._calG; delete body._bind; return BODIES.fit(body); };   // (contact: rests on what the rig rests on, 111a)
 
   /* ---------- you ---------- */
   let L=DEF(); try{ const c=OWNED.get('pfav'); if(c)L=decode(c); }catch(e){}

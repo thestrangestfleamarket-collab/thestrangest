@@ -41,7 +41,7 @@ DN.lookAtSky=h=>{ let best=DN.modes[0], bd=99; for(const m of DN.modes){ let d=M
   // the sun by the clock (not held, not a test): on the horizon at the real sunrise, highest at midday, on the horizon at the real sunset; the moon's disc where the real one is, its real phase (its light stays the night look's)
   // the sky's moment (ms): the game's own while the clock runs; under a held look or a test's hour, that hour laid onto today's real day and night (6 the sunrise, 20 the sunset), so a held NIGHT has a night's stars
   DN.skyAt=(h,t=Date.now())=>{ const {rise:r,set:s}=CLK.sun(t,DN.clk), L=CLK.local(t,DN.clk), z=L-CLK.at(t,DN.clk); h=((h%24)+24)%24; return Math.floor(L/864e5)*864e5+(h>=6&&h<20?r+(h-6)/14*(s-r):s+((h-20+24)%24)/10*(r+24-s))*36e5-z; };
-  DN.skyT=()=>DN.fixT??(DN.moving()?CLK.at(Date.now(),DN.clk):DN.skyAt(DN.hold&&!DN.test?S[DN.hold].h:CLOCK.h??12));
+  DN.skyT=()=>DN.fixT??(DN.moving()?CLK.at(Date.now(),DN.clk):DN.skyAt(DN.hold&&!DN.test&&S[DN.hold]?S[DN.hold].h:CLOCK.h??12));
   DN.moving=()=>false; CLOCK.moonReal=()=>null;   // no real sky: each look's sun stands at its own hour
   const B={}, ca=new THREE.Color(), cb=new THREE.Color(), blend=(A,C,f)=>{ for(const k in C){ const a=A[k]??C[k], c=C[k]; if(typeof c==='number'){ if(k==='h'){ let d=((c-a)%24+24)%24; if(d>12)d-=24; B[k]=((a+d*f)%24+24)%24; } else B[k]=a+(c-a)*f; } else if(typeof c==='string'&&c[0]==='#'&&typeof a==='string'&&a[0]==='#')B[k]='#'+ca.set(a).lerp(cb.set(c),f).getHexString(); else B[k]=c; } return B; };
   DN.P=()=>B; DN.E=()=>S[DN.mode]; DN.S=S; DN.D0=D0;

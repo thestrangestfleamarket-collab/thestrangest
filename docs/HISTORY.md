@@ -6155,3 +6155,4 @@ Owner: "what polyfork animations do we have for our character", then "yes lets u
 - 11 Nov 2026, the fairy ring picks where you see it (owner: "why cant i attempt to pick those glowing mushrooms?"): a double click on any of its caps gathers it, not only its middle.
 - 11 Nov 2026, the hover cab's side panel (owner: "fix the look of taxi floating"): the yellow panel on each rear side sits on the body behind the rear door, not standing off it over the door.
 - 11 Nov 2026, the map fits the menu (owner: "make the map fit the menu"): the STREET and SUBWAY maps fill the menu's pane at any window size.
+- 11 Nov 2026, the ambulance's side panel and the glowing ring (owner: "yes fix the ambulance too and make the ring glow"): the hover ambulance's rear side panels sit on its body behind the rear door, as the cab's; the blue fairy ring's caps glow by themselves like moonglows.

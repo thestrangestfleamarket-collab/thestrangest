@@ -118,7 +118,7 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
     WALL(PY(HD.x0),PY(HD.x0),HD.y0,HD.y1,(u,z)=>GRID(u,z/24)); WALL(PY(HD.x1),PY(HD.x1),HD.y0,HD.y1,(u,z)=>GRID(u,z/24)); WALL(PX(HD.y0),PX(HD.y0),HD.x0,HD.x1,(u,z)=>panel(u,z)||GRID(u,z/24));
     sol(AR.x0-.1,HD.y0,AR.x0+.1,AR.y1); sol(AR.x1-.1,HD.y0,AR.x1+.1,AR.y1); sol(AR.x0,AR.y1-.1,AR.x1,AR.y1+.1); sol(HD.x0,HD.y0-.1,HD.x1,HD.y0+.1); sol(AR.x0,AR.y0-.1,AR.x1,AR.y0+.1);
     const CW_=Math.abs(X(1)-X(0)), ZW_=Math.abs(Y(1)-Y(0)), KIT=STORE.cabs.kit(), SCRS=[];
-    const ctex=(w,h,f)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'); f(g,w,h); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return t; };
+    const ctex=(w,h,f)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'); f(g,w,h); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return t; };
     const lam=(map,e=.3)=>new THREE.MeshLambertMaterial({map,emissiveMap:map,emissive:new THREE.Color(e,e,e)}), glow=map=>new THREE.MeshBasicMaterial({map});
     const rnd=((sd)=>()=>((sd=(sd*16807)%2147483647)/2147483647))(77);
     const wear=(g,w,h,k=1)=>{ for(let i=0;i<w*h/90*k;i++){ g.fillStyle=`rgba(${rnd()<.5?'255,255,255':'0,0,0'},${.03+rnd()*.06})`; g.fillRect(rnd()*w,rnd()*h,1+rnd()*2,1+rnd()*2); }

@@ -152,7 +152,10 @@ await grab('loop',async()=>{ const M=SHARED.METRO, D=LEVEL.loop, T=TILE, SZ=-98,
       st.signs.exit=sign((g,W,Hh)=>exitSign(g,W,Hh,st),[P(.05,EX0-2.6,92),P(.05,EX1+2.6,92),P(.05,EX1+2.6,116),P(.05,EX0-2.6,116)],512,72,[pe0],false,IN);
       st.signs.map=sign((g,W,Hh)=>mapSign(g,W,Hh,st),[P(LEN-.05,MID-1,40),P(LEN-.05,MID+1,40),P(LEN-.05,MID+1,99),P(LEN-.05,MID-1,99)],512,512,[pe1],false,IN); }
     else { pe1=cutAt(LEN,-1); pw0=cutAt(0,1); pw1=cutAt(XW,-1);   // gone with their walls when a wall is cut away
-      st.signs.map=sign((g,W,Hh)=>mapSign(g,W,Hh,st),[P(LEN-.05,MID-1,36),P(LEN-.05,MID+1,36),P(LEN-.05,MID+1,95),P(LEN-.05,MID-1,95)],512,512,[pe1],false,IN); }
+      st.signs.map=sign((g,W,Hh)=>mapSign(g,W,Hh,st),[P(LEN-.05,MID-1,36),P(LEN-.05,MID+1,36),P(LEN-.05,MID+1,95),P(LEN-.05,MID-1,95)],512,512,[pe1],false,IN);
+      // the same map at the platform's other end, on the street end's wall beside the way out (owner, 11 Nov 2026)
+      { const pl=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6), n=new THREE.Vector3(...P(1,0,0)).sub(new THREE.Vector3(...P(0,0,0))).normalize(); cutWalls.push({pl,nx:n.x,nz:n.z,foot:H(-24),me:null});
+        st.signs.map0=sign((g,W,Hh)=>mapSign(g,W,Hh,st),[P(.05,EX0-1.4,36),P(.05,EX0-3.4,36),P(.05,EX0-3.4,95),P(.05,EX0-1.4,95)],512,512,[pl],false,IN); } }
     for(const t of D.trains){ const inn=t.track==='inner', a=inn?.04:XW-.04; for(const u0 of [LEN/2-3.5])st.signs['t'+t.id+'_'+u0]=sign((g,W,Hh)=>trackSign(g,W,Hh,st,t),[P(u0,a,100),P(u0+7,a,100),P(u0+7,a,125),P(u0,a,125)],840,150,[inn?pw0:pw1],false,IN); }
     const bz=st.old?100:108, bd=sign((g,w,h)=>{ g.fillStyle='#050505'; g.fillRect(0,0,w,h); },[P(LEN-.05,MID-3,bz),P(LEN-.05,MID+3,bz),P(LEN-.05,MID+3,bz+24),P(LEN-.05,MID-3,bz+24)],512,112,[pe1],false,IN); st.board={t:bd.t,last:''};
     { const steps=st.old?M.SL.STEPS:[STEPU,STEPU]; st.edge={};

@@ -768,6 +768,8 @@ async function admin(env, b, origin) {
     if (!a) return { why: "no such painting" };
     if (b.do === "artget") { const d = await H.artAny(a); return d ? { ok: true, d } : { why: "no such painting" }; }
     return (await H.artOff(a)) ? { ok: true } : { why: "no such painting" }; }
+  if (b.do === "bugmark") { const st = String(b.status || ""), rid = String(b.report || ""); if (!/^(new|approved|later|fixed|no)$/.test(st) || !/^[\w-]{1,64}$/.test(rid)) return { why: "bad report" };
+    return res(await call("/rest/v1/bug_reports?id=eq." + encodeURIComponent(rid), { method: "PATCH", body: JSON.stringify({ status: st }) })); }
   if (!user()) return { why: "no such player" };
   if (b.do === "user") {
     const a = {}; if (b.email) a.email = String(b.email).trim().toLowerCase(), a.email_confirm = true; if (b.password) a.password = String(b.password);

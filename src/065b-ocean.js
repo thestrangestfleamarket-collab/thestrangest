@@ -48,7 +48,7 @@ OCEAN.make=(renderer,o)=>{ '@later';
       float turb=min(jac,texelFetch(uPrev,id,0).w+uDt*uRec/max(jac,.5)); outDisp=vec4(uLambda*a.x,a.z,uLambda*a.y,turb); outSlope=vec4(sl,sl*sl); }`;
   const fft={type:THREE.FloatType,minFilter:THREE.NearestFilter,magFilter:THREE.NearestFilter,depthBuffer:false,generateMipmaps:false};
   const h0RT=new THREE.WebGLRenderTarget(N,H,fft), half={...fft,type:THREE.HalfFloatType,count:2}, ping=new THREE.WebGLRenderTarget(N,H,half), pong=new THREE.WebGLRenderTarget(N,H,half);
-  const outO={type:THREE.HalfFloatType,minFilter:THREE.LinearMipmapLinearFilter,magFilter:THREE.LinearFilter,wrapS:THREE.RepeatWrapping,wrapT:THREE.RepeatWrapping,generateMipmaps:true,anisotropy:Math.min(8,renderer.capabilities.getMaxAnisotropy()),depthBuffer:false,count:2};
+  const outO={type:THREE.HalfFloatType,minFilter:THREE.LinearMipmapLinearFilter,magFilter:THREE.LinearFilter,wrapS:THREE.RepeatWrapping,wrapT:THREE.RepeatWrapping,generateMipmaps:true,depthBuffer:false,count:2};
   const OUT=CL.map(()=>[new THREE.WebGLRenderTarget(N,N,outO),new THREE.WebGLRenderTarget(N,N,outO)]);
   const cc=renderer.getClearColor(new THREE.Color()), ca=renderer.getClearAlpha(), rt0=renderer.getRenderTarget(); renderer.setClearColor(0x000000,1); for(const pr of OUT)for(const t of pr){ renderer.setRenderTarget(t); renderer.clear(true,false,false); } renderer.setClearColor(cc,ca); renderer.setRenderTarget(rt0);
   const LEN=new THREE.Vector3(...CL);

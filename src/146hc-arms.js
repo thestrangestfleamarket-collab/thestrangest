@@ -208,29 +208,48 @@ import {RIVER} from './066-river.js';
 
   /* ---------- the portals: blue then orange on any solid ground; anyone who steps in one comes out of the other, if both are where they are ---------- */
   const PCOL=[0x3aa8ff,0xff8a20], PR=.465, PH=2, PLIFE=30, poG=new THREE.CircleGeometry(PR,40).rotateX(-Math.PI/2), prG=new THREE.TorusGeometry(PR,.04,6,40).rotateX(Math.PI/2), poT={value:0};
-  // the hole: the view ray is followed down a well of depth PH under the disc, so the ground looks open
-  const poVS='varying vec3 vL; varying vec3 vD; void main(){ vL=position; vec4 w=modelMatrix*vec4(position,1.); vD=w.xyz-cameraPosition; gl_Position=projectionMatrix*viewMatrix*w; }';
-  const poFS=`uniform vec3 uC; uniform float uT; varying vec3 vL; varying vec3 vD; const float R=${PR.toFixed(2)}, H=${PH.toFixed(2)};
-    void main(){ vec3 d=normalize(vD); vec2 o=vL.xz; if(d.y>-1e-3){ gl_FragColor=vec4(uC*.1,1.); return; }
+  // the hole: the view ray is followed down a well of depth PH under the disc, so the ground looks open; with uOn, the picture seen out of the other portal (uV) fills it instead
+  const poVS='varying vec3 vL; varying vec3 vD; varying vec4 vS; void main(){ vL=position; vec4 w=modelMatrix*vec4(position,1.); vD=w.xyz-cameraPosition; gl_Position=projectionMatrix*viewMatrix*w; vS=gl_Position; }';
+  const poFS=`uniform vec3 uC; uniform float uT; uniform float uOn; uniform sampler2D uV; varying vec3 vL; varying vec3 vD; varying vec4 vS; const float R=${PR.toFixed(2)}, H=${PH.toFixed(2)};
+    void main(){ vec3 d=normalize(vD); vec2 o=vL.xz;
+      if(uOn>.5){ vec3 v=texture2D(uV,vS.xy/vS.w*.5+.5).rgb; gl_FragColor=vec4(mix(v,uC,.75*smoothstep(.72,1.,length(o)/R)),1.); return; }
+      if(d.y>-1e-3){ gl_FragColor=vec4(uC*.1,1.); return; }
       float a=dot(d.xz,d.xz), b=dot(o,d.xz), c=dot(o,o)-R*R, tw=a>1e-5?(-b+sqrt(max(b*b-a*c,0.)))/a:1e9, tb=H/(-d.y), t=min(tw,tb);
       vec3 h=vec3(o.x,0.,o.y)+t*d; float dep=clamp(-h.y/H,0.,1.), an=atan(h.z,h.x), r=length(h.xz)/R; vec3 col;
       if(tb<=tw){ float s=sin(an*3.+r*9.-uT*4.); col=uC*(.03+.12*s*s*(1.-r)); }
       else { float s=sin(an*6.+dep*10.-uT*3.); col=uC*(.02+1.1*exp(-5.*dep*H))*(.75+.25*s); } gl_FragColor=vec4(col,1.); }`;
-  const here=()=>SHARED.LVL+'|'+(LEVELS.cur||'')+'|'+(ROOMS.cur||''), poMesh=(c,lv)=>{ const g=new THREE.Group(), d=new THREE.Mesh(poG,new THREE.ShaderMaterial({uniforms:{uC:{value:new THREE.Color(PCOL[c])},uT:poT},vertexShader:poVS,fragmentShader:poFS,toneMapped:false})), r=new THREE.Mesh(prG,new THREE.MeshBasicMaterial({color:PCOL[c],toneMapped:false}));
+  const here=()=>SHARED.LVL+'|'+(LEVELS.cur||'')+'|'+(ROOMS.cur||''), poMesh=(c,lv)=>{ const g=new THREE.Group(), d=new THREE.Mesh(poG,new THREE.ShaderMaterial({uniforms:{uC:{value:new THREE.Color(PCOL[c])},uT:poT,uOn:{value:0},uV:{value:null}},vertexShader:poVS,fragmentShader:poFS,toneMapped:false})), r=new THREE.Mesh(prG,new THREE.MeshBasicMaterial({color:PCOL[c],toneMapped:false}));
     g.add(d,r); g.scale.setScalar(M); g.traverse(o=>{ o.raycast=()=>{}; o.userData.arms=1; }); g.userData.anyRoom=1; scene.add(LEVELS.own(g,lv)); return g; };
-  const portalSet=(who,c,x,y,z,pl)=>{ let pr=A.portals.get(who); if(!pr)A.portals.set(who,pr=[null,null]); if(pr[c])pr[c].m.removeFromParent(); pl=typeof pl==='string'?pl.slice(0,80):here(); pr[c]={x,y,z,pl,m:poMesh(c,pl.split('|')[1]||'*'),t:0}; pr[c].m.position.set(x,y+.03*M,z); sparks(x,y+.2*M,z,24,PCOL[c],3,.5); hear('laser',.5,.5,x,z); };
+  const poDrop=p=>{ p.m.removeFromParent(); p.m.children[0].material.dispose(); if(p.rt)p.rt.dispose(); };
+  const portalSet=(who,c,x,y,z,pl)=>{ let pr=A.portals.get(who); if(!pr)A.portals.set(who,pr=[null,null]); if(pr[c])poDrop(pr[c]); pl=typeof pl==='string'?pl.slice(0,80):here(); pr[c]={x,y,z,pl,m:poMesh(c,pl.split('|')[1]||'*'),t:0}; pr[c].m.position.set(x,y+.03*M,z); sparks(x,y+.2*M,z,24,PCOL[c],3,.5); hear('laser',.5,.5,x,z); };
   const portalShot=(S)=>{ '@later'; const h=trace(S.tip,S.dir,W.w_portal.rng*M); tracer(S.tip,h.p,PCOL[A.pc],.02,.15);
     if(!(h.what==='ground'||h.what==='wall'&&h.n&&h.n.y>.7)){ say('A PORTAL ONLY OPENS ON SOLID GROUND.','#c8a090'); return; }
     const g=SHARED.groundY&&SHARED.groundY(h.p.x,h.p.z); if(isFinite(g)&&g<h.p.y+.3*M)h.p.y=g; const c=A.pc, pl=here(); A.pc^=1; portalSet('me',c,h.p.x,h.p.y,h.p.z,pl); if(ONLINE.on)ONLINE.send({t:'arm',k:'portal',c,pl,p:[+h.p.x.toFixed(2),+h.p.y.toFixed(2),+h.p.z.toFixed(2)]}); };
   const portalTick=dt=>{ if(!A.portals.size)return; let inAny=false; poT.value=now()/1000%1000;
-    for(const [who,pr] of A.portals){ if(who!=='me'&&!ONLINE.others.has(who)){ for(const p of pr)if(p)p.m.removeFromParent(); A.portals.delete(who); continue; }
-      for(let c=0;c<2;c++){ const p=pr[c]; if(!p)continue; p.t+=dt; if(p.t>PLIFE){ p.m.removeFromParent(); pr[c]=null; sparks(p.x,p.y+.2*M,p.z,20,PCOL[c],2,.4); continue; }
+    for(const [who,pr] of A.portals){ if(who!=='me'&&!ONLINE.others.has(who)){ for(const p of pr)if(p)poDrop(p); A.portals.delete(who); continue; }
+      for(let c=0;c<2;c++){ const p=pr[c]; if(!p)continue; p.t+=dt; if(p.t>PLIFE){ poDrop(p); pr[c]=null; sparks(p.x,p.y+.2*M,p.z,20,PCOL[c],2,.4); continue; }
         p.m.scale.setScalar(M*Math.min(1,p.t/.25,(PLIFE-p.t)/.6)); p.m.children[1].rotation.y+=dt*2; if(rnd()<dt*14)SP.add(p.x+(rnd()-.5)*PR*1.6*M,p.y+.05*M,p.z+(rnd()-.5)*PR*1.6*M,0,(1+rnd())*M,0,PCOL[c],.6,{g:0,dr:0}); }
       if(!pr[0]&&!pr[1]){ A.portals.delete(who); continue; }
       if(!pr[0]||!pr[1]||pr[0].pl!==pr[1].pl||pr[0].pl!==here()||VIT.dead||RAG.on)continue;
       for(let c=0;c<2;c++){ const a=pr[c], b=pr[1-c], d=Math.hypot(pos.x-a.x,pos.z-a.z); if(d<PR*1.6*M&&Math.abs(SHARED.py-a.y)<1.2*M)inAny=true;
         if(d<PR*.8*M&&Math.abs(SHARED.py-a.y)<1.2*M&&!A.inP){ A.inP=true; sparks(a.x,a.y+M,a.z,30,PCOL[c],3,.5); UI.goTo(b.x,b.z,b.y); sparks(b.x,b.y+M,b.z,30,PCOL[1-c],3,.5); hear('whoosh',1.4,.6); return; } } }
     if(!inAny)A.inP=false; };
+  // what a portal shows: the scene from under its partner looking up (the way you come out), cut at the partner's ground; small, and only for a pair in your place, near and on screen
+  const VC=new THREE.PerspectiveCamera(), QX=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),Math.PI), CUT=new THREE.Plane(new V3(0,1,0),0), FR=new THREE.Frustum(), FM=new THREE.Matrix4(), SPH=new THREE.Sphere();
+  const portalView=renderer=>{ if(!A.portals.size)return; const cam=SHARED.cam, xr=renderer.xr&&renderer.xr.isPresenting, ok=!xr&&cam&&cam.isPerspectiveCamera, hp=here(), all=[];
+    for(const pr of A.portals.values())for(const p of pr)if(p){ all.push(p); p.m.children[0].material.uniforms.uOn.value=0; }
+    if(!ok)return; FR.setFromProjectionMatrix(FM.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse)); const job=[];
+    for(const pr of A.portals.values()){ if(!pr[0]||!pr[1]||pr[0].pl!==pr[1].pl||pr[0].pl!==hp)continue;
+      for(let c=0;c<2;c++){ const a=pr[c]; if(Math.hypot(cam.position.x-a.x,cam.position.y-a.y,cam.position.z-a.z)>40*M||cam.position.y<a.y)continue; SPH.center.set(a.x,a.y,a.z); SPH.radius=PR*M; if(FR.intersectsSphere(SPH))job.push([a,pr[1-c]]); } }
+    if(!job.length)return; const dw=renderer.domElement.width, dh=renderer.domElement.height, w=Math.max(64,Math.min(512,Math.round(dw*.4))), h=Math.max(32,Math.round(w*dh/Math.max(1,dw)));
+    const rt0=renderer.getRenderTarget(), cp0=renderer.clippingPlanes, sh0=renderer.shadowMap.autoUpdate, vis=all.map(p=>p.m.visible);
+    for(const p of all)p.m.visible=false; renderer.shadowMap.autoUpdate=false;
+    try{ for(const [a,b] of job.slice(0,4)){ if(!a.rt)a.rt=new THREE.WebGLRenderTarget(w,h); else if(a.rt.width!==w||a.rt.height!==h)a.rt.setSize(w,h);
+        VC.copy(cam); VC.position.set(cam.position.x-a.x,cam.position.y-a.y,cam.position.z-a.z).applyQuaternion(QX).add(SPH.center.set(b.x,b.y,b.z)); VC.quaternion.premultiply(QX); VC.updateMatrixWorld(true);
+        CUT.constant=-(b.y+.02*M); renderer.clippingPlanes=[CUT]; renderer.setRenderTarget(a.rt); renderer.clear(); renderer.render(scene,VC);
+        const u=a.m.children[0].material.uniforms; u.uV.value=a.rt.texture; u.uOn.value=1; } }
+    finally{ renderer.setRenderTarget(rt0); renderer.clippingPlanes=cp0; renderer.shadowMap.autoUpdate=sh0; all.forEach((p,i)=>{ p.m.visible=vis[i]; }); } };
+  SYS.add('water',renderer=>portalView(renderer),'146hc-portals');
 
   /* ---------- the leaf blower: a cone of air with leaves in it; it shoves people, knocks the characters over and blows loose things away ---------- */
   const LEAF=[0x8a6a2a,0xa8842a,0x6a8a2a,0xc8a040,0x7a4a1a];

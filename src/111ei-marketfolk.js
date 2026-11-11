@@ -58,7 +58,7 @@ const FOLKTEN={};
     eyes(h,.028,.02,.065,.014,'ivory:#6a9ac8',undefined,[0,0]); mk(h,SPH(.03,10,6),'skin:#3a1414',[0,-.04,.06],[0,0,0],[1.2,.8,.6]); }};
   /* 4 THE FISH: a round blue padded head freckled pink, two yellow domes for eyes, a huge yellow grin dotted black, a stalk on top with a pigeon on it; an orange jacket */
   D.fishmask={label:'THE FISH',height:1.75,size:9.8,skel:{},pose:{nod:2},m:B=>{ person(B,{top:'cloth:#e07a2a',leg:'cloth:#2a2a30',hand:'skin:#c89a78',coat:.25});
-    const H=grp(B.head,[0,.17,.02]); mk(H,P(SPH(.19,22,18),(x,y,z)=>hash3(Math.round(x*60),Math.round(y*60),Math.round(z*60))>.93?C('#d0507a'):C('#3aa0c4')),'cloth:vc',[0,0,0],[0,0,0],[1.05,1,.9]);
+    const H=grp(B.head,[0,.17,.02]); mk(H,P(SPH(.19,22,18),(x,y,z)=>hash3(Math.round(x*60),Math.round(y*60),Math.round(z*60))>.988?C('#d0507a'):C('#3aa0c4')),'cloth:vc',[0,0,0],[0,0,0],[1.05,1,.9]);
     for(const s of [1,-1])mk(H,SPH(.055,14,10),'cloth:#f2c22a',[s*.09,.07,.14],[0,0,0],[1,1,.6]);
     const L=grp(H,[0,-.06,.12]); mk(L,P(TOR(.12,.05,8,22),(x,y,z)=>hash3(Math.round(x*90),Math.round(y*90),3)>.86?C('#1a1a1a'):C('#f2c22a')),'cloth:vc',[0,0,0],[0,0,0],[1,.55,1]); mk(L,SPH(.12,14,8),'plain:#2a0e0c',[0,0,-.02],[0,0,0],[.85,.4,.3]);
     mk(H,TUBE(new THREE.CatmullRomCurve3([new V3(0,.18,0),new V3(0,.28,0),new V3(.03,.34,-.02)]),8,.008,5),'plain:#1a1a1a');
@@ -84,7 +84,7 @@ const FOLKTEN={};
     eyes(H,.08,.03,.13,.032,'ivory:#0a0806','ivory:#000000',[0,0],'ivory:#0e0a08');
     for(let i=0;i<6;i++)mk(H,P(SPH(.045-i*.003,12,10),(x,yy,z)=>hash3(Math.round(x*200),Math.round(yy*200),Math.round(z*200))>.5?C('#f0cc5a'):C('#d8a83a')),'plastic:vc',[0,-.03-i*.045,.15+i*.012],[0,0,0],[1,.8,1]); }};
   /* 7 THE WOOD MAN: a gnarled wooden body, bark all over, twigs and moss for hair, a sad old face; a plate of spaghetti and a fork */
-  D.woodman={label:'THE WOOD MAN',height:1.6,size:9,skel:{hipY:.82},pose:{L:{ua:[25,10],fa:[80,-30]},R:{ua:[30,14],fa:[100,-35]},nod:10,bend:5},m:B=>{ const W='wood:vc', w=tex('#8a7660','#4a3a2a',26);
+  D.woodman={label:'THE WOOD MAN',height:1.6,size:9,skel:{hipY:.82},pose:{L:{ua:[25,10],fa:[80,-30]},R:{ua:[30,14],fa:[100,-35]},nod:10,bend:5},m:B=>{ const W='wood:vc', w=tex('#b0804e','#6e4c2e',26);
     person(B,{top:W,leg:W,skin:W,hand:W,sleeve:W,shoe:W,skinF:w,skinM:W,longF:1.3,bulk:.85});
     for(const [bn,n] of [['torso',10],['hips',4],['thigh'+'L',3],['thighR',3]])for(let i=0;i<n;i++){ const a=rnd()*PI*2, y=bn==='torso'?rnd()*.4:-.15*rnd(); mk(B[bn],P(CYL(.008,.015,.18,5),w),W,[Math.sin(a)*.17,y,Math.cos(a)*.14],[rnd()-.5,0,rnd()-.5]); }
     const H=grp(B.head,[0,.13,.02]); mk(H,P(SPH(.105,18,14),w),W,[0,0,0],[0,0,0],[.95,1.1,1]); mk(H,P(SPH(.02,8,6),w),W,[0,-.01,.1],[.3,0,0],[.9,1.6,1]);

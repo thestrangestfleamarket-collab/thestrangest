@@ -6222,3 +6222,4 @@ Owner: "what polyfork animations do we have for our character", then "yes lets u
 - 11 Nov 2026, the traffic waits for THE BIG CAT (owner: "make cars wait behind him"): on his walk he keeps to the lane of his way, and the cars in it wait behind him.
 - 11 Nov 2026, THE BIG CAT blinks (owner: "make him blink"): every few seconds both lids sweep down over his eyes and up.
 - 11 Nov 2026, Lucky Lanes skee-ball (owner sent the page and its module; asked to replace the arcade's skee-ball): the arcade's skee-ball is the 3D Lucky Lanes cabinet in its window: drag to aim, flick up to roll (or ← →, hold Space), nine balls, corner pockets 100, BEST kept; still a ticket every 40 points.
+- 11 Nov 2026, HOOP FEVER (owner sent the page: "lets add basketball now"): arcade basketball in the arcade, a cabinet beside the skee-ball lanes; its game in its window: grab and flick, 60 seconds, the last 20 the hoop slides for 3, a streak adds 1; BEST kept; a ticket every 5 points.

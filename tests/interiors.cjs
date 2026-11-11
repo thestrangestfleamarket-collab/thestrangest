@@ -31,8 +31,8 @@ const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv
   { await pg.evaluate(()=>ROOMS.enter('arcade')); await U(()=>ROOMS.offIn&&ROOMS.offIn()==='arcade'&&!(window.FADE&&FADE.busy)&&__dbg.UI.things.some(t=>t.name.startsWith('SKEE-BALL')),180000); await U(()=>WORKERSDBG().some(w=>w.k==='w_tokenbot'&&w.made),60000).catch(()=>{});
     rec('arcade: TOKEN is made',await pg.evaluate(()=>WORKERSDBG().some(w=>w.k==='w_tokenbot'&&w.made)));
     const a=await pg.evaluate(async()=>{ const th=n=>__dbg.UI.things.find(t=>t.name.startsWith(n)), play=n=>{ th(n).act(); const ok=!!MINI.on&&MINI.on.title===n; MINI.close(); return ok; };
-      return {skee:play('SKEE-BALL'),claw:play('THE CLAW'),hockey:play('AIR HOCKEY'),cabs:__dbg.UI.things.filter(t=>t.name.startsWith('PLAY ')).length}; });
-    rec('arcade: skee-ball, the claw and air hockey play; the cabinets stand',a.skee&&a.claw&&a.hockey&&a.cabs>=6,JSON.stringify(a));
+      return {skee:play('SKEE-BALL'),hoops:play('HOOP FEVER'),claw:play('THE CLAW'),hockey:play('AIR HOCKEY'),cabs:__dbg.UI.things.filter(t=>t.name.startsWith('PLAY ')).length}; });
+    rec('arcade: skee-ball, HOOP FEVER, the claw and air hockey play; the cabinets stand',a.skee&&a.hoops&&a.claw&&a.hockey&&a.cabs>=6,JSON.stringify(a));
     if(OUT){ await pg.screenshot({path:OUT+'/arcade.png'}); }
     await pg.evaluate(()=>ROOMS.exit('arcade')); await pg.waitForTimeout(3000); }
   /* ---------- THE BODEGA ---------- */

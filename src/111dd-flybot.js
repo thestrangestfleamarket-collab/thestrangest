@@ -26,7 +26,7 @@ import {LABELS} from './104-labels.js';
   // it trails whoever it belongs to on a short leash, at head height, looking at them
   const fly=(R,x,y,z,now)=>{ const g=R.g, ty=y+1.85*T+Math.sin(now/520)*.05*T; let dx=g.position.x-x, dz=g.position.z-z, d=Math.hypot(dx,dz);
     if(!R.set||d>9*T){ g.position.set(x+.6*T,ty,z+.25*T); R.set=true; R.t=now; dx=.6*T; dz=.25*T; d=Math.hypot(dx,dz); }
-    const dt=Math.min(.1,(now-R.t)/1000); R.t=now; const k=1-Math.exp(-dt*4), L=.68*T, tx=d>1e-4?x+dx/d*L:x+L, tz=d>1e-4?z+dz/d*L:z;
+    const dt=Math.min(1,(now-R.t)/1000); R.t=now; const k=1-Math.exp(-dt*4), L=.68*T, tx=d>1e-4?x+dx/d*L:x+L, tz=d>1e-4?z+dz/d*L:z;
     g.position.x+=(tx-g.position.x)*k; g.position.z+=(tz-g.position.z)*k; g.position.y+=(ty-g.position.y)*Math.min(1,k*1.6);
     g.rotation.y=Math.atan2(x-g.position.x,z-g.position.z); g.rotation.z=Math.sin(now/900)*.06; R.rotor.rotation.y=now/38;
     const m=R.mode, c=m==='think'?0xf2c14e:m==='hear'?0xff8a6a:0x7ef0c8; if(R.c!==c){ R.c=c; R.lit.color.set(c); }

@@ -70,7 +70,7 @@ const mem = () => { let v = null; return { get: async () => v && JSON.parse(JSON
       await pg.evaluate(() => document.querySelector('#dflybot').click());
       await pg.waitForTimeout(500);
       ok(await pg.evaluate(() => !FLYBOTDBG().bots.some(x => x.id === 'me') && ONLINE.mine.ab() === null), 'sent off from the menu, it is gone');
-      if (process.argv[3]) { await pg.evaluate(() => { document.querySelector('#dflybot').click(); __dbg.ui().setView('third'); }); await pg.waitForTimeout(3000); await pg.screenshot({ path: process.argv[3] }); }
+      if (process.argv[3]) { await pg.evaluate(() => { document.querySelector('#dflybot').click(); __dbg.ui().setView('third'); }); await pg.waitForTimeout(9000); await pg.screenshot({ path: process.argv[3] }); }
     }
     ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.join(' | ') : ''));
     await b.close();

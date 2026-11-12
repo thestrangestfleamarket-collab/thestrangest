@@ -101,7 +101,7 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
     const sub=o=>{ const g=o.geometry, P=g.attributes.position.array, n=P.length/18|0, E=o.matrixWorld.elements, k=[];
       for(let f=0;f<n;f++){ let x=0,y=0,z=0; for(let q=0;q<6;q++){ const i=(f*6+q)*3, a=P[i], c=P[i+1], d=P[i+2]; x+=E[0]*a+E[4]*c+E[8]*d+E[12]; y+=E[1]*a+E[5]*c+E[9]*d+E[13]; z+=E[2]*a+E[6]*c+E[10]*d+E[14]; } if(inn(x/6,y/6,z/6))k.push(f); }
       if(k.length===n)return; if(!k.length){ T.L.push(o); return; } const ix=new Uint32Array(k.length*6); k.forEach((f,i)=>{ for(let q=0;q<6;q++)ix[i*6+q]=f*6+q; }); T.S.push({o,g,ix:new THREE.BufferAttribute(ix,1)}); };
-    const walk=o=>{ if(skip.has(o)||o.userData.anyRoom||o.isLight||o.isCamera)return true; if(o.userData.cullOf){ if(o.geometry&&st(o)===0)T.L.push(o); return true; } const own=o.geometry||o.isSprite||!o.children.length?st(o):-1; let kept=false; const outs=[];
+    const walk=o=>{ if(skip.has(o)||o.userData.anyRoom||o.isLight||o.isCamera)return true; if(o.userData.cullOf){ if(o.geometry&&st(o)===0)T.L.push(o); return true; } if(o.userData.facade)return false; const own=o.geometry||o.isSprite||!o.children.length?st(o):-1; let kept=false; const outs=[];
       for(const c of o.children){ if(walk(c))kept=true; else outs.push(c); }
       if(!kept&&own<=0)return false; for(const c of outs)T.H.push(c); if(own===0)T.L.push(o); else if(own===2)sub(o); return true; };
     for(const c of roots)if(!walk(c))T.H.push(c); return T; };

@@ -24,7 +24,7 @@ import {MUSH} from './111ec-mushseller.js';
   const WHEN={inkcap:'rain',trumpet:'rain',oyster:'dawn',ghostcap:'night'}, DEEP={ghostcap:1};
   const wetAgo=()=>performance.now()/1e3-(FORAGE.wetT||-1e9), now=k=>{ const w=WHEN[k], h=CLOCK?CLOCK.h:12; return !w||(w==='rain'?wetAgo()<1200:w==='dawn'?h>=4.5&&h<10:w==='night'?!!(CLOCK&&CLOCK.dark()):true); };
   const MK=Object.keys(MU);
-  const GROWS=Object.fromEntries(GRASS.K.map(k=>[k.id,{...k.mush}])), MTIER={}; for(const k of GRASS.K)for(const t of RARITY.TIERS)MTIER[k.mush[t]]=t; FORAGE.MTIER=MTIER; for(const k in MTIER)ITEMS.reg('m_'+k,{tier:{c:'common',r:'rare',s:'super'}[MTIER[k]],heals:MU[k][4]?0:{c:.1,r:.2,s:.4}[MTIER[k]]});
+  const GROWS=Object.fromEntries(GRASS.K.map(k=>[k.id,{...k.mush}])), MTIER={}; for(const k of GRASS.K)for(const t of RARITY.TIERS)MTIER[k.mush[t]]=t; FORAGE.MTIER=MTIER; for(const k in MTIER)ITEMS.reg('m_'+k,{tier:{c:'common',r:'rare',s:'super'}[MTIER[k]],heals:MU[k][4]?0:{c:.1,r:.2,s:.4}[MTIER[k]]}); for(const g in GEMS.TIER)ITEMS.reg(g,{tier:{c:'common',r:'rare',s:'super'}[GEMS.TIER[g]]});
   // one grass everywhere (GRASS.only): it grows every grass's mushrooms, so none go missing
   if(!GRASS.only&&GRASS.MIX){ const M=GRASS.MIX, gone=[M.lawn,...M.gone]; gone.forEach((g,i)=>{ const P=GROWS[M.patches[i%M.patches.length]]; for(const t of RARITY.TIERS)P[t]=[].concat(P[t],GROWS[g][t]); }); for(const g of gone)GROWS[g]={c:[],r:[],s:[]}; }   // mushrooms grow only in the patches; the lawn's and the meadow's move into them (7 Nov 2026)
   if(GRASS.only){ const U={c:[],r:[],s:[]}; for(const g in GROWS)for(const t of RARITY.TIERS)U[t].push(GROWS[g][t]); GROWS[GRASS.only]=U; }
@@ -139,7 +139,7 @@ import {MUSH} from './111ec-mushseller.js';
       STEMS.setMatrixAt(ns,m4.compose(new V3(m.x,m.y,m.z),q,new V3(r*sw*(m.pk?.6:.5),sH,r*sw*(m.pk?.6:.5)))); STEMS.setColorAt(ns++,col.setHex(sc));
       const me=glow?GLOW:CAPS, n=glow?ng++:nc++; me.setMatrixAt(n,m4.compose(new V3(m.x,m.y+sH*.95,m.z),q,new V3(r*w,r*h,r*w))); me.setColorAt(n,col.setHex(cc));
       const hb=new THREE.Mesh(HB,HM); hb.position.set(m.x,m.y+Math.max(.2*T,sH),m.z); hits.add(hb);
-      const th={name:nm,pick:true,obj:hb,reach:.9*T,near:1.6*T,tall:.4*T,act:()=>FORAGE.pick(m)}; UI.thing(th); things.push(th); }
+      const th={name:nm,pick:true,obj:hb,reach:.9*T,near:1.6*T,tall:.4*T,act:()=>FORAGE.pick(m),walk:()=>LOOKS.L&&LOOKS.L.bare&&(m.pk||m.rv>performance.now()/1e3)?'m_'+m.k:null}; UI.thing(th); things.push(th); }
     for(const [me,n] of [[CAPS,nc],[STEMS,ns],[GLOW,ng]]){ me.count=n; me.instanceMatrix.needsUpdate=true; if(me.instanceColor)me.instanceColor.needsUpdate=true; } FORAGE.shown=list.length; };
   FORAGE.things=()=>things; SYS.add('weedsAdd',(key,grp)=>{ CH.set(key,spawns(key,grp)); FORAGE.sync(); },'141-forage'); SYS.add('weedsDrop',key=>{ if(CH.delete(key))FORAGE.sync(); },'141-forage');
   if(WEEDS.chunks)for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); FORAGE.sync();
@@ -174,7 +174,7 @@ import {MUSH} from './111ec-mushseller.js';
       if(near&&shod&&up&&!UI.fly&&!S.shoeHint&&WEEDS.inPark&&WEEDS.inPark(pos.x,pos.z)){ S.shoeHint=1; say('TAKE OFF YOUR SHOES TO FORAGE SAFELY.','#f2c14e'); saveSoon(); }
       if(ch)FORAGE.sync(); },'141-forage');
     window.MUSHDBG=()=>{ '@later'; const now=performance.now()/1e3, o={hidden:0,revealed:0,peek:0,crushed:0,picked:0,barefoot:!shod0(),lawn:{}}; for(const arr of CH.values())for(const m of arr){ o.lawn[m.k]=(o.lawn[m.k]||0)+1; if(m.cr>now)o.crushed++; else if(S.picked[m.id])o.picked++; else if(m.pk)o.peek++; else if(m.rv>now)o.revealed++; else o.hidden++; } return o; }; }
-  FORAGE.pick=m=>{ '@later'; const [nm,d]=MU[m.k], kb=FORAGE.keen(); SFX.play('step',{vol:.5});
+  FORAGE.pick=m=>{ '@later'; if(!INV.room('m_'+m.k)&&!INV.room('u_'+m.k))return INV.full(); const [nm,d]=MU[m.k], kb=FORAGE.keen(); SFX.play('step',{vol:.5});
     if(d<=sk('forage')+15+kb&&use('forage',d-25,d+25,kb)){ S.picked[m.id]=1; let n=1+(sk('forage')+kb>d+20&&Math.random()<.4?1:0); const known=d<10||use('myco',d-30,d+20);
       const W=WX&&WX.now, slug=!!(W&&W.rain>.3&&CLOCK.dark())&&Math.random()<.4; if(slug&&n>1)n--; if(slug)say('SLUGS HAVE BEEN AT THESE IN THE WET NIGHT. PICK THEM SOONER.','#c8a090');
       give((known?'m_':'u_')+m.k,n); if(known)S.log[m.k]=(S.log[m.k]||0)+n; say(known?`YOU PICK ${n>1?n+' ':'A '}${nm}${n>1?'S':''}.`:`YOU PICK ${n>1?n:'A'} MUSHROOM${n>1?'S':''} YOU DON'T KNOW.`,known?'#e8e2cc':'#c8b0ff'); }

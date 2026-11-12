@@ -12,14 +12,14 @@ Object.assign(INV,{items:{},picked:{}}); window.INV=INV; GEMS.TIER=GTIER; window
   INV.bank={bal:()=>0,take:()=>0}; INV.money=()=>Math.max(0,INV.cash||0)+INV.bank.bal(); INV.afford=n=>INV.money()>=(+n||0);
   INV.pay=n=>{ n=+n||0; if(n<=0)return true; if(!INV.afford(n))return false; const h=Math.min(Math.max(0,INV.cash||0),n); INV.cash=(INV.cash||0)-h; if(n>h)INV.bank.take(n-h); return true; };
   INV.START=1000;   // what a new player starts with (owner, 7 Nov 2026: "$1,000"); a save from before is topped up to it once, and keeps more
-  try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1){ INV.items=D.items||{}; INV.picked=D.picked||{}; INV.inside=D.inside||{}; INV.inst=+D.inst||0; INV.cash=D.cash??INV.START; if(!D.g1m)INV.cash=Math.max(INV.cash,INV.START); } }catch(e){} if(QS.get('fresh')&&QS.get('keepinv')!=='1'){ INV.items={}; INV.picked={}; INV.inside={}; } INV.inside=INV.inside||{}; if(INV.cash==null)INV.cash=INV.START;
-  const save=()=>{ OWNED.set(KEY,JSON.stringify({v:1,g1m:1,items:INV.items,picked:INV.picked,inside:INV.inside||{},inst:INV.inst||0,cash:INV.cash})); if(window.MAIL&&MAIL.save)MAIL.save(); };
-  INV.save=save; INV.add=(id,n=1)=>{ INV.items[id]=(INV.items[id]||0)+n; save(); TRADE.draw(); };
+  try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1){ INV.items=D.items||{}; INV.picked=D.picked||{}; INV.inside=D.inside||{}; INV.inst=+D.inst||0; INV.found=D.found||{}; INV.cash=D.cash??INV.START; if(!D.g1m)INV.cash=Math.max(INV.cash,INV.START); } }catch(e){} if(QS.get('fresh')&&QS.get('keepinv')!=='1'){ INV.items={}; INV.picked={}; INV.inside={}; INV.found={}; } INV.found=INV.found||{}; INV.inside=INV.inside||{}; if(INV.cash==null)INV.cash=INV.START;
+  const save=()=>{ OWNED.set(KEY,JSON.stringify({v:1,g1m:1,items:INV.items,picked:INV.picked,inside:INV.inside||{},inst:INV.inst||0,found:INV.found||{},cash:INV.cash})); if(window.MAIL&&MAIL.save)MAIL.save(); };
+  INV.save=save; INV.room=()=>true; INV.full=()=>false; INV.gained=[]; INV.add=(id,n=1)=>{ INV.items[id]=(INV.items[id]||0)+n; save(); TRADE.draw(); if(n>0)for(const f of INV.gained)try{ f(id,n); }catch(e){} };   // INV.gained: who hears of each thing gained (the feed)
   INV.count=()=>Object.values(INV.items).reduce((a,b)=>a+b,0);
   INV.random=()=>{ let r=Math.random()*W; for(const g of GEMS){ if((r-=g[3])<0)return g[0]; } return GEMS[0][0]; };
   INV.ready=k=>INV.picked[k]==null||INV.picked[k]<day();
   INV.mark=k=>{ INV.picked[k]=day(); save(); };   // a find taken today (INV.pick also gives a stone)
-  INV.pick=k=>{ '@later'; if(!INV.ready(k)){ TRADE.note('NOTHING HERE TODAY. BACK TOMORROW'); return false; } const id=INV.random(), g=byId(id); INV.picked[k]=day(); INV.add(id);
+  INV.pick=k=>{ '@later'; if(!INV.ready(k)){ TRADE.note('NOTHING HERE TODAY. BACK TOMORROW'); return false; } const id=INV.random(), g=byId(id); if(!INV.room(id)){ INV.full(); return false; } INV.picked[k]=day(); INV.add(id);
     TRADE.note('YOU FOUND '+(/^[AEIOU]/.test(g[1])?'AN ':'A ')+g[1]+' · THE GEM SHOP PAYS $'+g[2]); SFX.play('chirp',{vol:.4}); return true; };
   // the server kept less than this game saved (more cash or things than play allows at once): what you carry follows it
   OWNED.onClip=c=>{ INV.cash=Math.max(0,(INV.cash||0)-Math.max(0,+c.cash||0)); for(const k in c.items||{}){ INV.items[k]=Math.max(0,(INV.items[k]||0)-c.items[k]); if(!INV.items[k])delete INV.items[k]; } save(); if(FORAGE&&FORAGE.draw)FORAGE.draw(); };

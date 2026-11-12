@@ -14,7 +14,7 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
   const pg=await ctx.newPage(); pg.setDefaultTimeout(600000); const errs=[]; pg.on('pageerror',e=>errs.push(e.message.slice(0,200)));
   await pg.goto(BASE+'/?fresh=1',{waitUntil:'commit',timeout:600000}); for(let i=0;i<1500&&!(await pg.evaluate(()=>!!window.__started).catch(()=>false));i++)await wait(200);
   await wait(8000);   // (no admins table off the website: the page is told it is the owner below; the server still checks the login is the owner's)
-  await pg.keyboard.press('Escape'); await wait(800); await pg.evaluate(()=>document.querySelector('[data-sec="set"]').click()); await wait(500); await pg.evaluate(()=>document.querySelector('[data-sub="time"]').click());
+  await pg.evaluate(()=>__UI.menuTab('set')); await wait(800); await pg.evaluate(()=>document.querySelector('[data-sec="set"]').click()); await wait(500); await pg.evaluate(()=>document.querySelector('[data-sub="time"]').click());
   for(let i=0;i<60&&!(await pg.evaluate(()=>{ DN.owner=true; if(!document.querySelector('#dnclkset'))DN.draw(); return !!document.querySelector('#dnclkset'); }).catch(()=>false));i++)await wait(500);
   const press=async(sel,word)=>{ await pg.evaluate(s=>document.querySelector(s).click(),sel); for(let i=0;i<40;i++){ const m=await pg.evaluate(()=>document.querySelector('#dnmsg').textContent); if(m&&!/setting/.test(m))return m; await wait(250); } return pg.evaluate(()=>document.querySelector('#dnmsg').textContent); };
   const hour=()=>pg.evaluate(()=>DN.clockH());

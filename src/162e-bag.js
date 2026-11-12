@@ -5,6 +5,7 @@ import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
+import {RARITY} from './013a-rarity.js';
 import {GEMS} from './101-gems.js';
 import {PFI} from './150cyb-pfitems.js';
 import {SWAP} from './159i-trade.js';
@@ -104,9 +105,9 @@ window.BAG=BAG;
   const spot=(key,id,ids)=>{ const P=POS[key]||(POS[key]={}); if(P[id])return P[id]; const used=ids.filter(q=>q!==id&&P[q]).map(q=>P[q]); for(let y=0;y+IC<=MH;y+=26)for(let x=0;x+IC<=MW;x+=28)if(!used.some(p=>Math.abs(p[0]-x)<34&&Math.abs(p[1]-y)<34))return P[id]=[x,y]; return P[id]=[Math.round(Math.random()*(MW-IC)),Math.round(Math.random()*(MH-IC))]; };
   let sel=null, selWin='bag';
   const wornAs=id=>WIELD.on===id?'HELD':Object.values(EQUIP.by).includes(id)?'WORN':'';
-  const icon=(key,id,n,x,y,sz=IC)=>{ const w=wornAs(id); return `<div class="bgi${sel===id&&selWin===key?' sel':''}${isCont(id)?' cont':''}" data-id="${esc(id)}" title="${esc(name(id))}" style="left:${x}px;top:${y}px;width:${sz}px;height:${sz}px"><img alt="" draggable="false" src="${BAG.icon(id)}">${n>1?`<span>x${n}</span>`:''}${w?`<i>${w}</i>`:''}</div>`; };
-  const row=(key,id,n)=>{ const w=wornAs(id); return `<div class="bgr${sel===id&&selWin===key?' sel':''}${isCont(id)?' cont':''}" data-id="${esc(id)}" title="${esc(name(id))}"><img alt="" draggable="false" src="${BAG.icon(id)}"><b style="${id.startsWith('u_')?'color:#c8b0ff':''}">${esc(name(id))}</b>${w?`<u>${w}</u>`:''}${n>1?`<i>x${n}</i>`:''}</div>`; };
-  const strip=key=>`<div class="bgf">${contents(key).length?'DOUBLE CLICK TO USE · DRAG OUT TO DROP':key==='bag'?'NOTHING. FIND MUSHROOMS ON THE LAWNS: A DOUBLE CLICK PICKS ONE.':'EMPTY. DRAG THINGS IN FROM YOUR BAG.'}</div>`;
+  const icon=(key,id,n,x,y,sz=IC)=>{ const w=wornAs(id); return `<div class="bgi${sel===id&&selWin===key?' sel':''}${isCont(id)?' cont':''}" data-id="${esc(id)}" data-card="${esc(id)}" style="left:${x}px;top:${y}px;width:${sz}px;height:${sz}px;border-bottom:3px solid ${RARITY.col(id)}"><img alt="" draggable="false" src="${BAG.icon(id)}">${n>1?`<span>x${n}</span>`:''}${w?`<i>${w}</i>`:''}</div>`; };
+  const row=(key,id,n)=>{ const w=wornAs(id); return `<div class="bgr${sel===id&&selWin===key?' sel':''}${isCont(id)?' cont':''}" data-id="${esc(id)}" data-card="${esc(id)}" style="border-left:3px solid ${RARITY.col(id)}"><img alt="" draggable="false" src="${BAG.icon(id)}"><b style="${id.startsWith('u_')?'color:#c8b0ff':''}">${esc(name(id))}</b>${w?`<u>${w}</u>`:''}${n>1?`<i>x${n}</i>`:''}</div>`; };
+  const strip=key=>`<div class="bgf">${contents(key).length?'DOUBLE CLICK TO USE · DRAG OUT TO DROP'+(key==='bag'&&BAG.room?BAG.room():''):key==='bag'?'NOTHING. FIND MUSHROOMS ON THE LAWNS: A DOUBLE CLICK PICKS ONE.':'EMPTY. DRAG THINGS IN FROM YOUR BAG.'}</div>`;
   const css=document.createElement('style'); css.textContent=`.bagw{position:fixed;z-index:21;resize:none!important;overflow:visible!important;padding:0;font-family:'Share Tech Mono',ui-monospace,monospace;font-size:13px;letter-spacing:.4px;color:#7dffa8;background:none;border:0;zoom:var(--uiz,1)} .bagw[hidden]{display:none} .bagw>.pX,.bagw .bgx{position:absolute;right:8px;top:6px}
     .bagw .bgx,.bagw>.pX{font:inherit;color:#7dffa8!important;background:#020a06!important;border:0!important;box-shadow:inset 0 0 0 1px #3aa866!important;padding:1px 6px;cursor:pointer} .bagw .bgx:hover,.bagw>.pX:hover{color:#020a06!important;background:#7dffa8!important} .bagw .bgo{position:relative} .bagw .bgk{position:absolute;left:0;top:0;width:${BW}px;height:${BH}px;transform-origin:0 0} .bagw .bgpan{position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(125,255,168,.05) 0 1px,transparent 1px 3px),rgba(2,10,6,.82);box-shadow:0 0 0 1px #2d5a40}
     .bagw .bgt{position:absolute;left:12px;right:44px;top:9px;color:#3aa866;font-size:12px;letter-spacing:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
@@ -161,6 +162,10 @@ window.BAG=BAG;
   const LOOK=new Map(), PLAIN=new Map(), V3=new THREE.Vector3(), MTR=T/.84;
   const plain=q=>{ let r=PLAIN.get(q); if(!r){ r=new THREE.MeshStandardMaterial({color:q.color,roughness:.15,transparent:true,opacity:.5,depthWrite:false}); PLAIN.set(q,r); } return r; };
   const realM=id=>{ const s=+prop(kindOf(id),'size'); return s>0?s:0; };
+  // a dropped thing glows its rarity's colour on the ground; STRANGER and THE STRANGEST send up a beam (owner, 11 Nov 2026); drawn only with the thing, near you
+  const GLW=[], BEAM=new THREE.CylinderGeometry(.05*T,.05*T,7*T,8,1,true), RING=new THREE.CircleGeometry(.32*T,20);
+  const glow=(P,id)=>{ const t=RARITY.of(kindOf(id)); if(!GLW[t])GLW[t]=new THREE.MeshBasicMaterial({color:RARITY.COL[t],transparent:true,opacity:t>=3?.32:.22,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide});
+    const r=new THREE.Mesh(RING,GLW[t]); r.rotation.x=-Math.PI/2; r.position.y=.02*T; r.userData.shared=true; P.add(r); if(t>=3){ const b=new THREE.Mesh(BEAM,GLW[t]); b.position.y=3.5*T; b.userData.shared=true; P.add(b); } return P; };
   const look=id=>{ '@later'; let P=LOOK.get(id); if(P)return P; P=new THREE.Group();
     if(!INSPECT.has(id)){ const tex=new THREE.CanvasTexture(paint(id)); tex.magFilter=tex.minFilter=THREE.NearestFilter; tex.colorSpace=THREE.SRGBColorSpace; tex.generateMipmaps=false;
       const c=paint(id), W=c.width, H=c.height, D=c.getContext('2d').getImageData(0,0,W,H).data; let x0=W, x1=-1, y1=-1;   // (the drawn part of the picture, not its empty edge, is the thing's size; it stands on its lowest drawn row)
@@ -171,7 +176,7 @@ window.BAG=BAG;
     { const b0=new THREE.Box3().setFromObject(m), z=b0.getSize(V3); if(!b0.isEmpty()&&!m.userData.pf&&z.y>1.8*Math.max(z.x,z.z)&&!/^(fl_|bnet$|net$|balloon$)/.test(kindOf(id))){ const W=new THREE.Group(); W.add(m); W.rotation.x=-Math.PI/2; m=W; } }   // (a long thin thing, a sword, lies on its side; a flower or a net on its stand stays up, and Polyfork's stand as made)
     const b=new THREE.Box3().setFromObject(m), L=b.isEmpty()?1:Math.max(.001,...b.getSize(V3).toArray()), want=realM(id), S=b.isEmpty()?MTR:want?want*MTR/L:L>5||L<.01?.3*MTR/L:MTR, I=new THREE.Group(); I.add(m); I.scale.setScalar(S); if(!b.isEmpty())I.position.set(-(b.min.x+b.max.x)/2*S,-b.min.y*S,-(b.min.z+b.max.z)/2*S);
     P.add(I); P.userData.tall=b.isEmpty()?.3*MTR:(b.max.y-b.min.y)*S; LOOK.set(id,P); return P; };
-  PFI.on.push(()=>{ LOOK.clear(); for(const g of GRD)if(g.m){ g.m.removeFromParent(); g.m=null; } near(); for(const id of URL.keys())WANT.add(id); URL.clear(); });   // Polyfork's models came: what lies about takes them
+  PFI.on.push(()=>{ LOOK.clear(); for(const g of GRD)if(g.m){ g.m.removeFromParent(); g.m=null; if(g.gl){ g.gl.removeFromParent(); g.gl=null; } } near(); for(const id of URL.keys())WANT.add(id); URL.clear(); });   // Polyfork's models came: what lies about takes them
   const room=()=>{ const c=ROOMS.cur; return c?String(c.off||c.id||''):''; };
   const unthing=th=>{ const i=UI.things.indexOf(th); if(i>=0)UI.things.splice(i,1); };
   const place=g=>{ '@later'; const sp=new THREE.Group(); sp.name='loose-'+g.id; sp.position.set(g.x,g.y,g.z); sp.rotation.y=(parseInt(g.key.slice(-4),36)||0)%628/100; sp.userData.level=g.lv||'street'; sp.visible=false; scene.add(sp); g.sp=sp;
@@ -180,12 +185,12 @@ window.BAG=BAG;
   // drawn only near you: the nearest 24 within 20 tiles on your level and in your room, kept until 26
   const near=()=>{ const rm=room(), now=Date.now(); let ex=false; for(const g of GRD.slice())if(g.until&&now>g.until&&!g.taking){ lose(g); ex=ex||!g.key.startsWith('drop:'); } if(ex)saveG();
     const L=[]; for(const g of GRD){ const d=Math.hypot(g.x-pos.x,g.z-pos.z); if((g.rm||'')===rm&&d<(g.m?KEEP:SEE)&&LEVELS.drawn(g.sp))L.push([g,d]); } const on=new Set(L.sort((a,b)=>a[1]-b[1]).slice(0,MOST).map(q=>q[0]));
-    for(const g of GRD){ const v=on.has(g); if(v&&!g.m){ g.m=look(g.id).clone(); g.sp.add(g.m); } else if(!v&&g.m){ g.m.removeFromParent(); g.m=null; } g.sp.visible=v; } };
+    for(const g of GRD){ const v=on.has(g); if(v&&!g.m){ g.m=look(g.id).clone(); g.gl=glow(new THREE.Group(),g.id); g.sp.add(g.m,g.gl); } else if(!v&&g.m){ g.m.removeFromParent(); g.m=null; if(g.gl){ g.gl.removeFromParent(); g.gl=null; } } g.sp.visible=v; } };
   // a container leaves with what is in it (and what is in those), as a record; back in a bag it is a fresh one of its kind
   const pack=c=>{ const I=INV.inside[c]||{}, out={in:{},subs:{}}; for(const id in I){ const n=I[id]; if(n<1)continue; if(isCont(id)){ const k=kindOf(id)+'#'+id; out.subs[k]=pack(id); out.in[k]=1; delete INV.items[id]; } else { FORAGE.take(id,n); out.in[id]=n; } } delete INV.inside[c]; return out; };
   const unpack=(k,r)=>{ const inst=fresh(kindOf(k)); INV.items[inst]=1; INV.inside[inst]={}; for(const id in r.in||{}){ const n=r.in[id]; if(id.includes('#')){ const sub=unpack(id,(r.subs||{})[id]||{}); INV.inside[inst][sub]=1; } else { FORAGE.give(id,n); INV.inside[inst][id]=n; } } return inst; };
   const finish=(g,r)=>{ if(r.id==='cash')INV.cash=(INV.cash||0)+Math.max(0,Math.floor(+r.n||0)); else if(isCont(r.id))unpack(r.id,r); else FORAGE.give(r.id,r.n||1); if(INV.save)INV.save(); say(r.id==='cash'?'YOU PICK UP $'+r.n+'.':'YOU PICK UP '+(/^(A|AN|THE) /.test(name(r.id))?'':'THE ')+name(r.id)+(r.n>1?' ×'+r.n:'')+'.','#f2c14e'); SFX.play('clunk',{vol:.4,pitch:1.6}); lose(g); saveG(); redraw(); };
-  BAG.pickUp=g=>{ if(!GRD.includes(g)||g.taking)return; if(g.key.startsWith('drop:')){ if(!online()){ say('YOU CANNOT REACH IT OFFLINE.','#c8a090'); return; } g.taking=true; ONLINE.send({t:'take',k:g.key}); return; } finish(g,{id:g.id,n:g.n,in:g.in,subs:g.subs}); };
+  BAG.pickUp=g=>{ if(!GRD.includes(g)||g.taking)return; if(g.id!=='cash'&&!INV.room(g.id))return INV.full(); if(g.key.startsWith('drop:')){ if(!online()){ say('YOU CANNOT REACH IT OFFLINE.','#c8a090'); return; } g.taking=true; ONLINE.send({t:'take',k:g.key}); return; } finish(g,{id:g.id,n:g.n,in:g.in,subs:g.subs}); };
   BAG.drop=(id,n=1,at,from='bag')=>{ '@later'; if(id==='passport')return say('YOUR PASSPORT STAYS WITH YOU.','#c8a090'),false; if(isCont(id))n=1; n=Math.min(n,have(id,from)); if(n<1)return false;
     if(VIT.dead)return say('A GHOST HOLDS NOTHING.','#c8a090'),false; const rm=room(); if(ROOMS.cur&&(!rm||/^apt/i.test(rm)))return say('NOT IN HERE. DROP IT OUTSIDE.','#c8a090'),false; if(st.water&&st.water.in)return say('NOT IN THE WATER.','#c8a090'),false;
     for(const s in EQUIP.by)if(EQUIP.by[s]===id&&FORAGE.has(id)<=n)EQUIP.wear(id,true); if(WIELD.on===id&&FORAGE.has(id)<=n)WIELD.set(null);

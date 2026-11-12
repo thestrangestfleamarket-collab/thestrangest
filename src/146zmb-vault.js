@@ -4,6 +4,7 @@ import {BAG, EQUIP, FORAGE, INV, ITEMS, pos, VAULT, WIELD} from './003b-systems.
 import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {QS, SYS, TILE, WP} from './006-map-pre.js';
+import {RARITY} from './013a-rarity.js';
 import {BANKK} from './146zm-bank.js';
 { const say=(t,c)=>SAY(t,c||'#e8e2cc');
   const read=()=>{ try{ const v=OWNED.get('vault'), o=typeof v==='string'?JSON.parse(v):v; return o&&o.v===1&&o.items?o:{v:1,items:{}}; }catch(e){ return {v:1,items:{}}; } };
@@ -18,7 +19,7 @@ import {BANKK} from './146zm-bank.js';
   const B='style="font:inherit;color:#e8e2cc;background:#1c1f23;border:2px solid #5a6068;padding:3px 8px;cursor:pointer"';
   const DIAL='<div style="width:34px;height:34px;border-radius:50%;background:radial-gradient(circle,#c9a64a 0 18%,#8a9098 20% 56%,#3a3e44 58% 64%,#9aa0a8 66%);box-shadow:0 0 0 2px #15171a;flex:none"></div>';
   const row=(id,n,side)=>`<button data-m="${side}" data-id="${id}" style="display:flex;gap:8px;align-items:center;width:100%;text-align:left;margin:2px 0;font:inherit;color:#e8e2cc;background:#1c1f23;border:1px solid #444a52;padding:3px 6px;cursor:pointer">`
-    +`<img src="${BAG.icon?BAG.icon(id):''}" alt="" style="width:22px;height:22px;image-rendering:pixelated"><span style="flex:1">${name(id)}</span><span>x${n}</span></button>`;
+    +`<img data-card="${id}" src="${BAG.icon?BAG.icon(id):''}" alt="" style="width:22px;height:22px;image-rendering:pixelated;border-bottom:3px solid ${RARITY.col(id)}"><span style="flex:1">${name(id)}</span><span>x${n}</span></button>`;
   const draw=()=>{ '@later'; if(W.hidden)return; const V=read(), mine=(BAG.contents?BAG.contents('bag'):Object.keys(INV.items)).filter(movable), acct=BANKK.account?BANKK.account():{bal:0};
     let o='<div style="display:flex;gap:10px;align-items:center;margin-bottom:10px">'+DIAL+'<b style="flex:1;color:#f2c14e;font-size:12px">YOUR SAFE · THE BANK</b><button '+B+' data-x="1">X</button></div>';
     o+=`<div style="margin-bottom:10px;padding:6px 8px;background:rgba(0,0,0,.3);border:1px solid #444a52">GOLD ON YOU <b style="color:#f2c14e">$${Math.round(INV.cash)}</b> · IN THE SAFE <b style="color:#f2c14e">$${acct.bal}</b><div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap"><button ${B} data-c="-10">TAKE OUT $10</button><button ${B} data-c="-100">TAKE OUT $100</button><button ${B} data-c="all">PUT IN ALL</button></div></div>`;

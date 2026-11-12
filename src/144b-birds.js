@@ -152,7 +152,7 @@ import {GARDEN} from './144a-garden.js';
       if(use('bird',d-25,d+25)){ if(!S.seen[b.k])log(b); feather(b.k,.3); makePet(b.k,b); say('IT SITS CALM IN YOUR HANDS.','#9fe07f'); } else { say('IT STARTLES AND FLIES OFF.','#c8a090'); flush(b); } },
     watch:b=>{ '@later'; const sd=seedAt(), bonus=sd&&Math.hypot(b.x-sd.x,b.z-sd.z)<2*T?10:0, d=DIFF(b.k); if(use('bird',d-25,d+25,bonus)){ log(b); feather(b.k,.1); WS={b,t:0,d,bonus}; say('YOU SETTLE IN TO WATCH IT. STAY CLOSE.','#9fe07f'); } else { say('IT FLIES OFF BEFORE YOU GET A GOOD LOOK.','#c8a090'); flush(b); } },
     tame:b=>{ '@later'; if(!S.seen[b.k])log(b); TAMING.go({bird:b}); },   // by TAMING (146zjd): it joins your pets; birdseed helps
-    catch:b=>{ '@later'; if(!FORAGE.has('bnet'))return say('YOU NEED A BIRD NET (THE BIRD SHOP HAS THEM).','#c8a090'); if(b.k===HAWK)return say('A HAWK IS FAR TOO BIG FOR YOUR NET.','#c8a090');
+    catch:b=>{ '@later'; if(!FORAGE.has('bnet'))return say('YOU NEED A BIRD NET (THE FOREST RANGER AT THE BIRD STALL HAS THEM).','#c8a090'); if(b.k===HAWK)return say('A HAWK IS FAR TOO BIG FOR YOUR NET.','#c8a090');
       if(!FORAGE.has('cage'))return say('YOU NEED AN EMPTY CAGE TO PUT IT IN.','#c8a090'); const d=DIFF(b.k)+10; SFX.play('step',{vol:.4});
       if(use('bird',d-25,d+25)){ FORAGE.take('cage',1); FORAGE.give('bd_'+b.k,1); if(!S.seen[b.k])log(b); feather(b.k,.5); say(`YOU NET THE ${K[b.k][0]} AND CAGE IT.`,'#b8f0a0'); drop(b); } else { say('YOUR NET SWISHES THROUGH EMPTY AIR.','#c8a090'); flush(b); } },
     free:b=>{ freePet(); }};
@@ -189,7 +189,7 @@ import {GARDEN} from './144a-garden.js';
   FORAGE.ACT.bhang=()=>{ '@later'; if(SHARED.LVL!=='up'||(ROOMS&&ROOMS.cur))return say('HANG IT OUTDOORS.','#c8a090'); FORAGE.take('feeder',1); S.feed={x:pos.x,y:(GARDEN.lawnAt&&GARDEN.lawnAt(pos.x,pos.z))??(typeof SHARED.groundY!=='undefined'?SHARED.groundY(pos.x,pos.z):pos.y),z:pos.z,t:1};
     save(); share(); feederShow(); say('YOU HANG THE FEEDER. BIRDS NEARBY WILL COME TO IT. A DOUBLE CLICK TAKES IT DOWN.','#9fe07f'); };
   setTimeout(feederShow,0); BIRDS.feeder=()=>FD&&FD.th;
-  FORAGE.ACT.bcage=id=>{ '@later'; const k=+id.slice(4); if(!FORAGE.has('cage'))return say('YOU NEED AN EMPTY CAGE (THE BIRD SHOP HAS THEM).','#c8a090'); FORAGE.take('cage',1); const b=petOf(); for(const q of Object.keys(INV.items))if(q.startsWith('pet_'))delete INV.items[q]; if(b)drop(b); FORAGE.give('bd_'+k,1); say(`YOU PUT YOUR TAME ${K[k][0]} IN THE CAGE.`,'#b8f0a0'); };
+  FORAGE.ACT.bcage=id=>{ '@later'; const k=+id.slice(4); if(!FORAGE.has('cage'))return say('YOU NEED AN EMPTY CAGE (THE FOREST RANGER AT THE BIRD STALL HAS THEM).','#c8a090'); FORAGE.take('cage',1); const b=petOf(); for(const q of Object.keys(INV.items))if(q.startsWith('pet_'))delete INV.items[q]; if(b)drop(b); FORAGE.give('bd_'+k,1); say(`YOU PUT YOUR TAME ${K[k][0]} IN THE CAGE.`,'#b8f0a0'); };
   FORAGE.BOOK.push({id:'birds',title:'BIRDS',rows:()=>K.map((q,k)=>[q[0],!!S.seen[k],S.seen[k]?'SEEN '+S.seen[k]+' · '+q[1].toUpperCase():'',RARE(k)]),foot:'Double click a bird to watch it. Birds are out by day, in fair weather; most in the park. Scatter seed, or hang a feeder, and stand still to bring them near.'});
   { const pk=Object.keys(INV.items).find(id=>id.startsWith('pet_')); if(pk){ const k=+pk.slice(4); const b=add(k,pos.x,SHARED.py+1.4*WU,pos.z); b.st='pet'; b.src='pet'; b.th.name='YOUR TAME '+K[k][0]; } }
   CLOCK.movers.push(()=>Object.values(ME));   // their shadows move: kept off the sun's still shadow map

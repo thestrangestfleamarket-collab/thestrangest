@@ -9,11 +9,20 @@ import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
 import {Reflector} from 'three/addons/objects/Reflector.js';
 
 const stage=document.getElementById('stage'), statEl=document.getElementById('stat');
-const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:'high-performance',alpha:true}); renderer.setClearAlpha(1); renderer.info.autoReset=false;
-renderer.setPixelRatio(1); renderer.localClippingEnabled=true; renderer.shadowMap.autoUpdate=false; renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.BasicShadowMap;
+// the lighter picture (kept on this device; ?lite=1 or 0 sets it): no shadows and the graphics card left to the browser's choice, for a machine that keeps losing the picture
+const LITE=(()=>{ try{ const q=new URLSearchParams(location.search).get('lite'); if(q==='1'||q==='0')localStorage.setItem('lite-picture',q); return localStorage.getItem('lite-picture')==='1'; }catch(e){ return false; } })(); SHARED.lite=LITE;
+const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:LITE?'default':'high-performance',alpha:true}); renderer.setClearAlpha(1); renderer.info.autoReset=false;
+renderer.setPixelRatio(1); renderer.localClippingEnabled=true; renderer.shadowMap.autoUpdate=false; renderer.shadowMap.enabled=!LITE; renderer.shadowMap.type=THREE.BasicShadowMap;
 stage.appendChild(renderer.domElement);
-renderer.domElement.addEventListener('webglcontextlost',e=>{ '@later'; e.preventDefault(); let d=document.getElementById('ctxlost'); if(!d){ d=document.createElement('div'); d.id='ctxlost'; d.style.cssText='position:fixed;inset:0;place-items:center;font:12px Silkscreen,monospace;letter-spacing:2px;color:#8a8f9c;background:#0e1016;z-index:60'; d.textContent='THE PICTURE WAS LOST, BRINGING IT BACK'; document.body.append(d); } d.style.display='grid'; });
-renderer.domElement.addEventListener('webglcontextrestored',()=>{ renderer.shadowMap.needsUpdate=true; const d=document.getElementById('ctxlost'); if(d)d.style.display='none'; });
+// the picture lost (a phone in the background, a graphics card that gave up): it says so and comes back; lost three times in two minutes, or not back in fifteen seconds, it stops trying and offers a reload, or a reload with the lighter picture
+{ let n=0, t0=0, tm=0, up=false; const TXT='THE PICTURE WAS LOST, BRINGING IT BACK';
+  const box=()=>{ let d=document.getElementById('ctxlost'); if(!d){ d=document.createElement('div'); d.id='ctxlost'; d.style.cssText='position:fixed;inset:0;place-items:center;place-content:center;gap:14px;text-align:center;padding:20px;font:12px Silkscreen,monospace;letter-spacing:2px;color:#8a8f9c;background:#0e1016;z-index:60'; d.textContent=TXT; document.body.append(d); } return d; };
+  const giveUp=()=>{ '@later'; if(up)return; up=true; const d=box(), B='font:12px Silkscreen,monospace;letter-spacing:2px;color:#ece5d3;background:#1b1f2a;border:2px solid #3a3f4e;padding:10px 16px;cursor:pointer';
+    d.innerHTML='<div>THE PICTURE KEEPS GETTING LOST</div><div style="max-width:520px;line-height:1.7">CLOSE OTHER TABS AND GAMES THAT DRAW 3D, THEN RELOAD. IF IT GOES ON, RESTART THE BROWSER.</div><div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button data-r style="'+B+'">RELOAD</button><button data-l style="'+B+'">RELOAD WITH A LIGHTER PICTURE</button></div>'; d.style.display='grid';
+    d.querySelector('[data-r]').onclick=()=>location.reload(); d.querySelector('[data-l]').onclick=()=>{ try{ localStorage.setItem('lite-picture','1'); }catch(e){} location.reload(); };
+    try{ const g=renderer.getContext(), x=g.getExtension('WEBGL_debug_renderer_info'); if(window.BUGS&&BUGS.err)BUGS.err('the picture kept getting lost ('+n+' times'+(LITE?', lighter picture':'')+'): '+(x?g.getParameter(x.UNMASKED_RENDERER_WEBGL):'?')); }catch(e){} };
+  renderer.domElement.addEventListener('webglcontextlost',e=>{ e.preventDefault(); const now=performance.now(); if(now-t0>120000)n=0; if(!n)t0=now; n++; if(!up){ box().style.display='grid'; clearTimeout(tm); if(n>=3)giveUp(); else tm=setTimeout(giveUp,15000); } });
+  renderer.domElement.addEventListener('webglcontextrestored',()=>{ clearTimeout(tm); renderer.shadowMap.needsUpdate=true; if(up)return; const d=document.getElementById('ctxlost'); if(d)d.style.display='none'; }); }
 const scene=new THREE.Scene();
 SHARED.composer=null;
 const PPU=30;

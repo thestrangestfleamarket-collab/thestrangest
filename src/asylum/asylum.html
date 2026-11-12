@@ -8,6 +8,7 @@
 html,body{margin:0;height:100%;background:#000;color:#d9d6c6;font-family:Georgia,'Times New Roman',serif;overflow:hidden;-webkit-user-select:none;user-select:none;touch-action:none}
 canvas{display:block;position:fixed;inset:0;width:100%;height:100%}
 [hidden]{display:none!important}
+#grain{position:fixed;inset:0;pointer-events:none;opacity:.11;mix-blend-mode:overlay}
 #vig{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 50%,rgba(0,0,0,.8) 100%)}
 #title,#pause{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;box-sizing:border-box;text-align:center;background:rgba(0,0,0,.72)}
 #pause{cursor:pointer;font-size:1.3rem;letter-spacing:.12em}
@@ -23,6 +24,7 @@ button:hover,button:focus-visible{background:#e4e0cc;color:#0b0a08;outline:none}
 #again{position:fixed;left:50%;bottom:8%;transform:translateX(-50%)}
 </style>
 <div id="vig" hidden></div>
+<div id="grain" hidden></div>
 <div id="title">
   <h1>HOLLOW PINES</h1>
   <p class="tag">State Hospital, Ward C. Your first night shift.</p>

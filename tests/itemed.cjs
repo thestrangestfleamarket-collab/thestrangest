@@ -11,12 +11,14 @@ const {chromium}=require('playwright'); const OUT=process.argv[2];
   const wait=ms=>new Promise(r=>setTimeout(r,ms)), U=async(f,ms=60000,a)=>{ for(const t=Date.now();Date.now()-t<ms;await wait(300))if(await pg.evaluate(f,a))return true; return false; };
   const shot=async n=>{ if(OUT)await pg.screenshot({path:require('path').join(OUT,n+'.png')}); };
   await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&hour=12&at=80,95',{timeout:240000}); await pg.waitForFunction(()=>window.__started,null,{timeout:300000});
+  await pg.evaluate(()=>{ PAINTINGS.got('itemedpt1',{t:'A TEST'}); FORAGE.give('pt_itemedpt1',1); });
   await pg.mouse.click(640,380); await pg.keyboard.press('Shift+Digit7');
   rec('shift+7 opens the ITEM editor',await U(()=>!!(window.ITEMED&&ITEMED.on&&ITEMED.dbg&&!document.getElementById('itb').hidden)));
   // a drawn 360 view: enough of the canvas is not empty
   const drawn=()=>{ const R=ITEMED.dbg.R(); if(!R)return 0; const c=R.domElement, k=document.createElement('canvas'); k.width=96; k.height=64; const g=k.getContext('2d'); g.drawImage(c,0,0,96,64); const d=g.getImageData(0,0,96,64).data; let n=0; for(let i=3;i<d.length;i+=4)if(d[i]>20)n++; return n; };
   const ready=()=>document.querySelector('#itb .note').textContent==='';
   const counts=await pg.evaluate(async()=>{ const o={}; for(const f of ['game','wear','held','place']){ await ITEMED.dbg.tab(f); o[f]=ITEMED.dbg.byId().size; } await ITEMED.dbg.tab('wear'); return o; });
+  rec('paintings are not listed one by one (no pt_ or wip_ ids)',await pg.evaluate(async()=>{ await ITEMED.dbg.tab('game'); const k=[...ITEMED.dbg.byId().keys()]; await ITEMED.dbg.tab('wear'); return k.length>0&&!k.some(id=>/^(pt|wip)_/.test(id)); }));
   rec('every family is listed: game items, wear and held kinds, placeable things',counts.game>=40&&counts.wear>=150&&counts.held>=60&&counts.place>=500,JSON.stringify(counts));
   for(const [f,id,n] of [['wear','pf_coat_plate_armour','a wear piece (plate armour)'],['held','pf_righthand_skateboard','a held piece (skateboard)'],['place','pfp_food-truck-3c4e0e','a placeable thing (food truck)']]){
     await pg.evaluate(([f,id])=>ITEMED.dbg.tab(f).then(()=>ITEMED.dbg.pick(id)),[f,id]);

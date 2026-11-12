@@ -26,6 +26,7 @@ const FILE = 'file://' + path.resolve(process.argv[2] || 'dist/asylum.html'), OU
   ok(/ward key/.test(await use(5.2, 26.1, 5.15, 25.1, .79)) && (await st()).inv.key, 'the ward key is on the office desk');
   await use(13.5, 25, 13.5, 23.5, 1.1); await sim(1.5); ok(await ev(() => ASY.door('ward').a > .9), 'the key opens the ward door');
   await at(13.5, 22.2, 13.5, 9.6); await sim(1); ok((await st()).p === 'pose', 'in the ward he stands under a tube at the far end'); await shot('first-sight'); await sim(3); ok((await st()).p === 'off', 'the tube fails and he is gone');
+  await ev(() => { ASY.door('closet').t = 1; }); await sim(1.5); ok(await ev(() => ASY.W.dyn.corpse.rotation.z > 1.4), 'the linen closet: the bound body falls out');
   await ev(() => { ASY.door('cell9').t = 1; }); await sim(1);
   ok(/fuse/.test(await use(9.8, 10.6, 8.5, 10.9, .64)) && (await st()).inv.fuses === 1, 'the first fuse is on the bed in cell 9'); await sim(1);
   ok(await ev(() => ASY.door('cell9').a === 0 && ASY.door('cell9').locked), 'the cell door slams and holds');
@@ -33,7 +34,7 @@ const FILE = 'file://' + path.resolve(process.argv[2] || 'dist/asylum.html'), OU
   ok(await ev(() => ASY.door('cell9').a > .5 && ASY.P.on && ASY.P.mode === 'off'), 'then the door opens by itself and he is loose');
   await ev(() => { ASY.P.pose(13.5, 15.5, { track: true }); ASY.P.stalk(0); ASY.W.tubes.forEach(t => { t.state = 'dead'; }); ASY.G.lightOn = false; }); await at(13.5, 8, 13.5, 15.5); const z0 = (await st()).pz; await sim(2); const z1 = (await st()).pz;
   ok(z1 < z0 - 1.5, 'in the dark he walks at you (' + z0.toFixed(1) + ' to ' + z1.toFixed(1) + ')');
-  await ev(() => { ASY.G.lightOn = true; }); await sim(.2); const z2 = (await st()).pz; await sim(2); await shot('held-by-the-light'); ok(Math.abs((await st()).pz - z2) < .05, 'with the flashlight on him he does not move');
+  await ev(() => { ASY.G.lightOn = true; }); await sim(.2); const z2 = (await st()).pz; await sim(2); await shot('held-by-the-light'); ok(Math.abs((await st()).pz - z2) < .6, 'with the flashlight on him he is held (a blink of the light lets him twitch)'); await sim(2.2); ok((await st()).pz < z2 - .5 || (await st()).p === 'off', 'held too long, the light blinks and he lurches closer');
   await ev(() => { ASY.G.lightOn = false; ASY.W.tubes.find(t => t.z === 9.5).state = 'on'; ASY.P.pose(13.5, 13.5, { track: true }); ASY.P.stalk(0); }); await sim(3); ok((await st()).pz > 11.5, 'a lit tube stops him at its edge'); await sim(3.5);
   ok(await ev(() => ASY.W.tubes.find(t => t.z === 9.5).state === 'dead'), 'and then that tube dies'); await sim(4); await shot('caught');
   let s = await st(); ok(s.deaths === 1, 'he reaches you: caught once'); await sim(4); s = await st(); ok(s.mode === 'play' && s.p === 'off' && Math.abs(s.hz - 10.6) < 1.5, 'and you come back at the last safe spot');
@@ -50,7 +51,7 @@ const FILE = 'file://' + path.resolve(process.argv[2] || 'dist/asylum.html'), OU
   await use(31.5, 7.6, 31.5, 8.8, 1.5); await sim(2); ok(await ev(() => ASY.G.placed), 'the three fuses go in the box'); ok(/lever/.test(await use(31, 7.7, 30.95, 8.8, 1.4)), 'the lever can be thrown'); await sim(3);
   s = await st(); ok(s.power && s.red, 'the mains come back, the tubes blow, the red lights come on'); await shot('red');
   await at(27.5, 2.5, 13, 2.5); await sim(.3); ok((await st()).p === 'chase', 'he runs you down from behind'); const d0 = await ev(() => ASY.P.dist()); await sim(.5); ok(await ev(() => ASY.P.dist()) < d0, 'and he is faster than standing still'); await shot('chase');
-  await at(13.5, 28.9, 13.5, 30.5, 1.1); ok(/Front doors/.test((await st()).near), 'the front doors answer'); await ev(() => ASY.S.use()); await sim(3); s = await st();
+  await at(13.5, 28.9, 13.5, 30.5, 1.1); ok(/Front doors/.test((await st()).near), 'the front doors answer'); await ev(() => ASY.S.use()); await sim(.5); ok((await st()).mode === 'play', 'the lock takes a moment to cycle'); await ev(() => { ASY.P.hide(); ASY.P.on = false; ASY.G.flags.chase = true; }); await sim(1.2); await ev(() => ASY.S.use()); await sim(3); s = await st();
   ok(s.mode === 'end' && /YOU GOT OUT/.test(s.hud.note || ''), 'out: the ending card'); await shot('end');
   ok(!errs.length, 'no page errors ' + errs.join(' | '));
   await pg.close();

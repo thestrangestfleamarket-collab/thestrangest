@@ -130,7 +130,7 @@ const PQ={}; window.PQ=PQ;
     HIVE.th={name:'A HOLLOW OAK, HUMMING WITH WILD BEES',obj:hit(G,1.4*T,2.4*T,1.6*T),reach:1.8*T,near:2.6*T,tall:2*T,act:()=>PQ.wild()}; UI.thing(HIVE.th); };
   const sting=()=>{ if(has('bee_veil'))return say('THE SWARM BUZZES AT YOUR VEIL, BUT CANNOT GET IN.','#e8e2cc'); if(VIT.hurt)VIT.hurt(.08); if(SFX.play)SFX.play('cough',{vol:.4,pitch:1.6}); say('THE SWARM POURS OUT OF THE OAK! YOU ARE STUNG ALL OVER.','#f09070'); };
   PQ.wild=()=>{ '@later'; if(!ready('wildhive'))return say('THE COMB IN THE HOLLOW IS BARE. THE WILD BEES WILL HAVE MORE BY TOMORROW.','#c8a090'); HIVE.swarm=4;
-    if(!has('bee_smoker')){ sting(); return say('WILD BEES WILL NOT GIVE UP THEIR HONEY WITHOUT SMOKE. THE BEEKEEPER ON MARKET ST SELLS A SMOKER.','#c8a090'); }
+    if(!has('bee_smoker')){ sting(); return say('WILD BEES WILL NOT GIVE UP THEIR HONEY WITHOUT SMOKE. THE VILLAGE GARDENER AT THE BEEKEEPER\'S STALL SELLS A SMOKER.','#c8a090'); }
     if(!use('bee',0,80)){ sting(); return say('YOUR SMOKE DRIFTS THE WRONG WAY. THEY ARE STILL ANGRY.','#c8a090'); }
     const jars=has('jar_honey'); if(!jars)return say('THE SMOKE QUIETS THEM, BUT YOU HAVE NO EMPTY HONEY JARS.','#c8a090');
     const n=Math.min(jars,1+Math.floor(sk('bee')/35)); FORAGE.take('jar_honey',n); FORAGE.give('honey_wild',n); FORAGE.give('bee_wax',2); took('wildhive'); HIVE.swarm=0; use('bee',10,80); if(SFX.play)SFX.play('drip',{vol:.5});
@@ -174,7 +174,7 @@ const PQ={}; window.PQ=PQ;
     m.th={name:'A '+NM[K[0]].replace(' (RARE)',''),obj:g,reach:1.4*T,near:2.2*T,tall:.4*T,act:()=>PQ.net(m)}; UI.thing(m.th); LOFT.moths.push(m); return m; };
   const unMoth=m=>{ LOFT.lampG.remove(m.g); const i=UI.things.indexOf(m.th); if(i>=0)UI.things.splice(i,1); const j=LOFT.moths.indexOf(m); if(j>=0)LOFT.moths.splice(j,1); for(const b of LOFT.bats)if(b.prey===m)b.prey=null; };
   const mothsHeld=()=>Object.keys(INV.items).reduce((a,id)=>a+(id.startsWith('mo_')?INV.items[id]:0),0);
-  PQ.net=m=>{ '@later'; if(!has('net'))return say('YOU NEED A BUTTERFLY NET FOR MOTHS ON THE WING. THE BUTTERFLY SHOP ON MARKET ST HAS THEM.','#c8a090');
+  PQ.net=m=>{ '@later'; if(!has('net'))return say('YOU NEED A BUTTERFLY NET FOR MOTHS ON THE WING. THE PARK RANGER AT THE BUTTERFLY STALL HAS THEM.','#c8a090');
     if(BFLY&&BFLY.held&&BFLY.held()+mothsHeld()>=BFLY.room())return say('YOUR JARS ARE FULL. SELL SOME, OR BUY A BIGGER JAR.','#c8a090');
     const d=m.K[1]; if(SFX.play)SFX.play('step',{vol:.4}); if(!use('ento',d-25,d+25,-0)){ m.a+=2; m.r=(.3+Math.random()*.6)*WU; return say('IT TUMBLES OUT OF YOUR NET AND BACK TO THE LIGHT.','#c8a090'); }
     FORAGE.give(m.K[0],1); FORAGE.draw(); unMoth(m); say(m.K===LUNA?'YOU NET THE LUNA MOTH. ITS LONG GREEN TAILS TREMBLE. A RARE CATCH!':'YOU NET A '+NM[m.K[0]]+'.',m.K===LUNA?'#f2c14e':'#e8e2cc'); };

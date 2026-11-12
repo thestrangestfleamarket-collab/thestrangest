@@ -13,7 +13,7 @@ import {FTREES} from './144j-fruittrees.js';
     if(id==='treepot'){ pot(.24,.4,0xb0623a); return g; }
     if(id==='spile'){ bucket(null); return g; }
     if(id==='burlap'){ P('cyl',0xb89a64,0,.07,0,.07,.36,.07,Math.PI/2,0,0,{kind:'cloth'}); for(const z of [-.1,.1])P('tor',0x7a5a34,0,.07,z,.072,.072,.02,0,0,0,WOOD); P('box',0xa88a56,.05,.012,0,.16,.008,.34,0,0,0,{kind:'cloth'}); return g; }
-    if(id==='birdnet'){ P('sph',0x3a5a3a,0,.06,0,.15,.06,.11,0,0,0,{kind:'cloth'}); for(let i=0;i<5;i++)Y(P('tor',0x5a7a52,0,.06,0,.15-i*.012,.06,.02,Math.PI/2,0,0,{kind:'cloth'}),i*.63); P('tor',0x7a5a34,0,.075,0,.05,.115,.03,0,0,0,WOOD); return g; }
+    if(id==='birdnet'){ P('cyl',0x2f4a30,0,.06,0,.055,.34,.055,0,Math.PI/2,0,{kind:'cloth'}); for(let i=0;i<9;i++)P('tor',0x7a9a6a,-.16+i*.04,.06,0,.057,.057,.012,0,Math.PI/2,0,{kind:'cloth'}); for(let i=0;i<6;i++){ const a=i/6*Math.PI*2; P('cyl',0x7a9a6a,0,.06+Math.cos(a)*.057,Math.sin(a)*.057,.003,.34,.003,0,Math.PI/2,0,{kind:'cloth'}); } for(const x of [-.1,.1])P('tor',0xc8b078,x,.06,0,.06,.06,.03,0,Math.PI/2,0,{kind:'cloth'}); return g; }
     const K=FTREES.CAT[id.slice(3)], k=K.k, r=.04*Math.max(.3,K.fs);
     if(id[0]==='s'){ const palm=K.c==='palm';
       P('sph',0xb08a5a,0,.09,0,.1,.09,.1,0,0,0,{kind:'cloth'}); P('tor',0x7a5a34,0,.13,0,.085,.085,.03,Math.PI/2,0,0,WOOD); P('cyl',palm?0x7a6a48:0x6a4a30,0,.36,0,palm?.018:.009,.42,palm?.014:.009,0,.04,0,WOOD);

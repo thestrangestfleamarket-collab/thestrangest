@@ -13,7 +13,7 @@ const WILD={}; window.WILD=WILD;
   const KS=()=>Object.keys(SP), FULL=50, NEED=5;
   const S={v:1,seen:{},paid:0}; try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1)Object.assign(S,D); }catch(e){} const save=()=>{ try{ OWNED.set(KEY,JSON.stringify(S)); }catch(e){} };
   const kindOf=N=>String(N.key).replace(/#\d+$/,'').replace(/\d+$/,'');
-  const binoc=()=>!!FORAGE.has('binoc'), WR0=3.5*T, WR1=9*T; let WS=null, lx=0, lz=0, spd=0;
+  const binoc=()=>!!(FORAGE.has('binoc')||FORAGE.has('spyglass')), WR0=3.5*T, WR1=9*T; let WS=null, lx=0, lz=0, spd=0;
   const log=k=>{ '@later'; const first=!S.seen[k]; S.seen[k]=(S.seen[k]||0)+1; const q=SP[k];
     if(first){ say(`NEW IN YOUR JOURNAL: ${q[0]} (${q[1].toUpperCase()}).`,'#c8b0ff'); if(q[4]){ INV.cash+=q[4]; say(`THE PARK'S WILDLIFE COUNT PAYS $${q[4]} FOR THE FIRST SIGHTING.`,'#f2c14e'); }
       if(!S.paid&&KS().every(j=>S.seen[j])){ S.paid=1; INV.cash+=FULL; say(`YOUR WILDLIFE PAGE IS FULL. THE PARK PAYS $${FULL}.`,'#f2c14e'); } }

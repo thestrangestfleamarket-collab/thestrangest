@@ -39,7 +39,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(await pg.evaluate(() => !__dbg.UI.hold), 'the view is left as it is');
     const tabs = await pg.evaluate(() => [...document.querySelectorAll('#roombuy [data-dept]')].map(b => b.dataset.dept));
     ok(tabs.includes('beds') && tabs.includes('g:street'), 'the buy bar has the room\'s departments and the game\'s (' + tabs.length + ')');
-    await pg.click('#roombuy [data-dept="beds"]'); await pg.waitForTimeout(4000);
+    await pg.click('#roomed [data-tab="buy"]'); await pg.click('#roombuy [data-dept="beds"]'); await pg.waitForTimeout(4000);
     ok((await db()).pics > 0 && await pg.evaluate(() => !!document.querySelector('#roombuy [data-add="BED"] img')), 'the tiles have pictures');
     // a bed bought and put down
     const c0 = (await db()).cash, bed = await buy('BED', R.Lx * .3, 0, R.Ly * .35), tb = bed && await T(bed);
@@ -61,20 +61,20 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const tq0 = await T(bed); await pg.keyboard.press('q'); await pg.waitForTimeout(200); const pq = await at(tq0.u, .5, tq0.v); await pg.mouse.move(pq.x, pq.y); await pg.keyboard.down('Shift'); await pg.mouse.wheel(0, -120); await pg.keyboard.up('Shift'); await pg.waitForTimeout(300);
     const tq = await T(bed);
     ok(Math.abs(Math.abs(tq.ry - tq0.ry) - Math.PI / 2) < .01 && tq.s > 1.02, 'Q turns it a quarter and Shift+wheel makes it bigger (turn ' + (tq.ry - tq0.ry).toFixed(2) + ', size ' + tq.s.toFixed(2) + ')');
-    await pg.keyboard.press('Delete'); await pg.waitForTimeout(300);
-    ok((await db()).gone === 1 && await pg.evaluate(() => !!document.querySelector('#roomed [data-back]')), 'DEL puts it away and the panel lists it');
+    await pg.keyboard.press('Delete'); await pg.waitForTimeout(300); await pg.click('#roomed [data-tab="things"]'); await pg.waitForTimeout(200);
+    ok((await db()).gone === 1 && await pg.evaluate(() => !!document.querySelector('#roomed [data-back]')), 'DEL puts it away and YOUR THINGS lists it');
     await pg.click('#roomed [data-back]'); await pg.waitForTimeout(300);
     ok((await db()).gone === 0, 'the panel brings it back');
     // a desk, and a lamp put on it
     // a spot for the table that is open floor on screen (not under the panel or the bar)
     let spot = [R.Lx * .5, R.Ly * .5]; for (const [fu, fv] of [[.2, .2], [.2, .8], [.5, .2], [.8, .8], [.35, .65], [.65, .35], [.8, .2]]) { const q = await at(R.Lx * fu, .76, R.Ly * fv); if (await pg.evaluate(([x, y]) => { const e = document.elementFromPoint(x, y); return e && e.tagName === 'CANVAS'; }, [q.x, q.y])) { spot = [R.Lx * fu, R.Ly * fv]; break; } }
     const tab = await buy('DESK', spot[0], 0, spot[1]), tt = await T(tab);
-    await pg.click('#roombuy [data-dept="lights"]');
+    await pg.click('#roomed [data-tab="buy"]'); await pg.click('#roombuy [data-dept="lights"]');
     const lamp = await buy('LAMP', tt.u, .76, tt.v); await pg.waitForTimeout(1500);
     const tl = await T(lamp);
     ok(lamp && tl.h > .6 && tl.h < 1, 'a lamp put down over the desk stands on it (h ' + (tl && tl.h.toFixed(2)) + ')');
     // a picture onto a wall
-    await pg.click('#roombuy [data-dept="decor"]');
+    await pg.click('#roomed [data-tab="buy"]'); await pg.click('#roombuy [data-dept="decor"]');
     let pic = null, tp = null; for (const [u, v] of [[R.Lx / 2, R.Ly], [0, R.Ly / 2], [R.Lx / 2, 0], [R.Lx, R.Ly / 2]]) { if (pic) { await pg.evaluate(id => { ROOMED.select(ROOMED._api().units().find(u => u.id === id)); ROOMED.sell(); }, pic); }
       pic = await buy('WALL SHELF', u, 1.5, v); tp = await T(pic); if (tp && Math.min(tp.u, R.Lx - tp.u, tp.v, R.Ly - tp.v) < .3 && Math.abs(tp.h + .2 - 1.5) < .6) break; }
     ok(tp && Math.min(tp.u, R.Lx - tp.u, tp.v, R.Ly - tp.v) < .3 && tp.h > .6, 'a wall shelf goes onto the wall you point at (' + (tp && [tp.u, tp.h, tp.v].map(x => x.toFixed(2)).join(',')) + ')');
@@ -85,8 +85,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(await pg.evaluate(() => { const K = ROOMED._api().kinds(); return ROOMED.buy('g:bus stop') === null && ROOMED.buy('g:crosswalk') === null && ROOMED.buy('CRT TV') === null && K['g:bus stop'].off && !K['g:bicycle'].off && K['g:ceiling fan'].tpl && K['g:ceiling fan'].mount === 'ceil' && ROOMED.price('g:sofa') === 400 && ROOMED.price('RECLINER') === 300; }), 'the cut kinds are off sale, the kept ones priced, the ceiling fan hangs from the ceiling');
     // SELL pays half back
     await pg.evaluate(id => ROOMED.select(ROOMED._api().units().find(u => u.id === id)), bus); const cs0 = (await db()).cash, pr = await pg.evaluate(() => ROOMED.price('g:bicycle'));
-    await pg.click('#roomed [data-a="sell"]'); await pg.waitForTimeout(300);
-    ok((await db()).cash === cs0 + Math.floor(pr / 2), 'SELL pays half back ($' + Math.floor(pr / 2) + ')');
+    const dl = await pg.evaluate(() => (document.querySelector('#roomsel [data-a="del"]') || {}).textContent); await pg.click('#roomsel [data-a="del"]'); await pg.waitForTimeout(300);
+    ok((await db()).cash === cs0 + Math.floor(pr / 2) && /DELETE/.test(dl), 'the picked thing\'s bar has DELETE, which sells a bought piece for half ($' + Math.floor(pr / 2) + '; owner, 12 Nov 2026: ' + dl + ')');
     await pg.click('#roomed [data-tab="walls"]'); const hitW = await pick('wall', 'brick');
     await pg.click('#roomed [data-tab="floor"]'); const hitF = await pick('floor', 'checker'); await pg.waitForTimeout(300);
     ok((await db()).wall === 'brick' && (await db()).floor === 'checker' && hitW && hitF, 'brick walls, a checker floor (each swatch reachable, not under the footer)');

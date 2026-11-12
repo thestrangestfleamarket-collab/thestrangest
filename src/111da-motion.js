@@ -70,7 +70,8 @@ import {AVATAR} from './111c-avatar.js';
     ['REST AND EXERCISE',['sitGround','meditate','sleep','stargaze','jacks','pushups']],
     ['WALKS',['stroll','strut','sneak','tiptoe','stagger','limp','sprint','backUp','crouchWalk','crawl','formalWalk']],
     ['TRICKS AND FIGHTING',['backflip','rollGo','knockback','pound','kickFront','kickRound','guard','swordCombo','slash','throw','toss']],
-    ['WORK',['pickUp']]];
+    ['WORK',['pickUp']],
+    ['LEARNT FROM FOLK',[]]];   // (moves the street's trainers show you, 162ee-emotes)
   const B=(t,n)=>{ const b=document.createElement('button'); b.type='button'; b.textContent=t; b.draggable=true; b.title='drag onto the quick bar to keep it there';
     b.onclick=()=>{ play(n); MOTION.close(); }; b.addEventListener('dragstart',e=>{ e.dataTransfer.setData('text/plain','emote:'+n); e.dataTransfer.effectAllowed='copy'; }); return b; };
   { const c=document.createElement('style'); c.textContent='#emotes .emk{color:#3aa866;margin:4px 0 2px;font-size:12px!important;line-height:1.2!important} #emotes h3{margin:0 0 4px} #emotes .emg{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:3px} #emotes .emg button{height:21px;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.1;font-size:10px!important;letter-spacing:0!important;padding:2px!important;box-shadow:inset 0 0 0 1px #2d5a40!important;overflow-wrap:anywhere}'; document.head.appendChild(c); }   // (owner, 7 Nov 2026: "every emote as a square with emote inside it"; his pick: just the name)
@@ -85,7 +86,8 @@ import {AVATAR} from './111c-avatar.js';
     if(k==='l'){ if(m&&m.name==='mc_kickSide'){ if(t>.45)play('kickSpin'); return; } if(!m||m.name.startsWith('mc_')&&info[m.name.slice(3)]&&!/kick/.test(m.name))play('kickSide'); }
     else if(k==='o'&&(!m||!/^mc_(dodge|kick)/.test(m.name))){ VIT.spend(.06); play('dodge'); } };
   addEventListener('keydown',e=>{ if(e.repeat||e.target&&e.target.closest&&e.target.closest('input,textarea,[contenteditable="true"]'))return; const k=UI.key(e);
-    if(k==='h'&&!UI.menuOpen){ MOTION.toggle(); e.preventDefault(); } else if((k==='l'||k==='o')&&!UI.menuOpen)fight(k); });
-  window.MOTION=MOTION; Object.defineProperty(MOTION,'cur',{get:()=>cur&&cur.n}); MOTION.dodging=()=>!!(st.move&&st.move.name==='mc_dodge'&&st.move.t<.55); Object.assign(MOTION,{EMOTES,label:n=>LABEL[n]||null,ensure,play,stop,their,has,info,add,packs,more,
+    if(k==='h'&&!UI.menuOpen){ if(MOTION.hDown)MOTION.hDown(); else MOTION.toggle(); e.preventDefault(); } else if((k==='l'||k==='o')&&!UI.menuOpen)fight(k); });
+  addEventListener('keyup',e=>{ if(e.key&&e.key.toLowerCase()===UI.keyOf('h')&&MOTION.hUp)MOTION.hUp(); });
+  window.MOTION=MOTION; Object.defineProperty(MOTION,'cur',{get:()=>cur&&cur.n}); MOTION.dodging=()=>!!(st.move&&st.move.name==='mc_dodge'&&st.move.t<.55); Object.assign(MOTION,{EMOTES,label:n=>LABEL[n]||null,teach:(n,t)=>{ LABEL[n]=t; },labels:()=>({...LABEL}),ensure,play,stop,their,has,info,add,packs,more,
     open:()=>{ sp.hidden=false; ensure(); }, close:()=>{ sp.hidden=true; }, toggle:()=>{ if(sp.hidden)MOTION.open(); else MOTION.close(); }});
 }

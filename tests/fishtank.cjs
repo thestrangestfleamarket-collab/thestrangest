@@ -1,4 +1,4 @@
-// THE FISH TANK CHECK (owner, 9 Nov 2026): node tests/fishtank.cjs dist/market.html [shots-dir]. A fresh apartment's tank is the large one, its water surface moves (the wave sim steps), the koi swims, a double-click without fish food opens the close look and its settings, a setting changes the tank and is in the saved layout; with fish food it still feeds.
+// THE FISH TANK CHECK (owner, 9 Nov 2026): node tests/fishtank.cjs dist/market.html [shots-dir]. A fresh apartment's tank is built, its water surface moves (the wave sim steps), the koi swims, a double-click without fish food opens the close look and its settings, a setting changes the tank and is in the saved layout; with fish food it still feeds.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=fishtank::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -11,7 +11,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   if (st) {
     const T = () => pg.evaluate(() => window.TANKDBG && TANKDBG()[0]);
     let t = null; for (let i = 0; i < 90; i++) { t = await T(); if (t && t.vis && t.fish > 0 && t.kinds.length) break; await pg.waitForTimeout(1000); }
-    ok(t && t.vis && t.size[0] >= 3 && t.size[2] >= 1.2, 'the tank builds, large: ' + JSON.stringify(t && t.size));
+    ok(t && t.vis && t.size[0] >= 1.5 && t.size[0] <= 1.8 && t.size[2] >= 1.2, 'the tank builds, half as long as it was (owner, 12 Nov 2026): ' + JSON.stringify(t && t.size));
     ok(t && t.kinds.includes('pfkoi'), 'the Polyfork koi is in it: ' + JSON.stringify(t && t.kinds));
     ok(t && t.kinds.filter(k => /koi/.test(k)).length >= 4 && t.kinds.includes('goldfish') && t.ways.length >= 2 && t.koiL < .2, 'koi of several colourings, half the size, with a shoal of goldfish, each kind swimming its own way (owner, 10 Nov 2026): ' + JSON.stringify([t && t.kinds, t && t.ways, t && t.koiL]));
     const a = await T(); await pg.waitForTimeout(12000); const c = await T();

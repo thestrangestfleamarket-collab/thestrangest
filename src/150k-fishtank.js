@@ -22,8 +22,8 @@ import {ROOMK} from './150a-bedroom.js';
     kinds:T.sch?Object.keys(T.sch).filter(k=>T.sch[k].im.count):[],wave:+(T.h.reduce((a,v)=>Math.max(a,Math.abs(v)),0)*1000).toFixed(4),sy:+T.surf.geometry.attributes.position.getY(NX*(NZ>>1)+(NX>>1)).toFixed(5),steps:T.steps,set:T.s,view:!!(V&&V.T===T),cam:SHARED.cam?[...SHARED.cam.position.toArray(),...SHARED.cam.getWorldDirection(new THREE.Vector3()).toArray()].map(v=>+v.toFixed(2)):null,size:[T.TW,T.TD,T.TH],f0:T.fish[0]?[T.fish[0].id,+T.fish[0].x.toFixed(3),+T.fish[0].y.toFixed(3),+T.fish[0].z.toFixed(3)]:null}));
   for(const k of ['FISH TANK'])ROOMK.always.add(k);   // in every apartment from the start (owner, 7 Nov 2026)
   ROOMK.parts.push(c=>{ '@apts'; const {part,mat,rbox,cap,Lx,Ly,du,solid}=c;
-    // along the back wall between the back door and the corner, where no window is (owner, 9 Nov 2026: larger, a showpiece)
-    const TW=Math.max(2.4,Math.min(3.6,Lx-du-2.4)), TD=1, TH=1.2, SH=.7, U0=du+.95+TW/2, V0=Ly-TD/2-.13, SW=TW-2*GL, SD=TD-2*GL, WY=SH+TH*.9;
+    // along the back wall between the back door and the corner, where no window is (owner, 12 Nov 2026: half as long)
+    const TW=Math.max(1.2,Math.min(1.8,(Lx-du-2.4)/2)), TD=1, TH=1.2, SH=.7, U0=du+.95+TW/2, V0=Ly-TD/2-.13, SW=TW-2*GL, SD=TD-2*GL, WY=SH+TH*.9;
     const sandY=(x,z)=>SH+.06+.03+.09*Math.min(1,Math.max(0,(z+SD/2)/SD))+.012*Math.sin(x*5.1+z*3.3);   // the sand's top, banked up toward the back
     cap('FISH TANK',g=>{ const tg=new THREE.Group(); tg.position.set(U0,0,V0); g.add(tg); const P=(geo,m,x,y,z,ry=0,cast=true)=>part(geo,m,x,y,z,ry,tg,cast);
       const V3=THREE.Vector3, ONE=new V3(1,1,1);

@@ -14,7 +14,7 @@ const {chromium}=require('playwright'), path=require('path');
   ok(!d.clips.length&&!d.out.length,'nothing stands in anything or outside its walls'+(d.clips.length||d.out.length?': '+JSON.stringify([d.clips,d.out]):''));
   ok(d.wins===1&&d.du>.9&&d.du<d.Lx/.907-.9,'one front window and the door, where the house has them');
   // another house's door: its flat at its price; no money, no move; with money it is paid once and kept
-  const k=await pg.evaluate(async()=>{ const M=__dbg.MAPK.MODS.apts, T=__dbg.UI.things.find(t=>/^No\. 2/.test(t.name)); CALLBOX.noReload=true; T.act(); const txt=document.getElementById('callbox').textContent; INV.cash=100; const poor=M.moveTo(1), c0=INV.cash; INV.cash=3000; const r=M.moveTo(1); return {txt,poor,c0,r,cash:INV.cash,flat:M.flatState(),back:M.moveCost(0),again:M.moveCost(1),up:M.moveCost(2)}; });
+  const k=await pg.evaluate(async()=>{ const M=__dbg.MAPK.MODS.apts, T=__dbg.UI.things.find(t=>/^No\. 2/.test(t.name)); CALLBOX.noReload=true; M.FREE=0; T.act(); const txt=document.getElementById('callbox').textContent; INV.cash=100; const poor=M.moveTo(1), c0=INV.cash; INV.cash=3000; const r=M.moveTo(1); return {txt,poor,c0,r,cash:INV.cash,flat:M.flatState(),back:M.moveCost(0),again:M.moveCost(1),up:M.moveCost(2)}; });
   ok(/A MEDIUM ROOM/.test(k.txt)&&/MOVE IN FOR \$2,500/.test(k.txt),'No. 2\'s door offers a medium room for $2,500');
   ok(k.poor==='poor'&&k.c0===100,'without the money you stay');
   ok(k.r==='moved'&&k.cash===500&&k.flat&&k.flat.tier===1&&k.flat.top===1&&k.back===0&&k.again===0&&k.up===8000,'with it you move in: $2,500 paid once, kept with what you own; moving back is free, the next size $8,000 ('+JSON.stringify(k.flat)+')');
@@ -23,5 +23,7 @@ const {chromium}=require('playwright'), path=require('path');
   ok(d.here.includes('FISH TANK')&&d.here.includes('RECLINER')&&d.away.includes('TELESCOPE')&&!d.clips.length&&!d.out.length,'it has the tank and the recliner too, all fitting: '+JSON.stringify({away:d.away,clips:d.clips,out:d.out}));
   await pg.evaluate(()=>{ localStorage.clear(); }); d=await open('');
   ok(d.tier===2&&d.mine==='house3'&&d.Lx>11&&!d.away.length&&!d.clips.length,'off the website the page keeps the big flat, every piece in it ('+d.Lx+' by '+d.Ly+' m)');
+  const f=await pg.evaluate(()=>{ const M=__dbg.MAPK.MODS.apts, T=__dbg.UI.things.find(t=>/^No\. 2/.test(t.name)); M.flatState=()=>({tier:0,top:0}); T.act(); return {t:M.tierOf(),r:M.moveTo(1),txt:document.getElementById('callbox').textContent}; });
+  ok(f.t===2&&f.r==='free'&&/EVERYONE HAS THE BIG ROOM/.test(f.txt),'everyone has the big room for now, whatever size they had; the smaller houses let nothing (12 Nov 2026)');
   ok(!errs.length,'no page errors'+(errs.length?': '+errs.slice(0,3).join(' | '):''));
   await b.close(); console.log(fails.length?fails.length+' failed':'flats: all good'); process.exit(fails.length?1:0); })();

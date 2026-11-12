@@ -13,8 +13,12 @@ APTS.num=OWNED.me&&OWNED.me.apt!=null?String(OWNED.me.apt):null;
 // the four sizes of flat, one a house (owner, 10-11 Nov 2026: small, medium, big, big with a half floor; "start small, buy up"): width and depth in tiles (none: the house's own), where along the house's front its far edge is (eb: so its window and door are the ones outside), what moving in costs, the pieces it starts with (none: all); which one is yours is kept with what you own
 APTS.TIERS=[{n:'A SMALL ROOM',w:5.3,d:4.4,eb:7.6,side:[],price:0,start:['CRT TV','WRITING DESK','TABLE RADIO','ROUND RUG','FLOOR PLANT']},{n:'A MEDIUM ROOM',w:8.5,d:6.1,eb:10.8,side:[],price:2500,start:['CRT TV','WRITING DESK','TABLE RADIO','ROUND RUG','FLOOR PLANT','RECLINER','BOOKSHELF','EARTH GLOBE','FERN STAND','FISH TANK','HANGING PLANT']},{n:'A BIG ROOM',price:8000},{n:'A BIG ROOM WITH A HALF FLOOR',loft:1,price:20000,soon:1}];
 APTS.flatState=()=>{ let o=null; try{ o=JSON.parse(OWNED.get('flat')||'null'); }catch(e){} return o&&typeof o==='object'?{tier:Math.max(0,Math.floor(+o.tier||0)),top:Math.max(0,Math.floor(+o.top||0))}:null; };
-// (off the website, where nothing is owned, the page keeps the big flat; ?tier=N for the tests)
-APTS.tierOf=()=>{ const q=new URLSearchParams(location.search).get('tier'), S=APTS.flatState(), t=q!=null&&+q>=0?+q:S?S.tier:/^https?:$/.test(location.protocol)?0:2; return Math.min(APTS.TIERS.length-1,Math.floor(t)); };   // the number the server gave you (/owned), none on the single-file page
+// (?tier=N for the tests)
+// (owner, 12 Nov 2026: everyone has the biggest flat for now; FREE is the size nobody is below)
+APTS.FREE=2;
+// (owner, 12 Nov 2026: the fire escapes are off limits for now: no ladder, no door out)
+APTS.NOESC=true;
+APTS.tierOf=()=>{ const q=new URLSearchParams(location.search).get('tier'), S=APTS.flatState(), t=q!=null&&+q>=0?+q:Math.max(APTS.FREE,S?S.tier:0); return Math.min(APTS.TIERS.length-1,Math.floor(t)); };   // the number the server gave you (/owned), none on the single-file page
 await grab('apts',async()=>{ const HOUSES=[WP.apts,...LEVEL.places.filter(p=>/^house\d+$/.test(p.id)).sort((a,b)=>a.x0-b.x0||a.y0-b.y0)].filter(Boolean), FL=APTS.flatOf(APTS.num), TI=APTS.tier=Math.min(APTS.tierOf(),HOUSES.length-1), MINE=HOUSES[TI];
   APTS.houses=HOUSES.map(p=>p.id); APTS.mine=MINE.id; APTS.houseName=MINE.name||''; APTS.flat=FL;
   for(let hi=0;hi<HOUSES.length;hi++){ await house(HOUSES[hi],HOUSES[hi]===MINE,FL,hi); }
@@ -122,7 +126,7 @@ async function house(HP,mine,FL,HI){ const APTS0=APTS; { const APTS=mine?APTS0:{
   const reg=o=>{ o.ghost=1; const f=()=>{ try{ UI.thing(o); }catch(e){ setTimeout(f,400); } }; setTimeout(f,0); };
   const lpt=(F,d)=>XZ(U(F.lx),F.yf+F.o*d);
   for(const F of ESC)for(const y of LS_){ const [x,z]=lpt(F,y===AH?-.6:1.1), hb=bx(.5*TILE,Y(60)-Y(0),.5*TILE,HIT); hb.position.set(x,Y(y+30),z); scene.add(hb);
-    reg({name:'FIRE ESCAPE LADDER',obj:hb,reach:.6*TILE,near:2.2*TILE,tall:1*TILE,act:()=>{ if(!LAD.F&&Math.abs(SHARED.py-Y(y))<SY*.3)lgo(F,y); }}); }
+    if(!APTS0.NOESC)reg({name:'FIRE ESCAPE LADDER',obj:hb,reach:.6*TILE,near:2.2*TILE,tall:1*TILE,act:()=>{ if(!LAD.F&&Math.abs(SHARED.py-Y(y))<SY*.3)lgo(F,y); }}); }
   APTS.inside=(x,z)=>x>BLK[0]&&x<BLK[2]&&z>BLK[1]&&z<BLK[3];
   APTS.lvY=lv=>R0+lv*SY; APTS.lvOf=y=>Math.max(0,Math.min(ST-1,Math.floor((y-R0)/SY+.08)));
   APTS.floor=()=>MODS.posok?APTS.lvOf(SHARED.py):0;
@@ -147,7 +151,7 @@ async function house(HP,mine,FL,HI){ const APTS0=APTS; { const APTS=mine?APTS0:{
   const EB=ESC.map(F=>tbox4(U(F.ua-.05),F.yf,U(F.ub+.05),F.yf+F.o*(DO+.05))), ovl=(s,b)=>s[0]<b[2]&&s[2]>b[0]&&s[1]<b[3]&&s[3]>b[1];
   APTS.in=false; APTS.esc=false; let was=-1;
   APTS.tick=()=>{ const ib=APTS.inside(pos.x,pos.z), roof=ib&&MODS.posok&&SHARED.py>RFY, eg=!ib&&SHARED.LVL==='up'&&EG(pos.x,pos.z)!=null, lv=APTS.floor();
-    APTS.in=!!APTS.inReal; APTS.esc=eg;
+    APTS.in=!!APTS.inReal; APTS.esc=eg; if(eg&&APTS0.NOESC&&!LAD.F){ const [x,z]=XZ(m,A.y1+1.2); pos.x=x; pos.z=z; }
     const key=(eg?2:0)+(roof?16:0)+lv*4; if(key!==was){ was=key; return eg?SOL.up.filter(s=>s===BLK||!EB.some(b=>ovl(s,b))).concat(SOLS[lv]):roof?SOL.up.filter(s=>s!==BLK).concat(EDGE,[BHR]):SOL[SHARED.LVL]||SOL.up; } return null; };
   window.HOUSEAT=(dy=0)=>XZ(m,A.y1+dy); APTS.doorAt=XZ(m,A.y1); APTS.doorHd=TA.hd(0);
   window.APTSDBG=()=>({in:APTS.in,esc:APTS.esc,floor:APTS.floor(),py:SHARED.py,pos:[+pos.x.toFixed(2),+pos.z.toFixed(2)],door:+X(m).toFixed(1),lad:LAD.F?+LAD.y.toFixed(1):null,block:BB});

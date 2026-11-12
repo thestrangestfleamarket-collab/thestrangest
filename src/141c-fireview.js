@@ -16,7 +16,7 @@ import {BLOCKS} from './038zb-blocks.js';
   F.out=()=>APTS.enterReal([X(DX),Z(V(.9)),Y(HZ),Math.PI]);
   F.back=()=>APTS.enterReal();
   const hit=(w,h,d,x,y,z)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshBasicMaterial({visible:false})); m.position.set(x,y,z); scene.add(m); return m; };
-  let plaque=null; APTS.furnish(APTS.my,()=>{ '@later'; UI.thing({name:'FIRE ESCAPE DOOR',ghost:1,obj:hit(1.1*T*KK,Y(78)-Y(0),1.6*T,X(APTS.fw[0]),Y(HZ+40),Z(APTS.fw[1]-.15)),reach:1.9*T,near:2.6*T,tall:2*T,act:()=>{ const D=APTS.escDoor; if(!APTS.in||!D)return; D.set(!D.open); const at=new THREE.Vector3(X(APTS.fw[0]),Y(HZ+40),Z(APTS.fw[1])); if(D.open)SFX.play('latch',{at,vol:.8}); else SFX.play('door',{at,vol:.35,pitch:1.6,delay:.25}); }});
+  let plaque=null; APTS.furnish(APTS.my,()=>{ '@later'; if(APTS.NOESC)return; UI.thing({name:'FIRE ESCAPE DOOR',ghost:1,obj:hit(1.1*T*KK,Y(78)-Y(0),1.6*T,X(APTS.fw[0]),Y(HZ+40),Z(APTS.fw[1]-.15)),reach:1.9*T,near:2.6*T,tall:2*T,act:()=>{ const D=APTS.escDoor; if(!APTS.in||!D)return; D.set(!D.open); const at=new THREE.Vector3(X(APTS.fw[0]),Y(HZ+40),Z(APTS.fw[1])); if(D.open)SFX.play('latch',{at,vol:.8}); else SFX.play('door',{at,vol:.35,pitch:1.6,delay:.25}); }});
   const F3={Y:'101101010010010',O:'111101101101111',U:'101101101101111',R:'110101110101101',A:'010101111101101',P:'110101110100100',T:'111010010010010',M:'101111101101101',E:'111100110100111',N:'110101101101101','0':'111101101101111','1':'010110010010111','2':'111001111100111','3':'111001111001111','4':'101101111001001','5':'111100111001111','6':'111100111101111','7':'111001010010010','8':'111101111101111','9':'111101111001111'};
   { const W=61, H=9, cv=document.createElement('canvas'); cv.width=W; cv.height=H; const g=cv.getContext('2d');
     const t=new THREE.CanvasTexture(cv); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace;
@@ -87,6 +87,7 @@ import {BLOCKS} from './038zb-blocks.js';
     cb.min.set(Math.min(X(IN.x0),X(IN.x1))+m,-1e9,Math.min(Z(IN.y0),Z(IN.y1))+m); cb.max.set(Math.max(X(IN.x0),X(IN.x1))-m,Y(HZ+S)-m,Math.max(Z(IN.y0),Z(IN.y1))-m); if(cb.containsPoint(c))return;   // in your rooms: in front of the walls, under the ceiling
     let k=1; const L=c.distanceTo(t); for(const a of ['x','y','z']){ const d=c[a]-t[a]; if(c[a]>cb.max[a]&&d>1e-6)k=Math.min(k,(cb.max[a]-t[a])/d); if(c[a]<cb.min[a]&&d<-1e-6)k=Math.min(k,(cb.min[a]-t[a])/d); } k=Math.max(k,Math.min(1,.9*T/(L||1))); c.set(t.x+(c.x-t.x)*k,t.y+(c.y-t.y)*k,t.z+(c.z-t.z)*k); });
   SYS.add('places',()=>{ const home=F.built&&!!APTS.inReal, on=home&&SHARED.LVL==='up'&&outL(pos.x,pos.z);
+    if(on&&APTS.NOESC&&!F.test){ pos.x=X(APTS.fw[0]); pos.z=Z(APTS.fw[1]+1); return; }
     if(on!==F.on){ F.on=on; APTS.onEsc=on; }   // the isometric view keeps facing out from your rooms: out on the landing it looks over the town (owner, 10 Nov 2026)
     UI.distMax=home?WMAX:null; if(home&&UI.dist>WMAX)UI.dist=WMAX;   // on your fire escape you can't zoom out past the landings round yours
     const iso=home&&!UI.persp; cutOn=iso&&on&&!UI.freeCam; if(cutOn)WALLP.constant=Z(FY)-.03*T;   // out on the landing in the isometric view, the house, your rooms and the hall behind its wall are cut away (set after the rooms' own clipping, below)

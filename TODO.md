@@ -132,6 +132,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 
 - [x] **The play on the Wooden O's stage** (owner, 10 Nov 2026: "bring the play back on the stage") · P2 · M · code + look [taking: claude/laughing-curie-ui41fc, 10 Nov]
 - [x] **The playhouse as THE WOODEN O** (owner, 10 Nov 2026: "redesign it", picked B) · P2 · M · code + look [taking: claude/laughing-curie-ui41fc, 10 Nov]
+- [ ] **The horn's way, for his look** (owner, 12 Nov 2026) · P2 · look. Traffic honks you, a car left in the road, the Big Cat and walkers out of its way; H does the same. Not yet: pets (they follow you), traffic cars do not pull over for a player's horn.
 - [x] **The movie theatre as THE STARLITE** (owner, 11 Nov 2026: "lets replace our movie t heatre in game with this") · P2 · M · code + look [done: claude/hopeful-faraday-grs9o0, 12 Nov]
 - [ ] **The Starlite, for his look** · P2 · look. The inside from his page, the reel between films, the house lights switch, the STARLITE neon.
 - [x] **The movie theatre as THE FLEA PIT** (owner, 10 Nov 2026: "i want to redsesign the movie theater", picked B) · P2 · M · code + look. Front, dark inside, box office, seats [taking: claude/laughing-curie-ui41fc, 10 Nov]

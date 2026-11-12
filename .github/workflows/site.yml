@@ -96,6 +96,7 @@ jobs:
           k art     'src/059p-art|data/art|art\.cjs'
           k weplay  'src/099-|src/136b|weplayers\.cjs'
           k cars    'src/150p-cars|src/150pe-carparts|src/150o-physmore|src/146i-ride|data/cars|data/radio|cars\.cjs|radio\.cjs'
+          k honk    'src/150pf-honk|src/150pb-|src/150pe-carparts|src/150p-cars|src/111ei-bigcat|honk\.cjs'
           k heli    'src/150pa-heli|src/150o-physmore|src/146i-ride|src/068a-pfrow|data/heli|heli\.cjs'
           k water   'src/065a|src/066-|src/060a|src/089a|src/141f|water'
           k scores  'src/059g|arcade-scores'
@@ -614,6 +615,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' cars')
         run: node tests/cars.cjs dist/market.html
+      - name: The horn's way (a honk clears you on foot, a car left in the road, THE BIG CAT; your own horn too)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' honk')
+        run: node tests/honk.cjs
       - name: The helipad (the tour's turns, ride along, fly it yourself, land, its pilot flies it home)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' heli')

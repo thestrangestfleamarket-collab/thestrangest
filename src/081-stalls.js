@@ -9,7 +9,7 @@ const STALL=(()=>{ const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS;
     puffball:{s:.045,h:1.6,f:(p,s)=>{ p('ball',0xf4f0e6,0,s*.8,0,s,s*.85,s); }},
     chanterelle:{s:.04,h:1.2,f:(p,s)=>{ p('cone',0xe0a032,0,s*.6,0,s,s*1.2,s,Math.PI); }},
     redcap:{s:.045,h:1.6,f:(p,s,r)=>{ p('cyl',0xeee6d6,0,s*.5,0,s*.3,s,s*.3); p('cap',0xc42a20,0,s*.95,0,s,s*.6,s); for(let k=0;k<2;k++){ const a=r+k*3.1; p('ball',0xf6f0e0,Math.cos(a)*s*.55,s*1.3,Math.sin(a)*s*.55,s*.16,s*.1,s*.16); } }},
-    inkcap:{s:.03,h:1.6,f:(p,s)=>{ p('cyl',0xe6e0d0,0,s*.8,0,s*.8,s*3.4,s*.8,Math.PI/2); }},
+    inkcap:{s:.03,h:1.6,f:(p,s)=>{ p('cyl',0xe8e4dc,0,s*.9,0,s*.28,s*1.8,s*.28); p('ball',0xe6e0d0,0,s*2.1,0,s*.7,s*1.5,s*.7); p('cap',0xcfc8b8,0,s*2.9,0,s*.5,s*.75,s*.5); }},
     bolete:{s:.055,h:1.4,f:(p,s)=>{ p('cyl',0xd8c4a0,0,s*.45,0,s*.45,s*.9,s*.45); p('cap',0x7a4a24,0,s*.85,0,s,s*.55,s); }},
     morel:{s:.03,h:2.2,f:(p,s)=>{ p('cyl',0xe2d4b4,0,s*.35,0,s*.4,s*.7,s*.4); p('cone',0x5e4428,0,s*1.5,0,s*.75,s*1.8,s*.75); }},
     moonglow:{s:.035,h:1.5,f:(p,s)=>{ p('cyl',0x9fe8f0,0,s*.5,0,s*.3,s,s*.3,0,1); p('cap',0x48d8f0,0,s*.9,0,s,s*.6,s,0,1); }},

@@ -10,7 +10,7 @@ import {GHOLD} from './146zoa-guitar-hold.js';
   const M=(kind,o={})=>({kind,...o}), METAL=M('metal',{metal:1,rough:.3}), GLASS={glass:1};
   // the shapes: each a few parts about a metre's scale (the ground sets its real size)
   const S={
-    spray:(a,b)=>{ const g=G(); add(g,'cyl',a,0,.09,0,.033,.18,.033,0,0,0,M('metal',{metal:1,rough:.35})); add(g,'cap',a,0,.18,0,.033,.025,.033,0,0,0,M('metal',{metal:1,rough:.35})); add(g,'cyl',0xf4efe4,0,.205,0,.012,.025,.012,0,0,0,M('plastic')); return g; },
+    spray:(a,b)=>{ const g=G(); add(g,'cyl',a,0,.09,0,.033,.18,.033,0,0,0,M('metal',{metal:.5,rough:.4})); add(g,'cap',a,0,.18,0,.033,.025,.033,0,0,0,M('metal',{metal:.5,rough:.4})); add(g,'cyl',0xf4efe4,0,.205,0,.012,.025,.012,0,0,0,M('plastic')); return g; },
     can:(a,b)=>{ const g=G(); add(g,'cyl',a,0,.06,0,.033,.12,.033,0,0,0,M('metal',{metal:1,rough:.35})); add(g,'cyl',b,0,.06,0,.0335,.07,.0335,0,0,0,M('paper')); add(g,'cyl',0xc8ccd2,0,.121,0,.03,.004,.03,0,0,0,METAL); return g; },
     box:(a,b)=>{ const g=G(); add(g,'box',a,0,.15,0,.2,.3,.07,0,0,0,M('paper')); add(g,'box',b,0,.17,.036,.14,.12,.002,0,0,0,M('paper')); return g; },
     flat:(a,b)=>{ const g=G(); add(g,'box',a,0,.01,0,.2,.02,.3,0,0,0,M('paper')); add(g,'box',b,0,.021,0,.14,.002,.2,0,0,0,M('paper')); return g; },
@@ -88,8 +88,11 @@ import {GHOLD} from './146zoa-guitar-hold.js';
     [/^(art_postcard|mus_postcard|lotto_ticket|play_ticket|ticket|fairticket|ptix|fairphoto|photo)$/,'card'],[/^(art_print|paper|news_paper)$|^plate_/,'flat'],[/^(canvas_|painting$|unfinished$)/,'board'],[/^(passport|mus_guidebook)$/,'book'],[/^rf_scroll$/,'scroll'],
     [/^(coat_|jacket_)/,'coat'],[/^jeans$/,'jeans'],[/^bee_veil$/,'hat'],[/^(shades|nv_goggles)$/,'goggles'],[/^(plush_|mus_plush$)/,'plush'],[/^prize_ring$/,'ring'],[/^prize_yoyo$/,'yoyo'],[/^cube\d$/,'cube'],[/^arc_token$/,'coin'],
     [/^(handheld|junk_handheld|pockettv|junk_pockettv|walkman|junk_walkman)$/,'gadget'],[/^phone_/,'phone'],[/^radio_scanner$/,'radio'],[/^reel_/,'reel'],[/^rod_/,'rod'],[/^lure_spoon$/,'lure'],[/^lure_worm$/,'worm'],[/^crabpot$/,'crab'],[/^auger$/,'auger'],[/^cooler_/,'cooler'],
-    [/^bee_hive$/,'hive'],[/^bee_smoker$/,'smoker'],[/^bee_wax$/,'block'],[/^gb_/,'ball'],[/^gem_wheel$/,'wheel'],[/^orchard_key$/,'key'],[/^quill_pen$/,'pen'],[/^bird_feather$/,'feather'],[/^nut_acorn$/,'acorns'],[/^pouch$/,'pouch'],[/^pack_(large|deluxe)$/,'sack'],[/^demon_ice$/,'block'],[/^scuba$/,'tank'],
+    [/^bee_hive$/,'hive'],[/^bee_smoker$/,'smoker'],[/^bee_wax$/,'block'],[/^gb_/,'ball'],[/^gem_wheel$/,'wheel'],[/^orchard_key$/,'key'],[/^quill_pen$/,'pen'],[/^bird_feather$/,'feather'],[/^nut_acorn$/,'acorns'],[/^pouch$/,'pouch'],[/^pack_(large|deluxe)$/,'sack'],[/^scuba$/,'tank'],
     [/^fair_pennant$/,'flag'],[/^(bonsai)$/,'plant'],[/^im_/,'implant'],[/^cactus/,'cactus'],[/^pot$/,'pot'],[/^feeder$/,'feeder'],[/^(bs_kit)$/,'kit'],[/^mus_replica$/,'frame']];
+  // a thing whose stuff has a colour of its own (its picture's main colour is the glass or the can, not what is in it)
+  const OWNC={d_cola:[0x2a1208,0],d_stout:[0x140c08,0],d_ale:[0xc8862a,0],honey_clover:[0xe8b030,0xd8c890],honey_lav:[0xd8a040,0x9a7ac8],honey_moon:[0xf0d890,0xc8ccd8],honey_rose:[0xd88a3a,0xd86a8a],honey_sun:[0xf2b420,0xf2d040],honey_wild:[0xb86a1a,0x6a8a3a],
+    spray_gold:[0xd8b040,0],spray_silver:[0xc8ccd2,0]};
   const shapeOf=id=>{ const k=String(id).split('~')[0]; for(const [re,s] of BY)if(re.test(k))return s; return null; };
-  INSPECT.kinds.push({is:id=>!!shapeOf(id),make:id=>{ '@later'; const [a,b]=cols(String(id).split('~')[0]), g=S[shapeOf(id)](a,b); g.userData.made=1; return g; }});
+  INSPECT.kinds.push({is:id=>!!shapeOf(id),make:id=>{ '@later'; const k=String(id).split('~')[0], [a,b]=OWNC[k]||cols(k), g=S[shapeOf(id)](a,b); g.userData.made=1; return g; }});
   INSPECT.shapeOf=shapeOf; }

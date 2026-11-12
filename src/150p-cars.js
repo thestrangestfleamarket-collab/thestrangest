@@ -174,6 +174,7 @@ const CARD=__LAZY__("data/cars.json"), RADJ=__LAZY__("data/radio.json"), RFILE={
   const at=C=>{ if(!C.mesh)return; C.mesh.position.set(C.x,yOf(C),C.z); C.mesh.rotation.set(0,C.hd,0); C.mesh.visible=!C.by; tint(C,C.mesh);
     const D=DATA.cars[C.model], ls=sz(C.model), hw=D.size[0]/2*M1*ls, hl=D.size[2]/2*M1*ls, c=Math.abs(Math.cos(C.hd)), s=Math.abs(Math.sin(C.hd)), ex=hw*c+hl*s, ez=hw*s+hl*c;
     if(!C.sol){ C.sol=[0,0,0,0]; SOL.up.push(C.sol); } if(C.by){ C.sol[0]=C.sol[2]=C.sol[1]=C.sol[3]=-1e7; return; } C.sol[0]=C.x-ex; C.sol[1]=C.z-ez; C.sol[2]=C.x+ex; C.sol[3]=C.z+ez; };
+  CAR.at=at;
   const moorAt=C=>{ if(!C.moor||C.moored||!RIVER.box||RIVER.fpier==null)return false; C.moored=1; if(!(ONLINE.world||{})['car:'+C.id]){ C.x=RIVER.fpier+C.moor[0]*T; C.z=RIVER.box.z1-C.moor[1]*T; C.hd=Math.PI; } return true; };
   const show=()=>{ for(const C of CARS.values()){ if(!DATA.cars[C.model])continue; moorAt(C); kindFor(C.model); if(!C.mesh){ C.mesh=build(C.model,idn(C.id)); C.mesh.userData.anyRoom=false; C.mesh.userData.parkFar=true; scene.add(C.mesh); const D=DATA.cars[C.model];
         if(inMap(C)&&CARX.things)CARX.things(C,D);

@@ -3,7 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {CARLAMPS, CLOCK, CULL, DRESS, ONLINE, PARK, pos, SFX, SPEED, UI, VLOOK, WALKS} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
-import {MODS, OUT, SOL, SYS, TILE} from './006-map-pre.js';
+import {LEVEL, MODS, OUT, SOL, SYS, TILE} from './006-map-pre.js';
 import {TRAINS} from './009c-trains.js';
 import {TLX} from './069-dress.js';
 import {BIGCAT} from './111ei-bigcat.js';
@@ -11,7 +11,7 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
 { const TD=__LAZY__("data/traffic.json"), T=TILE, M0=T/.84, M1=M0*1.4, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, say=(t,c)=>SAY(t,c||'#e8e2cc');
   const now=()=>(TRAINS.now?TRAINS.now():Date.now()/1000)+TRAFFIC.skew;
   // LOW: hover cars that keep to the road lanes, a hand over the ground; PACE: each model's own speed, a share of its lane's
-  const LOW=['taxi-pod','station-wagon-70s'], HOV={'taxi-pod':.3,'station-wagon-70s':.8}, PACE={'muscle-car-60s':1.15,'wedge-coupe-80s':1.2,'station-wagon-70s':.95,'convertible-60s':1.05,'camper-van':.8,'police-cruiser-80s':1.1,'taxi-pod':1,'town-car':1,hatchback:.95,suv:1,minivan:.9,pickup:.9,'kei-van':.85,rover:.75,interceptor:1.25,'escape-pod':.85,'taxi-coupe':1.05,ambulance:1.15,'police-flier':1.3};
+  const LOW=['taxi-pod','station-wagon-70s'], HOV={'taxi-pod':.3,'station-wagon-70s':.8}, PACE={'muscle-car-60s':1.15,'wedge-coupe-80s':1.2,'station-wagon-70s':.95,'convertible-60s':1.05,'camper-van':.8,'police-cruiser-80s':1.1,'taxi-pod':1,'town-car':1,hatchback:.95,suv:1,minivan:.9,pickup:.9,'kei-van':.85,interceptor:1.25,'escape-pod':.85,'taxi-coupe':1.05,ambulance:1.15,'police-flier':1.3};
   const GAME=['muscle-car-60s','convertible-60s','station-wagon-70s','wedge-coupe-80s','camper-van','police-cruiser-80s'];
   const zs=Z(SHARED.BOD.CURB), zp=Z(SHARED.BOD.FAR), zm=(zs+zp)/2, xW=X(-129), xE=X(261), SPAN=xE-xW, OFF=130*M0, LC=SPAN+OFF, HO=OFF/2;
   const gx0=X(PARK.gate[0]+PARK.ox), gx1=X(PARK.gate[1]+PARK.ox);
@@ -94,7 +94,7 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
         if(C.m){ const y=L.fly?SHARED.groundY(x,L.z)+L.fly+Math.sin(t*1.3+C.i*2)*.25*M0:SHARED.groundY(x,L.z)+(LOW.includes(C.model)?(HOV[C.model]+Math.sin(t*1.3+C.i*2)*.06)*M0:0); C.m.visible=true; C.m.position.set(x,y,L.z); C.m.rotation.set(0,L.dir>0?Math.PI/2:-Math.PI/2,L.fly?Math.sin(t*.9+C.i)*.04:0); }
         if(!L.fly&&!L.tiny){ if(!C.sol){ C.sol=[-1e7,-1e7,-1e7,-1e7]; SOL.up.push(C.sol); } const w=size(C.model)[0]*M1/2; if(C.m){ C.sol[0]=x-len; C.sol[2]=x+len; C.sol[1]=L.z-w; C.sol[3]=L.z+w; } else C.sol[0]=C.sol[1]=C.sol[2]=C.sol[3]=-1e7; } }); } };
   /* ---------- the rounds: fliers on a closed way of their own, from the shared clock alone (the police fliers over the sidewalks and across the park, the small craft round the park) ---------- */
-  const ROUND=['police-flier','interceptor','escape-pod'], RINGS=[]; TRAFFIC.rings=RINGS;
+  const ROUND=['police-flier','interceptor','escape-pod','rover'], RINGS=[]; TRAFFIC.rings=RINGS;
   { const a=PARK.x0+PARK.ox, b=PARK.x1+PARK.ox, c=PARK.y0+PARK.oy, e=PARK.y1+PARK.oy, ks=SHARED.BOD.CURB-2.5, kp=SHARED.BOD.FAR+2.5, w=b-a, d=e-c, xa=a+12, xb=b-12;
     const way=P=>{ const cv=new THREE.CatmullRomCurve3(P.map(q=>new THREE.Vector3(X(q[0]),q[2]*M0,Z(q[1]))),true,'centripetal'); cv.arcLengthDivisions=600; return cv; };
     const pol=[]; for(let i=0;i<=6;i++)pol.push([-120+i*(b-10+120)/6,ks,10]); for(let i=0;i<=5;i++)pol.push([b-10-i*(b-10-xa)/5,kp,10]);
@@ -103,14 +103,17 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
     RINGS.push({id:'police',cv:way(pol),v:9*M0,dir:1,models:['police-flier','police-flier','police-flier','police-flier'],m:[]});
     const rim=[[xa,c+14],[a+w*.5,c+10],[xb,c+14],[b-8,c+d*.5],[xb,e-14],[a+w*.5,e-10],[xa,e-14],[a+8,c+d*.5]].map(q=>[q[0],q[1],34]);
     RINGS.push({id:'craft',cv:way(rim),v:11*M0,dir:-1,models:['interceptor','escape-pod','interceptor','escape-pod'],m:[]});
+    // the rovers keep to the park's paths: along the cross path and back, up the long path and down it, round again
+    { const Q=LEVEL.paths||[], long=Q.slice().sort((p,q)=>Math.hypot(q.b[0]-q.a[0],q.b[1]-q.a[1])-Math.hypot(p.b[0]-p.a[0],p.b[1]-p.a[1])).slice(0,2), pts=[]; for(const q of long){ const n=8; for(let i=0;i<=n;i++)pts.push([q.a[0]+(q.b[0]-q.a[0])*i/n,q.a[1]+(q.b[1]-q.a[1])*i/n,0]); for(let i=n-1;i>0;i--)pts.push([q.a[0]+(q.b[0]-q.a[0])*i/n+1.6,q.a[1]+(q.b[1]-q.a[1])*i/n+1.6,0]); }
+      if(pts.length>4)RINGS.push({id:'rover',ground:1,cv:way(pts),v:1.8*M0,dir:1,models:['rover','rover'],m:[]}); }
     for(const R of RINGS)R.len=R.cv.getLength(); }
   const RP=new THREE.Vector3(), RT=new THREE.Vector3();
-  const ringAt=(R,i,t,o)=>{ const u=(((t*R.v*SPEED.of('fliers')*R.dir+i*R.len/R.models.length)/R.len)%1+1)%1; R.cv.getPointAt(u,RP); R.cv.getTangentAt(u,RT); o.x=RP.x; o.y=RP.y; o.z=RP.z; o.r=Math.atan2(RT.x*R.dir,RT.z*R.dir); return o; };
+  const ringAt=(R,i,t,o)=>{ const u=(((t*R.v*SPEED.of(R.ground?'traffic':'fliers')*R.dir+i*R.len/R.models.length)/R.len)%1+1)%1; R.cv.getPointAt(u,RP); R.cv.getTangentAt(u,RT); o.x=RP.x; o.y=RP.y; o.z=RP.z; o.r=Math.atan2(RT.x*R.dir,RT.z*R.dir); return o; };
   TRAFFIC.ringAt=(id,i,t)=>ringAt(RINGS.find(R=>R.id===id),i,t==null?now():t,{});
   const RO={}; SYS.add('life',()=>{ if(!D||!LANES[0].GR)return; const t=now(), Rr=Math.max(90*T,(window.CULL&&CULL.R)||0)*1.5, up=OUT.open&&SHARED.LVL==='up';
     for(const R of RINGS)R.models.forEach((k,i)=>{ if(!D[k]&&!carsIn())return; ringAt(R,i,t,RO); const near=up&&Math.abs(RO.x-pos.x)<Rr&&Math.abs(RO.z-pos.z)<Rr; let m=R.m[i];
       if(near&&!m)m=R.m[i]=take(k,0); if(!near&&m){ m.visible=false; (POOL[k+'~0']||(POOL[k+'~0']=[])).push(m); R.m[i]=null; return; } if(!m)return;
-      m.visible=true; m.position.set(RO.x,SHARED.groundY(RO.x,RO.z)+RO.y+Math.sin(t*1.1+i*2)*.3*M0,RO.z); m.rotation.set(0,RO.r,Math.sin(t*.8+i)*.05); }); },'150pb-traffic');
+      m.visible=true; m.position.set(RO.x,SHARED.groundY(RO.x,RO.z)+RO.y+(R.ground?0:Math.sin(t*1.1+i*2)*.3*M0),RO.z); m.rotation.set(0,RO.r,R.ground?0:Math.sin(t*.8+i)*.05); }); },'150pb-traffic');
   // the airship (owner, 9 Nov 2026: "make the blimp 7x bigger and floating around the city high up"): one, seven times the size, on a slow round over the section from the shared clock
   const BLIMP={k:'sky-tender',m:null,T:300,h:75*M0,at:t=>{ const a=t/BLIMP.T*Math.PI*2, cx=(xW+xE)/2, cz=zm+110*T; return {x:cx+Math.cos(a)*150*T,z:cz+Math.sin(a)*120*T,r:Math.atan2(-Math.sin(a)*150,Math.cos(a)*120)}; }}; TRAFFIC.blimp=BLIMP;
   SYS.add('life',()=>{ if(!D||!D[BLIMP.k])return; if(!BLIMP.m){ const g=new THREE.Group(); g.add(body(D[BLIMP.k],BLIMP.k)); g.scale.setScalar(7); g.traverse(o=>{ o.userData.anyRoom=false; o.frustumCulled=false; }); GRP.add(g); BLIMP.m=g; }
@@ -121,13 +124,13 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
   /* ---------- the kit fetched after the start, the game's cars once theirs are in ---------- */
   const carsIn=()=>!!(MODS.cars&&MODS.cars.dbg&&MODS.cars.build&&MODS.cars.dbg().loaded);
   let asked=false; SYS.add('life',()=>{ if(asked||!SYS.started)return; asked=true; TD().then(d=>{ D=d; const ks=Object.keys(d).filter(k=>d[k]&&d[k].parts);
-      const fl=ks.filter(k=>d[k].fly&&k!==BLIMP.k&&!ROUND.includes(k)), gr=ks.filter(k=>!d[k].fly&&k!=='kei-van'), ready=()=>{ const g=carsIn()?gr.concat(GAME.filter(k=>k!==PAT),LOW):gr; const f=carsIn()&&MODS.cars.fliers?fl.concat(MODS.cars.fliers().filter(k=>!LOW.includes(k)&&!ROUND.includes(k))):fl; LANES.forEach((L,i)=>{ L.FL=f; L.GR=g; L.pat=!L.fly&&i<2&&carsIn(); }); };
+      const fl=ks.filter(k=>d[k].fly&&k!==BLIMP.k&&!ROUND.includes(k)), gr=ks.filter(k=>!d[k].fly&&k!=='kei-van'&&!ROUND.includes(k)), ready=()=>{ const g=carsIn()?gr.concat(GAME.filter(k=>k!==PAT),LOW):gr; const f=carsIn()&&MODS.cars.fliers?fl.concat(MODS.cars.fliers().filter(k=>!LOW.includes(k)&&!ROUND.includes(k))):fl; LANES.forEach((L,i)=>{ L.FL=f; L.GR=g; L.pat=!L.fly&&i<2&&carsIn(); }); };
       for(const k of ks)VLOOK.kind('tr:'+k,{name:d[k].name,grp:d[k].fly?'FLYING TRAFFIC':'ROAD TRAFFIC',make:i=>body(d[k],k,i),traffic:k,...(TLIV[k]&&TLIV[k].length>1?{vname:'LOOK',variants:()=>TLIV[k].map((q,i)=>'LOOK '+(i+1))}:{})});
       ready(); fleet(); let n=0; const again=()=>{ if(carsIn()){ for(const L of LANES)for(const C of L.cars){ give(C); C.lap=-1e9; C.model=null; } ready(); } else if(++n<30)setTimeout(again,2000); }; setTimeout(again,2000);
     }).catch(e=>console.warn('TRAFFIC: the vehicles did not load',e)); },'150pb-traffic');
   // their lamps (150pc): every car on the road, measured once from its model
   const DIM={}, dimOf=k=>DIM[k]||(DIM[k]=(()=>{ const t=tpl(k); if(!t)return null; const b=new THREE.Box3().setFromObject(t); return [b.max.x-b.min.x,b.max.y-b.min.y,b.max.z-b.min.z,b.min.y]; })());
-  CARLAMPS.src.push(out=>{ for(const R of RINGS)R.m.forEach((m,i)=>{ const d=m&&m.visible&&dimOf(R.models[i]); if(d)out.push({x:m.position.x,y:m.position.y,z:m.position.z,r:m.rotation.y,dim:d,fly:true,own:!!(MODS.cars&&MODS.cars.own&&MODS.cars.own(R.models[i])),sp:R.v}); }); for(const L of LANES)for(const C of L.cars){ if(!C.m||!C.m.visible)continue; const d=dimOf(C.model); if(d)out.push({x:C.m.position.x,y:C.m.position.y,z:C.m.position.z,r:C.m.rotation.y,dim:d,fly:!!L.fly,own:!!(MODS.cars&&MODS.cars.own&&MODS.cars.own(C.model)),sp:C.sp}); } });
+  CARLAMPS.src.push(out=>{ for(const R of RINGS)R.m.forEach((m,i)=>{ const d=m&&m.visible&&dimOf(R.models[i]); if(d)out.push({x:m.position.x,y:m.position.y,z:m.position.z,r:m.rotation.y,dim:d,fly:!R.ground,own:!!(MODS.cars&&MODS.cars.own&&MODS.cars.own(R.models[i])),sp:R.v}); }); for(const L of LANES)for(const C of L.cars){ if(!C.m||!C.m.visible)continue; const d=dimOf(C.model); if(d)out.push({x:C.m.position.x,y:C.m.position.y,z:C.m.position.z,r:C.m.rotation.y,dim:d,fly:!!L.fly,own:!!(MODS.cars&&MODS.cars.own&&MODS.cars.own(C.model)),sp:C.sp}); } });
   TRAFFIC.dbg=()=>({loaded:!!D,rings:RINGS.map(R=>({id:R.id,len:R.len/M0,models:R.models,shown:R.m.filter(m=>m&&m.visible).length})),park:[PARK.x0+PARK.ox,PARK.x1+PARK.ox,PARK.y0+PARK.oy,PARK.y1+PARK.oy],tiny:LANES.filter(L=>L.tiny).map(L=>({z:L.z,cars:L.cars.map(C=>({model:C.model,sp:C.sp,shown:!!C.m,s:C.m?C.m.scale.x:0}))})),clip:LANES.reduce((n,L)=>n+L.cars.filter(C=>C.u!=null&&room(L,C,C.u)<-2*M0).length,0),lap:LC,m1:M1,light:light(now()),cross:[gx0,gx1],lanes:LANES.filter(L=>!L.tiny).map(L=>({dir:L.dir,fly:!!L.fly,z:L.z,stop:xOf(L,L.stop),cars:L.cars.map(C=>({model:C.model,x:xOf(L,((C.u%LC)+LC)%LC),on:(((C.u%LC)+LC)%LC)<SPAN,len:size(C.model)[2]*M1/2,s:+((((C.u%LC)+LC)%LC)/T).toFixed(1),sp:+(C.sp/M0).toFixed(1),shown:!!(C.m&&C.m.visible)}))}))});
 }
 export {TRAFFIC};

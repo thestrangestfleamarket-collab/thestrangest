@@ -17,11 +17,7 @@ const BEES={list:[]}; window.BEES=BEES;
   const HTIER={honey_wild:'c',honey_clover:'c',honey_lav:'r',honey_sun:'r',honey_rose:'r',honey_moon:'s'}; BEES.HTIER=HTIER; for(const id in HTIER)ITEMS.reg(id,{tier:{c:'common',r:'rare',s:'super'}[HTIER[id]]});
   const NM={bee_hive:'A BEEHIVE',bee_smoker:'A BEE SMOKER',bee_veil:"A BEEKEEPER'S VEIL",jar_honey:'AN EMPTY HONEY JAR',bee_wax:'BEESWAX',wax_candle:'A BEESWAX CANDLE'};
   for(const id in HONEY)NM[id]='A JAR OF '+HONEY[id][0];
-  FORAGE.add({names:NM,recipes:[['wax_candle','A BEESWAX CANDLE','bee',[0,45],{bee_wax:3},'a candle for your home; sells for $12'],
-    ['f_hfish','HONEY-GLAZED BASS','cooking',[25,70],{honey_wild:1,x_bass:1},'mends you a minute, stamina back'],['f_hmush','HONEYED CHANTERELLES','cooking',[20,60],{honey_clover:1,chanterelle:2},'some health'],
-    ['p_royal','ROYAL JELLY TONIC','alchemy',[50,100],{honey_moon:1,moonglow:1},'all your health, mending 2 min']],
-    does:{f_hfish:()=>{ FORAGE.feed(.4); FORAGE.buff('regen',60); VIT.sta=1; },f_hmush:()=>{ FORAGE.feed(.3); VIT.heal(.25); },p_royal:()=>{ VIT.heal(1); FORAGE.buff('regen',120); }},prices:{f_hfish:30,f_hmush:24,p_royal:160}});
-  FORAGE.CK.bee={short:'BEES',made:nm=>`YOU ROLL AND WICK THE WAX: ${nm}.`,fail:'THE WAX CRACKS. TRY AGAIN.'};
+  FORAGE.add({names:NM});
   FORAGE.BUYK.honey=['honey_','bee_wax','wax_candle']; FORAGE.sell(...Object.keys(HONEY),'bee_wax','wax_candle');
   FORAGE.HELP.push('BEEKEEPING: set a hive on the lawn (from your pack) among flowers; come back to take its honey (empty jars, a smoker, a veil).');
   const S={v:1,hives:[],got:{}}; try{ const D=JSON.parse(OWNED.get(KEY)||'null'); if(D&&D.v===1)Object.assign(S,D); }catch(e){} S.hives=(S.hives||[]).filter(h=>h&&Number.isFinite(h.x)&&Number.isFinite(h.z));

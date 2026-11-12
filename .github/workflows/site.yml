@@ -420,10 +420,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' holodeck')
         run: node tests/holodeck.cjs dist/market.html
-      - name: BOARDED UP (the holodeck's zombie siege, solo and two online, the server's relay)
+      - name: BOARDED UP (the holodeck's zombie siege, solo, two online, in the headset, the server's relay)
         timeout-minutes: 40
         if: contains(steps.f.outputs.run, ' boarded')
-        run: node tests/boarded.cjs dist/market.html && node tests/boarded-online.cjs dist/market.html && node tests/boarded-server.cjs
+        run: node tests/boarded.cjs dist/market.html && node tests/boarded-online.cjs dist/market.html && node tests/boarded-vr.cjs dist/market.html && node tests/boarded-server.cjs
       - name: The kite (held, launched, climbing in the wind)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' kite')

@@ -82,6 +82,7 @@ import {PAD} from './075-main-13.js';
     if(PAD.capture){ const f=PAD.capture, mo=BIND.mod, i=Bv.findIndex((v,j)=>j<16&&v>.5&&j!==mo);   // the next button pressed; with the hold-for-more button held, its second layer; that button alone, itself
       if(Bv.every(v=>!(v>.5))){ if(capUp&&capM){ PAD.capture=null; f(mo); return; } capUp=true; capM=false; } else if(capUp&&mo>=0&&on(mo)&&i<0)capM=true;
       if(capUp&&i>=0){ PAD.capture=null; f(mo>=0&&on(mo)?i+M_:i); return; } if(now>capT){ PAD.capture=null; f(null); } return; }
+    if(UI.gamewin==='pin'){ hold('h',on(4)||on(6)||on(14)?'a':null); hold('v',on(5)||on(7)||on(15)?'d':null); hold('A',on(b('jump'))||(ax[3]||0)>.6?' ':null); if(hit(b('back')))tap('Escape'); PAD.mv=null; PAD.aWait=true; return; }   // a pinball table: a bumper or trigger a side is its flipper, A or the right stick pulled back the plunger, B steps away
     if(UI.gamewin){ const lx=ax[0]||0, ly=ax[1]||0, dx=on(14)?-1:on(15)?1:Math.abs(lx)>.4?Math.sign(lx):0, dy=on(12)?-1:on(13)?1:Math.abs(ly)>.4?Math.sign(ly):0;   // a cabinet or the BBS: the stick is the arrows, A fires or enters, B leaves, X is the game's magic, Y its menu
       hold('h',dx<0?'ArrowLeft':dx>0?'ArrowRight':null); hold('v',dy<0?'ArrowUp':dy>0?'ArrowDown':null); hold('A',on(b('jump'))?(UI.gamewin==='bbs'?'Enter':' '):null); hold('X',on(b('use'))?'c':null); if(hit(b('kick')))tap('m'); if(hit(b('back')))tap('Escape'); PAD.mv=null; PAD.aWait=true; return; }
     if(panels().length){ letGo(); PAD.aWait=true; menus(on,hit,ax,act); if(hit(b('back')))back(); else if(hit(b('menu'))&&UI.menuOpen)tap('Escape'); return; }
@@ -153,5 +154,5 @@ import {PAD} from './075-main-13.js';
     el.querySelector('#padrst').onclick=()=>{ useLay(LNAME); save(); UI.padPage(); };
     if(PAD.ui&&!PAD.ui.isConnected)mark(null); };
   UI.padKeys=()=>{ if(UI.menuOpen)UI.padPage(); };
-  window.PADDBG=()=>({layout:LNAME,bind:{...BIND},held:[...PAD.held.entries()],useX:!!PAD.useX,modUsed:!!PAD.modUsed,panels:PAD.panels().map(e=>e.id||e.className)});
+  window.PAD=PAD; window.PADDBG=()=>({layout:LNAME,bind:{...BIND},held:[...PAD.held.entries()],useX:!!PAD.useX,modUsed:!!PAD.modUsed,panels:PAD.panels().map(e=>e.id||e.className)});
 }

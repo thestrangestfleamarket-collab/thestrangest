@@ -74,8 +74,8 @@ import {GUITAR} from './146zob-guitar.js';
       F.makeScale(k,k,k); G.matrix.copy(F); G.matrixWorldNeedsUpdate=true;
       for(let i=0;i<15;i++)W[i].multiplyMatrices(F,restM[i]);
       // onto the seat (the thighs' tops a hand above it), then the torso leans in and sways a little with the music
-      // one you walk with (K.walk: the violin, the flute, the trumpet): the hips and legs are the body's own steps, the rest upright on the hips; else onto the seat
-      if(K.walk){ VB.setFromMatrixPosition(MB.multiplyMatrices(P_[0],restM[0])).sub(VA.setFromMatrixPosition(W[0])); MA.makeTranslation(VB.x,VB.y,VB.z); for(let i=1;i<=8;i++)W[i].premultiply(MA); for(const i of [0,9,10,11,12,13,14])W[i].multiplyMatrices(P_[i],restM[i]); }
+      // one you walk with (K.walk: the violin, the flute, the trumpet): the hips, legs, torso and head are the body's own steps, the arms carried by the torso before they reach for it; else onto the seat
+      if(K.walk){ MB.copy(W[1]).invert(); MA.multiplyMatrices(P_[1],restM[1]).multiply(MB); for(let i=3;i<=8;i++)W[i].premultiply(MA); for(const i of [0,1,2,9,10,11,12,13,14])W[i].multiplyMatrices(P_[i],restM[i]); }
       else { MA.makeTranslation(0,(K.seat.y+.075-hipY)*k,(K.seat.z||0)*k); for(let i=0;i<15;i++)W[i].premultiply(MA); }
       const sway=K.sway?K.sway(P,t,H):0, tj=org(W[1],new V3());
       QA.setFromEuler(new THREE.Euler((K.lean||0)+.012*Math.sin(t*1.3),sway*.6,sway*.25+(K.roll?K.roll(P,t,H):0),'XYZ')); for(let i=1;i<=8;i++)turnAbout(W[i],tj,QA);

@@ -38,7 +38,7 @@ const PQ={}; window.PQ=PQ;
   // the orchard's flowers grow from their seeds through the garden's own planting (GARDEN.FL, GARDEN.SEED)
   if(GARDEN.FL){ GARDEN.FL.sweetpea=['HEIRLOOM SWEET PEA',60,16,0xd88ac8,0xf4e0f0,[.05,.9,.45,.3]]; GARDEN.FL.hollyhock=['HEIRLOOM HOLLYHOCK',65,18,0xc83a6a,0xf2e080,[.07,.6,1.1,.3]];
     GARDEN.SEED.sweetpea=['HEIRLOOM SWEET PEA SEEDS',20]; GARDEN.SEED.hollyhock=['HEIRLOOM HOLLYHOCK SEEDS',24]; }
-  FORAGE.HELP.push('THE PARK\'S FINDS: ice fishing through a hole you drill on the frozen lake (an ice auger, the Fisherman); the Lost Ball Pond and a hidden green; the Lost Orchard behind the castle; a wild hive in a hollow oak (bring a smoker); the moth lamp on the castle wall at midnight (bring a net).');
+  FORAGE.HELP.push('THE PARK\'S FINDS: ice fishing through a hole you drill on the frozen lake (an ice auger, the Fisherman); the Lost Orchard in the old castle clearing; a wild hive in a hollow oak (bring a smoker); the moth lamp on the loft in the clearing at midnight (bring a net).');
 
   /* ---------- where: open lawn found once the park is built, never on a path's solids or in the lake ---------- */
   const taken=[], freeAt=(x,z,r)=>WEEDS.inPark&&WEEDS.inPark(x,z,4+r/T)&&!SOL.up.some(s=>s[0]<x+r&&s[2]>x-r&&s[1]<z+r&&s[3]>z-r)&&[[0,0],[r,0],[-r,0],[0,r],[0,-r]].every(([a,b])=>FOUNT.bedAt(x+a,z+b)==null)&&taken.every(q=>Math.hypot(q[0]-x,q[1]-z)>q[2]+r);
@@ -156,7 +156,7 @@ const PQ={}; window.PQ=PQ;
     const glass=new THREE.MeshLambertMaterial({color:0xe8e0c0,emissive:0x000000}); LOFT.glass=glass; put(lampG,new THREE.BoxGeometry(.3*WU,.4*WU,.3*WU),glass,0,1.75*WU,0); put(lampG,new THREE.ConeGeometry(.26*WU,.2*WU,4),L(0x2a2a2e),0,2.05*WU,0,Math.PI/4);
     put(lampG,new THREE.PlaneGeometry(.8*WU,.9*WU),new THREE.MeshLambertMaterial({color:0xf4f2ea,side:THREE.DoubleSide}),.45*WU,.9*WU,0,Math.PI/2);   // the white sheet moths settle on
     LOFT.light=new THREE.PointLight(0xfff0c8,0,8*T,1.6); LOFT.light.position.set(0,1.75*WU,0); lampG.add(LOFT.light); LOFT.lampG=lampG;
-    const up=new THREE.Group(); up.position.set(foot[0]-x,g,foot[1]-z); G.add(up); LOFT.upTh={name:'A LADDER UP TO THE WALL-WALK',obj:hit(up,1*T,1.4*T),reach:1.4*T,near:2*T,tall:1.2*T,act:()=>PQ.climbLoft(1)}; UI.thing(LOFT.upTh);
+    const up=new THREE.Group(); up.position.set(foot[0]-x,g,foot[1]-z); G.add(up); LOFT.upTh={name:'A LADDER UP TO THE LOFT',obj:hit(up,1*T,1.4*T),reach:1.4*T,near:2*T,tall:1.2*T,act:()=>PQ.climbLoft(1)}; UI.thing(LOFT.upTh);
     const dn=new THREE.Group(); dn.position.set(.6*hw,top,sg*(hd-.3*T)); G.add(dn); LOFT.dnTh={name:'THE LADDER DOWN',obj:hit(dn,.8*T,1.2*T),reach:1.2*T,near:1.8*T,tall:1*T,act:()=>PQ.climbLoft(-1)}; UI.thing(LOFT.dnTh);
     LOFT.lampTh={name:'THE MOTH LAMP',obj:hit(lampG,.8*T,2*T),reach:1.6*T,near:2.4*T,tall:1.8*T,act:()=>PQ.lamp()}; UI.thing(LOFT.lampTh);
     const MG=new THREE.PlaneGeometry(.16*WU,.1*WU); LOFT.moths=[]; LOFT.bats=[];

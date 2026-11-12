@@ -114,7 +114,7 @@
    "steps": [
     "Double-click a merchant or a shop counter. Double-click a row to buy or sell; [ENTER] says yes, [ESC] no.",
     "Or drag a thing from your bag onto a shopkeeper to sell it.",
-    "ANTIQUES & PAWN buys anything at half its worth.",
+    "An EXCHANGE MACHINE on the street buys anything at half its worth.",
     "Who buys what: the Mushroom Seller mushrooms; the Tomato vegetables, fruit and flowers; the fish market's stalls and the Fisherman in Waders fish; the Park Ranger butterflies; the Forest Ranger birds; the Village Gardener honey; the Professor paintings, finds and fossils; the Samurai Warrior swords; the Rock Golem gems.",
     "Rent a table on Market St's row to sell your own things: +1 DAY, then PUT 1 or ALL, and collect the till.",
     "To look closely at something, press [5]. Drag to turn it, wheel to zoom."
@@ -133,7 +133,7 @@
       "THE AQUARIUM: buy fish for your tank.",
       "THE ARMOURY. THE SKATE SHOP: skateboards, BMX, hover boards and the go-kart.",
       "FISHING & SCUBA: rods, reels, lures, bait, coolers, goggles, a headlight and the scuba set.",
-      "ANTIQUES & PAWN buys anything. THE CLINIC: the Doctor.",
+      "THE CLINIC: the Doctor.",
       "THE BOOKSTORE: the free library, the table games and the Professor. THE BAR: the Badger pours ale, stout and cola; darts and pool."
      ]
     },
@@ -179,7 +179,7 @@
    "steps": [
     "Go to a park lawn. Press [;] to take your shoes off.",
     "Double-click a mushroom, a fairy ring or wildflowers to pick them.",
-    "In your bag: eat, identify, or make things.",
+    "In your bag: eat or identify.",
     "Your BOOK ([ESC], INVENTORY, BOOK) keeps a page for each thing you collect.",
     "Grow your own: seeds and saplings from the Tomato. Plant seeds from your pack on bare lawn (up to 12), or claim a plot at its post.",
     "The Mushroom Seller buys mushrooms and trains FORAGING and MYCOLOGY. The Tomato buys vegetables, fruit and flowers."
@@ -201,7 +201,7 @@
      "head": "TRAINERS",
      "steps": [
       "Each trainer asks you to find harder and harder things for their skill, and pays two to five times their worth.",
-      "The Mushroom Seller: FORAGING, MYCOLOGY. The Tomato: GARDENING. The Fisherman in Waders: FISHING. The Park Ranger: BUTTERFLIES. The Village Gardener: BEEKEEPING. The Rock Golem: GEMS. The Forest Ranger: BIRDING, CLIMBING, PHOTOGRAPHY. The Professor: BOOKBINDING, PALAEONTOLOGY. The Samurai Warrior: SWORDS. The Squirrel: FIGHTING.",
+      "The Mushroom Seller: FORAGING, MYCOLOGY. The Tomato: GARDENING. The Fisherman in Waders: FISHING. The Park Ranger: BUTTERFLIES. The Village Gardener: BEEKEEPING. The Rock Golem: GEMS. The Forest Ranger: BIRDING, CLIMBING, PHOTOGRAPHY. The Professor: PALAEONTOLOGY. The Samurai Warrior: SWORDS. The Squirrel: FIGHTING.",
       "Some merchants also sell a LESSON in what they buy (TRAIN)."
      ]
     },

@@ -32,7 +32,7 @@ DRONE.init=()=>{ const APTS=MODS.apts; if(!APTS||!APTS.R)return; const T=TILE, X
   const bringFurn=kind=>{ const l=ownedFurn(), [u,v]=SLOTS[l.length%SLOTS.length]; l.push({kind,u,v,r:0}); saveFurn(l); placeFurn(kind,u,v,0); };
 
   const mkDrone=()=>DRONE.mk();
-  const dropPoint=()=>{ const F=MODS.firev; return F&&F.spot?F.spot(.5):null; };
+  const dropPoint=()=>{ const F=MODS.firev; return F&&F.spot&&!MODS.apts.NOESC?F.spot(.5):null; };
 
   const flights=[], parcels=[]; const V=new THREE.Vector3();
   const landParcel=(label,onIn,dp,here,who)=>{ '@later'; const p=bx(.32*T,.24*T,.32*T,lam(0xc89a5a)); p.position.set(dp.x+(Math.random()-.5)*.5*T,dp.y+.12*T,dp.z); scene.add(p); parcels.push(p);

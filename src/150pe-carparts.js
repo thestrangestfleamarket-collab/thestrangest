@@ -18,7 +18,7 @@ import {MODS, SYS, TILE} from './006-map-pre.js';
 
   /* ---------- what is painted on: each picture made once, shared by every copy ---------- */
   const TEX={};
-  const cv=(k,w,h,f)=>{ if(TEX[k])return TEX[k]; const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'); f(g,w,h); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return TEX[k]=t; };
+  const cv=(k,w,h,f)=>{ if(TEX[k])return TEX[k]; const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'); f(g,w,h); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return TEX[k]=t; };
   const shield=(g,x,y,s)=>{ g.beginPath(); g.moveTo(x-s*.42,y-s*.5); g.lineTo(x+s*.42,y-s*.5); g.lineTo(x+s*.42,y+s*.05); g.quadraticCurveTo(x+s*.4,y+s*.38,x,y+s*.5); g.quadraticCurveTo(x-s*.4,y+s*.38,x-s*.42,y+s*.05); g.closePath(); };
   // no words on anything (owner, 10 Nov 2026): a plain shield on the front doors, blank plates
   const PIC={

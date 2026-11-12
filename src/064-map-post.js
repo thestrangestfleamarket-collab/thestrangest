@@ -1,7 +1,7 @@
 // THE STAIRS AND GROUND: inStair and SHARED.groundY say how high the ground is everywhere; LITE and HEMI set the lamps and sky light.
 import {SHARED, THREE} from './003-shx.js';
 import {LEVELS, LITE, NPCS, PARK, pos, ROOMS, UI, VIS} from './003b-systems.js';
-import {scene} from './004-main.js';
+import {renderer, scene} from './004-main.js';
 import {CASTLE, FIX, grab, lamps, LAY, LEVEL, MAPG, MAPSTAIR, MODS, RING, SECTIONS, SEEN, SHL, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {GRASS} from './014a-grass.js';
 import {FOUNT} from './060a-fount.js';
@@ -79,7 +79,7 @@ window.MAPDBG=()=>({LVL:SHARED.LVL,cut:MODS.stairCut.constant,vis:Object.fromEnt
 { const K=GRASS.TS, N=K*24, GL=GRASS.K.length;
   // the lawn's nine grasses (GRASS): each kind's painted picture in one array, and a map of which kind grows where over your section, a texel a tile; the land picks by spot, its edges jittered so the kinds mingle
   const g0=performance.now(), GD=new Uint8Array(N*N*4*GL); GRASS.K.forEach((k,i)=>{ if(!GRASS.only||k.id===GRASS.only)GD.set(GRASS.paint(k),i*N*N*4); }); const gt=new THREE.DataArrayTexture(GD,N,N,GL); gt.magFilter=THREE.NearestFilter; gt.minFilter=THREE.LinearMipmapLinearFilter; gt.generateMipmaps=true;
-  gt.colorSpace=THREE.SRGBColorSpace; gt.wrapS=gt.wrapT=THREE.MirroredRepeatWrapping; gt.needsUpdate=true;
+  gt.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy()); gt.colorSpace=THREE.SRGBColorSpace; gt.wrapS=gt.wrapT=THREE.MirroredRepeatWrapping; gt.needsUpdate=true;
   const t1=(GRASS.only?GRASS.of[GRASS.only]:GRASS.of[GRASS.MIX.lawn]).i,   // the one picture (the park's hill and the brook's banks wear it): the main lawn
     t=new THREE.DataTexture(GD.subarray(N*N*4*t1,N*N*4*(t1+1)),N,N); t.magFilter=THREE.NearestFilter; t.colorSpace=THREE.SRGBColorSpace; t.wrapS=t.wrapT=THREE.MirroredRepeatWrapping; t.repeat.set(1/K,1/K); t.needsUpdate=true;
   const KM=(()=>{ const L=SECTIONS.live, CB=(LEVEL.edge&&LEVEL.edge.carry)||0, xs=[SHARED.BOD.XS(L.x0)/TILE,SHARED.BOD.XS(L.x1+CB)/TILE], zs=[SHARED.BOD.ZS(L.y0)/TILE,SHARED.BOD.ZS(L.y1+CB)/TILE], x0=Math.floor(Math.min(...xs))-4, z0=Math.floor(Math.min(...zs))-4, W=Math.ceil(Math.max(...xs))+4-x0, H=Math.ceil(Math.max(...zs))+4-z0, D=new Uint8Array(W*H);

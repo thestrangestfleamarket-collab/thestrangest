@@ -18,6 +18,7 @@ const FILE = 'file://' + path.resolve(process.argv[2] || 'dist/asylum.html'), OU
     return W.items.every(i => [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1], [2, 0], [-2, 0], [0, 2], [0, -2]].some(([a, c]) => seen.has((Math.floor(i.z) + c) * GW + Math.floor(i.x) + a))) && ['morgue', 'boiler', 'cell9', 'cell7', 'treat', 'closet', 'day', 'office', 'records'].every(id => { const d = ASY.door(id); return seen.has(d.z * GW + d.x); }); }), 'every room and every thing to pick up can be walked to');
   await pg.click('#play'); await ev(() => { ASY.hold = true; }); await sim(.5);
   ok((await st()).mode === 'play' && await pg.isHidden('#title'), 'ENTER starts the night in the lobby');
+  await pg.waitForFunction(() => ASY.A.ready, null, { timeout: 30000 }).catch(() => {}); ok(await ev(() => ASY.A.ready), 'the recorded sounds are all decoded');
   await shot('lobby');
   ok(/Front doors/.test(await use(13.5, 28.9, 13.5, 30.5, 1.1)) && /mains power/.test((await st()).hud.sub), 'the front doors are mag-locked until the mains are back');
   await use(13.5, 25, 13.5, 23.5, 1.1); ok(await ev(() => ASY.door('ward').a === 0 && ASY.door('ward').locked), 'the ward door is locked without its key');

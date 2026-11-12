@@ -1,6 +1,6 @@
 // THE LAKE WRECK: the red interceptor, five times its size, crashed a thousand years ago on the big lake's bed (owner, 9 and 10 Nov 2026): rolled and nose-down in a basin dug for it, its hull torn open on one side, a wing broken off beside it; swim in through the tear, the shattered canopy or the broken tail, through the cockpit, the corridor and the hold to its treasure (the pirate wreck's chests, 066ba). Its model is data/lakewreck.json (tools/lakewreck-bake.py).
 import {SHARED, THREE} from './003-shx.js';
-import {PARK, pos, ROOMS, st} from './003b-systems.js';
+import {BATCH, PARK, pos, ROOMS, st} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {LEVEL, SOL, SYS, TILE, ZU} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
@@ -27,7 +27,7 @@ import {WRECK} from './066ba-wreck.js';
       for(let v=0;v<n;v++)for(let k=0;k<3;k++){ p[v*3+k]=P[v*3+k]*q.s[k]+q.o[k]; nn[v*3+k]=Nn[v*3+k]/127; }
       for(let v=0;v<n;v++){ C3.setRGB(Cc[v*3]/255,Cc[v*3+1]/255,Cc[v*3+2]/255,THREE.SRGBColorSpace); c[v*3]=C3.r; c[v*3+1]=C3.g; c[v*3+2]=C3.b; }
       const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(p,3)); geo.setAttribute('normal',new THREE.BufferAttribute(nn,3)); geo.setAttribute('color',new THREE.BufferAttribute(c,3)); geo.setIndex(new THREE.BufferAttribute(I,1));
-      const me=new THREE.Mesh(geo,q.e?M.lamp:M[q.m]||M.paint); me.castShadow=me.receiveShadow=!q.e; g.add(me); } return g; };
+      const me=new THREE.Mesh(q.e?geo:BATCH.unfightGeo(geo),q.e?M.lamp:M[q.m]||M.paint); me.castShadow=me.receiveShadow=!q.e; g.add(me); } return g; };
   const build=D=>{ '@park'; const P=PARK, [lx,ly]=LW.lake, X=SHARED.BOD.XS(lx+(P.ox||0)), Z=SHARED.BOD.ZS(ly+(P.oy||0)), y=FOUNT.bedY(-FOUNT.lake(lx,ly),lx,ly), V=new THREE.Vector3();
     const ship=part(D.ship), bed=part(D.bed); ship.scale.setScalar(MW); bed.scale.setScalar(MW); const hd=LW.lake[2]?Math.PI/2:0; ship.position.set(X,y+.05*MW,Z); ship.rotation.set(PITCH,hd,ROLL,'YXZ'); bed.position.set(X,y+.02*MW,Z); bed.rotation.y=hd;
     for(const o of [ship,bed]){ o.traverse(m=>{ m.userData.anyRoom=false; }); scene.add(o); LW.parts.push(o); } ship.updateMatrixWorld(true);

@@ -132,6 +132,7 @@ jobs:
           k pfrow   'src/068a|src/059i|src/069a|data/street|tools/row-lay|pfrow'
           k loadscreens 'src/006-map-pre|src/008-batch|src/009-down|tools/recover|loadscreens'
           k parkpf  'src/111fe|src/060a|src/061-park|data/parkpf|tools/park-pf|parkpf'
+          k boats   'src/111ff|src/111fe|src/060a|src/142-fishing|boats\.cjs'
           k zones   'src/129a|src/066-river|src/065a|src/065-ring|zones\.cjs'
           k bees    'src/147a|bees\.cjs'
           k fossils 'src/150cyc|src/141-forage|data/pffossils|data/trainers|worker/door|fossils\.cjs'
@@ -475,6 +476,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' parkpf')
         run: node tests/parkpf.cjs
+      - name: The lake's boats (rowed, never overlapping)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' boats')
+        run: node tests/boats.cjs
       - name: The Hudson loads when you go in
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' zones')
@@ -622,7 +627,7 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' copies')
         run: node tests/copies.cjs dist/market.html
-      - name: The money's server (the bucket, the body's drops, the stalls, the pawn shop)
+      - name: The money's server (the bucket, the body's drops, the stalls, the exchange machines)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' money')
         run: node tests/economy.cjs

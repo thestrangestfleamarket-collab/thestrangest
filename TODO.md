@@ -263,6 +263,7 @@ One tree pass (more leaves mean more shadow triangles).
 
 - [x] **The ESC wheel, five rarities, the item card, walk-over pickup, appraisal, emote extras, pockets** (owner, 11 Nov 2026: "go with all your picks, build in that order") · done 11 Nov.
 - [ ] **The owner tries them live and approves** · P2 · S · look. The bag's size (60/80/100, not the picked 24/36/48: a new player starts with 49 kinds); what the trainers teach (existing moves: HARVEST, PLANT A SEED, CAST A LINE, WATER THE FLOWERS, HARD LABOUR, BIG SWING, HOOK); the item card's lines (data/examine.json).
+- [ ] **Appraising: where now?** · P2 · S · pick. Antiques & Pawn is gone (11 Nov); rough stones are off until the owner picks who names them (the exchange machines' eye?).
 
 ## Moves
 

@@ -728,19 +728,6 @@
    "face": "n"
   },
   {
-   "id": "antiques",
-   "kind": "front",
-   "x0": -51,
-   "x1": -37,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2,
-   "name": "ANTIQUES & PAWN",
-   "pf": "antiques",
-   "merchant": "junkman"
-  },
-  {
    "id": "fishing",
    "kind": "front",
    "x0": -36.5,
@@ -1440,6 +1427,19 @@
    ]
   }
  ],
+ "exchange": {
+  "note": "the exchange machines about the streets (159ba-exchange): map tiles, rot the way one faces in radians (0 north, 3.1416 south, 1.5708 east)",
+  "at": [
+   {"x": -52.05, "y": -6.9, "rot": 1.5708},
+   {"x": 2.96, "y": -76.6},
+   {"x": 78.17, "y": -76.6},
+   {"x": 160.26, "y": -76.6},
+   {"x": 228.03, "y": -76.6},
+   {"x": 1, "y": -108.3, "rot": 3.1416},
+   {"x": 55.96, "y": -108.3, "rot": 3.1416},
+   {"x": 117.3, "y": -108.3, "rot": 3.1416}
+  ]
+ },
  "racks": {"note": "the brochure racks on the street (159k-brochures): map tiles, rot the way one faces in radians", "at": [{"x": 108.5, "y": -40.5}, {"x": 127, "y": -71.8}, {"x": 171.5, "y": -110.2}]},
  "things": [
   {
@@ -4053,8 +4053,8 @@
   },
   {
    "k": "p:canoe",
-   "x": 181.9,
-   "y": 129.28,
+   "x": 179.57,
+   "y": 131.44,
    "rot": 2.409,
    "float": 1
   },
@@ -4067,8 +4067,8 @@
   },
   {
    "k": "p:skiff",
-   "x": 186.11,
-   "y": 125.71,
+   "x": 187.95,
+   "y": 124.28,
    "rot": 2.409,
    "float": 1
   },
@@ -6309,7 +6309,7 @@
  },
  "bigTrees": [
   {
-   "note": "THE BIG TREES (owner, 7 Nov 2026; redone 10 Nov 2026): map tiles; kind A level branch, B rising, C low and sagging, G the giant (a hollow shell of leaves round thick limbs to climb); face: where the big branch reaches, degrees; climb: SPACE next to it climbs it; s: its size, 1 a 62 m tree (owner, 10 Nov 2026: \"move back towards park area and make them 25-50% smaller, and add 20 more scattered around. i want 1 giant big tree ... its 2x bigger\")"
+   "note": "THE BIG TREES (owner, 7 Nov 2026; redone 10 Nov 2026): map tiles; kind A level branch, B rising, C low and sagging, G the giant (a hollow shell of leaves round thick limbs to climb; look: drawn as that pack tree, Elder2 since 11 Nov 2026); face: where the big branch reaches, degrees; climb: SPACE next to it climbs it; s: its size, 1 a 62 m tree (owner, 10 Nov 2026: \"move back towards park area and make them 25-50% smaller, and add 20 more scattered around. i want 1 giant big tree ... its 2x bigger\")"
   },
   {
    "kind": "A",
@@ -6621,7 +6621,8 @@
    "y": 88,
    "face": 0,
    "climb": true,
-   "s": 2.4
+   "s": 2.4,
+   "look": "Elder2"
   }
  ],
  "cloudTrees": [],

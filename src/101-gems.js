@@ -16,8 +16,8 @@ Object.assign(INV,{items:{},picked:{}}); window.INV=INV; GEMS.TIER=GTIER; window
   INV.random=()=>{ let r=Math.random()*W; for(const g of GEMS){ if((r-=g[3])<0)return g[0]; } return GEMS[0][0]; };
   INV.ready=k=>INV.picked[k]==null||INV.picked[k]<day();
   INV.mark=k=>{ INV.picked[k]=day(); save(); };   // a find taken today (INV.pick also gives a stone)
-  INV.pick=k=>{ '@later'; if(!INV.ready(k)){ TRADE.note('NOTHING HERE TODAY. BACK TOMORROW'); return false; } const id=INV.random(); if(!INV.room('q_'+id)){ INV.full(); return false; } INV.picked[k]=day(); INV.add('q_'+id);
-    TRADE.note('YOU FOUND A ROUGH STONE · THE JUNK DEALER AT ANTIQUES & PAWN CAN TELL YOU WHAT IT IS'); SFX.play('chirp',{vol:.4}); return true; };
+  INV.pick=k=>{ '@later'; if(!INV.ready(k)){ TRADE.note('NOTHING HERE TODAY. BACK TOMORROW'); return false; } const id=INV.random(), g=byId(id); if(!INV.room(id)){ INV.full(); return false; } INV.picked[k]=day(); INV.add(id);
+    TRADE.note('YOU FOUND '+(/^[AEIOU]/.test(g[1])?'AN ':'A ')+g[1]+' · THE GEM SHOP PAYS $'+g[2]); SFX.play('chirp',{vol:.4}); return true; };
   // the server kept less than this game saved (more cash or things than play allows at once): what you carry follows it
   OWNED.onClip=c=>{ INV.cash=Math.max(0,(INV.cash||0)-Math.max(0,+c.cash||0)); for(const k in c.items||{}){ INV.items[k]=Math.max(0,(INV.items[k]||0)-c.items[k]); if(!INV.items[k])delete INV.items[k]; } save(); if(FORAGE&&FORAGE.draw)FORAGE.draw(); };
   INV.sell=(id,n=1)=>{ '@later'; const g=byId(id), have=INV.items[id]||0; n=Math.min(n,have); if(!g||n<1)return 0; INV.items[id]=have-n; if(!INV.items[id])delete INV.items[id]; const v=WORTH?WORTH.sell(id,n,g[2]):g[2]*n; INV.cash+=v; save();

@@ -4,7 +4,7 @@ import {RARITY} from './013a-rarity.js';
 import {ITEMCARD} from './162eb-card.js';
 const HUB={};
 { const esc=TEXT.esc, NS='http://www.w3.org/2000/svg', SZ=460, C=SZ/2, R1=SZ/2-6, R0=78;
-  const MENUS=[['SETTINGS','',()=>UI.menuTab('set')],['WHAT YOU CAN DO','?',()=>UI.menuTab('moves')],['PETS','',()=>UI.menuTab('pets')],['MAP','SHIFT+M',()=>UI.menuTab('map')],['EMOTES','H',()=>MOTION.toggle&&MOTION.toggle()]];
+  const MENUS=[['SETTINGS','',()=>UI.menuTab('set')],['WHAT YOU CAN DO','?',()=>UI.menuTab('moves')],['PETS','',()=>UI.menuTab('pets')],['MAP','SHIFT+M',()=>UI.menuTab('map')],['EMOTES','H',()=>MOTION.toggle&&MOTION.toggle()],['GUIDE','',()=>UI.menuTab('guide')],['PEOPLE','',()=>UI.menuTab('people')]];
   const OWN=[['TENANTS','',()=>UI.menuTab('tenants')],['ADMIN','',()=>UI.menuTab('admin')]];
   const KN={tools:'TOOLS',food:'FOOD',music:'MUSIC',rides:'RIDES',lights:'LIGHTS',wear:'WEAR',finds:'FINDS',other:'OTHER'};
   let own=false, step={}, el=null, svg=null, mid=null;

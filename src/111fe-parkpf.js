@@ -1,7 +1,7 @@
 // THE PARK'S POLYFORK THINGS: data/world.json's things with k 'p:<key>' (data/parkpf.json, tools/park-pf-bake.py), baked a patch of ground at a time into still meshes; only near patches drawn, small things nearer still, shadows close by; the big ones solid; the lamps lit at night.
 import {SHARED, THREE} from './003-shx.js';
 import {B64, I16, U16} from './003a-skin.js';
-import {CLOCK, DN, LITE, PARK, pos, UI, USE, WE, WED, WEEDS} from './003b-systems.js';
+import {BOAT, CLOCK, DN, LITE, PARK, pos, UI, USE, WE, WED, WEEDS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FIX, LEVEL, MAPG, SOL, SYS, TILE} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
@@ -26,12 +26,19 @@ const PARKPF={done:false,things:0,patches:[],tris:0,solids:0,moved:0,skipped:[]}
     const hit=(x0,z0,x1,z1)=>{ for(const s of sol0)if(s[0]<x1&&s[2]>x0&&s[1]<z1&&s[3]>z0)return true; return false; };
     const water=(x,z)=>{ const b=FOUNT.bedAt&&FOUNT.bedAt(x,z); return b!=null?FOUNT.LV:-.25*T; };
     const cells=new Map(), lampAt=[], seats=[], feet=[];
+    // the lake's boats: each its own mesh, moored for anyone to row (BOAT, 111ff)
+    const CRAFT={canoe:['CANOE',3.4],kayak:['KAYAK',4],skiff:['SKIFF',3]}, mapX=X=>X/T+B.OX-(Pk.ox||0), mapY=Z=>Z/T+B.OY-(Pk.oy||0), rock=(X,Z)=>SOL.up.some(s=>X>s[0]&&X<s[2]&&Z>s[1]&&Z<s[3]);
+    const craft=(k,Dk,x,y,z,a)=>{ const m=model(Dk), g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(m.P.map(v=>v*M),3)); g.setAttribute('color',new THREE.BufferAttribute(m.C,3)); g.setIndex(new THREE.BufferAttribute(m.I,1));
+      const me=new THREE.Mesh(g,mat); me.castShadow=me.receiveShadow=true; root.add(me);
+      BOAT.moor({k,name:'THE '+CRAFT[k][0],g:me,x,z,hd:a,len:Dk.size[2]*M,beam:Dk.size[0]*M,top:CRAFT[k][1]*T,floor:-.1*M,seat:.08*M,lv:()=>y,
+        wet:(X,Z)=>FOUNT.wet(X,Z,-.4*T)&&FOUNT.bridgeD(mapX(X),mapY(Z))>.8&&!rock(X,Z),dry:(X,Z)=>!FOUNT.wet(X,Z,.3*T)&&!rock(X,Z)}); };
     for(const o of LEVEL.things||[]){ if(!String(o.k).startsWith('p:'))continue; const k=o.k.slice(2), Dk=D[k]; if(!Dk){ PARKPF.skipped.push(k); continue; } PARKPF.things++;
       const a=o.rot||0, ca=Math.cos(a), sa=Math.sin(a), [sx,sy,sz]=Dk.size, ex=(Math.abs(ca)*sx+Math.abs(sa)*sz)/2, ez=(Math.abs(sa)*sx+Math.abs(ca)*sz)/2;
       let mx=o.x, my=o.y; const free=(x,y)=>{ const X=B.XS(x), Z=B.ZS(y); return o.fixed||BRIDGE.has(k)||(WET.has(k)||!wet(x,y))&&!hit(X-ex*M*.8,Z-ez*M*.8,X+ex*M*.8,Z+ez*M*.8); };   // a bridge spans the brook's bank rocks
       if(!free(mx,my)){ let f=null; for(let r=.6;r<=3&&!f;r+=.6)for(let i=0;i<8&&!f;i++){ const u=mx+Math.cos(i*Math.PI/4)*r, v=my+Math.sin(i*Math.PI/4)*r; if(free(u,v))f=[u,v]; }
         if(!f){ PARKPF.skipped.push(o.k+'@'+o.x+','+o.y); continue; } [mx,my]=f; PARKPF.moved++; }
       const x=B.XS(mx), z=B.ZS(my), y=o.float?water(x,z):(SHARED.groundY?SHARED.groundY(x,z):0);
+      if(CRAFT[k]&&o.float&&BOAT.moor){ craft(k,Dk,x,y,z,a); continue; }
       const big=Math.max(sx,sz)>=2.4||sy>=2.5, key=Math.floor(mx/CELL)+','+Math.floor(my/CELL)+(big?'b':'s'); let c=cells.get(key); if(!c)cells.set(key,c={big,L:[],n:0,t:0});
       const m=model(Dk), it={k:k,x,y,z}; c.L.push({m,x,y,z,ca,sa,it}); c.n+=m.n; c.t+=m.I.length;
       if(LAMP[k]){ const h=m.head, M_=M; lampAt.push([x+(h[0]*ca+h[2]*sa)*M_,y+h[1]*M_,z+(-h[0]*sa+h[2]*ca)*M_,LAMP[k],it]); }

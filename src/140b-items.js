@@ -20,7 +20,7 @@ import {TPANE} from './087dz-tpane.js';
     if(/^(ride|fly|horse|skate|kart|bmx|carpet|float)$/.test(gr)||/^(board_|balloon$|magic_carpet$|saddle$|skateboard$|kart$|bmx$|kite$)/.test(id))return 'rides';
     if(/^(light|night)$/.test(gr)||/headlight|lamp|lantern|nv_goggles|candle/.test(id))return 'lights';
     if(sl&&!/^(none|hand)$/.test(sl)||/^(coat_|jacket_|jeans|cowboyhat|shades|scuba)/.test(id))return 'wear';
-    if(ITEMS.tiered.has(id)||/^(q_|m_|u_|x_|b_\d|bu_|mo_|fl_|bd_|honey_|gb_|cut_|quartz$|amethyst$|geode$|amber$|moonstone$|opal$|emerald$|sapphire$|ruby$|meteor$)/.test(id))return 'finds';
+    if(ITEMS.tiered.has(id)||/^(m_|u_|x_|b_\d|bu_|mo_|fl_|bd_|honey_|gb_|cut_|quartz$|amethyst$|geode$|amber$|moonstone$|opal$|emerald$|sapphire$|ruby$|meteor$)/.test(id))return 'finds';
     if(P('edible')||/^(f_|d_|fr_|nut_|p_|soda_|shroom_)/.test(id))return 'food';
     if(sl==='hand'||P('reuse')||gr&&gr!=='none')return 'tools';
     return 'other'; };

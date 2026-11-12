@@ -21,7 +21,7 @@ const PICKUP={on:SAVE.get('walkpick')!=='0'};
     if(L){ L.n+=n; L.el.querySelector('i').textContent='×'+L.n; clearTimeout(L.t); L.el.classList.remove('out'); }
     else { const el=document.createElement('div'); el.className='in'; el.style.borderLeftColor=col; el.innerHTML=`<img alt="" src="${BAG.icon?BAG.icon(k):''}"><b style="color:${col}">${esc(FORAGE.name(k))}</b><i>×${n}</i>`; F.prepend(el); requestAnimationFrame(()=>el.classList.remove('in')); L={el,n}; LIVE.set(k,L); while(F.children.length>5)F.lastChild.remove(); }
     L.t=setTimeout(()=>{ L.el.classList.add('out'); setTimeout(()=>{ L.el.remove(); LIVE.delete(k); },500); },4000);
-    if(RARITY.of(k)>=3&&ITEMS.group(k)==='finds')PICKUP.hold(k); };
+    if(ITEMS.group(k)==='finds'){ INV.found=INV.found||{}; if(!INV.found[k]){ INV.found[k]=(ONLINE.myName&&ONLINE.myName())||'YOU'; if(INV.save)INV.save(); } if(RARITY.of(k)>=3)PICKUP.hold(k); } };
   INV.gained.push((id,n)=>{ if(SYS.started)PICKUP.feed(id,n); });
   // held up: a cheer the players near see (MOTION is shared) and the find's name over your head (the chat's line, ONLINE.said)
   let lastHeld=0;

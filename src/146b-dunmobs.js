@@ -72,9 +72,9 @@ __CODE__("worker/dunmobs.js")
   const drop=(k,x,z)=>{ const e=roll(k), id=e[0], n=id==='$'?Math.round((e[1]+Math.floor(Math.random()*(e[2]-e[1]+1)))*F()):1, p=near(x,z,.3*T,.6*T,.05*T)||{x,z}, gy=gnd(p.x,p.z);
     const m=new THREE.Mesh(id==='$'?CG:id.startsWith('p_')?PG:OG,LM[id]||(LM[id]=new THREE.MeshBasicMaterial({color:id==='$'?0xf2c14e:GC[id]||0xffffff})));
     m.position.set(p.x,gy+(id==='$'?.02:id.startsWith('p_')?.06:.08)*T,p.z); m.rotation.y=Math.random()*3;
-    const rough=GEMS.some(g=>g[0]===id), nm=id==='$'?n+' COINS':rough?'ROUGH STONE':nameOf(id);   // a stone comes rough: the Junk Dealer tells you what it is (11 Nov 2026)
-    thing(id==='$'?'COINS ($'+n+')':'A LOOSE '+nm,p.x,p.z,th=>{ if(id!=='$'&&!INV.room(GEMS.some(g=>g[0]===id)?'q_'+id:id))return INV.full(); if(id==='$'){ INV.cash+=n; say('YOU PICK UP $'+n+'.','#f2c14e'); } else if(rough){ INV.add('q_'+id,1); say('YOU PICK UP A ROUGH STONE. THE JUNK DEALER AT ANTIQUES & PAWN CAN TELL YOU WHAT IT IS.','#f2c14e'); } else{ FORAGE.give(id,1); say('YOU PICK UP THE '+nm+'.','#f2c14e'); }
-      sfx('clunk',{vol:.4,pitch:1.6}); unthing(th); FORAGE.draw(); },m,()=>id==='$'?'$':GEMS.some(g=>g[0]===id)?'q_'+id:id); };
+    const nm=id==='$'?n+' COINS':nameOf(id);
+    thing(id==='$'?'COINS ($'+n+')':'A LOOSE '+nm,p.x,p.z,th=>{ if(id!=='$'&&!INV.room(id))return INV.full(); if(id==='$'){ INV.cash+=n; say('YOU PICK UP $'+n+'.','#f2c14e'); } else{ (GEMS.some(g=>g[0]===id)?INV.add:FORAGE.give)(id,1); say('YOU PICK UP THE '+nm+'.','#f2c14e'); }
+      sfx('clunk',{vol:.4,pitch:1.6}); unthing(th); FORAGE.draw(); },m,()=>id==='$'?'$':id); };
   const goo=S=>{ const t=TIER[S.k]; S.th=thing(t.nm+' SLIME',S.x,S.z,th=>{ if(!FORAGE.has('bottle'))return say('YOU NEED A BOTTLE TO HOLD THE SLIME.','#c8a090');
     FORAGE.take('bottle',1); FORAGE.give('slime_'+S.k,1); say('YOU SCOOP THE '+t.nm+' SLIME INTO A BOTTLE.','#b8f0a0'); sfx('drip',{vol:.5,pitch:.7}); unthing(th); S.gone=true; FORAGE.draw(); }); };
   const prize=(w,tk,x,z,S)=>{ if(w==='s'){ const t=TIER[tk]; if(!t)return; xp(t.sk[0],t.sk[1]); if(!(AR&&AR.sim)){ goo(S||{k:tk,x,z}); loot(tk,t.loot,x,z); } SYS.run('slain',{kind:'slime',lvl,sim:!!(AR&&AR.sim)}); return; }   // your kill: what it teaches and drops

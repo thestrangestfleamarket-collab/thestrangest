@@ -17,7 +17,6 @@ const ITEMCARD={};
     if(P(id,'container'))L.push('Holds '+(P(id,'holds')||12)+' things.'); if(ITEMS.group(id)==='music')L.push('Play it.'); if(P(id,'cures'))L.push('Cures poison.');
     return L.join(' '); };
   ITEMCARD.skill=id0=>{ const id=kindOf(id0), B=FORAGE.BUYK||{}; for(const g in WORTH.KNOW)if((B[g]||[]).some(p=>id.startsWith(p))){ const k=WORTH.KNOW[g]; return ((FORAGE.SK||[]).find(s=>s[0]===k)||[k,k.toUpperCase()])[1]; } return ''; };
-  ITEMCARD.unknown=id=>String(id).startsWith('q_');
   ITEMCARD.finder=id=>(INV.found&&INV.found[kindOf(id)])||'';
   const css=document.createElement('style'); css.textContent=`#icard{position:fixed;z-index:90;width:330px;padding:12px;pointer-events:none;font:13px 'Share Tech Mono',ui-monospace,monospace;letter-spacing:.6px;line-height:1.5;color:#7dffa8;background:repeating-linear-gradient(0deg,rgba(125,255,168,.05) 0 1px,transparent 1px 3px),rgba(2,10,6,.95);zoom:var(--uiz,1)} #icard[hidden]{display:none}
     #icard .ct{display:flex;gap:12px} #icard canvas{width:${S}px;height:${S}px;flex:none;background:#06120b} #icard h4{margin:0 0 3px;font-weight:400;font-size:16px;letter-spacing:2px} #icard .cr{display:inline-block;padding:0 6px;color:#020a06;font-size:11px;margin-right:6px} #icard .ck{color:#3aa866;font-size:11px}

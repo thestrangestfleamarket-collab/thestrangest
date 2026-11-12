@@ -28,10 +28,10 @@ import {SYS, TILE} from './006-map-pre.js';
   const tabs=document.createElement('div'); tabs.className='wtabs'; tabs.innerHTML='<button class="btn" data-wt="edit" aria-pressed="true">EDIT</button><button class="btn" data-wt="place" aria-pressed="false">PLACE</button>';
   const box=document.createElement('div'); box.id='wplace'; box.className='pane'; box.hidden=true;
   box.innerHTML='<select id="wpcat"></select><input id="wpq" placeholder="search…" autocomplete="off"><div id="wplist" class="dim">loading…</div><div class="row"><button class="btn" data-pt="-45">⟲ 45°</button><button class="btn" data-pt="45">⟳ 45°</button><button class="btn" id="wpno">CANCEL</button></div><div class="dim" id="wpsay">pick a thing, then click the ground to put it down</div>';
-  P.insertBefore(tabs,pane); queueMicrotask(()=>paint('edit')); P.insertBefore(box,pane.nextSibling);
+  P.insertBefore(tabs,pane); P.insertBefore(box,pane.nextSibling);
   const $=s=>P.querySelector(s); for(const ev of ['keydown','keyup','keypress'])$('#wpq').addEventListener(ev,e=>e.stopPropagation());
   const say=t=>{ $('#wpsay').textContent=t; };
-  const paint=w=>{ for(const b of tabs.children){ const on=b.dataset.wt===w; b.setAttribute('aria-pressed',String(on)); b.setAttribute('aria-selected',String(on)); } };
+  const paint=w=>{ for(const b of tabs.children){ const on=b.dataset.wt===w; b.setAttribute('aria-pressed',String(on)); b.setAttribute('aria-selected',String(on)); } }; paint('edit');
   const tab=w=>{ paint(w); pane.hidden=w!=='edit'; box.hidden=w!=='place'; if(w!=='place')arm(null); else fill(); };
   tabs.onclick=e=>{ const b=e.target.closest('[data-wt]'); if(b)tab(b.dataset.wt); };
   const fill=async()=>{ '@later'; const j=await list().catch(()=>null), sel=$('#wpcat'); if(!j){ $('#wplist').textContent='the things did not load'; return; }

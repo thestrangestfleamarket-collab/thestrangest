@@ -41,7 +41,7 @@ import {ROOMK} from './150a-bedroom.js';
       solid(U0-D/2,V0-W/2,U0+D/2,V0+W/2,H); },{wire:'books',bake:true}); });
 
   ROOMK.wires.books=(un,c)=>{ '@later'; let holder=null; un.obj.traverse(o=>{ if(o.userData.books)holder=o; }); if(!holder)return;
-    const n=()=>ids().length||BK.EACH*14;
+    const n=()=>ids().length||120;
     c.hit(un,()=>'BOOKSHELF: '+n()+' BOOKS',()=>{ LIB.open(null,false,HOME); if(SFX)SFX.play('page',{vol:.4}); });
     LIB.load().then(()=>{ if(!un.obj.parent)return; holder.clear(); const sp=LIB.spines(rowsOf(),BK.SH,BK.FZ); holder.add(sp.mesh); const L={sp,un}; live.add(L); sp.skip(off()); }).catch(e=>console.warn('BOOKSHELF: the books did not load',e)); };
   window.BOOKCASEDBG=()=>({ids:ids().length,genres:LIB.data?[...new Set(ids().map(i=>LIB.by[i].genre))]:[],all:LIB.data?new Set(LIB.data.books.map(b=>b.genre)).size:0,live:live.size,off:off().slice(),thing:!!(window.__dbg&&__dbg.UI.things.some(t=>/^BOOKSHELF/.test(t.name)))});

@@ -32,7 +32,7 @@ const {chromium}=require('playwright'), path=require('path');
   const lf=await pg.evaluate(async()=>{ const W=ms=>new Promise(r=>setTimeout(r,ms)), at=async p=>{ __dbg.UI.goTo(p[0],p[2],p[1]); await W(2500); const l=LOFTDBG(); return [+l.h.toFixed(2),l.up]; }, l=LOFTDBG(); return {HW:l.HW,MH:l.MH,top:await at(l.top),deck:await at(l.deck),foot:await at(l.foot),under:await at([l.deck[0],l.foot[1],l.deck[2]]),lights:ROOMED._api().lightsAll().filter(q=>/PENDANT/.test(q.name||'')).length}; });
   ok(d.tier===3&&d.mine==='house4'&&lf.HW>7&&!d.clips.length,'the loft is No. 4\'s: a tall room ('+lf.HW.toFixed(1)+' m), nothing standing in anything (owner, 12 Nov 2026)');
   const dc=await pg.evaluate(async()=>{ const A=ROOMED._api(), R=A.R, F=R.loft, W=ms=>new Promise(r=>setTimeout(r,ms)), un=A.units().find(u=>u.kind==='BOOKSHELF'&&!u.gone), t0=A.getT(un);
-    const stair=ROOMED.fits(un,{...t0,u:F.mx-.5,v:(F.sv0+F.sv1)/2,h:0}), off=ROOMED.fits(un,{...t0,u:2,v:5,h:F.MH}); ROOMED.toggle(); ROOMED.select(un); ROOMED.floorTo(true); const t1=A.getT(un), on=ROOMED.fits(un,t1); ROOMED.select(null); ROOMED.toggle();
+    const stair=ROOMED.fits(un,{...t0,u:(F.sx[0]+F.sx[1])/2+.3,v:F.sv0+.9,h:0}), off=ROOMED.fits(un,{...t0,u:2,v:5,h:F.MH}); ROOMED.toggle(); ROOMED.select(un); ROOMED.floorTo(true); const t1=A.getT(un), on=ROOMED.fits(un,t1); ROOMED.select(null); ROOMED.toggle();
     __dbg.UI.goTo(...(p=>[p.x,p.z,p.y])(A.W(F.mx+1,F.MH,2))); await W(2500); const sol=__dbg.MAPK.SHARED?0:0;
     A.wall('sage','Ww'); A.floor('slate',true); R.loftSet('steel','brass'); const L=ROOMED.snapshot(A);
     return {stair:stair.ok,why:stair.why,off:off.ok,h:t1.h,on:on.ok,u:t1.u,walls:L.walls,floor2:L.floor2,loft:L.loft,brick:R.walls.Wf,clips:ROOMED.clips().length}; });

@@ -56,7 +56,7 @@ const BFLY={}; window.BFLY=BFLY;
   SYS.onStart(bfGo,'143-bfly');
   // sw: a net's swing that swept its hoop through the butterfly ({spd: the swing's speed, air: you were off the ground})
   BFLY.catch=(b,sw)=>{ '@later'; if(!b.g.parent)return; const p=W3.group.position; if(!sw&&Math.hypot(p.x-b.g.position.x,p.z-b.g.position.z)>1.8*T)return say('IT FLUTTERS OUT OF REACH.','#c8a090');
-    const fly=!!b.dur, net=!!sw||FORAGE.has('net'); if(fly&&!net)return say('IT IS ON THE WING. YOU NEED A NET (THE BUTTERFLY SHOP ON MARKET ST HAS THEM), OR WAIT TILL IT SETTLES.','#c8a090');
+    const fly=!!b.dur, net=!!sw||FORAGE.has('net'); if(fly&&!net)return say('IT IS ON THE WING. YOU NEED A NET (THE PARK RANGER AT THE BUTTERFLY STALL HAS THEM), OR WAIT TILL IT SETTLES.','#c8a090');
     if(held()>=room()){ b.until=0; b.away=[p.x,p.z]; return say(room()>5?'YOUR JARS ARE FULL. SELL SOME, OR BUY A BIGGER JAR.':'YOUR HANDS HOLD ONLY 5 BUTTERFLIES. A JAR HOLDS MORE: THE BUTTERFLY SHOP SELLS THEM.','#c8a090'); }
     const d=DIFF(b.k)+(fly?Math.round(8*SPD(b.k)):0)-(net?10:0), bonus=sw?Math.max(0,Math.min(8,(sw.spd-5)*.8))+(fly&&sw.air?5:0):0; SFX.play('step',{vol:.4});
     if(use('ento',d-25,d+25,bonus)){ const known=DIFF(b.k)<12||use('ento',DIFF(b.k)-30,DIFF(b.k)+20); FORAGE.give((known?'b_':'bu_')+b.k,1); if(known)got(b.k);

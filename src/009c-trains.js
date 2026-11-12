@@ -41,7 +41,7 @@ await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL
   // the cars: steel outside under graffiti with real window openings and sliding doors; inside bucket seats, partitions, poles and rails, ad cards, two light strips and two lights
   const z=k=>k*ZU, HL0=CARL/2*T, W0=CW*T, WI=CWI*T, F=z(FZ), PX=16, GR=M.GRAF;
   const font=(g,px,w=800)=>{ g.font=w+' '+px+'px "Helvetica Neue",Helvetica,Arial,sans-serif'; };
-  const canvas=(w,h)=>{ const cv=document.createElement('canvas'); cv.width=w; cv.height=h; return cv; }, ctex=(cv,rep)=>{ const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; if(rep)t.wrapS=t.wrapT=THREE.RepeatWrapping; return t; };
+  const canvas=(w,h)=>{ const cv=document.createElement('canvas'); cv.width=w; cv.height=h; return cv; }, ctex=(cv,rep)=>{ const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; if(rep)t.wrapS=t.wrapT=THREE.RepeatWrapping; return t; };
   const rng=seed=>{ let s=(Math.imul(seed|0,2654435761)^0x9e3779b9)>>>0||7; return ()=>{ s^=s<<13; s>>>=0; s^=s>>>17; s^=s<<5; s>>>=0; return s/4294967296; }; };
   const quad=(G,a,b,c,d,m,uv=[0,0,1,0,1,1,0,1])=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute([...a,...b,...c,...a,...c,...d],3));
     g.setAttribute('uv',new THREE.Float32BufferAttribute([uv[0],uv[1],uv[2],uv[3],uv[4],uv[5],uv[0],uv[1],uv[4],uv[5],uv[6],uv[7]],2)); g.computeVertexNormals(); const me=new THREE.Mesh(g,m); me.receiveShadow=true; G.add(me); return me; };

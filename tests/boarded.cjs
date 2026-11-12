@@ -1,5 +1,5 @@
 // BOARDED UP CHECK: node tests/boarded.cjs dist/market.html. The holodeck's booth lists BOARDED UP; RUN puts its own screen over the page and holds the
-// game's drawing; a solo game starts, the dead rise and come for the windows, and a board goes back on; LEAVE THE HOLODECK ends the program and gives the page back.
+// game's drawing; a solo game starts, the dead rise and come for the windows, and a board goes back on; an open doorway lets you out and the dead follow; LEAVE THE HOLODECK ends the program and gives the page back.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=boarded::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -20,6 +20,10 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       const w = A.windows.find(w => w.count < 6 && !w.vault), c0 = w ? w.count : -1; if (w) { window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyF' })); for (let i = 0; i < 90 && w.count === c0; i++) { p.hp = 100; p.pos.set(w.x - w.nx * .7, 0, w.z - w.nz * .7); A.step(1 / 30); } window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyF' })); }
       return { round: A.G.round, zombies: A.zombies.length, states: [...new Set(A.zombies.map(z => z.state))], torn: A.windows.some(w => w.count < 6), c0, c1: w ? w.count : -1, shown: getComputedStyle(document.getElementById('boarded')).display }; });
     ok(r2.round === 1 && r2.zombies > 0 && r2.torn && r2.c1 > r2.c0 && r2.shown === 'block', 'a solo game runs: round 1, the dead come, boards are torn off and one goes back on with F: ' + JSON.stringify(r2));
+    const r2b = await pg.evaluate(() => { const A = BOARDED.api, p = A.players[0], d = A.windows.find(w => w.door), o = {}; const walk = () => { p.pos.set(d.x, 0, d.z - 1.2); p.yaw = Math.PI; p.pitch = 0; window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyW' })); for (let i = 0; i < 60; i++) { p.hp = 100; p.yaw = Math.PI; A.step(1 / 30); } window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyW' })); return +p.pos.z.toFixed(2); };
+      for (const z of A.zombies) if (z.win === d && z.state !== 'dead') z.hp = 0; for (let i = d.count; i < 6; i++) d.count = i + 1; d.vault = null; o.shut = walk(); d.count = 0; o.open = walk();
+      for (let i = 0; i < 30 * 14; i++) { p.hp = 100; A.step(1 / 30); } o.at = [+p.pos.x.toFixed(1), +p.pos.z.toFixed(1)]; o.hunters = A.zombies.filter(z => z.state === 'chase' || z.state === 'attack').length; o.near = +Math.min(...A.zombies.filter(z => z.state !== 'dead').map(z => Math.hypot(z.pos.x - p.pos.x, z.pos.z - p.pos.z))).toFixed(1); return o; });
+    ok(r2b.shut < 8 && r2b.open > 8.6 && r2b.hunters > 0 && r2b.near < 3, 'a boarded door keeps you in; with no boards left you walk out onto the grounds, and the dead come for you there: ' + JSON.stringify(r2b));
     const r3 = await pg.evaluate(() => { BOARDED.api.toMenu(); document.getElementById('boarded').shadowRoot.querySelector('#bleave').click(); return { on: BOARDEDDBG().on, run: STORE.holo.run, shown: getComputedStyle(document.getElementById('boarded')).display }; });
     ok(!r3.on && !r3.run && r3.shown === 'none', 'LEAVE THE HOLODECK ends the program and gives the page back: ' + JSON.stringify(r3));
   }

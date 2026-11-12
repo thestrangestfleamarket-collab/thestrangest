@@ -93,7 +93,8 @@ const BOWL={BOWLS}; window.BOWL=BOWL;
         const pins=SPOT.map(()=>{ const m=new THREE.Mesh(pinGeo,pinMat); m.castShadow=true; LG.add(m); return m; });
         const bm=new THREE.Mesh(ballGeo,new THREE.MeshPhongMaterial({map:ballTex,color:BCOL[12],shininess:80,specular:0x777777})); bm.castShadow=true; bm.visible=false; LG.add(bm);
         const aim=new THREE.Mesh(aimGeo,aimMat); aim.visible=false; aim.position.y=G.LY+.003; LG.add(aim);
-        const cv=document.createElement('canvas'); cv.width=496; cv.height=172; const tex=new THREE.CanvasTexture(cv); tex.colorSpace=THREE.SRGBColorSpace;         pic(u,VF+.3,2.75,G.PITCH-.06,.6,0,1,tex,true);
+        const cv=document.createElement('canvas'); cv.width=496; cv.height=172; const tex=new THREE.CanvasTexture(cv); tex.colorSpace=THREE.SRGBColorSpace; tex.anisotropy=4;
+        pic(u,VF+.3,2.75,G.PITCH-.06,.6,0,1,tex,true);
         const L={i,u,LG,pins,ball:bm,aim,cv,tex,who:null,rolls:[],stand:1023,sim:null,res:null,sweep:0,lb:12}; K.lanes.push(L); respot(L); board(L);
         use('LANE '+(i+1)+' (BOWL)',u,VF+2.4,1.4,1.4,()=>BOWL.take(i),1.8); }
       sol(U0-.1,0,U0+N*G.PITCH+.1,VF);   // nobody walks down the lanes

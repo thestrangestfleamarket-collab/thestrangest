@@ -8,7 +8,7 @@ import {MINI} from './038zd-mini.js';
 import {PHX} from './151b-ph-kit.js';
 import {PHA} from './151c-ph-house.js';
 const PLAYF={}; window.PLAYF=PLAYF;
-{ FORAGE.add({names:{play_ticket:'A TICKET FOR THE PLAYHOUSE'}});
+{ FORAGE.add({names:{play_ticket:'A TICKET FOR THE PLAYHOUSE'}}); FORAGE.STOCK.push(()=>['play_ticket']);
   // where its people go, in the house's own metres (x across, z from the yard's middle to the gate)
   { const S=STORE.playFrame, R=ROOMS.off.playhouse; if(S&&R){ const D=PHA.D, PI=Math.PI, at=(x,z,hd,y)=>{ const w=S.W(x,0,z); return {x:w[0],z:w[2],hd,off:true,...(y!=null?{y:y*S.MV}:{})}; };
     R.spots={'BOX OFFICE':at(-D.GW-.5,10.6,PI/2),'BOOK-HOLDER':at(0,D.TZ+.4,0),'STEWARD, LOWER GALLERY':at(-5,7.6,PI*.75),'STEWARD, MIDDLE GALLERY':at(5,-6,PI*.25)};

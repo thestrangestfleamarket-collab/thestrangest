@@ -1,4 +1,4 @@
-// THE BRICK PHONE: node tests/phone.cjs dist/market.html. Every player has one; using it opens its screen of what the bodega sells; an order is paid (price and delivery) and the drone brings it to you outdoors, a parcel at your feet you take in.
+// THE BRICK PHONE: node tests/phone.cjs dist/market.html. Every player has one; using it opens its screen of what the bodega sells; an order is paid (price and delivery) and the drone brings it to you outdoors, a parcel at your feet you take in; one order in four THE COURIER rides over instead.
 const {chromium}=require('playwright'), path=require('path');
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:1000,height:600}}), errs=[]; let bad=0;
   const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; }; pg.on('pageerror',e=>errs.push(e.message));
@@ -7,7 +7,7 @@ const {chromium}=require('playwright'), path=require('path');
   ok(A.have===1&&A.name==='BRICK PHONE','every player has a BRICK PHONE '+JSON.stringify(A));
   const B=await pg.evaluate(async()=>{ HUD.useItem('brickphone'); await new Promise(r=>setTimeout(r,800)); return {open:!!MINI.on,title:MINI.on&&MINI.on.title}; });
   ok(B.open&&B.title==='BRICK PHONE','using it opens its screen '+JSON.stringify(B));
-  const C=await pg.evaluate(async()=>{ MINI.close(); const L=(()=>{ const A=BODEGA.all(); return [...A.supplies,...A.shelves,...A.goods]; })(), r=L.find(q=>q.price>0); INV.cash=500; const c0=INV.cash, n0=INV.items[r.id]||0, e=PHONE.order(r);
+  const C=await pg.evaluate(async()=>{ MINI.close(); PHONE.courier=0; const L=(()=>{ const A=BODEGA.all(); return [...A.supplies,...A.shelves,...A.goods]; })(), r=L.find(q=>q.price>0); INV.cash=500; const c0=INV.cash, n0=INV.items[r.id]||0, e=PHONE.order(r);
     for(let i=0;i<120&&DRONE.state!=='home';i++)await new Promise(q=>setTimeout(q,500));
     const th=__dbg.UI.things.find(t=>t.name==='A PARCEL: '+r.name), p=th&&th.obj.position, P=__dbg.pos(), d=p?Math.hypot(p.x-P[0],p.z-P[2])/__dbg.cv().TILE:null; if(th)th.act();
     return {lines:L.length,e,paid:c0-INV.cash,price:r.price,parcel:!!th,d,got:(INV.items[r.id]||0)-n0}; });
@@ -21,5 +21,12 @@ const {chromium}=require('playwright'), path=require('path');
     ONLINE.send=s0; ONLINE.on=on0; return {mine:!!mine&&mine.f===1,flying,left}; });
   ok(D.mine,'your order tells the others: the drone is shared '+JSON.stringify(D));
   ok(D.flying&&D.left>0,'another player\'s delivery: you see the drone fly in and the parcel left by them');
+  const E=await pg.evaluate(async()=>{ const A=BODEGA.all(), r=[...A.supplies,...A.shelves,...A.goods].find(q=>q.price>0), T=__dbg.cv().TILE; INV.cash=500; __dbg.UI.things.filter(t=>t.name==='A PARCEL: '+r.name).forEach(t=>t.act()); const n0=INV.items[r.id]||0; { const c=COURIERDBG(); let dx=25; while(dx<45&&!STFREE(c.x+dx*T,c.z,.3))dx++; __dbg.UI.goTo(c.x+dx*T,c.z,'up'); await new Promise(q=>setTimeout(q,1500)); } let k=0; const rnd=Math.random; Math.random=()=>(k++,.2); PHONE.courier=.25; const e=PHONE.order(r), by=PHONE.by; Math.random=()=>.3; const c1=INV.cash; PHONE.order(r); const by2=PHONE.by; Math.random=rnd;
+    const d0=(()=>{ const c=COURIERDBG(), P=__dbg.pos(); return Math.hypot(c.x-P[0],c.z-P[2])/T; })();
+    for(let i=0;i<400&&(COURIERDBG().job||DRONE.state!=='home');i++)await new Promise(q=>setTimeout(q,500));
+    const c=COURIERDBG(), P=__dbg.pos(), L=__dbg.UI.things.filter(t=>t.name==='A PARCEL: '+r.name); L.forEach(t=>t.act());
+    return {e,by,by2,d0:+d0.toFixed(1),d1:+(Math.hypot(c.x-P[0],c.z-P[2])/T).toFixed(1),job:c.job,parcels:L.length,got:(INV.items[r.id]||0)-n0}; });
+  ok(!E.e&&E.by==='COURIER'&&E.by2==='DRONE','one order in four goes to THE COURIER, the rest (and one while he is out) to the drone '+JSON.stringify(E));
+  ok(!E.job&&E.d1<4&&E.got===2,'he rides to you and leaves the parcel by you, taken in '+JSON.stringify({d0:E.d0,d1:E.d1,got:E.got}));
   ok(!errs.length,'no page errors '+errs.slice(0,2).join(' | '));
   await b.close(); process.exit(bad?1:0); })();

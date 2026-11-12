@@ -46,6 +46,7 @@ Object.assign(CLOCK,{movers:[],h:17.4,sunH:null,run:false,speed:1,shadeH:16,sunV
       const sc=sunF.shadow.camera, hr=(hi[0]-lo[0])/2, hu=(hi[1]-lo[1])/2, hd=(hi[2]-lo[2])/2+2*TILE; Object.assign(sc,{left:-hr,right:hr,top:hu,bottom:-hu,near:.5,far:2*hd+150*TILE}); sc.updateProjectionMatrix();
       sunF.target.position.copy(SR).multiplyScalar((lo[0]+hi[0])/2).addScaledVector(SU,(lo[1]+hi[1])/2).addScaledVector(dir,(lo[2]+hi[2])/2); sunF.position.copy(sunF.target.position).addScaledVector(dir,hd+150*TILE);
       sunF.target.updateMatrixWorld(); sunF.updateMatrixWorld(); sunF.shadow.bias=-.06*TILE/sc.far; sunF.shadow.normalBias=Math.max(sunL.shadow.normalBias,1.5*2*Math.max(hr,hu)/FM); };
+    { const q=SHARED.full()?1:0; if(q!==SC.q){ SC.q=q; for(const [L,m] of [[sunL,q?1536:768],[sunD,q?1024:512]]){ L.shadow.mapSize.set(m,m); if(L.shadow.map){ L.shadow.map.dispose(); L.shadow.map=null; } L.shadow.needsUpdate=true; } } }
     const strong=sunL.intensity>.3, now=performance.now(), out=up&&!(ROOMS.cur)&&sunL.intensity>0;
     if(out&&now-SC.st>1000){ SC.st=now; const g=sig(); if(g!==SC.g){ SC.g=g; SC.dirty=SC.fdirty=1; } }
     const stale=out&&(SC.d.dot(dir)<Math.cos(.4*D)||Math.hypot(SC.c.x-pos.x,SC.c.z-pos.z)>12*TILE||SC.lv!==SHARED.LVL);

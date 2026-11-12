@@ -16,7 +16,7 @@ const HONK={n:0}; window.HONK=HONK;
   HONK.inWay=inWay; HONK.aside=aside;
   SYS.add('honk',H=>{ if(!H||!isFinite(H.x)||!isFinite(H.z)||SHARED.LVL!=='up')return; HONK.n++; const me=ONLINE.me||'me', t=TRAINS.now?TRAINS.now():Date.now()/1000;
     // you, on foot in its way: you walk clear (a key takes the walk back)
-    if(H.by!==me&&!RIDE.on&&!(MODS.cars&&MODS.cars.driving)&&!st.sit&&!USE.seat&&!ROOMS.cur&&inWay(H,pos.x,pos.z)){ const p=aside(H,pos.x,pos.z); SHARED.target=new THREE.Vector3(p.x,SHARED.py,p.z); SAY('A HORN. YOU STEP OUT OF THE WAY.','#e8e2cc'); }
+    if(H.by!==me&&!RIDE.on&&!(MODS.cars&&MODS.cars.driving)&&!st.sit&&!USE.seat&&!ROOMS.cur&&inWay(H,pos.x,pos.z)){ const p=aside(H,pos.x,pos.z); SHARED.target=HONK.walk=new THREE.Vector3(p.x,SHARED.py,p.z); SAY('A HORN. YOU STEP OUT OF THE WAY.','#e8e2cc'); }
     // a car left empty in the road goes back to where it parks
     if(MODS.cars&&MODS.cars.cars)for(const C of MODS.cars.cars.values()){ if(C.by||!C.h0||!C.mesh||!onRoad(C.x,C.z)||onRoad(C.h0[0],C.h0[1])||!inWay(H,C.x,C.z,2*M0))continue; ONLINE.put('car:'+C.id,C.h0.join(',')); }
     // THE BIG CAT crossing hurries
@@ -24,4 +24,6 @@ const HONK={n:0}; window.HONK=HONK;
     // walkers go to the kerb, birds on the ground fly up
     for(const N of NPCS){ const s=N.st; if(!s||!s.folk||!N.g||!N.g.visible||t-(N.hkT||-99)<8||!inWay(H,s.x,s.z))continue; N.hkT=t; WALKS.errand(N,aside(H,s.x,s.z)); }
     if(BIRDS.list&&BIRDS.flush)for(const b of BIRDS.list)if(b.st==='ground'&&inWay(H,b.x,b.z,M0))BIRDS.flush(b); },'150pf-honk');
+  // the walk a honk started ends when you get in or onto something
+  SYS.add('life',()=>{ const w=HONK.walk; if(!w)return; if(SHARED.target!==w){ HONK.walk=null; return; } if(RIDE.on||(MODS.cars&&MODS.cars.driving)||st.sit||ROOMS.cur){ SHARED.target=HONK.walk=null; } },'150pf-honk');
 }

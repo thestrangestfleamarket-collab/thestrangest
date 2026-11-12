@@ -24,5 +24,8 @@ const {chromium}=require('playwright');
   // a player's own horn: what is ahead of the car moves, the driver does not
   const own=await pg.evaluate(([x,z])=>{ const C=[...CARS.cars.values()].find(c=>c.mesh&&c.h0&&!c.moor); ONLINE.put('car:'+C.id,[x,z,0].join(',')); SHARED.target=null; SYS.run('honk',{x:x-8,z,dx:1,dz:0,by:ONLINE.me||'me'}); return {home:Math.hypot(C.x-C.h0[0],C.z-C.h0[1])<.01,me:!SHARED.target}; },[x0+20,L.z]);
   ok(own.home&&own.me,'your own horn clears the car ahead and leaves you be '+JSON.stringify(own));
+  // a walk a honk started is dropped when you get into a car
+  const drop=await pg.evaluate(async([x,z])=>{ __dbg.UI.goTo(x,z,0,0); await new Promise(r=>setTimeout(r,300)); SYS.run('honk',{x:x-8,z,dx:1,dz:0,by:null}); const had=!!SHARED.target; const C=[...CARS.cars.values()].find(c=>c.mesh&&c.h0&&!c.moor); C.x=x+3; C.z=z; CARS.getIn(C.id); await new Promise(r=>setTimeout(r,1500)); const r={had,driving:!!CARS.driving,target:!!SHARED.target}; CARS.getOut&&CARS.getOut(); return r; },[x0,L.z]);
+  ok(drop.had&&drop.driving&&!drop.target,'getting into a car ends the walk a honk started '+JSON.stringify(drop));
   ok(!errs.length,'no page errors '+errs.slice(0,3).join(' | '));
   await b.close(); console.log(bad?bad+' FAILED':'all ok'); process.exit(bad?1:0); })();

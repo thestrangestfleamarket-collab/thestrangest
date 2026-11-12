@@ -70,7 +70,7 @@ by `tools/chunks.cjs` (needs `acorn`, which `npm ci` brings; without it everythi
 sees every name around it (handed in, or read live when it can change). Call `LOAD` (behind the place's black fade) before such a
 function first runs; if one runs before its chunk came, it is fetched there and then (the page waits for it) and the console says
 `chunk name was not loaded before use (#n)` (`dist/chunks.txt` lists every cut function by number): add the missing `LOAD`.
-Places (`dist/chunks.txt` lists every chunk and its functions; today also `caverns`, `blocks`, `nightmkt`, `editor`, `guide`, `log`, `greens`, `art`, `fair` (THE STRANGEST FAIR behind the West St row, 150q–150t: the lot, its rides, the midway, the karts) and the arcade games): `dungeon`, `park`, `fire`, `arcade`, `bath`, `apts`, `playhouse` (on the way in: `STORE.offGo`/`enter`/`ensure`, the
+Places (`dist/chunks.txt` lists every chunk and its functions; today also `caverns`, `blocks`, `nightmkt`, `editor`, `guide`, `log`, `greens`, `art`, `fair` (THE STRANGEST FAIR behind the West St row, 150q–150t: the lot, its rides, the midway, the karts), `pinball` (the arcade's two tables, 146zcz; the owner's module in `src/pinball/`) and the arcade games): `dungeon`, `park`, `fire`, `arcade`, `bath`, `apts`, `playhouse` (on the way in: `STORE.offGo`/`enter`/`ensure`, the
 `ROOMS` swap, `PARK.load`, the dungeon's `go`, a saved spot); `later` (code the start never runs, fetched as soon as the start is
 done) is marked by `tools/later.cjs` from what the start runs (re-run it in CI now and then: `SKIP=later MIN=0 python3 build.py &&
 node tools/later.cjs`; new code stays in the start file until then). `tests/places.cjs` enters every place on the website and fails

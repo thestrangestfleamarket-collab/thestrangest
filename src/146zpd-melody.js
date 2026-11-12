@@ -19,7 +19,7 @@ import {GSND} from './146zo-guitar-sound.js';
     K.dsp=()=>({fam:'hit',poly:6,body:[],dry:0,wet:0,gain:.5});
     K.sound=e=>{ const f=hz(e.n), T=Math.max(.5,e.d*1.3), v=Math.max(.1,Math.min(1,e.v)); return [{k:'hit',modes:C.parts.map(([n,a])=>[f*n,T/(1+.15*n),a*v]),tau:.01,id:e.n,ch:300+e.n,noise:[.01*v,.02,300,3000]}]; };
     // the recordings: a held note (soft or loud) or a short one (each group as loud as the touch, data/<id>-samples.json lv), the nearest one's at its speed; a note joined to the last comes in without its new attack, the last fading under it; a held note swells a little, and the trumpet's (recorded straight) takes a player's vibrato
-    K.samples=C.samples; K.mel=1;
+    K.samples=C.samples; K.mel=1; K.walk=1;
     K.sample=(e,P,S)=>{ const m=e.n, v=Math.max(.05,Math.min(1,e.v)), L=v<.62?0:1, sh=e.d<.24&&!e.sl&&!e.lg, pick=g=>GSND.near(S,g,m), n=(sh&&(pick('s'+L)||pick('s'+(1-L))))||pick('l'+L)||pick('l'+(1-L)); if(!n)return [];
       const short=n.k[0]==='s', long=!short&&e.d>.6;
       const lv=K.samples.lv||{}, g=n.k.split(':')[0], ref=lv.l1||1;
@@ -32,7 +32,7 @@ import {GSND} from './146zo-guitar-sound.js';
     K.compile=T=>{ const n=T.n, ev=[]; let lo=127, hi=0, t=0; for(let i=0;i+2<n.length;i+=3){ lo=Math.min(lo,n[i+1]); hi=Math.max(hi,n[i+1]); } const sh=12*Math.round((LO+HI-lo-hi)/24);
       for(let i=0;i+2<n.length;i+=3){ t+=n[i]/100; let m=n[i+1]+sh; while(m<LO)m+=12; while(m>HI)m-=12; ev.push({t,n:m,d:n[i+2]/100,v:.75,h:'R'}); }
       T.c={ev,len:ev.reduce((a,e)=>Math.max(a,e.t+e.d),0)}; };
-    K.model=()=>{ const g=new THREE.Group(), it=new THREE.Group(); INSTR.stool(g,.46); g.add(it); g.userData.it=it; C.build(it,it.userData); it.position.copy(C.at(new V3(0,1.1,.02))); it.quaternion.copy(C.q); INSTR.pf(PF=>dress(it,C,PF)); return g; };
+    K.model=()=>{ const g=new THREE.Group(), it=new THREE.Group(); g.add(it); g.userData.it=it; C.build(it,it.userData); it.position.copy(C.at(new V3(0,1.1,.02))); it.quaternion.copy(C.q); INSTR.pf(PF=>dress(it,C,PF)); return g; };
     K.feet=()=>({L:new V3(.11,.09,.3),R:new V3(-.11,.09,.3)});
     K.sway=(P,t)=>{ const sc=INSTR.score(P), n=sc.ev.length; return n&&t-sc.ev[n-1].t<3?.03*Math.sin(t*1.2):0; };
     if(C.lookY)K.lookY=()=>C.lookY;

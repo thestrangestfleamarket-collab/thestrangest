@@ -67,7 +67,7 @@ import {MUSH} from './111ec-mushseller.js';
   const have=id=>INV.items[id]||0, take=(id,n)=>{ INV.items[id]=have(id)-n; if(INV.items[id]<=0)delete INV.items[id]; }, give=(id,n=1)=>INV.add(id,n);
   GEMS.push(['m_morel','MOREL (MUSHROOM)',34,0],['m_moonglow','MOONGLOW (MUSHROOM)',90,0]);
   const say=SAY;
-  FORAGE.name=id=>NAME(id); FORAGE.eats=id=>!!ITEMS.prop(id,'edible'); FORAGE.RAW={}; FORAGE.has=id=>have(id); FORAGE.take=(id,n=1)=>{ take(id,n); saveSoon(); }; FORAGE.give=(id,n=1)=>give(id,n); FORAGE.sk=k=>sk(k); FORAGE.draw=()=>{ PACK.draw(); if(BAG.draw)BAG.draw(); };
+  FORAGE.name=id=>TEXT.bare(NAME(id)); FORAGE.eats=id=>!!ITEMS.prop(id,'edible'); FORAGE.RAW={}; FORAGE.has=id=>have(id); FORAGE.take=(id,n=1)=>{ take(id,n); saveSoon(); }; FORAGE.give=(id,n=1)=>give(id,n); FORAGE.sk=k=>sk(k); FORAGE.draw=()=>{ PACK.draw(); if(BAG.draw)BAG.draw(); };
   // a family's items join the model: a price is its VALUE; m_/u_/p_/f_ things and raw foods are EDIBLE and SELLABLE, as is anything added with sellable:true
   const FOOD=/^(m_|u_|p_|f_)/, reg=o=>{ const ids=new Set([...Object.keys(o.names||{}),...Object.keys(o.prices||{}),...Object.keys(o.does||{}),...Object.keys(o.raw||{}),...(o.recipes||[]).map(r=>r[0])]);
     for(const id of ids){ const p={}; if(o.prices&&o.prices[id]!=null)p.value=o.prices[id]; if(FOOD.test(id)||o.raw&&o.raw[id]||o.edible)p.edible=true; if(FOOD.test(id)||o.sellable)p.sellable=true; if(o.tiers&&o.tiers[id])p.tier=o.tiers[id]; ITEMS.reg(id,p); } };

@@ -5,6 +5,10 @@ import {scene} from './004-main.js';
 import {FIX, LEVEL, MAPG, SOL, STORE, TILE, ZU} from './006-map-pre.js';
 const STALL=(()=>{ const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS;
   const MUSH={
+    elfcup:{s:.035,h:1.2,f:(p,s)=>{ p('cyl',0xd8c8a0,0,s*.2,0,s*.18,s*.4,s*.18); p('cap',0xe02a1a,0,s*1.05,0,s,s*.7,s,Math.PI); p('cyl',0xb81a10,0,s*.98,0,s*.82,s*.06,s*.82); }},
+    lionsmane:{s:.05,h:1.6,f:(p,s)=>{ p('ball',0xf4f0e8,0,s*1.1,0,s,s*.8,s*.9); for(let k=0;k<14;k++){ const a=k*2.4, r=s*(.35+.5*((k*7)%10)/10); p('cone',0xece6da,Math.cos(a)*r,s*.55,Math.sin(a)*r*.9,s*.14,s*.9,s*.14,Math.PI); } }},
+    woodear:{s:.04,h:1.2,f:(p,s)=>{ p('cap',0x6a3a2a,0,s*.3,0,s,s*.5,s*.8,Math.PI,.25); p('cap',0x7a4a3a,s*.5,s*.5,s*.1,s*.6,s*.35,s*.5,Math.PI,-.5); p('ball',0x4a2618,-s*.1,s*.2,0,s*.5,s*.12,s*.4); }},
+    parasol:{s:.045,h:1.8,f:(p,s)=>{ p('cyl',0xe8e0d0,0,s*.8,0,s*.14,s*1.6,s*.14); p('cap',0xd8c8a0,0,s*1.5,0,s*1.2,s*.45,s*1.2); p('ball',0x8a6a44,0,s*1.95,0,s*.25,s*.1,s*.25); for(let k=0;k<7;k++){ const a=k*.9; p('ball',0x8a6a44,Math.cos(a)*s*.7,s*1.75,Math.sin(a)*s*.7,s*.14,s*.04,s*.14); } p('tor',0xe8e0d0,0,s*1.15,0,s*.2,s*.2,s*.3,Math.PI/2); }},
     button:{s:.035,h:1.2,f:(p,s)=>{ p('cyl',0xe8e2d4,0,s*.4,0,s*.35,s*.8,s*.35); p('cap',0xf2ede2,0,s*.7,0,s,s*.7,s); }},
     puffball:{s:.045,h:1.6,f:(p,s)=>{ p('ball',0xf4f0e6,0,s*.8,0,s,s*.85,s); }},
     chanterelle:{s:.04,h:1.2,f:(p,s)=>{ p('cone',0xe0a032,0,s*.6,0,s,s*1.2,s,Math.PI); }},
@@ -42,7 +46,7 @@ const STALL=(()=>{ const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS;
     const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; LAB={t,ks,mat:new THREE.MeshLambertMaterial({map:t,side:THREE.DoubleSide})}; return LAB; };
   const VEG={
     tomato:{s:.04,h:1.7,f:(p,s)=>{ p('ball',0xcc3420,0,s*.85,0,s,s*.85,s); p('ball',0x3e8a2a,0,s*1.6,0,s*.35,s*.15,s*.35); }},
-    pepper:{s:.045,h:2,f:(p,s,r,R)=>{ p('ball',[0x2f8a2a,0xd8b028,0xc8321e][Math.floor(R()*3)],0,s,0,s,s*1.1,s); }},
+    pepper:{s:.045,h:2,f:(p,s,r,R)=>{ const c=[0x2f8a2a,0xd8b028,0xc8321e][Math.floor(R()*3)]; for(let k=0;k<3;k++){ const a=r+k*2.09; p('ball',c,Math.cos(a)*s*.32,s,Math.sin(a)*s*.32,s*.68,s*1.1,s*.68); } p('cyl',0x3a6a2a,0,s*2.1,0,s*.12,s*.4,s*.12); p('cyl',0x3a6a2a,0,s*1.95,0,s*.4,s*.08,s*.4); }},
     carrot:{s:.02,h:2,f:(p,s)=>{ p('cone',0xe0742a,0,s,0,s,s*8,s,Math.PI/2); p('cone',0x4aa03a,0,s,-s*5,s*1.4,s*3,s*1.4,-Math.PI/2); }},
     corn:{s:.03,h:2,f:(p,s)=>{ p('cyl',0xe8c84a,0,s,0,s,s*6,s,Math.PI/2); p('cone',0x9ab04a,0,s,-s*3.8,s*1.3,s*2.5,s*1.3,-Math.PI/2); }},
     cabbage:{s:.075,h:1.7,f:(p,s)=>{ p('ball',0x8ac05a,0,s*.85,0,s,s*.85,s); p('cap',0x6aa040,0,s*.5,0,s*1.08,s*.55,s*1.08,Math.PI); }},

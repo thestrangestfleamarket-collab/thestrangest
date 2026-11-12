@@ -60,10 +60,12 @@ FORAGE.TABS.push({id:'fishing',draw:()=>{ '@later'; const IP=(id,k)=>ITEMS.prop(
 // what a catch looks like in the inspect window: the fish's own shape once the river is built (FISHING.look), the junk and the bait in simple shapes
 INSPECT.kinds.push({is:id=>/^x_/.test(id)||id==='chest'||/^bait/.test(id),make:id=>{ '@later'; const P=INSPECT.part;
     if(id==='x_boot'){ const g=new THREE.Group(); g.add(P('box',0x3a2e22,0,.06,0,.09,.12,.1),P('box',0x3a2e22,0,.02,.07,.09,.04,.16),P('box',0x1e1812,0,0,.04,.095,.012,.24)); return g; }
-    if(id==='x_can')return INSPECT.shape('jar',0x9aa0a4,0x8a9094); if(id==='x_note'){ const g=INSPECT.shape('bottle',0x9ad0b0); g.add(P('cyl',0xf2ead6,0,.12,0,.022,.14,.022)); return g; }
+    if(id==='x_can'){ const g=new THREE.Group(), T={kind:'metal',metal:.6,rough:.45}; g.add(P('cyl',0x9aa0a4,0,.06,0,.04,.12,.04,0,0,0,T),P('cyl',0x7a5a3a,0,.06,0,.0405,.06,.0405,0,0,0,{kind:'paper'}),P('cyl',0x3a3e40,0,.119,0,.036,.004,.036),P('cyl',0xb0b6ba,.03,.15,0,.038,.004,.038,0,1.1,0,T)); for(const y of [.012,.108])g.add(P('tor',0xb0b6ba,0,y,0,.04,.04,.02,Math.PI/2,0,0,T)); return g; } if(id==='x_note'){ const g=INSPECT.shape('bottle',0x9ad0b0); g.add(P('cyl',0xf2ead6,0,.12,0,.022,.14,.022)); return g; }
     if(id==='chest')return KIT.piece('chest',.36);
     if(/^bait/.test(id))return id==='bait_cut'?INSPECT.shape('lump',0xb07a6a):INSPECT.shape('jar',0x6a4a2a,0x3a3a3a);
-    return FISHING.look&&FISHING.look(id)||(()=>{ const g=new THREE.Group(); g.add(P('ball',0x8a9aa0,0,0,0,.2,.07,.035,0,0,0,{flat:1}),P('cone',0x7a8a90,-.24,0,0,.07,.1,.02,0,Math.PI/2)); return g; })(); }});
+    return FISHING.look&&FISHING.look(id)||(()=>{ const g=new THREE.Group(), [c,c2,L,H,wh]={x_burbot:[0x6a5a3a,0xc8b888,.26,.045,1],x_oldcat:[0x3a3a30,0x8a8670,.24,.07,2],x_smelt:[0xb8c4c8,0xe8eef0,.16,.035,0],x_whitefish:[0xd0d6d8,0xf2f4f4,.2,.06,0]}[id]||[0x8a9aa0,0xd0d8da,.2,.06,0], W={kind:'wet'};
+      g.add(P('sph',c,0,0,0,L,H,H*.55,0,0,0,W),P('sph',c2,0,-H*.3,0,L*.85,H*.6,H*.5,0,0,0,W),P('cone',c,-L-.05,0,0,H*1.1,.11,.012,0,-Math.PI/2,0,W),P('cone',c,-L*.1,H*.95,0,L*.3,H*.7,.008,0,0,0,W),P('cone',c,L*.3,-H*.8,H*.3,L*.12,H*.5,.008,Math.PI,0,0,W),P('ball',0x101010,L*.72,H*.25,H*.42,.01,.01,.006),P('ball',0x101010,L*.72,H*.25,-H*.42,.01,.01,.006));
+      for(let i=0;i<wh*2;i++){ const s=i%2?1:-1, k=i>>1; g.add(P('cyl',0x2a2a24,L*.98+.03,-H*.2-k*.02,s*.03,.003,.09,.003,s*.6,Math.PI/2-.3-k*.3)); } return g; })(); }});
 // the rowboat in the vehicle editor: a copy of the one on the river once the Hudson is built
 VLOOK.kind('rowboat',{name:'THE ROWBOAT',grp:'BOATS',make:()=>{ const b=BOAT.G; if(!b)return null; const c=b.clone(); c.visible=true; c.position.set(0,0,0); c.rotation.set(0,0,0); return VLOOK.dress('rowboat',c); }});
 // fishing starts with the game (THE LAKE needs no river); the Hudson's own parts (the stand, the rowboat, clicking its water) are added when it is built

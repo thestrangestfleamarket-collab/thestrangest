@@ -1,10 +1,11 @@
-// THE ARCADE'S PINBALL: two real tables on the arcade's west wall, POOH and MICKEY (src/pinball/table.js: the owner's module, its rules, ball and looks), played where they stand: A and D the flippers, hold SPACE and let go for the plunger, W or ESC to step away. Your game is your own page's; the best scores go on the arcade's shared top ten, tickets come out by your score.
+// THE ARCADE'S PINBALL: two real tables on the arcade's west wall, POOH and MICKEY (src/pinball/table.js: the owner's module, its rules, ball and looks), played where they stand: A and D the flippers, hold SPACE and let go for the plunger, W or ESC to step away; on a pad the bumpers or triggers are the flippers, A the plunger, B steps away (in the headset, each hand's trigger or grip is its flipper). Your game is your own page's; the best scores go on the arcade's shared top ten, tickets come out by your score.
 import {SHARED, THREE} from './003-shx.js';
-import {keys, ONLINE, pos, RAG, ROOMS, SFX, UI, VIT} from './003b-systems.js';
+import {keys, ONLINE, pos, RAG, ROOMS, SFX, UI, VIT, VR} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {MODS, STORE, SYS} from './006-map-pre.js';
 import {IKIT} from './038zc-ikit.js';
+import {PAD} from './075-main-13.js';
 const PIN={TABLES:[['pooh',8.32],['mickey',11.28]],U:.78,STAND:1,LOOK:.88,ZOOM:1.25,TICKET:20000}; window.PIN=PIN;   // each table's theme and where along the west wall it stands; its middle's metres from the wall, where you stand from its middle, how far down you look and how close; points a ticket
 { let API=null; const api=()=>API||(API=MAKE());
   const MAKE=()=>{ '@pinball';
@@ -40,9 +41,9 @@ const PIN={TABLES:[['pooh',8.32],['mickey',11.28]],U:.78,STAND:1,LOOK:.88,ZOOM:1
       #pinp[hidden]{display:none} #pinp .hd{display:flex;justify-content:space-between;gap:8px;align-items:center} #pinp .row{display:flex;gap:6px} #pinp button{font:inherit;color:inherit;background:#24143e;border:1px solid #6a3a9a;padding:3px 6px;cursor:pointer} #pinp .row button{flex:1;padding:12px 0;font-size:14px} #pinp .dim{opacity:.75} @media not (pointer:coarse){#pinp .row{display:none}}`; document.head.appendChild(css); }
     UI_.innerHTML='<div class="hd"><b id="pnn"></b><button id="pnx">STEP AWAY</button></div><div class="row" id="pnb"><button data-k="L">◀ FLIP</button><button data-k="S">PLUNGER</button><button data-k="R">FLIP ▶</button></div><div class="dim" id="pnt"></div>'; document.body.appendChild(UI_);
     const $=id=>UI_.querySelector('#'+id), fmt=n=>String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,',');
-    const panel=()=>{ if(!P){ UI_.hidden=true; return; } UI_.hidden=false; const t=P.t, S=t.pin.state, live=S.phase!=='idle'&&S.phase!=='over';
+    const panel=()=>{ if(!P||VR.on){ UI_.hidden=true; return; } UI_.hidden=false; const pad=PAD.n>0; const t=P.t, S=t.pin.state, live=S.phase!=='idle'&&S.phase!=='over';
       $('pnn').textContent=cab(t)+(live?' · BALL '+S.ball+' · '+fmt(S.score):t.over?' · GAME OVER · '+fmt(t.score):'');
-      $('pnt').textContent=live?'A/D OR ◀ ▶ THE FLIPPERS · HOLD SPACE AND LET GO: THE PLUNGER · W OR ESC STEP AWAY':'SPACE TO START · W OR ESC STEP AWAY'; };
+      $('pnt').textContent=pad?(live?'LB/RB OR THE TRIGGERS: THE FLIPPERS · HOLD A AND LET GO: THE PLUNGER · B STEP AWAY':'A TO START · B STEP AWAY'):live?'A/D OR ◀ ▶ THE FLIPPERS · HOLD SPACE AND LET GO: THE PLUNGER · W OR ESC STEP AWAY':'SPACE TO START · W OR ESC STEP AWAY'; };
     const key=(k,on)=>{ if(!P)return; const t=P.t, S=t.pin.state, live=S.phase!=='idle'&&S.phase!=='over';
       if(k==='L'||k==='R'){ if(live)t.pin.flip(k==='L'?0:1,on); }
       else if(k==='S'){ if(live)t.pin.plunge(on); else if(on)PIN.start(); } };
@@ -52,11 +53,11 @@ const PIN={TABLES:[['pooh',8.32],['mickey',11.28]],U:.78,STAND:1,LOOK:.88,ZOOM:1
     const kd=e=>{ if(!P||e.ctrlKey||e.metaKey||e.altKey||/INPUT|TEXTAREA|SELECT/.test((e.target&&e.target.tagName)||''))return; const m=MAP[(e.key||'').toLowerCase()]; if(!m)return; e.preventDefault(); e.stopImmediatePropagation();
       if(e.type==='keydown'){ if(e.repeat)return; if(m==='X')PIN.leave(); else key(m,true); } else if(m!=='X')key(m,false); };
     addEventListener('keydown',kd,true); addEventListener('keyup',kd,true); addEventListener('blur',()=>{ if(P)for(const k of ['L','R'])key(k,false); });
-    const pin=()=>{ window.RUNNER=MODS.runner={on:true,steer:()=>{ if(!P)return [0,0,0]; pos.x=P.t.x; pos.z=P.t.z; SHARED.heading=P.t.hd; SHARED.yaw=SHARED.yawTo=P.t.hd+Math.PI; SHARED.pitch=SHARED.pitchTo=PIN.LOOK; UI.fz=PIN.ZOOM; return [0,0,0]; }}; };
-    PIN.take=i=>{ const t=TB[i]; if(!t||P&&P.t===t||RAG.on||VIT.out>0)return; if(P)PIN.leave(true); P={t,view:UI.view,fz:UI.fz}; if(UI.view!=='first')UI.setView('first'); keys.clear(); pin(); panel();
-      const S=t.pin.state; if(S.phase==='idle'||S.phase==='over')say(cab(t)+': SPACE TO START. A AND D THE FLIPPERS, HOLD SPACE AND LET GO FOR THE PLUNGER.'); };
+    const pin=()=>{ window.RUNNER=MODS.runner={on:true,steer:()=>{ if(!P)return [0,0,0]; pos.x=P.t.x; pos.z=P.t.z; SHARED.heading=P.t.hd; if(!VR.on){ SHARED.yaw=SHARED.yawTo=P.t.hd+Math.PI; SHARED.pitch=SHARED.pitchTo=PIN.LOOK; UI.fz=PIN.ZOOM; } return [0,0,0]; }}; };
+    PIN.take=i=>{ const t=TB[i]; if(!t||P&&P.t===t||RAG.on||VIT.out>0)return; if(P)PIN.leave(true); P={t,view:UI.view,fz:UI.fz}; UI.gamewin='pin'; if(!VR.on&&UI.view!=='first')UI.setView('first'); keys.clear(); pin(); panel();
+      const S=t.pin.state; if(S.phase==='idle'||S.phase==='over')say(cab(t)+(VR.on?': A TO START. EACH HAND\'S TRIGGER IS ITS FLIPPER, HOLD A AND LET GO FOR THE PLUNGER, B STEPS AWAY.':PAD.n>0?': A TO START. LB AND RB THE FLIPPERS, HOLD A AND LET GO FOR THE PLUNGER.':': SPACE TO START. A AND D THE FLIPPERS, HOLD SPACE AND LET GO FOR THE PLUNGER.')); };
     PIN.start=()=>{ if(!P)return false; const t=P.t; t.over=false; t.score=0; t.pin.start(); panel(); return true; };
-    PIN.leave=quiet=>{ if(!P)return; const t=P.t, v=P.view, fz=P.fz; for(const s of [0,1])t.pin.flip(s,false); P=null; window.RUNNER=MODS.runner=null; UI_.hidden=true; keys.clear(); if(v&&v!==UI.view)UI.setView(v); else UI.fz=fz; if(!quiet)say('YOU STEP AWAY FROM '+cab(t)+'.','#e8d8ff'); };
+    PIN.leave=quiet=>{ if(!P)return; const t=P.t, v=P.view, fz=P.fz; for(const s of [0,1])t.pin.flip(s,false); P=null; if(UI.gamewin==='pin')UI.gamewin=null; window.RUNNER=MODS.runner=null; UI_.hidden=true; keys.clear(); if(VR.on);else if(v&&v!==UI.view)UI.setView(v); else UI.fz=fz; if(!quiet)say('YOU STEP AWAY FROM '+cab(t)+'.','#e8d8ff'); };
     // a game is over: the score to the shared top ten (the arcade's own table), tickets by the score
     const ended=(t,score)=>{ t.over=true; t.score=score; if(P&&P.t===t)panel(); const n=Math.min(10,Math.floor(score/PIN.TICKET)), k=kit(); PIN.last={table:t.pin.theme.id,score,tickets:n};
       say('GAME OVER: '+fmt(score)+'. SPACE FOR ANOTHER.','#5affff'); if(PIN.won)PIN.won(n); if(score>0&&k&&k.post)k.post(cab(t),ini(),Math.min(99999999,Math.round(score)),'').then(r=>{ PIN.last.rank=r; if(r>0&&r<=10)say('RANK '+r+' OF THE TOP TEN ON '+cab(t)+'.'); }); };
@@ -65,7 +66,7 @@ const PIN={TABLES:[['pooh',8.32],['mickey',11.28]],U:.78,STAND:1,LOOK:.88,ZOOM:1
     const step=dt=>{ if(!TB.length)return; if(!TB[0].pin.group.parent)return drop();   // the arcade was dropped
       if(P&&(ROOMS.offIn&&ROOMS.offIn()!=='arcade'||RAG.on||VIT.out>0||VIT.dead))PIN.leave(true);
       for(const t of TB){ const ph=t.pin.state.phase; if(P&&P.t===t||ph==='play'||ph==='between')for(let r=Math.min(dt||0,.12);r>1e-4;r-=.04)t.pin.update(Math.min(r,.04)); } };   // the table steps at most a 25th of a second: a slow frame is several steps
-    PIN.dbg=()=>({built:TB.length,me:P?P.t.i:null,view:UI.view,last:PIN.last||null,tables:TB.map(t=>{ const S=t.pin.state, g=t.pin.group; let n=0; g.traverse(o=>{ if(o.isMesh)n++; });
+    PIN.dbg=()=>({built:TB.length,me:P?P.t.i:null,view:UI.view,gamewin:UI.gamewin||null,last:PIN.last||null,tables:TB.map(t=>{ const S=t.pin.state, g=t.pin.group; let n=0; g.traverse(o=>{ if(o.isMesh)n++; });
       return {name:cab(t),phase:S.phase,ball:S.ball,score:S.score,balls:S.balls.map(b=>[+b.x.toFixed(3),+b.y.toFixed(3)]),fl:S.fl.map(f=>f.on),at:[+g.position.x.toFixed(2),+g.position.z.toFixed(2)],stand:[+t.x.toFixed(2),+t.z.toFixed(2)],meshes:n}; })});
     PIN.T=()=>TB;
     return {build,step,drop}; };

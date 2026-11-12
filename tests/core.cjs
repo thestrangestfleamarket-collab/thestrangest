@@ -484,6 +484,8 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       d.dispatchEvent(new PointerEvent('pointerover', { pointerType: 'mouse', bubbles: true, clientX: 20, clientY: 20 })); await w(400); const early = !!C && !C.hidden; await w(900); const late = !!C && !C.hidden;
       document.body.dispatchEvent(new PointerEvent('pointerover', { pointerType: 'mouse', bubbles: true })); await w(100); const gone = !C || C.hidden; d.remove(); return { early, late, gone }; }).catch(e => ({ err: e.message }));
     ok(!r.early && r.late && r.gone, 'the item card waits for a second\'s hover, then shows; moving off hides it (owner, 12 Nov 2026): ' + JSON.stringify(r)); }
+  { const r = await pg.evaluate(() => { const L = __dbg.LINES || window.LINES, N = (__dbg.NPCS || []).find(n => n && n.g), s0 = L.signs; let out; L.signs = () => 'SIGNED'; try { out = { said: L.say(N, 'HELLO THERE') }; } catch (e) { out = { err: e.message }; } L.signs = s0; return out; }).catch(e => ({ err: e.message }));
+    ok(!r.err, 'a character who signs says a line without an error (the Village Gardener, 12 Nov 2026): ' + JSON.stringify(r)); }
   await b.close();
   console.log(fails.length ? fails.length + ' failed' : 'all core checks passed');
   process.exit(fails.length ? 1 : 0);

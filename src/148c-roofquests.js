@@ -1,6 +1,6 @@
 // THE ROOFTOPS' SET PIECES (up your fire escape): the ruined greenhouse you restore into a bed for rare flowers (pigeons come for the seedlings), the night run over the next roofs to a mat where a rival master spars you for belts and scrolls, and the water tower you climb (worse in wind and rain) to the view, a hawk's nest and your flag.
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, CLOCK, FORAGE, INV, keys, MAIL, ONLINE, pos, ROOMS, SFX, st, UI, VIS, VIT, WX} from './003b-systems.js';
+import {CITY, CLOCK, FORAGE, INV, ITEMS, keys, MAIL, ONLINE, pos, ROOMS, SFX, st, UI, VIS, VIT, WX} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
@@ -16,6 +16,10 @@ const ROOFQ={built:false}; window.ROOFQ=ROOFQ;
   const night=()=>{ const h=CLOCK.h??12; return h>=20||h<6; }, sk=k=>FORAGE.sk?FORAGE.sk(k):10;
   const BELT=['WHITE','YELLOW','ORANGE','GREEN','BLUE','BROWN','BLACK'];
   FORAGE.add({names:{rf_scroll:"A NIGHT MASTER'S SCROLL"},prices:{rf_scroll:40}});
+  // the scroll has its uses (owner, 12 Nov 2026): studied, it is a lesson in fighting and is used up; the sword buyer pays for one
+  ITEMS.reg('rf_scroll',{value:40}); FORAGE.sell('rf_scroll'); (FORAGE.BUYK.swords=FORAGE.BUYK.swords||[]).push('rf_scroll');
+  FORAGE.ROWB.push(id=>id==='rf_scroll'?[['STUDY IT','rfstudy']]:[]);
+  FORAGE.ACT.rfstudy=()=>{ if(!FORAGE.has('rf_scroll'))return; FORAGE.take('rf_scroll',1); FORAGE.use('fight',-20,80); if(FORAGE.draw)FORAGE.draw(); SAY("YOU STUDY THE NIGHT MASTER'S SCROLL UNTIL ITS FORMS ARE YOURS. THE PAPER CRUMBLES.",'#e8e2cc'); };
   FORAGE.HELP.push('THE ROOFTOPS: up your fire escape, a ruined greenhouse to restore, the night run over the roofs to a master who spars you, and the water tower to climb.');
   let R=null, G=null, MH=0, MV=0; const things=[];
   const L=c=>new THREE.MeshLambertMaterial({color:c}), HIT=new THREE.MeshBasicMaterial({visible:false});

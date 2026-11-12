@@ -1,4 +1,4 @@
-// ASTRONOMY AT THE TELESCOPE (src/150fh-astro.js, 150fcz-firsts.js): node tests/astro.cjs [dist/market.html]. The skill gates 100X and 200X; a planet held in the middle goes in the logbook and teaches the skill; the camera makes a sellable print worth more in focus at the right exposure; a star party: the host's eyepiece is followed by a watcher, the host can hand over the tube; tonight's firsts keep the first name. SHOTS=<dir> saves pictures.
+// ASTRONOMY AT THE TELESCOPE (src/150fh-astro.js, 150fcz-firsts.js): node tests/astro.cjs [dist/market.html]. Every zoom is open; a planet held in the middle goes in the logbook and teaches the skill; the camera makes a sellable print worth more in focus at the right exposure; a star party: the host's eyepiece is followed by a watcher, the host can hand over the tube; tonight's firsts keep the first name. SHOTS=<dir> saves pictures.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=astro::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 const SHOTS = process.env.SHOTS;
@@ -13,9 +13,8 @@ const SHOTS = process.env.SHOTS;
     for (let i = 0; i < 30 && !(await pg.evaluate(() => window.BEDROOMDBG && BEDROOMDBG().built)); i++) await pg.waitForTimeout(1000);
     await pg.evaluate(async () => { FORAGE.S.sk.astro = 100; await SCOPE.open(); });
     const g0 = await pg.evaluate(() => { const B = [...document.querySelectorAll('#scopev [data-m]')].map(b => [+b.dataset.m, b.disabled]); return { B, skill: ASTRO.dbg().skill, eye: B.some(x => x[0] === 1) }; });
-    ok(g0.eye && g0.B.find(x => x[0] === 50)[1] === false && g0.B.find(x => x[0] === 100)[1] && g0.B.find(x => x[0] === 200)[1], 'at ASTRONOMY 10 the eyepieces up to 50X are open, 100X and 200X are not, and NAKED EYE is there (' + JSON.stringify(g0.B) + ')');
-    const g1 = await pg.evaluate(() => { FORAGE.S.sk.astro = 500; SCOPE.view.panel(); return [...document.querySelectorAll('#scopev [data-m]')].map(b => [+b.dataset.m, b.disabled]); });
-    ok(g1.find(x => x[0] === 100)[1] === false && g1.find(x => x[0] === 200)[1], 'at 50 the 100X opens, 200X still waits for 70 (' + JSON.stringify(g1) + ')');
+    ok(g0.eye && g0.B.every(x => !x[1]) && g0.B.some(x => x[0] === 200) && g0.B.some(x => x[0] >= 1000), 'every zoom is open whatever the skill, NAKED EYE to the thousands (12 Nov 2026) (' + JSON.stringify(g0.B) + ')');
+    await pg.evaluate(() => { FORAGE.S.sk.astro = 500; SCOPE.view.panel(); });
 
     // a planet held in the middle: the logbook, and the skill learnt from it
     const lg = await pg.evaluate(async () => { let h = 1; for (; h < 24; h++) { SCOPE.fixJD = SCOPE.jdAt(h); const a = SCOPE.altOf('ju'); if (a && a.alt > 25) { const s = SCOPE.astro.where('sun', SCOPE.fixJD), sa = SCOPE.astro.eq2hor(s.ra, s.dec, SCOPE.astro.lst(SCOPE.fixJD)).alt; if (sa < -12) break; } }

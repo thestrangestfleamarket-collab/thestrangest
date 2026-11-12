@@ -1,6 +1,6 @@
-// THE SUBWAY DEMONS: DEMONS, tiny red demons living down on the subway's track beds and in its tunnels: rare (one in two or three minutes of looking), they run from you within their own stretch of tunnel and blow up only when you corner them (it hurts, it never kills); the freeze ray locks one in a block of ice you can carry (it thaws in a minute) to the SECURITY OFFICE in the platform's far corner, which pays a bounty for each.
+// THE SUBWAY DEMONS: DEMONS, tiny red demons living down on the subway's track beds and in its tunnels: rare (one in two or three minutes of looking), they run from you within their own stretch of tunnel and blow up only when you corner them (it hurts, it never kills); the freeze ray locks one in a block of ice you can carry (it thaws in a minute) to the DEMON DROP BOX in the platform's far corner, which pays a bounty for each, or tame (TAMING 1) as a pet.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INV, LEVELS, pos, SFX, UI, VIT} from './003b-systems.js';
+import {FORAGE, INSPECT, INV, LEVELS, PETS, pos, SFX, UI, VIT} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {FIX, MODS, SOL, SYS, TILE} from './006-map-pre.js';
@@ -50,7 +50,7 @@ const DEMONS={list:[],BOUNTY:25};
   /* ---------- frozen: a block of ice you can lift into your bag; it thaws in a minute, in your hands or on the floor ---------- */
   const BAG=[];   // the thaw times of the blocks you carry
   const pick=d=>{ if(d.state!=='ice'){ say('IT HISSES AT YOU. FREEZE IT FIRST (THE FREEZE RAY).'); return; }
-    FORAGE.give(BAGID,1); BAG.push(d.ice); drop(d); SFX.play('clunk',{vol:.5,pitch:1.4}); say('YOU LIFT THE DEMON IN ITS BLOCK OF ICE. TAKE IT TO THE SECURITY OFFICE BEFORE IT THAWS ('+Math.ceil(BAG[BAG.length-1])+' s).','#9fe6ff'); };
+    FORAGE.give(BAGID,1); BAG.push(d.ice); drop(d); SFX.play('clunk',{vol:.5,pitch:1.4}); say('YOU LIFT THE DEMON IN ITS BLOCK OF ICE. DROP IT IN THE DEMON DROP BOX, OR TAME IT, BEFORE IT THAWS ('+Math.ceil(BAG[BAG.length-1])+' s).','#9fe6ff'); };
   SYS.onStart(()=>{ const n=FORAGE.has(BAGID)?(INV.items[BAGID]||1):0; for(let i=0;i<n;i++)BAG.push(ICE_S); },'146hbd-demons');
   const bagTick=dt=>{ for(let i=BAG.length-1;i>=0;i--){ if((BAG[i]-=dt)>0)continue; BAG.splice(i,1); if(!FORAGE.has(BAGID))continue; FORAGE.take(BAGID,1);
       const q=inStation()&&(trackNear(0,1.5*M)||trackNear(0,8*M)); if(q){ const d=spawn(q.x,q.z); d.t=-1; say('THE ICE IN YOUR BAG CRACKS. THE DEMON IS OUT AND DOWN INTO THE TRACKS!'); }
@@ -94,34 +94,38 @@ const DEMONS={list:[],BOUNTY:25};
   // the freeze ray and the flamethrower reach them as they do people (o.frozen is kept by the ray's ice)
   (MODS.moreBodies=MODS.moreBodies||[]).push(()=>inStation()?DEMONS.list.map(d=>({id:d.id,x:d.x,y:d.y,z:d.z,o:d,root:d.B})):[]);
 
-  /* ---------- the SECURITY OFFICE: a steel and glass booth in the platform's far corner (clear of the route map on the end wall); double-click its window to hand in what you carry ---------- */
-  const office=()=>{ const S=SL(), MTT=MT(); if(!S)return; const x0=S.MID+1.7, x1=S.MID+4.2, y0=S.L-2.6, y1=S.L-.55, a=MTT.at(x0,y0), b=MTT.at(x1,y1);
-    const X0=Math.min(a.x,b.x), X1=Math.max(a.x,b.x), Z0=Math.min(a.z,b.z), Z1=Math.max(a.z,b.z), cx=(X0+X1)/2, cz=(Z0+Z1)/2, W=X1-X0, D=Z1-Z0, gy=ground(cx,cz), H=2.5*M;
-    const toUs=MTT.at(S.MID,S.L-6), face=Math.atan2(toUs.x-cx,toUs.z-cz);
-    const g=new THREE.Group(); g.position.set(cx,gy,cz); g.rotation.y=Math.round(face/(Math.PI/2))*(Math.PI/2); ROOT.parent.add(LEVELS.own(g,'station'));
-    const ww=(Math.abs(Math.sin(g.rotation.y))>.5)?D:W, dd=(Math.abs(Math.sin(g.rotation.y))>.5)?W:D;
-    const steel=new THREE.MeshLambertMaterial({color:0x3c4652}), steelD=new THREE.MeshLambertMaterial({color:0x262c34}), glass=new THREE.MeshLambertMaterial({color:0x9fd0e0,transparent:true,opacity:.28,depthWrite:false}),
-      lit=new THREE.MeshBasicMaterial({color:0xfff2d0}), desk=new THREE.MeshLambertMaterial({color:0x5a4632});
-    const box=(w,h,d,m,x,y,z)=>{ const me=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m); me.position.set(x,y,z); me.castShadow=me.receiveShadow=m!==glass; g.add(me); return me; };
-    const lo=1*M, fz=dd/2;
-    box(ww,lo,.08*M,steel,0,lo/2,fz); box(ww,lo,.08*M,steel,0,lo/2,-fz); box(.08*M,lo,dd,steel,ww/2,lo/2,0); box(.08*M,lo,dd,steel,-ww/2,lo/2,0);   // the steel below the glass
-    box(ww,H-lo-.3*M,.03*M,glass,0,lo+(H-lo-.3*M)/2,fz); box(.03*M,H-lo-.3*M,dd,glass,ww/2,lo+(H-lo-.3*M)/2,0); box(.03*M,H-lo-.3*M,dd,glass,-ww/2,lo+(H-lo-.3*M)/2,0);
-    box(ww,H-lo,.08*M,steel,0,lo+(H-lo)/2,-fz);
-    for(const [x,z] of [[ww/2,fz],[-ww/2,fz],[ww/2,-fz],[-ww/2,-fz]])box(.1*M,H,.1*M,steelD,x,H/2,z);
-    box(ww+.2*M,.3*M,dd+.2*M,steelD,0,H-.15*M,0);   // the roof band
-    box(ww*.9,.04*M,.35*M,desk,0,lo,fz-.2*M); box(.5*M,.06*M,.25*M,steelD,0,lo-.05*M,fz+.12*M);   // the counter inside, the tray under the window
-    box(ww*.7,.04*M,dd*.6,lit,0,H-.32*M,0);   // its ceiling light
-    // the sign over the window
-    const cv=document.createElement('canvas'); cv.width=256; cv.height=48; const c2=cv.getContext('2d'); c2.fillStyle='#0e2a5a'; c2.fillRect(0,0,256,48); c2.strokeStyle='#d8e4f4'; c2.lineWidth=3; c2.strokeRect(3,3,250,42);
-    c2.fillStyle='#f4f6fa'; c2.font='bold 26px sans-serif'; c2.textAlign='center'; c2.textBaseline='middle'; c2.fillText('SECURITY',128,25);
-    const tx=new THREE.CanvasTexture(cv); tx.colorSpace=THREE.SRGBColorSpace; const sg=new THREE.Mesh(new THREE.PlaneGeometry(ww*.8,ww*.8*48/256),new THREE.MeshBasicMaterial({map:tx})); sg.position.set(0,H-.15*M,fz+.11*M); g.add(sg);
-    SOL.down.push([X0-.05*M,Z0-.05*M,X1+.05*M,Z1+.05*M]); FIX.down.push([X0,Z0,0,X1,Z1,H]);
-    const win=g.children.find(m=>m.material===glass);
-    UI.thing({name:'THE SECURITY OFFICE (HAND IN FROZEN DEMONS)',obj:win,reach:2.2*M,near:4*M,tall:gy+2*M,act:()=>{ const n=INV.items[BAGID]||0;
-      if(!n)return say('THE OFFICER BEHIND THE GLASS: "SEEN ANY OF THOSE LITTLE RED DEVILS? FREEZE ONE AND BRING IT HERE. $'+DEMONS.BOUNTY+' A HEAD."','#d8e4f4');
-      FORAGE.take(BAGID,n); BAG.length=0; const pay=n*DEMONS.BOUNTY; INV.cash=(INV.cash||0)+pay; if(INV.save)INV.save(); SFX.play('ding',{vol:.6});
-      say('YOU HAND IN '+(n>1?n+' FROZEN DEMONS':'A FROZEN DEMON')+'. THE SECURITY OFFICE PAYS YOU $'+pay+'.','#f2c14e'); }});
-    DEMONS.office={x:cx,z:cz,g}; };
-  SYS.onStart(()=>{ try{ office(); }catch(e){ console.warn('security office',e); } },'146hbd-demons');
+  /* ---------- the DEMON DROP BOX (owner, 12 Nov 2026; the security office it replaces is gone): a steel box with a chute in the platform's far corner, clear of the route map; double-click it to drop in the frozen demons you carry, it pays the bounty ---------- */
+  const dropbox=()=>{ const S=SL(), MTT=MT(); if(!S)return; const c=MTT.at(S.MID+3.4,S.L-1.3), cx=c.x, cz=c.z, gy=ground(cx,cz), W=1.1*M, D=.8*M, H=1.3*M;
+    const toUs=MTT.at(S.MID,S.L-6), face=Math.round(Math.atan2(toUs.x-cx,toUs.z-cz)/(Math.PI/2))*(Math.PI/2);
+    const g=new THREE.Group(); g.position.set(cx,gy,cz); g.rotation.y=face; ROOT.parent.add(LEVELS.own(g,'station'));
+    const steel=new THREE.MeshLambertMaterial({color:0x3c4652}), steelD=new THREE.MeshLambertMaterial({color:0x1c2128}), frost=new THREE.MeshLambertMaterial({color:0xb8e6ff,emissive:0x1a3a50});
+    const box=(w,h,d,m,x,y,z,rx=0)=>{ const me=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m); me.position.set(x,y,z); me.rotation.x=rx; me.castShadow=me.receiveShadow=true; g.add(me); return me; };
+    box(W,H,D,steel,0,H/2,0); box(W+.08*M,.08*M,D+.08*M,steelD,0,H+.04*M,0); box(W+.04*M,.1*M,D+.04*M,steelD,0,.05*M,0);
+    box(W*.7,.5*M,.05*M,steelD,0,H*.66,D/2+.01*M); const hatch=box(W*.66,.46*M,.04*M,steel,0,H*.66+.06*M,D/2+.09*M,.5); box(W*.3,.03*M,.05*M,steelD,0,H*.66+.3*M,D/2+.2*M);   // the chute's mouth, its hatch tipped open, the handle
+    box(W*.62,.03*M,.03*M,frost,0,H*.66-.2*M,D/2+.03*M);   // frost on the chute's lip
+    box(.3*M,.1*M,.12*M,steelD,W*.25,.3*M,D/2+.05*M);   // the coin tray
+    const cv=document.createElement('canvas'); cv.width=256; cv.height=64; const c2=cv.getContext('2d'); c2.fillStyle='#e8c21a'; c2.fillRect(0,0,256,64); c2.fillStyle='#14161a'; for(let x=-64;x<256;x+=32){ c2.beginPath(); c2.moveTo(x,64); c2.lineTo(x+16,64); c2.lineTo(x+48,0); c2.lineTo(x+32,0); c2.fill(); }
+    c2.fillStyle='#14161a'; c2.fillRect(8,12,240,40); c2.fillStyle='#ffe14a'; c2.font='bold 22px sans-serif'; c2.textAlign='center'; c2.textBaseline='middle'; c2.fillText('DEMON DROP · $'+DEMONS.BOUNTY,128,33);
+    const tx=new THREE.CanvasTexture(cv); tx.colorSpace=THREE.SRGBColorSpace; const sg=new THREE.Mesh(new THREE.PlaneGeometry(W*.9,W*.9/4),new THREE.MeshBasicMaterial({map:tx})); sg.position.set(0,H*.3,D/2+.012*M); g.add(sg);
+    const hw=(Math.abs(Math.sin(face))>.5?D:W)/2, hd=(Math.abs(Math.sin(face))>.5?W:D)/2;
+    SOL.down.push([cx-hw-.05*M,cz-hd-.05*M,cx+hw+.05*M,cz+hd+.05*M]); FIX.down.push([cx-hw,cz-hd,0,cx+hw,cz+hd,H]);
+    UI.thing({name:'THE DEMON DROP BOX (DROP IN FROZEN DEMONS)',obj:hatch,reach:2.2*M,near:4*M,tall:gy+1.6*M,act:()=>{ const n=INV.items[BAGID]||0;
+      if(!n)return say('A STEEL BOX, COLD TO THE TOUCH. ITS PLATE: "FROZEN DEMONS ONLY. $'+DEMONS.BOUNTY+' EACH."','#d8e4f4');
+      FORAGE.take(BAGID,n); BAG.length=0; const pay=n*DEMONS.BOUNTY; INV.cash=(INV.cash||0)+pay; if(INV.save)INV.save(); SFX.play('clunk',{vol:.6,pitch:.8}); SFX.play('ding',{vol:.6,delay:.4});
+      say('YOU DROP '+(n>1?n+' FROZEN DEMONS':'THE FROZEN DEMON')+' DOWN THE CHUTE. $'+pay+' RATTLES INTO THE TRAY.','#f2c14e'); }});
+    DEMONS.box={x:cx,z:cz,g}; };
+  SYS.onStart(()=>{ try{ dropbox(); }catch(e){ console.warn('demon drop box',e); } },'146hbd-demons');
+
+  /* ---------- tamed (owner, 12 Nov 2026: "with 1 taming you can tame them and they can become pets"): TAME IT on a frozen demon you carry, with TAMING 1 or more: the ice falls away and it is one of your pets (PETS, its kind `demon` baked by tools/demon-bake.py) ---------- */
+  const TAME=1;
+  FORAGE.ROWB.push(id=>id===BAGID?[['TAME IT','demontame']]:[]);
+  FORAGE.ACT.demontame=async()=>{ if(!FORAGE.has(BAGID))return; const k=FORAGE.sk?FORAGE.sk('tame')||0:0;
+    if(k<TAME)return say('YOU NEED TAMING '+TAME+' TO TAME A DEMON (YOURS IS '+k.toFixed(1)+'). TAME SOMETHING SMALL IN THE PARK FIRST.','#c8a090');
+    const K=(await PETS.idx()).by.demon; if(!K||!FORAGE.has(BAGID))return;
+    if(!PETS.add({k:'demon',n:'',c:K.zones.map(z=>z[1]),s:[],z:100,h:false},false,{tm:1}))return say('YOU HAVE TEN PETS: THAT IS THE MOST. LET ONE GO FIRST (ESC, PETS).','#c8a090');
+    FORAGE.take(BAGID,1); BAG.shift(); FORAGE.use('tame',-20,30); if(FORAGE.draw)FORAGE.draw(); SFX.play('step',{vol:.5,pitch:1.8}); SYS.run('tamed',{k:'demon',t:'pet'});
+    say('THE ICE FALLS AWAY. THE LITTLE DEMON BLINKS UP AT YOU: IT IS A PET OF YOURS. YOUR PETS ARE IN THE MENU (ESC, PETS).','#9fe07f'); };
+  // in the bag and the inspect window: the demon in its block of ice
+  INSPECT.kinds.push({is:id=>id===BAGID,make:()=>{ const d=make(); d.g.removeFromParent(); d.g.scale.setScalar(1); d.blk.visible=true; return d.g; }});
   window.DEMONS=DEMONS; DEMONS.T={M,spawn,boom,pick,BAG,onTrack,trackNear,me:()=>({x:pos.x,z:pos.z,hp:VIT.hp,dead:VIT.dead})};
-  window.DEMONDBG=()=>({n:DEMONS.list.length,list:DEMONS.list.map(d=>({id:d.id,state:d.state,x:+d.x.toFixed(2),z:+d.z.toFixed(2),ice:+(d.ice||0).toFixed(1)})),bag:BAG.map(t=>+t.toFixed(1)),office:DEMONS.office?{x:DEMONS.office.x,z:DEMONS.office.z}:null,spawn:()=>fromDark(),here:inStation()}); }
+  window.DEMONDBG=()=>({n:DEMONS.list.length,list:DEMONS.list.map(d=>({id:d.id,state:d.state,x:+d.x.toFixed(2),z:+d.z.toFixed(2),ice:+(d.ice||0).toFixed(1)})),bag:BAG.map(t=>+t.toFixed(1)),box:DEMONS.box?{x:DEMONS.box.x,z:DEMONS.box.z}:null,spawn:()=>fromDark(),here:inStation()}); }

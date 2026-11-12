@@ -55,7 +55,7 @@ import {STALL} from './081-stalls.js';
     for(const b of B){ const x=TX(b.x0), y=TY(b.y1), w=TX(b.x1)-x, h=TY(b.y0)-y; if(w<1.5||h<1.5||x>mw)continue; const go=b.place?` data-go="${esc(b.place.name)}"`:'', rot=h>w*1.3?` transform="rotate(-90 ${(x+w/2).toFixed(1)} ${(y+h/2).toFixed(1)})"`:'';
       if(b.k==='lot')S.push(`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" fill="${b.place?C.e:'none'}" stroke="${C.i}" stroke-width="1.2" stroke-dasharray="4 3"${go}/>`);
       else S.push(`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" fill="${b.place?C.e:b.k==='stairs'?C.i:'#06200f'}" stroke="${b.place?C.f:C.i}" stroke-width="1.2"${go}/>`);
-      if(b.n&&!b.place&&b.k!=='stairs'){ const fs=fit(b.n,w,h,8); S.push(txt(b.n,x+w/2,y+h/2+fs*.36,fs,{a:'middle',f:C.i,x:rot})); } }
+      if(b.n&&!b.place&&b.k!=='stairs'){ const fs=fit(TEXT.bare(b.n),w,h,8); S.push(txt(TEXT.bare(b.n),x+w/2,y+h/2+fs*.36,fs,{a:'middle',f:C.i,x:rot})); } }
     // the section's own ground named: the park, its lake, the streets, the alley, the promenade, the river
     const lab=(n,tx,ty,sz,o={})=>{ if(n&&tx>vx0&&tx<vx1&&ty>vy0&&ty<vy1)S.push(txt(n,TX(tx),TY(ty)+sz*.36,sz,{a:'middle',ls:o.ls??2,...o,x:o.r?`transform="rotate(${o.r} ${TX(tx).toFixed(1)} ${TY(ty).toFixed(1)})"`:''})); };
     if(P.x0!=null)lab(AREAS[3][1],(P.x0+P.x1)/2+P.ox,(P.y0+P.y1)/2+P.oy-8,26,{f:C.f,op:.85,ls:3});
@@ -95,16 +95,16 @@ import {STALL} from './081-stalls.js';
     return `<svg class="mv" viewBox="380 0 840 720" preserveAspectRatio="xMidYMid meet" style="aspect-ratio:840/720">${S.join('')}</svg>`; };
   /* ---------- UNDERGROUND: its places, and the dungeon's plan once it has been built ---------- */
   const under=()=>{ '@later'; const L=(LG.find(([k])=>k===TEXT.t('bro.g.underground'))||[,[]])[1], E=TEXT.esc||esc;
-    let h=`<h3>${E(TEXT.t('bro.g.underground'))}</h3>`+L.map(o=>`<div class="gor" data-go="${E(o.name)}"><i>${o.s?o.s.n:''}</i>${E(o.name)}</div>`).join('');
+    let h=`<h3>${E(TEXT.t('bro.g.underground'))}</h3>`+L.map(o=>`<div class="gor" data-go="${E(o.name)}"><i>${o.s?o.s.n:''}</i>${E(TEXT.bare(o.name))}</div>`).join('');
     const P=MODS.dunMap&&MODS.dunMap.plan(); h+=`<h3>${E(TEXT.t('bro.dun'))}</h3>`+(P?'<canvas class="dun"></canvas>':`<div class="dim">${E(TEXT.t('bro.dun2'))}</div>`);
     return [h,P]; };
   /* ---------- GO TO: every place the game registers, A to Z, with its number, and every tenant's apartment (owner, 8 and 9 Nov 2026) ---------- */
-  let TL=[]; const gotoItems=()=>{ const key=n=>n.replace(/^THE /,''), items=LG.flatMap(([,L])=>L.map(o=>({name:o.name,n:o.s?o.s.n:null}))).sort((a,b)=>key(a.name).localeCompare(key(b.name))), apts=[];
+  let TL=[]; const gotoItems=()=>{ const key=TEXT.bare, items=LG.flatMap(([,L])=>L.map(o=>({name:o.name,n:o.s?o.s.n:null}))).sort((a,b)=>key(a.name).localeCompare(key(b.name))), apts=[];
     if(ONLINE.visit){ const on=ONLINE.others?[...ONLINE.others.values()].filter(o=>o&&o.id&&o.name):[], seen=new Set(on.map(o=>o.id));
       for(const o of on)apts.push({name:o.name.toUpperCase()+"'S APARTMENT",visit:o,on:1}); for(const t of TL)if(!seen.has(t.id)){ seen.add(t.id); apts.push({name:String(t.name).toUpperCase()+"'S APARTMENT",visit:t}); }
       apts.sort((a,b)=>a.name.localeCompare(b.name)); }
     return {items,apts,all:items.concat(apts)}; };
-  const gotoRows=(f='')=>{ const {items,apts,all}=gotoItems(), F=f.trim().toUpperCase(), pick=o=>!F||o.name.includes(F), row=o=>`<div class="gor" data-i="${all.indexOf(o)}"><i>${o.n!=null?o.n:''}</i>${esc(o.name)}${o.on?'<span>'+esc(TEXT.t('bro.online'))+'</span>':''}</div>`;
+  const gotoRows=(f='')=>{ const {items,apts,all}=gotoItems(), F=f.trim().toUpperCase(), pick=o=>!F||o.name.includes(F), row=o=>`<div class="gor" data-i="${all.indexOf(o)}" data-n="${esc(o.name)}"><i>${o.n!=null?o.n:''}</i>${esc(TEXT.bare(o.name))}${o.on?'<span>'+esc(TEXT.t('bro.online'))+'</span>':''}</div>`;
     const A=apts.filter(pick); return {all,html:items.filter(pick).map(row).join('')+(A.length?`<h3>${esc(TEXT.t('bro.neighbours'))}</h3>`+A.map(row).join(''):''),n:items.filter(pick).length+A.length}; };
   /* ---------- the pane: drawn when its tab shows; the wheel zooms the picture, a drag moves it, a click goes there ---------- */
   let H=null, T='street', VB=null, VB0=null, ALL=[];

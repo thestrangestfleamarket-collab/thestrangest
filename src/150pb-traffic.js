@@ -68,7 +68,7 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
 
   /* ---------- driving: each car keeps to its place on the clock, slowing for the light, the car ahead and anyone in the road, then catching up ---------- */
   const xOf=(L,s)=>L.dir>0?xW+s:xE-s;
-  const blockers=()=>{ const B=[{x:pos.x,z:pos.z}]; for(const o of (ONLINE.others&&ONLINE.others.values())||[])if(o.p&&!o.dead)B.push({x:o.p.x,z:o.p.z}); if(MODS.cars&&MODS.cars.cars)for(const C of MODS.cars.cars.values()){ if(!C.by){ if(C.mesh)B.push({x:C.x,z:C.z,r:2.4*M1}); continue; } if(MODS.cars.flies(C.model))continue;
+  const blockers=()=>{ const B=[{x:pos.x,z:pos.z}]; for(const o of (ONLINE.others&&ONLINE.others.values())||[])if(o.p&&!o.dead)B.push({x:o.p.x,z:o.p.z}); if(MODS.cars&&MODS.cars.cars)for(const C of MODS.cars.cars.values()){ if(!C.by){ if(C.mesh)B.push({x:C.x,z:C.z,r:2.4*M1,w:2.6*M1}); continue; }   // (w: a parked car holds up only the lane it stands in, so one at the kerb is passed) if(MODS.cars.flies(C.model))continue;
       const o=C.by===(ONLINE.me||'me')?pos:(ONLINE.others&&ONLINE.others.get(C.by)||{}).p; if(o)B.push({x:o.x,z:o.z,r:2.4*M1}); }
     const cat=BIGCAT.road&&BIGCAT.road(); if(cat)B.push({x:cat.x,z:cat.z,r:3*M0}); return B; };   // THE BIG CAT crossing holds up the lanes he is in   // a car being driven is where its driver is
   const room=(L,C,u)=>{ let r=Infinity; for(const A of L.cars){ if(A===C||A.u==null)continue; const d=(((A.u-u)%LC)+LC)%LC; r=Math.min(r,Math.min(d,LC-d)-(size(C.model)[2]+size(A.model)[2])*M1/2-2*M0); } return r; };
@@ -84,7 +84,7 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
       L.cars.forEach(C=>{ const N=nomOf(L,C,t), nu=N.u, nv=N.v, s=C.u-lapOf(C.u)*LC, len=size(C.model)[2]*M1/2; let lim=Infinity;
         if(!L.tiny&&Lt.m!=='g'&&s+len<=L.stop){ const g=L.stop-(s+len); if(Lt.m==='r'||g>C.sp*C.sp/(2*5*M0))lim=Math.min(lim,g); }
         for(const A of L.cars)if(A!==C)lim=Math.min(lim,(((A.u-C.u)%LC)+LC)%LC-len-size(A.model)[2]*M1/2-2*M0);   // the car ahead on the road, whatever lap either is on
-        if(!L.fly){ if(s>=0&&s<SPAN){ const x=xOf(L,s); C.blk=false; for(const b of B){ if(L.tiny&&(b.l||b.r))continue; if(b.l?b.l!==L.dir:Math.abs(b.z-L.z)>hw+(b.r||0))continue; const d=(b.x-x)*L.dir-(b.r||.5*M0); if(d>-len&&d<len+(L.tiny?5:28)*M0){ lim=Math.min(lim,d-len-2*M0); if(d<len+(b.r?12:8)*M0)C.blk=true; } } } }
+        if(!L.fly){ if(s>=0&&s<SPAN){ const x=xOf(L,s); C.blk=false; for(const b of B){ if(L.tiny&&(b.l||b.r))continue; if(b.l?b.l!==L.dir:Math.abs(b.z-L.z)>(b.w||hw+(b.r||0)))continue; const d=(b.x-x)*L.dir-(b.r||.5*M0); if(d>-len&&d<len+(L.tiny?5:28)*M0){ lim=Math.min(lim,d-len-2*M0); if(d<len+(b.r?12:8)*M0)C.blk=true; } } } }
         const want=Math.min(Math.max(s>=0?.5*L.v:0,nv+Math.max(-.5*L.v,Math.min(.6*L.v,(nu-C.u)*.25))),lim<Infinity?Math.sqrt(2*4*M0*Math.max(0,lim)):1e9);
         C.sp+=Math.max(-9*M0*dt,Math.min(3*M0*dt,want-C.sp)); if(C.sp<0)C.sp=0; if(lim<.05*M0&&lim<Infinity)C.sp=Math.min(C.sp,0); C.u+=C.sp*dt;
         const lap=lapOf(C.u), s2=C.u-lap*LC, on=s2>=0&&s2<SPAN, x=xOf(L,s2), near=on&&up&&Math.abs(x-pos.x)<R&&Math.abs(L.z-pos.z)<R;

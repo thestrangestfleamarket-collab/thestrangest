@@ -225,7 +225,7 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
   const unbuild=()=>{ ARC.scr=null; if(!(HOLO.run&&HOLO.run.P.offWorld))HOLO.close(); for(const r of AS){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } AS=[]; if(AG){ AG.removeFromParent(); AG=null; } };   // an off-world adventure (the catacomb run) keeps the holodeck open while it drops the arcade; it re-enters on return
   const wb=box4(AR.x0-.2,HD.y0-.2,AR.x1+.2,AR.y1+.2);
   const rb=r=>{ const q=box4(r.x0,r.y0,r.x1,r.y1); return {x0:q[0],z0:q[1],x1:q[2],z1:q[3]}; };
-  ROOMS.off.arcade={name:'THE ARCADE',ar:AR,addSol:r=>{ AS.push(r); SOL.up.push(r); },box:{x0:wb[0],z0:wb[1],x1:wb[2],z1:wb[3],y0:-1,y1:Y(WH+40)},rooms:[rb(AR),rb(HD)],need:()=>LOAD('arcade','later'),
+  ROOMS.off.arcade={name:'THE ARCADE',ar:AR,addSol:r=>{ AS.push(r); SOL.up.push(r); },box:{x0:wb[0],z0:wb[1],x1:wb[2],z1:wb[3],y0:-1,y1:Y(WH+40)},rooms:[rb(AR),rb(HD)],need:()=>LOAD('arcade','later','pinball'),
     build:()=>{ AG=new THREE.Group(); AG.name='arcade-in'; scene.add(AG); AS=[]; PA=ROOMS.part(AG,build,MKA); return PA; },unbuild,
     spawn:[X(cx),Z(AR.y1-1.3),0,Math.PI],out:[...at(lcx,L.y1+.9),0,TA.hd(0)],door:(d=>[d[0],Y(0),d[1]])(at(lcx,L.y1+.25)),exit:[X(cx),0,Z(AR.y1-.25)],exitName:'OUT TO MAIN STREET'};
   if(PFA)Object.assign(ROOMS.off.arcade,{door:PFA.door,out:PFA.out});

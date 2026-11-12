@@ -1,4 +1,4 @@
-// THE ARCADE, FURNISHED: round the owner's cabinets and the holodeck door, what a real arcade has: skee-ball, air hockey and a claw machine (each a game, free play), the token machine (tickets won at the games traded for market tokens, 10 for 1), a soda machine, stools at the cabinets; where its staff and its crowd stand or sit.
+// THE ARCADE, FURNISHED: round the owner's cabinets and the holodeck door, what a real arcade has: skee-ball, air hockey, a claw machine and two pinball tables (each a game, free play), the token machine (tickets won at the games traded for market tokens, 10 for 1), a soda machine, stools at the cabinets; where its staff and its crowd stand or sit.
 import {THREE} from './003-shx.js';
 import {FORAGE, INV, ROOMS, UI, WORKERS} from './003b-systems.js';
 import {SAY} from './003d-say.js';
@@ -6,6 +6,7 @@ import {scene} from './004-main.js';
 import {STORE, TILE} from './006-map-pre.js';
 import {IKIT} from './038zc-ikit.js';
 import {MINI} from './038zd-mini.js';
+import {PIN} from './146zcz-pinball.js';
 const ARCADE={}; window.ARCADE=ARCADE;
 { FORAGE.add({names:{arc_token:'A MARKET TOKEN',prize_yoyo:'A YO-YO',prize_ring:'A PLASTIC RING'}});   // the prize tickets and plushes are the fair's (ptix, plush_*)
   const say=(t,c)=>SAY(t,c||'#f2c14e');
@@ -19,7 +20,7 @@ const ARCADE={}; window.ARCADE=ARCADE;
   // where its people go: the floor man by the middle, the crowd on stools at the side cabinets, at PETRI, the lanes, the hockey table, the claw
   { const o=ROOMS.off.arcade; if(o&&o.ar){ const F=IKIT.frame(o.ar), W=F.W, sp=(u,v,du,dv,h)=>{ const p=F.pw(u,v); return {x:p[0],z:p[1],hd:F.hd(du,dv),...(h!=null?{y:h*IKIT.MW}:{})}; }, YS=[2.03,4.34,6.66,8.97];
     o.spots={'RUNS THE FLOOR':sp(8.6,8.2,-1,0)};
-    o.seats=ARCADE.places=[...YS.map(v=>sp(1.55,v,-1,0,.62)),...YS.map(v=>sp(W-1.55,v,1,0,.62)),sp(10.72,1.6,0,-1),sp(3.55,7.0,0,-1),sp(4.45,7.0,0,-1),sp(10.2,3.2,0,1),sp(10.2,6.1,0,-1),sp(11.65,10.4,0,1),sp(6.2,7.6,-1,0)]; } }
+    o.seats=ARCADE.places=[...YS.map(v=>sp(1.55,v,-1,0,.62)),...YS.map(v=>PIN.TABLES.some(t=>t[1]===v)?sp(W-PIN.U-PIN.STAND,v-.75,1,0):sp(W-1.55,v,1,0,.62)),sp(10.72,1.6,0,-1),sp(3.55,7.0,0,-1),sp(4.45,7.0,0,-1),sp(10.2,3.2,0,1),sp(10.2,6.1,0,-1),sp(11.65,10.4,0,1),sp(6.2,7.6,-1,0)]; } }
   STORE.furnish=STORE.furnish||{};
   STORE.furnish.arcade=()=>{ '@later'; const o=ROOMS.off.arcade, F=IKIT.frame(o.ar), {W,D}=F, K=IKIT.room(F,m=>scene.add(m),o.addSol), {box,cyl,ball,glow,pic,words,sol,seat}=K, MW=K.MW, T=TILE;
     const C={chrome:0xc0c4c8,black:0x141418,purple:0x4a2a7a,teal:0x2ab8b0,glass:0xa8c8d8,red:0xc02838,wood:0x8a5a2a};
@@ -36,7 +37,9 @@ const ARCADE={}; window.ARCADE=ARCADE;
     // air hockey
     box(9.6,3.6,10.8,5.7,0,.78,C.black); box(9.62,3.62,10.78,5.68,.78,.8,0xe8f0f4); box(9.6,4.63,10.8,4.67,.8,.805,C.red); cyl(10.2,4.2,.04,.8,.83,C.red); cyl(10.2,5.2,.04,.8,.83,0x2060c0); glow(()=>{ for(const e of [3.6,5.66])box(9.6,e,10.8,e+.04,.6,.66,0xff4fa0); for(const e of [9.6,10.76])box(e,3.6,e+.04,5.7,.6,.66,0x40e0ff); }); sol(9.6,3.6,10.8,5.7); thing('AIR HOCKEY (1 TOKEN)',10.2,4.65,1.2,.9,ARCADE.hockey);
     // stools at the side cabinets
-    for(const v of [2.03,4.34,6.66,8.97])for(const u of [1.55,W-1.55])seat('STOOL',K.own(()=>{ cyl(u,v,.16,0,.04,C.chrome); cyl(u,v,.03,.04,.56,C.chrome); cyl(u,v,.18,.56,.62,C.purple,.17); }),[[u,v,.62,u<W/2?-1:1,0]],.8);
+    for(const v of [2.03,4.34,6.66,8.97])for(const u of [1.55,W-1.55])if(u<W/2||!PIN.TABLES.some(t=>t[1]===v))seat('STOOL',K.own(()=>{ cyl(u,v,.16,0,.04,C.chrome); cyl(u,v,.03,.04,.56,C.chrome); cyl(u,v,.18,.56,.62,C.purple,.17); }),[[u,v,.62,u<W/2?-1:1,0]],.8);
+    // the pinball tables on the west wall, past its cabinets
+    PIN.won=win; PIN.build(F,sol,(name,u,v,w,h,act)=>thing(name,u,v,w,h,act));
     K.flush();
     for(const [u,v,c,i,r] of [[4.0,4.8,0xff6ac0,5,6],[10.2,4.6,0x60c8ff,5,6],[11.6,11.0,0xfff0d0,3,4]]){ const L=new THREE.PointLight(c,i,r*T,1.6), p=F.pw(u,v); L.position.set(p[0],2.5*MW,p[1]); scene.add(L); }
     WORKERS.make('arcade'); };

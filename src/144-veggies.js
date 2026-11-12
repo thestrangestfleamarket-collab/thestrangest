@@ -1,6 +1,6 @@
 // THE VEGGIES: VEG, the vegetables the player can grow, pick and sell.
 import {SHARED} from './003-shx.js';
-import {CIVIC, FORAGE, INSPECT, INV, LINES, PARK, SFX, TALK, UI, VIT, WORTH} from './003b-systems.js';
+import {CIVIC, FORAGE, INSPECT, INV, LINES, PARK, SFX, TALK, UI, WORTH} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {TILE} from './006-map-pre.js';
 import {HOMES} from './076-npc-map.js';
@@ -20,10 +20,7 @@ const VEG={}; window.VEG=VEG;
   VEG.add=(sells,buys)=>{ for(const id in sells){ SELL[id]=sells[id]; XS.push(id); } for(const id in buys){ BUY[id]=buys[id]; XB.push(id); } }; const NMV=id=>NM[id]||FORAGE.NM[id]||id;
   FORAGE.add({names:Object.assign({},NM,{f_corn:'ROAST CORN',f_vstew:'VEGETABLE STEW',f_stuffpep:'STUFFED PEPPER',f_psoup:'PUMPKIN SOUP'}),
     raw:Object.fromEntries(V.map(v=>[v[0],[v[4],0]])),
-    prices:Object.assign({f_corn:7,f_vstew:14,f_stuffpep:16,f_psoup:28},BUY),
-    recipes:[['f_corn','ROAST CORN','cooking',[0,40],{v_corn:1},'fills a fifth'],['f_vstew','VEGETABLE STEW','cooking',[15,60],{v_potato:1,v_carrot:1,v_onion:1},'fills two fifths, some health'],
-      ['f_stuffpep','STUFFED PEPPER','cooking',[25,70],{v_pepper:1,m_button:2},'fills two fifths, mends you a minute'],['f_psoup','PUMPKIN SOUP','cooking',[40,85],{v_pumpkin:1,v_onion:1},'fills more than half, strong 2 min']],
-    does:{f_corn:()=>FORAGE.feed(.2),f_vstew:()=>{ FORAGE.feed(.4); VIT.heal(.2); },f_stuffpep:()=>{ FORAGE.feed(.4); FORAGE.buff('regen',60); },f_psoup:()=>{ FORAGE.feed(.6); FORAGE.buff('str',120); }}});
+    prices:BUY});
   const STAND=()=>{ const P=PARK, X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0)), A=STALL.at('tomato');
     VEG.stand=STALL.build({X,Z,x0:A.x0,x1:A.x1,y:P.y0,veg:true,seed:11,gate:A.gate,name:A.name});
     const N=TOONS.tomato; if(!N)return; if(!HOMES.keeper(N))MERCH.stand(N,VEG.stand);

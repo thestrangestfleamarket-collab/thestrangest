@@ -32,7 +32,7 @@ const SKATE={rails:[]}; window.SKATE=SKATE;
   const SCOOTK={name:'SCOOTER',...vehicle('scooter',1,(u,k)=>-.12*k),
     pose:R=>{ VPOSE.push=R.push==null?-1:R.push; VPOSE.brake=!(R.v>.2*TILE); VPOSE.z=0; return VPOSE; }};   // you stand toward its front, the bars a reach ahead
   const BMXK={name:'BMX',...vehicle('bmx',.75,(u,k)=>RIG.RIDEG.bb[1]*u+.125*k),
-    pose:R=>{ BPOSE.c=(BPOSE.c||0)+(R.v/TILE)*.14; BPOSE.brake=!(R.v>.2*TILE); return BPOSE; }};   // its cranks under the rig's: they turn as it rolls
+    pose:R=>{ const P=R.bp||(R.bp={...BPOSE}), t=performance.now()/1000; P.c+=(R.v/TILE)*2.8*Math.min(.1,t-(R.bt||t)); R.bt=t; P.brake=!(R.v>.2*TILE); return P; }};   // its cranks under the rig's: each rider's own, turning as it rolls
   const KINDS={skate:SKATEK,scoot:SCOOTK,bmx:BMXK};
   // the BMX for anyone (owner, 7 Nov 2026: "make the BMX rideable"): the BMX rider's bike, ridden by you as the hoverboard is (data/items.json bmx, grants bmx); others see you on it
   const BMXP={...BMXK,name:'BMX',cat:'skate',hint:'E SETS IT DOWN AND YOU GET ON. WASD PEDALS AND STEERS, SPACE HOPS, E GETS OFF.',onSay:'YOU SWING A LEG OVER THE BMX.',held:.5,acc:2.2,turn:2.2,drag:.5,knock:5,hop:2.6,

@@ -7,7 +7,7 @@ import {STALL} from './081-stalls.js';
 { SYS.onStart(async()=>{ await LOAD('later'); if(FORAGE.has('map'))FORAGE.take('map',FORAGE.has('map')); },'141e-map');
   for(const [k,d] of Object.entries({'bro.title1':'THE STRANGEST','bro.title2':'FLEA MARKET','bro.sub':"VISITOR'S MAP & GUIDE · NEW YORK",'bro.sec':'SECTION {id} · {a} · {b}','bro.poi':'POINTS OF INTEREST',
     'bro.here':'YOU ARE HERE','bro.hours':'THE HOURS','bro.hours2':'the sky keeps real Central time, one clock for everyone','bro.foot':'FREE · TAKE ONE · PRINTED AT THE BODEGA · 1986','bro.loop':'THE SUBWAY','bro.loop2':'THE SUBWAY UNDER THE RING STREETS · {n} STATIONS · TWO TRAINS','bro.loop3':'one station a section: its letter is the section it serves',
-    'bro.train':'TRAIN {n} · TO {next}','bro.track1':'TRAIN 1 · the outer track','bro.track2':'TRAIN 2 · the inner track','bro.stop':'A STOP AT EVERY STATION · a click on one rides there','bro.quiet':'the grey stations are sections not built yet','bro.back':'F FLIPS BACK TO THE MAP','bro.hint':'CLICK A PLACE TO GO THERE · WHEEL ZOOMS · F FLIPS IT · ESC PUTS IT AWAY',
+    'bro.train':'TRAIN {n} · TO {next}','bro.track1':'TRAIN 1 · the outer track','bro.track2':'TRAIN 2 · the inner track','bro.stop':'A STOP AT EVERY STATION · a click on one rides there','bro.quiet':'the grey stations are sections not built yet','bro.back':'F FLIPS BACK TO THE MAP · ESC PUTS IT AWAY','bro.hint':'CLICK A PLACE TO GO THERE · WHEEL ZOOMS · F FLIPS IT · ESC PUTS IT AWAY',
     'bro.cover3':"VISITOR'S MAP\n& GUIDE",'bro.cover4':'THE MAP ON ONE SIDE\nTHE SUBWAY ON THE OTHER','bro.free':'FREE · TAKE ONE','bro.ny':'NEW YORK','bro.ed':'1986 EDITION','bro.under':'underground','bro.water':'THE HUDSON','bro.goto':'GO TO','bro.choose':'CHOOSE A PLACE...','bro.lake':'THE LAKE','bro.alley':'THE ALLEY','bro.prom':'THE PROMENADE','bro.ff':'FORCEFIELD · THE EDGE OF THE SECTION','bro.g.outside':'OUTSIDE','bro.g.inside':'INSIDE','bro.g.underground':'UNDERGROUND','bro.g.else':'ELSEWHERE','bro.find':'TYPE A NAME...','bro.myapt':'MY APARTMENT','bro.neighbours':'NEIGHBOURS','bro.online':'online'}))TEXT.t(k,d);
   const css=document.createElement('style'); css.textContent=`#bro{position:fixed;inset:0;z-index:30;perspective:1600px;background:rgba(6,8,14,.55);overflow:hidden;user-select:none;touch-action:none} #bro[hidden]{display:none}
     #bro .sh{position:absolute;left:0;top:0;width:320px;height:720px;transform-style:preserve-3d;transform-origin:0 0;will-change:transform}
@@ -21,8 +21,7 @@ import {STALL} from './081-stalls.js';
     #bro .gol{position:absolute;left:0;right:0;top:100%;margin-top:3px;max-height:470px;overflow:auto;background:#f6f4ec;border:2px solid #111;box-shadow:3px 3px 0 rgba(0,0,0,.25)} #bro .gol[hidden]{display:none}
     #bro .gol input{all:unset;box-sizing:border-box;display:block;width:100%;padding:4px 7px;border-bottom:1.5px solid #111;background:#ece9df;color:#111;font:inherit;letter-spacing:1px} #bro .gol input::placeholder{color:#777}
     #bro .gor{display:flex;align-items:center;gap:7px;padding:2px 7px;cursor:pointer;white-space:nowrap} #bro .gor:hover,#bro .gor.on{background:#111;color:#f6f4ec} #bro .gor i{flex:none;width:13px;height:13px;border-radius:50%;border:1.3px solid #111;font:900 7px 'Helvetica Neue',Arial,sans-serif;font-style:normal;display:flex;align-items:center;justify-content:center;color:#fff} #bro .gor span{opacity:.6;font-weight:600;margin-left:auto}
-    #bro .gol h6{margin:0;padding:3px 7px 1px;font:inherit;letter-spacing:2px;opacity:.55}
-    #bro .hint{position:absolute;z-index:2;left:50%;bottom:10px;transform:translateX(-50%) translateZ(2px);font:9px Silkscreen,monospace;letter-spacing:1px;color:#f2c14e;text-shadow:1px 1px 0 #000;white-space:nowrap;pointer-events:none}`;
+    #bro .gol h6{margin:0;padding:3px 7px 1px;font:inherit;letter-spacing:2px;opacity:.55}`;
   document.head.appendChild(css);
   const W=document.createElement('div'); W.id='bro'; W.hidden=true; W.setAttribute('role','dialog'); W.setAttribute('aria-label','Map'); document.body.appendChild(W);
   const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
@@ -92,10 +91,11 @@ import {STALL} from './081-stalls.js';
     G.sel={x:gx+62,y:139,w:gw-62,h:18};
     S.push(`<line x1="${gx}" y1="168" x2="${gx+gw}" y2="168" stroke="${INK}" stroke-width="1" opacity=".4"/>`+txt(TEXT.t('bro.poi'),gx,185,11,{ls:2}));
     const HH=1.5, gh=LS.map(([,L])=>L.length+HH), tot=gh.reduce((a,b)=>a+b,0); let CM=gh.map(()=>0), best=tot; for(let m=0;m<1<<gh.length;m+=2){ let a=0; gh.forEach((h,i)=>{ if(m>>i&1)a+=h; }); const w=Math.max(a,tot-a); if(w<best-1e-9){ best=w; CM=gh.map((_,i)=>m>>i&1); } }   // two columns, the groups shared between them so neither runs long (owner, 8 Nov 2026: "too much empty space")
-    const cw=gw/2, rh=Math.min(21,430/best), fz=Math.min(12,Math.max(9,rh*.62));
+    const cw=gw/2, rh=Math.min(21,418/best), fz=Math.min(12,Math.max(9,rh*.62));
     LS.forEach(([k,L],i)=>{ const c=CM[i], r0=gh.slice(0,i).reduce((a,b,j)=>a+(CM[j]===c?b:0),0), x=gx+c*cw; let y=202+r0*rh;
       S.push(`<rect x="${x}" y="${(y-8).toFixed(1)}" width="${cw-14}" height="11" fill="${INK}"/>`+txt(k,x+4,(y+.5).toFixed(1),8,{f:PAPER,ls:2})); y+=HH*rh;
       for(const {name,s} of L){ S.push(`<g data-go="${esc(name)}">`+(s?bullet(s.n,x+9,(y-fz*.38).toFixed(1),fz*.66,s.col,fz*.82):'')+`<text x="${x+23}" y="${y.toFixed(1)}" font-size="${fz.toFixed(1)}">${esc(TEXT.bare(name))}</text></g>`); y+=rh; } });
+    S.push(txt(TEXT.t('bro.hint'),cx,633,7.5,{a:'middle',w:'600',ls:1}));   // printed on the sheet, clear of the map's own names (owner, 12 Nov 2026)
     S.push(`<line x1="${gx}" y1="652" x2="${gx+40}" y2="652" stroke="#12b5cf" stroke-width="2.5" stroke-dasharray="7 4"/>`+txt(TEXT.t('bro.ff'),gx+48,655,8,{w:'600'}));
     S.push(txt(TEXT.t('bro.hours'),gx,676,9.5,{ls:2})+txt(TEXT.t('bro.hours2'),gx,690,8,{w:'600'})+txt(TEXT.t('bro.foot'),cx,712,7,{a:'middle',w:'600',ls:1}));
     return S.join(''); };
@@ -149,7 +149,7 @@ import {STALL} from './081-stalls.js';
       X.onclick=e=>{ e.stopPropagation(); const r=e.target.closest('.gor'); if(!r)return; const o=ALL[+r.dataset.i]; if(!o)return; go(()=>o.visit?ONLINE.visit(o.visit.id,o.visit.name):UI.goName(o.name)); };
       for(const ev of ['pointerdown','click','wheel'])box.addEventListener(ev,e=>e.stopPropagation(),{passive:true});
       SH.appendChild(box); }
-    W.innerHTML=''; W.appendChild(SH); W.insertAdjacentHTML('beforeend',`<div class="hint">${esc(TEXT.t('bro.hint'))}</div>`); };
+    W.innerHTML=''; W.appendChild(SH); };
   const open=()=>{ if(up)return close(); up=true; flipped=false; z=1; px=py=0; keys.clear(); fit(); build(); W.hidden=false; pose(1,0); };
   const close=()=>{ if(!up)return; W.hidden=true; W.innerHTML=''; SH=null; up=false; };
   const flip=()=>{ if(!up)return; flipped=!flipped; pose(1,flipped?180:0); const sel=SH&&SH.querySelector('.gob'); if(sel){ sel.hidden=flipped; const l=sel.querySelector('.gol'); if(l)l.hidden=true; } };

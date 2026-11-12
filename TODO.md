@@ -45,6 +45,7 @@ headset · NPC voices.
 ## CI, checks and tools
 
 CI runs only on pull requests and by hand (the workflow has no push trigger), so `main` itself is checked only when someone starts it.
+- [ ] **Faces still sharing a place** (owner, 11 Nov 2026: "a permanent solutino for this issue that applies everywhere") · P2 · M · code. `PW_CHROMIUM=/opt/pw-browsers/chromium ZWHY=1 node tests/zfight.cjs dist/market.html` (40 min; or give spots `x,z`) lists them; 266 small pairs on 11 Nov (181 m² in all, from some 5,000): the park wall's queued pieces, the fish market against the bodega's ground, the street's prop kinds, shop window frames, the loop tunnels under far cars, the ring trees. Once it passes, add it to the workflow.
 - [ ] **`tools/row-lay.cjs` is stale** · P2 · S · code. Its place list is the 8 Nov layout; running it writes that over `data/world.json` (found 9 Nov). Bring it up to date or remove it.
 - [x] **Tests failing on `main`** · P2 · S · check. Done 9 Nov: the loop's station A followed the subway's move (trains stop at the platform
   again: `loop.cjs`, `riders.cjs`); `skills.cjs` checks only what isn't archived.
@@ -131,6 +132,8 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 
 - [x] **The play on the Wooden O's stage** (owner, 10 Nov 2026: "bring the play back on the stage") · P2 · M · code + look [taking: claude/laughing-curie-ui41fc, 10 Nov]
 - [x] **The playhouse as THE WOODEN O** (owner, 10 Nov 2026: "redesign it", picked B) · P2 · M · code + look [taking: claude/laughing-curie-ui41fc, 10 Nov]
+- [x] **The movie theatre as THE STARLITE** (owner, 11 Nov 2026: "lets replace our movie t heatre in game with this") · P2 · M · code + look [done: claude/hopeful-faraday-grs9o0, 12 Nov]
+- [ ] **The Starlite, for his look** · P2 · look. The inside from his page, the reel between films, the house lights switch, the STARLITE neon.
 - [x] **The movie theatre as THE FLEA PIT** (owner, 10 Nov 2026: "i want to redsesign the movie theater", picked B) · P2 · M · code + look. Front, dark inside, box office, seats [taking: claude/laughing-curie-ui41fc, 10 Nov]
 - [ ] **The fish market** · P2 · M · look. Owner, 9 Nov 2026: waits for his look and yes. Not yet: the workers keep no hours (the jobs system is archived), the editor's ground picture (`tools/topmap.cjs`) not re-made, the minimap does not draw the sheds.
 - [ ] **The fish market's sheds** · P3 · S · pick. The two sheds stand on the row, not on the water side as the real ones did (the quay stays open for fishing); say if they should cross the street.

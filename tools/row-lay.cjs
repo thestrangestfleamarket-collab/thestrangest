@@ -14,7 +14,6 @@ const PLACES=[
   {"id":"gym","name":"KNUCKLE & IRON","kind":"front","x0":186.15,"x1":202.15,"lot":true,"inW":22,"inD":17,"inH":130,"y0":-92.4,"y1":-77,"face":"n"},
   {"id":"bank","name":"THE BANK","kind":"front","x0":206.07,"x1":226.07,"y0":-92.4,"y1":-77,"face":"n"},
   {"id":"art","name":"THE ART MUSEUM","kind":"front","x0":230.0,"x1":252.0,"y0":-92.4,"y1":-77,"face":"n"},
-  {"id":"antiques","kind":"front","x0":-51,"x1":-37,"y0":-107.9,"y1":-95.9,"face":"s","row":2,"name":"ANTIQUES & PAWN","pf":"antiques"},
   {"id":"fishtables","kind":"lot","x0":57.01,"x1":77.01,"y0":-107.9,"y1":-95.9,"face":"s","row":2,"name":"THE FISH MARKET","fence":"barbed"},
   {"id":"flea","kind":"lot","x0":77.01,"x1":107.63,"y0":-107.9,"y1":-95.9,"face":"s","row":2,"name":"THE FLEA MARKET"},
   {"id":"flea2","kind":"lot","x0":116.37,"x1":146.99,"y0":-107.9,"y1":-95.9,"face":"s","row":2,"name":"THE FLEA MARKET"},

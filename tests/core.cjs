@@ -455,6 +455,10 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       for (const k of subs) { U.menuTab('moves', k); await w(50); out[k] = el.querySelectorAll('.mvc').length; }
       const f = el.querySelector('.mvf'); f.value = 'ROAM'; f.dispatchEvent(new Event('input')); const roam = [...el.querySelectorAll('.mvc h3')].map(h => h.textContent); U.moves(); await w(200); return { subs, out, roam, shut: !U.menuOpen }; });
     ok(r.subs.length === 9 && Object.values(r.out).every(n => n >= 1) && r.roam.includes('ROAM (THE HOLODECK)') && r.shut, 'WHAT YOU CAN DO (? key, owner 10 Nov 2026): every category lists its activities, FIND searches them all, ? again closes: ' + JSON.stringify(r)); }
+  { const r = await pg.evaluate(() => { const C = window.BIGCATWALK && { walkAt: window.BIGCATWALK }; if (!C || !C.walkAt) return { none: true }; const B = SHARED.BOD, zs = B.ZS(B.CURB), zp = B.ZS(B.FAR), lo = Math.min(zs, zp), hi = Math.max(zs, zp);
+      const S = []; let was = null, side = new Set(), inRoad = 0; for (let t = 0; t < 3600; t += 2) { const w = C.walkAt(t); if (w.cross) { if (!was) S.push(t); if (w.z > lo && w.z < hi) inRoad++; } else side.add(w.z > hi ? 'n' : w.z < lo ? 's' : 'road'); was = w.cross; }
+      const gaps = S.slice(1).map((t, i) => t - S[i]); return { starts: S.length, gaps: [Math.min(...gaps), Math.max(...gaps)], side: [...side], inRoad, still: C.walkAt(S[1] - 10), x: C.walkAt(0).x }; });
+    ok(!r.none && r.starts >= 11 && r.starts <= 21 && r.gaps[0] >= 170 && r.gaps[1] <= 310 && r.side.length === 2 && !r.side.includes('road') && r.inRoad > 0 && !r.still.cross, 'THE BIG CAT (owner, 12 Nov 2026): stands at a Market St kerb and crosses the road every 3 to 5 minutes, holding up the traffic only while crossing: ' + JSON.stringify(r)); }
   await b.close();
   console.log(fails.length ? fails.length + ' failed' : 'all core checks passed');
   process.exit(fails.length ? 1 : 0);

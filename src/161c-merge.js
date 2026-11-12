@@ -1,6 +1,6 @@
 // THE MERGE: a built inside's (ROOMS.part) plain, still meshes drawn as a few merged ones, a draw a material instead of a draw a thing (owner, 4 Nov 2026: the apartment's 800 draws); its pieces again while you decorate, rebuilt when a thing moves; what you use, what moves, what is see-through or pictured stays its own.
 import {THREE} from './003-shx.js';
-import {ROOMS, USE} from './003b-systems.js';
+import {BATCH, ROOMS, USE} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {MODS, SYS} from './006-map-pre.js';
 const MERGE={builds:0}; window.MERGE=MERGE; const SG=new Map();
@@ -25,7 +25,9 @@ const MERGE={builds:0}; window.MERGE=MERGE; const SG=new Map();
         Cc[(v+k)*3]=C.r*(vc?c.getX(k):1); Cc[(v+k)*3+1]=C.g*(vc?c.getY(k):1); Cc[(v+k)*3+2]=C.b*(vc?c.getZ(k):1); }
       if(g.index){ for(let k=0;k<g.index.count;k++)I[i+k]=g.index.getX(k)+v; i+=g.index.count; } else { for(let k=0;k<p.count;k++)I[i+k]=v+k; i+=p.count; }
       v+=p.count; }
-    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); g.setAttribute('normal',new THREE.BufferAttribute(Nn,3)); g.setAttribute('color',new THREE.BufferAttribute(Cc,3)); g.setIndex(new THREE.BufferAttribute(I,1)); g.computeBoundingSphere(); return g; };
+    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); g.setAttribute('normal',new THREE.BufferAttribute(Nn,3)); g.setAttribute('color',new THREE.BufferAttribute(Cc,3)); g.setIndex(new THREE.BufferAttribute(I,1));
+    { const u=g.toNonIndexed(), F=BATCH.unfight(u.attributes.position.array,{N:[u.attributes.normal.array,3],C:[u.attributes.color.array,3]}); if(F.at){ g.dispose(); const h=new THREE.BufferGeometry(); h.setAttribute('position',new THREE.BufferAttribute(F.P,3)); h.setAttribute('normal',new THREE.BufferAttribute(F.A.N,3)); h.setAttribute('color',new THREE.BufferAttribute(F.A.C,3)); h.computeBoundingSphere(); return h; } }   // no two faces in one place
+    g.computeBoundingSphere(); return g; };
   ROOMS.unmerge=P=>{ const d=DONE.get(P); if(!d)return; for(const me of d.made){ me.removeFromParent(); me.geometry.dispose(); me.material.dispose(); } for(const o of d.hid)o.visible=true; DONE.delete(P); };
   const sigOf=L=>L.length+':'+L.map(o=>{ const e=o.matrixWorld.elements; return o.id+'@'+e[12].toFixed(2)+','+e[13].toFixed(2)+','+e[14].toFixed(2)+','+e[0].toFixed(2)+','+e[8].toFixed(2); }).join(';');
   const mergeRoom=P=>{ const G=P.group, K=keep(P), L=[], d=DONE.get(P), H=new Set(d?d.hid:[]); G.updateMatrixWorld(true); G.traverse(o=>{ if(mayMerge(o,K,G,H))L.push(o); });

@@ -1,4 +1,4 @@
-// THE GAMES: the insides' small games for the minigames' window (MINI): darts (301 on a real board), pool (rack, cue ball, pockets), skee-ball (aim, a rising and falling power, the rings), the claw machine (a swinging head, a grip as good as your aim, carry it to the chute), air hockey (against the house). Each GAMES.x(opts) gives a game; opts.end(S) gets the result.
+// THE GAMES: the insides' small games for the minigames' window (MINI): darts (301 on a real board), pool (rack, cue ball, pockets), skee-ball (aim, a rising and falling power, the rings), the claw machine (a swinging head, a grip as good as your aim, carry it to the chute). Each GAMES.x(opts) gives a game; opts.end(S) gets the result.
 const GAMES={}; window.GAMES=GAMES;
 { const PI=Math.PI, rnd=Math.random, cl=(v,a,b)=>Math.max(a,Math.min(b,v)), font=(g,s,c,al='center')=>{ g.font=s+'px monospace'; g.fillStyle=c; g.textAlign=al; g.textBaseline='middle'; };
   /* ---------- DARTS: 301, three darts a turn; the aim sways, you click to throw ---------- */
@@ -145,24 +145,6 @@ const GAMES={}; window.GAMES=GAMES;
       g.fillStyle='#050505'; g.fillRect(150,374,60,24); g.font='bold 16px monospace'; g.fillStyle='#ff4a30'; g.shadowColor='#ff3020'; g.shadowBlur=6; g.fillText(String(Math.max(0,Math.ceil(S.time))).padStart(2,'0'),180,387); g.shadowBlur=0;
       const jx=cl((S.tx-(S.ptx??S.tx))*6,-10,10); S.ptx=S.tx; g.fillStyle='#0a0a0a'; g.beginPath(); g.ellipse(80,402,18,6,0,0,7); g.fill(); g.strokeStyle='#c0c4c8'; g.lineWidth=4; g.beginPath(); g.moveTo(80,400); g.lineTo(80+jx,380); g.stroke(); g.fillStyle='#c02838'; g.beginPath(); g.arc(80+jx,378,8,0,7); g.fill();
       const lit=(S.ph==='move'||S.ph==='carry')&&Math.floor(t*3)%2===0; g.fillStyle=lit?'#ffd040':'#806010'; if(lit){ g.shadowColor='#ffd040'; g.shadowBlur=12; } g.beginPath(); g.arc(285,390,13,0,7); g.fill(); g.shadowBlur=0; g.fillStyle='rgba(255,255,255,.4)'; g.beginPath(); g.arc(281,386,4,0,7); g.fill(); },
-    end:S=>o.end&&o.end(S)});
-  /* ---------- AIR HOCKEY: your mallet follows the mouse in your half; first to 5 against the house ---------- */
-  GAMES.hockey=(o={})=>({title:'AIR HOCKEY',w:320,h:480,again:true,help:'Move the mouse to move your mallet (the bottom half). First to 5.',
-    can:o.can,start:S=>{ if(o.pay)o.pay(); S.p={x:160,y:240,vx:0,vy:-60}; S.me={x:160,y:420,px:160,py:420}; S.ai={x:160,y:60}; S.a=0; S.b=0; },
-    tick:(S,dt)=>{ const P=S.p, M=S.me, A=S.ai, R=12, MR=22, GW=60;
-      M.px=M.x; M.py=M.y; M.x=cl(S.mx,MR+10,310-MR); M.y=cl(S.my,250,470-MR); const mvx=(M.x-M.px)/Math.max(dt,1e-3), mvy=(M.y-M.py)/Math.max(dt,1e-3);
-      const tx=P.y<240?P.x:160, ty=P.y<240?Math.min(P.y-20,200):60, sp=230*dt; A.x+=cl(tx-A.x,-sp,sp); A.y+=cl(ty-A.y,-sp,sp); A.y=cl(A.y,MR+10,230);
-      for(let st=0;st<3;st++){ const h=dt/3; P.x+=P.vx*h; P.y+=P.vy*h; P.vx*=Math.pow(.8,h); P.vy*=Math.pow(.8,h);
-        if(P.x<10+R){ P.x=10+R; P.vx=Math.abs(P.vx); } if(P.x>310-R){ P.x=310-R; P.vx=-Math.abs(P.vx); }
-        const inGoal=Math.abs(P.x-160)<GW; if(P.y<10+R){ if(inGoal){ S.a++; S.line=`YOU SCORE. ${S.a} : ${S.b}`; Object.assign(P,{x:160,y:240,vx:0,vy:60}); } else { P.y=10+R; P.vy=Math.abs(P.vy); } }
-        if(P.y>470-R){ if(inGoal){ S.b++; S.line=`THE HOUSE SCORES. ${S.a} : ${S.b}`; Object.assign(P,{x:160,y:240,vx:0,vy:-60}); } else { P.y=470-R; P.vy=-Math.abs(P.vy); } }
-        for(const [m,vx,vy] of [[M,mvx,mvy],[A,0,0]]){ const dx=P.x-m.x, dy=P.y-m.y, d=Math.hypot(dx,dy); if(d<R+MR&&d>0){ const nx=dx/d, ny=dy/d; P.x=m.x+nx*(R+MR); P.y=m.y+ny*(R+MR); const rel=(P.vx-vx)*nx+(P.vy-vy)*ny; if(rel<0){ P.vx-=1.9*rel*nx; P.vy-=1.9*rel*ny; } if(m===A){ P.vx+=nx*120; P.vy+=ny*120; } } }
-        const s=Math.hypot(P.vx,P.vy); if(s>700){ P.vx*=700/s; P.vy*=700/s; } }
-      if(S.a>=5||S.b>=5){ S.won=S.a>S.b; S.score=S.a; S.over=S.won?`YOU WIN ${S.a} : ${S.b}.`:`THE HOUSE WINS ${S.b} : ${S.a}.`; } },
-    draw:(S,g)=>{ g.fillStyle='#14141c'; g.fillRect(0,0,320,480); g.fillStyle='#e8f0f4'; g.fillRect(10,10,300,460); g.strokeStyle='#c02838'; g.lineWidth=2; g.beginPath(); g.moveTo(10,240); g.lineTo(310,240); g.stroke(); g.beginPath(); g.arc(160,240,40,0,7); g.stroke();
-      g.fillStyle='#14141c'; g.fillRect(100,4,120,8); g.fillRect(100,468,120,8);
-      g.fillStyle='#202020'; g.beginPath(); g.arc(S.p.x,S.p.y,12,0,7); g.fill(); g.fillStyle='#c02838'; g.beginPath(); g.arc(S.ai.x,S.ai.y,22,0,7); g.fill(); g.fillStyle='#2060c0'; g.beginPath(); g.arc(S.me.x,S.me.y,22,0,7); g.fill();
-      font(g,20,'#c02838'); g.fillText(S.b,290,210); font(g,20,'#2060c0'); g.fillText(S.a,290,270); },
     end:S=>o.end&&o.end(S)});
 }
 export {GAMES};

@@ -1,6 +1,6 @@
 // THE GARDEN: GARDEN, the wild flowers (each grass kind its own, park and street) and the garden plots the player can plant.
 import {SHARED, THREE} from './003-shx.js';
-import {BIRDS, CITY, CLOCK, FORAGE, INSPECT, ITEMS, MAIL, MOTION, pos, ROOMS, SFX, UI, WEEDS, WX} from './003b-systems.js';
+import {BIRDS, CITY, CLOCK, FORAGE, INSPECT, INV, ITEMS, MAIL, MOTION, pos, ROOMS, SFX, UI, WEEDS, WX} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
@@ -60,8 +60,8 @@ const GARDEN={}; window.GARDEN=GARDEN;
     HEAD.setMatrixAt(n.h,m4.compose(new V3(x,top,z),q,new V3(R*b,R*hh*(g<1?1.4:1),R*b))); HEAD.setColorAt(n.h++,col.setHex(g<1?0x5a9a4a:hc));
     if(cr&&g>=1){ CTR.setMatrixAt(n.c,m4.compose(new V3(x,top+R*hh*.55,z),q,new V3(R*cr,R*cr*.6,R*cr))); CTR.setColorAt(n.c++,col.setHex(cc)); } return top; };
   const sync=()=>{ hits.clear(); for(const t of things){ const i=UI.things.indexOf(t); if(i>=0)UI.things.splice(i,1); } things=[]; const n={s:0,h:0,c:0,l:0}, t0=now();
-    const add=(name,x,y,z,act)=>{ const hb=new THREE.Mesh(HB,HM); hb.position.set(x,y+.15*T,z); hits.add(hb); const th={name,pick:true,obj:hb,reach:.9*T,near:1.6*T,tall:.4*T,act}; UI.thing(th); things.push(th); };
-    for(const arr of CH.values())for(const f of arr){ if(S.picked[f.id]||n.s>=NMX-20)continue; put(f.k,f.x,f.y,f.z,f.s,f.a,1,n); add(FL[f.k][0],f.x,f.y,f.z,()=>GARDEN.pick(f)); }
+    const add=(name,x,y,z,act,walk)=>{ const hb=new THREE.Mesh(HB,HM); hb.position.set(x,y+.15*T,z); hits.add(hb); const th={name,pick:true,obj:hb,reach:.9*T,near:1.6*T,tall:.4*T,act,walk}; UI.thing(th); things.push(th); };
+    for(const arr of CH.values())for(const f of arr){ if(S.picked[f.id]||n.s>=NMX-20)continue; put(f.k,f.x,f.y,f.z,f.s,f.a,1,n); add(FL[f.k][0],f.x,f.y,f.z,()=>GARDEN.pick(f),()=>'fl_'+f.k); }
     for(const p of S.plots){ if(n.s>=NMX||Math.hypot(p.x-pos.x,p.z-pos.z)>40*T)continue; const g=Math.min(1,(t0-p.t)/GR(p)); put(p.k,p.x,p.y,p.z,1,p.a||0,g,n);
       add(`YOUR ${FL[p.k][0]} (${g>=1?'IN BLOOM':g<.4?'SPROUTING':'IN BUD'})`,p.x,p.y,p.z,()=>GARDEN.harvest(p)); }
     for(const [me,c] of [[STEM,n.s],[HEAD,n.h],[CTR,n.c],[LEAF,n.l]]){ me.count=c; me.instanceMatrix.needsUpdate=true; if(me.instanceColor)me.instanceColor.needsUpdate=true; } GARDEN.shown=n.s; };
@@ -70,7 +70,7 @@ const GARDEN={}; window.GARDEN=GARDEN;
     if(WEEDS.chunks)for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); sync(); }
   let st0=-1; SYS.every(()=>{ const d=day(); if(d!==S.pd){ const old=S.pd; S.pd=d; for(const k in S.picked)if(!k.startsWith(d+':'))delete S.picked[k]; if(old!==-1&&WEEDS.chunks){ CH.clear(); for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawns(k,g)); } save(); sync(); }
     const st=S.plots.map(p=>Math.min(1,(now()-p.t)/GR(p))<1?Math.floor((now()-p.t)/GR(p)*5):9).join(); if(st!==st0){ st0=st; sync(); } },2000);
-  GARDEN.pick=f=>{ '@later'; const [nm,d]=FL[f.k]; SFX.play('step',{vol:.4});
+  GARDEN.pick=f=>{ '@later'; if(!INV.room('fl_'+f.k))return INV.full(); const [nm,d]=FL[f.k]; SFX.play('step',{vol:.4});
     if(use('garden',d-25,d+25)){ S.picked[f.id]=1; const n=1+(sk('garden')>d+20&&Math.random()<.4?1:0); FORAGE.give('fl_'+f.k,n); S.log[f.k]=(S.log[f.k]||0)+n; say(`YOU PICK ${n>1?n+' ':'A '}${nm}${n>1?'S':''}.`,f.k==='slipper'?'#f2c14e':'#e8e2cc'); }
     else if(Math.random()<.3){ S.picked[f.id]=1; say('YOU CRUSH IT. THE PETALS FALL.','#c8a090'); } else say('THE STEM WILL NOT COME CLEANLY.','#c8a090');
     saveSoon(); sync(); FORAGE.draw(); };

@@ -103,6 +103,7 @@ if 'g' in os.environ.get('SKIP', '').split(','):
     sys.exit(print('built', pages[0], 'and', pages[1], 'only (SKIP=g: no dist/g, no npm packages needed)'))
 elif not os.path.exists('node_modules/three'):
     subprocess.run(['npm', 'install', '--no-audit', '--no-fund'], check=True)
+subprocess.run(['node', 'tools/asylum.cjs'], check=True)   # Hollow Pines (src/asylum/): its own page, dist/asylum.html
 for f in sorted(set(re.findall(r'__FILE__\("([^"]+)"\)', body))):
     o = 'dist/g/' + os.path.basename(f); shutil.copy(f, o); names[f] = json.dumps('/g/' + hashed(o))
 body = re.sub(r'__FILE__\("([^"]+)"\)', lambda m: names[m.group(1)], body)

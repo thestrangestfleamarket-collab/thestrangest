@@ -12,7 +12,7 @@ const PFROW={fronts:[],houses:[],things:[]};
   const HOUSES=LEVEL.places.filter(p=>p.pf&&p.y1!=null&&!p.row&&(p.face==='e'||p.face==='w')).sort((a,b)=>a.y0-b.y0);   // (a shop on the Hudson row stands through MSHOP.fronts)
   for(const p of HOUSES){ const x0=XS(p.x0), x1=XS(p.x1), z0=Math.min(ZS(p.y0),ZS(p.y1)), z1=Math.max(ZS(p.y0),ZS(p.y1)); p.sol=[x0,z0,x1,z1]; p.fix=[x0,z0,0,x1,z1,35/.84*ZU*24]; SOL.up.push(p.sol); FIX.up.push(p.fix); }   // solid from the start (the house is 35 m tall)
   const size=k=>(KITD[k]||{size:[1,1,1]}).size;
-  const PFC={hotel:[168,150,128],theatre:[120,52,48],play:[148,92,70],bar:[72,46,48],bodega:[150,62,48],bath:[188,180,164],books:[96,70,58],fishing:[90,96,104],tailor:[120,72,60],barber:[116,66,58],antiques:[110,84,64],outfitter:[96,92,80]};
+  const PFC={hotel:[168,150,128],theatre:[120,52,48],play:[148,92,70],bar:[72,46,48],bodega:[150,62,48],bath:[188,180,164],books:[96,70,58],fishing:[90,96,104],tailor:[120,72,60],barber:[116,66,58],outfitter:[96,92,80]};
   let BM=null; const BODMAT=()=>{ if(BM)return BM; BM=KIT.mat.clone(); const T=HUDSHOP.brick();
     BM.onBeforeCompile=sh=>{ sh.uniforms.uB={value:T}; sh.uniforms.uN={value:HUDSHOP.brickN()}; sh.uniforms.uM={value:HUDSHOP.brickM()}; sh.vertexShader='varying vec3 vBW; varying vec3 vBN;\n'+sh.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\n vBW=(modelMatrix*vec4(transformed,1.)).xyz; vBN=normalize(mat3(modelMatrix)*objectNormal);');
       sh.fragmentShader='uniform sampler2D uB; uniform sampler2D uN; uniform sampler2D uM; varying vec3 vBW; varying vec3 vBN;\n'+sh.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
@@ -25,7 +25,7 @@ const PFROW={fronts:[],houses:[],things:[]};
     // modelled in the Polyfork building's own footprint and height, not the model itself (owner, 8 Nov 2026: no painted windows)
     const ZT=Math.abs(SHARED.BOD.Y(1)-SHARED.BOD.Y(0));
     for(const f of SHARED.PFCORNER||[]){ const g=put('bodega',f.x,f.zf+f.zi*size('bodega')[2]*1.25*M/2,{rot:f.rot,m:size('bodega')[1]*1.25,mat:BODMAT()}); if(g&&f.flip)g.children[0].scale.x*=-1; PFROW.fronts.push({id:f.id,obj:g}); }
-    const BRICK={antiques:[124,70,54],fishing:[112,82,66],armor:[96,62,56],skate:[150,84,62],books:[132,76,58]};
+    const BRICK={fishing:[112,82,66],armor:[96,62,56],skate:[150,84,62],books:[132,76,58]};
     for(const f of MSHOP.fronts){ const h=size(f.pf)[1]*M, L=f.L, cx=(L.x0+L.x1)/2, LL=L, P=LEVEL.places.find(p=>p.id===f.id)||{};
       if(P.row===2){ PFROW.fronts.push({id:f.id,obj:HUDSHOP.make({L,pt:f.pt,closed:!MSHOP.at[f.id]||!MSHOP.at[f.id].open,brick:BRICK[f.id],bare:!!P.bare,du:f.du??cx,seed:f.id.length*17,parent:MAPG.bodega||scene})}); continue; }   // the Hudson row's shops: the florist's kind of building, the merchant's flat upstairs (owner, 8 Nov 2026)
       if(f.id==='bodega'){ PFROW.fronts.push({id:f.id,obj:put('bodega',f.x,f.zf+f.zi*size('bodega')[2]*1.25*M/2,{rot:f.rot,m:size('bodega')[1]*1.25,mat:BODMAT()})}); continue; }   // Polyfork's #12, bigger, its walls bricked (owner, 8 Nov 2026)

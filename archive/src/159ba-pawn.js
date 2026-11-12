@@ -2,24 +2,31 @@
 import {ARCHI, FORAGE, INV, ITEMS, ONLINE, SHOPS, TEXT} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {SYS} from './006-map-pre.js';
-const PAWN={stock:{},BUY:.5};
+import {RARITY} from './013a-rarity.js';
+const PAWN={stock:{},BUY:.5,FEE:5};
 { const esc=TEXT.esc, val=id=>{ const v=+(ITEMS.prop&&ITEMS.prop(id,'value')); return v>0&&!ARCHI(id)?v:0; }, pays=id=>Math.max(1,Math.floor(val(id)*PAWN.BUY)), costs=id=>Math.ceil(val(id));
   const say=t=>SAY(t,'#f2c14e'), nm=id=>FORAGE.name?FORAGE.name(id):String(id).toUpperCase(), redraw=()=>{ if(SHOPS.draw)SHOPS.draw(); if(FORAGE.draw)FORAGE.draw(); };
   const on=()=>!!ONLINE.on, send=o=>ONLINE.send({t:'pw',...o});
   // the window's two lists: what is on the shelf (pawned by anyone), and what of yours they would take
   SHOPS.pawnRows=(row,have)=>{ let o=''; const S=Object.keys(PAWN.stock).filter(id=>PAWN.stock[id]>0&&val(id)).sort();
     o+=`<div class="shh">ON THE SHELF</div>`+(S.length?S.map(id=>row(id,`<u>x${PAWN.stock[id]}</u><i>$${costs(id)}</i>`,`data-pbuy="${esc(id)}"`,costs(id)>have?' no':'')).join(''):`<div class="shh" style="opacity:.6">NOTHING YET</div>`);
+    const rough=Object.keys(INV.items).filter(id=>INV.items[id]>0&&id.startsWith('q_')).sort();
+    if(rough.length)o+=`<div class="shh">HE TELLS YOU WHAT IT IS</div>`+rough.map(id=>row(id,`<u>x${INV.items[id]}</u><i>$${PAWN.FEE}</i>`,`data-appr="${esc(id)}"`,PAWN.FEE>have?' no':'')).join('');
     const mine=Object.keys(INV.items).filter(id=>INV.items[id]>0&&val(id)).sort();
     if(mine.length)o+=`<div class="shh">THEY BUY</div>`+mine.map(id=>row(id,`<u>x${INV.items[id]}</u><i>$${pays(id)}</i>`,`data-pawn="${esc(id)}"`)).join('');
     return o; };
-  SHOPS.pawnAsk=(r,n)=>{ const id=r.dataset.pbuy||r.dataset.pawn; return r.dataset.pbuy?`BUY ${nm(id)} FOR $${costs(id)}?`:`PAWN ${n>1?n+' ':''}${nm(id)} FOR $${pays(id)*n}?`; };
-  PAWN.buy=id=>{ const p=costs(id); if(!p||!(PAWN.stock[id]>0))return false; if((INV.cash||0)<p){ say('YOU CANNOT AFFORD THAT.'); return false; }
+  SHOPS.pawnAsk=(r,n)=>{ if(r.dataset.appr)return `HAVE HIM LOOK AT ${nm(r.dataset.appr)} FOR $${PAWN.FEE}?`; const id=r.dataset.pbuy||r.dataset.pawn; return r.dataset.pbuy?`BUY ${nm(id)} FOR $${costs(id)}?`:`PAWN ${n>1?n+' ':''}${nm(id)} FOR $${pays(id)*n}?`; };
+  PAWN.buy=id=>{ const p=costs(id); if(!p||!(PAWN.stock[id]>0))return false; if(!INV.afford(p)){ say('YOU CANNOT AFFORD THAT.'); return false; }
     if(on()){ send({op:'buy',item:id,n:1,p}); return true; }
-    INV.cash-=p; if(!--PAWN.stock[id])delete PAWN.stock[id]; FORAGE.give(id,1); say(`YOU BUY ${nm(id)} FOR $${p}.`); redraw(); return true; };
-  PAWN.sell=(id,n)=>{ n=Math.min(n,INV.items[id]||0); if(n<1||!val(id))return false; FORAGE.take(id,n); if(INV.save)INV.save(); for(const f of FORAGE.SOLD||[])f(id,n,pays(id)*n);   // (what a sale clears goes as at any shop: a painting's title, a photo)
+    INV.pay(p); if(!--PAWN.stock[id])delete PAWN.stock[id]; FORAGE.give(id,1); say(`YOU BUY ${nm(id)} FOR $${p}.`); redraw(); return true; };
+  PAWN.sell=(id,n)=>{ n=Math.min(n,INV.items[id]||0); if(n<1||!val(id))return false; FORAGE.take(id,n); if(INV.save)INV.save();
     if(on()){ send({op:'sell',item:id,n}); redraw(); return true; }
     const v=pays(id)*n; INV.cash+=v; PAWN.stock[id]=(PAWN.stock[id]||0)+n; say(`YOU PAWN ${n>1?n+' ':''}${nm(id)} FOR $${v}.`); redraw(); return true; };
-  SHOPS.pawnDo=(r,n)=>r.dataset.pbuy?PAWN.buy(r.dataset.pbuy):PAWN.sell(r.dataset.pawn,n);
+  // appraising (owner, 11 Nov 2026): a rough thing (q_ID) becomes what it is for a small fee; the first of a kind you have named keeps your name (INV.found, the card's FOUND BY)
+  PAWN.appraise=id=>{ if(!String(id).startsWith('q_')||!(INV.items[id]>0))return false; if(!INV.afford(PAWN.FEE)){ say('YOU CANNOT AFFORD THAT.'); return false; } const k=id.slice(2);
+    INV.pay(PAWN.FEE); FORAGE.take(id,1); INV.found=INV.found||{}; if(!INV.found[k])INV.found[k]=(ONLINE.myName&&ONLINE.myName())||'YOU'; FORAGE.give(k,1); if(INV.save)INV.save();
+    say(`THE JUNK DEALER TURNS IT OVER: ${nm(k)}, ${RARITY.name(k)}. WORTH $${val(k)}.`); redraw(); return true; };
+  SHOPS.pawnDo=(r,n)=>r.dataset.appr?PAWN.appraise(r.dataset.appr):r.dataset.pbuy?PAWN.buy(r.dataset.pbuy):PAWN.sell(r.dataset.pawn,n);
   ONLINE.hear.pw=m=>{ '@later'; const op=m.op;
     if(op==='list'){ PAWN.stock=m.all||{}; redraw(); return; }
     if(op==='one'){ if(m.n>0)PAWN.stock[m.id]=m.n; else delete PAWN.stock[m.id]; redraw(); return; }

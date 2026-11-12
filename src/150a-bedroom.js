@@ -73,7 +73,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null,keep:[],always:new Set(),save:(
     const ISO={value:0};
 
     let R=null;   // the built room: its meshes, lights and loose things
-    const build=()=>{ '@apts'; const X=SHARED.BOD.X, Z=SHARED.BOD.Z, Yr=SHARED.BOD.Y, A=APTS.R, WI=APTS.WIN, WPL=APTS.WPL, M=(X(A.x0+1)-X(A.x0))/MPU, fy=Yr(APTS.RB+.15)+.012, HW=(Yr(APTS.S||130)-Yr(0))/M;
+    const build=()=>{ '@apts'; const X=SHARED.BOD.X, Z=SHARED.BOD.Z, Yr=SHARED.BOD.Y, A=APTS.R, WI=APTS.WIN, WPL=APTS.WPL, M=(X(A.x0+1)-X(A.x0))/MPU, fy=Yr(APTS.RB+.15)+.012, HW=(Yr(APTS.S||130)-Yr(0))/M*(APTS.HK||1);
       const px=z=>z/32.4, Lx=(A.x1-A.x0)*MPU, Ly=(A.y1-A.y0)*MPU, TH=.24, W=(u,h,v)=>new V3(X(A.x0)+u*M,fy+h*M,Z(A.y0)+v*M);
       const apt=new THREE.Group(); apt.position.set(X(A.x0),fy,Z(A.y0)); apt.scale.setScalar(M); scene.add(apt);
       R={apt,M,fy,doors:{},loose:[],lights:[],lamps:[],th:[],units:[],kinds:{},wins:[],winTh:[],ceil:[],wallMats:[],floorMat:null,wall:'beige',floor:'warm',glowK:1,addN:0};
@@ -239,7 +239,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null,keep:[],always:new Set(),save:(
       const spawn=(kind,t,id)=>{ const K=R.kinds[kind]; if(!K)return null; const o=K.tpl.clone(true); (K.loose?scene:apt).add(o);
         const un={id:id||('add-'+(++R.addN)),name:K.name,kind,obj:o,loose:K.loose,m:K.m,sol:K.sol,shf:K.shf,h:[],th:[],wire:K.wire,st:{},added:true,mount:K.mount,cat:K.cat}; R.units.push(un); setT(un,t); blobFor(un); wireUp(un); R.LL=null; un.obj.traverse(o=>{ if(o.isLight&&o.userData.i0!=null)paint(o); }); return un; };
       const drop=un=>{ remove(un); un.obj.removeFromParent(); const i=R.units.indexOf(un); if(i>=0)R.units.splice(i,1); };
-      const wall=k=>{ const D=WALLS[k]; if(!D)return; if(D.gen&&!D.t)D.t=D.gen(); for(const m of R.wallMats){ m.map=D.t||R.plaster; m.bumpMap=m.map; m.color.set(D.t?0xffffff:col(D.c)); m.needsUpdate=true; } R.wall=k; };
+      const wall=k=>{ const D=WALLS[k]; if(!D)return; if(D.gen&&!D.t)D.t=D.gen(); for(const m of R.wallMats){ if(m.userData.own)continue; m.map=D.t||R.plaster; m.bumpMap=m.map; m.color.set(D.t?0xffffff:col(D.c)); m.needsUpdate=true; } R.wall=k; };
       const floor=k=>{ const D=FLOORS[k]; if(!D)return; if(!D.t)D.t=D.gen(Lx,Ly); R.floorMat.map=D.t; R.floorMat.bumpMap=D.t; R.floorMat.needsUpdate=true; R.floor=k; };
       const kz=()=>R.kzone||[0,0,1,1], kfloor=k=>{ const D=KFLOORS[k]; if(!D||!R.kfloor)return; R.kfloorK=k; const on=k!=='room'; for(const o of R.kfloor)o.visible=on; if(!on)return;
         if(!D.t){ const z=kz(); D.t=D.gen(z[2]-z[0],z[3]-z[1]); } R.kfloorMat.map=D.t; R.kfloorMat.needsUpdate=true; };

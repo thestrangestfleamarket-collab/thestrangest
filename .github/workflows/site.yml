@@ -117,6 +117,7 @@ jobs:
           k hall    'src/150n|src/059a|hall\.cjs'
           k flats   'src/150n|src/059a|src/150d|src/141c|flats\.cjs'
           k holodeck 'src/059b-arcade|src/146bb|src/146b[cd]|holodeck'
+          k boarded 'src/146be-boarded|tests/boarded'
           k kite    'src/146g-kite|src/093|kite\.cjs'
           k swim    'src/146ga-swim|src/066-river|src/065a|swim\.cjs'
           k lakewreck 'src/066bb|src/066ba-wreck|src/060a-fount|data/lakewreck|tools/lakewreck|lakewreck\.cjs'
@@ -419,6 +420,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' holodeck')
         run: node tests/holodeck.cjs dist/market.html
+      - name: BOARDED UP (the holodeck's zombie siege, solo and two online, the server's relay)
+        timeout-minutes: 40
+        if: contains(steps.f.outputs.run, ' boarded')
+        run: node tests/boarded.cjs dist/market.html && node tests/boarded-online.cjs dist/market.html && node tests/boarded-server.cjs
       - name: The kite (held, launched, climbing in the wind)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' kite')

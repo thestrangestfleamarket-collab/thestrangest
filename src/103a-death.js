@@ -18,7 +18,7 @@ import {FADE, QS, STORE, SYS, TILE, wait} from './006-map-pre.js';
   SYS.every(grey,300,'103a-death grey');
   // your body (owner, 7 Nov 2026): it stays where you fell with all you carried for an hour; alive again, a double-click takes it all back; online, after the hour the section's server lets it all fall to the ground for anyone (owner, 9 Nov 2026)
   let body=null;
-  const keepBody=c=>{ try{ if(c)OWNED.set('corpse',JSON.stringify(c)); else OWNED.del('corpse'); }catch(e){} };
+  const keepBody=c=>{ try{ if(c)OWNED.set('corpse',JSON.stringify(c)); else OWNED.del('corpse'); }catch(e){} }; VIT.body=()=>body&&body.c?{...body.c}:null;   // what your body lying out there holds (tests)
   const hideBody=()=>{ if(!body)return; body.me.removeFromParent(); body.me.geometry.dispose(); const i=UI.things.indexOf(body.th); if(i>=0)UI.things.splice(i,1); body=null; };
   const showBody=c=>{ hideBody(); if(!c)return; const me=new THREE.Mesh(new THREE.CapsuleGeometry(.16*T,.9*T,4,8).rotateZ(Math.PI/2),new THREE.MeshToonMaterial({color:0x6a5a4a,gradientMap:W3.GP}));
     me.position.set(c.x,c.py+.16*T,c.z); me.rotation.y=c.h||0; me.castShadow=true; scene.add(LEVELS.own(me,c.lv||'*'));

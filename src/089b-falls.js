@@ -1,7 +1,7 @@
 // THE FALLS: FALLS is Central Park's waterfall beside the big lake (data/world.json parkPlaces.falls): an 18 m rock face of Polyfork rocks and moss, its plunge pool, the ledge behind the water, the jump rock, the mossy stairs, the lip with its spring, rope bridge and cairns, the rope swing, the rill to the brook; its ground is the park's (PARK.hill).
 import {SHARED, THREE} from './003-shx.js';
 import {B64, I16, U16} from './003a-skin.js';
-import {BROOK, CLOCK, DN, FALLS, FLOW, INV, keys, LITE, ONLINE, PARK, pos, RIDE, SFX, SKY, st, UI, WEEDS} from './003b-systems.js';
+import {BATCH, BROOK, CLOCK, DN, FALLS, FLOW, INV, keys, LITE, ONLINE, PARK, pos, RIDE, SFX, SKY, st, UI, WEEDS} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {renderer} from './004-main.js';
 import {LEVEL, MAPG, MODS, SYS, TILE, ZU} from './006-map-pre.js';
@@ -141,7 +141,7 @@ window.FALLS=FALLS;
     for(const [x,y] of LAN){ const at=put('lantern',x,y,null,1.1,rnd()*6); if(at)lamp.push([at.x,at.y+1.08*M,at.z]); }
     const merge=(list,mat,cast)=>{ if(!list.length)return null; let n=0, ni=0; for(const [md] of list){ n+=md.n; ni+=md.I.length; } const Pq=new Float32Array(n*3), Cq=new Float32Array(n*3), Iq=new Uint32Array(ni), vv=new THREE.Vector3(); let o=0, oi=0;
       for(const [md,mm] of list){ for(let i=0;i<md.n;i++){ vv.set(md.P[i*3],md.P[i*3+1],md.P[i*3+2]).applyMatrix4(mm); Pq[(o+i)*3]=vv.x; Pq[(o+i)*3+1]=vv.y; Pq[(o+i)*3+2]=vv.z; } Cq.set(md.C,o*3); for(let i=0;i<md.I.length;i++)Iq[oi+i]=md.I[i]+o; o+=md.n; oi+=md.I.length; }
-      let gg=new THREE.BufferGeometry(); gg.setAttribute('position',new THREE.BufferAttribute(Pq,3)); gg.setAttribute('color',new THREE.BufferAttribute(Cq,3)); gg.setIndex(new THREE.BufferAttribute(Iq,1)); gg=gg.toNonIndexed(); gg.computeVertexNormals(); gg.computeBoundingSphere();
+      let gg=new THREE.BufferGeometry(); gg.setAttribute('position',new THREE.BufferAttribute(Pq,3)); gg.setAttribute('color',new THREE.BufferAttribute(Cq,3)); gg.setIndex(new THREE.BufferAttribute(Iq,1)); gg=gg.toNonIndexed(); { const F=BATCH.unfight(gg.attributes.position.array,{C:[gg.attributes.color.array,3]}); if(F.at){ gg=new THREE.BufferGeometry(); gg.setAttribute('position',new THREE.BufferAttribute(F.P,3)); gg.setAttribute('color',new THREE.BufferAttribute(F.A.C,3)); } } gg.computeVertexNormals(); gg.computeBoundingSphere();
       const me=new THREE.Mesh(gg,mat); me.castShadow=cast; me.receiveShadow=true; root.add(me); FALLS.tris=(FALLS.tris||0)+ni/3; return me; };
     const mossM=new THREE.MeshLambertMaterial({vertexColors:true,flatShading:true});
     mossM.onBeforeCompile=sh=>{ sh.vertexShader='varying vec3 vWN; varying vec3 vWQ;\n'+sh.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\n vWQ=(modelMatrix*vec4(transformed,1.)).xyz; vWN=normalize(mat3(modelMatrix)*objectNormal);');
@@ -240,7 +240,7 @@ window.FALLS=FALLS;
         SYS.add('world',(kk,v)=>{ if(kk===k)draw(v); },'089b-falls cairn'); }); }
     /* toss a coin: a dollar into the pool for a wish */
     { const hb=new THREE.Mesh(new THREE.BoxGeometry(1.2*T,.6*T,1.2*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(X(C[0]+R-1.2),WY,Z(C[1]-1)); root.add(hb);
-      UI.thing({name:'TOSS A COIN',obj:hb,reach:3*T,near:4*T,tall:.6*T,act:()=>{ if(!INV||INV.cash<1)return SAY('YOU HAVE NO COIN TO TOSS.','#c8a090'); INV.cash-=1; if(SFX.play)SFX.play('splash',{vol:.25,pitch:1.8}); SAY('YOU TOSS A DOLLAR IN AND MAKE A WISH.','#9fd6dc'); }}); }
+      UI.thing({name:'TOSS A COIN',obj:hb,reach:3*T,near:4*T,tall:.6*T,act:()=>{ if(!INV||!INV.afford(1))return SAY('YOU HAVE NO COIN TO TOSS.','#c8a090'); INV.pay(1); if(SFX.play)SFX.play('splash',{vol:.25,pitch:1.8}); SAY('YOU TOSS A DOLLAR IN AND MAKE A WISH.','#9fd6dc'); }}); }
     /* the roar: one placed sound at the foot of the falls (a recorded loop held as a voice), louder as you come near */
     let roar=null; const sound=()=>{ const c=SFX.live&&SFX.live(), d=Math.hypot(pos.x-X(FZ),pos.z-WZ0)/M, on=!!c&&SFX.on&&d<90&&root.visible;
       if(!on){ if(roar){ roar.set(0,1); } return; } if(!roar)roar=SFX.voice('falls'); if(roar)roar.set(Math.min(.9,14/(d+8)),1,{x:X(FZ),y:WY+3*M,z:WZ0}); };

@@ -728,19 +728,6 @@
    "face": "n"
   },
   {
-   "id": "antiques",
-   "kind": "front",
-   "x0": -51,
-   "x1": -37,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2,
-   "name": "ANTIQUES & PAWN",
-   "pf": "antiques",
-   "merchant": "junkman"
-  },
-  {
    "id": "fishing",
    "kind": "front",
    "x0": -36.5,
@@ -1433,6 +1420,19 @@
    ]
   }
  ],
+ "exchange": {
+  "note": "the exchange machines about the streets (159ba-exchange): map tiles, rot the way one faces in radians (0 north, 3.1416 south, 1.5708 east)",
+  "at": [
+   {"x": -52.05, "y": -6.9, "rot": 1.5708},
+   {"x": 2.96, "y": -76.6},
+   {"x": 78.17, "y": -76.6},
+   {"x": 160.26, "y": -76.6},
+   {"x": 228.03, "y": -76.6},
+   {"x": 1, "y": -108.3, "rot": 3.1416},
+   {"x": 55.96, "y": -108.3, "rot": 3.1416},
+   {"x": 117.3, "y": -108.3, "rot": 3.1416}
+  ]
+ },
  "racks": {"note": "the brochure racks on the street (159k-brochures): map tiles, rot the way one faces in radians", "at": [{"x": 108.5, "y": -40.5}, {"x": 127, "y": -71.8}, {"x": 171.5, "y": -110.2}]},
  "things": [
   {

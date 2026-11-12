@@ -5,7 +5,7 @@ import {PPU, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {QS, SHL, SYS} from './006-map-pre.js';
 Object.assign(W3,{group:new THREE.Group(), meshes:[], idMeshes:[], L:new THREE.Vector3(), tint:new THREE.Color(1,1,1), tris:0, lv:{value:2}, look:{value:+(new URLSearchParams(location.search).get('look')||0)}, G:{value:new THREE.Matrix3()}, LP:{value:[new THREE.Vector3(),new THREE.Vector3()]}, LC:{value:[new THREE.Vector3(),new THREE.Vector3()]}, CamW:{value:new THREE.Vector3()}, LVP:{value:new THREE.Matrix4()},
-  sm:new THREE.WebGLRenderTarget(512,512), smCam:new THREE.OrthographicCamera(-2.1,2.1,2.1,-2.1,0.1,12), Lw:new THREE.Vector3()});
+  sm:new THREE.WebGLRenderTarget(256,256), smCam:new THREE.OrthographicCamera(-2.1,2.1,2.1,-2.1,0.1,12), Lw:new THREE.Vector3()});
 W3.sm.depthTexture=new THREE.DepthTexture(256,256); W3.sm.depthTexture.type=THREE.FloatType;
 { const R=RIG, {V,add,sub,mul,nrm,dot}=R, rest=(R.farOnly(false),R.build(R.walkPose({ph:0,w:0},null),null)), MATS=R.MATS, STEP=1, CELL=2, OUT=0.2*R.PX;
   const TET=[[0,5,1,6],[0,1,2,6],[0,2,3,6],[0,3,7,6],[0,7,4,6],[0,4,5,6]], CO=[[0,0,0],[1,0,0],[1,1,0],[0,1,0],[0,0,1],[1,0,1],[1,1,1],[0,1,1]];
@@ -356,7 +356,7 @@ OUTL.render=(renderer,scene,cam)=>{ '@later'; { const C=OUTL.pass.uniforms.cols.
   const m0=W3.mesh.material; W3.mesh.material=W3.idMat; renderer.render(W3.group,cam); W3.mesh.material=m0;
   renderer.autoClear=ac; rt.viewport.set(0,0,w,h); rt.scissorTest=false; renderer.setRenderTarget(null); };
 
-W3.shadowPass=renderer=>{ SYS.run('shadowPre',renderer); W3.shadowBase(renderer); SYS.run('shadow',renderer); }; W3.shadowBase=renderer=>{ if(W3.lv.value<1.5)return; { const n=SHARED.full()?512:256; if(W3.sm.width!==n)W3.sm.setSize(n,n); } if(W3.selfOff){ if(!W3.smClr){ W3.smClr=true; renderer.setRenderTarget(W3.sm); renderer.clear(); renderer.setRenderTarget(null); } return; } const m0=W3.mesh.material; W3.mesh.material=W3.depthMat;
+W3.shadowPass=renderer=>{ SYS.run('shadowPre',renderer); W3.shadowBase(renderer); SYS.run('shadow',renderer); }; W3.shadowBase=renderer=>{ if(W3.lv.value<1.5)return; if(W3.selfOff){ if(!W3.smClr){ W3.smClr=true; renderer.setRenderTarget(W3.sm); renderer.clear(); renderer.setRenderTarget(null); } return; } const m0=W3.mesh.material; W3.mesh.material=W3.depthMat;
   renderer.setRenderTarget(W3.sm); renderer.clear(); renderer.render(W3.group,W3.smCam); renderer.setRenderTarget(null); W3.mesh.material=m0; };
 window.W3=W3;
 export {OUTL};

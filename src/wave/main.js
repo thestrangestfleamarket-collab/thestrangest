@@ -57,13 +57,46 @@ scene.add(sunLight, fillLight, cutLight);
 addEventListener('resize', () => {
   if (renderer.xr.isPresenting) return;
   camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
+  setLook(look);
 });
 
 function makeCanvas(w, h) {
   const c = document.createElement('canvas'); c.width = w; c.height = h;
   const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
   return { c, g: c.getContext('2d'), tex };
+}
+
+// ───────────────────────── console looks ─────────────────────────
+// each look is a few lines added to every material's shader; switching recompiles them
+const LOOKS = [
+  { name: 'MODERN' },
+  { name: 'PS1', width: 320, px: 5, snap: 220, frag: 'c = floor(c * 31.0 + sw_bayer(fc)) / 31.0;' },
+  { name: 'PS2', width: 640, px: 3, frag: 'c = mix(vec3(dot(c, vec3(0.3, 0.59, 0.11))), c, 0.85) * 0.94 + 0.03; if (mod(fc.y, 2.0) < 1.0) c *= 0.86; c = floor(c * 63.0 + sw_bayer(fc)) / 63.0;' },
+  { name: 'XBOX', frag: 'c = pow(c, vec3(1.18)) * vec3(0.93, 1.08, 0.95); c += smoothstep(0.7, 1.0, c) * 0.12;' },
+  { name: 'SNES', width: 256, px: 6, frag: 'c = mix(vec3(dot(c, vec3(0.3, 0.59, 0.11))), c, 1.35); c = floor(clamp(c, 0.0, 1.0) * 7.0 + sw_bayer(fc)) / 7.0; if (mod(fc.y, 2.0) < 1.0) c *= 0.82;' },
+];
+let look = 0;
+const compiled = new Set();
+THREE.Material.prototype.customProgramCacheKey = function () { return look + (renderer.xr.isPresenting ? 'x' : 'd'); };
+THREE.Material.prototype.onBeforeCompile = function (shader) {
+  compiled.add(this);
+  const L = LOOKS[look]; if (!L.frag || this.userData.plain) return;
+  const px = renderer.xr.isPresenting ? L.px || 1 : 1;
+  if (L.snap) shader.vertexShader = shader.vertexShader.replace('#include <project_vertex>', `#include <project_vertex>
+    gl_Position.xy = floor(gl_Position.xy / gl_Position.w * ${L.snap.toFixed(1)} + 0.5) / ${L.snap.toFixed(1)} * gl_Position.w;`);
+  const i = shader.fragmentShader.lastIndexOf('}');
+  shader.fragmentShader = `float sw_bayer(vec2 p) { vec2 q = mod(p, 4.0), a = mod(q, 2.0), b = floor(q / 2.0); return (mod(a.x * 2.0 + a.y * 3.0, 4.0) * 4.0 + mod(b.x * 2.0 + b.y * 3.0, 4.0)) / 16.0; }
+` + shader.fragmentShader.slice(0, i) + `{ vec2 fc = floor(gl_FragCoord.xy / ${px.toFixed(1)}); vec3 c = gl_FragColor.rgb; ${L.frag} gl_FragColor.rgb = c; }
+}`;
+};
+function setLook(i) {
+  look = (i + LOOKS.length) % LOOKS.length; store.set('look', look);
+  for (const m of compiled) m.needsUpdate = true;
+  const L = LOOKS[look];
+  if (!renderer.xr.isPresenting) {
+    renderer.setPixelRatio(L.width ? L.width / innerWidth : Math.min(devicePixelRatio, 2)); renderer.setSize(innerWidth, innerHeight);
+    renderer.domElement.style.imageRendering = L.width ? 'pixelated' : '';
+  }
 }
 
 // ───────────────────────── procedural textures ─────────────────────────
@@ -546,7 +579,7 @@ function generateNotes({ events, obstacles, rnd }, dk) {
     let row = dir === 'A' ? Math.floor(rnd() * 2) : up ? 1 + Math.floor(rnd() * 2) : Math.floor(rnd() * 2);
     const clash = notes.find(n => Math.abs(n.t - t) < 0.12 && n.col === col && n.row === row);
     if (clash) row = (row + 1) % 3;
-    notes.push({ t, side, col, row, dir: DIRS[dir] });
+    notes.push({ t, side, col, row, dir: null });
   };
   let next = 'right';
   for (const e of events) {
@@ -715,7 +748,7 @@ class Btn {
   constructor(parent, x, y, w, h, label, fn, o = {}) {
     Object.assign(this, { root: parent, label, fn, sub: o.sub || '', accent: o.accent || '#8f7bff', selected: false, hov: false });
     this.L = makeCanvas(512, Math.round(512 * h / w));
-    this.mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: this.L.tex, transparent: true, fog: false, toneMapped: false }));
+    this.mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), Object.assign(new THREE.MeshBasicMaterial({ map: this.L.tex, transparent: true, fog: false, toneMapped: false }), { userData: { plain: true } }));
     this.mesh.position.set(x, y, 0); this.mesh.userData.btn = this; this.mesh.material.color.setScalar(0.8);
     parent.add(this.mesh); allBtns.push(this); this.draw();
   }
@@ -735,7 +768,7 @@ class Btn {
 }
 function panel(parent, x, y, w, h, pxW = 1024) {
   const L = makeCanvas(pxW, Math.round(pxW * h / w));
-  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: L.tex, transparent: true, fog: false, depthWrite: false, toneMapped: false }));
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), Object.assign(new THREE.MeshBasicMaterial({ map: L.tex, transparent: true, fog: false, depthWrite: false, toneMapped: false }), { userData: { plain: true } }));
   mesh.position.set(x, y, 0); parent.add(mesh); L.mesh = mesh;
   return L;
 }
@@ -752,7 +785,7 @@ function buildMenu() {
   const T = panel(menuGroup, 0, 2.42, 2.6, 0.5), g = T.g;
   g.textAlign = 'center'; g.fillStyle = '#ffffff'; g.font = `800 110px ${FONT}`;
   g.fillText('S H A R D W A V E', 512, 108);
-  g.fillStyle = '#b9b2e6'; g.font = `500 30px ${FONT}`; g.fillText('Cut each shard with the matching blade, the way its arrow points', 512, 168);
+  g.fillStyle = '#b9b2e6'; g.font = `500 30px ${FONT}`; g.fillText('Cut every shard as it reaches the line, on the beat', 512, 168);
   T.tex.needsUpdate = true;
   const list = [...TRACKS, ...BUNDLED, ...customTracks];
   list.forEach((tr, i) => {
@@ -763,7 +796,7 @@ function buildMenu() {
   });
   Object.entries(DIFFS).forEach(([k, d], i) => {
     const b = new Btn(menuGroup, 0.78, 1.92 - i * 0.31, 1.05, 0.27, d.label, () => { sel.diff = k; buildMenu(); },
-      { accent: '#28d7ff', sub: k === 'easy' ? 'Cut any way, no fail' : k === 'normal' ? 'Walls and doubles' : 'Fast and dense' });
+      { accent: '#28d7ff', sub: k === 'easy' ? 'Fewer shards, no fail' : k === 'normal' ? 'More shards, walls' : 'Fast and dense' });
     b.selected = sel.diff === k; b.draw();
   });
   const best = store.get(sel.track.id + '_' + sel.diff);
@@ -774,6 +807,7 @@ function buildMenu() {
   const lab = (syncMs > 0 ? '+' : '') + syncMs + ' ms';
   new Btn(menuGroup, 0.5, 0.5, 0.5, 0.22, 'EARLIER', nudge(20), { accent: '#8f7bff', sub: 'Shards ' + lab });
   new Btn(menuGroup, 1.06, 0.5, 0.5, 0.22, 'LATER', nudge(-20), { accent: '#8f7bff', sub: 'Shards ' + lab });
+  new Btn(menuGroup, 0.78, 0.22, 1.05, 0.24, 'LOOK: ' + LOOKS[look].name, () => { setLook(look + 1); buildMenu(); }, { accent: '#ff3ec8', sub: 'Modern · PS1 · PS2 · Xbox · SNES' });
 }
 const pauseGroup = new THREE.Group(); pauseGroup.position.set(0, 0, -1.9); pauseGroup.visible = false; scene.add(pauseGroup);
 new Btn(pauseGroup, 0, 1.75, 1.1, 0.26, 'Resume', () => resume(), { accent: '#ffa51f' });
@@ -901,7 +935,7 @@ function miss(n, label) {
 }
 function goodCut(n, h, acc, speed, dx, dy) {
   n.done = true; n.mesh.visible = false;
-  const pts = Math.round(60 + 40 * acc + Math.min(15, (speed - 1.3) * 4));
+  const pts = Math.round(60 + 40 * acc + clamp((speed - 0.8) * 4, 0, 15));
   cur.combo++; cur.maxCombo = Math.max(cur.maxCombo, cur.combo); cur.hits++; cur.raw += pts; cur.score += pts * mult();
   cur.energy = Math.min(1, cur.energy + 0.015); hudDirty = true;
   popup(acc > 0.75 ? 'PERFECT' : acc > 0.45 ? 'GREAT' : 'GOOD', n.x, n.y + 0.25);
@@ -926,9 +960,8 @@ function checkCuts(h) {
       const d = distToSeg(nPos, tA, tB, hitPt); if (d < best) { best = d; bestPt.copy(hitPt); }
     }
     if (best > HIT_R) continue;
-    const speed = h.vel.length(); if (speed < 1.3) continue;
+    const speed = h.vel.length(); if (speed < 0.8) continue;
     const vx = h.vel.x, vy = h.vel.y, l = Math.hypot(vx, vy);
-    if (h.side !== 'any' && h.side !== n.side) { buzz(h, 1, 150); miss(n, 'BAD CUT'); continue; }
     if (n.dir) {
       if (l < 0.6) continue;
       if ((vx * n.dir[0] + vy * n.dir[1]) / l < 0.25) { buzz(h, 1, 150); miss(n, 'BAD CUT'); continue; }
@@ -1040,7 +1073,7 @@ function updatePlay(dt) {
   while (cur.next < cur.notes.length && cur.notes[cur.next].t - songT < LEAD) {
     const n = cur.notes[cur.next++]; n.done = false; n.x = COLS_X[n.col]; n.y = cur.rowsY[n.row];
     const m = n.mesh = getNoteMesh(); m.gem.material = gemMat[n.side]; m.edges.material = edgeMat[n.side]; m.halo.material = haloMat[n.side]; m.floor.material = floorMat[n.side]; m.rgem.material = gemMat[n.side]; m.redges.material = edgeMat[n.side];
-    m.arrow.visible = !!n.dir; m.ring.visible = !n.dir;
+    m.arrow.visible = m.ring.visible = false;
     if (n.dir) m.arrow.rotation.z = Math.atan2(n.dir[1], n.dir[0]) - Math.PI / 2;
     active.push(n);
   }
@@ -1193,8 +1226,8 @@ vrBtn.addEventListener('click', async () => {
     await renderer.xr.setSession(session);
   } catch (e) { msg.textContent = 'Could not start VR: ' + e.message; }
 });
-renderer.xr.addEventListener('sessionstart', () => { for (const h of hands) { h.reset = true; setSide(h, h.i === 0 ? 'left' : 'right'); } });
-renderer.xr.addEventListener('sessionend', () => { pause(); for (const h of hands) h.reset = true; });
+renderer.xr.addEventListener('sessionstart', () => { for (const h of hands) { h.reset = true; setSide(h, h.i === 0 ? 'left' : 'right'); } setLook(look); });
+renderer.xr.addEventListener('sessionend', () => { pause(); for (const h of hands) h.reset = true; setLook(look); });
 $('file').addEventListener('change', async e => {
   const f = e.target.files[0]; if (!f) return;
   msg.textContent = 'Reading ' + f.name + '…';
@@ -1203,5 +1236,6 @@ $('file').addEventListener('change', async e => {
   e.target.value = '';
 });
 
+setLook(clamp(store.get('look'), 0, LOOKS.length - 1) | 0);
 buildMenu();
-window.__sw = { setQuality, get quality() { return quality; }, cur, hands, get state() { return state; }, get songT() { return songT; }, start: (i, dk) => startSong([...TRACKS, ...BUNDLED, ...customTracks][i], dk), loadCustom, pause, resume, TRACKS };
+window.__sw = { setLook, LOOKS, get look() { return look; }, setQuality, get quality() { return quality; }, cur, hands, get state() { return state; }, get songT() { return songT; }, start: (i, dk) => startSong([...TRACKS, ...BUNDLED, ...customTracks][i], dk), loadCustom, pause, resume, TRACKS };

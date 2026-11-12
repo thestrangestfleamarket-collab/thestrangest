@@ -127,11 +127,16 @@ const fishInit=()=>{ if(FISHING.at)return; const T=TILE, RB={get lv(){ return RI
     if(d.sell){ const n=d.n==='all'?FORAGE.has(d.sell):1, v=WORTH.sell(d.sell,n,PRICE[d.sell]); FORAGE.take(d.sell,n); INV.cash+=v; say(`YOU SELL ${n} ${FORAGE.NM[d.sell]} FOR $${v}.`,'#f2c14e'); SFX.play('clunk',{vol:.5}); }
     STAND.draw(); FORAGE.draw(); });
   STAND.open=()=>{ sp.hidden=false; STAND.draw(); };
-  const boat=new THREE.Group(); boat.visible=false; scene.add(boat); const BW=1.1*T, BLn=2.6*T, Y=v=>v*T/.84;
+  const boat=new THREE.Group(); boat.visible=false; scene.add(boat); const BW=1.43*T, BLn=4.05*T, Y=v=>v*T/.84;
   { const mat=new THREE.MeshLambertMaterial({color:0xe8e2d2}), trim=new THREE.MeshLambertMaterial({color:0xa83a2a}), wood=new THREE.MeshLambertMaterial({color:0x7a5634}), add=(m,x,y,z,w,h,d)=>{ const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m); o.position.set(x,y,z); o.castShadow=true; boat.add(o); return o; };
     add(mat,0,Y(.05),0,BW*.8,Y(.1),BLn*.86); for(const o of [-1,1]){ add(mat,o*BW*.45,Y(.25),0,.08*T,Y(.45),BLn*.86); add(trim,o*BW*.45,Y(.48),0,.1*T,Y(.05),BLn*.86); }
     add(mat,0,Y(.28),BLn*.45,BW*.55,Y(.5),.1*T); add(mat,0,Y(.25),-BLn*.45,BW*.85,Y(.45),.1*T); add(wood,0,Y(.35),.1*T,BW*.82,Y(.05),.3*T); add(wood,0,Y(.3),-BLn*.32,BW*.7,Y(.05),.3*T);
     BOAT.oars=[-1,1].map(o=>{ const p=new THREE.Group(); p.name=o<0?'OAR LEFT':'OAR RIGHT'; p.position.set(o*BW*.48,Y(.5),.1*T); const a=new THREE.Mesh(new THREE.BoxGeometry(1.5*T,.05*T,.05*T),wood); a.position.x=o*.6*T; const bl=new THREE.Mesh(new THREE.BoxGeometry(.4*T,.02*T,.16*T),wood); bl.position.x=o*1.3*T; p.add(a,bl); boat.add(p); return p; }); }
+  // the hull and oars are Polyfork's wooden rowboat (data/rowboat.json), fetched after the start: the boxes stand in until it is here
+  __LAZY__("data/rowboat.json")().then(J=>{ const k=BLn/J.rowhull.size[2], m=new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide}), hull=new THREE.Mesh(KIT.decode(J.rowhull),m), og=KIT.decode(J.rowoar);
+    for(const c of [...boat.children])if(!c.name)boat.remove(c); hull.name='HULL'; hull.scale.setScalar(k); hull.castShadow=true; boat.add(hull);
+    BOAT.oars.forEach((p,i)=>{ const o=i?1:-1; p.clear(); p.position.set(o*J.rowhull.size[0]*k*.47,J.rowhull.size[1]*k*.98,0); const a=new THREE.Mesh(og,m); a.scale.setScalar(k*1.25); a.rotation.y=o*Math.PI/2; a.position.x=o*J.rowoar.size[2]*k*1.25*.34; a.castShadow=true; p.add(a); });
+    if(VLOOK.apply)VLOOK.apply(boat); }).catch(e=>console.warn('rowboat',e));
   BOAT.G=VLOOK.dress('rowboat',boat);
   const nearDeck=(x,z,m)=>{ for(const d of RIVER.decks)for(const r of d.r)if(x>r[0]-m&&x<r[2]+m&&z>r[1]-m&&z<r[3]+m)return r; return null; };
   const atShore=()=>{ const L=RIVER.ladders.find(x=>Math.abs(x-BOAT.x)<1.3*T&&BOAT.z>RB.z1-1.6*T); if(L!=null)return {x:L,z:RB.z1+.7*T}; const r=nearDeck(BOAT.x,BOAT.z,1.4*T); if(r)return {x:cl(BOAT.x,r[0]+.4*T,r[2]-.4*T),z:cl(BOAT.z,r[1]+.4*T,r[3]-.4*T)}; return null; };

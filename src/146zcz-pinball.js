@@ -5,7 +5,7 @@ import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {MODS, STORE, SYS} from './006-map-pre.js';
 import {IKIT} from './038zc-ikit.js';
-const PIN={TABLES:[['pooh',6.66],['mickey',8.97]],U:.78,STAND:1,LOOK:.88,ZOOM:1.25,TICKET:20000}; window.PIN=PIN;   // each table's theme and where along the west wall it stands; its middle's metres from the wall, where you stand from its middle, how far down you look and how close; points a ticket
+const PIN={TABLES:[['pooh',8.32],['mickey',11.28]],U:.78,STAND:1,LOOK:.88,ZOOM:1.25,TICKET:20000}; window.PIN=PIN;   // each table's theme and where along the west wall it stands; its middle's metres from the wall, where you stand from its middle, how far down you look and how close; points a ticket
 { let API=null; const api=()=>API||(API=MAKE());
   const MAKE=()=>{ '@pinball';
     __CODE__("src/pinball/table.js")

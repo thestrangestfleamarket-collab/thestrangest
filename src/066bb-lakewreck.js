@@ -8,7 +8,7 @@ import {WRECK} from './066ba-wreck.js';
 { const T=TILE, MW=T/.84, LW={built:false,at:null,parts:[],walls:[],solid:false}; window.LAKEWRECK=LW;
   const BASIN={w:11,l:16,d:16};   // its basin: half its width and half its length in tiles (the ship is 23 m long, 15 m over the wings), its depth in metres
   // where: in the lake inside the map's edges, far from its shore, its islands and its deep holes; the basin dug there before the bed is made
-  const place=S=>{ if(LW.lake||LW.none)return; const L=S.L, P=PARK, E=(LEVEL.edge&&LEVEL.edge.lines)||[], xs=E.flatMap(l=>[l[0],l[2]]), ys=E.flatMap(l=>[l[1],l[3]]);
+  const place=S=>{ if(LW.lake||LW.none)return; const L=S.L, P=PARK, E=(LEVEL.edge&&(LEVEL.edge.field||LEVEL.edge.lines))||[], xs=E.flatMap(l=>[l[0],l[2]]), ys=E.flatMap(l=>[l[1],l[3]]);
     const B=E.length?[Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys)]:[-1e9,-1e9,1e9,1e9], ox=P.ox||0, oy=P.oy||0, W=BASIN.w, H=BASIN.l;
     let best=null, bc=-1e9, n=0;
     for(const a of [0,Math.PI/2]){ const c=Math.cos(a), s=Math.sin(a), ex=Math.abs(c)*W+Math.abs(s)*H, ey=Math.abs(s)*W+Math.abs(c)*H;   // a: the long side along y (0) or along x

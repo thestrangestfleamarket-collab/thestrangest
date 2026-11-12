@@ -5,7 +5,7 @@ import {scene} from './004-main.js';
 import {AWAY, SOL, STORE, SYS, TILE, TURN, WP, ZU} from './006-map-pre.js';
 { let made=null;
   const MH=TILE/.84, MV=ZU*24/.84, PI=Math.PI;
-  const cv=(w,h,f)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; f(c.getContext('2d'),w,h); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return t; };
+  const cv=(w,h,f)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; f(c.getContext('2d'),w,h); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return t; };
   const rep=t=>{ t.wrapS=t.wrapT=THREE.RepeatWrapping; return t; };
   // a box whose faces tile their picture every s metres
   const boxG=(w,h,d,s)=>{ const g=new THREE.BoxGeometry(w,h,d), uv=g.attributes.uv, dims=[[d,h],[d,h],[w,d],[w,d],[w,h],[w,h]]; for(let f=0;f<6;f++)for(let v=0;v<4;v++){ const i=f*4+v; uv.setXY(i,uv.getX(i)*dims[f][0]/s,uv.getY(i)*dims[f][1]/s); } return g; };

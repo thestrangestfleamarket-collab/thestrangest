@@ -55,7 +55,7 @@ FORAGE.TABS.push({id:'fishing',draw:()=>{ '@later'; const IP=(id,k)=>ITEMS.prop(
     o+='</table>'; }
   o+=`<div style="color:#9b9584;margin-top:4px;line-height:1.45">A baited hook in the Hudson can bring up an old boot, a tin can, a message in a bottle, a water-stained novel or, rarely, a SUNKEN CHEST (a gem and $10-40).</div>`;
   o+=H('7. THE ROWBOAT')+'<div style="line-height:1.45">Rent it at the stand, row with W A S D, fish from it for the deep fish, STEP ASHORE at a ladder or pier.</div>';
-  o+=H('8. COOK AND SELL')+R('FISH FRY','2 white perch: fills a third')+R('SMOKED EEL','2 eels: fills two fifths, strong 2 min')+R('GRILLED STRIPED BASS','1 striped bass: fills half, mends you a minute')+R('FISH CHOWDER','1 catfish, 2 button mushrooms: fills more than half')+R('STURGEON STEAK','1 sturgeon: fills most of you, quick 3 min')+R('SELL','At FISHING & SCUBA, the $ above. Cook by a flame; raw fish is risky.')+'';
+  o+=H('8. SELL')+R('SELL','At the fish market\'s stalls or to the Fisherman in Waders, the $ above.')+'';
   return o; }});
 // what a catch looks like in the inspect window: the fish's own shape once the river is built (FISHING.look), the junk and the bait in simple shapes
 INSPECT.kinds.push({is:id=>/^x_/.test(id)||id==='chest'||/^bait/.test(id),make:id=>{ '@later'; const P=INSPECT.part;
@@ -71,13 +71,7 @@ const fishInit=()=>{ if(FISHING.at)return; const T=TILE, RB={get lv(){ return RI
   const NAMES=FISHING.NAMES;
   const SPECIES=Object.keys(NAMES);   // their habits are the item model's: LIVES IN, DEPTH, BITES, BAIT, FIGHT, COMMON, WEIGHT, VALUE (data/items.json, the item editor)
   const JUNK=[['x_boot','OLD BOOT',.6,1],['x_can','TIN CAN',.5,1],['x_note','MESSAGE IN A BOTTLE',.05,5],['chest','SUNKEN CHEST',.05,0]];
-  FORAGE.add({names:Object.assign({},NAMES,Object.fromEntries(JUNK.map(j=>[j[0],j[1]])),{rod:'FISHING ROD',bait:'WORMS',bait_cut:'CUT BAIT (BUNKER)',rod_carbon:'CARBON ROD',rod_surf:'SURF ROD',reel_fast:'FAST REEL',reel_pro:'PRO REEL',lure_worm:'RUBBER WORM LURE',lure_spoon:'SPOON LURE',cooler_s:'SMALL COOLER',cooler_m:'COOLER',cooler_l:'BIG COOLER',crabpot:'CRAB POT'}),raw:Object.fromEntries(SPECIES.map(id=>[id,[Math.min(.2,.05+.03*(IP(id,'weight')||1)),.3]])),
-    prices:{f_fishfry:12,f_grillbass:34,f_chowder:30,f_smokeeel:22,f_sturgeon:90},
-    recipes:[['f_fishfry','FISH FRY','cooking',[10,50],{x_perch:2},'fills a third'],['f_smokeeel','SMOKED EEL','cooking',[25,70],{x_eel:2},'fills two fifths, strong 2 min'],
-      ['f_grillbass','GRILLED STRIPED BASS','cooking',[30,75],{x_bass:1},'fills half, mends you a minute'],['f_chowder','FISH CHOWDER','cooking',[40,85],{x_catfish:1,m_button:2},'fills more than half, some health'],
-      ['f_sturgeon','STURGEON STEAK','cooking',[65,110],{x_sturgeon:1},'fills most of you, quick on your feet 3 min']],
-    does:{f_fishfry:()=>FORAGE.feed(.33),f_smokeeel:()=>{ FORAGE.feed(.4); FORAGE.buff('str',120); },f_grillbass:()=>{ FORAGE.feed(.5); FORAGE.buff('regen',60); },
-      f_chowder:()=>{ FORAGE.feed(.6); VIT.heal(.3); },f_sturgeon:()=>{ FORAGE.feed(.8); FORAGE.buff('swift',180); }}});
+  FORAGE.add({names:Object.assign({},NAMES,Object.fromEntries(JUNK.map(j=>[j[0],j[1]])),{rod:'FISHING ROD',bait:'WORMS',bait_cut:'CUT BAIT (BUNKER)',rod_carbon:'CARBON ROD',rod_surf:'SURF ROD',reel_fast:'FAST REEL',reel_pro:'PRO REEL',lure_worm:'RUBBER WORM LURE',lure_spoon:'SPOON LURE',cooler_s:'SMALL COOLER',cooler_m:'COOLER',cooler_l:'BIG COOLER',crabpot:'CRAB POT'}),raw:Object.fromEntries(SPECIES.map(id=>[id,[Math.min(.2,.05+.03*(IP(id,'weight')||1)),.3]]))});
   const say=SAY, PRICE=Object.fromEntries([...SPECIES.map(id=>[id,IP(id,'value')||1]),...JUNK.map(j=>[j[0],j[3]])]);
   // the tackle you own: the best CAST (m), LINE (strength) and REEL (speed) of what is in your pack; fish in hand up to 5 and what your coolers KEEP
   const BAITIDS=['bait','bait_cut','lure_worm','lure_spoon'], G0={cast:12,line:1,reel:1}, GC={t:-1e9,v:G0};

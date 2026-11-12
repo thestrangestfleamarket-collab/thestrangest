@@ -42,7 +42,7 @@ await grab('loop',async()=>{ const M=SHARED.METRO, D=LEVEL.loop, T=TILE, SZ=-98,
   const tex=(w,h,fn,rep)=>{ const cv=document.createElement('canvas'); cv.width=w; cv.height=h; const g=cv.getContext('2d');
     const im=g.createImageData(w,h); for(let j=0;j<h;j++)for(let i=0;i<w;i++){ const c=fn(i,j), k=(j*w+i)*4; im.data[k]=c[0]; im.data[k+1]=c[1]; im.data[k+2]=c[2]; im.data[k+3]=255; } g.putImageData(im,0,0);
     const t=new THREE.CanvasTexture(cv); t.magFilter=THREE.NearestFilter; t.minFilter=THREE.NearestMipmapNearestFilter; t.colorSpace=THREE.SRGBColorSpace; if(rep)t.wrapS=t.wrapT=THREE.RepeatWrapping; return t; };
-  const draw=(w,h,fn)=>{ const cv=document.createElement('canvas'); cv.width=w; cv.height=h; const g=cv.getContext('2d'); fn(g,w,h); const t=new THREE.CanvasTexture(cv); t.magFilter=THREE.LinearFilter; t.minFilter=THREE.LinearMipmapLinearFilter; t.colorSpace=THREE.SRGBColorSpace; return t; };
+  const draw=(w,h,fn)=>{ const cv=document.createElement('canvas'); cv.width=w; cv.height=h; const g=cv.getContext('2d'); fn(g,w,h); const t=new THREE.CanvasTexture(cv); t.magFilter=THREE.LinearFilter; t.minFilter=THREE.LinearMipmapLinearFilter; t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return t; };
   const PX=12, BED=8.8;
   const bedTex=tex(Math.round(1.1*24),Math.round(BED*24),(i,j)=>{ const y=(i+.5)/24, x=(j+.5)/24-BED/2, ax=Math.abs(x), r=Math.abs(ax-.7);
     if(r<.07)return r<.025?[202,204,208]:sh([116,112,108],.85+.2*vn(y*2,x,7)); if(r<.14&&y<.34)return [70,52,40];

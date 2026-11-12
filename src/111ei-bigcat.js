@@ -1,6 +1,6 @@
 // THE BIG CAT: BIGCAT, a huge black cat-shaped blob (a rounded block with two horn-like ears, big speckled staring eyes, an open mouth with pink teeth, whiskers, two clawed paws) four and a half times a person's height, standing at Market St's kerb a block from the start and crossing the road every few minutes (a smooth MERCH body on the player's rig).
 import {SHARED, THREE} from './003-shx.js';
-import {pos} from './003b-systems.js';
+import {ONLINE, pos} from './003b-systems.js';
 import {SYS, TILE} from './006-map-pre.js';
 import {TRAINS} from './009c-trains.js';
 import {BODIES} from './111a-bodies.js';
@@ -53,8 +53,10 @@ const BIGCAT={};
   // where he is (owner, 12 Nov 2026: "standing on the street down market a block or two, crosses the street every 3-5 minutes (instead of walking down street)"): he stands at Market St's kerb by the crossing a block east of the start, and every 3 to 5 minutes walks slowly across the road to the other kerb and stands there (the traffic waits for him), on the shared clock
   const B=SHARED.BOD, M0=TILE/.84, XC=B.XS(171), zs=B.ZS(B.CURB), zp=B.ZS(B.FAR), zm=(zs+zp)/2, OFF=2.2*M0, Z=[zs-OFF,zp+OFF], WV=.7*M0, WD=Math.abs(Z[1]-Z[0])/WV, GAP=240, hs=n=>{ const v=Math.sin(n*12.9898)*43758.5453; return v-Math.floor(v); };
   const t0=k=>k*GAP+(hs(k)-.5)*60;   // crossing k starts here: 3 to 5 minutes after the one before
-  const walkAt=t=>{ const n=Math.floor(t/GAP); for(const k of [n+1,n,n-1]){ const u=t-t0(k); if(u>=0&&u<WD){ const a=Z[k&1], c=Z[(k+1)&1], d=Math.sign(c-a); return {x:XC,z:a+d*u*WV,to:c,cross:true}; } }
-    const k=t>=t0(n)+WD?n:n-1; return {x:XC,z:Z[(k+1)&1],cross:false}; };
+  // honked at while crossing (150pf, the shared honk:cat), he does the rest of it three times as fast
+  const walkAt=t=>{ const n=Math.floor(t/GAP), hk=+((ONLINE.world||{})['honk:cat'])||0; for(const k of [n+1,n,n-1]){ let u=t-t0(k); if(u<0)continue; const h=hk-t0(k); if(h>=0&&h<WD&&u>h)u=h+(u-h)*3;
+      if(u<WD){ const a=Z[k&1], c=Z[(k+1)&1], d=Math.sign(c-a); return {x:XC,z:a+d*u*WV,to:c,cross:true}; } return {x:XC,z:Z[(k+1)&1],cross:false}; }
+    return {x:XC,z:Z[(n-1)&1],cross:false}; };
   if(N){ N.walk.auto=false; const st=N.st;
     SYS.add('city',()=>{ const w=walkAt(TRAINS.now()); delete N.mode; st.next=null;
       if(w.cross){ st.x=w.x; st.z=w.z; st.to={x:w.x,z:w.to}; } else { if(Math.hypot(st.x-w.x,st.z-w.z)>.5)Object.assign(st,{x:w.x,z:w.z}); st.to=null; st.face={x:w.x,z:zm}; }

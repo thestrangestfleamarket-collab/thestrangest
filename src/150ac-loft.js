@@ -1,11 +1,11 @@
-// THE LOFT: No. 4's flat, everyone's for now (owner, 12 Nov 2026, of a photo, then of the room itself: "raise the 1st story height by 25%", "remove all the beams", "remove hang things from ceiling", "only 1" post): a tall room, a walnut upper floor along the blank wall, a second deck across the front behind glass on one post, the stair down from the landing by your door, the front wall in brick, tracks of spots flat on the ceiling, downlights under the deck, a radiator. The upper floor is walked (APTS.loftY) and furnished (pieces up there are solid only while you are: APTS.solidHi); its steel, woodwork and plaster are yours to choose in DECORATE (R.loftSet). R.loftDress lays the flat's own pieces out over both floors and hangs its rugs and pictures.
+// THE LOFT: No. 4's flat, everyone's for now (owner, 12 Nov 2026, of a photo, then of the room itself: "raise the 1st story height by 25%", "remove all the beams", "remove hang things from ceiling", "only 1" post): a tall room, a walnut upper floor along the blank wall, a second deck across the front behind glass on one post, the stair up the left wall and a gallery along the back wall over your door (the owner's pick C of mockups/loft-stairs.html), the front wall in brick, tracks of spots flat on the ceiling, downlights under the deck, a radiator. The upper floor is walked (APTS.loftY) and furnished (pieces up there are solid only while you are: APTS.solidHi); its steel, woodwork and plaster are yours to choose in DECORATE (R.loftSet). R.loftDress lays the flat's own pieces out over both floors and hangs its rugs and pictures.
 import {SHARED, THREE} from './003-shx.js';
 import {pos, UI} from './003b-systems.js';
 import {MODS, SYS} from './006-map-pre.js';
 import {ROOMK} from './150a-bedroom.js';
 { const APTS=MODS.apts;
   if(APTS&&APTS.R&&APTS.LOFT)ROOMK.parts.push(c=>{ '@apts'; const {apt,R,M,Lx,Ly,HW,part,mat,solid,shelf}=c, A=APTS.R, MPU=.907, V3=THREE.Vector3;
-    const MH=APTS.MH||4.375, mx=Lx-3.9, SW=1.1, sv0=2.55, sv1=8.3, N=24, ST=MH/N, RUN=(sv1-sv0)/(N-1), DK={u0:mx-3.2,v1:2.5}, RH=1.02;
+    const MH=APTS.MH||4.375, mx=Lx-3.9, SW=1.1, su0=.15, su1=su0+SW, sv0=1.0, sv1=6.75, N=24, ST=MH/N, RUN=(sv1-sv0)/(N-1), GV=Ly-1.15, DK={u0:mx-3.2,v1:2.5}, RH=1.02;   // the stair climbs the left (window) wall toward the back; a gallery along the back wall, over your door, joins it to the upper floor (owner, 12 Nov 2026, of mockups/loft-stairs.html: "C")
     // what you can choose (DECORATE's LOFT tab): the steel (rails, the post, the tracks), the woodwork (stair treads, the decks' edges), the plaster (the decks' undersides, the stair's flight)
     const OPTS=R.loftOpts={steel:{n:'RAILS AND STEEL',o:{black:['BLACK',[22,22,24]],white:['WHITE',[236,236,232]],brass:['BRASS',[176,138,70]],bronze:['BRONZE',[92,66,44]],red:['OXIDE RED',[130,44,34]]}},
       wood:{n:'WOODWORK',o:{walnut:['WALNUT',[92,58,36]],oak:['OAK',[176,132,84]],ebony:['EBONY',[34,26,22]],cherry:['CHERRY',[128,56,36]],white:['WHITE',[232,228,220]]}},
@@ -28,30 +28,27 @@ import {ROOMK} from './150a-bedroom.js';
     const box=(u0,h0,v0,u1,h1,v1,col)=>L.push([B(u1-u0,h1-h0,v1-v0),col,(u0+u1)/2,(h0+h1)/2,(v0+v1)/2]);
 
     /* ---------- the upper floor: the long deck by the blank wall, the deck across the front, the landing; white under, walnut edges, the room's boards on top (no two faces in one place: the slab stops under the boards, the edge boards stand outside it) ---------- */
-    const DECKS=[[mx,0,Lx,Ly],[DK.u0,0,mx,DK.v1],[mx-SW,sv1,mx,Ly]];
+    const DECKS=[[mx,0,Lx,Ly],[DK.u0,0,mx,DK.v1],[su0,sv1,su1,Ly],[su1,GV,mx,Ly]];
     for(const [u0,v0,u1,v1] of DECKS){ box(u0+.004,MH-.2,v0+.004,u1-.004,MH-.05,v1-.004,WHT); shelf(u0,v0,u1,v1,MH-.2,MH); }
-    for(const [u0,v0,u1,v1] of [[mx-.035,DK.v1+.035,mx,sv1],[DK.u0-.035,DK.v1,mx,DK.v1+.035],[DK.u0-.035,0,DK.u0,DK.v1],[mx-SW-.035,sv1,mx-SW,Ly],[mx-SW,sv1-.035,mx-.035,sv1]])box(u0,MH-.34,v0,u1,MH+.02,v1,WAL2);
+    for(const [u0,v0,u1,v1] of [[mx-.035,DK.v1+.035,mx,GV-.035],[DK.u0-.035,DK.v1,mx,DK.v1+.035],[DK.u0-.035,0,DK.u0,DK.v1],[su1,sv1,su1+.035,GV-.035],[su1,GV-.035,mx-.035,GV],[su0,sv1-.035,su1+.035,sv1]])box(u0,MH-.34,v0,u1,MH+.02,v1,WAL2);
     { const fm=mat([255,255,255],{clippingPlanes:[UPL]}); R.loftFloor=fm;   // its boards are one of the room's floors (A.floor(k,true)), laid as the room's own are
       for(const [u0,v0,u1,v1] of DECKS){ const w=u1-u0, d=v1-v0, g=new THREE.PlaneGeometry(w,d).rotateX(-Math.PI/2), uv=g.attributes.uv; for(let i=0;i<uv.count;i++){ const u=u0+uv.getX(i)*w, v=v0+(1-uv.getY(i))*d; uv.setXY(i,u/Lx,1-v/Ly); } part(g,fm,(u0+u1)/2,MH,(v0+v1)/2,0,apt,false); } }
     { const u=DK.u0+.07, v=DK.v1-.07; box(u-.05,0,v-.05,u+.05,MH-.2,v+.05,STL); box(u-.11,0,v-.11,u+.11,.02,v+.11,STL); solid(u-.08,v-.08,u+.08,v+.08,MH-.2); }   // the front deck's one post, on its foot plate
 
-    /* ---------- the stair: one closed white flight (its stepped side a single face), a walnut tread and riser to every step, up to the landing; a plain white closet under the landing ---------- */
-    { const sh=new THREE.Shape(); sh.moveTo(sv0,0); for(let i=0;i<N-1;i++){ sh.lineTo(sv0+i*RUN,(i+1)*ST-.05); sh.lineTo(sv0+(i+1)*RUN,(i+1)*ST-.05); } sh.lineTo(sv1,0); sh.closePath();
-      const g=new THREE.ExtrudeGeometry(sh,{depth:SW-.04,bevelEnabled:false}).toNonIndexed(), p=g.attributes.position; for(let i=0;i<p.count;i++){ const v=p.getX(i), h=p.getY(i), u=p.getZ(i); p.setXYZ(i,u,h,v); }
-      for(let i=0;i<p.count;i+=3){ const x=p.getX(i+1), y=p.getY(i+1), z=p.getZ(i+1); p.setXYZ(i+1,p.getX(i+2),p.getY(i+2),p.getZ(i+2)); p.setXYZ(i+2,x,y,z); } g.deleteAttribute('uv'); g.deleteAttribute('normal'); L.push([g,WHT,mx-SW+.02,0,0]);
-      for(let i=0;i<N-1;i++){ const h=(i+1)*ST, v=sv0+i*RUN; box(mx-SW,h-.045,v-.03,mx-.035,h,v+RUN-.016,WAL); box(mx-SW+.01,h-ST,v-.016,mx-.045,h-.045,v-.002,WAL2); } }
-    box(mx-SW,0,sv1+.002,mx-.004,MH-.2,Ly,WHT); box(mx-SW-.02,0,sv1,mx-SW,.09,Ly,WAL2);
-    solid(mx-SW-.06,sv0,mx-SW,sv1,MH); solid(mx-.03,sv0,mx+.03,sv1,MH); solid(mx-SW,sv1,mx,Ly,MH-.2);
+    /* ---------- the stair: open under, so the wall's windows show through it: a walnut tread and riser to every step on two steel strings, up the left wall to the landing ---------- */
+    { for(let i=0;i<N-1;i++){ const h=(i+1)*ST, v=sv0+i*RUN; box(su0,h-.045,v-.03,su1,h,v+RUN-.016,WAL); box(su0+.01,h-ST+.002,v-.016,su1-.01,h-.045,v-.002,WAL2); }
+      const len=Math.hypot(sv1-sv0,MH), rx=-Math.atan2(MH,sv1-sv0); for(const u of [su0+.07,su1-.07])L.push([B(.07,.24,len),STL,u,MH/2-.2,(sv0+sv1)/2+.1,rx,0,0]); }
+    solid(su1,sv0,su1+.06,sv0+RUN*10,ST*10); let gate=null; const gateSet=on=>{ if(on&&!gate)gate=solid(su0,sv0+RUN*10,su1,sv0+RUN*10+.08,.3); else if(!on&&gate){ if(APTS.unsolid)APTS.unsolid(gate); gate=null; } };   // under the low end there is no headroom: its side is closed, and its far end too unless you are on the stair (you walk under the rest)
 
     /* ---------- the rails: black steel, six bars between posts (level along the decks, raked up the stair); glass round the front deck ---------- */
     const rail=(u0,v0,h0,u1,v1,h1)=>{ const len=Math.hypot(u1-u0,v1-v0), n=Math.max(1,Math.round(len/1.3)), ry=Math.atan2(u1-u0,v1-v0), sl=Math.hypot(len,h1-h0), rx=-Math.atan2(h1-h0,len);
       for(let i=0;i<=n;i++){ const t=i/n, u=u0+(u1-u0)*t, v=v0+(v1-v0)*t, h=h0+(h1-h0)*t; L.push([B(.045,RH,.045),STL,u,h+RH/2,v]); }
       for(let k=0;k<6;k++){ const y=(k===5?RH-.01:.14+k*.165); L.push([B(k===5?.05:.018,k===5?.03:.018,sl),STL,(u0+u1)/2,(h0+h1)/2+y,(v0+v1)/2,rx,ry,0]); } };
-    rail(mx-.06,DK.v1+.1,MH,mx-.06,sv1,MH); rail(mx-SW,sv0,ST,mx-SW,sv1,MH); rail(mx-SW,sv1,MH,mx-SW,Ly-.05,MH);
+    rail(mx-.06,DK.v1+.1,MH,mx-.06,GV-.06,MH); rail(su1,sv0,ST,su1,sv1,MH); rail(su1,sv1,MH,su1,GV-.06,MH); rail(su1+.06,GV-.06,MH,mx-.12,GV-.06,MH);
     { const gm=APTS.glassMat?APTS.glassMat({opacity:.2,clippingPlanes:[UPL]}):mat([190,210,220],{transparent:true,opacity:.25,clippingPlanes:[UPL]});
-      for(const [u0,v0,u1,v1] of [[DK.u0,DK.v1,mx-SW,DK.v1],[DK.u0,.04,DK.u0,DK.v1]]){ const len=Math.hypot(u1-u0,v1-v0), ry=u0===u1?Math.PI/2:0; part(new THREE.PlaneGeometry(len,RH-.08),gm,(u0+u1)/2,MH+RH/2+.03,(v0+v1)/2,ry,apt,false).userData.soft=1;
+      for(const [u0,v0,u1,v1] of [[DK.u0,DK.v1,mx,DK.v1],[DK.u0,.04,DK.u0,DK.v1]]){ const len=Math.hypot(u1-u0,v1-v0), ry=u0===u1?Math.PI/2:0; part(new THREE.PlaneGeometry(len,RH-.08),gm,(u0+u1)/2,MH+RH/2+.03,(v0+v1)/2,ry,apt,false).userData.soft=1;
         L.push([B(u1-u0+.05,.06,v1-v0+.05),STL,(u0+u1)/2,MH+.05,(v0+v1)/2],[B(u1-u0+.03,.025,v1-v0+.03),STL,(u0+u1)/2,MH+RH,(v0+v1)/2]); }
-      rail(mx-SW,DK.v1,MH,mx-.06,DK.v1,MH); }
+      }
 
     /* ---------- a cast-iron radiator under the window; the tracks of spots flat on the ceiling, one over the room, one over the upper floor; downlights under the deck ---------- */
     const FX=[], lens=[], spots=[];
@@ -68,27 +65,30 @@ import {ROOMK} from './150a-bedroom.js';
 
     /* ---------- walking it: the height under you up there, and what is solid on the upper floor ---------- */
     const onDeck=(u,v)=>DECKS.some(([u0,v0,u1,v1])=>u>=u0&&u<=u1&&v>=v0&&v<=v1), ax=apt.position.x, az=apt.position.z, fy=R.fy;
-    APTS.loftY=(x,z)=>{ const u=(x-ax)/M, v=(z-az)/M, h=(SHARED.py-fy)/M; if(u>mx-SW&&u<mx&&v>sv0-.02&&v<sv1){ const hs_=Math.min(N-1,Math.max(1,Math.ceil((v-sv0)/RUN+.001)))*ST; return h>hs_-.75?fy+hs_*M:null; }
+    APTS.loftY=(x,z)=>{ const u=(x-ax)/M, v=(z-az)/M, h=(SHARED.py-fy)/M; if(u>su0&&u<su1&&v>sv0-.02&&v<sv1){ const hs_=Math.min(N-1,Math.max(1,Math.ceil((v-sv0)/RUN+.001)))*ST; return h>hs_-.75?fy+hs_*M:null; }
       return onDeck(u,v)&&h>MH-.75?fy+MH*M:null; };
     APTS.loftUp=()=>(SHARED.py-fy)/M>MH-.55;
-    R.loftUnder=()=>{ const u=(pos.x-ax)/M, v=(pos.z-az)/M, under=!!APTS.inReal&&!UI.persp&&(SHARED.py-fy)/M<MH-.6&&onDeck(u,v); UPL.constant=under?fy+(MH-.36)*M:1e6; if(under!==R.loftHid){ R.loftHid=under; const A2=ROOMK.api; if(A2)for(const un of A2.units()){ if(un.gone)continue; const h=un.loose?A2.toApt(un.obj.position.x,un.obj.position.y,un.obj.position.z).h:un.obj.position.y; if(h>MH-.3)un.obj.visible=!under; } } };
+    R.loftUnder=()=>{ const u=(pos.x-ax)/M, v=(pos.z-az)/M; gateSet(!(u>su0-.1&&u<su1+.1&&v>sv0-.6&&v<sv1&&((SHARED.py-fy)/M>.1||v<sv0+RUN*10))); const under=!!APTS.inReal&&!UI.persp&&(SHARED.py-fy)/M<MH-.6&&onDeck(u,v); UPL.constant=under?fy+(MH-.36)*M:1e6; if(under!==R.loftHid){ R.loftHid=under; const A2=ROOMK.api; if(A2)for(const un of A2.units()){ if(un.gone)continue; const h=un.loose?A2.toApt(un.obj.position.x,un.obj.position.y,un.obj.position.z).h:un.obj.position.y; if(h>MH-.3)un.obj.visible=!under; } } };
     const hi=(u0,v0,u1,v1)=>APTS.solidHi(A.x0+u0/MPU,A.y0+v0/MPU,A.x0+u1/MPU,A.y0+v1/MPU), T=.08;
     hi(-.4,-.4,Lx+.4,0); hi(-.4,Ly,Lx+.4,Ly+.4); hi(-.4,0,0,Ly); hi(Lx,0,Lx+.4,Ly);                                       // the walls
-    hi(mx-T,DK.v1,mx,sv1); hi(mx-SW-T,sv0,mx-SW,Ly); hi(DK.u0,DK.v1,mx,DK.v1+T); hi(DK.u0-T,0,DK.u0,DK.v1+T);              // the rails
-    R.loft={MH,mx,SW,sv0,sv1,N,DECKS,top:[mx-SW/2,sv1+1.0],foot:[mx-SW/2,sv0-.7],blocks:[[mx-SW-.06,sv0-.6,mx+.03,sv1,'THE STAIR'],[mx-SW,sv1,mx,Ly,'THE CLOSET'],[DK.u0,DK.v1-.16,DK.u0+.16,DK.v1,'THE POST'],[2.43,0,3.47,.26,'THE RADIATOR']],lib:Lx+1};
+    hi(mx-T,DK.v1,mx,GV); hi(su1,sv0,su1+T,GV); hi(su1,GV-T,mx,GV); hi(DK.u0,DK.v1,mx,DK.v1+T); hi(DK.u0-T,0,DK.u0,DK.v1+T);   // the rails
+    R.loft={MH,mx,SW,sv0,sv1,N,DECKS,sx:[su0,su1],top:[(su0+su1)/2,sv1+1.0],foot:[(su0+su1)/2,sv0-.7],blocks:[[su0,sv0-.6,su1+.06,sv0+RUN*10,'THE STAIR'],[DK.u0,DK.v1-.16,DK.u0+.16,DK.v1,'THE POST'],[2.43,0,3.47,.26,'THE RADIATOR']],lib:Lx+1};
     for(const k in R.loftK)R.loftSet(k,R.loftK[k]);
 
     /* ---------- the flat laid out (owner, 12 Nov 2026: "space things out better use the empty space, decorate with rugs, hanging photos, frames", "move these things to upstars"): the study and the bookcase upstairs, the den under the deck, a sitting corner in the tall room; rugs and pictures of the game's own; nothing hangs from the ceiling ---------- */
-    R.LOFTV=2; R.loftDress=A2=>{ for(const un of A2.units())if(un.mount!=='ceil'){ const t=A2.getT(un); if(t.h>=3.4&&t.h<7)A2.setT(un,{...t,h:t.h+MH-3.5}); }   // what stood on the upper floor when it was lower comes up with it
+    R.LOFTV=3; R.loftDress=A2=>{ if((A2.R.loftV||0)<2)for(const un of A2.units())if(un.mount!=='ceil'){ const t=A2.getT(un); if(t.h>=3.4&&t.h<7)A2.setT(un,{...t,h:t.h+MH-3.5}); }   // what stood on the upper floor when it was lower comes up with it
       const U=k=>A2.units().filter(u=>u.kind===k&&!u.added), set=(k,t,i=0)=>{ const un=U(k)[i]; if(!un)return; if(un.gone)A2.restore(un); A2.setT(un,{...A2.getT(un),...t}); };
+      // upstairs: the library and study on the long floor, the stargazer's corner on the glass deck
       set('BOOKSHELF',{v:5.3,h:MH}); set('WRITING DESK',{u:9.1,h:MH}); set('FLOWERING PLANT',{u:8.7,h:MH+.72}); set('HERB POT',{u:9.6,h:MH+.72}); set('LAB DESK',{u:10.9,h:MH}); set('LAB STOOL',{u:10.7,v:9.1,h:MH});
-      set('TELESCOPE',{u:5.6,v:1.2,h:MH}); set('EARTH GLOBE',{u:9.0,v:.9,h:MH}); set('GLOBE TABLE',{u:Lx-.5,v:1.6,h:MH,ry:Math.PI}); set('FERN STAND',{u:8.5,v:8.6,h:MH});
-      set('FISH TANK',{u:Lx-.66,v:3.2,h:0,ry:Math.PI/2}); set('OLIVE TREE',{u:.9,v:.9,h:0}); set('FLOOR PLANT',{u:4.7,v:9.7,h:0}); for(const un of U('HANGING PLANT'))if(!un.gone)A2.remove(un);
-      const W={Ww:[.03,Math.PI/2],We:[Lx-.03,-Math.PI/2],Wb:[Ly-.03,Math.PI]}, K=A2.kinds(), put=(id,kind,t)=>{ if(!K[kind]||A2.units().some(u=>u.id===id))return; const un=A2.spawn(kind,{s:1,ry:0,...t},id); if(un)un.paid=0; };
-      put('loft-rug-1','g:patterned rug, purple and gold',{u:3.3,h:0,v:5.4}); put('loft-rug-2','g:red rug',{u:9.7,h:MH,v:8.2}); put('loft-rug-3','MAUVE RUG',{u:6.2,h:MH,v:1.3});
-      put('loft-sofa','g:sofa',{u:3.3,h:0,v:7.2}); put('loft-lamp','g:floor lamp',{u:1.4,h:0,v:7.3});
-      put('loft-art-1','g:portrait in a red frame',{u:W.Ww[0],h:1.8,v:5.0,ry:W.Ww[1]}); put('loft-art-2','g:framed flower print',{u:W.Ww[0],h:1.75,v:6.4,ry:W.Ww[1]}); put('loft-art-3','g:poster: night painting',{u:2.4,h:1.9,v:W.Wb[0],ry:W.Wb[1]});
-      put('loft-art-4','g:round mirror',{u:4.3,h:1.7,v:W.Wb[0],ry:W.Wb[1]}); put('loft-art-5','g:poster: koi night',{u:W.We[0],h:MH+1.75,v:2.6,ry:W.We[1]}); put('loft-art-6','g:framed flower print',{u:W.We[0],h:MH+1.7,v:8.0,ry:W.We[1]}); put('loft-art-7','g:wall clock',{u:9.8,h:MH+2.1,v:W.Wb[0],ry:W.Wb[1]}); }; });
+      set('TELESCOPE',{u:5.6,v:1.2,h:MH}); set('EARTH GLOBE',{u:9.0,v:.9,h:MH}); set('GLOBE TABLE',{u:Lx-.5,v:1.6,h:MH,ry:Math.PI}); set('FERN STAND',{u:Lx-.5,v:7.7,h:MH});
+      // downstairs: the living room in the tall space, its seats facing the TV on the brick wall; the aquarium and pictures under the deck; plants by the door and under the stair
+      set('CRT TV',{u:4.45,v:.55,h:0,ry:Math.PI}); set('RECLINER',{u:6.3,v:4.2,h:0,ry:Math.PI}); set('ROUND RUG',{u:9.8,v:5.6,h:0}); set('TABLE RADIO',{u:.45,v:8.4,h:0});
+      set('FISH TANK',{u:Lx-.66,v:5.6,h:0,ry:Math.PI/2}); set('OLIVE TREE',{u:.75,v:5.9,h:0}); set('FLOOR PLANT',{u:4.7,v:9.7,h:0}); for(const un of U('HANGING PLANT'))if(!un.gone)A2.remove(un);
+      const W={Ww:[.03,Math.PI/2],We:[Lx-.03,-Math.PI/2],Wb:[Ly-.03,Math.PI]}, K=A2.kinds(), put=(id,kind,t)=>{ const was=A2.units().find(u=>u.id===id); if(was){ if(!was.gone)A2.setT(was,{...A2.getT(was),...t}); return; } if(!K[kind])return; const un=A2.spawn(kind,{s:1,ry:0,...t},id); if(un)un.paid=0; };
+      put('loft-rug-1','g:patterned rug, purple and gold',{u:4.45,h:0,v:3.0}); put('loft-rug-2','g:red rug',{u:9.6,h:MH,v:5.3}); put('loft-rug-3','MAUVE RUG',{u:6.2,h:MH,v:1.3});
+      put('loft-sofa','g:sofa',{u:4.45,h:0,v:4.6}); put('loft-lamp','g:floor lamp',{u:2.9,h:0,v:4.8});
+      put('loft-art-1','g:portrait in a red frame',{u:W.We[0],h:1.85,v:3.2,ry:W.We[1]}); put('loft-art-2','g:framed flower print',{u:W.We[0],h:1.8,v:8.0,ry:W.We[1]}); put('loft-art-3','g:poster: night painting',{u:2.6,h:1.9,v:W.Wb[0],ry:W.Wb[1]});
+      put('loft-art-4','g:round mirror',{u:7.2,h:1.7,v:W.Wb[0],ry:W.Wb[1]}); put('loft-art-5','g:poster: koi night',{u:W.We[0],h:MH+1.75,v:2.6,ry:W.We[1]}); put('loft-art-6','g:framed flower print',{u:W.We[0],h:MH+1.7,v:8.0,ry:W.We[1]}); put('loft-art-7','g:wall clock',{u:9.8,h:MH+2.1,v:W.Wb[0],ry:W.Wb[1]}); }; });
   // the loft's own start: light oak below, walnut above, white walls with the front one in brick (yours to change in DECORATE); its colours and which laying-out it has had are kept with your layout
   if(APTS&&APTS.R&&APTS.LOFT){ ROOMK.built.push(A=>{ '@apts'; if(!A.R.loft)return; A.wall('white','all'); A.wall('brick','Wf'); A.floor('oak'); A.floor('walnut',true); });
     ROOMK.keep.push({out:(L,A)=>{ if(A&&A.R.loft){ L.loft={...A.R.loftK}; if(A.R.loftV)L.loftV=A.R.loftV; } },in:(L,A)=>{ if(A&&A.R.loft){ if(L.loft)for(const k in L.loft)A.R.loftSet(k,L.loft[k]); A.R.loftV=L.loftV||0; } }}); }

@@ -1541,8 +1541,8 @@ SHARED.BODB={};
   const paint=(w,s,u,z)=>{ const nx=w.ax==='y'?s:0, ny=w.ax==='x'?s:0, Xw=w.ax==='y'?w.at+s*.1:u, Yw=w.ax==='x'?w.at+s*.1:u;
     return (!w.outer||s===w.inS)?bodegaWall(null,nx,ny,Xw,Yw,z,1):SHARED.BOD.facade(nx,ny,Xw,Yw,z,1,w.H); };
   const wallPt=(w,s,a,z)=>w.ax==='x'?[X(a),Y(z),Z(w.at+s*.1)]:[X(w.at+s*.1),Y(z),Z(a)];
-  const glassMat=new THREE.MeshLambertMaterial({color:new THREE.Color(.09,.11,.14),side:THREE.DoubleSide}), glassIn=new THREE.MeshBasicMaterial({color:0x8fa6b8,side:THREE.DoubleSide}); glassIn.userData.keep=true;
-  SHARED.BODB.tick=()=>{ if(SHARED.BODB.SG)glassIn.color.setHex(CLOCK.dark()?0x141a24:0x8fa6b8); };
+  const glassMat=new THREE.MeshLambertMaterial({color:new THREE.Color(.09,.11,.14),side:THREE.DoubleSide}), glassIn=new THREE.MeshBasicMaterial({color:0x000000,side:THREE.DoubleSide}); glassIn.userData.keep=true;
+  SHARED.BODB.tick=()=>{};
   const wallF=(w,inn)=>{ const as=new Set([w.a0,w.a1]), zs=new Set([0,w.H]), kind='W'+w.id;
     for(const h of w.holes){ as.add(Math.max(w.a0,h.a0)); as.add(Math.min(w.a1,h.a1)); zs.add(h.z0); zs.add(h.z1); }
     const A=[...as].sort((p,q)=>p-q), Zs=[...zs].sort((p,q)=>p-q);

@@ -1,7 +1,7 @@
 // THE FLYING BOT CHECK: node tests/flybot.cjs [dist/market.html]. worker/flybot.js with a stand-in for Claude (no network, no key): a question and its answer, the memory, the day's limit, a refusal, a bad key. With the page: the bot called from the menu flies beside you, a chat line with @ is asked, its answer is shown, spoken and sent on; another player's bot is drawn and heard only when near.
 const path = require('path'), fs = require('fs'), { pathToFileURL } = require('url');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=flybot::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
-const fake = replies => { const sent = []; return { sent, beta: { messages: { create: async q => { sent.push(JSON.parse(JSON.stringify(q))); const r = replies.shift(); if (r instanceof Error) throw r; return r; } } } }; };
+const fake = replies => { const sent = []; return { sent, messages: { create: async q => { sent.push(JSON.parse(JSON.stringify(q))); const r = replies.shift(); if (r instanceof Error) throw r; return r; } } }; };
 const mem = () => { let v = null; return { get: async () => v && JSON.parse(JSON.stringify(v)), put: async x => { v = JSON.parse(JSON.stringify(x)); return true; }, peek: () => v }; };
 (async () => {
   const { FLYBOT } = await import(pathToFileURL(path.join(__dirname, '..', 'worker', 'flybot.js')).href);
@@ -14,7 +14,7 @@ const mem = () => { let v = null; return { get: async () => v && JSON.parse(JSON
   const a = await M.ask({}, S, { say: 'what is that bright star?', name: 'ROSA', state: 'the player is near THE PARK' }, C);
   ok(a.say === 'That bright one is Jupiter.' && a.left === FLYBOT.DAY - 1, 'a question is answered in plain words (' + a.say + ')');
   const q = C.sent[0];
-  ok(q.model === FLYBOT.MODEL && q.fallbacks === 'default' && q.system[0].cache_control && /ROSA asks: what is that bright star\?/.test(q.messages[0].content) && /near THE PARK/.test(q.messages[0].content), 'Claude gets the question, who asked and where they are; the guide is cached');
+  ok(q.model === 'claude-haiku-5-5' && !q.fallbacks && q.system[0].cache_control && /ROSA asks: what is that bright star\?/.test(q.messages[0].content) && /near THE PARK/.test(q.messages[0].content), 'Claude gets the question, who asked and where they are; the guide is cached');
   await M.ask({}, S, { say: 'how many moons?', name: 'ROSA' }, C);
   ok(C.sent[1].messages.length === 3 && C.sent[1].messages[1].content === 'That bright one is Jupiter.' && !/near THE PARK/.test(C.sent[1].messages[0].content), 'it remembers the talk (words only)');
   ok((await M.ask({}, S, { say: 'x' }, C)).say === "I can't help with that one.", 'a refusal is said plainly');

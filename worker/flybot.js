@@ -1,7 +1,7 @@
 // THE FLYING BOT'S MIND (owner, 11 Nov 2026): a player's flying bot answers what they ask, aloud; Claude writes the answer here, the page says it (src/111dd-flybot.js). It knows the guide book, where the player is and the hour.
 import Anthropic from "@anthropic-ai/sdk";
 
-const MODEL = "claude-opus-5-5", HIST = 16, DAY = 150, NAME = "PIP";
+const MODEL = "claude-haiku-5-5", HIST = 16, DAY = 150, NAME = "PIP";
 const flat = v => typeof v === "string" ? v : Array.isArray(v) ? v.map(flat).join("\n") : v && typeof v === "object" ? Object.entries(v).filter(([k]) => k !== "id" && k !== "pic").map(([, x]) => flat(x)).join("\n") : "";
 const system = GUIDEDATA => { const GUIDE = [GUIDEDATA.intro || "", ...(GUIDEDATA.chapters || []).map(c => "## " + flat(c))].join("\n\n");
   return `You are ${NAME}, a small flying bot that goes about beside a player in THE MARKET (The Strangest Flea Market), a multiplayer 3D game set in a strange 1980s New York: Market St and its shops, the park, the river, an arcade, a bodega, a subway, a dungeon, a fair. The player asks you things by typing or by voice, and everything you answer is read aloud by a speech voice to them and to the players standing near, so you write for the ear.
@@ -30,7 +30,7 @@ const mind = GUIDEDATA => { const SYSTEM = system(GUIDEDATA || {});
   client = client || new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
   let r;
   try {
-    r = await client.beta.messages.create({ model: env.BOT_MODEL || MODEL, max_tokens: 2000, betas: ["server-side-fallback-2026-07-01"], fallbacks: "default",
+    r = await client.messages.create({ model: env.BOT_MODEL || MODEL, max_tokens: 2000,
       output_config: { effort: "low" }, system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }], messages: [...(M.hist || []), { role: "user", content: q }] });
   } catch (e) { return { why: e instanceof Anthropic.AuthenticationError ? "the Claude key is wrong" : e instanceof Anthropic.RateLimitError ? "Claude is busy, try again in a minute" : e instanceof Anthropic.APIError ? "Claude said " + (e.status || "") + " " + clip(e.message, 160) : "Claude could not be reached" }; }
   const say = r.stop_reason === "refusal" ? "I can't help with that one." : clip(text(r.content), 600) || "I have no answer for that.";

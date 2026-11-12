@@ -6,7 +6,7 @@ import {slabCol} from './014-gamekit.js';
 { const B=SHARED.BOD, G=MODS.bodega.ground, M=1/.84*TILE, XS=B.XS, ZS=B.ZS, x0=XS(BLOCK.x0+2), x1=XS(BLOCK.x1-2), h=(a,b,c)=>{ const v=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return v-Math.floor(v); };
   const zMF=ZS(BLOCK.front), zSW=ZS(B.CURB), zFAR=ZS(B.FAR), zPF=ZS(BLOCK.prom[1]), zPN=ZS(BLOCK.prom[0]);   // Market St's walk front..kerb, its road; the Hudson's promenade
   const band=(a,b)=>[Math.min(a,b),Math.max(a,b)], WALK=[band(zMF,zSW),band(zPF,zPN)], ROAD=band(zSW,zFAR);
-  const tex=(w,f)=>{ const cv=document.createElement('canvas'); cv.width=cv.height=w; f(cv.getContext('2d'),w); const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return t; };
+  const tex=(w,f)=>{ const cv=document.createElement('canvas'); cv.width=cv.height=w; f(cv.getContext('2d'),w); const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; return t; };
   const inst=(geo,mat,L,cast)=>{ if(!L.length)return; const me=new THREE.InstancedMesh(geo,mat,L.length), m=new THREE.Matrix4(), q=new THREE.Quaternion(), Y=new THREE.Vector3(0,1,0);
     L.forEach(([x,y,z,r,s=1],i)=>me.setMatrixAt(i,m.compose(new THREE.Vector3(x,y,z),q.setFromAxisAngle(Y,r),new THREE.Vector3(s,s,s)))); me.receiveShadow=true; me.castShadow=!!cast; me.raycast=()=>{}; scene.add(me); return me; };
   const decal=(w,d)=>new THREE.PlaneGeometry(w*M,d*M).rotateX(-Math.PI/2);

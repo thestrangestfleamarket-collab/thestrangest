@@ -35,7 +35,7 @@ import {RIVER} from './066-river.js';
   /* ---------- the ice on water: patches that grow while the ray is on them, hold you up, and melt ---------- */
   const IN=32, iceMat=new THREE.MeshPhongMaterial({color:0xcfeeff,specular:0xffffff,shininess:90,emissive:0x0c1a24}), iceG=(()=>{ const g=new THREE.CylinderGeometry(1,1,1,22,1), p=g.attributes.position;
       for(let i=0;i<p.count;i++){ const x=p.getX(i), z=p.getZ(i), r=Math.hypot(x,z); if(r>.5){ const a=Math.atan2(z,x), k=.86+.14*Math.sin(a*5.3+1)*Math.sin(a*2.1); p.setX(i,x*k); p.setZ(i,z*k); } } g.computeVertexNormals(); return g; })();
-  const iceMe=new THREE.InstancedMesh(iceG,iceMat,IN); iceMe.count=0; iceMe.name='ice'; iceMe.receiveShadow=true; iceMe.frustumCulled=false; iceMe.userData.anyRoom=1; scene.add(LEVELS.own(iceMe,'up'));
+  const iceMe=new THREE.InstancedMesh(iceG,iceMat,IN); iceMe.count=0; iceMe.name='ice'; iceMe.receiveShadow=true; iceMe.frustumCulled=false; iceMe.userData.anyRoom=1; scene.add(LEVELS.own(iceMe,'*'));
   const IL=[], m4=new THREE.Matrix4(), q4=new THREE.Quaternion(), s3=new V3(), p3=new V3(), TH=.06*M;
   const iceDraw=()=>{ IL.forEach((c,i)=>iceMe.setMatrixAt(i,m4.compose(p3.set(c.x,c.y-TH/2+.01*M,c.z),q4.setFromAxisAngle(s3.set(0,1,0),c.a),s3.set(c.r,TH,c.r)))); iceMe.count=IL.length; iceMe.instanceMatrix.needsUpdate=true; iceMe.visible=IL.length>0; };
   Object.assign(ICE,{list:IL,
@@ -84,8 +84,10 @@ import {RIVER} from './066-river.js';
   const along=(S,x,y,z)=>{ let best=1e9; const P=S.P; for(let i=1;i<P.length;i++){ const a=P[i-1], b=P[i], dx=b.x-a.x, dy=b.y-a.y, dz=b.z-a.z, l2=dx*dx+dy*dy+dz*dz||1, t=Math.max(0,Math.min(1,((x-a.x)*dx+(y-a.y)*dy+(z-a.z)*dz)/l2)); best=Math.min(best,Math.hypot(a.x+dx*t-x,a.y+dy*t-y,a.z+dz*t-z)); } return best; };
 
   /* ---------- the people a stream touches: you, the other players near you, the characters ---------- */
+  const MORE=MODS.moreBodies=MODS.moreBodies||[];   // other things a stream can touch (each a function giving {id,x,y,z,o,root}; o.frozen is kept)
   const bodies=()=>{ const L=[{id:'me',x:pos.x,y:SHARED.py,z:pos.z,root:W3.group}];
     for(const o of ONLINE.others.values()){ if(o.why!=='near you'||o.dead||!o.fig||!o.fig.g||!o.p)continue; const p=o.p; L.push({id:o.id,x:p.x,y:p.y??o.fig.g.position.y,z:p.z,o,root:o.fig.g}); }
+    for(const f of MORE)for(const b of f())L.push(b);
     for(const N of NPCS.all?NPCS.all():[]){ if(!N.g||!N.g.visible||N.far||!N.st||N.lv&&N.lv!==SHARED.LVL)continue; L.push({id:'npc:'+(N.key||'')+(N.uid||''),x:N.st.x,y:N.g.position.y,z:N.st.z,N,root:N.g}); } return L; };
   const touches=(S,b)=>Math.min(along(S,b.x,b.y+.4*M,b.z),along(S,b.x,b.y+M,b.z),along(S,b.x,b.y+1.6*M,b.z))<.5*M;
 

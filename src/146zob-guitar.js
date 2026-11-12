@@ -111,6 +111,8 @@ const GUITAR={}; window.GUITAR=GUITAR;
   const CU={on:true}, CV=new THREE.Vector3(), CT=new THREE.Vector3();
   const closeUp=v=>{ CU.on=v; if(v&&!UI.persp)UI.setView('third'); drawPanel(); };
   UI.camKeeps.push((p,T)=>{ if(!on||!CU.on||!ME.H||UI.view==='first')return; const m=ME.H.gm.matrixWorld; CT.set(.02,.52,.04).applyMatrix4(m); CV.set(.16,.46,.95).applyMatrix4(m); p.copy(CV); T.copy(CT); });
+  // a character's guitar: a player of its own playing pieces from the book (its skill its own, never a stumble), heard from where it stands
+  GUITAR.npc=id=>{ const P=mk(id); return {P,play:i=>{ if(GTBOOK[i])ACT.song(P,String(i)); },playing:()=>P.song>=0,tick:(x,z,lo)=>{ songTick(P); if(P.V)GSND.place(P.V,x,z,lo); },stop:()=>ACT.stop(P),drop:()=>unhold(P)}; };
   GUITAR.closeUp=closeUp; GUITAR.CU=CU; GUITAR.GSND=GSND; GUITAR.GHOLD=GHOLD; GUITAR.THEM=()=>THEM;
 
   /* ---------- the park's guitar on its stand (data/world.json parkPlaces.guitar): double-click it and it's yours to play while you stay ---------- */

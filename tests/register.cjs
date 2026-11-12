@@ -26,7 +26,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.mouse.click(bx.x + 200 * k, bx.y + (12 + row.i * 22 + 11 - row.sy) * ky);   // the window reads a click on its next frame: wait for it (a slow machine's frames are long)
     await pg.waitForFunction(() => (BODEGA.basket.get('g_dogfood') || 0) > 0, null, { timeout: 10000, polling: 100 }).catch(() => {});
     const bag = await pg.evaluate(() => BODEGA.basket.get('g_dogfood') || 0);
-    ok(bag === 1, 'a click on the dog food puts one in the basket');
+    const why = bag === 1 ? '' : ' ' + JSON.stringify({ row, bx, k, n: await pg.evaluate(() => document.querySelectorAll('canvas[width="400"][height="440"]').length), S: await pg.evaluate(() => { const S = MINI.state(); return S && { mx: S.mx, my: S.my, press: S.press, line: S.line, sy: S.sy, rows: S.rows.length, title: MINI.on && MINI.on.title }; }) });
+    ok(bag === 1, 'a click on the dog food puts one in the basket' + why);
     if (process.argv[3]) await pg.screenshot({ path: process.argv[3], clip: { x: bx.x - 20, y: bx.y - 50, width: bx.width + 40, height: bx.height + 110 } });
     await pg.mouse.move(bx.x + 200 * k, bx.y + 200 * k); for (let i = 0; i < 6; i++) { await pg.mouse.wheel(0, 200); await pg.waitForTimeout(80); }
     await pg.waitForTimeout(300);

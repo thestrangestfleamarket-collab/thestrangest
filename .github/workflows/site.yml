@@ -154,6 +154,7 @@ jobs:
           k guitar  'src/111b-hands|src/106-game-play-3-guitar|src/108-game-play-3-guitar|src/146zo|src/111c-avatar|data/pfhand|data/pfguitar|guitar\.cjs'
           k firstday 'src/162g-firstday|src/102-looks|src/101-gems|firstday\.cjs'
           k instruments 'src/146zp|src/150cyb-pfitems|src/146znz|src/111b-hands|data/pfitems|tools/pfitems|instruments\.cjs'
+          k import 'src/146zpe|src/146znz|src/146zp-|src/146zob|package\.json|import\.cjs'
           k perform 'src/146znz|src/146zq|src/146zr|src/146zob|src/111da-motion|data/dances|perform\.cjs'
           k signs 'src/146znz|src/146zs|src/111d-online|src/092-lines|src/159b-shops|src/159da-talk|src/160a-quests|src/160b-trainers|data/signs|data/characters|signs\.cjs'
           k firstday 'src/162g-firstday|src/102-looks|src/141-forage|src/101-gems|worker/door\.js|firstday\.cjs'
@@ -540,6 +541,10 @@ jobs:
         timeout-minutes: 25
         if: contains(steps.f.outputs.run, ' instruments')
         run: node tests/instruments.cjs dist/market.html
+      - name: Import music (MIDI, MusicXML, ABC and a text tab read, fitted to each instrument, free to play; LOOP and NEXT)
+        timeout-minutes: 20
+        if: contains(steps.f.outputs.run, ' import')
+        run: node tests/import.cjs dist/market.html
       - name: Dance and juggling (the skills, the books' bands, a pass or a fail, the wobble, the dropped balls, learnt in three, another player's)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' perform')

@@ -184,6 +184,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
   - [x] **Implants** · P3 · L · pick + code. Owner: "Both" (stat boosts and new abilities), fitted at a clinic. Done 10 Nov: THE CLINIC (`src/146zkc-clinic.js`, EQUIP's implants in `src/146c-equip.js`), `tests/implants.cjs`.
   - [x] **Bar games** · P2 · XL · pick + code. Owner's picks: darts (the archived 301), pool, bowling. Bowling done 10 Nov: THE STRANGEST LANES (`src/146zkb-bowling.js`, `worker/lanes.js`, `tests/bowling.cjs`).
   - [ ] **The bowling alley, seen live** · look. The lanes, pins and hook in a real browser; the longboarder at the counter; two players on the website.
+- [ ] **Import music, walking with an instrument, LOOP and NEXT, seen live** · look. [built 12 Nov] How the violin, flute and trumpet look held standing and walking; a real Guitar Pro file and a real .mxl tried on the website.
 - [ ] **The instruments, seen and heard live** · look. The 10 Nov feel and fuller recordings (and the recorded guitar): does it still sound like MIDI?
 - [x] **The piano's 88-key panel** (owner, 11 Nov 2026) · P2 · S · code. [done 11 Nov] A display under the book, lighting with the piece (book-only).
 - [x] **The instruments, the rest** · P3 · S · code. The bar's piano and kit playable in place; a bandstand for the park guitar. [done 11 Nov]

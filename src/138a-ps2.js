@@ -1,4 +1,4 @@
-// THE FILTERS: PS2, the picture's last pass but the cinema's cut. PS2 (the default: chunky pixels, 15-bit colour, a slight colour bleed, faint rainbow fringes) and the others a player picks in SETTINGS > FILTER (PS1, N64, XBOX, PS3, CRT, VHS, GAME BOY), all one shader.
+// THE EFFECTS: PS2, the picture's last pass but the cinema's cut, one shader. NONE is the default (the picture as drawn, no pass); a player picks another in SETTINGS > EFFECTS: old machines (PS1, PS2 as the owner fixed it, N64, ...), screens (CRT, ARCADE, VHS) and film (NOIR, SEPIA, 8MM).
 import {SHARED, THREE} from './003-shx.js';
 import {PS2} from './003b-systems.js';
 import {RH, RW, ShaderPass} from './004-main.js';
@@ -6,7 +6,7 @@ import {SAVE} from './005-save.js';
 import {QS, SYS} from './006-map-pre.js';
 PS2.shader={uniforms:{tDiffuse:{value:null},uT:{value:0},uL:{value:new THREE.Vector2(427,240)},uR:{value:new THREE.Vector2(854,480)},uA:{value:0},uQ:{value:8},uK:{value:new THREE.Vector3(1,1,1)},uO:{value:new THREE.Vector2()},uG:{value:new THREE.Vector4(1,1,0,0)},uTi:{value:new THREE.Vector3(1,1,1)},uC:{value:new THREE.Vector4()},uX:{value:new THREE.Vector4()}},
   vertexShader:'varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
-  // uG: saturation, contrast, the four-green palette, dither; uTi: tint; uC: scanlines, phosphor stripes, tube curve, dark corners; uX: glow, soft pixels, tape
+  // uG: saturation, contrast, the four-green palette, dither; uTi: tint; uC: scanlines, phosphor stripes, tube curve, dark corners; uX: glow, soft pixels, tape, film
   fragmentShader:`uniform sampler2D tDiffuse; uniform float uT,uA,uQ; uniform vec2 uL,uO,uR; uniform vec3 uK,uTi; uniform vec4 uG,uC,uX; varying vec2 vUv;
     float b2(vec2 a){ a=floor(a); return fract(a.x/2.+a.y*a.y*.75); }
     float b4(vec2 a){ return b2(.5*a)*.25+b2(a); }
@@ -17,7 +17,8 @@ PS2.shader={uniforms:{tDiffuse:{value:null},uT:{value:0},uL:{value:new THREE.Vec
     float vn(vec2 p){ vec2 i=floor(p),f=fract(p); f=f*f*(3.-2.*f); return mix(mix(h(i),h(i+vec2(1.,0.)),f.x),mix(h(i+vec2(0.,1.)),h(i+vec2(1.,1.)),f.x),f.y); }
     float gr(vec2 cell,float Y){ return (mix(h(cell),h(floor(cell*.5)+71.),.45)-.5)*.034*mix(.2,1.7,vn(cell/9.))*smoothstep(.03,.28,Y); }
     vec3 gl(vec2 cell,vec2 o){ return max(texture2D(tDiffuse,(cell+.5+o*uL.y/50.)/uL).rgb-.6,0.); }
-    void main(){ vec2 uv=vUv; float tb=0.;
+    void main(){ vec2 uv=vUv; float tb=0., fk=floor(uT*16.);
+      if(uX.w>0.)uv+=(vec2(h(vec2(fk,3.)),h(vec2(fk,5.)))-.5)*.004*uX.w;
       if(uC.z>0.){ vec2 p=uv*2.-1.; p+=p*p.yx*p.yx*uC.z; uv=p*.5+.5; }
       if(uX.z>0.){ float ln=floor(uv.y*uL.y), bd=fract(uv.y*.8-uT*.07); tb=smoothstep(0.,.015,bd)*smoothstep(.05,.02,bd);
         uv.x+=uX.z*((h(vec2(ln,floor(uT*20.)))-.5)*.0018+tb*.012+smoothstep(.035,0.,uv.y)*.02*h(vec2(ln,floor(uT*12.)))); }
@@ -35,6 +36,7 @@ PS2.shader={uniforms:{tDiffuse:{value:null},uT:{value:0},uL:{value:new THREE.Vec
       c+=gr(wc,Y)*uK.z;
       if(uX.x>0.)c+=(gl(cell,vec2(1.,0.))+gl(cell,vec2(-1.,0.))+gl(cell,vec2(0.,1.))+gl(cell,vec2(0.,-1.))+gl(cell,vec2(.7,.7))+gl(cell,vec2(-.7,.7))+gl(cell,vec2(.7,-.7))+gl(cell,vec2(-.7,-.7))+.6*(gl(cell,vec2(2.,0.))+gl(cell,vec2(-2.,0.))+gl(cell,vec2(0.,2.))+gl(cell,vec2(0.,-2.))))*.19*uX.x;
       if(uX.z>0.)c+=uX.z*((h(cell+floor(uT*24.)*17.)-.5)*.06*smoothstep(.02,.3,Y)+tb*h(cell*.37+uT)*.35);
+      if(uX.w>0.){ float sx=h(vec2(floor(uT*7.),7.)); c=c*(1.+(h(vec2(fk,1.))-.5)*.14*uX.w)+uX.w*((h(cell+fk*13.)-.5)*.09*smoothstep(.02,.3,Y)+smoothstep(.0016,0.,abs(vUv.x-sx))*.22*step(.55,h(vec2(floor(uT*7.),9.)))); }
       if(uG.x!=1.||uG.y!=1.){ c=mix(vec3(dot(c,vec3(.299,.587,.114))),c,uG.x); c=(c-.5)*uG.y+.5; }
       c*=uTi;
       if(uG.z>.5){ float g=floor(clamp(dot(c,vec3(.299,.587,.114))*1.15+(b4(cell)-.5)*.22*uG.w,0.,.999)*4.); c=g<1.?vec3(.059,.22,.059):g<2.?vec3(.188,.384,.188):g<3.?vec3(.545,.675,.059):vec3(.608,.737,.059); }
@@ -71,21 +73,29 @@ PS2.img=(px,W,H,lines)=>{ const T=PS2.tune(), L=Math.max(8,Math.round(T.pix?Math
 // the PS2 look's five parts (PIXELS, COLOURS, SMEAR, FRINGES, GRAIN) and its STRENGTH, as the owner fixed them (11 Nov 2026)
 PS2.parts={pix:true,col:true,smear:true,fringe:true,grain:false}; PS2.k=1.2;
 // THE FILTERS (SETTINGS > FILTER), one pass: lines its chunky pixels, draw the lines the picture is drawn at, Q the colour step, K smear, fringes, grain; PS2 has none of these, it is the look above
-PS2.F={ps1:{n:'PS1',lines:224,draw:448,Q:8,K:[.5,0,0],dith:1},
+PS2.F={none:{n:'NONE',lines:0,draw:1080,off:1,Q:0,K:[0,0,0]},
+  ps1:{n:'PS1',lines:224,draw:448,Q:8,K:[.5,0,0],dith:1},
   ps2:{n:'PS2'},
   n64:{n:'N64',lines:240,draw:480,Q:0,K:[1.2,0,0],soft:1,sat:.94},
+  dc:{n:'DREAMCAST',lines:480,draw:480,Q:0,K:[.2,0,0],glow:.15,con:1.05,sat:1.16},
+  gc:{n:'GAMECUBE',lines:480,draw:480,Q:0,K:[.6,0,0],soft:.5,glow:.25,sat:1.08,tint:[1.03,1,.97]},
   xbox:{n:'XBOX',lines:480,draw:480,Q:0,K:[.5,0,0],glow:.45,con:1.14,sat:1.06,tint:[.95,1.02,.96],vig:.2},
+  psp:{n:'PSP',lines:272,draw:544,Q:0,K:[1.7,0,0],mask:.05,con:.96,sat:1.1},
   ps3:{n:'PS3',lines:720,draw:720,Q:0,K:[.25,0,.5],glow:.8,con:1.1,sat:.68,tint:[1.07,.98,.82],vig:.34},
+  gb:{n:'GAME BOY',lines:144,draw:288,Q:0,K:[0,0,0],pal:1,dith:1},
   crt:{n:'CRT',lines:240,draw:480,Q:0,K:[1.2,.8,0],scan:.42,mask:.12,curve:.11,vig:.45,glow:.3},
+  arcade:{n:'ARCADE',lines:240,draw:480,Q:0,K:[.8,.4,0],scan:.55,mask:.18,curve:.05,vig:.3,glow:.6,sat:1.25,con:1.1},
   vhs:{n:'VHS',lines:240,draw:480,Q:0,K:[2,1,1.5],tape:1,sat:.82,con:.94,tint:[1.02,.99,1.05],scan:.12,vig:.25},
-  gb:{n:'GAME BOY',lines:144,draw:288,Q:0,K:[0,0,0],pal:1,dith:1}};
-PS2.f='ps2';
-PS2.pick=(f,keep=true)=>{ if(!PS2.F[f])return; PS2.f=f; if(keep)try{ SAVE.set('filter',f); }catch(e){} };
-{ let f=QS.get('filter'); if(!f)try{ f=SAVE.get('filter'); }catch(e){} if(f)PS2.pick(f,false); }
-PS2.tune=()=>{ const F=PS2.F[PS2.f]; if(F.lines)return {pix:true,k:240/F.lines,Q:F.Q,K:F.K,F}; const P=PS2.parts, k=PS2.k; return {pix:P.pix&&k>.05,k:Math.max(.25,k),Q:P.col?Math.round(8*k):0,K:[P.smear?k:0,P.fringe?k:0,P.grain?k:0],F}; };
+  noir:{n:'NOIR',lines:0,draw:1080,Q:0,K:[0,0,3],sat:0,con:1.3,glow:.3,vig:.5},
+  sepia:{n:'SEPIA',lines:0,draw:1080,Q:0,K:[0,0,1.5],sat:0,con:1.05,tint:[1.15,1,.75],vig:.35},
+  film:{n:'8MM',lines:0,draw:1080,Q:0,K:[.6,0,2],film:1,sat:.55,con:1.2,tint:[1.14,1,.76],vig:.75,glow:.3}};
+PS2.f='none';
+PS2.pick=(f,keep=true)=>{ if(!PS2.F[f])return; PS2.f=f; PS2.on=PS2.sp.enabled=!PS2.F[f].off; if(keep)try{ SAVE.set('filter',f); }catch(e){} };
+PS2.tune=()=>{ const F=PS2.F[PS2.f]; if(F.K)return {pix:F.lines>0,k:F.lines?240/F.lines:1,Q:F.Q,K:F.K,F}; const P=PS2.parts, k=PS2.k; return {pix:P.pix&&k>.05,k:Math.max(.25,k),Q:P.col?Math.round(8*k):0,K:[P.smear?k:0,P.fringe?k:0,P.grain?k:0],F}; };
 PS2.lines=()=>{ const T=PS2.tune(); return T.pix?Math.round(240/T.k):0; };
-PS2.on=true; PS2.sp.enabled=true;
+PS2.pick(PS2.f,false);
+{ let f=QS.get('filter'); if(!f)try{ f=SAVE.get('filter'); }catch(e){} if(f)PS2.pick(f,false); } PS2.f0=PS2.f;
 SYS.add('sky',()=>{ const P=SHARED.composer.passes; if(P[P.length-1]!==PS2.sp){ P.splice(P.indexOf(PS2.sp),1); P.push(PS2.sp); }
-  const T=PS2.tune(), F=T.F, Ln=PS2.lines(), draw=PS2.on&&F.draw||0, cap=PS2.on&&Ln?draw||Math.min(480,2*Ln):0; if(cap!==PS2.cap||draw!==PS2.draw){ PS2.cap=cap; PS2.draw=draw; if(SHARED.resize)SHARED.resize(); } const ck=Ln?Math.max(1,Math.round(RH/Ln)):1; SHARED.cellLines=PS2.on&&Ln?RH/ck:0; if(!PS2.on)return; const u=PS2.sp.uniforms, t=F.tint;
+  const T=PS2.tune(), F=T.F, Ln=PS2.lines(), draw=F.draw||0, cap=draw||(PS2.on&&Ln?Math.min(480,2*Ln):0); if(cap!==PS2.cap||draw!==PS2.draw){ PS2.cap=cap; PS2.draw=draw; if(SHARED.resize)SHARED.resize(); } const ck=Ln?Math.max(1,Math.round(RH/Ln)):1; SHARED.cellLines=PS2.on&&Ln?RH/ck:0; if(!PS2.on)return; const u=PS2.sp.uniforms, t=F.tint;
   u.uL.value.set(RW/ck,RH/ck); u.uR.value.set(RW,RH); u.uQ.value=T.Q; u.uK.value.set(T.K[0],T.K[1],T.K[2]);
-  u.uG.value.set(F.sat??1,F.con??1,F.pal||0,F.dith||0); u.uTi.value.set(t?t[0]:1,t?t[1]:1,t?t[2]:1); u.uC.value.set(F.scan||0,F.mask||0,F.curve||0,F.vig||0); u.uX.value.set(F.glow||0,F.soft||0,F.tape||0,0); u.uT.value=F.tape?performance.now()/1000%600:0; },'138a-ps2');   // each cell a whole number of the picture's pixels (6 Nov 2026)
+  u.uG.value.set(F.sat??1,F.con??1,F.pal||0,F.dith||0); u.uTi.value.set(t?t[0]:1,t?t[1]:1,t?t[2]:1); u.uC.value.set(F.scan||0,F.mask||0,F.curve||0,F.vig||0); u.uX.value.set(F.glow||0,F.soft||0,F.tape||0,F.film||0); u.uT.value=F.tape||F.film?performance.now()/1000%600:0; },'138a-ps2');   // each cell a whole number of the picture's pixels (6 Nov 2026)

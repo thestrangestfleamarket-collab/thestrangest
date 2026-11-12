@@ -1,11 +1,12 @@
 // THE LIVE SKY IN THE TELESCOPE: New York's real clouds (Open-Meteo), the satellites passing over (CelesTrak orbits, satellite.js), this week's comets and asteroids (JPL), meteor showers at their real rates, today's Sun (NASA SDO) with its sunspot groups and flares, and the northern lights when NOAA's Kp is high enough; fetched only when the eyepiece opens.
-import {WX} from './003b-systems.js';
+import {DN, WX} from './003b-systems.js';
 import {SYS} from './006-map-pre.js';
+import {EPH} from './134bb-ephem.js';
 import {SKYSHOW} from './134bc-skyshow.js';
 import {FIRSTS} from './150fcz-firsts.js';
 import {SCOPE} from './150fd-scope.js';
 const SKYL={on:false,data:{},err:{}}; window.SKYL=SKYL;
-{ const SBDB='https://ssd-api.jpl.nasa.gov/sbdb_query.api?', SWPC='https://services.swpc.noaa.gov/', NOWJD=()=>Date.now()/864e5+2440587.5;
+{ const SBDB='https://ssd-api.jpl.nasa.gov/sbdb_query.api?', SWPC='https://services.swpc.noaa.gov/', NOWJD=()=>EPH.jdOf(DN.skyT());
   const UP={weather:()=>'https://api.open-meteo.com/v1/forecast?latitude=40.7128&longitude=-74.006&hourly=cloud_cover,visibility,precipitation,snowfall&past_days=1&forecast_days=2&timezone=UTC',
     sats:()=>['https://celestrak.org/NORAD/elements/gp.php?GROUP=stations&FORMAT=tle','https://celestrak.org/NORAD/elements/gp.php?GROUP=visual&FORMAT=tle'],
     comets:()=>{ const j=Math.round(NOWJD()); return SBDB+new URLSearchParams({fields:'full_name,e,q,i,om,w,tp,M1,K1','sb-kind':'c','sb-cdata':JSON.stringify({AND:['tp|RG|'+(j-400)+'|'+(j+400),'M1|LT|11','q|LT|3.5']})}); },

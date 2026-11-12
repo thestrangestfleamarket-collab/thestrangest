@@ -1,13 +1,13 @@
-// THE TELESCOPE: a brass refractor on its tripod at your apartment's side window; double-click for the eyepiece: the real sky over New York at the game's moment (Yale Bright Star Catalogue; the planets, Moon and Sun from 134bb), the same sky the street has, eyepieces, focus, a clock drive, GO TO, a solar filter, and the weather in the way.
-import {THREE} from './003-shx.js';
-import {DN, SFX, WX} from './003b-systems.js';
+// THE TELESCOPE: a brass refractor on its tripod at your apartment's side window; double-click for the eyepiece: the real sky over New York at the game's moment (Yale Bright Star Catalogue; the planets, Moon and Sun from 134bb), the same sky the street has; it opens aimed at what you look at or the best thing up, the wheel zooms smoothly from the whole sky to thousands of times, a click centres a thing; focus, a clock drive, GO TO, a solar filter, and the weather in the way.
+import {SHARED, THREE} from './003-shx.js';
+import {DN, SFX, UI, WX} from './003b-systems.js';
 import {MODS, SYS} from './006-map-pre.js';
 import {EPH} from './134bb-ephem.js';
 import {ROOMK} from './150a-bedroom.js';
 import {FIRSTS} from './150fcz-firsts.js';
 const SCOPE={alt:35,az:270,va:0,vz:0,mag:1,focus:.18,track:true,lines:true,filter:false,goto:null,open:null,data:null,stars:null,view:null,ext:[],site:{ap:80,dark:0,max:200,name:'THE TELESCOPE'}}; window.SCOPE=SCOPE;   // ext: what later files add ({panel, click, input, draw, open, close}, 150fg on); site: the instrument and the place (its glass in mm, how much darker than the street the sky is in magnitudes, its strongest eyepiece; the field telescope sets its own, 150fj)
 { const STARS=__LAZY__("data/stars.json"), SCOPEJ=__LAZY__("data/scope.json");
-  SCOPE.files={sun:__FILE__("data/scope/sky/sun.jpg"),moon:__FILE__("data/scope/sky/moon.jpg"),mercury:__FILE__("data/scope/sky/mercury.jpg"),venus:__FILE__("data/scope/sky/venus.jpg"),mars:__FILE__("data/scope/sky/mars.jpg"),jupiter:__FILE__("data/scope/sky/jupiter.jpg"),saturn:__FILE__("data/scope/sky/saturn.jpg"),uranus:__FILE__("data/scope/sky/uranus.jpg"),neptune:__FILE__("data/scope/sky/neptune.jpg"),m42:__FILE__("data/scope/sky/m42.jpg"),m31:__FILE__("data/scope/sky/m31.jpg"),m1:__FILE__("data/scope/sky/m1.jpg"),m57:__FILE__("data/scope/sky/m57.jpg"),m51:__FILE__("data/scope/sky/m51.jpg"),m104:__FILE__("data/scope/sky/m104.jpg"),m16:__FILE__("data/scope/sky/m16.jpg"),m8:__FILE__("data/scope/sky/m8.jpg"),m13:__FILE__("data/scope/sky/m13.jpg"),m33:__FILE__("data/scope/sky/m33.jpg")};   // the sky's pictures (NASA's, data/full/scope-sources.json), each fetched the first time it comes into the field
+  SCOPE.files={sun:__FILE__("data/scope/sky/sun.jpg"),moon:__FILE__("data/scope/sky/moon.jpg"),moonhi:__FILE__("data/scope/sky/moonhi.jpg"),mercury:__FILE__("data/scope/sky/mercury.jpg"),venus:__FILE__("data/scope/sky/venus.jpg"),mars:__FILE__("data/scope/sky/mars.jpg"),jupiter:__FILE__("data/scope/sky/jupiter.jpg"),saturn:__FILE__("data/scope/sky/saturn.jpg"),uranus:__FILE__("data/scope/sky/uranus.jpg"),neptune:__FILE__("data/scope/sky/neptune.jpg"),m42:__FILE__("data/scope/sky/m42.jpg"),m31:__FILE__("data/scope/sky/m31.jpg"),m1:__FILE__("data/scope/sky/m1.jpg"),m57:__FILE__("data/scope/sky/m57.jpg"),m51:__FILE__("data/scope/sky/m51.jpg"),m104:__FILE__("data/scope/sky/m104.jpg"),m16:__FILE__("data/scope/sky/m16.jpg"),m8:__FILE__("data/scope/sky/m8.jpg"),m13:__FILE__("data/scope/sky/m13.jpg"),m33:__FILE__("data/scope/sky/m33.jpg")};   // the sky's pictures (NASA's, data/full/scope-sources.json), each fetched the first time it comes into the field
 
   /* ---------- the view: everything that runs only once someone looks through it ---------- */
   const make=()=>{ '@scope';
@@ -25,16 +25,20 @@ const SCOPE={alt:35,az:270,va:0,vz:0,mag:1,focus:.18,track:true,lines:true,filte
     const P=document.createElement('div'); P.className='ml'; P.style.cssText='width:min(250px,40vw);overflow:auto;padding:12px;background:#ece5d3;border-left:3px solid #3b2a1e;zoom:var(--uiz,1)'; O.appendChild(P);
     const css=document.createElement('style'); css.textContent='#scopev[hidden]{display:none!important} #scopev .row{margin:8px 0} #scopev .row>b{display:block;margin-bottom:4px} #scopev .btn{font:inherit;padding:4px 7px;margin:0 3px 3px 0;background:#ece5d3;color:#3b2a1e;border:2px solid #3b2a1e;cursor:pointer} #scopev .btn.on{background:#3b2a1e;color:#ece5d3} #scopev select,#scopev input[type=range]{width:100%;font:inherit} #scopev .info{color:#6a4a32;line-height:1.5}';
     document.head.appendChild(css); document.body.appendChild(O);
-    const MAGS=[[1,'NAKED EYE'],[6,'FINDER 6X'],[25,'25X'],[50,'50X'],[100,'100X'],[200,'200X'],[400,'400X']], FOV=m=>m===1?100:m===6?7:50/m;
+    const MAGS=[[1,'NAKED EYE'],[6,'FINDER 6X'],[25,'25X'],[50,'50X'],[100,'100X'],[200,'200X'],[400,'400X'],[1000,'1000X'],[2000,'2000X'],[5000,'5000X'],[10000,'10000X']], lg=Math.log;
+    const FOV=m=>m<=1?100:m<6?100*Math.pow(.07,lg(m)/lg(6)):m<25?7*Math.pow(2/7,lg(m/6)/lg(25/6)):50/m;   // the field in degrees: the whole sky at 1, the finder's 7 at 6, then 50/power
+    SCOPE.zmax=()=>SCOPE.site.max*25;   // the wheel goes far past the strongest eyepiece (owner, 12 Nov 2026: "really zoom into those massive levels", "zoom in as far as possible")
+    const magName=m=>m<=1.01?'NAKED EYE':(m<10?m.toFixed(1):Math.round(m))+'X';
     const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
     const targets=()=>{ const D=SCOPE.data||{}, sky=(D.sky||[]).filter(t=>t.ra!=null); return [['SOLAR SYSTEM',['moon','me','ve','ma','ju','sa','ur','ne','sun'].map(k=>({id:k,name:BODY[k].name}))],['DEEP SKY (MESSIER)',sky.map(t=>({id:t.id,name:t.name}))],['DOUBLE STARS',(D.doubles||[]).map((d,i)=>({id:'dbl:'+i,name:d.name}))],['STARS',(SCOPE.stars.named||[]).map((n,i)=>({id:'star:'+i,name:n[2]}))]]; };
     const panel=()=>{ P.innerHTML=`<div><b>${esc(SCOPE.site.name)}</b> <button class="btn" data-a="close" style="float:right">DONE</button></div>
-      <div class="row"><b>EYEPIECE</b>${MAGS.filter(([m])=>m<=SCOPE.site.max).map(([m,n])=>{ const ok=!SCOPE.magOK||SCOPE.magOK(m); return `<button class="btn ${SCOPE.mag===m?'on':''}" data-m="${m}"${ok?'':' disabled style="opacity:.55"'}>${n}${ok?'':' · '+esc(SCOPE.magNote(m))}</button>`; }).join('')}</div>
+      <div class="row"><b>ZOOM · <span id="scopez">${magName(SCOPE.mag)}</span></b>${MAGS.filter(([m])=>m<=SCOPE.zmax()).map(([m,n])=>`<button class="btn ${SCOPE.mag===m?'on':''}" data-m="${m}">${n}</button>`).join('')}</div>
+      <div class="row"><b>PRESETS · POINT AND ZOOM</b>${presets().map(([k,n,up])=>`<button class="btn" data-go="${k}"${up?'':' style="opacity:.5" title="BELOW THE HORIZON NOW"'}>${esc(n)}</button>`).join('')}</div>
       <div class="row"><b>FOCUS</b><input type="range" min="-100" max="100" value="${Math.round(SCOPE.focus*100)}" data-k="focus"></div>
       <div class="row"><button class="btn ${SCOPE.track?'on':''}" data-a="track">CLOCK DRIVE</button><button class="btn ${SCOPE.lines?'on':''}" data-a="lines">STAR LINES</button><button class="btn ${SCOPE.filter?'on':''}" data-a="filter">SOLAR FILTER</button></div>
       <div class="row"><b>GO TO</b><select data-k="goto">${targets().map(([g,L])=>`<optgroup label="${g}">${L.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('')}</optgroup>`).join('')}</select><button class="btn" data-a="go" style="margin-top:4px">GO</button><button class="btn" data-a="stop">STOP</button></div>
-      ${SCOPE.ext.map(e=>e.panel?e.panel()||'':'').join('')}<div class="row info" id="scoper"></div><div class="info" style="opacity:.75">DRAG TO MOVE THE TUBE · WHEEL TO ZOOM · ARROWS NUDGE</div>`; };
-    P.addEventListener('click',e=>{ const b=e.target.closest('button,[data-x]'); if(!b)return; for(const x of SCOPE.ext)if(x.click&&x.click(b)){ panel(); return; } const a=b.dataset.a; if(b.dataset.m){ SCOPE.mag=+b.dataset.m; panel(); return; }
+      ${SCOPE.ext.map(e=>e.panel?e.panel()||'':'').join('')}<div class="row info" id="scoper"></div><div class="info" style="opacity:.75">WHEEL: ZOOM IN AND OUT · DRAG: MOVE THE TUBE · CLICK A THING: CENTRE IT · ARROWS NUDGE</div>`; };
+    P.addEventListener('click',e=>{ const b=e.target.closest('button,[data-x]'); if(!b)return; for(const x of SCOPE.ext)if(x.click&&x.click(b)){ panel(); return; } const a=b.dataset.a; if(b.dataset.m){ SCOPE.mag=+b.dataset.m; panel(); return; } if(b.dataset.go){ SCOPE.show(b.dataset.go); panel(); return; }
       if(a==='close')return SCOPE.close(); if(a==='track')SCOPE.track=!SCOPE.track; if(a==='lines')SCOPE.lines=!SCOPE.lines; if(a==='filter')SCOPE.filter=!SCOPE.filter;
       if(a==='go')SCOPE.goTo(P.querySelector('[data-k=goto]').value); if(a==='stop'){ SCOPE.goto=null; SCOPE.va=SCOPE.vz=0; } if(a!=='go'&&a!=='stop')panel(); });
     P.addEventListener('input',e=>{ if(e.target.dataset.k==='focus')SCOPE.focus=+e.target.value/100; for(const x of SCOPE.ext)if(x.input)x.input(e.target); });
@@ -47,6 +51,16 @@ const SCOPE={alt:35,az:270,va:0,vz:0,mag:1,focus:.18,track:true,lines:true,filte
     SCOPE.goTo=id=>{ const q=radec(id); if(!q)return; const h=eq2hor(q.ra,q.dec,SCOPE.astro.lst(SCOPE.jd())); SCOPE.note=null; if(h.alt<0){ SCOPE.goto=null; SCOPE.note={s:q.name+' IS BELOW THE HORIZON NOW',t:performance.now()+5000}; return; } SCOPE.goto={id,...q}; };
     SCOPE.radec=()=>hor2eq(SCOPE.alt,SCOPE.az,SCOPE.astro.lst(SCOPE.jd()));
     SCOPE.altOf=id=>{ const q=radec(id); return q&&eq2hor(q.ra,q.dec,SCOPE.astro.lst(SCOPE.jd())); };
+    // what is up now, the showiest first (the Moon, the planets, the Sun last); where the tube points when it opens: where you look in first person, else at the first of these, else the brightest named star up
+    const upNow=()=>{ const jd=SCOPE.jd(), sunUp=EPH.seen('sun',jd).alt>-4, L=[]; for(const k of ['moon','ju','sa','ve','ma','me']){ const q=EPH.seen(k,jd); if(q.alt>4&&(k==='moon'||!sunUp||q.mag<-3.5))L.push([k,BODY[k].name]); } return L; };
+    SCOPE.upNow=upNow;
+    // the presets: the Moon, the planets and the sky's photographed showpieces; one click swings the tube there and zooms until the thing fills about half the field
+    const presets=()=>{ const L=['moon','me','ve','ma','ju','sa','ur','ne'].map(k=>[k,BODY[k].name]); for(const t of (SCOPE.data&&SCOPE.data.sky)||[])if(t.file&&t.ra!=null)L.push([t.id,t.name]); return L.map(([k,n])=>{ const h=SCOPE.altOf(k); return [k,n,!!h&&h.alt>0]; }); };
+    SCOPE.presets=presets;
+    SCOPE.show=id=>{ SCOPE.goTo(id); if(!SCOPE.goto)return false; const q=radec(id), deg=q.body?q.body.deg:(q.t&&q.t.fov_deg)||.2; SCOPE.mag=cl(50/(deg*2.2),6,SCOPE.zmax()); if(q.body&&id==='sun')SCOPE.filter=true; return true; };
+    const aim=()=>{ const C=SHARED.cam; if(UI.view==='first'&&C){ const d=C.getWorldDirection(new THREE.Vector3()), al=Math.asin(cl(d.y,-1,1))*R2D; if(al>8){ SCOPE.alt=Math.min(89,al); SCOPE.az=nrm(Math.atan2(-d.x,d.z)*R2D); SCOPE.va=SCOPE.vz=0; return; } }
+      const jd=SCOPE.jd(), U=upNow(); let h=null; if(U.length)h=EPH.seen(U[0][0],jd); else if(SCOPE.stars)for(let i=0;i<SCOPE.stars.named.length&&!h;i++){ const q=SCOPE.altOf('star:'+i); if(q&&q.alt>15)h=q; }   // (the list runs from the brightest)
+      if(h){ SCOPE.alt=cl(h.alt,-10,89.9); SCOPE.az=nrm(h.az); SCOPE.va=SCOPE.vz=0; } };
 
     /* ---------- the stars, as unit vectors once ---------- */
     let SX, SY, SZ, SM, SC; const starsIn=S=>{ const n=S.s.length; SX=new Float32Array(n); SY=new Float32Array(n); SZ=new Float32Array(n); SM=new Float32Array(n); SC=[];
@@ -70,10 +84,12 @@ const SCOPE={alt:35,az:270,va:0,vz:0,mag:1,focus:.18,track:true,lines:true,filte
 
     /* ---------- the mount: the tube has weight; a drag pushes it, friction stops it, the clock drive turns it with the sky, GO TO slews it ---------- */
     let drag=null, keyV=[0,0], wob=[0,0,0,0], last=performance.now(), lastJD=null;
-    cv.addEventListener('pointerdown',e=>{ drag={x:e.clientX,y:e.clientY,t:performance.now(),rx:0,ry:0}; cv.setPointerCapture(e.pointerId); cv.style.cursor='grabbing'; SCOPE.goto=null; });
+    cv.addEventListener('pointerdown',e=>{ drag={x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY,t:performance.now(),rx:0,ry:0}; cv.setPointerCapture(e.pointerId); cv.style.cursor='grabbing'; SCOPE.goto=null; });
     cv.addEventListener('pointermove',e=>{ if(!drag)return; drag.rx+=e.clientX-drag.x; drag.ry+=e.clientY-drag.y; drag.x=e.clientX; drag.y=e.clientY; });
-    const up=()=>{ drag=null; cv.style.cursor='grab'; }; cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
-    let wheelT=0; cv.addEventListener('wheel',e=>{ e.preventDefault(); const n=performance.now(); if(!e.deltaY||n-wheelT<180)return; wheelT=n; const L=MAGS.map(m=>m[0]).filter(m=>m<=SCOPE.site.max&&(!SCOPE.magOK||SCOPE.magOK(m))), i=L.indexOf(SCOPE.mag), j=cl((i<0?0:i)-Math.sign(e.deltaY),0,L.length-1); if(L[j]!==SCOPE.mag){ SCOPE.mag=L[j]; panel(); } },{passive:false});
+    const up=e=>{ const d=drag; drag=null; cv.style.cursor='grab'; if(d&&e&&e.type==='pointerup'&&Math.hypot(e.clientX-d.x0,e.clientY-d.y0)<5&&performance.now()-d.t<400&&VW){ const b=cv.getBoundingClientRect(), dx=e.clientX-b.left-VW.cx, dy=e.clientY-b.top-VW.cy; if(Math.hypot(dx,dy)<VW.R){ const q=hor2eq(cl(SCOPE.alt-dy/VW.pxd,-10,89.9),nrm(SCOPE.az+dx/VW.pxd/Math.max(.2,cs(SCOPE.alt))),VW.lst); SCOPE.goto={id:'pt',ra:q.ra,dec:q.dec,name:''}; } } };   // a click, not a drag: that spot to the middle
+    cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
+    let VW=null; const zshow=()=>{ const z=P.querySelector('#scopez'); if(z)z.textContent=magName(SCOPE.mag); P.querySelectorAll('[data-m]').forEach(b=>b.classList.toggle('on',+b.dataset.m===SCOPE.mag)); };
+    cv.addEventListener('wheel',e=>{ e.preventDefault(); if(!e.deltaY)return; const k=Math.exp(-cl(e.deltaY*(e.deltaMode===1?33:1),-240,240)*.0022); let m=cl(SCOPE.mag*k,1,SCOPE.zmax()); for(const [p] of MAGS)if(Math.abs(m/p-1)<.035&&p<=SCOPE.zmax())m=p; if(m!==SCOPE.mag){ SCOPE.mag=m; zshow(); } },{passive:false});   // the wheel zooms smoothly, catching on the eyepieces' own powers
     const keys=e=>{ if(O.hidden)return; const k=e.key, d=e.type==='keydown'?1:0; if(k==='Escape'&&d){ SCOPE.close(); } else if(k==='ArrowLeft')keyV[0]=-d; else if(k==='ArrowRight')keyV[0]=d; else if(k==='ArrowUp')keyV[1]=d; else if(k==='ArrowDown')keyV[1]=-d; else return; e.stopImmediatePropagation(); e.preventDefault(); };
     addEventListener('keydown',keys,true); addEventListener('keyup',keys,true);
     const mount=(dt,pxd)=>{ const jd=SCOPE.jd(), lst=SCOPE.astro.lst(jd);
@@ -82,8 +98,8 @@ const SCOPE={alt:35,az:270,va:0,vz:0,mag:1,focus:.18,track:true,lines:true,filte
       let wa=0, wz=0, tau=.35;
       if(drag){ const k=1/Math.max(1e-3,dt)/pxd; wz=-drag.rx*k/Math.max(.2,cs(SCOPE.alt)); wa=drag.ry*k; drag.rx=drag.ry=0; tau=.08; }
       else if(keyV[0]||keyV[1]){ wz=keyV[0]*FOV(SCOPE.mag)*.5/Math.max(.2,cs(SCOPE.alt)); wa=keyV[1]*FOV(SCOPE.mag)*.5; tau=.25; }
-      else if(SCOPE.goto){ const g=SCOPE.goto, b=BODY[g.id]?where(g.id,jd):null, h=eq2hor(b?b.ra:g.ra,b?b.dec:g.dec,lst); if(g.id==='moon')h.alt-=b.par*cs(h.alt); const ea=h.alt-SCOPE.alt, ez=s180(h.az-SCOPE.az), mx=8;
-        wa=cl(ea*2.2,-mx,mx); wz=cl(ez*2.2,-mx,mx); tau=.3; if(Math.abs(ea)<.002&&Math.abs(ez)<.002){ SCOPE.goto=null; } }
+      else if(SCOPE.goto){ const g=SCOPE.goto, b=BODY[g.id]?where(g.id,jd):null, h=eq2hor(b?b.ra:g.ra,b?b.dec:g.dec,lst); if(g.id==='moon')h.alt-=b.par*cs(h.alt); const ea=h.alt-SCOPE.alt, ez=s180(h.az-SCOPE.az), mx=g.id==='pt'?Math.max(.02,FOV(SCOPE.mag)*2):25;
+        wa=cl(ea*5,-mx,mx); wz=cl(ez*5,-mx,mx); tau=.15; const eps=Math.min(.002,FOV(SCOPE.mag)/400); if(Math.abs(ea)<eps&&Math.abs(ez)<eps){ SCOPE.goto=null; } }
       else { wa=0; wz=0; }
       const f=1-Math.exp(-dt/tau); SCOPE.va+=(wa-SCOPE.va)*f; SCOPE.vz+=(wz-SCOPE.vz)*f;
       SCOPE.alt=cl(SCOPE.alt+SCOPE.va*dt,-10,89.9); SCOPE.az=nrm(SCOPE.az+SCOPE.vz*dt); return {jd,lst}; };
@@ -92,7 +108,7 @@ const SCOPE={alt:35,az:270,va:0,vz:0,mag:1,focus:.18,track:true,lines:true,filte
     const g=cv.getContext('2d'); let W=0, H=0;
     const draw=dt=>{ const dpr=Math.min(2,devicePixelRatio||1), w=cv.clientWidth, h=cv.clientHeight; if(w!==W||h!==H){ W=w; H=h; cv.width=w*dpr; cv.height=h*dpr; } g.setTransform(dpr,0,0,dpr,0,0);
       const R=Math.min(w,h)*.46, cx=w/2, cy=h/2, fov=FOV(SCOPE.mag), pxd=R/(Math.tan(fov/2*D2R)*R2D);   // pixels a degree near the centre
-      const {jd,lst}=mount(dt,pxd);
+      const {jd,lst}=mount(dt,pxd); VW={cx,cy,R,pxd,lst};
       const put=(im,x,y,w,h,ox=0,oy=0)=>{ const m=40, x0=Math.max(x,cx-R-m-ox), y0=Math.max(y,cy-R-m-oy), x1=Math.min(x+w,cx+R+m-ox), y1=Math.min(y+h,cy+R+m-oy); if(x1<=x0||y1<=y0)return; const sw=(im.naturalWidth||im.width)/w, sh=(im.naturalHeight||im.height)/h; g.drawImage(im,(x0-x)*sw,(y0-y)*sh,(x1-x0)*sw,(y1-y0)*sh,x0,y0,x1-x0,y1-y0); };   // only the part in the eyepiece: a picture blown up to thousands of pixels freezes the page
       // the tube's frame: forward t, right r (towards the east when facing north), up u; horizon vectors are (east, up, north)
       const t=[cs(SCOPE.alt)*sn(SCOPE.az),sn(SCOPE.alt),cs(SCOPE.alt)*cs(SCOPE.az)], r0=[t[2],0,-t[0]], rl=Math.hypot(r0[0],r0[2])||1, r=[r0[0]/rl,0,r0[2]/rl], u=[t[1]*r[2]-t[2]*r[1],t[2]*r[0]-t[0]*r[2],t[0]*r[1]-t[1]*r[0]];
@@ -103,15 +119,15 @@ const SCOPE={alt:35,az:270,va:0,vz:0,mag:1,focus:.18,track:true,lines:true,filte
       // the light: the Sun's height sets the sky (New York's glow keeps it from black), the weather covers it
       const sun=where('sun',jd), sunH=eq2hor(sun.ra,sun.dec,lst), sv=eqv(sun.ra,sun.dec), sunOff=Math.acos(cl(sv[0]*t[0]+sv[1]*t[1]+sv[2]*t[2],-1,1))*R2D;
       const day=cl((sunH.alt+12)/12,0,1), Wx=(SCOPE.wx&&SCOPE.wx(jd))||(WX&&WX.now)||{cloud:0,rain:0,snow:0,fog:0}, wet=Math.max(Wx.rain||0,Wx.snow||0), cover=cl(((Wx.cloud||0)-.2)/.7,0,1), filt=SCOPE.filter?1e-5:1;
-      let lim=cl(8.3-11*day,-4,8.3)-2*cover-3*(Wx.fog||0); lim+=5*Math.log10(SCOPE.site.ap/80)+SCOPE.site.dark*(1-day); if(SCOPE.mag===1)lim-=3+5*Math.log10(SCOPE.site.ap/80); if(SCOPE.filter)lim=-30;   // the eye's 7 mm against the tube's 80
+      let lim=cl(8.3-11*day,-4,8.3)-2*cover-3*(Wx.fog||0); lim+=5*Math.log10(SCOPE.site.ap/80)+SCOPE.site.dark*(1-day); if(SCOPE.mag<6)lim-=(3+5*Math.log10(SCOPE.site.ap/80))*(1-lg(SCOPE.mag)/lg(6)); if(SCOPE.filter)lim=-30;   // the eye's 7 mm against the tube's 80
       const sky=day*filt*(1-.4*cover); g.fillStyle='#000'; g.fillRect(0,0,w,h); g.save(); g.beginPath(); g.arc(cx,cy,R,0,7); g.clip();
       g.fillStyle=`rgb(${Math.round(10+120*sky)},${Math.round(13+160*sky)},${Math.round(26+210*sky)})`; g.fillRect(cx-R,cy-R,2*R,2*R);
       // the air: seeing makes everything tremble a little, more the more you magnify (about 2.5 arc seconds over the city)
       for(let i=0;i<2;i++){ wob[i+2]+=((Math.random()-.5)*2-wob[i+2])*Math.min(1,dt*9); wob[i]+=(wob[i+2]-wob[i])*Math.min(1,dt*14); }
-      const see=2.5/3600*pxd, jx=wob[0]*see, jy=wob[1]*see, blur=Math.min(28,Math.abs(SCOPE.focus-.18)*SCOPE.mag*.45)+(SCOPE.mag>=100?see*.4:0);
+      const see=Math.min(1.6,2.5/3600*pxd), jx=wob[0]*see, jy=wob[1]*see, blur=Math.min(28,Math.abs(SCOPE.focus-.18)*Math.min(400,SCOPE.mag)*.45)+(SCOPE.mag>=100?see*.4:0);   // the air's tremble stays small however far in
       g.filter=blur>.3?`blur(${blur.toFixed(1)}px)`:'none'; g.translate(jx,jy);
       // the stars, by magnitude and colour
-      if(SX&&lim>-2){ const cR=Math.cos(Math.min(89,fov*.75)*D2R), pk=SCOPE.mag===1?.75:Math.max(.6,Math.min(1.6,25/SCOPE.mag+.4));
+      if(SX&&lim>-2){ const cR=Math.cos(Math.min(89,fov*.75)*D2R), pk=SCOPE.mag<1.5?.75:Math.max(.6,Math.min(1.6,25/SCOPE.mag+.4));
         for(let i=0;i<SX.length;i++){ const m=SM[i]; if(m>lim)continue; const v=hv(SX[i],SY[i],SZ[i]); if(v[0]*t[0]+v[1]*t[1]+v[2]*t[2]<cR||v[1]<-.02)continue; const p=proj(v); if(!p)continue;
           const k=cl((lim-m)/4,0,1), tw=1-.35*Math.random()*(1-v[1]); g.globalAlpha=k*tw*(1-cover*.85); g.fillStyle=SC[i]; g.beginPath(); g.arc(p[0],p[1],pk*Math.max(.7,(lim+1.5-m)*.45),0,7); g.fill(); }
         g.globalAlpha=1; }
@@ -126,7 +142,7 @@ const SCOPE={alt:35,az:270,va:0,vz:0,mag:1,focus:.18,track:true,lines:true,filte
         if(k==='sun'){ if(!SCOPE.filter)continue; } else if(q.mag>lim+2||v[1]<-.02)continue;
         const vis=k==='sun'?1:(1-cover*.9)*cl((lim+2-q.mag)/3,0,1); g.globalAlpha=vis;
         if(q.deg*pxd<3){ g.fillStyle=BODY[k].col; g.beginPath(); g.arc(p[0],p[1],Math.max(1.2,(lim+1.5-q.mag)*.35),0,7); g.fill(); g.globalAlpha=1; continue; }
-        const im=img(BODY[k].id), rr=sz/2; g.save(); g.translate(p[0],p[1]);
+        const im=(k==='moon'&&sz>760&&img('moonhi'))||img(BODY[k].id), rr=sz/2; g.save(); g.translate(p[0],p[1]);   // the Moon's sharper picture once it fills the field
         if(im){ if(k==='sa'){ g.globalCompositeOperation='lighter'; put(im,-rr,-rr,sz,sz,p[0]+jx,p[1]+jy); g.globalCompositeOperation='source-over'; } else { g.save(); g.beginPath(); g.arc(0,0,q.deg*pxd/2,0,7); g.clip(); put(im,-rr,-rr,sz,sz,p[0]+jx,p[1]+jy); g.restore(); } }   // the photo's black sky never covers ours else { g.fillStyle=BODY[k].col; g.beginPath(); g.arc(0,0,q.deg*pxd/2,0,7); g.fill(); }
         if(k!=='sun'&&q.i>2){ const sp=proj(sv), ang=sp?Math.atan2(sp[1]-p[1],sp[0]-p[0]):Math.atan2(sv[1]-v[1],0), dr=q.deg*pxd/2, ci=Math.cos(q.i*D2R); if(k==='moon'){ MP.ang=ang; MP.ci=ci; } g.rotate(ang); g.fillStyle='rgba(0,0,0,.9)'; g.beginPath();
           for(let a=-90;a<=90;a+=6){ const y=dr*sn(a); g.lineTo(-dr*cs(a)*1.01,y); } for(let a=90;a>=-90;a-=6){ const y=dr*sn(a); g.lineTo(-ci*dr*cs(a),y); } g.fill(); }   // the dark side: the limb away from the Sun to the terminator
@@ -166,7 +182,7 @@ const SCOPE={alt:35,az:270,va:0,vz:0,mag:1,focus:.18,track:true,lines:true,filte
       if(glare>0){ g.fillStyle=`rgba(255,253,240,${glare})`; g.fillRect(0,0,w,h); }
       if(SCOPE.filter&&sunOff>fov){ g.fillStyle='rgba(0,0,0,1)'; g.fillRect(cx-R,cy-R,2*R,2*R); }
       g.restore(); const vg=g.createRadialGradient(cx,cy,R*.82,cx,cy,R); vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,.85)'); g.fillStyle=vg; g.beginPath(); g.arc(cx,cy,R,0,7); g.fill();
-      if(SCOPE.mag===6){ g.strokeStyle='rgba(255,90,60,.6)'; g.lineWidth=1; g.beginPath(); g.moveTo(cx-R,cy); g.lineTo(cx+R,cy); g.moveTo(cx,cy-R); g.lineTo(cx,cy+R); g.stroke(); }
+      if(SCOPE.mag>=4&&SCOPE.mag<10){ g.strokeStyle='rgba(255,90,60,.6)'; g.lineWidth=1; g.beginPath(); g.moveTo(cx-R,cy); g.lineTo(cx+R,cy); g.moveTo(cx,cy-R); g.lineTo(cx,cy+R); g.stroke(); }
       g.fillStyle='#d8c8a8'; g.font='12px Silkscreen,monospace'; g.textAlign='center';
       const nt=SCOPE.note&&SCOPE.note.t>performance.now()?SCOPE.note.s:''; if(nt)g.fillText(nt,cx,Math.min(h-10,cy+R+16)); else if(SCOPE.filter&&sunOff>fov/2)g.fillText('THE SOLAR FILTER IS ON: ONLY THE SUN SHOWS THROUGH IT',cx,Math.min(h-10,cy+R+16)); else if(blur>4)g.fillText('OUT OF FOCUS: TURN THE FOCUS',cx,Math.min(h-10,cy+R+16)); else if(glare>.6)g.fillText('THE SUN! NEVER WITHOUT A SOLAR FILTER.',cx,cy+R+16>h-6?h-10:cy+R+16); else if(wet>.15)g.fillText(Wx.snow>Wx.rain?'SNOW ON THE GLASS':'RAIN ON THE GLASS',cx,Math.min(h-10,cy+R+16)); else if(cover>.6)g.fillText('CLOUDED OVER',cx,Math.min(h-10,cy+R+16));
       // what is in the middle, and where the tube points
@@ -177,7 +193,7 @@ const SCOPE={alt:35,az:270,va:0,vz:0,mag:1,focus:.18,track:true,lines:true,filte
         el.innerHTML=s; } };
 
     let T0=0; SYS.add('places',()=>{ if(O.hidden)return; const n=performance.now(), dt=Math.min(.1,(n-last)/1000); last=n; draw(dt); },'150fd-scope view');
-    return {open:()=>{ O.hidden=false; last=performance.now(); lastJD=null; SCOPE.focus=.18; SCOPE.filter=false; panel(); for(const x of SCOPE.ext)if(x.open)x.open(); },close:()=>{ O.hidden=true; drag=null; keyV=[0,0]; for(const x of SCOPE.ext)if(x.close)x.close(); },starsIn,draw,panel,cv,O,P,radec,drop:k=>{ delete IM[k]; delete FE[k]; },FOV}; };
+    return {open:()=>{ O.hidden=false; last=performance.now(); lastJD=null; SCOPE.focus=.18; SCOPE.filter=false; SCOPE.goto=null; if(!(SCOPE.lead&&SCOPE.lead(0)))aim(); panel(); for(const x of SCOPE.ext)if(x.open)x.open(); },close:()=>{ O.hidden=true; drag=null; keyV=[0,0]; for(const x of SCOPE.ext)if(x.close)x.close(); },starsIn,draw,panel,cv,O,P,radec,drop:k=>{ delete IM[k]; delete FE[k]; },FOV}; };
 
   let JP=null; SCOPE.json=()=>JP||(JP=SCOPEJ().then(d=>SCOPE.data=d));   // the index of the sky's targets and the globes, fetched once
   SCOPE.ready=async()=>{ if(window.LOAD)await LOAD('scope'); if(!SCOPE.view)SCOPE.view=make(); return SCOPE.astro; };   // the sky's sums, for the globes too

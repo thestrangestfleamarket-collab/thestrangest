@@ -166,7 +166,7 @@ const CARD=__LAZY__("data/cars.json"), RADJ=__LAZY__("data/radio.json"), RFILE={
       on:()=>{ if(!PB.R)PB.load(); }, off:()=>V.drop(),
       pose:R=>{ POSE.steer=V.on?V.steer*2:0; return POSE; },
       step:(R,dt)=>{ if(!V.step(R))return false; st.ride=POSE; return true; },
-      place:(m,R,t)=>{ const w=m.userData.wh, cb=m.userData.cab; if(cb)cb.sw.rotation.z=(R===RIDE&&V.on?V.steer:0)*5; if(R===RIDE)k.m=m; tintRide(model,m,R); if(CARX.place)CARX.place(model,m,R===RIDE?mine:null); if(R===RIDE&&V.place(m,w))return; m.position.y=SHARED.groundY(m.position.x,m.position.z); for(let i=0;i<4;i++)w[i].rotation.x+=(R.v||0)*.02; } };
+      place:(m,R,t)=>{ const w=m.userData.wh, cb=m.userData.cab; if(cb)cb.sw.rotation.z=(R===RIDE&&V.on?V.steer:0)*5; if(R===RIDE)k.m=m; tintRide(model,m,R); if(CARX.place)CARX.place(model,m,R===RIDE?mine:null); const gh=LIV[model]&&LIV[model].ghost?.45*M1:0; if(R===RIDE&&V.place(m,w)){ m.position.y+=gh; return; } m.position.y=SHARED.groundY(m.position.x,m.position.z)+gh; for(let i=0;i<4;i++)w[i].rotation.x+=(R.v||0)*.02; } };
     k.eye=eyeOf(model,k); RIDE.kind('car:'+model,k); return k; };
 
   /* ---------- parked: drawn where the section says, solid, a thing to double-click ---------- */

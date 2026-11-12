@@ -1,6 +1,6 @@
 // THE UI: the camera (isometric, behind, first person), zoom and turn, the menu, places, and the top-down shot.
 import {SHARED, THREE} from './003-shx.js';
-import {AMB, BAG, BLK, BUGS, CHARP, CINEMA, CIVIC, CLIP, DN, DRONE, ED, FEEL, FORAGE, GAMEED, GUIDE, INSPECT, ITEMED, keys, LAND, LEVELS, LINES, LOOK, LOOKS, MAPED, MOTION, MUS, NPCS, ONLINE, PARK, PB, PETS, pos, PROMPT, RIDE, RINSP, ROOMS, SFX, SNDED, SPEED, st, TALK, TENANTS, TEXT, UI, USE, VIT, VLOOK, VR, W3, WE, WIELD} from './003b-systems.js';
+import {AMB, BAG, BLK, BUGS, CHARP, CINEMA, CIVIC, CLIP, DN, DRONE, ED, FEEL, FORAGE, GUIDE, INSPECT, ITEMED, keys, LAND, LEVELS, LINES, LOOK, LOOKS, MAPED, MOTION, MUS, NPCS, ONLINE, PARK, PB, PETS, pos, PROMPT, RIDE, RINSP, ROOMS, SFX, SNDED, SPEED, st, TALK, TENANTS, TEXT, UI, USE, VIT, VLOOK, VR, W3, WE, WIELD} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {OCAM, PCAM, PPU, renderer, resize, RESN, RH, rppu, RW, scene} from './004-main.js';
 import {OWNED, SAVE} from './005-save.js';
@@ -17,12 +17,12 @@ for(const [k,d] of Object.entries({'map.train1':'TRAIN 1 · TO {next}','map.trai
 Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(),lookK:1});
 {
   const ACTS=[['w','walk up (screen)'],['s','walk down'],['a','walk left'],['d','walk right'],['shift','run · swim up, and faster · sink (free camera, fly)'],[' ','jump · rise (free camera, fly) · swim down'],
-    ['view','change the view (map, isometric, third person, behind, first person)'],['use','use what is near you (pet, door, mushroom...), or what you hold (skateboard, bike, balloon...)'],['rot','turn the view (a quarter in isometric; held, it turns third and first person)'],['j','punch'],['k','kick'],['n','slap'],['i','crouch (hold): then J an uppercut, K a sweep'],['2','leg sweep'],['3','back flip'],['4','front flip'],['r','roll'],['u','cartwheel'],['1','hold: sword · net · bird net · nothing (the mouse aims it, a click swings); a filled quick slot takes its number key, 1 to 0'],['p','block (hold): bare hands soften a blow; with a sword, one caught on the beat staggers them'],['v','wave'],['h','emotes: dance, cheer, clap, sit down and more (walk to stop one that loops) · in a car, the horn'],['l','side kick (again as it lands: a spin kick)'],['o','dodge back (blows miss you for a moment)'],['inspect','look over what you hold or point at (your pack has LOOK too)'],['shoes','shoes off / on (barefoot to forage)'],['t','decorate (in your apartment)'],['chat','talk to the players on your block'],['q','turn left'],['e','turn right'],['z','tilt down'],['x','tilt up'],['0','reset the view'],
+    ['view','change the view (map, isometric, third person, behind, first person)'],['use','use what is near you (pet, door, mushroom...), or what you hold (skateboard, bike, balloon...)'],['rot','turn the view (a quarter in isometric; held, it turns third and first person)'],['j','punch'],['k','kick'],['n','slap'],['i','crouch (hold): then J an uppercut, K a sweep'],['2','leg sweep'],['3','back flip'],['4','front flip'],['r','roll'],['u','cartwheel'],['1','hold: sword · net · bird net · nothing (the mouse aims it, a click swings); a filled quick slot takes its number key, 1 to 0'],['p','block (hold): bare hands soften a blow; with a sword, one caught on the beat staggers them'],['v','wave'],['h','emotes: dance, cheer, clap, sit down and more (walk to stop one that loops) · in a car, the horn'],['l','side kick (again as it lands: a spin kick)'],['o','dodge back (blows miss you for a moment)'],['inspect','look over what you hold or point at (your pack has LOOK too)'],['shoes','shoes off / on (barefoot to forage)'],['t','decorate (in your apartment)'],['chat','talk to the players on your block'],['talk','hold to speak aloud to the players near you (voice)'],['q','turn left'],['e','turn right'],['z','tilt down'],['x','tilt up'],['0','reset the view'],
     ['c','free camera'],['g','fly (Space up, Shift down; G again lands)']];
   const FIXED=[['I','YOUR PACK'],['?','WHAT YOU CAN DO'],['F8','REPORT A BUG'],['SHIFT+M','THE MAP'],['SHIFT+E','EDIT THE WORLD (ISOMETRIC)'],['1 TO 0','THE QUICK BAR (A FILLED SLOT TAKES ITS KEY)'],['ESC','THE MENU']];   // the keys that do not rebind
   const NAME=k=>k===''?'—':k===' '?'SPACE':k.length===1?k.toUpperCase():k.toUpperCase();
   let BIND={}; try{ BIND=JSON.parse(SAVE.get('keys')||'{}')||{}; }catch(e){}
-  const DEF={use:'e',e:'',view:'v',v:'b',rot:'r',r:'y',shoes:';',chat:'enter',inspect:'5',i:'c',c:'`'}, keyOf=a=>BIND[a]??DEF[a]??a, rev=()=>{ const r={}; for(const [a] of ACTS)r[keyOf(a)]=a; return r; };
+  const DEF={use:'e',e:'',view:'v',v:'b',rot:'r',r:'y',shoes:';',chat:'enter',talk:'m',inspect:'5',i:'c',c:'`'}, keyOf=a=>BIND[a]??DEF[a]??a, rev=()=>{ const r={}; for(const [a] of ACTS)r[keyOf(a)]=a; return r; };
   let REV=rev(), waiting=null; UI.keyOf=keyOf;
   UI.key=e=>{ const raw=e.key.toLowerCase();
     if(waiting){ if(raw!=='escape'){ const old=keyOf(waiting); for(const [a] of ACTS)if(a!==waiting&&keyOf(a)===raw)BIND[a]=old; BIND[waiting]=raw;
@@ -30,7 +30,6 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     if(ITEMED.on&&(raw==='escape'||e.code==='Digit7'&&e.shiftKey)){ if(e.type==='keydown'&&!e.repeat)ITEMED.key(); return null; }   // the ITEM editor (140ba): esc or shift+7 closes it; while it is open the game takes no keys
     if(e.code==='Digit7'&&e.shiftKey&&!ED.on&&!UI.menuOpen&&!/^(TEXTAREA|INPUT|SELECT)$/.test(e.target&&e.target.tagName||'')){ if(e.type==='keydown'&&!e.repeat&&ITEMED.key)ITEMED.key(); return null; }
     if(ITEMED.on)return null;
-    if(raw==='escape'&&e.shiftKey&&!ED.on){ if(e.type==='keydown'&&!e.repeat)GAMEED.toggle(); return null; }
     if(raw==='escape'){ if(e.type==='keydown')toggleMenu(); return null; }
     if(e.target&&/^(TEXTAREA|INPUT|SELECT)$/.test(e.target.tagName))return null;
     if(raw==='?'){ if(e.type==='keydown'&&!e.repeat)UI.moves(); return null; }
@@ -38,6 +37,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     if(UI.view==='iso'&&!ED.on&&(raw==='q'||raw==='r')){ if(e.type==='keydown'&&!e.repeat)UI.isoStep(raw==='q'?1:-1); return null; }
     if(UI.menuOpen)return null;
     if(ED.on){ const a=raw==='e'||raw==='q'?raw:REV[raw]; return ['q','e','z','x','0','=','-'].includes(a)?a:null; }
+    if(REV[raw]==='talk'){ if(!e.repeat&&ONLINE.talk)ONLINE.talk(e.type==='keydown'); return null; }
     const act=REV[raw]; if(act!==undefined){ if(act==='rot')UI.rotHeld=e.type==='keydown'; if(e.type==='keydown'&&!e.repeat){ if(act==='c')setFree(!UI.freeCam); if(act==='g')setFly(!UI.fly); if(act==='view'){ const V=UI.viewsHere(); UI.switchView(V[(V.indexOf(UI.view)+1)%V.length]); } if(act==='rot'&&(UI.view==='iso'||UI.view==='map'))UI.turn4(); if(act==='use'&&UI.useKey&&!/^(TEXTAREA|INPUT|SELECT)$/.test(e.target&&e.target.tagName||''))UI.useKey(); if(act==='shoes'&&typeof LOOKS!=='undefined'&&LOOKS.shoes)LOOKS.shoes(); if(act==='chat'&&ONLINE.open){ e.preventDefault(); ONLINE.open(); } if(act==='inspect'&&INSPECT.key)INSPECT.key(); } return act==='view'||act==='rot'||act==='use'||act==='shoes'||act==='chat'||act==='inspect'?null:act; }
     return ACTS.some(([a])=>a===raw)?'':raw; };
   { const K0=UI.key, K=new WeakMap(); UI.key=e=>{ if(K.has(e))return K.get(e); const r=K0(e); K.set(e,r); return r; }; }   // one press acts once: later listeners asking for the same event get the same answer
@@ -215,7 +215,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   const css=document.createElement('style'); css.textContent=`
   #mode{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(124px + var(--fy,0px) + env(safe-area-inset-bottom,0px));font:12px var(--pixel);color:var(--key);background:var(--panel);border:2px solid var(--line);padding:6px 10px;z-index:15}
   #mode[hidden],#said[hidden]{display:none}
-  #menu .box,#looks,#we,#movesp,#maped,#snded,#shbar,#stat,#said,.said2,#vit,#moves{zoom:var(--uiz,1)}
+  #menu .box,#looks,#we,#movesp,#stat,#said,.said2,#vit,#moves{zoom:var(--uiz,1)}
   #said{position:fixed;transform:translate(-50%,-100%);font:12px var(--pixel);color:var(--key);background:var(--panel);border:2px solid var(--line);padding:4px 8px;pointer-events:none;z-index:14}
   #menu{--mf:#7dffa8;--mi:#3aa866;--mb:#031a0d;--mt:#7dffa8;--md:#3aa866;--mo:#d8ffe4;--me:#0d3a1f;--mk:#020a06;--ms:#3aa866;--pixel:'Share Tech Mono',ui-monospace,monospace;--key:var(--mo);--fg:var(--mt);--dim:var(--md);--line:var(--mi);position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(5,6,10,.55);z-index:30}
   #menu[hidden]{display:none}
@@ -286,7 +286,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
       <div hidden><div class="row" id="dshd"></div>
       <div class="row"><button class="btn" id="danim">ANIMATION</button><button class="btn" id="dlit">LIGHT ON THEM</button><button class="btn" id="doutl">OUTLINE</button></div>
       <div class="row"><span>SHADE STEPS</span><input type="range" id="dsteps" min="2" max="12" step="1"></div><div class="row"><span>SHADOW DEPTH</span><input type="range" id="ddepth" min="0.02" max="0.98" step="0.005"></div></div></div>
-    <div class="pane" data-p="sound"><h3>SOUND</h3><div class="row"><button class="btn" id="dsfx">EFFECTS</button><button class="btn" id="damb">AMBIENCE</button><span>VOLUME</span><input type="range" id="dvol" min="0" max="1" step="0.01"></div><div id="dsndin"></div></div>
+    <div class="pane" data-p="sound"><h3>SOUND</h3><div class="row"><button class="btn" id="dsfx">EFFECTS</button><button class="btn" id="damb">AMBIENCE</button><span>VOLUME</span><input type="range" id="dvol" min="0" max="1" step="0.01"></div></div>
     <div class="pane" data-p="keys"><div class="dim" style="margin-bottom:8px">click a key, then press the one you want (Escape to keep it)</div><table id="keytab"></table>
       <div class="row" style="margin-top:10px"><button class="btn" id="kreset">ALL BACK AS THEY WERE</button></div><div id="credits" class="dim" style="margin-top:14px;font-size:9px"></div></div>
     <div class="pane" data-p="padset" id="dpad"></div>
@@ -309,12 +309,14 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   const $=s=>M.querySelector(s); let mapLv='up';
   // the one menu (owner, 5 Nov 2026: "B"): its sections down the left, each section's parts as tabs along the top; [id, name, key, parts or null, what a section without parts does]; a part is [id, name, its panes, or what it does]
   const shut=()=>{ if(UI.menuOpen)toggleMenu(); };
-  const SEC=[   // SETTINGS, PETS, INVENTORY, MAP for every player, ADMIN for the owners (owner, 7 Nov 2026); no PROFILE: you are your paper doll, double-click yourself (owner, 9 Nov 2026)
-    ['set','SETTINGS','ESC',[['view','VIEW',['display']],['camera','CAMERA',['camera']],['screen','SCREEN',['screen']],['chat','CHAT',['chat']],['res','RESOLUTION',['graphics']],['time','TIME',['atmo']],['weather','WEATHER',['weather']],['light','LIGHT',['light']],['sound','SOUND',['sound']],['keys','KEYS',['keys']],['pad','CONTROLLER',['padset']],['vr','VR',['vr']],['bug','REPORT A BUG',['bug']]]],   // every setting its own tab (owner, 8 Nov 2026: "everything needs its own tab, easier to find")   // no PEOPLE, BBS or GUIDE (owner, 7 Nov 2026); the chat stays in the corner
+  const SEC=[   // SETTINGS, PETS, INVENTORY, MAP, GUIDE, PEOPLE for every player, ADMIN for the owners (owner, 7 and 11 Nov 2026); no PROFILE: you are your paper doll, double-click yourself (owner, 9 Nov 2026)
+    ['set','SETTINGS','ESC',[['view','VIEW',['display']],['camera','CAMERA',['camera']],['screen','SCREEN',['screen']],['chat','CHAT',['chat']],['res','RESOLUTION',['graphics']],['time','TIME',['atmo']],['weather','WEATHER',['weather']],['light','LIGHT',['light']],['sound','SOUND',['sound']],['keys','KEYS',['keys']],['pad','CONTROLLER',['padset']],['vr','VR',['vr']],['bug','REPORT A BUG',['bug']]]],   // every setting its own tab (owner, 8 Nov 2026: "everything needs its own tab, easier to find")   // no BBS (owner, 7 Nov 2026); the chat stays in the corner
     ['moves','WHAT YOU CAN DO','?',[['move','MOVING'],['fight','FIGHTING'],['climb','CLIMBING & SWIMMING'],['ride','RIDING'],['out','OUTDOORS'],['games','GAMES & PLACES'],['home','YOUR APARTMENT'],['people','PEOPLE & MONEY'],['pad','CONTROLLER, TOUCH & VR']].map(([k,n])=>[k,n,['moves']])],   // every activity by category, its moves (owner, 10 Nov 2026)
     ['pets','PETS','',[['mine','YOUR PETS',['pets']],['pet','THEIR LOOK',['home']]]],   // every player's pets (owner, 8 Nov 2026)
     ['pack','INVENTORY','I',[['bag','BAG',['bag']],['skills','SKILLS',['pack']],['book','BOOK',['pack']],['fishing','FISHING',['pack']],['journal','JOURNAL',['pack']]]],
     ['map','MAP','SHIFT+M',[['street','STREET',['bro']],['subway','SUBWAY',['bro']],['under','UNDERGROUND',['bro']],['goto','GO TO',['bro']]]],   // the map a section of the menu (owner, 10 Nov 2026: "B")
+    ['guide','GUIDE','',[['guide','THE GUIDE',['guide']]]],   // back in the menu (owner, 11 Nov 2026)
+    ['people','PEOPLE','',[['people','ON YOUR BLOCK',['people']]]],   // back in the menu (owner, 11 Nov 2026)
     ['bbs','BBS','',[['shop','THE BODEGA',['bbs']],['furn','FURNITURE',['bbs']],['games','THE ARCADE',['bbs']],['orders','YOUR ORDERS',['bbs']]]],   // only from your computer, never in the menu's list
     ['tenants','TENANTS','',[['players','TENANTS',['tenants']]]],   // owners only, each its own (owner, 8 Nov 2026)
     ['admin','★ ADMIN','',[['queue','BUG QUEUE',['queue']],['text','TEXT',['text']],['editors','EDITORS',['editors']],['look','AVATAR',['home']],['veh','VEHICLES',['vehicles']],['vedit','VEHICLE EDITOR',['vedit']],['snded','SOUND EDITOR',['snded']],['tools','TOOLS',['tools']]]]];   // AVATAR: your look, owners only (owner, 9 Nov 2026: "the avatar editor should only be in the admin menu (since players cant edit themselves after they start)")   // TEXT its own tab (owner, 7 Nov 2026); no TESTS (owner, 8 Nov 2026)
@@ -341,7 +343,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     if(on.has('guide')&&GUIDE.open)GUIDE.open($('#dguide'));
     if(on.has('moves')&&UI.movesInto)UI.movesInto($('#dmoves'),pt[0]);
     if(on.has('bug'))BUGS.open($('#dbug')); if(on.has('queue'))BUGS.open($('#dqueue'),'queue');
-    if(['display','camera','screen','graphics','sound','atmo','light'].some(k=>on.has(k)))drawDisplay(); if(on.has('sound'))SNDED.into($('#dsndin')); if(on.has('keys'))drawKeys(); if(on.has('vr')&&VR.open)VR.open($('#dvr')); if(on.has('padset')&&UI.padPage)UI.padPage($('#dpad'));
+    if(['display','camera','screen','graphics','sound','atmo','light'].some(k=>on.has(k)))drawDisplay(); if(on.has('keys'))drawKeys(); if(on.has('vr')&&VR.open)VR.open($('#dvr')); if(on.has('padset')&&UI.padPage)UI.padPage($('#dpad'));
     if(on.has('atmo'))DN&&DN.draw(); if(on.has('tenants')&&TENANTS.open)TENANTS.open($('#dten')); if(on.has('text')&&TENANTS.text)TENANTS.text($('#dtext')); if(on.has('tools')&&CHARP.tools)CHARP.tools($('#dtools')); if(on.has('editors')&&CHARP.editors)CHARP.editors($('#deditors')); if(on.has('vehicles')&&SPEED.panel)SPEED.panel($('#dveh')); if(on.has('vedit')&&VLOOK.panel)VLOOK.panel($('#dvedit')); if(on.has('snded')&&SNDED.panel)SNDED.panel($('#dsnded'));
     bars(); };
   $('#mnav').addEventListener('click',e=>{ const b=e.target.closest('[data-sec]'); if(b)show(b.dataset.sec); });
@@ -460,7 +462,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   { const add=(n,x,z,lv)=>{ ROOMN.push(n); PLACES.push([n,x,z,lv]); }, mid=(X,Z,r)=>[(X(r[0])+X(r[2]))/2,(Z(r[1])+Z(r[3]))/2], B=SHARED.BOD.SB;
     if(SHARED.BOD.GD){ const s=SHARED.BOD.GD.shift||[0,0], m=mid(SHARED.BOD.X,SHARED.BOD.Z,SHARED.BOD.GD.floor||SHARED.BOD.GD.r); add('THE BATHS',m[0]+s[0],m[1]+s[1],'up'); }
     PLACES.push(['THE SUBWAY STAIRS',SHARED.BOD.XS((MAPSTAIR.x0+MAPSTAIR.x1)/2),SHARED.BOD.ZS(MAPSTAIR.y1+1.2),'up']); PLACEN.push('THE SUBWAY STAIRS'); }
-  { const sel=$('#placesel'), grp=(label,list)=>{ if(!list.length)return; const g=document.createElement('optgroup'); g.label=label; for(const n of list){ const o=document.createElement('option'); o.value=n; o.textContent=n; g.appendChild(o); } sel.appendChild(g); };
+  { const sel=$('#placesel'), grp=(label,list)=>{ if(!list.length)return; const g=document.createElement('optgroup'); g.label=label; for(const n of list.sort((a,b)=>TEXT.bare(a).localeCompare(TEXT.bare(b)))){ const o=document.createElement('option'); o.value=n; o.textContent=TEXT.bare(n); g.appendChild(o); } sel.appendChild(g); };
     const fill=()=>{ const seen=new Set(), G={OUTSIDE:[],INSIDE:[],UNDERGROUND:[]}, inn=new Set([...ROOMN,...(STORE.rooms||[]).map(R=>(R.name||'').toUpperCase()),...Object.keys(STORE.off||{})]);   // every place the game has registered, once, made when the list opens
       for(const p of UI.places()){ const n=p[0]; if(seen.has(n))continue; seen.add(n); (p[3]==='down'?G.UNDERGROUND:p[4]==='off'||typeof p[3]==='number'||inn.has(n)?G.INSIDE:G.OUTSIDE).push(n); }
       sel.textContent=''; const first=document.createElement('option'); first.value=''; first.textContent='CHOOSE A PLACE...'; sel.appendChild(first); for(const k in G)grp(k,G[k]); };
@@ -504,7 +506,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   $('#kreset').onclick=()=>{ BIND={}; try{ SAVE.del('keys'); }catch(e){} REV=rev(); drawKeys(); drawBadge(); };
   document.getElementById('stat').hidden=true;
   drawBadge(); }
-{ const PANS=[['menu',()=>UI.toggleMenu(),'.box'],['looks',el=>{ el.hidden=true; }],['we',()=>{}],['maped',()=>MAPED.toggle()],['snded',()=>SNDED.close()],['shbar'],['stat'],['gemp'],['packp',el=>{ el.hidden=true; if(FORAGE)FORAGE.PACK.open=false; }],['bagp',()=>{ if(BAG.toggle)BAG.toggle(false); }],['shopp'],['fishp'],['vegp'],['birdp'],['bookp'],['farlook'],['rinsp',()=>RINSP.toggle(false)],['emotes',()=>MOTION.close()]];
+{ const PANS=[['menu',()=>UI.toggleMenu(),'.box'],['looks',el=>{ el.hidden=true; }],['we',()=>{}],['stat'],['gemp'],['packp',el=>{ el.hidden=true; if(FORAGE)FORAGE.PACK.open=false; }],['bagp',()=>{ if(BAG.toggle)BAG.toggle(false); }],['shopp'],['fishp'],['vegp'],['birdp'],['farlook'],['rinsp',()=>RINSP.toggle(false)],['emotes',()=>MOTION.close()]];
   const css=document.createElement('style'); css.textContent='.pX{position:absolute;right:4px;top:4px;z-index:2;font:12px Silkscreen,monospace;color:#f2c14e;background:#0e1016;border:2px solid #3a3f4e;width:24px;height:24px;line-height:18px;padding:0;cursor:pointer} .pDrag{cursor:move}'; document.head.appendChild(css);
   { const ML=document.createElement('style'), C='color:#7dffa8!important', DIM='color:#3aa866!important', HI='color:#d8ffe4!important', sel=(k,cs)=>cs.map(c=>`.ml [style*="${k}:${c}"]`).join(',');   // every menu in the ESC menu's look (owner, 30 Oct 2026)
     ML.textContent=`.ml{font-family:'Share Tech Mono',ui-monospace,monospace!important;font-size:18px!important;line-height:1.45;letter-spacing:1px!important;${C};background:repeating-linear-gradient(0deg,rgba(125,255,168,.05) 0 1px,transparent 1px 3px),#020a06!important;border:0!important;border-radius:0!important;box-shadow:0 0 0 2px #3aa866!important}

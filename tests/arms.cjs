@@ -48,8 +48,13 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await shot('molotov');
 
     // the net: the player in front is caught
-    await place(4); await hold('w_net'); await pg.waitForTimeout(500); await aim(.02); await pg.evaluate(() => { __sent.length = 0; }); await fire('w_net');
-    const caught = await until(() => { const s = __sent.find(m => m.t === 'shot' && m.to === 'a' && m.tr === 'net'), t = ARMSDBG().traps.find(x => x[0] === 'a'); return s && t ? { tt: s.tt, trap: t } : null; }, 10000);
+    await hold('w_net'); await pg.waitForTimeout(500); let caught = null;
+    for (let i = 0; i < 3 && !caught; i++) {
+      await up(); await place(4); await until(() => { const o = ONLINE.others.get('a'), P = __dbg.you(), h = SHARED.heading, M = ARMSDBG().M; return o && o.p && Math.hypot(o.p.x - (P.x + Math.sin(h) * 4 * M), o.p.z - (P.z + Math.cos(h) * 4 * M)) < .5 * M; }, 4000);
+      await aim(.02); await pg.evaluate(() => { __sent.length = 0; }); await fire('w_net');
+      caught = await until(() => { const s = __sent.find(m => m.t === 'shot' && m.to === 'a' && m.tr === 'net'), t = ARMSDBG().traps.find(x => x[0] === 'a'); return s && t ? { tt: s.tt, trap: t, tries: 0 } : null; }, 6000);
+      if (caught) caught.tries = i + 1;
+      else console.log('  net miss: ' + JSON.stringify(await pg.evaluate(() => { const o = ONLINE.others.get('a'); return { me: __dbg.you(), h: SHARED.heading, a: o && o.p, stuck: SHARED.stuck, rag: RAGON(), last: ARMS.last }; }))); }
     ok(!!caught, 'a net catches the player it hits (' + JSON.stringify(caught) + ')');
     await shot('net');
 

@@ -4,6 +4,8 @@ import {PARK, pos, WEEDS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FIX, LEVEL, SOL, SYS, TILE} from './006-map-pre.js';
 import {PEEK} from './008-batch.js';
+import {FOREST} from './039-bodega.js';
+import {TREEGEN} from './060b-trees.js';
 PARK.climbable=[];
 { const T=TILE, M=T/.84, hs=(a,b)=>{ const s=Math.sin(a*127.1+b*311.7)*43758.5453; return s-Math.floor(s); };
   const KIND={ A:{h:62,r0:3.2,r1:.5,br:[[13,0,1.9],[14,7,1.5],[15,14,1.1],[15.5,20,.8],[16.5,26,.5]]},
@@ -33,7 +35,25 @@ PARK.climbable=[];
     for(const [a,b] of [[.72,.72],[1,.42],[.42,1]])SOL.up.push([x-rb*a,z-rb*b,x+rb*a,z+rb*b]);
     if(WEEDS.addFeet)WEEDS.addFeet([[x,z,rb,4*M]]);
     return {k:'BIGG',x,y,z,top:y+TH*M,r:(RX+6)*M,nr:(RX+20)*M,tr,rf:rb,fork:0,v0:0,v1:P.length/3,P:new Float32Array(P),LF:[],lb,sol,fix,climb:!!o.climb}; };
-  const make=(o,i,puffs)=>{ if(o.kind==='G')return giant(o,i,puffs); const sz=o.s||1, M=T/.84*sz, PK=Math.pow(sz,-.45), S=KIND[o.kind]||KIND.A, x=SHARED.BOD.XS(o.x), z=SHARED.BOD.ZS(o.y), y=SHARED.groundY?SHARED.groundY(x,z):0, face=(o.face||0)*Math.PI/180, dx=Math.cos(face), dz=Math.sin(face), P=[], lb=[];
+  // THE GIANT AS AN ELDER (owner, 11 Nov 2026: "the largest tree in game now should be replaced by a #2 of same size"; his picks: keep the climb and the hollow): the pack's Elder2 at 148 m, its leaf clumps hollow shells, open underneath; a gnarled trunk you climb to the top and a limb out into every clump
+  const elder=(o,i,E)=>{ const k=(o.s||2.4)/2.4, M=T/.84*k, x=SHARED.BOD.XS(o.x), z=SHARED.BOD.ZS(o.y), y=SHARED.groundY?SHARED.groundY(x,z):0, H=148, TH=H*.92, r0=8.5, P=[], lb=[], f=(o.face||0)*Math.PI/180, ca=Math.cos(f), sa=Math.sin(f), S=H*M;
+    const b=t=>{ const a=atob(t), u=new Uint8Array(a.length); for(let q=0;q<a.length;q++)u[q]=a.charCodeAt(q); return u; }, pk=new Float32Array(b(E.p).buffer), col=b(E.c), kk=b(E.k), LP=[], LC=[];
+    for(let t=0;t<kk.length;t++){ if(kk[t])continue; for(let v=0;v<3;v++){ const j=t*9+v*3, px=pk[j], pz=pk[j+2]; LP.push(x+(px*ca-pz*sa)*S,y+pk[j+1]*S,z+(px*sa+pz*ca)*S); LC.push(col[j]/255,col[j+1]/255,col[j+2]/255); } }
+    const CL=(TREEGEN.old[o.look]||{cl:[]}).cl.map(([cx,cy,cz,r])=>[x+(cx*ca-cz*sa)*S,y+cy*S,z+(cx*sa+cz*ca)*S,r*S]);
+    const rAt=h=>r0+(1.2-r0)*Math.pow(Math.min(1,Math.max(0,h)/TH),.65), kx=u=>Math.sin(u*7.5+f)*2.6*Math.min(1,u*3), kz=u=>Math.cos(u*5.2+f)*2.1*Math.min(1,u*3);   // the elder's kinks, within the bark's own reach so the climb keeps hold
+    const trunk=[]; for(let q=0;q<=14;q++){ const u=q/14; trunk.push([x+kx(u)*M,y+(u*TH-1)*M,z+kz(u)*M,rAt(u*TH)*M*(q?1:1.3)]); } tube(trunk,P);
+    for(let q=0;q<8;q++){ const a=q/8*6.28+.3; tube([[x,y+6*M,z,4.5*M],[x+Math.cos(a)*10.5*M,y+.8*M,z+Math.sin(a)*10.5*M,2.4*M],[x+Math.cos(a)*14*M,y-.6*M,z+Math.sin(a)*14*M,.7*M]],P); }
+    const limb=pts=>{ tube(pts,P); for(let q=0;q+1<pts.length;q++){ const A=pts[q], B=pts[q+1]; lb.push([A[0],A[1],A[2],B[0],B[1],B[2],A[3],B[3]]); } };
+    CL.forEach(([cx,cy,cz,r],q)=>{ const dx=cx-x, dz=cz-z, d=Math.hypot(dx,dz); if(d<r*.4)return; const h0=Math.max(40*M,cy-y-r*.55), u0=h0/(TH*M), sx=x+kx(u0)*M, sz=z+kz(u0)*M, R=Math.max(.9,2.6-1.6*h0/(TH*M))*M, pts=[];
+      for(let t5=0;t5<=5;t5++){ const t=t5/5, e=Math.min(1,(d-r*.15)/d)*t; pts.push([sx+(cx-sx)*e,y+h0+(cy-y-h0)*t*t*.8-Math.sin(t*3.1)*1.5*M,sz+(cz-sz)*e,R*(1-.6*t)]); } limb(pts);
+      for(let sd=0;sd<2;sd++){ const st=.55+.2*sd, p0=pts[Math.round(st*5)], a=Math.atan2(dz,dx)+(sd?.7:-.7), L=r*.55, sp=[]; for(let t3=0;t3<=3;t3++){ const t=t3/3; sp.push([p0[0]+Math.cos(a)*L*t,p0[1]+t*6*M,p0[2]+Math.sin(a)*L*t,R*.45*(1-.7*t)]); } limb(sp); } });
+    const tr=rAt(1.5)*M, rb=r0*1.3*M, sol=[x-tr*.8,z-tr*.8,x+tr*.8,z+tr*.8], fix=[x-tr*.8,z-tr*.8,y,x+tr*.8,z+tr*.8,y+30*M]; FIX.up.push(fix);
+    for(let q=1;q<4;q++){ const rr=rAt(q*TH/4)*M*.8; FIX.up.push([x-rr,z-rr,y+q*TH/4*M-15*M,x+rr,z+rr,y+q*TH/4*M+20*M]); }
+    for(const [a,c] of [[.72,.72],[1,.42],[.42,1]])SOL.up.push([x-rb*a,z-rb*c,x+rb*a,z+rb*c]);
+    if(WEEDS.addFeet)WEEDS.addFeet([[x,z,rb,4*M]]);
+    let RX=0; for(const c of CL)RX=Math.max(RX,Math.hypot(c[0]-x,c[2]-z)+c[3]);
+    return {k:'BIGG',look:o.look,x,y,z,top:y+H*M,r:RX+6*M,nr:RX+20*M,tr,rf:rb,fork:0,v0:0,v1:P.length/3,P:new Float32Array(P),LF:[],lb,sol,fix,climb:!!o.climb,leafP:new Float32Array(LP),leafC:new Float32Array(LC),blobs:CL}; };
+  const make=(o,i,puffs)=>{ if(o.kind==='G'&&o.look&&FOREST[o.look])return elder(o,i,FOREST[o.look]); if(o.kind==='G')return giant(o,i,puffs); const sz=o.s||1, M=T/.84*sz, PK=Math.pow(sz,-.45), S=KIND[o.kind]||KIND.A, x=SHARED.BOD.XS(o.x), z=SHARED.BOD.ZS(o.y), y=SHARED.groundY?SHARED.groundY(x,z):0, face=(o.face||0)*Math.PI/180, dx=Math.cos(face), dz=Math.sin(face), P=[], lb=[];
     const rAt=h=>S.r0+(S.r1-S.r0)*Math.pow(Math.max(0,h)/S.h,.7), at=(h,a,d)=>[x+Math.cos(a)*d,y+h*M,z+Math.sin(a)*d];
     const puff=(px,py,pz,r)=>{ const q=Math.hypot(px-x,pz-z), need=(rAt((py-y)/M)+1.5)*M+r*.5; if(q<need){ const k=need/(q||1); px=x+(px-x)*k; pz=z+(pz-z)*k; } puffs.push([px,py,pz,r,Math.floor(hs(i,puffs.length)*4)]); };   // the middle round the trunk stays open to climb
     const trunk=[]; for(let k=0;k<=8;k++){ const u=k/8; trunk.push([x+Math.sin(u*3+face)*.4*M*u,y+u*S.h*M-.5*M,z+Math.cos(u*2.3+face)*.3*M*u,rAt(u*S.h)*M*(k?1:1.35)]); } tube(trunk,P);
@@ -52,9 +72,10 @@ PARK.climbable=[];
     for(let k=0;k<6;k++){ const a=k/6*6.28+.4+face; for(const [d,w,hh] of [[4.2,.85,1.2],[5,.65,.7],[5.7,.45,.35]]){ if(d+w<=S.r0*1.35)continue; const cx=x+Math.cos(a)*d*M, cz=z+Math.sin(a)*d*M, h=w*M; SOL.up.push([cx-h,cz-h,cx+h,cz+h]); FIX.up.push([cx-h,cz-h,y,cx+h,cz+h,y+hh*M]); } }
     if(WEEDS.addFeet)WEEDS.addFeet([[x,z,rb,2.5*M]]);   // tufts and weeds round its foot and among its roots
     return {k:'BIG'+(o.kind||'A'),x,y,z,top:y+S.h*M,r:30*M,tr,rf:rb,fork:0,v0:0,v1:P.length/3,P:new Float32Array(P),LF:[],lb,sol,fix,climb:!!o.climb}; };
-  SYS.onStart(()=>{ const L=(LEVEL.bigTrees||[]).filter(o=>o.kind); if(!L.length)return; const g=new THREE.Group(), puffs=[];   // seen from the whole map, not only once the park is up (owner, 8 Nov 2026: "render entire map")
+  SYS.onStart(()=>{ const ALL=PARK.big=[], FLS=[]; PARK.bigFar={get count(){ return FLS.reduce((a,f)=>a+f.count,0); }}; PARK.bigLeaves={get count(){ return ALL.reduce((a,it)=>a+(it.near?it.p1-it.p0:0),0); }};
+  const build=L=>{ if(!L.length)return; const g=new THREE.Group(), puffs=[];   // seen from the whole map, not only once the park is up (owner, 8 Nov 2026: "render entire map")
     scene.add(g); SYS.every(()=>{ g.visible=SHARED.LVL==='up'; },500,'144d-bigtrees shown on the street level'); const bark=new THREE.MeshLambertMaterial({color:0x6a5040,flatShading:true}), leaf=new THREE.MeshLambertMaterial({color:0xffffff});
-    const items=L.map((o,i)=>{ const n=puffs.length, it=make(o,i,puffs); it.p0=n; it.p1=puffs.length; return it; }); PARK.big=items;
+    const i0=ALL.length, items=L.map((o,i)=>{ const n=puffs.length, it=make(o,i0+i,puffs); it.p0=n; it.p1=puffs.length; return it; }); ALL.push(...items); const elf=new THREE.MeshLambertMaterial({vertexColors:true,flatShading:true,side:THREE.DoubleSide});
     const PG=new THREE.IcosahedronGeometry(1,1), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), v=new THREE.Vector3(), s=new THREE.Vector3(), c=new THREE.Color(), EU=new THREE.Euler();   // each puff turned its own way: two the same size side by side never share a face
     PEEK.mark(PG,new Uint8Array(PG.attributes.position.count).fill(5));   // seen through round you like the park's other big trees (PEEK)
     // the leaves cast no shadow, only the bark (owner, 9 Nov 2026)
@@ -62,11 +83,12 @@ PARK.climbable=[];
     for(const it of items){ const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(it.P,3)); geo.computeVertexNormals(); { const N=geo.attributes.normal.array, n8=new Int8Array(N.length); for(let i=0;i<N.length;i++)n8[i]=Math.round(N[i]*127); geo.setAttribute('normal',new THREE.BufferAttribute(n8,3,true)); } const me=new THREE.Mesh(geo,bark); me.castShadow=me.receiveShadow=true; g.add(me); it.mesh=me; if(it.climb)PARK.climbable.push(it);
       const IM=new THREE.InstancedMesh(PG,leaf,it.p1-it.p0); for(let i=it.p0;i<it.p1;i++){ const [x,y,z,r,k]=puffs[i], G=GREEN[k]; IM.setMatrixAt(i-it.p0,m4.compose(v.set(x,y,z),q.setFromEuler(EU.set(i*2.399%6.283,i*1.618%6.283,i*.737%6.283)),s.setScalar(r))); IM.setColorAt(i-it.p0,c.setRGB(G[0],G[1],G[2],THREE.SRGBColorSpace)); }
       IM.castShadow=false; IM.receiveShadow=true; IM.computeBoundingSphere(); g.add(IM); it.leaves=IM;
+      if(it.leafP){ const lg=new THREE.BufferGeometry(); lg.setAttribute('position',new THREE.BufferAttribute(it.leafP,3)); lg.setAttribute('color',new THREE.BufferAttribute(it.leafC,3)); lg.computeVertexNormals(); PEEK.mark(lg,new Uint8Array(it.leafP.length/3).fill(5)); const lm=new THREE.Mesh(lg,elf); lm.receiveShadow=true; g.add(lm); it.shell=lm; }
       PEEK.mark(geo,new Uint8Array(it.P.length/3).fill(5)); const B=new THREE.Box3(); geo.computeBoundingBox(); B.copy(geo.boundingBox);
       for(let i=it.p0;i<it.p1;i++){ const [x,y,z,r]=puffs[i]; B.expandByPoint(v.set(x-r,y-r,z-r)); B.expandByPoint(v.set(x+r,y+r,z+r)); } PEEK.box(IM,B.min.x,B.min.y,B.min.z,B.max.x,B.max.y,B.max.z); }
     // from further off, each tree its plain shape: its leaves gathered into a few big blobs (twenty triangles each), its trunk and big branch six-sided tubes; a few hundred triangles a tree, all of them one draw each
     const FB=[], CELL=9*T/.84;
-    for(const it of items){ it.f0=FB.length; const cells=new Map(); for(let i=it.p0;i<it.p1;i++){ const P=puffs[i], kk=Math.floor(P[0]/CELL)+','+Math.floor(P[1]/CELL)+','+Math.floor(P[2]/CELL); (cells.get(kk)||cells.set(kk,[]).get(kk)).push(P); }
+    for(const it of items){ it.f0=FB.length; if(it.blobs){ for(const [x,y,z,r] of it.blobs)FB.push([x,y,z,r,0]); it.f1=FB.length; continue; } const cells=new Map(); for(let i=it.p0;i<it.p1;i++){ const P=puffs[i], kk=Math.floor(P[0]/CELL)+','+Math.floor(P[1]/CELL)+','+Math.floor(P[2]/CELL); (cells.get(kk)||cells.set(kk,[]).get(kk)).push(P); }
       for(const L_ of cells.values()){ let x=0,y=0,z=0,w=0; for(const P of L_){ const a=P[3]**3; x+=P[0]*a; y+=P[1]*a; z+=P[2]*a; w+=a; } x/=w; y/=w; z/=w; let r=0; for(const P of L_)r=Math.max(r,Math.hypot(P[0]-x,P[1]-y,P[2]-z)*.6+P[3]); FB.push([x,y,z,r,L_[0][4]]); }
       it.f1=FB.length; }
     const FL=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshLambertMaterial({color:0xffffff,flatShading:true}),FB.length);
@@ -75,14 +97,14 @@ PARK.climbable=[];
     const tubeAt=(i,a,b,r)=>{ D.set(b[0]-a[0],b[1]-a[1],b[2]-a[2]); const L_=D.length(); q.setFromUnitVectors(UP,D.normalize()); FT.setMatrixAt(i,m4.compose(v.set(a[0],a[1],a[2]),q,s.set(r,L_,r))); q.identity(); };
     items.forEach((it,i)=>{ it.T0=[[it.x,it.y-.5*T,it.z],[it.x,it.top,it.z],it.tr*1.15]; const lb=it.lb, b0=lb[0]; let e=0; while(e+1<lb.length&&lb[e+1][0]===lb[e][3]&&lb[e+1][2]===lb[e][5])e++; const be=lb[e];   // (the big branch: its segments come first, end to end)
       it.T1=[[b0[0],b0[1],b0[2]],[be[3],be[4],be[5]],b0[6]]; tubeAt(i*2,...it.T0); tubeAt(i*2+1,...it.T1); });
-    for(const M_ of [FL,FT]){ M_.castShadow=M_===FT; M_.receiveShadow=true; M_.frustumCulled=false; M_.userData.pieceCull=1; g.add(M_); } PARK.bigFar=FL;
+    for(const M_ of [FL,FT]){ M_.castShadow=M_===FT; M_.receiveShadow=true; M_.frustumCulled=false; M_.userData.pieceCull=1; g.add(M_); } FLS.push(FL);
     // which trees are near: whole within NEAR tiles of the eye (along the ground), their plain shapes away; the rest the other way round
     const NEAR=45*T, Z=new THREE.Matrix4().makeScale(0,0,0); let tk=0;
-    const swap=(it,i,near)=>{ it.near=near; it.mesh.visible=it.leaves.visible=near;
+    const swap=(it,i,near)=>{ it.near=near; it.mesh.visible=it.leaves.visible=near; if(it.shell)it.shell.visible=near;
       for(let j=it.f0;j<it.f1;j++){ if(near)FL.setMatrixAt(j,Z); else { const [x,y,z,r]=FB[j]; FL.setMatrixAt(j,m4.compose(v.set(x,y,z),q.setFromEuler(EU.set(j*2.399%6.283,j*1.618%6.283,j*.737%6.283)),s.setScalar(r))); } } FL.instanceMatrix.needsUpdate=true;
       if(near){ FT.setMatrixAt(i*2,Z); FT.setMatrixAt(i*2+1,Z); } else { tubeAt(i*2,...it.T0); tubeAt(i*2+1,...it.T1); } FT.instanceMatrix.needsUpdate=true; };
     items.forEach((it,i)=>swap(it,i,false));
     SYS.add('cam',dt=>{ if((tk-=dt||0)>0)return; tk=.25; const cam=SHARED.cam; if(!cam)return; const cx=cam.position.x, cz=cam.position.z, persp=!cam.isOrthographicCamera;
-      items.forEach((it,i)=>{ const N=Math.max(NEAR,it.nr||0), near=persp?Math.hypot(it.x-cx,it.z-cz)<N:Math.hypot(it.x-pos.x,it.z-pos.z)<N; if(near!==it.near)swap(it,i,near); }); },'144d-bigtrees near or far');
-    PARK.bigLeaves={get count(){ return items.reduce((a,it)=>a+(it.near?it.p1-it.p0:0),0); }}; },'144d-bigtrees');
+      items.forEach((it,i)=>{ const N=Math.max(NEAR,it.nr||0), near=persp?Math.hypot(it.x-cx,it.z-cz)<N:Math.hypot(it.x-pos.x,it.z-pos.z)<N; if(near!==it.near)swap(it,i,near); }); },'144d-bigtrees near or far'); };
+    build((LEVEL.bigTrees||[]).filter(o=>o.kind)); PARK.onSmallA=build; if(PARK.smallA)build(PARK.smallA); },'144d-bigtrees');
   window.BIGTREESDBG=()=>({trees:(PARK.big||[]).length,climbable:PARK.climbable.length,puffs:PARK.bigLeaves?PARK.bigLeaves.count:0,near:(PARK.big||[]).filter(t=>t.near).length,farBlobs:PARK.bigFar?PARK.bigFar.count:0,branches:(PARK.big||[]).map(t=>t.lb.length),tris:(PARK.big||[]).reduce((a,t)=>a+t.v1/3,0)}); }

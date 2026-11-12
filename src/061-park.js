@@ -248,7 +248,7 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     for(let i=0;i<n;i++){ const a=RG[i], b=RG[i+1]; ID[i]=-1; if(b<=a)continue; const G=new THREE.BufferGeometry(); for(const k of names){ const A=g.attributes[k], z=A.itemSize; G.setAttribute(k,new THREE.BufferAttribute(A.array.slice(a*z,b*z),z,A.normalized)); } me.setMatrixAt(ID[i]=me.addInstance(me.addGeometry(G)),I); }
     me.sortObjects=false; return me; };
   const CK={}, CARDS=(key,lite,look=0)=>{ const q=key+(lite===2?'.cl':'.c')+look; if(q in CK)return CK[q]; const D=F[key]; return CK[q]=D&&D.sum?TREEGEN.cards(D.sum,D.trunk,key.length*31+key.charCodeAt(key.length-1),lite===2,look):null; };
-  const OLD=['Elder1','OakTree1','OakTree2','OakTree3','Willow1'], OWN=k=>OLD.includes(k);   // the old trees with their own leaves (owner, 7 Nov 2026)
+  const OLD=['Elder1','Elder2','OakTree1','OakTree2','OakTree3','Willow1','Giant1'], OWN=k=>OLD.includes(k);   // the old trees with their own leaves (owner, 7 Nov 2026)
   const F=Object.assign({},FOREST,PROPS), mesh=(list,leafy,solid=true,sway=false,opt={})=>{ if(opt.cards)opt.map=TREEGEN.leaf(); const P3=[], C3=[], SW=[], TR=[], LF=[], RN=[], RG=[], IT=[], CN=[], UV=[], c=new THREE.Color(); for(const [key,x,y,m,turn,lift] of list){ const p0=P3.length; RG.push(p0/3); const ph=hash(Math.round(x*7),Math.round(y*7),131)*6.28; const D=opt.cards&&!OWN(key)&&CARDS(key,opt.cards,Math.floor(hash(Math.round(x*7),Math.round(y*7),977)*4)%4)||F[key], p=f32(D.p), col=b8(D.c), k=b8(D.k), s=m/.84*TILE, ca=Math.cos(turn||0), sa=Math.sin(turn||0), ox=X(x), oz=Z(y), oy=(lift||0)/.84*TILE+P.hill(x,y), LBW=(D.limbs||[]).map(([ax,ay,az,bx,by,bz,ra,rb])=>[ox+(ax*ca-az*sa)*s,ay*s+oy,oz+(ax*sa+az*ca)*s,ox+(bx*ca-bz*sa)*s,by*s+oy,oz+(bx*sa+bz*ca)*s,ra*s,rb*s]);
       const nt=opt.noTrunk&&/^OakTree/.test(key)&&!OWN(key); for(let i=0;i<p.length;i+=3){ const px=p[i]*s, py=p[i+1]*s+oy, pz=p[i+2]*s; if(nt&&k[Math.floor(i/9)]===1)P3.push(ox,oy,oz); else P3.push(ox+px*ca-pz*sa,py,oz+px*sa+pz*ca); if(sway)SW.push(k[Math.floor(i/9)]===0?Math.max(0,p[i+1])*s:0,ph); if(TL)LF.push(col[i+1]>col[i]*1.08&&col[i+1]>col[i+2]*1.08?1:0); const t=Math.floor(i/9), tq=D.cards?t>>1:t, sh=k[t]===0?.86+.28*hash(tq,x*7,y*3):k[t]===2?.9+.2*hash(t,x*5,y*9):.92+.16*hash(t,x*3,y*5);
         c.setRGB(col[i]/255*sh,col[i+1]/255*sh,col[i+2]/255*sh,THREE.SRGBColorSpace); C3.push(c.r,c.g,c.b); }
@@ -299,23 +299,32 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
       const keep=(x,y,r)=>KEEP.some(b=>x>b[0]-r&&x<b[2]+r&&y>b[1]-r&&y<b[3]+r)||x<P.x0+8||x>P.x1-8||y<P.y0+TREEY||y>P.y1-6||Math.hypot(x-cx,y-cy)<P.round[2]+r+4;
       const place=(k,x,y,m,t)=>{ add(k,x,y,m,t); put(x,y,m*W(k)); };
       const vn=(x,y,c,sd)=>{ const gx=Math.floor(x/c), gy=Math.floor(y/c), u0=x/c-gx, v0=y/c-gy, u=u0*u0*(3-2*u0), v=v0*v0*(3-2*v0), h=(i,j)=>hash(gx+i+500,gy+j+500,sd), a=h(0,0), b=h(1,0), c2=h(0,1), d=h(1,1); return a+(b-a)*u+(c2-a)*v+(a-b-c2+d)*u*v; };
-      const wood=(x,y)=>.65*vn(x,y,40,401)+.35*vn(x,y,15,409), OAK=['OakTree1','OakTree2','OakTree3','Elder1'], kind=(a,b,c)=>OAK[Math.floor(hash(a,b,c)*OAK.length)%OAK.length];
-      const row=(x,y,k,m,n)=>{ const r=m*W(k); if(pd(x,y)<1.6||FOUNT.lake(x,y)<2||BK.wet(x,y,1)||FOUNT.ter(x,y)<2||keep(x,y,0)||giant(x,y,0,15)||onThing(x,y,.6)||crowd(x,y,r,.45,6))return; place(k,x,y,m,hash(n,7,231)*6.28); };
+      const wood=(x,y)=>.65*vn(x,y,40,401)+.35*vn(x,y,15,409), OAK=['OakTree1','OakTree2','OakTree3','Elder1','Elder2'], kind=(a,b,c)=>OAK[Math.floor(hash(a,b,c)*OAK.length)%OAK.length];
+      const row=(x,y,k,m,n,cf=.45)=>{ const r=m*W(k); if(pd(x,y)<1.6||FOUNT.lake(x,y)<2||BK.wet(x,y,1)||FOUNT.ter(x,y)<2||keep(x,y,0)||giant(x,y,0,15)||onThing(x,y,.6)||crowd(x,y,r,cf,6))return; place(k,x,y,m,hash(n,7,231)*6.28); };
       // the paths' rows: the Mall's trees, the trunk just off the path's edge, one each side every 9 tiles
-      let n=0; for(const [ax,ay,bx,by] of P.segs){ const L=Math.hypot(bx-ax,by-ay), ux=(bx-ax)/L, uy=(by-ay)/L, NW=Math.round(L/70);
-        for(let s=4;s<L-2;s+=9)for(const sd of [-1,1]){ n++; const w=WA*Math.sin(2*Math.PI*NW*s/L), off=sd*8.5+w+(hash(n,3,233)-.5), x=ax+ux*s-uy*off, y=ay+uy*s+ux*off; row(x,y,kind(n,5,235),5.25*(2+.4*hash(n,9,237)),n); } }
+      let n=0; const MALL=LEVEL.paths.findIndex(q=>q.id==='path0'), MY=59.5-PO.y; P.segs.forEach(([ax,ay,bx,by],si)=>{ const L=Math.hypot(bx-ax,by-ay), ux=(bx-ax)/L, uy=(by-ay)/L, NW=Math.round(L/70);
+        for(let s=4;s<L-2;s+=9)for(const sd of [-1,1]){ n++; const w=WA*Math.sin(2*Math.PI*NW*s/L), off=sd*8.5+w+(hash(n,3,233)-.5), x=ax+ux*s-uy*off, y=ay+uy*s+ux*off;
+          if(si===MALL&&y<MY-4){ if(!(keep(x,y,0)||giant(x,y,0,15)||onThing(x,y,.6)||pd(x,y)<1.6))place('GE'+Math.floor(hash(n,7,239)*TREEGEN.count('E')),x,y,26+5*hash(n,9,237),hash(n,7,231)*6.28); continue; }
+          row(x,y,kind(n,5,235),5.25*(2+.4*hash(n,9,237)),n); } });
       // the lake's track: oaks behind it and willows leaning to the water
-      { const S=FOUNT.S; for(let i=0;i<S.shore.length;i+=5){ n++; const [x,y]=S.shore[i], q=S.nrm(x,y), d=FOUNT.TRACK[0]+FOUNT.TRACK[1]+3+hash(n,11,239)*2.5, wl=hash(n,13,241)<.4; row(x+q[0]*d,y+q[1]*d,wl?'Willow1':kind(n,15,243),5.25*(wl?1.3+.3*hash(n,17,245):1.5+.5*hash(n,17,245)),n); } }
+      { const S=FOUNT.S; for(let i=0;i<S.shore.length;i+=5){ n++; const [x,y]=S.shore[i], q=S.nrm(x,y), d=FOUNT.TRACK[0]+FOUNT.TRACK[1]+3+hash(n,11,239)*2.5, wl=hash(n,13,241)<.4, ch=!wl&&hash(n,19,247)<.55; row(x+q[0]*d,y+q[1]*d,wl?'Willow1':ch?'GK'+(n%TREEGEN.count('K')):kind(n,15,243),ch?14+4*hash(n,17,245):5.25*(wl?1.3+.3*hash(n,17,245):1.5+.5*hash(n,17,245)),n,ch?.15:.45); } }
       // the brook's banks
       { const B=(LEVEL.parkPlaces.brook&&LEVEL.parkPlaces.brook.pts)||[]; for(let i=0;i+1<B.length;i++){ const [ax,ay]=[B[i][0]-PO.x,B[i][1]-PO.y], [bx,by]=[B[i+1][0]-PO.x,B[i+1][1]-PO.y], L=Math.hypot(bx-ax,by-ay)||1, ux=(bx-ax)/L, uy=(by-ay)/L;
         for(let s=0;s<L;s+=7)for(const sd of [-1,1]){ n++; const off=sd*(5+hash(n,19,247)*3), x=ax+ux*s-uy*off, y=ay+uy*s+ux*off; row(x,y,hash(n,21,249)<.5?'Willow1':kind(n,23,251),5.25*(1.3+.4*hash(n,25,253)),n); } } }
       // the woods: thick where the drift is high, thinning to open lawn; never a crown over a path
       for(let i=0;i<40000;i++){ const x=P.x0+(P.x1-P.x0)*hash(i,31,261), y=P.y0+(P.y1-P.y0)*hash(i,33,263), w=wood(x,y); if(w<.4||hash(i,35,265)>Math.min(1,(w-.4)*6))continue;
-        const k=kind(i,37,267), m=5.25*(1.4+.8*hash(i,39,269)), r=m*W(k); if(!ok(x,y,r*.7)||keep(x,y,r*.5)||giant(x,y,r)||onThing(x,y,r*.4)||crowd(x,y,r,.72,4))continue; place(k,x,y,m,hash(i,41,271)*6.28); } }
+        const k=w>.6&&hash(i,43,273)<.7?'G'+(hash(i,45,275)<.5?'A':'C')+Math.floor(hash(i,47,277)*TREEGEN.count('A')):kind(i,37,267), m=5.25*(1.4+.8*hash(i,39,269))*(k[0]==='G'?1.25:1), r=m*W(k); if(!ok(x,y,r*.7)||keep(x,y,r*.5)||giant(x,y,r)||onThing(x,y,r*.4)||crowd(x,y,r,.72,4))continue; place(k,x,y,m,hash(i,41,271)*6.28); }
+      // a few of the pack's giants as landmarks out on the open lawns, far apart
+      { const LM=[]; for(let i=0;i<20000&&LM.length<5;i++){ const x=P.x0+(P.x1-P.x0)*hash(i,51,281), y=P.y0+(P.y1-P.y0)*hash(i,53,283); if(wood(x,y)>.32)continue; const m=22+4*hash(i,55,285), r=m*W('Giant1');
+          if(LM.some(([a,b])=>Math.hypot(a-x,b-y)<70)||!ok(x,y,r*.7)||keep(x,y,r*.5)||giant(x,y,r)||onThing(x,y,r*.4)||crowd(x,y,r,.8,8))continue; LM.push([x,y]); place('Giant1',x,y,m,hash(i,57,287)*6.28); } }
+      // today's big-tree look (A) at 10 to 20 m among the lawn trees; drawn by the big trees' own maker (144d), not climbable
+      { const SA=PARK.smallA=[]; for(let i=0;i<30000&&SA.length<30;i++){ const x=P.x0+(P.x1-P.x0)*hash(i,61,291), y=P.y0+(P.y1-P.y0)*hash(i,63,293); if(wood(x,y)>.45)continue; const sz=(10+10*hash(i,65,295))/62, r=sz*30/.84;
+          if(!ok(x,y,r*.6)||keep(x,y,r*.5)||giant(x,y,r)||onThing(x,y,r*.4)||crowd(x,y,r,.75,6)||SA.some(o=>Math.hypot(o.x-PO.x-x,o.y-PO.y-y)<r+12))continue; put(x,y,r); SA.push({kind:'A',x:+(x+PO.x).toFixed(1),y:+(y+PO.y).toFixed(1),face:Math.round(hash(i,67,297)*360),s:+sz.toFixed(3),small:1}); }
+        if(PARK.onSmallA)PARK.onSmallA(SA); } }
     { const FY=[P.y1+6,P.y1+20,P.y1+36], XA=P.x0-16, XB=P.x1+16, BACK=out.back=[]; let n=0; for(const [ri,fy] of FY.entries())for(let x=XA+9*ri+6;x<XB;x+=18,n++){ const k=hash(n,201,3)<.3?'Elder'+(1+n%2):'OakTree'+(1+n%3), m=5.25*(1.1+.25*hash(n,203,5)), xx=x+(hash(n,205,7)-.5)*9, yy=fy+(hash(n,207,9)-.5)*8; BACK.push([k,+xx.toFixed(1),+yy.toFixed(1),+m.toFixed(1),+(hash(n,209,11)*6.28).toFixed(2)]); } }
     const R0=out.length; let edgeOK;
     // a dense ring of tall trees just inside the wall, right round the park, so from outside only trees show at the edge
-    { const TK=OLD.filter(k=>k!=='Willow1');   // no willows on the wall (owner, 7 Nov 2026)
+    { const TK=['Elder1','OakTree1','OakTree2','OakTree3'];   // no willows on the wall (owner, 7 Nov 2026)
       const gap=(v,g,pad)=>g&&v>g[0]-pad&&v<g[1]+pad, PAD=4.5;
       edgeOK=(x,y)=>!(FOUNT.lake(x,y)<2.4||FOUNT.ter(x,y)<2.2||BK.wet(x,y,2)||path(x,y)||inCL(x,y,1));
       // one row along the wall, each crown just clear of the next (owner: "this size and distance from each other")
@@ -387,7 +396,8 @@ await grab('parkwall',async()=>{ const PO=LAY.o('park'), PE=LAY.e('park'); PARK.
     grp.userData.flowers=F1.length; grp.userData.mushrooms=M1.length; (MAPG.park||scene).add(grp); return grp; };
   const NOTREES=QS.get('trees')==='0';   // no trees placed yet (owner, 5 Nov 2026); ?trees=1 shows them
   PARK.trunksOf=trunks;
-  const NI=TREES.length-PARK.ringN, INO=[], INC=[]; PARK.later(()=>{ PARK.trees=NOTREES||!INO.length?null:mesh(INO,true,true,true,{lod:'near'}); PARK.cards=NOTREES||!INC.length?null:mesh(INC,true,true,true,{noTrunk:1,cards:1}); PARK.trunks=INC.length?trunks(INC):null; PARK.feet=INO.length+INC.length?feet(INO.concat(INC)):null;   // only the ring along the wall, no trees inside (owner, 7 Nov 2026)
+  const NI=TREES.length-PARK.ringN, INO=[], INC=[]; for(let i=NI-1;i>=0;i--)if(/^G[EK]/.test(TREES[i][0]))INC.push(...TREES.splice(i,1));   // the Mall's elms and the lake's cherries are leaf cards (2 Nov 2026)
+  PARK.later(()=>{ PARK.trees=NOTREES||!INO.length?null:mesh(INO,true,true,true,{lod:'near'}); PARK.cards=NOTREES||!INC.length?null:mesh(INC,true,true,true,{noTrunk:1,cards:1}); PARK.trunks=INC.length?trunks(INC):null; PARK.feet=INO.length+INC.length?feet(INO.concat(INC)):null;   // only the ring along the wall, no trees inside (owner, 7 Nov 2026)
     if(PARK.trees&&WEEDS){ const F=WEEDS.feet=WEEDS.feet||[]; for(const it of PARK.trees.userData.items||[])if(it.sol)F.push([it.x,it.z,(it.sol[2]-it.sol[0])/2]); } if(WEEDS&&WEEDS.lawnDrop)WEEDS.lawnDrop(P.rect()); });
   PARK.ring=NOTREES?null:mesh(TREES,true,true,false,{}); PARK.ringTrunks=null;   // the old trees in their own leaves, the ring and the park's woods in one mesh
   // the ring cheap from far off (owner, 8 Nov 2026: "simplify the other park trees too"): each tree whole within 30 tiles of you; further off its plain shape, a round crown (twenty triangles) on a six-sided trunk, all of them one draw; a tree moved in the world editor stays whole

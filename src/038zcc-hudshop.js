@@ -24,7 +24,7 @@ const HUDSHOP={tris:0,made:0};
     const cn=document.createElement('canvas'); cn.width=cn.height=N; const gn=cn.getContext('2d'), nm=gn.createImageData(N,N), at=(x,y)=>Hh[((y+N)%N)*N+(x+N)%N];
     for(let y=0;y<N;y++)for(let x=0;x<N;x++){ const dx=(at(x-1,y)-at(x+1,y))*2.2, dy=(at(x,y-1)-at(x,y+1))*2.2, l=Math.hypot(dx,dy,1), o=(y*N+x)*4; nm.data[o]=(dx/l*.5+.5)*255; nm.data[o+1]=(-dy/l*.5+.5)*255; nm.data[o+2]=(1/l*.5+.5)*255; nm.data[o+3]=255; }
     gn.putImageData(nm,0,0);
-    const tex=(c,srgb)=>{ const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.magFilter=THREE.LinearFilter; t.minFilter=THREE.LinearMipmapLinearFilter; t.generateMipmaps=true; t.anisotropy=4; if(srgb)t.colorSpace=THREE.SRGBColorSpace; return t; };
+    const tex=(c,srgb)=>{ const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.magFilter=THREE.LinearFilter; t.minFilter=THREE.LinearMipmapLinearFilter; t.generateMipmaps=true; if(srgb)t.colorSpace=THREE.SRGBColorSpace; return t; };
     const cm=document.createElement('canvas'); cm.width=cm.height=N; const gm=cm.getContext('2d'), mm=gm.createImageData(N,N); for(let i=0;i<N*N;i++){ const v=Hh[i]===0?255:0; mm.data[i*4]=mm.data[i*4+1]=mm.data[i*4+2]=v; mm.data[i*4+3]=255; } gm.putImageData(mm,0,0);
     BT=tex(cv,true); BN=tex(cn,false); BMk=tex(cm,false); };
   HUDSHOP.brick=()=>{ if(!BT)bake(); return BT; }; HUDSHOP.brickN=()=>{ if(!BN)bake(); return BN; }; HUDSHOP.brickM=()=>{ if(!BMk)bake(); return BMk; };   // (the mortar's mask: grey, not the brick's colour)
@@ -98,6 +98,6 @@ const HUDSHOP={tris:0,made:0};
         for(let k=0;k<6;k++){ g.fillStyle=`rgba(40,24,12,${.06+.06*R(r,k,4)})`; g.fillRect(x,r*rh+R(r,k,5)*rh,L,1); } if(R(r,x|0,6)<.25){ g.fillStyle='rgba(50,30,16,.5)'; g.beginPath(); g.ellipse(x+L*R(r,x|0,7),r*rh+rh/2,4,2.5,0,0,7); g.fill(); }
         g.fillStyle='rgba(20,12,6,.7)'; g.fillRect(x,r*rh,1.5,rh); x+=L; } g.fillStyle='rgba(20,12,6,.75)'; g.fillRect(0,r*rh,N,1.5); }
     for(let i=0;i<3000;i++){ g.fillStyle=R(i,1,8)<.5?'rgba(0,0,0,.06)':'rgba(255,240,220,.04)'; g.fillRect(R(i,2,8)*N,R(i,3,8)*N,2,2); }
-    const t=new THREE.CanvasTexture(cv); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return new THREE.MeshLambertMaterial({map:t,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1,side:THREE.DoubleSide}); })()); }
+    const t=new THREE.CanvasTexture(cv); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.colorSpace=THREE.SRGBColorSpace; return new THREE.MeshLambertMaterial({map:t,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1,side:THREE.DoubleSide}); })()); }
 window.HUDSHOP=HUDSHOP;
 export {HUDSHOP};

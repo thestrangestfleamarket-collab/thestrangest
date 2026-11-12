@@ -1,7 +1,7 @@
 // the asylum's sound, all made in the page: the drone, the tubes, steps, doors, the patient's breath, the stings
 let ac = null, out, wet, noiseBuf, voices = {};
 const now = () => ac.currentTime;
-export const A = { on: false, init, listener, step, creak, slam, rattle, bang, sting, scream, whisper, pickup, click, spark, squeak, drawer, surge, alarm, heart, breath, buzz, tv, boiler, drip, thud, stopAll, mute };
+export const A = { on: false, init, listener, step, creak, slam, rattle, bang, sting, scream, whisper, pickup, click, spark, squeak, drawer, surge, alarm, heart, breath, buzz, tv, boiler, drip, thud, stopAll, mute, croak, gasp, ring };
 
 function init() {
   if (ac) { ac.resume(); return; }
@@ -47,15 +47,16 @@ function listener(pos, fwd) {
   if (!ac) return; const l = ac.listener, t = now();
   if (l.positionX) { l.positionX.setTargetAtTime(pos.x, t, .03); l.positionY.setTargetAtTime(pos.y, t, .03); l.positionZ.setTargetAtTime(pos.z, t, .03); l.forwardX.setTargetAtTime(fwd.x, t, .03); l.forwardY.setTargetAtTime(fwd.y, t, .03); l.forwardZ.setTargetAtTime(fwd.z, t, .03); l.upX.value = 0; l.upY.value = 1; l.upZ.value = 0; }
   else { l.setPosition(pos.x, pos.y, pos.z); l.setOrientation(fwd.x, fwd.y, fwd.z, 0, 1, 0); }
-  const h = voices.heart; if (h.rate > .02 && t > h.next) { h.next = t + 1.1 - h.rate * .7; tone(null, { f: 58, f2: 38, dur: .16, gain: .5 * h.rate + .15 }); setTimeout(() => ac && tone(null, { f: 50, f2: 34, dur: .14, gain: .35 * h.rate + .1 }), 130); }
+  const h = voices.heart; if (h.rate > .35 && t > (h.br || 0)) { h.br = t + 2.3 - h.rate * 1.3; burst(null, { dur: .45, f: 700, f2: 1500, q: 1.2, gain: .05 + h.rate * .09, attack: .22 }); setTimeout(() => ac && burst(null, { dur: .5, f: 1100, f2: 500, q: 1, gain: .04 + h.rate * .07, attack: .1 }), 620); }
+  if (h.rate > .02 && t > h.next) { h.next = t + 1.1 - h.rate * .7; tone(null, { f: 58, f2: 38, dur: .16, gain: .5 * h.rate + .15 }); setTimeout(() => ac && tone(null, { f: 50, f2: 34, dur: .14, gain: .35 * h.rate + .1 }), 130); }
 }
-function step(run, wet2) { burst(null, { dur: .09, f: wet2 ? 500 : 240 + Math.random() * 120, q: 1.2, type: 'lowpass', gain: run ? .34 : .2 }); burst(null, { dur: .03, f: 2600, q: 2, gain: run ? .08 : .04 }); }
+function step(run, wet2) { setTimeout(() => ac && burst(null, { dur: .05, f: 420 + Math.random() * 200, q: 1, type: 'lowpass', gain: run ? .2 : .11 }), 70); burst(null, { dur: .09, f: wet2 ? 500 : 240 + Math.random() * 120, q: 1.2, type: 'lowpass', gain: run ? .34 : .2 }); burst(null, { dur: .03, f: 2600, q: 2, gain: run ? .08 : .04 }); }
 function creak(p, long) { const d = long ? 2.4 : .9; tone(p, { type: 'sawtooth', f: 240 + Math.random() * 80, f2: 420 + Math.random() * 200, dur: d, gain: .09, vib: 9 }); tone(p, { type: 'square', f: 610, f2: 380, dur: d * .8, gain: .03, vib: 13 }); }
 function slam(p) { burst(p, { dur: .5, f: 140, type: 'lowpass', gain: 1.6 }); burst(p, { dur: .12, f: 1800, gain: .5 }); tone(p, { f: 70, f2: 36, dur: .5, gain: .9 }); }
 function rattle(p) { for (let i = 0; i < 4; i++) setTimeout(() => burst(p, { dur: .05, f: 1900 + Math.random() * 800, q: 4, gain: .3 }), i * 70); }
 function bang(p, g = 1) { burst(p, { dur: .35, f: 200, type: 'lowpass', gain: 1.5 * g }); tone(p, { f: 95, f2: 48, dur: .4, gain: .8 * g }); burst(p, { dur: .2, f: 3000, q: 3, gain: .15 * g }); }
 function thud(p) { burst(p, { dur: .3, f: 110, type: 'lowpass', gain: .9 }); }
-function sting(level = 1) { for (const f of [311, 329, 622, 698, 1244]) tone(null, { type: 'sawtooth', f: f * (1 + Math.random() * .02), f2: f * .97, dur: 1.6 * level, gain: .12 * level, attack: .01, vib: 6 }); burst(null, { dur: .7 * level, f: 3200, q: .7, gain: .5 * level }); tone(null, { f: 60, f2: 30, dur: 1.2, gain: .8 * level }); }
+function sting(level = 1) { for (const f of [311, 329, 622, 698, 1244]) tone(null, { type: 'sawtooth', f: f * (1 + Math.random() * .02), f2: f * .97, dur: 1.6 * level, gain: .12 * level, attack: .01, vib: 6 }); burst(null, { dur: .7 * level, f: 3200, q: .7, gain: .5 * level }); tone(null, { f: 60, f2: 30, dur: 1.2, gain: .8 * level }); if (level >= 1) setTimeout(() => ac && ring(), 700); }
 function scream(p) { for (const [f, f2] of [[880, 540], [1320, 700], [1790, 900], [2600, 1400]]) tone(p, { type: 'sawtooth', f: f * (1 + Math.random() * .04), f2, dur: 1.3, gain: .22, attack: .02, vib: 17 }); burst(p, { dur: 1.2, f: 2400, q: .8, gain: .9, f2: 900 }); burst(p, { dur: .4, f: 150, type: 'lowpass', gain: 1.4 }); }
 function whisper(p) { for (let i = 0; i < 7; i++) setTimeout(() => burst(p, { dur: .12 + Math.random() * .2, f: 1400 + Math.random() * 2600, q: 5, gain: .22, attack: .04 }), i * 190 + Math.random() * 80); }
 function pickup() { tone(null, { f: 660, f2: 990, dur: .12, gain: .12 }); burst(null, { dur: .06, f: 3000, q: 2, gain: .1 }); }
@@ -71,4 +72,7 @@ function buzz(list) { if (!ac) return; voices.buzz.forEach((v, i) => { const t =
 function tv(on) { if (ac) voices.tv.g.gain.setTargetAtTime(on ? .12 : 0, now(), .05); }
 function boiler(on) { if (ac) voices.boiler.g.gain.setTargetAtTime(on ? 2.2 : 0, now(), .5); }
 function drip(p) { tone(p, { f: 1500 + Math.random() * 900, f2: 700, dur: .09, gain: .12 }); }
+function croak(p) { let t = 0; for (let i = 0; i < 16; i++) { t += 95 - i * 4.5; setTimeout(() => ac && burst(p, { dur: .028, f: 620 + Math.random() * 500, q: 9, gain: .55 }), t); } tone(p, { type: 'sawtooth', f: 62, f2: 48, dur: 1.2, gain: .12, vib: 23 }); }
+function gasp() { burst(null, { dur: .5, f: 900, f2: 2400, q: 1.5, gain: .3, attack: .28 }); }
+function ring() { tone(null, { f: 6100, dur: 3.2, gain: .035, attack: .4 }); tone(null, { f: 6230, dur: 2.6, gain: .02, attack: .6 }); }
 function stopAll() { if (!ac) return; alarm(false); heart(0); breath([0, 0, 0], 0); buzz([]); tv(false); boiler(false); voices.drone.gain.setTargetAtTime(.02, now(), 1); }

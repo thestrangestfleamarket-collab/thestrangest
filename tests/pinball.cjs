@@ -1,4 +1,4 @@
-// THE ARCADE'S PINBALL'S CHECK (src/146zcz-pinball.js, src/pinball/table.js): node tests/pinball.cjs [dist/market.html] [out folder]. Two tables stand on the arcade's west wall (few draws, no stool in their way); taking one puts you at it looking down, SPACE starts a game and the plunger sends the ball,
+// THE ARCADE'S PINBALL'S CHECK (src/146zcz-pinball.js, src/pinball/table.js): node tests/pinball.cjs [dist/market.html] [out folder]. Two tables stand on the arcade's west wall (few draws; the arcade has no stools); taking one puts you at it with the whole machine in the picture and the game's own windows put away, SPACE starts a game and the plunger sends the ball,
 // A and D work the flippers (a pad's bumpers and triggers, the headset's two hands); a finished game goes on the arcade's top ten and pays tickets; stepping away gives your view back; leaving the arcade drops the tables; no page errors. With an out folder, pictures.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=pinball::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
@@ -20,12 +20,15 @@ const OUT = process.argv[3];
     const lay = await pg.evaluate(() => { const D = PIN.dbg(), F = IKIT.frame(ROOMS.off.arcade.ar), wall = F.pw(F.W, 0)[0], th = ARCDBG().things;
       return { n: D.built, names: D.tables.map(t => t.name), meshes: D.tables.map(t => t.meshes), wall: D.tables.map(t => +(Math.abs(t.at[0] - wall) / IKIT.MW).toFixed(2)), play: th.filter(n => /^PLAY .* PINBALL$/.test(n)).length, stools: th.filter(n => n === 'STOOL').length, idle: D.tables.every(t => t.phase === 'idle'), cabs: th.filter(n => /^PLAY /.test(n)).length }; });
     ok(lay.n === 2 && lay.names.join() === 'POOH PINBALL,MICKEY PINBALL' && lay.play === 2 && lay.cabs === 8 && lay.idle, 'two tables, POOH and MICKEY, each a thing to play, beside the six cabinets: ' + JSON.stringify(lay));
-    ok(lay.wall.every(d => d > .6 && d < 1) && lay.stools === 6, 'their backs to the west wall, no stool where they stand: ' + JSON.stringify(lay.wall) + ' ' + lay.stools);
+    ok(lay.wall.every(d => d > .6 && d < 1) && lay.stools === 0, 'their backs to the west wall, no stools in the arcade: ' + JSON.stringify(lay.wall) + ' ' + lay.stools);
     ok(lay.meshes.every(n => n < 140), 'a table\'s still pieces are drawn together (under 140 meshes a table): ' + lay.meshes);
     if (OUT) { await pg.evaluate(() => { __dbg.UI.setView('third'); const t = PIN.T()[0]; __dbg.UI.goTo(t.x - 2.2, t.z + 2, 0, Math.PI / 2); }); await pg.waitForTimeout(3000); await pg.screenshot({ path: OUT + '/pinball-room.png' }); await pg.evaluate(v => __dbg.UI.setView(v), view0); }
     // your game on POOH
     await pg.evaluate(() => PIN.take(0)); await pg.waitForTimeout(600);
     const t0 = await pg.evaluate(() => { const D = PIN.dbg(), t = PIN.T()[0]; return { me: D.me, view: D.view, pinned: !!window.RUNNER, panel: !document.getElementById('pinp').hidden, at: Math.hypot(__dbg.pos()[0] - t.x, __dbg.pos()[2] - t.z) < .05 }; });
+    await pg.waitForTimeout(1200);
+    const sn = await pg.evaluate(() => ({ seen: +PIN.seen().toFixed(3), hud: ['vit', 'hlog', 'hqb'].filter(i => { const e = document.getElementById(i); return e && getComputedStyle(e).display !== 'none'; }) }));
+    ok(sn.seen > .5 && sn.seen <= 1 && !sn.hud.length, 'the whole machine is in the picture, the game\'s own windows put away: ' + JSON.stringify(sn));
     ok(t0.me === 0 && t0.view === 'first' && t0.pinned && t0.panel && t0.at, 'taking a table: you stand at it, looking down through your own eyes, its panel up: ' + JSON.stringify(t0));
     await pg.keyboard.press('Space'); await pg.waitForTimeout(400);
     const s0 = await pg.evaluate(() => PIN.dbg().tables[0]);
@@ -50,8 +53,8 @@ const OUT = process.argv[3];
     ok(s2.phase === 'ready' && s2.score === 0 && s2.ball === 1, 'SPACE again starts another game: ' + JSON.stringify(s2));
     // stepping away, then MICKEY
     await pg.keyboard.press('Escape'); await pg.waitForTimeout(400);
-    const l1 = await pg.evaluate(() => ({ me: PIN.dbg().me, view: PIN.dbg().view, pinned: !!window.RUNNER, panel: !document.getElementById('pinp').hidden }));
-    ok(l1.me === null && l1.view === view0 && !l1.pinned && !l1.panel, 'ESC steps away: you walk again, your view as it was: ' + JSON.stringify(l1));
+    const l1 = await pg.evaluate(() => ({ me: PIN.dbg().me, view: PIN.dbg().view, pinned: !!window.RUNNER, panel: !document.getElementById('pinp').hidden, hud: getComputedStyle(document.getElementById('vit')).display !== 'none' }));
+    ok(l1.me === null && l1.view === view0 && !l1.pinned && !l1.panel && l1.hud, 'ESC steps away: you walk again, your view as it was: ' + JSON.stringify(l1));
     await pg.evaluate(() => { PIN.take(1); PIN.start(); }); await pg.waitForTimeout(600);
     const m1 = await pg.evaluate(() => ({ me: PIN.dbg().me, t: PIN.dbg().tables[1] }));
     ok(m1.me === 1 && m1.t.phase === 'ready', 'MICKEY plays the same: ' + JSON.stringify(m1));

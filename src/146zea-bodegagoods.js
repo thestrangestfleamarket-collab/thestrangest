@@ -23,7 +23,7 @@ import {BODEGA} from './146ze-bodega.js';
   // which shelf row holds what (the bodega's own shelves, emptied of groceries): [shelf, row (0 bottom), ids]
   const LAYOUT=[['wl1',0,['pc_home','modem']],['wl1',1,['bonsai','cactus','cactus_eye']],['wl1',2,['cigar','cigar_blue','balloon']],['wl1',3,['shades','nv_goggles']],
     ['wr1',1,['coat_red','coat_green','coat_navy','cloudcoat']],['wr1',2,['jacket_denim','jacket_stud','jeans']]];
-  BODEGA.MAKE=MAKE; BODEGA.LAYOUT=LAYOUT;   // (others add theirs: the guitar, 146zob)
+  BODEGA.MAKE=MAKE; BODEGA.LAYOUT=LAYOUT; FORAGE.STOCK.push(()=>LAYOUT.flatMap(r=>r[2]));   // (others add theirs: the guitar, 146zob)
   const FACE={wl1:[1,0],wl2:[1,0],wr1:[-1,0],wl3:[1,0],wb1:[0,1],wb2:[0,1],wb3:[0,1],wm1:[1,0]}, SZ=[14,32,50,68];
   const price=id=>Math.max(1,Math.round(+(ITEMS.prop&&ITEMS.prop(id,'value'))||5));
   const buy=id=>{ const p=price(id), nm=(FORAGE.NM&&FORAGE.NM[id])||id.toUpperCase(); if(!INV.afford(p))return SAY('YOU CANNOT AFFORD '+nm+' ($'+p+').','#c8a090');

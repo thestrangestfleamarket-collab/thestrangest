@@ -24,7 +24,7 @@ import {ROOMK} from './150a-bedroom.js';
   let GT=null; const grain=()=>{ if(GT)return GT; const cv=document.createElement('canvas'); cv.width=128; cv.height=512; const g=cv.getContext('2d'); g.fillStyle='#6e4426'; g.fillRect(0,0,128,512);
     let s=11; const rnd=()=>{ s=(s*16807)%2147483647; return (s-1)/2147483646; };
     for(let i=0;i<70;i++){ const x=rnd()*128, w=.6+rnd()*2.2, a=.05+rnd()*.12; g.fillStyle=rnd()<.6?`rgba(40,22,10,${a})`:`rgba(150,100,60,${a})`; g.beginPath(); g.moveTo(x,0); for(let y=0;y<=512;y+=32)g.lineTo(x+Math.sin(y*.012+i)*3*rnd(),y); g.lineTo(x+w,512); g.lineTo(x+w,0); g.fill(); }
-    GT=new THREE.CanvasTexture(cv); GT.colorSpace=THREE.SRGBColorSpace; GT.wrapS=GT.wrapT=THREE.RepeatWrapping; return GT; };
+    GT=new THREE.CanvasTexture(cv); GT.colorSpace=THREE.SRGBColorSpace; GT.wrapS=GT.wrapT=THREE.RepeatWrapping; GT.anisotropy=4; return GT; };
   ROOMK.parts.push(c=>{ '@apts'; const {part,mat,rbox,cap,cur,solid,Lx,Ly}=c, p=(geo,m,u,h,v,ry=0,par=cur(),cast=true)=>part(geo,m,u,h,v,ry,par,cast);
     const U0=Lx-BK.D/2-.05, V0=Ly*.36, RY=-Math.PI/2;   // on the living room's east wall between its two front windows, facing into the room
     cap('BOOKSHELF',()=>{ const g=new THREE.Group(); g.position.set(U0,0,V0); g.rotation.y=RY; cur().add(g);

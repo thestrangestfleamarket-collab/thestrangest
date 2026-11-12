@@ -12,7 +12,7 @@ let bad = 0; const ok = (c, m) => { console.log((c ? 'ok   ' : 'FAIL ') + m); if
     return { had, g, again, it: { ...INV.items }, arch: Object.keys(INV.items).filter(id => ARCHI(id) && !['mortar', 'passport'].includes(id)), rows: ['telescope', 'microscope'].map(id => FORAGE.ROWB.flatMap(f => f(id)).map(x => x[0]).join()) }; });
   ok(!r.had, 'a player who is no owner has none of it');
   ok(r.g > 100 && r.again === 0, 'the kit gives ' + r.g + ' kinds, and nothing the second time');
-  for (const id of ['telescope', 'microscope', 'flamer', 'frost', 'magic_carpet', 'balloon', 'saddle', 'brickphone', 'cigar', 'nv_goggles', 'cowboyhat', 'spray_gold', 'jar_fly', 'spyglass', 'scuba', 'kart', 'rod', 'camera', 'binoc', 'sword_ench', 'guitar', 'trumpet', 'bee_hive'])
+  for (const id of ['telescope', 'microscope', 'flamer', 'frost', 'magic_carpet', 'balloon', 'saddle', 'brickphone', 'cigar', 'nv_goggles', 'cowboyhat', 'spray_gold', 'jar_fly', 'spyglass', 'scuba', 'kart', 'rod', 'camera', 'binoc', 'sword_ench', 'guitar', 'trumpet', 'bee_hive', 'jugball', 'jugclub', 'birdnet', 'burlap', 'play_ticket'])
     ok(r.it[id] >= 1, 'in the bag: ' + id);
   ok(r.it.shroom_fly >= 99 && r.it.bait >= 20, '99 of a power mushroom, 20 of what stacks');
   ok(!r.arch.length, 'nothing archived: ' + r.arch.join(','));

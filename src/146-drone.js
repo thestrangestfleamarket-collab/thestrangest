@@ -5,6 +5,7 @@ import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
 import {MODS, STORE, SYS, TILE} from './006-map-pre.js';
 import {CAT_INFO} from './014-gamekit.js';
+import {COURIER} from './111ee-courier.js';
 
 const ballGeo=(o={})=>{ const R=o.R||.15, P=[], N=[], C=[], c=new THREE.Color(), add=(g,h)=>{ if(g.index)g=g.toNonIndexed(); P.push(...g.attributes.position.array); N.push(...g.attributes.normal.array); c.setHex(h); for(let i=0;i<g.attributes.position.count;i++)C.push(c.r,c.g,c.b); };
   add(new THREE.IcosahedronGeometry(R,1),o.body??0xb8bec8); add(new THREE.CylinderGeometry(R*1.02,R*1.02,R*.22,10),o.band??0x3a3e48);
@@ -44,8 +45,10 @@ DRONE.init=()=>{ const APTS=MODS.apts; if(!APTS||!APTS.R)return; const T=TILE, X
   // someone else's delivery: the same drone flying to them (or their fire escape) and the parcel left by them a while; theirs to take, not yours
   const seen=[]; ONLINE.hear.drone=m=>{ if(!m||!isFinite(m.x)||!isFinite(m.z)||Math.hypot(m.x-pos.x,m.z-pos.z)>80*T||SHARED.LVL!=='up')return;
     const id=m.id, at=()=>{ const q=m.f&&ONLINE.others.get(id); if(!q||!q.p)return null; const g=SHARED.groundY?SHARED.groundY(q.p.x,q.p.z):m.y; return {x:q.p.x+.9*T,y:g,z:q.p.z}; };
-    const dp={x:+m.x,y:+m.y||0,z:+m.z}, {D,parcel}=mkDrone(); scene.add(D); D.position.set(dp.x,dp.y+8*T,dp.z-6*T); seen.push({D,parcel,dp,follow:m.f?at:null,ph:'in',theirs:1}); };
-  DRONE.go=deliver; DRONE.land=landParcel;
+    const dp={x:+m.x,y:+m.y||0,z:+m.z};
+    if(m.c){ if(COURIER.bring)COURIER.bring(()=>at()||dp,q=>{ const p=bx(.32*T,.24*T,.32*T,lam(0xc89a5a)); p.position.set(q.x,(SHARED.groundY?SHARED.groundY(q.x,q.z):dp.y)+.12*T,q.z); scene.add(p); seen.push({left:p,lt:45,done:true}); }); return; }   // THE COURIER rides it over on your screen too
+    const {D,parcel}=mkDrone(); scene.add(D); D.position.set(dp.x,dp.y+8*T,dp.z-6*T); seen.push({D,parcel,dp,follow:m.f?at:null,ph:'in',theirs:1}); };
+  DRONE.go=deliver; DRONE.land=landParcel; DRONE.tell=(label,dp,c)=>{ if(ONLINE.on)ONLINE.send({t:'drone',lb:String(label).slice(0,40),f:1,c:c?1:0,x:+dp.x.toFixed(2),y:+dp.y.toFixed(2),z:+dp.z.toFixed(2)}); };
   SYS.add('life',dt=>{ if(!dt)return;
     for(const f of [...flights,...seen]){ if(f.left&&(f.lt-=dt)<=0){ scene.remove(f.left); f.left=null; }
       if(f.ph==='in'){ if(f.follow){ const q=f.follow(); if(q)f.dp=q; } V.set(f.dp.x,f.dp.y+1.4*T,f.dp.z); f.D.position.lerp(V,Math.min(1,dt*2.2)); if(f.D.position.distanceTo(V)<.18*T)f.ph='drop'; }

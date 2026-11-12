@@ -14,7 +14,7 @@ const ITEMCARD={};
   ITEMCARD.does=id=>{ const L=[], g=P(id,'grants'), sl=P(id,'slot'), b=P(id,'boost');
     if(g&&GRANT[g])L.push(GRANT[g]); if(b&&BOOST[b])L.push('Eaten, '+BOOST[b]+'.'); else if(P(id,'edible'))L.push(P(id,'heals')?'Eaten, it heals '+Math.round(P(id,'heals')*100)+'%.':'You can eat it.');
     if(sl&&sl!=='none'&&sl!=='hand')L.push('Worn on the '+({body:'body',legs:'legs',head:'head',eyes:'eyes',back:'back'}[sl]||sl)+'.');
-    if(P(id,'container'))L.push('Holds '+(P(id,'holds')||12)+' things.'); if(ITEMS.group(id)==='music')L.push('Play it.'); if(P(id,'cures'))L.push('Cures poison.');
+    if(P(id,'container'))L.push('Holds '+(P(id,'holds')||12)+' things.'); if(ITEMS.group(id)==='music')L.push('Play it.'); if(P(id,'cures'))L.push('Cures poison.'); if(id==='spyglass')L.push('Watches birds and creatures from afar, as binoculars do.'); if(FORAGE.usable&&!FORAGE.usable(id))L.push('Set it out at home.');
     return L.join(' '); };
   ITEMCARD.skill=id0=>{ const id=kindOf(id0), B=FORAGE.BUYK||{}; for(const g in WORTH.KNOW)if((B[g]||[]).some(p=>id.startsWith(p))){ const k=WORTH.KNOW[g]; return ((FORAGE.SK||[]).find(s=>s[0]===k)||[k,k.toUpperCase()])[1]; } return ''; };
   ITEMCARD.finder=id=>(INV.found&&INV.found[kindOf(id)])||'';

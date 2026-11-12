@@ -36,7 +36,7 @@ import {RIVER} from './066-river.js';
   const ball=(r,m,y,z=0)=>{ const o=new THREE.Mesh(new THREE.SphereGeometry(r*M,12,9),m); o.position.set(0,y*M,z*M); return o; };
   const HELD=[], held=(g,id,tip)=>{ g.traverse(o=>{ o.userData.wield=1; o.castShadow=true; }); g.tipL=new V3(0,tip*M,0); g.head=g.tipL; g.arm=id; HELD.push(g); return g; };
   const MAKE={
-    w_revolver:()=>{ const g=new THREE.Group(), st=lam(0x34363c), wd=lam(0x6a4428); g.add(box(.035,.11,.05,wd,-.03,.02),cyl(.03,.03,.06,st,.06),cyl(.011,.011,.2,st,.17),box(.012,.03,.012,st,.25,-.012)); return held(g,'w_revolver',.28); },
+    w_revolver:()=>{ const g=new THREE.Group(), st=lam(0x34363c), wd=lam(0x6a4428); g.add(box(.034,.1,.048,wd,-.035,.022),box(.03,.07,.05,st,.04),cyl(.031,.031,.05,st,.05),cyl(.014,.014,.09,st,.12),box(.01,.014,.012,st,.158,-.018),box(.012,.03,.016,st,.005,-.03)); return held(g,'w_revolver',.17); },
     w_shotgun:()=>{ const g=new THREE.Group(), st=lam(0x2c2e33), wd=lam(0x7a4e2a); g.add(box(.05,.26,.06,wd,-.1,.02),box(.045,.1,.05,st,.06),cyl(.014,.014,.6,st,.38,0,-.012),cyl(.014,.014,.6,st,.38,0,.012),box(.04,.16,.045,wd,.22,.02)); return held(g,'w_shotgun',.69); },
     w_sniper:()=>{ const g=new THREE.Group(), st=lam(0x26282c), gr=lam(0x4a5038); g.add(box(.045,.3,.06,gr,-.12,.02),box(.04,.14,.05,st,.08),cyl(.011,.011,.78,st,.5),cyl(.022,.022,.2,st,.14,-.05),cyl(.026,.026,.02,glow(0x7fb0ff),.25,-.05),box(.008,.12,.008,st,.08,.05)); return held(g,'w_sniper',.9); },
     w_mgun:()=>{ const g=new THREE.Group(), st=lam(0x2a2c30), dk=lam(0x1a1c1e), ol=lam(0x4a5038); g.add(box(.05,.24,.06,ol,-.1,.02),box(.06,.18,.07,st,.08),cyl(.016,.016,.42,dk,.38),cyl(.03,.03,.3,st,.3),box(.03,.1,.12,dk,.08,-.08),box(.008,.06,.008,st,.17,.04)); return held(g,'w_mgun',.6); },

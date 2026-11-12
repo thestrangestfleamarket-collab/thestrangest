@@ -76,6 +76,8 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
   const lapOf=u=>Math.floor((u+HO)/LC), NM={u:0,v:0,hid:false};
   const nomOf=(L,C,t)=>{ const U=t*L.v+C.i*LC/L.n, lap=Math.floor(U/LC), f=Math.max(SPAN/LC+.03,PACE[pick(L,C,lap)]||1), s=Math.max(-HO,Math.min(SPAN+HO,SPAN/2+(U-lap*LC-LC/2)*f)); NM.u=lap*LC+s; NM.v=s>-HO&&s<SPAN+HO?f*L.v:0; NM.hid=s<0||s>=SPAN; return NM; };
   TRAFFIC.pace=PACE;
+  // the cars on the road that f(x,z) picks pull over for secs (a player's horn, 150pf)
+  TRAFFIC.pull=(f,secs)=>{ const t=now(); let n=0; for(const L of LANES){ if(L.fly||L.tiny)continue; for(const C of L.cars){ if(!C.m||C.u==null)continue; const s=C.u-lapOf(C.u)*LC; if(s<0||s>=SPAN||!f(xOf(L,s),L.z))continue; C.over=t+secs; n++; } } return n; };
   const step=dt=>{ const t=now(), Lt=light(t), B=LANES[0].GR?blockers():[], R=Math.max(90*T,(window.CULL&&CULL.R)||0), up=OUT.open&&!(PARK.within&&PARK.within(pos.x,pos.z))&&SHARED.LVL==='up';
     for(const L of LANES){ if(!L.GR)continue; const hw=L.tiny?.8*M0:Math.abs(zs-zm)/2+.6*M0;
       const nom=C=>nomOf(L,C,t).u;
@@ -85,14 +87,15 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
         if(!L.tiny&&Lt.m!=='g'&&s+len<=L.stop){ const g=L.stop-(s+len); if(Lt.m==='r'||g>C.sp*C.sp/(2*5*M0))lim=Math.min(lim,g); }
         for(const A of L.cars)if(A!==C)lim=Math.min(lim,(((A.u-C.u)%LC)+LC)%LC-len-size(A.model)[2]*M1/2-2*M0);   // the car ahead on the road, whatever lap either is on
         if(!L.fly){ if(s>=0&&s<SPAN){ const x=xOf(L,s); C.blk=false; for(const b of B){ if(L.tiny&&(b.l||b.r))continue; if(b.l?b.l!==L.dir:Math.abs(b.z-L.z)>(b.w||hw+(b.r||0)))continue; const d=(b.x-x)*L.dir-(b.r||.5*M0); if(d>-len&&d<len+(L.tiny?5:28)*M0){ lim=Math.min(lim,d-len-2*M0); if(d<len+(b.r?12:8)*M0)C.blk=true; } } } }
+        const ov=!L.fly&&!L.tiny&&C.over>t; if(ov)lim=Math.min(lim,0); { const to=ov?Math.sign((L.dir<0?zs:zp)-L.z)*Math.abs(zs-zm)/2:0, d=to-(C.oz||0); C.oz=(C.oz||0)+Math.max(-2.2*M0*dt,Math.min(2.2*M0*dt,d)); }   // pulled over for a player's horn: half up its kerb, stopped, then back into its lane
         const want=Math.min(Math.max(s>=0?.5*L.v:0,nv+Math.max(-.5*L.v,Math.min(.6*L.v,(nu-C.u)*.25))),lim<Infinity?Math.sqrt(2*4*M0*Math.max(0,lim)):1e9);
         C.sp+=Math.max(-9*M0*dt,Math.min(3*M0*dt,want-C.sp)); if(C.sp<0)C.sp=0; if(lim<.05*M0&&lim<Infinity)C.sp=Math.min(C.sp,0); C.u+=C.sp*dt;
         const lap=lapOf(C.u), s2=C.u-lap*LC, on=s2>=0&&s2<SPAN, x=xOf(L,s2), near=on&&up&&Math.abs(x-pos.x)<R&&Math.abs(L.z-pos.z)<R;
         if(lap!==C.lap||C.model==null){ give(C); C.lap=lap; C.model=pick(L,C,lap); C.v=(C.i*3+lap+L.seed)%looks(C.model); }
         if(near&&!C.m){ C.m=take(C.model,C.v); } if(!near&&C.m)give(C);
         if(!L.tiny&&C.blk&&C.m&&Lt.x!=='w'&&C.sp<.15*L.v&&t-(L.hk||-99)>6){ L.hk=t; SFX.play('horn',{at:{x,z:L.z},far:40*T,vol:.6,pitch:.85+(C.i%4)*.07,delay:.3}); SYS.run('honk',{x,z:L.z,dx:L.dir,dz:0,by:null}); }   // stopped for something in the road: a honk, and what it is gets out of the way (150pf)
-        if(C.m){ const y=L.fly?SHARED.groundY(x,L.z)+L.fly+Math.sin(t*1.3+C.i*2)*.25*M0:SHARED.groundY(x,L.z)+(LOW.includes(C.model)?(HOV[C.model]+Math.sin(t*1.3+C.i*2)*.06)*M0:0); C.m.visible=true; C.m.position.set(x,y,L.z); C.m.rotation.set(0,L.dir>0?Math.PI/2:-Math.PI/2,L.fly?Math.sin(t*.9+C.i)*.04:0); }
-        if(!L.fly&&!L.tiny){ if(!C.sol){ C.sol=[-1e7,-1e7,-1e7,-1e7]; SOL.up.push(C.sol); } const w=size(C.model)[0]*M1/2; if(C.m){ C.sol[0]=x-len; C.sol[2]=x+len; C.sol[1]=L.z-w; C.sol[3]=L.z+w; } else C.sol[0]=C.sol[1]=C.sol[2]=C.sol[3]=-1e7; } }); } };
+        if(C.m){ const y=L.fly?SHARED.groundY(x,L.z)+L.fly+Math.sin(t*1.3+C.i*2)*.25*M0:SHARED.groundY(x,L.z)+(LOW.includes(C.model)?(HOV[C.model]+Math.sin(t*1.3+C.i*2)*.06)*M0:0); C.m.visible=true; C.m.position.set(x,y,L.z+(C.oz||0)); C.m.rotation.set(0,L.dir>0?Math.PI/2:-Math.PI/2,L.fly?Math.sin(t*.9+C.i)*.04:0); }
+        if(!L.fly&&!L.tiny){ if(!C.sol){ C.sol=[-1e7,-1e7,-1e7,-1e7]; SOL.up.push(C.sol); } const w=size(C.model)[0]*M1/2; if(C.m){ const z=L.z+(C.oz||0); C.sol[0]=x-len; C.sol[2]=x+len; C.sol[1]=z-w; C.sol[3]=z+w; } else C.sol[0]=C.sol[1]=C.sol[2]=C.sol[3]=-1e7; } }); } };
   /* ---------- the rounds: fliers on a closed way of their own, from the shared clock alone (the police fliers over the sidewalks and across the park, the small craft round the park) ---------- */
   const ROUND=['police-flier','interceptor','escape-pod','rover'], RINGS=[]; TRAFFIC.rings=RINGS;
   { const a=PARK.x0+PARK.ox, b=PARK.x1+PARK.ox, c=PARK.y0+PARK.oy, e=PARK.y1+PARK.oy, ks=SHARED.BOD.CURB-2.5, kp=SHARED.BOD.FAR+2.5, w=b-a, d=e-c, xa=a+12, xb=b-12;

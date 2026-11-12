@@ -3,7 +3,7 @@ const {chromium}=require('playwright');
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']});
  const pg=await b.newPage({viewport:{width:480,height:270}}); let errs=[]; pg.on('pageerror',e=>errs.push(e.message.slice(0,140)));
  await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&at=0,6&hour=13&npcwait=99',{timeout:300000,waitUntil:'commit'}); for(let i=0;i<300&&!(await pg.evaluate(()=>!!window.__started).catch(()=>false));i++)await pg.waitForTimeout(1000); await pg.waitForTimeout(3000);
- await pg.evaluate(()=>__UI.brochure.open('goto')); await pg.waitForTimeout(1500); const names=await pg.evaluate(()=>[...document.querySelectorAll('#dbro .gor')].map(o=>o.textContent.replace(/^\d*/,'').replace(/online$/,'')).filter(n=>!/'S APARTMENT$/.test(n))); console.log('open',names.length); await pg.evaluate(()=>__UI.brochure.close());
+ await pg.evaluate(()=>__UI.brochure.open('goto')); await pg.waitForTimeout(1500); const names=await pg.evaluate(()=>[...document.querySelectorAll('#dbro .gor')].map(o=>o.dataset.n).filter(n=>!/'S APARTMENT$/.test(n))); console.log('open',names.length); await pg.evaluate(()=>__UI.brochure.close());
  const only=process.argv[2]?process.argv[2].split('|'):null; const list=[...new Set(names)].filter(n=>!only||only.includes(n)); console.log('places',list.length);
  const st=()=>pg.evaluate(()=>{ const y=__dbg.you(); return {x:y.x,z:y.z,y:y.y,room:ROOMS.cur&&(ROOMS.cur.off||ROOMS.cur.lz||ROOMS.cur.id)||null,lvl:SHARED.LVL,busy:FADE.busy}; });
  const T=33.9/30, bad=[];

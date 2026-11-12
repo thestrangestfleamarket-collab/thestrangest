@@ -1,7 +1,7 @@
 // THE PETS: Polyfork's base animals (data/pets/<kind>.json, tools/pets-bake.py) as a pet that follows you: adopt one at THE PET STORE, its colours, shape and size yours to choose; YOU's PET tab changes its look; other players see it.
 import {SHARED, THREE} from './003-shx.js';
 import {B64, F32, I16, SKIN} from './003a-skin.js';
-import {CITY, CLOCK, FORAGE, INV, LEVELS, LOOKS, NPCS, ONLINE, PETS, pos, ROOMS, SFX, st, UI, VIT, WINDOWS} from './003b-systems.js';
+import {CITY, CLOCK, FORAGE, INV, LEVELS, LOOKS, NPCS, ONLINE, PETS, pos, ROOMS, SFX, st, UI, USE, VIT, WINDOWS} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {OWNED} from './005-save.js';
@@ -95,8 +95,8 @@ window.PETS=PETS;
         if(o.preview){ if(d>3)place(L); st.to=null; st.face={x:L.x,z:L.z}; return; }
         if(o.stay){ if(!st.to&&(idleT-=dt)<0){ idleT=3+Math.random()*5; const a=Math.random()*6.28, r=Math.random()*1.6*WU; st.to={x:o.stay.x+Math.sin(a)*r,z:o.stay.z+Math.cos(a)*r}; st.v=walkV*WU; } return; }
         const R=o.rec||o.mine&&out(), far=L.fight?1.2:R?(R.lo<25?3.4:R.lo>=80?1.4:1.7):1.7, sp=pace(R);   // (its loyalty keeps it close, a shy one lags; hungry or ill, it is slow)
-        if(seat==='fly'){ const b=(far-.6)*WU, sd=(o.side||0)*WU, tx=L.x-Math.sin(L.hd)*b+Math.cos(L.hd)*sd, tz=L.z-Math.cos(L.hd)*b-Math.sin(L.hd)*sd, e=Math.hypot(st.x-tx,st.z-tz)/WU, low=!(L.me&&UI.fly)&&!(SHARED.groundY&&L.y-SHARED.groundY(L.x,L.z)>.3*WU);   // (behind you; still a moment on the ground, it lands there)
-          still=v<.3*WU?still+dt:0; if(!lands||still<1||!low)down=false;
+        if(seat==='fly'){ const b=(far-.6)*WU, sd=(o.side||0)*WU, tx=L.x-Math.sin(L.hd)*b+Math.cos(L.hd)*sd, tz=L.z-Math.cos(L.hd)*b-Math.sin(L.hd)*sd, e=Math.hypot(st.x-tx,st.z-tz)/WU, low=!!L.sit||!(L.me&&UI.fly)&&!(SHARED.groundY&&L.y-SHARED.groundY(L.x,L.z)>.3*WU);   // (behind you; still a moment on the ground, it lands there)
+          still=L.sit?Math.max(1,still):v<.3*WU?still+dt:0; if(!lands||still<1||!low)down=false;
           if(down&&e<1.5){ st.to=null; st.face={x:L.x,z:L.z}; return; }
           if(e>.25){ st.to={x:tx,z:tz}; st.v=Math.max(e>2?runV*sp:walkV*sp,v/WU*1.1)*WU; } else { st.to=null; st.face={x:L.x,z:L.z}; if(lands&&still>=1&&low)down=true; } return; }
         if(o.side&&d>far){ const sx=Math.cos(L.hd)*o.side*WU, sz=-Math.sin(L.hd)*o.side*WU, k=(far-.65)/d; st.to={x:L.x+dx*k+sx,z:L.z+dz*k+sz}; st.v=(d>far+1.8?Math.max(runV*sp,v/WU*1.15):walkV*sp)*WU; }
@@ -178,7 +178,7 @@ window.PETS=PETS;
     if(!id)return SAY(nm+' WANTS '+(K?FOODS[dietOf(K)]:'FOOD')+'.','#c8a090'); FORAGE.take(id,1); if(FORAGE.draw)FORAGE.draw();
     const was=fainted(r); r.hu=cl(r.hu-45); r.lo=cl(r.lo+4); if(was)r.hp=30; keep(); SAY(was?nm+' WAKES UP AND EATS EVERY BITE.':nm+' EATS IT ALL UP.','#9fe07f'); if(PETS.menuDraw)PETS.menuDraw(); };
   const shown=()=>inShop&&DRAFT||MY;
-  let foot=null; const meLead=()=>{ if(VIT.dead)return null; if(st.climb||st.hang||TREES.h!=null||TREES.stand){ if(!foot)foot={x:pos.x,z:pos.z,y:SHARED.groundY?SHARED.groundY(pos.x,pos.z):0,hd:SHARED.heading}; return foot; } foot=null; return {x:pos.x,z:pos.z,y:SHARED.py,hd:SHARED.heading,me:true}; };   // up a tree, your pet waits at its foot
+  let foot=null; const meLead=()=>{ if(VIT.dead)return null; if(st.climb||st.hang||TREES.h!=null||TREES.stand){ if(!foot)foot={x:pos.x,z:pos.z,y:SHARED.groundY?SHARED.groundY(pos.x,pos.z):0,hd:SHARED.heading}; return foot; } foot=null; if(USE.seat)return {x:pos.x,z:pos.z,y:SHARED.groundY?SHARED.groundY(pos.x,pos.z):SHARED.py,hd:SHARED.heading,me:true,sit:true}; return {x:pos.x,z:pos.z,y:SHARED.py,hd:SHARED.heading,me:true}; };   // up a tree, your pet waits at its foot
   const atHome=()=>!!(MODS.apts&&MODS.apts.inReal);
   let mine=null, mineCode='', homeSpot=null;
   const refresh=()=>{ const P=shown(), want=P&&(inShop||!fainted(out()))&&!(!inShop&&PETS.away&&PETS.away())&&(!P.h||inShop||atHome())?code(P)+(P.h&&!inShop?'@h':'')+(inShop?'@s':''):''; if(want===mineCode)return; mineCode=want; const my=++gen;

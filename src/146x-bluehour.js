@@ -33,4 +33,3 @@ const SMOKE={}; window.SMOKE=SMOKE;
     (WIELD.pend=WIELD.pend||[]).push([id,k]); if(WIELD.kind)WIELD.kind(id,k); }
 
 }
-export {SMOKE};

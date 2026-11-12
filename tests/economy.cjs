@@ -63,19 +63,15 @@ const run=async()=>{
   await deal({items:{x_perch:1},cash:20,art:{}});
   const d=lt(tb,'done'); ok(d&&d.get.cash===20&&d.get.items.x_perch===1&&J((await own(TA,{})).owned.inv).cash===30,'a real trade still goes through, paid on the server: '+JSON.stringify(d&&d.get));
   ta.close(); tb.close();
-  // the pawn shop (owner, 9 Nov 2026: Antiques & Pawn buys anything): half the value paid on the server, the stock shared, sold on at the full value
-  const pw=(w,o)=>w.send(JSON.stringify({t:'pw',...o})), lp=(w,op)=>w.got.filter(m=>m.t==='pw'&&m.op===op).pop();
-  const PA='epa-'+Date.now(), PB='epb-'+Date.now(); await own(PA,{put:{inv:JSON.stringify({v:1,items:{sword:2},cash:10})}}); await own(PB,{put:{inv:JSON.stringify({v:1,items:{},cash:40})}});
-  const pa=await open(PA), pb=await open(PB); await wait(300);
-  pw(pa,{op:'sell',item:'cut_meteor',n:50}); await wait(400); ok(lp(pa,'back')&&!lp(pa,'paid'),'what you do not have cannot be pawned');
-  pw(pa,{op:'sell',item:'zz_nothing',n:1}); await wait(300); ok(lp(pa,'back')&&/worth nothing/.test(lp(pa,'back').why),'a thing with no value is turned away');
-  pw(pa,{op:'sell',item:'sword',n:1}); await wait(500);
-  ok(lp(pa,'paid')&&lp(pa,'paid').cash===7&&!(J((await own(PA,{})).owned.inv).items.sword>1),'a sword ($15) is pawned for $7, taken from the server\'s copy of the pack');
-  ok(pb.got.some(m=>m.t==='pw'&&m.op==='one'&&m.id==='sword'&&m.n>=1),'everyone sees it on the shelf');
-  pw(pb,{op:'buy',item:'sword',n:1,p:7}); await wait(400); ok(lp(pb,'no')&&!lp(pb,'bought'),'a buy at the wrong price is refused');
-  pw(pb,{op:'buy',item:'sword',n:1,p:15}); await wait(500);
-  ok(lp(pb,'bought')&&lp(pb,'bought').cost===15&&J((await own(PB,{})).owned.inv).cash===25,'another player buys it at the full value, paid on the server');
-  pa.close(); pb.close();
+  // the exchange machines (owner, 11 Nov 2026): the eye pays half the value on the server and the thing is gone
+  const xm=(w,o)=>w.send(JSON.stringify({t:'xm',...o})), lp=(w,op)=>w.got.filter(m=>m.t==='xm'&&m.op===op).pop();
+  const PA='epa-'+Date.now(); await own(PA,{put:{inv:JSON.stringify({v:1,items:{sword:2},cash:10})}});
+  const pa=await open(PA); await wait(300);
+  xm(pa,{op:'sell',item:'cut_meteor',n:50}); await wait(400); ok(lp(pa,'back')&&!lp(pa,'paid'),'what you do not have cannot be put in');
+  xm(pa,{op:'sell',item:'zz_nothing',n:1}); await wait(300); ok(lp(pa,'back')&&/worth nothing/.test(lp(pa,'back').why),'a thing with no value is turned away');
+  xm(pa,{op:'sell',item:'sword',n:1}); await wait(500);
+  ok(lp(pa,'paid')&&lp(pa,'paid').cash===7&&J((await own(PA,{})).owned.inv).items.sword===1,'a sword ($15) goes in for $7, taken from the server\'s copy of the pack');
+  pa.close();
   a.close(); c.close(); };
 (async()=>{ const w=spawn('npx',['wrangler','dev','--port',String(PORT),'--ip','127.0.0.1','--var','DEV_AUTH:1','--show-interactive-dev-session=false'],{stdio:['ignore','pipe','pipe'],env:{...process.env,WRANGLER_SEND_METRICS:'false'}});
   let log=''; w.stdout.on('data',d=>log+=d); w.stderr.on('data',d=>log+=d);

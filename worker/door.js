@@ -7,9 +7,12 @@ import { MOBSIM } from "./dunmobs.js";
 import { lvBrief, lvGoal, lvH, lvMeet, lvRun } from "./lives.js";
 import { CLK } from "./clock.js";
 import { BOWLS } from "./lanes.js";
+import { FLYBOT } from "./flybot.js";
 import LIVESDATA from "../data/lives.json";
 import ITEMDATA from "../data/items.json";
 import WORLD from "../data/world.json";
+import GUIDEDATA from "../data/guide.json";
+const BOTMIND = FLYBOT.mind(GUIDEDATA);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, CODE = /^[A-Z0-9-]{6,32}$/, MAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 const json = (o, status = 200) => Response.json(o, { status, headers: { "cache-control": "no-store" } });
 const loopback = ip => !ip || ip === "::1" || ip === "localhost" || /^127\./.test(ip) || /^::ffff:127\./.test(ip);
@@ -65,6 +68,13 @@ export default {
       const gz = p.endsWith(".bin"), out = gz ? new Response(r.body, { status: r.status, headers: r.headers, encodeBody: "manual" }) : new Response(r.body, r);
       if (gz) { out.headers.set("content-type", "application/octet-stream"); out.headers.set("content-encoding", "gzip"); }
       out.headers.set("cache-control", "private, max-age=31536000, immutable"); out.headers.set("x-robots-tag", "noindex"); return out; }
+    // voice's relay (src/111dc-voice.js): short-lived Cloudflare TURN logins for a player (TURN_KEY_ID, TURN_KEY_TOKEN); without them only STUN
+    if (request.method === "GET" && p === "/turn") {
+      if (!(await inside(env, request, dev))) return new Response("not found", { status: 404 });
+      let ice = [{ urls: "stun:stun.cloudflare.com:3478" }];
+      if (env.TURN_KEY_ID && env.TURN_KEY_TOKEN) try { const r = await fetch("https://rtc.live.cloudflare.com/v1/turn/keys/" + env.TURN_KEY_ID + "/credentials/generate-ice-servers", { method: "POST", headers: { Authorization: "Bearer " + env.TURN_KEY_TOKEN, "content-type": "application/json" }, body: JSON.stringify({ ttl: 86400 }) });
+        if (r.ok) { const j = await r.json(), L = [].concat(j.iceServers || []).map(v => ({ ...v, urls: [].concat(v.urls || []).filter(u => !/:53(\?|$)/.test(u)) })).filter(v => v.urls.length); if (L.length) ice = L; } } catch (e) {}
+      return new Response(JSON.stringify({ iceServers: ice }), { headers: { "content-type": "application/json", "cache-control": "private, no-store" } }); }
     if (request.method === "GET" && p === "/now") {
       let r = null; try { r = await fetch(env.SUPABASE_URL + "/rest/v1/now_playing?select=*&id=eq.theatre", { headers: { apikey: env.SUPABASE_KEY } }); } catch (e) {}
       const out = new Response(r && r.ok ? r.body : "[]", { status: 200 }); out.headers.set("content-type", "application/json"); out.headers.set("cache-control", "no-store"); return out; }
@@ -74,9 +84,14 @@ export default {
       const id = BOOK.exec(p)[1], r = await bookText(id);
       if (!r.ok) return new Response("not found: " + r.why, { status: 404 });
       const out = new Response(r.body, { status: 200 }); out.headers.set("content-type", "text/plain; charset=utf-8"); out.headers.set("cache-control", "private, max-age=2592000"); out.headers.set("x-robots-tag", "noindex"); return out; }
+    // a film copied into our own R2 bucket (FILMS): an owner opens /film-fill/<id>/<file> once, the worker copies it from the Internet Archive in parts
+    if (request.method === "GET" && p.startsWith("/film-fill/") && FILM.test("/film" + p.slice(10))) {
+      const uid = await who(env, request, dev); if (!uid || (await owner(env, uid, dev)) !== true) return new Response("not found", { status: 404 });
+      const [, id, file] = FILM.exec("/film" + p.slice(10)); return new Response(await filmFill(env, id, file), { headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" } }); }
     if ((request.method === "GET" || request.method === "HEAD") && FILM.test(p)) {
       if (!(await inside(env, request, dev))) return new Response("not found", { status: 404 });
       const [, id, file] = FILM.exec(p), h = new Headers(), rg = request.headers.get("range"); if (rg) h.set("range", rg);
+      const kept = await filmR2(env, id + "/" + file, request); if (kept) return kept;
       let r = null; try { r = await fetch("https://archive.org/download/" + id + "/" + file, { method: request.method, headers: h }); } catch (e) {}
       if (!r || !(r.ok || r.status === 206)) return new Response("not found", { status: 404 });
       const out = new Response(r.body, { status: r.status }); for (const k of ["content-type", "content-length", "content-range", "accept-ranges"]) { const v = r.headers.get(k); if (v) out.headers.set(k, v); }
@@ -108,10 +123,14 @@ export default {
         if (MAPPATCH.NAME.test(sh[1])) { let m = null; try { m = JSON.parse(new TextDecoder().decode(buf)); } catch (e) {} if (!m || m.v !== MAPPATCH.v || !m.set || typeof m.set !== "object") return json({ why: "not a map editor file" }, 400); }
         return json({ ok: await postOf(env).putFile(sh[1], word(request.headers.get("content-type") || "application/octet-stream", 60), buf), size: buf.byteLength }); }
       return new Response("not found", { status: 404 }); }
-    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art" || p === "/orchard")) {
+    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art" || p === "/orchard" || p === "/bot")) {
       if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401);
       let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
+      // a player's flying bot asks its mind (worker/flybot.js): the answer to say aloud; its memory and the day's count are the player's, in Home
+      if (p === "/bot") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
+        if (tooMany("bot:" + id, 12)) return json({ why: "too much at once, wait a minute" }, 429);
+        const H = homeOf(env); return json(await BOTMIND.ask(env, { get: () => H.botGet(id), put: v => H.botPut(id, v) }, { say: body.say, state: body.state, name: await H.nameGet(id) })); }
       if (p === "/home") { if (body.list !== undefined) return json({ list: (await homeOf(env).tenants()).filter(t => t.who !== id) });   // every tenant's apartment, for the map's quick jumps
         if (body.who !== undefined) return json({ home: await homeOf(env).get(word(body.who, 64)) });   // a visit: another player's apartment, to look at
         if (body.put === undefined) return json({ home: await homeOf(env).get(id) });
@@ -188,6 +207,31 @@ async function bookText(id) {
     "https://mirror.cs.odu.edu/gutenberg/" + d + "/" + id + "-0.txt", "https://mirror.cs.odu.edu/gutenberg/" + d + "/" + id + ".txt"]) {
     try { const r = await fetch(u, { cf: { cacheTtl: 2592000, cacheEverything: true } }); if (r.ok) return { ok: true, body: r.body }; why.push(new URL(u).host + " " + r.status); } catch (e) { why.push(new URL(u).host + " failed"); } }
   return { ok: false, why: why.join(", ") };
+}
+// the films kept in R2: served with ranges (a video seeks); null when there is no bucket or no copy, and the Internet Archive serves it
+async function filmR2(env, key, request) {
+  if (!env.FILMS) return null;
+  let o = null; try { o = request.method === "HEAD" ? await env.FILMS.head(key) : await env.FILMS.get(key, { range: request.headers }); } catch (e) { return null; }
+  if (!o) return null;
+  const hd = new Headers(), size = o.size, rg = o.range && request.headers.get("range") ? o.range : null;
+  hd.set("content-type", "video/mp4"); hd.set("accept-ranges", "bytes"); hd.set("etag", o.httpEtag); hd.set("cache-control", "private, max-age=86400"); hd.set("x-robots-tag", "noindex");
+  if (rg) { const a = rg.offset != null ? rg.offset : size - rg.suffix, n = rg.length != null ? rg.length : size - a; hd.set("content-range", "bytes " + a + "-" + (a + n - 1) + "/" + size); hd.set("content-length", String(n)); }
+  else hd.set("content-length", String(size));
+  return new Response(request.method === "HEAD" ? null : o.body, { status: rg ? 206 : 200, headers: hd });
+}
+async function filmFill(env, id, file) {
+  if (!env.FILMS) return "no FILMS bucket on the worker (wrangler.jsonc r2_buckets)";
+  const key = id + "/" + file, have = await env.FILMS.head(key); if (have) return "already kept: " + key + " (" + have.size + " bytes)";
+  const src = "https://archive.org/download/" + id + "/" + file, hr = await fetch(src, { method: "HEAD", redirect: "follow" }), size = +hr.headers.get("content-length");
+  if (!hr.ok || !(size > 0)) return "the Internet Archive has no " + key + " (" + hr.status + ")";
+  const PART = 32 * 1024 * 1024, up = await env.FILMS.createMultipartUpload(key, { httpMetadata: { contentType: "video/mp4" } }), parts = [];
+  try {
+    for (let a = 0, n = 1; a < size; a += PART, n++) {
+      const b = Math.min(size, a + PART) - 1, r = await fetch(src, { headers: { range: "bytes=" + a + "-" + b }, redirect: "follow" });
+      if (r.status !== 206) throw new Error("part " + n + ": " + r.status);
+      parts.push(await up.uploadPart(n, await r.arrayBuffer())); }
+    await up.complete(parts); return "kept: " + key + " (" + size + " bytes, " + parts.length + " parts)";
+  } catch (e) { try { await up.abort(); } catch (x) {} return "could not copy " + key + ": " + e.message; }
 }
 const inside = async (env, request, dev) => !!(await who(env, request, dev));
 const forget = id => { for (const [k, v] of passed) if (v.id === id) passed.delete(k); };
@@ -338,23 +382,10 @@ export class Block extends Server {
       if (this.fosAll()[k]) { H.econGive(s.id, 0, { ["skel_" + k]: 1 }, "the museum had one").catch(() => {}); return say({ op: "no", k, why: "the museum already has one" }); }
       const o = { by: word(s.name, 24) || "A TENANT", at: Date.now() }; this.ctx.storage.sql.exec("insert into fossils(k, by, at) values(?, ?, ?)", k, o.by, o.at);
       say({ op: "took", k }); this.broadcast(JSON.stringify({ t: "fos", op: "one", k, o })); }).catch(() => say({ op: "no", k, why: "try again" })); }
-  pawnT() { if (this.pawnOk) return; this.pawnOk = 1; this.ctx.storage.sql.exec("create table if not exists pawn(id text primary key, n integer)"); }
-  pawnAll() { this.pawnT(); const o = {}; for (const r of this.ctx.storage.sql.exec("select id, n from pawn where n > 0").toArray()) o[r.id] = r.n; return o; }
-  pawnAdd(id, k) { this.pawnT(); const r = this.ctx.storage.sql.exec("select n from pawn where id = ?", id).toArray()[0], n = Math.max(0, Math.min(PAWN.most, (r ? r.n : 0) + k));
-    if (n) this.ctx.storage.sql.exec("insert into pawn(id, n) values(?, ?) on conflict(id) do update set n = excluded.n", id, n); else this.ctx.storage.sql.exec("delete from pawn where id = ?", id);
-    this.broadcast(JSON.stringify({ t: "pw", op: "one", id, n })); return n; }
-  pawn(c, s, m) { const op = String(m.op || ""), item = word(m.item, 48), n = Math.max(0, Math.min(9999, Math.floor(+m.n || 0))), say = x => c.send(JSON.stringify({ t: "pw", ...x })), H = homeOf(this.env);
-    if (op === "list") return say({ op: "list", all: this.pawnAll() });
-    if (!/^[a-z0-9_]{1,48}$/.test(item) || n < 1) return; const v = pawnVal(item);
-    if (op === "sell") { const back = why => say({ op: "back", why, items: { [item]: n }, cash: 0 }); if (!v) return back("it is worth nothing here");
-      const have = this.pawnAll(); if (!have[item] && Object.keys(have).length >= PAWN.kinds) return back("the shop is full");
-      const pay = Math.max(1, Math.floor(v * PAWN.buy)) * n;
-      H.econPay(s.id, 0, { [item]: n }, "pawned").then(r => { if (!r.ok) return back(r.why); this.pawnAdd(item, n); H.econAllow(s.id, pay, 0, "pawned").catch(() => {}); say({ op: "paid", item, n, cash: pay }); }).catch(() => back("try again")); return; }
-    if (op === "buy") { const have = this.pawnAll()[item] || 0; if (!v || !have) return say({ op: "no", why: "it is gone" }); const k = Math.min(n, have), cost = Math.ceil(v) * k;
-      if (Math.floor(+m.p || 0) !== Math.ceil(v)) return say({ op: "no", why: "the price changed" });
-      H.econPay(s.id, cost, {}, "bought at the pawn shop").then(r => { if (!r.ok) return say({ op: "no", why: r.why });
-        if ((this.pawnAll()[item] || 0) < k) { H.econGive(s.id, cost, {}, "pawn sale lost").catch(() => {}); return say({ op: "no", why: "it is gone" }); }
-        this.pawnAdd(item, -k); H.econAllow(s.id, 0, k, "bought at the pawn shop").catch(() => {}); say({ op: "bought", item, n: k, cost }); }).catch(() => say({ op: "no", why: "try again" })); } }
+  exch(c, s, m) { const item = word(m.item, 48), n = Math.max(0, Math.min(9999, Math.floor(+m.n || 0))), say = x => c.send(JSON.stringify({ t: "xm", ...x })), H = homeOf(this.env);
+    if (String(m.op || "") !== "sell" || !/^[a-z0-9_]{1,48}$/.test(item) || n < 1) return; const v = exchVal(item), back = why => say({ op: "back", why, items: { [item]: n }, cash: 0 });
+    if (!v) return back("it is worth nothing here"); const pay = Math.max(1, Math.floor(v * EXCH.pays)) * n;
+    H.econPay(s.id, 0, { [item]: n }, "exchanged").then(r => { if (!r.ok) return back(r.why); H.econAllow(s.id, pay, 0, "exchanged").catch(() => {}); say({ op: "paid", item, n, cash: pay }); }).catch(() => back("try again")); }
   stallT() { if (this.stallOk) return; this.stallOk = 1; this.ctx.storage.sql.exec("create table if not exists stalls(id text primary key, rec text)"); }
   stallGet(id) { this.stallT(); const r = this.ctx.storage.sql.exec("select rec from stalls where id = ?", id).toArray()[0]; try { return r ? JSON.parse(r.rec) : null; } catch (e) { return null; } }
   stallSet(id, o) { if (o) this.ctx.storage.sql.exec("insert into stalls(id, rec) values(?, ?) on conflict(id) do update set rec = excluded.rec", id, JSON.stringify(o)); else this.ctx.storage.sql.exec("delete from stalls where id = ?", id);
@@ -416,9 +447,9 @@ export class Block extends Server {
   near(s, to, r) { if (!s.at) return null; for (const o of this.getConnections()) if (o.state && o.state.id === to) { const a = o.state.at;
       return a && a[4] === s.at[4] && a[5] === s.at[5] && Math.hypot(a[0] - s.at[0], a[1] - s.at[1]) < r ? o : null; } return null; }
   onMessage(c, raw) {
-    const s = c.state; if (!s || typeof raw !== "string" || raw.length > (raw.startsWith('{"t":"folk"') ? 400000 : raw.startsWith('{"t":"mobgrid"') || raw.startsWith('{"t":"dmset"') ? 200000 : 2500)) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
+    const s = c.state; if (!s || typeof raw !== "string" || raw.length > (raw.startsWith('{"t":"folk"') ? 400000 : raw.startsWith('{"t":"mobgrid"') || raw.startsWith('{"t":"dmset"') ? 200000 : raw.startsWith('{"t":"rtc"') ? 12000 : 2500)) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
     const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0, at: {} }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 60) return;
-    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, sky: 200, skyw: 100, ride: 300, car: 300, curse: 1500, puff: 800, drone: 3000, ps: 150, fish: 200, world: 120, puts: 1000, lives: 3000, met: 1000, tr: 100, gtr: 25, ins: 20, jug: 200, mobgrid: 3000, dmset: 3000, breakout: 5000, mobhit: 60, mobpar: 200, vr: 60, tv: 200, body: 1000, st: 150, jet: 150, zap: 120, arm: 40, mobtame: 1000, tame: 500, bowl: 80 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
+    const gap = { hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, sky: 200, skyw: 100, ride: 300, car: 300, curse: 1500, puff: 800, drone: 3000, ps: 150, fish: 200, craft: 150, world: 120, puts: 1000, lives: 3000, met: 1000, tr: 100, gtr: 25, ins: 20, jug: 200, mobgrid: 3000, dmset: 3000, breakout: 5000, mobhit: 60, mobpar: 200, vr: 60, tv: 200, body: 1000, st: 150, jet: 150, zap: 120, arm: 40, mobtame: 1000, tame: 500, bowl: 80 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
     if (m.t === "bye") { this.onClose(c); c.setState({ ...s, id: "" }); try { c.close(1000, "bye"); } catch (e) {} return; }   // leaving: out for everyone now, not when the socket times out
     if (m.t === "mv" && Array.isArray(m.at)) {
       const a = m.at, at = [num(a[0], -1e5, 1e5), num(a[1], -1e5, 1e5), num(a[2], -1e4, 1e4), num(a[3], -10, 10), word(a[4], 8), word(a[5], 60)];
@@ -520,6 +551,9 @@ export class Block extends Server {
     } else if (m.t === "fish") {
       const v = (a, n) => Array.isArray(a) && a.length === n ? a.map(x => num(x, -1e5, 1e5)) : null;
       this.broadcast(JSON.stringify({ t: "fish", id: s.id, b: v(m.b, 3), x: v(m.x, 3), k: m.k ? word(m.k, 24) : null, boat: v(m.boat, 4) }), [c.id]);
+    } else if (m.t === "craft") {
+      // a moored boat rowed (src/111ff-boats.js): which one and where
+      if (Array.isArray(m.p) && m.p.length === 3) this.broadcast(JSON.stringify({ t: "craft", id: s.id, i: word(m.i, 16), p: m.p.map(x => num(x, -1e5, 1e5)), e: m.e ? 1 : 0 }), [c.id]);
     } else if (m.t === "gtr") {
       // the guitar (src/146zob-guitar.js): what a player plays, for everyone near to hear and see
       const k = /^(on|off|chord|strum|pluck|capo|song|stop)$/.test(m.k) ? m.k : ""; if (!k) return; const v = word(m.v, 12); if (!/^[0-9.:a-zA-Z#]*$/.test(v)) return;
@@ -556,6 +590,14 @@ export class Block extends Server {
     } else if (m.t === "say") {
       const text = word(m.text, 200), st = sayStyle(m.st), sg = typeof m.sg === "string" ? m.sg.replace(/[^wWs]/g, "").slice(0, 200) : "";   // (sg: signed, each word's kind; src/146zs-signs.js)
       if (text) this.broadcast(JSON.stringify(sg ? { t: "say", id: s.id, name: s.name, text, st, sg } : { t: "say", id: s.id, name: s.name, text, st }), [c.id]);
+    } else if (m.t === "bot") {   // what a player's flying bot said (src/111dd-flybot.js), for the players near them to hear
+      const text = word(m.text, 600); if (text) this.broadcast(JSON.stringify({ t: "bot", id: s.id, text }), [c.id]);
+    } else if (m.t === "rtc") {   // voice (src/111dc-voice.js): one player's WebRTC handshake handed to another near them; the voices go browser to browser
+      const to = word(m.to, 64), d = m.d; if (!to || to === s.id || !d || typeof d !== "object") return; const o = this.near(s, to, 45); let x = null;
+      if (d.sdp && (d.sdp.type === "offer" || d.sdp.type === "answer") && typeof d.sdp.sdp === "string" && d.sdp.sdp.length < 10000) x = { sdp: { type: d.sdp.type, sdp: d.sdp.sdp } };
+      else if (d.c && typeof d.c.candidate === "string" && d.c.candidate.length < 500) x = { c: { candidate: d.c.candidate, sdpMid: d.c.sdpMid == null ? null : word(d.c.sdpMid, 16), sdpMLineIndex: num(d.c.sdpMLineIndex, 0, 16) | 0 } };
+      else if (d.bye || d.no) x = d.bye ? { bye: 1 } : { no: 1 };
+      if (!x) return; if (!o) { if (!x.bye) c.send(JSON.stringify({ t: "rtc", from: to, d: { bye: 1 } })); return; } o.send(JSON.stringify({ t: "rtc", from: s.id, d: x }));
     } else if (m.t === "pm" && s.name) {   // a message to one player in this section (the paper doll's MESSAGE)
       const to = word(m.to, 64), text = word(m.text, 200); if (!to || to === s.id || !text) return;
       if (!this.hand(to, { t: "pm", from: s.id, name: s.name, text })) c.send(JSON.stringify({ t: "pm", op: "gone", from: to }));
@@ -571,7 +613,7 @@ export class Block extends Server {
     } else if (m.t === "everyone") {   // who is online in every section, for an invitation
       Promise.all(SECROOMS.map(r => r === this.name ? Promise.resolve(this.names()) : blockAsk(this.env, r, "names").catch(() => []))).then(L => c.send(JSON.stringify({ t: "everyone", all: L.flat().filter(p => p.id !== s.id).slice(0, 200) })));
     } else if (m.t === "st") { this.stall(c, s, m);
-    } else if (m.t === "pw") { this.pawn(c, s, m);
+    } else if (m.t === "xm") { this.exch(c, s, m);
     } else if (m.t === "fos") { this.fos(c, s, m);
     } else if (m.t === "body") {   // you died here (v), or took your body back (take)
       if (m.take) { this.bodyOff(s.id); this.broadcast(JSON.stringify({ t: "world", k: "body:" + s.id, v: "" })); } else if (m.v && typeof m.v === "object") this.bodyAt(s.id, m.v, this.dev && this.dev.has(c.id) && m.life ? num(m.life, 500, BODY_LIFE) : 0);
@@ -694,8 +736,8 @@ const WORLD_KEYS = [{ re: /^time$/, owner: 1 }, { re: /^looks$/, owner: 1 }, { r
   { re: /^car:[\w-]{1,32}$/ }, { re: /^radio:[\w-]{1,32}$/ }, { re: /^paint:[\w-]{1,32}$/ }, { re: /^cst:[\w-]{1,32}$/ }, { re: /^gate:[\w-]{1,32}$/ }, { re: /^flag:[\w-]{1,32}$/ }, { re: /^tbl:[\w:-]{1,34}$/ }, { re: /^tag:[\w:.-]{1,34}$/ }];
 // the stalls: their names, the rent a day, how many days ahead, the market's cut of a sale, how many kinds a stall shows
 const STALL = { ids: ["s1", "s2", "s3", "s4", "s5"], rent: 15, days: 7, cut: .05, kinds: 12 };
-// the pawn shop (src/159ba-pawn.js): it pays half an item's value (data/items.json) and sells what it took at the full value, one stock for the section
-const PAWN = { buy: .5, kinds: 120, most: 999 }, pawnVal = id => { const d = ITEMDATA[id]; const v = d && +d.value; return v > 0 && !(d && d.archived) ? v : 0; };
+// the exchange machines (src/159ba-exchange.js): the eye pays half an item's value (data/items.json) and the thing is gone
+const EXCH = { pays: .5 }, exchVal = id => { const d = ITEMDATA[id]; const v = d && +d.value; return v > 0 && !(d && d.archived) ? v : 0; };
 const stallPub = o => ({ who: o.who, name: o.name, until: o.until, goods: o.goods });
 const BODY_LIFE = 3600000;   // an hour, then a body's things fall to the ground
 const tradeNone = () => ({ items: {}, cash: 0, art: {} });
@@ -865,6 +907,10 @@ export class Home extends DurableObject {
   get(id) { const r = this.sql.exec("select room from homes where who = ?", id).toArray()[0]; try { return r ? JSON.parse(r.room) : null; } catch (e) { return null; } }
   tenants() { this.nameT(); return this.sql.exec("select n.who as who, n.name as name from names n union select h.who, null from homes h where h.who not in (select who from names) limit 2000").toArray().map(r => ({ who: r.who, name: r.name || null })); }
   put(id, room) { this.sql.exec("insert into homes(who, room, at) values(?, ?, ?) on conflict(who) do update set room = excluded.room, at = excluded.at", id, room, Date.now()); return true; }
+  // each player's flying bot's memory (worker/flybot.js): the last words both ways and the day's count
+  botT() { this.sql.exec("create table if not exists flybot(who text primary key, v text, at integer)"); }
+  botGet(id) { this.botT(); const r = this.sql.exec("select v from flybot where who = ?", id).toArray()[0]; try { return r ? JSON.parse(r.v) : null; } catch (e) { return null; } }
+  botPut(id, v) { this.botT(); this.sql.exec("insert into flybot(who, v, at) values(?, ?, ?) on conflict(who) do update set v = excluded.v, at = excluded.at", id, JSON.stringify(v).slice(0, 65536), Date.now()); return true; }
   // each player's owned things, a row a key (at most 2 MB a player)
   ownedT() { this.sql.exec("create table if not exists owned(who text, k text, v text, at integer, primary key(who, k))"); }
   // every citizen's passport number, issued in order from 1000 the first time the game asks

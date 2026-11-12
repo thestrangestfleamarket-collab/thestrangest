@@ -1,11 +1,10 @@
-// THE ARCADE: the arcade on Main Street as one painted block (its neon ARCADE front); its inside is built off the map when you go in: black walls, four cabinets along each side wall (double-click one to play its game; the games register in 059g), and the holodeck behind the back wall (double-click its door): an empty green grid with a panel on its far wall (double-click it for the list of adventures, each a program in STORE.holo.programs).
+// THE ARCADE: the arcade on Main Street as one painted block (its neon ARCADE front); its inside is built off the map when you go in: black walls, four cabinets along each side wall (double-click one to play its game; the games register in 059g), and the holodeck, a booth the size of a phone box at the back wall (E or a double-click: the list of adventures, each a program in STORE.holo.programs).
 import {SHARED, THREE} from './003-shx.js';
 import {BATCH, FORAGE, INV, ROOMS, TEXT, UI, WIELD} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {BLDK, FADE, FIX, grab, LEVEL, OFFDX, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
 import {LAMPS} from './014-gamekit.js';
-import {BLOCKS} from './038zb-blocks.js';
 import {FACADES} from './038zc-facades.js';
 await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD.Y, {hash:hs}=SHARED.BOD.g, sh=SHARED.BOD.K.sh, MS=STORE.main;
   const HOLO=STORE.holo={programs:[],run:null,hall:null}, say=(t,c)=>SAY(t,c);
@@ -34,28 +33,18 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
   const box4=(x0,y0,x1,y1)=>{ const a=X(x0), b=X(x1), c=Z(y0), d=Z(y1); return [Math.min(a,b),Math.min(c,d),Math.max(a,b),Math.max(c,d)]; };
   const MKA=(k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{})});
   const LW=MS.lot('arcade',180), TA=TURN(LW,WP.arcade.face), L=TA.L, W=L.x1-L.x0, lcx=(L.x0+L.x1)/2, at=(u,v)=>{ const p=TA.pt(u,v); return [X(p[0]),Z(p[1])]; }, k6=6, c0=Math.floor((W*24-35*k6)/2), on=MS.word('ARCADE',c0,118,k6), litc=c=>Object.assign(c.slice(),{e:1});
-  const front=(u,z,f)=>{ const c=Math.floor(u*24), dd=Math.abs(u-W/2);
-    if(z<8)return sh([44,34,52],f);
-    if(z<96&&dd<.78)return dd>.7||z>90?litc([255,80,200]):z>60?sh([40,24,52],f):sh([30,20,40],f*(Math.floor(u*24)%6===0?.8:1));
-    if(z<96&&u>.5&&u<W-.5){ const m=(u-.5)%2.1; return m<.08||z<11||z>93?sh([58,40,70],f):sh([20,16,32],f); }
-    if(z>=98&&z<102)return litc([236,64,160]); if(z>=104&&z<106)return litc([60,206,230]);
-    if(z>=110&&z<170&&c>=c0-8&&c<c0+35*k6+8)return MS.neon(on,c,z,k6,[255,80,200],f)||sh([24,16,32],f);
-    return null; };
-  const wall=BLOCKS.brick([96,58,80]);
   // Polyfork #12 (the bodega's building, 068a): its only door is the double door on its chamfered front corner; s=-1 when it stands mirrored. Its walls, that door's spot outside and where you come out.
   SHARED.pfDoor=(x,zf,zi,s)=>{ const M=TILE/.84, c=1.29*M, xa=x-5.53*M*s, xb=x+4.41*M*s, za=zf+zi*11.06*M, zb=zf+zi*1.12*M, dx=x+3.12*M*s, dz=zf+zi*2.41*M, nx=s*Math.SQRT1_2, nz=-zi*Math.SQRT1_2, r=(a,b,c_,d)=>[Math.min(a,c_),Math.min(b,d),Math.max(a,c_),Math.max(b,d)];
     return {sol:[r(xa,za,xb-c*s,zb),r(xb-c*s,za,xb,zb-zi*c)],door:[dx+nx*.25*TILE,0,dz+nz*.25*TILE],out:[dx+nx*1.3*TILE,dz+nz*1.3*TILE,0,Math.atan2(nx,nz)]}; };
   const PFA=WP.arcade.pf==='bodega'?SHARED.pfDoor(X((LW.x0+LW.x1)/2),Z(LW.y1),Math.sign(Z(LW.y1-1)-Z(LW.y1)),-1):null;
   if(WP.arcade.pf==='bodega'){ const fy=LW.y1, X=SHARED.BOD.X, Z=SHARED.BOD.Z; (SHARED.PFCORNER=SHARED.PFCORNER||[]).push({id:'arcade',x:X((LW.x0+LW.x1)/2),zf:Z(fy),zi:Math.sign(Z(fy-1)-Z(fy)),rot:TA.hd(0),flip:true}); }   // the Hudson entrance's east corner in the bodega's building, mirrored (owner, 8 Nov 2026)
   else FACADES.make({id:'arcade',L,pt:TA.pt,z1:L.h,wall:[96,58,80],trim:[150,120,170],frame:[58,40,70],seed:53,ground:118,door:{u:lcx,w:.9},glass:true,sign:{text:'ARCADE',color:[255,80,200],bg:[24,16,32]}});
-  if(0)BLOCKS.make({x0:LW.x0,x1:LW.x1,y0:LW.y0,y1:LW.y1,z0:0,z1:L.h,kind:'A',turn:TA,roof:(x,y)=>sh([40,36,44],.92+.12*hs(Math.floor(x*4),Math.floor(y*4),61)),
-    paint:(side,u,z,f)=>(side==='f'&&front(u-L.x0,z,f))||(z>L.h-10?sh([60,44,70],f):wall(u,z,f))});
   BATCH.build(MKA); for(const me of Object.values(BATCH.meshes)){ me.castShadow=true; me.receiveShadow=true; } BATCH.meshes={};
   for(const r of PFA?PFA.sol:[box4(LW.x0,LW.y0,LW.x1,LW.y1)]){ SOL.up.push(r); FIX.up.push([r[0],r[1],0,r[2],r[3],Y(L.h)]); }
   MS.unplace('ARCADE'); MS.unplace('THE ARCADE');
 
-  const AX=480+OFFDX/BLDK, AR={x0:AX,x1:AX+16,y0:-100,y1:-87}, HD={x0:AX,x1:AX+16,y0:-113,y1:-100}, cx=(AR.x0+AR.x1)/2, hy=(HD.y0+HD.y1)/2, WH=130, DW=.8, DH=95;
-  STORE.bound.x1=Math.max(STORE.bound.x1,X(AR.x1+20)); STORE.bound.z0=Math.min(STORE.bound.z0,Z(HD.y0-6)); STORE.bound.z1=Math.max(STORE.bound.z1,Z(AR.y1+6));
+  const AX=480+OFFDX/BLDK, AR={x0:AX,x1:AX+20,y0:-103,y1:-87}, BW=.6, BD=1.2, cx=(AR.x0+AR.x1)/2, hy=AR.y0+2.1, WH=130, DW=.8, DH=95;
+  STORE.bound.x1=Math.max(STORE.bound.x1,X(AR.x1+20)); STORE.bound.z0=Math.min(STORE.bound.z0,Z(AR.y0-6)); STORE.bound.z1=Math.max(STORE.bound.z1,Z(AR.y1+6));
   let AG=null, AS=[], PA=null; const ARC={scr:null}; SYS.add('places',dt=>{ if(ARC.scr)ARC.scr(dt); },'arcade screens');
   const build=()=>{ '@arcade';
     const S=1.6, ZM=38;
@@ -106,19 +95,12 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
     const PX=(y,o=0)=>(a,z)=>[X(a),Y(z),Z(y+o)], PY=(x,o=0)=>(a,z)=>[X(x+o),Y(z),Z(a)];
     const flo=(r,paint)=>bq([X(r.x0),Y(.15),Z(r.y1)],[X(r.x1),Y(.15),Z(r.y1)],[X(r.x1),Y(.15),Z(r.y0)],[X(r.x0),Y(.15),Z(r.y0)],faceTex((r.x1-r.x0)*24,(r.y1-r.y0)*24,(i,j)=>C(paint(r.x0+(i+.5)/24,r.y1-(j+.5)/24))),'A');
     const CW=3.2*S; flo(AR,(x,y)=>{ const c=carpet((((x-AR.x0)/CW)%1+1)%1,(((y-AR.y0)/CW)%1+1)%1); return c&&(c[0]||c[1]||c[2])?litc(c.map(q=>q*.8)):[10,9,14]; });
-    flo(HD,(x,y)=>GRID(x,y));
     WALL(PY(AR.x0),PY(AR.x0),AR.y0,AR.y1,(u,z)=>black(u,z,.7)); WALL(PY(AR.x1),PY(AR.x1),AR.y0,AR.y1,(u,z)=>black(u,z,.7));
     WALL(PX(AR.y1),PX(AR.y1),AR.x0,AR.x1,(u,z)=>{ const d=Math.abs(u-cx); if(d<.78&&z<94)return d>.7||z>88?[255,42,42,1]:sh([30,20,40],.9); return black(u,z,.85); });
-    const back=(u,z)=>inf(u,z)||GRID(u,z/24);
-    const door=(u,z)=>{ const d=Math.abs(u-cx); return d>DW-.06||z>DH-3?[60,255,120,1]:Math.abs(d-DW/2)<.03?[28,120,58,1]:sh([10,18,14],.9); };
-    WALL(PX(AR.y0,.03),PX(AR.y0,.03),AR.x0,AR.x1,(u,z)=>Math.abs(u-cx)<DW&&z<DH?door(u,z):back(u,z));
-    WALL(PX(AR.y0,-.03),PX(AR.y0,-.03),AR.x0,AR.x1,(u,z)=>Math.abs(u-cx)<DW&&z<DH?door(u,z):GRID(u,z/24));
-    const panel=(u,z)=>{ const du=(u-cx)*24, dz=z-66; if(Math.abs(du)>24||Math.abs(dz)>22)return null; if(Math.abs(du)>22||Math.abs(dz)>20)return [60,255,120,1]; if(Math.abs(du)>20||Math.abs(dz)>18)return [8,30,16];
-      const r=Math.floor((dz+18)/6); if(r%2===0&&du>-16&&du<(r===4?2:14-((r*7)%9)))return r===4?[217,255,230,1]:[120,255,160,1]; return [4,12,7]; };
-    WALL(PY(HD.x0),PY(HD.x0),HD.y0,HD.y1,(u,z)=>GRID(u,z/24)); WALL(PY(HD.x1),PY(HD.x1),HD.y0,HD.y1,(u,z)=>GRID(u,z/24)); WALL(PX(HD.y0),PX(HD.y0),HD.x0,HD.x1,(u,z)=>panel(u,z)||GRID(u,z/24));
-    sol(AR.x0-.1,HD.y0,AR.x0+.1,AR.y1); sol(AR.x1-.1,HD.y0,AR.x1+.1,AR.y1); sol(AR.x0,AR.y1-.1,AR.x1,AR.y1+.1); sol(HD.x0,HD.y0-.1,HD.x1,HD.y0+.1); sol(AR.x0,AR.y0-.1,AR.x1,AR.y0+.1);
+    WALL(PX(AR.y0),PX(AR.y0),AR.x0,AR.x1,(u,z)=>inf(u,z)||black(u,z,.8));
+    sol(AR.x0-.1,AR.y0,AR.x0+.1,AR.y1); sol(AR.x1-.1,AR.y0,AR.x1+.1,AR.y1); sol(AR.x0,AR.y1-.1,AR.x1,AR.y1+.1); sol(AR.x0,AR.y0-.1,AR.x1,AR.y0+.1); sol(cx-BW,AR.y0,cx+BW,AR.y0+BD);
     const CW_=Math.abs(X(1)-X(0)), ZW_=Math.abs(Y(1)-Y(0)), KIT=STORE.cabs.kit(), SCRS=[];
-    const ctex=(w,h,f)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'); f(g,w,h); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return t; };
+    const ctex=(w,h,f)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'); f(g,w,h); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return t; };
     const lam=(map,e=.3)=>new THREE.MeshLambertMaterial({map,emissiveMap:map,emissive:new THREE.Color(e,e,e)}), glow=map=>new THREE.MeshBasicMaterial({map});
     const rnd=((sd)=>()=>((sd=(sd*16807)%2147483647)/2147483647))(77);
     const wear=(g,w,h,k=1)=>{ for(let i=0;i<w*h/90*k;i++){ g.fillStyle=`rgba(${rnd()<.5?'255,255,255':'0,0,0'},${.03+rnd()*.06})`; g.fillRect(rnd()*w,rnd()*h,1+rnd()*2,1+rnd()*2); }
@@ -223,24 +205,29 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
       const xb=sd==='e'?AR.x0+.1:AR.x1-.1, dm=Dm*Math.max(...PR.map(p=>p[0])), r0=bw?[yc-w/2,AR.y0+.1,yc+w/2,AR.y0+.1+dm]:sd==='e'?[xb,yc-w/2,xb+dm,yc+w/2]:[xb-dm,yc-w/2,xb,yc+w/2]; sol(...r0);
       const hb=new THREE.Mesh(new THREE.BoxGeometry(Math.abs(X(r0[2])-X(r0[0]))+.4*TILE,Y(70),Math.abs(Z(r0[3])-Z(r0[1]))+.4*TILE),new THREE.MeshBasicMaterial({visible:false}));
       hb.position.set((X(r0[0])+X(r0[2]))/2,Y(35),(Z(r0[1])+Z(r0[3]))/2); scene.add(hb); UI.thing({name:'PLAY '+o.name,obj:hb,reach:1.5*TILE,near:2.5*TILE,tall:Y(70),act:()=>STORE.cabs.play(o.name)}); };
-    const YS=[AR.y0+2.2,AR.y0+4.7,AR.y0+7.2,AR.y0+9.7];
+    const YS=[AR.y0+2.6,AR.y0+5.8,AR.y0+9,AR.y0+12.2];
     for(const sd of ['e','w'])STORE.cabs.walls[sd].forEach((name,i)=>cab(sd,YS[i],{name,w:STY[name].pr==='road'||name==='RAINBOW RUN'?.86:undefined}));
     STORE.cabs.walls.b.forEach((name,i)=>cab('b',cx+3.6+i*2.5,{name}));   // the one new machine: the back wall beside the holodeck's door, facing the street door
     let si=0; ARC.scr=dt=>{ if(STORE.cabs.on||(ROOMS.offIn&&ROOMS.offIn()!=='arcade'))return; for(const q of SCRS)q.d.step(dt); const q=SCRS[si++%SCRS.length]; q.d.draw(); q.t.needsUpdate=true; };
-    for(const [y,name,ty,hd] of [[AR.y0+.3,'THE HOLODECK',AR.y0-1.3,Math.PI],[AR.y0-.3,'BACK TO THE ARCADE',AR.y0+1.3,0]]){ const hb=new THREE.Mesh(new THREE.BoxGeometry(1.3*TILE,2.4*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false}));
-      hb.position.set(X(cx),1.2*TILE,Z(y)); scene.add(hb); UI.thing({name,ghost:1,obj:hb,reach:1.4*TILE,near:2.6*TILE,tall:2.4*TILE,act:()=>!FADE.busy&&FADE.run('',()=>UI.goTo(X(cx),Z(ty),0,hd),{cut:true})}); }
-    for(const [x,y,c,i] of [[cx,(AR.y0+AR.y1)/2,0xc070ff,9],[cx,AR.y1-1,0xff4fa0,5],[cx,hy,0x66ff99,5]]){ const Lt=new THREE.PointLight(c,i,10*TILE,1.6); Lt.position.set(X(x),Y(118),Z(y)); scene.add(Lt); }
-    { const hb=new THREE.Mesh(new THREE.BoxGeometry(2.2*TILE,Y(50),.4*TILE),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(X(cx),Y(66),Z(HD.y0+.2)); scene.add(hb);
-      UI.thing({name:'THE HOLODECK PANEL',obj:hb,reach:1.6*TILE,near:2.8*TILE,tall:Y(90),act:()=>HOLO.menu()}); const hb4=box4(HD.x0,HD.y0,HD.x1,HD.y1); HOLO.hall={x:X(cx),z:Z(hy),G:AG,box:{x0:hb4[0],z0:hb4[1],x1:hb4[2],z1:hb4[3]},y:Y(.15),h:Y(WH),hpx:WH,door:{x:X(cx),z:Z(AR.y0-1.3)}}; }
+    for(const [x,y,c,i] of [[cx,(AR.y0+AR.y1)/2,0xc070ff,9],[cx,AR.y1-1,0xff4fa0,5],[cx,AR.y0+1.6,0x66ff99,4]]){ const Lt=new THREE.PointLight(c,i,10*TILE,1.6); Lt.position.set(X(x),Y(118),Z(y)); scene.add(Lt); }
+    { const T=TILE, W=2*BW*T, Dp=BD*T, Hh=2.5*T, bx=X(cx), bz=Z(AR.y0+BD/2), zs=Math.sign(Z(AR.y1)-Z(AR.y0)), G=new THREE.Group(); G.position.set(bx,Y(.15),bz); scene.add(G);
+      const gt=ctex(96,200,(g,w,h)=>{ g.fillStyle='#04190c'; g.fillRect(0,0,w,h); g.strokeStyle='#3cff78'; g.lineWidth=2; for(let x=0;x<=w;x+=24){ g.beginPath(); g.moveTo(x,0); g.lineTo(x,h); g.stroke(); } for(let y=0;y<=h;y+=25){ g.beginPath(); g.moveTo(0,y); g.lineTo(w,y); g.stroke(); } });
+      const st=ctex(128,32,(g,w,h)=>{ g.fillStyle='#04190c'; g.fillRect(0,0,w,h); g.fillStyle='#d9ffe6'; g.font='700 15px monospace'; g.textAlign='center'; g.fillText('HOLODECK',w/2,21); });
+      const dark=new THREE.MeshBasicMaterial({color:0x10141a}), lit=new THREE.MeshBasicMaterial({color:0x3cff78}), grid=new THREE.MeshBasicMaterial({map:gt,side:THREE.DoubleSide}), bx_=(w,h,d,x,y,z,m)=>{ const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m); o.position.set(x,y,z); G.add(o); return o; };
+      for(const sx of [-1,1]){ bx_(.08*T,Hh,.08*T,sx*(W/2-.04*T),Hh/2,zs*(Dp/2-.04*T),dark); bx_(.03*T,Hh,.03*T,sx*(W/2-.04*T),Hh/2,zs*(Dp/2+.01*T),lit); const sd=new THREE.Mesh(new THREE.PlaneGeometry(Dp,Hh),grid); sd.rotation.y=Math.PI/2; sd.position.set(sx*(W/2-.01*T),Hh/2,0); G.add(sd); }
+      { const bk=new THREE.Mesh(new THREE.PlaneGeometry(W,Hh),grid); bk.position.set(0,Hh/2,-zs*(Dp/2-.02*T)); G.add(bk); const fl=new THREE.Mesh(new THREE.PlaneGeometry(W,Dp),grid); fl.rotation.x=-Math.PI/2; fl.position.y=.02*T; G.add(fl); }
+      bx_(W,.34*T,Dp,0,Hh+.17*T,0,dark); const sg=new THREE.Mesh(new THREE.PlaneGeometry(W*.92,.26*T),new THREE.MeshBasicMaterial({map:st})); sg.position.set(0,Hh+.17*T,zs*(Dp/2+.005*T)); if(zs<0)sg.rotation.y=Math.PI; G.add(sg);
+      const hb=new THREE.Mesh(new THREE.BoxGeometry(W,2.4*T,Dp),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(bx,1.2*T,bz); scene.add(hb);
+      UI.thing({name:'THE HOLODECK',obj:hb,reach:1.5*T,near:2.8*T,tall:2.4*T,act:()=>HOLO.menu()}); const hb4=box4(AR.x0,AR.y0,AR.x1,AR.y1); HOLO.hall={x:X(cx),z:Z(hy),G:AG,box:{x0:hb4[0],z0:hb4[1],x1:hb4[2],z1:hb4[3]},y:Y(.15),h:Y(WH),hpx:WH,door:{x:X(cx),z:Z(hy)}}; }
     if(STORE.furnish&&STORE.furnish.arcade)STORE.furnish.arcade(); };
   const unbuild=()=>{ ARC.scr=null; if(!(HOLO.run&&HOLO.run.P.offWorld))HOLO.close(); for(const r of AS){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } AS=[]; if(AG){ AG.removeFromParent(); AG=null; } };   // an off-world adventure (the catacomb run) keeps the holodeck open while it drops the arcade; it re-enters on return
-  const wb=box4(AR.x0-.2,HD.y0-.2,AR.x1+.2,AR.y1+.2);
+  const wb=box4(AR.x0-.2,AR.y0-.2,AR.x1+.2,AR.y1+.2);
   const rb=r=>{ const q=box4(r.x0,r.y0,r.x1,r.y1); return {x0:q[0],z0:q[1],x1:q[2],z1:q[3]}; };
-  ROOMS.off.arcade={name:'THE ARCADE',ar:AR,addSol:r=>{ AS.push(r); SOL.up.push(r); },box:{x0:wb[0],z0:wb[1],x1:wb[2],z1:wb[3],y0:-1,y1:Y(WH+40)},rooms:[rb(AR),rb(HD)],need:()=>LOAD('arcade','later'),
+  ROOMS.off.arcade={name:'THE ARCADE',ar:AR,addSol:r=>{ AS.push(r); SOL.up.push(r); },box:{x0:wb[0],z0:wb[1],x1:wb[2],z1:wb[3],y0:-1,y1:Y(WH+40)},rooms:[rb(AR)],need:()=>LOAD('arcade','later'),
     build:()=>{ AG=new THREE.Group(); AG.name='arcade-in'; scene.add(AG); AS=[]; PA=ROOMS.part(AG,build,MKA); return PA; },unbuild,
     spawn:[X(cx),Z(AR.y1-1.3),0,Math.PI],out:[...at(lcx,L.y1+.9),0,TA.hd(0)],door:(d=>[d[0],Y(0),d[1]])(at(lcx,L.y1+.25)),exit:[X(cx),0,Z(AR.y1-.25)],exitName:'OUT TO MAIN STREET'};
   if(PFA)Object.assign(ROOMS.off.arcade,{door:PFA.door,out:PFA.out});
   { const B=SHARED.BOD, tx=w=>(w-B.XS(0))/(B.XS(1)-B.XS(0)), tz=w=>(w-B.ZS(0))/(B.ZS(1)-B.ZS(0)); if(LEVEL.homes&&!LEVEL.homes.game_master)LEVEL.homes.game_master=[+tx(X(cx-2.2)).toFixed(2),+tz(Z(AR.y0+1.6)).toFixed(2),0,'arcade']; }   // the Game Master by the holodeck's door (owner, 5 Nov 2026)
-  { const sp=ROOMS.off.arcade.spawn; STORE.places.push(['THE ARCADE',sp[0],sp[1],'up','off',sp[3]],['THE HOLODECK',X(cx),Z(hy+3),'up','off',Math.PI]); }
+  { const sp=ROOMS.off.arcade.spawn; STORE.places.push(['THE ARCADE',sp[0],sp[1],'up','off',sp[3]],['THE HOLODECK',X(cx),Z(hy+.6),'up','off',Math.PI]); }
   window.ARCDBG=()=>({built:!!PA,cabs:PA?PA.things.filter(t=>/^PLAY /.test(t.name)).length:0,things:PA?PA.things.map(t=>t.name):[],holo:{programs:HOLO.programs.map(P=>P.name),open:!hp.hidden,run:HOLO.run?HOLO.run.P.name:null,rows:hp.querySelectorAll('button[data-run]').length}});
 });

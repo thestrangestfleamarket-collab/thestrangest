@@ -14,7 +14,7 @@ Object.assign(CLOCK,{movers:[],h:17.4,sunH:null,run:false,speed:1,shadeH:16,sunV
   moonPhase:()=>{ const m=CLOCK.moonReal&&CLOCK.moonReal(); return m?m.phase:(((CLOCK.day()+(CLOCK.h??12)/24)/8+.125)%1+1)%1; },   // the real Moon's (moonReal, set by THE HOURS) or an 8-day cycle
  moonLit:()=>(1-Math.cos(CLOCK.moonPhase()*Math.PI*2))/2});
 { const D=Math.PI/180, sunL=new THREE.DirectionalLight(0xffffff,0), sunD=new THREE.DirectionalLight(0xffffff,0), sunF=new THREE.DirectionalLight(0xffffff,0), R=32*TILE, RD=20*TILE, FM=Math.min(+(QS.get('fmap')||1024),renderer.capabilities.maxTextureSize);
-  for(const [L,r,m] of [[sunL,R,1536],[sunD,RD,1024],[sunF,R,FM]]){ L.castShadow=true; L.shadow.mapSize.set(m,m); Object.assign(L.shadow.camera,{left:-r,right:r,top:r,bottom:-r,near:.5,far:260*TILE}); L.shadow.camera.updateProjectionMatrix();
+  for(const [L,r,m] of [[sunL,R,768],[sunD,RD,512],[sunF,R,FM]]){ L.castShadow=true; L.shadow.mapSize.set(m,m); Object.assign(L.shadow.camera,{left:-r,right:r,top:r,bottom:-r,near:.5,far:260*TILE}); L.shadow.camera.updateProjectionMatrix();
     L.shadow.bias=-.06/260; L.shadow.normalBias=+(QS.get("snb")||.12); L.shadow.autoUpdate=false; scene.add(L,L.target); }
   sunF.castShadow=false;   // no far shadow map: shadows within the near one's reach only (owner, 9 Nov 2026)
   const SC={c:new THREE.Vector3(1e9,0,0),d:new THREE.Vector3(),fd:new THREE.Vector3(),lv:'',flv:'',st:0,g:0,dirty:0,fdirty:0,ft:0,root:{visible:true,layers:new THREE.Layers(),children:[]},n:0,nd:0,nf:0,fb:null};
@@ -59,7 +59,7 @@ Object.assign(CLOCK,{movers:[],h:17.4,sunH:null,run:false,speed:1,shadeH:16,sunV
   CLOCK.farBox=()=>{ const C=RING.cf, M=SHARED.BOD.MAP, T=TILE, xa=[C.x0,C.x1,M.x0,M.x1].map(SHARED.BOD.XS), za=[C.y0,C.y1,M.y0,M.y1].map(SHARED.BOD.ZS); return [Math.min(...xa)-8*T,-4*T,Math.min(...za)-8*T,Math.max(...xa)+8*T,40*T,Math.max(...za)+8*T]; };
   const sig=()=>{ const dy=DYN(); let g=0; const f=o=>{ if(!o.visible||dy.has(o))return; if(o.isMesh&&o.castShadow)g=(g*31+o.id+(o.isInstancedMesh?o.count*7919:0))|0; for(const c of o.children)f(c); }; f(scene); return g; };
   CLOCK.set=h=>{ CLOCK.h=((h%24)+24)%24; };
-  CLOCK.dark=()=>elev(CLOCK.h)<-2;
+  CLOCK.dark=()=>CLOCK.elev()<-2;   // the sky's sun (real sunrise and sunset, or the held look), not the clock's hour on a made-up curve
   const DYN=()=>{ const out=new Set(); if(W3&&W3.group)out.add(W3.group); for(const N of NPCS)if(N.g)out.add(N.g); for(const x of NPCS.extra||[])if(x&&x.g)out.add(x.g);
     if(CREATS)for(const N of CREATS)if(N.g)out.add(N.g); for(const k of ['BOAT','DRONE'])if(window[k]&&window[k].g)out.add(window[k].g); for(const o of ONLINE.others?.values()||[])if(o.fig&&o.fig.g)out.add(o.fig.g); for(const f of CLOCK.movers)for(const o of f())if(o)out.add(o); return out; };
   { const SM=renderer.shadowMap, orig=SM.render;
@@ -70,5 +70,5 @@ Object.assign(CLOCK,{movers:[],h:17.4,sunH:null,run:false,speed:1,shadeH:16,sunV
       if(!dk&&lights.includes(sunD)&&sunD.shadow.needsUpdate){ const ch=SC.root.children; ch.length=0; for(const o of DYN())if(o.visible&&o.parent)ch.push(o); SC.root.traverse=f=>sc.traverse(f); SM.needsUpdate=true; orig.call(SM,[sunD],SC.root,camera); SC.nd++; }
       SM.needsUpdate=true; orig.call(SM,rest,sc,camera); camera.layers.mask=m0; }; }
   window.SUNDBG=()=>({still:SC.n,moving:SC.nd,far:SC.nf,box:SC.fb&&SC.fb.map(v=>+(v/TILE).toFixed(1)),fcam:[sunF.shadow.camera.right/TILE,sunF.shadow.camera.top/TILE,sunF.shadow.camera.far/TILE,sunF.shadow.normalBias].map(v=>+v.toFixed(2)),dyn:DYN().size,maps:[sunL.shadow.mapSize.x,sunD.shadow.mapSize.x,sunF.shadow.mapSize.x],patch:THREE.ShaderChunk.lights_fragment_begin.includes('NUM_DIR_LIGHT_SHADOWS > 2')});
-  CLOCK.sun=sunL; CLOCK.sunD=sunD; CLOCK.sunF=sunF; CLOCK.dyn=DYN; window.CLOCK=CLOCK; CLOCK.elev=()=>elev(CLOCK.sunH??CLOCK.h); CLOCK.dayElev=()=>elev(CLOCK.h); CLOCK.SKYV=SKYV;
+  CLOCK.sun=sunL; CLOCK.sunD=sunD; CLOCK.sunF=sunF; CLOCK.dyn=DYN; window.CLOCK=CLOCK; CLOCK.elev=()=>elev(CLOCK.sunH??CLOCK.h); CLOCK.dayElev=CLOCK.elev; CLOCK.SKYV=SKYV;
   }

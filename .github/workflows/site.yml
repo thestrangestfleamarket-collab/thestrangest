@@ -52,11 +52,13 @@ jobs:
           R=""; k(){ if [ "$FULL" = "true" ] || [ "$C" = "ALL" ] || echo "$C" | grep -Eq "$2"; then R="$R $1"; fi; }
           k grass   'src/014a|src/140-weeds|src/140a-tufts|src/141-forage|src/142a-flora|src/143-bfly|src/064|grasskinds'
           k online  'src/111d-online|worker/|online'
+          k voice   'src/111dc-voice|src/111d-online|worker/door|voice\.cjs'
           k drops   'src/162[de]|src/150cy|drops'
           k photog  'src/146m|src/160b|photog'
           k earn    'src/140c|src/160b|data/trainers|earn'
           k register 'src/146ze|src/038zd|register'
           k brawl   'src/146h|src/146a|src/103|brawl'
+          k flybot  'src/111dd|src/111d-online|worker/flybot|worker/door|flybot\.cjs'
           k physx   'src/090|src/150-loose|src/150o|physx'
           k vr      'src/162a-pad|src/162c-vr|vr\.cjs'
           k vrbody  'src/162c|src/111b|vrbody\.cjs'
@@ -131,6 +133,7 @@ jobs:
           k pfrow   'src/068a|src/059i|src/069a|data/street|tools/row-lay|pfrow'
           k loadscreens 'src/006-map-pre|src/008-batch|src/009-down|tools/recover|loadscreens'
           k parkpf  'src/111fe|src/060a|src/061-park|data/parkpf|tools/park-pf|parkpf'
+          k boats   'src/111ff|src/111fe|src/060a|src/142-fishing|boats\.cjs'
           k zones   'src/129a|src/066-river|src/065a|src/065-ring|zones\.cjs'
           k bees    'src/147a|bees\.cjs'
           k fossils 'src/150cyc|src/141-forage|data/pffossils|data/trainers|worker/door|fossils\.cjs'
@@ -194,6 +197,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' online')
         run: node tests/online.cjs dist/market.html
+      - name: Voice (two players near each other link, push to talk is heard, unlinked when apart)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' voice')
+        run: node tests/voice.cjs dist/market.html
       - name: The ground drops (off the quick bar onto the world, their 3D look, picked up, gone in time)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' drops')
@@ -450,6 +457,9 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' nightsky')
         run: node tests/nightsky.cjs dist/market.html
+      - name: The flying bot (its mind with a stand-in for Claude, called, asked, heard)
+        if: contains(steps.f.outputs.run, ' flybot')
+        run: node tests/flybot.cjs dist/market.html
       - name: The observatory (the dome in the park, the shared telescope, its goals)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' observatory')
@@ -470,6 +480,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' parkpf')
         run: node tests/parkpf.cjs
+      - name: The lake's boats (rowed, never overlapping)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' boats')
+        run: node tests/boats.cjs
       - name: The Hudson loads when you go in
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' zones')
@@ -617,7 +631,7 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' copies')
         run: node tests/copies.cjs dist/market.html
-      - name: The money's server (the bucket, the body's drops, the stalls, the pawn shop)
+      - name: The money's server (the bucket, the body's drops, the stalls, the exchange machines)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' money')
         run: node tests/economy.cjs

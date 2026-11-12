@@ -303,7 +303,8 @@ One tree pass (more leaves mean more shadow triangles).
 
 - [ ] **Try live** · P2 · S · look. The menus, where you start, the map and GO TO.
 - [x] **The ? menu redone** (owner, 10 Nov 2026: "list every single thing you can do in game caterogized so you can see the specific moves for each"; merged 10 Nov) · P2 · M · code.
-- [x] **The map in the menus' green look** (owner, 10 Nov 2026: "B, go"; done 10 Nov) · P2 · M · code. `src/141e-map.js`, `tests/brochure.cjs`. Waits for his look and yes.
+- [x] **The old brochure map back** (owner, 12 Nov 2026; done 12 Nov; supersedes 10 Nov's green look) · P2 · M · code. `src/141e-map.js`, `tests/brochure.cjs`. Waits for his look and yes.
+- [ ] **The section an even rectangle** (owner, 12 Nov 2026) · P2 · M · pick. The east edge steps 10 tiles (park 262, Market St 252): his pick of which side moves.
 - [ ] **The brochures** · P2 · S · look. Twelve, each in its own style, from three street racks (10 Nov): the styles, the photographs, where the racks stand, $2 and the $50 full set. Re-shoot a brochure's photographs and fix its words when its activity changes (`tools/brochure-shots.cjs`). START lends each kit (10 Nov): which items, where it starts you, when the loan goes back.
 - [ ] **The HUD's 24px margin on the owner's own screen** · P3 · S · look. His pick A (4 Nov); checked locally only.
 - [ ] **Phones** · P2 · L · look + code. Login on a phone never tried (the door lets them in since 9 Nov); the touch pad; menus fitted to

@@ -1,6 +1,6 @@
 // BOARDED UP: the holodeck's zombie siege, for one, two on one screen, or two online (a host runs the dead and a partner near them joins through the section's server: t 'bu'); its own canvas and renderer over the page while it runs, its models polyfork's, fetched when first run; in a headset the game's own renderer draws its scene (SHARED.drive.scene), the right controller aims
 import {SHARED, THREE} from './003-shx.js';
-import {ONLINE, VR} from './003b-systems.js';
+import {ONLINE, SFX, VR} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {renderer} from './004-main.js';
 import {STORE} from './006-map-pre.js';
@@ -347,7 +347,7 @@ const BOARDED={on:false,api:null}; window.BOARDED=BOARDED;
     let trI=0;function tracer(a,b){const t=tracers[trI++%tracers.length],p=t.l.geometry.attributes.position;p.setXYZ(0,a.x,a.y,a.z);p.setXYZ(1,b.x,b.y,b.z);p.needsUpdate=true;t.l.visible=true;t.t=.07}
 
     let AC,master,noiseB;
-    function audioInit(){if(AC)return;try{AC=new AudioContext()}catch(e){return}master=AC.createGain();master.gain.value=.55;master.connect(AC.destination);
+    function audioInit(){if(AC)return;try{AC=new AudioContext()}catch(e){return}master=AC.createGain();master.gain.value=SFX.snd?.55:0;SFX.onAll.push(on=>{master.gain.value=on?.55:0});master.connect(AC.destination);
       noiseB=AC.createBuffer(1,AC.sampleRate*2,AC.sampleRate);const d=noiseB.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
       const s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain(),l=AC.createOscillator(),lg=AC.createGain();s.buffer=noiseB;s.loop=true;f.type='lowpass';f.frequency.value=320;g.gain.value=.1;l.frequency.value=.13;lg.gain.value=.06;l.connect(lg).connect(g.gain);s.connect(f).connect(g).connect(master);s.start();l.start()}
     function nz(dur,type,f0,f1,vol,q=1,delay=0){if(!AC)return;const t=AC.currentTime+delay,s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();s.buffer=noiseB;s.loop=true;f.type=type;f.Q.value=q;f.frequency.setValueAtTime(f0,t);f.frequency.exponentialRampToValueAtTime(Math.max(20,f1),t+dur);g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);s.connect(f).connect(g).connect(master);s.start(t,Math.random());s.stop(t+dur+.05)}

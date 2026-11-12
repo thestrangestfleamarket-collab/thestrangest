@@ -240,7 +240,7 @@ window.FALLS=FALLS;
         SYS.add('world',(kk,v)=>{ if(kk===k)draw(v); },'089b-falls cairn'); }); }
     /* toss a coin: a dollar into the pool for a wish */
     { const hb=new THREE.Mesh(new THREE.BoxGeometry(1.2*T,.6*T,1.2*T),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(X(C[0]+R-1.2),WY,Z(C[1]-1)); root.add(hb);
-      UI.thing({name:'TOSS A COIN',obj:hb,reach:3*T,near:4*T,tall:.6*T,act:()=>{ if(!INV||INV.cash<1)return SAY('YOU HAVE NO COIN TO TOSS.','#c8a090'); INV.cash-=1; if(SFX.play)SFX.play('splash',{vol:.25,pitch:1.8}); SAY('YOU TOSS A DOLLAR IN AND MAKE A WISH.','#9fd6dc'); }}); }
+      UI.thing({name:'TOSS A COIN',obj:hb,reach:3*T,near:4*T,tall:.6*T,act:()=>{ if(!INV||!INV.afford(1))return SAY('YOU HAVE NO COIN TO TOSS.','#c8a090'); INV.pay(1); if(SFX.play)SFX.play('splash',{vol:.25,pitch:1.8}); SAY('YOU TOSS A DOLLAR IN AND MAKE A WISH.','#9fd6dc'); }}); }
     /* the roar: one placed sound at the foot of the falls (a recorded loop held as a voice), louder as you come near */
     let roar=null; const sound=()=>{ const c=SFX.live&&SFX.live(), d=Math.hypot(pos.x-X(FZ),pos.z-WZ0)/M, on=!!c&&SFX.on&&d<90&&root.visible;
       if(!on){ if(roar){ roar.set(0,1); } return; } if(!roar)roar=SFX.voice('falls'); if(roar)roar.set(Math.min(.9,14/(d+8)),1,{x:X(FZ),y:WY+3*M,z:WZ0}); };

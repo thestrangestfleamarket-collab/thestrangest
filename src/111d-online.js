@@ -175,7 +175,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
     if(ONLINE.others.size)draw(dt,now); fade(dt);
     if(ME.say&&now-ME.sayT<ONLINE.sayFor*1000){ ME.st=SP; if(VR.on){ if(ME.lab)ME.lab.show(false); tag(ME); ME.tag.visible=true; ME.tag.position.set(pos.x,SHARED.py+2.65*TILE,pos.z); fit(ME.tag); } else { if(ME.tag)ME.tag.visible=false; lab(ME); ME.lab.at(pos.x,SHARED.py+2.15*TILE,pos.z); } } else { if(ME.tag)ME.tag.visible=false; if(ME.lab)ME.lab.show(false); }; };
   const ME={mine:true,say:'',sayT:0,st:SP,tag:null,tagS:''}; ONLINE.ME=ME;
-  ONLINE.said=t=>{ t=String(t||'').trim().slice(0,200); if(!t)return; if(/^bank$/i.test(t)&&VAULT.open){ VAULT.open(); return; }
+  ONLINE.said=t=>{ t=String(t||'').trim().slice(0,200); if(!t)return; if(t[0]==='/'&&ONLINE.slash&&ONLINE.slash(t))return; if(/^bank$/i.test(t)&&VAULT.open){ VAULT.open(); return; }   // /wave: an emote (162ee-emotes)
     const sg=ONLINE.signs&&ONLINE.signs.mine(t); if(sg)t=sg.text;   // (the SIGN toggle: what your hands sign of it, 146zs)
     send(sg?{t:'say',text:t,st:SP,sg:sg.k}:{t:'say',text:t,st:SP}); line(myName()+(sg?' (SIGNS)':''),t); ME.say=t; ME.sayT=performance.now(); if(ONLINE.bot&&ONLINE.bot.heard)ONLINE.bot.heard(t); };
   const PS=['sit','climb','hang','water','grip','fly'], pick=o=>{ const r={}; let n=0; for(const k in o){ const v=o[k]; if(n>=16)break; if(typeof v==='number'&&isFinite(v)){ r[k]=Math.round(v*100)/100; n++; } else if(typeof v==='boolean'){ r[k]=v; n++; } } return r; };

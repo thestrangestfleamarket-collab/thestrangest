@@ -27,6 +27,7 @@ const SHOTS = process.argv[3];
     await pg.evaluate(([x, z, y]) => __dbg.UI.goTo(x, z, y), [...d.bed, d.top]); await pg.waitForTimeout(1500);
     const pl = await pg.evaluate(() => { INV.add('sd_marigold', 2); FORAGE.ACT.gplant('sd_marigold'); return GARDEN.plots().filter(p => p.bed === 'roofgh').length; });
     ok(pl === 1, 'a seed plants in the greenhouse bed (' + pl + ')');
+    await wait(() => !FADE.busy, 60000);   // the houses stand by the park (11 Nov 2026): going up loads it behind a fade, and the roof waits for it
     const pe = await pg.evaluate(async () => { ROOFQ.land(); const on = ROOFQ.PG.on; ROOFQ.PG.stay = 0; await new Promise(r => setTimeout(r, 1500)); return { on, eaten: GARDEN.plots().filter(p => p.bed === 'roofgh').length === 0 }; });
     ok(pe.on && pe.eaten, 'pigeons land and, left alone, eat the seedling: ' + JSON.stringify(pe));
     const ow = await pg.evaluate(async () => { FORAGE.ACT.gplant('sd_marigold'); ROOFQ.land(); ROOFQ.shoo(); const shooed = !ROOFQ.PG.on; ROOFQ.GH.owlTh.act(); ROOFQ.PG.fly = 0; ROOFQ.PG.t = 0; await new Promise(r => setTimeout(r, 1500)); return { shooed, owl: ROOFQ.S.owl, landed: ROOFQ.PG.on, kept: GARDEN.plots().filter(p => p.bed === 'roofgh').length }; });

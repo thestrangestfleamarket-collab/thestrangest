@@ -44,7 +44,16 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
         walk(scene); };
   const IV={key:null,b:null,want:null,re:null,busy:false,H:[],L:[],S:[],top:new Set(),nc:0,C:new Map()}; ROOMS.iv=IV;
   // Insides off the map (ROOMS.off[id]: name, box, need, build -> ROOMS.part, spawn/out [x,z,y,heading], door/exit [x,y,z], rooms [{x0,z0,x1,z1}] when the inside is several rooms, keep, outdoor when it is open air (you can ride there); a place with ground of its own puts {x0,z0,x1,z1,ground} in ROOMS.grounds while built): gone in and out of only by double-clicking the door's thing (door outside, exit inside; doors never move, walking into one does nothing), built on the way in, the street not drawn while you are in, dropped on the way out unless keep.
-  const offL=id=>{ const o=ROOMS.off[id]; if(ROOMS.lazy[id])return ROOMS.lazy[id]; const L=ROOMS.lazy[id]={name:o.name,off:1,need:()=>o.need&&o.need(),go:()=>{ o.P=o.build(); L.done=true; },done:false};
+  // every inside's way out is a door you see (owner, 11 Nov 2026): one panelled door at its exit, facing in, unless the inside draws its own (ownDoor) or has no exit; doorBack how far behind the exit point its wall is
+  const DOOR={}; ROOMS.door=(x,y,z,n,back=.26*TILE)=>{ const T=TILE;   // the door: its foot at x,y,z, n the way into the room, its wall back behind it
+    if(!DOOR.g){ const k=g=>(g.userData.keep=true,g), m=c=>{ const q=new THREE.MeshLambertMaterial({color:c}); q.userData.keep=true; return q; }; DOOR.fr=m(0x2c2018); DOOR.pa=m(0x6e4a30); DOOR.in=m(0x5a3a24); DOOR.kn=m(0xd0a850);
+      DOOR.g=[[k(new THREE.BoxGeometry(1.25*T,.12*T,.16*T)),'fr',0,2.26*T,0],[k(new THREE.BoxGeometry(.12*T,2.3*T,.16*T)),'fr',-.565*T,1.15*T,0],[k(new THREE.BoxGeometry(.12*T,2.3*T,.16*T)),'fr',.565*T,1.15*T,0],
+        [k(new THREE.BoxGeometry(1.01*T,2.2*T,.06*T)),'pa',0,1.1*T,0],[k(new THREE.BoxGeometry(.7*T,.75*T,.03*T)),'in',0,1.62*T,.04*T],[k(new THREE.BoxGeometry(.7*T,.75*T,.03*T)),'in',0,.62*T,.04*T],[k(new THREE.SphereGeometry(.055*T,8,6)),'kn',.38*T,1.08*T,.07*T]]; }
+    const d=new THREE.Group(); d.name='exit-door'; for(const [g,mt,px,py,pz] of DOOR.g){ const me=new THREE.Mesh(g,DOOR[mt]); me.position.set(px,py,pz); d.add(me); }
+    d.position.set(x-n[0]*back,y,z-n[1]*back); d.rotation.y=Math.atan2(n[0],n[1]); return d; };
+  const exitDoor=o=>{ const P=o.P; if(!o.exit||o.ownDoor||!o.spawn||!P||!P.group)return; const e=o.exit, dx=o.spawn[0]-e[0], dz=o.spawn[1]-e[2], n=Math.abs(dx)>Math.abs(dz)?[Math.sign(dx),0]:[0,Math.sign(dz)];
+    const d=ROOMS.door(e[0],e[1]||0,e[2],n,o.doorBack); P.group.add(d); P.objs.push(d); };
+  const offL=id=>{ const o=ROOMS.off[id]; if(ROOMS.lazy[id])return ROOMS.lazy[id]; const L=ROOMS.lazy[id]={name:o.name,off:1,need:()=>o.need&&o.need(),go:()=>{ o.P=o.build(); exitDoor(o); L.done=true; },done:false};
     if(!o.keep)L.drop=()=>{ ROOMS.unpart(o.P); o.P=null; if(o.unbuild)o.unbuild(); }; return L; };
   for(const id in ROOMS.off)offL(id);
   const offThings=id=>{ const o=ROOMS.off[id]; if(o.th||!UI.thing)return; o.th=1; const hb=(p,name,act,exit)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(1.3*TILE,2.4*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false}));

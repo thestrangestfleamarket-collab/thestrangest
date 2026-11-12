@@ -30,7 +30,8 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     if(ITEMED.on&&(raw==='escape'||e.code==='Digit7'&&e.shiftKey)){ if(e.type==='keydown'&&!e.repeat)ITEMED.key(); return null; }   // the ITEM editor (140ba): esc or shift+7 closes it; while it is open the game takes no keys
     if(e.code==='Digit7'&&e.shiftKey&&!ED.on&&!UI.menuOpen&&!/^(TEXTAREA|INPUT|SELECT)$/.test(e.target&&e.target.tagName||'')){ if(e.type==='keydown'&&!e.repeat&&ITEMED.key)ITEMED.key(); return null; }
     if(ITEMED.on)return null;
-    if(raw==='escape'){ if(e.type==='keydown')toggleMenu(); return null; }
+    if(raw==='escape'){ if(e.type==='keydown'){ if(UI.menuOpen||!UI.hub)toggleMenu(); else UI.hub(); } return null; }   // ESC: the wheel (162ed-hub); out of a menu it shuts it
+    if(UI.hubOpen)return null;
     if(e.target&&/^(TEXTAREA|INPUT|SELECT)$/.test(e.target.tagName))return null;
     if(raw==='?'){ if(e.type==='keydown'&&!e.repeat)UI.moves(); return null; }
     if(raw==='e'&&e.shiftKey&&!ED.on&&!UI.menuOpen){ if(e.type==='keydown'&&!e.repeat&&WE.key)WE.key(); return null; }
@@ -311,7 +312,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   // the one menu (owner, 5 Nov 2026: "B"): its sections down the left, each section's parts as tabs along the top; [id, name, key, parts or null, what a section without parts does]; a part is [id, name, its panes, or what it does]
   const shut=()=>{ if(UI.menuOpen)toggleMenu(); };
   const SEC=[   // SETTINGS, PETS, INVENTORY, MAP, GUIDE, PEOPLE for every player, ADMIN for the owners (owner, 7 and 11 Nov 2026); no PROFILE: you are your paper doll, double-click yourself (owner, 9 Nov 2026)
-    ['set','SETTINGS','ESC',[['view','VIEW',['display']],['camera','CAMERA',['camera']],['screen','SCREEN',['screen']],['chat','CHAT',['chat']],['res','RESOLUTION',['graphics']],['time','TIME',['atmo']],['weather','WEATHER',['weather']],['light','LIGHT',['light']],['sound','SOUND',['sound']],['keys','KEYS',['keys']],['pad','CONTROLLER',['padset']],['vr','VR',['vr']],['bug','REPORT A BUG',['bug']]]],   // every setting its own tab (owner, 8 Nov 2026: "everything needs its own tab, easier to find")   // no BBS (owner, 7 Nov 2026); the chat stays in the corner
+    ['set','SETTINGS','',[['view','VIEW',['display']],['camera','CAMERA',['camera']],['screen','SCREEN',['screen']],['chat','CHAT',['chat']],['res','RESOLUTION',['graphics']],['time','TIME',['atmo']],['weather','WEATHER',['weather']],['light','LIGHT',['light']],['sound','SOUND',['sound']],['keys','KEYS',['keys']],['pad','CONTROLLER',['padset']],['vr','VR',['vr']],['bug','REPORT A BUG',['bug']]]],   // every setting its own tab (owner, 8 Nov 2026: "everything needs its own tab, easier to find")   // no BBS (owner, 7 Nov 2026); the chat stays in the corner
     ['moves','WHAT YOU CAN DO','?',[['move','MOVING'],['fight','FIGHTING'],['climb','CLIMBING & SWIMMING'],['ride','RIDING'],['out','OUTDOORS'],['games','GAMES & PLACES'],['home','YOUR APARTMENT'],['people','PEOPLE & MONEY'],['pad','CONTROLLER, TOUCH & VR']].map(([k,n])=>[k,n,['moves']])],   // every activity by category, its moves (owner, 10 Nov 2026)
     ['pets','PETS','',[['mine','YOUR PETS',['pets']],['pet','THEIR LOOK',['home']]]],   // every player's pets (owner, 8 Nov 2026)
     ['pack','INVENTORY','I',[['bag','BAG',['bag']],['skills','SKILLS',['pack']],['book','BOOK',['pack']],['fishing','FISHING',['pack']],['journal','JOURNAL',['pack']]]],

@@ -1,0 +1,214 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Emotes and Inventory Styles</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{--mf:#7dffa8;--mi:#3aa866;--mb:#031a0d;--md:#3aa866;--mk:#020a06;--c:#7dffa8;--r:#4fb4ff;--s:#ffcf3f}
+*{box-sizing:border-box}
+body{margin:0;background:#05070a;font:15px 'Share Tech Mono',ui-monospace,monospace;color:var(--mf);letter-spacing:1.5px;padding:0 16px 60px}
+h1{font-size:22px;letter-spacing:4px;margin:28px auto 6px;max-width:1000px}
+h2{font-size:18px;letter-spacing:4px;margin:46px auto 4px;max-width:1000px;color:var(--mf);border-bottom:2px solid var(--mi);padding-bottom:6px}
+.note{color:#9aa;font-size:13px;line-height:1.6;max-width:1000px;margin:0 auto 10px}
+.opt{max-width:1000px;margin:26px auto 0}
+.lbl{color:#f2c14e;font-size:17px;margin-bottom:10px}.lbl small{display:block;color:#9aa;font-size:13px;letter-spacing:.6px;margin-top:4px;line-height:1.55}
+.lbl em{font-style:normal;color:#7a8;font-size:12px;display:block;margin-top:3px}
+.scene{position:relative;height:440px;overflow:hidden;background:radial-gradient(ellipse at 50% 120%,#24402c,#0d1a12 55%,#070b09);box-shadow:inset 0 0 0 2px var(--mi)}
+.scene.tall{height:520px}
+.pan{background:repeating-linear-gradient(0deg,rgba(125,255,168,.05) 0 1px,transparent 1px 3px),rgba(3,26,13,.9);box-shadow:inset 0 0 0 2px var(--mi)}
+.hint{position:absolute;left:12px;bottom:10px;font-size:12px;color:var(--md)}
+.guy{position:absolute;left:50%;bottom:70px;width:34px;height:96px;margin-left:-17px;border-radius:16px 16px 6px 6px;background:linear-gradient(#1b3b28,#0f2418);box-shadow:inset 0 0 0 2px #2d6a45}
+.guy:before{content:'';position:absolute;left:5px;top:-26px;width:24px;height:24px;border-radius:50%;background:#1b3b28;box-shadow:inset 0 0 0 2px #2d6a45}
+.say{position:absolute;left:50%;bottom:196px;transform:translateX(-50%);font-size:13px;color:var(--mk);background:var(--mf);padding:2px 8px;white-space:nowrap;opacity:0;transition:opacity .2s}
+.say.on{opacity:1}
+/* wheel */
+.wheel{position:absolute;left:50%;top:50%;width:330px;height:330px;margin:-165px 0 0 -165px}
+.wheel svg{width:100%;height:100%;overflow:visible}
+.wheel path{fill:rgba(3,26,13,.88);stroke:var(--mi);stroke-width:2;cursor:pointer;transition:fill .12s}
+.wheel path.hi{fill:var(--mf)}
+.wheel text{font-family:'Share Tech Mono',monospace;font-size:11px;fill:var(--mf);pointer-events:none;letter-spacing:1px}
+.wheel text.hi{fill:var(--mk)}
+.mid{position:absolute;left:50%;top:50%;width:120px;margin-left:-60px;transform:translateY(-50%);text-align:center;font-size:12px;color:var(--md);pointer-events:none;line-height:1.5}
+.mid b{display:block;color:var(--mf);font-weight:400;font-size:14px}
+.pages{position:absolute;left:50%;top:calc(50% + 178px);transform:translateX(-50%);display:flex;gap:6px;font-size:12px}
+.pages span{padding:2px 8px;box-shadow:inset 0 0 0 2px var(--mi);cursor:pointer}.pages .on{background:var(--mf);color:var(--mk)}
+/* list menu (interaction menu) */
+.imenu{position:absolute;left:18px;top:18px;width:290px}
+.imenu .t{padding:10px 12px;font-size:16px;letter-spacing:3px;border-bottom:2px solid var(--mi)}
+.imenu .row{display:flex;justify-content:space-between;padding:6px 12px;font-size:14px;cursor:pointer}
+.imenu .row.hi{background:var(--mf);color:var(--mk)}
+.imenu .row span{color:var(--md)}.imenu .row.hi span{color:var(--mk)}
+.imenu .f{padding:6px 12px;font-size:11px;color:var(--md);border-top:2px solid var(--mi)}
+/* hotbar */
+.hot{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:4px;padding:4px}
+.slot{position:relative;width:58px;height:58px;background:rgba(3,26,13,.9);box-shadow:inset 0 0 0 2px var(--mi);display:flex;align-items:center;justify-content:center;font-size:10px;text-align:center;line-height:1.2;padding:3px;cursor:pointer}
+.slot i{position:absolute;left:3px;top:1px;font-style:normal;font-size:10px;color:var(--md)}
+.slot b{position:absolute;right:3px;bottom:1px;font-weight:400;font-size:10px}
+.slot.sel{box-shadow:inset 0 0 0 3px var(--mf);transform:translateY(-8px)}
+.slot.c{border-bottom:4px solid var(--c)}.slot.r{border-bottom:4px solid var(--r)}.slot.s{border-bottom:4px solid var(--s)}
+.pic{width:28px;height:22px;margin:0 auto 3px;border-radius:4px;background:linear-gradient(135deg,#2d6a45,#123020)}
+/* grids */
+.grid{display:grid;gap:3px}
+.cell{background:rgba(2,10,6,.7);box-shadow:inset 0 0 0 1px #1d4a2f;min-height:0}
+.it{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;text-align:center;line-height:1.2;background:rgba(9,40,22,.95);box-shadow:inset 0 0 0 2px var(--mi);cursor:grab;padding:2px}
+.it.r{box-shadow:inset 0 0 0 2px var(--r)}.it.s{box-shadow:inset 0 0 0 2px var(--s)}
+.it .n{position:absolute;right:3px;bottom:1px;color:var(--md)}
+.card{position:absolute;width:250px;padding:12px;font-size:12px;line-height:1.55}
+.card h4{margin:0 0 2px;font-weight:400;font-size:15px;letter-spacing:2px}
+.tier{display:inline-block;padding:0 6px;color:var(--mk);font-size:11px;margin-bottom:6px}
+.bar2{height:6px;background:#0a2a16;margin:2px 0 6px;box-shadow:inset 0 0 0 1px var(--mi)}.bar2 div{height:100%;background:var(--mf)}
+.k{color:var(--md)}
+.tabs{display:flex;gap:4px;padding:8px}.tabs div{padding:5px 10px;font-size:13px;cursor:pointer}.tabs .on{background:var(--mf);color:var(--mk)}
+.doll{position:relative}
+.pslot{position:absolute;width:74px;height:56px;font-size:10px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(3,26,13,.9);box-shadow:inset 0 0 0 2px var(--mi)}
+.pslot small{color:var(--md);font-size:9px}
+.prompt{position:absolute;font-size:13px;padding:6px 10px;white-space:nowrap}
+.key{display:inline-block;min-width:22px;text-align:center;background:var(--mf);color:var(--mk);margin-right:6px;padding:0 4px}
+.beam{position:absolute;bottom:60px;width:10px;height:200px;margin-left:-5px;filter:blur(2px);opacity:.75}
+.drop{position:absolute;bottom:54px;width:30px;height:14px;margin-left:-15px;border-radius:50%}
+.toast{position:absolute;right:14px;top:14px;width:260px}
+.toast div{padding:6px 10px;margin-bottom:4px;font-size:12px;display:flex;gap:8px;align-items:center}
+.wt{position:absolute;font-size:12px;color:var(--md)}
+.cmp{max-width:1000px;margin:40px auto 0;width:100%;border-collapse:collapse;font-size:13px}
+.cmp td,.cmp th{border:1px solid #1d4a2f;padding:7px 8px;text-align:left;vertical-align:top}.cmp th{color:#f2c14e;font-weight:400}
+@media (max-width:700px){.scene{height:auto;min-height:440px}.card{position:relative!important;left:auto!important;right:auto!important;top:auto!important;margin:8px}}
+</style></head><body>
+
+<h1>EMOTES · INVENTORY · ITEMS — OTHER WAYS</h1>
+<p class="note">Common ways games like Fortnite and GTA handle these, in our green. Today: emotes are the H window of squares plus the quick bar; the bag is INVENTORY &gt; BAG in the ESC menu (double-click uses, drag to drop, pin or trade). The letters are the pick. Several can mix, for example 1A with 2B.</p>
+
+<h2>1 · EMOTES</h2>
+
+<div class="opt"><div class="lbl">1A · THE EMOTE WHEEL (Fortnite)<small>Hold H: a wheel of 8 opens round the middle of the screen. Point at one and let go to play it. The wheel's pages switch with the wheel or 1–6. You pick which emotes go on each page in the H window (so the squares stay as the shelf you pick from). Works the same with a controller stick and in VR.</small><em>Try it: hover a slice, click to play it. The tabs are the pages.</em></div>
+<div class="scene" id="s1a"><div class="guy"></div><div class="say" id="say1a"></div>
+<div class="wheel" id="w1a"></div><div class="mid" id="m1a"><b>WAVE</b>RELEASE H</div>
+<div class="pages" id="p1a"></div><div class="hint">HOLD H · POINT · RELEASE</div></div></div>
+
+<div class="opt"><div class="lbl">1B · THE INTERACTION MENU (GTA Online)<small>Tap M: a short list in the top left, moved with the arrows or the wheel, while you keep walking. Emotes are one entry among others (STYLE, WALK STYLE, MOOD, YOUR PET, INVENTORY, PASSPORT). The last one you played is kept, so a hold of a key replays it.</small><em>Try it: click a row.</em></div>
+<div class="scene" id="s1b"><div class="guy"></div><div class="say" id="say1b"></div>
+<div class="imenu pan" id="i1b"></div><div class="hint">M OPENS · ↑↓ CHOOSE · ENTER · BACKSPACE BACK · HOLD X REPLAYS THE LAST</div></div></div>
+
+<div class="opt"><div class="lbl">1C · THE QUICK BAR'S EMOTE ROW<small>Keep the H window and the quick bar as they are; add a second, thin row above the quick bar that shows only while you hold Alt: ten emotes on Alt+1 … Alt+0. Nothing else changes.</small></div>
+<div class="scene" id="s1c" style="height:300px"><div class="guy" style="bottom:110px"></div><div class="say" id="say1c" style="bottom:236px"></div>
+<div class="hot" id="h1c-e" style="bottom:84px"></div><div class="hot" id="h1c"></div></div></div>
+
+<h2>2 · INVENTORY</h2>
+
+<div class="opt"><div class="lbl">2A · FIVE SLOTS AND A BAG (Fortnite)<small>A short bar of 5 things in your hands (1–5, the wheel scrolls them), each edged in its rarity. Anything else goes in the bag. Carrying is limited, so what you choose to carry matters. The quick bar would stay for menus and emotes only.</small><em>Try it: click a slot or press 1–5 here.</em></div>
+<div class="scene" id="s2a" style="height:360px"><div class="guy" style="bottom:120px"></div><div class="say" id="say2a" style="bottom:246px"></div>
+<div class="hot" id="h2a"></div><div class="wt" style="right:12px;bottom:18px">BAG 14 / 24</div></div></div>
+
+<div class="opt"><div class="lbl">2B · THE ITEM WHEEL (GTA)<small>Hold Tab: the world slows (only for you, others see you reach into your bag), and a wheel of kinds opens: TOOLS, FOOD, MUSIC, RIDES, LIGHTS, WEAPONS, PETS, OTHER. Point at a kind to take its first thing; the wheel or Q/E steps through the others in that kind. Let go to hold it.</small><em>Try it: hover a kind, then the wheel steps through it.</em></div>
+<div class="scene" id="s2b"><div class="guy"></div><div class="say" id="say2b"></div>
+<div class="wheel" id="w2b"></div><div class="mid" id="m2b"><b>TOOLS</b>TROWEL · 1 / 4</div><div class="hint">HOLD TAB · POINT · WHEEL STEPS · RELEASE</div></div></div>
+
+<div class="opt"><div class="lbl">2C · A GRID WITH SIZES (survival games)<small>The bag is a grid; big things take more squares (the guitar 1×3, the saddle 2×2, a mushroom 1×1). The bag's size is the limit, not a count. Drag to move, R turns a thing while it's held. A bigger bag (a backpack) is more squares. Grid inventories like this (Resident Evil, Tarkov) are the opposite of Fortnite's 5 slots.</small><em>Try it: hover a thing for its card.</em></div>
+<div class="scene tall" id="s2c"><div class="pan" style="position:absolute;left:18px;top:18px;padding:10px">
+<div style="font-size:15px;letter-spacing:3px;margin-bottom:8px">BAG <span class="k" style="font-size:12px">· CANVAS PACK 8×6</span></div>
+<div class="grid" id="g2c" style="grid-template-columns:repeat(8,52px);grid-template-rows:repeat(6,52px)"></div></div>
+<div class="card pan" id="c2c" style="right:18px;top:18px"></div></div></div>
+
+<div class="opt"><div class="lbl">2D · THE LOCKER AND THE BODY (Fortnite's locker, GTA's wardrobe)<small>What you wear is its own screen: HEAD, FACE, BODY, LEGS, FEET, BACK, HANDS, a PET that follows, a RIDE. Each slot opens its own list. You save looks as presets (1–5) and swap them in one press. It sits next to the paper doll you get from double-clicking yourself; the bag keeps only what you carry.</small></div>
+<div class="scene tall" id="s2d"><div class="pan" style="position:absolute;inset:18px;display:grid;grid-template-columns:180px 1fr 260px;grid-template-rows:auto 1fr">
+<div class="tabs" style="grid-column:1/-1;border-bottom:2px solid var(--mi)" id="t2d"></div>
+<div style="padding:12px;font-size:13px;line-height:2" id="pre2d"></div>
+<div class="doll" id="d2d"><div class="guy" style="bottom:140px;transform:scale(2.2);transform-origin:bottom"></div></div>
+<div style="padding:12px;border-left:2px solid var(--mi);overflow:hidden" id="l2d"></div></div></div></div>
+
+<h2>3 · ITEMS</h2>
+
+<div class="opt"><div class="lbl">3A · RARITY COLOURS EVERYWHERE (Fortnite)<small>Our three tiers get a colour each, used the same everywhere: the bag's edge, the quick bar, the pickup line, the beam over a dropped thing, the trade window. COMMON green, RARE blue, SUPER RARE gold. A dropped thing glows its colour, and a super-rare one sends up a beam you can see from down the street.</small></div>
+<div class="scene" id="s3a" style="height:360px">
+<div class="beam" style="left:22%;background:linear-gradient(transparent,var(--c));height:70px"></div><div class="drop" style="left:22%;background:var(--c)"></div>
+<div class="beam" style="left:50%;background:linear-gradient(transparent,var(--r));height:130px"></div><div class="drop" style="left:50%;background:var(--r)"></div>
+<div class="beam" style="left:78%;background:linear-gradient(transparent,var(--s))"></div><div class="drop" style="left:78%;background:var(--s)"></div>
+<div class="prompt pan" style="left:22%;bottom:150px;transform:translateX(-50%)"><span class="key">E</span>MOREL ×3 <span style="color:var(--c)">COMMON</span></div>
+<div class="prompt pan" style="left:50%;bottom:210px;transform:translateX(-50%)"><span class="key">E</span>BLUE MORPHO <span style="color:var(--r)">RARE</span></div>
+<div class="prompt pan" style="left:78%;bottom:280px;transform:translateX(-50%)"><span class="key">E</span>MOON HONEY <span style="color:var(--s)">SUPER RARE</span></div>
+</div></div>
+
+<div class="opt"><div class="lbl">3B · THE ITEM CARD (both)<small>Hover anything in the bag, the quick bar, a shop or a trade: one card, the same everywhere. Its 3D model turning, its name, tier, what it does, its numbers (worth, weight, uses left), what skill it feeds, and the keys for it. It would replace the plain line under the bag.</small></div>
+<div class="scene" style="height:400px">
+<div class="card pan" style="left:50%;top:24px;margin-left:-180px;width:360px" id="c3b"></div></div></div>
+
+<div class="opt"><div class="lbl">3C · PICKUP AND THE FEED (GTA, Fortnite)<small>Walking over small things picks them up by themselves (mushrooms, coins, feathers); big or owned things still need E. Each find slides into a short feed at the top right (a picture, the name, ×count, its colour) and fades in 4 seconds, in place of the log line.</small></div>
+<div class="scene" style="height:300px" id="s3c"><div class="guy"></div><div class="toast" id="f3c"></div>
+<div class="hint">WALK OVER: TAKEN · E: BIG OR SOMEONE'S</div></div></div>
+
+<table class="cmp"><tr><th></th><th>FITS WHAT WE HAVE</th><th>COST</th><th>NOTE</th></tr>
+<tr><td>1A WHEEL</td><td>Uses the H window as its shelf; works with the controller and VR</td><td>One new window</td><td>The most common style today</td></tr>
+<tr><td>1B LIST</td><td>Brings EMOTES, PASSPORT and PETS together in one short list</td><td>Small</td><td>Overlaps with the ESC menu</td></tr>
+<tr><td>1C ALT ROW</td><td>Nothing changes</td><td>Tiny</td><td>Least new</td></tr>
+<tr><td>2A 5 SLOTS</td><td>Splits what you hold from the quick bar</td><td>Medium</td><td>Brings in a carrying limit (play changes)</td></tr>
+<tr><td>2B ITEM WHEEL</td><td>Uses our item kinds; fast with a controller</td><td>Medium; the slow-down is yours only</td><td>Owners carry 100+ things; a wheel sorts them</td></tr>
+<tr><td>2C GRID</td><td>Gives weight and size a use (saddle, guitar)</td><td>Large: every item needs a size</td><td>A rule for every item (schema-wide)</td></tr>
+<tr><td>2D LOCKER</td><td>Next to the paper doll; looks saved on the server</td><td>Medium</td><td>Gives clothes a home</td></tr>
+<tr><td>3A COLOURS</td><td>Our three tiers already exist</td><td>Small</td><td>Beams draw only near you</td></tr>
+<tr><td>3B CARD</td><td>Same 3D picture as the bag</td><td>Small</td><td>One card everywhere</td></tr>
+<tr><td>3C AUTO PICKUP</td><td>Fewer clicks when gathering</td><td>Small</td><td>Changes play: gathering is faster</td></tr>
+</table>
+
+<script>
+const $=id=>document.getElementById(id);
+const say=(id,t)=>{const e=$(id);e.textContent=t;e.classList.add('on');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('on'),1400)};
+function wheel(el,items,onHi,onPick){
+  const n=items.length,R=160,r=62,cx=165,cy=165;let s='<svg viewBox="0 0 330 330">';
+  items.forEach((t,i)=>{const a0=(i-.5)/n*2*Math.PI-Math.PI/2,a1=(i+.5)/n*2*Math.PI-Math.PI/2,g=.012;
+    const P=(a,rr)=>`${cx+rr*Math.cos(a)} ${cy+rr*Math.sin(a)}`;
+    s+=`<path data-i="${i}" d="M${P(a0+g,r)} L${P(a0+g,R)} A${R} ${R} 0 0 1 ${P(a1-g,R)} L${P(a1-g,r)} A${r} ${r} 0 0 0 ${P(a0+g,r)}Z"/>`;
+    const am=(a0+a1)/2,tx=cx+(R+r)/2*Math.cos(am),ty=cy+(R+r)/2*Math.sin(am);
+    s+=`<text data-i="${i}" x="${tx}" y="${ty+4}" text-anchor="middle">${t}</text>`});
+  el.innerHTML=s+'</svg>';
+  const hi=i=>{el.querySelectorAll('[data-i]').forEach(p=>p.classList.toggle('hi',+p.dataset.i===i));onHi(i)};
+  el.querySelectorAll('path').forEach(p=>{p.onmouseenter=()=>hi(+p.dataset.i);p.onclick=()=>onPick(+p.dataset.i)});
+  hi(0);return hi;
+}
+/* 1A */
+const PAGES={'GREET':['WAVE','BOW','HIGH FIVE','SALUTE','POINT','CLAP','SHRUG','BECKON'],'MOODS':['LAUGH','CRY','ANGRY','SCARED','THINK','FACEPALM','CHEER','YAWN'],'DANCE':['SHUFFLE','ROBOT','TWIST','DISCO','SWAY','JIG','MOONWALK','FLOSS'],'REST':['SIT','LIE DOWN','LEAN','STRETCH','PUSH-UPS','MEDITATE','STARGAZE','SLEEP']};
+let pg='GREET';const p1=$('p1a');
+const draw1a=()=>{p1.innerHTML=Object.keys(PAGES).map((k,i)=>`<span class="${k===pg?'on':''}" data-k="${k}">${i+1} ${k}</span>`).join('');
+  p1.querySelectorAll('span').forEach(s=>s.onclick=()=>{pg=s.dataset.k;draw1a()});
+  wheel($('w1a'),PAGES[pg],i=>$('m1a').innerHTML=`<b>${PAGES[pg][i]}</b>RELEASE H`,i=>say('say1a',PAGES[pg][i]))};draw1a();
+/* 1B */
+const MENU={'':[['EMOTES','›'],['WALK STYLE','SWAGGER'],['MOOD','HAPPY'],['YOUR PET','›'],['INVENTORY','›'],['PASSPORT','›'],['QUICK GPS','HOME']],
+'EMOTES':[['‹ BACK',''],['GREET','›'],['MOODS','›'],['DANCE','›'],['REST','›'],['LAST: WAVE','HOLD X']]};
+let mpath='',mhi=0;const d1b=()=>{const L=MENU[mpath]||PAGES[mpath].map(e=>[e,'']).concat([['‹ BACK','']]);
+  $('i1b').innerHTML=`<div class="t">${mpath||'YOU'}</div>`+L.map((r,i)=>`<div class="row${i===mhi?' hi':''}" data-i="${i}">${r[0]}<span>${r[1]}</span></div>`).join('')+`<div class="f">${L.length} ITEMS</div>`;
+  $('i1b').querySelectorAll('.row').forEach(e=>{e.onmouseenter=()=>{mhi=+e.dataset.i;d1b()};e.onclick=()=>{const t=L[+e.dataset.i][0];
+    if(t==='‹ BACK'){mpath=mpath in PAGES?'EMOTES':'';mhi=0}else if(MENU[t]||PAGES[t]){mpath=t;mhi=0}else if(mpath in PAGES){say('say1b',t)}else if(t.startsWith('LAST'))say('say1b','WAVE');d1b()}})};d1b();
+/* 1C */
+const QB=['MAP','BAG','PASSPORT','EMOTES','TROWEL','GUITAR','','','',''],QE=['WAVE','BOW','LAUGH','SIT','SHUFFLE','CLAP','POINT','STARGAZE','CHEER','YAWN'];
+$('h1c').innerHTML=QB.map((t,i)=>`<div class="slot"><i>${(i+1)%10}</i>${t}</div>`).join('');
+$('h1c-e').innerHTML=QE.map((t,i)=>`<div class="slot" style="height:38px;width:58px;opacity:.95" data-t="${t}"><i>ALT ${(i+1)%10}</i><span style="margin-top:8px">${t}</span></div>`).join('');
+$('h1c-e').querySelectorAll('.slot').forEach(e=>e.onclick=()=>say('say1c',e.dataset.t));
+/* 2A */
+const H5=[['TROWEL','c'],['FLAMETHROWER','r'],['GUITAR','c'],['MAGIC CARPET','s'],['MOREL','c',3]];let sel=0;
+const d2a=()=>{$('h2a').innerHTML=H5.map((x,i)=>`<div class="slot ${x[1]}${i===sel?' sel':''}" data-i="${i}"><i>${i+1}</i><div><div class="pic"></div>${x[0]}</div>${x[2]?`<b>×${x[2]}</b>`:''}</div>`).join('');
+  $('h2a').querySelectorAll('.slot').forEach(e=>e.onclick=()=>{sel=+e.dataset.i;d2a();say('say2a','HOLDING '+H5[sel][0])})};d2a();
+document.addEventListener('keydown',e=>{const n=+e.key;if(n>=1&&n<=5){const r=$('s2a').getBoundingClientRect();if(r.top<innerHeight&&r.bottom>0){sel=n-1;d2a();say('say2a','HOLDING '+H5[sel][0])}}});
+/* 2B */
+const KINDS={TOOLS:['TROWEL','FOSSIL BRUSH','BUTTERFLY NET','TELESCOPE'],FOOD:['MOREL','MOON HONEY','PRETZEL'],MUSIC:['GUITAR','HARP','DRUMS','PIANO'],RIDES:['SADDLE','MAGIC CARPET','BALLOON','SKATEBOARD'],LIGHTS:['FLASHLIGHT','HEADLIGHT','NIGHT-VISION'],WEAPONS:['FLAMETHROWER','FREEZE RAY'],PETS:['DOG LEASH','BIRD CAGE'],OTHER:['BRICK PHONE','CIGARS','SPRAY CAN']};
+const KN=Object.keys(KINDS);let kh=0,ks=0;const m2b=()=>$('m2b').innerHTML=`<b>${KN[kh]}</b>${KINDS[KN[kh]][ks]} · ${ks+1} / ${KINDS[KN[kh]].length}`;
+wheel($('w2b'),KN,i=>{if(i!==kh)ks=0;kh=i;m2b()},i=>say('say2b','HOLDING '+KINDS[KN[i]][ks]));
+$('w2b').addEventListener('wheel',e=>{e.preventDefault();const L=KINDS[KN[kh]].length;ks=(ks+(e.deltaY>0?1:L-1))%L;m2b()},{passive:false});
+/* 2C */
+const G=[['GUITAR',0,0,1,3,'c','Plays songs (MUSIC). 4.0 kg'],['SADDLE',1,0,2,2,'c','Hold and press E to ride your horse. 6.5 kg'],['TELESCOPE',3,0,3,1,'r','The 400 mm refractor. 3.2 kg'],['MOREL',6,1,1,1,'c','Edible mushroom ×3'],['MOON HONEY',7,1,1,1,'s','Only on a full moon. 0.4 kg'],['TROWEL',3,1,1,2,'c','Digs fossils (PALEONTOLOGY)'],['BRICK PHONE',4,1,1,2,'r','Calls a cab. 1.1 kg'],['FREEZE RAY',1,2,2,1,'r','Freezes water and folk'],['COWBOY HAT',5,1,1,1,'c','Worn on the head'],['BLUE MORPHO',6,2,1,1,'r','A butterfly in a jar'],['FLASHLIGHT',0,3,2,1,'c','Lights the dark']];
+let gh='';for(let i=0;i<48;i++)gh+=`<div class="cell" style="grid-column:${i%8+1};grid-row:${(i/8|0)+1}"></div>`;
+G.forEach((g,i)=>gh+=`<div class="it ${g[5]}" data-i="${i}" style="grid-column:${g[1]+1}/span ${g[3]};grid-row:${g[2]+1}/span ${g[4]}"><div class="pic" style="width:${Math.min(80,g[3]*24)}px;height:${Math.min(80,g[4]*18)}px"></div>${g[0]}</div>`);
+$('g2c').innerHTML=gh;const TN={c:['COMMON','var(--c)'],r:['RARE','var(--r)'],s:['SUPER RARE','var(--s)']};
+const c2c=i=>{const g=G[i];$('c2c').innerHTML=`<h4>${g[0]}</h4><span class="tier" style="background:${TN[g[5]][1]}">${TN[g[5]][0]}</span><div>${g[6]}</div><div class="k" style="margin-top:8px">${g[3]}×${g[4]} SQUARES · R TURNS</div><div class="k" style="margin-top:14px">BAG 31 / 48 SQUARES</div><div class="bar2"><div style="width:65%"></div></div>`};
+$('g2c').querySelectorAll('.it').forEach(e=>e.onmouseenter=()=>c2c(+e.dataset.i));c2c(1);
+/* 2D */
+const SL=[['HEAD','COWBOY HAT',10,8],['FACE','ROUND SPECS',10,26],['BACK','CANVAS PACK',10,44],['HANDS','GLOVES',10,62],['BODY','FLEECE ONESIE',72,8],['LEGS','WORK TROUSERS',72,26],['FEET','RED SNEAKERS',72,44],['PET','THE DOG',72,62],['RIDE','THE HORSE',72,80]];
+$('d2d').innerHTML+=SL.map(s=>`<div class="pslot" style="left:${s[2]}%;top:${s[3]}%;transform:translateX(-${s[2]>50?100:0}%)"><small>${s[0]}</small>${s[1]}</div>`).join('');
+$('t2d').innerHTML=['LOOK','HEAD','BODY','LEGS','FEET','BACK','PET','RIDE'].map((t,i)=>`<div class="${i?'':'on'}">${t}</div>`).join('');
+$('pre2d').innerHTML='<div class="k">SAVED LOOKS</div>'+['1 · EVERY DAY','2 · COWBOY','3 · NIGHT OUT','4 · SCUBA','5 · —'].map((t,i)=>`<div style="${i===1?'background:var(--mf);color:var(--mk);padding:0 6px':'padding:0 6px'}">${t}</div>`).join('')+'<div class="k" style="margin-top:10px">ENTER WEARS · F1–F5 ANYWHERE</div>';
+$('l2d').innerHTML='<div style="letter-spacing:3px;margin-bottom:8px">HEAD</div>'+[['COWBOY HAT','c',1],['TOP HAT','r'],['HARD HAT','c'],['DIVING HELMET','r'],['CROWN OF MOTHS','s'],['NOTHING','']].map(x=>`<div style="padding:5px 8px;margin-bottom:3px;${x[2]?'background:var(--mf);color:var(--mk)':'box-shadow:inset 0 0 0 1px #1d4a2f'};border-left:4px solid ${x[1]?TN[x[1]][1]:'transparent'}">${x[0]}</div>`).join('');
+/* 3B */
+$('c3b').innerHTML=`<div style="display:flex;gap:12px"><div class="pic" style="width:110px;height:110px;flex:none;margin:0;animation:spin 6s linear infinite"></div><div><h4>THE FREEZE RAY</h4><span class="tier" style="background:var(--r)">RARE</span><div>Turns water to ice you can walk on; stops folk for 5 s.</div></div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;margin-top:12px"><div><span class="k">WORTH</span> $240</div><div><span class="k">WEIGHT</span> 2.1 kg</div><div><span class="k">CHARGE</span> 18 / 30<div class="bar2"><div style="width:60%"></div></div></div><div><span class="k">SKILL</span> SCIENCE</div></div>
+<div class="k" style="margin-top:6px;border-top:2px solid var(--mi);padding-top:8px">2× CLICK HOLD · DRAG DROP · RIGHT-CLICK MORE</div>`;
+document.head.insertAdjacentHTML('beforeend','<style>@keyframes spin{from{transform:perspective(200px) rotateY(0)}to{transform:perspective(200px) rotateY(360deg)}}</style>');
+/* 3C */
+const F=[['MOREL','c',3],['COPPER COIN','c',12],['BLUE MORPHO','r',1],['MOON HONEY','s',1]];let fi=0;
+setInterval(()=>{const f=F[fi++%F.length],d=document.createElement('div');d.className='pan';d.style.borderLeft='4px solid '+TN[f[1]][1];d.style.transition='opacity .5s';
+  d.innerHTML=`<div class="pic" style="margin:0;width:22px;height:18px"></div><span style="flex:1">${f[0]}</span><span style="color:${TN[f[1]][1]}">×${f[2]}</span>`;$('f3c').prepend(d);
+  setTimeout(()=>d.style.opacity=0,3500);setTimeout(()=>d.remove(),4000)},1100);
+</script></body></html>

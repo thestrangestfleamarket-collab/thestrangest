@@ -1,4 +1,4 @@
-// THE ARCADE, FURNISHED: round the owner's cabinets and the holodeck booth, what a real arcade has: skee-ball, air hockey and a claw machine (each a game, free play), the token machine (tickets won at the games traded for market tokens, 10 for 1), a soda machine, stools at the cabinets; where its staff and its crowd stand or sit.
+// THE ARCADE, FURNISHED: round the owner's cabinets and the holodeck booth, what a real arcade has: skee-ball, air hockey, a claw machine and two pinball tables (each a game, free play), the token machine (tickets won at the games traded for market tokens, 10 for 1), a soda machine, stools at the cabinets; where its staff and its crowd stand or sit.
 import {THREE} from './003-shx.js';
 import {FORAGE, INV, ROOMS, UI, WORKERS} from './003b-systems.js';
 import {SAY} from './003d-say.js';
@@ -7,6 +7,7 @@ import {STORE, TILE} from './006-map-pre.js';
 import {IKIT} from './038zc-ikit.js';
 import {MINI} from './038zd-mini.js';
 import {AIRH} from './146zcz-airhockey.js';
+import {PIN} from './146zcz-pinball.js';
 const ARCADE={}; window.ARCADE=ARCADE;
 { FORAGE.add({names:{arc_token:'A MARKET TOKEN',prize_yoyo:'A YO-YO',prize_ring:'A PLASTIC RING'}});   // the prize tickets and plushes are the fair's (ptix, plush_*)
   const say=(t,c)=>SAY(t,c||'#f2c14e');
@@ -20,7 +21,7 @@ const ARCADE={}; window.ARCADE=ARCADE;
   // where its people go: the floor man by the middle, the crowd on stools at the side cabinets, at PETRI, the lanes, the hockey table, the claw
   { const o=ROOMS.off.arcade; if(o&&o.ar){ const F=IKIT.frame(o.ar), W=F.W, du=W-14.8, dv=F.D-12.02, sp=(u,v,du,dv,h)=>{ const p=F.pw(u,v); return {x:p[0],z:p[1],hd:F.hd(du,dv),...(h!=null?{y:h*IKIT.MW}:{})}; }, YS=[2.4,5.36,8.32,11.28];
     o.spots={'RUNS THE FLOOR':sp(8.6,8.2,-1,0)};
-    o.seats=ARCADE.places=[...YS.map(v=>sp(1.55,v,-1,0,.62)),...YS.map(v=>sp(W-1.55,v,1,0,.62)),sp(W/2+3.33,1.6,0,-1),sp(3.55,7.0,0,-1),sp(4.45,7.0,0,-1),sp(10.2+du,3.0,0,1),sp(9.2+du,4.65,1,0),sp(11.65+du/2,10.4+dv,0,1),sp(6.2,7.6,-1,0)]; } }
+    o.seats=ARCADE.places=[...YS.map(v=>sp(1.55,v,-1,0,.62)),...YS.map(v=>PIN.TABLES.some(t=>t[1]===v)?sp(W-PIN.U-PIN.STAND,v-.75,1,0):sp(W-1.55,v,1,0,.62)),sp(W/2+3.33,1.6,0,-1),sp(3.55,7.0,0,-1),sp(4.45,7.0,0,-1),sp(10.2+du,3.0,0,1),sp(9.2+du,4.65,1,0),sp(11.65+du/2,10.4+dv,0,1),sp(6.2,7.6,-1,0)]; } }
   STORE.furnish=STORE.furnish||{};
   STORE.furnish.arcade=()=>{ '@later'; const o=ROOMS.off.arcade, F=IKIT.frame(o.ar), pw0=F.pw, OF=[0,0], at=(u,v)=>{ OF[0]=u; OF[1]=v; }; F.pw=(u,v)=>pw0(u+OF[0],v+OF[1]); const {W,D}=F, du=W-14.8, dv=D-12.02, K=IKIT.room(F,m=>scene.add(m),o.addSol), {glow,words,seat}=K, MW=K.MW, T=TILE, m2=f=>(a,b,...r)=>f(a+OF[0],b+OF[1],...r), m4=f=>(a,b,c,d,...r)=>f(a+OF[0],b+OF[1],c+OF[0],d+OF[1],...r), box=m4(K.box), sol=m4(K.sol), cyl=m2(K.cyl), ball=m2(K.ball), pic=m2(K.pic);
     const C={chrome:0xc0c4c8,black:0x141418,purple:0x4a2a7a,teal:0x2ab8b0,glass:0xa8c8d8,red:0xc02838,wood:0x8a5a2a};
@@ -37,7 +38,9 @@ const ARCADE={}; window.ARCADE=ARCADE;
     // air hockey
     at(0,0); AIRH.put(F,K,10.2+du,4.65,m=>scene.add(m)); thing('AIR HOCKEY',10.2+du,4.65,1.2,.9,ARCADE.hockey);
     // stools at the side cabinets
-    at(0,0); for(const v of [2.4,5.36,8.32,11.28])for(const u of [1.55,W-1.55])seat('STOOL',K.own(()=>{ cyl(u,v,.16,0,.04,C.chrome); cyl(u,v,.03,.04,.56,C.chrome); cyl(u,v,.18,.56,.62,C.purple,.17); }),[[u,v,.62,u<W/2?-1:1,0]],.8);
+    at(0,0); for(const v of [2.4,5.36,8.32,11.28])for(const u of [1.55,W-1.55])if(u<W/2||!PIN.TABLES.some(t=>t[1]===v))seat('STOOL',K.own(()=>{ cyl(u,v,.16,0,.04,C.chrome); cyl(u,v,.03,.04,.56,C.chrome); cyl(u,v,.18,.56,.62,C.purple,.17); }),[[u,v,.62,u<W/2?-1:1,0]],.8);
+    // the pinball tables on the west wall, past its cabinets
+    PIN.won=win; PIN.build(F,sol,(name,u,v,w,h,act)=>thing(name,u,v,w,h,act));
     K.flush();
     for(const [u,v,c,i,r] of [[4.0,4.8,0xff6ac0,5,6],[10.2+du,4.6,0x60c8ff,5,6],[11.6+du/2,11.0+dv,0xfff0d0,3,4]]){ const L=new THREE.PointLight(c,i,r*T,1.6), p=F.pw(u,v); L.position.set(p[0],2.5*MW,p[1]); scene.add(L); }
     WORKERS.make('arcade'); };

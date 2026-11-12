@@ -22,8 +22,8 @@ const AQUA={tanks:[]}; window.AQUA=AQUA;
   const recs=()=>{ try{ const j=JSON.parse(OWNED.get('tank')||'[]'); return Array.isArray(j)?j.filter(r=>r&&BY[r.k]):[]; }catch(e){ return []; } };
   let LIST=recs(); const keep=()=>{ try{ OWNED.set('tank',JSON.stringify(LIST)); }catch(e){} };
   PETS.sea=()=>LIST; PETS.seaName=k=>BY[k]&&BY[k][1];
-  const buy=k=>{ const a=BY[k]; if(!a)return false; if(INV.cash<a[2]){ SAY('THE '+a[1]+' IS $'+a[2]+'. YOU HAVE $'+Math.round(INV.cash)+'.','#c8a090'); return false; }
-    INV.cash-=a[2]; if(INV.save)INV.save(); LIST.push({id:LIST.reduce((n,r)=>Math.max(n,r.id||0),0)+1,k,born:Date.now()}); keep();
+  const buy=k=>{ const a=BY[k]; if(!a)return false; if(!INV.afford(a[2])){ SAY('THE '+a[1]+' IS $'+a[2]+'. YOU HAVE $'+Math.round(INV.money())+'.','#c8a090'); return false; }
+    INV.pay(a[2]); if(INV.save)INV.save(); LIST.push({id:LIST.reduce((n,r)=>Math.max(n,r.id||0),0)+1,k,born:Date.now()}); keep();
     SAY('THE '+a[1]+' IS YOURS: $'+a[2]+'. IT SWIMS IN YOUR APARTMENT\'S FISH TANK NOW (ESC, PETS).','#9fe07f'); if(PETS.menuDraw)PETS.menuDraw(); return true; };
   AQUA.buy=buy;
   PETS.seaMenu=()=>{ if(!LIST.length)return ''; return '<h3 style="margin-top:16px">IN YOUR FISH TANK</h3>'+LIST.map(r=>`<div class="row" style="justify-content:space-between"><span>${BY[r.k][1]} <span class="dim">· SINCE ${new Date(r.born).toLocaleDateString()}</span></span><button class="btn" data-sea="${r.id}">LET IT GO</button></div>`).join('')

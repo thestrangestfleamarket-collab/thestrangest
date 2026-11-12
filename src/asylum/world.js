@@ -1,7 +1,7 @@
 // the asylum's map: rooms, walls, doors, lights and everything standing in them
 import * as T from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { toon, glow, rnd, M, WALL, FLOOR, CEIL, sign } from './tex.js';
+import { lit, glow, rnd, M, WALL, FLOOR, CEIL, sign } from './tex.js';
 
 export const GW = 36, GH = 32, H = 3, DH = 2.2;
 export const ROOMS = [
@@ -205,6 +205,7 @@ function props(scene) {
 
   shelf(S, 17.5, 12.25, 0, 2.6); shelf(S, 18.75, 13.3, -Math.PI / 2, 1.2); cyl(S, .16, .28, M.steel, 16.5, .14, 13.5, 'y', .19); cyl(S, .015, 1.4, M.woodLight, 16.45, .75, 13.6).rotation.z = -.2;
   batt('b2', 17.3, 1.06, 12.42);
+  const co = D.corpse = sub(scene, 16.25, 12.5, 0); sph(co, .2, M.sheet, 0, .85, 0, .95, 3.4, .8); sph(co, .12, M.sheet, 0, 1.62, .02, 1, 1.15, 1); for (const y of [.35, .8, 1.25]) box(co, .42, .04, .36, M.strap, 0, y, 0); wdec(co, .3, .3, M.blood, -.2, 1.6, 0, 'e'); co.traverse(c => { if (c.isMesh) c.castShadow = true; });
 
   const tv = sub(S, 22.55, 18.5, -Math.PI / 2); box(tv, .7, .7, .5, M.woodDark, 0, .35, 0); box(tv, .66, .5, .5, M.tvBody, 0, .97, 0); for (const s of [-.3, .3]) { const a = cyl(tv, .006, .5, M.chrome, s * .5, 1.45, 0); a.rotation.z = -s; }
   D.tv = wdec(scene, .5, .38, M.screenOff, 22.29, .98, 18.5, 'e'); solid(22.2, 18.1, 23, 18.9);

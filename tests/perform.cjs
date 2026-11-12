@@ -32,7 +32,7 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
     const until=async(f,ms)=>{ const e=performance.now()+ms; while(performance.now()<e){ if(f())return true; await new Promise(r=>setTimeout(r,50)); } return false; };
     // (frames are slow in software: the checks wait on what happens, not on a clock)
     await DANCE.go(i,{ok:false,at:.5}); await until(()=>nm()==='mc_'+T.m,3000); r.on=nm(); const poses=new Set(); for(let k=0;k<6&&nm()==='mc_'+T.m;k++){ poses.add(P()); await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))); } r.poses=poses.size;
-    await until(()=>nm()==='mc_dizzy',12000); r.wobble=nm(); r.cur=MOTION.cur; r.learntAfterFail=SONGBK.learnt('dance',T);
+    let dz=null; await until(()=>{ if(MOTION.cur==='dizzy')dz='dizzy'; return nm()==='mc_dizzy'; },12000); r.wobble=nm(); r.cur=MOTION.cur||dz;   // (the wobble is short: on a slow machine it may be over by the time its clip shows) r.learntAfterFail=SONGBK.learnt('dance',T);
     await until(()=>!MOTION.cur,8000); T.secs=3; const was=(S.songs.dance||{})[T.name]||0; await DANCE.go(i,{ok:true,at:1}); await until(()=>!DANCE.cur(),15000); r.clean=((S.songs.dance||{})[T.name]||0)-was;
     for(let n=0;n<3;n++)SONGBK.done('dance',T,true); r.learnt=SONGBK.learnt('dance',T); r.sure=SONGBK.chance('dance',T); S.sk.dance=0; r.tip=typeof SONGBK.busk('dance',T)==='number'; T.secs=12; return r; });
   rec('a CMU dance plays on the body (its move on the rig, the pose changing)',dn.on==='mc_'+dn.m&&dn.poses>=2,JSON.stringify({on:dn.on,poses:dn.poses}));

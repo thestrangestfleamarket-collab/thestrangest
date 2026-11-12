@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, INSTR, ONLINE, PARK, pos, st, UI, W3} from './003b-systems.js';
 import {SAY} from './003d-say.js';
-import {LEVEL, MAPG, SYS, TILE} from './006-map-pre.js';
+import {LEVEL, MAPG, SOL, SYS, TILE} from './006-map-pre.js';
 import {GTBOOK, GTCHORD, gtCompile} from './108-game-play-3-guitar-2-tunes.js';
 import {BODIES} from './111a-bodies.js';
 import {BODEGA} from './146ze-bodega.js';
@@ -119,11 +119,24 @@ const GUITAR={}; window.GUITAR=GUITAR;
   const STAND={g:null,gm:null}; GUITAR.STAND=STAND;
   GUITAR.standTile=()=>{ const q=LEVEL.parkPlaces&&LEVEL.parkPlaces.guitar; return q&&PARK.ox!=null?[q.x+PARK.ox,q.y+PARK.oy]:null; };
   const standAt=()=>{ const q=LEVEL.parkPlaces&&LEVEL.parkPlaces.guitar; if(!q||PARK.ox==null||!MAPG.park)return null; return {x:SHARED.BOD.XS(q.x+PARK.ox),z:SHARED.BOD.ZS(q.y+PARK.oy),hd:(q.hd||0)*Math.PI/180}; };
-  const buildStand=at=>{ const MW=TILE/.84, g=new THREE.Group(), wood=new THREE.MeshLambertMaterial({color:0x2a2420}), y=SHARED.groundY(at.x,at.z);
+  // its bandstand (a look for the owner, 11 Nov 2026): a low round deck with a step, six posts and a roof; the deck is the park's ground there (PARK.hill), the posts solid
+  const BAND={r:2,step:.3,h:.3};
+  const buildBand=(at,MW)=>{ const y0=SHARED.groundY(at.x,at.z), top=y0+BAND.h*MW, B=new THREE.Group(), L=c=>new THREE.MeshLambertMaterial({color:c}), deck=L(0x6e4e34), post=L(0x4a3424), roof=L(0x34452f), {r,step,h}=BAND;
+    const cyl=(r0,r1,hh,m,y,seg=20)=>{ const o=new THREE.Mesh(new THREE.CylinderGeometry(r0,r1,hh,seg),m); o.position.y=y; o.castShadow=o.receiveShadow=true; B.add(o); return o; };
+    cyl(r+step,r+step,h/2,deck,h/4); cyl(r,r,h,deck,h/2); cyl(r+.04,r+.04,.04,post,h-.01);
+    const PH=2.3; for(let i=0;i<6;i++){ const a=i/6*Math.PI*2+Math.PI/6, px=Math.sin(a)*(r-.12), pz=Math.cos(a)*(r-.12), o=cyl(.05,.05,PH,post,h+PH/2,6); o.position.x=px; o.position.z=pz;
+      const wx=at.x+(Math.cos(at.hd)*px+Math.sin(at.hd)*pz)*MW, wz=at.z+(-Math.sin(at.hd)*px+Math.cos(at.hd)*pz)*MW, e=.1*MW; SOL.up.push([wx-e,wz-e,wx+e,wz+e]); }
+    cyl(r+.1,r+.1,.08,post,h+PH); cyl(.1,r+.35,.7,roof,h+PH+.39,6).rotation.y=Math.PI/6;
+    B.scale.setScalar(MW); B.position.set(at.x,y0,at.z); B.rotation.y=at.hd; MAPG.park.add(B); BAND.g=B; BAND.top=top;
+    const q=LEVEL.parkPlaces.guitar, R0=(r+step)*MW/TILE, R1=r*MW/TILE, h0=PARK.hill; BAND.y0=y0;
+    PARK.hill=(x,y)=>{ const d=Math.hypot(x-q.x,y-q.y), g=h0(x,y); return d<R1?Math.max(g,top):d<R0?Math.max(g,y0+h/2*MW):g; };
+    return top; };
+  STAND.band=BAND;
+  const buildStand=at=>{ const MW=TILE/.84, g=new THREE.Group(), wood=new THREE.MeshLambertMaterial({color:0x2a2420}), y=buildBand(at,MW);
     for(const [a,l] of [[0,.62],[2.1,.5],[-2.1,.5]]){ const leg=new THREE.Mesh(new THREE.CylinderGeometry(.012,.012,l,5),wood); leg.position.set(Math.sin(a)*.14,l/2*.95,Math.cos(a)*.14-.04); leg.rotation.set(Math.cos(a)*.35*(a?1:-1),0,-Math.sin(a)*.35); g.add(leg); }
     const cradle=new THREE.Mesh(new THREE.BoxGeometry(.3,.03,.08),wood); cradle.position.set(0,.13,.02); g.add(cradle);
     const gm=GHOLD.model(); gm.rotation.x=-.22; gm.position.set(0,.12,.06); g.add(gm);
-    g.scale.setScalar(MW); g.position.set(at.x,y,at.z); g.rotation.y=at.hd; MAPG.park.add(g); STAND.g=g; STAND.gm=gm;
+    g.scale.setScalar(MW); g.position.set(at.x,y,at.z); g.rotation.y=at.hd; MAPG.park.add(g); STAND.g=g; STAND.gm=gm; STAND.home={x:at.x,z:at.z};
     UI.thing({name:'THE PARK\'S GUITAR (PLAY IT)',obj:gm,reach:1.8*TILE,near:3*TILE,tall:y+1.1*MW,act:()=>{ if(on)GUITAR.stop(); else GUITAR.start('park'); }}); };
   let sT=0; SYS.add('places',dt=>{ if((sT-=dt||0)>0)return; sT=.5; if(STAND.g)return; const at=standAt(); if(at&&Math.hypot(at.x-pos.x,at.z-pos.z)<60*TILE)buildStand(at); },'146zob-guitar');
 

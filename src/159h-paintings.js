@@ -132,6 +132,7 @@ const PAINTINGS={}; window.PAINTINGS=PAINTINGS;
   function cpIn(c){ return c&&typeof c==='object'?{i:String(c.i||'').slice(0,24),s:Math.max(0,Math.min(100,Math.round(+c.s||0))),b:Math.max(0,Math.min(9,Math.floor(+c.b||0))),a:String(c.a||'').toUpperCase().slice(0,40)}:undefined; }
   PAINTINGS.meta=id=>{ const a=M.art[id]; return a?{t:a.t,by:a.by,w:a.w,h:a.h,c:a.c,fr:a.fr,d:a.d,e:a.e,...(a.cp?{cp:a.cp}:{})}:null; };
   PAINTINGS.gave=id=>{ if(M.art[id]&&!FORAGE.has('pt_'+id)){ delete M.art[id]; save(); } };
+  FORAGE.SOLD.push(id=>{ if(id.startsWith('pt_'))PAINTINGS.gave(id.slice(3)); });
   PAINTINGS.got=(id,a)=>{ if(!/^[a-z0-9]{6,40}$/.test(id)||!a)return; M.art[id]={t:String(a.t||'UNTITLED'),by:String(a.by||''),w:+a.w||512,h:+a.h||512,c:CAN[a.c]?a.c:'canvas_m',fr:FR[a.fr]?a.fr:'',d:String(a.d||''),e:+a.e||0}; const cp=cpIn(a.cp); if(cp)M.art[id].cp=cp; save(); names(); kind(id); };
   PAINTINGS.mine=()=>M;
   window.PAINTDBG=()=>({wip:Object.keys(M.wip).length,art:Object.keys(M.art).length,painter:PAINTER.state(),gamewin:UI.gamewin});

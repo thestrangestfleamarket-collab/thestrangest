@@ -16,7 +16,7 @@ const MERGE={builds:0}; window.MERGE=MERGE; const SG=new Map();
   const CP=new WeakMap(); let cpn=0; const cpId=a=>!a||!a.length?0:CP.get(a)||(CP.set(a,++cpn),cpn);
   const keyOf=o=>{ const m=o.material; return [cpId(m.clippingPlanes),m.type,m.side,m.emissive?m.emissive.getHexString():'',m.flatShading?1:0,o.castShadow?1:0,o.receiveShadow?1:0,m.fog?1:0,m.depthWrite?1:0,m.toneMapped?1:0].join('|'); };
   // the pieces of one material into one geometry, in the room's own space, each piece's colour in its corners
-  const merge=(L,G)=>{ let nv=0, ni=0; for(const o of L){ const g=o.geometry; nv+=g.attributes.position.count; ni+=g.index?g.index.count:g.attributes.position.count; }
+  const merge=(L,G,raw)=>{ let nv=0, ni=0; for(const o of L){ const g=o.geometry; nv+=g.attributes.position.count; ni+=g.index?g.index.count:g.attributes.position.count; }
     const P=new Float32Array(nv*3), Nn=new Float32Array(nv*3), Cc=new Float32Array(nv*3), I=nv>65535?new Uint32Array(ni):new Uint16Array(ni); let v=0, i=0;
     GI.copy(G.matrixWorld).invert();
     for(const o of L){ const g=o.geometry, p=g.attributes.position, n=g.attributes.normal, c=g.attributes.color, m=o.material, vc=m.vertexColors&&c; M.multiplyMatrices(GI,o.matrixWorld); N3.getNormalMatrix(M); C.copy(m.color||C.set(1,1,1));
@@ -26,7 +26,7 @@ const MERGE={builds:0}; window.MERGE=MERGE; const SG=new Map();
       if(g.index){ for(let k=0;k<g.index.count;k++)I[i+k]=g.index.getX(k)+v; i+=g.index.count; } else { for(let k=0;k<p.count;k++)I[i+k]=v+k; i+=p.count; }
       v+=p.count; }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); g.setAttribute('normal',new THREE.BufferAttribute(Nn,3)); g.setAttribute('color',new THREE.BufferAttribute(Cc,3)); g.setIndex(new THREE.BufferAttribute(I,1));
-    { const u=g.toNonIndexed(), F=BATCH.unfight(u.attributes.position.array,{N:[u.attributes.normal.array,3],C:[u.attributes.color.array,3]}); if(F.at){ g.dispose(); const h=new THREE.BufferGeometry(); h.setAttribute('position',new THREE.BufferAttribute(F.P,3)); h.setAttribute('normal',new THREE.BufferAttribute(F.A.N,3)); h.setAttribute('color',new THREE.BufferAttribute(F.A.C,3)); h.computeBoundingSphere(); return h; } }   // no two faces in one place
+    if(!raw){ const u=g.toNonIndexed(), F=BATCH.unfight(u.attributes.position.array,{N:[u.attributes.normal.array,3],C:[u.attributes.color.array,3]}); if(F.at){ g.dispose(); const h=new THREE.BufferGeometry(); h.setAttribute('position',new THREE.BufferAttribute(F.P,3)); h.setAttribute('normal',new THREE.BufferAttribute(F.A.N,3)); h.setAttribute('color',new THREE.BufferAttribute(F.A.C,3)); h.computeBoundingSphere(); return h; } }   // no two faces in one place
     g.computeBoundingSphere(); return g; };
   ROOMS.unmerge=P=>{ const d=DONE.get(P); if(!d)return; for(const me of d.made){ me.removeFromParent(); me.geometry.dispose(); me.material.dispose(); } for(const o of d.hid)o.visible=true; DONE.delete(P); };
   const sigOf=L=>L.length+':'+L.map(o=>{ const e=o.matrixWorld.elements; return o.id+'@'+e[12].toFixed(2)+','+e[13].toFixed(2)+','+e[14].toFixed(2)+','+e[0].toFixed(2)+','+e[8].toFixed(2); }).join(';');
@@ -44,7 +44,7 @@ const MERGE={builds:0}; window.MERGE=MERGE; const SG=new Map();
     for(const g of scene.children)if(g.userData.mergeStatic&&!SG.has(g))SG.set(g,{group:g,things:[]});   // (still groups a builder marks: the view out of your windows)
     for(const [g,P] of SG)if(!g.parent){ ROOMS.unmerge(P); SG.delete(g); }
     for(const P of [...(ROOMS.built||[]),...SG.values()]){ if(ed){ ROOMS.unmerge(P); continue; } let shown=true; for(let q=P.group;q;q=q.parent)if(!q.visible){ shown=false; break; } if(shown)mergeRoom(P); } },'161c-merge');
-  MERGE.geo=merge;   // (pieces into one geometry in G's own space, each piece's colour in its corners: the far cars, 161ca)
+  MERGE.geo=merge;   // (pieces into one geometry in G's own space, each piece's colour in its corners: the far cars, 161ca, raw: a car's skins lie close and must all stay)
   ROOMS.mergeNow=P=>mergeRoom(P); window.MERGEDBG=()=>[...DONE].map(([P,d])=>({room:P.group.name,merged:d.made.length,pieces:d.hid.length}));
 }
 export {MERGE};

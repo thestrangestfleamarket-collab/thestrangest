@@ -11,7 +11,7 @@ import {GTOWER} from './063-tower.js';
 import {HEMI} from './064-map-post.js';
 import {RIVER} from './066-river.js';
 import {OUTL} from './072-walker3d.js';
-import {clampP, disp, marker, PAD, PMAX, PMIN, ray, VIEW0} from './075-main-13.js';
+import {clampP, disp, marker, PMAX, PMIN, ray, VIEW0} from './075-main-13.js';
 import {SOUND} from './091-sfx.js';
 for(const [k,d] of Object.entries({'map.train1':'TRAIN 1 · TO {next}','map.train2':'TRAIN 2 · TO {next}'}))TEXT.t(k,d);
 Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(),lookK:1});
@@ -30,7 +30,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     if(ITEMED.on&&(raw==='escape'||e.code==='Digit7'&&e.shiftKey)){ if(e.type==='keydown'&&!e.repeat)ITEMED.key(); return null; }   // the ITEM editor (140ba): esc or shift+7 closes it; while it is open the game takes no keys
     if(e.code==='Digit7'&&e.shiftKey&&!ED.on&&!UI.menuOpen&&!/^(TEXTAREA|INPUT|SELECT)$/.test(e.target&&e.target.tagName||'')){ if(e.type==='keydown'&&!e.repeat&&ITEMED.key)ITEMED.key(); return null; }
     if(ITEMED.on)return null;
-    if(raw==='escape'){ if(e.type==='keydown'){ if(UI.menuOpen||!UI.hub||VR.on||PAD.cur&&!UI.hubOpen)toggleMenu(); else UI.hub(); } return null; }   // ESC: the wheel (162ed-hub); out of a menu it shuts it; a pad or the headset, which cannot work the wheel, gets the menu
+    if(raw==='escape'){ if(e.type==='keydown'){ if(UI.menuOpen||!UI.hub)toggleMenu(); else UI.hub(); } return null; }   // ESC: the wheel (162ed-hub); out of a menu it shuts it
     if(UI.hubOpen)return null;
     if(e.target&&/^(TEXTAREA|INPUT|SELECT)$/.test(e.target.tagName))return null;
     if(raw==='?'){ if(e.type==='keydown'&&!e.repeat)UI.moves(); return null; }

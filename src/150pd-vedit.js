@@ -1,6 +1,6 @@
 // THE VEHICLE EDITOR: VLOOK, every vehicle's look as the owner sets it in ADMIN > VEHICLE EDITOR (its size, the colours it is painted in, each part hidden, sized, moved or tinted), a copy of a car parked where you stand, more of a vehicle in the traffic; one shared file (/shared/vlooks.json), the same for everyone.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, ITEMS, ONLINE, pos, RIDE, TEXT, VLOOK} from './003b-systems.js';
+import {ARCHI, FORAGE, ITEMS, ONLINE, pos, RIDE, TEXT, VLOOK} from './003b-systems.js';
 import {renderer} from './004-main.js';
 import {MAPFILE, MODS, SYS, TILE} from './006-map-pre.js';
 { const FILE='/shared/vlooks.json', V3=THREE.Vector3, esc=TEXT.esc, web=/^https?:$/.test(location.protocol);
@@ -80,7 +80,7 @@ import {MAPFILE, MODS, SYS, TILE} from './006-map-pre.js';
   { const k=new THREE.DirectionalLight(0xfff4e2,2.2), f=new THREE.DirectionalLight(0xbcd0ff,.8); k.position.set(-3,4,4); f.position.set(4,1,-3); ROOM.add(new THREE.AmbientLight(0xffffff,.9),k,f,PIV); }
   const HL=new THREE.Box3Helper(new THREE.Box3(),0xffd04a); HL.visible=false; ROOM.add(HL);
   let host=null, cur=null, vi=0, seq=0, obj=null, part='', say='', rt=null, px=null, g2=null, im=null, yaw=-.7, pitch=.3, drag=null, last=0, R=1;
-  const ridesIn=()=>{ for(const id of (ITEMS.ids?ITEMS.ids():[])){ const g=ITEMS.prop(id,'grants'), k=g&&RIDE.kinds[g]; if(!k||k.world||k.noLook||VLOOK.kinds[id])continue;
+  const ridesIn=()=>{ for(const id of (ITEMS.ids?ITEMS.ids():[])){ const g=ITEMS.prop(id,'grants'), k=g&&RIDE.kinds[g]; if(!k||k.world||k.noLook||VLOOK.kinds[id]||ARCHI(id))continue;
     VLOOK.kind(id,{name:(FORAGE.NM&&FORAGE.NM[id])||String(ITEMS.prop(id,'name')||id).toUpperCase(),grp:'RIDES',make:()=>VLOOK.dress(id,k.make(id))}); } };
   const drop=()=>{ if(!obj)return; PIV.remove(obj); VLOOK.live.delete(obj); if(obj.userData.vlDrop)obj.userData.vlDrop(); obj.traverse(c=>{ if(c.isMesh&&OWN.has(c)){ c.geometry.dispose(); for(const m of [].concat(c.material))m.dispose(); } }); obj=null; HL.visible=false; };
   const frame=()=>{ if(!obj)return; PIV.rotation.set(0,0,0); obj.position.set(0,0,0); obj.updateMatrixWorld(true); BX.setFromObject(obj); if(BX.isEmpty())return; BX.getBoundingSphere(SP); obj.position.sub(SP.center); R=Math.max(.01,SP.radius); };

@@ -21,6 +21,7 @@ Look there before changing how something looks or behaves, and add a dated entry
   blanks the import and export lines and joins the files as they are; every file is whole. `000`/`002`/`end` are the page's HTML, `001-rig.js` the Walker's rig, the rest the game's
   module. `game-*.js` are the old game's own makers, copied in (the build no longer reads `bralynnb/tsfm`).
   `main*.js` are the page's own glue code between places.
+  `src/asylum/` is HOLLOW PINES, a VR scare game on its own page (`/asylum`, to anyone with the link; `tools/asylum.cjs` bundles it into `dist/asylum.html`, `tests/asylum.cjs` plays it through): it shares nothing with THE MARKET.
   `src/door/door.html` is the website's door (invite code, login); `worker/door.js` the website's server (`wrangler.jsonc`).
   `src/editor/editor.html` is the owners' map editor, its own light page at `/editor` (no game): it edits a patch over `data/world.json`
   that PUBLISH LIVE sends to `/shared/map-<section>.json`, which the game lays over the level at start (`worker/mappatch.js`, one path for both).

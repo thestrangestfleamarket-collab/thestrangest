@@ -1,6 +1,6 @@
 // THE OTHER PLAYERS: ONLINE, everyone on your block (one server a section, worker/door.js Block): their bodies and name tags, who's online, and the chat.
 import {SHARED, THREE} from './003-shx.js';
-import {BUGS, EQUIP, keys, LEVELS, LOOKS, MOTION, ONLINE, pos, ROOMS, st, TEXT, UI, VAULT, VIT, VR, W3} from './003b-systems.js';
+import {BUGS, EQUIP, keys, LEVELS, LOOKS, MOTION, ONLINE, pos, ROOMS, SFX, st, TEXT, UI, VAULT, VIT, VR, W3} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
@@ -13,7 +13,7 @@ import {BODIES} from './111a-bodies.js';
 Object.assign(ONLINE,{others:new Map(),on:false,me:'',log:[],hear:{},puts:{}}); window.ONLINE=ONLINE;
 // things players set down (hives, crab pots...): each kind registers {set(id,name,list), clear(), share()}; the section sends them all on joining, then each change
 ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.puts[k]; H.clear(); for(const r of m.all)if(r&&r.k===k)H.set(r.id,r.name,r.list); H.share(); } return; } const H=ONLINE.puts[m.k]; if(H)H.set(m.id,m.name,m.list); };
-{ const R=RIG, PI4=Math.PI/4, LAG=160, SEND=1/6, FAR=1e9, MAXN=20, FADE_S=15000;
+{ const R=RIG, PI4=Math.PI/4, LAG=160, SEND=1/6, FAR=1e9, MAXN=20, FADE_S=15000, HEAR=12*TILE;
   // your words over heads: FONTS and COLS to pick from, SIZES in canvas px; SP is your own style (sent with each say), ONLINE.sayFor how long anyone's words stay (your setting)
   const FONTS=[['Silkscreen, monospace','PIXEL'],["'Press Start 2P', monospace",'ARCADE'],["'Share Tech Mono', monospace",'MONO'],['sans-serif','PLAIN'],['serif','SERIF'],['cursive','SCRIPT']], COLS=['#f4f2ea','#ffd27a','#7dffa8','#8fd0ff','#ff8ad8','#ff8a1f','#ff5a5a','#c8b0ff'], SIZES=[22,28,36];
   const SP={f:0,c:COLS[0],s:1}; try{ Object.assign(SP,style(JSON.parse(SAVE.get('speech')||'{}'))); }catch(e){}
@@ -38,7 +38,9 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
     return s[n]; };
   ONLINE.at=(o,now)=>{ const p=place(o,now)||{x:0,z:0}; return [p.x/TL,-p.z/TL]; }; ONLINE.V=V8;
 
-  const push=(o,a)=>{ const t0=performance.now(), L=o.s[o.s.length-1]; if(L)o.gap=(o.gap||SEND*1000)*.8+Math.min(3000,t0-L.t)*.2; o.s.push({t:t0,x:+a[0]||0,z:+a[1]||0,y:+a[2]||0,hd:+a[3]||0,lv:a[4]||'up',rm:a[5]||''}); if(o.s.length>8)o.s.shift(); };
+  // their sounds where they are, fading out by HEAR: a door when they go in or out of where you are, a blow when they are hit
+  const heard=(o,k,at)=>{ const q=at||o.p; if(!q||Math.hypot(q.x-pos.x,q.z-pos.z)>=HEAR)return; const w={x:q.x,y:q.y,z:q.z}; if(k==='door')SFX.door({at:w,far:HEAR}); else SFX.play(k,{vol:.6,vary:.12,at:w,far:HEAR}); };
+  const push=(o,a)=>{ const t0=performance.now(), L=o.s[o.s.length-1]; if(L&&(a[5]||'')!==L.rm){ const rk=roomKey(), lv=SHARED.LVL||'up', N={x:+a[0]||0,z:+a[1]||0,y:+a[2]||0}; if(L.rm===rk&&L.lv===lv)heard(o,'door',L); else if((a[5]||'')===rk&&(a[4]||'up')===lv)heard(o,'door',N); } if(L)o.gap=(o.gap||SEND*1000)*.8+Math.min(3000,t0-L.t)*.2; o.s.push({t:t0,x:+a[0]||0,z:+a[1]||0,y:+a[2]||0,hd:+a[3]||0,lv:a[4]||'up',rm:a[5]||''}); if(o.s.length>8)o.s.shift(); };
   const up=(id,p)=>{ '@later'; let o=ONLINE.others.get(id); if(!o){ o={id,name:'',look:'',s:[],S:R.create(),fig:null,key:'',say:'',sayT:0,tag:null,tagS:'',d:0}; ONLINE.others.set(id,o); }
     if(p){ if(p.name!=null)o.name=String(p.name); if(p.look!=null)o.look=String(p.look); if(p.dead!=null)o.dead=!!p.dead; if(p.hp!=null)o.hp=Math.max(0,Math.min(1,+p.hp||0)); if(p.x&&typeof p.x==='object')o.x={...p.x}; if(p.at)push(o,p.at); } return o; };
   const drop=id=>{ const o=ONLINE.others.get(id); if(o){ unfig(o); ONLINE.others.delete(id); } };
@@ -53,8 +55,8 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
     else if(m.t==='in'&&m.p&&m.p.id)up(m.p.id,m.p);
     else if(m.t==='out')drop(m.id);
     else if(m.t==='tell'&&m.text){ line(m.from||'THE MARKET',m.text); banner(m.from||'THE MARKET',m.text); }
-    else if(m.t==='act'&&m.id){ const o=ONLINE.others.get(m.id); if(o){ try{ if(m.stop||m.m&&/^mc_/.test(m.m))MOTION.their(o.S,m); else if(m.m)R.begin(o.S,m.m); else if(m.on)R.act(o.S,m.k); else R.release(o.S,m.k); }catch(e){} o.B=null; } return; }
-    else if(m.t==='ragon'&&m.id&&Array.isArray(m.n)&&Array.isArray(m.jl)){ const o=up(m.id); o.rag={n:m.n,jl:m.n.map((_,i)=>Object.fromEntries((m.jl[i]||[]).map(j=>[j[0],[+j[1],+j[2],+j[3]]]))),b:null,t:0}; return; }
+    else if(m.t==='act'&&m.id){ const o=ONLINE.others.get(m.id); if(o){ if(m.m==='flinch'&&o.why==='near you')heard(o,'punch'); try{ if(m.stop||m.m&&/^mc_/.test(m.m))MOTION.their(o.S,m); else if(m.m)R.begin(o.S,m.m); else if(m.on)R.act(o.S,m.k); else R.release(o.S,m.k); }catch(e){} o.B=null; } return; }
+    else if(m.t==='ragon'&&m.id&&Array.isArray(m.n)&&Array.isArray(m.jl)){ const o=up(m.id); if(!o.rag&&o.why==='near you')heard(o,'hurt'); o.rag={n:m.n,jl:m.n.map((_,i)=>Object.fromEntries((m.jl[i]||[]).map(j=>[j[0],[+j[1],+j[2],+j[3]]]))),b:null,t:0}; return; }
     else if(m.t==='rag'&&m.id&&Array.isArray(m.b)){ const o=ONLINE.others.get(m.id); if(!o||!o.rag)return; const r=o.rag; r.b=m.b.map((v,i)=>({name:r.n[i],x:[+v[0],+v[1],+v[2]],m3:qMat([+v[3],+v[4],+v[5],+v[6]]),jl:r.jl[i]||{}})); r.o=[+m.o[0],+m.o[1]]; r.hd=+m.hd||0; r.t=performance.now(); return; }
     else if(m.t==='ragoff'&&m.id){ const o=ONLINE.others.get(m.id); if(o){ o.rag=null; o.B=null; } return; }
     else if(ONLINE.hear[m.t]){ ONLINE.hear[m.t](m); return; }
@@ -113,7 +115,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
     for(const o of ONLINE.others.values()){ const p=o.p=place(o,now), d=p?Math.hypot(p.x-pos.x,p.z-pos.z):1e9; o.why=o.x&&o.x.invis?'unseen':!p?'no position yet':p.rm!==rk?'in another room':p.lv!==lv?'on another level':d>=FAR?'far away':'near you'; if(o.why==='near you'){ o.dd=d; C.push(o); } else hide(o); }
     C.sort((a,b)=>a.dd-b.dd); for(const o of C.slice(MAXN))hide(o);
     for(const o of C.slice(0,MAXN)){ try{ const rg=o.rag&&o.rag.b&&now-o.rag.t<3000?o.rag:null, p=o.p=rg?{...o.p,x:rg.o[0]*TL,z:-rg.o[1]*TL,hd:rg.hd}:o.p; if(o.key!==(o.look||'w00'))fig(o); const F=o.fig; if(!F)continue; const g=F.g;
-      const sp=o.q?Math.hypot(p.x-o.q.x,p.z-o.q.z)/Math.max(dt,1e-3):0; o.q={x:p.x,z:p.z}; o.S.target=sp>.4*TILE?1:0; R.step(o.S,o.frozen>0?0:dt);
+      const sp=o.q?Math.hypot(p.x-o.q.x,p.z-o.q.z)/Math.max(dt,1e-3):0; o.q={x:p.x,z:p.z}; o.S.target=sp>.4*TILE?1:0; R.step(o.S,o.frozen>0?0:dt); if(!rg&&!o.dead&&o.dd<HEAR)SFX.steps(o.S,1,{at:p,far:HEAR});
       const M=F.me.material, gh=!!o.dead, op=gh?.35:1, fl=o.flashT>now; if(F.ghost!==gh||F.op!==op){ F.ghost=gh; F.op=op; M.transparent=op<1; M.opacity=op; M.depthWrite=op===1; M.color.set(gh?0xcfe0ff:0xffffff); M.needsUpdate=true; F.me.castShadow=op===1; }   // a ghost half see-through
       if(F.fl!==fl&&M.emissive){ F.fl=fl; M.emissive.setScalar(fl?.55:0); }
       g.visible=true; g.position.set(p.x,p.y,p.z); g.rotation.y=p.hd; if(F.body)musScale(g,1); else musScale(g,F.bh||1); const sz=o.x&&+o.x.sz; if(sz>0)g.scale.multiplyScalar(sz); o.S.hi=o.x&&+o.x.hi||1; o.d=((Math.round(p.hd/PI4)%8)+8)%8;

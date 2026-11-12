@@ -29,7 +29,7 @@ Risk is noted only when it isn't low.
 ## For the owner
 
 **To try on the live site** (one sitting; each line is in its area below):
-everything merged since 7 Nov that "waits for his look and yes" (the new layout and fronts, the bar, the gym, the pets and pet shops, the
+HOLLOW PINES at `/asylum` (12 Nov: play it through on the screen and in the Quest 3; it has only been run in an emulated headset) · everything merged since 7 Nov that "waits for his look and yes" (the new layout and fronts, the bar, the gym, the pets and pet shops, the
 fish market (9 Nov), the farm, the guitar and instruments, the traffic, the skate pit, the telescope and microscope, the far view) · the merges without a green
 check (below) · phones and tablets · the moves · the cars, their insides and the radio · the menus, the start spot, the map and GO TO ·
 the HUD margin on his screen · the bath house on the island and a ghost's revival · the fluffy grass · the castle at night ·
@@ -174,20 +174,18 @@ steps go in one window, after the checks run on `main`, and end with the owner t
   - [x] **Violin, flute, trumpet** · P2 · L · code. [taking: claude/blissful-goodall-udydlj, 9 Nov]
   - [x] **The piano, harp and drums as Polyfork models** · P3 · M · code. [done 10 Nov, with the trumpet's valves moving] Owner, 10 Nov: "Use very realistic instruments models and textures" (his pick: Polyfork); their keys, strings and heads move, so each needs fitting.
   - [ ] **Violin, flute, trumpet, seen live** · look. How each is held and sounds; the tunes are the piano pieces' top line.
-  - [ ] **Dances** · P2 · L · code. Learnt by band like songs, from the CMU motion-capture library; performed for tips.
-  - [ ] **Painting copies** · P2 · L · code. Copy open-collection masterworks by difficulty; hang or sell them.
-  - [ ] **Sign language** · P2 · L · code. Owner: "Both": what you type is signed by your hands as far as your skill reaches, and some townsfolk only sign.
-  - [ ] **Juggling** · P3 · M · code. Patterns by band, street performing.
-  - [ ] **Animal taming, a skill** · P2 · XL · pick + code. Owner: "everything" (wildlife as pets, monsters that fight beside you, mounts): options first.
-  - [ ] **Fossil digs** · P3 · L · code. Dig bones, assemble skeletons for the museum.
-  - [ ] **Bar games** · P2 · XL · pick + code. Owner's picks: darts (the archived 301), pool, bowling (needs its own place: options first).
+  - [x] **Dances** · P2 · L · code. Learnt by band like songs, from the CMU motion-capture library; performed for tips. [done 10 Nov]
+  - [x] **Painting copies** · P2 · L · code. Copy open-collection masterworks by difficulty; hang or sell them. [done 10 Nov]
+  - [x] **Sign language** · P2 · L · code. Owner: "Both": what you type is signed by your hands as far as your skill reaches, and some townsfolk only sign. [done 10 Nov]
+  - [x] **Juggling** · P3 · M · code. Patterns by band, street performing. [done 10 Nov]
+  - [x] **Animal taming, a skill** · P2 · XL · pick + code. Owner: "everything" (wildlife as pets, monsters that fight beside you, mounts): options first. [done 10 Nov]
+  - [x] **Fossil digs** · P3 · L · code. Dig bones, assemble skeletons for the museum. [done 10 Nov]
   - [x] **Implants** · P3 · L · pick + code. Owner: "Both" (stat boosts and new abilities), fitted at a clinic. Done 10 Nov: THE CLINIC (`src/146zkc-clinic.js`, EQUIP's implants in `src/146c-equip.js`), `tests/implants.cjs`.
   - [x] **Bar games** · P2 · XL · pick + code. Owner's picks: darts (the archived 301), pool, bowling. Bowling done 10 Nov: THE STRANGEST LANES (`src/146zkb-bowling.js`, `worker/lanes.js`, `tests/bowling.cjs`).
   - [ ] **The bowling alley, seen live** · look. The lanes, pins and hook in a real browser; the longboarder at the counter; two players on the website.
-  - [ ] **Implants** · P3 · L · pick + code. Owner: "Both" (stat boosts and new abilities), fitted at a clinic.
 - [ ] **The instruments, seen and heard live** · look. The 10 Nov feel and fuller recordings (and the recorded guitar): does it still sound like MIDI?
 - [x] **The piano's 88-key panel** (owner, 11 Nov 2026) · P2 · S · code. [done 11 Nov] A display under the book, lighting with the piece (book-only).
-- [ ] **The instruments, the rest** · P3 · S · code. The bar's piano and kit playable in place; a bandstand for the park guitar.
+- [x] **The instruments, the rest** · P3 · S · code. The bar's piano and kit playable in place; a bandstand for the park guitar. [done 11 Nov]
 - [ ] **Companion drone NPC**: mockup done, waiting on "go" · pick.
 - [ ] **PIP the flying bot** (owner, 11 Nov 2026) · look. Built 11 Nov (`src/111dd-flybot.js`, `worker/flybot.js`, `tests/flybot.cjs`). Needs the `ANTHROPIC_API_KEY` secret on the worker; his yes on the look, the name and the daily limit (`BOT_DAILY`, 150). Model: Haiku 5.5 (owner, 12 Nov).
 - [x] **Your AI double** (owner, 9 Nov 2026; done 9 Nov) · P2 · M · code. `src/162gb-twin.js`, `worker/twin.js`, `tests/twin.cjs`. Removed 10 Nov 2026 with all the bots.
@@ -227,6 +225,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [x] **Glitched slab on Market St; three road cars out** · P1 · S · fix. Done 10 Nov: the subway train no longer shows on the street; boxy sedan, 80s hatchback and yellow cab gone from the traffic.
 - [x] **Vehicle editor follow-ups** · P3 · S · look. Done 10 Nov: a resized car or kart drives at its size, the traffic's models have their parts, the horse is in (colours and size), the train shows before you go down, the horse's COAT picker.
 
+- [ ] **The vehicles, the rest of the owner's list** (12 Nov 2026) · P2 · XL · look + code. Taken by the vehicles chat. Still to build: the ghost wagon floating when parked and driven; the convertible's octopus driver (twice the size, tentacles on the wheel); the hospital on West St (Polyfork) with the hover ambulance waiting in its garage for an emergency; the rover sentient, picking up trash and mending the park; the moored fishing boat twice the size with a crew (Polyfork people, fuzzy, purple skin); the town car a limousine twice as long; the go-kart and rowboat bigger and more real.
 - [ ] **Jets follow-ups** · P3 · S · pick. Fires and ice are worked out on each player's page (where a stream lands matches, how a fire
   spreads may not); characters burn and freeze but do not run from the fire.
 - [ ] **The physics extras (#512) never tried in a real game** · P3 · M · look + check. The bar's dartboard (beside its darts 301 game:
@@ -289,9 +288,9 @@ One tree pass (more leaves mean more shadow triangles).
 
 ## Paintings and trade
 
-- [ ] **Paintings in the item editor** · P3 · S · code. Each painting shows as its own entry; editing one does nothing (class `painting`,
+- [x] **Paintings in the item editor** [done 11 Nov] · P3 · S · code. Each painting shows as its own entry; editing one does nothing (class `painting`,
   `src/140b-items.js`). Hide `pt_`/`wip_` ids from its list. Same pull request as the next.
-- [ ] **A painting sold to THE TRADER leaves its title and thumbnail in your save** · P3 · S · code. Only trade calls `PAINTINGS.gave`.
+- [x] **A painting sold to THE TRADER leaves its title and thumbnail in your save** [done 11 Nov] · P3 · S · code. Only trade calls `PAINTINGS.gave`.
 - [ ] **Trade: photos can't be traded** (after the beta) · P4 · M · pick. "photos and the passport stay yours" (4 Nov); if yes, after the
   `Home` split, into the art store.
 - [ ] **The painter, not yet tried for real** · P3 · S · look. Pinch to zoom and pen pressure, in VR, the easel showing your latest
@@ -323,11 +322,11 @@ Owner, 9 Nov 2026: "real sounds". Each batch is named by the owner first.
 - [ ] **P3 S code** After baking the editor's export into the code, clear the live set (or it keeps overriding the next bake's changes).
 - [ ] **P3 S find** The wind is still made in code: the only CC0 wind found (OpenGameArt) is mostly low rumble. The effects file is 750 KB, all fetched at the first click (the ambience is its own file): split it further by place if it grows.
 - [ ] **P3 S code** Fights: no bow twang or arrow hit yet (the guardians' arrows still blip), golems and dungeon creatures still use the made sounds; other players don't hear your blows, only their own.
-- [ ] **P3 S check** `tests/instruments.cjs`' owner-kit line fails on main (the bag gets no instruments from `FORAGE.ownerKit()` there).
-- [ ] **P2 S check** `tests/datacheck.cjs` is broken on main: it calls the archived `SNDED.open`, the Hudson's `bell` has no recipe in its table, `data/drums-samples.mp3` has no provenance record.
+- [x] **P3 S check** `tests/instruments.cjs`' owner-kit line fails on main (the bag gets no instruments from `FORAGE.ownerKit()` there). [fixed 11 Nov: the test answers `/owned`]
+- [x] **P2 S check** `tests/datacheck.cjs` is broken on main: it calls the archived `SNDED.open`, the Hudson's `bell` has no recipe in its table, `data/drums-samples.mp3` has no provenance record. [done 11 Nov]
 - [ ] **P3 S code** No crash or skid sound for the cars yet, and the karts, helicopter and flying traffic are silent (no CC0 recordings found yet).
 - [ ] **P3 M code** Footsteps know only stone, grass and wood: the park's paths, sand, water's edge, metal stairs and carpet still sound as those three.
-- [ ] **P2 M code** Other players heard: their footsteps, hits and doors from where they stand, fading with distance.
+- [x] **P2 M code** Other players heard: their footsteps, hits and doors from where they stand, fading with distance. [done 11 Nov]
 - [ ] **P3 S pick** The bodega's counter radio still plays its code-made tune: give it the market's stations like the apartments'?
 
 ## VR

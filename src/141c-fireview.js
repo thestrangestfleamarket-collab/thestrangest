@@ -14,6 +14,7 @@ import {BLOCKS} from './038zb-blocks.js';
   F.on=false; F.G=G;
   F.spot=d=>({x:X(DX),y:Y(HZ),z:Z(V(d))});
   F.out=()=>APTS.enterReal([X(DX),Z(V(.9)),Y(HZ),Math.PI]);
+  F.test=new URLSearchParams(location.search).get('place')==='your fire escape';   // (off limits to players, 12 Nov 2026; the checks' ?place= still stands out there)
   F.back=()=>APTS.enterReal();
   const hit=(w,h,d,x,y,z)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshBasicMaterial({visible:false})); m.position.set(x,y,z); scene.add(m); return m; };
   let plaque=null; APTS.furnish(APTS.my,()=>{ '@later'; if(APTS.NOESC)return; UI.thing({name:'FIRE ESCAPE DOOR',ghost:1,obj:hit(1.1*T*KK,Y(78)-Y(0),1.6*T,X(APTS.fw[0]),Y(HZ+40),Z(APTS.fw[1]-.15)),reach:1.9*T,near:2.6*T,tall:2*T,act:()=>{ const D=APTS.escDoor; if(!APTS.in||!D)return; D.set(!D.open); const at=new THREE.Vector3(X(APTS.fw[0]),Y(HZ+40),Z(APTS.fw[1])); if(D.open)SFX.play('latch',{at,vol:.8}); else SFX.play('door',{at,vol:.35,pitch:1.6,delay:.25}); }});

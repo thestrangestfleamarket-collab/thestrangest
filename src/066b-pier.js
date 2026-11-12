@@ -22,7 +22,7 @@ RIVER.onBuild.push(()=>{ const T=TILE, V3=THREE.Vector3, RB=RIVER.box, Q=RB.z1, 
   const tone=(c,k,i)=>c.map(v=>v*(1-k/2+k*hs(i,c[0]*97))), WD=[.5,.45,.38], GRY=[.56,.54,.5], DK=[.3,.26,.21], IRON=[.16,.17,.18], RUST=[.42,.24,.14], ROPE=[.62,.54,.38];
   // the deck: planks across, with gaps, every one its own tone; a few warped
   const PT=.22*WU, PG=.025*WU, plank=(x0,x1,z0,z1)=>{ let i=0; for(let z=z1-PG;z-PT>z0;z-=PT+PG,i++){ const k=hs(i,x0|0), wv=hs(i,7)>.93?(.012+.012*hs(i,2)):0, sh=(hs(i,11)-.5)*.12*WU;
-      box((x0+x1)/2+sh,-.04*WU+wv*WU*.3,z-PT/2,x1-x0-Math.abs(sh)*2,.08*WU,PT,tone(k>.85?GRY:k<.12?DK:WD,.35,i+(x0|0)),0,0,wv); } };
+      box((x0+x1)/2+sh,-.04*WU+wv*WU*.3,z-PT/2,x1-x0+.03*WU-Math.abs(sh)*2,.08*WU,PT,tone(k>.85?GRY:k<.12?DK:WD,.35,i+(x0|0)),0,0,wv); } };
   plank(X-hw,X+hw,zH,Q); plank(X-HW,X+HW,zE,zH);
   for(const s of [-1,1]){ box(X+s*(hw-.05*WU),-.2*WU,(zH+Q)/2,.1*WU,.26*WU,Q-zH,DK); box(X+s*(HW-.05*WU),-.2*WU,(zE+zH)/2,.1*WU,.26*WU,HD,DK); }
   box(X,-.2*WU,zE+.05*WU,2*HW,.26*WU,.1*WU,DK); for(const s of [-1,1])box(X+s*(HW+hw)/2,-.2*WU,zH-.05*WU,HW-hw,.26*WU,.1*WU,DK);
@@ -33,15 +33,15 @@ RIVER.onBuild.push(()=>{ const T=TILE, V3=THREE.Vector3, RB=RIVER.box, Q=RB.z1, 
   let bi=0; for(let z=Q-1.5*T;z>zH+.5*T;z-=3*T,bi++){ const px=hw-.28*T; pile(X-px,z); pile(X+px,z); box(X,-.48*WU,z,2*hw+.2*WU,.3*WU,.32*WU,tone(DK,.3,bi));
     const y0=-.7*WU, y1=LV-1.6*WU, len=Math.hypot(2*px,y0-y1), a=Math.atan2(y0-y1,2*px); for(const s of [-1,1])box(X,(y0+y1)/2,z+s*.2*WU,len,.2*WU,.07*WU,tone(WD,.3,bi+s),0,0,s*a);
     if(bi%2===0&&z-3*T>zH)for(const sx of [-1,1]){ const l2=Math.hypot(3*T,y0-y1), a2=Math.atan2(y0-y1,3*T); box(X+sx*(px+.22*WU),(y0+y1)/2,z-1.5*T,.07*WU,.2*WU,l2,tone(WD,.3,bi+9),-a2,0,0); } }
-  const NI=Math.round(2*HW/(3*T)); for(let i=0;i<=NI;i++)for(let j=0;j<3;j++){ const x=X-HW+.4*T+i*(2*HW-.8*T)/NI, z=zH-.6*T-j*(HD-1.2*T)/2, moor=(i===0||i===NI||i%4===0)&&j!==1; pile(x,z,moor?.55*WU:-.08*WU); if(i<NI)box((x+X-HW+.4*T+(i+1)*(2*HW-.8*T)/NI)/2,-.48*WU,z,(2*HW-.8*T)/3+.3*WU,.3*WU,.32*WU,DK); }
+  const NI=Math.round(2*HW/(3*T)); for(let i=0;i<=NI;i++)for(let j=0;j<3;j++){ const x=X-HW+.4*T+i*(2*HW-.8*T)/NI, z=zH-.6*T-j*(HD-1.2*T)/2, moor=(i===0||i===NI||i%4===0)&&j!==1; pile(x,z,moor?.55*WU:-.08*WU); if(i<NI)box((x+X-HW+.4*T+(i+1)*(2*HW-.8*T)/NI)/2,-.48*WU,z,(2*HW-.8*T)/NI,.3*WU,.32*WU,DK); }
   // rails on the walk out, a low curb round the head; wheel blocks under the curb
   const RH=1.05*WU; for(const s of [-1,1]){ const x=X+s*(hw-.06*WU); let i=0; for(let z=Q-.1*T;z>zH+.3*T;z-=1.5*T,i++)box(x,RH/2,z,.1*WU,RH,.1*WU,tone(GRY,.25,i));
     box(x,RH-.03*WU,(zH+Q)/2,.14*WU,.06*WU,Q-zH,GRY); box(x,RH*.55,(zH+Q)/2,.05*WU,.1*WU,Q-zH,tone(GRY,.2,s+4));
     SOL.up.push([x-.12*T,zH+.1*T,x+.12*T,Q]); FIX.up.push([x-.12*T,zH+.1*T,0,x+.12*T,Q,RH]);
     const cx=X+s*(HW-.12*WU); box(cx,.08*WU,(zE+zH)/2,.2*WU,.15*WU,HD-.3*WU,DK); for(let k=0;k<6;k++){ const z=zH-.8*T-k*(HD-1.6*T)/5; box(cx,RH/2,z,.1*WU,RH,.1*WU,GRY); } box(cx,RH-.03*WU,(zE+zH)/2,.14*WU,.06*WU,HD-1.2*T,GRY);
     SOL.up.push([cx-.12*T,zE+.6*T,cx+.12*T,zH-.6*T]); FIX.up.push([cx-.12*T,zE+.6*T,0,cx+.12*T,zH-.6*T,RH]);
-    box(X+s*(HW+hw)/2,.08*WU,zH-.12*WU,HW-hw-.2*WU,.15*WU,.2*WU,DK); }
-  for(const o of [-1,-.45,.45,1])box(X+o*(HW-.9*T),.08*WU,zE+.12*WU,1.4*T,.15*WU,.2*WU,DK);
+    box(X+s*(HW+hw)/2,.085*WU,zH-.12*WU,HW-hw-.2*WU,.16*WU,.2*WU,DK); }
+  for(const o of [-1,-.45,.45,1])box(X+o*(HW-.9*T),.085*WU,zE+.12*WU,1.4*T,.16*WU,.2*WU,DK);
   // the ladder down off the head's end
   for(const o of [-.3,.3])box(X+o*WU,(LV-1.4*WU+.9*WU)/2,zE-.08*WU,.05*WU,.9*WU-(LV-1.4*WU),.05*WU,IRON); for(let y=LV-1.2*WU;y<0;y+=.3*WU)box(X,y,zE-.08*WU,.6*WU,.04*WU,.05*WU,IRON);
   // lamps: iron posts with a crook and a hooded light; bollards, cleats, rope, the gear of a working pier

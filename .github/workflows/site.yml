@@ -631,7 +631,7 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' copies')
         run: node tests/copies.cjs dist/market.html
-      - name: The money's server (the bucket, the body's drops, the stalls, the pawn shop)
+      - name: The money's server (the bucket, the body's drops, the stalls, the exchange machines)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' money')
         run: node tests/economy.cjs

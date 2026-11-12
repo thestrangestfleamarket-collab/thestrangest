@@ -41,14 +41,15 @@ const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv
     await pg.evaluate(()=>ROOMS.exit('bodega')); const out=await U(()=>!(ROOMS.offIn&&ROOMS.offIn())&&!(window.FADE&&FADE.busy),60000).then(()=>true).catch(()=>false);
     rec('bodega: you go in and come back out',inB&&out); }
   /* ---------- THE MOVIE THEATRE ---------- */
-  // THE FLEA PIT (10 Nov 2026): no way in without a ticket, a ticket lets you in; no snack bar; the fox at the box office, every seat on the list and every row to sit in
+  // THE STARLITE (11 Nov 2026): no way in without a ticket, a ticket lets you in; no snack bar; the fox at the box office, every seat on the list and every row to sit in; the floor steps up to the back; its own reel on the screen when no film is; dropped when you leave
   if(!await has('theatre'))skip('theatre'); else { const no=await pg.evaluate(()=>{ INV.items.ticket=0; return STORE.gate.theatre?STORE.gate.theatre():true; }); rec('theatre: no ticket, no way in',no===false);
     await pg.evaluate(()=>{ INV.add('ticket',1); STORE.enter('theatre',true); }); const inT=await U(()=>STORE.inside.theatre&&STORE.inside.theatre.done&&!(window.FADE&&FADE.busy),180000).then(()=>true).catch(()=>false);
     rec('theatre: a ticket lets you in',inT);
-    const fp=await pg.evaluate(()=>{ const R=STORE.rooms.find(r=>r.id==='theatre'), seats=__dbg.UI.things.filter(t=>t.name==='A ROW OF SEATS'); return {listed:(R.seats||[]).length,sit:seats.length,snack:!!(R.spots||{}).CONCESSIONS||WORKERSDBG().some(w=>w.k==='w_raccoon'&&w.made),fox:!!(CINEMA.dbg&&CINEMA.dbg().fox),box:!!(CINEMA.boxG&&CINEMA.boxG())}; });
-    rec('theatre: the seats are listed for moviegoers and can be sat in, no snack bar, the fox stands in the box office '+JSON.stringify(fp),fp.listed===56&&fp.sit===8&&!fp.snack&&fp.box);
+    const fp=await pg.evaluate(()=>{ const R=STORE.rooms.find(r=>r.id==='theatre'), seats=__dbg.UI.things.filter(t=>t.name==='A ROW OF SEATS'); return {listed:(R.seats||[]).length,sit:seats.length,snack:!!(R.spots||{}).CONCESSIONS||WORKERSDBG().some(w=>w.k==='w_raccoon'&&w.made),fox:!!(CINEMA.dbg&&CINEMA.dbg().fox),box:!!(CINEMA.boxG&&CINEMA.boxG()),rise:Math.max(...R.seats.map(p=>SHARED.groundY(p.x,p.z)))-Math.min(...R.seats.map(p=>SHARED.groundY(p.x,p.z))),free:R.seats.every(p=>p.x>R.x0&&p.x<R.x1&&p.z>R.z0&&p.z<R.z1),reel:!!STORE.main.theatre.reel,live:!!THEATRE.live()}; });
+    rec('theatre: the seats are listed for moviegoers and can be sat in, no snack bar, the fox stands in the box office '+JSON.stringify(fp),fp.listed===180&&fp.sit===60&&!fp.snack&&fp.box&&fp.rise>1.5&&fp.free&&fp.reel&&fp.live);
     if(OUT)await pg.screenshot({path:OUT+'/theatre.png'}).catch(()=>{});
-    await pg.evaluate(()=>STORE.exit('theatre')); await pg.waitForTimeout(3000); }
+    await pg.evaluate(()=>STORE.exit('theatre')); await pg.waitForTimeout(6000);
+    const gone=await pg.evaluate(()=>({live:!!THEATRE.live(),reel:!!STORE.main.theatre.reel,grounds:ROOMS.grounds.length,seats:__dbg.UI.things.filter(t=>t.name==='A ROW OF SEATS').length})); rec('theatre: dropped once you are out '+JSON.stringify(gone),!gone.live&&!gone.reel&&!gone.grounds&&!gone.seats); }
   /* ---------- THE ART MUSEUM ---------- */
   { await pg.evaluate(async()=>{ if(STORE.ensure)await STORE.ensure(); STORE.enter('art',true); }); await U(()=>STORE.inside.art&&STORE.inside.art.done&&!(window.FADE&&FADE.busy)&&__dbg.UI.things.some(t=>t.name==='THE FLOOR PLAN')&&STORE.art&&STORE.art.built,240000);
     const p=await people('art'); rec('art museum: nobody works there; visitor places inside it, standing places clear',p.spots===0&&p.seats>=12&&p.seatsIn&&!p.standFree,JSON.stringify(p));

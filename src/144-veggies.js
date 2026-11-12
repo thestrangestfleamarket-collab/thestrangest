@@ -17,7 +17,7 @@ const VEG={}; window.VEG=VEG;
   const NM=Object.fromEntries(V.map(v=>[v[0],v[1]])), SELL=Object.fromEntries(V.map(v=>[v[0],v[2]])), BUY=Object.fromEntries(V.map(v=>[v[0],v[3]])), XS=[], XB=[];
   INSPECT.kinds.push({is:id=>!!NM[id]||/^f_(corn|vstew|stuffpep|psoup)$/.test(id),make:id=>{ const K=STALL.VEG[id.slice(2)]; if(K)return INSPECT.recipe(K);
     return id==='f_corn'?INSPECT.recipe(STALL.VEG.corn):id==='f_stuffpep'?INSPECT.recipe(STALL.VEG.pepper):INSPECT.shape('bowl',id==='f_psoup'?0xe0882a:0x8a5a2a); }});
-  VEG.add=(sells,buys)=>{ for(const id in sells){ SELL[id]=sells[id]; XS.push(id); } for(const id in buys){ BUY[id]=buys[id]; XB.push(id); } }; const NMV=id=>NM[id]||FORAGE.NM[id]||id;
+  VEG.add=(sells,buys)=>{ for(const id in sells){ SELL[id]=sells[id]; XS.push(id); } for(const id in buys){ BUY[id]=buys[id]; XB.push(id); } }; FORAGE.STOCK.push(()=>[...V.map(v=>v[0]),...XS]); const NMV=id=>NM[id]||FORAGE.NM[id]||id;
   FORAGE.add({names:Object.assign({},NM,{f_corn:'ROAST CORN',f_vstew:'VEGETABLE STEW',f_stuffpep:'STUFFED PEPPER',f_psoup:'PUMPKIN SOUP'}),
     raw:Object.fromEntries(V.map(v=>[v[0],[v[4],0]])),
     prices:BUY});

@@ -25,8 +25,7 @@ const TYPER={pages:[],st:null,carX:42.5,on:false}; window.TYPER=TYPER;
   TYPER.savePages=()=>{ let P=TYPER.pages.slice(-MAXP); while(P.length>1&&JSON.stringify(P).length>200000)P=P.slice(1); TYPER.pages=P; try{ OWNED.set('pages',JSON.stringify(P)); }catch(e){} };
 
   /* ---------- a page you pulled out: a sheet pinned to the wall, the room editor's PAGES ---------- */
-  const pinned=p=>{ '@later'; const G=new THREE.Group(), c=document.createElement('canvas'); c.width=340; c.height=440; sheet(c,dec(p.s)); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4;
-    const m=new THREE.Mesh(new THREE.PlaneGeometry(.216,.279),new THREE.MeshLambertMaterial({map:t})); m.position.z=.004; G.add(m);
+  const pinned=p=>{ '@later'; const G=new THREE.Group(), c=document.createElement('canvas'); c.width=340; c.height=440; sheet(c,dec(p.s)); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace;     const m=new THREE.Mesh(new THREE.PlaneGeometry(.216,.279),new THREE.MeshLambertMaterial({map:t})); m.position.z=.004; G.add(m);
     for(const x of [-.07,.07]){ const pin=new THREE.Mesh(new THREE.SphereGeometry(.006,8,6),new THREE.MeshLambertMaterial({color:0xb83a2c})); pin.position.set(x,.12,.008); G.add(pin); } return G; };
   const kind=(R,p)=>{ '@later'; const k='pg:'+p.id; if(R.kinds[k])return; const D={kind:k,name:'PAGE: '+(p.t||'TYPED PAGE'),own:p.id,loose:false,m:0,wire:null,sol:[],shf:[],mount:'wall',dept:'pages',deptName:'PAGES'};
     Object.defineProperty(D,'tpl',{configurable:true,enumerable:true,get(){ const t=pinned(p); Object.defineProperty(D,'tpl',{value:t,enumerable:true}); return t; }}); R.kinds[k]=D; };

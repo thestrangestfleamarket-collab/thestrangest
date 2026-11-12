@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:,">
+<title>Shardwave</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #06041a; overflow: hidden; font-family: system-ui, sans-serif; color: #eae6ff; }
+  canvas { display: block; }
+  #ui { position: fixed; left: 16px; top: 16px; max-width: 340px; padding: 14px 16px; background: rgba(12, 8, 40, .82);
+        border: 1px solid #4b3bd6; border-radius: 12px; }
+  #ui h1 { margin: 0 0 6px; font-size: 22px; letter-spacing: .18em; }
+  #ui p { margin: 6px 0; font-size: 13px; line-height: 1.4; color: #b9b2e6; }
+  .btn { display: inline-block; margin: 6px 6px 0 0; padding: 10px 14px; font: 600 14px system-ui, sans-serif; color: #fff;
+         background: #4b3bd6; border: 0; border-radius: 8px; cursor: pointer; }
+  .btn.primary { background: #ff8a1f; color: #1a0d00; }
+  .btn[disabled] { opacity: .45; cursor: default; }
+</style>
+</head>
+<body>
+<div id="ui">
+  <h1>SHARDWAVE</h1>
+  <p id="msg">Checking for VR…</p>
+  <button id="vr" class="btn primary" disabled>Enter VR</button>
+  <label class="btn">Add your own song<input id="file" type="file" accept="audio/*" hidden></label>
+  <p>Cut each shard with the matching blade, in the direction its arrow points. Amber is your left hand, cyan your right. Lean away from red walls and duck under red beams.</p>
+  <p>No headset? Move the mouse to swing one blade that cuts both colours. Esc pauses. In VR, A/B/X/Y pauses.</p>
+</div>
+<script type="module">__WAVE__</script>
+</body>
+</html>

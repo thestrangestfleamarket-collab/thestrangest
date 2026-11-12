@@ -165,7 +165,7 @@ const FOSSIL={}; window.FOSSIL=FOSSIL;
     if(MOTION.play)MOTION.play('plant'); SFX.play('step',{vol:.5}); say(has('fos_brush')?'YOU DIG DOWN WITH THE TROWEL AND BRUSH THE EARTH AWAY...':'YOU DIG DOWN CAREFULLY WITH THE TROWEL...');
     return new Promise(res=>setTimeout(()=>{ busy=false; INV.mark(hkey(s,h)); const f=pickFind(s,o), bonus=has('fos_brush')?10:0, ok=FORAGE.use('paleo',f.a.lv-25,f.a.lv+25,bonus,{ok:o.ok,win:2});
       let id; if(ok){ id=bid(f.a.id,f.b); FORAGE.give(id,1); const L=S.log[f.a.id]||(S.log[f.a.id]={}); L[f.b]=(L[f.b]||0)+1; SFX.play('chirp',{vol:.4});
-        say('IT COMES UP WHOLE: '+NM[id]+(f.tier==='s'?' · SUPER RARE':f.tier==='r'?' · RARE':'')+'.',f.tier==='s'?'#f2c14e':'#e8e2cc'); }
+        say('IT COMES UP WHOLE: '+NM[id]+(f.tier&&f.tier!=='c'?' · '+RARITY.NAMES[f.tier]:'')+'.',f.tier==='s'?'#f2c14e':'#e8e2cc'); }
       else { id='fos_frag'; FORAGE.give(id,1); SFX.play('clunk',{vol:.4}); say('IT CRACKS AS YOU LIFT IT: '+f.a.name.toLowerCase()+' bone, now FOSSIL FRAGMENTS.','#c8a090'); }
       save(); if(s.G)build(s); if(FORAGE.draw)FORAGE.draw(); res({ok,id,animal:f.a.id,bone:f.b,tier:f.tier}); },o.fast?0:1200)); };
 

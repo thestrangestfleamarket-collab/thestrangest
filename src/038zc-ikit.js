@@ -1,6 +1,6 @@
 // THE INSIDES' KIT: IKIT.frame(R) gives a room's corner and axes in metres; IKIT.room(F,add) its makers (boxes, cylinders and balls merged into a few meshes, glowing parts, pictures, painted signs, seats you sit on). Every rebuilt inside furnishes with it.
 import {SHARED, THREE} from './003-shx.js';
-import {ARCHI, FORAGE, INV, pos, UI, USE, WE, WED} from './003b-systems.js';
+import {ARCHI, BATCH, FORAGE, INV, pos, UI, USE, WE, WED} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {SOL, TILE} from './006-map-pre.js';
 const IKIT={}; window.IKIT=IKIT;
@@ -25,11 +25,12 @@ const IKIT={}; window.IKIT=IKIT;
     const matL=new THREE.MeshLambertMaterial({vertexColors:true}), matB=new THREE.MeshBasicMaterial({vertexColors:true});
     // a bag as a mesh; own: its origin at its foot's middle (a thing to use or move)
     // the room's own pieces (not a thing of its own): one batch, each box, post and ball an entry the world editor picks, moves, tints and removes (owner, 7 Nov 2026: "make sure everything in game can be edited")
-    const batchOf=(b,mat)=>{ const me=new THREE.BatchedMesh(b.r.length,b.p.length/3,0,mat), items=[], P=new Float32Array(b.p), N=new Float32Array(b.n), C=new Float32Array(b.c);
+    const clean=b=>{ if(b.clean)return; b.clean=true; const U=BATCH.unfight(b.p,{n:[b.n,3],c:[b.c,3]}); if(!U.at)return; b.p=U.P; b.n=U.A.n; b.c=U.A.c; b.r=b.r.map(([v0,n,k])=>{ const a=U.at[v0/3]*3; return [a,U.at[(v0+n)/3]*3-a,k]; }); };   // no two faces in one place
+    const batchOf=(b,mat)=>{ clean(b); const me=new THREE.BatchedMesh(b.r.length,b.p.length/3,0,mat), items=[], P=new Float32Array(b.p), N=new Float32Array(b.n), C=new Float32Array(b.c);
       for(const [v0,n,k] of b.r){ const g=new THREE.BufferGeometry(), s3=v0*3, e3=(v0+n)*3; g.setAttribute('position',new THREE.BufferAttribute(P.slice(s3,e3),3)); g.setAttribute('normal',new THREE.BufferAttribute(N.slice(s3,e3),3)); g.setAttribute('color',new THREE.BufferAttribute(C.slice(s3,e3),3));
         g.computeBoundingBox(); const c=g.boundingBox.getCenter(new V3()); me.addInstance(me.addGeometry(g)); items.push({k,x:+c.x.toFixed(2),y:+g.boundingBox.min.y.toFixed(2),z:+c.z.toFixed(2)}); }
       me.computeBoundingSphere(); me.castShadow=mat===matL; me.receiveShadow=true; me.userData.weRoom=1; add(me); WED.meshes.push({place:F.id||'inside',me,items,temp:true}); return me; };
-    const meshOf=(b,mat=matL,ownO=false)=>{ if(!ownO&&b.r.length&&b.r.length<4000)return batchOf(b,mat); const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(b.p,3)); g.setAttribute('normal',new THREE.Float32BufferAttribute(b.n,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(b.c,3));
+    const meshOf=(b,mat=matL,ownO=false)=>{ clean(b); if(!ownO&&b.r.length&&b.r.length<4000)return batchOf(b,mat); const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(b.p,3)); g.setAttribute('normal',new THREE.Float32BufferAttribute(b.n,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(b.c,3));
       const me=new THREE.Mesh(g,mat); if(ownO){ g.computeBoundingBox(); const c=g.boundingBox.getCenter(new V3()); c.y=g.boundingBox.min.y; g.translate(-c.x,-c.y,-c.z); me.position.copy(c); }
       me.castShadow=mat===matL; me.receiveShadow=true; add(me); if(ownO)WED.objs.push({place:F.id||'inside',name:me.name||'thing',obj:me,temp:true}); return me; };
     // a flat picture facing (du,dv), its bottom middle at u,v,h
@@ -48,6 +49,6 @@ const IKIT={}; window.IKIT=IKIT;
     return {MW,box,cyl,ball,glow,own,meshOf,pic,words,seat,spot,sol,use,flush,matL,matB}; };
   // buying a thing over a counter or from a machine: the price from your cash, the thing in your pack
   IKIT.buy=(id,price,line)=>{ '@later'; const say=(t,c)=>SAY(t,c), nm=FORAGE.name?FORAGE.name(id):id.toUpperCase(); if(ARCHI(id)){ say('SOLD OUT.','#c8a090'); return false; }
-    if(INV.cash<price){ say('THAT IS $'+price+'. YOU HAVE $'+INV.cash+'.','#c8a090'); return false; } INV.cash-=price; INV.add(id,1); say(line||nm+': $'+price+'. IT IS IN YOUR PACK.','#f2c14e'); return true; };
+    if(!INV.afford(price)){ say('THAT IS $'+price+'. YOU HAVE $'+INV.money()+'.','#c8a090'); return false; } INV.pay(price); INV.add(id,1); say(line||nm+': $'+price+'. IT IS IN YOUR PACK.','#f2c14e'); return true; };
 }
 export {IKIT};

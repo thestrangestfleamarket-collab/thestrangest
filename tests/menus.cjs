@@ -1,4 +1,4 @@
-// THE MENU CHECK: node tests/menus.cjs dist/market.html [folder for screenshots]. ESC opens the one menu: its sections down the left (SETTINGS, PETS, INVENTORY, MAP; ADMIN for owners, 7 Nov 2026; your look in ADMIN > AVATAR, you the paper doll, 9 Nov 2026), each section's parts as tabs along the top; MAP and BAG open their own windows; ESC shuts it.
+// THE MENU CHECK: node tests/menus.cjs dist/market.html [folder for screenshots]. ESC opens the wheel (11 Nov 2026), its SETTINGS the one menu: its sections down the left (SETTINGS, PETS, INVENTORY, MAP; ADMIN for owners, 7 Nov 2026; your look in ADMIN > AVATAR, you the paper doll, 9 Nov 2026), each section's parts as tabs along the top; MAP and BAG open their own windows; ESC shuts it.
 const { chromium } = require('playwright'), path = require('path'), fs = require('fs');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=menus::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -18,8 +18,11 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const texts = q => pg.evaluate(s => [...document.querySelectorAll(s)].map(x => x.firstChild.textContent).join(), q);
   if (st) {
     ok(!(await pg.evaluate(() => !!document.getElementById('hh'))), 'the pager is gone');
-    await pg.keyboard.press('Escape');
-    ok(await until(() => __UI.menuOpen && __UI.menuNow()[0] === 'set'), 'ESC opens the menu at SETTINGS');
+    await pg.keyboard.press('Escape'); ok(await until(() => HUB.on && document.querySelectorAll('#hub path').length >= 13), 'ESC opens the wheel: the menus on top, your things by kind below (11 Nov 2026)');
+    { const r = await pg.evaluate(() => ({ top: [...document.querySelectorAll('#hub text:not(.s)')].slice(0, 5).map(t => t.textContent.replace(/\s/g, '')).join(), kinds: ITEMS.GROUPS.length })); ok(r.top === 'SETTINGS,WHATYOUCANDO,PETS,MAP,EMOTES' && r.kinds === 8, 'the wheel: SETTINGS, WHAT YOU CAN DO, PETS, MAP, EMOTES and eight kinds of things ' + JSON.stringify(r)); }
+    await pg.keyboard.press('Escape'); ok(await until(() => !HUB.on), 'ESC shuts the wheel');
+    await pg.keyboard.press('Escape'); await until(() => HUB.on); await pg.evaluate(() => document.querySelector('#hub path[data-i="0"]').dispatchEvent(new MouseEvent('click', { bubbles: true })));
+    ok(await until(() => __UI.menuOpen && __UI.menuNow()[0] === 'set' && !HUB.on), 'its SETTINGS opens the menu at SETTINGS');
     ok(await texts('#mnav [data-sec]') === 'SETTINGS,WHAT YOU CAN DO,PETS,INVENTORY,MAP,GUIDE,PEOPLE', 'the sections down the left: SETTINGS, WHAT YOU CAN DO, PETS, INVENTORY, MAP, GUIDE, PEOPLE (WHAT YOU CAN DO the ? list, 10 Nov 2026; MAP a section, 10 Nov 2026; no PROFILE: the paper doll, 9 Nov 2026; no ADMIN for a player; no BBS; GUIDE and PEOPLE back, 11 Nov 2026)');
     await pg.keyboard.press('Escape'); await until(() => !__UI.menuOpen);
     await pg.evaluate(() => DOLL.me()); ok(await until(() => !document.getElementById('doll').hidden), 'double-clicking yourself opens your paper doll');
@@ -27,7 +30,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.waitForTimeout(1500); await shot('doll');
     await pg.evaluate(() => document.querySelector('#doll [data-b="1"]').click()); ok(await until(() => !document.getElementById('looks').hidden && document.querySelector('#looks .ltabs [data-t=look]').hidden), 'its WEAR opens what you wear, with no LOOK');
     await shot('wear'); await pg.evaluate(() => { document.getElementById('looks').hidden = true; DOLL.me(); });
-    await pg.keyboard.press('Escape'); await until(() => __UI.menuOpen);
+    await pg.keyboard.press('Escape'); await until(() => HUB.on); await pg.evaluate(() => document.querySelector('#hub path[data-i="0"]').dispatchEvent(new MouseEvent('click', { bubbles: true }))); await until(() => __UI.menuOpen);
     await sec('pack'); ok(await until(() => BAG.inMenu() && document.querySelector('#dbag #bagp .bgr')), 'INVENTORY opens at BAG, your things in the menu (10 Nov 2026)'); await pg.evaluate(() => document.querySelector('#msub [data-sub="skills"]').click()); ok(await until(() => FORAGE.PACK.open && document.querySelector('#dpack #packp')), 'INVENTORY shows your skills in the menu');
     ok(await texts('#msub [data-sub]') === 'BAG,SKILLS,BOOK,FISHING,JOURNAL', 'INVENTORY: BAG, SKILLS, BOOK, FISHING, JOURNAL');
     await shot('pack');
@@ -38,13 +41,14 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     { const one = []; for (const [k, p] of [['camera', 'camera'], ['screen', 'screen'], ['chat', 'chat'], ['res', 'graphics'], ['time', 'atmo'], ['weather', 'weather'], ['light', 'light'], ['keys', 'keys'], ['vr', 'vr']]) { await sub(k); if ((await shown()) !== p) one.push(k + ':' + (await shown())); } ok(!one.length, 'each tab shows its own one pane' + (one.length ? ': ' + one : '')); }
     await sub('bug'); ok((await shown()) === 'bug', 'REPORT A BUG');
     await pg.keyboard.press('Escape'); ok(await until(() => !__UI.menuOpen), 'ESC shuts it');
-    await pg.keyboard.press('Escape'); ok(await until(() => __UI.menuOpen && __UI.menuNow()[0] === 'set'), 'and opens it again where you were');
+    await pg.keyboard.press('Escape'); await until(() => HUB.on); await pg.evaluate(() => document.querySelector('#hub path[data-i="0"]').dispatchEvent(new MouseEvent('click', { bubbles: true }))); ok(await until(() => __UI.menuOpen && __UI.menuNow().join() === 'set,bug'), 'and the wheel opens it again where you were');
     await pg.keyboard.press('Escape'); await until(() => !__UI.menuOpen);
     await pg.evaluate(() => __UI.menuTab('graphics')); ok((await now()).join() === 'set,res', 'the old tab names still land in the right place');
     await pg.evaluate(() => __UI.menuTab('bug')); ok((await now()).join() === 'set,bug', 'F8 lands on REPORT A BUG');
     await pg.evaluate(() => __UI.toggleMenu());
     await pg.evaluate(() => { CINEMA.isAdmin = async () => true; });   // an owner
-    await pg.keyboard.press('Escape'); ok(await until(() => !!document.querySelector('#mnav [data-sec="admin"]')), 'an owner sees ADMIN');
+    await pg.keyboard.press('Escape'); ok(await until(() => HUB.on && /ADMIN/.test(document.getElementById('hub').textContent)), 'an owner sees ADMIN on the wheel'); await pg.keyboard.press('Escape'); await until(() => !HUB.on);
+    await pg.evaluate(() => __UI.menuTab('set')); ok(await until(() => !!document.querySelector('#mnav [data-sec="admin"]')), 'an owner sees ADMIN');
     await sec('admin'); ok(await texts('#msub [data-sub]') === 'BUG QUEUE,TEXT,EDITORS,AVATAR,VEHICLES,VEHICLE EDITOR,SOUND EDITOR,TOOLS', 'ADMIN: BUG QUEUE, TEXT, EDITORS, AVATAR, VEHICLES, VEHICLE EDITOR, SOUND EDITOR, TOOLS (10 Nov 2026)');
     await sub('look'); ok(await until(() => document.querySelector('#dlooks #looks') && !document.querySelector('#looks').hidden && !!document.querySelector('#dhome #cpav')), 'ADMIN > AVATAR: your look beside your live avatar'); await shot('admin-avatar');
     await sub('tools'); ok(await until(() => !!document.querySelector('#dtools #cpstat')), 'TOOLS: stats and the render inspector (no game log, 8 Nov 2026)');

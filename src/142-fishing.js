@@ -102,7 +102,7 @@ const fishInit=()=>{ if(FISHING.at)return; const T=TILE, RB={get lv(){ return RI
     const sg=new THREE.Mesh(new THREE.PlaneGeometry(W*.9,W*.15),new THREE.MeshBasicMaterial({map:tx})); sg.position.set(SX,Y(2.25),SZ+D*.5+.27*T); MAPG.bodega.add(sg);
     SOL.up.push([SX-W/2-.1*T,SZ-D*.5,SX+W/2+.1*T,SZ+D*.55]); FIX.up.push([SX-W/2-.1*T,SZ-D*.5,0,SX+W/2+.1*T,SZ+D*.55,Y(2.4)]);
     const hb=new THREE.Mesh(new THREE.BoxGeometry(W,Y(2.4),D),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(SX,Y(1.2),SZ); MAPG.bodega.add(hb);
-    UI.thing({name:'BOATS (A ROWBOAT, $5 A TRIP)',obj:hb,reach:1.4*T,near:2.2*T,tall:Y(2.6),can:()=>INV.cash>=5?true:'YOU NEED $5 FOR A TRIP',act:()=>STAND.open()}); }
+    UI.thing({name:'BOATS (A ROWBOAT, $5 A TRIP)',obj:hb,reach:1.4*T,near:2.2*T,tall:Y(2.6),can:()=>INV.afford(5)?true:'YOU NEED $5 FOR A TRIP',act:()=>STAND.open()}); }
     const pick0=RIVER.pick; RIVER.pick=(ray,p)=>{ '@later'; const pl=new THREE.Plane(new THREE.Vector3(0,1,0),-RB.lv), hp=new THREE.Vector3(); if(FORAGE.has('rod')&&!RIVER.swim&&!S_&&ray.intersectPlane(pl,hp)&&FISHING.at(hp.x,hp.z)){ const d=Math.hypot(hp.x-p.x,hp.z-p.z); if(d<16*T&&d>1.5*T){ FISHING.cast(hp.x,hp.z); return true; } }
       return pick0(ray,p); }; };
   // (no bait stand on the promenade: bait is sold at FISHING & SCUBA, owner 7 Nov 2026)
@@ -113,7 +113,7 @@ const fishInit=()=>{ if(FISHING.at)return; const T=TILE, RB={get lv(){ return RI
   const TACKLE=[['rod_carbon','CARBON ROD · CASTS 16 M · LINE 1.3',1],['rod_surf','SURF ROD · CASTS 22 M · LINE 1.6',1],['reel_fast','FAST REEL · REELS 1.35X',1],['reel_pro','PRO REEL · REELS 1.7X',1],
     ['lure_worm','RUBBER WORM LURE · NOT USED UP',0],['lure_spoon','SPOON LURE · NOT USED UP',0],['cooler_s','SMALL COOLER · 15 MORE FISH',0],['cooler_m','COOLER · 40 MORE FISH',0],['cooler_l','BIG COOLER · 100 MORE FISH',0]];
   STAND.draw=()=>{ '@later'; if(sp.hidden)return; const ids=Object.keys(INV.items).filter(id=>INV.items[id]>0&&PRICE[id]!=null).sort();
-    let o=`<h3 style="margin:0 0 4px;color:#f2c14e;font:12px Silkscreen,monospace">BOATS</h3><button ${B} data-guide="1" style="float:right">FISHING GUIDE</button><div style="color:#9b9584;margin-bottom:8px">Self serve · pay in the box · buys your catch</div><div style="margin-bottom:8px">YOU HAVE <b style="color:#f2c14e">$${Math.round(INV.cash)}</b> · FISHING ${FORAGE.sk('fish').toFixed(1)}</div><table style="border-collapse:collapse;width:100%">`;
+    let o=`<h3 style="margin:0 0 4px;color:#f2c14e;font:12px Silkscreen,monospace">BOATS</h3><button ${B} data-guide="1" style="float:right">FISHING GUIDE</button><div style="color:#9b9584;margin-bottom:8px">Self serve · pay in the box · buys your catch</div><div style="margin-bottom:8px">YOU HAVE <b style="color:#f2c14e">$${Math.round(INV.money())}</b> · FISHING ${FORAGE.sk('fish').toFixed(1)}</div><table style="border-collapse:collapse;width:100%">`;
     if(0)o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">FISHING ROD</td><td style="text-align:right;padding:4px 6px">$15</td><td style="text-align:right">${FORAGE.has('rod')?'YOURS':`<button ${B} data-buy="rod">BUY</button>`}</td></tr>`;
     for(const [id,nm,c,n] of [])o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">${nm}</td><td style="text-align:right;padding:4px 6px">$${c}</td><td style="text-align:right">x${FORAGE.has(id)} <button ${B} data-bait="${id}">BUY</button></td></tr>`;
     for(const [id,nm,one] of []){ const v=IP(id,'value')||0, n=FORAGE.has(id)||0; o+=`<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">${nm}</td><td style="text-align:right;padding:4px 6px">$${v}</td><td style="text-align:right">${one&&n?'YOURS':`${n?'x'+n+' ':''}<button ${B} data-tack="${id}">BUY</button>`}</td></tr>`; }
@@ -124,12 +124,12 @@ const fishInit=()=>{ if(FISHING.at)return; const T=TILE, RB={get lv(){ return RI
     const x=sp.querySelector(':scope>.pX'); sp.innerHTML=o; if(x)sp.appendChild(x); };
   sp.addEventListener('click',e=>{ '@later'; const b=e.target.closest('button'); if(!b||b.classList.contains('pX'))return; const d=b.dataset;
     if(d.guide)return FISHING.guide();
-    if(d.train){ FORAGE.train(d.train,+d.cap); STAND.draw(); return; } if(d.buy==='rod'){ if(INV.cash<15)say('YOU CANNOT AFFORD THAT.','#c8a090'); else { INV.cash-=15; FORAGE.give('rod'); say('YOU TAKE A ROD AND DROP $15 IN THE BOX.'); } }
-    if(d.bait){ const w=WARES.find(x=>x[0]===d.bait); if(INV.cash<w[2])say('YOU CANNOT AFFORD THAT.','#c8a090'); else { INV.cash-=w[2]; FORAGE.give(w[0],w[3]); say(`YOU TAKE ${w[1]} AND DROP $${w[2]} IN THE BOX.`); } }
+    if(d.train){ FORAGE.train(d.train,+d.cap); STAND.draw(); return; } if(d.buy==='rod'){ if(!INV.afford(15))say('YOU CANNOT AFFORD THAT.','#c8a090'); else { INV.pay(15); FORAGE.give('rod'); say('YOU TAKE A ROD AND DROP $15 IN THE BOX.'); } }
+    if(d.bait){ const w=WARES.find(x=>x[0]===d.bait); if(!INV.afford(w[2]))say('YOU CANNOT AFFORD THAT.','#c8a090'); else { INV.pay(w[2]); FORAGE.give(w[0],w[3]); say(`YOU TAKE ${w[1]} AND DROP $${w[2]} IN THE BOX.`); } }
     if(d.tack){ const id=d.tack, v=IP(id,'value')||0, one=TACKLE.find(x=>x[0]===id)[2];
-      if(one&&!FORAGE.has('rod'))say('YOU NEED A ROD FIRST.','#c8a090'); else if(INV.cash<v)say('YOU CANNOT AFFORD THAT.','#c8a090');
-      else { INV.cash-=v; FORAGE.give(id); say(`YOU TAKE THE ${FORAGE.NM[id]} AND DROP $${v} IN THE BOX.`); } }
-    if(d.boat){ if(INV.cash<5)say('YOU CANNOT AFFORD THAT.','#c8a090'); else { INV.cash-=5; sp.hidden=true; BOAT.launch(); } }
+      if(one&&!FORAGE.has('rod'))say('YOU NEED A ROD FIRST.','#c8a090'); else if(!INV.afford(v))say('YOU CANNOT AFFORD THAT.','#c8a090');
+      else { INV.pay(v); FORAGE.give(id); say(`YOU TAKE THE ${FORAGE.NM[id]} AND DROP $${v} IN THE BOX.`); } }
+    if(d.boat){ if(!INV.afford(5))say('YOU CANNOT AFFORD THAT.','#c8a090'); else { INV.pay(5); sp.hidden=true; BOAT.launch(); } }
     if(d.sell){ const n=d.n==='all'?FORAGE.has(d.sell):1, v=WORTH.sell(d.sell,n,PRICE[d.sell]); FORAGE.take(d.sell,n); INV.cash+=v; say(`YOU SELL ${n} ${FORAGE.NM[d.sell]} FOR $${v}.`,'#f2c14e'); SFX.play('clunk',{vol:.5}); }
     STAND.draw(); FORAGE.draw(); });
   STAND.open=()=>{ sp.hidden=false; STAND.draw(); };

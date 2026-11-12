@@ -24,7 +24,7 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
   rec('gloves cover them (the glove, no jointed hands), and they come back bare',h.gloved!==false&&h.back!==false,JSON.stringify(h));
   // the bodega sells it
   const sh=await pg.evaluate(()=>({name:FORAGE.name('guitar'),price:ITEMS.prop('guitar','value'),shelf:!!(window.BODEGA||{}).LAYOUT&&BODEGA.LAYOUT.some(r=>r[2].includes('guitar')),make:!!(BODEGA.MAKE&&BODEGA.MAKE.guitar&&BODEGA.MAKE.guitar().children.length)}));
-  rec('the bodega sells A GUITAR on its bottom shelf, $180',sh.name==='A GUITAR'&&sh.price===180&&sh.shelf&&sh.make,JSON.stringify(sh));
+  rec('the bodega sells GUITAR on its bottom shelf, $180 (names without A, 11 Nov)',sh.name==='GUITAR'&&sh.price===180&&sh.shelf&&sh.make,JSON.stringify(sh));
   // playing it: in your hands, each chord's pressing fingers on their strings and frets
   const p=await pg.evaluate(async()=>{ __dbg.UI.setView('third'); FORAGE.give('guitar',1); FORAGE.ACT.guitar('guitar'); await new Promise(r=>setTimeout(r,800)); const H=GUITAR.ME.H, out={on:GUITAR.on(),held:!!H&&!!H.gm.parent,panel:!document.getElementById('gtp').hidden,miss:{}};
     for(const c of ['C','G','D','A','E','Am','Em','Dm','F']){ GUITAR.play('chord',c); await new Promise(r=>setTimeout(r,900)); const e=GUITAR.ME.H.err.L, sh=GTCHORD_OF(c); out.miss[c]=Math.round(Math.max(...sh.map(f=>e[f]))*1000); }

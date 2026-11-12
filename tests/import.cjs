@@ -25,12 +25,13 @@ const TAB='e|-0---3---0-------|\nB|---1---1---1-----|\nG|-----0-------0---|\nD|-
   // the four kinds of file
   const midi=[...require('abcjs').synth.getMidiFile(ABC,{midiOutputType:'binary'})[0]];
   const rd=await pg.evaluate(async({midi,XML,ABC,TAB})=>{ const o={}, enc=t=>new TextEncoder().encode(t), sum=p=>(p=p&&MUSICIN.clean(p))&&{name:p.name,by:p.by,notes:p.n.length/4,m:p.n.filter((v,i)=>i%4===1).slice(0,8),h:[...new Set(p.n.filter((v,i)=>i%4===3))].sort()};
-    for(const [k,f] of [['midi',()=>MUSICIN.read(new Uint8Array(midi))],['xml',()=>MUSICIN.read(enc(XML))],['abc',()=>MUSICIN.read(null,ABC)],['abcfile',()=>MUSICIN.read(enc(ABC))],['tab',()=>MUSICIN.read(null,TAB)],['junk',()=>MUSICIN.read(null,'hello there')]])try{ o[k]=sum(await f()); }catch(e){ o[k]='ERR '+e.message; }
+    for(const [k,f] of [['midi',()=>MUSICIN.read(new Uint8Array(midi))],['xml',()=>MUSICIN.read(enc(XML))],['abc',()=>MUSICIN.read(null,ABC)],['abcfile',()=>MUSICIN.read(enc(ABC))],['tab',()=>MUSICIN.read(null,TAB)],['run',()=>MUSICIN.read(null,'[Intro] '+TAB.split('\n').join('')+' (words after it)  '+TAB.split('\n').join('').replace(/-3-/g,'\u20143-'))],['junk',()=>MUSICIN.read(null,'hello there')]])try{ o[k]=sum(await f()); }catch(e){ o[k]='ERR '+e.message; }
     return o; },{midi,XML,ABC,TAB});
   rec('a MIDI file is read: its 25 notes, a hand each',rd.midi&&rd.midi.notes===25&&rd.midi.m[0]===60&&rd.midi.h.join()==='0,1',JSON.stringify(rd.midi));
   rec('MusicXML is read: its title, composer and eight notes',rd.xml&&rd.xml.name==='Sheet Test'&&rd.xml.by==='A. Player'&&rd.xml.notes===8&&rd.xml.m.join()==='60,64,67,64,60,64,67,64',JSON.stringify(rd.xml));
   rec('ABC is read, pasted or as a file: its title and notes',rd.abc&&rd.abc.name==='Abc Test'&&rd.abc.by==='Trad'&&rd.abc.notes===25&&rd.abcfile&&rd.abcfile.notes===25,JSON.stringify(rd.abc));
   rec('a text tab is read: its strings kept (the fifth string\'s third fret a C)',rd.tab&&rd.tab.notes===11&&rd.tab.m[0]===48&&rd.tab.h.every(h=>h>=2),JSON.stringify(rd.tab));
+  rec('a tab pasted with its lines run together, words round it and long dashes in it is read: both systems',rd.run&&rd.run.notes===22&&rd.run.m[0]===48,JSON.stringify(rd.run));
   rec('what is not music gives nothing',rd.junk===null,JSON.stringify(rd.junk));
   // added: in every book but the drums', fitted to each
   const ad=await pg.evaluate(async({ABC,TAB})=>{ for(const k of ['guitar','piano','drums','harp','violin','flute','trumpet']){ FORAGE.give(k,1); FORAGE.S.sk[k]=0; }

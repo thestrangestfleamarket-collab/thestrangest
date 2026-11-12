@@ -55,6 +55,7 @@ const FILE = 'file://' + path.resolve(process.argv[2] || 'dist/asylum.html'), OU
   ok(s.mode === 'end' && /YOU GOT OUT/.test(s.hud.note || ''), 'out: the ending card'); await shot('end');
   ok(!errs.length, 'no page errors ' + errs.join(' | '));
   await pg.close();
+  { const t = await b.newPage(); await t.goto(FILE); await t.waitForFunction(() => window.ASY); ok(await t.isVisible('#vr'), 'ENTER IN VR shows with no headset too'); await t.click('#vr'); await t.waitForTimeout(500); ok(await t.isVisible('#vrmsg') && /headset/i.test(await t.textContent('#vrmsg')) && await t.isVisible('#title'), 'and without one it says how to get in, and stays on the title'); await t.close(); }
 
   const vr = await b.newPage({ viewport: { width: 960, height: 600 } }), verr = []; vr.on('pageerror', e => verr.push(e.message.slice(0, 300)));
   await vr.addInitScript(fs.readFileSync(require.resolve('iwer/build/iwer.js'), 'utf8') + ';window.__xrd=new IWER.XRDevice(IWER.metaQuest3);window.__xrd.installRuntime({forceInstall:true});');

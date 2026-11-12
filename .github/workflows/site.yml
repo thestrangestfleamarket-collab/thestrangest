@@ -58,6 +58,7 @@ jobs:
           k earn    'src/140c|src/160b|data/trainers|earn'
           k register 'src/146ze|src/038zd|register'
           k brawl   'src/146h|src/146a|src/103|brawl'
+          k flybot  'src/111dd|src/111d-online|worker/flybot|worker/door|flybot\.cjs'
           k physx   'src/090|src/150-loose|src/150o|physx'
           k vr      'src/162a-pad|src/162c-vr|vr\.cjs'
           k vrbody  'src/162c|src/111b|vrbody\.cjs'
@@ -456,6 +457,9 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' nightsky')
         run: node tests/nightsky.cjs dist/market.html
+      - name: The flying bot (its mind with a stand-in for Claude, called, asked, heard)
+        if: contains(steps.f.outputs.run, ' flybot')
+        run: node tests/flybot.cjs dist/market.html
       - name: The observatory (the dome in the park, the shared telescope, its goals)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' observatory')
@@ -627,7 +631,7 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' copies')
         run: node tests/copies.cjs dist/market.html
-      - name: The money's server (the bucket, the body's drops, the stalls, the pawn shop)
+      - name: The money's server (the bucket, the body's drops, the stalls, the exchange machines)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' money')
         run: node tests/economy.cjs

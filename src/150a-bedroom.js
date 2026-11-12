@@ -150,7 +150,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null,keep:[],always:new Set(),save:(
         for(const sd of [1,-1]){ const z=sd*.04; part(new THREE.CylinderGeometry(.03,.03,.012,16).rotateX(Math.PI/2),br,w/2-.1,1.0*h/2.3,z,0,leaf); part(rbox(.13,.022,.022,.008),br,w/2-.155,1.0*h/2.3,z+sd*.03,0,leaf);   // the rose and the lever
           part(rbox(.03,.06,.008,.003),br,w/2-.1,.86*h/2.3,z,0,leaf); }   // the keyhole's plate
       };
-      for(const c of fw)windowAt('Wf',c,0,0,[0,-1,1,0],wz[0],wz[1],WW);
+      for(const f of fw)windowAt('Wf',f,0,0,[0,-1,1,0],wz[0],wz[1],WW);   // a small room has one front window
       for(const w of SWS){ windowAt('Ww',w[0],0,Math.PI/2,[-1,0,0,1],w[1],w[2],w[3],[3,3],w[4]).position.set(0,0,w[0]); windowAt('We',w[0],0,-Math.PI/2,[1,0,0,-1],w[1],w[2],w[3],[3,3],w[4]).position.set(Lx,0,w[0]); }
       doorAt('Wf',du,0,0,[0,-1,1,0],FD); doorAt('Wb',du,Ly,Math.PI,null,BD);
 

@@ -1,6 +1,7 @@
 // THE TEXT: every text box in the game reads its words here (TEXT.t(id, the game's own words, {parts})); the owner's words over them come from the worker (/texts; set in the TENANTS tab, kept in the Post Durable Object) and what they change repaints itself (TEXT.on).
 import {SIGNS, TEXT} from './003b-systems.js';
 Object.assign(TEXT,{
+  bare:s=>String(s??'').replace(/^(THE|AN?) +/i,''),   // a name without its THE / A / AN, as lists show and sort it (owner, 11 Nov 2026)
   esc:s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]),   // text for HTML, everywhere
   t:(id,d,v)=>{ if(d!=null&&!(id in TEXT.def))TEXT.def[id]=d; let s=TEXT.cur[id]??TEXT.def[id]??''; if(v)for(const k in v)s=s.split('{'+k+'}').join(v[k]??''); return s; },
   set:(id,s)=>{ if(s==null||s===''||s===TEXT.def[id])delete TEXT.cur[id]; else TEXT.cur[id]=s; for(const f of TEXT.on)f(id); },

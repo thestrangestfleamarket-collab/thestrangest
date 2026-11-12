@@ -177,7 +177,7 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
   const ME={mine:true,say:'',sayT:0,st:SP,tag:null,tagS:''}; ONLINE.ME=ME;
   ONLINE.said=t=>{ t=String(t||'').trim().slice(0,200); if(!t)return; if(/^bank$/i.test(t)&&VAULT.open){ VAULT.open(); return; }
     const sg=ONLINE.signs&&ONLINE.signs.mine(t); if(sg)t=sg.text;   // (the SIGN toggle: what your hands sign of it, 146zs)
-    send(sg?{t:'say',text:t,st:SP,sg:sg.k}:{t:'say',text:t,st:SP}); line(myName()+(sg?' (SIGNS)':''),t); ME.say=t; ME.sayT=performance.now(); };
+    send(sg?{t:'say',text:t,st:SP,sg:sg.k}:{t:'say',text:t,st:SP}); line(myName()+(sg?' (SIGNS)':''),t); ME.say=t; ME.sayT=performance.now(); if(ONLINE.bot&&ONLINE.bot.heard)ONLINE.bot.heard(t); };
   const PS=['sit','climb','hang','water','grip','fly'], pick=o=>{ const r={}; let n=0; for(const k in o){ const v=o[k]; if(n>=16)break; if(typeof v==='number'&&isFinite(v)){ r[k]=Math.round(v*100)/100; n++; } else if(typeof v==='boolean'){ r[k]=v; n++; } } return r; };
   const snap=()=>{ const s={}; for(const k of PS){ const v=st[k]; if(v&&typeof v==='object'&&(k!=='water'||v.in))s[k]=pick(v); } return s; };
   let psSent='', psT=0, psKeep=0;

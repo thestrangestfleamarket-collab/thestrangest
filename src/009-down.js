@@ -350,7 +350,7 @@ const SSUB=(()=>{ const W={};
     fence('y',xl,yb,S.y1-.08,2.2); fence('y',xr,yb,S.y1-.08,2.2); fence('x',yb,xl,xr,3.2);
     for(const [x,y] of LP){ bx(x-.1,y-.1,5,x+.1,y+.1,14,RAIL); bx(x-.06,y-.06,14,x+.06,y+.06,100,RAIL); bx(x-.08,y-.08,96,x+.08,y+.08,103,RAIL); bx(x-.09,y-.09,113,x+.09,y+.09,116,RAIL); bx(x-.03,y-.03,116,x+.03,y+.03,120,RAIL); }
     MODS.stairCut=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6); const SW=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6);
-    const mk=(B,pl)=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(B[0],3)); g.setAttribute('color',new THREE.Float32BufferAttribute(B[1],3)); g.computeVertexNormals();
+    const SR=BATCH.unfight.R(), mk=(B,pl)=>{ const F=BATCH.unfight(B[0],{C:[B[1],3]},true,SR), g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(F.P,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(F.A.C,3)); g.computeVertexNormals();
       const me=new THREE.Mesh(g,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide,clippingPlanes:pl})); me.receiveShadow=me.castShadow=true; scene.add(me); return me; };
     mk(TR,[MODS.stairCut]); M.deep=mk(EX,[MODS.stairCut]); cutWalls.push({pl:SW,nx:0,nz:0,foot:Y(SZ+8),me:mk(WL,[MODS.stairCut,SW]),get always(){ return SHARED.LVL==='down'&&MODS.inStair(pos.x,pos.z)==null; }});
     { const CL=[MODS.stairCut,SW], ink=[244,242,232,1], DOT=[[250,196,40,1],[244,128,40,1],[40,104,200,1],[230,52,44,1],[150,70,170,1],[40,150,80,1]];

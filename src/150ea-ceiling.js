@@ -34,7 +34,7 @@ const CEIL={ids:['ceil1','ceil2','ceil3','ceil4'],shells:[],th:null}; window.CEI
     [[.25,.25],[.75,.25],[.25,.75],[.75,.75]].forEach(([fu,fv],i)=>{ const g=new THREE.Group(); g.position.set(Lx*fu,HW,Ly*fv); apt.add(g); const sh=K.tpl.clone(true); let L=null; const B=[];
       sh.traverse(o=>{ if(o.isLight&&!L)L=o; if(o.userData.bulb){ o.material=o.material.clone(); B.push(o.material); } }); if(!L)return; L.removeFromParent(); L.position.set(0,-.14,0); g.add(L); L.userData.on=true; g.add(sh); sh.userData.B=B; sh.userData.L=L; CEIL.shells.push(sh);
       R.ceil.push({id:CEIL.ids[i],name:'CEILING LIGHT '+(i+1),L}); });
-    const u=fw.some(c=>Math.abs(du+1-c)<WW*.5+.2)?du-1:du+1, g=new THREE.Group(); g.position.set(u,1.35,.012); apt.add(g);
+    const u=fw.some(f=>Math.abs(du+1-f)<WW*.5+.2)?du-1:du+1, g=new THREE.Group(); g.position.set(u,1.35,.012); apt.add(g);
     const plate=new THREE.Mesh(rbox(.12,.16,.012,.004),mat([236,230,214],{roughness:.6})); plate.position.z=.006; g.add(plate);
     for(let i=0;i<4;i++){ const d=new THREE.Mesh(new THREE.CylinderGeometry(.012,.012,.006,12),mat([58,42,30],{roughness:.4})); d.rotation.x=Math.PI/2; d.position.set(-.03+.06*(i%2),.035-.07*Math.floor(i/2),.015); g.add(d); }
     const un={obj:g,th:[],name:'LIGHT SWITCH'}; CEIL.th=hit(un,()=>'LIGHT SWITCH',()=>{ CEIL.open(); },[.16,.2,.08,0,0,.01]); });

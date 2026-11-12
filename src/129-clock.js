@@ -14,7 +14,7 @@ Object.assign(CLOCK,{movers:[],h:17.4,sunH:null,run:false,speed:1,shadeH:16,sunV
   moonPhase:()=>{ const m=CLOCK.moonReal&&CLOCK.moonReal(); return m?m.phase:(((CLOCK.day()+(CLOCK.h??12)/24)/8+.125)%1+1)%1; },   // the real Moon's (moonReal, set by THE HOURS) or an 8-day cycle
  moonLit:()=>(1-Math.cos(CLOCK.moonPhase()*Math.PI*2))/2});
 { const D=Math.PI/180, sunL=new THREE.DirectionalLight(0xffffff,0), sunD=new THREE.DirectionalLight(0xffffff,0), sunF=new THREE.DirectionalLight(0xffffff,0), R=32*TILE, RD=20*TILE, FM=Math.min(+(QS.get('fmap')||1024),renderer.capabilities.maxTextureSize);
-  for(const [L,r,m] of [[sunL,R,1536],[sunD,RD,1024],[sunF,R,FM]]){ L.castShadow=true; L.shadow.mapSize.set(m,m); Object.assign(L.shadow.camera,{left:-r,right:r,top:r,bottom:-r,near:.5,far:260*TILE}); L.shadow.camera.updateProjectionMatrix();
+  for(const [L,r,m] of [[sunL,R,768],[sunD,RD,512],[sunF,R,FM]]){ L.castShadow=true; L.shadow.mapSize.set(m,m); Object.assign(L.shadow.camera,{left:-r,right:r,top:r,bottom:-r,near:.5,far:260*TILE}); L.shadow.camera.updateProjectionMatrix();
     L.shadow.bias=-.06/260; L.shadow.normalBias=+(QS.get("snb")||.12); L.shadow.autoUpdate=false; scene.add(L,L.target); }
   sunF.castShadow=false;   // no far shadow map: shadows within the near one's reach only (owner, 9 Nov 2026)
   const SC={c:new THREE.Vector3(1e9,0,0),d:new THREE.Vector3(),fd:new THREE.Vector3(),lv:'',flv:'',st:0,g:0,dirty:0,fdirty:0,ft:0,root:{visible:true,layers:new THREE.Layers(),children:[]},n:0,nd:0,nf:0,fb:null};
@@ -46,7 +46,6 @@ Object.assign(CLOCK,{movers:[],h:17.4,sunH:null,run:false,speed:1,shadeH:16,sunV
       const sc=sunF.shadow.camera, hr=(hi[0]-lo[0])/2, hu=(hi[1]-lo[1])/2, hd=(hi[2]-lo[2])/2+2*TILE; Object.assign(sc,{left:-hr,right:hr,top:hu,bottom:-hu,near:.5,far:2*hd+150*TILE}); sc.updateProjectionMatrix();
       sunF.target.position.copy(SR).multiplyScalar((lo[0]+hi[0])/2).addScaledVector(SU,(lo[1]+hi[1])/2).addScaledVector(dir,(lo[2]+hi[2])/2); sunF.position.copy(sunF.target.position).addScaledVector(dir,hd+150*TILE);
       sunF.target.updateMatrixWorld(); sunF.updateMatrixWorld(); sunF.shadow.bias=-.06*TILE/sc.far; sunF.shadow.normalBias=Math.max(sunL.shadow.normalBias,1.5*2*Math.max(hr,hu)/FM); };
-    { const q=SHARED.full()?1:0; if(q!==SC.q){ SC.q=q; for(const [L,m] of [[sunL,q?1536:768],[sunD,q?1024:512]]){ L.shadow.mapSize.set(m,m); if(L.shadow.map){ L.shadow.map.dispose(); L.shadow.map=null; } L.shadow.needsUpdate=true; } } }
     const strong=sunL.intensity>.3, now=performance.now(), out=up&&!(ROOMS.cur)&&sunL.intensity>0;
     if(out&&now-SC.st>1000){ SC.st=now; const g=sig(); if(g!==SC.g){ SC.g=g; SC.dirty=SC.fdirty=1; } }
     const stale=out&&(SC.d.dot(dir)<Math.cos(.4*D)||Math.hypot(SC.c.x-pos.x,SC.c.z-pos.z)>12*TILE||SC.lv!==SHARED.LVL);

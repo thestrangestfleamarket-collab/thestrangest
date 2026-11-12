@@ -1,0 +1,48 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Loft Stairs</title>
+<style>
+:root{ --night:#07090d; --panel:#0e1016; --line:#3a3f4e; --fg:#d8dbe4; --dim:#8a8f9c; --key:#f2c14e; --green:#7dffa8; color-scheme:dark }
+*{box-sizing:border-box}
+body{margin:0;background:var(--night);color:var(--fg);font:14px/1.55 ui-monospace,"Courier New",monospace}
+main{max-width:1240px;margin:0 auto;padding:22px 16px 50px}
+h1{font-size:20px;margin:0 0 4px;color:var(--key);font-weight:400}
+p{margin:6px 0;color:var(--dim);max-width:90ch} b{color:var(--fg);font-weight:400}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));margin-top:16px}
+.card{background:var(--panel);border:2px solid var(--line);padding:12px}
+.card h3{margin:0 0 8px;font-size:15px;font-weight:400;color:var(--green)} .card h3 i{font-style:normal;color:var(--key)}
+.card ul{margin:8px 0 0;padding-left:18px;color:var(--dim)} .card li{margin:3px 0}
+svg{display:block;width:100%;height:auto;background:#c9a87a}
+.key{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:14px;color:var(--dim)} .key span::before{content:'';display:inline-block;width:14px;height:10px;margin-right:6px;vertical-align:middle;background:var(--c);border:1px solid #000}
+</style>
+<main>
+<h1>THE LOFT: WHERE THE STAIR GOES</h1>
+<p>Plans seen from above, the window wall at the top, your front door at the bottom. Today the stair stands out in the room beside the deck. Each option puts it <b>against a wall</b>; the upper floor along the right wall and the glass deck over the front stay.</p>
+<div class="grid" id="g"></div>
+<div class="key"><span style="--c:#6b4a30">upper floor</span><span style="--c:#e8e4da">stair (arrow points up)</span><span style="--c:#8fb6d8">window</span><span style="--c:#7a3a2c">door</span><span style="--c:#a8794f">open floor below</span></div>
+<p style="margin-top:14px">My pick is <b>B</b>: the middle of the room and the den under the deck both stay clear, and the stair starts right by the front door.</p>
+</main>
+<script>
+const Lx=11.8, Ly=10.2, S=40, P=22, mx=7.9, W=Lx*S+2*P, H=Ly*S+2*P;
+const X=u=>P+u*S, Y=v=>P+v*S, R=(u0,v0,u1,v1,f,o='')=>`<rect x="${X(u0)}" y="${Y(v0)}" width="${(u1-u0)*S}" height="${(v1-v0)*S}" fill="${f}" ${o}/>`;
+const T=(u,v,t,c='#1a1208',sz=12)=>`<text x="${X(u)}" y="${Y(v)}" fill="${c}" font-size="${sz}" font-family="monospace" text-anchor="middle">${t}</text>`;
+const room=()=>R(0,0,Lx,Ly,'#b98a5c')+`<rect x="${P-6}" y="${P-6}" width="${Lx*S+12}" height="${Ly*S+12}" fill="none" stroke="#2a2a30" stroke-width="12"/>`
+  +`<rect x="${P}" y="${P-12}" width="${Lx*S}" height="12" fill="#7a3a2c"/>`                                   // the brick front wall
+  +[2.95,8.84].map(u=>`<rect x="${X(u-.7)}" y="${P-12}" width="${1.4*S}" height="12" fill="#8fb6d8"/>`).join('')+`<rect x="${X(5.25)}" y="${P-12}" width="${1.3*S}" height="12" fill="#5a2a20"/>`
+  +[2.2,5.1,8].map(v=>`<rect x="${P-12}" y="${Y(v-.7)}" width="12" height="${1.4*S}" fill="#8fb6d8"/>`).join('')
+  +`<rect x="${X(5.2)}" y="${Y(Ly)}" width="${1.4*S}" height="12" fill="#5a2a20"/>`+T(5.9,Ly+.45,'FRONT DOOR','#d8dbe4',11);
+const deck=(u0,v0,u1,v1)=>R(u0,v0,u1,v1,'#6b4a30','stroke="#2a1a10" stroke-width="2"');
+const stair=(u0,v0,u1,v1,dir)=>{ let s=R(u0,v0,u1,v1,'#e8e4da','stroke="#555" stroke-width="1.5"'); const along=Math.abs(u1-u0)>Math.abs(v1-v0), n=12;
+  for(let i=1;i<n;i++)s+=along?`<line x1="${X(u0+(u1-u0)*i/n)}" y1="${Y(v0)}" x2="${X(u0+(u1-u0)*i/n)}" y2="${Y(v1)}" stroke="#8a8478"/>`:`<line x1="${X(u0)}" y1="${Y(v0+(v1-v0)*i/n)}" x2="${X(u1)}" y2="${Y(v0+(v1-v0)*i/n)}" stroke="#8a8478"/>`;
+  const cu=(u0+u1)/2, cv=(v0+v1)/2, a=along?[[dir>0?u0+.4:u1-.4,cv],[dir>0?u1-.4:u0+.4,cv]]:[[cu,dir>0?v0+.4:v1-.4],[cu,dir>0?v1-.4:v0+.4]];
+  return s+`<line x1="${X(a[0][0])}" y1="${Y(a[0][1])}" x2="${X(a[1][0])}" y2="${Y(a[1][1])}" stroke="#c0392b" stroke-width="3" marker-end="url(#ar)"/>`; };
+const defs='<defs><marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#c0392b"/></marker></defs>';
+const base=()=>room()+deck(mx,0,Lx,Ly)+deck(mx-3.2,0,mx,2.5)+T(9.85,5.4,'UPPER FLOOR','#e8d8c0')+T(6.3,1.4,'GLASS DECK','#e8d8c0',11);
+const OPT=[
+ ['NOW','IN THE ROOM, BESIDE THE DECK',base()+stair(mx-1.1,2.55,mx,8.3,1)+deck(mx-1.1,8.3,mx,Ly),['Stands a metre and more out from every wall.','Cuts the tall room off from the den under the deck.']],
+ ['A','ON THE BLANK RIGHT WALL',room()+deck(mx,0,Lx-1.15,Ly)+deck(Lx-1.15,8.4,Lx,Ly)+deck(Lx-1.15,0,Lx,2.6)+deck(mx-3.2,0,mx,2.5)+stair(Lx-1.15,2.6,Lx,8.4,1)+T(9.3,5.4,'UPPER FLOOR','#e8d8c0')+T(6.3,1.4,'GLASS DECK','#e8d8c0',11),['Hard against the blank wall, rising through an opening in the upper floor.','The whole tall room is open; the den under the deck loses its wall side (the TV corner moves).','The upper floor is a metre narrower along the stair; the big bookcase moves to the back wall.']],
+ ['B','ON THE DOOR WALL, BY THE FRONT DOOR',base()+stair(.25,9.1,6.0,Ly,1)+deck(6.0,9.1,mx,Ly)+T(6.95,9.75,'GALLERY','#e8d8c0',10),['Against the back wall from the left corner, rising to the right; it passes over the front door (3.7 m up there) to a short gallery onto the upper floor.','The middle of the room and the den stay clear.','The wall space left of the door is the stair\'s; the desk wall upstairs stays.']],
+ ['C','ON THE WINDOW WALL (LEFT)',base()+stair(.25,1.0,1.35,6.75,1)+deck(.25,6.75,1.35,Ly)+deck(1.35,9.1,mx,Ly)+T(4.6,9.75,'GALLERY ALONG THE BACK WALL','#e8d8c0',10),['Against the left wall, rising toward the back, then a long gallery across the back wall to the upper floor.','Most walkway upstairs: you look down on the whole room from it.','The stair climbs past two of the left wall\'s windows and shades them.']]];
+document.getElementById('g').innerHTML=OPT.map(([k,n,svg,L])=>`<div class="card"><h3><i>${k}</i> · ${n}</h3><svg viewBox="0 0 ${W} ${H+14}">${defs}${svg}</svg><ul>${L.map(x=>`<li>${x}</li>`).join('')}</ul></div>`).join('');
+</script>

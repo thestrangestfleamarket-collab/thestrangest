@@ -1,5 +1,6 @@
 // SHARDWAVE: a VR rhythm game on its own page (/wave); shares no code with THE MARKET
 import * as THREE from 'three';
+import rockMp3 from '../../data/wave/rock.mp3';
 
 // ───────────────────────── constants ─────────────────────────
 const qs = new URLSearchParams(location.search);
@@ -373,6 +374,14 @@ function customMap(tr, dk, withObstacles) {
   return { events, obstacles, duration: tr.duration, rnd };
 }
 const customTracks = [];
+const BUNDLED = [{ id: 'rock', name: 'We Will Rock You', bytes: rockMp3, duration: 124.7, karaoke: [
+  [12.5, "Buddy you're a boy make a big noise\nPlayin' in the street gonna be a big man some day!"], [17.5, "You got mud on yo' face\nYou big disgrace"],
+  [20, "Kickin' your can all over the place, singin'"], [25, 'We will we will rock you!'],
+  [35, "Buddy you're a young man hard man\nShoutin' in the street gonna take on the world some day"], [42.5, "You got blood on yo' face\nYou big disgrace!"],
+  [45, "Wavin' your banner all over the place"], [47.5, 'We will we will rock you!'], [52.5, "Singin' We will we will rock you!"],
+  [60, "Buddy you're an old man poor man\nPleadin' with your eyes gonna make you some peace some day"], [65, 'You got mud on your face\nYou big disgrace!'],
+  [67.5, 'Somebody better put you back into your place!'], [72.5, 'We will we will rock you!'], [75, "Singin'"], [77.5, 'We will we will rock you!'],
+  [82.5, 'Everybody! We will we will rock you!'], [90, 'We will we will rock you!'], [93, ''], [95, '* ROCK OUT!!! *'], [121, ''] ] }];
 async function loadCustom(file) {
   ensureAudio();
   const buffer = await ctx.decodeAudioData(await file.arrayBuffer());
@@ -385,7 +394,7 @@ async function loadCustom(file) {
 // ───────────────────────── note pattern generator ─────────────────────────
 function generateNotes({ events, obstacles, rnd }, dk) {
   const notes = [], st = { left: { up: true, last: -9 }, right: { up: true, last: -9 } };
-  const pDiag = { easy: 0, normal: 0.25, hard: 0.4 }[dk], pAny = { easy: 0.4, normal: 0.1, hard: 0.04 }[dk];
+  const pDiag = { easy: 0, normal: 0.25, hard: 0.4 }[dk], pAny = { easy: 1, normal: 0.1, hard: 0.04 }[dk];
   const add = (t, side) => {
     const s = st[side], up = !s.up; s.up = up; s.last = t;
     let dir = up ? 'U' : 'D';
@@ -603,16 +612,16 @@ function buildMenu() {
   g.fillText('S H A R D W A V E', 512, 108);
   g.fillStyle = '#b9b2e6'; g.font = `500 30px ${FONT}`; g.fillText('Cut each shard with the matching blade, the way its arrow points', 512, 168);
   T.tex.needsUpdate = true;
-  const list = [...TRACKS, ...customTracks];
+  const list = [...TRACKS, ...BUNDLED, ...customTracks];
   list.forEach((tr, i) => {
     const mins = Math.floor(tr.duration / 60) + ':' + String(Math.floor(tr.duration % 60)).padStart(2, '0');
     const b = new Btn(menuGroup, -0.72, 1.92 - i * 0.31, 1.35, 0.27, tr.name, () => { sel.track = tr; buildMenu(); },
-      { sub: (tr.synth ? tr.bpm + ' BPM · ' : 'Your song · ') + mins });
+      { sub: (tr.synth ? tr.bpm + ' BPM · ' : tr.karaoke ? 'Karaoke · ' : 'Your song · ') + mins });
     b.selected = sel.track === tr; b.draw();
   });
   Object.entries(DIFFS).forEach(([k, d], i) => {
     const b = new Btn(menuGroup, 0.78, 1.92 - i * 0.31, 1.05, 0.27, d.label, () => { sel.diff = k; buildMenu(); },
-      { accent: '#28d7ff', sub: k === 'easy' ? 'No fail, no walls' : k === 'normal' ? 'Walls and doubles' : 'Fast and dense' });
+      { accent: '#28d7ff', sub: k === 'easy' ? 'Cut any way, no fail' : k === 'normal' ? 'Walls and doubles' : 'Fast and dense' });
     b.selected = sel.diff === k; b.draw();
   });
   const best = store.get(sel.track.id + '_' + sel.diff);
@@ -655,6 +664,13 @@ const barBack = new THREE.Mesh(new THREE.PlaneGeometry(1.7, 0.07), new THREE.Mes
 const unitGeo = new THREE.PlaneGeometry(1, 1).translate(0.5, 0, 0);
 const energyBar = new THREE.Mesh(unitGeo, addMat(0x5dff9b, 1)); energyBar.position.set(-0.85, 0, 0); energyBar.scale.set(0.85, 0.07, 1); feet.add(energyBar);
 const progBar = new THREE.Mesh(unitGeo, addMat(0x8f7bff, 1)); progBar.position.set(-0.85, 0.07, 0); progBar.scale.set(0.001, 0.016, 1); feet.add(progBar);
+const lyric = panel(hudGroup, 0, 3.15, 5.2, 0.9, 1024); lyric.mesh.position.z = -7; let lyricIdx = -2;
+function drawLyric(text) {
+  const g = lyric.g; g.clearRect(0, 0, 1024, 178); g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#ffffff';
+  const lines = text ? text.split('\n') : [];
+  lines.forEach((ln, i) => { let size = 56; g.font = `700 ${size}px ${FONT}`; while (g.measureText(ln).width > 1000 && size > 20) g.font = `700 ${size -= 2}px ${FONT}`; g.fillText(ln, 512, 89 + (i - (lines.length - 1) / 2) * 66); });
+  lyric.tex.needsUpdate = true;
+}
 let lastMult = 1, multPop = 0;
 function drawHud() {
   let g = hudL.g; g.clearRect(0, 0, 512, 256); g.textAlign = 'center'; g.textBaseline = 'middle';
@@ -694,7 +710,16 @@ function show(which) {
   state = which;
 }
 function startSong(track, dk) {
-  ensureAudio(); stopMusic(); clearPlayfield();
+  ensureAudio();
+  if (!track.synth && !track.buffer) {
+    if (track.loading) return; track.loading = true;
+    const b = track.bytes;
+    ctx.decodeAudioData(b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength)).then(buf => {
+      Object.assign(track, { buffer: buf, duration: buf.duration, peaks: analyze(buf), loading: false }); if (state === 'menu') startSong(track, dk);
+    }, () => { track.loading = false; });
+    return;
+  }
+  stopMusic(); clearPlayfield();
   if (ctx.state === 'suspended') ctx.resume();
   const headY = inXR() ? clamp(renderer.xr.getCamera().position.y, 1.0, 2.1) : 1.6;
   const map = track.synth ? synthMap(track, dk, inXR() || FORCE_WALLS) : customMap(track, dk, inXR() || FORCE_WALLS);
@@ -711,7 +736,7 @@ function startSong(track, dk) {
   }
   t0 = ctx.currentTime + 2.6;
   if (!track.synth) { cur.src = ctx.createBufferSource(); cur.src.buffer = track.buffer; cur.src.connect(musicBus); cur.src.start(t0); }
-  hudDirty = true; show('playing');
+  hudDirty = true; lyricIdx = -2; show('playing');
 }
 function pause() { if (state !== 'playing') return; ctx.suspend(); show('paused'); }
 function resume() { if (state !== 'paused') return; show('playing'); ctx.resume(); }
@@ -897,6 +922,9 @@ function updatePlay(dt) {
   wallHit = inside; obMat.opacity = inside ? 0.6 : 0.3;
   // HUD
   if (hudDirty) { drawHud(); hudDirty = false; }
+  const kl = tr.karaoke; let li = -1;
+  if (kl) for (let i = 0; i < kl.length && kl[i][0] <= songT; i++) li = i;
+  if (li !== lyricIdx) { lyricIdx = li; drawLyric(li >= 0 ? kl[li][1] : ''); }
   energyBar.scale.x = Math.max(0.001, cur.energy * 1.7);
   energyBar.material.color.setHex(cur.energy < 0.25 ? 0xff5c7f : 0x5dff9b);
   multPop = Math.max(0, multPop - dt * 3); hudR.mesh.scale.setScalar(1 + multPop * 0.25);
@@ -1010,4 +1038,4 @@ $('file').addEventListener('change', async e => {
 });
 
 buildMenu();
-window.__sw = { cur, hands, get state() { return state; }, get songT() { return songT; }, start: (i, dk) => startSong([...TRACKS, ...customTracks][i], dk), loadCustom, pause, resume, TRACKS };
+window.__sw = { cur, hands, get state() { return state; }, get songT() { return songT; }, start: (i, dk) => startSong([...TRACKS, ...BUNDLED, ...customTracks][i], dk), loadCustom, pause, resume, TRACKS };

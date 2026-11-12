@@ -14,7 +14,7 @@ const WRE=()=>MODS.roomed||{};   // the room editor (150d, later in the page): i
   const col=h=>new THREE.Color(h), rnd=(a,b)=>{ const x=Math.sin(a*127.1+b*311.7)*43758.5453; return x-Math.floor(x); };
   const cl=(x,a,b)=>Math.max(a,Math.min(b,x));
   const clipOf=k=>{ const P=MODS.apts&&MODS.apts.WPL&&MODS.apts.WPL[k]; return P?[P]:[]; };
-  const lam=(c,k,o={})=>new THREE.MeshLambertMaterial({color:col(c),side:THREE.DoubleSide,clippingPlanes:clipOf(k),...o});
+  const lam=(c,k,o={})=>new THREE.MeshLambertMaterial({color:col(c),side:THREE.DoubleSide,clippingPlanes:clipOf(k),userData:{wk:k},...o});
   const add=(g,geo,m,x,y,z,sh=true)=>{ const me=new THREE.Mesh(geo,m); me.position.set(x,y,z); me.castShadow=sh; me.receiveShadow=true; g.add(me); return me; };
 
   // a fabric's weave and an old bamboo blind's slats, painted once

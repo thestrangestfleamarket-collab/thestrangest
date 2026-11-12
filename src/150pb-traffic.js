@@ -49,7 +49,7 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
   let D=null; const TPL={}, POOL={}, GRP=new THREE.Group(); GRP.userData.parkFar=true; scene.add(GRP); CLOCK.movers.push(()=>[GRP]);
   const MAT=new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide});
   // the Polyfork models' own looks (owner, 12 Nov 2026): a colour swapped for another as the model is made, one of its looks by v
-  const TLIV={pickup:[null,{'69aab0':0xe8735a},{'69aab0':0xf0d878},{'69aab0':0x8fc0e0},{'69aab0':0xc23a30},{'69aab0':0xa8dcc0}],rover:[{'3f4149':0xb9bfc8,'5f656f':0x9aa1ab,'454f67':0x8d94a0}]};
+  const TLIV={pickup:[null,{'69aab0':0xe8735a},{'69aab0':0xf0d878},{'69aab0':0x8fc0e0},{'69aab0':0xc23a30},{'69aab0':0xa8dcc0}],rover:[{'3f4149':0xb9bfc8,'5f656f':0x9aa1ab,'454f67':0x8d94a0}],'town-car':[{d6d5d0:0x17181b,c4c3bd:0x222327,_only:/BODY/}]};
   const looks=k=>TLIV[k]?TLIV[k].length:MODS.cars&&MODS.cars.looks?MODS.cars.looks(k):1;
   const geo=(Q,map)=>{ const q=new Int16Array(Uint8Array.from(atob(Q.p),c=>c.charCodeAt(0)).buffer), col=Uint8Array.from(atob(Q.c),c=>c.charCodeAt(0)), b=Q.b, P=new Float32Array(q.length), C=new Float32Array(col.length), c=new THREE.Color();
     for(let i=0;i<q.length;i++){ const a=i%3; P[i]=b[a]+(q[i]+32768)/65535*(b[a+3]-b[a]); }
@@ -57,7 +57,7 @@ const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C,3)); g.computeVertexNormals(); g.computeBoundingSphere(); return g; };
   const SCALE={'kei-van':.2,interceptor:.5,'escape-pod':.5};
   const lid=k=>D&&D[k]?'tr:'+k:'car:'+k, size=k=>{ const G=MODS.cars&&MODS.cars.data&&MODS.cars.data(), s=D&&D[k]?D[k].size:G&&G.cars[k]?G.cars[k].size:[2,1.4,4.9], l=VLOOK.scaleOf(lid(k))*(SCALE[k]||1); return l===1?s:s.map(v=>v*l); };
-  const body=(Q,k,v)=>{ const g=new THREE.Group(), map=TLIV[k]&&TLIV[k][(v|0)%TLIV[k].length]; for(const n in Q.parts){ const q=Q.parts[n], me=new THREE.Mesh(geo(q,map),MAT); me.name=n; me.position.set(...q.at); me.castShadow=true; g.add(me); } g.scale.setScalar(M1*(SCALE[k]||1)); return VLOOK.dress('tr:'+k,g); };
+  const body=(Q,k,v)=>{ const g=new THREE.Group(), map=TLIV[k]&&TLIV[k][(v|0)%TLIV[k].length]; for(const n in Q.parts){ const q=Q.parts[n], me=new THREE.Mesh(geo(q,map&&map._only&&!map._only.test(n)?null:map),MAT); me.name=n; me.position.set(...q.at); me.castShadow=true; g.add(me); } g.scale.setScalar(M1*(SCALE[k]||1)); return VLOOK.dress('tr:'+k,g); };
   const tpl=(k,v)=>{ const key=k+'~'+(v|0); if(TPL[key])return TPL[key]; let g=null; if(D[k])g=body(D[k],k,v); else if(MODS.cars&&MODS.cars.build)g=MODS.cars.build(k,v); if(g)g.traverse(o=>{ o.userData.anyRoom=false; }); return TPL[key]=g; };
   const take=(k,v)=>{ const key=k+'~'+(v|0), P=POOL[key]||(POOL[key]=[]); if(P.length)return P.pop(); const t=tpl(k,v); if(!t)return null; const m=t.clone(); GRP.add(m); if(MODS.cars&&MODS.cars.cab)MODS.cars.cab(m); return m; };
   const give=C=>{ if(!C.m)return; C.m.visible=false; const key=C.model+'~'+(C.v|0); (POOL[key]||(POOL[key]=[])).push(C.m); C.m=null; };

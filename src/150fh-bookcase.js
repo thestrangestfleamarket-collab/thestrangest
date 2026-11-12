@@ -1,18 +1,17 @@
-// THE BOOKSHELF: a tall walnut bookcase in every apartment from the start (owner, 9 Nov 2026), five shelves of the bookstore's own books, a few from every one of its genres; double-click it to browse them by genre, read one in the bookstore's reader, take one off the shelf into your pack and put it back.
+// THE BOOKSHELF: one big walnut bookcase in every apartment from the start (owner, 9 and 12 Nov 2026: "1 big book case with real books inside - pick the most popular interesting ones from bookstore"), three bays and six shelves of the bookstore's MOST READ; double-click it to browse them by genre, read one in the bookstore's reader, take one off the shelf into your pack and put it back.
 import {THREE} from './003-shx.js';
 import {FORAGE, SFX} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {LIB} from './144ca-library.js';
 import {ROOMK} from './150a-bedroom.js';
 { ROOMK.always.add('BOOKSHELF');
-  const BK={W:1.04,H:2.24,D:.38,SD:.04,EACH:5,ROWS:5,SH:[.125,.52,.915,1.31,1.705]};   // metres: the case, its sides, five books a genre, its five shelves' tops
-  BK.IN=BK.W-2*BK.SD; BK.FZ=BK.D/2-.035;
+  const BK={W:3.12,H:2.66,D:.38,SD:.04,EACH:5,ROWS:6,BAYS:3,DV:.03,SH:[.125,.535,.945,1.355,1.765,2.175]};   // metres: the case, its sides, its three bays and the boards between them, its six shelves' tops
+  BK.IN=BK.W-2*BK.SD; BK.BW=(BK.IN-(BK.BAYS-1)*BK.DV)/BK.BAYS; BK.FZ=BK.D/2-.035;
   const hsh=s=>{ let h=2166136261; for(const c of String(s))h=Math.imul(h^c.charCodeAt(0),16777619)>>>0; return h; };
   // which books: a few from every genre the bookstore shelves, the same few in every home, in genre order down the case
-  let IDS=null; const ids=()=>{ if(IDS||!LIB.data)return IDS||[]; const by=new Map(), seen=new Set();
-    for(const b of LIB.data.books){ if(seen.has(b.id))continue; seen.add(b.id); if(!by.has(b.genre))by.set(b.genre,[]); by.get(b.genre).push(b); }
-    IDS=[]; for(const L of by.values())IDS.push(...L.sort((a,b)=>hsh(a.id)-hsh(b.id)).slice(0,BK.EACH).map(b=>b.id)); return IDS; };
-  const rowsOf=()=>{ const L=ids().map(i=>LIB.by[i]), n=Math.ceil(L.length/BK.ROWS); return Array.from({length:BK.ROWS},(_,r)=>LIB.layRow(L.slice((BK.ROWS-1-r)*n,(BK.ROWS-r)*n),BK.IN)); };   // read from the top shelf down
+  let IDS=null; const ids=()=>{ if(IDS||!LIB.data)return IDS||[]; const seen=new Set(); IDS=[]; for(const c of LIB.data.cases)if(/^popular/.test(c.id))for(const b of c.books)if(!seen.has(b.id)){ seen.add(b.id); IDS.push(b.id); } return IDS; };   // the bookstore's three MOST READ cases, the same in every home
+  const rowsOf=()=>{ const L=ids().map(i=>LIB.by[i]), n=Math.ceil(L.length/BK.ROWS), per=Math.ceil(n/BK.BAYS);   // read from the top shelf down, bay by bay
+    return Array.from({length:BK.ROWS},(_,r)=>{ const row=L.slice((BK.ROWS-1-r)*n,(BK.ROWS-r)*n), out=[]; for(let b=0;b<BK.BAYS;b++){ const seg=row.slice(b*per,(b+1)*per); if(!seg.length)continue; const cx=-BK.IN/2+BK.BW/2+b*(BK.BW+BK.DV); for(const o of LIB.layRow(seg,BK.BW))out.push({...o,x:o.x+cx}); } return out; }); };
   const live=new Set();   // the cases standing now ({sp, un}): taking a book off empties its place in each
   const off=()=>LIB.S.h||(LIB.S.h=[]);
   const refresh=()=>{ for(const L of live){ if(!L.un.obj.parent){ live.delete(L); continue; } L.sp.skip(off()); } };
@@ -31,8 +30,9 @@ import {ROOMK} from './150a-bedroom.js';
       const t=grain(), wood=mat([255,255,255],{map:t}), woodD=mat([150,120,100],{map:t}), back=mat([92,62,40]), brass=mat([196,160,82]);
       const {W,H,D,SD,IN,SH}=BK, Z=D/2;
       for(const s of [-1,1]){ p(rbox(SD,H-.08,D,.006),wood,s*(W/2-SD/2),(H-.08)/2,0,0,g); p(rbox(.05,H-.1,.02,.006),wood,s*(W/2-.025),(H-.1)/2+.02,Z+.005,0,g); }   // the sides and their face stiles
-      p(rbox(IN,H-.14,.012,.003),back,0,(H-.14)/2+.04,-Z+.01,0,g); for(let i=1;i<8;i++)p(rbox(.004,H-.16,.004,.001),woodD,-IN/2+IN*i/8,(H-.16)/2+.05,-Z+.019,0,g);   // the beadboard back
+      p(rbox(IN,H-.14,.012,.003),back,0,(H-.14)/2+.04,-Z+.01,0,g); for(let i=1;i<24;i++)p(rbox(.004,H-.16,.004,.001),woodD,-IN/2+IN*i/24,(H-.16)/2+.05,-Z+.019,0,g);   // the beadboard back
       p(rbox(IN,.1,.02,.004),woodD,0,.05,Z-.03,0,g); p(rbox(W+.02,.02,D+.01,.004),woodD,0,.01,.005,0,g);   // the toe kick and the plinth's foot
+      for(let b=1;b<BK.BAYS;b++)p(rbox(BK.DV,H-.2,D-.03,.004),wood,-IN/2+b*BK.BW+(b-.5)*BK.DV,(H-.2)/2+.06,-.01,0,g);   // the boards between the bays
       for(const y of SH){ p(rbox(IN,.025,D-.03,.004),wood,0,y-.0125,-.01,0,g); p(rbox(IN,.035,.018,.004),wood,0,y-.012,Z-.02,0,g); }   // the shelves, each with a lip
       p(rbox(IN,.03,D-.02,.004),wood,0,H-.13,0,0,g);   // the top board
       p(rbox(W+.02,.05,D+.02,.008),wood,0,H-.095,.01,0,g); p(rbox(W+.07,.03,D+.05,.01),woodD,0,H-.06,.025,0,g); p(rbox(W+.1,.03,D+.07,.012),wood,0,H-.03,.035,0,g);   // the crown, stepping out

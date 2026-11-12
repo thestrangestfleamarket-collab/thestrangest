@@ -1,4 +1,4 @@
-// THE FISH TANK CHECK (owner, 9 Nov 2026): node tests/fishtank.cjs dist/market.html [shots-dir]. A fresh apartment's tank is built, its water surface moves (the wave sim steps), the koi swims, a double-click without fish food opens the close look and its settings, a setting changes the tank and is in the saved layout; with fish food it still feeds.
+// THE FISH TANK CHECK (owner, 9 Nov 2026): node tests/fishtank.cjs dist/market.html [shots-dir]. A fresh apartment's tank is built, its water surface moves (the wave sim steps), the koi swims, a double-click opens the close look and its settings (with fish food in your pack too), a setting changes the tank and is in the saved layout; FEED THE FISH in the menu feeds.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=fishtank::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -37,9 +37,10 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       ok(await pg.evaluate(() => !TANKV.on() && !__dbg.UI.holdCam), 'Esc steps back');
     }
     const y0 = (await T()).y;
-    await pg.evaluate(() => { FORAGE.give('g_fishfood', 1); __dbg.UI.things.find(t => /FISH TANK|FEED THE FISH/.test(t.name)).act(); });
+    const withFood = await pg.evaluate(() => { TANKV.close(); FORAGE.give('g_fishfood', 1); const th = __dbg.UI.things.find(t => /FISH TANK|FEED THE FISH/.test(t.name)); th.act(); const r = { name: th.name, menu: TANKV.on(), feedBtn: !!document.querySelector('#tankp [data-a="feed"]'), food: FORAGE.has('g_fishfood') }; TANKV.act('feed'); TANKV.close(); return r; });
+    ok(withFood.menu && withFood.feedBtn && withFood.food && withFood.name === 'THE FISH TANK', 'with fish food a double-click still opens the menu, FEED THE FISH a button in it: ' + JSON.stringify(withFood));
     let f = null; for (let i = 0; i < 40; i++) { f = await T(); if (f.y > y0 + .1) break; await pg.waitForTimeout(500); }
-    ok(f.fed > 0 && f.y > y0 + .1 && !(await pg.evaluate(() => FORAGE.has('g_fishfood'))), 'with fish food it still feeds: the food is used and the fish rise (' + y0 + ' -> ' + f.y + ')');
+    ok(f.fed > 0 && f.y > y0 + .1 && !(await pg.evaluate(() => FORAGE.has('g_fishfood'))), 'FEED THE FISH in the menu: the food is used and the fish rise (' + y0 + ' -> ' + f.y + ')');
   }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close(); process.exit(fails.length ? 1 : 0);

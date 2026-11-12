@@ -180,8 +180,7 @@ const LIB={data:null,max:5,inside:[]}; window.LIB=LIB;   // inside: what else fu
     const mg=(L,mat)=>{ let n=0; for(const g of L)n+=g.attributes.position.count; const P=new Float32Array(n*3),N=new Float32Array(n*3),U=new Float32Array(n*2),I=[]; let o=0;
       for(const g of L){ P.set(g.attributes.position.array,o*3); N.set(g.attributes.normal.array,o*3); U.set(g.attributes.uv.array,o*2); for(const i of g.index.array)I.push(i+o); o+=g.attributes.position.count; g.dispose(); }
       const b=new THREE.BufferGeometry(); b.setAttribute('position',new THREE.BufferAttribute(P,3)); b.setAttribute('normal',new THREE.BufferAttribute(N,3)); b.setAttribute('uv',new THREE.BufferAttribute(U,2)); b.setIndex(I); const me=new THREE.Mesh(b,mat); me.castShadow=me.receiveShadow=true; return me; };
-    const CW=48, CH=320, NC=Math.max(1,...rows.map(r=>r.length)), cv=document.createElement('canvas'); cv.width=CW*NC; cv.height=CH*rows.length; const g=cv.getContext('2d'), tex=new THREE.CanvasTexture(cv); tex.colorSpace=THREE.SRGBColorSpace; tex.anisotropy=4;
-    rows.forEach((row,r)=>row.forEach((q,i)=>paintSpine(g,i*CW,r*CH,CW,CH,q.b,spineIm(q.b.id))));
+    const CW=48, CH=320, NC=Math.max(1,...rows.map(r=>r.length)), cv=document.createElement('canvas'); cv.width=CW*NC; cv.height=CH*rows.length; const g=cv.getContext('2d'), tex=new THREE.CanvasTexture(cv); tex.colorSpace=THREE.SRGBColorSpace;     rows.forEach((row,r)=>row.forEach((q,i)=>paintSpine(g,i*CW,r*CH,CW,CH,q.b,spineIm(q.b.id))));
     const geos=out=>{ const L=[]; rows.forEach((row,r)=>row.forEach((q,i)=>{ if(out&&out.has(q.b.id))return; const cx=i*CW, cy=r*CH;
       const geo=new THREE.BoxGeometry(q.th,q.h,q.d), uv=geo.attributes.uv, u0=cx/cv.width, u1=(cx+CW)/cv.width, v0=1-(cy+CH)/cv.height, v1=1-cy/cv.height;
       for(let k=0;k<uv.count;k++){ const face=Math.floor(k/4); if(face===4){ const a=uv.getX(k), c=uv.getY(k); uv.setXY(k,u0+(u1-u0)*a,v0+(v1-v0)*c); } else uv.setXY(k,u0+(u1-u0)*.5,v0+(v1-v0)*.5); }
@@ -259,8 +258,7 @@ const LIB={data:null,max:5,inside:[]}; window.LIB=LIB;   // inside: what else fu
       else if(k==='oak'){ const gr=.8+.2*Math.sin(y*1.4+Math.sin(x*.03)*2)+(rnd()<.02?-.25:0)+.05*(rnd()-.5); r=168*gr; gg=126*gr; b=78*gr; }
       else { const s=.95+.05*(rnd()-.5); r=236*s; gg=232*s; b=222*s; }
       d[i]=r; d[i+1]=gg; d[i+2]=b; d[i+3]=255; }
-    g.putImageData(I,0,0); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.wrapS=THREE.RepeatWrapping; t.anisotropy=4;
-    const sp={gilt:[0x8a6a2a,42],walnut:[0x2a2a2a,18],oak:[0x1c1c1c,10],white:[0x202020,8]}[k];
+    g.putImageData(I,0,0); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.wrapS=THREE.RepeatWrapping;     const sp={gilt:[0x8a6a2a,42],walnut:[0x2a2a2a,18],oak:[0x1c1c1c,10],white:[0x202020,8]}[k];
     return new THREE.MeshPhongMaterial({map:t,vertexColors:true,specular:sp[0],shininess:sp[1]}); })());
   // the frame round a w x h picture (metres): one ring of the rectangle for each profile point, joined side by side (the mitres fall at the corners)
   const frameGeo=(w,h,P)=>{ const pos=[],nor=[],uv=[],col=[], L=[0]; for(let i=1;i<P.length;i++)L.push(L[i-1]+Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]));
@@ -273,7 +271,7 @@ const LIB={data:null,max:5,inside:[]}; window.LIB=LIB;   // inside: what else fu
   let SHADOW=null; const shadowTex=()=>SHADOW||(SHADOW=(()=>{ const c=document.createElement('canvas'); c.width=c.height=64; const g=c.getContext('2d'), gr=g.createRadialGradient(32,32,8,32,32,32); gr.addColorStop(0,'rgba(0,0,0,.55)'); gr.addColorStop(.7,'rgba(0,0,0,.35)'); gr.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle=gr; g.fillRect(0,0,64,64); const t=new THREE.CanvasTexture(c); return t; })());
   const hang=(A,use,F,t,u,v,du,dv,hc)=>{ const MW=IKIT.MW, M=MOULD[t.fr]||MOULD.barbizon, s=Math.min(1,(t.big||.95)/Math.max(t.cm[0],t.cm[1])*100), h=t.cm[0]/100*s, w=t.cm[1]/100*s, ow=M.p[M.p.length-1][0];
     const G=new THREE.Group(), me=new THREE.Mesh(frameGeo(w,h,M.p),finish(M.f)); me.castShadow=me.receiveShadow=true; G.add(me);
-    const tx=new THREE.TextureLoader().load(t.i); tx.colorSpace=THREE.SRGBColorSpace; tx.anisotropy=4; const cv=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshLambertMaterial({map:tx,emissiveMap:tx,emissive:0x5a4a3a})); cv.position.z=.013; G.add(cv);   // (lit a little by its picture light)
+    const tx=new THREE.TextureLoader().load(t.i); tx.colorSpace=THREE.SRGBColorSpace; const cv=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshLambertMaterial({map:tx,emissiveMap:tx,emissive:0x5a4a3a})); cv.position.z=.013; G.add(cv);   // (lit a little by its picture light)
     const bk=new THREE.Mesh(new THREE.BoxGeometry(w+.01,h+.01,.008),new THREE.MeshLambertMaterial({color:0x3a2a1c})); bk.position.z=.004; G.add(bk);
     { const br=new THREE.MeshPhongMaterial({color:0xb8923a,specular:0x806030,shininess:50}), y=h/2+ow+.06, L=Math.max(.25,w*.45);   // the brass picture light over it: two arms off the wall, the hood, its warm glow
       for(const x of [-L*.3,L*.3]){ const a=new THREE.Mesh(new THREE.BoxGeometry(.012,.012,.16),br); a.position.set(x,y,.08); G.add(a); }

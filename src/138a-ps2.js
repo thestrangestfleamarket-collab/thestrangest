@@ -1,4 +1,4 @@
-// THE EFFECTS: PS2, the picture's last pass but the cinema's cut, one shader. NONE is the default (the picture as drawn, no pass); a player picks another in SETTINGS > EFFECTS: old machines (PS1, PS2 as the owner fixed it, N64, ...), screens (CRT, ARCADE, VHS) and film (NOIR, SEPIA, 8MM).
+// THE EFFECTS: PS2, the picture's last pass but the cinema's cut, one shader. PS2 is the default (as the owner fixed it); a player picks another in SETTINGS > EFFECTS: NONE, old machines (PS1, N64, ...), screens (CRT, ARCADE, VHS) and film (NOIR, SEPIA, 8MM). None is drawn at more lines than the GRAPHICS level.
 import {SHARED, THREE} from './003-shx.js';
 import {PS2} from './003b-systems.js';
 import {RH, RW, ShaderPass} from './004-main.js';
@@ -89,7 +89,7 @@ PS2.F={none:{n:'NONE',lines:0,draw:1080,off:1,Q:0,K:[0,0,0]},
   noir:{n:'NOIR',lines:0,draw:1080,Q:0,K:[0,0,3],sat:0,con:1.3,glow:.3,vig:.5},
   sepia:{n:'SEPIA',lines:0,draw:1080,Q:0,K:[0,0,1.5],sat:0,con:1.05,tint:[1.15,1,.75],vig:.35},
   film:{n:'8MM',lines:0,draw:1080,Q:0,K:[.6,0,2],film:1,sat:.55,con:1.2,tint:[1.14,1,.76],vig:.75,glow:.3}};
-PS2.f='none';
+PS2.f='ps2';
 PS2.pick=(f,keep=true)=>{ if(!PS2.F[f])return; PS2.f=f; PS2.on=PS2.sp.enabled=!PS2.F[f].off; if(keep)try{ SAVE.set('filter',f); }catch(e){} };
 PS2.tune=()=>{ const F=PS2.F[PS2.f]; if(F.K)return {pix:F.lines>0,k:F.lines?240/F.lines:1,Q:F.Q,K:F.K,F}; const P=PS2.parts, k=PS2.k; return {pix:P.pix&&k>.05,k:Math.max(.25,k),Q:P.col?Math.round(8*k):0,K:[P.smear?k:0,P.fringe?k:0,P.grain?k:0],F}; };
 PS2.lines=()=>{ const T=PS2.tune(); return T.pix?Math.round(240/T.k):0; };

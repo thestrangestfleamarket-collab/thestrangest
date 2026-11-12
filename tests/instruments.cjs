@@ -28,7 +28,8 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
   rec('the bodega sells A PIANO ($900), A DRUM KIT ($450) and A HARP ($700) on its shelf',sh.every(s=>s.shelf&&s.make)&&sh.map(s=>s.name+' '+s.price).join()==='PIANO 900,DRUM KIT 450,HARP 700',JSON.stringify(sh));
   // each: set down and sat at; fingers (or sticks) on what they play
   for(const K of ['piano','harp','drums']){
-    const p=await pg.evaluate(async K=>{ __dbg.UI.setView('third'); __dbg.UI.dist*=.4; FORAGE.give(K,1); FORAGE.ACT[K](K); await new Promise(r=>setTimeout(r,1200)); const P=INSTR.ME, o={on:INSTR.on(),held:!!P.H&&!!P.H.G.parent,panel:!document.getElementById('inp').hidden,sat:null,miss:[]};
+    const p=await pg.evaluate(async K=>{ __dbg.UI.setView('third'); __dbg.UI.dist*=.4; FORAGE.give(K,1); FORAGE.ACT[K](K); await new Promise(r=>setTimeout(r,1200)); for(let i=0;i<60&&!(INSTR.ME&&INSTR.ME.H&&INSTR.ME.H.W);i++)await new Promise(r=>setTimeout(r,250));   // (a slow runner sets it down later)
+    const P=INSTR.ME, o={on:INSTR.on(),held:!!P.H&&!!P.H.G.parent,panel:!document.getElementById('inp').hidden,sat:null,miss:[]};
       const W=P.H.W, hipY=P.H.W&&new P.H.G.position.constructor().setFromMatrixPosition(W[0]).y/P.H.k; o.sat=+hipY.toFixed(2);
       const chords=K==='piano'?[[48,52,55,60,64,67],[41,45,72,76,79],[48,52,55,64,67,71]]:K==='harp'?[[7,9,11,16,18,20],[3,5,22,24,26],[10,12,26,28,30]]:[[1],[5],[2],[6],[4],[7]];
       for(const ch of chords){ const evs=ch.map(n=>INSTR.note(P,K==='piano'?{n,v:.8,d:1e9,h:n<60?'L':'R'}:K==='harp'?{n,f:0,v:.8,d:2,h:n<14?'L':'R'}:{n,v:.8,d:.1,h:n===1?'L':'R'})); await new Promise(r=>setTimeout(r,K==='drums'?40:450)); if(K!=='drums')for(let f=0;f<8;f++)await new Promise(r=>requestAnimationFrame(r));   // (the reach settles over frames: on a slow machine 450 ms is only a frame or two)

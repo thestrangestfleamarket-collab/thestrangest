@@ -947,7 +947,7 @@
    "id": "c8",
    "model": "taxi-coupe",
    "x": -27.5,
-   "y": 4,
+   "y": 36.5,
    "hd": 0
   },
   {
@@ -960,9 +960,9 @@
   {
    "id": "c10",
    "model": "ambulance",
-   "x": -27.5,
-   "y": 29,
-   "hd": 0
+   "x": -17,
+   "y": 26,
+   "hd": 270
   },
   {
    "id": "c11",
@@ -984,6 +984,7 @@
   }
  ],
  "parkPlaces": {
+  "hospital": {"note": "THE HOSPITAL on West St's park side (owner, 12 Nov 2026): Polyfork's emergency block, annexe, lift tower and garage (src/150pg-hospital.js); map tiles: er the emergency block's middle, garage the garage's (the hover ambulance waits in it), front the side the doors face", "er": [-17.5, 7], "annexe": [-17.5, -8.5], "core": [-10, 12], "garage": [-17, 26], "front": "w"},
   "round": {
    "x": 112,
    "y": 59.5,
@@ -1267,7 +1268,8 @@
     "w": 53,
     "d": 36,
     "note": "the falls (src/089b-falls.js): no trees here"
-   }
+   },
+   {"id": "hospital", "x": -16, "y": 9.5, "w": 21, "d": 51, "note": "the hospital on West St (owner, 12 Nov 2026, spot A): no trees or paths here"}
   ],
   "stalls": [
    {

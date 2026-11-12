@@ -1,10 +1,12 @@
 // THE WINDOWS' DRESSING: double-click a window of your apartment for its menu (open or shut it; curtains: none, sheer, linen, velvet, café; blinds: none, venetian, roller, roman, bamboo, shutters, lowered and tilted); the sun's rays through the glass, with dust in them, cut by what hangs there; saved with your apartment.
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, pos, SFX} from './003b-systems.js';
+import {RH} from './004-main.js';
 import {MODS, SYS} from './006-map-pre.js';
 import {DRAPE} from './072a-cloth.js';
 import {ROOMK} from './150a-bedroom.js';
 const WINDR={wins:[],cur:null}; window.WINDR=WINDR;
+const LP=new THREE.Vector3(), LS=new THREE.Vector3();
 const WRE=()=>MODS.roomed||{};   // the room editor (150d, later in the page): its saving and who is visiting
 { const CUR={none:{n:'NONE'},sheer:{n:'SHEER',c:'#f4f1ea',op:.55,t:.6},linen:{n:'LINEN',c:'#d9ccb4',op:.93,t:.22},velvet:{n:'VELVET',c:'#6e1f2c',op:1,t:.03},cafe:{n:'CAFÉ',c:'#e8e0cc',op:.9,t:.25,half:1}};
   const BLI={none:{n:'NONE'},venetian:{n:'VENETIAN',c:'#ece6da',slat:1},roller:{n:'ROLLER',c:'#e2dccd',t:.14},roman:{n:'ROMAN',c:'#c9b79a',t:.12},bamboo:{n:'BAMBOO',c:'#b8955e',t:.38},shutters:{n:'SHUTTERS',c:'#f2efe6',slat:1}};
@@ -12,7 +14,7 @@ const WRE=()=>MODS.roomed||{};   // the room editor (150d, later in the page): i
   const col=h=>new THREE.Color(h), rnd=(a,b)=>{ const x=Math.sin(a*127.1+b*311.7)*43758.5453; return x-Math.floor(x); };
   const cl=(x,a,b)=>Math.max(a,Math.min(b,x));
   const clipOf=k=>{ const P=MODS.apts&&MODS.apts.WPL&&MODS.apts.WPL[k]; return P?[P]:[]; };
-  const lam=(c,k,o={})=>new THREE.MeshLambertMaterial({color:col(c),side:THREE.DoubleSide,clippingPlanes:clipOf(k),...o});
+  const lam=(c,k,o={})=>new THREE.MeshLambertMaterial({color:col(c),side:THREE.DoubleSide,clippingPlanes:clipOf(k),userData:{wk:k},...o});
   const add=(g,geo,m,x,y,z,sh=true)=>{ const me=new THREE.Mesh(geo,m); me.position.set(x,y,z); me.castShadow=sh; me.receiveShadow=true; g.add(me); return me; };
 
   // a fabric's weave and an old bamboo blind's slats, painted once
@@ -36,10 +38,11 @@ const WRE=()=>MODS.roomed||{};   // the room editor (150d, later in the page): i
           p.setXYZ(i,u,h,.09+Math.sin(a*Math.PI*(6+4*cd)+s)*(.03-.012*cd)*(.4+b)+.02*b); }
         cg.computeVertexNormals(); const me=add(g,cg,m,0,0,0); me.castShadow=C.op>.8; W.cloth.push(clothOf(me)); } }
     // the blinds
-    const B=BLI[d.b]; if(B&&d.b!=='none'){ const bc=d.bc||B.c, lv=cl(d.bl,0,1), yb=z1-lv*H, m=lam(bc,k), z=.035;
+    const B=BLI[d.b]; W.lod=null; if(B&&d.b!=='none'){ const bc=d.bc||B.c, lv=cl(d.bl,0,1), yb=z1-lv*H, m=lam(bc,k), z=.035;
       if(d.b==='venetian'){ const n=Math.round(H/.026), inst=new THREE.InstancedMesh(new THREE.BoxGeometry(w-.03,.0025,.026),m,n), M4=new THREE.Matrix4(), q=new THREE.Quaternion(), e=new THREE.Euler(cl(d.bt,0,1)*1.35,0,0), S=new THREE.Vector3(1,1,1); q.setFromEuler(e);
         const down=Math.max(0,Math.floor((z1-yb)/.026)); for(let i=0;i<n;i++){ const y=i<down?z1-.02-i*.026:z1-.02-down*.026-(i-down)*.005; M4.compose(new THREE.Vector3(0,y,z),i<down?q:new THREE.Quaternion(),S); inst.setMatrixAt(i,M4); }
-        inst.castShadow=inst.receiveShadow=true; g.add(inst); add(g,new THREE.BoxGeometry(w+.02,.03,.045),m,0,z1+.005,z); add(g,new THREE.BoxGeometry(w-.02,.012,.03),m,0,Math.min(yb,z1-.02-down*.026-(n-down)*.005),z);
+        inst.castShadow=inst.receiveShadow=true; g.add(inst);
+        if(down>0){ const hh=down*.026, bt=cl(d.bt,0,1), far=add(g,new THREE.PlaneGeometry(w-.03,hh),lam(bc,k,{transparent:bt<.9,opacity:bt<.9?.4+.6*bt:1,side:THREE.DoubleSide}),0,z1-.02-hh/2+.013,z,false); far.visible=false; W.lod=[inst,far]; }   // from far off the slats are finer than a pixel and ripple: one plain sheet stands in (owner, 12 Nov 2026) add(g,new THREE.BoxGeometry(w+.02,.03,.045),m,0,z1+.005,z); add(g,new THREE.BoxGeometry(w-.02,.012,.03),m,0,Math.min(yb,z1-.02-down*.026-(n-down)*.005),z);
         for(const s of [-.3,.3])add(g,new THREE.BoxGeometry(.004,Math.max(.01,z1-yb),.004),lam('#d8d2c4',k),s*w,(z1+yb)/2,z+.016,false); }
       else if(d.b==='roller'||d.b==='bamboo'){ const L=Math.max(.001,z1-yb), sm=d.b==='bamboo'?lam(bc,k,{map:reed()}):lam(bc,k,{map:weave()}), roll=.022+(1-lv)*.02;
         add(g,new THREE.PlaneGeometry(w-.02,L),sm,0,z1-L/2,z); add(g,new THREE.CylinderGeometry(roll,roll,w,14).rotateZ(Math.PI/2),sm,0,d.b==='bamboo'?yb:z1+.02,z+.01); if(d.b==='roller')add(g,new THREE.BoxGeometry(w-.02,.018,.012),lam('#8c8478',k),0,yb,z); }
@@ -141,6 +144,7 @@ const WRE=()=>MODS.roomed||{};   // the room editor (150d, later in the page): i
     DRAPE.step(c,h,o); DRAPE.out(c,c.me.geometry); };
   SYS.add('places',dt=>{ const A=MODS.apts, inn=!!(A&&A.inReal); if(!inn||!WINDR.wins.length)return; const t=performance.now()/1000, h=Math.min(.033,dt||0);
     const S=CLOCK.sun, dir=CLOCK.dir, I=S&&dir&&dir.y>.02?cl(S.intensity,0,3)/3:0;
+    for(const W of WINDR.wins)if(W.lod&&SHARED.cam){ const c=SHARED.cam; W.g.getWorldPosition(LP); const sc=W.g.getWorldScale(LS).x, px=c.isPerspectiveCamera?.026*sc/Math.max(.1,LP.distanceTo(c.position))*RH/(2*Math.tan(c.fov*Math.PI/360)):.026*sc*RH*(c.zoom||1)/Math.max(1e-3,c.top-c.bottom), near=px>3.2; W.lod[0].visible=near; W.lod[1].visible=!near; }
     for(const W of WINDR.wins){ const u=W.ru; if(!u)continue; u.uT.value=t;
       // the light's way into the room, in the window's own frame (+z the room side)
       if(I>0){ W.g.updateWorldMatrix(true,false); IM.copy(W.g.matrixWorld).invert(); TV.copy(dir).negate().transformDirection(IM); }

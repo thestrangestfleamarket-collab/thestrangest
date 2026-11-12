@@ -7,7 +7,7 @@ import {BLOCKS} from './038zb-blocks.js';
 import {FACADES} from './038zc-facades.js';
 const MSHOP={kit:{},at:{},defs:{},fronts:[]};
 // the real signs' pictures: gold leaf letters (a dark edge, a lighter face), a painted blade sign's name, a neon OPEN
-const SHOPSIGN=(()=>{ const C={}, mk=(k,w,h,f)=>C[k]||(C[k]=(()=>{ const cv=document.createElement('canvas'); cv.width=w; cv.height=h; const g=cv.getContext('2d'); f(g,w,h); const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return t; })());
+const SHOPSIGN=(()=>{ const C={}, mk=(k,w,h,f)=>C[k]||(C[k]=(()=>{ const cv=document.createElement('canvas'); cv.width=w; cv.height=h; const g=cv.getContext('2d'); f(g,w,h); const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; return t; })());
   const fit=(g,t,w,h,font)=>{ let s=h; do{ g.font=font.replace('S',s+'px'); s-=2; }while(g.measureText(t).width>w*.94&&s>8); };
   return {gold:(t,big)=>mk('g'+t,1024,128,(g,w,h)=>{ fit(g,t,w,h*(big?.86:.7),'bold S Georgia, serif'); g.textAlign='center'; g.textBaseline='middle'; g.lineJoin='round'; g.lineWidth=7; g.strokeStyle='rgba(40,22,6,.9)'; g.strokeText(t,w/2,h/2+4);
       const gr=g.createLinearGradient(0,h*.2,0,h*.85); gr.addColorStop(0,'#fff0b0'); gr.addColorStop(.45,'#e0b048'); gr.addColorStop(.55,'#b07a20'); gr.addColorStop(1,'#f0c860'); g.fillStyle=gr; g.fillText(t,w/2,h/2+4); }),

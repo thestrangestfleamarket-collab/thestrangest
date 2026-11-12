@@ -26,7 +26,7 @@ const HUDSON={}; window.HUDSON=HUDSON;
   FORAGE.sell('trophy_cat','ring_belly','doubloon','spyglass','medal_swim'); (FORAGE.BUYK.antiquities=FORAGE.BUYK.antiquities||[]).push('trophy_cat','ring_belly','doubloon','spyglass','medal_swim'); GEMS.push(['gold_flake','GOLD FLAKES',18,0],['gold_nugget','GOLD NUGGET',85,0]);   // weight 0: the gem shop buys gold, it is never a random find
   { const LK={trophy_cat:['trophy',0x6a4a2a,0x5a5a4a],ring_belly:['ring',0xc8a040],gold_flake:['flakes',0xf2c14e],gold_nugget:['lump',0xf2c14e],doubloon:['coins',0xd8b040],medal_swim:['medal',0xd8b040,0x2a5ac8],winch:['gadget',0x4a4a4e,0x8a6a3a],bk_captlog:['book',0x4a3a2a,0x8a7a5a],logbook_capt:['book',0x5a2a1a,0xe8dcc0],spyglass:['spyglass',0x6a4428,0xd8b040]};
     INSPECT.kinds.push({is:id=>!!LK[id],make:id=>INSPECT.shape(...LK[id])}); }
-  FORAGE.HELP.push('THE HUDSON: the Old Catfish bites by the pier pilings from 2 to 4 am on cut bait and a strong line; the scanner and extractor find gold in the silt round the wreck; the sunken safe beside it takes strength; the captain\'s logbook lies in its stern cabin.');
+  FORAGE.HELP.push('THE HUDSON: the Old Catfish bites by the pier pilings from 2 to 4 am on cut bait and a strong line; the sunken safe beside it takes strength; the captain\'s logbook lies in its stern cabin.');
 
   // THE OLD CATFISH: its own bite in the fishing odds, landed through the fishing fight like any fish; it never fits a pan, so it becomes a trophy, and its belly holds a ring
   FISHING.NAMES.x_oldcat='THE OLD CATFISH'; ITEMS.reg('x_oldcat',{fight:9,weight:25,value:250,bait:'cut',bites:'night'});

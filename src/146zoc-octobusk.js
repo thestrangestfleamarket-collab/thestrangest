@@ -78,8 +78,8 @@ const OCTOBUSK={};
       for(const [x,z,y,rx,rz] of [[-.36,.03,0,0,0],[-.29,-.07,0,.2,0],[-.25,.08,.002,0,.15],[-.42,-.06,0,0,0],[-.42,-.06,.005,0,0],[-.42,-.06,.01,.05,0],[-.19,-.02,.002,-.25,.1],[-.33,.12,0,0,0]]){ const c=new THREE.Mesh(coin,gold); c.position.set(x,.024+y,z); c.rotation.set(rx,Math.random(),rz); C.add(c); }
       const cp={x:p.x+Math.sin(hd)*1.1*M,z:p.z+Math.cos(hd)*1.1*M}; C.scale.setScalar(M*.75); C.position.set(cp.x,MODS.station.ground(cp.x,cp.z),cp.z); C.rotation.y=hd; body.root.add(C); OCTOBUSK.case=C;
       SOL.down.push([cp.x-.34*M,cp.z-.34*M,cp.x+.34*M,cp.z+.34*M]);
-      UI.thing({name:'THE OCTOPUS\'S GUITAR CASE (TIP HIM $1)',obj:C,reach:1.8*M,near:3*M,tall:C.position.y+.4*M,act:()=>{ if((INV.cash||0)<1)return SAY('YOU HAVE NO MONEY TO TIP HIM.','#c8a090');
-        INV.cash-=1; if(INV.save)INV.save(); SFX.play('ding',{vol:.4,pitch:1.5}); SAY('YOU DROP A DOLLAR IN THE CASE. THE OCTOPUS TIPS HIS HAT.','#f2c14e'); LINES.say(N,'Gracias.'); }}); }
+      UI.thing({name:'THE OCTOPUS\'S GUITAR CASE (TIP HIM $1)',obj:C,reach:1.8*M,near:3*M,tall:C.position.y+.4*M,act:()=>{ if(!INV.afford(1))return SAY('YOU HAVE NO MONEY TO TIP HIM.','#c8a090');
+        INV.pay(1); if(INV.save)INV.save(); SFX.play('ding',{vol:.4,pitch:1.5}); SAY('YOU DROP A DOLLAR IN THE CASE. THE OCTOPUS TIPS HIS HAT.','#f2c14e'); LINES.say(N,'Gracias.'); }}); }
     /* the guitar: the real one, held across him (posed off his chest each frame), its pieces from the book played through its own voice */
     const G=GUITAR.GHOLD.model(), gg=new THREE.Group(); gg.add(G); G.scale.setScalar(M*1.15); G.rotation.set(-.1,0,-1.22); G.position.set(-.36*M,-.12*M,0); body.root.add(gg);
     const at=new V3(); let wait=4, inn=false;

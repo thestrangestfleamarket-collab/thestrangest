@@ -47,7 +47,8 @@ const dispatch = (pg, key) => pg.evaluate(k => window.dispatchEvent(new Keyboard
     await pg.evaluate(() => window.DRONE.openAt('games')); await pg.waitForTimeout(200);
     ok(await pg.evaluate(() => DRONEDBG().page === 'games'), 'THE ARCADE is a tab');
     for (let i = 0; i < 60 && !(await pg.evaluate(() => DRONEDBG().arc)); i++) await pg.waitForTimeout(500);
-    const ga = await pg.evaluate(() => DRONEDBG()); ok(ga.arc && ga.games.length === 5 && ga.games[0] === 'RAINBOW RUN' && ga.games[4] === 'TORCHBEARER', 'the arcade\'s five cabinets list, wall by wall (' + ga.games.join(', ') + ')');
+    const ga = await pg.evaluate(() => ({ ...DRONEDBG(), want: [...STORE.cabs.walls.e, ...STORE.cabs.walls.w].filter(n => STORE.cabs.reg[n]) }));   // the arcade's cabinets as they stand (archived games are not there)
+    ok(ga.arc && ga.games.length >= 1 && ga.games.join() === ga.want.join() && ga.games.includes('TORCHBEARER'), 'the arcade\'s cabinets list, wall by wall (' + ga.games.join(', ') + ')');
     await pg.waitForTimeout(300); await pg.evaluate(() => { INV.cash = Math.max(INV.cash || 0, 20); document.querySelector('#dbbs [data-play]').click(); });
     let cab = false; for (let i = 0; i < 120 && !(cab = await pg.evaluate(() => STORE.cabs.on && STORE.cabs.dbg().loaded)); i++) await pg.waitForTimeout(500);
     ok(cab && (await pg.evaluate(() => STORE.cabs.dbg().name)) === 'RAINBOW RUN', 'PLAY opens the cabinet');

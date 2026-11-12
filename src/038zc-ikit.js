@@ -49,6 +49,6 @@ const IKIT={}; window.IKIT=IKIT;
     return {MW,box,cyl,ball,glow,own,meshOf,pic,words,seat,spot,sol,use,flush,matL,matB}; };
   // buying a thing over a counter or from a machine: the price from your cash, the thing in your pack
   IKIT.buy=(id,price,line)=>{ '@later'; const say=(t,c)=>SAY(t,c), nm=FORAGE.name?FORAGE.name(id):id.toUpperCase(); if(ARCHI(id)){ say('SOLD OUT.','#c8a090'); return false; }
-    if(INV.cash<price){ say('THAT IS $'+price+'. YOU HAVE $'+INV.cash+'.','#c8a090'); return false; } INV.cash-=price; INV.add(id,1); say(line||nm+': $'+price+'. IT IS IN YOUR PACK.','#f2c14e'); return true; };
+    if(!INV.afford(price)){ say('THAT IS $'+price+'. YOU HAVE $'+INV.money()+'.','#c8a090'); return false; } INV.pay(price); INV.add(id,1); say(line||nm+': $'+price+'. IT IS IN YOUR PACK.','#f2c14e'); return true; };
 }
 export {IKIT};

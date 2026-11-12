@@ -36,9 +36,9 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await shot('pack');
     await sub('book'); ok(await pg.evaluate(() => FORAGE.PACK.tab === 'book'), 'BOOK');
     await sec('set'); ok((await shown()) === 'display', 'SETTINGS opens at VIEW');
-    ok(await texts('#msub [data-sub]') === 'VIEW,CAMERA,SCREEN,CHAT,RESOLUTION,TIME,WEATHER,LIGHT,SOUND,KEYS,CONTROLLER,VR,REPORT A BUG', 'SETTINGS: every setting its own tab (8 Nov 2026)');
+    ok(await texts('#msub [data-sub]') === 'VIEW,CAMERA,SCREEN,CHAT,GRAPHICS,EFFECTS,TIME,WEATHER,LIGHT,SOUND,KEYS,CONTROLLER,VR,REPORT A BUG', 'SETTINGS: every setting its own tab (8 Nov 2026)');
     await shot('set-view');
-    { const one = []; for (const [k, p] of [['camera', 'camera'], ['screen', 'screen'], ['chat', 'chat'], ['res', 'graphics'], ['time', 'atmo'], ['weather', 'weather'], ['light', 'light'], ['keys', 'keys'], ['vr', 'vr']]) { await sub(k); if ((await shown()) !== p) one.push(k + ':' + (await shown())); } ok(!one.length, 'each tab shows its own one pane' + (one.length ? ': ' + one : '')); }
+    { const one = []; for (const [k, p] of [['camera', 'camera'], ['screen', 'screen'], ['chat', 'chat'], ['res', 'graphics'], ['filter', 'filter'], ['time', 'atmo'], ['weather', 'weather'], ['light', 'light'], ['keys', 'keys'], ['vr', 'vr']]) { await sub(k); if ((await shown()) !== p) one.push(k + ':' + (await shown())); } ok(!one.length, 'each tab shows its own one pane' + (one.length ? ': ' + one : '')); }
     await sub('bug'); ok((await shown()) === 'bug', 'REPORT A BUG');
     await pg.keyboard.press('Escape'); ok(await until(() => !__UI.menuOpen), 'ESC shuts it');
     await pg.keyboard.press('Escape'); await until(() => HUB.on); await pg.evaluate(() => document.querySelector('#hub path[data-i="0"]').dispatchEvent(new MouseEvent('click', { bubbles: true }))); ok(await until(() => __UI.menuOpen && __UI.menuNow().join() === 'set,bug'), 'and the wheel opens it again where you were');

@@ -20,7 +20,7 @@ const PHONE={fee:2,courier:.25,by:''}; window.PHONE=PHONE;
     const got=()=>{ FORAGE.give(r.id,1); if(FORAGE.save)FORAGE.save(); if(FORAGE.draw)FORAGE.draw(); };
     // one order in four comes by THE COURIER on his bike (when he can take it), the rest by drone
     PHONE.by=Math.random()<PHONE.courier&&DRONE.land&&COURIER.bring&&COURIER.bring(here,at=>DRONE.land(r.name,got,at,true,'THE COURIER'))?'COURIER':'DRONE';
-    if(PHONE.by==='DRONE')DRONE.go(r.name,got,{follow:here}); return ''; };
+    if(PHONE.by==='DRONE')DRONE.go(r.name,got,{follow:here}); else DRONE.tell(r.name,here(),1); return ''; };
   const view={title:'BRICK PHONE',w:W,h:H,help:'Up and down pick a line (or click it), SEND orders it: its price and $'+PHONE.fee+' delivery. The drone, or one time in four the courier on his bike, brings it to wherever you are outdoors. END hangs up.',
     start:S=>{ S.L=lines(); S.sel=0; S.top=0; S.msg='THE BODEGA · DRONE DELIVERY'; },
     tick:S=>{ const n=S.L.length; if(S.wheel){ S.sel=Math.max(0,Math.min(n-1,S.sel+Math.sign(S.wheel))); S.wheel=0; }

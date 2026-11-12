@@ -198,7 +198,7 @@ function props(scene) {
   const et = trolley(S, 19, 6.55, 0); box(et, .46, .3, .32, M.steelDark, 0, 1.03, 0); wdec(et, .44, .22, M.dials, 0, 1.03, .162, 'n'); cyl(et, .012, .5, M.black, .15, .9, .25, 'z'); solid(18.65, 6.3, 19.35, 6.8);
   D.fuse2 = fuse('f2', 19.14, 1.24, 6.55, true);
   trolley(S, 20.6, 8.7, .3); sink(S, 21.75, 6.6, -Math.PI / 2); ivstand(S, 18.2, 7.2); locker(S, 16.4, 5.28, 0, true); locker(S, 16.85, 5.28, 0); solid(16.1, 5, 17.1, 5.55);
-  box(S, 1.2, .9, .34, M.steelDark, 20.6, 1.5, 5.2); wdec(S, 1.1, .8, M.glass, 20.6, 1.5, 5.38, 'n'); for (let i = 0; i < 6; i++) cyl(S, .03, .12, M.enamel, 20.2 + i * .15, 1.3, 5.2);
+  box(S, 1.2, .9, .34, M.steelDark, 20.6, 1.5, 5.2); wdec(S, 1.1, .8, M.glass, 20.6, 1.5, 5.38, 'n'); solid(20, 5, 21.2, 5.42); for (let i = 0; i < 6; i++) cyl(S, .03, .12, M.enamel, 20.2 + i * .15, 1.3, 5.2);
   box(S, .34, .9, .1, M.coat, 17.9, 1.35, 10.92); box(S, .04, .04, .06, M.steelDark, 17.9, 1.84, 10.96); fdec(S, .5, .5, M.grate, 19.6, 9.2); fdec(S, 1.3, 1.3, M.blood, 19.3, 8.9, 2);
   wdec(S, .3, .44, M.hand, 16.02, 1.3, 9.4, 'w', .2);
   keyM('mkey', 17.9, 1.2, 10.82); note('finch', 20.62, .9, 8.72);

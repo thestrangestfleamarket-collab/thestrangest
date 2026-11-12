@@ -1,0 +1,2 @@
+head.glb, head-normal.jpg, face.jpg (baked by tools/asylum-bake.py from data/full/asylum/head-col.jpg): Infinite, 3D Head Scan by Lee Perry-Smith, Creative Commons Attribution 3.0 Unported, based on a work at www.triplegangers.com (from three.js examples, models/gltf/LeePerrySmith).
+body.glb: the Vanguard character with its Idle, Walk and Run motion capture, from Mixamo (Adobe), as shipped in three.js examples (models/gltf/Soldier.glb).

@@ -44,10 +44,10 @@ const ITEMCARD={};
   ITEMCARD.hide=()=>{ if(el.hidden)return; el.hidden=true; cur=null; if(SC)drop(); };
   // anything marked data-card shows it while pointed at; a long press on a phone
   let over=null;
-  addEventListener('pointerover',e=>{ if(e.pointerType!=='mouse')return; const t=e.target&&e.target.closest&&e.target.closest('[data-card]'); over=t; if(t&&t.dataset.card)ITEMCARD.show(t.dataset.card,e.clientX,e.clientY); else ITEMCARD.hide(); },true);
+  let wait=0; addEventListener('pointerover',e=>{ if(e.pointerType!=='mouse')return; const t=e.target&&e.target.closest&&e.target.closest('[data-card]'); if(t===over)return; over=t; clearTimeout(wait); ITEMCARD.hide(); if(t&&t.dataset.card)wait=setTimeout(()=>{ if(over===t&&document.contains(t))ITEMCARD.show(t.dataset.card,mx,my); },1000); },true);   // the card waits for a second's hover (owner, 12 Nov 2026)
   let mx=0, my=0; addEventListener('pointermove',e=>{ mx=e.clientX; my=e.clientY; if(over&&!el.hidden&&e.pointerType==='mouse')ITEMCARD.show(over.dataset.card,e.clientX,e.clientY); },true);
   let lp=0; addEventListener('pointerdown',e=>{ ITEMCARD.hide(); clearTimeout(lp); if(e.pointerType!=='mouse'){ const t=e.target&&e.target.closest&&e.target.closest('[data-card]'); if(t)lp=setTimeout(()=>{ over=t; ITEMCARD.show(t.dataset.card,e.clientX,e.clientY); },450); } },true);
   addEventListener('pointerup',e=>{ clearTimeout(lp); if(e.pointerType!=='mouse')setTimeout(()=>ITEMCARD.hide(),1500); },true); addEventListener('keydown',e=>{ if(e.key==='Escape')ITEMCARD.hide(); },true);
-  SYS.every(()=>{ if(over&&!document.contains(over)){ const e=document.elementFromPoint(mx,my), t=e&&e.closest&&e.closest('[data-card]'); over=t||null; if(t)ITEMCARD.show(t.dataset.card,mx,my); else ITEMCARD.hide(); } },300,'162eb-card gone');
+  SYS.every(()=>{ if(over&&!document.contains(over)){ const e=document.elementFromPoint(mx,my), t=e&&e.closest&&e.closest('[data-card]'); over=t||null; if(t&&!el.hidden)ITEMCARD.show(t.dataset.card,mx,my); else if(t){ clearTimeout(wait); wait=setTimeout(()=>{ if(over===t&&document.contains(t))ITEMCARD.show(t.dataset.card,mx,my); },1000); } else ITEMCARD.hide(); } },300,'162eb-card gone');
   window.ITEMCARD=ITEMCARD; }
 export {ITEMCARD};

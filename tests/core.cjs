@@ -478,6 +478,10 @@ ok(L.places.every(p => p.x0 >= L.streets.market.x0 && p.x1 <= L.streets.market.x
       const S = []; let was = null, side = new Set(), inRoad = 0; for (let t = 0; t < 3600; t += 2) { const w = C.walkAt(t); if (w.cross) { if (!was) S.push(t); if (w.z > lo && w.z < hi) inRoad++; } else side.add(w.z > hi ? 'n' : w.z < lo ? 's' : 'road'); was = w.cross; }
       const gaps = S.slice(1).map((t, i) => t - S[i]); return { starts: S.length, gaps: [Math.min(...gaps), Math.max(...gaps)], side: [...side], inRoad, still: C.walkAt(S[1] - 10), x: C.walkAt(0).x }; });
     ok(!r.none && r.starts >= 11 && r.starts <= 21 && r.gaps[0] >= 170 && r.gaps[1] <= 310 && r.side.length === 2 && !r.side.includes('road') && r.inRoad > 0 && !r.still.cross, 'THE BIG CAT (owner, 12 Nov 2026): stands at a Market St kerb and crosses the road every 3 to 5 minutes, holding up the traffic only while crossing: ' + JSON.stringify(r)); }
+  { const r = await pg.evaluate(async () => { const w = ms => new Promise(r => setTimeout(r, ms)), C = document.getElementById('icard'), d = document.createElement('div'); d.dataset.card = 'pebble'; d.style.cssText = 'position:fixed;left:10px;top:10px;width:40px;height:40px;z-index:99999'; document.body.appendChild(d);
+      d.dispatchEvent(new PointerEvent('pointerover', { pointerType: 'mouse', bubbles: true, clientX: 20, clientY: 20 })); await w(400); const early = !!C && !C.hidden; await w(900); const late = !!C && !C.hidden;
+      document.body.dispatchEvent(new PointerEvent('pointerover', { pointerType: 'mouse', bubbles: true })); await w(100); const gone = !C || C.hidden; d.remove(); return { early, late, gone }; }).catch(e => ({ err: e.message }));
+    ok(!r.early && r.late && r.gone, 'the item card waits for a second\'s hover, then shows; moving off hides it (owner, 12 Nov 2026): ' + JSON.stringify(r)); }
   await b.close();
   console.log(fails.length ? fails.length + ' failed' : 'all core checks passed');
   process.exit(fails.length ? 1 : 0);

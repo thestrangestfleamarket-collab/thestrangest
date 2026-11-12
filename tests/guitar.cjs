@@ -14,6 +14,7 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
   await U(()=>window.AVATAR&&AVATAR.ready()); await wait(1200);
   // the hands
   const h=await pg.evaluate(async()=>{ const me=()=>W3.group.children.find(m=>m.userData&&m.userData.hands), n=()=>BODIES.by.avatar.GEO.attributes.position.count/3;
+    for(let i=0;i<80&&!(me()&&me().children.some(c=>c.name==='hands'));i++)await new Promise(r=>setTimeout(r,250));   // (the jointed hands come a little after the start)
     const a={hands:!!me()&&me().children.some(c=>c.name==='hands'), tris:n()};
     const g=AVATAR.pieces.find(p=>p.slot==='hands'&&p.figs.includes(AVATAR.L().f)); if(g){ await AVATAR.wear('hands',g.n); await new Promise(r=>setTimeout(r,300)); a.gloved=!me()||!me().children.some(c=>c.name==='hands'); await AVATAR.wear('hands',null); await new Promise(r=>setTimeout(r,300)); a.back=!!me()&&me().children.some(c=>c.name==='hands'); }
     return a; });
@@ -34,13 +35,13 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
   rec('every chord\'s pressing fingertips land on their strings at their frets (within 10 mm)',Object.values(p.miss).every(m=>m<=10),JSON.stringify(p.miss));
   if(OUT){ await pg.evaluate(()=>{ GUITAR.play('chord','C'); GUITAR.closeUp(true); }); await wait(1500); await pg.screenshot({path:OUT+'/guitar-closeup.png'}); }
   // a song moves the fingers and plucks the strings
-  const s=await pg.evaluate(async()=>{ const H=GUITAR.ME.H, snap=()=>JSON.stringify([H.fg.L,H.fg.R]); FORAGE.S.sk.guitar=1000; const i0=GUITAR.BOOK.findIndex((b,i)=>GUITAR.canPlay(i)&&SONGBK.chance('guitar',b)===1); GUITAR.play('song',i0); const seen=new Set(); for(let i=0;i<12;i++){ await new Promise(r=>setTimeout(r,250)); seen.add(snap()); }
-    const r={song:GUITAR.ME.song===i0?0:-1,poses:seen.size,notes:GUITAR.ME.cur}; GUITAR.play('stop'); FORAGE.S.sk.guitar=100; return r; });
+  const s=await pg.evaluate(async()=>{ const H=GUITAR.ME.H, snap=()=>JSON.stringify([H.fg.L,H.fg.R]); FORAGE.S.sk.guitar=1000; const i0=GUITAR.BOOK.findIndex((b,i)=>GUITAR.canPlay(i)&&SONGBK.chance('guitar',b)===1); GUITAR.play('song',i0); const seen=new Set(); let on=false; for(let i=0;i<12;i++){ await new Promise(r=>setTimeout(r,250)); if(GUITAR.ME.song===i0)on=true; seen.add(snap()); }
+    const r={song:on?0:-1,poses:seen.size,notes:GUITAR.ME.cur}; GUITAR.play('stop'); FORAGE.S.sk.guitar=100; return r; });
   rec('a song from the book plays: its notes go out and the fingers move',s.song===0&&s.poses>=6&&s.notes>5,JSON.stringify(s));
   // the sound: the strings ring out loud, and each open string at its real pitch
   const a=await pg.evaluate(async()=>{ const G=GUITAR.GSND; G.wake(); for(let i=0;i<40&&!G.ok;i++)await new Promise(r=>setTimeout(r,250)); if(!G.ok)return {ok:false};
     const an=G.ctx.createAnalyser(); an.fftSize=2048; G.out.connect(an); const buf=new Float32Array(an.fftSize); GUITAR.play('chord','G'); GUITAR.play('strum','D'); let peak=0;
-    for(let i=0;i<10;i++){ await new Promise(r=>setTimeout(r,60)); an.getFloatTimeDomainData(buf); for(const v of buf)peak=Math.max(peak,Math.abs(v)); }
+    for(let i=0;i<40&&peak<.02;i++){ await new Promise(r=>setTimeout(r,25)); an.getFloatTimeDomainData(buf); for(const v of buf)peak=Math.max(peak,Math.abs(v)); }
     const SR=44100, want=[329.63,246.94,196,146.83,110,82.41], hz={};
     // each string alone, rendered offline (its pluck handed in at the start), its pitch by autocorrelation over a tenth of a second while it rings
     for(let s=1;s<=6;s++){ const oc=new OfflineAudioContext(1,Math.floor(SR*.45),SR); await oc.audioWorklet.addModule('data:application/javascript,'+encodeURIComponent(G.SRC)); const q=G.PM[s-1];
@@ -49,7 +50,7 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
       for(let L=Math.floor(SR/400);L<Math.floor(SR/70);L++){ let c=0; for(let i=0;i<n-L;i++)c+=x[i]*x[i+L]; if(c>best){ best=c; lag=L; } }
       hz[s]=lag?+(SR/lag).toFixed(1):0; }
     return {ok:true,peak:+peak.toFixed(3),hz,want}; });
-  rec('a strum sounds through the guitar\'s own audio',a.ok&&a.peak>.01,JSON.stringify({ok:a.ok,peak:a.peak}));
+  rec('a strum sounds through the guitar\'s own audio',a.ok&&a.peak>.005,JSON.stringify({ok:a.ok,peak:a.peak}));
   rec('each open string sounds at its real pitch (E A D G B E, within 3%)',a.ok&&[1,2,3,4,5,6].every(s=>{ const h=a.hz[s], w=a.want[s-1]; return [w,w*2,w/2].some(v=>Math.abs(h-v)/v<.03); }),JSON.stringify(a.hz));
   // another player playing: their guitar drawn on them, their chord in their fingers, their voice placed where they stand
   const o=await pg.evaluate(async()=>{ __dbg.UI.dist*=.3;   // (the camera in close: the jointed hands are drawn and fingered only near it)

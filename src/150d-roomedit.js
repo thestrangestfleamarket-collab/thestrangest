@@ -360,6 +360,10 @@ import {ROOMK} from './150a-bedroom.js';
       Object.defineProperty(D,'tpl',{value:g,enumerable:true}); return g; }});
     R.kinds[k]=D; return k; };
   ROOMK.keep.push({ out:()=>{}, in:(L,A)=>{ for(const a of (L&&L.added)||[])if(String(a.kind).startsWith('pack:'))packKind(A,a.kind.slice(5)); } });
+  // SET IT OUT (owner, 12 Nov 2026): a thing with no other use is put on show in your apartment from the bag, carried under the pointer till you click it down
+  { const row=id=>FORAGE.usable&&!FORAGE.usable(String(id).split('~')[0])?[['SET IT OUT','setout']]:[]; row.setout=1; FORAGE.ROWB.push(row);
+    FORAGE.ACT.setout=id=>{ if(!id||!FORAGE.has(id))return; const nm=String((FORAGE.NM&&FORAGE.NM[id])||id).toUpperCase(); if(!inHome()||HOME.guest)return SAY('THE '+nm+' CAN GO ON SHOW AT HOME: IN YOUR APARTMENT, SET IT OUT AND CLICK WHERE IT GOES.','#e8e2cc');
+      if(!ED.on)ED.toggle(); if(!ED.on)return; if(UI.menuOpen)UI.toggleMenu(); if(ED.buy(packKind(A_(),id)))SAY('CLICK WHERE THE '+nm+' GOES. PUT AWAY BRINGS IT BACK TO YOUR BAG.','#9fe07f'); }; }
   const packList=()=>Object.entries(INV.items||{}).filter(([id,n])=>n>0&&!/^\$/.test(id)).map(([id,n])=>({id,n,name:String((FORAGE.NM&&FORAGE.NM[id])||id).toUpperCase()})).sort((a,b)=>a.name<b.name?-1:1);
   const packPic=id=>{ try{ const c=BAG.pic&&BAG.pic(id); return c?c.toDataURL():''; }catch(e){ return ''; } };
   const drawSurf=()=>{ '@later'; const A=A_(), un=SURF.un; if(!A||!un){ SP.hidden=true; return; } const T=tops(un); if(!T.length){ SP.hidden=true; return; } const L=T[Math.min(SURF.lv,T.length-1)];

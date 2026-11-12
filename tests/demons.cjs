@@ -1,4 +1,4 @@
-// THE SUBWAY'S DEMONS AND ITS BUSKER: node tests/demons.cjs [dist/market.html] [shots dir]. On the platform's far corner by the route map the octopus in the cowboy hat loops the hardest piece in the book and says Gracias for a tip; down on the tracks a demon turns up, runs from you, and blows up only when cornered (it hurts, never kills); the freeze ray's ice makes one a block you carry; the security office pays for it; a kept block thaws and the demon is out.
+// THE SUBWAY'S DEMONS AND ITS BUSKER: node tests/demons.cjs [dist/market.html] [shots dir]. On the platform's far corner by the route map the octopus in the cowboy hat loops the hardest piece in the book and says Gracias for a tip; down on the tracks a demon turns up, runs from you, and blows up only when cornered (it hurts, never kills); the freeze ray's ice makes one a block you carry; the demon drop box pays for it, or TAMING 1 makes it a pet; a kept block thaws and the demon is out.
 const {chromium}=require('playwright');
 (async()=>{ const b=await chromium.launch({...(process.env.PW_CHROMIUM?{executablePath:process.env.PW_CHROMIUM}:{}),args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
   const pg=await b.newPage({viewport:{width:900,height:560}}), errs=[]; let bad=0; pg.on('pageerror',e=>errs.push(e.message));
@@ -26,8 +26,12 @@ const {chromium}=require('playwright');
   const F=await gd(D0.id); ok(F&&F.state==='ice'&&F.blk,'the freeze ray\'s ice locks it in a block ('+J(F)+')');
   const P=await pg.evaluate(id=>{ DEMONS.list.find(d=>d.id===id).th.act(); return {bag:INV.items.demon_ice||0,left:DEMONS.list.some(x=>x.id===id)}; },D0.id);
   ok(P.bag===1&&!P.left,'picked up, it is in your bag ('+J(P)+')');
-  const H=await pg.evaluate(()=>{ const th=__dbg.UI.things.find(t=>/SECURITY OFFICE/.test(t.name)); const c0=INV.cash; th.act(); return {office:!!th,paid:INV.cash-c0,bag:INV.items.demon_ice||0,want:DEMONS.BOUNTY}; });
-  ok(H.office&&H.paid===H.want&&H.bag===0,'the security office pays the bounty for it ('+J(H)+')');
+  const H=await pg.evaluate(()=>{ const th=__dbg.UI.things.find(t=>/DEMON DROP BOX/.test(t.name)); const c0=INV.cash; th.act(); return {box:!!th,office:__dbg.UI.things.some(t=>/SECURITY OFFICE/.test(t.name)),paid:INV.cash-c0,bag:INV.items.demon_ice||0,want:DEMONS.BOUNTY}; });
+  ok(H.box&&!H.office&&H.paid===H.want&&H.bag===0,'the demon drop box (no security office) pays the bounty for it ('+J(H)+')');
+  // tamed: not below TAMING 1; with it, the frozen demon you carry becomes one of your pets
+  const TM=await pg.evaluate(async()=>{ FORAGE.give('demon_ice',1); DEMONS.T.BAG.push(60); const S=FORAGE.S, n0=PETS.list().length; S.sk.tame=0; await FORAGE.ACT.demontame(); const no={bag:INV.items.demon_ice||0,pets:PETS.list().length-n0};
+    S.sk.tame=10; await FORAGE.ACT.demontame(); const r=PETS.list()[PETS.list().length-1]; return {no,bag:INV.items.demon_ice||0,pets:PETS.list().length-n0,kind:r&&PETS.decode(r.c).k}; });
+  ok(TM.no.bag===1&&TM.no.pets===0&&TM.bag===0&&TM.pets===1&&TM.kind==='demon','TAMING 1 tames a frozen demon into a pet, less does not ('+J(TM)+')');
   const T=await pg.evaluate(async()=>{ FORAGE.give('demon_ice',1); DEMONS.T.BAG.push(.5); const n0=DEMONS.list.length; for(let i=0;i<200&&INV.items.demon_ice;i++)await new Promise(r=>setTimeout(r,300)); const d=DEMONS.list[DEMONS.list.length-1]; return {bag:INV.items.demon_ice||0,out:DEMONS.list.length-n0,track:!!d&&DEMONS.T.onTrack(d.x,d.z)}; });
   ok(T.bag===0&&T.out===1&&T.track,'a block kept too long thaws and the demon is out, down on the tracks ('+J(T)+')');
   await pg.evaluate(()=>{ for(const d of [...DEMONS.list])d.g.removeFromParent(); DEMONS.list.length=0; });

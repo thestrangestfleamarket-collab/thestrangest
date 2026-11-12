@@ -55,11 +55,11 @@ const OCTOBUSK={};
     for(const [a,k] of [[PI*.72,1.05],[-PI*.72,1],[PI*.42,.95],[-PI*.42,1.1]]){ const cx=Math.sin(a), cz=Math.cos(a), px=-cz*.4, pz=cx*.4;
       tent(legs,[[cx*.12,-.02,cz*.12],[cx*.2,-.22,cz*.2],[cx*.3,fy+.1,cz*.3],[cx*.45*k,fy+.02,cz*.45*k],[cx*.62*k+px*.25,fy+.02,cz*.62*k+pz*.25],[cx*.7*k+px*.45,fy+.08,cz*.7*k+pz*.45]],.085,.016,[0,-1,0]); }
     return sk; };
-  // standing on two arms, the guitar across it: the left arm out along the neck, the right across the body strumming
-  const L={ua:[52,-28],fa:[58,14]}, R=t=>({ua:[34,22],fa:[96+(PLAY&&PLAY.playing()?Math.sin(t*PI*2*2.4)*9:0),-18]});
+  // standing on two arms, the guitar across it (the two front arms are then put on the guitar, below)
+  const L={ua:[52,-28],fa:[58,14]}, R=()=>({ua:[34,22],fa:[96,-18]});
   let PLAY=null;
   const body=MERCH.add({key:'octobusk',label:'THE OCTOPUS IN THE COWBOY HAT',height:2.3,model,size:10.5,q:.4,at:100,hd:0,
-    idle:(t,N)=>MERCH.pose({nod:-6,bend:4,look:N&&!N.sheetOn?Math.sin(t*.4)*8:0,L:{...L,ua:[L.ua[0]+Math.sin(t*.7)*3,L.ua[1]]},R:R(t)}),
+    idle:(t,N)=>MERCH.pose({nod:-6,bend:4,look:N&&!N.sheetOn?Math.sin(t*.4)*8:0,L,R:R()}),
     root:(()=>{ const g=new THREE.Group(); g.name='octobusk'; scene.add(LEVELS.own(g,'station')); return g; })(),ground:(x,z)=>MODS.station.ground(x,z)});
   const N=OCTOBUSK.N=body&&body.npc;
   // his spot: the platform's far corner beside the route map, facing back down the platform
@@ -80,17 +80,39 @@ const OCTOBUSK={};
       SOL.down.push([cp.x-.34*M,cp.z-.34*M,cp.x+.34*M,cp.z+.34*M]);
       UI.thing({name:'THE OCTOPUS\'S GUITAR CASE (TIP HIM $1)',obj:C,reach:1.8*M,near:3*M,tall:C.position.y+.4*M,act:()=>{ if(!INV.afford(1))return SAY('YOU HAVE NO MONEY TO TIP HIM.','#c8a090');
         INV.pay(1); if(INV.save)INV.save(); SFX.play('ding',{vol:.4,pitch:1.5}); SAY('YOU DROP A DOLLAR IN THE CASE. THE OCTOPUS TIPS HIS HAT.','#f2c14e'); LINES.say(N,'Gracias.'); }}); }
-    /* the guitar: the real one, held across him (posed off his chest each frame), its pieces from the book played through its own voice */
-    const G=GUITAR.GHOLD.model(), gg=new THREE.Group(); gg.add(G); G.scale.setScalar(M*1.15); G.rotation.set(-.1,0,-1.22); G.position.set(-.36*M,-.12*M,0); body.root.add(gg);
-    const at=new V3(); let wait=4, inn=false;
+    /* the guitar: the real one, held across his chest; his two front arms play it as the book's hands do: the left arm's tip goes to the string and fret pressed, the right arm's tip plucks the string sounded (GHOLD.tips), each arm reaching there (GHOLD.IK) */
+    const GH=GUITAR.GHOLD, M4=THREE.Matrix4, G=GH.model(); G.matrixAutoUpdate=false; G.frustumCulled=false;
+    const tgL=[0,1,2,3,4].map(()=>new V3()), tgR=[0,1,2,3,4].map(()=>new V3()), EMPTY={tune:[],strum:[],lh:[],pos:[{t:0,p:1}]}, FBZ=GH.F.fb[1];
+    const TIPS={L:new V3(),R:new V3()}, TIP=new V3(0,-.12,.15), Gm=new M4(), GR=new M4(), Rm=new M4(), va=new V3(), vb=new V3(), W=[], ERR={L:0,R:0};
+    // each arm's tip turned onto the guitar: the left comes up behind the neck and lies over the board, the right comes over the upper bout and curls down into the strings
+    const TURN={L:new M4().makeBasis(new V3(0,1,0),new V3(0,0,-1),new V3(-1,0,0)),R:new M4().makeBasis(new V3(0,-1,0),new V3(-1,0,0),new V3(0,0,-1))}, POLE={L:new V3(.5,-1,-.3),R:new V3(-.8,-.2,-.7)};
+    // (past the neck's foot the left cannot come up behind the neck: there it reaches over the body's lower edge and curls down, as the right does from above)
+    const QN=new THREE.Quaternion().setFromRotationMatrix(TURN.L), QB=new THREE.Quaternion().setFromRotationMatrix(new M4().makeBasis(new V3(0,1,0),new V3(1,0,0),new V3(0,0,-1))), QT=new THREE.Quaternion(), TL=new M4();
+    let GBo=null, restM=null, last=0, seen=false;
+    const post=PMx=>{ const P=PMx.value, k=va.setFromMatrixColumn(P[1],0).length(), now=performance.now()/1000, dt=Math.min(.1,Math.max(0,now-last)); last=now;
+      if(!restM){ restM=body.binv.map(m=>m.clone().invert()); for(let i=0;i<9;i++)W[i]=new M4(); }
+      if(!GBo){ N.g.updateMatrixWorld(); const sg=va.setFromMatrixColumn(N.g.matrixWorld,0).length(), O=body.rest.torso, q=N.size*.82*M/(k*sg);
+        GBo=new M4().makeTranslation(O.x,O.y+.06,O.z+.3).multiply(new M4().makeScale(q,q,q)).multiply(new M4().makeTranslation(-.36,-.12,0)).multiply(new M4().makeRotationFromEuler(new THREE.Euler(-.1,0,-1.22))).multiply(new M4().makeScale(1.15,1.15,1.15)); }
+      Gm.multiplyMatrices(P[1],GBo); G.matrix.copy(Gm); G.matrixWorldNeedsUpdate=true; GR.extractRotation(Gm);
+      const Pl=PLAY&&PLAY.P, on=!!(Pl&&Pl.song>=0&&GUITAR.BOOK[Pl.song].c), sc=on?GUITAR.BOOK[Pl.song].c:EMPTY, t=on?now-Pl.s0:now, strum=GH.tips(sc,t,tgL,tgR);
+      // one tip for a hand's fingers: the left's where they press (a pressing finger counts most), the right's the finger nearest its string
+      { let w=0; va.set(0,0,0); for(let f=1;f<5;f++){ const q=1+8*Math.max(0,1-(tgL[f].z-FBZ)/.012); va.addScaledVector(tgL[f],q); w+=q; } va.multiplyScalar(1/w); va.z+=.014; if(!seen)TIPS.L.copy(va); TIPS.L.lerp(va,1-Math.exp(-dt*16)); }
+      { let w=0, lo=1e9; for(let d=0;d<4;d++)lo=Math.min(lo,tgR[d].z); va.set(0,0,0); for(let d=0;d<4;d++){ const q=Math.exp(-(tgR[d].z-lo)/.004); va.addScaledVector(tgR[d],q); w+=q; } va.multiplyScalar(1/w); if(strum)va.copy(strum); va.z+=.012; if(!seen)TIPS.R.copy(va); TIPS.R.lerp(va,1-Math.exp(-dt*28)); } seen=true;
+      for(const [sd,ids] of [['L',[3,4,5]],['R',[6,7,8]]]){ for(const i of ids)W[i].multiplyMatrices(P[i],restM[i]);
+        if(sd==='L'){ const u=Math.max(0,Math.min(1,(TIPS.L.y-.56)/.08)); TL.makeRotationFromQuaternion(QT.copy(QB).slerp(QN,u*u*(3-2*u))); }
+        Rm.multiplyMatrices(GR,sd==='L'?TL:TURN.R); const wr=va.copy(TIPS[sd]).applyMatrix4(Gm).sub(vb.copy(TIP).applyMatrix4(Rm).multiplyScalar(k));
+        GH.IK.reach(W,ids,wr,vb.copy(POLE[sd]).transformDirection(P[1])); const h=ids[2], p=vb.setFromMatrixPosition(W[h]); ERR[sd]=p.distanceTo(wr)/k;
+        W[h].copy(Rm).scale(va.set(k,k,k)).setPosition(p); for(const i of ids)P[i].multiplyMatrices(W[i],body.binv[i]); } };
+    let wait=4, inn=false;
     // the hardest piece in the book (the highest GUITAR it asks), played over and over
     const hardest=()=>{ let b=0; GUITAR.BOOK.forEach((t,i)=>{ const B=GUITAR.BOOK[b]; if((t.lvl||0)>(B.lvl||0)||(t.lvl||0)===(B.lvl||0)&&(t.secs||0)>(B.secs||0))b=i; }); return b; };
-    SYS.add('places',dt=>{ dt=dt||0; const here=SHARED.LVL==='down'&&N.g.visible&&Math.hypot(pos.x-N.st.x,pos.z-N.st.z)<30*M; gg.visible=N.g.visible;
-      if(N.g.visible&&N.PM){ MERCH.at(N,'torso',[0,.06,.3],at); gg.position.copy(at); gg.rotation.set(0,N.st.hd,0); gg.scale.setScalar(N.size*.82); }
+    SYS.add('places',dt=>{ dt=dt||0; const here=SHARED.LVL==='down'&&N.g.visible&&Math.hypot(pos.x-N.st.x,pos.z-N.st.z)<30*M;
+      if(N.PM&&N.PM.post!==post){ N.PM.post=post; N.g.add(G); }
       if(!here){ if(inn&&PLAY){ PLAY.stop(); PLAY.drop(); } inn=false; return; }
       if(!inn){ inn=true; GUITAR.loadSongs(); if(!PLAY)PLAY=GUITAR.npc('octobusk'); }
       if(!PLAY.playing()&&(wait-=dt)<=0){ PLAY.play(hardest()); wait=2.5; }
       PLAY.tick(N.st.x,N.st.z,.5); },'146zoc-octobusk');
+    OCTOBUSK.play={tips:TIPS,err:ERR,guitar:G};
     OCTOBUSK.now=()=>PLAY&&PLAY.playing()?GUITAR.BOOK[PLAY.P.song].name:null; }
   window.OCTOBUSK=OCTOBUSK;
   window.OCTODBG=()=>N?{x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),hd:+N.st.hd.toFixed(2),vis:N.g.visible,tris:body.tris(),song:OCTOBUSK.now?OCTOBUSK.now():null}:null; }

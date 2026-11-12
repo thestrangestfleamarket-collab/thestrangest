@@ -1,10 +1,11 @@
 // THE LOFT: No. 4's flat, everyone's for now (owner, 12 Nov 2026, of a photo, then of the room itself: "raise the 1st story height by 25%", "remove all the beams", "remove hang things from ceiling", "only 1" post): a tall room, a walnut upper floor along the blank wall, a second deck across the front behind glass on one post, the stair down from the landing by your door, the front wall in brick, tracks of spots flat on the ceiling, downlights under the deck, a radiator. The upper floor is walked (APTS.loftY) and furnished (pieces up there are solid only while you are: APTS.solidHi); its steel, woodwork and plaster are yours to choose in DECORATE (R.loftSet). R.loftDress lays the flat's own pieces out over both floors and hangs its rugs and pictures.
 import {SHARED, THREE} from './003-shx.js';
-import {MODS} from './006-map-pre.js';
+import {pos, UI} from './003b-systems.js';
+import {MODS, SYS} from './006-map-pre.js';
 import {ROOMK} from './150a-bedroom.js';
 { const APTS=MODS.apts;
   if(APTS&&APTS.R&&APTS.LOFT)ROOMK.parts.push(c=>{ '@apts'; const {apt,R,M,Lx,Ly,HW,part,mat,solid,shelf}=c, A=APTS.R, MPU=.907, V3=THREE.Vector3;
-    const MH=4.375, mx=Lx-3.9, SW=1.1, sv0=2.55, sv1=8.3, N=24, ST=MH/N, RUN=(sv1-sv0)/(N-1), DK={u0:mx-3.2,v1:2.5}, RH=1.02;
+    const MH=APTS.MH||4.375, mx=Lx-3.9, SW=1.1, sv0=2.55, sv1=8.3, N=24, ST=MH/N, RUN=(sv1-sv0)/(N-1), DK={u0:mx-3.2,v1:2.5}, RH=1.02;
     // what you can choose (DECORATE's LOFT tab): the steel (rails, the post, the tracks), the woodwork (stair treads, the decks' edges), the plaster (the decks' undersides, the stair's flight)
     const OPTS=R.loftOpts={steel:{n:'RAILS AND STEEL',o:{black:['BLACK',[22,22,24]],white:['WHITE',[236,236,232]],brass:['BRASS',[176,138,70]],bronze:['BRONZE',[92,66,44]],red:['OXIDE RED',[130,44,34]]}},
       wood:{n:'WOODWORK',o:{walnut:['WALNUT',[92,58,36]],oak:['OAK',[176,132,84]],ebony:['EBONY',[34,26,22]],cherry:['CHERRY',[128,56,36]],white:['WHITE',[232,228,220]]}},
@@ -16,7 +17,7 @@ import {ROOMK} from './150a-bedroom.js';
       for(const [a,col0,ax] of G){ const col=typeof col0[0]==='string'?[col0[1],col0[1],col0[1]]:col0, k=a.attributes.position.count; P.set(a.attributes.position.array,o*3); Nn.set(a.attributes.normal.array,o*3); cc.setRGB(col[0]/255,col[1]/255,col[2]/255,THREE.SRGBColorSpace); for(let i=0;i<k;i++){ C[(o+i)*3]=cc.r; C[(o+i)*3+1]=cc.g; C[(o+i)*3+2]=cc.b; Gr[(o+i)*3+ax]=1; } o+=k; a.dispose(); }
       const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); g.setAttribute('normal',new THREE.BufferAttribute(Nn,3)); g.setAttribute('color',new THREE.BufferAttribute(C,3)); g.setAttribute('aGr',new THREE.BufferAttribute(Gr,3)); return g; };
     const B=(w,h,d)=>new THREE.BoxGeometry(w,h,d), hs=(a,b)=>{ const s=Math.sin(a*127.1+b*311.7)*43758.5453; return s-Math.floor(s); };
-    const vc=(o={})=>new THREE.MeshLambertMaterial({vertexColors:true,...o}), L=[];
+    const UPL=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6), vc=(o={})=>new THREE.MeshLambertMaterial({vertexColors:true,clippingPlanes:[UPL],...o}), L=[];   // UPL: seen from above while you stand under the upper floor, it and what is on it are not drawn (owner, 12 Nov 2026: "2nd story shouldnt show when you're under it")
     // sawn wood: long streaks down the grain, bands across it, a knot here and there (drawn from where the surface is, so it needs no picture)
     const grain=(m,k)=>{ m.onBeforeCompile=sh=>{ sh.vertexShader='attribute vec3 aGr; varying vec3 vGp, vGa;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vGp=position; vGa=aGr;');
         sh.fragmentShader='varying vec3 vGp, vGa;\nfloat gH(vec3 p){ return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453); }\nfloat gN(vec3 p){ vec3 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); return mix(mix(mix(gH(i),gH(i+vec3(1,0,0)),f.x),mix(gH(i+vec3(0,1,0)),gH(i+vec3(1,1,0)),f.x),f.y),mix(mix(gH(i+vec3(0,0,1)),gH(i+vec3(1,0,1)),f.x),mix(gH(i+vec3(0,1,1)),gH(i+vec3(1,1,1)),f.x),f.y),f.z); }\n'+sh.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
@@ -30,7 +31,7 @@ import {ROOMK} from './150a-bedroom.js';
     const DECKS=[[mx,0,Lx,Ly],[DK.u0,0,mx,DK.v1],[mx-SW,sv1,mx,Ly]];
     for(const [u0,v0,u1,v1] of DECKS){ box(u0+.004,MH-.2,v0+.004,u1-.004,MH-.05,v1-.004,WHT); shelf(u0,v0,u1,v1,MH-.2,MH); }
     for(const [u0,v0,u1,v1] of [[mx-.035,DK.v1+.035,mx,sv1],[DK.u0-.035,DK.v1,mx,DK.v1+.035],[DK.u0-.035,0,DK.u0,DK.v1],[mx-SW-.035,sv1,mx-SW,Ly],[mx-SW,sv1-.035,mx-.035,sv1]])box(u0,MH-.34,v0,u1,MH+.02,v1,WAL2);
-    { const fm=mat([255,255,255],{}); R.loftFloor=fm;   // its boards are one of the room's floors (A.floor(k,true)), laid as the room's own are
+    { const fm=mat([255,255,255],{clippingPlanes:[UPL]}); R.loftFloor=fm;   // its boards are one of the room's floors (A.floor(k,true)), laid as the room's own are
       for(const [u0,v0,u1,v1] of DECKS){ const w=u1-u0, d=v1-v0, g=new THREE.PlaneGeometry(w,d).rotateX(-Math.PI/2), uv=g.attributes.uv; for(let i=0;i<uv.count;i++){ const u=u0+uv.getX(i)*w, v=v0+(1-uv.getY(i))*d; uv.setXY(i,u/Lx,1-v/Ly); } part(g,fm,(u0+u1)/2,MH,(v0+v1)/2,0,apt,false); } }
     { const u=DK.u0+.07, v=DK.v1-.07; box(u-.05,0,v-.05,u+.05,MH-.2,v+.05,STL); box(u-.11,0,v-.11,u+.11,.02,v+.11,STL); solid(u-.08,v-.08,u+.08,v+.08,MH-.2); }   // the front deck's one post, on its foot plate
 
@@ -47,7 +48,7 @@ import {ROOMK} from './150a-bedroom.js';
       for(let i=0;i<=n;i++){ const t=i/n, u=u0+(u1-u0)*t, v=v0+(v1-v0)*t, h=h0+(h1-h0)*t; L.push([B(.045,RH,.045),STL,u,h+RH/2,v]); }
       for(let k=0;k<6;k++){ const y=(k===5?RH-.01:.14+k*.165); L.push([B(k===5?.05:.018,k===5?.03:.018,sl),STL,(u0+u1)/2,(h0+h1)/2+y,(v0+v1)/2,rx,ry,0]); } };
     rail(mx-.06,DK.v1+.1,MH,mx-.06,sv1,MH); rail(mx-SW,sv0,ST,mx-SW,sv1,MH); rail(mx-SW,sv1,MH,mx-SW,Ly-.05,MH);
-    { const gm=APTS.glassMat?APTS.glassMat({opacity:.2}):mat([190,210,220],{transparent:true,opacity:.25});
+    { const gm=APTS.glassMat?APTS.glassMat({opacity:.2,clippingPlanes:[UPL]}):mat([190,210,220],{transparent:true,opacity:.25,clippingPlanes:[UPL]});
       for(const [u0,v0,u1,v1] of [[DK.u0,DK.v1,mx-SW,DK.v1],[DK.u0,.04,DK.u0,DK.v1]]){ const len=Math.hypot(u1-u0,v1-v0), ry=u0===u1?Math.PI/2:0; part(new THREE.PlaneGeometry(len,RH-.08),gm,(u0+u1)/2,MH+RH/2+.03,(v0+v1)/2,ry,apt,false).userData.soft=1;
         L.push([B(u1-u0+.05,.06,v1-v0+.05),STL,(u0+u1)/2,MH+.05,(v0+v1)/2],[B(u1-u0+.03,.025,v1-v0+.03),STL,(u0+u1)/2,MH+RH,(v0+v1)/2]); }
       rail(mx-SW,DK.v1,MH,mx-.06,DK.v1,MH); }
@@ -60,7 +61,7 @@ import {ROOMK} from './150a-bedroom.js';
     { const v=5, u0=1.4, u1=mx-1.6; L.push([B(u1-u0,.03,.045),STL,(u0+u1)/2,HW-.015,v]); for(let i=0;i<5;i++)head(u0+.3+(u1-u0-.6)*i/4,v,i%2?0:Math.PI,1.2,i===2); }
     { const u=mx+1.5; L.push([B(.045,.03,Ly-2.4),STL,u,HW-.015,Ly/2]); for(let i=0;i<5;i++)head(u,1.6+(Ly-3.2)*i/4,Math.PI/2,1.05,i===2); }
     { const Gs=byG(L); for(const k in Gs)part(merge(Gs[k]),MT[k][0],0,0,0,0,apt); part(merge(FX),vc(),0,0,0,0,apt); }
-    { const lm=new THREE.MeshBasicMaterial({color:0xfff0d0}); for(const [u,y,v,yaw,pitch] of lens){ const m=part(new THREE.CircleGeometry(.042,12),lm,u,y,v,0,apt,false); m.rotation.order='YXZ'; m.rotation.set(pitch,yaw,0); m.userData.soft=1; }
+    { const lm=new THREE.MeshBasicMaterial({color:0xfff0d0,clippingPlanes:[UPL]}); for(const [u,y,v,yaw,pitch] of lens){ const m=part(new THREE.CircleGeometry(.042,12),lm,u,y,v,0,apt,false); m.rotation.order='YXZ'; m.rotation.set(pitch,yaw,0); m.userData.soft=1; }
       for(const v of [1.4,3.3,5.2,7.1,9]){ const m=part(new THREE.CircleGeometry(.07,14).rotateX(Math.PI/2),lm,mx+1.9,MH-.21,v,0,apt,false); m.userData.soft=1; }
       spots.forEach(([u,y,v,dx,dy,dz,yaw,pitch],i)=>{ const Lt=new THREE.SpotLight(0xfff2e0,6,14*M,.7,.55,1.6); Lt.userData.pool=true; Lt.userData.i0=6; Lt.userData.on=true; Lt.userData.yaw=yaw*180/Math.PI; Lt.userData.pitch=pitch*180/Math.PI; Lt.userData.angle=40; Lt.position.set(u,y,v); Lt.target.position.set(u+dx,y+dy,v+dz); apt.add(Lt); apt.add(Lt.target); R.ceil.push({id:'loft-track-'+(i+1),name:i?'UPSTAIRS TRACK':'ROOM TRACK',L:Lt}); });
       { const Lt=new THREE.PointLight(0xffd9a8,2.4,7*M,1.8); Lt.userData.pool=true; Lt.userData.i0=2.4; Lt.userData.on=true; Lt.position.set(mx+1.9,MH-.6,5.2); apt.add(Lt); R.ceil.push({id:'loft-den',name:'DEN DOWNLIGHTS',L:Lt}); } }
@@ -70,6 +71,7 @@ import {ROOMK} from './150a-bedroom.js';
     APTS.loftY=(x,z)=>{ const u=(x-ax)/M, v=(z-az)/M, h=(SHARED.py-fy)/M; if(u>mx-SW&&u<mx&&v>sv0-.02&&v<sv1){ const hs_=Math.min(N-1,Math.max(1,Math.ceil((v-sv0)/RUN+.001)))*ST; return h>hs_-.75?fy+hs_*M:null; }
       return onDeck(u,v)&&h>MH-.75?fy+MH*M:null; };
     APTS.loftUp=()=>(SHARED.py-fy)/M>MH-.55;
+    R.loftUnder=()=>{ const u=(pos.x-ax)/M, v=(pos.z-az)/M, under=!!APTS.inReal&&!UI.persp&&(SHARED.py-fy)/M<MH-.6&&onDeck(u,v); UPL.constant=under?fy+(MH-.36)*M:1e6; if(under!==R.loftHid){ R.loftHid=under; const A2=ROOMK.api; if(A2)for(const un of A2.units()){ if(un.gone)continue; const h=un.loose?A2.toApt(un.obj.position.x,un.obj.position.y,un.obj.position.z).h:un.obj.position.y; if(h>MH-.3)un.obj.visible=!under; } } };
     const hi=(u0,v0,u1,v1)=>APTS.solidHi(A.x0+u0/MPU,A.y0+v0/MPU,A.x0+u1/MPU,A.y0+v1/MPU), T=.08;
     hi(-.4,-.4,Lx+.4,0); hi(-.4,Ly,Lx+.4,Ly+.4); hi(-.4,0,0,Ly); hi(Lx,0,Lx+.4,Ly);                                       // the walls
     hi(mx-T,DK.v1,mx,sv1); hi(mx-SW-T,sv0,mx-SW,Ly); hi(DK.u0,DK.v1,mx,DK.v1+T); hi(DK.u0-T,0,DK.u0,DK.v1+T);              // the rails
@@ -90,4 +92,5 @@ import {ROOMK} from './150a-bedroom.js';
   // the loft's own start: light oak below, walnut above, white walls with the front one in brick (yours to change in DECORATE); its colours and which laying-out it has had are kept with your layout
   if(APTS&&APTS.R&&APTS.LOFT){ ROOMK.built.push(A=>{ '@apts'; if(!A.R.loft)return; A.wall('white','all'); A.wall('brick','Wf'); A.floor('oak'); A.floor('walnut',true); });
     ROOMK.keep.push({out:(L,A)=>{ if(A&&A.R.loft){ L.loft={...A.R.loftK}; if(A.R.loftV)L.loftV=A.R.loftV; } },in:(L,A)=>{ if(A&&A.R.loft){ if(L.loft)for(const k in L.loft)A.R.loftSet(k,L.loft[k]); A.R.loftV=L.loftV||0; } }}); }
+  SYS.add('places',()=>{ const A=ROOMK.api, R=A&&A.R; if(R&&R.loftUnder)R.loftUnder(); },'150ac-loft');
   window.LOFTDBG=()=>{ const A=ROOMK.api, R=A&&A.R, Lf=R&&R.loft; if(!Lf)return null; const W=(u,h,v)=>A.W(u,h,v); return {MH:Lf.MH,top:W(Lf.top[0],Lf.MH,Lf.top[1]).toArray(),foot:W(Lf.foot[0],0,Lf.foot[1]).toArray(),deck:W(Lf.mx+1.6,Lf.MH,A.Ly/2).toArray(),h:(SHARED.py-R.fy)/A.M,up:!!(APTS.loftUp&&APTS.loftUp()),HW:A.HW,M:A.M,fy:R.fy}; }; }

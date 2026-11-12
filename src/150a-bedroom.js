@@ -80,7 +80,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null,keep:[],always:new Set(),save:(
       let CUR=null; const cur=()=>CUR?CUR.obj:apt;   // the unit being built (a piece you can move), or the room itself
       const part=(geo,m,u,h,v,ry=0,par=cur(),cast=true)=>{ const me=new THREE.Mesh(geo,m); me.position.set(u,h,v); me.rotation.y=ry; me.castShadow=cast; me.receiveShadow=true; par.add(me); return me; };
       const thing=(u,h,v,ry=0)=>{ const g=new THREE.Group(); g.position.copy(W(u,h,v)); g.rotation.y=ry; g.scale.setScalar(M); scene.add(g); return g; };
-      const clip=k=>k?{clippingPlanes:[WPL[k]]}:{};
+      const clip=k=>k?{clippingPlanes:[WPL[k]],userData:{wk:k}}:{};
       // what loose things stand on: a solid up to a top (metres over the floor), a shelf between two heights; the top a hair under the surface, or the physics leaves it out
       const solidNow=(u0,v0,u1,v1,t)=>APTS.solid(A.x0+u0/MPU,A.y0+v0/MPU,A.x0+u1/MPU,A.y0+v1/MPU,(fy+(t-.002)*M-Yr(APTS.RB))/(Yr(1)-Yr(0)));
       const shelfNow=(u0,v0,u1,v1,b,t)=>APTS.shelf&&APTS.shelf(A.x0+u0/MPU,A.y0+v0/MPU,A.x0+u1/MPU,A.y0+v1/MPU,fy+b*M,fy+(t-.002)*M);
@@ -94,15 +94,15 @@ const ROOMK={parts:[],wires:{},built:[],api:null,keep:[],always:new Set(),save:(
       part(new THREE.BoxGeometry(Lx+2*TH,.3,Ly+2*TH),mat([176,182,182],{roughness:.9}),Lx/2,-.152,Ly/2,0,apt,false);   // the slab the room stands on, its edge seen against the dark
       const rect=(w,h,holes=[])=>{ const sh=new THREE.Shape([new THREE.Vector2(0,0),new THREE.Vector2(w,0),new THREE.Vector2(w,h),new THREE.Vector2(0,h)]); for(const [a0,a1,b0,b1] of holes)sh.holes.push(new THREE.Path([new THREE.Vector2(a0,b0),new THREE.Vector2(a1,b0),new THREE.Vector2(a1,b1),new THREE.Vector2(a0,b1)])); return sh; };
       const WW=2*WI.WHW*MPU, fw=WI.FWU.map(u=>u*MPU), du=WI.DU*MPU, wz=WI.WZ.map(z=>px(z-.15)), FD=[du-.64,du+.64,0,3.06], BD=[du-.665,du+.665,0,2.93], SWS=WI.SIDE.map(k=>[Ly*(1-k)-TH-.0054,wz[0],wz[1],WW,FRAME]);   // the side walls' windows where the house has them outside: centre, sill, head, width, frame
-      const win=c=>[c-WW/2,c+WW/2,wz[0],wz[1]];
+      const win=c=>[c-WW/2,c+WW/2,wz[0],wz[1]], MHu=APTS.MH||0, winU=c=>[c-WW/2,c+WW/2,wz[0]+MHu,wz[1]+MHu], SWU=MHu?SWS.map(w=>[w[0],w[1]+MHu,w[2]+MHu,w[3],w[4]]):[];   // the loft's upper floor has the same windows over the lower ones (owner, 12 Nov 2026: "add windows to 2nd story, functional like other windows")
       // aged plaster: cream kept, but soft stains, faint streaks and fine grain so the walls aren't flat (owner: grittier, keep cozy)
       const wallTex=(()=>{ const t=tex(512,512,(g,W,H)=>{ g.fillStyle='#ffffff'; g.fillRect(0,0,W,H);
         for(let i=0;i<50;i++){ g.strokeStyle=`rgba(120,102,72,${.015+rnd()*.03})`; g.lineWidth=.8+rnd()*1.6; g.beginPath(); const x=rnd()*W, y0=rnd()*H*.4; g.moveTo(x,y0); g.lineTo(x+(rnd()-.5)*18,y0+H*(.3+rnd()*.5)); g.stroke(); }
         for(let i=0;i<900;i++){ const b=rnd()<.5; g.fillStyle=`rgba(${b?70:255},${b?60:244},${b?44:220},${.02+rnd()*.03})`; g.fillRect(rnd()*W,rnd()*H,1,1); } }); t.wrapS=t.wrapT=THREE.MirroredRepeatWrapping; t.repeat.set(.2,.5); return t; })();
       R.plaster=wallTex;
       const wallOf=(k,len,holes,u,v,ry)=>{ const wm=mat(CREAM,{roughness:.96,map:wallTex,bumpMap:wallTex,bumpScale:.8,side:THREE.DoubleSide,shadowSide:THREE.DoubleSide,...clip(k)}); R.wallMats.push(wm); return part(PEEK.mark(new THREE.ExtrudeGeometry(rect(len,HW,holes),{depth:TH,bevelEnabled:false})),[wm,mat([200,206,208],{roughness:.9,side:THREE.DoubleSide,...clip(k)})],u,0,v,ry,apt); };
-      wallOf('Wf',Lx,[...fw.map(win),FD],0,-TH,0); wallOf('Wb',Lx,[BD],0,Ly,0);
-      wallOf('Ww',Ly,SWS.map(w=>[w[0]-w[3]/2,w[0]+w[3]/2,w[1],w[2]]),0,0,-Math.PI/2); wallOf('We',Ly,SWS.map(w=>[Ly-w[0]-w[3]/2,Ly-w[0]+w[3]/2,w[1],w[2]]),Lx,Ly,Math.PI/2);
+      wallOf('Wf',Lx,[...fw.map(win),...(MHu?fw.map(winU):[]),FD],0,-TH,0); wallOf('Wb',Lx,[BD],0,Ly,0);
+      wallOf('Ww',Ly,SWS.concat(SWU).map(w=>[w[0]-w[3]/2,w[0]+w[3]/2,w[1],w[2]]),0,0,-Math.PI/2); wallOf('We',Ly,SWS.map(w=>[Ly-w[0]-w[3]/2,Ly-w[0]+w[3]/2,w[1],w[2]]),Lx,Ly,Math.PI/2);
       // the soft dark where the floor meets each wall (light doesn't reach into the corner)
       { const ao=tex(4,64,(g,W,H)=>{ const gr=g.createLinearGradient(0,0,0,H); gr.addColorStop(0,'rgba(0,0,0,1)'); gr.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle=gr; g.fillRect(0,0,W,H); });
         const am=new THREE.MeshBasicMaterial({color:0x000000,alphaMap:ao,transparent:true,opacity:.42,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
@@ -152,6 +152,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null,keep:[],always:new Set(),save:(
           part(rbox(.03,.06,.008,.003),br,w/2-.1,.86*h/2.3,z,0,leaf); }   // the keyhole's plate
       };
       for(const f of fw)windowAt('Wf',f,0,0,[0,-1,1,0],wz[0],wz[1],WW);   // a small room has one front window
+      if(MHu){ for(const f of fw)windowAt('Wf',f,0,0,[0,-1,1,0],wz[0]+MHu,wz[1]+MHu,WW); for(const w of SWU)windowAt('Ww',w[0],0,Math.PI/2,[-1,0,0,1],w[1],w[2],w[3],[3,3],w[4]).position.set(0,0,w[0]); }
       for(const w of SWS){ windowAt('Ww',w[0],0,Math.PI/2,[-1,0,0,1],w[1],w[2],w[3],[3,3],w[4]).position.set(0,0,w[0]); windowAt('We',w[0],0,-Math.PI/2,[1,0,0,-1],w[1],w[2],w[3],[3,3],w[4]).position.set(Lx,0,w[0]); }
       doorAt('Wf',du,0,0,[0,-1,1,0],FD); doorAt('Wb',du,Ly,Math.PI,null,BD);
 
@@ -295,7 +296,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null,keep:[],always:new Set(),save:(
         for(const w of R.wins){ w.o+=((w.open?w.H:0)-w.o)*Math.min(1,h*3); w.sash.position.y=w.o; w.br+=((w.open?1:0)-w.br)*Math.min(1,h*.6); any=Math.max(any,w.br); }
         AMB.breeze=inn?any:0; }
       // what hangs high on a wall that is cut away goes with it (the cubbies, the shelves and what stands on them), so nothing floats between you and the camera
-      if((R.hiT=(R.hiT||0)-(dt||0))<=0){ R.hiT=.2; const A=R.api, cut=k=>APTS.WPL[k].constant<1e5; darken(R.apt); for(const un of R.units)darken(un.obj);
+      if((R.hiT=(R.hiT||0)-(dt||0))<=0){ R.hiT=.2; const A=R.api, cut=k=>APTS.WPL[k].constant<1e5; if(APTS.relink&&(R.relN=(R.relN||0)+1)%10===1)APTS.relink(R.apt); darken(R.apt); for(const un of R.units)darken(un.obj);
         for(const un of R.units){ if(un.gone)continue; const o=un.obj, p=un.loose?A.toApt(o.position.x,o.position.y,o.position.z):{u:o.position.x,h:o.position.y,v:o.position.z};
           const hide=p.h>1.2&&((cut('Ww')&&p.u<.5)||(cut('We')&&A.Lx-p.u<.5)||(cut('Wf')&&p.v<.5)||(cut('Wb')&&A.Ly-p.v<.5));
           if(hide!==!!un.st.hi){ un.st.hi=hide; o.traverse(q=>{ if(q.isMesh&&!q.userData.hit)q.visible=!hide; }); } } }

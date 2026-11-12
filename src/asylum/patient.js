@@ -1,31 +1,44 @@
-// the asylum's patient: his body, how he walks, and the rule that he only moves in the dark
+// the asylum's patient: a scanned human head on a motion-captured body (data/asylum/), how he walks, and the rule that he only moves in the dark
 import * as T from 'three';
-import { toon, glow, tex } from './tex.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { lit } from './tex.js';
+import bodyGlb from '../../data/asylum/body.glb';
+import headGlb from '../../data/asylum/head.glb';
+import faceJpg from '../../data/asylum/face.jpg';
+import headNormal from '../../data/asylum/head-normal.jpg';
 import { G } from './state.js';
 import { W, GW, GH, cell, los, litAt } from './world.js';
 import { A } from './audio.js';
 
-const skin = toon(0x86897a), dark = glow(0x000000), eye = glow(0xd8e0d0), nail = toon(0x2a2620);
-const gown = toon({ map: tex(64, 128, (g, w, h) => { g.fillStyle = '#626c64'; g.fillRect(0, 0, w, h); g.fillStyle = 'rgba(40,44,40,.5)'; for (let x = 4; x < w; x += 9) g.fillRect(x, 0, 1, h);
-  for (const [x, y, r] of [[20, 40, 16], [44, 90, 22], [30, 118, 14]]) { const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(70,10,8,.9)'); gr.addColorStop(1, 'rgba(60,20,10,0)'); g.fillStyle = gr; g.fillRect(0, 0, w, h); } g.fillStyle = 'rgba(20,16,10,.6)'; g.fillRect(0, h - 16, w, 16); }) });
-const m = (geo, mat, p, x = 0, y = 0, z = 0) => { const o = new T.Mesh(geo, mat); o.position.set(x, y, z); o.castShadow = true; p.add(o); return o; };
-const pv = (p, x, y, z) => { const g = new T.Group(); g.position.set(x, y, z); p.add(g); return g; };
-const limb = (p, r, l, mat) => m(new T.CylinderGeometry(r * .8, r, l, 7), mat, p, 0, -l / 2, 0);
+const g = new T.Group(), R = { ready: false, mixer: null, w: {}, a: {}, b: {}, head: null, acc: 0 }; g.visible = false;
+const tx = (url, srgb, rep) => { const t = new T.TextureLoader().load(url); t.flipY = !!rep ? false : true; if (srgb) t.colorSpace = T.SRGBColorSpace; if (rep) { t.wrapS = t.wrapT = T.RepeatWrapping; t.repeat.set(rep, rep); } return t; };
+const parse = u8 => new Promise((res, rej) => new GLTFLoader().parse(u8.buffer.slice(u8.byteOffset, u8.byteOffset + u8.byteLength), '', res, rej));
+Promise.all([parse(bodyGlb), parse(headGlb)]).then(([body, hd]) => {
+  const rig = body.scene; rig.rotation.y = Math.PI;
+  rig.traverse(o => { if (o.isBone) R.b[o.name.replace('mixamorig', '').replace(':', '')] = o; if (!o.isMesh) return; o.castShadow = true; o.frustumCulled = false; if (/visor/i.test(o.name)) { o.visible = false; return; }
+    const im = o.material.map && o.material.map.image; if (!im) return; const c = document.createElement('canvas'); c.width = c.height = 1024; const x = c.getContext('2d'); x.drawImage(im, 0, 0, 1024, 1024); const d = x.getImageData(0, 0, 1024, 1024), p = d.data;
+    for (let i = 0; i < p.length; i += 4) { const l = Math.min(1, (p[i] * .3 + p[i + 1] * .59 + p[i + 2] * .11) / 255 * 1.7 + .06); p[i] = 104 * l; p[i + 1] = 98 * l; p[i + 2] = 84 * l; } x.putImageData(d, 0, 0);
+    for (let i = 0; i < 90; i++) { const X = Math.random() * 1024, Y = Math.random() * 1024, r = 10 + Math.random() * 60, gr = x.createRadialGradient(X, Y, 0, X, Y, r); gr.addColorStop(0, i % 3 ? 'rgba(46,34,16,.55)' : 'rgba(64,8,6,.8)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = gr; x.fillRect(X - r, Y - r, r * 2, r * 2); }
+    const t = new T.CanvasTexture(c); t.flipY = false; t.colorSpace = T.SRGBColorSpace; o.material = lit({ map: t, normalMap: o.material.normalMap, rough: .9 }); o.material.bumpMap = null; });
+  const h0 = new T.Box3().setFromObject(rig), k = 1.93 / (h0.max.y - h0.min.y); rig.scale.set(k * .9, k, k * .9); g.add(rig);
+  R.mixer = new T.AnimationMixer(rig);
+  for (const c of body.animations) { let clip = c; const n = c.name.toLowerCase(); if (!['idle', 'walk', 'run'].includes(n)) continue;
+    const a = R.a[n] = R.mixer.clipAction(clip); a.setEffectiveWeight(n === 'idle' ? 1 : 0); a.play(); R.w[n] = n === 'idle' ? 1 : 0; }
+  let hm = null; hd.scene.traverse(o => { if (o.isMesh) hm = o; }); const geo = hm.geometry.clone(), uv = geo.attributes.uv, pos = geo.attributes.position;
+  const at = (u, v) => { let b = 0, bd = 9; for (let i = 0; i < uv.count; i++) { const d = (uv.getX(i) - u) ** 2 + (1 - uv.getY(i) - v) ** 2; if (d < bd) { bd = d; b = i; } } return new T.Vector3().fromBufferAttribute(pos, b); };
+  const mouth = at(.5, .468), chin = at(.5, .57), eyeL = at(.43, .31), eyeR = at(.572, .31), drop = chin.clone().sub(mouth), mt = new Float32Array(pos.count * 3);
+  for (let i = 0; i < uv.count; i++) { const u = uv.getX(i), v = 1 - uv.getY(i); if (v < .47) continue; const d = Math.hypot((u - .5) * 1.25, v - .55), w = Math.max(0, 1 - d / .16); if (w <= 0) continue; const s = w * w * (3 - 2 * w) * 1.25; mt[i * 3] = drop.x * s; mt[i * 3 + 1] = drop.y * s; mt[i * 3 + 2] = drop.z * s; }
+  geo.morphAttributes.position = [new T.Float32BufferAttribute(mt, 3)]; geo.morphTargetsRelative = true;
+  const fm = lit({ map: tx(faceJpg, true), normalMap: tx(headNormal, false), rough: .48 }); fm.bumpMap = null;
+  const head = R.head = new T.Mesh(geo, fm); head.castShadow = true; head.frustumCulled = false; head.morphTargetInfluences = [0]; head.updateMorphTargets();
+  const eyeW = eyeL.distanceTo(eyeR), sc = .064 / eyeW, mid = eyeL.clone().add(eyeR).multiplyScalar(.5), hb = R.b.Head, hs = new T.Vector3(); hb.getWorldScale(hs);
+  const hold = R.hold = new T.Group(); hb.add(hold); hb.scale.setScalar(.01); hb.getWorldScale(hs); hold.scale.setScalar(1 / hs.y); head.scale.setScalar(sc * 1.2); head.position.copy(mid).multiplyScalar(-sc * 1.2).add(new T.Vector3(0, .105, .085)); hold.add(head);
+  R.ready = true;
+}).catch(e => console.warn('the patient did not load', e));
+const qa = new T.Quaternion(), qb = new T.Quaternion(), va = new T.Vector3(), UP = new T.Vector3(0, 1, 0);
+function aim(bone, child, dir, w) { bone.parent.getWorldQuaternion(qa).invert(); va.copy(dir).normalize().applyQuaternion(qa); qb.setFromUnitVectors(UP.copy(child.position).normalize(), va); bone.quaternion.slerp(qb, w); }
 
-const g = new T.Group(), B = {};
-B.hip = pv(g, 0, .98, 0); B.torso = pv(B.hip, 0, 0, 0);
-m(new T.CylinderGeometry(.15, .19, .62, 9), gown, B.torso, 0, .31, 0); m(new T.CylinderGeometry(.2, .27, .52, 9, 1, true), gown, B.hip, 0, -.25, 0).material.side = T.DoubleSide;
-m(new T.CapsuleGeometry(.075, .36, 4, 8), gown, B.torso, 0, .6, 0).rotation.z = Math.PI / 2; m(new T.CylinderGeometry(.04, .05, .14, 7), skin, B.torso, 0, .7, .02);
-B.head = pv(B.torso, 0, .78, .03); const hd = m(new T.SphereGeometry(.115, 14, 10), skin, B.head, 0, .08, 0); hd.scale.set(1, 1.28, 1.06);
-for (const s of [-1, 1]) { const so = m(new T.SphereGeometry(.034, 8, 6), dark, B.head, s * .045, .1, .092); so.scale.set(1, 1.5, .6); m(new T.SphereGeometry(.007, 6, 4), eye, B.head, s * .045, .098, .113); }
-B.jaw = pv(B.head, 0, .0, .04); m(new T.BoxGeometry(.1, .05, .1), skin, B.jaw, 0, -.045, .03); B.mouth = m(new T.SphereGeometry(.04, 8, 6), dark, B.head, 0, .0, .1); B.mouth.scale.set(1, .5, .5);
-for (let i = 0; i < 9; i++) { const a = Math.PI - 1.5 + i * .375, hl = .22 + (i % 3) * .09, h = m(new T.BoxGeometry(.014, hl, .008), dark, B.head, Math.sin(a) * .116, .2 - hl / 2, Math.cos(a) * .116); h.rotation.y = a; }
-B.arm = [-1, 1].map(s => { const sh = pv(B.torso, s * .24, .6, 0); limb(sh, .045, .38, skin); const el = pv(sh, 0, -.38, 0); limb(el, .038, .4, skin); const hn = pv(el, 0, -.4, 0); m(new T.BoxGeometry(.07, .1, .03), skin, hn, 0, -.05, 0);
-  for (let f = 0; f < 4; f++) { const fg = m(new T.BoxGeometry(.012, .15, .012), skin, hn, -.027 + f * .018, -.17, 0); m(new T.BoxGeometry(.012, .03, .013), nail, fg, 0, -.08, 0); } return { sh, el }; });
-B.leg = [-1, 1].map(s => { const hp = pv(B.hip, s * .1, 0, 0); limb(hp, .06, .47, skin); const kn = pv(hp, 0, -.47, 0); limb(kn, .048, .47, skin); m(new T.BoxGeometry(.08, .05, .22), skin, kn, 0, -.485, .06); return { hp, kn }; });
-g.visible = false;
-
-const dist = new Int16Array(GW * GH); let bfsT = 0, target = null, ph = 0, vx = 0, vz = 0;
+const dist = new Int16Array(GW * GH); let bfsT = 0, target = null, vx = 0, vz = 0, burst = 0, lurches = 0, croakT = 5;
 export const P = { g, x: 0, z: 0, mode: 'off', frozen: false, speed: 1.25, lookT: 0, blockT: 0, respawnAt: 1e9, on: false, opt: {}, onKill: null, onTubeKill: null, dist: () => Math.hypot(P.x - G.head.x, P.z - G.head.z), pose, hide, stalk, chase, update, face, bfs };
 
 function passable(cx, cz) { const c = cell(cx, cz); if (c === '#' || W.blocked.has(cz * GW + cx)) return false; if (c === 'D') { const d = W.doorAt[cz * GW + cx]; return !d.locked && d.id !== 'exit'; } return true; }
@@ -37,7 +50,7 @@ function bfs() {
 function face(x, z) { g.rotation.y = Math.atan2(x - P.x, z - P.z); }
 function show() { g.visible = true; g.position.set(P.x, P.opt.crouch ? -P.opt.crouch : 0, P.z); }
 function pose(x, z, opt = {}) { P.mode = 'pose'; P.x = x; P.z = z; P.opt = opt; target = null; face(opt.face ? opt.face[0] : G.head.x, opt.face ? opt.face[1] : G.head.z); show(); }
-function hide() { P.mode = 'off'; g.visible = false; P.frozen = false; P.lookT = P.blockT = 0; A.breath([0, 0, 0], 0); }
+function hide() { burst = 0; P.mode = 'off'; g.visible = false; P.frozen = false; P.lookT = P.blockT = 0; A.breath([0, 0, 0], 0); }
 function stalk(delay) { P.on = true; if (P.mode === 'pose') { P.mode = 'stalk'; P.opt = {}; target = null; } else { hide(); P.respawnAt = G.t + delay; } }
 function chase(x, z) { P.on = true; P.mode = 'chase'; P.x = x; P.z = z; P.opt = {}; target = null; show(); }
 function spawn() {
@@ -46,7 +59,7 @@ function spawn() {
   if (!c.length) { P.respawnAt = G.t + 3; return; }
   const s = c[Math.random() * c.length | 0]; P.x = s[0] + .5; P.z = s[1] + .5; P.mode = 'stalk'; P.opt = {}; target = null; P.lookT = P.blockT = 0; show();
 }
-function lit() {
+function inBeam() {
   if (!G.lightOn || G.lightCut > 0 || G.batt <= 0) return false; const dx = P.x - G.lightPos.x, dz = P.z - G.lightPos.z, dy = 1.3 - G.lightPos.y, d = Math.hypot(dx, dy, dz);
   if (d > 13) return false; if (d > .3 && (dx * G.lightDir.x + dy * G.lightDir.y + dz * G.lightDir.z) / d < .9) return false; return los(G.head.x, G.head.z, P.x, P.z);
 }
@@ -54,7 +67,7 @@ function update(dt) {
   if (P.mode === 'off') { if (P.on && G.t > P.respawnAt && G.mode === 'play') spawn(); return; }
   const d = P.dist(), mv = P.mode === 'stalk' || P.mode === 'chase'; let sp = 0;
   if (mv && G.mode === 'play') {
-    const fl = P.mode === 'stalk' && lit(); let tb = null;
+    const fl = P.mode === 'stalk' && burst <= 0 && inBeam(); let tb = null;
     if ((bfsT -= dt) <= 0) { bfs(); bfsT = .25; }
     const cx = Math.floor(P.x), cz = Math.floor(P.z);
     if (!target || (Math.abs(P.x - target[0]) < .06 && Math.abs(P.z - target[1]) < .06)) {
@@ -65,23 +78,29 @@ function update(dt) {
     if (d < 1.3 && los(P.x, P.z, G.head.x, G.head.z)) target = [G.head.x, G.head.z];
     const tx = target[0] - P.x, tz = target[1] - P.z, tl = Math.hypot(tx, tz) || 1, dc = W.doorAt[Math.floor(target[1]) * GW + Math.floor(target[0])];
     if (P.mode === 'stalk') tb = litAt(P.x + tx / tl * .8, P.z + tz / tl * .8) || litAt(P.x, P.z);
-    P.frozen = fl || !!tb;
-    if (fl) { if ((P.lookT += dt) > 5.5) { G.lightCut = .4; A.click(null); hide(); P.respawnAt = G.t + 16 + Math.random() * 14; return; } } else P.lookT = Math.max(0, P.lookT - dt * .5);
+    P.frozen = (fl || !!tb) && burst <= 0;
+    if (fl) { if (d < 6.5 && Math.random() < dt * .35) G.lightCut = .1;
+      if ((P.lookT += dt) > 3.6) { P.lookT = 0; A.click(null); if (++lurches > 3) { lurches = 0; G.lightCut = .45; hide(); P.respawnAt = G.t + 14 + Math.random() * 12; return; } G.lightCut = .22; burst = Math.min(1.5, Math.max(0, d - 2)); A.croak([P.x, 1.6, P.z]); } } else P.lookT = Math.max(0, P.lookT - dt * .5);
+    if ((croakT -= dt) < 0) { croakT = 5 + Math.random() * 7; if (P.mode === 'stalk' && d < 12 && !fl) A.croak([P.x, 1.6, P.z]); }
     if (tb && !fl) { if ((P.blockT += dt) > 3.5) { P.blockT = 0; tb.state = 'dead'; A.spark([tb.x, 2.7, tb.z]); if (P.onTubeKill) P.onTubeKill(tb); } } else P.blockT = Math.max(0, P.blockT - dt);
     if (!P.frozen) {
-      if (dc && dc.a < .6) { dc.t = 1; } else { sp = P.mode === 'chase' ? P.speed * 2.75 : P.speed; const st = Math.min(sp * dt, tl); P.x += tx / tl * st; P.z += tz / tl * st; vx = tx / tl; vz = tz / tl; }
+      if (dc && dc.a < .6) { dc.t = 1; } else { sp = burst > 0 ? 9 : P.mode === 'chase' ? P.speed * 2.75 : P.speed; if (burst > 0 && ((burst -= sp * dt) <= 0 || d < 1.9)) burst = 0; const st = Math.min(sp * dt, tl); P.x += tx / tl * st; P.z += tz / tl * st; vx = tx / tl; vz = tz / tl; }
       const a = Math.atan2(vx, vz); let da = a - g.rotation.y; da = Math.atan2(Math.sin(da), Math.cos(da)); g.rotation.y += da * Math.min(1, dt * 8);
     }
     if (d < .85 && los(P.x, P.z, G.head.x, G.head.z) && P.onKill) { P.onKill(); return; }
   }
   if (P.mode === 'pose' && P.opt.track) face(G.head.x, G.head.z);
   g.position.set(P.x, P.opt.crouch ? -P.opt.crouch : 0, P.z);
-  ph += sp * dt * 3.4; const s = Math.sin(ph), run = P.mode === 'chase' || P.opt.reach, kill = P.mode === 'kill';
-  B.leg.forEach((l, i) => { const k = i ? -s : s; l.hp.rotation.x = sp ? k * .55 : 0; l.kn.rotation.x = sp ? Math.max(0, -k) * .8 + .1 : (P.opt.crouch ? .0 : 0); });
-  B.arm.forEach((a, i) => { const k = i ? s : -s; a.sh.rotation.x = run || kill ? -1.35 + k * .15 : sp ? k * .25 - .1 : -.05; a.sh.rotation.z = (i ? 1 : -1) * (run || kill ? -.12 : .06); a.el.rotation.x = run || kill ? -.25 : -.18; });
-  B.torso.rotation.x = run ? .42 : .2; B.hip.position.y = .98 - Math.abs(Math.cos(ph)) * (sp ? .03 : 0);
-  const tw = P.frozen ? 0 : Math.sin(G.t * 31) > .93 ? .25 : 0; let hy = Math.atan2(G.head.x - P.x, G.head.z - P.z) - g.rotation.y; hy = Math.atan2(Math.sin(hy), Math.cos(hy));
-  B.head.rotation.set(-.15 + (run ? -.3 : 0), Math.max(-1.3, Math.min(1.3, hy)), tw + (P.opt.tilt || 0));
-  const jaw = kill || P.opt.jaw ? 1 : run ? .6 + Math.sin(G.t * 20) * .2 : .1; B.jaw.position.y = -jaw * .07; B.mouth.scale.set(1 + jaw * .3, .5 + jaw * 2.2, .5); B.mouth.position.y = -jaw * .035;
+  if (R.ready) {
+    const run = P.mode === 'chase' || burst > 0, kill = P.mode === 'kill', reach = run || kill || P.opt.reach, want = { idle: sp ? 0 : 1, walk: sp && !run ? 1 : 0, run: sp && run ? 1 : 0 };
+    for (const k in R.a) { R.w[k] = (R.w[k] || 0) + (want[k] - (R.w[k] || 0)) * Math.min(1, dt * 7); R.a[k].setEffectiveWeight(R.w[k]); }
+    R.a.walk.timeScale = sp / 1.45; R.a.run.timeScale = burst > 0 ? 1.9 : .95;
+    const step = P.mode === 'stalk' && burst <= 0 ? 1 / 10 : 0; R.acc += P.frozen ? 0 : dt; if (R.acc >= step) { R.mixer.update(R.acc); R.acc = 0; } else R.mixer.update(0);
+    const b = R.b, tw = !P.frozen && Math.sin(G.t * 31) > .93 ? .3 : 0; let hy = Math.atan2(G.head.x - P.x, G.head.z - P.z) - g.rotation.y; hy = Math.atan2(Math.sin(hy), Math.cos(hy));
+    b.Neck.rotateY(Math.max(-.6, Math.min(.6, hy * .5))); b.Head.rotateY(Math.max(-.7, Math.min(.7, hy * .5))); b.Head.rotateX(run ? -.5 : P.opt.crouch ? -.55 : -.1); b.Head.rotateZ(.22 + tw + (P.opt.tilt || 0)); b.Head.scale.setScalar(.01); for (const n of ['Spine', 'Spine1', 'Spine2']) b[n].rotateX(run ? .13 : .07); b.Neck.rotateX(.1); b.LeftShoulder.rotateZ(-.12);
+    if (reach) { g.updateMatrixWorld(true); const f = new T.Vector3(Math.sin(g.rotation.y), -.12, Math.cos(g.rotation.y)), side = new T.Vector3(f.z, 0, -f.x); for (const [n, s] of [['Left', 1], ['Right', -1]]) { const d = f.clone().addScaledVector(side, s * .1).add(new T.Vector3(0, Math.sin(G.t * 9 + s) * .06, 0)); aim(b[n + 'Arm'], b[n + 'ForeArm'], d, .85); b[n + 'Arm'].updateMatrixWorld(true); aim(b[n + 'ForeArm'], b[n + 'Hand'], d, .8); } }
+    const jaw = kill || P.opt.jaw ? 1 : run ? .55 + Math.sin(G.t * 17) * .25 : .06; R.head.morphTargetInfluences[0] += (jaw - R.head.morphTargetInfluences[0]) * Math.min(1, dt * 12);
+    if (kill) { g.position.x += (Math.random() - .5) * .03; R.hold.rotation.z = (Math.random() - .5) * .25; } else R.hold.rotation.z = 0;
+  }
   A.breath([P.x, 1.6, P.z], Math.max(0, 1 - d / 13) * (.55 + .45 * Math.sin(G.t * 2.8)) * (P.frozen ? .5 : 1));
 }

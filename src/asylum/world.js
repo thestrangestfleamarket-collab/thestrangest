@@ -1,7 +1,7 @@
 // the asylum's map: rooms, walls, doors, lights and everything standing in them
 import * as T from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { toon, glow, rnd, M, WALL, FLOOR, CEIL, sign } from './tex.js';
+import { lit, glow, rnd, M, WALL, FLOOR, CEIL, sign } from './tex.js';
 
 export const GW = 36, GH = 32, H = 3, DH = 2.2;
 export const ROOMS = [
@@ -198,13 +198,14 @@ function props(scene) {
   const et = trolley(S, 19, 6.55, 0); box(et, .46, .3, .32, M.steelDark, 0, 1.03, 0); wdec(et, .44, .22, M.dials, 0, 1.03, .162, 'n'); cyl(et, .012, .5, M.black, .15, .9, .25, 'z'); solid(18.65, 6.3, 19.35, 6.8);
   D.fuse2 = fuse('f2', 19.14, 1.24, 6.55, true);
   trolley(S, 20.6, 8.7, .3); sink(S, 21.75, 6.6, -Math.PI / 2); ivstand(S, 18.2, 7.2); locker(S, 16.4, 5.28, 0, true); locker(S, 16.85, 5.28, 0); solid(16.1, 5, 17.1, 5.55);
-  box(S, 1.2, .9, .34, M.steelDark, 20.6, 1.5, 5.2); wdec(S, 1.1, .8, M.glass, 20.6, 1.5, 5.38, 'n'); for (let i = 0; i < 6; i++) cyl(S, .03, .12, M.enamel, 20.2 + i * .15, 1.3, 5.2);
+  box(S, 1.2, .9, .34, M.steelDark, 20.6, 1.5, 5.2); wdec(S, 1.1, .8, M.glass, 20.6, 1.5, 5.38, 'n'); solid(20, 5, 21.2, 5.42); for (let i = 0; i < 6; i++) cyl(S, .03, .12, M.enamel, 20.2 + i * .15, 1.3, 5.2);
   box(S, .34, .9, .1, M.coat, 17.9, 1.35, 10.92); box(S, .04, .04, .06, M.steelDark, 17.9, 1.84, 10.96); fdec(S, .5, .5, M.grate, 19.6, 9.2); fdec(S, 1.3, 1.3, M.blood, 19.3, 8.9, 2);
   wdec(S, .3, .44, M.hand, 16.02, 1.3, 9.4, 'w', .2);
   keyM('mkey', 17.9, 1.2, 10.82); note('finch', 20.62, .9, 8.72);
 
   shelf(S, 17.5, 12.25, 0, 2.6); shelf(S, 18.75, 13.3, -Math.PI / 2, 1.2); cyl(S, .16, .28, M.steel, 16.5, .14, 13.5, 'y', .19); cyl(S, .015, 1.4, M.woodLight, 16.45, .75, 13.6).rotation.z = -.2;
   batt('b2', 17.3, 1.06, 12.42);
+  const co = D.corpse = sub(scene, 16.25, 12.5, 0); sph(co, .2, M.sheet, 0, .85, 0, .95, 3.4, .8); sph(co, .12, M.sheet, 0, 1.62, .02, 1, 1.15, 1); for (const y of [.35, .8, 1.25]) box(co, .42, .04, .36, M.strap, 0, y, 0); wdec(co, .3, .3, M.blood, -.2, 1.6, 0, 'e'); co.traverse(c => { if (c.isMesh) c.castShadow = true; });
 
   const tv = sub(S, 22.55, 18.5, -Math.PI / 2); box(tv, .7, .7, .5, M.woodDark, 0, .35, 0); box(tv, .66, .5, .5, M.tvBody, 0, .97, 0); for (const s of [-.3, .3]) { const a = cyl(tv, .006, .5, M.chrome, s * .5, 1.45, 0); a.rotation.z = -s; }
   D.tv = wdec(scene, .5, .38, M.screenOff, 22.29, .98, 18.5, 'e'); solid(22.2, 18.1, 23, 18.9);

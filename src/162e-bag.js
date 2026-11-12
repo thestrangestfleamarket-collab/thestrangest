@@ -176,7 +176,7 @@ window.BAG=BAG;
     { const b0=new THREE.Box3().setFromObject(m), z=b0.getSize(V3); if(!b0.isEmpty()&&!m.userData.pf&&z.y>1.8*Math.max(z.x,z.z)&&!/^(fl_|bnet$|net$|balloon$)/.test(kindOf(id))){ const W=new THREE.Group(); W.add(m); W.rotation.x=-Math.PI/2; m=W; } }   // (a long thin thing, a sword, lies on its side; a flower or a net on its stand stays up, and Polyfork's stand as made)
     const b=new THREE.Box3().setFromObject(m), L=b.isEmpty()?1:Math.max(.001,...b.getSize(V3).toArray()), want=realM(id), S=b.isEmpty()?MTR:want?want*MTR/L:L>5||L<.01?.3*MTR/L:MTR, I=new THREE.Group(); I.add(m); I.scale.setScalar(S); if(!b.isEmpty())I.position.set(-(b.min.x+b.max.x)/2*S,-b.min.y*S,-(b.min.z+b.max.z)/2*S);
     P.add(I); P.userData.tall=b.isEmpty()?.3*MTR:(b.max.y-b.min.y)*S; LOOK.set(id,P); return P; };
-  PFI.on.push(()=>{ LOOK.clear(); for(const g of GRD)if(g.m){ g.m.removeFromParent(); g.m=null; } near(); for(const id of URL.keys())WANT.add(id); URL.clear(); });   // Polyfork's models came: what lies about takes them
+  PFI.on.push(()=>{ LOOK.clear(); for(const g of GRD)if(g.m){ g.m.removeFromParent(); g.m=null; if(g.gl){ g.gl.removeFromParent(); g.gl=null; } } near(); for(const id of URL.keys())WANT.add(id); URL.clear(); });   // Polyfork's models came: what lies about takes them
   const room=()=>{ const c=ROOMS.cur; return c?String(c.off||c.id||''):''; };
   const unthing=th=>{ const i=UI.things.indexOf(th); if(i>=0)UI.things.splice(i,1); };
   const place=g=>{ '@later'; const sp=new THREE.Group(); sp.name='loose-'+g.id; sp.position.set(g.x,g.y,g.z); sp.rotation.y=(parseInt(g.key.slice(-4),36)||0)%628/100; sp.userData.level=g.lv||'street'; sp.visible=false; scene.add(sp); g.sp=sp;
@@ -185,7 +185,7 @@ window.BAG=BAG;
   // drawn only near you: the nearest 24 within 20 tiles on your level and in your room, kept until 26
   const near=()=>{ const rm=room(), now=Date.now(); let ex=false; for(const g of GRD.slice())if(g.until&&now>g.until&&!g.taking){ lose(g); ex=ex||!g.key.startsWith('drop:'); } if(ex)saveG();
     const L=[]; for(const g of GRD){ const d=Math.hypot(g.x-pos.x,g.z-pos.z); if((g.rm||'')===rm&&d<(g.m?KEEP:SEE)&&LEVELS.drawn(g.sp))L.push([g,d]); } const on=new Set(L.sort((a,b)=>a[1]-b[1]).slice(0,MOST).map(q=>q[0]));
-    for(const g of GRD){ const v=on.has(g); if(v&&!g.m){ g.m=glow(look(g.id).clone(),g.id); g.sp.add(g.m); } else if(!v&&g.m){ g.m.removeFromParent(); g.m=null; } g.sp.visible=v; } };
+    for(const g of GRD){ const v=on.has(g); if(v&&!g.m){ g.m=look(g.id).clone(); g.gl=glow(new THREE.Group(),g.id); g.sp.add(g.m,g.gl); } else if(!v&&g.m){ g.m.removeFromParent(); g.m=null; if(g.gl){ g.gl.removeFromParent(); g.gl=null; } } g.sp.visible=v; } };
   // a container leaves with what is in it (and what is in those), as a record; back in a bag it is a fresh one of its kind
   const pack=c=>{ const I=INV.inside[c]||{}, out={in:{},subs:{}}; for(const id in I){ const n=I[id]; if(n<1)continue; if(isCont(id)){ const k=kindOf(id)+'#'+id; out.subs[k]=pack(id); out.in[k]=1; delete INV.items[id]; } else { FORAGE.take(id,n); out.in[id]=n; } } delete INV.inside[c]; return out; };
   const unpack=(k,r)=>{ const inst=fresh(kindOf(k)); INV.items[inst]=1; INV.inside[inst]={}; for(const id in r.in||{}){ const n=r.in[id]; if(id.includes('#')){ const sub=unpack(id,(r.subs||{})[id]||{}); INV.inside[inst][sub]=1; } else { FORAGE.give(id,n); INV.inside[inst][id]=n; } } return inst; };

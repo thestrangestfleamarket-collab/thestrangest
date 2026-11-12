@@ -140,7 +140,11 @@ export default {
         if (tooMany("home:" + id, 120)) return json({ why: "too many saves, wait a minute" }, 429);
         return json({ ok: await homeOf(env).put(id, t) }); }
       // what you own (cash, pack, skills, logs...): one copy a player, read at the start, written back key by key
-      if (p === "/owned") { if (body.put === undefined) { const H = homeOf(env), [owned, no, name] = await Promise.all([H.ownedGet(id), H.passport(id), H.nameGet(id)]); return json({ owned, me: { ...meOf(request, id), no, name } }); }
+      if (p === "/owned") {
+        // a piece of another player's imported music (src/146zpe-import.js), for those near who hear it played
+        if (body.music !== undefined) { if (tooMany("music:" + id, 60)) return json({ why: "wait a minute" }, 429); let L = null; try { L = JSON.parse((await homeOf(env).ownedGet(word(body.music, 64))).music || "[]"); } catch (e) {}
+          return json({ piece: Array.isArray(L) && L.find(x => x && x.id === String(body.p)) || null }); }
+        if (body.put === undefined) { const H = homeOf(env), [owned, no, name] = await Promise.all([H.ownedGet(id), H.passport(id), H.nameGet(id)]); return json({ owned, me: { ...meOf(request, id), no, name } }); }
         if (body.kit !== undefined) { if (await owner(env, id, dev) !== true) { if (!body.beta) return json({ why: "owners only" }, 403); return (await homeOf(env).betaKit(id, Math.min(20000, Math.max(0, Math.floor(+body.kit || 0))))) ? json({ ok: true }) : json({ why: "had it" }, 409); }   // the beta kit, once a player (owner, 11 Nov 2026)
           await homeOf(env).econAllow(id, 0, Math.min(20000, Math.max(0, Math.floor(+body.kit || 0))), "owners' kit"); return json({ ok: true }); }   // an owner's own kit, each start (141-forage)
         const put = body.put; if (!put || typeof put !== "object" || Array.isArray(put)) return json({ why: "bad save" }, 400);
@@ -558,11 +562,11 @@ export class Block extends Server {
       if (Array.isArray(m.p) && m.p.length === 3) this.broadcast(JSON.stringify({ t: "craft", id: s.id, i: word(m.i, 16), p: m.p.map(x => num(x, -1e5, 1e5)), e: m.e ? 1 : 0 }), [c.id]);
     } else if (m.t === "gtr") {
       // the guitar (src/146zob-guitar.js): what a player plays, for everyone near to hear and see
-      const k = /^(on|off|chord|strum|pluck|capo|song|stop)$/.test(m.k) ? m.k : ""; if (!k) return; const v = word(m.v, 12); if (!/^[0-9.:a-zA-Z#]*$/.test(v)) return;
+      const k = /^(on|off|chord|strum|pluck|capo|song|imp|stop)$/.test(m.k) ? m.k : ""; if (!k) return; const v = word(m.v, 12); if (!/^[0-9.:a-zA-Z#]*$/.test(v)) return;
       this.broadcast(JSON.stringify({ t: "gtr", id: s.id, k, v }), [c.id]);
     } else if (m.t === "ins") {
       // the instruments you sit at (src/146zp-instruments.js): the piano, the drums, the harp; what a player plays, for everyone near to hear and see
-      const k = /^(on|off|b|song|stop)$/.test(m.k) ? m.k : "", i = /^(piano|drums|harp|violin|flute|trumpet)$/.test(m.i) ? m.i : ""; if (!k || !i) return; const v = word(m.v, 48); if (!/^[0-9.,:LRFPnup-]*$/.test(v)) return;
+      const k = /^(on|off|b|song|imp|stop)$/.test(m.k) ? m.k : "", i = /^(piano|drums|harp|violin|flute|trumpet)$/.test(m.i) ? m.i : ""; if (!k || !i) return; const v = word(m.v, 48); if (!/^[0-9.,:LRFPnup-]*$/.test(v)) return;
       this.broadcast(JSON.stringify({ t: "ins", id: s.id, k, i, v }), [c.id]);
     } else if (m.t === "jug") {
       // juggling (src/146zr-juggle.js): the pattern, when it drops and with what ("i:fail:b|c"), or "" to stop

@@ -63,11 +63,11 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
     rec(`the ${K}: a skill, sold at the bodega, held as you sit; a tune from the book plays one note at a time in its range, the hands move, five pieces open at 0-10, its recordings come`,m.on&&m.held&&m.skill&&m.price>0&&m.shelf&&m.book>150&&m.notes>3&&m.poses>=4&&m.inRange&&m.one&&m.open===5&&m.sounds>=10,JSON.stringify(m));
     await wait(300); }
   // Polyfork's models (data/pfitems.json): once they have come, each of the six wears its own (the piano and its bench, the harp, the kit's snare, bass drum and cymbals, the stools), the first shapes hidden
-  const pf=await pg.evaluate(async()=>{ await PFI.load(); const want={piano:['piano_pf','piano_bench'],harp:['harp_pf','stool'],drums:['drum_snare','drum_kick','drum_cymbal','stool'],violin:['violin','violin_bow','stool'],flute:['flute','stool'],trumpet:['trumpet','stool']}, r={};
+  const pf=await pg.evaluate(async()=>{ await PFI.load(); const want={piano:['piano_pf','piano_bench'],harp:['harp_pf','stool'],drums:['drum_snare','drum_kick','drum_cymbal','stool'],violin:['violin','violin_bow'],flute:['flute'],trumpet:['trumpet']}, r={};
     for(const [K,ids] of Object.entries(want)){ const g=INSTR.KINDS[K].model(), on=new Set(), it=g.userData.it; if(it&&it.userData.bow)g.add(it.userData.bow); g.traverse(o=>{ if(!o.isMesh||!o.userData.pf)return; let v=true; for(let q=o;q;q=q.parent)if(q.visible===false)v=false; if(v)on.add(o.userData.pf); });
       r[K]={miss:ids.filter(id=>!on.has(PFI.mesh(id).userData.pf))}; }
     return r; });
-  rec('each of the six wears its Polyfork model once it has come (piano and bench, harp, the kit\'s drums and cymbals, violin and bow, flute, trumpet, their stools)',Object.values(pf).every(o=>!o.miss.length),JSON.stringify(pf));
+  rec('each of the six wears its Polyfork model once it has come (piano and bench, harp, the kit\'s drums and cymbals, violin and bow, flute, trumpet; a stool for the harp and the kit)',Object.values(pf).every(o=>!o.miss.length),JSON.stringify(pf));
   const tv=await pg.evaluate(async()=>{ const S=FORAGE.S; S.sk.trumpet=1000; FORAGE.give('trumpet',1); FORAGE.ACT.trumpet('trumpet'); await new Promise(r=>setTimeout(r,800)); const P=INSTR.ME, pv=P.H&&P.H.G.userData.it.userData.pf||{}, v=[1,2,3].map(i=>pv['piston-'+i]);
     const y=()=>v.map(q=>q?+(q.position.y-q.userData.at.y).toFixed(4):null), r={has:v.every(Boolean),rest:y()};
     const till=async ok=>{ for(let i=0;i<40&&!ok(y());i++)await new Promise(r=>setTimeout(r,100)); return y(); };

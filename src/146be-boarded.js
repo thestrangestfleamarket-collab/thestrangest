@@ -51,7 +51,7 @@ const BOARDED={on:false,api:null}; window.BOARDED=BOARDED;
 <div id="banner"></div>
 <div class="ov" id="menu">
 <h1>BOARDED UP</h1>
-<p>Night one. The mansion is all you have. They come through the windows and the front door: board them up, hold the hall, fall back up the stairs, last as long as you can.</p>
+<p>Night one. The mansion is all you have. They come through the windows and the front door: board them up, hold the hall, fall back up the stairs, last as long as you can. A way in with no boards left is a way out for you too.</p>
 <div><button id="b1" disabled>SOLO</button><button id="b2" disabled>2 PLAYERS, ONE SCREEN</button><button id="bhost" disabled>HOST ONLINE</button><button id="bjoin" style="display:none">JOIN</button><button id="bleave">LEAVE THE HOLODECK</button></div>
 <p id="netnote" style="font-size:13px;margin:8px 0 0;color:#8f8"></p>
 <p id="load" style="font-size:13px;margin:8px 0 0;color:#e6c060">LOADING</p>
@@ -150,7 +150,7 @@ const BOARDED={on:false,api:null}; window.BOARDED=BOARDED;
     Object.assign(moon.shadow.camera,{left:-42,right:42,top:42,bottom:-42,near:1,far:110});moon.shadow.bias=-.0004;moon.shadow.normalBias=.05;scene.add(moon);
 
     const HX=13,HZ=8,WT=.3,WH=6.4,SILL=.9,TOP=2.5,U0=3.9,U1=5.6,GY=3.2,GZ=-4.5,SW=2.5,SZ=1.5,CLIPY=1.05,L_ISO=5,L_ROOF=6;
-    const hAt=(x,z)=>z<GZ?GY:Math.abs(x)<SW&&z<SZ?GY*(SZ-z)/(SZ-GZ):0;
+    const hAt=(x,z)=>Math.abs(x)>HX||Math.abs(z)>HZ?0:z<GZ?GY:Math.abs(x)<SW&&z<SZ?GY*(SZ-z)/(SZ-GZ):0;
     const clipP=new THREE.Plane(V3(0,-1,0),99),CL={clippingPlanes:[clipP]};
     const solids=[],rects=[],windows=[],flick=[];
     const mWall=M(TX.wall,1.4),mSide=M(TX.brick,2.4,{color:0x9a9ca4}),mWallC=M(TX.wall,1.4,CL),mSideC=M(TX.brick,2.4,{color:0x9a9ca4,...CL}),mTrim=flat(0xb8b2a0,.6),mTrimC=flat(0xb8b2a0,.6,0,CL),mCap=new THREE.MeshBasicMaterial({color:0x0c0c0c});
@@ -277,12 +277,14 @@ const BOARDED={on:false,api:null}; window.BOARDED=BOARDED;
         for(let j=0;j<6;j++){const l=rnd(.5,1.1);o.position.set(x,rnd(2.2,4.9)*s,z);o.rotation.set(rnd(.5,1.15),rnd(TAU),0);o.scale.set(s*l,s*l,s*l);o.translateY(1.2*s*l);o.updateMatrix();br.setMatrixAt(k++,o.matrix)}}
       tr.castShadow=br.castShadow=true;scene.add(tr,br)}
 
-    const GC=.5,GW=HX*4,GH=HZ*4,blocked=new Uint8Array(GW*GH),N8=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
-    for(let z=0;z<GH;z++)for(let x=0;x<GW;x++){const px=-HX+(x+.5)*GC,pz=-HZ+(z+.5)*GC;for(const r of rects)if(r.kind!=='gap'&&px>r.x0-.2&&px<r.x1+.2&&pz>r.z0-.2&&pz<r.z1+.2)blocked[z*GW+x]=1}
-    const cellOf=(x,z)=>clamp(Math.floor((z+HZ)/GC),0,GH-1)*GW+clamp(Math.floor((x+HX)/GC),0,GW-1),bfsQ=new Int16Array(GW*GH);
+    const YX=36,YZ=30,GC=.5,GW=YX*4,GH=YZ*4,blocked=new Uint8Array(GW*GH),gapOf=new Uint8Array(GW*GH),N8=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+    for(let z=0;z<GH;z++)for(let x=0;x<GW;x++){const px=-YX+(x+.5)*GC,pz=-YZ+(z+.5)*GC,c=z*GW+x;for(const r of rects)if(r.kind!=='gap'&&px>r.x0-.2&&px<r.x1+.2&&pz>r.z0-.2&&pz<r.z1+.2)blocked[c]=1;
+      if(!blocked[c])for(const r of rects)if(r.kind==='gap'){const e=r.win.ns?[0,.3]:[.3,0];if(px>r.x0-e[0]&&px<r.x1+e[0]&&pz>r.z0-e[1]&&pz<r.z1+e[1])gapOf[c]=windows.indexOf(r.win)+1}}
+    const shut=c=>blocked[c]||(gapOf[c]&&windows[gapOf[c]-1].count>0);
+    const cellOf=(x,z)=>clamp(Math.floor((z+YZ)/GC),0,GH-1)*GW+clamp(Math.floor((x+YX)/GC),0,GW-1),bfsQ=new Int16Array(GW*GH);
     function field(p){const F=p.field;F.fill(9999);let h=0,t=0,s=cellOf(p.pos.x,p.pos.z);F[s]=0;bfsQ[t++]=s;
-      while(h<t){const c=bfsQ[h++],x=c%GW,z=c/GW|0,d=F[c]+1;for(let k=0;k<4;k++){const X=x+N8[k][0],Z=z+N8[k][1];if(X<0||Z<0||X>=GW||Z>=GH)continue;const n=Z*GW+X;if(blocked[n]||F[n]<=d)continue;F[n]=d;bfsQ[t++]=n}}}
-    function collide(pos,r,gaps){for(const b of rects){if(b.kind==='gap'&&!gaps)continue;const cx=clamp(pos.x,b.x0,b.x1),cz=clamp(pos.z,b.z0,b.z1),dx=pos.x-cx,dz=pos.z-cz,d2=dx*dx+dz*dz;if(d2>=r*r)continue;
+      while(h<t){const c=bfsQ[h++],x=c%GW,z=c/GW|0,d=F[c]+1;for(let k=0;k<4;k++){const X=x+N8[k][0],Z=z+N8[k][1];if(X<0||Z<0||X>=GW||Z>=GH)continue;const n=Z*GW+X;if(F[n]<=d||shut(n))continue;F[n]=d;bfsQ[t++]=n}}}
+    function collide(pos,r,gaps){for(const b of rects){if(b.kind==='gap'&&(!gaps||(gaps==='open'&&!b.win.count)))continue;const cx=clamp(pos.x,b.x0,b.x1),cz=clamp(pos.z,b.z0,b.z1),dx=pos.x-cx,dz=pos.z-cz,d2=dx*dx+dz*dz;if(d2>=r*r)continue;
         if(d2>1e-8){const d=Math.sqrt(d2);pos.x=cx+dx/d*r;pos.z=cz+dz/d*r}else{const l=pos.x-b.x0,ri=b.x1-pos.x,u=pos.z-b.z0,dn=b.z1-pos.z,m=Math.min(l,ri,u,dn);m===l?pos.x=b.x0-r:m===ri?pos.x=b.x1+r:m===u?pos.z=b.z0-r:pos.z=b.z1+r}}}
 
     const G0={pelvis:new THREE.BoxGeometry(.34,.2,.22),torso:new THREE.CapsuleGeometry(.16,.24,4,10),neck:new THREE.CylinderGeometry(.05,.055,.1,8),head:new THREE.SphereGeometry(.11,18,14),uarm:new THREE.CapsuleGeometry(.052,.2,3,8),farm:new THREE.CapsuleGeometry(.043,.2,3,8),hand:new THREE.BoxGeometry(.07,.1,.08),thigh:new THREE.CapsuleGeometry(.078,.26,3,8),shin:new THREE.CapsuleGeometry(.06,.28,3,8),foot:new THREE.BoxGeometry(.1,.08,.26)};
@@ -407,7 +409,7 @@ const BOARDED={on:false,api:null}; window.BOARDED=BOARDED;
     function spawnZ(){
       const zk=ZK.filter(k=>A[k]),z=newZ(zk.length?pick(zk):'',pick(ZT),rnd(.94,1.07)),a=rnd(TAU),r=rnd(21,27),R=G.round;
       let sp=rnd(.95,1.45);if(R>=3&&Math.random()<Math.min(.6,(R-2)*.13))sp=rnd(2,2.6);if(R>=6&&Math.random()<Math.min(.45,(R-5)*.09))sp=rnd(3.1,3.7);
-      z.id=zid++;z.hp=R<10?100+(R-1)*45:505*Math.pow(1.1,R-9);z.speed=sp;z.pos.set(Math.cos(a)*r*1.15,-1.75,Math.sin(a)*r*.85);
+      z.id=zid++;z.hp=R<10?100+(R-1)*45:505*Math.pow(1.1,R-9);z.speed=sp;z.pos.set(Math.cos(a)*r*1.15,-1.75,Math.sin(a)*r*.85);for(let k=0;k<8&&players.some(q=>Math.hypot(q.pos.x-z.pos.x,q.pos.z-z.pos.z)<7);k++){const b=rnd(TAU);z.pos.set(Math.cos(b)*r*1.15,-1.75,Math.sin(b)*r*.85)}
       z.win=windows.map(w=>({w,d:Math.hypot(w.x+w.nx-z.pos.x,w.z+w.nz-z.pos.z)+rnd(5)})).sort((p,q)=>p.d-q.d)[0].w;
       burst(tmp.set(z.pos.x,.05,z.pos.z),tmp2.set(0,1,0),14,.25,.2,.14,2.5)}
     const live=()=>zombies.reduce((n,z)=>n+(z.state!=='dead'),0);
@@ -416,9 +418,9 @@ const BOARDED={on:false,api:null}; window.BOARDED=BOARDED;
     function vol(pos){let d=99;for(const p of players)d=Math.min(d,Math.hypot(p.pos.x-pos.x,p.pos.z-pos.z));return clamp(1.15-d/20,0,1)}
 
     function steer(z,p){const dx=p.pos.x-z.pos.x,dz=p.pos.z-z.pos.z,d=Math.hypot(dx,dz)||1;if(d<1.3&&Math.abs(p.pos.y-z.pos.y)<1)return[dx/d,dz/d,d];
-      const ix=clamp(Math.floor((z.pos.x+HX)/GC),0,GW-1),iz=clamp(Math.floor((z.pos.z+HZ)/GC),0,GH-1),F=p.field;let best=F[iz*GW+ix],bx=0,bz=0;if(best>=9999)return[dx/d,dz/d,d];
-      for(const[ox,oz]of N8){const x=ix+ox,y=iz+oz;if(x<0||y<0||x>=GW||y>=GH)continue;if(ox&&oz&&(blocked[iz*GW+x]||blocked[y*GW+ix]))continue;const v=F[y*GW+x]+(ox&&oz?.4:0);if(v<best){best=v;bx=ox;bz=oz}}
-      if(!bx&&!bz)return[dx/d,dz/d,d];const tx=-HX+(ix+bx+.5)*GC-z.pos.x,tz=-HZ+(iz+bz+.5)*GC-z.pos.z,l=Math.hypot(tx,tz)||1;return[tx/l,tz/l,d]}
+      const ix=clamp(Math.floor((z.pos.x+YX)/GC),0,GW-1),iz=clamp(Math.floor((z.pos.z+YZ)/GC),0,GH-1),F=p.field;let best=F[iz*GW+ix],bx=0,bz=0;if(best>=9999)return[dx/d,dz/d,d];
+      for(const[ox,oz]of N8){const x=ix+ox,y=iz+oz;if(x<0||y<0||x>=GW||y>=GH)continue;if(ox&&oz&&(shut(iz*GW+x)||shut(y*GW+ix)))continue;const v=F[y*GW+x]+(ox&&oz?.4:0);if(v<best){best=v;bx=ox;bz=oz}}
+      if(!bx&&!bz)return[dx/d,dz/d,d];const tx=-YX+(ix+bx+.5)*GC-z.pos.x,tz=-YZ+(iz+bz+.5)*GC-z.pos.z,l=Math.hypot(tx,tz)||1;return[tx/l,tz/l,d]}
 
     function updZ(z,dt){
       const J=z.J,r=J.root;z.t+=dt;
@@ -429,18 +431,23 @@ const BOARDED={on:false,api:null}; window.BOARDED=BOARDED;
       if(z.net){const k=Math.min(1,dt*10);z.pos.x=lerp(z.pos.x,z.tx,k);z.pos.y=lerp(z.pos.y,z.ty,k);z.pos.z=lerp(z.pos.z,z.tz,k);face=z.tyaw;sp=z.mv?z.speed:0;if(z.state==='attack')z.atk=Math.min(1,z.atk+dt/.7);z.phase+=sp*dt*(2.2+1.2/z.speed)}else{
       for(const p of upP()){const d=Math.hypot(p.pos.x-z.pos.x,p.pos.z-z.pos.z);if(d<td){td=d;tgt=p}}
       const near=tgt&&Math.abs(tgt.pos.y-z.pos.y)<1.2;
-      const w=z.win;
+      let w=z.win;const zin=Math.abs(z.pos.x)<HX&&Math.abs(z.pos.z)<HZ,sd=zin?-1:1,reach=tgt&&z.pos.y>-.5&&tgt.field[cellOf(z.pos.x,z.pos.z)]<9999;
+      if(reach&&(z.state==='approach'||z.state==='tear'))z.state='chase';
+      else if(!reach&&tgt&&z.state==='chase'){w=z.win=windows.map(o=>({o,d:Math.hypot(o.x+o.nx*sd-z.pos.x,o.z+o.nz*sd-z.pos.z)})).sort((a,b)=>a.d-b.d)[0].o;z.state='approach'}
       if(z.state==='rise'){const q=Math.min(1,z.t/1.7);z.pos.y=lerp(-1.75,0,smooth(q));if(q>=1)z.state='approach'}
-      else if(z.state==='approach'){const tx=w.x+w.nx*.95+(w.ns?z.off:0),tz=w.z+w.nz*.95+(w.ns?0:z.off),dx=tx-z.pos.x,dz=tz-z.pos.z,d=Math.hypot(dx,dz);
-        const depth=(z.pos.x-w.x)*w.nx+(z.pos.z-w.z)*w.nz,lat=Math.abs(w.ns?z.pos.x-w.x:z.pos.z-w.z);
+      else if(z.state==='approach'){const tx=w.x+w.nx*.95*sd+(w.ns?z.off:0),tz=w.z+w.nz*.95*sd+(w.ns?0:z.off),dx=tx-z.pos.x,dz=tz-z.pos.z,d=Math.hypot(dx,dz);
+        const depth=((z.pos.x-w.x)*w.nx+(z.pos.z-w.z)*w.nz)*sd,lat=Math.abs(w.ns?z.pos.x-w.x:z.pos.z-w.z);
         if(d<.3||(depth<1.25&&lat<w.w/2+.15)){z.state='tear';z.tearT=rnd(.8,1.6);breakGlass(w)}else{mvx=dx/d;mvz=dz/d;sp=z.speed}}
-      else if(z.state==='tear'){face=Math.atan2(-w.nx,-w.nz);
+      else if(z.state==='tear'){face=Math.atan2(-w.nx*sd,-w.nz*sd);
         if(near&&td<1.5&&z.atkCd<=0){z.state='attack';z.atk=0;z.hit=false;z.ret='tear';z.tg=tgt}
         else if(w.count>0){if((z.tearT-=dt)<=0){z.tearT=rnd(1.5,2.5);w.count--;setPlank(w,w.count,false);sfx.crack(vol(z.pos))}}
-        else if(!w.vault){w.vault=z;z.state='vault';z.q=0;z.fx=z.pos.x;z.fz=z.pos.z}}
-      else if(z.state==='vault'){face=Math.atan2(-w.nx,-w.nz);z.q+=dt/(w.door?.8:1.25);const q=Math.min(1,z.q),e=smooth(q);z.pos.x=lerp(z.fx,w.x-w.nx*.8,e);z.pos.z=lerp(z.fz,w.z-w.nz*.8,e);z.pos.y=w.door?0:Math.sin(q*Math.PI)*.6;
+        else if(!w.vault){w.vault=z;z.state='vault';z.q=0;z.fx=z.pos.x;z.fz=z.pos.z;z.vs=sd}}
+      else if(z.state==='vault'){const vs=z.vs||1;face=Math.atan2(-w.nx*vs,-w.nz*vs);z.q+=dt/(w.door?.8:1.25);const q=Math.min(1,z.q),e=smooth(q);z.pos.x=lerp(z.fx,w.x-w.nx*(vs>0?.8:-1.1),e);z.pos.z=lerp(z.fz,w.z-w.nz*(vs>0?.8:-1.1),e);z.pos.y=w.door?0:Math.sin(q*Math.PI)*.6;
         if(q>=1){z.state='chase';z.pos.y=0;w.vault=null}}
-      else if(z.state==='chase'){if(tgt){const s=steer(z,tgt);mvx=s[0];mvz=s[1];sp=z.speed*(1-z.flinch*.6);if(td<1.15&&near){sp=0;face=Math.atan2(tgt.pos.x-z.pos.x,tgt.pos.z-z.pos.z);if(z.atkCd<=0){z.state='attack';z.atk=0;z.hit=false;z.ret='chase';z.tg=tgt}}}}
+      else if(z.state==='chase'){if(tgt){let went=false;const F=tgt.field,here=F[cellOf(z.pos.x,z.pos.z)];
+        for(const o of windows){if(o.count||o.vault)continue;const dep=((z.pos.x-o.x)*o.nx+(z.pos.z-o.z)*o.nz)*sd,lat=Math.abs(o.ns?z.pos.x-o.x:z.pos.z-o.z);
+          if(dep<1.3&&dep>-.4&&lat<o.w/2+.1&&F[cellOf(o.x-o.nx*1.2*sd,o.z-o.nz*1.2*sd)]<here){o.vault=z;w=z.win=o;z.state='vault';z.q=0;z.fx=z.pos.x;z.fz=z.pos.z;z.vs=sd;went=true;break}}
+        if(!went){const s=steer(z,tgt);mvx=s[0];mvz=s[1];sp=z.speed*(1-z.flinch*.6);if(td<1.15&&near){sp=0;face=Math.atan2(tgt.pos.x-z.pos.x,tgt.pos.z-z.pos.z);if(z.atkCd<=0){z.state='attack';z.atk=0;z.hit=false;z.ret='chase';z.tg=tgt}}}}}
       else if(z.state==='attack'){const p=z.tg;face=Math.atan2(p.pos.x-z.pos.x,p.pos.z-z.pos.z);z.atk+=dt/.7;
         if(z.atk>.45&&!z.hit){z.hit=true;if(!p.down&&Math.hypot(p.pos.x-z.pos.x,p.pos.z-z.pos.z)<1.6&&Math.abs(p.pos.y-z.pos.y)<1.3)hurtP(p,34)}if(z.atk>=1){z.state=z.ret;z.atkCd=.4}}
       if(sp>0){z.dx=lerp(z.dx,mvx,Math.min(1,dt*7));z.dz=lerp(z.dz,mvz,Math.min(1,dt*7));const l=Math.hypot(z.dx,z.dz)||1;z.pos.x+=z.dx/l*sp*dt;z.pos.z+=z.dz/l*sp*dt;z.phase+=sp*dt*(2.2+1.2/z.speed);face=Math.atan2(z.dx,z.dz)}
@@ -525,7 +532,8 @@ const BOARDED={on:false,api:null}; window.BOARDED=BOARDED;
       mouse.dx=mouse.dy=0;mouse.le=0;for(const k in edge)delete edge[k]}
 
     function vpOf(i){const W=innerWidth,H=innerHeight;return G.n===1||G.net||G.state==='menu'?{x:0,y:0,w:W,h:H}:{x:i?W/2:0,y:0,w:W/2,h:H}}
-    const inside=(x,y,z)=>Math.abs(x)<HX-.12&&Math.abs(z)<HZ-.12&&y>hAt(x,z)+.15&&y<WH-.12&&!(Math.abs(Math.abs(x)-6)<.25&&z<2.12)&&!(Math.abs(Math.abs(x)-3.7)<.37&&Math.abs(z-4.4)<.37);
+    const outOf=(x,z)=>Math.abs(x)>HX+WT||Math.abs(z)>HZ+WT;
+    const inside=(x,y,z,out)=>out?(Math.abs(x)>HX+WT+.2||Math.abs(z)>HZ+WT+.2)&&y>.15&&y<9:Math.abs(x)<HX-.12&&Math.abs(z)<HZ-.12&&y>hAt(x,z)+.15&&y<WH-.12&&!(Math.abs(Math.abs(x)-6)<.25&&z<2.12)&&!(Math.abs(Math.abs(x)-3.7)<.37&&Math.abs(z-4.4)<.37);
     const fwdOf=(p,o)=>o.set(-Math.sin(p.yaw)*Math.cos(p.pitch),Math.sin(p.pitch),-Math.cos(p.yaw)*Math.cos(p.pitch));
 
     function shoot(p){
@@ -545,6 +553,7 @@ const BOARDED={on:false,api:null}; window.BOARDED=BOARDED;
       for(const z of zombies){if(z.state==='dead'||z.state==='rise')continue;const dx=z.pos.x-p.pos.x,dz=z.pos.z-p.pos.z,d=Math.hypot(dx,dz);if(d<bd&&(dx*fx+dz*fz)/(d||1)>.45&&Math.abs(z.pos.y-p.pos.y)<1.3){bd=d;best=z}}
       if(best)dmgZ(best,150,p,'melee',tmp.set(best.pos.x,best.pos.y+1.35,best.pos.z).clone(),V3(-fx,.3,-fz))}
 
+    function standY(x,z){let y=hAt(x,z);for(const w of windows){if(w.door||w.count)continue;const dep=Math.abs((x-w.x)*w.nx+(z-w.z)*w.nz-WT/2),lat=Math.abs(w.ns?x-w.x:z-w.z);if(dep<.8&&lat<w.w/2)y=Math.max(y,(1-dep/.8)*.95)}return y}
     function updP(p,dt){
       const I=p.I,H=p.hud,GST=G.net==='guest';if(p.remote&&p.tp){const k=Math.min(1,dt*12);p.pos.lerp(p.tp,k);p.yaw=angLerp(p.yaw,p.tyaw,k);p.pitch=lerp(p.pitch,p.tpitch,k)}
       if(VRS.on){if(p.view!=='fp')setView(p,'fp')}else if(I.viewE&&!p.kb2)setView(p,VIEWS[(VIEWS.indexOf(p.view)+1)%3]);if(p.kb2&&p.view!=='iso')setView(p,'iso');
@@ -566,7 +575,7 @@ const BOARDED={on:false,api:null}; window.BOARDED=BOARDED;
         const w=p.w[p.cur],W=WEAP[w.id];p.ads=lerp(p.ads,I.ads&&!p.rel&&!iso?1:0,Math.min(1,dt*12));
         let mx=I.mx,mz=I.mz;const ml=Math.hypot(mx,mz);if(ml>1){mx/=ml;mz/=ml}
         const sprint=I.sprint&&mz>.3&&p.ads<.5,sp=sprint?5.6:p.ads>.5?2.2:3.7;p.sprinting=sprint&&ml>0;
-        p.pos.x+=(rx*mx+fx*mz)*sp*dt;p.pos.z+=(rz*mx+fz*mz)*sp*dt;collide(p.pos,.33,true);p.pos.y=lerp(p.pos.y,hAt(p.pos.x,p.pos.z),Math.min(1,dt*14));p.mv=p.remote?p.tmv||0:Math.min(1,ml);p.bob+=p.mv*sp*dt;
+        p.pos.x+=(rx*mx+fx*mz)*sp*dt;p.pos.z+=(rz*mx+fz*mz)*sp*dt;collide(p.pos,.33,'open');p.pos.x=clamp(p.pos.x,-YX+.7,YX-.7);p.pos.z=clamp(p.pos.z,-YZ+.7,YZ-.7);p.pos.y=lerp(p.pos.y,standY(p.pos.x,p.pos.z),Math.min(1,dt*14));p.mv=p.remote?p.tmv||0:Math.min(1,ml);p.bob+=p.mv*sp*dt;
         if(p.rel>0){p.rel-=dt;if(p.rel<=0){const n=Math.min(W.mag-w.mag,w.res);w.mag+=n;w.res-=n;p.rel=0}}
         const tryRel=()=>{if(!p.rel&&w.mag<W.mag&&w.res>0){p.rel=W.reload;sfx.reload(W.reload)}};
         if(I.reloadE)tryRel();
@@ -577,7 +586,7 @@ const BOARDED={on:false,api:null}; window.BOARDED=BOARDED;
         let act=null;
         const mate=players.find(q=>q!==p&&q.down&&!q.dead&&Math.hypot(q.pos.x-p.pos.x,q.pos.z-p.pos.z)<1.8);
         if(mate)act={k:'rev',t:`Hold ${p.useKey} to revive`,dur:3,fn(){if(GST)return NET.ev.push(['rev']);mate.down=false;mate.hp=60;mate.hurtT=0;addPts(p,100)}};
-        if(!act)for(const wn of windows){if(wn.count>=6||wn.vault)continue;if(Math.hypot(wn.x-wn.nx*.6-p.pos.x,wn.z-wn.nz*.6-p.pos.z)<1.5){act={k:'w'+windows.indexOf(wn),t:`Hold ${p.useKey} to board up ${wn.door?'the door':'the window'}`,dur:.75,fn(){if(GST)return NET.ev.push(['fix',windows.indexOf(wn)]);setPlank(wn,wn.count,true);wn.count++;sfx.hammer();addPts(p,10)}};break}}
+        if(!act)for(const wn of windows){if(wn.count>=6||wn.vault)continue;if(Math.min(Math.hypot(wn.x-wn.nx*.6-p.pos.x,wn.z-wn.nz*.6-p.pos.z),Math.hypot(wn.x+wn.nx*.9-p.pos.x,wn.z+wn.nz*.9-p.pos.z))<1.5){act={k:'w'+windows.indexOf(wn),t:`Hold ${p.useKey} to board up ${wn.door?'the door':'the window'}`,dur:.75,fn(){if(GST)return NET.ev.push(['fix',windows.indexOf(wn)]);setPlank(wn,wn.count,true);wn.count++;sfx.hammer();addPts(p,10)}};break}}
         if(!act)for(const b of BUYS){if(Math.hypot(b.sx-p.pos.x,b.sz-p.pos.z)<1.4&&Math.abs(b.y-p.pos.y)<1){const own=p.w.find(x=>x.id===b.id),BW=WEAP[b.id],cost=own?BW.cost/2:BW.cost;
           act={k:'b'+b.id,t:`Hold ${p.useKey}: ${own?'ammo for the ':''}${BW.name} [${cost}]`,dur:.35,once:1,fn(){if(p.pts<cost){sfx.empty();return}if(own&&own.res>=BW.res&&own.mag>=BW.mag)return;p.pts-=cost;sfx.buy();if(GST)NET.ev.push(['buy',cost]);
             if(own){own.res=BW.res;own.mag=BW.mag}else{const nw={id:b.id,mag:BW.mag,res:BW.res};if(p.w.length<2){p.w.push(nw);p.cur=1}else p.w[p.cur]=nw;p.rel=0;showGun(p)}}};break}}
@@ -593,8 +602,8 @@ const BOARDED={on:false,api:null}; window.BOARDED=BOARDED;
       const by=p.pos.y,eye=by+(p.down?.4:1.62),bobY=p.down?0:Math.sin(p.bob*4.2)*.022*(p.mv||0);
       p.cam.rotation.set(p.pitch,p.yaw,0,'YXZ');
       if(p.view==='fp'||p.dead)p.cam.position.set(p.pos.x,eye+bobY,p.pos.z);
-      else if(p.view==='tp'){fwdOf(p,tmp);const rx=Math.cos(p.yaw),rz=-Math.sin(p.yaw);let tx=p.pos.x,tz=p.pos.z,ty=by+(p.down?.7:1.62);for(let s=.5;s>0;s-=.1){if(inside(p.pos.x+rx*s,ty,p.pos.z+rz*s)){tx+=rx*s;tz+=rz*s;break}}
-        let d=2.5;for(;d>.2;d-=.15)if(inside(tx-tmp.x*d,ty-tmp.y*d,tz-tmp.z*d))break;p.tpd=d;p.cam.position.set(tx-tmp.x*d,ty-tmp.y*d,tz-tmp.z*d)}
+      else if(p.view==='tp'){fwdOf(p,tmp);const rx=Math.cos(p.yaw),rz=-Math.sin(p.yaw);let tx=p.pos.x,tz=p.pos.z,ty=by+(p.down?.7:1.62);const po=outOf(p.pos.x,p.pos.z);for(let s=.5;s>0;s-=.1){if(inside(p.pos.x+rx*s,ty,p.pos.z+rz*s,po)){tx+=rx*s;tz+=rz*s;break}}
+        let d=2.5;for(;d>.2;d-=.15)if(inside(tx-tmp.x*d,ty-tmp.y*d,tz-tmp.z*d,po))break;p.tpd=d;p.cam.position.set(tx-tmp.x*d,ty-tmp.y*d,tz-tmp.z*d)}
       p.cam.fov=lerp(p.view==='tp'?66:78,p.view==='tp'?48:52,p.ads)+(p.sprinting?4:0);p.cam.updateProjectionMatrix();
       p.ocam.position.set(p.pos.x,by+1,p.pos.z).addScaledVector(ISO_D,9);p.ocam.lookAt(p.pos.x,by+1,p.pos.z);p.ocam.updateMatrixWorld();
       const vm=p.vm,rq=p.rel>0?Math.sin(clamp(1-p.rel/WEAP[p.w[p.cur].id].reload,0,1)*Math.PI):0,mk=p.melee>0?Math.sin(p.melee/.55*Math.PI):0,sx=Math.sin(p.bob*2.1)*.004*(p.mv||0)*(1-p.ads);

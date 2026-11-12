@@ -5,7 +5,8 @@ import {SYS, TILE, ZU} from './006-map-pre.js';
 import {RIVER} from './066-river.js';
 import {PIER} from './066b-pier.js';
 import {KIT} from './068-kit.js';
-{ const DATA=__LAZY__("data/fishboat.json"), K=2;
+const MOORBOAT={b:null};
+{ const DATA=__LAZY__("data/fishboat.json"), K=4;
   VLOOK.kind('moored',{name:'THE MOORED FISHING BOAT',grp:'BOATS',make:()=>{ const m=window.MOORED; if(!m)return null; const c=m.g.clone(); c.position.set(0,0,0); c.rotation.set(0,0,0); return VLOOK.dress('moored',c); }});
   const hs=(a,b)=>{ const s=Math.sin(a*127.1+b*311.7)*43758.5453; return s-Math.floor(s); };
   const build=()=>{ const P=PIER, T=TILE, WU=T/.84, RB=RIVER.box; if(!P||!P.G||!RB||!KIT.data.fishboat)return;
@@ -28,8 +29,9 @@ import {KIT} from './068-kit.js';
     g.updateMatrixWorld(true); const bow=new THREE.Vector3(cx,top+.1,cz-L2*.92).applyMatrix4(body.matrixWorld), post=(RIVER.posts||[]).reduce((b,p)=>!b||Math.hypot(p[0]-bow.x,p[1]-bow.z)<Math.hypot(b[0]-bow.x,b[1]-bow.z)?p:b,null)||[P.x-P.hw,bow.z], pe=new THREE.Vector3(post[0],RB.lv+.9*WU,post[1]);
     const mid=bow.clone().lerp(pe,.5); mid.y=Math.min(bow.y,pe.y)-.55*WU; const rope=new THREE.Mesh(new THREE.TubeGeometry(new THREE.QuadraticBezierCurve3(bow,mid,pe),16,.035*WU,5,false),ropeM); rope.castShadow=true; P.G.add(rope);
     // it rides the waves: up and down and a little roll and pitch, only while you are near
-    const y0=g.position.y, BOAT2={g,x,z,y0}; window.MOORED=BOAT2; VLOOK.dress('moored',g);
+    const y0=g.position.y, BOAT2={g,x,z,y0,on:()=>P.G.visible,deck:(u,w,o)=>{ g.updateMatrixWorld(true); return body.localToWorld(o.set(cx+w*W2,top+.06,cz+u*L2)); }}; window.MOORED=MOORBOAT.b=BOAT2; VLOOK.dress('moored',g);
     SYS.add('life',()=>{ if(!P.G.visible||!RIVER.hAt||Math.hypot(pos.x-x,pos.z-z)>60*T)return; const h=RIVER.hAt(x,z)*.6, a=RIVER.hAt(x+BEAM/2,z)-RIVER.hAt(x-BEAM/2,z), b=RIVER.hAt(x,z+LEN/2)-RIVER.hAt(x,z-LEN/2);
       g.position.y=y0+h; g.rotation.z=Math.max(-.08,Math.min(.08,a/BEAM*.5)); g.rotation.x=Math.max(-.05,Math.min(.05,-b/LEN*.5)); },'068b-boat'); };
   const go=()=>DATA().then(J=>{ Object.assign(KIT.data,J); build(); }).catch(e=>console.warn('boat',e)); RIVER.onBuild.push(go); if(RIVER.on)go();
 }
+export {MOORBOAT};

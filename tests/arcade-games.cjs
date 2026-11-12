@@ -8,7 +8,7 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c){ bad++; 
   await pg.waitForFunction(()=>window.__started,null,{timeout:300000}); await pg.waitForTimeout(2000);
   const r=await pg.evaluate(()=>{ const run=(G,S0,f)=>{ const S={mx:150,my:200,down:false,press:false,release:false,keys:new Set(),t:0,over:'',line:'',score:0,...S0}; G.start(S); f(S,n=>{ for(let i=0;i<n&&!S.over;i++){ G.tick(S,1/60); S.press=S.release=false; } }); return S; };
     const out={};
-    { const G=SKEE.game(), S=run(G,{},(S,step)=>{ for(let n=0;n<60&&!S.over;n++){ S.keys.add(' '); step(50); S.keys.delete(' '); step(400); } }); out.skOver=S.over; out.skScore=S.score; out.skTix=S.tickets; G.close(); }
+    { const G=SKEE.game(), S=run(G,{},(S,step)=>{ for(let n=0;n<60&&!S.over;n++){ S.keys.add(' '); step(28+n%4*5); S.keys.delete(' '); step(400); } }); out.skOver=S.over; out.skScore=S.score; out.skTix=S.tickets; G.close(); }
     const claw=aim=>run(GAMES.claw(),{},(S,step)=>{ S.toys.sort((a,b)=>a.y-b.y); const t=S.toys[0]; if(aim){ S.toys=[t]; aim=t.r*.7; } for(let i=0;i<240;i++){ S.mx=t.x+aim; S.lastmx=S.mx; step(1); } S.press=true; step(1); for(let i=0;i<300&&S.ph!=='up';i++)step(1); out['grip'+(aim?1:0)]=S.grip||0; out['held'+(aim?1:0)]=!!S.held; if(S.held)S.grip=1;
       if(S.held){ for(let i=0;i<300&&S.ph!=='carry';i++)step(1); for(let x=S.tx;x>40;x-=1.2){ S.mx=x; S.lastmx=x; step(1); } S.mx=40; step(240); S.press=true; step(1); step(200); } out['won'+(aim?1:0)]=!!S.won; });
     claw(0); claw(1);

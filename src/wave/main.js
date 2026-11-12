@@ -6,7 +6,7 @@ import rockMp3 from '../../data/wave/rock.mp3';
 const qs = new URLSearchParams(location.search);
 const AUTOPLAY = qs.has('autoplay'), FORCE_WALLS = qs.has('walls');
 const COL = { left: 0xffa51f, right: 0x28d7ff, any: 0xffffff };
-const HITZ = -0.9;          // where shards are meant to be cut
+const HITZ = -1.25;          // where shards are meant to be cut
 const BLADE_LEN = 0.95;
 const HIT_R = 0.27;
 const LEAD = 2.0;           // seconds a shard is visible before its beat
@@ -106,6 +106,7 @@ const stripTex = (() => {
   for (const x of [-0.45, 0, 0.45]) flat(0.012, 120, laneMat, x, 0.005, -58);
   env.stripes = new THREE.InstancedMesh(new THREE.PlaneGeometry(2.6, 0.06).rotateX(-Math.PI / 2), addMat(0x4a3ad0, 0.55), 24);
   env.stripes.frustumCulled = false; scene.add(env.stripes);
+  env.cutLine = flat(2.6, 0.05, addMat(0xffffff, 0.8), 0, 0.012, HITZ); env.cutSoft = flat(0.5, 2.6, addMat(0xffffff, 0.3, stripTex), 0, 0.011, HITZ); env.cutSoft.rotation.z = Math.PI / 2;
   // platform
   const plat = new THREE.Mesh(new THREE.CylinderGeometry(1.35, 1.1, 0.14, 6), new THREE.MeshLambertMaterial({ color: 0x0b0930, flatShading: true }));
   plat.position.y = -0.07; scene.add(plat);
@@ -307,28 +308,37 @@ function scheduleStep(tr, step, t) {
   if (L && ln != null) { if (ty === 'drop') supersaw(t, [mel, delaySend, reverbSend], mtof(ln), 0.05, 0.3, 2600); else tone(t, [mel, delaySend, reverbSend], 'triangle', mtof(ln), 0.09, 0.005, 0.4, 3000); }
 }
 
-const RHYTHM = {
-  easy: { 1: [[0], [0, 8]], 2: [[0, 8], [0, 8, 12]], 3: [[0, 4, 8, 12], [0, 8, 12]] },
-  normal: { 1: [[0, 8]], 2: [[0, 4, 8, 12], [0, 4, 8]], 3: [[0, 4, 8, 10, 12], [0, 4, 6, 8, 12], [0, 2, 4, 8, 12, 14]] },
-  hard: { 1: [[0, 4, 8, 12]], 2: [[0, 4, 6, 8, 12, 14], [0, 2, 4, 8, 10, 12]], 3: [[0, 2, 4, 6, 8, 10, 12, 14], [0, 2, 4, 6, 8, 12, 14], [0, 3, 6, 8, 10, 12, 14]] },
-};
 function synthMap(tr, dk, withObstacles) {
   const rnd = rngFrom(tr.seed * 100 + Object.keys(DIFFS).indexOf(dk));
-  const events = [], obstacles = [], barDur = tr.stepDur * 16;
-  const pDbl = { easy: 0, normal: 0.25, hard: 0.4 }[dk];
+  const cands = [], obstacles = [], barDur = tr.stepDur * 16;
+  const pDbl = { easy: 0, normal: 0.25, hard: 0.4 }[dk], gap = { easy: 0.42, normal: 0.27, hard: 0.17 }[dk], minW = dk === 'hard' ? 1 : 2;
   let wallSide = 0;
   tr.bars.forEach((sec, bar) => {
     if (bar === 0 || bar === tr.bars.length - 1) return;
-    let level = SEC_LEVEL[sec.type];
-    if (sec.type === 'build' && sec.i === sec.n - 1) level = 3;
-    const pats = RHYTHM[dk][level], pat = pats[Math.floor(rnd() * pats.length)];
-    for (const s of pat) events.push({ t: (bar * 16 + s) * tr.stepDur, dbl: level === 3 && s === 0 && rnd() < pDbl });
+    const ty = sec.type, K = ty !== 'intro' && ty !== 'break', S = ty === 'verse' || ty === 'drop';
+    const B = ty === 'verse' || ty === 'drop' || ty === 'build' || ty === 'outro', L = ty === 'drop' || ty === 'break';
+    const every = sec.i >= sec.n - 1 ? 1 : sec.i >= sec.n - 2 ? 2 : 4;
+    for (let s = 0; s < 16; s++) {
+      if (dk === 'easy' && s % 4) continue;
+      let w = 0;
+      if (K && tr.kick[s] === 'x') w = 3;
+      if (S && (s === 4 || s === 12)) w = Math.max(w, 3);
+      if (ty === 'build' && s % every === 0) w = Math.max(w, 2.5);
+      if (L && tr.lead[bar % 8][s] != null) w = Math.max(w, 2);
+      if (s === 0) w = Math.max(w, 2);
+      if ((ty === 'intro' || ty === 'break') && s === 8) w = Math.max(w, 2);
+      if (B && tr.bass[s] === 'x') w = Math.max(w, 1);
+      if (w >= minW) cands.push({ t: (bar * 16 + s) * tr.stepDur, w: w + rnd() * 0.1, dbl: ty === 'drop' && s === 0 && rnd() < pDbl });
+    }
     if (withObstacles && dk !== 'easy') {
-      if ((sec.type === 'verse' && sec.i === 2) || (sec.type === 'drop' && sec.i % 8 === 4))
+      if ((ty === 'verse' && sec.i === 2) || (ty === 'drop' && sec.i % 8 === 4))
         obstacles.push({ t: bar * barDur, dur: barDur, type: wallSide++ % 2 ? 'left' : 'right' });
-      if (sec.type === 'break' && sec.i === 1) obstacles.push({ t: bar * barDur + barDur / 2, dur: 0.25, type: 'duck' });
+      if (ty === 'break' && sec.i === 1) obstacles.push({ t: bar * barDur + barDur / 2, dur: 0.25, type: 'duck' });
     }
   });
+  const events = [];
+  for (const c of cands.sort((a, b) => b.w - a.w)) if (!events.some(e => Math.abs(e.t - c.t) < gap - 0.001)) events.push(c);
+  events.sort((a, b) => a.t - b.t);
   return { events, obstacles, duration: tr.duration, rnd };
 }
 
@@ -373,8 +383,23 @@ function customMap(tr, dk, withObstacles) {
     for (let t = 14, i = 0; t < tr.duration - 6; t += 18, i++) obstacles.push({ t, dur: 2, type: i % 2 ? 'left' : 'right' });
   return { events, obstacles, duration: tr.duration, rnd };
 }
+// a song whose bars were measured by hand: two stomps and a clap in each
+function bakedMap(tr, dk, withObstacles) {
+  const rnd = rngFrom(51 + Object.keys(DIFFS).indexOf(dk)), q = tr.barLen / 4, events = [], obstacles = [];
+  tr.bars.forEach((T, i) => {
+    events.push({ t: T });
+    if (dk !== 'easy') events.push({ t: T + q });
+    events.push({ t: T + q * 2, dbl: dk === 'hard' || (dk === 'normal' && i % 2 === 1) });
+    if (dk === 'hard' && T > 94) events.push({ t: T + q * 3 });
+  });
+  if (withObstacles && dk !== 'easy')
+    for (let i = 10, k = 0; i < tr.bars.length - 4; i += 12, k++) obstacles.push({ t: tr.bars[i], dur: tr.barLen * 2, type: k % 2 ? 'left' : 'right' });
+  return { events, obstacles, duration: tr.duration, rnd };
+}
 const customTracks = [];
-const BUNDLED = [{ id: 'rock', name: 'We Will Rock You', bytes: rockMp3, duration: 124.7, karaoke: [
+const BUNDLED = [{ id: 'rock', name: 'We Will Rock You', bytes: rockMp3, duration: 124.7, barLen: 1.476,
+  bars: [2.427,3.939,5.443,6.951,8.428,9.908,11.384,12.88,14.368,15.844,17.316,18.792,20.252,21.728,23.225,24.709,26.185,27.661,29.137,30.613,32.121,33.589,35.093,36.569,38.006,39.478,40.954,42.454,43.922,45.398,46.87,48.342,49.818,51.31,52.787,54.263,55.747,57.231,58.707,60.183,61.659,63.123,64.587,66.051,67.516,68.992,70.468,71.944,73.42,74.896,76.364,77.84,79.316,80.812,82.273,83.749,85.233,86.681,88.161,89.645,91.121,92.581,94.021,95.481,96.938,98.414,99.886,101.362,102.846,104.322,105.782,107.246,108.698,110.138,111.615,113.075,114.527,116.003,117.479,118.975,120.451],
+  karaoke: [
   [12.5, "Buddy you're a boy make a big noise\nPlayin' in the street gonna be a big man some day!"], [17.5, "You got mud on yo' face\nYou big disgrace"],
   [20, "Kickin' your can all over the place, singin'"], [25, 'We will we will rock you!'],
   [35, "Buddy you're a young man hard man\nShoutin' in the street gonna take on the world some day"], [42.5, "You got blood on yo' face\nYou big disgrace!"],
@@ -604,6 +629,7 @@ function clearGroup(grp) {
 }
 
 const sel = { track: TRACKS[0], diff: 'normal' };
+let syncMs = clamp(store.get('sync'), -300, 300);
 const menuGroup = new THREE.Group(); menuGroup.position.set(0, 0, -2.4); scene.add(menuGroup);
 function buildMenu() {
   clearGroup(menuGroup);
@@ -628,6 +654,10 @@ function buildMenu() {
   const play = new Btn(menuGroup, 0.78, 0.88, 1.05, 0.4, 'PLAY', () => startSong(sel.track, sel.diff),
     { accent: '#ffa51f', sub: best ? 'Best ' + best.toLocaleString() : 'No score yet' });
   play.selected = true; play.draw();
+  const nudge = d => () => { syncMs = clamp(syncMs + d, -300, 300); store.set('sync', syncMs); buildMenu(); };
+  const lab = (syncMs > 0 ? '+' : '') + syncMs + ' ms';
+  new Btn(menuGroup, 0.5, 0.5, 0.5, 0.22, 'EARLIER', nudge(20), { accent: '#8f7bff', sub: 'Shards ' + lab });
+  new Btn(menuGroup, 1.06, 0.5, 0.5, 0.22, 'LATER', nudge(-20), { accent: '#8f7bff', sub: 'Shards ' + lab });
 }
 const pauseGroup = new THREE.Group(); pauseGroup.position.set(0, 0, -1.9); pauseGroup.visible = false; scene.add(pauseGroup);
 new Btn(pauseGroup, 0, 1.75, 1.1, 0.26, 'Resume', () => resume(), { accent: '#ffa51f' });
@@ -722,11 +752,11 @@ function startSong(track, dk) {
   stopMusic(); clearPlayfield();
   if (ctx.state === 'suspended') ctx.resume();
   const headY = inXR() ? clamp(renderer.xr.getCamera().position.y, 1.0, 2.1) : 1.6;
-  const map = track.synth ? synthMap(track, dk, inXR() || FORCE_WALLS) : customMap(track, dk, inXR() || FORCE_WALLS);
+  const map = (track.synth ? synthMap : track.bars ? bakedMap : customMap)(track, dk, inXR() || FORCE_WALLS);
   Object.assign(cur, {
     track, dk, speed: DIFFS[dk].speed, rowsY: [headY - 0.85, headY - 0.5, headY - 0.15], headY,
     notes: generateNotes(map, dk), obstacles: map.obstacles, duration: map.duration,
-    next: 0, step: 0, score: 0, raw: 0, hits: 0, combo: 0, maxCombo: 0, energy: 0.5, src: null,
+    next: 0, step: 0, clock: 0, score: 0, raw: 0, hits: 0, combo: 0, maxCombo: 0, energy: 0.5, src: null,
   });
   for (const o of cur.obstacles) {
     if (o.type === 'duck') Object.assign(o, { x0: -1.5, x1: 1.5, y0: headY - 0.3, y1: headY + 0.7 });
@@ -882,7 +912,13 @@ function updatePlay(dt) {
   if (tr.synth) while (cur.step < tr.bars.length * 16 && t0 + cur.step * tr.stepDur < ctx.currentTime + 0.3) {
     const t = t0 + cur.step * tr.stepDur; if (t > ctx.currentTime - 0.03) scheduleStep(tr, cur.step, t); cur.step++;
   }
-  songT = ctx.currentTime - t0 - lat;
+  let ct = ctx.currentTime - lat;
+  if (ctx.state === 'running' && ctx.getOutputTimestamp) {
+    const ts = ctx.getOutputTimestamp(), est = ts.contextTime + (performance.now() - ts.performanceTime) / 1000;
+    if (ts.contextTime > 0 && Math.abs(est - ctx.currentTime) < 0.6) ct = est;
+  }
+  if (ct < cur.clock && cur.clock - ct < 0.15) ct = cur.clock; cur.clock = ct;
+  songT = ct - t0 + syncMs / 1000;
   if (tr.synth) { const sec = tr.bars[clamp(Math.floor(songT / (tr.stepDur * 16)), 0, tr.bars.length - 1)]; env.target.setHex(SEC_TINT[sec.type]); }
   else env.target.setHSL((0.68 + songT * 0.012) % 1, 0.85, 0.6);
   while (cur.next < cur.notes.length && cur.notes[cur.next].t - songT < LEAD) {
@@ -977,6 +1013,7 @@ renderer.setAnimationLoop(time => {
     env.edgeMat.color.copy(T).lerp(tmpC.setHex(0xffffff), 0.3 + env.flash * 0.5).multiplyScalar(0.8 + pulse * 0.5);
     env.softMat.color.copy(T); env.softMat.opacity = 0.22 + pulse * 0.35;
     env.platGlow.material.color.copy(T); env.platGlow.material.opacity = 0.15 + pulse * 0.25;
+    env.cutLine.visible = env.cutSoft.visible = state === 'playing'; env.cutLine.material.opacity = 0.5 + env.flash * 0.5;
     env.haze.material.color.copy(T); env.haze.scale.setScalar(300 * (1 + pulse * 0.12));
     env.sun.scale.setScalar(1 + pulse * 0.04);
     env.gates.forEach((gt, i) => {

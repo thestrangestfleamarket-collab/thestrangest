@@ -53,8 +53,8 @@ export default {
     if ((request.method === "GET" || request.method === "HEAD") && APPF.test(p)) {
       const r = await env.ASSETS.fetch(new Request(url.origin + p)); if (!r.ok) return new Response("not found", { status: 404 });
       const out = new Response(r.body, r); if (p.endsWith(".webmanifest")) out.headers.set("content-type", "application/manifest+json"); out.headers.set("cache-control", "public, max-age=86400"); return out; }
-    // Hollow Pines (src/asylum/): its own page, to anyone with the link
-    if ((request.method === "GET" || request.method === "HEAD") && p === "/asylum") return page(env, url, "/asylum", request, "no-cache");
+    // Hollow Pines (src/asylum/): its own page at /vr (and /asylum, its first address), to anyone with the link
+    if ((request.method === "GET" || request.method === "HEAD") && (p === "/vr" || p === "/asylum")) return page(env, url, "/asylum", request, "no-cache");
     if (request.method === "GET" && p === "/sw.js") {
       if (!(await inside(env, request, dev))) return new Response("not found", { status: 404 });
       const out = await page(env, url, "/sw.js", request, "private, no-cache"); out.headers.set("content-type", "text/javascript; charset=utf-8"); return out; }
@@ -569,7 +569,7 @@ export class Block extends Server {
       const v = word(m.v, 24); if (!/^([0-9]+:[0-9.]+:[bc])?$/.test(v)) return;
       this.broadcast(JSON.stringify({ t: "jug", id: s.id, v }), [c.id]);
     } else if (m.t === "drone") {   // a delivery drone flying to a player: everyone near sees it (src/146-drone)
-      this.broadcast(JSON.stringify({ t: "drone", id: s.id, lb: word(m.lb, 40), f: m.f ? 1 : 0, x: num(m.x, -1e5, 1e5), y: num(m.y, -1e4, 1e4), z: num(m.z, -1e5, 1e5) }), [c.id]);
+      this.broadcast(JSON.stringify({ t: "drone", id: s.id, lb: word(m.lb, 40), f: m.f ? 1 : 0, c: m.c ? 1 : 0, x: num(m.x, -1e5, 1e5), y: num(m.y, -1e4, 1e4), z: num(m.z, -1e5, 1e5) }), [c.id]);
     } else if (m.t === "puff") {
       const k = /^cigar(_blue)?$/.test(m.k) ? m.k : "cigar";
       this.broadcast(JSON.stringify({ t: "puff", id: s.id, x: num(m.x, -1e5, 1e5), y: num(m.y, -1e4, 1e4), z: num(m.z, -1e5, 1e5), k }), [c.id]);

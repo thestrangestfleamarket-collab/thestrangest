@@ -1,17 +1,18 @@
-// the asylum's painted textures and its toon materials
+// the asylum's painted textures and its lit materials (relief from the paint; a cheaper shader in a headset)
 import * as T from 'three';
 
 let seed = 11;
 export const rnd = () => (seed = seed * 16807 % 2147483647) / 2147483647;
-const grad = new T.DataTexture(new Uint8Array([26, 84, 160, 255]), 4, 1, T.RedFormat);
-grad.minFilter = grad.magFilter = T.NearestFilter; grad.needsUpdate = true;
-export const toon = o => new T.MeshToonMaterial({ gradientMap: grad, ...(typeof o === 'number' ? { color: o } : o) });
+const QUEST = /OculusBrowser|Quest|Pico/i.test(navigator.userAgent);
+export const lit = o => { const p = typeof o === 'number' ? { color: o } : { ...o }, rough = p.rough ?? .82; delete p.rough;
+  if (QUEST) return new T.MeshLambertMaterial(p);
+  const m = new T.MeshStandardMaterial({ roughness: rough, metalness: 0, ...p }); if (p.map && !p.transparent) { m.bumpMap = p.map; m.bumpScale = 1.6; } return m; };
 export const glow = c => new T.MeshBasicMaterial({ color: c });
 export function tex(w, h, draw, rx = 1, ry = 1) {
   const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h);
   const t = new T.CanvasTexture(c); t.wrapS = t.wrapT = T.RepeatWrapping; t.repeat.set(rx, ry); t.colorSpace = T.SRGBColorSpace; t.anisotropy = 4; return t;
 }
-const decal = (w, h, draw) => toon({ map: tex(w, h, draw), transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3 });
+const decal = (w, h, draw) => lit({ map: tex(w, h, draw), transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3 });
 
 function stains(g, w, h, n, col, r0 = 8, r1 = 40) {
   for (let i = 0; i < n; i++) { const x = rnd() * w, y = rnd() * h, r = r0 + rnd() * r1, gr = g.createRadialGradient(x, y, 0, x, y, r);
@@ -33,7 +34,7 @@ function tiles(g, x0, y0, w, h, s, base, line, miss = 0) {
 }
 
 const WW = 256, WH = 384;
-const wall = draw => toon({ map: tex(WW, WH, draw) }), floor = draw => toon({ map: tex(256, 256, draw) });
+const wall = draw => lit({ map: tex(WW, WH, draw) }), floor = draw => lit({ map: tex(256, 256, draw), rough: .5 });
 export const WALL = {
   c: wall((g, w, h) => { g.fillStyle = '#868b7c'; g.fillRect(0, 0, w, h); stains(g, w, h * .55, 16, 'rgba(46,38,20,.5)'); streaks(g, w, h * .6, 18, 'rgba(54,40,18,.45)'); cracks(g, w, h * .4, 4, 'rgba(20,20,16,.7)');
     const y = h * .533; tiles(g, 0, y, w, h - y, 16, '#4c6657', '#22302a', 14); g.fillStyle = '#1b2520'; g.fillRect(0, y - 4, w, 7); stains(g, w, h, 10, 'rgba(0,0,0,.4)'); g.fillStyle = 'rgba(8,10,8,.55)'; g.fillRect(0, h - 14, w, 14); }),
@@ -51,6 +52,7 @@ export const WALL = {
   b: wall((g, w, h) => { g.fillStyle = '#1c1512'; g.fillRect(0, 0, w, h); for (let y = 0, r = 0; y < h; y += 12, r++) for (let x = -16 * (r % 2); x < w; x += 32) { const v = 52 + rnd() * 26 | 0; g.fillStyle = `rgb(${v + 22},${v - 6},${v - 18})`; g.fillRect(x + 1, y + 1, 30, 10); }
     stains(g, w, h, 20, 'rgba(0,0,0,.6)'); streaks(g, w, h, 8, 'rgba(0,0,0,.5)'); }),
 };
+if (WALL.t.isMeshStandardMaterial) { WALL.t.roughness = .42; WALL.c.roughness = .6; }
 WALL.m = WALL.t; WALL.s = WALL.b; WALL.r = WALL.o; WALL.D = WALL.c;
 export const FLOOR = {
   l: floor((g, w, h) => { for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) { g.fillStyle = (i + j) % 2 ? '#7c8473' : '#38423d'; g.fillRect(i * 64, j * 64, 64, 64); } g.strokeStyle = '#151916'; for (let i = 0; i <= 4; i++) { g.strokeRect(i * 64, 0, 0, h); g.strokeRect(0, i * 64, w, 0); } stains(g, w, h, 14, 'rgba(22,16,8,.5)'); speck(g, w, h, 300, .3); }),
@@ -66,7 +68,7 @@ FLOOR.m = FLOOR.t; FLOOR.s = FLOOR.b; FLOOR.r = FLOOR.o; FLOOR.D = FLOOR.c;
 export const CEIL = floor((g, w, h) => { g.fillStyle = '#5a5c54'; g.fillRect(0, 0, w, h); speck(g, w, h, 900, .25); g.strokeStyle = '#25261f'; g.lineWidth = 2; for (let i = 0; i <= 2; i++) { g.strokeRect(i * 128, 0, 0, h); g.strokeRect(0, i * 128, w, 0); }
   for (let i = 0; i < 5; i++) { const x = rnd() * w, y = rnd() * h, r = 14 + rnd() * 30; g.strokeStyle = 'rgba(60,40,14,.6)'; g.lineWidth = 3; g.beginPath(); g.arc(x, y, r, 0, 7); g.stroke(); g.fillStyle = 'rgba(60,44,18,.3)'; g.fill(); } g.fillStyle = '#080807'; g.fillRect(128, 0, 127, 127); });
 
-const DW = 128, DHH = 282, dm = draw => toon({ map: tex(DW, DHH, draw) });
+const DW = 128, DHH = 282, dm = draw => lit({ map: tex(DW, DHH, draw) });
 export const M = {
   doorWood: dm((g, w, h) => { g.fillStyle = '#34241a'; g.fillRect(0, 0, w, h); g.strokeStyle = '#150d08'; g.lineWidth = 4; g.strokeRect(14, 14, w - 28, 110); g.strokeRect(14, 142, w - 28, 122); stains(g, w, h, 8, 'rgba(0,0,0,.5)'); streaks(g, w, h, 6, 'rgba(0,0,0,.3)'); }),
   doorWard: dm((g, w, h) => { g.fillStyle = '#5e6a58'; g.fillRect(0, 0, w, h); g.fillStyle = '#080c0e'; g.fillRect(40, 30, 48, 70); g.strokeStyle = '#2a2e26'; g.lineWidth = 1; for (let i = 0; i < 9; i++) { g.strokeRect(40 + i * 6, 30, 0, 70); g.strokeRect(40, 30 + i * 9, 48, 0); }
@@ -75,29 +77,29 @@ export const M = {
     g.strokeStyle = '#1a1d1f'; g.lineWidth = 3; g.strokeRect(4, 4, w - 8, h - 8); streaks(g, w, h, 12, 'rgba(96,48,20,.5)'); stains(g, w, h, 8, 'rgba(0,0,0,.45)'); g.fillStyle = '#34393b'; g.fillRect(0, h - 44, w, 44); }),
   doorExit: dm((g, w, h) => { g.fillStyle = '#1b1e1c'; g.fillRect(0, 0, w, h); g.fillStyle = '#0c1826'; g.fillRect(12, 16, 46, 180); g.fillRect(70, 16, 46, 180); g.fillStyle = '#16283a'; g.fillRect(12, 120, 46, 76); g.fillRect(70, 120, 46, 76);
     g.strokeStyle = '#2c302c'; g.lineWidth = 3; g.strokeRect(12, 16, 46, 180); g.strokeRect(70, 16, 46, 180); g.fillStyle = '#6a6d60'; g.fillRect(20, 206, 88, 8); g.fillStyle = '#0a0a0a'; g.fillRect(62, 0, 4, h); }),
-  wood: toon(0x2a1d14), woodLight: toon(0x5a4630), woodDark: toon(0x160f0a),
-  steel: toon(0x6a7274), steelDark: toon(0x2a2f31), chrome: toon(0x9aa3a6), black: toon(0x0b0b0b), rubber: toon(0x151515),
-  rust: toon({ map: tex(128, 128, (g, w, h) => { g.fillStyle = '#4a2c18'; g.fillRect(0, 0, w, h); speck(g, w, h, 700, .5); stains(g, w, h, 14, 'rgba(120,60,20,.6)', 4, 20); stains(g, w, h, 10, 'rgba(0,0,0,.5)'); }) }),
-  enamel: toon(0x9aa093), enamelDirty: toon(0x70766a), porcelain: toon(0xa7aba0),
-  sheet: toon({ map: tex(128, 128, (g, w, h) => { g.fillStyle = '#a3a394'; g.fillRect(0, 0, w, h); streaks(g, w, h, 10, 'rgba(60,60,50,.25)'); stains(g, w, h, 8, 'rgba(70,56,24,.4)'); stains(g, w, h, 2, 'rgba(90,16,10,.5)', 6, 20); }) }),
-  mattress: toon({ map: tex(128, 128, (g, w, h) => { g.fillStyle = '#7d7a66'; g.fillRect(0, 0, w, h); g.fillStyle = '#5c6470'; for (let x = 6; x < w; x += 16) g.fillRect(x, 0, 3, h); stains(g, w, h, 10, 'rgba(50,34,10,.6)'); stains(g, w, h, 2, 'rgba(70,10,8,.6)', 10, 26); }) }),
-  leather: toon(0x3a1f1a), strap: toon(0x4a3a22), brass: toon({ color: 0x9a7a30, emissive: 0x2a1c04 }), ceramic: toon({ color: 0xc8c2a8, emissive: 0x2c2a20 }),
-  yellow: toon({ color: 0xb09018, emissive: 0x2a2204 }), red: toon(0x7a1f18), green: toon(0x3b5a44), paper: toon({ color: 0xb8b29a, emissive: 0x1c1a14 }),
-  cloth: toon(0x9a9a8c), coat: toon(0xa8a89a), plant: toon(0x2c2a16), pot: toon(0x5a3a26), plastic: toon(0x6a4a2c), skin: toon(0x8f8a78), bag: toon(0x15171a),
+  wood: lit(0x2a1d14), woodLight: lit(0x5a4630), woodDark: lit(0x160f0a),
+  steel: lit({ color: 0x6a7274, rough: .4 }), steelDark: lit(0x2a2f31), chrome: lit({ color: 0x9aa3a6, rough: .25 }), black: lit(0x0b0b0b), rubber: lit(0x151515),
+  rust: lit({ map: tex(128, 128, (g, w, h) => { g.fillStyle = '#4a2c18'; g.fillRect(0, 0, w, h); speck(g, w, h, 700, .5); stains(g, w, h, 14, 'rgba(120,60,20,.6)', 4, 20); stains(g, w, h, 10, 'rgba(0,0,0,.5)'); }) }),
+  enamel: lit(0x9aa093), enamelDirty: lit(0x70766a), porcelain: lit({ color: 0xa7aba0, rough: .3 }),
+  sheet: lit({ map: tex(128, 128, (g, w, h) => { g.fillStyle = '#a3a394'; g.fillRect(0, 0, w, h); streaks(g, w, h, 10, 'rgba(60,60,50,.25)'); stains(g, w, h, 8, 'rgba(70,56,24,.4)'); stains(g, w, h, 2, 'rgba(90,16,10,.5)', 6, 20); }) }),
+  mattress: lit({ map: tex(128, 128, (g, w, h) => { g.fillStyle = '#7d7a66'; g.fillRect(0, 0, w, h); g.fillStyle = '#5c6470'; for (let x = 6; x < w; x += 16) g.fillRect(x, 0, 3, h); stains(g, w, h, 10, 'rgba(50,34,10,.6)'); stains(g, w, h, 2, 'rgba(70,10,8,.6)', 10, 26); }) }),
+  leather: lit({ color: 0x3a1f1a, rough: .5 }), strap: lit(0x4a3a22), brass: lit({ color: 0x9a7a30, emissive: 0x2a1c04 }), ceramic: lit({ color: 0xc8c2a8, emissive: 0x2c2a20 }),
+  yellow: lit({ color: 0xb09018, emissive: 0x2a2204 }), red: lit(0x7a1f18), green: lit(0x3b5a44), paper: lit({ color: 0xb8b29a, emissive: 0x1c1a14 }),
+  cloth: lit(0x9a9a8c), coat: lit(0xa8a89a), plant: lit(0x2c2a16), pot: lit(0x5a3a26), plastic: lit(0x6a4a2c), skin: lit(0x8f8a78), bag: lit({ color: 0x15171a, rough: .35 }),
   tubeOn: glow(0xe6f4ff), brick: WALL.b, tile: WALL.t,
-  fire: glow(0xff7a20), glass: toon({ color: 0x1a2428, transparent: true, opacity: .55 }),
-  window: glow(0xffffff), tvBody: toon(0x2b241c),
-  dials: toon({ map: tex(128, 64, (g, w, h) => { g.fillStyle = '#2a2d2a'; g.fillRect(0, 0, w, h); for (const [x, r] of [[22, 15], [58, 15], [98, 20]]) { g.fillStyle = '#c9c4a8'; g.beginPath(); g.arc(x, 30, r, 0, 7); g.fill(); g.strokeStyle = '#111'; g.lineWidth = 2; g.beginPath(); g.moveTo(x, 30); g.lineTo(x + r * .7, 30 - r * .6); g.stroke(); }
+  fire: glow(0xff7a20), glass: lit({ color: 0x1a2428, transparent: true, opacity: .55 }),
+  window: glow(0xffffff), tvBody: lit(0x2b241c),
+  dials: lit({ map: tex(128, 64, (g, w, h) => { g.fillStyle = '#2a2d2a'; g.fillRect(0, 0, w, h); for (const [x, r] of [[22, 15], [58, 15], [98, 20]]) { g.fillStyle = '#c9c4a8'; g.beginPath(); g.arc(x, 30, r, 0, 7); g.fill(); g.strokeStyle = '#111'; g.lineWidth = 2; g.beginPath(); g.moveTo(x, 30); g.lineTo(x + r * .7, 30 - r * .6); g.stroke(); }
     g.fillStyle = '#8a1a14'; g.fillRect(8, 52, 10, 7); g.fillStyle = '#c9c4a8'; g.font = '8px sans-serif'; g.fillText('VOLTS      mA       SEC', 8, 10); }) }),
-  drawer: toon({ map: tex(64, 64, (g, w, h) => { g.fillStyle = '#737b7c'; g.fillRect(0, 0, w, h); g.strokeStyle = '#2a2f31'; g.lineWidth = 3; g.strokeRect(2, 2, w - 4, h - 4); g.fillStyle = '#c4bfa4'; g.fillRect(22, 12, 20, 9); g.fillStyle = '#1c2022'; g.fillRect(18, 40, 28, 6); streaks(g, w, h, 5, 'rgba(90,48,20,.5)'); }) }),
-  cabinet: toon({ map: tex(64, 128, (g, w, h) => { g.fillStyle = '#4d5448'; g.fillRect(0, 0, w, h); for (let i = 0; i < 4; i++) { g.strokeStyle = '#1c201a'; g.lineWidth = 2; g.strokeRect(3, i * 32 + 3, w - 6, 27); g.fillStyle = '#b8b29a'; g.fillRect(22, i * 32 + 8, 20, 6); g.fillStyle = '#15180f'; g.fillRect(24, i * 32 + 19, 16, 4); } stains(g, w, h, 6, 'rgba(60,34,10,.5)'); }) }),
-  locker: toon({ map: tex(64, 128, (g, w, h) => { g.fillStyle = '#48584e'; g.fillRect(0, 0, w, h); g.strokeStyle = '#18201b'; g.lineWidth = 2; g.strokeRect(2, 2, w - 4, h - 4); g.fillStyle = '#18201b'; for (let y = 12; y < 30; y += 5) g.fillRect(14, y, 36, 2); g.fillRect(48, 64, 5, 10); stains(g, w, h, 6, 'rgba(60,30,10,.5)'); }) }),
-  static: toon({ map: tex(64, 48, g => { g.fillStyle = '#000'; g.fillRect(0, 0, 64, 48); }) }),
-  screenOff: toon(0x0a0f0d),
+  drawer: lit({ map: tex(64, 64, (g, w, h) => { g.fillStyle = '#737b7c'; g.fillRect(0, 0, w, h); g.strokeStyle = '#2a2f31'; g.lineWidth = 3; g.strokeRect(2, 2, w - 4, h - 4); g.fillStyle = '#c4bfa4'; g.fillRect(22, 12, 20, 9); g.fillStyle = '#1c2022'; g.fillRect(18, 40, 28, 6); streaks(g, w, h, 5, 'rgba(90,48,20,.5)'); }) }),
+  cabinet: lit({ map: tex(64, 128, (g, w, h) => { g.fillStyle = '#4d5448'; g.fillRect(0, 0, w, h); for (let i = 0; i < 4; i++) { g.strokeStyle = '#1c201a'; g.lineWidth = 2; g.strokeRect(3, i * 32 + 3, w - 6, 27); g.fillStyle = '#b8b29a'; g.fillRect(22, i * 32 + 8, 20, 6); g.fillStyle = '#15180f'; g.fillRect(24, i * 32 + 19, 16, 4); } stains(g, w, h, 6, 'rgba(60,34,10,.5)'); }) }),
+  locker: lit({ map: tex(64, 128, (g, w, h) => { g.fillStyle = '#48584e'; g.fillRect(0, 0, w, h); g.strokeStyle = '#18201b'; g.lineWidth = 2; g.strokeRect(2, 2, w - 4, h - 4); g.fillStyle = '#18201b'; for (let y = 12; y < 30; y += 5) g.fillRect(14, y, 36, 2); g.fillRect(48, 64, 5, 10); stains(g, w, h, 6, 'rgba(60,30,10,.5)'); }) }),
+  static: lit({ map: tex(64, 48, g => { g.fillStyle = '#000'; g.fillRect(0, 0, 64, 48); }) }),
+  screenOff: lit(0x0a0f0d),
   win: glow(0xffffff),
   clock: decal(64, 64, (g) => { g.fillStyle = '#b9b49c'; g.beginPath(); g.arc(32, 32, 30, 0, 7); g.fill(); g.strokeStyle = '#111'; g.lineWidth = 3; g.stroke(); g.lineWidth = 2; g.beginPath(); g.moveTo(32, 32); g.lineTo(32, 10); g.moveTo(32, 32); g.lineTo(26, 17); g.stroke(); for (let i = 0; i < 12; i++) { const a = i * Math.PI / 6; g.fillStyle = '#111'; g.fillRect(31 + Math.sin(a) * 25, 31 - Math.cos(a) * 25, 2, 2); } }),
-  board: toon({ map: tex(128, 96, (g, w, h) => { g.fillStyle = '#5a4428'; g.fillRect(0, 0, w, h); speck(g, w, h, 300, .4); for (let i = 0; i < 9; i++) { g.save(); g.translate(14 + (i % 4) * 30, 14 + (i / 4 | 0) * 28); g.rotate(rnd() * .3 - .15); g.fillStyle = rnd() < .3 ? '#a59a6a' : '#b8b29a'; g.fillRect(0, 0, 22, 26); g.fillStyle = '#333'; for (let y = 4; y < 22; y += 4) g.fillRect(3, y, 10 + rnd() * 7, 1); g.restore(); } g.strokeStyle = '#1c130a'; g.lineWidth = 5; g.strokeRect(0, 0, w, h); }) }),
-  mirror: toon({ map: tex(64, 96, (g, w, h) => { g.fillStyle = '#39423f'; g.fillRect(0, 0, w, h); stains(g, w, h, 8, 'rgba(10,10,8,.6)'); g.strokeStyle = '#aab3ae'; g.lineWidth = 1; g.beginPath(); g.moveTo(40, 30); for (const [x, y] of [[10, 5], [40, 30], [62, 12], [40, 30], [58, 80], [40, 30], [6, 60], [40, 30], [30, 95]]) g.lineTo(x, y); g.stroke(); g.strokeStyle = '#1a1a16'; g.lineWidth = 4; g.strokeRect(0, 0, w, h); }) }),
+  board: lit({ map: tex(128, 96, (g, w, h) => { g.fillStyle = '#5a4428'; g.fillRect(0, 0, w, h); speck(g, w, h, 300, .4); for (let i = 0; i < 9; i++) { g.save(); g.translate(14 + (i % 4) * 30, 14 + (i / 4 | 0) * 28); g.rotate(rnd() * .3 - .15); g.fillStyle = rnd() < .3 ? '#a59a6a' : '#b8b29a'; g.fillRect(0, 0, 22, 26); g.fillStyle = '#333'; for (let y = 4; y < 22; y += 4) g.fillRect(3, y, 10 + rnd() * 7, 1); g.restore(); } g.strokeStyle = '#1c130a'; g.lineWidth = 5; g.strokeRect(0, 0, w, h); }) }),
+  mirror: lit({ map: tex(64, 96, (g, w, h) => { g.fillStyle = '#39423f'; g.fillRect(0, 0, w, h); stains(g, w, h, 8, 'rgba(10,10,8,.6)'); g.strokeStyle = '#aab3ae'; g.lineWidth = 1; g.beginPath(); g.moveTo(40, 30); for (const [x, y] of [[10, 5], [40, 30], [62, 12], [40, 30], [58, 80], [40, 30], [6, 60], [40, 30], [30, 95]]) g.lineTo(x, y); g.stroke(); g.strokeStyle = '#1a1a16'; g.lineWidth = 4; g.strokeRect(0, 0, w, h); }) }),
   drawing: i => decal(64, 80, (g, w, h) => { g.fillStyle = '#b8b29a'; g.fillRect(0, 0, w, h); const col = ['#7a1f18', '#111', '#2a3a5a'][i % 3]; g.strokeStyle = col; g.lineWidth = 2;
     if (i % 4 == 0) { g.beginPath(); g.arc(32, 26, 12, 0, 7); g.stroke(); g.fillStyle = '#000'; g.fillRect(26, 21, 4, 6); g.fillRect(35, 21, 4, 6); g.beginPath(); g.moveTo(32, 38); g.lineTo(32, 72); g.moveTo(32, 46); g.lineTo(8, 76); g.moveTo(32, 46); g.lineTo(56, 76); g.stroke(); }
     else if (i % 4 == 1) { for (let k = 0; k < 5; k++) { g.strokeRect(8 + k * 10, 20, 0, 40); } g.beginPath(); g.moveTo(4, 30); g.lineTo(60, 52); g.stroke(); g.beginPath(); g.arc(32, 40, 5, 0, 7); g.fill(); }
@@ -114,7 +116,7 @@ export const M = {
 const signs = {};
 export function sign(text, bg = '#b8b29a', fg = '#15150f', w = 256, h = 64) {
   const k = text + bg; if (signs[k]) return signs[k];
-  return signs[k] = toon({ emissive: 0x141410, map: tex(w, h, (g) => { g.fillStyle = bg; g.fillRect(0, 0, w, h); stains(g, w, h, 4, 'rgba(40,30,14,.35)'); g.strokeStyle = fg; g.lineWidth = 2; g.strokeRect(3, 3, w - 6, h - 6); g.fillStyle = fg; g.textAlign = 'center'; g.textBaseline = 'middle';
+  return signs[k] = lit({ emissive: 0x141410, map: tex(w, h, (g) => { g.fillStyle = bg; g.fillRect(0, 0, w, h); stains(g, w, h, 4, 'rgba(40,30,14,.35)'); g.strokeStyle = fg; g.lineWidth = 2; g.strokeRect(3, 3, w - 6, h - 6); g.fillStyle = fg; g.textAlign = 'center'; g.textBaseline = 'middle';
     const L = text.split('\n'); let s = Math.min(h * .62 / L.length, 40); g.font = `bold ${s}px sans-serif`; while (L.some(l => g.measureText(l).width > w - 20)) g.font = `bold ${--s}px sans-serif`; L.forEach((l, i) => g.fillText(l, w / 2, h / 2 + (i - (L.length - 1) / 2) * s * 1.15)); }) });
 }
 export function windowTex() {

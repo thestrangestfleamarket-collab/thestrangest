@@ -9,12 +9,12 @@ import { HUD } from './hud.js';
 const NOTES = {
   log: ['NIGHT LOG, FRONT DESK', '23:10  Mains dropped again. Third time this week.\n23:25  Front doors are on the mag-lock. They only release on mains power, so nobody leaves until the fuses are back in the boiler room box.\n23:40  Someone keeps pulling the fuses. Ask Dr. Finch.\n23:52  New night guard due. Ward key is in the office.'],
   memo: ['MEMO: Dr. A. Finch to all staff', 'The three mains fuses are NOT to be removed.\n\nI borrowed one for the machine in Treatment. One went down to the mortuary on a trolley by mistake. The third was found in Patient 9\'s cell. He collects things.\n\nPut them back in the boiler room and throw the lever.'],
-  file: ['PATIENT 9. RESTRICTED', 'Admitted 1961. No name on record.\n\nDoes not move while observed under light. Moves when he is not. Staff are to keep a lamp on him at all times.\n\nHe will not come into a lit corridor. Lately the tubes near his cell keep failing.\n\nDo not let your batteries run down.'],
+  file: ['PATIENT 9. RESTRICTED', 'Admitted 1961. No name on record.\n\nDoes not move while observed under light. Moves when he is not. Staff are to keep a lamp on him at all times. Do not trust it: every time the lamp blinks he is nearer.\n\nHe will not come into a lit corridor. Lately the tubes near his cell keep failing.\n\nDo not let your batteries run down.'],
   tally: ['SCRATCHED INTO THE WALL', 'he only walks in the dark\nhe only walks in the dark\nhe only walks in the dark\n\nkeep the light on him\n\nDON\'T LOOK AWAY'],
   finch: ['CLIPBOARD: Dr. Finch', 'Session 41. Patient 9. Full current, eleven seconds.\n\nNo response. He watched me the whole time.\n\nWhen the lamp flickered he was standing. The straps were still buckled.\n\nI have put the mortuary key in my coat. I will not be going down there again.'],
   tags: ['COLD ROOM REGISTER', 'Drawer 1  empty\nDrawer 2  unknown female\nDrawer 3  empty\nDrawer 4  FINCH, Aldous, Dr. Found in boiler room. Personal effects left on the tray.\nDrawer 5  empty\n\nGurney: PATIENT 9, pronounced 02:14.\n\n(the last line has been crossed out)'],
 };
-const inter = []; let near = null, intro = 0, dripT = 4, bangT = 50, sqT = 0, bodyUp = 0, arch = 0, drawerOpen = 0, leverT = -1, surge = -1;
+const inter = []; let near = null, intro = 0, dripT = 4, bangT = 50, sqT = 0, bodyUp = 0, arch = 0, drawerOpen = 0, leverT = -1, surge = -1, lastNote = '', fall = 0, glimT = 30, glim = 0;
 export const S = { init, update, use, kill, NOTES, state: () => ({ near: near && near.label(), obj: G.objective }) };
 const D = W.dyn, key = () => G.xr ? 'TRIGGER' : G.touch ? 'USE' : 'E';
 const obj = t => { if (G.objective !== t) { G.objective = t; HUD.say(t, 7); } };
@@ -33,7 +33,8 @@ function init() {
 }
 function useDoor(d) {
   const p = [d.px, 1.1, d.pz];
-  if (d.id === 'exit') { if (G.power) return win(); A.rattle(p); HUD.say('Mag-locked. It only releases on mains power.', 5); if (!G.inv.key && once('o1')) after(4.5, () => { if (!G.inv.key) obj('Find the ward key. The night log says it is in the office.'); }); return; }
+  if (d.id === 'exit') { if (G.flags.unlocked) return win();
+    if (G.power) { if (once('cyc')) { HUD.say('The lock is cycling. Hold on.', 2); for (const t of [0, .35, .7, 1.05]) after(t, () => A.click(p)); after(1.4, () => { G.flags.unlocked = true; A.thud(p); HUD.say('OPEN. GO.', 3); }); } return; } A.rattle(p); HUD.say('Mag-locked. It only releases on mains power.', 5); if (!G.inv.key && once('o1')) after(4.5, () => { if (!G.inv.key) obj('Find the ward key. The night log says it is in the office.'); }); return; }
   if (d.locked) {
     if (d.id === 'ward' && G.inv.key) { d.locked = false; A.click(p); once('wardopen') && after(.8, () => HUD.say('Cold air. Something sour under it.', 4)); }
     else if (d.id === 'morgue' && G.inv.mkey) { d.locked = false; A.click(p); }
@@ -42,7 +43,7 @@ function useDoor(d) {
   d.t = d.a > .5 ? 0 : 1; A.creak(p);
 }
 function take(it) {
-  if (it.kind === 'note') { if (HUD.reading()) return; const n = NOTES[it.id]; HUD.read(n[0], n[1], key() + ' to put it down'); G.mode = 'read'; A.pickup(); return; }
+  if (it.kind === 'note') { if (HUD.reading()) return; const n = NOTES[it.id]; lastNote = it.id; HUD.read(n[0], n[1], key() + ' to put it down'); G.mode = 'read'; A.pickup(); return; }
   it.got = true; if (it.mesh) it.mesh.visible = false; A.pickup();
   if (it.kind === 'batt') { G.batt = Math.min(1, G.batt + .6); HUD.say('Batteries.', 2.5); }
   else if (it.kind === 'key') { G.inv.key = true; HUD.say('The ward key.', 3); obj('Through the ward door. Find the boiler room fuse box.'); }
@@ -77,15 +78,18 @@ function s5() {
 }
 function kill() {
   if (G.mode !== 'play') return; G.mode = 'dead'; G.deaths++; P.mode = 'kill'; let fx = G.fwd.x, fz = G.fwd.z; const l = Math.hypot(fx, fz) || 1; P.x = G.head.x + fx / l * .6; P.z = G.head.z + fz / l * .6; P.opt = { jaw: 1 }; P.face(G.head.x, G.head.z); P.g.visible = true;
-  A.scream(null); A.sting(1.3); G.shake = .9; after(.9, () => { HUD.fadeTo = 1; });
-  after(2.6, () => { P.hide(); G.warp = { ...G.cp }; G.batt = Math.max(G.batt, .45); G.lightOn = true; G.mode = 'play'; HUD.fadeTo = 0; if (G.red) { G.flags.chase = false; P.on = false; } else { P.on = true; P.respawnAt = G.t + 16; } HUD.say(G.red ? 'RUN.' : 'Keep the light on him.', 4); });
+  HUD.fade.material.color.setHex(0x2a0000); A.scream(null); A.sting(1.3); A.gasp(); G.shake = 1.4; after(1.25, () => { HUD.fadeTo = 1; A.heart(0); A.thud(null); });
+  after(3.2, () => { HUD.fade.material.color.setHex(0); P.hide(); G.warp = { ...G.cp }; G.batt = Math.max(G.batt, .45); G.lightOn = true; G.mode = 'play'; HUD.fadeTo = 0; if (G.red) { G.flags.chase = false; P.on = false; } else { P.on = true; P.respawnAt = G.t + 16; } HUD.say(G.red ? 'RUN.' : 'Keep the light on him.', 4); });
 }
 function win() {
   G.mode = 'end'; A.stopAll(); A.slam(null); HUD.fadeTo = 1; P.hide(); P.on = false; const s = Math.round(G.t - G.t0), mm = Math.floor(s / 60), ss = String(s % 60).padStart(2, '0');
   after(1.6, () => { HUD.read('YOU GOT OUT', 'The doors lock again behind you.\n\nThrough the glass, at the far end of the ward, one tube comes back on. He is standing under it.\n\nTime inside: ' + mm + ':' + ss + '\nTimes he reached you: ' + G.deaths, 'HOLLOW PINES'); G.ended = true; });
 }
 function use() {
-  if (G.mode === 'read') { HUD.close(); G.mode = 'play'; return; }
+  if (G.mode === 'read') { HUD.close(); G.mode = 'play';
+    if (lastNote === 'tally' && once('c7')) { const d = door('cell7'), p = [11.5, 1.3, 18.5]; d.t = 0; d.fast = true; d.locked = true; after(.9, () => A.whisper(null)); after(2.4, () => { A.bang(p); d.shake = .4; }); after(4.6, () => { d.locked = false; d.t = 1; A.creak(p, true); }); }
+    if (lastNote === 'file' && once('rec')) after(.8, () => { const p = [13.5, 1.3, 23.5]; A.bang(p); door('ward').shake = .5; after(.45, () => { A.bang(p); door('ward').shake = .5; }); after(2, () => HUD.say('That came from the ward door.', 4)); });
+    return; }
   if (G.mode === 'play' && near) near.use();
 }
 function update(dt) {
@@ -107,7 +111,7 @@ function update(dt) {
   if (G.flags.hall && !G.flags.f1x && room === 'hall' && hz < 18.5 && wc.position.z > hz + 2.4 && !looking(wc.position.x, wc.position.z, .25)) { wc.position.z -= dt * 1.1; wc.position.x += (13.5 - wc.position.x) * dt; wc.rotation.y += (Math.PI - wc.rotation.y) * dt * 2; wc.userData.wheels.forEach(w => { w.rotation.x -= dt * 3.6; }); if ((sqT -= dt) < 0) { sqT = .55; A.squeak([wc.position.x, .3, wc.position.z]); } }
 
   if (G.flags.s3 && !G.flags.s3x && (G.t - G.flags.s3 > 7 || (G.t - G.flags.s3 > .4 && looking(11.5, 10.5, .82)))) { G.flags.s3x = G.flags.f1x = true; A.sting(1); A.bang([11.5, 1.4, 10.5], .7); G.shake = .3;
-    after(1.3, () => { G.lightCut = .55; P.hide(); }); after(2.6, () => { const d = door('cell9'); d.locked = false; d.t = 1; A.creak([11.5, 1.2, 10.5], true); cp(); P.stalk(13); HUD.say('He is out of his cell. Keep the light on him.', 5); }); }
+    after(1.3, () => { G.lightCut = .55; P.hide(); }); after(2.6, () => { const d = door('cell9'); d.locked = false; d.t = 1; A.creak([11.5, 1.2, 10.5], true); cp(); P.stalk(13); HUD.say('He is out of his cell. Keep the light on him.', 5); glimT = 20; }); }
   if (G.flags.s4 && !G.flags.s4x) { const seen = looking(P.x, P.z, .5) && G.t - G.flags.s4 > .3;
     if (seen || G.t - G.flags.s4 > 12) { G.flags.s4x = true; if (seen) { A.sting(1.2); A.scream([P.x, 1.6, P.z]); P.opt = { track: true, jaw: 1, reach: 1 }; G.shake = .5; } after(seen ? .9 : .1, () => { G.lightCut = .5; P.hide(); cp(); }); } }
   if (G.flags.s4x && room === 'hall' && P.mode === 'off' && once('s4b')) { P.pose(13.5, 21.4, { track: true }); after(1.5, () => { tubesNear(13.5, 21.5, 1, 'dead'); A.spark([13.5, 2.7, 21.5]); P.pose(13.5, 17.6, { track: true }); });
@@ -116,9 +120,17 @@ function update(dt) {
   if (G.red && !G.flags.chase && hx < 28 && P.mode === 'off') { G.flags.chase = true; P.chase(Math.min(33, hx + 4.2), 2.5); A.scream([P.x, 1.6, P.z]); }
   if (G.red && room === 'hall' && hz < 16.5 && once('c8b')) { const d = door('cell8'); d.locked = false; d.t = 1; d.fast = false; d.a = .5; A.slam([11.5, 1.3, 14.5]); A.sting(.6); }
 
+  if (door('closet').a > .5 && once('corpse')) { fall = .001; A.sting(.8); G.shake = .5; A.gasp(); }
+  if (fall > 0 && fall < 1) { fall = Math.min(1, fall + dt * (1.2 + fall * 5)); D.corpse.rotation.z = fall * 1.5; if (fall === 1) A.bang([15, .2, 12.5], .8); }
+  if (G.flags.s5x && room === 'morgue' && hx > 6.5 && drawerOpen >= 1 && once('dslam')) { G.flags.dclose = true; A.slam([1.5, .6, 4.7]); A.sting(.6); after(.5, () => A.croak([1.4, .6, 4.7])); }
+  if (G.flags.dclose && drawerOpen > 0) { drawerOpen = Math.max(0, drawerOpen - dt * 7); D.drawer.position.x = D.drawer.userData.x0 + drawerOpen * 1.75; }
+  if (glim) { if ((glim -= dt) <= 0 || (glim < 1.9 && looking(P.x, P.z, .93))) { if (P.mode === 'pose' && P.opt.glimpse) { G.lightCut = .18; P.hide(); } glim = 0; } }
+  else if (P.on && P.mode === 'off' && P.respawnAt - G.t > 5 && (room === 'hall' || room === 'cross') && (glimT -= dt) < 0) { glimT = 22 + Math.random() * 25; let best = null, bd = 0;
+    for (const [x0, z0, x1, z1] of [[12, 3, 14, 22], [11, 1, 27, 2]]) for (let z = z0; z <= z1; z++) for (let x = x0; x <= x1; x++) { const d = Math.hypot(x + .5 - hx, z + .5 - hz); if (d > 8 && d < 17 && d > bd && looking(x + .5, z + .5, .6) && los(hx, hz, x + .5, z + .5)) { bd = d; best = [x + .5, z + .5]; } }
+    if (best) { P.pose(best[0], best[1], { track: true, glimpse: 1, tilt: .3 }); glim = 2.4; A.croak([best[0], 1.6, best[1]]); } }
   const up = D.body.userData.up; up.rotation.x += ((bodyUp ? 1.25 : 0) - up.rotation.x) * Math.min(1, dt * (bodyUp ? 7 : 3));
   if (arch > 0) { arch -= dt; D.ectBody.position.y = .9 + Math.abs(Math.sin(G.t * 38)) * .12; D.lampM.color.setHex(Math.sin(G.t * 50) > 0 ? 0xfff2c0 : 0x1c1c18); G.fx = { x: 19, y: 2, z: 8, c: 0xcfe0ff, i: Math.sin(G.t * 50) > 0 ? 14 : 0 }; } else { D.ectBody.position.y = .9; D.lampM.color.setHex(0x1c1c18); if (G.fx && G.fx.x === 19) G.fx = null; }
-  if (G.flags.drawer && drawerOpen < 1) { drawerOpen = Math.min(1, drawerOpen + dt * .9); D.drawer.position.x = D.drawer.userData.x0 + drawerOpen * 1.75; if (drawerOpen >= .9 && !D.fuse3.got) D.fuse3.mesh.visible = true; }
+  if (G.flags.drawer && !G.flags.dclose && drawerOpen < 1) { drawerOpen = Math.min(1, drawerOpen + dt * .9); D.drawer.position.x = D.drawer.userData.x0 + drawerOpen * 1.75; if (drawerOpen >= .9 && !D.fuse3.got) D.fuse3.mesh.visible = true; }
   if (leverT >= 0 && leverT < 1) { leverT = Math.min(1, leverT + dt * 5); D.lever.rotation.x = -.9 + leverT * 1.8; }
   G.surge = surge >= 0 ? (surge += dt) : -1;
   D.fire.color.setHex(Math.sin(G.t * 11) + Math.sin(G.t * 17.3) > .2 ? 0xff7a20 : 0xc24a10);

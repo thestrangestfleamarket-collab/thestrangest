@@ -8,8 +8,10 @@ const {chromium}=require('playwright');
   ok(d.lanes.length===4&&d.lanes.every(L=>L.cars.every(c=>c.model)),'four lanes, every vehicle has a model'+(d.lanes.every(L=>L.cars.every(c=>c.model))?'':': '+JSON.stringify(d.lanes.map(L=>L.cars.map(c=>c.model)))));
   ok(new Set(d.lanes.flatMap(L=>L.cars.map(c=>c.model))).size>=8,'many kinds of vehicle');
   ok(d.lanes.filter(L=>L.fly).every(L=>L.cars.every(c=>c.model!=='rover')),'nothing with wheels flies');
+  // 12 Nov 2026: the kei vans a fifth their size on the two sidewalks; four police fliers on one round (sidewalks, then the park), the small craft round the park, none of them in the lanes
+  { const R=Object.fromEntries(d.rings.map(r=>[r.id,r])), all=d.lanes.flatMap(L=>L.cars.map(c=>c.model)); ok(d.tiny.length===2&&d.tiny.every(L=>L.cars.length>=4)&&R.police&&R.police.models.length===4&&R.police.models.every(m=>m==='police-flier')&&R.craft&&R.craft.models.includes('interceptor')&&R.craft.models.includes('escape-pod')&&!all.some(m=>['kei-van','police-flier','interceptor','escape-pod'].includes(m)),'kei vans on the sidewalks, the police fliers and small craft on their rounds: '+JSON.stringify({tiny:d.tiny.map(L=>L.cars.length),rings:d.rings.map(r=>[r.id,Math.round(r.len)])})); }
   const sp=await pg.evaluate(()=>{ const v0=TRAFFIC.lanes.map(L=>L.v); SPEED.set({traffic:2,fliers:.5}); const v1=TRAFFIC.lanes.map(L=>L.v); SPEED.set({}); return {v0,v1,v2:TRAFFIC.lanes.map(L=>L.v)}; });
-  ok(sp.v1.every((v,i)=>Math.abs(v-sp.v0[i]*(i<2?2:.5))<1e-6)&&sp.v2.every((v,i)=>v===sp.v0[i]),'the owner\'s speeds set the road\'s and the fliers\' '+JSON.stringify(sp));
+  ok(sp.v1.every((v,i)=>Math.abs(v-sp.v0[i]*(i<2||i>3?2:.5))<1e-6)&&sp.v2.every((v,i)=>v===sp.v0[i]),'the owner\'s speeds set the road\'s and the fliers\' '+JSON.stringify(sp));
   const R=()=>pg.evaluate(()=>{ const t=Date.now()/1000+TRAFFIC.skew; return ((t%90)+90)%90; });
   // green (the timer's 40 s of 90): someone in the westbound lane ahead of a car; it stops short of them
   await pg.evaluate(()=>{ const t=Date.now()/1000, r=((t%90)+90)%90; TRAFFIC.skew=(36-r); }); await pg.waitForTimeout(3000); d=await T();

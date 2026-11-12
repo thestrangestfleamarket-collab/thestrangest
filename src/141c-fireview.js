@@ -92,7 +92,7 @@ import {BLOCKS} from './038zb-blocks.js';
     if(on!==F.on){ F.on=on; APTS.onEsc=on; }   // the isometric view keeps facing out from your rooms: out on the landing it looks over the town (owner, 10 Nov 2026)
     UI.distMax=home?WMAX:null; if(home&&UI.dist>WMAX)UI.dist=WMAX;   // on your fire escape you can't zoom out past the landings round yours
     const iso=home&&!UI.persp; cutOn=iso&&on&&!UI.freeCam; if(cutOn)WALLP.constant=Z(FY)-.03*T;   // out on the landing in the isometric view, the house, your rooms and the hall behind its wall are cut away (set after the rooms' own clipping, below)
-    TOP.constant=iso?Y(on?HZ+3*S:HZ+45):1e6; BOT.constant=iso?Y(on?HZ+3*S:APTS.inHall&&APTS.inHall()?HZ+45:HZ+S*(APTS.HK||1)-.1):1e6; G.visible=home;   // out on your landing the two floors above you show; inside, nothing above your floor
+    TOP.constant=iso?Y(on?HZ+3*S:HZ+45):1e6; BOT.constant=iso?Y(on?HZ+3*S:APTS.inHall&&APTS.inHall()?HZ+45:HZ+3):1e6; G.visible=home;   // out on your landing the two floors above you show; inside, nothing above your floor
     if(home&&!UI.persp&&!UI.freeCam){ upV.setFromMatrixColumn(SHARED.cam.matrixWorld,1); const u=UI.off.dot(upV), lo=(Y(HZ-2.5*S)-SHARED.py)*upV.y; let hi=lo;
       for(const x of [IN.x0,IN.x1])for(const z of [IN.y0,IN.y1])hi=Math.max(hi,(X(x)-pos.x)*upV.x+(Y(HZ+(on?3:1)*S)-SHARED.py)*upV.y+(Z(z)-pos.z)*upV.z);
       const c=SHARED.cam; hi=Math.max(lo,hi-.85*(c.top-c.bottom)/2/(c.zoom||1)); const k=Math.max(lo,Math.min(hi,u)); if(k!==u)UI.off.addScaledVector(upV,k-u); }   // the view drags between the clouds' top and your ceiling's far corner at the top of the screen

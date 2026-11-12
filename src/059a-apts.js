@@ -194,6 +194,7 @@ async function house(HP,mine,FL,HI){ const APTS0=APTS; { const APTS=mine?APTS0:{
   APTS.doorW=(d=>[d[0],Y(0),d[1]])(XZ(m,A.y1+.25));
   // YOUR APARTMENT: entered off the map (the street never draws here), the live sky showing through the open windows with the far city hidden, so you look out on nothing but sky and clouds (owner, 23 Oct 2026)
   { APTS.inReal=false;
+    const CD=new THREE.Vector3();
     const hideFar=()=>{ const F=FAR3; if(F){ if(F.mesh)F.mesh.visible=false; if(F.panels)F.panels.visible=false; if(F.trees)F.trees.visible=false; if(F.FU)F.FU.uMK.value=0; if(F.fog&&scene.fog===F.fog)scene.fog=null; } };
     APTS.enterReal=async(at,label)=>{ if(FADE.busy)return; await FADE.run(label||'YOUR APARTMENT',async()=>{ if(!PA){ if(window.LOAD)await LOAD('apts','later'); build(); } if(MODS.firev&&STORE.offGo)await STORE.offGo(MODS.firev.name); if(AG)AG.visible=true; APTS.inReal=true; hideFar(); if(typeof at==='function')at=at(); if(at){ UI.goTo(at[0],at[1],at[2]); SHARED.heading=at[3]; } else { UI.goTo(X((AR.x0+AR.x1)/2),Z((AR.y0+AR.y1)/2),Yh(0)); SHARED.heading=0; } },{hold:200}); };   // your rooms and their fire escape are one place, built together
     APTS.exitReal=async(label='OUT TO THE STREET')=>{ if(FADE.busy)return; await FADE.run(label,async()=>{ APTS.inReal=false; if(AG)AG.visible=false; const d=XZ(m,A.y1+.9); UI.goTo(d[0],d[1],Yr(1)); SHARED.heading=TA.hd(0); },{hold:200}); };   // the elevator and the stairs down land you at the stoop (the lobby and the other floors are not built)
@@ -207,7 +208,9 @@ async function house(HP,mine,FL,HI){ const APTS0=APTS; { const APTS=mine?APTS0:{
       if(F&&F.out&&Math.abs(u-F.CX)<10&&Math.abs(v-F.WY-1)<4){ await F.out(); return [pos.x,pos.z,SHARED.py]; } return false; };   // a spot saved where the fire escape used to stand: your landing
     const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>APTS.inReal&&inR(x,z)?((APTS.hallY&&APTS.hallY(x,z))??(APTS.loftY&&APTS.loftY(x,z))??Yh(0)):sg0?sg0(x,z):null;   // the hall's stairs step you down and up
     SYS.add('places',()=>{ mkHB(); if(APTS.inReal&&(SHARED.LVL!=='up'||!inR(pos.x,pos.z)&&!(MODS.firev&&MODS.firev.onL&&MODS.firev.onL(pos.x,pos.z)))){ APTS.inReal=false; if(AG)AG.visible=false; }   // left by any way (menu, stairs, a door, a saved spot), not only your own door
-      if(APTS.inReal)hideFar(); if(APTS.ceil)APTS.ceil.visible=APTS.inReal&&!!UI.persp; const hc=APTS.inHall()&&!UI.persp?APTS.CUTH:1e6; APTS.HPL.constant=hc; WPL.Wb.constant=hc; },'059a-aptsky');   // ceiling only in first person; gone when you view the room from outside
+      if(APTS.inReal)hideFar(); if(APTS.ceil)APTS.ceil.visible=APTS.inReal&&!!UI.persp; const hc=APTS.inHall()&&!UI.persp?APTS.CUTH:1e6; APTS.HPL.constant=hc; WPL.Wb.constant=hc;
+      { const c=SHARED.cam, cut=APTS.inReal&&!UI.persp&&!APTS.onEsc&&c, low=Yh(9); if(cut)c.getWorldDirection(CD); const dx=cut?CD.x*Math.sign(X(1)-X(0)):0, dz=cut?CD.z*Math.sign(Z(1)-Z(0)):0;   // seen from above, the walls between you and the eye drop to their skirting (owner, 12 Nov 2026: "walls should vanish when you're inside your apartment")
+        WPL.Ww.constant=dx>.2?low:1e6; WPL.We.constant=dx<-.2?low:1e6; WPL.Wf.constant=dz>.2?low:1e6; if(dz<-.2)WPL.Wb.constant=Math.min(hc,low); } },'059a-aptsky');   // ceiling only in first person; gone when you view the room from outside
     window.ENTERAPT=()=>APTS.enterReal(); window.EXITAPT=()=>APTS.exitReal();
     APTS.REALDBG=()=>({inReal:APTS.inReal,built:!!PA}); }
   } }

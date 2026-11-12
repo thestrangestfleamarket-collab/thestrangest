@@ -1,5 +1,5 @@
 // THE ARCADE'S PINBALL'S CHECK (src/146zcz-pinball.js, src/pinball/table.js): node tests/pinball.cjs [dist/market.html] [out folder]. Two tables stand on the arcade's west wall (few draws, no stool in their way); taking one puts you at it looking down, SPACE starts a game and the plunger sends the ball,
-// A and D work the flippers; a finished game goes on the arcade's top ten and pays tickets; stepping away gives your view back; leaving the arcade drops the tables; no page errors. With an out folder, pictures.
+// A and D work the flippers (a pad's bumpers and triggers, the headset's two hands); a finished game goes on the arcade's top ten and pays tickets; stepping away gives your view back; leaving the arcade drops the tables; no page errors. With an out folder, pictures.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=pinball::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 const OUT = process.argv[3];
@@ -56,6 +56,27 @@ const OUT = process.argv[3];
     const m1 = await pg.evaluate(() => ({ me: PIN.dbg().me, t: PIN.dbg().tables[1] }));
     ok(m1.me === 1 && m1.t.phase === 'ready', 'MICKEY plays the same: ' + JSON.stringify(m1));
     if (OUT) { await pg.waitForTimeout(1500); await pg.screenshot({ path: OUT + '/pinball-mickey.png' }); }
+    // a gamepad on MICKEY: A holds and lets go the plunger, a bumper or a trigger a side is its flipper, B steps away
+    await pg.evaluate(() => { const G = { id: 'Xbox Wireless Controller (STANDARD GAMEPAD Vendor: 045e)', index: 0, connected: true, mapping: 'standard', timestamp: 1, axes: [0, 0, 0, 0], buttons: Array.from({ length: 17 }, () => ({ pressed: false, value: 0 })) };
+      navigator.getGamepads = () => [G]; window.__press = (i, v) => { G.buttons[i] = { pressed: v > .5, value: v }; G.timestamp++; }; dispatchEvent(new Event('gamepadconnected')); });
+    const gw = await pg.evaluate(() => PIN.dbg().gamewin);
+    await pg.evaluate(() => __press(0, 1)); await pg.waitForTimeout(900); await pg.evaluate(() => __press(0, 0));
+    ok(gw === 'pin' && await until(() => { const t = PIN.dbg().tables[1]; return t.phase === 'play' && t.balls[0] && t.balls[0][1] > .4; }, null, 8000), 'on a pad the table has the buttons (' + gw + '): A held and let go sends the ball');
+    await pg.evaluate(() => __press(4, 1)); await until(() => PIN.dbg().tables[1].fl[0], null, 4000); const g1 = await pg.evaluate(() => PIN.dbg().tables[1].fl.join());
+    await pg.evaluate(() => __press(7, 1)); await until(() => PIN.dbg().tables[1].fl[1], null, 4000); const g2 = await pg.evaluate(() => PIN.dbg().tables[1].fl.join());
+    await pg.evaluate(() => { __press(4, 0); __press(7, 0); }); await until(() => !PIN.dbg().tables[1].fl.some(Boolean), null, 4000); const g3 = await pg.evaluate(() => PIN.dbg().tables[1].fl.join());
+    ok(g1 === 'true,false' && g2 === 'true,true' && g3 === 'false,false', 'LB is the left flipper, RT the right, each on its own: ' + [g1, g2, g3].join(' | '));
+    await pg.evaluate(() => __press(1, 1)); const gb = await until(() => PIN.dbg().me === null && PIN.dbg().gamewin === null && !window.RUNNER, null, 6000); await pg.evaluate(() => __press(1, 0));
+    ok(gb, 'B steps away and gives the buttons back to the game');
+    await pg.evaluate(() => { navigator.getGamepads = () => []; dispatchEvent(new Event('gamepaddisconnected')); }); await pg.waitForTimeout(300);
+    // the headset (its two controllers are one pad, 162c-vr): no view of the page's is changed, no panel is put up, each hand's trigger is its flipper
+    const vr = await pg.evaluate(() => { const B = () => Array.from({ length: 16 }, () => ({ pressed: false, value: 0 })), G = { id: 'Meta Quest Touch (WebXR)', index: -1, connected: true, mapping: 'standard', timestamp: 1, axes: [0, 0, 0, 0], buttons: B() }, v0 = __dbg.UI.view, on0 = VR.on, r = {};
+      try { VR.on = true; PIN.take(1); r.view = __dbg.UI.view === v0; r.panel = document.getElementById('pinp').hidden; r.gw = PIN.dbg().gamewin; let t = performance.now();
+        const step = () => PAD.step(t += 16, G), f = () => PIN.dbg().tables[1].fl.join();
+        step(); G.buttons[6] = { pressed: true, value: 1 }; step(); r.left = f(); G.buttons[5] = { pressed: true, value: 1 }; step(); r.both = f(); G.buttons = B(); step(); r.none = f();
+        PIN.leave(true); r.after = __dbg.UI.view === v0 && PIN.dbg().gamewin === null; PAD.step(t += 16, null); } finally { VR.on = on0; }
+      return r; });
+    ok(vr.view && vr.panel && vr.gw === 'pin' && vr.left === 'true,false' && vr.both === 'true,true' && vr.none === 'false,false' && vr.after, 'in the headset: your view is your own, no panel, the left trigger and the right grip are the flippers: ' + JSON.stringify(vr));
     // out of the arcade: the game let go, the tables dropped
     await until(() => !FADE.busy, null, 30000); await pg.evaluate(() => ROOMS.exit('arcade'));
     ok(await until(() => ROOMS.offIn() !== 'arcade' && PIN.dbg().built === 0 && PIN.dbg().me === null && !window.RUNNER, null, 30000), 'leaving the arcade lets go of your game and drops the tables');

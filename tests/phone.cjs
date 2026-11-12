@@ -1,4 +1,4 @@
-// THE BRICK PHONE: node tests/phone.cjs dist/market.html. Every player has one; using it opens its screen of what the bodega sells; an order is paid (price and delivery) and the drone brings it to you outdoors, a parcel at your feet you take in; one order in four THE COURIER rides over instead.
+// THE BRICK PHONE: node tests/phone.cjs dist/market.html. Every player has one; using it opens its screen of what the bodega sells; an order is paid (price and delivery) and the drone brings it to you outdoors, a parcel at your feet you take in; one order in four THE COURIER rides over instead, seen by everyone near.
 const {chromium}=require('playwright'), path=require('path');
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:1000,height:600}}), errs=[]; let bad=0;
   const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; }; pg.on('pageerror',e=>errs.push(e.message));
@@ -28,5 +28,13 @@ const {chromium}=require('playwright'), path=require('path');
     return {e,by,by2,d0:+d0.toFixed(1),d1:+(Math.hypot(c.x-P[0],c.z-P[2])/T).toFixed(1),job:c.job,parcels:L.length,got:(INV.items[r.id]||0)-n0}; });
   ok(!E.e&&E.by==='COURIER'&&E.by2==='DRONE','one order in four goes to THE COURIER, the rest (and one while he is out) to the drone '+JSON.stringify(E));
   ok(!E.job&&E.d0>6&&E.d1<4&&E.got===2,'he rides to you and leaves the parcel by you, taken in '+JSON.stringify({d0:E.d0,d1:E.d1,got:E.got}));
+  const F=await pg.evaluate(async()=>{ const T=__dbg.cv().TILE, c=COURIERDBG(), sent=[], s0=ONLINE.send, on0=ONLINE.on; let dx=8; while(dx<30&&!STFREE(c.x-dx*T,c.z,.3))dx++; const X=c.x-dx*T, Z=c.z;
+    ONLINE.feed({t:'drone',id:'zed',c:1,f:0,lb:'A CAN OF CAT FOOD',x:X,y:0,z:Z}); await new Promise(q=>setTimeout(q,300)); const riding=COURIERDBG().job;
+    for(let i=0;i<400&&COURIERDBG().job;i++)await new Promise(q=>setTimeout(q,500)); const e=COURIERDBG();
+    const left=__dbg.scene.children.filter(m=>m.isMesh&&m.geometry&&m.geometry.type==='BoxGeometry'&&Math.hypot(m.position.x-X,m.position.z-Z)<.6).length;
+    const A=BODEGA.all(), r=[...A.supplies,...A.shelves,...A.goods].find(q=>q.price>0), rnd=Math.random; INV.cash=500; ONLINE.send=m=>sent.push(m); ONLINE.on=true; Math.random=()=>.2; PHONE.order(r); Math.random=rnd; ONLINE.send=s0; ONLINE.on=on0; const mine=sent.find(m=>m.t==='drone');
+    return {riding,d:+(Math.hypot(e.x-X,e.z-Z)/T).toFixed(1),left,by:PHONE.by,mine:!!mine&&mine.c===1}; });
+  ok(F.riding&&F.d<2&&F.left>0,'another player\'s courier order: you see him ride to them and the parcel left by them '+JSON.stringify(F));
+  ok(F.by==='COURIER'&&F.mine,'your courier order tells the others');
   ok(!errs.length,'no page errors '+errs.slice(0,2).join(' | '));
   await b.close(); process.exit(bad?1:0); })();

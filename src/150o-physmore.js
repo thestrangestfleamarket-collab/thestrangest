@@ -106,18 +106,26 @@ const VEH={};   // what you drive on Rapier's raycast vehicle (VEH.make below); 
   /* ---------- the go-kart: a RIDE kind on VEH; with VEHICLE PHYSICS off it glides like a board ---------- */
   FORAGE.add({names:{kart:'THE GO-KART'}});
   const POSE={k:'kart',steer:0,z:0};
-  const mat=c=>new THREE.MeshLambertMaterial({color:c}), WH=.15, WX=.36, WZ=.5;
-  const make=()=>{ '@later'; const G=new THREE.Group(), red=mat(0xc8302a), blk=mat(0x1c1c1e), gr=mat(0x8a8c90), seat=mat(0x2a2e3a);
-    const M=(geo,m,x,y,z)=>{ const o=new THREE.Mesh(geo,m); o.position.set(x,y,z); o.castShadow=true; G.add(o); return o; };
-    M(new THREE.BoxGeometry(.62,.07,1.25),gr,0,.12,0); M(new THREE.BoxGeometry(.5,.12,.34),red,0,.2,.5); M(new THREE.BoxGeometry(.66,.1,.22),red,0,.17,-.55);
-    M(new THREE.BoxGeometry(.4,.06,.36),seat,0,.2,-.18); M(new THREE.BoxGeometry(.4,.32,.06),seat,0,.36,-.36);
-    const col=M(new THREE.CylinderGeometry(.015,.015,.3,6),gr,0,.3,.24); col.rotation.x=-.9; const sw=M(new THREE.TorusGeometry(.09,.015,6,14),blk,0,.42,.16); sw.rotation.x=-.65; G.userData.sw=sw;
-    G.userData.wh=[[WX,WZ],[-WX,WZ],[WX,-WZ],[-WX,-WZ]].map(([x,z])=>{ const w=new THREE.Group(); w.position.set(x,WH,z); const t=new THREE.Mesh(new THREE.CylinderGeometry(WH,WH,.12,12),blk); t.rotation.z=Math.PI/2; t.castShadow=true; w.add(t);
-      const h=new THREE.Mesh(new THREE.CylinderGeometry(WH*.45,WH*.45,.13,8),gr); h.rotation.z=Math.PI/2; w.add(h); G.add(w); return w; });
+  const mat=c=>new THREE.MeshLambertMaterial({color:c}), WH=.14, WX=.52, WZ=.6;
+  // a racing kart at its real size (1.9 m): a tube frame and bumpers, floor tray, nose, number panel and side pods, a bucket seat, the wheel on its column, pedals, the tank, the engine with its filter, exhaust, chain and brake disc on the rear axle, small front and wide rear slicks
+  const make=()=>{ '@later'; const G=new THREE.Group(), red=mat(0xc8302a), blk=mat(0x18181a), gr=mat(0x9a9da2), dk=mat(0x3a3c42), seat=mat(0x22242c), wht=mat(0xe8e6de), gold=mat(0xc9a23a), tyre=mat(0x151516);
+    const M=(geo,m,x,y,z,rx=0,ry=0,rz=0,P=G)=>{ const o=new THREE.Mesh(geo,m); o.position.set(x,y,z); o.rotation.set(rx,ry,rz); o.castShadow=true; P.add(o); return o; }, H=Math.PI/2;
+    const tube=(m,a,b,r=.016)=>{ const A=new THREE.Vector3(...a), B=new THREE.Vector3(...b), d=B.clone().sub(A), o=new THREE.Mesh(new THREE.CylinderGeometry(r,r,d.length(),7),m); o.position.copy(A).add(B).multiplyScalar(.5); o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize()); o.castShadow=true; G.add(o); return o; };
+    for(const x of [-.27,.27]){ tube(gr,[x,.09,-.62],[x,.09,.5]); tube(gr,[x,.09,.5],[x*.55,.11,.86]); tube(gr,[x,.09,-.62],[x*1.25,.2,-.9]); tube(gr,[x*1.9,.13,-.34],[x*1.9,.13,.3],.014); tube(gr,[x,.09,-.3],[x*1.9,.13,-.34],.014); tube(gr,[x,.09,.3],[x*1.9,.13,.3],.014); }
+    for(const z of [-.62,-.2,.5])tube(gr,[-.27,.09,z],[.27,.09,z]); tube(gr,[-.34,.2,-.9],[.34,.2,-.9],.02); tube(blk,[-.42,.12,.9],[.42,.12,.9],.024); for(const x of [-.42,.42])tube(blk,[x,.12,.9],[x*1.1,.12,.74],.024);
+    M(new THREE.BoxGeometry(.5,.012,.78),dk,0,.078,.14); M(new THREE.BoxGeometry(.44,.1,.3),red,0,.17,.8,-.28); M(new THREE.BoxGeometry(.3,.06,.16),red,0,.13,.98,-.5); M(new THREE.BoxGeometry(.26,.24,.02),red,0,.4,.5,-.5); M(new THREE.BoxGeometry(.2,.16,.022),wht,0,.41,.512,-.5);
+    for(const x of [-.5,.5]){ const pd=M(new THREE.CapsuleGeometry(.075,.5,3,8),red,x,.16,-.02,H); pd.scale.set(1.15,1,1); M(new THREE.BoxGeometry(.012,.1,.4),wht,x+Math.sign(x)*.088,.17,-.02); }
+    { const S=new THREE.Group(); S.position.set(0,.13,-.3); S.rotation.x=-.16; G.add(S); M(new THREE.BoxGeometry(.36,.035,.34),seat,0,.02,.06,0,0,0,S); M(new THREE.BoxGeometry(.36,.4,.035),seat,0,.2,-.13,-.22,0,0,S); for(const x of [-.19,.19]){ M(new THREE.BoxGeometry(.03,.16,.36),seat,x,.08,.05,0,0,0,S); M(new THREE.BoxGeometry(.03,.3,.14),seat,x,.22,-.1,-.22,0,0,S); } }
+    tube(gr,[0,.12,.62],[0,.5,.2],.014); const sw=new THREE.Group(); sw.position.set(0,.5,.2); sw.rotation.x=-.82; G.add(sw); M(new THREE.TorusGeometry(.125,.016,6,18),blk,0,0,0,0,0,0,sw); for(const a of [0,2.1,4.2])M(new THREE.BoxGeometry(.012,.12,.012),gr,Math.sin(a)*.06,Math.cos(a)*.06,0,0,0,-a,sw); M(new THREE.CylinderGeometry(.03,.03,.02,10),red,0,0,.004,H,0,0,sw); G.userData.sw=sw;
+    for(const x of [-.12,.12])M(new THREE.BoxGeometry(.06,.1,.014),gr,x,.15,.68,-.5); M(new THREE.CylinderGeometry(.085,.085,.2,10),wht,0,.2,.34,0,0,H); M(new THREE.CylinderGeometry(.02,.02,.03,8),blk,.05,.29,.34);
+    M(new THREE.BoxGeometry(.2,.17,.24),dk,.34,.2,-.5); for(let k=0;k<5;k++)M(new THREE.BoxGeometry(.17,.012,.17),gr,.34,.3+k*.022,-.47); M(new THREE.CylinderGeometry(.055,.055,.12,10),blk,.34,.32,-.3,H); M(new THREE.CylinderGeometry(.03,.045,.36,8),gr,.47,.2,-.72,H); tube(gr,[.4,.24,-.54],[.47,.2,-.56],.02); M(new THREE.CylinderGeometry(.06,.06,.012,14),gold,.2,WH,-WZ,0,0,H); M(new THREE.CylinderGeometry(.085,.085,.008,14),gr,-.2,WH,-WZ,0,0,H); tube(dk,[-.62,WH,-WZ],[.62,WH,-WZ],.02); tube(dk,[.2,WH+.055,-WZ],[.26,.18,-.5],.008);
+    G.userData.wh=[[WX,WZ,0],[-WX,WZ,0],[WX,-WZ,1],[-WX,-WZ,1]].map(([x,z,rear])=>{ const w=new THREE.Group(), wd=rear?.21:.13, r=rear?WH:WH*.9, sx=Math.sign(x); w.position.set(x+(rear?sx*.03:0),WH,z);
+      M(new THREE.CylinderGeometry(r,r,wd*.82,16),tyre,0,0,0,0,0,H,w); for(const e of [-1,1])M(new THREE.CylinderGeometry(r*.94,r,wd*.09,16),tyre,e*wd*.455,0,0,0,0,e*H,w);
+      M(new THREE.CylinderGeometry(r*.58,r*.58,wd*1.01,12),gr,0,0,0,0,0,H,w); M(new THREE.CylinderGeometry(r*.22,r*.22,wd*1.04,8),gold,0,0,0,0,0,H,w); for(let k=0;k<3;k++)M(new THREE.BoxGeometry(.012,r*1.1,.03),dk,sx*wd*.5,0,0,k*Math.PI/3,0,0,w); G.add(w); return w; });
     G.scale.setScalar(T); return G; };
   // its vehicle at the size the owner gave its look (VLOOK 'kart'): the body, wheels and springs grow with it
-  const kartSpec=(ls=1)=>{ const s0=M1*.84*ls; return {half:[.31*s0,.1*s0,.62*s0],lift:.35*s0,mass:140,wheels:[[WX,WZ],[-WX,WZ],[WX,-WZ],[-WX,-WZ]].map(([x,z])=>[x*s0,-.02*s0,z*s0]),r:WH*s0,rest:.14*s0,travel:.1*s0,
-    engine:260*M1,reverse:150*M1,vmax:8*M1,vback:2.5*M1,brake:6*M1,idle:.6*M1,steer:.5,steerFade:4*M1,cat:'kart',knockR:.55*M1*ls,down:.31*T*ls,wy:WH,unit:T*ls}; };
+  const kartSpec=(ls=1)=>{ const s0=M1*.84*ls; return {half:[.6*s0,.1*s0,.95*s0],lift:.35*s0,mass:140,wheels:[[WX,WZ],[-WX,WZ],[WX,-WZ],[-WX,-WZ]].map(([x,z])=>[x*s0,-.02*s0,z*s0]),r:WH*s0,rest:.14*s0,travel:.1*s0,
+    engine:260*M1,reverse:150*M1,vmax:8*M1,vback:2.5*M1,brake:6*M1,idle:.6*M1,steer:.5,steerFade:4*M1,cat:'kart',knockR:.8*M1*ls,down:.31*T*ls,wy:WH,unit:T*ls}; };
   const KR=VEH.make(kartSpec(VLOOK.scaleOf('kart')));
   VLOOK.on(id=>{ if(!id||id==='kart')KR.size(kartSpec(VLOOK.scaleOf('kart'))); });
   // a kart as a RIDE kind on its vehicle V: the item you carry (KR), or one boarded where it stands (the fair's rentals, VEH.kartKind); crash: the speed a sudden stop throws you out at

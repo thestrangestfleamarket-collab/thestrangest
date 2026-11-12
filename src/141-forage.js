@@ -1,6 +1,6 @@
 // THE FORAGE: FORAGE lets the player gather mushrooms and things, keeps their pack, and sells them.
 import {SHARED, THREE} from './003-shx.js';
-import {ARCH, ARCHI, BAG, BUGS, CHARS, CITY, CIVIC, CLOCK, ED, EQUIP, FIRSTDAY, FORAGE, INSPECT, INV, ITEMS, LINES, LOOKS, MAIL, MOTION, NPCS, ONLINE, pos, SFX, st, TALK, TEXT, TRICKS, UI, VIT, W3, WE, WEEDS, WORTH, WX} from './003b-systems.js';
+import {ARCH, ARCHI, BAG, BUGS, CHARS, CITY, CIVIC, CLOCK, ED, EQUIP, FIRSTDAY, FORAGE, INSPECT, INV, ITEMS, LINES, LOOKS, MAIL, MOTION, NPCS, ONLINE, pos, SFX, st, TALK, TEXT, TRICKS, UI, VIT, W3, WE, WEEDS, WIELD, WORTH, WX} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
@@ -139,7 +139,11 @@ import {MUSH} from './111ec-mushseller.js';
   FORAGE.OWNERS=['flamer','frost','magic_carpet','balloon','saddle','brickphone','cigar','cigar_blue','nv_goggles','cowboyhat','spray_gold','spray_silver','jar_fly','logbook_capt','spyglass','spile','wax_candle','treepot','bottle'];
   const kitIds=()=>{ const ids=new Set([...FORAGE.POWER,'guitar','piano','drums','harp','violin','flute','trumpet']);
     for(const c in CHARS.store){ const t=!ARCH.has(c)&&CHARS.store[c]&&CHARS.store[c].trade; for(const x of (t&&Array.isArray(t.sells)&&t.sells)||[])ids.add(x); } for(const [x] of FORAGE.SELLS)ids.add(x); for(const f of FORAGE.STOCK)for(const x of f())ids.add(x); return ids; };
-  const kitGive=(ids,rent,pm=99)=>{ const P=FORAGE.POWER, G={}; for(const id of ids){ if(ARCHI(id)||!ITEMS.def(id)||!rent&&ITEMS.prop(id,'rental'))continue; const n=(P.includes(id)?pm:ITEMS.prop(id,'stackable')||ITEMS.prop(id,'edible')?20:1)-have(id); if(n>0)G[id]=n; } return G; };
+  // a thing you can use from the bag: held, eaten, worn, fitted, ridden, played, or with a button of its own (SET IT OUT, every thing's, apart)
+  FORAGE.usable=id=>{ const P=k=>ITEMS.prop(id,k), ok=v=>!!v&&v!=='none'; return !!(WIELD.LIST&&WIELD.LIST.includes(id)||FORAGE.eats(id)||FORAGE.ACT[id]||ok(P('slot'))||ok(P('grants'))||ok(P('implant'))||/^(music|rides)$/.test(ITEMS.group(id))||FORAGE.ROWB.some(f=>!f.setout&&(f(id)||[]).some(r=>r[1]!=='inspect'))); };
+  // the kits hand out only what can be used (owner, 12 Nov 2026); what an earlier kit gave that cannot is taken back once
+  const kitClean=()=>{ if(S.kitclean)return; let n=0; for(const id of new Set([...kitIds(),...FORAGE.OWNERS]))if(have(id)>0&&ITEMS.def(id)&&!ARCHI(id)&&!FORAGE.usable(id)){ take(id,have(id)); n++; } S.kitclean=1; saveSoon(); if(n)FORAGE.draw(); };
+  const kitGive=(ids,rent,pm=99)=>{ const P=FORAGE.POWER, G={}; for(const id of ids){ if(ARCHI(id)||!ITEMS.def(id)||!FORAGE.usable(id)||!rent&&ITEMS.prop(id,'rental'))continue; const n=(P.includes(id)?pm:ITEMS.prop(id,'stackable')||ITEMS.prop(id,'edible')?20:1)-have(id); if(n>0)G[id]=n; } return G; };
   // the beta: every player gets the owners' kit once a round (KITV, the worker's BETAKIT: raise both when the kit grows), 20 of each power mushroom; owners still top theirs up each start
   FORAGE.KITV=2;
   FORAGE.ownerKit=async(beta)=>{ const G=kitGive([...kitIds(),...FORAGE.OWNERS],!beta,beta?20:99), u=Object.values(G).reduce((a,b)=>a+b,0); if(!u)return 0;
@@ -148,7 +152,7 @@ import {MUSH} from './111ec-mushseller.js';
   // the owner's ALL SKILLS 100 (ADMIN > TOOLS): every skill reads 100 while it is on, nothing is gained, and the real levels are untouched under it
   FORAGE.maxed=v=>{ if(v==null)return MAXED; MAXED=!!v; S.max=MAXED?1:0; saveSoon(); FORAGE.draw(); FORAGE.sync(); for(const f of FORAGE.MAXFN)f(); return MAXED; }; FORAGE.MAXFN=[];
   // the beta's skills: every player reads 100 in every skill (owner, 11 Nov 2026: "give 100 skills to all players"); an owner can still turn his own off in ADMIN > TOOLS
-  SYS.onStart(()=>{ if(BUGS.owner)BUGS.owner().then(o=>{ if(o){ FORAGE.ownerKit(); FORAGE.maxed(S.max!==0); } else if(OWNED.me){ FORAGE.maxed(true); if(S.betakit!==FORAGE.KITV)FORAGE.ownerKit(true).then(g=>{ if(g==null)return; S.betakit=FORAGE.KITV; saveSoon(); if(g){ say('THE BETA KIT: '+g+' KINDS OF THINGS ARE IN YOUR BAG.','#7fdc8a'); } }); } }).catch(()=>{}); },'141-forage owners');
+  SYS.onStart(()=>{ kitClean(); if(BUGS.owner)BUGS.owner().then(o=>{ if(o){ FORAGE.ownerKit(); FORAGE.maxed(S.max!==0); } else if(OWNED.me){ FORAGE.maxed(true); if(S.betakit!==FORAGE.KITV)FORAGE.ownerKit(true).then(g=>{ if(g==null)return; S.betakit=FORAGE.KITV; saveSoon(); if(g){ say('THE BETA KIT: '+g+' KINDS OF THINGS ARE IN YOUR BAG.','#7fdc8a'); } }); } }).catch(()=>{}); },'141-forage owners');
   // the full kit, sent to a player from TENANTS (OWNED 'gift'): one of everything a live shop sells (20 of what stacks, 99 of each power mushroom), every instrument; rentals stay rented
   FORAGE.fullKit=()=>{ const G=kitGive(kitIds()); for(const id in G)give(id,G[id]); saveSoon(); FORAGE.draw(); return Object.keys(G).length; };
   SYS.onStart(()=>{ if(OWNED.get('gift')!=='kit')return; const g=FORAGE.fullKit(); OWNED.del('gift'); say('THE OWNERS SENT YOU A FULL KIT: '+g+' KINDS OF THINGS ARE IN YOUR BAG.','#7fdc8a'); },'141-forage gift');

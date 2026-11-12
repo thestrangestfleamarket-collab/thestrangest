@@ -64,13 +64,17 @@ function begin(vr) {
 }
 $('play').addEventListener('click', () => begin(false));
 $('again').addEventListener('click', () => location.reload());
-if (navigator.xr) navigator.xr.isSessionSupported('immersive-vr').then(ok => { $('vr').hidden = !ok; }).catch(() => {});
-$('vr').addEventListener('click', async () => {
+let vrOk = false; if (navigator.xr) navigator.xr.isSessionSupported('immersive-vr').then(ok => { vrOk = ok; $('vr2').hidden = !ok; }).catch(() => {});
+const noVR = t => { $('vrmsg').textContent = t; $('vrmsg').hidden = false; };
+const enterVR = async e => { e.stopPropagation();
+  if (!navigator.xr) return noVR(isSecureContext ? 'This browser has no VR. Put the headset on, open this same address in its browser (a Quest: the Browser app), and press ENTER IN VR there.' : 'VR needs the https address.');
+  if (!vrOk && !(await navigator.xr.isSessionSupported('immersive-vr').catch(() => false))) return noVR('No headset found by this browser. Put the headset on, open this same address in its browser (a Quest: the Browser app), and press ENTER IN VR there. On a PC, the headset has to be linked first (Quest Link or SteamVR) in Chrome or Edge.');
   try { A.init(); const s = await navigator.xr.requestSession('immersive-vr', { optionalFeatures: ['local-floor', 'bounded-floor'] }); renderer.xr.setReferenceSpaceType('local-floor'); await renderer.xr.setSession(s); renderer.xr.setFoveation?.(1);
     G.xr = true; camera.position.set(0, 0, 0); camera.rotation.set(0, 0, 0); rig.position.set(G.p.x, 0, G.p.z); HUD.mesh.position.set(0, -.12, -1.25); if (G.mode === 'title') begin(true); pause(false);
     s.addEventListener('end', () => { G.xr = false; xr.right = xr.left = null; desk(); HUD.mesh.position.set(0, -.04, -1.1); size(); if (!G.ended) pause(true); });
-  } catch (e) { $('vr').textContent = 'VR did not start'; }
-});
+  } catch (e) { noVR('VR did not start: ' + (e && e.message || e)); }
+};
+$('vr').addEventListener('click', enterVR); $('vr2').addEventListener('click', enterVR);
 [0, 1].forEach(i => { const c = renderer.xr.getController(i); rig.add(c);
   const hand = new T.Mesh(new T.BoxGeometry(.06, .025, .09), lit(0x6f6a5c)); hand.position.z = .03; hand.visible = false; c.add(hand);
   c.addEventListener('connected', e => { c.userData.hand = e.data.handedness; if (e.data.handedness === 'left') { xr.left = c; hand.visible = true; } else { xr.right = c; c.add(torch); torch.position.set(0, 0, -.04); torch.rotation.set(0, 0, 0); } });

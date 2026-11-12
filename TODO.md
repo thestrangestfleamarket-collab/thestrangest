@@ -29,7 +29,7 @@ Risk is noted only when it isn't low.
 ## For the owner
 
 **To try on the live site** (one sitting; each line is in its area below):
-everything merged since 7 Nov that "waits for his look and yes" (the new layout and fronts, the bar, the gym, the pets and pet shops, the
+HOLLOW PINES at `/asylum` (12 Nov: play it through on the screen and in the Quest 3; it has only been run in an emulated headset) · everything merged since 7 Nov that "waits for his look and yes" (the new layout and fronts, the bar, the gym, the pets and pet shops, the
 fish market (9 Nov), the farm, the guitar and instruments, the traffic, the skate pit, the telescope and microscope, the far view) · the merges without a green
 check (below) · phones and tablets · the moves · the cars, their insides and the radio · the menus, the start spot, the map and GO TO ·
 the HUD margin on his screen · the bath house on the island and a ghost's revival · the fluffy grass · the castle at night ·

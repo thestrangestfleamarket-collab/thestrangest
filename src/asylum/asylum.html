@@ -1,0 +1,36 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="robots" content="noindex">
+<title>Hollow Pines</title>
+<link rel="icon" href="data:,">
+<style>
+html,body{margin:0;height:100%;background:#000;color:#d9d6c6;font-family:Georgia,'Times New Roman',serif;overflow:hidden;-webkit-user-select:none;user-select:none;touch-action:none}
+canvas{display:block;position:fixed;inset:0;width:100%;height:100%}
+[hidden]{display:none!important}
+#vig{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 50%,rgba(0,0,0,.8) 100%)}
+#title,#pause{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;box-sizing:border-box;text-align:center;background:rgba(0,0,0,.72)}
+#pause{cursor:pointer;font-size:1.3rem;letter-spacing:.12em}
+h1{font-weight:400;font-size:clamp(2.2rem,8vw,4.6rem);letter-spacing:.3em;margin:0 0 0 .3em;color:#e4e0cc}
+.tag{font-style:italic;color:#9a9684;margin:0;font-size:1.1rem}
+.warn{max-width:34rem;color:#b9483a;margin:0;font-size:.95rem;line-height:1.5}
+.keys{max-width:36rem;color:#8a8776;margin:0;font:.85rem/1.7 system-ui,sans-serif}
+.row{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+button{font:1.05rem Georgia,serif;letter-spacing:.18em;color:#e4e0cc;background:#16130f;border:1px solid #5c5848;padding:14px 26px;cursor:pointer}
+button:hover,button:focus-visible{background:#e4e0cc;color:#0b0a08;outline:none}
+#touch{position:fixed;right:max(18px,env(safe-area-inset-right));bottom:max(18px,env(safe-area-inset-bottom));display:flex;gap:12px}
+#touch button{width:74px;height:74px;border-radius:50%;padding:0;font:.8rem system-ui,sans-serif;letter-spacing:.08em;background:rgba(20,18,14,.6)}
+#again{position:fixed;left:50%;bottom:8%;transform:translateX(-50%)}
+</style>
+<div id="vig" hidden></div>
+<div id="title">
+  <h1>HOLLOW PINES</h1>
+  <p class="tag">State Hospital, Ward C. Your first night shift.</p>
+  <p class="warn">Loud sounds, flashing lights and jump scares. Wear headphones. Not for anyone with photosensitive epilepsy or a heart condition.</p>
+  <div class="row"><button id="play">ENTER</button><button id="vr" hidden>ENTER IN VR</button></div>
+  <p class="keys">Keys: W A S D walk, Shift run, mouse look, E or click use, F flashlight.<br>Headset: left stick walk (push fully to run), right stick turn, trigger use, grip flashlight. The light is in your right hand.<br>Phone: left thumb walk, right thumb look.</p>
+</div>
+<div id="pause" hidden>CLICK TO GO BACK IN</div>
+<div id="touch" hidden><button id="blight">LIGHT</button><button id="buse">USE</button></div>
+<button id="again" hidden>PLAY AGAIN</button>
+<script type="module">__ASYLUM__</script>

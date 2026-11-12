@@ -1,34 +1,39 @@
-// THE LOFT: No. 4's flat (owner, 12 Nov 2026, of a photo: "match this layout exactly"): a tall room, a walnut upper floor along the blank wall with a library the length of it, a second deck across the front behind glass, the stair down from the landing by your door, timber beams and a truss under the ceiling, the front wall in brick, black pendants in the stairwell. The upper floor is walked (APTS.loftY), its rails and walls solid while you are up there (APTS.solidHi).
+// THE LOFT: No. 4's flat, everyone's for now (owner, 12 Nov 2026, of a photo: "match this layout exactly"): a tall room, a walnut upper floor along the blank wall with a library the length of it, a second deck across the front behind glass, the stair down from the landing by your door, timber beams and a truss under the ceiling, a fan, the front wall in brick, black pendants in the stairwell. The upper floor is walked (APTS.loftY) and furnished (pieces up there are solid only while you are: APTS.solidHi); its beams, steel, woodwork and plaster are yours to choose in DECORATE (R.loftSet).
 import {SHARED, THREE} from './003-shx.js';
 import {MODS} from './006-map-pre.js';
 import {ROOMK} from './150a-bedroom.js';
 { const APTS=MODS.apts;
-  if(APTS&&APTS.R&&APTS.LOFT)ROOMK.parts.push(c=>{ '@apts'; const {apt,R,M,Lx,Ly,HW,part,mat,tex,solid,shelf,clip,du}=c, A=APTS.R, MPU=.907, V3=THREE.Vector3;
+  if(APTS&&APTS.R&&APTS.LOFT)ROOMK.parts.push(c=>{ '@apts'; const {apt,R,M,Lx,Ly,HW,part,mat,solid,shelf,clip}=c, A=APTS.R, MPU=.907, V3=THREE.Vector3;
     const MH=3.5, mx=Lx-3.9, SW=1.1, sv0=2.94, sv1=7.8, N=19, RUN=(sv1-sv0)/(N-1), DK={u0:mx-3.2,v1:2.5}, RH=1.02;
-    const WAL=[92,58,36], WAL2=[74,46,28], WHT=[234,232,226], STL=[22,22,24], TIM=[98,66,42], TIM2=[78,52,34];
+    // what you can choose (DECORATE's LOFT tab): the beams, the steel (rails, posts, pendants), the woodwork (stair treads, edges, the library's cases), the plaster (the decks' undersides, the stair's flight)
+    const OPTS=R.loftOpts={beam:{n:'BEAMS',o:{timber:['TIMBER',[98,66,42]],dark:['DARK OAK',[52,36,26]],honey:['HONEY PINE',[176,128,72]],white:['WHITEWASH',[232,228,220]],steel:['BLACK STEEL',[30,30,34]]}},
+      steel:{n:'RAILS AND STEEL',o:{black:['BLACK',[22,22,24]],white:['WHITE',[236,236,232]],brass:['BRASS',[176,138,70]],bronze:['BRONZE',[92,66,44]],red:['OXIDE RED',[130,44,34]]}},
+      wood:{n:'WOODWORK',o:{walnut:['WALNUT',[92,58,36]],oak:['OAK',[176,132,84]],ebony:['EBONY',[34,26,22]],cherry:['CHERRY',[128,56,36]],white:['WHITE',[232,228,220]]}},
+      body:{n:'PLASTER',o:{white:['WHITE',[234,232,226]],cream:['CREAM',[232,220,196]],sage:['SAGE',[176,196,166]],charcoal:['CHARCOAL',[70,70,76]],concrete:['CONCRETE',[150,150,148]]}}};
+    const WAL=['wood',255], WAL2=['wood',205], WHT=['body',255], STL=['steel',255], TIM=['timber',255], TIM2=['timber',205];
     // many boxes in their own colours as one mesh: [geometry, rgb, x,y,z, rx,ry,rz]
     const merge=list=>{ let n=0; const ONE=new V3(1,1,1), G=list.map(([q,col,x,y,z,rx=0,ry=0,rz=0])=>{ const a=q.index?q.toNonIndexed():q; a.applyMatrix4(new THREE.Matrix4().compose(new V3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz)),ONE)); a.computeVertexNormals(); n+=a.attributes.position.count; return [a,col]; });
       const P=new Float32Array(n*3), Nn=new Float32Array(n*3), C=new Float32Array(n*3), cc=new THREE.Color(); let o=0;
-      for(const [a,col] of G){ const k=a.attributes.position.count; P.set(a.attributes.position.array,o*3); Nn.set(a.attributes.normal.array,o*3); cc.setRGB(col[0]/255,col[1]/255,col[2]/255,THREE.SRGBColorSpace); for(let i=0;i<k;i++){ C[(o+i)*3]=cc.r; C[(o+i)*3+1]=cc.g; C[(o+i)*3+2]=cc.b; } o+=k; a.dispose(); }
+      for(const [a,col0] of G){ const col=typeof col0[0]==='string'?[col0[1],col0[1],col0[1]]:col0, k=a.attributes.position.count; P.set(a.attributes.position.array,o*3); Nn.set(a.attributes.normal.array,o*3); cc.setRGB(col[0]/255,col[1]/255,col[2]/255,THREE.SRGBColorSpace); for(let i=0;i<k;i++){ C[(o+i)*3]=cc.r; C[(o+i)*3+1]=cc.g; C[(o+i)*3+2]=cc.b; } o+=k; a.dispose(); }
       const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(P,3)); g.setAttribute('normal',new THREE.BufferAttribute(Nn,3)); g.setAttribute('color',new THREE.BufferAttribute(C,3)); return g; };
     const B=(w,h,d)=>new THREE.BoxGeometry(w,h,d), hs=(a,b)=>{ const s=Math.sin(a*127.1+b*311.7)*43758.5453; return s-Math.floor(s); };
-    const vc=(o={})=>new THREE.MeshLambertMaterial({vertexColors:true,emissive:0x2a2622,...o}), L=[];
+    const vc=(o={})=>new THREE.MeshLambertMaterial({vertexColors:true,...o}), L=[];
+    const MT=R.loftM={body:[vc({emissive:0x34302a})],wood:[vc(),vc({...clip('We')})],steel:[vc({side:THREE.DoubleSide})],timber:[vc()]}, byG=list=>{ const o={}; for(const e of list)(o[e[1][0]]||(o[e[1][0]]=[])).push(e); return o; };
+    R.loftK={beam:'timber',steel:'black',wood:'walnut',body:'white'}; R.loftSet=(k,v)=>{ const O=OPTS[k]; if(!O||!O.o[v])return; R.loftK[k]=v; const c=O.o[v][1]; for(const m of MT[k==='beam'?'timber':k])m.color.setRGB(c[0]/255,c[1]/255,c[2]/255,THREE.SRGBColorSpace); };
     const box=(u0,h0,v0,u1,h1,v1,col)=>L.push([B(u1-u0,h1-h0,v1-v0),col,(u0+u1)/2,(h0+h1)/2,(v0+v1)/2]);
 
     /* ---------- the upper floor: the long deck by the library, the deck across the front, the landing; white under, walnut edges and boards ---------- */
     const DECKS=[[mx,0,Lx,Ly],[DK.u0,0,mx,DK.v1],[mx-SW,sv1,mx,Ly]];
     for(const [u0,v0,u1,v1] of DECKS){ box(u0,MH-.2,v0,u1,MH-.015,v1,WHT); shelf(u0,v0,u1,v1,MH-.2,MH); }
     for(const [u0,v0,u1,v1] of [[mx-.03,DK.v1,mx,sv1],[DK.u0,DK.v1-.03,mx,DK.v1],[DK.u0-.03,0,DK.u0,DK.v1],[mx-SW-.03,sv1,mx-SW,Ly],[mx-SW,sv1-.03,mx,sv1]])box(u0,MH-.34,v0,u1,MH+.02,v1,WAL2);
-    { const bt=tex(512,512,(g,W,H)=>{ g.fillStyle='#22140a'; g.fillRect(0,0,W,H); const rows=10, ph=H/rows; for(let r=0;r<rows;r++){ let x=-hs(r,1)*120; while(x<W){ const w=110+hs(r,x)*140, k=.82+hs(x,r+3)*.3; g.fillStyle=`rgb(${WAL[0]*k|0},${WAL[1]*k|0},${WAL[2]*k|0})`; g.fillRect(x+1,r*ph+1,w-2,ph-2);
-            for(let i=0;i<5;i++){ g.strokeStyle=`rgba(40,22,10,${.1+hs(i,x+r)*.14})`; g.lineWidth=.6; g.beginPath(); const y=r*ph+3+hs(i+7,x)*(ph-6); g.moveTo(x+2,y); g.lineTo(x+w-2,y+(hs(i,r)-.5)*3); g.stroke(); } g.fillStyle='rgba(255,220,180,.1)'; g.fillRect(x+1,r*ph+1,w-2,1.5); x+=w; } } },true);
-      const fm=mat([255,255,255],{map:bt}); R.loftFloor=fm;
-      for(const [u0,v0,u1,v1] of DECKS){ const g=new THREE.PlaneGeometry(u1-u0,v1-v0).rotateX(-Math.PI/2), uv=g.attributes.uv; for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getY(i)*(v1-v0)/2.2,uv.getX(i)*(u1-u0)/2.2); part(g,fm,(u0+u1)/2,MH,(v0+v1)/2,0,apt,false); } }
+    { const fm=mat([255,255,255],{}); R.loftFloor=fm;   // its boards are one of the room's floors (A.floor(k,true)), laid as the room's own are
+      for(const [u0,v0,u1,v1] of DECKS){ const w=u1-u0, d=v1-v0, g=new THREE.PlaneGeometry(w,d).rotateX(-Math.PI/2), uv=g.attributes.uv; for(let i=0;i<uv.count;i++){ const u=u0+uv.getX(i)*w, v=v0+(1-uv.getY(i))*d; uv.setXY(i,u/Lx,1-v/Ly); } part(g,fm,(u0+u1)/2,MH,(v0+v1)/2,0,apt,false); } }
     // slim steel posts under the front deck
     for(const [u,v] of [[DK.u0+.06,DK.v1-.06],[DK.u0+.06,.1],[mx-1.6,DK.v1-.06]]){ box(u-.045,0,v-.045,u+.045,MH-.2,v+.045,STL); solid(u-.07,v-.07,u+.07,v+.07,MH-.2); }
 
     /* ---------- the stair: walnut treads on a closed white flight, from the floor up to the landing; a white closet under the landing ---------- */
     for(let i=0;i<N-1;i++){ const h=(i+1)*MH/N, v=sv0+i*RUN; box(mx-SW,h-.05,v-.02,mx,h,v+RUN,WAL); box(mx-SW+.02,0,v,mx-.02,h-.05,v+RUN,WHT); }
-    box(mx-SW,0,sv1,mx,MH-.2,Ly,WHT); box(mx-SW-.012,.02,sv1+.5,mx-SW,2.1,sv1+1.4,[214,212,206]); box(mx-SW-.03,1.0,sv1+1.28,mx-SW-.012,1.04,sv1+1.34,STL);
+    box(mx-SW,0,sv1,mx,MH-.2,Ly,WHT); box(mx-SW-.012,.02,sv1+.5,mx-SW,2.1,sv1+1.4,['body',236]); box(mx-SW-.03,1.0,sv1+1.28,mx-SW-.012,1.04,sv1+1.34,STL);
     solid(mx-SW-.06,sv0,mx-SW,sv1,MH); solid(mx-.03,sv0,mx+.03,sv1,MH); solid(mx-SW,sv1,mx,Ly,MH-.2);
 
     /* ---------- the rails: black steel, six bars between posts (level along the decks, raked up the stair); glass round the front deck ---------- */
@@ -46,7 +51,8 @@ import {ROOMK} from './150a-bedroom.js';
     L.push([B(.26,HW-BY-.18,.26),TIM,mx*.5,(HW+BY+.18)/2,4.4]); for(const s of [-1,1])L.push([B(.2,.2,2.6),TIM2,mx*.5+s*1.05,BY+.18+(HW-BY-.18)/2,4.4,0,Math.PI/2,s*Math.atan2(HW-BY-.3,2.1)]);
     L.push([B(.3,.4,Ly),TIM,mx,BY-.38,Ly/2]); L.push([B(.24,BY-.58-MH,.24),TIM2,mx,(MH+BY-.58)/2,DK.v1]);
     for(const v of [2.2,3.6,5.2,6.6,8.4])L.push([new THREE.CylinderGeometry(.05,.065,.13,10),STL,mx-.02,BY-.66,v,.5,0,0]);
-    part(merge(L),vc(),0,0,0,0,apt);
+    { const fu=mx*.5, fv=7.3, fy_=BY-.75; L.push([new THREE.CylinderGeometry(.018,.018,.5,6),STL,fu,BY-.43,fv],[new THREE.CylinderGeometry(.11,.13,.16,14),STL,fu,fy_,fv]); for(let k=0;k<4;k++){ const a=k*Math.PI/2+.4; L.push([B(.16,.014,.72),WAL2,fu+Math.sin(a)*.48,fy_-.02,fv+Math.cos(a)*.48,0,a,.12]); } }   // the ceiling fan, still
+    { const Gs=byG(L); for(const k in Gs)part(merge(Gs[k]),MT[k][0],0,0,0,0,apt); }
     { const d=new THREE.CylinderGeometry(.24,.24,Ly-.5,18,6); d.rotateX(Math.PI/2); const dp=d.attributes.position; for(let i=0;i<dp.count;i++){ const z=dp.getZ(i), k=1+.02*Math.sin(z*26); dp.setX(i,dp.getX(i)*k); dp.setY(i,dp.getY(i)*k); } d.computeVertexNormals(); part(d,mat([238,238,236],{...clip('We')}),Lx-.6,MH+3.12,Ly/2,0,apt); }
 
     /* ---------- the library: walnut cases the length of the wall, six shelves high, full of books ---------- */
@@ -57,11 +63,11 @@ import {ROOMK} from './150a-bedroom.js';
       for(let i=0;i<cols;i++)for(let r=0;r<ROWS;r++){ const a=v0+i*cw+.03, b=v0+(i+1)*cw-.03, fl=y0+r*SH+.014, k=hs(i,r); if(k<.07){ Q.push([new THREE.SphereGeometry(.09,8,6),[210,200,170],Lx-D/2,fl+.09,(a+b)/2]); continue; }
           let v=a; const end=k<.3?a+(b-a)*(.45+hs(r,i)*.3):b; while(v<end-.02){ const w=.022+hs(v*91,i+r)*.034, h=.2+hs(v*37,r)*.14, d=.16+hs(v*53,i)*.1, lean=v+w>end-.04&&end<b?.22:0; Q.push([B(d,h,w),PAL[Math.floor(hs(v*13,i*7+r)*PAL.length)],Lx-.05-d/2,fl+h/2,v+w/2,lean,0,0]); v+=w+.003; }
           if(k>.86)Q.push([B(.2,.05,.14),PAL[(i+r)%PAL.length],Lx-.16,fl+.025,b-.1,0,.3,0]); }
-      part(merge(Q),vc({...clip('We')}),0,0,0,0,apt); }
+      part(merge(Q.filter(e=>typeof e[1][0]==='string')),MT.wood[1],0,0,0,0,apt); part(merge(Q.filter(e=>typeof e[1][0]!=='string')),vc({...clip('We')}),0,0,0,0,apt); }
 
     /* ---------- the stairwell's pendants: black domes on long cords, warm bulbs; two of them light the stair ---------- */
     { const P=[], bulbs=[], bm=new THREE.MeshBasicMaterial({color:0xffdca8}); for(const [du_,v,h] of [[.5,3.9,MH+1.9],[.72,4.8,MH+1.25],[.36,5.6,MH+1.6],[.6,6.5,MH+1.05]]){ const u=mx-du_; P.push([new THREE.CylinderGeometry(.006,.006,HW-h,5),STL,u,(HW+h)/2,v],[new THREE.SphereGeometry(.17,14,8,0,Math.PI*2,0,Math.PI*.62),STL,u,h-.1,v],[new THREE.CylinderGeometry(.03,.05,.08,10),STL,u,h+.06,v]); bulbs.push([u,h-.14,v]); }
-      const pm=vc({side:THREE.DoubleSide}); part(merge(P),pm,0,0,0,0,apt); for(const [u,h,v] of bulbs)part(new THREE.SphereGeometry(.045,8,6),bm,u,h,v,0,apt,false);
+      part(merge(P),MT.steel[0],0,0,0,0,apt); for(const [u,h,v] of bulbs)part(new THREE.SphereGeometry(.045,8,6),bm,u,h,v,0,apt,false);
       [bulbs[1],bulbs[3]].forEach(([u,h,v],i)=>{ const Lt=new THREE.PointLight(0xffc890,3.2,9*M,1.8); Lt.userData.pool=true; Lt.userData.i0=3.2; Lt.userData.on=true; Lt.position.set(u,h-.08,v); apt.add(Lt); R.ceil.push({id:'loft-pendant-'+(i+1),name:'STAIR PENDANT '+(i+1),L:Lt}); }); }
 
     /* ---------- walking it: the height under you up there, and what is solid on the upper floor ---------- */
@@ -72,8 +78,9 @@ import {ROOMK} from './150a-bedroom.js';
     const hi=(u0,v0,u1,v1)=>APTS.solidHi(A.x0+u0/MPU,A.y0+v0/MPU,A.x0+u1/MPU,A.y0+v1/MPU), T=.08;
     hi(-.4,-.4,Lx+.4,0); hi(-.4,Ly,Lx+.4,Ly+.4); hi(-.4,0,0,Ly); hi(Lx-.36,0,Lx+.4,Ly);                                   // the walls; the library
     hi(mx-T,DK.v1,mx,sv1); hi(mx-SW-T,sv0,mx-SW,Ly); hi(DK.u0,DK.v1,mx,DK.v1+T); hi(DK.u0-T,0,DK.u0,DK.v1+T);              // the rails
-    R.loft={MH,mx,SW,sv0,sv1,N,DECKS,top:[mx-SW/2,sv1+1.1],foot:[mx-SW/2,sv0-.7]}; });
-  // the loft's own start: light oak below, the front wall in brick (yours to change in DECORATE)
-  if(APTS&&APTS.R&&APTS.LOFT)ROOMK.built.push(A=>{ '@apts'; const R=A.R, D=A.walls.brick; if(!R.loft)return; if(D&&D.gen&&!D.t)D.t=D.gen(); const m=R.wallMats[0]; if(m&&D&&D.t){ m.map=D.t; m.bumpMap=D.t; m.color.set(0xffffff); m.userData.own=1; m.needsUpdate=true; } A.wall('white'); A.floor('oak');
-    const tk=A.units().find(u=>u.kind==='FISH TANK'&&!u.added); if(tk){ const t=A.getT(tk); A.setT(tk,{...t,u:A.Lx-.66,v:5.95,ry:Math.PI/2}); } });   // the tank stands under the deck (the closet has its old place)
+    R.loft={MH,mx,SW,sv0,sv1,N,DECKS,top:[mx-SW/2,sv1+1.1],foot:[mx-SW/2,sv0-.7],blocks:[[mx-SW-.06,sv0-.6,mx+.03,sv1,'THE STAIR'],[mx-SW,sv1,mx,Ly,'THE CLOSET'],[DK.u0,DK.v1-.14,DK.u0+.14,DK.v1,'A POST'],[DK.u0,.03,DK.u0+.14,.17,'A POST'],[mx-1.67,DK.v1-.14,mx-1.53,DK.v1,'A POST']],lib:Lx-.36};
+    for(const k in R.loftK)R.loftSet(k,R.loftK[k]); });
+  // the loft's own start: light oak below, walnut above, white walls with the front one in brick (yours to change in DECORATE); its colours are kept with your layout
+  if(APTS&&APTS.R&&APTS.LOFT){ ROOMK.built.push(A=>{ '@apts'; if(!A.R.loft)return; A.wall('white','all'); A.wall('brick','Wf'); A.floor('oak'); A.floor('walnut',true); });
+    ROOMK.keep.push({out:(L,A)=>{ if(A&&A.R.loft)L.loft={...A.R.loftK}; },in:(L,A)=>{ if(A&&A.R.loft&&L.loft)for(const k in L.loft)A.R.loftSet(k,L.loft[k]); }}); }
   window.LOFTDBG=()=>{ const A=ROOMK.api, R=A&&A.R, Lf=R&&R.loft; if(!Lf)return null; const W=(u,h,v)=>A.W(u,h,v); return {MH:Lf.MH,top:W(Lf.top[0],Lf.MH,Lf.top[1]).toArray(),foot:W(Lf.foot[0],0,Lf.foot[1]).toArray(),deck:W(Lf.mx+1.6,Lf.MH,A.Ly/2).toArray(),h:(SHARED.py-R.fy)/A.M,up:!!(APTS.loftUp&&APTS.loftUp()),HW:A.HW,M:A.M,fy:R.fy}; }; }

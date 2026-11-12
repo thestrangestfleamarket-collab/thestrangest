@@ -76,7 +76,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null,keep:[],always:new Set(),save:(
     const build=()=>{ '@apts'; const X=SHARED.BOD.X, Z=SHARED.BOD.Z, Yr=SHARED.BOD.Y, A=APTS.R, WI=APTS.WIN, WPL=APTS.WPL, M=(X(A.x0+1)-X(A.x0))/MPU, fy=Yr(APTS.RB+.15)+.012, HW=(Yr(APTS.S||130)-Yr(0))/M*(APTS.HK||1);
       const px=z=>z/32.4, Lx=(A.x1-A.x0)*MPU, Ly=(A.y1-A.y0)*MPU, TH=.24, W=(u,h,v)=>new V3(X(A.x0)+u*M,fy+h*M,Z(A.y0)+v*M);
       const apt=new THREE.Group(); apt.position.set(X(A.x0),fy,Z(A.y0)); apt.scale.setScalar(M); scene.add(apt);
-      R={apt,M,fy,doors:{},loose:[],lights:[],lamps:[],th:[],units:[],kinds:{},wins:[],winTh:[],ceil:[],wallMats:[],floorMat:null,wall:'beige',floor:'warm',glowK:1,addN:0};
+      R={apt,M,fy,doors:{},loose:[],lights:[],lamps:[],th:[],units:[],kinds:{},wins:[],winTh:[],ceil:[],wallMats:[],floorMat:null,wall:'beige',walls:{},floor:'warm',floor2:null,glowK:1,addN:0};
       let CUR=null; const cur=()=>CUR?CUR.obj:apt;   // the unit being built (a piece you can move), or the room itself
       const part=(geo,m,u,h,v,ry=0,par=cur(),cast=true)=>{ const me=new THREE.Mesh(geo,m); me.position.set(u,h,v); me.rotation.y=ry; me.castShadow=cast; me.receiveShadow=true; par.add(me); return me; };
       const thing=(u,h,v,ry=0)=>{ const g=new THREE.Group(); g.position.copy(W(u,h,v)); g.rotation.y=ry; g.scale.setScalar(M); scene.add(g); return g; };
@@ -84,6 +84,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null,keep:[],always:new Set(),save:(
       // what loose things stand on: a solid up to a top (metres over the floor), a shelf between two heights; the top a hair under the surface, or the physics leaves it out
       const solidNow=(u0,v0,u1,v1,t)=>APTS.solid(A.x0+u0/MPU,A.y0+v0/MPU,A.x0+u1/MPU,A.y0+v1/MPU,(fy+(t-.002)*M-Yr(APTS.RB))/(Yr(1)-Yr(0)));
       const shelfNow=(u0,v0,u1,v1,b,t)=>APTS.shelf&&APTS.shelf(A.x0+u0/MPU,A.y0+v0/MPU,A.x0+u1/MPU,A.y0+v1/MPU,fy+b*M,fy+(t-.002)*M);
+      const solidUp=(u0,v0,u1,v1,b,t)=>APTS.solidHi(A.x0+u0/MPU,A.y0+v0/MPU,A.x0+u1/MPU,A.y0+v1/MPU,fy+b*M,fy+(t-.002)*M);   // on an upper floor (the loft's): solid only while you are up there
       const solid=(u0,v0,u1,v1,t)=>CUR?CUR.sol.push([u0,v0,u1,v1,t]):solidNow(u0,v0,u1,v1,t);   // inside a unit: kept with it, placed wherever it stands
       const shelf=(u0,v0,u1,v1,b,t)=>CUR?CUR.shf.push([u0,v0,u1,v1,b,t]):shelfNow(u0,v0,u1,v1,b,t);
       const FRAME=[16,16,18], CREAM=[222,208,186], TRIM=[66,36,20], WOODO=[184,104,50], WOODD=[96,54,30];
@@ -161,7 +162,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null,keep:[],always:new Set(),save:(
       // where a unit stands decides its solids and shelves: its footprint turned and scaled, as boxes on the floor plan
       const place=un=>{ for(const h of un.h)if(APTS.unsolid)APTS.unsolid(h); un.h=[]; if(un.gone||un.loose)return; const g=un.obj, c=Math.cos(g.rotation.y), sn=Math.sin(g.rotation.y), k=g.scale.x;
         const xf=(x,z)=>[g.position.x+(x*c+z*sn)*k,g.position.z+(-x*sn+z*c)*k], box=r=>{ const P=[xf(r[0],r[1]),xf(r[2],r[1]),xf(r[0],r[3]),xf(r[2],r[3])]; return [Math.min(...P.map(q=>q[0])),Math.min(...P.map(q=>q[1])),Math.max(...P.map(q=>q[0])),Math.max(...P.map(q=>q[1]))]; };
-        for(const r of un.sol){ const b=box(r); un.h.push(solidNow(b[0],b[1],b[2],b[3],g.position.y+r[4]*k)); }
+        const up=R.loft&&g.position.y>R.loft.MH-.3; for(const r of un.sol){ const b=box(r); un.h.push(up?solidUp(b[0],b[1],b[2],b[3],g.position.y,g.position.y+r[4]*k):solidNow(b[0],b[1],b[2],b[3],g.position.y+r[4]*k)); }
         for(const r of un.shf){ const b=box(r); const h=shelfNow(b[0],b[1],b[2],b[3],g.position.y+r[4]*k,g.position.y+r[5]*k); if(h)un.h.push(h); } };
       // the still parts of a unit baked into one mesh a material (a few draws, not hundreds)
       const bake=S=>{ S.updateMatrixWorld(true); const inv=new THREE.Matrix4().copy(S.matrixWorld).invert(), by=new Map(), L=[];
@@ -239,8 +240,9 @@ const ROOMK={parts:[],wires:{},built:[],api:null,keep:[],always:new Set(),save:(
       const spawn=(kind,t,id)=>{ const K=R.kinds[kind]; if(!K)return null; const o=K.tpl.clone(true); (K.loose?scene:apt).add(o);
         const un={id:id||('add-'+(++R.addN)),name:K.name,kind,obj:o,loose:K.loose,m:K.m,sol:K.sol,shf:K.shf,h:[],th:[],wire:K.wire,st:{},added:true,mount:K.mount,cat:K.cat}; R.units.push(un); setT(un,t); blobFor(un); wireUp(un); R.LL=null; un.obj.traverse(o=>{ if(o.isLight&&o.userData.i0!=null)paint(o); }); return un; };
       const drop=un=>{ remove(un); un.obj.removeFromParent(); const i=R.units.indexOf(un); if(i>=0)R.units.splice(i,1); };
-      const wall=k=>{ const D=WALLS[k]; if(!D)return; if(D.gen&&!D.t)D.t=D.gen(); for(const m of R.wallMats){ if(m.userData.own)continue; m.map=D.t||R.plaster; m.bumpMap=m.map; m.color.set(D.t?0xffffff:col(D.c)); m.needsUpdate=true; } R.wall=k; };
-      const floor=k=>{ const D=FLOORS[k]; if(!D)return; if(!D.t)D.t=D.gen(Lx,Ly); R.floorMat.map=D.t; R.floorMat.bumpMap=D.t; R.floorMat.needsUpdate=true; R.floor=k; };
+      const WK=['Wf','Wb','Ww','We'], wall=(k,w)=>{ const D=WALLS[k]; if(!D)return; if(D.gen&&!D.t)D.t=D.gen(); if(w==='all')R.walls={}; else if(WK.includes(w))R.walls[w]=k; else R.wall=k; if(w==='all')R.wall=k;   // the room's paint (the walls with none of their own), every wall ('all'), or one wall's own (owner, 12 Nov 2026)
+        R.wallMats.forEach((m,i)=>{ const own=R.walls[WK[i]]; if(WK.includes(w)?WK[i]!==w:!!own)return; m.map=D.t||R.plaster; m.bumpMap=m.map; m.color.set(D.t?0xffffff:col(D.c)); m.needsUpdate=true; }); };
+      const floor=(k,up)=>{ const D=FLOORS[k]; if(!D)return; if(!D.t)D.t=D.gen(Lx,Ly); const m=up?R.loftFloor:R.floorMat; if(!m)return; m.map=D.t; if(!up)m.bumpMap=D.t; m.needsUpdate=true; if(up)R.floor2=k; else R.floor=k; };   // the room's floor, or the upper floor's (the loft)
       const kz=()=>R.kzone||[0,0,1,1], kfloor=k=>{ const D=KFLOORS[k]; if(!D||!R.kfloor)return; R.kfloorK=k; const on=k!=='room'; for(const o of R.kfloor)o.visible=on; if(!on)return;
         if(!D.t){ const z=kz(); D.t=D.gen(z[2]-z[0],z[3]-z[1]); } R.kfloorMat.map=D.t; R.kfloorMat.needsUpdate=true; };
       // a little picture of a paint, paper or floor for the editor's swatches (painted the first time it is asked for)

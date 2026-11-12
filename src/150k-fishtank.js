@@ -1,31 +1,47 @@
-// THE FISH TANK: the showpiece tank in every apartment (owner, 5 and 9 Nov 2026): live rippling water, caustics on the sand, Polyfork's koi and reef fish swimming; double-click it to look close and set its water, decor, fish and light (kept with your layout); with fish food the fish rise to eat.
+// THE FISH TANK: the tank in every apartment (owner, 5, 9 and 12 Nov 2026): live rippling water, caustics on the sand, Polyfork's koi and reef fish swimming; double-click it to look close and set its size, stand, rim, water, light, fish (their size and colour) and decor (Polyfork's corals, rocks and sunken things) (kept with your layout); with fish food the fish rise to eat.
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, PETS, pos, SFX, UI, VR, W3} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {SYS} from './006-map-pre.js';
 import {FISHES} from './141f-fishes.js';
 import {ROOMK} from './150a-bedroom.js';
-{ const GL=.012, NX=64, NZ=20, MAXF=16, CAPS=40;
+{ const GL=.012, NX=64, NZ=20, CAPS=40;
   const hs=(a,b)=>{ const s=Math.sin(a*127.1+b*311.7)*43758.5453; return s-Math.floor(s); };
   // the choices: each water says if it is salt; each fish its length in metres and which water it lives in
   const WATER={fresh:{n:'FRESH',salt:0,c:[.86,.96,.97],at:[.55,.82,.84],ad:2.2,s:0xcfeef2,sand:[.86,.8,.66]},salt:{n:'TROPICAL SALT',salt:1,c:[.72,.9,1],at:[.18,.58,.95],ad:1.3,s:0x8fd6ff,sand:[.95,.92,.84]},
     pond:{n:'MURKY POND',salt:0,c:[.72,.8,.56],at:[.34,.46,.2],ad:.55,s:0x7d9156,sand:[.5,.46,.34]},glow:{n:'BLACKLIGHT',salt:0,c:[.5,.42,.95],at:[.24,.12,.62],ad:1,s:0x8c66ff,sand:[.3,.3,.42],glow:1}};
   const KIND=[{id:'pfkoi',n:'KOI',L:.15,sp:.09,b:'cruise',var:['pfkoi','koi_showa','koi_gold','koi_sanke','koi_platinum','koi_asagi','koi_orange','koi_black','koi']},{id:'goldfish',n:'GOLDFISH',L:.1,sp:.1,b:'shoal'},{id:'pfclown',n:'CLOWNFISH',L:.09,sp:.14,salt:1,b:'hover'},{id:'pfbluetang',n:'BLUE TANG',L:.15,sp:.16,salt:1,b:'cruise'},
-    {id:'yellowtang',n:'YELLOW TANG',L:.13,sp:.15,salt:1,b:'shoal'},{id:'angelfish',n:'ANGELFISH',L:.13,sp:.1,salt:1,b:'hover'},{id:'mandarinfish',n:'MANDARIN',L:.07,sp:.06,salt:1,b:'bottom'}];
+    {id:'yellowtang',n:'YELLOW TANG',L:.13,sp:.15,salt:1,b:'shoal'},{id:'angelfish',n:'ANGELFISH',L:.13,sp:.1,salt:1,b:'hover'},{id:'mandarinfish',n:'MANDARIN',L:.07,sp:.06,salt:1,b:'bottom'},
+    {id:'puffer',n:'PUFFER',L:.12,sp:.07,salt:1,b:'hover'},{id:'lionfish',n:'LIONFISH',L:.15,sp:.06,salt:1,b:'hover'},{id:'moorishidol',n:'MOORISH IDOL',L:.13,sp:.12,salt:1,b:'cruise'},{id:'butterflyfish',n:'BUTTERFLYFISH',L:.11,sp:.12,salt:1,b:'shoal'},
+    {id:'firefish',n:'FIREFISH',L:.07,sp:.1,salt:1,b:'hover'},{id:'cardinalfish',n:'CARDINALFISH',L:.07,sp:.08,salt:1,b:'shoal'},{id:'chromis',n:'CHROMIS',L:.07,sp:.14,salt:1,b:'shoal'},{id:'cleanerwrasse',n:'CLEANER WRASSE',L:.08,sp:.16,salt:1,b:'cruise'},
+    {id:'foxface',n:'FOXFACE',L:.14,sp:.12,salt:1,b:'cruise'},{id:'shrimp',n:'SHRIMP',L:.05,sp:.04,salt:1,b:'bottom'}];
   const DECOR=[['sand','SAND'],['pebbles','ROCKS'],['driftwood','DRIFTWOOD'],['plants','PLANTS'],['castle','CASTLE'],['chest','CHEST'],['bubbler','BUBBLER']];
+  // the tank itself (owner, 12 Nov 2026): its length (of the medium one, never past the room's wall), what it stands on, its rim; how many fish each length holds
+  const SIZES={s:{n:'SMALL',k:.66,f:10},m:{n:'MEDIUM',k:1,f:16},l:{n:'LARGE',k:1.5,f:24},xl:{n:'SHOWPIECE',k:2,f:32}};
+  const BASES={walnut:{n:'WALNUT',c:[70,46,32]},oak:{n:'OAK',c:[176,132,84]},black:{n:'BLACK',c:[26,26,30]},white:{n:'WHITE',c:[232,230,224]},stone:{n:'STONE',c:[140,138,132]},steel:{n:'STEEL FRAME',c:[58,60,66],frame:1}};
+  const RIMS={black:{n:'BLACK',c:[24,24,26]},steel:{n:'STEEL',c:[170,174,180]},wood:{n:'WOOD',c:[96,62,40]},none:{n:'RIMLESS'}};
+  const FSIZE={s:{n:'S',k:.72},m:{n:'M',k:1},l:{n:'L',k:1.35}}, FTINT={nat:'#ffffff',gold:'#ffd24a',red:'#ff6a5a',pink:'#ff9ad0',blue:'#6aa8ff',green:'#7fe08a',violet:'#b48aff',black:'#4a4a52'}, LIGHTB={low:{n:'LOW',k:.55},mid:{n:'NORMAL',k:1},high:{n:'BRIGHT',k:1.6}};
+  // Polyfork's pieces (data/tankpf.json, tools/tank-pf-bake.py): [key, name, group, height in the tank (m), mossy]; each has its own place on the sand, tall ones at the back
+  const PF=[['staghorn','STAGHORN','CORAL',.3],['pillar','PILLAR','CORAL',.36],['softtree','SOFT TREE','CORAL',.34],['seafan','SEA FAN','CORAL',.3],['tubesponge','TUBE SPONGE','CORAL',.26],['table','TABLE','CORAL',.18],['barrelsponge','BARREL SPONGE','CORAL',.2],['toadstool','TOADSTOOL','CORAL',.15],['torch','TORCH','CORAL',.14],['brain','BRAIN','CORAL',.11],
+    ['clam','GIANT CLAM','REEF LIFE',.1],['anemone','ANEMONE','REEF LIFE',.1],['seagrass','SEAGRASS','REEF LIFE',.2],['urchin','URCHIN','REEF LIFE',.05],['starfish','STARFISH','REEF LIFE',.03],
+    ['reefarch','REEF ARCH','ROCK',.42],['bommie','ROCK SPIRE','ROCK',.36],['rockarch','ROCK ARCH','ROCK',.28],['reefboulder','REEF BOULDER','ROCK',.26],['lavarock','LAVA ROCK','ROCK',.2],['liverock','LIVE ROCK','ROCK',.18],
+    ['wreck','WRECKED HULL','SUNK',.46,1],['column','BROKEN COLUMN','SUNK',.4,1],['anchor','ANCHOR','SUNK',.38],['wheel',"SHIP'S WHEEL",'SUNK',.3],['dragonskull','DRAGON SKULL','SUNK',.26,1],['amphora','AMPHORA','SUNK',.22],['moai','FALLEN MOAI','SUNK',.2,1],['barrel','BARREL','SUNK',.2],
+    ['hoard','OVERFLOWING CHEST','SUNK',.2],['pfchest','TREASURE CHEST','SUNK',.16],['skull','MOSSY SKULL','SUNK',.13,1],['coins','GOLD COINS','SUNK',.03]];
+  const PFD=__LAZY__("data/tankpf.json"), ALLD=()=>DECOR.map(d=>d[0]).concat(PF.map(p=>p[0]));
   const LIGHTC={white:'#f2f7ff',warm:'#ffd9a0',blue:'#7fb6ff',pink:'#ff8fd0',green:'#9cffb0',uv:'#9a6bff'};
-  const DEF={w:'fresh',d:['sand','pebbles','driftwood','plants'],f:{pfkoi:5,goldfish:6},l:{on:1,c:'white'}};
+  const DEF={w:'fresh',d:['sand','pebbles','driftwood','plants'],f:{pfkoi:5,goldfish:6},l:{on:1,c:'white',b:'mid'},sz:'m',base:'walnut',rim:'black',fz:{},fc:{}};
   // a layout's tank as it may be read (another player's layout too): only known choices, at most MAXF fish
-  const clean=s=>{ s=s&&typeof s==='object'?s:{}; const o={w:WATER[s.w]?s.w:DEF.w,d:Array.isArray(s.d)?DECOR.map(d=>d[0]).filter(k=>s.d.includes(k)):DEF.d.slice(),f:{},l:{on:s.l&&s.l.on===0?0:1,c:s.l&&LIGHTC[s.l.c]?s.l.c:'white'}};
-    let n=0; for(const k of KIND){ const c=Math.max(0,Math.min(8,Math.round(+((s.f||DEF.f)[k.id])||0))); if(c&&n+c<=MAXF){ o.f[k.id]=c; n+=c; } } return o; };
+  const clean=s=>{ s=s&&typeof s==='object'?s:{}; const o={w:WATER[s.w]?s.w:DEF.w,d:Array.isArray(s.d)?ALLD().filter(k=>s.d.includes(k)):DEF.d.slice(),f:{},l:{on:s.l&&s.l.on===0?0:1,c:s.l&&LIGHTC[s.l.c]?s.l.c:'white',b:s.l&&LIGHTB[s.l.b]?s.l.b:'mid'},sz:SIZES[s.sz]?s.sz:'m',base:BASES[s.base]?s.base:'walnut',rim:RIMS[s.rim]?s.rim:'black',fz:{},fc:{}}, MAXF=SIZES[o.sz].f;
+    let n=0; for(const k of KIND){ const c=Math.max(0,Math.min(8,Math.round(+((s.f||DEF.f)[k.id])||0))); if(c&&n+c<=MAXF){ o.f[k.id]=c; n+=c; const z=s.fz&&s.fz[k.id], t=s.fc&&s.fc[k.id]; if(FSIZE[z]&&z!=='m')o.fz[k.id]=z; if(FTINT[t]&&t!=='nat')o.fc[k.id]=t; } } return o; };
   const TANKS=[]; window.TANKDBG=()=>TANKS.map(T=>({fish:T.fish.length,ways:[...new Set(T.fish.map(f=>f.b))],koiL:Math.max(0,...T.fish.filter(f=>f.kind==='pfkoi').map(f=>f.L)),vis:T.g.visible,pos:[+T.g.position.x.toFixed(2),+T.g.position.z.toFixed(2)],at:T.tg.localToWorld(new THREE.Vector3(0,T.SH+T.TH/2,0)).toArray().map(v=>+v.toFixed(2)),front:T.tg.localToWorld(new THREE.Vector3(0,T.SH+T.TH/2,-1)).toArray().map(v=>+v.toFixed(2)),fed:+(T.fed||0).toFixed(1),y:T.fish.length?+(T.fish.reduce((a,f)=>a+f.y,0)/T.fish.length).toFixed(3):0,
-    kinds:T.sch?Object.keys(T.sch).filter(k=>T.sch[k].im.count):[],wave:+(T.h.reduce((a,v)=>Math.max(a,Math.abs(v)),0)*1000).toFixed(4),sy:+T.surf.geometry.attributes.position.getY(NX*(NZ>>1)+(NX>>1)).toFixed(5),steps:T.steps,set:T.s,view:!!(V&&V.T===T),cam:SHARED.cam?[...SHARED.cam.position.toArray(),...SHARED.cam.getWorldDirection(new THREE.Vector3()).toArray()].map(v=>+v.toFixed(2)):null,size:[T.TW,T.TD,T.TH],f0:T.fish[0]?[T.fish[0].id,+T.fish[0].x.toFixed(3),+T.fish[0].y.toFixed(3),+T.fish[0].z.toFixed(3)]:null}));
+    kinds:T.sch?Object.keys(T.sch).filter(k=>T.sch[k].im.count):[],wave:+(T.h.reduce((a,v)=>Math.max(a,Math.abs(v)),0)*1000).toFixed(4),sy:+T.surf.geometry.attributes.position.getY(NX*(NZ>>1)+(NX>>1)).toFixed(5),steps:T.steps,set:T.s,pf:Object.keys(T.pf||{}),view:!!(V&&V.T===T),cam:SHARED.cam?[...SHARED.cam.position.toArray(),...SHARED.cam.getWorldDirection(new THREE.Vector3()).toArray()].map(v=>+v.toFixed(2)):null,size:[T.TW,T.TD,T.TH],f0:T.fish[0]?[T.fish[0].id,+T.fish[0].x.toFixed(3),+T.fish[0].y.toFixed(3),+T.fish[0].z.toFixed(3)]:null}));
   for(const k of ['FISH TANK'])ROOMK.always.add(k);   // in every apartment from the start (owner, 7 Nov 2026)
   ROOMK.parts.push(c=>{ '@apts'; const {part,mat,rbox,cap,Lx,Ly,du,solid}=c;
     // along the back wall between the back door and the corner, where no window is (owner, 12 Nov 2026: half as long)
-    const TW=Math.max(1.2,Math.min(1.8,(Lx-du-2.4)/2)), TD=1, TH=1.2, SH=.7, U0=du+.95+TW/2, V0=Ly-TD/2-.13, SW=TW-2*GL, SD=TD-2*GL, WY=SH+TH*.9;
+    const TW0=Math.max(1.2,Math.min(1.8,(Lx-du-2.4)/2)), TMAX=Math.max(TW0,Lx-du-2.4), TD=1, TH=1.2, SH=.7, U0=du+.95+TW0/2, V0=Ly-TD/2-.13, SD=TD-2*GL, WY=SH+TH*.9, len=s=>Math.max(1,Math.min(TMAX,TW0*SIZES[s.sz].k));
     const sandY=(x,z)=>SH+.06+.03+.09*Math.min(1,Math.max(0,(z+SD/2)/SD))+.012*Math.sin(x*5.1+z*3.3);   // the sand's top, banked up toward the back
-    cap('FISH TANK',g=>{ const tg=new THREE.Group(); tg.position.set(U0,0,V0); g.add(tg); const P=(geo,m,x,y,z,ry=0,cast=true)=>part(geo,m,x,y,z,ry,tg,cast);
+    // everything in the tank's own group, built for a length, a stand and a rim (built again when one of them changes)
+    const fill=(tg,TW,s)=>{ const SW=TW-2*GL, T0={}, P=(geo,m,x,y,z,ry=0,cast=true)=>part(geo,m,x,y,z,ry,tg,cast);
       const V3=THREE.Vector3, ONE=new V3(1,1,1);
       // a few parts in their own colours as one mesh (one draw): [geometry, rgb, x,y,z, rx,ry,rz]
       const merge=list=>{ let n=0; const G=list.map(([q,col,x,y,z,rx=0,ry=0,rz=0])=>{ const a=q.index?q.toNonIndexed():q; a.applyMatrix4(new THREE.Matrix4().compose(new V3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,rz)),ONE)); a.computeVertexNormals(); n+=a.attributes.position.count; return [a,col]; });
@@ -35,10 +51,11 @@ import {ROOMK} from './150a-bedroom.js';
       const vc=(o={})=>new THREE.MeshStandardMaterial({vertexColors:true,roughness:.85,flatShading:true,...o});
       const U={uT:{value:0},uL:{value:new THREE.Color(1,1,1)},uK:{value:1},uE:{value:0},uF:{value:null},uWD:{value:new THREE.Vector2(SW,SD)}};
       // the stand: a dark walnut cabinet; the frame: a black rim round the open top and the light bar along the back
-      P(rbox(TW+.08,SH,TD+.08,.02),mat([70,46,32]),0,SH/2,0);
-      const B=(w,h,d)=>new THREE.BoxGeometry(w,h,d), rimC=[24,24,26];
-      P(merge([[B(TW+.03,.04,.03),rimC,0,SH+TH+.02,-TD/2],[B(TW+.03,.04,.03),rimC,0,SH+TH+.02,TD/2],[B(.03,.04,TD),rimC,-TW/2,SH+TH+.02,0],[B(.03,.04,TD),rimC,TW/2,SH+TH+.02,0],
-        [B(TW+.03,.03,.03),rimC,0,SH+.015,-TD/2],[B(TW+.03,.03,.03),rimC,0,SH+.015,TD/2],[B(TW-.1,.035,.14),[40,40,44],0,SH+TH+.06,TD/2-.1]]),vc({flatShading:false,roughness:.5}),0,0,0);
+      const B=(w,h,d)=>new THREE.BoxGeometry(w,h,d), BS=BASES[s.base], rimC=RIMS[s.rim].c, RL=[[B(TW-.1,.035,.14),[40,40,44],0,SH+TH+.06,TD/2-.1]];
+      if(BS.frame){ const L=[[B(TW+.08,.05,TD+.08),BS.c,0,SH-.025,0],[B(TW+.04,.03,TD+.04),BS.c,0,.16,0]]; for(const sx of [-1,1])for(const sz of [-1,1])L.push([B(.05,SH-.05,.05),BS.c,sx*(TW/2+.015),(SH-.05)/2,sz*(TD/2+.015)]); P(merge(L),vc({flatShading:false,roughness:.45,metalness:.5}),0,0,0); }
+      else { P(rbox(TW+.08,SH,TD+.08,.02),mat(BS.c),0,SH/2,0); P(merge([[B(TW*.48,SH-.14,.012),BS.c.map(v=>v*.86),-TW*.245,SH/2,-TD/2-.045],[B(TW*.48,SH-.14,.012),BS.c.map(v=>v*.86),TW*.245,SH/2,-TD/2-.045],[B(.02,.12,.02),[190,170,120],-.03,SH/2,-TD/2-.06],[B(.02,.12,.02),[190,170,120],.03,SH/2,-TD/2-.06]]),vc({flatShading:false,roughness:.6}),0,0,0); }
+      if(rimC)RL.push([B(TW+.03,.04,.03),rimC,0,SH+TH+.02,-TD/2],[B(TW+.03,.04,.03),rimC,0,SH+TH+.02,TD/2],[B(.03,.04,TD),rimC,-TW/2,SH+TH+.02,0],[B(.03,.04,TD),rimC,TW/2,SH+TH+.02,0],[B(TW+.03,.03,.03),rimC,0,SH+.015,-TD/2],[B(TW+.03,.03,.03),rimC,0,SH+.015,TD/2]);
+      P(merge(RL),vc({flatShading:false,roughness:.5}),0,0,0);
       const bar=new THREE.MeshBasicMaterial({color:0xffffff,toneMapped:false}); P(B(TW-.16,.006,.08),bar,0,SH+TH+.04,TD/2-.1,0,false);
       // the kit every tank has: a dark backing on the back glass, the filter's intake and return in one back corner, the heater and a thermometer in the other
       { const blk=[18,20,24], Cy=(r,l)=>new THREE.CylinderGeometry(r,r,l,8);
@@ -101,19 +118,34 @@ import {ROOMK} from './150a-bedroom.js';
       const food=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshStandardMaterial({color:0xa0602a,roughness:.9}),16); food.count=0; food.frustumCulled=false; food.instanceMatrix.setUsage(THREE.DynamicDrawUsage); tg.add(food);
       // the live surface: a height for every point of a 64 x 20 grid, stepped 30 times a second; its curvature is the light it focuses onto the sand
       const ftx=new THREE.DataTexture(new Uint8Array(NX*NZ*4).fill(128),NX,NZ); ftx.magFilter=ftx.minFilter=THREE.LinearFilter; ftx.needsUpdate=true; U.uF.value=ftx;
-      const T={g,tg,TW,TD,TH,SH,SW,SD,WY,sandY,U,D,water,surf,surfM,sand,bar,bub,food,ftx,leaf:T0.leaf,lid:T0.lid,chestAt:T0.chestAt,bubAt:T0.bubAt,h:new Float32Array(NX*NZ),p:new Float32Array(NX*NZ),acc:0,E:0,steps:0,
-        fish:[],sch:{},shoal:{},anch:T0.anch,bubs:[],pel:[],t:Math.random()*100,s:clean(DEF),chestT:6}; TANKS.push(T); apply(T,T.s);
+      return {TW,SW,U,D,water,surf,surfM,sand,bar,bub,food,ftx,leaf:T0.leaf,lid:T0.lid,chestAt:T0.chestAt,bubAt:T0.bubAt,anch:T0.anch,pf:{}}; };
+    cap('FISH TANK',g=>{ const tg=new THREE.Group(); tg.position.set(U0,0,V0); g.add(tg); const s=clean(DEF), TW=len(s);
+      const T={g,tg,TD,TH,SH,SD,WY,sandY,fill,len,h:new Float32Array(NX*NZ),p:new Float32Array(NX*NZ),acc:0,E:0,steps:0,fish:[],sch:{},shoal:{},bubs:[],pel:[],t:Math.random()*100,s,chestT:6}; Object.assign(T,fill(tg,TW,s)); TANKS.push(T); apply(T,T.s);
       solid(U0-TW/2-.04,V0-TD/2-.04,U0+TW/2+.04,V0+TD/2+.04,SH+TH+.06);
       FISHES.load().then(()=>{ T.ready=true; school(T); }).catch(()=>{});
     },{id:'fishtank',wire:'tank'}); });
-  const T0={};   // what a tank's builder hands itself between its parts
 
   /* ---------- the settings: water, decor, fish, light ---------- */
-  const apply=(T,s)=>{ T.s=clean(s); const W=WATER[T.s.w], L=new THREE.Color(LIGHTC[T.s.l.c]), on=T.s.l.on;
+  // a new length, stand or rim: the tank's own group built again where it stands, its fish kept, its footprint with it
+  const refill=T=>{ for(const k in T.sch)T.tg.remove(T.sch[k].im); for(const ch of [...T.tg.children]){ T.tg.remove(ch); ch.traverse(o=>{ if(o.geometry)o.geometry.dispose(); }); }
+    Object.assign(T,T.fill(T.tg,T.len(T.s),T.s)); for(const k in T.sch)T.tg.add(T.sch[k].im); T.h.fill(0); T.p.fill(0); T.bubs.length=0; T.pel.length=0;
+    for(const f of T.fish){ f.x=Math.max(-T.SW/2+.1,Math.min(T.SW/2-.1,f.x)); f.t=0; }
+    const un=T.un, A=ROOMK.api; if(un&&un.sol&&un.sol[0]){ const x=T.tg.position.x, z=T.tg.position.z; un.sol[0]=[x-T.TW/2-.04,z-T.TD/2-.04,x+T.TW/2+.04,z+T.TD/2+.04,un.sol[0][4]]; if(A&&A.setT&&A.getT&&!un.gone)A.setT(un,A.getT(un)); } };
+  // a Polyfork piece: its baked shape (moss on what has lain long: the faces that look up go green), sized to its height in the tank, on its own place on the sand
+  const pfGeo={}, pfMake=(D,k,moss)=>{ if(pfGeo[k])return pfGeo[k]; const d=D[k]; if(!d)return null; const bin=atob(d.p), q=new Int16Array(Uint8Array.from(bin,c=>c.charCodeAt(0)).buffer), cl=Uint8Array.from(atob(d.c),c=>c.charCodeAt(0)), ib=Uint8Array.from(atob(d.i),c=>c.charCodeAt(0)), n=d.n, Pp=new Float32Array(n*3), cc=new THREE.Color();
+    for(let i=0;i<n*3;i++)Pp[i]=(q[i]+32500)*d.sc+d.lo[i%3]; let g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(Pp,3)); const Cu=new Float32Array(n*3); for(let i=0;i<n*3;i+=3){ cc.setRGB(cl[i]/255,cl[i+1]/255,cl[i+2]/255,THREE.SRGBColorSpace); Cu[i]=cc.r; Cu[i+1]=cc.g; Cu[i+2]=cc.b; }
+    g.setAttribute('color',new THREE.BufferAttribute(Cu,3)); g.setIndex(new THREE.BufferAttribute(d.i32?new Uint32Array(ib.buffer):new Uint16Array(ib.buffer),1)); g=g.toNonIndexed(); g.computeVertexNormals(); g.computeBoundingBox(); const b=g.boundingBox; g.translate(-(b.min.x+b.max.x)/2,-b.min.y,-(b.min.z+b.max.z)/2); g.computeBoundingBox();
+    if(moss){ const N=g.attributes.normal, C=g.attributes.color, Y=g.attributes.position, H=g.boundingBox.max.y||1; for(let i=0;i<N.count;i++){ const m=Math.max(0,Math.min(1,(N.getY(i)-.25)*1.6))*(.55+.45*hs(i/3|0,7))*(.5+.5*Y.getY(i)/H); C.setXYZ(i,C.getX(i)*(1-m)+.05*m,C.getY(i)*(1-m)+.2*m,C.getZ(i)*(1-m)+.07*m); } }
+    return pfGeo[k]=g; };
+  const pfMat=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.85,flatShading:true});
+  const pfShow=T=>{ const want=PF.filter(p=>T.s.d.includes(p[0])); for(const k in T.pf)T.pf[k].visible=T.s.d.includes(k); if(!want.some(p=>!T.pf[p[0]]))return; const pf=T.pf;
+    PFD().then(D=>{ if(T.pf!==pf)return; for(const p of want){ const [k,,grp,h,moss]=p; if(pf[k])continue; const g=pfMake(D,k,moss); if(!g)continue; const i=PF.indexOf(p), B=g.boundingBox.max, RW=q=>q[3]>=.3?2:q[3]>=.16?1:0, row=RW(p), col=PF.filter((q,j)=>j<i&&RW(q)===row).length, nrow=PF.filter(q=>RW(q)===row).length;
+        const x=(col+.5)/nrow*(T.SW-.24)-(T.SW-.24)/2+(hs(i,41)-.5)*.06, z=[-.3,.02,.3][row]*T.SD+(hs(i,42)-.5)*.1, sc=Math.min(h/B.y,.5/(B.x*2),.36/(B.z*2)), m=new THREE.Mesh(g,pfMat); m.position.set(x,T.sandY(x,z)-.012,z); m.rotation.y=(hs(i,43)-.5)*1.2; m.scale.setScalar(sc); m.castShadow=true; m.userData.keep=1; T.tg.add(m); pf[k]=m; m.visible=T.s.d.includes(k); } }).catch(()=>{}); };
+  const apply=(T,s)=>{ const o=T.s; T.s=clean(s); if(T.fill&&o&&(o.sz!==T.s.sz||o.base!==T.s.base||o.rim!==T.s.rim))refill(T); const W=WATER[T.s.w], L=new THREE.Color(LIGHTC[T.s.l.c]), on=T.s.l.on, LB=LIGHTB[T.s.l.b].k;
     T.water.color.setRGB(...W.at); T.water.opacity=Math.min(.6,.25/W.ad)*(on?1:1.3); T.surfM.color.setHex(W.s);
-    T.sand.color.setRGB(...(T.s.d.includes('sand')?W.sand:[.14,.14,.16])); T.U.uL.value.copy(L); T.U.uK.value=on?(W.glow?1.6:1):0;
+    T.sand.color.setRGB(...(T.s.d.includes('sand')?W.sand:[.14,.14,.16])); T.U.uL.value.copy(L); T.U.uK.value=on?(W.glow?1.6:1)*LB:0;
     T.bar.color.copy(on?L:new THREE.Color(.05,.05,.06)); T.leaf.emissive.setHex(W.glow&&on?0x146a34:0);
-    for(const [k] of DECOR)if(T.D[k])T.D[k].visible=T.s.d.includes(k); if(T.ready)school(T); };
+    for(const [k] of DECOR)if(T.D[k])T.D[k].visible=T.s.d.includes(k); pfShow(T); if(T.ready)school(T); };
   // the fish: one instanced school a kind (the shared swim of 141f), those that fit the water and your sea pets from the aquarium
   const fits=(k,W)=>!!k.salt===!!W.salt;
   // each fish its own way of swimming (owner, 10 Nov 2026): its kind's habit (cruising the length, shoaling, keeping by the wood or a stone, working the sand), its own pace, depth, laziness and place
@@ -125,11 +157,12 @@ import {ROOMK} from './150a-bedroom.js';
     else if(f.b==='hover'&&R()<.85){ f.tx=cl(f.ax+(R()-.5)*.3,x0,x1); f.tz=cl(f.az+(R()-.5)*.24,z0,z1); f.ty=yy(); f.t=2+R()*5; }
     else if(f.b==='bottom'){ const d=.15+R()*.5, a=R()*6.28; f.tx=cl(f.x+Math.cos(a)*d,x0,x1); f.tz=cl(f.z+Math.sin(a)*d,z0,z1); f.ty=yb; f.t=2+R()*4; f.rest=R()<.6?1+R()*4:0; }
     else { f.t=3+R()*6; f.tx=x0+R()*(x1-x0); f.tz=z0+R()*(z1-z0); f.ty=yy(); } };
+  const TINTS={}, TINT=c=>TINTS[c||'#ffffff']||(TINTS[c||'#ffffff']=new THREE.Color(c||'#ffffff'));
   const school=T=>{ if(!FISHES.school)return; const W=WATER[T.s.w], want=[];
-    for(const k of KIND)if(fits(k,W))for(let i=0;i<(T.s.f[k.id]||0);i++)want.push({id:k.var&&FISHES.ids.includes(k.var[i%k.var.length])?k.var[i%k.var.length]:k.id,kind:k.id,b:k.b||'wander',L:k.L*(.82+hs(i,k.id.length)*.36),sp:k.sp});
+    for(const k of KIND)if(fits(k,W))for(let i=0;i<(T.s.f[k.id]||0);i++)want.push({id:k.var&&FISHES.ids.includes(k.var[i%k.var.length])?k.var[i%k.var.length]:k.id,kind:k.id,b:k.b||'wander',L:k.L*(.82+hs(i,k.id.length)*.36)*FSIZE[T.s.fz[k.id]||'m'].k,sp:k.sp,c:FTINT[T.s.fc[k.id]||'nat']});
     const g0=FISHES.len('goldfish',1)||1; for(const r of (PETS.sea?PETS.sea():[]).slice(0,24)){ const L0=FISHES.len(r.k,1); if(L0)want.push({id:r.k,kind:r.k,b:'wander',L:Math.min(.3,Math.max(.06,.1*Math.sqrt(L0/g0))),sp:.08,pet:1}); }
     const old=T.fish, out=[]; for(const w of want){ if(!T.sch[w.id]){ const im=FISHES.school(w.id,CAPS); if(!im)continue; T.tg.add(im); T.sch[w.id]={im,n:0}; }
-      const j=old.findIndex(f=>f.id===w.id); let f; if(j>=0){ f=old.splice(j,1)[0]; f.L=w.L; f.sp=w.sp; soul(T,f,w); } else { const i=out.length; f={id:w.id,L:w.L,sp:w.sp,v:w.sp*.7,x:(hs(i,21)-.5)*T.SW*.7,z:(hs(i,22)-.5)*T.SD*.5,y:T.SH+.3+hs(i,23)*(T.WY-T.SH-.45),h:hs(i,24)*6.28,tx:0,ty:0,tz:0,t:0,ph:hs(i,25)*6.28,pt:0}; f.tx=f.x; f.ty=f.y; f.tz=f.z; soul(T,f,w); }
+      const j=old.findIndex(f=>f.id===w.id); let f; if(j>=0){ f=old.splice(j,1)[0]; f.L=w.L; f.sp=w.sp; soul(T,f,w); f.c=TINT(w.c); } else { const i=out.length; f={id:w.id,L:w.L,sp:w.sp,v:w.sp*.7,x:(hs(i,21)-.5)*T.SW*.7,z:(hs(i,22)-.5)*T.SD*.5,y:T.SH+.3+hs(i,23)*(T.WY-T.SH-.45),h:hs(i,24)*6.28,tx:0,ty:0,tz:0,t:0,ph:hs(i,25)*6.28,pt:0}; f.tx=f.x; f.ty=f.y; f.tz=f.z; soul(T,f,w); f.c=TINT(w.c); }
       if(T.sch[w.id].n++<CAPS)out.push(f); }
     for(const k in T.sch)T.sch[k].n=0; T.fish=out; };
 
@@ -173,8 +206,8 @@ import {ROOMK} from './150a-bedroom.js';
       const vy=(ty-f.y)*Math.min(1,dt*.8); f.y=Math.max(yb,Math.min(yt,f.y+vy)); f.pt+=(Math.max(-.4,Math.min(.4,vy/Math.max(dt,1e-3)/Math.max(f.v,.05)))-f.pt)*Math.min(1,dt*3);
       if(f.y>yt-.01&&f.v>.03&&Math.random()<dt*8)poke(T,f.x+Math.cos(f.h)*f.L*.4,f.z-Math.sin(f.h)*f.L*.4,.0015*f.v/.1,.03+f.L*.1);
       f.ph+=dt*(3+12*f.v);
-      const S=T.sch[f.id]; if(!S||S.n>=CAPS)continue; const i=S.n++; E3.set(0,f.h,f.pt); Q.setFromEuler(E3); Mx.compose(Pv.set(f.x,f.y,f.z),Q,Sv.setScalar(f.L)); S.im.setMatrixAt(i,Mx); S.im.userData.sw.setXYZ(i,f.ph,.6+Math.min(1.4,f.v*2),S.im.userData.style); }
-    for(const k in T.sch){ const S=T.sch[k]; S.im.count=S.n; S.im.instanceMatrix.needsUpdate=true; S.im.userData.sw.needsUpdate=true; }
+      const S=T.sch[f.id]; if(!S||S.n>=CAPS)continue; const i=S.n++; E3.set(0,f.h,f.pt); Q.setFromEuler(E3); Mx.compose(Pv.set(f.x,f.y,f.z),Q,Sv.setScalar(f.L)); S.im.setMatrixAt(i,Mx); S.im.setColorAt(i,f.c||TINT()); S.im.userData.sw.setXYZ(i,f.ph,.6+Math.min(1.4,f.v*2),S.im.userData.style); }
+    for(const k in T.sch){ const S=T.sch[k]; S.im.count=S.n; S.im.instanceMatrix.needsUpdate=true; if(S.im.instanceColor)S.im.instanceColor.needsUpdate=true; S.im.userData.sw.needsUpdate=true; }
     // the surface: stepped at 30 a second (at most three steps a frame), then shaped
     T.acc=Math.min(T.acc+dt,.1); let n=0; while(T.acc>=1/30){ T.acc-=1/30; step(T); n++; } if(n)shape(T); };
 
@@ -182,27 +215,32 @@ import {ROOMK} from './150a-bedroom.js';
   const feed=T=>{ FORAGE.take('g_fishfood',1); if(FORAGE.draw)FORAGE.draw(); T.fed=30; if(SFX)SFX.play('click',{vol:.3,vary:.2});
     const cx=(Math.random()-.5)*T.SW*.5, cz=-T.SD*.15+(Math.random()-.5)*T.SD*.3; for(let i=0;i<12;i++){ const x=cx+(Math.random()-.5)*.25, z=cz+(Math.random()-.5)*.18; T.pel.push({x,y:T.WY,z,t:Math.random()*.4}); poke(T,x,z,.004,.025); }
     SAY('YOU SHAKE IN A PINCH OF FOOD. THE FISH RISE AND SNAP IT UP.','#c8e8f0'); };
-  ROOMK.wires.tank=(un,c)=>{ const T=TANKS.find(q=>q.g===un.obj); if(!T)return; T.id=un.id;
+  ROOMK.wires.tank=(un,c)=>{ const T=TANKS.find(q=>q.g===un.obj); if(!T)return; T.id=un.id; T.un=un;
     c.hit(un,()=>FORAGE.has('g_fishfood')?'FEED THE FISH':'THE FISH TANK',()=>{ if(FORAGE.has('g_fishfood'))return feed(T); TANKV.open(T); }); };
 
   /* ---------- the close look: the camera before the tank's glass, and its settings beside it ---------- */
   let V=null, P=null;
   const TANKV=window.TANKV={on:()=>!!V};
-  const css=`#tankp{position:fixed;right:14px;top:50%;transform:translateY(-50%);z-index:22;width:min(300px,92vw);max-height:90vh;overflow:auto;padding:12px 14px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13ee;border:2px solid #3a3f4e;zoom:var(--uiz,1)}
+  const css=`#tankp{position:fixed;right:14px;top:50%;transform:translateY(-50%);z-index:22;width:min(340px,92vw);max-height:90vh;overflow:auto;padding:12px 14px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13ee;border:2px solid #3a3f4e;zoom:var(--uiz,1)}
     #tankp h4{margin:10px 0 4px;color:#7d8aa0;font:inherit}#tankp button{font:inherit;color:#d8dae2;background:#1a1d27;border:1px solid #3a3f4e;padding:3px 6px;margin:2px;cursor:pointer}#tankp button.on{background:#2c4a5a!important;border-color:#7fd0ff!important;color:#fff!important}
     #tankp button:disabled{opacity:.35;cursor:default}#tankp .row{display:flex;align-items:center;justify-content:space-between}#tankp .sw,#tankp .sw.on{width:18px;height:18px;padding:0;background:var(--c)!important}#tankp .sw.on{outline:2px solid #fff}`;
-  const draw=()=>{ '@later'; if(!P||!V)return; const T=V.T, s=T.s, W=WATER[s.w], guest=ROOMK.guest&&ROOMK.guest(), dis=guest?' disabled':'', n=Object.values(s.f).reduce((a,b)=>a+b,0), food=FORAGE.has('g_fishfood');
+  let TAB='tank';
+  const draw=()=>{ '@later'; if(!P||!V)return; const T=V.T, s=T.s, W=WATER[s.w], guest=ROOMK.guest&&ROOMK.guest(), dis=guest?' disabled':'', n=Object.values(s.f).reduce((a,b)=>a+b,0), MAXF=SIZES[s.sz].f, food=FORAGE.has('g_fishfood');
+    const bt=(a,nm,on,d='')=>`<button data-a="${a}" class="${on?'on':''}"${dis||d}>${nm}</button>`, pick=(a,O,cur)=>Object.keys(O).map(k=>bt(a+':'+k,O[k].n,cur===k)).join('');
+    let h='';
+    if(TAB==='tank')h='<h4>SIZE</h4>'+Object.keys(SIZES).map(k=>bt('z:'+k,SIZES[k].n,s.sz===k,T.len({sz:k})<T.len({sz:'m'})*SIZES[k].k-.05?' disabled title="NO ROOM ALONG THIS WALL"':'')).join('')+'<h4>STANDS ON</h4>'+pick('b',BASES,s.base)+'<h4>RIM</h4>'+pick('r',RIMS,s.rim)+`<div style="color:#7d7a70;margin-top:8px">${T.TW.toFixed(1)} M LONG · HOLDS ${MAXF} FISH</div>`;
+    if(TAB==='water')h='<h4>WATER</h4>'+pick('w',WATER,s.w)+'<h4>LIGHT</h4>'+bt('l:on',s.l.on?'ON':'OFF',s.l.on)+Object.keys(LIGHTC).map(k=>`<button class="sw ${s.l.c===k?'on':''}" data-a="l:c:${k}" title="${k.toUpperCase()}" style="--c:${LIGHTC[k]}"${dis}></button>`).join('')+'<h4>BRIGHTNESS</h4>'+Object.keys(LIGHTB).map(k=>bt('l:b:'+k,LIGHTB[k].n,s.l.b===k)).join('');
+    if(TAB==='fish')h=`<h4>FISH (${n} OF ${MAXF})</h4>`+KIND.map(k=>{ const ok=fits(k,W), c=s.f[k.id]||0; return `<div class="row" style="opacity:${ok?1:.45}"><span>${k.n} <i style="color:#7d7a70">${k.salt?'SALT':'FRESH'}</i></span><span><button data-a="f:${k.id}:-1"${dis||(!c?' disabled':'')}>-</button> ${c} <button data-a="f:${k.id}:1"${dis||(!ok||n>=MAXF||c>=8?' disabled':'')}>+</button></span></div>`+
+        (c?`<div class="row" style="margin:0 0 6px 8px"><span>${Object.keys(FSIZE).map(z=>bt('fz:'+k.id+':'+z,FSIZE[z].n,(s.fz[k.id]||'m')===z)).join('')}</span><span>${Object.keys(FTINT).map(t=>`<button class="sw ${(s.fc[k.id]||'nat')===t?'on':''}" data-a="fc:${k.id}:${t}" title="${t==='nat'?'ITS OWN COLOURS':t.toUpperCase()}" style="--c:${FTINT[t]};width:13px;height:13px"${dis}></button>`).join('')}</span></div>`:''); }).join('')+
+      (PETS.sea&&PETS.sea().length?`<div style="color:#7d7a70;margin-top:4px">AND YOUR ${PETS.sea().length} FROM THE AQUARIUM</div>`:'');
+    if(TAB==='decor')h='<h4>THE BED</h4>'+DECOR.map(([k,nm])=>bt('d:'+k,nm,s.d.includes(k))).join('')+[...new Set(PF.map(p=>p[2]))].map(G=>`<h4>${G==='SUNK'?'SUNKEN THINGS':G}</h4>`+PF.filter(p=>p[2]===G).map(p=>bt('d:'+p[0],p[1],s.d.includes(p[0]))).join('')).join('');
     P.innerHTML=`<div class="row"><b style="color:#f2c14e">THE FISH TANK</b><button data-a="x">X</button></div>`+(guest?'<div style="color:#c8a090;margin-top:6px">SOMEONE ELSE\'S TANK: YOU CAN LOOK.</div>':'')+
-      '<h4>WATER</h4>'+Object.keys(WATER).map(k=>`<button data-a="w:${k}" class="${s.w===k?'on':''}"${dis}>${WATER[k].n}</button>`).join('')+
-      '<h4>DECOR</h4>'+DECOR.map(([k,nm])=>`<button data-a="d:${k}" class="${s.d.includes(k)?'on':''}"${dis}>${nm}</button>`).join('')+
-      `<h4>FISH (${n} OF ${MAXF})</h4>`+KIND.map(k=>{ const ok=fits(k,W), c=s.f[k.id]||0; return `<div class="row" style="opacity:${ok?1:.45}"><span>${k.n} <i style="color:#7d7a70">${k.salt?'SALT':'FRESH'}</i></span><span><button data-a="f:${k.id}:-1"${dis||(!c?' disabled':'')}>-</button> ${c} <button data-a="f:${k.id}:1"${dis||(!ok||n>=MAXF||c>=8?' disabled':'')}>+</button></span></div>`; }).join('')+
-      (PETS.sea&&PETS.sea().length?`<div style="color:#7d7a70;margin-top:4px">AND YOUR ${PETS.sea().length} FROM THE AQUARIUM</div>`:'')+
-      '<h4>LIGHT</h4>'+`<button data-a="l:on" class="${s.l.on?'on':''}"${dis}>${s.l.on?'ON':'OFF'}</button>`+Object.keys(LIGHTC).map(k=>`<button class="sw ${s.l.c===k?'on':''}" data-a="l:c:${k}" title="${k.toUpperCase()}" style="--c:${LIGHTC[k]}"${dis}></button>`).join('')+
+      '<div style="margin-top:8px">'+[['tank','TANK'],['water','WATER & LIGHT'],['fish','FISH'],['decor','DECOR']].map(([k,nm])=>`<button data-a="tab:${k}" class="${TAB===k?'on':''}">${nm}</button>`).join('')+'</div>'+h+
       (food&&!guest?'<div style="margin-top:10px"><button data-a="feed">FEED THE FISH</button></div>':'')+'<div style="color:#7d7a70;margin-top:10px">ESC TO STEP BACK</div>'; };
   const act=a=>{ '@later'; if(!V)return; const T=V.T, s=JSON.parse(JSON.stringify(T.s)), [k,x,y]=a.split(':');
-    if(k==='x')return TANKV.close(); if(k==='feed'){ if(FORAGE.has('g_fishfood'))feed(T); return draw(); } if(ROOMK.guest&&ROOMK.guest())return;
-    if(k==='w')s.w=x; if(k==='d')s.d=s.d.includes(x)?s.d.filter(q=>q!==x):s.d.concat(x); if(k==='f'){ const n=Object.values(s.f).reduce((a,b)=>a+b,0), d=+y; if(d<0||n<MAXF)s.f[x]=Math.max(0,Math.min(8,(s.f[x]||0)+d)); if(!s.f[x])delete s.f[x]; }
-    if(k==='l'){ if(x==='on')s.l.on=s.l.on?0:1; else s.l.c=y; }
+    if(k==='x')return TANKV.close(); if(k==='tab'){ TAB=x; return draw(); } if(k==='feed'){ if(FORAGE.has('g_fishfood'))feed(T); return draw(); } if(ROOMK.guest&&ROOMK.guest())return;
+    if(k==='w')s.w=x; if(k==='d')s.d=s.d.includes(x)?s.d.filter(q=>q!==x):s.d.concat(x); if(k==='f'){ const n=Object.values(s.f).reduce((a,b)=>a+b,0), d=+y; if(d<0||n<SIZES[s.sz].f)s.f[x]=Math.max(0,Math.min(8,(s.f[x]||0)+d)); if(!s.f[x])delete s.f[x]; }
+    if(k==='l'){ if(x==='on')s.l.on=s.l.on?0:1; else if(x==='b')s.l.b=y; else s.l.c=y; } if(k==='z')s.sz=x; if(k==='b')s.base=x; if(k==='r')s.rim=x; if(k==='fz')s.fz[x]=y; if(k==='fc')s.fc[x]=y;
     apply(T,s); if(SFX)SFX.play('click',{vol:.25,vary:.2}); if(ROOMK.save)ROOMK.save(); draw(); };
   TANKV.open=T=>{ '@later'; if(V)TANKV.close(); if(!P){ const st=document.createElement('style'); st.textContent=css; document.head.appendChild(st); P=document.createElement('div'); P.id='tankp'; document.body.appendChild(P);
       P.addEventListener('click',e=>{ const b=e.target.closest('button'); if(b&&!b.disabled)act(b.dataset.a); }); for(const ev of ['pointerdown','dblclick','wheel'])P.addEventListener(ev,e=>e.stopPropagation()); }

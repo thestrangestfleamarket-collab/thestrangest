@@ -18,19 +18,21 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(c.steps > a.steps && c.wave > 0 && (c.sy !== a.sy || c.wave !== a.wave), 'the water surface moves (' + a.steps + ' -> ' + c.steps + ' steps, middle height ' + a.sy + ' -> ' + c.sy + ', highest wave ' + a.wave + ' -> ' + c.wave + ' mm)');
     ok(a.f0 && c.f0 && Math.hypot(c.f0[1] - a.f0[1], c.f0[3] - a.f0[3]) > .01, 'the koi swims: ' + JSON.stringify([a.f0, c.f0]));
     await pg.evaluate(() => { while (FORAGE.has('g_fishfood')) FORAGE.take('g_fishfood', 1); __dbg.UI.things.find(t => /FISH TANK|FEED THE FISH/.test(t.name)).act(); });
-    let v = false; for (let i = 0; i < 30 && !v; i++) { await pg.waitForTimeout(500); v = await pg.evaluate(() => TANKV.on() && !!document.querySelector('#tankp:not([hidden]) button[data-a="w:salt"]')); }
+    let v = false; for (let i = 0; i < 30 && !v; i++) { await pg.waitForTimeout(500); v = await pg.evaluate(() => TANKV.on() && !!document.querySelector('#tankp:not([hidden]) button[data-a="tab:water"]')); }
     ok(v, 'a double-click without fish food opens the close look and its settings');
     if (v) {
       await pg.waitForTimeout(3000); const cam = await pg.evaluate(() => ({ hold: __dbg.UI.holdCam, persp: __dbg.UI.persp }));
       ok(cam.hold === 'tank' && cam.persp, 'the camera comes close on the tank: ' + JSON.stringify(cam));
       if (out) await pg.screenshot({ path: path.join(out, 'tank-fresh.png'), timeout: 180000 });
-      for (const a of ['w:salt', 'f:pfclown:1', 'd:castle', 'l:c:blue']) await pg.$eval('#tankp button[data-a="' + a + '"]', b => b.click());
+      for (const [t, a] of [['water', 'w:salt'], ['fish', 'f:pfclown:1'], ['decor', 'd:castle'], ['water', 'l:c:blue']]) { await pg.$eval('#tankp button[data-a="tab:' + t + '"]', b => b.click()); await pg.$eval('#tankp button[data-a="' + a + '"]', b => b.click()); }
       let s = null; for (let i = 0; i < 30; i++) { await pg.waitForTimeout(1000); s = await T(); if (s.kinds.includes('pfclown')) break; }
       ok(s.set.w === 'salt' && s.set.f.pfclown === 1 && s.set.d.includes('castle') && s.set.l.c === 'blue', 'the settings change the tank: ' + JSON.stringify(s.set));
       ok(s.kinds.includes('pfclown') && !s.kinds.includes('pfkoi'), 'in salt water the clownfish swims and the koi (fresh) waits: ' + JSON.stringify(s.kinds));
       await pg.waitForTimeout(2000); const L = await pg.evaluate(() => { const H = ROOMED.HOME.layout; return H && H.tanks; });
       ok(L && L.fishtank && L.fishtank.w === 'salt' && L.fishtank.f.pfclown === 1, 'and they are in the saved layout: ' + JSON.stringify(L));
       if (out) { await pg.waitForTimeout(3000); await pg.screenshot({ path: path.join(out, 'tank-salt.png'), timeout: 180000 }); }
+      { const z=await pg.evaluate(async()=>{ const a=TANKDBG()[0].size[0]; for(const k of ['z:l','b:oak','r:steel','d:staghorn','d:skull','d:hoard','fz:pfclown:l','fc:pfclown:blue','l:b:high'])TANKV.act(k); for(let i=0;i<40&&TANKDBG()[0].pf.length<3;i++)await new Promise(r=>setTimeout(r,250)); const t=TANKDBG()[0]; return {a,b:t.size[0],set:t.set,pf:t.pf,clips:ROOMED.clips()}; });
+        ok(z.b>z.a*1.3&&z.set.sz==='l'&&z.set.base==='oak'&&z.set.rim==='steel'&&z.set.fz.pfclown==='l'&&z.set.fc.pfclown==='blue'&&z.set.l.b==='high'&&['staghorn','skull','hoard'].every(k=>z.pf.includes(k)), 'its size, stand, rim, a fish\'s size and colour, the light\'s strength and Polyfork\'s coral, mossy skull and chest are settings too (owner, 12 Nov 2026): '+JSON.stringify([z.a,z.b,z.pf])); }
       await pg.keyboard.press('Escape'); await pg.waitForTimeout(500);
       ok(await pg.evaluate(() => !TANKV.on() && !__dbg.UI.holdCam), 'Esc steps back');
     }

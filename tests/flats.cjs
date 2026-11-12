@@ -25,5 +25,7 @@ const {chromium}=require('playwright'), path=require('path');
   ok(d.tier===2&&d.mine==='house3'&&d.Lx>11&&!d.away.length&&!d.clips.length,'off the website the page keeps the big flat, every piece in it ('+d.Lx+' by '+d.Ly+' m)');
   const f=await pg.evaluate(()=>{ const M=__dbg.MAPK.MODS.apts, T=__dbg.UI.things.find(t=>/^No\. 2/.test(t.name)); M.flatState=()=>({tier:0,top:0}); T.act(); return {t:M.tierOf(),r:M.moveTo(1),txt:document.getElementById('callbox').textContent}; });
   ok(f.t===2&&f.r==='free'&&/EVERYONE HAS THE BIG ROOM/.test(f.txt),'everyone has the big room for now, whatever size they had; the smaller houses let nothing (12 Nov 2026)');
+  const hb=await pg.evaluate(async()=>{ const M=__dbg.MAPK.MODS.apts, B=document.getElementById('homebtn'), at=B.hidden; M.inReal=false; await new Promise(r=>setTimeout(r,1500)); const out=B.hidden; M.inReal=true; return {at,out}; });
+  ok(hb.at===true&&hb.out===false,'HOME shows anywhere but in your own flat (owner, 12 Nov 2026)');
   ok(!errs.length,'no page errors'+(errs.length?': '+errs.slice(0,3).join(' | '):''));
   await b.close(); console.log(fails.length?fails.length+' failed':'flats: all good'); process.exit(fails.length?1:0); })();

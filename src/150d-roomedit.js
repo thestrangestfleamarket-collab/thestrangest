@@ -78,7 +78,7 @@ import {ROOMK} from './150a-bedroom.js';
   const A_=()=>ROOMK.api, inHome=()=>!!(MODS.apts&&MODS.apts.inReal&&ROOMK.api);
   const css=document.createElement('style'); css.textContent=`
   #roomed{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));top:12px;width:300px;max-height:calc(100vh - 210px);display:flex;flex-direction:column;background:color-mix(in srgb,var(--bg) 97%,transparent);border:2px solid var(--line);font:12px var(--pixel);color:var(--fg);z-index:20}
-  #roomed[hidden],#roomedbtn[hidden],#roombuy[hidden],#roomsay[hidden]{display:none} #roomed h2{font:12px var(--pixel);color:var(--key);margin:0;padding:10px 12px;border-bottom:2px solid var(--line);flex-shrink:0}
+  #roomed[hidden],#roomedbtn[hidden],#homebtn[hidden],#roombuy[hidden],#roomsay[hidden]{display:none} #roomed h2{font:12px var(--pixel);color:var(--key);margin:0;padding:10px 12px;border-bottom:2px solid var(--line);flex-shrink:0}
   #roomed .tabs,#roombuy .tabs{display:flex;border-bottom:2px solid var(--line)} #roomed .tabs{flex-shrink:0} #roomed .tabs button,#roombuy .tabs button{flex:1;font:inherit;color:var(--dim);background:none;border:0;padding:8px 2px;cursor:pointer} #roomed .tabs button.on,#roombuy .tabs button.on{color:var(--key);background:#161924}
   #roomed .pane{padding:8px 12px;overflow:auto;flex:1 1 auto;min-height:0} #roomed .row{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin:6px 0} #roomed .lab{color:var(--dim);margin:10px 0 4px}
   #roomed .btn,#roombuy .btn{font:inherit;color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;padding:4px 7px;cursor:pointer} #roomed .btn:hover,#roombuy .btn:hover{border-color:var(--key)} #roomed .btn.on{border-color:var(--key);color:var(--key)}
@@ -93,12 +93,14 @@ import {ROOMK} from './150a-bedroom.js';
   #roombuy .tile img,#roombuy .tile i{display:block;width:100%;aspect-ratio:1/1;height:auto;background:#eceae4;object-fit:contain}
   #roombuy .tile span{display:block;font-size:10px;font-weight:bold;line-height:1.25;margin:5px 3px 0;min-height:13px} #roombuy .tile small{display:block;font-size:9px;color:#8f95a3;margin:2px 3px 0;min-height:11px} #roombuy .tile em{font-style:normal;color:var(--key);font-size:10px;margin:2px 3px 0}
   #roomsay{position:fixed;left:50%;transform:translateX(-50%);top:calc(52px + env(safe-area-inset-top,0px));font:12px var(--pixel);color:#ffd2c8;background:var(--panel);border:2px solid #7a3a30;padding:6px 12px;z-index:21;pointer-events:none}
-  #roomedbtn{position:fixed;left:50%;transform:translateX(-50%);top:calc(12px + env(safe-area-inset-top,0px));font:12px var(--pixel);color:var(--key);background:var(--panel);border:2px solid var(--line);padding:6px 12px;cursor:pointer;z-index:19}`;
+  #roomedbtn,#homebtn{position:fixed;left:50%;transform:translateX(-50%);top:calc(12px + env(safe-area-inset-top,0px));font:12px var(--pixel);color:var(--key);background:var(--panel);border:2px solid var(--line);padding:6px 12px;cursor:pointer;z-index:19}`;
   document.head.appendChild(css);
   const P=document.createElement('div'); P.id='roomed'; P.hidden=true; document.body.appendChild(P);
   const BUY=document.createElement('div'); BUY.id='roombuy'; BUY.hidden=true; document.body.appendChild(BUY);
   const SAYEL=document.createElement('div'); SAYEL.id='roomsay'; SAYEL.hidden=true; document.body.appendChild(SAYEL);
   const B=document.createElement('button'); B.id='roomedbtn'; B.className='mlb'; B.hidden=true; B.textContent='DECORATE · T'; B.onclick=()=>ED.toggle(); document.body.appendChild(B);
+  // HOME: anywhere but in your own apartment, back to it (owner, 12 Nov 2026)
+  const HB=document.createElement('button'); HB.id='homebtn'; HB.className='mlb'; HB.hidden=true; HB.textContent='HOME'; HB.title='Back to your apartment'; HB.onclick=()=>{ HB.blur(); if(UI.goPlace)UI.goPlace('YOUR APARTMENT'); }; document.body.appendChild(HB);
   let tab='things', dept='seating', helper=null, hover=null, saveT=0, sayT=0;
   const say=m=>{ SAYEL.textContent=m; SAYEL.hidden=false; clearTimeout(sayT); sayT=setTimeout(()=>{ SAYEL.hidden=true; },2200); ED.said=m; };
   const dirty=()=>{ clearTimeout(saveT); saveT=setTimeout(()=>{ const A=A_(); if(A)HOME.save(snapshot(A)); },1200); };
@@ -317,7 +319,7 @@ import {ROOMK} from './150a-bedroom.js';
     else used=false; if(used){ e.stopImmediatePropagation(); e.preventDefault(); } },true);
 
   // the button shows in your apartment; the editor closes if you leave it; the buy bar's pictures a couple a frame
-  SYS.add('places',()=>{ const h=inHome(); if(B.hidden===h)B.hidden=!h; if(ED.on&&!h)ED.toggle(); if(!ED.on&&!SP.hidden)SP.hidden=true; if(helper&&ED.sel){ if(ED.sel.gone||!ED.sel.obj.parent)select(null); else helper.update(); }
+  SYS.add('places',()=>{ const h=inHome(), mine=h&&!HOME.guest; if(B.hidden===h)B.hidden=!h; if(HB.hidden!==mine)HB.hidden=mine; HB.style.top=h?'calc(48px + env(safe-area-inset-top,0px))':''; if(ED.on&&!h)ED.toggle(); if(!ED.on&&!SP.hidden)SP.hidden=true; if(helper&&ED.sel){ if(ED.sel.gone||!ED.sel.obj.parent)select(null); else helper.update(); }
     if(hover&&(hover.un.gone||!hover.un.obj.parent))setHover(null);
     if(ED.on&&PQ.length)for(let i=0;i<2&&PQ.length;i++){ const k=PQ.shift(); if(!PICS[k])try{ drawPic(k); }catch(err){ PICS[k]=''; } } },'150d-roomedit');
   /* ---------- putting something on a surface: double-click a table, a shelf, a counter; choose from your pack (or buy a small thing); a top-down view of it, click where it goes ---------- */

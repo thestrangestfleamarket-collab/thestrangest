@@ -20,7 +20,6 @@ const ROOMS={lazy:{},off:{},grounds:[]},
   vwV=(x,y)=>[(x-y)*Math.SQRT1_2,-(x+y)*Math.SQRT1_2],
   wvV=(u,v)=>[(u-v)*Math.SQRT1_2,-(u+v)*Math.SQRT1_2],
   CLOCK={},
-  NEWS={},
   DRESS={},
   PONDS={wet:()=>false,strips:[]},
   LITE={},
@@ -92,7 +91,6 @@ const ROOMS={lazy:{},off:{},grounds:[]},
   POND={},
   SND={},
   LOOKS={},
-  GAMEED={},
   WE={},
   SIGNS={list:[]},
   TEXT={def:{},cur:{},on:[]},
@@ -100,11 +98,9 @@ const ROOMS={lazy:{},off:{},grounds:[]},
   MAPED={},
   SNDED={},
   EDITORS=window.EDITORS={},
-  LIGHTED={},
   ITEMS=window.ITEMS={defs:{}},
   ITEMED={},
   CHARS={},
-  CHARED={},
   SHOPS={},
   LAND={},
   BUGS={},
@@ -128,8 +124,8 @@ const ROOMS={lazy:{},off:{},grounds:[]},
 const INSTR={KINDS:{}}, FLORA={bushes:[],beds:[],tris:0,n:{}}, BIRDS={list:[]}, PAWNL=[], BATCH={items:[],tag:null}, WORTH={}, PROMPT={};
 // the archived editors and town life (owner, 5 Nov 2026) leave these calls answered by nothing
 { const no=()=>{}, nf=()=>false;
-  Object.assign(FEEL,{key:nf,ui:no},FEEL); Object.assign(GAMEED,{toggle:no},GAMEED); Object.assign(MAPED,{down:nf,move:no,up:no,toggle:no,box:()=>null},MAPED);
-  Object.assign(LAND,{down:nf,move:no,up:no},LAND); Object.assign(SNDED,{close:no,into:no},SNDED); Object.assign(RINSP,{toggle:no},RINSP);
+  Object.assign(MAPED,{down:nf,move:no,up:no,toggle:no,box:()=>null},MAPED);
+  Object.assign(LAND,{down:nf,move:no,up:no},LAND); Object.assign(SNDED,{close:no},SNDED); Object.assign(RINSP,{toggle:no},RINSP);
   Object.assign(EDITORS,{menu:no,key:no},EDITORS); Object.assign(SUMMON,{id:()=>'',here:()=>[],list:()=>[],go:no,back:no},SUMMON);
-  Object.assign(NEWS,{init:no},NEWS); Object.assign(BINS,{station:no},BINS); Object.assign(PNM,{tick:no},PNM); Object.assign(SGM,{tick:no},SGM); }
-export {AMB, ARCH, ARCHI, BAG, BATCH, BINS, BIRDS, BLAZE, BLK, BOAT, BOOKS, BROOK, BUGS, CARLAMPS, CARX, CHARP, CHARS, CINEMA, CITY, CIVIC, CLIP, CLOCK, CULL, DN, DOLL, DRESS, DRM, DRONE, ED, EQUIP, FALLS, FAR3, FARCITY, FEEL, FIGFX, FIRSTDAY, FLORA, FLOW, FORAGE, GAMEED, GHOSTS, GPH, GPUT, GTRH, GTSAMP, GUARD, GUIDE, HUD, ICE, IMK, INSPECT, INSTR, INTERIORS, INV, INVITES, ITEMED, ITEMS, keys, LAND, LEVELS, LINES, LITE, LOOK, LOOKS, MAIL, MAPED, MARKS, MOTION, MUS, NEWS, NPCS, ONLINE, PARK, PASSPORT, PAWNL, PB, PERFX, PETS, PH, PHYS, PNM, POND, PONDS, pos, PROMPT, PS2, RADIO, RAG, RIDE, RINSP, ROOMS, SCANNER, SELFSH, SFX, SGM, SHAD, SHOPS, SIGNS, SKY, SND, SNDED, SPEED, SPRAY, st, STAGE, SWIM, TABLES, TALK, TAMING, TENANTS, TEXT, TRADE, TRAINERS, TRICKS, UI, USE, VAULT, VIS, VIT, VLOOK, VR, vwV, W3, WALKS, WE, WED, WEEDS, WHERE, WIELD, WINDOWS, WORKERS, WORTH, wvV, WX, ZONES};
+  Object.assign(PNM,{tick:no},PNM); Object.assign(SGM,{tick:no},SGM); }
+export {AMB, ARCH, ARCHI, BAG, BATCH, BINS, BIRDS, BLAZE, BLK, BOAT, BOOKS, BROOK, BUGS, CARLAMPS, CARX, CHARP, CHARS, CINEMA, CITY, CIVIC, CLIP, CLOCK, CULL, DN, DOLL, DRESS, DRM, DRONE, ED, EQUIP, FALLS, FAR3, FARCITY, FEEL, FIGFX, FIRSTDAY, FLORA, FLOW, FORAGE, GHOSTS, GPH, GPUT, GTRH, GTSAMP, GUARD, GUIDE, HUD, ICE, IMK, INSPECT, INSTR, INTERIORS, INV, INVITES, ITEMED, ITEMS, keys, LAND, LEVELS, LINES, LITE, LOOK, LOOKS, MAIL, MAPED, MARKS, MOTION, MUS, NPCS, ONLINE, PARK, PASSPORT, PAWNL, PB, PERFX, PETS, PH, PHYS, PNM, POND, PONDS, pos, PROMPT, PS2, RADIO, RAG, RIDE, RINSP, ROOMS, SCANNER, SELFSH, SFX, SGM, SHAD, SHOPS, SIGNS, SKY, SND, SNDED, SPEED, SPRAY, st, STAGE, SWIM, TABLES, TALK, TAMING, TENANTS, TEXT, TRADE, TRAINERS, TRICKS, UI, USE, VAULT, VIS, VIT, VLOOK, VR, vwV, W3, WALKS, WE, WED, WEEDS, WHERE, WIELD, WINDOWS, WORKERS, WORTH, wvV, WX, ZONES};

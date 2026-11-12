@@ -2898,7 +2898,9 @@
     "f_bec",
     "f_hero",
     "f_chopped",
-    "d_coffee"
+    "d_coffee",
+    "pack_large",
+    "pack_deluxe"
    ],
    "line": "Bacon egg and cheese, salt pepper ketchup. That's the law."
   }

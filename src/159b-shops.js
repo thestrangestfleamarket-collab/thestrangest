@@ -2,6 +2,7 @@
 import {THREE} from './003-shx.js';
 import {ARCHI, BAG, CHARS, FORAGE, INV, ITEMS, LINES, NPCS, SFX, SHOPS, TEXT, UI, WORTH} from './003b-systems.js';
 import {SYS, TILE} from './006-map-pre.js';
+import {RARITY} from './013a-rarity.js';
 import {ASL} from './146zs-signs.js';
 Object.assign(SHOPS,{bound:new Set(),cur:null});
 { const T=TILE;
@@ -30,7 +31,7 @@ Object.assign(SHOPS,{bound:new Set(),cur:null});
   sp.addEventListener('keyup',e=>e.stopPropagation());
   sp.addEventListener('keydown',e=>{ if(e.key==='Escape'){ if(Q)ask(null); else SHOPS.close(); } else if(e.key==='Enter'&&Q)ask(true); e.stopPropagation(); });
   const pic=id=>{ try{ return BAG&&BAG.icon?BAG.icon(id):''; }catch(e){ return ''; } };
-  const row=(id,right,data,tag)=>`<div class="shr${tag||''}" ${data} title="${esc(name(id))}"><img alt="" draggable="false" src="${pic(id)}"><b>${esc(name(id))}</b>${right}</div>`;
+  const row=(id,right,data,tag)=>`<div class="shr${tag||''}" ${data} data-card="${esc(id)}" style="border-left:3px solid ${RARITY.col(id)}"><img alt="" draggable="false" src="${pic(id)}"><b>${esc(name(id))}</b>${right}</div>`;
   let Q=null;   // the confirmation open: its answer
   const ask=v=>{ const q=Q; Q=null; const el=sp.querySelector('.shq'); if(el)el.hidden=true; if(q)q(v); };
   const confirm=text=>new Promise(res=>{ if(Q)ask(null); const el=sp.querySelector('.shq'); if(!el)return res(null); Q=res; el.querySelector('p').textContent=text; el.hidden=false; el.querySelector('[data-q="y"]').focus(); });
@@ -46,7 +47,7 @@ Object.assign(SHOPS,{bound:new Set(),cur:null});
     sp.innerHTML=o; if(sc)sp.querySelector('.shm').scrollTop=sc; };
 
   // buying and selling, the one way (the window's double click after its confirmation, and the checks)
-  SHOPS.buy=(id,n=1,rent=false)=>{ const c=price(id)*n; if(cash()<c){ say('YOU CANNOT AFFORD THAT.'); return false; } INV.cash-=c;
+  SHOPS.buy=(id,n=1,rent=false)=>{ if(!INV.room(id))return INV.full(); const c=price(id)*n; if(cash()<c){ say('YOU CANNOT AFFORD THAT.'); return false; } INV.cash-=c;
     if(rent){ if(!(FORAGE&&FORAGE.has(id)))give(id,1); SYS.run('rent',id); } else { give(id,n); say(`YOU BUY ${n} ${name(id)} FOR $${c}.`); }   // a rental: one at a time, paid each time it is filled
     if(window.SFX)SFX.play('clunk',{vol:.5}); draw(); return true; };
   SHOPS.sell=(id,n)=>{ const F=FORAGE; n=Math.min(n,INV.items[id]||0); if(!n)return false; const v=WORTH.sell(id,n,worth(id)); if(F&&F.take)F.take(id,n); INV.cash+=v; INV.add('x',0); delete INV.items.x; say(`YOU SELL ${n} ${name(id)} FOR $${v}.`); for(const f of (F&&F.SOLD)||[])f(id,n,v); if(window.SFX)SFX.play('clunk',{vol:.5}); if(F&&F.draw)F.draw(); draw(); return true; };

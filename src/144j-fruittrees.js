@@ -71,7 +71,7 @@ const FTREES={}; window.FTREES=FTREES;
     CAT[k]={k,name,g,c,leaf,fr,fs,fl,y,m,z,p,pg:pg||k,hs,pn,pp,sp,bl,ev:fx.includes('e'),wrap:fx.includes('w'),sap:fx.includes('s'),bark:fx.includes('b'),cauli:fx.includes('c'),ban:fx.includes('n'),pip:fx.includes('p'),bird:fx.includes('B'),nut:fx.includes('N'),thin:fx.includes('t'),frost:fx.includes('f'),eat:!fx.includes('x'),
       n:Math.max(3,Math.min(18,Math.round(9/Math.sqrt(fs)))),item:'tf_'+k,sapling:'sp_'+k,pipItem:'pp_'+k}; }
   // what they give: the sapling (grafted where real ones are), a pip or nut to plant, the crop; the big pot, a bird net, burlap, a spile and bucket
-  const NM={treepot:'BIG TREE POT',birdnet:'BIRD NET',burlap:'BURLAP WRAP',spile:'SPILE AND BUCKET'}, PR={treepot:25,birdnet:6,burlap:4,spile:12}, SELLS={treepot:25,birdnet:6,burlap:4,spile:12}, BUYS={};
+  const NM={treepot:'BIG TREE POT',birdnet:'ORCHARD NETTING',burlap:'BURLAP WRAP',spile:'SPILE AND BUCKET'}, PR={treepot:25,birdnet:6,burlap:4,spile:12}, SELLS={treepot:25,birdnet:6,burlap:4,spile:12}, BUYS={};
   for(const k in CAT){ const K=CAT[k], seedy=K.c==='palm'||/^(coffee|cacao|tea|bay|cinnamon|willow|linden|cork|maple|birch|ginkgo|whiteoak|mulberry|serviceberry|elder)$/.test(k);
     NM[K.sapling]=K.name+(K.ban?' PUP':seedy?' SAPLING':' SAPLING (GRAFTED)'); NM[K.item]=K.pn; PR[K.item]=K.pp; PR[K.sapling]=K.sp; SELLS[K.sapling]=K.sp; BUYS[K.item]=K.pp;
     ITEMS.reg(K.item,{value:K.pp,stackable:true,sellable:true,weight:Math.max(.05,.15*K.fs),edible:K.eat,heals:K.eat?.05:0,icon:K.eat?'fruit':'sack',size:+(.08*K.fs).toFixed(2)});

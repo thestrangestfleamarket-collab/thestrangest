@@ -394,7 +394,7 @@ async function loadCustom(file) {
 // ───────────────────────── note pattern generator ─────────────────────────
 function generateNotes({ events, obstacles, rnd }, dk) {
   const notes = [], st = { left: { up: true, last: -9 }, right: { up: true, last: -9 } };
-  const pDiag = { easy: 0, normal: 0.25, hard: 0.4 }[dk], pAny = { easy: 0.4, normal: 0.1, hard: 0.04 }[dk];
+  const pDiag = { easy: 0, normal: 0.25, hard: 0.4 }[dk], pAny = { easy: 1, normal: 0.1, hard: 0.04 }[dk];
   const add = (t, side) => {
     const s = st[side], up = !s.up; s.up = up; s.last = t;
     let dir = up ? 'U' : 'D';
@@ -621,7 +621,7 @@ function buildMenu() {
   });
   Object.entries(DIFFS).forEach(([k, d], i) => {
     const b = new Btn(menuGroup, 0.78, 1.92 - i * 0.31, 1.05, 0.27, d.label, () => { sel.diff = k; buildMenu(); },
-      { accent: '#28d7ff', sub: k === 'easy' ? 'No fail, no walls' : k === 'normal' ? 'Walls and doubles' : 'Fast and dense' });
+      { accent: '#28d7ff', sub: k === 'easy' ? 'Cut any way, no fail' : k === 'normal' ? 'Walls and doubles' : 'Fast and dense' });
     b.selected = sel.diff === k; b.draw();
   });
   const best = store.get(sel.track.id + '_' + sel.diff);

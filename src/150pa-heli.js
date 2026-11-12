@@ -132,7 +132,7 @@ const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
   /* ---------- flying it yourself: one pilot a helicopter, as the section's server says (its car lock) ---------- */
   const FLY={x:0,y:0,z:0,hd:0,vf:0,vy:0,turn:0,pitch:0,bank:0,rot:0,down:true};
   const VMAX=30*M0, VBACK=6*M0, VUP=6*MV, TURN=1.1, TOPY=150*MV;
-  const B=LEVEL.edge&&LEVEL.edge.lines?(()=>{ const xs=[], ys=[]; for(const l of LEVEL.edge.lines){ xs.push(l[0],l[2]); ys.push(l[1],l[3]); } return {x0:X(Math.min(...xs)),x1:X(Math.max(...xs)),z0:Math.min(Z(Math.min(...ys)),Z(Math.max(...ys))),z1:Math.max(Z(Math.min(...ys)),Z(Math.max(...ys)))}; })():null;
+  const B=LEVEL.edge&&LEVEL.edge.lines?(()=>{ const xs=[], ys=[]; for(const l of LEVEL.edge.field||LEVEL.edge.lines){ xs.push(l[0],l[2]); ys.push(l[1],l[3]); } return {x0:X(Math.min(...xs)),x1:X(Math.max(...xs)),z0:Math.min(Z(Math.min(...ys)),Z(Math.max(...ys))),z1:Math.max(Z(Math.min(...ys)),Z(Math.max(...ys)))}; })():null;
   const pilotKind=H=>({name:H.name,world:true,seat:(m,o)=>o.set(0,0,0),fit:()=>.92,make:()=>new THREE.Group(),lift:.001,hop:false,knock:1e9,ease:1e3,dry:true,
     pose:()=>POSE, on:()=>{ FLY.rot=H.rot; hud(H,0); }, off:()=>hudOff(),
     step:(R,dt)=>{ const f=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0), tr=(keys.has('a')||keys.has('arrowleft')?1:0)-(keys.has('d')||keys.has('arrowright')?1:0), v=(keys.has(' ')?1:0)-(keys.has('shift')||keys.has('c')?1:0);

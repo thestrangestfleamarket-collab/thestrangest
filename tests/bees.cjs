@@ -1,5 +1,5 @@
 // THE BEES CHECK: node tests/bees.cjs dist/market.html. The Beekeeper sells, buys and teaches; a hive sets on the park lawn (three at most), fills over real time and faster among flowers;
-// taking honey needs jars, smoke calms the bees, a veil keeps stings off; the flowers decide the honey; wax makes a candle; the book keeps the honeys; an empty hive lifts back into the pack.
+// taking honey needs jars, smoke calms the bees, a veil keeps stings off; the flowers decide the honey; the book keeps the honeys; an empty hive lifts back into the pack.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=bees::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -31,10 +31,10 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     o.page = FORAGE.BOOK.find(p => p.id === 'honey').rows().filter(r => r[1]).length; o.hp = (__dbg.VIT ? __dbg.VIT.hp : 1) >= hp0; return o; });
   ok(tk.noJar && tk.last && tk.last.n >= 5 && tk.wax >= 3 && tk.after < 1 && tk.page === 1 && tk.hp, 'with jars, a smoker and a veil the full hive gives five jars and wax, and the book keeps the honey: ' + JSON.stringify(tk));
 
-  // wax makes a candle; honey heals; an empty hive lifts back into the pack
-  const lt = await pg.evaluate(() => { FORAGE.give('bee_wax', 3); FORAGE.craft('wax_candle'); const o = { candle: FORAGE.has('wax_candle') }; const id = BEES.last.id; o.edible = !!ITEMS.prop(id, 'edible');
+  // no candle crafting; honey heals; an empty hive lifts back into the pack
+  const lt = await pg.evaluate(() => { const o = { craft: typeof FORAGE.craft }; const id = BEES.last.id; o.edible = !!ITEMS.prop(id, 'edible');
     const h = BEES.S.hives[1]; BEES.lift(h); o.n = BEES.S.hives.length; o.back = FORAGE.has('bee_hive'); return o; });
-  ok(lt.candle >= 1 && lt.edible && lt.n === 2 && lt.back === 2, 'three wax make a candle, honey is food, an empty hive lifts back into the pack: ' + JSON.stringify(lt));
+  ok(lt.craft === 'undefined' && lt.edible && lt.n === 2 && lt.back === 2, 'no crafting (owner, 12 Nov 2026), honey is food, an empty hive lifts back into the pack: ' + JSON.stringify(lt));
 
   // other players: your hives go to the section; theirs stand where they set them, with their name, and come down when they lift them
   const op = await pg.evaluate(async () => { const T = __dbg.cv().TILE, p = __dbg.pos(), sent = []; ONLINE.on = true; const send = ONLINE.send; ONLINE.send = m => sent.push(m);

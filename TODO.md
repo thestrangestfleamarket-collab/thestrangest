@@ -45,6 +45,7 @@ headset · NPC voices.
 ## CI, checks and tools
 
 CI runs only on pull requests and by hand (the workflow has no push trigger), so `main` itself is checked only when someone starts it.
+- [ ] **Faces still sharing a place** (owner, 11 Nov 2026: "a permanent solutino for this issue that applies everywhere") · P2 · M · code. `PW_CHROMIUM=/opt/pw-browsers/chromium ZWHY=1 node tests/zfight.cjs dist/market.html` (40 min; or give spots `x,z`) lists them; 266 small pairs on 11 Nov (181 m² in all, from some 5,000): the park wall's queued pieces, the fish market against the bodega's ground, the street's prop kinds, shop window frames, the loop tunnels under far cars, the ring trees. Once it passes, add it to the workflow.
 - [ ] **`tools/row-lay.cjs` is stale** · P2 · S · code. Its place list is the 8 Nov layout; running it writes that over `data/world.json` (found 9 Nov). Bring it up to date or remove it.
 - [x] **Tests failing on `main`** · P2 · S · check. Done 9 Nov: the loop's station A followed the subway's move (trains stop at the platform
   again: `loop.cjs`, `riders.cjs`); `skills.cjs` checks only what isn't archived.

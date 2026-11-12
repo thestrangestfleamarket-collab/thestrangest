@@ -280,7 +280,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
       g.fillStyle='#1c1d1a'; g.fillRect(0,0,W,Math.round(H*.035)); c.tex.magFilter=THREE.LinearFilter; c.tex.needsUpdate=true;
       const me=put(new THREE.Mesh(holed(Wb,top-y0,(bS-cS)*dir,(win.y0+win.y1)/2-(y0+top)/2,BW/2-.12*tw,(win.y1-win.y0)/2),new THREE.MeshLambertMaterial({map:c.tex,emissive:0x0b0c0b})),cS,EXT,(y0+top)/2); me.receiveShadow=true; }
     put(blk(Wb+.12*tw,.22*tw,EXT+.18*tw,0x24231f),cS,(EXT+.18*tw)/2,top+.1*tw);   // the cornice
-    for(const s of [lo+.04*tw,hi-.04*tw])put(blk(.08*tw,top-y0,EXT,0x343f39),s,EXT/2,(y0+top)/2);
+    for(const s of [lo+.04*tw,hi-.04*tw])put(blk(.08*tw,top-y0,EXT+.02*tw,0x343f39),s,(EXT+.02*tw)/2,(y0+top)/2);
     { const DT=canv(64,160), g=DT.g; g.fillStyle='#5a3b27'; g.fillRect(0,0,64,160); for(let x=0;x<64;x+=16){ g.fillStyle='#3a2416'; g.fillRect(x,0,2,160); }   // the doors: planks, the old green paint coming off
       for(let i=0;i<40;i++){ g.fillStyle=R()<.7?'#46604e':'#2f2016'; g.fillRect(R()*64,R()*160,2+R()*10,2+R()*14); } DT.tex.needsUpdate=true;
       const lc=canv(32,48), lg=lc.g, gr=lg.createLinearGradient(0,0,0,48); gr.addColorStop(0,'#5a4020'); gr.addColorStop(1,'#d8a050'); lg.fillStyle=gr; lg.fillRect(0,0,32,48); lg.fillStyle='rgba(60,50,30,.5)'; for(let i=0;i<30;i++)lg.fillRect(R()*32,R()*48,2,2); lc.tex.needsUpdate=true;
@@ -303,8 +303,8 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
       GL=new THREE.MeshPhongMaterial({color:0xb8c0a8,specular:0x606050,shininess:30,transparent:true,opacity:.16,depthWrite:false});
     const bx=(w,h,d,m,x,y,z)=>{ const me=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m); me.position.set(x,y,z); me.castShadow=me.receiveShadow=true; G.add(me); return me; };
     const W=BW, cy=win.y0-Yb(0), gy=win.y1-Yb(0);
-    bx(W,H,.08*tw,IN,0,H/2,-D/2); for(const sx of [-1,1])bx(.12*tw,H,D,WALL,sx*(W/2-.06*tw),H/2,0); bx(W,.08*tw,D,WALL,0,H-.04*tw,0); bx(W,H-gy,.12*tw,WALL,0,(H+gy)/2,D/2-.06*tw);
-    bx(W,cy,.12*tw,WALL,0,cy/2,D/2-.06*tw); bx(W*1.04,.06*tw,.36*tw,WOOD,0,cy,D/2-.1*tw);
+    bx(W,H,.08*tw,IN,0,H/2,-D/2); for(const sx of [-1,1])bx(.12*tw,H,D+.02*tw,WALL,sx*(W/2-.06*tw),H/2,0); bx(W,.08*tw,D,WALL,0,H-.04*tw,0); bx(W,H-gy,.12*tw,WALL,0,(H+gy)/2,D/2-.05*tw);
+    bx(W,cy,.12*tw,WALL,0,cy/2,D/2-.05*tw);   // the booth's front stands a hair proud of the wall it is set in bx(W*1.04,.06*tw,.36*tw,WOOD,0,cy,D/2-.1*tw);
     const gl=new THREE.Mesh(new THREE.PlaneGeometry(W-.24*tw,gy-cy-.06*tw),GL); gl.position.set(0,(cy+gy)/2,D/2-.07*tw); G.add(gl);
     const wc=canv(128,128), wg=wc.g; wg.strokeStyle='rgba(110,108,96,.85)'; wg.lineWidth=1.5; for(let k=-128;k<256;k+=16){ wg.beginPath(); wg.moveTo(k,0); wg.lineTo(k+128,128); wg.stroke(); wg.beginPath(); wg.moveTo(k+128,0); wg.lineTo(k,128); wg.stroke(); }
     wc.tex.wrapS=wc.tex.wrapT=THREE.RepeatWrapping; wc.tex.generateMipmaps=true; wc.tex.minFilter=THREE.LinearMipmapLinearFilter; wc.tex.magFilter=THREE.LinearFilter; wc.tex.repeat.set((W-.24*tw)/(.9*tw),(gy-cy)/(.9*tw)); wc.tex.needsUpdate=true;

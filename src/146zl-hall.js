@@ -6,7 +6,7 @@ import {MINI} from './038zd-mini.js';
 const HALLK={}; window.HALLK=HALLK;
 { const say=(t,c)=>SAY(t,c||'#f2c14e');
   HALLK.mail=async()=>{ let n=0; try{ n=TENANTS.letters?await TENANTS.letters():0; }catch(e){ n=0; } HALLK.opened=(HALLK.opened||0)+1; if(!n)say('YOUR MAILBOX IS EMPTY.','#c8c0b0'); return n; };
-  const NOTES=[['THE ROOF IS OPEN','UP THE FIRE ESCAPE'],['QUIET AFTER ELEVEN','THE WALLS ARE THIN'],['LETTERS COME HERE','YOUR BOX IS BY YOUR DOOR'],['THE CALLBOX','RING A NEIGHBOUR TO BE LET IN'],['LOST: A KEY','ASK AT THE BODEGA'],['NO BIKES ON THE STOOP','THE SUPER MEANS IT']];
+  const NOTES=[['QUIET AFTER ELEVEN','THE WALLS ARE THIN'],['LETTERS COME HERE','YOUR BOX IS BY YOUR DOOR'],['THE CALLBOX','RING A NEIGHBOUR TO BE LET IN'],['LOST: A KEY','ASK AT THE BODEGA'],['NO BIKES ON THE STOOP','THE SUPER MEANS IT']];
   HALLK.notices=()=>MINI.look('THE NOTICE BOARD',(g,w,h)=>{ g.fillStyle='#a8844a'; g.fillRect(0,0,w,h); NOTES.forEach(([a,b],i)=>{ const x=12+(i%3)*(w-24)/3, y=14+Math.floor(i/3)*(h-28)/2, nw=(w-24)/3-10, nh=(h-28)/2-10;
     g.fillStyle=['#f4f0e0','#f0e080','#a0d0f0'][i%3]; g.fillRect(x,y,nw,nh); g.fillStyle='#c02028'; g.beginPath(); g.arc(x+nw/2,y+6,4,0,7); g.fill(); g.fillStyle='#2a2a32'; g.textAlign='center'; g.textBaseline='top'; g.font='bold 11px monospace'; g.fillText(a,x+nw/2,y+22); g.font='10px monospace'; g.fillText(b,x+nw/2,y+42); }); });
   STORE.furnish=STORE.furnish||{};

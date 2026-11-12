@@ -27,10 +27,10 @@ function resize(){ const dpr=devicePixelRatio||1, pw=innerWidth*FRAMEK*dpr, ph=i
   const c=renderer.domElement, cw=RW*S/dpr, ch=RH*S/dpr; c.style.width=cw+'px'; c.style.height=ch+'px'; c.style.imageRendering=S>1?'pixelated':'';
   c.style.left=Math.floor((innerWidth-cw)/2)+'px'; c.style.top=Math.floor((innerHeight-ch)/2)+'px'; document.documentElement.style.setProperty('--fx',c.style.left); document.documentElement.style.setProperty('--fy',c.style.top); c.style.borderRadius=FRAMEK<1?'18px':'0';
   frustum(); }
-let SCL=1; SHARED.ppu=PPU; SHARED.RESI=(r=>r>=0&&r<=2?r:1)(+(new URLSearchParams(location.search).get('res')??1));
+let SCL=1; SHARED.ppu=PPU; SHARED.RESI=+(new URLSearchParams(location.search).get('res')??0)>=2?1:0;   // ?res=2 and up is HIGH (the tests' old numbering)
 const V0=PPU*PXS, ZMAX=PPU*80;
-const RESN=['LOW','HIGH','HIGHEST'], RESLN=[240,360,480];   // HIGH the default (owner, 7 Nov 2026), HIGHEST above it (11 Nov 2026)   // with the PS2 filter on, never more than 480 lines: its 240 cells each read a 2x2 box, so 480 gives the same picture as the screen's own pixels
-const vpu=()=>V0*SHARED.ppu/PPU, art=vpu, pxS=()=>{ const L0=RESLN[SHARED.RESI], L=PS2.on&&PS2.cap?Math.min(L0||PS2.cap,PS2.cap):L0; const K=SHARED.RESK||1; return L?Math.max(1,Math.round(innerHeight*FRAMEK*(devicePixelRatio||1)/L))+(K<1?1:0):1/K; }, rppu=()=>vpu()/pxS();   // a whole number of the screen's pixels for each of the picture's, so walking never shifts which columns are doubled (6 Nov 2026: "every single pixel is changing when i walk")
+const RESN=['LOW','HIGH'], RESLN=[360,480];   // the lines the picture is drawn at, LOW the default (owner, 12 Nov 2026); an effect that shows fewer lines draws fewer   // with the PS2 filter on, never more than 480 lines: its 240 cells each read a 2x2 box, so 480 gives the same picture as the screen's own pixels
+const vpu=()=>V0*SHARED.ppu/PPU, art=vpu, pxS=()=>{ const L0=RESLN[SHARED.RESI], L=Math.min(L0,PS2.draw||PS2.cap||L0); const K=SHARED.RESK||1; return L?Math.max(1,Math.round(innerHeight*FRAMEK*(devicePixelRatio||1)/L))+(K<1?1:0):1/K; }, rppu=()=>vpu()/pxS();   // a whole number of the screen's pixels for each of the picture's, so walking never shifts which columns are doubled (6 Nov 2026: "every single pixel is changing when i walk")
 function frustum(){ const u=rppu(); let hw=RW/2/u, hh=RH/2/u; const mw=SHARED.camMaxW; if(mw>0&&2*hw>mw){ const k=mw/(2*hw); hw*=k; hh*=k; } SHARED.cam.left=-hw; SHARED.cam.right=hw; SHARED.cam.top=hh; SHARED.cam.bottom=-hh; SHARED.cam.updateProjectionMatrix(); }   // the visible width is capped at SHARED.camMaxW (set by the UI) so zooming all the way out shows the same extent at every resolution
 addEventListener('resize',resize); SHARED.resize=resize;
 

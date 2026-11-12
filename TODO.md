@@ -132,6 +132,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 
 - [x] **The play on the Wooden O's stage** (owner, 10 Nov 2026: "bring the play back on the stage") · P2 · M · code + look [taking: claude/laughing-curie-ui41fc, 10 Nov]
 - [x] **The playhouse as THE WOODEN O** (owner, 10 Nov 2026: "redesign it", picked B) · P2 · M · code + look [taking: claude/laughing-curie-ui41fc, 10 Nov]
+- [ ] **The horn's way, for his look** (owner, 12 Nov 2026) · P2 · look. Traffic honks you, a car left in the road, the Big Cat and walkers out of its way; H does the same. Not yet: pets (they follow you), traffic cars do not pull over for a player's horn.
 - [x] **The movie theatre as THE STARLITE** (owner, 11 Nov 2026: "lets replace our movie t heatre in game with this") · P2 · M · code + look [done: claude/hopeful-faraday-grs9o0, 12 Nov]
 - [ ] **The Starlite, for his look** · P2 · look. The inside from his page, the reel between films, the house lights switch, the STARLITE neon.
 - [x] **The movie theatre as THE FLEA PIT** (owner, 10 Nov 2026: "i want to redsesign the movie theater", picked B) · P2 · M · code + look. Front, dark inside, box office, seats [taking: claude/laughing-curie-ui41fc, 10 Nov]
@@ -183,6 +184,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
   - [x] **Implants** · P3 · L · pick + code. Owner: "Both" (stat boosts and new abilities), fitted at a clinic. Done 10 Nov: THE CLINIC (`src/146zkc-clinic.js`, EQUIP's implants in `src/146c-equip.js`), `tests/implants.cjs`.
   - [x] **Bar games** · P2 · XL · pick + code. Owner's picks: darts (the archived 301), pool, bowling. Bowling done 10 Nov: THE STRANGEST LANES (`src/146zkb-bowling.js`, `worker/lanes.js`, `tests/bowling.cjs`).
   - [ ] **The bowling alley, seen live** · look. The lanes, pins and hook in a real browser; the longboarder at the counter; two players on the website.
+- [ ] **Import music, walking with an instrument, LOOP and NEXT, seen live** · look. [built 12 Nov] How the violin, flute and trumpet look held standing and walking; a real Guitar Pro file and a real .mxl tried on the website.
 - [ ] **The instruments, seen and heard live** · look. The 10 Nov feel and fuller recordings (and the recorded guitar): does it still sound like MIDI?
 - [x] **The piano's 88-key panel** (owner, 11 Nov 2026) · P2 · S · code. [done 11 Nov] A display under the book, lighting with the piece (book-only).
 - [x] **The instruments, the rest** · P3 · S · code. The bar's piano and kit playable in place; a bandstand for the park guitar. [done 11 Nov]
@@ -201,6 +203,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 ## Apartments
 - [ ] **The four apartment houses on West St** (owner, 10–11 Nov 2026, `mockups/apartments.html` option B) · P2 · L · code. West St's road back from Market St for four lots; four house blocks, each its own brick (walk-up, brownstone, pre-war, cast-iron loft); the Tower goes. [taking: claude/trusting-fermat-sybm7o, 11 Nov]
 - [ ] **Four sizes of flat, buy up** (owner, 11 Nov 2026: "Start small, buy up", "Comes along") · P2 · L · code. Small, medium, big, big with a half floor; everyone starts in No. 1 and buys up; the layout comes along, what no longer fits goes to PUT AWAY. [taking: claude/trusting-fermat-sybm7o, 11 Nov]
+- [ ] **The loft: No. 4's big room with a half floor** (owner, 12 Nov 2026, a photo: "match this layout exactly") · P2 · L · code. Double height, a mezzanine with a library wall, stair, beams, brick; DECORATE changes floors, walls, colours and lights there too. [taking: claude/keen-turing-39a42r, 12 Nov]
 - [ ] **DECORATE's catalog lamps give no light; seven restored books share one name** (found in the 10 Nov 2026 audit) · P3 · S · code. The catalog's floor lamp, desk lamp, bare bulb, neon signs and lanterns are painted without their light; the books all read A RESTORED BOOK.
 - [x] **Pets** (owner, 7 Nov 2026: "use polyfork cats and dogs and birds, let people choose one as pet (choose color, style) use the base models"; done 7 Nov) · P2 · L · code. `src/146zj-pets.js`, `tools/pets-bake.py`, `tests/pets.cjs`. Waits for his look and yes.
 - [x] **Every breed, the permapet, PETS in the menu** (owner, 8 Nov 2026: "try to add every breed possible"; "player can pick their main pet when they start"; "add PETS menu in esc menu"; done 8 Nov) · P2 · L · code. `tools/breeds-bake.py`, `tools/breeds_list.py`, `src/146zj-pets.js`, `src/162g-firstday.js`, `tests/pets.cjs`. Waits for his look and yes.
@@ -225,7 +228,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [x] **Glitched slab on Market St; three road cars out** · P1 · S · fix. Done 10 Nov: the subway train no longer shows on the street; boxy sedan, 80s hatchback and yellow cab gone from the traffic.
 - [x] **Vehicle editor follow-ups** · P3 · S · look. Done 10 Nov: a resized car or kart drives at its size, the traffic's models have their parts, the horse is in (colours and size), the train shows before you go down, the horse's COAT picker.
 
-- [ ] **The vehicles, the rest of the owner's list** (12 Nov 2026) · P2 · XL · look + code. Taken by the vehicles chat. Still to build: the ghost wagon floating when parked and driven; the convertible's octopus driver (twice the size, tentacles on the wheel); the hospital on West St (Polyfork) with the hover ambulance waiting in its garage for an emergency; the rover sentient, picking up trash and mending the park; the moored fishing boat twice the size with a crew (Polyfork people, fuzzy, purple skin); the town car a limousine twice as long; the go-kart and rowboat bigger and more real.
+- [x] **The vehicles, the owner's list** (12 Nov 2026) · look + code. Done 12 Nov: every item built. Follow-ups for the owner: the hospital has no inside; the rovers are not solid; dropped things are left to their own timer.
 - [ ] **Jets follow-ups** · P3 · S · pick. Fires and ice are worked out on each player's page (where a stream lands matches, how a fire
   spreads may not); characters burn and freeze but do not run from the fire.
 - [ ] **The physics extras (#512) never tried in a real game** · P3 · M · look + check. The bar's dartboard (beside its darts 301 game:

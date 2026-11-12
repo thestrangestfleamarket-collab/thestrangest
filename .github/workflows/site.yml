@@ -96,6 +96,7 @@ jobs:
           k art     'src/059p-art|data/art|art\.cjs'
           k weplay  'src/099-|src/136b|weplayers\.cjs'
           k cars    'src/150p-cars|src/150pe-carparts|src/150o-physmore|src/146i-ride|data/cars|data/radio|cars\.cjs|radio\.cjs'
+          k honk    'src/150pf-honk|src/150pb-|src/150pe-carparts|src/150p-cars|src/111ei-bigcat|honk\.cjs'
           k heli    'src/150pa-heli|src/150o-physmore|src/146i-ride|src/068a-pfrow|data/heli|heli\.cjs'
           k water   'src/065a|src/066-|src/060a|src/089a|src/141f|water'
           k scores  'src/059g|arcade-scores'
@@ -153,6 +154,7 @@ jobs:
           k guitar  'src/111b-hands|src/106-game-play-3-guitar|src/108-game-play-3-guitar|src/146zo|src/111c-avatar|data/pfhand|data/pfguitar|guitar\.cjs'
           k firstday 'src/162g-firstday|src/102-looks|src/101-gems|firstday\.cjs'
           k instruments 'src/146zp|src/150cyb-pfitems|src/146znz|src/111b-hands|data/pfitems|tools/pfitems|instruments\.cjs'
+          k import 'src/146zpe|src/146znz|src/146zp-|src/146zob|package\.json|import\.cjs'
           k perform 'src/146znz|src/146zq|src/146zr|src/146zob|src/111da-motion|data/dances|perform\.cjs'
           k signs 'src/146znz|src/146zs|src/111d-online|src/092-lines|src/159b-shops|src/159da-talk|src/160a-quests|src/160b-trainers|data/signs|data/characters|signs\.cjs'
           k firstday 'src/162g-firstday|src/102-looks|src/141-forage|src/101-gems|worker/door\.js|firstday\.cjs'
@@ -539,6 +541,10 @@ jobs:
         timeout-minutes: 25
         if: contains(steps.f.outputs.run, ' instruments')
         run: node tests/instruments.cjs dist/market.html
+      - name: Import music (MIDI, MusicXML, ABC and a text tab read, fitted to each instrument, free to play; LOOP and NEXT)
+        timeout-minutes: 20
+        if: contains(steps.f.outputs.run, ' import')
+        run: node tests/import.cjs dist/market.html
       - name: Dance and juggling (the skills, the books' bands, a pass or a fail, the wobble, the dropped balls, learnt in three, another player's)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' perform')
@@ -614,6 +620,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' cars')
         run: node tests/cars.cjs dist/market.html
+      - name: The horn's way (a honk clears you on foot, a car left in the road, THE BIG CAT; your own horn too)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' honk')
+        run: node tests/honk.cjs
       - name: The helipad (the tour's turns, ride along, fly it yourself, land, its pilot flies it home)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' heli')

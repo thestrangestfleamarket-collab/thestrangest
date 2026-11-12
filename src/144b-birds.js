@@ -141,7 +141,7 @@ import {GARDEN} from './144a-garden.js';
   const draw=()=>{ '@later'; const b=PANEL.b; if(!b)return close(); const k=b.k, pet=b.st==='pet';
     let o=`<div style="color:#f2c14e;margin-bottom:4px">${pet?'YOUR TAME '+K[k][0]:nmOf(b)}</div><div style="color:#9b9584;margin-bottom:8px">${known(k)?`<i>${K[k][1]}</i> · SEEN ${S.seen[k]} TIME${S.seen[k]===1?'':'S'}`:'NOT IN YOUR JOURNAL YET'}</div><div>`;
     if(pet)o+=`<button ${B} data-a="free">LET IT GO</button>`; else o+=`<button ${B} data-a="pickup">PICK UP</button><button ${B} data-a="watch">WATCH</button><button ${B} data-a="tame">TAME${FORAGE.has('bseed')?' (SEED x'+FORAGE.has('bseed')+')':''}</button><button ${B} data-a="catch">CATCH${FORAGE.has('bnet')?' (CAGES x'+FORAGE.has('cage')+')':' (NO NET)'}</button>`;
-    o+=`</div><div style="color:#7d7a70;margin-top:8px">BIRDING ${FORAGE.sk('bird').toFixed(1)}${binoc()?' · BINOCULARS':''}. Seed, nets, cages, feeders, binoculars: the Nature Merchant.</div>`; const x=P.querySelector(':scope>.pX'); P.innerHTML=o; if(x)P.appendChild(x); };
+    o+=`</div><div style="color:#7d7a70;margin-top:8px">BIRDING ${FORAGE.sk('bird').toFixed(1)}${binoc()?' · BINOCULARS':''}. Seed, nets, cages, feeders, binoculars: the Forest Ranger at THE BIRD STALL.</div>`; const x=P.querySelector(':scope>.pX'); P.innerHTML=o; if(x)P.appendChild(x); };
   BIRDS.menu=b=>{ if(!BIRDS.list.includes(b))return; PANEL.b=b; P.hidden=false; draw(); };
   const gone=b=>!BIRDS.list.includes(b)||b.st==='fly';
   const log=b=>{ '@later'; const k=b.k, first=!S.seen[k]; S.seen[k]=(S.seen[k]||0)+1; save();

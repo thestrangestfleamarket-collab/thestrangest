@@ -81,9 +81,14 @@ export default {
       const id = BOOK.exec(p)[1], r = await bookText(id);
       if (!r.ok) return new Response("not found: " + r.why, { status: 404 });
       const out = new Response(r.body, { status: 200 }); out.headers.set("content-type", "text/plain; charset=utf-8"); out.headers.set("cache-control", "private, max-age=2592000"); out.headers.set("x-robots-tag", "noindex"); return out; }
+    // a film copied into our own R2 bucket (FILMS): an owner opens /film-fill/<id>/<file> once, the worker copies it from the Internet Archive in parts
+    if (request.method === "GET" && p.startsWith("/film-fill/") && FILM.test("/film" + p.slice(10))) {
+      const uid = await who(env, request, dev); if (!uid || (await owner(env, uid, dev)) !== true) return new Response("not found", { status: 404 });
+      const [, id, file] = FILM.exec("/film" + p.slice(10)); return new Response(await filmFill(env, id, file), { headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" } }); }
     if ((request.method === "GET" || request.method === "HEAD") && FILM.test(p)) {
       if (!(await inside(env, request, dev))) return new Response("not found", { status: 404 });
       const [, id, file] = FILM.exec(p), h = new Headers(), rg = request.headers.get("range"); if (rg) h.set("range", rg);
+      const kept = await filmR2(env, id + "/" + file, request); if (kept) return kept;
       let r = null; try { r = await fetch("https://archive.org/download/" + id + "/" + file, { method: request.method, headers: h }); } catch (e) {}
       if (!r || !(r.ok || r.status === 206)) return new Response("not found", { status: 404 });
       const out = new Response(r.body, { status: r.status }); for (const k of ["content-type", "content-length", "content-range", "accept-ranges"]) { const v = r.headers.get(k); if (v) out.headers.set(k, v); }
@@ -195,6 +200,31 @@ async function bookText(id) {
     "https://mirror.cs.odu.edu/gutenberg/" + d + "/" + id + "-0.txt", "https://mirror.cs.odu.edu/gutenberg/" + d + "/" + id + ".txt"]) {
     try { const r = await fetch(u, { cf: { cacheTtl: 2592000, cacheEverything: true } }); if (r.ok) return { ok: true, body: r.body }; why.push(new URL(u).host + " " + r.status); } catch (e) { why.push(new URL(u).host + " failed"); } }
   return { ok: false, why: why.join(", ") };
+}
+// the films kept in R2: served with ranges (a video seeks); null when there is no bucket or no copy, and the Internet Archive serves it
+async function filmR2(env, key, request) {
+  if (!env.FILMS) return null;
+  let o = null; try { o = request.method === "HEAD" ? await env.FILMS.head(key) : await env.FILMS.get(key, { range: request.headers }); } catch (e) { return null; }
+  if (!o) return null;
+  const hd = new Headers(), size = o.size, rg = o.range && request.headers.get("range") ? o.range : null;
+  hd.set("content-type", "video/mp4"); hd.set("accept-ranges", "bytes"); hd.set("etag", o.httpEtag); hd.set("cache-control", "private, max-age=86400"); hd.set("x-robots-tag", "noindex");
+  if (rg) { const a = rg.offset != null ? rg.offset : size - rg.suffix, n = rg.length != null ? rg.length : size - a; hd.set("content-range", "bytes " + a + "-" + (a + n - 1) + "/" + size); hd.set("content-length", String(n)); }
+  else hd.set("content-length", String(size));
+  return new Response(request.method === "HEAD" ? null : o.body, { status: rg ? 206 : 200, headers: hd });
+}
+async function filmFill(env, id, file) {
+  if (!env.FILMS) return "no FILMS bucket on the worker (wrangler.jsonc r2_buckets)";
+  const key = id + "/" + file, have = await env.FILMS.head(key); if (have) return "already kept: " + key + " (" + have.size + " bytes)";
+  const src = "https://archive.org/download/" + id + "/" + file, hr = await fetch(src, { method: "HEAD", redirect: "follow" }), size = +hr.headers.get("content-length");
+  if (!hr.ok || !(size > 0)) return "the Internet Archive has no " + key + " (" + hr.status + ")";
+  const PART = 32 * 1024 * 1024, up = await env.FILMS.createMultipartUpload(key, { httpMetadata: { contentType: "video/mp4" } }), parts = [];
+  try {
+    for (let a = 0, n = 1; a < size; a += PART, n++) {
+      const b = Math.min(size, a + PART) - 1, r = await fetch(src, { headers: { range: "bytes=" + a + "-" + b }, redirect: "follow" });
+      if (r.status !== 206) throw new Error("part " + n + ": " + r.status);
+      parts.push(await up.uploadPart(n, await r.arrayBuffer())); }
+    await up.complete(parts); return "kept: " + key + " (" + size + " bytes, " + parts.length + " parts)";
+  } catch (e) { try { await up.abort(); } catch (x) {} return "could not copy " + key + ": " + e.message; }
 }
 const inside = async (env, request, dev) => !!(await who(env, request, dev));
 const forget = id => { for (const [k, v] of passed) if (v.id === id) passed.delete(k); };

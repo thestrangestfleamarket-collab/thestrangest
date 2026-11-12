@@ -164,7 +164,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     if(CUT)CUT.uniforms.uOn.value=0; if(PS2.keepAlpha)PS2.keepAlpha(false);
     if(vFail||!snd.on){ soundBtn.textContent=vFail?vFail.toUpperCase():'🔇 tap for sound'; Object.assign(soundBtn.style,{display:'block',left:W/2+'px',top:(H-16)+'px'}); } else soundBtn.style.display='none'; };
   const buildHole=m=>{ '@later'; if(holeM)return; const fm=m.fm; fm.updateMatrixWorld(); const w=fm.geometry.parameters.width/2, h=fm.geometry.parameters.height/2, N=new THREE.Vector3(0,0,1).transformDirection(fm.matrixWorld);
-    holeM=new THREE.Mesh(new THREE.PlaneGeometry(1,1),HOLE);
+    holeM=new THREE.Mesh(new THREE.PlaneGeometry(1,1),HOLE); holeM.renderOrder=2;
     lgt=new THREE.PointLight(0xffffff,0,w*7,1.2); lgt.userData.in=()=>CINEMA.on; lgt.position.setFromMatrixPosition(fm.matrixWorld).addScaledVector(N,w*.9); lgt.position.y-=h*.3; LITE.recs.push(lgt); holeM.quaternion.copy(fm.quaternion); holeM.position.setFromMatrixPosition(fm.matrixWorld).addScaledVector(N,.02); holeM.visible=false; holeM.u={w:w*2,h:h*2}; scene.add(holeM);
     const hb=new THREE.Mesh(new THREE.BoxGeometry(w*2,h*2,.3*TILE),new THREE.MeshBasicMaterial({visible:false})); hb.quaternion.copy(fm.quaternion); hb.position.copy(holeM.position); scene.add(hb);
     UI.thing({name:'THE SCREEN',ghost:1,obj:hb,reach:40*TILE,near:40*TILE,tall:h*2,act:()=>openMenu()}); };
@@ -222,7 +222,7 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
       if(id)fetch('https://www.youtube.com/oembed?format=json&url=https://youtu.be/'+id).then(r=>r.ok?r.json():null).then(j=>{ if(j&&j.title){ CINEMA.ytTitle=j.title; sign(); } }).catch(()=>{}); }
     sign(); };
 
-  // the front, THE FLEA PIT (owner, 10 Nov 2026): a hand-lettered marquee over the doors (the film's title unless an admin wrote its lines), a pink FLEA PIT neon with a dead letter, a crooked poster case
+  // the front (owner, 10 Nov 2026; STARLITE since 11 Nov): a hand-lettered marquee over the doors (the film's title unless an admin wrote its lines), a pink STARLITE neon with a dead letter, a crooked poster case
   let canopy=null, post=null, box_o=null, neon=null; const ovr={text:null,bri:null,col:null};
   const canv=(w,h)=>{ const cv=document.createElement('canvas'); cv.width=w; cv.height=h; const tex=new THREE.CanvasTexture(cv); tex.magFilter=THREE.NearestFilter; tex.minFilter=THREE.LinearFilter; tex.generateMipmaps=false; tex.colorSpace=THREE.SRGBColorSpace; return {cv,g:cv.getContext('2d'),tex}; };
   const FACE='"Arial Narrow","Helvetica Neue",Arial,sans-serif';
@@ -322,10 +322,10 @@ import {FADE, SOL, STORE, SYS, TILE} from './006-map-pre.js';
     bx(.03*tw,.3*tw,.03*tw,new THREE.MeshLambertMaterial({color:0x222222}),0,H-.2*tw,0); const bulb=new THREE.Mesh(new THREE.SphereGeometry(.07*tw,8,6),new THREE.MeshBasicMaterial({color:0xffe0a0,toneMapped:false})); bulb.position.set(0,H-.4*tw,0); G.add(bulb);
     G.updateMatrixWorld(); const lamp=new THREE.PointLight(0xffc88a,4,3*tw,1.6); lamp.position.set(0,H*.8,0).applyMatrix4(G.matrixWorld); LITE.recs.push(lamp);
     G.traverse(o=>{ o.userData.seenOut=true; }); return {G,sc,key:'',x:kc.x,z:kc.z,ox,oz}; };
-  // the neon on top of the marquee: FLEA PIT in pink tubes, its I gone dark (it catches now and then)
-  const neonDraw=(c,on)=>{ '@later'; const g=c.g, W=c.cv.width, H=c.cv.height, T='FLEA PIT'; g.clearRect(0,0,W,H); g.font='900 '+Math.round(H*.74)+'px '+HAND; g.textBaseline='middle'; g.lineJoin='round';
+  // the neon on top of the marquee: STARLITE in pink tubes, its I gone dark (it catches now and then)
+  const neonDraw=(c,on)=>{ '@later'; const g=c.g, W=c.cv.width, H=c.cv.height, T='STARLITE'; g.clearRect(0,0,W,H); g.font='900 '+Math.round(H*.74)+'px '+HAND; g.textBaseline='middle'; g.lineJoin='round';
     const w=g.measureText(T).width, sc=Math.min(1,(W-60)/w); g.save(); g.translate(W/2,H/2+4); g.scale(sc,1); let x=-w/2;
-    for(let i=0;i<T.length;i++){ const ch=T[i], cw=g.measureText(ch).width, dead=i===6&&!on; g.textAlign='center';
+    for(let i=0;i<T.length;i++){ const ch=T[i], cw=g.measureText(ch).width, dead=i===5&&!on; g.textAlign='center';
       if(ch!==' '){ if(!dead){ g.shadowColor='#ff3c7c'; g.shadowBlur=26; g.strokeStyle='#ff4f8a'; g.lineWidth=13; g.strokeText(ch,x+cw/2,0); g.shadowBlur=8; g.strokeStyle='#ffd0e0'; g.lineWidth=4; g.strokeText(ch,x+cw/2,0); }
         else { g.shadowBlur=0; g.strokeStyle='#5a2a3c'; g.lineWidth=11; g.strokeText(ch,x+cw/2,0); g.strokeStyle='#7a4a5a'; g.lineWidth=3; g.strokeText(ch,x+cw/2,0); } }
       x+=cw; } g.restore(); c.tex.needsUpdate=true; };

@@ -89,8 +89,9 @@ window.MUSICIN=MUSICIN;
       const tracks=S.tracks.map(t=>({name:t.name||'',notes:[]})); for(const [tr,s,l,key] of N)if(tracks[tr]){ const t=sec(s); tracks[tr].notes.push({t,m:key,d:sec(s+l)-t}); }
       return {name:S.title||'',by:S.music||S.artist||'',tracks:tracks.filter(t=>t.notes.length)}; };
     // a text tab: blocks of six lines, the top one the first string; each column a step of time, a bar line none
-    const tab=(text,step)=>{ const rows=text.split(/\r?\n/).map(l=>{ const m=l.match(/^\s*[A-Ga-g]?[#b]?\s*[|:]?([-0-9hpbrsxHPBRSX\/\\~^()<>*.=|: ]{8,})\s*$/); return m&&m[1].includes('-')?m[1]:null; }), notes=[]; let t0=0;
-      for(let i=0;i+5<rows.length;i++){ if(!rows.slice(i,i+6).every(Boolean)||i&&rows[i-1])continue; const B=rows.slice(i,i+6), W=Math.max(...B.map(r=>r.length)); let q=0;
+    const tab=(text,step)=>{ text=text.replace(/[\u2013\u2014]/g,'-').replace(/(^|[|\s])([eEBGDA])\|(?=[-\dx])/g,'$1\n$2|');   // (a tab pasted with its lines run together: each string starts its own line again)
+      const rows=text.split(/\r?\n/).filter(l=>l.trim()).map(l=>{ let m=l.match(/^\s*[A-Ga-g]?[#b]?\s*[|:]?([-0-9hpbrsxHPBRSX\/\\~^()<>*.=|: ]{8,})\s*$/), r=m&&m[1]; if(!r&&(m=l.match(/^\s*[A-Ga-g][#b]?\s*\|([-0-9hpbrsxHPBRSX\/\\~^()<>*.=|: ]{8,})/))){ r=m[1]; const j=r.lastIndexOf('|'); if(j>0)r=r.slice(0,j+1); } return r&&r.includes('-')?r:null; }), notes=[]; let t0=0;
+      for(let i=0;i+5<rows.length;i++){ if(!rows.slice(i,i+6).every(Boolean))continue; const B=rows.slice(i,i+6), W=Math.max(...B.map(r=>r.length)); let q=0;
         for(let c=0;c<W;c++){ if(B.some(r=>r[c]==='|'))continue;
           B.forEach((r,s)=>{ if(!/\d/.test(r[c]||'')||/\d/.test(r[c-1]||''))return; let k=+r[c]; if(/\d/.test(r[c+1]||'')&&k*10+ +r[c+1]<=24)k=k*10+ +r[c+1]; notes.push({t:t0+q*step,m:OPEN[s]+k,d:2,s}); }); q++; }
         t0+=q*step; i+=5; }

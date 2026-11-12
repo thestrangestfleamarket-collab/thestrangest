@@ -93,10 +93,11 @@ __CODE__("worker/dunmobs.js")
     for(let t=0;t<n/3;t++){ let x=0, y=0, z=0; for(let k=0;k<3;k++){ x+=p[(t*3+k)*3]; y+=p[(t*3+k)*3+1]; z+=p[(t*3+k)*3+2]; } const q=(y/3-lo)/(hi-lo||1), h=Math.abs(Math.sin(x*91.3+z*47.1+y*13.7)*43758.5)%1;
       const o=q>.5&&h>.7?[170,255,70]:q>.4?[34,64,26]:h>.86?[120,220,60]:[22,34,20]; for(let k=0;k<3;k++)for(let j=0;j<3;j++)c[(t*3+k)*3+j]=U8?o[j]:o[j]/255; }
     g.attributes.color.needsUpdate=true; return g; };
-  const GLOW=new THREE.MeshBasicMaterial({color:0x7dff3a,transparent:true,opacity:.3,depthWrite:false,blending:THREE.AdditiveBlending}), GLG=new THREE.CircleGeometry(.42*T,12).rotateX(-Math.PI/2);
+  const GLOW=new THREE.MeshBasicMaterial({color:0x7dff3a,transparent:true,opacity:.5,depthWrite:false,blending:THREE.AdditiveBlending}), SPM=.9, GLG=new THREE.CircleGeometry(.7*T,12).rotateX(-Math.PI/2);
+  const glow=N=>{ const gl=new THREE.Mesh(GLG,GLOW); gl.position.y=.02*T; N.g.add(gl); };
   const mkSpiders=async()=>{ if(SPI.length||!window.LOAD&&!MODS.creatNew)return; if(window.LOAD)await LOAD('later'); if(SPI.length)return;
-    for(let i=0;i<4;i++){ const N=MODS.creatNew('Spider','spider',.55,{paint:toxic,npc:{lv:'down',group:'dungeon',free:(x,z,R)=>free(x,z,R),ground:(x,z)=>D.ground(x,z),speed:1.6,radius:.16}});
-      N.name='RADIOACTIVE SPIDER'; const gl=new THREE.Mesh(GLG,GLOW); gl.position.y=.02*T; N.g.add(gl); N.clip='Spider_Idle';
+    for(let i=0;i<4;i++){ const N=MODS.creatNew('Spider','spider',SPM,{paint:toxic,npc:{lv:'down',group:'dungeon',free:(x,z,R)=>free(x,z,R),ground:(x,z)=>D.ground(x,z),speed:1.6,radius:.16}});
+      N.name='RADIOACTIVE SPIDER'; glow(N); N.clip='Spider_Idle';
       const r={N,key:'spider',lv:[],kk:false,spider:true,v0:1.4*T,hp:0,style:{hit:'',reach:.6,at:.38}}; N.restless=()=>busy(r); SPI.push(r); park(r); } };
   const draw=()=>{ slimes.forEach((S,i)=>{ const t=TIER[S.k], s=S0*t.s; let sx=1, sy=1, y=0;
       if(S.dead){ const u=Math.min(1,S.pop/.28); sx=u<.4?1+u*.8:1.32+(u-.4)*.4; sy=u<.4?1+u*.5:Math.max(.13,1.2-(u-.4)*1.8); }
@@ -154,10 +155,10 @@ __CODE__("worker/dunmobs.js")
   // the picture: slimes as instances, guards and spiders as the dungeon's bodies, each kept on its monster's id
   const bodies=new Map(), seen={};
   // a creature's body (kind 'c': cr:Rat, fa:Bear, pw:ogre, pw:golem), made the first time one is wanted, then kept for the next
-  const CB=[], SZ={Rat:.3,Frog:.3,Snake:.25,Spider:.55,Wasp:.3,Bat:.4,Slime:.45}; for(const f of CREATS&&CREATS.FA||[])SZ[f[0]]=f[2];
+  const CB=[], SZ={Rat:.3,Frog:.3,Snake:.25,Spider:SPM,Wasp:.3,Bat:.4,Slime:.45}; for(const f of CREATS&&CREATS.FA||[])SZ[f[0]]=f[2];
   const entryOf=id=>{ const d=trying||live; return d&&d.mobs.find(e=>e.id===id); };
   const mkC=key=>{ const [src,k]=key.split(':'), o={lv:'down',group:'dungeon',free:(x,z,R)=>free(x,z,R),ground:(x,z)=>D.ground(x,z),speed:1.4,radius:.18}; let N=null;
-    try{ if(src==='pw')N=MODS.pawnNew&&MODS.pawnNew(k==='golem'?'hero_m':k,'dm_'+k,{npc:o,copy:k==='golem'?1:0}); else if(MODS.creatNew&&CREATURES[k])N=MODS.creatNew(k,'dm_'+k,SZ[k]||.6,{npc:o}); }catch(e){ console.warn('dungeon body',key,e); }
+    try{ if(src==='pw')N=MODS.pawnNew&&MODS.pawnNew(k==='golem'?'hero_m':k,'dm_'+k,{npc:o,copy:k==='golem'?1:0}); else if(MODS.creatNew&&CREATURES[k]){ N=MODS.creatNew(k,'dm_'+k,SZ[k]||.6,{npc:o,...(k==='Spider'?{paint:toxic}:{})}); if(k==='Spider')glow(N); } }catch(e){ console.warn('dungeon body',key,e); }
     if(!N)return null; const C=src==='pw'?null:Object.keys(CREATURES[k].clips||{}), f=re=>C&&C.find(n=>re.test(n));
     const r={N,key,c:true,lv:[],v0:1.4*T,hp:0,style:{reach:.8},cl:C&&{walk:f(/_(Walk|Flying|Jump)$/),idle:f(/_Idle$/)||f(/_Flying$/),hit:f(/Attack/),hurt:f(/_Hit$/),die:f(/Death/)}}; N.restless=()=>busy(r); CB.push(r); park(r); return r; };
   const show=dt=>{ const want=new Set(), k=AR===KEEP?KEEP.k:D.room, M_=pic?pic.m.filter(e=>e[1]===k):[]; let g=0, sp=0, sl=0;

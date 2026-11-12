@@ -302,7 +302,6 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     <div class="pane" data-p="text" id="dtext"></div>
     <div class="pane" data-p="editors" id="deditors"></div>
     <div class="pane" data-p="tools" id="dtools"></div>
-    <div class="pane" data-p="bro" id="dbro"></div>
     <div class="pane" data-p="bag" id="dbag"></div>
     <div class="pane" data-p="vehicles" id="dveh"></div>
     <div class="pane" data-p="vedit" id="dvedit"></div>
@@ -316,7 +315,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     ['moves','WHAT YOU CAN DO','?',[['move','MOVING'],['fight','FIGHTING'],['climb','CLIMBING & SWIMMING'],['ride','RIDING'],['out','OUTDOORS'],['games','GAMES & PLACES'],['home','YOUR APARTMENT'],['people','PEOPLE & MONEY'],['pad','CONTROLLER, TOUCH & VR']].map(([k,n])=>[k,n,['moves']])],   // every activity by category, its moves (owner, 10 Nov 2026)
     ['pets','PETS','',[['mine','YOUR PETS',['pets']],['pet','THEIR LOOK',['home']]]],   // every player's pets (owner, 8 Nov 2026)
     ['pack','INVENTORY','I',[['bag','BAG',['bag']],['skills','SKILLS',['pack']],['book','BOOK',['pack']],['fishing','FISHING',['pack']],['journal','JOURNAL',['pack']]]],
-    ['map','MAP','SHIFT+M',[['street','STREET',['bro']],['subway','SUBWAY',['bro']],['under','UNDERGROUND',['bro']],['goto','GO TO',['bro']]]],   // the map a section of the menu (owner, 10 Nov 2026: "B")
+    ['map','MAP','SHIFT+M',null,()=>{ shut(); UI.mapWindow(); }],   // the brochure map, its own window (owner, 12 Nov 2026: "bring the old map look back")
     ['guide','GUIDE','',[['guide','THE GUIDE',['guide']]]],   // back in the menu (owner, 11 Nov 2026)
     ['people','PEOPLE','',[['people','ON YOUR BLOCK',['people']]]],   // back in the menu (owner, 11 Nov 2026)
     ['bbs','BBS','',[['shop','THE BODEGA',['bbs']],['furn','FURNITURE',['bbs']],['games','THE ARCADE',['bbs']],['orders','YOUR ORDERS',['bbs']]]],   // only from your computer, never in the menu's list
@@ -338,7 +337,6 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     const on=new Set(pt[2].filter(p=>p!=='sound'||SOUND)); M.querySelectorAll('.panes>[data-p]').forEach(p=>p.hidden=!on.has(p.dataset.p)); $('.panes').scrollTop=0;
     if(on.has('home')){ if(CHARP.show)CHARP.show($('#dhome')); if(LOOKS.open){ LOOKS.only=null; LOOKS.open(); mount('looks',$('#dlooks'),true); LOOKS.tab(pt[0]); } } else { if(CHARP.hide)CHARP.hide(); mount('looks',null,false); }
     if(on.has('pack')&&FORAGE.PACK){ mount('packp',$('#dpack'),true); FORAGE.PACK.tab=pt[0]; FORAGE.PACK.open=true; FORAGE.PACK.draw(); } else { if(mount('packp',null,false)&&FORAGE.PACK)FORAGE.PACK.open=false; }
-    if(on.has('bro')&&UI.brochure)UI.brochure.into($('#dbro'),pt[0]);
     if(on.has('bag')&&BAG.into)BAG.into($('#dbag')); else if(BAG.out)BAG.out();   // the bag inside the menu (owner, 10 Nov 2026)
     if(on.has('people'))people(); if(on.has('pets')&&PETS.menu)PETS.menu($('#dpets'));
     if(on.has('bbs')){ if(DRONE.menu)DRONE.menu($('#dbbs'),pt[0]); else $('#dbbs').innerHTML='<div class="dim">the BBS answers once your apartment is built</div>'; }

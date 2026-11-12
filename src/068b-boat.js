@@ -5,7 +5,7 @@ import {SYS, TILE, ZU} from './006-map-pre.js';
 import {RIVER} from './066-river.js';
 import {PIER} from './066b-pier.js';
 import {KIT} from './068-kit.js';
-{ const DATA=__LAZY__("data/fishboat.json"), K=2;
+{ const DATA=__LAZY__("data/fishboat.json"), K=4;
   VLOOK.kind('moored',{name:'THE MOORED FISHING BOAT',grp:'BOATS',make:()=>{ const m=window.MOORED; if(!m)return null; const c=m.g.clone(); c.position.set(0,0,0); c.rotation.set(0,0,0); return VLOOK.dress('moored',c); }});
   const hs=(a,b)=>{ const s=Math.sin(a*127.1+b*311.7)*43758.5453; return s-Math.floor(s); };
   const build=()=>{ const P=PIER, T=TILE, WU=T/.84, RB=RIVER.box; if(!P||!P.G||!RB||!KIT.data.fishboat)return;

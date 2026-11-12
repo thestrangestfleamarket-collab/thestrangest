@@ -167,7 +167,7 @@ const CARD=__LAZY__("data/cars.json"), RADJ=__LAZY__("data/radio.json"), RFILE={
     k.eye=eyeOf(model,k); RIDE.kind('car:'+model,k); return k; };
 
   /* ---------- parked: drawn where the section says, solid, a thing to double-click ---------- */
-  const yOf=C=>DATA.cars[C.model].dive&&RIVER.box?top(DATA.cars[C.model]):SHARED.groundY(C.x,C.z);
+  const yOf=C=>DATA.cars[C.model].dive&&RIVER.box?top(DATA.cars[C.model]):SHARED.groundY(C.x,C.z)+(LIV[C.model]&&LIV[C.model].ghost?.45*M1:0);
   const at=C=>{ if(!C.mesh)return; C.mesh.position.set(C.x,yOf(C),C.z); C.mesh.rotation.set(0,C.hd,0); C.mesh.visible=!C.by; tint(C,C.mesh);
     const D=DATA.cars[C.model], ls=sz(C.model), hw=D.size[0]/2*M1*ls, hl=D.size[2]/2*M1*ls, c=Math.abs(Math.cos(C.hd)), s=Math.abs(Math.sin(C.hd)), ex=hw*c+hl*s, ez=hw*s+hl*c;
     if(!C.sol){ C.sol=[0,0,0,0]; SOL.up.push(C.sol); } if(C.by){ C.sol[0]=C.sol[2]=C.sol[1]=C.sol[3]=-1e7; return; } C.sol[0]=C.x-ex; C.sol[1]=C.z-ez; C.sol[2]=C.x+ex; C.sol[3]=C.z+ez; };

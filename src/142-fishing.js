@@ -74,6 +74,11 @@ const fishInit=()=>{ if(FISHING.at)return; const T=TILE, RB={get lv(){ return RI
   const SPECIES=Object.keys(NAMES);   // their habits are the item model's: LIVES IN, DEPTH, BITES, BAIT, FIGHT, COMMON, WEIGHT, VALUE (data/items.json, the item editor)
   const JUNK=[['x_boot','OLD BOOT',.6,1],['x_can','TIN CAN',.5,1],['x_note','MESSAGE IN A BOTTLE',.05,5],['chest','SUNKEN CHEST',.05,0]];
   FORAGE.add({names:Object.assign({},NAMES,Object.fromEntries(JUNK.map(j=>[j[0],j[1]])),{rod:'FISHING ROD',bait:'WORMS',bait_cut:'CUT BAIT (BUNKER)',rod_carbon:'CARBON ROD',rod_surf:'SURF ROD',reel_fast:'FAST REEL',reel_pro:'PRO REEL',lure_worm:'RUBBER WORM LURE',lure_spoon:'SPOON LURE',cooler_s:'SMALL COOLER',cooler_m:'COOLER',cooler_l:'BIG COOLER',crabpot:'CRAB POT'}),raw:Object.fromEntries(SPECIES.map(id=>[id,[Math.min(.2,.05+.03*(IP(id,'weight')||1)),.3]]))});
+  // the junk has its uses (owner, 12 Nov 2026): the fishmonger pays for all three, and the message can be read
+  ITEMS.reg('x_note',{value:5}); FORAGE.sell('x_boot','x_can','x_note');
+  const NOTES=['"IF YOU FIND THIS, THE RIVER RUNS BOTH WAYS. I AM FINE."','"THE STURGEON LIE DEEPEST, WHERE THE WATER IS DARK. BRING CUT BAIT."','"TO WHOEVER READS THIS: FEED THE KOI FOR ME."','"I THREW MY RING IN AFTER HER. THE CATFISH HAS IT NOW."','"DAY 40. THE BOAT LEAKS. THE EELS BITE AT NIGHT."','"MEET ME UNDER THE CLOCK AT DUSK. YOU WILL KNOW ME BY THE HAT."'];
+  FORAGE.ROWB.push(id=>id==='x_note'?[['READ IT','noteread']]:[]);
+  FORAGE.ACT.noteread=()=>{ if(!FORAGE.has('x_note'))return; SAY('YOU UNROLL THE PAPER IN THE BOTTLE: '+NOTES[Math.floor(Date.now()/864e5)%NOTES.length],'#9ad0b0'); };
   const say=SAY, PRICE=Object.fromEntries([...SPECIES.map(id=>[id,IP(id,'value')||1]),...JUNK.map(j=>[j[0],j[3]])]);
   // the tackle you own: the best CAST (m), LINE (strength) and REEL (speed) of what is in your pack; fish in hand up to 5 and what your coolers KEEP
   const BAITIDS=['bait','bait_cut','lure_worm','lure_spoon'], G0={cast:12,line:1,reel:1}, GC={t:-1e9,v:G0};

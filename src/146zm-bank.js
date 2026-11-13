@@ -12,6 +12,7 @@ const BANKK={}; window.BANKK=BANKK;
   const read=()=>{ try{ const v=OWNED.get('bank'); const o=typeof v==='string'?JSON.parse(v):v; return o&&o.v===1?o:{v:1,bal:0}; }catch(e){ return {v:1,bal:0}; } };
   const write=o=>{ try{ OWNED.set('bank',JSON.stringify(o)); }catch(e){} };
   BANKK.account=()=>read();
+  INV.bank={bal:()=>read().bal,take:n=>{ const o=read(), m=Math.min(Math.max(0,Math.trunc(n)),o.bal); o.bal-=m; write(o); return m; }};   // what a shop takes when you carry too little
   BANKK.move=n=>{ '@later'; const o=BANKK.account(); n=Math.trunc(n); if(n>0){ n=Math.min(n,INV.cash); if(!n)return 'YOU HAVE NO CASH ON YOU.'; INV.cash-=n; o.bal+=n; } else if(n<0){ const m=Math.min(-n,o.bal); if(!m)return 'THE ACCOUNT IS EMPTY.'; o.bal-=m; INV.cash+=m; n=-m; }
     write(o); if(INV.save)INV.save(); return ''; };
   // the cage's window: your cash, the balance, buttons to put in and take out

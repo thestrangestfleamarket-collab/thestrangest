@@ -19,8 +19,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const o = await pg.evaluate(() => { const h = STORE.bank.hoard; let on = !!h; for (let q = h; q && on; q = q.parent) { if (!q.visible) on = false; if (!q.parent && q.type !== 'Scene') on = false; } return { hoard: on, dropped: !!h && !h.parent, p: __dbg.pos().map(v => +v.toFixed(1)), why: h ? VIS.why(h) : [], lvl: SHARED.LVL, dead: __dbg.VIT.dead }; });   // drawn = in the scene with every parent shown (dropped once you leave, 3 Nov 2026)
   ok(!o.hoard, 'back on the street, nothing of the bank\'s inside is drawn: ' + JSON.stringify(o));
   await pg.evaluate(() => STORE.enter('bank', true)); await pg.waitForTimeout(2000); await pg.waitForFunction(() => !FADE.busy, null, { timeout: 120000 }); await at(1); await pg.waitForTimeout(1500); const g0 = await pg.evaluate(() => { const c = INV.cash; STORE.bank.steal(); return c; }); await pg.waitForTimeout(4000);
-  const fr = await pg.evaluate(() => ({ dead: __dbg.VIT.dead, cash: INV.cash, d: STORE.bank.dragon(), p: __dbg.pos().map(v => +v.toFixed(1)) }));
-  ok(fr.dead && fr.cash === g0, 'taking its gold, the dragon breathes fire and burns you up; the gold falls back: ' + JSON.stringify(fr));
+  const fr = await pg.evaluate(() => { const b = __dbg.VIT.body && __dbg.VIT.body(); return { dead: __dbg.VIT.dead, cash: INV.cash, body: b ? b.cash || 0 : 0, d: STORE.bank.dragon(), p: __dbg.pos().map(v => +v.toFixed(1)) }; });
+  ok(fr.dead && fr.cash + fr.body === g0, 'taking its gold, the dragon breathes fire and burns you up; the gold falls back (what you carried lies on your body, 9 Nov 2026): ' + JSON.stringify(fr) + ' carried $' + g0);
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close(); console.log(fails.length ? fails.length + ' failed' : 'all bank checks passed'); process.exit(fails.length ? 1 : 0);
 })();

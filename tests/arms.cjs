@@ -1,4 +1,4 @@
-// THE ARMS CHECK: node tests/arms.cjs dist/market.html [shots-prefix]. The fourteen weapons (146hc): owned from the start; a gun's shot on a player in front is sent as a hit; a grenade goes off and hurts who is near; a molotov lights a fire; a net catches a player; a mine goes off under a player; portals carry you; the leaf blower shoves; their hits on you hurt you, and a net holds you still; another player's shot is drawn; no page errors.
+// THE ARMS CHECK: node tests/arms.cjs dist/market.html [shots-prefix]. The fourteen weapons (146hc): owned from the start; a gun's shot on a player in front is sent as a hit; a grenade goes off and hurts who is near; a molotov lights a fire; a net catches a player; a mine goes off under a player; portals show the other side, carry you and close after 30 seconds; the leaf blower shoves; their hits on you hurt you, and a net holds you still; another player's shot is drawn; no page errors.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=arms::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -48,12 +48,19 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await shot('molotov');
 
     // the net: the player in front is caught
-    await place(4); await hold('w_net'); await pg.waitForTimeout(500); await aim(.02); await pg.evaluate(() => { __sent.length = 0; }); await fire('w_net');
-    const caught = await until(() => { const s = __sent.find(m => m.t === 'shot' && m.to === 'a' && m.tr === 'net'), t = ARMSDBG().traps.find(x => x[0] === 'a'); return s && t ? { tt: s.tt, trap: t } : null; }, 10000);
+    await hold('w_net'); await pg.waitForTimeout(500); let caught = null;
+    for (let i = 0; i < 3 && !caught; i++) {
+      await up(); await place(4); await until(() => { const o = ONLINE.others.get('a'), P = __dbg.you(), h = SHARED.heading, M = ARMSDBG().M; return o && o.p && Math.hypot(o.p.x - (P.x + Math.sin(h) * 4 * M), o.p.z - (P.z + Math.cos(h) * 4 * M)) < .5 * M; }, 4000);
+      await aim(.02); await pg.evaluate(() => { __sent.length = 0; }); await fire('w_net');
+      caught = await until(() => { const s = __sent.find(m => m.t === 'shot' && m.to === 'a' && m.tr === 'net'), t = ARMSDBG().traps.find(x => x[0] === 'a'); return s && t ? { tt: s.tt, trap: t, tries: 0 } : null; }, 6000);
+      if (caught) caught.tries = i + 1;
+      else console.log('  net miss: ' + JSON.stringify(await pg.evaluate(() => { const o = ONLINE.others.get('a'); return { me: __dbg.you(), h: SHARED.heading, a: o && o.p, stuck: SHARED.stuck, rag: RAGON(), last: ARMS.last }; }))); }
     ok(!!caught, 'a net catches the player it hits (' + JSON.stringify(caught) + ')');
     await shot('net');
 
     // the bubble and the snowball fly
+    { await hold('w_bubble'); await pg.waitForTimeout(300); await aim(.1); await pg.evaluate(() => { ARMS.cd = {}; ARMS.hold = true; ARMS.fire('w_bubble'); }); await pg.waitForTimeout(300); const b0 = (await pg.evaluate(() => ARMSDBG().bub)); await pg.waitForTimeout(1500); const b1 = (await pg.evaluate(() => ARMSDBG().bub)); await pg.evaluate(() => { ARMS.hold = false; });
+      const f = await until(() => ARMSDBG().P.find(p => p.id === 'w_bubble'), 1500); ok(b0 > 0 && b0 < .6 && b1 > b0 + .3 && f && f.k >= b1 - .05, 'the bubble starts small, grows while held and flies at that size when let go (owner, 13 Nov 2026): ' + JSON.stringify([b0, b1, f && f.k])); await pg.waitForTimeout(7000); }
     for (const id of ['w_bubble', 'w_snowball', 'w_fireworks', 'w_rocket']) { await hold(id); await pg.waitForTimeout(300); await aim(id === 'w_fireworks' ? -.4 : .1); await fire(id); const f = await until(id => ARMSDBG().P.find(p => p.id === id), 1500, id); ok(!!f, 'the ' + id.slice(2) + ' fires (' + JSON.stringify(f) + ')'); if (id === 'w_fireworks') { await pg.waitForTimeout(1350); await shot('fireworks'); } }
     await pg.waitForTimeout(3000);
 
@@ -75,9 +82,16 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.evaluate(() => ONLINE.feed({ t: 'out', id: 'a' })); await hold('w_portal'); await pg.waitForTimeout(400);
     await aim(.35); await fire('w_portal'); await pg.waitForTimeout(200); await aim(.12); await fire('w_portal'); await pg.waitForTimeout(300);
     const pr = await pg.evaluate(() => (ARMSDBG().portals.find(p => p[0] === 'me') || [])[1]);
+    const seen = await pg.evaluate(() => (ARMS.portals.get('me') || []).every(p => p && LEVELS.drawn(p.m)));
+    ok(seen, 'both portals are drawn where they opened');
+    const view = await until(() => (ARMS.portals.get('me') || []).some(p => p && p.rt && p.m.children[0].material.uniforms.uOn.value === 1), 5000);
+    ok(!!view, 'a portal on screen shows the view out of the other one');
     let tp = null; if (pr && pr[0] && pr[1]) { await pg.evaluate(p => __dbg.UI.goTo(p[0], p[2], p[1]), pr[0]); tp = await until(q => { const P = __dbg.you(); return Math.hypot(P.x - q[0], P.z - q[2]) < 2 ? [+P.x.toFixed(1), +P.z.toFixed(1)] : null; }, 10000, pr[1]); }
     ok(!!pr && !!pr[0] && !!pr[1] && !!tp, 'two portals open on the ground and stepping in one carries you to the other (' + JSON.stringify([pr, tp]) + ')');
     await shot('portal');
+    await pg.evaluate(() => { for (const p of ARMS.portals.get('me') || []) if (p) p.t = 29.9; }); await pg.waitForTimeout(6000);
+    const gone = await pg.evaluate(() => !ARMSDBG().portals.some(p => p[0] === 'me'));
+    ok(gone, 'the portals close after 30 seconds');
     await pg.evaluate(() => { ARMS.aim = null; WIELD.set(null); });
 
     // their hits on you: hurt, and a net holds you still

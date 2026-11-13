@@ -256,7 +256,6 @@
        "DOGS & CATS: 140 kinds of dog, 59 of cat, and rabbits.",
        "LIZARDS & DRAGONS: ten dinosaurs with a T. REX, seven dragons and BIG LIZ.",
        "THE BIRD SHOP and THE BUTTERFLY SHOP.",
-       "THE BARN in Central Park: horses, cows, pigs, an elephant, a giraffe, a lion.",
        "THE AQUARIUM: 52 fish and sea animals for the tank in your apartment. A shark. A dolphin. A plesiosaur."
       ]
      ],
@@ -300,7 +299,7 @@
      ],
      [
       "p",
-      "Four shops side by side on Market St, between the bar and the bodega. THE BARN is in Central Park. THE AQUARIUM is on the Hudson row."
+      "Four shops side by side on Market St, between the bar and the bodega. THE AQUARIUM is on the Hudson row."
      ],
      [
       "h",
@@ -328,10 +327,6 @@
        [
         "PARROTS",
         "$40"
-       ],
-       [
-        "HORSES, FARM",
-        "$60"
        ],
        [
         "DINOSAURS",
@@ -971,10 +966,6 @@
        "TORCHBEARER: 30 hand-laid floors, then endless",
        "PETRI: one dish shared by the whole market"
       ]
-     ],
-     [
-      "p",
-      "COMING SOON: KNUCKLE CITY, DRAGON POP, MONSTER ROAD."
      ]
     ],
     [
@@ -1303,7 +1294,7 @@
      ],
      [
       "p",
-      "Sell a stone to the Scuba Diver at the stall."
+      "Sell a stone to the Rock Golem at the gem stall."
      ]
     ],
     [

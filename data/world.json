@@ -483,65 +483,15 @@
   },
   {
    "id": "apts",
-   "name": "No. 1 THE WALK-UP",
-   "kind": "front",
-   "x0": -67.9,
-   "x1": -52.5,
-   "y0": -36,
-   "y1": -23,
-   "face": "e",
-   "storeys": 5,
-   "style": {
-    "wall": [138,59,44],
-    "trim": [112,46,36],
-    "base": [120,52,40],
-    "lintel": [217,205,184]
-   }
-  },
-  {
-   "id": "house2",
-   "name": "No. 2 THE BROWNSTONE",
-   "kind": "front",
-   "x0": -67.9,
-   "x1": -52.5,
-   "y0": -22,
-   "y1": -9,
-   "face": "e",
-   "storeys": 4,
-   "style": {
-    "wall": [94,67,52],
-    "trim": [78,56,44],
-    "base": [84,60,46],
-    "lintel": [122,90,72]
-   }
-  },
-  {
-   "id": "house3",
-   "name": "No. 3 THE PARKVIEW",
-   "kind": "front",
-   "x0": -67.9,
-   "x1": -52.5,
-   "y0": -8,
-   "y1": 5,
-   "face": "e",
-   "storeys": 6,
-   "style": {
-    "wall": [201,180,138],
-    "trim": [168,150,116],
-    "base": [216,210,194],
-    "lintel": [238,230,210]
-   }
-  },
-  {
-   "id": "house4",
    "name": "No. 4 THE FOUNDRY LOFTS",
    "kind": "front",
-   "x0": -67.9,
-   "x1": -52.5,
-   "y0": 6,
-   "y1": 19,
-   "face": "e",
+   "x0": 116.37,
+   "x1": 129.5,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n",
    "storeys": 4,
+   "note": "the only apartment house, the lofts, on the Hudson entrance's east corner across from the bodega (owner, 12 Nov 2026)",
    "style": {
     "wall": [61,64,70],
     "trim": [27,28,32],
@@ -657,19 +607,17 @@
    "x1": 107.63,
    "y0": -92.4,
    "y1": -77,
-   "face": "n",
-   "pf": "bodega"
+   "face": "n"
   },
   {
    "id": "arcade",
    "name": "THE ARCADE",
    "kind": "front",
-   "x0": 116.37,
-   "x1": 129.5,
+   "x0": -30.13,
+   "x1": -17.0,
    "y0": -92.4,
    "y1": -77,
-   "face": "n",
-   "pf": "bodega"
+   "face": "n"
   },
   {
    "id": "theatre",
@@ -726,19 +674,6 @@
    "y0": -92.4,
    "y1": -77,
    "face": "n"
-  },
-  {
-   "id": "antiques",
-   "kind": "front",
-   "x0": -51,
-   "x1": -37,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2,
-   "name": "ANTIQUES & PAWN",
-   "pf": "antiques",
-   "merchant": "junkman"
   },
   {
    "id": "fishing",
@@ -936,13 +871,6 @@
    "hd": 90
   },
   {
-   "id": "c4",
-   "model": "pickup-truck-70s",
-   "x": 297.7,
-   "y": -67,
-   "hd": 90
-  },
-  {
    "id": "c5",
    "model": "wedge-coupe-80s",
    "x": 306.8,
@@ -960,28 +888,21 @@
    "id": "c7",
    "model": "police-cruiser-80s",
    "x": -27.5,
-   "y": -8,
+   "y": 66,
    "hd": 0
   },
   {
    "id": "c8",
    "model": "taxi-coupe",
    "x": -27.5,
-   "y": 4,
+   "y": 36.5,
    "hd": 0
   },
   {
    "id": "c9",
    "model": "taxi-pod",
    "x": -27.5,
-   "y": 16,
-   "hd": 0
-  },
-  {
-   "id": "c10",
-   "model": "ambulance",
-   "x": -27.5,
-   "y": 29,
+   "y": 76,
    "hd": 0
   },
   {
@@ -1044,7 +965,7 @@
    "y": 174
   },
   "tower3": {
-   "x": 255,
+   "x": 245,
    "y": 59.5
   },
   "tower4": {
@@ -1287,7 +1208,8 @@
     "w": 53,
     "d": 36,
     "note": "the falls (src/089b-falls.js): no trees here"
-   }
+   },
+   {"id": "hospital", "x": -16, "y": 9.5, "w": 21, "d": 51, "note": "the hospital on West St (owner, 12 Nov 2026, spot A): no trees or paths here"}
   ],
   "stalls": [
    {
@@ -1440,6 +1362,19 @@
    ]
   }
  ],
+ "exchange": {
+  "note": "the exchange machines about the streets (159ba-exchange): map tiles, rot the way one faces in radians (0 north, 3.1416 south, 1.5708 east)",
+  "at": [
+   {"x": -52.05, "y": -6.9, "rot": 1.5708},
+   {"x": 2.96, "y": -76.6},
+   {"x": 78.17, "y": -76.6},
+   {"x": 160.26, "y": -76.6},
+   {"x": 228.03, "y": -76.6},
+   {"x": 1, "y": -108.3, "rot": 3.1416},
+   {"x": 55.96, "y": -108.3, "rot": 3.1416},
+   {"x": 117.3, "y": -108.3, "rot": 3.1416}
+  ]
+ },
  "racks": {"note": "the brochure racks on the street (159k-brochures): map tiles, rot the way one faces in radians", "at": [{"x": 108.5, "y": -40.5}, {"x": 127, "y": -71.8}, {"x": 171.5, "y": -110.2}]},
  "things": [
   {
@@ -4053,8 +3988,8 @@
   },
   {
    "k": "p:canoe",
-   "x": 181.9,
-   "y": 129.28,
+   "x": 179.57,
+   "y": 131.44,
    "rot": 2.409,
    "float": 1
   },
@@ -4067,8 +4002,8 @@
   },
   {
    "k": "p:skiff",
-   "x": 186.11,
-   "y": 125.71,
+   "x": 187.95,
+   "y": 124.28,
    "rot": 2.409,
    "float": 1
   },
@@ -4219,7 +4154,7 @@
    "bar"
   ],
   "origamifox": [
-   122.94,
+   -23.57,
    -74.6,
    5,
    "arcade"
@@ -4543,7 +4478,7 @@
    null
   ],
   "trucker": [
-   124.6,
+   136,
    -103,
    0,
    null
@@ -6309,7 +6244,7 @@
  },
  "bigTrees": [
   {
-   "note": "THE BIG TREES (owner, 7 Nov 2026; redone 10 Nov 2026): map tiles; kind A level branch, B rising, C low and sagging, G the giant (a hollow shell of leaves round thick limbs to climb); face: where the big branch reaches, degrees; climb: SPACE next to it climbs it; s: its size, 1 a 62 m tree (owner, 10 Nov 2026: \"move back towards park area and make them 25-50% smaller, and add 20 more scattered around. i want 1 giant big tree ... its 2x bigger\")"
+   "note": "THE BIG TREES (owner, 7 Nov 2026; redone 10 Nov 2026): map tiles; kind A level branch, B rising, C low and sagging, G the giant (a hollow shell of leaves round thick limbs to climb; look: drawn as that pack tree, Elder2 since 11 Nov 2026); face: where the big branch reaches, degrees; climb: SPACE next to it climbs it; s: its size, 1 a 62 m tree (owner, 10 Nov 2026: \"move back towards park area and make them 25-50% smaller, and add 20 more scattered around. i want 1 giant big tree ... its 2x bigger\")"
   },
   {
    "kind": "A",
@@ -6621,7 +6556,8 @@
    "y": 88,
    "face": 0,
    "climb": true,
-   "s": 2.4
+   "s": 2.4,
+   "look": "Elder2"
   }
  ],
  "cloudTrees": [],
@@ -6658,6 +6594,47 @@
     252,
     -231.5
    ]
+  ],
+  "fieldNote": "where the walls and forcefields stand when not on the lines (owner, 12 Nov 2026: the section an even rectangle, the park's east field in line with Market St's end); lines still say where the built map ends and the backdrop starts",
+  "field": [
+   [
+    -52.5,
+    -231.5,
+    -52.5,
+    181
+   ],
+   [
+    -52.5,
+    181,
+    252,
+    181
+   ],
+   [
+    252,
+    181,
+    252,
+    -38
+   ],
+   [
+    252,
+    -38,
+    252,
+    -231.5
+   ],
+   [
+    -52.5,
+    -38,
+    -24,
+    -38
+   ]
+  ],
+  "closed": [[-52.5,-38,-24,26]],
+  "closedNote": "West St shut off at Market St (owner, 12 Nov 2026: \"block off west st completely, no real buildings there - low renders\"): a forcefield across its mouth (the last field line); these boxes are inside the field lines but never walked, and their fronts are cheap painted blocks (fronts)",
+  "fronts": [
+   {"x0": -67.9, "x1": -52.5, "y0": -36, "y1": -23, "storeys": 5, "wall": [138,59,44], "trim": [112,46,36]},
+   {"x0": -67.9, "x1": -52.5, "y0": -22, "y1": -9, "storeys": 4, "wall": [94,67,52], "trim": [78,56,44]},
+   {"x0": -67.9, "x1": -52.5, "y0": -8, "y1": 5, "storeys": 6, "wall": [201,180,138], "trim": [168,150,116]},
+   {"x0": -67.9, "x1": -52.5, "y0": 6, "y1": 19, "storeys": 4, "wall": [61,64,70], "trim": [27,28,32]}
   ],
   "runs": [
    [

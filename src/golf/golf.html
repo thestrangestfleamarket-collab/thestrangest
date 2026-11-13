@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:,">
+<title>Halcyon Greens</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0b0f16; font-family: "Segoe UI", system-ui, sans-serif; color: #fff; user-select: none; -webkit-user-select: none; touch-action: none; }
+  canvas { display: block; }
+  #hud { position: fixed; inset: 0; pointer-events: none; }
+  #top { position: absolute; top: 14px; left: 16px; padding: 10px 16px; border-radius: 14px; background: rgba(10,14,22,.55); backdrop-filter: blur(6px); font-size: 15px; line-height: 1.45; }
+  #top b { font-size: 19px; }
+  #top .dim { opacity: .7; }
+  #toast { position: absolute; top: 22%; left: 50%; transform: translateX(-50%); padding: 12px 26px; border-radius: 999px; background: rgba(10,14,22,.7); font-size: 24px; font-weight: 600; opacity: 0; transition: opacity .35s; white-space: nowrap; }
+  #toast.show { opacity: 1; }
+  #power { position: absolute; bottom: 112px; left: 50%; transform: translateX(-50%); width: min(360px, 70vw); height: 14px; border-radius: 8px; background: rgba(10,14,22,.6); overflow: hidden; opacity: 0; transition: opacity .2s; }
+  #power.show { opacity: 1; }
+  #power i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #6fe08a, #ffd23c, #ff5a3c); }
+  #hint { position: absolute; bottom: 68px; left: 50%; transform: translateX(-50%); font-size: 13px; opacity: .8; background: rgba(10,14,22,.5); padding: 7px 14px; border-radius: 10px; white-space: nowrap; max-width: 96vw; overflow: hidden; text-overflow: ellipsis; }
+  .btns { position: absolute; right: 14px; top: 14px; display: flex; gap: 8px; pointer-events: auto; }
+  button.h { font: 600 14px "Segoe UI", system-ui, sans-serif; color: #fff; background: rgba(10,14,22,.6); border: 1px solid rgba(255,255,255,.25); border-radius: 12px; padding: 10px 14px; cursor: pointer; }
+  button.h:hover { background: rgba(255,255,255,.2); }
+  #putt { position: absolute; bottom: 110px; right: 18px; width: 92px; height: 92px; border-radius: 50%; font-size: 17px; pointer-events: auto; display: none; }
+  @media (pointer: coarse) { #putt { display: block; } #hint { display: none; } }
+  #loading { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: #0b0f16; font-size: 20px; letter-spacing: .2em; transition: opacity .6s; }
+</style>
+</head>
+<body>
+<div id="hud">
+  <div id="top"></div>
+  <div class="btns"><button class="h" id="bNext" style="display:none">Next hole ▸</button><button class="h" id="bBall">Reset ball</button><button class="h" id="bMenu">Menu</button></div>
+  <div id="toast"></div>
+  <div id="power"><i></i></div>
+  <button class="h" id="putt">PUTT</button>
+  <div id="hint"></div>
+</div>
+<div id="loading">HALCYON GREENS</div>
+<script type="module">__GOLF__</script>
+</body>
+</html>

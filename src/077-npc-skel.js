@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {SKIN} from './003a-skin.js';
 import {CLOCK, NPCS} from './003b-systems.js';
-import {MODS, QS, SOL, TILE} from './006-map-pre.js';
+import {MODS, QS, SOL, SYS, TILE} from './006-map-pre.js';
 import {SKEL} from './075-main-13.js';
 import {DUN, makeNPC, stfree, STHOLE} from './076-npc-map.js';
 const SKELGO=()=>SKELGO.p||(SKELGO.p=LOAD('dungeon').then(async()=>{ '@dungeon'; const S=await SKEL();
@@ -59,5 +59,5 @@ MODS.skel=SKELGO;
 window.SKELDBG=()=>NPCS.filter(N=>N.mixer).map(N=>({key:N.key,x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),y:+N.g.position.y.toFixed(2),to:!!N.st.to,bones:N.me.skeleton.bones.length}));
 if(!MODS.dungeon)await SKELGO();
 
-const DRAGON=__LAZY__("data/dragon.json");
+const DRAGON=SYS.far(__LAZY__("data/dragon.json"));
 export {DRAGON, SKELGO};

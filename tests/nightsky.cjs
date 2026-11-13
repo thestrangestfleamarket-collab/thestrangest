@@ -49,7 +49,7 @@ const SHOTS = process.env.SHOTS;
     // the field telescope outdoors
     const f = await pg.evaluate(async () => { const have = INV.items.fscope, was = SCOPE.site.ap; await FIELD.toggle(); await new Promise(r => setTimeout(r, 1500));
       return { have, was, open: SCOPE.isOpen(), site: SCOPE.site, on: FIELD.on, sky: SCOPE.data.sky.filter(t => t.m).length, pics: SCOPE.data.sky.filter(t => t.m && t.file).length, dbl: SCOPE.data.doubles.length, moon: SCOPE.data.moon.length, mags: [...document.querySelectorAll('#scopev [data-m]')].map(b => +b.dataset.m) }; });
-    ok(f.have === 1 && f.on && f.open && f.site.field && f.site.ap === 60 && f.was === 80 && !f.mags.includes(200) && f.mags.includes(100), 'the field telescope from the pack stands under the open sky and opens the eyepiece (60 mm, 100X at most)');
+    ok(f.have === 1 && f.on && f.open && f.site.field && f.site.ap === 60 && f.was === 80 && !f.mags.includes(5000) && f.mags.includes(2000), 'the field telescope from the pack stands under the open sky and opens the eyepiece (60 mm, its zoom to 2500X)');
     ok(f.sky === 110 && f.dbl >= 15 && f.moon >= 15, `the eyepiece knows all 110 Messier objects (${f.pics} with photographs), ${f.dbl} double stars, ${f.moon} places on the Moon`);
     const dz = await pg.evaluate(async () => { SCOPE.site.dark = 1.2; SCOPE.mag = 50; SCOPE.focus = .18; const L = SCOPE.data.sky.filter(t => t.m && !t.file && t.mag < 8.5).map(t => ({ t, h: SCOPE.altOf(t.id) })).filter(x => x.h.alt > 35).sort((a, b) => a.t.mag - b.t.mag), T = L[0].t;
       SCOPE.goTo(T.id); for (let k = 0; k < 120 && SCOPE.goto; k++) await new Promise(r => setTimeout(r, 250)); for (let k = 0; k < 30 && !ASTRO.dbg().seen[T.id]; k++) await new Promise(r => setTimeout(r, 300));
@@ -67,6 +67,11 @@ const SHOTS = process.env.SHOTS;
     ok(pay.d === 40 && pay.paid, 'ten constellations pay the goal once ($' + pay.d + ')');
     const pk = await pg.evaluate(async () => { FIELD.at = { x: 1e6, z: 0 }; await new Promise(r => setTimeout(r, 800)); return { on: FIELD.on, open: SCOPE.isOpen(), ap: SCOPE.site.ap }; });
     ok(!pk.on && !pk.open && pk.ap === 80, 'walking away folds the field telescope up');
+    const hd = await pg.evaluate(async () => { const w = t => new Promise(r => setTimeout(r, t)), A = SCOPE.astro, alt = () => { const jd = SCOPE.jd(), s = A.where('sun', jd); return A.eq2hor(s.ra, s.dec, A.lst(jd)).alt; };
+      const t = DN.test, h = DN.hold, f = SCOPE.fixJD, x = DN.fixT; SCOPE.fixJD = null; DN.fixT = undefined; DN.test = 0; DN.hold = 'night'; const night = alt(); DN.hold = 'day'; const day = alt(); DN.test = t; DN.hold = h; SCOPE.fixJD = f; DN.fixT = x;
+      WIELD.set('fscope'); await w(2500); const m = WIELD.held(), inHand = !!(m && m.visible); await FIELD.toggle(); await w(1500); const stood = FIELD.on, hid = !(m && m.visible); FIELD.pack(); WIELD.set(null); return { night, day, inHand, stood, hid }; });
+    ok(hd.night < -18 && hd.day > 5, 'a held NIGHT is night in the eyepiece, a held DAY day (Sun ' + hd.night.toFixed(0) + '°, ' + hd.day.toFixed(0) + '°)');
+    ok(hd.inHand && hd.stood && hd.hid, 'on its tripod the field telescope is out of your hands: ' + JSON.stringify(hd));
   } catch (e) { ok(false, 'the check ran through: ' + String(e && e.message || e).slice(0, 400)); }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close(); console.log(fails.length ? fails.length + ' FAILED' : 'night sky ok'); process.exit(fails.length ? 1 : 0);

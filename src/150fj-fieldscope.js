@@ -14,7 +14,7 @@ const FIELD={on:false,at:null}; window.FIELD=FIELD;
   const tube=(g,len,r,y,z0)=>{ const a=new THREE.Mesh(new THREE.CylinderGeometry(r,r,len,10),lam(0xe8e4d8)); a.rotation.x=Math.PI/2; a.position.set(0,y,z0); const b=new THREE.Mesh(new THREE.CylinderGeometry(r*1.15,r*1.15,len*.16,10),lam(0x1c1d20)); b.rotation.x=Math.PI/2; b.position.set(0,y,z0-len*.5); const e=new THREE.Mesh(new THREE.CylinderGeometry(r*.5,r*.5,len*.2,8),lam(0x1c1d20)); e.rotation.x=Math.PI/2; e.position.set(0,y,z0+len*.58); g.add(a,b,e); };
   const kind={name:'FIELD TELESCOPE',hint:'CLICK TO STAND IT ON ITS TRIPOD UNDER OPEN SKY AND LOOK THROUGH IT. WALK AWAY TO PACK IT UP.',
     make:()=>{ '@later'; const g=new THREE.Group(); tube(g,.4*M,.032*M,.08*M,-.1*M); g.traverse(o=>{ o.userData.wield=1; }); g.tipL=new THREE.Vector3(0,.08*M,-.3*M); g.head=g.tipL; return g; },
-    use:()=>FIELD.toggle() };
+    use:()=>FIELD.toggle(), away:()=>FIELD.on };
   (WIELD.pend=WIELD.pend||[]).push(['fscope',kind]); if(WIELD.kind)WIELD.kind('fscope',kind);
   let prop=null, A=null, keep=null;
   const stand=()=>{ '@later'; const g=new THREE.Group(), wood=lam(0x7e5430), H=1.25*M; for(let i=0;i<3;i++){ const a=i*Math.PI*2/3+.5, L=new THREE.Mesh(new THREE.CylinderGeometry(.014*M,.011*M,H*1.06,6),wood); L.position.set(Math.cos(a)*.2*M,H/2,Math.sin(a)*.2*M); L.rotation.set(-Math.sin(a)*.33,0,Math.cos(a)*.33,'XZY'); L.castShadow=true; g.add(L); }
@@ -22,7 +22,7 @@ const FIELD={on:false,at:null}; window.FIELD=FIELD;
   FIELD.dark=()=>{ const z=ZONES.at(pos.x,pos.z,SHARED.LVL||'up'); return (ZONES.dark&&z&&ZONES.dark[z.id])||0; };
   FIELD.toggle=async()=>{ if(FIELD.on){ if(!SCOPE.isOpen())await SCOPE.open(); return; }
     if(!SKY.on()||ROOMS.cur||SHARED.LVL==='down'){ SAY('THE FIELD TELESCOPE NEEDS OPEN SKY OVER IT.','#c8a090'); return; }
-    const d=FIELD.dark(); keep=SCOPE.site; SCOPE.site={ap:60,dark:d,max:100,name:'THE FIELD TELESCOPE',field:true}; if(SCOPE.mag>100)SCOPE.mag=50;
+    const d=FIELD.dark(); keep=SCOPE.site; SCOPE.site={ap:60,dark:d,max:100,name:'THE FIELD TELESCOPE',field:true}; if(SCOPE.mag>2500)SCOPE.mag=50;
     prop=stand(); A=prop.userData.tube; const hd=SHARED.heading||0; prop.position.set(pos.x+Math.sin(hd)*.6*M,SHARED.py||0,pos.z+Math.cos(hd)*.6*M); scene.add(prop); FIELD.on=true; FIELD.at={x:pos.x,z:pos.z}; SKYSHOW.want=true;
     SAY(d>0?'YOU STAND THE TELESCOPE IN THE GRASS. AWAY FROM THE LAMPS THE SKY IS DARKER: FAINTER THINGS SHOW HERE.':'YOU STAND THE TELESCOPE ON THE PAVEMENT. THE STREET LAMPS WASH OUT THE FAINT THINGS: THE PARK IS DARKER.','#c8e0ff'); await SCOPE.open(); };
   FIELD.pack=()=>{ if(!FIELD.on)return; FIELD.on=false; if(SCOPE.isOpen())SCOPE.close(); if(prop){ scene.remove(prop); prop.traverse(o=>{ if(o.geometry)o.geometry.dispose(); if(o.material)o.material.dispose(); }); prop=null; A=null; } if(keep)SCOPE.site=keep; keep=null; FIELD.at=null; };

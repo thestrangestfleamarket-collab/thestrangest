@@ -41,7 +41,7 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
   WIELD.mY=.25; WIELD.mZ=.85; WIELD.mouth=new V3();
   renderer.domElement.addEventListener('pointermove',e=>{ if(UI.locked&&UI.locked()){ const r=renderer.domElement.getBoundingClientRect(); ms.x=r.left+r.width/2; ms.y=r.top+r.height/2; return; } ms.x=e.clientX; ms.y=e.clientY; });
   WIELD.set=id=>{ '@later'; if(MESH[WIELD.on])MESH[WIELD.on].visible=false; WIELD.on=null; if(!id||!FORAGE.has(id)){ if(id)say('YOU HAVE NO '+NM[id]+'.','#c8a090'); return; }
-    const m=MESH[id]||(MESH[id]=mk(id)); if(!m.parent){ m.matrixAutoUpdate=false; m.userData.anyRoom=1; scene.add(m); } /* what you hold comes into every room with you: the room cull leaves it be */ WIELD.on=id; SHARED.target=null; if(/^sword/.test(id))MOTION.play('draw'); say('YOU HOLD THE '+NM[id]+'. '+(KIND[id]&&KIND[id].hint||'THE MOUSE SWINGS IT ROUND YOU, A CLICK SLASHES.'),'#e8e2cc'); FORAGE.draw(); };
+    const m=MESH[id]||(MESH[id]=mk(id)); if(!m.parent){ m.matrixAutoUpdate=false; m.userData.anyRoom=1; scene.add(LEVELS.own(m,'*')); } /* what you hold comes into every room with you: the room cull leaves it be */ WIELD.on=id; SHARED.target=null; if(/^sword/.test(id))MOTION.play('draw'); say('YOU HOLD THE '+NM[id]+'. '+(KIND[id]&&KIND[id].hint||'THE MOUSE SWINGS IT ROUND YOU, A CLICK SLASHES.'),'#e8e2cc'); FORAGE.draw(); };
   WIELD.next=()=>{ const own=LIST.filter(k=>FORAGE.has(k)), i=own.indexOf(WIELD.on); WIELD.set(i+1<own.length?own[i+1]:null); if(!WIELD.on)say('YOUR HANDS ARE FREE.','#e8e2cc'); };
   const WIELD_strike0=()=>{ '@later'; if(!WIELD.on||WIELD.block||sw&&sw.t<.18||VIT.dead||VIT.out>0||RAG.on)return false; if(KIND[WIELD.on]&&KIND[WIELD.on].use){ if(!KIND[WIELD.on].ekey)KIND[WIELD.on].use(); return false; }   // what you ride is used with E, not a click (owner, 8 Nov 2026) let heavy=false;
     heavy=false; if(WIELD.sword){ const now=performance.now(); combo=now-lastSw<900?combo+1:0; lastSw=now; heavy=combo>=2; if(heavy)combo=-1; const winded=VIT.sta<.08;
@@ -49,7 +49,7 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
     else sw={t:0,T:.3,s:side}; MOTION.play(heavy?'swingHeavy':side>0?'swingA':'swingB'); side=-side; SFX.play('swing',{vol:.45,pitch:heavy?.85:1.1,vary:.1}); return true; };
   WIELD.strike=(...a)=>{ const r=WIELD_strike0(...a); if(r)SYS.run('strike'); return r; };
   FORAGE.ROWB.push(id=>LIST.includes(id)?[[WIELD.on===id?'PUT AWAY':'HOLD','wield']]:[]); FORAGE.ACT.wield=id=>WIELD.set(WIELD.on===id?null:id);
-  const free=()=>!(RAG.on||st.water&&st.water.in||st.ride||st.climb||st.hang||st.sit&&!st.sit.hold||VIT.dead);
+  const free=()=>!(KIND[WIELD.on]&&KIND[WIELD.on].away&&KIND[WIELD.on].away()||RAG.on||st.water&&st.water.in||st.ride||st.climb||st.hang||st.sit&&!st.sit.hold||VIT.dead);
   WIELD.pre=dt=>{ const on=!!WIELD.on&&free();
     const bare=!WIELD.on&&free()&&!(VIT.out>0)&&keys.has('p')&&VIT.sta>.03&&!(st.up&&st.up.name!=='block');   // bare hands: the arms come up
     const bk=bare||on&&WIELD.sword&&!sw&&keys.has('p')&&VIT.sta>.03; if(bk!==WIELD.block){ const was=WIELD.bare; WIELD.block=bk; WIELD.bare=bk&&bare; if(bk){ WIELD.blockT=performance.now(); SFX.play('block',{vol:.3,vary:.1}); }

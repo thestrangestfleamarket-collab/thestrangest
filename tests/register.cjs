@@ -12,6 +12,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.evaluate(() => ROOMS.enter('bodega'));
     const inB = await pg.waitForFunction(() => ROOMS.offIn && ROOMS.offIn() === 'bodega' && !(window.FADE && FADE.busy), null, { timeout: 180000 }).then(() => true).catch(() => false);
     ok(inB, 'in the bodega');
+    await pg.waitForFunction(() => { const L = document.getElementById('loading'); return !L || getComputedStyle(L).pointerEvents === 'none'; }, null, { timeout: 120000 }).catch(() => {});   // the start's loading screen is gone (a click before then lands on it)
     const reg = await pg.evaluate(() => !!__dbg.UI.things.find(t => /THE REGISTER/.test(t.name)));
     ok(reg, 'the register is a thing to double-click');
     const A = await pg.evaluate(() => { const A = BODEGA.all(); return { sup: A.supplies.map(r => r.id), shelves: A.shelves.length, goods: A.goods.length }; });
@@ -19,17 +20,23 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(A.shelves + A.goods > 5, 'the shelves and the goods are listed too (' + A.shelves + ' + ' + A.goods + ')');
     await pg.evaluate(() => { INV.cash = Math.max(INV.cash, 100); BODEGA.register(); });
     await pg.waitForTimeout(500);
-    const cv = await pg.$('canvas[width="400"][height="440"]'), bx = await cv.boundingBox(), k = bx.width / 400;
+    const cv = await pg.$('canvas[width="400"][height="440"]');
+    const settle = async () => { let a = await cv.boundingBox(); for (let i = 0; i < 40; i++) { await pg.waitForTimeout(150); const b = await cv.boundingBox(); if (b && a && Math.abs(b.y - a.y) < .5 && Math.abs(b.x - a.x) < .5) return b; a = b; } return a; };   // the window settles where it stays (its words below can move it) before a click is aimed
+    let bx = await settle(); const k = bx.width / 400;
     // the dog food's line: find its row and click it
-    const row = await pg.evaluate(() => { const R = [{ head: 1 }, ...(BODEGA.basket.size ? [] : [{}])]; const A = BODEGA.all(); R.push({ head: 1 }, ...A.supplies); return R.findIndex(r => r.id === 'g_dogfood'); });
-    await pg.mouse.click(bx.x + 200 * k, bx.y + (12 + row * 22 + 11) * k); await pg.waitForTimeout(300);
+    const row = await pg.evaluate(() => { const S = MINI.state(); return { i: S.rows.findIndex(r => r.id === 'g_dogfood'), sy: S.sy || 0 }; });   // the window's own rows and scroll
+    bx = await settle(); const ky = bx.height / 440;
+    await pg.mouse.click(bx.x + 200 * k, bx.y + (12 + row.i * 22 + 11 - row.sy) * ky);   // the window reads a click on its next frame: wait for it (a slow machine's frames are long)
+    await pg.waitForFunction(() => (BODEGA.basket.get('g_dogfood') || 0) > 0, null, { timeout: 10000, polling: 100 }).catch(() => {});
     const bag = await pg.evaluate(() => BODEGA.basket.get('g_dogfood') || 0);
-    ok(bag === 1, 'a click on the dog food puts one in the basket');
+    const why = bag === 1 ? '' : ' ' + JSON.stringify({ row, bx, k, n: await pg.evaluate(() => document.querySelectorAll('canvas[width="400"][height="440"]').length), S: await pg.evaluate(() => { const S = MINI.state(); return S && { mx: S.mx, my: S.my, press: S.press, line: S.line, sy: S.sy, rows: S.rows.length, title: MINI.on && MINI.on.title }; }) });
+    ok(bag === 1, 'a click on the dog food puts one in the basket' + why);
     if (process.argv[3]) await pg.screenshot({ path: process.argv[3], clip: { x: bx.x - 20, y: bx.y - 50, width: bx.width + 40, height: bx.height + 110 } });
     await pg.mouse.move(bx.x + 200 * k, bx.y + 200 * k); for (let i = 0; i < 6; i++) { await pg.mouse.wheel(0, 200); await pg.waitForTimeout(80); }
     await pg.waitForTimeout(300);
     const d0 = await pg.evaluate(() => INV.items.g_dogfood || 0);
-    await pg.mouse.click(bx.x + 100 * k, bx.y + 410 * k); await pg.waitForTimeout(300);
+    bx = await settle(); await pg.mouse.click(bx.x + 100 * k, bx.y + 410 * (bx.height / 440));
+    await pg.waitForFunction(() => BODEGA.basket.size === 0, null, { timeout: 10000, polling: 100 }).catch(() => {});
     const d1 = await pg.evaluate(() => ({ n: INV.items.g_dogfood || 0, left: BODEGA.basket.size }));
     ok(d1.n === d0 + 1 && d1.left === 0, 'PAY buys it: the dog food is yours (' + d0 + ' -> ' + d1.n + ')');
     const err = await pg.evaluate(() => Object.entries(SYS.P).flatMap(([k, v]) => v.filter(s => s.err).map(s => k + ':' + s.name)));

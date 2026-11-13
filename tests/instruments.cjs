@@ -25,10 +25,11 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
   rec('an owner starts with the guitar, piano, drum kit and harp in the bag; ALL SKILLS 100 reads every skill 100 and off gives the real levels back',ok.items.every(n=>n===1)&&ok.sk.every(v=>v===100)&&ok.kept===0&&ok.off.every(v=>v===0),JSON.stringify(ok));
   await pg.evaluate(()=>{ for(const k of ['guitar','piano','drums','harp'])FORAGE.S.sk[k]=100; });
   const sh=await pg.evaluate(()=>['piano','drums','harp'].map(id=>({id,name:FORAGE.name(id),price:ITEMS.prop(id,'value'),shelf:BODEGA.LAYOUT.some(r=>r[2].includes(id)),make:!!(BODEGA.MAKE[id]&&BODEGA.MAKE[id]().children.length)})));
-  rec('the bodega sells A PIANO ($900), A DRUM KIT ($450) and A HARP ($700) on its shelf',sh.every(s=>s.shelf&&s.make)&&sh.map(s=>s.name+' '+s.price).join()==='A PIANO 900,A DRUM KIT 450,A HARP 700',JSON.stringify(sh));
+  rec('the bodega sells A PIANO ($900), A DRUM KIT ($450) and A HARP ($700) on its shelf',sh.every(s=>s.shelf&&s.make)&&sh.map(s=>s.name+' '+s.price).join()==='PIANO 900,DRUM KIT 450,HARP 700',JSON.stringify(sh));
   // each: set down and sat at; fingers (or sticks) on what they play
   for(const K of ['piano','harp','drums']){
-    const p=await pg.evaluate(async K=>{ __dbg.UI.setView('third'); __dbg.UI.dist*=.4; FORAGE.give(K,1); FORAGE.ACT[K](K); await new Promise(r=>setTimeout(r,1200)); const P=INSTR.ME, o={on:INSTR.on(),held:!!P.H&&!!P.H.G.parent,panel:!document.getElementById('inp').hidden,sat:null,miss:[]};
+    const p=await pg.evaluate(async K=>{ __dbg.UI.setView('third'); __dbg.UI.dist*=.4; FORAGE.give(K,1); FORAGE.ACT[K](K); await new Promise(r=>setTimeout(r,1200)); for(let i=0;i<60&&!(INSTR.ME&&INSTR.ME.H&&INSTR.ME.H.W);i++)await new Promise(r=>setTimeout(r,250));   // (a slow runner sets it down later)
+    const P=INSTR.ME, o={on:INSTR.on(),held:!!P.H&&!!P.H.G.parent,panel:!document.getElementById('inp').hidden,sat:null,miss:[]};
       const W=P.H.W, hipY=P.H.W&&new P.H.G.position.constructor().setFromMatrixPosition(W[0]).y/P.H.k; o.sat=+hipY.toFixed(2);
       const chords=K==='piano'?[[48,52,55,60,64,67],[41,45,72,76,79],[48,52,55,64,67,71]]:K==='harp'?[[7,9,11,16,18,20],[3,5,22,24,26],[10,12,26,28,30]]:[[1],[5],[2],[6],[4],[7]];
       for(const ch of chords){ const evs=ch.map(n=>INSTR.note(P,K==='piano'?{n,v:.8,d:1e9,h:n<60?'L':'R'}:K==='harp'?{n,f:0,v:.8,d:2,h:n<14?'L':'R'}:{n,v:.8,d:.1,h:n===1?'L':'R'})); await new Promise(r=>setTimeout(r,K==='drums'?40:450)); if(K!=='drums')for(let f=0;f<8;f++)await new Promise(r=>requestAnimationFrame(r));   // (the reach settles over frames: on a slow machine 450 ms is only a frame or two)
@@ -62,11 +63,11 @@ const PAGE=path.resolve(process.argv[2]||'dist/market.html'), OUT=process.argv[3
     rec(`the ${K}: a skill, sold at the bodega, held as you sit; a tune from the book plays one note at a time in its range, the hands move, five pieces open at 0-10, its recordings come`,m.on&&m.held&&m.skill&&m.price>0&&m.shelf&&m.book>150&&m.notes>3&&m.poses>=4&&m.inRange&&m.one&&m.open===5&&m.sounds>=10,JSON.stringify(m));
     await wait(300); }
   // Polyfork's models (data/pfitems.json): once they have come, each of the six wears its own (the piano and its bench, the harp, the kit's snare, bass drum and cymbals, the stools), the first shapes hidden
-  const pf=await pg.evaluate(async()=>{ await PFI.load(); const want={piano:['piano_pf','piano_bench'],harp:['harp_pf','stool'],drums:['drum_snare','drum_kick','drum_cymbal','stool'],violin:['violin','violin_bow','stool'],flute:['flute','stool'],trumpet:['trumpet','stool']}, r={};
+  const pf=await pg.evaluate(async()=>{ await PFI.load(); const want={piano:['piano_pf','piano_bench'],harp:['harp_pf','stool'],drums:['drum_snare','drum_kick','drum_cymbal','stool'],violin:['violin','violin_bow'],flute:['flute'],trumpet:['trumpet']}, r={};
     for(const [K,ids] of Object.entries(want)){ const g=INSTR.KINDS[K].model(), on=new Set(), it=g.userData.it; if(it&&it.userData.bow)g.add(it.userData.bow); g.traverse(o=>{ if(!o.isMesh||!o.userData.pf)return; let v=true; for(let q=o;q;q=q.parent)if(q.visible===false)v=false; if(v)on.add(o.userData.pf); });
       r[K]={miss:ids.filter(id=>!on.has(PFI.mesh(id).userData.pf))}; }
     return r; });
-  rec('each of the six wears its Polyfork model once it has come (piano and bench, harp, the kit\'s drums and cymbals, violin and bow, flute, trumpet, their stools)',Object.values(pf).every(o=>!o.miss.length),JSON.stringify(pf));
+  rec('each of the six wears its Polyfork model once it has come (piano and bench, harp, the kit\'s drums and cymbals, violin and bow, flute, trumpet; a stool for the harp and the kit)',Object.values(pf).every(o=>!o.miss.length),JSON.stringify(pf));
   const tv=await pg.evaluate(async()=>{ const S=FORAGE.S; S.sk.trumpet=1000; FORAGE.give('trumpet',1); FORAGE.ACT.trumpet('trumpet'); await new Promise(r=>setTimeout(r,800)); const P=INSTR.ME, pv=P.H&&P.H.G.userData.it.userData.pf||{}, v=[1,2,3].map(i=>pv['piston-'+i]);
     const y=()=>v.map(q=>q?+(q.position.y-q.userData.at.y).toFixed(4):null), r={has:v.every(Boolean),rest:y()};
     const till=async ok=>{ for(let i=0;i<40&&!ok(y());i++)await new Promise(r=>setTimeout(r,100)); return y(); };

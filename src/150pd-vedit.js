@@ -1,6 +1,6 @@
 // THE VEHICLE EDITOR: VLOOK, every vehicle's look as the owner sets it in ADMIN > VEHICLE EDITOR (its size, the colours it is painted in, each part hidden, sized, moved or tinted), a copy of a car parked where you stand, more of a vehicle in the traffic; one shared file (/shared/vlooks.json), the same for everyone.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, ITEMS, ONLINE, pos, RIDE, TEXT, VLOOK} from './003b-systems.js';
+import {ARCHI, FORAGE, ITEMS, ONLINE, pos, RIDE, TEXT, VLOOK} from './003b-systems.js';
 import {renderer} from './004-main.js';
 import {MAPFILE, MODS, SYS, TILE} from './006-map-pre.js';
 { const FILE='/shared/vlooks.json', V3=THREE.Vector3, esc=TEXT.esc, web=/^https?:$/.test(location.protocol);
@@ -76,14 +76,14 @@ import {MAPFILE, MODS, SYS, TILE} from './006-map-pre.js';
   let lastV=null; SYS.add('world',(k,v)=>{ if(k==='veh'&&v!==lastV){ lastV=v; if(web){ get(); syncCars(); } } },'150pd-vedit');
 
   /* ---------- the editor: every vehicle in a list, the one picked turning in a little studio, its look's controls under it ---------- */
-  const W=360, Hh=240, ROOM=new THREE.Scene(), PIV=new THREE.Group(), cam=new THREE.PerspectiveCamera(30,W/Hh,.01,500), SP=new THREE.Sphere(), BX=new THREE.Box3();
+  const W=360, Hh=240, ROOM=new THREE.Scene(), PIV=new THREE.Group(), cam=new THREE.PerspectiveCamera(30,W/Hh,.01,500), SP=new THREE.Sphere(), BX=new THREE.Box3(), B2=new THREE.Box3();
   { const k=new THREE.DirectionalLight(0xfff4e2,2.2), f=new THREE.DirectionalLight(0xbcd0ff,.8); k.position.set(-3,4,4); f.position.set(4,1,-3); ROOM.add(new THREE.AmbientLight(0xffffff,.9),k,f,PIV); }
   const HL=new THREE.Box3Helper(new THREE.Box3(),0xffd04a); HL.visible=false; ROOM.add(HL);
   let host=null, cur=null, vi=0, seq=0, obj=null, part='', say='', rt=null, px=null, g2=null, im=null, yaw=-.7, pitch=.3, drag=null, last=0, R=1;
-  const ridesIn=()=>{ for(const id of (ITEMS.ids?ITEMS.ids():[])){ const g=ITEMS.prop(id,'grants'), k=g&&RIDE.kinds[g]; if(!k||k.world||k.noLook||VLOOK.kinds[id])continue;
+  const ridesIn=()=>{ for(const id of (ITEMS.ids?ITEMS.ids():[])){ const g=ITEMS.prop(id,'grants'), k=g&&RIDE.kinds[g]; if(!k||k.world||k.noLook||VLOOK.kinds[id]||ARCHI(id))continue;
     VLOOK.kind(id,{name:(FORAGE.NM&&FORAGE.NM[id])||String(ITEMS.prop(id,'name')||id).toUpperCase(),grp:'RIDES',make:()=>VLOOK.dress(id,k.make(id))}); } };
   const drop=()=>{ if(!obj)return; PIV.remove(obj); VLOOK.live.delete(obj); if(obj.userData.vlDrop)obj.userData.vlDrop(); obj.traverse(c=>{ if(c.isMesh&&OWN.has(c)){ c.geometry.dispose(); for(const m of [].concat(c.material))m.dispose(); } }); obj=null; HL.visible=false; };
-  const frame=()=>{ if(!obj)return; PIV.rotation.set(0,0,0); obj.position.set(0,0,0); obj.updateMatrixWorld(true); BX.setFromObject(obj); if(BX.isEmpty())return; BX.getBoundingSphere(SP); obj.position.sub(SP.center); R=Math.max(.01,SP.radius); };
+  const frame=()=>{ if(!obj)return; PIV.rotation.set(0,0,0); obj.position.set(0,0,0); obj.updateMatrixWorld(true); BX.makeEmpty(); const seen=o=>{ if(!o.visible)return; if(o.isMesh&&o.geometry){ if(!o.geometry.boundingBox)o.geometry.computeBoundingBox(); BX.union(B2.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld)); } for(const c of o.children)seen(c); }; seen(obj); if(BX.isEmpty())return; BX.getBoundingSphere(SP); obj.position.sub(SP.center); R=Math.max(.01,SP.radius); };
   // (a maker may answer later: make() -> a promise of it; a kind with variants(), e.g. the horse's coats, is made as the one picked: make(i), its first variant())
   const pick=(id,v)=>{ drop(); cur=id; part=''; const K=VLOOK.kinds[id]; vi=v!=null?v:K&&K.variant?K.variant():0; const my=++seq; let o=null; try{ o=K&&K.make(vi); }catch(e){ console.warn('VLOOK make',id,e); }
     const show=o=>{ if(!o||my!==seq||obj){ if(o){ VLOOK.live.delete(o); if(o.userData.vlDrop)o.userData.vlDrop(); } return; } obj=o; obj.position.set(0,0,0); obj.rotation.set(0,0,0); obj.traverse(c=>{ c.frustumCulled=false; }); PIV.add(obj); frame(); draw(); };

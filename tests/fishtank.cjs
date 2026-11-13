@@ -17,9 +17,13 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const a = await T(); await pg.waitForTimeout(12000); const c = await T();
     ok(c.steps > a.steps && c.wave > 0 && (c.sy !== a.sy || c.wave !== a.wave), 'the water surface moves (' + a.steps + ' -> ' + c.steps + ' steps, middle height ' + a.sy + ' -> ' + c.sy + ', highest wave ' + a.wave + ' -> ' + c.wave + ' mm)');
     ok(a.f0 && c.f0 && Math.hypot(c.f0[1] - a.f0[1], c.f0[3] - a.f0[3]) > .01, 'the koi swims: ' + JSON.stringify([a.f0, c.f0]));
-    await pg.evaluate(() => { while (FORAGE.has('g_fishfood')) FORAGE.take('g_fishfood', 1); __dbg.UI.things.find(t => /FISH TANK|FEED THE FISH/.test(t.name)).act(); });
+    const ask = await pg.evaluate(() => { while (FORAGE.has('g_fishfood')) FORAGE.take('g_fishfood', 1); __dbg.UI.things.find(t => /FISH TANK|FEED THE FISH/.test(t.name)).act(); return { look: TANKV.on(), opts: [...document.querySelectorAll('#tanka:not([hidden]) button')].map(b => b.textContent) }; });
+    ok(!ask.look && ['VIEW', 'FEED', 'EDIT'].every(k => ask.opts.includes(k)), 'a double-click asks VIEW, FEED or EDIT (owner, 13 Nov 2026): ' + JSON.stringify(ask));
+    const vw = await pg.evaluate(async () => { TANKV.choose('view'); await new Promise(r => setTimeout(r, 300)); const r = { look: TANKV.on(), tabs: !!document.querySelector('#tankp:not([hidden]) button[data-a="tab:water"]') }; TANKV.close(); return r; });
+    ok(vw.look && !vw.tabs, 'VIEW comes close on the tank without its settings: ' + JSON.stringify(vw));
+    await pg.evaluate(() => { __dbg.UI.things.find(t => /FISH TANK/.test(t.name)).act(); TANKV.choose('edit'); });
     let v = false; for (let i = 0; i < 30 && !v; i++) { await pg.waitForTimeout(500); v = await pg.evaluate(() => TANKV.on() && !!document.querySelector('#tankp:not([hidden]) button[data-a="tab:water"]')); }
-    ok(v, 'a double-click without fish food opens the close look and its settings');
+    ok(v, 'EDIT opens the close look and its settings');
     if (v) {
       await pg.waitForTimeout(3000); const cam = await pg.evaluate(() => ({ hold: __dbg.UI.holdCam, persp: __dbg.UI.persp }));
       ok(cam.hold === 'tank' && cam.persp, 'the camera comes close on the tank: ' + JSON.stringify(cam));
@@ -46,10 +50,10 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       ok(await pg.evaluate(() => !TANKV.on() && !__dbg.UI.holdCam), 'Esc steps back');
     }
     const y0 = (await T()).y;
-    const withFood = await pg.evaluate(() => { TANKV.close(); FORAGE.give('g_fishfood', 1); const th = __dbg.UI.things.find(t => /FISH TANK|FEED THE FISH/.test(t.name)); th.act(); const r = { name: th.name, menu: TANKV.on(), feedBtn: !!document.querySelector('#tankp [data-a="feed"]'), food: FORAGE.has('g_fishfood') }; TANKV.act('feed'); TANKV.close(); return r; });
-    ok(withFood.menu && withFood.feedBtn && withFood.food && withFood.name === 'THE FISH TANK', 'with fish food a double-click still opens the menu, FEED THE FISH a button in it: ' + JSON.stringify(withFood));
+    const withFood = await pg.evaluate(() => { TANKV.close(); FORAGE.give('g_fishfood', 1); const th = __dbg.UI.things.find(t => /FISH TANK|FEED THE FISH/.test(t.name)); th.act(); const r = { name: th.name, menu: !TANKV.on(), feedBtn: !!document.querySelector('#tanka:not([hidden]) [data-a="feed"]:not([disabled])'), food: FORAGE.has('g_fishfood') }; TANKV.choose('feed'); return r; });
+    ok(withFood.menu && withFood.feedBtn && withFood.food && withFood.name === 'THE FISH TANK', 'with fish food the double-click\'s FEED is there: ' + JSON.stringify(withFood));
     let f = null; for (let i = 0; i < 40; i++) { f = await T(); if (f.y > y0 + .1) break; await pg.waitForTimeout(500); }
-    ok(f.fed > 0 && f.y > y0 + .1 && !(await pg.evaluate(() => FORAGE.has('g_fishfood'))), 'FEED THE FISH in the menu: the food is used and the fish rise (' + y0 + ' -> ' + f.y + ')');
+    ok(f.fed > 0 && f.y > y0 + .1 && !(await pg.evaluate(() => FORAGE.has('g_fishfood'))), 'FEED: the food is used and the fish rise (' + y0 + ' -> ' + f.y + ')');
   }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close(); process.exit(fails.length ? 1 : 0);

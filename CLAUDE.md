@@ -44,6 +44,8 @@ Look there before changing how something looks or behaves, and add a dated entry
   come first. **Builders read each other's registrations when they build** (`STORE.kit` from the store, `STORE.main` from
   main street, `MODS.apts` from the apartments), so a builder's file must come after the ones it reads: the imports cannot see that (they are property reads); the build check's error step can. Prove a move with the scope proof, then run the build check.
 
+**The street's files wait (13 Nov 2026)**: a start in your apartment or on the platform fetches none of the street's own files: a loader only the street needs is declared `SYS.far(__LAZY__("data/x.json"))` (006), which waits for `SYS.out()` (163: the first moment you are neither in your flat nor on the start platform; a test's `?fresh=1` opens it at the start); `tests/outgate.cjs`.
+
 **Painting far things later (21 Oct 2026)**: something big and far from where you start (the bodega's ground, the park wall) is
 queued with `BATCH.queue({make, cast, group, post, R, done})` and `q.add(x0,z0,x1,z1,()=>paint())` instead of painted in its builder:
 everything within `R` of you is painted before the start ends (`BATCH.near`), the rest a few ms a frame, nearest first (`BATCH.tick`).

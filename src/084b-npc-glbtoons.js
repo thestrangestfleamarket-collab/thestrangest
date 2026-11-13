@@ -4,7 +4,7 @@ import {QS, SYS} from './006-map-pre.js';
 import {PARTSNPC} from './080-npc-parts.js';
 import {RIGNPC} from './083-npc-rig.js';
 const GLBTOONS={list:[]}; window.GLBTOONS=GLBTOONS;
-{ const DATA=__LAZY__("data/toons-glb.json");
+{ const DATA=SYS.far(__LAZY__("data/toons-glb.json"));
   const SPR={ earL:{f:-.15,s:.12,k:70,c:6,lim:.4}, earR:{f:-.15,s:.12,k:70,c:6,lim:.4}, jL:{f:-.25,s:.1,k:45,c:5,lim:.35}, jR:{f:-.25,s:.1,k:45,c:5,lim:.35}, jB:{f:-.3,k:40,c:5,lim:.4},
     scarf:{f:-.35,s:.2,k:35,c:4,lim:.5}, hood:{f:-.1,s:.1,k:60,c:6,lim:.25}, horn:{f:-.06,s:.06,k:90,c:8,lim:.15}, hat:{f:-.08,s:.08,k:80,c:7,lim:.2}, umb:{f:-.12,s:.12,k:40,c:4,lim:.3},
     flapL:{f:-.3,k:45,c:5,lim:.4}, flapR:{f:-.3,k:45,c:5,lim:.4}, tail:{s:.3,y:.4,k:30,c:3,lim:.6}, tailFin:{s:.3,y:.4,k:30,c:3,lim:.6}, armLt:{f:-.1,k:50,c:5,lim:.3}, armRt:{f:-.1,k:50,c:5,lim:.3} };

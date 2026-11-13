@@ -9,7 +9,7 @@ import {PFROW} from './068a-pfrow.js';
 import {BODIES} from './111a-bodies.js';
 import {VEH} from './150o-physmore.js';
 const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
-{ const HD=__LAZY__("data/heli.json"), CAST=__LAZY__("data/cast/v-space.json");
+{ const HD=SYS.far(__LAZY__("data/heli.json")), CAST=SYS.far(__LAZY__("data/cast/v-space.json"));
   const T=TILE, M0=T/.84, YS=ZU*24/TILE, MV=M0*YS, say=(t,c)=>SAY(t,c||'#e8e2cc'), X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, sm=u=>u<=0?0:u>=1?1:u*u*(3-2*u), wrap=a=>Math.atan2(Math.sin(a),Math.cos(a));
   // the round: it leaves the pad every CYC seconds, flies F seconds and rests the rest, the rotor still
   const H2=0, CYC=300, F=130, UP0=5, UP1=11, DN0=F-14, DN1=F-4, LIFT=12, CRUISE=55, DECK={s:.8,v:.6};

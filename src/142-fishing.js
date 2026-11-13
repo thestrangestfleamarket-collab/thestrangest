@@ -55,15 +55,17 @@ FORAGE.TABS.push({id:'fishing',draw:()=>{ '@later'; const IP=(id,k)=>ITEMS.prop(
     o+='</table>'; }
   o+=`<div style="color:#9b9584;margin-top:4px;line-height:1.45">A baited hook in the Hudson can bring up an old boot, a tin can, a message in a bottle, a water-stained novel or, rarely, a SUNKEN CHEST (a gem and $10-40).</div>`;
   o+=H('7. THE ROWBOAT')+'<div style="line-height:1.45">Rent it at the stand, row with W A S D, fish from it for the deep fish, STEP ASHORE at a ladder or pier.</div>';
-  o+=H('8. COOK AND SELL')+R('FISH FRY','2 white perch: fills a third')+R('SMOKED EEL','2 eels: fills two fifths, strong 2 min')+R('GRILLED STRIPED BASS','1 striped bass: fills half, mends you a minute')+R('FISH CHOWDER','1 catfish, 2 button mushrooms: fills more than half')+R('STURGEON STEAK','1 sturgeon: fills most of you, quick 3 min')+R('SELL','At FISHING & SCUBA, the $ above. Cook by a flame; raw fish is risky.')+'';
+  o+=H('8. SELL')+R('SELL','At the fish market\'s stalls or to the Fisherman in Waders, the $ above.')+'';
   return o; }});
 // what a catch looks like in the inspect window: the fish's own shape once the river is built (FISHING.look), the junk and the bait in simple shapes
 INSPECT.kinds.push({is:id=>/^x_/.test(id)||id==='chest'||/^bait/.test(id),make:id=>{ '@later'; const P=INSPECT.part;
     if(id==='x_boot'){ const g=new THREE.Group(); g.add(P('box',0x3a2e22,0,.06,0,.09,.12,.1),P('box',0x3a2e22,0,.02,.07,.09,.04,.16),P('box',0x1e1812,0,0,.04,.095,.012,.24)); return g; }
-    if(id==='x_can')return INSPECT.shape('jar',0x9aa0a4,0x8a9094); if(id==='x_note'){ const g=INSPECT.shape('bottle',0x9ad0b0); g.add(P('cyl',0xf2ead6,0,.12,0,.022,.14,.022)); return g; }
+    if(id==='x_can'){ const g=new THREE.Group(), T={kind:'metal',metal:.6,rough:.45}; g.add(P('cyl',0x9aa0a4,0,.06,0,.04,.12,.04,0,0,0,T),P('cyl',0x7a5a3a,0,.06,0,.0405,.06,.0405,0,0,0,{kind:'paper'}),P('cyl',0x3a3e40,0,.119,0,.036,.004,.036),P('cyl',0xb0b6ba,.03,.15,0,.038,.004,.038,0,1.1,0,T)); for(const y of [.012,.108])g.add(P('tor',0xb0b6ba,0,y,0,.04,.04,.02,Math.PI/2,0,0,T)); return g; } if(id==='x_note'){ const g=INSPECT.shape('bottle',0x9ad0b0); g.add(P('cyl',0xf2ead6,0,.12,0,.022,.14,.022)); return g; }
     if(id==='chest')return KIT.piece('chest',.36);
     if(/^bait/.test(id))return id==='bait_cut'?INSPECT.shape('lump',0xb07a6a):INSPECT.shape('jar',0x6a4a2a,0x3a3a3a);
-    return FISHING.look&&FISHING.look(id)||(()=>{ const g=new THREE.Group(); g.add(P('ball',0x8a9aa0,0,0,0,.2,.07,.035,0,0,0,{flat:1}),P('cone',0x7a8a90,-.24,0,0,.07,.1,.02,0,Math.PI/2)); return g; })(); }});
+    return FISHING.look&&FISHING.look(id)||(()=>{ const g=new THREE.Group(), [c,c2,L,H,wh]={x_burbot:[0x6a5a3a,0xc8b888,.26,.045,1],x_oldcat:[0x3a3a30,0x8a8670,.24,.07,2],x_smelt:[0xb8c4c8,0xe8eef0,.16,.035,0],x_whitefish:[0xd0d6d8,0xf2f4f4,.2,.06,0]}[id]||[0x8a9aa0,0xd0d8da,.2,.06,0], W={kind:'wet'};
+      g.add(P('sph',c,0,0,0,L,H,H*.55,0,0,0,W),P('sph',c2,0,-H*.3,0,L*.85,H*.6,H*.5,0,0,0,W),P('cone',c,-L-.05,0,0,H*1.1,.11,.012,0,-Math.PI/2,0,W),P('cone',c,-L*.1,H*.95,0,L*.3,H*.7,.008,0,0,0,W),P('cone',c,L*.3,-H*.8,H*.3,L*.12,H*.5,.008,Math.PI,0,0,W),P('ball',0x101010,L*.72,H*.25,H*.42,.01,.01,.006),P('ball',0x101010,L*.72,H*.25,-H*.42,.01,.01,.006));
+      for(let i=0;i<wh*2;i++){ const s=i%2?1:-1, k=i>>1; g.add(P('cyl',0x2a2a24,L*.98+.03,-H*.2-k*.02,s*.03,.003,.09,.003,s*.6,Math.PI/2-.3-k*.3)); } return g; })(); }});
 // the rowboat in the vehicle editor: a copy of the one on the river once the Hudson is built
 VLOOK.kind('rowboat',{name:'THE ROWBOAT',grp:'BOATS',make:()=>{ const b=BOAT.G; if(!b)return null; const c=b.clone(); c.visible=true; c.position.set(0,0,0); c.rotation.set(0,0,0); return VLOOK.dress('rowboat',c); }});
 // fishing starts with the game (THE LAKE needs no river); the Hudson's own parts (the stand, the rowboat, clicking its water) are added when it is built
@@ -71,13 +73,12 @@ const fishInit=()=>{ if(FISHING.at)return; const T=TILE, RB={get lv(){ return RI
   const NAMES=FISHING.NAMES;
   const SPECIES=Object.keys(NAMES);   // their habits are the item model's: LIVES IN, DEPTH, BITES, BAIT, FIGHT, COMMON, WEIGHT, VALUE (data/items.json, the item editor)
   const JUNK=[['x_boot','OLD BOOT',.6,1],['x_can','TIN CAN',.5,1],['x_note','MESSAGE IN A BOTTLE',.05,5],['chest','SUNKEN CHEST',.05,0]];
-  FORAGE.add({names:Object.assign({},NAMES,Object.fromEntries(JUNK.map(j=>[j[0],j[1]])),{rod:'FISHING ROD',bait:'WORMS',bait_cut:'CUT BAIT (BUNKER)',rod_carbon:'CARBON ROD',rod_surf:'SURF ROD',reel_fast:'FAST REEL',reel_pro:'PRO REEL',lure_worm:'RUBBER WORM LURE',lure_spoon:'SPOON LURE',cooler_s:'SMALL COOLER',cooler_m:'COOLER',cooler_l:'BIG COOLER',crabpot:'CRAB POT'}),raw:Object.fromEntries(SPECIES.map(id=>[id,[Math.min(.2,.05+.03*(IP(id,'weight')||1)),.3]])),
-    prices:{f_fishfry:12,f_grillbass:34,f_chowder:30,f_smokeeel:22,f_sturgeon:90},
-    recipes:[['f_fishfry','FISH FRY','cooking',[10,50],{x_perch:2},'fills a third'],['f_smokeeel','SMOKED EEL','cooking',[25,70],{x_eel:2},'fills two fifths, strong 2 min'],
-      ['f_grillbass','GRILLED STRIPED BASS','cooking',[30,75],{x_bass:1},'fills half, mends you a minute'],['f_chowder','FISH CHOWDER','cooking',[40,85],{x_catfish:1,m_button:2},'fills more than half, some health'],
-      ['f_sturgeon','STURGEON STEAK','cooking',[65,110],{x_sturgeon:1},'fills most of you, quick on your feet 3 min']],
-    does:{f_fishfry:()=>FORAGE.feed(.33),f_smokeeel:()=>{ FORAGE.feed(.4); FORAGE.buff('str',120); },f_grillbass:()=>{ FORAGE.feed(.5); FORAGE.buff('regen',60); },
-      f_chowder:()=>{ FORAGE.feed(.6); VIT.heal(.3); },f_sturgeon:()=>{ FORAGE.feed(.8); FORAGE.buff('swift',180); }}});
+  FORAGE.add({names:Object.assign({},NAMES,Object.fromEntries(JUNK.map(j=>[j[0],j[1]])),{rod:'FISHING ROD',bait:'WORMS',bait_cut:'CUT BAIT (BUNKER)',rod_carbon:'CARBON ROD',rod_surf:'SURF ROD',reel_fast:'FAST REEL',reel_pro:'PRO REEL',lure_worm:'RUBBER WORM LURE',lure_spoon:'SPOON LURE',cooler_s:'SMALL COOLER',cooler_m:'COOLER',cooler_l:'BIG COOLER',crabpot:'CRAB POT'}),raw:Object.fromEntries(SPECIES.map(id=>[id,[Math.min(.2,.05+.03*(IP(id,'weight')||1)),.3]]))});
+  // the junk has its uses (owner, 12 Nov 2026): the fishmonger pays for all three, and the message can be read
+  ITEMS.reg('x_note',{value:5}); FORAGE.sell('x_boot','x_can','x_note');
+  const NOTES=['"IF YOU FIND THIS, THE RIVER RUNS BOTH WAYS. I AM FINE."','"THE STURGEON LIE DEEPEST, WHERE THE WATER IS DARK. BRING CUT BAIT."','"TO WHOEVER READS THIS: FEED THE KOI FOR ME."','"I THREW MY RING IN AFTER HER. THE CATFISH HAS IT NOW."','"DAY 40. THE BOAT LEAKS. THE EELS BITE AT NIGHT."','"MEET ME UNDER THE CLOCK AT DUSK. YOU WILL KNOW ME BY THE HAT."'];
+  FORAGE.ROWB.push(id=>id==='x_note'?[['READ IT','noteread']]:[]);
+  FORAGE.ACT.noteread=()=>{ if(!FORAGE.has('x_note'))return; SAY('YOU UNROLL THE PAPER IN THE BOTTLE: '+NOTES[Math.floor(Date.now()/864e5)%NOTES.length],'#9ad0b0'); };
   const say=SAY, PRICE=Object.fromEntries([...SPECIES.map(id=>[id,IP(id,'value')||1]),...JUNK.map(j=>[j[0],j[3]])]);
   // the tackle you own: the best CAST (m), LINE (strength) and REEL (speed) of what is in your pack; fish in hand up to 5 and what your coolers KEEP
   const BAITIDS=['bait','bait_cut','lure_worm','lure_spoon'], G0={cast:12,line:1,reel:1}, GC={t:-1e9,v:G0};
@@ -133,11 +134,16 @@ const fishInit=()=>{ if(FISHING.at)return; const T=TILE, RB={get lv(){ return RI
     if(d.sell){ const n=d.n==='all'?FORAGE.has(d.sell):1, v=WORTH.sell(d.sell,n,PRICE[d.sell]); FORAGE.take(d.sell,n); INV.cash+=v; say(`YOU SELL ${n} ${FORAGE.NM[d.sell]} FOR $${v}.`,'#f2c14e'); SFX.play('clunk',{vol:.5}); }
     STAND.draw(); FORAGE.draw(); });
   STAND.open=()=>{ sp.hidden=false; STAND.draw(); };
-  const boat=new THREE.Group(); boat.visible=false; scene.add(boat); const BW=1.1*T, BLn=2.6*T, Y=v=>v*T/.84;
+  const boat=new THREE.Group(); boat.visible=false; scene.add(boat); const BW=1.43*T, BLn=4.05*T, Y=v=>v*T/.84;
   { const mat=new THREE.MeshLambertMaterial({color:0xe8e2d2}), trim=new THREE.MeshLambertMaterial({color:0xa83a2a}), wood=new THREE.MeshLambertMaterial({color:0x7a5634}), add=(m,x,y,z,w,h,d)=>{ const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m); o.position.set(x,y,z); o.castShadow=true; boat.add(o); return o; };
     add(mat,0,Y(.05),0,BW*.8,Y(.1),BLn*.86); for(const o of [-1,1]){ add(mat,o*BW*.45,Y(.25),0,.08*T,Y(.45),BLn*.86); add(trim,o*BW*.45,Y(.48),0,.1*T,Y(.05),BLn*.86); }
     add(mat,0,Y(.28),BLn*.45,BW*.55,Y(.5),.1*T); add(mat,0,Y(.25),-BLn*.45,BW*.85,Y(.45),.1*T); add(wood,0,Y(.35),.1*T,BW*.82,Y(.05),.3*T); add(wood,0,Y(.3),-BLn*.32,BW*.7,Y(.05),.3*T);
     BOAT.oars=[-1,1].map(o=>{ const p=new THREE.Group(); p.name=o<0?'OAR LEFT':'OAR RIGHT'; p.position.set(o*BW*.48,Y(.5),.1*T); const a=new THREE.Mesh(new THREE.BoxGeometry(1.5*T,.05*T,.05*T),wood); a.position.x=o*.6*T; const bl=new THREE.Mesh(new THREE.BoxGeometry(.4*T,.02*T,.16*T),wood); bl.position.x=o*1.3*T; p.add(a,bl); boat.add(p); return p; }); }
+  // the hull and oars are Polyfork's wooden rowboat (data/rowboat.json), fetched after the start: the boxes stand in until it is here
+  __LAZY__("data/rowboat.json")().then(J=>{ const k=BLn/J.rowhull.size[2], m=new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide}), hull=new THREE.Mesh(KIT.decode(J.rowhull),m), og=KIT.decode(J.rowoar);
+    for(const c of [...boat.children])if(!c.name)boat.remove(c); hull.name='HULL'; hull.scale.setScalar(k); hull.castShadow=true; boat.add(hull);
+    BOAT.oars.forEach((p,i)=>{ const o=i?1:-1; p.clear(); p.position.set(o*J.rowhull.size[0]*k*.47,J.rowhull.size[1]*k*.98,0); const a=new THREE.Mesh(og,m); a.scale.setScalar(k*1.25); a.rotation.y=o*Math.PI/2; a.position.x=o*J.rowoar.size[2]*k*1.25*.34; a.castShadow=true; p.add(a); });
+    if(VLOOK.apply)VLOOK.apply(boat); }).catch(e=>console.warn('rowboat',e));
   BOAT.G=VLOOK.dress('rowboat',boat);
   const nearDeck=(x,z,m)=>{ for(const d of RIVER.decks)for(const r of d.r)if(x>r[0]-m&&x<r[2]+m&&z>r[1]-m&&z<r[3]+m)return r; return null; };
   const atShore=()=>{ const L=RIVER.ladders.find(x=>Math.abs(x-BOAT.x)<1.3*T&&BOAT.z>RB.z1-1.6*T); if(L!=null)return {x:L,z:RB.z1+.7*T}; const r=nearDeck(BOAT.x,BOAT.z,1.4*T); if(r)return {x:cl(BOAT.x,r[0]+.4*T,r[2]-.4*T),z:cl(BOAT.z,r[1]+.4*T,r[3]-.4*T)}; return null; };

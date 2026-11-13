@@ -62,6 +62,13 @@ jobs:
           k physx   'src/090|src/150-loose|src/150o|physx'
           k vr      'src/162a-pad|src/162c-vr|vr\.cjs'
           k asylum  'src/asylum/|tools/asylum\.cjs|tests/asylum\.cjs'
+          k golf    'src/golf/|data/golf/|tools/golf\.cjs|tests/golf\.cjs'
+          k cantina 'src/cantina/|data/cantina/|tools/cantina\.cjs|tests/cantina\.cjs|worker/cantina'
+          k scare   'src/scare/|data/scare/|tools/scare\.cjs|tests/scare\.cjs'
+          k holmes  'src/holmes/|data/holmes/|worker/holmes|tools/holmes|tests/holmes\.cjs'
+          k jam     'src/jam/|data/jam/|tools/jam\.cjs|tests/jam\.cjs'
+          k shoot   'src/shoot/|tools/shoot\.cjs|tests/shoot\.cjs'
+          k duel    'src/duel/|data/duel/|tools/duel\.cjs|tests/duel\.cjs'
           k vrbody  'src/162c|src/111b|vrbody\.cjs'
           k riders  'src/117a|src/009c|riders\.cjs'
           k loopmap 'src/159c|src/009b|loopmap\.cjs'
@@ -96,6 +103,7 @@ jobs:
           k art     'src/059p-art|data/art|art\.cjs'
           k weplay  'src/099-|src/136b|weplayers\.cjs'
           k cars    'src/150p-cars|src/150pe-carparts|src/150o-physmore|src/146i-ride|data/cars|data/radio|cars\.cjs|radio\.cjs'
+          k honk    'src/150pf-honk|src/150pb-|src/150pe-carparts|src/150p-cars|src/111ei-bigcat|honk\.cjs'
           k heli    'src/150pa-heli|src/150o-physmore|src/146i-ride|src/068a-pfrow|data/heli|heli\.cjs'
           k water   'src/065a|src/066-|src/060a|src/089a|src/141f|water'
           k scores  'src/059g|arcade-scores'
@@ -115,9 +123,10 @@ jobs:
           k train   'src/009b|src/009c|src/066c|src/159ca|loop\.cjs'
           k items   'src/162e|src/162d|src/150k|src/076a|src/146zea|src/146d-gear|data/icons|data/items|tools/icons|items\.cjs'
           k hall    'src/150n|src/059a|hall\.cjs'
-          k flats   'src/150n|src/059a|src/150d|src/141c|flats\.cjs'
-          k holodeck 'src/059b-arcade|src/146bb|src/146b[cdf]|holodeck'
-          k boarded 'src/146be-boarded|tests/boarded'
+          k flats   'src/150n|src/059a|src/150d|src/141c|src/150ac|flats\.cjs'
+          k frames  'src/150ga|src/150g-|frames\.cjs'
+          k holodeck 'src/059b-arcade|src/146bb|src/146b[fg]|src/holo/|tools/holo|holodeck|headset|roam'
+          k boarded 'src/holo/|tools/holo|tests/boarded'
           k kite    'src/146g-kite|src/093|kite\.cjs'
           k swim    'src/146ga-swim|src/066-river|src/065a|swim\.cjs'
           k lakewreck 'src/066bb|src/066ba-wreck|src/060a-fount|data/lakewreck|tools/lakewreck|lakewreck\.cjs'
@@ -153,6 +162,7 @@ jobs:
           k guitar  'src/111b-hands|src/106-game-play-3-guitar|src/108-game-play-3-guitar|src/146zo|src/111c-avatar|data/pfhand|data/pfguitar|guitar\.cjs'
           k firstday 'src/162g-firstday|src/102-looks|src/101-gems|firstday\.cjs'
           k instruments 'src/146zp|src/150cyb-pfitems|src/146znz|src/111b-hands|data/pfitems|tools/pfitems|instruments\.cjs'
+          k import 'src/146zpe|src/146znz|src/146zp-|src/146zob|package\.json|import\.cjs'
           k perform 'src/146znz|src/146zq|src/146zr|src/146zob|src/111da-motion|data/dances|perform\.cjs'
           k signs 'src/146znz|src/146zs|src/111d-online|src/092-lines|src/159b-shops|src/159da-talk|src/160a-quests|src/160b-trainers|data/signs|data/characters|signs\.cjs'
           k firstday 'src/162g-firstday|src/102-looks|src/141-forage|src/101-gems|worker/door\.js|firstday\.cjs'
@@ -236,6 +246,34 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' asylum')
         run: node tests/asylum.cjs dist/asylum.html
+      - name: The Speckled Band (the Holmes mystery at /holmes; the book's road, a move of your own, an emulated Quest 3)
+        timeout-minutes: 10
+        if: contains(steps.f.outputs.run, ' holmes')
+        run: node tests/holmes.cjs dist/holmes.html
+      - name: Vesper Ward (the scare game at /scare, played through, and in an emulated Quest 3)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' scare')
+        run: node tests/scare.cjs dist/scare.html
+      - name: Stadium Jam (the band game at /jam; the keys play it, then the sticks and tracked hands in an emulated Quest 3)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' jam')
+        run: node tests/jam.cjs dist/jam.html
+      - name: Halcyon Greens (mini golf at /golf; it loads, a putt rolls, a putt holes out)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' golf')
+        run: node tests/golf.cjs dist/golf.html
+      - name: The Cantina (the bar at /cantina; it loads, you sit, the cards deal, a regular answers, the look changes)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' cantina')
+        run: node tests/cantina.cjs dist/cantina.html
+      - name: Breachline (the duel at /shoot; a practice round, a kill, and the guns in an emulated Quest 3)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' shoot')
+        run: node tests/shoot.cjs dist/shoot.html
+      - name: AR Duel (the dodge fight at /duel; the bot round, every weapon, two linked pages)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' duel')
+        run: node tests/duel.cjs dist/duel.html
       - name: The headset (VR on an emulated Quest 3)
         timeout-minutes: 45
         if: contains(steps.f.outputs.run, ' vr')
@@ -416,14 +454,17 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' flats')
         run: node tests/flats.cjs dist/market.html
-      - name: The holodeck (its panel, the adventures menu)
-        timeout-minutes: 15
+      - name: Picture frames (a museum picture, your own, kept with the layout)
+        if: contains(steps.f.outputs.run, ' frames')
+        run: node tests/frames.cjs dist/market.html
+      - name: The holodeck (its booth, the headset, each program a page of its own; ROAM on its page and in the headset)
+        timeout-minutes: 40
         if: contains(steps.f.outputs.run, ' holodeck')
-        run: node tests/holodeck.cjs dist/market.html
-      - name: BOARDED UP (the holodeck's zombie siege, solo and two online, the server's relay)
+        run: node tests/holodeck.cjs dist/market.html && node tests/headset.cjs dist/market.html && node tests/roam.cjs dist/roam.html && node tests/roam-vr.cjs dist/roam.html
+      - name: BOARDED UP (the holodeck's zombie siege, solo, two online, in the headset, the server's relay)
         timeout-minutes: 40
         if: contains(steps.f.outputs.run, ' boarded')
-        run: node tests/boarded.cjs dist/market.html && node tests/boarded-online.cjs dist/market.html && node tests/boarded-server.cjs
+        run: node tests/boarded.cjs dist/boarded.html && node tests/boarded-online.cjs dist/boarded.html && node tests/boarded-vr.cjs dist/boarded.html && node tests/boarded-server.cjs
       - name: The kite (held, launched, climbing in the wind)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' kite')
@@ -539,6 +580,10 @@ jobs:
         timeout-minutes: 25
         if: contains(steps.f.outputs.run, ' instruments')
         run: node tests/instruments.cjs dist/market.html
+      - name: Import music (MIDI, MusicXML, ABC and a text tab read, fitted to each instrument, free to play; LOOP and NEXT)
+        timeout-minutes: 20
+        if: contains(steps.f.outputs.run, ' import')
+        run: node tests/import.cjs dist/market.html
       - name: Dance and juggling (the skills, the books' bands, a pass or a fail, the wobble, the dropped balls, learnt in three, another player's)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' perform')
@@ -614,6 +659,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' cars')
         run: node tests/cars.cjs dist/market.html
+      - name: The horn's way (a honk clears you on foot, a car left in the road, THE BIG CAT; your own horn too)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' honk')
+        run: node tests/honk.cjs
       - name: The helipad (the tour's turns, ride along, fly it yourself, land, its pilot flies it home)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' heli')

@@ -111,7 +111,7 @@ import {GARDEN} from './144a-garden.js';
     for(const [s,sg] of [['R',1],['L',-1]])for(const p of ['wing','bar']){ const c=P[p]; if(c==null)continue; const me=ME[p+s], i=n[p+s]=(n[p+s]||0); if(i>=MAXI)continue;
       m4.makeTranslation(sg*PIV[0],PIV[1],PIV[2]).multiply(mr.makeRotationZ(sg*b.wing)); me.setMatrixAt(i,m4.premultiply(mw)); me.setColorAt(i,col.setHex(c)); n[p+s]++; }
     b.hb.position.set(b.x,b.y+.2*T,b.z); };
-  const binoc=()=>!!FORAGE.has('binoc'); let WS=null; const WR0=3.5*T, WR1=9*T, wtick=dt=>{ if(!WS)return; const b=WS.b, d=Math.hypot(b.x-pos.x,b.z-pos.z);
+  const binoc=()=>!!(FORAGE.has('binoc')||FORAGE.has('spyglass')); let WS=null; const WR0=3.5*T, WR1=9*T, wtick=dt=>{ if(!WS)return; const b=WS.b, d=Math.hypot(b.x-pos.x,b.z-pos.z);
     const WR=binoc()?WR1:WR0; if(!BIRDS.list.includes(b)||b.st==='fly'||d>WR){ say(d>WR?'YOU LOSE SIGHT OF IT.':'IT FLIES OFF.','#c8a090'); WS=null; return; }
     WS.t+=dt*(spd<.3*T?1:.4); if(WS.t>=8){ WS.t=0; use('bird',WS.d-25,WS.d+25,WS.bonus+(spd<.1*T?5:0)); } };
   BIRDS.watching=()=>WS&&{k:WS.b.k,t:+WS.t.toFixed(1)};
@@ -141,7 +141,7 @@ import {GARDEN} from './144a-garden.js';
   const draw=()=>{ '@later'; const b=PANEL.b; if(!b)return close(); const k=b.k, pet=b.st==='pet';
     let o=`<div style="color:#f2c14e;margin-bottom:4px">${pet?'YOUR TAME '+K[k][0]:nmOf(b)}</div><div style="color:#9b9584;margin-bottom:8px">${known(k)?`<i>${K[k][1]}</i> · SEEN ${S.seen[k]} TIME${S.seen[k]===1?'':'S'}`:'NOT IN YOUR JOURNAL YET'}</div><div>`;
     if(pet)o+=`<button ${B} data-a="free">LET IT GO</button>`; else o+=`<button ${B} data-a="pickup">PICK UP</button><button ${B} data-a="watch">WATCH</button><button ${B} data-a="tame">TAME${FORAGE.has('bseed')?' (SEED x'+FORAGE.has('bseed')+')':''}</button><button ${B} data-a="catch">CATCH${FORAGE.has('bnet')?' (CAGES x'+FORAGE.has('cage')+')':' (NO NET)'}</button>`;
-    o+=`</div><div style="color:#7d7a70;margin-top:8px">BIRDING ${FORAGE.sk('bird').toFixed(1)}${binoc()?' · BINOCULARS':''}. Seed, nets, cages, feeders, binoculars: the Nature Merchant.</div>`; const x=P.querySelector(':scope>.pX'); P.innerHTML=o; if(x)P.appendChild(x); };
+    o+=`</div><div style="color:#7d7a70;margin-top:8px">BIRDING ${FORAGE.sk('bird').toFixed(1)}${binoc()?' · BINOCULARS':''}. Seed, nets, cages, feeders, binoculars: the Forest Ranger at THE BIRD STALL.</div>`; const x=P.querySelector(':scope>.pX'); P.innerHTML=o; if(x)P.appendChild(x); };
   BIRDS.menu=b=>{ if(!BIRDS.list.includes(b))return; PANEL.b=b; P.hidden=false; draw(); };
   const gone=b=>!BIRDS.list.includes(b)||b.st==='fly';
   const log=b=>{ '@later'; const k=b.k, first=!S.seen[k]; S.seen[k]=(S.seen[k]||0)+1; save();

@@ -28,7 +28,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const th = () => __dbg.UI.things.find(t => /FISH TANK|FEED THE FISH/.test(t.name));
     ok(await pg.evaluate(th), 'the fish tank can be double-clicked');
     const y0 = await pg.evaluate(() => TANKDBG()[0].y);
-    await pg.evaluate(() => { FORAGE.give('g_fishfood', 1); __dbg.UI.things.find(t => /FISH TANK|FEED THE FISH/.test(t.name)).act(); });
+    await pg.evaluate(() => { FORAGE.give('g_fishfood', 1); __dbg.UI.things.find(t => /FISH TANK|FEED THE FISH/.test(t.name)).act(); TANKV.choose('feed'); });
     for (let i = 0; i < 40 && (await pg.evaluate(() => TANKDBG()[0].y)) < y0 + .1; i++) await pg.waitForTimeout(500);
     const d = await pg.evaluate(() => ({ t: TANKDBG()[0], left: FORAGE.has('g_fishfood') }));
     ok(d.t.fed > 0 && d.t.y > y0 + .1 && !d.left, 'fish food is used up and the koi rise to eat (' + y0 + ' -> ' + d.t.y + ')');

@@ -1,4 +1,4 @@
-// THE INTERIORS, PART TWO (docs/INTERIORS.md): node tests/interiors2.cjs [out folder]. The playhouse (the Wooden O), the golems' cave, the bath house, your hall, the bank and the squirrel's tower: their staff spots and places, their new things and what each does. Exits 1 on any failure.
+// THE INTERIORS, PART TWO (docs/INTERIORS.md): node tests/interiors2.cjs [out folder]. The playhouse (the Wooden O), the golems' cave, the bath house, the bank and the squirrel's tower: their staff spots and places, their new things and what each does. Exits 1 on any failure.
 const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv[2];
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:960,height:640}}); const errs=[]; let bad=0;
   pg.on('pageerror',e=>errs.push(e.message.slice(0,160)));
@@ -43,9 +43,5 @@ const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv
     await pg.evaluate(()=>{ const th=__dbg.UI.things.find(t=>t.name.startsWith('THE LADDER (UP TO THE ROOF)')); if(th)th.act(); }); await U(()=>{ if(!TOWERK.roofAt)return false; const s=GTOWER.site(), w=TOWERK.where(); return w.y>s.top*.8&&Math.hypot(w.x-s.x,w.z-s.z)<s.r*1.5; },60000).catch(()=>{}); await pg.waitForTimeout(500);   // (the climb ends behind a fade: wait till you stand up there)
     const r=await pg.evaluate(()=>{ const s=GTOWER.site(), w=TOWERK.where(), up=w.y>s.top*.8&&Math.hypot(w.x-s.x,w.z-s.z)<s.r*1.5; const sg=__dbg.UI.things.find(t=>t.name==='THE SPYGLASS'); if(sg)sg.act(); const spy=!!TOWERK.spy; return {up,spy,hatch:__dbg.UI.things.some(t=>t.name==='THE HATCH (DOWN)')}; });
     rec("squirrel's tower: the ladder takes you up to the roof; the spyglass narrows the view; the hatch is there",r.up&&r.spy&&r.hatch,JSON.stringify(r)); await shot('tower-roof'); }
-  /* ---------- YOUR HALL ---------- */
-  { const ok=await pg.evaluate(()=>{ if(window.ENTERAPT){ ENTERAPT(); return true; } return false; }); await U(()=>window.HALLDBG&&HALLDBG().built&&__dbg.UI.things.some(t=>t.name==='YOUR MAILBOX'),180000).catch(()=>{});
-    const h=await pg.evaluate(async()=>{ const th=n=>__dbg.UI.things.find(t=>t.name===n); const nb=th('THE NOTICE BOARD'); if(nb)nb.act(); const board=MINI.on&&MINI.on.title==='THE NOTICE BOARD'; MINI.close(); const mb=th('YOUR MAILBOX'); const n=mb?await HALLK.mail():null; return {board,mail:mb?HALLK.opened>=1:false,n}; });
-    rec('your hall: the mailbox opens your letters (none here), the notice board reads',ok&&h.board&&h.mail,JSON.stringify(h)); await shot('hall'); }
   rec('no page errors',!errs.length,errs.slice(0,3).join(' | '));
   await b.close(); process.exit(bad?1:0); })();

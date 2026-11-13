@@ -56,6 +56,18 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await pg.screenshot({ path: (process.env.SHOT || '/tmp/crt') + '-full.png' });
     await pg.keyboard.press('Escape'); await pg.waitForTimeout(800);
     ok(!(await pg.evaluate(() => CRTDBG().watch)), 'Esc goes back to the room');
+    // (owner, 13 Nov 2026: "when trying to click out of back from watching the tv it freezes ... escape should close the tv close up. you should be able to double click the tv to use it from anywhere you can see it")
+    const S = () => pg.evaluate(() => ({ watch: CRTDBG().watch, panel: CRTDBG().panel, hub: !!__dbg.UI.hubOpen, menu: !!__dbg.UI.menuOpen, focus: document.activeElement === document.body }));
+    await pg.evaluate(() => CRT.open()); await pg.waitForTimeout(600); await pg.keyboard.press('Escape'); await pg.waitForTimeout(600);
+    let s1 = await S(); ok(!s1.panel && !s1.hub && !s1.menu, 'Esc shuts the TV panel, and not the game menu over it (' + JSON.stringify(s1) + ')');
+    if (s1.hub || s1.menu) { await pg.keyboard.press('Escape'); await pg.waitForTimeout(400); }
+    await pg.evaluate(() => CRT.watch(true)); await pg.waitForTimeout(600); await pg.click('#crtw [data-w="x"]', C); await pg.waitForTimeout(600);
+    s1 = await S(); ok(!s1.watch && s1.focus, 'BACK leaves the close-up and the keys are the game\'s again (' + JSON.stringify(s1) + ')');
+    await pg.evaluate(() => CRT.full(true)); await pg.waitForTimeout(1200); await pg.evaluate(() => document.fullscreenElement ? document.exitFullscreen() : document.dispatchEvent(new Event('fullscreenchange'))); await pg.waitForTimeout(1000);
+    ok(!(await pg.evaluate(() => CRTDBG().watch)), 'leaving full screen with the browser\'s Esc leaves the close-up too');
+    await pg.evaluate(() => CRT.full(true)); await pg.waitForTimeout(1200); await pg.click('#crtw [data-w="full"]', C); await pg.waitForTimeout(1000);
+    ok(await pg.evaluate(() => CRTDBG().watch && !CRTDBG().full), 'the FULL SCREEN button only leaves full screen'); await pg.evaluate(() => CRT.watch(false));
+    ok(await pg.evaluate(() => __dbg.UI.things.find(t => /^CRT TV/.test(t.name)).far === true && __dbg.UI.things.filter(t => /WINDOW/.test(t.name)).every(t => t.glass)), 'the TV is used from wherever you see it (a double-click passes a window\'s glass to it)');
     await pg.evaluate(async () => { await __dbg.MAPK.MODS.apts.exitReal(); for (let i = 0; i < 40 && (window.FADE && FADE.busy); i++) await new Promise(r => setTimeout(r, 250)); }); await pg.waitForTimeout(2000);
     const out = await pg.evaluate(() => CRTDBG());
     ok(out.on && !out.src && !out.panel, 'out of the apartment nothing streams (the set stays on for when you come back)');

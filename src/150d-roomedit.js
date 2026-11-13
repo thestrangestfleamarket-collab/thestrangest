@@ -20,8 +20,8 @@ import {ROOMK} from './150a-bedroom.js';
   const snapshot=A=>{ '@later'; const things={}, added=[], lights={};
     for(const un of A.units()){ const t=A.getT(un), e={u:r3(t.u),h:r3(t.h),v:r3(t.v),ry:r3(t.ry),s:r3(t.s)}; if(un.gone)e.gone=1; if(un.added)added.push({id:un.id,kind:un.kind,paid:un.paid||0,...e}); else things[un.id]=e; }
     for(const q of A.lightsAll()){ const L=A.lightGet(q.id); delete L.type0; lights[q.id]=L; }
-    const L={v:1,ep:EP,tier:A.R.tier??(MODS.apts.tier||0),wall:A.R.wall,floor:A.R.floor,kfloor:A.R.kfloorK,glow:A.R.glowK,addN:A.R.addN,things,added,lights}; for(const k of ROOMK.keep)try{ k.out(L,A); }catch(e){} return L; };
-  const apply=(A,L)=>{ '@later'; if(!L||!A)return; if(L.wall)A.wall(L.wall); if(L.floor)A.floor(L.floor); if(L.kfloor)A.kfloor(L.kfloor); if(L.glow!=null)A.glow(L.glow); A.R.addN=Math.max(A.R.addN,L.addN||0); for(const k of ROOMK.keep)try{ k.in(L,A); }catch(e){}
+    const L={v:1,ep:EP,tier:A.R.tier??(MODS.apts.tier||0),wall:A.R.wall,walls:{...A.R.walls},floor:A.R.floor,floor2:A.R.floor2,kfloor:A.R.kfloorK,glow:A.R.glowK,addN:A.R.addN,things,added,lights}; for(const k of ROOMK.keep)try{ k.out(L,A); }catch(e){} return L; };
+  const apply=(A,L)=>{ '@later'; if(!L||!A)return; if(L.walls)A.wall(L.wall||A.R.wall,'all'); else if(L.wall)A.wall(L.wall); for(const k in L.walls||{})A.wall(L.walls[k],k); if(L.floor)A.floor(L.floor); if(L.floor2)A.floor(L.floor2,true); if(L.kfloor)A.kfloor(L.kfloor); if(L.glow!=null)A.glow(L.glow); A.R.addN=Math.max(A.R.addN,L.addN||0); for(const k of ROOMK.keep)try{ k.in(L,A); }catch(e){}
     for(const a of L.added||[]){ if(A.units().some(u=>u.id===a.id))continue; const un=A.spawn(a.kind,a,a.id); if(!un)continue; un.paid=a.paid||0; if(a.gone)A.remove(un); }
     for(const un of A.units())if(!un.added&&L.things&&L.things[un.id]){ const t=L.things[un.id]; A.setT(un,t); if(t.gone)A.remove(un); }   // the pieces every flat has, where you moved them
     for(const id in L.lights||{})A.light(id,L.lights[id]); };
@@ -29,7 +29,7 @@ import {ROOMK} from './150a-bedroom.js';
   const SORT={};
   ROOMK.built.push(A=>{ '@later'; sortKinds(A); const lt={}; for(const q of A.lightsAll())lt[q.id]=A.lightGet(q.id); A.R.bare={wall:A.R.wall,floor:A.R.floor,kfloor:A.R.kfloorK,glow:A.R.glowK,lights:lt}; if(!QS.has('furnished'))for(const un of A.units().slice())if(!un.added&&!ROOMK.always.has(un.kind))A.drop(un); if(HOME.stale&&!HOME.guest){ const S=HOME.stale, K=A.kinds(); HOME.stale=null; let back=0, n=0; for(const a of S.added||[]){ const KO=K[a.kind]; if(KO&&KO.own){ FORAGE.give(KO.own,1); n++; } else back+=a.paid||0; }
       INV.cash=(INV.cash||0)+back; if(INV.save)INV.save(); HOME.save(snapshot(A)); if(back||n)UI.log('YOUR APARTMENT WAS RESET'+(back?': $'+back+' BACK FOR YOUR FURNITURE':'')+(n?(back?',':':')+' '+n+' THING'+(n>1?'S':'')+' BACK IN YOUR PACK':'')+'.','#c8a090'); }
-    if(HOME.guest)apply(A,HOME.guest.layout); else { if(HOME.loaded)apply(A,HOME.layout); tidy(A); } if(ED.on)ED.panel(); });
+    if(HOME.guest)apply(A,HOME.guest.layout); else { if(HOME.loaded)apply(A,HOME.layout); tidy(A); if(A.R.loftDress&&!QS.has('furnished')&&(A.R.loftV||0)<A.R.LOFTV){ A.R.loftDress(A); A.R.loftV=A.R.LOFTV; settle(null); if(HOME.loaded)HOME.save(snapshot(A)); } else if(A.R.loftPC&&!A.units().some(u=>u.id==='loft-pc')){ A.R.loftPC(A); settle(null); if(HOME.loaded)HOME.save(snapshot(A)); } } if(ED.on)ED.panel(); });   // (the loft lays its own pieces out once: 150ac)
   // a layout that comes back with pieces inside one another is put right once, and says so
   const tidy=A=>{ '@later'; if(HOME.guest)return; const T=MODS.apts.TIERS[MODS.apts.tier||0]||{}, L=HOME.layout, moved=!L||(L.tier??2)!==(MODS.apts.tier||0); if(moved&&L)for(const u of A.units())if(u.gone&&!u.added&&ROOMK.always.has(u.kind))A.restore(u);   // a new size of flat: the pieces every flat has come out again, then those it has no room for go back
     const m=settle(moved&&T.start?T.start:null); A.R.tier=MODS.apts.tier||0; if(!m.length&&!moved)return; if(HOME.loaded&&(m.length||L))HOME.save(snapshot(A)); const mv=m.filter(x=>x[1]==='moved').map(x=>x[0]), aw=m.filter(x=>x[1]!=='moved').map(x=>x[0]);
@@ -61,7 +61,7 @@ import {ROOMK} from './150a-bedroom.js';
     'WALL SHELF':25,'EARTH GLOBE':60,'GLOBE TABLE':40,'MOON GLOBE':60,'MARS GLOBE':60,'ROUND RUG':50,RECLINER:300,'FLOOR PLANT':30,'OLIVE TREE':60,'FERN STAND':35,'HANGING PLANT':20,'BISTRO TABLE':60,'LAWN CHAIR':30,'POTTED SHRUB':30,'FLOWER PLANTER':25,'WOODEN CRATE':10,
     KEYBOARD:15,MOUSE:8,BOOKS:6,PHOTO:5,RECORDS:8,'LAB STOOL':25,'FLOWERING PLANT':12,'HERB POT':8,'BASIL POT':8,'CANDLE LANTERN':12,'CACTUS POT':8,'WATERING CAN':10,
     PENDANT:25,CHANDELIER:60,'FLUSH DOME':20,'TRACK SPOTS':35,'PAPER LANTERN':15,SCONCE:18,'PICTURE LIGHT':15,'WALL LANTERN':22,'NEON SIGN':45,'LED STRIP':20};
-  const NOSALE=new Set(['CAT','BLIND','COFFEE MACHINE','CRT TV','TABLE RADIO','FISH TANK','TELESCOPE','BOOKSHELF','WRITING DESK','LAB DESK']);   // a pet; cut from sale; the pieces every flat has one of
+  const NOSALE=new Set(['CAT','BLIND','COFFEE MACHINE','CRT TV','TABLE RADIO','FISH TANK','TELESCOPE','BOOKSHELF','WRITING DESK','LAB DESK','HOME COMPUTER']);   // a pet; cut from sale; the pieces every flat has one of
   const kindOf=k=>{ const A=A_(); return A&&A.kinds()[k]; };
   // a kind that needs an item (own: bought from a merchant) costs nothing here: placing it uses the item up, putting it away gives it back
   const owned=K=>K&&K.own?(FORAGE.has?FORAGE.has(K.own):0):0;
@@ -77,29 +77,34 @@ import {ROOMK} from './150a-bedroom.js';
   const ED={on:false,sel:null,undo:[],grid:true}; window.ROOMED=MODS.roomed=ED;
   const A_=()=>ROOMK.api, inHome=()=>!!(MODS.apts&&MODS.apts.inReal&&ROOMK.api);
   const css=document.createElement('style'); css.textContent=`
-  #roomed{position:fixed;right:calc(12px + env(safe-area-inset-right,0px));top:12px;width:300px;max-height:calc(100vh - 210px);display:flex;flex-direction:column;background:color-mix(in srgb,var(--bg) 97%,transparent);border:2px solid var(--line);font:12px var(--pixel);color:var(--fg);z-index:20}
-  #roomed[hidden],#roomedbtn[hidden],#roombuy[hidden],#roomsay[hidden]{display:none} #roomed h2{font:12px var(--pixel);color:var(--key);margin:0;padding:10px 12px;border-bottom:2px solid var(--line);flex-shrink:0}
-  #roomed .tabs,#roombuy .tabs{display:flex;border-bottom:2px solid var(--line)} #roomed .tabs{flex-shrink:0} #roomed .tabs button,#roombuy .tabs button{flex:1;font:inherit;color:var(--dim);background:none;border:0;padding:8px 2px;cursor:pointer} #roomed .tabs button.on,#roombuy .tabs button.on{color:var(--key);background:#161924}
-  #roomed .pane{padding:8px 12px;overflow:auto;flex:1 1 auto;min-height:0} #roomed .row{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin:6px 0} #roomed .lab{color:var(--dim);margin:10px 0 4px}
-  #roomed .btn,#roombuy .btn{font:inherit;color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;padding:4px 7px;cursor:pointer} #roomed .btn:hover,#roombuy .btn:hover{border-color:var(--key)} #roomed .btn.on{border-color:var(--key);color:var(--key)}
-  #roomed .sw{width:58px;height:34px;border:2px solid #3a3f4e;cursor:pointer;margin-bottom:20px} #roomed .sw.on{border-color:var(--key)} #roomed .sw span{display:block;font-size:8px;line-height:1.15;margin-top:36px;color:var(--dim);text-align:center}
-  #roomed .light{border-top:1px solid var(--line);padding:6px 0} #roomed input[type=range]{width:120px} #roomed .hint{color:var(--dim);font-size:10px;line-height:1.6}
-  #roomed .foot{display:flex;gap:6px;padding:8px 12px;border-top:2px solid var(--line);background:var(--bg);flex-shrink:0}
-  #roombuy{position:fixed;left:calc(12px + env(safe-area-inset-left,0px));right:calc(12px + env(safe-area-inset-right,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));max-width:980px;margin:0 auto;background:color-mix(in srgb,var(--bg) 97%,transparent);border:2px solid var(--line);font:12px var(--pixel);color:var(--fg);z-index:20}
-  #roombuy .top{display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:2px solid var(--line)} #roombuy .top b{color:var(--key)} #roombuy .tabs{flex-wrap:wrap} #roombuy .tabs button{font-size:10px;flex:1 0 auto;padding:6px 6px}
-  #roombuy input{font:inherit;color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;padding:3px 6px;width:150px}
-  #roombuy .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:12px 10px;padding:10px 12px;max-height:44vh;overflow-y:auto;background:#17191f}
-  #roombuy .tile{display:flex;flex-direction:column;align-items:stretch;border:2px solid transparent;background:none;cursor:pointer;padding:0;text-align:left;font:inherit;color:#ece6d6} #roombuy .tile:hover{border-color:var(--key)} #roombuy .tile.poor{opacity:.45}
+  #roomed{position:fixed;left:calc(12px + env(safe-area-inset-left,0px));top:calc(56px + env(safe-area-inset-top,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));width:min(440px,94vw);display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto 1fr auto;background:rgba(3,26,13,.94);box-shadow:inset 0 0 0 2px #3aa866;font:15px 'Share Tech Mono',ui-monospace,monospace;letter-spacing:1px;color:#7dffa8;z-index:20;zoom:var(--uiz,1)}
+  #roomed[hidden],#roomedbtn[hidden],#homebtn[hidden],#roombuy[hidden],#roomsay[hidden],#roomsel[hidden]{display:none}
+  #roomed .ttl{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 48px 8px 12px;font-size:19px;letter-spacing:3px;border-bottom:2px solid #3aa866} #roomed .ttl span:first-child::before{content:'[ '} #roomed .ttl span:first-child::after{content:' ]'} #roomed .ttl i{font-style:normal;font-size:14px;color:#3aa866;letter-spacing:1px}
+  #roomed>.tabs{display:flex;flex-direction:column;gap:2px;padding:10px 6px;border-right:2px solid #3aa866} #roomed>.tabs button{font:inherit;text-align:left;white-space:nowrap;color:#7dffa8;background:none;border:0;padding:7px 8px;cursor:pointer} #roomed>.tabs button:hover{color:#d8ffe4} #roomed>.tabs button.on{color:#020a06;background:#7dffa8}
+  #roomed .pane{padding:10px 12px;overflow:auto;min-height:0} #roomed .row,#roomsel .row{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin:6px 0} #roomed .lab{color:#3aa866;margin:12px 0 5px;padding-bottom:4px;border-bottom:2px solid #1d5c38} #roomed .lab:first-child{margin-top:0}
+  #roomed .btn,#roombuy .btn,#roomsel .btn{font:inherit;color:#7dffa8;background:transparent;border:1px solid #3aa866;padding:5px 8px;cursor:pointer} #roomed .btn:hover,#roombuy .btn:hover,#roomsel .btn:hover{color:#020a06;background:#7dffa8} #roomed .btn.on,#roomsel .btn.on{color:#020a06;background:#7dffa8} #roomsel .btn.del{border-color:#c8644e;color:#ffb4a0} #roomsel .btn.del:hover{background:#ffb4a0;color:#1a0806}
+  #roomed .sw{width:62px;height:36px;border:2px solid #1d5c38;cursor:pointer;margin-bottom:26px} #roomed .sw.on{border-color:#d8ffe4;outline:2px solid #7dffa8} #roomed .sw span{display:block;font-size:10px;line-height:1.1;margin-top:38px;color:#3aa866;text-align:center;letter-spacing:0}
+  #roomed .light{border-top:1px solid #1d5c38;padding:6px 0} #roomed input[type=range]{width:130px} #roomed .hint{color:#3aa866;font-size:13px;line-height:1.55}
+  #roomed .foot{grid-column:1/-1;display:flex;gap:6px;padding:8px 12px;border-top:2px solid #3aa866}
+  #roombuy{font:inherit;color:inherit} #roombuy .top{display:flex;align-items:center;gap:8px;margin-bottom:8px} #roombuy .tabs{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:10px} #roombuy .tabs button{font:inherit;font-size:13px;color:#7dffa8;background:none;border:1px solid #1d5c38;padding:3px 6px;cursor:pointer} #roombuy .tabs button.on{color:#020a06;background:#7dffa8}
+  #roombuy input{font:inherit;color:#d8ffe4;background:#02140a;border:1px solid #3aa866;padding:4px 6px;flex:1;min-width:0}
+  #roombuy .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px 8px}
+  #roombuy .tile{display:flex;flex-direction:column;align-items:stretch;border:1px solid #1d5c38;background:none;cursor:pointer;padding:0;text-align:left;font:inherit;color:#d8ffe4} #roombuy .tile:hover{border-color:#7dffa8} #roombuy .tile.poor{opacity:.45}
   #roombuy .tile img,#roombuy .tile i{display:block;width:100%;aspect-ratio:1/1;height:auto;background:#eceae4;object-fit:contain}
-  #roombuy .tile span{display:block;font-size:10px;font-weight:bold;line-height:1.25;margin:5px 3px 0;min-height:13px} #roombuy .tile small{display:block;font-size:9px;color:#8f95a3;margin:2px 3px 0;min-height:11px} #roombuy .tile em{font-style:normal;color:var(--key);font-size:10px;margin:2px 3px 0}
+  #roombuy .tile span{display:block;font-size:12px;line-height:1.2;margin:4px 3px 0;min-height:13px;letter-spacing:0} #roombuy .tile small{display:block;font-size:10px;color:#3aa866;margin:1px 3px 0;min-height:11px;letter-spacing:0} #roombuy .tile em{font-style:normal;color:#f2c14e;font-size:12px;margin:1px 3px 3px}
+  @media(max-width:900px){#roomsel{left:50%!important;max-width:96vw!important}}
+  #roomsel{position:fixed;left:calc(50% + 232px);transform:translateX(-50%);bottom:calc(86px + env(safe-area-inset-bottom,0px));max-width:min(820px,calc(100vw - 490px));padding:8px 12px;background:rgba(3,26,13,.94);box-shadow:inset 0 0 0 2px #3aa866;font:15px 'Share Tech Mono',ui-monospace,monospace;letter-spacing:1px;color:#7dffa8;z-index:21;zoom:var(--uiz,1)} #roomsel b{color:#d8ffe4;margin-right:6px} #roomsel .row{margin:3px 0}
   #roomsay{position:fixed;left:50%;transform:translateX(-50%);top:calc(52px + env(safe-area-inset-top,0px));font:12px var(--pixel);color:#ffd2c8;background:var(--panel);border:2px solid #7a3a30;padding:6px 12px;z-index:21;pointer-events:none}
-  #roomedbtn{position:fixed;left:50%;transform:translateX(-50%);top:calc(12px + env(safe-area-inset-top,0px));font:12px var(--pixel);color:var(--key);background:var(--panel);border:2px solid var(--line);padding:6px 12px;cursor:pointer;z-index:19}`;
+  #roomedbtn,#homebtn{position:fixed;left:50%;transform:translateX(-50%);top:calc(12px + env(safe-area-inset-top,0px));font:12px var(--pixel);color:var(--key);background:var(--panel);border:2px solid var(--line);padding:6px 12px;cursor:pointer;z-index:19}`;
   document.head.appendChild(css);
   const P=document.createElement('div'); P.id='roomed'; P.hidden=true; document.body.appendChild(P);
   const BUY=document.createElement('div'); BUY.id='roombuy'; BUY.hidden=true; document.body.appendChild(BUY);
+  const SEL=document.createElement('div'); SEL.id='roomsel'; SEL.hidden=true; document.body.appendChild(SEL);   // what you picked up, and everything you can do with it
   const SAYEL=document.createElement('div'); SAYEL.id='roomsay'; SAYEL.hidden=true; document.body.appendChild(SAYEL);
   const B=document.createElement('button'); B.id='roomedbtn'; B.className='mlb'; B.hidden=true; B.textContent='DECORATE · T'; B.onclick=()=>ED.toggle(); document.body.appendChild(B);
-  let tab='things', dept='seating', helper=null, hover=null, saveT=0, sayT=0;
+  // HOME: anywhere but in your own apartment, back to it (owner, 12 Nov 2026)
+  const HB=document.createElement('button'); HB.id='homebtn'; HB.className='mlb'; HB.hidden=true; HB.textContent='HOME'; HB.title='Back to your apartment'; HB.onclick=()=>{ HB.blur(); if(UI.goPlace)UI.goPlace('YOUR APARTMENT'); }; document.body.appendChild(HB);
+  let tab='buy', wsel='all', dept='seating', helper=null, hover=null, saveT=0, sayT=0;
   const say=m=>{ SAYEL.textContent=m; SAYEL.hidden=false; clearTimeout(sayT); sayT=setTimeout(()=>{ SAYEL.hidden=true; },2200); ED.said=m; };
   const dirty=()=>{ clearTimeout(saveT); saveT=setTimeout(()=>{ const A=A_(); if(A)HOME.save(snapshot(A)); },1200); };
   ROOMK.save=()=>{ if(HOME.guest||!A_())return false; dirty(); return true; }; ROOMK.guest=()=>!!HOME.guest; ROOMK.snap=()=>A_()?snapshot(A_()):null;   // a piece's own settings saved with the layout (the fish tank)
@@ -112,7 +117,7 @@ import {ROOMK} from './150a-bedroom.js';
   ED.back=()=>{ '@later'; const A=A_(), op=ED.undo.pop(); if(!A||!op)return; if(ED.carry)endCarry(); if(op.t==='move')A.setT(op.un,op.prev); else if(op.t==='gone')A.restore(op.un); else if(op.t==='back')A.remove(op.un);
     else if(op.t==='add'){ INV.cash+=op.un.paid||0; A.drop(op.un); if(ED.sel===op.un)select(null); }
     else if(op.t==='sell'){ INV.cash-=op.got; const un=A.spawn(op.kind,op.at,op.id); if(un)un.paid=op.paid; }
-    else if(op.t==='wall')A.wall(op.prev); else if(op.t==='floor')A.floor(op.prev); else if(op.t==='kfloor')A.kfloor(op.prev); else if(op.t==='glow')A.glow(op.prev);
+    else if(op.t==='wall'){ A.wall(op.prev.wall,'all'); for(const k in op.prev.walls)A.wall(op.prev.walls[k],k); } else if(op.t==='floor')A.floor(op.prev); else if(op.t==='floor2')A.floor(op.prev,true); else if(op.t==='loft')A.R.loftSet(op.k,op.prev); else if(op.t==='kfloor')A.kfloor(op.prev); else if(op.t==='glow')A.glow(op.prev);
     else if(op.t==='light')A.light(op.id,op.prev); dirty(); ED.panel(); };
 
   /* ---------- the floor plan: where a thing stands, and whether it fits ---------- */
@@ -126,6 +131,8 @@ import {ROOMK} from './150a-bedroom.js';
     { const P=A.porch, inB=(x0,y0,x1,y1)=>me.every(b=>b[0]>=x0-.05&&b[1]>=y0-.05&&b[2]<=x1+.05&&b[3]<=y1+.05);   // in the room, or out on your fire escape's landing
       if(so!=='wall'&&so!=='ceil'&&!inB(0,0,A.Lx,A.Ly)&&!(P&&inB(P.u0,P.v0,P.u1,P.v1)))return {ok:false,me,why:'IT DOESN\'T FIT IN THE ROOM'}; }
     if(so!=='big'||un.loose)return {ok:true,me};
+    { const F=A.R.loft, e2=.03; if(F){ if(t.h>F.MH-.3){ if(!me.every(b=>F.DECKS.some(d=>b[0]>=d[0]-.02&&b[1]>=d[1]-.02&&b[2]<=d[2]+.02&&b[3]<=d[3]+.02)))return {ok:false,me,why:'UP HERE IT MUST STAND ON THE FLOOR'}; if(me.some(b=>b[2]>F.lib+e2))return {ok:false,me,why:'THE LIBRARY IS IN THE WAY'}; }
+        else for(const q of F.blocks)if(me.some(b=>b[4]<F.MH-.3&&b[0]<q[2]-e2&&q[0]<b[2]-e2&&b[1]<q[3]-e2&&q[1]<b[3]-e2))return {ok:false,me,why:q[4]+' IS IN THE WAY'}; } }
     for(const o of A.units()){ if(o===un||o.gone||o.loose||!(o.sol&&o.sol.length))continue; const ob=boxes(o,A.getT(o));
       for(const b of me)for(const q of ob)if(b[0]<q[2]-e&&q[0]<b[2]-e&&b[1]<q[3]-e&&q[1]<b[3]-e&&b[4]<q[5]-e&&q[4]<b[5]-e)return {ok:false,me,why:'THE '+o.name+' IS IN THE WAY'}; }
     return {ok:true,me}; };
@@ -145,7 +152,10 @@ import {ROOMK} from './150a-bedroom.js';
   // a change by key or button: kept if it fits (or if where it was didn't fit either)
   const tf=(un,f)=>{ '@later'; const A=A_(); if(drag&&drag.un===un){ f(drag.t); vis(un,drag.t); drag.fit=showFp(un,drag.t); if(helper)helper.update(); return; } const prev=A.getT(un), t={...prev}; f(t); const ok=fits(un,t); if(!ok.ok&&fits(un,prev).ok){ say(ok.why); showFp(un,prev); return; }
     A.setT(un,t); did({t:'move',un,prev}); if(helper)helper.update(); showFp(un,A.getT(un)); ED.panel(); };
-  const turn=(d,free)=>{ if(ED.sel)tf(ED.sel,t=>{ t.ry+=d; if(ED.grid&&!free)t.ry=snap(t.ry,RQ); }); }, size=k=>{ if(ED.sel)tf(ED.sel,t=>{ t.s=Math.max(.3,Math.min(3,t.s*k)); }); }, lift=d=>{ if(ED.sel)tf(ED.sel,t=>{ t.h=Math.max(0,t.h+d); }); };
+  const turn=(d,free)=>{ if(ED.sel)tf(ED.sel,t=>{ t.ry+=d; if(ED.grid&&!free)t.ry=snap(t.ry,RQ); }); }, size=k=>{ if(ED.sel)tf(ED.sel,t=>{ const s0=t.s||1; t.s=Math.max(.3,Math.min(3,s0*k)); if(sortOf(ED.sel)==='wall'){ const fb=own(ED.sel); t.h=onWall(ED.sel,t.h+(fb[4]+fb[5])/2*(s0-t.s),t.s); } }); }, lift=d=>{ if(ED.sel)tf(ED.sel,t=>{ t.h=sortOf(ED.sel)==='wall'?onWall(ED.sel,t.h+d,t.s||1):Math.max(0,t.h+d); }); };
+  // a thing on a wall grows and shrinks from its middle and goes anywhere on the wall, its whole frame between the floor and the ceiling (owner, 13 Nov 2026)
+  const onWall=(un,h,s)=>{ const fb=own(un), lo=-fb[4]*s, hi=A_().HW-fb[5]*s; return hi<lo?lo:Math.max(lo,Math.min(hi,h)); };
+  const floorTo=up=>{ '@later'; const A=A_(), F=A.R.loft, un=ED.sel; if(!F||!un)return; const prev=A.getT(un), t={...prev,h:up?F.MH:0}; if(up){ t.u=Math.max(F.mx+.6,Math.min(F.lib-.8,t.u)); } const q=findSpot(un,t); if(!fits(un,q).ok)return say(up?'NO ROOM FOR IT UPSTAIRS':'NO ROOM FOR IT DOWNSTAIRS'); A.setT(un,q); did({t:'move',un,prev}); if(helper)helper.update(); showFp(un,A.getT(un)); ED.panel(); };   // a piece carried to the loft's other floor, to the nearest place it fits
   const putAway=()=>{ const un=ED.sel, A=A_(); if(!un)return; if(ED.carry)endCarry(); const KO=kindOf(un.kind); if(KO&&KO.own&&un.added){ FORAGE.give(KO.own,1); A.drop(un); select(null); say('BACK IN YOUR PACK'); drawBuy(); return; } A.remove(un); did({t:'gone',un}); select(null); };
   const bringBack=un=>{ const A=A_(); A.restore(un); did({t:'back',un}); select(un); };
   // somewhere it fits, near where it was asked for: rings of grid steps outward
@@ -190,32 +200,39 @@ import {ROOMK} from './150a-bedroom.js';
   /* ---------- the buy bar ---------- */
   const forSale=A=>{ const K=A.kinds(); return Object.keys(K).filter(k=>!NOSALE.has(k)&&!K[k].bad&&!K[k].off&&(!K[k].own||owned(K[k]))).sort((a,b)=>K[a].name<K[b].name?-1:1); };
   let find='';
-  const drawBuy=()=>{ '@later'; const A=A_(); if(!ED.on||!A){ BUY.hidden=true; return; } BUY.hidden=false; const K=A.kinds(), q=find.trim().toUpperCase(), ks=forSale(A).filter(k=>q?K[k].name.includes(q):deptOf(k,K[k])===dept).slice(0,q?120:1e9), have=cash();
-    let h=`<div class="top"><b>BUY</b><span>YOU HAVE $${have.toLocaleString('en-US')}</span><input id="roomfind" placeholder="FIND" value="${find.replace(/"/g,'')}"><span style="margin-left:auto;color:var(--dim);font-size:10px">${ED.carry?'CLICK TO PUT IT DOWN · ESC TAKES IT BACK':'CLICK A THING TO BUY IT'}</span></div>`;
+  const drawBuy=()=>{ '@later'; const A=A_(); if(!ED.on||!A||tab!=='buy'){ BUY.hidden=true; return; } BUY.hidden=false; const K=A.kinds(), q=find.trim().toUpperCase(), ks=forSale(A).filter(k=>q?K[k].name.includes(q):deptOf(k,K[k])===dept).slice(0,q?120:1e9), have=cash();
+    let h=`<div class="top"><input id="roomfind" placeholder="FIND A THING" value="${find.replace(/"/g,'')}"></div><div class="hint" style="margin-bottom:8px">${ED.carry?'CLICK IN THE ROOM TO PUT IT DOWN · ESC TAKES IT BACK':'CLICK A THING TO BUY IT, THEN CLICK WHERE IT GOES'}</div>`;
     h+=`<div class="tabs">${depts(A).map(([k,n])=>`<button data-dept="${k}" class="${!q&&dept===k?'on':''}">${n}</button>`).join('')}</div><div class="tiles">`;
     for(const k of ks){ const p=price(k); if(!PICS[k]&&!PQ.includes(k))PQ.push(k);
       h+=`<button class="tile${have<p?' poor':''}" data-add="${k}">${PICS[k]?`<img alt="" src="${PICS[k]}">`:`<i data-pic="${k}"></i>`}<span>${K[k].name}</span><small data-sz="${k}">${SZ[k]||''}</small><em>${K[k].own?'YOURS x'+owned(K[k]):'$'+p}</em></button>`; }
-    const f=document.activeElement&&document.activeElement.id==='roomfind'; BUY.innerHTML=h+(ks.length?'':'<span style="color:var(--dim)">NOTHING HERE</span>')+'</div>';
+    const f=document.activeElement&&document.activeElement.id==='roomfind'; BUY.innerHTML=h+(ks.length?'':'<span class="hint">NOTHING HERE</span>')+'</div>';
     if(f){ const i=BUY.querySelector('#roomfind'); i.focus(); i.setSelectionRange(i.value.length,i.value.length); }
-    P.style.maxHeight=Math.max(160,innerHeight-BUY.offsetHeight-48)+'px'; };   // the panel stops above the bar, however tall its tabs wrap
-  BUY.addEventListener('click',e=>{ const b=e.target.closest('[data-dept],[data-add]'); if(!b)return; if(b.dataset.dept){ dept=b.dataset.dept; find=''; return drawBuy(); } ED.buy(b.dataset.add); });
+    const tl=P.querySelector('.ttl i'); if(tl)tl.textContent='$'+have.toLocaleString('en-US'); };
+  BUY.addEventListener('click',e=>{ const b=e.target.closest('[data-dept],[data-add]'); if(!b)return; e.stopPropagation(); if(b.dataset.dept){ dept=b.dataset.dept; find=''; return drawBuy(); } ED.buy(b.dataset.add); });
   BUY.addEventListener('input',e=>{ if(e.target.id==='roomfind'){ find=e.target.value; drawBuy(); } });
 
   /* ---------- the panel ---------- */
-  ED.panel=()=>{ '@later'; const A=A_(); if(!ED.on||!A){ P.hidden=true; BUY.hidden=true; return; } P.hidden=false;
+  // the picked thing's bar: every action in one row, DELETE among them (owner, 12 Nov 2026: "doesnt include deleting an item")
+  const drawSel=()=>{ '@later'; const A=A_(), s2=ED.sel; if(!ED.on||!A||!s2||s2.gone){ SEL.hidden=true; return; } SEL.hidden=false; const F=A.R.loft, own=kindOf(s2.kind)&&kindOf(s2.kind).own, pay=Math.floor((s2.paid||0)/2);
+    SEL.innerHTML=`<div class="row"><b>${name(s2)}</b><button class="btn" data-a="turnl">⟲ TURN</button><button class="btn" data-a="turnr">TURN ⟳</button><button class="btn" data-a="small">SMALLER</button><button class="btn" data-a="big">BIGGER</button><button class="btn" data-a="down">LOWER</button><button class="btn" data-a="up">RAISE</button>${F&&!s2.mount?(A.getT(s2).h>F.MH-.3?'<button class="btn" data-a="fdown">TO DOWNSTAIRS</button>':'<button class="btn" data-a="fup">TO UPSTAIRS</button>'):''}</div>
+      <div class="row">${NOSALE.has(s2.kind)||(kindOf(s2.kind)||{}).off?'':`<button class="btn" data-a="copy">COPY $${price(s2.kind)}</button>`}${A.lightsAll().some(q=>q.un===s2)?'<button class="btn" data-a2="light">ITS LIGHT</button>':''}<button class="btn" data-a="away">PUT AWAY</button>${s2.added?`<button class="btn del" data-a="del">${own?'BACK IN YOUR PACK':pay?'DELETE · SELL $'+pay:'DELETE'}</button>`:''}<button class="btn" data-a="drop" style="margin-left:auto">LET GO</button></div>`; };
+  const del=()=>{ '@later'; const un=ED.sel, A=A_(); if(!un||!un.added||!A)return; if((kindOf(un.kind)||{}).own||(un.paid||0)>0)return sell(); if(ED.carry)endCarry(); A.drop(un); select(null); say('GONE'); dirty(); ED.panel(); };   // a bought piece is sold, a free one (the loft's own rugs and pictures) just goes
+  ED.panel=()=>{ '@later'; const A=A_(); if(!ED.on||!A){ P.hidden=true; BUY.hidden=true; SEL.hidden=true; return; } P.hidden=false; if(tab==='loft'&&!A.R.loft)tab='buy';
     const T=(k,n)=>`<button data-tab="${k}" class="${tab===k?'on':''}">${n}</button>`;
-    let h=`<h2>DECORATE YOUR APARTMENT</h2><div class="tabs">${T('things','THINGS')}${T('walls','WALLS')}${T('floor','FLOOR')}${T('lights','LIGHTS')}</div><div class="pane">`;
-    if(tab==='things'){ const s=ED.sel;
-      h+=s?`<div class="lab">PICKED UP</div><div style="color:var(--key)">${name(s)}</div><div class="row"><button class="btn" data-a="turnl">⟲ TURN</button><button class="btn" data-a="turnr">TURN ⟳</button><button class="btn" data-a="small">SMALLER</button><button class="btn" data-a="big">BIGGER</button></div>
-        <div class="row"><button class="btn" data-a="down">LOWER</button><button class="btn" data-a="up">RAISE</button><button class="btn" data-a="copy">COPY $${price(s.kind)}</button><button class="btn" data-a="away">PUT AWAY</button>${s.added?`<button class="btn" data-a="sell">SELL $${Math.floor((s.paid||0)/2)}</button>`:''}${A.lightsAll().some(q=>q.un===s)?'<button class="btn" data-a2="light">LIGHT SETTINGS</button>':''}</div>`
-        :`<div class="hint">CLICK A THING TO PICK IT UP, DRAG TO MOVE IT: GREEN FITS, RED DOESN'T.<br>Q / E TURN · ALT FOR FREE PLACING · SHIFT+WHEEL RESIZES · [ ] LOWER / RAISE · DEL PUTS IT AWAY · G GRID · CTRL+Z UNDO</div>`;
-      { const C=clips(); if(C.length)h+=`<div class="lab" style="color:#e0503c">STANDING IN ONE ANOTHER</div><div class="hint">${C.map(([x,y])=>name(x)+' / '+name(y)).join('<br>')}</div><div class="row"><button class="btn" data-a="unclip">MOVE CLEAR</button></div>`; }
-      const gone=A.units().filter(u=>u.gone);
-      if(gone.length)h+=`<div class="lab">PUT AWAY</div><div class="row">${gone.map(u=>`<button class="btn" data-back="${u.id}">${name(u)}</button>`).join('')}</div>`; }
-    const sw=(set,k,D,on)=>{ const t=A.thumb(set,k); return `<div class="sw ${on?'on':''}" data-${set}="${k}" style="background:${hexs(D.c)}${t?` url(${t}) center/cover`:''}"><span>${D.n}</span></div>`; };
+    let h=`<div class="ttl"><span>DECORATE</span><i>$${cash().toLocaleString('en-US')}</i></div><div class="tabs">${T('buy','BUY')}${T('things','YOUR THINGS')}${T('walls','WALLS')}${T('floor','FLOORS')}${A.R.loft?T('loft','LOFT'):''}${T('lights','LIGHTS')}${T('help','HOW TO')}</div><div class="pane">`;
+    if(tab==='things'){ const here=A.units().filter(u=>!u.gone&&!u.loose&&sortOf(u)!=='small'), gone=A.units().filter(u=>u.gone);
+      { const C=clips(); if(C.length)h+=`<div class="lab" style="color:#ffb4a0">STANDING IN ONE ANOTHER</div><div class="hint">${C.map(([x,y])=>name(x)+' / '+name(y)).join('<br>')}</div><div class="row"><button class="btn" data-a="unclip">MOVE CLEAR</button></div>`; }
+      h+=`<div class="lab">IN THE ROOM · CLICK ONE TO PICK IT UP</div><div class="row">${here.map(u=>`<button class="btn ${ED.sel===u?'on':''}" data-pick="${u.id}">${name(u)}</button>`).join('')}</div>`;
+      h+=`<div class="lab">PUT AWAY · CLICK ONE TO BRING IT BACK</div><div class="row">${gone.length?gone.map(u=>`<button class="btn" data-back="${u.id}">${name(u)}</button>`).join(''):'<span class="hint">NOTHING IS PUT AWAY</span>'}</div>`; }
+    if(tab==='help')h+=`<div class="lab">MOVING THINGS</div><div class="hint">CLICK A THING TO PICK IT UP, DRAG TO MOVE IT: GREEN FITS, RED DOESN'T. ITS BAR AT THE FOOT OF THE SCREEN TURNS, SIZES, COPIES, PUTS AWAY AND DELETES IT.</div><div class="lab">KEYS</div><div class="hint">Q / E TURN · ALT FREE PLACING · SHIFT+WHEEL SIZE · [ ] LOWER / RAISE · DEL PUT AWAY · G GRID · CTRL+Z UNDO · T DONE</div><div class="lab">SMALL THINGS</div><div class="hint">DRAG THEM ONTO TABLES, SHELVES AND THE FLOOR. DOUBLE-CLICK A TABLE TO PUT SOMETHING ON IT FROM YOUR PACK.</div><div class="lab">START OVER</div><div class="row"><button class="btn" data-a="reset">EMPTY THE APARTMENT</button></div>`;
+    const sw=(set,k,D,on)=>{ const t=A.thumb(set==='floor2'?'floor':set,k); return `<div class="sw ${on?'on':''}" data-${set}="${k}" style="background:${hexs(D.c)}${t?` url(${t}) center/cover`:''}"><span>${D.n}</span></div>`; };
     const group=(set,lab,L,cur)=>L.length?`<div class="lab">${lab}</div><div class="row">${L.map(([k,D])=>sw(set,k,D,cur===k)).join('')}</div><div style="height:12px"></div>`:'';
-    if(tab==='walls'){ const W=Object.entries(A.walls); h+=group('wall','PAINT',W.filter(([k,D])=>!D.g),A.R.wall)+group('wall','WALLPAPER',W.filter(([k,D])=>D.g==='paper'),A.R.wall)+group('wall','BRICK AND WOOD',W.filter(([k,D])=>D.g==='other'),A.R.wall); }
-    if(tab==='floor'){ h+=group('floor','ROOM FLOOR',Object.entries(A.floors),A.R.floor); if(A.R.kfloor)h+=group('kfloor','KITCHEN FLOOR',Object.entries(A.kfloors),A.R.kfloorK); }
+    if(tab==='walls'){ const W=Object.entries(A.walls), cur=wsel==='all'?(Object.keys(A.R.walls).length?null:A.R.wall):(A.R.walls[wsel]||A.R.wall);
+      h+=`<div class="lab">WHICH WALL</div><div class="row">${[['all','EVERY WALL'],['Wf','WINDOW WALL'],['Wb','DOOR WALL'],['Ww','LEFT WALL'],['We','RIGHT WALL']].map(([k,n])=>`<button class="btn ${wsel===k?'on':''}" data-wsel="${k}">${n}</button>`).join('')}</div><div style="height:12px"></div>`;
+      h+=group('wall','PAINT',W.filter(([k,D])=>!D.g),cur)+group('wall','WALLPAPER',W.filter(([k,D])=>D.g==='paper'),cur)+group('wall','BRICK AND WOOD',W.filter(([k,D])=>D.g==='other'),cur); }
+    if(tab==='loft'&&A.R.loft){ const O=A.R.loftOpts; for(const k in O)h+=`<div class="lab">${O[k].n}</div><div class="row">${Object.entries(O[k].o).map(([v,[n,c]])=>`<div class="sw ${A.R.loftK[k]===v?'on':''}" data-loft="${k}:${v}" style="background:${hexs(c)}"><span>${n}</span></div>`).join('')}</div><div style="height:12px"></div>`;
+      h+=`<div class="hint">THE UPPER FLOOR'S BOARDS ARE UNDER FLOOR; EACH WALL'S OWN PAPER UNDER WALLS; A PICKED-UP THING GOES TO UPSTAIRS FROM THINGS.</div>`; }
+    if(tab==='floor'){ h+=group('floor',A.R.loft?'LOWER FLOOR':'ROOM FLOOR',Object.entries(A.floors),A.R.floor); if(A.R.loft)h+=group('floor2','UPPER FLOOR',Object.entries(A.floors),A.R.floor2).replace(/data-floor2=/g,'data-fl2='); if(A.R.kfloor)h+=group('kfloor','KITCHEN FLOOR',Object.entries(A.kfloors),A.R.kfloorK); }
     if(tab==='lights'){ const K=A.kinds(), fit=m=>Object.keys(K).filter(k=>K[k].cat==='light'&&K[k].mount===m);
       h+=`<div class="lab">ADD A LIGHT · CEILING</div><div class="row">${fit('ceil').map(k=>`<button class="btn" data-add="${k}">${K[k].name} $${price(k)}</button>`).join('')}</div>
         <div class="lab">ADD A LIGHT · WALL</div><div class="row">${fit('wall').map(k=>`<button class="btn" data-add="${k}">${K[k].name} $${price(k)}</button>`).join('')}</div>
@@ -228,20 +245,25 @@ import {ROOMK} from './150a-bedroom.js';
           ${L.type==='spot'?rng(q.id,'yaw','AIM TURN',L.yaw,-180,180,1,'°')+rng(q.id,'pitch','AIM TILT',L.pitch,0,90,1,'°')+rng(q.id,'angle','BEAM WIDTH',L.angle,5,85,1,'°')+rng(q.id,'soft','SOFTNESS',L.soft,0,100,100):''}
           ${rng(q.id,'reach','REACH',L.reach,30,300,100)}<div class="row"><button class="btn" data-lreset="${q.id}">AS IT CAME</button></div>`; }
         h+=`</div>`; } }
-    h+=`</div><div class="foot"><button class="btn" data-a="undo">UNDO</button><button class="btn" data-a="reset">RESET</button><button class="btn ${ED.grid?'on':''}" data-a="grid">GRID</button><button class="btn" data-a="done" style="margin-left:auto">DONE</button></div>`;
-    const st=P.scrollTop; P.innerHTML=h; P.scrollTop=st; drawBuy(); };
-  P.addEventListener('click',e=>{ '@later'; const b=e.target.closest('[data-tab],[data-a],[data-add],[data-back],[data-wall],[data-floor],[data-kfloor],[data-lon],[data-lopen],[data-ltype],[data-lclear],[data-lreset],[data-a2]'); if(!b)return; const A=A_(); if(!A)return; const d=b.dataset;
+    h+=`</div><div class="foot"><button class="btn" data-a="undo">UNDO</button><button class="btn ${ED.grid?'on':''}" data-a="grid">GRID</button><button class="btn" data-a="done" style="margin-left:auto">DONE</button></div>`;
+    const p0=P.querySelector('.pane'), st=p0?p0.scrollTop:0; P.innerHTML=h; const pn=P.querySelector('.pane'); if(tab==='buy')pn.appendChild(BUY); pn.scrollTop=st; drawBuy(); drawSel(); };
+  const onClick=e=>{ '@later'; const b=e.target.closest('[data-tab],[data-pick],[data-a],[data-add],[data-back],[data-wall],[data-wsel],[data-loft],[data-fl2],[data-floor],[data-kfloor],[data-lon],[data-lopen],[data-ltype],[data-lclear],[data-lreset],[data-a2]'); if(!b)return; const A=A_(); if(!A)return; const d=b.dataset;
     if(d.tab){ tab=d.tab; return ED.panel(); }
+    if(d.pick){ const un=A.units().find(u=>u.id===d.pick); if(un)select(un); return; }
     if(d.add)return ED.buy(d.add);
     if(d.back){ const un=A.units().find(u=>u.id===d.back); if(un)bringBack(un); return; }
-    if(d.wall){ did({t:'wall',prev:A.R.wall}); A.wall(d.wall); return ED.panel(); }
+    if(d.wsel){ wsel=d.wsel; return ED.panel(); }
+    if(d.wall){ did({t:'wall',prev:{wall:A.R.wall,walls:{...A.R.walls}}}); A.wall(d.wall,wsel); return ED.panel(); }
+    if(d.fl2){ did({t:'floor2',prev:A.R.floor2}); A.floor(d.fl2,true); return ED.panel(); }
+    if(d.loft){ const [k,v]=d.loft.split(':'); did({t:'loft',k,prev:A.R.loftK[k]}); A.R.loftSet(k,v); return ED.panel(); }
     if(d.floor){ did({t:'floor',prev:A.R.floor}); A.floor(d.floor); return ED.panel(); }
     if(d.kfloor){ did({t:'kfloor',prev:A.R.kfloorK}); A.kfloor(d.kfloor); return ED.panel(); }
     if(d.lopen){ ED.open=ED.open===d.lopen?null:d.lopen; return ED.panel(); }
     if(d.a2==='light'&&ED.sel){ const q=A.lightsAll().find(x=>x.un===ED.sel); if(q){ tab='lights'; ED.open=q.id; } return ED.panel(); }
     const lid=d.lon||d.ltype||d.lclear||d.lreset; if(lid){ const prev=A.lightGet(lid); if(!prev)return;
       if(d.lon)A.light(lid,{on:!prev.on}); else if(d.ltype)A.light(lid,{type:d.v}); else if(d.lclear)A.light(lid,{col:null,tint:null,tone:null}); else A.lightReset(lid); did({t:'light',id:lid,prev}); return ED.panel(); }
-    ({turnl:()=>turn(RQ),turnr:()=>turn(-RQ),small:()=>size(1/1.1),big:()=>size(1.1),down:()=>lift(-.05),up:()=>lift(.05),copy,away:putAway,sell,unclip:()=>{ const m=unclip(); if(m.length){ HOME.save(snapshot(A_())); say('MOVED CLEAR'); } ED.panel(); },undo:ED.back,reset:ED.reset,done:ED.toggle,grid:()=>{ ED.grid=!ED.grid; ED.panel(); }}[d.a]||(()=>{}))(); });
+    ({turnl:()=>turn(RQ),turnr:()=>turn(-RQ),small:()=>size(1/1.1),big:()=>size(1.1),down:()=>lift(-.05),up:()=>lift(.05),fup:()=>floorTo(true),fdown:()=>floorTo(false),copy,away:putAway,sell,del,drop:()=>{ if(ED.carry)placeCarry(true); select(null); },unclip:()=>{ const m=unclip(); if(m.length){ HOME.save(snapshot(A_())); say('MOVED CLEAR'); } ED.panel(); },undo:ED.back,reset:ED.reset,done:ED.toggle,grid:()=>{ ED.grid=!ED.grid; ED.panel(); }}[d.a]||(()=>{}))(); if(d.a)drawSel(); };
+  P.addEventListener('click',onClick); SEL.addEventListener('click',onClick); for(const ev of ['pointerdown','dblclick','wheel'])SEL.addEventListener(ev,e=>e.stopPropagation());
   let slid=null;
   P.addEventListener('input',e=>{ '@later'; const t=e.target, A=A_(); if(!A)return;
     if(t.dataset.lcol){ const id=t.dataset.lcol; if(!slid)slid={t:'light',id,prev:A.lightGet(id)}; const L=A.lightGet(id); A.light(id,{col:t.value,tint:L.tint??1}); return; }
@@ -268,6 +290,7 @@ import {ROOMK} from './150a-bedroom.js';
   const nW=new THREE.Vector3(), nM=new THREE.Matrix3();
   const surfaceAt=(e,un)=>{ '@later'; const A=A_(), objs=[]; for(const o of A.units())if(!o.gone&&o!==un)objs.push(o.obj);
     for(const h of ray(e).intersectObjects(objs,true)){ if(!meshOk(h.object)||h.object.userData.soft||!h.face)continue; nM.getNormalMatrix(h.object.matrixWorld); nW.copy(h.face.normal).applyMatrix3(nM).normalize(); if(nW.y>.6)return A.toApt(h.point.x,h.point.y,h.point.z); }
+    { const F=A.R.loft, r=ray(e).ray; if(F&&r.origin.y>A.W(0,F.MH,0).y){ plane.set(UP,-A.W(0,F.MH,0).y); if(r.intersectPlane(plane,hitP)){ const q=A.toApt(hitP.x,hitP.y,hitP.z); if(F.DECKS.some(d=>q.u>=d[0]&&q.v>=d[1]&&q.u<=d[2]&&q.v<=d[3]))return q; } } }   // the loft's upper floor, looked down on
     plane.set(UP,-A.W(0,0,0).y); return ray(e).ray.intersectPlane(plane,hitP)?A.toApt(hitP.x,hitP.y,hitP.z):null; };
   // which wall the pointer is on, from the inside (the one you see the face of)
   const WN={Ww:[1,0],We:[-1,0],Wf:[0,1],Wb:[0,-1]}, WRY={Ww:Math.PI/2,We:-Math.PI/2,Wf:0,Wb:Math.PI};
@@ -282,7 +305,7 @@ import {ROOMK} from './150a-bedroom.js';
     if(un.loose)A.lift(un); const fb=own(un), thin=Math.min(fb[2]-fb[0],fb[3]-fb[1])/2*(prev.s||1)+.01;
     drag={un,prev,off,wp,so,carry,moved:false,t:{...prev},w0:w0[1],d0:carry?Math.min(w0[0],thin):w0[0],dh:grab&&so==='wall'?(()=>{ const w=wallAt(grab); return w?prev.h-w.h:0; })():-fb[4]*(prev.s||1)}; showGrid(so!=='wall'&&so!=='ceil'); };
   const move=e=>{ '@later'; const A=A_(), d=drag, un=d.un, o=un.obj, t={...d.t}, free=e.altKey||!ED.grid;
-    if(d.so==='wall'){ const w=wallAt(e); if(!w)return; const [nu,nv]=WN[w.k]; t.h=Math.max(0,Math.min(A.HW-.1,w.h+d.dh)); t.u=w.u+nu*d.d0; t.v=w.v+nv*d.d0; t.ry=d.prev.ry+WRY[w.k]-WRY[d.w0];
+    if(d.so==='wall'){ const w=wallAt(e); if(!w)return; const [nu,nv]=WN[w.k]; t.h=onWall(d.un,w.h+d.dh,t.s||1); t.u=w.u+nu*d.d0; t.v=w.v+nv*d.d0; t.ry=d.prev.ry+WRY[w.k]-WRY[d.w0];
       if(!free){ t.h=snap(t.h,GS/2); if(nu)t.v=snap(t.v,GS/2); else t.u=snap(t.u,GS/2); } }
     else if(d.so==='small'){ const p=surfaceAt(e,un); if(!p)return; t.u=p.u; t.v=p.v; t.h=Math.max(0,p.h); if(!free&&p.h<.02){ t.u=snap(t.u,GS/2); t.v=snap(t.v,GS/2); } }
     else { plane.set(UP,-d.wp.y); if(!ray(e).ray.intersectPlane(plane,hitP))return; const n=hitP.clone().add(d.off), q=A.toApt(n.x,n.y,n.z); t.u=q.u; t.v=q.v; if(!free){ t.u=snap(t.u,GS); t.v=snap(t.v,GS); } }
@@ -317,7 +340,7 @@ import {ROOMK} from './150a-bedroom.js';
     else used=false; if(used){ e.stopImmediatePropagation(); e.preventDefault(); } },true);
 
   // the button shows in your apartment; the editor closes if you leave it; the buy bar's pictures a couple a frame
-  SYS.add('places',()=>{ const h=inHome(); if(B.hidden===h)B.hidden=!h; if(ED.on&&!h)ED.toggle(); if(!ED.on&&!SP.hidden)SP.hidden=true; if(helper&&ED.sel){ if(ED.sel.gone||!ED.sel.obj.parent)select(null); else helper.update(); }
+  SYS.add('places',()=>{ const h=inHome(), mine=h&&!HOME.guest; if(B.hidden===h)B.hidden=!h; if(HB.hidden!==mine)HB.hidden=mine; HB.style.top=h?'calc(48px + env(safe-area-inset-top,0px))':''; if(ED.on&&!h)ED.toggle(); if(!ED.on&&!SP.hidden)SP.hidden=true; if(helper&&ED.sel){ if(ED.sel.gone||!ED.sel.obj.parent)select(null); else helper.update(); }
     if(hover&&(hover.un.gone||!hover.un.obj.parent))setHover(null);
     if(ED.on&&PQ.length)for(let i=0;i<2&&PQ.length;i++){ const k=PQ.shift(); if(!PICS[k])try{ drawPic(k); }catch(err){ PICS[k]=''; } } },'150d-roomedit');
   /* ---------- putting something on a surface: double-click a table, a shelf, a counter; choose from your pack (or buy a small thing); a top-down view of it, click where it goes ---------- */
@@ -339,6 +362,10 @@ import {ROOMK} from './150a-bedroom.js';
       Object.defineProperty(D,'tpl',{value:g,enumerable:true}); return g; }});
     R.kinds[k]=D; return k; };
   ROOMK.keep.push({ out:()=>{}, in:(L,A)=>{ for(const a of (L&&L.added)||[])if(String(a.kind).startsWith('pack:'))packKind(A,a.kind.slice(5)); } });
+  // SET IT OUT (owner, 12 Nov 2026): a thing with no other use is put on show in your apartment from the bag, carried under the pointer till you click it down
+  { const row=id=>FORAGE.usable&&!FORAGE.usable(String(id).split('~')[0])?[['SET IT OUT','setout']]:[]; row.setout=1; FORAGE.ROWB.push(row);
+    FORAGE.ACT.setout=id=>{ if(!id||!FORAGE.has(id))return; const nm=String((FORAGE.NM&&FORAGE.NM[id])||id).toUpperCase(); if(!inHome()||HOME.guest)return SAY('THE '+nm+' CAN GO ON SHOW AT HOME: IN YOUR APARTMENT, SET IT OUT AND CLICK WHERE IT GOES.','#e8e2cc');
+      if(!ED.on)ED.toggle(); if(!ED.on)return; if(UI.menuOpen)UI.toggleMenu(); if(ED.buy(packKind(A_(),id)))SAY('CLICK WHERE THE '+nm+' GOES. PUT AWAY BRINGS IT BACK TO YOUR BAG.','#9fe07f'); }; }
   const packList=()=>Object.entries(INV.items||{}).filter(([id,n])=>n>0&&!/^\$/.test(id)).map(([id,n])=>({id,n,name:String((FORAGE.NM&&FORAGE.NM[id])||id).toUpperCase()})).sort((a,b)=>a.name<b.name?-1:1);
   const packPic=id=>{ try{ const c=BAG.pic&&BAG.pic(id); return c?c.toDataURL():''; }catch(e){ return ''; } };
   const drawSurf=()=>{ '@later'; const A=A_(), un=SURF.un; if(!A||!un){ SP.hidden=true; return; } const T=tops(un); if(!T.length){ SP.hidden=true; return; } const L=T[Math.min(SURF.lv,T.length-1)];
@@ -371,5 +398,5 @@ import {ROOMK} from './150a-bedroom.js';
   addEventListener('dblclick',e=>{ if(!ED.on||e.target!==renderer.domElement||ED.carry)return; const h=pick(e); if(!h||h.un.loose)return; e.stopImmediatePropagation(); e.preventDefault(); if(drag)finish(); SURF.open(h.un); },true);
   window.ROOMEDDBG=()=>{ '@later'; const A=A_(); return {out:A?A.units().filter(u=>!u.gone&&A.getT(u).v<0).map(u=>u.kind):[],on:ED.on,sel:ED.sel&&ED.sel.id,undo:ED.undo.length,saved:HOME.saved||0,layout:!!HOME.layout,units:A?A.units().length:0,gone:A?A.units().filter(u=>u.gone).length:0,added:A?A.units().filter(u=>u.added).length:0,wall:A&&A.R.wall,floor:A&&A.R.floor,kfloor:A&&A.R.kfloorK,
     carry:!!ED.carry,grid:ED.grid,cash:cash(),pics:Object.keys(PICS).filter(k=>PICS[k]).length,fp:fpG.visible?fpG.children.filter(m=>m.visible).map(m=>m.material===FPM.ok?'ok':'no'):[],said:ED.said||''}; };
-  ED._api=A_; ED.HOME=HOME; ED.snapshot=()=>A_()&&snapshot(A_()); ED.apply=L=>apply(A_(),L); ED.add=add; ED.select=select; ED.putAway=putAway; ED.turn=turn; ED.size=size; ED.fits=(un,t)=>fits(un,t||A_().getT(un)); ED.sortOf=sortOf; ED.price=price; ED.sell=()=>sell(); ED.place=()=>placeCarry(); ED.surf=SURF; ED.tops=un=>tops(un); ED.placeOn=placeOn; ED.packKind=id=>packKind(A_(),id); ED.clips=()=>clips().map(p=>p.map(u=>u.name)); ED.unclip=unclip; ED.settle=settle;
+  ED._api=A_; ED.HOME=HOME; ED.snapshot=()=>A_()&&snapshot(A_()); ED.apply=L=>apply(A_(),L); ED.add=add; ED.select=select; ED.floorTo=floorTo; ED.putAway=putAway; ED.turn=turn; ED.size=size; ED.fits=(un,t)=>fits(un,t||A_().getT(un)); ED.sortOf=sortOf; ED.price=price; ED.sell=()=>sell(); ED.place=()=>placeCarry(); ED.surf=SURF; ED.tops=un=>tops(un); ED.placeOn=placeOn; ED.packKind=id=>packKind(A_(),id); ED.clips=()=>clips().map(p=>p.map(u=>u.name)); ED.unclip=unclip; ED.settle=settle;
 }

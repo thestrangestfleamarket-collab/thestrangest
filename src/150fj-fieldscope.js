@@ -22,7 +22,7 @@ const FIELD={on:false,at:null}; window.FIELD=FIELD;
   FIELD.dark=()=>{ const z=ZONES.at(pos.x,pos.z,SHARED.LVL||'up'); return (ZONES.dark&&z&&ZONES.dark[z.id])||0; };
   FIELD.toggle=async()=>{ if(FIELD.on){ if(!SCOPE.isOpen())await SCOPE.open(); return; }
     if(!SKY.on()||ROOMS.cur||SHARED.LVL==='down'){ SAY('THE FIELD TELESCOPE NEEDS OPEN SKY OVER IT.','#c8a090'); return; }
-    const d=FIELD.dark(); keep=SCOPE.site; SCOPE.site={ap:60,dark:d,max:100,name:'THE FIELD TELESCOPE',field:true}; if(SCOPE.mag>100)SCOPE.mag=50;
+    const d=FIELD.dark(); keep=SCOPE.site; SCOPE.site={ap:60,dark:d,max:100,name:'THE FIELD TELESCOPE',field:true}; if(SCOPE.mag>2500)SCOPE.mag=50;
     prop=stand(); A=prop.userData.tube; const hd=SHARED.heading||0; prop.position.set(pos.x+Math.sin(hd)*.6*M,SHARED.py||0,pos.z+Math.cos(hd)*.6*M); scene.add(prop); FIELD.on=true; FIELD.at={x:pos.x,z:pos.z}; SKYSHOW.want=true;
     SAY(d>0?'YOU STAND THE TELESCOPE IN THE GRASS. AWAY FROM THE LAMPS THE SKY IS DARKER: FAINTER THINGS SHOW HERE.':'YOU STAND THE TELESCOPE ON THE PAVEMENT. THE STREET LAMPS WASH OUT THE FAINT THINGS: THE PARK IS DARKER.','#c8e0ff'); await SCOPE.open(); };
   FIELD.pack=()=>{ if(!FIELD.on)return; FIELD.on=false; if(SCOPE.isOpen())SCOPE.close(); if(prop){ scene.remove(prop); prop.traverse(o=>{ if(o.geometry)o.geometry.dispose(); if(o.material)o.material.dispose(); }); prop=null; A=null; } if(keep)SCOPE.site=keep; keep=null; FIELD.at=null; };

@@ -54,9 +54,10 @@ const BODEGA={basket:new Map()}; window.BODEGA=BODEGA;
   // the register (owner, 8 Nov 2026: "double click on the front desk or register and it will show every item in the bodega ... you dont have to walk around"): your basket, then everything sold here
   BODEGA.all=()=>{ const seen=new Set(), add=(L,r)=>{ if(r&&r.id&&!seen.has(r.id)){ seen.add(r.id); L.push(r); } }, S=[], G=[], U=[];
     for(const id of BODEGA.SUPPLIES)add(U,sold(id)); for(const r of BODEGA.counterLines())add(S,r); for(const k in SHELF)for(const r of BODEGA.shelf(k))add(S,r);
-    for(const [,,ids] of BODEGA.LAYOUT||[])for(const id of ids)add(G,sold(id)); return {shelves:S,goods:G,supplies:U}; };
+    for(const [,,ids] of BODEGA.LAYOUT||[])for(const id of ids)add(G,sold(id));
+    const E=[]; if(FORAGE.kitIds)for(const id of FORAGE.kitIds())if(ITEMS.def(id)&&!ITEMS.prop(id,'rental')&&FORAGE.usable(id))add(E,sold(id)); E.sort((a,b)=>a.name.localeCompare(b.name)); return {shelves:S,goods:G,supplies:U,every:E}; };   // and every thing in the game that does something (owner, 12 Nov 2026: "fill it with all the items in game that function")
   BODEGA.register=()=>MINI.open(list('THE REGISTER',()=>{ const R=[{head:'YOUR BASKET'}]; for(const [id,n] of BODEGA.basket)R.push({name:FORAGE.name(id),n,price:ITEMS.prop(id,'value')}); if(R.length===1)R.push({name:'(EMPTY: CLICK ANYTHING BELOW)'});
-    const A=BODEGA.all(); for(const [h,L] of [['SUPPLIES',A.supplies],['ON THE SHELVES',A.shelves],['GOODS',A.goods]])if(L.length){ R.push({head:h}); R.push(...L); } return R; },true));
+    const A=BODEGA.all(); for(const [h,L] of [['SUPPLIES',A.supplies],['ON THE SHELVES',A.shelves],['GOODS',A.goods],['EVERYTHING ELSE',A.every]])if(L.length){ R.push({head:h}); R.push(...L); } return R; },true));
   // a basket left unpaid stays in the bodega
   SYS.add('life',()=>{ if(BODEGA.basket.size&&(!ROOMS.offIn||ROOMS.offIn()!=='bodega')){ BODEGA.basket.clear(); say('YOU LEFT THE BASKET BY THE DOOR. UNPAID THINGS STAY IN THE BODEGA.','#c8a090'); } },'146ze-bodega');
   // where its people go, in the shop's own metres (u from its west wall, v from its back wall toward the street)

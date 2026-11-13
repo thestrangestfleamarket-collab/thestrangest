@@ -5,6 +5,7 @@ import {PPU, renderer, scene} from './004-main.js';
 import {BLDK, cutWalls, FIX, grab, LOTX, LOTY, MODS, SEEN, SOL, STORE, SYS, TILE, WP} from './006-map-pre.js';
 import {FLAME} from './007-fire.js';
 import {OBJ} from './008-batch.js';
+import {ONSEN} from './023-west-kits.js';
 
 await grab('ghostdojo',async()=>{ const {X:BX,Y:BY,Z:BZ,gbox:GB,faceTex,bq,C}=SHARED.BOD, J=SHARED.BOD.GDJ, GK=SHARED.BOD.GDK, {hash,grain}=SHARED.BOD.g, sh=SHARED.BOD.K.sh;
   if(GK){ const S=GK.S||1, {u,v,iu,iv}=GK, X=x=>BX(u(x)), Z=y=>BZ(v(y)), Y=z=>BY(z*S);   // drawn 1.5x about the middle of its front (owner, 8 Nov 2026): built and painted at its old size, every point scaled
@@ -111,9 +112,9 @@ await grab('ghostdojo',async()=>{ const {X:BX,Y:BY,Z:BZ,gbox:GB,faceTex,bq,C}=SH
       DEP.push({id:'front',x0:X0+EW.a0,x1:X0+EW.a1,y0:Y1-.12,y1:Y1-.1,z0:EW.z0,z1:EW.z1,c:AMBER,fs:(nx,ny,x,y,z,k)=>lit(Math.floor(z+EW.z0)%16===0||Math.floor((x-X0-EW.a0)*24)%14===0?sh(AMBER,.86):AMBER),top:()=>lit(AMBER)});
       DEP.push(onWall('front',EW.a0-.1,EW.a1+.1,EW.z0-6,EW.z0,.14,[86,54,42])); }
     if(H2>H)for(const u of UW){ const L=u.a1-u.a0, n=Math.round(L/.21); for(let i=1;i<n;i++){ const a=u.a0+i*L/n; DEP.push({...onWall('front',a-.025,a+.025,UZ0,UZ1,.05,[68,42,32]),id:'U'}); } DEP.push({...onWall('front',u.a0-.12,u.a1+.12,UZ0-6,UZ0,.12,[86,54,42]),id:'U'}); }
-    { const S=SIGN, F5={B:'uhhuhhu',A:'ehhvhhh',T:'v444444',H:'hhhvhhh',O:'ehhhhhe',U:'hhhhhhe',S:'fgge11u',E:'vgguggv'}, txt=(t,i,j)=>{ const c=Math.floor(i/12), g=F5[t[c]], gi=Math.floor((i-c*12)/2), gj=Math.floor(j/2); return !!g&&j>=0&&gi<5&&gj<7&&!!(parseInt(g[gj],32)>>(4-gi)&1); };
+    { const S=SIGN;   // no words (owner, 13 Nov 2026): the hot spring sign, ♨, that everyone reads as a bath
       const gl=(a,z)=>{ const L=S.a1-S.a0, u=(a-S.a0)/L, v=(z-S.z0)/(S.z1-S.z0); if(u<.04||u>.96||v<.07||v>.93)return [52,34,28];
-        const px=(a-S.a0)*24, pz=S.z1-z, W=L*24; if(txt('BATH',Math.floor(px-(W-46)/2),Math.floor(pz-10))||txt('HOUSE',Math.floor(px-(W-58)/2),Math.floor(pz-30)))return hs(Math.floor(a*24),Math.floor(z),684)<.12?[150,116,62]:[214,168,82];
+        const px=(a-S.a0)*24, pz=S.z1-z, W=L*24, Hs=S.z1-S.z0, k=Math.max(1,Math.floor(Math.min(W,Hs)*.8/ONSEN.length)); if(ONSEN.at(Math.floor((px-(W-ONSEN.length*k)/2)/k),Math.floor((pz-(Hs-ONSEN.length*k)/2)/k)))return hs(Math.floor(a*24),Math.floor(z),684)<.12?[150,116,62]:[214,168,82];
         return sh([36,52,84],.92+.1*hs(Math.floor(a*12),Math.floor(z/3),685)); };
       DEP.push({...onWall('front',S.a0,S.a1,S.z0,S.z1,.16,[36,52,84],{fs:(nx,ny,x,y,z,k)=>ny>0?sh(gl(x-X0,z+S.z0),k):sh([52,34,28],k),top:()=>[60,40,32]}),id:'U'}); }
     for(const f in IVY){ const w=WALLS[f]; for(let i=0;i<70;i++){ const a=hs(i,f.length,690)*w.L, z=4+hs(i,f.length,691)*290; if(ivyK(f,a,z)<.55||inOpen(f,a,z)||z+9>H2)continue;

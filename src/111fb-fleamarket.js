@@ -27,7 +27,7 @@ const CREW={list:[],loaded:{},hd:{},alias:{play:'playhouse',bath:'dojo',feel:'st
     if(at==='flea'){ const t=(LEVEL.things||[]).find(o=>o.k==='ftable'); return t?W(t.x,LEVEL.block.front+.9):null; }
     if(at==='lake'){ const L=LEVEL.parkPlaces.lake; return W(L.x+PARK.ox,L.y+PARK.oy); }
     if(at==='round')return W(PARK.round[0]+PARK.ox,PARK.round[1]+PARK.oy);
-    if(at==='hudson')return W(117.5,-113);
+    if(at==='hudson'){ const H=LEVEL.places.find(p=>p.kind==='passage'); return W((H.x0+H.x1)/2,-113); }
     if(at==='street')return W(72,-72.5);
     try{ const p=CITY.place(a); if(p)return {x:p.door.x,z:p.door.z}; }catch(e){}
     return null; };

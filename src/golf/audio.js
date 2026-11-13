@@ -62,6 +62,32 @@ export class GameAudio {
     seq.forEach((f, i) => this.bell(f, 0.22, 0.25 + i * 0.13));
   }
 
+  // running water heard from where it is: the falls loud and near, the brook softer
+  water(at) {
+    this.waterAt = at; if (!this.ctx || !at) return;
+    if (this.waterNodes) this.waterNodes.forEach(n => { try { n.stop ? n.stop() : n.disconnect(); } catch { } });
+    const c = this.ctx, nodes = this.waterNodes = [];
+    const src = (pos, f0, f1, gain, ref) => {
+      const p = c.createPanner(); p.panningModel = 'HRTF'; p.distanceModel = 'inverse'; p.refDistance = ref; p.rolloffFactor = 1.1; p.maxDistance = 400;
+      p.positionX.value = pos.x; p.positionY.value = pos.y; p.positionZ.value = pos.z;
+      for (const [f, q, g] of [[f0, 0.4, gain], [f1, 0.9, gain * 0.5]]) {
+        const s = c.createBufferSource(); s.buffer = this.noise; s.loop = true; s.playbackRate.value = 0.9 + Math.random() * 0.2;
+        const bq = c.createBiquadFilter(); bq.type = 'bandpass'; bq.frequency.value = f; bq.Q.value = q;
+        const gg = c.createGain(); gg.gain.value = g; const l = c.createOscillator(); l.frequency.value = 0.3 + Math.random() * 0.4; const lg = c.createGain(); lg.gain.value = g * 0.25;
+        l.connect(lg); lg.connect(gg.gain); s.connect(bq); bq.connect(gg); gg.connect(p); s.start(0, Math.random() * 1.5); l.start(); nodes.push(s, l, gg);
+      }
+      p.connect(this.amb); nodes.push(p);
+    };
+    if (at.falls) src(at.falls, 700, 2400, 0.9, 4);
+    if (at.brook) src(at.brook, 1500, 3800, 0.22, 2);
+  }
+  listen(cam) {
+    if (!this.ctx) return; const L = this.ctx.listener, e = cam.matrixWorld.elements;
+    if (!L.positionX) return;
+    L.positionX.value = e[12]; L.positionY.value = e[13]; L.positionZ.value = e[14];
+    L.forwardX.value = -e[8]; L.forwardY.value = -e[9]; L.forwardZ.value = -e[10]; L.upX.value = e[4]; L.upY.value = e[5]; L.upZ.value = e[6];
+  }
+
   setAmbience(kind) {
     if (kind === this.kind) return; this.kind = kind;
     if (!this.ctx) return;
@@ -77,12 +103,18 @@ export class GameAudio {
     };
     if (kind === 'sea') { layer('lowpass', 520, 0.3, 0.16, 0.11, 0.11); layer('bandpass', 1900, 0.5, 0.03, 0.17, 0.025); }
     else if (kind === 'alpine') { layer('bandpass', 380, 0.6, 0.09, 0.07, 0.05); layer('highpass', 3000, 0.3, 0.012, 0.13, 0.008); }
+    else if (kind === 'dusk') { layer('lowpass', 300, 0.4, 0.07, 0.04, 0.045); layer('bandpass', 900, 0.5, 0.012, 0.09, 0.01); }
     else { layer('lowpass', 260, 0.4, 0.1, 0.05, 0.05); }
+    if (this.waterAt) this.water(this.waterAt);
   }
 
   update(dt) {
     if (!this.ctx || !this.kind) return;
-    if ((this.nextBird -= dt) < 0 && this.kind !== 'night') {
+    if (this.kind === 'dusk' && (this.nextOwl = (this.nextOwl ?? 9) - dt) < 0) { // a far owl, now and then
+      this.nextOwl = 14 + Math.random() * 22; const f = 360 + Math.random() * 40, g = 0.05;
+      this._tone(f, 0.38, g, { to: f * 0.92, dest: this.amb }); this._tone(f * 0.97, 0.55, g * 0.9, { to: f * 0.86, dest: this.amb, delay: 0.62 });
+    }
+    if ((this.nextBird -= dt) < 0 && this.kind !== 'night' && this.kind !== 'dusk') {
       this.nextBird = 2 + Math.random() * (this.kind === 'alpine' ? 5 : 9);
       const f = 2200 + Math.random() * 1800, n = 2 + (Math.random() * 3 | 0);
       for (let i = 0; i < n; i++) this._tone(f, 0.09, 0.035, { to: f * (1.2 + Math.random() * 0.4), delay: i * 0.14, dest: this.amb });
@@ -93,7 +125,7 @@ export class GameAudio {
     }
     if ((this.nextNote -= dt) < 0 && this.vol.music > 0.01) {
       this.nextNote = 1.6 + Math.random() * 2.6;
-      const scale = this.kind === 'night' ? [220, 261.6, 293.7, 329.6, 392, 440, 523.3] : [261.6, 293.7, 329.6, 392, 440, 523.3, 587.3, 659.3];
+      const scale = this.kind === 'dusk' ? [146.8, 174.6, 196, 220, 261.6, 293.7] : this.kind === 'night' ? [220, 261.6, 293.7, 329.6, 392, 440, 523.3] : [261.6, 293.7, 329.6, 392, 440, 523.3, 587.3, 659.3];
       const f = scale[Math.random() * scale.length | 0];
       this.bell(f, 0.16, 0, this.mus);
       if (Math.random() < 0.4) this.bell(f * 1.5, 0.09, 0.3, this.mus);

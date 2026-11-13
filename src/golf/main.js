@@ -9,6 +9,7 @@ import { makeBall } from './physics.js';
 import { GameAudio } from './audio.js';
 import { Panel, textSprite } from './ui.js';
 import { Net } from './net.js';
+import { makePost } from './post.js';
 import { clamp, lerp } from './util.js';
 
 const V3 = THREE.Vector3;
@@ -32,9 +33,9 @@ const settings = Object.assign({
 if (params.get('name')) settings.name = params.get('name').slice(0, 20);
 const save = () => store.set('halcyon-settings', JSON.stringify(settings));
 const QUALITY = {
-  low: { pr: 0.8, shadows: false, shadowSize: 1024, terrainSeg: 110, propScale: 0.5, fb: 0.9, fov: 1, grass: 45000, trees: 8, treeKinds: 2 },
-  medium: { pr: 1, shadows: true, shadowSize: 1024, terrainSeg: 150, propScale: 0.8, fb: 1.0, fov: 0.6, grass: 120000, trees: 16, treeKinds: 4 },
-  high: { pr: 2, shadows: true, shadowSize: 2048, terrainSeg: 200, propScale: 1, fb: 1.2, fov: 0.2, grass: 240000, trees: 24, treeKinds: 5 },
+  low: { pr: 0.8, shadows: false, shadowSize: 1024, terrainSeg: 180, propScale: 0.5, fb: 0.9, fov: 1, grass: 45000, trees: 6, treeKinds: 2, farTrees: 300, mist: 14, fireflies: 90, bloom: false },
+  medium: { pr: 1, shadows: true, shadowSize: 1024, terrainSeg: 260, propScale: 0.8, fb: 1.0, fov: 0.6, grass: 120000, trees: 12, treeKinds: 4, farTrees: 700, mist: 26, fireflies: 160, bloom: true },
+  high: { pr: 2, shadows: true, shadowSize: 2048, terrainSeg: 340, propScale: 1, fb: 1.2, fov: 0.2, grass: 240000, trees: 16, treeKinds: 5, farTrees: 1400, mist: 40, fireflies: 240, bloom: true },
 };
 const Q = () => QUALITY[settings.quality] || QUALITY.high;
 
@@ -52,9 +53,10 @@ const vrButton = VRButton.createButton(renderer);
 document.body.appendChild(vrButton);
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.03, 5000);
+const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.03, 10000);
 const rig = new THREE.Group(); rig.add(camera); scene.add(rig);
-addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
+const post = makePost(renderer, scene, camera);
+addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); post.setSize(innerWidth, innerHeight); });
 
 const tex = createTextures();
 const assets = await loadAssets(renderer, (f) => { $('loading').textContent = 'HALCYON GREENS · ' + Math.round(f * 100) + '%'; });
@@ -177,7 +179,7 @@ function loadCourse(i, holeIdx = 0, keepScores = false) {
   game.holes = def.holes.map((h, k) => { const b = buildHole(h, k, mats); game.courseGroup.add(b.group); return b; });
   game.env = buildEnvironment(def.env, renderer, scene, game.holes, mats, Q(), assets);
   panel.accent = '#' + new THREE.Color(def.env.lanterns || def.env.flag).getHexString();
-  audio.setAmbience(def.env.kind);
+  audio.setAmbience(def.env.kind); audio.water(game.env.sounds);
   if (!keepScores) for (const sc of game.scores.values()) sc.s = [];
   gotoHole(holeIdx);
 }
@@ -480,7 +482,7 @@ function drawWrist(s) {
   wristT.needsUpdate = true;
 }
 
-const surfaceY = (x, z, y) => Math.max(game.hole ? game.hole.world.heightAt(x, z, y + 0.6) : -1e9, game.env ? Math.max(game.env.terrainH(x, z), game.env.waterY) : 0);
+const surfaceY = (x, z, y) => Math.max(game.hole ? game.hole.world.heightAt(x, z, y + 0.6) : -1e9, game.env ? Math.max(game.env.terrainH(x, z), game.env.waterAt(x, z)) : 0);
 const tmpV = new V3(), tmpV2 = new V3(), tmpQ = new THREE.Quaternion(), tmpE = new THREE.Euler(0, 0, 0, 'YXZ');
 function headYawLocal() { tmpE.setFromQuaternion(camera.quaternion, 'YXZ'); return tmpE.y; }
 // Move the rig so the player's head is above (x,z) with feet at y; optionally face `yaw`.
@@ -716,9 +718,9 @@ function physics(dt) {
   if (ball.holed && game.phase === 'play') { audio.cupDrop(); finishHole(Math.max(1, game.strokes)); return; }
   if (game.phase !== 'play') return;
   // out of bounds
-  const floor = Math.max(game.env.terrainH(ball.x, ball.z), game.env.waterY);
+  const wet = game.env.waterAt(ball.x, ball.z), floor = Math.max(game.env.terrainH(ball.x, ball.z), wet);
   if (ball.y - BALL_R < floor || ball.y < h.world.minY - 12) {
-    if (floor === game.env.waterY) audio.splash(); else audio.knock(2, 'ground');
+    if (floor === wet) audio.splash(); else audio.knock(2, 'ground');
     game.moving = false;
     resetBall(true, settings.practice ? 'Out of bounds' : 'Out of bounds  +1');
     return;
@@ -772,6 +774,7 @@ const startLoop = () => renderer.setAnimationLoop(() => {
   beacon.position.set(ball.x, ball.y, ball.z);
   ballMesh.visible = game.phase !== 'menu';
   if (game.env) game.env.update(dt, t, tmpV);
+  audio.listen(camera);
   if (confT > 0) {
     confT -= dt; const a = confGeo.attributes.position.array;
     for (let i = 0; i < CONF; i++) { confVel[i * 3 + 1] -= 6 * dt; for (let k = 0; k < 3; k++) { confVel[i * 3 + k] *= 1 - dt * 1.2; a[i * 3 + k] += confVel[i * 3 + k] * dt; } }
@@ -782,7 +785,7 @@ const startLoop = () => renderer.setAnimationLoop(() => {
   sendPose(dt); updateAvatars(dt);
   updateHud();
   if (game.menu && panel.dirty) drawMenu();
-  renderer.render(scene, camera);
+  if (xr || !Q().bloom) renderer.render(scene, camera); else post.render(dt);
 });
 
 // ------------------------------------------------------------------ boot

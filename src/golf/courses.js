@@ -3,8 +3,8 @@
 // Paths are [x, y, z, width] control points in hole-local space, tee end first.
 export const COURSES = [
   {
-    name: 'Lilienstein Meadow', blurb: 'One hole in a quiet meadow at golden hour.', difficulty: 'Par 3',
-    env: { kind: 'alpine', green: 0x4c9a52, wall: 0xffffff, under: 0xcfc6ba, accent: 0xb5482f, flag: 0xe8432e },
+    name: 'Hollowmere', blurb: 'One hole in a misty vale at dusk, by the falls.', difficulty: 'Par 3',
+    env: { kind: 'dusk', green: 0x3a6040, wall: 0xb4a796, under: 0x9a9184, accent: 0x7a3a2a, flag: 0x9e2a22 },
     holes: [
       { name: 'The Meander', par: 3, at: [0, 0, 0], rot: 0,
         path: [[0, 0, 5.2, 1.4], [0, 0, 2.6, 1.4], [1.3, 0.16, 0.7, 1.7], [1.6, 0, -1.3, 1.8], [0.2, 0, -3.2, 1.5], [0, 0, -5.2, 1.7]],

@@ -1,7 +1,7 @@
 // DECORATE'S POLYFORK FURNITURE (owner, 13 Nov 2026: "look throuh polyfork assets for better lookign furtneru and decor for apartment, add textures, roudned corners, flowing physics, etc."; his pick: soft goods, then the main furniture, then decor): Polyfork's sofas, armchairs, chairs, tables, a sideboard, a lamp, a jukebox and potted plants sold in DECORATE's POLYFORK department, the models fetched only when DECORATE opens or your flat already has one.
 import {THREE} from './003-shx.js';
 import {WE} from './003b-systems.js';
-import {SYS, TILE} from './006-map-pre.js';
+import {MODS, SYS, TILE} from './006-map-pre.js';
 import {ROOMK} from './150a-bedroom.js';
 const PFDECOR={ready:false,loading:false};
 { // the piece, its price, its footprint (x0,z0,x1,z1) and height in metres, from the world editor's catalog (data/weplace.json)
@@ -17,11 +17,11 @@ const PFDECOR={ready:false,loading:false};
   PFDECOR.load=()=>{ if(PFDECOR.ready||PFDECOR.loading||!WE.pfLoad)return; PFDECOR.loading=true;
     Promise.all(PICK.map(p=>WE.pfLoad(p[0]).catch(()=>null))).then(()=>{ PFDECOR.ready=true; PFDECOR.loading=false; fill(); }); };
   const fill=()=>{ const A=ROOMK.api; if(!A)return; for(const [k] of PICK){ const D=A.R.kinds['pf:'+k]; if(!D)continue; if(!D.tpl.children.length){ const m=meshOf(k); if(m)D.tpl.add(m); else D.bad=true; } D.off=!!D.bad;
-      for(const un of A.units())if(un.kind==='pf:'+k&&!un.obj.children.length&&D.tpl.children[0]){ un.obj.add(D.tpl.children[0].clone()); if(un.st)un.st.fb=null; } } if(window.ROOMED&&ROOMED.on&&ROOMED.panel)ROOMED.panel(); };
+      for(const un of A.units())if(un.kind==='pf:'+k&&!un.obj.children.length&&D.tpl.children[0]){ un.obj.add(D.tpl.children[0].clone()); if(un.st)un.st.fb=null; } } if(MODS.roomed&&MODS.roomed.on&&MODS.roomed.panel)MODS.roomed.panel(); };
   ROOMK.parts.push(ctx=>{ '@apts'; const {R}=ctx;
     for(const [k,price,x0,z0,x1,z1,h] of PICK){ const id='pf:'+k; if(R.kinds[id])continue; const G=new THREE.Group(), m=PFDECOR.ready?meshOf(k):null; if(m)G.add(m);
       R.kinds[id]={kind:id,name:nameOf(k),loose:false,m:0,wire:null,sol:SMALL.has(k)?[]:[[x0,z0,x1,z1,h]],shf:[],tpl:G,game:'pf',dept:'g:polyfork',deptName:'POLYFORK',price,off:!m}; } });   // (off sale until its model has come)
   ROOMK.built.push(A=>{ '@apts'; if(PFDECOR.ready)fill(); });
   // fetched when DECORATE opens, or at once when your flat has a piece waiting for its model
-  SYS.every(()=>{ const A=ROOMK.api; if(!A||PFDECOR.ready||PFDECOR.loading)return; if((window.ROOMED&&ROOMED.on)||A.units().some(u=>u.kind&&u.kind.startsWith('pf:')))PFDECOR.load(); },500,'150dz-pfdecor');
+  SYS.every(()=>{ const A=ROOMK.api; if(!A||PFDECOR.ready||PFDECOR.loading)return; if((MODS.roomed&&MODS.roomed.on)||A.units().some(u=>u.kind&&u.kind.startsWith('pf:')))PFDECOR.load(); },500,'150dz-pfdecor');
   window.PFDECORDBG=()=>{ const A=ROOMK.api, K=A?A.R.kinds:{}; const ks=Object.keys(K).filter(k=>k.startsWith('pf:')); return {ready:PFDECOR.ready,kinds:ks.length,built:ks.filter(k=>K[k].tpl.children.length).length,bad:ks.filter(k=>K[k].bad).length}; }; }

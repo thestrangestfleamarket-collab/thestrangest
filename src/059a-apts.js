@@ -18,9 +18,14 @@ APTS.FREE=3;
 // (owner, 12 Nov 2026: the fire escapes are off limits for now: no ladder, no door out)
 APTS.NOESC=true;
 APTS.tierOf=()=>{ const q=new URLSearchParams(location.search).get('tier'), S=APTS.flatState(), t=q!=null&&+q>=0?+q:Math.max(APTS.FREE,S?S.tier:0); return Math.min(APTS.TIERS.length-1,Math.floor(t)); };   // the number the server gave you (/owned), none on the single-file page
-await grab('apts',async()=>{ const HOUSES=[WP.apts,...LEVEL.places.filter(p=>/^house\d+$/.test(p.id)).sort((a,b)=>a.x0-b.x0||a.y0-b.y0)].filter(Boolean), FL=APTS.flatOf(APTS.num), TI=APTS.tier=Math.min(APTS.tierOf(),HOUSES.length-1), MINE=HOUSES[TI];
+await grab('apts',async()=>{ const HOUSES=[WP.apts,...LEVEL.places.filter(p=>/^house\d+$/.test(p.id)).sort((a,b)=>a.x0-b.x0||a.y0-b.y0)].filter(Boolean), FL=APTS.flatOf(APTS.num), TI=APTS.tier=APTS.tierOf(), MINE=HOUSES[Math.min(TI,HOUSES.length-1)];
   APTS.houses=HOUSES.map(p=>p.id); APTS.mine=MINE.id; APTS.houseName=MINE.name||''; APTS.flat=FL;
   for(let hi=0;hi<HOUSES.length;hi++){ await house(HOUSES[hi],HOUSES[hi]===MINE,FL,hi); }
+  // closed West St's fronts (owner, 12 Nov 2026: "no real buildings there - low renders"): each one painted block at half the picture size, windows only; no door, stoop, fire escape or solid (the forcefield keeps you out)
+  { const S=SHARED.BOD.K.STORY*1.25, {hash}=SHARED.BOD.g, KS=[]; for(const [i,F] of ((LEVEL.edge&&LEVEL.edge.fronts)||[]).entries()){ const AW={x0:LOTX(F.x0),x1:LOTX(F.x1),y0:LOTY(F.y0),y1:LOTY(F.y1)}, TA=TURN(AW,F.face||'e'), A=TA.L, TOP=28+F.storeys*S, feats=[];
+      for(let lv=0;lv<F.storeys;lv++)for(let u=A.x0+1.6;u<A.x1-1;u+=2.6)feats.push({side:'f',a0:u-.55,a1:u+.55,z0:28+lv*S+24,z1:28+lv*S+87,lit:hash(i,lv*9+u,7)<.4,seed:i*97+lv*13+Math.round(u*3),box:false});
+      BLOCKS.make({...AW,z0:0,z1:TOP,kind:'A',turn:TA,px:BLOCKS.PX/2,paint:BLOCKS.facade({px:BLOCKS.PX/2,feats,top:TOP,wall:BLOCKS.brick(F.wall),trim:F.trim,base:{z1:28,paint:BLOCKS.brick(F.trim)}})}); KS.push(i); }
+    if(KS.length){ BATCH.build(APTS.MKA||((k,map)=>new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide}))); BATCH.meshes={}; } }
   MODS.apts=APTS; });
 async function house(HP,mine,FL,HI){ const APTS0=APTS; { const APTS=mine?APTS0:{}; const {X,Z,faceTex,bq,C}=SHARED.BOD, Yr=SHARED.BOD.Y,
   RZ=APTS.RZ=28, Y=z=>Yr(z+RZ), gbox=(b,k)=>tgbox({...b,z0:b.z0+RZ,z1:b.z1+RZ},k), R0=APTS.R0=Yr(RZ)-Yr(0), {hash}=SHARED.BOD.g, {LSEED,STORY,sh}=SHARED.BOD.K, S=STORY*1.25, SK=HP.style||{}, WALLC=SK.wall||[138,60,44], TRIMC=SK.trim||[118,50,38], BASEC=SK.base||[120,52,40], LINT=SK.lintel||[200,170,150], ST=HP.storeys||10, AH=ST*S, TOP=RZ+AH, W=LSEED.walk, T=.1, HALL=APTS.HALL=2.75;

@@ -27,8 +27,8 @@ const RINGX={};
     RINGX.fieldTick=(x,z)=>{ if(!RINGX.field)return; const on=SHARED.LVL==='up'&&RINGX.near(x,z)<U.uR.value*1.3; if(on!==G.visible)G.visible=on; if(on)U.uP.value.set(x,z); }; }
   // inside the edges? (a saved spot from before the edges moved is brought in to the way through, 6 Nov 2026)
   { const E=LEVEL.edge&&(LEVEL.edge.field||LEVEL.edge.lines); if(E&&E.length){ const tx=x=>(x-XS(0))/(XS(1)-XS(0)), ty=z=>(z-ZS(0))/(ZS(1)-ZS(0)), xs=E.map(l=>[l[0],l[2]]).flat(), ys=E.map(l=>[l[1],l[3]]).flat(), X0=Math.min(...xs), Y1=Math.max(...ys), Y0=Math.min(...ys);
-    const step=E.find(l=>l[1]===l[3]&&l[0]!==l[2]&&l[1]>Y0&&l[1]<Y1), XA=Math.max(...xs), XB=step?Math.min(step[0],step[2]):XA, YS=step?step[1]:Y0;
-    RINGX.inEdge=(x,z)=>{ const a=tx(x), b=ty(z); return a>X0&&b<Y1&&b>Y0&&a<(b>YS?XA:XB); };
+    const XA=Math.max(...xs), step=E.find(l=>l[1]===l[3]&&l[0]!==l[2]&&l[1]>Y0&&l[1]<Y1&&Math.max(l[0],l[2])===XA), CLS=(LEVEL.edge&&LEVEL.edge.closed)||[], XB=step?Math.min(step[0],step[2]):XA, YS=step?step[1]:Y0;
+    RINGX.inEdge=(x,z)=>{ const a=tx(x), b=ty(z); return a>X0&&b<Y1&&b>Y0&&a<(b>YS?XA:XB)&&!CLS.some(c=>a>c[0]&&a<c[2]&&b>c[1]&&b<c[3]); };
     const W=LEVEL.places.find(p=>p.kind==='passage');
     SYS.onStart(()=>{ if(SHARED.LVL==='up'&&SHARED.floor==='up'&&!ROOMS.cur&&!(MODS.apts&&MODS.apts.inReal)&&!RINGX.inEdge(pos.x,pos.z)&&W){ pos.x=XS((W.x0+W.x1)/2); pos.z=ZS(LEVEL.block.front+3); } },'065-ring'); } }
   RINGX.tick=()=>{ if(SHARED.LVL==='down')scene.background.setRGB(0,0,0); if(RINGX.fieldTick)RINGX.fieldTick(pos.x,pos.z); };

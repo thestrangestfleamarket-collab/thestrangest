@@ -57,7 +57,7 @@ import {ROOMK} from './150a-bedroom.js';
   const stop=()=>{ if(src){ V.pause(); V.removeAttribute('src'); V.load(); src=''; } };
   const tune=()=>{ '@later'; const sh=CRT.on&&home()?showing():null; if(!sh||sh.guide||ytOf(sh)){ stop(); return; } const u=url(sh.s);
     if(u!==src){ src=u; CRT.err=false; V.src=u; V.currentTime=sh.off; CRT.snow=Math.max(CRT.snow,.5); }
-    V.volume=CRT.vol; if(V.paused){ const p=V.play(); if(p&&p.catch)p.catch(()=>{ V.muted=true; V.play().catch(()=>{}); addEventListener('pointerdown',()=>{ V.muted=false; },{once:true}); }); }
+    V.volume=SFX.snd?CRT.vol:0; if(V.paused){ const p=V.play(); if(p&&p.catch)p.catch(()=>{ V.muted=true; V.play().catch(()=>{}); addEventListener('pointerdown',()=>{ V.muted=false; },{once:true}); }); }
     if(V.readyState>0&&!V.seeking&&Math.abs(sh.off-V.currentTime)>4)V.currentTime=sh.off; };
   const look=()=>{ const sh=CRT.on&&CRT.data?showing():null; let m=null, lv=0;
     if(sh&&sh.guide)m=gt; else if(CRT.on&&ytOf(sh))m=ytOk&&CRT.snow<=0?bt:st; else if(CRT.on){ lv=CRT.snow<=0&&!CRT.err&&V.readyState>=2?1:0; m=lv?vt:st; }
@@ -96,7 +96,7 @@ import {ROOMK} from './150a-bedroom.js';
   CRT.step=d=>{ const C=chans(); if(!C.length)return; const i=Math.max(0,C.indexOf(chan())); CRT.channel(C[((i+d)%C.length+C.length)%C.length].ch); };
   CRT.choose=it=>{ const G=chans().find(c=>c.guide), p=okPick(it); if(!G||!p)return; CRT.chn=G.ch; CRT.on=true; CRT.pick=p; CRT.t0=Date.now(); changed(); if(SFX)SFX.play('click',{vol:.6,vary:.2}); };
   CRT.unpick=()=>{ CRT.pick=null; changed(); };
-  CRT.volume=v=>{ CRT.vol=Math.max(0,Math.min(1,v)); V.volume=CRT.vol; };
+  CRT.volume=v=>{ CRT.vol=Math.max(0,Math.min(1,v)); V.volume=SFX.snd?CRT.vol:0; }; SFX.onAll.push(on=>{ V.volume=on?CRT.vol:0; });
 
   /* ---------- the control panel ---------- */
   const P=document.createElement('div'); P.id='crtp'; P.hidden=true;

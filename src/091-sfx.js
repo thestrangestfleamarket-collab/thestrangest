@@ -5,9 +5,9 @@ import {SAVE} from './005-save.js';
 import {QS, SYS, TILE} from './006-map-pre.js';
 const SOUND=QS.get('sound')!=='0';
 const SNDMIX0={fx:{},loops:{},gap:1,blip:1};
-Object.assign(SFX,{on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}});
+Object.assign(SFX,{on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}});   // snd: the one switch over every sound, off until you turn it on (owner, 12 Nov 2026: "turn off all sounsd by default for players , must turn on if want sounds")
 { const rnd=()=>Math.random()*2-1, TAU=Math.PI*2;
-  { const s=SAVE.get('sfx'), v=SAVE.get('vol'); if(s!=null)SFX.on=s==='1'; if(v!=null)SFX.vol=Math.max(0,Math.min(1,+v)); }
+  { const s=SAVE.get('sfx'), v=SAVE.get('vol'), a=SAVE.get('snd'); if(s!=null)SFX.on=s==='1'; if(v!=null)SFX.vol=Math.max(0,Math.min(1,+v)); SFX.snd=QS.get('sound')==='1'||a==='1'; }   // (?sound=1 for the checks)
   const mixOf=o=>({fx:Object.assign({},SNDMIX0.fx,o&&o.fx||{}),loops:Object.assign({},SNDMIX0.loops,o&&o.loops||{}),gap:o&&o.gap!=null?+o.gap:SNDMIX0.gap,blip:o&&o.blip!=null?+o.blip:SNDMIX0.blip});
   try{ SFX.mix=mixOf(JSON.parse(SAVE.get('sndmix')||'null')); }catch(e){ SFX.mix=mixOf(null); }
   SFX.saveMix=()=>SAVE.set('sndmix',JSON.stringify(SFX.mix)); SFX.resetMix=()=>{ SFX.mix={fx:{},loops:{},gap:1,blip:1}; SAVE.del('sndmix'); }; SFX.fxLevel=k=>(SFX.mix.fx[k]==null?1:+SFX.mix.fx[k])*(SFX.setOf?SFX.setOf(k).lvl??1:1);
@@ -17,9 +17,10 @@ Object.assign(SFX,{on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}});
   SFX.wake=()=>{ const c=mk(); if(c&&c.state!=='running')c.resume().catch(()=>{}); return c; };
   { const w=e=>{ if(!e.isTrusted)return; woke=true; SFX.wake(); }; addEventListener('pointerdown',w,true); addEventListener('keydown',w,true); }
   SFX.live=()=>{ const c=SFX.ctx(); return c&&c.state==='running'?c:null; };
-  SFX.out=c=>{ if(!SFX.m||SFX.m.context!==c){ SFX.m=c.createGain(); SFX.m.gain.value=SFX.vol; SFX.m.connect(c.destination); } return SFX.m; };
+  SFX.out=c=>{ if(!SFX.m||SFX.m.context!==c){ SFX.m=c.createGain(); SFX.m.gain.value=SFX.snd?SFX.vol:0; SFX.m.connect(c.destination); } return SFX.m; };
   const bus=c=>{ if(!SFX.g||SFX.g.context!==c){ SFX.g=c.createGain(); SFX.g.connect(SFX.out(c)); } SFX.g.gain.value=SFX.on?1:0; return SFX.g; };
-  SFX.set=(on,vol)=>{ if(on!=null)SFX.on=on; if(vol!=null)SFX.vol=vol; SAVE.set('sfx',SFX.on?'1':'0'); SAVE.set('vol',String(SFX.vol)); const c=SFX.ac; if(c){ bus(c); SFX.out(c).gain.setTargetAtTime(SFX.vol,c.currentTime,.03); } };
+  SFX.set=(on,vol)=>{ if(on!=null)SFX.on=on; if(vol!=null)SFX.vol=vol; SAVE.set('sfx',SFX.on?'1':'0'); SAVE.set('vol',String(SFX.vol)); const c=SFX.ac; if(c){ bus(c); SFX.out(c).gain.setTargetAtTime(SFX.snd?SFX.vol:0,c.currentTime,.03); } };
+  SFX.master=on=>{ SFX.snd=!!on; SAVE.set('snd',SFX.snd?'1':'0'); const c=SFX.snd?SFX.wake():SFX.ac; if(c)SFX.out(c).gain.setTargetAtTime(SFX.snd?SFX.vol:0,c.currentTime,.03); for(const f of SFX.onAll)try{ f(SFX.snd); }catch(e){} };   // what plays outside this mixer (a TV's film, the cinema, a cabinet's own sound) hears of it through onAll
   const env=(t,p)=>Math.pow(Math.max(0,1-t),p), lp=()=>{ let y=0; return (x,k)=>(y=y*(1-k)+x*k); };
   const R={
     click:{len:.015,f:(D,n)=>{ for(let i=0;i<n;i++){ const t=i/n; D[i]=rnd()*env(t,2)*.6; } }},

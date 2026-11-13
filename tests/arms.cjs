@@ -59,6 +59,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     await shot('net');
 
     // the bubble and the snowball fly
+    { await hold('w_bubble'); await pg.waitForTimeout(300); await aim(.1); await pg.evaluate(() => { ARMS.cd = {}; ARMS.hold = true; ARMS.fire('w_bubble'); }); await pg.waitForTimeout(300); const b0 = (await pg.evaluate(() => ARMSDBG().bub)); await pg.waitForTimeout(1500); const b1 = (await pg.evaluate(() => ARMSDBG().bub)); await pg.evaluate(() => { ARMS.hold = false; });
+      const f = await until(() => ARMSDBG().P.find(p => p.id === 'w_bubble'), 1500); ok(b0 > 0 && b0 < .6 && b1 > b0 + .3 && f && f.k >= b1 - .05, 'the bubble starts small, grows while held and flies at that size when let go (owner, 13 Nov 2026): ' + JSON.stringify([b0, b1, f && f.k])); await pg.waitForTimeout(7000); }
     for (const id of ['w_bubble', 'w_snowball', 'w_fireworks', 'w_rocket']) { await hold(id); await pg.waitForTimeout(300); await aim(id === 'w_fireworks' ? -.4 : .1); await fire(id); const f = await until(id => ARMSDBG().P.find(p => p.id === id), 1500, id); ok(!!f, 'the ' + id.slice(2) + ' fires (' + JSON.stringify(f) + ')'); if (id === 'w_fireworks') { await pg.waitForTimeout(1350); await shot('fireworks'); } }
     await pg.waitForTimeout(3000);
 

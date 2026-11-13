@@ -30,7 +30,7 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
   { const c2=await b.newContext({viewport:{width:640,height:400}}); await c2.addCookies([{name:'tsfm-pass',value:'dev:owner-two',url:BASE}]); const p2=await c2.newPage(); p2.setDefaultTimeout(600000);   // a second owner's page follows the first's change (12 Nov 2026: "it only changes for me")
     await p2.goto(BASE+'/?fresh=1',{waitUntil:'commit',timeout:600000}); for(let i=0;i<1500&&!(await p2.evaluate(()=>!!window.__started).catch(()=>false));i++)await wait(200); await wait(8000); await p2.evaluate(()=>{ DN.owner=true; });
     for(let i=0;i<60&&!(await pg.evaluate(()=>ONLINE.on)&&await p2.evaluate(()=>ONLINE.on));i++)await wait(500);
-    const want=await pg.evaluate(()=>DN.mode==='night'?'day':'night'); await pg.evaluate(async m=>{ DN.hold=m; DN.set(m,true); await DN.pushTime(m); },want);
+    const want=await pg.evaluate(()=>DN.mode==='lamplit'?'afternoon':'lamplit'); await pg.evaluate(async m=>{ DN.hold=m; DN.set(m,true); await DN.pushTime(m); },want);
     let got=null; for(let i=0;i<40&&got!==want;i++){ await wait(500); got=await p2.evaluate(()=>DN.hold); }
     ok(got===want,'a look held for everyone reaches a second owner\'s page too ('+want+' -> '+got+')');
     await pg.evaluate(()=>{ DN.hold=null; return DN.pushTime('clock'); }); for(let i=0;i<40&&got!==null;i++){ await wait(500); got=await p2.evaluate(()=>DN.hold); }

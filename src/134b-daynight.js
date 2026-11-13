@@ -94,7 +94,7 @@ DN.lookAtSky=h=>{ let best=DN.modes[0], bd=99; for(const m of DN.modes){ let d=M
       C.querySelector('#dnclkset').onclick=()=>{ const v=C.querySelector('#dnclkh').value; if(!/^\d\d:\d\d/.test(v))return msg('pick a time first'); const h=+v.slice(0,2)+v.slice(3,5)/60; go((t,c)=>CLK.setHour(t,c,h),()=>'the clock at '+v+' for everyone'); };
       C.querySelector('#dnclkp').onclick=()=>{ const st=DN.clk&&DN.clk.stop!=null; go(st?CLK.resume:CLK.pause,()=>st?'the clock runs on for everyone':'the clock stopped for everyone'); };
       C.querySelector('#dnclkr').onclick=()=>go(CLK.real,()=>'Central time for everyone'); }
-    clkShow(); msg(dirty?'not saved':''); if(box.offsetParent)busy=busy.then(build).catch(e=>msg('panel did not load: '+e.message)); };
+    clkShow(); if(dirty)msg('not saved'); if(box.offsetParent)busy=busy.then(build).catch(e=>msg('panel did not load: '+e.message)); };
   if(box)for(const ev of ['keydown','keyup'])box.addEventListener(ev,e=>{ if(e.target.matches('input,textarea'))e.stopPropagation(); });
   setTimeout(()=>{ if(BUGS.owner)BUGS.owner().then(o=>{ DN.owner=!!o; if(o&&box&&box.offsetParent)DN.draw(); }).catch(()=>{}); },3000);   // EXPORT ("send it to Claude") is the owner's
   { let lastL=null, lastT=null; const FILE='/shared/looks.json', take=j=>{ if(!j||typeof j!=='object')return; for(const m of DN.modes)if(j[m]&&typeof j[m]==='object')S[m]={...D0[m],...j[m]}; fix(); DN.draw(); };

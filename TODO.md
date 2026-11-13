@@ -27,6 +27,8 @@ Risk is noted only when it isn't low.
    Section B, the shop insides with their windows, the moves.
 
 ## For the owner
+- **P2 · pick** THE CANTINA (13 Nov 2026): its name (THE CANTINA is a working name); whether the old lounge (still reached by GO TO) goes to the archive now that THE BAR's door opens THE CANTINA; which octopus (THE MARKET's drummer is in; Polyfork's is the other); anyone to cut from or add to the regulars.
+- **P2 · look** THE CANTINA in a headset on the live site: how the hands sit on the controllers, how dark each look is, the frame rate with every regular in the room.
 
 **To try on the live site** (one sitting; each line is in its area below):
 HOLLOW PINES at `/asylum` (12 Nov: play it through on the screen and in the Quest 3; it has only been run in an emulated headset) · everything merged since 7 Nov that "waits for his look and yes" (the new layout and fronts, the bar, the gym, the pets and pet shops, the
@@ -190,6 +192,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [x] **The piano's 88-key panel** (owner, 11 Nov 2026) · P2 · S · code. [done 11 Nov] A display under the book, lighting with the piece (book-only).
 - [x] **The instruments, the rest** · P3 · S · code. The bar's piano and kit playable in place; a bandstand for the park guitar. [done 11 Nov]
 - [ ] **Companion drone NPC**: mockup done, waiting on "go" · pick.
+- [ ] **THE SPECKLED BAND at `/holmes`** (owner, 13 Nov 2026) · look. Built 13 Nov (`src/holmes/`, `worker/holmes.js`, `tests/holmes.cjs`). Needs the `ANTHROPIC_API_KEY` secret on the worker and one real play with Claude answering (only a stand-in so far); his yes on the look, the daily limit (`HOLMES_DAILY`, 200) and whether it joins the holodeck. Speech in a browser with no recognition of its own (the Quest's) needs an `AI` binding in `wrangler.jsonc` (left out: `wrangler dev` then wants a Cloudflare token, which stops the site check); until then you type there. [taking: claude/holmes-page, 13 Nov]
 - [ ] **PIP the flying bot** (owner, 11 Nov 2026) · look. Built 11 Nov (`src/111dd-flybot.js`, `worker/flybot.js`, `tests/flybot.cjs`). Needs the `ANTHROPIC_API_KEY` secret on the worker; his yes on the look, the name and the daily limit (`BOT_DAILY`, 150). Model: Haiku 5.5 (owner, 12 Nov).
 - [x] **Your AI double** (owner, 9 Nov 2026; done 9 Nov) · P2 · M · code. `src/162gb-twin.js`, `worker/twin.js`, `tests/twin.cjs`. Removed 10 Nov 2026 with all the bots.
 - [ ] **Flight with the cape** · P2 · M · look + code. Its moves check times out, the cape isn't cloth, clouds hide you; DRIFTCAP lasts 5 min.
@@ -360,3 +363,9 @@ Last (owner, 7 Nov 2026: "we will do VR checks last"): every check and look line
 - Today: the line pools (`src/092-lines.js`) and the scripted talk window (`src/159da-talk.js`). No AI or voice code yet.
 - Needs: an ElevenLabs account, key and voices; the worker holds the keys and makes the calls; storage for lines, audio and log; a
   budget.
+
+## The Cantina
+
+- **P2 · L · code** Cards with other players at THE CANTINA's tables: a room on the website (a Durable Object as the `Block` is), seats, the deck and who holds which card decided there (13 Nov 2026; one player's for now).
+- **P2 · M · code** Talking to the regulars in the headset: speak, and the answer on a panel by their head (13 Nov 2026; the keyboard panel is built).
+- **P3 · M · code** The other regulars' lives (about twenty more bodies in the room have none yet), and the regulars moving: the waiter's rounds, the dealer's hands (13 Nov 2026).

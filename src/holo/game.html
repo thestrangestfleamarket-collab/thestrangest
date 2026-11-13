@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen&display=swap">
+<title>__TITLE__ · The Holodeck</title>
+<style>
+html,body{height:100%;margin:0;background:#000;overflow:hidden}
+#stage{position:fixed;inset:0;overflow:hidden;background:#000}
+#stage canvas{cursor:crosshair}
+.hb{position:fixed;z-index:5;font:11px Silkscreen,monospace;color:#c9ccd6;background:#0e1016c0;border:2px solid #3a3f4e;padding:5px 9px;cursor:pointer}
+#leave{right:10px;top:10px}
+#vrbtn{left:12px;bottom:12px;color:#f2c14e;z-index:2147483600}
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<button id="leave" class="hb" type="button">LEAVE THE HOLODECK</button>
+<button id="vrbtn" class="hb" type="button" hidden>ENTER VR</button>
+<script type="module">__GAME__</script>
+</body>
+</html>

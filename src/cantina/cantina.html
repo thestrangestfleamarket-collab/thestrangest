@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:,">
+<title>The Cantina</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0a0503; font-family: Georgia, "Times New Roman", serif; color: #eadfce; }
+  canvas { display: block; }
+  [hidden] { display: none !important; }
+  #loading, #menu { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 10; }
+  #loading { background: #0a0503; font-size: 20px; letter-spacing: .3em; }
+  #menu { background: radial-gradient(ellipse at 50% 35%, rgba(60,24,10,.55), rgba(6,3,2,.9) 70%); }
+  .panel { width: min(640px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto; box-sizing: border-box; padding: 26px 30px; border: 1px solid rgba(240,161,58,.45); border-radius: 12px; background: rgba(12,8,6,.78); }
+  h1 { margin: 0 0 2px; font-size: 38px; font-weight: normal; letter-spacing: .06em; color: #f0a13a; }
+  .sub { margin: 0 0 18px; opacity: .8; font-style: italic; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  button { padding: 10px 20px; font: inherit; font-size: 16px; border-radius: 8px; cursor: pointer; border: 1px solid #f0a13a; background: transparent; color: #f0a13a; }
+  button.go { background: #f0a13a; color: #1c1206; }
+  button.sel { background: rgba(240,161,58,.25); }
+  button:disabled { opacity: .4; cursor: default; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; font: 14px/1.5 system-ui, sans-serif; }
+  .cols h3 { margin: 6px 0 2px; font: 600 12px system-ui, sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #f0a13a; }
+  @media (max-width: 560px) { .cols { grid-template-columns: 1fr; } }
+  #status { margin-top: 10px; font: 13px system-ui, sans-serif; opacity: .7; min-height: 1.2em; }
+  #hud { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+  #cross { position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px; border-radius: 50%; background: rgba(255,255,255,.85); box-shadow: 0 0 0 1px rgba(0,0,0,.5); }
+  #hint { position: absolute; left: 50%; top: calc(50% + 28px); transform: translateX(-50%); padding: 4px 12px; border-radius: 14px; background: rgba(0,0,0,.55); font: 14px system-ui, sans-serif; white-space: nowrap; }
+  #hint:empty { display: none; }
+  #fade { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity .4s; z-index: 8; }
+  #fade.on { opacity: 1; }
+  #talk { position: fixed; right: 18px; bottom: 18px; width: min(400px, calc(100vw - 36px)); z-index: 9; border: 1px solid rgba(240,161,58,.5); border-radius: 10px; background: rgba(14,9,6,.92); padding: 12px 14px; font: 15px/1.45 system-ui, sans-serif; }
+  #talk header { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  #talkName { font: 20px Georgia, serif; color: #f0a13a; }
+  #talkSub { font-size: 12px; opacity: .7; margin-bottom: 8px; }
+  #talkClose { padding: 2px 10px; font-size: 13px; }
+  #talkLog { max-height: 40vh; overflow: auto; display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+  #talkLog p { margin: 0; padding: 7px 11px; border-radius: 9px; max-width: 90%; }
+  #talkLog .me { align-self: flex-end; background: #2a2f3a; }
+  #talkLog .them { align-self: flex-start; background: #2b1c12; }
+  #talkLog .them b { display: block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #f0a13a; }
+  #talkLog .note { align-self: center; font-size: 12px; opacity: .6; }
+  #talkForm { display: flex; gap: 8px; }
+  #talkSay { flex: 1; min-width: 0; padding: 8px 10px; font: inherit; color: #eadfce; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.25); border-radius: 7px; }
+</style>
+</head>
+<body>
+<div id="loading">THE CANTINA</div>
+<div id="menu" hidden>
+  <div class="panel">
+    <h1>THE CANTINA</h1>
+    <p class="sub">Tonight: <span id="look"></span>. Take a seat at the long table, or just listen to the band.</p>
+    <div class="row"><button class="go" id="play">Walk in</button><button id="vr" disabled>Enter VR</button></div>
+    <div class="row"><button data-style="auto">By the hour</button><button data-style="B">Barrel House</button><button data-style="A">Onyx Room</button><button data-style="C">After Hours</button></div>
+    <div class="cols">
+      <div><h3>Keyboard and mouse</h3><div>W A S D walk, Shift run, C zoom</div><div>E sit down, stand up</div><div>T talk to the one you face</div><div>Click: pick up, draw, press a table button</div><div>Wheel: choose a card in your hand</div><div>Right click: play it; F face down; Q toss; R flip</div></div>
+      <div><h3>In VR</h3><div>Left stick walks, right stick turns</div><div>A or X: sit at the nearest free chair, stand</div><div>Grip or pinch a card to pick it up</div><div>Let go to drop or throw; by your other hand to fan</div><div>Trigger points: grab from afar, press buttons</div></div>
+    </div>
+    <div id="status"></div>
+  </div>
+</div>
+<div id="hud" hidden><div id="cross"></div><div id="hint"></div></div>
+<div id="talk" hidden>
+  <header><span id="talkName"></span><button id="talkClose" type="button">Close</button></header>
+  <div id="talkSub"></div>
+  <div id="talkLog"></div>
+  <form id="talkForm"><input id="talkSay" maxlength="300" autocomplete="off" placeholder="Say something"><button class="go" type="submit">Say</button></form>
+</div>
+<div id="fade"></div>
+<script type="module">__CANTINA__</script>
+</body>
+</html>

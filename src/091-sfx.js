@@ -17,14 +17,10 @@ Object.assign(SFX,{on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}});   // snd: 
   SFX.wake=()=>{ const c=mk(); if(c&&c.state!=='running')c.resume().catch(()=>{}); return c; };
   { const w=e=>{ if(!e.isTrusted)return; woke=true; SFX.wake(); }; addEventListener('pointerdown',w,true); addEventListener('keydown',w,true); }
   SFX.live=()=>{ const c=SFX.ctx(); return c&&c.state==='running'?c:null; };
-  SFX.top=c=>{ if(!SFX.m||SFX.m.context!==c){ SFX.m=c.createGain(); SFX.m.gain.value=SFX.snd?SFX.vol:0; SFX.m.connect(c.destination); } return SFX.m; };
-  // everything the market sounds goes out through SFX.out, hushed while a holodeck program runs alone; the program's own sounds go through SFX.own
-  SFX.out=c=>{ if(!SFX.w||SFX.w.context!==c){ SFX.w=c.createGain(); SFX.w.gain.value=SFX.hush?0:1; SFX.w.connect(SFX.top(c)); } return SFX.w; };
-  SFX.own=c=>{ if(!SFX.o||SFX.o.context!==c){ SFX.o=c.createGain(); SFX.o.connect(SFX.top(c)); } return SFX.o; };
-  SYS.add('solo',on=>{ SFX.hush=on; if(SFX.w)SFX.w.gain.value=on?0:1; },'091-sfx');
+  SFX.out=c=>{ if(!SFX.m||SFX.m.context!==c){ SFX.m=c.createGain(); SFX.m.gain.value=SFX.snd?SFX.vol:0; SFX.m.connect(c.destination); } return SFX.m; };
   const bus=c=>{ if(!SFX.g||SFX.g.context!==c){ SFX.g=c.createGain(); SFX.g.connect(SFX.out(c)); } SFX.g.gain.value=SFX.on?1:0; return SFX.g; };
-  SFX.set=(on,vol)=>{ if(on!=null)SFX.on=on; if(vol!=null)SFX.vol=vol; SAVE.set('sfx',SFX.on?'1':'0'); SAVE.set('vol',String(SFX.vol)); const c=SFX.ac; if(c){ bus(c); SFX.top(c).gain.setTargetAtTime(SFX.snd?SFX.vol:0,c.currentTime,.03); } };
-  SFX.master=on=>{ SFX.snd=!!on; SAVE.set('snd',SFX.snd?'1':'0'); const c=SFX.snd?SFX.wake():SFX.ac; if(c)SFX.top(c).gain.setTargetAtTime(SFX.snd?SFX.vol:0,c.currentTime,.03); for(const f of SFX.onAll)try{ f(SFX.snd); }catch(e){} };   // what plays outside this mixer (a TV's film, the cinema, a cabinet's own sound) hears of it through onAll
+  SFX.set=(on,vol)=>{ if(on!=null)SFX.on=on; if(vol!=null)SFX.vol=vol; SAVE.set('sfx',SFX.on?'1':'0'); SAVE.set('vol',String(SFX.vol)); const c=SFX.ac; if(c){ bus(c); SFX.out(c).gain.setTargetAtTime(SFX.snd?SFX.vol:0,c.currentTime,.03); } };
+  SFX.master=on=>{ SFX.snd=!!on; SAVE.set('snd',SFX.snd?'1':'0'); const c=SFX.snd?SFX.wake():SFX.ac; if(c)SFX.out(c).gain.setTargetAtTime(SFX.snd?SFX.vol:0,c.currentTime,.03); for(const f of SFX.onAll)try{ f(SFX.snd); }catch(e){} };   // what plays outside this mixer (a TV's film, the cinema, a cabinet's own sound) hears of it through onAll
   const env=(t,p)=>Math.pow(Math.max(0,1-t),p), lp=()=>{ let y=0; return (x,k)=>(y=y*(1-k)+x*k); };
   const R={
     click:{len:.015,f:(D,n)=>{ for(let i=0;i<n;i++){ const t=i/n; D[i]=rnd()*env(t,2)*.6; } }},

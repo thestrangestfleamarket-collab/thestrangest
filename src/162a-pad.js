@@ -109,7 +109,7 @@ import {PAD} from './075-main-13.js';
     if(ok('moves')&&!AP.moves)tap('?'); if(ok('pack')&&!AP.pack)tap('i');
     if(rep('zu',ok('zin')))zoom(1); if(rep('zd',ok('zout')))zoom(-1);
     if(ok('back')&&!AP.back&&(FORAGE.PACK.open||document.getElementById('movesp')?.style.display==='block'))back(); if(ok('menu')&&!AP.menu)tap('Escape'); };
-  const tick=now=>{ if(!VR.on)pump(now,pick()); }; SYS.add('win',now=>{ if(PAD.n||PAD.tp)tick(now); },'162a-pad'); SYS.add('soloFrame',(dt,now)=>{ if(PAD.n||PAD.tp)tick(now); },'162a-pad');
+  const tick=now=>{ if(!VR.on)pump(now,pick()); }; SYS.add('win',now=>{ if(PAD.n||PAD.tp)tick(now); },'162a-pad');
   addEventListener('gamepadconnected',()=>{ if(!PAD.n++)PAD.t=0; if(UI.menuOpen)UI.padKeys(); });
   addEventListener('gamepaddisconnected',()=>{ PAD.n=Math.max(0,PAD.n-1); if(!PAD.n){ letGo(); mark(null); } });
   addEventListener('pointerdown',e=>{ if(e.isTrusted&&PAD.n){ mark(null); PAD.mouse=true; } },true);

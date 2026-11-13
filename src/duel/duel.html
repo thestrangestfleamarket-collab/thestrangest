@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:,">
+<title>AR Duel</title>
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #05060a; color: #e8ecf4;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  canvas { display: block; }
+  #lobby { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 50% 30%, #152036, #05060a 70%); z-index: 10; padding: 16px; }
+  #lobby.hidden { display: none; }
+  .card { width: min(440px, 100%); }
+  h1 { font-size: 44px; margin: 0 0 4px; letter-spacing: 2px; }
+  h1 span { color: #35e0ff; }
+  p { color: #9aa6bd; line-height: 1.45; margin: 6px 0 18px; }
+  button { display: block; width: 100%; padding: 16px; margin: 10px 0; font-size: 18px; font-weight: 700;
+    border: 0; border-radius: 12px; background: #1d2a44; color: #e8ecf4; cursor: pointer; }
+  button:hover { background: #27375a; }
+  button.primary { background: #35e0ff; color: #04202a; }
+  button.primary:hover { background: #7cecff; }
+  button:disabled { opacity: 0.4; cursor: default; }
+  .row { display: flex; gap: 10px; }
+  .row input { flex: 1; min-width: 0; padding: 14px; font-size: 22px; font-weight: 700; letter-spacing: 6px;
+    text-transform: uppercase; text-align: center; border-radius: 12px; border: 2px solid #27375a;
+    background: #0b1120; color: #fff; }
+  .row button { width: auto; margin: 0; padding: 0 22px; }
+  #code { font-size: 54px; font-weight: 800; letter-spacing: 12px; color: #35e0ff; text-align: center; margin: 8px 0; }
+  #status { min-height: 22px; color: #ffcc66; }
+  .step { display: none; }
+  .step.on { display: block; }
+  #help { position: fixed; left: 0; right: 0; bottom: 10px; text-align: center; font-size: 13px;
+    color: #9aa6bd; pointer-events: none; display: none; text-shadow: 0 1px 3px #000; }
+  #cross { position: fixed; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px; border-radius: 50%;
+    background: #fff; opacity: 0.7; pointer-events: none; display: none; }
+  small { color: #6f7b93; }
+  #themes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  #themes button { margin: 0; padding: 10px; font-size: 14px; }
+  #themes button.on { outline: 2px solid #35e0ff; color: #35e0ff; }
+</style>
+</head>
+<body>
+<div id="lobby">
+  <div class="card">
+    <h1>AR <span>DUEL</span></h1>
+
+    <div class="step on" id="step-menu">
+      <p>1-on-1 dodge-battles in your own room. Slow projectiles, real ducking.</p>
+      <button class="primary" id="btn-bot">Practice vs bot</button>
+      <button id="btn-host">Host a match</button>
+      <div class="row">
+        <input id="join-code" maxlength="4" placeholder="CODE" autocomplete="off">
+        <button id="btn-join">Join</button>
+      </div>
+    </div>
+
+    <div class="step" id="step-wait">
+      <p>Tell your opponent this room code:</p>
+      <div id="code"></div>
+      <button id="btn-cancel">Cancel</button>
+    </div>
+
+    <div class="step" id="step-enter">
+      <p id="enter-text">Connected. Choose how to play on this device.</p>
+      <button class="primary" id="btn-xr" disabled>Enter AR (headset)</button>
+      <button id="btn-desktop">Play on this screen</button>
+      <p style="margin:14px 0 4px">Room effect (optional)</p>
+      <div id="themes"></div>
+      <small>Headset: needs two controllers. Screen: WASD + mouse.</small>
+    </div>
+
+    <p id="status"></p>
+  </div>
+</div>
+<div id="cross"></div>
+<div id="help">WASD move &middot; mouse aim &middot; click fire / detonate &middot; right-click or Shift shield &middot; Q/E or 1-6 weapon &middot; C crouch &middot; R tilt wave &middot; T room effect &middot; Enter ready</div>
+<script type="module">__DUEL__</script>
+</body>
+</html>

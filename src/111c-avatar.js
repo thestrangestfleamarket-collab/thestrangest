@@ -16,7 +16,8 @@ const AVATAR={}; window.AVATAR=AVATAR;
   // no lanyards (owner, 9 Nov 2026: "remove lanyard from game totally - doesnt exist"): the wardrobe's LANYARD pieces are never worn or offered
   const GN=new Set(I.pieces.filter(p=>p.k==='LANYARD').map(p=>p.n)), GONE=p=>GN.has(p.n);
   const SKINS=['f3d5bd','e6b892','d9a984','c08a64','a26a45','7e4c2f','5c3622','3e2416'], HAIRC=['1d1712','3b2a1e','5a3a24','8a5a32','b98a4e','d8c28a','8c8c8c','e8e4dc'];
-  const EYES=[['2a2019','BRN'],['4a2c17','BRN'],['6b5a2a','HAZ'],['3f6b3a','GRN'],['3b6ea8','BLU'],['6f7b85','GRY'],['8a5a1a','AMB'],['111111','BLK']], EYE0='2a2019';   // (the eye colours to pick, owner 7 Nov 2026, each with the passport's code)
+  const EYES=[['2a2019','BRN'],['4a2c17','BRN'],['6b5a2a','HAZ'],['3f6b3a','GRN'],['3b6ea8','BLU'],['6f7b85','GRY'],['8a5a1a','AMB'],['111111','BLK']], EYE0='2a2019';
+  const UNDC=['5f76a0','f2efe6','151515','b0283a','e58fb0','3f6b3a','e0b83a','7a4fa0'], UND0='5f76a0';   // the underwear's colours to pick (owner, 11 Nov 2026), the first the body's own   // (the eye colours to pick, owner 7 Nov 2026, each with the passport's code)
   const BUILDN=['SLIM','MEDIUM','BROAD'], byN=new Map(I.pieces.map(p=>[p.n,p])), nOf=(slot,label)=>{ const p=I.pieces.find(q=>q.slot===slot&&q.label===label); return p?p.n:null; };
   const DEF=()=>({f:'m',b:1,h:100,skin:'d9a984',hair:'4b2519',w:{hair:[nOf('hair','SHORT'),''],top:[nOf('top','T-SHIRT'),''],bottom:[nOf('bottom','TROUSERS'),''],feet:[nOf('feet','SNEAKERS'),'']}});
 
@@ -45,11 +46,11 @@ const AVATAR={}; window.AVATAR=AVATAR;
   // the face you picked: eyes-mouth-eye size-mouth size ('' as it came)
   const fxEnc=L=>{ const F=fxOf(L); return F.e||F.m||F.es!==100||F.ms!==100?[F.e,F.m,F.es,F.ms].join('-'):''; };
   const fxDec=v=>{ const m=/^(\d)-(\d)-(\d{2,3})-(\d{2,3})$/.exec(v||''); if(!m)return null; const c=(x,a,b)=>Math.max(a,Math.min(b,+x)); return {e:c(m[1],0,FE.length-1),m:c(m[2],0,FM.length-1),es:c(m[3],50,150),ms:c(m[4],50,150)}; };
-  const code=L=>[L.f,L.b,L.h,L.skin,L.hair,...SLOTS.slice(0,OLD).map(x=>enc(x,L)),L.bare?'1':'',...SLOTS.slice(OLD).map(x=>enc(x,L)),L.eye&&L.eye!==EYE0?L.eye:'','',shEnc(L.sh),'',fxEnc(L)].join('.').replace(/\.+$/,'');   // (then barefoot, then the later slots, then the eyes)
+  const code=L=>[L.f,L.b,L.h,L.skin,L.hair,...SLOTS.slice(0,OLD).map(x=>enc(x,L)),L.bare?'1':'',...SLOTS.slice(OLD).map(x=>enc(x,L)),L.eye&&L.eye!==EYE0?L.eye:'','',shEnc(L.sh),'',fxEnc(L),L.under&&L.under!==UND0?L.under:''].join('.').replace(/\.+$/,'');   // (then barefoot, then the later slots, then the eyes)
   const hex=s=>/^[0-9a-f]{6}$/.test(s||'')?s:null, cols=s=>/^[0-9a-f]{6}$|^(?:[0-9a-f]{6})?(?:_(?:[0-9a-f]{6})?)+$/.test(s||'')?s:null;   // one colour (the piece's main part), or one a part in the piece's zone order, _ between (an empty part keeps its own)
   const decode=c=>{ const a=String(c||'').split('.'), L=DEF(); if(a.length<5)return L;
     L.f=a[0]==='f'?'f':'m'; L.b=Math.min(2,Math.max(0,parseInt(a[1])||0)); L.h=Math.min(110,Math.max(90,parseInt(a[2])||100)); L.skin=hex(a[3])||L.skin; L.hair=hex(a[4])||L.hair; L.w={};
-    if(a[5+OLD]==='1')L.bare=true; { const e=hex(a[6+SLOTS.length]); if(e)L.eye=e; } { const sh=shDec(a[8+SLOTS.length]); if(sh)L.sh=sh; } { const x=fxDec(a[10+SLOTS.length]); if(x)L.fx=x; }
+    if(a[5+OLD]==='1')L.bare=true; { const e=hex(a[6+SLOTS.length]); if(e)L.eye=e; } { const sh=shDec(a[8+SLOTS.length]); if(sh)L.sh=sh; } { const x=fxDec(a[10+SLOTS.length]); if(x)L.fx=x; } { const u=hex(a[11+SLOTS.length]); if(u)L.under=u; }
     SLOTS.forEach(([s],i)=>{ const v=a[at(i)]; if(!v||NOPROP.has(s))return; const [n,col]=v.split('~'), p=byN.get(parseInt(n,36)); if(p&&!GONE(p)&&p.slot===s&&p.figs.includes(L.f))L.w[s]=[p.n,cols(col)||'']; });
     return L; };
 
@@ -222,12 +223,17 @@ const AVATAR={}; window.AVATAR=AVATAR;
       for(let t=0;t<d.tri.length/3;t++){ if(!kept(d,t,pi))continue; const ix=[d.tri[t*3],d.tri[t*3+1],d.tri[t*3+2]]; if(ix.every(q=>X[q*3+1]<=RH.ty)){ nf++; continue; }
         const out=clipBelow(ix.map((q,j)=>({b:[j===0?1:0,j===1?1:0,j===2?1:0],p:[X[q*3],X[q*3+1],X[q*3+2]]})),RH.ty); cut.set(t,out); nf+=out.length; } });
     if(RH)nf+=RH.cap.length;
-    const pos=new Float32Array(nf*9), nor=new Float32Array(nf*9), col=new Float32Array(nf*9), bi=new Float32Array(nf*6), bw=new Float32Array(nf*3), fl=new Float32Array(nf*3), hh=new Float32Array(nf*3), fd=new Float32Array(nf*9), sm=new Float32Array(nf*3), ov=new Float32Array(nf*3), va=new THREE.Vector3(), vb=new THREE.Vector3(), vc=new THREE.Vector3(), n=new THREE.Vector3(), e=new THREE.Vector3();
+    // under a brimmed hat (wider than the head): everything from the chin up within its brim is in the brim's shade (hs; what is higher is inside the hat), whatever the sun's height
+    let HS=()=>0; { const hi=parts.findIndex(P=>P.slot==='hat'); if(hi>0&&!nob){ const X=XS[hi], d0=D_[0], X0=XS[0]; let hx0=1e9,hx1=-1e9, ax0=1e9,ax1=-1e9,ay0=1e9,az0=1e9,az1=-1e9;
+      for(let i=0;i<X.length;i+=3){ hx0=Math.min(hx0,X[i]); hx1=Math.max(hx1,X[i]); }
+      for(let q=0;q<X0.length/3;q++)if(hwOf(d0,q)>.5){ ax0=Math.min(ax0,X0[q*3]); ax1=Math.max(ax1,X0[q*3]); ay0=Math.min(ay0,X0[q*3+1]); az0=Math.min(az0,X0[q*3+2]); az1=Math.max(az1,X0[q*3+2]); }
+      const hw=(hx1-hx0)/2, aw=(ax1-ax0)/2, cx=(ax0+ax1)/2, cz=(az0+az1)/2; if(ax1>ax0&&hw>aw*1.35)HS=(x,y,z,slot)=>slot!=='hat'&&y>ay0-.01&&Math.hypot(x-cx,z-cz)<hw?1:0; } }
+    const hs=new Float32Array(nf*3), pos=new Float32Array(nf*9), nor=new Float32Array(nf*9), col=new Float32Array(nf*9), bi=new Float32Array(nf*6), bw=new Float32Array(nf*3), fl=new Float32Array(nf*3), hh=new Float32Array(nf*3), fd=new Float32Array(nf*9), sm=new Float32Array(nf*3), ov=new Float32Array(nf*3), va=new THREE.Vector3(), vb=new THREE.Vector3(), vc=new THREE.Vector3(), n=new THREE.Vector3(), e=new THREE.Vector3();
     let f=0;
     parts.forEach((P,pi)=>{ const d=D_[pi], v=P.v, X=XS[pi], XR=XM[pi], cut=CUT[pi];
       let y0=1e9, y1=-1e9; if(P.cape)for(let i=1;i<X.length;i+=3){ y0=Math.min(y0,X[i]); y1=Math.max(y1,X[i]); }   // a cape: how far down it each point is, and which way is out from the body
       const cz=P.col&&P.col.includes('_')?P.col.split('_'):null;
-      const C=P.zones.map((z,i)=>{ if(z==='skin')return lin(L.skin); if(P.slot==='body'&&z==='brow')return lin(L.hair); if(P.slot==='body'&&z==='eye'&&L.eye)return lin(L.eye);
+      const C=P.zones.map((z,i)=>{ if(z==='skin')return lin(L.skin); if(P.slot==='body'&&z==='brow')return lin(L.hair); if(P.slot==='body'&&z==='eye'&&L.eye)return lin(L.eye); if(P.slot==='body'&&z==='shirt'&&L.under)return lin(L.under);
         if((P.slot==='hair'||P.slot==='face')&&P.main&&i===P.main[0])return lin(L.hair); if(cz){ if(cz[i])return lin(cz[i]); } else if(P.col&&P.main&&i===P.main[0])return lin(P.col); return lin(String(P.pal[i]).slice(1)); });
       // the head's cut faces as moved, each point's normal the mean of the faces round it that turn less than 60 degrees from its own (the box's other edges stay sharp)
       const CF=new Map(); if(cut.size){ const K=p=>Math.round(p[0]*1e5)+','+Math.round(p[1]*1e5)+','+Math.round(p[2]*1e5), AC=new Map(), all=[];
@@ -244,16 +250,16 @@ const AVATAR={}; window.AVATAR=AVATAR;
       for(let t=0;t<d.tri.length/3;t++){ if(!kept(d,t,pi))continue; const ix=[d.tri[t*3],d.tri[t*3+1],d.tri[t*3+2]], ish=isHand(P,d,t)?1:0;
         if(CF.has(t)){ const cs=ix.map(q=>C[d.zone[q]]||C[0]);
           for(const F of CF.get(t)){ F.V.forEach((u,j)=>{ const o=f*3+j, b=u.b, [b0,b1,w]=two(u,ix); pos.set(F.p[j],o*3); nor.set(F.nn[j],o*3);
-              col.set([b[0]*cs[0].r+b[1]*cs[1].r+b[2]*cs[2].r,b[0]*cs[0].g+b[1]*cs[1].g+b[2]*cs[2].g,b[0]*cs[0].b+b[1]*cs[1].b+b[2]*cs[2].b],o*3); bi.set([b0,b1],o*2); bw[o]=w; hh[o]=ish; sm[o]=1; }); f++; }
+              col.set([b[0]*cs[0].r+b[1]*cs[1].r+b[2]*cs[2].r,b[0]*cs[0].g+b[1]*cs[1].g+b[2]*cs[2].g,b[0]*cs[0].b+b[1]*cs[1].b+b[2]*cs[2].b],o*3); bi.set([b0,b1],o*2); bw[o]=w; hh[o]=ish; sm[o]=1; hs[o]=HS(F.p[j][0],F.p[j][1],F.p[j][2],P.slot); }); f++; }
           continue; }
         va.fromArray(XR,ix[0]*3); vb.fromArray(XR,ix[1]*3); vc.fromArray(XR,ix[2]*3); n.subVectors(vb,va).cross(e.subVectors(vc,va)).normalize();
-        ix.forEach((q,j)=>{ const o=f*3+j, c=C[d.zone[q]]||C[0]; pos.set([XR[q*3],XR[q*3+1],XR[q*3+2]],o*3); nor.set([n.x,n.y,n.z],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([d.bone[q*2],d.bone[q*2+1]],o*2); bw[o]=d.w[q]/255; hh[o]=ish; if(P.slot==='back')ov[o]=1; if(P.cape){ const u=Math.max(0,(y1-X[q*3+1])/Math.max(1e-3,y1-y0)), x=X[q*3], z=X[q*3+2], l=Math.hypot(x,z)||1; fl[o]=u*u; fd.set([x/l*.2,0,back],o*3); } }); f++; } });
+        ix.forEach((q,j)=>{ const o=f*3+j, c=C[d.zone[q]]||C[0]; pos.set([XR[q*3],XR[q*3+1],XR[q*3+2]],o*3); nor.set([n.x,n.y,n.z],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([d.bone[q*2],d.bone[q*2+1]],o*2); bw[o]=d.w[q]/255; hh[o]=ish; hs[o]=HS(XR[q*3],XR[q*3+1],XR[q*3+2],P.slot); if(P.slot==='back')ov[o]=1; if(P.cape){ const u=Math.max(0,(y1-X[q*3+1])/Math.max(1e-3,y1-y0)), x=X[q*3], z=X[q*3+2], l=Math.hypot(x,z)||1; fl[o]=u*u; fd.set([x/l*.2,0,back],o*3); } }); f++; } });
     if(RH){ const c=lin(L.skin); for(const F of RH.cap){ F.p.forEach((P,j)=>{ const o=f*3+j; pos.set(P,o*3); nor.set(F.nn[j],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([HB,HB],o*2); bw[o]=1; hh[o]=0; sm[o]=1; }); f++; } }
-    for(const [A,B,C3,h] of FX){ const c=lin(h); [A,B,C3].forEach((P,j)=>{ const o=f*3+j; pos.set(P,o*3); nor.set([0,0,1],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([HB,HB],o*2); bw[o]=1; hh[o]=0; }); f++; }
+    for(const [A,B,C3,h] of FX){ const c=lin(h); [A,B,C3].forEach((P,j)=>{ const o=f*3+j; pos.set(P,o*3); nor.set([0,0,1],o*3); col.set([c.r,c.g,c.b],o*3); bi.set([HB,HB],o*2); bw[o]=1; hh[o]=0; hs[o]=HS(P[0],P[1],P[2],'face'); }); f++; }
     const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('normal',new THREE.BufferAttribute(nor,3)); g.setAttribute('color',new THREE.BufferAttribute(col,3));
-    g.setAttribute('bi',new THREE.BufferAttribute(bi,2)); g.setAttribute('bw',new THREE.BufferAttribute(bw,1)); g.setAttribute('fl',new THREE.BufferAttribute(fl,1)); g.setAttribute('fd',new THREE.BufferAttribute(fd,3)); g.setAttribute('hh',new THREE.BufferAttribute(hh,1)); g.setAttribute('sm',new THREE.BufferAttribute(sm,1)); g.setAttribute('ov',new THREE.BufferAttribute(ov,1)); g.computeBoundingSphere();
+    g.setAttribute('bi',new THREE.BufferAttribute(bi,2)); g.setAttribute('bw',new THREE.BufferAttribute(bw,1)); g.setAttribute('fl',new THREE.BufferAttribute(fl,1)); g.setAttribute('fd',new THREE.BufferAttribute(fd,3)); g.setAttribute('hh',new THREE.BufferAttribute(hh,1)); g.setAttribute('sm',new THREE.BufferAttribute(sm,1)); g.setAttribute('ov',new THREE.BufferAttribute(ov,1)); g.setAttribute('hs',new THREE.BufferAttribute(hs,1)); g.computeBoundingSphere();
     g.userData.hands=pfh?{skin:L.skin,b:L.b,grip:{L:false,R:false}}:null; return g; }
-  const empty=()=>{ const g=new THREE.BufferGeometry(); for(const [k,s] of [['position',3],['normal',3],['color',3],['bi',2],['bw',1],['fl',1],['fd',3],['hh',1],['sm',1],['ov',1]])g.setAttribute(k,new THREE.BufferAttribute(new Float32Array(0),s)); return g; };
+  const empty=()=>{ const g=new THREE.BufferGeometry(); for(const [k,s] of [['position',3],['normal',3],['color',3],['bi',2],['bw',1],['fl',1],['fd',3],['hh',1],['sm',1],['ov',1],['hs',1]])g.setAttribute(k,new THREE.BufferAttribute(new Float32Array(0),s)); return g; };
   // a body's skeleton for a figure and a height (taller: the same body drawn bigger on the rig)
   const fitTo=(body,L)=>{ const S=I.skel[L.f], Z=shapeOf(L.f,L.sh), {off,binv}=BODIES.skeleton(Z?Z.O1.map(o=>o.toArray()):S.origin,S.rest); Object.assign(body,{height:S.height*100/L.h,hipY:Z?Z.O1[0].y:S.hipY,off,binv,contact:true,dq:true,rnd:true,O0:Z?Z.O:null,O1:Z?Z.O1:null,J0:Z?Z.O1:S.origin.map(o=>new THREE.Vector3(...o))}); delete body._calG; delete body._bind; return BODIES.fit(body); };   // (contact: rests on what the rig rests on, 111a)
 
@@ -294,6 +300,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
     LOOKS.add('avc','HAIR COLOUR',el('lavc',HAIRC.map(h=>`<button class="sw" data-c="${h}" aria-label="hair #${h}"><i style="background:#${h}"></i></button>`).join('')+'<input type="color" id="lavcc" aria-label="any hair colour">'),{...A,order:5});
     for(const [k,t,N,o] of [['e','EYES',FEYES,5.1],['m','MOUTH',FMOUTHS,5.2]])LOOKS.add('avx'+k,t,el(null,`<select id="lavx${k}" aria-label="${t.toLowerCase()} style">${N.map((n,i)=>`<option value="${i}">${n}</option>`).join('')}</select><input type="range" id="lavx${k}s" min="50" max="150" step="5" aria-label="${t.toLowerCase()} size"><span id="lavx${k}v" class="dim"></span>`),{...A,order:o});
     LOOKS.add('ave','EYE COLOUR',el('lave',EYES.map(([h,t])=>`<button class="sw" data-c="${h}" aria-label="eyes ${t} #${h}"><i style="background:#${h}"></i></button>`).join('')+'<input type="color" id="lavec" aria-label="any eye colour">'),{...A,order:5.15});
+    LOOKS.add('avu','UNDERWEAR',el('lavu',UNDC.map(h=>`<button class="sw" data-c="${h}" aria-label="underwear #${h}"><i style="background:#${h}"></i></button>`).join('')+'<input type="color" id="lavuc" aria-label="any underwear colour">'),{...A,order:5.16});
     LOOKS.add('avwear','OUTFIT',el(null,'<button id="lavgo">CHOOSE WHAT YOU WEAR</button><span id="lavw" class="dim"></span>'),{...A,order:6});
     LOOKS.add('w-outfit','OUTFIT',el(null,'<select id="lavog" aria-label="outfit theme"></select><select id="lavo" aria-label="outfit"></select><span></span>','avw'),{...A,tab:'wear',order:-1});
     SLOTS.forEach(([s,t],i)=>!NOPROP.has(s)&&LOOKS.add('w-'+s,t,el(null,`<select id="lavt-${s}" aria-label="${t} kind"></select><select id="lav-${s}" aria-label="${t} version"></select><span id="lavk-${s}" class="avk"></span>`,'avw'),{...A,tab:'wear',order:i}));
@@ -305,6 +312,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
     const h=$('#lavh'); stop(h); h.oninput=()=>{ $('#lavhv').textContent=' '+h.value+'%'; }; h.onchange=()=>AVATAR.set({h:+h.value});
     $('#lavs').onclick=e=>{ const b=e.target.closest('button'); if(b)AVATAR.set({skin:b.dataset.c}); }; $('#lavsc').onchange=e=>AVATAR.set({skin:e.target.value.slice(1)});
     $('#lave').onclick=e=>{ const b=e.target.closest('button'); if(b)AVATAR.set({eye:b.dataset.c}); }; $('#lavec').onchange=e=>AVATAR.set({eye:e.target.value.slice(1)});
+    $('#lavu').onclick=e=>{ const b=e.target.closest('button'); if(b)AVATAR.set({under:b.dataset.c}); }; $('#lavuc').onchange=e=>AVATAR.set({under:e.target.value.slice(1)});
     $('#lavc').onclick=e=>{ const b=e.target.closest('button'); if(b)AVATAR.set({hair:b.dataset.c}); }; $('#lavcc').onchange=e=>AVATAR.set({hair:e.target.value.slice(1)});
     // OUTFITS: a theme, then one of the cast in it; their whole look goes on (what your figure can wear of it), their hair colour too
     const og=$('#lavog'), ol=$('#lavo'), OG=[...new Set((I.outfits||[]).map(o=>o.g))].sort(); stop(og); stop(ol);
@@ -322,7 +330,7 @@ const AVATAR={}; window.AVATAR=AVATAR;
   function draw(){ if(!panel())return; if(BODIES.pick()!=='avatar')return LOOKS.layout();
     for(const b of $('#lavf').children)on(b,b.dataset.f===L.f); for(const b of $('#lavb').children)on(b,+b.dataset.b===L.b);
     $('#lavh').value=L.h; $('#lavhv').textContent=' '+L.h+'%'; { const F=fxOf(L); for(const k of 'em'){ $('#lavx'+k).value=String(F[k]); $('#lavx'+k+'s').value=F[k+'s']; $('#lavx'+k+'v').textContent=' '+F[k+'s']+'%'; } } $('#lavsc').value='#'+L.skin; $('#lavcc').value='#'+L.hair;
-    for(const b of $('#lavs').children)if(b.dataset.c)on(b,b.dataset.c===L.skin); for(const b of $('#lavc').children)if(b.dataset.c)on(b,b.dataset.c===L.hair); { const e=L.eye||EYE0; $('#lavec').value='#'+e; for(const b of $('#lave').children)if(b.dataset.c)on(b,b.dataset.c===e); }
+    for(const b of $('#lavs').children)if(b.dataset.c)on(b,b.dataset.c===L.skin); for(const b of $('#lavc').children)if(b.dataset.c)on(b,b.dataset.c===L.hair); { const e=L.eye||EYE0; $('#lavec').value='#'+e; for(const b of $('#lave').children)if(b.dataset.c)on(b,b.dataset.c===e); } { const u=L.under||UND0; $('#lavuc').value='#'+u; for(const b of $('#lavu').children)if(b.dataset.c)on(b,b.dataset.c===u); }
     $('#lavw').textContent=D[L.f]?'':' LOADING…';
     for(const [s] of SLOTS){ if(NOPROP.has(s))continue; const K=kinds(s), sel=$('#lav-'+s), k=$('#lavk-'+s), kd=$('#lavt-'+s), w=L.w[s], J=D[L.f], cur=w&&byN.get(w[0]);
       sel.closest('.lr').dataset.off=K.size?'':'1';

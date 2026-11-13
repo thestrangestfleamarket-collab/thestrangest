@@ -45,6 +45,6 @@ const STARSKY={on:0};
   SYS.add('sky',()=>{ if(!SKY.on())return; if(!STARSKY.on&&!busy&&U.uStar.value>0){ busy=true; bake().catch(e=>{ console.warn('stars',e); setTimeout(()=>{ busy=false; },60000); }); }
     if(STARSKY.on&&!painting&&key()!==kb){ painting=true; setTimeout(()=>paint().finally(()=>{ painting=false; }),300); }   // THE HOURS changed what it is painted with
     { const P=DN.P?DN.P():{}; U.uSt.value.set((1-(P.stf??1))*.7,P.stw??1,P.stc??1); U.uMw.value.set(P.mw??1,P.mwgr??1); if(P.mwc1)U.uMw1.value.set(P.mwc1); if(P.mwc2)U.uMw2.value.set(P.mwc2); }
-    const L=CLK.lst(Date.now(),DN.clk)*R, p=CLK.LAT*R, sL=Math.sin(L), cL=Math.cos(L), sp=Math.sin(p), cp=Math.cos(p); STARSKY.lst=L/R;
+    const L=CLK.lst(DN.skyT(),null)*R, p=CLK.LAT*R, sL=Math.sin(L), cL=Math.cos(L), sp=Math.sin(p), cp=Math.cos(p); STARSKY.lst=L/R;
     U.uEq.value.set(sL,cp*cL,-sp*cL, -cL,cp*sL,-sp*sL, 0,sp,cp); },'134ba-stars');   // a direction of the world (+x west, +y up, +z north) to its place among the stars
   window.STARSKY=STARSKY; }

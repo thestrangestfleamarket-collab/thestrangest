@@ -1,6 +1,6 @@
 // THE BAR, THE LOUNGE (owner, 7 Nov 2026: "build the new bar based on polyfork assets, octopus plays drums"; his pick: the lounge, off the map, tall): Polyfork's casino-lounge pieces (data/bar.json) in a dark, tall room behind the Hudson row's BAR door: the back bar and counter with stools, velvet booths, drum tables, a pool table under its lamp, darts, a jukebox, a grand piano, and the stage where the octopus plays its kit.
 import {SHARED, THREE} from './003-shx.js';
-import {CHARS, DRM, ROOMS, SHOPS, STAGE, USE, WORKERS} from './003b-systems.js';
+import {CHARS, DRM, INSTR, ROOMS, SHOPS, STAGE, USE, VIS, WORKERS} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {SYS} from './006-map-pre.js';
@@ -12,7 +12,7 @@ import {KIT} from './068-kit.js';
 import {BODIES} from './111a-bodies.js';
 const LOUNGE={uses:[]}; window.LOUNGE=LOUNGE;   // uses: later files add to the room as it builds (K, F)
 { const PJ=__LAZY__("data/bar.json"); let PG=null, GEO=null; const geo=()=>PG||(PG=PJ().then(D=>{ const G={}; for(const k in D){ const g=KIT.decode(D[k]); g.computeBoundingBox(); G[k]=g; } return GEO=G; }));
-  { let wrapped=false; SYS.add('places',()=>{ if(wrapped)return; const o=ROOMS.off&&ROOMS.off.bar; if(!o)return; wrapped=true; const n0=o.need; o.need=()=>Promise.all([n0?n0():null,geo()]); },'146zca-lounge'); }
+  { let wrapped=false; const wrap=()=>{ if(wrapped)return; const o=ROOMS.off&&ROOMS.off.bar; if(!o)return; wrapped=true; const n0=o.need; o.need=()=>Promise.all([n0?n0():null,geo()]); }; wrap(); SYS.add('places',wrap,'146zca-lounge'); }   // (now when the bar is there already: going in before the first frame must wait for the pieces too)
   const say=(t,c)=>SAY(t,c||'#e8c8a0'), inBar=()=>!!(ROOMS.offIn&&ROOMS.offIn()==='bar');
   MSHOP.kit.bar=A=>{ '@later'; const R=A.R, F=IKIT.frame(R), MW=IKIT.MW, W=F.W, D=F.D, tm=D/(R.y1-R.y0), K=IKIT.room(F,o=>A.add(o),()=>{}), {box,pic,words,use}=K, G=GEO||{}, HT=A.WH/24*tm;
     const tx=u=>F.tu(u), ty=v=>F.tv(v), sol=(u0,v0,u1,v1)=>A.sol(R.x0+Math.min(u0,u1)/tm,R.y0+Math.min(v0,v1)/tm,R.x0+Math.max(u0,u1)/tm,R.y0+Math.max(v0,v1)/tm);
@@ -32,8 +32,15 @@ const LOUNGE={uses:[]}; window.LOUNGE=LOUNGE;   // uses: later files add to the 
     for(const u of [SU-1,SU+1])put('truss',u,SV+2.1,0,1,{h:4.6});
     put('mic',SU-1.5,SV+1.4,0,1,{h:SH}); put('followspot',W-8.2,9.4,1,-1);
     { const n0=PROPL.length, kx=tx(SU), ky=ty(SV+.2), p=CATALOG['drum kit on a stage'](kx,ky); SHARED.BOD.place(p,0); for(const b of p.boxes)SHARED.BOD.gbox(b,'A'); PROPL.length=n0;
-      DRM.make({at:(x,y)=>({x:SHARED.BOD.X(x),z:SHARED.BOD.Z(y)}),hd:0,stage:{z:14},drums:{x:kx,y:ky}},{add:g=>A.add(g),live:inBar}); STAGE.make({}); LOUNGE.kit={x:kx,y:ky}; }
+      DRM.make({at:(x,y)=>({x:SHARED.BOD.X(x),z:SHARED.BOD.Z(y)}),hd:0,stage:{z:14},drums:{x:kx,y:ky}},{add:g=>A.add(g),live:inBar}); STAGE.make({}); LOUNGE.kit={x:kx,y:ky};
+      // the kit played in place: the octopus steps off, you sit on his throne up on the stage
+      let GR=null; const kw={x:SHARED.BOD.X(kx),z:SHARED.BOD.Z(ky)};
+      LOUNGE.drums={live:inBar,at:()=>{ const a=DRM.at; return {x:a.x,z:a.z,hd:Math.atan2(kw.x-a.x,kw.z-a.z)}; },
+        take:()=>{ DRM.taken=true; if(DRM.stop)DRM.stop(); if(DRM.g)VIS.hide(DRM.g,'play',true); const a=DRM.at, e=.5*MW; GR={x0:a.x-e,x1:a.x+e,z0:a.z-e,z1:a.z+e,ground:()=>a.y}; ROOMS.grounds.push(GR); },
+        back:()=>{ DRM.taken=false; if(DRM.g)VIS.hide(DRM.g,'play',false); const i=ROOMS.grounds.indexOf(GR); if(i>=0)ROOMS.grounds.splice(i,1); GR=null; }}; }
     put('piano',W-6.6,2.6,0,1); put('pianobench',W-6.6,4.0,0,-1); sol(W-7.4,1.5,W-5.8,3.7);
+    { const s=F.pw(W-6.6,4.0), p=F.pw(W-6.6,2.6); LOUNGE.piano={live:inBar,at:()=>({x:s[0],z:s[1],hd:Math.atan2(p[0]-s[0],p[1]-s[1])})}; }
+    const inPlace=(id,P)=>()=>{ if(INSTR.kindOn()===id&&INSTR.ME.place===P)INSTR.stop(); else INSTR.start(id,P); };
     // THE BAR down the west wall: the back bar's lit shelves, the onyx counter, seven stools, glasses and a bottle on top
     for(const v of [7,9,11,13])put('backbar',.25,v,1,0);
     for(const v of [7,9,11,13])put('counter',2.05,v,1,0);
@@ -57,7 +64,8 @@ const LOUNGE={uses:[]}; window.LOUNGE=LOUNGE;   // uses: later files add to the 
     for(const u of [W-8.6,W-.6]){ put('column',u,.6,0,1,{sy:HT/4}); sol(u-.4,.2,u+.4,1); }   // either side of the stage, floor to ceiling
     for(const u of [.9,W-.9]){ put('palm',u,D-.9,0,-1); sol(u-.45,D-1.35,u+.45,D-.45); }
     put('ashtray',W/2-1.4,D-.6,0,-1); put('ashtray',W/2+1.4,D-.6,0,-1);
-    use('THE GRAND PIANO',W-6.6,2.6,1.5,1.9,()=>say('THE LID IS DOWN. THE OCTOPUS PLAYS ALONE TONIGHT.'),2);
+    use('THE GRAND PIANO (PLAY IT)',W-6.6,2.6,1.5,1.9,inPlace('piano',LOUNGE.piano),2.2);
+    use('THE DRUM KIT (PLAY IT)',SU,SV+.2,1.6,1.4,inPlace('drums',LOUNGE.drums),3);
     // the sconces, low and warm; the sign over the stage
     for(const v of [10.2,13.4,16.6])put('sconce',W-.05,v,-1,0,{h:2.2,shadow:false});
     for(const v of [16.5,19.5,22.5])put('sconce',.05,v,1,0,{h:2.2,shadow:false});

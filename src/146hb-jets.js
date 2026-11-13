@@ -10,12 +10,12 @@ import {RIVER} from './066-river.js';
 { const T=TILE, M=T/.84, V3=THREE.Vector3, rnd=Math.random, say=SAY, RF=7*M, RI=7*M, now=()=>performance.now();
   FORAGE.add({names:{flamer:'FLAMETHROWER',frost:'FREEZE RAY'}});
   if(!OWNED.get('jets')||QS.get('fresh')){ if(!INV.items.flamer)INV.items.flamer=1; if(!INV.items.frost)INV.items.frost=1; INV.save(); OWNED.set('jets','1'); }
-  const JET={hold:false,burst:0,on:'',sent:'',sentT:0,S:new Map(),E:new Map()}; window.JETS=JET;
+  const JET={hold:false,burst:0,on:'',sent:'',sentT:0,mode:'fluid',S:new Map(),E:new Map()}; window.JETS=JET;
 
   /* ---------- the two things in the hand, along the forearm (+y), the nozzle at the top ---------- */
   const lam=c=>new THREE.MeshLambertMaterial({color:c}), cyl=(r0,r1,h,m,y,z=0)=>{ const o=new THREE.Mesh(new THREE.CylinderGeometry(r0*M,r1*M,h*M,10),m); o.position.set(0,y*M,z*M); return o; }, box=(w,h,d,m,y,z=0)=>{ const o=new THREE.Mesh(new THREE.BoxGeometry(w*M,h*M,d*M),m); o.position.set(0,y*M,z*M); return o; };
   const HELD=[], held=(g,kind)=>{ g.traverse(o=>{ o.userData.wield=1; o.castShadow=true; }); g.kind=kind; HELD.push(g); return g; };
-  const flamer={name:'FLAMETHROWER',hint:'HOLD THE MOUSE DOWN TO SHOOT FIRE WHERE YOU AIM. IT LIGHTS WHAT IT HITS AND BURNS WHO IT TOUCHES.',
+  const flamer={name:'FLAMETHROWER',hint:'HOLD THE MOUSE DOWN TO SHOOT FIRE WHERE YOU AIM. IT LIGHTS WHAT IT HITS AND BURNS WHO IT TOUCHES. R CHANGES ITS FIRE.',
     make:()=>{ '@later'; const g=new THREE.Group(), st=lam(0x2a2b2e), red=lam(0xa82a1e), br=lam(0xb08a4a);
       g.add(cyl(.022,.022,.62,st,.3),cyl(.03,.024,.08,br,.62),cyl(.065,.065,.3,red,.16,.08),cyl(.066,.066,.02,st,.31,.08),cyl(.012,.012,.12,st,.38,.06),box(.03,.12,.05,lam(0x3a2a1e),-.03,.02));
       g.tipL=new V3(0,.67*M,0); g.head=g.tipL; return held(g,'f'); },
@@ -27,12 +27,15 @@ import {RIVER} from './066-river.js';
       g.tipL=new V3(0,.45*M,0); g.head=g.tipL; return held(g,'i'); },
     aim:(dt,a)=>{ if(JET.aim)a.copy(JET.aim); return false; }, use:()=>{ JET.hold=true; JET.burst=.3; } };
   for(const [id,k] of [['flamer',flamer],['frost',frost]]){ (WIELD.pend=WIELD.pend||[]).push([id,k]); if(WIELD.kind)WIELD.kind(id,k); }
-  addEventListener('pointerup',e=>{ if(e.button===0)JET.hold=false; }); addEventListener('blur',()=>{ JET.hold=false; });
+  addEventListener('pointerup',e=>{ if(e.button===0)JET.hold=false; });
+  // R with the flamethrower in hand: its next mode (MODS.flames.MODES)
+  addEventListener('keydown',e=>{ if(WIELD.on!=='flamer'||e.repeat||e.ctrlKey||e.metaKey||e.altKey||(e.key!=='r'&&e.key!=='R')||/INPUT|TEXTAREA|SELECT/.test((e.target&&e.target.tagName)||'')||e.target&&e.target.isContentEditable)return;
+    const L=MODS.flames?MODS.flames.MODES:['fluid']; JET.mode=L[(L.indexOf(JET.mode)+1)%L.length]; e.stopPropagation(); say('FLAMETHROWER: '+(MODS.flames?MODS.flames.NAMES[JET.mode]:JET.mode)+'.','#ffb36b'); },true); addEventListener('blur',()=>{ JET.hold=false; });
 
   /* ---------- the ice on water: patches that grow while the ray is on them, hold you up, and melt ---------- */
   const IN=32, iceMat=new THREE.MeshPhongMaterial({color:0xcfeeff,specular:0xffffff,shininess:90,emissive:0x0c1a24}), iceG=(()=>{ const g=new THREE.CylinderGeometry(1,1,1,22,1), p=g.attributes.position;
       for(let i=0;i<p.count;i++){ const x=p.getX(i), z=p.getZ(i), r=Math.hypot(x,z); if(r>.5){ const a=Math.atan2(z,x), k=.86+.14*Math.sin(a*5.3+1)*Math.sin(a*2.1); p.setX(i,x*k); p.setZ(i,z*k); } } g.computeVertexNormals(); return g; })();
-  const iceMe=new THREE.InstancedMesh(iceG,iceMat,IN); iceMe.count=0; iceMe.name='ice'; iceMe.receiveShadow=true; iceMe.frustumCulled=false; iceMe.userData.anyRoom=1; scene.add(LEVELS.own(iceMe,'up'));
+  const iceMe=new THREE.InstancedMesh(iceG,iceMat,IN); iceMe.count=0; iceMe.name='ice'; iceMe.receiveShadow=true; iceMe.frustumCulled=false; iceMe.userData.anyRoom=1; scene.add(LEVELS.own(iceMe,'*'));
   const IL=[], m4=new THREE.Matrix4(), q4=new THREE.Quaternion(), s3=new V3(), p3=new V3(), TH=.06*M;
   const iceDraw=()=>{ IL.forEach((c,i)=>iceMe.setMatrixAt(i,m4.compose(p3.set(c.x,c.y-TH/2+.01*M,c.z),q4.setFromAxisAngle(s3.set(0,1,0),c.a),s3.set(c.r,TH,c.r)))); iceMe.count=IL.length; iceMe.instanceMatrix.needsUpdate=true; iceMe.visible=IL.length>0; };
   Object.assign(ICE,{list:IL,
@@ -68,7 +71,7 @@ import {RIVER} from './066-river.js';
   /* ---------- the streams' physics: the flamethrower's fuel is thrown (about 14 m/s), falls under gravity and drags in the air, so its stream arcs; the freeze ray's beam runs straight ---------- */
   const G=9.8*M, KD=.07/M, FUEL=.28, ray=new THREE.Raycaster(), seen=o=>{ for(let q=o;q;q=q.parent)if(!q.visible||q===W3.group)return false; return !o.userData.wield&&!o.userData.iceShell&&!(o.material&&(o.material.visible===false||o.material.transparent&&o.material.opacity<.05)); };
   const wet=o=>{ for(let q=o;q;q=q.parent)if(/river|water|pond|lake|brook|pool|sea|harbo/i.test(q.name||''))return true; const u=o.material&&o.material.uniforms; return !!(u&&(u.uWA||u.uH||u.uLevel)); };
-  const path=S=>{ const P=S.P; P.length=0; P.push(S.tip.clone()); if(S.k!=='f'){ P.push(S.tip.clone().addScaledVector(S.dir,S.R)); return; }
+  const path=S=>{ const P=S.P; P.length=0; P.push(S.tip.clone()); if(S.k!=='f'||S.mode==='plasma'){ P.push(S.tip.clone().addScaledVector(S.dir,S.R)); return; }
     const p=S.tip.clone(), v=S.dir.clone().multiplyScalar(14*M); let s=0; const h=.02; for(let t=0;t<FUEL*3&&s<S.R;t+=h){ v.y-=G*h; v.multiplyScalar(1/(1+KD*v.length()*h)); const d=v.length()*h; p.addScaledVector(v,h); s+=d; if(Math.round(t/h)%3===2)P.push(p.clone()); } P.push(p.clone()); };
   const cast=S=>{ path(S); ray.camera=SHARED.cam; S.end=null; S.what=''; let s=0; const P=S.P, D=new V3();
     const gy0=(x,z)=>SHARED.groundY?SHARED.groundY(x,z):-1e9, wl=(x,z)=>RIVER&&RIVER.level?RIVER.level(x,z):null, gy=(x,z)=>{ const w=wl(x,z); return w==null?gy0(x,z):w; };
@@ -81,8 +84,10 @@ import {RIVER} from './066-river.js';
   const along=(S,x,y,z)=>{ let best=1e9; const P=S.P; for(let i=1;i<P.length;i++){ const a=P[i-1], b=P[i], dx=b.x-a.x, dy=b.y-a.y, dz=b.z-a.z, l2=dx*dx+dy*dy+dz*dz||1, t=Math.max(0,Math.min(1,((x-a.x)*dx+(y-a.y)*dy+(z-a.z)*dz)/l2)); best=Math.min(best,Math.hypot(a.x+dx*t-x,a.y+dy*t-y,a.z+dz*t-z)); } return best; };
 
   /* ---------- the people a stream touches: you, the other players near you, the characters ---------- */
+  const MORE=MODS.moreBodies=MODS.moreBodies||[];   // other things a stream can touch (each a function giving {id,x,y,z,o,root}; o.frozen is kept)
   const bodies=()=>{ const L=[{id:'me',x:pos.x,y:SHARED.py,z:pos.z,root:W3.group}];
     for(const o of ONLINE.others.values()){ if(o.why!=='near you'||o.dead||!o.fig||!o.fig.g||!o.p)continue; const p=o.p; L.push({id:o.id,x:p.x,y:p.y??o.fig.g.position.y,z:p.z,o,root:o.fig.g}); }
+    for(const f of MORE)for(const b of f())L.push(b);
     for(const N of NPCS.all?NPCS.all():[]){ if(!N.g||!N.g.visible||N.far||!N.st||N.lv&&N.lv!==SHARED.LVL)continue; L.push({id:'npc:'+(N.key||'')+(N.uid||''),x:N.st.x,y:N.g.position.y,z:N.st.z,N,root:N.g}); } return L; };
   const touches=(S,b)=>Math.min(along(S,b.x,b.y+.4*M,b.z),along(S,b.x,b.y+M,b.z),along(S,b.x,b.y+1.6*M,b.z))<.5*M;
 
@@ -122,6 +127,7 @@ import {RIVER} from './066-river.js';
   const selfTick=dt=>{ coldIn=Math.max(0,coldIn-dt*.4); immune=Math.max(0,immune-dt);
     if(SHARED.frozen>0){ SHARED.frozen-=dt; if(VIT.dead)SHARED.frozen=0; if(SHARED.frozen<=0){ SHARED.frozen=0; immune=2.5; say('THE ICE CRACKS AND YOU ARE FREE.','#9fe6ff'); } }
     if(JET.burnT>0){ if(st.water&&st.water.in){ JET.burnT=0; for(let k=0;k<4;k++)FLAME.puff(pos.x,SHARED.py+.8*M,pos.z,1.2,6); } else { JET.burnT-=dt; if((dotT-=dt)<=0){ dotT=.5; if(!VIT.dead)VIT.hurt(.01); } } } };
+  MODS.bodies=bodies; MODS.burnMe=burnMe; MODS.alight=(id,s)=>{ if(id!=='me'){ const e=fx(id); e.fire=Math.max(e.fire,s); } };   // for the other weapons (146hc)
   ONLINE.hear.zap=m=>{ '@later'; fx('me'); const f=Array.isArray(m.from)?{x:+m.from[0],z:+m.from[1]}:null; if(m.k==='i')freezeMe(.3); else burnMe(.025,f); };
 
   /* ---------- the beam of the freeze ray: a bright core with frost running down it ---------- */
@@ -132,18 +138,27 @@ import {RIVER} from './066-river.js';
   const UP=new V3(0,1,0);
 
   /* ---------- the streams: yours from your nozzle, theirs from theirs as they say they fire ---------- */
-  const mk=(id,k)=>({id,k,tip:new V3(),dir:new V3(0,0,1),R:k==='f'?RF:RI,P:[],len:0,end:null,what:'',cT:0,eA:0,lT:0,zT:{},at:now(),bm:null});
+  const mk=(id,k,mode)=>({id,k,mode:mode||'fluid',tip:new V3(),dir:new V3(0,0,1),R:k==='f'?RF:RI,P:[],len:0,end:null,what:'',cT:0,eA:0,lT:0,zT:{},at:now(),bm:null});
   const tipOf=(g,S)=>{ if(!g||!g.visible||!g.parent)return false; S.tip.copy(g.tipL).applyMatrix4(g.matrix); const e=g.matrix.elements; S.dir.set(e[4],e[5],e[6]).normalize(); return true; };
-  // where you aim: the point under the mouse (on your ground, or out along the ray), from the nozzle; no mouse (the headset): the way the tool points
-  const AIMP=new V3(), aimMine=S=>{ if(JET.aim){ S.dir.copy(JET.aim); return; } const r=WIELD.ray; if(!r||VR.on)return; const c=r.origin, d=r.direction, far=c.distanceTo(S.tip)+S.R;
-    let t=d.y<-1e-3?(SHARED.py-c.y)/d.y:far; if(!(t>0)||t>far)t=far; AIMP.copy(c).addScaledVector(d,t).sub(S.tip); if(AIMP.lengthSq()>.01*M*M)S.dir.copy(AIMP.normalize()); };
+  // where you aim: a body the mouse is on (another player, a character), else the point on your ground under it, else out along the ray; the fuel's drop allowed for. No mouse (the headset): the way the tool points
+  const AIMP=new V3(), onBody=(c,d)=>{ let bt=Infinity, hit=null; for(const b of bodies()){ if(b.id==='me')continue; const wx=c.x-b.x, wy=c.y-b.y, wz=c.z-b.z, dd=d.x*wx+d.y*wy+d.z*wz, den=1-d.y*d.y;
+      let s=den>1e-6?(wy-d.y*dd)/den:wy; s=Math.min(1.8*M,Math.max(.1*M,s)); const t=d.x*(b.x-c.x)+d.y*(b.y+s-c.y)+d.z*(b.z-c.z); if(t<=0||t>=bt)continue;
+      if(Math.hypot(c.x+d.x*t-b.x,c.y+d.y*t-b.y-s,c.z+d.z*t-b.z)<.45*M){ bt=t; hit=AIMP.set(b.x,b.y+Math.min(1.5*M,Math.max(.5*M,s)),b.z); } } return hit; };
+  const reach=(S,th,hx,hz,dh)=>{ const p=S.tip.clone(), v=new V3(hx*Math.cos(th),Math.sin(th),hz*Math.cos(th)).multiplyScalar(14*M); let s=0, h0=0; const h=.02;
+    for(let t=0;t<FUEL*3&&s<S.R;t+=h){ const y0=p.y; v.y-=G*h; v.multiplyScalar(1/(1+KD*v.length()*h)); p.addScaledVector(v,h); s+=v.length()*h; const h1=Math.hypot(p.x-S.tip.x,p.z-S.tip.z); if(h1>=dh){ const u=(dh-h0)/Math.max(1e-6,h1-h0); return y0+(p.y-y0)*u; } h0=h1; } return null; };
+  const lob=(S,T)=>{ const dx=T.x-S.tip.x, dz=T.z-S.tip.z, dh=Math.hypot(dx,dz); if(dh<.3*M)return; const hx=dx/dh, hz=dz/dh; let lo=Math.atan2(T.y-S.tip.y,dh), y=reach(S,lo,hx,hz,dh); if(y==null||y>=T.y)return;
+    let hi=lo; for(let i=0;i<20;i++){ hi=Math.min(1.2,hi+.06); y=reach(S,hi,hx,hz,dh); if(y==null){ hi=null; break; } if(y>=T.y)break; lo=hi; if(hi>=1.2){ hi=null; break; } }
+    if(hi!=null)for(let i=0;i<8;i++){ const m=(lo+hi)/2, ym=reach(S,m,hx,hz,dh); if(ym!=null&&ym<T.y)lo=m; else hi=m; } S.dir.set(hx*Math.cos(lo),Math.sin(lo),hz*Math.cos(lo)); };
+  const aimMine=S=>{ if(JET.aim){ S.dir.copy(JET.aim); return; } const r=WIELD.ray; if(!r||VR.on)return; const c=r.origin, d=r.direction, far=c.distanceTo(S.tip)+S.R;
+    let T=onBody(c,d); if(!T){ let t=d.y<-1e-3?(SHARED.py-c.y)/d.y:far; if(!(t>0)||t>far)t=far; T=AIMP.copy(c).addScaledVector(d,t); }
+    const D=T.clone().sub(S.tip); if(D.lengthSq()<=.01*M*M)return; S.dir.copy(D.normalize()); if(S.k==='f'&&S.mode!=='plasma')lob(S,T); };
   const drop=S=>{ if(S.bm)S.bm.visible=false; JET.S.delete(S.id); };
-  ONLINE.hear.jet=m=>{ '@later'; const S=JET.S.get(m.id); if(m.k==='f'||m.k==='i'){ let T=S; if(!T||T.k!==m.k){ if(T)drop(T); JET.S.set(m.id,T=mk(m.id,m.k)); } else T.at=now(); if(Array.isArray(m.v)){ T.rv=(T.rv||new V3()).set(+m.v[0]||0,+m.v[1]||0,+m.v[2]||1); if(T.rv.lengthSq()<1e-4)T.rv=null; else T.rv.normalize(); } } else if(S)drop(S); };
+  ONLINE.hear.jet=m=>{ '@later'; const S=JET.S.get(m.id); if(m.k==='f'||m.k==='i'){ let T=S; if(!T||T.k!==m.k){ if(T)drop(T); JET.S.set(m.id,T=mk(m.id,m.k)); } else T.at=now(); const ML=MODS.flames?MODS.flames.MODES:['fluid']; T.mode=ML[m.m|0]||'fluid'; if(Array.isArray(m.v)){ T.rv=(T.rv||new V3()).set(+m.v[0]||0,+m.v[1]||0,+m.v[2]||1); if(T.rv.lengthSq()<1e-4)T.rv=null; else T.rv.normalize(); } } else if(S)drop(S); };
   const PL=[];
   // each drop or puff is born somewhere inside the frame (its own age), so the stream is whole however long the frame was
-  const emit=(S,dt)=>{ const f=S.k==='f', rate=f?120:150; S.eA+=dt*rate; while(S.eA>=1){ S.eA-=1; const a=rnd()*dt, sp=(f?14:12)*M*(.9+rnd()*.2), j=f?.05:.04;
+  const emit=(S,dt)=>{ const f=S.k==='f'; if(f&&(S.mode==='tube'||S.mode==='plasma'))return; const jt=f&&S.mode==='jet', rate=jt?300:f?120:150; S.eA+=dt*rate; while(S.eA>=1){ S.eA-=1; const a=rnd()*dt, sp=(f?14:12)*M*(.9+rnd()*.2), j=f?.05:.04;
       const vx=(S.dir.x+(rnd()-.5)*j)*sp, vy=(S.dir.y+(rnd()-.5)*j)*sp, vz=(S.dir.z+(rnd()-.5)*j)*sp, x=S.tip.x+vx*a, y=S.tip.y+vy*a-(f?G*a*a/2:0), z=S.tip.z+vz*a;
-      const kind=f?3:rnd()<.3?8:7, q=kind===3?(S===JET.focus||rnd()>.35?{x,y,z,vx,vy,vz,t:0,life:.9+rnd()*.3,sz:0,own:1}:FLAME.part(3,x,y,z,vx,vy,vz,.8,.3*M)):kind===8?FLAME.part(8,x,y,z,vx,vy,vz,.7+rnd()*.4,.022*M,rnd()*9,G):FLAME.part(7,x,y,z,vx,vy,vz,.6+rnd()*.4,(.09+rnd()*.06)*M);
+      const kind=f?3:rnd()<.3?8:7, q=kind===3?(jt||S===JET.focus||rnd()>.35?{x,y,z,vx,vy,vz,t:0,life:.9+rnd()*.3,sz:0,own:1,sd:rnd()*9,big:.7+rnd()*.6}:FLAME.part(3,x,y,z,vx,vy,vz,.8,.3*M)):kind===8?FLAME.part(8,x,y,z,vx,vy,vz,.7+rnd()*.4,.022*M,rnd()*9,G):FLAME.part(7,x,y,z,vx,vy,vz,.6+rnd()*.4,(.09+rnd()*.06)*M);
       if(q){ q.t=a; PL.push({q,S,L:S.len*(.92+rnd()*.12),s:sp*a,kind,ph:0,ht:0,hd:0}); } } };
   // fuel: gravity and air drag till it lands; then it burns as gas: dragged to a stop, rising as hot air does. Frost mist sinks as cold air does; ice crystals fall and bounce
   const parts=dt=>{ for(let i=PL.length-1;i>=0;i--){ const p=PL[i], q=p.q; if(q.t>=q.life){ PL.splice(i,1); continue; } const v=Math.hypot(q.vx,q.vy,q.vz);
@@ -171,26 +186,29 @@ import {RIVER} from './066-river.js';
       else{ e.fire=0; if(b.id!=='me'){ e.cold+=dt; if(e.cold>=.9&&e.ice<=0){ e.ice=4; e.cold=-2; } else if(e.ice>0)e.ice=Math.min(5,e.ice+dt*.3); } }
       if(mine&&b.o){ const t=now(); if(t-(S.zT[b.id]||0)>300){ S.zT[b.id]=t; ONLINE.send({t:'zap',to:b.id,k:S.k}); } } } };
   const JETS_J=[];
-  const FL=new THREE.PointLight(new THREE.Color(1,.55,.2),0,8*M,1.6); FL.userData.fire=1; scene.add(FL);
+  const FLC={f:new THREE.Color(1,.55,.2),p:new THREE.Color(.45,.6,1)}, FL=new THREE.PointLight(FLC.f.clone(),0,8*M,1.6); FL.userData.fire=1; scene.add(FL);
   const firing=()=>{ const id=WIELD.on, g=WIELD.held&&WIELD.held(); if((id!=='flamer'&&id!=='frost')||!g||!g.visible||VIT.dead||VIT.out>0||RAG.on||SHARED.frozen>0)return ''; if(VR.on&&JET.burst<=0)JET.hold=false; return JET.hold||JET.burst>0?(id==='flamer'?'f':'i'):''; };
   const pilots=new Map();
   SYS.add('life',dt=>{ dt=Math.min(dt||0,.25); JET.burst=Math.max(0,JET.burst-dt); selfTick(dt);
-    const k=firing(); { let S=JET.S.get('me'); if(k){ if(!S||S.k!==k){ if(S)drop(S); JET.S.set('me',S=mk('me',k)); } S.at=now(); } else if(S)drop(S); } JET.on=k;
-    if(ONLINE.on&&(k!==JET.sent||k&&now()-JET.sentT>160)){ const S=JET.S.get('me'), r=v=>Math.round(v*100)/100; JET.sent=k; JET.sentT=now(); ONLINE.send(k&&S?{t:'jet',k,v:[r(S.dir.x),r(S.dir.y),r(S.dir.z)]}:{t:'jet',k}); }
+    const k=firing(); { let S=JET.S.get('me'); if(k){ if(!S||S.k!==k){ if(S)drop(S); JET.S.set('me',S=mk('me',k,JET.mode)); } S.at=now(); S.mode=JET.mode; } else if(S)drop(S); } JET.on=k;
+    if(ONLINE.on&&(k!==JET.sent||k&&now()-JET.sentT>160)){ const S=JET.S.get('me'), r=v=>Math.round(v*100)/100, mi=Math.max(0,(MODS.flames?MODS.flames.MODES:['fluid']).indexOf(JET.mode)); JET.sent=k; JET.sentT=now(); ONLINE.send(k&&S?{t:'jet',k,v:[r(S.dir.x),r(S.dir.y),r(S.dir.z)],m:mi}:{t:'jet',k}); }
     for(const g of HELD){ if(g.kind!=='f')continue; let s=pilots.get(g); const on=g.visible&&!!g.parent; if(on&&!s){ s=FLAME.add({kind:'candle',name:'pilot light',x:0,y:0,z:0,w:.03*M,h:.06*M}); pilots.set(g,s); }
       if(s){ s.on=on; if(on){ p3.copy(g.tipL).applyMatrix4(g.matrix); s.x=p3.x; s.y=p3.y-.02*M; s.z=p3.z; s.a.position.copy(p3); } } }
-    const L=JET.S.size||JET.E.size?bodies():null; let lb=(30*M)**2, lp=null;
+    const L=JET.S.size||JET.E.size?bodies():null; let lb=(30*M)**2, lp=null, lm='';
     for(const [id,S] of JET.S){ const mine=id==='me', g=mine?WIELD.held():WIELD.theirG&&WIELD.theirG(id);
-      if(!mine&&now()-S.at>2500){ drop(S); continue; } if(!tipOf(g,S)){ if(S.bm)S.bm.visible=false; continue; } if(mine)aimMine(S); else if(S.rv)S.dir.copy(S.rv);
+      if(!mine&&now()-S.at>2500){ drop(S); continue; } S.seen=false; if(!tipOf(g,S)){ if(S.bm)S.bm.visible=false; continue; } S.seen=true; if(mine)aimMine(S); else if(S.rv)S.dir.copy(S.rv);
       if((S.cT-=dt)<=0||!S.P.length){ S.cT=.12; cast(S); } else S.P[0].copy(S.tip);
       if(S.k==='i'){ const b=S.bm||(S.bm=beam()); b.visible=true; b.position.copy(S.tip); b.quaternion.setFromUnitVectors(UP,S.dir); b.scale.set(.045*M,Math.max(.01,S.len),.045*M); } else if(S.bm){ S.bm.visible=false; S.bm=null; }
-      if(S.k==='f'){ const d=(S.tip.x-pos.x)**2+(S.tip.z-pos.z)**2; if(d<lb){ lb=d; lp=S.P[Math.floor(S.P.length/2)]||S.tip; } }
+      if(S.k==='f'){ const d=(S.tip.x-pos.x)**2+(S.tip.z-pos.z)**2; if(d<lb){ lb=d; lm=S.mode; lp=S.P[Math.floor(S.P.length/2)]||S.tip; } }
       emit(S,dt); land(S,dt,mine); if(L)hits(S,dt,L,mine); }
-    if(lp){ FL.position.copy(lp); FL.position.y+=.3*M; FL.intensity=14*FLAME.flick(3); } else FL.intensity=0; uT.value=now()/1000%1000;
+    if(lp){ FL.position.copy(lp); FL.position.y+=.3*M; FL.intensity=14*FLAME.flick(3); FL.color.copy(lm==='plasma'?FLC.p:FLC.f); } else FL.intensity=0; uT.value=now()/1000%1000;
     parts(dt); if(L)bodyFx(dt,L);
+    // the other fires (146hac): the fuel jet's drops, the cel flames and the plasma bolts along their streams
+    { const FX=MODS.flames; if(FX){ const t=now()/1000%1000, JD=[], TU=[], PZ=[]; FX.time(t); for(const p of PL)if(p.kind===3&&p.q.own&&p.S.mode==='jet')JD.push(p.q);
+        for(const S of JET.S.values())if(S.k==='f'&&S.seen&&(S.mode==='tube'||S.mode==='plasma'))(S.mode==='tube'?TU:PZ).push(S); FX.jet(JD); FX.tube(TU,t); FX.plasma(PZ,t); } }
     // the fluid fire: its box on the flame nearest you, fed by that flame's drops (and any other drops inside it)
-    { let F=null, fd=(25*M)**2; for(const S of JET.S.values())if(S.k==='f'){ const d=(S.tip.x-pos.x)**2+(S.tip.z-pos.z)**2; if(d<fd){ fd=d; F=S; } } JET.focus=F; JETS_J.length=0;
-      if(F){ const hl=Math.hypot(F.dir.x,F.dir.z)||1; for(const p of PL)if(p.kind===3&&p.q.own){ const q=p.q, a=q.t; JETS_J.push({x:q.x,y:q.y,z:q.z,vx:q.vx,vy:q.vy,vz:q.vz,r:p.ph===0?(.05+a*.35)*M:(.15+(a-p.ht)*.6)*M,f:p.ph===0?(a<.04?0:26):10}); }
+    { let F=null, fd=(25*M)**2; for(const S of JET.S.values())if(S.k==='f'&&S.mode==='fluid'){ const d=(S.tip.x-pos.x)**2+(S.tip.z-pos.z)**2; if(d<fd){ fd=d; F=S; } } JET.focus=F; JETS_J.length=0;
+      if(F){ const hl=Math.hypot(F.dir.x,F.dir.z)||1; for(const p of PL)if(p.kind===3&&p.q.own&&p.S.mode==='fluid'){ const q=p.q, a=q.t; JETS_J.push({x:q.x,y:q.y,z:q.z,vx:q.vx,vy:q.vy,vz:q.vz,r:p.ph===0?(.05+a*.35)*M:(.15+(a-p.ht)*.6)*M,f:p.ph===0?(a<.04?0:26):10}); }
         if(JETS_J.length>24){ const k=JETS_J.length/24; for(let i=0;i<24;i++)JETS_J[i]=JETS_J[Math.floor(i*k)]; JETS_J.length=24; } }
       if(MODS.firesim)MODS.firesim.step(dt,F?{x:F.tip.x,y:SHARED.groundY?Math.min(F.tip.y,SHARED.groundY(F.tip.x,F.tip.z)):F.tip.y,z:F.tip.z,dx:F.dir.x/(Math.hypot(F.dir.x,F.dir.z)||1),dz:F.dir.z/(Math.hypot(F.dir.x,F.dir.z)||1)}:null,JETS_J); } iceTick(dt); frostTick(dt); },'146hb-jets');
   window.JETDBG=()=>({on:JET.on,streams:[...JET.S].map(([id,S])=>({id,k:S.k,len:+(S.len/M).toFixed(2),what:S.what,tip:[S.tip.x,S.tip.y,S.tip.z].map(v=>+v.toFixed(2)),dir:[S.dir.x,S.dir.y,S.dir.z].map(v=>+v.toFixed(2)),near:bodies().map(b=>[b.id,+(along(S,b.x,b.y+M,b.z)/M).toFixed(2),+b.x.toFixed(1),+b.y.toFixed(1),+b.z.toFixed(1)])})),parts:PL.length,ice:IL.map(c=>({x:c.x,z:c.z,y:c.y,r:c.r/M})),frost:FM.length,frozen:SHARED.frozen,burn:JET.burnT,fx:[...JET.E].map(([id,e])=>({id,fire:e.fire,ice:e.ice,cold:e.cold})),M}); }

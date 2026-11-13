@@ -5,11 +5,15 @@ import {scene} from './004-main.js';
 import {FIX, LEVEL, MAPG, SOL, STORE, TILE, ZU} from './006-map-pre.js';
 const STALL=(()=>{ const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS;
   const MUSH={
+    elfcup:{s:.035,h:1.2,f:(p,s)=>{ p('cyl',0xd8c8a0,0,s*.2,0,s*.18,s*.4,s*.18); p('cap',0xe02a1a,0,s*1.05,0,s,s*.7,s,Math.PI); p('cyl',0xb81a10,0,s*.98,0,s*.82,s*.06,s*.82); }},
+    lionsmane:{s:.05,h:1.6,f:(p,s)=>{ p('ball',0xf4f0e8,0,s*1.1,0,s,s*.8,s*.9); for(let k=0;k<14;k++){ const a=k*2.4, r=s*(.35+.5*((k*7)%10)/10); p('cone',0xece6da,Math.cos(a)*r,s*.55,Math.sin(a)*r*.9,s*.14,s*.9,s*.14,Math.PI); } }},
+    woodear:{s:.04,h:1.2,f:(p,s)=>{ p('cap',0x6a3a2a,0,s*.3,0,s,s*.5,s*.8,Math.PI,.25); p('cap',0x7a4a3a,s*.5,s*.5,s*.1,s*.6,s*.35,s*.5,Math.PI,-.5); p('ball',0x4a2618,-s*.1,s*.2,0,s*.5,s*.12,s*.4); }},
+    parasol:{s:.045,h:1.8,f:(p,s)=>{ p('cyl',0xe8e0d0,0,s*.8,0,s*.14,s*1.6,s*.14); p('cap',0xd8c8a0,0,s*1.5,0,s*1.2,s*.45,s*1.2); p('ball',0x8a6a44,0,s*1.95,0,s*.25,s*.1,s*.25); for(let k=0;k<7;k++){ const a=k*.9; p('ball',0x8a6a44,Math.cos(a)*s*.7,s*1.75,Math.sin(a)*s*.7,s*.14,s*.04,s*.14); } p('tor',0xe8e0d0,0,s*1.15,0,s*.2,s*.2,s*.3,Math.PI/2); }},
     button:{s:.035,h:1.2,f:(p,s)=>{ p('cyl',0xe8e2d4,0,s*.4,0,s*.35,s*.8,s*.35); p('cap',0xf2ede2,0,s*.7,0,s,s*.7,s); }},
     puffball:{s:.045,h:1.6,f:(p,s)=>{ p('ball',0xf4f0e6,0,s*.8,0,s,s*.85,s); }},
     chanterelle:{s:.04,h:1.2,f:(p,s)=>{ p('cone',0xe0a032,0,s*.6,0,s,s*1.2,s,Math.PI); }},
     redcap:{s:.045,h:1.6,f:(p,s,r)=>{ p('cyl',0xeee6d6,0,s*.5,0,s*.3,s,s*.3); p('cap',0xc42a20,0,s*.95,0,s,s*.6,s); for(let k=0;k<2;k++){ const a=r+k*3.1; p('ball',0xf6f0e0,Math.cos(a)*s*.55,s*1.3,Math.sin(a)*s*.55,s*.16,s*.1,s*.16); } }},
-    inkcap:{s:.03,h:1.6,f:(p,s)=>{ p('cyl',0xe6e0d0,0,s*.8,0,s*.8,s*3.4,s*.8,Math.PI/2); }},
+    inkcap:{s:.03,h:1.6,f:(p,s)=>{ p('cyl',0xe8e4dc,0,s*.9,0,s*.28,s*1.8,s*.28); p('ball',0xe6e0d0,0,s*2.1,0,s*.7,s*1.5,s*.7); p('cap',0xcfc8b8,0,s*2.9,0,s*.5,s*.75,s*.5); }},
     bolete:{s:.055,h:1.4,f:(p,s)=>{ p('cyl',0xd8c4a0,0,s*.45,0,s*.45,s*.9,s*.45); p('cap',0x7a4a24,0,s*.85,0,s,s*.55,s); }},
     morel:{s:.03,h:2.2,f:(p,s)=>{ p('cyl',0xe2d4b4,0,s*.35,0,s*.4,s*.7,s*.4); p('cone',0x5e4428,0,s*1.5,0,s*.75,s*1.8,s*.75); }},
     moonglow:{s:.035,h:1.5,f:(p,s)=>{ p('cyl',0x9fe8f0,0,s*.5,0,s*.3,s,s*.3,0,1); p('cap',0x48d8f0,0,s*.9,0,s,s*.6,s,0,1); }},
@@ -20,9 +24,29 @@ const STALL=(()=>{ const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS;
     oyster:{s:.05,h:1,f:(p,s,r)=>{ p('cap',0xb8b4aa,0,s*.4,0,s,s*.3,s*.7,.5); p('cap',0x9a968c,s*.5,s*.6,0,s*.7,s*.25,s*.5,.6); }},
     violet:{s:.035,h:1.5,f:(p,s)=>{ p('cyl',0x8a5ab8,0,s*.5,0,s*.28,s,s*.28); p('cap',0x6a2a9a,0,s*.9,0,s,s*.55,s); }},
     sulphur:{s:.05,h:1,f:(p,s)=>{ p('cap',0xf0b828,0,s*.4,0,s,s*.3,s*.8,.4); p('cap',0xe8781e,0,s*.75,0,s*.8,s*.25,s*.6,.4); }}};
+  // the mushrooms that give powers (FORAGE.POWER): their looks, and the short name on their box at the mushroom seller's stall
+  const POWER={
+    airshroom:{n:'BREATH',s:.04,h:1.5,f:(p,s)=>{ p('cyl',0xe0f4ff,0,s*.5,0,s*.3,s,s*.3); p('cap',0x9ad8ff,0,s*.95,0,s,s*.7,s); p('ball',0xffffff,0,s*1.2,0,s*.3,s*.2,s*.3); }},
+    glowcap:{n:'NIGHT VISION',s:.04,h:1.5,f:(p,s)=>{ p('cyl',0xe8ffe0,0,s*.5,0,s*.25,s,s*.25); p('cap',0x7cff9a,0,s*.95,0,s*1.1,s*.6,s*1.1,0,0,1); p('ball',0xd8ffb0,0,s*1.15,0,s*.25,s*.15,s*.25); }},
+    shroom_invis:{n:'INVISIBILITY',s:.04,h:1.5,f:(p,s)=>{ p('cyl',0xf2f6f8,0,s*.5,0,s*.26,s,s*.26); p('cap',0xdde6ec,0,s*.95,0,s,s*.6,s); }},
+    shroom_str:{n:'STRENGTH',s:.05,h:1.4,f:(p,s)=>{ p('cyl',0xe8d8c0,0,s*.4,0,s*.5,s*.8,s*.5); p('cap',0xa8241a,0,s*.8,0,s,s*.55,s); }},
+    shroom_swift:{n:'SPEED',s:.035,h:2,f:(p,s)=>{ p('cyl',0xf2ecd8,0,s*.8,0,s*.18,s*1.6,s*.18); p('cap',0xf2d02a,0,s*1.55,0,s,s*.3,s); }},
+    shroom_fly:{n:'FLIGHT',s:.045,h:1.6,f:(p,s,r)=>{ p('cyl',0xf4f6fa,0,s*.5,0,s*.28,s,s*.28); p('cap',0x5aaaf0,0,s*.95,0,s,s*.6,s); for(let k=0;k<3;k++){ const a=r+k*2.1; p('ball',0xffffff,Math.cos(a)*s*.5,s*1.3,Math.sin(a)*s*.5,s*.14,s*.08,s*.14); } }},
+    shroom_keen:{n:'KEEN EYE',s:.04,h:1.6,f:(p,s)=>{ p('cyl',0xece6d6,0,s*.5,0,s*.28,s,s*.28); p('cap',0x2a5ad8,0,s*.95,0,s,s*.6,s); p('ball',0xf2e04a,0,s*1.5,0,s*.3,s*.12,s*.3); }},
+    shroom_heal:{n:'HEALING',s:.045,h:1.5,f:(p,s)=>{ p('cyl',0xf6ece6,0,s*.5,0,s*.3,s,s*.3); p('cap',0xe86a8a,0,s*.95,0,s,s*.6,s); }},
+    shroom_cure:{n:'CURE POISON',s:.04,h:1.6,f:(p,s,r)=>{ p('cyl',0xf0ece0,0,s*.5,0,s*.28,s,s*.28); p('cap',0xf4f0e6,0,s*.95,0,s,s*.6,s); for(let k=0;k<3;k++){ const a=r+k*2.1; p('ball',0x4ab84a,Math.cos(a)*s*.5,s*1.3,Math.sin(a)*s*.5,s*.15,s*.08,s*.15); } }},
+    shroom_jump:{n:'JUMP',s:.035,h:2.2,f:(p,s)=>{ p('cyl',0xdcecc8,0,s*.9,0,s*.22,s*1.8,s*.22); p('cap',0x6ac83a,0,s*1.75,0,s,s*.55,s); }},
+    shroom_luck:{n:'LUCK',s:.045,h:1.6,f:(p,s)=>{ p('cyl',0xf2ead0,0,s*.5,0,s*.28,s,s*.28); p('cap',0xe8b828,0,s*.95,0,s,s*.6,s,0,0,1); p('ball',0x3a9a3a,0,s*1.5,0,s*.25,s*.1,s*.25); }},
+    shroom_fire:{n:'FIREPROOF',s:.04,h:1.6,f:(p,s)=>{ p('cyl',0xffd8a0,0,s*.5,0,s*.3,s,s*.3); p('cone',0xff5a1e,0,s*1.1,0,s*.8,s*.9,s*.8,0,0,1); }},
+    shroom_small:{n:'SHRINK',s:.022,h:1.5,f:(p,s)=>{ p('cyl',0xe8e0f0,0,s*.5,0,s*.3,s,s*.3); p('cap',0x8a4ac8,0,s*.95,0,s,s*.6,s); }},
+    shroom_big:{n:'GROW',s:.065,h:1.3,f:(p,s)=>{ p('cyl',0xe6dcc4,0,s*.4,0,s*.4,s*.8,s*.4); p('cap',0x6a8a3a,0,s*.8,0,s,s*.5,s); }}};
+  // the labels on the boxes: one picture, a strip for each kind (chalk on slate)
+  let LAB=null; const labels=()=>{ if(LAB)return LAB; const ks=Object.keys(POWER), cv=document.createElement('canvas'); cv.width=512; cv.height=64*ks.length; const g=cv.getContext('2d');
+    ks.forEach((k,i)=>{ const y=i*64; g.fillStyle='#2a2b28'; g.fillRect(0,y,512,64); g.strokeStyle='#8a6a3e'; g.lineWidth=6; g.strokeRect(3,y+3,506,58); g.fillStyle='#ece8dc'; let f=54; g.font=`bold ${f}px Georgia,serif`; while(g.measureText(POWER[k].n).width>490&&f>20){ f-=2; g.font=`bold ${f}px Georgia,serif`; } g.textAlign='center'; g.textBaseline='middle'; g.fillText(POWER[k].n,256,y+35); });
+    const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; LAB={t,ks,mat:new THREE.MeshLambertMaterial({map:t,side:THREE.DoubleSide})}; return LAB; };
   const VEG={
     tomato:{s:.04,h:1.7,f:(p,s)=>{ p('ball',0xcc3420,0,s*.85,0,s,s*.85,s); p('ball',0x3e8a2a,0,s*1.6,0,s*.35,s*.15,s*.35); }},
-    pepper:{s:.045,h:2,f:(p,s,r,R)=>{ p('ball',[0x2f8a2a,0xd8b028,0xc8321e][Math.floor(R()*3)],0,s,0,s,s*1.1,s); }},
+    pepper:{s:.045,h:2,f:(p,s,r,R)=>{ const c=[0x2f8a2a,0xd8b028,0xc8321e][Math.floor(R()*3)]; for(let k=0;k<3;k++){ const a=r+k*2.09; p('ball',c,Math.cos(a)*s*.32,s,Math.sin(a)*s*.32,s*.68,s*1.1,s*.68); } p('cyl',0x3a6a2a,0,s*2.1,0,s*.12,s*.4,s*.12); p('cyl',0x3a6a2a,0,s*1.95,0,s*.4,s*.08,s*.4); }},
     carrot:{s:.02,h:2,f:(p,s)=>{ p('cone',0xe0742a,0,s,0,s,s*8,s,Math.PI/2); p('cone',0x4aa03a,0,s,-s*5,s*1.4,s*3,s*1.4,-Math.PI/2); }},
     corn:{s:.03,h:2,f:(p,s)=>{ p('cyl',0xe8c84a,0,s,0,s,s*6,s,Math.PI/2); p('cone',0x9ab04a,0,s,-s*3.8,s*1.3,s*2.5,s*1.3,-Math.PI/2); }},
     cabbage:{s:.075,h:1.7,f:(p,s)=>{ p('ball',0x8ac05a,0,s*.85,0,s,s*.85,s); p('cap',0x6aa040,0,s*.5,0,s*1.08,s*.55,s*1.08,Math.PI); }},
@@ -49,7 +73,7 @@ const STALL=(()=>{ const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS;
     for(const B of FIX.up){ if(B[0]>a||B[3]<b||B[3]-B[0]<6*Math.abs(k))continue; const e=s>0?B[1]:B[4]; if(Math.abs(e-z0)<5*Math.abs(k)&&(f==null||e*s<f*s))f=e; }
     return f==null?y:y+(f-z0)/k; };
   const build=o=>{ const {X,Z,gate=1}=o, tab=!!o.goods, veg=o.veg||tab, KS=tab?GOODS:o.veg?VEG:MUSH, I={ball:[],cap:[],cone:[],cyl:[],box:[],glow:[]}, TG=[];
-    const x0=Math.min(o.x0,o.x1), x1=Math.max(o.x0,o.x1), wy=face(X,Z,x0,x1,o.y)-.03, xm=(x0+x1)/2, xg=gate>0?x1:x0, xo=gate>0?x0:x1, fo=-gate, CY1=wy-2.85, CY0=wy-3.65, ya=wy-.78, yb=wy-.02, xa=x0+.4, xb=x1-.4;
+    const x0=Math.min(o.x0,o.x1), x1=Math.max(o.x0,o.x1), wy=face(X,Z,x0,x1,o.y)-.03, xm=(x0+x1)/2, xg=gate>0?x1:x0, xo=gate>0?x0:x1, fo=-gate, CY1=wy-2.85, CY0=wy-3.65, ya=wy-(veg?.78:1.2), yb=wy-.02, xa=x0+.4, xb=x1-.4;
     let t=o.seed||7; const R=()=>{ t=(t*16807)%2147483647; return t/2147483647; }, RR=(a,b)=>a+R()*(b-a), BX=[1e9,1e9,-1e9,-1e9];
     const e=new THREE.Euler(), q=new THREE.Quaternion(), m4=new THREE.Matrix4(), V3=THREE.Vector3;
     const inst=(g,col,x,y,z,sx,sy,sz,rx=0,ry=0,rz=0)=>{ q.setFromEuler(e.set(rx,ry,rz)); I[g].push([m4.compose(new V3(x,y,z),q,new V3(sx,sy,sz)).clone(),col]); return [g,I[g].length-1]; };
@@ -66,12 +90,25 @@ const STALL=(()=>{ const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS;
     const H=.8, WOOD=0x9e7a4c, LEG=0x6e5434, DARK=0x7a5c38, ki={i:0};
     const legs=(a,b,c,d,h)=>{ const L=.1; for(const [u,v] of [[a+.05,c+.05],[b-.05-L,c+.05],[a+.05,d-.05-L],[b-.05-L,d-.05-L]])box(u,u+L,v,v+L,0,h,LEG); };
     const RW=tab?o.goods.map(k=>GOODS[k]):veg?[KS.potato,KS.cabbage,KS.tomato,KS.eggplant]:[KS.puffball,KS.chanterelle,KS.redcap,KS.moonglow], RH=[.24,H,1.2,1.6];
+    if(veg){
     const TOP=veg?1.78:2.58; legs(xa,xb,ya,yb,H-.05); box(xa,xb,ya,yb,H-.05,H,WOOD); box(xa+.04,xb-.04,ya+.04,yb-.04,.2,.24,DARK); box(xa,xb,yb-.035,yb,H,TOP,DARK);
     box(xa,xb,yb-.5,yb,1.15,1.2,WOOD); box(xa,xb,yb-.3,yb,1.55,1.6,WOOD);
     for(const u of [xa,(xa+xb)/2-.04,xb-.08]){ box(u,u+.08,yb-.5,yb-.42,H,1.15,LEG); box(u,u+.08,yb-.3,yb-.22,1.2,1.55,LEG); box(u,u+.08,yb-.1,yb-.02,H,TOP,LEG); if(!veg){ box(u,u+.08,yb-.24,yb-.16,1.6,1.95,LEG); box(u,u+.08,yb-.18,yb-.1,2,2.35,LEG); } }
-    if(!veg){ box(xa,xb,yb-.24,yb,1.95,2,WOOD); box(xa,xb,yb-.18,yb,2.35,2.4,WOOD); }
     row(RW[0],xa+.08,xb-.08,ya+.06,yb-.06,RH[0],.45); row(RW[1],xa+.04,xb-.04,ya+.03,yb-.52,RH[1],.8); row(RW[2],xa+.04,xb-.04,yb-.48,yb-.04,RH[2],.8); row(RW[3],xa+.04,xb-.04,yb-.28,yb-.04,RH[3],.9); if(!veg){ row(KS.ghostcap,xa+.04,(xa+xb)/2,yb-.22,yb-.04,2,.9); row(KS.violet,(xa+xb)/2,xb-.04,yb-.22,yb-.04,2,.9); row(KS.ember,xa+.04,(xa+xb)/2,yb-.16,yb-.04,2.4,.9); row(KS.oyster,(xa+xb)/2,xb-.04,yb-.16,yb-.04,2.4,.9); row(KS.sulphur,xa+.04,xb-.04,yb-.16,yb-.04,2.4,.3); }
-    solid(xa,xb,ya,yb,veg?1.8:2.6);
+    } else {
+      /* the mushroom seller's table: three plank steps rising to the wall, on them a box for each mushroom that gives a power, heaped with it, its name on the front */
+      legs(xa,xb,ya,yb,H-.05); box(xa,xb,ya,yb,H-.05,H,WOOD); box(xa+.04,xb-.04,ya+.04,yb-.04,.2,.24,DARK);
+      const ROWS=[['shroom_str','shroom_swift','shroom_jump','shroom_heal','shroom_cure'],['shroom_big','shroom_small','airshroom','glowcap','shroom_keen'],['shroom_fly','shroom_invis','shroom_luck','shroom_fire']], dep=(yb-ya-.06)/3, L=labels(), LP=[], LU=[], LI=[];
+      const dz=Math.sign(Z(yb)-Z(ya))||1, rx=-dz;
+      ROWS.forEach((ks,r)=>{ const c=ya+.03+r*dep, d=c+dep-.03, h0=H+r*.3; if(r)box(xa,xb,c-.01,yb,H,h0,DARK);
+        const n=ks.length, w=(xb-xa-.08)/n; ks.forEach((k,i)=>{ const K={...POWER[k],s:POWER[k].s*1.5}, a=xa+.04+i*w+.03, b=a+w-.06, h1=h0+.26; crate(a,b,c,d,h0,h1,[0x9a7044,0x8a6238,0xa47a4a][(i+r)%3]);
+          heap(K,(a+b)/2,(c+d)/2,h1-.07,(b-a)*.82,(d-c)*.78,Math.round(many(K,b-a,d-c)*1.4));
+          const li=L.ks.indexOf(k), cx=X((a+b)/2), cz=Z(c)-dz*.006*M, hw=Math.abs(X(b)-X(a))*.46, y0=mv(h0+.025), y1=mv(h0+.235), v0=1-(li+1)/L.ks.length, v1=1-li/L.ks.length, o=LP.length/3;
+          LP.push(cx-rx*hw,y0,cz, cx+rx*hw,y0,cz, cx+rx*hw,y1,cz, cx-rx*hw,y1,cz); LU.push(0,v0,1,v0,1,v1,0,v1); LI.push(o,o+1,o+2,o,o+2,o+3); }); });
+      const lg=new THREE.BufferGeometry(); lg.setAttribute('position',new THREE.Float32BufferAttribute(LP,3)); lg.setAttribute('uv',new THREE.Float32BufferAttribute(LU,2)); lg.setIndex(LI); lg.computeVertexNormals(); lg.computeBoundingSphere();
+      const lm=new THREE.Mesh(lg,L.mat); lm.receiveShadow=true; ((MAPG.parkwall)||scene).add(lm);
+    }
+    solid(xa,xb,ya,yb,veg?1.8:H+.75);
     const CK=tab?RW:veg?[KS.carrot,KS.pepper,KS.corn,KS.onion,KS.greens,KS.tomato]:[KS.button,KS.bolete,KS.inkcap,KS.morel,KS.redcap,KS.chanterelle];
     const fx=(u0,u1)=>[Math.min(xo+fo*u0,xo+fo*u1),Math.max(xo+fo*u0,xo+fo*u1)];
     if(veg&&!tab){ const SK=[KS.tomato,KS.cabbage,KS.pepper,KS.onion,KS.potato,KS.eggplant,KS.carrot,KS.corn]; let n=0;
@@ -140,6 +177,6 @@ const STALL=(()=>{ const M=TILE/.84, VS=ZU*24/TILE, mv=m=>m*M*VS;
   // where each park-wall stall stands (data/world.json parkPlaces.stalls): its side of the gate and its place out from it
   const at=id=>{ const L=(LEVEL.parkPlaces&&LEVEL.parkPlaces.stalls)||[], s=L.find(q=>q.id===id); if(!s)return null; const g=PARK.gate, W=4.8, step=5.4, k=s.slot||0;
     return s.side==='w'?{...s,x0:g[0]-3-k*step-W,x1:g[0]-3-k*step,gate:1}:{...s,x0:g[1]+3+k*step,x1:g[1]+3+k*step+W,gate:-1}; };
-  const made=[]; return {build,made,MUSH,VEG,GOODS,zones,work,pose,face,at}; })();
+  const made=[]; return {build,made,MUSH,POWER,VEG,GOODS,zones,work,pose,face,at}; })();
 window.STALL=STALL;
 export {STALL};

@@ -1,8 +1,9 @@
-// THE BODIES: bodies moved by the rig (each of its 15 bones takes the turn of the rig piece it stands for); you play as the avatar (111c), the only body you can be; one of each other walks main street.
+// THE BODIES: bodies moved by the rig (each of its 15 bones takes the turn of the rig piece it stands for); you play as the avatar (111c) or another playable body (YOU's BODY line); one of each other walks main street.
 import {SHARED, THREE} from './003-shx.js';
 import {B64, I16, U16} from './003a-skin.js';
-import {ARCH, CHARS, NPCS, pos, RAG, st, VIS, VIT, W3, WINDOWS} from './003b-systems.js';
+import {ARCH, CHARS, LOOKS, NPCS, pos, RAG, st, VIS, VIT, W3, WINDOWS} from './003b-systems.js';
 import {PPU} from './004-main.js';
+import {SAVE} from './005-save.js';
 import {ASTEP, MAPG, MODS, SYS, TILE} from './006-map-pre.js';
 import {HOMES, ROAM, stfree} from './076-npc-map.js';
 import {musScale, sheetView, spreadPose} from './110-musician.js';
@@ -46,10 +47,10 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     // body.rnd (your avatar): its points marked sm (its rounded head, 111c) shaded by their own smooth normals, the rest flat
     // body.rnd: what hangs off it (ov: BACK, its bags and straps, 111c) drawn a few centimetres nearer the eye than it is, so it shows over every coat (owner, 9 Nov 2026)
     const OV=body.rnd?' if(ov>.5){ vec4 mo=mvPosition; float od=uOV*length(modelViewMatrix[1].xyz); if(projectionMatrix[3][3]>.5)mo.z+=od; else mo.xyz*=max(0.,1.-od/length(mo.xyz)); gl_Position=projectionMatrix*mo; }':'';
-    const SM=body.rnd?'attribute float sm; attribute float ov; uniform float uOV; varying float vSm;':'', NF=body.rnd?' if(vSm>.5){ vec3 sn=normalize(vNormal); normal=dot(sn,normal)<0.?-sn:sn; }':'';
+    const SM=body.rnd?'attribute float sm; attribute float ov; attribute float hs; uniform float uOV; varying float vSm; varying float vHs;':'', NF=body.rnd?' if(vSm>.5){ vec3 sn=normalize(vNormal); normal=dot(sn,normal)<0.?-sn:sn; }':'';
     const mat=new THREE.MeshToonMaterial({vertexColors:true,gradientMap:W3.GP,side:THREE.DoubleSide});
     if(body.rnd)PM.ov={value:.035*(body.S||1)};
-    mat.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.uniforms.uHH=PM.hh; if(PM.ov)sh.uniforms.uOV=PM.ov; if(FL){ sh.uniforms.uFK=PM.fk; sh.uniforms.uFT=PM.ft; } sh.fragmentShader='#define BODYB .0015\n'+(SM?'varying float vSm;\n':'')+sh.fragmentShader; sh.vertexShader=MOVE+FL+SM+'\n'+sh.vertexShader.replace('#include <beginnormal_vertex>',AT_+' vec3 objectNormal=mat3(PM)*normal;').replace('#include <begin_vertex>','vec3 transformed=(PM*vec4('+P0+',1.)).xyz;'+HH+(SM?' vSm=sm;':'')).replace('#include <project_vertex>','#include <project_vertex>\n'+OV);
+    mat.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.uniforms.uHH=PM.hh; if(PM.ov)sh.uniforms.uOV=PM.ov; if(FL){ sh.uniforms.uFK=PM.fk; sh.uniforms.uFT=PM.ft; } sh.fragmentShader='#define BODYB .0015\n'+(SM?'varying float vSm; varying float vHs;\n':'')+(SM?sh.fragmentShader.replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n reflectedLight.directDiffuse*=1.-.72*vHs; reflectedLight.directSpecular*=1.-vHs;'):sh.fragmentShader); sh.vertexShader=MOVE+FL+SM+'\n'+sh.vertexShader.replace('#include <beginnormal_vertex>',AT_+' vec3 objectNormal=mat3(PM)*normal;').replace('#include <begin_vertex>','vec3 transformed=(PM*vec4('+P0+',1.)).xyz;'+HH+(SM?' vSm=sm; vHs=hs;':'')).replace('#include <project_vertex>','#include <project_vertex>\n'+OV);
       // a body's own layers (cloth over its lining, over the skin) a few millimetres apart: its shadow test leans that much more toward the light, or they shadow each other in specks (owner, 6 Nov 2026: "seems like its shadows")
       sh.fragmentShader=sh.fragmentShader.replace('#include <lights_fragment_begin>',THREE.ShaderChunk.lights_fragment_begin.replace(/((?:directional|spot|point)LightShadows?(?:\[ *\w+ *\])?)\.shadowBias/g,'($1.shadowBias-BODYB)')).replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(cross(dFdx(vViewPosition),dFdy(vViewPosition)));'+NF+' vec3 nonPerturbedNormal=normal;'); W3.rim(sh,PM.pl); };
     mat.customProgramCacheKey=()=>'body'+NB+CK+'b'+(FL?'f':'')+(SM?'r':'');
@@ -244,6 +245,13 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   BODIES.pick=()=>curKey();
   BODIES.onPick=[];   // told the body you now play as
   BODIES.set=key=>{ pick=playable(BODIES.by[key])?key:'avatar'; for(const f of BODIES.onPick)f(curKey()); };
+  // YOU's BODY line: every body you can be, once there is more than one; your pick is kept with your save
+  { let row=null; if(!QS.get('avatar')){ const k=SAVE.get('body'); if(k)pick=k; }
+    const draw=()=>{ const L=BODIES.list.filter(playable); if(L.length<2||!LOOKS.add||!document.getElementById('looks'))return;
+      if(!row){ row=document.createElement('div'); row.className='row'; row.id='lbody'; row.onclick=e=>{ const b=e.target.closest('button'); if(b)BODIES.set(b.dataset.b); }; LOOKS.add('body','BODY',row,{order:0}); }
+      row.innerHTML=L.map(b=>`<button data-b="${b.key}" aria-pressed="${b.key===curKey()}">${b.label}</button>`).join(''); };
+    BODIES.onPick.push(k=>{ SAVE.set('body',k); draw(); });
+    BODIES.joined=body=>{ if(!playable(body))return; draw(); if(body.key===pick)for(const f of BODIES.onPick)f(curKey()); }; }
   // a borrowed model's licence line, shown under the menu's KEYS
   BODIES.credit=t=>{ const c=document.getElementById('credits'); if(!c)return; const d=document.createElement('div'); d.textContent=t; c.appendChild(d); };
 
@@ -310,6 +318,6 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   BODIES.rebakedBody=(D,key,more)=>BODIES.fit(rebakedObj(D,key,more));   // a body for an overlay (not a street walker)
   BODIES.fit=body=>{ body.S=WALKER_H/body.height; body.KL=body.hipY*body.S/R.STAND; body.tris=()=>{ const g=body.GEO||(body.GEO=body.geo()); return (g.index?g.index.count:g.attributes.position.count)/3; }; return body; };   // (scaled so its height is the Walker's)
   BODIES.add=body=>{ BODIES.fit(body); BODIES.list.push(body); BODIES.by[body.key]=body;
-    walker(body); };
+    walker(body); BODIES.joined(body); };
 }
 export {BODIES};

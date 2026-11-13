@@ -30,7 +30,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(r1b.styled && r1b.mine && r1b.noName && r1b.you && r1b.stay && r1b.sayFor === 7 && r1b.logged, 'words over heads: ROSA\'s in her font, colour and size; your own over your head with no name; YOUR WORDS in the YOU window and WORDS STAY in CHAT (' + JSON.stringify(r1b) + ')');
     const x0 = await pg.evaluate(() => ONLINE.others.get('a').fig.g.position.x);
     await pg.evaluate(() => new Promise(res => { const P = __dbg.you(); let i = 0; const t = setInterval(() => { i++; ONLINE.feed({ t: 'mv', id: 'a', at: [P.x + 1.5 + i * .3, P.z, SHARED.py, Math.PI / 2, SHARED.LVL, ''] }); if (i === 6) { clearInterval(t); res(); } }, 160); }));
-    await pg.waitForTimeout(1500);
+    await pg.waitForFunction(x0 => ONLINE.others.get('a').fig.g.position.x > x0 + 1.5, x0, { timeout: 8000, polling: 250 }).catch(() => {});   // (a slow runner draws few frames)
     const r2 = await pg.evaluate(() => { const o = ONLINE.others.get('a'); return { x: o.fig.g.position.x, walk: o.S.target }; });
     ok(r2.x > x0 + 1.5, 'ROSA walks where the server sends her (' + x0.toFixed(2) + ' -> ' + r2.x.toFixed(2) + ')');
     const w = await pg.evaluate(() => { const sent = []; const s0 = ONLINE.send; ONLINE.send = m => sent.push(m); ONLINE.feed({ t: 'world', k: 'bin:T', v: 3 }); ONLINE.add('bin:T', 2); ONLINE.put('lit:T', 1); ONLINE.send = s0; return { v: ONLINE.world['bin:T'], l: ONLINE.world['lit:T'], sent }; });
@@ -61,6 +61,17 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       ONLINE.send = m => sent.push(m); ONLINE.on = true; const ok = ONLINE.pm(o, 'hi there'); ONLINE.send = s0; ONLINE.on = on0; ONLINE.feed({ t: 'pm', from: o.id, name: 'ROSA', text: 'back at you' }); el.hidden = true;
       return { id: o.id, open, btns, slots, ok, sent, heard: /FROM ROSA: back at you/.test(document.getElementById('onllog').textContent) }; });
     ok(dl.open && /^MESSAGE,TRADE/.test(dl.btns) && dl.slots === 6 && dl.ok && dl.sent[0] && dl.sent[0].t === 'pm' && dl.sent[0].to === dl.id && dl.heard, 'double-clicking a player opens their paper doll (MESSAGE, TRADE; their slots); a message goes to them alone and theirs shows in your chat (9 Nov 2026): ' + JSON.stringify(dl));
+    // what you hear of them (11 Nov 2026): a near walker's footsteps at them, a far one's fainter; a blow on them and a door they go through, where they are
+    await pg.evaluate(() => new Promise(res => { const P = __dbg.you(), T = __dbg.cv().TILE, L = SHARED.LVL; window.__heard = []; window.__p0 = __dbg.SFX.play;
+      __dbg.SFX.play = (k, o) => { const Y = __dbg.you(); if (o && o.at) __heard.push({ k, x: o.at.x, z: o.at.z, d: Math.hypot(o.at.x - Y.x, o.at.z - Y.z), far: o.far }); return __p0(k, o); };
+      ONLINE.feed({ t: 'in', p: { id: 'g', name: 'NEAR', look: 'w00', at: [P.x, P.z + 1.5 * T, SHARED.py, 0, L, ''] } }); ONLINE.feed({ t: 'in', p: { id: 'h', name: 'FAR', look: 'w00', at: [P.x, P.z - 9 * T, SHARED.py, 0, L, ''] } });
+      let i = 0; const t = setInterval(() => { i++; const dx = (i % 20 < 10 ? i % 10 : 10 - i % 10) * .3 * T; ONLINE.feed({ t: 'mv', id: 'g', at: [P.x + dx, P.z + 1.5 * T, SHARED.py, Math.PI / 2, L, ''] }); ONLINE.feed({ t: 'mv', id: 'h', at: [P.x + dx, P.z - 9 * T, SHARED.py, Math.PI / 2, L, ''] }); if (i === 40) { clearInterval(t); res(); } }, 160); }));
+    const hs = await pg.evaluate(() => { const T = __dbg.cv().TILE, steps = __heard.filter(h => /^step_/.test(h.k)), k = h => Math.max(0, 1 - h.d / h.far), g = steps.filter(h => h.d < 4 * T), h = steps.filter(h => h.d > 6 * T);
+      ONLINE.feed({ t: 'act', id: 'g', m: 'flinch' }); const hit = __heard.filter(h => h.k === 'punch' && h.d < 4 * T).length;
+      const o = ONLINE.others.get('g'), q = o.s[o.s.length - 1]; ONLINE.feed({ t: 'mv', id: 'g', at: [q.x, q.z, q.y, 0, q.lv, 'apt:elsewhere'] }); const door = __heard.filter(h => /^door/.test(h.k) && Math.hypot(h.x - q.x, h.z - q.z) < .01).length;
+      __dbg.SFX.play = __p0; return { near: g.length, far: h.length, kNear: g.length ? +k(g[0]).toFixed(2) : 0, kFar: h.length ? +k(h[0]).toFixed(2) : 0, hit, door }; });
+    ok(hs.near >= 2 && hs.far >= 2 && hs.kNear > hs.kFar && hs.kFar > 0, 'another player walking near you is heard at their feet, a farther one fainter (' + JSON.stringify(hs) + ')');
+    ok(hs.hit >= 1 && hs.door >= 1, 'a blow on them and a door they go through sound where they are (' + JSON.stringify(hs) + ')');
     ok(!r3.err.length, 'no SYS errors (' + r3.err.join(',') + ')');
   }
   ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));

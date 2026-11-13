@@ -60,7 +60,7 @@ await grab('art',async()=>{ if(AWAY.has('art')||!WP.art)return;
     const fit=(s,w)=>{ while(g.measureText(s).width>w&&s.length>3)s=s.slice(0,-2)+'…'; return s; }; g.fillText(fit(t.t,236),12,34); g.font='17px Georgia,serif'; g.fillText(fit(t.a+', '+t.d,236),12,62); g.fillStyle='#6a645c'; g.font='14px Georgia,serif'; g.fillText(fit(t.m,236),12,90);
     const tx=new THREE.CanvasTexture(cv); tx.colorSpace=THREE.SRGBColorSpace; return new THREE.Mesh(new THREE.PlaneGeometry(.44*U,.19*U),new THREE.MeshBasicMaterial({map:tx})); };
   // the inside drawn when you go in: the walls, the ceiling and its skylight, then the paintings
-  const canvasTex=(w,h,draw,rx=1,ry=1)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; draw(c.getContext('2d'),w,h); const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(rx,ry); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return t; };
+  const canvasTex=(w,h,draw,rx=1,ry=1)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; draw(c.getContext('2d'),w,h); const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(rx,ry); t.colorSpace=THREE.SRGBColorSpace; return t; };
   const img=src=>new Promise(r=>{ if(!src)return r(null); const i=new Image(); i.onload=()=>r(i); i.onerror=()=>r(null); i.src=src; });
   const build=async()=>{ '@art'; if(!DATA||!LAY)return; const gen=A_.gen; const G=new THREE.Group(); G.name='art museum'; G.userData.anyRoom=true; const WL=await img(TEX&&TEX.plaster), WD=await img(TEX&&TEX.wood), WDV=await img(TEX&&TEX.woodv);
     const rgb=a=>'rgb('+a.map(v=>Math.round(v)).join(',')+')';
@@ -89,7 +89,7 @@ await grab('art',async()=>{ if(AWAY.has('art')||!WP.art)return;
     const TL=new THREE.TextureLoader(), gilt=M({color:0x9a7a34}), dark=M({color:0x2a1c14});
     for(const p of LAY){ const t=DATA[p.i], f=p.f, g=new THREE.Group(), w=p.w*U, h=p.h*U, k=f.rm.k, old=[0,1,2].includes(f.rm.g);
       const fr=new THREE.Mesh(new THREE.BoxGeometry(w+.12*U,h+.12*U,.05*U),old?gilt:dark); fr.position.z=.025*U; g.add(fr);
-      const tx=TL.load(t.i); tx.colorSpace=THREE.SRGBColorSpace; tx.anisotropy=4; const cv=new THREE.Mesh(new THREE.PlaneGeometry(w,h),M({map:tx})); cv.position.z=.052*U; g.add(cv);
+      const tx=TL.load(t.i); tx.colorSpace=THREE.SRGBColorSpace; const cv=new THREE.Mesh(new THREE.PlaneGeometry(w,h),M({map:tx})); cv.position.z=.052*U; g.add(cv);
       const pq2=plaque(t); pq2.position.set(0,-h/2-.16*U,.008*U); g.add(pq2);
       const yy=Y(p.zc); if(f.ax==='y'){ g.position.set(X(f.at+f.nx*.012),yy,Z(p.a)); g.rotation.y=f.nx>0?Math.PI/2:-Math.PI/2; } else { g.position.set(X(p.a),yy,Z(f.at+f.ny*.012)); g.rotation.y=f.ny>0?0:Math.PI; }
       g.userData.at={k,g:f.rm.g,key:fk(f.nx,f.ny,f.at,k),a:+p.a.toFixed(2),w:+p.w.toFixed(2)}; G.add(g); UI.thing({name:t.t.toUpperCase(),obj:g,reach:1.6*U,near:3.4*U,tall:h+.3*U,act:()=>view(t,p)}); }

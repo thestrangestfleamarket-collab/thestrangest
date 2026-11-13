@@ -3,6 +3,7 @@ import {ARCHI, DOLL, FORAGE, INV, ONLINE, PASSPORT, TEXT} from './003b-systems.j
 import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {SYS} from './006-map-pre.js';
+import {RARITY} from './013a-rarity.js';
 import {PAINTINGS} from './159h-paintings.js';
 const SWAP={no:[id=>ARCHI(id)||id==='passport'||id.startsWith('photo_')||id.startsWith('wip_')]}; window.SWAP=SWAP;
 {
@@ -67,7 +68,7 @@ const SWAP={no:[id=>ARCHI(id)||id==='passport'||id.startsWith('photo_')||id.star
   SYS.onStart(()=>{ let L=null; try{ L=JSON.parse(OWNED.get('tradein')||'null'); }catch(e){} if(!Array.isArray(L)||!L.length)return; OWNED.del('tradein'); for(const r of L)take(r||{}); say('A TRADE CAME THROUGH WHILE YOU WERE AWAY: IT IS IN YOUR BAG.','#b8f0a0'); },'159i-trade tradein');
 
   /* ---------- the window ---------- */
-  const list=(o,mine)=>{ '@later'; const ks=Object.keys(o&&o.items||{}); let h=ks.map(id=>`<tr><td>${esc(nm(id))}</td><td style="text-align:right">×${o.items[id]}</td>${mine?`<td style="text-align:right"><button data-less="${esc(id)}" style="${B}" aria-label="One fewer">−</button></td>`:''}</tr>`).join('');
+  const list=(o,mine)=>{ '@later'; const ks=Object.keys(o&&o.items||{}); let h=ks.map(id=>`<tr><td data-card="${esc(id)}" style="color:${RARITY.col(id)}">${esc(nm(id))}</td><td style="text-align:right">×${o.items[id]}</td>${mine?`<td style="text-align:right"><button data-less="${esc(id)}" style="${B}" aria-label="One fewer">−</button></td>`:''}</tr>`).join('');
     if(o&&o.cash)h+=`<tr><td style="color:#f2c14e">CASH</td><td style="text-align:right;color:#f2c14e">$${Math.floor(o.cash).toLocaleString('en-US')}</td>${mine?'<td></td>':''}</tr>`;
     return h?`<table style="width:100%;border-collapse:collapse">${h}</table>`:'<div style="color:#9b9584">NOTHING YET.</div>'; };
   const draw=()=>{ '@later'; if(!T)return; const x=P.querySelector(':scope>.pX'); const pack=Object.keys(INV.items).filter(id=>can(id)&&(INV.items[id]-(T.mine.items[id]||0))>0).sort((a,b)=>nm(a).localeCompare(nm(b)));
@@ -81,7 +82,7 @@ const SWAP={no:[id=>ARCHI(id)||id==='passport'||id.startsWith('photo_')||id.star
       <div style="margin-top:10px;color:#9b9584">ANY CHANGE TAKES BACK BOTH ACCEPTS. TO GIVE SOMETHING AWAY, PUT IT IN AND ACCEPT.</div>
       <div style="margin-top:8px;display:flex;gap:6px;justify-content:flex-end"><button data-x="1" style="${B}">CANCEL</button><button data-ok="1" style="${B}">${T.okMe?'TAKE BACK':'ACCEPT'}</button></div>
       <h3 style="margin:12px 0 4px;color:#f2c14e;font:12px Silkscreen,monospace">YOUR PACK</h3>
-      ${pack.length?`<table style="width:100%;border-collapse:collapse">${pack.map(id=>`<tr style="border-bottom:1px solid #22252f"><td>${esc(nm(id))}</td><td style="text-align:right;color:#9b9584">${INV.items[id]-(T.mine.items[id]||0)}</td><td style="text-align:right"><button data-add="${esc(id)}" style="${B}">PUT IN</button></td></tr>`).join('')}</table>`:'<div style="color:#9b9584">NOTHING YOU CAN TRADE.</div>'}`;
+      ${pack.length?`<table style="width:100%;border-collapse:collapse">${pack.map(id=>`<tr style="border-bottom:1px solid #22252f"><td data-card="${esc(id)}" style="color:${RARITY.col(id)}">${esc(nm(id))}</td><td style="text-align:right;color:#9b9584">${INV.items[id]-(T.mine.items[id]||0)}</td><td style="text-align:right"><button data-add="${esc(id)}" style="${B}">PUT IN</button></td></tr>`).join('')}</table>`:'<div style="color:#9b9584">NOTHING YOU CAN TRADE.</div>'}`;
     if(x)P.appendChild(x); };
   P.addEventListener('click',e=>{ '@later'; if(!T||T.paying)return; const b=e.target.closest('button'); if(!b)return;
     if(b.dataset.add){ const id=b.dataset.add; if(can(id)&&(T.mine.items[id]||0)<INV.items[id]){ T.mine.items[id]=(T.mine.items[id]||0)+1; T.okMe=T.okThem=false; offer(); draw(); } }

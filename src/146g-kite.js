@@ -1,6 +1,6 @@
 // THE KITE: KITE flies any item that grants 'fly' from the winder in your hand: a diamond sail on its bridle in the day's wind (stronger and steadier with height, gusty low down), its tail, and a line that sags under its own weight and the wind's drag.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, ITEMS, LEVELS, MOTION, ONLINE, pos, SFX, st, VIT, WIELD, WX} from './003b-systems.js';
+import {FORAGE, INSPECT, ITEMS, LEVELS, MOTION, ONLINE, pos, SFX, st, VIT, WIELD, WX} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OUT, SYS, TILE} from './006-map-pre.js';
@@ -24,6 +24,10 @@ const KITE={on:false,reeling:false}; window.KITE=KITE;
     make:()=>{ '@later'; const g=new THREE.Group(), wood=lam(0x8a6a44), spool=new THREE.Mesh(new THREE.CylinderGeometry(.05*M,.05*M,.1*M,8),lam(0xf2efe6)), a=new THREE.Mesh(new THREE.BoxGeometry(.03*M,.2*M,.12*M),wood);
       spool.rotation.z=Math.PI/2; spool.position.y=.1*M; a.position.y=.1*M; g.add(a,spool); g.tipL=new V3(0,.2*M,0); g.head=g.tipL; return g; },
     aim:(dt,aim)=>KITE.aim(dt,aim), use:()=>KITE.click() };
+  // in the bag and the inspect window: the kite itself, a diamond on its spars with a tail of bows (the hand holds its winder)
+  INSPECT.kinds.unshift({is:id=>ids().includes(String(id).split('~')[0]),make:()=>{ '@later'; const P=INSPECT.part, g=new THREE.Group(), CL={kind:'cloth'};
+    g.add(P('oct',0xd83a2a,0,.42,0,.24,.34,.004,0,0,0,CL),P('box',0x8a6a44,0,.42,.006,.01,.68,.008,0,0,0,{kind:'wood'}),P('box',0x8a6a44,0,.42,.006,.48,.01,.008,0,0,0,{kind:'wood'}),P('oct',0xf2c14e,0,.42,.003,.1,.14,.004,0,0,0,CL));
+    for(let i=0;i<4;i++){ const x=Math.sin(i*1.4)*.04, y=.02-i*.07; g.add(P('cyl',0xf2efe6,x*.5,y+.035,0,.002,.07,.002),P('oct',[0x3a7ad8,0xf2c14e,0x4aa84a,0xd83a2a][i],x,y,0,.04,.018,.004,0,0,0,CL)); } return g; }});
   for(const id of ids()){ (WIELD.pend=WIELD.pend||[]).push([id,winder]); if(WIELD.kind)WIELD.kind(id,winder); }
   addEventListener('pointerup',()=>{ KITE.reeling=false; }); addEventListener('blur',()=>{ KITE.reeling=false; });
 

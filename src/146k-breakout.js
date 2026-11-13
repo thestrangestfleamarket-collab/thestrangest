@@ -30,7 +30,7 @@ if(!GUARD.shelved)PARK.later(()=>{ '@park'; const T=TILE, PI=Math.PI, X=SHARED.B
     if(!A.mv){ if(d>reach){ s.to={x:c.x,z:c.z}; s.v0=s.v0||s.v; s.v=s.v0*2.2; return true; } s.to=null; s.face={x:c.x,z:c.z}; if((N.cd=(N.cd??0)-dt)>0)return true;
       A.mv={k:R.w==='spear'?'thrust':['slash','back','overhead','thrust'][Math.floor(Math.random()*4)],t:0,hit:false,c}; return true; }
     s.to=null; s.face={x:A.mv.c.x,z:A.mv.c.z}; const q=GUARD.MOVE[A.mv.k];
-    if(!A.mv.hit&&A.mv.t/q.T>=q.hit){ A.mv.hit=true; const k=A.mv.c; if(!k.dead&&Math.hypot(k.x-s.x,k.z-s.z)<reach*1.2){ hurt(k,A.mv.k==='overhead'?2:1.2); const l=Math.hypot(k.x-s.x,k.z-s.z)||1; k.kb={x:(k.x-s.x)/l*.8*T,z:(k.z-s.z)/l*.8*T}; SFX.play&&SFX.play('step',{vol:.6,pitch:1.2,at:{x:k.x,z:k.z},far:14*T}); } }
+    if(!A.mv.hit&&A.mv.t/q.T>=q.hit){ A.mv.hit=true; const k=A.mv.c; if(!k.dead&&Math.hypot(k.x-s.x,k.z-s.z)<reach*1.2){ hurt(k,A.mv.k==='overhead'?2:1.2); const l=Math.hypot(k.x-s.x,k.z-s.z)||1; k.kb={x:(k.x-s.x)/l*.8*T,z:(k.z-s.z)/l*.8*T}; SFX.play&&SFX.play('blade',{vol:.6,vary:.12,at:{x:k.x,z:k.z},far:14*T}); } }
     if(A.mv.t>=q.T){ A.mv=null; N.cd=.3+Math.random()*.6; if(s.v0)s.v=s.v0; } return true; };
   SYS.add('life',dt=>{ const day=window.MAIL&&MAIL.ready?MAIL.day():Math.floor(Date.now()/864e5), h=CLOCK.h??12, w=waveAt(day);
     if(w!=null&&lastWave!==day&&((h>=w&&h<w+1)||(w>=24&&h>=w-24&&h<w-23))){ lastWave=day; if(PARK.ready)BREAK.wave(); }

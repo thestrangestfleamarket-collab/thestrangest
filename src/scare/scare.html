@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:,">
+<title>Vesper Ward</title>
+<style>
+:root{
+  --bg:#050605; --ink:#b7b2a3; --dim:#6a675d; --rule:#24261f; --stain:#7d2219; --paper:#cfc8b4;
+  --display:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --util:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);overflow:hidden;font-family:var(--display)}
+[hidden]{display:none!important}
+canvas{display:block;position:fixed;inset:0;width:100%;height:100%}
+#ui{position:fixed;inset:0;z-index:5;display:flex;align-items:center;overflow:auto;
+  padding-block:24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  background:linear-gradient(90deg,rgba(5,6,5,.97) 0%,rgba(5,6,5,.9) 45%,rgba(5,6,5,.55) 100%)}
+#card{max-width:34rem;margin-left:min(8vw,6rem);display:flex;flex-direction:column;gap:1.1rem;min-width:0}
+.eyebrow{font:500 .72rem/1 var(--util);letter-spacing:.28em;text-transform:uppercase;color:var(--dim)}
+h1{font:400 clamp(2.6rem,8vw,4.6rem)/.95 var(--display);letter-spacing:.02em;margin:0;color:var(--paper);text-wrap:balance}
+h1 span{color:var(--stain)}
+p{margin:0;font-size:1.05rem;line-height:1.55;max-width:60ch}
+.btns{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:.4rem}
+button{font:500 .8rem/1 var(--util);letter-spacing:.2em;text-transform:uppercase;padding:1rem 1.4rem;border:1px solid var(--dim);
+  background:transparent;color:var(--paper);cursor:pointer;border-radius:0}
+button.main{background:var(--paper);color:var(--bg);border-color:var(--paper)}
+button:hover:not(:disabled){border-color:var(--paper)}
+button:focus-visible{outline:2px solid var(--stain);outline-offset:3px}
+button:disabled{opacity:.35;cursor:not-allowed}
+dl{display:grid;grid-template-columns:auto 1fr;gap:.35rem 1.2rem;margin:0;font:400 .78rem/1.4 var(--util);color:var(--dim);border-top:1px solid var(--rule);padding-top:1rem}
+dt{color:var(--ink)} dd{margin:0}
+.warn{font:400 .74rem/1.5 var(--util);color:var(--dim)}
+#note{font:400 .74rem/1.5 var(--util);color:var(--stain);min-height:1.2em}
+#xh{position:fixed;left:50%;top:50%;width:4px;height:4px;margin:-2px;border-radius:50%;background:var(--paper);opacity:.55;z-index:4;pointer-events:none}
+#hud{position:fixed;left:max(16px,env(safe-area-inset-left,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:4;font:500 .72rem/1 var(--util);letter-spacing:.2em;color:var(--dim);text-transform:uppercase}
+</style>
+</head>
+<body>
+<div id="ui">
+  <div id="card">
+    <div class="eyebrow">Sub-level 3 &middot; Night shift</div>
+    <h1>Vesper <span>Ward</span></h1>
+    <p>The power is out. The lift needs three fuses. There are weapons down here if you can find them, and never enough rounds. The things in the dark turn toward light, toward running, and toward gunfire.</p>
+    <div class="btns">
+      <button class="main" id="bvr" disabled>Enter VR</button>
+      <button id="bdesk" disabled>Play in browser</button>
+    </div>
+    <div id="note"></div>
+    <div id="load" class="warn">Loading creatures&hellip;</div>
+    <dl>
+      <dt>Quest</dt><dd>Left stick walk &middot; left grip run &middot; left trigger torch &middot; right stick turn &middot; right trigger fire &middot; right grip reload &middot; A switch weapon</dd>
+      <dt>Desktop</dt><dd>WASD walk &middot; Shift run &middot; mouse look &middot; F torch &middot; click fire &middot; R reload &middot; Q or 1&ndash;3 switch</dd>
+    </dl>
+    <div class="warn">Wear headphones. Contains flashing light, sudden loud sound and jump scares.</div>
+    <div class="warn">Models: &ldquo;Zombie&rdquo; by DJMaesen and &ldquo;Low Poly Dead Body Covered&rdquo; by Arthur.Zim (CC BY 4.0, Sketchfab); characters and motion capture from Adobe Mixamo.</div>
+  </div>
+</div>
+<div id="hud" hidden></div>
+<div id="xh" hidden></div>
+<script type="module">__SCARE__</script>
+</body>
+</html>

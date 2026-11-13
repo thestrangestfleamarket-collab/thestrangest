@@ -19,7 +19,8 @@ const loopback = ip => !ip || ip === "::1" || ip === "localhost" || /^127\./.tes
 const SECROOMS = WORLD.sections.ids.flat().map(i => "s-" + String(i).toLowerCase().replace(/[^a-z0-9-]/g, "")), ROOM = /^[a-z0-9-]{1,32}$/, GUESS_MAX = 20, guesses = new Map(), passed = new Map(), FILE = /^\/g\/[a-z0-9-]+\.[0-9a-f]{10}\.(js|json|bin|mp3|jpg|png|webp)$/;
 const APPF = /^\/(app\.webmanifest|icon-(192|512)\.png)$/;   // the installable app's manifest and icon: to anyone
 const EDMAP = /^\/edmap\/t\d{1,2}_\d{1,2}\.jpg$/;
-const GOLFA = /^\/golf-assets\/[a-z0-9_\/-]+\.(jpg|json|txt)$/;   // HALCYON GREENS' pictures and models: to anyone
+const SCAREA = /^\/scare-assets\/[a-z0-9_-]+\.glb$/;   // VESPER WARD's models: to anyone
+const GOLFA = /^\/golf-assets\/(?!.*\.\.)[a-z0-9_.\/-]+\.(jpg|json|txt)$/;   // HALCYON GREENS' pictures and models: to anyone
 const BOOK = /^\/book\/(\d{1,6})\.txt$/, FILM = /^\/film\/([A-Za-z0-9_.-]{1,80})\/([A-Za-z0-9_.-]{1,120}\.mp4)$/, IA = /^\/ia\/([A-Za-z0-9_.-]{1,80})\.jpg$/, YT = /^\/yt\/([A-Za-z0-9_-]{11})\.jpg$/, BLANK = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYGD4DwABBAEAHnOcQAAAAABJRU5ErkJggg==";
 const SKYJD = () => { const d = new Date(); return Date.UTC(1985, d.getUTCMonth(), d.getUTCDate()) / 864e5 + 2440587.5; },   // the sky's year is 1985 (src/134b DN.YEAR): that year's comets
    SBDB = "https://ssd-api.jpl.nasa.gov/sbdb_query.api?", SWPC = "https://services.swpc.noaa.gov/";
@@ -59,6 +60,11 @@ export default {
     if ((request.method === "GET" || request.method === "HEAD") && (p === "/vr" || p === "/asylum")) return page(env, url, "/asylum", request, "no-cache");
     // SHARDWAVE (src/wave/): its own page at /wave, to anyone with the link
     if ((request.method === "GET" || request.method === "HEAD") && p === "/wave") return page(env, url, "/wave", request, "no-cache");
+    // VESPER WARD (src/scare/): its own page at /scare, to anyone with the link; its models under /scare-assets/
+    if ((request.method === "GET" || request.method === "HEAD") && p === "/scare") return page(env, url, "/scare", request, "no-cache");
+    if ((request.method === "GET" || request.method === "HEAD") && SCAREA.test(p)) {
+      const r = await env.ASSETS.fetch(new Request(url.origin + p)); if (!r.ok) return new Response("not found", { status: 404 });
+      const out = new Response(r.body, r); out.headers.set("content-type", "model/gltf-binary"); out.headers.set("cache-control", "public, max-age=86400"); out.headers.set("x-robots-tag", "noindex"); return out; }
     // HALCYON GREENS (src/golf/): its own page at /golf, to anyone with the link; its pictures under /golf-assets/
     if ((request.method === "GET" || request.method === "HEAD") && p === "/golf") return page(env, url, "/golf", request, "no-cache");
     if (p === "/golf/") return Response.redirect(url.origin + "/golf" + url.search, 301);

@@ -24,8 +24,9 @@ import {ROOMK} from './150a-bedroom.js';
         { vec3 ax=normalize(vGa+1e-4), al=ax*dot(vGp,ax), ac=vGp-al; vec3 q=ac*${k.toFixed(1)}+al*1.4; float a=gN(q), b=gN(q*3.1+7.), kn=smoothstep(.82,.95,gN(ac*6.+al*2.3+3.)); diffuseColor.rgb*=(.74+.36*a+.14*b)*(1.-.35*kn); }`); };
       m.customProgramCacheKey=()=>'loftgrain'+k; return m; };
     const MT=R.loftM={body:[vc({emissive:0x34302a})],wood:[grain(vc(),38)],steel:[vc({side:THREE.DoubleSide})]}, byG=list=>{ const o={}; for(const e of list)(o[e[1][0]]||(o[e[1][0]]=[])).push(e); return o; };
+    const SPL=new THREE.Plane(new THREE.Vector3(0,-1,0),1e6), cw={clippingPlanes:[UPL,SPL]}, MS={body:vc({emissive:0x34302a,...cw}),wood:grain(vc(cw),38),steel:vc({side:THREE.DoubleSide,...cw})}; for(const k in MS)MT[k].push(MS[k]);   // SPL: the left wall's cut, kept off while you are on the stair
     R.loftK={steel:'black',wood:'walnut',body:'white'}; R.loftSet=(k,v)=>{ const O=OPTS[k]; if(!O||!O.o[v])return; R.loftK[k]=v; const c=O.o[v][1]; for(const m of MT[k])m.color.setRGB(c[0]/255,c[1]/255,c[2]/255,THREE.SRGBColorSpace); };
-    const box=(u0,h0,v0,u1,h1,v1,col)=>L.push([B(u1-u0,h1-h0,v1-v0),col,(u0+u1)/2,(h0+h1)/2,(v0+v1)/2]);
+    const box=(u0,h0,v0,u1,h1,v1,col,to=L)=>to.push([B(u1-u0,h1-h0,v1-v0),col,(u0+u1)/2,(h0+h1)/2,(v0+v1)/2]);
 
     /* ---------- the upper floor: the long deck by the blank wall, the deck across the front, the landing; white under, walnut edges, the room's boards on top (no two faces in one place: the slab stops under the boards, the edge boards stand outside it) ---------- */
     const DECKS=[[mx,0,Lx,Ly],[DK.u0,0,mx,DK.v1],[su0,sv1,su1,Ly],[su1,GV,mx,Ly]];
@@ -35,15 +36,16 @@ import {ROOMK} from './150a-bedroom.js';
       for(const [u0,v0,u1,v1] of DECKS){ const w=u1-u0, d=v1-v0, g=new THREE.PlaneGeometry(w,d).rotateX(-Math.PI/2), uv=g.attributes.uv; for(let i=0;i<uv.count;i++){ const u=u0+uv.getX(i)*w, v=v0+(1-uv.getY(i))*d; uv.setXY(i,u/Lx,1-v/Ly); } part(g,fm,(u0+u1)/2,MH,(v0+v1)/2,0,apt,false); } }
 
     /* ---------- the stair: open under, so the wall's windows show through it: a walnut tread and riser to every step on two steel strings, up the left wall to the landing ---------- */
-    { for(let i=0;i<N-1;i++){ const h=(i+1)*ST, v=sv0+i*RUN; box(su0,h-.045,v-.03,su1,h,v+RUN-.016,WAL); box(su0+.01,h-ST+.002,v-.016,su1-.01,h-.045,v-.002,WAL2); }
-      const len=Math.hypot(sv1-sv0,MH), rx=-Math.atan2(MH,sv1-sv0); for(const u of [su0+.07,su1-.07])L.push([B(.07,.24,len),STL,u,MH/2-.2,(sv0+sv1)/2+.1,rx,0,0]); }
+    const LS=[];   // the flight and its rail: they drop with the wall they climb (owner, 13 Nov 2026)
+    { for(let i=0;i<N-1;i++){ const h=(i+1)*ST, v=sv0+i*RUN; box(su0,h-.045,v-.03,su1,h,v+RUN-.016,WAL,LS); box(su0+.01,h-ST+.002,v-.016,su1-.01,h-.045,v-.002,WAL2,LS); }
+      const len=Math.hypot(sv1-sv0,MH), rx=-Math.atan2(MH,sv1-sv0); for(const u of [su0+.07,su1-.07])LS.push([B(.07,.24,len),STL,u,MH/2-.2,(sv0+sv1)/2+.1,rx,0,0]); }
     solid(su1,sv0,su1+.06,sv0+RUN*10,ST*10); let gate=null; const gateSet=on=>{ if(on&&!gate)gate=solid(su0,sv0+RUN*10,su1,sv0+RUN*10+.08,.3); else if(!on&&gate){ if(APTS.unsolid)APTS.unsolid(gate); gate=null; } };   // under the low end there is no headroom: its side is closed, and its far end too unless you are on the stair (you walk under the rest)
 
     /* ---------- the rails: black steel, six bars between posts (level along the decks, raked up the stair); glass round the front deck ---------- */
-    const rail=(u0,v0,h0,u1,v1,h1)=>{ const len=Math.hypot(u1-u0,v1-v0), n=Math.max(1,Math.round(len/1.3)), ry=Math.atan2(u1-u0,v1-v0), sl=Math.hypot(len,h1-h0), rx=-Math.atan2(h1-h0,len);
-      for(let i=0;i<=n;i++){ const t=i/n, u=u0+(u1-u0)*t, v=v0+(v1-v0)*t, h=h0+(h1-h0)*t; L.push([B(.045,RH,.045),STL,u,h+RH/2,v]); }
-      for(let k=0;k<6;k++){ const y=(k===5?RH-.01:.14+k*.165); L.push([B(k===5?.05:.018,k===5?.03:.018,sl),STL,(u0+u1)/2,(h0+h1)/2+y,(v0+v1)/2,rx,ry,0]); } };
-    rail(mx-.06,DK.v1+.1,MH,mx-.06,GV-.06,MH); rail(su1,sv0,ST,su1,sv1,MH); rail(su1,sv1,MH,su1,GV-.06,MH); rail(su1+.06,GV-.06,MH,mx-.12,GV-.06,MH);
+    const rail=(u0,v0,h0,u1,v1,h1,to=L)=>{ const len=Math.hypot(u1-u0,v1-v0), n=Math.max(1,Math.round(len/1.3)), ry=Math.atan2(u1-u0,v1-v0), sl=Math.hypot(len,h1-h0), rx=-Math.atan2(h1-h0,len);
+      for(let i=0;i<=n;i++){ const t=i/n, u=u0+(u1-u0)*t, v=v0+(v1-v0)*t, h=h0+(h1-h0)*t; to.push([B(.045,RH,.045),STL,u,h+RH/2,v]); }
+      for(let k=0;k<6;k++){ const y=(k===5?RH-.01:.14+k*.165); to.push([B(k===5?.05:.018,k===5?.03:.018,sl),STL,(u0+u1)/2,(h0+h1)/2+y,(v0+v1)/2,rx,ry,0]); } };
+    rail(mx-.06,DK.v1+.1,MH,mx-.06,GV-.06,MH); rail(su1,sv0,ST,su1,sv1,MH,LS); rail(su1,sv1,MH,su1,GV-.06,MH); rail(su1+.06,GV-.06,MH,mx-.12,GV-.06,MH);
     { const gm=APTS.glassMat?APTS.glassMat({opacity:.2,clippingPlanes:[UPL]}):mat([190,210,220],{transparent:true,opacity:.25,clippingPlanes:[UPL]});
       for(const [u0,v0,u1,v1] of [[DK.u0,DK.v1,mx,DK.v1],[DK.u0,.04,DK.u0,DK.v1]]){ const len=Math.hypot(u1-u0,v1-v0), ry=u0===u1?Math.PI/2:0; part(new THREE.PlaneGeometry(len,RH-.08),gm,(u0+u1)/2,MH+RH/2+.03,(v0+v1)/2,ry,apt,false).userData.soft=1;
         L.push([B(u1-u0+.05,.06,v1-v0+.05),STL,(u0+u1)/2,MH+.05,(v0+v1)/2],[B(u1-u0+.03,.025,v1-v0+.03),STL,(u0+u1)/2,MH+RH,(v0+v1)/2]); }
@@ -52,14 +54,14 @@ import {ROOMK} from './150a-bedroom.js';
     /* ---------- a cast-iron radiator under the window ---------- */
     const FX=[];
     { const ru=2.95, c0=[206,202,192]; for(let i=0;i<14;i++)FX.push([B(.045,.62,.15),c0,ru-.46+i*.07,.43,.14]); FX.push([B(1.0,.03,.13),c0,ru,.76,.14],[B(1.0,.04,.13),c0,ru,.12,.14],[new THREE.CylinderGeometry(.02,.02,HW-.1,8),[176,120,70],ru+.62,HW/2,.09]); solid(ru-.52,.04,ru+.52,.24,.78); }
-    { const Gs=byG(L); for(const k in Gs)part(merge(Gs[k]),MT[k][0],0,0,0,0,apt); part(merge(FX),vc(),0,0,0,0,apt); }
+    { const Gs=byG(L); for(const k in Gs)part(merge(Gs[k]),MT[k][0],0,0,0,0,apt); const Gw=byG(LS); for(const k in Gw)part(merge(Gw[k]),MS[k],0,0,0,0,apt); part(merge(FX),vc(),0,0,0,0,apt); }
 
     /* ---------- walking it: the height under you up there, and what is solid on the upper floor ---------- */
     const onDeck=(u,v)=>DECKS.some(([u0,v0,u1,v1])=>u>=u0&&u<=u1&&v>=v0&&v<=v1), ax=apt.position.x, az=apt.position.z, fy=R.fy;
     APTS.loftY=(x,z)=>{ const u=(x-ax)/M, v=(z-az)/M, h=(SHARED.py-fy)/M; if(u>su0&&u<su1&&v>sv0-.02&&v<sv1){ const hs_=Math.min(N-1,Math.max(1,Math.ceil((v-sv0)/RUN+.001)))*ST; return h>hs_-.75?fy+hs_*M:null; }
       return onDeck(u,v)&&h>MH-.75?fy+MH*M:null; };
     APTS.loftUp=()=>(SHARED.py-fy)/M>MH-.55;
-    R.loftUnder=()=>{ const u=(pos.x-ax)/M, v=(pos.z-az)/M; gateSet(!(u>su0-.1&&u<su1+.1&&v>sv0-.6&&v<sv1&&((SHARED.py-fy)/M>.1||v<sv0+RUN*10))); const under=!!APTS.inReal&&!UI.persp&&(SHARED.py-fy)/M<MH-.6&&!(u>su0-.15&&u<su1+.15&&v>sv0-.3&&v<sv1+.15); UPL.constant=under?fy+(MH-.36)*M:1e6; if(under!==R.loftHid){ R.loftHid=under; const A2=ROOMK.api; if(A2)for(const un of A2.units()){ if(un.gone)continue; const h=un.loose?A2.toApt(un.obj.position.x,un.obj.position.y,un.obj.position.z).h:un.obj.position.y; if(h>MH-.3)un.obj.visible=!under; } } };
+    R.loftUnder=()=>{ const u=(pos.x-ax)/M, v=(pos.z-az)/M; gateSet(!(u>su0-.1&&u<su1+.1&&v>sv0-.6&&v<sv1&&((SHARED.py-fy)/M>.1||v<sv0+RUN*10))); const onSt=u>su0-.15&&u<su1+.15&&v>sv0-.3&&v<sv1+.15&&(SHARED.py-fy)/M>.1; SPL.constant=onSt||!APTS.WPL?1e6:APTS.WPL.Ww.constant; const under=!!APTS.inReal&&!UI.persp&&(SHARED.py-fy)/M<MH-.6&&!(u>su0-.15&&u<su1+.15&&v>sv0-.3&&v<sv1+.15); UPL.constant=under?fy+(MH-.36)*M:1e6; if(under!==R.loftHid){ R.loftHid=under; const A2=ROOMK.api; if(A2)for(const un of A2.units()){ if(un.gone)continue; const h=un.loose?A2.toApt(un.obj.position.x,un.obj.position.y,un.obj.position.z).h:un.obj.position.y; if(h>MH-.3)un.obj.visible=!under; } } };
     const hi=(u0,v0,u1,v1)=>APTS.solidHi(A.x0+u0/MPU,A.y0+v0/MPU,A.x0+u1/MPU,A.y0+v1/MPU), T=.08;
     hi(-.4,-.4,Lx+.4,0); hi(-.4,Ly,Lx+.4,Ly+.4); hi(-.4,0,0,Ly); hi(Lx,0,Lx+.4,Ly);                                       // the walls
     hi(mx-T,DK.v1,mx,GV); hi(su1,sv0,su1+T,GV); hi(su1,GV-T,mx,GV); hi(DK.u0,DK.v1,mx,DK.v1+T); hi(DK.u0-T,0,DK.u0,DK.v1+T);   // the rails
@@ -79,7 +81,9 @@ import {ROOMK} from './150a-bedroom.js';
       put('loft-rug-1','g:patterned rug, purple and gold',{u:4.45,h:0,v:3.0}); put('loft-rug-2','g:red rug',{u:9.6,h:MH,v:5.3}); put('loft-rug-3','MAUVE RUG',{u:6.2,h:MH,v:1.3});
       put('loft-sofa','g:sofa',{u:4.45,h:0,v:4.6}); put('loft-lamp','g:floor lamp',{u:2.9,h:0,v:4.8});
       put('loft-art-1','g:portrait in a red frame',{u:W.We[0],h:1.85,v:3.2,ry:W.We[1]}); put('loft-art-2','g:framed flower print',{u:W.We[0],h:1.8,v:8.0,ry:W.We[1]}); put('loft-art-3','g:poster: night painting',{u:2.6,h:1.9,v:W.Wb[0],ry:W.Wb[1]});
-      put('loft-art-4','g:round mirror',{u:7.2,h:1.7,v:W.Wb[0],ry:W.Wb[1]}); put('loft-art-5','g:poster: koi night',{u:W.We[0],h:MH+1.75,v:2.6,ry:W.We[1]}); put('loft-art-6','g:framed flower print',{u:W.We[0],h:MH+1.7,v:8.0,ry:W.We[1]}); put('loft-art-7','g:wall clock',{u:9.8,h:MH+2.1,v:W.Wb[0],ry:W.Wb[1]}); }; });
+      put('loft-art-4','g:round mirror',{u:7.2,h:1.7,v:W.Wb[0],ry:W.Wb[1]}); put('loft-art-5','g:poster: koi night',{u:W.We[0],h:MH+1.75,v:2.6,ry:W.We[1]}); put('loft-art-6','g:framed flower print',{u:W.We[0],h:MH+1.7,v:8.0,ry:W.We[1]}); put('loft-art-7','g:wall clock',{u:9.8,h:MH+2.1,v:W.Wb[0],ry:W.Wb[1]}); R.loftPC(A2); };
+    R.loftPC=A2=>{ const K=A2.kinds(); if(!K['g:desk']||!K['HOME COMPUTER']||A2.units().some(u=>u.id==='loft-pc'))return; const d=A2.spawn('g:desk',{s:1,ry:Math.PI,u:8.86,h:0,v:.5},'loft-pcdesk'); if(!d)return; d.paid=0; d.obj.updateMatrixWorld(true);
+      const bb=new THREE.Box3().setFromObject(d.obj), c=bb.getCenter(new THREE.Vector3()), t=A2.toApt(c.x,bb.max.y,c.z), pc=A2.spawn('HOME COMPUTER',{s:1,ry:0,u:t.u,h:t.h,v:t.v},'loft-pc'); if(pc)pc.paid=0; }; });
   // the loft's own start: light oak below, walnut above, white walls with the front one in brick (yours to change in DECORATE); its colours and which laying-out it has had are kept with your layout
   if(APTS&&APTS.R&&APTS.LOFT){ ROOMK.built.push(A=>{ '@apts'; if(!A.R.loft)return; A.wall('white','all'); A.wall('brick','Wf'); A.floor('oak'); A.floor('walnut',true); });
     ROOMK.keep.push({out:(L,A)=>{ if(A&&A.R.loft){ L.loft={...A.R.loftK}; if(A.R.loftV)L.loftV=A.R.loftV; } },in:(L,A)=>{ if(A&&A.R.loft){ if(L.loft)for(const k in L.loft)A.R.loftSet(k,L.loft[k]); A.R.loftV=L.loftV||0; } }}); }

@@ -63,6 +63,7 @@ jobs:
           k vr      'src/162a-pad|src/162c-vr|vr\.cjs'
           k asylum  'src/asylum/|tools/asylum\.cjs|tests/asylum\.cjs'
           k golf    'src/golf/|data/golf/|tools/golf\.cjs|tests/golf\.cjs'
+          k scare   'src/scare/|data/scare/|tools/scare\.cjs|tests/scare\.cjs'
           k duel    'src/duel/|data/duel/|tools/duel\.cjs|tests/duel\.cjs'
           k vrbody  'src/162c|src/111b|vrbody\.cjs'
           k riders  'src/117a|src/009c|riders\.cjs'
@@ -241,6 +242,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' asylum')
         run: node tests/asylum.cjs dist/asylum.html
+      - name: Vesper Ward (the scare game at /scare, played through, and in an emulated Quest 3)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' scare')
+        run: node tests/scare.cjs dist/scare.html
       - name: Halcyon Greens (mini golf at /golf; it loads, a putt rolls, a putt holes out)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' golf')

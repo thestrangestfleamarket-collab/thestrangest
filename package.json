@@ -8,6 +8,7 @@
     "@recast-navigation/generators": "0.43.1",
     "@tonejs/midi": "2.0.28",
     "abcjs": "6.7.2",
+    "cannon-es": "0.20.0",
     "esbuild": "0.24.0",
     "html-to-image": "1.11.13",
     "iwer": "2.5.0",

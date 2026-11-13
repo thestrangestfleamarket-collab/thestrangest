@@ -6,7 +6,6 @@ Everything the page loads is CC0 (public domain) except the thing's body.
 |---|---|---|---|
 | Surfaces: red brick, dark brick, asphalt, rusted green metal, rusty metal, corrugated iron, weathered planks, dirty carpet, hessian, dirty concrete | `data/hide/tex/*_{d,n,a}.jpg` | Poly Haven, https://polyhaven.com/textures (`red_brick_03`, `dark_brick_wall`, `asphalt_02`, `green_metal_rust`, `rusty_metal_02`, `corrugated_iron_02`, `weathered_planks`, `dirty_carpet`, `hessian_230`, `dirty_concrete`) | CC0 |
 | Models: trash can, trash bag, cardboard box, tyre, two barrels, air-conditioning unit, utility box, wall lamp, roller-shutter door, covered car, sofa, plastic container, cement bag, wooden crate, security light | `data/hide/m/*.glb` | Poly Haven, https://polyhaven.com/models (`metal_trash_can`, `trashbag`, `cardboard_box_01`, `old_tyre`, `Barrel_01`, `barrel_03`, `exterior_aircon_unit`, `utility_box_01`, `industrial_wall_lamp`, `rollershutter_door`, `covered_car`, `sofa_02`, `industrial_pastic_container`, `cement_bag`, `wooden_crate_02`, `security_light`) | CC0 |
-| Night reflections | `data/hide/night.hdr` | Poly Haven, https://polyhaven.com/a/cobblestone_street_night | CC0 |
 | Sounds (25) | `data/hide/snd/*.mp3` | BigSoundBank (Joseph Sardin) and OpenGameArt; one row each in `docs/hide-sounds.md` | CC0 |
 | The thing's body and motion | `data/scare/brute.glb` (VESPER WARD's brute, copied at build) | see `docs/scare-credits.md` | Mixamo terms, provenance unconfirmed |
 

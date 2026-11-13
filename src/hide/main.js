@@ -1,5 +1,5 @@
 // DEAD END: sixty seconds to hide in a dead-end alley, then something comes in to look for you. This file is the round (ready, hide, seek, the end), the signs you read, and the loop that moves everything.
-import { CLOCK, THREE, Q, clamp, lerp, rnd, renderer, scene, camera, rig, P, initPhysics, loadAssets } from './core.js';
+import { CLOCK, THREE, Q, clamp, lerp, rnd, renderer, scene, camera, rig, P, initPhysics, loadAssets, reflect, ray } from './core.js';
 import { WORLD, build } from './world.js';
 import { PL } from './player.js';
 import { SK } from './seeker.js';
@@ -7,7 +7,7 @@ import { A } from './sound.js';
 import { SPOTS } from './spots.js';
 
 const $ = id => document.getElementById(id), HIDE = +Q.get('t') || 60;
-const G = { mode: 'title', t: 0, left: HIDE, won: false, rounds: 0, beat: 0, drip: 2, storm: rnd(20, 45), flash: 0 };
+const G = { mode: 'title', t: 0, left: HIDE, won: false, rounds: 0, beat: 0, drip: 2, odd: 8, storm: rnd(20, 45), flash: 0 };
 document.body.appendChild(renderer.domElement);
 
 /* signs: a small one that rides at the top of your sight (the count), a large one that stands in the alley (start, the end) */
@@ -45,15 +45,23 @@ function frame(time) { const dt = clamp((time - last) / 1000 || .016, .001, 1 / 
 function tick(dt) { G.t += dt; CLOCK.t += dt; PL.update(dt); SK.update(dt); for (const u of WORLD.updaters) u(dt, A); physics(dt); A.frame();
   if (G.mode === 'hide') { const was = Math.ceil(G.left); G.left -= dt; const n = Math.ceil(G.left); if (n !== was && n >= 0) { hudSay(String(n), n <= 10 ? 'IT IS COMING' : 'HIDE', n <= 10 ? '#c2452f' : '#d8d2c2'); if (n <= 10) A.flat('heart', .7, 1); }
     if (G.left <= 0) { G.mode = 'seek'; G.t = 0; hudSay('', ''); PL.noises.length = 0; SK.enter(); } }
-  else if (G.mode === 'seek') { if (SK.state === 'caught' && SK.st > 1.3) end(false); else if (SK.state === 'gone') end(true);
+  else if (G.mode === 'seek') { if (SK.state === 'caught' && SK.st > 1.75) end(false); else if (SK.state === 'gone') end(true);
     const B = PL.breath; if (B.holding) { hud.m.visible = true; const g = hud.g; g.clearRect(0, 0, 512, 256); g.fillStyle = 'rgba(216,210,194,.25)'; g.fillRect(156, 120, 200, 8); g.fillStyle = B.air < .25 ? '#c2452f' : '#d8d2c2'; g.fillRect(156, 120, 200 * B.air, 8); hud.t.needsUpdate = true; G.bar = true; } else if (G.bar) { G.bar = false; hudSay('', ''); }
-    const d = SK.g.visible ? SK.pos.distanceTo(PL.pos) : 30, fear = clamp(1 - d / 14, 0, 1) * .8 + SK.aware * .4; G.beat -= dt * (1 + fear * 1.6); if (G.beat < 0) { G.beat = 1; A.flat('heart', .12 + fear * .75, 1); } }
+    const d = SK.g.visible ? SK.pos.distanceTo(PL.pos) : 30, fear = SK.state === 'caught' ? 0 : clamp(clamp(1 - d / 12, 0, 1) * .85 + Math.min(1, SK.aware) * .4, 0, 1); G.fear = lerp(G.fear || 0, fear, 1 - Math.exp(-dt * 2)); G.beat -= dt * (1 + fear * 1.6); if (G.beat < 0 && SK.state !== 'caught') { G.beat = 1; A.flat('heart', .12 + fear * .75, 1); PL.buzz(.15 + fear * .5, 60); }
+    WORLD.dread = SK.g.visible ? clamp(1 - Math.min(Math.hypot(SK.pos.x + .3, SK.pos.z + 8.5), Math.hypot(SK.pos.x - 2, SK.pos.z + 13.5)) / 7, 0, 1) : 0; if (SK.stepped) { SK.stepped = false; PL.buzz(clamp(1.2 - d / 9, 0, 1) * .8, 70); } }
+  else { G.fear = lerp(G.fear || 0, G.mode === 'hide' && G.left < 10 ? .5 : 0, 1 - Math.exp(-dt)); WORLD.dread = 0; }
+  A.tension(G.fear || 0);
+  // shut in (lid down, door shut, under the tarp) the world sounds dull: rays up and to the four sides all stop short
+  G.box = (G.box || 0) - dt; if (G.box < 0) { G.box = .25; let n = 0; for (const [x, y, z] of [[0, 1, 0], [1, 0, 0], [-1, 0, 0], [0, 0, 1], [0, 0, -1]]) if (ray(PL.head, { x, y, z }, y ? 1.1 : 1.3)) n++; G.shut = n >= 5 ? 1 : 0; } G.muf = lerp(G.muf || 0, G.shut || 0, 1 - Math.exp(-dt * 5)); A.muffle(G.muf * .62);
+  // the alley is never quite still: something small far off, a gust, a siren
+  G.odd -= dt; if (G.odd < 0) { G.odd = rnd(9, 24); const z = PL.pos.z + (Math.random() < .5 ? -1 : 1) * rnd(7, 15), at = { x: rnd(-2.3, 2.3), y: .1, z: clamp(z, -33, 6) }, r = Math.random(); if (r < .3) A.at('rat', at, .5, rnd(.9, 1.2)); else if (r < .45) A.at('glass', at, .3, rnd(.7, 1)); else if (r < .58) A.at(['metal1', 'metal2'], { x: rnd(-9, 9), y: 2, z: 12 }, .35, .5); else if (r < .7) A.siren(); else { G.gust = 1; } }
+  G.gust = Math.max(0, (G.gust || 0) - dt * .22); A.wind(.25 + Math.sin(CLOCK.t * .23) * .12 + G.gust * .6);
   G.drip -= dt; if (G.drip < 0) { G.drip = rnd(.6, 3); A.at('drip', { x: rnd(-2.4, 2.4), y: .1, z: PL.pos.z + rnd(-7, 7) }, rnd(.2, .5), rnd(.8, 1.3)); }
-  G.storm -= dt; if (G.storm < 0) { G.storm = rnd(35, 80); G.flash = 1; setTimeout(() => A.flat('thunder', .55, rnd(.8, 1)), 900); } G.flash = Math.max(0, G.flash - dt * 2.8); scene.fog.color.setRGB(.018 + G.flash * .07, .022 + G.flash * .075, .03 + G.flash * .09); scene.background.copy(scene.fog.color);
-  black.material.opacity = Math.max(PL.blind, G.mode === 'end' && !G.won ? clamp(G.t * 1.6, 0, .8) : 0); black.visible = black.material.opacity > .01; }
+  G.storm -= dt; if (G.storm < 0) { G.storm = rnd(35, 80); G.flash = 1; setTimeout(() => A.flat('thunder', .55, rnd(.8, 1)), 900); } G.flash = Math.max(0, G.flash - dt * 2.8); WORLD.flash = G.flash * (Math.random() < .7 ? 1 : .3); scene.fog.color.setRGB(.018 + G.flash * .05, .022 + G.flash * .055, .03 + G.flash * .07); scene.background.copy(scene.fog.color);
+  black.material.opacity = Math.max(PL.blind, SK.state === 'caught' && SK.st > 1.35 ? 1 : G.mode === 'end' && !G.won ? .85 : 0); black.visible = black.material.opacity > .01; }
 
 async function boot() { const bar = $('bar'), note = $('note'); let a = 0, b = 0; const show = () => { bar.style.transform = 'scaleX(' + (a * .9 + b * .1) + ')'; };
-  try { await initPhysics(); await Promise.all([loadAssets(v => { a = v; show(); }), A.load().then(() => { b = 1; show(); })]); build(); PL.init(); SK.init(); for (const T of P.things) T.b.wakeUp(); for (let i = 0; i < 260; i++) P.world.step(); for (const T of P.things) { T.home = { p: { ...T.b.translation() }, q: { ...T.b.rotation() } }; T.b.setLinvel({ x: 0, y: 0, z: 0 }, false); T.b.setAngvel({ x: 0, y: 0, z: 0 }, false); T.b.sleep(); T.o.position.copy(T.home.p); T.o.quaternion.copy(T.home.q); } SK.buildNav(); PL.update(.016);
+  try { await initPhysics(); await Promise.all([loadAssets(v => { a = v; show(); }), A.load().then(() => { b = 1; show(); })]); build(); PL.init(); SK.init(); for (const T of P.things) T.b.wakeUp(); for (let i = 0; i < 260; i++) P.world.step(); for (const T of P.things) { T.home = { p: { ...T.b.translation() }, q: { ...T.b.rotation() } }; T.b.setLinvel({ x: 0, y: 0, z: 0 }, false); T.b.setAngvel({ x: 0, y: 0, z: 0 }, false); T.b.sleep(); T.o.position.copy(T.home.p); T.o.quaternion.copy(T.home.q); } SK.buildNav(); for (const u of WORLD.updaters) u(.016); reflect(); PL.update(.016);
     if (Q.get('mind') !== 'local' && location.protocol.startsWith('http')) try { const r = await fetch('/hide/mind', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' }), j = await r.json(); if (r.ok && j.why === 'nothing sensed') SK.mode = 'claude'; else G.mindNote = r.status === 401 ? 'log in on this site for Claude' : (j.why || '').slice(0, 60); } catch (e) { G.mindNote = ''; }
   } catch (e) { note.textContent = 'It would not load: ' + (e && e.message || e); console.error(e); return; }
 window.__hide = { G, PL, SK, P, WORLD, A, THREE, SPOTS, camera, rig, scene, renderer, ready, startRound, end, reset, physics, sim: (n, dt = 1 / 60) => { for (let i = 0; i < n; i++) tick(dt); } };

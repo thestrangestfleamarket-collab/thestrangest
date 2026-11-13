@@ -10,6 +10,7 @@ const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _q = new THREE.Quatern
 let body, col, ctl, puffM, printM, printI = 0; const puffS = [], printS = [];
 
 // a noise the thing might hear: loud 1 carries the alley's length, .1 a couple of metres
+PL.buzz = (v, ms) => { if (!renderer.xr.isPresenting) return; for (const H of PL.hands) { const gp = H.src && H.src.gamepad, h = gp && (gp.hapticActuators && gp.hapticActuators[0]); try { if (h && h.pulse) h.pulse(Math.min(1, v), ms); else if (gp && gp.vibrationActuator) gp.vibrationActuator.playEffect('dual-rumble', { duration: ms, strongMagnitude: Math.min(1, v), weakMagnitude: Math.min(1, v) }); } catch (e) {} } };
 PL.noise = (pos, loud, what) => { if (loud > .02) PL.noises.push({ x: pos.x, y: pos.y ?? .5, z: pos.z, loud, what, t: CLOCK.t }); };
 
 function init() {
@@ -98,7 +99,7 @@ function update(dt) {
   else { if (B.holding) { B.holding = false; if (B.air <= .03) { PL.noise(PL.head, .45, 'a gasp'); A.at('breath', PL.head, .5, 1.25); B.exert = Math.max(B.exert, .75); B.phase = .95; } } B.air = Math.min(1, B.air + dt / 5);
     B.phase += dt / (3.9 - 2.4 * B.exert); if (B.phase >= 1) { B.phase = 0; const s = puffS.find(p => p.t > 2) || puffS[0]; s.t = 0; s.s.position.copy(PL.head).addScaledVector(PL.fwd, .14); s.s.position.y -= .07; s.v.copy(PL.fwd).multiplyScalar(.32 + B.exert * .3); s.v.y += .1; s.s.visible = true; s.k = .7 + B.exert * .6;
       const hit = ray(PL.head, PL.fwd, .5), reach = hit ? Math.max(0, hit.t - .06) : .44; if (hit && hit.t < .2) s.s.position.copy(PL.head).addScaledVector(PL.fwd, reach * .5); PL.puffs.push({ x: PL.head.x + PL.fwd.x * reach, y: s.s.position.y, z: PL.head.z + PL.fwd.z * reach, t: CLOCK.t }); if (PL.puffs.length > 6) PL.puffs.shift(); PL.noise(PL.head, .035 + B.exert * .12, 'breathing'); } }
-  for (const p of puffS) if (p.t < 2) { p.t += dt; p.s.position.addScaledVector(p.v, dt); p.v.multiplyScalar(1 - dt * 1.2); const u = p.t / 1.7; p.s.scale.setScalar(.07 + u * .42 * p.k); p.s.material.opacity = Math.max(0, .2 * p.k * Math.sin(Math.min(1, u) * Math.PI)); if (u >= 1) p.s.visible = false; }
+  for (const p of puffS) if (p.t < 2) { p.t += dt; p.s.position.addScaledVector(p.v, dt); p.v.multiplyScalar(1 - dt * 1.2); const u = p.t / 1.7; p.s.scale.setScalar(.07 + u * .42 * p.k); const tc = WORLD.torch, seen = clamp(WORLD.lit(p.s.position.x, p.s.position.z) * 1.1 + (tc && tc.on ? clamp(1.3 - p.s.position.distanceTo(tc.at) / 3.5, 0, 1) : 0), .04, 1); p.s.material.opacity = Math.max(0, .22 * p.k * seen * Math.sin(Math.min(1, u) * Math.PI)); if (u >= 1) p.s.visible = false; }
   for (const s of printS) if (s.visible) { s.userData.t += dt; if (s.userData.t > 45) s.visible = false; }
 
   /* hands */

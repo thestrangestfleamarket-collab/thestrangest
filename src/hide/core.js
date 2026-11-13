@@ -2,7 +2,6 @@
 import * as THREE from 'three';
 import RAPIER from '@dimforge/rapier3d-compat';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
 
 const Q = new URLSearchParams(location.search), LOW = Q.get('q') === 'low';
 const ASSET = 'hide-assets/';
@@ -15,7 +14,7 @@ const clamp = (v, a, b) => Math.min(b, Math.max(a, v)), lerp = (a, b, t) => a + 
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.setSize(innerWidth, innerHeight);
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
-renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.3;
 renderer.xr.enabled = true; renderer.xr.setReferenceSpaceType('local-floor'); renderer.xr.setFoveation(1);
 const scene = new THREE.Scene(); scene.background = new THREE.Color(0x05070b); scene.fog = new THREE.FogExp2(0x070a10, .05);
 const camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, .05, 120), rig = new THREE.Group(); rig.add(camera); scene.add(rig);
@@ -28,12 +27,13 @@ async function initPhysics() { await RAPIER.init({}); P.world = new RAPIER.World
 const TEX = {}, MODELS = {}, texL = new THREE.TextureLoader();
 const TEXN = ['red_brick_03', 'dark_brick_wall', 'asphalt_02', 'green_metal_rust', 'rusty_metal_02', 'corrugated_iron_02', 'weathered_planks', 'dirty_carpet', 'hessian_230', 'dirty_concrete'];
 const MODN = ['metal_trash_can', 'trashbag', 'cardboard_box_01', 'old_tyre', 'barrel_01', 'barrel_03', 'exterior_aircon_unit', 'utility_box_01', 'industrial_wall_lamp', 'rollershutter_door', 'covered_car', 'sofa_02', 'industrial_pastic_container', 'cement_bag', 'wooden_crate_02', 'security_light', 'brute'];
+// what shiny things reflect is the alley itself, pictured once from its middle with its own lamps lit
+function reflect() { const pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(scene, 0, .1, 70, { position: new THREE.Vector3(0, 1.6, -11) }).texture; scene.environmentIntensity = .55; pm.dispose(); }
 async function loadAssets(onp) {
-  let done = 0; const total = TEXN.length * 3 + MODN.length + 1, tick = v => { onp(++done / total); return v; }, L = new GLTFLoader(), aniso = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+  let done = 0; const total = TEXN.length * 3 + MODN.length, tick = v => { onp(++done / total); return v; }, L = new GLTFLoader(), aniso = Math.min(8, renderer.capabilities.getMaxAnisotropy());
   const jobs = [];
   for (const n of TEXN) for (const k of 'dna') jobs.push(texL.loadAsync(ASSET + 'tex/' + n + '_' + k + '.jpg').then(t => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = aniso; if (k === 'd') t.colorSpace = THREE.SRGBColorSpace; (TEX[n] = TEX[n] || {})[k] = t; tick(); }));
   for (const n of MODN) jobs.push(L.loadAsync(ASSET + 'm/' + n + '.glb').then(g => { MODELS[n] = g; tick(); }));
-  jobs.push(new HDRLoader().loadAsync(ASSET + 'night.hdr').then(t => { const pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromEquirectangular(t).texture; scene.environmentIntensity = .1; t.dispose(); pm.dispose(); tick(); }));
   await Promise.all(jobs);
 }
 // a surface from Poly Haven's three pictures; rep is metres a tile covers
@@ -82,4 +82,4 @@ function model(name, o = {}) {
 const ray = (() => { let r; return (o, d, max, groups = SIGHT, notBody = null) => { r = r || new RAPIER.Ray({ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 1 }); r.origin.x = o.x; r.origin.y = o.y; r.origin.z = o.z; r.dir.x = d.x; r.dir.y = d.y; r.dir.z = d.z;
   const h = P.world.castRay(r, max, true, undefined, groups, undefined, notBody || undefined); return h ? { t: h.timeOfImpact ?? h.toi, col: h.collider } : null; }; })();
 
-export { CLOCK, THREE, RAPIER, Q, LOW, ASSET, G, ALL, grp, SIGHT, clamp, lerp, rnd, renderer, scene, camera, rig, P, initPhysics, loadAssets, TEX, MODELS, mat, wbox, boxMesh, quat, stat, dyn, sBox, sCyl, sBall, model, ray };
+export { CLOCK, THREE, RAPIER, Q, LOW, ASSET, G, ALL, grp, SIGHT, clamp, lerp, rnd, renderer, scene, camera, rig, P, initPhysics, loadAssets, reflect, TEX, MODELS, mat, wbox, boxMesh, quat, stat, dyn, sBox, sCyl, sBall, model, ray };

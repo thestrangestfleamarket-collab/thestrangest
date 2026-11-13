@@ -30,7 +30,7 @@ const CEIL={ids:['ceil1','ceil2','ceil3','ceil4'],shells:[],th:null}; window.CEI
     if(b.dataset.t)set({type:b.dataset.t}); else if(a)set({on:a==='on'}); if(SFX)SFX.play('click',{vol:.8,vary:.2}); draw(); });
   P.addEventListener('input',e=>{ '@later'; const t=e.target, k=t.dataset.k; if(!k||(CRE().HOME&&CRE().HOME.guest))return; const o={}; if(k==='k')o.k=+t.value/100; else if(k==='tone')o.tone=+t.value; else if(k==='angle')o.angle=+t.value; else if(k==='soft')o.soft=+t.value/100; else if(k==='tint'){ o.tint=+t.value/100; if(!first().col)o.col='#ffffff'; } else if(k==='col'){ o.col=t.value; if(!(first().tint>0))o.tint=1; }
     set(o); if(t.nextElementSibling&&t.type==='range')t.nextElementSibling.textContent=t.value+(k==='tone'?'K':k==='angle'?'°':'%'); });
-  ROOMK.parts.push(c=>{ '@apts'; const {apt,R,Lx,Ly,HW,hit,mat,rbox,V3,du,fw,WW}=c, K=R.kinds['FLUSH DOME']; if(!K)return; CEIL.shells=[]; P.hidden=true;
+  ROOMK.parts.push(c=>{ '@apts'; const {apt,R,Lx,Ly,HW,hit,mat,rbox,V3,du,fw,WW}=c, K=R.kinds['FLUSH DOME']; if(!K||R.loft)return; CEIL.shells=[]; P.hidden=true;
     [[.25,.25],[.75,.25],[.25,.75],[.75,.75]].forEach(([fu,fv],i)=>{ const g=new THREE.Group(); g.position.set(Lx*fu,HW,Ly*fv); apt.add(g); const sh=K.tpl.clone(true); let L=null; const B=[];
       sh.traverse(o=>{ if(o.isLight&&!L)L=o; if(o.userData.bulb){ o.material=o.material.clone(); B.push(o.material); } }); if(!L)return; L.removeFromParent(); L.position.set(0,-.14,0); g.add(L); L.userData.on=true; g.add(sh); sh.userData.B=B; sh.userData.L=L; CEIL.shells.push(sh);
       R.ceil.push({id:CEIL.ids[i],name:'CEILING LIGHT '+(i+1),L}); });

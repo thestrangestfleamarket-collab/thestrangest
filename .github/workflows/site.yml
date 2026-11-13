@@ -66,6 +66,7 @@ jobs:
           k cantina 'src/cantina/|data/cantina/|tools/cantina\.cjs|tests/cantina\.cjs|worker/cantina'
           k scare   'src/scare/|data/scare/|tools/scare\.cjs|tests/scare\.cjs'
           k holmes  'src/holmes/|data/holmes/|worker/holmes|tools/holmes|tests/holmes\.cjs'
+          k jam     'src/jam/|data/jam/|tools/jam\.cjs|tests/jam\.cjs'
           k shoot   'src/shoot/|tools/shoot\.cjs|tests/shoot\.cjs'
           k duel    'src/duel/|data/duel/|tools/duel\.cjs|tests/duel\.cjs'
           k vrbody  'src/162c|src/111b|vrbody\.cjs'
@@ -253,6 +254,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' scare')
         run: node tests/scare.cjs dist/scare.html
+      - name: Stadium Jam (the band game at /jam; the keys play it, then the sticks and tracked hands in an emulated Quest 3)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' jam')
+        run: node tests/jam.cjs dist/jam.html
       - name: Halcyon Greens (mini golf at /golf; it loads, a putt rolls, a putt holes out)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' golf')

@@ -164,13 +164,13 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   cv.addEventListener('pointermove',e=>{ if(MAPED.dragging){ MAPED.move(e); return; } if(WE.dragging){ WE.move(e); return; } if(LAND.dragging){ LAND.move(e); return; } if(!L)return; if(!L.moved&&Math.hypot(e.clientX-L.x0,e.clientY-L.y0)>5)L.moved=true;
     if(L.moved){ const dx=e.clientX-L.x, dy=e.clientY-L.y; if(!e.shiftKey&&!e.altKey&&!UI.persp)UI.pan(dx,dy); else UI.orbit(dx,dy); } L.x=e.clientX; L.y=e.clientY; });
   cv.addEventListener('pointerup',()=>{ MAPED.up(); WE.up(); if(LAND.up)LAND.up(); L=null; });
-  const THINGS=[]; UI.thing=o=>THINGS.push(o); UI.things=THINGS;
+  const THINGS=[]; UI.thing=o=>THINGS.push(o); UI.things=THINGS; const seen=o=>{ for(let n=o;n;n=n.parent)if(!n.visible)return false; return true; };
   let goal=null; const said=document.createElement('div'); said.id='said'; said.hidden=true; document.body.appendChild(said);
   const say=(txt,at)=>{ '@later'; const r=cv.getBoundingClientRect(), v=at.clone().project(SHARED.cam); said.textContent=txt; said.style.left=Math.round(r.left+(v.x+1)/2*r.width)+'px'; said.style.top=Math.round(r.top+(1-v.y)/2*r.height)+'px'; said.hidden=false; clearTimeout(say.t); say.t=setTimeout(()=>said.hidden=true,2500); };
   const thAt=th=>th.obj.getWorldPosition(new THREE.Vector3());
   cv.addEventListener('dblclick',e=>{ '@later'; if(MAPED.on||LAND.on)return; if(WE.on){ WE.pick(e); return; } if(ED.on||UI.freeCam)return; ray.setFromCamera(ndc(e),SHARED.cam);
     if(WIELD&&WIELD.on){ const me=THINGS.find(th=>th.name==='YOU'); if(me&&me.obj.visible&&ray.intersectObject(me.obj,true).length)me.act(); return; }   // holding something, a double-click on yourself still opens your avatar (owner, 9 Nov 2026)
-    const live=THINGS.filter(th=>th.obj.visible&&(!th.obj.parent||th.obj.parent.visible)&&LEVELS.drawn(th.obj)); const hits=ray.intersectObjects(live.map(th=>th.obj),true);
+    const live=THINGS.filter(th=>seen(th.obj)&&LEVELS.drawn(th.obj)); const hits=ray.intersectObjects(live.map(th=>th.obj),true);
     const thOf=o=>live.find(th=>{ let q=o; while(q){ if(q===th.obj)return true; q=q.parent; } return false; });
     let best=null, bd=1e9; if(hits.length){ const th=thOf(hits[0].object); if(th){ best=th; bd=hits[0].distance; }
       if(th&&th.glass)for(const h of hits.slice(1)){ const t=thOf(h.object); if(t&&t.far){ best=t; bd=h.distance; break; } if(t&&!t.glass)break; } }   // through a window's glass to what you can use from afar (the TV)
@@ -179,7 +179,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
     if(RIVER&&RIVER.pick&&!VIT.dead&&RIVER.pick(ray.ray,pos))return;
     goal=null; });
   UI.nearThing=()=>{ if(ED.on||UI.freeCam||MAPED.on||WE.on||LAND.on)return null; const hx=Math.sin(SHARED.heading), hz=Math.cos(SHARED.heading), Wt=st.water, py=Wt&&Wt.in&&Wt.level!=null?Wt.y*ZU:SHARED.py; let best=null, bs=1e9;   // a swimmer's own height (a sunken chest is reached by diving to it)
-    for(const th of THINGS){ if(th.quiet||!th.obj.visible||th.obj.parent&&!th.obj.parent.visible||!LEVELS.drawn(th.obj))continue; const p=thAt(th), dx=p.x-pos.x, dz=p.z-pos.z, d=Math.max(0,Math.hypot(dx,dz)-(th.r||0));
+    for(const th of THINGS){ if(th.quiet||!seen(th.obj)||!LEVELS.drawn(th.obj))continue; const p=thAt(th), dx=p.x-pos.x, dz=p.z-pos.z, d=Math.max(0,Math.hypot(dx,dz)-(th.r||0));
       if(d>(th.near||(th.reach||1)+1.2*TILE)||Math.abs(p.y-py)>2*TILE)continue; const s=(th.exit?-1e6:0)+d-(dx*hx+dz*hz)/(d||1)*.6*TILE; if(s<bs){ bs=s; best=th; } }
     if(!best&&typeof USE!=='undefined')for(const dy of [0,-.5,-1.2]){ ray.set(new THREE.Vector3(pos.x,SHARED.py+TILE,pos.z),new THREE.Vector3(hx,dy,hz).normalize()); ray.far=2.4*TILE; const u=USE.pick(ray); ray.far=Infinity; if(u){ best=u.th; break; } }
     return best; };
@@ -188,7 +188,7 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   UI.choices=()=>{ if(ED.on||UI.freeCam||MAPED.on||WE.on||LAND.on)return []; const L=[], K=WIELD.on&&WIELD.kinds&&WIELD.kinds[WIELD.on];
     if(K&&K.use)L.push({held:true,name:'USE '+String((FORAGE.name&&FORAGE.name(WIELD.on))||K.name||WIELD.on).toUpperCase()});
     const hx=Math.sin(SHARED.heading), hz=Math.cos(SHARED.heading), Wt=st.water, py=Wt&&Wt.in&&Wt.level!=null?Wt.y*ZU:SHARED.py, S=[];
-    for(const th of THINGS){ if(th.quiet||th.name==='YOU'||!th.obj.visible||th.obj.parent&&!th.obj.parent.visible||!LEVELS.drawn(th.obj))continue; const p=thAt(th), dx=p.x-pos.x, dz=p.z-pos.z, d=Math.max(0,Math.hypot(dx,dz)-(th.r||0));
+    for(const th of THINGS){ if(th.quiet||th.name==='YOU'||!seen(th.obj)||!LEVELS.drawn(th.obj))continue; const p=thAt(th), dx=p.x-pos.x, dz=p.z-pos.z, d=Math.max(0,Math.hypot(dx,dz)-(th.r||0));
       if(d>(th.near||(th.reach||1)+1.2*TILE)||Math.abs(p.y-py)>2*TILE)continue; S.push([d-(dx*hx+dz*hz)/(d||1)*.6*TILE,th]); }
     S.sort((a,b)=>a[0]-b[0]); if(!S.length){ const b=UI.nearThing(); if(b)S.push([0,b]); }
     for(const [,th] of S.slice(0,4)){ L.push({th,name:th.name}); for(const a of th.acts||[])L.push({th,sub:a,name:a.name}); }

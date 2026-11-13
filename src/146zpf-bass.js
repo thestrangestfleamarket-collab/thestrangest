@@ -1,7 +1,7 @@
 // THE DOUBLE BASS (owner, 8 Nov 2026: "add bass guitar too", then Polyfork's Double Bass): Polyfork's upright bass (data/pfbass.json, tools/pfbass-bake.py) set down and played from a tall stool (INSTR, 146zp): four strings E1 A1 D2 G2, the left hand stopping them up the neck (the thumb behind it, fingering 1-2-4), the right hand's first two fingers plucking by the end of the fingerboard, the plucked string shimmering; its sound the VS Chamber Orchestra's solo contrabass plucked (CC0), the music engine's bass strings till it comes; the book each piano piece's bass line (data/bass-songs.json).
 import {THREE} from './003-shx.js';
 import {B64, I16, U16} from './003a-skin.js';
-import {IMK, INSTR} from './003b-systems.js';
+import {IMK, INSPECT, INSTR} from './003b-systems.js';
 import {imAct} from './120-game-music-2-instruments.js';
 { const {cyl,sm}=INSTR, V3=THREE.Vector3, G=__DATA__("data/pfbass.json"), F=G.frame;
   const OPEN=[28,33,38,43], NM=['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'], nm=m=>NM[m%12]+(Math.floor(m/12)-1);
@@ -81,4 +81,5 @@ import {imAct} from './120-game-music-2-instruments.js';
   K.hear=(P,k,v)=>{ if(k!=='n')return; const [s,f,q]=v.split('.').map(Number); if(s>=0&&s<4&&f>=0&&f<=14)INSTR.note(P,{s,f,v:(q||6)/9,d:2.5}); };
   INSTR.bass={sp,fretU,PLUCK,OPEN,finger,MB,TUNE};
 
+  INSPECT.kinds.push({is:id=>id==='bass',make:()=>{ const g=new THREE.Group(); g.add(bassMesh()); return g; }});
   INSTR.kind(K); INSTR.shelf('bass',K.shelf,.14); }

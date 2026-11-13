@@ -122,13 +122,14 @@ const ROOMK={parts:[],wires:{},built:[],api:null,keep:[],always:new Set(),save:(
       const glass=k=>APTS.glassMat(clip(k));
       // the picture's window: a thick orange frame of four panes and its sill
       const windowAt=(k,uc,v,ry,out,z0,z1,w,panes=[3,3],fc=FRAME)=>{ const g=new THREE.Group(); g.position.set(uc,0,v); g.rotation.y=ry; apt.add(g); const wm=mat(fc,{roughness:.55,...clip(k)});
-        const sash=new THREE.Group(); g.add(sash);   // the glass and its bars: slides up into the wall when the window is opened
-        part(new THREE.PlaneGeometry(w-.04,z1-z0-.04),glass(k),0,(z0+z1)/2,-.16,0,sash,false);
+        const sash=new THREE.Group(), zm=(z0+z1)/2, hh=(z1-z0)/2; g.add(sash);   // double-hung: the lower sash slides up behind the upper one, inside the frame
+        part(new THREE.PlaneGeometry(w-.04,hh-.02),glass(k),0,zm+hh/2-.01,-.16,0,g,false); part(new THREE.PlaneGeometry(w-.04,hh-.02),glass(k),0,z0+hh/2+.01,-.2,0,sash,false);
+        part(rbox(w,.03,.04,.004),wm,0,zm,-.13,0,g); part(rbox(w,.03,.04,.004),wm,0,zm,-.2,0,sash);
         for(const s of [-1,1])part(rbox(.05,z1-z0+.04,.16,.006),wm,s*(w/2-.005),(z0+z1)/2,-.06,0,g); part(rbox(w+.04,.05,.16,.006),wm,0,z1+.015,-.06,0,g);   // black steel: slim sections
         part(rbox(w+.16,.05,.2,.012),wm,0,z0-.01,-.04,0,g);
-        for(let i=1;i<panes[0];i++)part(rbox(.022,z1-z0,.04,.004),wm,-w/2+w*i/panes[0],(z0+z1)/2,-.13,0,sash);
-        for(let j=1;j<panes[1];j++)part(rbox(w,.022,.04,.004),wm,0,z0+(z1-z0)*j/panes[1],-.13,0,sash);
-        // double-click it: it opens (the sash up half way) and a calm breeze comes in; again, it shuts
+        for(let i=1;i<panes[0];i++){ part(rbox(.022,hh,.04,.004),wm,-w/2+w*i/panes[0],zm+hh/2,-.13,0,g); part(rbox(.022,hh,.04,.004),wm,-w/2+w*i/panes[0],z0+hh/2,-.2,0,sash); }
+        for(let j=1;j<panes[1];j++){ const z=z0+(z1-z0)*j/panes[1]; if(Math.abs(z-zm)>.03)part(rbox(w,.022,.04,.004),wm,0,z,z>zm?-.13:-.2,0,z>zm?g:sash); }
+        // double-click it: it opens (the lower sash up behind the upper) and a calm breeze comes in; again, it shuts
         const W_={g,sash,open:false,o:0,br:0,H:(z1-z0)*.5,k,w,z0,z1}; R.wins.push(W_);
         const hb=new THREE.Mesh(new THREE.BoxGeometry(w,z1-z0,.3),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(0,(z0+z1)/2,-.05); hb.userData.soft=hb.userData.keep=hb.userData.hit=1; g.add(hb);
         const th={name:'OPEN THE WINDOW',obj:hb,reach:1.6*M,near:2.6*M,tall:(z1-z0)*M,act:()=>{ W_.open=!W_.open; th.name=W_.open?'CLOSE THE WINDOW':'OPEN THE WINDOW'; if(SFX)SFX.play('latch',{vol:.5,vary:.2}); }};

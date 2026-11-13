@@ -2,7 +2,7 @@
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=fishtank::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
-  const out = process.argv[3], b = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+  const out = process.argv[3], b = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'], ...(process.env.PW_CHROMIUM ? { executablePath: process.env.PW_CHROMIUM } : {}) });
   const pg = await b.newPage({ viewport: { width: 1100, height: 700 } }), errs = [];
   pg.on('pageerror', e => errs.push(e.message.slice(0, 300)));
   await pg.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=13&place=your%20apartment', { waitUntil: 'commit' });
@@ -24,6 +24,9 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       await pg.waitForTimeout(3000); const cam = await pg.evaluate(() => ({ hold: __dbg.UI.holdCam, persp: __dbg.UI.persp }));
       ok(cam.hold === 'tank' && cam.persp, 'the camera comes close on the tank: ' + JSON.stringify(cam));
       if (out) await pg.screenshot({ path: path.join(out, 'tank-fresh.png'), timeout: 180000 });
+      { const c0 = (await T()).cam; await pg.mouse.move(400, 350); await pg.mouse.down(); await pg.mouse.move(300, 300, { steps: 4 }); await pg.mouse.up(); await pg.mouse.move(400, 380); for (let i = 0; i < 4; i++) await pg.mouse.wheel(0, -300); await pg.waitForTimeout(2500); const l = await T();
+        ok(l.look && Math.abs(l.look[0]) > .2 && l.look[2] > .3 && Math.hypot(l.cam[0] - c0[0], l.cam[1] - c0[1], l.cam[2] - c0[2]) > .2 && l.view, 'a drag looks round the tank and the wheel comes close (owner, 12 Nov 2026): ' + JSON.stringify(l.look));
+        if (out) await pg.screenshot({ path: path.join(out, 'tank-close.png'), timeout: 180000 }); }
       for (const [t, a] of [['water', 'w:salt'], ['fish', 'f:pfclown:1'], ['decor', 'd:castle'], ['water', 'l:c:blue']]) { await pg.$eval('#tankp button[data-a="tab:' + t + '"]', b => b.click()); await pg.$eval('#tankp button[data-a="' + a + '"]', b => b.click()); }
       let s = null; for (let i = 0; i < 30; i++) { await pg.waitForTimeout(1000); s = await T(); if (s.kinds.includes('pfclown')) break; }
       ok(s.set.w === 'salt' && s.set.f.pfclown === 1 && s.set.d.includes('castle') && s.set.l.c === 'blue', 'the settings change the tank: ' + JSON.stringify(s.set));

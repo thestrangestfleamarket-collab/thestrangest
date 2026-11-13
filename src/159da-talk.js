@@ -4,6 +4,7 @@ import {CHARS, FORAGE, INV, keys, LINES, LOOKS, NPCS, pos, SFX, SHOPS, TALK, TEX
 import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {SYS, TILE} from './006-map-pre.js';
+import {ASL} from './146zs-signs.js';
 { const T=TILE, esc=TEXT.esc;
   const NOTALK=/^(ogre|skeleton|slime|dragon|rat|frog|bat|wasp|spider|snake)$|^(ogre|skeleton)_/, CPS=45;
   LINES.add('about',['This is the Strangest Flea Market. Everything is for sale, eventually.','Market St runs the whole block. The park is north, the subway under your feet.','You find things here you did not know you lost.',
@@ -23,7 +24,7 @@ import {SYS, TILE} from './006-map-pre.js';
   // a character with no script: hello, what this place is, the shop if it keeps one, goodbye
   const chat=N=>{ '@later'; const shop=TALK.shops.has(N)||CHARS.trade&&CHARS.trade(N), R=[{t:'WHAT IS THIS PLACE?',go:'about'}]; if(shop)R.unshift({t:'WHAT DO YOU SELL?',do:'shop'}); R.push({t:'GOODBYE.',go:'bye'});
     return {start:'hi',lines:{hi:{say:'@greet',opts:R},about:{say:'@about',opts:R.filter(r=>r.go!=='about')},bye:{say:'@bye',opts:[]}}}; };
-  TALK.tests.cash=a=>(INV.cash||0)>=(+a||0);
+  TALK.tests.cash=a=>INV.afford(+a||0);
   TALK.script=N=>{ const t=recOf(N).talk||N.talk, s=t&&t.lines&&t.lines[t.start]?t:chat(N); return s; };   // a townsperson's own life is something to ask about (src/158-lives.js)
 
   const P=document.createElement('div'); P.id='talkp'; P.hidden=true;
@@ -36,8 +37,8 @@ import {SYS, TILE} from './006-map-pre.js';
   const sayOf=s=>{ const a=Array.isArray(s)?s[Math.floor(Math.random()*s.length)]:String(s||''); if(a[0]==='@')return LINES.pick(a.slice(1),{name:you()})||'...'; return a.replace(/\{(\w+)\}/g,(m,k)=>k==='name'?you():TALK.vars[k]?TALK.vars[k]():m); };
   const drawOpts=()=>{ '@later'; oEl.innerHTML=opts.map((o,i)=>{ const lack=o.do==='take'&&have(item(o.arg).id)<item(o.arg).n;
       return `<div data-i="${i}" style="cursor:${lack?'default':'pointer'};padding:2px 6px;${i===at?'background:#1c2130;color:#f2c14e':''}${lack?';color:#6f7686':''}">${i+1}. ${esc(o.t)}${lack?` <span style="color:#8a6a5a">(YOU NEED ${item(o.arg).n} ${esc(nm(item(o.arg).id))})</span>`:''}</div>`; }).join('')||'<div data-i="-1" style="cursor:pointer;padding:2px 6px;background:#1c2130;color:#f2c14e">1. (LEAVE)</div>'; };
-  const show=k=>{ if(!N)return; if(!k||!S.lines[k])return TALK.close(); id=k; L=S.lines[k]; text=sayOf(L.say); shown=0; acc=0; at=0;
-    const m=mem(CHARS.id(N)); opts=(L.opts||[]).filter(o=>test(o.if,m)); oEl.innerHTML=''; tEl.textContent=''; if(L.set)set(L.set); };
+  const show=k=>{ if(!N)return; if(!k||!S.lines[k])return TALK.close(); id=k; L=S.lines[k]; text=ASL.line(N,sayOf(L.say)); shown=0; acc=0; at=0;
+    const m=mem(CHARS.id(N)); opts=ASL.follows(N,true)?(L.opts||[]).filter(o=>test(o.if,m)):[]; oEl.innerHTML=''; tEl.textContent=''; if(L.set)set(L.set); };   // (one who signs: their line as far as you read it, nothing to do with them till you follow; 146zs)
   const set=a=>{ const m=mem(CHARS.id(N)); for(const w of String(a).trim().split(/\s+/).filter(Boolean)){ const [k,v]=w.split('='); if(k[0]==='!')delete m[k.slice(1)]; else m[k]=v==null?1:v; } save(); };
   const pick=i=>{ '@later'; if(!N)return; if(shown<text.length){ shown=text.length; tEl.textContent=text; drawOpts(); return; } if(i===-1||!opts.length)return TALK.close(); const o=opts[i]; if(!o)return;
     if(o.do==='take'){ const {id:t,n}=item(o.arg); if(have(t)<n)return; FORAGE.take(t,n); SAY(`YOU HAND OVER ${n} ${nm(t)}.`,'#e8e2cc'); }
@@ -48,7 +49,7 @@ import {SYS, TILE} from './006-map-pre.js';
     if(o.do==='shop'){ const n0=N, f=TALK.shops.get(n0); TALK.close(); if(f)f(); else if(SHOPS.open)SHOPS.open(n0); return; }
     show(o.go); };
   const loop=t=>{ if(!N)return; const dt=Math.min(.1,(t-(last||t))/1000); last=t;
-    if(shown<text.length){ acc+=dt*CPS; const n=Math.min(text.length,Math.floor(acc)); if(n>shown){ if((n&1)===0||n===text.length)SFX.blip(voice(),{at:{x:N.st.x,z:N.st.z},far:14*T}); shown=n; tEl.textContent=text.slice(0,n); if(n===text.length)drawOpts(); } }
+    if(shown<text.length){ acc+=dt*CPS; const n=Math.min(text.length,Math.floor(acc)); if(n>shown){ if(((n&1)===0||n===text.length)&&!ASL.signer(N))SFX.blip(voice(),{at:{x:N.st.x,z:N.st.z},far:14*T}); shown=n; tEl.textContent=text.slice(0,n); if(n===text.length)drawOpts(); } }
     if(Math.hypot(N.st.x-pos.x,N.st.z-pos.z)>5*T||VIT.dead)TALK.close(); }; SYS.add('win',loop,'159da-talk');
   // no talk boxes (owner, 8 Nov 2026: "remove dialogue boxes from characters in game, when you double click a merchant yu just see their wares"): a merchant's double click opens their wares, anyone else's does nothing; the window below stays for a script that asks for it (TALK.talk)
   const shopOf=n=>TALK.shops.get(n)||(CHARS.trade&&CHARS.trade(n)?()=>SHOPS.open(n):null);

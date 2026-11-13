@@ -1,4 +1,4 @@
-// The dungeon's uneven ground (8 Nov 2026): rooms have ledges and pits; a ledge stops you from below, its ramp takes you up, walking off it drops you; torches on every wall; the city's leftovers by room.
+// The dungeon's uneven ground (8 Nov 2026): rooms have ledges and pits; a ledge stops you from below, its ramp takes you up, walking off it drops you; torches on every wall, their light baked (11 Nov); the city's leftovers by room.
 const {chromium}=require('playwright');
 (async()=>{ const b=await chromium.launch({executablePath:process.env.PW_CHROMIUM||undefined,args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
   const pg=await b.newPage({viewport:{width:1280,height:720}}); const errs={}; pg.on('pageerror',e=>{ errs[e.message]=1; });
@@ -8,6 +8,7 @@ const {chromium}=require('playwright');
   ok(R.filter(r=>r.feats.length).length>=R.length*.6,'most rooms have ledges or pits ('+R.filter(r=>r.feats.length).length+' of '+R.length+')');
   ok(new Set(R.map(r=>r.theme)).size===4,'all four leftovers of the city: '+[...new Set(R.map(r=>r.theme))].join(', '));
   ok(R.every(r=>r.torches>=5),'every room has at least five torches: '+R.map(r=>r.torches).join(' '));
+  { const g=await pg.evaluate(()=>DGB()); ok(g.on&&g.lights>=R.length*5&&g.mats>0&&!g.skipped&&g.ms<3000,'every torch\'s light baked onto the rock, walls blocking it '+JSON.stringify(g)); }
   const L=R.flatMap(r=>r.feats.map(f=>({...f,room:r.nm}))).find(f=>f.h>0&&Math.min(f.rx,f.ry)>1.6);
   const at=(f,a,d)=>pg.evaluate(([f,a,d])=>DUNAT(f.cx+Math.cos(a)*f.rx*d,f.cy+Math.sin(a)*f.ry*d),[f,a,d]);
   const walkTo=async(x,z,ms)=>{ await pg.evaluate(([x,z])=>{ SHARED.target=__dbg.THREE?new __dbg.THREE.Vector3(x,SHARED.py,z):null; __UI.go&&__UI.go(Math.hypot(x-__dbg.pos()[0],z-__dbg.pos()[2])); },[x,z]); await W(ms); await pg.evaluate(()=>{ SHARED.target=null; }); };

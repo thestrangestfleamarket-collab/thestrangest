@@ -54,7 +54,7 @@ import {AVATAR} from './111c-avatar.js';
 
     /* ---------- every item, by family ---------- */
     const E={game:[],wear:[],held:[],place:null};
-    const gameList=()=>{ const ids=new Set([...ITEMS.ids(),...ITEMED.discovered()]); return [...ids].filter(id=>!/^pfp?_/.test(id)&&!(ARCHI&&ARCHI(id))).map(id=>{ let g='ITEMS'; try{ if(BAG.kind)g=BAG.kind(id).toUpperCase(); }catch(e){}
+    const gameList=()=>{ const ids=new Set([...ITEMS.ids(),...ITEMED.discovered()]); return [...ids].filter(id=>!/^(pfp?|pt|wip)_/.test(id)&&!(ARCHI&&ARCHI(id))).map(id=>{ let g='ITEMS'; try{ if(BAG.kind)g=BAG.kind(id).toUpperCase(); }catch(e){}
       return {fam:'game',id,name:String(ITEMED.nameOf(id)).toUpperCase(),grp:g}; }).sort((a,b)=>a.grp.localeCompare(b.grp)||a.name.localeCompare(b.name)); };
     { const K=new Map(); for(const p of AVATAR.pieces){ const key=p.slot+'|'+p.k; if(!K.has(key))K.set(key,{fam:HELD.has(p.slot)?'held':'wear',id:'pf_'+p.slot+'_'+norm(p.k),name:p.k,grp:SLOTN[p.slot]||p.slot.toUpperCase(),slot:p.slot,vers:[]}); K.get(key).vers.push(p); }
       const order=Object.keys(SLOTN); for(const e of [...K.values()].sort((a,b)=>order.indexOf(a.slot)-order.indexOf(b.slot)||a.name.localeCompare(b.name)))E[e.fam].push(e); }

@@ -1,10 +1,9 @@
-// THE PLAYHOUSE IN PICTURES: goes in and takes a picture from each of a list of spots (local metres: x, z, eye height above the ground, the way you look, the tilt), for looking over the hall by eye.
+// THE PLAYHOUSE IN PICTURES (the Wooden O): goes in and takes a picture from each of a list of spots (local metres: x, z, eye height above the ground, the way you look, the tilt), for looking over the round by eye.
 // Run: node tests/playhouse-shots.cjs [outdir] [only]   (slow: software rendering)
 const {chromium}=require('playwright'), fs=require('fs');
 const OUT=process.argv[2]||'shots', ONLY=process.argv[3]||'';
 const SPOTS={
-  stalls:[0,14,1.6,Math.PI,-.05], stage:[0,-6,1.6,Math.PI,-.05], apron:[0,1.5,1.6,0,-.15], steps:[8.8,6,1.6,Math.PI,-.1], foyer:[0,26,1.6,Math.PI,.05], bar:[4,21,1.6,Math.PI/2,0],
-  boxoffice:[-4,21,1.6,-Math.PI/2,0], wingsL:[8,-3,1.6,-Math.PI/2-.4,.1], wingsR:[-7,-6,1.6,Math.PI/2+.5,.1], fly:[0,-6,1.6,Math.PI/2,-1.1], ceiling:[0,10,1.6,Math.PI,-.9] };
+  yard:[0,8,1.6,Math.PI,-.05], stage:[0,-4.5,1.6,0,-.05], heavens:[0,-3,1.6,Math.PI,.9], sky:[0,2,1.6,0,.9], gate:[0,10.5,1.6,0,0], gallery:[-10.4,0,1.6,Math.PI/2,-.1], tiring:[0,-1,1.6,Math.PI,.1] };
 (async()=>{ fs.mkdirSync(OUT,{recursive:true}); const b=await chromium.launch({executablePath:process.env.PW_EXE||undefined,args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
   const pg=await b.newPage({viewport:{width:960,height:540}}), errs=[]; pg.on('pageerror',e=>errs.push(e.message)); pg.on('console',m=>{ if(m.type()==='error'||/playhouse|chunk/.test(m.text()))console.log('console:',m.text().slice(0,300)); });
   await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&at=0,0&hour=12'); await pg.waitForFunction(()=>window.__started,null,{timeout:400000}); await pg.waitForTimeout(1500);
@@ -14,7 +13,4 @@ const SPOTS={
   for(const [k,[x,z,e,hd,pt]] of Object.entries(SPOTS)){ if(ONLY&&!ONLY.split(',').includes(k))continue;
     await pg.evaluate(([x,z,hd,pt])=>{ PHDBG().look(x,z,hd,pt,'first'); },[x,z,hd,pt]);
     await pg.waitForTimeout(2500); await pg.screenshot({path:OUT+'/'+k+'.png',timeout:240000}); console.log('shot',k); }
-  if(process.env.CURTAIN){ for(const [k,t] of [['curtainShut',0],['curtainOpen',1],['curtainHalf',.5]]){ await pg.evaluate(t=>{ PHDBG().curtain(t); PHDBG().look(0,9,Math.PI,.04,'first'); PHDBG().run((K)=>{ const c=K.cloth.curtain; for(let i=0;i<400;i++)c.step(1/20,null); }); },t); await pg.waitForTimeout(3000); await pg.screenshot({path:OUT+'/'+k+'.png',timeout:240000}); console.log('shot',k); } }
-  if(process.env.LOOKS){ for(const lk of process.env.LOOKS.split(',')){ await pg.evaluate(lk=>{ PHDBG().curtain(1); PHDBG().run((K)=>{ const c=K.cloth.curtain; for(let i=0;i<400;i++)c.step(1/20,null); K.lx.cue(lk,.01); if(K.sets.LOOKS[lk])K.sets.go(lk,true); }); PHDBG().look(0,13,Math.PI,.04,'first'); },lk); await pg.waitForTimeout(4000); await pg.screenshot({path:OUT+'/look-'+lk+'.png',timeout:240000}); console.log('shot',lk); } }
-  if(process.env.SHOW){ for(const ts of process.env.SHOW.split(',')){ await pg.evaluate(ts=>{ PHDBG().showAt(+ts); PHDBG().look(0,9.5,Math.PI,.06,'first'); },ts); await pg.waitForTimeout(7000); await pg.screenshot({path:OUT+'/show-'+ts+'.png',timeout:240000}); console.log('shot show',ts, await pg.evaluate(()=>document.getElementById('phcap').textContent.slice(0,60))); } }
   console.log(errs.length?'errors: '+errs.join(' | '):'no page errors'); await b.close(); })();

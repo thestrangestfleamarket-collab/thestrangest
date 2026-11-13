@@ -1833,6 +1833,20 @@
   "sellable": true,
   "size": 1.7
  },
+ "jugball": {
+  "value": 4,
+  "weight": 0.12,
+  "stackable": true,
+  "sellable": true,
+  "size": 0.1
+ },
+ "jugclub": {
+  "value": 9,
+  "weight": 0.25,
+  "stackable": true,
+  "sellable": true,
+  "size": 0.5
+ },
  "bmx": {
   "slot": "hand",
   "grants": "bmx",
@@ -2061,6 +2075,10 @@
   "value": 150,
   "weight": 0.9
  },
+ "vr_headset": {
+  "value": 300,
+  "weight": 0.5
+ },
  "shroom_keen": {
   "edible": true,
   "stackable": true,
@@ -2169,5 +2187,113 @@
   "weight": 1.1,
   "sellable": true,
   "size": 0.5
+ },
+ "im_lace": {
+  "implant": "head",
+  "plusInt": 10,
+  "value": 600,
+  "weight": 0.1,
+  "size": 0.12,
+  "icon": "gadget",
+  "color": "#7a8af0"
+ },
+ "im_luck": {
+  "implant": "head",
+  "grants": "luck",
+  "value": 500,
+  "weight": 0.1,
+  "size": 0.12,
+  "icon": "gadget",
+  "color": "#f2c14e"
+ },
+ "im_cateye": {
+  "implant": "eyes",
+  "grants": "night",
+  "value": 450,
+  "weight": 0.1,
+  "size": 0.12,
+  "icon": "gadget",
+  "color": "#3aff6a"
+ },
+ "im_hawk": {
+  "implant": "eyes",
+  "grants": "keen",
+  "value": 400,
+  "weight": 0.1,
+  "size": 0.12,
+  "icon": "gadget",
+  "color": "#f0a030"
+ },
+ "im_myo": {
+  "implant": "arms",
+  "plusStr": 10,
+  "value": 600,
+  "weight": 0.1,
+  "size": 0.12,
+  "icon": "gadget",
+  "color": "#e0543f"
+ },
+ "im_heart": {
+  "implant": "chest",
+  "plusSta": 10,
+  "value": 600,
+  "weight": 0.1,
+  "size": 0.12,
+  "icon": "gadget",
+  "color": "#e8c650"
+ },
+ "im_gill": {
+  "implant": "chest",
+  "grants": "gills",
+  "value": 450,
+  "weight": 0.1,
+  "size": 0.12,
+  "icon": "gadget",
+  "color": "#5ab8f0"
+ },
+ "im_plate": {
+  "implant": "chest",
+  "plusHp": 20,
+  "value": 500,
+  "weight": 0.1,
+  "size": 0.12,
+  "icon": "gadget",
+  "color": "#a8adb8"
+ },
+ "im_spring": {
+  "implant": "legs",
+  "grants": "spring",
+  "value": 500,
+  "weight": 0.1,
+  "size": 0.12,
+  "icon": "gadget",
+  "color": "#8fd36a"
+ },
+ "im_twitch": {
+  "implant": "legs",
+  "grants": "swift",
+  "value": 550,
+  "weight": 0.1,
+  "size": 0.12,
+  "icon": "gadget",
+  "color": "#ef6d5a"
+ },
+ "im_adrenal": {
+  "implant": "spine",
+  "grants": "adrenal",
+  "value": 450,
+  "weight": 0.1,
+  "size": 0.12,
+  "icon": "gadget",
+  "color": "#ff9a40"
+ },
+ "im_marrow": {
+  "implant": "spine",
+  "grants": "mend",
+  "value": 450,
+  "weight": 0.1,
+  "size": 0.12,
+  "icon": "gadget",
+  "color": "#d8343a"
  }
 }

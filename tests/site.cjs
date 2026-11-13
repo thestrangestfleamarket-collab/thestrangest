@@ -14,6 +14,26 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
   const fs=require('fs'), gf=fs.readdirSync('dist/g').filter(f=>f!=='market.html');
   for(const p of ['/market.html','/market','/door.html','/avatar.html','/g/market.html','/g/market','/g/'+gf[0]])ok((await fetch(BASE+p)).status===404,p+' is not handed out by itself');
   ok((await fetch(BASE+'/g/'+gf[0],{headers:{cookie:'tsfm-pass=dev:site-check'}})).status===200,'/g/'+gf[0]+' with a login');
+  for(const u of ['/vr','/asylum']){ const r=await fetch(BASE+u); ok(r.status===200&&/Hollow Pines/.test(await r.text()),u+' (Hollow Pines) is handed to anyone, no login'); }
+  for(const u of ['/holo','/roam','/boarded']){ const a=await fetch(BASE+u,{redirect:'manual'}), b=await fetch(BASE+u,{headers:{cookie:'tsfm-pass=dev:site-check'}}), c=await fetch(BASE+u+'.html');
+    ok(a.status===302&&b.status===200&&/The Holodeck/.test(await b.text())&&c.status===404,u+' (a holodeck page) is handed to a login only; anyone else is sent to the door'); }
+  { const r=await fetch(BASE+'/wave'); ok(r.status===200&&/Shardwave/.test(await r.text()),'/wave (SHARDWAVE) is handed to anyone, no login'); }
+  { const r=await fetch(BASE+'/holmes'); ok(r.status===200&&/The Speckled Band/.test(await r.text()),'/holmes (THE SPECKLED BAND) is handed to anyone, no login');
+    const t=await fetch(BASE+'/holmes',{method:'POST',headers:{'content-type':'application/json',origin:BASE},body:'{}'}); ok(t.status===401,'but the others answer only a login ('+t.status+')'); }
+  for(const u of ['/jam','/rock']){ const r=await fetch(BASE+u); ok(r.status===200&&/Stadium Jam/.test(await r.text()),u+' (STADIUM JAM) is handed to anyone, no login'); }
+  {
+    const a=await fetch(BASE+'/jam-assets/left.glb'), d=await fetch(BASE+'/jam-assets/drums.json'); ok(a.status===200&&/gltf/.test(a.headers.get('content-type')||'')&&d.status===200,'and its hands and samples under /jam-assets/'); }
+  { const sock=name=>new Promise(res=>{ const s=new WebSocket('ws://127.0.0.1:'+PORT+'/parties/jam/site-check'), got=[]; s.onmessage=e=>got.push(JSON.parse(e.data)); s.onopen=()=>{ s.send(JSON.stringify({t:'join',name,inst:'guitar'})); res({s,got}); }; s.onerror=()=>res({s,got}); }), nap=()=>new Promise(r=>setTimeout(r,500));
+    const a=await sock('Ann'); await nap(); const b=await sock('Bob'); await nap(); b.s.send(JSON.stringify({t:'note',k:'d',pad:99,v:5,x:1})); b.s.send(JSON.stringify({t:'hack'})); await nap(); b.s.close(); await nap(); a.s.close();
+    const T=a.got.map(m=>m.t).join(), n=a.got.find(m=>m.t==='note')||{};
+    ok(T==='welcome,peer-join,note,peer-leave'&&b.got[0]&&b.got[0].slot===1&&b.got[0].peers.length===1&&n.pad===15&&n.v===1&&!('x' in n),'a STADIUM JAM room seats two, passes a note on cut to its rules, and says who left: '+T); }
+  { const r=await fetch(BASE+'/scare'); ok(r.status===200&&/Vesper Ward/.test(await r.text()),'/scare (VESPER WARD) is handed to anyone, no login');
+    const a=await fetch(BASE+'/scare-assets/pale.glb'); ok(a.status===200&&/gltf/.test(a.headers.get('content-type')||''),'and its models under /scare-assets/'); }
+  { const r=await fetch(BASE+'/shoot'); ok(r.status===200&&/Breachline/.test(await r.text()),'/shoot (BREACHLINE) is handed to anyone, no login'); }
+  { const r=await fetch(BASE+'/golf'); ok(r.status===200&&/Halcyon Greens/.test(await r.text()),'/golf (HALCYON GREENS) is handed to anyone, no login');
+    const a=await fetch(BASE+'/golf-assets/sky/dusk_4k.jpg'), h=await fetch(BASE+'/golf-assets/sky/dusk_1k.hdr.txt'), m=await fetch(BASE+'/golf-assets/models/fern_02/fern_02.json'), x=await fetch(BASE+'/golf-assets/../g/market.html');
+    ok(a.status===200&&/image\/jpeg/.test(a.headers.get('content-type')||'')&&h.status===200&&m.status===200&&x.status!==200,'and its sky, light and models under /golf-assets/ (nothing outside it)'); }
+  { const r=await fetch(BASE+'/duel'), a=await fetch(BASE+'/duel-assets/gunmetal_color.jpg'); ok(r.status===200&&/AR Duel/.test(await r.text())&&a.status===200&&/image\/jpeg/.test(a.headers.get('content-type')||''),'/duel (AR DUEL) and its pictures are handed to anyone, no login'); }
   { const m=await fetch(BASE+'/app.webmanifest'), j=m.ok?await m.json().catch(()=>null):null, ic=j&&j.icons?await Promise.all(j.icons.map(i=>fetch(BASE+i.src).then(r=>r.ok&&/image\/png/.test(r.headers.get('content-type')||'')))):[];
     ok(!!j&&/manifest\+json/.test(m.headers.get('content-type')||'')&&j.start_url==='/'&&ic.length>=2&&ic.every(Boolean),'the installable app: its manifest and icons are handed to anyone'); }
   { const home=body=>fetch(BASE+'/home',{method:'POST',headers:{cookie:'tsfm-pass=dev:site-check',origin:BASE,'content-type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()).catch(e=>({why:String(e)}));
@@ -111,7 +131,7 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
   ok(await door.locator('#dcode').isVisible().catch(()=>false),'/ without a login: the door, with its invite code box');
   ok(!derr.length,'the door: no page errors '+derr.join(' | '));
   await door.click('[data-a="ask"]'); await door.fill('#dmail','asker@example.com'); await door.click('[data-a="doask"]'); await door.waitForTimeout(1000);
-  ok(/asker@example\.com/.test(await door.locator('#door').innerText()),'the door: asking for an invite takes an email');
+  ok(/asker@example\.com/i.test(await door.locator('#door').innerText()),'the door: asking for an invite takes an email');
   { const pc=await b.newContext({viewport:{width:412,height:915},isMobile:true,hasTouch:true}), ph=await pc.newPage(); await ph.goto(BASE+'/',{waitUntil:'load'}); await ph.waitForTimeout(1500);
     ok(await ph.locator('#dcode').isVisible().catch(()=>false),'the door on a phone: the invite code box, not turned away'); await pc.close(); }
   const ctx=await b.newContext(); await ctx.addCookies([{name:'tsfm-pass',value:'dev:site-check',url:BASE}]);

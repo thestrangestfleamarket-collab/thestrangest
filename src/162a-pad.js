@@ -62,7 +62,7 @@ import {PAD} from './075-main-13.js';
   const step=(dx,dy)=>{ const k=dx+','+dy, now=performance.now(); if(k!==nav){ nav=k; navT=now+350; return !!(dx||dy); } if((dx||dy)&&now>=navT){ navT=now+120; return true; } return false; };
   const way=(on,ax)=>{ const x=ax[0]||0, y=ax[1]||0, dx=on(14)?-1:on(15)?1:Math.abs(x)>.5&&Math.abs(x)>Math.abs(y)?Math.sign(x):0, dy=dx?0:on(12)?-1:on(13)?1:Math.abs(y)>.5?Math.sign(y):0; return [dx,dy]; };
   const fire=el=>{ el.dispatchEvent(new Event('input',{bubbles:true})); el.dispatchEvent(new Event('change',{bubbles:true})); };
-  const closeBtn=p=>p&&[...p.querySelectorAll('button')].find(b=>b.classList.contains('pX')||/close/i.test(b.getAttribute('aria-label')||'')||/close$|x$/i.test(b.id)||/^(X|×|✕|CLOSE|DONE|LEAVE)$/i.test(b.textContent.trim()));
+  const closeBtn=p=>p&&[...p.querySelectorAll('button')].find(b=>b.classList.contains('pX')||/close/i.test(b.getAttribute('aria-label')||'')||/close$|x$/i.test(b.id)||/^(X|×|✕|CLOSE|DONE|LEAVE|✕ BACK|BACK)$/i.test(b.textContent.trim()));
   const back=()=>{ if(PAD.grab){ grab(null); return; } if(UI.menuOpen||document.getElementById('movesp')?.style.display==='block'){ tap('Escape'); return; }
     const p=(PAD.ui&&PAD.ui.closest('body>*'))||panels().slice(-1)[0], x=closeBtn(p); if(x){ x.click(); return; } if(p)(PAD.ui&&p.contains(PAD.ui)?PAD.ui:p).dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true})); };   // a box with no close button (the emotes) takes Escape
   const menus=(on,hit,ax,act)=>{ '@later'; if(PAD.mouse){ if(!act)return; PAD.mouse=false; } const [dx,dy]=way(on,ax), a=PAD.ui, cs=ctls();
@@ -82,8 +82,10 @@ import {PAD} from './075-main-13.js';
     if(PAD.capture){ const f=PAD.capture, mo=BIND.mod, i=Bv.findIndex((v,j)=>j<16&&v>.5&&j!==mo);   // the next button pressed; with the hold-for-more button held, its second layer; that button alone, itself
       if(Bv.every(v=>!(v>.5))){ if(capUp&&capM){ PAD.capture=null; f(mo); return; } capUp=true; capM=false; } else if(capUp&&mo>=0&&on(mo)&&i<0)capM=true;
       if(capUp&&i>=0){ PAD.capture=null; f(mo>=0&&on(mo)?i+M_:i); return; } if(now>capT){ PAD.capture=null; f(null); } return; }
+    if(UI.gamewin==='pin'){ hold('h',on(4)||on(6)||on(14)?'a':null); hold('v',on(5)||on(7)||on(15)?'d':null); hold('A',on(b('jump'))||(ax[3]||0)>.6?' ':null); if(hit(b('back')))tap('Escape'); PAD.mv=null; PAD.aWait=true; return; }   // a pinball table: a bumper or trigger a side is its flipper, A or the right stick pulled back the plunger, B steps away
     if(UI.gamewin){ const lx=ax[0]||0, ly=ax[1]||0, dx=on(14)?-1:on(15)?1:Math.abs(lx)>.4?Math.sign(lx):0, dy=on(12)?-1:on(13)?1:Math.abs(ly)>.4?Math.sign(ly):0;   // a cabinet or the BBS: the stick is the arrows, A fires or enters, B leaves, X is the game's magic, Y its menu
       hold('h',dx<0?'ArrowLeft':dx>0?'ArrowRight':null); hold('v',dy<0?'ArrowUp':dy>0?'ArrowDown':null); hold('A',on(b('jump'))?(UI.gamewin==='bbs'?'Enter':' '):null); hold('X',on(b('use'))?'c':null); if(hit(b('kick')))tap('m'); if(hit(b('back')))tap('Escape'); PAD.mv=null; PAD.aWait=true; return; }
+    if(UI.hubOpen&&UI.hubPad){ letGo(); UI.hubPad(ax[0]||0,ax[1]||0,hit(b('jump')),hit(5)||hit(15)?1:hit(4)||hit(14)?-1:0,hit(3)); if(hit(b('back'))||hit(b('menu')))tap('Escape'); PAD.mv=null; PAD.aWait=true; return; }   // ESC's wheel (162ed-hub)
     if(panels().length){ letGo(); PAD.aWait=true; menus(on,hit,ax,act); if(hit(b('back')))back(); else if(hit(b('menu'))&&UI.menuOpen)tap('Escape'); return; }
     if(SHARED.drive){ letGo(); nav=''; PAD.mv=null; if(SHARED.drive.pad)SHARED.drive.pad(gp,dt,hit,on); if(hit(b('menu')))tap('Escape'); return; }
     nav=''; if(PAD.ui||PAD.at){ mark(null); PAD.at=null; } if(PAD.aWait&&!on(b('jump')))PAD.aWait=false;
@@ -153,5 +155,5 @@ import {PAD} from './075-main-13.js';
     el.querySelector('#padrst').onclick=()=>{ useLay(LNAME); save(); UI.padPage(); };
     if(PAD.ui&&!PAD.ui.isConnected)mark(null); };
   UI.padKeys=()=>{ if(UI.menuOpen)UI.padPage(); };
-  window.PADDBG=()=>({layout:LNAME,bind:{...BIND},held:[...PAD.held.entries()],useX:!!PAD.useX,modUsed:!!PAD.modUsed,panels:PAD.panels().map(e=>e.id||e.className)});
+  window.PAD=PAD; window.PADDBG=()=>({layout:LNAME,bind:{...BIND},held:[...PAD.held.entries()],useX:!!PAD.useX,modUsed:!!PAD.modUsed,panels:PAD.panels().map(e=>e.id||e.className)});
 }

@@ -23,5 +23,13 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
   ok(frames>=2,'the game keeps running after it comes back ('+frames+' frames in 3 s)');
   const shot1=(await pg.screenshot()).length;
   ok(shot1>shot0*0.5,'it draws again (screenshot '+shot1+' bytes against '+shot0+' before)');
+  // lost again and again (a graphics card that keeps giving up): it stops trying and offers a reload and a lighter picture
+  for(let i=0;i<3;i++){ await pg.evaluate(()=>window.__LX.loseContext()); await pg.waitForTimeout(1200); await pg.evaluate(()=>window.__LX.restoreContext()); await pg.waitForTimeout(2500); }
+  const gu=await pg.evaluate(()=>{ const d=document.getElementById('ctxlost'); return {shown:!!d&&d.style.display==='grid',text:d?d.textContent:'',reload:!!(d&&d.querySelector('[data-r]')),lite:!!(d&&d.querySelector('[data-l]'))}; });
+  ok(gu.shown&&/KEEPS GETTING LOST/.test(gu.text)&&gu.reload&&gu.lite,'lost three times in a row, it stops and offers RELOAD and a lighter picture '+JSON.stringify({shown:gu.shown,reload:gu.reload,lite:gu.lite}));
+  await pg.evaluate(()=>document.querySelector('#ctxlost [data-l]').click()); await pg.waitForTimeout(3000);
+  let again=false; for(let i=0;i<900&&!(again=await pg.evaluate(()=>!!window.__started).catch(()=>false));i++)await pg.waitForTimeout(500);
+  const lite=await pg.evaluate(()=>({lite:SHARED.lite,shadows:__dbg.renderer?__dbg.renderer.shadowMap.enabled:null,key:localStorage.getItem('lite-picture')})).catch(e=>({err:e.message}));
+  ok(again&&lite.lite===true&&lite.key==='1','the lighter picture: the game starts again without shadows, and the choice is kept '+JSON.stringify(lite));
   ok(!errs.length,'no page errors '+[...new Set(errs)].join(' | '));
   await b.close(); console.log(bad?bad+' FAILED':'all good'); process.exit(bad?1:0); })();

@@ -41,7 +41,7 @@ await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL
   // the cars: steel outside under graffiti with real window openings and sliding doors; inside bucket seats, partitions, poles and rails, ad cards, two light strips and two lights
   const z=k=>k*ZU, HL0=CARL/2*T, W0=CW*T, WI=CWI*T, F=z(FZ), PX=16, GR=M.GRAF;
   const font=(g,px,w=800)=>{ g.font=w+' '+px+'px "Helvetica Neue",Helvetica,Arial,sans-serif'; };
-  const canvas=(w,h)=>{ const cv=document.createElement('canvas'); cv.width=w; cv.height=h; return cv; }, ctex=(cv,rep)=>{ const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; if(rep)t.wrapS=t.wrapT=THREE.RepeatWrapping; return t; };
+  const canvas=(w,h)=>{ const cv=document.createElement('canvas'); cv.width=w; cv.height=h; return cv; }, ctex=(cv,rep)=>{ const t=new THREE.CanvasTexture(cv); t.colorSpace=THREE.SRGBColorSpace; if(rep)t.wrapS=t.wrapT=THREE.RepeatWrapping; return t; };
   const rng=seed=>{ let s=(Math.imul(seed|0,2654435761)^0x9e3779b9)>>>0||7; return ()=>{ s^=s<<13; s>>>=0; s^=s>>>17; s^=s<<5; s>>>=0; return s/4294967296; }; };
   const quad=(G,a,b,c,d,m,uv=[0,0,1,0,1,1,0,1])=>{ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute([...a,...b,...c,...a,...c,...d],3));
     g.setAttribute('uv',new THREE.Float32BufferAttribute([uv[0],uv[1],uv[2],uv[3],uv[4],uv[5],uv[0],uv[1],uv[4],uv[5],uv[6],uv[7]],2)); g.computeVertexNormals(); const me=new THREE.Mesh(g,m); me.receiveShadow=true; G.add(me); return me; };
@@ -160,7 +160,7 @@ await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL
   const cars=()=>TRAINS.list.flatMap(tn=>tn.cars.map(c=>({tn,c})));
   const HL=CARL/2*T, HW=CW*T, HWI=CWI*T, R=.36, AISLE=(CWI-.95)*T-R;
   const inCar=(x,z)=>{ for(const {tn,c} of cars()){ if(!c.p)continue; const q=loc(c.p,x,z); if(Math.abs(q.a)<HL-.2&&Math.abs(q.v)<HWI)return {tn,c,q}; } return null; };
-  L.under.push({inside:(x,z)=>!!inCar(x,z),ground:()=>L.H(FLOOR)}); TRAINS.cars=cars;
+  L.under.push({inside:(x,z)=>!!inCar(x,z),ground:()=>L.H(FLOOR)}); TRAINS.cars=cars; TRAINS.inCar=inCar;
   const atDoor=a=>DOORS.some(m=>Math.abs(a-m*T)<DWH*T-.15);
   const ride={c:null,tn:null}, STEP=2.2*T;
   const edges=tn=>{ const S=tn.S, k=tn.track, st=S.doors?S.at:null;
@@ -223,7 +223,7 @@ await grab('trains',async()=>{ const M=SHARED.METRO, L=LOOP, D=L.D, T=TILE, CARL
         if(Math.abs(q.v)>=HW+R)continue; const w=wrl(c.p,q.a,Math.sign(q.v||1)*(HW+R)); pos.x=w.x; pos.z=w.z; } }
     for(const tn of TRAINS.list)edges(tn);
     const first=UI.view==='first', cam=SHARED.cam&&SHARED.cam.position;
-    for(const tn of TRAINS.list)for(const c of tn.cars){ const on=ride.tn===tn&&!first, near=down&&Math.hypot(c.p.x-pos.x,c.p.z-pos.z)<60*T; c.G.visible=!(L.tunHid&&!L.inStation(c.p.x,c.p.z)); c.ext.visible=true; c.inner.visible=near; c.strips.visible=true; c.upper['-1'].visible=c.upper['1'].visible=true; }
+    for(const tn of TRAINS.list)for(const c of tn.cars){ const on=ride.tn===tn&&!first, near=down&&Math.hypot(c.p.x-pos.x,c.p.z-pos.z)<60*T; c.G.visible=down&&!(L.tunHid&&!L.inStation(c.p.x,c.p.z)); c.ext.visible=true; c.inner.visible=near; c.strips.visible=true; c.upper['-1'].visible=c.upper['1'].visible=true; }
     const ms=performance.now(); if(ms<bt)return; bt=ms+500; if(!down)return;
     if(ride.tn)signText(ride.tn);
     const h=L.here(pos.x,pos.z); if(h.d<40*T){ const st=h.st;

@@ -23,7 +23,7 @@ GUARD.list=[];
   TALK.tests.bounty=a=>a==='on'?!!B:a==='done'?done():false;
   TALK.vars.bounty=()=>{ const d=B&&def(B.id); return d?d.t+': '+B.got+' OF '+B.n:'NOTHING'; };
   TALK.tests.vit=a=>a==='hurt'?VIT.hp<.99:true;
-  TALK.ops.heal=a=>{ const c=+a||0; if(INV.cash<c)return say('YOU CANNOT AFFORD IT.','#c8a090'); INV.cash-=c; VIT.heal(1); say('THE HERBALIST MENDS YOU.','#b8f0a0'); FORAGE.draw&&FORAGE.draw(); };
+  TALK.ops.heal=a=>{ const c=+a||0; if(!INV.afford(c))return say('YOU CANNOT AFFORD IT.','#c8a090'); INV.pay(c); VIT.heal(1); say('THE HERBALIST MENDS YOU.','#b8f0a0'); FORAGE.draw&&FORAGE.draw(); };
   FORAGE.BUYK.slime=['slime_']; FORAGE.BUYK.gems=[...GEMS.map(g=>g[0]),'raw_geode']; FORAGE.BUYK.fish=['x_'];
   LINES.add('gd_pub',['Long watch. Good ale.','Sit down, sit down. Old Gristle won\'t bite.','To the keep!','Another round before the stair calls.','You were down there? Tell us everything.']);
   LINES.add('gd_up',['Back up! Good.','You made it out. Most do.','Anything follow you? No? Good.','Welcome back to the light.','Up the stair and still standing.']);
@@ -67,7 +67,7 @@ GUARD.list=[];
       s.hold=true; s.to=null; s.x=N.spot.x; s.z=N.spot.z; s.face={x:tg[0],z:tg[2]}; A.act='';
       const M=A.mv; if(!M){ if((N.cd=(N.cd??Math.random()*2)-dt)>0)return; const k=bow?'draw':R.w==='spear'?'thrust':['slash','back','overhead','thrust','slash'][Math.floor(Math.random()*5)]; A.mv={k,t:0,hit:false}; return; }
       const q=MOVE[M.k], u=M.t/q.T; if(!M.hit&&u>=q.hit){ M.hit=true; const vis=NPCS.live?NPCS.live(s.x,N.g.position.y,s.z):true;
-        if(bow)loose(N,new THREE.Vector3(tg[0],tg[1],tg[2]),.05+.04*Math.random()); else if(vis){ const p=new THREE.Vector3(tg[0],tg[1]-(M.k==='thrust'?.15*MV:0),tg[2]); chipsAt(p,M.k==='overhead'?6:4,0x8a6a42); SFX.play&&SFX.play('step',{vol:.6,pitch:.8+Math.random()*.3,at:{x:p.x,z:p.z},far:14*T}); } }
+        if(bow)loose(N,new THREE.Vector3(tg[0],tg[1],tg[2]),.05+.04*Math.random()); else if(vis){ const p=new THREE.Vector3(tg[0],tg[1]-(M.k==='thrust'?.15*MV:0),tg[2]); chipsAt(p,M.k==='overhead'?6:4,0x8a6a42); SFX.play&&SFX.play('blade',{vol:.6,vary:.12,at:{x:p.x,z:p.z},far:14*T}); } }
       if(u>=1){ A.mv=null; N.cd=bow?1.5+Math.random()*2:.5+Math.random()*1.2; } };
     // the rig: the squirrel knight's bones, scaled to its bulk, with a cape and two ears that swing; the body from FOLK
     const mk=R=>{ const b=R.bulk||1, sp=R.sp, cat=sp==='caterpillar', A={act:'',t:0,k:0};

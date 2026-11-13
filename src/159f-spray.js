@@ -18,6 +18,9 @@ import {SECTION, SYS, TILE} from './006-map-pre.js';
   const mine=new Set(), C=new THREE.Color();
   const drawTag=t=>{ const o=new V3(...t.o), n=new V3(...t.n).normalize(), [a,b]=basis(n), p=String(t.p).split(',').map(Number); C.setHex(COL[t.c]||0xffffff); for(let i=0;i+1<p.length;i+=2)put(o.clone().addScaledVector(a,p[i]/100).addScaledVector(b,p[i+1]/100),n,t.w,C); };
   SYS.add('world',(k,v)=>{ if(!k.startsWith('tag:')||typeof v!=='string'||mine.has(k))return; try{ drawTag(JSON.parse(v)); }catch(e){} },'159f-spray');
+  // a tag cleaned off (the park's rovers, 150ph): its word cleared for everyone, the dots drawn again from the tags left
+  SPRAY.wipe=(x,z,r)=>{ const W=ONLINE.world||{}; let n=0; for(const k in W){ if(!k.startsWith('tag:')||!W[k])continue; try{ const t=JSON.parse(W[k]); if(Math.hypot(t.o[0]-x,t.o[2]-z)<r){ ONLINE.put(k,''); W[k]=''; mine.delete(k); n++; } }catch(e){} }
+    if(n){ IM.count=0; for(const k in W)if(k.startsWith('tag:')&&W[k])try{ drawTag(JSON.parse(W[k])); }catch(e){} IM.instanceMatrix.needsUpdate=true; } return n; };
   const S=()=>{ try{ return JSON.parse(OWNED.get('spray')||'{}'); }catch(e){ return {}; } };
   SPRAY.left=id=>{ const s=S(); return s[id]==null?PER[id]||0:s[id]; }; const use=(id,n)=>{ const s=S(); s[id]=Math.max(0,SPRAY.left(id)-n); OWNED.set('spray',JSON.stringify(s)); return s[id]; };
   const sp=document.createElement('div'); sp.id='sprayp'; sp.hidden=true;

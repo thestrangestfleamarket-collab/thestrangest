@@ -1,0 +1,26 @@
+// THE CIGAR IN YOUR MOUTH AND THE NIGHT-VISION GOGGLES (owner, 11 Nov 2026): a held cigar sits at your mouth, your arm down; worn night-vision goggles, or a night vision mushroom, turn the picture green and bright. With an out folder, third-person shots in the park's open meadow.
+const { chromium } = require('playwright');
+(async()=>{ const OUT=process.argv[2]; const b=await chromium.launch({executablePath:process.env.PW_CHROMIUM,args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:960,height:640}}); const errs={}; let bad=0;
+  pg.on('pageerror',e=>{ const k=e.message.slice(0,160); errs[k]=(errs[k]||0)+1; });
+  const rec=(n,ok,i)=>{ if(!ok)bad++; console.log((ok?'PASS ':'FAIL ')+n+(i?'  · '+i:'')); }, wait=ms=>new Promise(r=>setTimeout(r,ms));
+  await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&hour=23&at=80,95',{timeout:240000}); await pg.waitForFunction(()=>window.__started,null,{timeout:300000});
+  await pg.waitForFunction(()=>{ const L=document.getElementById('loading'); return !L||!L.isConnected||L.hidden||getComputedStyle(L).display==='none'||+getComputedStyle(L).opacity<.05; },null,{timeout:600000}); await wait(3000);
+  await pg.evaluate(()=>{ FORAGE.give('cigar',1); FORAGE.give('nv_goggles',1); WIELD.set('cigar'); const UI=__dbg.UI; UI.setView('third'); UI.dist*=.45; SHARED.pitchTo=SHARED.pitch=.15; SHARED.yawTo=SHARED.yaw=SHARED.heading; });
+  await wait(2500);
+  const c=await pg.evaluate(()=>{ const m=WIELD.held(), V=m.position.constructor, p=new V().setFromMatrixPosition(m.matrix), J=W3.lastB&&W3.lastB.J, h=J&&new V(J.head.x,J.head.y,J.head.z).applyMatrix4(W3.group.matrixWorld);
+    return {shown:m.visible, aim:!!(__dbg.ST&&__dbg.ST.aim), d:h?+p.distanceTo(h).toFixed(3):null, up:h?+(p.y-h.y).toFixed(3):null}; });
+  rec('the cigar is shown at your head, not in your hand',c.shown&&c.d!=null&&c.d<.4,JSON.stringify(c));
+  if(OUT)await pg.screenshot({path:OUT+'/cigar.png'});
+  await pg.evaluate(()=>{ WIELD.set(null); EQUIP.wear('nv_goggles',true); });
+  const NV=()=>SHARED.composer.passes.find(p=>p.uniforms&&p.uniforms.uOn&&/vec3\(\.2,1\.,\.35\)/.test(p.material.fragmentShader));
+  await pg.waitForFunction(`(${NV})()&&(${NV})().uniforms.uOn.value>.9`,null,{timeout:60000}).catch(()=>{}); await wait(500);
+  const n=await pg.evaluate(()=>({night:EQUIP.night, on:SHARED.composer.passes.some(p=>p.enabled&&p.uniforms&&p.uniforms.uOn&&p.uniforms.uOn.value>.9&&/vec3\(\.2,1\.,\.35\)/.test(p.material.fragmentShader))}));
+  rec('night-vision goggles turn the picture green',n.night&&n.on,JSON.stringify(n));
+  if(OUT)await pg.screenshot({path:OUT+'/nightvision.png'});
+  await pg.evaluate(()=>EQUIP.wear('nv_goggles',true)); await pg.waitForFunction(`!((${NV})()||{}).enabled`,null,{timeout:60000}).catch(()=>{});
+  const f=await pg.evaluate(()=>SHARED.composer.passes.every(p=>!(p.enabled&&p.uniforms&&p.uniforms.uOn&&/vec3\(\.2,1\.,\.35\)/.test(p.material.fragmentShader))));
+  rec('off again when you take them off',f);
+  await pg.evaluate(()=>{ FORAGE.S.fx.dark=30; }); await pg.waitForFunction(`((${NV})()||{}).enabled&&(${NV})().uniforms.uOn.value>.9`,null,{timeout:60000}).catch(()=>{});
+  rec('a night vision mushroom gives the same night vision',await pg.evaluate(`!!((${NV})()||{}).enabled`));
+  const E=Object.entries(errs); rec('no page errors',!E.length,E.map(([k,n])=>n+'× '+k).join(' | '));
+  console.log(bad?bad+' FAILED':'ALL PASS'); await b.close(); process.exit(bad?1:0); })();

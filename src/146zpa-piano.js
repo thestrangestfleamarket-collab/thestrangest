@@ -1,12 +1,13 @@
 // THE PIANO (owner, 7 Nov 2026: "lets do piano and drums and harp"): an upright of 88 keys, set down and sat at (INSTR, 146zp): each key a lever that dips under its finger, the sustain pedal under the right foot; its sound each string struck by a felt hammer (the strings' partials a little sharp as real stiff strings are, two strings a note beating, a damper on every key below the top two octaves); the book is Mutopia's solo piano pieces (data/piano-songs.json).
 import {THREE} from './003-shx.js';
 import {INSTR} from './003b-systems.js';
+import {GSND} from './146zo-guitar-sound.js';
 { const {box,cyl,mat,sm}=INSTR, V3=THREE.Vector3, M4=THREE.Matrix4, Q4=THREE.Quaternion;
-  // the keyboard (metres, the player at the origin facing +z, +x their left): white keys 20.5 mm (an upright sized for the Walker), the low notes on the left
-  const WK=.0205, KF=.27, KL=.135, BL=.085, BW=.011, KY=.65, LO=21, HI=108;
+  // the keyboard (metres, the player at the origin facing +z, +x their left): white keys 20.5 mm (an upright sized for the Walker), the low notes on the left; the keys as long as Polyfork's upright's
+  const WK=.0205, KF=.27, KL=.172, BL=.112, BW=.011, KY=.65, LO=21, HI=108;
   const BLACK=m=>[1,3,6,8,10].includes(m%12), WI=[], KX=[];
   { let w=0; for(let m=LO;m<=HI;m++){ if(BLACK(m)){ WI[m]=w-.5; } else { WI[m]=w; w++; } KX[m]=(25.5-WI[m])*WK; } }
-  const top=(m,o=new V3())=>BLACK(m)?o.set(KX[m],KY+.022,KF+.06):o.set(KX[m],KY,KF+.03);
+  const top=(m,o=new V3())=>BLACK(m)?o.set(KX[m],KY+.022,KF+KL-BL+.015):o.set(KX[m],KY,KF+.03);
   const imHz=m=>440*Math.pow(2,(m-69)/12);
   const K={id:'piano',name:'A PIANO',skill:'piano',seat:{y:.46,z:0},lean:.16,look:.42,BOOK:[],slip:[21,108],cam:{p:[-1.5,1.3,.12],t:[0,.64,.28]},
     help:'Z S X D C… AND Q 2 W 3 E… THE KEYS · ← → THE OCTAVE · SPACE THE PEDAL · SHIFT LOUDER · ` A SONG'};
@@ -17,11 +18,12 @@ import {INSTR} from './003b-systems.js';
       if(n<=5){ const dc=.00045*(1+((m*7)%5)*.25); modes.push([f*(1-dc),t*1.15,a*.55],[f*(1+dc),t*.55,a*.5]); } else modes.push([f,t,a]); }
     return {k:'hit',modes,tau:.0008,id:m,ch:200+m,noise:[.035*v,.012,70,1800]}; };
   K.dsp=()=>({fam:'hit',poly:40,body:[],dry:0,wet:0,gain:.72});
-  // the recordings: the Salamander grand, every third note, each played at the nearest one's speed; played soft, darker, as a real hammer's felt is
-  K.samples={...__DATA__("data/piano-samples.json"),file:__FILE__("data/piano-samples.mp3")}; const PS=K.samples.s.map(r=>r[0]);
-  K.sample=e=>{ const m=e.n, v=Math.max(.05,Math.min(1,e.v)); let m0=PS[0]; for(const k of PS)if(Math.abs(k-m)<Math.abs(m0-m))m0=k; return [{k:m0,rate:Math.pow(2,(m-m0)/12),gain:1.1*Math.pow(v,1.5),lp:900+15000*v*v,id:m,re:true}]; };
+  // the recordings: the Salamander grand, every third note (as it was recorded) at three loudnesses, each played at the nearest one's speed, the nearest loudness up or down to the touch; a key let go, its damper heard falling
+  K.samples={...__DATA__("data/piano-samples.json"),file:__FILE__("data/piano-samples.mp3")};
+  const VL=[.3,.6,.95];
+  K.sample=(e,P,S)=>{ const m=e.n, v=Math.max(.05,Math.min(1,e.v)), L=v<.45?0:v<.78?1:2, n=GSND.near(S,'p'+L,m); return n?[{...n,gain:1.25*Math.pow(v/VL[L],1.1),lp:3000+15000*v*v,id:m,re:true}]:[]; };
   K.sound=e=>[hit(e.n,Math.max(.08,Math.min(1,e.v)))];
-  K.release=(e,P)=>{ if(e.n>88)return []; if(P&&P.st.ped){ (P.st.held||(P.st.held=new Set())).add(e.n); return []; } return [{k:'damp',id:e.n,T:.1+(88-e.n)*.004}]; };
+  K.release=(e,P)=>{ if(e.n>88)return []; if(P&&P.st.ped){ (P.st.held||(P.st.held=new Set())).add(e.n); return []; } return [{k:'damp',id:e.n,T:.1+(88-e.n)*.004,rel:.01+.025*Math.max(.1,Math.min(1,e.v))}]; };
   K.hush=P=>{ const o=[]; for(let m=LO;m<=HI;m++)o.push({k:'damp',id:m,T:.25}); if(P.st.held)P.st.held.clear(); return o; };
   const pedal=(P,d)=>{ P.st.ped=d; if(!d&&P.st.held){ const down=new Set(P.live.ev.filter(e=>e.d>1e6).map(e=>e.n)), out=[]; for(const m of P.st.held)if(!down.has(m))out.push({k:'damp',id:m,T:.12+(88-m)*.004}); P.st.held.clear(); INSTR.raw(P,out); } };
 
@@ -30,27 +32,31 @@ import {INSTR} from './003b-systems.js';
   K.compile=T=>{ const n=T.n, ev=[]; let t=0; for(let i=0;i+3<n.length;i+=4){ t+=n[i]/100; const vh=n[i+3]; ev.push({t,n:n[i+1],d:n[i+2]/100,v:(vh>>1)/15,h:vh&1?'R':'L'}); }
     T.c={ev,len:ev.reduce((a,e)=>Math.max(a,e.t+e.d),0)}; };
 
-  /* ---------- the model: the case, the keys (two instanced sets, each key turned about its far end as it goes down), the pedals, the bench ---------- */
+  /* ---------- the model: Polyfork's upright (its own keys and pedals cut out: tools/pfitems-list.json piano_pf) fitted so its keyboard is these keys, and its bench; the keys (two instanced sets, each key turned about its far end as it goes down) and the pedals the game's; the first shapes till the model comes ---------- */
   const IM=new M4(), IQ=new Q4(), IP=new V3(), IS=new V3(1,1,1), AX=new V3(1,0,0);
-  K.model=()=>{ const g=new THREE.Group(), wood=mat(0x2a1a12), dark=mat(0x150e0a);
+  // (the model's 52 white keys span 1.206 m, their tops 0.678 up, their fronts 0.302 out, its pedals 0.09 apart, 0.1645 up, hinged 0.202 out, 0.118 long: scaled to these keys and turned to face you)
+  const FX=52*WK/1.206, FY=KY/.678, FZ=KF+.302*FX, PEDX=.09*FX, PEDY=.1645*FY, PEDZ=FZ-.202*FX, PEDL=.118*FX;
+  K.model=()=>{ const g=new THREE.Group(), wood=mat(0x2a1a12), dark=mat(0x150e0a), first=new THREE.Group(); g.add(first);
     const NW=52, NB=36, wh=new THREE.InstancedMesh(new THREE.BoxGeometry(WK-.0013,.022,KL),mat(0xece4d0),NW), bk=new THREE.InstancedMesh(new THREE.BoxGeometry(BW,.022,BL),mat(0x111111),NB);
     wh.castShadow=bk.castShadow=true; wh.receiveShadow=true; const keys={}; let iw=0, ib=0;
     for(let m=LO;m<=HI;m++){ const b=BLACK(m), y=b?KY+.011:KY-.011, z=b?KF+KL-BL/2:KF+KL/2; keys[m]={b,i:b?ib++:iw++,y,z,dip:0,set:-1}; }
     g.add(wh,bk); g.userData.keys=keys; g.userData.wh=wh; g.userData.bk=bk;
     for(let m=LO;m<=HI;m++)place(g,m,0);
     const W=NW*WK;
-    g.add(box(W+.05,.03,.2,dark,0,KY-.022-.015,KF+.08));   // the keybed
-    for(const s of [-1,1])g.add(box(.035,.075,.24,wood,s*(W/2+.02),KY-.005,KF+.1));   // the cheeks
-    g.add(box(W+.08,.05,.035,wood,0,KY+.03,KF+KL+.018));   // the rail behind the keys
-    g.add(box(W+.12,1.2,.29,wood,0,.6,KF+KL+.18));   // the case
-    g.add(box(W+.16,.035,.33,dark,0,1.215,KF+KL+.17));   // the lid
-    { const d=box(.62,.2,.018,dark,0,KY+.2,KF+KL+.03); d.rotation.x=-.2; g.add(d); }   // the music desk
-    g.add(box(W-.04,KY-.12,.025,wood,0,(KY-.12)/2+.04,KF+.25));   // the lower panel
-    for(const s of [-1,1]){ g.add(box(.05,KY-.04,.05,wood,s*(W/2+.03),(KY-.04)/2,KF+.07)); g.add(box(.07,.04,.3,dark,s*(W/2+.03),.02,KF+.12)); }   // the legs and toe blocks
-    const peds=[]; for(const x of [.055,0,-.055]){ const p=box(.022,.012,.075,mat(0xc9a24c),0,0,.0375); const pv=new THREE.Group(); pv.position.set(x,.05,KF+.2); pv.add(p); p.position.z=-.0375; g.add(pv); peds.push(pv); }   // soft, middle, sustain (the right)
+    first.add(box(W+.05,.03,.2,dark,0,KY-.022-.015,KF+.08));   // the keybed
+    for(const s of [-1,1])first.add(box(.035,.075,.24,wood,s*(W/2+.02),KY-.005,KF+.1));   // the cheeks
+    first.add(box(W+.08,.05,.035,wood,0,KY+.03,KF+KL+.018));   // the rail behind the keys
+    first.add(box(W+.12,1.2,.29,wood,0,.6,KF+KL+.18));   // the case
+    first.add(box(W+.16,.035,.33,dark,0,1.215,KF+KL+.17));   // the lid
+    { const d=box(.62,.2,.018,dark,0,KY+.2,KF+KL+.03); d.rotation.x=-.2; first.add(d); }   // the music desk
+    first.add(box(W-.04,KY-.12,.025,wood,0,(KY-.12)/2+.04,KF+.25));   // the lower panel
+    for(const s of [-1,1]){ first.add(box(.05,KY-.04,.05,wood,s*(W/2+.03),(KY-.04)/2,KF+.07)); first.add(box(.07,.04,.3,dark,s*(W/2+.03),.02,KF+.12)); }   // the legs and toe blocks
+    // the pedals: soft, middle, sustain (the right), each turning about its far end
+    const peds=[]; for(const x of [PEDX,0,-PEDX]){ const p=box(.039,.016,PEDL,mat(0xc9a24c),0,0,-PEDL/2); const pv=new THREE.Group(); pv.position.set(x,PEDY,PEDZ); pv.add(p); g.add(pv); peds.push(pv); }
     g.userData.peds=peds;
     // the bench
-    g.add(box(.72,.05,.32,dark,0,K.seat.y-.025,-.04)); for(const x of [-.32,.32])for(const z of [-.17,.09])g.add(box(.035,K.seat.y-.05,.035,dark,x,(K.seat.y-.05)/2,z));
+    first.add(box(.72,.05,.32,dark,0,K.seat.y-.025,-.04)); for(const x of [-.32,.32])for(const z of [-.17,.09])first.add(box(.035,K.seat.y-.05,.035,dark,x,(K.seat.y-.05)/2,z));
+    INSTR.pf(mk=>{ const c=mk('piano_pf'), b=mk('piano_bench'); if(!c||!b)return; first.visible=false; g.add(INSTR.fit(c,Math.PI,[FX,FY,FX],[0,0,FZ]),INSTR.fit(b,0,K.seat.y/INSTR.bb(b).max.y,[0,0,-.04])); });
     return g; };
   const place=(g,m,dip)=>{ const k=g.userData.keys[m]; if(Math.abs(k.set-dip)<.003)return; k.set=dip; const mesh=k.b?g.userData.bk:g.userData.wh, L=k.b?BL:KL, piv=KF+KL+.24;
     // (a key is a lever: its front goes down about 9 mm, turning about a point far behind)
@@ -79,7 +85,7 @@ import {INSTR} from './003b-systems.js';
       const cx=(25.5-S[sd])*WK;
       out[sd]={wr:new V3(cx-sg*.012,KY+.06,KF-.085),Fd:new V3(-sg*.08,-.42,1),Dd:new V3(sg*.1,1,.3),pole:new V3(sd==='L'?1:-1,-.55,-.7),tips,w}; }
     return out; };
-  K.feet=(P,t)=>{ const d=P.st.ped?1:0; P.st.pd=(P.st.pd||0)+(d-(P.st.pd||0))*.35; return {L:new V3(.13,.09,.33),R:new V3(-.06,.1-.016*P.st.pd,.35)}; };
+  K.feet=(P,t)=>{ const d=P.st.ped?1:0; P.st.pd=(P.st.pd||0)+(d-(P.st.pd||0))*.35; return {L:new V3(.13,.09,.33),R:new V3(-PEDX,PEDY+.045-.016*P.st.pd,PEDZ-PEDL*.6)}; };
   K.sway=(P,t)=>{ const sc=INSTR.score(P), n=sc.ev.length; return n&&t-sc.ev[n-1].t<3?.02*Math.sin(t*1.6):0; };
   K.roll=(P,t,H)=>H.c?-.06*Math.max(-1,Math.min(1,((H.c.L+H.c.R)/2-25.5)/14)):0;
   K.lookY=(P,t,H)=>H.c?.25*Math.max(-1,Math.min(1,(25.5-(H.c.L+H.c.R)/2)/18)):0;
@@ -87,7 +93,7 @@ import {INSTR} from './003b-systems.js';
   K.anim=(P,H,t,dt)=>{ H.dt=dt*60; const g=H.G, keys=g.userData.keys, down={};
     for(const e of window_(P,H,t)){ const p=press(e,t); if(p>(down[e.n]||0))down[e.n]=p; }
     for(let m=LO;m<=HI;m++){ const k=keys[m], d=down[m]||0; if(d!==k.dip||k.set<0){ k.dip=d; place(g,m,d); } }
-    g.userData.peds[2].rotation.x=.18*(P.st.pd||0); };
+    g.userData.peds[2].rotation.x=-.16*(P.st.pd||0); if(P===INSTR.ME)lightPlayed(down); };
 
   /* ---------- playing it: the computer's keys as two rows of a piano (as music programs have them), the octave, the pedal; the panel's keys by click ---------- */
   const ROW={KeyZ:0,KeyS:1,KeyX:2,KeyD:3,KeyC:4,KeyV:5,KeyG:6,KeyB:7,KeyH:8,KeyN:9,KeyJ:10,KeyM:11,Comma:12,KeyL:13,Period:14,Semicolon:15,Slash:16,
@@ -114,6 +120,22 @@ import {INSTR} from './003b-systems.js';
   const NN=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
   K.status=P=>'OCTAVE '+NN[oct()%12]+(oct()/12-1)+(P.st.ped?' · PEDAL DOWN':'');
   K.draw=(PN,P)=>{ const pv=PN.querySelector('#pnvel'); if(pv&&!pv.oninput)pv.oninput=e=>{ vel=+e.target.value; }; const o=PN.querySelector('#pnoct'); if(o)o.textContent=NN[oct()%12]+(oct()/12-1); const pd=PN.querySelector('#pnped'); if(pd)pd.setAttribute('aria-pressed',String(!!P.st.ped)); };
+
+  /* ---------- the panel's keyboard (owner, 11 Nov 2026: "Full 88-key panel", "Keep book-only"): a display under the book, every key lighting as the piece plays it; all 88 or five octaves round the piece; the notes named or not (each viewer's choice, kept in their browser) ---------- */
+  const PREF={view:innerWidth<560?'five':'all',lab:'none'}; try{ Object.assign(PREF,JSON.parse(localStorage.getItem('tsfm.piano.kb')||'{}')); }catch(_){}
+  const save=()=>{ try{ localStorage.setItem('tsfm.piano.kb',JSON.stringify(PREF)); }catch(_){} };
+  const DO=['DO','','RE','','MI','FA','','SOL','','LA','','SI'], lit=new Set(); let shown=null;
+  const span=sc=>{ if(PREF.view==='all')return [LO,HI]; const ev=sc.ev, c=ev.length?Math.round(ev.reduce((a,e)=>a+e.n,0)/ev.length):60, lo=Math.max(LO,Math.min(HI-60,c-30-((c-30)%12+12)%12)); return [lo,lo+60]; };
+  const boardHTML=()=>{ const el=document.querySelector('#inp .kb'); if(!el)return; const sc=INSTR.score(INSTR.ME), [a,b]=span(sc), ws=[]; shown=sc; lit.clear(); for(let m=a;m<=b;m++)if(!BLACK(m))ws.push(m); const w=100/ws.length; let h='';
+    for(let m=a;m<=b;m++){ const nm=PREF.lab==='abc'?NN[m%12]+(m%12===0?(m/12-1):''):PREF.lab==='doremi'?DO[m%12]:'', l=BLACK(m)?(ws.indexOf(m-1)+1)*w-w*.3:ws.indexOf(m)*w, wd=BLACK(m)?w*.6:w;
+      h+=`<b class="${BLACK(m)?'k':'w'}" data-m="${m}" style="left:${l.toFixed(3)}%;width:${wd.toFixed(3)}%">${!BLACK(m)&&nm?nm:''}</b>`; }
+    el.className='kb'+(PREF.view==='all'?' all':''); el.innerHTML=h; };
+  K.board=()=>{ setTimeout(boardHTML,0); return `<div class="kb"></div><div class="r"><span class="d">KEYS</span><button data-kv="all">88</button><button data-kv="five">5 OCTAVES</button><span class="d">NAMES</span><button data-kl="none">NONE</button><button data-kl="abc">C D E</button><button data-kl="doremi">DO RE MI</button></div>`; };
+  K.boardDraw=PN=>{ for(const b of PN.querySelectorAll('[data-kv]'))b.setAttribute('aria-pressed',String(b.dataset.kv===PREF.view)); for(const b of PN.querySelectorAll('[data-kl]'))b.setAttribute('aria-pressed',String(b.dataset.kl===PREF.lab)); };
+  K.boardClick=b=>{ if(b.dataset.kv)PREF.view=b.dataset.kv; else if(b.dataset.kl)PREF.lab=b.dataset.kl; else return; save(); boardHTML(); INSTR.drawPanel(); };
+  const lightPlayed=down=>{ const el=document.querySelector('#inp .kb'); if(!el)return; if(shown!==INSTR.score(INSTR.ME))boardHTML();
+    for(const m of lit)if(!(down[m]>.5)){ lit.delete(m); const b=el.querySelector('b[data-m="'+m+'"]'); if(b)b.classList.remove('pl'); }
+    for(const m in down)if(down[m]>.5&&!lit.has(+m)){ const b=el.querySelector('b[data-m="'+m+'"]'); if(b){ b.classList.add('pl'); lit.add(+m); } } };
 
   /* ---------- the others: their notes ('n' midi.velocity, several by commas), their lifts ('u'), their pedal ('p') ---------- */
   K.hear=(P,k,v)=>{ if(k==='n')for(const s of v.split(',')){ const [m,q]=s.split('.').map(Number); if(m>=LO&&m<=HI)INSTR.note(P,{n:m,v:(q||6)/9,d:1e9,h:m<60?'L':'R'}); }

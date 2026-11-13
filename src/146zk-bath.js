@@ -15,8 +15,8 @@ const BATHK={until:0}; window.BATHK=BATHK;
       seats:[sp(W*.3-.45,.75,0,1,.45),sp(W*.3+.45,.75,0,1,.45),sp(W*.7-.45,.75,0,1,.45),sp(W*.7+.45,.75,0,1,.45),sp(.75,D*.4,1,0,.45),sp(.75,D*.4+.9,1,0,.45)]};
     (STORE.rooms||(STORE.rooms=[])).push(R); BATHK.room=R; } }
   // a soak and a towel at the desk: the steam mends you faster for three minutes
-  BATHK.soak=()=>{ '@later'; if(BATHK.until>now())return say('THE BEDSHEET: "YOU ARE STILL SOAKING. ENJOY THE STEAM."'); if(INV.cash<4)return say('THE BEDSHEET: "A SOAK AND A TOWEL IS FOUR DOLLARS."','#c8a090');
-    INV.cash-=4; BATHK.until=now()+180; BATHK.paid=(BATHK.paid||0)+1; say('THE BEDSHEET HANDS YOU A WARM TOWEL. SIT IN THE STEAM: IT MENDS YOU FAST FOR THREE MINUTES.'); };
+  BATHK.soak=()=>{ '@later'; if(BATHK.until>now())return say('THE BEDSHEET: "YOU ARE STILL SOAKING. ENJOY THE STEAM."'); if(!INV.afford(4))return say('THE BEDSHEET: "A SOAK AND A TOWEL IS FOUR DOLLARS."','#c8a090');
+    INV.pay(4); BATHK.until=now()+180; BATHK.paid=(BATHK.paid||0)+1; say('THE BEDSHEET HANDS YOU A WARM TOWEL. SIT IN THE STEAM: IT MENDS YOU FAST FOR THREE MINUTES.'); };
   VIT.mends.push(()=>{ const G=GD(); return BATHK.until>now()&&G&&G.inside&&G.inside()?1/15:0; });
   const LINES=['"WELCOME TO THE BATHS. SHOES OFF, PLEASE."','"THE STEAM IS GOOD FOR THE LIVING AND THE DEAD."','"I WAS A BEDSHEET ONCE. NOW I AM A BEDSHEET THAT WORKS."','"TOWELS ARE WITH THE SOAK. FOUR DOLLARS."'];
   STORE.furnish=STORE.furnish||{};

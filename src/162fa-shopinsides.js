@@ -14,11 +14,11 @@ import {MSHOP} from './059i-mshops.js';
     clothes:[[120,96,80],[232,220,210],[120,60,60],0x4a3428,'racks'],skate:[[90,90,92],[200,200,196],[200,110,40],0x2a2a2a,'ramps'],
     diner:[[200,200,206],[232,226,214],[170,40,50],0xc0c4c8,'booths'],fishing:[[92,80,64],[190,206,214],[40,70,90],0x4a3a28,'nets'],
     tailor:[[104,80,62],[226,214,196],[90,60,70],0x4a3222,'mannequin'],barber:[[230,230,230],[220,232,236],[160,40,40],0x2a2a2e,'chair'],
-    hotel:[[110,40,40],[220,204,170],[90,60,40],0x4a2e1c,'lobby']};
+    hotel:[[110,40,40],[220,204,170],[90,60,40],0x4a2e1c,'lobby'],clinic:[[196,204,206],[234,240,240],[96,150,160],0xdfe4e6,'']};
   const DEF=[[100,82,60],[214,206,190],[90,70,52],0x5a3e28,''];
   // what the counter does: open the keeper's shop, or the shop's own service
   const SERVE={hotel:()=>{ if(VIT.dead)return say('THE CLERK: GHOSTS RECOVER IN THE BATH HOUSE\'S STEAM, NOT HERE.','#c8a090'); if(VIT.hp>=1)return say('THE CLERK: YOU LOOK RESTED ALREADY. COME BACK WHEN YOU\'RE HURT.','#c8a090');
-      if(INV.cash<10)return say('A ROOM IS $10 A REST. YOU HAVE $'+Math.round(INV.cash)+'.','#c8a090'); INV.cash-=10; VIT.heal(1); say('YOU SLEEP A WHILE UPSTAIRS. FULL HEALTH. $10.'); },
+      if(!INV.afford(10))return say('A ROOM IS $10 A REST. YOU HAVE $'+Math.round(INV.money())+'.','#c8a090'); INV.pay(10); VIT.heal(1); say('YOU SLEEP A WHILE UPSTAIRS. FULL HEALTH. $10.'); },
     tailor:()=>{ say('THE TAILOR: LET\'S SEE WHAT YOU\'RE WEARING.'); DOLL.looks('wear'); },
     barber:()=>{ say('THE BARBER: SIT DOWN. WHAT ARE WE DOING TODAY?'); DOLL.looks('look'); }};
   const SVN={hotel:'THE FRONT DESK (REST $10: FULL HEALTH)',tailor:'THE TAILOR\'S COUNTER (CHANGE WHAT YOU WEAR)',barber:'THE BARBER\'S COUNTER (CHANGE YOUR HAIR)'};

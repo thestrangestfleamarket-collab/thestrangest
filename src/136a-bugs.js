@@ -54,15 +54,17 @@ import {BUILDV} from './135-where.js';
       catch(e){ $('#bugsay').textContent='not sent: '+(e.message||e); } $('#bugsend').disabled=false; };
     };
   const queue=async()=>{ '@later'; const be=await backend(), $=s=>el.querySelector(s); if(!$('#bugq'))return;
-    try{ rows=await be.list(); }catch(e){ $('#bugq').textContent='the queue would not load: '+(e.message||e); return; }
+    try{ rows=(await be.list()).map(r=>{ let c=r.context; if(typeof c==='string')try{ c=JSON.parse(c); }catch(e){ c=null; } c=c&&typeof c==='object'?{...c}:{};
+      if(!Array.isArray(c.at)||c.at.length<2||!c.at.every(Number.isFinite))delete c.at; c.errs=Array.isArray(c.errs)?c.errs:c.errs?[c.errs]:[]; return {...r,context:c}; }); }
+    catch(e){ $('#bugq').textContent='the queue would not load: '+(e.message||e); return; }
     $('#bugst').innerHTML=ST.map(([k,n])=>`<button class="btn" data-f="${k}" aria-pressed="${k===filt}">${n} ${rows.filter(r=>(r.status||'new')===k).length}</button>`).join('');
     $('#bugst').onclick=e=>{ const b=e.target.closest('[data-f]'); if(b){ filt=b.dataset.f; queue(); } };
     const L=rows.filter(r=>(r.status||'new')===filt);
-    $('#bugq').innerHTML=L.length?L.map(r=>{ const c=r.context||{}; return `<div data-id="${esc(r.id)}" style="border:2px solid var(--line);padding:8px;margin:8px 0">
+    $('#bugq').innerHTML=L.length?L.map(r=>{ const c=r.context; try{ return `<div data-id="${esc(r.id)}" style="border:2px solid var(--line);padding:8px;margin:8px 0">
       <div class="dim">${esc(new Date(r.at).toLocaleString())} &middot; ${esc(c.from||'')} build ${esc(c.build??'?')} &middot; ${esc(c.near?'near '+c.near:'')} ${c.at?esc(c.at.join(', ')):''} &middot; ${c.hour!=null?esc(c.hour)+'h':''} ${esc(c.view||'')}</div>
       <div style="white-space:pre-wrap;margin:6px 0">${esc(r.body)}</div>${c.errs&&c.errs.length?`<div class="dim">errors: ${esc(c.errs.join(' | '))}</div>`:''}
       <div class="row">${r.shots?'<button class="btn" data-a="pic">PICTURE</button>':''}${c.at?'<button class="btn" data-a="go">GO THERE</button>':''}
-      ${ST.filter(([k])=>k!==filt).map(([k,n])=>`<button class="btn" data-s="${k}">${({new:'BACK TO NEW',approved:'APPROVE'})[k]||n}</button>`).join('')}</div><img hidden style="max-width:100%;image-rendering:pixelated"></div>`; }).join(''):'<div class="dim">nothing here</div>';
+      ${ST.filter(([k])=>k!==filt).map(([k,n])=>`<button class="btn" data-s="${k}">${({new:'BACK TO NEW',approved:'APPROVE'})[k]||n}</button>`).join('')}</div><img hidden style="max-width:100%;image-rendering:pixelated"></div>`; }catch(e){ return `<div data-id="${esc(r.id)}" style="border:2px solid var(--line);padding:8px;margin:8px 0"><div style="white-space:pre-wrap">${esc(r.body)}</div>${ST.filter(([k])=>k!==filt).map(([k,n])=>`<button class="btn" data-s="${k}">${n}</button>`).join('')}</div>`; } }).join(''):'<div class="dim">nothing here</div>';
     $('#bugq').onclick=async e=>{ const b=e.target.closest('button'), box=e.target.closest('[data-id]'); if(!b||!box)return; const r=rows.find(x=>x.id===box.dataset.id);
       if(b.dataset.s){ b.disabled=true; try{ if(b.dataset.s==='approved'&&r.context&&r.context.kind==='worldedit'&&BUGS.approveEdit)await BUGS.approveEdit(r); await be.mark(r.id,b.dataset.s); queue(); }catch(x){ b.textContent='FAILED'; } return; }
       if(b.dataset.a==='pic'){ const im=box.querySelector('img'); if(!im.hidden){ im.hidden=true; return; } b.textContent='...'; try{ const u=await be.shot(r); if(u){ im.src=u; im.hidden=false; } }catch(x){} b.textContent='PICTURE'; }

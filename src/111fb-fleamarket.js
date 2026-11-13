@@ -7,7 +7,7 @@ import {FIX, LEVEL, MAPG, MODS, QS, SOL, STORE, SYS, TILE} from './006-map-pre.j
 import {stfree} from './076-npc-map.js';
 import {BODIES} from './111a-bodies.js';
 const CREW={list:[],loaded:{},hd:{},alias:{play:'playhouse',bath:'dojo',feel:'store:feel-lab'}};
-{ const PF=__LAZY__("data/polyfork.json"), FM=window.FLEA=MODS.flea={made:[],want:(LEVEL.things||[]).length}; window.CREW=CREW;
+{ const PF=SYS.far(__LAZY__("data/polyfork.json")), FM=window.FLEA=MODS.flea={made:[],want:(LEVEL.things||[]).length}; window.CREW=CREW;
   const G={arcade:__LAZY__("data/cast/arcade.json"),art:__LAZY__("data/cast/art.json"),bank:__LAZY__("data/cast/bank.json"),bar:__LAZY__("data/cast/bar.json"),bath:__LAZY__("data/cast/bath.json"),
     boards:__LAZY__("data/cast/boards.json"),bodega:__LAZY__("data/cast/bodega.json"),castle:__LAZY__("data/cast/castle.json"),clinic:__LAZY__("data/cast/clinic.json"),commute:__LAZY__("data/cast/commute.json"),
     depot:__LAZY__("data/cast/depot.json"),diner:__LAZY__("data/cast/diner.json"),feel:__LAZY__("data/cast/feel.json"),firehouse:__LAZY__("data/cast/firehouse.json"),fixit:__LAZY__("data/cast/fixit.json"),

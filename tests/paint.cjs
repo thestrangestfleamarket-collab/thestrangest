@@ -5,7 +5,8 @@ const FILE=process.argv[2]||'dist/market.html', SHOTS=process.argv[3]||'';
   const ctx=await b.newContext({viewport:{width:1280,height:800}}), pg=await ctx.newPage(), errs=[]; let bad=0; pg.on('pageerror',e=>errs.push(e.message));
   const ok=(c,m)=>{ console.log((c?'ok  ':'FAIL')+' '+m); if(!c)bad++; };
   const url='file://'+process.cwd()+'/'+FILE;
-  await pg.goto(url+'?fresh=1&hour=13&at=53,10'); await pg.waitForFunction(()=>window.__started,null,{timeout:400000}); await pg.waitForTimeout(2000);
+  await pg.goto(url+'?fresh=1&hour=13&at=53,10'); await pg.waitForFunction(()=>window.__started,null,{timeout:400000});
+  await pg.waitForFunction(()=>{ const L=document.getElementById('loading'); return (!L||getComputedStyle(L).display==='none'||getComputedStyle(L).opacity==='0')&&!(window.FADE&&FADE.busy); },null,{timeout:240000,polling:200}); await pg.waitForTimeout(2000);   // the strokes are real mouse moves: the loading screen must be off first
   const px=(x,y)=>pg.evaluate(([x,y])=>PAINTER.pixel(x,y),[x,y]);
   const drag=async(pts,o={})=>{ const s=await pg.evaluate(p=>p.map(([x,y])=>PAINTER.screen(x,y)),pts); if(o.alt)await pg.keyboard.down('Alt'); await pg.mouse.move(s[0][0],s[0][1]); await pg.mouse.down(); for(const q of s.slice(1))await pg.mouse.move(q[0],q[1],{steps:6}); await pg.mouse.up(); if(o.alt)await pg.keyboard.up('Alt'); await pg.waitForTimeout(60); };
   const near=(a,c,t=40)=>a&&Math.abs(a[0]-c[0])+Math.abs(a[1]-c[1])+Math.abs(a[2]-c[2])<=t;
@@ -90,8 +91,9 @@ const FILE=process.argv[2]||'dist/market.html', SHOTS=process.argv[3]||'';
   ok(Sh.k&&Sh.k[0]==='pt_'&&Sh.sells&&Sh.buys,'THE TRADER sells canvases and buys paintings ('+JSON.stringify(Sh)+')');
 
   // trade through the block: ask, open, put the painting in, accept, done
-  const T0=await pg.evaluate(()=>{ window.__sent=[]; ONLINE.on=true; ONLINE.send=m=>__sent.push(JSON.parse(JSON.stringify(m))); ONLINE.use({id:'a',name:'ROSA'}); const card=document.getElementById('passportw'), shown=card&&card.style.display==='flex'&&/ROSA/.test(card.textContent); const bt=card&&card.querySelector('.pT'); if(bt)bt.click(); return {sent:__sent.slice(),shown}; });
-  ok(T0.shown&&T0.sent.some(m=>m.t==='tr'&&m.op==='ask'&&m.to==='a'),'double-clicking a player who is standing shows their ID card, and its ASK TO TRADE asks them to trade (owner, 8 Nov 2026)');
+  const T0=await pg.evaluate(async()=>{ window.__sent=[]; ONLINE.on=true; ONLINE.send=m=>__sent.push(JSON.parse(JSON.stringify(m))); const P=__dbg.you(); ONLINE.feed({t:'hi',you:'me',all:[{id:'a',name:'ROSA',look:'w00',at:[P.x+1.5,P.z,SHARED.py,0,SHARED.LVL,'']}]});
+    for(let i=0;i<100&&!(ONLINE.others.get('a')&&ONLINE.others.get('a').fig);i++)await new Promise(r=>setTimeout(r,100)); ONLINE.use(ONLINE.others.get('a')); const card=document.getElementById('dollo'), shown=card&&!card.hidden&&getComputedStyle(card).display!=='none'&&/ROSA/.test(card.textContent); const bt=card&&[...card.querySelectorAll('.dl-btns button')].find(b=>b.textContent.trim()==='TRADE'); if(bt)bt.click(); return {sent:__sent.slice(),shown}; });
+  ok(T0.shown&&T0.sent.some(m=>m.t==='tr'&&m.op==='ask'&&m.to==='a'),'double-clicking a player who is standing shows them (owner, 9 Nov 2026), and TRADE there asks them to trade');
   await pg.evaluate(()=>ONLINE.feed({t:'tr',op:'open',with:'a',name:'ROSA'}));
   ok(await pg.evaluate(()=>!document.getElementById('tradep').hidden),'they said yes: the trade window opens');
   await pg.evaluate(id=>{ [...document.querySelectorAll('#tradep [data-add]')].find(b=>b.dataset.add==='pt_'+id).click(); },F.id); await pg.waitForFunction(()=>__sent.some(m=>m.op==='offer'),null,{timeout:20000}).catch(()=>{});
@@ -102,6 +104,8 @@ const FILE=process.argv[2]||'dist/market.html', SHOTS=process.argv[3]||'';
   if(SHOTS)await pg.screenshot({path:SHOTS+'/trade.png'});
   await pg.evaluate(()=>[...document.querySelectorAll('#tradep [data-ok]')][0].click()); await pg.waitForFunction(()=>__sent.some(m=>m.op==='ok'),null,{timeout:20000}).catch(()=>{});
   ok(await pg.evaluate(()=>__sent.some(m=>m.op==='ok'&&m.v===true)),'ACCEPT tells the block');
+  await pg.evaluate(id=>ONLINE.feed({t:'tr',op:'pay',give:{items:{['pt_'+id]:1},cash:0,art:{}}}),F.id); await pg.waitForFunction(()=>__sent.some(m=>m.op==='paid'),null,{timeout:20000}).catch(()=>{});   // both accepted: the block asks for what you put in, then says done
+  ok(await pg.evaluate(id=>{ const m=__sent.filter(m=>m.op==='paid').pop(); return !!m&&m.o.items['pt_'+id]===1; },F.id),'asked to pay, the painting leaves the pack and the block is told');
   await pg.evaluate(id=>ONLINE.feed({t:'tr',op:'done',with:'a',give:{items:{['pt_'+id]:1},cash:0,art:{}},get:{items:{canvas_s:1},cash:50,art:{}}}),F.id);
   const T2=await pg.evaluate(id=>({has:INV.items['pt_'+id]||0,meta:!!PAINTINGS.mine().art[id],can:INV.items.canvas_s||0,cash:INV.cash,open:!document.getElementById('tradep').hidden}),F.id);
   ok(T2.has===0&&!T2.meta&&T2.can===1&&T2.cash===cash0+50&&!T2.open,'done: the painting is gone to them, their canvas and $50 are yours ('+JSON.stringify(T2)+')');
@@ -113,6 +117,8 @@ const FILE=process.argv[2]||'dist/market.html', SHOTS=process.argv[3]||'';
   const G=await pg.evaluate(()=>{ ONLINE.feed({t:'tr',op:'open',with:'b',name:'BOB'}); ONLINE.feed({t:'tr',op:'done',with:'b',give:{items:{},cash:0,art:{}},get:{items:{pt_gift12345:1},cash:0,art:{gift12345:{t:'A GIFT',by:'BOB',w:768,h:512,c:'canvas_w',fr:'gilt',d:'1 NOV 2026',e:.4}}}});
     return {has:INV.items.pt_gift12345,a:PAINTINGS.mine().art.gift12345,name:FORAGE.name('pt_gift12345')}; });
   ok(G.has===1&&G.a&&G.a.by==='BOB'&&G.a.fr==='gilt'&&G.name==='PAINTING: “A GIFT”','a painting given to you is yours, with its painter and frame');
+  const Sold=await pg.evaluate(()=>{ const ok=SHOPS.sell('pt_gift12345',1); return {ok,has:INV.items.pt_gift12345||0,meta:!!PAINTINGS.mine().art.gift12345}; });
+  ok(Sold.ok&&!Sold.has&&!Sold.meta,'a painting sold to THE TRADER leaves your save, title and thumbnail too ('+JSON.stringify(Sold)+')');
   await pg.evaluate(()=>{ ONLINE.feed({t:'tr',op:'open',with:'a',name:'ROSA'}); ONLINE.feed({t:'tr',op:'x',why:'too far apart'}); });
   ok(await pg.evaluate(()=>document.getElementById('tradep').hidden),'a trade called off by the block closes the window');
 
@@ -125,6 +131,8 @@ const FILE=process.argv[2]||'dist/market.html', SHOTS=process.argv[3]||'';
   // at home: hang it, and the easel (the same browser, not fresh: what you own is kept)
   await pg.goto(url+'?hour=15&place=your%20apartment',{waitUntil:'commit'}); await pg.waitForFunction(()=>window.__started,null,{timeout:400000});
   for(let i=0;i<40&&!(await pg.evaluate(()=>window.BEDROOMDBG&&BEDROOMDBG().built&&window.ROOMEDDBG&&ROOMED._api()));i++)await pg.waitForTimeout(1000);
+  for(let i=0;i<20&&!(await pg.evaluate(()=>VAULT.moved()));i++)await pg.waitForTimeout(500);   // a returning player's first start puts what is not a tool in the safe at the bank (11 Nov 2026): take it all back out (the painting, the canvases), as a player would there
+  await pg.evaluate(()=>{ const V=VAULT.items(); for(const id in V)VAULT.take(id,V[id]); });
   const H=await pg.evaluate(()=>{ const M=PAINTINGS.mine(), id=Object.keys(M.art).find(k=>M.art[k].t==='SUN OVER THE PARK'), R=ROOMED._api().R; return {id,kind:!!R.kinds['pt:'+id],easel:!!R.kinds['pt:easel'],has:INV.items['pt_'+id]}; });
   ok(H.id&&H.kind&&H.easel&&H.has===1,'at home the painting and the EASEL are things to put in your room ('+JSON.stringify(H)+')');
   const W=await pg.evaluate(async id=>{ ROOMED.buy('pt:'+id); await new Promise(r=>setTimeout(r,300)); try{ ROOMED.place(); }catch(e){} const A=ROOMED._api(), un=A.units().find(u=>u.kind==='pt:'+id);

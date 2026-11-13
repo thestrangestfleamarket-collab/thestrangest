@@ -1,0 +1,6 @@
+Textures from ambientCG.com, licensed CC0 1.0 (public domain):
+- plates_*: "Metal Plates 015 A"
+- gunmetal_*: "Metal 046 B"
+- brushed_*: "Metal 009"
+- carbon_*: "Fabric 004" (carbon-fibre weave)
+- rubber_*: "Rubber 004"

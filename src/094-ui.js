@@ -171,9 +171,11 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   cv.addEventListener('dblclick',e=>{ '@later'; if(MAPED.on||LAND.on)return; if(WE.on){ WE.pick(e); return; } if(ED.on||UI.freeCam)return; ray.setFromCamera(ndc(e),SHARED.cam);
     if(WIELD&&WIELD.on){ const me=THINGS.find(th=>th.name==='YOU'); if(me&&me.obj.visible&&ray.intersectObject(me.obj,true).length)me.act(); return; }   // holding something, a double-click on yourself still opens your avatar (owner, 9 Nov 2026)
     const live=THINGS.filter(th=>th.obj.visible&&(!th.obj.parent||th.obj.parent.visible)&&LEVELS.drawn(th.obj)); const hits=ray.intersectObjects(live.map(th=>th.obj),true);
-    let best=null, bd=1e9; if(hits.length){ let o=hits[0].object; const th=live.find(th=>{ let q=o; while(q){ if(q===th.obj)return true; q=q.parent; } return false; }); if(th){ best=th; bd=hits[0].distance; } }
+    const thOf=o=>live.find(th=>{ let q=o; while(q){ if(q===th.obj)return true; q=q.parent; } return false; });
+    let best=null, bd=1e9; if(hits.length){ const th=thOf(hits[0].object); if(th){ best=th; bd=hits[0].distance; }
+      if(th&&th.glass)for(const h of hits.slice(1)){ const t=thOf(h.object); if(t&&t.far){ best=t; bd=h.distance; break; } if(t&&!t.glass)break; } }   // through a window's glass to what you can use from afar (the TV)
     const u=USE.pick(ray); if(u&&u.d<bd)best=u.th;
-    if(best){ walkUp(best); return; }
+    if(best){ if(best.far){ goal=null; best.act(); } else walkUp(best); return; }   // a thing marked far (the TV) is used from wherever you see it
     if(RIVER&&RIVER.pick&&!VIT.dead&&RIVER.pick(ray.ray,pos))return;
     goal=null; });
   UI.nearThing=()=>{ if(ED.on||UI.freeCam||MAPED.on||WE.on||LAND.on)return null; const hx=Math.sin(SHARED.heading), hz=Math.cos(SHARED.heading), Wt=st.water, py=Wt&&Wt.in&&Wt.level!=null?Wt.y*ZU:SHARED.py; let best=null, bs=1e9;   // a swimmer's own height (a sunken chest is reached by diving to it)

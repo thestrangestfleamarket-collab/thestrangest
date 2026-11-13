@@ -1,6 +1,6 @@
 // THE INSTRUMENTS YOU SIT AT (owner, 7 Nov 2026: "lets do piano and drums and harp ... play like the guitar"; "start me with every instrument and 100 skill in each"): INSTR, one way to own, set down, sit at and play the piano, the drum kit and the harp (146zpa-c fill in each): the instrument before you, your body seated with its arms, hands and every finger (or stick) on what it plays, its sound from the music engine's strings, heads and hammers, a song book by skill, the close-up, and everyone near seeing and hearing it.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INSTR, MUSICIN, ONLINE, pos, st, UI, W3} from './003b-systems.js';
+import {FORAGE, INSTR, MUSICIN, ONLINE, pos, st, UI, W3, WIELD} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {SYS} from './006-map-pre.js';
 import {BODIES} from './111a-bodies.js';

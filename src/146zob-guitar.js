@@ -1,6 +1,6 @@
 // THE GUITAR (owner, 7 Nov 2026: "i want to add the guitar back into game. use the polyfork assets ... hand 3d model, physics, real string acoustics, sounds, closeup, fingers"; his picks: own one and play it anywhere, and the park's is anyone's; play it yourself or a song from the book; the strings' physics): GUITAR, the item (the bodega sells it), the park's guitar on its stand, playing (keys and the panel), the close-up, and everyone near hearing and seeing it.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INSTR, MUSICIN, ONLINE, PARK, pos, st, UI, W3} from './003b-systems.js';
+import {FORAGE, INSTR, MUSICIN, ONLINE, PARK, pos, st, UI, W3, WIELD} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {LEVEL, MAPG, SOL, SYS, TILE} from './006-map-pre.js';
 import {GTBOOK, GTCHORD, gtCompile} from './108-game-play-3-guitar-2-tunes.js';

@@ -143,6 +143,8 @@ Object.assign(UI,{freeCam:false,fly:false,menuOpen:false,camT:new THREE.Vector3(
   // the views by place (owner, 7 Nov 2026): in town only the overhead view, turned and zoomed in from the start's distance (never further out); third and first person inside an inside or Central Park; out of those you are put back overhead. Whatever takes the view for itself (fishing, a spyglass, the tower's glass, VR, a holodeck program) keeps it
   UI.ZL=[1,2,5,10,20,40].map(k=>PPU*.75*k); UI.ZOUT=UI.ZL[0];   // the overhead wheel steps between set zoom levels (owner, 7 Nov 2026); 2× is the start's
   UI.FZ=[1,2,5,10]; UI.fz=1; UI.FOV0=PCAM.fov;   // first person's wheel steps the eye's zoom the same way
+  { const off=QS.get('zpx')==='0', Z0={third:8*TILE,follow:4*TILE};
+    UI.zoomK=()=>{ if(off||VR.on||UI.owned())return 1; const k=UI.view==='first'?UI.fz:UI.persp?(Z0[UI.view]||UI.dist)/UI.dist:SHARED.ppu/VIEW0.ppu; return Math.max(1,Math.min(UI.ZPXMAX,k)); }; UI.ZPXMAX=4; }   // zoomed in, the picture's pixels grow with the zoom (a pixel the same size in the world as at the opening view), up to 4x (owner, 10 Nov 2026)
   UI.DL=[1,2,5,10,20].map(k=>22*TILE/k);   // the behind view's wheel steps the same way: its distance 1×, 2×, 5×, 10×, 20× in from 22 tiles, never nearer than 1.2 or past the place's own limit
   { let acc=0, last=0; UI.zoomLv=e=>{ const t=performance.now(); if(t-last<180){ acc=0; return; } acc+=e.deltaY; if(Math.abs(acc)<40)return; const d=Math.sign(acc); acc=0;
     if(UI.view==='first'){ if(UI.owned())return; const c=UI.fz, n=d<0?UI.FZ.find(v=>v>c*1.02):[...UI.FZ].reverse().find(v=>v<c*.98); if(n==null)return; last=t; UI.fz=n; return; }

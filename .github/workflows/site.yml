@@ -240,7 +240,7 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' asylum')
         run: node tests/asylum.cjs dist/asylum.html
-      - name: Halcyon Greens (mini golf at /golf: loads, a putt, holing out)
+      - name: Halcyon Greens (mini golf at /golf; it loads, a putt rolls, a putt holes out)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' golf')
         run: node tests/golf.cjs dist/golf.html

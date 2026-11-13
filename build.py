@@ -109,6 +109,7 @@ subprocess.run(['node', 'tools/holo.cjs'], check=True)   # the holodeck's pages 
 subprocess.run(['node', 'tools/wave.cjs'], check=True)   # SHARDWAVE (src/wave/): its own page, dist/wave.html
 subprocess.run(['node', 'tools/cantina.cjs'], check=True)   # THE CANTINA (src/cantina/): its own page, dist/cantina.html, and its models and pictures, dist/cantina-assets/
 subprocess.run(['node', 'tools/scare.cjs'], check=True)   # VESPER WARD (src/scare/): its own page, dist/scare.html, and its models, dist/scare-assets/
+subprocess.run(['node', 'tools/hide.cjs'], check=True)   # DEAD END (src/hide/): its own page, dist/hide.html, and its pictures, models and sounds, dist/hide-assets/
 subprocess.run(['node', 'tools/jam.cjs'], check=True)   # STADIUM JAM (src/jam/): its own page, dist/jam.html, and its avatars, hands and samples, dist/jam-assets/
 subprocess.run(['node', 'tools/shoot.cjs'], check=True)   # BREACHLINE (src/shoot/): its own page, dist/shoot.html
 subprocess.run(['node', 'tools/golf.cjs'], check=True)   # HALCYON GREENS (src/golf/): its own page, dist/golf.html, and its pictures, dist/golf-assets/

@@ -1,0 +1,143 @@
+// DEAD END's thing: a body that walks, hears, sees by its light, notices what has moved, and asks a mind (Claude through worker/hide.js, or its own instinct when that cannot be reached) where to look next. The mind is given its senses, never your place.
+import { CLOCK, THREE, RAPIER, LOW, G, grp, SIGHT, clamp, lerp, rnd, scene, P, MODELS, ray } from './core.js';
+import { WORLD } from './world.js';
+import { PL } from './player.js';
+import { A } from './sound.js';
+import { SPOTS } from './spots.js';
+
+const CELL = .2, X0 = -2.6, Z0 = 4, NX = 26, NZ = 192, PATIENCE = 150, EYE = 2.0, MON = grp(G.MON, G.SOLID);
+const SK = { g: new THREE.Group(), pos: new THREE.Vector3(0, 0, 6), yaw: Math.PI, state: 'wait', mode: 'local', aware: 0, asked: -9, patience: PATIENCE, t: 0, thoughts: [], log: [], clues: [], searched: {}, messSeen: {}, used: new Set(), plan: null, queue: [], path: [], pending: false, feinted: false, fails: 0,
+  eye: new THREE.Vector3(), look: new THREE.Vector3(0, 1, 0), lookTo: new THREE.Vector3(0, 1, -5), lightOn: true, crouch: 0, st: 0, lastSeen: new THREE.Vector3(), lost: 0, urgent: false, cn: 0, stuck: 0, reflex: 0, why: '' };
+const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _d = new THREE.Vector3(), pts = [];
+let body, col, ctl, mixer, acts = {}, cur = null, light, cone, eyesG, spine = [], nav = null, stepAcc = 0, growlT = 8, lightPos = new THREE.Vector3();
+const now = () => CLOCK.t, spotAt = id => WORLD.GEO[id];
+const nearSpot = (x, z, max = 2.6) => { let b = null, bd = max; for (const s of SPOTS) { const g = spotAt(s.id), d = Math.hypot(g.look[0] - x, g.look[2] - z); if (d < bd) { bd = d; b = s.id; } } return b; };
+
+function init() {
+  const src = MODELS.brute.scene, bx = new THREE.Box3().setFromObject(src), k = 2.25 / (bx.max.y - bx.min.y); src.scale.setScalar(k); src.position.y = -bx.min.y * k; SK.g.add(src); scene.add(SK.g); SK.g.visible = false;
+  src.traverse(o => { if (o.isMesh) { o.castShadow = true; o.frustumCulled = false; o.material.roughness = .62; o.material.metalness = 0; o.material.color.multiplyScalar(.55); } if (o.isBone && /Spine1?$/.test(o.name)) spine.push(o);
+ });
+  mixer = new THREE.AnimationMixer(src); for (const c of MODELS.brute.animations) { const t = c.tracks.find(t => /Hips\.position$/.test(t.name)); if (t) for (let i = 0; i < t.values.length; i += 3) { t.values[i] = t.values[0]; t.values[i + 2] = t.values[2]; } acts[c.name] = mixer.clipAction(c); }
+  for (const n of ['attack', 'rage', 'slam', 'taunt']) if (acts[n]) { acts[n].setLoop(THREE.LoopOnce); acts[n].clampWhenFinished = true; }
+  body = P.world.createRigidBody(RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(0, 0, 6)); col = P.world.createCollider(RAPIER.ColliderDesc.capsule(.68, .38).setTranslation(0, 1.08, 0).setCollisionGroups(MON), body); SK.body = body;
+  ctl = P.world.createCharacterController(.03); ctl.enableAutostep(.3, .1, true); ctl.enableSnapToGround(.3); ctl.setApplyImpulsesToDynamicBodies(true); ctl.setCharacterMass(170);
+  light = new THREE.SpotLight(0xf2efe6, 0, 17, .4, .55, 1.7); light.castShadow = true; light.shadow.mapSize.setScalar(LOW ? 512 : 1024); light.shadow.camera.near = .25; light.shadow.camera.far = 17; light.shadow.bias = -.002; light.shadow.normalBias = .03; scene.add(light, light.target);
+  cone = new THREE.Mesh(new THREE.ConeGeometry(Math.tan(.4) * 9, 9, 20, 1, true).translate(0, -4.5, 0).rotateX(-Math.PI / 2), new THREE.ShaderMaterial({ transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, uniforms: { k: { value: 0 } },
+    vertexShader: 'varying float z;varying vec3 n;varying vec3 v;void main(){z=position.z;n=normalize(normalMatrix*normal);vec4 m=modelViewMatrix*vec4(position,1.);v=normalize(-m.xyz);gl_Position=projectionMatrix*m;}',
+    fragmentShader: 'uniform float k;varying float z;varying vec3 n;varying vec3 v;void main(){float f=pow(abs(dot(n,v)),1.6);float a=f*(1.-z/9.)*(1.-z/9.)*.04*k;gl_FragColor=vec4(vec3(.82,.88,1.)*a,a);}' })); cone.frustumCulled = false; scene.add(cone);
+  buildNav();
+}
+/* the walkable floor as a grid, found by asking the physics where a body its size fits */
+function buildNav() { const ball = new RAPIER.Ball(.4), g = new Uint8Array(NX * NZ), heavy = c => { const T = P.byCol.get(c.handle); return !T || T.fixed || T.mass > 30 || T.kind === 'drum'; };
+  for (let j = 0; j < NZ; j++) for (let i = 0; i < NX; i++) { const x = X0 + (i + .5) * CELL, z = Z0 - (j + .5) * CELL; let bad = x < -2.2 || x > 2.2 || WORLD.blocked.some(r => x > r[0] && x < r[1] + .45 && z > r[2] - .45 && z < r[3] + .45);
+    if (!bad) bad = !!P.world.intersectionWithShape({ x, y: .75, z }, { x: 0, y: 0, z: 0, w: 1 }, ball, undefined, MON, undefined, undefined, heavy); g[j * NX + i] = bad ? 1 : 0; } nav = g; }
+const cellOf = (x, z) => [clamp(Math.floor((x - X0) / CELL), 0, NX - 1), clamp(Math.floor((Z0 - z) / CELL), 0, NZ - 1)];
+function freeNear(i, j) { if (!nav[j * NX + i]) return [i, j]; for (let r = 1; r < 14; r++) for (let dj = -r; dj <= r; dj++) for (let di = -r; di <= r; di++) { const a = i + di, b = j + dj; if (a >= 0 && b >= 0 && a < NX && b < NZ && !nav[b * NX + a] && Math.max(Math.abs(di), Math.abs(dj)) === r) return [a, b]; } return [i, j]; }
+function pathTo(x, z) { SK.goal = [x, z]; const [si, sj] = freeNear(...cellOf(SK.pos.x, SK.pos.z)), [ti, tj] = freeNear(...cellOf(x, z)), N = NX * NZ, gS = new Float32Array(N).fill(1e9), from = new Int32Array(N).fill(-1), open = [sj * NX + si], done = new Uint8Array(N); gS[open[0]] = 0; const h = k => Math.hypot(k % NX - ti, Math.floor(k / NX) - tj);
+  while (open.length) { let bi = 0, bf = 1e9; for (let n = 0; n < open.length; n++) { const f = gS[open[n]] + h(open[n]); if (f < bf) { bf = f; bi = n; } } const k = open.splice(bi, 1)[0]; if (done[k]) continue; done[k] = 1; const ci = k % NX, cj = Math.floor(k / NX); if (ci === ti && cj === tj) break;
+    for (let dj = -1; dj <= 1; dj++) for (let di = -1; di <= 1; di++) { if (!di && !dj) continue; const a = ci + di, b = cj + dj; if (a < 0 || b < 0 || a >= NX || b >= NZ) continue; const q = b * NX + a; if (nav[q] || done[q] || (di && dj && (nav[cj * NX + a] || nav[b * NX + ci]))) continue; const c = gS[k] + (di && dj ? 1.414 : 1); if (c < gS[q]) { gS[q] = c; from[q] = k; open.push(q); } } }
+  const out = []; let k = tj * NX + ti; if (from[k] < 0 && k !== sj * NX + si) return [[x, z]]; while (k >= 0) { out.push([X0 + (k % NX + .5) * CELL, Z0 - (Math.floor(k / NX) + .5) * CELL]); k = from[k]; } out.reverse(); const thin = out.filter((p, n) => n % 3 === 2 || n === out.length - 1); return thin.length ? thin : [[x, z]]; }
+
+function play(name, fade = .3) { const a = acts[name]; if (!a || cur === a) return; a.reset().fadeIn(fade).play(); if (cur) cur.fadeOut(fade); cur = a; }
+function setState(s) { SK.state = s; SK.st = 0; }
+function think(t, action) { if (t) SK.thoughts.push({ at: Math.round(SK.t), text: t, action }); }
+function clue(kind, x, z, strength, note) { const t = now(), old = SK.clues.find(c => c.kind === kind && t - c.t < 4 && Math.hypot(c.x - x, c.z - z) < 2.5 && !SK.used.has(c.id));
+  if (old) { old.x = x; old.z = z; old.t = t; old.strength = Math.max(old.strength, strength); if (note) old.note = note; return old; } const c = { id: 'c' + (++SK.cn), kind, x, z, strength, note, t }; SK.clues.push(c); if (SK.clues.length > 14) SK.clues.shift(); return c; }
+
+/* what has been moved: only what it has come near enough to see, and not what it knocked itself */
+function messAt(id) { const out = [], L = P.lids[id]; if (L && L.isOpen() !== L.was) out.push(L.was ? 'now SHUT; it was open when you came' : 'now OPEN; it was shut when you came');
+  let n = 0, what = ''; for (const T of P.things) if (T.spot === id && !T.lid && !T.monT) { const p = T.b.translation(), q = T.b.rotation(), h = T.home; if (Math.hypot(p.x - h.p.x, p.y - h.p.y, p.z - h.p.z) > .22 || Math.abs(q.x * h.q.x + q.y * h.q.y + q.z * h.q.z + q.w * h.q.w) < .97) { n++; what = T.name; } }
+  if (n) out.push(n > 1 ? n + ' things knocked out of place' : what + ' knocked out of place'); if (id === 'blankets') { const c = WORLD.cloth; if (c.max.y > .24) out.push('a lump under the cloth the size of a body'); else if (c.min.x > -2.2 || c.max.x < -1 || c.max.z < -14.5) out.push('the blanket has been dragged'); }
+  return out.join('; '); }
+function observe(urgent) { const t = now(); for (const s of SPOTS) { const g = spotAt(s.id); if (Math.hypot(g.at[0] - SK.pos.x, g.at[1] - SK.pos.z) < 6.5) SK.messSeen[s.id] = messAt(s.id); }
+  return { t: SK.t, patience: SK.patience, at: nearSpot(SK.pos.x, SK.pos.z, 3.5) || '', feinted: SK.feinted, urgent, spots: SPOTS.map(s => ({ id: s.id, searched: SK.searched[s.id] || 0, dist: Math.hypot(spotAt(s.id).at[0] - SK.pos.x, spotAt(s.id).at[1] - SK.pos.z), mess: SK.messSeen[s.id] || '' })),
+    clues: SK.clues.filter(c => !SK.used.has(c.id) && t - c.t < 90).map(c => ({ id: c.id, kind: c.kind, near: nearSpot(c.x, c.z) || '', dist: Math.hypot(c.x - SK.pos.x, c.z - SK.pos.z), age: t - c.t, strength: c.strength, note: c.note || '' })), last: SK.log.slice(-6) }; }
+/* instinct: the mind it falls back on */
+function localMind(o) { const un = o.spots.filter(s => s.searched < 2), fresh = o.clues.filter(c => c.age < 30).sort((a, b) => b.strength * 3 - b.age * .12 - a.strength * 3 + a.age * .12)[0], say = L => L[Math.floor(Math.random() * L.length)];
+  if (fresh && (fresh.strength >= 2 || fresh.kind !== 'noise')) return { action: 'investigate', clue: fresh.id, thorough: true, spot: '', thought: say(['There. ' + (fresh.kind === 'breath' ? 'Warm breath in the cold.' : fresh.kind === 'prints' ? 'Wet feet went this way.' : fresh.kind === 'glimpse' ? 'Something moved.' : 'I heard that.'), 'Close. Very close.']) };
+  if (o.patience < 10) return { action: 'leave', spot: '', clue: '', thorough: false, thought: 'Nothing. It is gone, or it is better than me.' };
+  const messy = un.filter(s => s.mess).sort((a, b) => a.dist - b.dist)[0]; if (messy) return { action: 'search', spot: messy.id, thorough: true, clue: '', thought: say(['That was not like that before.', 'Something touched this.']) };
+  if (!o.feinted && o.t > 55 && Math.random() < .2) return { action: 'feint', spot: '', clue: '', thorough: false, thought: 'Let it think I have gone.' };
+  if (Math.random() < .13) return { action: 'listen', spot: '', clue: '', thorough: false, thought: 'Quiet. Let it breathe.' };
+  const pick = o.spots.filter(s => s.searched < 1).map(s => [s, -s.dist * .16 + Math.random() * 2.2]).sort((a, b) => b[1] - a[1])[0] || un.map(s => [s, -s.dist * .1 + Math.random() * 2]).sort((a, b) => b[1] - a[1])[0];
+  if (!pick) return { action: 'leave', spot: '', clue: '', thorough: false, thought: 'I have looked everywhere.' };
+  return { action: 'search', spot: pick[0].id, clue: '', thorough: pick[0].searched === 1 || Math.random() < .5, thought: say(['Somewhere a body fits.', 'Not here yet. Next.', 'It is small and it is afraid.', 'I can wait longer than it can.']) }; }
+async function ask(urgent) { if (SK.pending) return; SK.pending = true; SK.asked = now(); const o = observe(urgent), round = SK.round; let D = null;
+  if (SK.mode === 'claude') { try { const c = new AbortController(), tm = setTimeout(() => c.abort(), 7000), r = await fetch('/hide/mind', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(o), signal: c.signal }); clearTimeout(tm); const j = await r.json();
+      if (j && j.action) { D = j; SK.fails = 0; } else { SK.why = (j && j.why) || 'no answer'; SK.fails++; } } catch (e) { SK.why = 'not reached'; SK.fails++; } if (SK.fails >= 2) SK.mode = 'local'; }
+  if (!D) D = localMind(o); SK.pending = false; if (round !== SK.round || !['think', 'goto', 'listen'].includes(SK.state)) return; decide(D); }
+function decide(D) { think(D.thought, D.action); SK.queue.length = 0; let a = D.action;
+  if (a === 'investigate') { const c = SK.clues.find(c => c.id === D.clue); if (c) { SK.used.add(c.id); const s = nearSpot(c.x, c.z, 2.2); SK.plan = s ? { type: 'search', spot: s, thorough: true } : { type: 'point', x: clamp(c.x, -2, 2), z: clamp(c.z, -33, -1) }; } else a = 'sweep'; }
+  if (a === 'search') { if (D.spot && spotAt(D.spot)) SK.plan = { type: 'search', spot: D.spot, thorough: !!D.thorough }; else a = 'sweep'; }
+  if (a === 'feint' && SK.feinted) a = 'listen'; if (a === 'leave' && SK.patience > 45) a = 'sweep';
+  if (a === 'sweep') { const L = SPOTS.filter(s => !(SK.searched[s.id] > 0)).sort((x, y) => Math.abs(-x.z - SK.pos.z) - Math.abs(-y.z - SK.pos.z)).slice(0, 5); if (!L.length) { SK.plan = { type: 'listen', dur: 3 }; } else { SK.queue = L.slice(1).map(s => ({ type: 'search', spot: s.id, thorough: false })); SK.plan = { type: 'search', spot: L[0].id, thorough: false }; } }
+  if (a === 'listen') SK.plan = { type: 'listen', dur: 4.5 }; if (a === 'feint') { SK.feinted = true; SK.plan = { type: 'feint' }; } if (a === 'leave') SK.plan = { type: 'leave' };
+  start(); }
+function start() { const p = SK.plan; if (!p) return setState('think'); SK.stuck = 0; SK.blocks = 0;
+  if (p.type === 'search') { const g = spotAt(p.spot); SK.path = pathTo(g.at[0], g.at[1]); setState('goto'); } else if (p.type === 'point') { SK.path = pathTo(p.x, p.z); setState('goto'); }
+  else if (p.type === 'listen') setState('listen'); else { SK.path = pathTo(0, 2.5); setState('goto'); } }
+
+function enter() { SK.round = (SK.round || 0) + 1; SK.g.visible = true; SK.pos.set(0, 0, 4.2); body.setTranslation(SK.pos, true); SK.yaw = Math.PI; SK.t = 0; SK.patience = PATIENCE; SK.aware = 0; SK.lightOn = true; WORLD.gate.to = 1; A.at('gate', { x: 0, y: 1.2, z: 0 }, 1.1, .8); A.at('growl1', { x: 0, y: 1.6, z: 3 }, .8);
+  buildNav(); SK.blocks = 0; SK.plan = { type: 'point', x: 0, z: -2.2 }; SK.path = pathTo(0, -2.2); setState('goto'); play('walk'); }
+function reset() { SK.round = (SK.round || 0) + 1; SK.g.visible = false; SK.pos.set(0, 0, 6); body.setTranslation(SK.pos, true); setState('wait'); Object.assign(SK, { aware: 0, asked: -9, urgent: false, lost: 0, plan: null, pending: false, feinted: false, fails: 0, cn: 0, crouch: 0, lightOn: true, patience: PATIENCE, t: 0, why: '' }); SK.thoughts.length = SK.log.length = SK.clues.length = SK.queue.length = 0; SK.searched = {}; SK.messSeen = {}; SK.used.clear(); light.intensity = 0; cone.material.uniforms.k.value = 0; WORLD.gate.to = 0; for (const T of P.things) T.monT = T.plT = 0; }
+function walk(dt, speed) { const w = SK.path[0]; if (!w) return true; const dx = w[0] - SK.pos.x, dz = w[1] - SK.pos.z, d = Math.hypot(dx, dz); if (d < .22) { SK.path.shift(); return !SK.path.length; }
+  const yaw = Math.atan2(dx, dz); let dy = yaw - SK.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); SK.yaw += clamp(dy, -dt * 4.5, dt * 4.5); const f = Math.max(.15, Math.cos(dy)), s = Math.min(speed * f * dt, d);
+  ctl.computeColliderMovement(col, { x: dx / d * s, y: -.08, z: dz / d * s }, undefined, MON); for (let i = 0; i < ctl.numComputedCollisions(); i++) { const c = ctl.computedCollision(i), T = c && c.collider && P.byCol.get(c.collider.handle); if (T && !T.fixed) T.monT = CLOCK.t; } const m = ctl.computedMovement(), mv = Math.hypot(m.x, m.z); SK.pos.x += m.x; SK.pos.z += m.z; SK.pos.y = Math.max(0, SK.pos.y + m.y); body.setNextKinematicTranslation(SK.pos);
+  // not getting nearer: something it cannot shove is in the way, so that patch of floor is closed and it goes round; three times and it gives the walk up
+  if (d < SK.wd - .04) { SK.wd = d; SK.stuck = 0; } else SK.stuck += dt; if (SK.wp !== w) { SK.wp = w; SK.wd = d; SK.stuck = 0; }
+  if (SK.stuck > 1.1) { SK.stuck = 0; SK.wd = 99; if (++SK.blocks > 3) { SK.path.length = 0; return true; } const bx = SK.pos.x + dx / d * .6, bz = SK.pos.z + dz / d * .6, [ci, cj] = cellOf(bx, bz);
+    for (let b = cj - 2; b <= cj + 2; b++) for (let a = ci - 2; a <= ci + 2; a++) if (a >= 0 && b >= 0 && a < NX && b < NZ) nav[b * NX + a] = 1; const g = SK.goal; SK.path = pathTo(g[0], g[1]); return false; }
+  stepAcc += mv; if (stepAcc > (speed > 2 ? 1.25 : .92)) { stepAcc = 0; A.at(['heavy1', 'heavy2'], { x: SK.pos.x, y: .1, z: SK.pos.z }, speed > 2 ? 1.1 : .7, speed > 2 ? 1.15 : 1); }
+  if (cur) cur.timeScale = cur === acts.run ? speed / 3.2 : speed / 1.15; return false; }
+const los = (from, x, y, z) => { _d.set(x - from.x, y - from.y, z - from.z); const d = _d.length(); if (d < .05) return true; _d.multiplyScalar(1 / d); const h = ray(from, _d, d, SIGHT); if (h && h.t < d - .06) return false; _b.set(x, y, z); return !WORLD.cloth.blocks(from, _b); };
+
+function sense(dt, searching) { const t = now(), fx = Math.sin(SK.yaw), fz = Math.cos(SK.yaw), listening = SK.state === 'listen';
+  /* hearing */
+  for (const n of PL.noises) { if (n.done) continue; n.done = true; const d = Math.hypot(n.x - SK.pos.x, n.z - SK.pos.z), pd = Math.hypot(n.x - PL.pos.x, n.z - PL.pos.z); if (d < 1.4 && pd > 2.2) continue; const heard = n.loud * (listening ? 1.9 : 1) / (1 + (d / 4) * (d / 4)); if (heard < .035) continue;
+    const j = d * .1, s = heard > .25 ? 3 : heard > .09 ? 2 : 1, c = clue('noise', n.x + rnd(-j, j), n.z + rnd(-j, j), s, n.what); if (SK.state !== 'chase') { SK.reflex = 1.3; SK.lookTo.set(c.x, .8, c.z); if (s >= 2) SK.urgent = true; if (s === 3 && d < 3) SK.aware += .22; } }
+  if (PL.noises.length > 30) PL.noises.splice(0, PL.noises.length - 30);
+  if (listening && !PL.breath.holding && SK.pos.distanceTo(PL.pos) < 2.6) SK.aware += dt * .4;
+  /* sight */
+  light.getWorldPosition(lightPos); _a.copy(SK.look).sub(lightPos).normalize(); PL.points(pts); let seen = 0, total = 0, lit = false; const n = pts.length / 3;
+  for (let i = 0; i < n; i++) { const x = pts[i * 3], y = pts[i * 3 + 1], z = pts[i * 3 + 2], w = i === 0 ? 1.6 : 1; total += w; _d.set(x - SK.eye.x, y - SK.eye.y, z - SK.eye.z); const d = _d.length(); _d.multiplyScalar(1 / d);
+    const inCone = SK.lightOn && (searching ? d < 4.2 : _d.dot(_a) > .93), front = searching || inCone || _d.x * fx + _d.z * fz > .2, range = inCone ? 13 : 1.5 + 9 * WORLD.lit(x, z); if (!front || d > range) continue; if (los(SK.eye, x, y, z)) { seen += w; lit = lit || inCone; } }
+  const vis = seen / total, pd = SK.eye.distanceTo(PL.head); SK.vis = vis;
+  if (vis > 0) { SK.aware += dt * vis * (lit ? 3.4 : 1.5) * (1 + PL.speed * 1.1) * clamp(1.5 - pd / 8, .12, 1.5) * [1, .8, .6][PL.low || 0]; SK.lastSeen.copy(PL.pos); if (SK.aware > .35 && SK.state !== 'chase') { const c = clue('glimpse', PL.pos.x, PL.pos.z, vis > .4 ? 3 : 2, 'part of a body'); if (t - (c.told || 0) > 5) { c.told = t; SK.urgent = true; } } } else SK.aware = Math.max(0, SK.aware - dt * .3);
+  /* breath in the light, wet prints in the light */
+  for (const p of PL.puffs) { if (p.seen || t - p.t > 1.6) continue; _d.set(p.x - lightPos.x, p.y - lightPos.y, p.z - lightPos.z); const d = _d.length(); _d.multiplyScalar(1 / d); if (SK.lightOn && d < 7 && (_d.dot(_a) > .9 || (searching && d < 2.4)) && los(lightPos, p.x, p.y, p.z)) { p.seen = true; clue('breath', p.x, p.z, 3, 'breath fogging'); SK.aware += .3; SK.urgent = true; SK.lookTo.set(p.x, p.y, p.z); SK.reflex = 1.5; } }
+  let pr = null; for (const p of PL.prints) if (!p.seen && SK.lightOn && Math.hypot(p.x - SK.pos.x, p.z - SK.pos.z) < 4.5 && t - p.t < 45) { p.seen = true; pr = p; } if (pr) { const last = PL.prints[PL.prints.length - 1]; clue('prints', last.x, last.z, 2, 'wet prints leading ' + (last.z < pr.z - .5 ? 'deeper in' : last.z > pr.z + .5 ? 'back toward the gate' : 'to one side')); } }
+
+function update(dt) { if (SK.state === 'wait' || SK.state === 'gone' || SK.state === 'caught' && SK.st > 4) return; SK.st += dt; const S = SK.state, hunting = ['think', 'goto', 'inspect', 'listen'].includes(S); let searching = false;
+  if (hunting) { SK.t += dt; SK.patience -= dt; }
+  if (S === 'goto') { play('walk'); const p = SK.plan, done = walk(dt, p && (p.type === 'leave' || p.type === 'feint') ? 1.5 : 1.25); if (SK.reflex <= 0) SK.lookTo.set(SK.pos.x + Math.sin(SK.yaw) * 5 + Math.sin(SK.st * 1.1) * 1.6, .7, SK.pos.z + Math.cos(SK.yaw) * 5);
+    if (SK.urgent && now() - SK.asked > 2.5 && p && p.type !== 'leave' && p.type !== 'feint') { SK.urgent = false; SK.queue.length = 0; ask(true); }
+    if (done) { if (!p) setState('think'); else if (p.type === 'search') setState('inspect'); else if (p.type === 'point') { SK.plan = null; if (SK.pos.z > -3 && !SK.t) setState('think'); else { SK.plan = { type: 'listen', dur: 2.5 }; setState('listen'); } } else if (p.type === 'feint') setState('feint'); else if (p.type === 'leave') { setState('gone'); SK.g.visible = false; light.intensity = 0; cone.material.uniforms.k.value = 0; WORLD.gate.to = 0; return; } } }
+  else if (S === 'think') { play('idle'); if (SK.reflex <= 0) SK.lookTo.set(SK.pos.x + Math.sin(SK.yaw + Math.sin(SK.st * .9) * 1.1) * 5, .8, SK.pos.z + Math.cos(SK.yaw + Math.sin(SK.st * .9) * 1.1) * 5);
+    if (SK.patience <= 0) { think('Enough. Nothing lives here.', 'leave'); SK.plan = { type: 'leave' }; start(); } else if (SK.queue.length && !SK.urgent) { SK.plan = SK.queue.shift(); start(); } else if (!SK.pending && SK.st > .5 && now() - SK.asked > 1.2) { const u = SK.urgent; SK.urgent = false; ask(u); } }
+  else if (S === 'inspect') { const p = SK.plan, g = spotAt(p.spot), kind = SPOTS.find(s => s.id === p.spot).kind, dur = p.thorough ? 5.6 : 1.9; let dy = Math.atan2(g.look[0] - SK.pos.x, g.look[2] - SK.pos.z) - SK.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); SK.yaw += clamp(dy, -dt * 3.5, dt * 3.5);
+    SK.lookTo.set(g.look[0] + Math.sin(SK.st * 2.3) * .5, g.look[1], g.look[2] + Math.cos(SK.st * 1.7) * .7); SK.reflex = 0;
+    if (p.thorough) { searching = SK.st > .9; SK.crouch = lerp(SK.crouch, kind === 'lid' ? .35 : 1, 1 - Math.exp(-dt * 3)); if (!p.did && SK.st > .5) { p.did = true; const L = P.lids[p.spot]; if (L && !L.isOpen()) { L.set(true); play('slam', .15); A.at('gate', L.T.b.translation(), .6, 1.4); } else if (kind === 'cloth') { play('slam', .15); WORLD.cloth.rip(rnd(3, 5), rnd(-4, -2)); A.at('cloth', { x: g.look[0], y: .4, z: g.look[2] }, .9, .8); } else play('idle'); } } else play('idle');
+    if (SK.st > dur) { SK.searched[p.spot] = Math.max(SK.searched[p.spot] || 0, p.thorough ? 2 : 1); SK.messSeen[p.spot] = messAt(p.spot); SK.log.push({ did: (p.thorough ? 'searched ' : 'glanced at ') + p.spot + (p.thorough ? ' thoroughly' : ''), found: 'nothing' }); SK.plan = null; setState('think'); } }
+  else if (S === 'listen') { play('idle'); SK.lightOn = SK.st < .4; if (SK.urgent && SK.st > 1) { SK.urgent = false; SK.lightOn = true; SK.plan = null; setState('think'); ask(true); } else if (SK.st > (SK.plan ? SK.plan.dur : 4)) { SK.lightOn = true; SK.log.push({ did: 'stood dark and listened', found: 'nothing new' }); SK.plan = null; setState('think'); } }
+  else if (S === 'feint') { SK.lightOn = false; SK.g.visible = false; WORLD.gate.to = SK.st < 1 ? 0 : WORLD.gate.to; if (SK.st > 10) { SK.g.visible = true; SK.lightOn = true; WORLD.gate.to = 1; SK.log.push({ did: 'pretended to leave, came back quietly', found: 'you are back at the gate' }); buildNav(); SK.plan = { type: 'point', x: 0, z: -2 }; SK.path = pathTo(0, -2); setState('goto'); SK.t += .01; } }
+  else if (S === 'spotted') { play('rage', .15); SK.lookTo.copy(PL.head); let dy = Math.atan2(PL.pos.x - SK.pos.x, PL.pos.z - SK.pos.z) - SK.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); SK.yaw += clamp(dy, -dt * 5, dt * 5); if (SK.st > 1.25) { setState('chase'); SK.lost = 0; SK.repath = 0; SK.best = 99; SK.near = 0; } }
+  else if (S === 'chase') { play('run', .2); SK.lookTo.copy(PL.head); SK.reflex = 0; SK.repath -= dt; if (SK.repath <= 0) { SK.repath = .35; SK.blocks = 0; SK.path = pathTo(SK.lastSeen.x, SK.lastSeen.z); } walk(dt, 3.3); SK.lost = SK.vis > 0 ? 0 : SK.lost + dt; SK.aware = Math.max(SK.aware, SK.vis > 0 ? 1 : 0);
+    const pd = Math.hypot(PL.pos.x - SK.pos.x, PL.pos.z - SK.pos.z); SK.near = pd < SK.best - .05 ? (SK.best = pd, 0) : (SK.near || 0) + dt;   // it reaches in for you where its body cannot follow
+    if ((pd < 1.7 && (SK.vis > 0 || SK.lost < 1.2) || (pd < 2.7 && SK.near > 1 && PL.pos.distanceTo(SK.lastSeen) < .7)) && Math.abs(PL.pos.y - SK.pos.y) < 1.9) { setState('caught'); play('attack', .1); if (pd < 1.7 && pd > .01) { SK.pos.x = PL.pos.x + (SK.pos.x - PL.pos.x) / pd * 1.7; SK.pos.z = PL.pos.z + (SK.pos.z - PL.pos.z) / pd * 1.7; body.setNextKinematicTranslation(SK.pos); } SK.yaw = Math.atan2(PL.pos.x - SK.pos.x, PL.pos.z - SK.pos.z); A.at('roar', { x: SK.pos.x, y: 1.8, z: SK.pos.z }, 1.6); think('There you are.', 'caught'); }
+    else if ((SK.lost > 4 && SK.st > 2) || SK.near > 9) { SK.aware = .3; clue('glimpse', SK.lastSeen.x, SK.lastSeen.z, 3, 'it ran this way, then you lost it'); SK.log.push({ did: 'chased it', found: 'lost sight of it near ' + (nearSpot(SK.lastSeen.x, SK.lastSeen.z, 4) || 'open ground') }); SK.plan = null; SK.urgent = true; setState('think'); } }
+  else if (S === 'caught') { SK.lookTo.copy(PL.head); }
+  SK.crouch = S === 'inspect' ? SK.crouch : lerp(SK.crouch, 0, 1 - Math.exp(-dt * 4)); SK.reflex -= dt;
+  if (hunting && SK.aware >= 1) { setState('spotted'); SK.plan = null; SK.queue.length = 0; SK.lightOn = true; A.at('growl2', { x: SK.pos.x, y: 1.8, z: SK.pos.z }, 1.5, 1.1); think('I see you.', 'spotted'); }
+  growlT -= dt; if (growlT < 0 && SK.g.visible && S !== 'caught') { growlT = rnd(9, 17); A.at(['growl1', 'growl2'], { x: SK.pos.x, y: 1.7, z: SK.pos.z }, .45, rnd(.8, 1)); }
+
+  /* the body, its eyes, its light */
+  SK.g.position.copy(SK.pos); SK.g.rotation.y = SK.yaw; mixer.update(dt); for (const b of spine) b.rotation.x += SK.crouch * .42;
+  SK.look.lerp(SK.lookTo, 1 - Math.exp(-dt * (S === 'chase' ? 9 : 4.5))); const p = SK.plan, g = S === 'inspect' && p && p.thorough && SK.st > .7 ? spotAt(p.spot).eye : null, fx = Math.sin(SK.yaw), fz = Math.cos(SK.yaw);
+  _a.set(SK.pos.x + fx * .45 - fz * .25, 1.45 - SK.crouch * .55, SK.pos.z + fz * .45 + fx * .25); if (g) _a.set(g[0], g[1], g[2]); light.position.lerp(_a, 1 - Math.exp(-dt * 5)); light.target.position.copy(SK.look);
+  SK.eye.set(SK.pos.x + fx * .15, EYE - SK.crouch * .9, SK.pos.z + fz * .15); if (g) SK.eye.copy(light.position);
+  const on = SK.lightOn && SK.g.visible ? 1 : 0; light.intensity = lerp(light.intensity, on * 110, 1 - Math.exp(-dt * 12)); cone.material.uniforms.k.value = light.intensity / 110; cone.position.copy(light.position); cone.lookAt(SK.look);
+  WORLD.rain.uniforms.torch.value.copy(light.position).lerp(SK.look, .35).setY(on ? 1.6 : -50);
+  if (SK.g.visible && S !== 'feint') sense(dt, searching);
+}
+Object.assign(SK, { init, enter, reset, update, observe, localMind, buildNav, pathTo, messAt, decide });
+export { SK };

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:,">
+<title>Dead End</title>
+<style>
+:root{--bg:#040506;--ink:#a9a497;--dim:#6b675e;--rule:#22231f;--lamp:#e39a45;--blood:#c2452f;--paper:#d8d2c2;
+  --display:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;--util:ui-monospace,"SF Mono",Menlo,Consolas,monospace;color-scheme:dark}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);overflow:hidden;font-family:var(--display)}
+[hidden]{display:none!important}
+canvas{display:block;position:fixed;inset:0;width:100%;height:100%}
+#ui{position:fixed;inset:0;z-index:5;display:flex;align-items:flex-end;overflow:auto;padding:max(24px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(40px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  background:radial-gradient(120% 90% at 78% 8%,rgba(227,154,69,.13) 0%,rgba(4,5,6,0) 45%),linear-gradient(0deg,rgba(4,5,6,.98) 0%,rgba(4,5,6,.93) 55%,rgba(4,5,6,.8) 100%)}
+#card{max-width:36rem;margin-left:min(7vw,5rem);display:flex;flex-direction:column;gap:1rem;min-width:0}
+.eyebrow{font:500 .72rem/1 var(--util);letter-spacing:.3em;text-transform:uppercase;color:var(--lamp)}
+h1{font:400 clamp(3rem,11vw,6.2rem)/.86 var(--display);letter-spacing:-.01em;margin:0;color:var(--paper);text-wrap:balance}
+h1 em{font-style:normal;color:var(--blood)}
+p{margin:0;font-size:1.06rem;line-height:1.55;max-width:58ch}
+.btns{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:.3rem}
+button{font:500 .8rem/1 var(--util);letter-spacing:.2em;text-transform:uppercase;padding:1rem 1.4rem;border:1px solid var(--dim);background:transparent;color:var(--paper);cursor:pointer;border-radius:0}
+button.main{background:var(--paper);color:var(--bg);border-color:var(--paper)}
+button:hover:not(:disabled){border-color:var(--lamp)}
+button:focus-visible{outline:2px solid var(--lamp);outline-offset:3px}
+button:disabled{opacity:.35;cursor:not-allowed}
+dl{display:grid;grid-template-columns:auto 1fr;gap:.35rem 1.2rem;margin:0;font:400 .78rem/1.45 var(--util);color:var(--dim);border-top:1px solid var(--rule);padding-top:1rem}
+dt{color:var(--ink)}dd{margin:0}
+.small{font:400 .74rem/1.5 var(--util);color:var(--dim)}
+#note{color:var(--blood);min-height:1.2em}
+#load{height:2px;background:var(--rule);width:min(100%,22rem)}
+#bar{height:100%;background:var(--lamp);transform:scaleX(0);transform-origin:left;transition:transform .2s}
+@media (prefers-reduced-motion:reduce){#bar{transition:none}}
+</style>
+</head>
+<body>
+<div id="ui"><div id="card">
+  <div class="eyebrow">Sixty seconds</div>
+  <h1>Dead <em>End</em></h1>
+  <p>You ran into an alley with no way out. You have one minute to hide before it comes in after you. Twenty places will hold a body. It listens, it watches for your breath in its light, and it notices what you moved.</p>
+  <div id="load"><div id="bar"></div></div>
+  <div class="btns"><button id="bvr" class="main" disabled>Enter headset</button><button id="bdesk" disabled>Play on screen</button></div>
+  <dl><dt>Headset</dt><dd>Left stick walks. Right stick turns, and pulled down it crouches you. Grip carries or climbs. Right trigger opens and shuts. A climbs over. Left trigger holds your breath.</dd>
+      <dt>Screen</dt><dd>WASD, Shift to run, C to crouch then lie flat, mouse button to carry, E to open and shut, Space to climb over, Q to hold your breath.</dd></dl>
+  <div class="small" id="mind"></div><div class="small" id="vrnote"></div><div class="small" id="note"></div>
+  <div class="small">Dark, loud and frightening. Play seated or with clear floor around you.</div>
+</div></div>
+<script type="module">__HIDE__</script>
+</body>
+</html>

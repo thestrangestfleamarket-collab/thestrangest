@@ -613,12 +613,11 @@
    "id": "arcade",
    "name": "THE ARCADE",
    "kind": "front",
-   "x0": 116.37,
-   "x1": 129.5,
-   "y0": -107.9,
-   "y1": -95.9,
-   "face": "s",
-   "row": 2
+   "x0": -30.13,
+   "x1": -17.0,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n"
   },
   {
    "id": "theatre",
@@ -777,7 +776,7 @@
   {
    "id": "fishmarket",
    "kind": "market",
-   "x0": 130,
+   "x0": 116.37,
    "x1": 252,
    "y0": -107.9,
    "y1": -95.9,
@@ -786,7 +785,7 @@
    "name": "THE FISH MARKET",
    "note": "the Hudson row east of the way through (owner, 9 Nov 2026): the yard, the tin shed, the brick shed (x spans), the highway over the promenade (y span, deck height in metres, a bent every so many tiles); stalls: a wholesaler each (who: its record in characters.json)",
    "yard": [
-    131,
+    117,
     147
    ],
    "tin": [
@@ -4155,8 +4154,8 @@
    "bar"
   ],
   "origamifox": [
-   122.94,
-   -109.6,
+   -23.57,
+   -74.6,
    5,
    "arcade"
   ],

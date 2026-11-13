@@ -1,4 +1,8 @@
 // DECORATE'S POLYFORK FURNITURE (owner, 13 Nov 2026: "look throuh polyfork assets for better lookign furtneru and decor for apartment, add textures, roudned corners, flowing physics, etc."; his pick: soft goods, then the main furniture, then decor): Polyfork's sofas, armchairs, chairs, tables, a sideboard, a lamp, a jukebox and potted plants sold in DECORATE's POLYFORK department, the models fetched only when DECORATE opens or your flat already has one.
+import {THREE} from './003-shx.js';
+import {WE} from './003b-systems.js';
+import {SYS, TILE} from './006-map-pre.js';
+import {ROOMK} from './150a-bedroom.js';
 const PFDECOR={ready:false,loading:false};
 { // the piece, its price, its footprint (x0,z0,x1,z1) and height in metres, from the world editor's catalog (data/weplace.json)
   const PICK=[['lounge-sofa-c34b3e',650,-0.99,-0.5,0.99,0.49,0.92],['sofa-9c0e7e',600,-1.0,-0.5,1.0,0.47,0.959],['lounge-armchair-5a72ca',380,-0.334,-0.324,0.334,0.324,0.79],['armchair-980c7c',350,-0.44,-0.388,0.44,0.392,0.901],['velvet-tub-chair-b0b5f8',320,-0.35,-0.276,0.35,0.334,0.87],['motel-shell-chair-8a22f6',160,-0.261,-0.259,0.261,0.259,0.8],['gilt-chiavari-chair-f62c19',140,-0.213,-0.216,0.213,0.199,0.9],['dining-chair-530532',120,-0.201,-0.175,0.201,0.213,0.862],['bistro-chair-7c354d',90,-0.229,-0.253,0.229,0.279,0.876],['task-chair-ccd944',150,-0.319,-0.267,0.319,0.34,1.068],['bar-stool-0de3c8',80,-0.191,-0.15,0.191,0.213,0.78],['counter-stool-73553a',80,-0.265,-0.272,0.265,0.272,0.504],['piano-bench-93e2b4',120,-0.365,-0.165,0.365,0.165,0.5],
@@ -21,4 +25,3 @@ const PFDECOR={ready:false,loading:false};
   // fetched when DECORATE opens, or at once when your flat has a piece waiting for its model
   SYS.every(()=>{ const A=ROOMK.api; if(!A||PFDECOR.ready||PFDECOR.loading)return; if((window.ROOMED&&ROOMED.on)||A.units().some(u=>u.kind&&u.kind.startsWith('pf:')))PFDECOR.load(); },500,'150dz-pfdecor');
   window.PFDECORDBG=()=>{ const A=ROOMK.api, K=A?A.R.kinds:{}; const ks=Object.keys(K).filter(k=>k.startsWith('pf:')); return {ready:PFDECOR.ready,kinds:ks.length,built:ks.filter(k=>K[k].tpl.children.length).length,bad:ks.filter(k=>K[k].bad).length}; }; }
-export {PFDECOR};

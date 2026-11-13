@@ -22,7 +22,7 @@ const APPF = /^\/(app\.webmanifest|icon-(192|512)\.png)$/;   // the installable 
 const EDMAP = /^\/edmap\/t\d{1,2}_\d{1,2}\.jpg$/;
 const SCAREA = /^\/scare-assets\/[a-z0-9_-]+\.glb$/;   // VESPER WARD's models: to anyone
 const JAMA = /^\/jam-assets\/[a-z0-9_-]+\.(glb|json|mp3)$/, JAMT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg" };   // STADIUM JAM's avatars, hands and samples: to anyone
-const GOLFA = /^\/golf-assets\/(?!.*\.\.)[a-z0-9_.\/-]+\.(jpg|json|txt)$/;   // HALCYON GREENS' pictures and models: to anyone
+const GOLFA = /^\/(golf|duel)-assets\/(?!.*\.\.)[a-z0-9_.\/-]+\.(jpg|json|txt)$/;   // HALCYON GREENS' pictures and models, AR DUEL's pictures: to anyone
 const BOOK = /^\/book\/(\d{1,6})\.txt$/, FILM = /^\/film\/([A-Za-z0-9_.-]{1,80})\/([A-Za-z0-9_.-]{1,120}\.mp4)$/, IA = /^\/ia\/([A-Za-z0-9_.-]{1,80})\.jpg$/, YT = /^\/yt\/([A-Za-z0-9_-]{11})\.jpg$/, BLANK = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYGD4DwABBAEAHnOcQAAAAABJRU5ErkJggg==";
 const SKYJD = () => { const d = new Date(); return Date.UTC(1985, d.getUTCMonth(), d.getUTCDate()) / 864e5 + 2440587.5; },   // the sky's year is 1985 (src/134b DN.YEAR): that year's comets
    SBDB = "https://ssd-api.jpl.nasa.gov/sbdb_query.api?", SWPC = "https://services.swpc.noaa.gov/";
@@ -77,6 +77,9 @@ export default {
     // HALCYON GREENS (src/golf/): its own page at /golf, to anyone with the link; its pictures under /golf-assets/
     if ((request.method === "GET" || request.method === "HEAD") && p === "/golf") return page(env, url, "/golf", request, "no-cache");
     if (p === "/golf/") return Response.redirect(url.origin + "/golf" + url.search, 301);
+    // AR DUEL (src/duel/): its own page at /duel, to anyone with the link; its pictures under /duel-assets/
+    if ((request.method === "GET" || request.method === "HEAD") && p === "/duel") return page(env, url, "/duel", request, "no-cache");
+    if (p === "/duel/") return Response.redirect(url.origin + "/duel" + url.search, 301);
     if ((request.method === "GET" || request.method === "HEAD") && GOLFA.test(p)) {
       const r = await env.ASSETS.fetch(new Request(url.origin + p)); if (!r.ok) return new Response("not found", { status: 404 });
       const out = new Response(r.body, r); out.headers.set("cache-control", "public, max-age=86400"); out.headers.set("x-robots-tag", "noindex"); return out; }

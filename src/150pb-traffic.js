@@ -8,7 +8,7 @@ import {TRAINS} from './009c-trains.js';
 import {TLX} from './069-dress.js';
 import {BIGCAT} from './111ei-bigcat.js';
 const TRAFFIC={lanes:[],skew:0}; window.TRAFFIC=TRAFFIC;
-{ const TD=__LAZY__("data/traffic.json"), T=TILE, M0=T/.84, M1=M0*1.4, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, say=(t,c)=>SAY(t,c||'#e8e2cc');
+{ const TD=SYS.far(__LAZY__("data/traffic.json")), T=TILE, M0=T/.84, M1=M0*1.4, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, say=(t,c)=>SAY(t,c||'#e8e2cc');
   const now=()=>(TRAINS.now?TRAINS.now():Date.now()/1000)+TRAFFIC.skew;
   // LOW: hover cars that keep to the road lanes, a hand over the ground; PACE: each model's own speed, a share of its lane's
   const LOW=['taxi-pod','station-wagon-70s'], HOV={'taxi-pod':.3,'station-wagon-70s':.8}, PACE={'muscle-car-60s':1.15,'wedge-coupe-80s':1.2,'station-wagon-70s':.95,'convertible-60s':1.05,'camper-van':.8,'police-cruiser-80s':1.1,'taxi-pod':1,'town-car':1,hatchback:.95,suv:1,minivan:.9,pickup:.9,'kei-van':.85,interceptor:1.25,'escape-pod':.85,'taxi-coupe':1.05,ambulance:1.15,'police-flier':1.3};

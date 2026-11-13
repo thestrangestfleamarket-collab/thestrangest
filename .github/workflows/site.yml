@@ -125,6 +125,7 @@ jobs:
           k hall    'src/150n|src/059a|hall\.cjs'
           k flats   'src/150n|src/059a|src/150d|src/141c|src/150ac|flats\.cjs'
           k frames  'src/150ga|src/150g-|frames\.cjs'
+          k outgate 'src/006-map-pre|src/163-main|outgate\.cjs'
           k holodeck 'src/059b-arcade|src/146bb|src/146b[fg]|src/holo/|tools/holo|holodeck|headset|roam'
           k boarded 'src/holo/|tools/holo|tests/boarded'
           k kite    'src/146g-kite|src/093|kite\.cjs'
@@ -457,6 +458,9 @@ jobs:
       - name: Picture frames (a museum picture, your own, kept with the layout)
         if: contains(steps.f.outputs.run, ' frames')
         run: node tests/frames.cjs dist/market.html
+      - name: The street's files wait until you are out (a platform start)
+        if: contains(steps.f.outputs.run, ' outgate')
+        run: node tests/outgate.cjs dist/market.html
       - name: The holodeck (its booth, the headset, each program a page of its own; ROAM on its page and in the headset)
         timeout-minutes: 40
         if: contains(steps.f.outputs.run, ' holodeck')

@@ -1,12 +1,12 @@
 // THE MUSHROOM SELLER: MUSH, his body on the player's rig (a smooth MERCH body: a real scanned skull, long ash-blond hair, the hat grown over with mushrooms, the mottled rust robe, the woven shawl and grey strap, the tray heaped with mushrooms), and his booth at the park wall.
 import {SHARED, THREE} from './003-shx.js';
 import {PARK, pos} from './003b-systems.js';
-import {MODS, TILE} from './006-map-pre.js';
+import {MODS, SYS, TILE} from './006-map-pre.js';
 import {HOMES} from './076-npc-map.js';
 import {STALL} from './081-stalls.js';
 import {BODIES} from './111a-bodies.js';
 import {MERCH} from './111e-merch.js';
-const MUSH={}, SKULL=__LAZY__("data/skull.json"); let swing=null;
+const MUSH={}, SKULL=SYS.far(__LAZY__("data/skull.json")); let swing=null;
 { const {SPH,CYL,TOR,grp,mk,paint,hash3,C,mix,fbm,lathe,bend,ribbon}=MERCH.K, PI=Math.PI, T=TILE, V3=THREE.Vector3;
   let seed=11; const rnd=()=>{ seed=(seed*16807)%2147483647; return seed/2147483647; };
   // a mushroom: its stem, the cap's dome (darker at its crown, speckled) and rolled rim, the gills under it; o {r cap, h stem, s stem radius, cap '#hex', stem, gill, k cap height, seg}

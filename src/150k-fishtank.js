@@ -187,7 +187,7 @@ import {TANKFX} from './150ja-tankfx.js';
     const cx=(Math.random()-.5)*T.SW*.5, cz=-T.SD*.15+(Math.random()-.5)*T.SD*.3; for(let i=0;i<12;i++){ const x=cx+(Math.random()-.5)*.25, z=cz+(Math.random()-.5)*.18; T.pel.push({x,y:T.WY,z,t:Math.random()*.4}); poke(T,x,z,.004,.025); }
     SAY('YOU SHAKE IN A PINCH OF FOOD. THE FISH RISE AND SNAP IT UP.','#c8e8f0'); };
   ROOMK.wires.tank=(un,c)=>{ const T=TANKS.find(q=>q.g===un.obj); if(!T)return; T.id=un.id; T.un=un;
-    c.hit(un,()=>FORAGE.has('g_fishfood')?'FEED THE FISH':'THE FISH TANK',()=>{ if(FORAGE.has('g_fishfood'))return feed(T); TANKV.open(T); }); };
+    c.hit(un,()=>'THE FISH TANK',()=>TANKV.open(T)); };   // always its menu (FEED THE FISH is a button in it)
 
   /* ---------- the close look: the camera before the tank's glass, and its settings beside it ---------- */
   let V=null, P=null;

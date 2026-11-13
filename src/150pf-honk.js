@@ -1,4 +1,4 @@
-// THE HORN'S WAY (owner, 12 Nov 2026): what a honk moves out of a vehicle's way. A honk is the SYS event 'honk' {x,z,dx,dz,by} (a traffic car held up, 150pb; a player's horn, 150pe; dx,dz its heading or null: all round it). You on foot step aside, a car left empty in the road pulls over to the kerb, THE BIG CAT hurries his crossing, walkers go to the kerb, birds fly up.
+// THE HORN'S WAY (owner, 12 Nov 2026): what a honk moves out of a vehicle's way. A honk is the SYS event 'honk' {x,z,dx,dz,by} (a traffic car held up, 150pb; a player's horn, 150pe; dx,dz its heading or null: all round it). You on foot step aside, a car left empty in the road pulls over to the kerb, THE BIG CAT hurries his crossing, walkers go to the kerb, birds fly up; for a player's horn the cars on the road pull over too.
 import {SHARED, THREE} from './003-shx.js';
 import {BIRDS, NPCS, ONLINE, pos, RIDE, ROOMS, st, USE, WALKS} from './003b-systems.js';
 import {SAY} from './003d-say.js';
@@ -19,6 +19,8 @@ const HONK={n:0}; window.HONK=HONK;
     if(H.by!==me&&!RIDE.on&&!(MODS.cars&&MODS.cars.driving)&&!st.sit&&!USE.seat&&!ROOMS.cur&&inWay(H,pos.x,pos.z)){ const p=aside(H,pos.x,pos.z); SHARED.target=HONK.walk=new THREE.Vector3(p.x,SHARED.py,p.z); SAY('A HORN. YOU STEP OUT OF THE WAY.','#e8e2cc'); }
     // a car left empty in the road pulls over: half up the nearer kerb, along the street
     if(MODS.cars&&MODS.cars.cars)for(const C of MODS.cars.cars.values()){ if(C.by||!C.mesh||!onRoad(C.x,C.z)||!inWay(H,C.x,C.z,2*M0))continue; const R=TRAFFIC.road, z=C.z-R.z0<R.z1-C.z?R.z0-.7*M0:R.z1+.7*M0; ONLINE.put('car:'+C.id,[C.x,z,Math.cos(C.hd)<0?-Math.PI/2:Math.PI/2].map(v=>+v.toFixed(3)).join(',')); }
+    // a player's horn: the traffic in its way pulls over and lets it by
+    if(H.by&&TRAFFIC.pull)TRAFFIC.pull((x,z)=>inWay(H,x,z,M0),8);
     // THE BIG CAT crossing hurries
     { const c=BIGCAT.road&&BIGCAT.road(); if(c&&inWay(H,c.x,c.z,3*M0)&&t-(+((ONLINE.world||{})['honk:cat'])||0)>60)ONLINE.put('honk:cat',String(Math.round(t*10)/10)); }
     // walkers go to the kerb, birds on the ground fly up

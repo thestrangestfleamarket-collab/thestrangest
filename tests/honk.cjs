@@ -27,6 +27,11 @@ const {chromium}=require('playwright');
   // a player's own horn: what is ahead of the car moves, the driver does not
   const own=await pg.evaluate(([x,z])=>{ const C=[...CARS.cars.values()].find(c=>c.mesh&&!c.moor); ONLINE.put('car:'+C.id,[x,z,0].join(',')); SHARED.target=null; SYS.run('honk',{x:x-8,z,dx:1,dz:0,by:ONLINE.me||'me'}); const R=TRAFFIC.road; return {home:C.z<R.z0||C.z>R.z1,me:!SHARED.target}; },[x0+20,L.z]);
   ok(own.home&&own.me,'your own horn clears the car ahead and leaves you be '+JSON.stringify(own));
+  // a player's horn behind a traffic car: it pulls over to its kerb and stops, then goes back into its lane
+  await pg.evaluate(z=>{ __dbg.UI.goTo(TRAFFIC.road.x0+40,z-30,0,0); },R.z0);
+  const pv=await pg.evaluate(async()=>{ const L=TRAFFIC.lanes[0], wait=ms=>new Promise(r=>setTimeout(r,ms)); let C=null; for(let i=0;i<300&&!C;i++){ C=L.cars.find(K=>K.m&&K.sp>2&&Math.abs(K.m.position.x-__dbg.you().x)<25); if(!C)await wait(300); } if(!C)return null;
+    const x=C.m.position.x; SYS.run('honk',{x:x+9,z:L.z,dx:-1,dz:0,by:'someone'}); await wait(6000); const off=C.m.position.z-L.z, sp=C.sp, R=TRAFFIC.road, kerb=L.z-R.z0<R.z1-L.z?-1:1; await wait(9000); return {off:+off.toFixed(2),side:Math.sign(off)===kerb,sp:+sp.toFixed(2),back:+Math.abs((C.m?C.m.position.z:L.z)-L.z).toFixed(2),again:+C.sp.toFixed(2)}; });
+  ok(!!pv&&Math.abs(pv.off)>1.5&&pv.side&&pv.sp<.5&&pv.back<.3&&pv.again>1,"for a player's horn the traffic car ahead pulls over to its kerb and stops, then drives on in its lane "+JSON.stringify(pv));
   // a walk a honk started is dropped when you get into a car
   const drop=await pg.evaluate(async([x,z])=>{ __dbg.UI.goTo(x,z,0,0); await new Promise(r=>setTimeout(r,300)); SYS.run('honk',{x:x-8,z,dx:1,dz:0,by:null}); const had=!!SHARED.target; const C=[...CARS.cars.values()].find(c=>c.mesh&&!c.moor); C.x=x+3; C.z=z; CARS.getIn(C.id); await new Promise(r=>setTimeout(r,1500)); const r={had,driving:!!CARS.driving,target:!!SHARED.target}; CARS.getOut&&CARS.getOut(); return r; },[x0,L.z]);
   ok(drop.had&&drop.driving&&!drop.target,'getting into a car ends the walk a honk started '+JSON.stringify(drop));

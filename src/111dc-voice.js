@@ -51,11 +51,11 @@ import {SYS, TILE} from './006-map-pre.js';
     if(on&&!V.mic)mic().then(s=>{ if(s)s.getAudioTracks()[0].enabled=V.talking; }); else if(V.mic)V.mic.getAudioTracks()[0].enabled=on; };
   addEventListener('blur',()=>ONLINE.talk(false));
   const hud=()=>{ if(!HUD){ HUD=document.createElement('div'); HUD.id='vtalk'; HUD.setAttribute('role','status'); HUD.style.cssText='position:fixed;left:50%;bottom:calc(64px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);padding:4px 10px;background:#0b0d13e0;border:2px solid #7dffa8;color:#7dffa8;font:12px Silkscreen,monospace;letter-spacing:1px;z-index:6;pointer-events:none'; document.body.appendChild(HUD); }
-    const n=[...V.peers.values()].filter(P=>P.pc.connectionState==='connected').length; HUD.textContent='((·)) TALKING'+(n?' · '+n+' NEAR CAN HEAR':' · NOBODY NEAR'); HUD.hidden=!V.talking; };
+    const n=[...V.peers.values()].filter(P=>P.pc.connectionState==='connected').length; HUD.textContent='((·)) TALKING'+(n?' · '+n+' NEAR CAN HEAR':V.peers.size?' · REACHING '+V.peers.size+' NEAR YOU...':' · NOBODY NEAR'); HUD.hidden=!V.talking; };
 
   /* ---------- each frame: links follow who is near; their voices move with them and with your ears ---------- */
   const fw=new THREE.Vector3();
-  SYS.add('life',dt=>{ if(!ONLINE.on){ if(V.peers.size)for(const id of [...V.peers.keys()])cut(id,false); return; }
+  const tick=()=>{ if(!ONLINE.on){ if(V.peers.size)for(const id of [...V.peers.keys()])cut(id,false); return; }
     const now=performance.now();
     if(now-scanT>500){ scanT=now; const C=[];
       for(const o of ONLINE.others.values())if(o.why==='near you'&&o.dd<(V.peers.has(o.id)?DROP:LINK)&&!(o.vno&&now-o.vno<1e4))C.push(o);
@@ -68,8 +68,8 @@ import {SYS, TILE} from './006-map-pre.js';
     if(L.positionX){ L.positionX.value=lx; L.positionY.value=ly; L.positionZ.value=lz; L.forwardX.value=fw.x; L.forwardY.value=fw.y; L.forwardZ.value=fw.z; L.upX.value=0; L.upY.value=1; L.upZ.value=0; }
     else{ L.setPosition(lx,ly,lz); L.setOrientation(fw.x,fw.y,fw.z,0,1,0); }
     for(const P of V.peers.values()){ const o=ONLINE.others.get(P.id); if(!P.pan||!o||!o.p)continue; const x=o.p.x/M, y=(o.p.y||0)/M+1.6, z=o.p.z/M;
-      if(P.pan.positionX){ P.pan.positionX.value=x; P.pan.positionY.value=y; P.pan.positionZ.value=z; } else P.pan.setPosition(x,y,z); }
-  },'111dc-voice');
+      if(P.pan.positionX){ P.pan.positionX.value=x; P.pan.positionY.value=y; P.pan.positionZ.value=z; } else P.pan.setPosition(x,y,z); } };
+  SYS.add('life',tick,'111dc-voice'); setInterval(()=>{ if(document.hidden)tick(); },500);   // a window behind another draws no frames: its links and its ears still follow
   // who is speaking (the ((·)) by their name, 111d): 40 ms of their sound read every 150 ms, whatever the frame rate
   setInterval(()=>{ if(!V.peers.size)return; const now=performance.now(); for(const P of V.peers.values()){ if(!P.an)continue; const o=ONLINE.others.get(P.id); if(!o)continue;
     P.an.getByteTimeDomainData(P.buf); let s=0; for(let i=0;i<P.buf.length;i+=8){ const v=P.buf[i]-128; s+=v*v; } P.lv=Math.sqrt(s/(P.buf.length/8)); if(P.lv>4)o.vt=now; } },150);

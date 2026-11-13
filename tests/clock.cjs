@@ -27,6 +27,14 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
   const m4=await press('#dnclkr'), f4=await file(), h4=await hour(), real=+new Date().toLocaleString('en-US',{timeZone:'America/Chicago',hour:'numeric',hourCycle:'h23'});
   ok(/Central/.test(m4)&&f4&&f4.clk&&!f4.clk.off&&f4.clk.stop==null&&Math.floor(h4)===real,'REAL TIME puts it back on Central time ('+m4+'; '+h4.toFixed(2)+' vs '+real+')');
   { const r=await fetch(BASE+'/shared/time.json',{method:'POST',headers:{cookie:'tsfm-pass=dev:clock-player',origin:BASE,'content-type':'application/json'},body:'{"clk":{"off":0,"stop":0}}'}); ok(r.status===403,'a player who is not the owner cannot set the clock ('+r.status+')'); }
+  { const c2=await b.newContext({viewport:{width:640,height:400}}); await c2.addCookies([{name:'tsfm-pass',value:'dev:owner-two',url:BASE}]); const p2=await c2.newPage(); p2.setDefaultTimeout(600000);   // a second owner's page follows the first's change (12 Nov 2026: "it only changes for me")
+    await p2.goto(BASE+'/?fresh=1',{waitUntil:'commit',timeout:600000}); for(let i=0;i<1500&&!(await p2.evaluate(()=>!!window.__started).catch(()=>false));i++)await wait(200); await wait(8000); await p2.evaluate(()=>{ DN.owner=true; });
+    for(let i=0;i<60&&!(await pg.evaluate(()=>ONLINE.on)&&await p2.evaluate(()=>ONLINE.on));i++)await wait(500);
+    const want=await pg.evaluate(()=>DN.mode==='night'?'day':'night'); await pg.evaluate(async m=>{ DN.hold=m; DN.set(m,true); await DN.pushTime(m); },want);
+    let got=null; for(let i=0;i<40&&got!==want;i++){ await wait(500); got=await p2.evaluate(()=>DN.hold); }
+    ok(got===want,'a look held for everyone reaches a second owner\'s page too ('+want+' -> '+got+')');
+    await pg.evaluate(()=>{ DN.hold=null; return DN.pushTime('clock'); }); for(let i=0;i<40&&got!==null;i++){ await wait(500); got=await p2.evaluate(()=>DN.hold); }
+    ok(got===null,'and THE CLOCK\'S again reaches it ('+got+')'); await c2.close(); }
   ok(!errs.length,'no page errors '+errs.join(' | '));
   await b.close(); w.kill(); console.log(bad?bad+' FAILED':'all good'); process.exit(bad?1:0);
 })().catch(e=>{ console.log('FAIL '+e.message); process.exit(1); });

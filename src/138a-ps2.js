@@ -99,7 +99,7 @@ const Z={lines:0,draw:1080,Q:0,dith:0,smear:0,fringe:0,grain:0,soft:0,glow:0,sat
 // the effects: each its name and what differs from none (pal: 1 four greens, 2 EGA's sixteen, 3 two tones; mode: a drawn style)
 PS2.F={none:{n:'NONE',off:1},
   ps1:{n:'PS1',lines:224,draw:448,Q:8,smear:.5,dith:1},
-  ps2:{n:'PS2',lines:256,draw:256,Q:10,smear:1.2,fringe:1.2},
+  ps2:{n:'PS2',lines:200,draw:400,Q:10,smear:1.2,fringe:1.2},
   n64:{n:'N64',lines:240,draw:480,smear:1.2,soft:1,sat:.94},
   dc:{n:'DREAMCAST',lines:480,draw:480,smear:.2,glow:.15,con:1.05,sat:1.16},
   gc:{n:'GAMECUBE',lines:480,draw:480,smear:.6,soft:.5,glow:.25,sat:1.08,tr:1.03,tb:.97},
@@ -136,8 +136,8 @@ PS2.lines=()=>{ const T=PS2.tune(); return T.pix?Math.round(240/T.k):0; };
 PS2.pick(PS2.f,false);
 { let f=QS.get('filter'); if(!f)try{ f=SAVE.get('filter'); }catch(e){} if(f)PS2.pick(f,false); } PS2.f0=PS2.f;
 SYS.add('sky',()=>{ const P=SHARED.composer.passes; if(P[P.length-1]!==PS2.sp){ P.splice(P.indexOf(PS2.sp),1); P.push(PS2.sp); }
-  const T=PS2.tune(), F=T.F, Ln=PS2.lines(), draw=Math.max(F.draw,Ln)||Ln, cap=draw; if(cap!==PS2.cap||draw!==PS2.draw){ PS2.cap=cap; PS2.draw=draw; if(SHARED.resize)SHARED.resize(); } const ck=Ln?Math.max(1,Math.round(RH/Ln)):1; SHARED.cellLines=PS2.on&&Ln?RH/ck:0; if(!PS2.on)return; const u=PS2.sp.uniforms;
-  u.uL.value.set(RW/ck,RH/ck); u.uB.value=ck>1?.25:0; u.uR.value.set(RW,RH); u.uQ.value=T.Q; u.uK.value.set(T.K[0],T.K[1],T.K[2]);
+  const T=PS2.tune(), F=T.F, Ln=PS2.lines(), draw=F.draw||0, cap=draw||(PS2.on&&Ln?Math.min(480,2*Ln):0); if(cap!==PS2.cap||draw!==PS2.draw){ PS2.cap=cap; PS2.draw=draw; if(SHARED.resize)SHARED.resize(); } const ck=Ln?Math.max(1,Math.round(RH/Ln)):1; SHARED.cellLines=PS2.on&&Ln?RH/ck:0; if(!PS2.on)return; const u=PS2.sp.uniforms;
+  u.uL.value.set(RW/ck,RH/ck); u.uB.value=.25; u.uR.value.set(RW,RH); u.uQ.value=T.Q; u.uK.value.set(T.K[0],T.K[1],T.K[2]);
   u.uG.value.set(F.sat,F.con,F.pal,F.dith); u.uTi.value.set(F.tr,F.tg,F.tb); u.uC.value.set(F.scan,F.mask,F.curve,F.vig); u.uX.value.set(F.glow,F.soft,F.tape,F.film); u.uS.value.set(F.ink,F.post,F.split,F.mode?F.style:0); u.uM.value=F.mode&&F.style>0?F.mode:0; u.uT.value=F.tape||F.film?performance.now()/1000%600:0; },'138a-ps2');   // each cell a whole number of the picture's pixels (6 Nov 2026)
 
 // THE EFFECT'S NUMBERS IN THE MENU (SETTINGS > EFFECTS, under the list): a slider each, kept as you move it; the owner's SAVE FOR EVERYONE
@@ -157,7 +157,7 @@ SYS.add('sky',()=>{ const P=SHARED.composer.passes; if(P[P.length-1]!==PS2.sp){ 
     if(j.res===0||j.res===1){ SHARED.RESI=j.res; try{ SAVE.set('gfx',String(j.res)); }catch(e){} if(SHARED.resize)SHARED.resize(); }
     try{ SAVE.set('gfxat',String(j.at)); }catch(e){} if(host&&host.offsetParent){ document.querySelectorAll('#dfil [data-fil]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.fil===PS2.f))); document.querySelectorAll('[data-res]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.res===SHARED.RESI))); PS2.panel(); } };
   const get=()=>web?fetch(FILE,{credentials:'same-origin'}).then(r=>r.ok&&r.status!==204?r.json():null).then(take).catch(()=>{}):Promise.resolve();
-  PS2.take=take; PS2.pushAll=clear=>{ const at=Date.now(), j=clear?{v:1,at,f:'ps2',res:1,set:{}}:{v:1,at,f:PS2.f,res:SHARED.RESI,set:PS2.set}; say='SAVING...'; if(clear)take(j); else try{ SAVE.set('gfxat',String(at)); }catch(e){}
+  PS2.take=take; PS2.pushAll=clear=>{ const at=Date.now(), j=clear?{v:1,at,f:'ps2',res:0,set:{}}:{v:1,at,f:PS2.f,res:SHARED.RESI,set:PS2.set}; say='SAVING...'; if(clear)take(j); else try{ SAVE.set('gfxat',String(at)); }catch(e){}
     return fetch(FILE,{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(j)}).then(async r=>{ const o=await r.json().catch(()=>({})); if(!r.ok||!o.ok)throw new Error(o.why||r.status); if(ONLINE.put&&ONLINE.on)ONLINE.put('gfx',lastG=at); say=clear?'EVERYONE IS BACK ON THE GAME\'S OWN LOOK':'SAVED: EVERYONE HAS THIS LOOK NOW'; }).catch(e=>{ say='NOT SAVED: '+String(e.message||e).toUpperCase(); }).then(()=>{ if(host)PS2.panel(); }); };
   SYS.add('world',(k,v)=>{ if(k==='gfx'&&v!==lastG){ lastG=v; get(); } },'138a-gfx');
   get(); setTimeout(()=>{ if(BUGS.owner)BUGS.owner().then(o=>{ own=o===true||!!o; if(own&&host&&host.offsetParent)PS2.panel(); }).catch(()=>{}); },3000); }

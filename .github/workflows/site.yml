@@ -121,7 +121,6 @@ jobs:
           k flats   'src/150n|src/059a|src/150d|src/141c|src/150ac|flats\.cjs'
           k frames  'src/150ga|src/150g-|frames\.cjs'
           k outgate 'src/006-map-pre|src/163-main|outgate\.cjs'
-          k holodeck 'src/059b-arcade|src/146bb|src/146b[cdf]|holodeck'
           k holodeck 'src/059b-arcade|src/146bb|src/146b[cdfg]|holodeck|headset'
           k boarded 'src/146be-boarded|tests/boarded'
           k kite    'src/146g-kite|src/093|kite\.cjs'

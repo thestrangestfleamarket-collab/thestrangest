@@ -181,7 +181,7 @@ import {GUITAR} from './146zob-guitar.js';
 
   /* ---------- the others: their instruments from their word ('ins'), their sound from where they sit ---------- */
   const THEM=new Map(); INSTR.THEM=()=>THEM;
-  const KID={p:'piano',d:'drums',h:'harp',v:'violin',f:'flute',t:'trumpet'};
+  const KID={p:'piano',d:'drums',h:'harp',v:'violin',f:'flute',t:'trumpet',b:'bass'};
   ONLINE.mine.ins=()=>on&&ME.K?ME.K.id[0]+(ME.song>=0?'s':'')+(ME.place?'k':''):null;
   const them=(id,kid)=>{ const K=INSTR.KINDS[kid]; if(!K)return null; let P=THEM.get(id); if(P&&P.K!==K){ unhold(P); P=null; } if(!P){ P=mk(id,K); THEM.set(id,P); } return P; };
   ONLINE.hear.ins=m=>{ if(!m.id||!INSTR.KINDS[m.i])return; const P=them(m.id,m.i); if(!P)return; const k=m.k, v=String(m.v||'');

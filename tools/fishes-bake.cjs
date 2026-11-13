@@ -1,6 +1,6 @@
 // THE FISH, REAL (owner, 28 Oct 2026: "make all the fish look as complex as the packs fish, look online for sources ... realistic textures"): every
 // catchable species and the pack's shoal, from CC0 scans and models, cut to ~1,500 triangles and a small JPEG each, turned to swim along +X with +Y up
-// and scaled to unit length, packed into data/fishes.json for src/066c-fishes.js. The sturgeon and the blue crab have no free model: they are built here.
+// and scaled to unit length, packed into data/fishes.json for src/066c-fishes.js. The sturgeon and the blue crab have no free model: they are built here. Afterwards: python3 tools/fishes-share.py (bodies stored once).
 // Sources (all CC0 1.0): ffish.asia / floraZia.com scans (sketchfab.com/ffishAsia-and-floraZia), Polyy.AI "3D Fish Pack" (polyyai.itch.io/3d-fish-pack),
 // both as mirrored in github.com/lisa-1002/fishing3d/vendor/fish/real. Run: npm i --no-save @gltf-transform/core@4.1.1 @gltf-transform/functions@4.1.1
 // @gltf-transform/extensions@4.1.1 meshoptimizer@0.25.0 sharp@0.33.5 && node tools/fishes-bake.cjs <dir of the .glb files> [data/fishes.json]

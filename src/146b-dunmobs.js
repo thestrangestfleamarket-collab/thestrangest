@@ -139,7 +139,7 @@ __CODE__("worker/dunmobs.js")
   ONLINE.hear.mobhurt=m=>{ if(!trying)felt(m); };
   // the dungeon master's design (worker/dunmobs.js M.clean): the published one from the server, or a draft being tried alone
   let live=LIVE, trying=null;
-  const apply=async d=>{ if(window.LOAD)await LOAD('later'); if(D.setMap)D.setMap(d&&d.map); await bake(); MOBSIM.design(MS,d); pic=null; };
+  const apply=async d=>{ if(window.LOAD)await LOAD('later'); if(CREATS.fauna)await Promise.all(((d&&d.mobs)||[]).filter(e=>/^fa:/.test(e.key||'')).map(e=>CREATS.fauna(e.key.slice(3)))).catch(()=>{}); if(D.setMap)D.setMap(d&&d.map); await bake(); MOBSIM.design(MS,d); pic=null; };
   const dm=()=>{ live=LIVE; if(!trying)apply(live); };
   ONLINE.hear.dmres=m=>say(m.ok?'THE DUNGEON IS PUBLISHED: '+(m.n|0)+' CREATURE KINDS.':'NOT PUBLISHED: '+String(m.why||'').toUpperCase(),m.ok?'#b8f0a0':'#e8a090');
   ONLINE.hear.mobkill=m=>{ if(!trying)won(m); };
@@ -158,7 +158,7 @@ __CODE__("worker/dunmobs.js")
   const CB=[], SZ={Rat:.3,Frog:.3,Snake:.25,Spider:SPM,Wasp:.3,Bat:.4,Slime:.45}; for(const f of CREATS&&CREATS.FA||[])SZ[f[0]]=f[2];
   const entryOf=id=>{ const d=trying||live; return d&&d.mobs.find(e=>e.id===id); };
   const mkC=key=>{ const [src,k]=key.split(':'), o={lv:'down',group:'dungeon',free:(x,z,R)=>free(x,z,R),ground:(x,z)=>D.ground(x,z),speed:1.4,radius:.18}; let N=null;
-    try{ if(src==='pw')N=MODS.pawnNew&&MODS.pawnNew(k==='golem'?'hero_m':k,'dm_'+k,{npc:o,copy:k==='golem'?1:0}); else if(MODS.creatNew&&CREATURES[k]){ N=MODS.creatNew(k,'dm_'+k,SZ[k]||.6,{npc:o,...(k==='Spider'?{paint:toxic}:{})}); if(k==='Spider')glow(N); } }catch(e){ console.warn('dungeon body',key,e); }
+    try{ if(src==='pw')N=MODS.pawnNew&&MODS.pawnNew(k==='golem'?'hero_m':k,'dm_'+k,{npc:o,copy:k==='golem'?1:0}); else if(!CREATURES[k]&&CREATS.fauna)CREATS.fauna(k); else if(MODS.creatNew&&CREATURES[k]){ N=MODS.creatNew(k,'dm_'+k,SZ[k]||.6,{npc:o,...(k==='Spider'?{paint:toxic}:{})}); if(k==='Spider')glow(N); } }catch(e){ console.warn('dungeon body',key,e); }
     if(!N)return null; const C=src==='pw'?null:Object.keys(CREATURES[k].clips||{}), f=re=>C&&C.find(n=>re.test(n));
     const r={N,key,c:true,lv:[],v0:1.4*T,hp:0,style:{reach:.8},cl:C&&{walk:f(/_(Walk|Flying|Jump)$/),idle:f(/_Idle$/)||f(/_Flying$/),hit:f(/Attack/),hurt:f(/_Hit$/),die:f(/Death/)}}; N.restless=()=>busy(r); CB.push(r); park(r); return r; };
   const show=dt=>{ const want=new Set(), k=AR===KEEP?KEEP.k:D.room, M_=pic?pic.m.filter(e=>e[1]===k):[]; let g=0, sp=0, sl=0;

@@ -1,0 +1,222 @@
+<title>Shardwave Levels</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+  /* layout: a two-column wall of first-person stills, each numbered so one can be picked by number */
+  :root {
+    --bg: #0b0a14; --panel: #151326; --line: #2b2848; --fg: #ece9f7; --muted: #a6a1c4; --amber: #ffa51f; --cyan: #28d7ff;
+    --display: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif; --body: 'Inter', system-ui, sans-serif;
+    color-scheme: dark;
+  }
+  body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 15px; line-height: 1.5;
+         padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 48px; }
+  .wrap { max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+  header { display: flex; flex-direction: column; gap: 8px; }
+  h1 { font-family: var(--display); font-weight: 700; font-size: clamp(28px, 5vw, 44px); letter-spacing: 0.04em; margin: 0; text-wrap: balance; }
+  header p { margin: 0; color: var(--muted); max-width: 65ch; }
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+  figure { margin: 0; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  canvas { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: #000; border: 1px solid var(--line); border-radius: 6px; }
+  figcaption { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 12px; align-items: baseline; }
+  .n { font-family: var(--display); font-weight: 700; font-size: 26px; color: var(--amber); font-variant-numeric: tabular-nums; grid-row: span 2; }
+  .name { font-family: var(--display); font-weight: 700; font-size: 18px; letter-spacing: 0.02em; }
+  .beat { color: var(--muted); font-size: 14px; }
+  .beat b { color: var(--cyan); font-weight: 600; }
+  @media (max-width: 720px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+</style>
+<div class="wrap">
+  <header>
+    <h1>SHARDWAVE LEVELS</h1>
+    <p>Eight places the game could happen in, drawn from where you stand. Same lane, same shards and blades; only the world changes. Pick by number.</p>
+  </header>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+const W = 960, H = 540, CX = 480;
+const rng = s => () => { s = (s + 0x6D2B79F5) | 0; let t = Math.imul(s ^ (s >>> 15), 1 | s); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+const lin = (c, x0, y0, x1, y1, st) => { const g = c.createLinearGradient(x0, y0, x1, y1); st.forEach(([o, k]) => g.addColorStop(o, k)); return g; };
+const rad = (c, x, y, r, st) => { const g = c.createRadialGradient(x, y, 0, x, y, r); st.forEach(([o, k]) => g.addColorStop(o, k)); return g; };
+function glow(c, x, y, r, col, a = 1) { c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = a; c.fillStyle = rad(c, x, y, r, [[0, col], [1, 'rgba(0,0,0,0)']]); c.fillRect(x - r, y - r, 2 * r, 2 * r); c.restore(); }
+function poly(c, pts, fill) { c.beginPath(); pts.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.closePath(); c.fillStyle = fill; c.fill(); }
+const P = (off, t, hy, half = 330) => { const k = Math.pow(t, 1.7); return { x: CX + off * (16 + (half - 16) * k), y: hy + (H - hy) * k, s: k }; };
+function lane(c, hy, fill, edge, o = {}) {
+  const half = o.half || 330;
+  poly(c, [[CX - 16, hy], [CX + 16, hy], [CX + half, H], [CX - half, H]], fill);
+  c.strokeStyle = o.cross || 'rgba(255,255,255,0.12)'; c.lineWidth = 1;
+  for (let i = 1; i < 14; i++) { const a = P(-1, i / 14, hy, half), b = P(1, i / 14, hy, half); c.beginPath(); c.moveTo(a.x, a.y); c.lineTo(b.x, b.y); c.stroke(); }
+  if (o.lanes !== false) for (const f of [-0.34, 0, 0.34]) { c.beginPath(); c.moveTo(CX + f * 16, hy); c.lineTo(CX + f * half, H); c.stroke(); }
+  if (edge) { c.save(); c.strokeStyle = edge; c.lineWidth = 3; c.shadowColor = edge; c.shadowBlur = 14;
+    for (const s of [-1, 1]) { c.beginPath(); c.moveTo(CX + s * 16, hy); c.lineTo(CX + s * half, H); c.stroke(); } c.restore(); }
+  const cut = P(1, 0.78, hy, half); c.save(); c.strokeStyle = 'rgba(255,255,255,0.85)'; c.lineWidth = 3; c.shadowColor = '#fff'; c.shadowBlur = 12;
+  c.beginPath(); c.moveTo(CX - (cut.x - CX), cut.y); c.lineTo(cut.x, cut.y); c.stroke(); c.restore();
+}
+function gem(c, x, y, s, col, lite, glowCol) {
+  if (glowCol) glow(c, x, y, s * 2.6, glowCol, 0.7);
+  poly(c, [[x, y - s], [x + s * 0.8, y], [x, y + s], [x - s * 0.8, y]], col);
+  poly(c, [[x, y - s], [x + s * 0.8, y], [x, y]], lite); poly(c, [[x, y + s], [x - s * 0.8, y], [x, y]], 'rgba(0,0,0,0.28)');
+  c.strokeStyle = 'rgba(255,255,255,0.8)'; c.lineWidth = Math.max(1, s / 22); c.beginPath(); c.moveTo(x, y - s); c.lineTo(x + s * 0.8, y); c.lineTo(x, y + s); c.lineTo(x - s * 0.8, y); c.closePath(); c.stroke();
+}
+const SH = [[-0.5, 0.22], [0.45, 0.34], [-0.12, 0.5], [0.55, 0.66], [-0.55, 0.84]];
+function shards(c, hy, draw) { SH.forEach(([o, t], i) => { const p = P(o * 0.72, t, hy); draw(p.x, p.y - 170 * p.s - 6, 50 * p.s + 4, i, p); }); }
+function blades(c, L, Rr) {
+  for (const [x0, y0, x1, y1, col] of [[300, 560, 205, 318, L], [660, 560, 755, 318, Rr]]) {
+    c.save(); c.lineCap = 'round'; c.shadowColor = col; c.shadowBlur = 26; c.strokeStyle = col; c.lineWidth = 11; c.globalAlpha = 0.55; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke();
+    c.globalAlpha = 1; c.strokeStyle = '#fff'; c.lineWidth = 4; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke(); c.restore();
+  }
+}
+function beam(c, x, y, ang, len, w, col, a) { c.save(); c.translate(x, y); c.rotate(ang); c.globalCompositeOperation = 'lighter'; c.globalAlpha = a;
+  c.fillStyle = lin(c, 0, 0, 0, len, [[0, col], [1, 'rgba(0,0,0,0)']]); c.beginPath(); c.moveTo(-3, 0); c.lineTo(3, 0); c.lineTo(w, len); c.lineTo(-w, len); c.closePath(); c.fill(); c.restore(); }
+
+const LEVELS = [
+  ['Stadium stage', 'Stage lights swing and <b>fire on the kicks</b>, the crowd’s hands go up on the claps, pyro on the drops.', c => {
+    const r = rng(1), hy = 250;
+    c.fillStyle = lin(c, 0, 0, 0, H, [[0, '#05040c'], [0.5, '#170c2a'], [1, '#07050f']]); c.fillRect(0, 0, W, H);
+    glow(c, CX, hy - 10, 420, '#ff4fa3', 0.35); glow(c, CX, hy, 200, '#ffd27a', 0.5);
+    c.strokeStyle = '#2a2740'; c.lineWidth = 10; c.beginPath(); c.moveTo(60, 40); c.quadraticCurveTo(CX, -40, 900, 40); c.stroke();
+    for (let i = 0; i < 9; i++) { const x = 100 + i * 95, y = 38 - Math.sin(i / 8 * Math.PI) * 38; c.fillStyle = '#44405e'; c.fillRect(x - 9, y, 18, 14);
+      beam(c, x, y + 12, (r() - 0.5) * 1.1, 520, 70, ['#ffa51f', '#28d7ff', '#ff4fa3'][i % 3], 0.34); glow(c, x, y + 12, 26, '#ffffff'); }
+    for (let row = 0; row < 7; row++) { const y = hy + 20 + row * 46, sc = 0.5 + row * 0.22; c.fillStyle = `rgb(${10 + row * 3},${8 + row * 2},${22 + row * 4})`;
+      for (const side of [-1, 1]) for (let i = 0; i < 16; i++) { const x = CX + side * (90 + row * 46 + i * 34 * sc + r() * 10); if (x < -30 || x > W + 30) continue;
+        c.beginPath(); c.arc(x, y, 9 * sc, 0, 7); c.fill(); c.fillRect(x - 10 * sc, y + 6 * sc, 20 * sc, 60 * sc);
+        if (r() < 0.45) { c.save(); c.strokeStyle = c.fillStyle; c.lineWidth = 5 * sc; c.beginPath(); c.moveTo(x - 8 * sc, y + 12 * sc); c.lineTo(x - 16 * sc, y - 22 * sc); c.moveTo(x + 8 * sc, y + 12 * sc); c.lineTo(x + 16 * sc, y - 24 * sc); c.stroke(); c.restore(); } } }
+    lane(c, hy, lin(c, 0, hy, 0, H, [[0, '#2a2233'], [1, '#0e0c16']]), '#ffd27a');
+    for (let i = 1; i < 12; i++) for (const s of [-1, 1]) { const p = P(s, i / 12, hy); glow(c, p.x, p.y, 8 + 22 * p.s, '#fff1c2'); }
+    for (const x of [300, 660]) for (let i = 0; i < 40; i++) glow(c, x + (r() - 0.5) * 60, hy - r() * 150, 3 + r() * 5, '#ffb347');
+    shards(c, hy, (x, y, s, i) => gem(c, x, y, s, i % 2 ? '#c8a11f' : '#d8d8e6', i % 2 ? '#ffe27a' : '#ffffff', i % 2 ? '#ffb020' : '#b9c8ff'));
+    blades(c, '#ffa51f', '#ff4fa3');
+  }],
+  ['Underwater reef', 'Light shafts <b>ripple with the bass</b>, fish schools scatter on each hit, jellyfish shards pulse as they drift in.', c => {
+    const r = rng(2), hy = 230;
+    c.fillStyle = lin(c, 0, 0, 0, H, [[0, '#2fd0d6'], [0.35, '#0f7fa6'], [1, '#04233f']]); c.fillRect(0, 0, W, H);
+    for (let i = 0; i < 9; i++) beam(c, 80 + i * 100 + r() * 40, -20, 0.25 + (r() - 0.5) * 0.2, 620, 60 + r() * 50, '#d9fffb', 0.16);
+    for (let L = 0; L < 3; L++) { c.fillStyle = ['#0b5c7d', '#084a69', '#063a55'][L]; c.beginPath(); c.moveTo(0, H);
+      for (let x = 0; x <= W; x += 40) c.lineTo(x, hy + 20 + L * 38 - Math.abs(Math.sin(x * 0.011 + L * 2)) * (70 - L * 18) * (Math.abs(x - CX) > 120 ? 1 : 0.15)); c.lineTo(W, H); c.fill(); }
+    for (const side of [-1, 1]) for (let i = 0; i < 9; i++) { const x = CX + side * (250 + i * 30 + r() * 20), h = 180 + r() * 260; c.strokeStyle = i % 2 ? '#0d5a3e' : '#12734c'; c.lineWidth = 9 + r() * 8; c.lineCap = 'round';
+      c.beginPath(); c.moveTo(x, H + 10); c.bezierCurveTo(x + 40, H - h * 0.4, x - 50, H - h * 0.7, x + 20 * side, H - h); c.stroke(); }
+    for (const [fx, fy, col] of [[230, 150, '#ffc94d'], [720, 190, '#ff8fa3'], [640, 90, '#e9fbff']]) for (let i = 0; i < 26; i++) { const x = fx + (r() - 0.5) * 150, y = fy + (r() - 0.5) * 60; c.fillStyle = col; c.beginPath(); c.ellipse(x, y, 7, 3, 0, 0, 7); c.fill(); poly(c, [[x - 6, y], [x - 12, y - 4], [x - 12, y + 4]], col); }
+    lane(c, hy, lin(c, 0, hy, 0, H, [[0, '#3aa7a0'], [1, '#d9c79a']]), '#b8fff4', { cross: 'rgba(255,255,255,0.22)' });
+    c.save(); c.globalCompositeOperation = 'lighter'; c.strokeStyle = 'rgba(255,255,255,0.22)'; c.lineWidth = 2;
+    for (let i = 0; i < 22; i++) { const p = P((r() - 0.5) * 1.6, 0.3 + r() * 0.7, hy); c.beginPath(); c.ellipse(p.x, p.y, 50 * p.s, 9 * p.s, r(), 0, 7); c.stroke(); } c.restore();
+    for (let i = 0; i < 60; i++) { c.strokeStyle = 'rgba(255,255,255,0.5)'; c.lineWidth = 1.5; c.beginPath(); c.arc(r() * W, r() * H, 2 + r() * 6, 0, 7); c.stroke(); }
+    shards(c, hy, (x, y, s, i) => { const col = i % 2 ? '#ff7ad1' : '#7af7ff'; glow(c, x, y, s * 2.6, col, 0.7);
+      c.fillStyle = col; c.globalAlpha = 0.85; c.beginPath(); c.arc(x, y, s, Math.PI, 0); c.quadraticCurveTo(x, y + s * 0.5, x - s, y); c.fill(); c.globalAlpha = 1;
+      c.strokeStyle = col; c.lineWidth = Math.max(1, s / 12); for (let k = -2; k <= 2; k++) { c.beginPath(); c.moveTo(x + k * s * 0.35, y + s * 0.15); c.quadraticCurveTo(x + k * s * 0.5, y + s * 0.9, x + k * s * 0.3, y + s * 1.6); c.stroke(); }
+      c.fillStyle = 'rgba(255,255,255,0.7)'; c.beginPath(); c.arc(x - s * 0.3, y - s * 0.45, s * 0.2, 0, 7); c.fill(); });
+    blades(c, '#ffe27a', '#7af7ff');
+  }],
+  ['Cathedral', 'The rose window <b>lights pane by pane</b> with the melody, beams sweep the dust, the organ pipes glow on the bass.', c => {
+    const r = rng(3), hy = 300;
+    c.fillStyle = lin(c, 0, 0, 0, H, [[0, '#0a0810'], [1, '#1c1722']]); c.fillRect(0, 0, W, H);
+    glow(c, CX, 170, 330, '#ffb86b', 0.45);
+    const cols = ['#ff4d6d', '#ffd23f', '#3ddc97', '#3a86ff', '#b5179e', '#ff9f1c'];
+    for (let ring = 3; ring >= 1; ring--) for (let i = 0; i < 12 * ring; i++) { const a0 = i / (12 * ring) * 6.2832, a1 = (i + 0.86) / (12 * ring) * 6.2832, r0 = ring * 26 - 20, r1 = ring * 26;
+      c.fillStyle = cols[(i + ring) % 6]; c.beginPath(); c.arc(CX, 170, r1, a0, a1); c.arc(CX, 170, r0, a1, a0, true); c.fill(); }
+    c.strokeStyle = '#120e18'; c.lineWidth = 7; c.beginPath(); c.arc(CX, 170, 82, 0, 7); c.stroke();
+    for (let i = 0; i < 6; i++) { const k = 1 - i / 6.4, w = 46 * k + 10; for (const s of [-1, 1]) { const x = CX + s * (130 + (1 - k) * -40 + k * 330);
+      c.fillStyle = lin(c, x - w, 0, x + w, 0, [[0, '#0d0a12'], [0.5, `rgb(${58 * k + 20},${50 * k + 18},${62 * k + 22})`], [1, '#0d0a12']]); c.fillRect(x - w / 2, 0, w, hy + (H - hy) * k * 0.92);
+      c.strokeStyle = `rgba(90,78,96,${0.3 + k * 0.5})`; c.lineWidth = 6 * k + 1; c.beginPath(); c.moveTo(x - s * w / 2, 150 * (1 - k) + 40); c.quadraticCurveTo(CX, -170 * k - 10, CX, 30 * (1 - k)); c.stroke(); } }
+    for (let i = 0; i < 5; i++) beam(c, CX + (i - 2) * 30, 120, (i - 2) * 0.33, 520, 80, cols[i], 0.2);
+    for (let i = 0; i < 160; i++) glow(c, CX + (r() - 0.5) * 520, 120 + r() * 380, 1.5 + r() * 2.5, '#fff3d6', 0.7);
+    lane(c, hy, lin(c, 0, hy, 0, H, [[0, '#5b1422'], [1, '#8f1d2c']]), '#e0b060', { lanes: false, cross: 'rgba(0,0,0,0.18)' });
+    shards(c, hy, (x, y, s, i) => gem(c, x, y, s, cols[i % 6], 'rgba(255,255,255,0.55)', cols[i % 6]));
+    blades(c, '#ffd23f', '#9ad1ff');
+  }],
+  ['Storm at sea', 'Lightning <b>cracks on the snare</b>, swells lift the deck on each bar, rain drives harder as the song builds.', c => {
+    const r = rng(4), hy = 255;
+    c.fillStyle = lin(c, 0, 0, 0, H, [[0, '#0d1220'], [0.5, '#27344a'], [1, '#101826']]); c.fillRect(0, 0, W, H);
+    for (let i = 0; i < 40; i++) { c.fillStyle = `rgba(${40 + r() * 40},${50 + r() * 40},${70 + r() * 40},0.35)`; c.beginPath(); c.ellipse(r() * W, r() * 190, 90 + r() * 120, 26 + r() * 30, 0, 0, 7); c.fill(); }
+    glow(c, 690, 120, 300, '#bcd4ff', 0.5);
+    c.save(); c.strokeStyle = '#f2f7ff'; c.shadowColor = '#bcd4ff'; c.shadowBlur = 20; c.lineWidth = 4; c.beginPath(); let lx = 700, ly = 0; c.moveTo(lx, ly);
+    for (let i = 0; i < 9; i++) { lx += (r() - 0.5) * 70; ly += 28; c.lineTo(lx, ly); } c.stroke(); c.lineWidth = 2; c.beginPath(); c.moveTo(lx - 20, ly - 90); c.lineTo(lx - 80, ly - 30); c.lineTo(lx - 70, ly); c.stroke(); c.restore();
+    for (let L = 0; L < 7; L++) { const y = hy + L * 30; c.fillStyle = `rgb(${14 + L * 4},${30 + L * 7},${48 + L * 9})`; c.beginPath(); c.moveTo(0, H);
+      for (let x = 0; x <= W; x += 16) c.lineTo(x, y - Math.sin(x * (0.012 - L * 0.001) + L * 1.7) * (10 + L * 7) - Math.sin(x * 0.04 + L) * 4); c.lineTo(W, H); c.fill();
+      c.strokeStyle = 'rgba(220,235,255,0.25)'; c.lineWidth = 2; c.beginPath(); for (let x = 0; x <= W; x += 16) c.lineTo(x, y - Math.sin(x * (0.012 - L * 0.001) + L * 1.7) * (10 + L * 7) - Math.sin(x * 0.04 + L) * 4); c.stroke(); }
+    lane(c, hy, lin(c, 0, hy, 0, H, [[0, '#3a2a1e'], [1, '#6b4a2f']]), '#d7a35a', { half: 300, cross: 'rgba(0,0,0,0.3)' });
+    c.strokeStyle = '#2a1c12'; c.lineWidth = 7; for (const s of [-1, 1]) { c.beginPath(); c.moveTo(CX + s * 150, 340); c.lineTo(CX + s * 420, 500); c.stroke(); for (let i = 0; i < 5; i++) { const x = CX + s * (170 + i * 60), y = 352 + i * 35.5; c.beginPath(); c.moveTo(x, y); c.lineTo(x, y + 50 + i * 14); c.stroke(); } }
+    c.strokeStyle = 'rgba(210,225,255,0.4)'; c.lineWidth = 1.5; for (let i = 0; i < 260; i++) { const x = r() * W * 1.2, y = r() * H; c.beginPath(); c.moveTo(x, y); c.lineTo(x - 14, y + 44); c.stroke(); }
+    shards(c, hy, (x, y, s, i) => { const col = i % 2 ? '#ffb347' : '#8fe3ff'; glow(c, x, y, s * 3, col, 0.8); c.fillStyle = '#1b1410'; c.fillRect(x - s * 0.6, y - s, s * 1.2, s * 0.25); c.fillRect(x - s * 0.6, y + s * 0.8, s * 1.2, s * 0.25);
+      c.fillStyle = col; c.fillRect(x - s * 0.5, y - s * 0.75, s, s * 1.55); c.strokeStyle = '#1b1410'; c.lineWidth = Math.max(1, s / 10); c.strokeRect(x - s * 0.5, y - s * 0.75, s, s * 1.55); c.beginPath(); c.arc(x, y - s * 1.1, s * 0.3, Math.PI, 0); c.stroke(); });
+    blades(c, '#ffb347', '#bcd4ff');
+  }],
+  ['Forest at dusk', 'Fireflies <b>blink in time</b>, lantern shards float down the path, the canopy sways with the melody.', c => {
+    const r = rng(5), hy = 270;
+    c.fillStyle = lin(c, 0, 0, 0, H, [[0, '#2a1846'], [0.45, '#c2543c'], [0.62, '#f2a65a'], [1, '#1a1420']]); c.fillRect(0, 0, W, H);
+    glow(c, CX, hy, 300, '#ffd28a', 0.8);
+    for (let L = 0; L < 4; L++) { const k = (L + 1) / 4; c.fillStyle = `rgb(${86 - L * 20},${46 - L * 10},${70 - L * 14})`;
+      for (const s of [-1, 1]) for (let i = 0; i < 7; i++) { const x = CX + s * (70 + (1 - k) * 20 + i * (60 + L * 46) + r() * 30), w = 10 + k * 46 + r() * 12; c.fillRect(x - w / 2, 0, w, hy + 30 + k * 240);
+        c.beginPath(); c.ellipse(x, 6 + L * 6, 70 + k * 80, 30 + k * 34, 0, 0, 7); c.fill(); }
+      c.beginPath(); c.moveTo(0, H); for (let x = 0; x <= W; x += 30) c.lineTo(x, hy + 14 + L * 30 - (Math.abs(x - CX) > 110 + L * 60 ? 14 + r() * 16 : 0)); c.lineTo(W, H); c.fill(); }
+    lane(c, hy, lin(c, 0, hy, 0, H, [[0, '#8a5a3a'], [1, '#3d2a22']]), null, { lanes: false, cross: 'rgba(0,0,0,0.15)' });
+    for (let i = 2; i < 13; i++) for (const s of [-1, 1]) { const p = P(s * 1.12, i / 13, hy); glow(c, p.x, p.y, 10 + 26 * p.s, '#7dffb0', 0.8); c.fillStyle = '#d8ffe6'; c.beginPath(); c.arc(p.x, p.y - 4 * p.s, 3 + 6 * p.s, Math.PI, 0); c.fill(); }
+    for (let i = 0; i < 90; i++) { const x = r() * W, y = 120 + r() * 380; glow(c, x, y, 5 + r() * 9, '#e8ff7a'); }
+    shards(c, hy, (x, y, s, i) => { const col = i % 2 ? '#ff8a4c' : '#ffd66b'; glow(c, x, y, s * 3, col, 0.85); c.fillStyle = col; c.beginPath(); c.ellipse(x, y, s * 0.75, s, 0, 0, 7); c.fill();
+      c.strokeStyle = 'rgba(90,30,10,0.55)'; c.lineWidth = Math.max(1, s / 14); for (let k = -1; k <= 1; k++) { c.beginPath(); c.ellipse(x, y, s * 0.75 * Math.abs(k || 0.35), s, 0, 0, 7); c.stroke(); }
+      c.fillStyle = '#3a1c10'; c.fillRect(x - s * 0.35, y - s * 1.12, s * 0.7, s * 0.16); c.fillRect(x - s * 0.35, y + s * 0.96, s * 0.7, s * 0.16); });
+    blades(c, '#ffd66b', '#7dffb0');
+  }],
+  ['Night city rooftop', 'Windows <b>light up floor by floor</b>, neon signs flicker on the hats, rain streaks the glass edge.', c => {
+    const r = rng(6), hy = 290;
+    c.fillStyle = lin(c, 0, 0, 0, H, [[0, '#070818'], [0.6, '#231a45'], [1, '#0a0914']]); c.fillRect(0, 0, W, H);
+    glow(c, CX, hy + 10, 460, '#ff4fa3', 0.35);
+    for (let L = 0; L < 3; L++) { let x = -20; while (x < W) { const w = 40 + r() * 70 - L * 6, h = 90 + r() * 200 + L * 20, y = hy + 40 + L * 26 - h; if (Math.abs(x + w / 2 - CX) > 60 + L * 70) {
+        c.fillStyle = `rgb(${16 + L * 6},${14 + L * 5},${34 + L * 9})`; c.fillRect(x, y, w, H - y);
+        for (let wy = y + 8; wy < hy + 40; wy += 13) for (let wx = x + 6; wx < x + w - 8; wx += 11) if (r() < 0.42) { c.fillStyle = r() < 0.75 ? '#ffd98a' : '#8fe3ff'; c.globalAlpha = 0.35 + L * 0.25; c.fillRect(wx, wy, 6, 8); c.globalAlpha = 1; } }
+      x += w + 6; } }
+    for (const [x, y, w, h, col, t] of [[90, 150, 150, 46, '#ff4fa3', 'OPEN LATE'], [730, 120, 130, 46, '#28d7ff', 'HOTEL'], [200, 60, 90, 36, '#ffd23f', 'BAR']]) { c.save(); c.strokeStyle = col; c.shadowColor = col; c.shadowBlur = 20; c.lineWidth = 3; c.strokeRect(x, y, w, h);
+      c.fillStyle = col; c.font = `700 ${h * 0.5}px Space Grotesk, sans-serif`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(t, x + w / 2, y + h / 2 + 1); c.restore(); }
+    lane(c, hy, lin(c, 0, hy, 0, H, [[0, '#2a2550'], [1, '#0d0c1e']]), '#ff4fa3');
+    c.save(); c.globalCompositeOperation = 'lighter'; for (let i = 0; i < 14; i++) { const p = P((r() - 0.5) * 1.6, 0.25 + r() * 0.75, hy); c.fillStyle = `rgba(${r() < 0.5 ? '255,79,163' : '40,215,255'},0.18)`; c.fillRect(p.x - 4 * p.s - 2, p.y - 70 * p.s, 8 * p.s + 4, 140 * p.s); } c.restore();
+    c.strokeStyle = 'rgba(190,200,255,0.3)'; c.lineWidth = 1.2; for (let i = 0; i < 220; i++) { const x = r() * W, y = r() * H; c.beginPath(); c.moveTo(x, y); c.lineTo(x - 5, y + 34); c.stroke(); }
+    shards(c, hy, (x, y, s, i) => { const col = i % 2 ? '#ff4fa3' : '#28d7ff'; glow(c, x, y, s * 2.8, col, 0.8); c.save(); c.strokeStyle = col; c.shadowColor = col; c.shadowBlur = 16; c.lineWidth = Math.max(2, s / 7);
+      c.fillStyle = 'rgba(10,8,24,0.75)'; c.fillRect(x - s * 0.8, y - s * 0.8, s * 1.6, s * 1.6); c.strokeRect(x - s * 0.8, y - s * 0.8, s * 1.6, s * 1.6); c.strokeRect(x - s * 0.35, y - s * 0.35, s * 0.7, s * 0.7); c.restore(); });
+    blades(c, '#ff4fa3', '#28d7ff');
+  }],
+  ['Paper theatre', 'Flat cut-out layers <b>slide and bounce on the beat</b>; in the headset each sheet sits at its own depth.', c => {
+    const r = rng(7), hy = 280;
+    c.fillStyle = '#f1e4c8'; c.fillRect(0, 0, W, H);
+    const sh = f => { c.save(); c.shadowColor = 'rgba(60,40,20,0.35)'; c.shadowBlur = 14; c.shadowOffsetY = 8; f(); c.restore(); };
+    sh(() => { c.fillStyle = '#f29e4c'; c.beginPath(); c.arc(CX, hy - 20, 110, 0, 7); c.fill(); });
+    for (const [x, y, w] of [[170, 110, 150], [700, 80, 190], [540, 150, 110]]) sh(() => { c.fillStyle = '#fffaf0'; c.beginPath(); c.ellipse(x, y, w / 2, 22, 0, 0, 7); c.ellipse(x - w / 5, y - 16, w / 4, 20, 0, 0, 7); c.ellipse(x + w / 6, y - 20, w / 3.4, 24, 0, 0, 7); c.fill(); });
+    [['#7fb7be', 60, 0.006, 0], ['#5a9a8b', 40, 0.009, 2], ['#3d6e63', 26, 0.013, 4]].forEach(([col, amp, f, ph], L) => sh(() => { c.fillStyle = col; c.beginPath(); c.moveTo(0, H);
+      for (let x = 0; x <= W; x += 12) c.lineTo(x, hy + L * 34 - Math.sin(x * f + ph) * amp - (L === 0 && x % 96 < 12 ? 30 : 0)); c.lineTo(W, H); c.fill(); }));
+    for (const s of [-1, 1]) for (let i = 0; i < 4; i++) sh(() => { const x = CX + s * (190 + i * 80), y = hy + 60 + i * 44, k = 0.5 + i * 0.3; c.fillStyle = '#6b4a2f'; c.fillRect(x - 5 * k, y - 40 * k, 10 * k, 60 * k); poly(c, [[x, y - 150 * k], [x + 40 * k, y - 30 * k], [x - 40 * k, y - 30 * k]], i % 2 ? '#2f5d50' : '#417a63'); });
+    sh(() => lane(c, hy, '#e9d3a3', null, { lanes: false, cross: 'rgba(120,90,50,0.25)' }));
+    for (const s of [-1, 1]) sh(() => { c.fillStyle = '#b3272d'; c.beginPath(); c.moveTo(CX + s * 480, 0); c.lineTo(CX + s * 360, 0); c.quadraticCurveTo(CX + s * 300, 240, CX + s * 400, H); c.lineTo(CX + s * 480, H); c.fill();
+      c.strokeStyle = 'rgba(80,10,14,0.5)'; c.lineWidth = 3; for (let i = 0; i < 4; i++) { c.beginPath(); c.moveTo(CX + s * (380 + i * 26), 0); c.quadraticCurveTo(CX + s * (340 + i * 30), 250, CX + s * (410 + i * 20), H); c.stroke(); } });
+    sh(() => { c.fillStyle = '#8f1d22'; c.fillRect(0, 0, W, 34); for (let x = 0; x < W; x += 60) { c.beginPath(); c.arc(x + 30, 34, 30, 0, Math.PI); c.fill(); } });
+    shards(c, hy, (x, y, s, i) => sh(() => { const a = i % 2 ? ['#e4572e', '#f3a683'] : ['#2e86ab', '#9fd3e6']; poly(c, [[x, y - s], [x + s * 0.8, y], [x, y + s], [x - s * 0.8, y]], a[0]); poly(c, [[x, y - s], [x + s * 0.8, y], [x, y]], a[1]); }));
+    for (const [x0, y0, x1, y1, col] of [[300, 560, 205, 318, '#e4572e'], [660, 560, 755, 318, '#2e86ab']]) sh(() => { c.strokeStyle = col; c.lineWidth = 14; c.lineCap = 'round'; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke(); c.strokeStyle = '#fffaf0'; c.lineWidth = 4; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke(); });
+  }],
+  ['Flea market at night', 'String lights <b>chase down the aisle</b> on every beat, stall lamps swing, odd finds fly at you as shards.', c => {
+    const r = rng(8), hy = 285;
+    c.fillStyle = lin(c, 0, 0, 0, H, [[0, '#0b1026'], [0.6, '#2a1f3d'], [1, '#120d18']]); c.fillRect(0, 0, W, H);
+    for (let i = 0; i < 120; i++) { c.fillStyle = `rgba(255,255,255,${r() * 0.7})`; c.fillRect(r() * W, r() * 200, 1.5, 1.5); }
+    glow(c, 770, 80, 110, '#fff3c4', 0.6); c.fillStyle = '#fff6d8'; c.beginPath(); c.arc(770, 80, 30, 0, 7); c.fill();
+    glow(c, CX, hy, 330, '#ffb347', 0.5);
+    const aw = ['#c0392b', '#2a9d8f', '#e9c46a', '#8e5bd0', '#e76f51'];
+    for (let i = 5; i >= 0; i--) { const k0 = 0.1 + i * 0.117, k1 = k0 + 0.117; for (const s of [-1, 1]) { const a = P(s * 1.25, k0, hy), b = P(s * 1.25, k1, hy), ha = 340 * a.s + 20, hb = 340 * b.s + 20, ex = s * 260;
+        poly(c, [[a.x, a.y], [b.x, b.y], [b.x, b.y - hb], [a.x, a.y - ha]], `rgb(${40 + i * 6},${30 + i * 4},${46 + i * 5})`);
+        poly(c, [[b.x, b.y], [b.x + ex * b.s * 2, b.y], [b.x + ex * b.s * 2, b.y - hb], [b.x, b.y - hb]], `rgb(${28 + i * 4},${22 + i * 3},${36 + i * 4})`);
+        for (let st = 0; st < 6; st++) { const t0 = st / 6, t1 = (st + 1) / 6, xa = a.x + (b.x - a.x) * t0, xb = a.x + (b.x - a.x) * t1, ya = a.y - ha + (b.y - hb - a.y + ha) * t0, yb = a.y - ha + (b.y - hb - a.y + ha) * t1, d = 40 * (a.s + (b.s - a.s) * t0) + 6;
+          poly(c, [[xa, ya], [xb, yb], [xb - s * d, yb + d * 0.55], [xa - s * d, ya + d * 0.55]], st % 2 ? '#f4ead5' : aw[(i + (s > 0 ? 2 : 0)) % 5]); }
+        glow(c, (a.x + b.x) / 2, (a.y + b.y) / 2 - (ha + hb) / 3, 30 + 110 * b.s, '#ffb347', 0.55);
+        for (let o = 0; o < 4; o++) { const t = (o + 0.5) / 4, x = a.x + (b.x - a.x) * t, y = a.y + (b.y - a.y) * t, z = 26 * (a.s + (b.s - a.s) * t) + 3; c.fillStyle = aw[(o + i) % 5]; if (o % 2) c.fillRect(x - z / 2, y - z * 1.5, z, z * 1.5); else { c.beginPath(); c.arc(x, y - z * 0.9, z * 0.6, 0, 7); c.fill(); c.fillRect(x - z * 0.12, y - z * 0.4, z * 0.24, z * 0.4); } } } }
+    lane(c, hy, lin(c, 0, hy, 0, H, [[0, '#6a5a4e'], [1, '#2e2622']]), null, { cross: 'rgba(0,0,0,0.35)' });
+    for (let row = 0; row < 5; row++) { const k = 0.16 + row * 0.15, a = P(-1.25, k, hy), b = P(1.25, k, hy), top = 350 * a.s + 26; c.strokeStyle = '#1a1420'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(a.x, a.y - top); c.quadraticCurveTo(CX, a.y - top + 70 * a.s + 6, b.x, b.y - top); c.stroke();
+      for (let i = 1; i < 12; i++) { const t = i / 12, x = a.x + (b.x - a.x) * t, y = a.y - top + (70 * a.s + 6) * 2 * t * (1 - t) * 1; glow(c, x, y, 7 + 26 * a.s, ['#ffd98a', '#ff8fa3', '#8fe3ff', '#b8ff9a'][i % 4]); c.fillStyle = '#fff'; c.beginPath(); c.arc(x, y, 1.5 + 4 * a.s, 0, 7); c.fill(); } }
+    shards(c, hy, (x, y, s, i) => { const col = aw[(i * 2 + 1) % 5]; glow(c, x, y, s * 2.6, col, 0.7);
+      if (i % 3 === 0) { c.fillStyle = col; c.beginPath(); c.moveTo(x - s * 0.9, y - s * 0.5); c.lineTo(x + s * 0.9, y - s * 0.5); c.lineTo(x + s * 0.45, y - s * 1.2); c.lineTo(x - s * 0.45, y - s * 1.2); c.fill(); c.fillStyle = '#d9c7a0'; c.fillRect(x - s * 0.1, y - s * 0.5, s * 0.2, s * 1.1); c.fillRect(x - s * 0.5, y + s * 0.6, s, s * 0.2); }
+      else if (i % 3 === 1) { c.fillStyle = col; c.globalAlpha = 0.85; c.fillRect(x - s * 0.5, y - s * 0.4, s, s * 1.4); c.fillRect(x - s * 0.2, y - s * 1.1, s * 0.4, s * 0.8); c.globalAlpha = 1; c.fillStyle = 'rgba(255,255,255,0.6)'; c.fillRect(x - s * 0.35, y - s * 0.2, s * 0.15, s); }
+      else { c.strokeStyle = col; c.lineWidth = Math.max(2, s / 5); c.beginPath(); c.arc(x, y, s * 0.75, 0, 7); c.stroke(); c.fillStyle = '#fff6d8'; c.beginPath(); c.arc(x, y, s * 0.55, 0, 7); c.fill(); c.strokeStyle = '#2a1f3d'; c.lineWidth = Math.max(1, s / 12); c.beginPath(); c.moveTo(x, y); c.lineTo(x, y - s * 0.4); c.moveTo(x, y); c.lineTo(x + s * 0.3, y); c.stroke(); } });
+    blades(c, '#ffb347', '#8fe3ff');
+  }],
+];
+const grid = document.getElementById('grid');
+LEVELS.forEach(([name, beat, draw], i) => {
+  const f = document.createElement('figure'), cv = document.createElement('canvas'); cv.width = W; cv.height = H; cv.setAttribute('role', 'img'); cv.setAttribute('aria-label', name + ' level mockup');
+  const cap = document.createElement('figcaption'); cap.innerHTML = `<span class="n">${i + 1}</span><span class="name">${name}</span><span class="beat">${beat}</span>`;
+  f.append(cv, cap); grid.append(f);
+  const c = cv.getContext('2d');
+  try { draw(c); } catch (e) { c.fillStyle = '#fff'; c.font = '20px sans-serif'; c.fillText('Could not draw this one: ' + e.message, 30, 60); }
+});
+</script>

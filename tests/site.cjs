@@ -16,6 +16,8 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
   ok((await fetch(BASE+'/g/'+gf[0],{headers:{cookie:'tsfm-pass=dev:site-check'}})).status===200,'/g/'+gf[0]+' with a login');
   for(const u of ['/vr','/asylum']){ const r=await fetch(BASE+u); ok(r.status===200&&/Hollow Pines/.test(await r.text()),u+' (Hollow Pines) is handed to anyone, no login'); }
   { const r=await fetch(BASE+'/wave'); ok(r.status===200&&/Shardwave/.test(await r.text()),'/wave (SHARDWAVE) is handed to anyone, no login'); }
+  { const r=await fetch(BASE+'/holmes'); ok(r.status===200&&/The Speckled Band/.test(await r.text()),'/holmes (THE SPECKLED BAND) is handed to anyone, no login');
+    const t=await fetch(BASE+'/holmes',{method:'POST',headers:{'content-type':'application/json',origin:BASE},body:'{}'}); ok(t.status===401,'but the others answer only a login ('+t.status+')'); }
   { const r=await fetch(BASE+'/scare'); ok(r.status===200&&/Vesper Ward/.test(await r.text()),'/scare (VESPER WARD) is handed to anyone, no login');
     const a=await fetch(BASE+'/scare-assets/pale.glb'); ok(a.status===200&&/gltf/.test(a.headers.get('content-type')||''),'and its models under /scare-assets/'); }
   { const r=await fetch(BASE+'/golf'); ok(r.status===200&&/Halcyon Greens/.test(await r.text()),'/golf (HALCYON GREENS) is handed to anyone, no login');

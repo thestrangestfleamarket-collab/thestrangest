@@ -189,6 +189,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [x] **The piano's 88-key panel** (owner, 11 Nov 2026) · P2 · S · code. [done 11 Nov] A display under the book, lighting with the piece (book-only).
 - [x] **The instruments, the rest** · P3 · S · code. The bar's piano and kit playable in place; a bandstand for the park guitar. [done 11 Nov]
 - [ ] **Companion drone NPC**: mockup done, waiting on "go" · pick.
+- [ ] **THE SPECKLED BAND at `/holmes`** (owner, 13 Nov 2026) · look. Built 13 Nov (`src/holmes/`, `worker/holmes.js`, `tests/holmes.cjs`). Needs the `ANTHROPIC_API_KEY` secret on the worker and one real play with Claude answering (only a stand-in so far); his yes on the look, the daily limit (`HOLMES_DAILY`, 200) and whether it joins the holodeck. [taking: claude/holmes-page, 13 Nov]
 - [ ] **PIP the flying bot** (owner, 11 Nov 2026) · look. Built 11 Nov (`src/111dd-flybot.js`, `worker/flybot.js`, `tests/flybot.cjs`). Needs the `ANTHROPIC_API_KEY` secret on the worker; his yes on the look, the name and the daily limit (`BOT_DAILY`, 150). Model: Haiku 5.5 (owner, 12 Nov).
 - [x] **Your AI double** (owner, 9 Nov 2026; done 9 Nov) · P2 · M · code. `src/162gb-twin.js`, `worker/twin.js`, `tests/twin.cjs`. Removed 10 Nov 2026 with all the bots.
 - [ ] **Flight with the cape** · P2 · M · look + code. Its moves check times out, the cape isn't cloth, clouds hide you; DRIFTCAP lasts 5 min.

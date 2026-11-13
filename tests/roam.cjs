@@ -1,4 +1,4 @@
-// THE ROAM CHECK: node tests/roam.cjs dist/market.html. The holodeck lists ROAM free; running it fades you off the map into the ship's cockpit (first person,
+// THE ROAM CHECK: node tests/roam.cjs dist/market.html. The holodeck lists ROAM free; running it puts you in the ship's cockpit, the market stopped (first person,
 // the ship owning the controls and the camera, a field of rocks round you); the throttle and boost move you, pitching for a while turns you upside down (full 360°),
 // lasers break rocks, a missile launches and bursts, a dead hull sends you back to the holodeck, and holding Q ends the program.
 const { chromium } = require('playwright'), path = require('path');
@@ -18,9 +18,9 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const s1 = await pg.evaluate(async () => { const H = STORE.holo, P = H.programs.find(p => p.name === 'ROAM'); INV.cash = 3; H.start(P);
     const U = async (f, ms = 90000) => { for (const t = Date.now(); Date.now() - t < ms; await new Promise(r => setTimeout(r, 150))) if (f()) return true; return false; };
     const on = await U(() => ROAMDBG().on && !FADE.busy); await new Promise(r => setTimeout(r, 1500)); const d = ROAMDBG();
-    return { on, cash: INV.cash, off: ROOMS.offIn && ROOMS.offIn(), run: ARCDBG().holo.run, d, drive: !!SHARED.drive, walker: __dbg.W3.group.visible, py: SHARED.py, camNear: Math.abs(d.cam[0] - 3000) < 20 }; });
-  ok(s1.on && s1.cash === 3 && s1.off === 'roam' && s1.run === 'ROAM' && s1.d.view === 'first' && s1.drive && !s1.walker && s1.d.chunks > 150 && s1.d.instances === s1.d.chunks && s1.d.meteors > 60 && s1.d.hull === 100 && s1.d.far === 9000 && s1.camNear && s1.py === 0,
-    'ROAM costs nothing and fades you off the map into the cockpit: first person, the ship owns the controls, the camera sits in the room, a field of rocks round you: ' + JSON.stringify(s1).slice(0, 600));
+    return { on, cash: INV.cash, off: ROOMS.offIn && ROOMS.offIn(), run: ARCDBG().holo.run, d, drive: !!SHARED.drive, solo: !!SHARED.solo, walker: __dbg.W3.group.visible, camNear: Math.abs(d.cam[0] - 3000) < 20 }; });
+  ok(s1.on && s1.cash === 3 && s1.off === 'arcade' && s1.solo && s1.run === 'ROAM' && s1.d.view === 'first' && s1.drive && !s1.walker && s1.d.chunks > 150 && s1.d.instances === s1.d.chunks && s1.d.meteors > 60 && s1.d.hull === 100 && s1.d.far === 9000 && s1.camNear,
+    'ROAM costs nothing and puts you in the cockpit, the market stopped: first person, the ship owns the controls, the camera sits in the room, a field of rocks round you: ' + JSON.stringify(s1).slice(0, 600));
   const f1 = await pg.evaluate(async () => { const U = async (f, ms = 20000) => { for (const t = Date.now(); Date.now() - t < ms; await new Promise(r => setTimeout(r, 150))) if (f()) return true; return false; };
     ROAM.input({ thr: 1, boost: 1 }); const fast = await U(() => ROAMDBG().speed > 120, 90000); const d = ROAMDBG(); ROAM.input({ thr: -1 }); await new Promise(r => setTimeout(r, 2500)); const d2 = ROAMDBG(); ROAM.input(null);
     return { fast, speed: d.speed, boost: d.boost, moved: Math.hypot(...d.world), slowed: d2.speed < d.speed, pos: [__dbg.you().x, __dbg.you().z] }; });

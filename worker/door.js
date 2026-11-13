@@ -59,6 +59,8 @@ export default {
     if ((request.method === "GET" || request.method === "HEAD") && (p === "/vr" || p === "/asylum")) return page(env, url, "/asylum", request, "no-cache");
     // SHARDWAVE (src/wave/): its own page at /wave, to anyone with the link
     if ((request.method === "GET" || request.method === "HEAD") && p === "/wave") return page(env, url, "/wave", request, "no-cache");
+    // BREACHLINE (src/shoot/): its own page at /shoot, to anyone with the link
+    if ((request.method === "GET" || request.method === "HEAD") && p === "/shoot") return page(env, url, "/shoot", request, "no-cache");
     // HALCYON GREENS (src/golf/): its own page at /golf, to anyone with the link; its pictures under /golf-assets/
     if ((request.method === "GET" || request.method === "HEAD") && p === "/golf") return page(env, url, "/golf", request, "no-cache");
     if (p === "/golf/") return Response.redirect(url.origin + "/golf" + url.search, 301);

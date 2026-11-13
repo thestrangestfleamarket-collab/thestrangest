@@ -12,7 +12,7 @@ const CARFAR={}; window.CARFAR=CARFAR;
      
       if(o.isMesh&&!o.isInstancedMesh&&!o.isSkinnedMesh&&mt&&!Array.isArray(mt)&&!mt.map&&!(mt.alphaTest>0)&&!o.morphTargetInfluences&&o.geometry&&o.geometry.attributes.position){ const k=keyOf(o,mt); let g=G.get(k); if(!g)G.set(k,g={L:[],o}); g.L.push(o); }
       for(const c of o.children)walk(c); }; walk(m); return [...G.values()]; };
-  const bake=m=>groups(m).map(({L,o})=>{ const mt=o.material.clone(); mt.vertexColors=true; if(mt.color)mt.color.set(1,1,1); return {geo:MERGE.geo(L,m),mat:mt,cast:o.castShadow,rec:o.receiveShadow,ro:o.renderOrder}; });
+  const bake=m=>groups(m).map(({L,o})=>{ const mt=o.material.clone(); mt.vertexColors=true; if(mt.color)mt.color.set(1,1,1); return {geo:MERGE.geo(L,m,true),mat:mt,cast:o.castShadow,rec:o.receiveShadow,ro:o.renderOrder}; });
   const farOf=(k,m)=>{ const B=GEO[k]||(GEO[k]=bake(m)); if(!B.length)return null; const F=new THREE.Group(); F.userData.carFar=1; F.visible=false;
     for(const b of B){ const me=new THREE.Mesh(b.geo,b.mat); me.castShadow=b.cast; me.receiveShadow=b.rec; me.renderOrder=b.ro; me.raycast=()=>{}; F.add(me); } m.add(F); return F; };
   const set=(m,far)=>{ const U=m.userData, F=U.far; if(!!U.isFar===far)return; U.isFar=far;
@@ -26,5 +26,5 @@ const CARFAR={}; window.CARFAR=CARFAR;
     if(!U.far)return; const d=m.getWorldPosition(V).distanceTo(cp); set(m,U.isFar?d>R*.95:d>R*1.05); };
   // the traffic's copies, and the parked cars (150p: a parked one is hidden while it is driven; the driven one is its own)
   SYS.add('life',()=>{ const cam=SHARED.cam; if(!cam)return; const R=CARFAR.R(), cp=cam.position;
-    for(const L of TRAFFIC.lanes||[])for(const C of L.cars)one(C.m,C.model,R,cp);
-    if(MODS.cars&&MODS.cars.cars)for(const C of MODS.cars.cars.values())one(C.mesh,C.model,R,cp); },'161ca-carfar'); }
+    for(const L of TRAFFIC.lanes||[])for(const C of L.cars)one(C.m,C.model+'~'+(C.v|0),R,cp);
+    if(MODS.cars&&MODS.cars.cars)for(const C of MODS.cars.cars.values())one(C.mesh,C.model+'~'+C.id,R,cp); },'161ca-carfar'); }

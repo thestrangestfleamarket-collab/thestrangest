@@ -1146,7 +1146,7 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
 {
   const B0=LBLD[0], B00={...B0}, W=LSEED.walk, CURB=LSEED.street, FAR=LSEED.grass, RD=-8;
   const OX=(B00.x0+B00.x1)/2, OY=B00.y1, K=BLDK, X=x=>(x-OX)*TILE*K, Z=y=>(y-OY)*TILE*K, Y=z=>z*ZU*K, XS=x=>(x-OX)*TILE, ZS=y=>(y-OY)*TILE, YS=z=>z*ZU, MX=x=>x/TILE+OX, MY=z=>z/TILE+OY; if(OX!==ORIGIN[0]||OY!==ORIGIN[1])console.warn('the bodega lot is not on the level file\'s origin',OX,OY,ORIGIN); Object.assign(SHARED.BOD,{X,Z,Y,XS,ZS,YS,MX,MY,OX,OY,B0});
-  const MAP={x0:WESTX,x1:EASTX,y0:B00.y0,y1:FAR+12}, RG=RING, WEND=RING.wy1;
+  const MAP={x0:WESTX,x1:EASTX,y0:B00.y0,y1:FAR+12}, RG=RING, WEND=LEVEL.streets.west.y1!=null?LOTY(LEVEL.streets.west.y1):RING.wy1;
   const HUD=SHARED.BOD.HUD=WP.bodega.row===2||!!WP.bodega.pf; if(!HUD){ B0.x0=LOTX(WP.bodega.x0); B0.x1=LOTX(WP.bodega.x1); }   // on the Hudson row (owner, 7 Nov 2026) the old front is not built: the inside keeps its own size
   const BODOFF=B0.y0+3.75; SHARED.BOD.BODOFF=BODOFF;
   const SB={...B0,x0:1330+OFFDX/BLDK,x1:1330+OFFDX/BLDK+(B0.x1-B0.x0)}; SHARED.BOD.SB=SB; SHARED.BOD.SHOPDX=X(SB.x0)-X(B0.x0);
@@ -1541,8 +1541,8 @@ SHARED.BODB={};
   const paint=(w,s,u,z)=>{ const nx=w.ax==='y'?s:0, ny=w.ax==='x'?s:0, Xw=w.ax==='y'?w.at+s*.1:u, Yw=w.ax==='x'?w.at+s*.1:u;
     return (!w.outer||s===w.inS)?bodegaWall(null,nx,ny,Xw,Yw,z,1):SHARED.BOD.facade(nx,ny,Xw,Yw,z,1,w.H); };
   const wallPt=(w,s,a,z)=>w.ax==='x'?[X(a),Y(z),Z(w.at+s*.1)]:[X(w.at+s*.1),Y(z),Z(a)];
-  const glassMat=new THREE.MeshLambertMaterial({color:new THREE.Color(.09,.11,.14),side:THREE.DoubleSide}), glassIn=new THREE.MeshBasicMaterial({color:0x8fa6b8,side:THREE.DoubleSide}); glassIn.userData.keep=true;
-  SHARED.BODB.tick=()=>{ if(SHARED.BODB.SG)glassIn.color.setHex(CLOCK.dark()?0x141a24:0x8fa6b8); };
+  const glassMat=new THREE.MeshLambertMaterial({color:new THREE.Color(.09,.11,.14),side:THREE.DoubleSide}), glassIn=new THREE.MeshBasicMaterial({color:0x000000,side:THREE.DoubleSide}); glassIn.userData.keep=true;
+  SHARED.BODB.tick=()=>{};
   const wallF=(w,inn)=>{ const as=new Set([w.a0,w.a1]), zs=new Set([0,w.H]), kind='W'+w.id;
     for(const h of w.holes){ as.add(Math.max(w.a0,h.a0)); as.add(Math.min(w.a1,h.a1)); zs.add(h.z0); zs.add(h.z1); }
     const A=[...as].sort((p,q)=>p-q), Zs=[...zs].sort((p,q)=>p-q);
@@ -1733,7 +1733,7 @@ SHARED.BODB={};
   SHARED.BODB.unbuild=()=>{ if(SHARED.BODB.SG)SHARED.BODB.SG.removeFromParent(); SHARED.BODB.SG=null; SHARED.BOD.goodsMesh=null; };
   { const SB=SHARED.BOD.SB, m0=(B0.x0+B0.x1)/2, mS=(SB.x0+SB.x1)/2, bx=(x0,y0,x1,y1)=>[Math.min(X(x0),X(x1)),Math.min(Z(y0),Z(y1)),Math.max(X(x0),X(x1)),Math.max(Z(y0),Z(y1))], wb=bx(SB.x0-.2,SB.y0-.2,SB.x1+.2,SB.y1+.2);
     ROOMS.off.bodega={name:'THE BODEGA',box:{x0:wb[0],z0:wb[1],x1:wb[2],z1:wb[3],y0:-1,y1:Y(SB.h)},need:()=>LOAD(SHARED.BODB.build.chunk),build:SHARED.BODB.build,unbuild:SHARED.BODB.unbuild,
-      spawn:[X(mS),Z(SB.y1-1.3),0,Math.PI],out:[X(m0),Z(B0.y1+.7),0,0],door:[X(m0),Y(0),Z(B0.y1+.25)],exit:[X(mS),0,Z(SB.y1-.25)],exitName:'OUT TO THE STREET',shift:[X(m0)-X(mS),Z(B0.y1)-Z(SB.y1)]};
+      spawn:[X(mS),Z(SB.y1-1.3),0,Math.PI],out:[X(m0),Z(B0.y1+.7),0,0],door:[X(m0),Y(0),Z(B0.y1+.25)],exit:[X(mS),0,Z(SB.y1-.25)],exitName:'OUT TO THE STREET',ownDoor:1,shift:[X(m0)-X(mS),Z(B0.y1)-Z(SB.y1)]};
     if(SHARED.BOD.HUD){ const P=WP.bodega, N=P.face==='n', hx=LOTX((P.x0+P.x1)/2), hy=LOTY(N?P.y1:P.y0), o=N?1:-1; Object.assign(ROOMS.off.bodega,{out:[X(hx),Z(hy+.7*o),0,N?0:Math.PI],door:[X(hx),Y(0),Z(hy+.25*o)],shift:null}); } }   // its door on its lot's street side (Market St or the promenade)   // its door on the Hudson lot, on the promenade
 }
 { const {BF_KINDS,bfPic}=SHARED.BOD.STOREK.bf, PICS=new Map(), hash=SHARED.BOD.g.hash;

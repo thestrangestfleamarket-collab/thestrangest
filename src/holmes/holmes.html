@@ -1,0 +1,29 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="robots" content="noindex">
+<title>The Speckled Band</title>
+<link rel="icon" href="data:,">
+<style>
+html,body{margin:0;height:100%;background:#0d0b08;color:#e6dcc3;font-family:Georgia,'Times New Roman',serif;overflow:hidden;-webkit-user-select:none;user-select:none;touch-action:none}
+canvas{display:block;position:fixed;inset:0;width:100%;height:100%}
+[hidden]{display:none!important}
+#title{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;box-sizing:border-box;text-align:center;background:rgba(13,11,8,.86);overflow:auto}
+h1{font-weight:400;font-size:clamp(1.8rem,6.5vw,3.8rem);letter-spacing:.22em;margin:0 0 0 .22em}
+.by{font-style:italic;color:#a89c80;margin:0;font-size:1.05rem}
+.how{max-width:38rem;margin:0;font-size:1rem;line-height:1.6;color:#d3c8ac}
+.keys{max-width:38rem;color:#8d836b;margin:0;font:.85rem/1.7 system-ui,sans-serif}
+.warn{max-width:34rem;color:#c9695c;margin:0;font-size:.95rem;line-height:1.5}
+.row{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+button{font:1.05rem Georgia,serif;letter-spacing:.16em;color:#e6dcc3;background:#1c1710;border:1px solid #6b6048;padding:14px 26px;cursor:pointer}
+button:hover,button:focus-visible{background:#e6dcc3;color:#0d0b08;outline:none}
+</style>
+<div id="title">
+  <h1>THE SPECKLED BAND</h1>
+  <p class="by">A Sherlock Holmes mystery by Arthur Conan Doyle, 1892. You are Holmes.</p>
+  <p class="how">At each step the page shows what Holmes does in the book. Do as he did and the story runs exactly as written. Do anything else, in your own words, and the others answer you as themselves, and the story goes where that leads.</p>
+  <div class="row"><button id="play">BEGIN</button><button id="vr">BEGIN IN VR</button></div>
+  <p id="vrmsg" class="warn" hidden></p>
+  <p class="keys">Mouse or touch: press the page's buttons, drag to look about. Keys: Enter or Space turns the page, 1 to 4 choose, type when asked.<br>Headset: point at the page with either hand and pull the trigger, or pinch.<br>The others are played by Claude and answer only a tenant who is logged in to the market; the book's own road is open to anyone.</p>
+</div>
+<script type="module">__HOLMES__</script>

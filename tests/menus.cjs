@@ -1,4 +1,4 @@
-// THE MENU CHECK: node tests/menus.cjs dist/market.html [folder for screenshots]. ESC opens the one menu: its sections down the left (SETTINGS, PETS, INVENTORY, MAP; ADMIN for owners, 7 Nov 2026; your look in ADMIN > AVATAR, you the paper doll, 9 Nov 2026), each section's parts as tabs along the top; MAP and BAG open their own windows; ESC shuts it.
+// THE MENU CHECK: node tests/menus.cjs dist/market.html [folder for screenshots]. ESC opens the wheel (11 Nov 2026), its SETTINGS the one menu: its sections down the left (SETTINGS, PETS, INVENTORY, MAP; ADMIN for owners, 7 Nov 2026; your look in ADMIN > AVATAR, you the paper doll, 9 Nov 2026), each section's parts as tabs along the top; MAP and BAG open their own windows; ESC shuts it.
 const { chromium } = require('playwright'), path = require('path'), fs = require('fs');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=menus::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -18,40 +18,52 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const texts = q => pg.evaluate(s => [...document.querySelectorAll(s)].map(x => x.firstChild.textContent).join(), q);
   if (st) {
     ok(!(await pg.evaluate(() => !!document.getElementById('hh'))), 'the pager is gone');
-    await pg.keyboard.press('Escape');
-    ok(await until(() => __UI.menuOpen && __UI.menuNow()[0] === 'set'), 'ESC opens the menu at SETTINGS');
-    ok(await texts('#mnav [data-sec]') === 'SETTINGS,WHAT YOU CAN DO,PETS,INVENTORY,MAP', 'the sections down the left: SETTINGS, WHAT YOU CAN DO, PETS, INVENTORY, MAP (WHAT YOU CAN DO the ? list, 10 Nov 2026; MAP a section, 10 Nov 2026; no PROFILE: the paper doll, 9 Nov 2026; no ADMIN for a player; no PEOPLE, BBS or GUIDE)');
+    await pg.keyboard.press('Escape'); ok(await until(() => HUB.on && document.querySelectorAll('#hub path').length >= 13), 'ESC opens the wheel: the menus on top, your things by kind below (11 Nov 2026)');
+    { const r = await pg.evaluate(() => ({ top: [...document.querySelectorAll('#hub text:not(.s)')].slice(0, 5).map(t => t.textContent.replace(/\s/g, '')).join(), kinds: ITEMS.GROUPS.length })); ok(r.top === 'SETTINGS,WHATYOUCANDO,PETS,MAP,EMOTES' && r.kinds === 8, 'the wheel: SETTINGS, WHAT YOU CAN DO, PETS, MAP, EMOTES and eight kinds of things ' + JSON.stringify(r)); }
+    await pg.keyboard.press('Escape'); ok(await until(() => !HUB.on), 'ESC shuts the wheel');
+    await pg.keyboard.press('Escape'); await until(() => HUB.on); await pg.evaluate(() => document.querySelector('#hub path[data-i="0"]').dispatchEvent(new MouseEvent('click', { bubbles: true })));
+    ok(await until(() => __UI.menuOpen && __UI.menuNow()[0] === 'set' && !HUB.on), 'its SETTINGS opens the menu at SETTINGS');
+    ok(await texts('#mnav [data-sec]') === 'SETTINGS,WHAT YOU CAN DO,PETS,INVENTORY,MAP,GUIDE,PEOPLE', 'the sections down the left: SETTINGS, WHAT YOU CAN DO, PETS, INVENTORY, MAP, GUIDE, PEOPLE (WHAT YOU CAN DO the ? list, 10 Nov 2026; MAP a section, 10 Nov 2026; no PROFILE: the paper doll, 9 Nov 2026; no ADMIN for a player; no BBS; GUIDE and PEOPLE back, 11 Nov 2026)');
     await pg.keyboard.press('Escape'); await until(() => !__UI.menuOpen);
     await pg.evaluate(() => DOLL.me()); ok(await until(() => !document.getElementById('doll').hidden), 'double-clicking yourself opens your paper doll');
     ok(await pg.evaluate(() => [...document.querySelectorAll('#doll [data-b]')].map(x => x.textContent).join() === 'EDIT,WEAR,WORDS,SKILLS,JOURNAL,EMOTES,PASSPORT,LOG OUT'), 'the doll has EDIT, WEAR, WORDS, SKILLS, JOURNAL, EMOTES, PASSPORT and LOG OUT');
     await pg.waitForTimeout(1500); await shot('doll');
     await pg.evaluate(() => document.querySelector('#doll [data-b="1"]').click()); ok(await until(() => !document.getElementById('looks').hidden && document.querySelector('#looks .ltabs [data-t=look]').hidden), 'its WEAR opens what you wear, with no LOOK');
     await shot('wear'); await pg.evaluate(() => { document.getElementById('looks').hidden = true; DOLL.me(); });
-    await pg.keyboard.press('Escape'); await until(() => __UI.menuOpen);
+    await pg.keyboard.press('Escape'); await until(() => HUB.on); await pg.evaluate(() => document.querySelector('#hub path[data-i="0"]').dispatchEvent(new MouseEvent('click', { bubbles: true }))); await until(() => __UI.menuOpen);
     await sec('pack'); ok(await until(() => BAG.inMenu() && document.querySelector('#dbag #bagp .bgr')), 'INVENTORY opens at BAG, your things in the menu (10 Nov 2026)'); await pg.evaluate(() => document.querySelector('#msub [data-sub="skills"]').click()); ok(await until(() => FORAGE.PACK.open && document.querySelector('#dpack #packp')), 'INVENTORY shows your skills in the menu');
     ok(await texts('#msub [data-sub]') === 'BAG,SKILLS,BOOK,FISHING,JOURNAL', 'INVENTORY: BAG, SKILLS, BOOK, FISHING, JOURNAL');
     await shot('pack');
     await sub('book'); ok(await pg.evaluate(() => FORAGE.PACK.tab === 'book'), 'BOOK');
     await sec('set'); ok((await shown()) === 'display', 'SETTINGS opens at VIEW');
-    ok(await texts('#msub [data-sub]') === 'VIEW,CAMERA,SCREEN,CHAT,RESOLUTION,PS2 FILTER,TIME,WEATHER,LIGHT,SOUND,KEYS,CONTROLLER,VR,REPORT A BUG', 'SETTINGS: every setting its own tab (8 Nov 2026)');
+    ok(await texts('#msub [data-sub]') === 'VIEW,CAMERA,SCREEN,CHAT,GRAPHICS,EFFECTS,TIME,WEATHER,LIGHT,SOUND,KEYS,CONTROLLER,VR,REPORT A BUG', 'SETTINGS: every setting its own tab (8 Nov 2026)');
     await shot('set-view');
-    { const one = []; for (const [k, p] of [['camera', 'camera'], ['screen', 'screen'], ['chat', 'chat'], ['res', 'graphics'], ['ps2', 'ps2'], ['time', 'atmo'], ['weather', 'weather'], ['light', 'light'], ['keys', 'keys'], ['vr', 'vr']]) { await sub(k); if ((await shown()) !== p) one.push(k + ':' + (await shown())); } ok(!one.length, 'each tab shows its own one pane' + (one.length ? ': ' + one : '')); }
-    await sub('ps2'); await shot('set-ps2');
-    { const r = await pg.evaluate(() => { const b = document.getElementById('dps2'), on0 = PS2.on; b.click(); const off = PS2.on; b.click(); const g = document.querySelector('#dps2p [data-k="grain"]'), g0 = PS2.parts.grain; g.click(); const g1 = PS2.parts.grain; g.click(); return { on0, off, back: PS2.on, g0, g1, gb: PS2.parts.grain }; }); ok(r.on0 && !r.off && r.back && r.g0 !== r.g1 && r.gb === r.g0, 'PS2 FILTER: on and off, and each part on its own (8 Nov 2026) ' + JSON.stringify(r)); }
-    { await pg.evaluate(() => { document.getElementById('dps2m').click(); const k = document.getElementById('dps2mk'); k.value = '1.5'; k.dispatchEvent(new Event('input')); }); const on = await until(() => document.getElementById('menu').closest('body>*').classList.contains('ps2m') && !!document.querySelector('#ps2mf feComponentTransfer')); await shot('ps2-menus');
-      const r = await pg.evaluate(() => ({ on: PS2.menu.on, k: PS2.menu.k })); ok(await pg.evaluate(() => ['vit', 'hqb', 'hmap'].every(i => document.getElementById(i).classList.contains('ps2m')) && !document.querySelector('#stage.ps2m,#wlabels.ps2m')), 'and over the HUD (the bars, the hotbar, the map), not the game (9 Nov 2026)'); await pg.evaluate(() => document.getElementById('dps2m').click()); const off = await until(() => !document.querySelector('.ps2m'));
-      { await pg.evaluate(() => { document.getElementById('dps2w').click(); const k = document.getElementById('dps2wk'); k.value = '0.5'; k.dispatchEvent(new Event('input')); }); const won = await until(() => document.getElementById('wlabels').classList.contains('ps2w') && !!document.querySelector('#ps2wf') && !!document.querySelector('#ps2mf')), wk = await pg.evaluate(() => PS2.words.k); await pg.evaluate(() => document.getElementById('dps2w').click());
-        ok(won && wk === 0.5 && await until(() => !document.querySelector('.ps2w')), 'PS2 FILTER ON WORDS IN THE WORLD: on or off with its own level (9 Nov 2026)'); }
-      ok(on && r.on && r.k === 1.5 && off, 'PS2 FILTER ON MENUS: on lays the filter over the open menu at its own level, off takes it away (9 Nov 2026) ' + JSON.stringify(r)); }
+    { const one = []; for (const [k, p] of [['camera', 'camera'], ['screen', 'screen'], ['chat', 'chat'], ['res', 'graphics'], ['filter', 'filter'], ['time', 'atmo'], ['weather', 'weather'], ['light', 'light'], ['keys', 'keys'], ['vr', 'vr']]) { await sub(k); if ((await shown()) !== p) one.push(k + ':' + (await shown())); } ok(!one.length, 'each tab shows its own one pane' + (one.length ? ': ' + one : '')); }
     await sub('bug'); ok((await shown()) === 'bug', 'REPORT A BUG');
     await pg.keyboard.press('Escape'); ok(await until(() => !__UI.menuOpen), 'ESC shuts it');
-    await pg.keyboard.press('Escape'); ok(await until(() => __UI.menuOpen && __UI.menuNow()[0] === 'set'), 'and opens it again where you were');
+    await pg.keyboard.press('Escape'); await until(() => HUB.on); await pg.evaluate(() => document.querySelector('#hub path[data-i="0"]').dispatchEvent(new MouseEvent('click', { bubbles: true }))); ok(await until(() => __UI.menuOpen && __UI.menuNow().join() === 'set,bug'), 'and the wheel opens it again where you were');
     await pg.keyboard.press('Escape'); await until(() => !__UI.menuOpen);
     await pg.evaluate(() => __UI.menuTab('graphics')); ok((await now()).join() === 'set,res', 'the old tab names still land in the right place');
     await pg.evaluate(() => __UI.menuTab('bug')); ok((await now()).join() === 'set,bug', 'F8 lands on REPORT A BUG');
     await pg.evaluate(() => __UI.toggleMenu());
     await pg.evaluate(() => { CINEMA.isAdmin = async () => true; });   // an owner
-    await pg.keyboard.press('Escape'); ok(await until(() => !!document.querySelector('#mnav [data-sec="admin"]')), 'an owner sees ADMIN');
+    // the wheel on a pad: START opens it, the stick points at a slice (it stays lit let go), RB steps through a kind, B shuts it, A chooses
+    { if (await pg.evaluate(() => __UI.menuOpen)) { await pg.evaluate(() => __UI.toggleMenu()); await until(() => !__UI.menuOpen); }
+      await pg.evaluate(() => { const G = { id: 'Xbox Wireless Controller (STANDARD GAMEPAD Vendor: 045e)', index: 0, connected: true, mapping: 'standard', timestamp: 1, axes: [0, 0, 0, 0], buttons: Array.from({ length: 17 }, () => ({ pressed: false, value: 0 })) };
+        navigator.getGamepads = () => [G]; window.__press = (i, v) => { G.buttons[i] = { pressed: v > .5, value: v }; G.timestamp++; }; window.__axes = a => { G.axes = a; G.timestamp++; }; dispatchEvent(new Event('gamepadconnected')); for (const id of ITEMS.ids().filter(id => ITEMS.group(id) === 'food').slice(0, 8)) INV.add(id, 1); });
+      const tap = async i => { await pg.evaluate(i => __press(i, 1), i); await pg.waitForTimeout(250); await pg.evaluate(i => __press(i, 0), i); await pg.waitForTimeout(250); };
+      await tap(9); ok(await until(() => HUB.on), 'on a pad START opens the wheel');
+      await pg.evaluate(() => __axes([-.95, -.3, 0, 0])); await until(() => HUB.dbg().name === 'SETTINGS', 4000); await pg.evaluate(() => __axes([0, 0, 0, 0])); await pg.waitForTimeout(300);
+      const p1 = await pg.evaluate(() => HUB.dbg()); ok(p1.name === 'SETTINGS' && /STICK POINTS/.test(p1.hint), 'the stick points at SETTINGS, which stays lit when the stick is let go: ' + JSON.stringify({ name: p1.name, hint: p1.hint }));
+      const fi = await pg.evaluate(() => { const S = HUB.dbg().slices, i = S.indexOf('FOOD') - S.findIndex(n => n === 'TOOLS'), n = ITEMS.GROUPS.length, a = (i + .5) / n * Math.PI; __axes([Math.cos(a), Math.sin(a), 0, 0]); return HUB.of('food').length; });
+      await until(() => HUB.dbg().name === 'FOOD', 4000); const f0 = await pg.evaluate(() => HUB.dbg().item); await tap(5); const f1 = await pg.evaluate(() => HUB.dbg().item);
+      ok(fi >= 2 && f0 && f1 && f0 !== f1, 'the stick points at FOOD and RB steps to the next thing of that kind: ' + JSON.stringify({ fi, f0, f1 }));
+      await pg.evaluate(() => __axes([0, 0, 0, 0])); await tap(1); ok(await until(() => !HUB.on && !__UI.menuOpen), 'B shuts the wheel');
+      await tap(9); await until(() => HUB.on); await pg.evaluate(() => __axes([-.95, -.3, 0, 0])); await until(() => HUB.dbg().name === 'SETTINGS', 4000); await pg.evaluate(() => __axes([0, 0, 0, 0])); await tap(0);
+      ok(await until(() => __UI.menuOpen && !HUB.on), 'A on SETTINGS opens the menu');
+      await pg.evaluate(() => { __UI.toggleMenu(); navigator.getGamepads = () => []; dispatchEvent(new Event('gamepaddisconnected')); }); await until(() => !__UI.menuOpen); await pg.mouse.move(200, 200); await pg.mouse.move(260, 240); }
+    await pg.keyboard.press('Escape'); ok(await until(() => HUB.on && /ADMIN/.test(document.getElementById('hub').textContent)), 'an owner sees ADMIN on the wheel'); await pg.keyboard.press('Escape'); await until(() => !HUB.on);
+    await pg.evaluate(() => __UI.menuTab('set')); ok(await until(() => !!document.querySelector('#mnav [data-sec="admin"]')), 'an owner sees ADMIN');
     await sec('admin'); ok(await texts('#msub [data-sub]') === 'BUG QUEUE,TEXT,EDITORS,AVATAR,VEHICLES,VEHICLE EDITOR,SOUND EDITOR,TOOLS', 'ADMIN: BUG QUEUE, TEXT, EDITORS, AVATAR, VEHICLES, VEHICLE EDITOR, SOUND EDITOR, TOOLS (10 Nov 2026)');
     await sub('look'); ok(await until(() => document.querySelector('#dlooks #looks') && !document.querySelector('#looks').hidden && !!document.querySelector('#dhome #cpav')), 'ADMIN > AVATAR: your look beside your live avatar'); await shot('admin-avatar');
     await sub('tools'); ok(await until(() => !!document.querySelector('#dtools #cpstat')), 'TOOLS: stats and the render inspector (no game log, 8 Nov 2026)');

@@ -1,0 +1,66 @@
+// THE BIG CAT: BIGCAT, a huge black cat-shaped blob (a rounded block with two horn-like ears, big speckled staring eyes, an open mouth with pink teeth, whiskers, two clawed paws) four and a half times a person's height, standing at Market St's kerb a block from the start and crossing the road every few minutes (a smooth MERCH body on the player's rig).
+import {SHARED, THREE} from './003-shx.js';
+import {ONLINE, pos} from './003b-systems.js';
+import {SYS, TILE} from './006-map-pre.js';
+import {TRAINS} from './009c-trains.js';
+import {BODIES} from './111a-bodies.js';
+import {MERCH} from './111e-merch.js';
+const BIGCAT={};
+{ const {SPH,CYL,TOR,CAP,grp,mk,paint,C,mix,fbm,hash3}=MERCH.K, PI=Math.PI;
+  // his skin: a matte black, faintly mottled, flecked with pale specks
+  const BLK=C('#141416'), BLK2=C('#1f1f23'), SPECK=C('#5a5a5e');
+  const skin=(x,y,z)=>{ let c=mix(BLK,BLK2,fbm(x*6,y*6,z*6)*1.6-.4); if(hash3(Math.round(x*140),Math.round(y*140),Math.round(z*140))>.996)c=mix(c,SPECK,.6); return c; };
+  const S='skin:vc', sk2=g=>paint(g,skin);
+  // the eyes' whites: an off-white, browned and flecked like old enamel
+  const EYE=C('#e8dcc8'), EYED=C('#b8a080'), FLECK=C('#7a5a3a');
+  const eyeC=(x,y,z)=>{ let c=mix(EYE,EYED,fbm(x*30,y*30,z*30)*1.4-.35); if(hash3(Math.round(x*400),Math.round(y*400),Math.round(z*400))>.95)c=mix(c,FLECK,.7); return c; };
+  // a rounded block: a sphere pushed out toward a box (p under 1 squarer), its half sizes w, h, d
+  const block=(w,h,d,p,n=40)=>{ const g=SPH(1,n,Math.round(n*.75)), P=g.attributes.position; for(let i=0;i<P.count;i++){ const f=v=>Math.sign(v)*Math.pow(Math.abs(v),p); let x=f(P.getX(i)), y=f(P.getY(i)), z=f(P.getZ(i)); const t=(y+1)/2; x*=1+.06*(1-t); z*=1+.04*(1-t); P.setXYZ(i,x*w,y*h,z*d); } g.computeVertexNormals(); return g; };
+  const model=()=>{ const sk=MERCH.skel({hipY:.38,waist:.05,neck:1,shX:.3,shY:.8,upper:.2,fore:.2,hipX:.32,thigh:.19,shin:.17}), {B}=sk;
+    /* the body: one block from just above his paws to the crown, all of it on the hips so it never bends */
+    const Bd=grp(B.hips,[0,.74,0]); Bd.userData.rigid=1;
+    mk(Bd,sk2(block(.76,.8,.56,.42)),S);
+    /* the ears: two thick rounded horns on the top corners, leaning out */
+    for(const s of [1,-1]){ const E=grp(Bd,[s*.5,.72,0],[.05,0,-s*.75]); mk(E,sk2(MERCH.K.lathe([[.001,-.05],[.2,-.04],[.19,.08],[.15,.2],[.1,.3],[.055,.36],[.001,.385]],16,22)),S,[0,0,0],[0,0,0],[1.35,1.6,1.1]); }
+    /* the eyes: big staring balls set into the face, small black pupils near the middle; a socket ring of skin round each */
+    for(const s of [1,-1]){ mk(Bd,paint(SPH(.215,30,22),eyeC),'ivory:vc',[s*.3,.26,.5]); mk(Bd,SPH(.05,14,10),'ivory:#070607',[s*.27,.27,.712],[0,0,0],[1,1,.45]);
+      mk(Bd,sk2(TOR(.21,.04,8,30)),S,[s*.3,.26,.54]);
+      /* the lids: a heavy upper lid down to the top of the pupil, a thin lower one */
+      mk(Bd,sk2(SPH(.226,30,12,0,PI*2,0,PI*.28)),S,[s*.3,.26,.5],[.5,0,0]); mk(Bd,sk2(SPH(.222,30,8,0,PI*2,0,PI*.2)),S,[s*.3,.26,.5],[PI-.45,0,0]); }
+    /* the nose: a ridge down from between the eyes to a round bump */
+    mk(Bd,sk2(SPH(.07,14,12)),S,[0,.2,.57],[0,0,0],[.9,2.6,.9]); mk(Bd,sk2(SPH(.08,14,12)),S,[0,.02,.6],[0,0,0],[1.25,.9,1]);
+    /* the mouth: open in an O, dark inside, a lip of skin round it, four pink teeth at the bottom */
+    mk(Bd,SPH(.27,26,16),'plain:#1c0a0c',[0,-.24,.5],[0,0,0],[1.12,.6,.25]);
+    mk(Bd,sk2(TOR(.27,.045,10,36)),S,[0,-.24,.555],[0,0,0],[1.12,.6,1]);
+    for(let i=0;i<4;i++)mk(Bd,SPH(.05,12,10),'skin:#eaa2ac',[(i-1.5)*.085,-.35+Math.abs(i-1.5)*.012,.56],[0,0,0],[.85,1.15,.7]);
+    /* the whiskers: four thin dark bristles a side, fanned out from the cheeks */
+    for(const s of [1,-1])for(let k=0;k<4;k++){ const W=grp(Bd,[s*.42,-.14-k*.04,.52],[0,s*.35,s*(-.35+k*.22)]); mk(W,CYL(.006,.003,.26,4),'plain:#4a4a50',[s*.13,0,0],[0,0,PI/2]); }
+    /* the legs: short and thick, under the block; the paws big and round, four toes in front */
+    for(const s of [1,-1]){ const n=s>0?'L':'R';
+      mk(B['thigh'+n],sk2(CYL(.15,.14,.2,14)),S,[0,-.1,0]); mk(B['shin'+n],sk2(CYL(.14,.15,.18,14)),S,[0,-.08,.02]);
+      const F=B['shoe'+n]; mk(F,sk2(SPH(.23,22,14)),S,[0,.14,.1],[0,0,0],[1.15,.68,1.35]);
+      for(let i=0;i<4;i++){ const a=(i-1.5)*.4; mk(F,sk2(SPH(.09,14,10)),S,[Math.sin(a)*.22,.085,.24+Math.cos(a)*.16],[0,0,0],[.95,.95,1.2]); } }
+    return sk; };
+  // five times a person's height
+  // his blink (owner, 11 Nov 2026: "make him blink"): every few seconds both lids sweep down over the eyes and up, only near you
+  const LIDM=new THREE.MeshStandardMaterial({color:0x17171a,roughness:.85}), MH=new THREE.Matrix4(), MT=new THREE.Matrix4(); let BL=null, bt=0, nb=2, hold=false;
+  const blink=N=>{ if(!BL){ BL=new THREE.Group(); BL.matrixAutoUpdate=false; const g=new THREE.SphereGeometry(.232,24,10,0,PI*2,0,PI/2); for(const s of [1,-1]){ const m=new THREE.Mesh(g,LIDM); m.position.set(s*.3,1,.5); BL.add(m); } N.g.parent.add(BL); }
+    const t=performance.now()/1000; if(t>nb){ bt=t; nb=t+2.5+Math.random()*4.5; } const k=(t-bt)/.18, a=hold?1:k<1?Math.sin(k*PI):0; BL.visible=N.g.visible&&!!N.PM&&a>0; if(!BL.visible)return;
+    for(const m of BL.children)m.rotation.x=-.6+a*2.15;
+    const i=BODIES.BONES.indexOf('hips'), o=N.body.rest.hips; N.g.updateMatrix(); BL.matrix.copy(N.g.matrix).multiply(MH.copy(N.PM.value[i])).multiply(MT.makeTranslation(o.x,o.y,o.z)); BL.matrixWorldNeedsUpdate=true; };
+  const body=MERCH.add({key:'bigcat',label:'THE BIG CAT',height:2.3,model,size:45,q:.75,at:100,idle:()=>MERCH.pose({bend:0,nod:0})});
+  const N=BIGCAT.N=body&&body.npc;
+  // where he is (owner, 12 Nov 2026: "standing on the street down market a block or two, crosses the street every 3-5 minutes (instead of walking down street)"): he stands at Market St's kerb by the crossing a block east of the start, and every 3 to 5 minutes walks slowly across the road to the other kerb and stands there (the traffic waits for him), on the shared clock
+  const B=SHARED.BOD, M0=TILE/.84, XC=B.XS(171), zs=B.ZS(B.CURB), zp=B.ZS(B.FAR), zm=(zs+zp)/2, OFF=2.2*M0, Z=[zs-OFF,zp+OFF], WV=.7*M0, WD=Math.abs(Z[1]-Z[0])/WV, GAP=240, hs=n=>{ const v=Math.sin(n*12.9898)*43758.5453; return v-Math.floor(v); };
+  const t0=k=>k*GAP+(hs(k)-.5)*60;   // crossing k starts here: 3 to 5 minutes after the one before
+  // honked at while crossing (150pf, the shared honk:cat), he does the rest of it three times as fast
+  const walkAt=t=>{ const n=Math.floor(t/GAP), hk=+((ONLINE.world||{})['honk:cat'])||0; for(const k of [n+1,n,n-1]){ let u=t-t0(k); if(u<0)continue; const h=hk-t0(k); if(h>=0&&h<WD&&u>h)u=h+(u-h)*3;
+      if(u<WD){ const a=Z[k&1], c=Z[(k+1)&1], d=Math.sign(c-a); return {x:XC,z:a+d*u*WV,to:c,cross:true}; } return {x:XC,z:Z[(k+1)&1],cross:false}; }
+    return {x:XC,z:Z[(n-1)&1],cross:false}; };
+  if(N){ N.walk.auto=false; const st=N.st;
+    SYS.add('city',()=>{ const w=walkAt(TRAINS.now()); delete N.mode; st.next=null;
+      if(w.cross){ st.x=w.x; st.z=w.z; st.to={x:w.x,z:w.to}; } else { if(Math.hypot(st.x-w.x,st.z-w.z)>.5)Object.assign(st,{x:w.x,z:w.z}); st.to=null; st.face={x:w.x,z:zm}; }
+      if(Math.hypot(pos.x-st.x,pos.z-st.z)<40)blink(N); else if(BL)BL.visible=false; },'111ei-bigcat'); }
+  BIGCAT.walkAt=window.BIGCATWALK=walkAt; BIGCAT.lids=()=>BL; BIGCAT.road=()=>{ if(!N)return null; const w=walkAt(TRAINS.now()); return w.cross?{x:w.x,z:w.z}:null; };   // only while crossing does he hold up the road (every lane he is in)
+  window.BIGCATDBG=(x,z)=>{ if(x==='blink'){ nb=0; return; } if(x==='shut'){ hold=!!z; return; } if(N&&x!=null){ Object.assign(N.st,{x,z,to:null,next:null}); } if(N&&BL&&x==null&&z===undefined){} return N?{x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),vis:N.g.visible,tris:body.tris(),lid:BL&&(()=>{ BL.updateMatrixWorld(true); const v=BL.children[0].getWorldPosition(new THREE.Vector3()), e=MERCH.at(N,'hips',[.3,1,.5],new THREE.Vector3()); return {on:BL.visible,d:+v.distanceTo(e).toFixed(3),y:+v.y.toFixed(1)}; })()}:null; }; }
+export {BIGCAT};

@@ -365,3 +365,5 @@ add('va_seal', P(["", "", "......kkkk", ".....kJWJJk", ".....kJJJJk", "......kJJ
 
 # the brick phone (owner, 8 Nov 2026): a grey 1980s handset, its antenna, green screen and keypad
 add('brickphone', P(["..........kk", "..........kSk", "..........kSk", "....kkkkkkkSkk", "...kGGGGGGGGGGk", "...kGkkkkkkkkGk", "...kGkLLLLLLkGk", "...kGkLlLLlLkGk", "...kGkkkkkkkkGk", "...kGRGGGGGgGGk", "...kGBkBkBkGGk", "...kGGGGGGGGGGk", "...kGBkBkBkGGk", "...kGGGGGGGGGGk", "...kGBkBkBkGGk", "....kkkkkkkkkk"], {'G': '#4a4a50', 'S': '#2a2a2e', 'L': '#8fa86a', 'l': '#5a7a3a', 'R': '#c8343c', 'g': '#3a8a4a', 'B': '#c8c8cc'}))
+# the VR headset (owner, 13 Nov 2026): a grey visor with its green holodeck lens, the strap behind
+add('vr_headset', P(["", "", "", "....kkkkkkkk", "..kkSSSSSSSSkk", ".kSkkkkkkkkkkSk", "kSkGGGGGGGGGGkSk", "kSkGgLLggLLgGkSk", "kSkGgLLggLLgGkSk", "kSkGGGGkkGGGGkSk", ".kSkkkk..kkkkSk", "..kSk......kSk", "...kkkkkkkkkk"], {'S': '#8a8e98', 'G': '#14261a', 'g': '#1e4a2c', 'L': '#7dffa4'}))

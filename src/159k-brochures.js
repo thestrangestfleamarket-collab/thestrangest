@@ -144,7 +144,7 @@ const BROCH={}; window.BROCH=BROCH;
     sh.classList.toggle('col',col); sh.style.zoom=Math.max(.3,Math.min(1.6,col?iw/300:Math.min(iw/(300*n),ih/620))); };
   const pics=id=>B[id][3];
   const draw=()=>{ if(!V||!L)return; const D=BROCH.D, n=D.list.length, bar=h=>`<div class="bar">${h}</div>`;
-    if(V.mode==='rack')W.innerHTML=bar(`<span>BROCHURES · $${PRICE} EACH</span><b>YOU HAVE COLLECTED ${count()} OF ${n}${S.paid?'':' · A FULL SET PAYS $'+FULL}</b><b>$${Math.round(INV.cash)}</b><button data-a="x">CLOSE</button>`)
+    if(V.mode==='rack')W.innerHTML=bar(`<span>BROCHURES · $${PRICE} EACH</span><b>YOU HAVE COLLECTED ${count()} OF ${n}${S.paid?'':' · A FULL SET PAYS $'+FULL}</b><b>$${Math.round(INV.money())}</b><button data-a="x">CLOSE</button>`)
       +`<div class="grid">${D.list.map(b=>`<div class="slot${S.got[b.id]?' got':''}"><div class="c">${L.cover(b,pics(b.id)[0])}</div><span>${have(b.id)?'IN YOUR PACK · READ':S.got[b.id]?'COLLECTED · $'+PRICE:'$'+PRICE}</span></div>`).join('')}</div>`;
     else{ const b=BROCH.by[V.id], go=UI.places().some(p=>p[0]===b.place);
       W.innerHTML=bar(`<span>${esc(B[b.id][0])}</span>${V.mode==='open'?'<button data-a="fold">FOLD</button>':'<button data-a="open">OPEN</button>'}<button data-a="x">${V.from?'BACK TO THE RACK':'CLOSE'}</button>`)
@@ -153,8 +153,8 @@ const BROCH={}; window.BROCH=BROCH;
   const show=async v=>{ V=v; W.hidden=false; if(!L)W.innerHTML='<div style="margin:auto;font:11px Silkscreen,monospace;color:#f2c14e">UNFOLDING...</div>'; W.focus(); await ready(); if(V===v)draw(); };
   const close=()=>{ W.hidden=true; W.innerHTML=''; V=null; };
   const back=()=>{ if(V&&V.mode!=='rack'&&V.from)show({mode:'rack'}); else close(); };
-  const buy=id=>{ if(have(id))return show({mode:'cover',id,from:1}); if(INV.cash<PRICE)return say('A BROCHURE IS $'+PRICE+'.','#c8a090');
-    INV.cash-=PRICE; FORAGE.give(PRE+id,1); const first=!S.got[id]; S.got[id]=1; if(SFX)SFX.play('page',{vol:.5}); say('YOU TAKE '+B[id][0]+'. READ IT ANYWHERE FROM YOUR PACK.');
+  const buy=id=>{ if(have(id))return show({mode:'cover',id,from:1}); if(!INV.afford(PRICE))return say('A BROCHURE IS $'+PRICE+'.','#c8a090');
+    INV.pay(PRICE); FORAGE.give(PRE+id,1); const first=!S.got[id]; S.got[id]=1; if(SFX)SFX.play('page',{vol:.5}); say('YOU TAKE '+B[id][0]+'. READ IT ANYWHERE FROM YOUR PACK.');
     if(first&&!S.paid&&IDS.every(k=>S.got[k])){ S.paid=1; INV.cash+=FULL; say('YOU HAVE EVERY BROCHURE. THE VISITORS\' BUREAU PAYS $'+FULL+'.','#f2c14e'); }
     save(); if(FORAGE.draw)FORAGE.draw(); show({mode:'cover',id,from:1}); };
   // START: takes you to the thing to do and lends what it needs; the loan goes back once you are far from where it began, or after an hour

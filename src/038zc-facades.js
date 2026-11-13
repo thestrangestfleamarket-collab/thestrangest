@@ -1,6 +1,6 @@
 // FACADES: a street building's outside modelled, not painted (owner, 8 Nov 2026): solid walls in plain colours, real window openings with frames, sills, lintels, glass and a drawn shade behind it, the room's dark beyond, lit warm at night; string courses, a cornice and a parapet; a shop window left open for its real glass (WINDOWS.pane) and a door.
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, pos} from './003b-systems.js';
+import {BATCH, CLOCK, pos} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {SYS, TILE} from './006-map-pre.js';
 const FACADES={night:{value:0},made:0,tris:0,near:[]};
@@ -11,7 +11,7 @@ const FACADES={night:{value:0},made:0,tris:0,near:[]};
       sh.fragmentShader='uniform float uNight; varying float vGlow;\n'+sh.fragmentShader.replace('#include <opaque_fragment>','outgoingLight+=diffuseColor.rgb*vGlow*uNight*1.6;\n#include <opaque_fragment>'); };
     MS.customProgramCacheKey=()=>'facade1';
     MG=new THREE.MeshPhongMaterial({color:0xb8ccd8,specular:0xffffff,shininess:110,transparent:true,opacity:.12,depthWrite:false,side:THREE.DoubleSide}); };
-  SYS.add('life',()=>{ const h=CLOCK.h??12, c=x=>Math.max(0,Math.min(1,x)); FACADES.night.value=1-c((h-6.5)/1.5)*c((19.5-h)/1.5); },'038zc-facades');
+  SYS.add('life',()=>{ FACADES.night.value=CLOCK.elev?Math.max(0,Math.min(1,(1-CLOCK.elev())/8)):0; },'038zc-facades');
   // the rich fronts' carved stone shows only near (o.rich.near tiles); farther the plain front stands alone
   let nt=0; SYS.add('places',dt=>{ if((nt-=dt||0)>0)return; nt=.25; for(const n of FACADES.near){ const v=Math.hypot(pos.x-n.x,pos.z-n.z)<n.r; if(n.g.visible!==v)n.g.visible=v; } },'038zc-facades near');
   // the rich fronts' walls: brick laid in running bond, and rusticated stone for the base, each a tile-able picture (TX tiles across)
@@ -21,7 +21,7 @@ const FACADES={night:{value:0},made:0,tris:0,near:[]};
     else { g.fillStyle='#4e4b46'; g.fillRect(0,0,512,512); const bh=512/9, bw=512/4; for(let r=0;r<9;r++)for(let i=-1;i<5;i++){ const x=i*bw+(r&1)*bw/2, d=.86+.2*R(i,r,11);
         g.fillStyle=`rgb(${148*d|0},${144*d|0},${136*d|0})`; g.fillRect(x+4,r*bh+5,bw-8,bh-9); g.fillStyle=`rgba(255,255,255,.08)`; g.fillRect(x+4,r*bh+5,bw-8,3); } }
     for(let i=0;i<9000;i++){ const x=R(i,1,13)*512, y=R(i,2,13)*512; g.fillStyle=R(i,3,13)<.5?'rgba(0,0,0,.12)':'rgba(255,255,255,.07)'; g.fillRect(x,y,1.5,1.5); }
-    const t=new THREE.CanvasTexture(cv); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return new THREE.MeshLambertMaterial({map:t,side:THREE.DoubleSide}); })());
+    const t=new THREE.CanvasTexture(cv); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.colorSpace=THREE.SRGBColorSpace; return new THREE.MeshLambertMaterial({map:t,side:THREE.DoubleSide}); })());
   // o: L the lot in its own frame (front along L.y1), pt (u,v)->lot tiles (TURN's pt), z1 the height in z-pixels (24 a tile), wall/trim colours,
   // door {u,w} (tiles, its middle and half width), shop [{u0,u1,z0,z1}] openings kept for real glass, glass:true glazes the ground floor's windows itself, seed
   FACADES.make=o=>{ mats(); const {X,Y,Z}=SHARED.BOD, L=o.L, pt=o.pt||((u,v)=>[u,v]), P=[], C=[], G=[], GP=[], seed=o.seed||7;
@@ -119,11 +119,11 @@ const FACADES={night:{value:0},made:0,tris:0,near:[]};
       for(let i=1;i<nb;i++){ const u=b0+i*bay; if(o.door&&Math.abs(u-o.door.u)<dw)continue; box(u-.12,u+.12,y1-.02,y1+.06,RU,TOP,ST,.84); for(const h of holes)if(h.kind==='win'&&Math.abs((h.u0+h.u1)/2-u)<bay)box(u-.08,u+.08,y1+.06,y1+.09,(h.z0+h.z1)/2-4,(h.z0+h.z1)/2+4,ST,.95); }
       for(let u=x0+.25;u<x1-.3;u+=.3)box(u,u+.13,y1-.02,y1+.1,TOP-6,TOP,ST,.9); for(let u=x0+.4;u<x1-.4;u+=1.1)box(u,u+.16,y1-.02,y1+.28,TOP+6,TOP+14,ST,.8);
       box(x0,x1,y1-.02,y1+.12,RU-4,RU,ST,1.04); T={P,C,G}; }
-    const g=new THREE.Group(), geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); geo.setAttribute('color',new THREE.Float32BufferAttribute(C,3)); geo.setAttribute('aGlow',new THREE.Float32BufferAttribute(G,1)); geo.computeVertexNormals();
+    const U=BATCH.unfight(P,{C:[C,3],G:[G,1]},true,BATCH.OUT), g=new THREE.Group(), geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.Float32BufferAttribute(U.P,3)); geo.setAttribute('color',new THREE.Float32BufferAttribute(U.A.C,3)); geo.setAttribute('aGlow',new THREE.Float32BufferAttribute(U.A.G,1)); geo.computeVertexNormals();
     const me=new THREE.Mesh(geo,MS); me.castShadow=me.receiveShadow=true; g.add(me);
     if(GP.length){ const gg=new THREE.BufferGeometry(); gg.setAttribute('position',new THREE.Float32BufferAttribute(GP,3)); gg.computeVertexNormals(); const gm=new THREE.Mesh(gg,MG); gm.renderOrder=2; gm.raycast=()=>{}; g.add(gm); }
     for(const k in TQ){ const q=TQ[k]; if(!q.P.length)continue; const tg=new THREE.BufferGeometry(); tg.setAttribute('position',new THREE.Float32BufferAttribute(q.P,3)); tg.setAttribute('uv',new THREE.Float32BufferAttribute(q.U,2)); tg.computeVertexNormals(); const tm=new THREE.Mesh(tg,tex(k)); tm.castShadow=tm.receiveShadow=true; g.add(tm); FACADES.tris+=q.P.length/9; }
-    if(NEAR.P.length){ const ng=new THREE.BufferGeometry(); ng.setAttribute('position',new THREE.Float32BufferAttribute(NEAR.P,3)); ng.setAttribute('color',new THREE.Float32BufferAttribute(NEAR.C,3)); ng.setAttribute('aGlow',new THREE.Float32BufferAttribute(NEAR.G,1)); ng.computeVertexNormals();
+    if(NEAR.P.length){ const NU=BATCH.unfight(NEAR.P,{C:[NEAR.C,3],G:[NEAR.G,1]},true,BATCH.OUT), ng=new THREE.BufferGeometry(); ng.setAttribute('position',new THREE.Float32BufferAttribute(NU.P,3)); ng.setAttribute('color',new THREE.Float32BufferAttribute(NU.A.C,3)); ng.setAttribute('aGlow',new THREE.Float32BufferAttribute(NU.A.G,1)); ng.computeVertexNormals();
       const nm=new THREE.Mesh(ng,MS); nm.castShadow=nm.receiveShadow=true; const ngp=new THREE.Group(); ngp.add(nm); g.add(ngp); const c=W((x0+x1)/2,y1,0); FACADES.near.push({g:ngp,x:c[0],z:c[2],r:(RI.near||40)*TILE+(x1-x0)/2*TILE}); FACADES.tris+=NEAR.P.length/9; }
     g.userData.facade=o.id||1; (o.parent||scene).add(g); FACADES.made++; FACADES.tris+=P.length/9+GP.length/9; return g; };
 }

@@ -14,6 +14,7 @@ Object.assign(LINES,{log:[]});
     gd_up:['Up you come, {{name}}.','Someone comes. Good, it\'s you.','Back from below? You look it.','Hold. Ah. Pass, friend.','Mind the gate as you go.','The stair is yours.'],
     thanks:['Thanks, {{name}}.','Much obliged.','There you go.','Read it before the rain does.','Come back tomorrow, it\'s all new.','Keep the change. No, wait.'],
     mushroom:['Mushrooms. Fresh picked.','These ones glow a little.','Try one. Or don\'t.','Found them under the bridge.','Only the red ones bite.','For you, {{name}}, half price.'],
+    octobusk:['Howdy, {{name}}.','Eight arms, one guitar. Still short a hand.','This one\'s for the late trains.','Tip\'s in the hat. Well. Under the hat.','Mind the demons, partner. Little red ones.','Ain\'t a song I can\'t play.'],
     newscat:['Hmph.','I\'m reading.','Bad news. It\'s all bad news.','Don\'t block my light, {{name}}.','The crossword\'s wrong again.','You again.'],
     courier:['Parcel for... no, not you.','Coming through!','Sign here. No, here.','Left at the door, {{name}}. As usual.','Can\'t stop, it\'s fragile.','Beep beep.'],
   };
@@ -30,7 +31,7 @@ Object.assign(LINES,{log:[]});
   const st=document.createElement('style'); st.textContent='.said2{position:fixed;transform:translate(-50%,-100%);font:12px var(--pixel);color:var(--fg);background:var(--panel);border:2px solid var(--line);padding:3px 7px;pointer-events:none;z-index:14;white-space:nowrap;max-width:240px}'; document.head.appendChild(st);
   const ON=[], MAX=3, V=new THREE.Vector3();
   const you=()=>(LOOKS.L&&LOOKS.L.name)||'';
-  LINES.say=(N,k,ctx)=>{ '@later'; if(!N||!N.g)return ''; const text=POOL[k]?LINES.pick(k,Object.assign({name:you()},ctx||{})):String(k); if(!text)return '';
+  LINES.say=(N,k,ctx)=>{ '@later'; if(!N||!N.g)return ''; let text=POOL[k]?LINES.pick(k,Object.assign({name:you()},ctx||{})):String(k); if(!text)return '';
     const sg=LINES.signs&&LINES.signs(N,text); if(sg)text=sg;   // (a townsperson who signs: their line as far as you read signs, no voice; 146zs)
     const old=ON.findIndex(o=>o.N===N); if(old>=0){ ON[old].el.remove(); ON.splice(old,1); } while(ON.length>=MAX){ ON[0].el.remove(); ON.shift(); }
     const el=document.createElement('div'); el.className='said2'; document.body.appendChild(el);

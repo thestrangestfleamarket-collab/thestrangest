@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:,">
+<title>Breachline</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; color: #e6edf2; }
+  canvas { display: block; }
+  #menu { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: radial-gradient(ellipse at center, rgba(3,8,12,0.55), rgba(0,0,0,0.9)); overflow-y: auto; }
+  .card { width: min(680px, 100% - 32px); margin: 16px; padding: 28px 30px; background: rgba(8,14,19,0.88); border: 1px solid #1d3a46; border-radius: 14px; backdrop-filter: blur(8px); box-shadow: 0 20px 80px #000; }
+  h1 { margin: 0; font-size: 44px; letter-spacing: 0.14em; font-weight: 900; } h1 span { color: #ff6a30; }
+  .tag { color: #7f98a6; margin: 4px 0 20px; letter-spacing: 0.05em; }
+  h2 { font-size: 12px; letter-spacing: 0.18em; color: #5fb8cc; margin: 20px 0 8px; text-transform: uppercase; }
+  button { font: inherit; color: inherit; background: #12222b; border: 1px solid #2a4e5c; border-radius: 9px; padding: 12px 16px; cursor: pointer; transition: 0.12s; }
+  button:hover:not(:disabled) { background: #1a3440; border-color: #5fb8cc; } button:disabled { opacity: 0.45; cursor: default; }
+  button.primary { background: #ff6a30; border-color: #ff8a58; color: #140700; font-weight: 800; } button.primary:hover:not(:disabled) { background: #ff8450; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; } .row > * { flex: 1 1 150px; }
+  #maps { display: flex; gap: 10px; flex-wrap: wrap; } .map { flex: 1 1 150px; text-align: left; } .map small { display: block; color: #7f98a6; margin-top: 4px; font-size: 12px; } .map.on { border-color: #ff6a30; background: #2a1a12; }
+  input[type=text] { font: inherit; background: #060b0f; color: #fff; border: 1px solid #2a4e5c; border-radius: 9px; padding: 12px; width: 100%; box-sizing: border-box; text-transform: uppercase; letter-spacing: 0.3em; text-align: center; }
+  #codebox { display: none; text-align: center; margin: 12px 0; } #code { font-size: 46px; font-weight: 900; letter-spacing: 0.3em; color: #ffd040; user-select: all; }
+  #status { color: #9fd8e6; min-height: 1.3em; margin-top: 12px; font-size: 14px; }
+  #step2 { display: none; }
+  details { margin-top: 18px; color: #9fb0ba; font-size: 13.5px; } summary { cursor: pointer; color: #5fb8cc; letter-spacing: 0.1em; text-transform: uppercase; font-size: 12px; }
+  table { border-collapse: collapse; width: 100%; margin-top: 8px; } td { padding: 4px 8px 4px 0; vertical-align: top; border-bottom: 1px solid #14242c; } td:first-child { color: #e6edf2; white-space: nowrap; }
+  label { display: flex; align-items: center; gap: 8px; margin: 8px 0; } input[type=range] { flex: 1; }
+  #hud { display: none; position: fixed; inset: 0; pointer-events: none; text-shadow: 0 1px 6px #000; }
+  #cross { position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; border: 2px solid rgba(255,255,255,0.75); border-radius: 50%; transform: translate(-50%, -50%); transition: transform 0.08s; }
+  #hpwrap { position: absolute; left: 28px; bottom: 26px; font-size: 34px; font-weight: 800; } #hpbg { width: 220px; height: 8px; background: #12303a; border-radius: 4px; overflow: hidden; } #hpbar { height: 100%; width: 100%; background: #30ffb0; }
+  #ammo { position: absolute; right: 28px; bottom: 26px; text-align: right; font-size: 20px; } #ammo b { font-size: 40px; } #ammo span { display: block; font-size: 13px; color: #ffb020; letter-spacing: 0.1em; } #ammo small { color: #9fb0ba; font-size: 13px; }
+  #score { position: absolute; left: 50%; top: 18px; transform: translateX(-50%); font-size: 34px; font-weight: 800; } #score small { font-size: 16px; color: #9fb0ba; margin: 0 14px; }
+  #msg { position: absolute; left: 50%; top: 26%; transform: translateX(-50%); text-align: center; font-size: 54px; font-weight: 900; letter-spacing: 0.08em; opacity: 0; } #msg small { font-size: 18px; font-weight: 600; color: #c8d4e0; }
+</style>
+</head>
+<body>
+<div id="hud">
+  <div id="cross"></div><div id="score"></div><div id="msg"></div>
+  <div id="hpwrap"><span id="hp">100</span><div id="hpbg"><div id="hpbar"></div></div></div>
+  <div id="ammo"></div>
+</div>
+<div id="menu"><div class="card">
+  <h1>BREACH<span>LINE</span></h1>
+  <div class="tag">Two-player VR duel · first to 7 · three arenas</div>
+  <h2>Arena</h2><div id="maps"></div>
+  <div id="step1">
+    <h2>Match</h2>
+    <div class="row"><button id="host" class="primary">Host a match</button><button id="practice">Practice vs bot</button></div>
+    <div class="row" style="margin-top:10px"><input id="joincode" type="text" maxlength="5" placeholder="Code"><button id="join">Join with code</button></div>
+  </div>
+  <div id="codebox"><div style="color:#7f98a6;font-size:13px">Give this code to your opponent</div><div id="code"></div></div>
+  <div id="step2">
+    <h2>Play</h2>
+    <div class="row"><button id="vr" class="primary" disabled>Checking for headset…</button><button id="desktop">Mouse &amp; keyboard</button></div>
+  </div>
+  <div id="status"></div>
+  <details><summary>VR controls</summary><table>
+    <tr><td>Grip (hold)</td><td>Grab a weapon from its holster: pistol on right hip, rifle over right shoulder, shotgun over left shoulder, grenades on chest. Let go and it snaps back to its holster.</td></tr>
+    <tr><td>Trigger</td><td>Fire. Holding a grenade: arm it (3 s fuse), then release grip to throw.</td></tr>
+    <tr><td>Second hand</td><td>Grip the fore-end to steady rifle or shotgun (much less recoil). Slide it back and forward to pump the shotgun.</td></tr>
+    <tr><td>A / X</td><td>Drop magazine. Grab a fresh one at your belt with the free hand and push it into the magwell. Shotgun: bring shells from belt to the loading port.</td></tr>
+    <tr><td>B / Y</td><td>Release a locked bolt after reloading — or grip the slide / charging handle and pull back. Otherwise toggles the flashlight.</td></tr>
+    <tr><td>Left stick</td><td>Move (click to sprint). Right stick: turn. Physically crouch and lean to use cover.</td></tr>
+  </table></details>
+  <details><summary>Mouse &amp; keyboard controls</summary><table>
+    <tr><td>WASD / Shift / C</td><td>Move / sprint / crouch</td></tr><tr><td>Mouse L / R</td><td>Fire / aim down sights</td></tr>
+    <tr><td>1 2 3</td><td>Pistol / rifle / shotgun</td></tr><tr><td>R / G / F</td><td>Reload / grenade / flashlight</td></tr>
+  </table></details>
+  <details><summary>Comfort &amp; handling</summary>
+    <label>Weapon grip angle <input id="tilt" type="range" min="-40" max="40" step="1"><span id="tiltv"></span></label>
+    <label><input id="smooth" type="checkbox"> Smooth turning (default is 30° snap turn)</label>
+    <label><input id="vignette" type="checkbox"> Comfort vignette while moving</label>
+    <label><input id="lefty" type="checkbox"> Swap sticks (move with right hand)</label>
+  </details>
+</div></div>
+<script type="module">__SHOOT__</script>
+</body>
+</html>

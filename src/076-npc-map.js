@@ -1,6 +1,6 @@
 // NPCs: makeNPC builds a body with self-shading and its cel material; the NPC list, culling and the street lane.
 import {SHARED, THREE} from './003-shx.js';
-import {ARCH, CHARS, CLIP, CULL, LEVELS, NPCS, ONLINE, PARK, PONDS, pos, ROOMS, SELFSH, UI, VIT, W3, WALKS, WINDOWS} from './003b-systems.js';
+import {ARCH, CHARS, CLIP, CLOCK, CULL, LEVELS, NPCS, ONLINE, PARK, PONDS, pos, ROOMS, SELFSH, UI, VIT, W3, WALKS, WINDOWS} from './003b-systems.js';
 import {PPU, renderer, scene} from './004-main.js';
 import {ASTEP, CASTLE, LEVEL, MAPG, MAPSTAIR, MODS, RING, SKINCULL, SOL, STN, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
@@ -208,17 +208,17 @@ SYS.add('near',(x,z)=>NPCS.near(x,z),'npc shading');
       const lod=seen&&!far&&!N.sheet&&d>NPCS.LOD*(SHARED.lodK||1)&&!!N.g.parent.visible&&LEVELS.drawn(N.g); N.lod=lod;
       N.far=far||lod; N.hid=lod||!N.sheet&&(!seen||far&&!N.shaded||CULL.past(p.x,p.z,Math.max(TILE,N.cullR||0))); if(!N.shaded&&(!far||d<NPCS.SHADE)&&shadeN<2){ N.shade(); shadeN++; }
       if(!far&&!lod){ if(!(N.frozen>0))N.tick(dt,you); } else{ if(N.farMove&&!(N.frozen>0))N.farMove(dt); if(N.st){ N.g.position.x=N.st.x; N.g.position.z=N.st.z; if(!N.hid&&N.ground)N.g.position.y=N.ground(N.st.x,N.st.z)+(N._bb||0); } } }   // a body not ticked still stands where its character is (and on its ground, if it is drawn)
-    NPCS.lodDraw();
-    for(const X of NPCS.extra){ const a=X.at; X.hid=!!a&&(!FR.intersectsSphere(SP.set(V.set(a.x,(a.y||0)+1,a.z),2*TILE))||CULL.past(a.x,a.z,2*TILE)); } };
+    for(const X of NPCS.extra){ const a=X.at; X.lod=!!a&&!!X.g&&X.g.visible&&X.mode!=='hidden'&&!X.sheet&&Math.hypot(a.x-you.x,a.z-you.z)>NPCS.LOD*(SHARED.lodK||1)&&!!X.g.parent&&X.g.parent.visible&&LEVELS.drawn(X.g); X.hid=!!a&&(!FR.intersectsSphere(SP.set(V.set(a.x,(a.y||0)+1,a.z),2*TILE))||CULL.past(a.x,a.z,2*TILE)); if(X.lod&&X.hid)X.lod=false; else if(X.lod)X.hid=true; }
+    NPCS.lodDraw(); };
   // the far characters' plain shapes: a body box and a head box each, as tall and wide as the character's own body (measured once), one draw for all
   { const NB=new THREE.BoxGeometry(1,1,1).translate(0,.5,0), mk=()=>{ const m=new THREE.InstancedMesh(NB,new THREE.MeshLambertMaterial({color:0xffffff}),2048); m.count=0; m.frustumCulled=false; m.castShadow=true; m.name='farfolk'; scene.add(m); return m; };
-    let BODY=null, HEAD=null; const M=new THREE.Matrix4(), Q=new THREE.Quaternion(), S3=new THREE.Vector3(), P3=new THREE.Vector3(), C=new THREE.Color(), BX=new THREE.Box3(), CL=[[.18,.2,.26],[.34,.24,.2],[.2,.3,.42],[.4,.38,.34],[.5,.2,.2],[.22,.36,.24],[.6,.55,.45],[.12,.12,.14]];
+    let BODY=null, HEAD=null; const M=new THREE.Matrix4(), Q=new THREE.Quaternion(), S3=new THREE.Vector3(), P3=new THREE.Vector3(), C=new THREE.Color(), BX=new THREE.Box3(), BB=new THREE.Box3(), CL=[[.18,.2,.26],[.34,.24,.2],[.2,.3,.42],[.4,.38,.34],[.5,.2,.2],[.22,.36,.24],[.6,.55,.45],[.12,.12,.14]];
     NPCS.LOD=90*TILE;
-    NPCS.lodDraw=()=>{ if(!BODY){ BODY=mk(); HEAD=mk(); } let n=0;
-      for(const N of NPCS){ if(!N.lod||n>=2048)continue; if(!N.lodSz){ const v=N.g.visible; N.g.visible=true; BX.setFromObject(N.g); N.g.visible=v; const sz=BX.isEmpty()?null:BX.getSize(new THREE.Vector3()); N.lodSz=sz&&sz.y>.05?[Math.min(sz.x,sz.z,sz.y*.45),sz.y]:[.5*TILE,1.9*TILE]; }
+    NPCS.lodDraw=()=>{ if(!BODY){ BODY=mk(); HEAD=mk(); if(CLOCK.movers)CLOCK.movers.push(()=>[BODY,HEAD]); } let n=0;
+      for(const L of [NPCS,NPCS.extra])for(const N of L){ if(!N.lod||n>=2048)continue; if(!N.lodSz){ BX.makeEmpty(); N.g.updateWorldMatrix(true,true); N.g.traverse(o=>{ const g=o.geometry, P=g&&g.attributes&&g.attributes.position; if(!P||!(o.isMesh||o.isSkinnedMesh)||P.usage===THREE.DynamicDrawUsage)return; if(!g.boundingBox){ const A=P.array; for(let i=0;i<A.length;i++)if(!Number.isFinite(A[i]))return; g.computeBoundingBox(); } BB.copy(g.boundingBox).applyMatrix4(o.matrixWorld); BX.union(BB); }); const sz=BX.isEmpty()?null:BX.getSize(new THREE.Vector3()); N.lodSz=sz&&sz.y>.05?[Math.min(sz.x,sz.z,sz.y*.45),sz.y]:[.5*TILE,1.9*TILE]; }
         const [w,h]=N.lodSz, k=(N.key||'').length*7+(N.key||'').charCodeAt(0), c=CL[k%CL.length], hy=N.g.position.y;
-        BODY.setMatrixAt(n,M.compose(P3.set(N.g.position.x,hy,N.g.position.z),Q.setFromAxisAngle(S3.set(0,1,0),N.g.rotation.y||0),S3.set(w,h*.82,w*.6))); BODY.setColorAt(n,C.setRGB(c[0],c[1],c[2]));
-        HEAD.setMatrixAt(n,M.compose(P3.set(N.g.position.x,hy+h*.82,N.g.position.z),Q,S3.set(w*.55,h*.18,w*.55))); HEAD.setColorAt(n,C.setRGB(.78,.6,.48)); n++; }
+        const at=N.st||N.at||N.g.position; BODY.setMatrixAt(n,M.compose(P3.set(at.x,hy,at.z),Q.setFromAxisAngle(S3.set(0,1,0),N.g.rotation.y||0),S3.set(w,h*.82,w*.6))); BODY.setColorAt(n,C.setRGB(c[0],c[1],c[2]));
+        HEAD.setMatrixAt(n,M.compose(P3.set(at.x,hy+h*.82,at.z),Q,S3.set(w*.55,h*.18,w*.55))); HEAD.setColorAt(n,C.setRGB(.78,.6,.48)); n++; }
       for(const m of [BODY,HEAD]){ m.count=n; m.instanceMatrix.needsUpdate=true; if(m.instanceColor)m.instanceColor.needsUpdate=true; } };
     window.FARFOLK=()=>({lod:NPCS.filter(N=>N.lod).length,all:NPCS.length,tris:(BODY?BODY.count:0)*24}); }
   // someone in the way (8 Nov 2026): would N standing at x,z overlap another character, a standing body or a player near you, and closer than it is now (so two who overlap can always part)

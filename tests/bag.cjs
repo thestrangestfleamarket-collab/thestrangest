@@ -16,7 +16,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const r1 = await pg.evaluate(() => { const P = document.getElementById('bagp'), K = document.getElementById('packp'), ids = FORAGE.ids(), kinds = new Set(ids.map(id => BAG.kind(id))); let bad = 0; for (const id of ids) if (!/^data:image\/png/.test(BAG.icon(id))) bad++;
     return { open: !P.hidden, menu: !!P.closest('#dbag') && JSON.stringify(__UI.menuNow()) === '["pack","bag"]', pack: !!K && !K.hidden && !!K.closest('#menu'), rows: P.querySelectorAll('.bgr').length, pics: [...P.querySelectorAll('.bgr img')].every(i => /^data:image/.test(i.src)), plain: !P.querySelector('.bgsw,.bgsort,.bgview'), h: P.querySelector('.bgm').offsetHeight, grip: !!P.querySelector('.bggrip'), n: ids.length, bad, kinds: kinds.size, mortar: BAG.kind('mortar'), gem: BAG.kind('ruby'), mush: BAG.kind('m_morel'), potion: BAG.kind('p_heal') }; });
   ok(r1.open && r1.menu && !r1.pack && r1.rows >= 2 && r1.pics && r1.plain && r1.h > 200 && !r1.grip, 'I opens the bag in the menu, INVENTORY > BAG, listing the starter kit, each row with its picture; no switches, no corner grip ' + JSON.stringify(r1));
-  ok(r1.bad === 0 && r1.kinds >= 15 && r1.mortar === 'mortar' && r1.gem === 'gem' && r1.mush === 'mush' && r1.potion === 'potion', 'every one of ' + r1.n + ' items has a picture, by its family (' + r1.kinds + ' kinds)');
+  ok(r1.bad === 0 && r1.kinds >= 15 && r1.mortar === 'mortar' && r1.gem === 'gem' && r1.mush === 'mush' && r1.potion === 'potion', 'every one of ' + r1.n + ' items has a picture, by its family (' + r1.kinds + ' kinds; ' + r1.bad + ' not yet)');
 
   const r2 = await pg.evaluate(() => { const b0 = INV.items.bottle; BAG.drop('bottle', 1); const D = BAGDBG(), g = D.ground[0] || {};
     const saved = JSON.parse(JSON.parse(localStorage.getItem('market-save')).ground || '[]'); return { b0, b1: INV.items.bottle, th: D.loose.includes('A LOOSE EMPTY BOTTLE'), d: g.d, saved: saved.length, lv: g.lv, sprite: g.drawn, pick: g.pick && g.thing }; });
@@ -45,8 +45,8 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const rows = await pg.evaluate(() => [...document.querySelectorAll('#bagp .bgr')].map(r => r.dataset.id));
     ok(sc.max > 0 && sc.top >= sc.max - 2 && rows[rows.length - 1] === top, 'held at the bottom edge the list scrolls to its end, and the row drops there last ' + JSON.stringify({ sc, top, last: rows[rows.length - 1] })); }
   const q = await at('#hqb .qs[data-i="0"]'); await dragTo('#bagp .bgr[data-id="camera"]', q.x, q.y);
-  const r7 = await pg.evaluate(() => { const s = document.querySelector('#hqb .qs[data-i="0"]'); return { slot: HUD.slots[0], camera: INV.items.camera, pic: !!s.querySelector('img') && /^data:image/.test(s.querySelector('img').src), title: s.title }; });
-  ok(r7.slot === 'camera' && r7.camera === 1 && r7.pic && r7.title === 'CAMERA (35 MM) ×1', 'dragging the camera onto the quick bar fills its first slot with its picture, its name and amount on hover; the mortar still in the bag ' + JSON.stringify(r7));
+  const r7 = await pg.evaluate(() => { const s = document.querySelector('#hqb .qs[data-i="0"]'); return { slot: HUD.slots[0], camera: INV.items.camera, pic: !!s.querySelector('img') && /^data:image/.test(s.querySelector('img').src), title: s.title, card: s.dataset.card }; });
+  ok(r7.slot === 'camera' && r7.camera === 1 && r7.pic && r7.card === 'camera', 'dragging the camera onto the quick bar fills its first slot with its picture, the item card on hover (11 Nov 2026); the mortar still in the bag ' + JSON.stringify(r7));
   await dragTo('#bagp .bgr[data-id="bottle"]', 260, 560); await answer(1);
   const r8 = await pg.evaluate(() => ({ b: INV.items.bottle, ground: BAG.ground.length, d: (BAGDBG().ground[0] || {}).d }));
   ok(r8.b === r2.b0 - 1 && r8.ground === 1 && r8.d < 1.2, 'dragging a bottle out of the bag asks how many and drops one at your feet ' + JSON.stringify(r8));

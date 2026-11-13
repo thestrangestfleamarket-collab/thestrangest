@@ -13,12 +13,13 @@ import {MODS, SYS, TILE} from './006-map-pre.js';
   const where=C=>{ if(C===mineC())return null; const o=C.by&&ONLINE.others&&ONLINE.others.get(C.by), g=o&&o.fig&&o.fig.g; return g?{x:g.position.x,z:g.position.z}:{x:C.x,z:C.z}; };
   const snd=(k,C,o)=>{ if(!SFX.play)return; const at=where(C); SFX.play(k,at?{...o,at,far:(o.far||30)*T}:o); };
   CP.toggle=(C,k)=>{ const s=read(C), b=BIT[k]; if(!b)return; const on=!(s.b&b); write(C,s.b^b,s.h); if(b<64)snd(on?'latch':'door',C,{vol:.6}); return on; };
-  CP.honk=C=>{ const s=read(C); write(C,s.b,(s.h+1)%1000); snd('horn',C,{vol:.9,far:45}); };
+  const way=C=>{ const me=C===mineC(), at=me?pos:where(C), h=SHARED.heading; SYS.run('honk',{x:at.x,z:at.z,dx:me?Math.sin(h):null,dz:me?Math.cos(h):null,by:C.by||ONLINE.me||'me'}); };   // what is in a honking car's way moves (150pf)
+  CP.honk=C=>{ const s=read(C); write(C,s.b,(s.h+1)%1000); snd('horn',C,{vol:.9,far:45}); way(C); };
   CP.bits=C=>read(C).b; CP.BIT=BIT;
 
   /* ---------- what is painted on: each picture made once, shared by every copy ---------- */
   const TEX={};
-  const cv=(k,w,h,f)=>{ if(TEX[k])return TEX[k]; const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'); f(g,w,h); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return TEX[k]=t; };
+  const cv=(k,w,h,f)=>{ if(TEX[k])return TEX[k]; const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d'); f(g,w,h); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return TEX[k]=t; };
   const shield=(g,x,y,s)=>{ g.beginPath(); g.moveTo(x-s*.42,y-s*.5); g.lineTo(x+s*.42,y-s*.5); g.lineTo(x+s*.42,y+s*.05); g.quadraticCurveTo(x+s*.4,y+s*.38,x,y+s*.5); g.quadraticCurveTo(x-s*.4,y+s*.38,x-s*.42,y+s*.05); g.closePath(); };
   // no words on anything (owner, 10 Nov 2026): a plain shield on the front doors, blank plates
   const PIC={
@@ -124,7 +125,7 @@ import {MODS, SYS, TILE} from './006-map-pre.js';
       if(s.b&BIT.siren&&(C===me||C.by)&&now>(C.sn||0)){ C.sn=now+1.5; snd('siren',C,{vol:C===me?.7:1,far:70}); } }
     for(const G of ALL){ const px=PX.get(G); if(px.fr!==FR&&px.night!==NIGHT){ px.night=NIGHT; lampsOf(px,NIGHT,0,0); } } },'150pe-carparts');
   SYS.add('world',(k,v)=>{ if(typeof k!=='string'||!k.startsWith('cst:'))return; const K=cars(), C=K&&K.cars.get(k.slice(4)); if(!C)return; const s=read(C), p=SEEN[C.id]||{b:0,h:s.h}; SEEN[C.id]=s; if(C===mineC()||C.by===ONLINE.me)return;
-    if(s.h!==p.h)snd('horn',C,{vol:.9,far:45}); const d=(s.b^p.b)&63; if(d)snd(s.b&d?'latch':'door',C,{vol:.6}); },'150pe-carparts');
+    if(s.h!==p.h){ snd('horn',C,{vol:.9,far:45}); way(C); } const d=(s.b^p.b)&63; if(d)snd(s.b&d?'latch':'door',C,{vol:.6}); },'150pe-carparts');
   CARX.dbg=()=>({built:ALL.length,cars:Object.fromEntries([...(cars()?cars().cars.values():[])].map(C=>[C.id,read(C)])),parts:ALL.map(G=>{ const px=PX.get(G); return {open:Object.fromEntries(Object.keys(px.PT).map(n=>[n,+(px.cur[n]||0).toFixed(2)])),bar:!!(px.bar&&px.bar.on),head:px.lamps.head[0]?+px.lamps.head[0].material.emissiveIntensity.toFixed(2):null,marks:G.getObjectsByProperty?G.getObjectsByProperty('name','MARK').length:0}; })});
   CARX.parts=CP;
 }

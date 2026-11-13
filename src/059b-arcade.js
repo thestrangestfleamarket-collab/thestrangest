@@ -1,33 +1,29 @@
 // THE ARCADE: the arcade on Main Street as one painted block (its neon ARCADE front); its inside is built off the map when you go in: black walls, four cabinets along each side wall (double-click one to play its game; the games register in 059g), and the holodeck, a booth the size of a phone box at the back wall (E or a double-click: the list of adventures, each a program in STORE.holo.programs).
 import {SHARED, THREE} from './003-shx.js';
-import {BATCH, FORAGE, INV, keys, pos, ROOMS, TEXT, UI, WIELD} from './003b-systems.js';
+import {BATCH, FORAGE, INV, ONLINE, ROOMS, TEXT, UI} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {BLDK, FIX, grab, LEVEL, OFFDX, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
 import {LAMPS} from './014-gamekit.js';
 import {FACADES} from './038zc-facades.js';
 await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD.Y, {hash:hs}=SHARED.BOD.g, sh=SHARED.BOD.K.sh, MS=STORE.main;
-  const HOLO=STORE.holo={programs:[],run:null,hall:null}, say=(t,c)=>SAY(t,c);
+  const HOLO=STORE.holo={programs:[],hall:null}, say=(t,c)=>SAY(t,c);
   const SKN=k=>{ const s=(FORAGE.SK||[]).find(s=>s[0]===k); return s?s[1]:String(k||'').toUpperCase(); }, esc=TEXT.esc;
   const hp=document.createElement('div'); hp.id='holog'; hp.hidden=true;
   hp.style.cssText='position:fixed;left:50%;top:10%;transform:translateX(-50%);width:min(520px,92vw);max-height:80vh;overflow:auto;z-index:21;padding:14px 16px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13f2;border:2px solid #3a3f4e;zoom:var(--uiz,1)';
   document.body.appendChild(hp); hp.addEventListener('keyup',e=>e.stopPropagation()); hp.addEventListener('keydown',e=>{ if(e.key==='Escape')HOLO.hide(); e.stopPropagation(); });
   const xb=document.createElement('button'); xb.className='pX'; xb.textContent='X'; xb.style.cssText='position:absolute;right:10px;top:10px;font:inherit;color:#c9ccd6;background:#0e1016;border:2px solid #3a3f4e;padding:3px 8px;cursor:pointer'; xb.onclick=()=>HOLO.hide(); hp.appendChild(xb);
   const B='style="font:inherit;color:#ece5d3;background:#0e1016;border:2px solid #3a3f4e;padding:2px 7px;cursor:pointer"';
-  HOLO.draw=()=>{ '@later'; if(hp.hidden)return; let o='<h3 style="margin:0 0 4px;color:#f2c14e;font:12px Silkscreen,monospace">THE HOLODECK</h3><div style="color:#9b9584;margin-bottom:8px">'+(HOLO.run?'RUNNING: '+esc(HOLO.run.P.name):'PICK AN ADVENTURE.')+'</div><div style="margin-bottom:8px">YOU HAVE <b style="color:#f2c14e">$'+Math.round(INV.money())+'</b></div>';
-    o+=HOLO.programs.length?'<table style="border-collapse:collapse;width:100%">'+HOLO.programs.map((P,i)=>'<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">'+esc(P.name)+(P.skill?'<div style="color:#9b9584">'+esc(SKN(P.skill))+'</div>':'')+'</td><td style="text-align:right;padding:4px 6px">'+(P.cost===0?'FREE':'$'+(P.cost==null?8:P.cost))+'</td><td style="text-align:right"><button '+B+' data-run="'+i+'"'+(HOLO.run?' disabled':'')+'>RUN</button></td></tr>').join('')+'</table>':'<div style="color:#9b9584">NO ADVENTURES ARE LOADED.</div>';
-    if(HOLO.run)o+='<div style="margin-top:8px"><button '+B+' data-end="1">END PROGRAM</button></div>'; hp.innerHTML=o; hp.appendChild(xb); };
-  hp.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||b.classList.contains('pX'))return; if(b.dataset.end){ HOLO.end(); HOLO.draw(); return; } const P=HOLO.programs[+b.dataset.run]; if(P)HOLO.start(P); });
+  HOLO.draw=()=>{ '@later'; if(hp.hidden)return; let o='<h3 style="margin:0 0 4px;color:#f2c14e;font:12px Silkscreen,monospace">THE HOLODECK</h3><div style="color:#9b9584;margin-bottom:8px">PICK AN ADVENTURE. THE MARKET IS LEFT BEHIND WHILE YOU PLAY.</div><div style="margin-bottom:8px">YOU HAVE <b style="color:#f2c14e">$'+Math.round(INV.money())+'</b></div>';
+    o+=HOLO.programs.length?'<table style="border-collapse:collapse;width:100%">'+HOLO.programs.map((P,i)=>'<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">'+esc(P.name)+(P.skill?'<div style="color:#9b9584">'+esc(SKN(P.skill))+'</div>':'')+'</td><td style="text-align:right;padding:4px 6px">'+(P.cost===0?'FREE':'$'+(P.cost==null?8:P.cost))+'</td><td style="text-align:right"><button '+B+' data-run="'+i+'">RUN</button></td></tr>').join('')+'</table>':'<div style="color:#9b9584">NO ADVENTURES ARE LOADED.</div>';
+    hp.innerHTML=o; hp.appendChild(xb); };
+  hp.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||b.classList.contains('pX'))return; const P=HOLO.programs[+b.dataset.run]; if(P)HOLO.start(P); });
   HOLO.menu=worn=>{ HOLO.worn=!!worn; hp.hidden=false; HOLO.draw(); if(UI.menuLook)UI.menuLook(); };
   HOLO.hide=()=>{ hp.hidden=true; };
-  HOLO.end=()=>{ const D=HOLO.run; if(!D)return; HOLO.run=null; if(D.P.hide)D.P.hide(); HOLO.solo(false); };
-  // while a program runs it is the only thing running: the frame (075) draws and steps nothing of the market, only what listens to 'soloFrame' (the program, the controller, the word to the server)
-  HOLO.solo=(on,P)=>{ if(!!SHARED.solo===on)return; SHARED.solo=on; SHARED.target=null; keys.clear(); document.body.classList.toggle('holosolo',on); SYS.run('solo',on,P); };
-  HOLO.close=()=>{ HOLO.end(); HOLO.hide(); HOLO.hall=null; };
-  HOLO.start=P=>{ '@later'; if(HOLO.run||!HOLO.hall&&!HOLO.worn)return; const c=P.cost||0; if(!INV.afford(c))return say('THE HOLODECK TAKES $'+c+' FOR THIS PROGRAM.','#c8a090'); INV.pay(c); if(P.tool){ if(!FORAGE.has(P.tool))FORAGE.give(P.tool,1); if(WIELD.on!==P.tool)WIELD.set(P.tool); }
-    const H=HOLO.hall||{x:pos.x,z:pos.z}; HOLO.run={P,x:H.x,z:H.z,n:0,good:0,t:2}; HOLO.hide(); HOLO.solo(true,P); if(P.place&&H.G)P.place(H.x,H.z,0,H.G); if(P.intro)say(P.intro,'#7dffa4'); if(P.go)P.go(HOLO.run); };
-  SYS.add('strike',()=>{ const D=HOLO.run; if(D&&D.P.strike)D.P.strike(D); },'holodeck program');
-  SYS.add('soloFrame',dt=>{ const D=HOLO.run; if(D&&D.P.run)D.P.run(D,dt); },'holodeck program');
+  // a program is a page of its own (src/holo/): running one leaves the market's page for it, so nothing of the market stays loaded; the page keeps you in your room with the server and brings you back here
+  HOLO.url=P=>location.protocol==='file:'?'.'+P.page.replace(/^(\/[a-z]+)/,'$1.html'):P.page;
+  HOLO.go=P=>{ try{ sessionStorage.setItem('holo',JSON.stringify({...(ONLINE.card?ONLINE.card():{}),back:location.pathname+location.search,game:P.name})); }catch(e){} (HOLO.nav||(u=>location.assign(u)))(HOLO.url(P)); };
+  HOLO.start=P=>{ '@later'; if(!P||!P.page||!HOLO.hall&&!HOLO.worn)return; const c=P.cost||0; if(!INV.afford(c))return say('THE HOLODECK TAKES $'+c+' FOR THIS PROGRAM.','#c8a090'); INV.pay(c); HOLO.hide(); HOLO.go(P); };
 
   const box4=(x0,y0,x1,y1)=>{ const a=X(x0), b=X(x1), c=Z(y0), d=Z(y1); return [Math.min(a,b),Math.min(c,d),Math.max(a,b),Math.max(c,d)]; };
   const MKA=(k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{})});
@@ -217,9 +213,9 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
       { const bk=new THREE.Mesh(new THREE.PlaneGeometry(W,Hh),grid); bk.position.set(0,Hh/2,-zs*(Dp/2-.02*T)); G.add(bk); const fl=new THREE.Mesh(new THREE.PlaneGeometry(W,Dp),grid); fl.rotation.x=-Math.PI/2; fl.position.y=.02*T; G.add(fl); }
       bx_(W,.34*T,Dp,0,Hh+.17*T,0,dark); const sg=new THREE.Mesh(new THREE.PlaneGeometry(W*.92,.26*T),new THREE.MeshBasicMaterial({map:st})); sg.position.set(0,Hh+.17*T,zs*(Dp/2+.005*T)); if(zs<0)sg.rotation.y=Math.PI; G.add(sg);
       const hb=new THREE.Mesh(new THREE.BoxGeometry(W,2.4*T,Dp),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(bx,1.2*T,bz); scene.add(hb);
-      UI.thing({name:'THE HOLODECK',obj:hb,reach:1.5*T,near:2.8*T,tall:2.4*T,act:()=>HOLO.menu(),get acts(){ return HOLO.run?[{name:'END PROGRAM',act:()=>HOLO.end()}]:HOLO.programs.map(P=>({name:'RUN '+P.name,act:()=>HOLO.start(P)})); }}); const hb4=box4(AR.x0,AR.y0,AR.x1,AR.y1); HOLO.hall={x:X(cx),z:Z(hy),G:AG,box:{x0:hb4[0],z0:hb4[1],x1:hb4[2],z1:hb4[3]},y:Y(.15),h:Y(WH),hpx:WH,door:{x:X(cx),z:Z(hy)}}; }
+      UI.thing({name:'THE HOLODECK',obj:hb,reach:1.5*T,near:2.8*T,tall:2.4*T,act:()=>HOLO.menu(),get acts(){ return HOLO.programs.map(P=>({name:'RUN '+P.name,act:()=>HOLO.start(P)})); }}); const hb4=box4(AR.x0,AR.y0,AR.x1,AR.y1); HOLO.hall={x:X(cx),z:Z(hy),G:AG,box:{x0:hb4[0],z0:hb4[1],x1:hb4[2],z1:hb4[3]},y:Y(.15),h:Y(WH),hpx:WH,door:{x:X(cx),z:Z(hy)}}; }
     if(STORE.furnish&&STORE.furnish.arcade)STORE.furnish.arcade(); };
-  const unbuild=()=>{ ARC.scr=null; HOLO.close(); for(const r of AS){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } AS=[]; if(AG){ AG.removeFromParent(); AG=null; } };
+  const unbuild=()=>{ ARC.scr=null; HOLO.hide(); HOLO.hall=null; for(const r of AS){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } AS=[]; if(AG){ AG.removeFromParent(); AG=null; } };
   const wb=box4(AR.x0-.2,AR.y0-.2,AR.x1+.2,AR.y1+.2);
   const rb=r=>{ const q=box4(r.x0,r.y0,r.x1,r.y1); return {x0:q[0],z0:q[1],x1:q[2],z1:q[3]}; };
   ROOMS.off.arcade={name:'THE ARCADE',ar:AR,addSol:r=>{ AS.push(r); SOL.up.push(r); },box:{x0:wb[0],z0:wb[1],x1:wb[2],z1:wb[3],y0:-1,y1:Y(WH+40)},rooms:[rb(AR)],need:()=>LOAD('arcade','later','pinball'),
@@ -228,5 +224,5 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
   if(PFA)Object.assign(ROOMS.off.arcade,{door:PFA.door,out:PFA.out});
   { const B=SHARED.BOD, tx=w=>(w-B.XS(0))/(B.XS(1)-B.XS(0)), tz=w=>(w-B.ZS(0))/(B.ZS(1)-B.ZS(0)); if(LEVEL.homes&&!LEVEL.homes.game_master)LEVEL.homes.game_master=[+tx(X(cx-2.2)).toFixed(2),+tz(Z(AR.y0+1.6)).toFixed(2),0,'arcade']; }   // the Game Master by the holodeck's door (owner, 5 Nov 2026)
   { const sp=ROOMS.off.arcade.spawn; STORE.places.push(['THE ARCADE',sp[0],sp[1],'up','off',sp[3]],['THE HOLODECK',X(cx),Z(hy+.6),'up','off',Math.PI]); }
-  window.ARCDBG=()=>({built:!!PA,cabs:PA?PA.things.filter(t=>/^PLAY /.test(t.name)).length:0,things:PA?PA.things.map(t=>t.name):[],holo:{programs:HOLO.programs.map(P=>P.name),open:!hp.hidden,run:HOLO.run?HOLO.run.P.name:null,rows:hp.querySelectorAll('button[data-run]').length}});
+  window.ARCDBG=()=>({built:!!PA,cabs:PA?PA.things.filter(t=>/^PLAY /.test(t.name)).length:0,things:PA?PA.things.map(t=>t.name):[],holo:{programs:HOLO.programs.map(P=>P.name),open:!hp.hidden,rows:hp.querySelectorAll('button[data-run]').length}});
 });

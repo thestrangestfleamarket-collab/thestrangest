@@ -20,8 +20,8 @@ const clip = (s, n) => String(s ?? "").replace(/[\u0000-\u001f\u007f]/g, " ").sl
 const today = () => new Date().toISOString().slice(0, 10);
 
 // mind(the guide book) gives {SYSTEM, ask}. One question ({say, name, state}) and its answer ({say} or {why}); store {get, put} keeps {hist, day, n}: the last words both ways, and how many questions today
-const mind = GUIDEDATA => { const SYSTEM = system(GUIDEDATA || {});
-  const ask = async (env, store, body, client) => {
+// voice(SYSTEM, NAME) gives the ask of anyone who speaks through Claude (the flying bot; THE CANTINA's regulars, worker/cantina.js)
+const voice = (SYSTEM, NAME) => async (env, store, body, client) => {
   const said = clip(body.say, 400).trim(); if (!said) return { why: "nothing to answer" };
   const M = (await store.get()) || { hist: [] }, d = today(), max = +env.BOT_DAILY || DAY;
   if (M.day !== d) { M.day = d; M.n = 0; }
@@ -36,6 +36,6 @@ const mind = GUIDEDATA => { const SYSTEM = system(GUIDEDATA || {});
   const say = r.stop_reason === "refusal" ? "I can't help with that one." : clip(text(r.content), 600) || "I have no answer for that.";
   M.n++; M.hist = [...(M.hist || []), { role: "user", content: `${who} asks: ${said}` }, { role: "assistant", content: say }].slice(-HIST); await store.put(M);
   return { say, left: max - M.n }; };
-  return { SYSTEM, ask }; };
+const mind = GUIDEDATA => { const SYSTEM = system(GUIDEDATA || {}); return { SYSTEM, ask: voice(SYSTEM, NAME) }; };
 
-export const FLYBOT = { MODEL, NAME, DAY, HIST, mind };
+export const FLYBOT = { MODEL, NAME, DAY, HIST, mind, voice };

@@ -96,7 +96,7 @@ import {ROOMK} from './150a-bedroom.js';
   CRT.step=d=>{ const C=chans(); if(!C.length)return; const i=Math.max(0,C.indexOf(chan())); CRT.channel(C[((i+d)%C.length+C.length)%C.length].ch); };
   CRT.choose=it=>{ const G=chans().find(c=>c.guide), p=okPick(it); if(!G||!p)return; CRT.chn=G.ch; CRT.on=true; CRT.pick=p; CRT.t0=Date.now(); changed(); if(SFX)SFX.play('click',{vol:.6,vary:.2}); };
   CRT.unpick=()=>{ CRT.pick=null; changed(); };
-  CRT.volume=v=>{ CRT.vol=Math.max(0,Math.min(1,v)); V.volume=SFX.snd?CRT.vol:0; }; SFX.onAll.push(on=>{ V.volume=on?CRT.vol:0; }); SYS.add('solo',on=>{ V.volume=on||!SFX.snd?0:CRT.vol; },'150fa-crt');
+  CRT.volume=v=>{ CRT.vol=Math.max(0,Math.min(1,v)); V.volume=SFX.snd?CRT.vol:0; }; SFX.onAll.push(on=>{ V.volume=on?CRT.vol:0; });
 
   /* ---------- the control panel ---------- */
   const P=document.createElement('div'); P.id='crtp'; P.hidden=true;
@@ -158,13 +158,15 @@ import {ROOMK} from './150a-bedroom.js';
   const loop=()=>{ if(!W.open)return; W.raf=requestAnimationFrame(loop); W.R.render(W.sc,W.cam); };
   CRT.watch=on=>{ '@later'; on=on==null?!W.open:!!on; if(on===W.open)return draw(1);
     if(on){ wbuild(); W.open=true; W.z=1; W.el.hidden=false; W.el.appendChild(P); P.hidden=true; place(); loop(); if(!CRT.on)CRT.power(true); }
-    else { W.open=false; W.full=false; cancelAnimationFrame(W.raf); if(document.fullscreenElement)document.exitFullscreen().catch(()=>{}); W.el.hidden=true; document.body.appendChild(P); }
+    else { W.open=false; W.full=false; cancelAnimationFrame(W.raf); if(document.fullscreenElement){ W.own=true; document.exitFullscreen().catch(()=>{}); } W.el.hidden=true; document.body.appendChild(P); const f=document.activeElement; if(f&&f!==document.body&&f.blur)f.blur(); }
     draw(1); };
   CRT.full=on=>{ '@later'; on=on==null?!W.full:!!on; if(on&&!W.open)CRT.watch(true); W.full=on;
-    try{ if(on&&!document.fullscreenElement&&W.el.requestFullscreen)W.el.requestFullscreen().catch(()=>{}); else if(!on&&document.fullscreenElement)document.exitFullscreen().catch(()=>{}); }catch(e){}
+    try{ if(on&&!document.fullscreenElement&&W.el.requestFullscreen)W.el.requestFullscreen().catch(()=>{}); else if(!on&&document.fullscreenElement){ W.own=true; document.exitFullscreen().catch(()=>{}); } }catch(e){}
     W.z=on?fill():1; place(); setTimeout(()=>{ if(W.open){ W.z=W.full?fill():W.z; place(); } },250); draw(1); };
-  document.addEventListener('fullscreenchange',()=>{ if(W.open&&!document.fullscreenElement&&W.full){ W.full=false; W.z=1; place(); draw(1); } });
-  addEventListener('keydown',e=>{ if(!W.open||/^F\d+$/.test(e.key)||e.key==='Tab'||(e.target&&e.target.closest&&e.target.closest('input,textarea')))return; const k=e.key;
+  // ESC in full screen is the browser's (the page never hears it): leaving full screen that way leaves the close-up too; the FULL SCREEN button only toggles full screen
+  document.addEventListener('fullscreenchange',()=>{ if(document.fullscreenElement)return; const own=W.own; W.own=false; if(!W.open||!W.full)return; if(!own)return CRT.watch(false); W.full=false; W.z=1; place(); draw(1); });
+  addEventListener('keydown',e=>{ if(!W.open&&e.key==='Escape'&&!P.hidden){ CRT.close(); e.stopImmediatePropagation(); e.preventDefault(); return; }   // ESC shuts the TV's panel, not the game's menu behind it
+    if(!W.open||/^F\d+$/.test(e.key)||e.key==='Tab'||(e.target&&e.target.closest&&e.target.closest('input,textarea')))return; const k=e.key;
     if(k==='Escape')CRT.watch(false); else if(k==='ArrowRight'||k==='ArrowUp')CRT.step(1); else if(k==='ArrowLeft'||k==='ArrowDown')CRT.step(-1);
     else if(k==='+'||k==='=')zoom(1.2); else if(k==='-'||k==='_')zoom(1/1.2); else if(k==='f'||k==='F')CRT.full(); else if(k==='g'||k==='G'){ if(P.hidden)CRT.open(); else CRT.close(); }
     e.stopImmediatePropagation(); e.preventDefault(); },true);
@@ -205,7 +207,7 @@ import {ROOMK} from './150a-bedroom.js';
 
   ROOMK.wires.crt=(un,c)=>{ '@later'; let G=null, L=null, led=null; un.obj.traverse(o=>{ if(o.userData.screen)G=o; if(o.userData.hole)CRT.hole=o; if(o.isLight&&o.userData.tv)L=o; if(o.userData.led){ o.material=o.material.clone(); led=o; } }); if(!G)return;
     CRT.unit=un; look();
-    c.hit(un,()=>{ const C=chan(), sh=CRT.on&&C?showing():null; return 'CRT TV: '+(CRT.on?'CH '+(C?C.ch:'')+(sh&&sh.demand?' · '+sh.s.title:''):'OFF'); },()=>{ CRT.open(); if(SFX)SFX.play('click',{vol:.6,vary:.2}); });
+    const th=c.hit(un,()=>{ const C=chan(), sh=CRT.on&&C?showing():null; return 'CRT TV: '+(CRT.on?'CH '+(C?C.ch:'')+(sh&&sh.demand?' · '+sh.s.title:''):'OFF'); },()=>{ CRT.open(); if(SFX)SFX.play('click',{vol:.6,vary:.2}); }); th.far=true;   // double-clicked from anywhere in the room you can see it (owner, 13 Nov 2026)
     let fl=0; un.tick=dt=>{ fl+=dt; if(L)L.intensity=U.uOn.value*(.7+.25*Math.sin(fl*9)*Math.sin(fl*2.3)); if(led)led.material.color.setHex(CRT.on?0x5aff7a:0xff3a2a); }; };
 
   // each frame while you are home: the tube warms up and collapses, the picture keeps its moment, snow while it tunes; out of the apartment it stops (the state stays)

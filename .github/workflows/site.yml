@@ -63,8 +63,11 @@ jobs:
           k vr      'src/162a-pad|src/162c-vr|vr\.cjs'
           k asylum  'src/asylum/|tools/asylum\.cjs|tests/asylum\.cjs'
           k golf    'src/golf/|data/golf/|tools/golf\.cjs|tests/golf\.cjs'
+          k cantina 'src/cantina/|data/cantina/|tools/cantina\.cjs|tests/cantina\.cjs|worker/cantina'
           k scare   'src/scare/|data/scare/|tools/scare\.cjs|tests/scare\.cjs'
           k holmes  'src/holmes/|data/holmes/|worker/holmes|tools/holmes|tests/holmes\.cjs'
+          k shoot   'src/shoot/|tools/shoot\.cjs|tests/shoot\.cjs'
+          k duel    'src/duel/|data/duel/|tools/duel\.cjs|tests/duel\.cjs'
           k vrbody  'src/162c|src/111b|vrbody\.cjs'
           k riders  'src/117a|src/009c|riders\.cjs'
           k loopmap 'src/159c|src/009b|loopmap\.cjs'
@@ -121,8 +124,8 @@ jobs:
           k hall    'src/150n|src/059a|hall\.cjs'
           k flats   'src/150n|src/059a|src/150d|src/141c|src/150ac|flats\.cjs'
           k frames  'src/150ga|src/150g-|frames\.cjs'
-          k holodeck 'src/059b-arcade|src/146bb|src/146b[cdfg]|holodeck|headset'
-          k boarded 'src/146be-boarded|tests/boarded'
+          k holodeck 'src/059b-arcade|src/146bb|src/146b[fg]|src/holo/|tools/holo|holodeck|headset|roam'
+          k boarded 'src/holo/|tools/holo|tests/boarded'
           k kite    'src/146g-kite|src/093|kite\.cjs'
           k swim    'src/146ga-swim|src/066-river|src/065a|swim\.cjs'
           k lakewreck 'src/066bb|src/066ba-wreck|src/060a-fount|data/lakewreck|tools/lakewreck|lakewreck\.cjs'
@@ -254,6 +257,18 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' golf')
         run: node tests/golf.cjs dist/golf.html
+      - name: The Cantina (the bar at /cantina; it loads, you sit, the cards deal, a regular answers, the look changes)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' cantina')
+        run: node tests/cantina.cjs dist/cantina.html
+      - name: Breachline (the duel at /shoot; a practice round, a kill, and the guns in an emulated Quest 3)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' shoot')
+        run: node tests/shoot.cjs dist/shoot.html
+      - name: AR Duel (the dodge fight at /duel; the bot round, every weapon, two linked pages)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' duel')
+        run: node tests/duel.cjs dist/duel.html
       - name: The headset (VR on an emulated Quest 3)
         timeout-minutes: 45
         if: contains(steps.f.outputs.run, ' vr')
@@ -437,14 +452,14 @@ jobs:
       - name: Picture frames (a museum picture, your own, kept with the layout)
         if: contains(steps.f.outputs.run, ' frames')
         run: node tests/frames.cjs dist/market.html
-      - name: The holodeck (its panel, the adventures menu)
-        timeout-minutes: 15
+      - name: The holodeck (its booth, the headset, each program a page of its own; ROAM on its page and in the headset)
+        timeout-minutes: 40
         if: contains(steps.f.outputs.run, ' holodeck')
-        run: node tests/holodeck.cjs dist/market.html && node tests/headset.cjs dist/market.html
+        run: node tests/holodeck.cjs dist/market.html && node tests/headset.cjs dist/market.html && node tests/roam.cjs dist/roam.html && node tests/roam-vr.cjs dist/roam.html
       - name: BOARDED UP (the holodeck's zombie siege, solo, two online, in the headset, the server's relay)
         timeout-minutes: 40
         if: contains(steps.f.outputs.run, ' boarded')
-        run: node tests/boarded.cjs dist/market.html && node tests/boarded-online.cjs dist/market.html && node tests/boarded-vr.cjs dist/market.html && node tests/boarded-server.cjs
+        run: node tests/boarded.cjs dist/boarded.html && node tests/boarded-online.cjs dist/boarded.html && node tests/boarded-vr.cjs dist/boarded.html && node tests/boarded-server.cjs
       - name: The kite (held, launched, climbing in the wind)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' kite')

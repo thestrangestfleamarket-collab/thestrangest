@@ -15,14 +15,18 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
   for(const p of ['/market.html','/market','/door.html','/avatar.html','/g/market.html','/g/market','/g/'+gf[0]])ok((await fetch(BASE+p)).status===404,p+' is not handed out by itself');
   ok((await fetch(BASE+'/g/'+gf[0],{headers:{cookie:'tsfm-pass=dev:site-check'}})).status===200,'/g/'+gf[0]+' with a login');
   for(const u of ['/vr','/asylum']){ const r=await fetch(BASE+u); ok(r.status===200&&/Hollow Pines/.test(await r.text()),u+' (Hollow Pines) is handed to anyone, no login'); }
+  for(const u of ['/holo','/roam','/boarded']){ const a=await fetch(BASE+u,{redirect:'manual'}), b=await fetch(BASE+u,{headers:{cookie:'tsfm-pass=dev:site-check'}}), c=await fetch(BASE+u+'.html');
+    ok(a.status===302&&b.status===200&&/The Holodeck/.test(await b.text())&&c.status===404,u+' (a holodeck page) is handed to a login only; anyone else is sent to the door'); }
   { const r=await fetch(BASE+'/wave'); ok(r.status===200&&/Shardwave/.test(await r.text()),'/wave (SHARDWAVE) is handed to anyone, no login'); }
   { const r=await fetch(BASE+'/holmes'); ok(r.status===200&&/The Speckled Band/.test(await r.text()),'/holmes (THE SPECKLED BAND) is handed to anyone, no login');
     const t=await fetch(BASE+'/holmes',{method:'POST',headers:{'content-type':'application/json',origin:BASE},body:'{}'}); ok(t.status===401,'but the others answer only a login ('+t.status+')'); }
   { const r=await fetch(BASE+'/scare'); ok(r.status===200&&/Vesper Ward/.test(await r.text()),'/scare (VESPER WARD) is handed to anyone, no login');
     const a=await fetch(BASE+'/scare-assets/pale.glb'); ok(a.status===200&&/gltf/.test(a.headers.get('content-type')||''),'and its models under /scare-assets/'); }
+  { const r=await fetch(BASE+'/shoot'); ok(r.status===200&&/Breachline/.test(await r.text()),'/shoot (BREACHLINE) is handed to anyone, no login'); }
   { const r=await fetch(BASE+'/golf'); ok(r.status===200&&/Halcyon Greens/.test(await r.text()),'/golf (HALCYON GREENS) is handed to anyone, no login');
     const a=await fetch(BASE+'/golf-assets/sky/dusk_4k.jpg'), h=await fetch(BASE+'/golf-assets/sky/dusk_1k.hdr.txt'), m=await fetch(BASE+'/golf-assets/models/fern_02/fern_02.json'), x=await fetch(BASE+'/golf-assets/../g/market.html');
     ok(a.status===200&&/image\/jpeg/.test(a.headers.get('content-type')||'')&&h.status===200&&m.status===200&&x.status!==200,'and its sky, light and models under /golf-assets/ (nothing outside it)'); }
+  { const r=await fetch(BASE+'/duel'), a=await fetch(BASE+'/duel-assets/gunmetal_color.jpg'); ok(r.status===200&&/AR Duel/.test(await r.text())&&a.status===200&&/image\/jpeg/.test(a.headers.get('content-type')||''),'/duel (AR DUEL) and its pictures are handed to anyone, no login'); }
   { const m=await fetch(BASE+'/app.webmanifest'), j=m.ok?await m.json().catch(()=>null):null, ic=j&&j.icons?await Promise.all(j.icons.map(i=>fetch(BASE+i.src).then(r=>r.ok&&/image\/png/.test(r.headers.get('content-type')||'')))):[];
     ok(!!j&&/manifest\+json/.test(m.headers.get('content-type')||'')&&j.start_url==='/'&&ic.length>=2&&ic.every(Boolean),'the installable app: its manifest and icons are handed to anyone'); }
   { const home=body=>fetch(BASE+'/home',{method:'POST',headers:{cookie:'tsfm-pass=dev:site-check',origin:BASE,'content-type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()).catch(e=>({why:String(e)}));

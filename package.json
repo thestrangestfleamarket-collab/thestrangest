@@ -2,6 +2,7 @@
   "private": true,
   "devDependencies": {
     "@coderline/alphatab": "1.9.0",
+    "@dgreenheck/ez-tree": "^1.1.0",
     "@dimforge/rapier3d-compat": "0.19.3",
     "@recast-navigation/core": "0.43.1",
     "@recast-navigation/generators": "0.43.1",

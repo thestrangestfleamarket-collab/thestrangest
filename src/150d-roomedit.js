@@ -152,7 +152,9 @@ import {ROOMK} from './150a-bedroom.js';
   // a change by key or button: kept if it fits (or if where it was didn't fit either)
   const tf=(un,f)=>{ '@later'; const A=A_(); if(drag&&drag.un===un){ f(drag.t); vis(un,drag.t); drag.fit=showFp(un,drag.t); if(helper)helper.update(); return; } const prev=A.getT(un), t={...prev}; f(t); const ok=fits(un,t); if(!ok.ok&&fits(un,prev).ok){ say(ok.why); showFp(un,prev); return; }
     A.setT(un,t); did({t:'move',un,prev}); if(helper)helper.update(); showFp(un,A.getT(un)); ED.panel(); };
-  const turn=(d,free)=>{ if(ED.sel)tf(ED.sel,t=>{ t.ry+=d; if(ED.grid&&!free)t.ry=snap(t.ry,RQ); }); }, size=k=>{ if(ED.sel)tf(ED.sel,t=>{ t.s=Math.max(.3,Math.min(3,t.s*k)); }); }, lift=d=>{ if(ED.sel)tf(ED.sel,t=>{ t.h=Math.max(0,t.h+d); }); };
+  const turn=(d,free)=>{ if(ED.sel)tf(ED.sel,t=>{ t.ry+=d; if(ED.grid&&!free)t.ry=snap(t.ry,RQ); }); }, size=k=>{ if(ED.sel)tf(ED.sel,t=>{ const s0=t.s||1; t.s=Math.max(.3,Math.min(3,s0*k)); if(sortOf(ED.sel)==='wall'){ const fb=own(ED.sel); t.h=onWall(ED.sel,t.h+(fb[4]+fb[5])/2*(s0-t.s),t.s); } }); }, lift=d=>{ if(ED.sel)tf(ED.sel,t=>{ t.h=sortOf(ED.sel)==='wall'?onWall(ED.sel,t.h+d,t.s||1):Math.max(0,t.h+d); }); };
+  // a thing on a wall grows and shrinks from its middle and goes anywhere on the wall, its whole frame between the floor and the ceiling (owner, 13 Nov 2026)
+  const onWall=(un,h,s)=>{ const fb=own(un), lo=-fb[4]*s, hi=A_().HW-fb[5]*s; return hi<lo?lo:Math.max(lo,Math.min(hi,h)); };
   const floorTo=up=>{ '@later'; const A=A_(), F=A.R.loft, un=ED.sel; if(!F||!un)return; const prev=A.getT(un), t={...prev,h:up?F.MH:0}; if(up){ t.u=Math.max(F.mx+.6,Math.min(F.lib-.8,t.u)); } const q=findSpot(un,t); if(!fits(un,q).ok)return say(up?'NO ROOM FOR IT UPSTAIRS':'NO ROOM FOR IT DOWNSTAIRS'); A.setT(un,q); did({t:'move',un,prev}); if(helper)helper.update(); showFp(un,A.getT(un)); ED.panel(); };   // a piece carried to the loft's other floor, to the nearest place it fits
   const putAway=()=>{ const un=ED.sel, A=A_(); if(!un)return; if(ED.carry)endCarry(); const KO=kindOf(un.kind); if(KO&&KO.own&&un.added){ FORAGE.give(KO.own,1); A.drop(un); select(null); say('BACK IN YOUR PACK'); drawBuy(); return; } A.remove(un); did({t:'gone',un}); select(null); };
   const bringBack=un=>{ const A=A_(); A.restore(un); did({t:'back',un}); select(un); };
@@ -303,7 +305,7 @@ import {ROOMK} from './150a-bedroom.js';
     if(un.loose)A.lift(un); const fb=own(un), thin=Math.min(fb[2]-fb[0],fb[3]-fb[1])/2*(prev.s||1)+.01;
     drag={un,prev,off,wp,so,carry,moved:false,t:{...prev},w0:w0[1],d0:carry?Math.min(w0[0],thin):w0[0],dh:grab&&so==='wall'?(()=>{ const w=wallAt(grab); return w?prev.h-w.h:0; })():-fb[4]*(prev.s||1)}; showGrid(so!=='wall'&&so!=='ceil'); };
   const move=e=>{ '@later'; const A=A_(), d=drag, un=d.un, o=un.obj, t={...d.t}, free=e.altKey||!ED.grid;
-    if(d.so==='wall'){ const w=wallAt(e); if(!w)return; const [nu,nv]=WN[w.k]; t.h=Math.max(0,Math.min(A.HW-.1,w.h+d.dh)); t.u=w.u+nu*d.d0; t.v=w.v+nv*d.d0; t.ry=d.prev.ry+WRY[w.k]-WRY[d.w0];
+    if(d.so==='wall'){ const w=wallAt(e); if(!w)return; const [nu,nv]=WN[w.k]; t.h=onWall(d.un,w.h+d.dh,t.s||1); t.u=w.u+nu*d.d0; t.v=w.v+nv*d.d0; t.ry=d.prev.ry+WRY[w.k]-WRY[d.w0];
       if(!free){ t.h=snap(t.h,GS/2); if(nu)t.v=snap(t.v,GS/2); else t.u=snap(t.u,GS/2); } }
     else if(d.so==='small'){ const p=surfaceAt(e,un); if(!p)return; t.u=p.u; t.v=p.v; t.h=Math.max(0,p.h); if(!free&&p.h<.02){ t.u=snap(t.u,GS/2); t.v=snap(t.v,GS/2); } }
     else { plane.set(UP,-d.wp.y); if(!ray(e).ray.intersectPlane(plane,hitP))return; const n=hitP.clone().add(d.off), q=A.toApt(n.x,n.y,n.z); t.u=q.u; t.v=q.v; if(!free){ t.u=snap(t.u,GS); t.v=snap(t.v,GS); } }

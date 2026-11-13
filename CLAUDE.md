@@ -22,6 +22,7 @@ Look there before changing how something looks or behaves, and add a dated entry
   module. `game-*.js` are the old game's own makers, copied in (the build no longer reads `bralynnb/tsfm`).
   `main*.js` are the page's own glue code between places.
   `src/asylum/` is HOLLOW PINES, a VR scare game on its own page (`/vr`, also `/asylum`, to anyone with the link; in THE MARKET a holodeck program, `146bf-hollow.js`, shows that page over the game; `tools/asylum.cjs` bundles it into `dist/asylum.html`, `tests/asylum.cjs` plays it through): it shares no code with THE MARKET.
+  `src/golf/` is HALCYON GREENS, a mini golf game on its own page (`/golf`, to anyone with the link; a holodeck program in `146bf-hollow.js`; `tools/golf.cjs` bundles it into `dist/golf.html` and copies its pictures and models, `data/golf/`, to `dist/golf-assets/`, too big to put in the page; `tests/golf.cjs`): it shares no code with THE MARKET.
   `src/door/door.html` is the website's door (invite code, login); `worker/door.js` the website's server (`wrangler.jsonc`).
   `src/editor/editor.html` is the owners' map editor, its own light page at `/editor` (no game): it edits a patch over `data/world.json`
   that PUBLISH LIVE sends to `/shared/map-<section>.json`, which the game lays over the level at start (`worker/mappatch.js`, one path for both).

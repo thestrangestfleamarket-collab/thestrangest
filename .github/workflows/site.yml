@@ -120,7 +120,7 @@ jobs:
           k hall    'src/150n|src/059a|hall\.cjs'
           k flats   'src/150n|src/059a|src/150d|src/141c|src/150ac|flats\.cjs'
           k frames  'src/150ga|src/150g-|frames\.cjs'
-          k holodeck 'src/059b-arcade|src/146bb|src/146b[cdf]|holodeck'
+          k holodeck 'src/059b-arcade|src/146bb|src/146b[cdfg]|holodeck|headset'
           k boarded 'src/146be-boarded|tests/boarded'
           k kite    'src/146g-kite|src/093|kite\.cjs'
           k swim    'src/146ga-swim|src/066-river|src/065a|swim\.cjs'
@@ -435,7 +435,7 @@ jobs:
       - name: The holodeck (its panel, the adventures menu)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' holodeck')
-        run: node tests/holodeck.cjs dist/market.html
+        run: node tests/holodeck.cjs dist/market.html && node tests/headset.cjs dist/market.html
       - name: BOARDED UP (the holodeck's zombie siege, solo, two online, in the headset, the server's relay)
         timeout-minutes: 40
         if: contains(steps.f.outputs.run, ' boarded')

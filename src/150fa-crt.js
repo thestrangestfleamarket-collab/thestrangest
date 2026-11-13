@@ -96,7 +96,7 @@ import {ROOMK} from './150a-bedroom.js';
   CRT.step=d=>{ const C=chans(); if(!C.length)return; const i=Math.max(0,C.indexOf(chan())); CRT.channel(C[((i+d)%C.length+C.length)%C.length].ch); };
   CRT.choose=it=>{ const G=chans().find(c=>c.guide), p=okPick(it); if(!G||!p)return; CRT.chn=G.ch; CRT.on=true; CRT.pick=p; CRT.t0=Date.now(); changed(); if(SFX)SFX.play('click',{vol:.6,vary:.2}); };
   CRT.unpick=()=>{ CRT.pick=null; changed(); };
-  CRT.volume=v=>{ CRT.vol=Math.max(0,Math.min(1,v)); V.volume=SFX.snd?CRT.vol:0; }; SFX.onAll.push(on=>{ V.volume=on?CRT.vol:0; }); SYS.add('solo',on=>{ V.volume=on||!SFX.snd?0:CRT.vol; },'150fa-crt');
+  CRT.volume=v=>{ CRT.vol=Math.max(0,Math.min(1,v)); V.volume=SFX.snd?CRT.vol:0; }; SFX.onAll.push(on=>{ V.volume=on?CRT.vol:0; });
 
   /* ---------- the control panel ---------- */
   const P=document.createElement('div'); P.id='crtp'; P.hidden=true;

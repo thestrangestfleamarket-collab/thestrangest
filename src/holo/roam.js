@@ -1,11 +1,7 @@
-// ROAM: the holodeck's space flight. Pick it in the holodeck and you are in the cockpit of a small, worn ship among the meteors far off the map: a gritty cockpit painted pixel by pixel (scuffed gunmetal, chipped paint, cracked leather, grimy glass) lit by its own instruments, full 360° flight with a flight assist, boost, lasers and missiles that blow small rocks apart and break big ones up a piece at a time; ramming rocks cracks the glass and wears the hull, and a dead hull sends you back to the holodeck. The ship owns the controls and the camera through SHARED.drive (the frame, the headset and the gamepad read it). On screen the mouse or the arrows aim; in the headset the Quest sticks fly, or you reach out and take the stick and the throttle with your hands or controllers.
+// ROAM: the holodeck's space flight, a page of its own (/roam, host.js). Pick it in the holodeck and you are in the cockpit of a small, worn ship among the meteors far off the map: a gritty cockpit painted pixel by pixel (scuffed gunmetal, chipped paint, cracked leather, grimy glass) lit by its own instruments, full 360° flight with a flight assist, boost, lasers and missiles that blow small rocks apart and break big ones up a piece at a time; ramming rocks cracks the glass and wears the hull, and a dead hull sends you back to the holodeck. The ship owns the controls and the camera through SHARED.drive (the frame, the headset and the gamepad read it). On screen the mouse or the arrows aim; in the headset the Quest sticks fly, or you reach out and take the stick and the throttle with your hands or controllers.
 import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
-import {SHARED, THREE} from './003-shx.js';
-import {SFX, UI, VR, W3} from './003b-systems.js';
-import {SAY} from './003d-say.js';
-import {EffectComposer, OutputPass, PCAM, renderer, RenderPass} from './004-main.js';
-import {FADE, STORE, TILE} from './006-map-pre.js';
-import {PAD} from './075-main-13.js';
+import {EffectComposer, FADE, OutputPass, PAD, PCAM, renderer, RenderPass, SFX, SHARED, STORE, THREE, TILE, UI, VR, W3} from './host.js';
+import {SAY} from '../003d-say.js';
 { const H=STORE.holo, T=TILE, M=T/.84, say=(t,c)=>SAY(t,c), V3=THREE.Vector3, Q4=THREE.Quaternion;
   const WX=3000, WZ=-80, FIELD=620;
   const ROAM=window.ROAM={on:false,fake:null};
@@ -245,7 +241,7 @@ import {PAD} from './075-main-13.js';
     const IN={pitch:0,yaw:0,roll:0,thr:0,boost:0,fire:0,mis:0,end:0}, PADIN={pitch:0,yaw:0,roll:0,thr:0,boost:0,fire:0,mis:0,end:0,fresh:false}, KEY=new Set(), MOUSE={x:0,y:0,on:false,l:false,r:false,wheel:0}; let test=null, endHold=0, misEdge=false;
     const HAND={on:false,stick:null,thr:null,pitch:0,yaw:0,roll:0,thrV:null,boost:false,fire:0,mis:0,end:0,seen:0};
     const FWD=new V3(), UP=new V3(), RIGHT=new V3(), EYE=new V3(), WQ=new Q4(), HL0=new V3(), DQ=new Q4(), VQ=new Q4(); let yaw0=0, calOK=false;
-    const sfx=(k,o)=>{ try{ const c=SFX.live(); return c?SFX.play(k,{...o,bus:SFX.own(c)}):null; }catch(e){ return null; } };
+    const sfx=(k,o)=>{ try{ return SFX.play(k,o); }catch(e){ return null; } };
     const worldOf=(p,out)=>out.copy(p).add(WORLD.position);
 
     const killChunk=(c,boom,big)=>{ if(c.dead)return; c.dead=true; unplace(c); const i=chunks.indexOf(c); if(i>=0)chunks.splice(i,1); const mc=c.met.chunks, j=mc.indexOf(c); if(j>=0)mc.splice(j,1);

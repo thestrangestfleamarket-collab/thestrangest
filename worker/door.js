@@ -59,6 +59,10 @@ export default {
       const out = new Response(r.body, r); if (p.endsWith(".webmanifest")) out.headers.set("content-type", "application/manifest+json"); out.headers.set("cache-control", "public, max-age=86400"); return out; }
     // Hollow Pines (src/asylum/): its own page at /vr (and /asylum, its first address), to anyone with the link
     if ((request.method === "GET" || request.method === "HEAD") && (p === "/vr" || p === "/asylum")) return page(env, url, "/asylum", request, "no-cache");
+    // the holodeck's pages (src/holo/): the shell for the page games (/holo), ROAM (/roam) and BOARDED UP (/boarded); to a checked login, anyone else goes to the door
+    if ((request.method === "GET" || request.method === "HEAD") && (p === "/holo" || p === "/roam" || p === "/boarded")) {
+      if (!(await inside(env, request, dev))) return Response.redirect(url.origin + "/", 302);
+      const out = await page(env, url, p, request, "private, no-cache"); out.headers.set("vary", "Cookie"); return out; }
     // SHARDWAVE (src/wave/): its own page at /wave, to anyone with the link
     if ((request.method === "GET" || request.method === "HEAD") && p === "/wave") return page(env, url, "/wave", request, "no-cache");
     // VESPER WARD (src/scare/): its own page at /scare, to anyone with the link; its models under /scare-assets/
@@ -638,7 +642,7 @@ export class Block extends Server {
       else if (d.c && typeof d.c.candidate === "string" && d.c.candidate.length < 500) x = { c: { candidate: d.c.candidate, sdpMid: d.c.sdpMid == null ? null : word(d.c.sdpMid, 16), sdpMLineIndex: num(d.c.sdpMLineIndex, 0, 16) | 0 } };
       else if (d.bye || d.no) x = d.bye ? { bye: 1 } : { no: 1 };
       if (!x) return; if (!o) { if (!x.bye) c.send(JSON.stringify({ t: "rtc", from: to, d: { bye: 1 } })); return; } o.send(JSON.stringify({ t: "rtc", from: s.id, d: x }));
-    } else if (m.t === "bu") {   // BOARDED UP (src/146be-boarded.js): one player's game traffic handed to their partner in the same room
+    } else if (m.t === "bu") {   // BOARDED UP (src/holo/boarded.js): one player's game traffic handed to their partner in the same room
       const to = word(m.to, 64), d = m.d; if (!to || to === s.id || !d || typeof d !== "object") return; const o = this.near(s, to, 60); if (o) o.send(JSON.stringify({ t: "bu", from: s.id, d }));
     } else if (m.t === "pm" && s.name) {   // a message to one player in this section (the paper doll's MESSAGE)
       const to = word(m.to, 64), text = word(m.text, 200); if (!to || to === s.id || !text) return;

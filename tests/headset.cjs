@@ -1,40 +1,30 @@
-// THE VR HEADSET CHECK: node tests/headset.cjs dist/market.html. Every player has a VR HEADSET; used anywhere it lists the holodeck's programs; a program
-// run from it is all that runs: the market's frame stops (nothing drawn, nothing stepped, its sounds hushed, its HUD gone), the word to the server goes on; ending it brings the market back.
+// THE VR HEADSET CHECK: node tests/headset.cjs dist/market.html (dist/roam.html, dist/holo.html and dist/asylum.html beside it). Every player has a VR HEADSET; used anywhere it lists the
+// holodeck's programs; RUN leaves the market's page for the program's own page, where no market is loaded; LEAVE THE HOLODECK loads the market again, you where you stood.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=headset::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
-  const b = await chromium.launch({ ...(process.env.PWCHROME ? { executablePath: process.env.PWCHROME } : {}), args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
+  const b = await chromium.launch({ ...(process.env.PWCHROME ? { executablePath: process.env.PWCHROME } : {}), args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--allow-file-access-from-files'] });
   const pg = await b.newPage({ viewport: { width: 800, height: 500 } }), errs = [];
   pg.on('pageerror', e => errs.push(e.message.slice(0, 300))); pg.on('console', m => { if (/not loaded before use|^ROAM|^SYS /.test(m.text())) errs.push(m.text().slice(0, 300)); });
-  await pg.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=13&res=1&at=60,-60', { waitUntil: 'commit' });
-  await pg.waitForFunction(() => window.__started, null, { timeout: 300000 });
-  await pg.waitForTimeout(8000); await pg.waitForFunction(() => !FADE.busy, null, { timeout: 120000, polling: 200 }).catch(() => {});
-  const r1 = await pg.evaluate(async () => { await LOAD('later'); const have = INV.items.vr_headset || 0, name = FORAGE.name('vr_headset'), usable = FORAGE.usable('vr_headset'), icon = !!(window.BAG && BAG.icon && BAG.icon('vr_headset'));
-    HUD.useItem('vr_headset'); const hp = document.getElementById('holog'); return { have, name, usable, icon, arcade: ARCDBG().built, open: !hp.hidden, rows: hp.querySelectorAll('button[data-run]').length, text: hp.textContent.slice(0, 400) }; });
+  const started = async () => { await pg.waitForFunction(() => window.__started, null, { timeout: 400000 }); await pg.waitForTimeout(8000); await pg.waitForFunction(() => !FADE.busy, null, { timeout: 120000, polling: 200 }).catch(() => {}); };
+  await pg.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=13&res=1&at=60,-60', { waitUntil: 'commit' }); await started();
+  const r1 = await pg.evaluate(async () => { await LOAD('later'); const have = INV.items.vr_headset || 0, name = FORAGE.name('vr_headset'), usable = FORAGE.usable('vr_headset');
+    HUD.useItem('vr_headset'); const hp = document.getElementById('holog'); return { have, name, usable, arcade: ARCDBG().built, open: !hp.hidden, rows: hp.querySelectorAll('button[data-run]').length, text: hp.textContent.slice(0, 500), at: [__dbg.pos()[0], __dbg.pos()[2]] }; });
   ok(r1.have === 1 && r1.name === 'VR HEADSET' && r1.usable, 'every player has a VR HEADSET, usable from the bag: ' + JSON.stringify(r1));
-  ok(!r1.arcade && r1.open && r1.rows === 9 && /VESPER WARD/.test(r1.text) && /BREACHLINE/.test(r1.text) && /HALCYON GREENS/.test(r1.text) && /ROAM/.test(r1.text) && /BOARDED UP/.test(r1.text) && /HOLLOW PINES/.test(r1.text) && /SHARDWAVE/.test(r1.text), 'used on the street (no arcade built), it lists every holodeck program');
-  const r2 = await pg.evaluate(async () => { const H = STORE.holo, L = [], W = ms => new Promise(r => setTimeout(r, ms)), C = { life: 0, places: 0, solo: 0 }, sent = [], s0 = ONLINE.send, on0 = ONLINE.on;
-    SYS.add('life', () => C.life++, 'headset check'); SYS.add('places', () => C.places++, 'headset check'); SYS.add('soloFrame', () => C.solo++, 'headset check');
-    H.programs.push({ name: 'TEST RUN', cost: 0, go: () => L.push('go'), run: D => { D.n++; }, hide: () => L.push('hide') }); await W(600); const before = { ...C }, at = [__dbg.pos()[0], __dbg.pos()[2]];
-    ONLINE.send = m => sent.push(m.t); ONLINE.on = true;
-    H.menu(true); [...document.querySelectorAll('#holog button[data-run]')].pop().click(); const c0 = { ...C }; await W(6000); const c1 = { ...C };
-    const hud = [...document.body.children].filter(e => !/^(stage|hollow|boarded|fjour|vrbtn)$/.test(e.id) && !/^(SCRIPT|STYLE|LINK|META)$/.test(e.tagName) && getComputedStyle(e).display !== 'none').map(e => e.id || e.tagName);
-    const mid = { solo: !!SHARED.solo, cls: document.body.classList.contains('holosolo'), run: H.run && H.run.P.name, n: H.run && H.run.n, hush: __dbg.SFX.hush, hud, life: c1.life - c0.life, places: c1.places - c0.places, frames: c1.solo - c0.solo, sent: [...new Set(sent)], moved: Math.hypot(__dbg.pos()[0] - at[0], __dbg.pos()[2] - at[1]) };
-    H.end(); ONLINE.send = s0; ONLINE.on = on0; const c2 = { ...C }; await W(1500); H.programs.pop();
-    return { ran: before.life > 0, L, mid, after: { solo: !!SHARED.solo, cls: document.body.classList.contains('holosolo'), run: H.run, hush: __dbg.SFX.hush, life: C.life - c2.life, frames: C.solo - c2.solo } }; });
-  ok(r2.ran && r2.L[0] === 'go' && r2.mid.solo && r2.mid.cls && r2.mid.run === 'TEST RUN' && r2.mid.n > 0 && r2.mid.frames > 0 && r2.mid.life === 0 && r2.mid.places === 0, 'a program run from the headset is all that runs: the market\'s frame is stopped, the program is stepped: ' + JSON.stringify(r2.mid));
-  ok(r2.mid.hud.length === 0 && r2.mid.hush === true && r2.mid.moved === 0, 'the market\'s HUD is gone, its sounds hushed, you stay where you stood: ' + JSON.stringify(r2.mid.hud));
-  ok(r2.mid.sent.includes('mv'), 'the word to the server goes on (you stay online): ' + JSON.stringify(r2.mid.sent));
-  ok(r2.L[1] === 'hide' && !r2.after.solo && !r2.after.cls && !r2.after.run && !r2.after.hush && r2.after.life > 0 && r2.after.frames === 0, 'ending it brings the market back: ' + JSON.stringify(r2.after));
-  const r3 = await pg.evaluate(() => { const H = STORE.holo; H.menu(true); const bt = [...document.querySelectorAll('#holog button[data-run]')][H.programs.findIndex(p => p.name === 'HOLLOW PINES')]; bt.click();
-    const f = document.querySelector('#hollow iframe'), mid = { on: HOLLOW.on, src: f && f.getAttribute('src'), solo: !!SHARED.solo, shown: getComputedStyle(document.getElementById('hollow')).display }; document.querySelector('#hollow button').click();
-    return { mid, off: !HOLLOW.on && !SHARED.solo && !H.run }; });
-  ok(r3.mid.on && r3.mid.src === '/vr' && r3.mid.solo && r3.mid.shown === 'block' && r3.off, 'HOLLOW PINES from the headset: its page alone over the stopped market; LEAVE THE HOLODECK ends it: ' + JSON.stringify(r3));
-  const r4 = await pg.evaluate(async () => { const H = STORE.holo, U = async (f, ms = 120000) => { for (const t = Date.now(); Date.now() - t < ms; await new Promise(r => setTimeout(r, 150))) if (f()) return true; return false; };
-    const at = [__dbg.pos()[0], __dbg.pos()[2]], v0 = __dbg.UI.view; H.menu(true); H.start(H.programs.find(p => p.name === 'ROAM')); const on = await U(() => ROAMDBG().on); await new Promise(r => setTimeout(r, 2500)); const d = ROAMDBG();
-    const mid = { on, solo: !!SHARED.solo, t: d.t, chunks: d.chunks, drive: d.drive, off: (ROOMS.offIn && ROOMS.offIn()) || null, moved: Math.hypot(__dbg.pos()[0] - at[0], __dbg.pos()[2] - at[1]) };
-    H.end(); await new Promise(r => setTimeout(r, 1500)); return { mid, after: { on: ROAMDBG().on, solo: !!SHARED.solo, drive: !!SHARED.drive, walker: __dbg.W3.group.visible, view: __dbg.UI.view === v0, moved: Math.hypot(__dbg.pos()[0] - at[0], __dbg.pos()[2] - at[1]) } }; });
-  ok(r4.mid.on && r4.mid.solo && r4.mid.t > 0 && r4.mid.chunks > 100 && r4.mid.drive && !r4.mid.off && r4.mid.moved === 0, 'ROAM from the headset on the street: the ship flies, the market stopped, you are moved nowhere: ' + JSON.stringify(r4.mid));
-  ok(!r4.after.on && !r4.after.solo && !r4.after.drive && r4.after.walker && r4.after.view && r4.after.moved < 1, 'ending it puts you back on the street where you stood, the view yours again: ' + JSON.stringify(r4.after));
+  ok(!r1.arcade && r1.open && r1.rows === 9 && /AR DUEL/.test(r1.text) && /THE CANTINA/.test(r1.text) && /VESPER WARD/.test(r1.text) && /BREACHLINE/.test(r1.text) && /HALCYON GREENS/.test(r1.text) && /ROAM/.test(r1.text) && /BOARDED UP/.test(r1.text) && /HOLLOW PINES/.test(r1.text) && /SHARDWAVE/.test(r1.text), 'used on the street (no arcade built), it lists every holodeck program');
+  await pg.evaluate(() => { const H = STORE.holo; document.querySelectorAll('#holog button[data-run]')[H.programs.findIndex(p => p.name === 'ROAM')].click(); });
+  await pg.waitForFunction(() => /roam\.html/.test(location.pathname) && window.ROAMDBG && ROAMDBG().on, null, { timeout: 180000, polling: 200 });
+  const r2 = await pg.evaluate(() => { const c = HOLONET.card; return { market: typeof window.__dbg !== 'undefined' || typeof window.ARCDBG !== 'undefined' || typeof window.INV !== 'undefined', run: HOLO.run && HOLO.run.P.name, card: { room: c.room, name: !!c.name, look: !!c.look, at: c.at, back: c.back, game: c.game } }; });
+  ok(!r2.market && r2.run === 'ROAM', 'RUN ROAM leaves the market\'s page: ROAM\'s own page runs it, nothing of the market loaded: ' + JSON.stringify({ market: r2.market, run: r2.run }));
+  ok(/^s-/.test(r2.card.room) && r2.card.name && r2.card.look && Array.isArray(r2.card.at) && Math.hypot(r2.card.at[0] - r1.at[0], r2.card.at[1] - r1.at[1]) < 1 && r2.card.game === 'ROAM', 'the page was handed your room, name, look and where you stood, to keep you with the server: ' + JSON.stringify(r2.card));
+  await pg.click('#leave', { noWaitAfter: true }); await started();
+  const r3 = await pg.evaluate(() => ({ market: /market\.html/.test(location.pathname), d: Math.hypot(__dbg.pos()[0] - 60, __dbg.pos()[2] + 60), have: INV.items.vr_headset || 0, phone: INV.items.brickphone || 0 }));
+  ok(r3.market && r3.d < 2 && r3.have === r3.phone, 'LEAVE THE HOLODECK loads the market again, you where you stood (the headset kept as the other given-once things are: a second ?fresh=1 start off the website empties the bag): ' + JSON.stringify(r3));
+  await pg.evaluate(async () => { await LOAD('later'); INV.items.vr_headset = 1; HUD.useItem('vr_headset'); const H = STORE.holo; document.querySelectorAll('#holog button[data-run]')[H.programs.findIndex(p => p.name === 'HOLLOW PINES')].click(); });
+  await pg.waitForFunction(() => /holo\.html/.test(location.pathname) && document.querySelector('iframe'), null, { timeout: 180000, polling: 200 });
+  const r4 = await pg.evaluate(() => ({ src: document.querySelector('iframe').getAttribute('src'), allow: document.querySelector('iframe').allow, market: typeof window.__dbg !== 'undefined', leave: !!document.getElementById('leave'), room: HOLONET.card.room }));
+  ok(/asylum\.html$/.test(r4.src) && /xr-spatial-tracking/.test(r4.allow) && !r4.market && r4.leave && /^s-/.test(r4.room), 'RUN HOLLOW PINES leaves for the holodeck\'s shell: the game\'s page alone, LEAVE THE HOLODECK over it, no market loaded: ' + JSON.stringify(r4));
+  await pg.click('#leave', { noWaitAfter: true }); await pg.waitForFunction(() => /market\.html/.test(location.pathname), null, { timeout: 60000 });
+  ok(true, 'LEAVE THE HOLODECK on the shell goes back to the market');
   ok(!errs.length, 'no page errors: ' + errs.slice(0, 3).join(' | '));
-  await b.close(); process.exit(fails.length ? 1 : 0); })();
+  await b.close(); process.exit(fails.length ? 1 : 0); })().catch(e => { console.log('FAIL ' + e.message); process.exit(1); });

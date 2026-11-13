@@ -1,4 +1,4 @@
-// BOARDED UP ONLINE CHECK: node tests/boarded-online.cjs dist/market.html. Two pages, their 'bu' messages handed across here in place of the section's server:
+// BOARDED UP ONLINE CHECK: node tests/boarded-online.cjs dist/boarded.html. Two pages, their 'bu' messages handed across here in place of the section's server:
 // one hosts, the other is offered JOIN and joins; each has one whole screen; the host's dead and torn boards appear on the guest; the guest's shot hurts a zombie on the
 // host and pays the guest; the guest's board goes on for both; the guest leaving hands the host a solo game.
 const { chromium } = require('playwright'), path = require('path');
@@ -7,10 +7,9 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   const b = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] }), errs = [], pgs = {};
   const open = async me => { const pg = await b.newPage({ viewport: { width: 640, height: 400 } }), other = me === 'a' ? 'b' : 'a'; pgs[me] = pg; pg.on('pageerror', e => errs.push(me + ': ' + e.message.slice(0, 300)));
     await pg.exposeFunction('__butx', j => pgs[other] && pgs[other].evaluate(([f, j]) => { if (window.BOARDED && BOARDED.api) BOARDED.api.net(f, JSON.parse(j)); }, [me, j]).catch(() => {}));
-    await pg.goto('file://' + path.resolve(process.argv[2] || 'dist/market.html') + '?fresh=1&hour=13&res=1&buq=low', { waitUntil: 'commit' });
-    await pg.waitForFunction(() => window.__started, null, { timeout: 400000 }); await pg.waitForTimeout(12000); await pg.waitForFunction(() => !FADE.busy, null, { timeout: 120000 }).catch(() => {});
-    for (let k = 0; k < 4; k++) { await pg.evaluate(() => { if (!ARCDBG().built && !FADE.busy) ROOMS.enter('arcade'); }); if (await pg.waitForFunction(() => ARCDBG().built && !FADE.busy, null, { timeout: 60000 }).then(() => 1, () => 0)) break; }
-    await pg.evaluate(o => { BOARDED.online = () => true; BOARDED.peers = () => [{ id: o, name: o === 'a' ? 'ALICE' : 'BOB' }]; BOARDED.tx = (to, d) => window.__butx(JSON.stringify(d)); const H = STORE.holo; H.start(H.programs.find(p => p.name === 'BOARDED UP')); }, other);
+    await pg.goto('file://' + path.resolve(process.argv[2] || 'dist/boarded.html') + '?stay=1&buq=low', { waitUntil: 'commit' });
+    await pg.waitForFunction(() => window.BOARDEDDBG && window.HOLO && HOLO.run, null, { timeout: 120000 });
+    await pg.evaluate(o => { BOARDED.online = () => true; BOARDED.peers = () => [{ id: o, name: o === 'a' ? 'ALICE' : 'BOB' }]; BOARDED.tx = (to, d) => window.__butx(JSON.stringify(d)); }, other);
     await pg.waitForFunction(() => BOARDEDDBG().ready, null, { timeout: 300000 }); await pg.evaluate(() => { BOARDED.api.NET.timeout = 1e12; }); return pg; };
   const [A, B] = await Promise.all([open('a'), open('b')]);
   const run = (pg, s) => pg.evaluate(s => { const X = BOARDED.api; for (let i = 0; i < s * 30; i++) { if (X.G.net !== 'guest') for (const p of X.players) { p.hp = 100; p.down = p.dead = false; } X.step(1 / 30); } }, s);

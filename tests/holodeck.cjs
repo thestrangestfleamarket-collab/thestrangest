@@ -1,6 +1,6 @@
 // THE HOLODECK CHECK: node tests/holodeck.cjs dist/market.html. The holodeck is a booth at the arcade's back wall: no knight, no sword
 // programs; E or a double-click on it opens the adventures menu; a registered program is listed with
-// its cost, RUN takes the money and starts it, END PROGRAM stops it, ESC closes the menu, and leaving the arcade closes everything.
+// its cost, RUN takes the money and leaves the market for the program's own page, ESC closes the menu, and leaving the arcade closes everything.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=holodeck::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -20,21 +20,17 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   await pg.evaluate(() => document.getElementById('holog').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
   const r3 = await pg.evaluate(() => ({ open: ARCDBG().holo.open }));
   ok(!r3.open, 'ESC closes the menu');
-  const r4 = await pg.evaluate(() => { const H = STORE.holo, L = []; H.programs.push({ name: 'TEST RUN', skill: 'sword', cost: 12, intro: 'A TEST.', go: D => L.push('go'), run: (D, dt) => { D.n++; }, hide: () => L.push('hide') });
+  const r4 = await pg.evaluate(() => { const H = STORE.holo, N = []; H.nav = u => N.push(u); H.programs.push({ name: 'TEST RUN', skill: 'sword', cost: 12, page: '/test?g=1' });
     INV.cash = 20; H.menu(); const hp = document.getElementById('holog'), row = [...hp.querySelectorAll('button[data-run]')].pop(), listed = /TEST RUN/.test(hp.textContent) && /SWORDSMANSHIP/.test(hp.textContent) && /\$12/.test(hp.textContent);
-    row.click(); const d1 = ARCDBG().holo, cash = INV.cash, hid = hp.hidden; H.menu(); const endB = hp.querySelector('button[data-end]'), ran = H.run && H.run.n >= 0 && H.run.x === H.hall.x; if (endB) endB.click(); const d2 = ARCDBG().holo; H.hide(); H.programs.pop();
-    return { listed, run: d1.run, cash, hid, ran, L, after: d2.run, rowsNow: ARCDBG().holo.programs.length }; });
-  ok(r4.listed && r4.run === 'TEST RUN' && r4.cash === 8 && r4.hid && r4.ran && r4.L[0] === 'go' && r4.after === null && r4.L[1] === 'hide' && r4.rowsNow === 9,
-    'a registered adventure is listed with its skill and cost; RUN takes $12, closes the menu and starts it in the hall; END PROGRAM stops it: ' + JSON.stringify(r4));
-  const r6 = await pg.evaluate(() => { const c = __dbg.UI.choices().find(c => c.name === 'RUN HOLLOW PINES'); c.sub.act(); const f = document.querySelector('#hollow iframe'), on = HOLLOW.on, src = f && f.getAttribute('src'), run = ARCDBG().holo.run, ends = __dbg.UI.choices().map(c => c.name); document.querySelector('#hollow button').click(); return { on, src, run, ends, off: !HOLLOW.on && !document.querySelector('#hollow iframe') && !ARCDBG().holo.run }; });
-  ok(r6.on && r6.src === '/vr' && r6.run === 'HOLLOW PINES' && r6.ends.includes('END PROGRAM') && r6.off, 'RUN HOLLOW PINES from the E popup puts its page (/vr) over the game; LEAVE THE HOLODECK ends it: ' + JSON.stringify(r6));
-  const r7 = await pg.evaluate(() => { const c = __dbg.UI.choices().find(c => c.name === 'RUN SHARDWAVE'); c.sub.act(); const f = document.querySelector('#hollow iframe'), on = HOLLOW.on, src = f && f.getAttribute('src'), run = ARCDBG().holo.run; document.querySelector('#hollow button').click(); return { on, src, run, off: !HOLLOW.on && !document.querySelector('#hollow iframe') && !ARCDBG().holo.run }; });
-  ok(r7.on && r7.src === '/wave' && r7.run === 'SHARDWAVE' && r7.off, 'RUN SHARDWAVE puts its page (/wave) over the game; LEAVE THE HOLODECK ends it: ' + JSON.stringify(r7));
-  const r8 = await pg.evaluate(() => { const c = __dbg.UI.choices().find(c => c.name === 'RUN BREACHLINE'); c.sub.act(); const f = document.querySelector('#hollow iframe'), on = HOLLOW.on, src = f && f.getAttribute('src'), run = ARCDBG().holo.run; document.querySelector('#hollow button').click(); return { on, src, run, off: !HOLLOW.on && !document.querySelector('#hollow iframe') && !ARCDBG().holo.run }; });
-  ok(r8.on && r8.src === '/shoot' && r8.run === 'BREACHLINE' && r8.off, 'RUN BREACHLINE puts its page (/shoot) over the game; LEAVE THE HOLODECK ends it: ' + JSON.stringify(r8));
+    row.click(); const cash = INV.cash, hid = hp.hidden, card = JSON.parse(sessionStorage.getItem('holo') || '{}'); H.programs.pop();
+    return { listed, cash, hid, N, card: { room: card.room, name: !!card.name, at: Array.isArray(card.at) && card.at.length === 6, back: card.back, game: card.game }, rowsNow: ARCDBG().holo.programs.length }; });
+  ok(r4.listed && r4.cash === 8 && r4.hid && r4.N.length === 1 && r4.N[0] === './test.html?g=1' && /^s-/.test(r4.card.room) && r4.card.name && r4.card.at && /market\.html/.test(r4.card.back) && r4.card.game === 'TEST RUN' && r4.rowsNow === 9,
+    'a registered adventure is listed with its skill and cost; RUN takes $12, closes the menu and leaves the market for its page, handing over your room, name and place: ' + JSON.stringify(r4));
+  const r6 = await pg.evaluate(() => { const H = STORE.holo, N = []; H.nav = u => N.push(u); for (const n of ['HOLLOW PINES', 'SHARDWAVE', 'HALCYON GREENS', 'VESPER WARD', 'BREACHLINE', 'AR DUEL', 'THE CANTINA', 'ROAM', 'BOARDED UP']) __dbg.UI.choices().find(c => c.name === 'RUN ' + n).sub.act(); delete H.nav; return { N, market: !!document.querySelector('#hollow,#boarded') }; });
+  ok(r6.N.join() === './holo.html?g=vr,./holo.html?g=wave,./holo.html?g=golf,./holo.html?g=scare,./holo.html?g=shoot,./holo.html?g=duel,./holo.html?g=cantina,./roam.html,./boarded.html' && !r6.market, 'RUN from the E popup leaves for each program\'s own page (the shell for the page games, ROAM\'s, BOARDED UP\'s); none runs inside the market: ' + JSON.stringify(r6));
   await pg.evaluate(() => { STORE.holo.menu(); ROOMS.exit('arcade'); }); await pg.waitForTimeout(1500); await wait(() => !FADE.busy).catch(() => {});
-  const r5 = await pg.evaluate(() => ({ open: ARCDBG().holo.open, hall: !!STORE.holo.hall, run: ARCDBG().holo.run }));
-  ok(!r5.open && !r5.hall && !r5.run, 'leaving the arcade drops the holodeck and closes its menu: ' + JSON.stringify(r5));
+  const r5 = await pg.evaluate(() => ({ open: ARCDBG().holo.open, hall: !!STORE.holo.hall }));
+  ok(!r5.open && !r5.hall, 'leaving the arcade drops the holodeck and closes its menu: ' + JSON.stringify(r5));
   ok(!errs.length, 'no page errors ' + errs.join(' | '));
   await b.close(); console.log(fails.length ? fails.length + ' FAILED' : 'all good'); process.exit(fails.length ? 1 : 0);
 })().catch(e => { console.log('FAIL ' + e.message); process.exit(1); });

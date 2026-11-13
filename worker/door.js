@@ -9,6 +9,7 @@ import { lvBrief, lvGoal, lvH, lvMeet, lvRun } from "./lives.js";
 import { CLK } from "./clock.js";
 import { BOWLS } from "./lanes.js";
 import { FLYBOT } from "./flybot.js";
+import { CANTINA } from "./cantina.js";
 import LIVESDATA from "../data/lives.json";
 import ITEMDATA from "../data/items.json";
 import WORLD from "../data/world.json";
@@ -22,7 +23,7 @@ const APPF = /^\/(app\.webmanifest|icon-(192|512)\.png)$/;   // the installable 
 const EDMAP = /^\/edmap\/t\d{1,2}_\d{1,2}\.jpg$/;
 const SCAREA = /^\/scare-assets\/[a-z0-9_-]+\.glb$/;   // VESPER WARD's models: to anyone
 const JAMA = /^\/jam-assets\/[a-z0-9_-]+\.(glb|json|mp3)$/, JAMT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg" };   // STADIUM JAM's avatars, hands and samples: to anyone
-const GOLFA = /^\/(golf|duel)-assets\/(?!.*\.\.)[a-z0-9_.\/-]+\.(jpg|json|txt)$/;   // HALCYON GREENS' pictures and models, AR DUEL's pictures: to anyone
+const GOLFA = /^\/(golf|duel|cantina)-assets\/(?!.*\.\.)[A-Za-z0-9_.\/-]+\.(jpg|json|txt|glb|mp3)$/;   // HALCYON GREENS' pictures and models, AR DUEL's pictures, THE CANTINA's models and pictures: to anyone
 const BOOK = /^\/book\/(\d{1,6})\.txt$/, FILM = /^\/film\/([A-Za-z0-9_.-]{1,80})\/([A-Za-z0-9_.-]{1,120}\.mp4)$/, IA = /^\/ia\/([A-Za-z0-9_.-]{1,80})\.jpg$/, YT = /^\/yt\/([A-Za-z0-9_-]{11})\.jpg$/, BLANK = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYGD4DwABBAEAHnOcQAAAAABJRU5ErkJggg==";
 const SKYJD = () => { const d = new Date(); return Date.UTC(1985, d.getUTCMonth(), d.getUTCDate()) / 864e5 + 2440587.5; },   // the sky's year is 1985 (src/134b DN.YEAR): that year's comets
    SBDB = "https://ssd-api.jpl.nasa.gov/sbdb_query.api?", SWPC = "https://services.swpc.noaa.gov/";
@@ -60,6 +61,10 @@ export default {
       const out = new Response(r.body, r); if (p.endsWith(".webmanifest")) out.headers.set("content-type", "application/manifest+json"); out.headers.set("cache-control", "public, max-age=86400"); return out; }
     // Hollow Pines (src/asylum/): its own page at /vr (and /asylum, its first address), to anyone with the link
     if ((request.method === "GET" || request.method === "HEAD") && (p === "/vr" || p === "/asylum")) return page(env, url, "/asylum", request, "no-cache");
+    // the holodeck's pages (src/holo/): the shell for the page games (/holo), ROAM (/roam) and BOARDED UP (/boarded); to a checked login, anyone else goes to the door
+    if ((request.method === "GET" || request.method === "HEAD") && (p === "/holo" || p === "/roam" || p === "/boarded")) {
+      if (!(await inside(env, request, dev))) return Response.redirect(url.origin + "/", 302);
+      const out = await page(env, url, p, request, "private, no-cache"); out.headers.set("vary", "Cookie"); return out; }
     // SHARDWAVE (src/wave/): its own page at /wave, to anyone with the link
     if ((request.method === "GET" || request.method === "HEAD") && p === "/wave") return page(env, url, "/wave", request, "no-cache");
     // VESPER WARD (src/scare/): its own page at /scare, to anyone with the link; its models under /scare-assets/
@@ -67,8 +72,8 @@ export default {
     if ((request.method === "GET" || request.method === "HEAD") && SCAREA.test(p)) {
       const r = await env.ASSETS.fetch(new Request(url.origin + p)); if (!r.ok) return new Response("not found", { status: 404 });
       const out = new Response(r.body, r); out.headers.set("content-type", "model/gltf-binary"); out.headers.set("cache-control", "public, max-age=86400"); out.headers.set("x-robots-tag", "noindex"); return out; }
-    // STADIUM JAM (src/jam/): its own page at /jam, to anyone with the link; its avatars, hands and samples under /jam-assets/
-    if ((request.method === "GET" || request.method === "HEAD") && p === "/jam") return page(env, url, "/jam", request, "no-cache");
+    // STADIUM JAM (src/jam/): its own page at /jam, also /rock, to anyone with the link; its avatars, hands and samples under /jam-assets/
+    if ((request.method === "GET" || request.method === "HEAD") && (p === "/jam" || p === "/rock")) return page(env, url, "/jam", request, "no-cache");
     if ((request.method === "GET" || request.method === "HEAD") && JAMA.test(p)) {
       const r = await env.ASSETS.fetch(new Request(url.origin + p)); if (!r.ok) return new Response("not found", { status: 404 });
       const out = new Response(r.body, r); out.headers.set("content-type", JAMT[p.split(".").pop()]); out.headers.set("cache-control", "public, max-age=86400"); out.headers.set("x-robots-tag", "noindex"); return out; }
@@ -80,6 +85,8 @@ export default {
     // AR DUEL (src/duel/): its own page at /duel, to anyone with the link; its pictures under /duel-assets/
     if ((request.method === "GET" || request.method === "HEAD") && p === "/duel") return page(env, url, "/duel", request, "no-cache");
     if (p === "/duel/") return Response.redirect(url.origin + "/duel" + url.search, 301);
+    // THE CANTINA (src/cantina/): its own page at /cantina, to anyone with the link; its models and pictures under /cantina-assets/
+    if ((request.method === "GET" || request.method === "HEAD") && p === "/cantina") return page(env, url, "/cantina", request, "no-cache");
     if ((request.method === "GET" || request.method === "HEAD") && GOLFA.test(p)) {
       const r = await env.ASSETS.fetch(new Request(url.origin + p)); if (!r.ok) return new Response("not found", { status: 404 });
       const out = new Response(r.body, r); out.headers.set("cache-control", "public, max-age=86400"); out.headers.set("x-robots-tag", "noindex"); return out; }
@@ -154,11 +161,20 @@ export default {
         if (MAPPATCH.NAME.test(sh[1])) { let m = null; try { m = JSON.parse(new TextDecoder().decode(buf)); } catch (e) {} if (!m || m.v !== MAPPATCH.v || !m.set || typeof m.set !== "object") return json({ why: "not a map editor file" }, 400); }
         return json({ ok: await postOf(env).putFile(sh[1], word(request.headers.get("content-type") || "application/octet-stream", 60), buf), size: buf.byteLength }); }
       return new Response("not found", { status: 404 }); }
-    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art" || p === "/orchard" || p === "/bot")) {
+    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art" || p === "/orchard" || p === "/bot" || p === "/cantina/talk")) {
       if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401);
       let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
       // a player's flying bot asks its mind (worker/flybot.js): the answer to say aloud; its memory and the day's count are the player's, in Home
+      // a regular of THE CANTINA answers a visitor (worker/cantina.js); what the two have said is the visitor's, kept beside their bot's, and the day's count is one for the whole bar
+      if (p === "/cantina/talk") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
+        const c = word(body.who, 24); if (!CANTINA.has(c)) return json({ why: "nobody by that name here" }, 400);
+        if (tooMany("bot:" + id, 12)) return json({ why: "too much at once, wait a minute" }, 429);
+        const H = homeOf(env), k = id + "~cantina", day = new Date().toISOString().slice(0, 10), D = (await H.botGet(k)) || {}, max = +env.BOT_DAILY || FLYBOT.DAY;
+        if (D.day === day && D.n >= max) return json({ why: "the bar has talked enough for one day; come back tomorrow" });
+        const out = await CANTINA.MINDS[c].ask(env, { get: () => H.botGet(k + "~" + c), put: v => H.botPut(k + "~" + c, v) }, { say: body.say, state: body.state, name: await H.nameGet(id) });
+        if (out.say) await H.botPut(k, { day, n: D.day === day ? D.n + 1 : 1 });
+        return json(out); }
       if (p === "/bot") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
         if (tooMany("bot:" + id, 12)) return json({ why: "too much at once, wait a minute" }, 429);
         const H = homeOf(env); return json(await BOTMIND.ask(env, { get: () => H.botGet(id), put: v => H.botPut(id, v) }, { say: body.say, state: body.state, name: await H.nameGet(id) })); }
@@ -634,7 +650,7 @@ export class Block extends Server {
       else if (d.c && typeof d.c.candidate === "string" && d.c.candidate.length < 500) x = { c: { candidate: d.c.candidate, sdpMid: d.c.sdpMid == null ? null : word(d.c.sdpMid, 16), sdpMLineIndex: num(d.c.sdpMLineIndex, 0, 16) | 0 } };
       else if (d.bye || d.no) x = d.bye ? { bye: 1 } : { no: 1 };
       if (!x) return; if (!o) { if (!x.bye) c.send(JSON.stringify({ t: "rtc", from: to, d: { bye: 1 } })); return; } o.send(JSON.stringify({ t: "rtc", from: s.id, d: x }));
-    } else if (m.t === "bu") {   // BOARDED UP (src/146be-boarded.js): one player's game traffic handed to their partner in the same room
+    } else if (m.t === "bu") {   // BOARDED UP (src/holo/boarded.js): one player's game traffic handed to their partner in the same room
       const to = word(m.to, 64), d = m.d; if (!to || to === s.id || !d || typeof d !== "object") return; const o = this.near(s, to, 60); if (o) o.send(JSON.stringify({ t: "bu", from: s.id, d }));
     } else if (m.t === "pm" && s.name) {   // a message to one player in this section (the paper doll's MESSAGE)
       const to = word(m.to, 64), text = word(m.text, 200); if (!to || to === s.id || !text) return;

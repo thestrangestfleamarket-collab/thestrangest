@@ -15,8 +15,11 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
   for(const p of ['/market.html','/market','/door.html','/avatar.html','/g/market.html','/g/market','/g/'+gf[0]])ok((await fetch(BASE+p)).status===404,p+' is not handed out by itself');
   ok((await fetch(BASE+'/g/'+gf[0],{headers:{cookie:'tsfm-pass=dev:site-check'}})).status===200,'/g/'+gf[0]+' with a login');
   for(const u of ['/vr','/asylum']){ const r=await fetch(BASE+u); ok(r.status===200&&/Hollow Pines/.test(await r.text()),u+' (Hollow Pines) is handed to anyone, no login'); }
+  for(const u of ['/holo','/roam','/boarded']){ const a=await fetch(BASE+u,{redirect:'manual'}), b=await fetch(BASE+u,{headers:{cookie:'tsfm-pass=dev:site-check'}}), c=await fetch(BASE+u+'.html');
+    ok(a.status===302&&b.status===200&&/The Holodeck/.test(await b.text())&&c.status===404,u+' (a holodeck page) is handed to a login only; anyone else is sent to the door'); }
   { const r=await fetch(BASE+'/wave'); ok(r.status===200&&/Shardwave/.test(await r.text()),'/wave (SHARDWAVE) is handed to anyone, no login'); }
-  { const r=await fetch(BASE+'/jam'); ok(r.status===200&&/Stadium Jam/.test(await r.text()),'/jam (STADIUM JAM) is handed to anyone, no login');
+  for(const u of ['/jam','/rock']){ const r=await fetch(BASE+u); ok(r.status===200&&/Stadium Jam/.test(await r.text()),u+' (STADIUM JAM) is handed to anyone, no login'); }
+  {
     const a=await fetch(BASE+'/jam-assets/left.glb'), d=await fetch(BASE+'/jam-assets/drums.json'); ok(a.status===200&&/gltf/.test(a.headers.get('content-type')||'')&&d.status===200,'and its hands and samples under /jam-assets/'); }
   { const sock=name=>new Promise(res=>{ const s=new WebSocket('ws://127.0.0.1:'+PORT+'/parties/jam/site-check'), got=[]; s.onmessage=e=>got.push(JSON.parse(e.data)); s.onopen=()=>{ s.send(JSON.stringify({t:'join',name,inst:'guitar'})); res({s,got}); }; s.onerror=()=>res({s,got}); }), nap=()=>new Promise(r=>setTimeout(r,500));
     const a=await sock('Ann'); await nap(); const b=await sock('Bob'); await nap(); b.s.send(JSON.stringify({t:'note',k:'d',pad:99,v:5,x:1})); b.s.send(JSON.stringify({t:'hack'})); await nap(); b.s.close(); await nap(); a.s.close();

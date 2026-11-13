@@ -1,9 +1,6 @@
-// BOARDED UP: the holodeck's zombie siege, for one, two on one screen, or two online (a host runs the dead and a partner near them joins through the section's server: t 'bu'); its own canvas and renderer over the page while it runs, its models polyfork's, fetched when first run; in a headset the game's own renderer draws its scene (SHARED.drive.scene), the right controller aims
-import {SHARED, THREE} from './003-shx.js';
-import {ONLINE, SFX, VR} from './003b-systems.js';
-import {SAY} from './003d-say.js';
-import {renderer} from './004-main.js';
-import {STORE} from './006-map-pre.js';
+// BOARDED UP: the holodeck's zombie siege, a page of its own (/boarded, host.js), for one, two on one screen, or two online (a host runs the dead and a partner near them joins through the section's server: t 'bu'); its own canvas and renderer over the page while it runs, its models polyfork's, fetched when first run; in a headset the game's own renderer draws its scene (SHARED.drive.scene), the right controller aims
+import {ONLINE, renderer, SFX, SHARED, STORE, THREE, VR} from './host.js';
+import {SAY} from '../003d-say.js';
 const BOARDED={on:false,api:null}; window.BOARDED=BOARDED;
 { const H=STORE.holo; let host=null, shadow=null, making=null;
   const CSS=`#wrap{position:fixed;inset:0;background:#000;overflow:hidden;font-family:system-ui,sans-serif;color:#ddd;user-select:none}

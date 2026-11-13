@@ -256,7 +256,7 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' scare')
         run: node tests/scare.cjs dist/scare.html
-      - name: Dead End (the hiding game at /hide: its places, its physics, a round against the thing, and an emulated Quest 3)
+      - name: Dead End (the hiding game at /hide, its places and physics, a round against the thing, and an emulated Quest 3)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' hide')
         run: node tests/hide.cjs dist/hide.html

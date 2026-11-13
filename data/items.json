@@ -2188,6 +2188,12 @@
   "sellable": true,
   "size": 0.5
  },
+ "bass": {
+  "value": 800,
+  "weight": 2.5,
+  "sellable": true,
+  "size": 1.8
+ },
  "im_lace": {
   "implant": "head",
   "plusInt": 10,

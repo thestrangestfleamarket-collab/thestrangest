@@ -37,7 +37,7 @@ const MERGE={builds:0}; window.MERGE=MERGE; const SG=new Map();
       if(moved){ const i=L.filter(o=>!o.userData.noMerge); L.length=0; L.push(...i); } }
     MERGE.builds++; if(d)ROOMS.unmerge(P); if(L.length<8){ DONE.set(P,{sig,made:[],hid:[]}); return; }
     const by=new Map(); for(const o of L){ const k=keyOf(o); (by.get(k)||by.set(k,[]).get(k)).push(o); }
-    const made=[]; for(const [,B] of by){ if(B.length<2)continue; const m0=B[0].material, mat=m0.clone(); mat.vertexColors=true; if(mat.color)mat.color.set(1,1,1); mat.userData={};
+    const made=[]; for(const [,B] of by){ if(B.length<2)continue; const m0=B[0].material, mat=m0.clone(); mat.vertexColors=true; if(mat.color)mat.color.set(1,1,1); mat.userData=m0.userData&&m0.userData.wk?{wk:m0.userData.wk}:{}; if(m0.clippingPlanes&&m0.clippingPlanes.length)mat.clippingPlanes=m0.clippingPlanes;   // the merged piece keeps its wall's own cut (the clone's is a copy), so it drops with the wall
       const me=new THREE.Mesh(merge(B,G),mat); me.castShadow=B[0].castShadow; me.receiveShadow=B[0].receiveShadow; me.name='merged'; me.userData.merged=B.length; G.add(me); made.push(me); for(const o of B)o.visible=false; }
     DONE.set(P,{sig:sigOf(L),made,hid:L.filter(o=>!o.visible),at:new Map(L.map(o=>{ const e=o.matrixWorld.elements; return [o,[e[12],e[13],e[14],e[0],e[8]]]; }))}); };
   let t=0; SYS.add('rooms',()=>{ const now=performance.now(); if(now-t<1000)return; t=now; const ed=MODS.roomed&&MODS.roomed.on;

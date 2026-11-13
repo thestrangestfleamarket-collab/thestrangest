@@ -125,9 +125,9 @@ vTp=(uTI*(modelMatrix*wp)).xyz; vTn=mat3(uTI)*(mat3(modelMatrix)*on); }`);
   // a bubble: clear in its middle, bright round its rim and on top
   const bubble=U=>sm(U,`void main(){ float f=1.-abs(dot(normalize(vN),normalize(vP))); gl_FragColor=vec4(mix(uWC,vec3(1.),.7)*(uL*uK*.8+.3)*(.5+f+.7*smoothstep(.5,.9,normalize(vN).y)),.1+.85*pow(f,2.2));`,
     {side:THREE.FrontSide,vs:'varying vec3 vP,vN; void main(){ vec4 mv=modelViewMatrix*instanceMatrix*vec4(position,1.); vN=normalize(normalMatrix*mat3(instanceMatrix)*normal); vP=-mv.xyz; gl_Position=projectionMatrix*mv; }'});
-  // the light the tank throws on the floor before it: the same moving caustics, faint
-  const spill=(TW,TD,U)=>{ const g=new THREE.PlaneGeometry(TW+1.6,1.7); g.rotateX(-Math.PI/2); g.translate(0,0,-TD/2-.85);
-    const m=sm(U,`void main(){ vec2 q=vec2(vP.x/(uWD.x*.5+.8),(vP.z+uWD.y*.5)/1.7); float fall=clamp(1.-abs(q.x),0.,1.)*clamp(1.+q.y,0.,1.)*smoothstep(0.,.08,-q.y); fall*=fall;
+  // the light the tank throws on the floor round its glass, before it and either side (none behind: its back is to the wall): the same moving caustics, faint
+  const spill=(TW,TD,U)=>{ const g=new THREE.PlaneGeometry(TW+1.8,TD+1.7); g.rotateX(-Math.PI/2); g.translate(0,0,-.85);
+    const m=sm(U,`void main(){ float dx=max(abs(vP.x)-uWD.x*.5-.05,0.), dz=max(-vP.z-uWD.y*.5-.05,0.), d=length(vec2(dx/.9,dz/1.7)); float fall=clamp(1.-d,0.,1.)*smoothstep(0.,.05,dx+dz)*step(vP.z,uWD.y*.5); fall*=fall;
   gl_FragColor=vec4(uL*uK*mix(vec3(1.),uWC*1.4,.6)*fall*(.05+.5*tcaus(vP.xz*.45,uT*.7)),1.);`,{add:1,side:THREE.FrontSide}); m.polygonOffset=true; m.polygonOffsetFactor=-2; m.polygonOffsetUnits=-2; return [g,m]; };
   return {mesh,lin,uniforms,wet,sandY,sand,bed,rays,surface,glass,bubble,spill}; };
 export {TANKFX};

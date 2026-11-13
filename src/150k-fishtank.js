@@ -137,8 +137,8 @@ import {TANKFX} from './150ja-tankfx.js';
   /* ---------- the water's physics: a height field (the wave equation, damped, walls reflecting) ---------- */
   const poke=(T,x,z,a,r)=>{ const dx=T.SW/(NX-1), dz=T.SD/(NZ-1), cx=(x+T.SW/2)/dx, cz=(z+T.SD/2)/dz, R=Math.ceil(r/dx)+1;
     for(let j=Math.max(0,Math.floor(cz-R));j<=Math.min(NZ-1,Math.ceil(cz+R));j++)for(let i=Math.max(0,Math.floor(cx-R));i<=Math.min(NX-1,Math.ceil(cx+R));i++){ const d2=((i-cx)*dx)**2+((j-cz)*dz)**2; if(d2<r*r*4)T.h[j*NX+i]-=a*Math.exp(-d2/(r*r)); } };
-  // ripples travel at one speed whichever way they go (.5 m/s), whatever the tank's length; 60 steps a second
-  const step=T=>{ const h=T.h, p=T.p, Dm=.994, a=(.5/60*(NX-1)/T.SW)**2, b=(.5/60*(NZ-1)/T.SD)**2, q=Math.min(1,.46/(a+b)), Cx=a*q, Cz=b*q; let E=0;
+  // ripples travel at one speed whichever way they go (.25 m/s, owner 13 Nov 2026: the water moved too fast), whatever the tank's length; 60 steps a second
+  const step=T=>{ const h=T.h, p=T.p, Dm=.994, a=(.25/60*(NX-1)/T.SW)**2, b=(.25/60*(NZ-1)/T.SD)**2, q=Math.min(1,.46/(a+b)), Cx=a*q, Cz=b*q; let E=0;
     for(let j=0;j<NZ;j++)for(let i=0;i<NX;i++){ const k=j*NX+i, c=h[k], l=h[i?k-1:k], r=h[i<NX-1?k+1:k], u=h[j?k-NX:k], d=h[j<NZ-1?k+NX:k]; p[k]=(2*c-p[k]+Cx*(l+r-2*c)+Cz*(u+d-2*c))*Dm; E+=Math.abs(p[k]); }
     T.h=p; T.p=h; T.E=E/(NX*NZ); T.steps++; };
   const shape=T=>{ const h=T.h, g=T.surf.geometry, P=g.attributes.position, N=g.attributes.normal, dx=T.SW/(NX-1), dz=T.SD/(NZ-1), F=T.ftx.image.data;
@@ -148,10 +148,10 @@ import {TANKFX} from './150ja-tankfx.js';
 
   /* ---------- each frame: the fish swim, the bubbles rise, the food falls, the surface moves ---------- */
   const Mx=new THREE.Matrix4(), Q=new THREE.Quaternion(), E3=new THREE.Euler(0,0,0,'XYZ'), Pv=new THREE.Vector3(), Sv=new THREE.Vector3();
-  const tick=(T,dt)=>{ T.t+=dt; T.U.uT.value=T.t; T.U.uE.value=Math.min(1,T.E*400); const W2=T.SW/2, D2=T.SD/2, on=k=>T.s.d.includes(k);
+  const tick=(T,dt)=>{ T.t+=dt; T.U.uT.value=T.t*.4; T.U.uE.value=Math.min(1,T.E*400); const W2=T.SW/2, D2=T.SD/2, on=k=>T.s.d.includes(k);
     const up=T.fed>0?Math.min(1,T.fed/3,(30-T.fed)/.6):0; if(T.fed>0)T.fed-=dt;   // fed: they swim to the top and quicker, then settle back
     // the filter's return stirs one corner a little, always
-    if(Math.random()<dt*14)poke(T,-W2+.1+Math.random()*.22,D2-.1,.0011,.035); if(Math.random()<dt*5)poke(T,(Math.random()-.5)*T.SW*.9,(Math.random()-.5)*T.SD*.9,.00035,.05);
+    if(Math.random()<dt*6)poke(T,-W2+.1+Math.random()*.22,D2-.1,.0008,.035); if(Math.random()<dt*2)poke(T,(Math.random()-.5)*T.SW*.9,(Math.random()-.5)*T.SD*.9,.00035,.05);
     if(T.bubs.length<60&&Math.random()<dt*7)T.bubs.push({x:-W2+.1+Math.random()*.2,y:T.WY-.03-Math.random()*.12,z:D2-.1+(Math.random()-.5)*.04,r:.0015+Math.random()*.002,ph:Math.random()*6});   // the fine bubbles the return carries under
     { const U=T.U, c=SHARED.cam; T.tg.updateWorldMatrix(true,false); U.uTI.value.copy(T.tg.matrixWorld).invert(); if(c)U.uCam.value.setFromMatrixPosition(c.matrixWorld).applyMatrix4(U.uTI.value); }
     // bubbles: a stream from the bubbler, a burst when the chest's lid lifts; each breaks the surface where it reaches it
@@ -187,16 +187,16 @@ import {TANKFX} from './150ja-tankfx.js';
     const cx=(Math.random()-.5)*T.SW*.5, cz=-T.SD*.15+(Math.random()-.5)*T.SD*.3; for(let i=0;i<12;i++){ const x=cx+(Math.random()-.5)*.25, z=cz+(Math.random()-.5)*.18; T.pel.push({x,y:T.WY,z,t:Math.random()*.4}); poke(T,x,z,.004,.025); }
     SAY('YOU SHAKE IN A PINCH OF FOOD. THE FISH RISE AND SNAP IT UP.','#c8e8f0'); };
   ROOMK.wires.tank=(un,c)=>{ const T=TANKS.find(q=>q.g===un.obj); if(!T)return; T.id=un.id; T.un=un;
-    c.hit(un,()=>'THE FISH TANK',()=>TANKV.open(T)); };   // always its menu (FEED THE FISH is a button in it)
+    c.hit(un,()=>'THE FISH TANK',()=>TANKV.ask(T)); };   // a double-click asks what you want: VIEW, FEED or EDIT (owner, 13 Nov 2026)
 
   /* ---------- the close look: the camera before the tank's glass, and its settings beside it ---------- */
   let V=null, P=null;
   const TANKV=window.TANKV={on:()=>!!V};
-  const css=`#tankp{position:fixed;right:14px;top:50%;transform:translateY(-50%);z-index:22;width:min(340px,92vw);max-height:90vh;overflow:auto;padding:12px 14px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13ee;border:2px solid #3a3f4e;zoom:var(--uiz,1)}
-    #tankp h4{margin:10px 0 4px;color:#7d8aa0;font:inherit}#tankp button{font:inherit;color:#d8dae2;background:#1a1d27;border:1px solid #3a3f4e;padding:3px 6px;margin:2px;cursor:pointer}#tankp button.on{background:#2c4a5a!important;border-color:#7fd0ff!important;color:#fff!important}
-    #tankp button:disabled{opacity:.35;cursor:default}#tankp .row{display:flex;align-items:center;justify-content:space-between}#tankp .sw,#tankp .sw.on{width:18px;height:18px;padding:0;background:var(--c)!important}#tankp .sw.on{outline:2px solid #fff}`;
+  const css=`:is(#tankp,#tanka){position:fixed;right:14px;top:50%;transform:translateY(-50%);z-index:22;width:min(340px,92vw);max-height:90vh;overflow:auto;padding:12px 14px;font:11px Silkscreen,monospace;letter-spacing:.4px;color:#d8dae2;background:#0b0d13ee;border:2px solid #3a3f4e;zoom:var(--uiz,1)}
+    :is(#tankp,#tanka) h4{margin:10px 0 4px;color:#7d8aa0;font:inherit}:is(#tankp,#tanka) button{font:inherit;color:#d8dae2;background:#1a1d27;border:1px solid #3a3f4e;padding:3px 6px;margin:2px;cursor:pointer}:is(#tankp,#tanka) button.on{background:#2c4a5a!important;border-color:#7fd0ff!important;color:#fff!important}
+    :is(#tankp,#tanka) button:disabled{opacity:.35;cursor:default}:is(#tankp,#tanka) .row{display:flex;align-items:center;justify-content:space-between}:is(#tankp,#tanka) .sw,:is(#tankp,#tanka) .sw.on{width:18px;height:18px;padding:0;background:var(--c)!important}:is(#tankp,#tanka) .sw.on{outline:2px solid #fff}`;
   let TAB='tank';
-  const draw=()=>{ '@later'; if(!P||!V)return; const T=V.T, s=T.s, W=WATER[s.w], guest=ROOMK.guest&&ROOMK.guest(), dis=guest?' disabled':'', n=Object.values(s.f).reduce((a,b)=>a+b,0), MAXF=SIZES[s.sz].f, food=FORAGE.has('g_fishfood');
+  const draw=()=>{ '@later'; if(!P||!V)return; if(V.mode==='view'){ P.innerHTML=`<div class="row"><b style="color:#f2c14e">THE FISH TANK</b><button data-a="x">X</button></div><div style="color:#7d7a70;margin-top:8px">DRAG TO LOOK ROUND · SCROLL TO COME CLOSE · TAP THE GLASS · ESC TO STEP BACK</div>`; return; } const T=V.T, s=T.s, W=WATER[s.w], guest=ROOMK.guest&&ROOMK.guest(), dis=guest?' disabled':'', n=Object.values(s.f).reduce((a,b)=>a+b,0), MAXF=SIZES[s.sz].f, food=FORAGE.has('g_fishfood');
     const bt=(a,nm,on,d='')=>`<button data-a="${a}" class="${on?'on':''}"${dis||d}>${nm}</button>`, pick=(a,O,cur)=>Object.keys(O).map(k=>bt(a+':'+k,O[k].n,cur===k)).join('');
     let h='';
     if(TAB==='tank')h='<h4>SIZE</h4>'+Object.keys(SIZES).map(k=>bt('z:'+k,SIZES[k].n,s.sz===k,T.len({sz:k})<T.len({sz:'m'})*SIZES[k].k-.05?' disabled title="NO ROOM ALONG THIS WALL"':'')).join('')+'<h4>STANDS ON</h4>'+pick('b',BASES,s.base)+'<h4>RIM</h4>'+pick('r',RIMS,s.rim)+`<div style="color:#7d7a70;margin-top:8px">${T.TW.toFixed(1)} M LONG · HOLDS ${MAXF} FISH</div>`;
@@ -213,9 +213,20 @@ import {TANKFX} from './150ja-tankfx.js';
     if(k==='w')s.w=x; if(k==='d')s.d=s.d.includes(x)?s.d.filter(q=>q!==x):s.d.concat(x); if(k==='f'){ const n=Object.values(s.f).reduce((a,b)=>a+b,0), d=+y; if(d<0||n<SIZES[s.sz].f)s.f[x]=Math.max(0,Math.min(8,(s.f[x]||0)+d)); if(!s.f[x])delete s.f[x]; }
     if(k==='l'){ if(x==='on')s.l.on=s.l.on?0:1; else if(x==='b')s.l.b=y; else s.l.c=y; } if(k==='z')s.sz=x; if(k==='b')s.base=x; if(k==='r')s.rim=x; if(k==='fz')s.fz[x]=y; if(k==='fc')s.fc[x]=y;
     apply(T,s); if(SFX)SFX.play('click',{vol:.25,vary:.2}); if(ROOMK.save)ROOMK.save(); draw(); };
-  TANKV.open=T=>{ '@later'; if(V)TANKV.close(); if(!P){ const st=document.createElement('style'); st.textContent=css; document.head.appendChild(st); P=document.createElement('div'); P.id='tankp'; document.body.appendChild(P);
-      P.addEventListener('click',e=>{ const b=e.target.closest('button'); if(b&&!b.disabled)act(b.dataset.a); }); for(const ev of ['pointerdown','dblclick','wheel'])P.addEventListener(ev,e=>e.stopPropagation()); }
-    V={T,yaw:0,pit:0,zoom:0,px:0,py:0,cy:0,cp:0,cz:0,cx:0,cpy:0,view0:UI.view,x:pos.x,z:pos.z,t0:performance.now(),fp:UI.persp?SHARED.cam.position.clone():null,fq:SHARED.cam.quaternion.clone()}; if(!(VR&&VR.on)){ if(!UI.persp)UI.setView('third'); UI.holdCam='tank'; } P.hidden=false; draw(); };
+  // the double-click's choice: VIEW (the close look alone), FEED (a pinch of food, where you stand), EDIT (the close look with the tank's settings)
+  let AQ=null, AT=null;
+  TANKV.ask=T=>{ '@later'; if(V)TANKV.close(); if(!AQ){ if(!P)TANKV.panel(); AQ=document.createElement('div'); AQ.id='tanka'; AQ.style.cssText='top:auto;bottom:22%;right:50%;transform:translateX(50%);width:auto'; document.body.appendChild(AQ);
+      AQ.addEventListener('click',e=>{ const b=e.target.closest('button'); if(b&&!b.disabled)TANKV.choose(b.dataset.a); });
+      for(const ev of ['pointerdown','dblclick','wheel'])AQ.addEventListener(ev,e=>e.stopPropagation()); }
+    AT=T; const guest=ROOMK.guest&&ROOMK.guest(); AQ.innerHTML=`<div class="row" style="gap:10px"><b style="color:#f2c14e">THE FISH TANK</b><button data-a="x">X</button></div><div style="margin-top:8px"><button data-a="view">VIEW</button><button data-a="feed"${guest?' disabled':''}>FEED</button><button data-a="edit"${guest?' disabled':''}>EDIT</button></div>`; AQ.hidden=false; AT.at=[pos.x,pos.z]; };
+  TANKV.unask=()=>{ if(AQ)AQ.hidden=true; AT=null; };
+  TANKV.choose=a=>{ const T=AT; TANKV.unask(); if(!T)return; if(a==='view')TANKV.open(T,'view'); else if(a==='edit')TANKV.open(T,'edit'); else if(a==='feed'){ if(FORAGE.has('g_fishfood'))feed(T); else SAY('YOU HAVE NO FISH FOOD. THE BODEGA SELLS IT.','#c8a090'); } };
+  SYS.add('cam',()=>{ if(AT&&AQ&&!AQ.hidden&&(!AT.g.parent||Math.hypot(pos.x-AT.at[0],pos.z-AT.at[1])>2*(AT.g.parent.scale.x||1)))TANKV.unask(); },'150k-fishtank ask');
+  addEventListener('keydown',e=>{ if(AT&&e.key==='Escape'){ e.stopPropagation(); TANKV.unask(); } },true);
+  TANKV.panel=()=>{ const st=document.createElement('style'); st.textContent=css; document.head.appendChild(st); P=document.createElement('div'); P.id='tankp'; P.hidden=true; document.body.appendChild(P);
+      P.addEventListener('click',e=>{ const b=e.target.closest('button'); if(b&&!b.disabled)act(b.dataset.a); }); for(const ev of ['pointerdown','dblclick','wheel'])P.addEventListener(ev,e=>e.stopPropagation()); };
+  TANKV.open=(T,mode='edit')=>{ '@later'; if(V)TANKV.close(); if(!P)TANKV.panel();
+    V={T,mode,yaw:0,pit:0,zoom:0,px:0,py:0,cy:0,cp:0,cz:0,cx:0,cpy:0,view0:UI.view,x:pos.x,z:pos.z,t0:performance.now(),fp:UI.persp?SHARED.cam.position.clone():null,fq:SHARED.cam.quaternion.clone()}; if(!(VR&&VR.on)){ if(!UI.persp)UI.setView('third'); UI.holdCam='tank'; } P.hidden=false; draw(); };
   TANKV.close=()=>{ if(!V)return; const v0=V.view0; V=null; if(P)P.hidden=true; if(UI.holdCam==='tank'){ UI.holdCam=null; if(v0&&UI.view!==v0)UI.setView(v0); } };
   TANKV.act=a=>act(a);
   addEventListener('keydown',e=>{ if(V&&e.key==='Escape'){ e.stopPropagation(); e.preventDefault(); TANKV.close(); } },true);

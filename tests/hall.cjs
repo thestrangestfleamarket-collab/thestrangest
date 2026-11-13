@@ -16,10 +16,10 @@ const {chromium}=require('playwright'), SHOTS=process.argv[3];
   ok(d.visit&&d.visit[0]==='n2'&&!d.open,'buzzed in, you go to their flat and the callbox closes ('+JSON.stringify(d.visit)+')');
   d=await pg.evaluate(()=>{ const sent=[]; ONLINE.send=m=>{ if(m.t==='ring')sent.push(m); }; ONLINE.hear.ring({op:'ask',from:'n3',name:'June'}); const up=HALLDBG().buzzer, txt=document.getElementById('buzzer').textContent; document.querySelector('#buzzer [data-a=yes]').click(); return {up,txt,sent,down:!HALLDBG().buzzer}; });
   ok(d.up&&/JUNE IS AT YOUR DOOR/.test(d.txt)&&d.sent[0]&&d.sent[0].op==='yes'&&d.sent[0].to==='n3'&&d.down,'your buzzer says who is at the door; LET IN answers yes ('+JSON.stringify(d.sent[0])+')');
-  // inside: no hall; the front door, the mailbox, the notice board
-  await pg.evaluate(()=>window.ENTERAPT()); await until(()=>HALLDBG().real&&HALLDBG().built&&HALLDBG().things.includes('YOUR MAILBOX')); await clear(); await pg.waitForTimeout(1500);
+  // inside: no hall; the front door
+  await pg.evaluate(()=>window.ENTERAPT()); await until(()=>HALLDBG().real&&HALLDBG().built&&HALLDBG().things.includes('FRONT DOOR')); await clear(); await pg.waitForTimeout(1500);
   d=await pg.evaluate(()=>HALLDBG());
-  ok(d.real&&d.things.includes('FRONT DOOR')&&d.things.includes('YOUR MAILBOX')&&d.things.includes('THE NOTICE BOARD'),'in your flat: the front door, your mailbox and the notice board ('+d.things.join(', ')+')');
+  ok(d.real&&d.things.includes('FRONT DOOR')&&!d.things.includes('YOUR MAILBOX')&&!d.things.includes('THE NOTICE BOARD'),'in your flat: the front door, and no mailbox or notice board by it (owner, 13 Nov 2026) ('+d.things.join(', ')+')');
   ok(!d.things.includes('ELEVATOR')&&!d.things.includes('STAIRS DOWN TO THE STREET'),'no lift and no stairs');
   if(SHOTS){ await pg.evaluate(()=>{ __dbg.ui().setView('first'); __dbg.face(Math.PI); }); await pg.waitForTimeout(6000); await pg.screenshot({path:SHOTS+'/frontdoor-inside.png'}); }
   await pg.evaluate(()=>HALLDBG().use('FRONT DOOR')); await until(()=>!HALLDBG().real); await clear(); await pg.waitForTimeout(1000);

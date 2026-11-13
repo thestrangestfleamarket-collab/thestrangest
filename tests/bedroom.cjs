@@ -1,4 +1,4 @@
-// THE APARTMENT ROOM CHECK: node tests/bedroom.cjs dist/market.html. Your apartment as one open room: built with its things as real bodies, all four walls standing in the isometric view, the picture's green-grey void outside, the lamp and screens switching, the bed, bench and chairs to sit on, the drawers opening, the record turning; the CRT TV's channels; the kitchen with its fridge, stove and tap working; every loose thing clear of the walls (the fire escape's pots, out on the landing, aside).
+// THE APARTMENT ROOM CHECK: node tests/bedroom.cjs dist/market.html. Your apartment as one open room: built with its things as real bodies, the near walls dropping away in the isometric view, the picture's green-grey void outside, the lamp and screens switching, the bed, bench and chairs to sit on, the drawers opening, the record turning; the CRT TV's channels; the kitchen with its fridge, stove and tap working; every loose thing clear of the walls (the fire escape's pots, out on the landing, aside).
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=bedroom::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -15,7 +15,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const d = await pg.evaluate(() => BEDROOMDBG());
     ok(d.built && d.loose >= 10, 'the room is built, its small things real bodies (' + d.loose + ')');
     const fy = await pg.evaluate(() => SHARED.BOD.Y(__dbg.MAPK.MODS.apts.RB + .15));
-    ok(d.walls.length === 4 && d.walls.every(w => w > 1e5), 'in the isometric view all four walls stand, none cut (27 Oct 2026) (' + d.walls.map(w => w.toFixed(2)) + ')');
+    ok(d.walls.length === 4 && d.walls.filter(w => w > 1e5).length >= 2 && d.walls.some(w => w < 1e5), 'in the isometric view the far walls stand and those between you and the eye drop away (owner, 12 Nov 2026: "walls should vanish when you\'re inside your apartment") (' + d.walls.map(w => w.toFixed(2)) + ')');
     const bg = await pg.evaluate(() => { const c = __dbg.scene.background; return c && c.isColor ? c.getHexString() : String(c); });   // 27 Oct: the house below and the live sky round your rooms, no longer the green-grey void
     ok(/^[0-9a-f]{6}$/.test(bg) && !(parseInt(bg.slice(0, 2), 16) < 16 && parseInt(bg.slice(2, 4), 16) < 21), 'outside is the live sky round your rooms, not the old green-grey void (' + bg + ')');
     const used = await pg.evaluate(async () => { const s0 = BEDPICDBG().screens, T = __dbg.UI.things.filter(t => /^(LAMP|MONITOR|TV):/.test(t.name)); for (const t of T) t.act(); await new Promise(r => setTimeout(r, 300)); return { n: T.length, d: BEDROOMDBG(), s0, s1: BEDPICDBG().screens }; });

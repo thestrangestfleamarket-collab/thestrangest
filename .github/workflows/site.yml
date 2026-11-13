@@ -65,6 +65,7 @@ jobs:
           k golf    'src/golf/|data/golf/|tools/golf\.cjs|tests/golf\.cjs'
           k cantina 'src/cantina/|data/cantina/|tools/cantina\.cjs|tests/cantina\.cjs|worker/cantina'
           k scare   'src/scare/|data/scare/|tools/scare\.cjs|tests/scare\.cjs'
+          k holmes  'src/holmes/|data/holmes/|worker/holmes|tools/holmes|tests/holmes\.cjs'
           k jam     'src/jam/|data/jam/|tools/jam\.cjs|tests/jam\.cjs'
           k shoot   'src/shoot/|tools/shoot\.cjs|tests/shoot\.cjs'
           k duel    'src/duel/|data/duel/|tools/duel\.cjs|tests/duel\.cjs'
@@ -245,6 +246,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' asylum')
         run: node tests/asylum.cjs dist/asylum.html
+      - name: The Speckled Band (the Holmes mystery at /holmes; the book's road, a move of your own, an emulated Quest 3)
+        timeout-minutes: 10
+        if: contains(steps.f.outputs.run, ' holmes')
+        run: node tests/holmes.cjs dist/holmes.html
       - name: Vesper Ward (the scare game at /scare, played through, and in an emulated Quest 3)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' scare')

@@ -268,7 +268,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `146a-wield.js` | 17.7 | top level |  | 003: SHARED THREE; 003b: BIRDS EQUIP FORAGE INSPECT ITEMS LEVELS MOTION ONLINE RAG SFX UI VIT VR W3 WEEDS WIELD keys st; 003d: SAY; 004: renderer scene; 006: BF SYS TILE; 111a: BODIES; 143: BFLY |
 | `146b-dunmobs.js` | 32.8 | top level |  | 003: SHARED THREE; 003a: SKIN; 003b: FORAGE INSPECT INV ITEMS LEVELS NPCS ONLINE PARK SFX UI VIS VIT W3 WIELD pos st; 003d: SAY; 004: renderer scene; 006: CASTLE MAPG MODS SOL SYS TILE ZU; 013a: RARITY; 077: SKELGO; 086: CREATURES CREATURESREADY; 087: CREATS; 101: GEMS |
 | `146bb-dm.js` | 18.4 | top level | DM (162b) | 003: SHARED; 003b: BUGS pos; 003d: SAY; 006: MODS SYS TILE; 087: CREATS |
-| `146bf-hollow.js` | 1.2 | top level |  | 003b: ONLINE; 003d: SAY; 006: STORE |
+| `146bf-hollow.js` | 1.3 | top level |  | 003b: ONLINE; 003d: SAY; 006: STORE |
 | `146bg-headset.js` | 0.6 | top level |  | 003b: FORAGE INV; 006: STORE SYS |
 | `146c-equip.js` | 22.6 | top level |  | 003: SHARED THREE; 003b: EQUIP FLOW FORAGE ITEMS LOOKS VIT VR W3; 003d: SAY; 004: OutputPass ShaderPass; 005: OWNED; 006: SYS; 072b: GARB; 111a: BODIES; 111c: AVATAR |
 | `146d-gear.js` | 3.2 | top level |  | 003: SHARED THREE; 003b: EQUIP FORAGE INSPECT ITEMS LITE ONLINE pos; 003d: SAY; 006: SYS TILE; 101: GEMS |

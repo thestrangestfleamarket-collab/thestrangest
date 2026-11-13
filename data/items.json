@@ -2075,6 +2075,10 @@
   "value": 150,
   "weight": 0.9
  },
+ "vr_headset": {
+  "value": 300,
+  "weight": 0.5
+ },
  "shroom_keen": {
   "edible": true,
   "stackable": true,

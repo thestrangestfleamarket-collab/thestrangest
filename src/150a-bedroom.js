@@ -132,7 +132,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null,keep:[],always:new Set(),save:(
         // double-click it: it opens (the lower sash up behind the upper) and a calm breeze comes in; again, it shuts
         const W_={g,sash,open:false,o:0,br:0,H:(z1-z0)*.5,k,w,z0,z1}; R.wins.push(W_);
         const hb=new THREE.Mesh(new THREE.BoxGeometry(w,z1-z0,.3),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(0,(z0+z1)/2,-.05); hb.userData.soft=hb.userData.keep=hb.userData.hit=1; g.add(hb);
-        const th={name:'OPEN THE WINDOW',obj:hb,reach:1.6*M,near:2.6*M,tall:(z1-z0)*M,act:()=>{ W_.open=!W_.open; th.name=W_.open?'CLOSE THE WINDOW':'OPEN THE WINDOW'; if(SFX)SFX.play('latch',{vol:.5,vary:.2}); }};
+        const th={name:'OPEN THE WINDOW',obj:hb,reach:1.6*M,near:2.6*M,tall:(z1-z0)*M,glass:true,act:()=>{ W_.open=!W_.open; th.name=W_.open?'CLOSE THE WINDOW':'OPEN THE WINDOW'; if(SFX)SFX.play('latch',{vol:.5,vary:.2}); }};
         UI.thing(th); R.winTh.push(th); W_.th=th;
         return g; };
       // a door: a moulded casing on plinth blocks, a six-panel leaf (raised panels in bevelled frames) or a glazed one in black steel, three brass hinges, a lever on a rose, a threshold

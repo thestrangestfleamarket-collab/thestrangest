@@ -1,9 +1,9 @@
 // THE ARCADE: the arcade on Main Street as one painted block (its neon ARCADE front); its inside is built off the map when you go in: black walls, four cabinets along each side wall (double-click one to play its game; the games register in 059g), and the holodeck, a booth the size of a phone box at the back wall (E or a double-click: the list of adventures, each a program in STORE.holo.programs).
 import {SHARED, THREE} from './003-shx.js';
-import {BATCH, FORAGE, INV, ROOMS, TEXT, UI, WIELD} from './003b-systems.js';
+import {BATCH, FORAGE, INV, keys, pos, ROOMS, TEXT, UI, WIELD} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
-import {BLDK, FADE, FIX, grab, LEVEL, OFFDX, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
+import {BLDK, FIX, grab, LEVEL, OFFDX, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
 import {LAMPS} from './014-gamekit.js';
 import {FACADES} from './038zc-facades.js';
 await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD.Y, {hash:hs}=SHARED.BOD.g, sh=SHARED.BOD.K.sh, MS=STORE.main;
@@ -18,17 +18,16 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
     o+=HOLO.programs.length?'<table style="border-collapse:collapse;width:100%">'+HOLO.programs.map((P,i)=>'<tr style="border-bottom:1px solid #22252f"><td style="padding:4px 2px">'+esc(P.name)+(P.skill?'<div style="color:#9b9584">'+esc(SKN(P.skill))+'</div>':'')+'</td><td style="text-align:right;padding:4px 6px">'+(P.cost===0?'FREE':'$'+(P.cost==null?8:P.cost))+'</td><td style="text-align:right"><button '+B+' data-run="'+i+'"'+(HOLO.run?' disabled':'')+'>RUN</button></td></tr>').join('')+'</table>':'<div style="color:#9b9584">NO ADVENTURES ARE LOADED.</div>';
     if(HOLO.run)o+='<div style="margin-top:8px"><button '+B+' data-end="1">END PROGRAM</button></div>'; hp.innerHTML=o; hp.appendChild(xb); };
   hp.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||b.classList.contains('pX'))return; if(b.dataset.end){ HOLO.end(); HOLO.draw(); return; } const P=HOLO.programs[+b.dataset.run]; if(P)HOLO.start(P); });
-  HOLO.menu=()=>{ hp.hidden=false; HOLO.draw(); if(UI.menuLook)UI.menuLook(); };
+  HOLO.menu=worn=>{ HOLO.worn=!!worn; hp.hidden=false; HOLO.draw(); if(UI.menuLook)UI.menuLook(); };
   HOLO.hide=()=>{ hp.hidden=true; };
-  HOLO.end=()=>{ const D=HOLO.run; if(!D)return; HOLO.run=null; if(D.P.hide)D.P.hide(); };
+  HOLO.end=()=>{ const D=HOLO.run; if(!D)return; HOLO.run=null; if(D.P.hide)D.P.hide(); HOLO.solo(false); };
+  // while a program runs it is the only thing running: the frame (075) draws and steps nothing of the market, only what listens to 'soloFrame' (the program, the controller, the word to the server)
+  HOLO.solo=(on,P)=>{ if(!!SHARED.solo===on)return; SHARED.solo=on; SHARED.target=null; keys.clear(); document.body.classList.toggle('holosolo',on); SYS.run('solo',on,P); };
   HOLO.close=()=>{ HOLO.end(); HOLO.hide(); HOLO.hall=null; };
-  HOLO.start=P=>{ '@later'; if(HOLO.run||!HOLO.hall)return; const c=P.cost||0; if(!INV.afford(c))return say('THE HOLODECK TAKES $'+c+' FOR THIS PROGRAM.','#c8a090'); INV.pay(c); if(P.tool){ if(!FORAGE.has(P.tool))FORAGE.give(P.tool,1); if(WIELD.on!==P.tool)WIELD.set(P.tool); }
-    const H=HOLO.hall; HOLO.run={P,x:H.x,z:H.z,n:0,good:0,t:2}; HOLO.hide(); if(P.place)P.place(H.x,H.z,0,H.G); if(P.intro)say(P.intro,'#7dffa4'); if(P.go)P.go(HOLO.run); };
+  HOLO.start=P=>{ '@later'; if(HOLO.run||!HOLO.hall&&!HOLO.worn)return; const c=P.cost||0; if(!INV.afford(c))return say('THE HOLODECK TAKES $'+c+' FOR THIS PROGRAM.','#c8a090'); INV.pay(c); if(P.tool){ if(!FORAGE.has(P.tool))FORAGE.give(P.tool,1); if(WIELD.on!==P.tool)WIELD.set(P.tool); }
+    const H=HOLO.hall||{x:pos.x,z:pos.z}; HOLO.run={P,x:H.x,z:H.z,n:0,good:0,t:2}; HOLO.hide(); HOLO.solo(true,P); if(P.place&&H.G)P.place(H.x,H.z,0,H.G); if(P.intro)say(P.intro,'#7dffa4'); if(P.go)P.go(HOLO.run); };
   SYS.add('strike',()=>{ const D=HOLO.run; if(D&&D.P.strike)D.P.strike(D); },'holodeck program');
-  SYS.add('places',dt=>{ const D=HOLO.run; if(!D)return;
-    if(D.P.room&&ROOMS.offIn){ const at=ROOMS.offIn(), Lz=ROOMS.lazy&&ROOMS.lazy[D.P.room]; if(at===D.P.room||Lz&&Lz.done)D.inWorld=true; }   // in its world once the world is built, even mid-fade
-    if(D.P.room&&ROOMS.offIn&&!FADE.busy){ const at=ROOMS.offIn(); const now=performance.now(); if(at===D.P.room){ D.outAt=0; } else if(D.inWorld&&now-(D.outAt||(D.outAt=now))>1000){ HOLO.end(); if(at!=='arcade'){ HOLO.hide(); HOLO.hall=null; } return; } }   // out of an adventure's world for a second, whichever way you left: the program is over (a one-frame gap in the room tracker is not leaving)
-    if(D.P.run)D.P.run(D,dt); },'holodeck program');
+  SYS.add('soloFrame',dt=>{ const D=HOLO.run; if(D&&D.P.run)D.P.run(D,dt); },'holodeck program');
 
   const box4=(x0,y0,x1,y1)=>{ const a=X(x0), b=X(x1), c=Z(y0), d=Z(y1); return [Math.min(a,b),Math.min(c,d),Math.max(a,b),Math.max(c,d)]; };
   const MKA=(k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide,alphaTest:.5}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.3}:{})});
@@ -220,7 +219,7 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
       const hb=new THREE.Mesh(new THREE.BoxGeometry(W,2.4*T,Dp),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(bx,1.2*T,bz); scene.add(hb);
       UI.thing({name:'THE HOLODECK',obj:hb,reach:1.5*T,near:2.8*T,tall:2.4*T,act:()=>HOLO.menu(),get acts(){ return HOLO.run?[{name:'END PROGRAM',act:()=>HOLO.end()}]:HOLO.programs.map(P=>({name:'RUN '+P.name,act:()=>HOLO.start(P)})); }}); const hb4=box4(AR.x0,AR.y0,AR.x1,AR.y1); HOLO.hall={x:X(cx),z:Z(hy),G:AG,box:{x0:hb4[0],z0:hb4[1],x1:hb4[2],z1:hb4[3]},y:Y(.15),h:Y(WH),hpx:WH,door:{x:X(cx),z:Z(hy)}}; }
     if(STORE.furnish&&STORE.furnish.arcade)STORE.furnish.arcade(); };
-  const unbuild=()=>{ ARC.scr=null; if(!(HOLO.run&&HOLO.run.P.offWorld))HOLO.close(); for(const r of AS){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } AS=[]; if(AG){ AG.removeFromParent(); AG=null; } };   // an off-world adventure (the catacomb run) keeps the holodeck open while it drops the arcade; it re-enters on return
+  const unbuild=()=>{ ARC.scr=null; HOLO.close(); for(const r of AS){ const i=SOL.up.indexOf(r); if(i>=0)SOL.up.splice(i,1); } AS=[]; if(AG){ AG.removeFromParent(); AG=null; } };
   const wb=box4(AR.x0-.2,AR.y0-.2,AR.x1+.2,AR.y1+.2);
   const rb=r=>{ const q=box4(r.x0,r.y0,r.x1,r.y1); return {x0:q[0],z0:q[1],x1:q[2],z1:q[3]}; };
   ROOMS.off.arcade={name:'THE ARCADE',ar:AR,addSol:r=>{ AS.push(r); SOL.up.push(r); },box:{x0:wb[0],z0:wb[1],x1:wb[2],z1:wb[3],y0:-1,y1:Y(WH+40)},rooms:[rb(AR)],need:()=>LOAD('arcade','later','pinball'),

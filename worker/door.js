@@ -65,6 +65,8 @@ export default {
     if ((request.method === "GET" || request.method === "HEAD") && SCAREA.test(p)) {
       const r = await env.ASSETS.fetch(new Request(url.origin + p)); if (!r.ok) return new Response("not found", { status: 404 });
       const out = new Response(r.body, r); out.headers.set("content-type", "model/gltf-binary"); out.headers.set("cache-control", "public, max-age=86400"); out.headers.set("x-robots-tag", "noindex"); return out; }
+    // BREACHLINE (src/shoot/): its own page at /shoot, to anyone with the link
+    if ((request.method === "GET" || request.method === "HEAD") && p === "/shoot") return page(env, url, "/shoot", request, "no-cache");
     // HALCYON GREENS (src/golf/): its own page at /golf, to anyone with the link; its pictures under /golf-assets/
     if ((request.method === "GET" || request.method === "HEAD") && p === "/golf") return page(env, url, "/golf", request, "no-cache");
     if (p === "/golf/") return Response.redirect(url.origin + "/golf" + url.search, 301);

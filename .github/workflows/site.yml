@@ -62,6 +62,8 @@ jobs:
           k physx   'src/090|src/150-loose|src/150o|physx'
           k vr      'src/162a-pad|src/162c-vr|vr\.cjs'
           k asylum  'src/asylum/|tools/asylum\.cjs|tests/asylum\.cjs'
+          k golf    'src/golf/|data/golf/|tools/golf\.cjs|tests/golf\.cjs'
+          k scare   'src/scare/|data/scare/|tools/scare\.cjs|tests/scare\.cjs'
           k vrbody  'src/162c|src/111b|vrbody\.cjs'
           k riders  'src/117a|src/009c|riders\.cjs'
           k loopmap 'src/159c|src/009b|loopmap\.cjs'
@@ -118,7 +120,7 @@ jobs:
           k hall    'src/150n|src/059a|hall\.cjs'
           k flats   'src/150n|src/059a|src/150d|src/141c|src/150ac|flats\.cjs'
           k frames  'src/150ga|src/150g-|frames\.cjs'
-          k holodeck 'src/059b-arcade|src/146bb|src/146b[cdf]|holodeck'
+          k holodeck 'src/059b-arcade|src/146bb|src/146b[cdfg]|holodeck|headset'
           k boarded 'src/146be-boarded|tests/boarded'
           k kite    'src/146g-kite|src/093|kite\.cjs'
           k swim    'src/146ga-swim|src/066-river|src/065a|swim\.cjs'
@@ -239,6 +241,14 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' asylum')
         run: node tests/asylum.cjs dist/asylum.html
+      - name: Vesper Ward (the scare game at /scare, played through, and in an emulated Quest 3)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' scare')
+        run: node tests/scare.cjs dist/scare.html
+      - name: Halcyon Greens (mini golf at /golf; it loads, a putt rolls, a putt holes out)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' golf')
+        run: node tests/golf.cjs dist/golf.html
       - name: The headset (VR on an emulated Quest 3)
         timeout-minutes: 45
         if: contains(steps.f.outputs.run, ' vr')
@@ -425,7 +435,7 @@ jobs:
       - name: The holodeck (its panel, the adventures menu)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' holodeck')
-        run: node tests/holodeck.cjs dist/market.html
+        run: node tests/holodeck.cjs dist/market.html && node tests/headset.cjs dist/market.html
       - name: BOARDED UP (the holodeck's zombie siege, solo, two online, in the headset, the server's relay)
         timeout-minutes: 40
         if: contains(steps.f.outputs.run, ' boarded')

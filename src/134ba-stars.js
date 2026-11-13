@@ -24,7 +24,7 @@ const STARSKY={on:0};
   const cube=(F,n)=>{ const t=new THREE.CubeTexture(F.map(d=>new THREE.DataTexture(d,n,n,THREE.RGBAFormat))); t.magFilter=t.minFilter=THREE.LinearFilter; t.generateMipmaps=false; t.needsUpdate=true; return t; };
   const wait=()=>new Promise(r=>setTimeout(r,0));
   const MW=[]; let mwT=null, kb='', painting=false;
-  const key=()=>{ const P=DN.S&&DN.S.night||{}; return [P.mww??1,P.mwcore??1,P.mwdust??1,P.mwdet??1].join(); };
+  const key=()=>{ const P=DN.S&&DN.S[DN.mode]||{}; return [P.mww??1,P.mwcore??1,P.mwdust??1,P.mwdet??1].join(); };
   const paint=async()=>{ const o=[0,0], d=[0,0,0], k=key(), P=k.split(',').map(Number); K.w=Math.max(.05,P[0]); K.core=P[1]; K.dust=P[2]; K.det=P[3];
     for(let f=0;f<6;f++){ const D=MW[f]||(MW[f]=new Uint8Array(NM*NM*4)); for(let y=0;y<NM;y++)for(let x=0;x<NM;x++){ dir(f,(x+.5)/NM*2-1,(y+.5)/NM*2-1,d); mw(d[0],d[1],d[2],o); const i=(y*NM+x)*4; D[i]=255*Math.sqrt(cl(o[0]*.62)); D[i+1]=255*o[1]; D[i+2]=0; D[i+3]=255; } await wait(); }
     kb=k; if(mwT)mwT.needsUpdate=true; };

@@ -136,8 +136,8 @@ PS2.lines=()=>{ const T=PS2.tune(); return T.pix?Math.round(240/T.k):0; };
 PS2.pick(PS2.f,false);
 { let f=QS.get('filter'); if(!f)try{ f=SAVE.get('filter'); }catch(e){} if(f)PS2.pick(f,false); } PS2.f0=PS2.f;
 SYS.add('sky',()=>{ const P=SHARED.composer.passes; if(P[P.length-1]!==PS2.sp){ P.splice(P.indexOf(PS2.sp),1); P.push(PS2.sp); }
-  const T=PS2.tune(), F=T.F, Ln=PS2.lines(), draw=Math.max(F.draw,Ln)||Ln, cap=draw; if(cap!==PS2.cap||draw!==PS2.draw){ PS2.cap=cap; PS2.draw=draw; if(SHARED.resize)SHARED.resize(); } const ck=Ln?Math.max(1,Math.round(RH/Ln)):1; SHARED.cellLines=PS2.on&&Ln?RH/ck:0; if(!PS2.on)return; const u=PS2.sp.uniforms;
-  u.uL.value.set(RW/ck,RH/ck); u.uB.value=ck>1?.25:0; u.uR.value.set(RW,RH); u.uQ.value=T.Q; u.uK.value.set(T.K[0],T.K[1],T.K[2]);
+  const T=PS2.tune(), F=T.F, Ln=PS2.lines(), draw=F.draw||0, cap=draw||(PS2.on&&Ln?Math.min(480,2*Ln):0); if(cap!==PS2.cap||draw!==PS2.draw){ PS2.cap=cap; PS2.draw=draw; if(SHARED.resize)SHARED.resize(); } const ck=Ln?Math.max(1,Math.round(RH/Ln)):1; SHARED.cellLines=PS2.on&&Ln?RH/ck:0; if(!PS2.on)return; const u=PS2.sp.uniforms;
+  u.uL.value.set(RW/ck,RH/ck); u.uB.value=.25; u.uR.value.set(RW,RH); u.uQ.value=T.Q; u.uK.value.set(T.K[0],T.K[1],T.K[2]);
   u.uG.value.set(F.sat,F.con,F.pal,F.dith); u.uTi.value.set(F.tr,F.tg,F.tb); u.uC.value.set(F.scan,F.mask,F.curve,F.vig); u.uX.value.set(F.glow,F.soft,F.tape,F.film); u.uS.value.set(F.ink,F.post,F.split,F.mode?F.style:0); u.uM.value=F.mode&&F.style>0?F.mode:0; u.uT.value=F.tape||F.film?performance.now()/1000%600:0; },'138a-ps2');   // each cell a whole number of the picture's pixels (6 Nov 2026)
 
 // THE EFFECT'S NUMBERS IN THE MENU (SETTINGS > EFFECTS, under the list): a slider each, kept as you move it; the owner's SAVE FOR EVERYONE

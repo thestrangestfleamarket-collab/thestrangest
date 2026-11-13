@@ -20,7 +20,7 @@ const SECROOMS = WORLD.sections.ids.flat().map(i => "s-" + String(i).toLowerCase
 const APPF = /^\/(app\.webmanifest|icon-(192|512)\.png)$/;   // the installable app's manifest and icon: to anyone
 const EDMAP = /^\/edmap\/t\d{1,2}_\d{1,2}\.jpg$/;
 const SCAREA = /^\/scare-assets\/[a-z0-9_-]+\.glb$/;   // VESPER WARD's models: to anyone
-const GOLFA = /^\/golf-assets\/[a-z0-9_\/-]+\.(jpg|json|txt)$/;   // HALCYON GREENS' pictures and models: to anyone
+const GOLFA = /^\/golf-assets\/(?!.*\.\.)[a-z0-9_.\/-]+\.(jpg|json|txt)$/;   // HALCYON GREENS' pictures and models: to anyone
 const BOOK = /^\/book\/(\d{1,6})\.txt$/, FILM = /^\/film\/([A-Za-z0-9_.-]{1,80})\/([A-Za-z0-9_.-]{1,120}\.mp4)$/, IA = /^\/ia\/([A-Za-z0-9_.-]{1,80})\.jpg$/, YT = /^\/yt\/([A-Za-z0-9_-]{11})\.jpg$/, BLANK = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYGD4DwABBAEAHnOcQAAAAABJRU5ErkJggg==";
 const SKYJD = () => { const d = new Date(); return Date.UTC(1985, d.getUTCMonth(), d.getUTCDate()) / 864e5 + 2440587.5; },   // the sky's year is 1985 (src/134b DN.YEAR): that year's comets
    SBDB = "https://ssd-api.jpl.nasa.gov/sbdb_query.api?", SWPC = "https://services.swpc.noaa.gov/";

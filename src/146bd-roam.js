@@ -1,10 +1,10 @@
-// ROAM: the holodeck's space flight. Pick it in the holodeck and it fades you into the cockpit of a small, worn ship among the meteors far off the map: a gritty cockpit painted pixel by pixel (scuffed gunmetal, chipped paint, cracked leather, grimy glass) lit by its own instruments, full 360° flight with a flight assist, boost, lasers and missiles that blow small rocks apart and break big ones up a piece at a time; ramming rocks cracks the glass and wears the hull, and a dead hull sends you back to the holodeck. The ship owns the controls and the camera through SHARED.drive (the frame, the headset and the gamepad read it). On screen the mouse or the arrows aim; in the headset the Quest sticks fly, or you reach out and take the stick and the throttle with your hands or controllers.
+// ROAM: the holodeck's space flight. Pick it in the holodeck and you are in the cockpit of a small, worn ship among the meteors far off the map: a gritty cockpit painted pixel by pixel (scuffed gunmetal, chipped paint, cracked leather, grimy glass) lit by its own instruments, full 360° flight with a flight assist, boost, lasers and missiles that blow small rocks apart and break big ones up a piece at a time; ramming rocks cracks the glass and wears the hull, and a dead hull sends you back to the holodeck. The ship owns the controls and the camera through SHARED.drive (the frame, the headset and the gamepad read it). On screen the mouse or the arrows aim; in the headset the Quest sticks fly, or you reach out and take the stick and the throttle with your hands or controllers.
 import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
 import {SHARED, THREE} from './003-shx.js';
-import {pos, ROOMS, SFX, UI, VR, W3} from './003b-systems.js';
+import {SFX, UI, VR, W3} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {EffectComposer, OutputPass, PCAM, renderer, RenderPass} from './004-main.js';
-import {FADE, STORE, SYS, TILE} from './006-map-pre.js';
+import {FADE, STORE, TILE} from './006-map-pre.js';
 import {PAD} from './075-main-13.js';
 { const H=STORE.holo, T=TILE, M=T/.84, say=(t,c)=>SAY(t,c), V3=THREE.Vector3, Q4=THREE.Quaternion;
   const WX=3000, WZ=-80, FIELD=620;
@@ -245,7 +245,7 @@ import {PAD} from './075-main-13.js';
     const IN={pitch:0,yaw:0,roll:0,thr:0,boost:0,fire:0,mis:0,end:0}, PADIN={pitch:0,yaw:0,roll:0,thr:0,boost:0,fire:0,mis:0,end:0,fresh:false}, KEY=new Set(), MOUSE={x:0,y:0,on:false,l:false,r:false,wheel:0}; let test=null, endHold=0, misEdge=false;
     const HAND={on:false,stick:null,thr:null,pitch:0,yaw:0,roll:0,thrV:null,boost:false,fire:0,mis:0,end:0,seen:0};
     const FWD=new V3(), UP=new V3(), RIGHT=new V3(), EYE=new V3(), WQ=new Q4(), HL0=new V3(), DQ=new Q4(), VQ=new Q4(); let yaw0=0, calOK=false;
-    const sfx=(k,o)=>{ try{ return SFX.play(k,o); }catch(e){ return null; } };
+    const sfx=(k,o)=>{ try{ const c=SFX.live(); return c?SFX.play(k,{...o,bus:SFX.own(c)}):null; }catch(e){ return null; } };
     const worldOf=(p,out)=>out.copy(p).add(WORLD.position);
 
     const killChunk=(c,boom,big)=>{ if(c.dead)return; c.dead=true; unplace(c); const i=chunks.indexOf(c); if(i>=0)chunks.splice(i,1); const mc=c.met.chunks, j=mc.indexOf(c); if(j>=0)mc.splice(j,1);
@@ -315,7 +315,7 @@ import {PAD} from './075-main-13.js';
         DOLLY.quaternion.copy(WQ).multiply(DQ.setFromAxisAngle(TV2.set(0,1,0),-yaw0)); DOLLY.scale.setScalar(M); DOLLY.position.copy(EYE).sub(TV.copy(HL0).multiplyScalar(M).applyQuaternion(DOLLY.quaternion)); VQ.copy(DOLLY.quaternion).multiply(HQ); if(VR.cam)VR.cam.far=9000/M; },
       recentre:()=>{ calOK=false; },
       scene:RSCENE,
-      draw:()=>{ const sz=renderer.getDrawingBufferSize(V2); if(!COMP){ COMP=new EffectComposer(renderer); COMP.setPixelRatio(1); COMP.addPass(new RenderPass(RSCENE,PCAM)); BLOOM=new UnrealBloomPass(new THREE.Vector2(sz.x,sz.y),.25,.35,.93); COMP.addPass(BLOOM); COMP.addPass(new OutputPass()); COMP.setSize(sz.x,sz.y); } else if(COMP._w!==sz.x||COMP._h!==sz.y)COMP.setSize(sz.x,sz.y); COMP._w=sz.x; COMP._h=sz.y; COMP.render(); } };
+      draw:()=>{ const sz=renderer.getDrawingBufferSize(V2); if(!COMP){ COMP=new EffectComposer(renderer); COMP.setPixelRatio(1); COMP.addPass(new RenderPass(RSCENE,PCAM)); BLOOM=new UnrealBloomPass(new THREE.Vector2(sz.x,sz.y),.25,.35,.93); COMP.addPass(BLOOM); COMP.addPass(new OutputPass()); COMP.setSize(sz.x,sz.y); } else if(COMP._w!==sz.x||COMP._h!==sz.y)COMP.setSize(sz.x,sz.y); COMP._w=sz.x; COMP._h=sz.y; if(Math.abs(PCAM.aspect-sz.x/sz.y)>1e-3){ PCAM.aspect=sz.x/sz.y; PCAM.updateProjectionMatrix(); } COMP.render(); } };
     let COMP=null, BLOOM=null; const V2=new THREE.Vector2();
     const flare=()=>{ TV.set(0,0,-1).applyQuaternion(VQ); const k=TV.dot(SUNDIR), vis=cl((k-.55)/.4,0,1); EYE.set(0,0,0); SHIP.localToWorld(EYE); ROOT.worldToLocal(EYE);
       for(const f of FLARE){ f.material.opacity=vis*.1; if(vis>0){ TV2.copy(SUNDIR).lerp(TV,f.userData.k).normalize(); f.position.copy(EYE).addScaledVector(TV2,3000); } } };
@@ -380,28 +380,24 @@ import {PAD} from './075-main-13.js';
       if((Math.floor(S.t*15)!==Math.floor((S.t-dt)*15)))screens(); };
 
     let saved=null, hum=null; const HID=['vit','hqb','hmap','hlog'], hidden=[];
-    const build=()=>{ seedField(); RSCENE.add(ROOT,sun,sun.target,hemi); screens(); writePlacard('screen'); return ROOMS.part(ROOT,()=>{},null); };
+    const build=()=>{ seedField(); RSCENE.add(ROOT,sun,sun.target,hemi); screens(); writePlacard('screen'); };
     const unbuild=()=>{ RSCENE.clear(); if(COMP){ COMP.dispose(); COMP=null; } ROOT.traverse(o=>{ if(o.geometry&&!disposables.includes(o.geometry))o.geometry.dispose(); if(o.material&&o.material.isSpriteMaterial&&o.material.map)o.material.map.dispose(); }); for(const g of disposables)g.dispose(); for(const k in MAT)for(const m of [].concat(MAT[k])){ for(const key of ['map','normalMap','roughnessMap','metalnessMap','alphaMap','emissiveMap'])if(m[key])m[key].dispose(); m.dispose(); } API=null; };
     const start=R=>{ D=R; ROAM.on=true; for(const id of HID){ const el=document.getElementById(id); if(el){ hidden.push([el,el.style.display]); el.style.display='none'; } }
       S.q.identity(); S.w.set(0,0,0); S.v.set(0,0,0); S.a.set(0,0,0); S.thr=.35; S.boost=false; S.hull=100; S.fuel=100; S.near=1e9; S.caut=false; S.score=0; S.heat=0; S.lock=0; S.mis=6; S.misT=0; S.dead=false; S.t=0; S.shake=0; S.flash=0; S.tgt=null; KEY.clear(); MOUSE.on=MOUSE.l=MOUSE.r=false; MOUSE.wheel=0; endHold=0; calOK=false; test=null; WORLD.position.set(0,0,0); CH.p.copy(CH.a); CH.p.y-=.13; CH.v.set(0,0,0);
-      saved={gy:SHARED.groundY,view:UI.view,fov:PCAM.fov,far:PCAM.far,vfar:VR.cam?VR.cam.far:0,tm:renderer.toneMapping,ex:renderer.toneMappingExposure}; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=.8; SHARED.groundY=()=>0; SHARED.py=0; pos.x=WX; pos.z=WZ; SHARED.target=null; if(UI.setView)UI.setView('first'); PCAM.far=9000; PCAM.updateProjectionMatrix();
+      saved={view:UI.view,fov:PCAM.fov,far:PCAM.far,vfar:VR.cam?VR.cam.far:0,tm:renderer.toneMapping,ex:renderer.toneMappingExposure}; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=.8; SHARED.target=null; if(UI.setView)UI.setView('first'); PCAM.far=9000; PCAM.updateProjectionMatrix();
       SHARED.drive=DRIVE; addEventListener('keydown',onKey,true); addEventListener('keyup',onKey,true); addEventListener('pointermove',onMove,true); addEventListener('pointerdown',onBtn,true); addEventListener('pointerup',onBtn,true); addEventListener('wheel',onWheel,{capture:true,passive:false}); addEventListener('contextmenu',onCtx,true); addEventListener('blur',onLeave); document.addEventListener('pointerleave',onLeave);
       hum=sfx('hum',{vol:.35}); say(VR.on?'LEFT STICK: THROTTLE AND ROLL · RIGHT STICK: PITCH AND YAW · A BOOST · TRIGGERS FIRE · OR TAKE THE STICK IN YOUR HAND · HOLD Y OR THE RED BUTTON TO END':'W/S THROTTLE · A/D ROLL · MOUSE OR ARROWS AIM · SHIFT BOOST · SPACE LASERS · F MISSILE · HOLD Q TO END','#7dffa4'); };
     const end=()=>{ if(!ROAM.on)return; ROAM.on=false; SHARED.drive=null; for(const [el,d] of hidden)el.style.display=d; hidden.length=0; removeEventListener('keydown',onKey,true); removeEventListener('keyup',onKey,true); removeEventListener('pointermove',onMove,true); removeEventListener('pointerdown',onBtn,true); removeEventListener('pointerup',onBtn,true); removeEventListener('wheel',onWheel,{capture:true}); removeEventListener('contextmenu',onCtx,true); removeEventListener('blur',onLeave); document.removeEventListener('pointerleave',onLeave);
-      if(hum&&hum.s)try{ hum.s.stop(); }catch(e){} hum=null; if(saved){ SHARED.groundY=saved.gy; PCAM.fov=saved.fov; PCAM.far=saved.far; PCAM.updateProjectionMatrix(); if(VR.cam&&saved.vfar)VR.cam.far=saved.vfar; renderer.toneMapping=saved.tm; renderer.toneMappingExposure=saved.ex; if(saved.view&&UI.setView&&UI.view!==saved.view)UI.setView(saved.view); saved=null; } W3.group.visible=true;
-      EXIT.hall=H.hall; EXIT.want=true; EXIT.tries=0; EXIT.go(); D=null; };
+      if(hum&&hum.s)try{ hum.s.stop(); }catch(e){} hum=null; if(saved){ PCAM.fov=saved.fov; PCAM.far=saved.far; PCAM.updateProjectionMatrix(); if(VR.cam&&saved.vfar)VR.cam.far=saved.vfar; renderer.toneMapping=saved.tm; renderer.toneMappingExposure=saved.ex; if(saved.view&&UI.setView&&UI.view!==saved.view)UI.setView(saved.view); saved=null; } W3.group.visible=true; D=null; };
     const dbg=()=>({on:ROAM.on,t:+S.t.toFixed(1),drive:SHARED.drive===DRIVE,view:UI.view,chunks:chunks.length,meteors:meteors.length,instances:IM.flat().reduce((a,m)=>a+m.count,0),rocks:S.score,hull:S.hull,speed:+S.speed.toFixed(1),thr:+S.thr.toFixed(2),boost:S.boost,heat:+S.heat.toFixed(2),mis:S.mis,bolts:BOLTS.filter(b=>b.on).length,missiles:MIS.filter(m=>m.on).length,shards:SH.length,up:+UP.y.toFixed(3),fwd:[+FWD.x.toFixed(3),+FWD.y.toFixed(3),+FWD.z.toFixed(3)],tgt:S.tgt?+S.tgtD.toFixed(1):null,dead:S.dead,world:[+WORLD.position.x.toFixed(1),+WORLD.position.y.toFixed(1),+WORLD.position.z.toFixed(1)],cam:[+PCAM.position.x.toFixed(2),+PCAM.position.y.toFixed(2),+PCAM.position.z.toFixed(2)],far:PCAM.far,hand:{on:HAND.on,stick:!!HAND.stick,thr:!!HAND.thr,pitch:+HAND.pitch.toFixed(2),yaw:+HAND.yaw.toFixed(2),roll:+HAND.roll.toFixed(2),thrV:HAND.thrV,boost:HAND.boost,fire:HAND.fire,mis:HAND.mis,end:HAND.end,seen:HAND.seen},placard:plcMode,cracks:cracks.visible,in:{pitch:+IN.pitch.toFixed(2),yaw:+IN.yaw.toFixed(2),roll:+IN.roll.toFixed(2),fire:IN.fire,end:IN.end}});
     const aim=()=>{ let best=null, bd=1e9; for(const c of chunks){ worldOf(c.p,TV); const d=TV.length(); if(d<bd){ bd=d; best=c; } } if(!best)return null; worldOf(best.p,TV).normalize(); S.q.setFromUnitVectors(TV2.set(0,0,-1),TV); S.w.set(0,0,0); FWD.copy(TV); return bd; };
-    return {build,unbuild,start,step,end,dbg,aim,cam:dt=>DRIVE.cam(SHARED.cam,dt),input:o=>{ test=o; },hurt:n=>hurt(n,'test'),grips:()=>({stick:STICKP.toArray(),thr:THRP.toArray(),end:ENDP.toArray()})}; };
+    return {build,unbuild,start,step,end,dbg,aim,cam:dt=>DRIVE.cam(PCAM,dt),input:o=>{ test=o; },hurt:n=>hurt(n,'test'),grips:()=>({stick:STICKP.toArray(),thr:THRP.toArray(),end:ENDP.toArray()})}; };
 
-  const EXIT={want:false,hall:null,tries:0,go:()=>{ '@later'; if(!EXIT.want)return; const off=ROOMS.offIn&&ROOMS.offIn()==='roam', Hl=EXIT.hall; if(!off){ EXIT.want=false; if(ROOMS.lazy&&ROOMS.lazy.roam&&ROOMS.lazy.roam.drop)ROOMS.lazy.roam.drop(); return; } if(!Hl||!ROOMS.enterAt){ EXIT.want=false; return; } const p=ROOMS.enterAt('arcade',[Hl.x,Hl.z,0,Math.PI]); if(p){ EXIT.want=false; p.catch(e=>console.warn('ROAM exit',e)); } else if(++EXIT.tries>600)EXIT.want=false; }};
-  SYS.add('cam',dt=>{ if(ROAM.on&&API)API.cam(dt); if(EXIT.want&&!ROAM.on)EXIT.go(); },'roam');
-  ROOMS.off.roam={name:'ROAM',noCeil:1,box:{x0:WX-12*T,z0:WZ-12*T,x1:WX+12*T,z1:WZ+12*T,y0:-3,y1:20*T},spawn:[WX,WZ,0,0],out:[WX,WZ,0,0],
-    need:()=>LOAD('roam').then(()=>{ if(!API)API=MAKE(); }),build:()=>API.build(),unbuild:()=>{ if(API)API.unbuild(); }};
-  H.programs.push({ name:'ROAM', cost:0, offWorld:true, room:'roam',
+  const need=()=>LOAD('roam').then(()=>{ if(!API)API=MAKE(); });
+  H.programs.push({ name:'ROAM', cost:0,
     intro:'ROAM. A SMALL SHIP AMONG THE METEORS. FLY ANY WAY UP; LASERS BREAK THE ROCKS, MISSILES BREAK THE BIG ONES. DON\'T RAM THEM.',
-    go:R=>{ D=R; if(!ROOMS.enterAt)return; ROOMS.enterAt('roam',[WX,WZ,0,0]).then(()=>{ if(D!==R||!API)return; API.start(R); }).catch(e=>console.warn('ROAM',e)); },
-    run:(R,dt)=>{ if(API&&ROAM.on)API.step(dt); },
-    hide:()=>{ if(API)API.end(); else D=null; } });
-  ROAM.exit=EXIT; ROAM.aim=()=>API?API.aim():null; ROAM.input=o=>{ if(API)API.input(o); }; ROAM.hurt=n=>{ if(API)API.hurt(n); }; ROAM.grips=()=>API?API.grips():null;
+    go:R=>{ D=R; need().then(()=>{ if(D!==R||H.run!==R)return; API.build(); API.start(R); }).catch(e=>{ console.warn('ROAM',e); if(H.run===R)H.end(); }); },
+    run:(R,dt)=>{ if(API&&ROAM.on)API.step(dt); if(API&&ROAM.on)API.cam(dt); },
+    hide:()=>{ D=null; if(API&&ROAM.on){ API.end(); API.unbuild(); } } });
+  ROAM.aim=()=>API?API.aim():null; ROAM.input=o=>{ if(API)API.input(o); }; ROAM.hurt=n=>{ if(API)API.hurt(n); }; ROAM.grips=()=>API?API.grips():null;
   window.ROAMDBG=()=>API?API.dbg():{on:false,loaded:false}; }

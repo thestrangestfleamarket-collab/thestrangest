@@ -58,7 +58,7 @@ ROOMS.roofAt=(x,y,z)=>{ '@later'; const h=new THREE.Raycaster(new THREE.Vector3(
   for(const id in ROOMS.off)offL(id);
   const offThings=id=>{ const o=ROOMS.off[id]; if(o.th||!UI.thing)return; o.th=1; const hb=(p,name,act,exit)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(1.3*TILE,2.4*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false}));
       m.position.set(p[0],p[1]+1.2*TILE,p[2]); scene.add(m); UI.thing({name,ghost:1,obj:m,reach:1.4*TILE,near:2.6*TILE,tall:2.4*TILE,act,exit}); };
-    if(o.door)hb(o.door,o.name,()=>ROOMS.enter(id)); if(o.exit)hb(o.exit,o.exitName||'OUTSIDE',()=>ROOMS.exit(id),1); };
+    if(o.door)hb(o.door,o.name,()=>o.page&&ROOMS.page?ROOMS.page(o):ROOMS.enter(id)); if(o.exit)hb(o.exit,o.exitName||'OUTSIDE',()=>ROOMS.exit(id),1); };
   const offHide=on=>{ for(const k in MAPG)VIS.hide(MAPG[k],'off',on); }; ROOMS.offHide=offHide;
   // run fn with the world as it is outside the inside you are in (nothing hidden for the room, no clipping): a window's picture of the street
   ROOMS.peek=fn=>{ '@later'; const H=IV.H.slice(), L=IV.L.slice(), S=IV.S.slice(), ix=S.map(([g])=>g.index), off=IV.b&&(IV.b.off||IV.b.away), clip=renderer.clippingPlanes;

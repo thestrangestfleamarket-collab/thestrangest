@@ -27,6 +27,8 @@ Risk is noted only when it isn't low.
    Section B, the shop insides with their windows, the moves.
 
 ## For the owner
+- **P2 · pick** THE CANTINA (13 Nov 2026): its name (THE CANTINA is a working name); whether the old lounge (still reached by GO TO) goes to the archive now that THE BAR's door opens THE CANTINA; which octopus (THE MARKET's drummer is in; Polyfork's is the other); anyone to cut from or add to the regulars.
+- **P2 · look** THE CANTINA in a headset on the live site: how the hands sit on the controllers, how dark each look is, the frame rate with every regular in the room.
 
 **To try on the live site** (one sitting; each line is in its area below):
 HOLLOW PINES at `/asylum` (12 Nov: play it through on the screen and in the Quest 3; it has only been run in an emulated headset) · everything merged since 7 Nov that "waits for his look and yes" (the new layout and fronts, the bar, the gym, the pets and pet shops, the
@@ -359,3 +361,9 @@ Last (owner, 7 Nov 2026: "we will do VR checks last"): every check and look line
 - Today: the line pools (`src/092-lines.js`) and the scripted talk window (`src/159da-talk.js`). No AI or voice code yet.
 - Needs: an ElevenLabs account, key and voices; the worker holds the keys and makes the calls; storage for lines, audio and log; a
   budget.
+
+## The Cantina
+
+- **P2 · L · code** Cards with other players at THE CANTINA's tables: a room on the website (a Durable Object as the `Block` is), seats, the deck and who holds which card decided there (13 Nov 2026; one player's for now).
+- **P2 · M · code** Talking to the regulars in the headset: speak, and the answer on a panel by their head (13 Nov 2026; the keyboard panel is built).
+- **P3 · M · code** The other regulars' lives (about twenty more bodies in the room have none yet), and the regulars moving: the waiter's rounds, the dealer's hands (13 Nov 2026).

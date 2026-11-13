@@ -1,4 +1,4 @@
-// THE LOFT: No. 4's flat, everyone's for now (owner, 12 Nov 2026, of a photo, then of the room itself: "raise the 1st story height by 25%", "remove all the beams", "remove hang things from ceiling", "only 1" post): a tall room, a walnut upper floor along the blank wall, a second deck across the front behind glass on one post, the stair up the left wall and a gallery along the back wall over your door (the owner's pick C of mockups/loft-stairs.html), the front wall in brick, tracks of spots flat on the ceiling, downlights under the deck, a radiator. The upper floor is walked (APTS.loftY) and furnished (pieces up there are solid only while you are: APTS.solidHi); its steel, woodwork and plaster are yours to choose in DECORATE (R.loftSet). R.loftDress lays the flat's own pieces out over both floors and hangs its rugs and pictures.
+// THE LOFT: No. 4's flat, everyone's for now (owner, 12 Nov 2026, of a photo, then of the room itself: "raise the 1st story height by 25%", "remove all the beams", "remove hang things from ceiling", "only 1" post): a tall room, a walnut upper floor along the blank wall, a second deck across the front behind glass (no post: owner, 13 Nov 2026), the stair up the left wall and a gallery along the back wall over your door (the owner's pick C of mockups/loft-stairs.html), the front wall in brick, tracks of spots flat on the ceiling, downlights under the deck, a radiator. The upper floor is walked (APTS.loftY) and furnished (pieces up there are solid only while you are: APTS.solidHi); its steel, woodwork and plaster are yours to choose in DECORATE (R.loftSet). R.loftDress lays the flat's own pieces out over both floors and hangs its rugs and pictures.
 import {SHARED, THREE} from './003-shx.js';
 import {pos, UI} from './003b-systems.js';
 import {MODS, SYS} from './006-map-pre.js';
@@ -6,7 +6,7 @@ import {ROOMK} from './150a-bedroom.js';
 { const APTS=MODS.apts;
   if(APTS&&APTS.R&&APTS.LOFT)ROOMK.parts.push(c=>{ '@apts'; const {apt,R,M,Lx,Ly,HW,part,mat,solid,shelf}=c, A=APTS.R, MPU=.907, V3=THREE.Vector3;
     const MH=APTS.MH||4.375, mx=Lx-3.9, SW=1.1, su0=.15, su1=su0+SW, sv0=1.0, sv1=6.75, N=24, ST=MH/N, RUN=(sv1-sv0)/(N-1), GV=Ly-1.15, DK={u0:mx-3.2,v1:2.5}, RH=1.02;   // the stair climbs the left (window) wall toward the back; a gallery along the back wall, over your door, joins it to the upper floor (owner, 12 Nov 2026, of mockups/loft-stairs.html: "C")
-    // what you can choose (DECORATE's LOFT tab): the steel (rails, the post, the tracks), the woodwork (stair treads, the decks' edges), the plaster (the decks' undersides, the stair's flight)
+    // what you can choose (DECORATE's LOFT tab): the steel (rails, the tracks), the woodwork (stair treads, the decks' edges), the plaster (the decks' undersides, the stair's flight)
     const OPTS=R.loftOpts={steel:{n:'RAILS AND STEEL',o:{black:['BLACK',[22,22,24]],white:['WHITE',[236,236,232]],brass:['BRASS',[176,138,70]],bronze:['BRONZE',[92,66,44]],red:['OXIDE RED',[130,44,34]]}},
       wood:{n:'WOODWORK',o:{walnut:['WALNUT',[92,58,36]],oak:['OAK',[176,132,84]],ebony:['EBONY',[34,26,22]],cherry:['CHERRY',[128,56,36]],white:['WHITE',[232,228,220]]}},
       body:{n:'PLASTER',o:{white:['WHITE',[234,232,226]],cream:['CREAM',[232,220,196]],sage:['SAGE',[176,196,166]],charcoal:['CHARCOAL',[70,70,76]],concrete:['CONCRETE',[150,150,148]]}}};
@@ -33,7 +33,6 @@ import {ROOMK} from './150a-bedroom.js';
     for(const [u0,v0,u1,v1] of [[mx-.035,DK.v1+.035,mx,GV-.035],[DK.u0-.035,DK.v1,mx,DK.v1+.035],[DK.u0-.035,0,DK.u0,DK.v1],[su1,sv1,su1+.035,GV-.035],[su1,GV-.035,mx-.035,GV],[su0,sv1-.035,su1+.035,sv1]])box(u0,MH-.34,v0,u1,MH+.02,v1,WAL2);
     { const fm=mat([255,255,255],{clippingPlanes:[UPL]}); R.loftFloor=fm;   // its boards are one of the room's floors (A.floor(k,true)), laid as the room's own are
       for(const [u0,v0,u1,v1] of DECKS){ const w=u1-u0, d=v1-v0, g=new THREE.PlaneGeometry(w,d).rotateX(-Math.PI/2), uv=g.attributes.uv; for(let i=0;i<uv.count;i++){ const u=u0+uv.getX(i)*w, v=v0+(1-uv.getY(i))*d; uv.setXY(i,u/Lx,1-v/Ly); } part(g,fm,(u0+u1)/2,MH,(v0+v1)/2,0,apt,false); } }
-    { const u=DK.u0+.07, v=DK.v1-.07; box(u-.05,0,v-.05,u+.05,MH-.2,v+.05,STL); box(u-.11,0,v-.11,u+.11,.02,v+.11,STL); solid(u-.08,v-.08,u+.08,v+.08,MH-.2); }   // the front deck's one post, on its foot plate
 
     /* ---------- the stair: open under, so the wall's windows show through it: a walnut tread and riser to every step on two steel strings, up the left wall to the landing ---------- */
     { for(let i=0;i<N-1;i++){ const h=(i+1)*ST, v=sv0+i*RUN; box(su0,h-.045,v-.03,su1,h,v+RUN-.016,WAL); box(su0+.01,h-ST+.002,v-.016,su1-.01,h-.045,v-.002,WAL2); }
@@ -64,7 +63,7 @@ import {ROOMK} from './150a-bedroom.js';
     const hi=(u0,v0,u1,v1)=>APTS.solidHi(A.x0+u0/MPU,A.y0+v0/MPU,A.x0+u1/MPU,A.y0+v1/MPU), T=.08;
     hi(-.4,-.4,Lx+.4,0); hi(-.4,Ly,Lx+.4,Ly+.4); hi(-.4,0,0,Ly); hi(Lx,0,Lx+.4,Ly);                                       // the walls
     hi(mx-T,DK.v1,mx,GV); hi(su1,sv0,su1+T,GV); hi(su1,GV-T,mx,GV); hi(DK.u0,DK.v1,mx,DK.v1+T); hi(DK.u0-T,0,DK.u0,DK.v1+T);   // the rails
-    R.loft={MH,mx,SW,sv0,sv1,N,DECKS,sx:[su0,su1],top:[(su0+su1)/2,sv1+1.0],foot:[(su0+su1)/2,sv0-.7],blocks:[[su0,sv0-.6,su1+.06,sv0+RUN*10,'THE STAIR'],[DK.u0,DK.v1-.16,DK.u0+.16,DK.v1,'THE POST'],[2.43,0,3.47,.26,'THE RADIATOR']],lib:Lx+1};
+    R.loft={MH,mx,SW,sv0,sv1,N,DECKS,sx:[su0,su1],top:[(su0+su1)/2,sv1+1.0],foot:[(su0+su1)/2,sv0-.7],blocks:[[su0,sv0-.6,su1+.06,sv0+RUN*10,'THE STAIR'],[2.43,0,3.47,.26,'THE RADIATOR']],lib:Lx+1};
     for(const k in R.loftK)R.loftSet(k,R.loftK[k]);
 
     /* ---------- the flat laid out (owner, 12 Nov 2026: "space things out better use the empty space, decorate with rugs, hanging photos, frames", "move these things to upstars"): the study and the bookcase upstairs, the den under the deck, a sitting corner in the tall room; rugs and pictures of the game's own; nothing hangs from the ceiling ---------- */

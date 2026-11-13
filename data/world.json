@@ -483,65 +483,15 @@
   },
   {
    "id": "apts",
-   "name": "No. 1 THE WALK-UP",
-   "kind": "front",
-   "x0": -67.9,
-   "x1": -52.5,
-   "y0": -36,
-   "y1": -23,
-   "face": "e",
-   "storeys": 5,
-   "style": {
-    "wall": [138,59,44],
-    "trim": [112,46,36],
-    "base": [120,52,40],
-    "lintel": [217,205,184]
-   }
-  },
-  {
-   "id": "house2",
-   "name": "No. 2 THE BROWNSTONE",
-   "kind": "front",
-   "x0": -67.9,
-   "x1": -52.5,
-   "y0": -22,
-   "y1": -9,
-   "face": "e",
-   "storeys": 4,
-   "style": {
-    "wall": [94,67,52],
-    "trim": [78,56,44],
-    "base": [84,60,46],
-    "lintel": [122,90,72]
-   }
-  },
-  {
-   "id": "house3",
-   "name": "No. 3 THE PARKVIEW",
-   "kind": "front",
-   "x0": -67.9,
-   "x1": -52.5,
-   "y0": -8,
-   "y1": 5,
-   "face": "e",
-   "storeys": 6,
-   "style": {
-    "wall": [201,180,138],
-    "trim": [168,150,116],
-    "base": [216,210,194],
-    "lintel": [238,230,210]
-   }
-  },
-  {
-   "id": "house4",
    "name": "No. 4 THE FOUNDRY LOFTS",
    "kind": "front",
-   "x0": -67.9,
-   "x1": -52.5,
-   "y0": 6,
-   "y1": 19,
-   "face": "e",
+   "x0": 116.37,
+   "x1": 129.5,
+   "y0": -92.4,
+   "y1": -77,
+   "face": "n",
    "storeys": 4,
+   "note": "the only apartment house, the lofts, on the Hudson entrance's east corner across from the bodega (owner, 12 Nov 2026)",
    "style": {
     "wall": [61,64,70],
     "trim": [27,28,32],
@@ -657,8 +607,7 @@
    "x1": 107.63,
    "y0": -92.4,
    "y1": -77,
-   "face": "n",
-   "pf": "bodega"
+   "face": "n"
   },
   {
    "id": "arcade",
@@ -666,10 +615,10 @@
    "kind": "front",
    "x0": 116.37,
    "x1": 129.5,
-   "y0": -92.4,
-   "y1": -77,
-   "face": "n",
-   "pf": "bodega"
+   "y0": -107.9,
+   "y1": -95.9,
+   "face": "s",
+   "row": 2
   },
   {
    "id": "theatre",
@@ -828,7 +777,7 @@
   {
    "id": "fishmarket",
    "kind": "market",
-   "x0": 116.37,
+   "x0": 130,
    "x1": 252,
    "y0": -107.9,
    "y1": -95.9,
@@ -837,7 +786,7 @@
    "name": "THE FISH MARKET",
    "note": "the Hudson row east of the way through (owner, 9 Nov 2026): the yard, the tin shed, the brick shed (x spans), the highway over the promenade (y span, deck height in metres, a bent every so many tiles); stalls: a wholesaler each (who: its record in characters.json)",
    "yard": [
-    117,
+    131,
     147
    ],
    "tin": [
@@ -940,7 +889,7 @@
    "id": "c7",
    "model": "police-cruiser-80s",
    "x": -27.5,
-   "y": -8,
+   "y": 66,
    "hd": 0
   },
   {
@@ -954,15 +903,8 @@
    "id": "c9",
    "model": "taxi-pod",
    "x": -27.5,
-   "y": 16,
+   "y": 76,
    "hd": 0
-  },
-  {
-   "id": "c10",
-   "model": "ambulance",
-   "x": -17,
-   "y": 26,
-   "hd": 270
   },
   {
    "id": "c11",
@@ -984,7 +926,6 @@
   }
  ],
  "parkPlaces": {
-  "hospital": {"note": "THE HOSPITAL on West St's park side (owner, 12 Nov 2026): Polyfork's emergency block, annexe, lift tower and garage (src/150pg-hospital.js); map tiles: er the emergency block's middle, garage the garage's (the hover ambulance waits in it), front the side the doors face", "er": [-17.5, 7], "annexe": [-17.5, -8.5], "core": [-10, 12], "garage": [-17, 26], "front": "w"},
   "round": {
    "x": 112,
    "y": 59.5,
@@ -4215,7 +4156,7 @@
   ],
   "origamifox": [
    122.94,
-   -74.6,
+   -109.6,
    5,
    "arcade"
   ],
@@ -4538,7 +4479,7 @@
    null
   ],
   "trucker": [
-   124.6,
+   136,
    -103,
    0,
    null
@@ -6680,7 +6621,21 @@
     -38,
     252,
     -231.5
+   ],
+   [
+    -52.5,
+    -38,
+    -24,
+    -38
    ]
+  ],
+  "closed": [[-52.5,-38,-24,26]],
+  "closedNote": "West St shut off at Market St (owner, 12 Nov 2026: \"block off west st completely, no real buildings there - low renders\"): a forcefield across its mouth (the last field line); these boxes are inside the field lines but never walked, and their fronts are cheap painted blocks (fronts)",
+  "fronts": [
+   {"x0": -67.9, "x1": -52.5, "y0": -36, "y1": -23, "storeys": 5, "wall": [138,59,44], "trim": [112,46,36]},
+   {"x0": -67.9, "x1": -52.5, "y0": -22, "y1": -9, "storeys": 4, "wall": [94,67,52], "trim": [78,56,44]},
+   {"x0": -67.9, "x1": -52.5, "y0": -8, "y1": 5, "storeys": 6, "wall": [201,180,138], "trim": [168,150,116]},
+   {"x0": -67.9, "x1": -52.5, "y0": 6, "y1": 19, "storeys": 4, "wall": [61,64,70], "trim": [27,28,32]}
   ],
   "runs": [
    [

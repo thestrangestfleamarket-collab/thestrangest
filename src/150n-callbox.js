@@ -1,10 +1,10 @@
-// THE FRONT DOOR AND THE CALLBOX: your flat's front door goes straight out to the street (no hall, stairs or lift; owner, 10 Nov 2026); your mailbox and the notice board hang by it; the callbox beside the house's street door lists who lives there, rings one, and their buzzer lets you in or not.
+// THE FRONT DOOR AND THE CALLBOX: your flat's front door goes straight out to the street (no hall, stairs or lift; owner, 10 Nov 2026); the callbox beside the house's street door lists who lives there, rings one, and their buzzer lets you in or not.
 import {SHARED, THREE} from './003-shx.js';
 import {INV, ONLINE, SFX, UI} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
-import {MODS, STORE, SYS, TILE} from './006-map-pre.js';
+import {MODS, SYS, TILE} from './006-map-pre.js';
 import {ROOMK} from './150a-bedroom.js';
 { const APTS=MODS.apts, H={built:false}, CALL={ring:null,ask:null,sent:[]}; window.CALLBOX=CALL;
   const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])), say=(t,c)=>SAY(t,c||'#f2c14e');
@@ -13,7 +13,6 @@ import {ROOMK} from './150a-bedroom.js';
     const hitAt=(u,h,v,w,hh,d,name,act)=>{ const hb=new THREE.Mesh(new THREE.BoxGeometry(w*M,hh*M,d*M),new THREE.MeshBasicMaterial({visible:false})); hb.position.copy(W(u,h,v)); scene.add(hb); UI.thing({name,ghost:1,obj:hb,reach:1.6*M,near:2.8*M,tall:hh*M,act}); };
     if(APTS.frontDoor)APTS.frontDoor.set(false);
     hitAt(du,1.15,Ly-.2,1.2,2.3,.8,'FRONT DOOR',()=>{ if(!APTS.inReal)return; SFX.play('latch',{at:W(du,1.1,Ly),vol:.8}); APTS.exitReal('OUT TO THE STREET'); });
-    if(STORE.furnish&&STORE.furnish.hall)STORE.furnish.hall({box,hitAt,mat,v1:Ly,EW:du-2.8,us:2*3.4-1.6-(du-2.8),...(du<3.9?{nc:du-1.6,ny:.85}:{})});   // the mailboxes left of the door, the notice board beside them (over them in a narrow room)
     H.built=true; });
 
   /* ---------- the callbox on the street ---------- */

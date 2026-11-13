@@ -13,6 +13,8 @@ const { chromium } = require('playwright'), path = require('path');
     const r = await pg.evaluate(() => { const c = __sw.cur; return { track: c.track.name, look: __sw.LOOKS[__sw.look].name, hits: c.hits, passed: c.notes.filter(n => n.t < __sw.songT - 0.3).length, dirs: c.notes.filter(n => n.dir).length, state: __sw.state }; });
     ok(r.state === 'playing' && r.passed >= 5 && r.hits >= r.passed - 1 && r.dirs === 0, 'the bot cuts every shard on time, none needs a direction: ' + JSON.stringify(r));
   }
+  const lv = await pg.evaluate(async () => { const names = []; for (let i = 0; i < __sw.LV.length; i++) { __sw.setLevel(i); names.push(__sw.LV[__sw.level].name); await new Promise(r => setTimeout(r, 1200)); } __sw.setLevel(0); return names; });
+  ok(lv.join() === 'VOID,REEF,FOREST,PAPER', 'every level can be entered while a song plays: ' + lv.join());
   ok(!errs.length, 'no page errors ' + errs.slice(0, 3).join(' | '));
   await b.close(); console.log(bad ? bad + ' FAILED' : 'all good'); process.exit(bad ? 1 : 0);
 })();

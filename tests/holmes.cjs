@@ -46,7 +46,7 @@ const D = o => ({ narration: 'Holmes held out his hand for a fee, and I saw the 
     const st = () => pg.evaluate(() => ({ kind: __holmes.ui.kind, head: __holmes.ui.head, text: __holmes.text(), i: __holmes.S.i, changed: __holmes.S.changed.length, place: __holmes.place(), people: __holmes.people(), btns: __holmes.ui.btns.map(x => x.label) }));
     await pg.click('#play'); await pg.waitForTimeout(600); let s = await st();
     ok(s.kind === 'read' && /On glancing over my notes/.test(s.text) && s.place === 'baker', 'it opens on the book\'s first words, in Baker Street');
-    ok(await thru() === 'choose' && (s = await st()) && /Wake Watson/.test(s.text) && s.btns.length === 4 && /BOOK/.test(s.btns[0]), 'then what Holmes does in the book, two other things, and your own words');
+    ok(await thru() === 'choose' && (s = await st()) && /Wake Watson/.test(s.text) && s.btns.length >= 4 && /BOOK/.test(s.btns[0]), 'then what Holmes does in the book, two other things, and your own words');
     await pg.evaluate(() => __holmes.press('book')); s = await st(); ok(s.kind === 'read' && /Very sorry to knock you up, Watson/.test(s.text) && await pg.evaluate(() => __spoke.length > 0), 'do as the book does and the book\'s own passage is read, aloud too');
     await thru(); s = await st(); ok(s.i === 1 && s.people.includes('helen') && await pg.evaluate(() => __asked.length === 0), 'on to the next step, Miss Stoner in the room, and nobody was asked');
     if (OUT) { await pg.waitForTimeout(800); await pg.screenshot({ path: path.join(OUT, 'choose.png') }); }
@@ -65,7 +65,16 @@ const D = o => ({ narration: 'Holmes held out his hand for a fee, and I saw the 
     ok(s.kind === 'note' && /Log in at thestrangestfleamarket\.com/.test(s.text), 'without a login it says so, and the book\'s road stays open'); await pg.evaluate(() => __holmes.press('ok'));
     const n = await pg.evaluate(() => __asked.length), walk = await pg.evaluate(() => { const H = __holmes, places = new Set(); let k = 0; while (H.ui.kind !== 'end' && k++ < 900) { places.add(H.place()); H.press(H.ui.kind === 'read' ? 'next' : 'book'); } return { kind: H.ui.kind, text: H.text(), places: [...places], k }; });
     ok(walk.kind === 'end' && /exactly as Dr Watson set it down/.test(walk.text) && await pg.evaluate(() => __asked.length) === n, 'the whole book, start to finish, with nobody asked (' + walk.k + ' presses)');
-    ok(['baker', 'lane', 'lawn', 'bedroom', 'roylott', 'inn', 'vigil', 'train'].every(p => walk.places.includes(p)), 'through every place: ' + walk.places.join(', '));
+    ok(['baker', 'lane', 'lawn', 'bedroom', 'roylott', 'inn', 'vigil', 'death', 'train'].every(p => walk.places.includes(p)), 'through every place: ' + walk.places.join(', '));
+    // the people and the loose things: Polyfork's bodies in motion, looking at you; a book picked up and let fall
+    await pg.evaluate(() => { __holmes.press('again'); let k = 0; while (__holmes.S.i < 1 && k++ < 50) __holmes.press(__holmes.ui.kind === 'read' ? 'next' : 'book'); __holmes.press('book'); }); await pg.waitForTimeout(2500);
+    const pe = await pg.evaluate(() => ({ w: __holmes.person('watson'), h: __holmes.person('helen'), th: __holmes.things() }));
+    ok(pe.w.head[1] > 1.5 && pe.w.head[1] < 1.9 && /Sitting/.test(pe.h.clip) && pe.h.head[1] < 1.45 && pe.h.head[1] > .9, 'Watson stands, Miss Stoner sits by the fire (' + pe.w.clip + ', ' + pe.h.clip + ', her head at ' + pe.h.head[1].toFixed(2) + ' m)');
+    const bk = pe.th.find(x => x.name === 'book'); ok(bk && bk.y > .25 && bk.y < .6 && pe.th.length >= 5, 'loose things rest where they were put (' + pe.th.length + '; the book at ' + (bk && bk.y.toFixed(2)) + ' m)');
+    const bookY = async () => (await pg.evaluate(() => __holmes.things())).find(x => x.name === 'book').y, until = async f => { let y = 0; for (let i = 0; i < 60; i++) { await pg.waitForTimeout(500); y = await bookY(); if (f(y)) break; } return y; };
+    await pg.evaluate(() => __holmes.hold('book')); const up = { y: await until(y => y > 1.3) }; await pg.evaluate(() => __holmes.drop()); const dn = { y: await until(y => y < .6) };
+    ok(up.y > 1.2 && dn.y < .7, 'a book picked up comes to your hand, and let go it falls (' + up.y.toFixed(2) + ' then ' + dn.y.toFixed(2) + ' m)');
+    if (OUT) await pg.screenshot({ path: path.join(OUT, 'room.png') });
     ok(!errs.length, 'no page errors ' + errs.join(' | ')); await pg.close();
 
     const vr = await b.newPage({ viewport: { width: 960, height: 600 } }), verr = []; vr.on('pageerror', x => verr.push(x.message.slice(0, 300)));

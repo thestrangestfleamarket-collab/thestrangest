@@ -10,6 +10,7 @@
   },
   "durable_objects": { "bindings": [{ "name": "Block", "class_name": "Block" }, { "name": "Post", "class_name": "Post" }, { "name": "Home", "class_name": "Home" }, { "name": "Dish", "class_name": "Dish" }] },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Block"] }, { "tag": "v2", "new_sqlite_classes": ["Post"] }, { "tag": "v3", "new_sqlite_classes": ["Home"] }, { "tag": "v4", "new_sqlite_classes": ["Dish"] }, { "tag": "v5", "new_sqlite_classes": ["Botrun"] }, { "tag": "v6", "deleted_classes": ["Botrun"] }],
+  "ai": { "binding": "AI" },
   "workers_dev": true,
   "observability": { "enabled": true }
 }

@@ -1,6 +1,6 @@
 // THE WIELD: WIELD lets the player hold and swing a sword (any blade on the item model), a butterfly net or a bird net, or hold a tool another system registers (the fishing rod) in the passport's hand, the mouse taking the arm round in full circles: swings chain into a heavy third, cost stamina, and P held raises the blade to block.
 import {SHARED, THREE} from './003-shx.js';
-import {BIRDS, EQUIP, FORAGE, INSPECT, ITEMS, keys, LEVELS, MOTION, ONLINE, RAG, SFX, st, UI, VIT, VR, W3, WEEDS, WIELD} from './003b-systems.js';
+import {BIRDS, EQUIP, FORAGE, INSPECT, ITEMS, keys, LEVELS, MOTION, ONLINE, pos, RAG, SFX, st, UI, VIT, VR, W3, WEEDS, WIELD} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {BF, SYS, TILE} from './006-map-pre.js';

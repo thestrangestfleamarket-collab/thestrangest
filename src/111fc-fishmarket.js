@@ -11,7 +11,7 @@ const FISHMKT={tris:0,things:[],stalls:[],sol:[],made:false};
   if(P&&P.tin&&P.brick&&P.highway){ const {XS,ZS}=SHARED.BOD, T=TILE, m=1/.84, MV=ZU*24/.84, GY=(u,v)=>SHARED.groundY?SHARED.groundY(XS(u),ZS(v)):0;
     const lin=c=>{ const t=new THREE.Color(); t.setRGB(c[0]/255,c[1]/255,c[2]/255,THREE.SRGBColorSpace); return [t.r,t.g,t.b]; };
     const rnd=(a,b)=>{ const v=Math.sin(a*127.1+b*311.7)*43758.5453; return v-Math.floor(v); };
-    const PROPS=__LAZY__("data/fishprops.json"), ZN={}, SG=[], POOL=[]; let zk='', base=0;
+    const PROPS=SYS.far(__LAZY__("data/fishprops.json")), ZN={}, SG=[], POOL=[]; let zk='', base=0;
     const zone=(k,b)=>{ zk=k; base=b; };   // (a zone's parts marked top stand over your head: its mesh k^ is not drawn in the overhead views while you are under it)
     const solid=(u0,v0,u1,v1,h)=>{ const r=[Math.min(XS(u0),XS(u1)),Math.min(ZS(v0),ZS(v1)),Math.max(XS(u0),XS(u1)),Math.max(ZS(v0),ZS(v1))]; SOL.up.push(r); FIX.up.push([r[0],r[1],base,r[2],r[3],base+h*MV]); FISHMKT.sol.push(r); };
     // a box: u east, v north (map tiles), h up (metres over the zone's ground); o.t its material (pl plain, tin, brick, cob), o.glow lit after dark, o.sol solid

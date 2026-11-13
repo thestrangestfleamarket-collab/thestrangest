@@ -140,7 +140,7 @@ const fishInit=()=>{ if(FISHING.at)return; const T=TILE, RB={get lv(){ return RI
     add(mat,0,Y(.28),BLn*.45,BW*.55,Y(.5),.1*T); add(mat,0,Y(.25),-BLn*.45,BW*.85,Y(.45),.1*T); add(wood,0,Y(.35),.1*T,BW*.82,Y(.05),.3*T); add(wood,0,Y(.3),-BLn*.32,BW*.7,Y(.05),.3*T);
     BOAT.oars=[-1,1].map(o=>{ const p=new THREE.Group(); p.name=o<0?'OAR LEFT':'OAR RIGHT'; p.position.set(o*BW*.48,Y(.5),.1*T); const a=new THREE.Mesh(new THREE.BoxGeometry(1.5*T,.05*T,.05*T),wood); a.position.x=o*.6*T; const bl=new THREE.Mesh(new THREE.BoxGeometry(.4*T,.02*T,.16*T),wood); bl.position.x=o*1.3*T; p.add(a,bl); boat.add(p); return p; }); }
   // the hull and oars are Polyfork's wooden rowboat (data/rowboat.json), fetched after the start: the boxes stand in until it is here
-  __LAZY__("data/rowboat.json")().then(J=>{ const k=BLn/J.rowhull.size[2], m=new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide}), hull=new THREE.Mesh(KIT.decode(J.rowhull),m), og=KIT.decode(J.rowoar);
+  SYS.far(__LAZY__("data/rowboat.json"))().then(J=>{ const k=BLn/J.rowhull.size[2], m=new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide}), hull=new THREE.Mesh(KIT.decode(J.rowhull),m), og=KIT.decode(J.rowoar);
     for(const c of [...boat.children])if(!c.name)boat.remove(c); hull.name='HULL'; hull.scale.setScalar(k); hull.castShadow=true; boat.add(hull);
     BOAT.oars.forEach((p,i)=>{ const o=i?1:-1; p.clear(); p.position.set(o*J.rowhull.size[0]*k*.47,J.rowhull.size[1]*k*.98,0); const a=new THREE.Mesh(og,m); a.scale.setScalar(k*1.25); a.rotation.y=o*Math.PI/2; a.position.x=o*J.rowoar.size[2]*k*1.25*.34; a.castShadow=true; p.add(a); });
     if(VLOOK.apply)VLOOK.apply(boat); }).catch(e=>console.warn('rowboat',e));

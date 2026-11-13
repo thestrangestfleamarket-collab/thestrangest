@@ -4,7 +4,7 @@ import {NPCS, pos} from './003b-systems.js';
 import {SYS, TILE, ZU} from './006-map-pre.js';
 import {BODIES} from './111a-bodies.js';
 const SKELRIG={seen:new Set()}; window.SKELRIG=SKELRIG;
-{ const DATA=__LAZY__("data/skelbodies.json"); let BM=null;
+{ const DATA=SYS.far(__LAZY__("data/skelbodies.json")); let BM=null;
   DATA().then(J=>{ BM={}; for(const k of ['Warrior','Mage','Minion','Rogue'])BM[k]=BODIES.rebakedBody(J,k); }).catch(e=>console.warn('SKELRIG',e));
   const YS=ZU*24/TILE;
   const add=N=>{ '@later'; const body=BM[N.skelChar]; if(!body)return; const {me,PM}=BODIES.mesh(body), grp=new THREE.Group(), k=body.height*N.H/(2.166*52);

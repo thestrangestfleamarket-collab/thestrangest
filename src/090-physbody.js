@@ -38,7 +38,7 @@ Object.assign(PB,{on:false,ready:false,loose:0.5}); window.PB=PB;
       while(acc>=1/120){ acc-=1/120; drive(1/120,down); world.step(); } }
     W3.group.position.set(0,0,0); W3.group.rotation.set(0,0,0); W3.group.scale.set(W3.SZ/PPU,ZU*W3.SZ*(W3.BH||1),W3.SZ/PPU); W3.L.applyAxisAngle(new THREE.Vector3(0,1,0),hd); W3.G.value.identity();
     const Fb=KEYS.map((k,i)=>{ const rb=bodies[i], p=rb.translation(), r=rb.rotation(); return new THREE.Matrix4().compose(P.set(p.x,p.y,p.z),Q.set(r.x,r.y,r.z,r.w),Sc.set(1,1,1)); });
-    if(W3.body.on){ W3.body.phys(KEYS.map((k,i)=>Fb[i].clone().multiply(tgt[i].m.clone().invert())),T); return true; }   // the body you wear (your avatar) takes the same physics: each part's move off the rig, on its own bones
+    if(W3.body.on)W3.body.phys(KEYS.map((k,i)=>Fb[i].clone().multiply(tgt[i].m.clone().invert())),T);   // the body you wear (your avatar) takes the same physics: each part's move off the rig, on its own bones
     const Bm=KEYS.map(k=>M(R.frameOf(k,B)).invert());
     PCS.forEach((pc,i)=>{ '@later'; const j=PART[i]; if(j<0)return; const O=new THREE.Matrix4().multiplyMatrices(Bm[j],M(R.frameOf(pc.on||pc.n,B))); const PM=W3.PM.value[i].multiplyMatrices(Fb[j],O);
       if(W3.E&&W3.E[i])W3.applyE(PM,W3.E[i],new THREE.Vector3().setFromMatrixPosition(PM)); if(W3.HIDE[i])PM.makeScale(0,0,0); });

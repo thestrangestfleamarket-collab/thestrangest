@@ -1,6 +1,6 @@
-// THE BIG CAT: BIGCAT, a huge black cat-shaped blob (a rounded block with two horn-like ears, big speckled staring eyes, an open mouth with pink teeth, whiskers, two clawed paws) four and a half times a person's height, now and then walking down Market St's road (a smooth MERCH body on the player's rig).
+// THE BIG CAT: BIGCAT, a huge black cat-shaped blob (a rounded block with two horn-like ears, big speckled staring eyes, an open mouth with pink teeth, whiskers, two clawed paws) four and a half times a person's height, standing at Market St's kerb a block from the start and crossing the road every few minutes (a smooth MERCH body on the player's rig).
 import {SHARED, THREE} from './003-shx.js';
-import {pos} from './003b-systems.js';
+import {ONLINE, pos} from './003b-systems.js';
 import {SYS, TILE} from './006-map-pre.js';
 import {TRAINS} from './009c-trains.js';
 import {BODIES} from './111a-bodies.js';
@@ -50,11 +50,17 @@ const BIGCAT={};
     const i=BODIES.BONES.indexOf('hips'), o=N.body.rest.hips; N.g.updateMatrix(); BL.matrix.copy(N.g.matrix).multiply(MH.copy(N.PM.value[i])).multiply(MT.makeTranslation(o.x,o.y,o.z)); BL.matrixWorldNeedsUpdate=true; };
   const body=MERCH.add({key:'bigcat',label:'THE BIG CAT',height:2.3,model,size:45,q:.75,at:100,idle:()=>MERCH.pose({bend:0,nod:0})});
   const N=BIGCAT.N=body&&body.npc;
-  // his walk (owner, 11 Nov 2026): every 3 to 10 minutes he walks slowly down Market St's road end to end in the lane of his way, one way then the other (the traffic waits behind him), on the shared clock; away between walks
-  const B=SHARED.BOD, M0=TILE/.84, xW=B.XS(-129), xE=B.XS(261), zs=B.ZS(B.CURB), zp=B.ZS(B.FAR), zm=(zs+zp)/2, WV=.7*M0, WD=(xE-xW)/WV, WP=390+WD, hs=n=>{ const v=Math.sin(n*12.9898)*43758.5453; return v-Math.floor(v); };
-  const walkAt=t=>{ const n=Math.floor(t/WP); for(const k of [n+1,n,n-1]){ const u=t-(k*WP+(hs(k)-.5)*210); if(u>=0&&u<WD)return k&1?{x:xE-u*WV,to:xW,z:(zs+zm)/2,dir:-1}:{x:xW+u*WV,to:xE,z:(zp+zm)/2,dir:1}; } return null; };
-  if(N){ N.walk.auto=false; const st=N.st; N.mode='hidden';
-    SYS.add('city',()=>{ const w=walkAt(TRAINS.now()); if(!w){ N.mode='hidden'; st.to=null; if(BL)BL.visible=false; return; } delete N.mode; st.x=w.x; st.z=w.z; st.to={x:w.to,z:w.z}; st.next=null; if(Math.hypot(pos.x-st.x,pos.z-st.z)<40)blink(N); else if(BL)BL.visible=false; },'111ei-bigcat'); }
-  BIGCAT.walkAt=walkAt; BIGCAT.lids=()=>BL; BIGCAT.road=()=>N&&N.mode!=='hidden'?walkAt(TRAINS.now()):null;
+  // where he is (owner, 12 Nov 2026: "standing on the street down market a block or two, crosses the street every 3-5 minutes (instead of walking down street)"): he stands at Market St's kerb by the crossing a block east of the start, and every 3 to 5 minutes walks slowly across the road to the other kerb and stands there (the traffic waits for him), on the shared clock
+  const B=SHARED.BOD, M0=TILE/.84, XC=B.XS(171), zs=B.ZS(B.CURB), zp=B.ZS(B.FAR), zm=(zs+zp)/2, OFF=2.2*M0, Z=[zs-OFF,zp+OFF], WV=.7*M0, WD=Math.abs(Z[1]-Z[0])/WV, GAP=240, hs=n=>{ const v=Math.sin(n*12.9898)*43758.5453; return v-Math.floor(v); };
+  const t0=k=>k*GAP+(hs(k)-.5)*60;   // crossing k starts here: 3 to 5 minutes after the one before
+  // honked at while crossing (150pf, the shared honk:cat), he does the rest of it three times as fast
+  const walkAt=t=>{ const n=Math.floor(t/GAP), hk=+((ONLINE.world||{})['honk:cat'])||0; for(const k of [n+1,n,n-1]){ let u=t-t0(k); if(u<0)continue; const h=hk-t0(k); if(h>=0&&h<WD&&u>h)u=h+(u-h)*3;
+      if(u<WD){ const a=Z[k&1], c=Z[(k+1)&1], d=Math.sign(c-a); return {x:XC,z:a+d*u*WV,to:c,cross:true}; } return {x:XC,z:Z[(k+1)&1],cross:false}; }
+    return {x:XC,z:Z[(n-1)&1],cross:false}; };
+  if(N){ N.walk.auto=false; const st=N.st;
+    SYS.add('city',()=>{ const w=walkAt(TRAINS.now()); delete N.mode; st.next=null;
+      if(w.cross){ st.x=w.x; st.z=w.z; st.to={x:w.x,z:w.to}; } else { if(Math.hypot(st.x-w.x,st.z-w.z)>.5)Object.assign(st,{x:w.x,z:w.z}); st.to=null; st.face={x:w.x,z:zm}; }
+      if(Math.hypot(pos.x-st.x,pos.z-st.z)<40)blink(N); else if(BL)BL.visible=false; },'111ei-bigcat'); }
+  BIGCAT.walkAt=window.BIGCATWALK=walkAt; BIGCAT.lids=()=>BL; BIGCAT.road=()=>{ if(!N)return null; const w=walkAt(TRAINS.now()); return w.cross?{x:w.x,z:w.z}:null; };   // only while crossing does he hold up the road (every lane he is in)
   window.BIGCATDBG=(x,z)=>{ if(x==='blink'){ nb=0; return; } if(x==='shut'){ hold=!!z; return; } if(N&&x!=null){ Object.assign(N.st,{x,z,to:null,next:null}); } if(N&&BL&&x==null&&z===undefined){} return N?{x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),vis:N.g.visible,tris:body.tris(),lid:BL&&(()=>{ BL.updateMatrixWorld(true); const v=BL.children[0].getWorldPosition(new THREE.Vector3()), e=MERCH.at(N,'hips',[.3,1,.5],new THREE.Vector3()); return {on:BL.visible,d:+v.distanceTo(e).toFixed(3),y:+v.y.toFixed(1)}; })()}:null; }; }
 export {BIGCAT};

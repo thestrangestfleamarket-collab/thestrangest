@@ -147,12 +147,12 @@ const CREATS=[]; window.CREATS=CREATS;
     const fauna=key=>FAP[key]||(FAP[key]=FA.some(f=>f[0]===key)?Promise.all([PF[key]?PF[key]():null,FX()]).then(([p,x])=>{ if(x.own[key])return C[key]=x.own[key]; const cl={}, s=p.size, m=x.parts[key]||x.c[key]?{...p.mesh,parts:x.parts[key]||p.mesh.parts,c:x.c[key]||p.mesh.c}:p.mesh;
       for(const n in p.clips)cl[key+'_'+n]=p.clips[n]; for(const n in x.clips[key]||{})cl[key+'_'+n]=x.clips[key][n]; return C[key]={rig:p.rig,mesh:m,clips:cl,tall:p.tall,lo:[-s[0]/2,0,-s[2]/2],hi:[s[0]/2,s[1],s[2]/2]}; }):Promise.resolve(null));
     CREATS.fauna=fauna;
-    CREATURESREADY.then(()=>Promise.all([...PARKKEEP].map(fauna))).then(()=>{ FA.forEach(([key,name,m,n,sp],i)=>{ if(!C[key]||!PARKKEEP.has(key))return; const L=KIND[key].lane; for(let j=0;j<n;j++){ const x=L.x0+hs(i,j)*(L.x1-L.x0), z=L.z0+hs(j,i+7)*(L.z1-L.z0); spawn([key,name,m,inv(L,x,z),sp,0]); } }); }).catch(e=>console.warn('FAUNA',e)); }
+    CREATURESREADY.then(SYS.far(()=>Promise.all([...PARKKEEP].map(fauna)))).then(()=>{ FA.forEach(([key,name,m,n,sp],i)=>{ if(!C[key]||!PARKKEEP.has(key))return; const L=KIND[key].lane; for(let j=0;j<n;j++){ const x=L.x0+hs(i,j)*(L.x1-L.x0), z=L.z0+hs(j,i+7)*(L.z1-L.z0); spawn([key,name,m,inv(L,x,z),sp,0]); } }); }).catch(e=>console.warn('FAUNA',e)); }
   window.CREATNEW=MODS.creatNew=(key,id,metres,X={})=>{ '@later'; const D=C[key], K=KIND[key], rig=rigOf(D.rig), CL=clipsOf(D), mixer=new THREE.AnimationMixer(rig.bones[0]), A={}, act=n=>A[n]||(A[n]=mixer.clipAction(CL[n])); let cur=null, cn;
     const N=makeNPC(null,{key:id,name:id.toUpperCase(),names:D.mesh.parts,lv:'up',group:'bodega',geo:X.paint?X.paint(geomOf(D.mesh)):PAINT(key,geomOf(D.mesh)),skin:rig,tall:D.tall,rank:D.mesh.parts.map(()=>0),metres,x:0,z:0,lane:K.lane,free:()=>true,radius:.12,speed:1,stride:0,rock:0,bob:0,...X.npc,
       anim:(dt)=>{ const want=N.clip||K.idle; if(want!==cur||N.clipN!==cn){ const a=act(want), one=!!(K.once&&K.once.includes(want)); a.reset().setLoop(one?THREE.LoopOnce:THREE.LoopRepeat,Infinity).fadeIn(.15).play(); a.clampWhenFinished=one; if(cur&&cur!==want)act(cur).fadeOut(.15); cur=want; cn=N.clipN; } act(cur).timeScale=N.clipK||1; mixer.update(dt); }});
     N.g.rotation.order='YXZ'; N.me.rotation.y=K.turn||0; N.me.position.set(0,0,0); N.mixer=mixer; return N; };
   window.CREATDBG=()=>CREATS.map(N=>({key:N.key,x:+N.st.x.toFixed(1),z:+N.st.z.toFixed(1),y:+N.g.position.y.toFixed(2),to:!!N.st.to,vis:N.body.visible})); }
 
-const PAWNS=__LAZY__("data/pawns.json");
+const PAWNS=SYS.far(__LAZY__("data/pawns.json"));
 export {CREATS, PAWNS};

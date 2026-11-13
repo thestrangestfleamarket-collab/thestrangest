@@ -5,9 +5,9 @@ import {SAVE} from './005-save.js';
 import {QS, SYS, TILE} from './006-map-pre.js';
 const SOUND=QS.get('sound')!=='0';
 const SNDMIX0={fx:{},loops:{},gap:1,blip:1};
-Object.assign(SFX,{on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}});
+Object.assign(SFX,{on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}});   // snd: the one switch over every sound, off until you turn it on (owner, 12 Nov 2026: "turn off all sounsd by default for players , must turn on if want sounds")
 { const rnd=()=>Math.random()*2-1, TAU=Math.PI*2;
-  { const s=SAVE.get('sfx'), v=SAVE.get('vol'); if(s!=null)SFX.on=s==='1'; if(v!=null)SFX.vol=Math.max(0,Math.min(1,+v)); }
+  { const s=SAVE.get('sfx'), v=SAVE.get('vol'), a=SAVE.get('snd'); if(s!=null)SFX.on=s==='1'; if(v!=null)SFX.vol=Math.max(0,Math.min(1,+v)); SFX.snd=QS.get('sound')==='1'||a==='1'; }   // (?sound=1 for the checks)
   const mixOf=o=>({fx:Object.assign({},SNDMIX0.fx,o&&o.fx||{}),loops:Object.assign({},SNDMIX0.loops,o&&o.loops||{}),gap:o&&o.gap!=null?+o.gap:SNDMIX0.gap,blip:o&&o.blip!=null?+o.blip:SNDMIX0.blip});
   try{ SFX.mix=mixOf(JSON.parse(SAVE.get('sndmix')||'null')); }catch(e){ SFX.mix=mixOf(null); }
   SFX.saveMix=()=>SAVE.set('sndmix',JSON.stringify(SFX.mix)); SFX.resetMix=()=>{ SFX.mix={fx:{},loops:{},gap:1,blip:1}; SAVE.del('sndmix'); }; SFX.fxLevel=k=>(SFX.mix.fx[k]==null?1:+SFX.mix.fx[k])*(SFX.setOf?SFX.setOf(k).lvl??1:1);
@@ -17,9 +17,10 @@ Object.assign(SFX,{on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}});
   SFX.wake=()=>{ const c=mk(); if(c&&c.state!=='running')c.resume().catch(()=>{}); return c; };
   { const w=e=>{ if(!e.isTrusted)return; woke=true; SFX.wake(); }; addEventListener('pointerdown',w,true); addEventListener('keydown',w,true); }
   SFX.live=()=>{ const c=SFX.ctx(); return c&&c.state==='running'?c:null; };
-  SFX.out=c=>{ if(!SFX.m||SFX.m.context!==c){ SFX.m=c.createGain(); SFX.m.gain.value=SFX.vol; SFX.m.connect(c.destination); } return SFX.m; };
+  SFX.out=c=>{ if(!SFX.m||SFX.m.context!==c){ SFX.m=c.createGain(); SFX.m.gain.value=SFX.snd?SFX.vol:0; SFX.m.connect(c.destination); } return SFX.m; };
   const bus=c=>{ if(!SFX.g||SFX.g.context!==c){ SFX.g=c.createGain(); SFX.g.connect(SFX.out(c)); } SFX.g.gain.value=SFX.on?1:0; return SFX.g; };
-  SFX.set=(on,vol)=>{ if(on!=null)SFX.on=on; if(vol!=null)SFX.vol=vol; SAVE.set('sfx',SFX.on?'1':'0'); SAVE.set('vol',String(SFX.vol)); const c=SFX.ac; if(c){ bus(c); SFX.out(c).gain.setTargetAtTime(SFX.vol,c.currentTime,.03); } };
+  SFX.set=(on,vol)=>{ if(on!=null)SFX.on=on; if(vol!=null)SFX.vol=vol; SAVE.set('sfx',SFX.on?'1':'0'); SAVE.set('vol',String(SFX.vol)); const c=SFX.ac; if(c){ bus(c); SFX.out(c).gain.setTargetAtTime(SFX.snd?SFX.vol:0,c.currentTime,.03); } };
+  SFX.master=on=>{ SFX.snd=!!on; SAVE.set('snd',SFX.snd?'1':'0'); const c=SFX.snd?SFX.wake():SFX.ac; if(c)SFX.out(c).gain.setTargetAtTime(SFX.snd?SFX.vol:0,c.currentTime,.03); for(const f of SFX.onAll)try{ f(SFX.snd); }catch(e){} };   // what plays outside this mixer (a TV's film, the cinema, a cabinet's own sound) hears of it through onAll
   const env=(t,p)=>Math.pow(Math.max(0,1-t),p), lp=()=>{ let y=0; return (x,k)=>(y=y*(1-k)+x*k); };
   const R={
     click:{len:.015,f:(D,n)=>{ for(let i=0;i<n;i++){ const t=i/n; D[i]=rnd()*env(t,2)*.6; } }},
@@ -38,6 +39,7 @@ Object.assign(SFX,{on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}});
     splash:{len:.32,f:(D,n,S)=>{ const f=lp(); for(let i=0;i<n;i++){ const t=i/n, s=i/S; D[i]=f(rnd(),.35)*env(t,2.5)*.5+Math.sin(TAU*(180-120*t)*s)*env(t,6)*.25; } }},
     blip:{len:.06,f:(D,n,S)=>{ for(let i=0;i<n;i++){ const t=i/n, s=i/S; D[i]=Math.sin(TAU*1800*s)*Math.sin(t*Math.PI)*.3; } }},
     ding:{len:.7,f:(D,n,S)=>{ for(let i=0;i<n;i++){ const s=i/S; D[i]=(Math.sin(TAU*1320*s)+Math.sin(TAU*2640*s)*.35+Math.sin(TAU*3960*s)*.12)*Math.min(s*400,1)*Math.exp(-s*7)*.3; } }},
+    bell:{len:3,f:(D,n,S)=>{ const P=[[.5,.5,.6],[1,1,.9],[1.19,.55,1.3],[1.5,.35,1.8],[2,.5,2.2],[2.66,.25,3.4],[3.01,.18,4.5]]; for(let i=0;i<n;i++){ const s=i/S; let v=0; for(const [r,a,d] of P)v+=Math.sin(TAU*392*r*s)*a*Math.exp(-s*d); D[i]=v*Math.min(s*600,1,(n-i)/S*3)*.22; } }},
     chirp:{len:.22,f:(D,n,S)=>{ for(let i=0;i<n;i++){ const t=i/n, s=i/S, k=Math.floor(t*3), u=t*3-k; D[i]=Math.sin(TAU*(2600+1400*u+300*k)*s)*Math.sin(u*Math.PI)*.2; } }},
     cricket:{len:.45,f:(D,n,S)=>{ for(let i=0;i<n;i++){ const s=i/S, t=i/n, g=(s*26)%1<.3?1:0; D[i]=Math.sin(TAU*4200*s)*g*Math.sin(t*Math.PI)*.12; } }},
     bark:{len:.3,f:(D,n,S)=>{ const F=lp(); for(let i=0;i<n;i++){ let v=0; for(const st of [0,n*.5|0]){ const dt=i-st; if(dt>=0&&dt<n*.4){ const t=dt/(n*.4), s=dt/S; v+=(Math.sin(TAU*(320-80*t)*s)*.5+F(rnd(),.4)*.4)*Math.min(t*20,1)*env(t,2); } } D[i]=v*.5; } }},
@@ -100,9 +102,10 @@ Object.assign(SFX,{on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}});
     let P=null; if(o.at){ P=SFX.spot(c); } else if(o.pan!=null&&c.createStereoPanner){ P=c.createStereoPanner(); P.pan.value=o.pan; }
     const kd=place(o,G,o.at?P:null); if(kd<=0)return null; G.gain.value=(o.vol==null?1:o.vol)*kd*(o.raw?1:SFX.fxLevel(k)); const out=o.bus||bus(c); if(P)s.connect(P).connect(G).connect(out); else s.connect(G).connect(out); const t0=c.currentTime+(o.delay||0); if(B)s.start(t0,Math.max(0,B.t-.012),B.L+.03); else s.start(t0); return {s,G,P}; };
   // what is underfoot (wood inside, grass in the park, stone elsewhere) and a door gone through
-  SFX.ground=()=>ROOMS.cur||(ROOMS.offIn&&ROOMS.offIn())?'wood':SHARED.LVL==='up'&&PARK.within&&PARK.within(pos.x,pos.z)?'grass':'stone';
-  SFX.door=()=>{ SFX.play('dooropen',{vol:.7}); SFX.play('door',{vol:.7,delay:.9}); };
-  const STEP={stone:'step_stone',grass:'step_grass',wood:'step_wood'}; let ph0=0; SFX.steps=(st,go)=>{ const ph=st.ph||0; const down=Math.floor(ph*2)!==Math.floor(ph0*2); ph0=ph; if(!down||!(go>0)||st.w<.3||st.move||!SFX.on)return; SFX.play(STEP[SFX.ground()],{vol:.045+.075*(st.run||0),vary:.12}); };
+  SFX.ground=(x=pos.x,z=pos.z)=>ROOMS.cur||(ROOMS.offIn&&ROOMS.offIn())?'wood':SHARED.LVL==='up'&&PARK.within&&PARK.within(x,z)?'grass':'stone';
+  SFX.door=(o={})=>{ SFX.play('dooropen',{vol:.7,...o}); SFX.play('door',{vol:.7,delay:.9,...o}); };
+  // a walker's footfalls (you, or another player with {at,far}): one each half of the walk's cycle
+  const STEP={stone:'step_stone',grass:'step_grass',wood:'step_wood'}, PH0=new WeakMap(); SFX.steps=(st,go,o)=>{ const ph=st.ph||0, p0=PH0.has(st)?PH0.get(st):ph, down=Math.floor(ph*2)!==Math.floor(p0*2); PH0.set(st,ph); if(!down||!(go>0)||st.w<.3||st.move||!SFX.on)return; const at=o&&o.at; SFX.play(STEP[at?SFX.ground(at.x,at.z):SFX.ground()],{vol:.045+.075*(st.run||0),vary:.12,at,far:o&&o.far}); };
   const hashS=s=>{ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; };
   SFX.voiceOf=(key,bank)=>{ const h=hashS(String(key||'')); return {bank:bank||(h&1?'high':'low'),pitch:.92+((h>>>8)%1000)/1000*.16}; };
   const VB={}; const vbuf=(c,bank,i)=>{ '@later'; const key=bank+i; if(VB[key]&&VB[key].sampleRate===c.sampleRate)return VB[key]; const S=c.sampleRate, n=S*.07|0, b=c.createBuffer(1,n,S), D=b.getChannelData(0), f0=(bank==='high'?230:140)*(1+(i%4)*.06), fm=[1.5,2.2,2.8,3.6][(i>>2)%4];

@@ -23,7 +23,7 @@ GUARD.list=[];
   TALK.tests.bounty=a=>a==='on'?!!B:a==='done'?done():false;
   TALK.vars.bounty=()=>{ const d=B&&def(B.id); return d?d.t+': '+B.got+' OF '+B.n:'NOTHING'; };
   TALK.tests.vit=a=>a==='hurt'?VIT.hp<.99:true;
-  TALK.ops.heal=a=>{ const c=+a||0; if(INV.cash<c)return say('YOU CANNOT AFFORD IT.','#c8a090'); INV.cash-=c; VIT.heal(1); say('THE HERBALIST MENDS YOU.','#b8f0a0'); FORAGE.draw&&FORAGE.draw(); };
+  TALK.ops.heal=a=>{ const c=+a||0; if(!INV.afford(c))return say('YOU CANNOT AFFORD IT.','#c8a090'); INV.pay(c); VIT.heal(1); say('THE HERBALIST MENDS YOU.','#b8f0a0'); FORAGE.draw&&FORAGE.draw(); };
   FORAGE.BUYK.slime=['slime_']; FORAGE.BUYK.gems=[...GEMS.map(g=>g[0]),'raw_geode']; FORAGE.BUYK.fish=['x_'];
   LINES.add('gd_pub',['Long watch. Good ale.','Sit down, sit down. Old Gristle won\'t bite.','To the keep!','Another round before the stair calls.','You were down there? Tell us everything.']);
   LINES.add('gd_up',['Back up! Good.','You made it out. Most do.','Anything follow you? No? Good.','Welcome back to the light.','Up the stair and still standing.']);

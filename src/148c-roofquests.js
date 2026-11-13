@@ -1,6 +1,6 @@
 // THE ROOFTOPS' SET PIECES (up your fire escape): the ruined greenhouse you restore into a bed for rare flowers (pigeons come for the seedlings), the night run over the next roofs to a mat where a rival master spars you for belts and scrolls, and the water tower you climb (worse in wind and rain) to the view, a hawk's nest and your flag.
 import {SHARED, THREE} from './003-shx.js';
-import {CITY, CLOCK, FORAGE, INV, keys, MAIL, ONLINE, pos, ROOMS, SFX, st, UI, VIS, VIT, WX} from './003b-systems.js';
+import {CITY, CLOCK, FORAGE, INV, ITEMS, keys, MAIL, ONLINE, pos, ROOMS, SFX, st, UI, VIS, VIT, WX} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
@@ -16,6 +16,10 @@ const ROOFQ={built:false}; window.ROOFQ=ROOFQ;
   const night=()=>{ const h=CLOCK.h??12; return h>=20||h<6; }, sk=k=>FORAGE.sk?FORAGE.sk(k):10;
   const BELT=['WHITE','YELLOW','ORANGE','GREEN','BLUE','BROWN','BLACK'];
   FORAGE.add({names:{rf_scroll:"A NIGHT MASTER'S SCROLL"},prices:{rf_scroll:40}});
+  // the scroll has its uses (owner, 12 Nov 2026): studied, it is a lesson in fighting and is used up; the sword buyer pays for one
+  ITEMS.reg('rf_scroll',{value:40}); FORAGE.sell('rf_scroll'); (FORAGE.BUYK.swords=FORAGE.BUYK.swords||[]).push('rf_scroll');
+  FORAGE.ROWB.push(id=>id==='rf_scroll'?[['STUDY IT','rfstudy']]:[]);
+  FORAGE.ACT.rfstudy=()=>{ if(!FORAGE.has('rf_scroll'))return; FORAGE.take('rf_scroll',1); FORAGE.use('fight',-20,80); if(FORAGE.draw)FORAGE.draw(); SAY("YOU STUDY THE NIGHT MASTER'S SCROLL UNTIL ITS FORMS ARE YOURS. THE PAPER CRUMBLES.",'#e8e2cc'); };
   FORAGE.HELP.push('THE ROOFTOPS: up your fire escape, a ruined greenhouse to restore, the night run over the roofs to a master who spars you, and the water tower to climb.');
   let R=null, G=null, MH=0, MV=0; const things=[];
   const L=c=>new THREE.MeshLambertMaterial({color:c}), HIT=new THREE.MeshBasicMaterial({visible:false});
@@ -26,7 +30,7 @@ const ROOFQ={built:false}; window.ROOFQ=ROOFQ;
   // ---------- the greenhouse: an old glasshouse gone to ruin; cleared, reglazed and its beds mended it is a bed of GARDEN's (half a day to bloom under glass) with a seed tray that gives a rare seed a day
   const GH={}, PG={on:false,t:60,stay:0,birds:[],fly:0}, RARE=['lavender','iris','foxglove','violet','violet','slipper'];
   const ghStep=[['CLEAR THE BROKEN GLASS',0],['REGLAZE IT',60],['MEND ITS BEDS',25]];
-  const ghBuild=()=>{ const {U,V,top}=R, x0=Math.min(U(13.2),U(17.2)), x1=Math.max(U(13.2),U(17.2)), z0=Math.min(V(4.2),V(8)), z1=Math.max(V(4.2),V(8)), wh=2.3*MV, rh=3.1*MV, g=GH.g=new THREE.Group(); G.add(g);
+  const ghBuild=()=>{ const {P,top}=R, ga=P(S_(13.2),4.2), gb=P(S_(17.2),8), x0=Math.min(ga[0],gb[0]), x1=Math.max(ga[0],gb[0]), z0=Math.min(ga[1],gb[1]), z1=Math.max(ga[1],gb[1]), wh=2.3*MV, rh=3.1*MV, g=GH.g=new THREE.Group(); G.add(g);
     Object.assign(GH,{x0,x1,z0,z1,y:top}); const W=L(0xdfe6e2), RS=L(0x8a7a66), cx=(x0+x1)/2, d=.05*MH;
     for(const x of [x0,x1])for(const z of [z0,z1])bx(x-d,x+d,top,top+wh,z-d,z+d,W,g);
     for(let k=1;k<4;k++){ const x=x0+(x1-x0)*k/4; for(const z of [z0,z1])bx(x-d*.6,x+d*.6,top,top+wh,z-d*.6,z+d*.6,W,g); }
@@ -54,12 +58,12 @@ const ROOFQ={built:false}; window.ROOFQ=ROOFQ;
   const ghShow=()=>{ for(const m of GH.panes)m.visible=S.gh>=2||!m.userData.broke; GH.rub.visible=S.gh<1; GH.tray.visible=GH.trayLeaf.visible=S.gh>=3; GH.trayTh.obj.visible=S.gh>=3; GH.owl.visible=!!S.owl; GH.owlTh.obj.visible=S.gh>=3;
     for(const m of GH.bedM)m.visible=S.gh>=3; GH.th.name=S.gh>=3?'THE ROOFTOP GREENHOUSE':'A RUINED GREENHOUSE: '+ghStep[S.gh][0]+(ghStep[S.gh][1]?' ($'+ghStep[S.gh][1]+')':''); GH.owlTh.name=S.owl?'THE OWL DECOY':'A HOOK FOR AN OWL DECOY ($12)'; };
   const ghAct=()=>{ '@later'; if(S.gh>=3)return say('YOUR GREENHOUSE. PLANT SEEDS IN ITS BEDS: UNDER GLASS THEY BLOOM IN HALF A DAY. THE TRAY GIVES A RARE SEED EACH DAY.','#9fe07f');
-    const [nm,c]=ghStep[S.gh]; if(c){ if(INV.cash<c)return say('YOU NEED $'+c+' TO '+nm+'.','#c8a090'); INV.cash-=c; if(INV.save)INV.save(); }
+    const [nm,c]=ghStep[S.gh]; if(c){ if(!INV.afford(c))return say('YOU NEED $'+c+' TO '+nm+'.','#c8a090'); INV.pay(c); if(INV.save)INV.save(); }
     else { if(VIT.sta<.15)return say('YOU ARE TOO TIRED. CATCH YOUR BREATH.','#c8a090'); VIT.sta=Math.max(0,VIT.sta-.12); FORAGE.use('garden',-30,60); }
     S.gh++; save(); ghShow(); SFX.play('clunk',{vol:.5,pitch:1.2}); say(['YOU SWEEP THE BROKEN GLASS INTO A HEAP AND CARRY IT DOWN.','NEW PANES IN EVERY FRAME. THE GREENHOUSE SHINES.','YOU MEND THE BEDS AND FILL THEM WITH SOIL. THE GREENHOUSE IS YOURS TO PLANT.'][S.gh-1],S.gh>=3?'#9fe07f':'#e8e2cc'); };
   const trayAct=()=>{ '@later'; if(S.gh<3)return; if(!INV.ready('roofgh:tray'))return say('THE TRAY IS BARE. A NEW SEED SETS BY TOMORROW.','#c8a090');
     const k=RARE[Math.floor(Math.random()*RARE.length)]; mark('roofgh:tray'); FORAGE.give('sd_'+k,1); FORAGE.use('garden',0,80); say('A RARE SEED HAS SET IN THE TRAY: '+FORAGE.name('sd_'+k)+'.','#9fe07f'); FORAGE.draw(); };
-  const owlAct=()=>{ '@later'; if(S.owl)return say('THE PLASTIC OWL GLARES. NO PIGEON WILL LAND WHILE IT WATCHES.'); if(INV.cash<12)return say('YOU NEED $12 FOR AN OWL DECOY.','#c8a090'); INV.cash-=12; if(INV.save)INV.save(); S.owl=1; save(); ghShow(); say('YOU HANG A PLASTIC OWL OVER THE BEDS.'); };
+  const owlAct=()=>{ '@later'; if(S.owl)return say('THE PLASTIC OWL GLARES. NO PIGEON WILL LAND WHILE IT WATCHES.'); if(!INV.afford(12))return say('YOU NEED $12 FOR AN OWL DECOY.','#c8a090'); INV.pay(12); if(INV.save)INV.save(); S.owl=1; save(); ghShow(); say('YOU HANG A PLASTIC OWL OVER THE BEDS.'); };
   const seedlings=()=>GARDEN.plots().filter(p=>p.bed==='roofgh'&&(GARDEN.now()-p.t)/12<.4);
   const land=()=>{ PG.on=true; PG.stay=30; PG.th.obj.visible=true; PG.birds.forEach((b,i)=>{ const [a,bb,c,e]=GH.beds[i%2]; b.position.set(a+(bb-a)*(.2+.3*i),GH.bedY,(c+e)/2); b.visible=true; }); say('PIGEONS DROP INTO THE GREENHOUSE AFTER YOUR SEEDLINGS! SHOO THEM.','#ffb070'); };
   const shoo=()=>{ '@later'; if(!PG.on)return; PG.on=false; PG.fly=1.5; PG.t=90+Math.random()*90; PG.th.obj.visible=false; FORAGE.use('bird',-20,60); SFX.play('chirp',{vol:.5,pitch:1.4}); say('YOU CLAP. THE PIGEONS CLATTER UP AND AWAY.'); };
@@ -70,7 +74,7 @@ const ROOFQ={built:false}; window.ROOFQ=ROOFQ;
 
   // ---------- the water tower (ROOFS' tank on your roof): a ladder up its legs to a catwalk round the rim; the CLIMBING skill sets the pace, wet or windy rungs can slip you off (VIT.hurt, onto the roof)
   const TW={c:null,on:false,want:false,jp:false};
-  const twBuild=()=>{ const {U,V,top}=R, tx=U(5), tz=V(2.4), r=1.5*MH, legH=3.2*MV, deck=top+legH+3.56*MV, lx=tx+r*1.05, IR=L(0x2c2e30); Object.assign(TW,{tx,tz,r,deck,lx,H:deck-top});
+  const twBuild=()=>{ const {P,top}=R, [tx,tz]=P(5,2.4), r=1.5*MH, legH=3.2*MV, deck=top+legH+3.56*MV, lx=tx+r*1.05, IR=L(0x2c2e30); Object.assign(TW,{tx,tz,r,deck,lx,H:deck-top});
     for(const dz of [-.2*MH,.2*MH])bx(lx-.02*MH,lx+.02*MH,top,top+legH+.4*MV,tz+dz-.02*MH,tz+dz+.02*MH,IR); for(let y=top+.3*MV;y<top+legH+.3*MV;y+=.42*MV)bx(lx-.02*MH,lx+.02*MH,y,y+.04*MV,tz-.2*MH,tz+.2*MH,IR);
     { const m=add(new THREE.RingGeometry(r,r+.7*MH,28),new THREE.MeshLambertMaterial({color:0x4a4038,side:THREE.DoubleSide}),tx,deck,tz); m.rotation.x=-Math.PI/2;
       const rl=add(new THREE.TorusGeometry(r+.68*MH,.025*MH,4,32),IR,tx,deck+1.05*MV,tz); rl.rotation.x=Math.PI/2; for(let k=0;k<12;k++){ const a=k/12*Math.PI*2; if(Math.abs(Math.sin(a/2))<.12)continue; bx(-.02*MH,.02*MH,deck,deck+1.05*MV,-.02*MH,.02*MH,IR).position.set(tx+Math.cos(a)*(r+.68*MH),deck+.52*MV,tz+Math.sin(a)*(r+.68*MH)); } }
@@ -110,19 +114,19 @@ const ROOFQ={built:false}; window.ROOFQ=ROOFQ;
 
   // ---------- the night run: perches over your roof's parapet and the next houses' roofs, leapt one to the next (W or SPACE; S back), the CLIMBING skill your footing; a miss you catch, two and you fall to your roof. It ends on the mat where a rival master waits
   const C={on:false,i:0,leap:null,miss:0,held:true}, M=[];
-  const runBuild=()=>{ const {U,V,top,box}=R, mine=[(box[0]+box[2])/2,(box[1]+box[3])/2], P=MV*1.05;
+  const runBuild=()=>{ const {top,box}=R, mine=[(box[0]+box[2])/2,(box[1]+box[3])/2], P=MV*1.05;
     const nb=(MODS.apts.blocks||[]).filter(b=>!b.mine&&Math.abs(b.top-top)<3*MV).map(b=>({b,c:[(b.box[0]+b.box[2])/2,(b.box[1]+b.box[3])/2]})).map(o=>({...o,d:Math.hypot(o.c[0]-mine[0],o.c[1]-mine[1])})).filter(o=>o.d<40*T).sort((a,b)=>a.d-b.d).slice(0,2);
     const CR=L(0x6a4a2a), LN=new THREE.MeshBasicMaterial({color:0xffb050}); M.length=0;
     const edgeOf=(bb,dx,dz,off,inset)=>{ const cx=(bb[0]+bb[2])/2, cz=(bb[1]+bb[3])/2, ax=Math.abs(dx)>Math.abs(dz); return ax?[dx>0?bb[2]-inset:bb[0]+inset,cz+off]:[cx+off,dz>0?bb[3]-inset:bb[1]+inset]; };
-    M.push({x:U(S_(16)),z:V(10.9),y:top,n:'start'});
+    M.push({x:R.P(S_(16),10.9)[0],z:R.P(S_(16),10.9)[1],y:top,n:'start'});
     for(const o of nb){ const dx=o.c[0]-mine[0], dz=o.c[1]-mine[1], bb=o.b.box, t2=o.b.top;
       const a=edgeOf(box,dx,dz,-1.2*MH,.15*MH), b=edgeOf(bb,-dx,-dz,-1.2*MH,.7*MH), c=[(bb[0]+bb[2])/2,(bb[1]+bb[3])/2], d=edgeOf(bb,-dx,-dz,1.2*MH,.7*MH), e=edgeOf(box,dx,dz,1.2*MH,.15*MH);
       bx(c[0]-.5*MH,c[0]+.5*MH,t2,t2+1.2*MV,c[1]-.5*MH,c[1]+.5*MH,CR); bx(c[0]-.35*MH,c[0]+.35*MH,t2+1.2*MV,t2+1.9*MV,c[1]-.35*MH,c[1]+.35*MH,CR);   // a stack of crates in the middle of its roof
       M.push({x:a[0],z:a[1],y:top+P},{x:b[0],z:b[1],y:t2},{x:c[0],z:c[1],y:t2+1.9*MV},{x:d[0],z:d[1],y:t2},{x:e[0],z:e[1],y:top+P}); }
-    if(!nb.length){ M.push({x:U(S_(12)),z:V(9),y:top+.6*MV},{x:U(S_(15.5)),z:V(1.4),y:top+3.2*MV},{x:U(S_(12.5)),z:V(2.2),y:top+3.2*MV}); }   // no neighbour: the bulkhead's roof instead
-    M.push({x:U(S_(15.2)),z:V(10.9),y:top,n:'mat'}); C.ok=true;
+    if(!nb.length){ M.push({x:R.P(S_(12),9)[0],z:R.P(S_(12),9)[1],y:top+.6*MV},{x:R.P(S_(15.5),1.4)[0],z:R.P(S_(15.5),1.4)[1],y:top+3.2*MV},{x:R.P(S_(12.5),2.2)[0],z:R.P(S_(12.5),2.2)[1],y:top+3.2*MV}); }   // no neighbour: the bulkhead's roof instead
+    M.push({x:R.P(S_(15.2),10.9)[0],z:R.P(S_(15.2),10.9)[1],y:top,n:'mat'}); C.ok=true;
     for(const m of M.slice(1,-1)){ const l=add(new THREE.SphereGeometry(.09*MH,8,6),LN,m.x,m.y+.25*MV,m.z); l.castShadow=false; m.lamp=l; }   // a paper lantern on each perch, lit after dark
-    const mx=U(S_(15.2)), mz=V(10.9); C.mat={x:mx,z:mz}; const mt=bx(mx-1.5*MH,mx+1.5*MH,top,top+.04*MV,mz-1.5*MH,mz+1.5*MH,L(0xc8b88a)); bx(mx-1.6*MH,mx+1.6*MH,top,top+.03*MV,mz-1.6*MH,mz+1.6*MH,L(0x3a5a3a)).position.y=top+.012*MV; mt.castShadow=false;
+    const [mx,mz]=R.P(S_(15.2),10.9); C.mat={x:mx,z:mz}; const mt=bx(mx-1.5*MH,mx+1.5*MH,top,top+.04*MV,mz-1.5*MH,mz+1.5*MH,L(0xc8b88a)); bx(mx-1.6*MH,mx+1.6*MH,top,top+.03*MV,mz-1.6*MH,mz+1.6*MH,L(0x3a5a3a)).position.y=top+.012*MV; mt.castShadow=false;
     C.th=thing({name:'THE NIGHT RUN (A CHALK MARK)',act:()=>runStart()},M[0].x,top,M[0].z,.7*MH,.6*MV); };
   const S_=u=>u>13?u-Math.max(0,26-R.W):u;
   const runStart=()=>{ '@later'; if(!night())return say('A CHALK ARROW ON THE ROOF. THE RUN IS ONLY OPEN AFTER DARK.','#c8a090'); if(B.on)return; C.on=true; C.i=0; C.leap=null; C.miss=0; C.held=true; pos.x=M[0].x; pos.z=M[0].z; face(1);
@@ -173,7 +177,7 @@ const ROOFQ={built:false}; window.ROOFQ=ROOFQ;
     if(!TW.on&&(TW.want||up)&&Math.hypot(pos.x-(TW.lx+.3*MH),pos.z-TW.tz)<.6*MH&&Math.abs(SHARED.py-R.top)<.5*MV){ TW.want=false; onLad(0); return true; } TW.want=false; return false; });
 
   const build=()=>{ '@later'; const A=MODS.apts.A, X=SHARED.BOD.X, Z=SHARED.BOD.Z, mine=(MODS.apts.blocks||[]).find(b=>b.mine); MH=T/.84; MV=SHARED.BOD.YS(24)/.84;
-    R={A,W:Math.abs(A.x1-A.x0),U:u=>X(A.x0+u),V:v=>Z(A.y0+v),top:MODS.apts.lvY(MODS.apts.floors||3),box:mine?mine.box:[X(A.x0),Z(A.y0),X(A.x1),Z(A.y1)]};
+    R={A,W:Math.abs(A.x1-A.x0),P:(u,v)=>MODS.apts.XZ?MODS.apts.XZ(A.x0+u,A.y0+v):[X(A.x0+u),Z(A.y0+v)],top:MODS.apts.lvY(MODS.apts.floors||3),box:mine?mine.box:[X(A.x0),Z(A.y0),X(A.x1),Z(A.y1)]};
     G=new THREE.Group(); G.name='roofquests'; scene.add(G); ghBuild(); twBuild(); runBuild(); ROOFQ.built=true; };
   let far=true; SYS.add('places',dt=>{ if(!ROOFQ.built){ if(MODS.apts&&MODS.apts.A&&MODS.apts.blocks&&SHARED.BOD&&SYS.started){ const A=MODS.apts.A, x=SHARED.BOD.X((A.x0+A.x1)/2), z=SHARED.BOD.Z((A.y0+A.y1)/2); if(Math.hypot(pos.x-x,pos.z-z)<60*T)build(); } return; }
     dt=Math.min(.1,dt||0); const cx=(R.box[0]+R.box[2])/2, cz=(R.box[1]+R.box[3])/2, near=SHARED.LVL==='up'&&!ROOMS.cur&&Math.hypot(pos.x-cx,pos.z-cz)<70*T; if(near===far){ far=!near; G.visible=near; }

@@ -38,8 +38,8 @@ import {ROOMK} from './150a-bedroom.js';
     const name=()=>{ const s=RADISH.pot(id), p=P[s.k]; if(!s.dirt)return 'CLAY POT: EMPTY'; if(!p)return 'CLAY POT: DIRT, NO SEED'; const wet=s.wet>hour();
       return p.name+': '+(s.fr?s.fr+' RIPE':s.g>=p.first?'FLOWERING':s.g>p.first*.4?'GROWING':'A SPROUT')+(wet?' · WET':' · DRY'); };
     L.name=name; L.th=c.hit(un,name,()=>{ const s=RADISH.pot(id), has=FORAGE.has;
-      if(!s.dirt){ if(!has('dirt'))return say('IT NEEDS DIRT. THE FLORIST SELLS IT BY THE BAG.','#c8a090'); FORAGE.take('dirt',1); s.dirt=1; MOTION.play('plant'); say('YOU FILL THE POT WITH DIRT.'); }
-      else if(!s.k){ const k=Object.keys(P).find(q=>has(P[q].seed)); if(!k)return say('PLANT A SEED: THE FLORIST SELLS THEM.','#c8a090'); FORAGE.take(P[k].seed,1); MOTION.play('plant'); Object.assign(s,{k,g:0,at:hour(),fr:0,picked:0}); say('YOU PRESS A '+P[k].name+' SEED INTO THE DIRT.'); }
+      if(!s.dirt){ if(!has('dirt'))return say('IT NEEDS DIRT. THE TOMATO SELLS IT BY THE BAG.','#c8a090'); FORAGE.take('dirt',1); s.dirt=1; MOTION.play('plant'); say('YOU FILL THE POT WITH DIRT.'); }
+      else if(!s.k){ const k=Object.keys(P).find(q=>has(P[q].seed)); if(!k)return say('PLANT A SEED: THE TOMATO SELLS THEM.','#c8a090'); FORAGE.take(P[k].seed,1); MOTION.play('plant'); Object.assign(s,{k,g:0,at:hour(),fr:0,picked:0}); say('YOU PRESS A '+P[k].name+' SEED INTO THE DIRT.'); }
       else if(s.fr>0){ const p=P[s.k], n=s.fr; FORAGE.give(p.fruit,n); MOTION.play('harvest'); s.picked=(s.picked||0)+n; s.fr=0; say('YOU PICK '+n+' '+p.name+(n>1?'S':'')+'.','#b8f0a0'); }
       else if(s.wet<=hour()){ if(!has('water'))return say('THE DIRT IS DRY. IT NEEDS WATER (A JUG OF RAIN).','#c8a090'); grow(s); FORAGE.take('water',1); MOTION.play('water'); s.wet=hour()+WET; s.at=hour(); say('THE DIRT DRINKS IT IN.','#9fd8ff'); if(SFX.play)SFX.play('splash',{vol:.3}); }
       else return say('IT IS GROWING. COME BACK LATER.');

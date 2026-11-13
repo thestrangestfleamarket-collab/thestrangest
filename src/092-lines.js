@@ -31,7 +31,7 @@ Object.assign(LINES,{log:[]});
   const st=document.createElement('style'); st.textContent='.said2{position:fixed;transform:translate(-50%,-100%);font:12px var(--pixel);color:var(--fg);background:var(--panel);border:2px solid var(--line);padding:3px 7px;pointer-events:none;z-index:14;white-space:nowrap;max-width:240px}'; document.head.appendChild(st);
   const ON=[], MAX=3, V=new THREE.Vector3();
   const you=()=>(LOOKS.L&&LOOKS.L.name)||'';
-  LINES.say=(N,k,ctx)=>{ '@later'; if(!N||!N.g)return ''; const text=POOL[k]?LINES.pick(k,Object.assign({name:you()},ctx||{})):String(k); if(!text)return '';
+  LINES.say=(N,k,ctx)=>{ '@later'; if(!N||!N.g)return ''; let text=POOL[k]?LINES.pick(k,Object.assign({name:you()},ctx||{})):String(k); if(!text)return '';
     const sg=LINES.signs&&LINES.signs(N,text); if(sg)text=sg;   // (a townsperson who signs: their line as far as you read signs, no voice; 146zs)
     const old=ON.findIndex(o=>o.N===N); if(old>=0){ ON[old].el.remove(); ON.splice(old,1); } while(ON.length>=MAX){ ON[0].el.remove(); ON.shift(); }
     const el=document.createElement('div'); el.className='said2'; document.body.appendChild(el);

@@ -1,7 +1,8 @@
 // THE COURIER: COURIER, a wrinkled little creature in a hooded fleece onesie with bat-wing ears and headphones, riding a bike round the street with a taped parcel on its front rack (a smooth MERCH body on the player's rig, pedalling with the rig's bike pose).
 import {SHARED, THREE} from './003-shx.js';
-import {TILE} from './006-map-pre.js';
-import {HOMES} from './076-npc-map.js';
+import {CITY} from './003b-systems.js';
+import {SYS, TILE} from './006-map-pre.js';
+import {HOMES, stfree} from './076-npc-map.js';
 import {MERCH} from './111e-merch.js';
 const COURIER={};
 { const {SPH,CYL,TOR,BOX,CONE,CAP,grp,mk,paint,C,mix,fbm}=MERCH.K, PI=Math.PI, V3=THREE.Vector3;
@@ -81,4 +82,15 @@ const COURIER={};
   if(COURIER.N&&HOMES.band){ const b=HOMES.band(), st=COURIER.N.st, x=(b.x0+b.x1)/2, z=b.rows?b.rows[0]:(b.z0+b.z1)/2; Object.assign(st.home,{x,z,r:Math.max(b.x1-b.x0,b.z1-b.z0)/2}); st.x=x; st.z=z; st.to=st.next=null; }
   if(COURIER.N&&new URLSearchParams(location.search).get('sheet')==='courier')Object.assign(COURIER.N.st,{hold:true,pin:true,to:null,next:null,x:SHARED.BOD.XS(100),z:SHARED.BOD.ZS((SHARED.BOD.MAP.y0+SHARED.BOD.MAP.y1)/2)});
   { const inView=()=>{ if(!SHARED.BOUND)return setTimeout(inView,500); const st=COURIER.N&&COURIER.N.st; if(st&&st.pin)st.z=Math.min(st.z,SHARED.BOUND.z1-1.5*TILE); }; if(COURIER.N&&COURIER.N.st.pin)inView(); }   // (inside the camera's bounds)   // still on his sheet
-  window.COURIERDBG=()=>{ const N=COURIER.N; return N?{x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),to:!!N.st.to,v:N.RS&&+N.RS.v.toFixed(2),vis:N.g.visible,tris:body.tris()}:null; }; }
+  // a delivery (the phone's): he rides the city's route to where() (you, followed twice if you walk on) and stops by it; done(spot) leaves the parcel. false: he cannot take it
+  let job=null; const far=(a,b)=>Math.hypot(a.x-b.x,a.z-b.z);
+  const ride=at=>{ const st=COURIER.N.st, r=CITY.route&&CITY.route('up',{x:st.x,z:st.z},at,stfree); if(!r||!r.pts||r.pts.length<2)return false; Object.assign(job,{pts:r.pts,i:1,at,stuck:0}); st.to={x:r.pts[1].x,z:r.pts[1].z}; st.next=null; st.wait=0; return true; };
+  const end=()=>{ const N=COURIER.N, j=job; job=null; N.errand=false; N.st.to=null; N.st.wait=4; j.done(j.at); };
+  const there=()=>{ const w=job.where(); if(job.n++<2&&far(w,job.at)>3*TILE&&ride(w))return; end(); };
+  COURIER.bring=(where,done)=>{ const N=COURIER.N; if(!N||job||N.on===false||N.mode==='hidden'||N.st.pin||N.st.hold||SHARED.LVL!=='up')return false; job={where,done,t:0,n:0}; if(!ride(where())){ job=null; return false; } N.errand=true; return true; };
+  SYS.add('life',dt=>{ if(!job||!dt)return; const st=COURIER.N.st, n=job.pts.length, p=job.pts[job.i]; if((job.t+=dt)>150)return end();
+    if(job.i>=n-1&&far(st,job.at)<1.3*TILE)return there(); if(st.to)return;
+    if(far(st,p)<.5*TILE){ job.stuck=0; if(++job.i<n){ const q=job.pts[job.i]; st.to={x:q.x,z:q.z}; return; } return there(); }
+    if((job.stuck+=dt)>3){ st.x=p.x; st.z=p.z; job.stuck=0; } else { st.to={x:p.x,z:p.z}; st.wait=0; } },'111ee-courier');
+  window.COURIERDBG=()=>{ const N=COURIER.N; return N?{x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),to:!!N.st.to,v:N.RS&&+N.RS.v.toFixed(2),vis:N.g.visible,tris:body.tris(),job:!!job}:null; }; }
+export {COURIER};

@@ -64,6 +64,14 @@
   "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
  },
  {
+  "file": "data/scope/sky/moonhi.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Moon_nearside_LRO_5000.jpg",
+  "original": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Moon_nearside_LRO_5000.jpg/1920px-Moon_nearside_LRO_5000.jpg",
+  "credit": "NASA/GSFC/Arizona State University",
+  "licence": "Public domain (per Wikimedia Commons)",
+  "licence_url": "https://creativecommons.org/publicdomain/mark/1.0/"
+ },
+ {
   "file": "data/scope/sky/mercury.jpg",
   "source": "https://commons.wikimedia.org/wiki/File:Mercury_in_true_color.jpg",
   "original": "https://upload.wikimedia.org/wikipedia/commons/4/4a/Mercury_in_true_color.jpg",

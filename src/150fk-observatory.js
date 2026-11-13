@@ -15,7 +15,7 @@ const OBSV={site:{ap:400,dark:1.2,max:400,name:'THE GREAT TELESCOPE (400 MM)',fi
   OBSV.use=async()=>{ if(SCOPE.isOpen())return; if(!keep)keep=SCOPE.site; SCOPE.site=OBSV.site; const o=OBSV.op();
     if(o){ await ASTRO.watch(o.id,o.name,true); return; }
     ASTRO.share(true); await SCOPE.open(); say('YOU HAVE THE GREAT TELESCOPE. WHOEVER STEPS UP AFTER YOU SEES WHAT YOU SEE.'); };
-  SCOPE.ext.push({close:()=>{ if(SCOPE.site!==OBSV.site)return; SCOPE.site=keep||SCOPE.site; keep=null; if(SCOPE.mag>SCOPE.site.max)SCOPE.mag=50; }});
+  SCOPE.ext.push({close:()=>{ if(SCOPE.site!==OBSV.site)return; SCOPE.site=keep||SCOPE.site; keep=null; if(SCOPE.mag>SCOPE.zmax())SCOPE.mag=50; }});
   // the tube follows whoever steers; nobody at it, it rests pointing up the slit
   // whoever had the tube walks off: after a moment with nobody steering, a watcher still at the eyepiece has it (each waits a different while, so one of them takes it)
   let idleT=0; const turn=()=>{ let h=0; for(const c of String(ONLINE.me||''))h=(h*31+c.charCodeAt(0))%5; return 1500+h*700; };

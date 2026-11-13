@@ -1,6 +1,6 @@
 // THE INSTRUMENTS YOU SIT AT (owner, 7 Nov 2026: "lets do piano and drums and harp ... play like the guitar"; "start me with every instrument and 100 skill in each"): INSTR, one way to own, set down, sit at and play the piano, the drum kit and the harp (146zpa-c fill in each): the instrument before you, your body seated with its arms, hands and every finger (or stick) on what it plays, its sound from the music engine's strings, heads and hammers, a song book by skill, the close-up, and everyone near seeing and hearing it.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INSTR, MUSICIN, ONLINE, pos, st, UI, W3} from './003b-systems.js';
+import {FORAGE, INSTR, MUSICIN, ONLINE, pos, st, UI, W3, WIELD} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {SYS} from './006-map-pre.js';
 import {BODIES} from './111a-bodies.js';
@@ -54,12 +54,13 @@ import {GUITAR} from './146zob-guitar.js';
       if(K.mel){ e.lg=!!nx&&gap<.06&&nx.t>e.t+.03; if(e.lg)nx.sl=1; }
       const t0=e.t, t1=ex(t0+e.d); e.t=Math.max(0,ex(t0)+jt+(hsh(i+31)-.5)*.004); e.d=Math.max(.03,t1-ex(t0)); }
     ev.sort((a,b)=>a.t-b.t); c.len=Math.max(ex(end),ev.reduce((a,e)=>Math.max(a,e.t+e.d),0)); };
-  const songGo=(P,i,fail=0)=>{ const T=P.K.BOOK[i]; if(!T)return; if(!T.c)P.K.compile(T); INSTR.feel(T.c,P.K); P.song=i; P.s0=now()+.6; P.cur=0; P.fail=fail; };
+  const songGo=(P,i,fail=0,miss=0,seed=0)=>{ const T=P.K.BOOK[i]; if(!T)return; if(!T.c)P.K.compile(T); INSTR.feel(T.c,P.K); P.song=i; P.s0=now()+.6; P.cur=0; P.fail=fail; P.miss=miss; P.seed=seed; };
   const songStop=P=>{ if(P.song<0)return; P.song=-1; if(P.V&&P.K.hush)rel(P,P.K.hush(P),GSND.now()+.01); };
   // a song's notes go to the voice a little ahead of the clock
-  const songTick=P=>{ if(P.song<0)return; const T=P.K.BOOK[P.song], c=T&&T.c; if(!c)return songStop(P); const t=time(P); if(P.fail&&t>P.fail){ songStop(P); if(P===ME){ tell('stop'); SONGBK.done(P.K.skill,T,false,P.fail/c.len); fillSongs(); drawPanel(); } return; }
-    if(t>c.len+1){ const i=P.song; songStop(P); if(P===ME){ SONGBK.done(P.K.skill,T,true); fillSongs(); const n=SONGBK.next(P.K.skill,P.K.BOOK,i); if(n>=0){ const el=PN&&PN.querySelector('#insong'); if(el)el.value=n; INSTR.play('song',n); } drawPanel(); } return; } const V=voice(P); if(!V)return;
-    while(P.cur<c.ev.length&&c.ev[P.cur].t<=t+.12){ let e=c.ev[P.cur++]; if(e.t<t-.05)continue; if(P.fail&&e.t>P.fail-SONGBK.LEAD){ const d=SONGBK.slip(); if(d===0)continue; if(d){ const R=P.K.slip; e={...e,n:Math.max(R[0],Math.min(R[1],e.n+d))}; } }
+  const songTick=P=>{ if(P.song<0)return; const T=P.K.BOOK[P.song], c=T&&T.c; if(!c)return songStop(P); const t=time(P); if(P.fail&&t>P.fail){ songStop(P); if(P===ME){ tell('stop'); SONGBK.done(P.K.skill,T,false,P.fail/c.len,true); fillSongs(); drawPanel(); } return; }
+    if(P===ME&&t>0&&SONGBK.tick(P.K.skill,T,P,t))drawPanel();
+    if(t>c.len+1){ const i=P.song; songStop(P); if(P===ME){ SONGBK.done(P.K.skill,T,true,1,true); fillSongs(); const n=SONGBK.next(P.K.skill,P.K.BOOK,i); if(n>=0){ const el=PN&&PN.querySelector('#insong'); if(el)el.value=n; INSTR.play('song',n); } drawPanel(); } return; } const V=voice(P); if(!V)return;
+    while(P.cur<c.ev.length&&c.ev[P.cur].t<=t+.12){ let e=c.ev[P.cur++]; if(e.t<t-.05)continue; if(P.fail&&e.t>P.fail-SONGBK.LEAD||SONGBK.wrong(P,P.cur)){ const d=SONGBK.slip(); if(d===0)continue; if(d){ const R=P.K.slip; e={...e,n:Math.max(R[0],Math.min(R[1],e.n+d))}; } }
       const when=GSND.now()+Math.max(0,e.t-t)+.02; emit(P,e,when);
       if(P.K.release&&e.d<60)rel(P,P.K.release(e,P),when+e.d); } };
 
@@ -117,6 +118,7 @@ import {GUITAR} from './146zob-guitar.js';
   // place: one that stands somewhere (the bar's piano and kit): {at()->{x,z,hd} its seat, take(), back(), live()}; you sit there and play the room's own, yours not set down, none needed in your bag
   INSTR.start=(id,place)=>{ const K=INSTR.KINDS[id]; if(!K)return; if(on){ if(ME.K===K)return; INSTR.stop(); }
     if(st.water&&st.water.in||st.ride||st.climb||st.hang||st.sit)return say('NOT HERE: STAND SOMEWHERE STEADY AND OPEN TO SET IT DOWN.','#c8a090');
+    if(WIELD.on)return say('YOUR HANDS ARE FULL: PUT AWAY THE '+WIELD.what()+' FIRST.','#c8a090');
     if(GUITAR&&GUITAR.on())GUITAR.stop(); GSND.wake(); on=true; ME.K=K; wx=pos.x; wz=pos.z; setTimeout(()=>smp(K),400); ME.song=-1; ME.live={ev:[]}; ME.st={}; ME.cur=0;
     ME.place=place||null; if(place){ ME.back=pos.clone(); const a=place.at(); pos.x=a.x; pos.z=a.z; SHARED.heading=a.hd; SHARED.target=null; if(place.take)place.take(); }
     prevView=UI.view; if(CU.on&&!UI.persp)UI.setView('third'); panel(true); tell('on',place?'k':''); K.loadBook&&K.loadBook();
@@ -124,7 +126,7 @@ import {GUITAR} from './146zob-guitar.js';
   INSTR.stop=()=>{ if(!on)return; on=false; MUSICIN.close&&MUSICIN.close(); songStop(ME); if(ME.K&&ME.K.hush&&ME.V)rel(ME,ME.K.hush(ME),GSND.now()+.01); unhold(ME); panel(false); tell('off');
     const pl=ME.place; ME.place=null; if(pl){ if(pl.back)pl.back(); if(ME.back){ pos.x=ME.back.x; pos.z=ME.back.z; } ME.back=null; } if(prevView&&prevView!==UI.view&&!/third/.test(prevView))UI.setView(prevView); prevView=''; };
   INSTR.play=(k,v)=>{ if(!on)return; const K=ME.K; if(k==='song'&&v===ME.song)k='stop';
-    if(k==='song'){ const T=K.BOOK[v]; if(!T||!SONGBK.can(K.skill,K.BOOK,T))return say(T?`${T.name.toUpperCase()} IS NOT OPEN TO YOU YET (${K.skill.toUpperCase()} ${T.lvl}; YOURS IS ${skill(K).toFixed(1)}). LEARN THE PIECES YOU HAVE.`:'THAT PIECE IS NOT IN THE BOOK.','#c8a090'); if(T.imp&&!T.n.length)return say(K.name.replace(/^A /,'THE ')+' CAN PLAY NONE OF THAT PIECE.','#c8a090'); if(!T.c)K.compile(T); const r=SONGBK.start(K.skill,T), f=r.ok?0:+(T.c.len*r.at).toFixed(1); songGo(ME,v,f); if(T.imp)tell('imp',T.imp); else tell('song',v+(f?':'+f:'')); }
+    if(k==='song'){ const T=K.BOOK[v]; if(!T||!SONGBK.can(K.skill,K.BOOK,T))return say(T?`${T.name.toUpperCase()} IS NOT OPEN TO YOU YET (${K.skill.toUpperCase()} ${T.lvl}; YOURS IS ${skill(K).toFixed(1)}). LEARN THE PIECES YOU HAVE.`:'THAT PIECE IS NOT IN THE BOOK.','#c8a090'); if(T.imp&&!T.n.length)return say(K.name.replace(/^A /,'THE ')+' CAN PLAY NONE OF THAT PIECE.','#c8a090'); if(!T.c)K.compile(T); const r=SONGBK.start(K.skill,T), f=r.ok?0:+(T.c.len*r.at).toFixed(1); songGo(ME,v,f,r.miss,r.seed); if(T.imp)tell('imp',T.imp); else tell('song',SONGBK.code(v,r,T.c.len)); }
     else if(k==='stop'){ songStop(ME); tell('stop'); }
     drawPanel(); };
 
@@ -184,7 +186,7 @@ import {GUITAR} from './146zob-guitar.js';
   const them=(id,kid)=>{ const K=INSTR.KINDS[kid]; if(!K)return null; let P=THEM.get(id); if(P&&P.K!==K){ unhold(P); P=null; } if(!P){ P=mk(id,K); THEM.set(id,P); } return P; };
   ONLINE.hear.ins=m=>{ if(!m.id||!INSTR.KINDS[m.i])return; const P=them(m.id,m.i); if(!P)return; const k=m.k, v=String(m.v||'');
     if(k==='off'){ unhold(P); THEM.delete(m.id); return; } if(k==='on')return;
-    if(k==='song'&&parseInt(v)>=0){ const K=P.K, i=parseInt(v), f=+v.split(':')[1]||0; (K.BOOK[i]?Promise.resolve():K.loadBook?K.loadBook():Promise.resolve()).then(()=>{ if(K.BOOK[i])songGo(P,i,f); }); }
+    if(k==='song'&&parseInt(v)>=0){ const K=P.K, r=SONGBK.read(v), i=r.i; (K.BOOK[i]?Promise.resolve():K.loadBook?K.loadBook():Promise.resolve()).then(()=>{ if(K.BOOK[i])songGo(P,i,r.fail,r.miss,r.seed); }); }
     else if(k==='imp')MUSICIN.theirs(m.id,v,P.K.id).then(i=>{ if(i>=0&&THEM.get(m.id)===P)songGo(P,i,0); });
     else if(k==='stop')songStop(P);
     else if(k==='b'&&P.K.hear)for(const it of v.split(',').slice(0,12))if(it)P.K.hear(P,it[0],it.slice(1)); };

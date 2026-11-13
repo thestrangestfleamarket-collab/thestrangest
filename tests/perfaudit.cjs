@@ -43,7 +43,8 @@ const {chromium}=require('playwright'); const fs=require('fs'), path=require('pa
       const P=PASS['shadow maps']||(PASS['shadow maps']={n:0,ms:0,calls:0,tris:0}); P.n++; P.ms+=d; P.calls+=renderer.info.render.calls-i0; P.tris+=renderer.info.render.triangles-t0; pass=p0; if(stack.length)stack[stack.length-1]+=d; };
     const rb0=renderer.renderBufferDirect.bind(renderer); renderer.renderBufferDirect=(c,s,g,m,o,grp)=>{ if(REC){ const n=g.index?g.index.count:g.attributes.position?g.attributes.position.count:0, dr=g.drawRange;
         let st=Math.max(dr.start,grp?grp.start:0), en=Math.min(dr.start+dr.count,grp?grp.start+grp.count:Infinity,n); const inst=o.isInstancedMesh?o.count:g.isInstancedBufferGeometry?g.instanceCount:1;
-        const prim=o.isPoints?'pts':o.isLine||o.isLineSegments?'line':'tri', cnt=Math.max(0,en-st)/(prim==='tri'?3:1)*inst;
+        const prim=o.isPoints?'pts':o.isLine||o.isLineSegments?'line':'tri'; let cnt=Math.max(0,en-st)/(prim==='tri'?3:1)*inst;
+        if(o.isBatchedMesh&&o._multiDrawCounts){ let k=0; for(let i=0;i<o._multiDrawCount;i++)k+=o._multiDrawCounts[i]; cnt=k/(prim==='tri'?3:1); }   // a batch draws only its pieces left after its own cull
         REC.push({pass:s===null?('shadow '+(camL.get(c)||'?')):pass,owner:label(o),prim,cnt,o,culled:o.frustumCulled,mat:m.type}); } rb0(c,s,g,m,o,grp); };
     const fr=()=>new Promise(r=>requestAnimationFrame(()=>r()));
     // ---- frames: CPU by system, render calls ----
@@ -62,9 +63,15 @@ const {chromium}=require('playwright'); const fs=require('fs'), path=require('pa
     REC=[]; await fr(); await fr(); const D=REC; REC=null; const NR=2;
     const cam=__R.cam; cam.updateMatrixWorld(); const M4=cam.projectionMatrix.clone().multiply(cam.matrixWorldInverse); const e=M4.elements;
     const inView=(x,y,z)=>{ const w=e[3]*x+e[7]*y+e[11]*z+e[15], X=(e[0]*x+e[4]*y+e[8]*z+e[12])/w, Y=(e[1]*x+e[5]*y+e[9]*z+e[13])/w, Z=(e[2]*x+e[6]*y+e[10]*z+e[14])/w; return X>-1.05&&X<1.05&&Y>-1.05&&Y<1.05&&Z>-1&&Z<1; };
+    const PL=[[e[3]+e[0],e[7]+e[4],e[11]+e[8],e[15]+e[12]],[e[3]-e[0],e[7]-e[4],e[11]-e[8],e[15]-e[12]],[e[3]+e[1],e[7]+e[5],e[11]+e[9],e[15]+e[13]],[e[3]-e[1],e[7]-e[5],e[11]-e[9],e[15]-e[13]],[e[3]+e[2],e[7]+e[6],e[11]+e[10],e[15]+e[14]],[e[3]-e[2],e[7]-e[6],e[11]-e[10],e[15]-e[14]]].map(p=>{ const l=Math.hypot(p[0],p[1],p[2]); return p.map(v=>v/l); });
+    const sphereIn=(x,y,z,r)=>PL.every(p=>p[0]*x+p[1]*y+p[2]*z+p[3]>-r);
     const boxes=__R.ROOMS.boxes(), cur=__R.ROOMS.cur, inRoom=(x,y,z)=>boxes.some(B=>B!==cur&&x>B.x0&&x<B.x1&&z>B.z0&&z<B.z1&&(B.y0==null||y>B.y0-.1)&&(B.y1==null||y<B.y1+.1));
     const geomStat=new Map(); const stat=o=>{ if(geomStat.has(o))return geomStat.get(o); const g=o.geometry, P=g&&g.attributes.position; let r={n:0,vis:0,room:0};
-      if(P&&!o.isSkinnedMesh&&!o.isInstancedMesh&&!o.isPoints&&!o.isLine){ o.updateWorldMatrix(true,false); const m=o.matrixWorld.elements, I=g.index?g.index.array:null, nT=(I?I.length:P.count)/3, A=P.array, st=P.itemSize, step=Math.max(1,Math.floor(nT/400000));
+      if(o.isInstancedMesh||o.isBatchedMesh){ o.updateWorldMatrix(true,false); const MW=o.matrixWorld, S=o.matrixWorld.getMaxScaleOnAxis(), M=MW.clone(), c=MW.elements.slice(0,0); const pieces=[];
+          if(o.isInstancedMesh){ const g=o.geometry; if(!g.boundingSphere)g.computeBoundingSphere(); for(let i=0;i<o.count;i++){ o.getMatrixAt(i,M); pieces.push([M.clone().premultiply(MW),g.boundingSphere,(g.index?g.index.count:g.attributes.position.count)/3]); } }
+          else if(o._instanceInfo)o._instanceInfo.forEach((r,i)=>{ if(!r||!r.active||!r.visible)return; const G=o._geometryInfo[r.geometryIndex]; const bs=o.getBoundingSphereAt(r.geometryIndex,G.boundingSphere?G.boundingSphere.clone():undefined); if(!bs)return; o.getMatrixAt(i,M); pieces.push([M.clone().premultiply(MW),bs,G.count/3]); });
+          let all=0, in_=0; for(const [m,bs,t] of pieces){ const v=bs.center.clone().applyMatrix4(m), rr=bs.radius*m.getMaxScaleOnAxis(); all+=t; if(sphereIn(v.x,v.y,v.z,rr))in_+=t; } r={n:all||1,vis:in_,room:0}; }
+      else if(P&&!o.isSkinnedMesh&&!o.isPoints&&!o.isLine){ o.updateWorldMatrix(true,false); const m=o.matrixWorld.elements, I=g.index?g.index.array:null, nT=(I?I.length:P.count)/3, A=P.array, st=P.itemSize, step=Math.max(1,Math.floor(nT/400000));
         const id=k=>I?I[k]:k; let s=0; for(let t=0;t<nT;t+=step){ let x=0,y=0,z=0; for(let k=0;k<3;k++){ const v=id(t*3+k)*(P.isInterleavedBufferAttribute?P.data.stride:st)+(P.isInterleavedBufferAttribute?P.offset:0); x+=A[v]; y+=A[v+1]; z+=A[v+2]; } x/=3; y/=3; z/=3;
           const wx=m[0]*x+m[4]*y+m[8]*z+m[12], wy=m[1]*x+m[5]*y+m[9]*z+m[13], wz=m[2]*x+m[6]*y+m[10]*z+m[14]; s++; if(inView(wx,wy,wz))r.vis++; if(!cur&&inRoom(wx,wy,wz))r.room++; }
         r.n=s; } else if(o.isObject3D){ const p=o.getWorldPosition(o.position.clone()); r={n:1,vis:inView(p.x,p.y+.5,p.z)?1:0,room:0}; } geomStat.set(o,r); return r; };

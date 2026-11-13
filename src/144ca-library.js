@@ -157,7 +157,7 @@ const LIB={data:null,max:5,inside:[]}; window.LIB=LIB;   // inside: what else fu
   const bookDims=b=>({th:.012+(b.pages||300)*.00007,h:.25+hsh(b.id)*.07,d:.2+hsh(b.t)*.05});
   // a case reads from its top shelf down (row 0 is the bottom shelf)
   // a shelf's books side by side, filling its width IN left to right: thick or thin by length
-  LIB.layRow=(row,IN)=>{ const L=row.map(bookDims), sum=L.reduce((a,q)=>a+q.th,0), k=(IN-.012)/sum; let x=-IN/2+.006;
+  LIB.layRow=(row,IN,real)=>{ const L=row.map(b=>{ const q=bookDims(b); if(real)q.th=Math.min(q.th,.065); return q; }), sum=L.reduce((a,q)=>a+q.th,0), k=real?Math.min(1,(IN-.012)/sum):(IN-.012)/sum; let x=-IN/2+.006;   // real: each book its own thickness, left to right, never stretched
     return row.map((b,i)=>{ const q=L[i], th=q.th*k, o={b,x:x+th/2,th,h:q.h,d:q.d}; x+=th; return o; }); };
   LIB.shelfOf=C=>{ '@later'; return [0,1,2,3].map(r=>LIB.layRow(C.books.slice((3-r)*10,(3-r)*10+10),BC.IN)); };   // ten to a shelf
   // one spine on a canvas: w x h px, x/y its corner
@@ -176,15 +176,16 @@ const LIB={data:null,max:5,inside:[]}; window.LIB=LIB;   // inside: what else fu
     g.save(); g.translate(x+w/2,(a0+a1)/2); g.rotate(Math.PI/2); g.font=`${afs}px Georgia,serif`; g.fillText(A,0,0); g.restore(); g.restore(); };
   const IMS={}, spineIm=id=>{ const f=spineF(id); if(!f)return null; if(!IMS[id]){ const im=new Image(); im.src=f; IMS[id]=im; } return IMS[id].complete&&IMS[id].naturalWidth?IMS[id]:null; };
   // the books of a case as one mesh: each a box, its spine painted on one sheet (a cell a book), the real spine laid over where one survives; rows[r] stand on SH[r], their fronts at FZ; skip(ids) takes those off the shelf
-  LIB.spines=(rows,SH,FZ)=>{ '@later';
+  LIB.spines=(rows,SH,FZ,pages)=>{ '@later';   // pages: the tops, bottoms and fore-edges show the leaves
     const mg=(L,mat)=>{ let n=0; for(const g of L)n+=g.attributes.position.count; const P=new Float32Array(n*3),N=new Float32Array(n*3),U=new Float32Array(n*2),I=[]; let o=0;
       for(const g of L){ P.set(g.attributes.position.array,o*3); N.set(g.attributes.normal.array,o*3); U.set(g.attributes.uv.array,o*2); for(const i of g.index.array)I.push(i+o); o+=g.attributes.position.count; g.dispose(); }
       const b=new THREE.BufferGeometry(); b.setAttribute('position',new THREE.BufferAttribute(P,3)); b.setAttribute('normal',new THREE.BufferAttribute(N,3)); b.setAttribute('uv',new THREE.BufferAttribute(U,2)); b.setIndex(I); const me=new THREE.Mesh(b,mat); me.castShadow=me.receiveShadow=true; return me; };
-    const CW=48, CH=320, NC=Math.max(1,...rows.map(r=>r.length)), cv=document.createElement('canvas'); cv.width=CW*NC; cv.height=CH*rows.length; const g=cv.getContext('2d'), tex=new THREE.CanvasTexture(cv); tex.colorSpace=THREE.SRGBColorSpace; tex.anisotropy=4;
-    rows.forEach((row,r)=>row.forEach((q,i)=>paintSpine(g,i*CW,r*CH,CW,CH,q.b,spineIm(q.b.id))));
+    const CW=48, CH=320, NC=Math.max(1,...rows.map(r=>r.length)), cv=document.createElement('canvas'); cv.width=CW*(NC+(pages?1:0)); cv.height=CH*rows.length; const g=cv.getContext('2d'), tex=new THREE.CanvasTexture(cv); tex.colorSpace=THREE.SRGBColorSpace;     rows.forEach((row,r)=>row.forEach((q,i)=>paintSpine(g,i*CW,r*CH,CW,CH,q.b,spineIm(q.b.id))));
+    if(pages){ g.fillStyle='#e6dcc2'; g.fillRect(NC*CW,0,CW,CH); for(let i=0;i<CW;i+=2){ g.fillStyle=`rgba(120,96,60,${.08+(i*37%11)/60})`; g.fillRect(NC*CW+i,0,1,CH); } }
+    const pu0=NC*CW/cv.width, pu1=(NC*CW+CW)/cv.width, pv0=1-CH/cv.height;
     const geos=out=>{ const L=[]; rows.forEach((row,r)=>row.forEach((q,i)=>{ if(out&&out.has(q.b.id))return; const cx=i*CW, cy=r*CH;
       const geo=new THREE.BoxGeometry(q.th,q.h,q.d), uv=geo.attributes.uv, u0=cx/cv.width, u1=(cx+CW)/cv.width, v0=1-(cy+CH)/cv.height, v1=1-cy/cv.height;
-      for(let k=0;k<uv.count;k++){ const face=Math.floor(k/4); if(face===4){ const a=uv.getX(k), c=uv.getY(k); uv.setXY(k,u0+(u1-u0)*a,v0+(v1-v0)*c); } else uv.setXY(k,u0+(u1-u0)*.5,v0+(v1-v0)*.5); }
+      for(let k=0;k<uv.count;k++){ const face=Math.floor(k/4); if(face===4){ const a=uv.getX(k), c=uv.getY(k); uv.setXY(k,u0+(u1-u0)*a,v0+(v1-v0)*c); } else if(pages&&face>=2){ const a=uv.getX(k), c=uv.getY(k); uv.setXY(k,pu0+(pu1-pu0)*(face===5?c:a),pv0+(1-pv0)*(face===5?a:c)); } else uv.setXY(k,u0+(u1-u0)*.5,v0+(v1-v0)*.5); }
       geo.translate(q.x,SH[r]+q.h/2,FZ-q.d/2-.01); L.push(geo); })); return L; };
     const mesh=mg(geos(null),new THREE.MeshLambertMaterial({map:tex}));
     for(const row of rows)for(const q of row)if(spineF(q.b.id)){ const im=new Image(); im.onload=()=>{ rows.forEach((rw,r)=>rw.forEach((z,i)=>{ if(z.b.id===q.b.id){ paintSpine(g,i*CW,r*CH,CW,CH,z.b,im); tex.needsUpdate=true; } })); }; im.src=spineF(q.b.id); }
@@ -259,8 +260,7 @@ const LIB={data:null,max:5,inside:[]}; window.LIB=LIB;   // inside: what else fu
       else if(k==='oak'){ const gr=.8+.2*Math.sin(y*1.4+Math.sin(x*.03)*2)+(rnd()<.02?-.25:0)+.05*(rnd()-.5); r=168*gr; gg=126*gr; b=78*gr; }
       else { const s=.95+.05*(rnd()-.5); r=236*s; gg=232*s; b=222*s; }
       d[i]=r; d[i+1]=gg; d[i+2]=b; d[i+3]=255; }
-    g.putImageData(I,0,0); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.wrapS=THREE.RepeatWrapping; t.anisotropy=4;
-    const sp={gilt:[0x8a6a2a,42],walnut:[0x2a2a2a,18],oak:[0x1c1c1c,10],white:[0x202020,8]}[k];
+    g.putImageData(I,0,0); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.wrapS=THREE.RepeatWrapping;     const sp={gilt:[0x8a6a2a,42],walnut:[0x2a2a2a,18],oak:[0x1c1c1c,10],white:[0x202020,8]}[k];
     return new THREE.MeshPhongMaterial({map:t,vertexColors:true,specular:sp[0],shininess:sp[1]}); })());
   // the frame round a w x h picture (metres): one ring of the rectangle for each profile point, joined side by side (the mitres fall at the corners)
   const frameGeo=(w,h,P)=>{ const pos=[],nor=[],uv=[],col=[], L=[0]; for(let i=1;i<P.length;i++)L.push(L[i-1]+Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]));
@@ -273,7 +273,7 @@ const LIB={data:null,max:5,inside:[]}; window.LIB=LIB;   // inside: what else fu
   let SHADOW=null; const shadowTex=()=>SHADOW||(SHADOW=(()=>{ const c=document.createElement('canvas'); c.width=c.height=64; const g=c.getContext('2d'), gr=g.createRadialGradient(32,32,8,32,32,32); gr.addColorStop(0,'rgba(0,0,0,.55)'); gr.addColorStop(.7,'rgba(0,0,0,.35)'); gr.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle=gr; g.fillRect(0,0,64,64); const t=new THREE.CanvasTexture(c); return t; })());
   const hang=(A,use,F,t,u,v,du,dv,hc)=>{ const MW=IKIT.MW, M=MOULD[t.fr]||MOULD.barbizon, s=Math.min(1,(t.big||.95)/Math.max(t.cm[0],t.cm[1])*100), h=t.cm[0]/100*s, w=t.cm[1]/100*s, ow=M.p[M.p.length-1][0];
     const G=new THREE.Group(), me=new THREE.Mesh(frameGeo(w,h,M.p),finish(M.f)); me.castShadow=me.receiveShadow=true; G.add(me);
-    const tx=new THREE.TextureLoader().load(t.i); tx.colorSpace=THREE.SRGBColorSpace; tx.anisotropy=4; const cv=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshLambertMaterial({map:tx,emissiveMap:tx,emissive:0x5a4a3a})); cv.position.z=.013; G.add(cv);   // (lit a little by its picture light)
+    const tx=new THREE.TextureLoader().load(t.i); tx.colorSpace=THREE.SRGBColorSpace; const cv=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshLambertMaterial({map:tx,emissiveMap:tx,emissive:0x5a4a3a})); cv.position.z=.013; G.add(cv);   // (lit a little by its picture light)
     const bk=new THREE.Mesh(new THREE.BoxGeometry(w+.01,h+.01,.008),new THREE.MeshLambertMaterial({color:0x3a2a1c})); bk.position.z=.004; G.add(bk);
     { const br=new THREE.MeshPhongMaterial({color:0xb8923a,specular:0x806030,shininess:50}), y=h/2+ow+.06, L=Math.max(.25,w*.45);   // the brass picture light over it: two arms off the wall, the hood, its warm glow
       for(const x of [-L*.3,L*.3]){ const a=new THREE.Mesh(new THREE.BoxGeometry(.012,.012,.16),br); a.position.set(x,y,.08); G.add(a); }

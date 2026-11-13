@@ -58,17 +58,28 @@ const MERCH={list:[],SURF:{plain:0,knit:1,cloth:2,denim:3,leather:4,metal:5,skin
   const offOf=B=>{ const off={}; for(const n of BONES){ if(!PARENT[n])continue; const p=B[n].position; off[n]=[PARENT[n],p.x,p.y,p.z]; } return off; };
 
   /* ---------- baked: every part's faces flat, coloured, each held by its one bone ---------- */
-  MERCH.bake=({root,B})=>{ root.updateMatrixWorld(true);
-    const inv={}; for(const n of BONES)inv[n]=B[n].matrixWorld.clone().invert();
-    const P=[],N=[],C=[],I=[],W=[],MT=[], va=new V3(),vb=new V3(),vc=new V3(),e1=new V3(),e2=new V3(),nn=new V3(),na=new V3(),col=new THREE.Color(), M=new THREE.Matrix4(), NM=new THREE.Matrix3();
-    root.traverse(o=>{ if(!o.isMesh)return; let b=o; while(b&&!b.userData.bone)b=b.parent; if(!b)return; const bi=BONES.indexOf(b.userData.bone);
-      M.multiplyMatrices(inv[b.userData.bone],o.matrixWorld); NM.getNormalMatrix(M); if(o.geometry.index)o.geometry.computeVertexNormals(); else if(!o.geometry.attributes.normal)o.geometry.computeVertexNormals();
+  // each bone's place at rest (metres): the bake puts every point there, BODIES moves it by its bones' turns (binv)
+  const restOf=({root,B})=>{ root.updateMatrixWorld(true); const O={}; for(const n of BONES)O[n]=new V3().setFromMatrixPosition(B[n].matrixWorld); return O; };
+  MERCH.bake=(S)=>{ const {root,B}=S, O=restOf(S), q=S.q, R=Math.max(.04,.12*q.hipY), KIDS={};
+    for(const n of BONES){ const pa=PARENT[n]; if(pa)(KIDS[pa]=KIDS[pa]||[]).push(n); }
+    // a point's two bones: its own and, near a joint, the bone across it (half each at the joint, fading out over R) so elbows, knees, shoulders, waist and neck bend smoothly;
+    // a skirt or coat (userData.skirt) on the hips follows the thigh on its side more the lower it hangs; a prop (userData.rigid) keeps to its bone
+    const two=(n,p,ud)=>{ if(ud.rigid)return [n,n,1];
+      if(ud.skirt&&n==='hips'){ const th=p.x>=0?'thighL':'thighR', d=Math.max(0,Math.min(1,(O.hips.y-p.y)/Math.max(.05,O.hips.y-O.shinL.y))); return [n,th,1-.8*d]; }
+      let best=null, bd=R; const jt=[]; if(PARENT[n])jt.push([PARENT[n],O[n]]); for(const c of KIDS[n]||[])jt.push([c,O[c]]);
+      for(const [o,J] of jt){ const d=p.distanceTo(J); if(d<bd){ bd=d; best=o; } }
+      return best?[n,best,1-.5*(1-bd/R)]:[n,n,1]; };
+    const P=[],N=[],C=[],I=[],W=[],MT=[], va=new V3(),vb=new V3(),vc=new V3(),e1=new V3(),e2=new V3(),nn=new V3(),na=new V3(),col=new THREE.Color(), NM=new THREE.Matrix3();
+    root.traverse(o=>{ if(!o.isMesh)return; let b=o; while(b&&!b.userData.bone)b=b.parent; if(!b)return; const bn=b.userData.bone;
+      let ud={}; for(let u=o;u&&u!==b.parent;u=u.parent)ud={...u.userData,...ud};
+      NM.getNormalMatrix(o.matrixWorld); if(o.geometry.index)o.geometry.computeVertexNormals(); else if(!o.geometry.attributes.normal)o.geometry.computeVertexNormals();
       const g=o.geometry.index?o.geometry.toNonIndexed():o.geometry, p=g.attributes.position, gn=g.attributes.normal, gc=g.attributes.color, spec=o.userData.c, mt=o.userData.m||0;
       const hex=Array.isArray(spec)?spec[0]:spec, jt=Array.isArray(spec)?spec[1]:.03; if(hex&&hex!=='vc')col.set(hex);
-      for(let f=0;f<p.count;f+=3){ va.fromBufferAttribute(p,f).applyMatrix4(M); vb.fromBufferAttribute(p,f+1).applyMatrix4(M); vc.fromBufferAttribute(p,f+2).applyMatrix4(M);
+      for(let f=0;f<p.count;f+=3){ va.fromBufferAttribute(p,f).applyMatrix4(o.matrixWorld); vb.fromBufferAttribute(p,f+1).applyMatrix4(o.matrixWorld); vc.fromBufferAttribute(p,f+2).applyMatrix4(o.matrixWorld);
         nn.crossVectors(e1.subVectors(vb,va),e2.subVectors(vc,va)); if(nn.lengthSq()<1e-14)continue; nn.normalize();
         let r,gg,bb; if(gc&&spec==='vc'){ r=-1; } else { const k=1+(hash3(Math.round(va.x*40),Math.round(va.y*40),Math.round(va.z*40))-.5)*2*jt; r=col.r*k; gg=col.g*k; bb=col.b*k; }
-        [va,vb,vc].forEach((v,q)=>{ P.push(v.x,v.y,v.z); if(gn){ na.fromBufferAttribute(gn,f+q).applyMatrix3(NM).normalize(); if(na.dot(nn)<-.2)na.negate(); N.push(na.x,na.y,na.z); } else N.push(nn.x,nn.y,nn.z); if(r<0)C.push(gc.getX(f+q),gc.getY(f+q),gc.getZ(f+q)); else C.push(r,gg,bb); I.push(bi,bi); W.push(1); MT.push(mt); }); } });
+        [va,vb,vc].forEach((v,q)=>{ P.push(v.x,v.y,v.z); if(gn){ na.fromBufferAttribute(gn,f+q).applyMatrix3(NM).normalize(); if(na.dot(nn)<-.2)na.negate(); N.push(na.x,na.y,na.z); } else N.push(nn.x,nn.y,nn.z); if(r<0)C.push(gc.getX(f+q),gc.getY(f+q),gc.getZ(f+q)); else C.push(r,gg,bb);
+          const [a,c2,w]=two(bn,v,ud); I.push(BONES.indexOf(a),BONES.indexOf(c2)); W.push(w); MT.push(mt); }); } });
     // see-through surfaces (glass, tulle: 10 and up) go last, in a group of their own drawn see-through
     const nv=MT.length, ord=[...Array(nv/3).keys()].sort((a,b)=>(MT[a*3]>=10)-(MT[b*3]>=10)), re=(A,k)=>{ const o=new Array(A.length); ord.forEach((f,i)=>{ for(let j=0;j<3*k;j++)o[i*3*k+j]=A[f*3*k+j]; }); return o; };
     const P2=re(P,3),N2=re(N,3),C2=re(C,3),I2=re(I,2),W2=re(W,1),M2=re(MT,1);
@@ -79,16 +90,17 @@ const MERCH={list:[],SURF:{plain:0,knit:1,cloth:2,denim:3,leather:4,metal:5,skin
 
   /* ---------- a merchant: def {key, label, height (m), model()->skel with parts, at, size (x/10 of a person, the owner's scale), idle(t,N)->rig pose, after(B,N,dt), lift(t)} ---------- */
   MERCH.add=def=>{ if(ARCH.has(def.key))return null; K.Q=MERCH.LOD!==1?MERCH.LOD:def.q??1; const S=def.model(); K.Q=1;   // an archived character gets no body
-    const body={key:def.key,label:def.label,height:def.height,hipY:S.q.hipY,off:offOf(S.B),binv:null,at:def.at??0,geo:()=>MERCH.bake(S),
-      size:(def.size||10)/10,smooth:true,idle:def.idle,after:def.after,lift:def.lift,hd:def.hd,ride:def.ride,rideSpeed:def.rideSpeed,root:def.inside?scene:null};
+    const O=restOf(S), body={key:def.key,label:def.label,height:def.height,hipY:S.q.hipY,off:offOf(S.B),binv:BONES.map(n=>new THREE.Matrix4().makeTranslation(-O[n].x,-O[n].y,-O[n].z)),rest:O,at:def.at??0,geo:()=>MERCH.bake(S),
+      size:(def.size||10)/10,smooth:true,idle:def.idle,after:def.after,lift:def.lift,hd:def.hd,ride:def.ride,rideSpeed:def.rideSpeed,root:def.root||(def.inside?scene:null),ground:def.ground};
     BODIES.add(body); MERCH.list.push(body); return body; };
   // where a point on one of a body's bones (metres, in the bone's own frame) is in the world, as posed this frame: for things held or worn
-  MERCH.at=(N,bone,p,out)=>out.set(p[0],p[1],p[2]).applyMatrix4(N.PM.value[BONES.indexOf(bone)]).applyMatrix4(N.g.matrixWorld);
+  MERCH.at=(N,bone,p,out)=>{ const o=N.body&&N.body.rest&&N.body.rest[bone]; out.set(p[0]+(o?o.x:0),p[1]+(o?o.y:0),p[2]+(o?o.z:0)).applyMatrix4(N.PM.value[BONES.indexOf(bone)]).applyMatrix4(N.g.matrixWorld); return out; };
   // a body held at its stall (STALL.build's S): on its spot, facing the street, never roaming (not on its sheet or stood out with ?npcat)
   MERCH.stand=(N,S)=>{ const q=new URLSearchParams(location.search); if(!N||!S||q.get('sheet')===N.key||q.get('npcat'))return false; S.N=N; N.free=()=>true;
     Object.assign(N.st,{x:S.home.x,z:S.home.z,to:null,next:null,hold:true,pin:true,hd:Math.atan2(S.face.x-S.home.x,S.face.z-S.home.z)}); return true; };
   // a rig pose from a few joint angles (degrees), over the plain stand
-  let STAND=null; MERCH.pose=c=>RIG.apply(STAND||(STAND=RIG.apply(RIG.walkPose({ph:0,w:0,run:0},null),RIG.STANDK)),c);
+  // standing at ease, not to attention: a little lean, the chest turned a touch, the head tipped, the arms soft at the elbows
+  let STAND=null; MERCH.pose=c=>RIG.apply(STAND||(STAND=RIG.apply(RIG.walkPose({ph:0,w:0,run:0},null),{...RIG.STANDK,bend:3,cyaw:4,nod:-3,L:{...RIG.STANDK.L,ua:[6,10],fa:[26,6]},R:{...RIG.STANDK.R,ua:[9,9],fa:[32,4]}})),c);
 }
 window.MERCH=MERCH;
 export {MERCH};

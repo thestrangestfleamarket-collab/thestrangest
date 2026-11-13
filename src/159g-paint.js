@@ -1,4 +1,4 @@
-// THE PAINTER: paint and draw on a canvas from your pack, with brushes, pencil, airbrush, eraser, smudge, fill, shapes, an eyedropper, a colour picker, layers, undo and zoom; finished, it is a painting to hang (DECORATE), give or sell.
+// THE PAINTER: paint and draw on a canvas from your pack, with brushes, pencil, airbrush, eraser, smudge, fill, shapes, an eyedropper, a colour picker, layers, undo and zoom (a copy shows its masterwork faintly over the canvas as a guide); finished, it is a painting to hang (DECORATE), give or sell.
 import {SHARED} from './003-shx.js';
 const PAINTER={}; window.PAINTER=PAINTER;
 {
@@ -63,7 +63,7 @@ const PAINTER={}; window.PAINTER=PAINTER;
   @media (max-width:820px){#paintp{grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) 40%}#paintp .pside{grid-column:1/-1}#paintp .ptools button{padding:4px 5px}#paintp .ptools button span{display:none}}`;
   document.head.appendChild(st);
   ui.innerHTML=`<div class="pbar"><span class="pt">[ PAINT ]</span><span class="ps" id="pp-sub"></span>
-    <button id="pp-undo" title="Ctrl+Z">UNDO</button><button id="pp-redo" title="Ctrl+Shift+Z">REDO</button><button id="pp-mirror" title="M">MIRROR</button><button id="pp-fit" title="0">FIT</button><button id="pp-z" title="1">100%</button>
+    <button id="pp-undo" title="Ctrl+Z">UNDO</button><button id="pp-redo" title="Ctrl+Shift+Z">REDO</button><button id="pp-mirror" title="M">MIRROR</button><button id="pp-guide" title="U" hidden>GUIDE</button><button id="pp-fit" title="0">FIT</button><button id="pp-z" title="1">100%</button>
     <button id="pp-done">FINISH</button><button id="pp-close" title="Esc">SAVE & CLOSE</button></div>
     <div class="ptools" id="pp-tools" role="toolbar" aria-label="Tools"></div>
     <div class="pview" id="pp-view"><canvas id="pp-cv" aria-label="The painting"></canvas></div>
@@ -75,7 +75,7 @@ const PAINTER={}; window.PAINTER=PAINTER;
       <div class="pbox"><h4>LAYERS</h4><div class="play" id="pp-layers"></div>
         <div class="prow"><button id="pp-ladd">NEW</button><button id="pp-ldup">COPY</button><button id="pp-lup">UP</button><button id="pp-ldn">DOWN</button><button id="pp-lmerge">MERGE</button><button id="pp-ldel">DELETE</button></div>
         <div class="prow"><label for="pp-lop">OPACITY</label><input type="range" id="pp-lop" min="0" max="100"><span class="pnum" id="pp-lopn"></span></div></div>
-      <div class="phint">B P A E S G L R O I H: TOOLS · [ ]: SIZE · X: SWAP · ALT+CLICK: PICK · SPACE OR RIGHT DRAG: MOVE · WHEEL: ZOOM · SHIFT: STRAIGHT</div>
+      <div class="phint">B P A E S G L R O I H: TOOLS · [ ]: SIZE · X: SWAP · U: GUIDE · ALT+CLICK: PICK · SPACE OR RIGHT DRAG: MOVE · WHEEL: ZOOM · SHIFT: STRAIGHT</div>
     </div>`;
   document.body.appendChild(ui);
   const $=id=>ui.querySelector('#pp-'+id);
@@ -94,6 +94,7 @@ const PAINTER={}; window.PAINTER=PAINTER;
     cx.save(); cx.translate(V.x,V.y); cx.fillStyle=chkPat; cx.fillRect(0,0,P.w*V.z,P.h*V.z); cx.restore();
     cx.imageSmoothingEnabled=V.z<2; cx.imageSmoothingQuality='high';
     P.layers.forEach((L,i)=>{ if(!L.vis)return; cx.globalAlpha=L.op; cx.drawImage(i===P.cur&&S.live?S.tmp:L.cv,V.x,V.y,P.w*V.z,P.h*V.z); }); cx.globalAlpha=1;
+    const G=P.o.guide; if(G&&G.on&&G.img){ cx.globalAlpha=G.a; cx.drawImage(G.img,V.x,V.y,P.w*V.z,P.h*V.z); cx.globalAlpha=1; }
     cx.strokeStyle='rgba(0,0,0,.6)'; cx.lineWidth=1; cx.strokeRect(V.x-.5,V.y-.5,P.w*V.z+1,P.h*V.z+1);
     if(B.mirror){ cx.strokeStyle='rgba(125,255,168,.5)'; cx.setLineDash([6,6]); cx.beginPath(); cx.moveTo(V.x+P.w*V.z/2,V.y); cx.lineTo(V.x+P.w*V.z/2,V.y+P.h*V.z); cx.stroke(); cx.setLineDash([]); }
     if(hover&&['brush','pencil','air','erase','smudge'].includes(B.tool)){ const r=Math.max(1,B.size/2*V.z); cx.beginPath(); cx.arc(V.x+hover[0]*V.z,V.y+hover[1]*V.z,r,0,7); cx.strokeStyle='rgba(0,0,0,.7)'; cx.lineWidth=2; cx.stroke(); cx.strokeStyle='rgba(255,255,255,.9)'; cx.lineWidth=1; cx.stroke(); } };
@@ -194,7 +195,7 @@ const PAINTER={}; window.PAINTER=PAINTER;
     if(k===' '){ spaceDown=true; e.preventDefault(); return; }
     if(KEYT[k]){ setTool(KEYT[k]); return; }
     if(k==='['){ B.size=cl(Math.round(B.size/1.2),1,300); brushBox(); redraw(); } else if(k===']'){ B.size=cl(Math.round(B.size*1.2+1),1,300); brushBox(); redraw(); }
-    else if(k==='x')swap(); else if(k==='m')toggleMirror(); else if(k==='0')fit(); else if(k==='1'){ const r=view.getBoundingClientRect(); zoomAt(1,r.width/2,r.height/2); } };
+    else if(k==='x')swap(); else if(k==='m')toggleMirror(); else if(k==='u')toggleGuide(); else if(k==='0')fit(); else if(k==='1'){ const r=view.getBoundingClientRect(); zoomAt(1,r.width/2,r.height/2); } };
   ui.addEventListener('keydown',onKey);
   // a click on a layer or the painting can take the keys' focus off the window: while it is open, the painter keeps them
   ui.tabIndex=-1; ui.addEventListener('pointerdown',e=>{ if(!e.target.closest('input,button,select'))ui.focus({preventScroll:true}); });
@@ -260,15 +261,16 @@ const PAINTER={}; window.PAINTER=PAINTER;
 
   /* ---------- the bar ---------- */
   const toggleMirror=()=>{ B.mirror=!B.mirror; bar(); redraw(); };
-  const bar=()=>{ if(!P)return; $('sub').textContent=`${P.title||'UNTITLED'} · ${P.w}×${P.h}`; $('z').textContent=Math.round(V.z*100)+'%'; $('undo').disabled=!P.undo.length; $('redo').disabled=!P.redo.length; $('mirror').setAttribute('aria-pressed',B.mirror); };
-  $('undo').onclick=undo; $('redo').onclick=redo; $('mirror').onclick=toggleMirror; $('fit').onclick=fit; $('z').onclick=()=>{ const r=view.getBoundingClientRect(); zoomAt(1,r.width/2,r.height/2); };
+  const toggleGuide=()=>{ const G=P&&P.o.guide; if(!G)return; G.on=!G.on; bar(); redraw(); };
+  const bar=()=>{ if(!P)return; $('sub').textContent=`${P.title||'UNTITLED'} · ${P.w}×${P.h}`; $('z').textContent=Math.round(V.z*100)+'%'; $('undo').disabled=!P.undo.length; $('redo').disabled=!P.redo.length; $('mirror').setAttribute('aria-pressed',B.mirror); const G=P.o.guide; $('guide').hidden=!G; if(G)$('guide').setAttribute('aria-pressed',!!G.on); };
+  $('undo').onclick=undo; $('redo').onclick=redo; $('mirror').onclick=toggleMirror; $('guide').onclick=toggleGuide; $('fit').onclick=fit; $('z').onclick=()=>{ const r=view.getBoundingClientRect(); zoomAt(1,r.width/2,r.height/2); };
   const panels=()=>{ tools(); brushBox(); colourBox(); layers(); bar(); };
 
   let say=t=>{ if(PAINTER.say)PAINTER.say(t); };
   const flat=()=>{ const c=mk(P.w,P.h), x=c.getContext('2d'); for(const L of P.layers)if(L.vis){ x.globalAlpha=L.op; x.drawImage(L.cv,0,0); } return c; };
 
   /* ---------- open, close, finish: the hooks (PAINTER.onSave, onFinish) belong to the paintings (159h) ---------- */
-  PAINTER.open=async(o)=>{ '@later'; // o: {w,h,title,bg,layers:[{n,vis,op,src}],onSave,onFinish,frames}
+  PAINTER.open=async(o)=>{ '@later'; // o: {w,h,title,bg,layers:[{n,vis,op,src}],onSave,onFinish,frames,guide:{img,a,on},fixTitle,note}
     P={w:o.w,h:o.h,title:o.title||'',layers:[],cur:0,undo:[],redo:[],ln:1,changed:false,o};
     if(o.layers&&o.layers.length){ for(const s of o.layers){ const L=layer(s.n||'LAYER',o.w,o.h); L.vis=s.vis!==false; L.op=s.op==null?1:s.op; if(s.src){ const im=new Image(); im.src=s.src; try{ await im.decode(); L.cx.drawImage(im,0,0); }catch(e){} } P.layers.push(L); } P.ln=P.layers.length; P.cur=P.layers.length-1; }
     else { const bg=layer('BACKGROUND',o.w,o.h); bg.cx.fillStyle=o.bg||'#f4efe4'; bg.cx.fillRect(0,0,o.w,o.h); P.layers.push(bg, layer('LAYER 1',o.w,o.h)); P.cur=1; }
@@ -277,16 +279,17 @@ const PAINTER={}; window.PAINTER=PAINTER;
   PAINTER.close=()=>{ if(!P)return; if(drawing){ drawing=false; end(); } const o=P.o; try{ if(o.onSave&&P.changed)o.onSave(pack(),flat()); }catch(e){ console.warn('painter save',e); } ui.hidden=true; P=null; PAINTER.isOpen=false; SHARED.covered=false; try{ o.onClose&&o.onClose(); }catch(e){} };
   $('close').onclick=()=>PAINTER.close();
   $('done').onclick=()=>{ '@later'; if(!P)return; const o=P.o, dlg=document.createElement('div'); dlg.className='pdlg'; const F=o.frames||[['','NO FRAME']]; let fr=F[1]?F[1][0]:'';
-    dlg.innerHTML=`<div><h4>FINISH AND SIGN</h4><div class="prow"><label for="pp-title">TITLE</label><input type="text" id="pp-title" maxlength="40" style="flex:1" value="${String(P.title||'').replace(/"/g,'')}"></div>
+    dlg.innerHTML=`<div><h4>FINISH AND SIGN</h4><div class="prow"><label for="pp-title">TITLE</label><input type="text" id="pp-title" maxlength="60" style="flex:1" value="${String(P.title||'').replace(/"/g,'')}"${o.fixTitle?' readonly':''}></div>
       <div class="prow"><label>FRAME</label>${F.map(([k,n])=>`<button data-fr="${k}" aria-pressed="${k===fr}">${n}</button>`).join('')}</div>
-      <div class="phint">ONCE FINISHED IT CAN NO LONGER BE PAINTED ON. IT IS ONE OF A KIND: HANG IT AT HOME WITH DECORATE, GIVE IT OR SELL IT.</div>
+      <div class="phint">${o.note||'ONCE FINISHED IT CAN NO LONGER BE PAINTED ON. IT IS ONE OF A KIND: HANG IT AT HOME WITH DECORATE, GIVE IT OR SELL IT.'}</div>
       <div class="prow" style="justify-content:flex-end"><button id="pp-back">KEEP PAINTING</button><button id="pp-sign" style="box-shadow:inset 0 0 0 2px var(--g)">SIGN</button></div></div>`;
     view.appendChild(dlg); const ti=dlg.querySelector('#pp-title'); ti.focus(); ti.select();
     dlg.querySelectorAll('[data-fr]').forEach(b=>b.onclick=()=>{ fr=b.dataset.fr; dlg.querySelectorAll('[data-fr]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.fr===fr)); });
     dlg.querySelector('#pp-back').onclick=()=>dlg.remove();
-    dlg.querySelector('#pp-sign').onclick=()=>{ const title=(ti.value||'').trim().toUpperCase()||'UNTITLED'; P.title=title; const img=flat(); const oo=P.o; dlg.remove(); ui.hidden=true; P=null; PAINTER.isOpen=false; SHARED.covered=false; try{ oo.onClose&&oo.onClose(); }catch(e){} try{ oo.onFinish&&oo.onFinish({title,frame:fr,img}); }catch(e){ console.warn('painter finish',e); } }; };
-  PAINTER.state=()=>P?{w:P.w,h:P.h,layers:P.layers.length,cur:P.cur,tool:B.tool,size:B.size,op:B.op,col:hex2(B.col),undo:P.undo.length,redo:P.redo.length,zoom:V.z,open:!ui.hidden}:{open:false};
-  PAINTER.B=B; PAINTER.setTool=setTool; PAINTER.setCol=c=>setCol(rgbOf(c)||c); PAINTER.flat=()=>P&&flat(); PAINTER.undo=undo; PAINTER.redo=redo;
+    dlg.querySelector('#pp-sign').onclick=()=>{ const title=(o.fixTitle||ti.value||'').trim().toUpperCase()||'UNTITLED'; P.title=title; const img=flat(); const oo=P.o; dlg.remove(); ui.hidden=true; P=null; PAINTER.isOpen=false; SHARED.covered=false; try{ oo.onClose&&oo.onClose(); }catch(e){} try{ oo.onFinish&&oo.onFinish({title,frame:fr,img}); }catch(e){ console.warn('painter finish',e); } }; };
+  PAINTER.state=()=>P?{w:P.w,h:P.h,layers:P.layers.length,cur:P.cur,tool:B.tool,size:B.size,op:B.op,col:hex2(B.col),undo:P.undo.length,redo:P.redo.length,zoom:V.z,open:!ui.hidden,guide:P.o.guide?{a:P.o.guide.a,on:!!P.o.guide.on}:null}:{open:false};
+  PAINTER.B=B; PAINTER.setTool=setTool; PAINTER.setCol=c=>setCol(rgbOf(c)||c); PAINTER.flat=()=>P&&flat(); PAINTER.undo=undo; PAINTER.redo=redo; PAINTER.guide=toggleGuide;
+  PAINTER.paintImage=img=>{ if(!P)return; const L=P.layers[P.cur], u=snapRect(P.cur,0,0,P.w,P.h); L.cx.drawImage(img,0,0,P.w,P.h); if(u)pushUndo(u); thumbs(); redraw(); };   // a picture laid on the current layer (the tests)
   PAINTER.screen=(x,y)=>{ const r=view.getBoundingClientRect(); return [r.left+V.x+x*V.z,r.top+V.y+y*V.z]; };   // a painting's pixel on the screen (the tests)
   PAINTER.pixel=(x,y)=>{ if(!P)return null; const d=flat().getContext('2d').getImageData(x,y,1,1).data; return [d[0],d[1],d[2],d[3]]; };
 }

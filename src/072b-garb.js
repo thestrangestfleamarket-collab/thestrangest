@@ -203,7 +203,7 @@ const GARB={};
       c.a[0]=e[0]*a[0]+e[4]*a[1]+e[8]*a[2]+e[12]; c.a[1]=e[1]*a[0]+e[5]*a[1]+e[9]*a[2]+e[13]; c.a[2]=e[2]*a[0]+e[6]*a[1]+e[10]*a[2]+e[14];
       c.b[0]=e[0]*b[0]+e[4]*b[1]+e[8]*b[2]+e[12]; c.b[1]=e[1]*b[0]+e[5]*b[1]+e[9]*b[2]+e[13]; c.b[2]=e[2]*b[0]+e[6]*b[1]+e[10]*b[2]+e[14];
       c.r=r*Math.sqrt(Math.hypot(e[0],e[1],e[2])*Math.hypot(e[8],e[9],e[10]))+x.inf; } };
-  const FIRM=.45, RW={}, WR={}, FM=new THREE.Matrix4(), FQ=V(0,0,0);
+  const CALM=20, CALMV=3e-4, FIRM=.45, RW={}, WR={}, FM=new THREE.Matrix4(), FQ=V(0,0,0);
   const firm=(w,Ms)=>{ '@later'; const T=w.d.X0; for(const F of w.t.firm)for(let k=0,m=F.ps.length;k<m;k++){ const n=F.ps[k], D=sdfOf(n); if(!D)continue; const f=fr0(n), rw=RW[n]||(RW[n]=new THREE.Matrix4()), wr=WR[n]||(WR[n]=new THREE.Matrix4());
       FM.set(f.x.x,f.y.x,f.z.x,f.o.x,f.x.y,f.y.y,f.z.y,f.o.y,f.x.z,f.y.z,f.z.z,f.o.z,0,0,0,1); wr.copy(FM).invert().premultiply(Ms[NI[n]]); rw.copy(wr).invert(); const a=rw.elements, b=wr.elements;
       for(let q=0;q<F.ix.length;q++){ const i=F.ix[q]*3, x=T[i], y=T[i+1], z=T[i+2]; FQ.x=a[0]*x+a[4]*y+a[8]*z+a[12]; FQ.y=a[1]*x+a[5]*y+a[9]*z+a[13]; FQ.z=a[2]*x+a[6]*y+a[10]*z+a[14];
@@ -240,13 +240,18 @@ const GARB={};
     if(!jump){ Gi.copy(G).invert(); Md.multiplyMatrices(Gi,W.Gp); const e=Md.elements; if(Math.hypot(e[12],e[13],e[14])>30)jump=true; }
     W.Gp=(W.Gp||new THREE.Matrix4()).copy(G);
     const h=Math.max(1/120,Math.min(1/40,dt||1/60));
-    for(const w of W.ws){ aim(w,scratch); if(w.t.firm&&sim)firm(w,scratch); const d=w.d, X=d.X, Xp=d.Xp, T=d.X0, pin=d.pin;
-      if(jump||!sim||!w.free)DRAPE.settle(d,T);
+    // at rest (the body and its pose still, the cloth settled) nothing is aimed, stepped or drawn until something moves
+    const e0=Md.elements, Bp=W.Bp||(W.Bp=new Float32Array(NAMES.length*16).fill(NaN)); let held=!jump&&Math.abs(e0[12])+Math.abs(e0[13])+Math.abs(e0[14])+Math.abs(e0[0]-1)+Math.abs(e0[5]-1)+Math.abs(e0[10]-1)<1e-5;
+    for(let i=0;i<NAMES.length;i++){ const e=scratch[i].elements; for(let j=0;j<16;j++){ if(!(Math.abs(e[j]-Bp[i*16+j])<1e-5))held=false; Bp[i*16+j]=e[j]; } }
+    for(const w of W.ws){ const d=w.d, X=d.X, Xp=d.Xp, T=d.X0, pin=d.pin;
+      if(held&&w.aimed===(sim?2:1)&&(!sim||!w.free||w.calm>=CALM)){ w.rest=1; continue; } w.rest=0; w.aimed=sim?2:1;
+      aim(w,scratch); if(w.t.firm&&sim)firm(w,scratch);
+      if(jump||!sim||!w.free){ DRAPE.settle(d,T); w.calm=0; }
       else{ const e=Md.elements;
         for(let i=0;i<d.n;i++){ const a=i*3; if(pin[i]){ X[a]=T[a]; X[a+1]=T[a+1]; X[a+2]=T[a+2]; continue; }
           let x=X[a], y=X[a+1], z=X[a+2]; X[a]=e[0]*x+e[4]*y+e[8]*z+e[12]; X[a+1]=e[1]*x+e[5]*y+e[9]*z+e[13]; X[a+2]=e[2]*x+e[6]*y+e[10]*z+e[14];
           x=Xp[a]; y=Xp[a+1]; z=Xp[a+2]; Xp[a]=e[0]*x+e[4]*y+e[8]*z+e[12]; Xp[a+1]=e[1]*x+e[5]*y+e[9]*z+e[13]; Xp[a+2]=e[2]*x+e[6]*y+e[10]*z+e[14]; }
-        keepOut(w,scratch); DRAPE.step(d,h,w.o); }
+        keepOut(w,scratch); w.calm=DRAPE.step(d,h,w.o)<CALMV?(w.calm||0)+1:0; }
       draw(w); }
     W.ms=performance.now()-t0; };
   // what a figure wears: everyone's shirt, trousers and shoes (bare feet take the shoes off) and the dyes ({shirt, pants} colours from what it wears); the hat and jacket pieces are kept for gear to wear
@@ -260,5 +265,5 @@ const GARB={};
   const myE={}, IDX={};
   GARB.myE=()=>{ const f=W3.style&&W3.style.form==='F'; for(const n of NAMES){ const p=f&&n==='torso'?'torsoF':f&&n==='head'?'headF':n; const i=IDX[p]??(IDX[p]=W3.idx(p)); myE[n]=i>=0&&W3.E?W3.E[i]:null; } return myE; };
   GARB.of=(form,i2E)=>{ const o={}; for(const n of NAMES){ const p=form==='F'&&n==='torso'?'torsoF':form==='F'&&n==='head'?'headF':n, i=W3.idx(p); o[n]=i>=0?i2E(i):null; } return o; };
-  window.GARBDBG=()=>{ const H=GARB.mine, W=H&&H.garb; return W?{k:W.k,parts:W.ws.map(w=>({k:w.k,points:w.t.n,free:w.d.pin.reduce((a,p)=>a+(p?0:1),0),still:w.d.still})),held:W.rg.length,made:GARB.made,ms:+W.ms.toFixed(3),shown:W.root.visible}:null; }; window.GARBDBG.spec=GARB.spec; window.GARBDBG.G=GARB; }
+  window.GARBDBG=()=>{ const H=GARB.mine, W=H&&H.garb; return W?{k:W.k,parts:W.ws.map(w=>({k:w.k,points:w.t.n,free:w.d.pin.reduce((a,p)=>a+(p?0:1),0),still:w.calm||0,rest:!!w.rest})),held:W.rg.length,made:GARB.made,ms:+W.ms.toFixed(3),shown:W.root.visible}:null; }; window.GARBDBG.spec=GARB.spec; window.GARBDBG.G=GARB; }
 export {GARB};

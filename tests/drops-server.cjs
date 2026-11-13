@@ -16,7 +16,7 @@ const run=async()=>{
   ok(!W(b,'drop:bad!').length&&!W(b,'drop:bbbb1').length,'a bad key or item is refused');
   const c=await open('carol'); await wait(500); const h=hi(c);
   ok(h&&h.world&&h.world['drop:aaaa1']&&JSON.parse(h.world['drop:aaaa1']).n===3,'carol joins later and is told of it');
-  a.send(JSON.stringify({t:'take',k:'drop:aaaa1'})); b.send(JSON.stringify({t:'take',k:'drop:aaaa1'})); await wait(500);
+  a.send(JSON.stringify({t:'take',k:'drop:aaaa1'})); b.send(JSON.stringify({t:'take',k:'drop:aaaa1'})); for(let i=0;i<50&&!(a.got.some(m=>m.t==='took'&&m.k==='drop:aaaa1')&&b.got.some(m=>m.t==='took'&&m.k==='drop:aaaa1'));i++)await wait(100);   // both answers, however slow the runner
   const ta=a.got.find(m=>m.t==='took'&&m.k==='drop:aaaa1'), tb=b.got.find(m=>m.t==='took'&&m.k==='drop:aaaa1');
   ok(ta&&ta.v&&JSON.parse(ta.v).n===3&&tb&&tb.v==='','both reach for it: the first gets it with its record, the second gets nothing');
   ok(W(c,'drop:aaaa1').some(m=>m.v===''),'everyone sees it go');

@@ -11,6 +11,7 @@ const {chromium}=require('playwright'); const OUT=process.argv[2], TOL=+(process
     for(const [s,l] of [['hair','SHORT'],['top','T-SHIRT'],['bottom','TROUSERS'],['feet','SNEAKERS']])await AVATAR.wear(s,pick(s,l));
     await MOTION.play('nod',{share:false}).catch(()=>{});   // (the recorded moves come with their data)
     const R=RIG, st=__dbg.ST, raf=()=>new Promise(r=>requestAnimationFrame(r));
+    const settle=async(n,ms)=>{ const t=performance.now(); for(let i=0;i<n;i++){ await raf(); if(i>=2&&performance.now()-t>ms)break; } };   // n frames, or fewer once ms have gone by (software rendering draws a few frames a second)
     const me=()=>W3.group.children.find(m=>m.geometry===BODIES.by.avatar.GEO), M=new __dbg.THREE.Matrix4(), V=new __dbg.THREE.Vector3();
     // the avatar's lowest point and the rig's, in the rig's space (its ground at 0)
     window.__low=()=>{ const m=me(); if(!m)return null; const P=m.userData.PM.value, A=m.geometry.attributes, p=A.position.array, bi=A.bi.array, bw=A.bw.array; let lo=1e9; const LV=new __dbg.THREE.Vector3();
@@ -26,11 +27,11 @@ const {chromium}=require('playwright'); const OUT=process.argv[2], TOL=+(process
       const c=cv.getContext('2d'), im=c.createImageData(W,H); for(let y=0;y<H;y++)im.data.set(px.subarray((H-1-y)*W*4,(H-y)*W*4),y*W*4); const k=window.__k++, x0=(k%cols)*W, y0=Math.floor(k/cols)*H; c.putImageData(im,x0,y0);
       c.fillStyle='#ff0'; c.font='11px monospace'; c.fillText(n,x0+3,y0+12); c.fillStyle='#3f3'; c.fillRect(x0,y0+Math.round(H*.72),W,1); };
     window.__moves=()=>Object.keys(R.MOVES);
-    window.__play=async name=>{ for(let i=0;i<20;i++)await raf(); const s0=__low(); if(window.__c==null)window.__c=s0.off; R.begin(st,name); const out={name,max:0,at:0,n:0}; let t0=performance.now();
+    window.__play=async name=>{ await settle(20,350); const s0=__low(); if(window.__c==null)window.__c=s0.off; R.begin(st,name); const out={name,max:0,at:0,n:0}; let t0=performance.now();
       let shot=!window.__nm;
       while(st.move&&st.move.name===name&&performance.now()-t0<12000){ await raf(); if(!shot&&st.move&&st.move.t>=st.move.def.dur*.4){ shot=true; __tile(name); } const l=__low(); if(!l||l.blend)continue;   // (not while it crossfades from its clips)
       out.n++; const e=Math.abs(l.av-(st.move&&st.move.def.below!=null/*a pull-up from below a ledge: with the rig*/?l.rig+__c:Math.max(l.rig+__c,l.floor-.3))); if(e>out.max){ out.max=e; out.at=st.move?st.move.t:0; out.l=l; } }
-      if(st.move&&st.move.name===name)st.move.t=st.move.def.dur; for(let i=0;i<30;i++)await raf(); out.max=+out.max.toFixed(2); return out; }; });
+      if(st.move&&st.move.name===name)st.move.t=st.move.def.dur; await settle(30,500); out.max=+out.max.toFixed(2); return out; }; });
   const moves=(await pg.evaluate(()=>__moves())).filter(n=>n!=='mantle'); console.log(moves.length+' moves');   // (not the mantle: it pulls you up a ledge, begun only at one: a ladder's top, a tree)
   if(OUT)await pg.evaluate(n=>{ window.__nm=n; const THREE=__dbg.THREE, g=W3.group; g.updateMatrixWorld(true); window.__hh=(W3.eyeAt(new THREE.Vector3()).y-g.getWorldPosition(new THREE.Vector3()).y)*1.5; },moves.length);
   const res=[]; for(const n of moves){ const r=await pg.evaluate(n=>__play(n),n).catch(e=>({name:n,err:e.message})); res.push(r); }

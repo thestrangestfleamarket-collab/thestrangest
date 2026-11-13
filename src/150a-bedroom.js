@@ -13,7 +13,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null,keep:[],always:new Set(),save:(
     const rbox=(w,h,d,r=.015,s=4)=>{ '@later'; r=Math.min(r,w/2-1e-4,h/2-1e-4,d/2-1e-4); const g=new THREE.BoxGeometry(w,h,d,s,s,s), p=g.attributes.position, n=g.attributes.normal, hx=w/2-r, hy=h/2-r, hz=d/2-r, v=new V3(), q=new V3();
       for(let i=0;i<p.count;i++){ v.fromBufferAttribute(p,i); q.set(cl(v.x,-hx,hx),cl(v.y,-hy,hy),cl(v.z,-hz,hz)); v.sub(q); const l=v.length()||1; v.multiplyScalar(1/l); n.setXYZ(i,v.x,v.y,v.z); p.setXYZ(i,q.x+v.x*r,q.y+v.y*r,q.z+v.z*r); }
       p.needsUpdate=true; n.needsUpdate=true; return g; };
-    const tex=(w,h,draw,rep)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; draw(c.getContext('2d'),w,h); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; if(rep){ t.wrapS=t.wrapT=THREE.RepeatWrapping; } return t; };
+    const tex=(w,h,draw,rep)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; draw(c.getContext('2d'),w,h); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; if(rep){ t.wrapS=t.wrapT=THREE.RepeatWrapping; } return t; };
     const rnd=(()=>{ let s=91; return ()=>{ s=(s*16807)%2147483647; return (s-1)/2147483646; }; })();
 
     /* ---------- the textures, painted once ---------- */
@@ -73,17 +73,18 @@ const ROOMK={parts:[],wires:{},built:[],api:null,keep:[],always:new Set(),save:(
     const ISO={value:0};
 
     let R=null;   // the built room: its meshes, lights and loose things
-    const build=()=>{ '@apts'; const X=SHARED.BOD.X, Z=SHARED.BOD.Z, Yr=SHARED.BOD.Y, A=APTS.R, WI=APTS.WIN, WPL=APTS.WPL, M=(X(A.x0+1)-X(A.x0))/MPU, fy=Yr(APTS.RB+.15)+.012, HW=(Yr(APTS.S||130)-Yr(0))/M;
+    const build=()=>{ '@apts'; const X=SHARED.BOD.X, Z=SHARED.BOD.Z, Yr=SHARED.BOD.Y, A=APTS.R, WI=APTS.WIN, WPL=APTS.WPL, M=(X(A.x0+1)-X(A.x0))/MPU, fy=Yr(APTS.RB+.15)+.012, HW=(Yr(APTS.S||130)-Yr(0))/M*(APTS.HK||1);
       const px=z=>z/32.4, Lx=(A.x1-A.x0)*MPU, Ly=(A.y1-A.y0)*MPU, TH=.24, W=(u,h,v)=>new V3(X(A.x0)+u*M,fy+h*M,Z(A.y0)+v*M);
       const apt=new THREE.Group(); apt.position.set(X(A.x0),fy,Z(A.y0)); apt.scale.setScalar(M); scene.add(apt);
-      R={apt,M,fy,doors:{},loose:[],lights:[],lamps:[],th:[],units:[],kinds:{},wins:[],winTh:[],ceil:[],wallMats:[],floorMat:null,wall:'beige',floor:'warm',glowK:1,addN:0};
+      R={apt,M,fy,doors:{},loose:[],lights:[],lamps:[],th:[],units:[],kinds:{},wins:[],winTh:[],ceil:[],wallMats:[],floorMat:null,wall:'beige',walls:{},floor:'warm',floor2:null,glowK:1,addN:0};
       let CUR=null; const cur=()=>CUR?CUR.obj:apt;   // the unit being built (a piece you can move), or the room itself
       const part=(geo,m,u,h,v,ry=0,par=cur(),cast=true)=>{ const me=new THREE.Mesh(geo,m); me.position.set(u,h,v); me.rotation.y=ry; me.castShadow=cast; me.receiveShadow=true; par.add(me); return me; };
       const thing=(u,h,v,ry=0)=>{ const g=new THREE.Group(); g.position.copy(W(u,h,v)); g.rotation.y=ry; g.scale.setScalar(M); scene.add(g); return g; };
-      const clip=k=>k?{clippingPlanes:[WPL[k]]}:{};
+      const clip=k=>k?{clippingPlanes:[WPL[k]],userData:{wk:k}}:{};
       // what loose things stand on: a solid up to a top (metres over the floor), a shelf between two heights; the top a hair under the surface, or the physics leaves it out
       const solidNow=(u0,v0,u1,v1,t)=>APTS.solid(A.x0+u0/MPU,A.y0+v0/MPU,A.x0+u1/MPU,A.y0+v1/MPU,(fy+(t-.002)*M-Yr(APTS.RB))/(Yr(1)-Yr(0)));
       const shelfNow=(u0,v0,u1,v1,b,t)=>APTS.shelf&&APTS.shelf(A.x0+u0/MPU,A.y0+v0/MPU,A.x0+u1/MPU,A.y0+v1/MPU,fy+b*M,fy+(t-.002)*M);
+      const solidUp=(u0,v0,u1,v1,b,t)=>APTS.solidHi(A.x0+u0/MPU,A.y0+v0/MPU,A.x0+u1/MPU,A.y0+v1/MPU,fy+b*M,fy+(t-.002)*M);   // on an upper floor (the loft's): solid only while you are up there
       const solid=(u0,v0,u1,v1,t)=>CUR?CUR.sol.push([u0,v0,u1,v1,t]):solidNow(u0,v0,u1,v1,t);   // inside a unit: kept with it, placed wherever it stands
       const shelf=(u0,v0,u1,v1,b,t)=>CUR?CUR.shf.push([u0,v0,u1,v1,b,t]):shelfNow(u0,v0,u1,v1,b,t);
       const FRAME=[16,16,18], CREAM=[222,208,186], TRIM=[66,36,20], WOODO=[184,104,50], WOODD=[96,54,30];
@@ -93,15 +94,15 @@ const ROOMK={parts:[],wires:{},built:[],api:null,keep:[],always:new Set(),save:(
       part(new THREE.BoxGeometry(Lx+2*TH,.3,Ly+2*TH),mat([176,182,182],{roughness:.9}),Lx/2,-.152,Ly/2,0,apt,false);   // the slab the room stands on, its edge seen against the dark
       const rect=(w,h,holes=[])=>{ const sh=new THREE.Shape([new THREE.Vector2(0,0),new THREE.Vector2(w,0),new THREE.Vector2(w,h),new THREE.Vector2(0,h)]); for(const [a0,a1,b0,b1] of holes)sh.holes.push(new THREE.Path([new THREE.Vector2(a0,b0),new THREE.Vector2(a1,b0),new THREE.Vector2(a1,b1),new THREE.Vector2(a0,b1)])); return sh; };
       const WW=2*WI.WHW*MPU, fw=WI.FWU.map(u=>u*MPU), du=WI.DU*MPU, wz=WI.WZ.map(z=>px(z-.15)), FD=[du-.64,du+.64,0,3.06], BD=[du-.665,du+.665,0,2.93], SWS=WI.SIDE.map(k=>[Ly*(1-k)-TH-.0054,wz[0],wz[1],WW,FRAME]);   // the side walls' windows where the house has them outside: centre, sill, head, width, frame
-      const win=c=>[c-WW/2,c+WW/2,wz[0],wz[1]];
+      const win=c=>[c-WW/2,c+WW/2,wz[0],wz[1]], MHu=APTS.MH||0, winU=c=>[c-WW/2,c+WW/2,wz[0]+MHu,wz[1]+MHu], SWU=MHu?SWS.map(w=>[w[0],w[1]+MHu,w[2]+MHu,w[3],w[4]]):[], SWL=MHu?SWS.filter(w=>w[0]>3.6):SWS, SWE=MHu?[]:SWS, fwU=MHu?fw.concat(fw.some(f=>Math.abs(f-du)<WW)?[]:[du]):[];   // in the loft (owner, 12 Nov 2026: "moev windows in logical places"): none behind the low end of the stair, none in the blank party wall, a third upstairs over the fire-escape door   // the loft's upper floor has the same windows over the lower ones (owner, 12 Nov 2026: "add windows to 2nd story, functional like other windows")
       // aged plaster: cream kept, but soft stains, faint streaks and fine grain so the walls aren't flat (owner: grittier, keep cozy)
       const wallTex=(()=>{ const t=tex(512,512,(g,W,H)=>{ g.fillStyle='#ffffff'; g.fillRect(0,0,W,H);
         for(let i=0;i<50;i++){ g.strokeStyle=`rgba(120,102,72,${.015+rnd()*.03})`; g.lineWidth=.8+rnd()*1.6; g.beginPath(); const x=rnd()*W, y0=rnd()*H*.4; g.moveTo(x,y0); g.lineTo(x+(rnd()-.5)*18,y0+H*(.3+rnd()*.5)); g.stroke(); }
         for(let i=0;i<900;i++){ const b=rnd()<.5; g.fillStyle=`rgba(${b?70:255},${b?60:244},${b?44:220},${.02+rnd()*.03})`; g.fillRect(rnd()*W,rnd()*H,1,1); } }); t.wrapS=t.wrapT=THREE.MirroredRepeatWrapping; t.repeat.set(.2,.5); return t; })();
       R.plaster=wallTex;
       const wallOf=(k,len,holes,u,v,ry)=>{ const wm=mat(CREAM,{roughness:.96,map:wallTex,bumpMap:wallTex,bumpScale:.8,side:THREE.DoubleSide,shadowSide:THREE.DoubleSide,...clip(k)}); R.wallMats.push(wm); return part(PEEK.mark(new THREE.ExtrudeGeometry(rect(len,HW,holes),{depth:TH,bevelEnabled:false})),[wm,mat([200,206,208],{roughness:.9,side:THREE.DoubleSide,...clip(k)})],u,0,v,ry,apt); };
-      wallOf('Wf',Lx,[win(fw[0]),win(fw[1]),FD],0,-TH,0); wallOf('Wb',Lx,[BD],0,Ly,0);
-      wallOf('Ww',Ly,SWS.map(w=>[w[0]-w[3]/2,w[0]+w[3]/2,w[1],w[2]]),0,0,-Math.PI/2); wallOf('We',Ly,SWS.map(w=>[Ly-w[0]-w[3]/2,Ly-w[0]+w[3]/2,w[1],w[2]]),Lx,Ly,Math.PI/2);
+      wallOf('Wf',Lx,[...fw.map(win),...fwU.map(winU),FD],0,-TH,0); wallOf('Wb',Lx,[BD],0,Ly,0);
+      wallOf('Ww',Ly,SWL.concat(SWU).map(w=>[w[0]-w[3]/2,w[0]+w[3]/2,w[1],w[2]]),0,0,-Math.PI/2); wallOf('We',Ly,SWE.map(w=>[Ly-w[0]-w[3]/2,Ly-w[0]+w[3]/2,w[1],w[2]]),Lx,Ly,Math.PI/2);
       // the soft dark where the floor meets each wall (light doesn't reach into the corner)
       { const ao=tex(4,64,(g,W,H)=>{ const gr=g.createLinearGradient(0,0,0,H); gr.addColorStop(0,'rgba(0,0,0,1)'); gr.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle=gr; g.fillRect(0,0,W,H); });
         const am=new THREE.MeshBasicMaterial({color:0x000000,alphaMap:ao,transparent:true,opacity:.42,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
@@ -121,16 +122,17 @@ const ROOMK={parts:[],wires:{},built:[],api:null,keep:[],always:new Set(),save:(
       const glass=k=>APTS.glassMat(clip(k));
       // the picture's window: a thick orange frame of four panes and its sill
       const windowAt=(k,uc,v,ry,out,z0,z1,w,panes=[3,3],fc=FRAME)=>{ const g=new THREE.Group(); g.position.set(uc,0,v); g.rotation.y=ry; apt.add(g); const wm=mat(fc,{roughness:.55,...clip(k)});
-        const sash=new THREE.Group(); g.add(sash);   // the glass and its bars: slides up into the wall when the window is opened
-        part(new THREE.PlaneGeometry(w-.04,z1-z0-.04),glass(k),0,(z0+z1)/2,-.16,0,sash,false);
+        const sash=new THREE.Group(), zm=(z0+z1)/2, hh=(z1-z0)/2; g.add(sash);   // double-hung: the lower sash slides up behind the upper one, inside the frame
+        part(new THREE.PlaneGeometry(w-.04,hh-.02),glass(k),0,zm+hh/2-.01,-.16,0,g,false); part(new THREE.PlaneGeometry(w-.04,hh-.02),glass(k),0,z0+hh/2+.01,-.2,0,sash,false);
+        part(rbox(w,.03,.04,.004),wm,0,zm,-.13,0,g); part(rbox(w,.03,.04,.004),wm,0,zm,-.2,0,sash);
         for(const s of [-1,1])part(rbox(.05,z1-z0+.04,.16,.006),wm,s*(w/2-.005),(z0+z1)/2,-.06,0,g); part(rbox(w+.04,.05,.16,.006),wm,0,z1+.015,-.06,0,g);   // black steel: slim sections
         part(rbox(w+.16,.05,.2,.012),wm,0,z0-.01,-.04,0,g);
-        for(let i=1;i<panes[0];i++)part(rbox(.022,z1-z0,.04,.004),wm,-w/2+w*i/panes[0],(z0+z1)/2,-.13,0,sash);
-        for(let j=1;j<panes[1];j++)part(rbox(w,.022,.04,.004),wm,0,z0+(z1-z0)*j/panes[1],-.13,0,sash);
-        // double-click it: it opens (the sash up half way) and a calm breeze comes in; again, it shuts
+        for(let i=1;i<panes[0];i++){ part(rbox(.022,hh,.04,.004),wm,-w/2+w*i/panes[0],zm+hh/2,-.13,0,g); part(rbox(.022,hh,.04,.004),wm,-w/2+w*i/panes[0],z0+hh/2,-.2,0,sash); }
+        for(let j=1;j<panes[1];j++){ const z=z0+(z1-z0)*j/panes[1]; if(Math.abs(z-zm)>.03)part(rbox(w,.022,.04,.004),wm,0,z,z>zm?-.13:-.2,0,z>zm?g:sash); }
+        // double-click it: it opens (the lower sash up behind the upper) and a calm breeze comes in; again, it shuts
         const W_={g,sash,open:false,o:0,br:0,H:(z1-z0)*.5,k,w,z0,z1}; R.wins.push(W_);
         const hb=new THREE.Mesh(new THREE.BoxGeometry(w,z1-z0,.3),new THREE.MeshBasicMaterial({visible:false})); hb.position.set(0,(z0+z1)/2,-.05); hb.userData.soft=hb.userData.keep=hb.userData.hit=1; g.add(hb);
-        const th={name:'OPEN THE WINDOW',obj:hb,reach:1.6*M,near:2.6*M,tall:(z1-z0)*M,act:()=>{ W_.open=!W_.open; th.name=W_.open?'CLOSE THE WINDOW':'OPEN THE WINDOW'; if(SFX)SFX.play('latch',{vol:.5,vary:.2}); }};
+        const th={name:'OPEN THE WINDOW',obj:hb,reach:1.6*M,near:2.6*M,tall:(z1-z0)*M,glass:true,act:()=>{ W_.open=!W_.open; th.name=W_.open?'CLOSE THE WINDOW':'OPEN THE WINDOW'; if(SFX)SFX.play('latch',{vol:.5,vary:.2}); }};
         UI.thing(th); R.winTh.push(th); W_.th=th;
         return g; };
       // a door: a moulded casing on plinth blocks, a six-panel leaf (raised panels in bevelled frames) or a glazed one in black steel, three brass hinges, a lever on a rose, a threshold
@@ -150,8 +152,9 @@ const ROOMK={parts:[],wires:{},built:[],api:null,keep:[],always:new Set(),save:(
         for(const sd of [1,-1]){ const z=sd*.04; part(new THREE.CylinderGeometry(.03,.03,.012,16).rotateX(Math.PI/2),br,w/2-.1,1.0*h/2.3,z,0,leaf); part(rbox(.13,.022,.022,.008),br,w/2-.155,1.0*h/2.3,z+sd*.03,0,leaf);   // the rose and the lever
           part(rbox(.03,.06,.008,.003),br,w/2-.1,.86*h/2.3,z,0,leaf); }   // the keyhole's plate
       };
-      windowAt('Wf',fw[0],0,0,[0,-1,1,0],wz[0],wz[1],WW); windowAt('Wf',fw[1],0,0,[0,-1,1,0],wz[0],wz[1],WW);
-      for(const w of SWS){ windowAt('Ww',w[0],0,Math.PI/2,[-1,0,0,1],w[1],w[2],w[3],[3,3],w[4]).position.set(0,0,w[0]); windowAt('We',w[0],0,-Math.PI/2,[1,0,0,-1],w[1],w[2],w[3],[3,3],w[4]).position.set(Lx,0,w[0]); }
+      for(const f of fw)windowAt('Wf',f,0,0,[0,-1,1,0],wz[0],wz[1],WW);   // a small room has one front window
+      if(MHu){ for(const f of fwU)windowAt('Wf',f,0,0,[0,-1,1,0],wz[0]+MHu,wz[1]+MHu,WW); for(const w of SWU)windowAt('Ww',w[0],0,Math.PI/2,[-1,0,0,1],w[1],w[2],w[3],[3,3],w[4]).position.set(0,0,w[0]); }
+      for(const w of SWL)windowAt('Ww',w[0],0,Math.PI/2,[-1,0,0,1],w[1],w[2],w[3],[3,3],w[4]).position.set(0,0,w[0]); for(const w of SWE)windowAt('We',w[0],0,-Math.PI/2,[1,0,0,-1],w[1],w[2],w[3],[3,3],w[4]).position.set(Lx,0,w[0]);
       doorAt('Wf',du,0,0,[0,-1,1,0],FD); doorAt('Wb',du,Ly,Math.PI,null,BD);
 
       /* ---------- the pieces: each one a unit you can move, turn, resize or put away (the room editor, 150d) ---------- */
@@ -161,7 +164,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null,keep:[],always:new Set(),save:(
       // where a unit stands decides its solids and shelves: its footprint turned and scaled, as boxes on the floor plan
       const place=un=>{ for(const h of un.h)if(APTS.unsolid)APTS.unsolid(h); un.h=[]; if(un.gone||un.loose)return; const g=un.obj, c=Math.cos(g.rotation.y), sn=Math.sin(g.rotation.y), k=g.scale.x;
         const xf=(x,z)=>[g.position.x+(x*c+z*sn)*k,g.position.z+(-x*sn+z*c)*k], box=r=>{ const P=[xf(r[0],r[1]),xf(r[2],r[1]),xf(r[0],r[3]),xf(r[2],r[3])]; return [Math.min(...P.map(q=>q[0])),Math.min(...P.map(q=>q[1])),Math.max(...P.map(q=>q[0])),Math.max(...P.map(q=>q[1]))]; };
-        for(const r of un.sol){ const b=box(r); un.h.push(solidNow(b[0],b[1],b[2],b[3],g.position.y+r[4]*k)); }
+        const up=R.loft&&g.position.y>R.loft.MH-.3; for(const r of un.sol){ const b=box(r); un.h.push(up?solidUp(b[0],b[1],b[2],b[3],g.position.y,g.position.y+r[4]*k):solidNow(b[0],b[1],b[2],b[3],g.position.y+r[4]*k)); }
         for(const r of un.shf){ const b=box(r); const h=shelfNow(b[0],b[1],b[2],b[3],g.position.y+r[4]*k,g.position.y+r[5]*k); if(h)un.h.push(h); } };
       // the still parts of a unit baked into one mesh a material (a few draws, not hundreds)
       const bake=S=>{ S.updateMatrixWorld(true); const inv=new THREE.Matrix4().copy(S.matrixWorld).invert(), by=new Map(), L=[];
@@ -239,8 +242,9 @@ const ROOMK={parts:[],wires:{},built:[],api:null,keep:[],always:new Set(),save:(
       const spawn=(kind,t,id)=>{ const K=R.kinds[kind]; if(!K)return null; const o=K.tpl.clone(true); (K.loose?scene:apt).add(o);
         const un={id:id||('add-'+(++R.addN)),name:K.name,kind,obj:o,loose:K.loose,m:K.m,sol:K.sol,shf:K.shf,h:[],th:[],wire:K.wire,st:{},added:true,mount:K.mount,cat:K.cat}; R.units.push(un); setT(un,t); blobFor(un); wireUp(un); R.LL=null; un.obj.traverse(o=>{ if(o.isLight&&o.userData.i0!=null)paint(o); }); return un; };
       const drop=un=>{ remove(un); un.obj.removeFromParent(); const i=R.units.indexOf(un); if(i>=0)R.units.splice(i,1); };
-      const wall=k=>{ const D=WALLS[k]; if(!D)return; if(D.gen&&!D.t)D.t=D.gen(); for(const m of R.wallMats){ m.map=D.t||R.plaster; m.bumpMap=m.map; m.color.set(D.t?0xffffff:col(D.c)); m.needsUpdate=true; } R.wall=k; };
-      const floor=k=>{ const D=FLOORS[k]; if(!D)return; if(!D.t)D.t=D.gen(Lx,Ly); R.floorMat.map=D.t; R.floorMat.bumpMap=D.t; R.floorMat.needsUpdate=true; R.floor=k; };
+      const WK=['Wf','Wb','Ww','We'], wall=(k,w)=>{ const D=WALLS[k]; if(!D)return; if(D.gen&&!D.t)D.t=D.gen(); if(w==='all')R.walls={}; else if(WK.includes(w))R.walls[w]=k; else R.wall=k; if(w==='all')R.wall=k;   // the room's paint (the walls with none of their own), every wall ('all'), or one wall's own (owner, 12 Nov 2026)
+        R.wallMats.forEach((m,i)=>{ const own=R.walls[WK[i]]; if(WK.includes(w)?WK[i]!==w:!!own)return; m.map=D.t||R.plaster; m.bumpMap=m.map; m.color.set(D.t?0xffffff:col(D.c)); m.needsUpdate=true; }); };
+      const floor=(k,up)=>{ const D=FLOORS[k]; if(!D)return; if(!D.t)D.t=D.gen(Lx,Ly); const m=up?R.loftFloor:R.floorMat; if(!m)return; m.map=D.t; if(!up)m.bumpMap=D.t; m.needsUpdate=true; if(up)R.floor2=k; else R.floor=k; };   // the room's floor, or the upper floor's (the loft)
       const kz=()=>R.kzone||[0,0,1,1], kfloor=k=>{ const D=KFLOORS[k]; if(!D||!R.kfloor)return; R.kfloorK=k; const on=k!=='room'; for(const o of R.kfloor)o.visible=on; if(!on)return;
         if(!D.t){ const z=kz(); D.t=D.gen(z[2]-z[0],z[3]-z[1]); } R.kfloorMat.map=D.t; R.kfloorMat.needsUpdate=true; };
       // a little picture of a paint, paper or floor for the editor's swatches (painted the first time it is asked for)
@@ -293,7 +297,7 @@ const ROOMK={parts:[],wires:{},built:[],api:null,keep:[],always:new Set(),save:(
         for(const w of R.wins){ w.o+=((w.open?w.H:0)-w.o)*Math.min(1,h*3); w.sash.position.y=w.o; w.br+=((w.open?1:0)-w.br)*Math.min(1,h*.6); any=Math.max(any,w.br); }
         AMB.breeze=inn?any:0; }
       // what hangs high on a wall that is cut away goes with it (the cubbies, the shelves and what stands on them), so nothing floats between you and the camera
-      if((R.hiT=(R.hiT||0)-(dt||0))<=0){ R.hiT=.2; const A=R.api, cut=k=>APTS.WPL[k].constant<1e5; darken(R.apt); for(const un of R.units)darken(un.obj);
+      if((R.hiT=(R.hiT||0)-(dt||0))<=0){ R.hiT=.2; const A=R.api, cut=k=>APTS.WPL[k].constant<1e5; if(APTS.relink&&(R.relN=(R.relN||0)+1)%10===1)APTS.relink(R.apt); darken(R.apt); for(const un of R.units)darken(un.obj);
         for(const un of R.units){ if(un.gone)continue; const o=un.obj, p=un.loose?A.toApt(o.position.x,o.position.y,o.position.z):{u:o.position.x,h:o.position.y,v:o.position.z};
           const hide=p.h>1.2&&((cut('Ww')&&p.u<.5)||(cut('We')&&A.Lx-p.u<.5)||(cut('Wf')&&p.v<.5)||(cut('Wb')&&A.Ly-p.v<.5));
           if(hide!==!!un.st.hi){ un.st.hi=hide; o.traverse(q=>{ if(q.isMesh&&!q.userData.hit)q.visible=!hide; }); } } }

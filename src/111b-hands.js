@@ -44,7 +44,7 @@ const HANDS={}; window.HANDS=HANDS;
   const R0=RIG.fgOf({fist:0});
   const RX=new M4(), RY=new M4(), T1=new M4(), MX=new M4().makeScale(-1,1,1);
   const fk=(fg,out)=>{ const turn=new Array(NJ).fill(null);
-    for(let i=0;i<5;i++){ const f=fg[i]||R0[i], c=CH[i], sp=(f[3]-R0[i][3])*(i?-1:0);
+    for(let i=0;i<5;i++){ const f=fg[i]||R0[i], c=CH[i], sp=i?R0[i][3]-f[3]:f[4]||0;
       // a finger curls toward its palm about its joint's x (OpenXR: -z along the bone, +y the back), and spreads about y at the knuckle; the thumb's base turns it across the palm
       for(let k=0;k<3;k++){ const m=new M4().makeRotationX(-f[k]*(i?1:.8)); if(k===0&&sp)m.premultiply(RY.makeRotationY(sp)); if(i===0&&k===0)m.premultiply(RY.makeRotationY(-f[0]*.6)); turn[c[k]]=m; } }
     for(const j of ORDER){ const p=PAR[j]; out[j].copy(p>=0?T1.multiplyMatrices(out[p],LOC[j]):LOC[j]); if(turn[j])out[j].multiply(turn[j]); }
@@ -77,20 +77,28 @@ const HANDS={}; window.HANDS=HANDS;
   HANDS.NAME=NAME; HANDS.REST=REST; HANDS.CH=CH; HANDS.LOC={L:LOCL,R:LOCR}; HANDS.R0=R0;
   // a digit's tip (hand space) for its pose f, and its pose moved till the tip reaches a point (damped least squares on its knuckle, middle joint and spread; the last joint follows the middle)
   const TA=new M4(), TM=new M4();
-  const tipOf=(i,f,out)=>{ const c=CH[i], sp=(f[3]-R0[i][3])*(i?-1:0); TA.copy(REST[c[0]]);
-    for(let k=0;k<3;k++){ TM.makeRotationX(-f[k]*(i?1:.8)); if(k===0&&sp)TM.premultiply(RY.makeRotationY(sp)); if(i===0&&k===0)TM.premultiply(RY.makeRotationY(-f[0]*.6)); TA.multiply(TM); TA.multiply(LOC[c[k+1]]); }
+  const LAST=new M4();
+  const tipOf=(i,f,out,pts)=>{ const c=CH[i], sp=i?R0[i][3]-f[3]:f[4]||0; TA.copy(REST[c[0]]); if(pts)pts[0].setFromMatrixPosition(TA);
+    for(let k=0;k<3;k++){ TM.makeRotationX(-f[k]*(i?1:.8)); if(k===0&&sp)TM.premultiply(RY.makeRotationY(sp)); if(i===0&&k===0)TM.premultiply(RY.makeRotationY(-f[0]*.6)); TA.multiply(TM); if(k===2)LAST.copy(TA); TA.multiply(LOC[c[k+1]]); if(pts)pts[k+1].setFromMatrixPosition(TA); }
     return out.setFromMatrixPosition(TA); };
   HANDS.tip=(i,f,out=new V3())=>tipOf(i,f,out);
-  const LIM=[[-.4,1.4],[0,1.9]], J=[[0,0,0],[0,0,0],[0,0,0]], E=new V3(), P0=new V3(), P1=new V3();
-  HANDS.reach=(i,tg,f)=>{ const np=i?3:2, set=(f,a0,a1,sp)=>{ f[0]=Math.max(LIM[0][0],Math.min(LIM[0][1],a0)); f[1]=Math.max(LIM[1][0],Math.min(LIM[1][1],a1)); f[2]=f[1]*.72; if(i)f[3]=Math.max(R0[i][3]-.55,Math.min(R0[i][3]+.55,sp)); };
-    for(let it=0;it<10;it++){ tipOf(i,f,P0); E.subVectors(tg,P0); if(E.lengthSq()<1e-8)break; const x=[f[0],f[1],f[3]];
-      for(let q=0;q<np;q++){ const g=f.slice(), d=.01; if(q===0)g[0]+=d; else if(q===1){ g[1]+=d; g[2]=g[1]*.72; } else g[3]+=d; tipOf(i,g,P1).sub(P0).multiplyScalar(1/d); J[q][0]=P1.x; J[q][1]=P1.y; J[q][2]=P1.z; }
-      // (J^T J + lambda) dx = J^T e, a 2 or 3 square solved by hand
-      const A=[], b=[]; for(let r=0;r<np;r++){ A.push([]); for(let c=0;c<np;c++)A[r].push(J[r][0]*J[c][0]+J[r][1]*J[c][1]+J[r][2]*J[c][2]+(r===c?2e-5:0)); b.push(J[r][0]*E.x+J[r][1]*E.y+J[r][2]*E.z); }
-      const dx=np===2?(()=>{ const D=A[0][0]*A[1][1]-A[0][1]*A[1][0]; return [(b[0]*A[1][1]-A[0][1]*b[1])/D,(A[0][0]*b[1]-A[1][0]*b[0])/D]; })():(()=>{ const [a,bb,c]=A, D=a[0]*(bb[1]*c[2]-bb[2]*c[1])-a[1]*(bb[0]*c[2]-bb[2]*c[0])+a[2]*(bb[0]*c[1]-bb[1]*c[0]);
-        const s=(m,k)=>{ const M=m.map(r=>r.slice()); for(let r=0;r<3;r++)M[r][k]=b[r]; return M[0][0]*(M[1][1]*M[2][2]-M[1][2]*M[2][1])-M[0][1]*(M[1][0]*M[2][2]-M[1][2]*M[2][0])+M[0][2]*(M[1][0]*M[2][1]-M[1][1]*M[2][0]); };
-        return [s(A,0)/D,s(A,1)/D,s(A,2)/D]; })();
-      const k=Math.min(1,.25/Math.max(1e-6,Math.hypot(...dx))); set(f,x[0]+dx[0]*k,x[1]+dx[1]*k,i?x[2]+dx[2]*k:f[3]); }
+  // a digit's joints for its pose (hand space): its first joint, the next two, then its tip
+  HANDS.chain=(i,f,pts)=>{ tipOf(i,f,pts[3],pts); return pts; };
+  // how far a digit's last bone reaches past its tip joint toward -n (n a unit direction in hand space): a tip held that far off a surface facing n rests its skin on it
+  const LASTV=CH.map(c=>{ const L=[]; for(let i=0;i<N;i++)if(JI[i]===c[2])L.push(new V3(X[i*3],X[i*3+1],X[i*3+2])); return L; }), VX=new V3(), VT=new V3();
+  HANDS.ext=(i,f,n)=>{ tipOf(i,f,VT); let e=0; for(const v of LASTV[i]){ const d=VT.dot(n)-VX.copy(v).applyMatrix4(LAST).dot(n); if(d>e)e=d; } return e; };
+  const LIM=[[-.4,1.4],[0,1.9]], P0=new V3(), P1=new V3();
+  // avoid (optional): (i, its joints and tip) => the way each of its points must still move to be clear of something, flat [x,y,z,...] of a fixed length (zeros when clear); the pose then reaches as near as it can without going in
+  const PJ=[0,1,2,3].map(()=>new V3()), PJ1=[0,1,2,3].map(()=>new V3());
+  const res=(i,f,tg,avoid,P,pts)=>{ tipOf(i,f,P,avoid?pts:null); const r=[P.x-tg.x,P.y-tg.y,P.z-tg.z]; if(avoid)for(const v of avoid(i,pts))r.push(-v); return r; };
+  HANDS.reach=(i,tg,f,avoid)=>{ const np=i||avoid?3:2, set=(f,a0,a1,sp)=>{ f[0]=Math.max(LIM[0][0],Math.min(LIM[0][1],a0)); f[1]=Math.max(LIM[1][0],Math.min(LIM[1][1],a1)); f[2]=f[1]*.72; if(np>2&&i)f[3]=Math.max(R0[i][3]-.55,Math.min(R0[i][3]+.55,sp)); else if(np>2)f[4]=Math.max(-.55,Math.min(.55,sp)); };   // (the thumb swings at its base too (its f[4]) when it has something to keep out of)
+    for(let it=0;it<10;it++){ const r0=res(i,f,tg,avoid,P0,PJ); if(r0.reduce((a,v)=>a+v*v,0)<1e-8)break; const x=[f[0],f[1],i?f[3]:f[4]||0], Jc=[];
+      for(let q=0;q<np;q++){ const g=f.slice(), d=.01; if(q===0)g[0]+=d; else if(q===1){ g[1]+=d; g[2]=g[1]*.72; } else if(i)g[3]+=d; else g[4]=(g[4]||0)+d; Jc.push(res(i,g,tg,avoid,P1,PJ1).map((v,m)=>(v-r0[m])/d)); }
+      // (J^T J + lambda) dx = -J^T r, a 2 or 3 square by elimination
+      const A=[], b=[]; for(let u=0;u<np;u++){ A.push([]); for(let c=0;c<np;c++){ let t=u===c?2e-5:0; for(let m=0;m<r0.length;m++)t+=Jc[u][m]*Jc[c][m]; A[u].push(t); } let t=0; for(let m=0;m<r0.length;m++)t-=Jc[u][m]*r0[m]; b.push(t); }
+      for(let u=0;u<np;u++){ let mx=u; for(let w=u+1;w<np;w++)if(Math.abs(A[w][u])>Math.abs(A[mx][u]))mx=w; [A[u],A[mx]]=[A[mx],A[u]]; [b[u],b[mx]]=[b[mx],b[u]]; for(let w=u+1;w<np;w++){ const k=A[w][u]/A[u][u]; for(let c=u;c<np;c++)A[w][c]-=k*A[u][c]; b[w]-=k*b[u]; } }
+      const dx=new Array(np).fill(0); for(let u=np-1;u>=0;u--){ let v=b[u]; for(let c=u+1;c<np;c++)v-=A[u][c]*dx[c]; dx[u]=v/A[u][u]; }
+      const k=Math.min(1,.25/Math.max(1e-6,Math.hypot(...dx))); set(f,x[0]+dx[0]*k,x[1]+dx[1]*k,np>2?x[2]+dx[2]*k:f[3]); }
     return f; };
   HANDS.set=(st,fg)=>{ if(st)st.fg=fg; };
   // the headset's tracked hands as these hands (VR, 162c): WebXR's 25 joints are this hand's, frame for frame, so each joint's pose drives its bone; the right hand the left one mirrored

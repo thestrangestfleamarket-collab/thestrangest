@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {FORAGE, keys, PB, pos, RAG, ROOMS, SFX, st, USE, VIT, W3} from './003b-systems.js';
 import {SAY} from './003d-say.js';
-import {Reflector} from './004-main.js';
+import {Reflector, RH} from './004-main.js';
 import {MODS, SYS, TILE} from './006-map-pre.js';
 import {IKIT} from './038zc-ikit.js';
 import {MSHOP} from './059i-mshops.js';
@@ -66,7 +66,7 @@ const GYM={}; window.GYM=GYM;
       for(let r=0;r<2;r++)for(let i=0;i<8;i++){ const vv=v0+.25+i*.44, h=r?.99:.6, rr=.045+i*.006; box(u-.1+r*.1,vv-.12,u+r*.1,vv+.12,h,h+.03,STEEL); for(const s of [-1,1])cyl(u-.05+r*.1,vv+s*.12,rr,h,h+rr*2,DARK); }
       use('THE DUMBBELLS (CURL)',u,(v0+v1)/2,.8,1.1,()=>GYM.reps('curl'),1.5);
       box(W-.06,2.9,W,7.6,.3,2.7,DARK);   // the mirror's frame, and the mirror: a real reflection of the room and of you, moving as you move, in the headset too (owner, 8 Nov 2026)
-      { const mw=4.5, mh=2.2, p=F.pw(W-.07,5.25), r=new Reflector(new THREE.PlaneGeometry(mw*MW,mh*MW),{textureWidth:1536,textureHeight:768,color:0xe8ecef,clipBias:.003});
+      { const mw=4.5, mh=2.2, p=F.pw(W-.07,5.25), r=new Reflector(new THREE.PlaneGeometry(mw*MW,mh*MW),{textureWidth:Math.ceil(2*RH),textureHeight:Math.ceil(RH),color:0xe8ecef,clipBias:.003});
         r.position.set(p[0],1.5*MW,p[1]); r.rotation.y=Math.atan2(-F.eu[0],-F.eu[1]); r.name='gym mirror'; A.add(r); K.mirror=r;
         const draw=r.onBeforeRender; r.onBeforeRender=function(...a){ const G=W3.group, gv=G&&G.visible, nh=W3.noHead&&W3.dress; if(G)G.visible=true; if(nh){ W3.noHead=false; W3.dress(); } try{ draw.apply(this,a); } finally{ if(G)G.visible=gv; if(nh){ W3.noHead=true; W3.dress(); } } }; } }   // (through your own eyes, and in the headset, your body and head are hidden from you: the mirror shows them)
     // the lockers and a bench on the back wall, a water cooler, the rope mats by the door

@@ -35,7 +35,7 @@ import {RIVER} from './066-river.js';
   /* ---------- the ice on water: patches that grow while the ray is on them, hold you up, and melt ---------- */
   const IN=32, iceMat=new THREE.MeshPhongMaterial({color:0xcfeeff,specular:0xffffff,shininess:90,emissive:0x0c1a24}), iceG=(()=>{ const g=new THREE.CylinderGeometry(1,1,1,22,1), p=g.attributes.position;
       for(let i=0;i<p.count;i++){ const x=p.getX(i), z=p.getZ(i), r=Math.hypot(x,z); if(r>.5){ const a=Math.atan2(z,x), k=.86+.14*Math.sin(a*5.3+1)*Math.sin(a*2.1); p.setX(i,x*k); p.setZ(i,z*k); } } g.computeVertexNormals(); return g; })();
-  const iceMe=new THREE.InstancedMesh(iceG,iceMat,IN); iceMe.count=0; iceMe.name='ice'; iceMe.receiveShadow=true; iceMe.frustumCulled=false; iceMe.userData.anyRoom=1; scene.add(LEVELS.own(iceMe,'up'));
+  const iceMe=new THREE.InstancedMesh(iceG,iceMat,IN); iceMe.count=0; iceMe.name='ice'; iceMe.receiveShadow=true; iceMe.frustumCulled=false; iceMe.userData.anyRoom=1; scene.add(LEVELS.own(iceMe,'*'));
   const IL=[], m4=new THREE.Matrix4(), q4=new THREE.Quaternion(), s3=new V3(), p3=new V3(), TH=.06*M;
   const iceDraw=()=>{ IL.forEach((c,i)=>iceMe.setMatrixAt(i,m4.compose(p3.set(c.x,c.y-TH/2+.01*M,c.z),q4.setFromAxisAngle(s3.set(0,1,0),c.a),s3.set(c.r,TH,c.r)))); iceMe.count=IL.length; iceMe.instanceMatrix.needsUpdate=true; iceMe.visible=IL.length>0; };
   Object.assign(ICE,{list:IL,
@@ -84,8 +84,10 @@ import {RIVER} from './066-river.js';
   const along=(S,x,y,z)=>{ let best=1e9; const P=S.P; for(let i=1;i<P.length;i++){ const a=P[i-1], b=P[i], dx=b.x-a.x, dy=b.y-a.y, dz=b.z-a.z, l2=dx*dx+dy*dy+dz*dz||1, t=Math.max(0,Math.min(1,((x-a.x)*dx+(y-a.y)*dy+(z-a.z)*dz)/l2)); best=Math.min(best,Math.hypot(a.x+dx*t-x,a.y+dy*t-y,a.z+dz*t-z)); } return best; };
 
   /* ---------- the people a stream touches: you, the other players near you, the characters ---------- */
+  const MORE=MODS.moreBodies=MODS.moreBodies||[];   // other things a stream can touch (each a function giving {id,x,y,z,o,root}; o.frozen is kept)
   const bodies=()=>{ const L=[{id:'me',x:pos.x,y:SHARED.py,z:pos.z,root:W3.group}];
     for(const o of ONLINE.others.values()){ if(o.why!=='near you'||o.dead||!o.fig||!o.fig.g||!o.p)continue; const p=o.p; L.push({id:o.id,x:p.x,y:p.y??o.fig.g.position.y,z:p.z,o,root:o.fig.g}); }
+    for(const f of MORE)for(const b of f())L.push(b);
     for(const N of NPCS.all?NPCS.all():[]){ if(!N.g||!N.g.visible||N.far||!N.st||N.lv&&N.lv!==SHARED.LVL)continue; L.push({id:'npc:'+(N.key||'')+(N.uid||''),x:N.st.x,y:N.g.position.y,z:N.st.z,N,root:N.g}); } return L; };
   const touches=(S,b)=>Math.min(along(S,b.x,b.y+.4*M,b.z),along(S,b.x,b.y+M,b.z),along(S,b.x,b.y+1.6*M,b.z))<.5*M;
 
@@ -125,6 +127,7 @@ import {RIVER} from './066-river.js';
   const selfTick=dt=>{ coldIn=Math.max(0,coldIn-dt*.4); immune=Math.max(0,immune-dt);
     if(SHARED.frozen>0){ SHARED.frozen-=dt; if(VIT.dead)SHARED.frozen=0; if(SHARED.frozen<=0){ SHARED.frozen=0; immune=2.5; say('THE ICE CRACKS AND YOU ARE FREE.','#9fe6ff'); } }
     if(JET.burnT>0){ if(st.water&&st.water.in){ JET.burnT=0; for(let k=0;k<4;k++)FLAME.puff(pos.x,SHARED.py+.8*M,pos.z,1.2,6); } else { JET.burnT-=dt; if((dotT-=dt)<=0){ dotT=.5; if(!VIT.dead)VIT.hurt(.01); } } } };
+  MODS.bodies=bodies; MODS.burnMe=burnMe; MODS.alight=(id,s)=>{ if(id!=='me'){ const e=fx(id); e.fire=Math.max(e.fire,s); } };   // for the other weapons (146hc)
   ONLINE.hear.zap=m=>{ '@later'; fx('me'); const f=Array.isArray(m.from)?{x:+m.from[0],z:+m.from[1]}:null; if(m.k==='i')freezeMe(.3); else burnMe(.025,f); };
 
   /* ---------- the beam of the freeze ray: a bright core with frost running down it ---------- */
@@ -137,9 +140,18 @@ import {RIVER} from './066-river.js';
   /* ---------- the streams: yours from your nozzle, theirs from theirs as they say they fire ---------- */
   const mk=(id,k,mode)=>({id,k,mode:mode||'fluid',tip:new V3(),dir:new V3(0,0,1),R:k==='f'?RF:RI,P:[],len:0,end:null,what:'',cT:0,eA:0,lT:0,zT:{},at:now(),bm:null});
   const tipOf=(g,S)=>{ if(!g||!g.visible||!g.parent)return false; S.tip.copy(g.tipL).applyMatrix4(g.matrix); const e=g.matrix.elements; S.dir.set(e[4],e[5],e[6]).normalize(); return true; };
-  // where you aim: the point under the mouse (on your ground, or out along the ray), from the nozzle; no mouse (the headset): the way the tool points
-  const AIMP=new V3(), aimMine=S=>{ if(JET.aim){ S.dir.copy(JET.aim); return; } const r=WIELD.ray; if(!r||VR.on)return; const c=r.origin, d=r.direction, far=c.distanceTo(S.tip)+S.R;
-    let t=d.y<-1e-3?(SHARED.py-c.y)/d.y:far; if(!(t>0)||t>far)t=far; AIMP.copy(c).addScaledVector(d,t).sub(S.tip); if(AIMP.lengthSq()>.01*M*M)S.dir.copy(AIMP.normalize()); };
+  // where you aim: a body the mouse is on (another player, a character), else the point on your ground under it, else out along the ray; the fuel's drop allowed for. No mouse (the headset): the way the tool points
+  const AIMP=new V3(), onBody=(c,d)=>{ let bt=Infinity, hit=null; for(const b of bodies()){ if(b.id==='me')continue; const wx=c.x-b.x, wy=c.y-b.y, wz=c.z-b.z, dd=d.x*wx+d.y*wy+d.z*wz, den=1-d.y*d.y;
+      let s=den>1e-6?(wy-d.y*dd)/den:wy; s=Math.min(1.8*M,Math.max(.1*M,s)); const t=d.x*(b.x-c.x)+d.y*(b.y+s-c.y)+d.z*(b.z-c.z); if(t<=0||t>=bt)continue;
+      if(Math.hypot(c.x+d.x*t-b.x,c.y+d.y*t-b.y-s,c.z+d.z*t-b.z)<.45*M){ bt=t; hit=AIMP.set(b.x,b.y+Math.min(1.5*M,Math.max(.5*M,s)),b.z); } } return hit; };
+  const reach=(S,th,hx,hz,dh)=>{ const p=S.tip.clone(), v=new V3(hx*Math.cos(th),Math.sin(th),hz*Math.cos(th)).multiplyScalar(14*M); let s=0, h0=0; const h=.02;
+    for(let t=0;t<FUEL*3&&s<S.R;t+=h){ const y0=p.y; v.y-=G*h; v.multiplyScalar(1/(1+KD*v.length()*h)); p.addScaledVector(v,h); s+=v.length()*h; const h1=Math.hypot(p.x-S.tip.x,p.z-S.tip.z); if(h1>=dh){ const u=(dh-h0)/Math.max(1e-6,h1-h0); return y0+(p.y-y0)*u; } h0=h1; } return null; };
+  const lob=(S,T)=>{ const dx=T.x-S.tip.x, dz=T.z-S.tip.z, dh=Math.hypot(dx,dz); if(dh<.3*M)return; const hx=dx/dh, hz=dz/dh; let lo=Math.atan2(T.y-S.tip.y,dh), y=reach(S,lo,hx,hz,dh); if(y==null||y>=T.y)return;
+    let hi=lo; for(let i=0;i<20;i++){ hi=Math.min(1.2,hi+.06); y=reach(S,hi,hx,hz,dh); if(y==null){ hi=null; break; } if(y>=T.y)break; lo=hi; if(hi>=1.2){ hi=null; break; } }
+    if(hi!=null)for(let i=0;i<8;i++){ const m=(lo+hi)/2, ym=reach(S,m,hx,hz,dh); if(ym!=null&&ym<T.y)lo=m; else hi=m; } S.dir.set(hx*Math.cos(lo),Math.sin(lo),hz*Math.cos(lo)); };
+  const aimMine=S=>{ if(JET.aim){ S.dir.copy(JET.aim); return; } const r=WIELD.ray; if(!r||VR.on)return; const c=r.origin, d=r.direction, far=c.distanceTo(S.tip)+S.R;
+    let T=onBody(c,d); if(!T){ let t=d.y<-1e-3?(SHARED.py-c.y)/d.y:far; if(!(t>0)||t>far)t=far; T=AIMP.copy(c).addScaledVector(d,t); }
+    const D=T.clone().sub(S.tip); if(D.lengthSq()<=.01*M*M)return; S.dir.copy(D.normalize()); if(S.k==='f'&&S.mode!=='plasma')lob(S,T); };
   const drop=S=>{ if(S.bm)S.bm.visible=false; JET.S.delete(S.id); };
   ONLINE.hear.jet=m=>{ '@later'; const S=JET.S.get(m.id); if(m.k==='f'||m.k==='i'){ let T=S; if(!T||T.k!==m.k){ if(T)drop(T); JET.S.set(m.id,T=mk(m.id,m.k)); } else T.at=now(); const ML=MODS.flames?MODS.flames.MODES:['fluid']; T.mode=ML[m.m|0]||'fluid'; if(Array.isArray(m.v)){ T.rv=(T.rv||new V3()).set(+m.v[0]||0,+m.v[1]||0,+m.v[2]||1); if(T.rv.lengthSq()<1e-4)T.rv=null; else T.rv.normalize(); } } else if(S)drop(S); };
   const PL=[];

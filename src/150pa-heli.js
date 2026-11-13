@@ -1,6 +1,6 @@
 // THE HELIPAD: Polyfork's rooftop helipad deck and windsock on the bank, and the news helicopter (data/heli.json) that flies a round of the city every five minutes from the shared clock and lands again, its rotor still on the pad, a Polyfork pilot at the controls; ride along in a seat, or take the controls yourself (one pilot, kept by the section's server like a car).
 import {SHARED, THREE} from './003-shx.js';
-import {keys, ONLINE, pos, RIDE, SPEED, st, UI, VLOOK} from './003b-systems.js';
+import {ARCH, keys, ONLINE, pos, RIDE, SPEED, st, UI, VLOOK} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {FIX, LEVEL, SOL, STORE, SYS, TILE, ZU} from './006-map-pre.js';
@@ -9,7 +9,7 @@ import {PFROW} from './068a-pfrow.js';
 import {BODIES} from './111a-bodies.js';
 import {VEH} from './150o-physmore.js';
 const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
-{ const HD=__LAZY__("data/heli.json"), CAST=__LAZY__("data/cast/v-space.json");
+{ const HD=SYS.far(__LAZY__("data/heli.json")), CAST=SYS.far(__LAZY__("data/cast/v-space.json"));
   const T=TILE, M0=T/.84, YS=ZU*24/TILE, MV=M0*YS, say=(t,c)=>SAY(t,c||'#e8e2cc'), X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, sm=u=>u<=0?0:u>=1?1:u*u*(3-2*u), wrap=a=>Math.atan2(Math.sin(a),Math.cos(a));
   // the round: it leaves the pad every CYC seconds, flies F seconds and rests the rest, the rotor still
   const H2=0, CYC=300, F=130, UP0=5, UP1=11, DN0=F-14, DN1=F-4, LIFT=12, CRUISE=55, DECK={s:.8,v:.6};
@@ -36,9 +36,9 @@ const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
   const padAt=()=>{ const h={obj:STORE.bank&&STORE.bank.out}; if(!h.obj)return null; h.obj.updateMatrixWorld(true); const bb=new THREE.Box3().setFromObject(h.obj), c=bb.getCenter(new THREE.Vector3());
     const base=bb.max.y-.2*MV, top=base+3*DECK.v*MV; return {x:c.x,z:c.z,base,top,rot:h.obj.rotation.y,front:h.obj.rotation.y,hb:bb}; };
   const deckPt=(P,u,v)=>{ const c=Math.cos(P.rot), s=Math.sin(P.rot); return {x:P.x+(u*c+v*s)*M0,z:P.z+(-u*s+v*c)*M0}; };
-  const buildPad=P=>{ const deck=model('deck',DECK.s*M0,DECK.v*MV); deck.position.set(P.x,P.base,P.z); deck.rotation.y=P.rot; deck.userData.anyRoom=false; scene.add(deck);
+  const buildPad=P=>{ const deck=model('deck',DECK.s*M0,DECK.v*MV); deck.position.set(P.x,P.base,P.z); deck.rotation.y=P.rot; deck.userData.anyRoom=false; deck.userData.parkFar=true; scene.add(deck);
     const w=6*DECK.s*M0; FIX.up.push([P.x-w,P.z-w,P.base,P.x+w,P.z+w,P.top]);
-    const sk=model('sock',.5*M0,.5*MV), sp=sk.userData.parts.sock, q=deckPt(P,4.1,-4.1); sk.position.set(q.x,P.top,q.z); sk.children.forEach(c=>c.position.z-=D.sock.parts.sock.at[2]); sk.userData.anyRoom=false; scene.add(sk);
+    const sk=model('sock',.5*M0,.5*MV), sp=sk.userData.parts.sock, q=deckPt(P,4.1,-4.1); sk.position.set(q.x,P.top,q.z); sk.children.forEach(c=>c.position.z-=D.sock.parts.sock.at[2]); sk.userData.anyRoom=false; sk.userData.parkFar=true; scene.add(sk);
     HELI.pad={...P,deck,sock:sk,sp}; };
   // the street below: where you come down the bank's stairs, by its front door
   const street=()=>{ const P=HELI.pad, d=(P.hb.max.z-P.hb.min.z)/2+1.2*M0, q=deckPt(P,0,0); const fz=P.z+Math.cos(P.rot)*d, fx=P.x+Math.sin(P.rot)*d+3*M0; return {x:fx,z:fz,hd:P.rot}; };
@@ -103,7 +103,7 @@ const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
 
   /* ---------- the pilot: Polyfork's aircrew pilot, at the controls while it flies, waiting on the deck otherwise ---------- */
   let castAsked=false; const PL={};
-  const bring=()=>{ if(castAsked)return; castAsked=true; CAST().then(J=>{ for(const H of HELI.list){ const b=J.bodies[H.pilot]; if(!b)continue; const k='heli_'+H.pilot, P={y:0};
+  const bring=()=>{ if(castAsked)return; castAsked=true; CAST().then(J=>{ for(const H of HELI.list){ const b=!ARCH.has(H.pilot)&&J.bodies[H.pilot]; if(!b)continue; const k='heli_'+H.pilot, P={y:0};
       BODIES.add({...BODIES.rebakedBody(J,H.pilot,{}),key:k,label:H.label,size:b.height/1.8,hd:0,ground:()=>P.y});
       const N=BODIES.by[k]&&BODIES.by[k].npc; if(!N)continue; N.on=true; N.walk.auto=false; N.free=()=>true; N.st.pin=true; N.st.home={x:HELI.pad.x,z:HELI.pad.z,r:0}; PL[H.id]={N,P}; } }).catch(e=>console.warn('HELI pilots',e)); };
   const CAR={k:'car',steer:0,z:0};
@@ -132,7 +132,7 @@ const HELI={list:[],pad:null,skew:0}; window.HELI=HELI;
   /* ---------- flying it yourself: one pilot a helicopter, as the section's server says (its car lock) ---------- */
   const FLY={x:0,y:0,z:0,hd:0,vf:0,vy:0,turn:0,pitch:0,bank:0,rot:0,down:true};
   const VMAX=30*M0, VBACK=6*M0, VUP=6*MV, TURN=1.1, TOPY=150*MV;
-  const B=LEVEL.edge&&LEVEL.edge.lines?(()=>{ const xs=[], ys=[]; for(const l of LEVEL.edge.lines){ xs.push(l[0],l[2]); ys.push(l[1],l[3]); } return {x0:X(Math.min(...xs)),x1:X(Math.max(...xs)),z0:Math.min(Z(Math.min(...ys)),Z(Math.max(...ys))),z1:Math.max(Z(Math.min(...ys)),Z(Math.max(...ys)))}; })():null;
+  const B=LEVEL.edge&&LEVEL.edge.lines?(()=>{ const xs=[], ys=[]; for(const l of LEVEL.edge.field||LEVEL.edge.lines){ xs.push(l[0],l[2]); ys.push(l[1],l[3]); } return {x0:X(Math.min(...xs)),x1:X(Math.max(...xs)),z0:Math.min(Z(Math.min(...ys)),Z(Math.max(...ys))),z1:Math.max(Z(Math.min(...ys)),Z(Math.max(...ys)))}; })():null;
   const pilotKind=H=>({name:H.name,world:true,seat:(m,o)=>o.set(0,0,0),fit:()=>.92,make:()=>new THREE.Group(),lift:.001,hop:false,knock:1e9,ease:1e3,dry:true,
     pose:()=>POSE, on:()=>{ FLY.rot=H.rot; hud(H,0); }, off:()=>hudOff(),
     step:(R,dt)=>{ const f=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0), tr=(keys.has('a')||keys.has('arrowleft')?1:0)-(keys.has('d')||keys.has('arrowright')?1:0), v=(keys.has(' ')?1:0)-(keys.has('shift')||keys.has('c')?1:0);

@@ -34,9 +34,9 @@ const wait=(pg,ms)=>pg.waitForTimeout(ms);
     await wait(pg,8000); ok(await pg.evaluate(()=>PHYSDBG().rags)===0,'and gets up again'); }
   else console.log('note no one in today\'s cast has a jointed body, so no one can be knocked over (dormant until they do: owner, 7 Nov 2026)');
   // the kart
-  await pg.evaluate(()=>__dbg.go(59.9,1.6)); await wait(pg,2000);
+  await pg.evaluate(()=>__dbg.go(59.9,19.2)); await wait(pg,2000);   // (on the road's middle line: the kart is full size since 12 Nov 2026 and the sidewalk's poles and stoops catch it)
   const m=await pg.evaluate(()=>{ FORAGE.give('kart',1); WIELD.set('kart'); return RIDE.mount('kart'); }); await wait(pg,1000);
-  await pg.keyboard.down('w'); let k1={d:null}; for(let i=0;i<12;i++){ await wait(pg,500); const q=await pg.evaluate(()=>({d:PHYSDBG().kart,p:__dbg.pos(),r:RIDEDBG()})); if(q.d&&(!k1.d||Math.abs(q.d.sp)>=Math.abs(k1.d.sp)))k1=q; } await pg.keyboard.up('w'); await wait(pg,1500);
+  await pg.keyboard.down('w'); let k1={d:null}; for(let i=0;i<24;i++){ await wait(pg,500); const q=await pg.evaluate(()=>({d:PHYSDBG().kart,p:__dbg.pos(),r:RIDEDBG()})); if(q.d&&(!k1.d||Math.abs(q.d.sp)>=Math.abs(k1.d.sp)))k1=q; } await pg.keyboard.up('w'); await wait(pg,1500);
   ok(m&&k1.d&&Math.abs(k1.d.sp)>.15,`in the go-kart, W drives it on Rapier's wheels (speed ${k1.d&&k1.d.sp}, ${JSON.stringify(k1.r)})`);
   await pg.evaluate(()=>RIDE.off()); await wait(pg,500); ok(!(await pg.evaluate(()=>PHYSDBG().kart)),'getting out takes the kart out of the world');
   // switched off: a vehicle glides like a board, no ragdolls

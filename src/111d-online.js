@@ -173,7 +173,8 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
       if(meAcc>1){ meAcc=0; const n=myName(), k=lookKey(), dead=VIT.dead?1:0, hp=Math.round(VIT.hp*20)/20, x={}; for(const f in ONLINE.mine){ try{ const v=ONLINE.mine[f](); if(v!=null)x[f]=v; }catch(e){} } const s=n+'|'+k+'|'+dead+'|'+hp+'|'+JSON.stringify(x); if(s!==meSent){ meSent=s; ONLINE.send({t:'me',name:n,look:k,dead,hp,x}); } }
       keep+=dt; if(acc>=SEND){ acc=0; const a=[+pos.x.toFixed(2),+pos.z.toFixed(2),+SHARED.py.toFixed(2),+Math.atan2(Math.sin(SHARED.heading),Math.cos(SHARED.heading)).toFixed(2),SHARED.LVL||'up',roomKey()];
         if(!last||Math.abs(a[0]-last[0])+Math.abs(a[1]-last[1])+Math.abs(a[2]-last[2])>.01||Math.abs(a[3]-last[3])>.04||a[4]!==last[4]||a[5]!==last[5]||keep>4){ last=a; keep=0; ONLINE.send({t:'mv',at:a}); } } } };
-  SYS.add('soloFrame',dt=>keepUp(dt||0),'111d-online');
+  // what a holodeck page needs to keep you in this room after the market is gone (src/holo/net.js)
+  ONLINE.card=()=>({room:ROOM,name:myName(),look:lookKey(),hp:Math.round(VIT.hp*20)/20,at:[+pos.x.toFixed(2),+pos.z.toFixed(2),+SHARED.py.toFixed(2),+Math.atan2(Math.sin(SHARED.heading),Math.cos(SHARED.heading)).toFixed(2),SHARED.LVL||'up',roomKey()]});
   ONLINE.tick=dt=>{ const now=performance.now(); keepUp(dt);
     if(ONLINE.others.size)draw(dt,now); fade(dt);
     if(ME.say&&now-ME.sayT<ONLINE.sayFor*1000){ ME.st=SP; if(VR.on){ if(ME.lab)ME.lab.show(false); tag(ME); ME.tag.visible=true; ME.tag.position.set(pos.x,SHARED.py+2.65*TILE,pos.z); fit(ME.tag); } else { if(ME.tag)ME.tag.visible=false; lab(ME); ME.lab.at(pos.x,SHARED.py+2.15*TILE,pos.z); } } else { if(ME.tag)ME.tag.visible=false; if(ME.lab)ME.lab.show(false); }; };

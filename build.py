@@ -104,6 +104,7 @@ if 'g' in os.environ.get('SKIP', '').split(','):
 elif not os.path.exists('node_modules/three'):
     subprocess.run(['npm', 'install', '--no-audit', '--no-fund'], check=True)
 subprocess.run(['node', 'tools/asylum.cjs'], check=True)   # Hollow Pines (src/asylum/): its own page, dist/asylum.html
+subprocess.run(['node', 'tools/holo.cjs'], check=True)   # the holodeck's pages (src/holo/): dist/holo.html, dist/roam.html, dist/boarded.html
 subprocess.run(['node', 'tools/wave.cjs'], check=True)   # SHARDWAVE (src/wave/): its own page, dist/wave.html
 subprocess.run(['node', 'tools/golf.cjs'], check=True)   # HALCYON GREENS (src/golf/): its own page, dist/golf.html, and its pictures, dist/golf-assets/
 for f in sorted(set(re.findall(r'__FILE__\("([^"]+)"\)', body))):

@@ -1,9 +1,10 @@
-// Halcyon Greens' world: a misty dusk vale (Poly Haven sky, scans and textures, CC0), hills to the horizon in thick air, a stream and waterfall, lanterns, trees
+// Halcyon Greens' world: a misty dusk vale (Poly Haven sky, scans and textures, CC0), hills to the horizon in thick air, a stream and waterfall, the garden (garden.js), trees
 import * as THREE from 'three';
 import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { Tree } from '@dgreenheck/ez-tree';
 import { fbm, mulberry32, smoothstep, lerp, clamp } from './util.js';
+import { PLAN, gardenGround, gardenKeep, gardenMask, tended, buildGarden } from './garden.js';
 
 const V3 = THREE.Vector3, UP = new V3(0, 1, 0);
 // The sky is turned so its low sun (3° up in the photo) sits ahead of the tee; the light is lifted to 8° so shadows stay usable.
@@ -38,7 +39,7 @@ const f3 = (v) => `vec3(${v.x.toFixed(4)}, ${v.y.toFixed(4)}, ${v.z.toFixed(4)})
 }
 
 export async function loadAssets(renderer, onProgress = () => { }) {
-  let done = 0; const total = 15;
+  let done = 0; const total = 10;
   const tick = (p) => p.then((v) => { onProgress(++done / total); return v; });
   const tl = new THREE.TextureLoader(), gl = new GLTFLoader();
   const maxAniso = renderer.capabilities.getMaxAnisotropy();
@@ -47,7 +48,7 @@ export async function loadAssets(renderer, onProgress = () => { }) {
     if (srgb) t.colorSpace = THREE.SRGBColorSpace; return t;
   });
   const model = (n) => tick(gl.loadAsync(`golf-assets/models/${n}/${n}.json`));
-  const [hdr, sky, gd, gn, ga, wd, wn, wa, rocks, fern, stump, lantern, statue, gate, log] = await Promise.all([
+  const [hdr, sky, gd, gn, ga, wd, wn, wa, rocks, fern] = await Promise.all([
     tick(fetch('golf-assets/sky/dusk_1k.hdr.txt').then(r => r.text()).then((b64) => {
       // The sky's light ships base64 in a text file so any static host serves it.
       const bin = atob(b64.trim()), buf = new Uint8Array(bin.length);
@@ -60,7 +61,7 @@ export async function loadAssets(renderer, onProgress = () => { }) {
     tick(tl.loadAsync('golf-assets/sky/dusk_4k.jpg')),
     tex('golf-assets/tex/leafy_grass_diff.jpg', true), tex('golf-assets/tex/leafy_grass_nor.jpg'), tex('golf-assets/tex/leafy_grass_arm.jpg'),
     tex('golf-assets/tex/wood_planks_diff.jpg', true, 0.6), tex('golf-assets/tex/wood_planks_nor.jpg', false, 0.6), tex('golf-assets/tex/wood_planks_arm.jpg', false, 0.6),
-    model('rock_moss_set_01'), model('fern_02'), model('tree_stump_01'), model('Lantern_01'), model('gothic_statue'), model('large_iron_gate'), model('dead_tree_trunk'),
+    model('rock_moss_set_01'), model('fern_02'),
   ]);
   hdr.mapping = THREE.EquirectangularReflectionMapping;
   const pm = new THREE.PMREMGenerator(renderer);
@@ -78,18 +79,9 @@ export async function loadAssets(renderer, onProgress = () => { }) {
     });
     return out;
   };
-  // A whole glTF as one group, base on the origin, with its height.
-  const whole = (g) => {
-    const s = g.scene; s.updateMatrixWorld(true);
-    const b = new THREE.Box3().setFromObject(s), c = b.getCenter(new V3());
-    s.position.set(-c.x, -b.min.y, -c.z);
-    s.traverse(o => { if (o.isMesh) { o.castShadow = o.receiveShadow = true; } });
-    const grp = new THREE.Group(); grp.add(s); return { obj: grp, h: b.max.y - b.min.y, w: Math.max(b.max.x - b.min.x, b.max.z - b.min.z) };
-  };
   return {
     env, sky, grass: { map: gd, normalMap: gn, arm: ga }, wood: { map: wd, normalMap: wn, arm: wa },
-    rocks: pieces(rocks), ferns: pieces(fern), stump: pieces(stump),
-    lantern: whole(lantern), statue: whole(statue), gate: whole(gate), log: whole(log),
+    rocks: pieces(rocks), ferns: pieces(fern),
   };
 }
 
@@ -218,11 +210,11 @@ export function buildEnvironment(e, renderer, scene, holes, mats, quality, A) {
     h += fbm(x * 0.0008 + 5, z * 0.0008, 3) * 160 * smoothstep(700, 2000, r);
     const dp = Math.hypot(x - PLATEAU[0], z - PLATEAU[1]);          // the ledge the waterfall drops from
     h = Math.max(h, 7.4 * smoothstep(8.2, 5.4, dp) + (fbm(x * 0.4, z * 0.4, 3) - 0.5) * 0.6 * smoothstep(9, 5, dp));
-    h += 9 * smoothstep(30, 9, dp) * smoothstep(5, 14, dp);        // and the rise it sits on
+    h += 6 * smoothstep(16, 8, dp) * smoothstep(5, 10, dp);         // and the rise it sits on
     return h;
   };
   const groundH = (x, z, withDeck = true) => {
-    let h = baseH(x, z);
+    let h = gardenGround(x, z, baseH(x, z));
     const st = nearStream(x, z);
     if (st) {
       const [d, wy, hw] = st, lift = Math.max(0, h - wy);
@@ -236,12 +228,12 @@ export function buildEnvironment(e, renderer, scene, holes, mats, quality, A) {
     return h;
   };
   const waterAt = (x, z) => { const st = nearStream(x, z); if (st && st[0] < st[2] + 0.2) return st[1]; return Math.hypot(x - POOL.x, z - POOL.z) < 4.2 ? POOL.y : -Infinity; };
-  const clear = (x, z) => { const st = nearStream(x, z); return Math.min(deck(x, z)[0], st ? st[0] - st[2] - 0.6 : 1e9, Math.hypot(x - POOL.x, z - POOL.z) - 4.6); };
+  const clear = (x, z) => { const st = nearStream(x, z); return Math.min(deck(x, z)[0], st ? st[0] - st[2] - 0.6 : 1e9, Math.hypot(x - POOL.x, z - POOL.z) - 4.6, gardenKeep(x, z)); };
 
   const SIZE = 4400, SEG = quality.terrainSeg;
   const tg = new THREE.PlaneGeometry(SIZE, SIZE, SEG, SEG); tg.rotateX(-Math.PI / 2);
   const tp = tg.attributes.position, uv = tg.attributes.uv, col = new Float32Array(tp.count * 3);
-  const cMeadow = new THREE.Color(0x6f7446), cDry = new THREE.Color(0x8c8456), cLush = new THREE.Color(0x4d5a32), cWood = new THREE.Color(0x2e3a24), cRock = new THREE.Color(0x6b6862), cMud = new THREE.Color(0x3a3126), cc = new THREE.Color();
+  const cMeadow = new THREE.Color(0x6f7446), cDry = new THREE.Color(0x8c8456), cLush = new THREE.Color(0x4d5a32), cWood = new THREE.Color(0x2e3a24), cRock = new THREE.Color(0x6b6862), cMud = new THREE.Color(0x3a3126), cMoss = new THREE.Color(0x4a6a2a), cc = new THREE.Color();
   for (let i = 0; i < tp.count; i++) {
     let x = tp.getX(i), z = tp.getZ(i);
     const u = Math.max(Math.abs(x), Math.abs(z)) / (SIZE / 2), k = 0.012 + 0.988 * Math.pow(u, 2.6); x *= k; z *= k;
@@ -251,6 +243,7 @@ export function buildEnvironment(e, renderer, scene, holes, mats, quality, A) {
     cc.lerp(cWood, smoothstep(0.5, 0.62, wood) * smoothstep(40, 120, Math.hypot(x, z)));
     const st = nearStream(x, z); if (st && st[0] < st[2] + 0.6) cc.lerp(cMud, smoothstep(st[2] + 0.6, st[2] * 0.7, st[0]) * 0.6);
     if (Math.hypot(x - PLATEAU[0], z - PLATEAU[1]) < 9 && y > 1) cc.lerp(cRock, 0.7);
+    cc.lerp(cMoss, gardenMask(x, z) * (0.75 + 0.25 * fbm(x * 0.4, z * 0.4 + 3, 3)));
     cc.multiplyScalar(1.15 + (m - 0.5) * 0.45);
     col[i * 3] = cc.r; col[i * 3 + 1] = cc.g; col[i * 3 + 2] = cc.b;
   }
@@ -279,7 +272,7 @@ export function buildEnvironment(e, renderer, scene, holes, mats, quality, A) {
     const m = new THREE.Mesh(g, mat); m.receiveShadow = true; m.renderOrder = 2; group.add(m); return m;
   };
   ribbon(upper, waterMat(1.1, 0.5)); ribbon(lower, waterMat(0.45, 0.5));
-  const poolMat = waterMat(0.12, 0.35); poolMat.envMapIntensity = 1.3; poolMat.color.set(0x16201f);
+  const poolMat = waterMat(0.12, 0.35); poolMat.envMapIntensity = 1.3; poolMat.color.set(0x16201f); poolMat.opacity = 0.68;
   const pool = new THREE.Mesh(new THREE.CircleGeometry(4.0, 48).rotateX(-Math.PI / 2), poolMat);
   pool.position.copy(POOL).y += 0.01; pool.receiveShadow = true; pool.renderOrder = 2; group.add(pool);
 
@@ -350,14 +343,8 @@ export function buildEnvironment(e, renderer, scene, holes, mats, quality, A) {
     const s = rnd() < 0.5 ? -1 : 1, p = q.p.clone().addScaledVector(q.side, s * (q.w / 2 + 0.2 + rnd() * 0.5)), piece = A.rocks[i % A.rocks.length];
     place(piece, p.x, groundH(p.x, p.z) - 0.12, p.z, (0.25 + rnd() * 0.45) / piece.r * 0.5, rnd() * 6.28);
   }
-  for (let i = 0, n = 0; n < 22 && i < 400; i++) {
-    const a = rnd() * 6.283, r = 5 + rnd() * 34, x = center.x + Math.cos(a) * r, z = center.z + Math.sin(a) * r;
-    const p = A.rocks[i % A.rocks.length], s = (0.3 + rnd() * rnd() * 1.0);
-    if (clear(x, z) < 0.6 + p.r * s) continue;
-    place(p, x, groundH(x, z) - p.h * s * 0.25, z, s, rnd() * 6.283); n++;
-  }
 
-  // ---------- trees: a few real ones near, painted cut-outs on the hills ----------
+  // ---------- trees: the garden's maples and pines where the plan puts them, a ring of woodland beyond, painted cut-outs on the hills ----------
   const presets = ['Oak Medium', 'Ash Medium', 'Aspen Medium', 'Oak Large', 'Pine Medium'];
   const protos = presets.slice(0, Math.max(2, quality.treeKinds)).map((p, i) => {
     const t = new Tree(); t.loadPreset(p); t.options.seed = 2024 + i * 77;
@@ -367,18 +354,28 @@ export function buildEnvironment(e, renderer, scene, holes, mats, quality, A) {
     updaters.push((dt, time) => t.update(time));
     return { t, h, name: p };
   });
-  const bare = new Tree(); bare.loadPreset('Oak Large'); bare.options.seed = 666; bare.options.leaves.count = 0; bare.options.bark.tint = 0x8a8478; bare.generate();
-  const bareH = new THREE.Box3().setFromObject(bare).getSize(new V3()).y;
+  const special = (preset, seed, tint) => { // a maple's autumn red or a pine's dark needles, painted over the leaf texture's own green
+    const t = new Tree(); t.loadPreset(preset); t.options.seed = seed; t.generate();
+    const m = t.leavesMesh.material, orig = m.onBeforeCompile;
+    m.onBeforeCompile = (sh) => { orig(sh); sh.fragmentShader = sh.fragmentShader.replace('#include <map_fragment>', `#include <map_fragment>\n diffuseColor.rgb = vec3( dot( diffuseColor.rgb, vec3( 0.3, 0.59, 0.11 ) ) ) * 2.4 * ${'vec3(' + tint.map(v => v.toFixed(3)).join(',') + ')'};`); };
+    m.customProgramCacheKey = () => 'leaf-' + tint.join(',');
+    updaters.push((dt, time) => t.update(time));
+    return { t, h: new THREE.Box3().setFromObject(t).getSize(new V3()).y };
+  };
+  const maple = special('Ash Medium', 811, [0.78, 0.17, 0.07]), maple2 = special('Ash Small', 812, [0.86, 0.38, 0.08]), pine = special('Pine Medium', 913, [0.2, 0.3, 0.16]);
   const putTree = (p, x, z, height, prot = p.t) => {
     const g = new THREE.Group();
     for (const m of [prot.branchesMesh, prot.leavesMesh]) { if (!m.geometry.attributes.position) continue; const c = new THREE.Mesh(m.geometry, m.material); c.castShadow = true; c.receiveShadow = true; g.add(c); }
     g.position.set(x, groundH(x, z) - 0.15, z); g.rotation.y = rnd() * 6.283; g.scale.setScalar(height / p.h * (0.9 + rnd() * 0.2)); group.add(g); return g;
   };
-  const spots = [[-8.5, 7, 0, 12], [-9.5, -6, 1, 10], [4.5, 15, 2, 11], [-15, 1, 3, 14], [-5, -17, 0, 11], [-18, 13, 1, 12], [3, -27, 4, 15], [26, 6, 3, 13],
-    [-26, -9, 2, 12], [18, 18, 0, 13], [-12, 26, 4, 15], [-33, 20, 1, 13], [30, -6, 2, 12], [-28, -26, 0, 14], [10, 30, 3, 13], [36, 14, 4, 15]];
-  let near = 0;
-  for (const [x, z, k, height] of spots) { if (near >= quality.trees) break; if (clear(x, z) < 2) continue; putTree(protos[k % protos.length], x, z, height); near++; }
-  putTree({ t: bare, h: bareH }, -6.5, -11.5, 13); putTree({ t: bare, h: bareH }, 27, -32, 16);
+  PLAN.maples.forEach(([x, z, h], i) => putTree(i % 2 ? maple2 : maple, x, z, h));
+  PLAN.pines.forEach(([x, z, h]) => putTree(pine, x, z, h));
+  const spots = [];   // the woodland edge: a loose ring just outside the garden, thicker behind the bamboo
+  for (let i = 0; i < 40 && spots.length < quality.trees; i++) {
+    const a = rnd() * 6.283, r = 19 + rnd() * 16, x = center.x + Math.cos(a) * r, z = center.z + Math.sin(a) * r;
+    if (tended(x, z) || clear(x, z) < 2.5 || spots.some(([sx, sz]) => Math.hypot(sx - x, sz - z) < 6)) continue;
+    spots.push([x, z]); putTree(protos[i % protos.length], x, z, 10 + rnd() * 5);
+  }
 
   // the far trees: each kind rendered once to a picture, then stood as crossed cards across the hills
   {
@@ -418,7 +415,7 @@ export function buildEnvironment(e, renderer, scene, holes, mats, quality, A) {
   }
 
   // ---------- grass ----------
-  const N = quality.grass, R = 32;
+  const N = quality.grass, R = 40;
   const gm = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide });
   gm.onBeforeCompile = (s) => {
     s.uniforms.uTime = uTime;
@@ -439,7 +436,7 @@ export function buildEnvironment(e, renderer, scene, holes, mats, quality, A) {
   for (let tries = 0; n < N && tries < N * 3; tries++) {
     const a = rnd() * 6.283, r = R * Math.pow(rnd(), 0.72);
     const x = center.x + Math.cos(a) * r, z = center.z + Math.sin(a) * r;
-    const dd = clear(x, z); if (dd < 0.1) continue;
+    const dd = clear(x, z); if (dd < 0.1 || tended(x, z)) continue;
     const patch = fbm(x * 0.5 + 3, z * 0.5, 3), fade = 1 - smoothstep(R * 0.6, R, r);
     const h = (0.08 + patch * 0.34 + rnd() * 0.1) * (0.45 + 0.55 * smoothstep(0.1, 1.6, dd)) * (0.35 + 0.65 * fade);
     d.position.set(x, groundH(x, z) - 0.01, z); d.rotation.set((rnd() - 0.5) * 0.5, rnd() * 6.283, 0);
@@ -449,80 +446,16 @@ export function buildEnvironment(e, renderer, scene, holes, mats, quality, A) {
   }
   grass.count = n; grass.receiveShadow = true; grass.frustumCulled = false; group.add(grass);
 
-  // ---------- the place: ferns, the gate at the tee, lanterns, the statue above the falls, a fallen log, a fence, a far house ----------
+  // ---------- ferns where it is damp and shaded: the stream's banks, under the maples, at the woodland's feet ----------
   const fernAt = (x, z, s = 1) => { if (clear(x, z) < 0.3) return; const p = A.ferns[(rnd() * A.ferns.length) | 0]; place(p, x, groundH(x, z) - 0.02, z, (0.55 + rnd() * 0.6) * s, rnd() * 6.283); };
-  for (const [x, z] of spots.slice(0, 10)) for (let i = 0; i < 4; i++) { const a = rnd() * 6.283, r = 0.8 + rnd() * 2; fernAt(x + Math.cos(a) * r, z + Math.sin(a) * r); }
-  for (const run of runs) for (let i = 4; i < run.length; i += 5) { const q = run[i]; if (q.p.distanceTo(center) > 40) continue; const s = rnd() < 0.5 ? -1 : 1, p = q.p.clone().addScaledVector(q.side, s * (q.w / 2 + 0.9 + rnd())); fernAt(p.x, p.z, 1.2); }
-  if (A.stump[0]) place(A.stump[0], -3.6, groundH(-3.6, 3.4) - 0.06, 3.4, 1, 1);
+  for (const [x, z] of [...spots, ...PLAN.maples]) for (let i = 0; i < 4; i++) { const a = rnd() * 6.283, r = 0.8 + rnd() * 1.8; fernAt(x + Math.cos(a) * r, z + Math.sin(a) * r); }
+  for (const run of runs) for (let i = 3; i < run.length; i += 3) { const q = run[i]; if (q.p.distanceTo(center) > 40) continue; const s = rnd() < 0.5 ? -1 : 1, p = q.p.clone().addScaledVector(q.side, s * (q.w / 2 + 0.7 + rnd() * 0.6)); fernAt(p.x, p.z, 1.1); }
 
-  const inst = (w, s) => { const o = w.obj.clone(true); o.scale.setScalar(s); return o; };
-  const teeBack = hole.tee.clone().addScaledVector(hole.teeDir, -1.6);
-  { // an old iron gate standing on its own in the grass beside the tee, no fence either side
-    const r = new V3(-hole.teeDir.z, 0, hole.teeDir.x), gp = hole.tee.clone().addScaledVector(r, -3.4).addScaledVector(hole.teeDir, 0.6);
-    const gte = inst(A.gate, 2.6 / A.gate.h); gte.position.set(gp.x, groundH(gp.x, gp.z) - 0.05, gp.z);
-    gte.rotation.y = Math.atan2(hole.teeDir.x, hole.teeDir.z) + 0.5; gte.rotation.z = 0.03; group.add(gte);
-  }
-  const statueAt = new V3(PLATEAU[0] + 1.2, 0, PLATEAU[1] - 0.6); statueAt.y = groundH(statueAt.x, statueAt.z) - 0.1;
-  { const st = inst(A.statue, 2.4 / A.statue.h); st.position.copy(statueAt); st.rotation.y = Math.atan2(center.x - statueAt.x, center.z - statueAt.z); group.add(st); }
-  { const lg = inst(A.log, 3.2 / A.log.w); const x = -4.8, z = -8.2; lg.position.set(x, groundH(x, z) - 0.12, z); lg.rotation.y = 0.7; group.add(lg); }
-
-  // lanterns on crooked posts along the course; three of them really light the ground and flicker
-  const glow = glowTex(), lanterns = [];
-  const lampAt = (x, z, real) => {
-    const g = new THREE.Group(), y = groundH(x, z); g.position.set(x, y, z); g.rotation.y = rnd() * 6.28; g.rotation.z = (rnd() - 0.5) * 0.06; group.add(g);
-    const post = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.75, 0.08).translate(0, 0.875, 0), mats.wall); post.castShadow = true; g.add(post);
-    const arm = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.06, 0.06).translate(0.19, 1.68, 0), mats.wall); arm.castShadow = true; g.add(arm);
-    const lan = inst(A.lantern, 0.32 / A.lantern.h); lan.position.set(0.36, 1.3, 0); g.add(lan);
-    const flame = new THREE.Mesh(new THREE.SphereGeometry(0.03, 12, 8), new THREE.MeshBasicMaterial({ color: new THREE.Color(4.5, 2.2, 0.7) }));
-    flame.position.set(0.36, 1.41, 0); g.add(flame);
-    const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: 0xffb060, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.55 }));
-    halo.position.copy(flame.position); halo.scale.setScalar(0.7); g.add(halo);
-    let light = null;
-    if (real) { light = new THREE.PointLight(0xffa24a, 2.6, 7.5, 1.8); light.position.set(0.36, 1.4, 0); g.add(light); }
-    lanterns.push({ halo, light, ph: rnd() * 10, flame });
-  };
-  {
-    const sm = hole.samples, picks = [0.12, 0.36, 0.62, 0.9];
-    picks.forEach((f, i) => { const s = sm[Math.floor(f * (sm.length - 1))], side = i % 2 ? 1 : -1; lampAt(s[0] + s[4] * side * (s[3] - 0.15), s[1] + s[5] * side * (s[3] - 0.15), i !== 2); });
-    const r = new V3(-hole.teeDir.z, 0, hole.teeDir.x);
-    lampAt(teeBack.x + r.x * 1.6, teeBack.z + r.z * 1.6, false); lampAt(teeBack.x - r.x * 1.6, teeBack.z - r.z * 1.6, false);
-  }
-  updaters.push((dt, t) => {
-    for (const L of lanterns) {
-      const f = 0.82 + 0.1 * Math.sin(t * 7.3 + L.ph) + 0.06 * Math.sin(t * 13.1 + L.ph * 2) + 0.04 * Math.sin(t * 23 + L.ph);
-      if (L.light) L.light.intensity = 2.6 * f; L.halo.material.opacity = 0.5 * f; L.flame.scale.setScalar(0.9 + 0.2 * f);
-    }
-  });
-
-  { // a split-rail fence wandering along the meadow's edge, old, rails down in places
-    const fenceMat = mats.wall, pts = [];
-    for (let i = 0; i <= 24; i++) { const t = i / 24, a = lerp(2.3, 4.3, t); const r = 21 + fbm(t * 3, 1, 2) * 8; pts.push([Math.cos(a) * r + center.x, Math.sin(a) * r + center.z]); }
-    for (let i = 0; i < pts.length; i++) {
-      const [x, z] = pts[i]; if (clear(x, z) < 0.5) continue; const y = groundH(x, z);
-      const post = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1.15, 0.12).translate(0, 0.5, 0), fenceMat);
-      post.position.set(x, y - 0.05, z); post.rotation.set((rnd() - 0.5) * 0.15, rnd(), (rnd() - 0.5) * 0.15); post.castShadow = true; group.add(post);
-      if (i && rnd() > 0.18) {
-        const [px, pz] = pts[i - 1]; if (clear(px, pz) < 0.5) continue; const py = groundH(px, pz);
-        for (const hgt of [0.45, 0.85]) {
-          if (rnd() < 0.15) continue;
-          const a = new V3(px, py + hgt, pz), b = new V3(x, y + hgt, z), L = a.distanceTo(b);
-          const rail = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.09, L), fenceMat); rail.position.copy(a).add(b).multiplyScalar(0.5); rail.lookAt(b); rail.castShadow = true; group.add(rail);
-        }
-      }
-    }
-  }
-  { // a small stone house on the far ridge, one window lit
-    const dir = new V3(SUN.x, 0, SUN.z).normalize().applyAxisAngle(UP, 0.35), p = dir.multiplyScalar(330);
-    let best = p.clone(), by = -1e9; for (let i = 0; i < 40; i++) { const q = p.clone().add(new V3((rnd() - 0.5) * 90, 0, (rnd() - 0.5) * 90)); const y = groundH(q.x, q.z, false); if (y > by) { by = y; best = q; } }
-    const hs = new THREE.Group(); hs.position.set(best.x, by - 0.5, best.z); hs.rotation.y = rnd() * 6.28; group.add(hs);
-    const stone = new THREE.MeshStandardMaterial({ color: 0x575a5c, roughness: 1 }), roof = new THREE.MeshStandardMaterial({ color: 0x2c2a2a, roughness: 0.9 });
-    const body = new THREE.Mesh(new THREE.BoxGeometry(9, 5, 6).translate(0, 2.5, 0), stone); hs.add(body);
-    const rf = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 4.6, 3.4, 4, 1).rotateY(Math.PI / 4).scale(1.45, 1, 1).translate(0, 6.7, 0), roof); hs.add(rf);
-    const ch = new THREE.Mesh(new THREE.BoxGeometry(0.8, 2.4, 0.8).translate(2.8, 7.4, 0), stone); hs.add(ch);
-    const win = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 1.3), new THREE.MeshBasicMaterial({ color: new THREE.Color(14, 7, 2.2) })); win.position.set(-1.8, 2.6, 3.01); hs.add(win);
-    const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: 0xffa050, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.6, fog: false }));
-    halo.position.set(-1.8, 2.6, 3.4); halo.scale.setScalar(9); hs.add(halo);
-  }
+  // ---------- the garden itself ----------
+  const glow = glowTex();
+  const ridge = (() => { const dir = new V3(SUN.x, 0, SUN.z).normalize().applyAxisAngle(UP, -0.3), p = dir.multiplyScalar(300); let best = p.clone(), by = -1e9;
+    for (let i = 0; i < 50; i++) { const q = p.clone().add(new V3((rnd() - 0.5) * 100, 0, (rnd() - 0.5) * 100)); const y = groundH(q.x, q.z, false); if (y > by) { by = y; best = q; } } return best.setY(by - 0.6); })();
+  const garden = buildGarden({ group, groundH, rnd, mats, A, updaters, glow, lower, pool: POOL, ridgeSpot: ridge });
 
   // ---------- mist, fireflies ----------
   {
@@ -561,7 +494,7 @@ export function buildEnvironment(e, renderer, scene, holes, mats, quality, A) {
   const out = new V3(POOL.x - LIP.x, 0, POOL.z - LIP.z).normalize();
   return {
     group, sun, focus, lightHole() { },
-    terrainH: (x, z) => groundH(x, z), waterAt, waterY: -1000,
+    terrainH: (x, z) => groundH(x, z), waterAt, waterY: -1000, deer: garden.deer,
     sounds: { falls: LIP.clone().addScaledVector(out, 1.4).setY(POOL.y + 1.5), brook: lower[Math.min(lower.length - 1, 16)].p.clone() },
     update(dt, t, camPos) { uTime.value = t; if (camPos) dome.position.copy(camPos); for (const u of updaters) u(dt, t); },
     dispose() { scene.remove(group); grass.dispose(); tg.dispose(); },

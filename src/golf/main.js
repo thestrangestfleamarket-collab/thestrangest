@@ -180,6 +180,7 @@ function loadCourse(i, holeIdx = 0, keepScores = false) {
   game.env = buildEnvironment(def.env, renderer, scene, game.holes, mats, Q(), assets);
   panel.accent = '#' + new THREE.Color(def.env.lanterns || def.env.flag).getHexString();
   audio.setAmbience(def.env.kind); audio.water(game.env.sounds);
+  if (game.env.deer) game.env.deer.onKnock = (p) => audio.clack(p);
   if (!keepScores) for (const sc of game.scores.values()) sc.s = [];
   gotoHole(holeIdx);
 }

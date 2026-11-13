@@ -81,6 +81,12 @@ export class GameAudio {
     if (at.falls) src(at.falls, 700, 2400, 0.9, 4);
     if (at.brook) src(at.brook, 1500, 3800, 0.22, 2);
   }
+  // the deer scarer's bamboo knocking its stone, heard from where it stands
+  clack(pos) {
+    if (!this.ctx) return; const c = this.ctx, p = c.createPanner(); p.panningModel = 'HRTF'; p.refDistance = 2; p.rolloffFactor = 1.2;
+    p.positionX.value = pos.x; p.positionY.value = pos.y; p.positionZ.value = pos.z; p.connect(this.amb);
+    this._tone(820, 0.09, 0.5, { type: 'triangle', to: 610, dest: p }); this._tone(1650, 0.05, 0.18, { dest: p }); this._tone(410, 0.14, 0.25, { dest: p });
+  }
   listen(cam) {
     if (!this.ctx) return; const L = this.ctx.listener, e = cam.matrixWorld.elements;
     if (!L.positionX) return;

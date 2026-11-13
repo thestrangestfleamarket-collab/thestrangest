@@ -91,6 +91,4 @@ DRONE.init=()=>{ const APTS=MODS.apts; if(!APTS||!APTS.R)return; const T=TILE, X
   DRONE.close=()=>{ const n=UI.menuNow&&UI.menuNow(); if(n&&n[0]==='bbs')UI.toggleMenu(); };
   SYS.every(()=>{ if(COMP.page==='orders')draw(); },500,'146-bbs');
 
-  const hit=bx(.9*T,1.4*T,.9*T,new THREE.MeshBasicMaterial({visible:false})); hit.position.set(X(AR.x0+6.8),Y((APTS.RB||0)+25),Z(AR.y0+.9)); scene.add(hit);
-  UI.thing({name:'THE COMPUTER',ghost:1,obj:hit,reach:1.4*T,near:2.8*T,tall:1.6*T,act:DRONE.open});
   window.DRONEDBG=()=>{ const n=UI.menuNow&&UI.menuNow(); return {state:DRONE.state,flights:flights.length,parcels:parcels.length,owned:ownedFurn().length,cash:purse.get(),furn:FURN.length,on:!!n&&n[0]==='bbs',page:n&&n[0]==='bbs'?n[1]:null,orders:COMP.orders.length,arc:COMP.arc,games:COMP.arc?CABS():[]}; }; };

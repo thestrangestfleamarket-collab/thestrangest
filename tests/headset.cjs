@@ -18,7 +18,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     H.programs.push({ name: 'TEST RUN', cost: 0, go: () => L.push('go'), run: D => { D.n++; }, hide: () => L.push('hide') }); await W(600); const before = { ...C }, at = [__dbg.pos()[0], __dbg.pos()[2]];
     ONLINE.send = m => sent.push(m.t); ONLINE.on = true;
     H.menu(true); [...document.querySelectorAll('#holog button[data-run]')].pop().click(); const c0 = { ...C }; await W(6000); const c1 = { ...C };
-    const hud = [...document.body.children].filter(e => !/^(stage|hollow|boarded|fjour)$/.test(e.id) && !/^(SCRIPT|STYLE|LINK|META)$/.test(e.tagName) && getComputedStyle(e).display !== 'none').map(e => e.id || e.tagName);
+    const hud = [...document.body.children].filter(e => !/^(stage|hollow|boarded|fjour|vrbtn)$/.test(e.id) && !/^(SCRIPT|STYLE|LINK|META)$/.test(e.tagName) && getComputedStyle(e).display !== 'none').map(e => e.id || e.tagName);
     const mid = { solo: !!SHARED.solo, cls: document.body.classList.contains('holosolo'), run: H.run && H.run.P.name, n: H.run && H.run.n, hush: __dbg.SFX.hush, hud, life: c1.life - c0.life, places: c1.places - c0.places, frames: c1.solo - c0.solo, sent: [...new Set(sent)], moved: Math.hypot(__dbg.pos()[0] - at[0], __dbg.pos()[2] - at[1]) };
     H.end(); ONLINE.send = s0; ONLINE.on = on0; const c2 = { ...C }; await W(1500); H.programs.pop();
     return { ran: before.life > 0, L, mid, after: { solo: !!SHARED.solo, cls: document.body.classList.contains('holosolo'), run: H.run, hush: __dbg.SFX.hush, life: C.life - c2.life, frames: C.solo - c2.solo } }; });

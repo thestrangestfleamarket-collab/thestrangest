@@ -30,6 +30,7 @@ import {TANKFX} from './150ja-tankfx.js';
   // the tank itself (owner, 12 Nov 2026): its length (of the medium one, never past the room's wall), what it stands on, its rim; how many fish each length holds
   const SIZES={s:{n:'SMALL',k:.66,f:10},m:{n:'MEDIUM',k:1,f:16},l:{n:'LARGE',k:1.5,f:24},xl:{n:'SHOWPIECE',k:2,f:32}};
   const BASES={walnut:{n:'WALNUT',c:[70,46,32]},oak:{n:'OAK',c:[176,132,84]},black:{n:'BLACK',c:[26,26,30]},white:{n:'WHITE',c:[232,230,224]},stone:{n:'STONE',c:[140,138,132]},steel:{n:'STEEL FRAME',c:[58,60,66],frame:1}};
+  const WSPD={still:{n:'STILL',k:.2},slow:{n:'SLOW',k:.5},calm:{n:'CALM',k:1},lively:{n:'LIVELY',k:2}};   // how fast the water moves (owner, 13 Nov 2026: "allow control water speed")
   const RIMS={black:{n:'BLACK',c:[24,24,26]},steel:{n:'STEEL',c:[170,174,180]},wood:{n:'WOOD',c:[96,62,40]},none:{n:'RIMLESS'}};
   const FSIZE={s:{n:'S',k:.72},m:{n:'M',k:1},l:{n:'L',k:1.35}}, FTINT={nat:'#ffffff',gold:'#ffd24a',red:'#ff6a5a',pink:'#ff9ad0',blue:'#6aa8ff',green:'#7fe08a',violet:'#b48aff',black:'#4a4a52'}, LIGHTB={low:{n:'LOW',k:.55},mid:{n:'NORMAL',k:1},high:{n:'BRIGHT',k:1.6}};
   // Polyfork's pieces (data/tankpf.json, tools/tank-pf-bake.py): [key, name, group, height in the tank (m), mossy]; each has its own place on the sand, tall ones at the back
@@ -40,9 +41,9 @@ import {TANKFX} from './150ja-tankfx.js';
     ['hoard','OVERFLOWING CHEST','SUNK',.2],['pfchest','TREASURE CHEST','SUNK',.16],['skull','MOSSY SKULL','SUNK',.13,1],['coins','GOLD COINS','SUNK',.03]];
   const PFD=__LAZY__("data/tankpf.json"), ALLD=()=>DECOR.map(d=>d[0]).concat(PF.map(p=>p[0]));
   const LIGHTC={white:'#f2f7ff',warm:'#ffd9a0',blue:'#7fb6ff',pink:'#ff8fd0',green:'#9cffb0',uv:'#9a6bff'};
-  const DEF={w:'fresh',d:['sand','pebbles','driftwood','plants'],f:{pfkoi:5,goldfish:6},l:{on:1,c:'white',b:'mid'},sz:'m',base:'walnut',rim:'black',fz:{},fc:{}};
+  const DEF={w:'fresh',d:['sand','pebbles','driftwood','plants'],f:{pfkoi:5,goldfish:6},l:{on:1,c:'white',b:'mid'},sz:'m',base:'walnut',rim:'black',ws:'calm',fz:{},fc:{}};
   // a layout's tank as it may be read (another player's layout too): only known choices, at most MAXF fish
-  const clean=s=>{ s=s&&typeof s==='object'?s:{}; const o={w:WATER[s.w]?s.w:DEF.w,d:Array.isArray(s.d)?ALLD().filter(k=>s.d.includes(k)):DEF.d.slice(),f:{},l:{on:s.l&&s.l.on===0?0:1,c:s.l&&LIGHTC[s.l.c]?s.l.c:'white',b:s.l&&LIGHTB[s.l.b]?s.l.b:'mid'},sz:SIZES[s.sz]?s.sz:'m',base:BASES[s.base]?s.base:'walnut',rim:RIMS[s.rim]?s.rim:'black',fz:{},fc:{}}, MAXF=SIZES[o.sz].f;
+  const clean=s=>{ s=s&&typeof s==='object'?s:{}; const o={w:WATER[s.w]?s.w:DEF.w,d:Array.isArray(s.d)?ALLD().filter(k=>s.d.includes(k)):DEF.d.slice(),f:{},l:{on:s.l&&s.l.on===0?0:1,c:s.l&&LIGHTC[s.l.c]?s.l.c:'white',b:s.l&&LIGHTB[s.l.b]?s.l.b:'mid'},sz:SIZES[s.sz]?s.sz:'m',base:BASES[s.base]?s.base:'walnut',rim:RIMS[s.rim]?s.rim:'black',ws:WSPD[s.ws]?s.ws:'calm',fz:{},fc:{}}, MAXF=SIZES[o.sz].f;
     let n=0; for(const k of KIND){ const c=Math.max(0,Math.min(8,Math.round(+((s.f||DEF.f)[k.id])||0))); if(c&&n+c<=MAXF){ o.f[k.id]=c; n+=c; const z=s.fz&&s.fz[k.id], t=s.fc&&s.fc[k.id]; if(FSIZE[z]&&z!=='m')o.fz[k.id]=z; if(FTINT[t]&&t!=='nat')o.fc[k.id]=t; } } return o; };
   const TANKS=[]; window.TANKDBG=()=>TANKS.map(T=>({fish:T.fish.length,ways:[...new Set(T.fish.map(f=>f.b))],koiL:Math.max(0,...T.fish.filter(f=>f.kind==='pfkoi').map(f=>f.L)),vis:T.g.visible,pos:[+T.g.position.x.toFixed(2),+T.g.position.z.toFixed(2)],at:T.tg.localToWorld(new THREE.Vector3(0,T.SH+T.TH/2,0)).toArray().map(v=>+v.toFixed(2)),front:T.tg.localToWorld(new THREE.Vector3(0,T.SH+T.TH/2,-1)).toArray().map(v=>+v.toFixed(2)),fed:+(T.fed||0).toFixed(1),y:T.fish.length?+(T.fish.reduce((a,f)=>a+f.y,0)/T.fish.length).toFixed(3):0,
     kinds:T.sch?Object.keys(T.sch).filter(k=>T.sch[k].im.count):[],wave:+(T.h.reduce((a,v)=>Math.max(a,Math.abs(v)),0)*1000).toFixed(4),sy:+T.surf.geometry.attributes.position.getY(NX*(NZ>>1)+(NX>>1)).toFixed(5),steps:T.steps,set:T.s,pf:Object.keys(T.pf||{}),view:!!(V&&V.T===T),look:V&&V.T===T?[V.yaw,V.pit,V.zoom].map(v=>+v.toFixed(3)):null,cam:SHARED.cam?[...SHARED.cam.position.toArray(),...SHARED.cam.getWorldDirection(new THREE.Vector3()).toArray()].map(v=>+v.toFixed(2)):null,size:[T.TW,T.TD,T.TH],f0:T.fish[0]?[T.fish[0].id,+T.fish[0].x.toFixed(3),+T.fish[0].y.toFixed(3),+T.fish[0].z.toFixed(3)]:null}));
@@ -155,7 +156,7 @@ import {TANKFX} from './150ja-tankfx.js';
   const poke=(T,x,z,a,r)=>{ const dx=T.SW/(NX-1), dz=T.SD/(NZ-1), cx=(x+T.SW/2)/dx, cz=(z+T.SD/2)/dz, R=Math.ceil(r/dx)+1;
     for(let j=Math.max(0,Math.floor(cz-R));j<=Math.min(NZ-1,Math.ceil(cz+R));j++)for(let i=Math.max(0,Math.floor(cx-R));i<=Math.min(NX-1,Math.ceil(cx+R));i++){ const d2=((i-cx)*dx)**2+((j-cz)*dz)**2; if(d2<r*r*4)T.h[j*NX+i]-=a*Math.exp(-d2/(r*r)); } };
   // ripples travel at one speed whichever way they go (.25 m/s, owner 13 Nov 2026: the water moved too fast), whatever the tank's length; 60 steps a second
-  const step=T=>{ const h=T.h, p=T.p, Dm=.994, a=(.25/60*(NX-1)/T.SW)**2, b=(.25/60*(NZ-1)/T.SD)**2, q=Math.min(1,.46/(a+b)), Cx=a*q, Cz=b*q; let E=0;
+  const step=T=>{ const sp=.25*WSPD[T.s.ws].k, h=T.h, p=T.p, Dm=.994, a=(sp/60*(NX-1)/T.SW)**2, b=(sp/60*(NZ-1)/T.SD)**2, q=Math.min(1,.46/(a+b)), Cx=a*q, Cz=b*q; let E=0;
     for(let j=0;j<NZ;j++)for(let i=0;i<NX;i++){ const k=j*NX+i, c=h[k], l=h[i?k-1:k], r=h[i<NX-1?k+1:k], u=h[j?k-NX:k], d=h[j<NZ-1?k+NX:k]; p[k]=(2*c-p[k]+Cx*(l+r-2*c)+Cz*(u+d-2*c))*Dm; E+=Math.abs(p[k]); }
     T.h=p; T.p=h; T.E=E/(NX*NZ); T.steps++; };
   const shape=T=>{ const h=T.h, g=T.surf.geometry, P=g.attributes.position, N=g.attributes.normal, dx=T.SW/(NX-1), dz=T.SD/(NZ-1), F=T.ftx.image.data;
@@ -165,10 +166,10 @@ import {TANKFX} from './150ja-tankfx.js';
 
   /* ---------- each frame: the fish swim, the bubbles rise, the food falls, the surface moves ---------- */
   const Mx=new THREE.Matrix4(), Q=new THREE.Quaternion(), E3=new THREE.Euler(0,0,0,'XYZ'), Pv=new THREE.Vector3(), Sv=new THREE.Vector3();
-  const tick=(T,dt)=>{ T.t+=dt; T.U.uT.value=T.t*.4; T.U.uE.value=Math.min(1,T.E*400); const W2=T.SW/2, D2=T.SD/2, on=k=>T.s.d.includes(k);
+  const tick=(T,dt)=>{ T.t+=dt; const wk=WSPD[T.s.ws].k; T.wt=(T.wt||0)+dt*.4*wk; T.U.uT.value=T.wt; T.U.uE.value=Math.min(1,T.E*400); const W2=T.SW/2, D2=T.SD/2, on=k=>T.s.d.includes(k);
     const up=T.fed>0?Math.min(1,T.fed/3,(30-T.fed)/.6):0; if(T.fed>0)T.fed-=dt;   // fed: they swim to the top and quicker, then settle back
     // the filter's return stirs one corner a little, always
-    if(Math.random()<dt*6)poke(T,-W2+.1+Math.random()*.22,D2-.1,.0008,.035); if(Math.random()<dt*2)poke(T,(Math.random()-.5)*T.SW*.9,(Math.random()-.5)*T.SD*.9,.00035,.05);
+    if(Math.random()<dt*6*wk)poke(T,-W2+.1+Math.random()*.22,D2-.1,.0008,.035); if(Math.random()<dt*2*wk)poke(T,(Math.random()-.5)*T.SW*.9,(Math.random()-.5)*T.SD*.9,.00035,.05);
     if(T.bubs.length<60&&Math.random()<dt*7)T.bubs.push({x:-W2+.1+Math.random()*.2,y:T.WY-.03-Math.random()*.12,z:D2-.1+(Math.random()-.5)*.04,r:.0015+Math.random()*.002,ph:Math.random()*6});   // the fine bubbles the return carries under
     { const U=T.U, c=SHARED.cam; T.tg.updateWorldMatrix(true,false); U.uTI.value.copy(T.tg.matrixWorld).invert(); if(c)U.uCam.value.setFromMatrixPosition(c.matrixWorld).applyMatrix4(U.uTI.value); }
     // bubbles: a stream from the bubbler, a burst when the chest's lid lifts; each breaks the surface where it reaches it
@@ -218,7 +219,7 @@ import {TANKFX} from './150ja-tankfx.js';
     const bt=(a,nm,on,d='')=>`<button data-a="${a}" class="${on?'on':''}"${dis||d}>${nm}</button>`, pick=(a,O,cur)=>Object.keys(O).map(k=>bt(a+':'+k,O[k].n,cur===k)).join('');
     let h='';
     if(TAB==='tank')h='<h4>SIZE</h4>'+Object.keys(SIZES).map(k=>bt('z:'+k,SIZES[k].n,s.sz===k,T.len({sz:k})<T.len({sz:'m'})*SIZES[k].k-.05?' disabled title="NO ROOM ALONG THIS WALL"':'')).join('')+'<h4>STANDS ON</h4>'+pick('b',BASES,s.base)+'<h4>RIM</h4>'+pick('r',RIMS,s.rim)+`<div style="color:#7d7a70;margin-top:8px">${T.TW.toFixed(1)} M LONG · HOLDS ${MAXF} FISH</div>`;
-    if(TAB==='water')h='<h4>WATER</h4>'+pick('w',WATER,s.w)+'<h4>LIGHT</h4>'+bt('l:on',s.l.on?'ON':'OFF',s.l.on)+Object.keys(LIGHTC).map(k=>`<button class="sw ${s.l.c===k?'on':''}" data-a="l:c:${k}" title="${k.toUpperCase()}" style="--c:${LIGHTC[k]}"${dis}></button>`).join('')+'<h4>BRIGHTNESS</h4>'+Object.keys(LIGHTB).map(k=>bt('l:b:'+k,LIGHTB[k].n,s.l.b===k)).join('');
+    if(TAB==='water')h='<h4>WATER</h4>'+pick('w',WATER,s.w)+'<h4>LIGHT</h4>'+bt('l:on',s.l.on?'ON':'OFF',s.l.on)+Object.keys(LIGHTC).map(k=>`<button class="sw ${s.l.c===k?'on':''}" data-a="l:c:${k}" title="${k.toUpperCase()}" style="--c:${LIGHTC[k]}"${dis}></button>`).join('')+'<h4>BRIGHTNESS</h4>'+Object.keys(LIGHTB).map(k=>bt('l:b:'+k,LIGHTB[k].n,s.l.b===k)).join('')+'<h4>WATER SPEED</h4>'+pick('ws',WSPD,s.ws);
     if(TAB==='fish')h=`<h4>IN THE TANK: ${n} OF ${MAXF}</h4>`+[0,1].map(sl=>`<h4>${sl?'SALT WATER':'FRESH WATER'}</h4>`+KIND.filter(k=>!!k.salt===!!sl).map(k=>{ const ok=fits(k,W), c=s.f[k.id]||0; return `<div class="row" style="opacity:${ok?1:.45}"><span>${k.n} <i style="color:#7d7a70">${k.salt?'SALT':'FRESH'}</i></span><span><button data-a="f:${k.id}:-1"${dis||(!c?' disabled':'')}>-</button> ${c} <button data-a="f:${k.id}:1"${dis||(!ok||n>=MAXF||c>=8?' disabled':'')}>+</button></span></div>`+
         (c?`<div class="row" style="margin:0 0 6px 8px"><span>${Object.keys(FSIZE).map(z=>bt('fz:'+k.id+':'+z,FSIZE[z].n,(s.fz[k.id]||'m')===z)).join('')}</span><span>${Object.keys(FTINT).map(t=>`<button class="sw ${(s.fc[k.id]||'nat')===t?'on':''}" data-a="fc:${k.id}:${t}" title="${t==='nat'?'ITS OWN COLOURS':t.toUpperCase()}" style="--c:${FTINT[t]};width:13px;height:13px"${dis}></button>`).join('')}</span></div>`:''); }).join('')).join('')+
       (PETS.sea&&PETS.sea().length?`<div style="color:#7d7a70;margin-top:4px">AND YOUR ${PETS.sea().length} FROM THE AQUARIUM</div>`:'');
@@ -229,7 +230,7 @@ import {TANKFX} from './150ja-tankfx.js';
   const act=a=>{ '@later'; if(!V)return; const T=V.T, s=JSON.parse(JSON.stringify(T.s)), [k,x,y]=a.split(':');
     if(k==='x')return TANKV.close(); if(k==='tab'){ TAB=x; return draw(); } if(k==='feed'){ if(FORAGE.has('g_fishfood'))feed(T); return draw(); } if(ROOMK.guest&&ROOMK.guest())return;
     if(k==='w')s.w=x; if(k==='d')s.d=s.d.includes(x)?s.d.filter(q=>q!==x):s.d.concat(x); if(k==='f'){ const n=Object.values(s.f).reduce((a,b)=>a+b,0), d=+y; if(d<0||n<SIZES[s.sz].f)s.f[x]=Math.max(0,Math.min(8,(s.f[x]||0)+d)); if(!s.f[x])delete s.f[x]; }
-    if(k==='l'){ if(x==='on')s.l.on=s.l.on?0:1; else if(x==='b')s.l.b=y; else s.l.c=y; } if(k==='z')s.sz=x; if(k==='b')s.base=x; if(k==='r')s.rim=x; if(k==='fz')s.fz[x]=y; if(k==='fc')s.fc[x]=y;
+    if(k==='l'){ if(x==='on')s.l.on=s.l.on?0:1; else if(x==='b')s.l.b=y; else s.l.c=y; } if(k==='z')s.sz=x; if(k==='b')s.base=x; if(k==='r')s.rim=x; if(k==='ws')s.ws=x; if(k==='fz')s.fz[x]=y; if(k==='fc')s.fc[x]=y;
     apply(T,s); if(SFX)SFX.play('click',{vol:.25,vary:.2}); if(ROOMK.save)ROOMK.save(); draw(); };
   // the double-click's choice: VIEW (the close look alone), FEED (a pinch of food, where you stand), EDIT (the close look with the tank's settings)
   let AQ=null, AT=null;

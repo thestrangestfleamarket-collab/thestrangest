@@ -109,6 +109,7 @@ subprocess.run(['node', 'tools/cantina.cjs'], check=True)   # THE CANTINA (src/c
 subprocess.run(['node', 'tools/scare.cjs'], check=True)   # VESPER WARD (src/scare/): its own page, dist/scare.html, and its models, dist/scare-assets/
 subprocess.run(['node', 'tools/shoot.cjs'], check=True)   # BREACHLINE (src/shoot/): its own page, dist/shoot.html
 subprocess.run(['node', 'tools/golf.cjs'], check=True)   # HALCYON GREENS (src/golf/): its own page, dist/golf.html, and its pictures, dist/golf-assets/
+subprocess.run(['node', 'tools/duel.cjs'], check=True)   # AR DUEL (src/duel/): its own page, dist/duel.html, and its pictures, dist/duel-assets/
 for f in sorted(set(re.findall(r'__FILE__\("([^"]+)"\)', body))):
     o = 'dist/g/' + os.path.basename(f); shutil.copy(f, o); names[f] = json.dumps('/g/' + hashed(o))
 body = re.sub(r'__FILE__\("([^"]+)"\)', lambda m: names[m.group(1)], body)

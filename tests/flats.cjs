@@ -35,5 +35,6 @@ const {chromium}=require('playwright'), path=require('path');
   ok(!dc.stair&&/STAIR/.test(dc.why||'')&&!dc.off&&Math.abs(dc.h-lf.MH)<.01&&dc.on&&!dc.clips,'DECORATE in the loft: nothing stands in the stair, TO UPSTAIRS sets a piece on the upper floor where it fits: '+JSON.stringify(dc));
   ok(dc.brick==='brick'&&dc.walls.Ww==='sage'&&dc.floor2==='slate'&&dc.loft&&dc.loft.steel==='brass','each wall its own paper (the window wall starts in brick), the upper floor its own boards, the loft\'s steel, beams, woodwork and plaster their colours, all kept with the layout');
   ok(lf.top[0]>lf.MH-.05&&lf.top[1]&&lf.deck[0]>lf.MH-.05&&lf.deck[1]&&Math.abs(lf.foot[0])<.1&&!lf.foot[1]&&Math.abs(lf.under[0])<.1&&!lf.under[1],'its upper floor is walked: the landing and the deck hold you up there, under the deck you stand on the floor: '+JSON.stringify(lf));
+  { const bk=await pg.evaluate(()=>{ const g=__scene.children.find(c=>c.name==='block'); return {inn:__dbg.MAPK.MODS.apts.inReal,vis:g&&g.visible}; }); ok(bk.inn&&bk.vis===false,'in your flat the park\'s backdrop trees are not drawn ('+JSON.stringify(bk)+')'); }
   ok(!errs.length,'no page errors'+(errs.length?': '+errs.slice(0,3).join(' | '):''));
   await b.close(); console.log(fails.length?fails.length+' failed':'flats: all good'); process.exit(fails.length?1:0); })();

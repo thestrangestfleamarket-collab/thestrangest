@@ -1,9 +1,9 @@
 // THE APARTMENTS: the brownstone apartment house on the street as one painted block (brick, windows, flower boxes, ivy; the back blank: the halls), its 3D fire escapes with plants, its stoop and the stair head on the roof; YOUR APARTMENT and its hall (stairs, elevator) inside are built off the map when you go in (their own builders).
 import {SHARED, THREE} from './003-shx.js';
-import {BATCH, CLOCK, FAR3, FORAGE, pos, ROOMS, st, UI} from './003b-systems.js';
+import {BATCH, CLOCK, FAR3, FORAGE, pos, ROOMS, st, UI, VIS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
-import {BLDK, FADE, FIX, grab, LEVEL, LOTX, LOTY, MODS, OFFDX, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
+import {BLDK, FADE, FIX, grab, LEVEL, LOTX, LOTY, MAPG, MODS, OFFDX, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
 import {BLOCKS} from './038zb-blocks.js';
 const APTS={EMPTY:true};
 // the flats (owner, 6 Nov 2026: "Free flat at first login"; 8 Nov 2026: "1 large apartment that has any many floors as we need"): a flat number maps to a floor and a side of the one tower, two flats a floor, no top floor
@@ -214,7 +214,7 @@ async function house(HP,mine,FL,HI){ const APTS0=APTS; { const APTS=mine?APTS0:{
       if(F&&F.out&&Math.abs(u-F.CX)<10&&Math.abs(v-F.WY-1)<4){ await F.out(); return [pos.x,pos.z,SHARED.py]; } return false; };   // a spot saved where the fire escape used to stand: your landing
     const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>APTS.inReal&&inR(x,z)?((APTS.hallY&&APTS.hallY(x,z))??(APTS.loftY&&APTS.loftY(x,z))??Yh(0)):sg0?sg0(x,z):null;   // the hall's stairs step you down and up
     SYS.add('places',()=>{ mkHB(); if(APTS.inReal&&(SHARED.LVL!=='up'||!inR(pos.x,pos.z)&&!(MODS.firev&&MODS.firev.onL&&MODS.firev.onL(pos.x,pos.z)))){ APTS.inReal=false; if(AG)AG.visible=false; }   // left by any way (menu, stairs, a door, a saved spot), not only your own door
-      if(APTS.inReal)hideFar(); if(APTS.ceil)APTS.ceil.visible=APTS.inReal&&!!UI.persp; const hc=APTS.inHall()&&!UI.persp?APTS.CUTH:1e6; APTS.HPL.constant=hc; WPL.Wb.constant=hc;
+      if(APTS.inReal)hideFar(); VIS.hide(MAPG.block,'flat',!!APTS.inReal); if(APTS.ceil)APTS.ceil.visible=APTS.inReal&&!!UI.persp; const hc=APTS.inHall()&&!UI.persp?APTS.CUTH:1e6; APTS.HPL.constant=hc; WPL.Wb.constant=hc;
       { const c=SHARED.cam, cut=APTS.inReal&&!UI.persp&&!APTS.onEsc&&c, low=Yh(9); if(cut)c.getWorldDirection(CD); const dx=cut?CD.x*Math.sign(X(1)-X(0)):0, dz=cut?CD.z*Math.sign(Z(1)-Z(0)):0;   // seen from above, the walls between you and the eye drop to their skirting (owner, 12 Nov 2026: "walls should vanish when you're inside your apartment")
         if(cut&&AG&&(APTS.relT=(APTS.relT||0)-1)<0){ APTS.relT=20; APTS.relink(AG); }
         WPL.Ww.constant=dx>.2?low:1e6; WPL.We.constant=dx<-.2?low:1e6; WPL.Wf.constant=dz>.2?low:1e6; if(dz<-.2)WPL.Wb.constant=Math.min(hc,low); } },'059a-aptsky');   // ceiling only in first person; gone when you view the room from outside

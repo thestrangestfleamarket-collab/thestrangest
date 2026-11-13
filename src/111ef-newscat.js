@@ -1,4 +1,4 @@
-// THE CAT IN THE RAINCOAT: NEWSCAT, a grumpy cream cat in a glossy yellow raincoat and hood, sitting on the Market St sidewalk by the subway stairs reading the paper, a tin and spilt papers beside him (a smooth MERCH body on the player's rig, at the low detail).
+// THE CAT IN THE RAINCOAT: NEWSCAT, a grumpy cream cat in a glossy yellow raincoat and hood, sitting on the Market St sidewalk by the subway stairs reading the paper, a tin and spilt papers beside him (a smooth MERCH body on the player's rig, at the low detail); the cat is archived (ARCH), his newsstand stands empty.
 import {SHARED, THREE} from './003-shx.js';
 import {pos} from './003b-systems.js';
 import {LEVEL, MAPG, MODS, SOL, TILE} from './006-map-pre.js';
@@ -98,9 +98,9 @@ const NEWSCAT={};
     const papers=new THREE.Mesh(pg,new THREE.MeshStandardMaterial({vertexColors:true,roughness:.92,side:THREE.DoubleSide})); papers.castShadow=papers.receiveShadow=true;
     const K=new THREE.Group(); K.add(shell,papers); K.scale.setScalar(TILE); return K; };
   // his spot: at the curb just east of the subway stairs on Market St's north sidewalk, the window to the sidewalk; he sits on the ledge (body.lift)
-  if(N){ const st=N.st, Wp=LEVEL.places.find(p=>p.id==='subway'), b=HOMES.band&&HOMES.band();
+  { const Wp=LEVEL.places.find(p=>p.id==='subway'), b=HOMES.band&&HOMES.band();
     if(Wp&&b&&new URLSearchParams(location.search).get('sheet')!=='newscat'){ const x=SHARED.BOD.XS(Wp.x1)+(KW/2+2.3)*TILE, z=b.rows[0]+2.4*TILE, hd=Math.PI;
-      Object.assign(st,{x,z,to:null,next:null,hold:true,pin:true,hd}); Object.assign(st.home,{x,z,r:0}); N.free=()=>true;
-      const K=NEWSCAT.kiosk=kiosk(); K.position.set(x,MODS.bodega.ground(x,z),z); K.rotation.y=hd; MAPG.bodega.add(K); body.lift=()=>LEDGE*TILE;
+      if(N){ const st=N.st; Object.assign(st,{x,z,to:null,next:null,hold:true,pin:true,hd}); Object.assign(st.home,{x,z,r:0}); N.free=()=>true; body.lift=()=>LEDGE*TILE; }
+      const K=NEWSCAT.kiosk=kiosk(); K.position.set(x,MODS.bodega.ground(x,z),z); K.rotation.y=hd; MAPG.bodega.add(K);
       const ex=KW/2*TILE, f=.85*TILE, bk=.75*TILE; SOL.up.push([x-ex,z-f,x+ex,z+bk]); } }
   window.NEWSCATDBG=()=>N?{x:+N.st.x.toFixed(2),z:+N.st.z.toFixed(2),hd:+N.st.hd.toFixed(2),vis:N.g.visible,tris:body.tris()}:null; }

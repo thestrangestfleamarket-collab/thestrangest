@@ -68,7 +68,7 @@ const SHOTS = process.env.SHOTS;
     const pk = await pg.evaluate(async () => { FIELD.at = { x: 1e6, z: 0 }; await new Promise(r => setTimeout(r, 800)); return { on: FIELD.on, open: SCOPE.isOpen(), ap: SCOPE.site.ap }; });
     ok(!pk.on && !pk.open && pk.ap === 80, 'walking away folds the field telescope up');
     const hd = await pg.evaluate(async () => { const w = t => new Promise(r => setTimeout(r, t)), A = SCOPE.astro, alt = () => { const jd = SCOPE.jd(), s = A.where('sun', jd); return A.eq2hor(s.ra, s.dec, A.lst(jd)).alt; };
-      const t = DN.test, h = DN.hold, f = SCOPE.fixJD, x = DN.fixT; SCOPE.fixJD = null; DN.fixT = undefined; DN.test = 0; DN.hold = 'night'; const night = alt(); DN.hold = 'day'; const day = alt(); DN.test = t; DN.hold = h; SCOPE.fixJD = f; DN.fixT = x;
+      const t = DN.test, h = DN.hold, f = SCOPE.fixJD, x = DN.fixT; SCOPE.fixJD = null; DN.fixT = undefined; DN.test = 0; DN.hold = 'lamplit'; const night = alt(); DN.hold = 'afternoon'; const day = alt(); DN.test = t; DN.hold = h; SCOPE.fixJD = f; DN.fixT = x;
       WIELD.set('fscope'); await w(2500); const m = WIELD.held(), inHand = !!(m && m.visible); await FIELD.toggle(); await w(1500); const stood = FIELD.on, hid = !(m && m.visible); FIELD.pack(); WIELD.set(null); return { night, day, inHand, stood, hid }; });
     ok(hd.night < -18 && hd.day > 5, 'a held NIGHT is night in the eyepiece, a held DAY day (Sun ' + hd.night.toFixed(0) + '°, ' + hd.day.toFixed(0) + '°)');
     ok(hd.inHand && hd.stood && hd.hid, 'on its tripod the field telescope is out of your hands: ' + JSON.stringify(hd));

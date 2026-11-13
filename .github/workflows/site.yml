@@ -63,8 +63,10 @@ jobs:
           k vr      'src/162a-pad|src/162c-vr|vr\.cjs'
           k asylum  'src/asylum/|tools/asylum\.cjs|tests/asylum\.cjs'
           k golf    'src/golf/|data/golf/|tools/golf\.cjs|tests/golf\.cjs'
+          k cantina 'src/cantina/|data/cantina/|tools/cantina\.cjs|tests/cantina\.cjs|worker/cantina'
           k scare   'src/scare/|data/scare/|tools/scare\.cjs|tests/scare\.cjs'
           k shoot   'src/shoot/|tools/shoot\.cjs|tests/shoot\.cjs'
+          k duel    'src/duel/|data/duel/|tools/duel\.cjs|tests/duel\.cjs'
           k vrbody  'src/162c|src/111b|vrbody\.cjs'
           k riders  'src/117a|src/009c|riders\.cjs'
           k loopmap 'src/159c|src/009b|loopmap\.cjs'
@@ -250,10 +252,18 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' golf')
         run: node tests/golf.cjs dist/golf.html
+      - name: The Cantina (the bar at /cantina; it loads, you sit, the cards deal, a regular answers, the look changes)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' cantina')
+        run: node tests/cantina.cjs dist/cantina.html
       - name: Breachline (the duel at /shoot; a practice round, a kill, and the guns in an emulated Quest 3)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' shoot')
         run: node tests/shoot.cjs dist/shoot.html
+      - name: AR Duel (the dodge fight at /duel; the bot round, every weapon, two linked pages)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' duel')
+        run: node tests/duel.cjs dist/duel.html
       - name: The headset (VR on an emulated Quest 3)
         timeout-minutes: 45
         if: contains(steps.f.outputs.run, ' vr')

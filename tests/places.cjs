@@ -14,9 +14,11 @@ const TOUR=[
     const B=__dbg.MAPK.BOD, P=PARK; STORE.goTo(B.XS(P.round[0]+(P.ox||0)+3),B.ZS(P.round[1]+(P.oy||0)+3),'up'); return await U(()=>PARK.ready&&PARK.in&&(!FOUNT.on||!!FOUNT.drops)&&!(window.FADE&&FADE.busy)); },
     async()=>{ const B=__dbg.MAPK.BOD; STORE.goTo(B.XS(99),B.ZS((B.CURB+B.FAR)/2),'up'); for(const t=Date.now();Date.now()-t<30000&&(PARK.in||(window.FADE&&FADE.busy));)await new Promise(r=>setTimeout(r,250)); }],
   ['fire escape','x-fire',async()=>{ const U=async(f,ms=90000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
-    FIREV.out(); return await U(()=>FIREDBG().built&&!(window.FADE&&FADE.busy)); },async()=>{ FIREV.back(); for(const t=Date.now();Date.now()-t<30000&&(window.FADE&&FADE.busy);)await new Promise(r=>setTimeout(r,250)); }],
+    FIREV.test=1; FIREV.out(); return await U(()=>FIREDBG().built&&!(window.FADE&&FADE.busy)); },async()=>{ FIREV.back(); for(const t=Date.now();Date.now()-t<30000&&(window.FADE&&FADE.busy);)await new Promise(r=>setTimeout(r,250)); }],
   ['arcade','x-arcade',async()=>{ const U=async(f,ms=90000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
     ROOMS.enter('arcade'); return await U(()=>ARCDBG().built&&!(window.FADE&&FADE.busy)); },async()=>{ ROOMS.exit('arcade'); for(const t=Date.now();Date.now()-t<30000&&(window.FADE&&FADE.busy);)await new Promise(r=>setTimeout(r,250)); }],
+  ['bowling','x-bowling',async()=>{ const U=async(f,ms=120000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
+    ROOMS.enter('bowling'); return await U(()=>window.BOWL&&BOWL.dbg&&BOWL.dbg().built&&!(window.FADE&&FADE.busy)); },async()=>{ ROOMS.exit('bowling'); for(const t=Date.now();Date.now()-t<30000&&(window.FADE&&FADE.busy);)await new Promise(r=>setTimeout(r,250)); }],
   ['playhouse','x-playhouse',async()=>{ const U=async(f,ms=120000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
     ROOMS.enter('playhouse'); return await U(()=>PHDBG().built&&!(window.FADE&&FADE.busy)); },async()=>{ ROOMS.exit('playhouse'); for(const t=Date.now();Date.now()-t<30000&&(window.FADE&&FADE.busy);)await new Promise(r=>setTimeout(r,250)); }],
   ['arcade game','x-blocks',async()=>{ const U=async(f,ms=90000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
@@ -28,22 +30,21 @@ const TOUR=[
   ['torchbearer','x-torch',async()=>{ const U=async(f,ms=90000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
     ROOMS.enter('arcade'); if(!await U(()=>ARCDBG().built&&!(window.FADE&&FADE.busy)))return 'the arcade did not build'; STORE.cabs.play('TORCHBEARER'); return await U(()=>STORE.cabs.on&&STORE.cabs.dbg().loaded); },
     async()=>{ STORE.cabs.close(); ROOMS.exit('arcade'); for(const t=Date.now();Date.now()-t<30000&&(window.FADE&&FADE.busy);)await new Promise(r=>setTimeout(r,250)); }],
-  ['roam','x-roam',async()=>{ const U=async(f,ms=90000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
-    ROOMS.enter('arcade'); if(!await U(()=>ARCDBG().built&&!(window.FADE&&FADE.busy)))return 'the arcade did not build'; const P=STORE.holo.programs.find(p=>p.name==='ROAM'); STORE.holo.start(P); return await U(()=>ROAMDBG().on&&ROAMDBG().chunks>100&&!(window.FADE&&FADE.busy)); },
-    async()=>{ STORE.holo.end(); for(const t=Date.now();Date.now()-t<30000&&(ROAMDBG().on||(window.FADE&&FADE.busy));)await new Promise(r=>setTimeout(r,250)); ROOMS.exit('arcade'); for(const t=Date.now();Date.now()-t<30000&&(window.FADE&&FADE.busy);)await new Promise(r=>setTimeout(r,250)); }],
   ['bath house','x-bath',async()=>{ const U=async(f,ms=90000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
-    const G=__dbg.MAPK.BOD.GD, B=__dbg.MAPK.BOD; STORE.goTo(B.X(G.door[0]),B.Z(G.door[1]+2),'up'); if(!await U(()=>G.built()))return 'the bath house\'s inside was not built from the street (its door is open)';
-    STORE.goTo(B.X(G.door[0]),B.Z(G.door[1]-2),'up'); return await U(()=>G.inside(),10000); },
-    async()=>{ const G=__dbg.MAPK.BOD.GD, B=__dbg.MAPK.BOD; STORE.goTo(B.X(G.door[0]),B.Z(G.door[1]+2),'up'); }],
+    const G=__dbg.MAPK.BOD.GD, B=__dbg.MAPK.BOD; STORE.goTo(B.X(G.door[0]),B.Z(G.door[1]+2),'up'); const s=G.inside()?-1:1; window.__bathOut=s;   // which side of its door is the street (the bath house can face either way)
+    STORE.goTo(B.X(G.door[0]),B.Z(G.door[1]+2*s),'up'); if(!await U(()=>G.built()))return 'the bath house\'s inside was not built from the street (its door is open)';
+    STORE.goTo(B.X(G.door[0]),B.Z(G.door[1]-2*s),'up'); return await U(()=>G.inside(),10000); },
+    async()=>{ const G=__dbg.MAPK.BOD.GD, B=__dbg.MAPK.BOD, s=window.__bathOut||1; STORE.goTo(B.X(G.door[0]),B.Z(G.door[1]+2*s),'up'); }],
   ['art museum','x-art',async()=>{ const U=async(f,ms=120000)=>{ for(const t=Date.now();Date.now()-t<ms;await new Promise(r=>setTimeout(r,250)))if(f())return true; return false; };
     STORE.enter('art',true); return await U(()=>STORE.art&&STORE.art.hung>0&&!(window.FADE&&FADE.busy)); },async()=>{ STORE.exit('art'); for(const t=Date.now();Date.now()-t<30000&&(window.FADE&&FADE.busy);)await new Promise(r=>setTimeout(r,250)); }],
 ];
 (async()=>{
   fs.mkdirSync(OUT,{recursive:true});
-  const w=spawn('npx',['wrangler','dev','--port',String(PORT),'--ip','127.0.0.1','--var','DEV_AUTH:1','--show-interactive-dev-session=false'],{stdio:['ignore','pipe','pipe'],env:{...process.env,WRANGLER_SEND_METRICS:'false'}});
+  const w=spawn('npx',['wrangler','dev','--port',String(PORT),'--ip','127.0.0.1','--var','DEV_AUTH:1','--show-interactive-dev-session=false'],{stdio:['ignore','pipe','pipe'],detached:true,env:{...process.env,WRANGLER_SEND_METRICS:'false'}});
+  const stop=()=>{ try{ process.kill(-w.pid,'SIGKILL'); }catch(e){ try{ w.kill('SIGKILL'); }catch(_){} } };   // the worker's whole group: wrangler leaves workerd on the port otherwise, and the next test on it talks to this one
   let log=''; w.stdout.on('data',d=>log+=d); w.stderr.on('data',d=>log+=d);
   let up=false; for(let i=0;i<120&&!up;i++){ await wait(1000); up=await fetch(BASE+'/').then(r=>r.ok).catch(()=>false); }
-  if(!up){ console.log('FAIL: the worker never started\n'+log); w.kill(); process.exit(1); }
+  if(!up){ console.log('FAIL: the worker never started\n'+log); stop(); process.exit(1); }
   const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
   const ctx=await b.newContext({viewport:{width:640,height:360}}); await ctx.addCookies([{name:'tsfm-pass',value:'dev:site-check',url:BASE}]);
   await ctx.addInitScript(()=>{ let s; Object.defineProperty(window,'__started',{configurable:true,get(){ return s; },set(v){ s=v; if(v&&!window.__t0)window.__t0=performance.now(); }}); });
@@ -79,5 +80,5 @@ const TOUR=[
   const lp=await pg.evaluate(()=>{ const p=__dbg.MAPK.MODS.station.plat, y=__dbg.you(); return {lvl:__dbg.lvl(),dist:Math.hypot(y.x-p.x,y.z-p.z),you:y}; }).catch(e=>'ERR '+e.message);
   ok(lp&&lp.lvl==='down'&&lp.dist<2,'a login after an hour or more starts on the subway platform ('+JSON.stringify(lp).slice(0,400)+')');
   ok(!late.length,'no slow fetch anywhere '+late.join(' | '));
-  await b.close(); w.kill(); console.log(bad?bad+' FAILED':'all good'); process.exit(bad?1:0);
+  await b.close(); stop(); console.log(bad?bad+' FAILED':'all good'); process.exit(bad?1:0);
 })().catch(e=>{ console.log('FAIL '+e.message); process.exit(1); });

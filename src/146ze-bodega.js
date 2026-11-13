@@ -32,7 +32,7 @@ const BODEGA={basket:new Map()}; window.BODEGA=BODEGA;
   BODEGA.counterLines=()=>BOD.GLAY?linesOf([BOD.GLAY.counter]):[];
   const total=()=>{ let t=0; for(const [id,n] of BODEGA.basket)t+=ITEMS.prop(id,'value')*n; return t; }, count=()=>{ let c=0; for(const n of BODEGA.basket.values())c+=n; return c; };
   BODEGA.pick=(id,n=1)=>{ BODEGA.basket.set(id,(BODEGA.basket.get(id)||0)+n); };
-  BODEGA.pay=()=>{ const t=total(); if(!count())return 'YOUR BASKET IS EMPTY.'; if(INV.cash<t)return `THAT IS $${t}. YOU HAVE $${INV.cash}.`; INV.cash-=t; for(const [id,n] of BODEGA.basket)INV.add(id,n); BODEGA.basket.clear(); BODEGA.paid=(BODEGA.paid||0)+t; return ''; };
+  BODEGA.pay=()=>{ const t=total(); if(!count())return 'YOUR BASKET IS EMPTY.'; if(!INV.afford(t))return `THAT IS $${t}. YOU HAVE $${INV.money()}.`; INV.pay(t); for(const [id,n] of BODEGA.basket)INV.add(id,n); BODEGA.basket.clear(); BODEGA.paid=(BODEGA.paid||0)+t; return ''; };
   // a list you click: a shelf, or the register (the basket, then what is by the register)
   const list=(title,rows,reg)=>({title,w:400,h:440,help:reg?'Everything the bodega sells: click a line to put one in your basket, the wheel scrolls. PAY takes your cash and the bag is yours.':'Click a line to put one in your basket. Pay yourself at the register on the counter.',
     start:S=>{ S.rows=rows(); },
@@ -49,14 +49,15 @@ const BODEGA={basket:new Map()}; window.BODEGA=BODEGA;
   const reg0=()=>12;
   BODEGA.openShelf=key=>MINI.open(list('THE SHELF',()=>BODEGA.shelf(key)));
   // everyday supplies the skills and pets use up (owner, 8 Nov 2026: "make sure the bodega has supplies players need (like pet food)"); a line shows once its item is in the game
-  BODEGA.SUPPLIES=['g_catfood','g_dogfood','g_fishfood','bseed','feeder','cage','bottle','jar_s','jar_m','jar_l','jar_honey','net','bait','bait_cut','crabpot','pot','dirt','water','seed_star','seed_sun','seed_hum','canvas_s','canvas_m','spray'];
+  BODEGA.SUPPLIES=['g_catfood','g_dogfood','g_fishfood','bseed','feeder','cage','bottle','jar_s','jar_m','jar_l','jar_honey','net','bait','bait_cut','pot','dirt','water','seed_star','seed_sun','seed_hum','canvas_s','canvas_m','spray'];
   const sold=id=>{ const v=+ITEMS.prop(id,'value'), nm=FORAGE.name(id); return !ARCHI(id)&&nm&&nm!==id&&v>0?{id,name:nm,price:Math.round(v)}:null; };
   // the register (owner, 8 Nov 2026: "double click on the front desk or register and it will show every item in the bodega ... you dont have to walk around"): your basket, then everything sold here
   BODEGA.all=()=>{ const seen=new Set(), add=(L,r)=>{ if(r&&r.id&&!seen.has(r.id)){ seen.add(r.id); L.push(r); } }, S=[], G=[], U=[];
     for(const id of BODEGA.SUPPLIES)add(U,sold(id)); for(const r of BODEGA.counterLines())add(S,r); for(const k in SHELF)for(const r of BODEGA.shelf(k))add(S,r);
-    for(const [,,ids] of BODEGA.LAYOUT||[])for(const id of ids)add(G,sold(id)); return {shelves:S,goods:G,supplies:U}; };
+    for(const [,,ids] of BODEGA.LAYOUT||[])for(const id of ids)add(G,sold(id));
+    const E=[]; if(FORAGE.kitIds)for(const id of FORAGE.kitIds())if(ITEMS.def(id)&&!ITEMS.prop(id,'rental')&&FORAGE.usable(id))add(E,sold(id)); E.sort((a,b)=>a.name.localeCompare(b.name)); return {shelves:S,goods:G,supplies:U,every:E}; };   // and every thing in the game that does something (owner, 12 Nov 2026: "fill it with all the items in game that function")
   BODEGA.register=()=>MINI.open(list('THE REGISTER',()=>{ const R=[{head:'YOUR BASKET'}]; for(const [id,n] of BODEGA.basket)R.push({name:FORAGE.name(id),n,price:ITEMS.prop(id,'value')}); if(R.length===1)R.push({name:'(EMPTY: CLICK ANYTHING BELOW)'});
-    const A=BODEGA.all(); for(const [h,L] of [['SUPPLIES',A.supplies],['ON THE SHELVES',A.shelves],['GOODS',A.goods]])if(L.length){ R.push({head:h}); R.push(...L); } return R; },true));
+    const A=BODEGA.all(); for(const [h,L] of [['SUPPLIES',A.supplies],['ON THE SHELVES',A.shelves],['GOODS',A.goods],['EVERYTHING ELSE',A.every]])if(L.length){ R.push({head:h}); R.push(...L); } return R; },true));
   // a basket left unpaid stays in the bodega
   SYS.add('life',()=>{ if(BODEGA.basket.size&&(!ROOMS.offIn||ROOMS.offIn()!=='bodega')){ BODEGA.basket.clear(); say('YOU LEFT THE BASKET BY THE DOOR. UNPAID THINGS STAY IN THE BODEGA.','#c8a090'); } },'146ze-bodega');
   // where its people go, in the shop's own metres (u from its west wall, v from its back wall toward the street)

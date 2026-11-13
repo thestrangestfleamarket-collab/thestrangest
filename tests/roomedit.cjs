@@ -1,4 +1,4 @@
-// THE ROOM EDITOR CHECK: node tests/roomedit.cjs dist/market.html. DECORATE in your apartment, like the Sims: the room starts empty but for its own pieces and you start with $1,000,000; T opens the panel and the buy bar (pictured things, prices, the game's items too); a bought thing follows the pointer and a click puts it down on the grid; a drag moves it (its solid follows), red where it doesn't fit (back where it was); a small thing onto a table, a picture onto a wall; Q turns a quarter, Shift+wheel resizes, DEL puts it away and the panel brings it back; SELL pays half back; walls, floor and a light; UNDO; DONE saves, and the room comes back the same after a reload.
+// THE ROOM EDITOR CHECK: node tests/roomedit.cjs dist/market.html. DECORATE in your apartment, like the Sims: the room starts empty but for its own pieces and you start with $1,000,000; T opens the panel and the buy bar (pictured things, prices, the game's items too); a bought thing follows the pointer and a click puts it down on the grid; a drag moves it (its solid follows), red where it doesn't fit (back where it was); a small thing onto a table, a picture onto a wall; Q turns a quarter, Shift+wheel resizes, DEL puts it away and the panel brings it back; SELL pays half back; walls, floor and a light; UNDO; DONE saves, and the room comes back the same after a reload. It runs in the big room (?tier=2): its pieces and drags were laid out for that floor, clear of the loft's stair.
 const { chromium } = require('playwright'), path = require('path');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=roomedit::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 (async () => {
@@ -7,7 +7,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ctx.setDefaultTimeout(120000);   // full-resolution software drawing on CI is slow; a click may wait past Playwright's 30 s
   pg.on('pageerror', e => errs.push(e.message.slice(0, 300)));
   const url = 'file://' + path.resolve(process.argv[2] || 'dist/market.html');
-  const start = async q => { await pg.goto(url + '?hour=15&place=your%20apartment' + q, { waitUntil: 'commit' });
+  const start = async q => { await pg.goto(url + '?hour=15&tier=2&place=your%20apartment' + q, { waitUntil: 'commit' });
     let st = false; for (let i = 0; i < 60 && !st; i++) { await pg.waitForTimeout(3000); st = await pg.evaluate(() => !!window.__started).catch(() => false); }
     for (let i = 0; i < 30 && !(await pg.evaluate(() => window.BEDROOMDBG && BEDROOMDBG().built && window.ROOMEDDBG && ROOMED._api())); i++) await pg.waitForTimeout(1000);
     return st; };
@@ -28,7 +28,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
   ok(st, 'the page starts');
   if (st) {
     const R = await room(), R0 = R;
-    const own = await pg.evaluate(() => ROOMED._api().units().filter(u => !u.added).length); ok(await pg.evaluate(() => ROOMED._api().units().every(u => !u.added && ['CRT TV', 'WRITING DESK', 'TELESCOPE', 'EARTH GLOBE', 'GLOBE TABLE', 'LAB DESK', 'LAB STOOL', 'FISH TANK', 'TABLE RADIO', 'RECLINER', 'ROUND RUG', 'BOOKSHELF', 'FLOOR PLANT', 'OLIVE TREE', 'FERN STAND', 'HANGING PLANT', 'FLOWERING PLANT', 'HERB POT', 'BASIL POT'].includes(u.kind))), 'the apartment starts empty but for its own pieces (the TV, typewriter, telescope, globes, microscope, fish tank: owner, 7 Nov 2026)');
+    const own = await pg.evaluate(() => ROOMED._api().units().filter(u => !u.added).length); ok(await pg.evaluate(() => ROOMED._api().units().every(u => !u.added && ['CRT TV', 'WRITING DESK', 'TELESCOPE', 'EARTH GLOBE', 'GLOBE TABLE', 'LAB DESK', 'LAB STOOL', 'FISH TANK', 'TABLE RADIO', 'RECLINER', 'ROUND RUG', 'BOOKSHELF', 'FLOOR PLANT', 'OLIVE TREE', 'FERN STAND', 'HANGING PLANT', 'FLOWERING PLANT', 'HERB POT', 'BASIL POT', 'BISTRO TABLE', 'LAWN CHAIR', 'POTTED SHRUB', 'FLOWER PLANTER', 'WOODEN CRATE', 'CANDLE LANTERN', 'CACTUS POT', 'WATERING CAN'].includes(u.kind))), 'the apartment starts empty but for its own pieces (the TV, typewriter, telescope, globes, microscope, fish tank: owner, 7 Nov 2026)');
     ok((await db()).cash >= 1000, 'you start with $1,000 (' + (await db()).cash + ')');
     await pg.evaluate(() => { window.INV.cash = 1e6; });   // enough for everything the check buys (a player starts with $1,000 since 7 Nov 2026)
     ok(await pg.evaluate(() => !document.getElementById('roomedbtn').hidden), 'the DECORATE button shows in your apartment');
@@ -39,7 +39,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     ok(await pg.evaluate(() => !__dbg.UI.hold), 'the view is left as it is');
     const tabs = await pg.evaluate(() => [...document.querySelectorAll('#roombuy [data-dept]')].map(b => b.dataset.dept));
     ok(tabs.includes('beds') && tabs.includes('g:street'), 'the buy bar has the room\'s departments and the game\'s (' + tabs.length + ')');
-    await pg.click('#roombuy [data-dept="beds"]'); await pg.waitForTimeout(4000);
+    await pg.click('#roomed [data-tab="buy"]'); await pg.click('#roombuy [data-dept="beds"]'); await pg.waitForTimeout(4000);
     ok((await db()).pics > 0 && await pg.evaluate(() => !!document.querySelector('#roombuy [data-add="BED"] img')), 'the tiles have pictures');
     // a bed bought and put down
     const c0 = (await db()).cash, bed = await buy('BED', R.Lx * .3, 0, R.Ly * .35), tb = bed && await T(bed);
@@ -61,31 +61,32 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const tq0 = await T(bed); await pg.keyboard.press('q'); await pg.waitForTimeout(200); const pq = await at(tq0.u, .5, tq0.v); await pg.mouse.move(pq.x, pq.y); await pg.keyboard.down('Shift'); await pg.mouse.wheel(0, -120); await pg.keyboard.up('Shift'); await pg.waitForTimeout(300);
     const tq = await T(bed);
     ok(Math.abs(Math.abs(tq.ry - tq0.ry) - Math.PI / 2) < .01 && tq.s > 1.02, 'Q turns it a quarter and Shift+wheel makes it bigger (turn ' + (tq.ry - tq0.ry).toFixed(2) + ', size ' + tq.s.toFixed(2) + ')');
-    await pg.keyboard.press('Delete'); await pg.waitForTimeout(300);
-    ok((await db()).gone === 1 && await pg.evaluate(() => !!document.querySelector('#roomed [data-back]')), 'DEL puts it away and the panel lists it');
+    await pg.keyboard.press('Delete'); await pg.waitForTimeout(300); await pg.click('#roomed [data-tab="things"]'); await pg.waitForTimeout(200);
+    ok((await db()).gone === 1 && await pg.evaluate(() => !!document.querySelector('#roomed [data-back]')), 'DEL puts it away and YOUR THINGS lists it');
     await pg.click('#roomed [data-back]'); await pg.waitForTimeout(300);
     ok((await db()).gone === 0, 'the panel brings it back');
     // a desk, and a lamp put on it
     // a spot for the table that is open floor on screen (not under the panel or the bar)
     let spot = [R.Lx * .5, R.Ly * .5]; for (const [fu, fv] of [[.2, .2], [.2, .8], [.5, .2], [.8, .8], [.35, .65], [.65, .35], [.8, .2]]) { const q = await at(R.Lx * fu, .76, R.Ly * fv); if (await pg.evaluate(([x, y]) => { const e = document.elementFromPoint(x, y); return e && e.tagName === 'CANVAS'; }, [q.x, q.y])) { spot = [R.Lx * fu, R.Ly * fv]; break; } }
     const tab = await buy('DESK', spot[0], 0, spot[1]), tt = await T(tab);
-    await pg.click('#roombuy [data-dept="lights"]');
+    await pg.click('#roomed [data-tab="buy"]'); await pg.click('#roombuy [data-dept="lights"]');
     const lamp = await buy('LAMP', tt.u, .76, tt.v); await pg.waitForTimeout(1500);
     const tl = await T(lamp);
     ok(lamp && tl.h > .6 && tl.h < 1, 'a lamp put down over the desk stands on it (h ' + (tl && tl.h.toFixed(2)) + ')');
     // a picture onto a wall
-    await pg.click('#roombuy [data-dept="decor"]');
+    await pg.click('#roomed [data-tab="buy"]'); await pg.click('#roombuy [data-dept="decor"]');
     let pic = null, tp = null; for (const [u, v] of [[R.Lx / 2, R.Ly], [0, R.Ly / 2], [R.Lx / 2, 0], [R.Lx, R.Ly / 2]]) { if (pic) { await pg.evaluate(id => { ROOMED.select(ROOMED._api().units().find(u => u.id === id)); ROOMED.sell(); }, pic); }
       pic = await buy('WALL SHELF', u, 1.5, v); tp = await T(pic); if (tp && Math.min(tp.u, R.Lx - tp.u, tp.v, R.Ly - tp.v) < .3 && Math.abs(tp.h + .2 - 1.5) < .6) break; }
     ok(tp && Math.min(tp.u, R.Lx - tp.u, tp.v, R.Ly - tp.v) < .3 && tp.h > .6, 'a wall shelf goes onto the wall you point at (' + (tp && [tp.u, tp.h, tp.v].map(x => x.toFixed(2)).join(',')) + ')');
     // a game item found by name
-    await pg.fill('#roomfind', 'bus stop'); await pg.waitForTimeout(500);
-    const bus = await buy('g:bus stop', R.Lx * .2, 0, R.Ly * .8);
-    ok(bus && await pg.evaluate(id => ROOMED._api().units().find(u => u.id === id).obj.children.length > 0, bus), 'a game item (the bus stop) found by name and bought');
+    await pg.fill('#roomfind', 'bicycle'); await pg.waitForTimeout(500);
+    const bus = await buy('g:bicycle', R.Lx * .2, 0, R.Ly * .8);
+    ok(bus && await pg.evaluate(id => ROOMED._api().units().find(u => u.id === id).obj.children.length > 0, bus), 'a game item (the bicycle) found by name and bought');
+    ok(await pg.evaluate(() => { const K = ROOMED._api().kinds(); return ROOMED.buy('g:bus stop') === null && ROOMED.buy('g:crosswalk') === null && ROOMED.buy('CRT TV') === null && K['g:bus stop'].off && !K['g:bicycle'].off && K['g:ceiling fan'].tpl && K['g:ceiling fan'].mount === 'ceil' && ROOMED.price('g:sofa') === 400 && ROOMED.price('RECLINER') === 300; }), 'the cut kinds are off sale, the kept ones priced, the ceiling fan hangs from the ceiling');
     // SELL pays half back
-    await pg.evaluate(id => ROOMED.select(ROOMED._api().units().find(u => u.id === id)), bus); const cs0 = (await db()).cash, pr = await pg.evaluate(() => ROOMED.price('g:bus stop'));
-    await pg.click('#roomed [data-a="sell"]'); await pg.waitForTimeout(300);
-    ok((await db()).cash === cs0 + Math.floor(pr / 2), 'SELL pays half back ($' + Math.floor(pr / 2) + ')');
+    await pg.evaluate(id => ROOMED.select(ROOMED._api().units().find(u => u.id === id)), bus); const cs0 = (await db()).cash, pr = await pg.evaluate(() => ROOMED.price('g:bicycle'));
+    const dl = await pg.evaluate(() => (document.querySelector('#roomsel [data-a="del"]') || {}).textContent); await pg.click('#roomsel [data-a="del"]'); await pg.waitForTimeout(300);
+    ok((await db()).cash === cs0 + Math.floor(pr / 2) && /DELETE/.test(dl), 'the picked thing\'s bar has DELETE, which sells a bought piece for half ($' + Math.floor(pr / 2) + '; owner, 12 Nov 2026: ' + dl + ')');
     await pg.click('#roomed [data-tab="walls"]'); const hitW = await pick('wall', 'brick');
     await pg.click('#roomed [data-tab="floor"]'); const hitF = await pick('floor', 'checker'); await pg.waitForTimeout(300);
     ok((await db()).wall === 'brick' && (await db()).floor === 'checker' && hitW && hitF, 'brick walls, a checker floor (each swatch reachable, not under the footer)');

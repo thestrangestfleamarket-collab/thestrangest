@@ -29,10 +29,13 @@ const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv
   /* ---------- THE ARCADE ---------- */
   // since 7 Nov 2026 the token changer, prize counter and soda machine are archived: the games are free
   { await pg.evaluate(()=>ROOMS.enter('arcade')); await U(()=>ROOMS.offIn&&ROOMS.offIn()==='arcade'&&!(window.FADE&&FADE.busy)&&__dbg.UI.things.some(t=>t.name.startsWith('SKEE-BALL')),180000); await U(()=>WORKERSDBG().some(w=>w.k==='w_tokenbot'&&w.made),60000).catch(()=>{});
-    rec('arcade: TOKEN is made',await pg.evaluate(()=>WORKERSDBG().some(w=>w.k==='w_tokenbot'&&w.made)));
+    rec('arcade: TOKEN is archived (11 Nov 2026), never made',await pg.evaluate(()=>!WORKERSDBG().some(w=>w.k==='w_tokenbot'&&w.made)&&!(window.BODIES&&BODIES.by&&BODIES.by.w_tokenbot)));
     const a=await pg.evaluate(async()=>{ const th=n=>__dbg.UI.things.find(t=>t.name.startsWith(n)), play=n=>{ th(n).act(); const ok=!!MINI.on&&MINI.on.title===n; MINI.close(); return ok; };
-      return {skee:play('SKEE-BALL'),claw:play('THE CLAW'),hockey:play('AIR HOCKEY'),cabs:__dbg.UI.things.filter(t=>t.name.startsWith('PLAY ')).length}; });
-    rec('arcade: skee-ball, the claw and air hockey play; the cabinets stand',a.skee&&a.claw&&a.hockey&&a.cabs>=8,JSON.stringify(a));
+      const W=ms=>new Promise(r=>setTimeout(r,ms)), view=__dbg.UI.view; th('AIR HOCKEY').act(); const sat=AIRH.on&&__dbg.UI.holdCam==='hockey'; AIRH.start('easy'); AIRH.aim(0,.3); let hit=false; for(let i=0;i<15;i++){ await W(100); const q=AIRH.dbg(); if(q.mode==='play'&&q.puck[1]<.3)hit=true; } const d=AIRH.dbg();
+      const S=AIRH.sim, s=S.create(), ev=[]; let goals=0, out=0; S.faceoff(s,1); for(let i=0;i<240*120;i++){ S.think(s,s.m[0],S.LEVELS.hard,1/240); S.think(s,s.m[1],S.LEVELS.easy,1/240); S.step(s,1/240,ev); if(Math.abs(s.puck.x)>S.W||Math.abs(s.puck.z)>S.L+.1)out++; if(!s.live){ goals++; S.faceoff(s,1); } }
+      AIRH.close(); const hockey=sat&&hit&&goals>0&&!out&&!AIRH.on&&!__dbg.UI.holdCam&&__dbg.UI.view===view;
+      return {skee:play('SKEE-BALL'),hoops:play('HOOP FEVER'),claw:play('THE CLAW'),hockey,hk:{sat,hit,goals,out,d},cabs:__dbg.UI.things.filter(t=>t.name.startsWith('PLAY ')).length}; });
+    rec('arcade: skee-ball, HOOP FEVER, the claw and air hockey play; the cabinets stand',a.skee&&a.hoops&&a.claw&&a.hockey&&a.cabs>=6,JSON.stringify(a));
     if(OUT){ await pg.screenshot({path:OUT+'/arcade.png'}); }
     await pg.evaluate(()=>ROOMS.exit('arcade')); await pg.waitForTimeout(3000); }
   /* ---------- THE BODEGA ---------- */
@@ -41,28 +44,26 @@ const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv
     await pg.evaluate(()=>ROOMS.exit('bodega')); const out=await U(()=>!(ROOMS.offIn&&ROOMS.offIn())&&!(window.FADE&&FADE.busy),60000).then(()=>true).catch(()=>false);
     rec('bodega: you go in and come back out',inB&&out); }
   /* ---------- THE MOVIE THEATRE ---------- */
-  // a ticket lets you in; its popcorn and soda machines are archived (7 Nov 2026)
-  if(!await has('theatre'))skip('theatre'); else { await pg.evaluate(()=>{ INV.add('ticket',1); STORE.enter('theatre',true); }); const inT=await U(()=>STORE.inside.theatre&&STORE.inside.theatre.done&&!(window.FADE&&FADE.busy),180000).then(()=>true).catch(()=>false);
-    await U(()=>WORKERSDBG().some(w=>w.k==='w_raccoon'&&w.made),60000).catch(()=>{});
-    rec('theatre: a ticket lets you in, THE RACCOON is made',inT&&await pg.evaluate(()=>WORKERSDBG().some(w=>w.k==='w_raccoon'&&w.made)));
+  // THE STARLITE (11 Nov 2026): no way in without a ticket, a ticket lets you in; no snack bar; the fox at the box office, every seat on the list and every row to sit in; the floor steps up to the back; its own reel on the screen when no film is; dropped when you leave
+  if(!await has('theatre'))skip('theatre'); else { const no=await pg.evaluate(()=>{ INV.items.ticket=0; return STORE.gate.theatre?STORE.gate.theatre():true; }); rec('theatre: no ticket, no way in',no===false);
+    await pg.evaluate(()=>{ INV.add('ticket',1); STORE.enter('theatre',true); }); const inT=await U(()=>STORE.inside.theatre&&STORE.inside.theatre.done&&!(window.FADE&&FADE.busy),180000).then(()=>true).catch(()=>false);
+    rec('theatre: a ticket lets you in',inT);
+    const fp=await pg.evaluate(()=>{ const R=STORE.rooms.find(r=>r.id==='theatre'), seats=__dbg.UI.things.filter(t=>t.name==='A ROW OF SEATS'); return {listed:(R.seats||[]).length,sit:seats.length,snack:!!(R.spots||{}).CONCESSIONS||WORKERSDBG().some(w=>w.k==='w_raccoon'&&w.made),fox:!!(CINEMA.dbg&&CINEMA.dbg().fox),box:!!(CINEMA.boxG&&CINEMA.boxG()),rise:Math.max(...R.seats.map(p=>SHARED.groundY(p.x,p.z)))-Math.min(...R.seats.map(p=>SHARED.groundY(p.x,p.z))),free:R.seats.every(p=>p.x>R.x0&&p.x<R.x1&&p.z>R.z0&&p.z<R.z1),reel:!!STORE.main.theatre.reel,live:!!THEATRE.live()}; });
+    rec('theatre: the seats are listed for moviegoers and can be sat in, no snack bar, the fox stands in the box office '+JSON.stringify(fp),fp.listed===180&&fp.sit===60&&!fp.snack&&fp.box&&fp.rise>1.5&&fp.free&&fp.reel&&fp.live);
     if(OUT)await pg.screenshot({path:OUT+'/theatre.png'}).catch(()=>{});
-    await pg.evaluate(()=>STORE.exit('theatre')); await pg.waitForTimeout(3000); }
+    await pg.evaluate(()=>STORE.exit('theatre')); await pg.waitForTimeout(6000);
+    const gone=await pg.evaluate(()=>({live:!!THEATRE.live(),reel:!!STORE.main.theatre.reel,grounds:ROOMS.grounds.length,seats:__dbg.UI.things.filter(t=>t.name==='A ROW OF SEATS').length})); rec('theatre: dropped once you are out '+JSON.stringify(gone),!gone.live&&!gone.reel&&!gone.grounds&&!gone.seats); }
   /* ---------- THE ART MUSEUM ---------- */
-  { await pg.evaluate(async()=>{ if(STORE.ensure)await STORE.ensure(); STORE.enter('art',true); }); await U(()=>STORE.inside.art&&STORE.inside.art.done&&!(window.FADE&&FADE.busy)&&__dbg.UI.things.some(t=>/^A GUIDED TOUR WITH ROSIE/.test(t.name))&&STORE.art&&STORE.art.built,240000);
-    const p=await people('art'); rec('art museum: staff spots and visitor places inside it, standing places clear',p.spots>=4&&p.seats>=12&&p.spotsIn&&p.seatsIn&&!p.spotsFree.length&&!p.standFree,JSON.stringify(p));
-    const rd=()=>{ const N=BODIES.by.w_redpanda&&BODIES.by.w_redpanda.npc, s=STORE.rooms.find(r=>r.id==='art').spots['DOCENT TOURS']; return N?Math.hypot(N.st.x-s.x,N.st.z-s.z):null; };
-    await pg.waitForFunction(`(${rd})()!=null&&(${rd})()<.2`,null,{timeout:90000}).catch(()=>{}); rec('art museum: ROSIE THE RED PANDA stands by her tour sign',await pg.evaluate(`(${rd})()<.2`));
+  { await pg.evaluate(async()=>{ if(STORE.ensure)await STORE.ensure(); STORE.enter('art',true); }); await U(()=>STORE.inside.art&&STORE.inside.art.done&&!(window.FADE&&FADE.busy)&&__dbg.UI.things.some(t=>t.name==='THE FLOOR PLAN')&&STORE.art&&STORE.art.built,240000);
+    const p=await people('art'); rec('art museum: nobody works there; visitor places inside it, standing places clear',p.spots===0&&p.seats>=12&&p.seatsIn&&!p.standFree,JSON.stringify(p));
     const a=await pg.evaluate(()=>{ const th=n=>__dbg.UI.things.find(t=>t.name.startsWith(n));
-      th('THE INFORMATION DESK (THE FLOOR PLAN)').act(); const plan=MINI.on&&MINI.on.title==='THE FLOOR PLAN'; MINI.close();
+      th('THE FLOOR PLAN').act(); const plan=MINI.on&&MINI.on.title==='THE FLOOR PLAN'; MINI.close();
       const casts=__dbg.UI.things.filter(t=>/\(A (CAST|COPY)\)/.test(t.name)).length;
       const R=STORE.rooms.find(r=>r.id==='art'), bx=R.box||R, inArt=t=>{ const o=t.obj; if(!o||!o.updateWorldMatrix)return true; o.updateWorldMatrix(true,false); const e=o.matrixWorld.elements; return e[12]>bx.x0&&e[12]<bx.x1&&e[14]>bx.z0&&e[14]<bx.z1; };   // (the bookstore café elsewhere is not the museum's)
-      const shopL=__dbg.UI.things.filter(t=>/ESPRESSO|PASTRY|POSTCARD|PRINTS|CAFÉ/.test(t.name)&&inArt(t)).map(t=>t.name), shops=shopL.length;
-      INV.cash=5; th('A GUIDED TOUR WITH ROSIE').act(); const paid=INV.cash===2&&!!GALLERY.touring;
-      return {plan,casts,shops,paid,shopL}; });
-    rec('art museum: the floor plan; no casts, no café, no gift shop',a.plan&&a.casts===0&&a.shops===0,JSON.stringify(a));
-    const tour=await pg.waitForFunction(()=>{ const T=GALLERY.touring; if(T&&T.N.st.to){ T.N.st.x=T.N.st.to.x; T.N.st.z=T.N.st.to.z; } return GALLERY.last&&T&&T.i>=0; },null,{timeout:120000,polling:500}).then(()=>true).catch(()=>false);   // she walks at the frames' pace; on a slow machine the check sets her down at her stop
-    rec('art museum: the tour costs $3, ROSIE walks to a painting and tells you about it',a.paid&&tour,await pg.evaluate(()=>JSON.stringify({last:GALLERY.last,i:GALLERY.touring&&GALLERY.touring.i})));
+      const shopL=__dbg.UI.things.filter(t=>/ESPRESSO|PASTRY|POSTCARD|PRINTS|CAFÉ|GUIDED TOUR|INFORMATION DESK/.test(t.name)&&inArt(t)).map(t=>t.name), shops=shopL.length;
+      return {plan,casts,shops,shopL,rosie:ARCH.has('w_redpanda')}; });
+    rec('art museum: the floor plan by the door; no casts, café, gift shop, desk or tour',a.plan&&a.casts===0&&a.shops===0&&a.rosie,JSON.stringify(a));
     if(OUT)await pg.screenshot({path:OUT+'/art.png'}).catch(()=>{});
-    await pg.evaluate(()=>STORE.exit('art')); await pg.waitForTimeout(4000); rec('art museum: leaving ends the tour',await pg.evaluate(()=>!GALLERY.touring)); }
+    await pg.evaluate(()=>STORE.exit('art')); await pg.waitForTimeout(4000); }
   rec('no page errors',!errs.length,errs.slice(0,3).join(' | '));
   await b.close(); process.exit(bad?1:0); })();

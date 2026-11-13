@@ -1,15 +1,16 @@
-// The owner's .glb toons: the teddy bear, fetched after the start (the donut, origami fox, bear in the coat, Mr. Blocks, ember knight, Number 80, rain fish, manatee and ticket fox are archived, owner 5 Nov 2026).
+// The owner's .glb toons: the teddy bear and THE TICKET FOX (the origami fox, in the theatre's box office), fetched after the start (the donut, bear in the coat, Mr. Blocks, ember knight, Number 80, rain fish and manatee are archived, owner 5 Nov 2026).
 import {CINEMA, SHOPS} from './003b-systems.js';
 import {QS, SYS} from './006-map-pre.js';
 import {PARTSNPC} from './080-npc-parts.js';
 import {RIGNPC} from './083-npc-rig.js';
 const GLBTOONS={list:[]}; window.GLBTOONS=GLBTOONS;
-{ const DATA=__LAZY__("data/toons-glb.json");
+{ const DATA=SYS.far(__LAZY__("data/toons-glb.json"));
   const SPR={ earL:{f:-.15,s:.12,k:70,c:6,lim:.4}, earR:{f:-.15,s:.12,k:70,c:6,lim:.4}, jL:{f:-.25,s:.1,k:45,c:5,lim:.35}, jR:{f:-.25,s:.1,k:45,c:5,lim:.35}, jB:{f:-.3,k:40,c:5,lim:.4},
     scarf:{f:-.35,s:.2,k:35,c:4,lim:.5}, hood:{f:-.1,s:.1,k:60,c:6,lim:.25}, horn:{f:-.06,s:.06,k:90,c:8,lim:.15}, hat:{f:-.08,s:.08,k:80,c:7,lim:.2}, umb:{f:-.12,s:.12,k:40,c:4,lim:.3},
     flapL:{f:-.3,k:45,c:5,lim:.4}, flapR:{f:-.3,k:45,c:5,lim:.4}, tail:{s:.3,y:.4,k:30,c:3,lim:.6}, tailFin:{s:.3,y:.4,k:30,c:3,lim:.6}, armLt:{f:-.1,k:50,c:5,lim:.3}, armRt:{f:-.1,k:50,c:5,lim:.3} };
   const KIND={
-    teddy:{metres:1.4,radius:.3,speed:.34,stride:6,at:66,o:{leg:.4,arm:.3,bob:.025,rock:.05}} };
+    teddy:{metres:1.4,radius:.3,speed:.34,stride:6,at:66,o:{leg:.4,arm:.3,bob:.025,rock:.05}},
+    ticketfox:{data:'origamifox',metres:1.15,radius:.24,speed:.42,stride:7,at:62} };
   const skirt=def=>{ const S=def.bones.filter(b=>/^[kc]\d+$/.test(b[0])).map(b=>b[0]); if(!S.length)return null;
     const ys=def.bones.filter(b=>S.includes(b[0])).map(b=>b[2][1]), top=Math.max(...ys), bot=Math.min(...ys), hip=def.bones.find(b=>b[0]==='hips')[2], r=Math.max(...def.bones.filter(b=>S.includes(b[0])).map(b=>Math.abs(b[2][0])))||1;
     const at=Object.fromEntries(def.bones.map(b=>[b[0],b[2]]));

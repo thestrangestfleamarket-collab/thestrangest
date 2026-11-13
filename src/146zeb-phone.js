@@ -1,10 +1,11 @@
-// THE BRICK PHONE (owner, 8 Nov 2026: "give all players a 1980s style cellular phone they can use to order things. a drone can deliver things to them anywhere they are"): every player has one; use it and its green screen lists what the bodega sells, SEND orders one (its price and $2 delivery), and the drone flies it to you wherever you stand outdoors.
+// THE BRICK PHONE (owner, 8 Nov 2026: "give all players a 1980s style cellular phone they can use to order things. a drone can deliver things to them anywhere they are"): every player has one; use it and its green screen lists what the bodega sells, SEND orders one (its price and $2 delivery), and the drone flies it to you wherever you stand outdoors; one order in four THE COURIER rides over instead.
 import {SHARED} from './003-shx.js';
 import {DRONE, FORAGE, INSPECT, INV, pos, ROOMS} from './003b-systems.js';
 import {SYS, TILE} from './006-map-pre.js';
 import {MINI} from './038zd-mini.js';
+import {COURIER} from './111ee-courier.js';
 import {BODEGA} from './146ze-bodega.js';
-const PHONE={fee:2}; window.PHONE=PHONE;
+const PHONE={fee:2,courier:.25,by:''}; window.PHONE=PHONE;
 { const ID='brickphone', W=260, H=500, LINES=7, LY=78, LH=24;
   FORAGE.add({names:{[ID]:'BRICK PHONE'},prices:{[ID]:0}});
   INSPECT.kinds.push({is:id=>id===ID,make:()=>INSPECT.shape('brickphone',0x2c2d31)});
@@ -15,14 +16,17 @@ const PHONE={fee:2}; window.PHONE=PHONE;
   const here=()=>{ const T=TILE, h=SHARED.heading||0, x=pos.x+Math.sin(h)*.9*T, z=pos.z+Math.cos(h)*.9*T; return {x,y:SHARED.groundY?SHARED.groundY(x,z):0,z}; };
   const signal=()=>SHARED.LVL==='up'&&!(ROOMS.offIn&&ROOMS.offIn())&&!(ROOMS.cur&&ROOMS.cur.name);
   PHONE.order=r=>{ if(!r)return 'NOTHING PICKED.'; if(!signal())return 'NO SIGNAL IN HERE. TRY OUTSIDE.'; if(!DRONE.go)return 'NO DRONE ANSWERS.'; if(DRONE.state!=='home')return 'THE DRONE IS OUT. CALL BACK SOON.';
-    const cost=r.price+PHONE.fee; if(INV.cash<cost)return 'NOT ENOUGH CASH ($'+cost+').'; INV.cash-=cost; if(INV.save)INV.save();
-    DRONE.go(r.name,()=>{ FORAGE.give(r.id,1); if(FORAGE.save)FORAGE.save(); if(FORAGE.draw)FORAGE.draw(); },{follow:here}); return ''; };
-  const view={title:'BRICK PHONE',w:W,h:H,help:'Up and down pick a line (or click it), SEND orders it: its price and $'+PHONE.fee+' delivery. The drone brings it to wherever you are outdoors. END hangs up.',
+    const cost=r.price+PHONE.fee; if(!INV.afford(cost))return 'NOT ENOUGH CASH ($'+cost+').'; INV.pay(cost); if(INV.save)INV.save();
+    const got=()=>{ FORAGE.give(r.id,1); if(FORAGE.save)FORAGE.save(); if(FORAGE.draw)FORAGE.draw(); };
+    // one order in four comes by THE COURIER on his bike (when he can take it), the rest by drone
+    PHONE.by=Math.random()<PHONE.courier&&DRONE.land&&COURIER.bring&&COURIER.bring(here,at=>DRONE.land(r.name,got,at,true,'THE COURIER'))?'COURIER':'DRONE';
+    if(PHONE.by==='DRONE')DRONE.go(r.name,got,{follow:here}); else DRONE.tell(r.name,here(),1); return ''; };
+  const view={title:'BRICK PHONE',w:W,h:H,help:'Up and down pick a line (or click it), SEND orders it: its price and $'+PHONE.fee+' delivery. The drone, or one time in four the courier on his bike, brings it to wherever you are outdoors. END hangs up.',
     start:S=>{ S.L=lines(); S.sel=0; S.top=0; S.msg='THE BODEGA · DRONE DELIVERY'; },
     tick:S=>{ const n=S.L.length; if(S.wheel){ S.sel=Math.max(0,Math.min(n-1,S.sel+Math.sign(S.wheel))); S.wheel=0; }
       if(S.press){ const x=S.mx, y=S.my; const B=btn(x,y);
         if(B==='up')S.sel=Math.max(0,S.sel-1); else if(B==='dn')S.sel=Math.min(n-1,S.sel+1);
-        else if(B==='send'){ const r=S.L[S.sel], e=PHONE.order(r); S.msg=e||('ORDERED: '+r.name+'. THE DRONE IS ON ITS WAY.'); }
+        else if(B==='send'){ const r=S.L[S.sel], e=PHONE.order(r); S.msg=e||('ORDERED: '+r.name+(PHONE.by==='COURIER'?'. THE COURIER IS RIDING OVER.':'. THE DRONE IS ON ITS WAY.')); }
         else if(B==='end'){ S.close=true; if(MINI.close)MINI.close(); }
         else if(y>LY&&y<LY+LINES*LH&&x>36&&x<W-36)S.sel=Math.min(n-1,S.top+Math.floor((y-LY)/LH)); }
       if(S.sel<S.top)S.top=S.sel; if(S.sel>=S.top+LINES)S.top=S.sel-LINES+1; },

@@ -3,12 +3,13 @@ import {BUGS, ONLINE, SIGNS, TENANTS, TEXT} from './003b-systems.js';
 import {SYS} from './006-map-pre.js';
 { const esc=TEXT.esc;
   const day=t=>t?new Date(typeof t==='number'?t:Date.parse(t)).toLocaleString():'—';
+  const dur=ms=>{ const m=Math.round((ms||0)/6e4); return m<60?m+'m':Math.floor(m/60)+'h '+(m%60)+'m'; };
   const api=async(path,body)=>{ '@later'; try{ if(BUGS.tok)await BUGS.tok(); }catch(e){}
     let r; try{ r=await fetch(path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body||{})}); }catch(e){ return {why:'the server did not answer'}; } let j={}; try{ j=await r.json(); }catch(e){} if(!r.ok&&!j.why)j.why='the server said '+r.status; return j; };
   const room=()=>ONLINE.room;
   let el=null, D=null, open=null, say='';
   // each part folds; which are folded is kept in this browser
-  const SECS=['codes','players'], SEC=(()=>{ try{ return JSON.parse(localStorage.getItem('tenants-folds')||'{}')||{}; }catch(e){ return {}; } })();
+  const SECS=['asks','codes','players'], SEC=(()=>{ try{ return JSON.parse(localStorage.getItem('tenants-folds')||'{}')||{}; }catch(e){ return {}; } })();
   const keep=()=>{ try{ localStorage.setItem('tenants-folds',JSON.stringify(SEC)); }catch(e){} };
   const sec=(k,t,body)=>`<details data-sec="${k}"${SEC[k]?'':' open'}><summary style="cursor:pointer;list-style:none"><h3 style="display:inline">${SEC[k]?'▸':'▾'} ${t}</h3></summary>${body}</details>`;
 
@@ -16,11 +17,14 @@ import {SYS} from './006-map-pre.js';
   const draw=()=>{ '@later'; if(!el)return; if(!D){ el.innerHTML='<div class="dim">...</div>'; return; } if(D.why){ el.innerHTML='<div class="dim">'+esc(D.why)+'</div>'; return; }
     const U=D.users.slice().sort((a,b)=>((a.player&&a.player.apt)||1e9)-((b.player&&b.player.apt)||1e9)), on=U.filter(u=>u.online).length;
     const live=D.codes.filter(c=>c.uses<c.max_uses), done=D.codes.length-live.length;
+    const mail=new Set(U.map(u=>(u.email||'').toLowerCase())), asked=new Map((D.asks||[]).map(a=>[a.email,a])), waiting=(D.asks||[]).filter(a=>!mail.has(a.email));
     el.innerHTML=`<h3>TENANTS</h3><div class="row"><span class="dim">${U.length} players · ${on} online now${say?' · '+esc(say):''}</span><button class="btn" id="tfold">${Object.keys(SEC).length&&SECS.every(k=>SEC[k])?'OPEN ALL':'COLLAPSE ALL'}</button></div>
+      ${sec('asks','ASKED FOR AN INVITE',waiting.map(a=>`<div class="row" data-ask="${esc(a.email)}"><span>${esc(a.email)}</span><span class="dim">${esc(day(a.at))}${a.sent?' · code sent '+esc(day(a.sent)):''}</span><button class="btn" data-a="send">${a.sent?'SEND AGAIN':'SEND CODE'}</button><button class="btn" data-a="drop">DROP</button></div>`).join('')||'<div class="dim">nobody waiting</div>')}
       ${sec('codes','INVITE CODES',`<div class="row"><span>USES</span><input id="tuses" type="number" min="1" max="1000" value="1" style="width:60px;font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;padding:4px"><button class="btn" id="tcode">NEW CODE</button></div>
       ${live.slice().reverse().map(c=>`<div class="row"><code>${esc(c.code)}</code><span class="dim">${esc(c.uses)}/${esc(c.max_uses)}</span><button class="btn" data-off="${esc(c.code)}">TURN OFF</button></div>`).join('')||'<div class="dim">no codes open</div>'}${done?`<div class="dim">${done} used up</div>`:''}`)}
       ${sec('players','PLAYERS',U.map(u=>{ const p=u.player||{}; return `<div data-u="${esc(u.id)}" style="border:2px solid var(--line);padding:6px 8px;margin:6px 0">
-        <div class="row"><b>${esc(p.apt||'—')}</b>${u.name?`<b>${esc(u.name)}</b>`:''}<span>${esc(u.email)}</span>${u.online?'<span style="color:#7fdc8a">ONLINE</span>':''}${u.admin?'<span style="color:#ffd27a">OWNER</span>':''}${u.banned?'<span style="color:#e06a5a">BANNED</span>':''}<span class="dim">joined ${esc(day(u.joined))} · last in ${esc(day(u.last))}</span><button class="btn" data-a="more">${open===u.id?'LESS':'MORE'}</button></div>
+        <div class="row"><b>${esc(p.apt||'—')}</b>${u.name?`<b>${esc(u.name)}</b>`:''}<span>${esc(u.email)}</span>${u.online?'<span style="color:#7fdc8a">ONLINE</span>':''}${u.admin?'<span style="color:#ffd27a">OWNER</span>':''}${u.banned?'<span style="color:#e06a5a">BANNED</span>':''}<span class="dim">joined ${esc(day(u.joined))} · last login ${esc(day(u.last))}</span><button class="btn" data-a="more">${open===u.id?'LESS':'MORE'}</button></div>
+        <div class="dim" style="margin:2px 0 0">played ${esc(dur(u.play&&u.play.ms))} · ${esc(u.play?u.play.n:0)} visits · last in game ${esc(day(u.play&&u.play.last))}${asked.has((u.email||'').toLowerCase())?(a=>' · asked for an invite '+esc(day(a.at))+(a.sent?' · code sent '+esc(day(a.sent)):''))(asked.get((u.email||'').toLowerCase())):''}</div>
         ${open===u.id?`<div class="dim" style="white-space:pre-wrap;margin:4px 0">${esc(Object.entries({id:u.id,phone:u.phone,confirmed:u.confirmed,provider:u.provider,...p}).filter(([,v])=>v!==''&&v!=null).map(([k,v])=>k+': '+(typeof v==='object'?JSON.stringify(v):v)).join('\n'))}</div>
           <div class="row"><span>EMAIL</span><input data-f="email" type="text" value="${esc(u.email)}" style="width:220px;font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;padding:4px"><span>APT</span><input data-f="apt" type="number" value="${esc(p.apt??'')}" style="width:70px;font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;padding:4px"><span>NEW PASSWORD</span><input data-f="password" type="text" placeholder="8 or more" style="width:120px;font:inherit;background:#0e1016;color:var(--fg);border:2px solid #3a3f4e;padding:4px"><button class="btn" data-a="save">SAVE</button></div>
           <div class="row"><button class="btn" data-a="admin">${u.admin?'NOT AN OWNER':'MAKE AN OWNER'}</button><button class="btn" data-a="ban">${u.banned?'UNBAN':'BAN'}</button><button class="btn" data-a="kit">GIVE FULL KIT</button><button class="btn" data-a="delete">DELETE</button></div>`:''}</div>`; }).join(''))}`;
@@ -30,6 +34,7 @@ import {SYS} from './006-map-pre.js';
     const $=s=>el.querySelector(s); for(const f of el.querySelectorAll('input,textarea,select'))for(const ev of ['keydown','keyup'])f.addEventListener(ev,e=>e.stopPropagation());
     const act=async(b,body,ok)=>{ if(b)b.disabled=true; const r=await api('/admin',{room:room(),...body}); say=r.why?'not done: '+r.why:ok(r); await load(); };
     $('#tcode').onclick=e=>act(e.target,{do:'code',uses:+$('#tuses').value||1},r=>{ try{ navigator.clipboard.writeText(r.code); }catch(x){} return 'new code '+r.code+' (copied)'; });
+    el.querySelectorAll('[data-ask] [data-a]').forEach(b=>b.onclick=()=>{ const m=b.closest('[data-ask]').dataset.ask; act(b,{do:b.dataset.a==='send'?'askcode':'askoff',email:m},r=>b.dataset.a==='send'?'code '+r.code+' emailed to '+m:'dropped '+m); });
     el.querySelectorAll('[data-off]').forEach(b=>b.onclick=()=>act(b,{do:'codeoff',code:b.dataset.off},()=>'code turned off'));
     el.querySelectorAll('[data-u]').forEach(box=>box.onclick=e=>{ const b=e.target.closest('[data-a]'); if(!b)return; const id=box.dataset.u, u=D.users.find(x=>x.id===id), a=b.dataset.a;
       if(a==='more'){ open=open===id?null:id; draw(); return; }

@@ -14,47 +14,43 @@ await grab('mainstreet',async()=>{ const K=STORE.kit, {room,STEPS}=K, {X,Y,Z,pla
   const unplace=n=>{ const i=STORE.places.findIndex(p=>p[0]===n); if(i>=0)STORE.places.splice(i,1); }, door=(k,f)=>{ const T=TURN(lot(k),WP[k].face), L=T.L, u=L.x0+f(L), a=T.pt(u,L.y1+2.2/BLDK), b=T.pt(u,L.y1); return [X(a[0]),Z(a[1]),X(b[0]),Z(b[1]),T.hd(0)]; };
   const MS=STORE.main={lot,word,neon,unplace,doors:[...(AWAY.has('theatre')?[]:[['THE MOVIE THEATRE',...door('theatre',()=>4.4)]]),['THE ARCADE',...door('arcade',L=>(L.x1-L.x0)/2)],...(AWAY.has('playhouse')?[]:[['THE PLAYHOUSE',...door('play',L=>(L.x1-L.x0)/2)]])]};
 
-  if(!AWAY.has('theatre')){ STORE.open=Object.assign(STORE.open||{},{theatre:[...['f','b','e'].map(sd=>TURN(lot('theatre'),WP.theatre.face).side(sd)),'lobby']});   // in the theatre only its screen wall stays (its local west, turned to its street)
+  if(!AWAY.has('theatre')){   // the theatre keeps its walls inside (off the map, nothing outside to see)
   // the theatre is built in its own frame (the front at the local y1) and turned onto its street like the bar: props and lamps by turnIn, the painters by loc
-  STEPS.push(()=>{ '@later'; const BW0=lot('theatre',300), OXT=WP.theatre.pf?1150+OFFDX/BLDK-(BW0.x0+BW0.x1)/2:0, BW={...BW0,x0:BW0.x0+OXT,x1:BW0.x1+OXT}, TB=TURN(BW,WP.theatre.face), B={...BW,...TB.L}, W=B.x1-B.x0, cx=(B.x0+B.x1)/2, door=B.x0+4.4, prop=SK.prop, sided=SK.sided; STORE.theatreFrame={B,TB};   // the theatre's own layout and its turn, for what furnishes it
-    const loc=(nx,ny,x,y)=>{ const l=TB.back(x,y); for(let i=0;i<TB.q;i++){ const t=nx; nx=ny; ny=-t; } return [nx,ny,l[0],l[1]]; }, solL=(x0,y0,x1,y1,h)=>{ const a=TB.pt(x0,y0), b=TB.pt(x1,y1); K.sol(Math.min(a[0],b[0]),Math.min(a[1],b[1]),Math.max(a[0],b[0]),Math.max(a[1],b[1]),h); };
+  STEPS.push(()=>{ '@later'; const TM=.924, ZM=TILE/.84/(Y(1)-Y(0));   // a theatre tile in metres; wall rows in a metre
+    // THE STARLITE inside (owner, 11 Nov 2026), in metres from the screen wall: ten rows of seats each a step up, the way in beside the screen
+    const LAY={D:26,W:16,H:8.5,RISE:.22,ROWS:10,ROWD:1.5,ROW0:8,STEP0:7.05,NS:9,PITCH:.62,AISLE:.9,DOOR:3.4,SW:9.6,SY:1.15}; LAY.floorH=u=>u<LAY.STEP0?0:Math.min(LAY.ROWS-1,Math.floor((u-LAY.STEP0)/LAY.ROWD))*LAY.RISE;
+    const BW0=lot('theatre',300), OXT=WP.theatre.pf?1150+OFFDX/BLDK-(BW0.x0+BW0.x1)/2:0, BW=OXT?{...BW0,x0:BW0.x0+OXT,x1:BW0.x0+OXT+LAY.D/TM+.2,y0:BW0.y1-LAY.W/TM-.2,h:Math.round(LAY.H*ZM)+2}:BW0, TB=TURN(BW,WP.theatre.face), B={...BW,...TB.L}, W=B.x1-B.x0, cx=(B.x0+B.x1)/2, prop=SK.prop, sided=SK.sided; STORE.theatreFrame={B,TB,LAY};   // the theatre's own layout and its turn, for what furnishes it
+    const door=OXT?B.x0+.1+LAY.DOOR/TM:B.x0+4.4;
+    const loc=(nx,ny,x,y)=>{ const l=TB.back(x,y); for(let i=0;i<TB.q;i++){ const t=nx; nx=ny; ny=-t; } return [nx,ny,l[0],l[1]]; };
     const SEG=[[6,14.65,-6],[16.6,19.5,-7.95],[2.8,2.8+W-11.55,8.75]];
     const pic=(X_,z)=>{ const u=X_-B.x0; for(const [a,b,o] of SEG)if(u>=a+o&&u<b+o)return TH.THFRONT(u-o,z); return null; };
     const out=(nx,ny,Xw,Yw,z,f,cap)=>{ if(ny>0){ const c=pic(Xw,z); if(c)return c.e?c:sh(c,f); } const u=(nx?Yw:Xw)*24|0, r=z|0; if(r>B.h-8)return sh([200,192,170],f); return sh(r%8<1||(u+(r>>3&1)*8)%16<1?[120,52,44]:[156,66,54],f); };
-    const cy=(B.y0+B.y1)/2, tz=(X(1)-X(0))/(Y(1)-Y(0)), S={y0:cy-6,y1:cy+6,x:B.x0+T,z0:30,m:.4}; S.z1=S.z0+(S.y1-S.y0)*tz*9/16;
-    const HT=Math.min(4,Math.floor((B.x1-T-B.x0-6.55)/1.45))*19;
-    const EXN=(B.y0+T+B.y0+1.2)/2, EXS=(B.y1-1.75+B.y1-T)/2, PIL=[1.6,4.6,7.6,10.4].map(d=>B.x0+d), DL=[], LZ=150;
-    for(let y=B.y0+1;y<B.y1-.6;y+=1.6)DL.push(y);
-    const wash=(u,z,L,top,w0)=>{ let g=0; for(const p of L){ const dz=Math.abs(z-top), w=w0+dz*.004; g=Math.max(g,Math.max(0,1-Math.abs(u-p)/w)*Math.exp(-dz/85)); } return g; };
-    const glow=(c,g,to)=>lit([c[0]+(to[0]-c[0])*g|0,c[1]+(to[1]-c[1])*g|0,c[2]+(to[2]-c[2])*g|0]);
-    const inWall=(_,nx,ny,X_,Y_,z,f)=>{ const u=nx?Y_:X_, n=.95+.1*hs(Math.floor(u*24),Math.floor(z/2),71);
-      if(z<6)return sh([14,13,15],f); if(z>284)return sh([17,16,19],f);
-      if(nx>0)return z<S.z1+20&&Y_>S.y0-.6&&Y_<S.y1+.6?sh([14,13,16],f*n*(.9+.1*Math.sin(u*38))):sh([44,43,48],f*n*((u*1.25)%1<.035||z%40<1?.65:1));
-      if(ny>0){ const g=wash(X_,z,PIL,LZ,.2), s=(X_*8)%1, b=sh(s<.13?[34,18,16]:Math.floor(X_*8)&1?[92,48,38]:[80,41,33],f*n); return g>.05?glow(b,g*.85,[255,190,128]):b; }
-      if(nx<0){ const b=sh(((Y_*.9)%1<.03||z%46<1)?[36,35,40]:[52,51,57],f*n); if(z>HT+100){ const g=wash(Y_,z,DL,262,.08)*(z<262?1:.2); return g>.05?glow(b,g*.9,[255,226,180]):b; } return b; }
-      return sh([40,39,44],f*n*((u*1.6)%1<.03?.7:1)); };
-    const floor=(x,y)=>{ const n=hs(Math.floor(x*24),Math.floor(y*24),73); return n<.05?[70,68,74]:n>.97?[48,47,52]:[60,59,64]; };
-    const dp=TB.pt(door,B.y1), dw=TB.side('f'), D={w:dw,a:dw==='f'||dw==='b'?dp[0]:dp[1],wd:1.56,h:94}, floorW=(x,y)=>{ const l=TB.back(x,y); return floor(l[0],l[1]); }, inW=(_,nx,ny,x,y,z,f)=>{ const q=loc(nx,ny,x,y); return inWall(_,q[0],q[1],q[2],q[3],z,f); }, outW=(nx,ny,x,y,z,f,cap)=>{ const q=loc(nx,ny,x,y); return out(q[0],q[1],q[2],q[3],z,f,cap); };
+    const cy=(B.y0+B.y1)/2, tz=(X(1)-X(0))/(Y(1)-Y(0)), S={y0:cy-LAY.SW/TM/2,y1:cy+LAY.SW/TM/2,x:B.x0+T,z0:Math.round(LAY.SY*ZM),m:.3}; S.z1=S.z0+(S.y1-S.y0)*tz*9/16;
+    // the walls: pleated wine-red cloth over a dark dado with a brass line, following the steps; the screen wall black; the back wall dark round the projection port
+    const inWall=(_,nx,ny,X_,Y_,z,f)=>{ if(nx>0)return sh([6,5,6],f); if(z>B.h-7)return sh([14,11,11],f);
+      const m=((nx?Y_-B.y0:X_-B.x0)-.1)*TM, zr=z-(nx?LAY.floorH(LAY.D):LAY.floorH(m))*ZM;
+      if(nx<0&&Math.abs(m-LAY.W/2)<1.6)return sh(z>4.3*ZM&&z<5.7*ZM?[5,4,4]:[20,14,14],f);
+      if(zr<24)return sh([28,20,14],f); if(zr<27)return sh([118,92,42],f);
+      const v=30+60*(.5+.5*Math.sin(m/.54*6.2832)), n=.9+.14*hs(Math.floor(m*26),Math.floor(z/3),71); return sh([v,v*.2,v*.24],f*n); };
+    const floor=()=>[22,12,30];   // (under the carpet the furnishing lays)
+    const dp=TB.pt(door,B.y1), dw=TB.side('f'), dpic=(ii,jj,Wd,Hd)=>{ const z=Hd-jj; return ii<2||ii>=Wd-2||z>Hd-2?[34,26,24]:Math.abs(z-Hd*.48)<1.3&&ii>Wd*.2&&ii<Wd*.8?[138,106,42]:[15,11,11]; };
+    const D={w:dw,a:dw==='f'||dw==='b'?dp[0]:dp[1],...(OXT?{wd:1.2,h:60,pic:dpic}:{wd:1.56,h:94})}, floorW=(x,y)=>{ const l=TB.back(x,y); return floor(l[0],l[1]); }, inW=(_,nx,ny,x,y,z,f)=>{ const q=loc(nx,ny,x,y); return inWall(_,q[0],q[1],q[2],q[3],z,f); }, outW=(nx,ny,x,y,z,f,cap)=>{ const q=loc(nx,ny,x,y); return out(q[0],q[1],q[2],q[3],z,f,cap); };
     const R=room('theatre','MOVIE THEATRE',BW,{floor:floorW,in:inW,out:outW,cope:[200,192,170]},D,(B_,l0)=>{
       const n0=PROPS.length;
-      for(const [a,b,o] of SEG){ TH.thAt(B.x1-o,B.y0); TH.thFront(p=>{ const u0=Math.max(p[0],a), u1=Math.min(p[1],b); return u1-u0>.01?[u0,u1,...p.slice(2)]:null; }); }
+      if(!OXT)for(const [a,b,o] of SEG){ TH.thAt(B.x1-o,B.y0); TH.thFront(p=>{ const u0=Math.max(p[0],a), u1=Math.min(p[1],b); return u1-u0>.01?[u0,u1,...p.slice(2)]:null; }); }
       turn(B,n0,l0);
-      const Bk=[10,9,11], bk={c:Bk,top:()=>Bk,fi:()=>Bk,fj:()=>Bk}, sx=S.x+.06;
-      SHARED.PNAME='movie screen wall'; prop([{x0:S.x,y0:S.y0,x1:sx,y1:S.y1,z0:S.z0,z1:S.z1,c:[150,150,154],top:()=>Bk,fj:()=>Bk,fi:()=>[150,150,154]},
-        {x0:S.x,y0:S.y0-S.m,x1:sx,y1:S.y1+S.m,z0:S.z1,z1:S.z1+10,...bk},{x0:S.x,y0:S.y0-S.m,x1:sx,y1:S.y1+S.m,z0:S.z0-8,z1:S.z0,...bk},{x0:S.x,y0:S.y0-S.m,x1:sx,y1:S.y0,z0:S.z0,z1:S.z1,...bk},{x0:S.x,y0:S.y1,x1:sx,y1:S.y1+S.m,z0:S.z0,z1:S.z1,...bk}],null,{high:true});
-      SHARED.PNAME='exit door'; for(const ey of [EXN,EXS])prop([{x0:B.x1-T-.05,y0:ey-.45,x1:B.x1-T,y1:ey+.45,z0:0,z1:94,foot:1,c:[40,38,42],top:()=>[40,38,42],fi:(y,z)=>Math.abs(y-ey)>.4||z>90?[20,19,22]:z>40&&z<46?[150,150,156]:[44,42,48],fj:()=>[30,29,33]},
-        {x0:B.x1-T-.07,y0:ey-.3,x1:B.x1-T,y1:ey+.3,z0:100,z1:110,em:1,c:[200,30,30],top:()=>[60,8,8],fi:(y,z)=>z>101.5&&z<108.5&&Math.abs(y-ey)<.25&&Math.floor((y-ey)*24+40)%4?[255,70,60]:[70,10,10],fj:()=>[60,8,8]}],null,{high:true});
-      for(const ey of [EXN,EXS])LAMPS.push({x:B.x1-.6,y:ey,z:105,r:2.2,c:[.55,.08,.06]});
-      for(const x of PIL)LAMPS.push({x,y:B.y0+T+.5,z:LZ,r:4.5,c:[.62,.38,.22]});
-      SHARED.PNAME='downlight'; for(const y of DL){ prop([{x0:B.x1-T-.1,y0:y-.07,x1:B.x1-T,y1:y+.07,z0:262,z1:268,em:1,c:[255,236,200],top:()=>[255,236,200],fi:()=>[255,236,200],fj:()=>[255,236,200]}],null,{high:true}); }
-      for(const y of [B.y0+2,cy,B.y1-2])LAMPS.push({x:B.x1-1.4,y,z:262,r:6,c:[.34,.3,.28]});
-      LAMPS.push({x:B.x0+3,y:cy,z:250,r:6,c:[.3,.3,.36]});
-      STORE.turnIn(TB,n0,l0); if(STORE.furnish&&STORE.furnish.theatre)STORE.furnish.theatre(B,TB);
-    },{holes:(()=>{ const a=TB.pt(door-3.71,B.y1), b=TB.pt(door-1.69,B.y1), k=dw==='f'||dw==='b'?0:1; return {[dw]:[{a0:Math.min(a[k],b[k]),a1:Math.max(a[k],b[k]),z0:36,z1:92,open:true}]}; })()});
+      // the screen: white in a black masking
+      const BK=[8,7,8], WH=[206,204,196], fr={c:BK,top:()=>BK,fi:()=>BK,fj:()=>BK}, sx=S.x+.06;
+      SHARED.PNAME='movie screen'; prop([{x0:S.x,y0:S.y0,x1:sx,y1:S.y1,z0:S.z0,z1:S.z1,c:WH,top:()=>BK,fj:()=>BK,fi:()=>WH},
+        {x0:S.x,y0:S.y0-S.m,x1:sx+.08,y1:S.y1+S.m,z0:S.z1,z1:S.z1+8,...fr},{x0:S.x,y0:S.y0-S.m,x1:sx+.08,y1:S.y1+S.m,z0:S.z0-8,z1:S.z0,...fr},{x0:S.x,y0:S.y0-S.m,x1:sx+.08,y1:S.y0,z0:S.z0,z1:S.z1,...fr},{x0:S.x,y0:S.y1,x1:sx+.08,y1:S.y1+S.m,z0:S.z0,z1:S.z1,...fr}],null,{high:true});
+      STORE.turnIn(TB,n0,l0);
+    },OXT?{noOut:true}:{holes:(()=>{ const a=TB.pt(door-3.71,B.y1), b=TB.pt(door-1.69,B.y1), k=dw==='f'||dw==='b'?0:1; return {[dw]:[{a0:Math.min(a[k],b[k]),a1:Math.max(a[k],b[k]),z0:36,z1:92,open:true}]}; })()});
+    { const I=STORE.inside.theatre; if(I&&!I.done){ const g0=I.go; I.go=()=>{ g0(); if(STORE.furnish&&STORE.furnish.theatre)STORE.furnish.theatre(B,TB); }; } }   // furnished on the way in, dropped with the inside
     const tx=new THREE.DataTexture(new Uint8Array(TH.FILMW*TH.FILMH*4),TH.FILMW,TH.FILMH); tx.magFilter=tx.minFilter=THREE.NearestFilter; tx.colorSpace=THREE.SRGBColorSpace;
     const fm=new THREE.Mesh(new THREE.PlaneGeometry(Math.abs(Z(S.y1)-Z(S.y0)),Y(S.z1)-Y(S.z0)),new THREE.MeshBasicMaterial({map:tx})); const fp=TB.pt(S.x+.075,cy); fm.rotation.y=Math.PI/2+TB.hd(0); fm.position.set(X(fp[0]),Y((S.z0+S.z1)/2),Z(fp[1])); fm.visible=false; scene.add(fm); fm.updateMatrixWorld();
-    if(OXT){ const T0=TURN(BW0,WP.theatre.face), L0=T0.L, cl=(L0.x0+L0.x1)/2; STORE.streetDoor.theatre={door:T0.pt(cl,L0.y1+.35),out:[...T0.pt(cl,L0.y1+1.4),T0.hd(0)]}; K.sol(BW0.x0,BW0.y0,BW0.x1,BW0.y1,300); }   // the inside off the map, its door on the lot (owner, 7 Nov 2026)
-    unplace('MOVIE THEATRE'); MS.theatre={R,fm,tx,k:-1,exits:[EXN,EXS].map(ey=>{ const q=TB.pt(B.x1-T-.1,ey); return [X(q[0]),Z(q[1])]; }),S:{x:X(S.x),y0:Z(S.y0),y1:Z(S.y1)},TB}; }); }
+    if(OXT){ const T0=TURN(BW0,WP.theatre.face), L0=T0.L, cl=(L0.x0+L0.x1)/2, ex=CINEMA.EXT||0; STORE.streetDoor.theatre={door:T0.pt(cl,L0.y1+ex+.35),out:[...T0.pt(cl,L0.y1+ex+1.4),T0.hd(0)]}; K.sol(BW0.x0,BW0.y0,BW0.x1,BW0.y1,300); }   // the inside off the map, its door on the lot (owner, 7 Nov 2026), out past the stepped-out front
+    const ex=OXT?TB.pt(door,B.y0+.5):null;   // the other exit, across the room from the way in
+    unplace('MOVIE THEATRE'); MS.theatre={R,fm,tx,k:-1,exits:ex?[[X(ex[0]),Z(ex[1])]]:[],S:{x:X(S.x),y0:Z(S.y0),y1:Z(S.y1)},TB}; }); }
 
   // the playhouse lot is solid from the start; only its painting waits for its step (the soak found a pawn sealed in when the step landed)
   if(!AWAY.has('playhouse')){ { const LW=lot('play',190), TP=TURN(LW,WP.play.face); if(TP.q){ const a=X(LW.x0), b=X(LW.x1), c=Z(LW.y0), d=Z(LW.y1); SOL.up.push([Math.min(a,b),Math.min(c,d),Math.max(a,b),Math.max(c,d)]); FIX.up.push([Math.min(a,b),Math.min(c,d),0,Math.max(a,b),Math.max(c,d),Y(TP.L.h)]); } }
@@ -65,7 +61,7 @@ await grab('mainstreet',async()=>{ const K=STORE.kit, {room,STEPS}=K, {X,Y,Z,pla
 
   STEPS.push(()=>{ '@later';
     const film=now=>{ const M=MS.theatre; if(!M)return; if(CINEMA.on){ M.fm.visible=false; return; } const near=SHARED.LVL==='up'&&(M.R.inside(pos.x,pos.z)||Math.hypot(pos.x-M.R.at.x,pos.z-M.R.at.z)<6*TILE); M.fm.visible=near; if(!near)return;
-      const k=Math.floor(now/125)%TH.FILMN; if(k===M.k)return; M.k=k; const f=TH.filmFrame(k), d=M.tx.image.data, W=TH.FILMW, Hh=TH.FILMH;
+      if(M.reel)return; const k=Math.floor(now/125)%TH.FILMN; if(k===M.k)return; M.k=k; const f=TH.filmFrame(k), d=M.tx.image.data, W=TH.FILMW, Hh=TH.FILMH;
       for(let j=0;j<Hh;j++)for(let i=0;i<W;i++){ const s=(j*W+i)*3, o=((Hh-1-j)*W+i)*4; d[o]=f[s]; d[o+1]=f[s+1]; d[o+2]=f[s+2]; d[o+3]=255; } M.tx.needsUpdate=true; };
     const lane=()=>{ if(MS.laned||!BLK.lane||!STORE.meshes)return; const ms=new Set(); for(const id of ['theatre','arcade','playhouse'])for(const w of ['f','b','w','e','lobby'])for(const me of BATCH.all(STORE.meshes,'W'+id+':'+w))ms.add(me); if(!ms.size)return; MS.laned=1;
       for(const w of cutWalls){ if(!ms.has(w.me))continue; const wh=w.when, al=Object.getOwnPropertyDescriptor(w,'always'), was=al?(al.get?()=>al.get.call(w):()=>al.value):()=>false;

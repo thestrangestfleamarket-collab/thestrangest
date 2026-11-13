@@ -9,7 +9,10 @@ const wait=(pg,ms)=>pg.waitForTimeout(ms);
   await pg.goto('file://'+process.cwd()+'/dist/market.html?fresh=1&hour=14&physics=1&at=79.6,1.6',{timeout:180000});
   for(let i=0;i<200&&!await pg.evaluate(()=>!!window.__started).catch(()=>false);i++)await wait(pg,1000);
   for(let i=0;i<60&&!await pg.evaluate(()=>GOODSDBG().built).catch(()=>false);i++)await wait(pg,1000);
-  await pg.evaluate(()=>{ const c=LOOSE.list(true).find(q=>q.name==='milk crates'); if(c)__dbg.UI.goTo(c.at[0]+1.5,c.at[2],'up'); });   // the crates move with the map: go to them
+  // a stack of milk crates of its own beside you (the street's were a loose thing until the bodega's front became a painted block)
+  await pg.evaluate(()=>{ const p=__dbg.pos(), M=__dbg.cv().TILE/.84, W=__dbg.W3.mesh, g=new W.geometry.constructor(), A=W.geometry.attributes.position.constructor, P=[], y0=SHARED.groundY(p[0]+1.2*M,p[2]+1.6*M);
+    for(const x of [-.25,.25])for(const y of [0,.6])for(const z of [-.25,.25])P.push(p[0]+1.2*M+x*M,y0+y*M,p[2]+1.6*M+z*M); const I=[0,1,3,0,3,2,4,6,7,4,7,5,0,4,5,0,5,1,2,3,7,2,7,6,0,2,6,0,6,4,1,5,7,1,7,3];
+    g.setAttribute('position',new A(new Float32Array(P),3)); g.setIndex(I); g.computeVertexNormals(); const m=new W.constructor(g,W.material); __dbg.scene.add(m); GPH.add(m,{name:'milk crates',m:3}); });
   for(let i=0;i<60&&!await pg.evaluate(()=>GOODSDBG().active>0).catch(()=>false);i++)await wait(pg,1000);
   await wait(pg,1500);
   const ui=await pg.evaluate(()=>{ const B=document.querySelector('#menu [data-p="graphics"] #dphx'); return {rows:B?B.querySelectorAll('[data-px]').length:0,cfg:PHYS.cfg}; });
@@ -31,9 +34,9 @@ const wait=(pg,ms)=>pg.waitForTimeout(ms);
     await wait(pg,8000); ok(await pg.evaluate(()=>PHYSDBG().rags)===0,'and gets up again'); }
   else console.log('note no one in today\'s cast has a jointed body, so no one can be knocked over (dormant until they do: owner, 7 Nov 2026)');
   // the kart
-  await pg.evaluate(()=>__dbg.go(59.9,1.6)); await wait(pg,2000);
+  await pg.evaluate(()=>__dbg.go(59.9,19.2)); await wait(pg,2000);   // (on the road's middle line: the kart is full size since 12 Nov 2026 and the sidewalk's poles and stoops catch it)
   const m=await pg.evaluate(()=>{ FORAGE.give('kart',1); WIELD.set('kart'); return RIDE.mount('kart'); }); await wait(pg,1000);
-  await pg.keyboard.down('w'); let k1={d:null}; for(let i=0;i<12;i++){ await wait(pg,500); const q=await pg.evaluate(()=>({d:PHYSDBG().kart,p:__dbg.pos(),r:RIDEDBG()})); if(q.d&&(!k1.d||Math.abs(q.d.sp)>=Math.abs(k1.d.sp)))k1=q; } await pg.keyboard.up('w'); await wait(pg,1500);
+  await pg.keyboard.down('w'); let k1={d:null}; for(let i=0;i<24;i++){ await wait(pg,500); const q=await pg.evaluate(()=>({d:PHYSDBG().kart,p:__dbg.pos(),r:RIDEDBG()})); if(q.d&&(!k1.d||Math.abs(q.d.sp)>=Math.abs(k1.d.sp)))k1=q; } await pg.keyboard.up('w'); await wait(pg,1500);
   ok(m&&k1.d&&Math.abs(k1.d.sp)>.15,`in the go-kart, W drives it on Rapier's wheels (speed ${k1.d&&k1.d.sp}, ${JSON.stringify(k1.r)})`);
   await pg.evaluate(()=>RIDE.off()); await wait(pg,500); ok(!(await pg.evaluate(()=>PHYSDBG().kart)),'getting out takes the kart out of the world');
   // switched off: a vehicle glides like a board, no ragdolls

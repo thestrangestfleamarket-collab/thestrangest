@@ -5,7 +5,7 @@ import json, math
 X=lambda t:-81.36+1.13*t; Z=lambda t:87.01+1.13*t   # map tiles to the world (SHARED.BOD.XS / ZS)
 PI=math.pi; N,E,S,W=0,PI/2,PI,-PI/2   # which way a model's front (+Z) looks
 T=lambda m:m/.84   # metres to tiles
-size={k:v['size'] for k,v in json.load(open('data/pfprops.json')).items()}
+size={k:v['size'] for k,v in json.load(open('data/full/pfprops.json')).items()}
 P=[]
 def put(k,tx,ty,rot=0,s=1,solid=True):
     assert 'pf_'+k in size,k; o={'k':'pf_'+k,'x':round(X(tx),3),'z':round(Z(ty),3),'y':0,'s':s,'rot':round(rot,4)}

@@ -36,9 +36,12 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, MV=W
   WEEDS.mushAt=(x,z)=>vn(x/T/13,z/T/13,311)>.7;
   WEEDS.kindAt=(x,z)=>GRASS.at(x/T,z/T).id;   // the grass kind growing here (GRASS)
   // where the lawn is in one chunk: drawn from above, the land showing through what stands low on it
-  const PBO=[], mask=(cx,cz,later)=>{ const x0=cx*CS, z0=cz*CS, LW=[MODS.land,typeof POND!=='undefined'?POND.hills:null].filter(Boolean), hid=[];
+  // what the shots leave out and the lawns they look for: found once for a batch of chunks (one walk of the scene), set aside, and put back after
+  const prep=()=>{ const LW=[MODS.land,typeof POND!=='undefined'?POND.hills:null].filter(Boolean), hid=[];
     scene.traverseVisible(o=>{ if((o.isMesh||o.isPoints||o.isLine||o.isSprite)&&(skip(o)||o.userData.tall))hid.push(o); }); for(const g of [W3.group,...NPCS.map(N=>N.g),...WED.meshes.map(en=>en.me)])if(g&&g.visible)hid.push(g); scene.traverse(o=>{ if(o.visible&&o.userData.landProp)hid.push(o); if(o.visible&&/^grass/.test(o.userData.landPatch))LW.push(o); }); hid.forEach(o=>o.visible=false);
-    const lm=LW.map(o=>o.layers.mask); LW.forEach(o=>o.layers.set(5));
+    const lm=LW.map(o=>o.layers.mask); LW.forEach(o=>o.layers.set(5)); const SMp=renderer.shadowMap, sa=SMp.autoUpdate, sn=SMp.needsUpdate; SMp.autoUpdate=false; SMp.needsUpdate=false;   // the shots read no shadows: the sun's maps are not drawn again for them
+    return ()=>{ SMp.autoUpdate=sa; SMp.needsUpdate=sn; LW.forEach((o,i)=>o.layers.mask=lm[i]); hid.forEach(o=>o.visible=true); }; };
+  const PBO=[], mask=(cx,cz,later)=>{ const x0=cx*CS, z0=cz*CS, back=prep();
     const rt0=renderer.getRenderTarget(), ac=renderer.autoClear, ov=scene.overrideMaterial, cc=renderer.getClearColor(new THREE.Color()), ca=renderer.getClearAlpha(), bg=scene.background, fg=scene.fog;
     CAM.position.set(x0+CS/2,40*T,z0+CS/2); CAM.up.set(0,0,-1); CAM.lookAt(x0+CS/2,0,z0+CS/2); CAM.updateMatrixWorld();
     renderer.setRenderTarget(RT); renderer.setClearColor(0,0); scene.background=null; scene.fog=null; renderer.autoClear=false; renderer.clear();
@@ -46,8 +49,20 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, MV=W
     let job=null; if(later){ const gl=renderer.getContext(), pb=PBO.pop()||gl.createBuffer(); gl.bindBuffer(gl.PIXEL_PACK_BUFFER,pb); gl.bufferData(gl.PIXEL_PACK_BUFFER,PIX.byteLength,gl.STREAM_READ); gl.readPixels(0,0,W*SS,W*SS,gl.RGBA,gl.UNSIGNED_BYTE,0); gl.bindBuffer(gl.PIXEL_PACK_BUFFER,null); job={cx,cz,pb,sync:gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE,0)}; gl.flush(); }
     else renderer.readRenderTargetPixels(RT,0,0,W*SS,W*SS,PIX);
     scene.overrideMaterial=ov; renderer.setRenderTarget(rt0); renderer.autoClear=ac; renderer.setClearColor(cc,ca); scene.background=bg; scene.fog=fg;
-    LW.forEach((o,i)=>o.layers.mask=lm[i]); hid.forEach(o=>o.visible=true);
+    back();
     return job||read(cx,cz,PIX); };
+  // several chunks at once (those round you not yet known): one shot of the ground they cover, on the same grid of pixels, cut into each chunk's picture
+  let RTM=null, PXM=null; const CAMM=new THREE.OrthographicCamera(-1,1,1,-1,.1,80*T);
+  const many=L=>{ let a0=1e9, a1=-1e9, b0=1e9, b1=-1e9; for(const [a,b] of L){ a0=Math.min(a0,a); a1=Math.max(a1,a); b0=Math.min(b0,b); b1=Math.max(b1,b); }
+    const na=a1-a0+1, nb=b1-b0+1, PW=(na*N+2*MG)*SS, PH=(nb*N+2*MG)*SS, hx=na*CS/2+MG*CELL, hz=nb*CS/2+MG*CELL, mx=(a0+na/2)*CS, mz=(b0+nb/2)*CS, back=prep();
+    if(!RTM)RTM=new THREE.WebGLRenderTarget(PW,PH,{depthBuffer:true}); else if(RTM.width!==PW||RTM.height!==PH)RTM.setSize(PW,PH); if(!PXM||PXM.length<PW*PH*4)PXM=new Uint8Array(PW*PH*4);
+    CAMM.left=-hx; CAMM.right=hx; CAMM.top=hz; CAMM.bottom=-hz; CAMM.updateProjectionMatrix(); CAMM.position.set(mx,40*T,mz); CAMM.up.set(0,0,-1); CAMM.lookAt(mx,0,mz); CAMM.updateMatrixWorld();
+    const rt0=renderer.getRenderTarget(), ac=renderer.autoClear, ov=scene.overrideMaterial, cc=renderer.getClearColor(new THREE.Color()), ca=renderer.getClearAlpha(), bg=scene.background, fg=scene.fog;
+    renderer.setRenderTarget(RTM); renderer.setClearColor(0,0); scene.background=null; scene.fog=null; renderer.autoClear=false; renderer.clear();
+    CAMM.layers.set(0); scene.overrideMaterial=M0; renderer.render(scene,CAMM); CAMM.layers.set(5); scene.overrideMaterial=M1; renderer.render(scene,CAMM); renderer.readRenderTargetPixels(RTM,0,0,PW,PH,PXM);
+    scene.overrideMaterial=ov; renderer.setRenderTarget(rt0); renderer.autoClear=ac; renderer.setClearColor(cc,ca); scene.background=bg; scene.fog=fg; back();
+    const out=new Map(), S=W*SS; for(const [a,b,k] of L){ const ox=(a-a0)*N*SS, oy=(b1-b)*N*SS; for(let r=0;r<S;r++)PIX.set(PXM.subarray(((oy+r)*PW+ox)*4,((oy+r)*PW+ox+S)*4),r*S*4); out.set(k,read(a,b,PIX)); }   // rows from the bottom: the far side (larger z) first
+    return out; };
   // the picture read into one chunk's lawn
   const read=(cx,cz,PIX)=>{ const x0=cx*CS, z0=cz*CS, G=new Float32Array(W*W), I=new Uint8Array(W*W), F=new Uint16Array(W*W), SQ=[], ci=(i,j)=>(j+MG)*W+i+MG;   // F: each cell's 4x4 looks, a bit each (the lawn to a quarter of a cell, for the tufts)
     for(let r=0;r<W;r++)for(let u=0;u<W;u++){ const i=u-MG, j=N+MG-1-r, x=x0+(i+.5)*CELL, z=z0+(j+.5)*CELL; let n=0, g=0, f=0; for(let b=0;b<SS;b++)for(let a=0;a<SS;a++){ const k=((r*SS+b)*W*SS+u*SS+a)*4; if(PIX[k]>=128){ n++; g+=PIX[k+1]; f|=1<<((SS-1-b)*SS+a); } }
@@ -75,7 +90,8 @@ WEEDS.lawnInit=()=>{ const T=TILE, CS=8*T, N=16, CELL=CS/N, MG=4, W=N+2*MG, MV=W
   let busy=0, next=0; WEEDS.lawnTick=()=>{ if(SHARED.LVL!=='up'||(ROOMS&&ROOMS.cur)||STORE.rooms&&STORE.rooms.some(R=>R.inside(pos.x,pos.z)))return; const pcx=Math.floor(pos.x/CS), pcz=Math.floor(pos.z/CS); collect();
     for(const k of [...CH.keys()]){ const [a,b]=k.split(',').map(Number); if(Math.max(Math.abs(a-pcx),Math.abs(b-pcz))>4)drop(k); }
     const add=(a,b,k)=>{ const gb=build(a,b); CH.set(k,gb); if(gb)SYS.run('weedsAdd',k,gb); };
-    for(let b=-2;b<=2;b++)for(let a=-2;a<=2;a++){ const k=(pcx+a)+','+(pcz+b); if(!CH.has(k))add(pcx+a,pcz+b,k); }   // all that can be on screen, at once, so no lawn shows half built
+    { const L=[], need=[]; for(let b=-2;b<=2;b++)for(let a=-2;a<=2;a++){ const k=(pcx+a)+','+(pcz+b); if(CH.has(k))continue; L.push([pcx+a,pcz+b,k]); if(!BAKED.has(k))need.push([pcx+a,pcz+b,k]); }
+      const shot=need.length?many(need):null; for(const [a,b,k] of L){ const gb=BAKED.has(k)?BAKED.get(k):keep(a,b,shot.get(k)); CH.set(k,gb); if(gb)SYS.run('weedsAdd',k,gb); } }   // all that can be on screen, at once, so no lawn shows half built
     let best=null, bd=1e9; for(let b=-3;b<=3;b++)for(let a=-3;a<=3;a++){ const k=(pcx+a)+','+(pcz+b); if(CH.has(k)||WAIT.has(k))continue; const d=a*a+b*b; if(d<bd){ bd=d; best=[pcx+a,pcz+b,k]; } }
     if(best&&WAIT.size<2&&performance.now()>=next){ const t0=performance.now(); if(BAKED.has(best[2]))add(...best); else ask(...best); busy=performance.now()-t0; WEEDS.busy=busy; next=performance.now()+Math.max(120,busy*3); } };
   SYS.add('life',(dt)=>{ WEEDS.lawnTick(); WEEDS.moveTick(); },'140-weeds'); };

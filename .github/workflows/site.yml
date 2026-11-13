@@ -37,7 +37,7 @@ jobs:
       group: site-${{ github.head_ref || github.ref_name }}
       cancel-in-progress: true
     runs-on: ubuntu-latest
-    timeout-minutes: ${{ ((github.event_name == 'workflow_dispatch' && inputs.full) || contains(github.event.pull_request.labels.*.name, 'full')) && 300 || 75 }}
+    timeout-minutes: ${{ ((github.event_name == 'workflow_dispatch' && inputs.full) || contains(github.event.pull_request.labels.*.name, 'full')) && 300 || 150 }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -50,93 +50,127 @@ jobs:
         run: |
           C=$(for f in $(git diff --name-only "origin/$BASE"...HEAD 2>/dev/null || echo ALL); do [ "$f" = ALL ] && { echo ALL; break; }; case "$f" in src/*.js) git diff -U0 "origin/$BASE"...HEAD -- "$f" | grep -E '^[-+][^-+]' | grep -vqE "^[-+](import \{[^}]*\} from '\./[^']+';|export \{[^}]*\};) *$" && echo "$f";; *) echo "$f";; esac; done)
           R=""; k(){ if [ "$FULL" = "true" ] || [ "$C" = "ALL" ] || echo "$C" | grep -Eq "$2"; then R="$R $1"; fi; }
-          k grass   'src/014a|src/14[0-4]|src/064|grasskinds'
-          k online  'src/111d|worker/|online'
-          k drops   'src/162[de]|src/150cy|worker/door|drops'
+          k grass   'src/014a|src/140-weeds|src/140a-tufts|src/141-forage|src/142a-flora|src/143-bfly|src/064|grasskinds'
+          k online  'src/111d-online|worker/|online'
+          k voice   'src/111dc-voice|src/111d-online|worker/door|voice\.cjs'
+          k drops   'src/162[de]|src/150cy|drops'
           k photog  'src/146m|src/160b|photog'
           k earn    'src/140c|src/160b|data/trainers|earn'
           k register 'src/146ze|src/038zd|register'
           k brawl   'src/146h|src/146a|src/103|brawl'
+          k flybot  'src/111dd|src/111d-online|worker/flybot|worker/door|flybot\.cjs'
           k physx   'src/090|src/150-loose|src/150o|physx'
-          k vr      'src/162[a-c]|vr\.cjs'
-          k vrbody  'src/162c|src/111a|src/111b|src/111d|worker/door|vrbody\.cjs'
+          k vr      'src/162a-pad|src/162c-vr|vr\.cjs'
+          k asylum  'src/asylum/|tools/asylum\.cjs|tests/asylum\.cjs'
+          k golf    'src/golf/|data/golf/|tools/golf\.cjs|tests/golf\.cjs'
+          k cantina 'src/cantina/|data/cantina/|tools/cantina\.cjs|tests/cantina\.cjs|worker/cantina'
+          k scare   'src/scare/|data/scare/|tools/scare\.cjs|tests/scare\.cjs'
+          k holmes  'src/holmes/|data/holmes/|worker/holmes|tools/holmes|tests/holmes\.cjs'
+          k jam     'src/jam/|data/jam/|tools/jam\.cjs|tests/jam\.cjs'
+          k shoot   'src/shoot/|tools/shoot\.cjs|tests/shoot\.cjs'
+          k duel    'src/duel/|data/duel/|tools/duel\.cjs|tests/duel\.cjs'
+          k vrbody  'src/162c|src/111b|vrbody\.cjs'
           k riders  'src/117a|src/009c|riders\.cjs'
-          k twin    'src/162g|src/159i|src/111d|worker/twin|worker/door|twin\.cjs'
           k loopmap 'src/159c|src/009b|loopmap\.cjs'
           k spiders 'src/146b|src/087-npc-creatures|data/creatures|spiders\.cjs'
-          k dunshare 'src/062a|src/146b|src/111d|worker/door|worker/dunmobs|dunshare\.cjs'
+          k dunshare 'src/062a|src/146b|worker/dunmobs|dunshare\.cjs'
           k dunsrv 'worker/door|worker/dunmobs|dunmobs-server\.cjs'
           k phone 'src/146-drone|src/146zeb|src/146ze-|phone\.cjs'
           k dm 'src/062a|src/146b|src/087|src/088|worker/dunmobs|dm\.cjs'
           k animals 'src/087|src/111db|worker/folk|animals\.cjs'
           k parksolid 'src/111fe|src/100-use|data/world|parksolid\.cjs'
           k guardians 'src/146ja|src/146k|src/146b|worker/dunmobs|src/103a|src/059e|data/guardians|guardians\.cjs|body\.cjs'
-          k faunarest 'src/087-npc-creatures|data/fauna|fauna-rest\.cjs'
+          k towers  'src/062-castle|src/063-tower|src/146ja|data/guardians|towers\.cjs'
           k itempics 'src/162e-bag|src/162d-hud|src/162fa-shopinsides|src/150cy|itempics\.cjs'
           k ground  'src/162e-bag|src/150cy-inspect|src/140b-items|data/items|grounditems\.cjs'
-          k avdesign 'src/111a-bodies|src/111c-avatar|src/111cb-designer|src/102b-designer|avdesigner\.cjs'
+          k avdesign 'src/111c-avatar|src/111cb-designer|src/102b-designer|avdesigner\.cjs'
           k space   'src/075-main|src/076-npc|src/087-npc-creatures|src/139-clip|src/150-loose|worker/folk|space\.cjs'
-          k motion  'src/001-rig|src/111d|src/100-use|data/moves2|tools/m2m-moves|motion\.cjs'
+          k motion  'src/001-rig|src/111da|src/100-use|data/moves2|tools/m2m-moves|motion\.cjs'
           k passport 'src/159d|passport\.cjs'
           k scanner 'src/159e|src/146-|scanner\.cjs'
-          k cafe    'src/144c[a-z]|src/038zd|data/bookstore|worker/door|cafe\.cjs|tgames\.cjs'
-          k invites 'src/144c[a-z]|src/111d-online|src/141e-map|src/162d-hud|worker/door|invites'
+          k cafe    'src/144c[a-z]|src/038zd|data/bookstore|cafe\.cjs|tgames\.cjs'
+          k invites 'src/144c[a-z]|src/141e-map|invites'
           k spray   'src/159f|src/146-|spray\.cjs'
-          k money   'src/159(ba|[ij])|src/005-save|src/101-gems|src/103a|src/140c|worker/door|economy\.cjs'
-          k paint   'src/159[g-i]|src/150a|src/150d|src/140b|src/146h|data/characters|worker/|paint\.cjs|trade-server\.cjs'
+          k money   'src/159(ba|[ij])|src/101-gems|src/103a|src/140c|worker/door|economy\.cjs'
+          k paint   'src/159[g-i]|src/150d|data/characters|paint\.cjs|trade-server\.cjs'
+          k copies  'src/159[gh]|src/141-forage|src/146znz|data/copies|copies\.cjs'
           k bodega80 'src/039-bodega|src/016-street-kit|bodega80s\.cjs'
           k bedroom 'src/150[a-c]|src/150ea|src/059a|bedroom'
           k roomedit 'src/150[c-e]|src/150cz|src/059a|roomedit'
-          k fishing 'src/142-|src/142b|src/066|src/141f|fishing'
-          k guide   'src/136d|src/094|data/guide|guide'
+          k fishing 'src/142-|src/066|src/141f|fishing'
+          k guide   'src/136d|data/guide|guide'
           k bank    'src/059h|src/058-store|src/161-perf|bank'
           k art     'src/059p-art|data/art|art\.cjs'
           k weplay  'src/099-|src/136b|weplayers\.cjs'
-          k cars    'src/150p-cars|src/150o-physmore|src/146i-ride|data/cars|data/radio|worker/|cars\.cjs|radio\.cjs'
-          k heli    'src/150pa-heli|src/150p-cars|src/146i-ride|src/068a-pfrow|data/heli|worker/|heli\.cjs'
+          k cars    'src/150p-cars|src/150pe-carparts|src/150o-physmore|src/146i-ride|data/cars|data/radio|cars\.cjs|radio\.cjs'
+          k honk    'src/150pf-honk|src/150pb-|src/150pe-carparts|src/150p-cars|src/111ei-bigcat|honk\.cjs'
+          k heli    'src/150pa-heli|src/150o-physmore|src/146i-ride|src/068a-pfrow|data/heli|heli\.cjs'
           k water   'src/065a|src/066-|src/060a|src/089a|src/141f|water'
           k scores  'src/059g|arcade-scores'
           k arcade  'src/059[b,g-o]|arcade-torch|arcade-petri'
           k bbs     'src/146-drone|src/059a|bbs\.cjs'
           k layout 'src/094-ui|src/162d-hud|src/103-vitals|layout\.cjs'
-          k use 'src/094-ui|src/100-use|src/001-rig|src/111da-motion|tests/use\.cjs'
+          k use 'src/100-use|src/001-rig|src/111da-motion|tests/use\.cjs'
           k insides 'src/059-store|src/059-street|src/059h|src/059p|src/008-batch|insides\.cjs'
           k roofq 'src/148c-roofquests|src/144a-garden|roof-quests\.cjs'
           k riverq 'src/066-river|src/066b-pier|src/066ba-wreck|src/142-fishing|src/146d-gear|src/146gb-hudson|src/150q-hudtrophies|river-quests\.cjs'
           k libquests 'src/144c|src/146zh|lib-quests\.cjs'
-          k skillshops 'src/059i|src/159b|src/111fb|data/characters|data/world|skillshops\.cjs'
+          k skillshops 'src/059i|src/159b|src/111fb|data/characters|skillshops\.cjs'
+          k implants 'src/146c-equip|src/146zkc|src/103-vitals|implants\.cjs'
           k stow 'src/130-rooms|src/130a|src/130b|src/008-batch|stow\.cjs'
           k playhouse 'src/151[a-z]|src/059-street|playhouse'
-          k menus 'src/146-drone|src/094|src/102-looks|src/136a-bugs|src/141-forage|src/162b|menus\.cjs'
+          k menus 'src/146-drone|src/094|src/102-looks|src/136a-bugs|src/162b|menus\.cjs'
           k train   'src/009b|src/009c|src/066c|src/159ca|loop\.cjs'
           k items   'src/162e|src/162d|src/150k|src/076a|src/146zea|src/146d-gear|data/icons|data/items|tools/icons|items\.cjs'
           k hall    'src/150n|src/059a|hall\.cjs'
-          k holodeck 'src/059b-arcade|src/146bb|src/146b[cd]|holodeck'
+          k flats   'src/150n|src/059a|src/150d|src/141c|src/150ac|flats\.cjs'
+          k frames  'src/150ga|src/150g-|frames\.cjs'
+          k outgate 'src/006-map-pre|src/163-main|outgate\.cjs'
+          k holodeck 'src/059b-arcade|src/146bb|src/146b[fg]|src/holo/|tools/holo|holodeck|headset|roam'
+          k boarded 'src/holo/|tools/holo|tests/boarded'
           k kite    'src/146g-kite|src/093|kite\.cjs'
           k swim    'src/146ga-swim|src/066-river|src/065a|swim\.cjs'
-          k visit   'src/150d|src/146z|src/059a|src/111d|visit\.cjs'
+          k lakewreck 'src/066bb|src/066ba-wreck|src/060a-fount|data/lakewreck|tools/lakewreck|lakewreck\.cjs'
+          k visit   'src/150d|src/059a|visit\.cjs'
           k aptfixed 'src/150a|src/150d|src/150f|src/150k|aptfixed\.cjs'
-          k aptradio 'src/150fb|src/150p-cars|src/150a|src/150d|data/radio|aptradio\.cjs'
-          k sound   'src/091-sfx|src/093-|src/100-use|src/146zo-|src/150p-cars|sound\.cjs'
-          k clock   'src/134b|worker/clock|worker/door|clock\.cjs'
+          k firetown 'src/141c|src/059[ad]|src/130a|src/161a|src/150[ad]|src/150fi|firetown\.cjs'
+          k aptradio 'src/150fb|src/150a|src/150d|data/radio|aptradio\.cjs'
+          k crt     'src/150fa|src/150a|src/150d|data/tv\.json|crt\.cjs'
+          k sound   'src/091-sfx|src/093-|src/100-use|src/146zo-|src/150p-cars|src/150pb-|src/150pcb-|data/sfx|sound\.cjs'
+          k clock   'src/134b|worker/clock|clock\.cjs'
+          k indoorlight 'src/134b-|src/138-|src/130-rooms|src/006-map-pre|indoorlight\.cjs'
+          k nightsky 'src/132-sky|src/134b[a-c]|src/150f[c-j]|worker/clock|data/scope\.json|nightsky\.cjs'
+          k observatory 'src/059i|src/150f[dhk]|worker/door|observatory\.cjs'
           k westst  'src/023|src/05[89]-|src/059[e-h]|westst'
-          k pfrow   'src/068a|src/059i|src/069a|data/street|data/world|tools/row-lay|pfrow'
-          k loadscreens 'src/006-map-pre|src/008-batch|src/009-down|src/094-ui|tools/recover|loadscreens'
-          k parkpf  'src/111fe|src/060a|src/061-park|data/parkpf|data/world|tools/park-pf|parkpf'
+          k pfrow   'src/068a|src/059i|src/069a|data/street|tools/row-lay|pfrow'
+          k loadscreens 'src/006-map-pre|src/008-batch|src/009-down|tools/recover|loadscreens'
+          k parkpf  'src/111fe|src/060a|src/061-park|data/parkpf|tools/park-pf|parkpf'
+          k boats   'src/111ff|src/111fe|src/060a|src/142-fishing|boats\.cjs'
           k zones   'src/129a|src/066-river|src/065a|src/065-ring|zones\.cjs'
           k bees    'src/147a|bees\.cjs'
+          k fossils 'src/150cyc|src/141-forage|data/pffossils|data/trainers|worker/door|fossils\.cjs'
+          k fruittrees 'src/144j|src/147d|src/150hb|fruittrees\.cjs'
           k parkq   'src/147b|src/060a-fount|src/142-fishing|src/144a-garden|park-quests\.cjs'
-          k interiors 'src/038z[cd]|src/059p-art|src/059i|src/146j-board|src/146l-fixer|src/146n-scanner|src/039-bodega|src/059-street|src/058-store|src/146z[5b-z]|src/059b-arcade|src/150p-cars|src/059-store|src/027-rooms-kits|src/111fb|src/159-jobs|data/characters|data/items|interiors\.cjs'
-          k lounge 'src/146zca|src/127-drummer|src/128-bandstand|src/059i|src/146zb-workers|data/bar\.json|lounge\.cjs'
+          k interiors 'src/038z[cd]|src/059p-art|src/059i|src/146j-board|src/146l-fixer|src/146n-scanner|src/039-bodega|src/059-street|src/058-store|src/146z[5b-n]|src/059b-arcade|src/059-store|src/027-rooms-kits|src/111fb|src/159-jobs|data/characters|data/items|interiors\.cjs'
+          k bowling 'src/146zkb-bowling|src/059i|data/world|worker/lanes|bowling\.cjs'
+          k pinball 'src/146zcz-pinball|src/pinball/|src/146zd-arcade|src/059b-arcade|pinball\.cjs'
+          k lounge 'src/146zca|src/146zp-instruments|src/127-drummer|src/128-bandstand|src/059i|src/146zb-workers|data/bar\.json|lounge\.cjs'
           k interiors2 'src/038z[cd]|src/146z5|src/146z[j-n]|src/151z|src/151c-ph-house|src/060-cave|src/146e-golems|src/059e-ghostdojo|src/059h-bank|src/150n-hall|src/063-tower|src/136c-tenants|interiors2\.cjs'
-          k skate   'src/146i|src/111fd|src/001-rig|src/069a-block|data/skate|data/world\.json|skate\.cjs|skatepit\.cjs'
-          k mmo     'src/111d-online|src/111da-motion|src/146h-brawl|src/146i|worker/door|mmo\.cjs|workflows/site'
-          k kit     'src/141-forage|src/111fd|src/146i-ride|src/003b|data/items|kit\.cjs|src/136c-tenants'
-          k browser 'src/162ac-mouselook|src/162ad-awake|src/091-sfx|src/094-ui|browser\.cjs'
-          k guitar  'src/111b-hands|src/106-game-play-3-guitar|src/108-game-play-3-guitar|src/146zo|src/111a-bodies|src/111c-avatar|data/pfhand|data/pfguitar|worker/door|guitar\.cjs'
+          k skate   'src/146i|src/111fd|src/069a-block|data/skate|skate\.cjs|skatepit\.cjs'
+          k mmo     'src/111d-online|src/111da-motion|src/146h-brawl|mmo\.cjs'
+          k kit     'src/141-forage|src/111fd|src/146i-ride|data/items|kit\.cjs|src/136c-tenants'
+          k browser 'src/162ac-mouselook|src/162ad-awake|src/091-sfx|browser\.cjs'
+          k guitar  'src/111b-hands|src/106-game-play-3-guitar|src/108-game-play-3-guitar|src/146zo|src/111c-avatar|data/pfhand|data/pfguitar|guitar\.cjs'
+          k firstday 'src/162g-firstday|src/102-looks|src/101-gems|firstday\.cjs'
+          k instruments 'src/146zp|src/150cyb-pfitems|src/146znz|src/111b-hands|data/pfitems|tools/pfitems|instruments\.cjs'
+          k import 'src/146zpe|src/146znz|src/146zp-|src/146zob|package\.json|import\.cjs'
+          k perform 'src/146znz|src/146zq|src/146zr|src/146zob|src/111da-motion|data/dances|perform\.cjs'
+          k signs 'src/146znz|src/146zs|src/111d-online|src/092-lines|src/159b-shops|src/159da-talk|src/160a-quests|src/160b-trainers|data/signs|data/characters|signs\.cjs'
           k firstday 'src/162g-firstday|src/102-looks|src/141-forage|src/101-gems|worker/door\.js|firstday\.cjs'
           k avatar  'src/111c-avatar|src/111a-bodies|src/102-looks|src/001-rig|src/111da-motion|data/pfavatar|data/pfanim|avatar\.cjs|avatarmoves\.cjs|pfclips\.cjs'
           k wild    'src/087-npc-creatures|src/144[f-h]|src/076-npc-map|wild\.cjs'
+          k taming  'src/146zj|src/144b-birds|src/146b-dunmobs|src/146i-ride|worker/dunmobs|data/pets\.json|tools/pets-tame|taming\.cjs'
+          k brochures 'src/159k-brochures|data/brochures|brochures\.cjs'
           k places  'build\.py|tools/(chunks|later|yields|minify|imports)|worker/|src/(000|002|end)|\.html$|package|wrangler|places\.cjs|workflows/site'
           D=$(git diff -U0 "origin/$BASE"...HEAD -- 'src/*.js' 2>/dev/null | grep -E '^[-+][^-+]' || true)
           if grep -qE "'@[a-z]|LOAD(ED)?\(" <<<"$D"; then case "$R" in *' places'*) ;; *) R="$R places";; esac; fi
@@ -169,10 +203,18 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' grass')
         run: node tests/grasskinds.cjs dist/market.html
+      - name: Taming (TAMING from 0, its three tiers, a pet, a fighter, a mount, others see them)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' taming')
+        run: node tests/taming.cjs dist/market.html
       - name: The other players (bodies, name tags, the list, chat)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' online')
         run: node tests/online.cjs dist/market.html
+      - name: Voice (two players near each other link, push to talk is heard, unlinked when apart)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' voice')
+        run: node tests/voice.cjs dist/market.html
       - name: The ground drops (off the quick bar onto the world, their 3D look, picked up, gone in time)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' drops')
@@ -193,10 +235,6 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' drops')
         run: node tests/drops-server.cjs
-      - name: The AI double (its mind with a stand-in Claude, its moves in the game)
-        timeout-minutes: 20
-        if: contains(steps.f.outputs.run, ' twin')
-        run: node tests/twin.cjs dist/market.html
       - name: Fights between players (hitboxes, blows, knockdown)
         timeout-minutes: 20
         if: contains(steps.f.outputs.run, ' brawl')
@@ -205,6 +243,38 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' physx')
         run: node tests/physx.cjs dist/market.html
+      - name: Hollow Pines (the asylum, played through, and in an emulated Quest 3)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' asylum')
+        run: node tests/asylum.cjs dist/asylum.html
+      - name: The Speckled Band (the Holmes mystery at /holmes; the book's road, a move of your own, an emulated Quest 3)
+        timeout-minutes: 10
+        if: contains(steps.f.outputs.run, ' holmes')
+        run: node tests/holmes.cjs dist/holmes.html
+      - name: Vesper Ward (the scare game at /scare, played through, and in an emulated Quest 3)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' scare')
+        run: node tests/scare.cjs dist/scare.html
+      - name: Stadium Jam (the band game at /jam; the keys play it, then the sticks and tracked hands in an emulated Quest 3)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' jam')
+        run: node tests/jam.cjs dist/jam.html
+      - name: Halcyon Greens (mini golf at /golf; it loads, a putt rolls, a putt holes out)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' golf')
+        run: node tests/golf.cjs dist/golf.html
+      - name: The Cantina (the bar at /cantina; it loads, you sit, the cards deal, a regular answers, the look changes)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' cantina')
+        run: node tests/cantina.cjs dist/cantina.html
+      - name: Breachline (the duel at /shoot; a practice round, a kill, and the guns in an emulated Quest 3)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' shoot')
+        run: node tests/shoot.cjs dist/shoot.html
+      - name: AR Duel (the dodge fight at /duel; the bot round, every weapon, two linked pages)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' duel')
+        run: node tests/duel.cjs dist/duel.html
       - name: The headset (VR on an emulated Quest 3)
         timeout-minutes: 45
         if: contains(steps.f.outputs.run, ' vr')
@@ -237,10 +307,6 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' itempics')
         run: node tests/itempics.cjs dist/market.html
-      - name: fauna rests
-        timeout-minutes: 15
-        if: contains(steps.f.outputs.run, ' faunarest')
-        run: node tests/fauna-rest.cjs dist/market.html
       - name: motion
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' motion')
@@ -254,7 +320,7 @@ jobs:
         if: contains(steps.f.outputs.run, ' dunshare')
         run: node tests/dunshare.cjs dist/market.html
       - name: The brick phone (every player has one, an order paid, the drone brings it to you)
-        timeout-minutes: 15
+        timeout-minutes: 25
         if: contains(steps.f.outputs.run, ' phone')
         run: node tests/phone.cjs dist/market.html
       - name: The dungeon master (an empty dungeon, creatures put in and set up, a room laid out)
@@ -269,6 +335,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' parksolid')
         run: node tests/parksolid.cjs dist/market.html
+      - name: The watchtowers (the castle gone, the stair kept, six towers, each guard at its tower)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' towers')
+        run: node tests/towers.cjs dist/market.html
       - name: The keep's guardians (the crew, a breakout fought, a bounty)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' guardians')
@@ -278,7 +348,7 @@ jobs:
         if: contains(steps.f.outputs.run, ' guardians')
         run: node tests/body.cjs dist/market.html
       - name: The items (each its own picture and name, the archived dead ones, fish food for the koi)
-        timeout-minutes: 15
+        timeout-minutes: 45
         if: contains(steps.f.outputs.run, ' items')
         run: node tests/items.cjs dist/market.html
       - name: passport
@@ -293,6 +363,14 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' lounge')
         run: node tests/lounge.cjs
+      - name: The bowling alley (its door, four lanes in Rapier, ten-pin scoring, another player's throw, the best games)
+        timeout-minutes: 20
+        if: contains(steps.f.outputs.run, ' bowling')
+        run: node tests/bowling.cjs dist/market.html
+      - name: The arcade's pinball (two tables, a game played, the top ten, tickets, dropped on the way out)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' pinball')
+        run: node tests/pinball.cjs dist/market.html
       - name: The interiors, part two (the playhouse's foyer, the golems' cave, the bath house, your hall, the bank, the squirrel's tower)
         if: contains(steps.f.outputs.run, ' interiors2')
         run: node tests/interiors2.cjs
@@ -317,7 +395,7 @@ jobs:
         if: contains(steps.f.outputs.run, ' bedroom')
         run: node tests/bedroom.cjs dist/market.html
       - name: The room editor (decorate your apartment, saved and back after a reload)
-        timeout-minutes: 15
+        timeout-minutes: 30
         if: contains(steps.f.outputs.run, ' roomedit')
         run: node tests/roomedit.cjs dist/market.html
       - name: The shops' insides (built on the way in, dropped on the way out, nothing left behind)
@@ -344,13 +422,17 @@ jobs:
         timeout-minutes: 30
         if: contains(steps.f.outputs.run, ' skillshops')
         run: node tests/skillshops.cjs dist/market.html
+      - name: The implants (the clinic built on the way in, the doctor sells, one to a slot, fitted and removed, saved)
+        timeout-minutes: 30
+        if: contains(steps.f.outputs.run, ' implants')
+        run: node tests/implants.cjs dist/market.html
       - name: The street let go while you are in a room off the map (pictures back as they were on the way out)
         if: contains(steps.f.outputs.run, ' stow')
         run: node tests/stow.cjs dist/market.html
       - name: The screen's layout (drag the HUD and windows, saved, back after a reload)
         if: contains(steps.f.outputs.run, ' layout')
         run: node tests/layout.cjs dist/market.html
-      - name: Use (E uses what is in reach, no walk; a double click walks up, stops dead, no slide)
+      - name: Use (E and the double click walk up to a thing a little out of reach, stop dead, no slide)
         if: contains(steps.f.outputs.run, ' use')
         run: node tests/use.cjs
       - name: The computer's BBS (dial-in, order, drone delivery, drone view)
@@ -369,10 +451,24 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' hall')
         run: node tests/hall.cjs
-      - name: The holodeck (its panel, the adventures menu)
+      - name: The four sizes of flat (small, medium, big; moving in)
         timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' flats')
+        run: node tests/flats.cjs dist/market.html
+      - name: Picture frames (a museum picture, your own, kept with the layout)
+        if: contains(steps.f.outputs.run, ' frames')
+        run: node tests/frames.cjs dist/market.html
+      - name: The street's files wait until you are out (a platform start)
+        if: contains(steps.f.outputs.run, ' outgate')
+        run: node tests/outgate.cjs dist/market.html
+      - name: The holodeck (its booth, the headset, each program a page of its own; ROAM on its page and in the headset)
+        timeout-minutes: 40
         if: contains(steps.f.outputs.run, ' holodeck')
-        run: node tests/holodeck.cjs dist/market.html
+        run: node tests/holodeck.cjs dist/market.html && node tests/headset.cjs dist/market.html && node tests/roam.cjs dist/roam.html && node tests/roam-vr.cjs dist/roam.html
+      - name: BOARDED UP (the holodeck's zombie siege, solo, two online, in the headset, the server's relay)
+        timeout-minutes: 40
+        if: contains(steps.f.outputs.run, ' boarded')
+        run: node tests/boarded.cjs dist/boarded.html && node tests/boarded-online.cjs dist/boarded.html && node tests/boarded-vr.cjs dist/boarded.html && node tests/boarded-server.cjs
       - name: The kite (held, launched, climbing in the wind)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' kite')
@@ -381,6 +477,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' swim')
         run: node tests/swim.cjs dist/market.html
+      - name: The lake wreck (its basin, built near, solid to a swimmer among it, its chests; the lake deeper in spots)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' lakewreck')
+        run: node tests/lakewreck.cjs dist/market.html
       - name: Visiting another player's apartment
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' visit')
@@ -389,10 +489,18 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' aptfixed')
         run: node tests/aptfixed.cjs dist/market.html
+      - name: The town from your fire escape (pictured on the landing, not in your rooms)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' firetown')
+        run: node tests/firetown.cjs dist/market.html
       - name: The apartment's radio (in a fresh apartment, its panel, it plays, quieter away, kept in the layout)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' aptradio')
         run: node tests/aptradio.cjs dist/market.html
+      - name: The CRT TV (its panel, THE GUIDE plays a pick, shared with the room, kept in the layout, close up and full screen)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' crt')
+        run: node tests/crt.cjs dist/market.html
       - name: The sound (on by default, one audio context and volume, every effect plays)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' sound')
@@ -401,6 +509,21 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' clock')
         run: node tests/clock.cjs
+      - name: The insides' light (a roofed public inside keeps the day's light at night; the street, the open air and your apartment keep the hour)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' indoorlight')
+        run: node tests/indoorlight.cjs dist/market.html
+      - name: The night sky (one sky, the planets, stargazing, the Messier catalogue, the field telescope)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' nightsky')
+        run: node tests/nightsky.cjs dist/market.html
+      - name: The flying bot (its mind with a stand-in for Claude, called, asked, heard)
+        if: contains(steps.f.outputs.run, ' flybot')
+        run: node tests/flybot.cjs dist/market.html
+      - name: The observatory (the dome in the park, the shared telescope, its goals)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' observatory')
+        run: node tests/observatory.cjs dist/market.html
       - name: West St faces its street (every door and way out)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' westst')
@@ -417,14 +540,26 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' parkpf')
         run: node tests/parkpf.cjs
+      - name: The lake's boats (rowed, never overlapping)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' boats')
+        run: node tests/boats.cjs
       - name: The Hudson loads when you go in
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' zones')
         run: node tests/zones.cjs
+      - name: Fossil digs (the sites, a dig, assembling, the museum's hall)
+        timeout-minutes: 20
+        if: contains(steps.f.outputs.run, ' fossils')
+        run: node tests/fossils.cjs dist/market.html
       - name: The bees (the Beekeeper, hives on the lawn, honey)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' bees')
         run: node tests/bees.cjs dist/market.html
+      - name: The fruit trees (57 real trees, their rules, the park orchard's plots, a big pot at home)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' fruittrees')
+        run: node tests/fruittrees.cjs dist/market.html
       - name: The starter kit and the BMX (every player starts with the kit, once; the BMX rides)
         timeout-minutes: 10
         if: contains(steps.f.outputs.run, ' kit')
@@ -433,6 +568,10 @@ jobs:
         timeout-minutes: 10
         if: contains(steps.f.outputs.run, ' kit')
         run: node tests/fullkit.cjs dist/market.html
+      - name: The owners' kit (every usable carried thing, the carried telescope and microscope)
+        timeout-minutes: 10
+        if: contains(steps.f.outputs.run, ' kit')
+        run: node tests/ownerkit.cjs dist/market.html
       - name: The browser's extras (the mouse look in first person, a sound's place in 3D, the screen kept awake)
         timeout-minutes: 10
         if: contains(steps.f.outputs.run, ' browser')
@@ -441,6 +580,22 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' guitar')
         run: node tests/guitar.cjs dist/market.html
+      - name: The instruments (piano, harp, drums, violin, flute, trumpet on their Polyfork models; fingers and sticks land, the trumpet's valves move, their sounds)
+        timeout-minutes: 25
+        if: contains(steps.f.outputs.run, ' instruments')
+        run: node tests/instruments.cjs dist/market.html
+      - name: Import music (MIDI, MusicXML, ABC and a text tab read, fitted to each instrument, free to play; LOOP and NEXT)
+        timeout-minutes: 20
+        if: contains(steps.f.outputs.run, ' import')
+        run: node tests/import.cjs dist/market.html
+      - name: Dance and juggling (the skills, the books' bands, a pass or a fail, the wobble, the dropped balls, learnt in three, another player's)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' perform')
+        run: node tests/perform.cjs dist/market.html
+      - name: Sign language (the skill, its books by band, a practice's pass or fail, signed chat on the hands, read as far as the reader's skill, a signing trader's gate)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' signs')
+        run: node tests/signs.cjs dist/market.html
       - name: The Polyfork avatar (worn, dressed, clothes hide the body, the look's code, another player's copy)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' avatar')
@@ -469,6 +624,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' wild')
         run: node tests/wild.cjs
+      - name: The brochures (the racks, buying, reading, GO THERE, the full set)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' brochures')
+        run: node tests/brochures.cjs
       - name: Check the site opens (door, then THE MARKET)
         timeout-minutes: 15
         run: node tests/site.cjs
@@ -504,6 +663,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' cars')
         run: node tests/cars.cjs dist/market.html
+      - name: The horn's way (a honk clears you on foot, a car left in the road, THE BIG CAT; your own horn too)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' honk')
+        run: node tests/honk.cjs
       - name: The helipad (the tour's turns, ride along, fly it yourself, land, its pilot flies it home)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' heli')
@@ -532,7 +695,11 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' paint')
         run: node tests/trade-server.cjs
-      - name: The money's server (the bucket, the body's drops, the stalls, the pawn shop)
+      - name: Painting copies (the masterworks by band, the guide over the canvas, a copy scored, passed or failed, a painting you own)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' copies')
+        run: node tests/copies.cjs dist/market.html
+      - name: The money's server (the bucket, the body's drops, the stalls, the exchange machines)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' money')
         run: node tests/economy.cjs

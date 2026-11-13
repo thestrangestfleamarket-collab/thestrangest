@@ -3,14 +3,17 @@ import {THREE} from './003-shx.js';
 import {IMK, INSTR} from './003b-systems.js';
 import {imAct} from './120-game-music-2-instruments.js';
 { const {box,cyl,mat,sm}=INSTR, V3=THREE.Vector3;
-  // the strings' plane (metres, the harpist at the origin facing +z, +x their left): along the soundboard from its foot (the bass) to its top at the shoulder (the treble)
-  const N=34, PX=-.07, SB0=new V3(PX,.13,.46), SB1=new V3(PX,.84,.25);
-  const root=s=>SB0.clone().lerp(SB1,s/(N-1)), topY=s=>{ const u=s/(N-1); return 1.19+(.93-1.19)*u+.045*Math.sin(Math.PI*u); };
-  const pluckY=s=>{ const r=root(s).y, t=topY(s); return Math.max(r+.05,Math.min(t-.05,.8)); };
-  const at=s=>{ const r=root(s); return new V3(PX,pluckY(s),r.z); };
+  // the strings where Polyfork's concert harp has them (tools/pfitems-list.json harp_pf; metres, the harpist at the origin facing +z, +x their left): its 47 (C1 to G7) along the soundboard, these the 34 from C2 to A6;
+  // the model scaled by FS, turned so its strings run away from you, at FZ: each string's foot on the soundboard's line, its top under the neck
+  const N=34, PX=-.07, FS=.72, FZ=.45, TOPS=[1.531,1.526,1.52,1.51,1.5,1.49,1.48,1.47,1.46,1.45,1.44,1.427,1.414,1.401,1.387,1.374,1.361,1.347,1.334,1.321,1.307,1.294,1.28,1.267,1.254,1.24,1.238,1.235,1.233,1.231,1.229,1.226,1.224,1.222];
+  const root=s=>new V3(PX,FS*(.217+.020543*(s+7)),FZ+FS*(.24-.012348*(s+7))), topY=s=>FS*TOPS[s], SB0=root(0), SB1=root(N-1);
+  const pluckY=s=>{ const r=root(s).y, t=topY(s); return Math.max(r+.04,Math.min(t-.04,.86)); };
+  // the harp leans back onto your shoulder, TILT about its foot: the strings' places as you see them
+  const TILT=.1, tl=v=>{ const z=v.z-FZ; return new V3(v.x,v.y*Math.cos(TILT)+z*Math.sin(TILT),FZ+z*Math.cos(TILT)-v.y*Math.sin(TILT)); };
+  const at=s=>{ const r=root(s); return tl(new V3(PX,pluckY(s),r.z)); };
   const LET=['C','D','E','F','G','A','B'], letter=s=>s%7, NAT=[0,2,4,5,7,9,11];
-  // the pedals left to right as a harpist's feet find them: D C B under the left, E F G A under the right
-  const PORD=[1,0,6,2,3,4,5], PX0=[PX+.15,PX+.11,PX+.07,PX-.07,PX-.11,PX-.15,PX-.19];
+  // the pedals left to right as a harpist's feet find them: D C B under the left, E F G A under the right; where the model has their ends
+  const PORD=[1,0,6,2,3,4,5], PX0=[.06,.029,-.031,-.07,-.109,-.169,-.2], PZ0=[.397,.373,.36,.36,.36,.373,.397], PNAME=['pedal-d','pedal-c','pedal-b','pedal-e','pedal-f','pedal-g','pedal-a'];
   const K={id:'harp',name:'A HARP',skill:'harp',seat:{y:.46,z:-.04},lean:.06,look:.2,BOOK:[],slip:[0,N-1],cam:{p:[-1.4,1.05,.35],t:[PX,.8,.2]},
     help:'Z X C… A S D… Q W E… EACH KEY A STRING, LOW TO HIGH · 1-7 THE PEDALS D C B E F G A · ↑ ↓ A GLISSANDO · ` A SONG'};
   K.dsp=()=>IMK.harp.dsp;
@@ -26,22 +29,24 @@ import {imAct} from './120-game-music-2-instruments.js';
   K.compile=T=>{ const n=T.n, ev=[]; let t=0; for(let i=0;i+4<n.length;i+=5){ t+=n[i]/100; ev.push({t,n:n[i+1],f:n[i+2]-1,d:n[i+3]/100,v:.7,h:n[i+4]?'R':'L'}); }
     T.c={ev,len:ev.reduce((a,e)=>Math.max(a,e.t+e.d),0)}; };
 
-  /* ---------- the model: the soundboard and its box, the neck curving over the strings, the column, the base and its pedals, the strings, the stool ---------- */
-  const GOLD=0xc9a24c, WOOD=0x6b3f22;
-  K.model=()=>{ const g=new THREE.Group(), U=g.userData;
+  /* ---------- the model: Polyfork's concert pedal harp (its strings cut out, its seven pedals its own parts), the game's strings on it; the first shapes (the soundboard and its box, the neck, the column, the base and pedals) till it comes ---------- */
+  const GOLD=0xc9a24c, WOOD=0x6b3f22, COLZ=FZ+FS*.39;
+  K.model=()=>{ const g=new THREE.Group(), U=g.userData, first=new THREE.Group(), lean=new THREE.Group(), hp=new THREE.Group(); lean.position.z=FZ; lean.rotation.x=-TILT; hp.position.z=-FZ; lean.add(hp); g.add(lean); hp.add(first);
     const len=SB0.distanceTo(SB1), mid=SB0.clone().add(SB1).multiplyScalar(.5), ang=Math.atan2(SB1.z-SB0.z,SB1.y-SB0.y);
-    const sb=box(.16,len+.06,.025,WOOD,0,0,0); sb.position.copy(mid); sb.rotation.x=ang; g.add(sb);
-    const bx=new THREE.Mesh(new THREE.CylinderGeometry(.04,.13,len,10,1,false,Math.PI/2,Math.PI),mat(0x5a3218)); bx.castShadow=true; bx.position.copy(mid).add(new V3(0,-.07*Math.cos(ang),.07*Math.sin(ang)).multiplyScalar(-1)); bx.rotation.x=ang; g.add(bx);
+    const sb=box(.16,len+.06,.025,WOOD,0,0,0); sb.position.copy(mid); sb.rotation.x=ang; first.add(sb);
+    const bx=new THREE.Mesh(new THREE.CylinderGeometry(.04,.13,len,10,1,false,Math.PI/2,Math.PI),mat(0x5a3218)); bx.castShadow=true; bx.position.copy(mid).add(new V3(0,-.07*Math.cos(ang),.07*Math.sin(ang)).multiplyScalar(-1)); bx.rotation.x=ang; first.add(bx);
     // the neck through the strings' tops, on to the column's head
-    const pts=[]; for(let s=0;s<N;s+=3)pts.push(new V3(PX,topY(s)+.03,root(s).z)); pts.unshift(new V3(PX,1.22,.54)); pts.push(new V3(PX,topY(N-1)+.02,SB1.z-.04),new V3(PX,SB1.y+.02,SB1.z-.03));
-    const neck=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),40,.02,8),mat(WOOD)); neck.castShadow=true; g.add(neck);
-    g.add(cyl(.028,.034,1.2,GOLD,12,PX,.62,.54)); g.add(cyl(.05,.035,.08,GOLD,12,PX,1.25,.54));   // the column and its crown
-    g.add(box(.3,.1,.34,mat(WOOD),PX,.05,.42));   // the base
-    U.peds=PORD.map((L,i)=>{ const p=new THREE.Group(); p.position.set(PX0[i],.035,.19); p.add(box(.016,.012,.07,GOLD,0,0,-.035)); g.add(p); return {g:p,L}; });
+    const pts=[]; for(let s=0;s<N;s+=3)pts.push(new V3(PX,topY(s)+.03,root(s).z)); pts.unshift(new V3(PX,topY(0)+.06,COLZ)); pts.push(new V3(PX,topY(N-1)+.02,SB1.z-.04),new V3(PX,SB1.y+.02,SB1.z-.03));
+    const neck=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),40,.02,8),mat(WOOD)); neck.castShadow=true; first.add(neck);
+    first.add(cyl(.028,.034,topY(0),GOLD,12,PX,topY(0)/2,COLZ)); first.add(cyl(.05,.035,.08,GOLD,12,PX,topY(0)+.05,COLZ));   // the column and its crown
+    first.add(box(.3,.1,.34,mat(WOOD),PX,.05,FZ+.12));   // the base
+    U.peds=PORD.map((L,i)=>{ const p=new THREE.Group(); p.position.set(PX0[i],.035,PZ0[i]+.05); p.add(box(.016,.012,.07,GOLD,0,0,-.035)); first.add(p); return {g:p,L}; });
     // the strings: gut, the C strings red, the F strings dark blue, the lowest wound in copper
     U.str=[]; for(let s=0;s<N;s++){ const r=root(s), tY=topY(s), L=tY-r.y, l=letter(s), c=l===0?0xb3262a:l===3?0x232c6e:s<7?0xb07a4a:0xe6dcc2, th=s<7?.0024:s<20?.0017:.0012;
-      const m=cyl(th,th,L,c,5,PX,r.y+L/2,r.z); m.castShadow=false; g.add(m); U.str[s]={m,a:0}; }
-    g.add(cyl(.17,.17,.06,0x1a1414,18,0,K.seat.y-.03,-.04)); for(const a of [.5,2.6,-1.6])g.add(cyl(.012,.012,K.seat.y-.06,0x1a1414,6,Math.sin(a)*.12,(K.seat.y-.06)/2,-.04+Math.cos(a)*.12));
+      const m=cyl(th,th,L,c,5,PX,r.y+L/2,r.z); m.castShadow=false; hp.add(m); U.str[s]={m,a:0}; }
+    INSTR.stool(g,K.seat.y,-.04);
+    // (the model's strings run along its x, the bass at +x: turned a quarter so they run away from you, their plane at PX)
+    INSTR.pf(mk=>{ const m=mk('harp_pf'); if(!m)return; first.visible=false; hp.add(INSTR.fit(m,-Math.PI/2,FS,[PX,0,FZ])); const pp=m.userData.parts; U.peds.forEach((p,i)=>{ if(pp[PNAME[i]])p.pf=pp[PNAME[i]]; }); });
     return g; };
 
   /* ---------- the hands: each a place along the strings; its thumb takes the highest of its notes, then the index, middle and ring fingers downward; a finger comes onto its string and pulls through it into the palm ---------- */
@@ -65,15 +70,16 @@ import {imAct} from './120-game-music-2-instruments.js';
   // the feet on the pedals: a foot goes to the pedal about to change and moves it; at rest they wait by their pedals
   K.feet=(P,t,H)=>{ const pl=ped(P), want=H.pw||(H.pw=pl.slice()); for(const e of window_(P,H,t))if(e.f!=null&&e.t<=t+.25&&e.t>=t-.05)want[letter(e.n)]=e.f;
     let fl=null, fr=null; for(let L=0;L<7;L++)if(want[L]!==pl[L]){ const i=PORD.indexOf(L); if(i<3)fl=i; else fr=i; }
-    const ft=(i,dflt)=>i==null?dflt:new V3(PX0[i],.1,.14);
-    H.pf={L:fl,R:fr}; return {L:ft(fl,new V3(PX0[1],.1,.12)),R:ft(fr,new V3(PX0[4],.1,.12))}; };
+    const ft=(i,dflt)=>i==null?dflt:new V3(PX0[i],.1,PZ0[i]-.07);
+    H.pf={L:fl,R:fr}; return {L:ft(fl,new V3(PX0[1]+.04,.1,PZ0[1]-.12)),R:ft(fr,new V3(PX0[4]-.03,.1,PZ0[4]-.12))}; };
   K.after=(P,H,t)=>{ const pl=ped(P), want=H.pw; if(!want)return; for(let L=0;L<7;L++)if(want[L]!==pl[L]&&INSTR.score(P)!==P.live)pl[L]=want[L]; };
   K.sway=(P,t)=>{ const sc=INSTR.score(P), n=sc.ev.length; return n&&t-sc.ev[n-1].t<3?.018*Math.sin(t*1.1):0; };
   // each frame: a plucked string shimmers wide and settles as it rings; the pedals sit in their notches
   K.anim=(P,H,t,dt)=>{ H.dt=dt*60; const U=H.G.userData, t0=H.at??t; H.at=t; const sc=INSTR.score(P), ev=sc.ev;
     for(let i=H.lo||0;i<ev.length&&ev[i].t<=t;i++){ const e=ev[i]; if(e.t>t0&&U.str[e.n])U.str[e.n].a=Math.min(1,.5+e.v); }
     for(const S of U.str){ if(S.a<.01){ if(S.on){ S.m.scale.set(1,1,1); S.on=false; } continue; } S.a*=Math.pow(.25,dt); const k=1+S.a*2.2*(.7+.3*Math.sin(t*70)); S.m.scale.set(k,1,k); S.on=true; }
-    const pl=ped(P); for(const p of U.peds)p.g.rotation.x=.25*pl[p.L]; };
+    const pl=ped(P); for(const p of U.peds){ p.g.rotation.x=.25*pl[p.L]; if(p.pf)p.pf.quaternion.copy(p.pf.userData.q0).multiply(QX.setFromAxisAngle(XA,.25*pl[p.L])); } };
+  const QX=new THREE.Quaternion(), XA=new V3(1,0,0);
 
   /* ---------- playing it: the letter rows of the computer's keys are the strings low to high (each key one string), the number keys the pedals, the arrows a glissando ---------- */
   const ROWS=['KeyZ','KeyX','KeyC','KeyV','KeyB','KeyN','KeyM','Comma','Period','Slash','KeyA','KeyS','KeyD','KeyF','KeyG','KeyH','KeyJ','KeyK','KeyL','Semicolon','Quote','KeyQ','KeyW','KeyE','KeyR','KeyT','KeyY','KeyU','KeyI','KeyO','KeyP','BracketLeft','BracketRight','Backslash'];

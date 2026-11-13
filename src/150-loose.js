@@ -93,7 +93,17 @@ import {BVH} from './137-bvh.js';
         const key='kerb'+i+':'+a; if(stat.has(key)){ W.set(key,stat.get(key).b); continue; } const pts=[]; let ok=true;
         for(const u of [u0,u1]){ const hi=SHARED.groundY(...P(u,v-n*.15)), lo=SHARED.groundY(...P(u,rm+n*(KW+.2))); if(!(hi-lo>.12*T&&hi-lo<.6*T)){ ok=false; break; }
           for(const [w,y] of [[pm,hi],[rm,hi],[rm+n*KW,lo],[pm,lo-.1*T],[rm+n*KW,lo-.1*T]]){ const [x,z]=P(u,w); pts.push(x,y,z); } }
-        if(ok)W.set(key,{hull:new Float32Array(pts)}); } }); }
+        if(ok)W.set(key,{hull:new Float32Array(pts)}); } });
+      // the corners' arcs the same, a short slope per piece of the arc, from the outermost the ground's boxes step there
+      (B.kerbArcs||[]).forEach((ka,i)=>{ if(!(ka.r>0))return; const P=(t,r)=>[B.XS(ka.cx+Math.cos(t)*r),B.ZS(ka.cy+Math.sin(t)*r)];
+        for(let s=0;s+1<ka.P.length;s++){ const t0=Math.atan2(ka.P[s][1]-ka.cy,ka.P[s][0]-ka.cx), t1=Math.atan2(ka.P[s+1][1]-ka.cy,ka.P[s+1][0]-ka.cx), [mx,mz]=P((t0+t1)/2,ka.r); if(far(mx-T,mz-T,mx+T,mz+T))continue;
+          const key='kerbc'+i+':'+s; if(stat.has(key)){ W.set(key,stat.get(key).b); continue; }
+          const hi=SHARED.groundY(...P((t0+t1)/2,ka.r-.15)), lo=SHARED.groundY(...P((t0+t1)/2,ka.r+1.2+KW)); if(!(hi-lo>.12*T&&hi-lo<.6*T))continue;
+          let rm=ka.r, ok=true; for(let j=0;j<=12;j++){ const t=t0+(t1-t0)*j/12; if(Math.abs(SHARED.groundY(...P(t,ka.r-.15))-hi)>.05*T||Math.abs(SHARED.groundY(...P(t,ka.r+1.2+KW))-lo)>.05*T){ ok=false; break; }
+            for(let r=ka.r+1;r>ka.r-1;r-=.05){ const [x,z]=P(t,r); if(SHARED.groundY((Math.floor(x/T)+.5)*T,(Math.floor(z/T)+.5)*T)>(hi+lo)/2){ rm=Math.max(rm,r+.05); break; } } }
+          if(!ok)continue; rm+=.04; const pts=[];
+          for(const t of [t0,t1])for(const [r,y] of [[ka.r-1,hi],[rm,hi],[rm+KW,lo],[ka.r-1,lo-.1*T],[rm+KW,lo-.1*T]]){ const [x,z]=P(t,r); pts.push(x,y,z); }
+          W.set(key,{hull:new Float32Array(pts)}); } }); }
     for(const it of act)if(it.rest)add(it,[it.a[0],it.a[1]-.06*T,it.a[2],it.b[0],it.a[1],it.b[2]],true);
     for(const [key,s] of stat)if(!W.has(key)){ for(const c of s.cs)world.removeCollider(c,false); stat.delete(key); }
     for(const [key,b] of W)if(!stat.has(key))stat.set(key,{b,cs:(Array.isArray(b[0])?b:[b]).map(q=>{ const d=q.hull?R.ColliderDesc.convexHull(q.hull):R.ColliderDesc.cuboid((q[3]-q[0])/2,(q[4]-q[1])/2,(q[5]-q[2])/2).setTranslation((q[0]+q[3])/2,(q[1]+q[4])/2,(q[2]+q[5])/2); return d?world.createCollider(d.setFriction(.8).setCollisionGroups(G0),fb):null; }).filter(Boolean)}); };
@@ -181,7 +191,7 @@ import {BVH} from './137-bvh.js';
   GPH.bin=it=>{ it.gone=1; const p=it.rb?it.rb.translation():it.t; if(SFX.play)SFX.play('clunk',{vol:.5,pitch:.8,at:p}); if(it.rb)off(it); hideMesh(it); };
   GPH.smash=it=>{ it.gone=1; const p=it.rb?it.rb.translation():it.t; if(SFX.play){ SFX.play('click',{vol:.8,pitch:2.4,vary:.3,at:p}); SFX.play('clunk',{vol:.4,pitch:1.9,at:p}); } if(it.rb)off(it); hideMesh(it); };
   // what the other physics extras use: the engine, the world, the fixed body, a body's loose thing, and hooks into each step (pre/post), its events (coll) and whether to keep stepping (ext)
-  Object.assign(GPH,{kerbs:()=>[...stat.keys()].filter(k=>typeof k==='string'&&k.startsWith('kerb')).length,pre:[],post:[],coll:[],ext:[],phys:()=>ready?{R,world,fb,you}:null,ofCollider:h=>byC.get(h),active:()=>act,heldNow:()=>held});
+  Object.assign(GPH,{kerbs:(p='kerb')=>[...stat.keys()].filter(k=>typeof k==='string'&&k.startsWith(p)).length,pre:[],post:[],coll:[],ext:[],phys:()=>ready?{R,world,fb,you}:null,ofCollider:h=>byC.get(h),active:()=>act,heldNow:()=>held});
   // hanging things on a joint at their top: wind and bumps swing them, SWAYING THINGS sets how freely
   let gt=0; const gust=dt=>{ '@later'; const k=PHYS.lv('joints'); if(!k||(gt-=dt)>0)return; gt=1.5+Math.random()*3; const w=(WX&&WX.now&&WX.now.wind)||.2, out=!(ROOMS&&ROOMS.cur);
     for(const it of act)if(it.hang&&it!==held){ const j=it.m*(out?w*1.4:.08)*k*.05*(.5+Math.random()); it.rb.wakeUp(); it.rb.applyImpulse({x:(Math.random()-.5)*j,y:0,z:(Math.random()-.5)*j},true); } };
@@ -253,6 +263,8 @@ import {BVH} from './137-bvh.js';
   window.GOODSAT=i=>{ const it=items.filter(q=>q.k==='v')[i]; const p=it.rb?it.rb.translation():it.t; return [p.x,p.y,p.z]; };
   window.GOODSDBG=()=>({built:ready,pre:pre.size,n:items.length,active:act.size,awake:[...act].filter(it=>!it.rb.isSleeping()).length,moved:items.filter(it=>it.moved).length,held:held&&held.name,statics:[...stat.values()].reduce((s,q)=>s+q.cs.length,0),ms:+GPH.ms.toFixed(3),hooks:!!hooks});
   window.GOODSHIT=MODS.goodsHit=(k=4,r=3,n)=>{ let c=0; for(const it of act){ const p=it.rb.translation(); if(Math.hypot(p.x-pos.x,p.z-pos.z)<r*T&&(!n||rx(n).test(it.name))){ c++; it.rb.wakeUp(); it.rb.applyImpulse({x:(Math.random()-.5)*k*it.rb.mass(),y:k*.5*it.rb.mass(),z:(Math.random()-.5)*k*it.rb.mass()},true); } } return c; };
+  MODS.goodsBlast=(x,y,z,r,k,dir)=>{ let c=0; for(const it of act){ const p=it.rb.translation(), ex=p.x-x, ey=p.y-y, ez=p.z-z, d=Math.hypot(ex,ey,ez); if(d>r)continue; const f=(1-d/r)*k*it.rb.mass(), l=d||1;   // a shot, a blast or a gust (146hc): out from the point, or along dir
+      const u=dir?[dir.x,dir.y+.2,dir.z]:[ex/l,Math.max(.35,ey/l+.4),ez/l]; it.rb.wakeUp(); it.rb.applyImpulse({x:u[0]*f,y:u[1]*f,z:u[2]*f},true); c++; } return c; };
   window.LOOSE={list:(all)=>(all?items:[...act]).map(it=>({name:it.name,k:it.k,m:+it.m.toFixed(1),heavy:it.heavy,sol:it.sol.length,active:!!it.rb,awake:!!it.rb&&!it.rb.isSleeping(),at:(it.rb?[it.rb.translation()]:[it.t]).map(p=>[p.x,p.y,p.z].map(v=>+v.toFixed(3)))[0],c:it.c.map(v=>+v.toFixed(3)),h:it.h.map(v=>+v.toFixed(3)),sols:it.sol.map(([r])=>r.slice())})),
     push:(n,x,y,z)=>{ const it=nearest(q=>rx(n).test(q.name)); if(!it)return null; it.rb.wakeUp(); it.rb.applyImpulse({x:x*it.rb.mass(),y:y*it.rb.mass(),z:z*it.rb.mass()},true); return it.name; },
     nearest:n=>{ const it=nearest(q=>rx(n).test(q.name)); return it&&{name:it.name,m:it.m,heavy:it.heavy,awake:it===held||!!it.rb&&!it.rb.isSleeping(),at:(p=>[p.x,p.y,p.z])(at(it)),h:it.h,sols:it.sol.map(([r])=>r.slice()),dm:!!it.dm}; },

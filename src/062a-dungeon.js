@@ -54,7 +54,7 @@ await grab('dungeon',async()=>{});
   const clear=()=>{ '@later'; if(!mine)return; const M=mine; mine=null; cur=0;
     for(const o of M.objs){ G.remove(o); o.traverse(c=>{ if(c.geometry)c.geometry.dispose(); if(c.material&&c.material!==MODS.castleStairMat)for(const q of [].concat(c.material)){ if(q.map)q.map.dispose(); if(q.emissiveMap)q.emissiveMap.dispose(); q.dispose(); } }); }
     const out=(A,L)=>{ for(const a of L){ const i=A.indexOf(a); if(i>=0)A.splice(i,1); } };
-    out(SOL.down,M.sol); out(FIX.down,M.fix); if(CITY.extra&&CITY.extra.down)out(CITY.extra.down,M.route||[]); out(LITE.recs,M.lights); out(FLAME.src,M.fl); out(cutWalls,M.cuts); LITE.t=0; for(const f of HK)f(0); };
+    out(SOL.down,M.sol); out(FIX.down,M.fix); if(CITY.extra&&CITY.extra.down)out(CITY.extra.down,M.route||[]); out(LITE.recs,M.lights); out(FLAME.src,M.fl); out(cutWalls,M.cuts); LITE.t=0; if(MODS.dunBake)MODS.dunBake.off(); for(const f of HK)f(0); };
   const build=()=>{ '@dungeon'; clear(); const Ls=RM.map(r=>lay(r.k)), E=Ls[0], up=E.up, s0=scene.children.length, n0=KP.length, l0=K.LAMPS.length, f0=FLAME.src.length, keep=BATCH.items.splice(0), M={objs:[],sol:[],fix:[],lights:[],fl:[],cuts:[],route:[]};
     const arch=(nx,ny,Xp,Yp,z)=>{ if(ny<=0||Math.abs(Yp-E.R.y0)>.06||Xp<up.x0-.2||Xp>up.x1+.2)return null; const hw=(up.x1-up.x0)*12, d=Math.abs(Xp-(up.x0+up.x1)/2)*24, sp=up.n*up.rise+30, r=Math.hypot(d,Math.max(0,z-sp));
       return r<hw-3?P0.dark:r<hw+2?sh(P0.hi,.8):null; };
@@ -112,6 +112,7 @@ await grab('dungeon',async()=>{});
     if(LK)Ls.filter(l=>!l.c).forEach((l,i)=>LK.dress(l,{own:o=>scene.add(LEVELS.own(o,'dungeon')),light,PL,lavaR,more:i>0}));
     if(TR)for(const l of Ls)TR.dress(l,{own:o=>scene.add(LEVELS.own(o,'dungeon')),PL,sol,light});
     for(const o of scene.children.slice(s0)){ G.add(o); M.objs.push(o); }
+    if(MODS.dunBake)MODS.dunBake.bake({G,lights:M.lights,bound:bnd(),open:(x,z)=>!!roomAt(iX(x),iZ(z)),key:JSON.stringify(MAP)});
     mine=M; cur=0; spikes(true); LITE.t=0; if(MODS.dungeon)MODS.dungeon.v=(MODS.dungeon.v||0)+1; return Ls; };   // (v: the map redraws its plan)
   let CT=null, WT=null; const can=(w,h,f)=>{ const c=document.createElement('canvas'); c.width=w; c.height=h; f(c.getContext('2d')); const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.magFilter=THREE.NearestFilter; return t; };
   const CEIL=()=>CT||(CT=can(24,24,g=>{ g.fillStyle='#1c1a19'; g.fillRect(0,0,24,24); for(let j=0;j<4;j++)for(let i=0;i<2;i++){ const v=34+((i*7+j*13)%5)*4; g.fillStyle=`rgb(${v},${v-3},${v-6})`; g.fillRect(i*12+(j&1)*6+1,j*6+1,10,4); } }),CT.wrapS=CT.wrapT=THREE.RepeatWrapping,CT);
@@ -147,6 +148,7 @@ await grab('dungeon',async()=>{});
     MAP.splice(0,MAP.length,...W.map(r=>r.slice())); RM.splice(0,RM.length,...rmOf()); Object.assign(BB,bbOf()); for(const k in LC)delete LC[k];
     if(mine){ clear(); build(); SHARED.BOUND=bnd(); const r=roomAt(iX(pos.x),iZ(pos.z)); if(!r){ const a=lay(1).atUp; UI.goTo(a.x,a.z,'down'); } cur=0; enter(r&&!r.c?r.k:1); } return true; };
   MODS.dungeon={tooHigh:(x,z,py)=>!!mine&&lotAt(x,z)>0&&ground(x,z)-py>Y(MODS.dunTerr?MODS.dunTerr.STEP:14),get B(){ return lay(cur||1).B; },get level(){ return mine?band():0; },get room(){ return cur; },traps:()=>mine?RM.flatMap(r=>lay(r.k).hz):[],lavaR,inLava,ground,inside:(x,z)=>lotAt(x,z)>0,bound:()=>bnd(),arrive:n=>lay(pick(n)).atUp,lay,rooms:RM,roomOf:(x,z)=>{ const r=roomAt(iX(x),iZ(z)); return r&&!r.c?r.k:0; },hook:f=>HK.push(f),tick(){},setMap,map:()=>MAP.map(r=>r.slice()),map0:()=>MAP0.map(r=>r.slice()),OX,OY};
+  (MODS.ledges=MODS.ledges||[]).push({lv:'down',tooHigh:(x,z,py)=>MODS.dungeon.tooHigh(x,z,py)});
   window.DUNGEON=MODS.dunPlay={get level(){ return mine?band():0; },get room(){ return cur&&RM[cur-1].nm; },at:(gx,gy)=>UI.goTo(X(gx),Z(gy),'down'),to:(f,gx)=>{ const R=lay(cur||1).R; UI.goTo(X(gx??(R.x0+R.x1)/2),Z(R.y0+f*(R.y1-R.y0)),'down'); },traps:()=>MODS.dungeon.traps(),go:n=>go(Math.max(0,Math.min(NL,n|0)),'top'),spawn:async n=>{ if(n&&(!mine||band()!==n))await go(n,'top'); return MODS.skel(); },levels:NL};
   window.DUNDBG=()=>({level:mine?band():0,room:cur,hp:+VIT.hp.toFixed(3),drag:SHARED.drag,lv:SHARED.LVL,busy,lot:typeof pos!=='undefined'?lotAt(pos.x,pos.z):0,objs:mine?mine.objs.length:0,lights:mine?mine.lights.length:0,sol:mine?mine.sol.length:0,
     tris:mine?mine.objs.reduce((a,o)=>{ let t=0; o.traverse(c=>{ if(c.geometry&&c.geometry.attributes.position)t+=(c.geometry.index?c.geometry.index.count:c.geometry.attributes.position.count)/3; }); return a+t; },0):0,skel:!!(MODS.skel&&MODS.skel.p)}); }

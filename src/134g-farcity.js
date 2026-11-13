@@ -1,6 +1,6 @@
 // THE FAR CITY (owner, 8 Nov 2026: "the map should have a baked in nyc skyline that goes on for as far as you can see until it fades out (real world) ... the stuff that you cant reach should be low res until its just baked shapes towards the end, ie 1 building could be 6-10 triangles total"); 8 Nov 2026: "only build what is needed for the outline ... just do outline of buildings skyline past that"): past what the view reaches, only a painted skyline all the way round, drawn once, the air taking more of it the further it is. The plan of it is data/world.json edge.city (tiles).
 import {SHARED, THREE} from './003-shx.js';
-import {CLOCK, SKY, UI} from './003b-systems.js';
+import {BLK, CLOCK, FARCITY, SKY, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {LEVEL, QS, SYS, TILE} from './006-map-pre.js';
 { const C=LEVEL.edge&&LEVEL.edge.city; if(C&&!QS.has('nocity')){ const T=TILE, XS=SHARED.BOD.XS, ZS=SHARED.BOD.ZS;
@@ -46,5 +46,5 @@ import {LEVEL, QS, SYS, TILE} from './006-map-pre.js';
   ring.onBeforeRender=(r,s,cam)=>{ ring.position.set(cam.position.x,Math.min(cam.position.y,0),cam.position.z); };
   // the cylinder's angle against the painting's: its u runs from +z toward +x, as the painting was laid out
   let sT=0; SYS.add('sky',dt=>{ ring.visible=!!UI.persp; if((sT-=dt||0)>0)return; sT=.5;
-    if(SKY.U&&SKY.U.uH)U.uHaze.value.copy(SKY.U.uH.value); const e=CLOCK.elev?CLOCK.elev():30; U.uDay.value=Math.max(.06,Math.min(1,(e+4)/16)); },'134g-farcity');
-  window.FARCITY={ring}; } }
+    if(SKY.U&&SKY.U.uH)U.uHaze.value.copy(SKY.U.uH.value); const e=CLOCK.elev?CLOCK.elev():30; U.uDay.value=Math.max(.06,Math.min(1,(e+4)/16)); if(BLK.cityU){ BLK.cityU.uHaze.value.copy(U.uHaze.value); BLK.cityU.uNight.value=1-Math.max(0,Math.min(1,(U.uDay.value-.1)/.5)); } },'134g-farcity');
+  Object.assign(FARCITY,{ring}); window.FARCITY=FARCITY; } }

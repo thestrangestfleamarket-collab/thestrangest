@@ -67,6 +67,8 @@ const MOBSIM={};
       S.m.push({...m,i:++S.seq,r:K.k,x:R2(sp.x),z:R2(sp.z),home:{x:sp.x,z:sp.z},pt:null,rs:0,beh:'hunt',agg:0,prov:0,tg:'',to:null,kb:null,land:0,stun:0,cool:1.5+rnd(),acts:0,hits:0,blks:0,gd:0});
       m.dead=S.t||.001; m.hp=0; }   // gone from below till it comes back
     return out.length; };
+  // tamed by a player (src/146zjd): it leaves, no reward, and comes back as another after its respawn; null if it was already gone
+  M.tame=(S,i)=>{ const m=S.m.find(q=>q.i===i); if(!m||m.dead)return null; m.dead=S.t||.001; m.hp=0; m.tg=''; return m; };
   M.parried=(S,i)=>{ const m=S.m.find(q=>q.i===i); if(m&&!m.dead){ m.cool=3.2; m.stun=Math.max(m.stun,.8); } };   // caught on the beat: it staggers, open to you
   // what the page draws: the monsters in the rooms asked for, [i,room,kind,key,x,z,heading,hp,most hp,dead for s,strikes,hits,blocks,target,design entry]
   M.snap=(S,rooms)=>({at:R2(S.t),m:S.m.filter(m=>!rooms||rooms.has(m.r)).filter(m=>!m.dead||S.t-m.dead<ROT).map(m=>[m.i,m.r,m.kind,m.key,R2(m.x),R2(m.z),R2(m.h),R2(m.hp),m.mhp,m.dead?R2(S.t-m.dead):0,m.acts,m.hits,m.blks,m.tg,m.e||''])}); }

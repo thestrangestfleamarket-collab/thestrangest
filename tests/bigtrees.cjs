@@ -6,10 +6,15 @@ const {chromium}=require('playwright'), out=process.argv[2];
   for(let i=0;i<300;i++){ await pg.waitForTimeout(1000); if(await pg.evaluate(()=>!!window.__started).catch(()=>false))break; }
   await pg.waitForFunction(()=>window.BIGTREESDBG&&BIGTREESDBG().trees>0,null,{timeout:180000}).catch(()=>{});
   const d=await pg.evaluate(()=>({...BIGTREESDBG(),farTris:PARK.bigFar.count*20+PARK.big.length*24,others:(PARK.treeItems?PARK.treeItems():[]).filter(o=>PARK.climbable.includes(o)).length,spots:TREESDBG().spots}));
-  d.want=require(process.cwd()+'/data/world.json').bigTrees.filter(o=>o.kind).length; ok(d.trees===d.want&&d.trees>=6&&d.climbable===d.trees,'every big tree in data/world.json stands, all climbable ('+d.trees+' of '+d.want+', '+d.climbable+' climbable)');
+  d.want=require(process.cwd()+'/data/world.json').bigTrees.filter(o=>o.kind).length; ok(d.trees>=d.want&&d.want>=6&&d.climbable===d.want,'every big tree in data/world.json stands and climbs ('+d.want+' of them, '+d.climbable+' climbable)');
+  ok(d.trees-d.want>=8,'today\'s tree (A) at 10 to 20 m among the lawn trees, not climbable (owner, 11 Nov 2026: '+(d.trees-d.want)+')');
   ok(d.branches.every(n=>n>=9),'each has its big branch and 4 to 8 more ('+d.branches.join(', ')+' limb pieces)');
   ok(d.puffs>200||d.farBlobs>d.trees*10,'leaves on them ('+d.puffs+' puffs near, '+d.farBlobs+' far blobs)');
   ok(d.others===0,'no other tree is climbable');
+  const G=await pg.evaluate(()=>{ const it=PARK.big.find(t=>t.k==='BIGG'); return it&&{look:it.look,shell:it.leafP?it.leafP.length/9:0,puffs:it.p1-it.p0,h:((it.top-it.y)/TREES.T*.84)|0,limbs:it.lb.length,climb:PARK.climbable.includes(it)}; });
+  ok(G&&G.look==='Elder2'&&G.shell>100&&!G.puffs&&G.h>140&&G.limbs>=8&&G.climb,'the giant is the pack\'s elder at 148 m (owner, 11 Nov 2026), its clumps hollow shells, a limb into each to climb ('+JSON.stringify(G)+')');
+  const W=await pg.evaluate(()=>{ const c={}; for(const o of PARK.treeItems())c[o.k.replace(/\d+$/,'')]=(c[o.k.replace(/\d+$/,'')]||0)+1; return c; });
+  ok(W.OakTree>50&&W.Elder>50&&W.GA>5&&W.GC>5&&W.Giant>=3&&W.GE>=6&&W.GK>=4,'the park\'s woods: oaks, elders, grown trees, the pack\'s giants, the Mall\'s elms, the lake\'s cherries ('+JSON.stringify(W)+')');
   ok(d.farTris<20000,'cheap from far off (owner, 8 Nov 2026: "they shouldnt cost much from far off at all"): '+d.farTris+' triangles for every big tree as its plain shape; whole only near ('+d.near+' near now)');
   const w=await pg.evaluate(()=>{ const B=SHARED.BOD, ax=B.XS(0), bx=B.XS(1)-ax, az=B.ZS(0), bz=B.ZS(1)-az, L=PARK.treeItems().map(o=>[(o.x-ax)/bx-PARK.ox,(o.z-az)/bz-PARK.oy]); return {n:L.length,onPath:L.filter(([x,y])=>PARK.pd(x,y)<0).length,tris:PARK.ring.userData.P.length/9}; });
   ok(w.n>=300,'the park as thick with trees as Central Park ('+w.n+' trees, 8 Nov 2026)'); ok(!w.onPath,'no trunk on a path ('+w.onPath+')'); ok(w.tris<150000,'cheap: '+w.tris+' tree triangles, one draw');

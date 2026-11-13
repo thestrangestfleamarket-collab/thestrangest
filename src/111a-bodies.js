@@ -1,8 +1,9 @@
-// THE BODIES: bodies moved by the rig (each of its 15 bones takes the turn of the rig piece it stands for); you play as the avatar (111c), the only body you can be; one of each other walks main street.
+// THE BODIES: bodies moved by the rig (each of its 15 bones takes the turn of the rig piece it stands for); you play as the avatar (111c) or another playable body (YOU's BODY line); one of each other walks main street.
 import {SHARED, THREE} from './003-shx.js';
 import {B64, I16, U16} from './003a-skin.js';
-import {ARCH, CHARS, NPCS, pos, RAG, st, VIS, VIT, W3, WINDOWS} from './003b-systems.js';
+import {ARCH, CHARS, LOOKS, NPCS, pos, RAG, st, VIS, VIT, W3, WINDOWS} from './003b-systems.js';
 import {PPU} from './004-main.js';
+import {SAVE} from './005-save.js';
 import {ASTEP, MAPG, MODS, SYS, TILE} from './006-map-pre.js';
 import {HOMES, ROAM, stfree} from './076-npc-map.js';
 import {musScale, sheetView, spreadPose} from './110-musician.js';
@@ -46,10 +47,10 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     // body.rnd (your avatar): its points marked sm (its rounded head, 111c) shaded by their own smooth normals, the rest flat
     // body.rnd: what hangs off it (ov: BACK, its bags and straps, 111c) drawn a few centimetres nearer the eye than it is, so it shows over every coat (owner, 9 Nov 2026)
     const OV=body.rnd?' if(ov>.5){ vec4 mo=mvPosition; float od=uOV*length(modelViewMatrix[1].xyz); if(projectionMatrix[3][3]>.5)mo.z+=od; else mo.xyz*=max(0.,1.-od/length(mo.xyz)); gl_Position=projectionMatrix*mo; }':'';
-    const SM=body.rnd?'attribute float sm; attribute float ov; uniform float uOV; varying float vSm;':'', NF=body.rnd?' if(vSm>.5){ vec3 sn=normalize(vNormal); normal=dot(sn,normal)<0.?-sn:sn; }':'';
+    const SM=body.rnd?'attribute float sm; attribute float ov; attribute float hs; uniform float uOV; varying float vSm; varying float vHs;':'', NF=body.rnd?' if(vSm>.5){ vec3 sn=normalize(vNormal); normal=dot(sn,normal)<0.?-sn:sn; }':'';
     const mat=new THREE.MeshToonMaterial({vertexColors:true,gradientMap:W3.GP,side:THREE.DoubleSide});
     if(body.rnd)PM.ov={value:.035*(body.S||1)};
-    mat.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.uniforms.uHH=PM.hh; if(PM.ov)sh.uniforms.uOV=PM.ov; if(FL){ sh.uniforms.uFK=PM.fk; sh.uniforms.uFT=PM.ft; } sh.fragmentShader='#define BODYB .0015\n'+(SM?'varying float vSm;\n':'')+sh.fragmentShader; sh.vertexShader=MOVE+FL+SM+'\n'+sh.vertexShader.replace('#include <beginnormal_vertex>',AT_+' vec3 objectNormal=mat3(PM)*normal;').replace('#include <begin_vertex>','vec3 transformed=(PM*vec4('+P0+',1.)).xyz;'+HH+(SM?' vSm=sm;':'')).replace('#include <project_vertex>','#include <project_vertex>\n'+OV);
+    mat.onBeforeCompile=sh=>{ sh.uniforms.uPM=PM; sh.uniforms.uHH=PM.hh; if(PM.ov)sh.uniforms.uOV=PM.ov; if(FL){ sh.uniforms.uFK=PM.fk; sh.uniforms.uFT=PM.ft; } sh.fragmentShader='#define BODYB .0015\n'+(SM?'varying float vSm; varying float vHs;\n':'')+(SM?sh.fragmentShader.replace('#include <lights_fragment_end>','#include <lights_fragment_end>\n reflectedLight.directDiffuse*=1.-.72*vHs; reflectedLight.directSpecular*=1.-vHs;'):sh.fragmentShader); sh.vertexShader=MOVE+FL+SM+'\n'+sh.vertexShader.replace('#include <beginnormal_vertex>',AT_+' vec3 objectNormal=mat3(PM)*normal;').replace('#include <begin_vertex>','vec3 transformed=(PM*vec4('+P0+',1.)).xyz;'+HH+(SM?' vSm=sm; vHs=hs;':'')).replace('#include <project_vertex>','#include <project_vertex>\n'+OV);
       // a body's own layers (cloth over its lining, over the skin) a few millimetres apart: its shadow test leans that much more toward the light, or they shadow each other in specks (owner, 6 Nov 2026: "seems like its shadows")
       sh.fragmentShader=sh.fragmentShader.replace('#include <lights_fragment_begin>',THREE.ShaderChunk.lights_fragment_begin.replace(/((?:directional|spot|point)LightShadows?(?:\[ *\w+ *\])?)\.shadowBias/g,'($1.shadowBias-BODYB)')).replace('#include <normal_fragment_begin>','float faceDirection=1.0; vec3 normal=normalize(cross(dFdx(vViewPosition),dFdy(vViewPosition)));'+NF+' vec3 nonPerturbedNormal=normal;'); W3.rim(sh,PM.pl); };
     mat.customProgramCacheKey=()=>'body'+NB+CK+'b'+(FL?'f':'')+(SM?'r':'');
@@ -244,6 +245,13 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   BODIES.pick=()=>curKey();
   BODIES.onPick=[];   // told the body you now play as
   BODIES.set=key=>{ pick=playable(BODIES.by[key])?key:'avatar'; for(const f of BODIES.onPick)f(curKey()); };
+  // YOU's BODY line: every body you can be, once there is more than one; your pick is kept with your save
+  { let row=null; if(!QS.get('avatar')){ const k=SAVE.get('body'); if(k)pick=k; }
+    const draw=()=>{ const L=BODIES.list.filter(playable); if(L.length<2||!LOOKS.add||!document.getElementById('looks'))return;
+      if(!row){ row=document.createElement('div'); row.className='row'; row.id='lbody'; row.onclick=e=>{ const b=e.target.closest('button'); if(b)BODIES.set(b.dataset.b); }; LOOKS.add('body','BODY',row,{order:0}); }
+      row.innerHTML=L.map(b=>`<button data-b="${b.key}" aria-pressed="${b.key===curKey()}">${b.label}</button>`).join(''); };
+    BODIES.onPick.push(k=>{ SAVE.set('body',k); draw(); });
+    BODIES.joined=body=>{ if(!playable(body))return; draw(); if(body.key===pick)for(const f of BODIES.onPick)f(curKey()); }; }
   // a borrowed model's licence line, shown under the menu's KEYS
   BODIES.credit=t=>{ const c=document.getElementById('credits'); if(!c)return; const d=document.createElement('div'); d.textContent=t; c.appendChild(d); };
 
@@ -268,11 +276,11 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
     if(body.ride){ NPC.board=body.ride.make(); NPC.board.visible=false; NPC.board.userData.anyRoom=true; (body.root||MAPG.bodega).add(NPC.board); NPC.RS={v:0,z:0,vz:0,lean:0,push:-1,pt:0}; }   // a rider: a RIDE kind's board under its feet
     NPC.tick=dt=>{ if(NPC.rag&&NPC.mode==='hidden')NPC.rag(dt);
       if((!NPC.on||NPC.mode==='hidden'||ARCH.has(body.key))&&!SHEET){ g.visible=false; if(NPC.board)NPC.board.visible=false; return; } g.visible=true;
-      if(SHEET){ R.farOnly(false); const B=R.settle(R.build(spreadPose(),null),0); st.y=MODS.bodega.ground(st.x,st.z); g.position.set(st.x,st.y,st.z); g.rotation.y=st.hd; musScale(g,1); pose(B,FIG.PM,body);
+      if(SHEET){ R.farOnly(false); const B=R.settle(R.build(QS.has('sheetidle')&&body.idle?body.idle(performance.now()/1000,NPC):spreadPose(),null),0); st.y=MODS.bodega.ground(st.x,st.z); g.position.set(st.x,st.y,st.z); g.rotation.y=st.hd; musScale(g,1); pose(B,FIG.PM,body);
         if(!NPC.sheetOn){ NPC.sheetOn=true; sheetView(g,st.y+g.scale.y*27); } return; }
       if(NPC.rag){ const B=NPC.rag(dt); if(B){ NPC.B=B; pose(B,FIG.PM,body); return; } }
       const near=Math.hypot(pos.x-st.x,pos.z-st.z)<40;
-      if(!st.pin&&!free(st.x,st.z)){ for(let k=0;k<80;k++){ const a=k*2.4, r=(k>>2)*.25*TILE; if(free(st.x+Math.sin(a)*r,st.z+Math.cos(a)*r)){ st.x+=Math.sin(a)*r; st.z+=Math.cos(a)*r; break; } } }
+      if(!st.pin&&(st.x!==NPC.fx||st.z!==NPC.fz||(NPC.ft-=dt)<=0)){ NPC.ft=1; if(!free(st.x,st.z)){ for(let k=0;k<80;k++){ const a=k*2.4, r=(k>>2)*.25*TILE; if(free(st.x+Math.sin(a)*r,st.z+Math.cos(a)*r)){ st.x+=Math.sin(a)*r; st.z+=Math.cos(a)*r; break; } } } NPC.fx=st.x; NPC.fz=st.z; }   // (where it stands checked when it moved, else once a second)
       if(st.pin)st.to=null;
       if(!st.to){ SR.target=0; st.wait-=dt; if(st.wait<=0&&!st.hold&&!NPC.errand&&!ROAM.pick(st,(x,z)=>free(x,z)))st.wait=1; }
       if(st.to){ const ex=st.to.x-st.x, ez=st.to.z-st.z, d=Math.hypot(ex,ez);
@@ -282,12 +290,12 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
       if(body.ride){ const RS=NPC.RS, vm=(body.rideSpeed||3)*TILE/.84, mv=!!st.to&&SR.target>0;   // on its board: rolls, pushing off while it gathers speed, coasts, brakes to a stop
         RS.v=mv?Math.min(vm,RS.v+vm*.5*dt):Math.max(0,RS.v-vm*1.5*dt); if(mv&&RS.v<vm*.9){ RS.pt+=dt*1.3; RS.push=RS.pt%1; } else { RS.pt=0; RS.push=-1; }
         go=st.to?Math.min(RS.v*dt,Math.hypot(st.to.x-st.x,st.to.z-st.z)):0; SR.ride=body.ride.pose(RS); }
-      else{ const d0=SR.dist; R.step(SR,dt); go=(SR.dist-d0)*W3.BASE/PPU*.85; }
-      if(go>0){ const nx=st.x+Math.sin(st.hd)*go, nz=st.z+Math.cos(st.hd)*go; if(free(nx,nz)){ st.x=nx; st.z=nz; } else { st.to=null; st.next=null; st.wait=.5+Math.random(); if(NPC.RS)NPC.RS.v=0; } }
+      else{ const d0=SR.dist; R.farOnly(true); R.step(SR,dt); R.farOnly(false); go=(SR.dist-d0)*W3.BASE/PPU*.85; }
+      if(go>0){ const nx=st.x+Math.sin(st.hd)*go, nz=st.z+Math.cos(st.hd)*go; if(free(nx,nz)){ st.x=NPC.fx=nx; st.z=NPC.fz=nz; } else { st.to=null; st.next=null; st.wait=.5+Math.random(); if(NPC.RS)NPC.RS.v=0; } }
       st.y=(body.ground||MODS.bodega.ground)(st.x,st.z)+(body.lift?body.lift(performance.now()/1000,NPC):0); g.position.set(st.x,st.y,st.z); g.rotation.y=st.hd; musScale(g,1); if(NPC.size!==1)g.scale.multiplyScalar(NPC.size);
       if(NPC.board){ const b=NPC.board; b.visible=true; b.position.set(st.x,st.y+R.RIDEG.deck*g.scale.y,st.z); b.rotation.set(0,st.hd,0); if(body.ride.place)body.ride.place(b,NPC.RS,0,{g,S:body.S||1}); }
       const eye=!near&&WINDOWS.near(st.x,st.z); if(!(near||eye)||!seen(g)||NPC.hid&&!eye)return; if(NPC.B&&!(st.to&&LIVEP.has(NPC))&&!ASTEP.gate(NPC,dt))return;
-      R.farOnly(false); const B=body.idle&&!st.to&&!NPC.busy&&!SR.sit?R.settle(R.build(body.idle(performance.now()/1000,NPC),null),0):R.pose(SR,true); NPC.B=B; pose(B,FIG.PM,body); if(body.after)body.after(B,NPC,dt); };
+      R.farOnly(true); const B=body.idle&&!st.to&&!NPC.busy&&!SR.sit?R.settle(R.build(body.idle(performance.now()/1000,NPC),null),0):R.pose(SR,true); R.farOnly(false); NPC.B=B; pose(B,FIG.PM,body); if(body.after)body.after(B,NPC,dt); };   // (no fingers worked out: a body has no finger bones)
   }
   // the nearest walkers on the move get a pose every frame, as you do; the rest keep the 10-a-second step
   const LIVEP=new Set(); let smT=0;
@@ -310,6 +318,6 @@ const BODIES={list:[],by:{}}; window.BODIES=BODIES;
   BODIES.rebakedBody=(D,key,more)=>BODIES.fit(rebakedObj(D,key,more));   // a body for an overlay (not a street walker)
   BODIES.fit=body=>{ body.S=WALKER_H/body.height; body.KL=body.hipY*body.S/R.STAND; body.tris=()=>{ const g=body.GEO||(body.GEO=body.geo()); return (g.index?g.index.count:g.attributes.position.count)/3; }; return body; };   // (scaled so its height is the Walker's)
   BODIES.add=body=>{ BODIES.fit(body); BODIES.list.push(body); BODIES.by[body.key]=body;
-    walker(body); };
+    walker(body); BODIES.joined(body); };
 }
 export {BODIES};

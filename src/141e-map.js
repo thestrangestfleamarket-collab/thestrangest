@@ -1,4 +1,4 @@
-// THE MAP: a folded 1986 visitor's brochure. MAP in the menu (or Shift+M, or a click on the minimap) brings it up, unfolded over the screen at once (no motion, owner 4 Nov 2026): the street level painted flat, every place numbered in its own colour, a guide column; F flips it to THE SUBWAY on the back; a click on a place or a station goes there; ESC puts it away.
+// THE MAP: a folded 1986 visitor's brochure (owner, 4 Nov 2026; back 12 Nov 2026: "bring the old map look back"). MAP in the menu (or Shift+M, or a click on the minimap) brings it up, unfolded over the screen at once (no motion, owner 4 Nov 2026): the street level painted flat, every place numbered in its own colour, a guide column; F flips it to THE SUBWAY on the back; a click on a place or a station goes there; ESC puts it away.
 import {SHARED} from './003-shx.js';
 import {FORAGE, keys, MARKS, ONLINE, PARK, pos, ROOMS, TEXT, UI} from './003b-systems.js';
 import {LEVEL, MODS, SECTION, SECTIONS, SYS, TILE} from './006-map-pre.js';
@@ -7,8 +7,8 @@ import {STALL} from './081-stalls.js';
 { SYS.onStart(async()=>{ await LOAD('later'); if(FORAGE.has('map'))FORAGE.take('map',FORAGE.has('map')); },'141e-map');
   for(const [k,d] of Object.entries({'bro.title1':'THE STRANGEST','bro.title2':'FLEA MARKET','bro.sub':"VISITOR'S MAP & GUIDE · NEW YORK",'bro.sec':'SECTION {id} · {a} · {b}','bro.poi':'POINTS OF INTEREST',
     'bro.here':'YOU ARE HERE','bro.hours':'THE HOURS','bro.hours2':'the sky keeps real Central time, one clock for everyone','bro.foot':'FREE · TAKE ONE · PRINTED AT THE BODEGA · 1986','bro.loop':'THE SUBWAY','bro.loop2':'THE SUBWAY UNDER THE RING STREETS · {n} STATIONS · TWO TRAINS','bro.loop3':'one station a section: its letter is the section it serves',
-    'bro.train':'TRAIN {n} · TO {next}','bro.track1':'TRAIN 1 · the outer track','bro.track2':'TRAIN 2 · the inner track','bro.stop':'A STOP AT EVERY STATION · a click on one rides there','bro.quiet':'the grey stations are sections not built yet','bro.back':'F FLIPS BACK TO THE MAP','bro.hint':'CLICK A PLACE TO GO THERE · WHEEL ZOOMS · F FLIPS IT · ESC PUTS IT AWAY',
-    'bro.cover3':"VISITOR'S MAP\n& GUIDE",'bro.cover4':'THE MAP ON ONE SIDE\nTHE SUBWAY ON THE OTHER','bro.free':'FREE · TAKE ONE','bro.ny':'NEW YORK','bro.ed':'1986 EDITION','bro.under':'underground','bro.water':'THE HUDSON','bro.goto':'GO TO','bro.choose':'CHOOSE A PLACE...','bro.lake':'THE LAKE','bro.alley':'THE ALLEY','bro.prom':'THE PROMENADE','bro.ff':'FORCEFIELD · THE EDGE OF THE SECTION','bro.g.outside':'OUTSIDE','bro.g.inside':'INSIDE','bro.g.underground':'UNDERGROUND','bro.g.else':'ELSEWHERE','bro.find':'TYPE A NAME...','bro.neighbours':'NEIGHBOURS ONLINE','bro.online':'online'}))TEXT.t(k,d);
+    'bro.train':'TRAIN {n} · TO {next}','bro.track1':'TRAIN 1 · the outer track','bro.track2':'TRAIN 2 · the inner track','bro.stop':'A STOP AT EVERY STATION · a click on one rides there','bro.quiet':'the grey stations are sections not built yet','bro.back':'F FLIPS BACK TO THE MAP · ESC PUTS IT AWAY','bro.hint':'CLICK A PLACE TO GO THERE · WHEEL ZOOMS · F FLIPS IT · ESC PUTS IT AWAY',
+    'bro.cover3':"VISITOR'S MAP\n& GUIDE",'bro.cover4':'THE MAP ON ONE SIDE\nTHE SUBWAY ON THE OTHER','bro.free':'FREE · TAKE ONE','bro.ny':'NEW YORK','bro.ed':'1986 EDITION','bro.under':'underground','bro.water':'THE HUDSON','bro.goto':'GO TO','bro.choose':'CHOOSE A PLACE...','bro.lake':'THE LAKE','bro.alley':'THE ALLEY','bro.prom':'THE PROMENADE','bro.ff':'FORCEFIELD · THE EDGE OF THE SECTION','bro.g.outside':'OUTSIDE','bro.g.inside':'INSIDE','bro.g.underground':'UNDERGROUND','bro.g.else':'ELSEWHERE','bro.find':'TYPE A NAME...','bro.myapt':'MY APARTMENT','bro.neighbours':'NEIGHBOURS','bro.online':'online'}))TEXT.t(k,d);
   const css=document.createElement('style'); css.textContent=`#bro{position:fixed;inset:0;z-index:30;perspective:1600px;background:rgba(6,8,14,.55);overflow:hidden;user-select:none;touch-action:none} #bro[hidden]{display:none}
     #bro .sh{position:absolute;left:0;top:0;width:320px;height:720px;transform-style:preserve-3d;transform-origin:0 0;will-change:transform}
     #bro .pn{position:absolute;left:0;top:0;width:320px;height:720px;transform-style:preserve-3d;transform-origin:0 50%} #bro .pn .pn{left:100%}
@@ -21,8 +21,7 @@ import {STALL} from './081-stalls.js';
     #bro .gol{position:absolute;left:0;right:0;top:100%;margin-top:3px;max-height:470px;overflow:auto;background:#f6f4ec;border:2px solid #111;box-shadow:3px 3px 0 rgba(0,0,0,.25)} #bro .gol[hidden]{display:none}
     #bro .gol input{all:unset;box-sizing:border-box;display:block;width:100%;padding:4px 7px;border-bottom:1.5px solid #111;background:#ece9df;color:#111;font:inherit;letter-spacing:1px} #bro .gol input::placeholder{color:#777}
     #bro .gor{display:flex;align-items:center;gap:7px;padding:2px 7px;cursor:pointer;white-space:nowrap} #bro .gor:hover,#bro .gor.on{background:#111;color:#f6f4ec} #bro .gor i{flex:none;width:13px;height:13px;border-radius:50%;border:1.3px solid #111;font:900 7px 'Helvetica Neue',Arial,sans-serif;font-style:normal;display:flex;align-items:center;justify-content:center;color:#fff} #bro .gor span{opacity:.6;font-weight:600;margin-left:auto}
-    #bro .gol h6{margin:0;padding:3px 7px 1px;font:inherit;letter-spacing:2px;opacity:.55}
-    #bro .hint{position:absolute;z-index:2;left:50%;bottom:10px;transform:translateX(-50%) translateZ(2px);font:9px Silkscreen,monospace;letter-spacing:1px;color:#f2c14e;text-shadow:1px 1px 0 #000;white-space:nowrap;pointer-events:none}`;
+    #bro .gol h6{margin:0;padding:3px 7px 1px;font:inherit;letter-spacing:2px;opacity:.55}`;
   document.head.appendChild(css);
   const W=document.createElement('div'); W.id='bro'; W.hidden=true; W.setAttribute('role','dialog'); W.setAttribute('aria-label','Map'); document.body.appendChild(W);
   const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
@@ -33,7 +32,7 @@ import {STALL} from './081-stalls.js';
   const star=(x,y,r)=>`<polygon points="${[0,1,2,3,4,5,6,7,8,9].map(i=>{ const a=-Math.PI/2+i*Math.PI/5, q=i%2?r*.45:r; return (x+Math.cos(a)*q).toFixed(1)+','+(y+Math.sin(a)*q).toFixed(1); }).join(' ')}" fill="${RED}" stroke="${PAPER}" stroke-width="1.5"/>`;
   let PL=[], LN=[], LG=[], G=null;   // the numbered places and the sheet's geometry, made each time it opens
   /* ---------- the front: the map on the left, the guide column on the right ---------- */
-  const front=()=>{ '@later'; const Q=UI.mapPlan(), T=TILE, OX=SHARED.BOD.OX, OY=SHARED.BOD.OY, E=(LEVEL.edge&&LEVEL.edge.lines)||[], F=Q.F;
+  const front=()=>{ '@later'; const Q=UI.mapPlan(), T=TILE, OX=SHARED.BOD.OX, OY=SHARED.BOD.OY, E=(LEVEL.edge&&(LEVEL.edge.field||LEVEL.edge.lines))||[], F=Q.F;
     // the map cropped to the section (its forcefields and the houses on them), a little of the backdrop round it
     const ex=E.flatMap(l=>[l[0],l[2]]), ey=E.flatMap(l=>[l[1],l[3]]), vx0=Math.max(F.x0,(ex.length?Math.min(...ex):F.x0)-22), vx1=Math.min(F.x1,(ex.length?Math.max(...ex):F.x1)+4), vy0=Math.max(F.y0,(LEVEL.block&&LEVEL.block.walk?Math.min(...LEVEL.block.walk):F.y0)-16), vy1=Math.min(F.y1,(ey.length?Math.max(...ey):F.y1)+5);
     const f=Math.min(720/(vx1-vx0),720/(vy1-vy0)), mw=(vx1-vx0)*f, mh=720, my=0, TX=tx=>(tx-vx0)*f, TY=ty=>(vy1-ty)*f, WX=x=>TX(OX+x/T), WY=z=>TY(OY+z/T);
@@ -65,7 +64,7 @@ import {STALL} from './081-stalls.js';
     for(const b of B){ const x=TX(b.x0), y=TY(b.y1), w=TX(b.x1)-x, h=TY(b.y0)-y; if(w<1.5||h<1.5||x>mw)continue; const go=b.place?` data-go="${esc(b.place.name)}"`:'', rot=h>w*1.3?` transform="rotate(-90 ${(x+w/2).toFixed(1)} ${(y+h/2).toFixed(1)})"`:'';
       if(b.k==='lot'){ S.push(`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" fill="${b.place?b.place.col:'#eceae2'}" fill-opacity=".6" stroke="${INK}" stroke-width="1.2" stroke-dasharray="4 3"${go}/>`); }
       else S.push(`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" fill="${b.place?b.place.col:b.k==='stairs'?INK:'#d8d6ce'}" stroke="${INK}" stroke-width="1.2"${go}/>`);
-      if(b.n&&!b.place&&b.k!=='stairs'){ const fs=fit(b.n,w,h,8); S.push(txt(b.n,x+w/2,y+h/2+fs*.36,fs,{a:'middle',op:.7,x:rot})); } }
+      if(b.n&&!b.place&&b.k!=='stairs'){ const fs=fit(TEXT.bare(b.n),w,h,8); S.push(txt(TEXT.bare(b.n),x+w/2,y+h/2+fs*.36,fs,{a:'middle',op:.7,x:rot})); } }
     // the section's own ground named: the park, its lake, the streets, the alley, the promenade, the river
     const lab=(n,tx,ty,sz,o={})=>{ if(n&&tx>vx0&&tx<vx1&&ty>vy0&&ty<vy1)S.push(txt(n,TX(tx),TY(ty)+sz*.36,sz,{a:'middle',ls:o.ls??2,...o,x:o.r?`transform="rotate(${o.r} ${TX(tx).toFixed(1)} ${TY(ty).toFixed(1)})"`:''})); };
     if(P.x0!=null)lab(AREAS[3][1],(P.x0+P.x1)/2+P.ox,(P.y0+P.y1)/2+P.oy-8,26,{f:'#2c5e1a',op:.8,ls:1});
@@ -92,10 +91,11 @@ import {STALL} from './081-stalls.js';
     G.sel={x:gx+62,y:139,w:gw-62,h:18};
     S.push(`<line x1="${gx}" y1="168" x2="${gx+gw}" y2="168" stroke="${INK}" stroke-width="1" opacity=".4"/>`+txt(TEXT.t('bro.poi'),gx,185,11,{ls:2}));
     const HH=1.5, gh=LS.map(([,L])=>L.length+HH), tot=gh.reduce((a,b)=>a+b,0); let CM=gh.map(()=>0), best=tot; for(let m=0;m<1<<gh.length;m+=2){ let a=0; gh.forEach((h,i)=>{ if(m>>i&1)a+=h; }); const w=Math.max(a,tot-a); if(w<best-1e-9){ best=w; CM=gh.map((_,i)=>m>>i&1); } }   // two columns, the groups shared between them so neither runs long (owner, 8 Nov 2026: "too much empty space")
-    const cw=gw/2, rh=Math.min(21,430/best), fz=Math.min(12,Math.max(9,rh*.62));
+    const cw=gw/2, rh=Math.min(21,418/best), fz=Math.min(12,Math.max(9,rh*.62));
     LS.forEach(([k,L],i)=>{ const c=CM[i], r0=gh.slice(0,i).reduce((a,b,j)=>a+(CM[j]===c?b:0),0), x=gx+c*cw; let y=202+r0*rh;
       S.push(`<rect x="${x}" y="${(y-8).toFixed(1)}" width="${cw-14}" height="11" fill="${INK}"/>`+txt(k,x+4,(y+.5).toFixed(1),8,{f:PAPER,ls:2})); y+=HH*rh;
-      for(const {name,s} of L){ S.push(`<g data-go="${esc(name)}">`+(s?bullet(s.n,x+9,(y-fz*.38).toFixed(1),fz*.66,s.col,fz*.82):'')+`<text x="${x+23}" y="${y.toFixed(1)}" font-size="${fz.toFixed(1)}">${esc(name)}</text></g>`); y+=rh; } });
+      for(const {name,s} of L){ S.push(`<g data-go="${esc(name)}">`+(s?bullet(s.n,x+9,(y-fz*.38).toFixed(1),fz*.66,s.col,fz*.82):'')+`<text x="${x+23}" y="${y.toFixed(1)}" font-size="${fz.toFixed(1)}">${esc(TEXT.bare(name))}</text></g>`); y+=rh; } });
+    S.push(txt(TEXT.t('bro.hint'),cx,633,7.5,{a:'middle',w:'600',ls:1}));   // printed on the sheet, clear of the map's own names (owner, 12 Nov 2026)
     S.push(`<line x1="${gx}" y1="652" x2="${gx+40}" y2="652" stroke="#12b5cf" stroke-width="2.5" stroke-dasharray="7 4"/>`+txt(TEXT.t('bro.ff'),gx+48,655,8,{w:'600'}));
     S.push(txt(TEXT.t('bro.hours'),gx,676,9.5,{ls:2})+txt(TEXT.t('bro.hours2'),gx,690,8,{w:'600'})+txt(TEXT.t('bro.foot'),cx,712,7,{a:'middle',w:'600',ls:1}));
     return S.join(''); };
@@ -134,22 +134,22 @@ import {STALL} from './081-stalls.js';
   const build=()=>{ '@later'; const F=front(), K=back(); SH=document.createElement('div'); SH.className='sh'; let parent=SH;
     for(let i=0;i<4;i++){ const p=document.createElement('div'); p.className='pn'; p.innerHTML=`<div class="fc"><svg viewBox="${i*320} 0 320 720">${F}</svg><u></u>${i?'<i class="l"></i>':''}${i<3?'<i class="r"></i>':''}</div><div class="fc bk"><svg viewBox="${(3-i)*320} 0 320 720">${K}</svg>${i<3?'<u></u><i class="l"></i>':''}</div>`; parent.appendChild(p); parent=p; }
     if(G&&G.sel){ const q=G.sel, box=document.createElement('div'); box.className='gob'; Object.assign(box.style,{left:q.x+'px',top:q.y+'px',width:q.w+'px',height:q.h+'px'});   // GO TO: every place the game registers, A to Z, with its number on the map, and your neighbours' apartments (owner, 8 Nov 2026)
-      const key=n=>n.replace(/^THE /,''), items=LG.flatMap(([,L])=>L.map(o=>({name:o.name,n:o.s?o.s.n:null,col:o.s?o.s.col:null}))).sort((a,b)=>key(a.name).localeCompare(key(b.name)));
+      const key=TEXT.bare, items=LG.flatMap(([,L])=>L.map(o=>({name:o.name,n:o.s?o.s.n:null,col:o.s?o.s.col:null}))).sort((a,b)=>key(a.name).localeCompare(key(b.name)));
       // every tenant's apartment: those online now (marked) and the rest from the server's list
       let TL=[]; const apts=[], ALL=[...items], mkApts=()=>{ if(!ONLINE.visit)return; const on=ONLINE.others?[...ONLINE.others.values()].filter(o=>o&&o.id&&o.name):[], seen=new Set(on.map(o=>o.id));
         apts.length=0; for(const o of on)apts.push({name:o.name.toUpperCase()+"'S APARTMENT",visit:o,on:1}); for(const t of TL)if(!seen.has(t.id)){ seen.add(t.id); apts.push({name:String(t.name).toUpperCase()+"'S APARTMENT",visit:t}); }
         apts.sort((a,b)=>a.name.localeCompare(b.name)); ALL.length=items.length; ALL.push(...apts); }; mkApts();
-      const row=(o,i)=>`<div class="gor" data-goto="${esc(o.name)}" data-i="${i}">${o.n!=null?`<i style="background:${o.col};${DARK[o.col]?'color:#111':''}">${o.n}</i>`:'<i style="background:#fff"></i>'}${esc(o.name)}${o.on?'<span>'+esc(TEXT.t('bro.online'))+'</span>':''}</div>`;
-      box.innerHTML=`<button type="button" aria-haspopup="listbox"><b>${esc(TEXT.t('bro.choose'))}</b><b>▾</b></button><div class="gol" hidden role="listbox"><input type="text" placeholder="${esc(TEXT.t('bro.find'))}" aria-label="${esc(TEXT.t('bro.find'))}"><div class="gox"></div></div>`;
+      const row=(o,i)=>`<div class="gor" data-goto="${esc(o.name)}" data-i="${i}">${o.n!=null?`<i style="background:${o.col};${DARK[o.col]?'color:#111':''}">${o.n}</i>`:'<i style="background:#fff"></i>'}${esc(TEXT.bare(o.name))}${o.on?'<span>'+esc(TEXT.t('bro.online'))+'</span>':''}</div>`;
+      box.innerHTML=`<button type="button" aria-haspopup="listbox"><b>${esc(TEXT.t('bro.choose'))}</b><b>▾</b></button><div class="gol" hidden role="listbox"><input type="text" placeholder="${esc(TEXT.t('bro.find'))}" aria-label="${esc(TEXT.t('bro.find'))}"><div class="gor goapt"><i style="background:#fff"></i>${esc(TEXT.t('bro.myapt'))}</div><div class="gox"></div></div>`;
       const L=box.querySelector('.gol'), F=box.querySelector('input'), X=box.querySelector('.gox');
       const fill=()=>{ mkApts(); const f=F.value.trim().toUpperCase(), pick=o=>!f||o.name.includes(f); X.innerHTML=items.map((o,i)=>[o,i]).filter(([o])=>pick(o)).map(([o,i])=>row(o,i)).join('')+(apts.some(pick)?`<h6>${esc(TEXT.t('bro.neighbours'))}</h6>`+apts.map((o,i)=>[o,items.length+i]).filter(([o])=>pick(o)).map(([o,i])=>row(o,i)).join(''):''); };
       const toggle=()=>{ L.hidden=!L.hidden; if(!L.hidden){ F.value=''; fill(); F.focus(); if(ONLINE.tenants)ONLINE.tenants().then(l=>{ TL=l||[]; if(!L.hidden)fill(); }); } };
       box.querySelector('button').onclick=e=>{ e.stopPropagation(); toggle(); };
-      F.oninput=fill;
+      F.oninput=fill; box.querySelector('.goapt').onclick=e=>{ e.stopPropagation(); go(()=>UI.goName('YOUR APARTMENT')); };
       X.onclick=e=>{ e.stopPropagation(); const r=e.target.closest('.gor'); if(!r)return; const o=ALL[+r.dataset.i]; if(!o)return; go(()=>o.visit?ONLINE.visit(o.visit.id,o.visit.name):UI.goName(o.name)); };
       for(const ev of ['pointerdown','click','wheel'])box.addEventListener(ev,e=>e.stopPropagation(),{passive:true});
       SH.appendChild(box); }
-    W.innerHTML=''; W.appendChild(SH); W.insertAdjacentHTML('beforeend',`<div class="hint">${esc(TEXT.t('bro.hint'))}</div>`); };
+    W.innerHTML=''; W.appendChild(SH); };
   const open=()=>{ if(up)return close(); up=true; flipped=false; z=1; px=py=0; keys.clear(); fit(); build(); W.hidden=false; pose(1,0); };
   const close=()=>{ if(!up)return; W.hidden=true; W.innerHTML=''; SH=null; up=false; };
   const flip=()=>{ if(!up)return; flipped=!flipped; pose(1,flipped?180:0); const sel=SH&&SH.querySelector('.gob'); if(sel){ sel.hidden=flipped; const l=sel.querySelector('.gol'); if(l)l.hidden=true; } };
@@ -167,10 +167,10 @@ import {STALL} from './081-stalls.js';
       const [x,zz]=G.toWorld(sx,sy); go(()=>UI.goTo(x,zz,'up')); }); }
   addEventListener('keydown',e=>{ const key=(e.key||'').toLowerCase(), sm=e.shiftKey&&key==='m'&&!e.ctrlKey&&!e.metaKey&&!e.altKey;
     if(sm){ if(e.repeat||(e.target&&e.target.closest&&e.target.closest('input,textarea,select,[contenteditable="true"]')))return; e.preventDefault(); e.stopImmediatePropagation(); if(up)return close(); if(UI.menuOpen)UI.toggleMenu(); return open(); }
-    if(!up)return; e.stopImmediatePropagation(); if(e.target&&e.target.matches&&e.target.matches('#bro input')&&key!=='escape'){ if(key==='enter'){ const r=W.querySelector('.gor'); if(r)r.click(); } return; } e.preventDefault(); if(e.repeat)return;   // the drop-down keeps its own keys
+    if(!up)return; e.stopImmediatePropagation(); if(e.target&&e.target.matches&&e.target.matches('#bro input')&&key!=='escape'){ if(key==='enter'){ const r=W.querySelector('.gox .gor'); if(r)r.click(); } return; } e.preventDefault(); if(e.repeat)return;   // the drop-down keeps its own keys
     if(key==='escape'){ close(); } else if(key==='f')flip(); },true);
   addEventListener('keyup',e=>{ if(up)e.stopImmediatePropagation(); },true);
   addEventListener('resize',()=>{ if(up){ fit(); pose(1,flipped?180:0); } });
-  UI.mapWindow=()=>{ if(!up)open(); };
+  UI.mapWindow=()=>{ if(UI.menuOpen)UI.toggleMenu(); if(!up)open(); };
   UI.brochure={open,close,flip,up:()=>up,flipped:()=>flipped,places:()=>LN.slice()};
-  window.BRODBG=()=>({up,flipped,places:LN.length,spots:PL.length,sel:(()=>{ const b=document.querySelector('#bro .gob'); if(!b)return 0; const l=b.querySelector('.gol'), h=l.hidden; l.hidden=false; b.querySelector('input').dispatchEvent(new Event('input')); const n=b.querySelectorAll('.gor').length; l.hidden=h; return n; })(),go:document.querySelectorAll('#bro [data-go]').length,st:document.querySelectorAll('#bro [data-st]').length}); }
+  window.BRODBG=()=>({up,flipped,places:LN.length,spots:PL.length,sel:(()=>{ const b=document.querySelector('#bro .gob'); if(!b)return 0; const l=b.querySelector('.gol'), h=l.hidden; l.hidden=false; b.querySelector('input').dispatchEvent(new Event('input')); const n=b.querySelectorAll('.gox .gor').length; l.hidden=h; return n; })(),go:document.querySelectorAll('#bro [data-go]').length,st:document.querySelectorAll('#bro [data-st]').length}); }

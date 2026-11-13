@@ -6,7 +6,6 @@ import {MAPG, MODS, SOL, SYS, TILE} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
 import {makeNPC, STHOLE} from './076-npc-map.js';
 import {CREATURES, CREATURESREADY} from './086-npc-fox.js';
-import {FARM} from './086a-farm.js';
 const CREATS=[]; window.CREATS=CREATS;
 { const C=CREATURES, geomOf=M=>SKIN.geom(M), rigOf=R=>SKIN.rig(R), clipsOf=D=>SKIN.clips(D.clips,D.rig.names);
   const M=SHARED.BOD.MAP, X=SHARED.BOD.XS, Z=SHARED.BOD.ZS, PARKL={x0:X(PARK.x0+PARK.ox+2.2),x1:X(PARK.x1+PARK.ox-2.2),z0:Z(PARK.y0+PARK.oy+2.2),z1:Z(PARK.y1+PARK.oy-2.2)}, ALL={x0:X(M.x0+2),x1:X(M.x1-2),z0:Z(-76.3),z1:Z(PARK.y1+PARK.oy-1)},
@@ -72,9 +71,10 @@ const CREATS=[]; window.CREATS=CREATS;
         if((S.c-=dt)<=0){ if(Math.random()<.45){ S.mode='go'; S.food=foodOf(n); } else S.mode='home'; st.to=null; } }
       else if(S.mode==='home'){ st.v=K.v*WU; S.hy=n.y-N.ground(n.x,n.z); if(!st.to)st.to={x:n.x,z:n.z}; if(at(n.x,n.z)){ S.mode='in'; S.c=rnd(6,25); st.to=null; N.body.visible=false; } } },
     bat:(dt,you,st,N,S,K)=>{ '@later'; const out=K.out(); N.body.visible=out; if(!out){ st.to=null; return; } st.v=K.v*WU;
+      if(!S.hubs&&S.roost){ S.hubs=[S.roost]; S.hub=S.roost; S.sw=1e9; }
       if(!S.hubs){ const P=POND, H=[]; if(P&&P.c)H.push({x:P.c.x,z:P.c.z}); for(const d of FL().beds)if(inL(PARKL,d.x,d.z))H.push({x:d.x,z:d.z}); if(!H.length)H.push({x:(PARKL.x0+PARKL.x1)/2,z:(PARKL.z0+PARKL.z1)/2}); S.hubs=H; S.hub=H[Math.floor(Math.random()*H.length)]; S.sw=rnd(15,40); }
       if((S.sw-=dt)<=0){ S.sw=rnd(15,40); S.hub=S.hubs[Math.floor(Math.random()*S.hubs.length)]; }
-      if((S.d-=dt)<=0||!st.to){ S.d=rnd(.4,1.3); const a=Math.random()*Math.PI*2, r=rnd(0,5)*WU; st.to={x:Math.max(PARKL.x0,Math.min(PARKL.x1,S.hub.x+Math.cos(a)*r)),z:Math.max(PARKL.z0,Math.min(PARKL.z1,S.hub.z+Math.sin(a)*r))}; S.hy=rnd(2.5,7)*WU; } },
+      if((S.d-=dt)<=0||!st.to){ S.d=rnd(.4,1.3); const a=Math.random()*Math.PI*2, r=rnd(0,1)*(S.hub.r||5*WU); st.to={x:Math.max(PARKL.x0,Math.min(PARKL.x1,S.hub.x+Math.cos(a)*r)),z:Math.max(PARKL.z0,Math.min(PARKL.z1,S.hub.z+Math.sin(a)*r))}; S.hy=rnd(2.5,7)*WU; } },
     spider:(dt,you,st,N,S,K)=>{ st.to=null; },
     frog:(dt,you,st,N,S,K)=>{ '@later'; const P=POND; if(!S.set||!P||!P.c)return;
       if(!st.goIn&&st.inT==null&&Math.hypot(you.x-st.x,you.z-st.z)<K.flee*WU){ const a=Math.atan2(st.z-P.c.z,st.x-P.c.x); st.to={x:P.c.x+Math.cos(a)*P.r*.9,z:P.c.z+Math.sin(a)*P.r*.9}; st.goIn=true; S.fled=1; SFX.play&&SFX.play('splash'); } },
@@ -90,7 +90,8 @@ const CREATS=[]; window.CREATS=CREATS;
       const x=b.x+Math.sin(a)*(b.r+.06*WU), z=b.z+Math.cos(a)*(b.r+.06*WU), y=b.y+Math.min(b.h*.6,1.1*WU); st.x=x; st.z=z; st.h=a; S.hy=y-N.ground(x,z); S.y=S.hy;
       const w=new THREE.LineSegments(webGeo(),webMat); w.position.set(x,y+.02*WU,z); w.rotation.y=a; w.raycast=()=>{}; MAPG.park.add(w); S.web=w; N.web={x,y,z,a}; return true; },
     frog:N=>{ const P=POND; if(!P||!P.ready||!P.c)return false; const e=P.edge(); N.st.x=e.x; N.st.z=e.z; return true; },
-    bat:(N,S)=>{ const P=POND; if(!P||!P.ready||!P.c)return false; const a=Math.random()*Math.PI*2, r=rnd(0,4)*WU; N.st.x=P.c.x+Math.cos(a)*r; N.st.z=P.c.z+Math.sin(a)*r; return true; },
+    bat:(N,S)=>{ const RS=MODS.batRoosts||[]; if(RS.length){ const R=S.roost=RS[(BATN.n++)%RS.length], a=Math.random()*Math.PI*2, r=rnd(0,1)*R.r; N.st.x=R.x+Math.cos(a)*r; N.st.z=R.z+Math.sin(a)*r; return true; }   // a roost a place keeps (MODS.batRoosts: x, z, r world; n bats)
+      const P=POND; if(!P||!P.ready||!P.c)return false; const a=Math.random()*Math.PI*2, r=rnd(0,4)*WU; N.st.x=P.c.x+Math.cos(a)*r; N.st.z=P.c.z+Math.sin(a)*r; return true; },
     wasp:(N,S)=>{ const n=nestOf(); if(!n)return false; S.mode='in'; S.c=rnd(0,15); N.st.x=n.x; N.st.z=n.z; N.body.visible=false; return true; } };
   const PICK={
     frog:(st,N,S)=>{ '@later'; const P=POND; if(!P||!P.c||Math.random()<.65){ st.to=null; st.wait=rnd(6,22); return; } const a=Math.atan2(st.z-P.c.z,st.x-P.c.x)+rnd(-.12,.12), r=P.r+rnd(.25,1.1)*WU; st.to={x:P.c.x+Math.cos(a)*r,z:P.c.z+Math.sin(a)*r}; if(!N.free(st.to.x,st.to.z,st.R)){ st.to=null; st.wait=2; } },
@@ -103,15 +104,15 @@ const CREATS=[]; window.CREATS=CREATS;
   let si=0; const spawn=([key,name,metres,tp,speed,turn,ex])=>{ const D=C[key], K=Object.assign({},KIND[key],ex&&{lane:ex.lane}), rig=rigOf(D.rig), CL=clipsOf(D), mixer=new THREE.AnimationMixer(rig.bones[0]), A={}, act=n=>A[n]||(A[n]=mixer.clipAction(CL[n])), free=K.fly&&K.beh?()=>true:ex?ex.free:(K.free||FREE), [tx,tz]=tp||[0,0], tiny=metres<.2&&!K.big;
     const S={t:Math.random()*10,y:0,hy:0,i:K.beh==='spider'?si++:0,fly:Array.isArray(K.fly)?K.fly[0]+Math.random()*(K.fly[1]-K.fly[0]):0,hid:false}; let cur=null; const beh=BEH[K.beh], pk=PICK[K.beh];
     const N=makeNPC(null,{key:key.toLowerCase(),name,names:D.mesh.parts,lv:ex?ex.lv:'up',group:ex?ex.group:K.lane===PARKL?'park':'bodega',geo:PAINT(key,geomOf(D.mesh)),skin:rig,tall:D.tall,rank:D.mesh.parts.map(()=>0),metres,x:ex?ex.x:K.lane===PARKL?rnd(PARKL.x0,PARKL.x1):X(tx),z:ex?ex.z:K.lane===PARKL?rnd(PARKL.z0,PARKL.z1):Z(tz),lane:K.lane,free,ground:ex?ex.ground:(x,z)=>MODS.bodega.ground(x,z),radius:tiny?.03:.12,fly:!!K.fly,speed,stride:0,rock:0,bob:0,
-      brain:beh?((dt,you,st)=>{ if(!S.set&&SET[K.beh])S.set=SET[K.beh](N,S); else S.set=1; beh(dt,you,st,N,S,K); }):K.farm?(dt=>N.life&&N.life.drive(dt)):null,
+      brain:beh?((dt,you,st)=>{ if(!S.set&&SET[K.beh])S.set=SET[K.beh](N,S); else S.set=1; beh(dt,you,st,N,S,K); }):null,
       pick:st=>{ if(pk)return pk(st,N,S); if(WALKS.pick&&WALKS.pick(st))return; if(Array.isArray(K.fly)){ const L=K.lane; st.to={x:L.x0+Math.random()*(L.x1-L.x0),z:L.z0+Math.random()*(L.z1-L.z0)}; S.fly=K.fly[0]+Math.random()*(K.fly[1]-K.fly[0]); return; } const P=POND, L=K.lane; S.drink=false; st.face=null; if(P&&P.ready&&K.lane===PARKL&&Math.random()<.4){ const e=P.edge(); if(free(e.x,e.z,.12*TILE)){ st.to=e; S.drink=true; return; } }
           for(let k=0;k<12;k++){ const p={x:L.x0+Math.random()*(L.x1-L.x0),z:L.z0+Math.random()*(L.z1-L.z0)}; if(free(p.x,p.z,.12*TILE)){ st.to=p; return; } } st.to=null; st.wait=1; },
       anim:(dt,moving,st,sc)=>{ S.t+=dt; if(!beh){ const dark=CLOCK.dark(), out=K.night===1?dark:K.day?!dark:true; if(out===S.hid){ S.hid=!out; VIS.hide(N.g,'away',!out); st.hold=!out; if(!out)st.to=null; } if(!out)return; } if(!N.body.visible)return;
         if(S.drink&&!st.to&&POND&&POND.c){ st.face={x:POND.c.x,z:POND.c.z}; st.wait=Math.max(st.wait||0,6); S.drink=false; }
-        if(N.life)S.rest=N.life.clip; else if(moving)S.rest=undefined; else if(S.rest===undefined){ S.rest=null; let u=Math.random(); for(const [c,p,nt] of K.rest||[])if((!nt||CLOCK.dark())&&C[key].clips[c]&&(u-=p)<0){ S.rest=c; st.wait=Math.max(st.wait||0,6+Math.random()*10); break; } }   // stopped: now and then it sits, grazes, barks, howls at night or sleeps a while
+        if(moving)S.rest=undefined; else if(S.rest===undefined){ S.rest=null; let u=Math.random(); for(const [c,p,nt] of K.rest||[])if((!nt||CLOCK.dark())&&C[key].clips[c]&&(u-=p)<0){ S.rest=c; st.wait=Math.max(st.wait||0,6+Math.random()*10); break; } }   // stopped: now and then it sits, grazes, barks, howls at night or sleeps a while
         const run=K.run&&moving&&st.v>1.2*TILE, want=moving?(run?K.run:K.walk):S.rest||K.idle; if(want!==cur){ const a=act(want); a.reset().setLoop(THREE.LoopRepeat,Infinity).fadeIn(.2).play(); if(cur)act(cur).fadeOut(.2); cur=want; }
         if(K.hop){ const a=act(cur), ph=(a.time/a.getClip().duration)%1, air=moving&&ph>K.hop[0]&&ph<K.hop[1]; st.v=speed*TILE*(S.fled?3:1)*(air?1/(K.hop[1]-K.hop[0]):.004); a.timeScale=S.fled?2:1; }
-        else act(cur).timeScale=K.fly&&K.beh?1.6:moving?Math.min(4,Math.max(.6,st.v/(K.pace*sc))):1; if(N.life)N.life.anim(dt,mixer); else mixer.update(dt);
+        else act(cur).timeScale=K.fly&&K.beh?1.6:moving?Math.min(4,Math.max(.6,st.v/(K.pace*sc))):1; mixer.update(dt);
         S.y+=(S.hy-S.y)*Math.min(1,dt*(K.beh==='bat'?3:2)); if(S.fly)N.g.position.y+=S.fly*WU*.5+Math.sin(S.t*2.1)*.15; if(S.hy||S.y)N.g.position.y+=S.y+(K.fly?Math.sin(S.t*(K.beh==='wasp'?9:2.1))*(K.beh==='wasp'?.01:.15)*WU:0);
         if(K.fly)N.body.rotation.z=moving?Math.sin(S.t*(K.beh==='bat'?4:1.3))*.25:0; }});
     N.g.rotation.order='YXZ'; N.me.rotation.y=turn+(K.turn||0); N.me.position.set(0,0,0); if(K.beh==='spider')N.me.rotation.x=-Math.PI/2;
@@ -119,18 +120,17 @@ const CREATS=[]; window.CREATS=CREATS;
     if(K.fly&&!K.beh){ N.st.v=speed*TILE; } if(tiny||K.fly){ N.blocks=()=>false; N.push=()=>{}; } if(tiny){ N.push=()=>{}; N.selfSh=false; N.me.castShadow=false; } N.ex=ex; N.kind=key; N.wild=S; if(SET[K.beh])N.farMove=()=>{ if(!S.set&&PARK.ready)S.set=SET[K.beh](N,S); };
     if(ex)N.g.position.set(N.st.x,ex.ground(N.st.x,N.st.z),N.st.z);
     N.mixer=mixer; N.lane=K.lane; N.restless=()=>!!K.fly; if(!ex&&(K.lane===PARKL||K.park))N.park=true; N.pack(); CREATS.push(N);
-    if(K.farm&&!ex)N.life=FARM.join(N,[...key].reduce((a,c)=>(a*31+c.charCodeAt(0))%9973,0)+(FARMN[key]=(FARMN[key]||0)+1)*7,D.clips,rig,D.rig.names,key);   // the farm's animals live by the farm's day (086a), the same for everyone
-    else if(!K.beh&&!K.fly&&!ex){ const L=K.lane; N.wkey='an:'+key+':'+(SEEN[key]=(SEEN[key]||0)+1); WSH.push([N,{v:speed*TILE*.5,auto:0,mode:{b:{band:[[L.x0,L.z0,L.x1,L.z1]]}}}]); } };   // an animal on the ground walks where the section's walks say: the same for everyone
-  const SEEN={}, WSH=[], FARMN={}; let shareT=0; SYS.every(()=>{ if(!WSH.length||!WALKS.on||!WALKS.reg||!(window.LOAD))return; if(shareT)return; shareT=1; LOAD('later').then(()=>{ for(const [N,m] of WSH.splice(0))WALKS.reg(N,m); shareT=0; }); },2000,'087 animals walk shared');
-  CREATURESREADY.then(()=>{ for(const e of CH)spawn(e); });
-  // the Drive's animals (owner, 3 Nov 2026): the park's woods, its farm, its zoo and its dinosaur valley, bugs in the grass, cats and a dog on the street
-  { const R=(x0,y0,x1,y1)=>({x0:X(x0),x1:X(x1),z0:Z(y0),z1:Z(y1),park:1}), WOOD=PARKL, FARML=FARM.pen, ZOO=R(-20,104,22,134), DINO=R(62,132,104,176), LAKE=R(140,-2,166,22);
+    if(!K.beh&&!K.fly&&!ex){ const L=K.lane; N.wkey='an:'+key+':'+(SEEN[key]=(SEEN[key]||0)+1); WSH.push([N,{v:speed*TILE*.5,auto:0,mode:{b:{band:[[L.x0,L.z0,L.x1,L.z1]]}}}]); } };   // an animal on the ground walks where the section's walks say: the same for everyone
+  const SEEN={}, WSH=[]; let shareT=0; SYS.every(()=>{ if(!WSH.length||!WALKS.on||!WALKS.reg||!(window.LOAD))return; if(shareT)return; shareT=1; LOAD('later').then(()=>{ for(const [N,m] of WSH.splice(0))WALKS.reg(N,m); shareT=0; }); },2000,'087 animals walk shared');
+  const BATN={n:0}; CREATURESREADY.then(()=>{ for(const e of CH)spawn(e); for(const R of MODS.batRoosts||[])for(let i=0;i<(R.n||3);i++)spawn(['Bat','BAT',.25,null,1,0]); });   // the bats of a place that keeps a roost (the falls, 089b), out at dark
+  // the Drive's animals (owner, 3 Nov 2026): the park's woods, its zoo and its dinosaur valley, bugs in the grass, cats and a dog on the street
+  { const R=(x0,y0,x1,y1)=>({x0:X(x0),x1:X(x1),z0:Z(y0),z1:Z(y1),park:1}), WOOD=PARKL, ZOO=R(-20,104,22,134), DINO=R(62,132,104,176), LAKE=R(140,-2,166,22);
     const DRY=(x,z,R)=>FREE(x,z,R)&&!((FLOW&&FLOW.waters)||[]).some(w=>w.has&&w.has(x,z));
     const k=(n,lane,pace,o={})=>KIND[n]=Object.assign({walk:n+'_Walk',run:n+'_Run',idle:n+'_Idle',pace,lane,park:lane!==ALL,free:lane===LAKE?FREE:DRY},o), fly=(n,lane,f,o)=>k(n,lane,3,Object.assign({walk:n+'_Fly',run:null,idle:n+'_Fly',fly:f},o));
     const RS=(n,...L)=>L.map(([c,p,nt])=>[n+'_'+c,p,nt]);   // what it does when it stops, now and then: [clip, chance, night only]
     k('Fox',WOOD,3,{night:.5,rest:RS('Fox',['Sit',.35],['Howl',.2,1])}); k('Deer',WOOD,2.4); k('Wolf',WOOD,3,{night:1,rest:RS('Wolf',['Howl',.4,1],['Sit',.3])}); k('Bear',WOOD,2); k('Crow',ALL,2.5); fly('Owl',WOOD,[5,9],{night:1}); k('Duck',LAKE,2,{run:null});
     k('Cat',ALL,2.5); k('BlackCat',ALL,2.5,{night:1}); k('Dog',ALL,3,{rest:RS('Dog',['Sit',.45],['Bark',.2])});
-    for(const n of ['Cow','Pig','Horse','WildHorse','Mule','Ibex'])k(n,FARML,2.4,{farm:1}); for(const n of ['Lion','Elephant','Giraffe','Zebra','Camel'])k(n,ZOO,2.4); k('Penguin',LAKE,2,{run:null});
+    for(const n of ['Cow','Pig','Horse','WildHorse','Mule','Ibex'])k(n,WOOD,2.4); for(const n of ['Lion','Elephant','Giraffe','Zebra','Camel'])k(n,ZOO,2.4); k('Penguin',LAKE,2,{run:null});
     k('Raptor',DINO,3); k('Stego',DINO,2); k('Brachio',DINO,1.6,{run:null}); fly('Ptera',DINO,[8,14]);
     for(const n of ['AntQueen','WoodAnt','Aphid','Ladybird','Hopper','Beetle','Mantis'])k(n,WOOD,3); for(const n of ['Caterpillar','Slug','Snail'])k(n,WOOD,1.5,{walk:n+'_Crawl',run:null}); k('Crab',LAKE,2);
     fly('Bee',WOOD,[.6,1.6],{day:1}); fly('Bumblebee',WOOD,[.6,1.6],{day:1}); fly('Firefly',WOOD,[.5,1.8],{night:1});
@@ -141,14 +141,18 @@ const CREATS=[]; window.CREATS=CREATS;
       ['Raptor','VELOCIRAPTOR',.9,3,1.4],['Stego','STEGOSAURUS',3.5,2,.5],['Brachio','BRACHIOSAURUS',11,1,.4],['Ptera','PTERANODON',1.6,2,1.4],
       ['AntQueen','ANT QUEEN',.015,2,.05],['WoodAnt','WOOD ANT',.008,6,.06],['Aphid','APHID',.004,6,.005],['Ladybird','LADYBIRD',.008,4,.03],['Hopper','GRASSHOPPER',.02,4,.2],['Beetle','STAG BEETLE',.03,2,.05],['Mantis','PRAYING MANTIS',.04,2,.03],
       ['Caterpillar','CATERPILLAR',.01,3,.01],['Slug','LEOPARD SLUG',.02,3,.01],['Snail','SNAIL',.025,3,.01],['Crab','HERMIT CRAB',.04,3,.1],['Bee','HONEYBEE',.015,6,.8],['Bumblebee','BUMBLEBEE',.02,3,.7],['Firefly','FIREFLY',.012,5,.4]];
-    const PARKKEEP=new Set(['Crow','Owl','Duck','Penguin','Bee','Bumblebee','Firefly','Cow','Pig','Horse','Mule']);   // the rest are pets at the pet shops; the farm animals graze the farm's paddock
-    CREATS.FA=FA; const FL=__LAZY__("data/fauna.json"), hs=(a,b)=>{ const v=Math.sin(a*127.1+b*311.7)*43758.5453; return v-Math.floor(v); }, inv=(L,x,z)=>[(x-X(0))/(X(1)-X(0)),(z-Z(0))/(Z(1)-Z(0))];
-    CREATURESREADY.then(()=>FL()).then(J=>{ Object.assign(C,J); FA.forEach(([key,name,m,n,sp],i)=>{ if(!C[key]||!PARKKEEP.has(key))return; const L=KIND[key].lane; for(let j=0;j<n;j++){ const x=L.x0+hs(i,j)*(L.x1-L.x0), z=L.z0+hs(j,i+7)*(L.z1-L.z0); spawn([key,name,m,inv(L,x,z),sp,0]); } }); }).catch(e=>console.warn('FAUNA',e)); }
+    const PARKKEEP=new Set(['Crow','Owl','Duck','Penguin','Bee','Bumblebee','Firefly','Deer']);   // the rest are pets only; deer in the woods to tame and ride (146zjd)
+    CREATS.FA=FA; const FX=__LAZY__("data/fauna-extra.json"), PF={AntQueen:__LAZY__("data/pets/antqueen.json"),Aphid:__LAZY__("data/pets/aphid.json"),Bear:__LAZY__("data/pets/bear.json"),Bee:__LAZY__("data/pets/bee.json"),Beetle:__LAZY__("data/pets/beetle.json"),Brachio:__LAZY__("data/pets/brachio.json"),Bumblebee:__LAZY__("data/pets/bumblebee.json"),Camel:__LAZY__("data/pets/camel.json"),Cat:__LAZY__("data/pets/cat.json"),Caterpillar:__LAZY__("data/pets/caterpillar.json"),Cow:__LAZY__("data/pets/cow.json"),Crab:__LAZY__("data/pets/hermit.json"),Crow:__LAZY__("data/pets/crow.json"),Deer:__LAZY__("data/pets/deer.json"),Dog:__LAZY__("data/pets/dog.json"),Duck:__LAZY__("data/pets/duck.json"),Elephant:__LAZY__("data/pets/elephant.json"),Firefly:__LAZY__("data/pets/firefly.json"),Fox:__LAZY__("data/pets/fox.json"),Giraffe:__LAZY__("data/pets/giraffe.json"),Hopper:__LAZY__("data/pets/hopper.json"),Ibex:__LAZY__("data/pets/ibex.json"),Ladybird:__LAZY__("data/pets/ladybird.json"),Lion:__LAZY__("data/pets/lion.json"),Mantis:__LAZY__("data/pets/mantis.json"),Mule:__LAZY__("data/pets/mule.json"),Owl:__LAZY__("data/pets/owl.json"),Penguin:__LAZY__("data/pets/penguin.json"),Pig:__LAZY__("data/pets/pig.json"),Ptera:__LAZY__("data/pets/ptera.json"),Raptor:__LAZY__("data/pets/raptor.json"),Slug:__LAZY__("data/pets/slug.json"),Snail:__LAZY__("data/pets/snail.json"),Stego:__LAZY__("data/pets/stego.json"),Wolf:__LAZY__("data/pets/wolf.json"),WoodAnt:__LAZY__("data/pets/ant.json"),Zebra:__LAZY__("data/pets/zebra.json")}, FAP={}, hs=(a,b)=>{ const v=Math.sin(a*127.1+b*311.7)*43758.5453; return v-Math.floor(v); }, inv=(L,x,z)=>[(x-X(0))/(X(1)-X(0)),(z-Z(0))/(Z(1)-Z(0))];
+    // an animal's body, skeleton and clips are its pet file's (data/pets); fauna-extra adds the clips a pet has not and the three with a body of their own
+    const fauna=key=>FAP[key]||(FAP[key]=FA.some(f=>f[0]===key)?Promise.all([PF[key]?PF[key]():null,FX()]).then(([p,x])=>{ if(x.own[key])return C[key]=x.own[key]; const cl={}, s=p.size, m=x.parts[key]||x.c[key]?{...p.mesh,parts:x.parts[key]||p.mesh.parts,c:x.c[key]||p.mesh.c}:p.mesh;
+      for(const n in p.clips)cl[key+'_'+n]=p.clips[n]; for(const n in x.clips[key]||{})cl[key+'_'+n]=x.clips[key][n]; return C[key]={rig:p.rig,mesh:m,clips:cl,tall:p.tall,lo:[-s[0]/2,0,-s[2]/2],hi:[s[0]/2,s[1],s[2]/2]}; }):Promise.resolve(null));
+    CREATS.fauna=fauna;
+    CREATURESREADY.then(SYS.far(()=>Promise.all([...PARKKEEP].map(fauna)))).then(()=>{ FA.forEach(([key,name,m,n,sp],i)=>{ if(!C[key]||!PARKKEEP.has(key))return; const L=KIND[key].lane; for(let j=0;j<n;j++){ const x=L.x0+hs(i,j)*(L.x1-L.x0), z=L.z0+hs(j,i+7)*(L.z1-L.z0); spawn([key,name,m,inv(L,x,z),sp,0]); } }); }).catch(e=>console.warn('FAUNA',e)); }
   window.CREATNEW=MODS.creatNew=(key,id,metres,X={})=>{ '@later'; const D=C[key], K=KIND[key], rig=rigOf(D.rig), CL=clipsOf(D), mixer=new THREE.AnimationMixer(rig.bones[0]), A={}, act=n=>A[n]||(A[n]=mixer.clipAction(CL[n])); let cur=null, cn;
     const N=makeNPC(null,{key:id,name:id.toUpperCase(),names:D.mesh.parts,lv:'up',group:'bodega',geo:X.paint?X.paint(geomOf(D.mesh)):PAINT(key,geomOf(D.mesh)),skin:rig,tall:D.tall,rank:D.mesh.parts.map(()=>0),metres,x:0,z:0,lane:K.lane,free:()=>true,radius:.12,speed:1,stride:0,rock:0,bob:0,...X.npc,
       anim:(dt)=>{ const want=N.clip||K.idle; if(want!==cur||N.clipN!==cn){ const a=act(want), one=!!(K.once&&K.once.includes(want)); a.reset().setLoop(one?THREE.LoopOnce:THREE.LoopRepeat,Infinity).fadeIn(.15).play(); a.clampWhenFinished=one; if(cur&&cur!==want)act(cur).fadeOut(.15); cur=want; cn=N.clipN; } act(cur).timeScale=N.clipK||1; mixer.update(dt); }});
     N.g.rotation.order='YXZ'; N.me.rotation.y=K.turn||0; N.me.position.set(0,0,0); N.mixer=mixer; return N; };
   window.CREATDBG=()=>CREATS.map(N=>({key:N.key,x:+N.st.x.toFixed(1),z:+N.st.z.toFixed(1),y:+N.g.position.y.toFixed(2),to:!!N.st.to,vis:N.body.visible})); }
 
-const PAWNS=__LAZY__("data/pawns.json");
+const PAWNS=SYS.far(__LAZY__("data/pawns.json"));
 export {CREATS, PAWNS};

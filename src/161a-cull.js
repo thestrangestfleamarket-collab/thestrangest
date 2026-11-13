@@ -1,9 +1,9 @@
-// THE CULL: CULL draws each big mesh as one BatchedMesh (an instanced mesh's copies a piece each, a plain mesh marked userData.cull in cells of 10 tiles) so three's multi-draw draws only the pieces in view and within the distance fog's end (DFOG.cut) or the player's DRAW DISTANCE; nothing wholly past them is drawn.
+// THE CULL: CULL draws each big mesh as one BatchedMesh (an instanced mesh's copies a piece each, one that moves its copies when marked userData.pieceCull, a plain mesh marked userData.cull in cells of 10 tiles) so three's multi-draw draws only the pieces in view and within the distance fog's end (DFOG.cut) or the player's DRAW DISTANCE; nothing wholly past them is drawn.
 import {SHARED, THREE} from './003-shx.js';
 import {CULL, ED, FAR3, MAPED, PARK, pos, ROOMS, UI} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
-import {LEVEL, QS, SYS, TILE} from './006-map-pre.js';
+import {LEVEL, MAPG, QS, SYS, TILE} from './006-map-pre.js';
 import {DFOG} from './134e-distfog.js';
 Object.assign(CULL,{L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0',FL:[],H:[],D:[],R:0,hz:QS.get('hazecull')!=='0',PAD:2*TILE});
 { const m4=new THREE.Matrix4(), w4=new THREE.Matrix4(), v=new THREE.Vector3(), S=new THREE.Sphere(), B=new THREE.Box3(), C=new THREE.Color(), key=(x,z)=>Math.floor(x/CULL.CS)*4096+Math.floor(z/CULL.CS);
@@ -16,7 +16,7 @@ Object.assign(CULL,{L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0',FL:[],H:
   const drop=R=>{ for(const p of R.px){ p.removeFromParent(); p.dispose(); } R.px=[]; R.bm=null; };
   const vers=s=>{ const g=s.geometry; return s.isInstancedMesh?s.instanceMatrix.version+'/'+(s.instanceColor?'c'+s.instanceColor.version:'')+'/'+s.count:(g.index?g.index.version:0)+'/'+Object.values(g.attributes).map(a=>a.version).join(); };
   // each piece's box in the mesh's own frame, for the distance test
-  const centres=R=>{ const bm=R.bm, n=R.n, c=R.c=new Float32Array(n*6); for(let i=0;i<n;i++){ bm.getMatrixAt(i,m4); bm.getBoundingBoxAt(R.gid(i),B).applyMatrix4(m4); c[i*6]=B.min.x; c[i*6+1]=B.min.y; c[i*6+2]=B.min.z; c[i*6+3]=B.max.x; c[i*6+4]=B.max.y; c[i*6+5]=B.max.z; } bm.boundingSphere=null; bm.boundingBox=null; R.fresh=true; };
+  const centres=R=>{ const bm=R.bm, n=R.n, c=R.c=new Float32Array(n*6), o=R.o=R.s.userData.cullFar?new Float32Array(n*3):null; for(let i=0;i<n;i++){ bm.getMatrixAt(i,m4); bm.getBoundingBoxAt(R.gid(i),B).applyMatrix4(m4); c[i*6]=B.min.x; c[i*6+1]=B.min.y; c[i*6+2]=B.min.z; c[i*6+3]=B.max.x; c[i*6+4]=B.max.y; c[i*6+5]=B.max.z; if(o){ o[i*3]=m4.elements[12]; o[i*3+1]=m4.elements[13]; o[i*3+2]=m4.elements[14]; } } bm.boundingSphere=null; bm.boundingBox=null; R.fresh=true; };
   const fill=R=>{ const s=R.s, bm=R.bm, A=s.instanceMatrix.array, K=s.instanceColor&&s.instanceColor.array; for(let i=0;i<R.n;i++){ bm.setMatrixAt(i,m4.fromArray(A,i*16)); if(K)bm.setColorAt(i,C.setRGB(K[i*3],K[i*3+1],K[i*3+2])); } centres(R); };
   const part=R=>{ drop(R); const s=R.s, g=s.geometry, M=s.material; R.g=g; R.v=vers(s); if(Array.isArray(M)||M.isShaderMaterial||s.customDepthMaterial&&s.customDepthMaterial.isShaderMaterial){ R.off=true; return; } s.updateWorldMatrix(true,false); let bm;
     if(s.isInstancedMesh){ R.n=s.count; if(R.n<2){ R.off=true; return; } const P=g.attributes.position; bm=new THREE.BatchedMesh(R.n,P.count,g.index?g.index.count:0,M); const gid=bm.addGeometry(g); for(let i=0;i<R.n;i++)bm.addInstance(gid); R.gid=()=>gid; R.tri=()=>(g.index?g.index.count:P.count)/3; R.bm=bm; fill(R); }
@@ -32,8 +32,11 @@ Object.assign(CULL,{L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0',FL:[],H:
   const tie=R=>{ const s=R.s, p=R.bm; if(p.parent!==s.parent)s.parent.add(p); p.matrix.copy(s.matrix); p.matrixWorldNeedsUpdate=true; p.visible=R.vis; p.layers.mask=s.layers.mask; p.castShadow=s.castShadow; p.receiveShadow=s.receiveShadow; p.frustumCulled=s.frustumCulled;
     p.material=s.material; p.customDepthMaterial=s.customDepthMaterial; p.customDistanceMaterial=s.customDistanceMaterial; p.renderOrder=s.renderOrder; wrap(s.material); wrap(s.customDepthMaterial); wrap(s.customDistanceMaterial); };
   // the pieces wholly past the distance: left out, until the distance or you move
-  const far=R=>{ const bm=R.bm, c=R.c, n=R.n; if(!(CULL.R>0||CULL.keep)){ if(R.hid){ for(let i=0;i<n;i++)bm.setVisibleAt(i,true); R.hid=false; } return; } const e=R.s.matrixWorld.elements; let any=false;
-    for(let i=0;i<n;i++){ B.min.set(c[i*6],c[i*6+1],c[i*6+2]); B.max.set(c[i*6+3],c[i*6+4],c[i*6+5]); const F=foot(B,e), p=CULL.pastBox(F[0],F[1],F[2],F[3]); bm.setVisibleAt(i,!p); any=any||p; } R.hid=any; };
+  // and a piece its own shader has already shrunk to nothing (userData.cullFar: the distance from the camera to the piece's origin past which it is drawn at no size), with CULL.FARM to spare for the camera moving between two looks
+  const far=R=>{ const bm=R.bm, c=R.c, o=R.o, n=R.n, haze=CULL.R>0||CULL.keep, cf=o&&!ED.on&&!MAPED.on?R.s.userData.cullFar:0; if(!haze&&!cf){ if(R.hid){ for(let i=0;i<n;i++)bm.setVisibleAt(i,true); R.hid=false; } return; } const e=R.s.matrixWorld.elements, cp=SHARED.cam.position, lim=(cf+CULL.FARM)**2; let any=false;
+    for(let i=0;i<n;i++){ let p=false; if(haze){ B.min.set(c[i*6],c[i*6+1],c[i*6+2]); B.max.set(c[i*6+3],c[i*6+4],c[i*6+5]); const F=foot(B,e); p=CULL.pastBox(F[0],F[1],F[2],F[3]); }
+      if(!p&&cf){ const a=o[i*3], b=o[i*3+1], d=o[i*3+2], x=e[0]*a+e[4]*b+e[8]*d+e[12]-cp.x, y=e[1]*a+e[5]*b+e[9]*d+e[13]-cp.y, z=e[2]*a+e[6]*b+e[10]*d+e[14]-cp.z; p=x*x+y*y+z*z>lim; }
+      bm.setVisibleAt(i,!p); any=any||p; } R.hid=any; };
   const SM=new THREE.Matrix4(), SF=new THREE.Frustum(), SS=new THREE.Sphere();
   CULL.seen=(L,o,skip)=>{ SM.multiplyMatrices(SHARED.cam.projectionMatrix,SHARED.cam.matrixWorldInverse); const e=SM.elements, ox=o?o.x:0, oy=o?o.y:0, oz=o?o.z:0;
     if(!SHARED.cam.isOrthographicCamera){ SF.setFromProjectionMatrix(SM); return L.some(S=>!(skip&&skip(S))&&SF.intersectsSphere(SS.set(S.center,S.radius).translate(v.set(ox,oy,oz)))); }
@@ -65,19 +68,28 @@ Object.assign(CULL,{L:[],M:new Map(),CS:10*TILE,on:QS.get('cull')!=='0',FL:[],H:
   const hazeHide=()=>{ if(!(CULL.R>0||CULL.keep))return;
     for(const o of CULL.FL){ if(!o.visible||!o.parent)continue; const F=foot(box(o),o.matrixWorld.elements);
       if(CULL.pastBox(F[0],F[1],F[2],F[3])){ if(o.children.length){ const g=o.geometry; if(g.drawRange.count){ CULL.D.push([g,g.drawRange.count]); g.drawRange.count=0; } } else { o.visible=false; CULL.H.push(o); } } } };
+  // in the park its trees hide the far street, falls, wall and cars (owner, 10 Nov 2026: "stop drawing the far bodega, falls and wall", then the cars by the bank): in first and third person, what in these groups (and in what is marked userData.parkFar) lies wholly past CULL.PS from you is not drawn
+  CULL.PS=100*TILE; const PG=()=>[MAPG.bodega,MAPG.park,MAPG.parkwall,...scene.children.filter(o=>o.userData.parkFar)]; let PL=[], pt=0, px=1e9, pz=1e9;
+  const parkFar=()=>{ if(!(UI.persp&&!UI.freeCam&&!ED.on&&!MAPED.on&&!ROOMS.cur&&SHARED.LVL==='up'&&!renderer.xr.isPresenting&&PARK.within&&PARK.within(pos.x,pos.z))){ PL=[]; px=1e9; return; }
+    const now=performance.now(); if(now-pt>1000||Math.hypot(pos.x-px,pos.z-pz)>TILE/2){ pt=now; px=pos.x; pz=pos.z; PL=[]; const R=CULL.PS;
+      for(const G of PG())if(G)G.traverse(o=>{ if(!(o.isMesh||o.isPoints||o.isLine)||!o.geometry||!o.geometry.attributes.position||(o.userData||{}).rin)return; const F=foot(box(o),o.matrixWorld.elements);
+        if(Math.hypot(Math.max(F[0]-pos.x,0,pos.x-F[2]),Math.max(F[1]-pos.z,0,pos.z-F[3]))>R)PL.push(o); }); }
+    for(const o of PL)if(o.visible){ o.visible=false; CULL.H.push(o); } };
   CULL.add=s=>{ if(!CULL.on||!s||CULL.M.has(s))return; const R={s,px:[],bm:null,n:0,ch:0,np:0}; CULL.M.set(s,R); CULL.L.push(R); };
   // a big, still, plain mesh joins the grid by rule, as an instanced one does: wider than a cell, one plain material, its geometry unchanged between two looks (a mesh still being painted waits)
   const WAIT=new Map(), big=o=>{ const g=o.geometry, M=o.material, P=g.attributes.position; if(Array.isArray(M)||M.isShaderMaterial||M.transparent||o.morphTargetInfluences||(g.index?g.index.count:P.count)<768)return false; if(!g.boundingSphere)g.computeBoundingSphere(); return g.boundingSphere.radius*o.matrixWorld.getMaxScaleOnAxis()>CULL.CS/2; };
-  let wt=0; const settle=()=>{ const now=performance.now(); if(!WAIT.size||now-wt<1000)return; wt=now; for(const [o,v] of WAIT){ if(!o.parent||CULL.M.has(o)){ WAIT.delete(o); continue; } const n=vers(o); if(n===v){ WAIT.delete(o); CULL.add(o); return; } WAIT.set(o,n); } };
+  let wt=0; const settle=()=>{ const now=performance.now(); if(!WAIT.size||now-wt<1000)return; wt=now; for(const [o,v] of WAIT){ if(!o.parent||CULL.M.has(o)){ WAIT.delete(o); continue; } const n=vers(o); if(n===v){ WAIT.delete(o); CULL.add(o); } else WAIT.set(o,n); } };
   CULL.rush=()=>{ for(const o of WAIT.keys())if(o.parent)CULL.add(o); WAIT.clear(); };
-  CULL.scan=()=>{ const FL=[]; scene.traverse(o=>{ if((o.isMesh||o.isPoints||o.isLine)&&o.frustumCulled&&!o.isSkinnedMesh&&o.geometry&&o.geometry.attributes.position&&!CULL.M.has(o)&&!o.userData.cullOf)FL.push(o); }); CULL.FL=FL; if(!CULL.on)return; scene.traverse(o=>{ if(o.isMesh&&o.userData.cull&&!o.isInstancedMesh){ CULL.add(o); return; } if(o.isMesh&&!o.isInstancedMesh&&!o.isBatchedMesh&&!o.isSkinnedMesh&&o.frustumCulled&&o.geometry&&o.geometry.attributes.position&&!CULL.M.has(o)&&!o.userData.cullOf&&!WAIT.has(o)&&big(o)){ WAIT.set(o,''); return; } if(!o.isInstancedMesh||CULL.M.has(o)||o.userData.cullOf||!o.frustumCulled||o.count<8||Object.values(o.geometry.attributes).some(a=>a.isInstancedBufferAttribute))return;
+  CULL.scan=()=>{ const FL=[]; scene.traverse(o=>{ if((o.isMesh||o.isPoints||o.isLine)&&o.frustumCulled&&!o.isSkinnedMesh&&o.geometry&&o.geometry.attributes.position&&!CULL.M.has(o)&&!o.userData.cullOf)FL.push(o); }); CULL.FL=FL; if(!CULL.on)return; scene.traverse(o=>{ if(o.isMesh&&o.userData.cull&&!o.isInstancedMesh){ CULL.add(o); return; } if(o.isInstancedMesh&&o.userData.pieceCull){ CULL.add(o); return; } if(o.isMesh&&!o.isInstancedMesh&&!o.isBatchedMesh&&!o.isSkinnedMesh&&o.frustumCulled&&o.geometry&&o.geometry.attributes.position&&!CULL.M.has(o)&&!o.userData.cullOf&&!WAIT.has(o)&&big(o)){ WAIT.set(o,''); return; } if(!o.isInstancedMesh||CULL.M.has(o)||o.userData.cullOf||!o.frustumCulled||o.count<8||Object.values(o.geometry.attributes).some(a=>a.isInstancedBufferAttribute))return;
     if(!o.boundingSphere)o.computeBoundingSphere(); if(o.boundingSphere.radius>CULL.CS/2)CULL.add(o); }); };
-  let lx=1e9, lz=1e9, lR=-1, lK=null;
-  CULL.begin=()=>{ if(ROOMS.hold)ROOMS.hold(); range(); settle(); const moved=Math.hypot(pos.x-lx,pos.z-lz)>TILE/2||CULL.R!==lR||CULL.keep!==lK; if(moved){ lx=pos.x; lz=pos.z; lR=CULL.R; lK=CULL.keep; }
+  let lx=1e9, lz=1e9, lR=-1, lK=null; const LC=new THREE.Vector3(1e9,0,0); CULL.FARM=4*TILE; CULL.BUDGET=4;
+  CULL.begin=()=>{ if(ROOMS.hold)ROOMS.hold(); range(); settle(); const cp=SHARED.cam.position, moved=Math.hypot(pos.x-lx,pos.z-lz)>TILE/2||CULL.R!==lR||CULL.keep!==lK||cp.distanceTo(LC)>CULL.FARM/2; if(moved){ lx=pos.x; lz=pos.z; lR=CULL.R; lK=CULL.keep; LC.copy(cp); }
+    const t0=performance.now(); let parted=false;
     for(const R of CULL.L){ if(R.off)continue; const s=R.s; if(!s.parent){ drop(R); R.off=true; continue; }
-      const vv=vers(s); if(!R.done||s.geometry!==R.g||!s.isInstancedMesh&&vv!==R.v||s.isInstancedMesh&&s.count!==R.n){ if(R.done&&++R.np>8){ drop(R); R.off=true; continue; } R.done=true; part(R); if(R.off){ drop(R); continue; } R.ch=0; }
+      if(!R.done&&parted&&performance.now()-t0>CULL.BUDGET)continue;   // a new mesh waits for a later frame once this one's splitting is spent; it draws whole meanwhile
+      const vv=vers(s); if(!R.done)parted=true; if(!R.done||s.geometry!==R.g||!s.isInstancedMesh&&vv!==R.v||s.isInstancedMesh&&s.count!==R.n){ if(R.done&&++R.np>8){ drop(R); R.off=true; continue; } R.done=true; part(R); if(R.off){ drop(R); continue; } R.ch=0; }
       else if(vv!==R.v){ R.v=vv; fill(R); if(++R.ch>20){ drop(R); R.off=true; continue; } } else R.ch=0;
-      R.vis=s.visible; tie(R); s.visible=false; if(moved||R.fresh){ far(R); R.fresh=false; } } hazeHide(); };
+      R.vis=s.visible; tie(R); s.visible=false; if(moved||R.fresh){ far(R); R.fresh=false; } } hazeHide(); parkFar(); };
   CULL.end=()=>{ for(const o of CULL.H)o.visible=true; for(const [g,n] of CULL.D)g.drawRange.count=n; CULL.D.length=0; CULL.hn=CULL.H.length; CULL.H.length=0; for(const R of CULL.L){ if(R.off||!R.bm)continue; R.s.visible=R.vis; R.bm.visible=false; } };
   SYS.add('perfBounds',()=>CULL.scan(),'161a-cull');
-  window.CULLDBG=()=>({on:CULL.on,keep:CULL.keep,hazeR:CULL.R,hazeList:CULL.FL.length,hazeHid:CULL.hn||0,src:CULL.L.length,live:CULL.L.filter(R=>!R.off&&R.bm).length,wait:WAIT.size,pieces:CULL.L.reduce((a,R)=>a+(R.off||!R.bm?0:R.n),0)}); }
+  window.CULLDBG=()=>({on:CULL.on,keep:CULL.keep,hazeR:CULL.R,hazeList:CULL.FL.length,hazeHid:CULL.hn||0,parkHid:PL.length,src:CULL.L.length,live:CULL.L.filter(R=>!R.off&&R.bm).length,wait:WAIT.size,pieces:CULL.L.reduce((a,R)=>a+(R.off||!R.bm?0:R.n),0)}); }

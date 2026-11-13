@@ -18,7 +18,7 @@ import {FADE, QS, STORE, SYS, TILE, wait} from './006-map-pre.js';
   SYS.every(grey,300,'103a-death grey');
   // your body (owner, 7 Nov 2026): it stays where you fell with all you carried for an hour; alive again, a double-click takes it all back; online, after the hour the section's server lets it all fall to the ground for anyone (owner, 9 Nov 2026)
   let body=null;
-  const keepBody=c=>{ try{ if(c)OWNED.set('corpse',JSON.stringify(c)); else OWNED.del('corpse'); }catch(e){} };
+  const keepBody=c=>{ try{ if(c)OWNED.set('corpse',JSON.stringify(c)); else OWNED.del('corpse'); }catch(e){} }; VIT.body=()=>body&&body.c?{...body.c}:null;   // what your body lying out there holds (tests)
   const hideBody=()=>{ if(!body)return; body.me.removeFromParent(); body.me.geometry.dispose(); const i=UI.things.indexOf(body.th); if(i>=0)UI.things.splice(i,1); body=null; };
   const showBody=c=>{ hideBody(); if(!c)return; const me=new THREE.Mesh(new THREE.CapsuleGeometry(.16*T,.9*T,4,8).rotateZ(Math.PI/2),new THREE.MeshToonMaterial({color:0x6a5a4a,gradientMap:W3.GP}));
     me.position.set(c.x,c.py+.16*T,c.z); me.rotation.y=c.h||0; me.castShadow=true; scene.add(LEVELS.own(me,c.lv||'*'));
@@ -31,8 +31,8 @@ import {FADE, QS, STORE, SYS, TILE, wait} from './006-map-pre.js';
     if(old){ for(const k in old.items)c.items[k]=(c.items[k]||0)+old.items[k]; Object.assign(c.inside,old.inside||{}); c.cash+=old.cash||0; }   // a body already lying somewhere: what it held comes to the new one
     if(Object.keys(c.items).length||c.cash){ INV.items={}; INV.inside={}; INV.cash=0; INV.save(); keepBody(c); showBody(c); if(ONLINE.on)ONLINE.send({t:'body',v:{x:c.x,y:c.py,z:c.z,lv:LEVELS.cur||'street',rm:typeof ROOMS.cur==='string'?ROOMS.cur:''}}); } };
   const back=async here=>{ '@later'; busy=true; await FADE.run('REFRESHED',async()=>{ await wait(1500);
-    const G=SHARED.BOD.GD, K=SHARED.BOD.GDK, dx=G.door[0], oy=K?K.y1e+.6:G.door[1]+3;
-    if(!here&&!G.here){ STORE.goTo(SHARED.BOD.X(dx),SHARED.BOD.Z(oy),'up'); SHARED.heading=SHARED.BOD.Z(oy+1)>SHARED.BOD.Z(oy)?0:Math.PI; PH.hd=SHARED.heading; } keys.clear(); SHARED.target=null;
+    const G=SHARED.BOD.GD, K=SHARED.BOD.GDK, dx=G.door[0], oy=K?K.ry(K.y1e+.6):G.door[1]+3, fy=K&&K.flip?-1:1;
+    if(!here&&!G.here){ STORE.goTo(SHARED.BOD.X(dx),SHARED.BOD.Z(oy),'up'); SHARED.heading=SHARED.BOD.Z(oy+fy)>SHARED.BOD.Z(oy)?0:Math.PI; PH.hd=SHARED.heading; } keys.clear(); SHARED.target=null;
     VIT.dead=false; VIT.hp=1; VIT.sta=1; VIT.out=0; gh=0; rise=-1; wt=0; wt0=0; wn=0; look(false); try{ SAVE.del('dead'); SAVE.del('deadat'); }catch(e){}
     },{hold:200}); note('You feel refreshed.',5); busy=false; };
   // RESURRECT in the menu (owner, 4 Nov 2026, every player): back to life where you stand (a ragdoll still falling settles first)

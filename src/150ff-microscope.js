@@ -9,8 +9,9 @@ const MIC={open:false,data:null,ext:[]}; window.MIC=MIC;   // ext: what later fi
   MIC.files=SLF;
 
   /* ---------- the desk, the microscope, the slide box and the stool, against the back wall of your study ---------- */
-  for(const k of ['LAB DESK', 'LAB STOOL'])ROOMK.always.add(k);   // in every apartment from the start (owner, 7 Nov 2026)
-  ROOMK.parts.push(c=>{ '@apts'; const {part,mat,rbox,cap,cur,solid,thing,bake,R}=c, p=(geo,m,u,h,v,ry=0,par=cur(),cast=true)=>part(geo,m,u,h,v,ry,par,cast), keep=me=>{ me.userData.keep=1; return me; };
+  MIC.off=true;   // out of the game for now (owner, 12 Nov 2026)
+  if(!MIC.off)for(const k of ['LAB DESK', 'LAB STOOL'])ROOMK.always.add(k);   // in every apartment from the start (owner, 7 Nov 2026)
+  ROOMK.parts.push(c=>{ '@apts'; if(MIC.off)return; const {part,mat,rbox,cap,cur,solid,thing,bake,R}=c, p=(geo,m,u,h,v,ry=0,par=cur(),cast=true)=>part(geo,m,u,h,v,ry,par,cast), keep=me=>{ me.userData.keep=1; return me; };
     const U0=1.2, V0=c.Ly-.36, DW=1.5, DD=.62, DH=.76;
     const oak=mat([150,104,62]), oakD=mat([104,70,40]), black=mat([30,30,32]), cream=mat([226,222,210]), chrome=mat([186,188,192]), brass=mat([176,140,70]), glassM=mat([200,220,230],{transparent:true,opacity:.5,depthWrite:false});
     cap('LAB DESK',()=>{ const g=new THREE.Group(); g.position.set(U0,0,V0); g.rotation.y=Math.PI; cur().add(g);
@@ -192,7 +193,7 @@ const MIC={open:false,data:null,ext:[]}; window.MIC=MIC;   // ext: what later fi
   MIC.dbg=()=>V.el?{open:MIC.open,obj:V.obj,mag:OBJ[V.obj].m*10,fov:fov(),bar:V.bar,barPx:V.barPx,S:V.cv.width,slide:V.slide&&V.slide.id,img:!!V.img,W:V.W,H:V.H,sx:V.sx,sy:V.sy,zf:V.zf,blur:+blurOf(-V.zf).toFixed(2),loads:V.loads,
     org:V.org?V.org.map(o=>({k:o.k,x:+o.x.toFixed(1),y:+o.y.toFixed(1),len:o.len})):null,pxPerUm:V.cv.width/fov()}:{open:false};
   MIC.K.DRAW=DRAW; MIC.blurAt=dz=>V.el?blurOf(dz):null; MIC.setFocus=z=>{ if(V.el)V.zf=z; };
-  SYS.add('places',dt=>{ if(MIC.open&&MIC.frame)MIC.frame(dt||0); if(MIC.open&&!(MODS.apts&&MODS.apts.inReal))MIC.close(); },'150ff-microscope');
+  SYS.add('places',dt=>{ if(MIC.open&&MIC.frame)MIC.frame(dt||0); if(MIC.open&&!MIC.carried&&!(MODS.apts&&MODS.apts.inReal))MIC.close(); },'150ff-microscope');
   window.MICDBG=()=>MIC.dbg();
 }
 export {MIC};

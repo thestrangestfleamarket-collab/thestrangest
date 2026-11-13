@@ -1,6 +1,6 @@
 {
  "guitar": "guitar-b013ee",
- "harp": "gilded-harp-f32566",
+ "harp": "concert-pedal-harp-eb1a21",
  "piano": "upright-piano-c0b0ef",
  "sword": "sword-0e681b",
  "bmx": "kid-s-bmx-bike-cec43e",
@@ -75,5 +75,16 @@
  "bird_feather": "fallen-bird-feather-ffbc11",
  "x_crab": "shore-crab-base",
  "pouch": "coin-pouch-be4dd8",
- "fair_pennant": "survey-flag-fa500f"
+ "fair_pennant": "survey-flag-fa500f",
+ "violin": "violin-515f9c",
+ "violin_bow": "string-bow-6ae03c",
+ "flute": "flute-dad6f2",
+ "trumpet": {"id":"trumpet-349b2e","preview":true,"parts":["piston-1","piston-2","piston-3"]},
+ "piano_pf": {"id":"upright-piano-c0b0ef","cut":[[-0.59,0.65,0.16,0.59,0.7,0.34],[-0.59,0.62,0.344,0.59,0.7,0.347],[-0.12,0.148,0.27,0.12,0.17,0.37]]},
+ "piano_bench": "piano-bench-93e2b4",
+ "harp_pf": {"id":"concert-pedal-harp-eb1a21","preview":true,"parts":["pedal-d","pedal-c","pedal-b","pedal-e","pedal-f","pedal-g","pedal-a"],"cut":[[-0.335,0.2,-0.0015,0.25,1.6,0.0015]]},
+ "drum_snare": {"id":"snare-drum-601c48","preview":true,"parts":["drum"]},
+ "drum_kick": {"id":"concert-bass-drum-88ee8e","drop":["cradle","cradle-rubber"]},
+ "drum_cymbal": {"id":"orchestral-cymbal-5edbc4","parts":["cymbal-body"],"drop":["cymbal-strap"]},
+ "stool": "lab-stool-022713"
 }

@@ -1,6 +1,6 @@
 // NPCs: makeNPC builds a body with self-shading and its cel material; the NPC list, culling and the street lane.
 import {SHARED, THREE} from './003-shx.js';
-import {ARCH, CHARS, CLIP, CULL, LEVELS, NPCS, ONLINE, PARK, PONDS, pos, ROOMS, SELFSH, UI, VIT, W3, WALKS, WINDOWS} from './003b-systems.js';
+import {ARCH, CHARS, CLIP, CLOCK, CULL, LEVELS, NPCS, ONLINE, PARK, PONDS, pos, ROOMS, SELFSH, UI, VIT, W3, WALKS, WINDOWS} from './003b-systems.js';
 import {PPU, renderer, scene} from './004-main.js';
 import {ASTEP, CASTLE, LEVEL, MAPG, MAPSTAIR, MODS, RING, SKINCULL, SOL, STN, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
@@ -134,7 +134,8 @@ function makeNPC(D,o){ const N={key:o.key,name:o.name,names:o.names,lv:o.lv||'do
   N.g=g; N.st=st; N.body=body; N.H=H; if(CHARS.apply)CHARS.apply(N); if(ARCH.has(N.key)){ g.visible=false; N.archived=true; (ARCH.built=ARCH.built||[]).push(N.key); return N; } NPCS.push(N); return N; }
 SYS.add('shadow',r=>{ for(const N of NPCS)if(N.selfSh)try{ N.shadowPass(r); }catch(e){ if(!N.shErr){ N.shErr=1; console.warn('NPC shadow',N.key,e); } } },'npc shadows');
 const STLANE={x0:SHARED.BOD.XS(SHARED.BOD.MAP.x0+2),x1:Math.min(SHARED.BOD.XS(SHARED.BOD.MAP.x1-2),RINGX.bound.x1-TILE),z0:SHARED.BOD.ZS(-76.3),z1:Math.min(SHARED.BOD.ZS(RING.wy1-1),RINGX.bound.z1-TILE)}, STHOLE=[SHARED.BOD.XS(MAPSTAIR.x0-.6),SHARED.BOD.ZS(MAPSTAIR.y0),SHARED.BOD.XS(MAPSTAIR.x1+.6),SHARED.BOD.ZS(MAPSTAIR.y1+.6)],
-  CSHOLE=[SHARED.BOD.XS(CASTLE.stair.x0-.6),SHARED.BOD.ZS(CASTLE.stair.y0-.6),SHARED.BOD.XS(CASTLE.stair.x1+.6),SHARED.BOD.ZS(CASTLE.stair.y1+.6)], CSB=[SHARED.BOD.XS(CASTLE.b[0]-.5),SHARED.BOD.ZS(CASTLE.b[2]-.5),SHARED.BOD.XS(CASTLE.b[1]+.5),SHARED.BOD.ZS(CASTLE.b[3]+.5)],
+  CSHOLE=[SHARED.BOD.XS(CASTLE.stair.x0-.6),SHARED.BOD.ZS(CASTLE.stair.y0-.6),SHARED.BOD.XS(CASTLE.stair.x1+.6),SHARED.BOD.ZS(CASTLE.stair.y1+.6)], CSB=[SHARED.BOD.XS(CASTLE.stair.x0-.6),SHARED.BOD.ZS(CASTLE.stair.y0-.6),SHARED.BOD.XS(CASTLE.stair.x1+.6),SHARED.BOD.ZS(CASTLE.stair.y1+.6)],   // (the castle is gone, 10 Nov 2026: only the stair's hole is kept clear)
+ 
   inBox=(b,x,z,R)=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R,
   inBuilding=(x,z,R)=>ROOMS.boxes().some(b=>b.y0<1&&x>b.x0-R&&x<b.x1+R&&z>b.z0-R&&z<b.z1+R)||(MODS.apts&&MODS.apts.inside&&MODS.apts.inside(x,z))||inBox(CSB,x,z,R),
   stfree=(x,z,R)=>RINGX.inside(x,z,R)&&!inBox(STHOLE,x,z,R)&&!inBox(CSHOLE,x,z,R)&&!inBuilding(x,z,R)&&!SOL.up.some(b=>x>b[0]-R&&x<b[2]+R&&z>b[1]-R&&z<b[3]+R)&&!FOUNT.wet(x,z,R)&&!PONDS.wet(x,z,R);
@@ -145,9 +146,7 @@ const RDX=x=>(x-SHARED.BOD.XS(0))/(SHARED.BOD.XS(1)-SHARED.BOD.XS(0)), RDZ=z=>(z
   stroad=(x,z)=>inRoad(x,z)&&!xingAt(RDX(x),RDZ(z)),
   pedfree=(x,z,R)=>stfree(x,z,R)&&!stroad(x,z),
   // stepping off the kerb onto the lit crossing while it does not say WALK: wait
-  pedHold=(x0,z0,x1,z1)=>{ if(inRoad(x0,z0)||!inRoad(x1,z1))return false; const w=xingAt(RDX(x1),RDZ(z1)), R=SHARED.BOD.road; return !!(w&&w.lit&&R.walk&&!R.walk()); },
-  // the nearest sidewalk point to one in the road (any: a crosswalk too; straight across to the nearer kerb), else the point itself
-  offRoad=(x,z,any)=>{ if(!(any?inRoad(x,z):stroad(x,z)))return {x,z}; const T=TILE; for(let d=.5*T;d<12*T;d+=.5*T)for(const s of [1,-1]){ const q=z+s*d; if(!inRoad(x,q))return {x,z:q+s*.6*T}; } return {x,z}; };
+  pedHold=(x0,z0,x1,z1)=>{ if(inRoad(x0,z0)||!inRoad(x1,z1))return false; const w=xingAt(RDX(x1),RDZ(z1)), R=SHARED.BOD.road; return !!(w&&w.lit&&R.walk&&!R.walk()); };
 window.PEDFREE=pedfree; window.STROAD=stroad;
 const ROAM={L:STLANE,wallZ:SHARED.BOD.ZS(PARK.y0+PARK.oy),gate:[SHARED.BOD.XS(PARK.gate[0]+PARK.ox+.8),SHARED.BOD.XS(PARK.gate[1]+PARK.ox-.8)]};
 window.ROAMDBG=()=>ROAM;
@@ -181,7 +180,7 @@ HOMES.keeper=N=>{ const H=LEVEL.homes&&LEVEL.homes[N.key], R=H&&H[3]&&ROOMS.off[
 HOMES.IN=.3; HOMES.NEAR=4;
 HOMES.doors=()=>{ '@later'; const B=SHARED.BOD, L=[]; for(const id in ROOMS.off){ const o=ROOMS.off[id]; if(o.door&&!o.mine)L.push({id,x:o.door[0],z:o.door[2]}); }
   for(const id in STORE.inside||{}){ const R=STORE.inside[id]; if(R.th)L.push({id,x:R.th.obj.position.x,z:R.th.obj.position.z}); }
-  if(B.GD&&B.GD.door)L.push({id:'bath',x:B.X(B.GD.door[0]),z:B.Z(B.GD.door[1]+.35)}); return L; };
+  if(B.GD&&B.GD.door)L.push({id:'bath',x:B.X(B.GD.door[0]),z:B.Z(B.GD.door[1]+(B.GDK&&B.GDK.flip?-.35:.35))}); return L; };
 HOMES.door=h=>{ '@later'; if(h.shop===null)return null; const L=HOMES.doors(); if(!L.length)return null;
   if(h.shop===undefined){ let b=null, bd=h.r+HOMES.NEAR*TILE; for(const d of L){ const k=Math.hypot(d.x-h.x,d.z-h.z); if(k<bd){ bd=k; b=d; } } h.shop=b?b.id:null; return b; }
   return L.find(d=>d.id===h.shop)||null; };
@@ -209,23 +208,24 @@ SYS.add('near',(x,z)=>NPCS.near(x,z),'npc shading');
       const lod=seen&&!far&&!N.sheet&&d>NPCS.LOD*(SHARED.lodK||1)&&!!N.g.parent.visible&&LEVELS.drawn(N.g); N.lod=lod;
       N.far=far||lod; N.hid=lod||!N.sheet&&(!seen||far&&!N.shaded||CULL.past(p.x,p.z,Math.max(TILE,N.cullR||0))); if(!N.shaded&&(!far||d<NPCS.SHADE)&&shadeN<2){ N.shade(); shadeN++; }
       if(!far&&!lod){ if(!(N.frozen>0))N.tick(dt,you); } else{ if(N.farMove&&!(N.frozen>0))N.farMove(dt); if(N.st){ N.g.position.x=N.st.x; N.g.position.z=N.st.z; if(!N.hid&&N.ground)N.g.position.y=N.ground(N.st.x,N.st.z)+(N._bb||0); } } }   // a body not ticked still stands where its character is (and on its ground, if it is drawn)
-    NPCS.lodDraw();
-    for(const X of NPCS.extra){ const a=X.at; X.hid=!!a&&(!FR.intersectsSphere(SP.set(V.set(a.x,(a.y||0)+1,a.z),2*TILE))||CULL.past(a.x,a.z,2*TILE)); } };
+    for(const X of NPCS.extra){ const a=X.at; X.lod=!!a&&!!X.g&&X.g.visible&&X.mode!=='hidden'&&!X.sheet&&Math.hypot(a.x-you.x,a.z-you.z)>NPCS.LOD*(SHARED.lodK||1)&&!!X.g.parent&&X.g.parent.visible&&LEVELS.drawn(X.g); X.hid=!!a&&(!FR.intersectsSphere(SP.set(V.set(a.x,(a.y||0)+1,a.z),2*TILE))||CULL.past(a.x,a.z,2*TILE)); if(X.lod&&X.hid)X.lod=false; else if(X.lod)X.hid=true; }
+    NPCS.lodDraw(); };
   // the far characters' plain shapes: a body box and a head box each, as tall and wide as the character's own body (measured once), one draw for all
   { const NB=new THREE.BoxGeometry(1,1,1).translate(0,.5,0), mk=()=>{ const m=new THREE.InstancedMesh(NB,new THREE.MeshLambertMaterial({color:0xffffff}),2048); m.count=0; m.frustumCulled=false; m.castShadow=true; m.name='farfolk'; scene.add(m); return m; };
-    let BODY=null, HEAD=null; const M=new THREE.Matrix4(), Q=new THREE.Quaternion(), S3=new THREE.Vector3(), P3=new THREE.Vector3(), C=new THREE.Color(), BX=new THREE.Box3(), CL=[[.18,.2,.26],[.34,.24,.2],[.2,.3,.42],[.4,.38,.34],[.5,.2,.2],[.22,.36,.24],[.6,.55,.45],[.12,.12,.14]];
+    let BODY=null, HEAD=null; const M=new THREE.Matrix4(), Q=new THREE.Quaternion(), S3=new THREE.Vector3(), P3=new THREE.Vector3(), C=new THREE.Color(), BX=new THREE.Box3(), BB=new THREE.Box3(), CL=[[.18,.2,.26],[.34,.24,.2],[.2,.3,.42],[.4,.38,.34],[.5,.2,.2],[.22,.36,.24],[.6,.55,.45],[.12,.12,.14]];
     NPCS.LOD=90*TILE;
-    NPCS.lodDraw=()=>{ if(!BODY){ BODY=mk(); HEAD=mk(); } let n=0;
-      for(const N of NPCS){ if(!N.lod||n>=2048)continue; if(!N.lodSz){ const v=N.g.visible; N.g.visible=true; BX.setFromObject(N.g); N.g.visible=v; const sz=BX.isEmpty()?null:BX.getSize(new THREE.Vector3()); N.lodSz=sz&&sz.y>.05?[Math.min(sz.x,sz.z,sz.y*.45),sz.y]:[.5*TILE,1.9*TILE]; }
+    NPCS.lodDraw=()=>{ if(!BODY){ BODY=mk(); HEAD=mk(); if(CLOCK.movers)CLOCK.movers.push(()=>[BODY,HEAD]); } let n=0;
+      for(const L of [NPCS,NPCS.extra])for(const N of L){ if(!N.lod||n>=2048)continue; if(!N.lodSz){ BX.makeEmpty(); N.g.updateWorldMatrix(true,true); N.g.traverse(o=>{ const g=o.geometry, P=g&&g.attributes&&g.attributes.position; if(!P||!(o.isMesh||o.isSkinnedMesh)||P.usage===THREE.DynamicDrawUsage)return; if(!g.boundingBox){ const A=P.array; for(let i=0;i<A.length;i++)if(!Number.isFinite(A[i]))return; g.computeBoundingBox(); } BB.copy(g.boundingBox).applyMatrix4(o.matrixWorld); BX.union(BB); }); const sz=BX.isEmpty()?null:BX.getSize(new THREE.Vector3()); N.lodSz=sz&&sz.y>.05?[Math.min(sz.x,sz.z,sz.y*.45),sz.y]:[.5*TILE,1.9*TILE]; }
         const [w,h]=N.lodSz, k=(N.key||'').length*7+(N.key||'').charCodeAt(0), c=CL[k%CL.length], hy=N.g.position.y;
-        BODY.setMatrixAt(n,M.compose(P3.set(N.g.position.x,hy,N.g.position.z),Q.setFromAxisAngle(S3.set(0,1,0),N.g.rotation.y||0),S3.set(w,h*.82,w*.6))); BODY.setColorAt(n,C.setRGB(c[0],c[1],c[2]));
-        HEAD.setMatrixAt(n,M.compose(P3.set(N.g.position.x,hy+h*.82,N.g.position.z),Q,S3.set(w*.55,h*.18,w*.55))); HEAD.setColorAt(n,C.setRGB(.78,.6,.48)); n++; }
+        const at=N.st||N.at||N.g.position; BODY.setMatrixAt(n,M.compose(P3.set(at.x,hy,at.z),Q.setFromAxisAngle(S3.set(0,1,0),N.g.rotation.y||0),S3.set(w,h*.82,w*.6))); BODY.setColorAt(n,C.setRGB(c[0],c[1],c[2]));
+        HEAD.setMatrixAt(n,M.compose(P3.set(at.x,hy+h*.82,at.z),Q,S3.set(w*.55,h*.18,w*.55))); HEAD.setColorAt(n,C.setRGB(.78,.6,.48)); n++; }
       for(const m of [BODY,HEAD]){ m.count=n; m.instanceMatrix.needsUpdate=true; if(m.instanceColor)m.instanceColor.needsUpdate=true; } };
     window.FARFOLK=()=>({lod:NPCS.filter(N=>N.lod).length,all:NPCS.length,tris:(BODY?BODY.count:0)*24}); }
   // someone in the way (8 Nov 2026): would N standing at x,z overlap another character, a standing body or a player near you, and closer than it is now (so two who overlap can always part)
   const live=X=>X.on!==false&&X.st&&X.g&&(X.g.visible||X._cv)&&X.mode!=='hidden'&&!X.rag&&!X.far&&!X.fly&&!X.tiny&&X.st.inT==null;
   NPCS.inway=(N,x,z)=>{ const st=N.st, lv=N.lv||'up', R=st.R, ns=N.nose?N.nose(x,z):null;
-    for(const q of NPCS){ if(q===N||q.far||q.lv!==lv||q.key==='dragon'||q.fly||q.tiny||q.mode==='hidden'||!q.blocks)continue; if((q.blocks(x,z,R)||ns&&q.blocks(ns.x,ns.z,R))&&q.gap(x,z)<q.gap(st.x,st.z))return true; }
+    for(const q of NPCS){ if(q===N||q.far||q.lv!==lv||q.key==='dragon'||q.fly||q.tiny||q.mode==='hidden'||!q.blocks||N.pet&&q.pet)continue;   // (pets never wait for each other)
+      if((q.blocks(x,z,R)||ns&&q.blocks(ns.x,ns.z,R))&&q.gap(x,z)<q.gap(st.x,st.z))return true; }
     for(const X of NPCS.extra){ if(X===N||!live(X)||(X.lv||'up')!==lv)continue; const s=X.st, r=(s.R||.3)+R, d=Math.hypot(s.x-x,s.z-z); if(d<r&&d<Math.hypot(s.x-st.x,s.z-st.z))return true; }
     if(ONLINE.others&&lv===SHARED.LVL)for(const o of ONLINE.others.values()){ if(o.why!=='near you'||!o.p||o.dead)continue; const d=Math.hypot(o.p.x-x,o.p.z-z); if(d<R+.3&&d<Math.hypot(o.p.x-st.x,o.p.z-st.z))return true; }
     return false; };
@@ -234,4 +234,4 @@ SYS.add('near',(x,z)=>NPCS.near(x,z),'npc shading');
   NPCS.R=25*TILE; NPCS.DRAW=30*TILE; NPCS.seen=(x,y,z,r)=>FR.intersectsSphere(SP.set(V.set(x,y,z),r||2*TILE)); NPCS.live=(x,y,z,r)=>Math.hypot(x-pos.x,z-pos.z)<NPCS.R&&NPCS.seen(x,y,z,r);
   NPCS.cull=on=>{ const one=(o,g)=>{ if(on){ if(o.hid&&g.visible){ g.visible=false; o._cv=true; } } else if(o._cv){ g.visible=true; o._cv=false; } };
     for(const N of NPCS)one(N,N.g); for(const X of NPCS.extra)if(X.g)one(X,X.g); }; }
-export {CSB, CSHOLE, DUN, HOMES, inRoad, makeNPC, offRoad, pedfree, pedHold, ROAM, stfree, STHOLE, STLANE, stroad};
+export {CSB, CSHOLE, DUN, HOMES, makeNPC, pedfree, ROAM, stfree, STHOLE, STLANE};

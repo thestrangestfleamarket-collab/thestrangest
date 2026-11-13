@@ -3,7 +3,7 @@ import {SHARED, THREE} from './003-shx.js';
 import {BROOK, CLOCK, FLOW, PARK, ROOMS, SKY, VIT, WED} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {FIX, LEVEL, MAPG, MODS, SOL, STORE, TILE, ZU} from './006-map-pre.js';
-const FOUNT={ready:false,swim:false,on:false,holds:[]}; window.FOUNT=FOUNT;   // holds: what holds you up over the lake (the ice, the footbridges), each (x,z)=>bool
+const FOUNT={ready:false,swim:false,on:false,holds:[],shaped:[],BASINS:[]}; window.FOUNT=FOUNT;   // shaped: f(S) once the lake's shape is known, before its bed is made (a basin dug for a wreck: BASINS [x, y, rx, ry, depth m, turn])   // holds: what holds you up over the lake (the ice, the footbridges), each (x,z)=>bool
 FOUNT.held=(x,z)=>FOUNT.holds.some(f=>f(x,z));
 { const ss=(a,b,v)=>{ const t=Math.max(0,Math.min(1,(v-a)/(b-a))); return t*t*(3-2*t); }, hs=(a,b,c=0)=>{ const s=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453; return s-Math.floor(s); };
   const raw=(x,y)=>{ const {C,R,L}=FOUNT.S, dx=x-L.x, dy=y-L.y, e=Math.hypot(dx/L.rx,dy/L.ry)||1e-6, g=Math.hypot(dx/(L.rx*L.rx),dy/(L.ry*L.ry))/e||1e-6, a=Math.atan2(dy,dx), k=Math.hypot(x-C.x,y-C.y);
@@ -19,12 +19,13 @@ FOUNT.held=(x,z)=>FOUNT.holds.some(f=>f(x,z));
   FOUNT.bedM=d=>Math.min(3.5,Math.max(0,d)*.42);
   FOUNT.away=(x,y)=>Math.min(lake(x,y)-1,ter(x,y)-1);
   // the running track round the lake (owner, 2 Nov 2026, his picture of the reservoir's path and rail): a band TRACK[1] either side of TRACK[0] tiles off the water, along the whole shore inside the park
-  const TRACK=FOUNT.TRACK=[4.2,1.9]; FOUNT.trackD=(x,y)=>{ const S=FOUNT.S; if(!S||x>S.wx1+2.5||y>S.wy1+2.5)return 1e9; return Math.abs(shoreL(x,y)-TRACK[0])-TRACK[1]; };
+  const CARRY=(LEVEL.edge&&LEVEL.edge.carry)||0;   // the park carried on past the section's north and east edges (data/world.json edge.carry): the shore and its track go on through it
+  const TRACK=FOUNT.TRACK=[4.2,1.9]; FOUNT.trackD=(x,y)=>{ const S=FOUNT.S; if(!S||x>S.wx1+2.5+CARRY||y>S.wy1+2.5+CARRY)return 1e9; return Math.abs(shoreL(x,y)-TRACK[0])-TRACK[1]; };
   FOUNT.at=P=>{ if(FOUNT.S)return FOUNT.S; const wx1=P.x1-8, wy1=P.y1-8, R=23, cx=wx1-R-8; let yS=P.round[1]+4.2+3;
     const C={x:cx,y:Math.ceil(yS+3.5+R)}, BL=LEVEL.parkPlaces.bigLake||{}, L={x:BL.x??P.x1,y:BL.y??P.y1,rx:BL.rx||110,ry:BL.ry||85}; L.cx=L.x+L.rx+6; L.cy=L.y+L.ry+6;
     // the lake's deep holes (owner, 28 Oct 2026: "make the lake and hudson go very deep in certain spots"): two, 25 and 40 m down, black without a light; [x, y, radius, depth], clear of the islands
     FOUNT.HOLES=[[L.x-L.rx*.62,L.y-L.ry*.12,7,25],[L.x+L.rx*.2,L.y-L.ry*.35,9,40]];
-    FOUNT.S={C,R,L,wx1,wy1}; const S=FOUNT.S, pts=[];
+    FOUNT.S={C,R,L,wx1,wy1}; const S=FOUNT.S, pts=[]; for(const f of FOUNT.shaped)try{ f(S); }catch(e){ console.warn('FOUNT: a shape hook failed',e); }
     for(let i=0;i<600;i++){ const a=Math.PI*2*i/600, cx=Math.cos(a), cy=Math.sin(a); let t=0; while(t<220&&raw(L.x+cx*t,L.y+cy*t)<0)t+=.2; let t0=Math.max(0,t-.2), t1=t; for(let k=0;k<16;k++){ const t=(t0+t1)/2; if(raw(L.x+cx*t,L.y+cy*t)<0)t0=t; else t1=t; } pts.push([L.x+cx*t0,L.y+cy*t0]); }
     // the whole shore (owner, 7 Nov 2026: "the stream should lead to the actual large lake in corner ... not all fitting in this section"): most of it lies past the forcefield, seen, never walked
     const cut=(Q,k,v)=>{ const o=[]; for(let i=0;i<Q.length;i++){ const p=Q[i], q=Q[(i+1)%Q.length], ip=p[k]<=v, iq=q[k]<=v; if(ip)o.push(p); if(ip!==iq){ const t=(v-p[k])/(q[k]-p[k]); o.push([p[0]+(q[0]-p[0])*t,p[1]+(q[1]-p[1])*t]); } } return o; };
@@ -34,13 +35,13 @@ FOUNT.held=(x,z)=>FOUNT.holds.some(f=>f(x,z));
     for(let x=Math.floor(S.x0);x<L.cx;x+=2){ const x2=Math.min(x+2,L.cx-.01), w=y=>lake(x,y)<0||lake(x+1,y)<0||lake(x2,y)<0; let y0=null; for(let y=S.y0-1;y<=L.cy+.5;y+=.5){ const i_=y<L.cy&&w(y); if(i_&&y0===null)y0=y; if(!i_&&y0!==null){ strips.push([X(x),Z(y0),X(x2),Z(Math.min(y,L.cy))]); y0=null; } } }
     S.strips=strips;
     const nrm=(x,y)=>{ const e=.25, gx=lake(x+e,y)-lake(x-e,y), gy=lake(x,y+e)-lake(x,y-e), n=Math.hypot(gx,gy)||1; return [gx/n,gy/n]; };
-    const shore=[]; for(let i=1;i<poly.length;i++){ const [ax,ay]=poly[i-1], [bx,by]=poly[i], l=Math.hypot(bx-ax,by-ay); for(let s=0;s<l;s+=.25){ const x=ax+(bx-ax)*s/l, y=ay+(by-ay)*s/l; if(x<L.cx-.5&&y<L.cy-.5&&x<wx1+6&&y<wy1+6)shore.push([x,y]); } }
+    const shore=[]; for(let i=1;i<poly.length;i++){ const [ax,ay]=poly[i-1], [bx,by]=poly[i], l=Math.hypot(bx-ax,by-ay); for(let s=0;s<l;s+=.25){ const x=ax+(bx-ax)*s/l, y=ay+(by-ay)*s/l; if(x<L.cx-.5&&y<L.cy-.5&&x<wx1+6+CARRY&&y<wy1+6+CARRY)shore.push([x,y]); } }
     const rocks=[]; let acc=0; for(let i=0;i<shore.length;i++){ acc+=.25; const gap=1.3+.8*hs(i,3,1); if(acc<gap)continue; acc=0; const [x,y]=shore[i], n=nrm(x,y), k=.15+.5*hs(i,5,2), s=.24+.5*Math.pow(hs(i,7,3),1.5);
       const rx=x-n[0]*k, ry=y-n[1]*k; if(ter(rx,ry)<.25)continue; rocks.push([rx,ry,s,hs(i,9,4)]); }
     S.rocks=rocks;
     S.shore=shore; S.nrm=nrm;
     // the shore's trees stand past the running track (owner, 2 Nov 2026), their crowns over it and the water
-    const oaks=[]; acc=0; for(let i=0;i<shore.length;i++){ acc+=.25; if(acc<14+4*hs(i,11,5))continue; const [x,y]=shore[i]; if(x>wx1+2||y>wy1+2)continue; const n=nrm(x,y), k=TRACK[0]+TRACK[1]+2.6+3*hs(i,13,6), ox=x+n[0]*k, oy=y+n[1]*k, m=12+hs(i,17,8)*6, r=m*.42, [rx,ry]=P.round;
+    const oaks=[]; acc=0; for(let i=0;i<shore.length;i++){ acc+=.25; if(acc<14+4*hs(i,11,5))continue; const [x,y]=shore[i]; if(x>wx1+2+CARRY||y>wy1+2+CARRY)continue; const n=nrm(x,y), k=TRACK[0]+TRACK[1]+2.6+3*hs(i,13,6), ox=x+n[0]*k, oy=y+n[1]*k, m=12+hs(i,17,8)*6, r=m*.42, [rx,ry]=P.round;
       if(ter(ox,oy)<r+.5||P.pd(ox,oy)<2.2||oy<P.y0+18)continue; acc=0; oaks.push(['OakTree'+(1+Math.floor(hs(i,15,7)*3)),+ox.toFixed(1),+oy.toFixed(1),+m.toFixed(1)]); }
     S.oaks=oaks; S.lamps=!FOUNT.on?[]:[200,228,256,284,312,340].map(a=>[C.x+Math.cos(a*Math.PI/180)*(R-.6),C.y+Math.sin(a*Math.PI/180)*(R-.6)]);
     if(FOUNT.on&&STORE.places)STORE.places.push(['THE FOUNTAIN',X(C.x),Z(C.y-R-1.6),'up']);
@@ -67,7 +68,12 @@ FOUNT.held=(x,z)=>FOUNT.holds.some(f=>f(x,z));
   const build=()=>{ '@park'; const P=PARK, S=FOUNT.S, {C,R,L}=S, X=x=>SHARED.BOD.XS(x+(P.ox||0)), Z=y=>SHARED.BOD.ZS(y+(P.oy||0)), Y=SHARED.BOD.YS, T=TILE, WU=T/.84, V3=THREE.Vector3, grp=MAPG.park||scene, CX=X(C.x), CZ=Z(C.y);
     const LV=-.22*WU, bedM=FOUNT.bedM, BK=P.brook, bk=(a,b)=>{ const h=BK&&BK.h(a,b); return h==null?1e9:h*WU-.5*ZU; }, bedY0=d=>-bedM(d)*WU-.04; FOUNT.LV=LV;
     const HOLE=FOUNT.HOLES, pit=(x,y)=>HOLE.reduce((a,[hx,hy,r,dd])=>a+dd*Math.exp(-((x-hx)**2+(y-hy)**2)/(r*r)),0);
-    const bedY=(d,x,y)=>bedY0(d)-(x!=null&&d>1.5?pit(x,y)*Math.min(1,(d-1.5)/3)*WU:0); FOUNT.bedY=bedY;
+    // a basin (FOUNT.BASINS): flat at its depth inside its ellipse, its sides easing up to the bed round it
+    const basin=(x,y,b0)=>{ let b=b0; for(const [bx,by,rx,ry,D,a] of FOUNT.BASINS){ const c=Math.cos(a||0), s=Math.sin(a||0), u=((x-bx)*c+(y-by)*s)/rx, v=(-(x-bx)*s+(y-by)*c)/ry, r=Math.hypot(u,v); if(r<1.4){ const k=r<1?1:1-(r-1)/.4, t=k*k*(3-2*k); b=Math.min(b,b+(-D*WU-b)*t); } } return b; };
+    // deeper in spots (owner, 10 Nov 2026: "the lake needs to be 2-6x deeper in spots"): broad patches of the open bed two to six times its depth, shallow still by the shore
+    const vn=(x,y)=>{ const xi=Math.floor(x), yi=Math.floor(y), u=x-xi, v=y-yi, a=hs(xi,yi,7), b=hs(xi+1,yi,7), c=hs(xi,yi+1,7), e=hs(xi+1,yi+1,7), su=u*u*(3-2*u), sv=v*v*(3-2*v); return a+(b-a)*su+(c-a)*sv+(a-b-c+e)*su*sv; };
+    const deeper=(d,x,y)=>{ if(x==null||d<4)return 1; const k=ss(.48,.7,vn(x/26,y/26))*Math.min(1,(d-4)/10); return 1+k*(1+4*vn(x/11+5,y/11+3)); };
+    const bedY=(d,x,y)=>{ const b=bedY0(d)*deeper(d,x,y)-(x!=null&&d>1.5?pit(x,y)*Math.min(1,(d-1.5)/3)*WU:0); return x!=null&&FOUNT.BASINS.length?basin(x,y,b):b; }; FOUNT.bedY=bedY;
     FOUNT.bedAt=(x,z)=>{ if(SHARED.LVL!=='up')return null; const d=-lake(x/T+SHARED.BOD.OX-(P.ox||0),z/T+SHARED.BOD.OY-(P.oy||0)); const px=x/T+SHARED.BOD.OX-(P.ox||0), py=z/T+SHARED.BOD.OY-(P.oy||0); return d>-1?bedY(d,px,py):null; };
     { const mx=x=>x/T+SHARED.BOD.OX-(P.ox||0), mz=z=>z/T+SHARED.BOD.OY-(P.oy||0), a=[X(S.x0-3),X(L.cx+3)], b=[Z(S.y0-3),Z(L.cy+3)];   // the big lake in the one water (065a): its bed, a bank that rises past the shore
       FLOW.add({name:'lake',kind:'lake',shown:()=>grp.visible,box:[Math.min(...a),Math.min(...b),Math.max(...a),Math.max(...b)],has:(x,z)=>SHARED.LVL==='up'&&lake(mx(x),mz(z))<.4,bed:(x,z)=>{ const d=-lake(mx(x),mz(z)); return d>0?bedY(d,mx(x),mz(z)):LV-.04+(-d)*.5*WU; },rest:()=>LV}); }
@@ -88,8 +94,10 @@ FOUNT.held=(x,z)=>FOUNT.holds.some(f=>f(x,z));
           .replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=vec3(.7,.82,.78)*wg;'); };
       m.customProgramCacheKey=()=>'fwater'; return m; };
     const lakeM=wmat([.13,.25,.18],[.24,.33,.21],[0,0,0,0]); FOUNT.lakeM=lakeM;
-    const chunks=(cell,keep,make)=>{ const x0=Math.floor(S.x0)-6, y0=Math.floor(S.y0)-6, CH=16; let tris=0;
-      for(let cx=x0;cx<L.cx;cx+=CH)for(let cy=y0;cy<L.cy;cy+=CH){ const pos=[], ex=[], cl=cx>=P.x1||cy>=P.y1?cell*4:cell; for(let x=cx;x<Math.min(cx+CH,L.cx+cl);x+=cl)for(let y=cy;y<Math.min(cy+CH,L.cy+cl);y+=cl){ const cell=cl; const q=[[x,y],[x+cell,y],[x+cell,y+cell],[x,y+cell]], d=q.map(([a,b])=>-lake(a,b)); if(!keep(d,x+cell/2,y+cell/2))continue; make(q,d,pos,ex); }
+    // laid out in 16-cell chunks as ever, three by three of them drawn as one mesh (10 Nov 2026: the lake was 145 draws of one material)
+    const chunks=(cell,keep,make)=>{ const x0=Math.floor(S.x0)-6, y0=Math.floor(S.y0)-6, CH=16, BG=3*CH; let tris=0;
+      for(let bx=x0;bx<L.cx;bx+=BG)for(let by=y0;by<L.cy;by+=BG){ const pos=[], ex=[];
+        for(let cx=bx;cx<Math.min(bx+BG,L.cx);cx+=CH)for(let cy=by;cy<Math.min(by+BG,L.cy);cy+=CH){ const cl=cx>=P.x1||cy>=P.y1?cell*4:cell; for(let x=cx;x<Math.min(cx+CH,L.cx+cl);x+=cl)for(let y=cy;y<Math.min(cy+CH,L.cy+cl);y+=cl){ const cell=cl; const q=[[x,y],[x+cell,y],[x+cell,y+cell],[x,y+cell]], d=q.map(([a,b])=>-lake(a,b)); if(!keep(d,x+cell/2,y+cell/2))continue; make(q,d,pos,ex); } }
         if(!pos.length)continue; tris+=pos.length/9; FOUNT.parts.push([pos,ex]); }
       return tris; };
     FOUNT.parts=[]; const BD=[[.36,.32,.22],[.29,.28,.19],[.21,.23,.15],[.14,.18,.12]], lin=new THREE.Color();

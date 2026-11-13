@@ -38,7 +38,7 @@ const PQ={}; window.PQ=PQ;
   // the orchard's flowers grow from their seeds through the garden's own planting (GARDEN.FL, GARDEN.SEED)
   if(GARDEN.FL){ GARDEN.FL.sweetpea=['HEIRLOOM SWEET PEA',60,16,0xd88ac8,0xf4e0f0,[.05,.9,.45,.3]]; GARDEN.FL.hollyhock=['HEIRLOOM HOLLYHOCK',65,18,0xc83a6a,0xf2e080,[.07,.6,1.1,.3]];
     GARDEN.SEED.sweetpea=['HEIRLOOM SWEET PEA SEEDS',20]; GARDEN.SEED.hollyhock=['HEIRLOOM HOLLYHOCK SEEDS',24]; }
-  FORAGE.HELP.push('THE PARK\'S FINDS: ice fishing through a hole you drill on the frozen lake (an ice auger, the Fisherman); the Lost Ball Pond and a hidden green; the Lost Orchard behind the castle; a wild hive in a hollow oak (bring a smoker); the moth lamp on the castle wall at midnight (bring a net).');
+  FORAGE.HELP.push('THE PARK\'S FINDS: ice fishing through a hole you drill on the frozen lake (an ice auger, the Fisherman); the Lost Orchard in the old castle clearing; a wild hive in a hollow oak (bring a smoker); the moth lamp on the loft in the clearing at midnight (bring a net).');
 
   /* ---------- where: open lawn found once the park is built, never on a path's solids or in the lake ---------- */
   const taken=[], freeAt=(x,z,r)=>WEEDS.inPark&&WEEDS.inPark(x,z,4+r/T)&&!SOL.up.some(s=>s[0]<x+r&&s[2]>x-r&&s[1]<z+r&&s[3]>z-r)&&[[0,0],[r,0],[-r,0],[0,r],[0,-r]].every(([a,b])=>FOUNT.bedAt(x+a,z+b)==null)&&taken.every(q=>Math.hypot(q[0]-x,q[1]-z)>q[2]+r);
@@ -115,7 +115,7 @@ const PQ={}; window.PQ=PQ;
     scr-=dt; if(inn&&scr<=0&&ORCH.thorns.some(([x,z])=>Math.hypot(pos.x-x,pos.z-z)<.9*T)){ scr=2; if(VIT.hurt)VIT.hurt(.02); say('THORNS SCRATCH YOU.','#e0a080'); } };
   // its key: down the castle's well, once
   const WELL={}; const buildWell=()=>{ '@later'; const C=MODS.castle.BOUND, x=C.x1-4.4*T, z=C.z1-5.4*T, G=new THREE.Group(); G.position.set(x,gy(x,z),z); scene.add(G); WELL.G=G;
-    WELL.th={name:'THE CASTLE WELL',obj:hit(G,1.4*T,1.2*T),reach:2*T,near:2.8*T,tall:1*T,act:()=>{ if(SFX.play)SFX.play('creak',{vol:.5});
+    WELL.th={name:'THE OLD WELL',obj:hit(G,1.4*T,1.2*T),reach:2*T,near:2.8*T,tall:1*T,act:()=>{ if(SFX.play)SFX.play('creak',{vol:.5});
       if(INV.picked.orchkey==null||!has('orchard_key')&&!ready('orchkey',7)){ if(has('orchard_key'))return say('YOU HAUL UP THE BUCKET: COLD WATER, NOTHING ELSE.'); took('orchkey'); FORAGE.give('orchard_key',1); FORAGE.draw(); return say('YOU HAUL UP THE BUCKET. AN OLD IRON KEY LIES IN THE SILT, ITS TAG READS "ORCHARD".','#f2c14e'); }
       say('YOU HAUL UP THE BUCKET: COLD WATER, NOTHING ELSE.'); }}; UI.thing(WELL.th); };
 
@@ -130,7 +130,7 @@ const PQ={}; window.PQ=PQ;
     HIVE.th={name:'A HOLLOW OAK, HUMMING WITH WILD BEES',obj:hit(G,1.4*T,2.4*T,1.6*T),reach:1.8*T,near:2.6*T,tall:2*T,act:()=>PQ.wild()}; UI.thing(HIVE.th); };
   const sting=()=>{ if(has('bee_veil'))return say('THE SWARM BUZZES AT YOUR VEIL, BUT CANNOT GET IN.','#e8e2cc'); if(VIT.hurt)VIT.hurt(.08); if(SFX.play)SFX.play('cough',{vol:.4,pitch:1.6}); say('THE SWARM POURS OUT OF THE OAK! YOU ARE STUNG ALL OVER.','#f09070'); };
   PQ.wild=()=>{ '@later'; if(!ready('wildhive'))return say('THE COMB IN THE HOLLOW IS BARE. THE WILD BEES WILL HAVE MORE BY TOMORROW.','#c8a090'); HIVE.swarm=4;
-    if(!has('bee_smoker')){ sting(); return say('WILD BEES WILL NOT GIVE UP THEIR HONEY WITHOUT SMOKE. THE BEEKEEPER ON MARKET ST SELLS A SMOKER.','#c8a090'); }
+    if(!has('bee_smoker')){ sting(); return say('WILD BEES WILL NOT GIVE UP THEIR HONEY WITHOUT SMOKE. THE VILLAGE GARDENER AT THE BEEKEEPER\'S STALL SELLS A SMOKER.','#c8a090'); }
     if(!use('bee',0,80)){ sting(); return say('YOUR SMOKE DRIFTS THE WRONG WAY. THEY ARE STILL ANGRY.','#c8a090'); }
     const jars=has('jar_honey'); if(!jars)return say('THE SMOKE QUIETS THEM, BUT YOU HAVE NO EMPTY HONEY JARS.','#c8a090');
     const n=Math.min(jars,1+Math.floor(sk('bee')/35)); FORAGE.take('jar_honey',n); FORAGE.give('honey_wild',n); FORAGE.give('bee_wax',2); took('wildhive'); HIVE.swarm=0; use('bee',10,80); if(SFX.play)SFX.play('drip',{vol:.5});
@@ -156,7 +156,7 @@ const PQ={}; window.PQ=PQ;
     const glass=new THREE.MeshLambertMaterial({color:0xe8e0c0,emissive:0x000000}); LOFT.glass=glass; put(lampG,new THREE.BoxGeometry(.3*WU,.4*WU,.3*WU),glass,0,1.75*WU,0); put(lampG,new THREE.ConeGeometry(.26*WU,.2*WU,4),L(0x2a2a2e),0,2.05*WU,0,Math.PI/4);
     put(lampG,new THREE.PlaneGeometry(.8*WU,.9*WU),new THREE.MeshLambertMaterial({color:0xf4f2ea,side:THREE.DoubleSide}),.45*WU,.9*WU,0,Math.PI/2);   // the white sheet moths settle on
     LOFT.light=new THREE.PointLight(0xfff0c8,0,8*T,1.6); LOFT.light.position.set(0,1.75*WU,0); lampG.add(LOFT.light); LOFT.lampG=lampG;
-    const up=new THREE.Group(); up.position.set(foot[0]-x,g,foot[1]-z); G.add(up); LOFT.upTh={name:'A LADDER UP TO THE WALL-WALK',obj:hit(up,1*T,1.4*T),reach:1.4*T,near:2*T,tall:1.2*T,act:()=>PQ.climbLoft(1)}; UI.thing(LOFT.upTh);
+    const up=new THREE.Group(); up.position.set(foot[0]-x,g,foot[1]-z); G.add(up); LOFT.upTh={name:'A LADDER UP TO THE LOFT',obj:hit(up,1*T,1.4*T),reach:1.4*T,near:2*T,tall:1.2*T,act:()=>PQ.climbLoft(1)}; UI.thing(LOFT.upTh);
     const dn=new THREE.Group(); dn.position.set(.6*hw,top,sg*(hd-.3*T)); G.add(dn); LOFT.dnTh={name:'THE LADDER DOWN',obj:hit(dn,.8*T,1.2*T),reach:1.2*T,near:1.8*T,tall:1*T,act:()=>PQ.climbLoft(-1)}; UI.thing(LOFT.dnTh);
     LOFT.lampTh={name:'THE MOTH LAMP',obj:hit(lampG,.8*T,2*T),reach:1.6*T,near:2.4*T,tall:1.8*T,act:()=>PQ.lamp()}; UI.thing(LOFT.lampTh);
     const MG=new THREE.PlaneGeometry(.16*WU,.1*WU); LOFT.moths=[]; LOFT.bats=[];
@@ -174,7 +174,7 @@ const PQ={}; window.PQ=PQ;
     m.th={name:'A '+NM[K[0]].replace(' (RARE)',''),obj:g,reach:1.4*T,near:2.2*T,tall:.4*T,act:()=>PQ.net(m)}; UI.thing(m.th); LOFT.moths.push(m); return m; };
   const unMoth=m=>{ LOFT.lampG.remove(m.g); const i=UI.things.indexOf(m.th); if(i>=0)UI.things.splice(i,1); const j=LOFT.moths.indexOf(m); if(j>=0)LOFT.moths.splice(j,1); for(const b of LOFT.bats)if(b.prey===m)b.prey=null; };
   const mothsHeld=()=>Object.keys(INV.items).reduce((a,id)=>a+(id.startsWith('mo_')?INV.items[id]:0),0);
-  PQ.net=m=>{ '@later'; if(!has('net'))return say('YOU NEED A BUTTERFLY NET FOR MOTHS ON THE WING. THE BUTTERFLY SHOP ON MARKET ST HAS THEM.','#c8a090');
+  PQ.net=m=>{ '@later'; if(!has('net'))return say('YOU NEED A BUTTERFLY NET FOR MOTHS ON THE WING. THE PARK RANGER AT THE BUTTERFLY STALL HAS THEM.','#c8a090');
     if(BFLY&&BFLY.held&&BFLY.held()+mothsHeld()>=BFLY.room())return say('YOUR JARS ARE FULL. SELL SOME, OR BUY A BIGGER JAR.','#c8a090');
     const d=m.K[1]; if(SFX.play)SFX.play('step',{vol:.4}); if(!use('ento',d-25,d+25,-0)){ m.a+=2; m.r=(.3+Math.random()*.6)*WU; return say('IT TUMBLES OUT OF YOUR NET AND BACK TO THE LIGHT.','#c8a090'); }
     FORAGE.give(m.K[0],1); FORAGE.draw(); unMoth(m); say(m.K===LUNA?'YOU NET THE LUNA MOTH. ITS LONG GREEN TAILS TREMBLE. A RARE CATCH!':'YOU NET A '+NM[m.K[0]]+'.',m.K===LUNA?'#f2c14e':'#e8e2cc'); };

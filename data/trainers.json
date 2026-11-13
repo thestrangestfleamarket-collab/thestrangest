@@ -19,6 +19,7 @@
   "gem": "MASTER OF GEMS",
   "forage": "MASTER FORAGER OF THE PARK",
   "bind": "MASTER BOOKBINDER",
+  "paleo": "MASTER PALEONTOLOGIST",
   "sword": "MASTER SWORDSMAN",
   "fight": "MASTER OF FISTS",
   "climb": "MASTER CLIMBER",
@@ -56,8 +57,8 @@
     "bee"
    ]
   },
-  "scuba_diver": {
-   "name": "THE SCUBA DIVER",
+  "rock_golem": {
+   "name": "THE ROCK GOLEM",
    "skills": [
     "gem"
    ]
@@ -73,7 +74,8 @@
   "professor": {
    "name": "THE PROFESSOR",
    "skills": [
-    "bind"
+    "bind",
+    "paleo"
    ]
   },
   "samurai_warrior": {
@@ -165,7 +167,7 @@
     "item": "x_crab",
     "n": 2,
     "pay": 3,
-    "where": "a crab pot off the pier"
+    "where": "the pier, on cut bait"
    },
    {
     "item": "x_eel",
@@ -344,6 +346,38 @@
     "n": 1,
     "pay": 5,
     "where": "the orchard"
+   }
+  ],
+  "paleo": [
+   {
+    "item": "skel_trilobite",
+    "n": 1,
+    "pay": 2,
+    "where": "dig at the brook bank, assemble it"
+   },
+   {
+    "item": "skel_fish",
+    "n": 1,
+    "pay": 3,
+    "where": "the brook bank, then the preparation table"
+   },
+   {
+    "item": "skel_sabre",
+    "n": 1,
+    "pay": 3,
+    "where": "the clay pit by the pond"
+   },
+   {
+    "item": "skel_mastodon",
+    "n": 1,
+    "pay": 4,
+    "where": "the clay pit by the pond"
+   },
+   {
+    "item": "skel_trike",
+    "n": 1,
+    "pay": 5,
+    "where": "the old quarry by the cave"
    }
   ],
   "bind": [

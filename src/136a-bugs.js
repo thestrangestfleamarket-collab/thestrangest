@@ -30,7 +30,7 @@ import {BUILDV} from './135-where.js';
     list:async()=>(await (await sb('/rest/v1/bug_reports?select=id,player,body,context,shots,status,note,created_at&order=created_at.desc&limit=300')).json()).map(r=>({...r,at:Date.parse(r.created_at)})),
     shot:async r=>{ const a=await (await sb('/rest/v1/bug_shots?select=jpg&report=eq.'+r.id)).json(); if(a.length)return a[0].jpg; if(!r.shots)return '';
       const b=await (await sb('/storage/v1/object/authenticated/bugs/'+r.player+'/'+r.id+'/000.jpg')).blob(); return URL.createObjectURL(b); },
-    mark:(id,status)=>sb('/rest/v1/bug_reports?id=eq.'+id,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({status})}) };
+    mark:async(id,status)=>{ await tok(); const r=await fetch('/admin',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({do:'bugmark',report:id,status})}); let j={}; try{ j=await r.json(); }catch(e){} if(!r.ok||!j.ok)throw new Error(j.why||'the server said '+r.status); } };
   let BE=null; const backend=async()=>BE||(ck()||localStorage.getItem(LS)?(BE=SITE):null);
   const grab=()=>new Promise(res=>requestAnimationFrame(()=>{ try{ const s=renderer.domElement, k=s.width>=1280?1280/s.width:Math.min(3,Math.floor(1280/s.width)), c=document.createElement('canvas');
     c.width=Math.round(s.width*k); c.height=Math.round(s.height*k); const g=c.getContext('2d'); g.imageSmoothingEnabled=false; g.drawImage(s,0,0,c.width,c.height);
@@ -54,20 +54,22 @@ import {BUILDV} from './135-where.js';
       catch(e){ $('#bugsay').textContent='not sent: '+(e.message||e); } $('#bugsend').disabled=false; };
     };
   const queue=async()=>{ '@later'; const be=await backend(), $=s=>el.querySelector(s); if(!$('#bugq'))return;
-    try{ rows=await be.list(); }catch(e){ $('#bugq').textContent='the queue would not load: '+(e.message||e); return; }
+    try{ rows=(await be.list()).map(r=>{ let c=r.context; if(typeof c==='string')try{ c=JSON.parse(c); }catch(e){ c=null; } c=c&&typeof c==='object'?{...c}:{};
+      if(!Array.isArray(c.at)||c.at.length<2||!c.at.every(Number.isFinite))delete c.at; c.errs=Array.isArray(c.errs)?c.errs:c.errs?[c.errs]:[]; return {...r,context:c}; }); }
+    catch(e){ $('#bugq').textContent='the queue would not load: '+(e.message||e); return; }
     $('#bugst').innerHTML=ST.map(([k,n])=>`<button class="btn" data-f="${k}" aria-pressed="${k===filt}">${n} ${rows.filter(r=>(r.status||'new')===k).length}</button>`).join('');
     $('#bugst').onclick=e=>{ const b=e.target.closest('[data-f]'); if(b){ filt=b.dataset.f; queue(); } };
     const L=rows.filter(r=>(r.status||'new')===filt);
-    $('#bugq').innerHTML=L.length?L.map(r=>{ const c=r.context||{}; return `<div data-id="${esc(r.id)}" style="border:2px solid var(--line);padding:8px;margin:8px 0">
+    $('#bugq').innerHTML=L.length?L.map(r=>{ const c=r.context; try{ return `<div data-id="${esc(r.id)}" style="border:2px solid var(--line);padding:8px;margin:8px 0">
       <div class="dim">${esc(new Date(r.at).toLocaleString())} &middot; ${esc(c.from||'')} build ${esc(c.build??'?')} &middot; ${esc(c.near?'near '+c.near:'')} ${c.at?esc(c.at.join(', ')):''} &middot; ${c.hour!=null?esc(c.hour)+'h':''} ${esc(c.view||'')}</div>
       <div style="white-space:pre-wrap;margin:6px 0">${esc(r.body)}</div>${c.errs&&c.errs.length?`<div class="dim">errors: ${esc(c.errs.join(' | '))}</div>`:''}
       <div class="row">${r.shots?'<button class="btn" data-a="pic">PICTURE</button>':''}${c.at?'<button class="btn" data-a="go">GO THERE</button>':''}
-      ${ST.filter(([k])=>k!==filt).map(([k,n])=>`<button class="btn" data-s="${k}">${({new:'BACK TO NEW',approved:'APPROVE'})[k]||n}</button>`).join('')}</div><img hidden style="max-width:100%;image-rendering:pixelated"></div>`; }).join(''):'<div class="dim">nothing here</div>';
+      ${ST.filter(([k])=>k!==filt).map(([k,n])=>`<button class="btn" data-s="${k}">${({new:'BACK TO NEW',approved:'APPROVE'})[k]||n}</button>`).join('')}</div><img hidden style="max-width:100%;image-rendering:pixelated"></div>`; }catch(e){ return `<div data-id="${esc(r.id)}" style="border:2px solid var(--line);padding:8px;margin:8px 0"><div style="white-space:pre-wrap">${esc(r.body)}</div>${ST.filter(([k])=>k!==filt).map(([k,n])=>`<button class="btn" data-s="${k}">${n}</button>`).join('')}</div>`; } }).join(''):'<div class="dim">nothing here</div>';
     $('#bugq').onclick=async e=>{ const b=e.target.closest('button'), box=e.target.closest('[data-id]'); if(!b||!box)return; const r=rows.find(x=>x.id===box.dataset.id);
-      if(b.dataset.s){ b.disabled=true; try{ if(b.dataset.s==='approved'&&r.context&&r.context.kind==='worldedit'&&BUGS.approveEdit)await BUGS.approveEdit(r); await be.mark(r.id,b.dataset.s); queue(); }catch(x){ b.textContent='FAILED'; } return; }
+      if(b.dataset.s){ b.disabled=true; try{ if(b.dataset.s==='approved'&&r.context&&r.context.kind==='worldedit'&&BUGS.approveEdit)await BUGS.approveEdit(r); await be.mark(r.id,b.dataset.s); queue(); }catch(x){ b.textContent='FAILED'; b.title=x.message||String(x); const w=box.querySelector('.bugwhy')||box.appendChild(Object.assign(document.createElement('div'),{className:'dim bugwhy'})); w.textContent='not marked: '+b.title; b.disabled=false; } return; }
       if(b.dataset.a==='pic'){ const im=box.querySelector('img'); if(!im.hidden){ im.hidden=true; return; } b.textContent='...'; try{ const u=await be.shot(r); if(u){ im.src=u; im.hidden=false; } }catch(x){} b.textContent='PICTURE'; }
       if(b.dataset.a==='go'){ const a=r.context.at; UI.toggleMenu(); STORE.goTo(a[0],a[1],a[2],null,r.context.lvl); if(r.context.hd!=null)SHARED.heading=r.context.hd; if(r.context.hour!=null)CLOCK.set(r.context.hour); } }; };
   const logout=()=>{ try{ document.cookie='tsfm-pass=; path=/; max-age=0; samesite=strict'; }catch(e){} try{ localStorage.removeItem(LS); }catch(e){} location.replace('/'); };
-  Object.assign(BUGS,{sb,tok,owner:SITE.owner,logout,file:async(body,context,jpg)=>{ '@later'; const B=await backend(); if(!B)throw new Error('not on the website'); await B.send(String(body).slice(0,2000),context,jpg||''); },grab:()=>grab()});   // a report sent by the game for the owner (a bot's failed test)
+  Object.assign(BUGS,{sb,tok,owner:SITE.owner,logout});
   BUGS.open=async(e,m)=>{ el=e; mode=m||'report'; if(mode==='queue'){ el.innerHTML='<h3>THE QUEUE</h3><div class="row" id="bugst"></div><div id="bugq"></div>'; queue(); return; } ctx=where(); el.innerHTML='<div class="dim">...</div>'; shot=await grab(); draw(); };   // the queue is ADMIN's own tab
   addEventListener('keydown',e=>{ if(e.key==='F8'&&!e.repeat){ e.preventDefault(); UI.menuTab('bug'); } }); }

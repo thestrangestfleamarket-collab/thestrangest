@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {BUGS, CLOCK, DN, FAR3, ONLINE, PARK, pos, ROOMS, SKY, VIS, W3, WX} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {MISTE, MISTS, MISTSC, QS, STORE, SYS} from './006-map-pre.js';
+import {MISTE, MISTS, MISTSC, MODS, QS, STORE, SYS} from './006-map-pre.js';
 import {HEMI} from './064-map-post.js';
 import {TPANE} from './087dz-tpane.js';
 __CODE__("worker/clock.js")
@@ -17,7 +17,7 @@ DN.lookFor=h=>{ const [a,b,f]=DN.mix(h); return f<.5?a:b; };
 { const U=SKY.U, Q=k=>(QS.get(k)??''),
     D0={day:{h:9.5,sun:1.3,amb:1.15,sunc:'#fff6e8',ambc:'#e6f0ff',zen:'#2f7ae8',hor:'#b4d6f6',cld:0,cov:.45,cl:1.3,m0:70,m1:100,hz:.8,mist:'#a8cbf0',skym:0,farb:1.15,grade:'#fbfcff',lift:'#000000',liftk:0,lamp:1,star:1,moon:1,cldc:'#f4ecf4',cldk:.9,sunhz:'#ffffff',sunk:0,shaft:.7,glow:1,bands:0,tun:.02,mw:1,mwc1:'#dfe7ff',mwc2:'#fff0d1',mwgr:1,mww:1,mwcore:1,mwdust:1,mwdet:1,stf:1,stw:1,stc:1},
       dusk:{h:18.9,sun:.25,amb:.75,sunc:'#ff7050',ambc:'#6a78c0',zen:'#1e2c6e',hor:'#d88aa0',cld:0,cov:.45,cl:1.3,m0:70,m1:100,hz:.8,mist:'#7a6a9a',skym:0,farb:1.15,grade:'#f0f0ff',lift:'#2a3060',liftk:.08,lamp:1,star:1,moon:1,cldc:'#f4ecf4',cldk:.9,sunhz:'#ff9080',sunk:.4,shaft:0,glow:1.3,bands:0,tun:.02,mw:1,mwc1:'#dfe7ff',mwc2:'#fff0d1',mwgr:1,mww:1,mwcore:1,mwdust:1,mwdet:1,stf:1,stw:1,stc:1},
-      night:{h:23,sun:1.4,amb:1.1,sunc:'#c8d8ff',ambc:'#a8c0ff',zen:'#0a1838',hor:'#1e3460',cld:0,cov:1,cl:1.1,m0:4,m1:140,hz:1,mist:'#1a2a50',skym:0,farb:.62,grade:'#ffffff',lift:'#10204a',liftk:.1,lamp:1.25,star:1.6,moon:1,cldc:'#f0d8d0',cldk:.9,sunhz:'#f4c9a8',sunk:0,shaft:0,glow:1.1,bands:0,tun:.02,mw:1,mwc1:'#dfe7ff',mwc2:'#fff0d1',mwgr:1,mww:1,mwcore:1,mwdust:1,mwdet:1,stf:1,stw:1,stc:1}};
+      night:{h:23,sun:1.4,amb:1.1,sunc:'#c8d8ff',ambc:'#a8c0ff',zen:'#02030a',hor:'#070c1c',cld:0,cov:1,cl:1.1,m0:4,m1:140,hz:1,mist:'#1a2a50',skym:0,farb:.62,grade:'#ffffff',lift:'#10204a',liftk:.1,lamp:1.25,star:1.6,moon:1,cldc:'#f0d8d0',cldk:.9,sunhz:'#f4c9a8',sunk:0,shaft:0,glow:1.1,bands:0,tun:.02,mw:0,mwc1:'#dfe7ff',mwc2:'#fff0d1',mwgr:1,mww:1,mwcore:1,mwdust:1,mwdet:1,stf:1,stw:1,stc:1}};
   const F=[['h','SUN HEIGHT (WHEN HELD; ELSE THE CLOCK)',7.5,18.5,.05,'dg'],['h','DUSK HOUR (WHEN HELD; ELSE THE CLOCK)',17.5,20,.05,'u'],['h','NIGHT HOUR (WHERE THE MOON IS)',19.5,29.5,.05,'n'],['sun','SUNLIGHT',0,2,.01,'dgu'],['sun','MOONLIGHT',0,3,.01,'n'],['sunc','SUNLIGHT COLOUR','c','dgu'],['amb','LIGHT ALL ROUND',0,3,.01],['ambc','LIGHT ALL ROUND COLOUR (THE SHADOWS)','c'],
     ['zen','SKY OVERHEAD','c'],['hor','SKY AT THE HORIZON','c'],['bands','SKY BANDS (0 = SMOOTH)',0,8,1],['cld','CLOUDY (DIMS THE SUN)',0,1,.01],['cov','CLOUD COVER (LOWER = MORE, 1 = NONE)',.2,1,.01],['cl','CLOUD BRIGHTNESS',.5,1.6,.01],
     ['m0','MIST STARTS (TILES PAST TOWN)',-10,120,1],['m1','MIST DEPTH (TILES)',4,160,1],['hz','MIST TINTED BY THE SKY',0,1,.01],['mist','MIST COLOUR','c','dgu'],['skym','SKY HIDDEN BY THE MIST',0,1,.01],['farb','FAR CITY HAZE BRIGHTNESS',.3,1.3,.01],
@@ -29,7 +29,12 @@ DN.lookFor=h=>{ const [a,b,f]=DN.mix(h); return f<.5?a:b; };
   // the time: DAY or NIGHT by the clock's hour (or the owner's hold, on the server); a change fades over a minute. The sun and sky stay each look's own (CLOCK.sunH); the day's hour runs
   const T={prev:DN.mode,t0:0};
   // the sun by the clock (not held, not a test): on the horizon at the real sunrise, highest at midday, on the horizon at the real sunset; the moon's disc where the real one is, its real phase (its light stays the night look's)
-  DN.moving=()=>!DN.test&&!DN.hold; CLOCK.moonReal=()=>DN.moving()?CLK.moon(Date.now(),DN.clk):null; DN.sunOf=(m,h)=>{ if(m==='night')return S.night.h; const {rise:r,set:st}=DN.times(); return Math.max(4,Math.min(21.4,7.31+(h-r)*10.78/Math.max(1,st-r))); };
+  // the sky's moment (ms): the game's own while the clock runs; under a held look or a test's hour, that hour laid onto today's real day and night (6 the sunrise, 20 the sunset), so a held NIGHT has a night's stars
+  // the sky's year (owner, 12 Nov 2026: "the stars match over nyc in 1985 exactly"): today's date and hour, in 1985
+  DN.YEAR=1985; DN.era=t=>{ const d=new Date(t); return Date.UTC(DN.YEAR,d.getUTCMonth(),d.getUTCDate(),d.getUTCHours(),d.getUTCMinutes(),d.getUTCSeconds(),d.getUTCMilliseconds()); };
+  DN.skyAt=(h,t=Date.now())=>{ const {rise:r,set:s}=CLK.sun(t,DN.clk), L=CLK.local(t,DN.clk), z=L-CLK.at(t,DN.clk); h=((h%24)+24)%24; return DN.era(Math.floor(L/864e5)*864e5+(h>=6&&h<20?r+(h-6)/14*(s-r):s+((h-20+24)%24)/10*(r+24-s))*36e5-z); };
+  DN.skyT=()=>DN.fixT??(DN.moving()?DN.era(CLK.at(Date.now(),DN.clk)):DN.skyAt(DN.hold&&!DN.test?S[DN.hold].h:CLOCK.h??12));
+  DN.moving=()=>!DN.test&&!DN.hold; CLOCK.moonReal=()=>DN.moving()?CLK.moon(DN.skyT(),null):null; DN.sunOf=(m,h)=>{ if(m==='night')return S.night.h; const {rise:r,set:st}=DN.times(); return Math.max(4,Math.min(21.4,7.31+(h-r)*10.78/Math.max(1,st-r))); };
   const B={}, ca=new THREE.Color(), cb=new THREE.Color(), blend=(A,C,f)=>{ for(const k in C){ const a=A[k]??C[k], c=C[k]; if(typeof c==='number'){ if(k==='h'){ let d=((c-a)%24+24)%24; if(d>12)d-=24; B[k]=((a+d*f)%24+24)%24; } else B[k]=a+(c-a)*f; } else if(typeof c==='string'&&c[0]==='#'&&typeof a==='string'&&a[0]==='#')B[k]='#'+ca.set(a).lerp(cb.set(c),f).getHexString(); else B[k]=c; } return B; };
   DN.P=()=>B; DN.E=()=>S[DN.mode]; DN.S=S; DN.D0=D0;
   const fix=()=>{ const P=S[DN.mode]; WX.fix={cloud:P.cld,rain:0,snow:0,storm:0,wind:DN.mode==='night'?.08:.15,dir:1,fog:0}; PARK&&PARK.lampLit&&PARK.lampLit(); };
@@ -38,13 +43,18 @@ DN.lookFor=h=>{ const [a,b,f]=DN.mix(h); return f<.5?a:b; };
   SYS.add('clockPre',()=>{ const f0=Math.min(1,(Date.now()-T.t0)/DN.FADE), f=f0*f0*(3-2*f0); if(!CLOCK.run&&DN.moving()){ const h=DN.clockH(), [ma,mb,g0]=DN.mix(h), g=g0*g0*(3-2*g0), a=DN.sunOf(ma,h), c=DN.sunOf(mb,h); blend(S[ma],S[mb],g); let d=((c-a)%24+24)%24; if(d>12)d-=24; B.h=((a+d*g)%24+24)%24; }   // by the clock the colours turn slowly through sunrise and sunset
     else blend(S[T.prev]||S[DN.mode],S[DN.mode],f); CLOCK.sunQ=DN.moving(); if(!CLOCK.run){ CLOCK.sunH=B.h; CLOCK.h=DN.test?B.h:DN.clockH(); const m=DN.test?DN.mode:DN.hold||DN.lookFor(CLOCK.h); if(m!==DN.mode)DN.set(m,DN.started); } else CLOCK.sunH=null; },'134b-daynight');
   setTimeout(()=>{ DN.started=1; },5000);   // (from here on a change of look fades)
+  DN.INDOOR={sun:[0xffe8c3,4.7],fill:[0xcad5eb,1.8],hemi:[0xaccbfa,0x5b4a35,.09]};
+  DN.indoor=()=>SHARED.LVL!=='down'&&!!ROOMS.cur&&!ROOMS.cur.sky&&!(MODS.apts&&(MODS.apts.in||MODS.apts.inReal));
   SYS.add('sky',()=>{ const P=B, up=SHARED.LVL!=='down';
     CLOCK.sun.intensity*=P.sun; CLOCK.sun.color.multiply(tc.set(P.sunc)); if(up){ HEMI.intensity*=P.amb; if(P.ambc)HEMI.color.multiply(tc.set(P.ambc)); } DN.lk=P.lamp;
     { const F=DN.fillL||(DN.fillL=(()=>{ const L=new THREE.DirectionalLight(0xffffff,0); L.castShadow=false; scene.add(L); scene.add(L.target); return L; })()), sv=CLOCK.sunV, nk=Math.max(0,Math.min(1,(3-CLOCK.dayElev())/8)), k=DN.fill??(.38-.3*nk);   // the fill: a soft light from opposite the sun, no shadows, so shade keeps a body's shape and colours (owner, 6 Nov 2026: "the shadows are too dark ... just 1 solid dark color")
       F.color.copy(HEMI.color).lerp(CLOCK.sun.color,.3); F.intensity=up?k*(CLOCK.sun.intensity+HEMI.intensity*.8):0; F.position.set(pos.x-sv.x*100,pos.y+Math.max(.35,Math.abs(sv.y))*100,pos.z-sv.z*100); F.target.position.set(pos.x,pos.y,pos.z); F.target.updateMatrixWorld();
       W3.moon.value=up&&!ROOMS.cur?.32*nk:0; }   // at night the fill falls away and the moon edges every body instead (owner, 9 Nov 2026)
+    // a roofed public inside keeps the day's light whatever the hour (owner, 11 Nov 2026): its own lamps were never enough, it was the sun through the roof that lit it; apartments and insides open to the sky keep the real hour
+    if(DN.indoor()){ const I=DN.INDOOR, F=DN.fillL; CLOCK.sun.color.setHex(I.sun[0]); CLOCK.sun.intensity=I.sun[1]; F.color.setHex(I.fill[0]); F.intensity=I.fill[1]; HEMI.color.setHex(I.hemi[0]); HEMI.groundColor.setHex(I.hemi[1]); HEMI.intensity=I.hemi[2]; }
     DN.U.grade.value.set(P.grade); DN.U.lift.value.set(P.lift); DN.U.liftK.value=up?P.liftk:0;
-    if(SKY.on()){ U.uZ.value.set(P.zen); U.uH.value.set(P.hor); U.uM.value.copy(U.uH.value).lerp(U.uZ.value,.45); U.uCov.value=P.cov; U.uCL.value=P.cl; U.uCldC.value.set(P.cldc||'#ffffff'); U.uCldK.value=P.cldk||0; U.uBands.value=P.bands; U.uMistK.value*=P.skym;
+    if(SKY.on()){ U.uZ.value.set(P.zen); U.uH.value.set(P.hor); U.uM.value.copy(U.uH.value).lerp(U.uZ.value,.45); { const nk=Math.max(0,Math.min(1,(-4-CLOCK.elev())/6)); U.uS.value.lerp(U.uH.value,nk); U.uA.value.lerp(U.uH.value,nk); }   // no glow along the night's horizon: a clear dark sky (owner, 10 Nov 2026)
+      U.uCov.value=P.cov; U.uCL.value=P.cl; U.uCldC.value.set(P.cldc||'#ffffff'); U.uCldK.value=P.cldk||0; U.uBands.value=P.bands; U.uMistK.value*=P.skym;
       U.uStar.value=Math.min(2,U.uStar.value*P.star); U.uMoonK.value=Math.min(1,U.uMoonK.value*P.moon); }
     MISTS.x=CLOCK.sunV.x; MISTS.y=CLOCK.sunV.y; MISTS.z=CLOCK.sunV.z; MISTS.w=up&&MISTE.x&&FAR3.mist?(P.sunk||0)*Math.max(0,Math.min(1,(CLOCK.elev()+2)/6)):0; MISTSC.set(P.sunhz||'#ffffff');
     if(MISTE.x&&FAR3.mist){ MISTE.y=P.m0; MISTE.z=P.m1; const f=FAR3.fog.color.lerp(P.mist?tc.set(P.mist):U.uH.value,P.hz); U.uMistC.value.copy(f); FAR3.FU.uMC.value.copy(f).multiplyScalar(P.farb); if(scene.background&&scene.background.isColor)scene.background.copy(f).multiplyScalar(.5); }
@@ -77,13 +87,13 @@ DN.lookFor=h=>{ const [a,b,f]=DN.mix(h); return f<.5?a:b; };
     clkShow(); msg(dirty?'not saved':''); if(box.offsetParent)busy=busy.then(build).catch(e=>msg('panel did not load: '+e.message)); };
   if(box)for(const ev of ['keydown','keyup'])box.addEventListener(ev,e=>{ if(e.target.matches('input,textarea'))e.stopPropagation(); });
   setTimeout(()=>{ if(BUGS.owner)BUGS.owner().then(o=>{ DN.owner=!!o; if(o&&box&&box.offsetParent)DN.draw(); }).catch(()=>{}); },3000);   // EXPORT ("send it to Claude") is the owner's
-  { const FILE='/shared/looks.json', take=j=>{ if(!j||typeof j!=='object')return; for(const m of DN.modes)if(j[m]&&typeof j[m]==='object')S[m]={...D0[m],...j[m]}; fix(); DN.draw(); };
+  { let lastL=null, lastT=null; const FILE='/shared/looks.json', take=j=>{ if(!j||typeof j!=='object')return; for(const m of DN.modes)if(j[m]&&typeof j[m]==='object')S[m]={...D0[m],...j[m]}; fix(); DN.draw(); };
     const get=()=>fetch(FILE,{credentials:'same-origin'}).then(r=>r.ok&&r.status!==204?r.json():null).then(take).catch(()=>{});
-    const TF='/shared/time.json', getT=()=>fetch(TF,{credentials:'same-origin'}).then(r=>r.ok&&r.status!==204?r.json():null).then(j=>{ DN.clk=j&&CLK.ok(j.clk)?j.clk:null; DN.draw(); if(j&&j.hold&&DN.modes.includes(j.now)){ DN.hold=j.now; DN.set(j.now,DN.started); } else DN.hold=null; }).catch(()=>{});   // (a pick from before the clock ran, with no hold, is the clock's now)
+    const TF='/shared/time.json', getT=()=>fetch(TF,{credentials:'same-origin'}).then(r=>r.ok&&r.status!==204?r.json():null).then(j=>{ DN.clk=j&&CLK.ok(j.clk)?j.clk:null; DN.draw(); if(j&&j.hold&&DN.modes.includes(j.now)){ DN.hold=j.now; DN.set(j.now,DN.started); } else DN.hold=null; DN.draw(); }).catch(()=>{});   // (a pick from before the clock ran, with no hold, is the clock's now)
     if(!DN.test){ get(); getT(); }
-    const putT=o=>fetch(TF,{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify({now:DN.hold||'clock',hold:DN.hold?1:0,clk:DN.clk,...o})}).then(async r=>{ const o=await r.json().catch(()=>({})); if(!r.ok||!o.ok)throw new Error(o.why||r.status); if(ONLINE.put&&ONLINE.on)ONLINE.put('time',Date.now()); });
+    const putT=o=>fetch(TF,{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify({now:DN.hold||'clock',hold:DN.hold?1:0,clk:DN.clk,...o})}).then(async r=>{ const o=await r.json().catch(()=>({})); if(!r.ok||!o.ok)throw new Error(o.why||r.status); if(ONLINE.put&&ONLINE.on)ONLINE.put('time',lastT=Date.now()); });
     DN.pushTime=m=>putT({now:m,hold:m==='clock'?0:1}); DN.pushClk=c=>putT({clk:c});   // the look held and the clock: one file, each change keeps the other
     DN.diff=()=>{ const o={}; for(const m of DN.modes){ const d={}; for(const k in S[m])if(S[m][k]!==D0[m][k])d[k]=S[m][k]; if(Object.keys(d).length)o[m]=d; } return o; };   // only what differs from the game's own: a reset look leaves the file
-    DN.push=()=>fetch(FILE,{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(DN.diff())}).then(async r=>{ const o=await r.json().catch(()=>({})); if(!r.ok||!o.ok)throw new Error(o.why||r.status); if(ONLINE.put&&ONLINE.on)ONLINE.put('looks',Date.now()); });
-    let lastL=null, lastT=null; SYS.add('world',(k,v)=>{ if(DN.owner||DN.test)return; if(k==='looks'&&v!==lastL){ lastL=v; get(); } if(k==='time'&&v!==lastT){ lastT=v; DN.started=1; getT(); } },'134b-looks'); }
+    DN.push=()=>fetch(FILE,{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(DN.diff())}).then(async r=>{ const o=await r.json().catch(()=>({})); if(!r.ok||!o.ok)throw new Error(o.why||r.status); if(ONLINE.put&&ONLINE.on)ONLINE.put('looks',lastL=Date.now()); });
+    SYS.add('world',(k,v)=>{ if(DN.test)return; if(k==='looks'&&v!==lastL){ lastL=v; if(!dirty)get(); } if(k==='time'&&v!==lastT){ lastT=v; DN.started=1; getT(); } },'134b-looks'); }   // another owner's change reaches an owner too (his own is not read back; his unsaved look is kept)
   CLOCK.run=false; blend(S[DN.mode],S[DN.mode],1); fix(); DN.draw(); window.DN=DN; window.CLK=CLK; window.DNDBG=()=>({mode:DN.mode,h:+CLOCK.h.toFixed(2),elev:+CLOCK.elev().toFixed(1),wx:WX.now,lk:DN.lk}); }

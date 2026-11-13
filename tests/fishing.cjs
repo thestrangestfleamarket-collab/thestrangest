@@ -72,10 +72,10 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
       s.mode = 'shake'; s.runT = 1e9; await new Promise(r => setTimeout(r, 300)); r.shakes = document.getElementById('fishhud').textContent.includes('SHAKES ITS HEAD'); FISHING.reel(); FISHING.force = null; FISHING.drag = 3; FISHING.speed = sp0; FISHING.auto = au0; return r; });
     ok(fr.word === 'LOOSE,GOOD,EASE' && fr.fight && fr.rests && fr.shakes, 'the fight: LOOSE / GOOD / EASE by the line, a resting fish gets its breath back and a shaking one says to ease off: ' + JSON.stringify(fr)); }
   // the tackle: better rods cast further on stronger line, reels reel faster; bought at the stand
-  const g = await pg.evaluate(() => { const g0 = { ...FISHING.gear() }; INV.cash = 1000; for (const id of ['rod_surf', 'reel_pro', 'lure_spoon', 'cooler_s', 'crabpot']) FORAGE.give(id, 1);
+  const g = await pg.evaluate(() => { const g0 = { ...FISHING.gear() }; INV.cash = 1000; for (const id of ['rod_surf', 'reel_pro', 'lure_spoon', 'cooler_s']) FORAGE.give(id, 1);
     return { g0, cash: INV.cash }; });
   const g1 = await pg.evaluate(() => new Promise(r => setTimeout(() => r({ ...FISHING.gear() }), 700)));
-  ok(g.g0.cast === 12 && g.g0.line === 1 && g1.cast === 22 && g1.line === 1.6 && g1.reel === 1.7, 'better rods (cast, line), reels, lures, a cooler and a crab pot work: ' + JSON.stringify({ g0: g.g0, g1 }));
+  ok(g.g0.cast === 12 && g.g0.line === 1 && g1.cast === 22 && g1.line === 1.6 && g1.reel === 1.7, 'better rods (cast, line), reels, lures and a cooler work: ' + JSON.stringify({ g0: g.g0, g1 }));
   // the fight: pulling against the fish's run tires it faster than pulling with it; low drag lets it take line instead of snapping
   const st = await pg.evaluate(async () => { const T = __dbg.cv().TILE, wait = ms => new Promise(r => setTimeout(r, ms)); FISHING.speed = 4; FISHING.force = 'x_bass'; FISHING.win = 30; if (!FORAGE.S.hook) FORAGE.ACT.fhook('bait_cut'); FISHING.cast(PIER.x + 3.2 * T, PIER.zE - 7 * T);
     const t0 = performance.now(); let s; while (performance.now() - t0 < 300000) { s = FISHING.state(); if (s && s.st === 'bite') break; await wait(50); } FISHING.click(); s = FISHING.state();
@@ -91,16 +91,7 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     FORAGE.take('cooler_s', 1); for (const id of ['x_perch', 'x_eel', 'x_shad', 'x_bass']) FORAGE.take(id, FORAGE.has(id) || 0); FORAGE.give('x_perch', 5); const n0 = FISHING.held(); await land(); const n1 = FISHING.held(), freed = !!(FISHING.last && FISHING.last.freed);
     FORAGE.give('cooler_s'); return { lure, room0, n0, n1, freed, room1: FISHING.room() }; });
   ok(cl.lure === 'lure_spoon' && cl.n0 === 5 && cl.n1 === 5 && cl.freed && cl.room1 === 20, 'the spoon lure stays on the hook; without a cooler a sixth fish goes back, a small cooler holds 15 more: ' + JSON.stringify(cl));
-  // crab pots: drop one ahead, it is kept, haul it later for what crawled in
-  const cp = await pg.evaluate(() => { SHARED.heading = Math.PI; const p = POTS.drop(); if (!p) return { dropped: false }; const kept = JSON.parse(__dbg.SAVE.get('pots')).length; p.t -= 60 * 60000; POTS.haul(p); return { dropped: true, kept, got: POTS.last.got, back: FORAGE.has('crabpot'), left: JSON.parse(__dbg.SAVE.get('pots')).length }; });
-  ok(cp.dropped && cp.kept === 1 && cp.got.length > 0 && cp.back === 1 && cp.left === 0, 'a crab pot dropped in the river is kept, and hauled after an hour holds a catch: ' + JSON.stringify(cp));
-  // other players: their pots float where they dropped them, with their name, and go when they haul them; yours go to the section
-  const tp = await pg.evaluate(async () => { const T = __dbg.cv().TILE, sent = [], on = ONLINE.on, send = ONLINE.send; ONLINE.on = true; ONLINE.send = m => sent.push(m);
-    ONLINE.hear.puts({ all: [{ id: 'q', name: 'Otto', k: 'pot', list: [[PIER.x + 3 * T, 0, PIER.zE - 6 * T, 1]] }] }); await new Promise(r => setTimeout(r, 400));
-    const p = (POTS.theirs.get('q') || [])[0], o = { shown: !!(p && p.g && p.g.visible), name: p && p.th && p.th.name, mine: !!sent.find(m => m.t === 'puts' && m.k === 'pot') };
-    ONLINE.hear.puts({ id: 'q', k: 'pot', name: 'Otto', list: [] }); o.gone = !POTS.theirs.has('q') && !(p && p.g); ONLINE.on = on; ONLINE.send = send; return o; });
-  ok(tp.shown && tp.name === "OTTO'S CRAB POT" && tp.mine && tp.gone, "another player's crab pot floats where they dropped it, with their name, and goes when they haul it; yours go to the section: " + JSON.stringify(tp));
-  const gd = await pg.evaluate(() => { FISHING.guide(); const P = document.getElementById('packp'), t = P ? P.innerText : ''; const r = { open: FORAGE.PACK.open, tab: FORAGE.PACK.tab, fish: Object.values(FISHING.NAMES).filter(n => t.includes(n)).length, all: Object.keys(FISHING.NAMES).length }; FORAGE.PACK.toggle(); return r; });
+  const gd = await pg.evaluate(() => { FISHING.guide(); const P = document.getElementById('packp'), t = P ? P.innerText : ''; const r = { open: FORAGE.PACK.open, tab: FORAGE.PACK.tab, fish: Object.values(FISHING.NAMES).filter(n => t.includes(n)).length, all: Object.keys(FISHING.NAMES).length, missing: Object.values(FISHING.NAMES).filter(n => !t.includes(n)) }; FORAGE.PACK.toggle(); return r; });
   ok(gd.open && gd.tab === 'fishing' && gd.fish === gd.all, 'the fishing guide opens in the pack and lists every fish: ' + JSON.stringify(gd));
   // another player fishing beside you: the rod in her hand, her line from its tip to her float
   const rf = await pg.evaluate(async () => { const T = __dbg.cv().TILE, x = PIER.x + 1.5 * T, z = PIER.zE + 2 * T, on = ONLINE.on; ONLINE.on = true;

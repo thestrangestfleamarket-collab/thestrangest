@@ -6,13 +6,34 @@ const {chromium}=require('playwright'), {spawn}=require('child_process');
 const PORT=8799, BASE='http://127.0.0.1:'+PORT;
 let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
 (async()=>{
-  const w=spawn('npx',['wrangler','dev','--port',String(PORT),'--ip','127.0.0.1','--var','DEV_AUTH:1','--show-interactive-dev-session=false'],{stdio:['ignore','pipe','pipe'],env:{...process.env,WRANGLER_SEND_METRICS:'false'}});
+  const w=spawn('npx',['wrangler','dev','--port',String(PORT),'--ip','127.0.0.1','--var','DEV_AUTH:1','--show-interactive-dev-session=false','--persist-to',require('fs').mkdtempSync(require('path').join(require('os').tmpdir(),'site-'))],{stdio:['ignore','pipe','pipe'],detached:true,env:{...process.env,WRANGLER_SEND_METRICS:'false'}});
+  const stop=()=>{ try{ process.kill(-w.pid,'SIGKILL'); }catch(e){ try{ w.kill('SIGKILL'); }catch(_){} } };   // the worker's whole group: wrangler leaves workerd on the port otherwise, and the next test on it talks to this one
   let log=''; w.stdout.on('data',d=>log+=d); w.stderr.on('data',d=>log+=d);
   let up=false; for(let i=0;i<120&&!up;i++){ await new Promise(r=>setTimeout(r,1000)); up=await fetch(BASE+'/').then(r=>r.ok).catch(()=>false); }
-  if(!up){ console.log('FAIL: the worker never started\n'+log); w.kill(); process.exit(1); }
+  if(!up){ console.log('FAIL: the worker never started\n'+log); stop(); process.exit(1); }
   const fs=require('fs'), gf=fs.readdirSync('dist/g').filter(f=>f!=='market.html');
   for(const p of ['/market.html','/market','/door.html','/avatar.html','/g/market.html','/g/market','/g/'+gf[0]])ok((await fetch(BASE+p)).status===404,p+' is not handed out by itself');
   ok((await fetch(BASE+'/g/'+gf[0],{headers:{cookie:'tsfm-pass=dev:site-check'}})).status===200,'/g/'+gf[0]+' with a login');
+  for(const u of ['/vr','/asylum']){ const r=await fetch(BASE+u); ok(r.status===200&&/Hollow Pines/.test(await r.text()),u+' (Hollow Pines) is handed to anyone, no login'); }
+  for(const u of ['/holo','/roam','/boarded']){ const a=await fetch(BASE+u,{redirect:'manual'}), b=await fetch(BASE+u,{headers:{cookie:'tsfm-pass=dev:site-check'}}), c=await fetch(BASE+u+'.html');
+    ok(a.status===302&&b.status===200&&/The Holodeck/.test(await b.text())&&c.status===404,u+' (a holodeck page) is handed to a login only; anyone else is sent to the door'); }
+  { const r=await fetch(BASE+'/wave'); ok(r.status===200&&/Shardwave/.test(await r.text()),'/wave (SHARDWAVE) is handed to anyone, no login'); }
+  { const r=await fetch(BASE+'/holmes'); ok(r.status===200&&/The Speckled Band/.test(await r.text()),'/holmes (THE SPECKLED BAND) is handed to anyone, no login');
+    const t=await fetch(BASE+'/holmes',{method:'POST',headers:{'content-type':'application/json',origin:BASE},body:'{}'}); ok(t.status===401,'but the others answer only a login ('+t.status+')'); }
+  for(const u of ['/jam','/rock']){ const r=await fetch(BASE+u); ok(r.status===200&&/Stadium Jam/.test(await r.text()),u+' (STADIUM JAM) is handed to anyone, no login'); }
+  {
+    const a=await fetch(BASE+'/jam-assets/left.glb'), d=await fetch(BASE+'/jam-assets/drums.json'); ok(a.status===200&&/gltf/.test(a.headers.get('content-type')||'')&&d.status===200,'and its hands and samples under /jam-assets/'); }
+  { const sock=name=>new Promise(res=>{ const s=new WebSocket('ws://127.0.0.1:'+PORT+'/parties/jam/site-check'), got=[]; s.onmessage=e=>got.push(JSON.parse(e.data)); s.onopen=()=>{ s.send(JSON.stringify({t:'join',name,inst:'guitar'})); res({s,got}); }; s.onerror=()=>res({s,got}); }), nap=()=>new Promise(r=>setTimeout(r,500));
+    const a=await sock('Ann'); await nap(); const b=await sock('Bob'); await nap(); b.s.send(JSON.stringify({t:'note',k:'d',pad:99,v:5,x:1})); b.s.send(JSON.stringify({t:'hack'})); await nap(); b.s.close(); await nap(); a.s.close();
+    const T=a.got.map(m=>m.t).join(), n=a.got.find(m=>m.t==='note')||{};
+    ok(T==='welcome,peer-join,note,peer-leave'&&b.got[0]&&b.got[0].slot===1&&b.got[0].peers.length===1&&n.pad===15&&n.v===1&&!('x' in n),'a STADIUM JAM room seats two, passes a note on cut to its rules, and says who left: '+T); }
+  { const r=await fetch(BASE+'/scare'); ok(r.status===200&&/Vesper Ward/.test(await r.text()),'/scare (VESPER WARD) is handed to anyone, no login');
+    const a=await fetch(BASE+'/scare-assets/pale.glb'); ok(a.status===200&&/gltf/.test(a.headers.get('content-type')||''),'and its models under /scare-assets/'); }
+  { const r=await fetch(BASE+'/shoot'); ok(r.status===200&&/Breachline/.test(await r.text()),'/shoot (BREACHLINE) is handed to anyone, no login'); }
+  { const r=await fetch(BASE+'/golf'); ok(r.status===200&&/Halcyon Greens/.test(await r.text()),'/golf (HALCYON GREENS) is handed to anyone, no login');
+    const a=await fetch(BASE+'/golf-assets/sky/dusk_4k.jpg'), h=await fetch(BASE+'/golf-assets/sky/dusk_1k.hdr.txt'), m=await fetch(BASE+'/golf-assets/models/fern_02/fern_02.json'), x=await fetch(BASE+'/golf-assets/../g/market.html');
+    ok(a.status===200&&/image\/jpeg/.test(a.headers.get('content-type')||'')&&h.status===200&&m.status===200&&x.status!==200,'and its sky, light and models under /golf-assets/ (nothing outside it)'); }
+  { const r=await fetch(BASE+'/duel'), a=await fetch(BASE+'/duel-assets/gunmetal_color.jpg'); ok(r.status===200&&/AR Duel/.test(await r.text())&&a.status===200&&/image\/jpeg/.test(a.headers.get('content-type')||''),'/duel (AR DUEL) and its pictures are handed to anyone, no login'); }
   { const m=await fetch(BASE+'/app.webmanifest'), j=m.ok?await m.json().catch(()=>null):null, ic=j&&j.icons?await Promise.all(j.icons.map(i=>fetch(BASE+i.src).then(r=>r.ok&&/image\/png/.test(r.headers.get('content-type')||'')))):[];
     ok(!!j&&/manifest\+json/.test(m.headers.get('content-type')||'')&&j.start_url==='/'&&ic.length>=2&&ic.every(Boolean),'the installable app: its manifest and icons are handed to anyone'); }
   { const home=body=>fetch(BASE+'/home',{method:'POST',headers:{cookie:'tsfm-pass=dev:site-check',origin:BASE,'content-type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()).catch(e=>({why:String(e)}));
@@ -25,6 +46,9 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
     ok((await fetch(BASE+'/owned',{method:'POST',headers:{origin:BASE},body:'{}'})).status===401,'/owned without a login is refused');
     const p1=await own({put:{inv:'{"v":1}',birds:'x'}}), p2=await own({put:{birds:null}}), got=await own({}), bad=await own({put:{'no way':'x'}});
     ok(p1.ok===true&&p2.ok===true&&got.owned&&got.owned.inv==='{"v":1}'&&!('birds' in got.owned)&&!bad.ok,'/owned keeps what you own, key by key ('+JSON.stringify(got).slice(0,80)+')'); }
+  { const orch=(who,body)=>fetch(BASE+'/orchard',{method:'POST',headers:{cookie:'tsfm-pass=dev:'+who,origin:BASE,'content-type':'application/json'},body:JSON.stringify({sec:'A',...body})}).then(r=>r.json()).catch(e=>({why:String(e)}));
+    const c1=await orch('orch-a',{claim:2}), c2=await orch('orch-b',{claim:2}), p1=await orch('orch-a',{put:{v:1,trees:[{id:'x',k:'apple'},null,null,null]}}), p3=await orch('orch-c',{put:{v:1,trees:[]}}), L=await orch('orch-b',{}), a=L.plots&&L.plots.find(p=>p.plot===c1.plot);
+    ok(c1.plot===2&&c2.plot!=null&&c2.plot!==2&&p1.ok===true&&p3.ok===false&&a&&a.d&&a.d.trees[0].k==='apple','/orchard: one plot a player, only its keeper writes it, everyone reads them ('+JSON.stringify(L).slice(0,90)+')'); }
   { const me=who=>fetch(BASE+'/owned',{method:'POST',headers:{cookie:'tsfm-pass='+who,origin:BASE,'content-type':'application/json'},body:'{}'}).then(r=>r.json()).then(j=>j.me&&j.me.no).catch(()=>null);
     const a1=await me('dev:pass-a'), a2=await me('dev:pass-a'), b1=await me('dev:pass-b');
     ok(Number.isInteger(a1)&&a1>=1000&&a1===a2&&Number.isInteger(b1)&&b1!==a1,'/owned issues each player one passport number, in order, and keeps it ('+a1+', '+b1+')'); }
@@ -57,21 +81,16 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
     ok(put.ok&&seen===200&&list.art&&list.art.some(a=>a.id===K&&a.who==='dev-art-painter')&&pic.d==='data:image/webp;base64,AAAA'&&notP.why&&off.ok&&have===410&&after===404&&again===409&&!list2.art.some(a=>a.id===K),
       'the owner sees a finished painting, takes it down, and it is gone for everyone and cannot be put back ('+JSON.stringify([put,seen,list.why||(list.art||[]).length,pic.why,off,have,after,again])+')'); }
   { const A=(body,ck='dev:owner-bots')=>fetch(BASE+'/admin',{method:'POST',headers:{cookie:'tsfm-pass='+ck,origin:BASE,'content-type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json()).catch(e=>({why:String(e)}));
-    const run=(key,body={})=>fetch(BASE+'/bots/run',{method:'POST',headers:{'x-bot-key':key,'content-type':'application/json'},body:JSON.stringify(body)});
-    ok((await A({do:'bots'},'dev:site-check')).why!==undefined&&(await run('nope')).status===403,'the bots: not for a player, and the runner needs the key');
-    const nb=await A({do:'botnew',set:{at:[1,2]}}), set=await A({do:'botset',id:nb.id,set:{name:'CHECKBOT',job:'fish',hp:.5,say:'hi'}}), L=await A({do:'bots'}), b=L.bots&&L.bots.find(x=>x.id===nb.id);
-    const r=await (await run(L.key,{status:{[nb.id]:{doing:'checking',cash:5}}})).json(), mine=r.bots&&r.bots.find(x=>x.id===nb.id), L2=await A({do:'bots'}), b2=L2.bots&&L2.bots.find(x=>x.id===nb.id);
-    ok(nb.ok&&set.ok&&b&&b.name==='CHECKBOT'&&b.job==='fish'&&b.hp===.5&&mine&&mine.login&&mine.login.access_token==='dev:'+nb.id.slice(4)&&b2.status&&b2.status.doing==='checking','the owner spawns and sets a bot; the runner gets its job and login and reports back ('+JSON.stringify(mine||r).slice(0,120)+')');
-    const off=await A({do:'botset',id:nb.id,set:{on:false}}), r2=await (await run(L.key)).json(), del=await A({do:'botdel',id:nb.id}), L3=await A({do:'bots'});
-    ok(off.ok&&r2.bots&&!r2.bots.some(x=>x.id===nb.id)&&del.ok&&!L3.bots.some(x=>x.id===nb.id),'a bot turned off is not run; a deleted bot is gone'); }
+    const run=await fetch(BASE+'/bots/run',{method:'POST',headers:{'content-type':'application/json'},body:'{}'}), L=await A({do:'bots'}), T=await fetch(BASE+'/twin',{method:'POST',headers:{cookie:'tsfm-pass=dev:owner-bots',origin:BASE,'content-type':'application/json'},body:'{}'});
+    const rt=await run.text(), tt=await T.text(); ok(!/"bots"/.test(rt)&&!L.ok&&!L.bots&&!/"(say|calls|why)"/.test(tt),'the bots are gone: no runner, no BOTS for the owner, no AI double ('+[run.status,JSON.stringify(L).slice(0,80),T.status]+')'); }
   { const WS=require('ws'); const dish=who=>new Promise((res,rej)=>{ const w=new WS(BASE.replace(/^http/,'ws')+'/parties/dish/petri',{headers:{cookie:'tsfm-pass='+who,origin:BASE}}); const got=[]; w.on('message',d=>{ try{ got.push(JSON.parse(d)); }catch(e){} }); w.on('open',()=>res({w,got})); w.on('error',rej); setTimeout(()=>rej(new Error('no dish')),20000); });
     const wait=(c,f,ms=8000)=>new Promise(r=>{ const t0=Date.now(); const k=setInterval(()=>{ if(f(c.got)||Date.now()-t0>ms){ clearInterval(k); r(f(c.got)); } },100); });
     ok(await new Promise(r=>{ const w=new WS(BASE.replace(/^http/,'ws')+'/parties/dish/petri',{headers:{origin:BASE}}); w.on('unexpected-response',(q,res)=>r(res.statusCode===401||res.statusCode===404)); w.on('open',()=>r(false)); w.on('error',()=>r(true)); }),'the dish without a login is refused');
     let a=null, bb=null; try{ a=await dish('dev:dish-a'); bb=await dish('dev:dish-b'); }catch(e){ ok(false,'two players reach the dish ('+e.message+')'); }
     if(a&&bb){ const hiA=await wait(a,g=>g.find(m=>m.t==='hi')), hiB=await wait(bb,g=>g.find(m=>m.t==='hi'));
-      const A=hiA&&hiA.you; ok(hiA&&hiB&&A&&A!==hiB.you&&hiB.S.players.some(p=>p[0]===A)&&hiB.S.players.filter(p=>p[3]).length===11&&hiA.S.pellets.length===1000,'two players reach the dish and see each other among eleven bots ('+(hiB&&hiB.S.players.length)+' in it, you '+A+')');
+      const A=hiA&&hiA.you; ok(hiA&&hiB&&A&&A!==hiB.you&&hiB.S.players.some(p=>p[0]===A)&&hiB.S.players.length===2&&hiA.S.pellets.length===1000,'two players reach the dish and see each other, no bots ('+(hiB&&hiB.S.players.length)+' in it, you '+A+')');
       a.w.send(JSON.stringify({t:'in',dx:1,dy:0})); const tk=await wait(a,g=>g.filter(m=>m.t==='tk').length>=5&&g.filter(m=>m.t==='tk').slice(-1)[0]); const mv=tk&&tk.cells.find(c=>c[1]===A), first=hiA&&hiA.S.cells.find(c=>c[1]===A);
-      ok(mv&&first&&mv[2]>first[2]+5&&tk.who.length>=13&&tk.board.length>0,'the dish ticks ten times a second and steering moves your cell ('+(first&&first[2])+' → '+(mv&&mv[2])+')');
+      ok(mv&&first&&mv[2]>first[2]+5&&tk.who.length===2&&tk.board.length>0,'the dish ticks ten times a second and steering moves your cell ('+(first&&first[2])+' → '+(mv&&mv[2])+')');
       a.w.close(); bb.w.close(); }
     // the section's room (the Block): a login reaches it, the second player hears the first is there, a move and a name go across
     const blk=who=>new Promise((res,rej)=>{ const w=new WS(BASE.replace(/^http/,'ws')+'/parties/block/s-a',{headers:{cookie:'tsfm-pass='+who,origin:BASE}}); const got=[]; w.on('message',d=>{ try{ got.push(JSON.parse(d)); }catch(e){} }); w.on('open',()=>res({w,got})); w.on('error',rej); setTimeout(()=>rej(new Error('no block')),20000); });
@@ -106,11 +125,13 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
       ok(back&&hi2&&!('sum:dragon#3' in hi2.world),'SUMMON: SEND BACK reaches everyone and is forgotten'); }
     catch(e){ ok(false,'SUMMON: two players reach the block ('+e.message+')'); }
     finally{ if(P)P.w.close(); if(O)O.w.close(); } }
-  const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
+  const b=await chromium.launch({...(process.env.PWCHROME?{executablePath:process.env.PWCHROME}:{}),args:['--use-gl=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist']});
   const door=await b.newPage(), derr=[]; door.on('pageerror',e=>derr.push(e.message));
   await door.goto(BASE+'/',{waitUntil:'load'}); await door.waitForTimeout(1500);
   ok(await door.locator('#dcode').isVisible().catch(()=>false),'/ without a login: the door, with its invite code box');
   ok(!derr.length,'the door: no page errors '+derr.join(' | '));
+  await door.click('[data-a="ask"]'); await door.fill('#dmail','asker@example.com'); await door.click('[data-a="doask"]'); await door.waitForTimeout(1000);
+  ok(/asker@example\.com/i.test(await door.locator('#door').innerText()),'the door: asking for an invite takes an email');
   { const pc=await b.newContext({viewport:{width:412,height:915},isMobile:true,hasTouch:true}), ph=await pc.newPage(); await ph.goto(BASE+'/',{waitUntil:'load'}); await ph.waitForTimeout(1500);
     ok(await ph.locator('#dcode').isVisible().catch(()=>false),'the door on a phone: the invite code box, not turned away'); await pc.close(); }
   const ctx=await b.newContext(); await ctx.addCookies([{name:'tsfm-pass',value:'dev:site-check',url:BASE}]);
@@ -130,6 +151,6 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
         return {ctl:true,ok:r.ok,n,m,n2,page:!!(await c.match('/'))}; },gf.find(f=>/^m\.[0-9a-f]+\.js$/.test(f))||gf[0]).catch(e=>({err:String(e)}));
     ok(sw.ctl&&sw.ok&&sw.n>0&&sw.m===sw.n&&sw.n2===sw.n&&!sw.page,'the service worker keeps the game\'s files on the device, and never the page: '+JSON.stringify(sw)); }
   ok(!gerr.length,'THE MARKET: no page errors '+[...new Set(gerr)].join(' | '));
-  await b.close(); w.kill();
+  await b.close(); stop();
   console.log(bad?bad+' FAILED':'all good'); process.exit(bad?1:0);
 })();

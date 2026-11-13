@@ -3,6 +3,7 @@ import {ARCHI, DOLL, FORAGE, INV, ONLINE, PASSPORT, TEXT} from './003b-systems.j
 import {SAY} from './003d-say.js';
 import {OWNED} from './005-save.js';
 import {SYS} from './006-map-pre.js';
+import {RARITY} from './013a-rarity.js';
 import {PAINTINGS} from './159h-paintings.js';
 const SWAP={no:[id=>ARCHI(id)||id==='passport'||id.startsWith('photo_')||id.startsWith('wip_')]}; window.SWAP=SWAP;
 {
@@ -18,11 +19,8 @@ const SWAP={no:[id=>ARCHI(id)||id==='passport'||id.startsWith('photo_')||id.star
   const cash=()=>Math.floor(INV.cash||0);
 
   /* ---------- asking and being asked ---------- */
-  PASSPORT.trade=o=>SWAP.ask(o); ONLINE.useUp=o=>(ONLINE.botUse&&ONLINE.botUse(o))||(DOLL.see?DOLL.see(o):SWAP.ask(o));   // an owner's own bot opens its window (136ca), anyone else their paper doll (owner, 9 Nov 2026: "if you click on someone else you just see them"), with TRADE and their ID card
+  PASSPORT.trade=o=>SWAP.ask(o); ONLINE.useUp=o=>DOLL.see?DOLL.see(o):SWAP.ask(o);   // someone else: their paper doll (owner, 9 Nov 2026: "if you click on someone else you just see them"), with TRADE and their ID card
   let pre=null;   // a thing dragged onto them goes in as soon as the trade opens
-  // your own AI double (162gb): SWAP.trust(id) true for it (and for its owner, in its game): their asks are taken and what they accept is accepted; SWAP.give hands someone things in one go
-  let gift=null; const trust=id=>{ try{ return !!(SWAP.trust&&SWAP.trust(String(id))); }catch(e){ return false; } };
-  SWAP.give=(o,items,c)=>{ gift={to:o.id,items:items||{},cash:Math.max(0,Math.floor(+c||0))}; SWAP.ask(o); };
   SWAP.ask=(o,put)=>{ if(!ONLINE.on)return say('TRADING NEEDS THE BLOCK: YOU ARE NOT ONLINE.','#c8a090'); if(T)return say('YOU ARE ALREADY TRADING.','#c8a090'); pre=put&&put.id?put:null;
     ONLINE.send({t:'tr',op:'ask',to:o.id}); say('YOU ASK '+(o.name||'THEM')+' TO TRADE.'); };
   const asked=()=>{ '@later'; if(!ask){ Q.hidden=true; return; } Q.innerHTML=`<h3 style="margin:0 0 8px;color:#f2c14e;font:12px Silkscreen,monospace">TRADE</h3><div>${esc(ask.name||'A TENANT')} WANTS TO TRADE WITH YOU.</div>
@@ -32,17 +30,16 @@ const SWAP={no:[id=>ARCHI(id)||id==='passport'||id.startsWith('photo_')||id.star
 
   /* ---------- what the server says ---------- */
   ONLINE.hear.tr=m=>{ '@later'; const op=m.op;
-    if(op==='ask'){ if(T)return ONLINE.send({t:'tr',op:'no',to:m.from}); if(trust(m.from)){ ONLINE.send({t:'tr',op:'yes',to:m.from}); return; } ask={from:String(m.from),name:String(m.name||''),until:performance.now()+30000}; asked(); return; }
+    if(op==='ask'){ if(T)return ONLINE.send({t:'tr',op:'no',to:m.from}); ask={from:String(m.from),name:String(m.name||''),until:performance.now()+30000}; asked(); return; }
     if(op==='no')return say((m.name||'THEY')+' DOES NOT WANT TO TRADE.','#c8a090');
     if(op==='far')return say('TOO FAR AWAY TO TRADE: WALK UP TO THEM.','#c8a090');
     if(op==='busy')return say('THEY ARE IN ANOTHER TRADE.','#c8a090');
     if(!T&&op==='x'&&m.back){ take(m.back); return say('THE TRADE FELL THROUGH. WHAT YOU PUT IN IS BACK.','#c8a090'); }
     if(!T&&op==='done'){ take(m.get||{}); return say('A TRADE CAME THROUGH.','#b8f0a0'); }
     if(op==='open'){ ask=null; asked(); T={with:String(m.with),name:String(m.name||'A TENANT'),mine:{items:{},cash:0},theirs:null,okMe:false,okThem:false,done:false}; if(pre&&can(pre.id)){ T.mine.items[pre.id]=Math.min(pre.n||1,INV.items[pre.id]); offer(); } pre=null;
-      if(gift&&gift.to===T.with){ for(const id in gift.items)if(can(id))T.mine.items[id]=Math.min(gift.items[id],INV.items[id]); T.mine.cash=Math.min(gift.cash||0,cash()); gift=null; offer(); flush(); setTimeout(()=>{ if(T)ONLINE.send({t:'tr',op:'ok',v:true}); },400); }
       P.hidden=false; draw(); return; }
     if(!T)return;
-    if(op==='st'){ T.theirs=m.theirs||null; T.okMe=!!m.okMe; T.okThem=!!m.okThem; draw(); if(T.okThem&&!T.okMe&&trust(T.with))setTimeout(()=>{ if(T&&T.okThem&&!T.okMe)ONLINE.send({t:'tr',op:'ok',v:true}); },300); return; }
+    if(op==='st'){ T.theirs=m.theirs||null; T.okMe=!!m.okMe; T.okThem=!!m.okThem; draw(); return; }
     if(op==='pay'){ pay(m.give||{}); return; }
     if(op==='done'){ done(m); return; }
     if(op==='x'){ if(m.back)take(m.back); say('THE TRADE IS OFF'+(m.why?': '+String(m.why).toUpperCase():'')+(m.back?'. WHAT YOU PUT IN IS BACK':'')+'.','#c8a090'); shut(); } };
@@ -71,7 +68,7 @@ const SWAP={no:[id=>ARCHI(id)||id==='passport'||id.startsWith('photo_')||id.star
   SYS.onStart(()=>{ let L=null; try{ L=JSON.parse(OWNED.get('tradein')||'null'); }catch(e){} if(!Array.isArray(L)||!L.length)return; OWNED.del('tradein'); for(const r of L)take(r||{}); say('A TRADE CAME THROUGH WHILE YOU WERE AWAY: IT IS IN YOUR BAG.','#b8f0a0'); },'159i-trade tradein');
 
   /* ---------- the window ---------- */
-  const list=(o,mine)=>{ '@later'; const ks=Object.keys(o&&o.items||{}); let h=ks.map(id=>`<tr><td>${esc(nm(id))}</td><td style="text-align:right">×${o.items[id]}</td>${mine?`<td style="text-align:right"><button data-less="${esc(id)}" style="${B}" aria-label="One fewer">−</button></td>`:''}</tr>`).join('');
+  const list=(o,mine)=>{ '@later'; const ks=Object.keys(o&&o.items||{}); let h=ks.map(id=>`<tr><td data-card="${esc(id)}" style="color:${RARITY.col(id)}">${esc(nm(id))}</td><td style="text-align:right">×${o.items[id]}</td>${mine?`<td style="text-align:right"><button data-less="${esc(id)}" style="${B}" aria-label="One fewer">−</button></td>`:''}</tr>`).join('');
     if(o&&o.cash)h+=`<tr><td style="color:#f2c14e">CASH</td><td style="text-align:right;color:#f2c14e">$${Math.floor(o.cash).toLocaleString('en-US')}</td>${mine?'<td></td>':''}</tr>`;
     return h?`<table style="width:100%;border-collapse:collapse">${h}</table>`:'<div style="color:#9b9584">NOTHING YET.</div>'; };
   const draw=()=>{ '@later'; if(!T)return; const x=P.querySelector(':scope>.pX'); const pack=Object.keys(INV.items).filter(id=>can(id)&&(INV.items[id]-(T.mine.items[id]||0))>0).sort((a,b)=>nm(a).localeCompare(nm(b)));
@@ -85,7 +82,7 @@ const SWAP={no:[id=>ARCHI(id)||id==='passport'||id.startsWith('photo_')||id.star
       <div style="margin-top:10px;color:#9b9584">ANY CHANGE TAKES BACK BOTH ACCEPTS. TO GIVE SOMETHING AWAY, PUT IT IN AND ACCEPT.</div>
       <div style="margin-top:8px;display:flex;gap:6px;justify-content:flex-end"><button data-x="1" style="${B}">CANCEL</button><button data-ok="1" style="${B}">${T.okMe?'TAKE BACK':'ACCEPT'}</button></div>
       <h3 style="margin:12px 0 4px;color:#f2c14e;font:12px Silkscreen,monospace">YOUR PACK</h3>
-      ${pack.length?`<table style="width:100%;border-collapse:collapse">${pack.map(id=>`<tr style="border-bottom:1px solid #22252f"><td>${esc(nm(id))}</td><td style="text-align:right;color:#9b9584">${INV.items[id]-(T.mine.items[id]||0)}</td><td style="text-align:right"><button data-add="${esc(id)}" style="${B}">PUT IN</button></td></tr>`).join('')}</table>`:'<div style="color:#9b9584">NOTHING YOU CAN TRADE.</div>'}`;
+      ${pack.length?`<table style="width:100%;border-collapse:collapse">${pack.map(id=>`<tr style="border-bottom:1px solid #22252f"><td data-card="${esc(id)}" style="color:${RARITY.col(id)}">${esc(nm(id))}</td><td style="text-align:right;color:#9b9584">${INV.items[id]-(T.mine.items[id]||0)}</td><td style="text-align:right"><button data-add="${esc(id)}" style="${B}">PUT IN</button></td></tr>`).join('')}</table>`:'<div style="color:#9b9584">NOTHING YOU CAN TRADE.</div>'}`;
     if(x)P.appendChild(x); };
   P.addEventListener('click',e=>{ '@later'; if(!T||T.paying)return; const b=e.target.closest('button'); if(!b)return;
     if(b.dataset.add){ const id=b.dataset.add; if(can(id)&&(T.mine.items[id]||0)<INV.items[id]){ T.mine.items[id]=(T.mine.items[id]||0)+1; T.okMe=T.okThem=false; offer(); draw(); } }

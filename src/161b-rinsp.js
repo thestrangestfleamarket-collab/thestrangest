@@ -1,12 +1,13 @@
 // THE RENDER INSPECTOR: RINSP, the panel showing what is drawn, its triangles, materials and cost.
 import {SHARED, THREE} from './003-shx.js';
-import {BATCH, CULL, INTERIORS, LEVELS, LOOK, NPCS, pos, PS2, RINSP, ROOMS, TEXT, UI, W3} from './003b-systems.js';
+import {BATCH, CULL, DN, GPUT, INTERIORS, LEVELS, LOOK, NPCS, pos, PS2, RINSP, ROOMS, TEXT, UI, W3} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {MAPG, STORE, SYS, TILE} from './006-map-pre.js';
 import {OUTL} from './072-walker3d.js';
-Object.assign(RINSP,{on:false,sel:null,f:''}); window.RINSP=RINSP;
+import {BUILDV} from './135-where.js';
+Object.assign(RINSP,{on:false,sel:null,f:'',open:new Set()}); window.RINSP=RINSP;
 { const T=TILE, V=new THREE.Vector3(), P3=new THREE.Vector3(), V2=new THREE.Vector3(), M4=new THREE.Matrix4(), F=new THREE.Frustum(), BX=new THREE.Box3(), BU=new THREE.Box3();
-  let el=null, fc=0, f0=0, n=0, hl=null, hlT=0, last=null, lastH=[];
+  let el=null, fc=0, f0=0, n=0, hl=null, hlT=0, last=null, lastH=[], cap=40, LI=null;
   const esc=TEXT.esc, kb=b=>b<1048576?(b/1024).toFixed(0)+'K':(b/1048576).toFixed(1)+'M';
   const mats=o=>Array.isArray(o.material)?o.material:o.material?[o.material]:[];
   const tris=o=>{ '@later'; const g=o.geometry; if(o.isSprite)return 2; if(!g||!g.attributes)return 0; if(o.isBatchedMesh&&o._instanceInfo){ let n=0; o._instanceInfo.forEach(r=>{ if(r.visible&&r.active)n+=o._geometryInfo[r.geometryIndex].count; }); return Math.round(n/3); } const c=g.index?g.index.count:g.attributes.position?g.attributes.position.count:0, d=g.drawRange, k=Math.max(0,Math.min(c-d.start,d.count));
@@ -28,11 +29,17 @@ Object.assign(RINSP,{on:false,sel:null,f:''}); window.RINSP=RINSP;
     if((o.userData||{}).inner)leaf+=' (room part)'; return (top?top.slice(4)+' / ':'')+leaf; };
   const youIn=b=>pos.x>b.x0&&pos.x<b.x1&&pos.z>b.z0&&pos.z<b.z1&&SHARED.py>b.y0-.3&&SHARED.py<b.y1;
   const wbox=o=>{ if(o.isInstancedMesh||o.isBatchedMesh){ if(!o.boundingBox)o.computeBoundingBox(); return BX.copy(o.boundingBox).applyMatrix4(o.matrixWorld); } const g=o.geometry; if(!g)return BX.makeEmpty(); if(!g.boundingBox)g.computeBoundingBox(); return BX.copy(g.boundingBox).applyMatrix4(o.matrixWorld); };
+  const t3=v=>[+(v.x/T).toFixed(2),+(v.y/T).toFixed(2),+(v.z/T).toFixed(2)];
+  const linfo=(l,vis)=>{ '@later'; return {type:l.type.replace('Light',''),name:label(l),on:vis&&l.intensity>0,lighting:vis&&l.intensity>0&&!!(l.isPointLight||l.isSpotLight),intensity:+l.intensity.toFixed(3),color:'#'+l.color.getHexString(),reach:l.distance?+(l.distance/T).toFixed(1):0,at:t3(l.getWorldPosition(V)),dist:+(l.getWorldPosition(V).distanceTo(P3)/T).toFixed(1),
+    shadow:l.castShadow?(l.shadow&&l.shadow.mapSize?l.shadow.mapSize.x:0)*(l.isPointLight?6:1):0,shadowAuto:l.castShadow&&l.shadow?l.shadow.autoUpdate!==false:undefined}; };
+  const info=o=>{ '@later'; const r=objOf((o.userData||{}).cullOf||o)||(o.parent&&objOf(o.parent)), b=wbox(o), e=b.isEmpty();
+    return {type:o.type,name:o.name||'',tris:tris(o),calls:calls(o),copies:o.isInstancedMesh?o.count:undefined,cast:!!o.castShadow,recv:!!o.receiveShadow,neverCulled:!o.frustumCulled||undefined,layers:o.layers.mask,order:o.renderOrder||undefined,geo:gb(o.geometry),at:t3(e?o.getWorldPosition(V):b.getCenter(V)),size:e?undefined:t3(b.getSize(V2)),dist:+((e?o.getWorldPosition(V).distanceTo(P3):b.distanceToPoint(P3))/T).toFixed(1),
+      mats:mats(o).map(m=>({type:m.type,name:m.name||'',program:prog(m),transparent:m.transparent||undefined,hidden:m.visible?undefined:true,side:m.side===THREE.DoubleSide?'double':undefined,tex:texs(m).map(t=>{ const [w,h,c]=tsz(t); return {w,h,bytes:c}; })})),holds:r?r.objs:undefined}; };
   const collect0=full=>{ '@later'; names(); M4.multiplyMatrices(SHARED.cam.projectionMatrix,SHARED.cam.matrixWorldInverse); F.setFromProjectionMatrix(M4); P3.set(pos.x,SHARED.py,pos.z);
     const HG=new Set([...NPCS,...(NPCS.extra||[])].filter(N=>N.hid&&N.g).map(N=>N.g)), npcHid=o=>{ for(let q=o;q;q=q.parent)if(HG.has(q))return true; return false; }, RB=ROOMS.boxes(), fg=scene.fog&&scene.fog.isFog?scene.fog:null, seen=new Set(), drawn=new Set(), rows=new Map(), progs=new Set(), lights=[];
     const TH=(UI.things||[]).filter(th=>th.obj&&th.obj.visible&&(!th.obj.parent||th.obj.parent.visible)&&LEVELS.drawn(th.obj)).map(th=>[th.name,th.obj.getWorldPosition(new THREE.Vector3()),th.near||th.reach||T]);
     scene.traverseVisible(o=>{ seen.add(o); if(o.isLight){ lights.push(o); return; } if((o.userData||{}).rin||!(o.isMesh||o.isPoints||o.isLine||o.isSprite)||HG.size&&npcHid(o))return;
-      const ms=mats(o); if(!ms.some(m=>m.visible)||!o.layers.test(SHARED.cam.layers))return; const R=CULL.M&&CULL.M.get(o); let tr=0, inV;
+      const ms=mats(o); if(!ms.some(m=>m.visible)||!o.layers.test(SHARED.cam.layers))return; const R=CULL.M&&CULL.M.get(o.userData.cullOf||o); let tr=0, inV;
       if(R&&!R.off&&R.px.length){ const t=CULL.view(R,F); inV=t>=0; tr=Math.max(0,t); } else { inV=o.isSprite||!o.geometry?true:F.intersectsObject(o); tr=tris(o); }
       if(o.frustumCulled&&!inV)return; drawn.add(o); for(const m of ms)progs.add(prog(m));
       const b=wbox(o), d=b.isEmpty()?o.getWorldPosition(V).distanceTo(P3):b.distanceToPoint(P3), why=[];
@@ -42,16 +49,16 @@ Object.assign(RINSP,{on:false,sel:null,f:''}); window.RINSP=RINSP;
         if(fg){ const c=b.getCenter(V).applyMatrix4(SHARED.cam.matrixWorldInverse), rad=b.getSize(V2).length()/2; if(-c.z-rad>fg.far)why.push('IN FOG'); } }
       let act=null; if(!b.isEmpty()&&b.max.distanceTo(b.min)<8*T)for(const [nm,p,r] of TH)if(b.distanceToPoint(p)<r){ act=nm; break; }
       const k=label(o); let w=rows.get(k); if(!w)rows.set(k,w={name:k,tris:0,calls:0,n:0,sh:0,dist:1e9,inView:false,why:new Set(),act:null,objs:[]});
-      w.tris+=tr; w.calls+=calls(o); w.n++; if(o.castShadow)w.sh++; w.dist=Math.min(w.dist,d); w.inView=w.inView||inV; for(const y of why)w.why.add(y); if(act)w.act=act; if(w.objs.length<40)w.objs.push(o); });
+      w.tris+=tr; w.calls+=calls(o); w.n++; if(o.castShadow)w.sh++; w.dist=Math.min(w.dist,d); w.inView=w.inView||inV; for(const y of why)w.why.add(y); if(act)w.act=act; if(w.objs.length<cap)w.objs.push(o); });
     const out=[...rows.values()].map(w=>({...w,dist:+(w.dist/T).toFixed(1),why:[...w.why]})).sort((a,b)=>b.tris-a.tris), I=renderer.info, lit=lights.filter(l=>(l.isPointLight||l.isSpotLight)&&l.intensity>0);
     const head={fps:Math.round(RINSP.fps||0),ms:+(RINSP.ms||0).toFixed(1),calls:(I.last||I.render).calls,tris:(I.last||I.render).triangles,points:(I.last||I.render).points,lines:(I.last||I.render).lines,programs:(I.programs||[]).length,progsOnScreen:progs.size,
       geometries:I.memory.geometries,textures:I.memory.textures,lightsInScene:0,lightsLit:lit.length,shadows:lights.filter(l=>l.castShadow).map(l=>l.type.replace('Light','')+' '+(l.shadow&&l.shadow.mapSize?l.shadow.mapSize.x:'?')+(l.isPointLight?'x6':'')),
       lvl:SHARED.LVL,place:ROOMS.cur?(ROOMS.cur.name||ROOMS.cur.id||'room'):'',at:[+(pos.x/T).toFixed(1),+(pos.z/T).toFixed(1)],drawnObjs:drawn.size,drawnTris:out.reduce((a,w)=>a+w.tris,0),fog:fg?+(fg.far/T).toFixed(0):null};
     let hid=lastH; if(full){ const H=new Map(), gs=new Set(), ts=new Set(); let all=0, gB=0, tB=0;
-      scene.traverse(o=>{ if(o.isLight){ head.lightsInScene++; return; } if(!(o.isMesh||o.isPoints||o.isLine)||(o.userData||{}).rin||(o.userData||{}).cullOf)return; const ms=mats(o), t=tris(o); all+=t;
-        let g0=0, t0=0; if(o.geometry&&!gs.has(o.geometry)){ gs.add(o.geometry); g0=gb(o.geometry); gB+=g0; } for(const m of ms)for(const x of texs(m))if(!ts.has(x)){ ts.add(x); t0+=tsz(x)[2]; } tB+=t0;
+      scene.traverse(o=>{ if(o.isLight){ head.lightsInScene++; if(LI)LI.push(linfo(o,seen.has(o))); return; } if(!(o.isMesh||o.isPoints||o.isLine)||(o.userData||{}).rin||(o.userData||{}).cullOf)return; const ms=mats(o), t=tris(o); all+=t;
+        let g0=0, t0=0; if(o.geometry&&o.geometry.attributes){ const g=o.geometry; for(const a of [g.index,...Object.values(g.attributes)]){ const r=a&&(a.isInterleavedBufferAttribute?a.data.array:a.array); if(r&&!gs.has(r.buffer)){ gs.add(r.buffer); g0+=r.byteLength; } } gB+=g0; } for(const m of ms)for(const x of texs(m))if(!ts.has(x)){ ts.add(x); t0+=tsz(x)[2]; } tB+=t0;
         const CR=CULL.M&&CULL.M.get(o); if(drawn.has(o)||CR&&!CR.off&&CR.px.some(p=>drawn.has(p))||!ms.some(m=>m.visible))return; const why=!seen.has(o)?'HIDDEN':!o.layers.test(SHARED.cam.layers)?(o.castShadow?'LAYER OFF, STILL CASTS SHADOW':'LAYER OFF'):'OUT OF VIEW';
-        const k=label(o); let w=H.get(k); if(!w)H.set(k,w={name:k,tris:0,n:0,geoB:0,texB:0,why:new Set(),objs:[]}); w.tris+=t; w.n++; if(w.objs.length<40)w.objs.push(o); w.geoB+=g0; w.texB+=t0; w.why.add(why); });
+        const k=label(o); let w=H.get(k); if(!w)H.set(k,w={name:k,tris:0,n:0,geoB:0,texB:0,why:new Set(),objs:[]}); w.tris+=t; w.n++; if(w.objs.length<cap)w.objs.push(o); w.geoB+=g0; w.texB+=t0; w.why.add(why); });
       hid=lastH=[...H.values()].map(w=>({...w,why:[...w.why]})).sort((a,b)=>b.geoB+b.texB+b.tris*30-(a.geoB+a.texB+a.tris*30)); head.loadedTris=all; head.geoBytes=gB; head.texBytes=tB; RINSP.tot={all,gB,tB,L:head.lightsInScene}; }
     else if(RINSP.tot){ head.loadedTris=RINSP.tot.all; head.geoBytes=RINSP.tot.gB; head.texBytes=RINSP.tot.tB; head.lightsInScene=RINSP.tot.L; }
     return last={head,drawn:out,hidden:hid}; };
@@ -65,35 +72,47 @@ Object.assign(RINSP,{on:false,sel:null,f:''}); window.RINSP=RINSP;
     hl=new THREE.Box3Helper(BU.clone(),0xff3df0); hl.material.depthTest=false; hl.material.transparent=true; hl.renderOrder=9999; hl.frustumCulled=false; hl.layers.mask=SHARED.cam.layers.mask; hl.userData.rin=1; scene.add(LEVELS.own(hl,'*')); hlT=performance.now()+5000; };
   const row=(w,i,h)=>'<tr data-i="'+i+'"'+(RINSP.sel===w.name?' class="s"':'')+'><td>'+esc(w.name)+(w.n>1?' <span class="d">×'+w.n+'</span>':'')+'</td><td>'+w.tris.toLocaleString()+'</td>'+
     (h?'<td>'+kb(w.geoB+w.texB)+'</td><td class="w">'+esc(w.why.join(', '))+'</td>':'<td>'+w.calls+'</td><td>'+(w.sh?'Y':'')+'</td><td>'+w.dist+'</td><td>'+(w.inView?'Y':'<b>N</b>')+'</td><td class="w">'+esc(w.why.join(', '))+(w.act?' <span class="a">USE: '+esc(w.act)+'</span>':'')+'</td>')+'</tr>';
-  const draw=()=>{ '@later'; if(!el)return; const D=collect(n++%4===0), h=D.head, f=RINSP.f.toLowerCase(), ok=w=>!f||w.name.toLowerCase().includes(f)||w.why.join(' ').toLowerCase().includes(f), dr=D.drawn.filter(ok).slice(0,60), hd=D.hidden.filter(ok).slice(0,30);
+  const catOf=nm=>{ const i=nm.indexOf(' / '); return i>0?nm.slice(0,i).toUpperCase():/^NPC /.test(nm)?'CHARACTERS':nm==='YOU'?'YOU':/^BATCH/.test(nm)?'BATCHES':'OTHER'; };
+  const draw=()=>{ '@later'; if(!el)return; const D=collect(n++%4===0), h=D.head, f=RINSP.f.toLowerCase(), ok=w=>!f||w.name.toLowerCase().includes(f)||w.why.join(' ').toLowerCase().includes(f), dr=D.drawn.filter(ok), hd=D.hidden.filter(ok);
     el.querySelector('.h').innerHTML=esc(h.fps+' FPS · '+h.ms+' MS · '+h.calls+' CALLS · '+h.tris.toLocaleString()+' TRIS'+(h.points?' · '+h.points+' PTS':'')+' (all passes)')+'<br>'+
       esc('PROGRAMS '+h.programs+' ('+h.progsOnScreen+' on screen) · GEOMETRIES '+h.geometries+' · TEXTURES '+h.textures)+'<br>'+
       esc(GT.line())+'<br>'+esc('LIGHTS '+h.lightsInScene+' in scene, '+h.lightsLit+' lighting · SHADOWS '+(h.shadows.join(', ')||'none'))+'<br>'+
       esc('MAIN VIEW '+h.drawnObjs+' objects, '+h.drawnTris.toLocaleString()+' tris · LOADED '+(h.loadedTris||0).toLocaleString()+' tris, geo '+kb(h.geoBytes||0)+', tex '+kb(h.texBytes||0))+'<br>'+
       esc((h.lvl==='up'?'STREET':String(h.lvl).toUpperCase())+(h.place?' · '+h.place:'')+' · at '+h.at.join(',')+(h.fog!=null?' · fog '+h.fog+' tiles':''));
-    { let tm=el.querySelector('.tm'); if(!tm){ tm=document.createElement('div'); tm.className='tm'; el.querySelector('.h').after(tm); }   // the time each system takes a frame (SYS.timing, on while this is open)
-      const fr=Math.max(1,RINSP.tf||0), L=[...SYS.T].map(([k,r])=>[k,r.ms/fr]).sort((a,b)=>b[1]-a[1]), sum=L.reduce((a,b)=>a+b[1],0), ms=h.ms||0; RINSP.tf=0; SYS.T.clear();
-      tm.innerHTML='<h4>[ TIME A FRAME ]</h4><table class="t0"><tr><th>SYSTEM</th><th>MS</th><th>OF FRAME</th></tr>'+L.slice(0,24).map(([k,v])=>'<tr><td>'+esc(k)+'</td><td>'+v.toFixed(2)+'</td><td>'+(ms?Math.round(v/ms*100):0)+'%</td></tr>').join('')+
-        '<tr><td>'+esc('THE REST (drawing, the frame\'s own work, waiting)')+'</td><td>'+Math.max(0,ms-sum).toFixed(2)+'</td><td>'+(ms?Math.round(Math.max(0,ms-sum)/ms*100):0)+'%</td></tr></table>'; }
-    el.querySelector('.t1').innerHTML='<tr><th>DRAWN</th><th>TRIS</th><th>CALLS</th><th>SHD</th><th>DIST</th><th>VIEW</th><th>NOTES</th></tr>'+dr.map(w=>row(w,D.drawn.indexOf(w),0)).join('');
-    el.querySelector('.t2').innerHTML='<tr><th>NOT DRAWN</th><th>TRIS</th><th>MEMORY</th><th>WHY</th></tr>'+hd.map(w=>row(w,D.hidden.indexOf(w),1)).join('');
+    { let tm=el.querySelector('.tm'); if(!tm){ tm=document.createElement('div'); tm.className='tm'; el.querySelector('.h').after(tm); tm.onclick=pick(0); }   // the time each system takes a frame (SYS.timing, on while this is open)
+      const fr=Math.max(1,RINSP.tf||0), ms=h.ms||0, E=[...SYS.T].map(([k,r])=>[k,r.ms/fr]), sum=E.reduce((a,b)=>a+b[1],0); RINSP.tf=0; SYS.T.clear();
+      const DRW=/shadow|outl|water|river|fount|far3/i, root={kids:new Map()}, put=(path,v)=>{ let nd=root; for(const k of path){ let c=nd.kids.get(k); if(!c)nd.kids.set(k,c={name:k,ms:0,kids:new Map()}); c.ms+=v; nd=c; } };
+      for(const [k,v] of E){ const i=k.indexOf(' · '); if(k==='frame')put(["THE LOOP'S OWN CODE (outside any system)"],v); else if(k.startsWith('draw · '))put(['DRAWING',k.slice(7)+' (the pass)'],v); else if(i<0)put([DRW.test(k)?'DRAWING':'FRAME STEPS',k],v); else put(['SYSTEMS',k.slice(0,i).toUpperCase(),k.slice(i+3)],v); }
+      { const WT='THE GRAPHICS CARD AND THE WAIT', wait=Math.max(0,ms-sum), G=GT.X?Object.entries(GT.ms):[], gs=G.reduce((a,b)=>a+b[1],0), k=gs>wait&&gs>0?wait/gs:1, tt=D.drawn.reduce((a,w)=>a+w.tris,0);   // the card's own time for each pass; the scene's shared out by triangles
+        for(const [nm,v] of G){ if(nm==='SCENE'&&tt>0){ const C=new Map(); for(const w of D.drawn)C.set(catOf(w.name),(C.get(catOf(w.name))||0)+w.tris); for(const [c,t] of C)put([WT,'SCENE (by its share of triangles)',c],v*k*t/tt); } else put([WT,nm],v*k); }
+        put([WT,GT.X?"IDLE: THE BROWSER, THE SCREEN'S NEXT REFRESH":'THIS BROWSER DOES NOT SAY HOW THE CARD SPENDS IT'],Math.max(0,wait-gs*k)); }
+      const tr=(nd,d,path)=>[...nd.kids.values()].sort((a,b)=>b.ms-a.ms).map(c=>{ const key=path+'/'+c.name, has=c.kids.size>0, op=has&&RINSP.open.has(key);
+        return '<tr'+(has?' data-c="'+esc(key)+'" class="c"':'')+'><td style="padding-left:'+(4+d*12)+'px">'+(has?(op?'▾ ':'▸ '):'')+esc(c.name)+(has?' <span class="d">'+c.kids.size+'</span>':'')+'</td><td>'+c.ms.toFixed(2)+'</td><td>'+(ms?Math.round(c.ms/ms*100):0)+'%</td></tr>'+(op?tr(c,d+1,key):''); }).join('');
+      { const ser=nd=>[...nd.kids.values()].sort((a,b)=>b.ms-a.ms).map(c=>({name:c.name,ms:+c.ms.toFixed(3),ofFrame:ms?+(c.ms/ms*100).toFixed(1):0,parts:c.kids.size?ser(c):undefined})); RINSP.time=ser(root); }
+      tm.innerHTML='<h4>[ TIME A FRAME ]</h4><table class="t0"><tr><th>WHERE</th><th>MS</th><th>OF FRAME</th></tr>'+tr(root,0,'T')+'</table>'; }
+    const grp=(L,all,hdn,tag)=>{ const G=new Map(); for(const w of L){ const c=catOf(w.name); let g=G.get(c); if(!g)G.set(c,g={name:c,tris:0,calls:0,n:0,mem:0,dist:1e9,rows:[]}); g.tris+=w.tris; g.calls+=w.calls||0; g.n+=w.n; g.mem+=(w.geoB||0)+(w.texB||0); g.dist=Math.min(g.dist,w.dist??1e9); g.rows.push(w); }
+      return [...G.values()].sort((a,b)=>hdn?b.mem+b.tris*30-(a.mem+a.tris*30):b.tris-a.tris).map(g=>{ const key=tag+'/'+g.name, op=!!f||RINSP.open.has(key)||g.rows.some(w=>w.name===RINSP.sel);
+        return '<tr data-c="'+esc(key)+'" class="c"><td>'+(op?'▾ ':'▸ ')+esc(g.name)+' <span class="d">'+g.rows.length+'</span></td><td>'+g.tris.toLocaleString()+'</td>'+(hdn?'<td>'+kb(g.mem)+'</td><td></td>':'<td>'+g.calls+'</td><td></td><td>'+g.dist+'</td><td></td><td></td>')+'</tr>'+(op?g.rows.map(w=>row(w,all.indexOf(w),hdn)).join(''):''); }).join(''); };
+    el.querySelector('.t1').innerHTML='<tr><th>DRAWN</th><th>TRIS</th><th>CALLS</th><th>SHD</th><th>DIST</th><th>VIEW</th><th>NOTES</th></tr>'+grp(dr,D.drawn,0,'D');
+    el.querySelector('.t2').innerHTML='<tr><th>NOT DRAWN</th><th>TRIS</th><th>MEMORY</th><th>WHY</th></tr>'+grp(hd,D.hidden,1,'H');
     const s=D.drawn.find(w=>w.name===RINSP.sel)||D.hidden.find(w=>w.name===RINSP.sel); el.querySelector('.dt').innerHTML=s?'<b>'+esc(s.name)+'</b>'+detail(s):'<span class="d">click a row to light it up and see its parts</span>';
     if(hl&&performance.now()>hlT)mark(null); };
-  const pick=h=>e=>{ const tr=e.target.closest('tr[data-i]'); if(!tr||!last)return; const w=(h?last.hidden:last.drawn)[+tr.dataset.i]; if(!w)return; RINSP.sel=RINSP.sel===w.name?null:w.name; mark(RINSP.sel?w:null); draw(); };
+  const pick=h=>e=>{ const ct=e.target.closest('tr[data-c]'); if(ct){ const k=ct.dataset.c; if(RINSP.open.has(k))RINSP.open.delete(k); else RINSP.open.add(k); draw(); return; } const tr=e.target.closest('tr[data-i]'); if(!tr||!last)return; const w=(h?last.hidden:last.drawn)[+tr.dataset.i]; if(!w)return; RINSP.sel=RINSP.sel===w.name?null:w.name; mark(RINSP.sel?w:null); draw(); };
   const make=()=>{ '@later'; const css=document.createElement('style'); css.textContent=`#rinsp{position:fixed;left:calc(12px + env(safe-area-inset-left,0px));top:12px;z-index:16;width:min(620px,calc(100vw - 24px));max-height:calc(100vh - 24px);overflow:auto;box-sizing:border-box;font:10px/1.5 var(--pixel);color:var(--fg);background:rgba(11,13,19,.94);border:2px solid var(--line);padding:8px 10px}
 #rinsp[hidden]{display:none}#rinsp h3{font:inherit;font-size:11px;color:var(--key);margin:8px 0 4px}#rinsp h3:first-child{margin-top:0}#rinsp .h{font-variant-numeric:tabular-nums}#rinsp .d{color:var(--dim)}#rinsp .a{color:#7fe08a}
 #rinsp input{font:inherit;color:var(--fg);background:#0e1016;border:2px solid #3a3f4e;padding:3px 6px;width:100%;box-sizing:border-box}#rinsp table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
 #rinsp th{color:var(--dim);text-align:right;font-weight:normal;padding:2px 4px;border-bottom:1px solid var(--line)}#rinsp th:first-child,#rinsp td:first-child{text-align:left}#rinsp td{padding:2px 4px;border-bottom:1px solid #22252f;text-align:right;white-space:nowrap}
-#rinsp td:first-child{max-width:210px;overflow:hidden;text-overflow:ellipsis}#rinsp td.w{white-space:normal;text-align:left;color:#f2a35e;max-width:170px}#rinsp tr[data-i]{cursor:pointer}#rinsp tr[data-i]:hover{background:#1a1d27}#rinsp tr.s{background:#2a1f33}
-#rinsp .dt{margin:6px 0;padding:6px;border:1px solid var(--line);word-break:break-word}#rinsp .o{margin-top:4px;color:var(--dim)}`; document.head.appendChild(css);
-    el=document.createElement('div'); el.id='rinsp'; el.hidden=true; el.innerHTML='<h3>RENDER INSPECTOR</h3><div class="h"></div><h3>FIND</h3><input placeholder="name or note (FAR, SHUT IN, FOG...)"><div class="dt"></div><table class="t1"></table><h3>LOADED BUT NOT DRAWN</h3><table class="t2"></table>';
-    document.body.appendChild(el); const inp=el.querySelector('input'); inp.oninput=()=>{ RINSP.f=inp.value; draw(); }; el.querySelector('.t1').onclick=pick(0); el.querySelector('.t2').onclick=pick(1); };
+#rinsp td:first-child{max-width:210px;overflow:hidden;text-overflow:ellipsis}#rinsp td.w{white-space:normal;text-align:left;color:#f2a35e;max-width:170px}#rinsp tr[data-i],#rinsp tr.c{cursor:pointer}#rinsp tr.c td{color:var(--key)}#rinsp tr[data-i] td:first-child{padding-left:16px}#rinsp tr[data-i]:hover{background:#1a1d27}#rinsp tr.s{background:#2a1f33}
+#rinsp .dt{margin:6px 0;padding:6px;border:1px solid var(--line);word-break:break-word}#rinsp .o{margin-top:4px;color:var(--dim)}#rinsp .ex{font:inherit;margin-left:8px;padding:1px 8px;cursor:pointer}`; document.head.appendChild(css);
+    el=document.createElement('div'); el.id='rinsp'; el.hidden=true; el.innerHTML='<h3>RENDER INSPECTOR <button class="btn ex">EXPORT</button></h3><div class="h"></div><h3>FIND</h3><input placeholder="name or note (FAR, SHUT IN, FOG...)"><div class="dt"></div><table class="t1"></table><h3>LOADED BUT NOT DRAWN</h3><table class="t2"></table>';
+    document.body.appendChild(el); const inp=el.querySelector('input'); inp.oninput=()=>{ RINSP.f=inp.value; draw(); }; el.querySelector('.t1').onclick=pick(0); el.querySelector('.t2').onclick=pick(1); el.querySelector('.ex').onclick=e=>{ const b=e.currentTarget; RINSP.export(); b.textContent='SAVED + COPIED'; setTimeout(()=>{ b.textContent='EXPORT'; },1500); }; };
   const loop=now=>{ if(!RINSP.on)return; fc++; RINSP.tf=(RINSP.tf||0)+1; if(GT.on)GT.poll(); if(!f0)f0=now; if(now-f0>=500){ RINSP.fps=fc*1000/(now-f0); RINSP.ms=(now-f0)/fc; fc=0; f0=now; } };
   // the GPU's own time for each full-screen pass and each picture drawn outside them (EXT_disjoint_timer_query_webgl2; where the browser has it), so the slow part shows
   const GT={on:false,q:[],ms:{},cur:0}; RINSP.gpu=GT.ms;
   const gtName=(p,i)=>p===SHARED.RPASS?'SCENE':window.OUTL&&p===OUTL.sp?'OUTLINE':PS2&&p===PS2.sp?'PS2':LOOK&&p===LOOK.sp?'LOOK':p.constructor&&p.constructor.name==='OutputPass'?'OUTPUT':'PASS '+i;
   const gtWrap=(o,k,nm)=>{ '@later'; const f=o[k]; if(!f||f.__gt)return; const w=function(...a){ const gl=renderer.getContext(), X=GT.X; if(!GT.on||!X||GT.cur)return f.apply(this,a); const q=gl.createQuery(); gl.beginQuery(X.TIME_ELAPSED_EXT,q); GT.cur=1;
-      try{ return f.apply(this,a); } finally{ gl.endQuery(X.TIME_ELAPSED_EXT); GT.cur=0; GT.q.push([q,typeof nm==='function'?nm.apply(this,a):nm]); } }; w.__gt=1; o[k]=w; };
+      try{ return f.apply(this,a); } finally{ gl.endQuery(X.TIME_ELAPSED_EXT); GT.cur=0; GT.q.push([q,typeof nm==='function'?nm.apply(this,a):nm]); } }; w.__gt=1; if(f.__ct)w.__ct=1; o[k]=w; };
+  const ctWrap=(o,k,nm)=>{ const f=o[k]; if(!f||f.__ct)return; const w=function(...a){ if(!SYS.timing)return f.apply(this,a); const t0=performance.now(), c0=SYS.cs; try{ return f.apply(this,a); } finally{ SYS.took(nm,t0,c0); } }; w.__ct=1; if(f.__gt)w.__gt=1; o[k]=w; };
   GT.poll=()=>{ '@later'; const gl=renderer.getContext(), X=GT.X; if(!X)return; const bad=gl.getParameter(X.GPU_DISJOINT_EXT), frame={};
     while(GT.q.length&&gl.getQueryParameter(GT.q[0][0],gl.QUERY_RESULT_AVAILABLE)){ const [q,nm]=GT.q.shift(); if(!bad)frame[nm]=(frame[nm]||0)+gl.getQueryParameter(q,gl.QUERY_RESULT)/1e6; gl.deleteQuery(q); }
     for(const k in frame)GT.ms[k]=GT.ms[k]==null?frame[k]:GT.ms[k]*.9+frame[k]*.1; };
@@ -103,6 +122,18 @@ Object.assign(RINSP,{on:false,sel:null,f:''}); window.RINSP=RINSP;
   GT.stop=()=>{ GT.on=false; };
   GT.line=()=>{ if(!GT.X)return 'GPU TIME: this browser does not say'; const e=Object.entries(GT.ms).sort((a,b)=>b[1]-a[1]); return 'GPU MS: '+(e.length?e.map(([k,v])=>k+' '+v.toFixed(1)).join(' · '):'measuring...'); };
   RINSP.toggle=v=>{ const on=v===undefined?!RINSP.on:!!v; if(on===RINSP.on)return; RINSP.on=on; SYS.timing=on; SYS.T.clear(); RINSP.tf=0; if(!el)make(); el.hidden=!on;
-    if(on){ n=0; fc=0; f0=0; GT.start(); draw(); } else { GT.stop(); mark(null); RINSP.sel=null; } };
+    if(on){ n=0; fc=0; f0=0; if(SHARED.composer)SHARED.composer.passes.forEach((p,i)=>ctWrap(p,'render','draw · '+gtName(p,i))); GT.start(); draw(); } else { GT.stop(); mark(null); RINSP.sel=null; } };
   SYS.add('win',loop,'161b-rinsp fps'); SYS.every(()=>{ if(RINSP.on)draw(); },500,'161b-rinsp');
+  // everything the panel knows, nothing folded or cut short, as one file
+  RINSP.report=()=>{ '@later'; let D, L=[]; cap=1e9; LI=L; try{ D=collect(true); } finally{ cap=40; LI=null; }
+    const c=SHARED.cam, cv=renderer.domElement, I=renderer.info, RB=ROOMS.boxes().filter(youIn).map(r=>r.name||r.id||'room'), row=w=>{ const {objs,...r}=w; return {...r,group:catOf(w.name),parts:objs.map(info)}; },
+      tot=A=>{ const G={}; for(const w of A){ const g=G[catOf(w.name)]||(G[catOf(w.name)]={rows:0,objects:0,tris:0,calls:0,bytes:0}); g.rows++; g.objects+=w.n; g.tris+=w.tris; g.calls+=w.calls||0; g.bytes+=(w.geoB||0)+(w.texB||0); } return G; };
+    return JSON.parse(JSON.stringify({what:'THE MARKET render export',when:new Date().toISOString(),build:String(BUILDV),units:'at, size, dist, reach and fog are in tiles; one tile is '+T+' world units; bytes are bytes; ms are per frame',
+      where:{level:SHARED.LVL,floor:SHARED.floor,place:D.head.place,room:ROOMS.cur?{id:ROOMS.cur.id,name:ROOMS.cur.name,off:!!ROOMS.cur.off}:null,insideBoxes:RB,at:t3(P3.set(pos.x,SHARED.py,pos.z)),heading:SHARED.heading,view:UI.view,sky:DN.mode,
+        camera:{at:t3(c.getWorldPosition(V)),looks:c.getWorldDirection(V2).toArray().map(v=>+v.toFixed(3)),fov:c.fov,near:c.near,far:+(c.far/T).toFixed(1),layers:c.layers.mask},fog:D.head.fog},
+      screen:{w:cv.width,h:cv.height,pixelRatio:renderer.getPixelRatio(),gpu:GPUT.name,browser:navigator.userAgent,passes:SHARED.composer?SHARED.composer.passes.map((p,i)=>({name:gtName(p,i),on:p.enabled!==false})):[]},
+      head:D.head,gpuMs:GT.ms,time:RINSP.time||[],groups:{drawn:tot(D.drawn),notDrawn:tot(D.hidden)},drawn:D.drawn.map(row),notDrawn:D.hidden.map(row),lights:L.sort((a,b)=>b.on-a.on||a.dist-b.dist),
+      programs:(I.programs||[]).map(p=>({name:p.name,id:p.id,used:p.usedTimes})).sort((a,b)=>b.used-a.used)})); };
+  RINSP.export=()=>{ '@later'; const R=RINSP.report(), s=JSON.stringify(R,null,1), a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([s],{type:'application/json'})); a.download='render-'+(R.where.place||R.where.level||'x').toString().toLowerCase().replace(/[^a-z0-9]+/g,'-')+'-'+R.when.slice(0,19).replace(/[:T]/g,'-')+'.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+    try{ navigator.clipboard.writeText(s).catch(()=>{}); }catch(e){} return R; };
   window.RENDERLIST=()=>{ const D=collect(true), strip=w=>{ const {objs,...r}=w; return r; }; return JSON.parse(JSON.stringify({head:D.head,drawn:D.drawn.map(strip),hidden:D.hidden.map(strip)})); }; }

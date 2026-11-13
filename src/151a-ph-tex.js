@@ -13,7 +13,7 @@ PHT.make=()=>{ '@playhouse';
   const px=(w,h,f,col=true,rep=[1,1])=>{ const c=cv(w,h), g=c.getContext('2d'), im=g.createImageData(w,h), d=im.data;
     for(let y=0;y<h;y++)for(let x=0;x<w;x++){ const p=f(x,y), o=(y*w+x)*4; d[o]=cl(p[0]); d[o+1]=cl(p[1]); d[o+2]=cl(p[2]); d[o+3]=p.length>3?cl(p[3]):255; }
     g.putImageData(im,0,0); return tex(c,col,rep); };
-  const tex=(c,col=true,rep=[1,1])=>{ const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(rep[0],rep[1]); if(col)t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return t; };
+  const tex=(c,col=true,rep=[1,1])=>{ const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(rep[0],rep[1]); if(col)t.colorSpace=THREE.SRGBColorSpace; return t; };
   T.tex=tex; T.cv=cv; T.fbm=fbm; T.h2=h2;
 
   // VELVET: the house curtain, the drapes, the seats: a deep pile whose crushed streaks run with the hang, a fine nap that catches the light

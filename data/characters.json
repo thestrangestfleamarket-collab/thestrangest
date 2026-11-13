@@ -1221,7 +1221,7 @@
      ],
      "opts": [
       {
-       "t": "WHAT IS UNDER THE CASTLE?",
+       "t": "WHAT IS UNDER THE STAIR?",
        "go": "under"
       },
       {
@@ -2322,11 +2322,14 @@
  "junkman": {
   "name": "THE JUNK DEALER",
   "trade": {
-   "sells": [],
-   "buys": [
-    "pawn"
+   "sells": [
+    "tv_small",
+    "phone_home",
+    "modem",
+    "binoc",
+    "shades"
    ],
-   "line": "Anything with a value, I'll take it. Half now. Someone pays full later."
+   "line": "It all works. Some of it on purpose."
   },
   "talk": {
    "start": "hi",
@@ -2720,8 +2723,8 @@
   "pf": "professor-14dc4d",
   "group": "art",
   "job": {
-   "at": "art",
-   "title": "CURATOR",
+   "at": "books",
+   "title": "THE COUNTER",
    "hours": [
     10,
     17
@@ -2748,18 +2751,22 @@
     "canvas_t",
     "paper",
     "quill_pen",
-    "stack_key"
+    "stack_key",
+    "trowel",
+    "fos_brush"
    ],
    "buys": [
     "paintings",
     "antiquities",
     "photos",
     "slime",
-    "plates"
+    "plates",
+    "fossils"
    ],
    "teaches": [
     "guitar",
-    "astro"
+    "astro",
+    "paleo"
    ],
    "line": "Canvases and paper. I buy good paintings and old things."
   }
@@ -2767,27 +2774,11 @@
  "tour_guide": {
   "pf": "tour-guide-1b0428",
   "group": "art",
-  "job": {
-   "at": "art",
-   "title": "TOURS OF THE GALLERIES",
-   "hours": [
-    10,
-    17
-   ]
-  },
   "name": "THE TOUR GUIDE"
  },
  "graduate_in_gown": {
   "pf": "graduate-in-gown-c72050",
   "group": "art",
-  "job": {
-   "at": "art",
-   "title": "DOCENT",
-   "hours": [
-    10,
-    17
-   ]
-  },
   "name": "THE GRADUATE IN GOWN"
  },
  "senior_scientist": {
@@ -2907,7 +2898,9 @@
     "f_bec",
     "f_hero",
     "f_chopped",
-    "d_coffee"
+    "d_coffee",
+    "pack_large",
+    "pack_deluxe"
    ],
    "line": "Bacon egg and cheese, salt pepper ketchup. That's the law."
   }
@@ -3023,14 +3016,12 @@
   "pf": "longboarder-0ea806",
   "group": "boards",
   "job": {
-   "at": "boards",
-   "title": "REGULAR",
+   "at": "bowling",
+   "title": "RUNS THE LANES",
    "hours": [
-    14,
-    20
-   ],
-   "r": 4,
-   "home": "house"
+    12,
+    24
+   ]
   },
   "name": "THE LONGBOARDER"
  },
@@ -3317,7 +3308,24 @@
     18
    ]
   },
-  "name": "THE DOCTOR"
+  "name": "THE DOCTOR",
+  "trade": {
+   "sells": [
+    "im_lace",
+    "im_luck",
+    "im_cateye",
+    "im_hawk",
+    "im_myo",
+    "im_heart",
+    "im_gill",
+    "im_plate",
+    "im_spring",
+    "im_twitch",
+    "im_adrenal",
+    "im_marrow"
+   ],
+   "line": "Buy an implant here, then sit in the chair and I fit it. One to a slot; I take them out too."
+  }
  },
  "ward_nurse": {
   "pf": "ward-nurse-84b61d",
@@ -3955,6 +3963,7 @@
   "name": "THE CHINCHINERO"
  },
  "village_gardener": {
+  "signs": true,
   "pf": "village-gardener-9f7af6",
   "group": "park",
   "job": {
@@ -4177,11 +4186,18 @@
   "name": "THE SCUBA DIVER",
   "trade": {
    "sells": [
-    "gem_wheel",
-    "headlight",
     "g_fishfood"
    ],
-   "line": "The wheel and a good light. Cut your stones on the wheel; I buy every one you bring me, cut or rough.",
+   "line": "Fish food for the tanks."
+  }
+ },
+ "rock_golem": {
+  "name": "THE ROCK GOLEM",
+  "trade": {
+   "sells": [
+    "headlight"
+   ],
+   "line": "Stones? We buy stones. Every one you bring. And a good light for the dark.",
    "buys": [
     "gems"
    ],
@@ -4326,6 +4342,7 @@
   "name": "THE CHILD WITH A PAINTED FACE"
  },
  "diner_waitress": {
+  "signs": true,
   "pf": "diner-waitress-60f6a1",
   "group": "diner",
   "job": {
@@ -5774,14 +5791,6 @@
    "f2": "#f2ede6",
    "coat": "robe",
    "cc": "#22262e"
-  },
-  "job": {
-   "at": "art",
-   "title": "DOCENT TOURS",
-   "hours": [
-    0,
-    24
-   ]
   },
   "talk": {
    "start": "hi",

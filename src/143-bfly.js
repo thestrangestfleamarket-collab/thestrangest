@@ -52,11 +52,11 @@ const BFLY={}; window.BFLY=BFLY;
     let fa=0; SYS.add('life',dt=>{ if((fa+=dt||0)<.1)return; fa=0; if(!BFLY.out||SHARED.LVL!=='up'||!CH.size)return; const p=W3.group.position, v=st.run>.5?1.5:(st.move&&st.move.name==='crouch')||(st.w||0)<.4?.45:1, sk=Math.min(1,FORAGE.sk('ento')/100);
       for(const L of CH.values())for(const b of L){ b.g.visible=Math.hypot(p.x-b.g.position.x,p.z-b.g.position.z)<20*T; if(b.dur||!b.g.parent)continue; if(Math.hypot(p.x-b.g.position.x,p.z-b.g.position.z)<(.8+b.fast)*T*v*(1-.35*sk)){ b.until=0; b.away=[p.x,p.z]; } } },'143-bfly');
     let turn0=-1; SYS.every(()=>{ const tn=Math.floor((CLOCK?CLOCK.h:12)/2); if(tn!==turn0&&WEEDS.chunks){ const first=turn0<0; turn0=tn; if(!first){ for(const L of CH.values())L.forEach(drop); CH.clear(); for(const [k,g] of WEEDS.chunks)if(g&&g.sq)CH.set(k,spawn(k,g)); } }
-    beds(); const W=WX&&WX.now, hide=(CLOCK&&CLOCK.dark())||!!(W&&(W.rain>.25||W.snow>.25||W.wind>.8)); for(const L of CH.values())for(const b of L)b.g.visible=!hide; BFLY.out=!hide; },1000); }); };
+    beds(); const W=WX&&WX.now, hide=(CLOCK&&CLOCK.dark())||!!(W&&(W.rain>.25||W.snow>.25||W.wind>.8)); const p=W3.group.position; for(const L of CH.values())for(const b of L)b.g.visible=!hide&&Math.hypot(p.x-b.g.position.x,p.z-b.g.position.z)<20*T; BFLY.out=!hide; },1000); }); };
   SYS.onStart(bfGo,'143-bfly');
   // sw: a net's swing that swept its hoop through the butterfly ({spd: the swing's speed, air: you were off the ground})
   BFLY.catch=(b,sw)=>{ '@later'; if(!b.g.parent)return; const p=W3.group.position; if(!sw&&Math.hypot(p.x-b.g.position.x,p.z-b.g.position.z)>1.8*T)return say('IT FLUTTERS OUT OF REACH.','#c8a090');
-    const fly=!!b.dur, net=!!sw||FORAGE.has('net'); if(fly&&!net)return say('IT IS ON THE WING. YOU NEED A NET (THE BUTTERFLY SHOP ON MARKET ST HAS THEM), OR WAIT TILL IT SETTLES.','#c8a090');
+    const fly=!!b.dur, net=!!sw||FORAGE.has('net'); if(fly&&!net)return say('IT IS ON THE WING. YOU NEED A NET (THE PARK RANGER AT THE BUTTERFLY STALL HAS THEM), OR WAIT TILL IT SETTLES.','#c8a090');
     if(held()>=room()){ b.until=0; b.away=[p.x,p.z]; return say(room()>5?'YOUR JARS ARE FULL. SELL SOME, OR BUY A BIGGER JAR.':'YOUR HANDS HOLD ONLY 5 BUTTERFLIES. A JAR HOLDS MORE: THE BUTTERFLY SHOP SELLS THEM.','#c8a090'); }
     const d=DIFF(b.k)+(fly?Math.round(8*SPD(b.k)):0)-(net?10:0), bonus=sw?Math.max(0,Math.min(8,(sw.spd-5)*.8))+(fly&&sw.air?5:0):0; SFX.play('step',{vol:.4});
     if(use('ento',d-25,d+25,bonus)){ const known=DIFF(b.k)<12||use('ento',DIFF(b.k)-30,DIFF(b.k)+20); FORAGE.give((known?'b_':'bu_')+b.k,1); if(known)got(b.k);

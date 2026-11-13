@@ -13,7 +13,7 @@ if(!GUARD.shelved)PARK.later(()=>{ '@park'; const T=TILE, PI=Math.PI, X=SHARED.B
   // a wave: on the clock, so every player sees the same nights (about one night in two, sometime between nine and one)
   const waveAt=day=>h3(day,3,7)<.55?21+h3(day,5,9)*4:null; let lastWave=-1;
   BREAK.wave=n=>MODS.dunkeep&&MODS.dunkeep.wave(n);
-  SYS.add('breakout',n=>{ if(!n)return; BREAK.on=true; if(Math.hypot(pos.x-TOP.x,pos.z-TOP.z)<40*T)say('SOMETHING IS COMING UP THE CASTLE STAIR!','#ff8a6a'); },'146k-breakout');
+  SYS.add('breakout',n=>{ if(!n)return; BREAK.on=true; if(Math.hypot(pos.x-TOP.x,pos.z-TOP.z)<40*T)say('SOMETHING IS COMING UP THE DUNGEON STAIR!','#ff8a6a'); },'146k-breakout');
   const nearest=(x,z,max)=>{ let b=null, bd=max; for(const c of BREAK.list){ if(c.dead)continue; const d=Math.hypot(c.x-x,c.z-z); if(d<bd){ bd=d; b=c; } } return b&&{c:b,d:bd}; };
   // a guardian in the fight: closes to striking distance and swings in time (melee), or keeps its distance and shoots (bow) or casts (staff)
   const bolts=[], boltG=new THREE.SphereGeometry(.06,10,8);
@@ -30,12 +30,12 @@ if(!GUARD.shelved)PARK.later(()=>{ '@park'; const T=TILE, PI=Math.PI, X=SHARED.B
     if(!A.mv){ if(d>reach){ s.to={x:c.x,z:c.z}; s.v0=s.v0||s.v; s.v=s.v0*2.2; return true; } s.to=null; s.face={x:c.x,z:c.z}; if((N.cd=(N.cd??0)-dt)>0)return true;
       A.mv={k:R.w==='spear'?'thrust':['slash','back','overhead','thrust'][Math.floor(Math.random()*4)],t:0,hit:false,c}; return true; }
     s.to=null; s.face={x:A.mv.c.x,z:A.mv.c.z}; const q=GUARD.MOVE[A.mv.k];
-    if(!A.mv.hit&&A.mv.t/q.T>=q.hit){ A.mv.hit=true; const k=A.mv.c; if(!k.dead&&Math.hypot(k.x-s.x,k.z-s.z)<reach*1.2){ hurt(k,A.mv.k==='overhead'?2:1.2); const l=Math.hypot(k.x-s.x,k.z-s.z)||1; k.kb={x:(k.x-s.x)/l*.8*T,z:(k.z-s.z)/l*.8*T}; SFX.play&&SFX.play('step',{vol:.6,pitch:1.2,at:{x:k.x,z:k.z},far:14*T}); } }
+    if(!A.mv.hit&&A.mv.t/q.T>=q.hit){ A.mv.hit=true; const k=A.mv.c; if(!k.dead&&Math.hypot(k.x-s.x,k.z-s.z)<reach*1.2){ hurt(k,A.mv.k==='overhead'?2:1.2); const l=Math.hypot(k.x-s.x,k.z-s.z)||1; k.kb={x:(k.x-s.x)/l*.8*T,z:(k.z-s.z)/l*.8*T}; SFX.play&&SFX.play('blade',{vol:.6,vary:.12,at:{x:k.x,z:k.z},far:14*T}); } }
     if(A.mv.t>=q.T){ A.mv=null; N.cd=.3+Math.random()*.6; if(s.v0)s.v=s.v0; } return true; };
   SYS.add('life',dt=>{ const day=window.MAIL&&MAIL.ready?MAIL.day():Math.floor(Date.now()/864e5), h=CLOCK.h??12, w=waveAt(day);
     if(w!=null&&lastWave!==day&&((h>=w&&h<w+1)||(w>=24&&h>=w-24&&h<w-23))){ lastWave=day; if(PARK.ready)BREAK.wave(); }
     BREAK.list=MODS.dunkeep?MODS.dunkeep.list():[]; if(!BREAK.list.length&&!BREAK.on)return; if(!PARK.in&&!BREAK.list.some(c=>!c.dead))return;
-    for(const N of GUARD.list){ if(N.mode==='home'||N.gd.inside||N.gd.perch&&N.gd.perch!=='wall')continue; const t=nearest(N.st.x,N.st.z,16*T); if(t&&!N.ctl)N.ctl=ctl; }
+    for(const N of GUARD.list){ if(N.mode==='home'||N.gd.inside||N.gd.perch&&N.gd.perch!=='wall'||N.gd.top&&N.grip!=='bow')continue; const t=nearest(N.st.x,N.st.z,16*T); if(t&&!N.ctl)N.ctl=ctl; }
     if(BREAK.list.some(c=>!c.dead))BREAK.seen=true;
     for(const b of bolts){ b.t+=dt; const c=b.c, ty=c.g.position.y+.2*MV, dx=c.x-b.m.position.x, dy=ty-b.m.position.y, dz=c.z-b.m.position.z, l=Math.hypot(dx,dy,dz), v=9*MH*dt;
       if(l<v||c.dead){ if(!c.dead)hurt(c,1.6); b.t=9; } else b.m.position.set(b.m.position.x+dx/l*v,b.m.position.y+dy/l*v,b.m.position.z+dz/l*v); }

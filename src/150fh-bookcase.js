@@ -1,17 +1,18 @@
-// THE BOOKSHELF: one big walnut bookcase in every apartment from the start (owner, 9 and 12 Nov 2026: "1 big book case with real books inside - pick the most popular interesting ones from bookstore"), three bays and six shelves of the bookstore's MOST READ; double-click it to browse them by genre, read one in the bookstore's reader, take one off the shelf into your pack and put it back.
+// THE BOOKSHELF: one tall walnut bookcase in every apartment from the start (owner, 9 and 12 Nov 2026: "1 big book case with real books inside - pick the most popular interesting ones from bookstore"), two bays and six shelves of the bookstore's MOST READ at their real size; double-click it to browse them by genre, read one in the bookstore's reader, take one off the shelf into your pack and put it back.
 import {THREE} from './003-shx.js';
 import {FORAGE, SFX} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {LIB} from './144ca-library.js';
 import {ROOMK} from './150a-bedroom.js';
 { ROOMK.always.add('BOOKSHELF');
-  const BK={W:3.12,H:2.66,D:.38,SD:.04,EACH:5,ROWS:6,BAYS:3,DV:.03,SH:[.125,.535,.945,1.355,1.765,2.175]};   // metres: the case, its sides, its three bays and the boards between them, its six shelves' tops
-  BK.IN=BK.W-2*BK.SD; BK.BW=(BK.IN-(BK.BAYS-1)*BK.DV)/BK.BAYS; BK.FZ=BK.D/2-.035;
+  const BK={BW:.4,H:2.66,D:.38,SD:.04,ROWS:6,BAYS:2,DV:.03,SH:[.125,.535,.945,1.355,1.765,2.175]};   // metres: a bay's width (the books at their real size fill it), the case, its sides, its two bays and the board between, its six shelves' tops
+  BK.IN=BK.BAYS*BK.BW+(BK.BAYS-1)*BK.DV; BK.W=BK.IN+2*BK.SD; BK.FZ=BK.D/2-.035;
   const hsh=s=>{ let h=2166136261; for(const c of String(s))h=Math.imul(h^c.charCodeAt(0),16777619)>>>0; return h; };
   // which books: a few from every genre the bookstore shelves, the same few in every home, in genre order down the case
   let IDS=null; const ids=()=>{ if(IDS||!LIB.data)return IDS||[]; const seen=new Set(); IDS=[]; for(const c of LIB.data.cases)if(/^popular/.test(c.id))for(const b of c.books)if(!seen.has(b.id)){ seen.add(b.id); IDS.push(b.id); } return IDS; };   // the bookstore's three MOST READ cases, the same in every home
-  const rowsOf=()=>{ const L=ids().map(i=>LIB.by[i]), n=Math.ceil(L.length/BK.ROWS), per=Math.ceil(n/BK.BAYS);   // read from the top shelf down, bay by bay
-    return Array.from({length:BK.ROWS},(_,r)=>{ const row=L.slice((BK.ROWS-1-r)*n,(BK.ROWS-r)*n), out=[]; for(let b=0;b<BK.BAYS;b++){ const seg=row.slice(b*per,(b+1)*per); if(!seg.length)continue; const cx=-BK.IN/2+BK.BW/2+b*(BK.BW+BK.DV); for(const o of LIB.layRow(seg,BK.BW))out.push({...o,x:o.x+cx}); } return out; }); };
+  const rowsOf=()=>{ const L=ids().map(i=>LIB.by[i]), th=b=>Math.min(.065,.012+(b.pages||300)*.00007), N=BK.ROWS*BK.BAYS, tot=L.reduce((a,b)=>a+th(b),0), seg=Array.from({length:N},()=>[]);   // read from the top shelf down, bay by bay, each bay an even share at the books' real thickness
+    let c=0; for(const b of L){ const t=th(b); seg[Math.min(N-1,Math.floor((c+t/2)/tot*N))].push(b); c+=t; }
+    return Array.from({length:BK.ROWS},(_,r)=>{ const out=[]; for(let b=0;b<BK.BAYS;b++){ const cx=-BK.IN/2+BK.BW/2+b*(BK.BW+BK.DV); for(const o of LIB.layRow(seg[(BK.ROWS-1-r)*BK.BAYS+b],BK.BW,true))out.push({...o,x:o.x+cx}); } return out; }); };
   const live=new Set();   // the cases standing now ({sp, un}): taking a book off empties its place in each
   const off=()=>LIB.S.h||(LIB.S.h=[]);
   const refresh=()=>{ for(const L of live){ if(!L.un.obj.parent){ live.delete(L); continue; } L.sp.skip(off()); } };
@@ -30,7 +31,7 @@ import {ROOMK} from './150a-bedroom.js';
       const t=grain(), wood=mat([255,255,255],{map:t}), woodD=mat([150,120,100],{map:t}), back=mat([92,62,40]), brass=mat([196,160,82]);
       const {W,H,D,SD,IN,SH}=BK, Z=D/2;
       for(const s of [-1,1]){ p(rbox(SD,H-.08,D,.006),wood,s*(W/2-SD/2),(H-.08)/2,0,0,g); p(rbox(.05,H-.1,.02,.006),wood,s*(W/2-.025),(H-.1)/2+.02,Z+.005,0,g); }   // the sides and their face stiles
-      p(rbox(IN,H-.14,.012,.003),back,0,(H-.14)/2+.04,-Z+.01,0,g); for(let i=1;i<24;i++)p(rbox(.004,H-.16,.004,.001),woodD,-IN/2+IN*i/24,(H-.16)/2+.05,-Z+.019,0,g);   // the beadboard back
+      p(rbox(IN,H-.14,.012,.003),back,0,(H-.14)/2+.04,-Z+.01,0,g); for(let i=1;i<8;i++)p(rbox(.004,H-.16,.004,.001),woodD,-IN/2+IN*i/8,(H-.16)/2+.05,-Z+.019,0,g);   // the beadboard back
       p(rbox(IN,.1,.02,.004),woodD,0,.05,Z-.03,0,g); p(rbox(W+.02,.02,D+.01,.004),woodD,0,.01,.005,0,g);   // the toe kick and the plinth's foot
       for(let b=1;b<BK.BAYS;b++)p(rbox(BK.DV,H-.2,D-.03,.004),wood,-IN/2+b*BK.BW+(b-.5)*BK.DV,(H-.2)/2+.06,-.01,0,g);   // the boards between the bays
       for(const y of SH){ p(rbox(IN,.025,D-.03,.004),wood,0,y-.0125,-.01,0,g); p(rbox(IN,.035,.018,.004),wood,0,y-.012,Z-.02,0,g); }   // the shelves, each with a lip
@@ -43,6 +44,6 @@ import {ROOMK} from './150a-bedroom.js';
   ROOMK.wires.books=(un,c)=>{ '@later'; let holder=null; un.obj.traverse(o=>{ if(o.userData.books)holder=o; }); if(!holder)return;
     const n=()=>ids().length||120;
     c.hit(un,()=>'BOOKSHELF: '+n()+' BOOKS',()=>{ LIB.open(null,false,HOME); if(SFX)SFX.play('page',{vol:.4}); });
-    LIB.load().then(()=>{ if(!un.obj.parent)return; holder.clear(); const sp=LIB.spines(rowsOf(),BK.SH,BK.FZ); holder.add(sp.mesh); const L={sp,un}; live.add(L); sp.skip(off()); }).catch(e=>console.warn('BOOKSHELF: the books did not load',e)); };
+    LIB.load().then(()=>{ if(!un.obj.parent)return; holder.clear(); const sp=LIB.spines(rowsOf(),BK.SH,BK.FZ,true); holder.add(sp.mesh); const L={sp,un}; live.add(L); sp.skip(off()); }).catch(e=>console.warn('BOOKSHELF: the books did not load',e)); };
   window.BOOKCASEDBG=()=>({ids:ids().length,genres:LIB.data?[...new Set(ids().map(i=>LIB.by[i].genre))]:[],all:LIB.data?new Set(LIB.data.books.map(b=>b.genre)).size:0,live:live.size,off:off().slice(),thing:!!(window.__dbg&&__dbg.UI.things.some(t=>/^BOOKSHELF/.test(t.name)))});
 }

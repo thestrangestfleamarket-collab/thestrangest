@@ -28,7 +28,7 @@ import {AVATAR} from './111c-avatar.js';
   const HAIRN=[['1d1712','BLK'],['3b2a1e','BRO'],['5a3a24','BRO'],['8a5a32','AUB'],['b98a4e','BLN'],['d8c28a','BLN'],['8c8c8c','GRY'],['e8e4dc','WHI']];
   const rgb=h=>[0,2,4].map(i=>parseInt(String(h||'000000').slice(i,i+2),16)), near=(h,L)=>{ const a=rgb(h); let b=L[0], d=1e9; for(const e of L){ const c=rgb(e[0]), q=(a[0]-c[0])**2+(a[1]-c[1])**2+(a[2]-c[2])**2; if(q<d){ d=q; b=e; } } return b[1]; };
   const usd=d=>/^\d{4}-\d\d-\d\d$/.test(d||'')?d.slice(5,7)+'/'+d.slice(8,10)+'/'+d.slice(0,4):'—';
-  const addr=()=>{ const F=APTS.flatOf&&APTS.flatOf(APTS.num); if(!APTS.num||!F||!(F.floor>0))return 'NO FLAT YET'; return 'APT '+F.floor+(F.side?'B':'A')+' · '+(APTS.houseName||'No. 1')+', WEST ST'; };
+  const addr=()=>{ const F=APTS.flatOf&&APTS.flatOf(APTS.num); if(!APTS.num||!F||!(F.floor>0))return 'NO FLAT YET'; return 'APT '+F.floor+(F.side?'B':'A')+' · '+(APTS.houseName||'No. 4')+', MARKET ST'; };
   const lb=(n,k)=>`<div style="font-size:8.5px;font-weight:900;letter-spacing:1.1px;color:#3aa866">${n?`<span style="color:#ffd27a;margin-right:3px">${n}</span>`:''}${k}</div>`;
   const K=(n,k,v,x='')=>`<div style="${x}">${lb(n,k)}<div style="font-size:14px;font-weight:900;letter-spacing:.4px;line-height:1.15">${v}</div></div>`;
   const IN=(f,v,x='',t='text')=>`<input class="pE" data-f="${f}" type="${t}" value="${esc(v)}" spellcheck="false" autocomplete="off" style="${x}">`;

@@ -62,7 +62,7 @@ import {PAD} from './075-main-13.js';
   const step=(dx,dy)=>{ const k=dx+','+dy, now=performance.now(); if(k!==nav){ nav=k; navT=now+350; return !!(dx||dy); } if((dx||dy)&&now>=navT){ navT=now+120; return true; } return false; };
   const way=(on,ax)=>{ const x=ax[0]||0, y=ax[1]||0, dx=on(14)?-1:on(15)?1:Math.abs(x)>.5&&Math.abs(x)>Math.abs(y)?Math.sign(x):0, dy=dx?0:on(12)?-1:on(13)?1:Math.abs(y)>.5?Math.sign(y):0; return [dx,dy]; };
   const fire=el=>{ el.dispatchEvent(new Event('input',{bubbles:true})); el.dispatchEvent(new Event('change',{bubbles:true})); };
-  const closeBtn=p=>p&&[...p.querySelectorAll('button')].find(b=>b.classList.contains('pX')||/close/i.test(b.getAttribute('aria-label')||'')||/close$|x$/i.test(b.id)||/^(X|×|✕|CLOSE|DONE|LEAVE)$/i.test(b.textContent.trim()));
+  const closeBtn=p=>p&&[...p.querySelectorAll('button')].find(b=>b.classList.contains('pX')||/close/i.test(b.getAttribute('aria-label')||'')||/close$|x$/i.test(b.id)||/^(X|×|✕|CLOSE|DONE|LEAVE|✕ BACK|BACK)$/i.test(b.textContent.trim()));
   const back=()=>{ if(PAD.grab){ grab(null); return; } if(UI.menuOpen||document.getElementById('movesp')?.style.display==='block'){ tap('Escape'); return; }
     const p=(PAD.ui&&PAD.ui.closest('body>*'))||panels().slice(-1)[0], x=closeBtn(p); if(x){ x.click(); return; } if(p)(PAD.ui&&p.contains(PAD.ui)?PAD.ui:p).dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true})); };   // a box with no close button (the emotes) takes Escape
   const menus=(on,hit,ax,act)=>{ '@later'; if(PAD.mouse){ if(!act)return; PAD.mouse=false; } const [dx,dy]=way(on,ax), a=PAD.ui, cs=ctls();

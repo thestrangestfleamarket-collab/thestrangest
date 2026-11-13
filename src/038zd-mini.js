@@ -19,8 +19,8 @@ const MINI={on:null}; window.MINI=MINI;
     if(!S.over){ g.tick&&g.tick(S,dt); if(S.over){ ST.textContent=S.over; if(g.end)g.end(S); MINI.last={game:g.title,line:S.over,score:S.score}; } else ST.textContent=S.line||''; }
     G.setTransform(1,0,0,1,0,0); G.clearRect(0,0,CV.width,CV.height); g.draw&&g.draw(S,G); S.press=false; S.release=false; raf=requestAnimationFrame(loop); };
   const begin=game=>{ '@later'; if(game.can){ const no=game.can(); if(no){ ST.textContent=no; S=null; return false; } } CV.width=game.w||400; CV.height=game.h||440; S={game,mx:CV.width/2,my:CV.height/2,down:false,press:false,release:false,keys:new Set(),t:0,over:'',line:'',score:0}; if(game.start)game.start(S); return true; };
-  MINI.open=game=>{ mount(); MINI.on=game; TI.textContent=game.title; HE.textContent=game.help||''; AG.hidden=!game.again; ST.textContent=''; W.hidden=false; cancelAnimationFrame(raf); last=0; if(begin(game))raf=requestAnimationFrame(loop); else G.clearRect(0,0,CV.width,CV.height); return S; };
-  MINI.close=()=>{ if(!MINI.on)return; const g=MINI.on; MINI.on=null; cancelAnimationFrame(raf); if(S&&!S.over&&g.quit)g.quit(S); S=null; W.hidden=true; };
+  MINI.open=game=>{ mount(); if(MINI.on&&MINI.on!==game&&MINI.on.close)MINI.on.close(); MINI.on=game; TI.textContent=game.title; HE.textContent=game.help||''; AG.hidden=!game.again; ST.textContent=''; W.hidden=false; cancelAnimationFrame(raf); last=0; if(begin(game))raf=requestAnimationFrame(loop); else G.clearRect(0,0,CV.width,CV.height); return S; };
+  MINI.close=()=>{ if(!MINI.on)return; const g=MINI.on; MINI.on=null; cancelAnimationFrame(raf); if(S&&!S.over&&g.quit)g.quit(S); if(g.close)g.close(); S=null; W.hidden=true; };
   MINI.state=()=>S;
   AG.onclick=()=>{ const g=MINI.on; if(!g)return; ST.textContent=''; cancelAnimationFrame(raf); last=0; if(begin(g))raf=requestAnimationFrame(loop); };
   CL.onclick=()=>MINI.close();

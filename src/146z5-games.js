@@ -1,4 +1,4 @@
-// THE GAMES: the insides' small games for the minigames' window (MINI): darts (301 on a real board), pool (rack, cue ball, pockets), skee-ball (aim, a rising and falling power, the rings), the claw machine (a swinging head, a grip as good as your aim, carry it to the chute). Each GAMES.x(opts) gives a game; opts.end(S) gets the result.
+// THE GAMES: the insides' small games for the minigames' window (MINI): darts (301 on a real board), pool (rack, cue ball, pockets), the claw machine (a swinging head, a grip as good as your aim, carry it to the chute). Each GAMES.x(opts) gives a game; opts.end(S) gets the result.
 const GAMES={}; window.GAMES=GAMES;
 { const PI=Math.PI, rnd=Math.random, cl=(v,a,b)=>Math.max(a,Math.min(b,v)), font=(g,s,c,al='center')=>{ g.font=s+'px monospace'; g.fillStyle=c; g.textAlign=al; g.textBaseline='middle'; };
   /* ---------- DARTS: 301, three darts a turn; the aim sways, you click to throw ---------- */
@@ -43,49 +43,6 @@ const GAMES={}; window.GAMES=GAMES;
       const cue=S.balls[0]; if(S.aim&&cue){ const dx=cue.x-S.mx, dy=cue.y-S.my, d=Math.hypot(dx,dy)||1; g.strokeStyle='#d8b878'; g.lineWidth=3; g.beginPath(); g.moveTo(cue.x-dx/d*12,cue.y-dy/d*12); g.lineTo(cue.x-dx/d*(12+Math.min(d,140)+60),cue.y-dy/d*(12+Math.min(d,140)+60)); g.stroke();
         g.strokeStyle='rgba(255,255,255,.35)'; g.lineWidth=1; g.setLineDash([4,4]); g.beginPath(); g.moveTo(cue.x,cue.y); g.lineTo(cue.x+dx/d*300,cue.y+dy/d*300); g.stroke(); g.setLineDash([]); }
       font(g,12,'#e8e4d8','left'); g.fillText(`SHOTS ${S.shots}`,18,8); },
-    end:S=>o.end&&o.end(S)});
-  /* ---------- SKEE-BALL: nine balls; the aim swings, hold and the power rises and falls, let go to roll ---------- */
-  const HOLES=[[78,36,14,100],[222,36,14,100],[150,150,14,50],[150,150,30,40],[150,150,50,30],[150,150,74,20],[150,150,100,10]];   // smallest first: a ball scores the first it is in
-  const ball=(g,x,y,r,a=1)=>{ const q=g.createRadialGradient(x-r*.35,y-r*.4,r*.1,x,y,r); q.addColorStop(0,'#f0b07a'); q.addColorStop(.5,'#a8582c'); q.addColorStop(1,'#4a200c'); g.globalAlpha=a; g.fillStyle=q; g.beginPath(); g.arc(x,y,r,0,7); g.fill(); g.globalAlpha=1; };
-  GAMES.skee=(o={})=>({title:'SKEE-BALL',w:300,h:480,again:true,help:'Hold and the power rises and falls; let go to roll. The arrow swings, so time both. Every 40 points is a ticket.',
-    can:o.can,start:S=>{ S.left=9; S.sum=0; S.ball=null; S.pw=0; S.dir=1; S.marks=[]; S.pops=[]; S.flash=null; if(o.pay)o.pay(); },
-    tick:(S,dt)=>{ S.t+=dt; S.ang=Math.sin(S.t*1.7)*.22;
-      if(!S.ball&&S.left>0){ if(S.press){ S.pw=0; S.dir=1; } if(S.down){ S.pw+=S.dir*dt*1.1; if(S.pw>=1){ S.pw=1; S.dir=-1; } if(S.pw<=.02){ S.pw=.02; S.dir=1; } }
-        if(S.release&&S.pw>0){ S.ball={x:150,y:440,vx:Math.sin(S.ang),vy:-1,p:S.pw,d:0,end:150+(rnd()-.5)*30}; S.pw=0; } }
-      for(const p of S.pops)p[3]+=dt; S.pops=S.pops.filter(p=>p[3]<1.2); if(S.flash&&(S.flash.t+=dt)>1)S.flash=null;
-      const b=S.ball; if(b){ b.d+=dt*420; b.x=150+b.vx*b.d*.9; b.y=440-b.d; const reach=250+b.p*220; if(b.d>=reach||b.y<20){ const lx=b.x, ly=Math.max(30,440-reach)+(rnd()-.5)*10; let s=0, hi=-1; HOLES.some(([hx,hy,hr,v],i)=>Math.hypot(lx-hx,ly-hy)<hr&&(s=v,hi=i,true));
-        S.sum+=s; S.left--; S.marks.push([lx,ly,s]); S.pops.push([lx,ly,s?'+'+s:'GUTTER',0]); if(hi>=0)S.flash={i:hi,t:0}; S.ball=null; S.line=`${s?s:'GUTTER'} · ${S.sum} SO FAR · ${S.left} BALL${S.left===1?'':'S'} LEFT`; if(!S.left){ S.score=S.sum; const n=Math.floor(S.sum/40); S.tickets=n; S.over=`${S.sum} POINTS: ${n} TICKET${n===1?'':'S'}.`; } } } },
-    draw:(S,g)=>{ const t=S.t;
-      let q=g.createLinearGradient(0,0,300,0); q.addColorStop(0,'#2a1408'); q.addColorStop(.5,'#4a2812'); q.addColorStop(1,'#2a1408'); g.fillStyle=q; g.fillRect(0,0,300,480);
-      q=g.createRadialGradient(150,140,20,150,140,220); q.addColorStop(0,'#2e2850'); q.addColorStop(1,'#0e0c1c'); g.fillStyle=q; g.fillRect(10,10,280,250);
-      g.strokeStyle='rgba(255,255,255,.04)'; g.lineWidth=1; for(let x=14;x<290;x+=8){ g.beginPath(); g.moveTo(x,10); g.lineTo(x,260); g.stroke(); }
-      for(let i=0;i<34;i++){ const [x,y]=i<16?[5,8+i*16]:i<18?[i===16?18:282,4]:[295,8+(i-18)*16], on=Math.floor(t*6+i)%3===0; g.fillStyle=on?'#ffe08a':'#6a4a20'; if(on){ g.shadowColor='#ffcc40'; g.shadowBlur=8; } g.beginPath(); g.arc(x,y,2.6,0,7); g.fill(); g.shadowBlur=0; }
-      for(let x=30;x<280;x+=14){ const on=Math.floor(t*6+x/14)%3===0; g.fillStyle=on?'#ffe08a':'#6a4a20'; if(on){ g.shadowColor='#ffcc40'; g.shadowBlur=8; } g.beginPath(); g.arc(x,4,2.6,0,7); g.fill(); g.shadowBlur=0; }
-      [...HOLES].reverse().forEach(([hx,hy,hr,v])=>{ const i=HOLES.findIndex(h=>h[3]===v&&h[0]===hx), fl=S.flash&&S.flash.i===i&&Math.floor(S.flash.t*10)%2===0;
-        const c=fl?['#fff6c0','#fff0a0']:v>=100?['#ff5a68','#8a1020']:v>=50?['#ffe27a','#c08a10']:[['#6a6aa8','#2c2c50'],['#5a5a96','#262646'],['#64649e','#2a2a4c'],['#545490','#222240']][(v/10)%4];
-        q=g.createRadialGradient(hx-hr*.3,hy-hr*.35,hr*.1,hx,hy,hr); q.addColorStop(0,c[0]); q.addColorStop(1,c[1]); g.fillStyle=q; if(v>=50||fl){ g.shadowColor=fl?'#fff':v>=100?'#ff3040':'#ffc020'; g.shadowBlur=fl?18:10; } g.beginPath(); g.arc(hx,hy,hr,0,7); g.fill(); g.shadowBlur=0;
-        g.strokeStyle='#08080e'; g.lineWidth=3; g.stroke(); g.strokeStyle='rgba(255,255,255,.18)'; g.lineWidth=1; g.beginPath(); g.arc(hx,hy,hr-2,PI*1.05,PI*1.6); g.stroke(); });
-      for(const [hx,hy,hr,v] of HOLES){ g.font='bold 11px monospace'; g.textAlign='center'; g.textBaseline='middle'; const y=v>=50?hy:hy-hr+11; g.fillStyle='rgba(0,0,0,.5)'; g.fillText(v,hx+1,y+1); g.fillStyle=v>=50?'#2a1008':'#f0ecff'; g.fillText(v,hx,y); }
-      for(const [x,y] of S.marks)ball(g,x,y,4,.7);
-      g.fillStyle='#1a0c04'; g.fillRect(0,258,300,8);
-      g.save(); g.beginPath(); g.moveTo(44,480); g.lineTo(256,480); g.lineTo(232,266); g.lineTo(68,266); g.closePath(); g.clip();
-      q=g.createLinearGradient(0,266,0,480); q.addColorStop(0,'#b88a50'); q.addColorStop(1,'#e6c088'); g.fillStyle=q; g.fillRect(40,266,220,214);
-      g.strokeStyle='rgba(90,50,20,.22)'; g.lineWidth=1; for(let k=-5;k<=5;k++){ g.beginPath(); g.moveTo(150+k*21.2,480); g.lineTo(150+k*16.4,266); g.stroke(); }
-      for(let y=300;y<480;y+=46){ g.strokeStyle='rgba(90,50,20,.12)'; g.beginPath(); g.moveTo(40,y); g.lineTo(260,y); g.stroke(); }
-      q=g.createLinearGradient(0,266,0,300); q.addColorStop(0,'rgba(20,8,0,.6)'); q.addColorStop(.5,'rgba(255,230,180,.25)'); q.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle=q; g.fillRect(40,266,220,34);
-      if(!S.ball&&S.left){ g.setLineDash([5,6]); g.strokeStyle='rgba(125,255,168,.35)'; g.lineWidth=2; g.beginPath(); g.moveTo(150,440); g.lineTo(150+Math.sin(S.ang)*.9*180,440-180); g.stroke(); g.setLineDash([]); }
-      g.restore();
-      for(const [x0,x1] of [[44,68],[256,232]]){ q=g.createLinearGradient(x0-12,0,x0+12,0); q.addColorStop(0,'#6a3a18'); q.addColorStop(1,'#3a1c08'); g.strokeStyle='#8a5a2a'; g.lineWidth=5; g.beginPath(); g.moveTo(x0,480); g.lineTo(x1,266); g.stroke(); }
-      g.fillStyle='#050505'; g.fillRect(84,270,132,22); g.strokeStyle='#5a3a1a'; g.lineWidth=2; g.strokeRect(84,270,132,22);
-      g.font='bold 13px monospace'; g.textBaseline='middle'; g.shadowColor='#ff3020'; g.shadowBlur=6; g.fillStyle='#ff4a30'; g.textAlign='left'; g.fillText(String(S.sum).padStart(3,'0'),92,281); g.textAlign='right'; g.fillStyle='#ffb020'; g.shadowColor='#ffa000'; g.fillText('BALL '+(S.left?10-S.left:9)+'/9',208,281); g.shadowBlur=0;
-      for(let i=0;i<S.left-(S.ball?0:1);i++)ball(g,74+i*12,468,5);
-      if(S.ball){ const r=9-3*(440-S.ball.y)/420; g.fillStyle='rgba(40,20,0,.35)'; g.beginPath(); g.ellipse(S.ball.x+2,S.ball.y+r*.7,r,r*.45,0,0,7); g.fill(); ball(g,S.ball.x,S.ball.y,r); }
-      else if(S.left){ const a=S.ang, ex=150+Math.sin(a)*70, ey=440-Math.cos(a)*70; ball(g,150,440,9);
-        g.save(); g.translate(150,440); g.rotate(a); g.shadowColor='#7dffa8'; g.shadowBlur=10; g.fillStyle='#7dffa8'; g.fillRect(-2,-62,4,48); g.beginPath(); g.moveTo(0,-76); g.lineTo(-9,-60); g.lineTo(9,-60); g.closePath(); g.fill(); g.restore(); g.shadowBlur=0; }
-      g.fillStyle='#120804'; g.fillRect(10,288,22,186); g.strokeStyle='#8a5a2a'; g.lineWidth=2; g.strokeRect(10,288,22,186);
-      q=g.createLinearGradient(0,472,0,290); q.addColorStop(0,'#3cd070'); q.addColorStop(.6,'#f2d040'); q.addColorStop(1,'#ff3a30'); const h=S.pw*182; g.fillStyle=q; g.shadowColor=S.pw>.85?'#ff3a30':'#7dffa8'; g.shadowBlur=S.pw?8:0; g.fillRect(14,472-h,14,h); g.shadowBlur=0;
-      g.fillStyle='rgba(255,255,255,.25)'; for(let k=1;k<10;k++)g.fillRect(14,472-k*18.2,k%5?5:14,1);
-      for(const [x,y,s,a] of S.pops){ g.globalAlpha=Math.max(0,1-a/1.2); g.font='bold 16px monospace'; g.textAlign='center'; g.fillStyle='#000'; g.fillText(s,x+1,y-a*30+1); g.fillStyle=s==='GUTTER'?'#c8c8d8':'#ffe27a'; g.fillText(s,x,y-a*30); g.globalAlpha=1; } },
     end:S=>o.end&&o.end(S)});
   /* ---------- THE CLAW: the head swings on its cable, so let it settle; the grip is as good as you centre it; carry it gently to the chute and let go ---------- */
   const TOYC=[['#c8844e','#7a4220'],['#f0a8cc','#a85a80'],['#88c8f0','#3a78a8'],['#f4e07a','#b09020'],['#a8e0a0','#4a8a48'],['#e87070','#902c2c'],['#d8c8f0','#7a64a8']];

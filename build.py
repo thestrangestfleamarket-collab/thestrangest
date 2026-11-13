@@ -106,6 +106,7 @@ elif not os.path.exists('node_modules/three'):
 subprocess.run(['node', 'tools/asylum.cjs'], check=True)   # Hollow Pines (src/asylum/): its own page, dist/asylum.html
 subprocess.run(['node', 'tools/wave.cjs'], check=True)   # SHARDWAVE (src/wave/): its own page, dist/wave.html
 subprocess.run(['node', 'tools/cantina.cjs'], check=True)   # THE CANTINA (src/cantina/): its own page, dist/cantina.html, and its models and pictures, dist/cantina-assets/
+subprocess.run(['node', 'tools/scare.cjs'], check=True)   # VESPER WARD (src/scare/): its own page, dist/scare.html, and its models, dist/scare-assets/
 subprocess.run(['node', 'tools/golf.cjs'], check=True)   # HALCYON GREENS (src/golf/): its own page, dist/golf.html, and its pictures, dist/golf-assets/
 for f in sorted(set(re.findall(r'__FILE__\("([^"]+)"\)', body))):
     o = 'dist/g/' + os.path.basename(f); shutil.copy(f, o); names[f] = json.dumps('/g/' + hashed(o))

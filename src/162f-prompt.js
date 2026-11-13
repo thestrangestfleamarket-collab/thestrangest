@@ -9,6 +9,7 @@ import {SYS} from './006-map-pre.js';
     if(c&&c.held)s=`<span class="k">${uk}</span> · ${c.name}${more}`;
     else if(th){ const why=!c.sub&&th.can&&th.can(), key=c.sub?uk:th.key||uk; s=why&&why!==true?`${c.name} · <span class="why">${String(why).toUpperCase()}</span>${more}`:`<span class="k">${key}</span> · ${c.name}${more}`; }
     if(s&&L.length>1)s=L.map((q,i)=>`<div class="row${i===(UI.pickI||0)?' on':''}">${i===(UI.pickI||0)?'▸ '+s:'&nbsp; '+q.name}</div>`).join('')+'<div class="ft">SHIFT + WHEEL TO CHOOSE</div>'; }catch(e){ PROMPT.err=String(e&&e.message||e); }
+    if(s){ const q=document.getElementById('hqb'), r=q&&!q.hidden&&q.getBoundingClientRect(); if(r&&r.height){ const z=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--uiz'))||1, bt=Math.round((innerHeight-r.top+8)/z)+'px'; if(el.style.bottom!==bt)el.style.bottom=bt; } else if(el.style.bottom)el.style.bottom=''; }   // always just above the bar, however tall it is
     if(s!==last){ last=s; el.innerHTML=s; el.hidden=!s; at=performance.now(); el.classList.remove('gone'); } else if(s&&performance.now()-at>3000)el.classList.add('gone'); };   // a hint fades after 3 s (owner, 8 Nov 2026)
   SYS.add('vitals',dt=>{ if((t-=dt||.02)>0)return; PROMPT.tick(); },'162f-prompt');
   window.PROMPT=PROMPT; }

@@ -1,6 +1,6 @@
 // THE GUITAR (owner, 7 Nov 2026: "i want to add the guitar back into game. use the polyfork assets ... hand 3d model, physics, real string acoustics, sounds, closeup, fingers"; his picks: own one and play it anywhere, and the park's is anyone's; play it yourself or a song from the book; the strings' physics): GUITAR, the item (the bodega sells it), the park's guitar on its stand, playing (keys and the panel), the close-up, and everyone near hearing and seeing it.
 import {SHARED, THREE} from './003-shx.js';
-import {FORAGE, INSTR, MUSICIN, ONLINE, PARK, pos, st, UI, W3} from './003b-systems.js';
+import {FORAGE, INSTR, MUSICIN, ONLINE, PARK, pos, st, UI, W3, WIELD} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {LEVEL, MAPG, SOL, SYS, TILE} from './006-map-pre.js';
 import {GTBOOK, GTCHORD, gtCompile} from './108-game-play-3-guitar-2-tunes.js';
@@ -43,12 +43,13 @@ const GUITAR={}; window.GUITAR=GUITAR;
       ss.forEach((s,i)=>{ const n={t:t+T*i/Math.max(1,ss.length-1),s,k:fretOf(P,s),r:'s',amp:(dn?.42:.32)*(full&&s>4?1.12:1)}; n.at=n.k+P.capo; L.tune.push(n); note(P,n); }); trim(P); },
     pluck:(P,s)=>{ const t=now(), r=s>=4?'p':s===3?'i':s===2?'m':'a', n={t,s,k:fretOf(P,s),r,amp:r==='p'?.6:.5}; n.at=n.k+P.capo; P.live.tune.push(n); note(P,n); trim(P); },
     capo:(P,c)=>{ P.capo=Math.max(0,Math.min(7,c|0)); ACT.chord(P,P.chord); },
-    song:(P,v)=>{ const i=parseInt(v), T=GTBOOK[i]; if(!T)return; if(!T.c)gtCompile(T); P.song=i; P.s0=now(); P.cur=0; P.done=0; P.fail=+String(v).split(':')[1]||0; },
+    song:(P,v)=>{ const r=SONGBK.read(v), i=r.i, T=GTBOOK[i]; if(!T)return; if(!T.c)gtCompile(T); P.song=i; P.s0=now(); P.cur=0; P.done=0; P.fail=r.fail; P.miss=r.miss; P.seed=r.seed; },
     stop:P=>{ if(P.song<0)return; P.song=-1; if(P.V)for(let s=1;s<=6;s++)GSND.mute(P.V,s,GSND.now()+.01,.05); ACT.chord(P,P.chord); }};
   // a song's notes go to the strings a little ahead of the clock, and the left hand's lifts mute them
-  const songTick=P=>{ if(P.song<0)return; const T=GTBOOK[P.song], c=T.c, t=time(P); if(P.fail&&t>P.fail){ ACT.stop(P); if(P===ME){ tell('stop'); SONGBK.done('guitar',T,false,P.fail/c.len); fillSongs(); drawPanel(); } return; }
-    if(t>c.len){ const i=P.song; ACT.stop(P); if(P===ME){ SONGBK.done('guitar',T,true); SONGBK.busk('guitar',T); fillSongs(); const n=SONGBK.next('guitar',GTBOOK,i); if(n>=0){ const el=PN&&PN.querySelector('#gtsong'); if(el)el.value=n; GUITAR.play('song',n); } drawPanel(); } return; } const V=voice(P); if(!V)return;
-    while(P.cur<c.ev.length&&c.ev[P.cur].t<=t+.12){ const e=c.ev[P.cur++]; if(e.t<t-.05)continue; const when=GSND.now()+Math.max(0,e.t-t)+.02; let d=0; if(e.n&&P.fail&&e.t>P.fail-SONGBK.LEAD){ d=SONGBK.slip(); if(d===0)continue; d=d||0; }
+  const songTick=P=>{ if(P.song<0)return; const T=GTBOOK[P.song], c=T.c, t=time(P); if(P.fail&&t>P.fail){ ACT.stop(P); if(P===ME){ tell('stop'); SONGBK.done('guitar',T,false,P.fail/c.len,true); fillSongs(); drawPanel(); } return; }
+    if(P===ME&&SONGBK.tick('guitar',T,P,t))drawPanel();
+    if(t>c.len){ const i=P.song; ACT.stop(P); if(P===ME){ SONGBK.done('guitar',T,true,1,true); SONGBK.busk('guitar',T); fillSongs(); const n=SONGBK.next('guitar',GTBOOK,i); if(n>=0){ const el=PN&&PN.querySelector('#gtsong'); if(el)el.value=n; GUITAR.play('song',n); } drawPanel(); } return; } const V=voice(P); if(!V)return;
+    while(P.cur<c.ev.length&&c.ev[P.cur].t<=t+.12){ const e=c.ev[P.cur++]; if(e.t<t-.05)continue; const when=GSND.now()+Math.max(0,e.t-t)+.02; let d=0; if(e.n&&(P.fail&&e.t>P.fail-SONGBK.LEAD||SONGBK.wrong(P,P.cur))){ d=SONGBK.slip(); if(d===0)continue; d=d||0; }
       if(e.n)GSND.pluck(V,e.n.s,Math.max(0,e.n.at+d),when,e.n.amp,e.n.tone>=4000?1:e.n.tone>=3500?.8:.5,GHOLD.plFrac(e.n.r)); else GSND.mute(V,e.s,when); } };
   const hold=(P,me,PM,body)=>{ if(P.H&&P.H.me===me)return; if(P.H)GHOLD.detach(P.H); P.H=me&&PM?GHOLD.attach(me,PM,body,{score:()=>score(P),time:()=>time(P)}):null; };
   const unhold=P=>{ if(P.H)GHOLD.detach(P.H); P.H=null; if(P.V){ GSND.drop(P.id); P.V=null; } };
@@ -59,6 +60,7 @@ const GUITAR={}; window.GUITAR=GUITAR;
   const myMesh=()=>W3.group.children.find(m=>m.userData&&m.userData.hands&&m.userData.PM&&m.visible!==undefined);
   const tell=(k,v)=>{ if(ONLINE.send)ONLINE.send({t:'gtr',k,v:v==null?'':v}); };
   GUITAR.start=(src='own')=>{ if(on)return; if(st.water&&st.water.in||st.ride||st.climb||st.hang)return say('NOT HERE: STAND SOMEWHERE STEADY TO PLAY.','#c8a090');
+    if(WIELD.on)return say('YOUR HANDS ARE FULL: PUT AWAY THE '+WIELD.what()+' FIRST.','#c8a090');
     if(INSTR&&INSTR.on())INSTR.stop(); GSND.wake(); on=true; from=src; wx=pos.x; wz=pos.z; GUITAR.stow(); ME.song=-1; ME.chord=''; ME.live={tune:[],strum:[],lh:[],pos:[{t:0,p:1}]}; ACT.chord(ME,'');
     prevView=UI.view; if(CU.on&&!UI.persp)UI.setView('third'); panel(true); tell('on',src==='park'?'k':'f'); if(src==='park'&&STAND.g)STAND.gm.visible=false;
     say('YOU TAKE UP THE GUITAR: WALK AS YOU PLAY. PICK A PIECE FROM THE BOOK · P PLAYS IT · TAB THE CLOSE-UP · ESC TO STOP.'); };
@@ -68,7 +70,7 @@ const GUITAR={}; window.GUITAR=GUITAR;
   GUITAR.on=()=>on; GUITAR.ME=ME; GUITAR.ACT=ACT;
   GUITAR.play=(k,v)=>{ if(!on)return; if(k==='song'&&v===ME.song)k='stop';
     if(k==='song'&&!canPlay(v)){ const T=GTBOOK[v]; return say(T?`${T.name.toUpperCase()} IS NOT OPEN TO YOU YET (GUITAR ${T.lvl}; YOURS IS ${skill().toFixed(1)}). LEARN THE PIECES YOU HAVE.`:'THAT PIECE IS NOT IN THE BOOK.','#c8a090'); }
-    let imp=''; if(k==='song'){ const T=GTBOOK[v]; if(T.imp&&!T.notes.length)return say('THE GUITAR CAN PLAY NONE OF THAT PIECE.','#c8a090'); imp=T.imp||''; if(!T.c)gtCompile(T); const r=SONGBK.start('guitar',T); if(!r.ok)v=v+':'+(T.c.len*r.at).toFixed(1); }
+    let imp=''; if(k==='song'){ const T=GTBOOK[v]; if(T.imp&&!T.notes.length)return say('THE GUITAR CAN PLAY NONE OF THAT PIECE.','#c8a090'); imp=T.imp||''; if(!T.c)gtCompile(T); v=SONGBK.code(v,SONGBK.start('guitar',T),T.c.len); }
     if(k==='strum'||k==='pluck')practise(); ACT[k](ME,v); if(imp)tell('imp',imp); else tell(k,v); drawPanel(); };
   FORAGE.ACT.guitar=()=>{ if(on)GUITAR.stop(); else GUITAR.start('own'); };
   FORAGE.ACT.gplay=FORAGE.ACT.guitar;

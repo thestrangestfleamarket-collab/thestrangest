@@ -151,6 +151,7 @@ import {ROOMK} from './150a-bedroom.js';
       if(a==='dn')CRT.step(-1); else if(a==='up')CRT.step(1); else if(a==='guide'){ const G=chans().find(c=>c.guide); if(G)CRT.channel(G.ch); CRT.open(); } else if(a==='menu'){ if(P.hidden)CRT.open(); else CRT.close(); }
       else if(a==='in')zoom(1.2); else if(a==='out')zoom(1/1.2); else if(a==='full')CRT.full(); else if(a==='x')CRT.watch(false); });
     for(const ev of ['pointerdown','mousedown','click','dblclick','contextmenu','pointerup','mouseup'])el.addEventListener(ev,e=>{ if(!P.contains(e.target))e.stopPropagation(); });
+    el.addEventListener('click',e=>{ if(e.target===el)CRT.watch(false); });   // a click on the dark round the set goes back to the room
     el.addEventListener('wheel',e=>{ if(P.contains(e.target))return; e.preventDefault(); e.stopPropagation(); zoom(e.deltaY<0?1.12:1/1.12); },{passive:false});
     el.addEventListener('pointermove',()=>{ W.idle=0; el.classList.remove('idle'); });
     addEventListener('resize',()=>{ if(W.open){ if(W.full)W.z=fill(); place(); } }); };

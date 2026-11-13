@@ -1,4 +1,4 @@
-// THE FRONT DOOR AND THE CALLBOX: your flat's front door goes straight out to the street (no hall, stairs or lift; owner, 10 Nov 2026); nothing fixed hangs by it (owner, 13 Nov 2026: the mailbox and notice board are gone); the callbox beside the house's street door lists who lives there, rings one, and their buzzer lets you in or not.
+// THE FRONT DOOR AND THE CALLBOX: your flat's front door goes straight out to the street (no hall, stairs or lift; owner, 10 Nov 2026); the callbox beside the house's street door lists who lives there, rings one, and their buzzer lets you in or not.
 import {SHARED, THREE} from './003-shx.js';
 import {INV, ONLINE, SFX, UI} from './003b-systems.js';
 import {SAY} from './003d-say.js';

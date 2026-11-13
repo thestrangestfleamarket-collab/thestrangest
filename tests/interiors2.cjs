@@ -1,4 +1,4 @@
-// THE INTERIORS, PART TWO (docs/INTERIORS.md): node tests/interiors2.cjs [out folder]. The playhouse (the Wooden O), the golems' cave, the bath house, your hall, the bank and the squirrel's tower: their staff spots and places, their new things and what each does. Exits 1 on any failure.
+// THE INTERIORS, PART TWO (docs/INTERIORS.md): node tests/interiors2.cjs [out folder]. The playhouse (the Wooden O), the golems' cave, the bath house, the bank and the squirrel's tower: their staff spots and places, their new things and what each does. Exits 1 on any failure.
 const {chromium}=require('playwright'), fs=require('fs'); const OUT=process.argv[2];
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:960,height:640}}); const errs=[]; let bad=0;
   pg.on('pageerror',e=>errs.push(e.message.slice(0,160)));

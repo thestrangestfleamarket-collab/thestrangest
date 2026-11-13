@@ -1,6 +1,6 @@
 // THE WIELD: WIELD lets the player hold and swing a sword (any blade on the item model), a butterfly net or a bird net, or hold a tool another system registers (the fishing rod) in the passport's hand, the mouse taking the arm round in full circles: swings chain into a heavy third, cost stamina, and P held raises the blade to block.
 import {SHARED, THREE} from './003-shx.js';
-import {BIRDS, EQUIP, FORAGE, INSPECT, ITEMS, keys, LEVELS, MOTION, ONLINE, pos, RAG, SFX, st, UI, VIT, VR, W3, WEEDS, WIELD} from './003b-systems.js';
+import {BIRDS, EQUIP, FORAGE, INSPECT, ITEMS, keys, LEVELS, MOTION, ONLINE, RAG, SFX, st, UI, VIT, VR, W3, WEEDS, WIELD} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {renderer, scene} from './004-main.js';
 import {BF, SYS, TILE} from './006-map-pre.js';
@@ -11,7 +11,7 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
   const SWC={sword_wood:[0xa88a60,0x6a4a2a,0x4a3020],sword:[0xd8dce2,0x9a8450,0x4a3426],sword_steel:[0xeef2f8,0xb0b8c8,0x24242e],sword_ench:[0x9ad8ff,0xd8b060,0x3a2a5a]};
   const LIST=[...Object.keys(SWC).filter(id=>ITEMS.prop(id,'slot')==='hand'),'net','bnet']; WIELD.LIST=LIST;
   // other held tools register here: WIELD.kind(id,{name,make,aim(dt,aim,mouse) -> true when it moves the arm itself,use() -> true when a click is its own, mouth: true when it is held in the teeth, not the hand}); make() returns a group with .tipL (its tip, local) when something hangs off it
-  const KIND={}; WIELD.kinds=KIND; WIELD.useHeld=()=>{ const k=WIELD.on&&KIND[WIELD.on]; if(!k||!k.use)return false; k.use(); return true; }; WIELD.tip=new THREE.Vector3(); WIELD.ray=null; WIELD.pt=null; WIELD.face=null; WIELD.kind=(id,k)=>{ KIND[id]=k; NM[id]=k.name; if(!LIST.includes(id))LIST.push(id); }; for(const [id,k] of WIELD.pend||[])WIELD.kind(id,k);
+  const KIND={}; WIELD.kinds=KIND; WIELD.useHeld=()=>{ const k=WIELD.on&&KIND[WIELD.on]; if(!k||!k.use)return false; k.use(); return true; }; WIELD.tip=new THREE.Vector3(); WIELD.ray=null; WIELD.kind=(id,k)=>{ KIND[id]=k; NM[id]=k.name; if(!LIST.includes(id))LIST.push(id); }; for(const [id,k] of WIELD.pend||[])WIELD.kind(id,k);
   FORAGE.add({names:{sword:'SWORD',sword_wood:'WOODEN SWORD',sword_steel:'STEEL SWORD',sword_ench:'ENCHANTED BLADE'},prices:{sword:15,sword_wood:8,sword_steel:40,sword_ench:120}});
   // the sword is bought from the swordsmith now, not given free (owner, 22 Oct 2026).
   const lam=c=>new THREE.MeshLambertMaterial({color:c}), bx=(w,h,d,m,y)=>{ const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m); o.position.y=y; return o; };
@@ -28,14 +28,7 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
   // a slash across: round the world's up, or round the camera's forward when the arm is raised or dropped (so a lifted arm still cuts across the screen)
   const slash=(v,S,dt)=>{ S.t+=dt; const u=Math.min(1,S.t/S.T), e=u*u*(3-2*u); sax.copy(UP).addScaledVector(v,-v.y); if(sax.lengthSq()<.1)sax.copy(cz); sax.normalize(); v.applyAxisAngle(sax,S.s*(1.5-3*e)*(S.h?1.4:1)).setY(v.y-(S.h?.45:.25)*Math.sin(Math.PI*u)).normalize(); return S.t>=S.T; };
   let phOk=false, sw=null, side=1, spd=0, cutT=0, combo=0, lastSw=0, heavy=false;
-  // the arm swings only in front of the body: an aim going behind is held at the body's sides while he turns to it
-  // what the mouse's ray meets, looked up at most every 80 ms (and again only when the mouse or the view moved); between looks the ray is met on that spot's height
-  const tgt=new V3(), hitP=new V3(); let hitY=null, hitT=0, hitK='', exact=false;
-  const skipM=o=>{ if(!o.isMesh)return true; const m=o.material; if(m&&(m.visible===false||m.transparent&&m.opacity<.05))return true; for(let q=o;q;q=q.parent)if(!q.visible||q===W3.group||q===MESH[WIELD.on])return true; return false; };
-  const pick=()=>{ const o=rc.ray.origin, d=rc.ray.direction, now=performance.now(), far=o.distanceTo(hip)+40*T, k=ms.x+','+ms.y+','+o.x.toFixed(2)+','+o.y.toFixed(2)+','+o.z.toFixed(2)+','+d.x.toFixed(3)+','+d.y.toFixed(3)+','+d.z.toFixed(3);
-    if(k===hitK&&hitY!=null)return tgt.copy(hitP);
-    if(now-hitT>80){ hitT=now; hitK=k; const h=rc.intersectObjects(scene.children,true).find(h=>h.distance<far&&!(h.point.y>SHARED.py+.1*T&&Math.hypot(h.point.x-hip.x,h.point.z-hip.z)<.35*T)&&!skipM(h.object)); if(h){ hitP.copy(h.point); hitY=h.point.y; return tgt.copy(hitP); } hitY=null; }
-    const at=y=>{ const t=Math.abs(d.y)>1e-3?(y-o.y)/d.y:-1; return t>0&&t<far?t:0; }; const t=(hitY!=null&&at(hitY))||at(SHARED.py)||Math.min(far,o.distanceTo(hip)); return tgt.copy(o).addScaledVector(d,t); };
+  // the arm swings only in front of the body (owner, 2 Nov 2026): an aim going behind is held at the body's sides; the keys turn the body, never the swing
   const front=v=>{ const fx=Math.sin(SHARED.heading), fz=Math.cos(SHARED.heading), k=v.x*fx+v.z*fz; if(k<.05)v.x+=fx*(.05-k),v.z+=fz*(.05-k); return v.normalize(); };
   // something held in the teeth (the cigar, owner 11 Nov 2026: "it should be in your mouth not hand"): its matrix at the mouth from the head's joints, pointing out and a little down; null without a head
   const mh=new V3(), mt=new V3(), ml=new V3(), mr=new V3(), mu=new V3(), mf=new V3(), mx=new V3(), MM=new THREE.Matrix4();
@@ -62,17 +55,17 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
     const bk=bare||on&&WIELD.sword&&!sw&&keys.has('p')&&VIT.sta>.03; if(bk!==WIELD.block){ const was=WIELD.bare; WIELD.block=bk; WIELD.bare=bk&&bare; if(bk){ WIELD.blockT=performance.now(); SFX.play('block',{vol:.3,vary:.1}); }
       try{ if(WIELD.bare){ RIG.act(st,'B'); SYS.run('act','B',1); } else if(was){ RIG.release(st,'B'); SYS.run('act','B',0); } }catch(e){} }
     if(WIELD.block){ VIT.sta=Math.max(0,VIT.sta-dt*.2); VIT.inFight(3); }
-    if(on&&!(KIND[WIELD.on]&&KIND[WIELD.on].mouth)){ const r=renderer.domElement.getBoundingClientRect(); if(ms.x>=0){ const nx=(ms.x-r.left)/r.width*2-1, ny=-((ms.y-r.top)/r.height*2-1); rc.setFromCamera(new THREE.Vector2(nx,ny),SHARED.cam); WIELD.ray=rc.ray;
-        // the tool points at the spot in the world under the mouse, and he turns to face it (owner, 10 Nov 2026)
-        const C=SHARED.cam.matrixWorld.elements; cx.set(C[0],C[1],C[2]); cy.set(C[4],C[5],C[6]); cz.set(-C[8],-C[9],-C[10]);
-        WIELD.pt=pick(); aim.copy(WIELD.pt).sub(sh.lengthSq()?sh:hip); if(aim.lengthSq()>1e-6)aim0.copy(aim.normalize());
-        const fx=WIELD.pt.x-pos.x, fz=WIELD.pt.z-pos.z; WIELD.face=Math.hypot(fx,fz)>.3*T?Math.atan2(fx,fz):null; } else { WIELD.pt=null; WIELD.face=null; aim0.set(Math.sin(SHARED.heading),-.3,Math.cos(SHARED.heading)).normalize(); } aim.copy(aim0);   /* no mouse aiming it: the tool rests in front of him, a little down, wherever he faces */
-      const K=KIND[WIELD.on], own=!!(K&&K.aim&&K.aim(dt,aim,aim0)); if(own){ sw=null; WIELD.face=null; }
+    if(on&&!(KIND[WIELD.on]&&KIND[WIELD.on].mouth)){ const r=renderer.domElement.getBoundingClientRect(); if(ms.x>=0){ const nx=(ms.x-r.left)/r.width*2-1, ny=-((ms.y-r.top)/r.height*2-1), asp=r.width/Math.max(1,r.height); rc.setFromCamera(new THREE.Vector2(nx,ny),SHARED.cam); WIELD.ray=rc.ray;
+        // the arm follows the mouse round the shoulder on the screen, any way round: on the shoulder it points away from the camera, a torso's length out it lies across the screen, further out it leans back toward the camera (120 degrees at most, so the mouse's side always counts)
+        const C=SHARED.cam.matrixWorld.elements; cx.set(C[0],C[1],C[2]); cy.set(C[4],C[5],C[6]); cz.set(-C[8],-C[9],-C[10]); let px=0, py=0, R0=.5;
+        if(sh.lengthSq()&&hip.lengthSq()){ const a=sh.clone().project(SHARED.cam), b=hip.clone().project(SHARED.cam); if(a.z<1&&Math.abs(a.x)<1.5&&Math.abs(a.y)<1.5){ px=a.x*asp; py=a.y; R0=Math.max(.25,Math.hypot((b.x-a.x)*asp,b.y-a.y)*1.3); } }
+        const dx=nx*asp-px, dy=ny-py, f=Math.min(4/3,Math.hypot(dx,dy)/R0)*Math.PI/2, th=Math.atan2(dy,dx);
+        aim.copy(cz).multiplyScalar(Math.cos(f)).addScaledVector(cx,Math.cos(th)*Math.sin(f)).addScaledVector(cy,Math.sin(th)*Math.sin(f)); if(aim.lengthSq()>1e-6)aim0.copy(aim.normalize()); } else aim0.set(Math.sin(SHARED.heading),-.3,Math.cos(SHARED.heading)).normalize(); aim.copy(aim0);   /* no mouse aiming it: the tool rests in front of him, a little down, wherever he faces */
+      const K=KIND[WIELD.on], own=!!(K&&K.aim&&K.aim(dt,aim,aim0)); if(own)sw=null;
       if(WIELD.block&&!own){ aim.set(Math.sin(SHARED.heading)*.35,.95,Math.cos(SHARED.heading)*.35).normalize(); aim0.copy(aim); }
-      if(sw&&slash(aim,sw,dt))sw=null; exact=!!WIELD.pt&&!own&&!WIELD.block&&!sw&&aim.x*Math.sin(SHARED.heading)+aim.z*Math.cos(SHARED.heading)>=.05; if(!own)front(aim);
+      if(sw&&slash(aim,sw,dt))sw=null; if(!own)front(aim);
       const was=cur.clone(); cur.lerp(aim,1-Math.exp(-dt*(sw||own?40:20))).normalize(); spd=dt>0?was.angleTo(cur)/dt:0; }
     const w0=st.aim?st.aim.w:0, mo=!!(KIND[WIELD.on]&&KIND[WIELD.on].mouth), w=w0+((on&&!mo&&!(st.move&&st.move.name==='pick')?1:0)-w0)*Math.min(1,dt*10);
-    if(!on||mo){ WIELD.pt=null; WIELD.face=null; exact=false; }
     if(!on&&w<.02){ st.aim=null; return; } IM.copy(W3.group.matrixWorld).invert(); const v=cur.clone().transformDirection(IM); st.aim={v:RIG.V(v.x,v.y,v.z),w}; };
   WIELD.post=B=>{ const m=MESH[WIELD.on], mo=!!(KIND[WIELD.on]&&KIND[WIELD.on].mouth), on=!!(m&&free()&&(mo?B&&B.J&&W3.group.visible:st.aim&&st.aim.w>.3)); for(const k in MESH)MESH[k].visible=on&&MESH[k]===m; if(!(on&&mo))WIELD.mouth.set(0,0,0); if(!on){ pts.length=0; phOk=false; return; }
     const G=W3.group.matrixWorld, J=B.J;
@@ -81,7 +74,7 @@ Object.assign(WIELD,{on:null,block:false,bare:false,blockT:0,swing:null}); windo
     const AH=BODIES.hand(WIELD.hand);   // (in your avatar's own hand)
     P(AH?AH.shoulder:J_(J,'shoulder'),sh); P(J.pelvis,hip); P(AH?AH.elbow:J_(J,'elbow'),ax); P(AH?AH.palm:J_(J,'palm'),base); ax.subVectors(P(AH?AH.wrist:J_(J,'wrist'),tip),ax).normalize();
     const HV=VR.on&&VR.hand&&VR.hand(WIELD.hand==='L'?'left':'right'); WIELD.vel=HV?HV.v:null;   // in the headset the tool hangs from the controller: its forward is the shaft, its roll the face
-    if(HV){ base.copy(HV.wp); ax.set(0,0,-1).applyQuaternion(HV.wq); bx2.set(1,0,0).applyQuaternion(HV.wq); } else { if(exact&&WIELD.pt&&base.distanceToSquared(WIELD.pt)>.04*T*T)ax.subVectors(WIELD.pt,base).normalize(); bx2.crossVectors(ax,UP); if(bx2.lengthSq()<1e-4)bx2.set(1,0,0); bx2.normalize(); } bz.crossVectors(bx2,ax);
+    if(HV){ base.copy(HV.wp); ax.set(0,0,-1).applyQuaternion(HV.wq); bx2.set(1,0,0).applyQuaternion(HV.wq); } else { bx2.crossVectors(ax,UP); if(bx2.lengthSq()<1e-4)bx2.set(1,0,0); bx2.normalize(); } bz.crossVectors(bx2,ax);
     M.makeBasis(bx2,ax,bz).setPosition(base); m.matrix.copy(M); m.matrixWorld.copy(M); if(m.tipL){ WIELD.tip.copy(m.tipL).applyMatrix4(M); if(m.bend)m.bend(); } head.copy(m.head).applyMatrix4(M); tip.copy(base).addScaledVector(ax,m.head.y+(m.r||0)*2);
     const fast=(spd>7||sw)&&!KIND[WIELD.on], now=performance.now(); if(!WIELD.mv){ WIELD.mv=1; SYS.add('weedsMove',()=>{ if(performance.now()<cutT)WEEDS.movers[7].set(tip.x,tip.z,.6*T,1); },'146a-wield'); } if(fast){ pts.unshift([base.clone().addScaledVector(ax,.25),tip.clone(),now]); if(WIELD.sword&&tip.y<SHARED.py+.6*T)cutT=now+400; }
     while(pts.length&&(pts.length>N||now-pts[pts.length-1][2]>120))pts.pop();

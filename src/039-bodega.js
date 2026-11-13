@@ -1147,7 +1147,8 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
   const B0=LBLD[0], B00={...B0}, W=LSEED.walk, CURB=LSEED.street, FAR=LSEED.grass, RD=-8;
   const OX=(B00.x0+B00.x1)/2, OY=B00.y1, K=BLDK, X=x=>(x-OX)*TILE*K, Z=y=>(y-OY)*TILE*K, Y=z=>z*ZU*K, XS=x=>(x-OX)*TILE, ZS=y=>(y-OY)*TILE, YS=z=>z*ZU, MX=x=>x/TILE+OX, MY=z=>z/TILE+OY; if(OX!==ORIGIN[0]||OY!==ORIGIN[1])console.warn('the bodega lot is not on the level file\'s origin',OX,OY,ORIGIN); Object.assign(SHARED.BOD,{X,Z,Y,XS,ZS,YS,MX,MY,OX,OY,B0});
   const MAP={x0:WESTX,x1:EASTX,y0:B00.y0,y1:FAR+12}, RG=RING, WEND=LEVEL.streets.west.y1!=null?LOTY(LEVEL.streets.west.y1):RING.wy1;
-  const HUD=SHARED.BOD.HUD=WP.bodega.row===2||!!WP.bodega.pf; if(!HUD){ B0.x0=LOTX(WP.bodega.x0); B0.x1=LOTX(WP.bodega.x1); }   // on the Hudson row (owner, 7 Nov 2026) the old front is not built: the inside keeps its own size
+  const HUD=SHARED.BOD.HUD=WP.bodega.row===2||!!WP.bodega.pf; if(!HUD){ B0.x0=LOTX(WP.bodega.x0); B0.x1=LOTX(WP.bodega.x1); }
+  if(WP.bodega.pf==='bodega'){ const P=WP.bodega, k=P.pfk||1.25, s=P.corner==='w'?-1:1, u=k/(.84*K), x0=LOTX(P.x0), x1=LOTX(P.x1); SHARED.BOD.PFB={k,s,u,zu:k*24/(.84*K),cx:(x0+x1)/2+s*Math.max(0,(x1-x0)/2-4.425*u-.05/K),yf:LOTY(P.y1),lot:{x0,x1,y0:LOTY(P.y0),y1:LOTY(P.y1)}}; }   // Polyfork's corner building (#12) on its lot, in lot tiles: its size k, s -1 when its cut corner is to the west, pushed to that side   // on the Hudson row (owner, 7 Nov 2026) the old front is not built: the inside keeps its own size
   const BODOFF=B0.y0+3.75; SHARED.BOD.BODOFF=BODOFF;
   const SB={...B0,x0:1330+OFFDX/BLDK,x1:1330+OFFDX/BLDK+(B0.x1-B0.x0)}; SHARED.BOD.SB=SB; SHARED.BOD.SHOPDX=X(SB.x0)-X(B0.x0);
   const holed=f=>(x,y)=>[MAPSTAIR,...RING.stairs].some(S=>x>=S.x0&&x<S.x1&&y>=S.y0&&y<S.y1)?null:f(x,y);
@@ -1242,6 +1243,12 @@ await grab('bodega',async()=>{ const solids=SOL.up, fixed=FIX.up, SHL=[]; let BO
       M.milkcrates(bo.x0+.25,bo.y1+.18,3); M.milkcrates(bo.x1-1.05,bo.y1+.18,2); }
     M.gatebox(bo.x0+.2,bo.x1-.2,bo.y1,114); M.bell(bm,bo.y1,98); M.meterbox(bo.x0+.9,bo.y1,30); M.number(bo.x0+1.6,bo.y1,82,'66');
     for(const p of PROPL.slice(n0))FRONT.push(p); }
+    else if(SHARED.BOD.PFB){ const F=SHARED.BOD.PFB, nx=x=>F.cx+F.s*(x-.425)*F.u, ny=z=>F.yf-(4.85-z)*F.u, nz=y=>Math.round(y*F.zu), a=nx(2.19), b=nx(-4), x0=Math.min(a,b), x1=Math.max(a,b), wy=ny(3.95), gy=ny(3.75), d0=F.s<0?x0:x1, at=t=>F.s<0?x0+t:x1-t, ps=(t,w)=>F.s<0?x0+t:x1-t-w, sp=(t0,t1)=>[Math.min(at(t0),at(t1)),Math.max(at(t0),at(t1))];   // the corner building's front (owner, 13 Nov 2026: "realistic signage, front decor, real bodega style"): the shop sign over the awning, neons and posters in the glass, the stand and buckets on the pavement; the cut corner (its door) kept clear
+      M.signbox(x0+.15,x1-.15,wy,nz(2.76),nz(3.62),[250,206,40],[196,30,34],'DELI GROCERY',true);
+      M.neon(at(1.1),gy,nz(1.95),'OPEN',[255,70,90]); M.neon(at(3.4),gy,nz(2.05),'COLD BEER',[255,80,70],1); M.neon(at(3.4),gy,nz(1.75),'CERVEZA FRIA',[90,160,255],1); M.neon(at(6.1),gy,nz(2),'ATM',[90,255,140]);
+      { const wh=[250,250,246], bk=[22,22,24]; M.signbox(...sp(5.4,6.8),gy,nz(.62),nz(.98),wh,[40,80,200],'LOTTO',false,1); M.poster(...sp(2.6,4.4),gy,nz(.6),nz(1.15),wh,[['WE ACCEPT',bk,1,3],['FOOD STAMPS',[200,40,40],1,10]]); M.poster(...sp(1.4,2.1),gy,nz(.62),nz(1.02),[40,90,170],[['ICE',wh,1,3]]); }
+      const sy=wy+.06; M.milkcrates(ps(1,.5),sy,3); M.produce(ps(1.8,2.2),sy,2.2); M.buckets(ps(4.2,.78),sy); M.newsrack(ps(5.15,.5),sy); M.icebox(ps(6.3,.9),sy); M.number(d0+F.s*.1,wy,nz(2.95),'66');
+      for(const p of PROPL.slice(n0))FRONT.push(p); }
     { const K=SHARED.GHOSTK.GSK, BP=WP.bath&&WP.bath.park?WP.bath:null; if(BP)K.s=K.s*.75; K.flip=!!(BP&&BP.face==='s'); const s=K.s; { const o=LAY.o('ghost'); K.o=BP?[LOTX((BP.x0+BP.x1)/2)-4*s,LOTY(BP.y0)]:[131+o.x/BLDK,W-8.3*s+o.y/BLDK]; K.HOME=[K.o[0]+.4*s,K.o[1]+4.1*s,K.o[0]+7.8*s,K.o[1]+9.1*s]; } const n3=PROPL.length;   // in Central Park three quarters of its size (owner, 8 Nov 2026: "lets put the bathhouse inside central park, 25% smaller")
       for(const [k,dx,dy] of PRESETS['Preset Ghost Street 1'])if(!/row house|utility pole/.test(k))CATALOG[k](K.o[0]-3.5*s+dx,K.o[1]-.45*s+dy);
       for(const p of PROPL.slice(n3))GHOSTST.push(p); SHARED.BOD.GHOSTST=GHOSTST; SHARED.BOD.GSK=K; gdShape(GHOSTST,K,LAMPS);

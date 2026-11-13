@@ -123,6 +123,9 @@ Object.assign(CAT_INFO,{'stacked washer and dryer':I(1,'Stacked Washer and Dryer
   'vent grille':I(12,'Vent Grille',18,'A grey grille with dark slats. Hangs on a wall.','steel')}); })();
 SHARED.PNAME='object';
 
+// ♨, the hot spring sign: a bowl with three wisps of steam rising from it, cell (i,j) from the top left
+const ONSEN=['...#....#....#...','..#....#....#....','..#....#....#....','...#....#....#...','....#....#....#..','....#....#....#..','...#....#....#...','..#....#....#....','.................','#...............#','#...............#','.#.............#.','.##...........##.','..###.......###..','....#########....','.................','.................'];
+ONSEN.at=(i,j)=>j>=0&&j<ONSEN.length&&i>=0&&ONSEN[j][i]==='#';
 const PRESETS={}; SHARED.GHOSTK=null;
 {
 const FP=24;
@@ -223,9 +226,7 @@ function gsFloor(x,y){ '@later'; if(!GSK)return null; const o=GSK.o; const s=GSK
   function shopEave(o){ const bs=klean(o,.3,7.7,WL,3.8,84,72);
     bs.push(kbox(o,2.3,3.4,2.38,3.5,78,84,{c:QD.blueDark,foot:0}),kbox(o,4.0,3.4,4.08,3.5,78,84,{c:QD.blueDark,foot:0}));
     bs.push(kbox(o,2.0,3.48,4.375,3.52,82,108,{c:QD.blue,foot:0,top:()=>QD.blueDark,fb:()=>QD.blueDark,fu:()=>QD.blueDark,fw:()=>QD.blueDark,
-      fv:(a,z)=>{ '@later'; if(a<2||a>=74||z<84||z>=106)return QD.blueDark; const dx=a-19, dz=z-95, r=Math.hypot(dx,dz);
-        if(r<10)return r<2?QD.blue:Math.abs(Math.cos(Math.atan2(dz,dx)*3))>.42||r<4?QD.ochre:QD.blue;
-        const m=a-36, y=105-z; return m>=0&&m<14&&(y===4||y===12||m===6&&y>2&&y<18||y>12&&(m===2||m===11)||y===17&&m>1&&m<12)||m>=19&&m<33&&(y===6||m===26&&y>2&&y<19||y>8&&y<16&&(m===21||m===31)||y===15&&m>20&&m<32)?QD.ochre:(a+z)%9===0?QD.blueLight:QD.blue; }}));
+      fv:(a,z)=>{ '@later'; if(a<2||a>=74||z<84||z>=106)return QD.blueDark; return ONSEN.at(a-29,104-z)?QD.ochre:(a+z)%9===0?QD.blueLight:QD.blue; }}));   // ♨, no words (owner, 13 Nov 2026)
     bs.push(kbox(o,4.9,3.3,6.3,3.75,76,104,{c:QD.blue,foot:0,top:()=>QD.blueLight,fu:()=>QD.blueDark,fv:(a,z)=>FANC(a,z,0)}));
     const p=GPUT('ghost street eave',bs,{o:{walk:true,lifeK:2,hang:72}});
     p.lifeDraw=(D,W,Hh,ox,oy,t,K=1)=>{ const f=Math.floor(t*10)%3, L=lifeLit(p,o[0]+5.6*s,o[1]+3.75*s,90); lifeFace(D,W,Hh,ox,oy,K,o,4.9,true,o[1]+3.75*s,1,19,42,78,101,(a,z)=>{ const d=Math.hypot(a-30.5,z-89.5); return d<9.5?FANC(a,z,f):null; },L); };
@@ -376,4 +377,4 @@ SHARED.BOD.GDJ={djAndon,djCandle,djIncense,djHanging,djTokonoma,djBokkenRack,djL
 const STOREK={LAMPS,PRESETS,CATALOG,PROPS:PROPL,LBLD,T,STORY,hash,sh,sided,prop,LSEED}; const SQLV={octo:0}; const DEEPW={ZPX:24};
 LBLD.push({id:'ldiner',label:'DINER',x0:106.5,y0:-84,x1:120,y1:-77,h:130,st:1,c:[176,62,56]},{id:'lbodega2',label:'BAR',x0:WROW.bar.x0,y0:WROW.bar.y0,x1:WROW.bar.x1,y1:WROW.bar.y1,h:130,st:1,c:[146,96,64]},{id:'ldungeon',label:'THE DUNGEON',x0:500,y0:-58,x1:513,y1:-47,h:130,st:1,c:[60,56,52]},{id:'lcastle',label:'THE KEEP',x0:88.75,y0:-94,x1:98.25,y1:-85,h:520,st:4,tall:4,c:[150,142,126]});
 const KEEPC={k:[426,435.5,-86,-77],door:430.75,arches:[428.1,430.75,433.4],b:[422,439,-90,-73],gate:430.5};
-export {DEEPW, KEEPC, PRESETS, SQLV, STOREK};
+export {DEEPW, KEEPC, ONSEN, PRESETS, SQLV, STOREK};

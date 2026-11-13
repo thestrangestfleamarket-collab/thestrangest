@@ -50,25 +50,17 @@ import {ROOMK} from './150a-bedroom.js';
         L.push([B(u1-u0+.05,.06,v1-v0+.05),STL,(u0+u1)/2,MH+.05,(v0+v1)/2],[B(u1-u0+.03,.025,v1-v0+.03),STL,(u0+u1)/2,MH+RH,(v0+v1)/2]); }
       }
 
-    /* ---------- a cast-iron radiator under the window; the tracks of spots flat on the ceiling, one over the room, one over the upper floor; downlights under the deck ---------- */
-    const FX=[], lens=[], spots=[];
+    /* ---------- a cast-iron radiator under the window ---------- */
+    const FX=[];
     { const ru=2.95, c0=[206,202,192]; for(let i=0;i<14;i++)FX.push([B(.045,.62,.15),c0,ru-.46+i*.07,.43,.14]); FX.push([B(1.0,.03,.13),c0,ru,.76,.14],[B(1.0,.04,.13),c0,ru,.12,.14],[new THREE.CylinderGeometry(.02,.02,HW-.1,8),[176,120,70],ru+.62,HW/2,.09]); solid(ru-.52,.04,ru+.52,.24,.78); }
-    const head=(u,v,yaw,pitch,real)=>{ const y=HW-.03, dy=Math.sin(pitch), dh=Math.cos(pitch), du=Math.sin(yaw)*dh, dv=Math.cos(yaw)*dh; L.push([new THREE.CylinderGeometry(.045,.06,.15,12),STL,u+du*.05,y-.07-dy*.05,v+dv*.05,...(Math.abs(Math.sin(yaw))>.5?[0,0,-Math.sign(Math.sin(yaw))*(Math.PI/2+pitch)]:[Math.sign(Math.cos(yaw))*(Math.PI/2+pitch),0,0])]);
-      lens.push([u+du*.13,y-.07-dy*.13,v+dv*.13,yaw,pitch]); if(real)spots.push([u+du*.13,y-.07-dy*.13,v+dv*.13,du,-dy,dv,yaw,pitch]); };
-    { const v=5, u0=1.4, u1=mx-1.6; L.push([B(u1-u0,.03,.045),STL,(u0+u1)/2,HW-.015,v]); for(let i=0;i<5;i++)head(u0+.3+(u1-u0-.6)*i/4,v,i%2?0:Math.PI,1.2,i===2); }
-    { const u=mx+1.5; L.push([B(.045,.03,Ly-2.4),STL,u,HW-.015,Ly/2]); for(let i=0;i<5;i++)head(u,1.6+(Ly-3.2)*i/4,Math.PI/2,1.05,i===2); }
     { const Gs=byG(L); for(const k in Gs)part(merge(Gs[k]),MT[k][0],0,0,0,0,apt); part(merge(FX),vc(),0,0,0,0,apt); }
-    { const lm=new THREE.MeshBasicMaterial({color:0xfff0d0,clippingPlanes:[UPL]}); for(const [u,y,v,yaw,pitch] of lens){ const m=part(new THREE.CircleGeometry(.042,12),lm,u,y,v,0,apt,false); m.rotation.order='YXZ'; m.rotation.set(pitch,yaw,0); m.userData.soft=1; }
-      for(const v of [1.4,3.3,5.2,7.1,9]){ const m=part(new THREE.CircleGeometry(.07,14).rotateX(Math.PI/2),lm,mx+1.9,MH-.21,v,0,apt,false); m.userData.soft=1; }
-      spots.forEach(([u,y,v,dx,dy,dz,yaw,pitch],i)=>{ const Lt=new THREE.SpotLight(0xfff2e0,6,14*M,.7,.55,1.6); Lt.userData.pool=true; Lt.userData.i0=6; Lt.userData.on=true; Lt.userData.yaw=yaw*180/Math.PI; Lt.userData.pitch=pitch*180/Math.PI; Lt.userData.angle=40; Lt.position.set(u,y,v); Lt.target.position.set(u+dx,y+dy,v+dz); apt.add(Lt); apt.add(Lt.target); R.ceil.push({id:'loft-track-'+(i+1),name:i?'UPSTAIRS TRACK':'ROOM TRACK',L:Lt}); });
-      { const Lt=new THREE.PointLight(0xffd9a8,2.4,7*M,1.8); Lt.userData.pool=true; Lt.userData.i0=2.4; Lt.userData.on=true; Lt.position.set(mx+1.9,MH-.6,5.2); apt.add(Lt); R.ceil.push({id:'loft-den',name:'DEN DOWNLIGHTS',L:Lt}); } }
 
     /* ---------- walking it: the height under you up there, and what is solid on the upper floor ---------- */
     const onDeck=(u,v)=>DECKS.some(([u0,v0,u1,v1])=>u>=u0&&u<=u1&&v>=v0&&v<=v1), ax=apt.position.x, az=apt.position.z, fy=R.fy;
     APTS.loftY=(x,z)=>{ const u=(x-ax)/M, v=(z-az)/M, h=(SHARED.py-fy)/M; if(u>su0&&u<su1&&v>sv0-.02&&v<sv1){ const hs_=Math.min(N-1,Math.max(1,Math.ceil((v-sv0)/RUN+.001)))*ST; return h>hs_-.75?fy+hs_*M:null; }
       return onDeck(u,v)&&h>MH-.75?fy+MH*M:null; };
     APTS.loftUp=()=>(SHARED.py-fy)/M>MH-.55;
-    R.loftUnder=()=>{ const u=(pos.x-ax)/M, v=(pos.z-az)/M; gateSet(!(u>su0-.1&&u<su1+.1&&v>sv0-.6&&v<sv1&&((SHARED.py-fy)/M>.1||v<sv0+RUN*10))); const under=!!APTS.inReal&&!UI.persp&&(SHARED.py-fy)/M<MH-.6&&onDeck(u,v); UPL.constant=under?fy+(MH-.36)*M:1e6; if(under!==R.loftHid){ R.loftHid=under; const A2=ROOMK.api; if(A2)for(const un of A2.units()){ if(un.gone)continue; const h=un.loose?A2.toApt(un.obj.position.x,un.obj.position.y,un.obj.position.z).h:un.obj.position.y; if(h>MH-.3)un.obj.visible=!under; } } };
+    R.loftUnder=()=>{ const u=(pos.x-ax)/M, v=(pos.z-az)/M; gateSet(!(u>su0-.1&&u<su1+.1&&v>sv0-.6&&v<sv1&&((SHARED.py-fy)/M>.1||v<sv0+RUN*10))); const under=!!APTS.inReal&&!UI.persp&&(SHARED.py-fy)/M<MH-.6&&!(u>su0-.15&&u<su1+.15&&v>sv0-.3&&v<sv1+.15); UPL.constant=under?fy+(MH-.36)*M:1e6; if(under!==R.loftHid){ R.loftHid=under; const A2=ROOMK.api; if(A2)for(const un of A2.units()){ if(un.gone)continue; const h=un.loose?A2.toApt(un.obj.position.x,un.obj.position.y,un.obj.position.z).h:un.obj.position.y; if(h>MH-.3)un.obj.visible=!under; } } };
     const hi=(u0,v0,u1,v1)=>APTS.solidHi(A.x0+u0/MPU,A.y0+v0/MPU,A.x0+u1/MPU,A.y0+v1/MPU), T=.08;
     hi(-.4,-.4,Lx+.4,0); hi(-.4,Ly,Lx+.4,Ly+.4); hi(-.4,0,0,Ly); hi(Lx,0,Lx+.4,Ly);                                       // the walls
     hi(mx-T,DK.v1,mx,GV); hi(su1,sv0,su1+T,GV); hi(su1,GV-T,mx,GV); hi(DK.u0,DK.v1,mx,DK.v1+T); hi(DK.u0-T,0,DK.u0,DK.v1+T);   // the rails

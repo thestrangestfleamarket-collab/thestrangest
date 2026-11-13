@@ -8,8 +8,8 @@ const {chromium}=require('playwright');
   await pg.waitForFunction(()=>window.PFROWDBG&&PFROWDBG().done,null,{timeout:120000}).catch(()=>{}); await pg.waitForTimeout(1500);
   const d=await pg.evaluate(()=>PFROWDBG());
   ok(d.done,'the Polyfork fronts came after the start: '+JSON.stringify(d));
-  const W=JSON.parse(require('fs').readFileSync('data/world.json','utf8')), hud=W.places.filter(p=>p.row===2&&p.kind==='front').map(p=>p.id), want=[...hud,'bodega','arcade'];   // the Hudson row's shops (one brick building kind, 8 Nov 2026) and the two corners at the Hudson entrance
-  ok(want.every(id=>d.fronts.includes(id)),'every Hudson row shop has its building, and the bodega and the arcade the corners at the Hudson entrance (8 Nov 2026: '+want.filter(id=>!d.fronts.includes(id)).join(', ')+' missing of '+d.fronts.join(', ')+')');
+  const W=JSON.parse(require('fs').readFileSync('data/world.json','utf8')), hud=W.places.filter(p=>p.row===2&&p.kind==='front'&&p.pf).map(p=>p.id), want=hud;   // the Hudson row's shops (one brick building kind, 8 Nov 2026); the Hudson entrance's corners are the old bodega and the lofts, the arcade its own front (12 Nov 2026)
+  ok(want.every(id=>d.fronts.includes(id)),'every Hudson row shop has its building (8 Nov 2026: '+want.filter(id=>!d.fronts.includes(id)).join(', ')+' missing of '+d.fronts.join(', ')+')');
   // nothing overlaps (owner, 8 Nov 2026: "make sure the buildings dont over lap"): the backdrop's blocks past the map's edge stand clear of every place on their row
   const ov=await pg.evaluate(L=>{ const bad=[]; for(const k of BLK.back||[])for(const p of L){ if(p.x0==null||p.y0==null||p.y1==null)continue; const ox=Math.min(k.x1,p.x1)-Math.max(k.x0,p.x0), oy=Math.min(k.y1,p.y1)-Math.max(k.y0,p.y0); if(ox>.2&&oy>.2)bad.push(p.id+' '+ox.toFixed(1)); } return {n:(BLK.back||[]).length,bad}; },require('../data/world.json').places);
   ok(ov.n>0&&!ov.bad.length,'the backdrop past the map\'s edge overlaps no building: '+JSON.stringify(ov));

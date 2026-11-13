@@ -21,7 +21,7 @@ import {RIVER} from './066-river.js';
     w_fireworks:{n:'FIREWORKS',k:'proj',cd:.7,sp:17,up:.15,g:.12,fuse:1.3,wob:1,smoke:.4,boom:{r:2.6,d:.1,md:2,kb:.5,fire:1,burst:1},snd:['whoosh',1.8,.5],hint:'A CLICK LAUNCHES A ROCKET THAT BURSTS IN COLOURS. LOW DOWN IT LIGHTS A FIRE.'},
     w_snowball:{n:'SNOWBALL LAUNCHER',k:'proj',cd:.35,sp:19,up:.12,g:1,hit:{d:.02,md:.4,kb:.5,splat:1},snd:['whoosh',2.2,.35],hint:'A CLICK LOBS A SNOWBALL.'},
     w_net:{n:'NET LAUNCHER',k:'proj',cd:1.2,sp:16,up:.1,g:.6,hit:{tr:'net',tt:4},snd:['whoosh',.9,.5],hint:'A CLICK FIRES A NET. WHO IT CATCHES CANNOT MOVE FOR A FEW SECONDS.'},
-    w_bubble:{n:'BUBBLE GUN',k:'proj',cd:.6,sp:4.5,up:0,g:-.03,drag:.25,life:6,hit:{tr:'bubble',tt:4},snd:['blip',.6,.4],hint:'A CLICK BLOWS A BIG BUBBLE. WHO IT TOUCHES IS HELD INSIDE IT FOR A FEW SECONDS.'},
+    w_bubble:{n:'BUBBLE GUN',k:'proj',cd:.6,sp:4.5,up:0,g:-.03,drag:.25,life:6,hit:{tr:'bubble',tt:4},snd:['blip',.6,.4],hint:'HOLD TO BLOW A BUBBLE: THE LONGER YOU HOLD, THE BIGGER IT GROWS. LET GO AND IT FLIES; WHO IT TOUCHES IS HELD INSIDE IT.'},
     w_mine:{n:'MINE',k:'mine',cd:1,boom:{r:3.6,d:.5,md:9,kb:2.4},hint:'A CLICK SETS A MINE ON THE GROUND IN FRONT OF YOU. IT GOES OFF WHEN SOMEONE STEPS ON IT.'},
     w_blower:{n:'LEAF BLOWER',k:'blow',rng:7,auto:1,hint:'HOLD THE MOUSE DOWN TO BLOW. IT PUSHES PEOPLE AND LOOSE THINGS AWAY.'},
     w_portal:{n:'PORTAL GUN',k:'portal',cd:.4,rng:40,hint:'A CLICK OPENS A PORTAL ON ANY SOLID GROUND, BLUE THEN ORANGE. STEP INTO ONE TO COME OUT OF THE OTHER. THEY LAST 30 SECONDS.'}};
@@ -36,7 +36,7 @@ import {RIVER} from './066-river.js';
   const ball=(r,m,y,z=0)=>{ const o=new THREE.Mesh(new THREE.SphereGeometry(r*M,12,9),m); o.position.set(0,y*M,z*M); return o; };
   const HELD=[], held=(g,id,tip)=>{ g.traverse(o=>{ o.userData.wield=1; o.castShadow=true; }); g.tipL=new V3(0,tip*M,0); g.head=g.tipL; g.arm=id; HELD.push(g); return g; };
   const MAKE={
-    w_revolver:()=>{ const g=new THREE.Group(), st=lam(0x34363c), wd=lam(0x6a4428); g.add(box(.035,.11,.05,wd,-.03,.02),cyl(.03,.03,.06,st,.06),cyl(.011,.011,.2,st,.17),box(.012,.03,.012,st,.25,-.012)); return held(g,'w_revolver',.28); },
+    w_revolver:()=>{ const g=new THREE.Group(), st=lam(0x34363c), wd=lam(0x6a4428); g.add(box(.034,.1,.048,wd,-.035,.022),box(.03,.07,.05,st,.04),cyl(.031,.031,.05,st,.05),cyl(.014,.014,.09,st,.12),box(.01,.014,.012,st,.158,-.018),box(.012,.03,.016,st,.005,-.03)); return held(g,'w_revolver',.17); },
     w_shotgun:()=>{ const g=new THREE.Group(), st=lam(0x2c2e33), wd=lam(0x7a4e2a); g.add(box(.05,.26,.06,wd,-.1,.02),box(.045,.1,.05,st,.06),cyl(.014,.014,.6,st,.38,0,-.012),cyl(.014,.014,.6,st,.38,0,.012),box(.04,.16,.045,wd,.22,.02)); return held(g,'w_shotgun',.69); },
     w_sniper:()=>{ const g=new THREE.Group(), st=lam(0x26282c), gr=lam(0x4a5038); g.add(box(.045,.3,.06,gr,-.12,.02),box(.04,.14,.05,st,.08),cyl(.011,.011,.78,st,.5),cyl(.022,.022,.2,st,.14,-.05),cyl(.026,.026,.02,glow(0x7fb0ff),.25,-.05),box(.008,.12,.008,st,.08,.05)); return held(g,'w_sniper',.9); },
     w_mgun:()=>{ const g=new THREE.Group(), st=lam(0x2a2c30), dk=lam(0x1a1c1e), ol=lam(0x4a5038); g.add(box(.05,.24,.06,ol,-.1,.02),box(.06,.18,.07,st,.08),cyl(.016,.016,.42,dk,.38),cyl(.03,.03,.3,st,.3),box(.03,.1,.12,dk,.08,-.08),box(.008,.06,.008,st,.17,.04)); return held(g,'w_mgun',.6); },
@@ -47,7 +47,7 @@ import {RIVER} from './066-river.js';
     w_fireworks:()=>{ const g=new THREE.Group(), rd=lam(0xc82a2a), bl=lam(0x2a5ac8), yl=lam(0xe8c040), wd=lam(0xa88a5a); g.add(cyl(.004,.004,.3,wd,-.05),cyl(.024,.024,.16,rd,.16,0,-.02),cyl(.024,.024,.16,bl,.16,0,.025),new THREE.Mesh(new THREE.ConeGeometry(.026*M,.05*M,10),yl)); g.children[3].position.set(-.02*M,.265*M,0); return held(g,'w_fireworks',.28); },
     w_snowball:()=>{ const g=new THREE.Group(), bl=lam(0x3a6ab0), wh=lam(0xf4f8ff), dk=lam(0x2a2e36); g.add(box(.035,.1,.05,dk,-.03,.02),cyl(.04,.04,.4,bl,.2),cyl(.05,.05,.03,dk,.41),ball(.036,wh,.43),cyl(.03,.03,.08,bl,.12,-.06),ball(.03,wh,.17,-.06)); return held(g,'w_snowball',.45); },
     w_net:()=>{ const g=new THREE.Group(), dk=lam(0x3a3e34), rope=lam(0xb8a878); g.add(box(.035,.1,.05,dk,-.03,.02),cyl(.05,.065,.36,dk,.18),cyl(.06,.06,.06,rope,.38),cyl(.003,.003,.08,rope,.43,.03),cyl(.003,.003,.08,rope,.43,-.03)); return held(g,'w_net',.42); },
-    w_bubble:()=>{ const g=new THREE.Group(), pk=lam(0xe87ab8), yl=lam(0xf4d040), bm=new THREE.MeshPhongMaterial({color:0xc8f0ff,transparent:true,opacity:.35,shininess:120}); g.add(box(.035,.1,.05,pk,-.03,.02),cyl(.03,.04,.22,pk,.12),cyl(.045,.045,.04,yl,.12,-.06),new THREE.Mesh(new THREE.TorusGeometry(.04*M,.006*M,6,16),yl),ball(.035,bm,.28)); g.children[3].position.y=.26*M; return held(g,'w_bubble',.28); },
+    w_bubble:()=>{ const g=new THREE.Group(), pk=lam(0xe87ab8), yl=lam(0xf4d040), bm=new THREE.MeshPhongMaterial({color:0xc8f0ff,transparent:true,opacity:.16,shininess:120,depthWrite:false}); g.add(box(.035,.1,.05,pk,-.03,.02),cyl(.03,.04,.22,pk,.12),cyl(.045,.045,.04,yl,.12,-.06),new THREE.Mesh(new THREE.TorusGeometry(.04*M,.006*M,6,16),yl),ball(.035,bm,.28)); g.children[3].position.y=.26*M; return held(g,'w_bubble',.28); },
     w_mine:()=>{ const g=new THREE.Group(), gr=lam(0x48503a), dk=lam(0x2a2c28), rd=glow(0xff2a1a); g.add(cyl(.09,.1,.04,gr,.05),cyl(.03,.03,.02,dk,.08),ball(.01,rd,.095)); g.children.forEach(c=>c.rotation.x=0); return held(g,'w_mine',.1); },
     w_blower:()=>{ const g=new THREE.Group(), or=lam(0xe0702a), dk=lam(0x2a2c30), gy=lam(0x8a8e94); g.add(box(.1,.14,.12,or,-.02,-.04),box(.03,.08,.04,dk,.04,.04),cyl(.035,.035,.55,gy,.3),cyl(.04,.035,.04,dk,.58)); return held(g,'w_blower',.6); },
     w_portal:()=>{ const g=new THREE.Group(), wh=lam(0xeef0f2), dk=lam(0x303238), core=new THREE.MeshBasicMaterial({color:0x3aa8ff}); g.add(box(.04,.1,.05,dk,-.03,.02),box(.06,.2,.08,wh,.12),cyl(.016,.03,.1,dk,.26),ball(.03,core,.33),box(.004,.12,.03,dk,.12,0,.032)); g.core=core; return held(g,'w_portal',.34); }};
@@ -133,9 +133,9 @@ import {RIVER} from './066-river.js';
       case 'w_net': return ()=>[new THREE.Mesh(new THREE.IcosahedronGeometry(.16*M,1),new THREE.MeshBasicMaterial({color:0xb8a878,wireframe:true}))];
       case 'w_bubble': return ()=>[new THREE.Mesh(new THREE.SphereGeometry(.32*M,18,14),bubMat)];
       default: return ()=>[ball(.05,lam(0x888888),0)]; } })()); for(const c of M0())g.add(c); g.traverse(o=>{ o.raycast=()=>{}; o.userData.arms=1; o.castShadow=true; }); g.userData.anyRoom=1; scene.add(LEVELS.own(g,'*')); return g; };
-  const bubMat=new THREE.MeshPhongMaterial({color:0xd8f4ff,specular:0xffffff,shininess:160,emissive:0x302848,transparent:true,opacity:.28,depthWrite:false,side:THREE.DoubleSide});
-  const launch=(id,tip,dir,who,mine)=>{ '@later'; const w=W[id], v=dir.clone(); v.y+=w.up||0; v.normalize().multiplyScalar(w.sp*M);
-    const P={id,w,who,mine,p:tip.clone(),v,t:0,lp:tip.clone(),rT:0,m:pmesh(id),sT:0,bn:0,sd:rnd()*9}; P.m.position.copy(P.p); A.P.push(P); hear(w.snd[0],w.snd[1],w.snd[2],tip.x,tip.z); return P; };
+  const bubMat=new THREE.MeshPhongMaterial({color:0xd8f4ff,specular:0xffffff,shininess:160,emissive:0x0c0a14,transparent:true,opacity:.1,depthWrite:false,side:THREE.DoubleSide});
+  const launch=(id,tip,dir,who,mine,k=1)=>{ '@later'; const w=W[id], v=dir.clone(); v.y+=w.up||0; v.normalize().multiplyScalar(w.sp*M/Math.sqrt(Math.max(.5,k)));
+    const P={id,w,who,mine,p:tip.clone(),v,t:0,lp:tip.clone(),rT:0,m:pmesh(id),sT:0,bn:0,sd:rnd()*9,k}; P.m.scale.setScalar(k); P.m.position.copy(P.p); A.P.push(P); hear(w.snd[0],w.snd[1],w.snd[2],tip.x,tip.z); return P; };
   const done=(P,i)=>{ P.m.removeFromParent(); P.m.traverse(o=>{ if(o.geometry)o.geometry.dispose(); }); A.P.splice(i,1); };
   const contact=(P,p,what,n,b)=>{ '@later'; const w=P.w;
     if(w.boom&&!(P.id==='w_grenade'&&!b&&P.t<w.fuse)&&!(P.id==='w_fireworks'&&!b&&what==='air')){ boom(P.id,p,P.mine,what); return true; }
@@ -144,7 +144,7 @@ import {RIVER} from './066-river.js';
       if(h.splat){ bits(p.x,p.y,p.z,18,[0xf4f8ff,0xdce8f4],2.4,.9,{bo:.1}); hear('thud',1.8,.4,p.x,p.z); }
       if(h.tr==='bubble'){ bits(p.x,p.y,p.z,10,[0xd8f4ff,0xf0d8ff],1.8,.4,{g:.2,bo:0}); hear('click',2.2,.4,p.x,p.z); }
       if(h.tr==='net')bits(p.x,p.y,p.z,6,[0xb8a878],1,.5);
-      if(b&&P.mine){ affect(b,P.id,{d:h.d||0,kb:h.kb||0,dn:0,tr:h.tr,tt:h.tt},{x:P.p.x-P.v.x*.05,z:P.p.z-P.v.z*.05}); mob(p.x,p.y,p.z,.4*T,h.md||0,h.kb||0); }
+      if(b&&P.mine){ affect(b,P.id,{d:h.d||0,kb:h.kb||0,dn:0,tr:h.tr,tt:h.tr==='bubble'?h.tt*Math.max(.4,Math.min(1.5,P.k)):h.tt},{x:P.p.x-P.v.x*.05,z:P.p.z-P.v.z*.05}); mob(p.x,p.y,p.z,.4*T,h.md||0,h.kb||0); }
       else if(P.mine&&h.md)mob(p.x,p.y,p.z,.4*T,h.md,h.kb||0); }
     return true; };
   const projTick=dt=>{ if(!A.P.length)return; const L=A.P.some(P=>P.mine)?bodies():null;
@@ -156,12 +156,12 @@ import {RIVER} from './066-river.js';
       P.p.addScaledVector(P.v,dt);
       if(w.smoke&&(P.sT-=dt)<=0){ P.sT=.035/w.smoke; FLAME.puff(p0.x,p0.y,p0.z,.5*w.smoke+.2,1); sparks(p0.x,p0.y,p0.z,P.id==='w_fireworks'?3:2,P.id==='w_fireworks'?0xffd070:0xffa040,1,.25); }
       let hit=false;
-      if(L){ for(const b of L){ if(b.id===P.who&&P.t<.35||b.id==='me'&&P.who==='me'&&P.t<.6)continue; if(near(b,P.p.x,P.p.y,P.p.z,P.id==='w_bubble'?.3*M:.08*M)){ hit=!contact(P,P.p,'body',null,b)?false:true; if(hit)break; } } }
+      if(L){ for(const b of L){ if(b.id===P.who&&P.t<.35||b.id==='me'&&P.who==='me'&&P.t<.6)continue; if(near(b,P.p.x,P.p.y,P.p.z,P.id==='w_bubble'?.3*M*P.k:.08*M)){ hit=!contact(P,P.p,'body',null,b)?false:true; if(hit)break; } } }
       if(!hit){ const g=gy(P.p.x,P.p.z); if(P.p.y<g){ const what=wl(P.p.x,P.p.z)!=null&&wl(P.p.x,P.p.z)>=SHARED.groundY(P.p.x,P.p.z)?'water':'ground'; P.p.y=g; hit=contact(P,P.p.clone(),what,UP,null); } }
       if(!hit&&(P.rT-=dt)<=0){ P.rT=.05; const d=new V3().subVectors(P.p,P.lp), l=d.length(); if(l>1e-4){ ray.set(P.lp,d.divideScalar(l)); ray.far=l; ray.camera=SHARED.cam; let h=null; try{ h=ray.intersectObjects(scene.children,true).find(h=>seen(h.object)&&!(h.distance<.3*M&&P.t<.15)); }catch(e){}
           const hb=h&&P.mine?bodyOf(h.object,L):null; if(hb)hit=contact(P,h.point.clone(),'body',null,hb); else if(h){ const n=h.face?h.face.normal.clone().transformDirection(h.object.matrixWorld):UP; hit=contact(P,h.point.clone().addScaledVector(n,.03*M),n.y>.7?'ground':'wall',n,null); } } P.lp.copy(P.p); }
       if(hit){ done(P,i); continue; }
-      P.m.position.copy(P.p); if(P.id==='w_rocket'||P.id==='w_fireworks'){ const v=P.v.clone().normalize(); P.m.quaternion.setFromUnitVectors(UP,v); } else if(P.id!=='w_bubble'){ P.m.rotation.x+=dt*9; P.m.rotation.z+=dt*5; } else { const s=1+Math.sin(P.t*6)*.04; P.m.scale.set(s,1/s,s); } } };
+      P.m.position.copy(P.p); if(P.id==='w_rocket'||P.id==='w_fireworks'){ const v=P.v.clone().normalize(); P.m.quaternion.setFromUnitVectors(UP,v); } else if(P.id!=='w_bubble'){ P.m.rotation.x+=dt*9; P.m.rotation.z+=dt*5; } else { const s=1+Math.sin(P.t*6)*.04; P.m.scale.set(s*P.k,P.k/s,s*P.k); } } };
 
   /* ---------- a blast: a fireball, a shock ring, smoke and dirt; it hurts and throws whoever is near (by how near), monsters and loose things; the molotov and fireworks light fire ---------- */
   const COLS=[0xff4a4a,0x4aff6a,0x4a8aff,0xffe04a,0xff4aff,0x4affff,0xffffff];
@@ -207,7 +207,7 @@ import {RIVER} from './066-river.js';
       for(const b of L){ const d=Math.hypot(b.x-q.x,b.z-q.z), dy=Math.abs(b.y-q.y); if(b.id==='me'&&!q.clear){ if(d>1.2*M)q.clear=true; continue; } if(d<.6*M&&dy<1*M){ dropMine(q); boom('w_mine',new V3(q.x,q.y+.1*M,q.z),true,'ground'); if(ONLINE.on)ONLINE.send({t:'arm',k:'boom',w:'w_mine',i:q.i,p:[+q.x.toFixed(2),+q.y.toFixed(2),+q.z.toFixed(2)]}); break; } } } };
 
   /* ---------- the portals: blue then orange on any solid ground; anyone who steps in one comes out of the other, if both are where they are ---------- */
-  const PCOL=[0x3aa8ff,0xff8a20], PR=.93, PH=4, PLIFE=30, poG=new THREE.CircleGeometry(PR,40).rotateX(-Math.PI/2), prG=new THREE.TorusGeometry(PR,.08,6,40).rotateX(Math.PI/2), poT={value:0};
+  const PCOL=[0x3aa8ff,0xff8a20], PR=.465, PH=2, PLIFE=30, poG=new THREE.CircleGeometry(PR,40).rotateX(-Math.PI/2), prG=new THREE.TorusGeometry(PR,.04,6,40).rotateX(Math.PI/2), poT={value:0};
   // the hole: the view ray is followed down a well of depth PH under the disc, so the ground looks open; with uOn, the picture seen out of the other portal (uV) fills it instead
   const poVS='varying vec3 vL; varying vec3 vD; varying vec4 vS; void main(){ vL=position; vec4 w=modelMatrix*vec4(position,1.); vD=w.xyz-cameraPosition; gl_Position=projectionMatrix*viewMatrix*w; vS=gl_Position; }';
   const poFS=`uniform vec3 uC; uniform float uT; uniform float uOn; uniform sampler2D uV; varying vec3 vL; varying vec3 vD; varying vec4 vS; const float R=${PR.toFixed(2)}, H=${PH.toFixed(2)};
@@ -224,14 +224,14 @@ import {RIVER} from './066-river.js';
   const portalSet=(who,c,x,y,z,pl)=>{ let pr=A.portals.get(who); if(!pr)A.portals.set(who,pr=[null,null]); if(pr[c])poDrop(pr[c]); pl=typeof pl==='string'?pl.slice(0,80):here(); pr[c]={x,y,z,pl,m:poMesh(c,pl.split('|')[1]||'*'),t:0}; pr[c].m.position.set(x,y+.03*M,z); sparks(x,y+.2*M,z,24,PCOL[c],3,.5); hear('laser',.5,.5,x,z); };
   const portalShot=(S)=>{ '@later'; const h=trace(S.tip,S.dir,W.w_portal.rng*M); tracer(S.tip,h.p,PCOL[A.pc],.02,.15);
     if(!(h.what==='ground'||h.what==='wall'&&h.n&&h.n.y>.7)){ say('A PORTAL ONLY OPENS ON SOLID GROUND.','#c8a090'); return; }
-    const c=A.pc, pl=here(); A.pc^=1; portalSet('me',c,h.p.x,h.p.y,h.p.z,pl); if(ONLINE.on)ONLINE.send({t:'arm',k:'portal',c,pl,p:[+h.p.x.toFixed(2),+h.p.y.toFixed(2),+h.p.z.toFixed(2)]}); };
+    const g=SHARED.groundY&&SHARED.groundY(h.p.x,h.p.z); if(isFinite(g)&&g<h.p.y+.3*M)h.p.y=g; const c=A.pc, pl=here(); A.pc^=1; portalSet('me',c,h.p.x,h.p.y,h.p.z,pl); if(ONLINE.on)ONLINE.send({t:'arm',k:'portal',c,pl,p:[+h.p.x.toFixed(2),+h.p.y.toFixed(2),+h.p.z.toFixed(2)]}); };
   const portalTick=dt=>{ if(!A.portals.size)return; let inAny=false; poT.value=now()/1000%1000;
     for(const [who,pr] of A.portals){ if(who!=='me'&&!ONLINE.others.has(who)){ for(const p of pr)if(p)poDrop(p); A.portals.delete(who); continue; }
       for(let c=0;c<2;c++){ const p=pr[c]; if(!p)continue; p.t+=dt; if(p.t>PLIFE){ poDrop(p); pr[c]=null; sparks(p.x,p.y+.2*M,p.z,20,PCOL[c],2,.4); continue; }
-        p.m.scale.setScalar(M*Math.min(1,p.t/.25,(PLIFE-p.t)/.6)); p.m.children[1].rotation.y+=dt*2; if(rnd()<dt*14)SP.add(p.x+(rnd()-.5)*1.5*M,p.y+.05*M,p.z+(rnd()-.5)*1.5*M,0,(1+rnd())*M,0,PCOL[c],.6,{g:0,dr:0}); }
+        p.m.scale.setScalar(M*Math.min(1,p.t/.25,(PLIFE-p.t)/.6)); p.m.children[1].rotation.y+=dt*2; if(rnd()<dt*14)SP.add(p.x+(rnd()-.5)*PR*1.6*M,p.y+.05*M,p.z+(rnd()-.5)*PR*1.6*M,0,(1+rnd())*M,0,PCOL[c],.6,{g:0,dr:0}); }
       if(!pr[0]&&!pr[1]){ A.portals.delete(who); continue; }
       if(!pr[0]||!pr[1]||pr[0].pl!==pr[1].pl||pr[0].pl!==here()||VIT.dead||RAG.on)continue;
-      for(let c=0;c<2;c++){ const a=pr[c], b=pr[1-c], d=Math.hypot(pos.x-a.x,pos.z-a.z); if(d<1.5*M&&Math.abs(SHARED.py-a.y)<1.2*M)inAny=true;
+      for(let c=0;c<2;c++){ const a=pr[c], b=pr[1-c], d=Math.hypot(pos.x-a.x,pos.z-a.z); if(d<PR*1.6*M&&Math.abs(SHARED.py-a.y)<1.2*M)inAny=true;
         if(d<PR*.8*M&&Math.abs(SHARED.py-a.y)<1.2*M&&!A.inP){ A.inP=true; sparks(a.x,a.y+M,a.z,30,PCOL[c],3,.5); UI.goTo(b.x,b.z,b.y); sparks(b.x,b.y+M,b.z,30,PCOL[1-c],3,.5); hear('whoosh',1.4,.6); return; } } }
     if(!inAny)A.inP=false; };
   // what a portal shows: the scene from under its partner looking up (the way you come out), cut at the partner's ground; small, and only for a pair in your place, near and on screen
@@ -271,7 +271,7 @@ import {RIVER} from './066-river.js';
   const v3=a=>Array.isArray(a)?new V3(+a[0]||0,+a[1]||0,+a[2]||0):null;
   const armHeard=m=>{ const w=W[m.w], p=v3(m.p);
     if(m.k==='shot'&&w&&p&&Array.isArray(m.e)){ const ends=m.e.map(v3).filter(Boolean); const d=ends[0]?ends[0].clone().sub(p).normalize():new V3(0,0,1); for(const e of ends)impact(e,'wall',w.beam?0xff5040:0); flare(m.w,p,d,ends); return; }
-    if(m.k==='proj'&&w&&p&&Array.isArray(m.v)){ const d=v3(m.v); if(d.lengthSq()<1e-4)return; launch(m.w,p,d.normalize(),m.id,false); return; }
+    if(m.k==='proj'&&w&&p&&Array.isArray(m.v)){ const d=v3(m.v); if(d.lengthSq()<1e-4)return; launch(m.w,p,d.normalize(),m.id,false,m.w==='w_bubble'?Math.max(.2,Math.min(2,+m.s||1)):1); return; }
     if(m.k==='mine'&&p){ const q={i:+m.i,who:m.id,x:p.x,y:p.y,z:p.z,t:0,m:mineMesh()}; q.m.position.set(p.x,p.y-.03*M,p.z); A.mines.push(q); return; }
     if(m.k==='boom'&&p){ const q=A.mines.find(q=>q.who===m.id&&q.i===+m.i); if(q)dropMine(q); boom('w_mine',p,false,'ground'); return; }
     if(m.k==='trap'&&m.to&&m.to!==ONLINE.me){ trap(m.to,m.s==='bubble'?'bubble':'net',Math.max(0,Math.min(6,+m.d||0))); return; }
@@ -286,6 +286,7 @@ import {RIVER} from './066-river.js';
     aimAt(S,(w.rng||30)*M);
     if(w.k==='gun'){ shoot(id,S,true); A.last={id,tip:S.tip.toArray(),dir:S.dir.toArray()}; return; }
     if(w.k==='portal'){ portalShot(S); return; }
+    if(id==='w_bubble'){ if(!A.bub){ A.bub={m:pmesh(id),k:.2,t0:now()}; A.bub.m.scale.setScalar(.2); A.bub.m.position.copy(S.tip); } return; }   // blown while you hold, let go in the tick below
     if(w.k==='proj'){ launch(id,S.tip,S.dir,'me',true); A.last={id,tip:S.tip.toArray(),dir:S.dir.toArray()}; if(ONLINE.on){ const r=v=>Math.round(v*1000)/1000; ONLINE.send({t:'arm',k:'proj',w:id,p:S.tip.toArray().map(v=>Math.round(v*100)/100),v:[r(S.dir.x),r(S.dir.y),r(S.dir.z)]}); } } };
   A.fire=fire;
   const pilots=new Map();
@@ -293,8 +294,12 @@ import {RIVER} from './066-river.js';
     if(A.hold&&WIELD.on&&W[WIELD.on]&&W[WIELD.on].auto&&W[WIELD.on].k==='gun')fire(WIELD.on);
     for(const g of HELD){ if(g.arm==='w_portal'&&g.core)g.core.color.setHex(PCOL[A.pc]); if(g.arm!=='w_molotov')continue; let s=pilots.get(g); const on=g.visible&&!!g.parent;
       if(on&&!s){ s=FLAME.add({kind:'candle',name:'molotov rag',x:0,y:0,z:0,w:.03*M,h:.07*M}); pilots.set(g,s); } if(s){ s.on=on; if(on){ const p=g.tipL.clone().applyMatrix4(g.matrix); s.x=p.x; s.y=p.y; s.z=p.z; s.a.position.copy(p); } } }
+    if(A.bub){ const B=A.bub, g=WIELD.held&&WIELD.held(), S={tip:new V3(),dir:new V3()}, ok=WIELD.on==='w_bubble'&&g&&tipOf(g,S);
+      if(ok&&A.hold&&!blocked()){ B.k=Math.min(2,.2+(now()-B.t0)/1000*.7); aimAt(S,30*M); B.m.scale.setScalar(B.k*(1+Math.sin(now()/90)*.03)); B.m.position.copy(S.tip).addScaledVector(S.dir,.32*M*B.k); A.cd.w_bubble=now()/1000+W.w_bubble.cd; }
+      else { B.m.removeFromParent(); B.m.traverse(o=>{ if(o.geometry)o.geometry.dispose(); }); A.bub=null; if(ok){ aimAt(S,30*M); const tip=S.tip.clone().addScaledVector(S.dir,.32*M*B.k), k=+B.k.toFixed(2); launch('w_bubble',tip,S.dir,'me',true,k); A.last={id:'w_bubble',tip:tip.toArray(),dir:S.dir.toArray()};
+          if(ONLINE.on){ const r=v=>Math.round(v*1000)/1000; ONLINE.send({t:'arm',k:'proj',w:'w_bubble',s:k,p:tip.toArray().map(v=>Math.round(v*100)/100),v:[r(S.dir.x),r(S.dir.y),r(S.dir.z)]}); } } } }
     const busy=A.P.length||A.mines.length||A.traps.size||A.blows.size||WIELD.on==='w_blower';
     const L=busy&&(A.P.some(P=>P.mine)||A.mines.some(q=>q.who==='me')||A.traps.size||A.blows.has('me')||WIELD.on==='w_blower')?bodies():null;
     projTick(dt); mineTick(dt,L); trapTick(dt,L?new Map(L.map(b=>[b.id,b])):A.traps.size?new Map(bodies().map(b=>[b.id,b])):null); blowTick(dt,L); portalTick(dt);
     SP.tick(dt); BT.tick(dt); fbTick(dt); },'146hc-arms');
-  window.ARMSDBG=()=>({on:WIELD.on,W:IDS,owned:IDS.filter(id=>INV.items[id]),P:A.P.map(P=>({id:P.id,t:+P.t.toFixed(2),p:P.p.toArray().map(v=>+v.toFixed(2))})),mines:A.mines.map(q=>({who:q.who,t:+q.t.toFixed(1)})),portals:[...A.portals].map(([w,pr])=>[w,pr.map(p=>p&&[+p.x.toFixed(2),+p.y.toFixed(2),+p.z.toFixed(2)])]),traps:[...A.traps].map(([id,X])=>[id,X.kind,+X.t.toFixed(1)]),stuck:SHARED.stuck,sparks:SP.L.length,bits:BT.L.length,blows:[...A.blows.keys()],last:A.last,M}); }
+  window.ARMSDBG=()=>({on:WIELD.on,W:IDS,owned:IDS.filter(id=>INV.items[id]),bub:A.bub?+A.bub.k.toFixed(2):0,P:A.P.map(P=>({id:P.id,k:P.k,t:+P.t.toFixed(2),p:P.p.toArray().map(v=>+v.toFixed(2))})),mines:A.mines.map(q=>({who:q.who,t:+q.t.toFixed(1)})),portals:[...A.portals].map(([w,pr])=>[w,pr.map(p=>p&&[+p.x.toFixed(2),+p.y.toFixed(2),+p.z.toFixed(2)])]),traps:[...A.traps].map(([id,X])=>[id,X.kind,+X.t.toFixed(1)]),stuck:SHARED.stuck,sparks:SP.L.length,bits:BT.L.length,blows:[...A.blows.keys()],last:A.last,M}); }

@@ -49,7 +49,7 @@ const SHOTS = process.env.SHOTS;
     // the field telescope outdoors
     const f = await pg.evaluate(async () => { const have = INV.items.fscope, was = SCOPE.site.ap; await FIELD.toggle(); await new Promise(r => setTimeout(r, 1500));
       return { have, was, open: SCOPE.isOpen(), site: SCOPE.site, on: FIELD.on, sky: SCOPE.data.sky.filter(t => t.m).length, pics: SCOPE.data.sky.filter(t => t.m && t.file).length, dbl: SCOPE.data.doubles.length, moon: SCOPE.data.moon.length, mags: [...document.querySelectorAll('#scopev [data-m]')].map(b => +b.dataset.m) }; });
-    ok(f.have === 1 && f.on && f.open && f.site.field && f.site.ap === 60 && f.was === 80 && !f.mags.includes(200) && f.mags.includes(100), 'the field telescope from the pack stands under the open sky and opens the eyepiece (60 mm, 100X at most)');
+    ok(f.have === 1 && f.on && f.open && f.site.field && f.site.ap === 60 && f.was === 80 && !f.mags.includes(5000) && f.mags.includes(2000), 'the field telescope from the pack stands under the open sky and opens the eyepiece (60 mm, its zoom to 2500X)');
     ok(f.sky === 110 && f.dbl >= 15 && f.moon >= 15, `the eyepiece knows all 110 Messier objects (${f.pics} with photographs), ${f.dbl} double stars, ${f.moon} places on the Moon`);
     const dz = await pg.evaluate(async () => { SCOPE.site.dark = 1.2; SCOPE.mag = 50; SCOPE.focus = .18; const L = SCOPE.data.sky.filter(t => t.m && !t.file && t.mag < 8.5).map(t => ({ t, h: SCOPE.altOf(t.id) })).filter(x => x.h.alt > 35).sort((a, b) => a.t.mag - b.t.mag), T = L[0].t;
       SCOPE.goTo(T.id); for (let k = 0; k < 120 && SCOPE.goto; k++) await new Promise(r => setTimeout(r, 250)); for (let k = 0; k < 30 && !ASTRO.dbg().seen[T.id]; k++) await new Promise(r => setTimeout(r, 300));

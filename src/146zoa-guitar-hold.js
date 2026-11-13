@@ -69,6 +69,7 @@ const GHOLD={};
       out[1].copy(T); strum=T; }
     return strum; };
 
+  GHOLD.tips=(sc,t,L,R)=>{ left(sc,t,L,{f:0}); return right(sc,t,R); };   // (where a score puts the fingertips at t, on the guitar: for a player without a person's hands, 146zoc)
   /* ---------- the body's bones as frames in its mesh's space; turning them; two-bone reach ---------- */
   const QA=new Q4(), VA=new V3(), VB=new V3(), VC=new V3(), VD=new V3(), MA=new M4(), MB=new M4(), MC=new M4();
   const org=(m,o)=>o.setFromMatrixPosition(m);

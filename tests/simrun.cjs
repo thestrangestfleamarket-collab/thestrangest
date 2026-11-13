@@ -45,7 +45,7 @@ const MIN=+(process.argv[2]||3), OUT=process.argv[3], TRIS=+(process.env.SIM_TRI
     seen[name]=(seen[name]||0)+1;
     await pg.mouse.dblclick(480+(i%3-1)*120,420); await pg.waitForTimeout(1500); await sample(name+' (walking)');
     await pg.keyboard.down('Shift'); await pg.keyboard.down('w'); await pg.waitForTimeout(1500); await sample(name+' (running)'); await pg.keyboard.up('w'); await pg.keyboard.up('Shift'); await pg.waitForTimeout(400);
-    if(i===2){ await pg.keyboard.press('Escape'); await pg.waitForTimeout(300); await pg.click('[data-t="display"]'); await pg.waitForTimeout(300); await sample(name+' (menu)'); await pg.keyboard.press('Escape'); await pg.evaluate(()=>{ __dbg.SNDED.open(); }); await pg.waitForTimeout(300); await sample(name+' (sound editor)'); await pg.evaluate(()=>__dbg.SNDED.close()); }
+    if(i===2){ await pg.evaluate(()=>__dbg.ui().menuTab('set')); await pg.waitForTimeout(300); await pg.click('[data-t="display"]'); await pg.waitForTimeout(300); await sample(name+' (menu)'); await pg.keyboard.press('Escape'); await pg.evaluate(()=>{ __dbg.SNDED.open(); }); await pg.waitForTimeout(300); await sample(name+' (sound editor)'); await pg.evaluate(()=>__dbg.SNDED.close()); }
     if(i===3){ const th=await pg.evaluate(()=>{ const t=__dbg.UI.things.find(t=>t.npc&&t.obj.visible); if(!t)return null; t.act(); return __dbg.LINES.say(t.npc,'greet'); }); if(th)S.sounds++; }
     if(Date.now()-lastAudit>20000){ lastAudit=Date.now(); await audit(name); } }
   // ---- DAYS AT THE FASTEST: the clock wraps, the weather runs over days

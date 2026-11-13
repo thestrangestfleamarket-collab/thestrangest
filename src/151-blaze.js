@@ -42,6 +42,7 @@ import {FOUNT} from './060a-fount.js';
   BLAZE.land=p=>{ if(burnable(p.x,p.z)&&rnd()<.6)start(p.x,p.z); };
   const norm=s=>String(s||'').toLowerCase().replace(/\s+/g,'_'), burns=BLAZE.burns=id=>!!(ITEMS&&ITEMS.prop&&ITEMS.prop(norm(id),'burnable'));
   const end=f=>{ f.out=true; f.s.on=false; f.s.free=true; f.m.t=0; f.m.a0=Math.max(.6,f.m.a); for(let k=0;k<4;k++)FLAME.puff(f.x+(rnd()-.5)*.4*T,f.y+.2*T,f.z+(rnd()-.5)*.4*T,1.3,f.wet>=WET?6:5); };
+  BLAZE.douse=(x,z,r)=>{ let n=0; for(const f of F)if(Math.hypot(f.x-x,f.z-z)<r&&f.wet<WET){ f.wet=WET; n++; } return n; };
   let fixT=0;
   const fireTick=dt=>{ fixT-=dt; const fx=fixT<=0; if(fx)fixT=2;
     for(let i=F.length-1;i>=0;i--){ const f=F[i]; f.age+=dt;

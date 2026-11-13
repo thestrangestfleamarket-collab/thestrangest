@@ -2322,11 +2322,14 @@
  "junkman": {
   "name": "THE JUNK DEALER",
   "trade": {
-   "sells": [],
-   "buys": [
-    "pawn"
+   "sells": [
+    "tv_small",
+    "phone_home",
+    "modem",
+    "binoc",
+    "shades"
    ],
-   "line": "Anything with a value, I'll take it. Half now. Someone pays full later."
+   "line": "It all works. Some of it on purpose."
   },
   "talk": {
    "start": "hi",
@@ -2895,7 +2898,9 @@
     "f_bec",
     "f_hero",
     "f_chopped",
-    "d_coffee"
+    "d_coffee",
+    "pack_large",
+    "pack_deluxe"
    ],
    "line": "Bacon egg and cheese, salt pepper ketchup. That's the law."
   }

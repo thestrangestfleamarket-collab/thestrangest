@@ -32,7 +32,7 @@ const FISHES={list:[],ready:false}; window.FISHES=FISHES;
       const g=geoOf(id,d), mat=swimMat(map,!d.t), im=new THREE.InstancedMesh(g,mat,CAP); im.instanceMatrix.setUsage(THREE.DynamicDrawUsage); im.count=0; im.frustumCulled=false;
       const sw=new THREE.InstancedBufferAttribute(new Float32Array(CAP*3),3); sw.setUsage(THREE.DynamicDrawUsage); g.setAttribute('aSw',sw); scene.add(im);
       M[id]={g,im,sw,map,vc:!d.t}; };
-    for(const id in real)add(id,real[id],true); packIds=Object.keys(pack); for(const id of packIds)if(!M[id])add(id,pack[id],false);
+    for(const id in real)add(id,real[id].of?{...real[real[id].of],...real[id]}:real[id],true); packIds=Object.keys(pack); for(const id of packIds)if(!M[id])add(id,pack[id],false);
     FISHES.ready=true; FISHES.ids=Object.keys(M); }));
   // a single fish to hold (the hooked one, the one in the inspect window): the species' own shape and picture, still
   FISHES.model=(id,kg=1)=>{ const m=M[id]; if(!m)return null; let mt=mats[id]; if(!mt){ mt=mats[id]=new THREE.MeshLambertMaterial({map:m.map,vertexColors:m.vc,side:THREE.DoubleSide}); }

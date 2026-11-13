@@ -14,14 +14,14 @@ const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process
     const { at, Lx } = await pg.evaluate(() => BEDROOMDBG());
     const me = at.find(a => a[0] === 'BOOKSHELF');
     ok(!!me, 'a fresh apartment has its bookshelf (' + JSON.stringify(me) + ')');
-    const hit = me ? at.filter(a => a !== me && a[0] !== 'ROUND RUG' && a[1] < me[2] && a[2] > me[1] && a[3] < me[4] && a[4] > me[3]).map(a => a[0]) : ['?'];
+    const hit = me ? await pg.evaluate(() => ROOMED.clips().map(c => c[0].kind + '/' + c[1].kind)) : ['?'];   // (it stands on the loft's upper floor: clear of what shares its floor)
     ok(!hit.length && me[1] > 0 && me[2] <= Lx + .01, 'it stands clear of the other pieces and inside the walls (' + hit + ')');
-    ok(d && d.live >= 1 && d.ids >= 40 && d.genres.length === d.all && d.all >= 10, 'its books are the bookstore\'s, a few from every genre (' + JSON.stringify(d && { n: d.ids, g: d.genres.length, all: d.all }) + ')');
+    ok(d && d.live >= 1 && d.ids >= 100 && d.genres.length === 1 && /MOST READ/.test(d.genres[0]), 'its books are the bookstore\'s MOST READ, a hundred and more (owner, 12 Nov 2026) (' + JSON.stringify(d && { n: d.ids, g: d.genres.length, all: d.all }) + ')');
     const op = await pg.evaluate(async () => { const t = __dbg.UI.things.find(t => /^BOOKSHELF/.test(t.name)); if (!t) return null; t.act(); for (let i = 0; i < 20 && document.getElementById('libp').hidden; i++) await new Promise(r => setTimeout(r, 250));
       const P = document.getElementById('libp'); return { name: t.name, open: !P.hidden, head: P.querySelector('b') && P.querySelector('b').textContent, tabs: [...P.querySelectorAll('[data-t]')].map(x => x.dataset.t), n: P.querySelectorAll('.bk').length }; });
-    ok(op && op.open && /BOOKSHELF/.test(op.head) && op.n === d.ids && op.tabs.length >= d.all + 2, 'double-clicking it opens the browser of its books by genre (' + JSON.stringify(op) + ')');
-    const g = await pg.evaluate(async () => { const P = document.getElementById('libp'), T = [...P.querySelectorAll('[data-t]')][3]; T.click(); await new Promise(r => setTimeout(r, 100)); return { tab: T.dataset.t, n: P.querySelectorAll('.bk').length }; });
-    ok(g.n > 0 && g.n < d.ids, 'a genre shows only its own (' + JSON.stringify(g) + ')');
+    ok(op && op.open && /BOOKSHELF/.test(op.head) && op.n === d.ids && op.tabs.length >= 3, 'double-clicking it opens the browser of its books (' + JSON.stringify(op) + ')');
+    const g = await pg.evaluate(async () => { const P = document.getElementById('libp'), T = [...P.querySelectorAll('[data-t]')][2]; T.click(); await new Promise(r => setTimeout(r, 100)); return { tab: T.dataset.t, n: P.querySelectorAll('.bk').length }; });
+    ok(g.n > 0 && g.n <= d.ids, 'its shelf tab shows its books (' + JSON.stringify(g) + ')');
     const tk = await pg.evaluate(async () => { const P = document.getElementById('libp'); P.querySelector('.bk').click(); await new Promise(r => setTimeout(r, 100)); const id = P.querySelector('[data-a=take]').dataset.b; P.querySelector('[data-a=take]').click(); await new Promise(r => setTimeout(r, 100));
       const a = { id, off: BOOKCASEDBG().off, pack: __dbg.FORAGE ? __dbg.FORAGE.has('hb_' + id) : window.FORAGE && FORAGE.has('hb_' + id), put: !!P.querySelector('[data-a=put]') }; return a; });
     ok(tk.off.includes(tk.id) && tk.put, 'a book comes off the shelf (' + JSON.stringify(tk) + ')');

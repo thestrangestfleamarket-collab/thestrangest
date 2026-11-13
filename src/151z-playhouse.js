@@ -34,7 +34,7 @@ await grab('playhouse',async()=>{ if(AWAY.has('playhouse'))return; const MS=STOR
   const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>{ if(K&&x>OX+B.x0*MH&&x<OX+B.x1*MH&&z>OZ+B.z0*MH&&z<OZ+B.z1*MH){ const y=K.groundAt(lx(x),lz(z)); return (y==null?0:y)*MV; } return sg0?sg0(x,z):null; };
   const door=at(m,L.y1+.25), out=at(m,L.y1+.9);
   ROOMS.off.playhouse={name:'THE PLAYHOUSE',box:{x0:OX+B.x0*MH,z0:OZ+B.z0*MH,x1:OX+B.x1*MH,z1:OZ+B.z1*MH,y0:-3*MV,y1:(PD.TOP+3)*MV},noCeil:true,clearAir:true,sky:true,need:()=>LOAD('playhouse'),build,unbuild,
-    spawn:[...(p=>[p[0],p[2]])(W(0,0,GZ)),0,PI],out:[...out,0,TP.hd(0)],door:[door[0],0,door[1]],exit:W(0,PD.G1,PD.A1),exitName:'OUT TO THE STREET'};
+    spawn:[...(p=>[p[0],p[2]])(W(0,0,GZ)),0,PI],out:[...out,0,TP.hd(0)],door:[door[0],0,door[1]],exit:W(0,PD.G1,PD.A1),exitName:'OUT TO THE STREET',ownDoor:1};
   STORE.places.push(['THE PLAYHOUSE',...(p=>[p[0],p[2]])(W(0,0,GZ)),'up','off',PI]);
   ROOMS.reset&&ROOMS.reset();
   // each frame while you are inside: the parts' own work; the lanterns lit after dark (the yard is open to the sky, so the day comes in as it is)

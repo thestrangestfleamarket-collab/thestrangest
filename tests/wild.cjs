@@ -19,6 +19,8 @@ const {chromium}=require('playwright');
     for(let t=0;t<12;t++){ WILD.ff(1); if(WILDDBG().seen[k])return true; await new Promise(r=>setTimeout(r,1000)); } return JSON.stringify(WILDDBG()); });
   ok(watched===true,'watching a creature logs it in the journal ('+watched+')');
   const trees=await E(()=>((window.PARK&&PARK.trees)||[]).length); const sq=await E(()=>SQDBG2()); ok(sq.built&&sq.n===6&&sq.shown||!trees,'six grey squirrels about the park trees by day: '+JSON.stringify(sq));
+  const fa=await E(async()=>{ try{ await Promise.all(['Bear','Cow','Bee','Horse'].map(k=>CREATS.fauna(k))); const o={}; for(const [k,c] of [['Bear','Bear_Walk'],['Cow','Cow_Sleep'],['Bee','Bee_Fly'],['Horse','Horse_Graze']]){ const N=CREATNEW(k,'t_'+k,1); N.clip=c; N.anim&&N.anim(.1); o[k]=!!(N&&N.body); VIS.hide(N.g,'away',true); } return o; }catch(e){ return String(e&&e.stack||e).slice(0,300); } });
+  ok(fa&&fa.Bear&&fa.Cow&&fa.Bee&&fa.Horse,"an animal's body comes from its pet file, with the clips a pet has not (a bear, a sleeping cow, a bee, a grazing horse): "+JSON.stringify(fa));
   await E(()=>{ DN.set('night'); });
   const ff=await E(async()=>{ for(let t=0;t<30&&!(FFLYDBG().built&&FFLYDBG().shown);t++)await new Promise(r=>setTimeout(r,500)); const o={d:FFLYDBG()}; FORAGE.S.sk.ento=1000; FORAGE.give('jar_s',1);
     const th=__dbg.UI.things.find(t=>t.name==='FIREFLIES'); STORE.goTo(th.obj.position.x+T0(),th.obj.position.z,'up'); await new Promise(r=>setTimeout(r,2500)); th.act(); o.jar=FORAGE.has('jar_fly'); o.seen=WILD.seen('firefly');

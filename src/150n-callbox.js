@@ -1,10 +1,10 @@
-// THE FRONT DOOR AND THE CALLBOX: your flat's front door goes straight out to the street (no hall, stairs or lift; owner, 10 Nov 2026); your mailbox and the notice board hang by it; the callbox beside the house's street door lists who lives there, rings one, and their buzzer lets you in or not.
+// THE FRONT DOOR AND THE CALLBOX: your flat's front door goes straight out to the street (no hall, stairs or lift; owner, 10 Nov 2026); the callbox beside the house's street door lists who lives there, rings one, and their buzzer lets you in or not.
 import {SHARED, THREE} from './003-shx.js';
 import {INV, ONLINE, SFX, UI} from './003b-systems.js';
 import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
-import {MODS, STORE, SYS, TILE} from './006-map-pre.js';
+import {MODS, SYS, TILE} from './006-map-pre.js';
 import {ROOMK} from './150a-bedroom.js';
 { const APTS=MODS.apts, H={built:false}, CALL={ring:null,ask:null,sent:[]}; window.CALLBOX=CALL;
   const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])), say=(t,c)=>SAY(t,c||'#f2c14e');
@@ -13,7 +13,6 @@ import {ROOMK} from './150a-bedroom.js';
     const hitAt=(u,h,v,w,hh,d,name,act)=>{ const hb=new THREE.Mesh(new THREE.BoxGeometry(w*M,hh*M,d*M),new THREE.MeshBasicMaterial({visible:false})); hb.position.copy(W(u,h,v)); scene.add(hb); UI.thing({name,ghost:1,obj:hb,reach:1.6*M,near:2.8*M,tall:hh*M,act}); };
     if(APTS.frontDoor)APTS.frontDoor.set(false);
     hitAt(du,1.15,Ly-.2,1.2,2.3,.8,'FRONT DOOR',()=>{ if(!APTS.inReal)return; SFX.play('latch',{at:W(du,1.1,Ly),vol:.8}); APTS.exitReal('OUT TO THE STREET'); });
-    if(STORE.furnish&&STORE.furnish.hall)STORE.furnish.hall({box,hitAt,mat,v1:Ly,EW:du-2.8,us:2*3.4-1.6-(du-2.8),...(du<3.9?{nc:du-1.6,ny:.85}:{})});   // the mailboxes left of the door, the notice board beside them (over them in a narrow room)
     H.built=true; });
 
   /* ---------- the callbox on the street ---------- */
@@ -47,11 +46,11 @@ import {ROOMK} from './150a-bedroom.js';
     else done(op==='gone'?'NOBODY HOME.':R.name.toUpperCase()+': NOT NOW.'); };
   /* ---------- another house's door: its flat, and moving in (owner, 11 Nov 2026: "start small, buy up") ---------- */
   const money=n=>'\u0024'+Math.round(n).toLocaleString('en-US');
-  APTS.moveCost=i=>{ const S=APTS.flatState()||{tier:APTS.tier||0,top:APTS.tier||0}; return i<=Math.max(S.top,S.tier)?0:APTS.TIERS[i].price; };   // a size you have paid for once is yours to move back to
-  APTS.moveTo=i=>{ const T=APTS.TIERS[i]; if(!T||i===(APTS.tier||0))return 'here'; if(T.soon)return 'soon'; const p=APTS.moveCost(i), S=APTS.flatState()||{tier:APTS.tier||0,top:APTS.tier||0}; if((INV.cash||0)<p){ say('NOT ENOUGH MONEY: '+money(p),'#c8a090'); return 'poor'; }
-    INV.cash=(INV.cash||0)-p; if(INV.save)INV.save(); OWNED.set('flat',JSON.stringify({tier:i,top:Math.max(S.top,S.tier,i)})); if(OWNED.flush)OWNED.flush(); CALL.moved=i; say('YOU MOVE IN. YOUR THINGS COME ALONG.'); setTimeout(()=>{ if(!CALL.noReload)location.reload(); },1800); return 'moved'; };
+  APTS.moveCost=i=>{ const S=APTS.flatState()||{tier:APTS.tier||0,top:APTS.tier||0}; return i<=Math.max(S.top,S.tier,APTS.FREE)?0:APTS.TIERS[i].price; };   // a size you have paid for once is yours to move back to
+  APTS.moveTo=i=>{ const T=APTS.TIERS[i]; if(!T||i===(APTS.tier||0))return 'here'; if(T.soon)return 'soon'; if(i<APTS.FREE)return 'free'; const p=APTS.moveCost(i), S=APTS.flatState()||{tier:APTS.tier||0,top:APTS.tier||0}; if(!INV.afford(p)){ say('NOT ENOUGH MONEY: '+money(p),'#c8a090'); return 'poor'; }
+    INV.pay(p); if(INV.save)INV.save(); OWNED.set('flat',JSON.stringify({tier:i,top:Math.max(S.top,S.tier,i)})); if(OWNED.flush)OWNED.flush(); CALL.moved=i; say('YOU MOVE IN. YOUR THINGS COME ALONG.'); setTimeout(()=>{ if(!CALL.noReload)location.reload(); },1800); return 'moved'; };
   APTS.knock=(i,HP)=>{ const T=APTS.TIERS[Math.min(i,APTS.TIERS.length-1)], p=APTS.moveCost(i); CALL.knock=i; P.hidden=false;
-    P.innerHTML=`<div style="display:flex;justify-content:space-between;gap:12px"><b>${esc(HP.name||'APARTMENTS')}</b><button data-a="x" style="${BT}">X</button></div><div style="margin:8px 0">${esc(T.n)}. YOU DON'T LIVE HERE.</div><div style="display:flex;justify-content:space-between;gap:12px;border-top:1px solid #12402a;padding:6px 0">${T.soon?'<span style="color:#3f9c6a">NOT READY TO LET YET.</span>':`<span>${p?'MOVE IN FOR '+money(p):'MOVE BACK IN (YOURS ALREADY)'}<br><span style="color:#3f9c6a">YOUR THINGS COME ALONG; WHAT DOESN'T FIT IS PUT AWAY.</span></span><button data-a="move" style="${BT};border-color:#f2c14e;color:#f2c14e">MOVE IN</button>`}</div>`; };
+    P.innerHTML=`<div style="display:flex;justify-content:space-between;gap:12px"><b>${esc(HP.name||'APARTMENTS')}</b><button data-a="x" style="${BT}">X</button></div><div style="margin:8px 0">${esc(T.n)}. YOU DON'T LIVE HERE.</div><div style="display:flex;justify-content:space-between;gap:12px;border-top:1px solid #12402a;padding:6px 0">${T.soon?'<span style="color:#3f9c6a">NOT READY TO LET YET.</span>':i<APTS.FREE?'<span style="color:#3f9c6a">EVERYONE HAS THE LOFT FOR NOW.</span>':`<span>${p?'MOVE IN FOR '+money(p):'MOVE BACK IN (YOURS ALREADY)'}<br><span style="color:#3f9c6a">YOUR THINGS COME ALONG; WHAT DOESN'T FIT IS PUT AWAY.</span></span><button data-a="move" style="${BT};border-color:#f2c14e;color:#f2c14e">MOVE IN</button>`}</div>`; };
   let made=false; SYS.add('places',()=>{ if(made||!UI.thing||!APTS||!APTS.doorW||!APTS.T)return; made=true;
     const T=APTS.T, L=T.L, B=SHARED.BOD, at=(du,dv)=>{ const p=T.pt((L.x0+L.x1)/2+du,L.y1+dv); return [B.X(p[0]),B.Z(p[1])]; }, [x,z]=at(1.25,.06), [fx,fz]=at(1.25,1), y=APTS.doorW[1]+1.35*TILE;
     const g=new THREE.Group(); g.position.set(x,y,z); g.lookAt(fx,y,fz); const M=c=>new THREE.MeshLambertMaterial({color:c}), add=(w,h,d,c,px,py,pz)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(w*TILE,h*TILE,d*TILE),M(c)); m.position.set(px*TILE,py*TILE,pz*TILE); g.add(m); return m; };

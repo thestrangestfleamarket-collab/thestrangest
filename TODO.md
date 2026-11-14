@@ -207,6 +207,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [x] **THE BIG CAT furry, by a pole down Market St** (owner, 14 Nov 2026) · P2 · S · code + look. Done: worktree-agent-a4e3f10d0a6cacb08, 14 Nov.
 
 ## Apartments
+- [x] **Flat: realism pass** (owner, 14 Nov 2026: "make apartment super cozy and realistic", "Add depth and nuane to the floor and walls"; done 14 Nov) · P2 · L · code. Boards, plaster, brick and trim with relief; laid out again with Polyfork's pieces; lamps that light. Still to come: a real kitchen model (Polyfork has none; the catalog's boxy fridge, sink and stove stand in), soft goods with cloth. Waits for his look and yes.
 - [x] **GRAPHICS HIGH the rich picture: soft shadows, 720 lines, contact shade** (owner, 14 Nov 2026; done 14 Nov) · P2 · M · code. Frame cost on a real machine not measured yet. Waits for his look and yes.
 - [x] **Every sound in the SOUND menu; footsteps lowest, ambience off by default** (owner, 14 Nov 2026; done 14 Nov) · P2 · S · code. Waits for his look and yes.
 - [x] **Market St re-laid, the lofts into the clouds, the corner bodega, the bath house's ♨** (owner, 13 Nov 2026; done 13 Nov) · P2 · L · code. Waits for his look and yes.

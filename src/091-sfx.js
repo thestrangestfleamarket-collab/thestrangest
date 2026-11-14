@@ -4,13 +4,13 @@ import {PARK, pos, ROOMS, SFX, UI} from './003b-systems.js';
 import {SAVE} from './005-save.js';
 import {QS, SYS, TILE} from './006-map-pre.js';
 const SOUND=QS.get('sound')!=='0';
-const SNDMIX0={fx:{},loops:{},gap:1,blip:1};
+const SNDMIX0={fx:{step_stone:.1,step_grass:.1,step_wood:.1},loops:{},gap:1,blip:1};   // footsteps at the lowest level until you raise them (owner, 14 Nov 2026)
 Object.assign(SFX,{on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}});   // snd: the one switch over every sound, off until you turn it on (owner, 12 Nov 2026: "turn off all sounsd by default for players , must turn on if want sounds")
 { const rnd=()=>Math.random()*2-1, TAU=Math.PI*2;
   { const s=SAVE.get('sfx'), v=SAVE.get('vol'), a=SAVE.get('snd'); if(s!=null)SFX.on=s==='1'; if(v!=null)SFX.vol=Math.max(0,Math.min(1,+v)); SFX.snd=QS.get('sound')==='1'||a==='1'; }   // (?sound=1 for the checks)
   const mixOf=o=>({fx:Object.assign({},SNDMIX0.fx,o&&o.fx||{}),loops:Object.assign({},SNDMIX0.loops,o&&o.loops||{}),gap:o&&o.gap!=null?+o.gap:SNDMIX0.gap,blip:o&&o.blip!=null?+o.blip:SNDMIX0.blip});
   try{ SFX.mix=mixOf(JSON.parse(SAVE.get('sndmix')||'null')); }catch(e){ SFX.mix=mixOf(null); }
-  SFX.saveMix=()=>SAVE.set('sndmix',JSON.stringify(SFX.mix)); SFX.resetMix=()=>{ SFX.mix={fx:{},loops:{},gap:1,blip:1}; SAVE.del('sndmix'); }; SFX.fxLevel=k=>(SFX.mix.fx[k]==null?1:+SFX.mix.fx[k])*(SFX.setOf?SFX.setOf(k).lvl??1:1);
+  SFX.saveMix=()=>SAVE.set('sndmix',JSON.stringify(SFX.mix)); SFX.resetMix=()=>{ SFX.mix=mixOf(null); SAVE.del('sndmix'); }; SFX.fxLevel=k=>(SFX.mix.fx[k]==null?1:+SFX.mix.fx[k])*(SFX.setOf?SFX.setOf(k).lvl??1:1);
   // the page's one audio context: made at the first click or key (or when something asks with SFX.wake), everything heard goes out through SFX.out
   let woke=false; const mk=()=>{ if(!SOUND)return null; if(!SFX.ac)try{ SFX.ac=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } return SFX.ac; };
   SFX.ctx=()=>SFX.ac||(woke||(navigator.userActivation&&navigator.userActivation.hasBeenActive)?mk():null);
@@ -113,4 +113,15 @@ Object.assign(SFX,{on:true,vol:1,mix:{fx:{},loops:{},gap:1,blip:1}});   // snd: 
   SFX.blip=(v,o={})=>{ '@later'; const c=SFX.live(); if(!c||!SFX.on)return; const s=c.createBufferSource(), G=c.createGain(); s.buffer=vbuf(c,v.bank||'low',Math.floor(Math.random()*16)); s.playbackRate.value=(v.pitch||1)*(.96+Math.random()*.08);
     let P=null; if(o.at)P=SFX.spot(c); const kd=place(o,G,P); if(kd<=0)return; G.gain.value=.22*kd*(SFX.mix.blip==null?1:+SFX.mix.blip); if(P)s.connect(P).connect(G).connect(bus(c)); else s.connect(G).connect(bus(c)); s.start(); };
 }
+// SETTINGS, SOUND: every sound in the game, each its own level for you (kept with your mix), a PLAY to hear it; the background beds the same
+{ const LOOPS=['city','crickets','hum','rain','wind'], STEPS=[.1,2,.1]; let find='', host=null;
+  const nm=k=>k.replace(/^amb_/,'').replace(/_/g,' ').toUpperCase(), lv=(o,k)=>o[k]==null?1:+o[k], txt=v=>v<=0?'OFF':Math.round(v*100)+'%';
+  const row=(g,k,v)=>'<div class="row" style="margin:2px 0"><span style="flex:1 1 9em">'+nm(k)+'</span>'+(g==='fx'?'<button class="btn" data-sp="'+k+'">PLAY</button>':'')+'<input type="range" data-sg="'+g+'" data-sk="'+k+'" min="0" max="'+STEPS[1]+'" step="'+STEPS[2]+'" value="'+v+'" style="flex:2 1 8em"><span class="dim" data-sv="'+g+k+'" style="min-width:3.5em;text-align:right">'+txt(v)+'</span></div>';
+  const draw=()=>{ if(!host||!host.isConnected)return; const L=SFX.all().filter(k=>!find||nm(k).includes(find));
+    host.innerHTML='<div class="row"><span>EVERY SOUND</span><input class="smf" placeholder="FIND" value="'+find+'" style="flex:1"><button class="btn" data-sr="1">ALL BACK TO START</button></div>'
+      +'<div style="max-height:46vh;overflow:auto">'+L.map(k=>row('fx',k,lv(SFX.mix.fx,k))).join('')+'<div class="dim" style="margin-top:6px">BACKGROUND</div>'+LOOPS.filter(k=>!find||nm(k).includes(find)).map(k=>row('loops',k,lv(SFX.mix.loops,k))).join('')+'</div>'; };
+  SFX.mixPanel=el=>{ if(!el)return; const fresh=host!==el; host=el; draw(); if(!fresh)return;
+    el.addEventListener('input',e=>{ const t=e.target; if(t.matches('.smf')){ find=t.value.trim().toUpperCase(); const p=t.selectionStart; draw(); const n=host.querySelector('.smf'); n.focus(); n.setSelectionRange(p,p); return; }
+      if(!t.dataset.sg)return; const v=+t.value; SFX.mix[t.dataset.sg][t.dataset.sk]=v; SFX.saveMix(); const s=host.querySelector('[data-sv="'+t.dataset.sg+t.dataset.sk+'"]'); if(s)s.textContent=txt(v); });
+    el.addEventListener('click',e=>{ const b=e.target.closest('[data-sp],[data-sr]'); if(!b)return; if(b.dataset.sr){ SFX.resetMix(); draw(); return; } SFX.wake(); SFX.play(b.dataset.sp,{vol:.6}); }); }; }
 export {SOUND};

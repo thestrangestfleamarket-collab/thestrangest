@@ -205,6 +205,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
   today's cast's bodies get a ragdoll; `tests/physx.cjs` checks them again then. When they come: stand up where they fell, not where they were.
 
 ## Apartments
+- [x] **Every sound in the SOUND menu; footsteps lowest, ambience off by default** (owner, 14 Nov 2026; done 14 Nov) · P2 · S · code. Waits for his look and yes.
 - [x] **Market St re-laid, the lofts into the clouds, the corner bodega, the bath house's ♨** (owner, 13 Nov 2026; done 13 Nov) · P2 · L · code. Waits for his look and yes.
 - [ ] **The four apartment houses on West St** (owner, 10–11 Nov 2026, `mockups/apartments.html` option B) · P2 · L · code. West St's road back from Market St for four lots; four house blocks, each its own brick (walk-up, brownstone, pre-war, cast-iron loft); the Tower goes. [taking: claude/trusting-fermat-sybm7o, 11 Nov]
 - [ ] **Four sizes of flat, buy up** (owner, 11 Nov 2026: "Start small, buy up", "Comes along") · P2 · L · code. Small, medium, big, big with a half floor; everyone starts in No. 1 and buys up; the layout comes along, what no longer fits goes to PUT AWAY. [taking: claude/trusting-fermat-sybm7o, 11 Nov]

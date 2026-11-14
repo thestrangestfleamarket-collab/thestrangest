@@ -5,7 +5,7 @@ const ROOT = path.resolve(__dirname, '..'), HF = 'https://huggingface.co/dataset
 const LIST = {
   hero: ['src/challenger2_tomm8', HF + '000-041/e70234f6d695467499abc56646ab3e66.glb', { kind: 'hero', root: 'chellie_dio', tex: 1024 }],
   ally: ['src/challenger2_tomm8', HF + '000-041/e70234f6d695467499abc56646ab3e66.glb', { kind: 'hero', root: 'chellie_dio', lite: 1, tex: 512, plain: 1 }],
-  foe: ['src/battle_tank_alexander', HF + '000-000/5fcc302b89414348811eaa1ad4dc435f.glb', { kind: 'foe', turret: ['tank_low001'], fwd: '+x', size: 7.6, tris: 15000, tex: 512 }],
+  foe: ['src/m84_pinokio', HF + '000-071/4b1d69b514aa4ff0a3acc41586d6db33.glb', { kind: 'foe', turret: ['kupola', 'otvor1', 'poklopac2', 'poklopac3', 'poklopac4', 'lampa4', 'lampa5', 'antena1', 'antena2', 'vizir1', 'sanduk1', 'sanduk2', 'obrana1', 'obrana2', 'cijev', 'cijev_p'], fwd: '+z', size: 9.5, tris: 15000, tex: 512 }],
   seat: ['src/pilot_seat_pabooklas', HF + '000-051/310dca3487884ba690de7ac9e1995763.glb', { size: 1.15, axis: 'y', tris: 7000, tex: 512 }],
   console: ['src/old_control_panel', HF + '000-098/b84686130a2442d985c6f36c23d0836d.glb', { size: 1.0, axis: 'x', tex: 1024 }],
   display: ['src/medical_console', HF + '000-065/89065e109790417191467cfececf2c7c.glb', { size: 0.5, axis: 'x', tex: 1024 }],
@@ -15,18 +15,18 @@ const LIST = {
   barn: ['src/american_old_barn', HF + '000-119/1d0b768a8e2449de990b3f69f94c5db6.glb', { size: 14, axis: 'x', tex: 1024 }],
   cars: ['src/burned_cars', HF + '000-083/701066df6b914fd08318524c7ccd96a7.glb', { size: 4.6, axis: 'z', tex: 512 }],
   // the town
-  h6: ['src/b_lg_nivelles_h6', HF + '000-019/8456355d5b74437bb4ac1397166b551a.glb', { tex: 1024, plain: 1 }],
-  row: ['src/b_lg_lemans_row', HF + '000-139/03a7af7a44c7448ba1601a89ea9a87c2.glb', { tex: 1024, plain: 1 }],
-  h9: ['src/b_lg_nivelles_h9', HF + '000-053/9a6bbcb6da704592b368e29b87cac11d.glb', { tex: 1024, plain: 1 }],
-  shop: ['src/b_lg_mons_shop2', HF + '000-056/7397096856d3452fa15ae074f460ad36.glb', { tex: 1024, plain: 1 }],
+  h6: ['src/b_lg_nivelles_h6', HF + '000-019/8456355d5b74437bb4ac1397166b551a.glb', { tex: 512, plain: 1 }],
+  row: ['src/b_lg_lemans_row', HF + '000-139/03a7af7a44c7448ba1601a89ea9a87c2.glb', { tex: 512, plain: 1 }],
+  h9: ['src/b_lg_nivelles_h9', HF + '000-053/9a6bbcb6da704592b368e29b87cac11d.glb', { tex: 512, plain: 1 }],
+  shop: ['src/b_lg_mons_shop2', HF + '000-056/7397096856d3452fa15ae074f460ad36.glb', { tex: 512, plain: 1 }],
   cork: ['src/b_lg_cork_shop', HF + '000-063/21818eaa4c1c402a82baf9031ebaa93a.glb', { tex: 512, plain: 1 }],
-  flats: ['src/b_lg_bordeaux_flat2', HF + '000-042/d390f8d7c3064060b03a753ec02c1da1.glb', { tex: 1024, plain: 1 }],
-  white: ['src/b_lg_brussels_h1', HF + '000-134/b79775c5152e4d0d803d048acab1daac.glb', { tex: 1024, plain: 1 }],
-  cottage: ['src/b_lg_feluy_village', HF + '000-098/9304c869ff07425399a054d548bdf4fb.glb', { tex: 1024, plain: 1 }],
+  flats: ['src/b_lg_bordeaux_flat2', HF + '000-042/d390f8d7c3064060b03a753ec02c1da1.glb', { tex: 512, plain: 1 }],
+  white: ['src/b_lg_brussels_h1', HF + '000-134/b79775c5152e4d0d803d048acab1daac.glb', { tex: 512, plain: 1 }],
+  cottage: ['src/b_lg_feluy_village', HF + '000-098/9304c869ff07425399a054d548bdf4fb.glb', { tex: 512, plain: 1 }],
   villa: ['src/b_satik_h1', HF + '000-068/a81c9bcf068f47ccb737bead5fac3e0d.glb', { size: 9.5, axis: 'y', tex: 512, plain: 1 }],
-  mill: ['src/w_colin_factory', HF + '000-104/4e033f90eaaa4e68931af60f0309f537.glb', { tex: 1024, plain: 1 }],
-  works: ['src/w_rajib_warehouse', HF + '000-146/08a4f422bc634033b8023d53beaf8242.glb', { size: 15, axis: 'y', tex: 1024, plain: 1 }],
-  church: ['src/k_lg_fagnolle_church', HF + '000-132/ae5bcac872ac47f9b644e08aeb19f936.glb', { sink: 5.1, tex: 1024, plain: 1 }],
+  mill: ['src/w_colin_factory', HF + '000-104/4e033f90eaaa4e68931af60f0309f537.glb', { tex: 512, plain: 1 }],
+  works: ['src/w_rajib_warehouse', HF + '000-146/08a4f422bc634033b8023d53beaf8242.glb', { size: 15, axis: 'y', tex: 512, plain: 1 }],
+  church: ['src/k_lg_fagnolle_church', HF + '000-132/ae5bcac872ac47f9b644e08aeb19f936.glb', { sink: 5.1, tex: 512, plain: 1 }],
   watertower: ['src/t_wt_nermin', HF + '000-109/f517b60777124dfc9e56158c9b0a94f1.glb', { size: 16, axis: 'y', tex: 512, plain: 1 }],
   silos: ['src/t_silos_nermin', HF + '000-044/ef3e7aa9a5254faaa2a612afe0cd92b3.glb', { size: 14, axis: 'y', tex: 256, plain: 1 }],
   stacks: ['src/t_smokestacks', HF + '000-001/ffaf6bfbd8b84eb985dee2a35ba79440.glb', { sink: 1, tex: 512, plain: 1 }],
@@ -50,6 +50,11 @@ const LIST = {
   hedgehog: ['src/ob_hedgehog', HF + '000-096/0e09cbddad864003bc4f10c612bb7284.glb', { size: 1.5, axis: 'y', tris: 1500, tex: 256, plain: 1 }],
   wreck: ['src/wr_cascavel', HF + '000-004/7ef593b344624e6388eaa44b5551fad7.glb', { size: 5.2, axis: 'z', tris: 8000, tex: 512, plain: 1 }],
   grenade: ['src/gr_m67_vextin', HF + '000-121/05e2a29118c3408eaa574bcec6997aba.glb', { size: 0.09, axis: 'y', tex: 256, plain: 1 }],
+  breech: ['src/zis2_gun', HF + '000-008/61e3cb4b62ad48b186596b0cd88fc156.glb', { size: 6.8, axis: 'z', crop: [-.2, .34, .63, 1.22, -.9, .34], tex: 1024 }],
+  mfd: ['src/mfd_ludde', HF + '000-105/797da922b1724a2fbdcf5b6379525b49.glb', { size: 0.34, axis: 'y', tris: 4000, tex: 512 }],
+  shell: ['src/shell120_xephoney', HF + '000-013/84164b6b1e234cfd9fe88cdb490032c7.glb', { size: 0.8, axis: 'y', tex: 512 }],
+  mine: ['src/tm46_coozy', HF + '000-127/b087652da1b6446c856494df7804503c.glb', { size: 0.32, axis: 'x', tris: 1800, tex: 512 }],
+  hatch: ['src/hatch_tadas', HF + '000-134/8a4568cbe6e34d7390b3307ea8299a5d.glb', { size: 0.74, axis: 'x', tex: 512 }],
   pipes: ['modular_industrial_pipes_01', '', { size: 0, tris: 3000, tex: 256 }], sconce: ['industrial_caged_sconce', '', { size: 0.22, axis: 'y', tris: 3000, tex: 256 }], ammobox: ['ammo_box', '', { size: 0, tex: 256 }],
   binos: ['binoculars', '', { size: 0.19, axis: 'x', tris: 4000, tex: 512 }],
   pistol: ['service_pistol', '', { keep: '_a$', fwd: '+x', size: 0, tex: 512 }],
@@ -91,7 +96,7 @@ window.prep=async(url,o)=>{await MS.ready;const GL=new GLTFLoader();GL.register(
     if(o.kind==='foe'){const isT=m=>{let p=m;while(p){if(o.turret.includes(p.name))return true;p=p.parent;}return false;},hull=gather(root,m=>!isT(m)),tur=gather(root,isT);for(const ps of[hull,tur])each(ps,g=>g.applyMatrix4(M));
       const ub=union(tur),hb=union(hull),px=(hb.min.x+hb.max.x)/2;let n=0,z=0;each(tur,g=>{const p=g.attributes.position;for(let i=0;i<p.count;i++)if(p.getY(i)<ub.min.y+.35){z+=p.getZ(i);n++;}});const P=V(px,0,z/n);
       for(const ps of[hull,tur])each(ps,g=>g.translate(-P.x,0,-P.z));tris=thin([...hull,...tur],o.tris);out.add(node('hull',hull),node('turret',tur));const u2=union(tur),h2=union(hull);Object.assign(info,{turret:[u2.min.toArray(),u2.max.toArray()],hull:[h2.min.toArray(),h2.max.toArray()]});
-    }else{each(all,g=>g.applyMatrix4(M));tris=thin(all,o.tris);out.add(node('m',all));const b2=union(all);info.box=[b2.min.toArray(),b2.max.toArray()];}}
+    }else{each(all,g=>g.applyMatrix4(M));if(o.crop){const c=o.crop;for(const p of all){const g=p.geo,ps=g.attributes.position,ix=g.index.array,keep=[];for(let i=0;i<ix.length;i+=3){let x=0,y=0,z=0;for(let k=0;k<3;k++){x+=ps.getX(ix[i+k])/3;y+=ps.getY(ix[i+k])/3;z+=ps.getZ(ix[i+k])/3;}if(x>c[0]&&x<c[1]&&y>c[2]&&y<c[3]&&z>c[4]&&z<c[5])keep.push(ix[i],ix[i+1],ix[i+2]);}g.setIndex(keep);}}tris=thin(all,o.tris);out.add(node('m',all));const b2=new THREE.Box3().setFromObject(out);info.box=[b2.min.toArray(),b2.max.toArray()];}}
   if(o.plain)out.traverse(m=>{if(m.isMesh){const a=m.material;a.normalMap=a.roughnessMap=a.metalnessMap=a.aoMap=a.emissiveMap=null;a.metalness=0;a.roughness=.9;}});
   out.traverse(m=>{if(!m.isMesh)return;const a=m.material;for(const k of['map','normalMap','roughnessMap','metalnessMap','aoMap','emissiveMap'])if(a[k])a[k].userData.mimeType=a.transparent||a.alphaTest>0?'image/png':'image/jpeg';});
   const bin=await new GLTFExporter().parseAsync(out,{binary:true,maxTextureSize:o.tex||1024});info.tris=Math.round(tris);const u=new Uint8Array(bin);let s='';for(let i=0;i<u.length;i+=32768)s+=String.fromCharCode.apply(null,u.subarray(i,i+32768));return{info,b64:btoa(s)};};window.ready=1;</script>`;

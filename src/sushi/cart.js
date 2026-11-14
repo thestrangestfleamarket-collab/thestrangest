@@ -234,7 +234,7 @@ export function buildCart(scene, city) {
     b.refresh();
     const pos = new V3(x, 0.95, z);
     G.sources.push({ pos, r: 0.07, name: `${TOPPINGS[k].label.toLowerCase()} (bin)`, can: () => b.stock > 0, take: () => { b.stock--; b.refresh(); return new Food(k); }, bin: b });
-    G.targets.push({ getPos: () => pos, r: 0.068, prio: 1, accepts: (it) => it.kind === 'food' && it.topping === k, receive: (it) => { b.stock += it.servings; it.remove(); b.refresh(); G.audio.play('plop'); } });
+    G.targets.push({ getPos: () => pos, r: 0.095, prio: 1, accepts: (it) => it.kind === 'food' && it.topping === k, receive: (it) => { b.stock += it.servings; it.remove(); b.refresh(); G.audio.play('plop'); } });
     C.bins[k] = b;
   });
 

@@ -45,7 +45,7 @@ export function buildTalk() {
         if (r.status !== 429) talk.tts = false;
       } catch (e) { /* fall through to the browser's voice */ }
     }
-    try { if (!window.speechSynthesis) return; const u = new SpeechSynthesisUtterance(text); u.pitch = Math.max(0.5, Math.min(1.8, v.pitch * (v.g === 'f' ? 1.1 : 0.85))); u.rate = 1.02; u.volume = 1; u.lang = 'en-US'; speechSynthesis.speak(u); } catch (e) { /* this browser has no voice */ }
+    try { if (!window.speechSynthesis || !speechSynthesis.getVoices().length) { talk.voiceless = true; G.audio.play('voice'); return; } const u = new SpeechSynthesisUtterance(text); u.pitch = Math.max(0.5, Math.min(1.8, v.pitch * (v.g === 'f' ? 1.1 : 0.85))); u.rate = 1.02; u.volume = 1; u.lang = 'en-US'; speechSynthesis.speak(u); } catch (e) { /* this browser has no voice */ }
   }
 
   async function say(c, kind, situation, facts, cookSaid) {
@@ -92,15 +92,18 @@ export function buildTalk() {
   const heard = (text) => { text = String(text || '').trim(); if (!text) return; if (/guide( mode)? (on|off)/i.test(text) && text.length < 24) { G.debug?.guide?.set(/ on/i.test(text)); return; } if (/^\W*(open |show |close )?(the )?(menu|settings)\W*$/i.test(text)) { G.debug?.menu?.toggle(); return; } talk.cookSays(text); };
   talk.heard = heard;
   const noise = () => { talk.attend(4); if (G.t - lastNoise < 9) return; const c = talk.target(); if (!c) { G.game.callOver?.(); return; } lastNoise = G.t; speak(c, pick(CANNED.noise)); }; // heard, not understood: they still answer
+  let primed = null; const MIC = { audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } };
+  talk.needPrime = async () => { if (primed || !navigator.mediaDevices) return false; try { const p = await navigator.permissions.query({ name: 'microphone' }); return p.state !== 'granted'; } catch (e) { return true; } };
+  talk.prime = async () => { try { primed = await navigator.mediaDevices.getUserMedia(MIC); talk.mic = 'ready'; return true; } catch (e) { talk.mic = 'blocked: allow the microphone'; return false; } };
   const recorder = () => {
     if (!(navigator.mediaDevices && window.MediaRecorder)) { talk.mic = 'no microphone'; active = false; return; }
-    navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }).then((st) => {
+    (primed ? Promise.resolve(primed) : navigator.mediaDevices.getUserMedia(MIC)).then((st) => {
       stream = st; talk.mic = 'listening'; const ac = G.audio.ctx || new AudioContext(), an = ac.createAnalyser(); an.fftSize = 512; ac.createMediaStreamSource(st).connect(an);
       const buf = new Float32Array(512); let mr = null, parts = [], loud = 0, quiet = 0, t0 = 0, floor = 0.006;
       const loop = () => {
         if (!active) return; an.getFloatTimeDomainData(buf); let s2 = 0; for (let i = 0; i < 512; i++) s2 += buf[i] * buf[i]; const rms = Math.sqrt(s2 / 512), now = performance.now(), theyTalk = (talk.speaking || 0) > G.t || window.speechSynthesis?.speaking;
         if (!mr) { floor += (Math.min(rms, 0.04) - floor) * 0.02; if (!theyTalk && rms > Math.max(0.012, floor * 3)) { if (++loud > 3) { parts = []; const m = (mr = new MediaRecorder(st)); m.ondataavailable = (e) => parts.push(e.data); talk.attend(5);
-              m.onstop = async () => { const blob = new Blob(parts, { type: m.mimeType }); if (blob.size < 2500) return; try { const r = await fetch('/holmes/hear', { method: 'POST', body: blob }); if (r.ok) { const j = await r.json(); talk.mic = 'listening'; if (j.text) heard(j.text); else noise(); } else { talk.mic = r.status === 401 ? 'needs a login' : r.status === 429 ? 'listening' : 'the site cannot hear'; noise(); } } catch (e) { noise(); } };
+              m.onstop = async () => { const blob = new Blob(parts, { type: m.mimeType }); talk.sent = (talk.sent || 0) + 1; if (blob.size < 2500) return; try { const r = await fetch('/holmes/hear', { method: 'POST', body: blob }); if (r.ok) { const j = await r.json(); talk.mic = 'listening'; if (j.text) heard(j.text); else noise(); } else { talk.mic = r.status === 401 ? 'needs a login' : r.status === 429 ? 'listening' : 'the site cannot hear'; noise(); } } catch (e) { noise(); } };
               m.start(); t0 = now; quiet = 0; } } else loud = 0; }
         else { quiet = rms < Math.max(0.009, floor * 1.8) ? quiet + 1 : 0; if (quiet > 40 || now - t0 > 8000) { const m = mr; mr = null; loud = 0; try { m.stop(); } catch (e) { /* stopped */ } } }
         setTimeout(loop, 20); }; loop();
@@ -108,9 +111,10 @@ export function buildTalk() {
   };
   talk.listen = (on) => {
     if (on === active) return; active = on;
-    if (!on) { talk.mic = 'off'; try { rec?.stop(); } catch (e) { /* not running */ } rec = null; stream?.getTracks().forEach((x) => x.stop()); stream = null; return; }
-    if (!SR) return recorder();
-    let errs = 0; const go = () => { if (!active || errs >= 2) return; rec = new SR(); rec.lang = 'en-US'; rec.continuous = true; rec.interimResults = false; talk.mic = 'listening';
+    if (!on) { talk.mic = 'off'; try { rec?.stop(); } catch (e) { /* not running */ } rec = null; if (stream && stream !== primed) stream.getTracks().forEach((x) => x.stop()); stream = null; return; }
+    if (!SR || /OculusBrowser|Quest|Pico|Wolvic|VR/i.test(navigator.userAgent)) return recorder(); // a headset's browser names a recogniser it does not have
+    let errs = 0, began = false; setTimeout(() => { if (active && !began && errs < 2) { errs = 2; try { rec?.abort(); } catch (e) { /* gone */ } rec = null; recorder(); } }, 3000);
+    const go = () => { if (!active || errs >= 2) return; rec = new SR(); rec.lang = 'en-US'; rec.continuous = true; rec.interimResults = false; talk.mic = 'listening'; rec.onstart = () => { began = true; };
       rec.onspeechstart = () => talk.attend(5);
       rec.onresult = (e) => { errs = 0; for (let i = e.resultIndex; i < e.results.length; i++) if (e.results[i].isFinal) heard(e.results[i][0].transcript); };
       rec.onerror = (e) => { if (e.error !== 'no-speech' && e.error !== 'aborted') { errs++; if (errs >= 2 || e.error === 'not-allowed' || e.error === 'service-not-allowed') { errs = 2; rec = null; recorder(); } } }; // a headset browser may name a recogniser it does not have: record instead

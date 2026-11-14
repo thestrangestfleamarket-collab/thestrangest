@@ -67,6 +67,7 @@ jobs:
           k scare   'src/scare/|data/scare/|tools/scare\.cjs|tests/scare\.cjs'
           k hide    'src/hide/|data/hide/|worker/hide|tools/hide\.cjs|tests/hide\.cjs'
           k zombie  'src/zombie/|data/zombie/|worker/zombie|tools/zombie|tests/zombie\.cjs'
+          k guests  'src/guests/|data/guests/|worker/guests|tools/guests|tests/guests\.cjs'
           k holmes  'src/holmes/|data/holmes/|worker/holmes|tools/holmes|tests/holmes\.cjs'
           k jam     'src/jam/|data/jam/|tools/jam\.cjs|tests/jam\.cjs'
           k shoot   'src/shoot/|tools/shoot\.cjs|tests/shoot\.cjs'
@@ -266,6 +267,11 @@ jobs:
         timeout-minutes: 30
         if: contains(steps.f.outputs.run, ' zombie')
         run: node tests/zombie.cjs dist/zombie.html
+
+      - name: The Guest List (the party at /guests; the house, twenty guests, a killing seen and unseen, a body hidden and found, the server's minds)
+        timeout-minutes: 30
+        if: contains(steps.f.outputs.run, ' guests')
+        run: node tests/guests.cjs dist/guests.html
       - name: Stadium Jam (the band game at /jam; the keys play it, then the sticks and tracked hands in an emulated Quest 3)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' jam')

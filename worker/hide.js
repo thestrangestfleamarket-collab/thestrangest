@@ -2,15 +2,15 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { SPOTS, KINDS } from "../src/hide/spots.js";
 
-const MODEL = "claude-haiku-5-5", DAY = 600, IDS = SPOTS.map(s => s.id), ACTS = ["search", "investigate", "listen", "sweep", "toy", "feint", "leave"], CLUES = ["noise", "breath", "glimpse", "prints", "scent"];
+const MODEL = "claude-haiku-5-5", DAY = 600, IDS = SPOTS.map(s => s.id), ACTS = ["search", "investigate", "listen", "sweep", "toy", "mimic", "feint", "leave"], CLUES = ["noise", "breath", "glimpse", "prints", "scent"];
 const clip = (s, n) => String(s ?? "").replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, n);
 const num = (v, lo, hi, d = lo) => Number.isFinite(+v) ? Math.min(hi, Math.max(lo, Math.round(+v * 10) / 10)) : d;
 const text = c => (c || []).filter(b => b.type === "text").map(b => b.text).join(" ").trim();
 
-const SYSTEM = `You are the mind of a huge, patient predator hunting ONE human who is hiding somewhere on the ground floor of an abandoned school at night. You entered through the only doors; the stairs are blocked and the human cannot leave. You carry a light. You are called every few seconds with what your senses have gathered and you choose the next thing your body does. You are never told where the human is: reason from the evidence like a tracker, and be hard to fool.
+const SYSTEM = `You are the mind of a thin, pale, patient thing with red eyes hunting ONE human who is hiding somewhere in a family's house at night, in a storm. You came in at the front door; every other door out is locked and the human cannot leave. You move slowly and you do not tire. You are called every few seconds with what your senses have gathered and you choose the next thing your body does. You are never told where the human is: reason from the evidence like a tracker, and be hard to fool.
 
-THE SCHOOL is one wing: a corridor 40 metres long and 3 wide, lined with lockers, running from the entrance doors (0 m) to a chained fire door (40 m), with rooms opening off both sides (classrooms, an art room, a lab, two bathrooms, a janitor's closet, a stair hall, an office, a lounge, a store room). Moonlight comes through the windows; a few lights still flicker. The breaker box is in the janitor's closet: if the lights go out, the human threw it, and was standing there a moment ago. A room door that is not as you first saw it means the human went through it. These are its ${SPOTS.length} hiding places, by how far along the corridor they are:
-${SPOTS.map(s => `- ${s.id} (${s.z} m, ${s.room}, ${s.kind}): ${s.name}. A human hides ${s.how}.`).join("\n")}
+THE HOUSE has three floors joined by one enclosed staircase off the hall: the GROUND floor (hall, living room, dining room, study, kitchen, utility room), UPSTAIRS (landing, big bedroom, child's room, nursery with a walk-in closet, bathroom) and the BASEMENT (one long cellar under the whole house, reached by a door at the back of the hall). Changing floor costs about ten seconds, so finish a floor before you leave it unless the evidence is on another. It is very dark: the human carries a torch, and a torch seen is a human found. The house's lamps have switches; the breaker box is in the basement: if every lamp dies at once, the human threw it, and was standing there a moment ago. A room door that is not as you first saw it means the human went through it. The television, the radio, the fans, the music box, the clock and two of the windows can all be set going by a hand to draw you off or to cover other sounds: a noise from one of them means a human was AT it a moment ago, and is probably not there now. These are the ${SPOTS.length} hiding places:
+${SPOTS.map(s => `- ${s.id} (${s.floor}, ${s.room}, ${s.kind}): ${s.name}. A human hides ${s.how}.`).join("\n")}
 
 HOW A SEARCH WORKS
 ${Object.entries(KINDS).map(([k, v]) => `- ${k}: ${v}.`).join("\n")}
@@ -18,7 +18,7 @@ A glance takes about 2 seconds, a thorough search about 6, and walking costs abo
 
 WHAT YOUR SENSES REPORT
 - spots: each place with how well you have searched it (0 not yet, 1 glanced, 2 thoroughly) and "mess": anything there that is not as you first saw it (a door or lid not as it was, something knocked over, boxes shifted, a lump under cloth, a cobweb torn across the way in). Mess is strong evidence but a clever human may make a mess in one place and hide in another.
-- clues, each with an id, kind, the place it was nearest, how far from you, how many seconds old, and strength 1-3: "noise" (something you heard; the building is silent, and sound carries down the corridor), "breath" (a puff of warm breath fogging in your light: a human is within a metre or two of that place RIGHT NOW unless the clue is old), "glimpse" (you saw part of a body move), "prints" (footprints, wet ones or ones left in the dust of a room nobody has walked in for years, with the direction they lead: the human walked exactly there), "scent" (the smell of wet clothes: the human walked through a leak's puddle and is within three metres of you, though the place given is only rough).
+- clues, each with an id, kind, the place it was nearest, how far from you, how many seconds old, and strength 1-3: "noise" (something you heard; the storm and anything left running hide quiet sounds; sound is weaker through a floor), "breath" (a puff of warm breath fogging in your light: a human is within a metre or two of that place RIGHT NOW unless the clue is old), "glimpse" (you saw part of a body move), "prints" (footprints, wet ones or ones left in the dust of a room nobody has walked in for years, with the direction they lead: the human walked exactly there), "scent" (the smell of wet clothes: the human walked through a leak's puddle and is within three metres of you, though the place given is only rough).
 - habits: how many times this same human has ended a past hunt in each place. Humans return to what worked; check a favourite early, but not every time.
 - last: what you did recently and what came of it.
 
@@ -27,7 +27,8 @@ ACTIONS
 - investigate: go to where clue "clue" came from and search around it thoroughly.
 - listen: stand still and dark for a few seconds; quiet sounds and breathing carry further then. Good when you have nothing, or to tempt the human into moving.
 - toy: go to "spot", drag a hand along it, put your light out and stand over it in silence, rattle it once, and walk on. It finds nothing by itself, but a frightened human gasps, shifts or breathes, and you hear it. Use it on a place you suspect but have not opened.
-- sweep: walk the corridor's length slowly with the light, glancing at everything not yet searched.
+- sweep: go through the nearest places not yet searched, glancing at each.
+- mimic: you can throw sounds. Make footsteps, a knock or a door's creak come from a place far from you, then stand dark and listen. A hiding human who believes you are over there may move, breathe out or switch on a torch, and you hear or see it. Use it when you have nothing, not more than a few times.
 - feint: pretend to give up: walk out of the doors, wait, and come back silently. Usable once; humans often move when they think you have gone.
 - leave: give up for good. Only when patience is nearly spent.
 
@@ -42,7 +43,7 @@ function tidy(b) {
   const spots = (Array.isArray(b.spots) ? b.spots : []).filter(s => s && IDS.includes(s.id)).slice(0, IDS.length).map(s => ({ id: s.id, searched: num(s.searched, 0, 2), dist: num(s.dist, 0, 60), ...(clip(s.mess, 80) ? { mess: clip(s.mess, 80) } : {}) }));
   const clues = (Array.isArray(b.clues) ? b.clues : []).filter(c => c && CLUES.includes(c.kind)).slice(-10).map(c => ({ id: clip(c.id, 6), kind: c.kind, near: IDS.includes(c.near) ? c.near : "open ground", dist: num(c.dist, 0, 60), age: num(c.age, 0, 600), strength: num(c.strength, 1, 3, 1), ...(clip(c.note, 80) ? { note: clip(c.note, 80) } : {}) }));
   const last = (Array.isArray(b.last) ? b.last : []).slice(-6).map(l => ({ did: clip(l && l.did, 60), found: clip(l && l.found, 80) }));
-  return { habits: {}, seconds_hunting: num(b.t, 0, 3600), patience_left: num(b.patience, 0, 600), you_are_near: IDS.includes(b.at) ? b.at : "the gate", feint_used: !!b.feinted, urgent: !!b.urgent, spots, clues, last };
+  return { habits: {}, seconds_hunting: num(b.t, 0, 3600), patience_left: num(b.patience, 0, 600), you_are_near: IDS.includes(b.at) ? b.at : "open floor", feint_used: !!b.feinted, urgent: !!b.urgent, spots, clues, last };
 }
 
 // one thought. store {get, put} keeps {day, n}, this player's thoughts today
@@ -68,7 +69,7 @@ async function think(env, store, body, client) {
 
 // one finished game, cut to what the log keeps (the page's own account: src/hide/seeker.js record)
 function row(b) { const L = (a, n, f) => (Array.isArray(a) ? a : []).slice(-n).map(f), ids = a => L(a, 40, x => clip(x, 20)).filter(x => IDS.includes(x)), map = o => Object.fromEntries(Object.entries(o && typeof o === "object" ? o : {}).filter(([k]) => IDS.includes(k)).map(([k, v]) => [k, num(v, 0, 99)]));
-  return { v: 1, mind: b.mind === "claude" ? "claude" : "local", vr: !!b.vr, won: !!b.won, how: clip(b.how, 12), seek: num(b.seek, 0, 3600), spot: IDS.includes(b.spot) ? b.spot : "", room: clip(b.room, 4), pos: L(b.pos, 2, v => num(v, -60, 60)), stance: num(b.stance, 0, 2), power: !!b.power, key: !!b.key, prints: num(b.prints, 0, 200), webs: ids(b.webs), mess: ids(b.mess), searched: map(b.searched), habits: map(b.habits),
+  return { v: 1, mind: b.mind === "claude" ? "claude" : "local", vr: !!b.vr, won: !!b.won, how: clip(b.how, 12), seek: num(b.seek, 0, 3600), spot: IDS.includes(b.spot) ? b.spot : "", room: clip(b.room, 12), floor: num(b.floor, 0, 2), pos: L(b.pos, 2, v => num(v, -60, 60)), stance: num(b.stance, 0, 2), power: !!b.power, key: !!b.key, prints: num(b.prints, 0, 200), webs: ids(b.webs), mess: ids(b.mess), searched: map(b.searched), habits: map(b.habits),
     clues: L(b.clues, 40, c => ({ kind: CLUES.includes(c && c.kind) ? c.kind : "", near: IDS.includes(c && c.near) ? c.near : "", ago: num(c && c.ago, 0, 3600), s: num(c && c.s, 1, 3, 1), note: clip(c && c.note, 60) })), log: L(b.log, 60, l => ({ did: clip(l && l.did, 70), found: clip(l && l.found, 70) })), thoughts: L(b.thoughts, 40, t => ({ at: num(t && t.at, 0, 3600), a: clip(t && t.a, 12), text: clip(t && t.text, 160) })) }; }
 // what the games so far say: rows are {at, data} newest first
 function report(rows) { const G2 = rows.map(r => ({ at: r.at, ...r.data })), n = G2.length, pct = (a, b) => b ? Math.round(100 * a / b) + "%" : "-", esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])), by = {}, searched = {}, kinds = {};

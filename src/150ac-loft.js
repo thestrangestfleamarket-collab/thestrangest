@@ -1,6 +1,6 @@
 // THE LOFT: No. 4's flat, everyone's for now (owner, 12 Nov 2026, of a photo, then of the room itself: "raise the 1st story height by 25%", "remove all the beams", "remove hang things from ceiling", "only 1" post): a tall room, a walnut upper floor along the blank wall, a second deck across the front behind glass (no post: owner, 13 Nov 2026), the stair up the left wall and a gallery along the back wall over your door (the owner's pick C of mockups/loft-stairs.html), the front wall in brick, tracks of spots flat on the ceiling, downlights under the deck, a radiator. The upper floor is walked (APTS.loftY) and furnished (pieces up there are solid only while you are: APTS.solidHi); its steel, woodwork and plaster are yours to choose in DECORATE (R.loftSet). R.loftDress lays the flat's own pieces out over both floors and hangs its rugs and pictures.
 import {SHARED, THREE} from './003-shx.js';
-import {pos, UI} from './003b-systems.js';
+import {pos} from './003b-systems.js';
 import {MODS, SYS} from './006-map-pre.js';
 import {ROOMK} from './150a-bedroom.js';
 { const APTS=MODS.apts;
@@ -61,7 +61,7 @@ import {ROOMK} from './150a-bedroom.js';
     APTS.loftY=(x,z)=>{ const u=(x-ax)/M, v=(z-az)/M, h=(SHARED.py-fy)/M; if(u>su0&&u<su1&&v>sv0-.02&&v<sv1){ const hs_=Math.min(N-1,Math.max(1,Math.ceil((v-sv0)/RUN+.001)))*ST; return h>hs_-.75?fy+hs_*M:null; }
       return onDeck(u,v)&&h>MH-.75?fy+MH*M:null; };
     APTS.loftUp=()=>(SHARED.py-fy)/M>MH-.55;
-    R.loftUnder=()=>{ const u=(pos.x-ax)/M, v=(pos.z-az)/M; gateSet(!(u>su0-.1&&u<su1+.1&&v>sv0-.6&&v<sv1&&((SHARED.py-fy)/M>.1||v<sv0+RUN*10))); const onSt=u>su0-.15&&u<su1+.15&&v>sv0-.3&&v<sv1+.15&&(SHARED.py-fy)/M>.1; SPL.constant=onSt||!APTS.WPL?1e6:APTS.WPL.Ww.constant; const under=!!APTS.inReal&&!UI.persp&&(SHARED.py-fy)/M<MH-.6&&!(u>su0-.15&&u<su1+.15&&v>sv0-.3&&v<sv1+.15); UPL.constant=under?fy+(MH-.36)*M:1e6; if(under!==R.loftHid){ R.loftHid=under; const A2=ROOMK.api; if(A2)for(const un of A2.units()){ if(un.gone)continue; const h=un.loose?A2.toApt(un.obj.position.x,un.obj.position.y,un.obj.position.z).h:un.obj.position.y; if(h>MH-.3)un.obj.visible=!under; } } };
+    R.loftUnder=()=>{ const u=(pos.x-ax)/M, v=(pos.z-az)/M; gateSet(!(u>su0-.1&&u<su1+.1&&v>sv0-.6&&v<sv1&&((SHARED.py-fy)/M>.1||v<sv0+RUN*10))); const onSt=u>su0-.15&&u<su1+.15&&v>sv0-.3&&v<sv1+.15&&(SHARED.py-fy)/M>.1; SPL.constant=onSt||!APTS.WPL?1e6:APTS.WPL.Ww.constant; const under=false; UPL.constant=under?fy+(MH-.36)*M:1e6; if(under!==R.loftHid){ R.loftHid=under; const A2=ROOMK.api; if(A2)for(const un of A2.units()){ if(un.gone)continue; const h=un.loose?A2.toApt(un.obj.position.x,un.obj.position.y,un.obj.position.z).h:un.obj.position.y; if(h>MH-.3)un.obj.visible=!under; } } };
     const hi=(u0,v0,u1,v1)=>APTS.solidHi(A.x0+u0/MPU,A.y0+v0/MPU,A.x0+u1/MPU,A.y0+v1/MPU), T=.08;
     hi(-.4,-.4,Lx+.4,0); hi(-.4,Ly,Lx+.4,Ly+.4); hi(-.4,0,0,Ly); hi(Lx,0,Lx+.4,Ly);                                       // the walls
     hi(mx-T,DK.v1,mx,GV); hi(su1,sv0,su1+T,GV); hi(su1,GV-T,mx,GV); hi(DK.u0,DK.v1,mx,DK.v1+T); hi(DK.u0-T,0,DK.u0,DK.v1+T);   // the rails

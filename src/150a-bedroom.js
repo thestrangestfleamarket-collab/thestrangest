@@ -4,6 +4,7 @@ import {AMB, CLOCK, GPH, SFX, SHAD, SKY, UI, USE} from './003b-systems.js';
 import {renderer, scene} from './004-main.js';
 import {MODS, SYS} from './006-map-pre.js';
 import {PEEK} from './008-batch.js';
+import {HUDSHOP} from './038zcc-hudshop.js';
 const ROOMK={parts:[],wires:{},built:[],api:null,keep:[],always:new Set(),save:()=>false,guest:()=>false};   // the room's other parts (the bedroom 150b) add their builders and what their pieces do (wires); the room editor (150d) hears when it is built and works through api; always: the kinds every apartment has from the start, never emptied out
 { const APTS=MODS.apts;
   if(APTS&&APTS.R){ const V3=THREE.Vector3, cl=(v,a,b)=>Math.max(a,Math.min(b,v)), MPU=.907;   // the apartment's art unit is .907 m: the picture's sizes are metres
@@ -100,9 +101,30 @@ const ROOMK={parts:[],wires:{},built:[],api:null,keep:[],always:new Set(),save:(
         for(let i=0;i<50;i++){ g.strokeStyle=`rgba(120,102,72,${.015+rnd()*.03})`; g.lineWidth=.8+rnd()*1.6; g.beginPath(); const x=rnd()*W, y0=rnd()*H*.4; g.moveTo(x,y0); g.lineTo(x+(rnd()-.5)*18,y0+H*(.3+rnd()*.5)); g.stroke(); }
         for(let i=0;i<900;i++){ const b=rnd()<.5; g.fillStyle=`rgba(${b?70:255},${b?60:244},${b?44:220},${.02+rnd()*.03})`; g.fillRect(rnd()*W,rnd()*H,1,1); } }); t.wrapS=t.wrapT=THREE.MirroredRepeatWrapping; t.repeat.set(.2,.5); return t; })();
       R.plaster=wallTex;
-      const wallOf=(k,len,holes,u,v,ry)=>{ const wm=mat(CREAM,{roughness:.96,map:wallTex,bumpMap:wallTex,bumpScale:.8,side:THREE.DoubleSide,shadowSide:THREE.DoubleSide,...clip(k)}); R.wallMats.push(wm); return part(PEEK.mark(new THREE.ExtrudeGeometry(rect(len,HW,holes),{depth:TH,bevelEnabled:false})),[wm,mat([200,206,208],{roughness:.9,side:THREE.DoubleSide,...clip(k)})],u,0,v,ry,apt); };
+      const brickOut=(wm,k)=>{ const o=k==='Wf'?-1:1, WC=(APTS.WALLC||[96,62,50]).map(v=>v/255);   // the outside of your walls is the house's brick, so from above the building is one block (owner, 14 Nov 2026: "should just look like normal wall windows, etc all the way down")
+        wm.onBeforeCompile=sh=>{ sh.uniforms.uB={value:HUDSHOP.brick()}; sh.uniforms.uM={value:HUDSHOP.brickM()}; sh.uniforms.uWC={value:new THREE.Vector3(...WC)};
+          sh.vertexShader='varying vec3 vLP;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vLP=position;');
+          sh.fragmentShader='uniform sampler2D uB,uM; uniform vec3 uWC; varying vec3 vLP;\n'+sh.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\n if(('+o.toFixed(1)+')*(vLP.z-'+(TH/2).toFixed(4)+')>0.){ vec2 bu=vLP.xy*.62; vec3 t=texture2D(uB,bu).rgb; float l=dot(t,vec3(.333)), mk=texture2D(uM,bu).r; diffuseColor.rgb=mix(uWC*(t/max(l,.01))*(.35+1.05*l)*1.25,vec3(.42,.41,.4)*(.65+.45*l),mk); }'); };
+        wm.customProgramCacheKey=()=>'flatwall'+o; };
+      let wallOf=(k,len,holes,u,v,ry)=>{ const wm=mat(CREAM,{roughness:.96,map:wallTex,bumpMap:wallTex,bumpScale:.8,side:THREE.DoubleSide,shadowSide:THREE.DoubleSide,...clip(k)}); brickOut(wm,k); R.wallMats.push(wm); return part(PEEK.mark(new THREE.ExtrudeGeometry(rect(len,HW,holes),{depth:TH,bevelEnabled:false})),[wm,mat([200,206,208],{roughness:.9,side:THREE.DoubleSide,...clip(k)})],u,0,v,ry,apt); };
+      const WM=[]; R.wallMeshes=WM; const wallOf0=wallOf; wallOf=(...a)=>{ const me=wallOf0(...a); if(me){ WM.push(me); me.userData.noMerge=1; } return me; };   // each wall registered with the see-through circle once the room stands (below)
       wallOf('Wf',Lx,[...fw.map(win),...fwU.map(winU),FD],0,-TH,0); wallOf('Wb',Lx,[BD],0,Ly,0);
       wallOf('Ww',Ly,SWL.concat(SWU).map(w=>[w[0]-w[3]/2,w[0]+w[3]/2,w[1],w[2]]),0,0,-Math.PI/2); wallOf('We',Ly,SWE.map(w=>[Ly-w[0]-w[3]/2,Ly-w[0]+w[3]/2,w[1],w[2]]),Lx,Ly,Math.PI/2);
+      // the house below your floor (owner, 14 Nov 2026: "should just look like normal wall windows, etc all the way down", "square building"): its brick walls flush with yours and the same windows on every storey, down into the clouds
+      { const SM=HW/(APTS.HK||1), N=7, D=SM*N, WC=(APTS.WALLC||[96,62,50]).map(v=>v/255), sm=new THREE.MeshLambertMaterial({color:0xffffff});
+        sm.onBeforeCompile=sh=>{ sh.uniforms.uB={value:HUDSHOP.brick()}; sh.uniforms.uM={value:HUDSHOP.brickM()}; sh.uniforms.uWC={value:new THREE.Vector3(...WC)};
+          sh.vertexShader='varying vec2 vLP;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n vLP=position.xy;');
+          sh.fragmentShader='uniform sampler2D uB,uM; uniform vec3 uWC; varying vec2 vLP;\n'+sh.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n { vec2 bu=vLP*.62; vec3 t=texture2D(uB,bu).rgb; float l=dot(t,vec3(.333)), mk=texture2D(uM,bu).r; diffuseColor.rgb=mix(uWC*(t/max(l,.01))*(.35+1.05*l)*1.25,vec3(.42,.41,.4)*(.65+.45*l),mk); }'); };
+        sm.customProgramCacheKey=()=>'flatshell';
+        const sides=[[Lx+2*TH,Lx/2,-TH,Math.PI],[Lx+2*TH,Lx/2,Ly+TH,0],[Ly+2*TH,-TH,Ly/2,-Math.PI/2],[Ly+2*TH,Lx+TH,Ly/2,Math.PI/2]];
+        for(const [len,u,v,ry] of sides){ const me=new THREE.Mesh(new THREE.PlaneGeometry(len,D),sm); me.position.set(u,-D/2,v); me.rotation.y=ry; me.castShadow=false; me.receiveShadow=true; me.userData.noMerge=1; apt.add(me); }
+        const WS=[]; for(const c of fw)WS.push([c,-TH,Math.PI]); for(const w of SWS){ WS.push([-TH,w[0],-Math.PI/2]); WS.push([Lx+TH,w[0],Math.PI/2]); }
+        const n=WS.length*N, fr=new THREE.InstancedMesh(new THREE.BoxGeometry(WW+.2,wz[1]-wz[0]+.2,.06),new THREE.MeshLambertMaterial({color:0xd8cfbd}),n), gl=new THREE.InstancedMesh(new THREE.BoxGeometry(WW,wz[1]-wz[0],.03),new THREE.MeshLambertMaterial({color:0xffffff}),n), bar=new THREE.InstancedMesh(new THREE.BoxGeometry(WW,.05,.05),new THREE.MeshLambertMaterial({color:0xd8cfbd}),n);
+        const m4=new THREE.Matrix4(), q=new THREE.Quaternion(), P=new V3(), O=new V3(), one=new V3(1,1,1), cc=new THREE.Color(); let k=0;
+        for(let i=1;i<=N;i++)for(const [u,v,ry] of WS){ const h=-i*SM+(wz[0]+wz[1])/2; q.setFromAxisAngle(new V3(0,1,0),ry); O.set(0,0,.03).applyQuaternion(q);
+          fr.setMatrixAt(k,m4.compose(P.set(u,h,v).add(O),q,one)); gl.setMatrixAt(k,m4.compose(P.set(u,h,v).addScaledVector(O,2),q,one)); bar.setMatrixAt(k,m4.compose(P.set(u,h+(wz[1]-wz[0])*.04,v).addScaledVector(O,2.6),q,one));
+          const lit=((i*7+k*13)%5)===0; gl.setColorAt(k,lit?cc.setRGB(.95,.72,.42):cc.setRGB(.16+.04*((k*3)%3),.2,.27)); k++; }
+        for(const me of [fr,gl,bar]){ me.instanceMatrix.needsUpdate=true; me.userData.noMerge=1; me.receiveShadow=true; apt.add(me); } }
       // the soft dark where the floor meets each wall (light doesn't reach into the corner)
       { const ao=tex(4,64,(g,W,H)=>{ const gr=g.createLinearGradient(0,0,0,H); gr.addColorStop(0,'rgba(0,0,0,1)'); gr.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle=gr; g.fillRect(0,0,W,H); });
         const am=new THREE.MeshBasicMaterial({color:0x000000,alphaMap:ao,transparent:true,opacity:.42,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
@@ -269,7 +291,8 @@ const ROOMK={parts:[],wires:{},built:[],api:null,keep:[],always:new Set(),save:(
         Object.assign(u,{k:1,tone:null,col:null,tint:null,reach:null},u.def); light(id,{on:true}); e.L.color.setHex(u.c0); paint(e.L); };
       const lift=un=>{ const g=un.gone; un.gone=true; body(un); un.gone=g; };   // out of the physics while you carry it
       R.api={R,M,Lx,Ly,HW,porch:(F=>F?{u0:(A.x1-A.x0-F.ub)*MPU+.12,u1:(A.x1-A.x0-F.ua)*MPU-.12,v0:-(.24+APTS.DO*MPU)+.14,v1:-.3}:null)(APTS.ESC&&APTS.ESC[0]),units:()=>R.units,kinds:()=>R.kinds,getT,setT,remove,restore,spawn,drop,lift,toApt,W,unitBox,wall,floor,lightsAll,light,lightGet,lightReset,walls:WALLS,floors:FLOORS,kfloors:KFLOORS,kfloor,thumb,glow:k=>{ R.glowK=cl(k,0,3); }};
-      if(R.kfloor)kfloor('oak'); ROOMK.api=R.api; for(const f of ROOMK.built)f(R.api);
+      if(R.kfloor)kfloor('oak'); ROOMK.api=R.api; for(const f of ROOMK.built)f(R.api); apt.updateMatrixWorld(true); { const top=fy+2.2*M, BX=new THREE.Box3(); apt.traverse(o=>{ if(!o.isMesh||!o.geometry||o.geometry.attributes.aWl||o.userData.sky||(o.material&&o.material.transparent))return; BX.setFromObject(o); if(BX.isEmpty()||BX.max.y<top)return; PEEK.mark(o.geometry,new Uint8Array(o.geometry.attributes.position.count).fill(3)); PEEK.box(o,BX.min.x,BX.min.y,BX.min.z,BX.max.x,BX.max.y,BX.max.z); }); }   // the upper floor and anything over your head opens in the circle too (owner, 14 Nov 2026: "dont hide the 2nd story ever. ony transpareny circle")
+      for(const me of R.wallMeshes||[]){ const b=new THREE.Box3().setFromObject(me); if(!b.isEmpty())PEEK.box(me,b.min.x,b.min.y,b.min.z,b.max.x,b.max.y,b.max.z); }
       window.BEDROOMDBG=()=>({built:!!R,Lx,Ly,fw,du,HW,loose:R?R.th.length:0,units:R?R.units.length:0,kinds:R?R.units.map(u=>u.kind):[],at:R?R.units.filter(u=>!u.loose).map(u=>{ const b=new THREE.Box3().setFromObject(u.obj), a=R.apt.matrixWorld.clone().invert(); b.applyMatrix4(a); return [u.kind,+b.min.x.toFixed(2),+b.max.x.toFixed(2),+b.min.z.toFixed(2),+b.max.z.toFixed(2)]; }):[],walls:Object.values(APTS.WPL||{}).map(p=>+p.constant.toFixed(2)),lamps:R?R.lamps.map(l=>l.on):[]}); };
 
     // gone with the apartment: the loose things leave the physics, the ones you added leave the scene

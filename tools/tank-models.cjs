@@ -44,6 +44,7 @@ const LIST = {
   truck: ['src/v_ural', HF + '000-143/f953c51a5dbc4a15949f4dcc0905c4e8.glb', { tex: 512, plain: 1 }],
   busstop: ['src/d_bus_vagab', HF + '000-111/ac13a4bade94409fa688f1c4185f126d.glb', { size: 2.7, axis: 'y', tex: 256, plain: 1 }],
   pipes: ['modular_industrial_pipes_01', '', { size: 0, tris: 3000, tex: 256 }], sconce: ['industrial_caged_sconce', '', { size: 0.22, axis: 'y', tris: 3000, tex: 256 }], ammobox: ['ammo_box', '', { size: 0, tex: 256 }],
+  binos: ['binoculars', '', { size: 0.19, axis: 'x', tris: 4000, tex: 512 }],
   rocks: ['rock_moss_set_01', '', { size: 0, tris: 2500, tex: 512 }],
 };
 const NM = '/node_modules/', PAGE = `<script type="importmap">{"imports":{"three":"${NM}three/build/three.module.js","three/addons/":"${NM}three/examples/jsm/"}}</script><script type="module">

@@ -4,7 +4,7 @@ import {AMB, CLOCK, NPCS, PARK, pos, ROOMS, SFX, WX} from './003b-systems.js';
 import {SAVE} from './005-save.js';
 import {TILE} from './006-map-pre.js';
 import {FOUNT} from './060a-fount.js';
-Object.assign(AMB,{on:true});
+Object.assign(AMB,{on:false});   // off until you turn it on (owner, 14 Nov 2026: "ambience off")
 { const S=SAVE.get('amb'); if(S!=null)AMB.on=S==='1';
   const dB=d=>Math.pow(10,d/20), T=TILE;
   const SETS={

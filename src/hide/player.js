@@ -21,7 +21,7 @@ function init() {
   puffM = new THREE.SpriteMaterial({ map: WORLD.glowT, color: 0xb8c4d0, transparent: true, opacity: 0, depthWrite: false });
   for (let i = 0; i < 10; i++) { const s = new THREE.Sprite(puffM.clone()); s.visible = false; scene.add(s); puffS.push({ s, t: 9, v: new THREE.Vector3() }); }
   printM = new THREE.MeshStandardMaterial({ color: 0x030405, roughness: .05, transparent: true, opacity: .7, depthWrite: false, envMapIntensity: 4 });
-  for (let i = 0; i < 36; i++) { const m = new THREE.Mesh(new THREE.PlaneGeometry(.1, .26), printM.clone()); m.rotation.x = -Math.PI / 2; m.visible = false; m.renderOrder = 2; scene.add(m); printS.push(m); }
+  for (let i = 0; i < 90; i++) { const m = new THREE.Mesh(new THREE.PlaneGeometry(.1, .26), printM.clone()); m.rotation.x = -Math.PI / 2; m.visible = false; m.renderOrder = 2; scene.add(m); printS.push(m); }
   const hm = new THREE.MeshStandardMaterial({ color: 0x1b1a19, roughness: .8 });
   for (let i = 0; i < 2; i++) { const grip = renderer.xr.getControllerGrip(i), mesh = new THREE.Group(), part = (w, h, d, x, y, z, rx = 0) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), hm); m.position.set(x, y, z); m.rotation.x = rx; m.castShadow = true; mesh.add(m); };   // a gloved hand: palm, four fingers curled a little, a thumb, a cuff
     part(.082, .028, .09, 0, 0, .01); for (let f = 0; f < 4; f++) { part(.017, .018, .05, -.031 + f * .0207, -.004, -.058, -.25); part(.016, .016, .035, -.031 + f * .0207, -.018, -.094, -.7); } part(.02, .02, .05, (i ? -1 : 1) * .05, -.004, -.02, 0); part(.074, .05, .1, 0, .002, .1); mesh.rotation.x = -.5; grip.add(mesh); rig.add(grip);
@@ -33,7 +33,7 @@ function init() {
   addEventListener('keydown', e => { if (e.repeat) return; PL.keys[e.code] = true; if (e.code === 'KeyC') setStance((PL.stance + 1) % 3); if (e.code === 'KeyE') use(); if (e.code === 'Space') { e.preventDefault(); tryMantle(); } });
   addEventListener('keyup', e => { PL.keys[e.code] = false; });
   addEventListener('mousemove', e => { if (document.pointerLockElement !== renderer.domElement) return; PL.yaw -= e.movementX * .0022; PL.pitch = clamp(PL.pitch - e.movementY * .0022, -1.5, 1.5); });
-  addEventListener('mousedown', e => { if (document.pointerLockElement === renderer.domElement && e.button === 0) { PL.mouse.down = true; mouseGrab(); } }); addEventListener('mouseup', () => { const h = PL.mouse.held; PL.mouse.down = false; drop(PL.mouse); if (h && !PL.frozen) { const v = clamp(15 / (h.T.mass + 1), 2, 8), m = h.T.mass; h.T.b.applyImpulse({ x: PL.fwd.x * v * m, y: (PL.fwd.y * v + 1.2) * m, z: PL.fwd.z * v * m }, true); h.T.plT = CLOCK.t; } });
+  addEventListener('mousedown', e => { if (document.pointerLockElement === renderer.domElement && e.button === 0) { if (PL.onUse && PL.onUse(PL.head)) return; PL.mouse.down = true; mouseGrab(); } }); addEventListener('mouseup', () => { const h = PL.mouse.held; PL.mouse.down = false; drop(PL.mouse); if (h && !h.T.lid && !PL.frozen) { const v = clamp(15 / (h.T.mass + 1), 2, 8), m = h.T.mass; h.T.b.applyImpulse({ x: PL.fwd.x * v * m, y: (PL.fwd.y * v + 1.2) * m, z: PL.fwd.z * v * m }, true); h.T.plT = CLOCK.t; } });
 }
 function place(x, y, z, yaw) { PL.pos.set(x, y, z); PL.yaw = yaw; PL.pitch = 0; PL.vy = 0; PL.stance = 0; PL.eye = EYES[0]; body.setTranslation(PL.pos, true); rig.rotation.y = yaw; rig.position.set(x - camLocal().x, y, z - camLocal().z); for (const s of printS) s.visible = false; PL.key = false; PL.damp = 0; PL.prints.length = 0; PL.noises.length = 0; PL.wet = 0; PL.breath.air = 1; PL.breath.exert = 0; PL.mantle = null; }
 const camLocal = () => renderer.xr.isPresenting ? _w.set(camera.position.x, 0, camera.position.z).applyAxisAngle(UP, rig.rotation.y) : _w.set(0, 0, 0);
@@ -46,10 +46,12 @@ function take(Hd, p) {
   const c = WORLD.cloth, i = c.near(p, .2); if (i >= 0) { Hd.pin = i; c.pins.set(i, p); A.at('cloth', p, .3); return; }
   const pr = P.world.projectPoint(p, true, undefined, grp(G.HAND, G.SOLID)); if (!pr) return; const d = Math.hypot(pr.point.x - p.x, pr.point.y - p.y, pr.point.z - p.z); if (d > .16 && !pr.isInside) return;
   const T = P.byCol.get(pr.collider.handle); if (T && T.isKey) { PL.key = true; T.b.setTranslation({ x: 0, y: -40, z: 0 }, false); T.b.sleep(); T.o.visible = false; A.at('glass', p, .25, 1.9); PL.noise(p, .1, 'a key'); return; }
-  if (T && !T.fixed && !T.lid && T.mass < 60) { T.plT = CLOCK.t; const b = T.b, t = b.translation(), q = b.rotation(); Hd.held = { T, local: _v.set(pr.point.x - t.x, pr.point.y - t.y, pr.point.z - t.z).applyQuaternion(_q.set(q.x, q.y, q.z, q.w).invert()).clone() }; b.wakeUp(); }
+  if (T && T.lid && T.lid.locked) { PL.noise(p, .45, 'a chain rattling'); A.at(['metal1', 'metal2'], p, .5, 1.5); return; }
+  if (T && T.lid) T.lid.free();
+  if (T && !T.fixed && T.mass < 60) { T.plT = CLOCK.t; if (T.lid) { PL.noise(p, .22, 'a hinge'); A.at('gate', p, .16, 1.8); } const b = T.b, t = b.translation(), q = b.rotation(); Hd.held = { T, local: _v.set(pr.point.x - t.x, pr.point.y - t.y, pr.point.z - t.z).applyQuaternion(_q.set(q.x, q.y, q.z, q.w).invert()).clone() }; b.wakeUp(); }
   else if (Hd.grip) { Hd.climb = true; Hd.last.copy(p); }
 }
-function drop(Hd) { if (Hd.pin >= 0) WORLD.cloth.pins.delete(Hd.pin); Hd.pin = -1; Hd.held = null; Hd.climb = false; }
+function drop(Hd) { if (Hd.pin >= 0) WORLD.cloth.pins.delete(Hd.pin); if (Hd.held && Hd.held.T.lid) Hd.held.T.lid.rest(); Hd.pin = -1; Hd.held = null; Hd.climb = false; }
 function carry(Hd, p, dt) { if (Hd.pin >= 0) WORLD.cloth.pins.set(Hd.pin, p); const h = Hd.held; if (!h) return; const b = h.T.b, t = b.translation(), q = b.rotation(), m = h.T.mass;
   const a = _v.copy(h.local).applyQuaternion(_q.set(q.x, q.y, q.z, q.w)), lv = b.linvel(), av = b.angvel(), k = Math.min(2200, m * 420), c = 1.9 * Math.sqrt(k * m);
   const vx = lv.x + av.y * a.z - av.z * a.y, vy = lv.y + av.z * a.x - av.x * a.z, vz = lv.z + av.x * a.y - av.y * a.x; let fx = k * (p.x - t.x - a.x) - c * vx, fy = k * (p.y - t.y - a.y) - c * vy + m * 9.81, fz = k * (p.z - t.z - a.z) - c * vz;
@@ -70,11 +72,11 @@ function tryMantle() { if (PL.frozen || PL.mantle || !PL.grounded) return; const
 
 function update(dt) {
   const xr = renderer.xr.isPresenting, K = PL.keys, B = PL.breath; let mx = 0, mz = 0, run = false;
-  if (xr) { for (const H of PL.hands) { const gp = H.src && H.src.gamepad; if (!gp) continue; const ax = gp.axes, sx = ax[2] ?? ax[0] ?? 0, sy = ax[3] ?? ax[1] ?? 0, tr = gp.buttons[0] && gp.buttons[0].pressed, sq = gp.buttons[1] && gp.buttons[1].pressed, a = gp.buttons[4] && gp.buttons[4].pressed;
-      if (H.src.handedness === 'left') { mx = Math.abs(sx) > .15 ? sx : 0; mz = Math.abs(sy) > .15 ? sy : 0; run = Math.hypot(sx, sy) > .92 || (gp.buttons[3] && gp.buttons[3].pressed); B.want = !!tr; }
+  if (xr) { B.want = false; for (const H of PL.hands) { const gp = H.src && H.src.gamepad; if (!gp) continue; const ax = gp.axes, sx = ax[2] ?? ax[0] ?? 0, sy = ax[3] ?? ax[1] ?? 0, tr = !!(gp.buttons[0] && gp.buttons[0].pressed);
+      if (H.src.handedness === 'left') { mx = Math.abs(sx) > .15 ? sx : 0; mz = Math.abs(sy) > .15 ? sy : 0; run = Math.hypot(sx, sy) > .92; }
       else { if (Math.abs(sx) > .7 && !H.snap) { H.snap = true; rig.rotation.y -= Math.sign(sx) * Math.PI / 6; PL.yaw = rig.rotation.y; const c = camLocal(); rig.position.x = PL.pos.x - c.x; rig.position.z = PL.pos.z - c.z; } if (Math.abs(sx) < .3) H.snap = false;
-        if (Math.abs(sy) > .75 && !H.cr) { H.cr = true; setStance(clamp(PL.stance + Math.sign(sy), 0, 2)); } if (Math.abs(sy) < .3) H.cr = false; if (tr && !H.tr) use(); H.tr = tr; if (a && !H.a) tryMantle(); H.a = a; }
-      if (sq && !H.sq) take(H, H.pos.clone()); if (!sq && H.sq) drop(H); H.sq = sq; } }
+        if (Math.abs(sy) > .75 && !H.cr) { H.cr = true; setStance(clamp(PL.stance + Math.sign(sy), 0, 2)); } if (Math.abs(sy) < .3) H.cr = false; }
+      if (tr && !H.tr && !(PL.onUse && PL.onUse(H.pos))) take(H, H.pos.clone()); if (!tr && H.tr) drop(H); H.tr = tr; } }
   else { mx = (K.KeyD ? 1 : 0) - (K.KeyA ? 1 : 0); mz = (K.KeyS ? 1 : 0) - (K.KeyW ? 1 : 0); run = !!K.ShiftLeft; B.want = !!K.KeyQ; rig.rotation.y = PL.yaw; camera.rotation.set(PL.pitch, 0, 0, 'YXZ');
     const want = EYES[PL.stance]; PL.eye = lerp(PL.eye, want, 1 - Math.exp(-dt * 9)); camera.position.set(0, PL.eye, 0); }
   if (PL.frozen) { mx = mz = 0; }
@@ -98,7 +100,7 @@ function update(dt) {
   /* footsteps: sound for you, noise for it, wet prints after a puddle */
   if (PL.grounded && !PL.mantle) { PL.stride += PL.moved; const st = [.78, .58, .46][low]; if (PL.stride > st) { PL.stride = 0; let loud = low === 0 ? (PL.run ? .85 : PL.speed > 1.2 ? .4 : .2) : low === 1 ? .12 : .06; const f = { x: PL.pos.x, y: PL.pos.y + .05, z: PL.pos.z };
       const wet = PL.pos.y < .1 && WORLD.puddles.some(p => Math.hypot(p.x - f.x, p.z - f.z) < p.r); if (wet) { loud *= 1.6; PL.wet = 11; PL.damp = 60; A.at('splash', f, clamp(loud, .1, .6)); } A.at(['step1', 'step2', 'step3', 'step4'], f, loud * .55 + .03, low ? .8 : 1); PL.noise(f, loud, 'footsteps');
-      if (PL.wet > 0 && !wet) { PL.wet -= st; const s = printS[printI++ % printS.length], side = printI % 2 ? .09 : -.09; s.position.set(f.x + Math.cos(yaw) * side, PL.pos.y + .008, f.z - Math.sin(yaw) * side); s.rotation.z = yaw; s.material.opacity = .75 * PL.wet / 11; s.visible = true; s.userData.t = 0; PL.prints.push({ x: f.x, z: f.z, yaw, t: CLOCK.t }); if (PL.prints.length > 40) PL.prints.shift(); } } }
+      const dusty = !wet && PL.wet <= 0 && PL.pos.y < .1 && Math.abs(f.x) > 1.75 && f.z < -1.1; if ((PL.wet > 0 && !wet) || dusty) { if (!dusty) PL.wet -= st; const s = printS[printI++ % printS.length], side = printI % 2 ? .09 : -.09; s.position.set(f.x + Math.cos(yaw) * side, PL.pos.y + .008, f.z - Math.sin(yaw) * side); s.rotation.z = yaw; s.material.opacity = dusty ? .3 : .75 * PL.wet / 11; s.visible = true; s.userData.t = dusty ? -600 : 0; PL.prints.push({ x: f.x, z: f.z, yaw, t: CLOCK.t, dust: dusty }); if (PL.prints.length > 90) PL.prints.shift(); } } }
   B.exert = clamp(B.exert + (PL.run ? dt * .22 : -dt * .05), 0, 1);
 
   /* breath: fog you cannot help, unless you hold it */

@@ -32,11 +32,10 @@ function rainGlass() {
         vec2 n = a.xy + b.xy*.8 + c.xy*.9; float wet = clamp(a.z + b.z + c.z, 0., 1.);
         gl_FragColor = vec4(n*.5 + .5, wet, 1.); }` });
   const q = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), sm), qs = new THREE.Scene(), qc = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1); q.frustumCulled = false; qs.add(q);
-  ROOM.rainRT = { rt, sm, qs, qc };
+  ROOM.rainRT = { rt, sm, qs, qc }; rt.texture.repeat.set(3.2, 2.4);
   // the normal map reads the picture's first two channels as the surface's tilt
-  const m = LOW ? new THREE.MeshStandardMaterial({ color: 0xa8b4c0, transparent: true, opacity: .1, roughness: .05, metalness: .2, normalMap: rt.texture, depthWrite: false })
-    : new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: .04, metalness: 0, transmission: 1, thickness: .008, ior: 1.5, normalMap: rt.texture, specularIntensity: 1, envMapIntensity: .5 });
-  m.normalScale.set(1.5, -1.5); ROOM.glassM = m; return m;
+  const m = new THREE.MeshPhysicalMaterial({ color: 0xb8c4d0, transparent: true, opacity: .14, roughness: .02, metalness: 0, normalMap: rt.texture, specularIntensity: 1, envMapIntensity: 1.6, clearcoat: 1, clearcoatRoughness: 0, depthWrite: false });
+  m.normalScale.set(.9, -.9); ROOM.glassM = m; return m;
 }
 function drawRain(t) { const R = ROOM.rainRT; if (!R) return; R.sm.uniforms.t.value = t; const xr = renderer.xr.enabled, old = renderer.getRenderTarget(); renderer.xr.enabled = false; renderer.setRenderTarget(R.rt); renderer.render(R.qs, R.qc); renderer.setRenderTarget(old); renderer.xr.enabled = xr; }
 
@@ -250,7 +249,7 @@ function spots() {
 
 // the window's light: neon from across the avenue through the glass, cold sky glow, and lightning
 function outsideLight() {
-  const pink = new THREE.SpotLight(0xff3f8a, 1300, 0, .13, .6, 2); pink.position.set(8, 8, -38); pink.target.position.set(3.4, .4, 2.6); scene.add(pink, pink.target);
+  const pink = new THREE.SpotLight(0xff3f8a, 1300, 0, .13, .6, 2); pink.position.set(-10, 6, -38); pink.target.position.set(4.4, .9, 4.6); scene.add(pink, pink.target);
   pink.castShadow = true; pink.shadow.mapSize.set(LOW ? 512 : 1024, LOW ? 512 : 1024); pink.shadow.bias = -.0002; pink.shadow.normalBias = .02; pink.shadow.camera.near = 32; pink.shadow.camera.far = 48;
   const cyan = new THREE.SpotLight(0x4fd8ff, 700, 0, .07, .7, 2); cyan.position.set(-10, 6, -38); cyan.target.position.set(5.9, .5, 1.6); cyan.castShadow = true; cyan.shadow.mapSize.set(512, 512); cyan.shadow.camera.near = 32; cyan.shadow.camera.far = 48; cyan.shadow.normalBias = .02; scene.add(cyan, cyan.target);
   const hemi = new THREE.HemisphereLight(0x5a5068, 0x1c1410, .55); scene.add(hemi);

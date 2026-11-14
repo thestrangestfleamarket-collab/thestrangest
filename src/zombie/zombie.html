@@ -33,7 +33,7 @@ input[type=text]{font:400 .9rem var(--util);background:transparent;border:1px so
 #note{color:var(--neon);min-height:1.2em}
 #hud{position:fixed;inset:0;z-index:4;pointer-events:none;font:500 15px/1.4 var(--util);color:rgba(255,232,200,.78);text-shadow:0 1px 4px #000}
 #h-time{position:absolute;left:max(18px,env(safe-area-inset-left,0px));bottom:max(18px,env(safe-area-inset-bottom,0px))}
-#h-do{position:absolute;left:max(18px,env(safe-area-inset-left,0px));bottom:calc(max(18px,env(safe-area-inset-bottom,0px)) + 24px);color:rgba(230,230,220,.62)}
+#h-do{white-space:pre-line;position:absolute;left:max(18px,env(safe-area-inset-left,0px));bottom:calc(max(18px,env(safe-area-inset-bottom,0px)) + 24px);color:rgba(230,230,220,.62)}
 #h-use{position:absolute;left:0;right:0;top:58%;text-align:center;color:rgba(255,255,255,.8)}
 #h-say{position:absolute;left:10%;right:10%;bottom:16%;text-align:center;font:italic 400 22px/1.4 var(--display);color:rgba(255,240,215,.92)}
 #h-say.them{color:rgba(205,225,205,.9)}
@@ -51,8 +51,8 @@ input[type=text]{font:400 .9rem var(--util);background:transparent;border:1px so
   <div id="load"><div id="bar"></div></div>
   <div class="btns"><button id="bvr" class="main" disabled>Enter headset</button><button id="bdesk" disabled>Play on screen</button></div>
   <div class="row"><label>Your name, for the voices <input id="name" type="text" maxlength="20" autocomplete="off"></label><label><input id="voices" type="checkbox"> Voices</label></div>
-  <dl><dt>Headset</dt><dd>Left stick walks, right stick turns. Point and pull the right trigger to use things. Grip picks things up. Left trigger, or both hands over your eyes, shuts them. B stands you up.</dd>
-      <dt>Screen</dt><dd>WASD and the mouse. E uses what you look at. Hold the mouse button to carry. Hold Space to shut your eyes.</dd>
+  <dl><dt>Headset</dt><dd>Left stick walks, right stick turns. Point and pull the right trigger to use things. Grip picks things up. Left trigger, or both hands over your eyes, shuts them. B stands you up. Your watch has the time and tonight's list.</dd>
+      <dt>Screen</dt><dd>WASD and the mouse. E uses what you look at. Hold the mouse button to carry. Hold Space to shut your eyes. Hold Tab for tonight's list.</dd>
       <dt>Hunted</dt><dd>The lights die. You have four seconds: shut yourself in the bathroom with your eyes closed, or get under the covers. Not the same place twice.</dd></dl>
   <div class="small" id="vrnote"></div><div class="small" id="note"></div>
   <div class="small">Frightening. Play seated or with clear floor around you.</div>

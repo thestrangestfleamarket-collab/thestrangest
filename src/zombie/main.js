@@ -52,7 +52,7 @@ let sub = { text: '', t: 0, who: '' }, prompt = '';
 let lastHud = '';
 function drawHud() {
   const xr = renderer.xr.isPresenting, live = G.mode === 'play' || G.mode === 'sleep' || G.mode === 'hunt'; hud.m.visible = xr;
-  const c = CHORES[G.doing || G.cur], line = live && c && G.mode === 'play' ? c.text + progressText() : '', time = live ? clockText() + ' · night ' + G.night : '', said = sub.text && sub.t > 0 ? sub.text : '';
+  const c = CHORES[G.doing || G.cur], line = live && PL.keys.Tab ? G.chores.map(id => (G.done[id] ? '✓ ' : '· ') + CHORES[id].text).join('\n') : live && c && G.mode === 'play' ? c.text + progressText() : '', time = live ? clockText() + ' · night ' + G.night : '', said = sub.text && sub.t > 0 ? sub.text : '';
   if (!xr) { const k = [time, line, prompt, said, sub.who].join('|'); if (k !== lastHud) { lastHud = k; $('h-time').textContent = time; $('h-do').textContent = line; $('h-use').textContent = prompt; $('h-say').textContent = said; $('h-say').className = sub.who === 'them' ? 'them' : ''; } $('hud').hidden = !live; return; }
   $('hud').hidden = true; const g = hud.g, W = 1024, H = 512; g.clearRect(0, 0, W, H); if (!live) { hud.t.needsUpdate = true; return; }
   g.shadowColor = '#000'; g.shadowBlur = 8;
@@ -271,12 +271,13 @@ function draw(dt) {
   if (comp && !renderer.xr.isPresenting) { const h = ray0(); focus = lerp(focus, h, 1 - Math.exp(-dt * 5)); bokeh.uniforms.focus.value = focus; bokeh.uniforms.aperture.value = PL.eyesShut ? .003 : .0006; grain.uniforms.t.value = CLOCK.t; grain.uniforms.amt.value = .045 + (G.mode === 'hunt' ? .05 : 0); comp.render(dt); }
   else renderer.render(scene, camera);
 }
-function ray0() { const h = ray(PL.head, PL.fwd, 30); return h ? Math.max(.3, h.t) : 30; }
+// what you look at, for the lens: through the window you look at the city, not the glass
+function ray0() { const h = ray(PL.head, PL.fwd, 30); if (!h) return 60; const T = P.byCol.get(h.col.handle); return T && T.kind === 'glass' ? 60 : Math.max(.3, h.t); }
 function frame(time) { const dt = clamp((time - last) / 1000 || .016, .001, 1 / 20); last = time; if (G.mode !== 'title' && !G.paused) tick(dt); else if (G.mode === 'title') { cityUpdate(dt, PL.head); roomUpdate(dt, CLOCK.t += dt); } draw(dt); }
 
 // after a card: on to the next night, or again
 function onCard() { if (!G.card) return false; const c = G.card; G.card = null; showBoard(false); if (c === 'dead') startNight(G.night); else if (c === 'won') startNight(Math.min(5, G.night + 1)); else if (c === 'end') startNight(1); return true; }
-addEventListener('keydown', e => { if (e.code === 'KeyE' && G.card) onCard(); if (e.code === 'Escape') G.paused = false; });
+
 const _use = PL.use; PL.use = H => { if (onCard()) return; _use(H); };
 renderer.xr.addEventListener('sessionstart', () => { const L = PL.hands.find(h => h.src && h.src.handedness === 'left') || PL.hands[0]; watch.m.position.set(0, .03, .05); watch.m.rotation.set(-Math.PI / 2 + .3, 0, 0); L.grip.add(watch.m); });
 

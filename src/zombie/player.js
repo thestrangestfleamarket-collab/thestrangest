@@ -23,7 +23,7 @@ function init() {
     PL.hands.push(H); grip.addEventListener('connected', e => { H.src = e.data; H.on = true; }); grip.addEventListener('disconnected', () => { H.on = false; H.src = null; drop(H); });
   }
   PL.mouse = { held: null, dist: .8, down: false, pos: new THREE.Vector3() };
-  addEventListener('keydown', e => { if (e.repeat) return; PL.keys[e.code] = true; if (e.code === 'KeyE') use(); if (e.code === 'Space') e.preventDefault(); });
+  addEventListener('keydown', e => { if (e.repeat) return; PL.keys[e.code] = true; if (e.code === 'KeyE') PL.use(); if (e.code === 'Space' || e.code === 'Tab') e.preventDefault(); });
   addEventListener('keyup', e => { PL.keys[e.code] = false; });
   addEventListener('mousemove', e => { if (document.pointerLockElement !== renderer.domElement) return; PL.yaw -= e.movementX * .0021; PL.pitch = clamp(PL.pitch - e.movementY * .0021, -1.45, 1.45); });
   addEventListener('mousedown', e => { if (document.pointerLockElement === renderer.domElement && e.button === 0) { PL.mouse.down = true; mouseGrab(); } });
@@ -59,7 +59,7 @@ function update(dt) {
   if (xr) { for (const H of PL.hands) { const gp = H.src && H.src.gamepad; if (!gp) continue; const ax = gp.axes, sx = ax[2] ?? ax[0] ?? 0, sy = ax[3] ?? ax[1] ?? 0, tr = gp.buttons[0] && gp.buttons[0].pressed, sq = gp.buttons[1] && gp.buttons[1].pressed, bb = (gp.buttons[5] && gp.buttons[5].pressed) || (gp.buttons[4] && gp.buttons[4].pressed);
       if (H.src.handedness === 'left') { mx = Math.abs(sx) > .15 ? sx : 0; mz = Math.abs(sy) > .15 ? sy : 0; if (tr || bb) shut = true; }
       else { if (Math.abs(sx) > .7 && !H.snap) { H.snap = true; rig.rotation.y -= Math.sign(sx) * Math.PI / 6; PL.yaw = rig.rotation.y; const c = camLocal(); rig.position.x = PL.pos.x - c.x; rig.position.z = PL.pos.z - c.z; } if (Math.abs(sx) < .3) H.snap = false;
-        if (tr && !H.tr) use(H); H.tr = tr; if (bb && !H.b) PL.onStand && PL.onStand(); H.b = bb; }
+        if (tr && !H.tr) PL.use(H); H.tr = tr; if (bb && !H.b) PL.onStand && PL.onStand(); H.b = bb; }
       if (sq && !H.sq) take(H, H.pos.clone()); if (!sq && H.sq) drop(H); H.sq = sq; H.beam.visible = H.src.handedness === 'right' && !!PL.pointed(); } }
   else { mx = (K.KeyD ? 1 : 0) - (K.KeyA ? 1 : 0); mz = (K.KeyS ? 1 : 0) - (K.KeyW ? 1 : 0); shut = !!K.Space; rig.rotation.y = PL.yaw; camera.rotation.set(PL.pitch, 0, 0, 'YXZ');
     const want = PL.seat ? (PL.covered ? .5 : PL.seat.eye || 1.15) : EYE; PL.eye = lerp(PL.eye, want, 1 - Math.exp(-dt * 7)); camera.position.set(0, PL.eye, 0); }

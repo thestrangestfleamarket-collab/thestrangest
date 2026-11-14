@@ -81,7 +81,7 @@ function build() { for (let i = 0; i < 6; i++) make(i, KINDS[i]); initDrips(); }
 /* put one at a spot, in that spot's shape */
 function setSpot(C, id) {
   const S = ROOM.spots[id]; if (!S) return false; if (THEM.list.some(o => o !== C && o.spot === id && o.state !== 'away')) return false;
-  C.spot = id; C.pose = S.pose; C.pos.copy(S.pos); C.yaw = S.yaw; C.state = 'wait'; C.root.visible = true; C.since = CLOCK.t; C.flinchT = -9; C.upd = 0; render(C, 0, true);
+  C.spot = id; C.pose = S.pose; C.pos.copy(S.pos); C.yaw = S.yaw; C.state = 'wait'; C.root.visible = true; C.since = CLOCK.t; C.flinchT = -9; C.upd = 0; C.vis = 0; render(C, 0, true);
   if (S.pose === 'stand' || S.pose === 'sit') puddle(C.pos.x, floorAt(C.pos.x, C.pos.z) + .002, C.pos.z, rnd(.18, .32));
   return true;
 }
@@ -135,6 +135,8 @@ function update(dt, me) {
     if (since < .9 && since > .05 && C.state !== 'hunt') { if (me.turnRate > (renderer.xr.isPresenting ? 4.5 : 6.5) || (eyesShut && !me.sleeping) || me.backFrom(C.pos) > 1.1) { C.sus += .26; C.flinches++; C.seenT = C.flinchT = -9; THEM.onEvent && THEM.onEvent('flinch', C); } }
     // backing away from one close by
     if (dist < 1.6 && me.backFrom(C.pos) > .9 && C.vis) { C.sus += dt * .35; C.backs += dt; }
+    // walking about with your head hung, as if there were something you would rather not see
+    if (gaze.y < -.75 && me.speed > .45 && !me.seat) C.sus += dt * .05;
     // running in a small flat
     if (me.speed > 2.4 && C.vis) C.sus += dt * .12;
     C.sus = Math.max(0, C.sus - dt * (me.busy ? .02 : .006)); C.sus = Math.min(1.2, C.sus);

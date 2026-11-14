@@ -5,7 +5,7 @@ import { PL } from './player.js';
 import { A } from './sound.js';
 import { SPOTS } from './spots.js';
 
-const CELL = .2, X0 = -8.2, Z0 = 7, NX = 82, NZ = 98, NC = NX * NZ, NL = 3, PATIENCE = 260, EYE = 1.72, MON = grp(G.MON, G.SOLID);
+const CELL = .2, X0 = -8.2, Z0 = 7, NX = 82, NZ = 98, NC = NX * NZ, NL = 4, PATIENCE = 260, EYE = 1.72, MON = grp(G.MON, G.SOLID);
 const SK = { g: new THREE.Group(), pos: new THREE.Vector3(0, 0, 6), yaw: Math.PI, state: 'wait', mode: 'local', aware: 0, asked: -9, patience: PATIENCE, cfg: { patience: PATIENCE, sense: 1, mask: 1 }, habits: {}, t: 0, thoughts: [], log: [], clues: [], searched: {}, messSeen: {}, used: new Set(), plan: null, queue: [], path: [], pending: false, feinted: false, fails: 0,
   eye: new THREE.Vector3(), look: new THREE.Vector3(0, 1, 0), lookTo: new THREE.Vector3(0, 1, -5), lightOn: true, crouch: 0, st: 0, lastSeen: new THREE.Vector3(), lost: 0, urgent: false, cn: 0, stuck: 0, reflex: 0, why: '' };
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _d = new THREE.Vector3(), pts = [];

@@ -2,11 +2,12 @@
 import { ART as PICS, fuse, wbox, mergeStatics, THREE, RAPIER, LOW, G, grp, clamp, lerp, rnd, scene, P, mat, boxMesh, stat as stat0, dyn as dyn0, sBox, sCyl, sBall, model } from './core.js';
 import { makeCloth } from './cloth.js';
 
-const W = .55, LEN = 12, HI = 2.6, PITCH = 2.9, CUT = 3.65, ADD = 1.5, RX = 6 + ADD, T = .2, LV = [-PITCH, 0, PITCH];
+const W = .55, LEN = 12, HI = 2.6, PITCH = 2.9, CUT = 3.65, ADD = 1.5, RX = 6 + ADD, T = .2, LV = [-PITCH, 0, PITCH, 2 * PITCH];
+let RAW = false;   // while true, x is the house's real x (the newer furniture is placed where it stands)
 // the side rooms are ADD wider than they were drawn: what stands beyond CUT from the middle moves out with the outer wall, and a wall, floor or worktop that crosses CUT grows
-const MX = x => x > CUT ? x + ADD : x < -CUT ? x - ADD : x;
-const GEO = {};   // per place: where the thing stands to look (at), what it looks at (look), where its eyes go when it searches properly (eye), its floor (L: 0 basement, 1 ground, 2 upstairs), and the doors it must open (lids)
-const levelOf = y => y < -1.3 ? 0 : y < 1.6 ? 1 : 2;
+const MX = x => RAW ? x : x > CUT ? x + ADD : x < -CUT ? x - ADD : x;
+const GEO = {};   // per place: where the thing stands to look (at), what it looks at (look), where its eyes go when it searches properly (eye), its floor (L: 0 basement, 1 ground, 2 upstairs, 3 attic), and the doors it must open (lids)
+const levelOf = y => y < -1.3 ? 0 : y < 1.6 ? 1 : y < 4.5 ? 2 : 3;
 const WORLD = { W, LEN, HI, PITCH, RX, LV, MX, levelOf, GEO, cloth: null, clothSpot: 'sheet', puddles: [], lamps: [], blocked: [], updaters: [], gate: null, rain: null, lit: null, ladders: [], doors: [], slow: [], power: true, roomOf: {}, shutter: () => {}, devices: [], fixtures: [], stairs: [], flash: 0, tubes: [] };
 
 function canvasTex(w, h, draw, o = {}) { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; if (o.rep) { t.wrapS = t.wrapT = THREE.RepeatWrapping; } t.anisotropy = 4; return t; }
@@ -29,9 +30,10 @@ function build() {
   const add = (o, x, y, z, ry = 0) => { o.position.set(MX(x), y + Y, z); o.rotation.y = ry; scene.add(o); return o; };
   const spot = (id, at, look, eye, room, lids) => { GEO[id] = { at: [MX(at[0]), at[1]], look: [MX(look[0]), look[1] + Y, look[2]], eye: [MX(eye[0]), eye[1] + Y, eye[2]], lids, L: levelOf(Y + .5), y: Y }; if (room) WORLD.roomOf[id] = room; };
 
+  const boards0 = mat('wood_floor_worn', { tile: 2, color: 0x6f675c });
   /* the slabs: the basement's floor, the ground floor with the hole the cellar stair goes down through, the upper floor with the stairwell, and the roof's underside. A slab is the ceiling of the room below it */
   const slab = (top, hole, m = ceilM) => { const a = -6.2, b = 6.2, f = .2, k = -12.2, pc = (x0, x1, z0, z1) => { if (x1 - x0 > .01 && z0 - z1 > .01) statW(x1 - x0, .3, z0 - z1, (x0 + x1) / 2, top - .15, (z0 + z1) / 2, m); }; if (!hole) return pc(a, b, f, k); const [x0, x1, z0, z1] = hole; pc(a, x0, f, k); pc(x1, b, f, k); pc(x0, x1, f, z0); pc(x0, x1, z1, k); };
-  slab(LV[0], null, conc); slab(LV[1], [.2, 1.2, -4.4, -8.6]); slab(LV[2], [.2, 1.2, -4, -8.2]); slab(LV[2] + PITCH); stat0(5, .3, 7.4, 0, -.15, 3.9, conc); stat0(60, .1, 60, 0, -.2, -6, asphalt, { ghost: true, noShadow: true });
+  slab(LV[0], null, conc); slab(LV[1], [.2, 1.2, -4.4, -8.6]); slab(LV[2], [.2, 1.2, -4, -8.2]); slab(LV[3], [.2, 1.2, -4, -8.2], boards0); slab(LV[3] + PITCH, null, boards0); stat0(5, .3, 7.4, 0, -.15, 3.9, conc); stat0(60, .1, 60, 0, -.2, -6, asphalt, { ghost: true, noShadow: true });
   const fl = (x0, x1, z0, z1, m) => stat(x1 - x0, .03, z0 - z1, (x0 + x1) / 2, .012, (z0 + z1) / 2, m, { ghost: true, noShadow: true });
 
   /* walls: a run along z in the plane x = c ('z'), or along x in the plane z = c ('x'), with holes for doors and windows */
@@ -69,7 +71,7 @@ function build() {
     L.ax = ax; L.c = c; L.away = ax === 'z' ? -dir * sw : dir * sw; DOORS.push(L);
     L.room = id; L.mid = ax === 'z' ? [MX(c), (a + b) / 2] : [MX((a + b) / 2), c]; L.y = Y; return L; };
   // a piece of real furniture that stands where it is put and cannot be walked through
-  const solid = (name, o) => { const g = fixed(name, o), s = g.userData.size, t = Math.abs(Math.sin(o.ry || 0)) > .7; stat(t ? s.z : s.x, o.ch || s.y, t ? s.x : s.z, o.x, (o.y || 0) + (o.ch || s.y) / 2, o.z, null, { kind: o.kind || 'wood' }); return g; };
+  const solid = (name, o) => { const g = fixed(name, o), s = g.userData.size, t = Math.abs(Math.sin(o.ry || 0)) > .7; stat0(t ? s.z : s.x, o.ch || s.y, t ? s.x : s.z, MX(o.x), (o.y || 0) + (o.ch || s.y) / 2 + Y, o.z, null, { kind: o.kind || 'wood' }); return g; };
   // a bed: a frame a body can lie under, with a valance down to the floor on the open sides; its head is at -x
   const bed = (cx, cz, len, wid, m = linen) => { stat(len, .1, wid, cx, .6, cz, wood, Wd); for (const sx of [-1, 1]) for (const sz of [-1, 1]) stat(.07, .55, .07, cx + sx * (len / 2 - .05), .275, cz + sz * (wid / 2 - .05), woodD, Wd); stat(.07, 1.25, wid, cx - len / 2 - .01, .625, cz, woodD, Wd); stat(.05, .75, wid, cx + len / 2, .375, cz, woodD, { ghost: true });
     const mt = boxMesh(len - .06, .2, wid - .04, m); add(mt, cx, .75, cz); const pl = boxMesh(.36, .1, wid * .42, whiteM); add(pl, cx - len / 2 + .3, .9, cz - wid * .22); const p2 = boxMesh(.36, .1, wid * .42, whiteM); add(p2, cx - len / 2 + .3, .9, cz + wid * .22); const qu = boxMesh(len * .62, .05, wid + .04, m === linen ? velvetG : velvet); add(qu, cx + len * .16, .87, cz);
@@ -86,8 +88,8 @@ function build() {
   /* the stairs: an enclosed flight up from the hall and, under it, the flight down to the cellar. A slope carries a body; the treads are what you see */
   const flight = (yBot, zBot, zTop, m) => { const run = Math.abs(zTop - zBot), len = Math.hypot(run, PITCH), ang = Math.atan2(PITCH, run), n = 14; stat0(1, .16, len, .7, yBot + PITCH / 2 - .08 * Math.cos(ang), (zBot + zTop) / 2 - .08 * Math.sin(ang), null, { rx: ang, kind: 'wood' });
     for (let i = 0; i < n; i++) stat0(1, PITCH / n, run / n, .7, yBot + PITCH * (i + .5) / n, zBot + (zTop - zBot) * (i + .5) / n, m, { ghost: true }); };
-  flight(LV[1], -4, -8.2, wood); flight(LV[0], -4.4, -8.6, woodD);
-  WORLD.stairs = [{ lo: [.7, -3.6, 1], hi: [.7, -8.6, 2] }, { lo: [.7, -4, 0], hi: [.7, -9, 1] }];
+  flight(LV[1], -4, -8.2, wood); flight(LV[0], -4.4, -8.6, woodD); flight(LV[2], -4, -8.2, woodD);
+  WORLD.stairs = [{ lo: [.7, -3.6, 1], hi: [.7, -8.6, 2] }, { lo: [.7, -4, 0], hi: [.7, -9, 1] }, { lo: [.7, -3.6, 2], hi: [.7, -8.6, 3] }];
 
   /* ───────── the ground floor ───────── */
   Y = LV[1];
@@ -145,15 +147,15 @@ function build() {
   { const g = model('boombox', { long: .5 }); add(g, 4.3, .94, -9.3, .4); device('radio', 'radio', 4.3, 1.05, -9.3); }
   device('window', 'winK', 5.82, 1.2, -10.15, { pane: wK }); const fKit = fixture('kitchen', 'kitchen', 3.6, HI - .1, -9.6, { on: true, k: .9, r: 6, col: 0xe6efe8, flick: true, geo: new THREE.BoxGeometry(.1, .04, 1.1) }); plate(1.41, 1.25, -11.3, Math.PI / 2, fKit);
   { const d = boxMesh(.07, 2.05, .9, woodD); add(d, 5.9, 1.03, -8.05); const bar = boxMesh(.05, .06, .8, iron); add(bar, 5.84, 1.05, -8.05); WORLD.door = new THREE.Vector3(MX(5.75), 1, -8.05); WORLD.doors.push(WORLD.door.clone()); const s = new THREE.Mesh(new THREE.BoxGeometry(.03, .14, .3), glow(0x2aff5a, .8)); add(s, 5.88, 2.25, -8.05); }
-  for (const [x, z] of [[1.9, -9.2], [5.2, -7.6]]) prop('metal_trash_can', { h: .62, x, y: .01, z, ry: rnd(6), mass: 4, kind: 'metal', name: 'the kitchen bin', cyl: .18, fr: .6, asleep: true });
+  for (const [x, z] of [[2.6, -10.6], [5.2, -7.6]]) prop('metal_trash_can', { h: .62, x, y: .01, z, ry: rnd(6), mass: 4, kind: 'metal', name: 'the kitchen bin', cyl: .18, fr: .6, asleep: true });
 
   /* ───────── upstairs ───────── */
   Y = LV[2];
   fl(-1.3, 1.3, .1, -4, boards); fl(-1.3, .2, -4, -8.2, boards); fl(-1.3, 1.3, -8.2, -12.1, boards); fl(-6.1, -1.3, .1, -6, rugF); fl(-6.1, -1.3, -6, -12.1, rugF); fl(1.3, 6.1, .1, -4.5, rugF); fl(1.3, 6.1, -4.5, -8, boards); fl(1.3, 6.1, -8, -12.1, white);
   wall('x', 0, -6, 6, [wn(-5.7, -3.9), wn(3.9, 5.7)]); wall('x', -12, -6, 6, [wn(-5.7, -3.9), wn(3.8, 4.8, 1.3, 2)]); wall('z', -6, 0, -12, [wn(-2, -3.8), wn(-8, -9.8)]); wall('z', 6, 0, -12, [wn(-1.5, -3.3)]);
   win('x', 0, -5.7, -3.9); win('x', 0, 3.9, 5.7); win('x', -12, -5.7, -3.9); win('x', -12, 3.8, 4.8, 1.3, 2); win('z', -6, -2, -3.8); win('z', -6, -8, -9.8); win('z', 6, -1.5, -3.3);
-  wall('z', -1.3, 0, -12, [dh(-2.6, -3.55), dh(-9, -9.95)], wallB); wall('z', 1.3, 0, -12, [dh(-1.6, -2.55), dh(-10.2, -11.15)], wallB); wall('z', .1, -4, -8.2, [], wallB); wall('x', -4, .1, 1.3, [], wallB); wall('x', -6, -6, -1.3, [], wallB); wall('x', -4.5, 1.3, 6, [dh(3.75, 4.85)], wallB); wall('x', -8, 1.3, 6, [], wallB);
-  door('Master', 'z', -1.3, -2.6, -3.55, 1, .3); door('Child', 'z', -1.3, -9, -9.95, 1, 1.2); door('Nursery', 'z', 1.3, -1.6, -2.55, -1, 0); door('Bath', 'z', 1.3, -10.2, -11.15, -1, .6); door('Closet', 'x', -4.5, 3.75, 4.85, 1, .2);
+  wall('z', -1.3, 0, -12, [dh(-2.6, -3.55), dh(-9, -9.95)], wallB); wall('z', 1.3, 0, -12, [dh(-1.6, -2.55), dh(-10.2, -11.15)], wallB); wall('z', .1, -4, -8.2, [], wallB); wall('x', -4, .1, 1.3, [dh(.2, 1.2)], wallB); wall('x', -6, -6, -1.3, [], wallB); wall('x', -4.5, 1.3, 6, [dh(3.75, 4.85)], wallB); wall('x', -8, 1.3, 6, [], wallB);
+  door('Master', 'z', -1.3, -2.6, -3.55, 1, .3); door('Child', 'z', -1.3, -9, -9.95, 1, 1.2); door('Nursery', 'z', 1.3, -1.6, -2.55, -1, 0); door('Bath', 'z', 1.3, -10.2, -11.15, -1, .6); door('Closet', 'x', -4.5, 3.75, 4.85, 1, .2); door('Attic', 'x', -4, .2, 1.2, 1, 0);
   chest('blanket', -.78, -11, .7, 1.7, .7, -1, woodD, false); spot('blanket', [.5, -11], [-.78, .3, -11], [-.3, 1.4, -11], 'landing');
   const fUp = fixture('landing', 'landing', 0, HI - .12, -10, { on: true, k: .7, r: 6.5 }); plate(-1.19, 1.25, -8.5, Math.PI / 2, fUp); { const g = model('modern_ceiling_lamp_01', { long: .42, noShadow: true }); add(g, 0, HI - g.userData.size.y, -10); } { const r = boxMesh(.9, .012, 7, velvet); r.castShadow = false; add(r, -.5, .02, -4.4); }
 
@@ -186,7 +188,7 @@ function build() {
   prop('rockingchair_01', { h: 1, x: 2.6, y: .01, z: -3.5, ry: 2.4, mass: 7, kind: 'wood', name: 'the rocking chair', fr: .5, sx: .8, sz: .8, asleep: true }).kick = true;
   const fNur = fixture('nursery', 'Nursery', 3.6, HI - .12, -2.2, { k: .7, r: 5.5 }); plate(1.41, 1.25, -1.35, Math.PI / 2, fNur);
   { const rail = boxMesh(2.3, .04, .04, iron); add(rail, 4.9, 1.75, -7.3); stat(2.3, 1.35, .03, 4.9, 1.02, -7.3, null, { veil: true }); for (let i = 0; i < 6; i++) { const c = boxMesh(.38, rnd(.95, 1.3), .09, [hess, carpet, velvet, velvetG][i % 4]); add(c, 3.9 + i * .4, 1.1 + rnd(-.05, .05), -7.3 + rnd(-.03, .03), rnd(-.15, .15)); } spot('walkin', [4.9, -5.6], [4.9, 1, -7.64], [3.7, 1.4, -7.64], 'Closet'); }
-  prop('vintage_suitcase', { long: .6, x: 5.3, y: .02, z: -5.4, ry: .5, mass: 3, kind: 'card', name: 'a suitcase', fr: .8, asleep: true }); for (const [x, z] of [[2.1, -5.2], [5.4, -6.6]]) prop('cardboard_box_01', { long: .5, x, y: .01, z, ry: rnd(6), mass: 2, kind: 'card', name: 'a box', fr: .9, asleep: true });
+  prop('vintage_suitcase', { long: .6, x: 5.3, y: .02, z: -5.4, ry: .5, mass: 3, kind: 'card', name: 'a suitcase', fr: .8, asleep: true }); for (const [x, z] of [[3, -6.2], [5.4, -6.6]]) prop('cardboard_box_01', { long: .5, x, y: .01, z, ry: rnd(6), mass: 2, kind: 'card', name: 'a box', fr: .9, asleep: true });
 
   /* ───────── the basement ───────── */
   Y = LV[0];
@@ -235,6 +237,48 @@ function build() {
   { stat(.8, .42, 1.8, 4.75, .21, -4.6, hess, { kind: 'soft' }); stat(.22, .5, 1.8, 5.04, .67, -4.6, hess, { kind: 'soft' }); veil(1.9, .95, 4.3, .48, -4.6, 1, linen); veil(.9, .95, 4.75, .48, -3.68, 0, linen); const top = boxMesh(.95, .012, 1.9, linen); add(top, 4.75, .95, -4.6); spot('oldsofa', [3.2, -4.6], [5.55, .3, -4.6], [5.55, 1.2, -3.3], 'Cellar'); }
   { const t = new THREE.Mesh(new THREE.CylinderGeometry(.35, .35, 1.5, 16), rust); t.castShadow = t.receiveShadow = true; add(t, 5.5, .75, -.6); stat(.65, 1.5, .65, 5.5, .75, -.6, null, M); }
   for (const [x, z] of [[-3, -4.2], [.9, -1], [-4.4, -8.6]]) prop('wooden_crate_02', { long: .6, x, y: .01, z, ry: rnd(6), mass: 6, kind: 'wood', name: 'a crate', fr: .9, asleep: true });
+
+  /* ───────── twenty-four more places, set down where they really stand, and the attic over it all ───────── */
+  RAW = true; const grey = new THREE.MeshStandardMaterial({ color: 0x6d7275, roughness: .5, metalness: .5 }), soot = new THREE.MeshStandardMaterial({ color: 0x141312, roughness: 1 });
+  // a low frame with a cloth to the floor on every side: a body lies under it
+  const draped = (x, z, w, d, h, m) => { stat(w, .05, d, x, h, z, wood, Wd); for (const sx of [-1, 1]) for (const sz of [-1, 1]) stat(.07, h, .07, x + sx * (w / 2 - .06), h / 2, z + sz * (d / 2 - .06), wood, Wd); veil(w + .1, h, x, h / 2, z - d / 2 - .03, 0, m); veil(w + .1, h, x, h / 2, z + d / 2 + .03, 0, m); veil(d + .1, h, x - w / 2 - .03, h / 2, z, 1, m); veil(d + .1, h, x + w / 2 + .03, h / 2, z, 1, m); const top = boxMesh(w + .14, .012, d + .14, m); add(top, x, h + .035, z); };
+  Y = LV[1];
+  chest('hallbench', -.8, -10.75, .66, 1.3, .62, -1, woodD, false); spot('hallbench', [.3, -10.75], [-.8, .3, -10.75], [-.4, 1.4, -10.75], 'hall');
+  { for (const x of [-5.02, -3.78]) stat(.3, 1, .62, x, .5, -.41, brick); stat(1.54, 1.6, .62, -4.4, 1.8, -.41, brick); stat(1.7, .06, .74, -4.4, 1.03, -.45, woodD, { ghost: true }); stat(.94, .04, .5, -4.4, .02, -.4, soot, { ghost: true }); veil(.98, .98, -4.4, .5, -.74, 0, soot); spot('fireplace', [-3.55, -1.45], [-4.4, .3, -.42], [-4.4, .5, -1.15], 'living'); }
+  closet('sideboard', -3.7, -11.6, 0, { wood: true, w: 1.3, d: .62, h: .92, m: woodD, solid: true }); spot('sideboard', [-3.7, -10.2], [-3.7, .3, -11.6], [-3.7, .6, -10.95], 'Dining');
+  { stat(1.2, 1.5, .45, 4.2, .75, -.95, grey, M); stat(.45, 1.5, .62, 3.38, .75, -.41, grey, M); for (const x of [3.9, 4.5]) for (const y of [.3, .75, 1.2]) { const hd = boxMesh(.16, .03, .03, iron); hd.castShadow = false; add(hd, x, y, -1.19); } spot('filing', [4.2, -2.2], [4.2, .5, -.42], [5.25, 1.3, -.42], 'Study'); }
+  chest('trunkS', 4.4, -3.72, .7, 1.25, .66, 1, woodD, false); spot('trunkS', [4.4, -2.45], [4.4, .3, -3.72], [4.4, 1.4, -3.2], 'Study');
+  closet('dryer', 4.6, -4.8, 2, { w: .82, d: .76, h: .92, m: whiteM, solid: true, mass: 6 }); spot('dryer', [4.6, -6.15], [4.6, .35, -4.8], [4.6, .6, -5.5], 'Utility');
+  chest('bigbin', 1.74, -9.55, .7, .72, 1, 1, new THREE.MeshStandardMaterial({ color: 0x24312a, roughness: .6 }), false); spot('bigbin', [2.75, -10.05], [1.74, .4, -9.55], [2.3, 1.6, -9.55], 'Kitchen');
+  Y = LV[2];
+  veil(1.25, 2.3, -.6, 1.2, -.64, 0, velvetG); spot('curtainU', [-.3, -1.8], [-.6, 1, -.36], [.1, 1.4, -.36], 'landing');
+  { stat(1.4, 1.8, .04, -4.7, .9, -5.2, hess, Wd); stat(.04, 1.8, .7, -5.4, .9, -5.55, hess, Wd); spot('screenM', [-4.7, -4.3], [-4.8, .9, -5.57], [-3.75, 1.4, -5.6], 'Master'); }
+  mound(-4.4, -10.6, .55, .5, velvetG); spot('beanbag', [-3.6, -9.9], [-4.4, .2, -10.6], [-4.05, .3, -10.25], 'Child');
+  { stat(1, .5, .45, -4.4, .25, -6.88, whiteM, Wd); stat(1, .62, .45, -4.4, .81, -6.88, velvet, Wd); const rf = boxMesh(1.1, .05, .5, woodD); add(rf, -4.4, 1.14, -6.88); spot('dollhouse', [-4.4, -8.1], [-4.4, .4, -6.38], [-3.55, 1.2, -6.38], 'Child'); }
+  bed(4, -3.85, 1.9, 1); spot('bedG', [4, -2.3], [4, .15, -3.85], [4, .25, -2.9], 'Nursery');
+  closet('fitted', 7.02, -3.4, 3, { wood: true, w: 1, m: whiteM }); spot('fitted', [5.6, -3], [7.02, 1, -3.4], [6.45, 1.5, -3.4], 'Nursery');
+  { for (const [y, h, m] of [[.22, .44, hess], [.65, .4, velvet], [1.05, .4, woodD]]) stat(1.2, h, .45, 2.6, y, -7.1, m, { kind: 'card' }); stat(.4, 1.25, .6, 3.4, .625, -7.6, woodD, { kind: 'card' }); spot('suitcases', [2.6, -5.9], [2.6, .5, -7.62], [1.72, 1.3, -7.62], 'Closet'); }
+  chest('steamer', 1.87, -5.5, .7, 1.3, .68, -1, woodD, false); spot('steamer', [3.1, -5.5], [1.87, .3, -5.5], [2.4, 1.4, -5.5], 'Closet');
+  closet('shower', 3.05, -11.48, 0, { w: .92, d: .86, h: 2, m: whiteM, solid: true, mass: 5 }); spot('shower', [3.05, -9.9], [3.05, 1, -11.48], [3.05, 1.5, -10.9], 'Bath');
+  mound(2.05, -9.7, .5, .45, linen); spot('towels', [3.2, -9.6], [2.05, .2, -9.7], [2.5, .3, -9.7], 'Bath');
+  Y = LV[0];
+  chest('coal', -3, -.85, .8, 1.3, .8, -1, soot, false); spot('coal', [-1.95, -1], [-3, .3, -.85], [-2.45, 1.4, -.85], 'Cellar');
+  /* the attic: one long room under the roof, reached by a door on the landing and a stair over the stair */
+  RAW = false; Y = LV[3];
+  wall('x', 0, -6, 6, [wn(-.5, .5, 1.1, 1.9)], woodD); wall('x', -12, -6, 6, [wn(-.5, .5, 1.1, 1.9)], woodD); wall('z', -6, 0, -12, [], woodD); wall('z', 6, 0, -12, [], woodD); win('x', 0, -.5, .5, 1.1, 1.9); win('x', -12, -.5, .5, 1.1, 1.9);
+  wall('z', .1, -4, -8.2, [], woodD); wall('z', 1.3, -4, -8.2, [], woodD); wall('x', -4, .1, 1.3, [], woodD);
+  RAW = true;
+  { stat(1.2, 1.5, 1.2, -6.6, .75, -10.7, rust, M); const pp = new THREE.Mesh(new THREE.CylinderGeometry(.05, .05, 1.1, 8), rust); add(pp, -6.6, 2.05, -10.7); spot('tank', [-5.2, -10], [-6.6, .5, -11.6], [-5.7, 1.3, -11.6], 'attic'); }
+  pile('atticboxes', 5.9, -1); stat(.5, 1.26, .65, 5.3, .63, -.43, card, { kind: 'card' }); spot('atticboxes', [6.2, -2.4], [6.2, .4, -.42], [7.12, 1.3, -.5], 'attic');
+  draped(-3.5, -9.5, 1.7, .95, .82, linen); spot('dustsheet', [-3.5, -7.9], [-3.5, .3, -9.5], [-3.5, .4, -8.8], 'attic');
+  closet('atticwardrobe', 4.5, -11.68, 0, { wood: true, w: 1.1, m: woodD }); spot('atticwardrobe', [4.5, -10.3], [4.5, 1, -11.7], [4.5, 1.5, -11.15], 'attic');
+  { stat(1.2, HI, .8, -4.4, HI / 2, -1.1, brick); stat(.6, 1.2, .6, -5.3, .6, -.4, card, { kind: 'card' }); spot('chimney', [-4.4, -2.6], [-4.4, .5, -.4], [-3.5, 1.3, -.4], 'attic'); }
+  { const x = 7.04, z = -5.5, len = 3; stat(.72, .03, len, x, .665, z, woodD, Wd); stat(.03, .68, len, x - .345, .34, z, woodD, Wd); stat(.72, .68, .03, x, .34, z - len / 2, woodD, Wd); spot('eaves', [5.8, -3.2], [x, .35, z], [x, .4, z + len / 2 + .25], 'attic'); }
+  const fAt = fixture('attic', 'attic', -.8, HI - .45, -9.6, { k: .7, r: 7, size: .05 }); { const g = model('pull_chain_light_socket', { h: .4, noShadow: true }); add(g, -.8, HI - .4, -9.6); device('switch', 'sw_attic', -.8, 1.55, -9.6, { fx: fAt }); const ch = boxMesh(.006, .6, .006, iron); add(ch, -.8, 1.85, -9.6); }
+  for (const [x, z] of [[-1.5, -2.5], [3, -6.5], [-6.5, -5], [2.5, -10.8]]) prop('wooden_crate_02', { long: .6, x, y: .01, z, ry: rnd(6), mass: 6, kind: 'wood', name: 'a crate', fr: .9, asleep: true });
+  for (const [x, z] of [[-2.5, -5.5], [5.5, -8.5], [-5.5, -7.5], [3.2, -3]]) prop('cardboard_box_01', { long: .5, x, y: .02, z, ry: rnd(6), mass: 1.8, kind: 'card', name: 'a packed box', fr: 1, asleep: true });
+  prop('rockingchair_01', { h: 1, x: -1.6, y: .01, z: -10.6, ry: .8, mass: 7, kind: 'wood', name: 'a rocking chair', fr: .5, sx: .8, sz: .8, asleep: true }).kick = true;
+  RAW = false;
   Y = 0;
 
   /* what frames the windows and what hangs on the walls: the family's pictures (the Met's open-access portraits and paintings), aged a little, all on one sheet */
@@ -287,7 +331,7 @@ function build() {
   WORLD.lit = (x, z, y = 0) => { let v = .03 + WORLD.flash * .5; for (const F of WORLD.fixtures) if (F.lit && Math.abs(F.y - y - 1) < 2.2) v = Math.max(v, F.k * F.f * clamp(1 - Math.hypot(x - F.x, z - F.z) / F.r, 0, 1)); return Math.min(1, v); };
   WORLD.lamps = WORLD.fixtures;
   // where dust lies thick enough to take a footprint: the cellar and the rooms nobody uses (study, utility, nursery and its closet)
-  WORLD.dusty = (x, y, z) => y < -2 || (x > 1.45 && (y > 2 ? z > -7.9 : y > -.5 && z > -6.9));
+  WORLD.dusty = (x, y, z) => y < -2 || y > 5 || (x > 1.45 && (y > 2 ? z > -7.9 : y > -.5 && z > -6.9));
 
   /* the weather: rain past every window, and the dust of the house in whatever light there is */
   { const N = LOW ? 900 : 2200, g = new THREE.BufferGeometry(), p = new Float32Array(N * 6), e = new Float32Array(N * 2); for (let i = 0; i < N; i++) { const side = Math.floor(rnd(4)), d = rnd(.25, 3.5), u = rnd(-7, 7), x = side === 0 ? -6.2 - ADD - d : side === 1 ? 6.2 + ADD + d : u * 1.25, z = side === 2 ? .2 + d : side === 3 ? -12.2 - d : -6 + u, y = rnd(0, 9); p.set([x, y, z, x, y, z], i * 6); e[i * 2] = 0; e[i * 2 + 1] = 1; }

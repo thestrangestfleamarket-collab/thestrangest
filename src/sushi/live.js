@@ -38,6 +38,7 @@ export function buildLive() {
   // on its own page: the cook stands behind the platform's cart of the home section (009-down.js: its place there), as THE COOK
   live.join = () => { if (framed || link || !/^https?:$/.test(location.protocol)) return; let card = null; try { card = JSON.parse(sessionStorage.getItem('holo') || 'null'); } catch (e) { /* none */ }
     NET.card = card && card.room ? card : { room: 's-a', name: 'THE COOK', look: 'w0', hp: 1, at: [0, 0, 0, 0, 'up', 'alley'], back: '/' }; NET.query = { cart: '1' }; link = cartLink(NET, take); NET.connect(); };
+  live.net = () => ({ on: NET.on, me: NET.me, others: [...NET.others.values()].map((o) => [o.id, !!o.cp]) });
   live.update = (dt) => {
     for (const w of live.watchers.values()) { if (w.seated) continue; const pos = w.p.root.position, d = pos.distanceTo(w.to); if (d > 0.08) { _a.copy(w.to).sub(pos).multiplyScalar(Math.min(d, 1.4 * dt) / d); pos.add(_a); w.p.root.rotation.y = Math.atan2(_a.x, _a.z); w.p.pose = 'walk'; } else { w.p.pose = 'stand'; w.p.root.rotation.y = Math.atan2(-pos.x, -0.6 - pos.z); } w.p.look = G.camera.getWorldPosition(_b); w.p.update(dt, G.t); }
     if ((t2 += dt) >= 0.12 && G.t - seenT < 4) { t2 = 0; const d = mirror.frame(); if (link) { if (NET.on) link.items(d); } else if (framed) try { window.parent.postMessage({ yataiItems: d }, location.origin); } catch (e) { /* alone */ } }   // the things themselves, while anyone is in the market's alley to see them

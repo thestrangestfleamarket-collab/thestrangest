@@ -47,6 +47,7 @@ headset · NPC voices.
 
 - **P2 · look** COLD BORE at `/sniper` (14 Nov 2026; live without a check, as asked): play it on the screen and in the Quest 3 (it has only been run in software rendering and an emulated headset: the frame rate, how the rifle sits in the hands, the eye behind the scope); its name (COLD BORE is a working name); boats still made in code; every car is the one model (a VW Corrado) in five paints and the helicopter is a gunship, until better free ones are found; a hit person falls by being tipped over (the library has no falling motion); `tests/sniper.cjs` was last run in full before the real assets went in.
 - **P2 · look** EDGE OF 88 at `/edge` and HULL DOWN at `/tank` (14 Nov 2026): play both on the screen and in the Quest 3 (run only in software rendering and an emulated headset: the frame rate, the seat's height in the turret, the turret turning you in the headset); Hull Down is new, built on his kit: its look, its four waves, its name's addresses (`/tank`, `/hull`); whether either goes in the holodeck's list.
+- **P2 · look** HULL DOWN rebuilt (14 Nov 2026): his look and yes in the Quest 3: the frame rate with the town and trees, the dark turret, the sound mix (the tank recordings are 1940s film ones, nothing modern is free), the enemy's tank (a made-up one: no free real T-72 with pictures), no coaxial gun or foot soldiers yet.
 
 ## CI, checks and tools
 

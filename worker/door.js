@@ -29,7 +29,7 @@ const EDMAP = /^\/edmap\/t\d{1,2}_\d{1,2}\.jpg$/;
 const SCAREA = /^\/scare-assets\/[a-z0-9_-]+\.glb$/;   // VESPER WARD's models: to anyone
 const SNIPA = /^\/sniper-assets\/(sky|tex|m|snd|p)\/[A-Za-z0-9_-]+\.(glb|json|mp3|jpg|png)$/, SNIPT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg", jpg: "image/jpeg", png: "image/png" };   // COLD BORE's skies, surfaces, models and sounds: to anyone
 const JAMA = /^\/jam-assets\/[a-z0-9_-]+\.(glb|json|mp3)$/, JAMT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg" };   // STADIUM JAM's avatars, hands and samples: to anyone
-const GOLFA = /^\/(golf|duel|cantina|hide|zombie|sushi)-assets\/(?!.*\.\.)[A-Za-z0-9_.\/-]+\.(jpg|json|txt|glb|mp3|hdr|fbx|webp)$/;   // HALCYON GREENS' pictures and models, AR DUEL's pictures, THE CANTINA's models and pictures, DEAD END's pictures, models and sounds, EYES DOWN's pictures and models: to anyone
+const GOLFA = /^\/(golf|duel|cantina|hide|zombie|sushi|tank)-assets\/(?!.*\.\.)[A-Za-z0-9_.\/-]+\.(jpg|json|txt|glb|mp3|hdr|fbx|webp)$/;   // HALCYON GREENS' pictures and models, AR DUEL's pictures, THE CANTINA's models and pictures, DEAD END's pictures, models and sounds, EYES DOWN's pictures and models, HULL DOWN's sky, surfaces, models and sounds: to anyone
 const BOOK = /^\/book\/(\d{1,6})\.txt$/, FILM = /^\/film\/([A-Za-z0-9_.-]{1,80})\/([A-Za-z0-9_.-]{1,120}\.mp4)$/, IA = /^\/ia\/([A-Za-z0-9_.-]{1,80})\.jpg$/, YT = /^\/yt\/([A-Za-z0-9_-]{11})\.jpg$/, BLANK = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYGD4DwABBAEAHnOcQAAAAABJRU5ErkJggg==";
 const SKYJD = () => { const d = new Date(); return Date.UTC(1985, d.getUTCMonth(), d.getUTCDate()) / 864e5 + 2440587.5; },   // the sky's year is 1985 (src/134b DN.YEAR): that year's comets
    SBDB = "https://ssd-api.jpl.nasa.gov/sbdb_query.api?", SWPC = "https://services.swpc.noaa.gov/";
@@ -93,7 +93,7 @@ export default {
     // EDGE OF 88 (src/edge/): the plank over the city, its own page at /edge, also /game, to anyone with the link
     if ((request.method === "GET" || request.method === "HEAD") && (p === "/edge" || p === "/game")) return page(env, url, "/edge", request, "no-cache");
     if (p === "/edge/" || p === "/game/") return Response.redirect(url.origin + "/edge" + url.search, 301);
-    // HULL DOWN (src/tank/): the tank's turret, its own page at /tank, also /hull, to anyone with the link
+    // HULL DOWN (src/tank/): the tank's turret, its own page at /tank, also /hull, to anyone with the link; its sky, surfaces, models and sounds under /tank-assets/
     if ((request.method === "GET" || request.method === "HEAD") && (p === "/tank" || p === "/hull")) return page(env, url, "/tank", request, "no-cache");
     if (p === "/tank/" || p === "/hull/") return Response.redirect(url.origin + "/tank" + url.search, 301);
     // BREACHLINE (src/shoot/): its own page at /shoot, to anyone with the link

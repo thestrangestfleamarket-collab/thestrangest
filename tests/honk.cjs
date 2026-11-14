@@ -1,4 +1,4 @@
-// THE HORN'S WAY (150pf): node tests/honk.cjs. A traffic car held up honks and what holds it up gets out of the way: you on foot walk to the kerb, a car left empty in the road pulls over to the kerb, THE BIG CAT hurries his crossing; a player's own horn does the same.
+// THE HORN'S WAY (150pf): node tests/honk.cjs. A traffic car held up honks and what holds it up gets out of the way: you on foot walk to the kerb, a car left empty in the road pulls over to the kerb; a player's own horn does the same.
 const {chromium}=require('playwright');
 (async()=>{ const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']}); const pg=await b.newPage({viewport:{width:960,height:640}}); const errs=[]; let bad=0;
   pg.on('pageerror',e=>errs.push(e.message.slice(0,160)));
@@ -21,9 +21,6 @@ const {chromium}=require('playwright');
   // the lane is clear again: the cars drive past it
   const flow=await pg.waitForFunction(([c,z])=>TRAFFIC.lanes[0].cars.some(K=>K.m&&K.sp>3&&Math.abs(K.m.position.x-c.at[0])<6),[car,L.z],{timeout:150000}).then(()=>true).catch(()=>false);
   ok(flow,'the traffic drives past the car at the kerb');
-  // THE BIG CAT: honked at mid-crossing, he is across sooner
-  const cat=await pg.evaluate(()=>{ const W=window.BIGCATWALK; let t=1000; while(!W(t).cross)t+=1; const t1=t+3; let a=t1; while(W(a).cross)a+=.5; ONLINE.world['honk:cat']=t1; let h=t1; while(W(h).cross)h+=.5; const same=W(t1-1).z; delete ONLINE.world['honk:cat']; return {slow:a-t1,fast:h-t1,cont:Math.abs(W(t1-1).z-same)<1e-9}; });
-  ok(cat.fast>0&&cat.fast<cat.slow*.5&&cat.cont,'THE BIG CAT, honked at, finishes his crossing in a third of the time '+JSON.stringify(cat));
   // a player's own horn: what is ahead of the car moves, the driver does not
   const own=await pg.evaluate(([x,z])=>{ const C=[...CARS.cars.values()].find(c=>c.mesh&&!c.moor); ONLINE.put('car:'+C.id,[x,z,0].join(',')); SHARED.target=null; SYS.run('honk',{x:x-8,z,dx:1,dz:0,by:ONLINE.me||'me'}); const R=TRAFFIC.road; return {home:C.z<R.z0||C.z>R.z1,me:!SHARED.target}; },[x0+20,L.z]);
   ok(own.home&&own.me,'your own horn clears the car ahead and leaves you be '+JSON.stringify(own));

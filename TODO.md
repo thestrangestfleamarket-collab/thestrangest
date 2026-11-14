@@ -204,6 +204,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [ ] **Climbing the puff trees; placing them** · P3 · pick.
 - [ ] **Ragdolls for today's bodies** · P3 · L · pick + code. Owner, 7 Nov ("go with your recommendations"): knock-overs stay dormant until
   today's cast's bodies get a ragdoll; `tests/physx.cjs` checks them again then. When they come: stand up where they fell, not where they were.
+- [x] **THE BIG CAT furry, by a pole down Market St** (owner, 14 Nov 2026) · P2 · S · code + look. Done: worktree-agent-a4e3f10d0a6cacb08, 14 Nov.
 
 ## Apartments
 - [x] **GRAPHICS HIGH the rich picture: soft shadows, 720 lines, contact shade** (owner, 14 Nov 2026; done 14 Nov) · P2 · M · code. Frame cost on a real machine not measured yet. Waits for his look and yes.

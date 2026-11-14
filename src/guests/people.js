@@ -27,7 +27,9 @@ class Body {
     a.setEffectiveWeight(1); if (old && old !== a) { a.crossFadeFrom(old, fade, false); } a.play(); this.cur = name; this.curOnce = !!o.once; }
   // move over the ground at v m/s facing yaw: picks the walk whose own speed is nearest and plays it at the pace that keeps the feet from sliding
   walk(v) { let best = WALKS[0]; for (const w of WALKS) if (Math.abs(w[1] - v) < Math.abs(best[1] - v)) best = w; if (this.drunk && v < 1.2) best = ['walk_drunk', PEOPLE.clips[this.sex].walk_drunk.speed]; this.play(best[0], .3, { rate: clamp(v / best[1], .6, 1.5) }); }
-  hold(obj, o = {}) { if (this.held) this.held.removeFromParent(); this.held = obj; if (!obj) return; const h = this.bones.Bip01_R_Hand; h.add(obj); const s = 1 / (h.getWorldScale(_v).x || 1); obj.scale.multiplyScalar(s); obj.position.set(o.px ?? .09, o.py ?? -.03, o.pz ?? .02).multiplyScalar(s); obj.rotation.set(o.rx ?? 0, o.ry ?? 0, o.rz ?? -1.57); }
+  hold(obj, o = {}) { if (this.held) this.held.removeFromParent(); this.held = obj; if (!obj) return; const h = this.bones.Bip01_R_Hand; h.add(obj); const s = 1 / (h.getWorldScale(_v).x || 1); obj.scale.multiplyScalar(s); obj.position.set(o.px ?? .09, o.py ?? -.03, o.pz ?? .02).multiplyScalar(s); obj.rotation.set(o.rx ?? 0, o.ry ?? 0, o.rz ?? -1.57);
+    // a glass is held upright in the hand as the drinking pose holds it
+    if (o.upright && !this.rag) { const was = this.cur; this.play('drink_idle', 0, { start0: 1, again: 1 }); this.mixer.update(0); this.o.position.set(this.x, this.y, this.z); this.o.rotation.y = this.yaw; this.o.updateMatrixWorld(true); h.getWorldQuaternion(_q); obj.quaternion.copy(_q.invert()).multiply(_q2.setFromAxisAngle(Y, 0)); const yq = new THREE.Quaternion().setFromAxisAngle(Y, this.yaw); obj.quaternion.copy(_q).multiply(yq); } }
   say(dur) { this.talkT = dur; }
   step(dt) { if (this.frozen) return; if (this.rag) { this.ragStep(dt); return; }
     this.mixer.update(dt); const o = this.o; o.position.set(this.x, this.y, this.z); o.rotation.y = this.yaw; this.blob.position.set(this.x, this.y + .008, this.z); this.blob.visible = o.visible;

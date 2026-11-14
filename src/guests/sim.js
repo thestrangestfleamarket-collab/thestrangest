@@ -31,7 +31,7 @@ function spawn() { CAST.forEach((c, i) => { const g = new Guest(c, i); SIM.list.
   // the party as it stands at nine: most in the hall, staff at their work
   const start = { agnes: [34.6, 13.3, 0], tomas: [18.8, 6.85, -1.57], bill: [26, 20.6, Math.PI] }; let k = 0; const an = SPOTS.filter(s => s.kind === 'mingle' && (s.room === 'hall' || s.room === 'dining' || s.room === 'foyer'));
   for (const g of SIM.list) { const s = start[g.id]; if (s) g.place(...s); else { const a = an[k % an.length], n = Math.floor(k / an.length), t = (k * 2.4) % 6.28; g.place(a.x + Math.cos(t) * (.8 + n * .3), a.z + Math.sin(t) * (.8 + n * .3), t + Math.PI); k++; } g.body.step(0); if (!g.c.staff && g.c.drinks > 0 && chance(.7)) giveGlass(g); } }
-function giveGlass(g, dose, tea) { if (g.glass) return; const m = wineglass(true); g.glass = { m, level: 1, dose: dose || null, tea: !!tea }; g.body.hold(m, { px: .1, py: -.02, pz: .04, rx: 0, rz: -1.45 }); g.need.drink = 0; }
+function giveGlass(g, dose, tea) { if (g.glass) return; const m = wineglass(true); g.glass = { m, level: 1, dose: dose || null, tea: !!tea }; g.body.hold(m, { px: .1, py: -.035, pz: .03, upright: 1 }); g.need.drink = 0; }
 function dropGlass(g) { if (!g.glass) return; g.body.hold(null); g.glass = null; }
 
 // SPEECH: a line said aloud; those in earshot hear it, the page shows and voices it

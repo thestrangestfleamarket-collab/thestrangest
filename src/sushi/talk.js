@@ -17,8 +17,8 @@ const CANNED = {
   good: ['Ahh. That hits the spot.', 'Perfect. Just what I needed.', 'This is why I come here.'], ok: ['Not bad. Thanks.', 'Mm. It will do.'],
   bad: ['Hm. This is not quite what I ordered.', 'Something is off with this bowl.'], angry: ['Forget it. I cannot wait any longer.'],
   reply: ['Ha. If you say so.', 'Is that right?', 'Sure, sure.'], wave: ['Evening! Busy night?', 'Hey there. How are you doing?', 'Ah, hello!'],
-  react: ['Whoa. Everything all right back there?', 'Careful!', 'Ha. Butterfingers.'], chat: ['That train is taking its time. How is your night going?', 'Long day. This is the best part of it.', 'Smells wonderful tonight.', 'You been here long tonight?'],
-  noise: ['Sorry? I cannot hear you over the train.', 'Hm? Say that again?', 'What was that?'],
+  react: ['Whoa. Everything all right back there?', 'Careful!', 'Ha. Butterfingers.'], chat: ['This rain will not quit. How is your night going?', 'Long day. This is the best part of it.', 'Smells wonderful tonight.', 'You been here long tonight?'],
+  noise: ['Sorry? I cannot hear you over the rain.', 'Hm? Say that again?', 'What was that?'],
 };
 
 export function buildTalk() {
@@ -96,7 +96,7 @@ export function buildTalk() {
 
   talk.event = (c, kind, r) => {
     const waited = c.order ? Math.round(c.maxPatience - c.patience) : 0;
-    if (kind === 'order') say(c, 'order', 'You just sat down at the counter on the subway platform. Greet the cook and say what you want; you may ask how their night is going.', 'You have not been served yet.');
+    if (kind === 'order') say(c, 'order', 'You just ducked out of the rain and sat down at the cart in the alley. Greet the cook and say what you want; you may ask how their night is going.', 'You have not been served yet.');
     else if (kind === 'impatient') say(c, 'impatient', 'You have been waiting a while and your bowl has not arrived.', `You have waited about ${waited} seconds. Nothing has been served to you yet.`);
     else if (kind === 'taste') { c.p.gesture?.(r.score >= 80 ? 'nod' : r.score >= 50 ? 'shrug' : 'no'); say(c, r.score >= 80 ? 'good' : r.score >= 50 ? 'ok' : 'bad', 'The cook just set your bowl in front of you and you took your first taste. Say what you think of it.', `Quality ${r.score}/100. ${r.issues.length ? 'Problems with the bowl: ' + r.issues.join('; ') + '.' : 'It is exactly what you ordered, hot and well made.'} ${r.pay ? `You will pay${r.tip ? ' and leave a tip' : ', no tip'}.` : 'It is so wrong you refuse to pay.'}`); }
     else if (kind === 'wave') say(c, 'wave', 'The cook just caught your eye and waved at you from behind the counter. You wave back and say something.', c.result ? 'You have your food.' : 'You are still waiting for your food.');

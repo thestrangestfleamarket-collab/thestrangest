@@ -97,6 +97,15 @@ export default {
     // DEAD END (src/hide/): its own page at /hide, to anyone with the link; its pictures, models and sounds under /hide-assets/; the thing's mind (POST /hide/mind) only to a login
     if ((request.method === "GET" || request.method === "HEAD") && p === "/hide") return page(env, url, "/hide", request, "no-cache");
     if (p === "/hide/") return Response.redirect(url.origin + "/hide" + url.search, 301);
+    // DEAD END's log (worker/hide.js): every finished game is kept (Supabase hide_games, the service key), from anyone who played; the report only to an owner
+    if (request.method === "POST" && p === "/hide/log") { if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
+      if (tooMany("hlog:" + (request.headers.get("CF-Connecting-IP") || "local"), 8)) return json({ why: "too much at once" }, 429); const k = svc(env); if (!k) return json({ why: "no log yet" });
+      const raw = await request.text(); if (raw.length > 30000) return json({ why: "too long" }, 400); let b; try { b = JSON.parse(raw); } catch (e) { return json({ why: "not a game" }, 400); } if (!b || typeof b !== "object") return json({ why: "not a game" }, 400);
+      const id = await who(env, request, dev).catch(() => null), r = await fetch(env.SUPABASE_URL + "/rest/v1/hide_games", { method: "POST", headers: { ...k, "content-type": "application/json", Prefer: "return=minimal" }, body: JSON.stringify({ player: id && /^[0-9a-f-]{36}$/.test(id) ? id : null, data: HIDE.row(b) }) }).catch(() => null);
+      return json({ ok: !!(r && r.ok) }); }
+    if (request.method === "GET" && p === "/hide/report") { const id = await who(env, request, dev); if (!id) return Response.redirect(url.origin + "/", 302); const ow = await owner(env, id, dev); if (ow !== true) return json({ why: "owners only" }, 403);
+      const r = await fetch(env.SUPABASE_URL + "/rest/v1/hide_games?select=at,data&order=at.desc&limit=2000", { headers: svc(env) }), rows = r.ok ? await r.json() : [], R = HIDE.report(rows);
+      return url.searchParams.get("json") ? json({ ...R.sum, games: R.games }) : new Response(R.html, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } }); }
     // EYES DOWN (src/zombie/): its own page at /zombie (also /eyes), to anyone with the link; its pictures and models under /zombie-assets/; the visitors' mind (POST /zombie/mind) and the night reached (POST /zombie/save) only to a login
     if ((request.method === "GET" || request.method === "HEAD") && (p === "/zombie" || p === "/eyes")) return page(env, url, "/zombie", request, "no-cache");
     if (p === "/zombie/" || p === "/eyes/") return Response.redirect(url.origin + "/zombie" + url.search, 301);

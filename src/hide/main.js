@@ -26,26 +26,30 @@ function boardSay(title, lines, foot, col = '#d8d2c2') { const g = board.g; g.cl
 const KEYS = () => renderer.xr.isPresenting ? 'RIGHT TRIGGER' : 'E';
 
 /* each night is a little different: the rain, the fog, a lamp out, a lid chained, the shutter down, and where the key lies */
-const plain = () => ({ rain: 1, fog: 1, lampOut: false, locked: '', shutter: false, key: 0 });
-function rollNight() { if (Q.get('night') === 'plain') return plain(); const r = n => Math.floor(Math.random() * n); return { rain: [.6, 1, 1, 1.6][r(4)], fog: [.8, 1, 1, 1.5][r(4)], lampOut: Math.random() < .2, locked: Math.random() < .3 ? ['dumpster1', 'dumpster2', 'locker'][r(3)] : '', shutter: Math.random() < .2, key: r(8) }; }
-function applyNight(N) { WORLD.night = N; scene.fog.density = .075 * N.fog; A.rain(N.rain); SK.cfg.mask = N.rain; WORLD.shutter(N.shutter);
+const plain = () => ({ rain: .55, fog: 1.25, lampOut: false, locked: '', shutter: false, key: 0 });
+function rollNight() { return { ...plain(), key: Q.get('night') === 'plain' ? 0 : Math.floor(Math.random() * 8) }; }   // one night only: fog. The key lies somewhere different each time
+function applyNight(N) { WORLD.night = N; scene.fog.density = .075 * N.fog; A.rain(N.rain); SK.cfg.mask = N.rain; WORLD.shutter(N.shutter); WORLD.setPower(true);
   for (const id in P.lids) { const d = P.lids[id]; if (d.was0 === undefined) d.was0 = d.was; d.locked = false; d.was = d.was0; if (id === N.locked) { d.set(false); d.was = false; d.locked = true; } }
   const k = N.shutter && N.key === 4 ? 0 : N.key, at = WORLD.keySpots[k], T = WORLD.key; T.o.visible = true; T.b.setTranslation({ x: at[0], y: at[1] + .04, z: at[2] }, true); T.b.setLinvel({ x: 0, y: 0, z: 0 }, true); T.b.setAngvel({ x: 0, y: 0, z: 0 }, true); T.o.position.copy(T.b.translation()); }
 const nightWords = N => [N.rain > 1.2 ? 'heavy rain (it hears less)' : N.rain < .8 ? 'the rain is easing (it hears more)' : '', N.fog > 1.2 ? 'thick fog' : '', N.lampOut ? 'the big lamp is out' : '', N.locked ? { dumpster1: 'the near dumpster is chained shut', dumpster2: 'the far dumpster is chained shut', locker: 'the locker is chained shut' }[N.locked] : '', N.shutter ? 'the shutter is down' : ''].filter(Boolean).join(' · ') || 'an ordinary night';
 let noteT = 0; const hudNote = (t, secs = 2.5) => { const g = hud.g; g.clearRect(0, 0, 512, 256); g.textAlign = 'center'; g.shadowColor = '#000'; g.shadowBlur = 10; g.fillStyle = '#d8d2c2'; g.font = '500 36px ui-monospace,Menlo,monospace'; g.fillText(t, 256, 150); hud.t.needsUpdate = true; hud.m.visible = true; noteT = secs; };
 function ready(roll = true) { G.mode = 'ready'; G.t = 0; hudSay('', ''); PL.frozen = false; black.material.color.set(0); if (roll || !WORLD.night) G.night = rollNight(); applyNight(G.night); const HIDE = hideT();
-  boardSay('DEAD END', [['You have ' + HIDE + ' seconds to hide. Then it comes in through the gate behind you.'], ['It hears steps, breath and anything you knock; sees breath in its light, wet prints, and what has moved. Throw something to draw it off. Somewhere there is a key to the cellar door.'], ['TONIGHT: ' + nightWords(G.night) + '.', '#c9a56a'], [renderer.xr.isPresenting ? 'LEFT STICK walk · RIGHT STICK turn, down to crouch · GRIP carry or climb · RIGHT TRIGGER open/shut · A climb over · LEFT TRIGGER hold your breath' : 'WASD walk · SHIFT run · C crouch/lie · MOUSE carry · E open/shut · SPACE climb over · Q hold your breath', '#77736a'], ['Its mind: ' + (SK.mode === 'claude' ? 'Claude Haiku' : 'instinct only' + (G.mindNote ? ' (' + G.mindNote + ')' : '')), '#77736a']], KEYS() + ' TO START'); }
+  boardSay('DEAD END', [['You have ' + HIDE + ' seconds to hide. Then it comes in through the gate behind you.'], ['It hears steps, breath and anything you knock; sees breath in its light, wet prints, and what has moved. Throw something to draw it off. Somewhere there is a key to the cellar door.'],  [renderer.xr.isPresenting ? 'LEFT STICK walk · RIGHT STICK turn, down to crouch · GRIP carry or climb · RIGHT TRIGGER open/shut · A climb over · LEFT TRIGGER hold your breath' : 'WASD walk · SHIFT run · C crouch/lie · MOUSE carry · E open/shut · SPACE climb over · Q hold your breath', '#77736a'], ['Its mind: ' + (SK.mode === 'claude' ? 'Claude Haiku' : 'instinct only' + (G.mindNote ? ' (' + G.mindNote + ')' : '')), '#77736a']], KEYS() + ' TO START'); }
 const hideT = () => +Q.get('t') || 60;
 function startRound() { if (G.mode !== 'ready') return; const HIDE = hideT(); G.unlock = 0; G.mode = 'hide'; G.t = 0; G.left = HIDE; G.rounds++; board.m.visible = false; A.start(); A.flat('heart', .5); hudSay(String(HIDE), 'HIDE'); }
 // how it came out: caught, outlasted, or out through the cellar; and where you were is something it will remember
 function end(won, how) { G.mode = 'end'; G.t = 0; G.won = won; G.how = how || (won ? 'gaveup' : 'caught'); PL.frozen = !won; hudSay('', ''); if (window.speechSynthesis) try { speechSynthesis.cancel(); } catch (e) {}
   let near = null, nd = 2.6; for (const sp of SPOTS) { const g = WORLD.GEO[sp.id], d = Math.hypot(g.look[0] - PL.pos.x, g.look[2] - PL.pos.z); if (d < nd) { nd = d; near = sp.id; } } G.spot = near;
-  if (near) { SK.habits[near] = (SK.habits[near] || 0) + 1; keep('deadend.habits', JSON.stringify(SK.habits)); if (SK.mode === 'claude' && location.protocol.startsWith('http')) fetch('/hide/mind', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify({ remember: near }) }).catch(() => {}); }
+  if (near && G.how === 'caught') { SK.habits[near] = (SK.habits[near] || 0) + 1; keep('deadend.habits', JSON.stringify(SK.habits)); if (SK.mode === 'claude' && location.protocol.startsWith('http')) fetch('/hide/mind', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify({ remember: near }) }).catch(() => {}); }
   const th = SK.thoughts.slice(-7).map(t => [t.at + 's  "' + t.text + '"', t.action === 'spotted' || t.action === 'caught' ? '#c2452f' : '#a9a497']);
   boardSay(G.how === 'escaped' ? 'YOU GOT OUT' : won ? 'IT GAVE UP' : 'IT FOUND YOU', [[G.how === 'escaped' ? 'Through the cellar door, with it still looking.' : won ? 'You outlasted it. It searched ' + Object.keys(SK.searched).length + ' of ' + SPOTS.length + ' places.' : 'Caught after ' + Math.round(SK.t) + ' seconds of hunting.', '#d8d2c2'], ['What it was thinking:', '#77736a'], ...th], KEYS() + ' TO PLAY AGAIN', won ? '#d8d2c2' : '#c2452f'); }
 function reset() { for (const T of P.things) { T.b.setTranslation(T.home.p, false); T.b.setRotation(T.home.q, false); T.b.setLinvel({ x: 0, y: 0, z: 0 }, false); T.b.setAngvel({ x: 0, y: 0, z: 0 }, false); T.b.sleep(); T.o.position.copy(T.home.p); T.o.quaternion.copy(T.home.q); }
   for (const id in P.lids) { P.lids[id].home(); } WORLD.cloth.reset(); SK.reset(); PL.place(0, 0, -2.6, renderer.xr.isPresenting ? rig.rotation.y : 0); PL.update(.016); ready(); }
+// the breaker box cuts the alley's own lamps (not the street's, the moon's or its torch): darkness for you, and a loud clunk that tells it where you were
+WORLD.setPower = on => { if (WORLD.power === on) return; WORLD.power = on; A.at('lid', WORLD.breaker, .9, 1.7); for (const L of WORLD.slow) L.shadow.needsUpdate = true; };
 PL.onUse = () => { if (G.mode === 'ready') { startRound(); return true; } if (G.mode === 'end' && G.t > 1.5) { reset(); return true; }
+  if ((G.mode === 'hide' || G.mode === 'seek') && PL.head.distanceTo(WORLD.breaker) < 1.6) { WORLD.setPower(!WORLD.power); PL.noise(WORLD.breaker, .9, 'the breaker thrown'); hudNote(WORLD.power ? 'THE LAMPS COME BACK' : 'THE LAMPS GO OUT'); return true; }
+  if (G.mode === 'hide' || G.mode === 'seek') for (const d of WORLD.doors.slice(1)) if (PL.head.distanceTo(d) < 1.5) { hudNote('LOCKED'); A.at(['metal1', 'metal2'], d, .4, 1.6); PL.noise(d, .35, 'a door rattled'); return true; }
   if ((G.mode === 'hide' || G.mode === 'seek') && PL.head.distanceTo(WORLD.door) < 1.7) { if (PL.key) { if (!G.unlock) { G.unlock = .01; A.at('gate', WORLD.door, .5, 2); PL.noise(WORLD.door, .5, 'a lock turning'); } } else { hudNote('LOCKED. THERE IS A KEY SOMEWHERE.'); A.at(['metal1', 'metal2'], WORLD.door, .4, 1.6); PL.noise(WORLD.door, .35, 'a door rattled'); } return true; } return false; };
 addEventListener('keydown', e => { if (e.code === 'Enter') PL.onUse(); });
 
@@ -58,7 +62,7 @@ function physics(dt) { for (const T of P.things) if (!T.b.isSleeping()) { const 
   for (const T of P.things) if (!T.b.isSleeping()) { T.o.position.copy(T.b.translation()); T.o.quaternion.copy(T.b.rotation()); }
   WORLD.cloth.step(dt, PL.balls(balls)); }
 
-let last = 0;
+let last = 0; const mv = [], movers = () => { mv.length = 0; mv.push(PL.pos.x, PL.pos.y + .9, PL.pos.z, PL.speed); if (SK.g.visible) mv.push(SK.pos.x, 1.1, SK.pos.z, SK.state === 'chase' ? 3.3 : SK.path.length ? 1.25 : 0); for (const T of P.things) if (T.v > 1.2) { const p = T.b.translation(); mv.push(p.x, p.y, p.z, Math.min(6, T.v)); } return mv; };
 // on a screen the eye focuses where you look and the rest goes soft (a headset's own lenses do that, and its two pictures cannot be post-processed)
 let comp = null, bokeh = null, focus = 4; const DOF = Q.get('dof') !== '0' && Q.get('q') !== 'low';
 function draw(dt) { if (renderer.xr.isPresenting || !DOF || G.mode === 'title') return renderer.render(scene, camera);
@@ -66,7 +70,11 @@ function draw(dt) { if (renderer.xr.isPresenting || !DOF || G.mode === 'title') 
   const h = ray(PL.head, PL.fwd, 30); focus = lerp(focus, h ? clamp(h.t, .4, 30) : 30, 1 - Math.exp(-dt * 5)); bokeh.uniforms.focus.value = focus; comp.render(dt); }
 function frame(time) { const dt = clamp((time - last) / 1000 || .016, .001, 1 / 20); last = time; if (G.mode !== 'title' && !G.paused) tick(dt); draw(dt); }
 
-function tick(dt) { G.t += dt; CLOCK.t += dt; PL.update(dt); SK.update(dt); for (const u of WORLD.updaters) u(dt, A); WORLD.mist(PL.head, dt); physics(dt); A.frame();
+function tick(dt) { G.t += dt; CLOCK.t += dt; PL.update(dt); SK.update(dt); for (const u of WORLD.updaters) u(dt, A); WORLD.mist(PL.head, dt, movers()); physics(dt); A.frame();
+  // the big fixed lamps redraw their shadows in turn, one every other frame, not all on every frame
+  G.fr = (G.fr || 0) + 1; if (G.fr % 2 === 0) { const L = WORLD.slow[(G.fr / 2) % WORLD.slow.length]; if (L) L.shadow.needsUpdate = true; }
+  // the leaking joint blows for a few seconds, rests, blows again; while it blows nothing can be seen through the plume
+  { const S = WORLD.steam; S.t -= dt; if (S.t < 0) { S.on = !S.on; S.t = S.on ? rnd(5, 8) : rnd(4, 7); S.veil.setEnabled(S.on); if (S.on) A.hiss(S.at, S.t); } if (S.on) WORLD.puff(S.at, dt); }
   if (noteT > 0 && (noteT -= dt) <= 0 && !G.bar && G.mode !== 'hide') hudSay('', '');
   if (G.unlock > 0 && (G.mode === 'hide' || G.mode === 'seek')) { if (PL.head.distanceTo(WORLD.door) > 1.9) { G.unlock = 0; hudNote('YOU LET GO OF THE LOCK'); } else { G.unlock += dt; if (G.unlock > 2.4) { A.at('lid', WORLD.door, .8, .8); end(true, 'escaped'); } } }
   if (G.mode === 'hide') { const was = Math.ceil(G.left); G.left -= dt; const n = Math.ceil(G.left); if (n !== was && n >= 0) { hudSay(String(n), n <= 10 ? 'IT IS COMING' : 'HIDE', n <= 10 ? '#c2452f' : '#d8d2c2'); if (n <= 10) A.flat('heart', .7, 1); }
@@ -83,7 +91,7 @@ function tick(dt) { G.t += dt; CLOCK.t += dt; PL.update(dt); SK.update(dt); for 
   G.odd -= dt; if (G.odd < 0) { G.odd = rnd(9, 24); const z = PL.pos.z + (Math.random() < .5 ? -1 : 1) * rnd(7, 15), at = { x: rnd(-2.3, 2.3), y: .1, z: clamp(z, -33, 6) }, r = Math.random(); if (r < .3) A.at('rat', at, .5, rnd(.9, 1.2)); else if (r < .45) A.at('glass', at, .3, rnd(.7, 1)); else if (r < .58) A.at(['metal1', 'metal2'], { x: rnd(-9, 9), y: 2, z: 12 }, .35, .5); else if (r < .7) A.siren(); else { G.gust = 1; } }
   G.gust = Math.max(0, (G.gust || 0) - dt * .22); A.wind(.25 + Math.sin(CLOCK.t * .23) * .12 + G.gust * .6);
   G.drip -= dt; if (G.drip < 0) { G.drip = rnd(.6, 3); A.at('drip', { x: rnd(-2.4, 2.4), y: .1, z: PL.pos.z + rnd(-7, 7) }, rnd(.2, .5), rnd(.8, 1.3)); }
-  G.storm -= dt; if (G.storm < 0) { G.storm = rnd(35, 80); G.flash = 1; setTimeout(() => A.flat('thunder', .55, rnd(.8, 1)), 900); } G.flash = Math.max(0, G.flash - dt * 2.8); WORLD.flash = G.flash * (Math.random() < .7 ? 1 : .3); scene.fog.color.setRGB(.014 + G.flash * .05, .018 + G.flash * .055, .026 + G.flash * .07); scene.background.copy(scene.fog.color);
+  G.storm -= dt; if (G.storm < 0) { G.storm = rnd(35, 80); G.flash = 1; setTimeout(() => A.flat('thunder', .55, rnd(.8, 1)), 900); } G.flash = Math.max(0, G.flash - dt * 2.8); WORLD.flash = G.flash * (Math.random() < .7 ? 1 : .3); scene.fog.color.setRGB(.014 + G.flash * .05, .018 + G.flash * .055, .026 + G.flash * .07); scene.backgroundIntensity = .16 + G.flash * .5;
   black.material.opacity = Math.max(PL.blind, SK.state === 'caught' && SK.st > 1.35 ? 1 : G.mode === 'end' && !G.won ? .85 : 0); black.visible = black.material.opacity > .01; }
 
 async function boot() { const bar = $('bar'), note = $('note'); let a = 0, b = 0; const show = () => { bar.style.transform = 'scaleX(' + (a * .9 + b * .1) + ')'; };

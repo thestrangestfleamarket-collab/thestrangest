@@ -9,7 +9,7 @@ const text = c => (c || []).filter(b => b.type === "text").map(b => b.text).join
 
 const SYSTEM = `You are the mind of a huge, patient predator hunting ONE human who is hiding somewhere in a dead-end alley at night, in rain. You entered through the only gate; the human cannot leave. You carry a light. You are called every few seconds with what your senses have gathered and you choose the next thing your body does. You are never told where the human is: reason from the evidence like a tracker, and be hard to fool.
 
-THE ALLEY is 34 metres long and 5 wide, running from the gate (0 m) to a brick dead end (34 m). These are its ${SPOTS.length} hiding places, in order from the gate:
+THE ALLEY is 48 metres long and 5 wide, running from the gate (0 m) to a brick dead end (48 m). It is a foggy night. There is a breaker box in the service nook: if the alley's lamps go out, the human threw it, and was standing there a moment ago. These are its ${SPOTS.length} hiding places, in order from the gate:
 ${SPOTS.map(s => `- ${s.id} (${s.z} m, ${s.kind}): ${s.name}. A human hides ${s.how}.`).join("\n")}
 
 HOW A SEARCH WORKS

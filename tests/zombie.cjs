@@ -80,6 +80,12 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
     if (G.mode === 'play' && G.cur === 'leave') { Z.at(6.0, 2.6, Math.PI); Z.down(); Z.run(1, careful); Z.at(1.0, 4.4, Math.PI); Z.use('chain'); Z.use('front'); }
     return { mode: G.mode, why: G.why, slept, done: Object.keys(G.done).join(), min: Math.round(G.min), flinches: G.flinches, comp: Math.round(G.composure), sus: z.THEM.list.map(C => +C.sus.toFixed(2)).join() }; }, [N, careful]);
   for (const N of [1, 3, 5]) { s = await night(N, true); ok(s.mode === 'won', 'night ' + N + ', played carefully, ends at six with every chore done: ' + JSON.stringify(s)); if (s.mode === 'won') await shot('night' + N).catch(() => {}); }
+  // creeping: it crawls toward you while you look away, and stops dead when you look
+  s = await ev(() => { const z = Z.z, C = z.THEM.list[1]; z.startNight(1); for (const o of z.THEM.list) z.away(o); C.active = true; C.testAt = 999; Z.at(3.3, 2.6, 0); z.PL.pitch = -.2; z.PL.jump = true; z.creep(C, false); C.pos.set(5.6, 0, 4.6);
+    const d = () => Math.hypot(C.pos.x - z.PL.pos.x, C.pos.z - z.PL.pos.z), r = { d0: +d().toFixed(2), path: 0 }; for (let i = 0; i < 30 * 6; i++) { z.sim(1, 1 / 30); r.path = Math.max(r.path, C.path.length); } r.d1 = +d().toFixed(2); r.pose = C.pose; r.state = C.state;
+    Z.look(C.pos.clone().setY(.4)); z.PL.jump = true; z.sim(3, 1 / 30); const p0 = C.pos.clone(); for (let i = 0; i < 60; i++) z.sim(1, 1 / 30); r.vis = C.vis; r.still = +C.pos.distanceTo(p0).toFixed(3); return r; });
+  ok(s.state === 'creep' && s.pose === 'crawl' && s.d1 < s.d0 - 2 && s.d1 < 1.6, 'looking away, it crawls across the flat to you, round the furniture: ' + JSON.stringify(s));
+  ok(s.vis === 1 && s.still < .01, 'look at it and it stops dead where it is');
   // their tricks: put right, nothing; left running, they notice
   s = await ev(() => { const z = Z.z, C = z.THEM.list[0]; z.startNight(1); C.active = true; z.setSpot(C, 'corner'); C.dwell = 999; C.testAt = 999; Z.at(3.0, 3.0, 0); Z.down(); z.sim(5, 1 / 30);
     const r = {}; z.mess(C, 'radio'); r.on = z.ROOM.radio.on; r.spot = C.spot; Z.at(1.0, 1.85, -Math.PI / 2); Z.down(); Z.use('radio'); z.sim(30, 1 / 30); r.fixed = !Object.keys(z.G.messes).length; r.sus1 = +C.sus.toFixed(2);

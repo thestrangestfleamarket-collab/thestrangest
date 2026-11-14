@@ -25,6 +25,8 @@ const {chromium}=require('playwright'), out=process.argv[2];
   const T=await pg.evaluate(()=>PARK.climbable.map(t=>({x:t.x,z:t.z,tr:t.tr,st:Math.max(t.tr,t.rf||0)+.05*TREES.T,k:t.k})));   // st: where you stand beside its foot (solid out to its bark at the ground, 9 Nov 2026)
   if(out){ await look(54,168,T[0].x,T[0].z,'third',-.45); await pg.waitForTimeout(4000); await look(null,0,T[0].x,T[0].z,'third',-.45); await shot('middle');
     for(let i=0;i<T.length;i++){ const t=T[i], a=Math.atan2(t.z-168,t.x-54); await look(t.x+Math.cos(a)*55,t.z+Math.sin(a)*55,t.x,t.z,'third',-.5); await pg.waitForTimeout(4000); await look(null,0,t.x,t.z,'third',-.5); await shot('tree'+(i+1)+'-'+t.k); } }
+  { const t=T[1], TT=await pg.evaluate(()=>TREES.T); await look(t.x+120*TT,t.z,t.x,t.z,'third',-.3); await pg.waitForTimeout(2500); await look(t.x+t.st,t.z,t.x,t.z,'third',-.3); const fs=[]; for(let k=0;k<30;k++){ fs.push(await pg.evaluate(()=>PARK.climbable[1].f)); await pg.waitForTimeout(100); }
+    ok(fs[0]<1&&fs.some(f=>f>0&&f<1)&&fs[fs.length-1]===1,'a big tree fades in as you come near, not all at once (owner, 14 Nov 2026: '+fs.map(f=>(+f).toFixed(2)).join(' ')+')'); }
   const t=T[1]; await look(t.x+t.st,t.z,t.x,t.z,'third',-.3); await pg.waitForTimeout(3000); await look(null,0,t.x,t.z,'third',-.3);
   await pg.waitForFunction(()=>/CLIMB/.test(PROMPT.text()),null,{timeout:60000}).catch(()=>{});
   const pr=await pg.evaluate(()=>PROMPT.text().replace(/<[^>]+>/g,'')); ok(/SPACE · CLIMB/.test(pr),'next to the trunk the prompt says SPACE · CLIMB ("'+pr+'")'); await shot('prompt');

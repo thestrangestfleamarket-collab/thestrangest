@@ -3,7 +3,8 @@ const { chromium } = require('playwright'), fs = require('fs'), path = require('
 const SRC = 'https://raw.githubusercontent.com/microsoft/Microsoft-Rocketbox/master/Assets/Animations/all_animations_max_motextr_static/', OUT = path.join(__dirname, '../data/sushi/anim/'), ROOT = path.join(__dirname, '..');
 // [file in the library, our name, 'body' a seated whole body | 'top' the trunk, arms and head only (laid over a seated body), longest seconds kept]
 const JOBS = [['sit_table_idle_cough', 'cough', 'body', 8], ['sit_table_idle_roll_head', 'roll', 'body', 8], ['sit_table_idle_scratch_head', 'scratch', 'body', 8], ['sit_table_idle_touch_face', 'face', 'body', 8], ['sit_table_idle_touch_hair', 'hair', 'body', 8], ['sit_table_idle_yawn', 'yawn', 'body', 8], ['sit_table_idle_relaxed_01', 'relaxed', 'body', 10], ['sit_table_gestic_shrug_01', 'shrug', 'body', 6], ['sit_table_gestic_thoughtful', 'think', 'body', 8],
-  ['gestic_talk_neutral_01', 'talk1', 'top', 8], ['gestic_talk_relaxed_01', 'talk2', 'top', 8], ['gestic_talk_excited_01', 'talk3', 'top', 8], ['gestic_listen_accept_01', 'nod', 'top', 5], ['gestic_listen_deny_01', 'no', 'top', 5], ['gestic_laugh_low', 'laugh', 'top', 5]];
+  ['gestic_talk_neutral_01', 'talk1', 'top', 8], ['gestic_talk_relaxed_01', 'talk2', 'top', 8], ['gestic_talk_excited_01', 'talk3', 'top', 8], ['gestic_listen_accept_01', 'nod', 'top', 5], ['gestic_listen_deny_01', 'no', 'top', 5], ['gestic_laugh_low', 'laugh', 'top', 5], ['idle_neutral_01', 'stand', 'body', 10], ['idle_look_around_01', 'gaze', 'body', 8], ['wave_01', 'wave', 'top', 4]];
+const ONLY = process.argv.slice(2);
 const TOP = /Spine1|Spine2|Neck|Head|Clavicle|UpperArm|Forearm|Hand|Finger/;
 const PAGE = `<!doctype html><script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script><script type="module">import * as THREE from 'three'; import { FBXLoader } from 'three/addons/loaders/FBXLoader.js'; const m = new THREE.LoadingManager(); m.setURLModifier((u) => /\\.(tga|png|jpg)$/i.test(u) ? 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==' : u); window.load = (u) => new FBXLoader(m).loadAsync(u); window.ready = true;</script>`;
 const get = (u) => new Promise((res, rej) => { const a = process.env.HTTPS_PROXY ? null : null; require('child_process').execFile('curl', ['-sSL', '-m', '120', u], { encoding: 'buffer', maxBuffer: 1 << 28 }, (e, out) => (e ? rej(e) : res(out))); });
@@ -12,7 +13,7 @@ const get = (u) => new Promise((res, rej) => { const a = process.env.HTTPS_PROXY
   await new Promise((res) => srv.listen(0, '127.0.0.1', res));
   const b = await chromium.launch({ executablePath: process.env.PWCHROME }), p = await b.newPage(); p.on('pageerror', (e) => console.log('[pageerror]', e.message));
   await p.goto('http://127.0.0.1:' + srv.address().port + '/'); await p.waitForFunction('window.ready');
-  for (const g of ['m', 'f']) for (const [src, name, kind, max] of JOBS) {
+  for (const g of ['m', 'f']) for (const [src, name, kind, max] of JOBS) { if (ONLY.length && !ONLY.includes(name)) continue;
     const key = `/_a/${g}_${src}.fbx`; try { mem[key] = await get(SRC + `${g}_${src}.max.fbx`); } catch (e) { console.log('no', g, src); continue; } if (mem[key].length < 10000) { console.log('missing', g, src); delete mem[key]; continue; }
     const json = await p.evaluate(async ([url, top, max, TOPS]) => {
       const o = await load(url), c = o.animations[o.animations.length - 1], re = new RegExp(TOPS), out = { duration: 0, tracks: [] }, r = (v, d) => +v.toFixed(d);

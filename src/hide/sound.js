@@ -30,10 +30,14 @@ A.scare = () => { if (!A.ctx || A.ctx.state !== 'running') return; const c = A.c
   shot('roar', 2.6, .85); shot('roar', 1.6, 1.45); shot('growl2', 1.8, 1.7); shot('metal1', 1.5, .6); shot('lid', 1.2, .8);
   const n = c.createBufferSource(), ng = c.createGain(), nf = c.createBiquadFilter(); n.buffer = A.noise; nf.type = 'highpass'; nf.frequency.value = 1800; ng.gain.setValueAtTime(1.1, t); ng.gain.exponentialRampToValueAtTime(.001, t + .9); n.connect(nf).connect(ng).connect(A.raw); n.start(t); n.stop(t + 1);
   const o = c.createOscillator(), og = c.createGain(); o.type = 'sawtooth'; o.frequency.setValueAtTime(880, t); o.frequency.exponentialRampToValueAtTime(70, t + .7); og.gain.setValueAtTime(.5, t); og.gain.exponentialRampToValueAtTime(.001, t + 1.2); o.connect(og).connect(A.raw); o.start(t); o.stop(t + 1.3); };
+// a steam joint blowing: hiss from where it leaks, for as long as it blows
+A.hiss = (pos, secs) => { if (!A.ctx || A.ctx.state !== 'running') return; const c = A.ctx, t = c.currentTime, n = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(), p = c.createPanner(); n.buffer = A.noise; n.loop = true; f.type = 'highpass'; f.frequency.value = 3200; g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.5, t + .3); g.gain.setValueAtTime(.5, t + secs - .5); g.gain.linearRampToValueAtTime(0, t + secs);
+  p.panningModel = 'HRTF'; p.refDistance = 1.2; p.rolloffFactor = 1.8; p.positionX.value = pos.x; p.positionY.value = pos.y; p.positionZ.value = pos.z; n.connect(f).connect(g).connect(p).connect(A.out); n.start(t); n.stop(t + secs + .1); };
 // far off, a siren that comes and goes
 A.siren = () => { if (!A.ctx || A.ctx.state !== 'running') return; const c = A.ctx, t = c.currentTime, o = c.createOscillator(), g = c.createGain(), f = c.createBiquadFilter(); o.type = 'triangle'; for (let i = 0; i < 9; i++) { o.frequency.setValueAtTime(620, t + i); o.frequency.linearRampToValueAtTime(900, t + i + .5); o.frequency.linearRampToValueAtTime(620, t + i + 1); }
   f.type = 'lowpass'; f.frequency.value = 700; g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.035, t + 3); g.gain.linearRampToValueAtTime(0, t + 9); o.connect(f).connect(g).connect(A.bed); o.start(t); o.stop(t + 9.2); };
-A.start = () => { A.resume(); A.loop('rain', .34); A.loop('city', .16); drone(); };
+A.rain = k => { if (A.loops.rain) A.loops.rain.g.gain.value = .34 * k; A.rainK = k; };
+A.start = () => { A.resume(); A.loop('rain', .34 * (A.rainK || 1)); A.loop('city', .16); drone(); };
 A.frame = () => { if (!A.ctx) return; const l = A.ctx.listener; camera.getWorldPosition(_p); camera.getWorldDirection(_f); _u.set(0, 1, 0).applyQuaternion(camera.getWorldQuaternion(new THREE.Quaternion()));
   if (l.positionX) { l.positionX.value = _p.x; l.positionY.value = _p.y; l.positionZ.value = _p.z; l.forwardX.value = _f.x; l.forwardY.value = _f.y; l.forwardZ.value = _f.z; l.upX.value = _u.x; l.upY.value = _u.y; l.upZ.value = _u.z; } else { l.setPosition(_p.x, _p.y, _p.z); l.setOrientation(_f.x, _f.y, _f.z, _u.x, _u.y, _u.z); } };
 // what each kind of thing sounds like when struck, and how far the noise carries (1 = a shout)

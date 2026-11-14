@@ -2,6 +2,7 @@
 import { CLOCK, THREE, RAPIER, G, grp, clamp, lerp, rnd, renderer, scene, camera, rig, P, ray } from './core.js';
 import { WORLD } from './world.js';
 import { A } from './sound.js';
+import { makeBody } from './body.js';
 
 const R = .22, EYES = [1.66, .8, .34], DROP = [0, -.75, -1.25], SPEED = [2.3, 1.15, .6], GROUPS = grp(G.PLAYER, G.SOLID | G.SEE);
 const PL = { pos: new THREE.Vector3(0, 0, -2.6), head: new THREE.Vector3(), fwd: new THREE.Vector3(), yaw: 0, pitch: 0, eye: EYES[0], stance: 0, H: 1.78, vy: 0, grounded: true, speed: 0, run: false, blind: 0, wet: 0, stride: 0,
@@ -22,17 +23,19 @@ function init() {
   printM = new THREE.MeshStandardMaterial({ color: 0x030405, roughness: .05, transparent: true, opacity: .7, depthWrite: false, envMapIntensity: 4 });
   for (let i = 0; i < 36; i++) { const m = new THREE.Mesh(new THREE.PlaneGeometry(.1, .26), printM.clone()); m.rotation.x = -Math.PI / 2; m.visible = false; m.renderOrder = 2; scene.add(m); printS.push(m); }
   const hm = new THREE.MeshStandardMaterial({ color: 0x1b1a19, roughness: .8 });
-  for (let i = 0; i < 2; i++) { const grip = renderer.xr.getControllerGrip(i), mesh = new THREE.Mesh(new THREE.BoxGeometry(.075, .035, .12), hm); mesh.castShadow = true; grip.add(mesh); rig.add(grip);
+  for (let i = 0; i < 2; i++) { const grip = renderer.xr.getControllerGrip(i), mesh = new THREE.Group(), part = (w, h, d, x, y, z, rx = 0) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), hm); m.position.set(x, y, z); m.rotation.x = rx; m.castShadow = true; mesh.add(m); };   // a gloved hand: palm, four fingers curled a little, a thumb, a cuff
+    part(.082, .028, .09, 0, 0, .01); for (let f = 0; f < 4; f++) { part(.017, .018, .05, -.031 + f * .0207, -.004, -.058, -.25); part(.016, .016, .035, -.031 + f * .0207, -.018, -.094, -.7); } part(.02, .02, .05, (i ? -1 : 1) * .05, -.004, -.02, 0); part(.074, .05, .1, 0, .002, .1); mesh.rotation.x = -.5; grip.add(mesh); rig.add(grip);
     const hb = P.world.createRigidBody(RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(0, -5, 0)); P.world.createCollider(RAPIER.ColliderDesc.ball(.05).setCollisionGroups(grp(G.HAND, G.SOLID)), hb);
     const H = { grip, hb, pos: new THREE.Vector3(0, -5, 0), last: new THREE.Vector3(), on: false, src: null, held: null, pin: -1, climb: false, sq: false, tr: false }; PL.hands.push(H);
     grip.addEventListener('connected', e => { H.src = e.data; H.on = true; }); grip.addEventListener('disconnected', () => { H.on = false; H.src = null; drop(H); }); }
+  PL.body = makeBody();
   PL.mouse = { held: null, pin: -1, dist: .8, down: false, pos: new THREE.Vector3() };
   addEventListener('keydown', e => { if (e.repeat) return; PL.keys[e.code] = true; if (e.code === 'KeyC') setStance((PL.stance + 1) % 3); if (e.code === 'KeyE') use(); if (e.code === 'Space') { e.preventDefault(); tryMantle(); } });
   addEventListener('keyup', e => { PL.keys[e.code] = false; });
   addEventListener('mousemove', e => { if (document.pointerLockElement !== renderer.domElement) return; PL.yaw -= e.movementX * .0022; PL.pitch = clamp(PL.pitch - e.movementY * .0022, -1.5, 1.5); });
-  addEventListener('mousedown', e => { if (document.pointerLockElement === renderer.domElement && e.button === 0) { PL.mouse.down = true; mouseGrab(); } }); addEventListener('mouseup', () => { PL.mouse.down = false; drop(PL.mouse); });
+  addEventListener('mousedown', e => { if (document.pointerLockElement === renderer.domElement && e.button === 0) { PL.mouse.down = true; mouseGrab(); } }); addEventListener('mouseup', () => { const h = PL.mouse.held; PL.mouse.down = false; drop(PL.mouse); if (h && !PL.frozen) { const v = clamp(15 / (h.T.mass + 1), 2, 8), m = h.T.mass; h.T.b.applyImpulse({ x: PL.fwd.x * v * m, y: (PL.fwd.y * v + 1.2) * m, z: PL.fwd.z * v * m }, true); h.T.plT = CLOCK.t; } });
 }
-function place(x, y, z, yaw) { PL.pos.set(x, y, z); PL.yaw = yaw; PL.pitch = 0; PL.vy = 0; PL.stance = 0; PL.eye = EYES[0]; body.setTranslation(PL.pos, true); rig.rotation.y = yaw; rig.position.set(x - camLocal().x, y, z - camLocal().z); for (const s of printS) s.visible = false; PL.prints.length = 0; PL.noises.length = 0; PL.wet = 0; PL.breath.air = 1; PL.breath.exert = 0; PL.mantle = null; }
+function place(x, y, z, yaw) { PL.pos.set(x, y, z); PL.yaw = yaw; PL.pitch = 0; PL.vy = 0; PL.stance = 0; PL.eye = EYES[0]; body.setTranslation(PL.pos, true); rig.rotation.y = yaw; rig.position.set(x - camLocal().x, y, z - camLocal().z); for (const s of printS) s.visible = false; PL.key = false; PL.damp = 0; PL.prints.length = 0; PL.noises.length = 0; PL.wet = 0; PL.breath.air = 1; PL.breath.exert = 0; PL.mantle = null; }
 const camLocal = () => renderer.xr.isPresenting ? _w.set(camera.position.x, 0, camera.position.z).applyAxisAngle(UP, rig.rotation.y) : _w.set(0, 0, 0);
 function fits(H, x, y, z) { const r = Math.min(R, H / 2 - .01), sh = new RAPIER.Capsule(Math.max(.01, H / 2 - r), r); return !P.world.intersectionWithShape({ x, y: y + H / 2 + .04, z }, { x: 0, y: 0, z: 0, w: 1 }, sh, undefined, GROUPS, col); }
 function setH(H) { if (Math.abs(H - PL.H) < .02) return true; if (H > PL.H && !fits(H, PL.pos.x, PL.pos.y, PL.pos.z)) return false; const r = Math.min(R, H / 2 - .01); col.setShape(new RAPIER.Capsule(Math.max(.01, H / 2 - r), r)); col.setTranslationWrtParent({ x: 0, y: H / 2, z: 0 }); PL.H = H; return true; }
@@ -42,7 +45,8 @@ function setStance(s) { if (PL.frozen) return; if (s < PL.stance && !renderer.xr
 function take(Hd, p) {
   const c = WORLD.cloth, i = c.near(p, .2); if (i >= 0) { Hd.pin = i; c.pins.set(i, p); A.at('cloth', p, .3); return; }
   const pr = P.world.projectPoint(p, true, undefined, grp(G.HAND, G.SOLID)); if (!pr) return; const d = Math.hypot(pr.point.x - p.x, pr.point.y - p.y, pr.point.z - p.z); if (d > .16 && !pr.isInside) return;
-  const T = P.byCol.get(pr.collider.handle); if (T && !T.fixed && !T.lid && T.mass < 60) { T.plT = CLOCK.t; const b = T.b, t = b.translation(), q = b.rotation(); Hd.held = { T, local: _v.set(pr.point.x - t.x, pr.point.y - t.y, pr.point.z - t.z).applyQuaternion(_q.set(q.x, q.y, q.z, q.w).invert()).clone() }; b.wakeUp(); }
+  const T = P.byCol.get(pr.collider.handle); if (T && T.isKey) { PL.key = true; T.b.setTranslation({ x: 0, y: -40, z: 0 }, false); T.b.sleep(); T.o.visible = false; A.at('glass', p, .25, 1.9); PL.noise(p, .1, 'a key'); return; }
+  if (T && !T.fixed && !T.lid && T.mass < 60) { T.plT = CLOCK.t; const b = T.b, t = b.translation(), q = b.rotation(); Hd.held = { T, local: _v.set(pr.point.x - t.x, pr.point.y - t.y, pr.point.z - t.z).applyQuaternion(_q.set(q.x, q.y, q.z, q.w).invert()).clone() }; b.wakeUp(); }
   else if (Hd.grip) { Hd.climb = true; Hd.last.copy(p); }
 }
 function drop(Hd) { if (Hd.pin >= 0) WORLD.cloth.pins.delete(Hd.pin); Hd.pin = -1; Hd.held = null; Hd.climb = false; }
@@ -55,7 +59,7 @@ function mouseGrab() { const M = PL.mouse; camera.getWorldDirection(_v); const h
 // open or shut the nearest lid or door: pointed at, or simply within reach
 function use() { if (PL.frozen) return; if (PL.onUse && PL.onUse()) return; let best = null, bd = 1.5; const from = renderer.xr.isPresenting && PL.hands[1].on ? PL.hands[1].pos : PL.head;
   for (const id in P.lids) { const L = P.lids[id], t = L.T.o.children[0].getWorldPosition(_v), d = t.distanceTo(from); if (d < bd) { bd = d; best = L; } }
-  if (!best) return; best.set(!best.want); PL.noise(best.T.b.translation(), .4, 'a hinge'); A.at('gate', best.T.b.translation(), .25, 1.7); }
+  if (!best) return; if (!best.set(!best.want)) { PL.noise(best.T.b.translation(), .45, 'a chain rattling'); A.at(['metal1', 'metal2'], best.T.b.translation(), .5, 1.5); return; } PL.noise(best.T.b.translation(), .4, 'a hinge'); A.at('gate', best.T.b.translation(), .25, 1.7); }
 
 // over, onto or into something up to chest height
 function tryMantle() { if (PL.frozen || PL.mantle || !PL.grounded) return; const d = _v.copy(PL.fwd).setY(0).normalize(), o = { x: PL.pos.x, y: PL.pos.y + .3, z: PL.pos.z }; let h = ray(o, d, .95, GROUPS, body); o.y = PL.pos.y + .75; const h2 = ray(o, d, .95, GROUPS, body); if (!h || (h2 && h2.t < h.t)) h = h2; if (!h) return;
@@ -78,10 +82,13 @@ function update(dt) {
   camera.getWorldDirection(PL.fwd); const yaw = Math.atan2(-PL.fwd.x, -PL.fwd.z), cl = camLocal(), low = headY < .6 ? 2 : headY < 1.15 ? 1 : 0, sp = SPEED[low] * (run && low === 0 ? 1.8 : 1), len = Math.hypot(mx, mz) || 1;
   const want = { x: (mx * Math.cos(yaw) + mz * Math.sin(yaw)) / Math.max(1, len) * sp * dt, y: 0, z: (-mx * Math.sin(yaw) + mz * Math.cos(yaw)) / Math.max(1, len) * sp * dt };
   if (xr) { want.x += rig.position.x + cl.x - PL.pos.x; want.z += rig.position.z + cl.z - PL.pos.z; }
-  let climbing = false; for (const H of PL.hands) if (H.climb && H.on) { climbing = true; want.x += H.last.x - H.pos.x; want.y += H.last.y - H.pos.y; want.z += H.last.z - H.pos.z; }
+  let climbing = false, rung = null; for (const L of WORLD.ladders || []) if (Math.hypot(PL.pos.x - L.x, PL.pos.z - L.z) < L.r && PL.pos.y < L.y1 && PL.pos.y > L.y0 - .3) rung = L;
+  // a ladder: push toward it to go up, pull back to come down, let go of the stick to hang; each rung rings a little
+  if (rung && !PL.frozen && (mz < 0 || PL.pos.y > rung.y0 + .15)) { climbing = true; const up = (mz < 0 ? 1.25 : mz > 0 ? -1.25 : 0) * dt; want.y += up; want.x *= .35; want.z *= .35; PL.rungs = (PL.rungs || 0) + Math.abs(up); if (PL.rungs > .3) { PL.rungs = 0; A.at(['metal1', 'metal2'], PL.pos, .12, 1.8); PL.noise(PL.pos, .22, 'a ladder rung'); } if (PL.pos.y + up >= rung.y1 - .02 && mz < 0) { want.x += (rung.x - PL.pos.x) * .2; want.z -= .05; } }
+  for (const H of PL.hands) if (H.climb && H.on) { climbing = true; want.x += H.last.x - H.pos.x; want.y += H.last.y - H.pos.y; want.z += H.last.z - H.pos.z; }
   if (PL.mantle) { const M = PL.mantle; M.t = Math.min(1, M.t + dt / .6); const e = M.t * M.t * (3 - 2 * M.t); PL.pos.lerpVectors(M.from, M.to, e); PL.pos.y = lerp(lerp(M.from.y, M.top, Math.min(1, M.t * 2)), M.to.y, Math.max(0, M.t * 2 - 1)); PL.vy = 0; if (M.t >= 1) PL.mantle = null; PL.moved = 0; }
   else { if (climbing) PL.vy = 0; else { PL.vy = PL.grounded ? -1 : PL.vy - 9.81 * dt; want.y += PL.vy * dt; }
-    ctl.computeColliderMovement(col, want, undefined, GROUPS); for (let i = 0; i < ctl.numComputedCollisions(); i++) { const c = ctl.computedCollision(i), T = c && c.collider && P.byCol.get(c.collider.handle); if (T && !T.fixed) T.plT = CLOCK.t; } const m = ctl.computedMovement(); PL.grounded = ctl.computedGrounded(); PL.pos.x += m.x; PL.pos.y += m.y; PL.pos.z += m.z; PL.moved = Math.hypot(m.x, m.z);
+    ctl.computeColliderMovement(col, want, undefined, GROUPS); for (let i = 0; i < ctl.numComputedCollisions(); i++) { const c = ctl.computedCollision(i), T = c && c.collider && P.byCol.get(c.collider.handle); if (T && !T.fixed) T.plT = CLOCK.t; } const m = ctl.computedMovement(); const wasAir = !PL.grounded, fell = PL.vy; PL.grounded = ctl.computedGrounded(); if (wasAir && PL.grounded && fell < -5) { PL.noise(PL.pos, clamp(-fell / 8, .4, 1), 'a body landing'); A.at(['heavy1', 'heavy2'], PL.pos, .8, 1.3); } PL.pos.x += m.x; PL.pos.y += m.y; PL.pos.z += m.z; PL.moved = Math.hypot(m.x, m.z);
     if (PL.pos.y < -6) PL.pos.set(0, .1, -2.6); }
   body.setNextKinematicTranslation(PL.pos); PL.speed = lerp(PL.speed, PL.moved / Math.max(dt, .001), .25); PL.run = run && PL.speed > 3; PL.low = low;
   rig.position.set(PL.pos.x - cl.x, PL.pos.y + off, PL.pos.z - cl.z); rig.updateMatrixWorld(true); camera.getWorldPosition(PL.head);
@@ -90,7 +97,7 @@ function update(dt) {
 
   /* footsteps: sound for you, noise for it, wet prints after a puddle */
   if (PL.grounded && !PL.mantle) { PL.stride += PL.moved; const st = [.78, .58, .46][low]; if (PL.stride > st) { PL.stride = 0; let loud = low === 0 ? (PL.run ? .85 : PL.speed > 1.2 ? .4 : .2) : low === 1 ? .12 : .06; const f = { x: PL.pos.x, y: PL.pos.y + .05, z: PL.pos.z };
-      const wet = PL.pos.y < .1 && WORLD.puddles.some(p => Math.hypot(p.x - f.x, p.z - f.z) < p.r); if (wet) { loud *= 1.6; PL.wet = 11; A.at('splash', f, clamp(loud, .1, .6)); } A.at(['step1', 'step2', 'step3', 'step4'], f, loud * .55 + .03, low ? .8 : 1); PL.noise(f, loud, 'footsteps');
+      const wet = PL.pos.y < .1 && WORLD.puddles.some(p => Math.hypot(p.x - f.x, p.z - f.z) < p.r); if (wet) { loud *= 1.6; PL.wet = 11; PL.damp = 60; A.at('splash', f, clamp(loud, .1, .6)); } A.at(['step1', 'step2', 'step3', 'step4'], f, loud * .55 + .03, low ? .8 : 1); PL.noise(f, loud, 'footsteps');
       if (PL.wet > 0 && !wet) { PL.wet -= st; const s = printS[printI++ % printS.length], side = printI % 2 ? .09 : -.09; s.position.set(f.x + Math.cos(yaw) * side, PL.pos.y + .008, f.z - Math.sin(yaw) * side); s.rotation.z = yaw; s.material.opacity = .75 * PL.wet / 11; s.visible = true; s.userData.t = 0; PL.prints.push({ x: f.x, z: f.z, yaw, t: CLOCK.t }); if (PL.prints.length > 40) PL.prints.shift(); } } }
   B.exert = clamp(B.exert + (PL.run ? dt * .22 : -dt * .05), 0, 1);
 
@@ -102,7 +109,10 @@ function update(dt) {
   for (const p of puffS) if (p.t < 2) { p.t += dt; p.s.position.addScaledVector(p.v, dt); p.v.multiplyScalar(1 - dt * 1.2); const u = p.t / 1.7; p.s.scale.setScalar(.07 + u * .42 * p.k); const tc = WORLD.torch, seen = clamp(WORLD.lit(p.s.position.x, p.s.position.z) * 1.1 + (tc && tc.on ? clamp(1.3 - p.s.position.distanceTo(tc.at) / 3.5, 0, 1) : 0), .04, 1); p.s.material.opacity = Math.max(0, .22 * p.k * seen * Math.sin(Math.min(1, u) * Math.PI)); if (u >= 1) p.s.visible = false; }
   for (const s of printS) if (s.visible) { s.userData.t += dt; if (s.userData.t > 45) s.visible = false; }
 
-  /* hands */
+  /* hands; one held over your mouth holds your breath; and the body under your head */
+  if (xr) { _v.copy(PL.head).addScaledVector(PL.fwd, .07); _v.y -= .09; for (const H of PL.hands) if (H.on && H.pos.distanceTo(_v) < .15) B.want = true; }
+  PL.damp = Math.max(0, (PL.damp || 0) - dt);
+  { const f = _w.copy(PL.fwd).setY(0); if (f.lengthSq() < .01) f.set(-Math.sin(PL.yaw), 0, -Math.cos(PL.yaw)); f.normalize(); let L = null, R = null; for (const H of PL.hands) if (H.on && H.src) { if (H.src.handedness === 'left') L = H.pos; else R = H.pos; } if (!xr && PL.mouse.down && (PL.mouse.held || PL.mouse.pin >= 0)) R = PL.mouse.pos; PL.body.update({ pos: PL.pos, head: PL.head, fwd: f, hands: [L, R], moved: PL.mantle ? 0 : PL.moved, low: PL.low || 0 }, dt); }
   for (const H of PL.hands) { if (!H.on) continue; H.last.copy(H.pos); H.grip.getWorldPosition(H.pos); H.hb.setNextKinematicTranslation(H.pos); carry(H, H.pos, dt); }
   if (!xr) { const M = PL.mouse; M.pos.copy(PL.head).addScaledVector(PL.fwd, M.dist); if (M.down) carry(M, M.pos, dt); }
 }

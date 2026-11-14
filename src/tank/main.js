@@ -94,8 +94,8 @@ camera.rotation.order='YXZ';
 const rig=new T.Group();rig.add(camera);
 
 const sunL=new T.DirectionalLight(0xffc48a,3.4);
-sunL.castShadow=true;sunL.shadow.mapSize.set(2048,2048);sunL.shadow.autoUpdate=false;
-const shc=sunL.shadow.camera;shc.left=-46;shc.right=46;shc.top=46;shc.bottom=-46;shc.near=1;shc.far=400;
+sunL.castShadow=true;sunL.shadow.mapSize.set(1024,1024);sunL.shadow.autoUpdate=false;
+const shc=sunL.shadow.camera;shc.left=-26;shc.right=26;shc.top=26;shc.bottom=-26;shc.near=1;shc.far=400;
 sunL.shadow.bias=-.0004;sunL.shadow.normalBias=.06;
 scene.add(sunL,sunL.target);
 const hemiL=new T.HemisphereLight(0x8ea4c6,0x40382c,.5);scene.add(hemiL);const ENV=scene.environment;
@@ -139,8 +139,8 @@ const FEAT={bush:[],tree:[],rockS:[],rockB:[],crag:[],log:[],dead:[],bags:[],hog
     else if(t<.76)FEAT.rockB.push([x,z,r()*6.28,3+r()*4]);else if(t<.85)FEAT.crag.push([x,z,r()*6.28,1.1+r()*1.5]);else if(t<.91)FEAT.log.push([x,z,r()*6.28,.8+r()*.5]);else if(t<.95)FEAT.dead.push([x,z,r()*6.28,.9+r()*.6]);
     else if(t<.975)FEAT.bags.push([x,z,r()*6.28]);else if(t<.99)FEAT.hog.push([x,z,r()*6.28]);else FEAT.wreck.push([x,z,r()*6.28]);}}})();
 const landMat=new T.MeshLambertMaterial({map:A0.grass.d,vertexColors:true});
-landMat.onBeforeCompile=s=>{s.uniforms.tDry={value:A0.dry};s.uniforms.tSoil={value:A0.soil.d};s.uniforms.uT=landMat.userData.uT={value:0};const seg=(a,b)=>`rd=min(rd,sdS(wp,vec2(${a[0]}.,${a[1]}.),vec2(${b[0]}.,${b[1]}.)));`;
-  s.fragmentShader=s.fragmentShader.replace('#include <map_pars_fragment>','#include <map_pars_fragment>\nuniform sampler2D tDry;uniform sampler2D tSoil;uniform float uT;\nfloat fh(vec2 p){return fract(sin(p.x*127.1+p.y*311.7)*43758.5453);}\nfloat sdS(vec2 p,vec2 a,vec2 b){vec2 pa=p-a,ba=b-a;return length(pa-ba*clamp(dot(pa,ba)/dot(ba,ba),0.,1.));}\nfloat pondD(vec2 p){float m=9.;'+PONDS.map(q=>`m=min(m,(length(p-vec2(${q[0]}.,${q[1]}.))-${q[2]}.)/9.+1.);`).join('')+'return m;}')
+landMat.onBeforeCompile=s=>{s.uniforms.tDry={value:A0.dry};s.uniforms.tSoil={value:A0.soil.d};s.uniforms.uT=landMat.userData.uT={value:0};s.uniforms.tShade=landMat.userData.tShade={value:null};s.uniforms.uShadeM=landMat.userData.uShadeM={value:new T.Matrix4()};const seg=(a,b)=>`rd=min(rd,sdS(wp,vec2(${a[0]}.,${a[1]}.),vec2(${b[0]}.,${b[1]}.)));`;
+  s.fragmentShader=s.fragmentShader.replace('#include <map_pars_fragment>','#include <map_pars_fragment>\nuniform sampler2D tDry;uniform sampler2D tSoil;uniform sampler2D tShade;uniform mat4 uShadeM;uniform float uT;\nfloat shadeAt(vec3 w){vec4 c=uShadeM*vec4(w,1.);vec3 q=c.xyz*.5+.5;if(q.x<0.||q.x>1.||q.y<0.||q.y>1.)return 1.;float s=0.;for(int i=0;i<4;i++){vec2 o=vec2(i<2?-.6:.6,mod(float(i),2.)<.5?-.6:.6)/2048.;s+=step(q.z-.0016,unpackRGBAToDepth(texture2D(tShade,q.xy+o)));}return s*.25;}\nfloat fh(vec2 p){return fract(sin(p.x*127.1+p.y*311.7)*43758.5453);}\nfloat sdS(vec2 p,vec2 a,vec2 b){vec2 pa=p-a,ba=b-a;return length(pa-ba*clamp(dot(pa,ba)/dot(ba,ba),0.,1.));}\nfloat pondD(vec2 p){float m=9.;'+PONDS.map(q=>`m=min(m,(length(p-vec2(${q[0]}.,${q[1]}.))-${q[2]}.)/9.+1.);`).join('')+'return m;}')
    .replace('#include <map_fragment>',`vec2 wp=vFogWorld.xz;vec2 q=vec2(${FCS.toFixed(5)}*wp.x+${FSN.toFixed(5)}*wp.y,${(-FSN).toFixed(5)}*wp.x+${FCS.toFixed(5)}*wp.y);vec2 fs=vec2(${FW}.0,${FD}.0);vec2 cell=floor(q/fs);vec2 ff=fract(q/fs);
     float fr=fh(vec2(cell.x*1.37+.5,cell.y*2.11+.25));float edge=min(min(ff.x,1.-ff.x)*fs.x,min(ff.y,1.-ff.y)*fs.y);float inF=smoothstep(2.5,5.5,edge+2.*(texture2D(map,wp*.02).g-.4));
     vec3 g1=texture2D(map,wp/5.3).rgb;vec3 g2=texture2D(map,wp/31.).rgb;vec3 gr=g1*(.55+1.1*g2);
@@ -149,7 +149,7 @@ landMat.onBeforeCompile=s=>{s.uniforms.tDry={value:A0.dry};s.uniforms.tSoil={val
     vec3 gc=mix(mix(mix(gr,dr,kd),so,ks),gr*vec3(.62,.66,.5),kw);float wood=smoothstep(.5,.62,texture2D(map,wp/2900.).g+.25*texture2D(map,wp/700.).r);gc=mix(gc,mix(gr,vec3(.16,.2,.11),wood*.85),farK);float rd=1e9;${ROAD.slice(0,-1).map((a,i)=>seg(a,ROAD[i+1])).join('')}
     vec3 tar=texture2D(tSoil,wp/3.3).rgb*vec3(.5,.5,.52)+.05;float town=min(1.-smoothstep(70.,115.,length(wp-vec2(150.,300.))),1.)*.75+(1.-smoothstep(40.,75.,length(wp-vec2(-480.,-640.))))*.8+(1.-smoothstep(35.,60.,length(wp-vec2(420.,-560.))))*.7;
     gc=mix(gc,so*vec3(.95,.9,.82),(1.-smoothstep(4.5,7.5,rd))*.6);gc=mix(gc,tar,max(1.-smoothstep(2.8,3.6,rd+.6*(g1.g-.4)),town*smoothstep(.2,.5,g2.r+.3)));
-    float cl=texture2D(map,wp/1700.+vec2(uT*.0021,uT*.0009)).g*.6+texture2D(map,wp/640.-vec2(uT*.003,0.)).r*.4;gc*=mix(.34,1.08,smoothstep(.3,.56,cl))*vec3(.9,.93,.9);
+    float cl=texture2D(map,wp/1700.+vec2(uT*.0021,uT*.0009)).g*.6+texture2D(map,wp/640.-vec2(uT*.003,0.)).r*.4;gc*=mix(.34,1.08,smoothstep(.3,.56,cl))*vec3(.9,.93,.9);gc*=mix(vec3(.34,.38,.46),vec3(1.),shadeAt(vFogWorld));
     float wet=1.-smoothstep(0.,1.,pondD(wp));gc=mix(gc,gc*vec3(.35,.33,.3),wet);diffuseColor.rgb*=gc;`);};
 (function buildLand(){
   const g=new T.PlaneGeometry(GN*GS,GN*GS,GN,GN);g.rotateX(-Math.PI/2);
@@ -235,6 +235,14 @@ const solids=[];
   const wg=new T.BufferGeometry();wg.setAttribute('position',new T.Float32BufferAttribute(wp,3));const wires=new T.LineSegments(wg,new T.LineBasicMaterial({color:0x1a1a1a,transparent:true,opacity:.7}));wires.frustumCulled=false;land.add(wires);
   for(let i=0;i<ROAD.length-1;i++){const a=ROAD[i],b=ROAD[i+1],L=Math.hypot(b[0]-a[0],b[1]-a[1]),ux=(b[0]-a[0])/L,uz=(b[1]-a[1])/L;for(let d=i?20:130;d<L-(i===ROAD.length-2?80:0);d+=55)place(M.pole,a[0]+ux*d-uz*7,a[1]+uz*d+ux*7,Math.atan2(ux,uz),1,.3,8);}
   land.userData.flush();
+  // the still world's shadow, drawn once from the sun: trees, buildings, rocks and the hills themselves
+  {const R=980,cam=new T.OrthographicCamera(-R,R,R,-R,10,9000);cam.position.copy(SUN).multiplyScalar(4000);cam.lookAt(0,0,0);cam.updateMatrixWorld();cam.updateProjectionMatrix();
+   const rt=new T.WebGLRenderTarget(2048,2048,{minFilter:T.NearestFilter,magFilter:T.NearestFilter}),keep=new Map(),dep=new Map();
+   land.traverse(m=>{if(!m.isMesh&&!m.isInstancedMesh)return;keep.set(m,m.material);const a=m.material;if(a.transparent&&!a.alphaTest){m.visible=false;return;}let d=dep.get(a);if(!d){d=new T.MeshDepthMaterial({depthPacking:T.RGBADepthPacking,map:a.alphaTest?a.map:null,alphaTest:a.alphaTest||0,side:T.DoubleSide});dep.set(a,d);}m.material=d;});
+   const vis=[];scene.children.forEach(c=>{if(c!==land){vis.push([c,c.visible]);c.visible=false;}});land.traverse(o=>{if(o.isLine){vis.push([o,o.visible]);o.visible=false;}});const tm=renderer.toneMapping,cc=renderer.getClearColor(new T.Color()).clone(),ca=renderer.getClearAlpha(),fg=scene.fog;scene.fog=null;
+   renderer.toneMapping=T.NoToneMapping;renderer.setClearColor(0xffffff,1);renderer.setRenderTarget(rt);renderer.clear();renderer.render(scene,cam);renderer.setRenderTarget(null);renderer.setClearColor(cc,ca);renderer.toneMapping=tm;scene.fog=fg;
+   for(const[c,v]of vis)c.visible=v;for(const[m,a]of keep){m.material=a;m.visible=true;m.castShadow=false;}
+   landMat.userData.shade={tex:rt.texture,m:new T.Matrix4().multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse)};}
 })();
 
 // ---------- air: mist lying in the hollows, smoke standing on the horizon, guns flashing beyond it ----------
@@ -248,7 +256,7 @@ const mist=[],farFlash=[];
     const f=new T.Sprite(new T.SpriteMaterial({map:glowT,color:new T.Color(3,1.9,.9),transparent:true,opacity:0,blending:T.AdditiveBlending,depthWrite:false,fog:false}));f.scale.setScalar(420);f.position.set(x+(r()-.5)*900,y+30,z+(r()-.5)*900);f.userData={t:9,next:2+r()*8};scene.add(f);farFlash.push(f);}
 })();
 function updateAir(dt){
-  if(landMat.userData.uT)landMat.userData.uT.value=time;
+  if(landMat.userData.uT){landMat.userData.uT.value=time;if(landMat.userData.shade&&!landMat.userData.tShade.value){landMat.userData.tShade.value=landMat.userData.shade.tex;landMat.userData.uShadeM.value.copy(landMat.userData.shade.m);}}
   for(const s of mist){s.position.x=s.userData.x+Math.sin(time*.02*s.userData.sp+s.userData.ph)*40;}
   for(const f of farFlash){const u=f.userData;u.t+=dt;if(u.t>u.next){u.t=0;u.next=3+Math.random()*11;play('boom_far',.16+Math.random()*.12,'out',5+Math.random()*5,.7+Math.random()*.3);}f.material.opacity=u.t<.3?(1-u.t/.3)*.8:0;}
 }
@@ -331,7 +339,7 @@ const breech=new T.Group(),breechSlide=new T.Group();
   // real kit: the seat, the consoles, the switch box, the radio, a crew helmet, the ready rounds, pipes, the lamp
   const dress=(src,x,y,z,ry,f,s=1)=>{const o=src.clone();o.traverse(m=>{if(m.isMesh){m.material=m.material.clone();m.material.envMapIntensity=.2;if(f)f(m.material);}});o.position.set(x,y,z);o.rotation.y=ry;o.scale.setScalar(s);inside.add(o);return o;};
   dress(M.seat,HX,FLOOR-.02,HZ+.1,Math.PI,m=>{m.color.multiplyScalar(.75);});
-  dress(M.console,HX+.02,FLOOR-.3,HZ-1.42,0,m=>{m.color.setRGB(.4,.45,.4);m.emissiveMap=m.map;m.emissive=new T.Color(.22,.18,.16);},.86);
+  dress(M.console,HX+.02,FLOOR-.3,HZ-1.42,0,m=>{m.color.setRGB(.4,.45,.4);m.emissiveMap=m.map;m.emissive=new T.Color(.3,.24,.2);},.86);
   const cov=add(new T.PlaneGeometry(.25,.225),new T.MeshBasicMaterial({map:fcsT,toneMapped:false,color:0x8a8a8a}));cov.position.set(HX-.2,FLOOR+.582,HZ-1.293);cov.rotation.x=-.21;
   dress(M.display,1.27,FLOOR+EYE+.02,HZ+.12,-Math.PI/2,m=>{m.color.setRGB(.3,.33,.29);m.emissiveMap=m.map;m.emissive=new T.Color(.25,.32,.34);},.9);
   dress(M.switchbox,1.3,FLOOR+.7,HZ+.75,-Math.PI/2,m=>{m.color.multiplyScalar(.8);m.emissiveMap=m.map;m.emissive=new T.Color(.3,.3,.3);});
@@ -351,6 +359,7 @@ const breech=new T.Group(),breechSlide=new T.Group();
   L.alarm=new T.PointLight(0xff2a14,0,3.5,2);L.alarm.position.set(.6,CEIL-.2,-.7);
   L.day=new T.SpotLight(0xfff0dc,0,6,.5,.7,1.2);L.day.position.set(HX,CEIL+1.2,HZ);L.day.target.position.set(HX-.15,FLOOR,HZ+.2);
   inside.add(L.dome,L.dome.target,L.screen,L.mfd,L.alarm,L.day,L.day.target);
+  L.lid=new T.Group();L.lid.position.set(HX,CEIL+.13,HZ+.35);inside.add(L.lid);add(new T.CylinderGeometry(.35,.35,.04,28).translate(0,0,-.35),dark,L.lid);add(new T.TorusGeometry(.07,.012,8,16).translate(0,-.05,-.35),steel,L.lid);add(new T.CylinderGeometry(.3,.3,.02,28).translate(0,-.03,-.35),pad,L.lid);
   const beacon=add(new T.SphereGeometry(.022,12,8),new T.MeshBasicMaterial({color:0x300a06}));beacon.position.copy(L.alarm.position);L.beacon=beacon;
   inside.traverse(m=>{if(m.isMesh&&!m.material.isMeshBasicMaterial){m.castShadow=true;m.receiveShadow=true;}});
 
@@ -885,7 +894,7 @@ function drawStat(){
 // ---------- seeing: eye adaptation, hit effects ----------
 function updateVision(dt){
   const fx=$('fxToggle').checked,out=!P.headIn,dmg=1-P.armour/100;
-  const tgtE=state==='preview'||out||(P.sight&&!xrActive)?.4:lerp(.85,.6,P.hatch);
+  const tgtE=state==='preview'||out||(P.sight&&!xrActive)?.4:lerp(.8,.55,P.hatch);
   expo=Math.exp(lerp(Math.log(expo),Math.log(tgtE),1-Math.exp(-dt/(P.sight&&!xrActive?.3:1.5))));
   renderer.toneMappingExposure=expo*(1+P.recoil*.25);
   {const mu=monitorMat.uniforms;mu.gain.value=1.15/expo;mu.thermal.value=P.thermal?1:0;mu.snow.value=P.dmg.sight>0?1:0;mu.time.value=time;}
@@ -962,10 +971,10 @@ function frame(){
   const vr=renderer.xr.isPresenting,flatSight=!vr&&P.sight&&state==='play',inNow=P.headIn&&!flatSight,L=inside.userData.L;
   const heat=on=>{const h=on&&P.thermal?1:0;if(heat.h===h)return;heat.h=h;M.foe.traverse(m=>{if(m.isMesh){m.material.emissive.setScalar(h*1.4);}});for(const w of wreckMats.values())w.emissive.setScalar(h*.5);heroProto.traverse(m=>{if(m.isMesh)m.material.emissive.setScalar(h*.7);});};
   gunCam.fov=P.zoom?TY.zoom:9;
-  const lights=inn=>{sunL.intensity=inn?0:3.4;sunL.castShadow=!inn;hemiL.intensity=inn?.012:.5;scene.environment=ENV;
+  const lights=inn=>{sunL.intensity=inn?0:3.4;sunL.castShadow=!inn;hemiL.intensity=inn?.003+.02*P.hatch:.5;scene.environment=ENV;
     const fl=P.shake>.05?.55+.45*Math.sin(time*90)*Math.sin(time*37):1,pw=inn?(P.power==null?1:P.power)*fl:0,low=P.armour<40?1:0;
-    L.dome.intensity=pw*.16*(1-.5*low);L.dome.castShadow=inn;if(inn&&frameN%8===0)L.dome.shadow.needsUpdate=true;L.screen.intensity=inn?(P.dmg.sight>0?.25:.7)*(.92+.08*Math.sin(time*23))*(P.thermal?.8:1):0;L.screen.color.setRGB(P.thermal?.6:.75,1,P.thermal?.7:.86);L.mfd.intensity=inn?.38:0;
-    L.alarm.intensity=inn?(P.hurt>.02?1.6*P.hurt:0)+low*.9*(.5+.5*Math.sin(time*7)):0;L.beacon.material.color.setRGB(.2+L.alarm.intensity,.04,.03);L.day.intensity=inn?P.hatch*3:0;if(!inn&&(frameN&1))sunL.shadow.needsUpdate=true;};
+    L.dome.intensity=pw*.028;L.dome.castShadow=inn;if(inn&&frameN%8===0)L.dome.shadow.needsUpdate=true;L.screen.intensity=inn?(P.dmg.sight>0?.25:.7)*(.92+.08*Math.sin(time*23))*(P.thermal?.8:1):0;L.screen.color.setRGB(P.thermal?.6:.75,1,P.thermal?.7:.86);L.mfd.intensity=inn?.38:0;
+    L.alarm.intensity=inn?(P.hurt>.02?1.6*P.hurt:0)+low*.9*(.5+.5*Math.sin(time*7)):0;L.beacon.material.color.setRGB(.2+L.alarm.intensity,.04,.03);L.day.intensity=inn?P.hatch*3:0;L.lid.rotation.x=clamp(P.hatch*2.2,0,1)*1.9;if(!inn&&(frameN&1))sunL.shadow.needsUpdate=true;};
   if(inNow&&state!=='preview'&&(!vr||frameN%3===0)){
     inside.visible=false;ext.visible=turN.visible=true;lights(false);heat(true);
     const prev=renderer.getRenderTarget(),xe=renderer.xr.enabled;renderer.xr.enabled=false;
@@ -998,7 +1007,6 @@ vrBtn.addEventListener('click',async()=>{
   try{
     const session=await navigator.xr.requestSession('immersive-vr',{optionalFeatures:['local-floor','bounded-floor']});
     await renderer.xr.setSession(session);
-    sunL.shadow.mapSize.set(1024,1024);if(sunL.shadow.map){sunL.shadow.map.dispose();sunL.shadow.map=null;}
     xrActive=true;camera.position.set(0,0,0);camera.rotation.set(0,0,0);camera.fov=72;xr.cx=xr.cz=0;xr.centre=20;
     if(state==='preview'){P.hatchOpen=false;P.hatch=0;}
     hideMenu();beginPlay();

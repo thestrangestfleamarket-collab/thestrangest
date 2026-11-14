@@ -2,7 +2,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { CAST, BY, STORY } from "../src/guests/cast.js";
 
-const MODEL = "claude-haiku-5-5", DAY = 4000, VOICE = "@cf/deepgram/aura-1";
+const MODEL = "claude-haiku-5-5", DAY = 2500, VOICE = "@cf/deepgram/aura-1";
 const PLACES = ["hall", "dining", "library", "drawing", "conserv", "billiard", "study", "bath", "foyer", "kitchen", "pantry", "cellar", "bedroom", "wcorr", "ecorr"], PLACE_N = { hall: "the great hall", dining: "the dining room", library: "the library", drawing: "the drawing room (television)", conserv: "the conservatory", billiard: "the billiard room", study: "the study (telephone, old weapons, a hunting rifle)", bath: "the bathroom", foyer: "the entrance hall (front door, locked)", kitchen: "the kitchen", pantry: "the pantry (chest freezer)", cellar: "the cellar (wine, the fuse board)", bedroom: "the blue bedroom", wcorr: "the west corridor", ecorr: "the east corridor" };
 const INTENTS = ["stay", "mingle", "look_for", "go_to", "go_with", "stay_together", "search_house", "keep_away", "none"], FEEL = ["calm", "merry", "uneasy", "afraid", "angry", "grieving", "suspicious"], KINDS = ["think", "reply", "testimony", "gather", "chat"], ASKED = ["talk", "follow", "wait", "drink", "seen", "blame", "calm", "errand", "deny", "discredit"];
 const IDS = CAST.map(c => c.id);

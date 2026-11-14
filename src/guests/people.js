@@ -32,6 +32,8 @@ class Body {
     if (o.upright && !this.rag) { const was = this.cur; this.play('drink_idle', 0, { start0: 1, again: 1 }); this.mixer.update(0); this.o.position.set(this.x, this.y, this.z); this.o.rotation.y = this.yaw; this.o.updateMatrixWorld(true); h.getWorldQuaternion(_q); obj.quaternion.copy(_q.invert()).multiply(_q2.setFromAxisAngle(Y, 0)); const yq = new THREE.Quaternion().setFromAxisAngle(Y, this.yaw); obj.quaternion.copy(_q).multiply(yq); } }
   say(dur) { this.talkT = dur; }
   step(dt) { if (this.frozen) return; if (this.rag) { this.ragStep(dt); return; }
+    // out of sight: no bones are moved; far off: every other frame
+    if (this.cull) { this.o.position.set(this.x, this.y, this.z); this.o.rotation.y = this.yaw; this.sk = 0; return; } if (this.far && (this.sk = (this.sk || 0) + 1) % 2) { this.dtk = dt; this.o.position.set(this.x, this.y, this.z); this.o.rotation.y = this.yaw; return; } if (this.far && this.dtk) { dt += this.dtk; this.dtk = 0; }
     this.mixer.update(dt); const o = this.o; o.position.set(this.x, this.y, this.z); o.rotation.y = this.yaw; this.blob.position.set(this.x, this.y + .008, this.z); this.blob.visible = o.visible;
     // the head and eyes turn to what holds their attention, as far as a neck allows
     const hd = this.bones.Bip01_Head, nk = this.bones.Bip01_Neck; let ty = 0, tp = 0; if (this.look) { const dx = this.look.x - this.x, dz = this.look.z - this.z, d = Math.hypot(dx, dz); ty = clamp(angd(this.yaw, Math.atan2(dx, dz)), -1.25, 1.25); tp = clamp(Math.atan2((this.look.y ?? 1.6) - (this.y + this.h * .93), d), -.5, .5); if (Math.abs(angd(this.yaw, Math.atan2(dx, dz))) > 2) ty = 0; }

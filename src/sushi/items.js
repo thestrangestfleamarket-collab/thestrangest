@@ -214,6 +214,10 @@ export class Food extends Item {
     if (this.held || this.dead || !(this.topping || this.cooked)) return; const p = this.obj.position, b = findBowlUnder(p, 0.09); if (!b || p.y - b.obj.position.y > 0.1) return;
     if (this.cooked) { if (!b.noodles) { b.addNoodles(this.cook); this.remove(); } } else b.addTopping(this);
   }
+  cut() { // halved where it lies
+    if (this.noodle || this.halved) { G.fx.drops(this.obj.position, 0xe8d8a0, 3); return; } const p = this.obj.position;
+    for (const sx of [-1, 1]) { const f = new Food(this.topping, this.servings / 2); f.halved = true; f.obj.scale.set(0.55, 1, 1); f.obj.position.set(p.x + sx * 0.014, p.y + 0.01, p.z); f.obj.quaternion.copy(this.obj.quaternion); f.drop(_v2.set(sx * 0.25, 0.3, 0).clone()); } this.remove();
+  }
   onImpact(sp) { if (this.topping === 'egg' && sp > 2.4) { G.fx.splat(this.obj.position, 0xf4efe2, 0.06, 0xf0a020); G.audio.play('splash'); this.remove(); return true; } return false; }
   hint() { return this.noodle ? 'noodles → drop into a basket in the boiling pot' : `${this.name} → drop on a bowl (or back in its bin)`; }
 }
@@ -238,6 +242,7 @@ export class Raw extends Item {
   }
   onGrab() { if (this.board) { this.board.item = null; this.board = null; } }
   onImpact(sp) { if (this.raw === 'egg' && sp > 2.2) { G.fx.splat(this.obj.position, 0xf4efe2, 0.085, 0xf0a020); shatter(this, 0xc89860, 4); return true; } return false; }
+  cut() { if (this.raw === 'egg' && !this.board) { G.fx.splat(this.obj.position, 0xf4efe2, 0.06, 0xf0a020); this.remove(); return; } const b0 = this.board; if (!b0) this.board = { x: this.obj.position.x - 0.085, y: this.obj.position.y - this.def.r, z: this.obj.position.z, item: this }; this.slice(); if (!b0 && !this.dead) this.board = null; }
   slice() {
     const d = this.def, b = this.board; this.left--;
     this.body.scale.x = Math.max(0.02, this.left / d.n);
@@ -319,15 +324,15 @@ export class Ladle extends Tool {
     this.mode = mode; this.type = type; this.vessel = vessel; this.liq = m.liq; this.cup = m.cup; this.filled = false; this.vol = 0; this.r = big ? 0.045 : 0.021; this.heat = 1; this.center.set(0, 0, -0.03);
   }
   setFilled(f, type) { this.filled = f; this.vol = f ? 1 : 0; this.liq.visible = f; this.liq.scale.setScalar(1); if (type) { this.type = type; this.liq.material.color.set(BROTH[type].color); } }
-  onHome() { this.setFilled(true, this.mode === 'broth' ? this.vessel.type : null); this.heat = this.vessel.heat ?? 1; }
+  onHome() { if ((this.vessel.level ?? 1) <= 0.03) return; this.setFilled(true, this.mode === 'broth' ? this.vessel.type : null); this.heat = this.vessel.heat ?? 1; }
   vessels() { return this.mode === 'broth' ? G.cart.pots.filter((p) => p.type) : [this.vessel]; }
   onHeld(dt, h) {
     const c = this.point(this.cup, _v), tilt = this.tilt();
-    for (const v of this.vessels()) if (Math.hypot(c.x - v.x, c.z - v.z) < v.r && c.y < v.liqY + 0.025) { if (this.vol < 0.98) { this.setFilled(true, this.mode === 'broth' ? v.type : null); this.heat = v.heat ?? 1; G.audio.play('plop'); } return; } // under the surface: full again
+    for (const v of this.vessels()) if (Math.hypot(c.x - v.x, c.z - v.z) < v.r && c.y < v.liqY + 0.025) { if (this.vol < 0.98 && (v.level ?? 1) > 0.03) { if (v.level !== undefined) v.level = Math.max(0, v.level - (1 - this.vol) * (v.sip || 0.02)); this.setFilled(true, this.mode === 'broth' ? v.type : null); this.heat = v.heat ?? 1; G.audio.play('plop'); } return; } // under the surface: full again
     if (this.vol <= 0 || tilt < 0.8 || dt <= 0) return;
     const q = Math.min(this.vol, clamp((tilt - 0.8) / 0.7, 0.12, 1) * 1.7 * dt), up = _vt.set(0, 1, 0).applyQuaternion(this.obj.quaternion), hl = Math.hypot(up.x, up.z) || 1; // it runs over the low side of the cup, faster the further it is tipped
     this.vol -= q; _v2.set(up.x / hl * 0.25 + h.vel.x * 0.4, -0.2, up.z / hl * 0.25 + h.vel.z * 0.4);
-    G.fx.pour(c.addScaledVector(_q2.set(up.x / hl, 0, up.z / hl), this.r * 0.9), _v2, this.liq.material.color.getHex(), q, { kind: this.mode, type: this.type, heat: this.heat });
+    G.fx.pour(c.addScaledVector(_q2.set(up.x / hl, 0, up.z / hl), this.r * 0.9), _v2, this.liq.material.color.getHex(), q, { kind: this.mode, type: this.type, heat: this.heat }, this, this.r * 0.2);
     this.liq.scale.setScalar(Math.max(0.3, Math.sqrt(this.vol))); if (this.vol <= 0.002) this.setFilled(false);
   }
   hint() { return this.filled ? 'hold over a bowl and tip it: it pours' : 'empty: dip it back in the pot'; }
@@ -383,12 +388,77 @@ export class Knife extends Tool {
     this.blade = new V3(0, -0.04, -0.15); this.useMode = 'chop'; this.center.set(0, 0, -0.04); this.armedCut = false;
   }
   onHeld(dt, h) {
-    const b = G.cart.board, raw = b.item; if (!raw) return;
-    const p = this.point(this.blade, _v), top = b.y + raw.def.r * 2;
-    const over = Math.abs(p.x - (b.x - 0.05)) < 0.16 && Math.abs(p.z - b.z) < 0.09;
-    if (!over) { this.armedCut = false; return; }
-    if (p.y > top + 0.045) this.armedCut = true;
-    else if ((this.armedCut && p.y < top + 0.012) || (h.xr && h.useDown && p.y < top + 0.2)) { this.armedCut = false; raw.slice(); h.pulse?.(0.6, 40); }
+    const p = this.point(this.blade, _v), b = G.cart.board, raw = b.item; this.py ??= p.y; const vy = dt > 0 ? (p.y - this.py) / dt : 0; this.py = p.y; this.cool = (this.cool || 0) - dt;
+    if (raw) {
+      const top = b.y + raw.def.r * 2, over = Math.abs(p.x - (b.x - 0.05)) < 0.16 && Math.abs(p.z - b.z) < 0.09;
+      if (!over) this.armedCut = false; else if (p.y > top + 0.045) this.armedCut = true;
+      else if ((this.armedCut && p.y < top + 0.012) || (h.xr && h.useDown && p.y < top + 0.2)) { this.armedCut = false; raw.slice(); h.pulse?.(0.6, 40); return; }
+    }
+    if (this.cool > 0 || !(vy < -0.5 || h.useDown)) return; // anywhere else: whatever the edge comes down through is cut
+    for (const it of G.items) { if (it === this || it.dead || it.held || it.locked || !it.cut || it === raw) continue; const c = it.worldCenter(_v2); if (Math.hypot(c.x - p.x, c.z - p.z) < Math.max(0.03, it.radius * 0.8) && Math.abs(p.y - c.y) < 0.05) { this.cool = 0.25; it.cut(p); h.pulse?.(0.5, 30); G.audio.play('chop'); return; } }
   }
   hint() { return G.cart.board.item ? 'chop: bring the blade down on the board' : 'put a pork roll / naruto / negi / egg on the board first'; }
+}
+
+// ------------------------------------------------------------------ the cart's own furniture as bodies: anything on it can be lifted, carried, thrown
+export class Prop extends Item {
+  // o.col: { t: 'cyl', hh, r } or { t: 'box', hx, hy, hz }, o.mass; o.fragile: colour of the pieces; o.pour: { color, pay, r } runs out of its top when tipped
+  constructor(obj, o) { super('prop', obj, { radius: o.radius ?? 0.05, cy: o.cy ?? (o.col.hh ?? o.col.hy), lift: o.lift ?? 0.1, name: o.name }); this.col = o.col; this.mass = o.mass ?? 0.3; this.fragile = o.fragile; this.pours = o.pour; this.top = o.top ?? this.center.y * 2; this.carry = []; this.last = new V3().copy(obj.position); this.aim.set(0, this.center.y, 0); }
+  hold(it) { it.carrier = this; this.carry.push({ it, p: it.obj.position.clone().sub(this.obj.position).applyQuaternion(_q.copy(this.obj.quaternion).invert()), q: _q.clone().multiply(it.obj.quaternion) }); }
+  update(dt) {
+    const p = this.obj.position, moved = p.distanceToSquared(this.last) > 1e-10 || this.held || this.free;
+    if (moved) { const spill = this.tilt() > 1.9; this.carry = this.carry.filter((c) => { const it = c.it; if (it.dead || it.held || it.free || it.carrier !== this) { if (it.carrier === this) it.carrier = null; return false; } it.obj.position.copy(c.p).applyQuaternion(this.obj.quaternion).add(p); it.obj.quaternion.copy(this.obj.quaternion).multiply(c.q); if (spill) { it.carrier = null; it.drop(_v2.set(rand(-0.3, 0.3), -0.4, rand(-0.3, 0.3)).clone()); return false; } return true; }); this.moved?.(p.x - this.last.x, p.y - this.last.y, p.z - this.last.z); this.last.copy(p); }
+    if (this.pours && (this.held || this.free) && dt > 0) { const t = this.tilt(); if (t > 1.15) { const up = _vt.set(0, 1, 0).applyQuaternion(this.obj.quaternion), hl = Math.hypot(up.x, up.z) || 1, q = clamp((t - 1.1) / 0.8, 0.15, 1) * (this.pours.rate || 1.4) * dt, lip = _v.set(0, this.top, 0).applyQuaternion(this.obj.quaternion).add(p).addScaledVector(_q2.set(up.x / hl, 0, up.z / hl), this.pours.lip ?? 0.02); if (this.pours.can ? this.pours.can(q) : true) G.fx.pour(lip, _v2.set(up.x / hl * 0.3, -0.2, up.z / hl * 0.3), this.pours.color, q, this.pours.pay, this, this.pours.r || 0.006); } }
+    this.tick?.(dt);
+  }
+  onGround() { } onLand() { G.audio.play(this.fragile ? 'bottle' : 'place'); }
+  onImpact(sp) { if (this.fragile !== undefined && sp > 3.4) { for (const c of this.carry) { c.it.carrier = null; c.it.drop(); } shatter(this, this.fragile, 7); return true; } return false; }
+  hint() { return this.name; }
+}
+// a pot or a crock: its liquid is a level that ladling and tipping run down and pouring back in raises
+export class Vessel extends Prop {
+  constructor(obj, o, v) {
+    super(obj, o); this.v = v; this.h = o.h; this.takes = { r: v.r, h: o.h }; v.level = 1; v.item = this; const pos = obj.position, lo = o.lo ?? 0.15;
+    Object.defineProperties(v, { x: { get: () => pos.x }, z: { get: () => pos.z }, baseY: { get: () => pos.y }, tipped: { get: () => this.tilt() > 0.45 }, rimY: { get: () => (v.tipped ? -9 : pos.y + o.h) }, liqY: { get: () => (v.tipped || v.level <= 0.03 ? -9 : pos.y + o.h * (lo + (o.hi ?? 0.8) * v.level - lo * v.level)) } });
+    this.liq = o.liq; this.liq0 = o.liq.position.y; this.lo = lo; this.hi = o.hi ?? 0.8; this.tools = [];
+  }
+  receive(p, q) { const v = this.v; v.level = Math.min(1, v.level + q * (this.fill || 0.05)); if (v.heat !== undefined && p.heat !== undefined) v.heat = Math.max(0.15, v.heat - q * 0.03); if (G.t - (this.ps || 0) > 0.45) { this.ps = G.t; G.audio.play('pour'); } }
+  moved(dx, dy, dz) { for (const t of this.tools) { if (t.dead) continue; t.home.pos.x += dx; t.home.pos.y += dy; t.home.pos.z += dz; if (t.atHome && !t.held) { t.obj.position.x += dx; t.obj.position.y += dy; t.obj.position.z += dz; } } }
+  tick(dt) {
+    const v = this.v, t = this.tilt(); this.liq.visible = v.level > 0.03; this.liq.position.y = this.h * (this.lo + (this.hi - this.lo) * v.level);
+    if (t > 0.95 && v.level > 0.03 && dt > 0) { const up = _vt.set(0, 1, 0).applyQuaternion(this.obj.quaternion), hl = Math.hypot(up.x, up.z) || 1, q = clamp((t - 0.9) / 0.6, 0.2, 1) * dt, lip = _v.set(0, this.h, 0).applyQuaternion(this.obj.quaternion).add(this.obj.position).addScaledVector(_q2.set(up.x / hl, 0, up.z / hl), v.r * 0.9);
+      v.level = Math.max(0, v.level - q * (this.drain || 0.35)); for (let i = 0; i < 2; i++) G.fx.pour(lip, _v2.set(up.x / hl * (0.4 + i * 0.2), -0.1, up.z / hl * (0.4 + i * 0.2)), this.liq.material.color.getHex(), q * 2, this.pay, this, v.r * 0.22);
+      if (G.t - (this.ms || 0) > 6) { this.ms = G.t; G.game?.onMess?.('tip a pot over, the soup running everywhere'); } }
+  }
+}
+// a pair of chopsticks
+export class Sticks extends Item {
+  constructor() { const g = new THREE.Group(), s = shared(); for (const x of [-0.004, 0.004]) M(new THREE.CylinderGeometry(0.0026, 0.0018, 0.21, 5).rotateX(Math.PI / 2), s.sticks ||= mat({ color: 0xd8c49a, roughness: 0.6 }), g, x, 0, 0); super('sticks', g, { radius: 0.03, lift: 0.08, name: 'chopsticks' }); this.col = { t: 'box', hx: 0.008, hy: 0.004, hz: 0.105 }; this.mass = 0.02; }
+  onGrab() { this.carrier = null; } onGround() { } hint() { return 'chopsticks'; }
+}
+// a rag: a square of cloth, every thread of it weighed and pulled (it hangs from where you hold it, drapes where it lands, and wipes what it is rubbed on)
+export class Rag extends Item {
+  constructor(x, y, z) {
+    const N = 7, S = 0.26 / (N - 1), geo = new THREE.PlaneGeometry(0.26, 0.26, N - 1, N - 1).rotateX(-Math.PI / 2), g = new THREE.Group();
+    const m = new THREE.Mesh(geo, mat({ map: T.canvasTex(64, 64, (c) => { c.fillStyle = '#d8d2c0'; c.fillRect(0, 0, 64, 64); c.strokeStyle = '#3a5a8a'; c.lineWidth = 3; c.strokeRect(5, 5, 54, 54); c.strokeStyle = 'rgba(90,70,40,0.25)'; for (let i = 0; i < 64; i += 4) { c.beginPath(); c.moveTo(i, 0); c.lineTo(i, 64); c.stroke(); } }), side: THREE.DoubleSide, roughness: 0.95 })); m.frustumCulled = false; m.castShadow = true; g.add(m);
+    super('rag', g, { radius: 0.09, lift: 0.1, name: 'rag' }); this.N = N; this.S = S; this.mesh = m; m.userData.item = this; m.matrixAutoUpdate = false; this.pts = []; this.old = [];
+    for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) { const p = new V3(x + (i - 3) * S, y, z + (j - 3) * S); this.pts.push(p); this.old.push(p.clone()); }
+    g.position.set(x, y, z); this.grabI = 24; this.rest = 0;
+  }
+  drop(vel) { this.free = false; if (vel) for (let i = 0; i < this.pts.length; i++) this.old[i].copy(this.pts[i]).addScaledVector(vel, -1 / 72); this.rest = 0; }
+  onGrab() { let bd = 9; const hp = this.held.pos; this.pts.forEach((p, i) => { const d = p.distanceTo(hp); if (d < bd) { bd = d; this.grabI = i; } }); this.rest = 0; }
+  floorAt(p) { let y = 0.004; for (const s of G.surfaces) if (s.y <= p.y + 0.03 && s.y > y && p.x > s.minX && p.x < s.maxX && p.z > s.minZ && p.z < s.maxZ) y = s.y + 0.004; return y; }
+  update(dt) {
+    if (dt <= 0) return; const P = this.pts, O = this.old, N = this.N, S = this.S; if (!this.held && this.rest > 1) return;
+    let move = 0; for (let i = 0; i < P.length; i++) { const p = P[i], o = O[i], vx = (p.x - o.x) * 0.985, vy = (p.y - o.y) * 0.985, vz = (p.z - o.z) * 0.985; o.copy(p); p.x += vx; p.y += vy - 9.8 * dt * dt; p.z += vz; move += Math.abs(vx) + Math.abs(vy) + Math.abs(vz); }
+    const link = (a, b, L) => { const A = P[a], B = P[b], dx = B.x - A.x, dy = B.y - A.y, dz = B.z - A.z, d = Math.hypot(dx, dy, dz) || 1e-6, k = (d - L) / d * 0.5; A.x += dx * k; A.y += dy * k; A.z += dz * k; B.x -= dx * k; B.y -= dy * k; B.z -= dz * k; };
+    for (let it = 0; it < 4; it++) { for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) { const a = j * N + i; if (i < N - 1) link(a, a + 1, S); if (j < N - 1) link(a, a + N, S); if (i < N - 1 && j < N - 1 && it === 0) { link(a, a + N + 1, S * 1.414); link(a + 1, a + N, S * 1.414); } }
+      if (this.held) P[this.grabI].copy(this.held.pos);
+      for (let i = 0; i < P.length; i++) { const p = P[i], f = this.floorAt(p) + (i % 5) * 0.0006; if (p.y < f) { p.y = f; const o = O[i]; o.x += (p.x - o.x) * 0.5; o.z += (p.z - o.z) * 0.5; } } }
+    this.rest = move < 0.004 ? this.rest + dt : 0;
+    const a = this.mesh.geometry.attributes.position; let cx = 0, cy = 0, cz = 0; for (let i = 0; i < P.length; i++) { a.setXYZ(i, P[i].x, P[i].y, P[i].z); cx += P[i].x; cy += P[i].y; cz += P[i].z; } a.needsUpdate = true; this.mesh.geometry.computeVertexNormals();
+    const n = P.length; this.obj.position.set(cx / n, cy / n, cz / n); this.mesh.matrix.makeTranslation(-cx / n, -cy / n, -cz / n); this.obj.quaternion.identity();
+    if (this.held && (!this.held.xr || (this.held.vs && this.held.vs.length() > 0.08))) { let w = 0; for (let i = 0; i < P.length; i += 2) if (P[i].y - this.floorAt(P[i]) < 0.012) w += G.fx.wipe(P[i], 0.06); if (w && G.t - (this.ws || 0) > 0.5) { this.ws = G.t; G.audio.play('place'); G.talk?.seen?.('wipe the counter down'); } }
+  }
+  onGround() { } onLand() { } hint() { return 'rag → rub it over a spill'; }
 }

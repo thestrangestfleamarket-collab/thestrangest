@@ -88,8 +88,14 @@ export class GameAudio {
     }
   }
 
-  setRadio(on) { this.radioOn = on; if (this.ready) { this.radioGain.gain.value = on ? 1.6 : 0; this.nextT = this.ctx.currentTime + 0.05; this.step = 0; if (on) this.burst(3000, 0.25, { vol: 0.2, dest: this.radioGain }); } }
-  tune() { this.station = (this.station + 1) % 3; this.step = 0; if (this.ready && this.radioOn) this.burst(2000, 0.3, { vol: 0.35, to: 5000, dest: this.radioGain }); }
+  setRadio(on) { this.radioOn = on; if (this.ready) { this.radioGain.gain.value = on && !this.live() ? 1.6 : 0; this.nextT = this.ctx.currentTime + 0.05; this.step = 0; if (on) this.burst(3000, 0.25, { vol: 0.2, dest: this.radioGain }); } this.stream(); }
+  // stations past the cart's own three are real ones off the air (SomaFM, listener-supported, free to stream)
+  live() { return this.station >= 3 ? REAL[this.station - 3] : null; }
+  stream() {
+    const L = this.radioOn ? this.live() : null; if (!L) { if (this.el) { this.el.pause(); this.el.removeAttribute('src'); } return; }
+    const el = (this.el ||= new Audio()); el.preload = 'none'; el.src = L.url; el.volume = 0.5; el.play().catch(() => { this.station = 0; this.radioGain.gain.value = this.radioOn ? 1.6 : 0; });
+  }
+  tune() { this.station = (this.station + 1) % (3 + REAL.length); this.step = 0; if (this.ready && this.radioOn) { this.radioGain.gain.value = this.live() ? 0 : 1.6; this.burst(2000, 0.3, { vol: 0.35, to: 5000, dest: this.live() ? this.master : this.radioGain }); } this.stream(); }
 
   update(boil, env) {
     if (!this.ready) return;
@@ -107,7 +113,8 @@ export class GameAudio {
       l.forwardX.value = f.x; l.forwardY.value = f.y; l.forwardZ.value = f.z;
       l.upX.value = 0; l.upY.value = 1; l.upZ.value = 0;
     }
-    if (!this.radioOn) return;
+    if (this.el && !this.el.paused) { const d = Math.hypot(_p.x + 1.0, _p.z + 0.46); this.el.volume = Math.max(0.05, Math.min(1, 0.55 / Math.max(0.6, d))) * Math.min(1, this.master.gain.value); }
+    if (!this.radioOn || this.live()) return;
     const S = STATIONS[this.station], spb = 60 / S.bpm / 4;
     while (this.nextT < c.currentTime + 0.12) { this.seq(S, this.step, this.nextT - c.currentTime, spb); this.step++; this.nextT += spb; }
   }
@@ -127,6 +134,7 @@ export class GameAudio {
 }
 
 // Original loops in the spirit of the era (city-pop, synthwave, slow jam).
+export const REAL = [{ name: 'SomaFM Underground 80s', fm: '88.5', url: 'https://ice1.somafm.com/u80s-128-mp3' }, { name: 'SomaFM Left Coast 70s', fm: '91.3', url: 'https://ice1.somafm.com/seventies-128-mp3' }, { name: 'SomaFM Secret Agent', fm: '94.9', url: 'https://ice1.somafm.com/secretagent-128-mp3' }];
 const STATIONS = [
   { bpm: 108, pad: 'triangle', lead: 'square', stab: 10, kick: [0, 6, 8], snare: [4, 12], bass: [0, null, 0, null, 12, null, 0, 7, 0, null, 0, null, 10, null, 12, null],
     chords: [[65, 69, 72, 76], [64, 67, 71, 74], [62, 65, 69, 72], [67, 71, 74, 77]], arp: [0, null, 2, 3, null, 2, 4, null, 3, null, 2, null, 1, null, 2, null] },

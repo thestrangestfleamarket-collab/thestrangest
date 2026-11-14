@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import { G, V3 } from './ctx.js';
 import * as T from './tex.js';
+import { REAL } from './audio.js';
 
 export function buildMenu(scene, cart, guide, talk, shadowLights, report) {
   const m = { open: false }, W = 0.62, H = 0.56, tex = T.panelTex(620, 560, () => { });
@@ -10,7 +11,7 @@ export function buildMenu(scene, cart, guide, talk, shadowLights, report) {
   const rows = [
     ['GUIDE MODE', () => (guide.on ? 'ON' : 'OFF'), () => guide.set(!guide.on)],
     ['RADIO', () => (G.audio.radioOn ? 'ON' : 'OFF'), () => G.audio.setRadio(!G.audio.radioOn)],
-    ['STATION', () => 'FM ' + ['76.1', '80.0', '84.7'][G.audio.station], () => { if (!G.audio.radioOn) G.audio.setRadio(true); G.audio.tune(); }],
+    ['STATION', () => 'FM ' + (['76.1', '80.0', '84.7'][G.audio.station] || REAL[G.audio.station - 3].fm + ' ' + REAL[G.audio.station - 3].name.toUpperCase()), () => { if (!G.audio.radioOn) G.audio.setRadio(true); G.audio.tune(); }],
     ['VOLUME', () => Math.round(S.volume * 100) + '%', () => { S.volume = S.volume >= 1.5 ? 0.25 : S.volume + 0.25; if (G.audio.master) G.audio.master.gain.value = S.volume; }],
     ['SPOKEN VOICES', () => (S.tts ? 'ON' : 'OFF'), () => { S.tts = !S.tts; G.muteVoices = !S.tts; if (!S.tts) window.speechSynthesis?.cancel(); }],
     ['MICROPHONE', () => (S.mic ? (talk.mic || 'ON').toUpperCase() : 'OFF'), () => { S.mic = !S.mic; talk.listen(S.mic); }],

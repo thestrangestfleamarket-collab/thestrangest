@@ -57,10 +57,11 @@ export function buildLife(scene, city, cart) {
 
   if (!city.station) {
   // ---- manhole venting steam into the lamp light
+  const VX = city.vent ? city.vent.x : 4.6, VZ = city.vent ? city.vent.z : -6.2;
   const mh = cyl(0.42, 0.42, 0.02, mat({ color: 0x2a2a2e, roughness: 0.5, metalness: 0.7 }), 4.6, -0.11, -6.2, root, 24); mh.castShadow = false; nop(mh);
   const smoke = T.smokeTex(), puffs = [];
   for (let i = 0; i < 14; i++) { const s = nop(new THREE.Sprite(new THREE.SpriteMaterial({ map: smoke, color: 0xc8b8a8, transparent: true, opacity: 0, depthWrite: false }))); s.userData.t = i / 14; root.add(s); puffs.push(s); }
-  ups.push((dt) => { for (const s of puffs) { s.userData.t += dt * 0.16; if (s.userData.t > 1) { s.userData.t = 0; s.userData.x = (Math.random() - 0.5) * 0.3; } const k = s.userData.t; s.position.set(4.6 + (s.userData.x || 0) + k * k * env.wind * 2.2, -0.05 + k * 3.2, -6.2); const sc = 0.5 + k * 2.4; s.scale.set(sc, sc, 1); s.material.opacity = Math.sin(k * Math.PI) * 0.16; } });
+  ups.push((dt) => { for (const s of puffs) { s.userData.t += dt * 0.16; if (s.userData.t > 1) { s.userData.t = 0; s.userData.x = (Math.random() - 0.5) * 0.3; } const k = s.userData.t; s.position.set(VX + (s.userData.x || 0) + k * k * env.wind * 2.2, -0.05 + k * 3.2, VZ); const sc = 0.5 + k * 2.4; s.scale.set(sc, sc, 1); s.material.opacity = Math.sin(k * Math.PI) * 0.16; } });
 
   }
   // ---- the train coming into the station: its noise, and the wind it pushes ahead of it
@@ -73,7 +74,7 @@ export function buildLife(scene, city, cart) {
     for (const k of city.cars) { const d = k.c.position.distanceTo(cam), g = 1 / (1 + (d * d) / 60); if (g > best) { best = g; pan = clamp((k.c.position.x - cam.x) / 14, -1, 1); } }
     env.car = best; env.carPan = pan;
     stepT -= dt; if (stepT <= 0 && G.game.customers.some((c) => (c.state === 'walk' || c.state === 'leaving') && Math.abs(c.p.root.position.x) < 4)) { G.audio.play('step'); stepT = 0.47; }
-    if (!city.station) { chirpT -= dt; if (chirpT <= 0 && (t % 30) / 30 < 0.55) { G.audio.play('chirp'); chirpT = 1.25; } if (Math.random() < dt * 14) G.audio.play('patter'); }
+    if (!city.station) { chirpT -= dt; if (!city.alley && chirpT <= 0 && (t % 30) / 30 < 0.55) { G.audio.play('chirp'); chirpT = 1.25; } if (Math.random() < dt * 14) G.audio.play('patter'); }
   });
 
   return { env, update(dt, t) { for (const u of ups) u(dt, t); } };

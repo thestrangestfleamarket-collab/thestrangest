@@ -24,7 +24,7 @@ class Game {
     r.xr.enabled = true; r.xr.setReferenceSpaceType('local-floor'); r.xr.setFramebufferScaleFactor(tier ? 1.3 : 1.1); if (!tier) r.xr.setFoveation(0.6); document.body.prepend(r.domElement);
     this.scene = new THREE.Scene(); this.camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.04, 9000); this.camera.position.set(0, 1.58, 0); this.rig = new THREE.Group(); this.rig.add(this.camera); this.scene.add(this.rig);
     addEventListener('resize', () => { if (r.xr.isPresenting) return; this.camera.aspect = innerWidth / innerHeight; this.camera.updateProjectionMatrix(); r.setSize(innerWidth, innerHeight); });
-    this.audio = new AudioSys(); this.audio.voice = this.settings.voice; this.ready = this.init(); }
+    this.audio = new AudioSys(); this.audio.voice = this.settings.voice; this.ready = this.init().catch((e) => { $('status').textContent = e.message; console.error(e); }); }
   async init() {
     const r = this.renderer; await loadAssets((k) => { $('status').textContent = 'Loading ' + Math.round(k * 100) + '%'; });
     this.A = A; this.world = new World(this); this.crowd = new Crowd(this); this.fx = new FX(this); this.rifle = new Rifle(this); this.board = new Board(this);

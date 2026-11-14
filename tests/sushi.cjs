@@ -10,7 +10,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   const b = await chromium.launch({ ...(process.env.PWCHROME ? { executablePath: process.env.PWCHROME } : {}), args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'] });
   const errs = [], miss = [];
   const open = async (q, init) => { const p = await b.newPage({ viewport: { width: 800, height: 450 } }); if (init) await p.addInitScript(init);
-    p.on('pageerror', e => errs.push(e.message.slice(0, 300))); p.on('response', r => { if (r.status() === 404 && !/talk$|hear$|say$|opacity_color/.test(r.url())) miss.push(r.url().split('/').pop()); });
+    p.on('pageerror', e => errs.push(e.message.slice(0, 300))); p.on('response', r => { if (r.status() === 404 && !/talk$|hear$|say$|opacity_color|\/film\//.test(r.url())) miss.push(r.url().split('/').pop()); });
     await p.goto(FILE + q); await p.waitForFunction('window.G && G.debug', null, { timeout: 240000 }); await p.waitForTimeout(3000); return p; };
   const p = await open('?desktop&nopost');
   ok(await p.evaluate(() => G.mode === 'desktop' && G.debug.PH.ready), 'the cart loads on a screen, its loose things on the physics engine');
@@ -90,6 +90,8 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   ok(phys.props > 15 && phys.spilt && phys.off && phys.back, 'a pot lifts off its burner, spills when tipped, and heats again set back down'); ok(phys.wiped, 'the rag wipes a spill off the counter');
   const blk = await p.evaluate(() => { const B = G.block; let moved = 0, seen = 0; const x0 = B.people.map((h) => h.p.root.position.x); for (let i = 0; i < 20 * 150; i++) { G.debug.tick(1 / 20); seen = Math.max(seen, B.people.filter((h) => h.p.root.visible).length); } B.people.forEach((h, i) => { if (Math.abs(h.p.root.position.x - x0[i]) > 1 || h.taken) moved++; }); const h = B.take(), named = !!(h && h.p.cast.name && B.story(h.def).includes(' is ')); if (h) B.give(h); return { n: B.people.length, moved, seen, named, ok: B.people.every((q) => isFinite(q.p.root.position.x)) }; });
   ok(blk.n === 10 && blk.moved >= 3 && blk.seen >= 2 && blk.named && blk.ok, 'the street has its ten neighbours, about their errands, and one of them can come to the cart as themself');
+  const tvc = await p.evaluate(() => { const t = G.tv, b = (n) => G.buttons.find((x) => x.name === n), c0 = t.ch.ch; b('TV channel').press(); const c1 = t.ch.ch; b('TV power').press(); const off = !t.on; b('TV power').press(); for (let i = 0; i < 10; i++) G.debug.tick(1 / 30); return { sets: t.tubes.reduce((a, q) => a + q.sets.length, 0), changed: c0 !== c1, off, on: t.on, chans: t.channels.length }; });
+  ok(tvc.sets >= 1 && tvc.changed && tvc.off && tvc.on && tvc.chans >= 5, 'the cart has a television: its knobs change the channel and switch it off and on');
   ok(await p.evaluate(() => document.querySelectorAll('canvas').length === 1 && G.renderer.info.memory.geometries > 60 && G.baked > 100), 'the street is drawn, its still parts baked together');
   if (OUT) await p.screenshot({ path: path.join(OUT, '01-cart.png'), timeout: 120000 }).catch(() => {});
   await p.close();

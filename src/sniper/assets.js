@@ -14,14 +14,14 @@ export async function loadAssets(onProgress) {
   const jobs = [fetch(BASE + 'sky/sky.json').then(r => r.json()).then((j) => { A.info = j; tick(); })];
   for (const s of TEX) { A.tex[s] = {}; jobs.push(tex('tex/' + s + '_d.jpg', true).then(t => { A.tex[s].d = t; }), tex('tex/' + s + '_n.jpg').then(t => { A.tex[s].n = t; }), tex('tex/' + s + '_a.jpg').then(t => { A.tex[s].a = t; })); }
   for (const m of MODELS) jobs.push(gl.loadAsync(BASE + 'm/' + m + '.glb').then((g) => { A.m[m] = g.scene; tick(); }));
-  for (const c of CARDS) jobs.push(tl.loadAsync(BASE + 'tex/' + c + '.png').then((t) => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; A.card[c] = t; tick(); }));
+  for (const c of CARDS) jobs.push(tl.loadAsync(BASE + 'tex/' + c + '.webp').then((t) => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; A.card[c] = t; tick(); }));
   for (let i = 0; i < 5; i++) jobs.push(tl.loadAsync(BASE + 'tex/car_' + i + '.jpg').then((t) => { t.colorSpace = THREE.SRGBColorSpace; t.flipY = false; t.anisotropy = 4; A.carTex[i] = t; tick(); }));
   // the people: each avatar sized to 1.76 m, standing on the ground, facing +Z; each motion kept as turns of the body's bones and the hips' rise, its walk held in place
   for (const n of PEOPLE) jobs.push(gl.loadAsync(BASE + 'p/' + n + '.glb').then((g) => { g.scene.updateMatrixWorld(true); const b = new THREE.Box3().setFromObject(g.scene); g.scene.traverse((m) => { if (m.isMesh && m.material.transparent) { m.material.transparent = false; m.material.alphaTest = 0.4; } }); A.p[n] = { scene: g.scene, fit: 1.76 / (b.max.y - b.min.y) }; tick(); }));
   for (const s of ['m', 'f']) for (const c of MOVES[s]) jobs.push(gl.loadAsync(BASE + 'p/a_' + s + '_' + c + '.glb').then((g) => { const clip = g.animations[0], keep = [];
     for (const t of clip.tracks) { if (FACE.test(t.name)) continue; if (t.name.endsWith('.quaternion')) keep.push(t); else if (/Pelvis\.position$/.test(t.name)) { const v = t.values, n = v.length / 3; for (let a = 0; a < 3; a++) { const d = v[(n - 1) * 3 + a] - v[a]; if (Math.abs(d) > 8) for (let i = 0; i < n; i++) v[i * 3 + a] = v[a] + (v[i * 3 + a] - v[a] - d * i / (n - 1)); } keep.push(t); } }
     clip.tracks = keep; clip.name = c; A.clip[s][c] = clip; tick(); }));
-  await Promise.all(jobs); A.ok = true;
+  const res = await Promise.allSettled(jobs), bad = res.filter(r => r.status === 'rejected'); if (bad.length) { console.error('COLD BORE: ' + bad.length + ' files did not load', bad[0].reason); throw new Error('Some of the game\'s files did not load. Reload the page to try again.'); } A.ok = true;
 }
 // a sky's picture and its small copy for the light, fetched the first time its hour is wanted
 export function sky(name) {

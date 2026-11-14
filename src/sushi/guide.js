@@ -7,8 +7,8 @@ import { TOPPINGS, TARE, BROTH } from './items.js';
 export function buildGuide(scene, C) {
   const g = { on: true }, nop = (o) => { o.userData.nopick = true; return o; };
   const tex = T.panelTex(640, 300, () => { });
-  const card = nop(new THREE.Mesh(new THREE.PlaneGeometry(0.46, 0.216), new THREE.MeshBasicMaterial({ map: tex, color: 0xd0d0d0 }))); card.position.set(0.76, 1.42, -0.52); card.rotation.x = 0.08; scene.add(card);
-  const am = new THREE.MeshBasicMaterial({ color: new THREE.Color(0.3, 1.6, 0.5), toneMapped: false, transparent: true, opacity: 0.9, depthTest: false });
+  const card = nop(new THREE.Mesh(new THREE.PlaneGeometry(0.46, 0.216), new THREE.MeshBasicMaterial({ map: tex, color: 0xd0d0d0 }))); card.position.set(-0.9, 1.86, -0.42); card.rotation.y = 0.55; scene.add(card);
+  const am = new THREE.MeshBasicMaterial({ color: new THREE.Color(0.3, 1.6, 0.5), toneMapped: false, transparent: true, opacity: 0.9 });
   const arrow = nop(new THREE.Mesh(new THREE.ConeGeometry(0.028, 0.075, 4), am)); arrow.rotation.x = Math.PI; arrow.renderOrder = 60; scene.add(arrow);
   const ring = nop(new THREE.Mesh(new THREE.RingGeometry(0.05, 0.062, 20).rotateX(-Math.PI / 2), am)); ring.renderOrder = 60; scene.add(ring);
   const bpos = new V3(0.78, 0.93, -0.07), bm = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.034, 0.03, 12), new THREE.MeshBasicMaterial({ color: 0x30c060 })); bm.position.copy(bpos); C.group.add(bm);
@@ -36,7 +36,7 @@ export function buildGuide(scene, C) {
     const want = o.firm ? [9, 14] : [14, 23], bk = C.baskets.find((b) => b.noodles);
     if (!bowl.noodles && !bk) return held((x) => x.noodle) ? ['Drop the noodles in a basket', 'In the boiling pot, near left', C.baskets[0].point(C.baskets[0].cup, new V3()).setY(1.22)] : ['Start the noodles: take a portion', head + ' — wooden tray, front left', box];
     if (bowl.tare !== r.tare) { const l = G.items.find((i) => i.kind === 'ladle' && i.mode === 'tare' && i.type === r.tare); return l.held ? [`Tip the ${TARE[r.tare].label} tare over the bowl`, 'Roll your wrist', bp] : [`Take the ${TARE[r.tare].label} tare ladle`, 'Small crocks behind the mat', l.obj.position.clone().setY(l.obj.position.y + 0.08)]; }
-    if (bowl.broth < 2 || bowl.brothType !== r.broth) { const l = C.brothLadles.find((x) => x.vessel.type === r.broth); if (!l.held) return [`Take the ${BROTH[r.broth].label} broth ladle`, 'Big pot on the stove', l.obj.position.clone().setY(l.obj.position.y + 0.08)]; return l.filled ? [`Pour ${BROTH[r.broth].label} broth  ${bowl.broth}/2`, 'Tip it over the bowl', bp] : ['Dip the ladle back in the pot', 'It refills', new V3(l.vessel.x, l.vessel.rimY + 0.14, l.vessel.z)]; }
+    if (bowl.broth < 1.6 || bowl.brothType !== r.broth) { const l = C.brothLadles.find((x) => x.vessel.type === r.broth); if (!l.held) return [`Take the ${BROTH[r.broth].label} broth ladle`, 'Big pot on the stove', l.obj.position.clone().setY(l.obj.position.y + 0.08)]; return l.filled ? [`Pour ${BROTH[r.broth].label} broth  ${Math.round(bowl.broth * 50)}%`, 'Hold it tipped over the bowl', bp] : ['Dip the ladle back in the pot', 'It refills', new V3(l.vessel.x, l.vessel.rimY + 0.14, l.vessel.z)]; }
     if (!bowl.noodles) { const k = bk.noodles.cook, i = C.baskets.indexOf(bk); if (k < want[0]) return [`Noodles cooking — wait for ${o.firm ? 'YELLOW' : 'GREEN'}`, `${Math.ceil(want[0] - k)} s · dial ${i + 1}`, new V3(-1.09, 1.48, -0.05 + i * 0.2)]; return bk.held ? ['Tip the noodles into the bowl', k > want[1] ? 'A little past its best' : 'Now', bp] : ['Lift the noodle basket', 'By its handle', bk.obj.position.clone().setY(bk.obj.position.y + 0.08)]; }
     const have = {}; bowl.toppings.forEach((t) => (have[t] = (have[t] || 0) + 1));
     for (const [t, n] of Object.entries(o.tops)) if ((have[t] || 0) < n) {

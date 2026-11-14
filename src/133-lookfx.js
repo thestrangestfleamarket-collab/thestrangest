@@ -8,11 +8,11 @@ import {LFX, OUT, SOL, SYS, TILE} from './006-map-pre.js';
     const h=(x,y)=>{ const s=Math.sin(((x%16+16)%16)*127.1+((y%16+16)%16)*311.7)*43758.5453; return s-Math.floor(s); }, vn=(x,y)=>{ const i=Math.floor(x), j=Math.floor(y), u=x-i, v=y-j, a=u*u*(3-2*u), b=v*v*(3-2*v);
       return (h(i,j)*(1-a)+h(i+1,j)*a)*(1-b)+(h(i,j+1)*(1-a)+h(i+1,j+1)*a)*b; };
     for(let y=0;y<63;y++)for(let x=0;x<64;x++){ const n=vn(x/8,y/8)*.65+vn(x/4+5,y/4+3)*.35; E[(y*64+x)*4]=Math.round(n*255); }
-    if(F.has('ao'))setTimeout(()=>{ '@later'; const A=LFX.AO, W=A.w*A.k, H=A.h*A.k, D=new Float32Array(W*H).fill(1e9);
+    LFX.bakeAO=()=>{ if(LFX.aoDone)return; LFX.aoDone=true; setTimeout(()=>{ '@later'; const A=LFX.AO, W=A.w*A.k, H=A.h*A.k, D=new Float32Array(W*H).fill(1e9);
       for(const b of SOL.up){ const i0=Math.max(0,Math.floor((b[0]-A.x0)*A.k)), i1=Math.min(W-1,Math.ceil((b[2]-A.x0)*A.k)), j0=Math.max(0,Math.floor((b[1]-A.z0)*A.k)), j1=Math.min(H-1,Math.ceil((b[3]-A.z0)*A.k)); for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++)D[j*W+i]=0; }
       for(let j=0;j<H;j++)for(let i=0;i<W;i++){ const k=j*W+i; if(i)D[k]=Math.min(D[k],D[k-1]+1); if(j)D[k]=Math.min(D[k],D[k-W]+1,i?D[k-W-1]+1.41:1e9,i<W-1?D[k-W+1]+1.41:1e9); }
       for(let j=H-1;j>=0;j--)for(let i=W-1;i>=0;i--){ const k=j*W+i; if(i<W-1)D[k]=Math.min(D[k],D[k+1]+1); if(j<H-1)D[k]=Math.min(D[k],D[k+W]+1,i<W-1?D[k+W+1]+1.41:1e9,i?D[k+W-1]+1.41:1e9); }
-      const R=.42*TILE*A.k, O=LFX.ao.image.data; for(let k=0;k<W*H;k++)O[k]=Math.round(255*(.62+.38*cl(D[k]/R))); LFX.ao.needsUpdate=true; },200);
+      const R=.42*TILE*A.k, O=LFX.ao.image.data; for(let k=0;k<W*H;k++)O[k]=Math.round(255*(.62+.38*cl(D[k]/R))); LFX.ao.needsUpdate=true; },200); }; if(F.has('ao'))LFX.bakeAO();   // the contact shade's map, made once (at the start, or when GRAPHICS HIGH first wants it)
     const sky=new THREE.Color(); let t0=performance.now(); const WS={wet:null,snow:0,h:null,t:t0}; window.WETQ=o=>{ if(o)Object.assign(WS,o); return {...WS}; };
     LFX.tick=()=>{ const day=cl((CLOCK.elev()+3)/12), W=WX.now||{cloud:.3,wind:.3,rain:0}, inside=!OUT.open, t=(performance.now()-t0)/1000, row=63*64*4;
       E[row]=F.has('cs')&&!inside?Math.round(255*day*(.55+.45*cl(W.cloud*1.4))):0;

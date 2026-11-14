@@ -19,12 +19,12 @@ const lin=c=>c<=.04045?c/12.92:Math.pow((c+.055)/1.055,2.4);
 // ---------- renderer ----------
 const canvas=$('c');
 const renderer=new T.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
-const PR=Math.min(window.devicePixelRatio||1,1.75);
+const PR=Math.min(window.devicePixelRatio||1,1.5);
 renderer.setPixelRatio(PR);
 renderer.setSize(innerWidth,innerHeight);
 renderer.outputEncoding=T.sRGBEncoding;
 renderer.toneMapping=T.ACESFilmicToneMapping;
-renderer.toneMappingExposure=.5;
+renderer.toneMappingExposure=.4;
 renderer.shadowMap.enabled=true;
 renderer.shadowMap.type=T.PCFSoftShadowMap;
 renderer.xr.enabled=true;
@@ -43,11 +43,11 @@ const jget=f=>count(fetch(BASE+f).then(r=>r.json()));
 const TREES=['island_tree_01','island_tree_02','island_tree_03','tree_small_02','jacaranda_tree','shrub_02'];
 let A0;
 try{
-  const names=['hero','foe','seat','console','display','switchbox','radio','helmet','barn','cars','pipes','sconce','ammobox','rocks','h6','row','h9','shop','cork','flats','white','cottage','villa','mill','works','church','watertower','silos','stacks','mast','pylon','pole','stonewall','lamp','hay','brokenwall','rubble','trabant','lada','van','tractor','truck','busstop','binos','hand_l','hand_r','crag','deadtree','sandbags','hedgehog','wreck','grenade','pistol','soldier'];
+  const names=['hero','ally','foe','seat','console','display','switchbox','radio','helmet','barn','cars','pipes','sconce','ammobox','rocks','h6','row','h9','shop','cork','flats','white','cottage','villa','mill','works','church','watertower','silos','stacks','mast','pylon','pole','stonewall','lamp','hay','brokenwall','rubble','trabant','lada','van','tractor','truck','busstop','binos','hand_l','hand_r','crag','deadtree','sandbags','hedgehog','wreck','grenade','pistol','soldier'];
   const[sky,skyS,SKY,TREEJ,MODJ,grass,dry,soil,plate,paint,leather,cards,models]=await Promise.all([
     count(new Promise((ok,no)=>texL.load(BASE+'sky/sky.jpg',ok,null,()=>no(new Error('sky'))))),count(new Promise((ok,no)=>texL.load(BASE+'sky/sky_s.jpg',ok,null,()=>no(new Error('sky'))))),jget('sky/sky.json'),jget('trees.json'),jget('models.json'),
     pbr('leafy_grass',1),tex('sparse_grass_d.jpg',{srgb:1}),pbr('farm_soil',1),pbr('metal_plate',1),pbr('green_metal_rust',1),pbr('fabric_leather_02',1),
-    Promise.all(TREES.map(n=>Promise.all([0,1].map(v=>Promise.all([tex(n+'_'+v+'_d.webp',{srgb:1,clamp:1}),tex(n+'_'+v+'_n.webp',{clamp:1})]))))),
+    Promise.all(TREES.map(n=>Promise.all([0,1].map(v=>Promise.all([tex(n+'_'+v+'_d.webp',{srgb:1,clamp:1})]))))),
     Promise.all(names.map(model))]);
   A0={sky,skyS,SKY,TREEJ,MODJ,grass,dry,soil,plate,paint,leather,cards,M:Object.fromEntries(names.map((n,i)=>[n,models[i]]))};
 }catch(e){$('loading').textContent='Could not load the game’s files ('+e.message+'). Reload to try again.';return;}
@@ -84,7 +84,7 @@ const FOG=new T.Color(lin(SKY.hor[0]),lin(SKY.hor[1]),lin(SKY.hor[2])).multiplyS
 const scene=new T.Scene();
 scene.fog=new T.FogExp2(FOG,-40);
 A0.sky.encoding=T.sRGBEncoding;A0.sky.wrapS=T.RepeatWrapping;A0.sky.anisotropy=maxAniso;
-const sky=new T.Mesh(new T.SphereGeometry(5000,48,18,0,Math.PI*2,0,Math.PI*SKY.cut),new T.MeshBasicMaterial({map:A0.sky,side:T.BackSide,fog:false,depthWrite:false,color:new T.Color(1.55,1.5,1.5)}));
+const sky=new T.Mesh(new T.SphereGeometry(5000,48,18,0,Math.PI*2,0,Math.PI*SKY.cut),new T.MeshBasicMaterial({map:A0.sky,side:T.BackSide,fog:false,depthWrite:false,color:new T.Color(1.3,1.24,1.22)}));
 sky.renderOrder=-10;sky.frustumCulled=false;scene.add(sky);
 A0.skyS.encoding=T.sRGBEncoding;A0.skyS.mapping=T.EquirectangularReflectionMapping;
 const pmrem=new T.PMREMGenerator(renderer);scene.environment=pmrem.fromEquirectangular(A0.skyS).texture;
@@ -93,12 +93,12 @@ const camera=new T.PerspectiveCamera(72,innerWidth/innerHeight,.06,9000);
 camera.rotation.order='YXZ';
 const rig=new T.Group();rig.add(camera);
 
-const sunL=new T.DirectionalLight(0xffc890,3.0);
-sunL.castShadow=true;sunL.shadow.mapSize.set(2048,2048);
+const sunL=new T.DirectionalLight(0xffc48a,3.4);
+sunL.castShadow=true;sunL.shadow.mapSize.set(2048,2048);sunL.shadow.autoUpdate=false;
 const shc=sunL.shadow.camera;shc.left=-46;shc.right=46;shc.top=46;shc.bottom=-46;shc.near=1;shc.far=400;
 sunL.shadow.bias=-.0004;sunL.shadow.normalBias=.06;
 scene.add(sunL,sunL.target);
-const hemiL=new T.HemisphereLight(0x8ea4c6,0x40382c,.42);scene.add(hemiL);const ENV=scene.environment;
+const hemiL=new T.HemisphereLight(0x8ea4c6,0x40382c,.5);scene.add(hemiL);const ENV=scene.environment;
 
 function glowCanvas(soft){const c=cnv(128,128),g=c.getContext('2d'),gr=g.createRadialGradient(64,64,0,64,64,64);gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(soft?.08:.22,'rgba(255,255,255,'+(soft?.5:.75)+')');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(0,0,128,128);return c;}
 function smokeCanvas(){const c=cnv(128,128),g=c.getContext('2d'),r=rng(4);for(let i=0;i<34;i++){const x=38+r()*52,y=38+r()*52,rad=12+r()*26,gr=g.createRadialGradient(x,y,0,x,y,rad);gr.addColorStop(0,'rgba(255,255,255,.2)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(0,0,128,128);}return c;}
@@ -138,7 +138,7 @@ const FEAT={bush:[],tree:[],rockS:[],rockB:[],crag:[],log:[],dead:[],bags:[],hog
     else if(t<.66)for(let k=0;k<2+r()*2;k++)FEAT.rockS.push([x+(r()-.5)*9,z+(r()-.5)*9,r()*6.28,.7+r()*1.1]);
     else if(t<.76)FEAT.rockB.push([x,z,r()*6.28,3+r()*4]);else if(t<.85)FEAT.crag.push([x,z,r()*6.28,1.1+r()*1.5]);else if(t<.91)FEAT.log.push([x,z,r()*6.28,.8+r()*.5]);else if(t<.95)FEAT.dead.push([x,z,r()*6.28,.9+r()*.6]);
     else if(t<.975)FEAT.bags.push([x,z,r()*6.28]);else if(t<.99)FEAT.hog.push([x,z,r()*6.28]);else FEAT.wreck.push([x,z,r()*6.28]);}}})();
-const landMat=new T.MeshStandardMaterial({map:A0.grass.d,normalMap:A0.grass.n,normalScale:new T.Vector2(.9,.9),vertexColors:true,roughness:1,envMapIntensity:.3});
+const landMat=new T.MeshLambertMaterial({map:A0.grass.d,vertexColors:true});
 landMat.onBeforeCompile=s=>{s.uniforms.tDry={value:A0.dry};s.uniforms.tSoil={value:A0.soil.d};s.uniforms.uT=landMat.userData.uT={value:0};const seg=(a,b)=>`rd=min(rd,sdS(wp,vec2(${a[0]}.,${a[1]}.),vec2(${b[0]}.,${b[1]}.)));`;
   s.fragmentShader=s.fragmentShader.replace('#include <map_pars_fragment>','#include <map_pars_fragment>\nuniform sampler2D tDry;uniform sampler2D tSoil;uniform float uT;\nfloat fh(vec2 p){return fract(sin(p.x*127.1+p.y*311.7)*43758.5453);}\nfloat sdS(vec2 p,vec2 a,vec2 b){vec2 pa=p-a,ba=b-a;return length(pa-ba*clamp(dot(pa,ba)/dot(ba,ba),0.,1.));}\nfloat pondD(vec2 p){float m=9.;'+PONDS.map(q=>`m=min(m,(length(p-vec2(${q[0]}.,${q[1]}.))-${q[2]}.)/9.+1.);`).join('')+'return m;}')
    .replace('#include <map_fragment>',`vec2 wp=vFogWorld.xz;vec2 q=vec2(${FCS.toFixed(5)}*wp.x+${FSN.toFixed(5)}*wp.y,${(-FSN).toFixed(5)}*wp.x+${FCS.toFixed(5)}*wp.y);vec2 fs=vec2(${FW}.0,${FD}.0);vec2 cell=floor(q/fs);vec2 ff=fract(q/fs);
@@ -177,27 +177,29 @@ const TSCALE=[4.2,5.2,6.4,4.6,1.05,1.5];
     if(f.kind<3&&r()<.55){const[x,z]=o(.2+r()*.6,.2+r()*.6);put(r()<.3?4:Math.floor(r()*3),x,z,1.3);}}
   for(const[x,z]of FEAT.bush)put(5,x,z,1.25);for(const[x,z]of FEAT.tree)put(r()<.2?4:Math.floor(r()*4),x,z,1.15);
   for(const q of PONDS)for(let i=0;i<26;i++){const a=r()*6.28,d=q[2]*(1.08+r()*.5);put(r()<.75?5:3,q[0]+Math.cos(a)*d,q[1]+Math.sin(a)*d,r()<.75?1.3:1);}
-  for(let i=0;i<2600;i++){const a2=r()*6.28,d=1700+Math.pow(r(),1.4)*2600,x=Math.cos(a2)*d,z=Math.sin(a2)*d;if(fbm(x/700+3,z/700+8,2)<.5)continue;spots[Math.floor(r()*4)].push([x,z,2.2+r()*1.6,Math.atan2(SUN.x,SUN.z)+(r()-.5)]);}
+  for(let i=0;i<1500;i++){const a2=r()*6.28,d=1700+Math.pow(r(),1.4)*2600,x=Math.cos(a2)*d,z=Math.sin(a2)*d;if(fbm(x/700+3,z/700+8,2)<.5)continue;spots[Math.floor(r()*4)].push([x,z,2.2+r()*1.6,Math.atan2(SUN.x,SUN.z)+(r()-.5)]);}
   const dm=new T.Object3D();let n_=0;
-  TREES.forEach((n,k)=>{const J=TREEJ[n],S=TSCALE[k],list=spots[k];if(!list.length)return;
-    for(let v=0;v<2;v++){const g=new T.PlaneGeometry(J.w*S,J.h*S);g.translate(0,J.h*S/2-.15,0);if(v)g.rotateY(Math.PI/2);
-      const mat=new T.MeshStandardMaterial({map:A0.cards[k][v][0],normalMap:A0.cards[k][v][1],alphaTest:.42,side:T.DoubleSide,roughness:.95,envMapIntensity:.5,color:new T.Color(.9,.94,.8),emissive:new T.Color(.2,.22,.15),emissiveMap:A0.cards[k][v][0],normalScale:new T.Vector2(.6,.6)});
+  TREES.forEach((n,k)=>{const J=TREEJ[n],S=TSCALE[k],all=spots[k];if(!all.length)return;const near=all.filter(t=>Math.hypot(t[0],t[1])<620),far=all.filter(t=>Math.hypot(t[0],t[1])>=620);
+    for(let v=0;v<2;v++)for(const[list,sh]of v?[[near,true]]:[[near,true],[far,false]]){if(!list.length)continue;const g=new T.PlaneGeometry(J.w*S,J.h*S);g.translate(0,J.h*S/2-.15,0);if(v)g.rotateY(Math.PI/2);
+      const mat=new T.MeshLambertMaterial({map:A0.cards[k][v][0],alphaTest:.42,side:T.DoubleSide,color:new T.Color(.8,.84,.7),emissive:new T.Color(.1,.11,.08),emissiveMap:A0.cards[k][v][0]});
       const im=new T.InstancedMesh(g,mat,list.length);list.forEach((t,i)=>{dm.position.set(t[0],hAt(t[0],t[1]),t[1]);dm.rotation.set(0,t[3],0);dm.scale.setScalar(t[2]);dm.updateMatrix();im.setMatrixAt(i,dm.matrix);});
-      im.frustumCulled=false;im.castShadow=true;land.add(im);}n_+=list.length;});console.log('trees',n_);
+      im.frustumCulled=false;im.castShadow=sh;land.add(im);n_+=list.length;}});
 })();
+const cheapOf=new Map(),cheap=m=>{if(!cheapOf.has(m))cheapOf.set(m,new T.MeshLambertMaterial({map:m.map,color:m.color,alphaTest:m.alphaTest,side:m.side,transparent:m.transparent,opacity:m.opacity}));return cheapOf.get(m);};
 const prep=(o,f)=>{o.traverse(m=>{if(m.isMesh){m.castShadow=m.receiveShadow=true;if(f)f(m.material,m);}});return o;};
 const solids=[];
 (function buildScenery(){
-  const place=(src,x,z,ry,s=1,r=0,h=0)=>{const o=src.clone();o.position.set(x,hAt(x,z)-.1,z);o.rotation.y=ry;o.scale.setScalar(s);land.add(o);if(r)solids.push({x,z,r,h});return o;};
-  for(const n of['barn','cars','rocks','h6','row','h9','shop','cork','flats','white','cottage','villa','mill','works','church','watertower','silos','stacks','mast','pylon','pole','stonewall','lamp','hay','brokenwall','rubble','trabant','lada','van','tractor','truck','busstop'])prep(M[n],m=>{m.envMapIntensity=.3;m.metalness=0;});
+  const lots=new Map(),place=(src,x,z,ry,s=1,r=0,h=0)=>{(lots.get(src)||lots.set(src,[]).get(src)).push([x,z,ry,s,-.1]);if(r)solids.push({x,z,r,h});};
+  for(const n of['barn','cars','rocks','h6','row','h9','shop','cork','flats','white','cottage','villa','mill','works','church','watertower','silos','stacks','mast','pylon','pole','stonewall','lamp','hay','brokenwall','rubble','trabant','lada','van','tractor','truck','busstop'])prep(M[n]);
   place(M.barn,-150,-230,.5,1,7,7);place(M.barn,250,-360,1.9,.9,7,7);place(M.barn,-330,160,2.6,1,7,7);place(M.cars,-128,-218,1.1);place(M.tractor,262,-338,.3);
   const r=rng(77),dm=new T.Object3D(),mx=new T.Matrix4();
   // many of one model drawn as one: [x, z, turn, size, lift, lean, tall]
-  const many=(src,list)=>{if(!list.length)return;src.updateMatrixWorld(true);src.traverse(m=>{if(!m.isMesh)return;const im=new T.InstancedMesh(m.geometry,m.material,list.length);list.forEach((t,i)=>{dm.position.set(t[0],hAt(t[0],t[1])+(t[4]||0),t[1]);dm.rotation.set(0,t[2],t[5]||0);dm.scale.set(t[3],t[3]*(t[6]||1),t[3]);dm.updateMatrix();im.setMatrixAt(i,mx.multiplyMatrices(dm.matrix,m.matrixWorld));});im.castShadow=im.receiveShadow=true;im.frustumCulled=false;land.add(im);});};
+  const many=(src,list)=>{if(!list.length)return;src.updateMatrixWorld(true);src.traverse(m=>{if(!m.isMesh)return;const im=new T.InstancedMesh(m.geometry,m.material,list.length);list.forEach((t,i)=>{dm.position.set(t[0],hAt(t[0],t[1])+(t[4]||0),t[1]);dm.rotation.set(0,t[2],t[5]||0);dm.scale.set(t[3],t[3]*(t[6]||1),t[3]);dm.updateMatrix();im.setMatrixAt(i,mx.multiplyMatrices(dm.matrix,m.matrixWorld));});im.material=cheap(m.material);im.castShadow=im.receiveShadow=true;im.frustumCulled=false;land.add(im);});};
   prep(M.crag,m=>{m.envMapIntensity=.3;m.color.setRGB(.62,.6,.55);});prep(M.deadtree,m=>{m.envMapIntensity=.2;m.side=T.DoubleSide;m.alphaTest=.4;});prep(M.sandbags,m=>{m.envMapIntensity=.2;m.color.setRGB(.6,.58,.5);});prep(M.hedgehog,m=>{m.color.setRGB(.25,.16,.12);m.envMapIntensity=.3;});prep(M.wreck,m=>{m.envMapIntensity=.3;m.color.multiplyScalar(.55);});
   many(M.rocks,FEAT.rockS.map(t=>[t[0],t[1],t[2],t[3],-t[3]*.2]));many(M.rocks,FEAT.rockB.map(t=>[t[0],t[1],t[2],t[3],-t[3]*.3,0,1.6]));many(M.crag,FEAT.crag.map(t=>[t[0],t[1],t[2],t[3],-.6]));
   many(M.deadtree,FEAT.dead.map(t=>[t[0],t[1],t[2],t[3],-.5]));many(M.deadtree,FEAT.log.map(t=>[t[0],t[1],t[2],t[3],.9,1.45]));many(M.sandbags,FEAT.bags.flatMap(t=>[0,1,2,3,4].map(k=>[t[0]+Math.cos(t[2])*k*1.5,t[1]+Math.sin(t[2])*k*1.5,-t[2],1.15,0])));
   many(M.hedgehog,FEAT.hog.flatMap(t=>[0,1,2].map(k=>[t[0]+Math.cos(t[2])*k*3.2,t[1]+Math.sin(t[2])*k*3.2,t[2]+k,1,-.1])));for(const t of FEAT.wreck)place(M.wreck,t[0],t[1],t[2],1,2.6,2.6);
+  land.userData.flush=()=>{for(const[src,list]of lots)many(src,list);};
   for(const t of FEAT.rockB)solids.push({x:t[0],z:t[1],r:t[3]*2.4,h:t[3]*2.4});for(const t of FEAT.crag)solids.push({x:t[0],z:t[1],r:t[3]*2.2,h:t[3]*7});for(const t of FEAT.dead)solids.push({x:t[0],z:t[1],r:.5,h:6});
   // the ponds: still dark water in the hollows
   {const wm=new T.MeshStandardMaterial({color:0x0c1416,roughness:.06,metalness:.3,envMapIntensity:1.5,transparent:true,opacity:.93});for(const q of PONDS){const w=new T.Mesh(new T.CircleGeometry(q[2]*1.03,40).rotateX(-Math.PI/2),wm);w.position.set(q[0],q[3]-.55,q[1]);w.receiveShadow=true;land.add(w);}}
@@ -232,6 +234,7 @@ const solids=[];
   PY.forEach(([x,z],i)=>{place(M.pylon,x,z,.12,1,2.5,26);if(i){const[ax,az]=PY[i-1];for(const off of[-4.6,4.6])for(let k=0;k<16;k++){const t0=k/16,t1=(k+1)/16,sag=t=>-9*4*t*(1-t);wp.push(lerp(ax,x,t0),lerp(hAt(ax,az),hAt(x,z),t0)+21+sag(t0),lerp(az,z,t0)+off,lerp(ax,x,t1),lerp(hAt(ax,az),hAt(x,z),t1)+21+sag(t1),lerp(az,z,t1)+off);}}});
   const wg=new T.BufferGeometry();wg.setAttribute('position',new T.Float32BufferAttribute(wp,3));const wires=new T.LineSegments(wg,new T.LineBasicMaterial({color:0x1a1a1a,transparent:true,opacity:.7}));wires.frustumCulled=false;land.add(wires);
   for(let i=0;i<ROAD.length-1;i++){const a=ROAD[i],b=ROAD[i+1],L=Math.hypot(b[0]-a[0],b[1]-a[1]),ux=(b[0]-a[0])/L,uz=(b[1]-a[1])/L;for(let d=i?20:130;d<L-(i===ROAD.length-2?80:0);d+=55)place(M.pole,a[0]+ux*d-uz*7,a[1]+uz*d+ux*7,Math.atan2(ux,uz),1,.3,8);}
+  land.userData.flush();
 })();
 
 // ---------- air: mist lying in the hollows, smoke standing on the horizon, guns flashing beyond it ----------
@@ -254,7 +257,7 @@ function updateAir(dt){
 const tank=new T.Group();scene.add(tank);
 const ext=new T.Group();tank.add(ext);
 prep(M.hero,m=>{m.envMapIntensity=.7;m.color.multiplyScalar(.82);});
-const heroProto=M.hero.clone(true);heroProto.traverse(m=>{if(m.isMesh){m.material=m.material.clone();}});
+const heroProto=M.ally;heroProto.traverse(m=>{if(m.isMesh){m.material=new T.MeshLambertMaterial({map:m.material.map,color:new T.Color(.8,.8,.8),emissive:new T.Color(0,0,0)});m.castShadow=false;}});heroProto.getObjectByName('hull').add(new T.Mesh(new T.BoxGeometry(3.4,.75,6.7).translate(0,.4,.5),new T.MeshLambertMaterial({color:0x14140f})));
 const hullN=M.hero.getObjectByName('hull'),turret=new T.Group(),turN=M.hero.getObjectByName('turret'),gunN=M.hero.getObjectByName('gun');
 ext.add(hullN);tank.add(turret);turret.add(turN);
 const TRUN=new T.Vector3().fromArray(MODJ.hero.trunnion);
@@ -280,13 +283,13 @@ const monitorMat=new T.ShaderMaterial({uniforms:{map:{value:null},gain:{value:1}
 #include <tonemapping_fragment>
 #include <encodings_fragment>
   }`}),statC=cnv(512,320),statT=ctex(statC),fcsC=cnv(256,192),fcsT=ctex(fcsC);
-const sightRT=new T.WebGLRenderTarget(640,480,{type:T.HalfFloatType});monitorMat.uniforms.map.value=sightRT.texture;
+const sightRT=new T.WebGLRenderTarget(512,384,{type:T.HalfFloatType});monitorMat.uniforms.map.value=sightRT.texture;
 const breech=new T.Group(),breechSlide=new T.Group();
 (function buildInside(){
   const CEIL=ROOF-.12,H=CEIL-FLOOR,mk=(t,rep,o)=>{const m=new T.MeshStandardMaterial(Object.assign({map:t.d.clone(),normalMap:t.n.clone(),roughnessMap:t.a.clone(),metalnessMap:t.a.clone(),envMapIntensity:.18},o));for(const k of['map','normalMap','roughnessMap','metalnessMap']){m[k].repeat.set(rep,rep);m[k].needsUpdate=true;}return m;};
   // the turret's white paint: the green paint's picture with its colour taken out and lifted
   const white=(()=>{const im=A0.paint.d.image,c=cnv(im.width,im.height),g=c.getContext('2d');g.drawImage(im,0,0);const d=g.getImageData(0,0,c.width,c.height),a=d.data;for(let i=0;i<a.length;i+=4){const l=a[i]*.3+a[i+1]*.5+a[i+2]*.2,v=Math.min(255,70+l*1.75);a[i]=v*.97;a[i+1]=v;a[i+2]=v*.93;}g.putImageData(d,0,0);const t=ctex(c);t.encoding=T.sRGBEncoding;t.wrapS=t.wrapT=T.RepeatWrapping;return{d:t,n:A0.paint.n,a:A0.paint.a};})();
-  const wallMat=mk(white,.55,{color:0x9aa196,metalness:.1,roughness:.8,side:T.DoubleSide}),frame=mk(white,.8,{color:0x858c80,metalness:.15,roughness:.7}),dark=mk(A0.paint,1.5,{color:0x30352c,metalness:.4,roughness:.7}),
+  const wallMat=mk(white,.55,{color:0x5e645a,metalness:.1,roughness:.8,side:T.DoubleSide}),frame=mk(white,.8,{color:0x50564c,metalness:.15,roughness:.7}),dark=mk(A0.paint,1.5,{color:0x30352c,metalness:.4,roughness:.7}),
     olive=mk(A0.paint,1.2,{color:0x8c9478,metalness:.3,roughness:.75}),floorMat=mk(A0.plate,1.6,{color:0x6b6e66,metalness:.6,roughness:.8}),pad=mk(A0.leather,3,{color:0x2a2622,metalness:0,roughness:1}),
     steel=new T.MeshStandardMaterial({color:0x44474a,metalness:.85,roughness:.4,normalMap:A0.paint.n,normalScale:new T.Vector2(.35,.35),envMapIntensity:.45}),bright=new T.MeshStandardMaterial({color:0x9a9da0,metalness:1,roughness:.22,envMapIntensity:.6}),
     brass=new T.MeshStandardMaterial({color:0xb08a3a,metalness:1,roughness:.32,envMapIntensity:.5}),rubberM=new T.MeshStandardMaterial({color:0x0c0c0c,roughness:.7}),glass=new T.MeshStandardMaterial({color:0x06100c,roughness:.08,metalness:.2,envMapIntensity:.5});
@@ -328,14 +331,14 @@ const breech=new T.Group(),breechSlide=new T.Group();
   add(new T.PlaneGeometry(.46,.345),new T.MeshBasicMaterial({map:rT,transparent:true,toneMapped:false,depthWrite:false}),sight).position.z=.004;
   // the commander's panel on the right: armour, gun, rounds, the plot
   const mfd=new T.Group();mfd.position.set(1.16,FLOOR+EYE-.12,HZ-.62);mfd.rotation.y=-1.02;inside.add(mfd);
-  box(.44,.3,.1,dark,0,0,-.055,mfd);box(.4,.26,.01,rubberM,0,0,-.004,mfd);add(new T.PlaneGeometry(.37,.231),new T.MeshBasicMaterial({map:statT,toneMapped:false}),mfd).position.z=.003;
+  box(.44,.3,.1,dark,0,0,-.055,mfd);box(.4,.26,.01,rubberM,0,0,-.004,mfd);add(new T.PlaneGeometry(.37,.231),new T.MeshBasicMaterial({map:statT,toneMapped:false,color:0x9a9a9a}),mfd).position.z=.003;
   for(let i=0;i<4;i++)box(.022,.03,.012,olive,-.205,.09-i*.06,.004,mfd);
   // real kit: the seat, the consoles, the switch box, the radio, a crew helmet, the ready rounds, pipes, the lamp
   const dress=(src,x,y,z,ry,f,s=1)=>{const o=src.clone();o.traverse(m=>{if(m.isMesh){m.material=m.material.clone();m.material.envMapIntensity=.2;if(f)f(m.material);}});o.position.set(x,y,z);o.rotation.y=ry;o.scale.setScalar(s);inside.add(o);return o;};
   dress(M.seat,HX,FLOOR-.02,HZ+.1,Math.PI,m=>{m.color.multiplyScalar(.75);});
-  dress(M.console,HX+.02,FLOOR-.3,HZ-1.42,0,m=>{m.color.setRGB(.62,.7,.6);m.emissiveMap=m.map;m.emissive=new T.Color(.5,.42,.38);},.86);
-  const cov=add(new T.PlaneGeometry(.25,.225),new T.MeshBasicMaterial({map:fcsT,toneMapped:false}));cov.position.set(HX-.2,FLOOR+.582,HZ-1.293);cov.rotation.x=-.21;
-  dress(M.display,1.27,FLOOR+EYE+.02,HZ+.12,-Math.PI/2,m=>{m.color.setRGB(.42,.46,.4);m.emissiveMap=m.map;m.emissive=new T.Color(.55,.7,.75);},.9);
+  dress(M.console,HX+.02,FLOOR-.3,HZ-1.42,0,m=>{m.color.setRGB(.4,.45,.4);m.emissiveMap=m.map;m.emissive=new T.Color(.22,.18,.16);},.86);
+  const cov=add(new T.PlaneGeometry(.25,.225),new T.MeshBasicMaterial({map:fcsT,toneMapped:false,color:0x8a8a8a}));cov.position.set(HX-.2,FLOOR+.582,HZ-1.293);cov.rotation.x=-.21;
+  dress(M.display,1.27,FLOOR+EYE+.02,HZ+.12,-Math.PI/2,m=>{m.color.setRGB(.3,.33,.29);m.emissiveMap=m.map;m.emissive=new T.Color(.25,.32,.34);},.9);
   dress(M.switchbox,1.3,FLOOR+.7,HZ+.75,-Math.PI/2,m=>{m.color.multiplyScalar(.8);m.emissiveMap=m.map;m.emissive=new T.Color(.3,.3,.3);});
   box(.9,.03,.34,olive,.25,FLOOR+.86,1.32,inside);dress(M.radio,.42,FLOOR+.875,1.3,Math.PI,null);dress(M.helmet,-.1,FLOOR+.875,1.3,2.6,null);
   dress(M.ammobox,-.5,FLOOR+.875,1.3,1.2,null,1.6);dress(M.ammobox,-.6,FLOOR,-.55,.3,null,2.2);dress(M.ammobox,-.85,FLOOR,-.8,-.5,null,2.2);
@@ -348,13 +351,11 @@ const breech=new T.Group(),breechSlide=new T.Group();
   for(const pts of[[[1.28,FLOOR+1.15,.2],[1.3,CEIL-.06,.3],[.9,CEIL-.03,-.4],[HX+.25,FLOOR+EYE+.3,HZ-.98]],[[1.3,FLOOR+.9,HZ+.75],[1.31,FLOOR+.5,.5],[1.2,FLOOR+.2,-.4],[.9,FLOOR+.25,-1.0]],[[.42,FLOOR+.95,1.42],[.8,FLOOR+1.2,1.46],[1.2,FLOOR+1.1,1.2],[1.3,FLOOR+.95,HZ+.8]]])
     add(new T.TubeGeometry(new T.CatmullRomCurve3(pts.map(p=>new T.Vector3(...p))),24,.011,6),rubberM);
   const L=inside.userData.L={};
-  L.dome=new T.SpotLight(0xff9a62,0,7,1.25,.6,1.6);L.dome.position.set(-.2,CEIL-.12,.2);L.dome.target.position.set(.1,FLOOR,.15);L.dome.castShadow=true;L.dome.shadow.mapSize.set(1024,1024);L.dome.shadow.camera.near=.08;L.dome.shadow.camera.far=4;L.dome.shadow.bias=-.002;L.dome.shadow.normalBias=.02;
-  L.fill=new T.PointLight(0xffd0a0,0,4,2);L.fill.position.set(-.2,CEIL-.35,.2);
+  L.dome=new T.SpotLight(0xff9a62,0,7,1.25,.6,1.6);L.dome.position.set(-.2,CEIL-.12,.2);L.dome.target.position.set(.1,FLOOR,.15);L.dome.castShadow=true;L.dome.shadow.mapSize.set(512,512);L.dome.shadow.autoUpdate=false;L.dome.shadow.camera.near=.08;L.dome.shadow.camera.far=4;L.dome.shadow.bias=-.002;L.dome.shadow.normalBias=.02;
   L.screen=new T.PointLight(0x9fd8b8,0,2.4,2);L.screen.position.set(HX,FLOOR+EYE,HZ-.55);L.mfd=new T.PointLight(0x8fe0a8,0,1.6,2);L.mfd.position.set(1.0,FLOOR+EYE-.1,HZ-.45);
-  L.fcs=new T.PointLight(0x58ff9a,0,1.3,2);L.fcs.position.set(HX-.2,FLOOR+.75,HZ-1.1);L.unit=new T.PointLight(0x7fd0ff,0,1.5,2);L.unit.position.set(1.1,FLOOR+EYE+.1,HZ+.12);inside.add(L.fcs,L.unit);
   L.alarm=new T.PointLight(0xff2a14,0,3.5,2);L.alarm.position.set(.6,CEIL-.2,-.7);
   L.day=new T.SpotLight(0xfff0dc,0,6,.5,.7,1.2);L.day.position.set(HX,CEIL+1.2,HZ);L.day.target.position.set(HX-.15,FLOOR,HZ+.2);
-  inside.add(L.dome,L.dome.target,L.fill,L.screen,L.mfd,L.alarm,L.day,L.day.target);
+  inside.add(L.dome,L.dome.target,L.screen,L.mfd,L.alarm,L.day,L.day.target);
   const beacon=add(new T.SphereGeometry(.022,12,8),new T.MeshBasicMaterial({color:0x300a06}));beacon.position.copy(L.alarm.position);L.beacon=beacon;
   inside.traverse(m=>{if(m.isMesh&&!m.material.isMeshBasicMaterial){m.castShadow=true;m.receiveShadow=true;}});
 
@@ -717,7 +718,7 @@ function reset(){
   for(const e of foes)scene.remove(e.g);foes.length=0;while(shells.length)dropShell(shells[0]);for(const c of crews)scene.remove(c.g);crews.length=0;for(const n of nades)scene.remove(n.g);nades.length=0;for(const m of mines)scene.remove(m.m);mines.length=0;Object.assign(INV,{pistol:8,mags:3,grenade:4,mine:3,reload:0});
   Object.assign(P,{x:0,z:0,yaw:0,v:0,tyaw:0,elev:.03,aimYaw:0,aimPitch:0,armour:100,rounds:40,reload:0,shake:0,hurt:0,hatch:0,hatchOpen:false,sight:false,recoil:0,kills:0,shots:0,hits:0,ammo:{S:TY.S,H:TY.H},rounds:TY.S+TY.H,loaded:'S',next:'S',range:400,lased:-99,zoom:0,thermal:false,smoke:TY.smoke,smokeT:-99,power:1,dmg:{tracks:0,trav:0,sight:0,fire:0}});
   resetFriends();
-  wave=0;waveT=5;endT=0;deathFade=0;expo=1.0;
+  wave=0;waveT=5;endT=0;deathFade=0;expo=.7;
 }
 function spawnWave(){
   const n=WAVES[wave],base=P.yaw+P.tyaw,spread=[.7,1.3,2.1,3.1][wave];
@@ -889,10 +890,10 @@ function drawStat(){
 // ---------- seeing: eye adaptation, hit effects ----------
 function updateVision(dt){
   const fx=$('fxToggle').checked,out=!P.headIn,dmg=1-P.armour/100;
-  const tgtE=state==='preview'||out||(P.sight&&!xrActive)?.5:lerp(1.5,.8,P.hatch);
+  const tgtE=state==='preview'||out||(P.sight&&!xrActive)?.4:lerp(.85,.6,P.hatch);
   expo=Math.exp(lerp(Math.log(expo),Math.log(tgtE),1-Math.exp(-dt/(P.sight&&!xrActive?.3:1.5))));
   renderer.toneMappingExposure=expo*(1+P.recoil*.25);
-  {const mu=monitorMat.uniforms;mu.gain.value=1.2/expo;mu.thermal.value=P.thermal?1:0;mu.snow.value=P.dmg.sight>0?1:0;mu.time.value=time;}
+  {const mu=monitorMat.uniforms;mu.gain.value=.5/expo;mu.thermal.value=P.thermal?1:0;mu.snow.value=P.dmg.sight>0?1:0;mu.time.value=time;}
   vign.visible=xrActive&&fx&&P.hurt>.01;vign.material.uniforms.amt.value=P.hurt*.8;
   const u=lens.uniforms;u.time.value=time;u.blur.value=fx?P.hurt*.7+P.shake*.12:0;u.ca.value=.004+(fx?P.hurt*.02+dmg*.005:0);u.desat.value=fx?dmg*.35+P.hurt*.3:0;u.vig.value=.28+(fx?P.hurt*.3:0);
   applyFade();
@@ -966,17 +967,17 @@ function frame(){
   const vr=renderer.xr.isPresenting,flatSight=!vr&&P.sight&&state==='play',inNow=P.headIn&&!flatSight,L=inside.userData.L;
   const heat=on=>{const h=on&&P.thermal?1:0;if(heat.h===h)return;heat.h=h;M.foe.traverse(m=>{if(m.isMesh){m.material.emissive.setScalar(h*1.4);}});for(const w of wreckMats.values())w.emissive.setScalar(h*.5);heroProto.traverse(m=>{if(m.isMesh)m.material.emissive.setScalar(h*.7);});};
   gunCam.fov=P.zoom?TY.zoom:9;
-  const lights=inn=>{sunL.intensity=inn?0:3.0;sunL.castShadow=!inn;hemiL.intensity=inn?.02:.42;scene.environment=ENV;
+  const lights=inn=>{sunL.intensity=inn?0:3.4;sunL.castShadow=!inn;hemiL.intensity=inn?.012:.5;scene.environment=ENV;
     const fl=P.shake>.05?.55+.45*Math.sin(time*90)*Math.sin(time*37):1,pw=inn?(P.power==null?1:P.power)*fl:0,low=P.armour<40?1:0;
-    L.dome.intensity=pw*.5*(1-.5*low);L.dome.castShadow=inn;L.fill.intensity=pw*.035;L.screen.intensity=inn?(P.dmg.sight>0?.5:1.5)*(.92+.08*Math.sin(time*23))*(P.thermal?.8:1):0;L.screen.color.setRGB(P.thermal?.6:.75,1,P.thermal?.7:.86);L.mfd.intensity=inn?.9:0;L.fcs.intensity=inn?.55:0;L.unit.intensity=inn?.45:0;
-    L.alarm.intensity=inn?(P.hurt>.02?2.4*P.hurt:0)+low*1.6*(.5+.5*Math.sin(time*7)):0;L.beacon.material.color.setRGB(.2+L.alarm.intensity,.04,.03);L.day.intensity=inn?P.hatch*5:0;};
-  if(inNow&&state!=='preview'&&(!vr||frameN&1)){
+    L.dome.intensity=pw*.16*(1-.5*low);L.dome.castShadow=inn;if(inn&&frameN%8===0)L.dome.shadow.needsUpdate=true;L.screen.intensity=inn?(P.dmg.sight>0?.25:.7)*(.92+.08*Math.sin(time*23))*(P.thermal?.8:1):0;L.screen.color.setRGB(P.thermal?.6:.75,1,P.thermal?.7:.86);L.mfd.intensity=inn?.38:0;
+    L.alarm.intensity=inn?(P.hurt>.02?1.6*P.hurt:0)+low*.9*(.5+.5*Math.sin(time*7)):0;L.beacon.material.color.setRGB(.2+L.alarm.intensity,.04,.03);L.day.intensity=inn?P.hatch*3:0;if(!inn&&(frameN&1))sunL.shadow.needsUpdate=true;};
+  if(inNow&&state!=='preview'&&(!vr||frameN%3===0)){
     inside.visible=false;ext.visible=turN.visible=true;lights(false);heat(true);
     const prev=renderer.getRenderTarget(),xe=renderer.xr.enabled;renderer.xr.enabled=false;
     gunCam.aspect=4/3;gunCam.updateProjectionMatrix();renderer.setRenderTarget(sightRT);renderer.render(scene,gunCam);
     renderer.setRenderTarget(prev);renderer.xr.enabled=xe;}
   const vb2=vr&&P.item==='bino';binoView.visible=binoBack.visible=false;
-  if(vb2){lights(false);const prev=renderer.getRenderTarget(),xe=renderer.xr.enabled;renderer.xr.enabled=false;renderer.setRenderTarget(sightRT);renderer.render(scene,binoCam);renderer.setRenderTarget(prev);renderer.xr.enabled=xe;binoView.visible=binoBack.visible=true;binoView.material.uniforms.gain.value=1.2/expo;}
+  if(vb2){lights(false);const prev=renderer.getRenderTarget(),xe=renderer.xr.enabled;renderer.xr.enabled=false;renderer.setRenderTarget(sightRT);renderer.render(scene,binoCam);renderer.setRenderTarget(prev);renderer.xr.enabled=xe;binoView.visible=binoBack.visible=true;binoView.material.uniforms.gain.value=.9/expo;}
   inside.visible=inNow;ext.visible=turN.visible=!inNow;hatchLid.visible=!inNow;lights(inNow);heat(flatSight);lens.uniforms.thermal.value=flatSight&&P.thermal?1:0;
   if(vr)renderer.render(scene,camera);
   else{if(flatSight){gunCam.aspect=innerWidth/innerHeight;gunCam.updateProjectionMatrix();}renderPass.camera=flatSight?gunCam:camera;composer.render(dt);}
@@ -1002,6 +1003,7 @@ vrBtn.addEventListener('click',async()=>{
   try{
     const session=await navigator.xr.requestSession('immersive-vr',{optionalFeatures:['local-floor','bounded-floor']});
     await renderer.xr.setSession(session);
+    sunL.shadow.mapSize.set(1024,1024);if(sunL.shadow.map){sunL.shadow.map.dispose();sunL.shadow.map=null;}
     xrActive=true;camera.position.set(0,0,0);camera.rotation.set(0,0,0);camera.fov=72;xr.cx=xr.cz=0;xr.centre=20;
     if(state==='preview'){P.hatchOpen=false;P.hatch=0;}
     hideMenu();beginPlay();

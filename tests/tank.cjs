@@ -61,7 +61,27 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   await pg.evaluate(() => game.skip()); await till(pg, () => game.foes.length > 0); await stand(pg, 0, 160);
   await pg.evaluate(() => { const e = game.foes[0]; game.P.armour = 5; e.shots = 1; e.fireT = 0; e.tyaw = 0; Math.random = () => 0; }); await till(pg, () => game.state !== 'play'); await pg.evaluate(() => { Math.random = window.__r; }); await till(pg, () => game.state === 'over');
   ok(await pg.evaluate(() => game.state === 'over' && /Knocked out/.test(document.querySelector('#msg p').textContent)), 'armour gone, the tank is knocked out and the battle ends');
+  // on foot: a crewman close by, a grenade for him, a mine for a tank
+  await till(pg, () => game.state === 'over'); await pg.keyboard.press('Space'); await secs(pg, .3); await alone(pg); await pg.evaluate(() => game.skip()); await till(pg, () => game.foes.length > 0); await pg.evaluate(() => game.foes.forEach(e => { e.fireT = 1e9; e.state = 'hold'; e.dx = e.x; e.dz = e.z; }));
+  await pg.keyboard.press('KeyH'); await till(pg, () => game.P.hatch >= 1 && !game.P.headIn); await secs(pg, .3);
+  await pg.evaluate(() => { const P = game.P, a = P.yaw + P.tyaw; game.addCrew(P.x - Math.sin(a) * 19, P.z - Math.cos(a) * 19).fireT = 1e9; });
+  await pg.keyboard.press('Digit4'); ok(await pg.evaluate(() => game.P.item) === 'grenade', 'head out, 4 takes a grenade in your hand'); await pg.keyboard.press('Space'); await till(pg, () => game.crews[0].state === 'dead');
+  ok(await pg.evaluate(() => game.crews[0].state === 'dead' && game.INV.grenade === 3), 'thrown at a crewman on foot, it kills him');
+  await pg.keyboard.press('Digit5'); await pg.keyboard.press('Space'); s = await pg.evaluate(() => ({ n: game.mines.length, left: game.INV.mine })); ok(s.n === 1 && s.left === 2, '5 lays a mine on the ground ahead');
+  await pg.evaluate(() => { const m = game.mines[0], e = game.foes[0]; e.x = e.dx = m.x; e.z = e.dz = m.z; }); await till(pg, () => game.foes[0].state === 'dead'); ok(await pg.evaluate(() => game.foes[0].state === 'dead' && game.mines.length === 0), 'a tank that runs on to it is knocked out');
+  await pg.keyboard.press('KeyB'); ok(await pg.evaluate(() => game.P.item === 'bino' && !document.getElementById('bino').hidden), 'B raises the binoculars'); await pg.keyboard.press('KeyB');
   await pg.close();
+
+  // the three tanks, and one against one: two pages in the one lobby
+  const ctx = await b.newContext({ viewport: { width: 256, height: 144 } }), page2 = async q => { const p = await ctx.newPage(); watch(p); await p.goto(FILE + q); await p.waitForFunction(() => window.game && game.time > .2, null, { timeout: 600000 }).catch(() => {}); return p; };
+  const A = await page2('?local&slot=0'); await A.click('[data-tank="hunter"]'); await A.click('#flatBtn', { timeout: 300000 }); await secs(A, .3);
+  ok(await A.evaluate(() => game.type === 'hunter' && game.P.rounds === 20 && game.friends.length === 2), 'the ARCHER chosen on the menu goes out with its own load (20 rounds)');
+  const B = await page2('?local&slot=1'); await B.click('[data-tank="light"]'); await B.click('#flatBtn', { timeout: 300000 }); await secs(B, .5); await secs(A, .5);
+  s = await A.evaluate(() => ({ peer: !!game.NET.peer, f: game.friends.length, foes: game.foes.length, rem: game.rem.on, d: Math.hypot(game.rem.x - game.P.x, game.rem.z - game.P.z), m: document.querySelector('#msg p').textContent }));
+  ok(s.peer && s.f === 0 && s.foes === 0 && s.rem && s.d > 300 && /Another player has joined/.test(s.m), 'a second player in: "' + s.m + '", the waves and the platoon go, the other tank stands ' + Math.round(s.d) + ' m off');
+  ok(await B.evaluate(() => !!game.NET.peer && game.NET.slot === 1 && game.rem.on && game.type === 'light'), 'the second player is in the same fight, in a SCIMITAR');
+  await B.evaluate(() => new BroadcastChannel('tank-local').postMessage({ from: 'zz', m: { t: 'hit', d: 30 } })); await secs(A, .3); ok(await A.evaluate(() => game.P.armour) < 100, 'a hit the other player scores costs your armour');
+  await B.close(); await secs(A, .4); ok(await A.evaluate(() => !game.NET.peer && /has left/.test(document.querySelector('#msg p').textContent)), 'when they leave you are back to the waves'); await ctx.close();
 
   const vr = await b.newPage({ viewport: { width: 320, height: 180 } }); watch(vr);
   await vr.addInitScript(fs.readFileSync(require.resolve('iwer/build/iwer.js'), 'utf8') + ';window.__xrd=new IWER.XRDevice(IWER.metaQuest3);window.__xrd.installRuntime({forceInstall:true});window.__xrd.position.set(0.3,1.2,0.2);');
@@ -76,8 +96,8 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   ok(await vr.evaluate(() => game.P.v > 2), 'the left stick drives');
   await vr.evaluate(() => __xrd.controllers.right.updateButtonValue('trigger', 1)); await secs(vr, .2); await vr.evaluate(() => __xrd.controllers.right.updateButtonValue('trigger', 0));
   ok(await vr.evaluate(() => game.P.rounds === 39 && game.shells.length + game.P.shots >= 1), 'the right trigger fires the gun');
-  await vr.evaluate(() => { game.P.aimPitch = 0; game.P.elev = -.1; __xrd.controllers.left.updateButtonValue('trigger', 1); }); await secs(vr, .2); await vr.evaluate(() => __xrd.controllers.left.updateButtonValue('trigger', 0));
-  ok(await vr.evaluate(() => game.time - game.P.lased < 2 || /No return/.test(document.querySelector('#msg p').textContent)), 'the left trigger lases (' + (await vr.evaluate(() => game.time - game.P.lased < 2 ? Math.round(game.P.range) + ' m' : 'no return off the sky')) + ')');
+  await vr.evaluate(() => { game.P.aimPitch = 0; game.P.elev = -.1; __xrd.controllers.right.updateButtonValue('squeeze', 1); }); await secs(vr, .2); await vr.evaluate(() => __xrd.controllers.right.updateButtonValue('squeeze', 0));
+  ok(await vr.evaluate(() => game.time - game.P.lased < 2 || /No return/.test(document.querySelector('#msg p').textContent)), 'the right grip lases (' + (await vr.evaluate(() => game.time - game.P.lased < 2 ? Math.round(game.P.range) + ' m' : 'no return off the sky')) + ')');
   await vr.evaluate(() => __xrd.controllers.right.updateButtonValue('b-button', 1)); await secs(vr, .2); await vr.evaluate(() => __xrd.controllers.right.updateButtonValue('b-button', 0)); ok(await vr.evaluate(() => game.P.zoom === 1), 'B zooms the sight');
   ok(await vr.evaluate(() => game.hands.left.root.visible && game.hands.right.root.visible && game.hands.right.root.position.distanceTo(game.camera.position) < 1.2), 'your gloved hands and sleeved arms follow the controllers');
   await vr.evaluate(() => __xrd.controllers.right.updateButtonValue('a-button', 1)); await secs(vr, .2); await vr.evaluate(() => __xrd.controllers.right.updateButtonValue('a-button', 0)); await till(vr, () => game.P.hatch >= 1);

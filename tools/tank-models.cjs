@@ -4,6 +4,7 @@ const ROOT = path.resolve(__dirname, '..'), HF = 'https://huggingface.co/dataset
 // out: [source file, where it comes from, options]. fwd: the way the model faces as it comes; size: metres along `axis` (z after turning); tris: most triangles kept; tex: picture size
 const LIST = {
   hero: ['src/challenger2_tomm8', HF + '000-041/e70234f6d695467499abc56646ab3e66.glb', { kind: 'hero', root: 'chellie_dio', tex: 1024 }],
+  ally: ['src/challenger2_tomm8', HF + '000-041/e70234f6d695467499abc56646ab3e66.glb', { kind: 'hero', root: 'chellie_dio', lite: 1, tex: 512, plain: 1 }],
   foe: ['src/battle_tank_alexander', HF + '000-000/5fcc302b89414348811eaa1ad4dc435f.glb', { kind: 'foe', turret: ['tank_low001'], fwd: '+x', size: 7.6, tris: 15000, tex: 512 }],
   seat: ['src/pilot_seat_pabooklas', HF + '000-051/310dca3487884ba690de7ac9e1995763.glb', { size: 1.15, axis: 'y', tris: 7000, tex: 512 }],
   console: ['src/old_control_panel', HF + '000-098/b84686130a2442d985c6f36c23d0836d.glb', { size: 1.0, axis: 'x', tex: 1024 }],
@@ -63,15 +64,15 @@ function gather(o,keep){const by=new Map();o.updateWorldMatrix(true,true);const 
     if(!g.index)g=mergeVertices(g);g.applyMatrix4(inv.clone().multiply(m.matrixWorld));const mats=Array.isArray(m.material)?m.material:[m.material];(by.get(mats[0])||by.set(mats[0],[]).get(mats[0])).push(g);});
   return[...by].map(([mat,gs])=>({mat,geo:gs.length>1?mergeGeometries(gs,false):gs[0]}));}
 const each=(ps,f)=>ps.forEach(p=>f(p.geo));
-function thin(ps,max){const tot=ps.reduce((n,p)=>n+p.geo.index.count/3,0);if(!max||tot<=max)return tot;let out=0;for(const p of ps){const g=p.geo,idx=new Uint32Array(g.index.array),pos=new Float32Array(g.attributes.position.array);
-  const[ni]=MS.simplify(idx,pos,3,Math.max(3,Math.floor(idx.length*max/tot/3)*3),.05);g.setIndex(new THREE.BufferAttribute(ni,1));out+=ni.length/3;}return out;}
+function thin(ps,max,err=.05){const tot=ps.reduce((n,p)=>n+p.geo.index.count/3,0);if(!max||tot<=max)return tot;let out=0;for(const p of ps){const g=p.geo,idx=new Uint32Array(g.index.array),pos=new Float32Array(g.attributes.position.array);
+  const[ni]=MS.simplify(idx,pos,3,Math.max(3,Math.floor(idx.length*max/tot/3)*3),err);g.setIndex(new THREE.BufferAttribute(ni,1));out+=ni.length/3;}return out;}
 function prune(g){const idx=g.index.array,map=new Map(),keep=[];const ni=new Uint32Array(idx.length);for(let i=0;i<idx.length;i++){let m=map.get(idx[i]);if(m===undefined){m=keep.length;map.set(idx[i],m);keep.push(idx[i]);}ni[i]=m;}
   const o=new THREE.BufferGeometry();for(const[k,a]of Object.entries(g.attributes)){const n=new Float32Array(keep.length*a.itemSize);keep.forEach((s,i)=>{for(let c=0;c<a.itemSize;c++)n[i*a.itemSize+c]=a.array[s*a.itemSize+c];});o.setAttribute(k,new THREE.BufferAttribute(n,a.itemSize));}o.setIndex(new THREE.BufferAttribute(keep.length<65536?new Uint16Array(ni):ni,1));return o;}
 function node(name,ps){const g=new THREE.Group();g.name=name;ps.forEach((p,i)=>{const m=new THREE.Mesh(prune(p.geo),p.mat);m.name=name+'_'+i;g.add(m);});return g;}
 const union=ps=>{const b=new THREE.Box3();each(ps,g=>b.union(box(g)));return b;};
 window.prep=async(url,o)=>{await MS.ready;const GL=new GLTFLoader();GL.register(parser=>({name:'KHR_materials_pbrSpecularGlossiness',extendMaterialParams(i,params){const e=(parser.json.materials[i].extensions||{}).KHR_materials_pbrSpecularGlossiness;if(!e)return null;const p=[];if(e.diffuseFactor){params.color=new THREE.Color().setRGB(e.diffuseFactor[0],e.diffuseFactor[1],e.diffuseFactor[2],THREE.LinearSRGBColorSpace);params.opacity=e.diffuseFactor[3];}params.metalness=0;params.roughness=.9;if(e.diffuseTexture)p.push(parser.assignTexture(params,'map',e.diffuseTexture,THREE.SRGBColorSpace));return Promise.all(p);}}));const scene=(await GL.loadAsync(url)).scene;scene.updateMatrixWorld(true);let root=o.root?scene.getObjectByName(o.root):scene;const out=new THREE.Scene(),info={};let tris=0;
   const M=new THREE.Matrix4();
-  if(o.kind==='hero'){const under=n=>m=>{let p=m;while(p){if(p.name===n)return true;p=p.parent;}return false;},part=n=>gather(root,under(n)),hull=[...part('chassis'),...part('laufweerk'),...part('kettel'),...part('ketter')],tur=part('turret'),gun=part('barrel');
+  if(o.kind==='hero'){const under=n=>m=>{let p=m;while(p){if(p.name===n)return true;p=p.parent;}return false;},part=n=>gather(root,under(n)),hull=o.lite?part('chassis'):[...part('chassis'),...part('laufweerk'),...part('kettel'),...part('ketter')],tur=part('turret'),gun=part('barrel');
     // the turret is turned and the gun raised as it comes: find the gun's line, turn both back about the point where that line crosses the hull's middle
     const pts=[];each(gun,g=>{const p=g.attributes.position;for(let i=0;i<p.count;i++)pts.push(V(p.getX(i),p.getY(i),p.getZ(i)));});const c=pts.reduce((a,p)=>a.add(p),V(0,0,0)).multiplyScalar(1/pts.length);
     let d=V(0,0,1);for(let k=0;k<40;k++){const n=V(0,0,0);for(const p of pts){const q=p.clone().sub(c);n.addScaledVector(q,q.dot(d));}d=n.normalize();}
@@ -80,10 +81,10 @@ window.prep=async(url,o)=>{await MS.ready;const GL=new GLTFLoader();GL.register(
     M.makeRotationY(-yaw).multiply(new THREE.Matrix4().makeTranslation(-P.x,0,-P.z));each(tur,g=>g.applyMatrix4(M));each(gun,g=>g.applyMatrix4(M));each(hull,g=>g.translate(-P.x,0,-P.z));
     let gb=union(gun);const T=V((gb.min.x+gb.max.x)/2,0,gb.min.z);{let n=0,y=0;each(gun,g=>{const p=g.attributes.position;for(let i=0;i<p.count;i++)if(p.getZ(i)<gb.min.z+(gb.max.z-gb.min.z)*.06){y+=p.getY(i);n++;}});T.y=y/n;}
     M.makeTranslation(T.x,T.y,T.z).multiply(new THREE.Matrix4().makeRotationX(pitch)).multiply(new THREE.Matrix4().makeTranslation(-T.x,-T.y,-T.z));each(gun,g=>g.applyMatrix4(M));
-    const s=3.55/(hb.max.x-hb.min.x),y0=union(hull).min.y;M.makeScale(s,s,s).multiply(new THREE.Matrix4().makeRotationY(Math.PI)).multiply(new THREE.Matrix4().makeTranslation(0,-y0,0));
+    const s=3.55/(hb.max.x-hb.min.x),y0=o.lite?union(hull).min.y-(hb.max.x-hb.min.x)*.0935:union(hull).min.y;M.makeScale(s,s,s).multiply(new THREE.Matrix4().makeRotationY(Math.PI)).multiply(new THREE.Matrix4().makeTranslation(0,-y0,0));
     for(const ps of[hull,tur,gun])each(ps,g=>g.applyMatrix4(M));T.applyMatrix4(M);each(gun,g=>g.translate(-T.x,-T.y,-T.z));
-    if(o.tris)thin([hull,tur,gun].flat(),o.tris);const gN=node('gun',gun);gN.position.copy(T);const tN=node('turret',tur);tN.add(gN);out.add(node('hull',hull),tN);gb=union(gun);const ub=union(tur),hb2=union(hull);
-    Object.assign(info,{yaw,pitch,trunnion:T.toArray(),muzzle:[0,0,gb.min.z],turret:[ub.min.toArray(),ub.max.toArray()],hull:[hb2.min.toArray(),hb2.max.toArray()]});tris=o.tris?thin([hull,tur,gun].flat(),o.tris):[hull,tur,gun].flat().reduce((n,p)=>n+p.geo.index.count/3,0);
+    if(o.tris)thin([hull,tur,gun].flat(),o.tris,o.err);const gN=node('gun',gun);gN.position.copy(T);const tN=node('turret',tur);tN.add(gN);out.add(node('hull',hull),tN);gb=union(gun);const ub=union(tur),hb2=union(hull);
+    Object.assign(info,{yaw,pitch,trunnion:T.toArray(),muzzle:[0,0,gb.min.z],turret:[ub.min.toArray(),ub.max.toArray()],hull:[hb2.min.toArray(),hb2.max.toArray()]});tris=o.tris?thin([hull,tur,gun].flat(),o.tris,o.err):[hull,tur,gun].flat().reduce((n,p)=>n+p.geo.index.count/3,0);
   }else{const all=gather(root,o.keep?m=>{let p=m;while(p){if(new RegExp(o.keep).test(p.name))return true;p=p.parent;}return false;}:null),b=union(all),sz=b.getSize(V(0,0,0)),ce=b.getCenter(V(0,0,0)),turn={'+x':Math.PI/2,'-x':-Math.PI/2,'+z':Math.PI,'-z':0}[o.fwd||'-z'];
     const along=o.fwd&&o.fwd[1]==='x'?sz.x:o.axis==='x'?sz.x:o.axis==='y'?sz.y:sz.z,s=o.size?o.size/along:1;
     M.makeTranslation(0,-(o.sink||0),0).multiply(new THREE.Matrix4().makeScale(s,s,s)).multiply(new THREE.Matrix4().makeRotationY(turn)).multiply(new THREE.Matrix4().makeTranslation(-ce.x,-b.min.y,-ce.z));

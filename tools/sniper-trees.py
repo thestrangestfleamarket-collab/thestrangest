@@ -1,4 +1,4 @@
-# COLD BORE's trees: a Poly Haven scan (CC0) drawn by Blender into a picture with alpha for a card: pip install bpy; python3 tools/sniper-trees.py fir_sapling_medium _a_ /tmp/fir.png; python3 tools/sniper-trees.py island_tree_01 '' /tmp/leaf.png; then crop each to its tree and save as data/sniper/tex/fir.png (512x1024) and leaf.png (512x512)
+# COLD BORE's trees: a Poly Haven scan (CC0) drawn by Blender into a picture with alpha for a card: pip install bpy; python3 tools/sniper-trees.py fir_sapling_medium _a_ /tmp/fir.webp; python3 tools/sniper-trees.py island_tree_01 '' /tmp/leaf.webp; then crop each to its tree and save as data/sniper/tex/fir.webp (512x1024) and leaf.webp (512x512)
 import bpy, sys, json, os, urllib.request, math
 from mathutils import Vector
 slug, pick, out = sys.argv[-3], sys.argv[-2], sys.argv[-1]

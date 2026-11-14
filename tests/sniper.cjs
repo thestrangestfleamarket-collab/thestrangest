@@ -3,7 +3,7 @@ const { chromium } = require('playwright'), path = require('path'), fs = require
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=sniper::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 const PAGE = path.resolve(process.argv[2] || 'dist/sniper.html'), ROOT = path.dirname(PAGE), OUT = process.argv[3]; if (OUT) fs.mkdirSync(OUT, { recursive: true });
 const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, decodeURIComponent(q.url.split('?')[0])); if (!f.startsWith(ROOT)) { r.writeHead(403); return r.end(); }
-  fs.readFile(f, (e, d) => { if (e) { r.writeHead(404); return r.end(); } r.writeHead(200, { 'content-type': { jpg: 'image/jpeg', glb: 'model/gltf-binary', json: 'application/json', mp3: 'audio/mpeg' }[f.split('.').pop()] || 'text/html' }); r.end(d); }); });
+  fs.readFile(f, (e, d) => { if (e) { r.writeHead(404); return r.end(); } r.writeHead(200, { 'content-type': { jpg: 'image/jpeg', glb: 'model/gltf-binary', json: 'application/json', mp3: 'audio/mpeg', webp: 'image/webp' }[f.split('.').pop()] || 'text/html' }); r.end(d); }); });
 (async () => {
   await new Promise(res => srv.listen(0, '127.0.0.1', res)); const FILE = 'http://127.0.0.1:' + srv.address().port + '/' + path.basename(PAGE) + '?q=0';
   const exe = process.env.PWCHROME || (fs.existsSync('/opt/pw-browsers/chromium') ? '/opt/pw-browsers/chromium' : null);

@@ -241,7 +241,7 @@ export default {
         const SPK = ["orion", "perseus", "orpheus", "helios", "zeus", "arcas", "angus", "luna", "stella", "hera", "asteria", "athena"], spk = SPK.includes(body.speaker) ? body.speaker : "orion";
         try { const v = await env.AI.run("@cf/deepgram/aura-1", { text, speaker: spk, encoding: "mp3" }, { returnRawResponse: true }); if (v && v.ok) return new Response(v.body, { headers: { "content-type": "audio/mpeg", "cache-control": "no-store" } }); } catch (e) { } // a natural voice of their own, as THE GUEST LIST's guests have; the plain one below if it fails
         try { const r = await env.AI.run("@cf/myshell-ai/melotts", { prompt: text, lang: "en" }), a = r && r.audio; if (typeof a !== "string" || !a) return json({ why: "no voice came" }, 502);
-          return new Response(Uint8Array.from(atob(a), ch => ch.charCodeAt(0)), { headers: { "content-type": "audio/mpeg", "cache-control": "no-store" } }); } catch (e) { return json({ why: "the voice could not be made" }, 502); } }
+          return new Response(Uint8Array.from(atob(a), ch => ch.charCodeAt(0)), { headers: { "content-type": "audio/mpeg", "cache-control": "no-store", "x-voice": "plain" } }); } catch (e) { return json({ why: "the voice could not be made" }, 502); } }
       // a customer at YATAI '86's cart says a line (worker/sushi.js); the day's count is the player's, in Home
       if (p === "/sushi/talk") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
         if (tooMany("sushi:" + id, 20)) return json({ why: "too much at once, wait a minute" }, 429);

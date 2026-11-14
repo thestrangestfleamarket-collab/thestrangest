@@ -44,7 +44,7 @@ for s in TEX:
     if only and s not in only: continue
     F = json.loads(get(API + s))
     for k, n in (('Diffuse', 'd'), ('nor_gl', 'n'), ('arm', 'a')):
-        open(OUT + 'tex/' + s + '_' + n + '.jpg', 'wb').write(jpg(get(F[k]['1k']['jpg']['url']), 1024, 78))
+        open(OUT + 'tex/' + s + '_' + n + '.jpg', 'wb').write(jpg(get(F[k]['1k']['jpg']['url']), 512 if n == 'a' else 1024, 78))   # roughness and shade are soft things: half the size is enough
     print(s, flush=True)
 for s, z in MODELS.items():
     if only and s not in only: continue

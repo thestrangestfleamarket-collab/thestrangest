@@ -62,7 +62,7 @@ function physics(dt) { for (const T of P.things) if (!T.b.isSleeping()) { const 
   for (const T of P.things) if (!T.b.isSleeping()) { T.o.position.copy(T.b.translation()); T.o.quaternion.copy(T.b.rotation()); }
   WORLD.cloth.step(dt, PL.balls(balls)); }
 
-let last = 0; const mv = [], movers = () => { mv.length = 0; mv.push(PL.pos.x, PL.pos.y + .9, PL.pos.z, PL.speed); if (SK.g.visible) mv.push(SK.pos.x, 1.1, SK.pos.z, SK.state === 'chase' ? 3.3 : SK.path.length ? 1.25 : 0); for (const T of P.things) if (T.v > 1.2) { const p = T.b.translation(); mv.push(p.x, p.y, p.z, Math.min(6, T.v)); } return mv; };
+let last = 0; const mv = [], movers = () => { mv.length = 0; mv.push(PL.pos.x, PL.pos.y + .9, PL.pos.z, PL.speed); if (SK.g.visible) mv.push(SK.pos.x, 1.1, SK.pos.z, SK.state === 'chase' ? 3.3 : SK.path.length ? 1.25 : 0); for (const T of P.things) if (T.v > .05) { const p = T.b.translation(); mv.push(p.x, p.y, p.z, T.v > 1.2 ? Math.min(6, T.v) : .1); } return mv; };
 // on a screen the eye focuses where you look and the rest goes soft (a headset's own lenses do that, and its two pictures cannot be post-processed)
 let comp = null, bokeh = null, focus = 4; const DOF = Q.get('dof') !== '0' && Q.get('q') !== 'low';
 function draw(dt) { if (renderer.xr.isPresenting || !DOF || G.mode === 'title') return renderer.render(scene, camera);
@@ -72,7 +72,8 @@ function frame(time) { const dt = clamp((time - last) / 1000 || .016, .001, 1 / 
 
 function tick(dt) { G.t += dt; CLOCK.t += dt; PL.update(dt); SK.update(dt); for (const u of WORLD.updaters) u(dt, A); WORLD.mist(PL.head, dt, movers()); physics(dt); A.frame();
   // the big fixed lamps redraw their shadows in turn, one every other frame, not all on every frame
-  G.fr = (G.fr || 0) + 1; if (G.fr % 2 === 0) { const L = WORLD.slow[(G.fr / 2) % WORLD.slow.length]; if (L) L.shadow.needsUpdate = true; }
+  // and only if something has moved where that lamp shines: a still alley costs no shadow work at all
+  G.fr = (G.fr || 0) + 1; if (G.fr % 2 === 0) { const L = WORLD.slow[(G.fr / 2) % WORLD.slow.length], m = movers(); if (L) { const [x, z, r] = L.userData.reach; for (let i = 0; i < m.length; i += 4) if (m[i + 3] > .03 && Math.hypot(m[i] - x, m[i + 2] - z) < r) { L.shadow.needsUpdate = true; break; } } }
   // the leaking joint blows for a few seconds, rests, blows again; while it blows nothing can be seen through the plume
   { const S = WORLD.steam; S.t -= dt; if (S.t < 0) { S.on = !S.on; S.t = S.on ? rnd(5, 8) : rnd(4, 7); S.veil.setEnabled(S.on); if (S.on) A.hiss(S.at, S.t); } if (S.on) WORLD.puff(S.at, dt); }
   if (noteT > 0 && (noteT -= dt) <= 0 && !G.bar && G.mode !== 'hide') hudSay('', '');

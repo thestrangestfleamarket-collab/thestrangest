@@ -70,6 +70,7 @@ jobs:
           k jam     'src/jam/|data/jam/|tools/jam\.cjs|tests/jam\.cjs'
           k shoot   'src/shoot/|tools/shoot\.cjs|tests/shoot\.cjs'
           k duel    'src/duel/|data/duel/|tools/duel\.cjs|tests/duel\.cjs'
+          k laser   'src/laser/|worker/laser|tools/laser\.cjs|tests/laser\.cjs'
           k vrbody  'src/162c|src/111b|vrbody\.cjs'
           k riders  'src/117a|src/009c|riders\.cjs'
           k loopmap 'src/159c|src/009b|loopmap\.cjs'
@@ -280,6 +281,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' duel')
         run: node tests/duel.cjs dist/duel.html
+      - name: Laser Tag (Super Charge 25 at /laser; the pack's rules, two linked packs tagging and covering, an emulated Quest 3 lining up)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' laser')
+        run: node tests/laser.cjs dist/laser.html
       - name: The headset (VR on an emulated Quest 3)
         timeout-minutes: 45
         if: contains(steps.f.outputs.run, ' vr')

@@ -2,6 +2,7 @@ import { DurableObject } from "cloudflare:workers";
 import { getServerByName, routePartykitRequest, Server } from "partyserver";
 import { DISH, DISHK } from "./dish.js";
 import { JAM } from "./jam.js";
+import { LASER } from "./laser.js";
 import { MAPPATCH } from "./mappatch.js";
 import { FOLKSIM } from "./folk.js";
 import { MOBSIM } from "./dunmobs.js";
@@ -86,6 +87,9 @@ export default {
     // HALCYON GREENS (src/golf/): its own page at /golf, to anyone with the link; its pictures under /golf-assets/
     if ((request.method === "GET" || request.method === "HEAD") && p === "/golf") return page(env, url, "/golf", request, "no-cache");
     if (p === "/golf/") return Response.redirect(url.origin + "/golf" + url.search, 301);
+    // LASER TAG (src/laser/): its own page at /laser, to anyone with the link; its one public room is the Laser Durable Object
+    if ((request.method === "GET" || request.method === "HEAD") && p === "/laser") return page(env, url, "/laser", request, "no-cache");
+    if (p === "/laser/") return Response.redirect(url.origin + "/laser" + url.search, 301);
     // AR DUEL (src/duel/): its own page at /duel, to anyone with the link; its pictures under /duel-assets/
     if ((request.method === "GET" || request.method === "HEAD") && p === "/duel") return page(env, url, "/duel", request, "no-cache");
     if (p === "/duel/") return Response.redirect(url.origin + "/duel" + url.search, 301);
@@ -152,8 +156,9 @@ export default {
       return skyFeed(sky[1], request); }
     if (p.startsWith("/parties/")) return (await routePartykitRequest(request, env, {
       onBeforeConnect: async (req, { party, name }) => {
-        const room = party === "block" || party === "jam" ? ROOM.test(name) : party === "dish" && name === "petri";   // the dish: one for the whole market, the arcade's PETRI
+        const room = party === "block" || party === "jam" ? ROOM.test(name) : party === "laser" ? name === "public" : party === "dish" && name === "petri";   // the dish: one for the whole market, the arcade's PETRI; LASER TAG: one public room
         if (!room || (request.headers.get("Origin") !== url.origin && !dev)) return new Response("not found", { status: 404 });
+        if (party === "laser") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // LASER TAG's room: to anyone with the link, like its page
         if (party === "jam") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // STADIUM JAM's rooms: to anyone with the link, like its page
         const id = await who(env, request, dev); if (!id) return new Response("login", { status: 401 });
         const r = new Request(req); r.headers.set("x-tsfm-id", id); r.headers.set("x-partykit-room", name); if (dev) r.headers.set("x-tsfm-dev", "1"); return r; },
@@ -940,6 +945,23 @@ export class Dish extends Server {
 }
 
 // letters from the market: kept here (no Supabase table needed), shown to the player when they next open the game
+// LASER TAG's room: the one public game, two players; it gives each a pack (RED, GREEN) and passes poses, pack states, shots and tags on to the other (worker/laser.js says what passes)
+export class Laser extends Server {
+  static options = { hibernate: false };
+  peers(not) { const a = []; for (const o of this.getConnections()) if (o.id !== not && o.state) a.push({ id: o.id, ...o.state }); return a; }
+  onMessage(c, raw) {
+    if (typeof raw !== "string" || raw.length > 1024) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
+    const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0 }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 120) return;
+    if (m && m.t === "join") { if (c.state) return; const peers = this.peers(c.id);
+      if (peers.length >= LASER.MAX) { c.send('{"t":"full"}'); return c.close(4002, "full"); }
+      const st = { slot: LASER.slot(peers.map(q => q.slot)) }; c.setState(st);
+      c.send(JSON.stringify({ t: "welcome", id: c.id, slot: st.slot, peers })); return this.broadcast(JSON.stringify({ t: "peer-join", id: c.id, ...st }), [c.id]); }
+    if (!c.state) return; const out = LASER.clean(m); if (!out) return;
+    out.id = c.id; this.broadcast(JSON.stringify(out), [c.id]); }
+  onClose(c) { if (c.state) this.broadcast(JSON.stringify({ t: "peer-leave", id: c.id }), [c.id]); }
+  onError(c) { this.onClose(c); }
+}
+
 // STADIUM JAM's stage: one per room code, eight players at most; it keeps who plays what and passes each pose and note on to the others (worker/jam.js says what passes)
 export class Jam extends Server {
   static options = { hibernate: false };

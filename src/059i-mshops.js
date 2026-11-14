@@ -134,7 +134,7 @@ await grab('mshops',async()=>{ const {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, hs=SHARED
   for(const id of ['theatre','bar','bodega','bath']){   // (the playhouse has its own timber front, 151zc)
    const p=WP[id]; if(!p||!p.pf||DEF[id]||AWAY.has(id==='play'?'playhouse':id))continue; const LW=MS.lot(id,200), S=p.face==='s', fy=S?LW.y0:LW.y1, TA=TURN(LW,p.face||'n'); MSHOP.fronts.push({id,pf:p.pf,x:X((LW.x0+LW.x1)/2),zf:Z(fy),zi:Math.sign(Z(fy+(S?1:-1))-Z(fy)),w:Math.abs(X(LW.x1)-X(LW.x0)),rot:TA.hd(0),L:TA.L,pt:TA.pt});
     const F=MSHOP.fronts[MSHOP.fronts.length-1];
-    if(id==='bodega'&&SHARED.BOD.PFB){ const B=SHARED.BOD.PFB; F.k=B.k; F.s=B.s; F.x=SHARED.BOD.X(B.cx); }   // Polyfork's corner building (#12) where the bodega's layout put it (039)
+    if(id==='bodega'&&SHARED.BOD.PFB){ const B=SHARED.BOD.PFB; F.k=B.k; F.s=B.s; F.x=SHARED.BOD.X(B.cx); F.zf=SHARED.BOD.Z(B.yf); }   // Polyfork's corner building (#12) where the bodega's layout put it (039)
     const PD=id==='bodega'&&p.pf==='bodega'&&SHARED.pfDoor?SHARED.pfDoor(F.x,F.zf,F.zi,F.s,F.k):null;
     if(PD&&ROOMS.off.bodega)Object.assign(ROOMS.off.bodega,{door:PD.door,out:PD.out,shift:null});
     if(id==='bodega'||id==='bath')for(const r of PD?PD.sol:[box4(LW.x0,LW.y0,LW.x1,LW.y1)]){ SOL.up.push(r); FIX.up.push([r[0],r[1],0,r[2],r[3],Y(120)]); } }   // the theatre's, playhouse's, bar's, bodega's and bath house's Polyfork outsides (their insides off the map; the bodega and bath house solid here, the others by their own builders)   // the theatre's and the playhouse's Polyfork outsides (their insides off the map)

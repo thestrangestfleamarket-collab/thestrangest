@@ -18,9 +18,9 @@ export function canvasTex(w, h, draw, o = {}) {
   // drawn large, kept small and unfiltered (the PlayStation 2 look); o.keep for things that must stay readable
   const c = document.createElement('canvas'); c.width = w; c.height = h;
   const g = c.getContext('2d'); draw(g, w, h);
-  const k = o.keep ? 1 : 0.5, sc = document.createElement('canvas'); sc.width = Math.max(8, Math.round(w * k)); sc.height = Math.max(8, Math.round(h * k));
+  const k = 1, sc = document.createElement('canvas'); sc.width = Math.max(8, Math.round(w * k)); sc.height = Math.max(8, Math.round(h * k));
   const sg = sc.getContext('2d'), t = new THREE.CanvasTexture(sc);
-  t.colorSpace = o.linear ? THREE.NoColorSpace : THREE.SRGBColorSpace; t.magFilter = THREE.NearestFilter; t.anisotropy = 1;
+  t.colorSpace = o.linear ? THREE.NoColorSpace : THREE.SRGBColorSpace; t.anisotropy = 4;
   if (o.repeat) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(o.repeat[0], o.repeat[1]); }
   t.userData.canvas = c; t.userData.ctx = g; t.userData.blit = () => { sg.clearRect(0, 0, sc.width, sc.height); sg.drawImage(c, 0, 0, sc.width, sc.height); t.needsUpdate = true; }; t.userData.blit();
   return t;

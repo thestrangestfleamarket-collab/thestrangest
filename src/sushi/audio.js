@@ -9,7 +9,7 @@ export class GameAudio {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return;
     const c = (this.ctx = new AC());
-    this.master = c.createGain(); this.master.gain.value = 0.8; this.master.connect(c.destination);
+    this.master = c.createGain(); this.master.gain.value = 1.0; this.master.connect(c.destination);
     // shared noise buffer
     const len = c.sampleRate * 2, b = c.createBuffer(1, len, c.sampleRate), d = b.getChannelData(0);
     for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
@@ -26,8 +26,8 @@ export class GameAudio {
     this.far = c.createStereoPanner ? c.createStereoPanner() : c.createGain(); if (this.far.pan) this.far.pan.value = 0.6; this.far.connect(this.master);
     // radio chain -> small speaker, panned left where the boombox sits
     this.radioGain = c.createGain(); this.radioGain.gain.value = 0;
-    const bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1400; bp.Q.value = 0.45;
-    const pan = c.createPanner(); pan.panningModel = 'HRTF'; pan.refDistance = 0.8; pan.rolloffFactor = 1.2;
+    const bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1200; bp.Q.value = 0.25;
+    const pan = c.createPanner(); pan.panningModel = 'HRTF'; pan.refDistance = 1.6; pan.rolloffFactor = 0.6;
     pan.positionX.value = -1.0; pan.positionY.value = 1.45; pan.positionZ.value = -0.5;
     this.radioGain.connect(bp); bp.connect(pan); pan.connect(this.master);
     this.ready = true;
@@ -88,7 +88,7 @@ export class GameAudio {
     }
   }
 
-  setRadio(on) { this.radioOn = on; if (this.ready) { this.radioGain.gain.value = on ? 0.5 : 0; this.nextT = this.ctx.currentTime + 0.05; this.step = 0; if (on) this.burst(3000, 0.25, { vol: 0.2, dest: this.radioGain }); } }
+  setRadio(on) { this.radioOn = on; if (this.ready) { this.radioGain.gain.value = on ? 1.6 : 0; this.nextT = this.ctx.currentTime + 0.05; this.step = 0; if (on) this.burst(3000, 0.25, { vol: 0.2, dest: this.radioGain }); } }
   tune() { this.station = (this.station + 1) % 3; this.step = 0; if (this.ready && this.radioOn) this.burst(2000, 0.3, { vol: 0.35, to: 5000, dest: this.radioGain }); }
 
   update(boil, env) {

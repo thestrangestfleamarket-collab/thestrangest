@@ -4,7 +4,7 @@ import { G, V3, Q, UP, mat, clamp, lerp, rand } from './ctx.js';
 import * as T from './tex.js';
 import { PH } from './physics.js';
 
-const _v = new V3(), _v2 = new V3(), _vt = new V3(), _q = new Q();
+const _v = new V3(), _v2 = new V3(), _vt = new V3(), _q2 = new V3(), _q = new Q();
 
 export const TOPPINGS = {
   chashu: { label: 'CHASHU', jp: 'チャーシュー' }, egg: { label: 'EGG', jp: '味玉' }, negi: { label: 'NEGI', jp: 'ネギ' },
@@ -147,12 +147,18 @@ export class Bowl extends Item {
     this.nest = M(s.nest, s.noodleCooked, g); this.nest.visible = false;
     this.tops = new THREE.Group(); g.add(this.tops);
     this.tare = null; this.brothType = null; this.broth = 0; this.noodles = null; this.toppings = []; this.temp = 0; this.dirty = false; this.eaten = 0; this.served = false;
-    this.target = { getPos: () => _v2.copy(this.obj.position).setY(this.obj.position.y + 0.06), r: 0.115, accepts: (it) => it.kind === 'food' && it.topping && !this.dirty && !this.locked && it !== this, receive: (it) => this.addTopping(it) };
+    this.target = { getPos: () => _v2.copy(this.obj.position).setY(this.obj.position.y + 0.06), r: 0.115, accepts: () => false, receive: () => { } }; // nothing snaps in: things fall in
     G.targets.push(this.target);
   }
   onRemove() { const i = G.targets.indexOf(this.target); if (i >= 0) G.targets.splice(i, 1); }
   get empty() { return !this.tare && !this.broth && !this.noodles && !this.toppings.length; }
-  level() { return clamp((this.tare ? 0.12 : 0) + this.broth * 0.44, 0, 1) * (1 - this.eaten * 0.85); }
+  level() { return clamp(Math.min(1, this.tareAmt || 0) * 0.12 + this.broth * 0.44, 0, 1) * (1 - this.eaten * 0.85); }
+  receive(p, q) { // poured liquid arriving, a little at a time
+    if (this.dirty || this.locked) return;
+    if (p.kind === 'tare') { if (this.tare && this.tare !== p.type && this.tareAmt > 0.3) this.mixed = true; this.tareAmt = (this.tareAmt || 0) + q; if (!this.tare || this.tareAmt >= 0.5) this.tare = p.type; }
+    else { if (this.brothType && this.brothType !== p.type && this.broth > 0.4) this.mixed = true; this.brothType = p.type; this.broth = Math.min(3, this.broth + q); this.temp = Math.max(this.temp, p.heat); this.over = this.broth > 2.6; }
+    this.refresh(); if (G.t - (this.pourS || 0) > 0.45) { this.pourS = G.t; G.audio.play('pour'); }
+  }
   liquidY() { return 0.017 + this.level() * 0.05; }
   refresh() {
     const L = this.level(), y = this.liquidY(), r = 0.04 + ((y - 0.016) / 0.069) * 0.058;
@@ -165,7 +171,7 @@ export class Bowl extends Item {
     this.tops.position.y = Math.max(0.02, y + 0.003);
     this.tops.children.forEach((t, i) => { t.visible = this.eaten < (i + 1) / (this.tops.children.length + 1); });
   }
-  addTare(type) { this.tare = this.tare && this.tare !== type ? 'mixed' : type; if (this.tare === 'mixed') this.tare = type, (this.mixed = true); this.refresh(); G.audio.play('pour'); }
+  addTare(type) { this.tareAmt = 1; this.tare = this.tare && this.tare !== type ? 'mixed' : type; if (this.tare === 'mixed') this.tare = type, (this.mixed = true); this.refresh(); G.audio.play('pour'); }
   addBroth(type, heat) {
     if (this.brothType && this.brothType !== type) this.mixed = true;
     this.brothType = type; this.broth = Math.min(3, this.broth + 1); this.temp = Math.max(this.temp, heat); this.over = this.broth > 2; this.refresh(); G.audio.play('pour');
@@ -181,7 +187,7 @@ export class Bowl extends Item {
     else if (type === 'chashu' || type === 'naruto') { o.rotateX(0.18); }
     this.tops.add(o); it.remove(); this.refresh(); G.audio.play('plop');
   }
-  spill() { if (this.empty) return; this.tare = this.brothType = this.noodles = null; this.broth = 0; this.toppings = []; this.tops.clear(); this.temp = 0; this.mixed = this.over = false; this.dirty = true; this.eaten = 0; this.refresh(); G.audio.play('splash'); G.fx.drops(this.obj.position, 0xc99a3c, 14); }
+  spill() { if (this.empty) return; this.tare = this.brothType = this.noodles = null; this.tareAmt = 0; this.broth = 0; this.toppings = []; this.tops.clear(); this.temp = 0; this.mixed = this.over = false; this.dirty = true; this.eaten = 0; this.refresh(); G.audio.play('splash'); G.fx.drops(this.obj.position, 0xc99a3c, 14); }
   makeDirty() { this.dirty = true; this.locked = false; this.eaten = 1; this.tops.clear(); this.refresh(); this.liq.visible = true; this.liq.position.y = 0.019; this.liq.scale.set(0.035, 1, 0.035); }
   update(dt) {
     if (this.temp > 0) { this.temp = Math.max(0, this.temp - dt / 110); if (this.temp > 0.45 && !this.dirty && Math.random() < dt * 5) G.fx.steam(_v.copy(this.obj.position).setY(this.obj.position.y + 0.08), 0.5); }
@@ -203,6 +209,10 @@ export class Food extends Item {
     super('food', g, o);
     if (type === 'noodle') this.noodle = true; else this.topping = type;
     this.servings = servings;
+  }
+  update() { // a topping or a clump of cooked noodles that has come down inside a bowl belongs to it
+    if (this.held || this.dead || !(this.topping || this.cooked)) return; const p = this.obj.position, b = findBowlUnder(p, 0.09); if (!b || p.y - b.obj.position.y > 0.1) return;
+    if (this.cooked) { if (!b.noodles) { b.addNoodles(this.cook); this.remove(); } } else b.addTopping(this);
   }
   onImpact(sp) { if (this.topping === 'egg' && sp > 2.4) { G.fx.splat(this.obj.position, 0xf4efe2, 0.06, 0xf0a020); G.audio.play('splash'); this.remove(); return true; } return false; }
   hint() { return this.noodle ? 'noodles → drop into a basket in the boiling pot' : `${this.name} → drop on a bowl (or back in its bin)`; }
@@ -266,7 +276,7 @@ class Debris extends Item {
   onGround() { } onLand() { }
 }
 function shatter(it, color, n) {
-  const p = it.obj.position, v = it.vel; G.audio.play('break');
+  const p = it.obj.position, v = it.vel; G.audio.play('break'); G.game?.onMess?.(it.kind === 'bowl' ? 'drop a bowl, which smashed' : it.kind === 'drink' ? 'smash a bottle' : 'throw an egg, which burst');
   for (let i = 0; i < n; i++) { const d = new Debris(color); d.obj.position.set(p.x + rand(-0.05, 0.05), p.y + 0.03 + rand(0, 0.05), p.z + rand(-0.05, 0.05)); d.obj.rotation.set(rand(6), rand(6), rand(6)); d.drop(_v2.set(v.x * 0.4 + rand(-1.6, 1.6), Math.abs(v.y) * 0.3 + rand(0.5, 2.2), v.z * 0.4 + rand(-1.6, 1.6)).clone()); }
   it.remove();
 }
@@ -302,32 +312,25 @@ function ladleMesh(L, r, liquidColor) {
 }
 
 export class Ladle extends Tool {
-  // mode 'tare' (fixed type, refills from its crock) or 'broth' (fills from whichever pot it is dipped in)
+  // mode 'tare' (fixed type, refills from its crock) or 'broth' (fills from whichever pot it is dipped in); what it holds runs out as it is tipped
   constructor(mode, type, vessel) {
     const big = mode === 'broth', m = ladleMesh(big ? 0.27 : 0.15, big ? 0.045 : 0.021, big ? BROTH[type].color : TARE[type].color);
     super('ladle', m.g, { radius: 0.07, lift: big ? 0.15 : 0.12, aim: m.cup, name: big ? `${BROTH[type].label.toLowerCase()} broth ladle` : `${TARE[type].label.toLowerCase()} tare ladle` });
-    this.mode = mode; this.type = type; this.vessel = vessel; this.liq = m.liq; this.cup = m.cup; this.filled = false; this.heat = 1; this.center.set(0, 0, -0.03);
+    this.mode = mode; this.type = type; this.vessel = vessel; this.liq = m.liq; this.cup = m.cup; this.filled = false; this.vol = 0; this.r = big ? 0.045 : 0.021; this.heat = 1; this.center.set(0, 0, -0.03);
   }
-  setFilled(f, type) { this.filled = f; this.liq.visible = f; if (type) { this.type = type; this.liq.material.color.set(BROTH[type].color); } }
-  onHome() { this.setFilled(true, this.mode === 'broth' ? this.vessel.type : null); this.heat = this.vessel.heat ?? 1; this.armed = true; }
+  setFilled(f, type) { this.filled = f; this.vol = f ? 1 : 0; this.liq.visible = f; this.liq.scale.setScalar(1); if (type) { this.type = type; this.liq.material.color.set(BROTH[type].color); } }
+  onHome() { this.setFilled(true, this.mode === 'broth' ? this.vessel.type : null); this.heat = this.vessel.heat ?? 1; }
   vessels() { return this.mode === 'broth' ? G.cart.pots.filter((p) => p.type) : [this.vessel]; }
   onHeld(dt, h) {
     const c = this.point(this.cup, _v), tilt = this.tilt();
-    if (!h.use && tilt < 0.6) this.armed = true;
-    for (const v of this.vessels()) {
-      if (Math.hypot(c.x - v.x, c.z - v.z) < v.r && c.y < v.rimY + 0.25) {
-        if (!this.filled && (c.y < v.liqY + 0.025 || h.useDown)) { this.setFilled(true, this.mode === 'broth' ? v.type : null); this.heat = v.heat ?? 1; this.armed = false; G.audio.play('plop'); }
-        return; // never pour while over a vessel
-      }
-    }
-    if (!this.filled || !this.armed) return;
-    const bowl = findBowlUnder(c);
-    if (bowl && (tilt > 0.95 || (h.xr && h.useDown))) {
-      if (this.mode === 'tare') bowl.addTare(this.type); else bowl.addBroth(this.type, this.heat);
-      G.fx.drops(c, this.liq.material.color.getHex(), 8); this.setFilled(false); this.armed = false;
-    } else if (!bowl && tilt > 1.8) { this.setFilled(false); this.armed = false; G.audio.play('splash'); G.fx.drops(c, this.liq.material.color.getHex(), 10); }
+    for (const v of this.vessels()) if (Math.hypot(c.x - v.x, c.z - v.z) < v.r && c.y < v.liqY + 0.025) { if (this.vol < 0.98) { this.setFilled(true, this.mode === 'broth' ? v.type : null); this.heat = v.heat ?? 1; G.audio.play('plop'); } return; } // under the surface: full again
+    if (this.vol <= 0 || tilt < 0.8 || dt <= 0) return;
+    const q = Math.min(this.vol, clamp((tilt - 0.8) / 0.7, 0.12, 1) * 1.7 * dt), up = _vt.set(0, 1, 0).applyQuaternion(this.obj.quaternion), hl = Math.hypot(up.x, up.z) || 1; // it runs over the low side of the cup, faster the further it is tipped
+    this.vol -= q; _v2.set(up.x / hl * 0.25 + h.vel.x * 0.4, -0.2, up.z / hl * 0.25 + h.vel.z * 0.4);
+    G.fx.pour(c.addScaledVector(_q2.set(up.x / hl, 0, up.z / hl), this.r * 0.9), _v2, this.liq.material.color.getHex(), q, { kind: this.mode, type: this.type, heat: this.heat });
+    this.liq.scale.setScalar(Math.max(0.3, Math.sqrt(this.vol))); if (this.vol <= 0.002) this.setFilled(false);
   }
-  hint() { return this.filled ? 'hold over a bowl and tilt to pour' : 'empty — dip it back in the pot'; }
+  hint() { return this.filled ? 'hold over a bowl and tip it: it pours' : 'empty: dip it back in the pot'; }
 }
 
 export class Basket extends Tool {
@@ -352,13 +355,11 @@ export class Basket extends Tool {
       if (this.noodles.cook > 9 && this.nest.material !== shared().noodleCooked) this.nest.material = shared().noodleCooked;
     }
   }
-  onHeld(dt, h) {
+  onHeld(dt, h) { // tipped out of the water, the noodles slide out as one clump and fall where they fall
     const c = this.point(this.cup, _v), tilt = this.tilt();
-    if (!h.use && tilt < 0.6) this.armed = true;
-    if (!this.noodles || !this.armed || this.inWater()) return;
-    const bowl = findBowlUnder(c, 0.12);
-    if (bowl && !bowl.noodles && (tilt > 0.95 || (h.xr && h.useDown))) { bowl.addNoodles(this.noodles.cook); this.noodles = null; this.nest.visible = false; this.armed = false; G.fx.drops(c, 0xf0e8c8, 6); }
-    else if (!bowl && tilt > 1.8) { this.noodles = null; this.nest.visible = false; this.armed = false; G.audio.play('splash'); }
+    if (!this.noodles || this.inWater() || tilt < 0.95) return;
+    const f = new Food('noodle'); f.cooked = true; f.cook = this.noodles.cook; f.name = 'cooked noodles'; f.obj.children[0].material = shared().noodleCooked; f.obj.position.copy(c); f.drop(_v2.set(h.vel.x * 0.4, -0.3, h.vel.z * 0.4));
+    this.noodles = null; this.nest.visible = false; G.audio.play('plop');
   }
   hint() { return this.noodles ? `noodles ${doneness(this.noodles.cook).label} — tilt over a bowl with broth` : 'empty basket — drop fresh noodles in it'; }
 }

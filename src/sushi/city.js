@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { G, mat, mesh, box, cyl, rand, pick, mergeStatic } from './ctx.js';
 import * as T from './tex.js';
 import { makePerson } from './avatars.js';
+import { buildBlock } from './block.js';
 import { makeStreet } from './street.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -253,14 +254,7 @@ export function buildCity(scene) {
 
   const CARTEYE = new THREE.Vector3(0, 1.6, 0.2);
   // ---------- pedestrians ----------
-  const peds = [];
-  for (let i = 0; i < 3; i++) {
-    const p = makePerson(500 + i * 7), far = i < 1, dir = i % 2 ? 1 : -1;
-    p.root.position.set(-40 + R() * 80, 0, far ? -12 - R() * 1.2 : -2.4 - R() * 0.5); p.root.rotation.y = dir > 0 ? Math.PI / 2 : -Math.PI / 2; p.pose = 'walk';
-    p.root.traverse((o) => { o.userData.nopick = true; });
-    const v = 1.0 + R() * 0.5; p.speed = v; city.add(p.root); peds.push({ p, dir, v });
-  }
-  ups.push((dt, t) => peds.forEach((k) => { k.p.root.position.x += k.dir * k.v * dt; if (Math.abs(k.p.root.position.x) > 45) k.p.root.position.x = -45 * k.dir; k.p.look = Math.abs(k.p.root.position.x) < 6 && k.p.root.position.z > -4 ? CARTEYE : null; k.p.update(dt, t * (k.v / 1.2)); }));
+  const block = buildBlock(city, fronts.shops); ups.push((dt, t) => block.update(dt, t)); // the neighbours, about their night
 
   fronts.seats.slice(0, 1).forEach((st, i) => { const p = makePerson(900 + i); p.pose = 'sit'; p.root.position.copy(st.p); p.root.rotation.y = st.ry; p.root.traverse((o) => { o.userData.nopick = true; }); city.add(p.root); ups.push((dt, t) => p.update(dt, t)); });
 

@@ -91,7 +91,7 @@ export function buildTalk() {
     if (!line) { const set = CANNED[kind] || CANNED.reply; line = pick(set).replace('{order}', c.order ? c.order.recipe.name[0] + c.order.recipe.name.slice(1).toLowerCase() + ' ramen' : 'ramen'); }
     v.busy = false; v.history.push({ who: 'me', text: line }); if (v.history.length > 10) v.history.splice(0, 2);
     if (!G.game.customers.includes(c)) return;
-    talk.last = { who: v.name, line }; speak(c, line, reply, { kind, live, think: Math.round(performance.now() - t0) });
+    talk.last = { who: v.name, line, n: (talk.lastN = (talk.lastN || 0) + 1) }; speak(c, line, reply, { kind, live, think: Math.round(performance.now() - t0) });
   }
 
   talk.event = (c, kind, r) => {
@@ -113,6 +113,7 @@ export function buildTalk() {
   };
   talk.cookSays = (text) => {
     text = String(text || '').trim().slice(0, 240); if (!text) return false; talk.attend(6); const c = talk.target(), n = G.game.customers.filter((x) => x.state === 'sitting' || x.state === 'waiting' || x.state === 'eating').length;
+    talk.last = { who: 'THE COOK', line: text, n: (talk.lastN = (talk.lastN || 0) + 1) };
     note({ who: 'COOK', text, to: c ? voiceOf(c).name : n ? 'nobody (looking at no one, ' + n + ' seated)' : 'nobody (no one seated)' });
     if (!c) { if (!n) G.game.callOver?.(); return false; }
     c.p.gesture?.(Math.random() < 0.7 ? 'nod' : 'think');

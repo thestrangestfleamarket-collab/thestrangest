@@ -2,6 +2,7 @@
 import { CLOCK, THREE, RAPIER, G, grp, clamp, lerp, rnd, renderer, scene, camera, rig, P, ray } from './core.js';
 import { WORLD } from './world.js';
 import { A } from './sound.js';
+import { makeBody } from './body.js';
 
 const R = .22, EYES = [1.66, .8, .34], DROP = [0, -.75, -1.25], SPEED = [2.3, 1.15, .6], GROUPS = grp(G.PLAYER, G.SOLID | G.SEE);
 const PL = { pos: new THREE.Vector3(0, 0, -2.6), head: new THREE.Vector3(), fwd: new THREE.Vector3(), yaw: 0, pitch: 0, eye: EYES[0], stance: 0, H: 1.78, vy: 0, grounded: true, speed: 0, run: false, blind: 0, wet: 0, stride: 0,
@@ -27,14 +28,12 @@ function init() {
     const hb = P.world.createRigidBody(RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(0, -5, 0)); P.world.createCollider(RAPIER.ColliderDesc.ball(.05).setCollisionGroups(grp(G.HAND, G.SOLID)), hb);
     const H = { grip, hb, pos: new THREE.Vector3(0, -5, 0), last: new THREE.Vector3(), on: false, src: null, held: null, pin: -1, climb: false, sq: false, tr: false }; PL.hands.push(H);
     grip.addEventListener('connected', e => { H.src = e.data; H.on = true; }); grip.addEventListener('disconnected', () => { H.on = false; H.src = null; drop(H); }); }
-  // the body you see when you look down, and whose shadow the lamps throw
-  const cloth = new THREE.MeshStandardMaterial({ color: 0x15171a, roughness: .9 }), bg = new THREE.Group(), torso = new THREE.Mesh(new THREE.CapsuleGeometry(.15, .34, 4, 10), cloth), legs = [-1, 1].map(s => { const l = new THREE.Mesh(new THREE.CapsuleGeometry(.075, .62, 4, 8), cloth); l.position.set(s * .1, .4, 0); l.castShadow = true; bg.add(l); return l; }); torso.castShadow = true; bg.add(torso); scene.add(bg); PL.bodyG = bg; PL.torso = torso; PL.legs = legs;
+  PL.body = makeBody();
   PL.mouse = { held: null, pin: -1, dist: .8, down: false, pos: new THREE.Vector3() };
   addEventListener('keydown', e => { if (e.repeat) return; PL.keys[e.code] = true; if (e.code === 'KeyC') setStance((PL.stance + 1) % 3); if (e.code === 'KeyE') use(); if (e.code === 'Space') { e.preventDefault(); tryMantle(); } });
   addEventListener('keyup', e => { PL.keys[e.code] = false; });
   addEventListener('mousemove', e => { if (document.pointerLockElement !== renderer.domElement) return; PL.yaw -= e.movementX * .0022; PL.pitch = clamp(PL.pitch - e.movementY * .0022, -1.5, 1.5); });
   addEventListener('mousedown', e => { if (document.pointerLockElement === renderer.domElement && e.button === 0) { PL.mouse.down = true; mouseGrab(); } }); addEventListener('mouseup', () => { const h = PL.mouse.held; PL.mouse.down = false; drop(PL.mouse); if (h && !PL.frozen) { const v = clamp(15 / (h.T.mass + 1), 2, 8), m = h.T.mass; h.T.b.applyImpulse({ x: PL.fwd.x * v * m, y: (PL.fwd.y * v + 1.2) * m, z: PL.fwd.z * v * m }, true); h.T.plT = CLOCK.t; } });
-  addEventListener('keydown', e => { if (!e.repeat && /^Digit[1-3]$/.test(e.code) && PL.onAlt) PL.onAlt(+e.code.slice(5) - 1); });
 }
 function place(x, y, z, yaw) { PL.pos.set(x, y, z); PL.yaw = yaw; PL.pitch = 0; PL.vy = 0; PL.stance = 0; PL.eye = EYES[0]; body.setTranslation(PL.pos, true); rig.rotation.y = yaw; rig.position.set(x - camLocal().x, y, z - camLocal().z); for (const s of printS) s.visible = false; PL.key = false; PL.damp = 0; PL.prints.length = 0; PL.noises.length = 0; PL.wet = 0; PL.breath.air = 1; PL.breath.exert = 0; PL.mantle = null; }
 const camLocal = () => renderer.xr.isPresenting ? _w.set(camera.position.x, 0, camera.position.z).applyAxisAngle(UP, rig.rotation.y) : _w.set(0, 0, 0);
@@ -72,7 +71,7 @@ function tryMantle() { if (PL.frozen || PL.mantle || !PL.grounded) return; const
 function update(dt) {
   const xr = renderer.xr.isPresenting, K = PL.keys, B = PL.breath; let mx = 0, mz = 0, run = false;
   if (xr) { for (const H of PL.hands) { const gp = H.src && H.src.gamepad; if (!gp) continue; const ax = gp.axes, sx = ax[2] ?? ax[0] ?? 0, sy = ax[3] ?? ax[1] ?? 0, tr = gp.buttons[0] && gp.buttons[0].pressed, sq = gp.buttons[1] && gp.buttons[1].pressed, a = gp.buttons[4] && gp.buttons[4].pressed;
-      if (H.src.handedness === 'left') { mx = Math.abs(sx) > .15 ? sx : 0; mz = Math.abs(sy) > .15 ? sy : 0; run = Math.hypot(sx, sy) > .92 || (gp.buttons[3] && gp.buttons[3].pressed); B.want = !!tr; const x = gp.buttons[4] && gp.buttons[4].pressed; if (x && !H.x && PL.onAlt) PL.onAlt(-1); H.x = x; }
+      if (H.src.handedness === 'left') { mx = Math.abs(sx) > .15 ? sx : 0; mz = Math.abs(sy) > .15 ? sy : 0; run = Math.hypot(sx, sy) > .92 || (gp.buttons[3] && gp.buttons[3].pressed); B.want = !!tr; }
       else { if (Math.abs(sx) > .7 && !H.snap) { H.snap = true; rig.rotation.y -= Math.sign(sx) * Math.PI / 6; PL.yaw = rig.rotation.y; const c = camLocal(); rig.position.x = PL.pos.x - c.x; rig.position.z = PL.pos.z - c.z; } if (Math.abs(sx) < .3) H.snap = false;
         if (Math.abs(sy) > .75 && !H.cr) { H.cr = true; setStance(clamp(PL.stance + Math.sign(sy), 0, 2)); } if (Math.abs(sy) < .3) H.cr = false; if (tr && !H.tr) use(); H.tr = tr; if (a && !H.a) tryMantle(); H.a = a; }
       if (sq && !H.sq) take(H, H.pos.clone()); if (!sq && H.sq) drop(H); H.sq = sq; } }
@@ -110,7 +109,7 @@ function update(dt) {
   /* hands; one held over your mouth holds your breath; and the body under your head */
   if (xr) { _v.copy(PL.head).addScaledVector(PL.fwd, .07); _v.y -= .09; for (const H of PL.hands) if (H.on && H.pos.distanceTo(_v) < .15) B.want = true; }
   PL.damp = Math.max(0, (PL.damp || 0) - dt);
-  { const h = Math.max(.3, PL.head.y - PL.pos.y), f = _w.copy(PL.fwd).setY(0).normalize(), bg = PL.bodyG, k = clamp(h / 1.66, .25, 1); bg.position.set(PL.pos.x - f.x * (.1 + (1 - k) * .35), PL.pos.y, PL.pos.z - f.z * (.1 + (1 - k) * .35)); bg.rotation.y = Math.atan2(f.x, f.z); PL.torso.position.y = h * .68 - .06; PL.torso.scale.y = k; for (const l of PL.legs) { l.scale.y = k; l.position.y = h * .25; } bg.visible = !PL.thing; }
+  { const f = _w.copy(PL.fwd).setY(0); if (f.lengthSq() < .01) f.set(-Math.sin(PL.yaw), 0, -Math.cos(PL.yaw)); f.normalize(); let L = null, R = null; for (const H of PL.hands) if (H.on && H.src) { if (H.src.handedness === 'left') L = H.pos; else R = H.pos; } if (!xr && PL.mouse.down && (PL.mouse.held || PL.mouse.pin >= 0)) R = PL.mouse.pos; PL.body.update({ pos: PL.pos, head: PL.head, fwd: f, hands: [L, R], moved: PL.mantle ? 0 : PL.moved, low: PL.low || 0 }, dt); }
   for (const H of PL.hands) { if (!H.on) continue; H.last.copy(H.pos); H.grip.getWorldPosition(H.pos); H.hb.setNextKinematicTranslation(H.pos); carry(H, H.pos, dt); }
   if (!xr) { const M = PL.mouse; M.pos.copy(PL.head).addScaledVector(PL.fwd, M.dist); if (M.down) carry(M, M.pos, dt); }
 }

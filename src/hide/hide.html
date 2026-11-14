@@ -29,11 +29,6 @@ dl{display:grid;grid-template-columns:auto 1fr;gap:.35rem 1.2rem;margin:0;font:4
 dt{color:var(--ink)}dd{margin:0}
 .small{font:400 .74rem/1.5 var(--util);color:var(--dim)}
 #note{color:var(--blood);min-height:1.2em}
-.duo{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;font:400 .74rem/1 var(--util);color:var(--dim)}
-.duo input{font:500 .8rem/1 var(--util);letter-spacing:.15em;text-transform:uppercase;padding:.7rem .6rem;width:7.5rem;background:transparent;border:1px solid var(--rule);color:var(--paper);border-radius:0}
-.duo #ini{width:3.2rem}
-.duo input:focus-visible{outline:2px solid var(--lamp);outline-offset:2px}
-.duo button{padding:.7rem .9rem;font-size:.7rem}
 #load{height:2px;background:var(--rule);width:min(100%,22rem)}
 #bar{height:100%;background:var(--lamp);transform:scaleX(0);transform-origin:left;transition:transform .2s}
 @media (prefers-reduced-motion:reduce){#bar{transition:none}}
@@ -46,9 +41,8 @@ dt{color:var(--ink)}dd{margin:0}
   <p>You ran into an alley with no way out. You have one minute to hide before it comes in after you. Twenty places will hold a body. It listens, it watches for your breath in its light, and it notices what you moved.</p>
   <div id="load"><div id="bar"></div></div>
   <div class="btns"><button id="bvr" class="main" disabled>Enter headset</button><button id="bdesk" disabled>Play on screen</button></div>
-  <div class="duo"><label for="ini">Initials</label><input id="ini" maxlength="3" value="YOU" autocomplete="off" spellcheck="false"><label for="room">Two players</label><input id="room" maxlength="12" placeholder="ROOM CODE" autocomplete="off" spellcheck="false"><button id="bhost" disabled>Host: you hide</button><button id="bjoin" disabled>Join: you hunt</button></div>
-  <dl><dt>Headset</dt><dd>Left stick walks. Right stick turns, and pulled down it crouches you. Grip carries, throws or climbs. Right trigger opens and shuts. A climbs over. Left trigger, or a hand over your mouth, holds your breath. X changes the difficulty.</dd>
-      <dt>Screen</dt><dd>WASD, Shift to run, C to crouch then lie flat, mouse button to carry and throw, E to open and shut, Space to climb over, Q to hold your breath, 1 2 3 for easy, normal, hard.</dd></dl>
+  <dl><dt>Headset</dt><dd>Left stick walks. Right stick turns, and pulled down it crouches you. Grip carries, throws or climbs. Right trigger opens and shuts. A climbs over. Left trigger, or a hand over your mouth, holds your breath.</dd>
+      <dt>Screen</dt><dd>WASD, Shift to run, C to crouch then lie flat, mouse button to carry and throw, E to open and shut, Space to climb over, Q to hold your breath.</dd></dl>
   <div class="small" id="mind"></div><div class="small" id="vrnote"></div><div class="small" id="note"></div>
   <div class="small">Dark, loud and frightening. Play seated or with clear floor around you.</div>
 </div></div>

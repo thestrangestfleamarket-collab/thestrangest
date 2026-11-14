@@ -65,6 +65,7 @@ jobs:
           k golf    'src/golf/|data/golf/|tools/golf\.cjs|tests/golf\.cjs'
           k cantina 'src/cantina/|data/cantina/|tools/cantina\.cjs|tests/cantina\.cjs|worker/cantina'
           k scare   'src/scare/|data/scare/|tools/scare\.cjs|tests/scare\.cjs'
+          k hide    'src/hide/|data/hide/|worker/hide|tools/hide\.cjs|tests/hide\.cjs'
           k holmes  'src/holmes/|data/holmes/|worker/holmes|tools/holmes|tests/holmes\.cjs'
           k jam     'src/jam/|data/jam/|tools/jam\.cjs|tests/jam\.cjs'
           k shoot   'src/shoot/|tools/shoot\.cjs|tests/shoot\.cjs'
@@ -255,6 +256,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' scare')
         run: node tests/scare.cjs dist/scare.html
+      - name: Dead End (the hiding game at /hide, its places and physics, a round against the thing, and an emulated Quest 3)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' hide')
+        run: node tests/hide.cjs dist/hide.html
       - name: Stadium Jam (the band game at /jam; the keys play it, then the sticks and tracked hands in an emulated Quest 3)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' jam')

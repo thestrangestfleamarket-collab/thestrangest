@@ -93,7 +93,8 @@ function physics(dt) { P.world.timestep = dt; P.world.step(eq); eq.drainContactF
 /* the night */
 function startNight(n) {
   G.night = n; const N = NIGHTS[n]; G.chores = [...N.chores]; G.done = {}; G.hold = {}; G.min = 0; G.mode = 'play'; G.hunt = null; G.sleep = null; G.flinches = 0; G.close = 0; G.composure = 100; G.hideMem = null; G.thoughts = []; G.log = []; G.why = ''; G.t = 0; G.red = 0; G.cutDone = !N.cut; G.knockDone = !N.knock; G.stayer = null;
-  G.phone = { at: rnd(40, 70), ringing: false, rings: 0, call: null, fake: false };
+  G.phone = { at: rnd(40, 70), ringing: false, rings: 0, call: null, fake: false }; G.messes = {}; G.ignored = 0;
+  ROOM.radio.on = false; ROOM.blender.on = false; ROOM.tap.on = false; ROOM.lights.bath.on = true;
   ROOM.power = true; ROOM.lights.main.on = true; ROOM.lights.bed.on = false; ROOM.tv.on = false; ROOM.tv.msg = ''; ROOM.fridge.open = false; ROOM.bathDoor.shut = false; ROOM.chain = false; ROOM.chainMesh.visible = false; ROOM.chainLoose.visible = true; ROOM.stove.on = false; ROOM.stove.heat = 0; ROOM.closet.want = .18;
   for (const T of P.things) { T.b.setTranslation(T.home.p, true); T.b.setRotation(T.home.q, true); T.b.setLinvel({ x: 0, y: 0, z: 0 }, true); T.b.setAngvel({ x: 0, y: 0, z: 0 }, true); }
   THEM.list.forEach((C, i) => { away(C); C.sus = 0; C.contact = 0; C.noticed = false; C.active = i < N.them; C.enterAt = 20 + i * rnd(25, 45); C.dwell = 0; C.testAt = rnd(25, 50); C.glances = C.stareSec = C.flinches = C.backs = 0; C.cool = 0; });
@@ -124,7 +125,7 @@ PL.onUse = U => {
   if (id === 'alarmclock' && G.mode === 'sleep' && G.sleep.alarm) { G.sleep.alarm = 0; A.play('click', ROOM.alarm.b.translation()); return; }
   if (id === 'alarmclock') finish('alarm');
   if (id === 'closet' && G.chores.includes('coat') && !G.done.coat && ROOM.closet.want > 1) finish('coat');
-  if (id === 'bed') goToBed();
+  if (id === 'bed') { if (G.mode === 'sleep') PL.sit(ROOM.seats.bed); else goToBed(); }
   if (id === 'front' && G.cur === 'leave') { if (ROOM.chain) { say('The chain.', { silent: true, who: 'you' }); return; } winGame(); }
 };
 PL.onTake = T => { if (T === ROOM.milk && G.chores.includes('milk') && !G.done.milk) finish('milk'); };
@@ -150,9 +151,9 @@ function goToBed() {
 }
 function sleepTick(dt) {
   const S = G.sleep; S.t += dt; G.min = lerp(S.from, 420, clamp(S.t / 110, 0, 1));
-  if (PL.seat !== ROOM.seats.bed) { if (!S.warned) { S.warned = true; for (const C of THEM.list) if (C.state !== 'away') C.sus += .3; } }
+  if (PL.seat !== ROOM.seats.bed && !Object.keys(G.messes).length && !S.alarm) { if (!S.warned) { S.warned = true; for (const C of THEM.list) if (C.state !== 'away') C.sus += .3; } }
   S.next -= dt; if (S.next < 0) { S.next = rnd(10, 18); S.n++; const act = THEM.list.filter(C => C.active);
-    const r = Math.random(); if (S.alarmLeft && S.t > 35) { S.alarmLeft = 0; S.alarm = 9; A.play('alarm', ROOM.alarm.b.translation(), 1); }
+    const r = Math.random(); if (S.t > 20 && !S.messed && r < .3 && act.length) { S.messed = true; const C = pick(act); mess(C, pick(['radio', 'tv', 'tap', 'bathlight', 'fridge'])); } else if (S.alarmLeft && S.t > 35) { S.alarmLeft = 0; S.alarm = 9; A.play('alarm', ROOM.alarm.b.translation(), 1); }
     else if (r < .45 && act.length) { const C = pick(act); const sp = pick(['bedfoot', 'underbed', 'ceilingbed', 'window'].filter(s => !THEM.list.some(o => o.spot === s && o.state !== 'away'))); if (sp && !seenNow(ROOM.spots[sp].pos)) { setSpot(C, sp); A.play('slither', ROOM.spots[sp].pos, .7); } }
     else if (r < .7 && act.length) { const C = pick(act); if (C.state !== 'away') A.say(pick(LINES.them), { whisper: true, pos: C.pos, cancel: true }); }
     else if (act.length && S.n > 2) { const C = pick(act); if (C.state === 'away' || C.vis === 0) { C.pos.copy(PL.head); approach(C, 6); A.play('breathe', PL.head, .8); } } }
@@ -182,7 +183,7 @@ function director(dt) {
 }
 function choose(C) { const cur = G.cur && CHORES[G.cur]; let opts = cur ? [...cur.spots] : ['corner', 'kitchen']; if (Math.random() < .3) opts = Object.keys(ROOM.spots).filter(s => s !== 'face');
   opts = opts.filter(s => !THEM.list.some(o => o !== C && o.spot === s && o.state !== 'away')); if (G.mode === 'play') opts = opts.filter(s => !['underbed', 'ceilingbed'].includes(s) || G.cur === 'bed'); return opts.length ? pick(opts) : null; }
-function pickTest(C) { const r = Math.random(); if (C.sus > .4 && r < .45) return 'approach'; if (r < .3) return 'drop'; if (r < .5) return 'whisper'; if (r < .62 && G.night >= 2) return 'knock'; if (r < .72 && G.night >= 2 && !G.phone.ringing && !G.phone.call && G.done.phone) return 'ring'; if (r < .8) return 'channel'; return 'approach'; }
+function pickTest(C) { const r = Math.random(); if (r < .3) return 'mess'; if (r < .4) return 'move'; if (C.sus > .4 && r < .45) return 'approach'; if (r < .3) return 'drop'; if (r < .5) return 'whisper'; if (r < .62 && G.night >= 2) return 'knock'; if (r < .72 && G.night >= 2 && !G.phone.ringing && !G.phone.call && G.done.phone) return 'ring'; if (r < .8) return 'channel'; return 'approach'; }
 function doTest(C, kind) {
   G.log.push({ t: Math.round(G.t), what: 'a test: ' + kind });
   if (kind === 'approach') { if (C.vis) return; C.pos.copy(PL.head).addScaledVector(PL.fwd, -1.5); approach(C, rnd(5, 8)); A.play('breathe', PL.head, .7); return; }
@@ -190,8 +191,25 @@ function doTest(C, kind) {
   if (kind === 'whisper') { const line = C.line || pick(LINES.them); C.line = ''; A.say(G.name && Math.random() < .4 ? G.name + '.' : line, { whisper: true, pos: C.pos }); C.flinchT = CLOCK.t; return; }
   if (kind === 'knock') { A.play('knock', new THREE.Vector3(.75, 1.2, 5.1), 1); C.flinchT = CLOCK.t; return; }
   if (kind === 'ring') { G.phone.ringing = true; G.phone.rt = 0; G.phone.fake = true; return; }
+  if (kind === 'mess') { mess(C, C.thing || null); C.thing = null; return; }
+  if (kind === 'move') { moveThing(C); return; }
   if (kind === 'channel') { if (ROOM.tv.on) { ROOM.tv.ch = 2; ROOM.tv.msg = pick(['LOOK AT IT', 'IT SEES YOU', 'EYES DOWN', 'DON\'T']); setTimeout(() => { ROOM.tv.msg = ''; ROOM.tv.ch = 0; }, 1600); C.flinchT = CLOCK.t; } return; }
 }
+
+/* their tricks: something switched on, opened, left running, the light put out, a thing of yours moved. Anyone would go and put it right; somebody who leaves it, as if they knew who did it, is noticed. They do it from beside the thing. */
+function mess(C, id) {
+  const ids = Object.keys(ROOM.dev).filter(k => !ROOM.dev[k].is() && !G.messes[k] && !(k === 'light' && (G.mode === 'sleep' || G.cur === 'bed')) && !(k === 'tv' && G.doing === 'news') && !(k === 'stove' && G.cur === 'cook'));
+  id = id && ids.includes(id) ? id : pick(ids); if (!id) return; const D = ROOM.dev[id];
+  if (C.state !== 'away' && C.spot !== D.spot && !seenNow(C.pos) && !seenNow(ROOM.spots[D.spot].pos)) setSpot(C, D.spot);
+  D.set(true); G.messes[id] = { t: G.t, C }; A.play('click', D.at(), .6); if (id === 'fridge') A.play('fridgeOpen', D.at(), .8); if (id === 'closet' || id === 'bathdoor') A.play(id === 'bathdoor' ? 'doorShut' : 'doorOpen', D.at(), .8);
+  G.log.push({ t: Math.round(G.t), what: 'they turned on / opened ' + D.label });
+}
+function moveThing(C) { const T = pick(P.things.filter(T => !seenNow(new THREE.Vector3(T.b.translation().x, T.b.translation().y, T.b.translation().z)))); if (!T) return;
+  const to = pick([[3.3, .6, 2.4], [6.45, .75, 1.3], [6.6, .3, 4.3], [2.5, .6, 3.9], [.9, 1.0, 4.4], [4.5, .02, 1.5]]); const p = new THREE.Vector3(to[0], to[1], to[2]); if (seenNow(p)) return;
+  T.b.setTranslation({ x: p.x, y: p.y, z: p.z }, true); T.b.setLinvel({ x: 0, y: 0, z: 0 }, true); G.log.push({ t: Math.round(G.t), what: 'they moved ' + (T.name || 'a thing') }); }
+const expected = id => (id === 'tv' && G.doing === 'news') || (id === 'stove' && G.cur === 'cook') || (id === 'tap' && G.doing === 'dishes') || (id === 'light' && (G.cur === 'bed' || G.mode === 'sleep')) || (id === 'fridge' && G.cur === 'milk');
+function messTick(dt) { let open = 0; for (const id in G.messes) { const M = G.messes[id]; if (!ROOM.dev[id].is() || expected(id)) { delete G.messes[id]; G.log.push({ t: Math.round(G.t), what: 'put right ' + ROOM.dev[id].label }); continue; } if (G.t - M.t > 22) open++; }
+  if (open) { G.ignored += dt; for (const C of THEM.list) if (C.state === 'wait') C.sus += dt * .035 * open; } }
 
 /* hunts: the lights die; four seconds to hide behind the bathroom door or under the covers, and keep your eyes shut */
 THEM.onEvent = (kind, C) => {
@@ -231,10 +249,10 @@ function die(why) {
 async function think() {
   if (!G.mindOK || G.mindBusy || (G.mode !== 'play' && G.mode !== 'sleep')) return; G.mindBusy = true;
   const them = THEM.list.filter(C => C.active).map(C => ({ id: 'v' + C.id, kind: C.kind, at: C.state === 'away' ? 'away' : C.spot || 'moving', suspicion: Math.round(clamp(C.sus, 0, 1) * 100) / 100, glanced_at: C.glances, stared_sec: Math.round(C.stareSec), flinches: C.flinches, backed_off: Math.round(C.backs * 10) / 10 }));
-  const body = { night: G.night, clock: clockText(), sleeping: G.mode === 'sleep', chore: G.cur || 'none', done: Object.keys(G.done), room: PL.room(), seated: PL.seat ? (PL.seat === ROOM.seats.bed ? 'bed' : PL.seat === ROOM.seats.sofa ? 'sofa' : 'table') : 'standing', tv: ROOM.tv.on, them, events: G.log.slice(-8) };
+  const body = { night: G.night, clock: clockText(), sleeping: G.mode === 'sleep', chore: G.cur || 'none', done: Object.keys(G.done), room: PL.room(), seated: PL.seat ? (PL.seat === ROOM.seats.bed ? 'bed' : PL.seat === ROOM.seats.sofa ? 'sofa' : 'table') : 'standing', tv: ROOM.tv.on, them, events: G.log.slice(-8), left_on: Object.keys(G.messes) };
   try { const r = await fetch('/zombie/mind', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'include', body: JSON.stringify(body) }); if (r.status === 401 || r.status === 403 || r.status === 404) { G.mindOK = false; G.mindWhy = 'instinct'; G.mindBusy = false; return; }
     const D = await r.json(); if (D.why) { G.mindWhy = D.why; } if (D.thought) G.thoughts.push(D.thought);
-    for (const o of D.orders || []) { const C = THEM.list.find(c => 'v' + c.id === o.id && c.active); if (!C || C.state === 'hunt') continue; if (o.spot && ROOM.spots[o.spot]) C.want = o.spot; if (o.test && o.test !== 'none') C.wantTest = o.test; if (o.say) C.line = String(o.say).slice(0, 60); }
+    for (const o of D.orders || []) { const C = THEM.list.find(c => 'v' + c.id === o.id && c.active); if (!C || C.state === 'hunt') continue; if (o.spot && ROOM.spots[o.spot]) C.want = o.spot; if (o.test && o.test !== 'none') C.wantTest = o.test; if (o.say) C.line = String(o.say).slice(0, 60); if (o.thing && ROOM.dev[o.thing]) C.thing = o.thing; }
   } catch (e) { G.mindWhy = 'instinct'; } G.mindBusy = false;
 }
 async function saveProgress(n) { keep('eyes.night', String(n)); try { await fetch('/zombie/save', { method: 'POST', headers: { 'content-type': 'application/json' }, credentials: 'include', body: JSON.stringify({ night: n }) }); } catch (e) {} }
@@ -252,16 +270,16 @@ function tick(dt) {
     if (!G.cutDone && G.t > 150 && Object.keys(G.done).length >= 4) { G.cutDone = true; ROOM.power = false; G.cutT = 25; say('The power\'s gone.', { silent: true, who: 'you' }); }
     if (G.cutT > 0) { G.cutT -= dt; if (G.cutT <= 0) ROOM.power = true; }
     if (!G.knockDone && G.t > 100) { G.knockDone = true; A.play('knock', new THREE.Vector3(.75, 1.2, 5.1), 1.2); setTimeout(() => A.say('Hey. It\'s Frank from 31C. You okay in there? Open up.', { who: 'them', rate: .9, pitch: .7 }), 1500); }
-    phoneTick(dt); director(dt);
+    phoneTick(dt); director(dt); messTick(dt);
   }
-  if (G.mode === 'sleep') { PL.busy = PL.eyesShut; sleepTick(dt); director(dt); }
+  if (G.mode === 'sleep') { PL.busy = PL.eyesShut; sleepTick(dt); director(dt); messTick(dt); }
   if (G.mode === 'hunt') huntTick(dt);
   if (G.mode === 'play' || G.mode === 'sleep' || G.mode === 'hunt') themUpdate(dt, PL);
   G.mindT -= dt; if (G.mindT < 0) { G.mindT = 6; think(); }
   cityUpdate(dt, PL.head); roomUpdate(dt, CLOCK.t);
   if (CITY.onThunder === undefined) CITY.onThunder = () => A.play('thunder', null, .9);
   const tense = Math.max(0, ...THEM.list.map(C => C.state === 'away' ? 0 : C.sus + (C.contact > 0 ? .5 : 0)), G.mode === 'hunt' ? 1 : 0); ROOM.lights.main.dip = clamp((tense - .6) * .5, 0, .35) * (Math.random() < .3 ? 1 : .4);
-  A.update(dt, clamp(tense, 0, 1), ROOM.tv.on && ROOM.power, ROOM.tv.k, G.mode === 'sleep'); A.listen(PL.head, PL.fwd);
+  A.update(dt, clamp(tense, 0, 1), ROOM.tv.on && ROOM.power, ROOM.tv.k, G.mode === 'sleep'); A.devices(dt, { radio: ROOM.radio.on && ROOM.power, blender: ROOM.blender.on && ROOM.power, tap: ROOM.tap.on }); A.listen(PL.head, PL.fwd);
   if (G.mode === 'sleep' && G.sleep) PL.busy = true;
   sub.t -= dt; prompt = ''; if (G.mode === 'play' || G.mode === 'sleep') { const U = PL.pointed(); if (U && U.label) prompt = (renderer.xr.isPresenting ? 'trigger: ' : 'E: ') + U.label; }
 }
@@ -290,7 +308,7 @@ async function boot() {
   // reflections: the room itself, pictured once from its middle with its lights on
   const pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(scene, .02, .1, 100, { position: new THREE.Vector3(3.3, 1.5, 2.5) }).texture; scene.environmentIntensity = .45; pm.dispose();
   if (!LOW) post(); PL.place(.75, 4.3, Math.PI * .9); renderer.setAnimationLoop(frame);
-  window.__zombie = { G, PL, THEM, ROOM, CITY, P, THREE, A, renderer, scene, camera, rig, startNight, startHunt, die, draw, setSpot, away, approach, CHORES, NIGHTS, finish, goToBed, dawn, think, onCard,
+  window.__zombie = { G, PL, THEM, ROOM, CITY, P, THREE, A, renderer, scene, camera, rig, startNight, startHunt, die, draw, mess, moveThing, setSpot, away, approach, CHORES, NIGHTS, finish, goToBed, dawn, think, onCard,
     sim: (n, dt = 1 / 60) => { for (let i = 0; i < n; i++) tick(dt); }, look: (p) => { const d = new THREE.Vector3().subVectors(p, PL.head); PL.yaw = Math.atan2(-d.x, -d.z); PL.pitch = Math.atan2(d.y, Math.hypot(d.x, d.z)); } };
   G.night = await loadProgress(); $('night').textContent = G.night > 1 ? 'Continue: night ' + G.night + ' of 5' : 'Night 1 of 5';
   $('bdesk').disabled = false; $('bdesk').onclick = () => { go(); renderer.domElement.requestPointerLock && renderer.domElement.requestPointerLock(); };

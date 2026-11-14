@@ -30,9 +30,9 @@ function init() {
   addEventListener('mouseup', () => { const h = PL.mouse.held; PL.mouse.down = false; drop(PL.mouse); if (h) { const m = h.T.mass; h.T.b.applyImpulse({ x: PL.fwd.x * 3 * m, y: (PL.fwd.y * 3 + .6) * m, z: PL.fwd.z * 3 * m }, true); } });
 }
 const camLocal = () => renderer.xr.isPresenting ? _w.set(camera.position.x, 0, camera.position.z).applyAxisAngle(UP, rig.rotation.y) : _w.set(0, 0, 0);
-function place(x, z, yaw) { PL.pos.set(x, 0, z); PL.yaw = yaw; PL.pitch = 0; body.setTranslation(PL.pos, true); rig.rotation.y = yaw; const c = camLocal(); rig.position.set(x - c.x, 0, z - c.z); PL.seat = null; PL.lying = false; }
+function place(x, z, yaw) { PL.jump = true; PL.pos.set(x, 0, z); PL.yaw = yaw; PL.pitch = 0; body.setTranslation(PL.pos, true); rig.rotation.y = yaw; const c = camLocal(); rig.position.set(x - c.x, 0, z - c.z); PL.seat = null; PL.lying = false; }
 // sit on a seat or lie on the bed: you are put there, facing its way; any step gets you up
-function sit(S) { PL.seat = S; PL.lying = !!S.lie; PL.pos.copy(S.pos); body.setTranslation(PL.pos, true); PL.yaw = S.yaw; PL.pitch = S.lie ? .9 : 0; rig.rotation.y = S.yaw; const c = camLocal(); rig.position.set(S.pos.x - c.x, 0, S.pos.z - c.z); PL.sitT = CLOCK.t; }
+function sit(S) { PL.jump = true; PL.seat = S; PL.lying = !!S.lie; PL.pos.copy(S.pos); body.setTranslation(PL.pos, true); PL.yaw = S.yaw; PL.pitch = S.lie ? .9 : 0; rig.rotation.y = S.yaw; const c = camLocal(); rig.position.set(S.pos.x - c.x, 0, S.pos.z - c.z); PL.sitT = CLOCK.t; }
 function stand() { if (!PL.seat) return; const S = PL.seat; PL.seat = null; PL.lying = false; PL.covered = false; _v.set(Math.sin(S.yaw), 0, Math.cos(S.yaw)).multiplyScalar(-.45); PL.pos.add(_v); if (S.lie) { PL.pos.set(5.7, 0, 1.5); } body.setTranslation(PL.pos, true); PL.pitch = 0; }
 
 /* hands: carry what is loose */
@@ -73,12 +73,12 @@ function update(dt) {
   if (xr && !PL.seat) { want.x += rig.position.x + cl.x - PL.pos.x; want.z += rig.position.z + cl.z - PL.pos.z; }
   const before = PL.pos.clone();
   if (!PL.seat) { want.y = -.05; ctl.computeColliderMovement(col, want, undefined, GROUPS); const m = ctl.computedMovement(); PL.pos.x += m.x; PL.pos.z += m.z; PL.pos.y = 0; body.setNextKinematicTranslation(PL.pos); }
-  PL.vel.subVectors(PL.pos, before).divideScalar(Math.max(dt, 1e-3)); PL.speed = lerp(PL.speed, PL.vel.length(), .3);
+  PL.vel.subVectors(PL.pos, before).divideScalar(Math.max(dt, 1e-3)); if (PL.jump) PL.vel.set(0, 0, 0); PL.speed = lerp(PL.speed, PL.vel.length(), .3);
   if (PL.seat) { rig.position.set(PL.pos.x - cl.x, xr ? (PL.seat.lie ? -.8 : -.45) : 0, PL.pos.z - cl.z); } else rig.position.set(PL.pos.x - cl.x, 0, PL.pos.z - cl.z);
   rig.updateMatrixWorld(true); camera.getWorldPosition(PL.head); camera.getWorldDirection(PL.fwd);
   // how fast your head turns, not counting the stick's snap turns
   _w.set(0, 0, -1).applyQuaternion(camera.quaternion); const local = xr ? _w : PL.fwd;
-  PL.turnRate = lerp(PL.turnRate, Math.acos(clamp(local.dot(lastF), -1, 1)) / Math.max(dt, 1e-3), .5); lastF.copy(local);
+  PL.turnRate = PL.jump ? 0 : lerp(PL.turnRate, Math.acos(clamp(local.dot(lastF), -1, 1)) / Math.max(dt, 1e-3), .5); lastF.copy(local); PL.jump = false;
   for (const H of PL.hands) { if (!H.on) continue; H.grip.getWorldPosition(H.pos); H.hb.setNextKinematicTranslation(H.pos); carry(H, H.pos, dt); }
   if (!xr) { const M = PL.mouse; M.pos.copy(PL.head).addScaledVector(PL.fwd, M.dist); if (M.down) carry(M, M.pos, dt); }
 }

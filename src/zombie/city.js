@@ -71,7 +71,7 @@ function neon(text, x, y, z, size, color, vertical) {
 }
 
 function traffic() {
-  const N = LOW ? 160 : 340, m = new THREE.MeshBasicMaterial({ map: dot(), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
+  const N = LOW ? 90 : 160, m = new THREE.MeshBasicMaterial({ map: dot(), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
   const I = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), m, N); I.frustumCulled = false; const cars = [];
   const S = STREET + 1, lanes = [
     { a: [-800, S, -24], b: [800, S, -24], col: 0xfff1d8 }, { a: [800, S, -30], b: [-800, S, -30], col: 0xff2a1a },
@@ -88,7 +88,7 @@ function traffic() {
 }
 
 function rain() {
-  const N = LOW ? 400 : 900, m = new THREE.MeshBasicMaterial({ color: 0x8c96a6, transparent: true, opacity: .12, depthWrite: false, blending: THREE.AdditiveBlending });
+  const N = LOW ? 250 : 500, m = new THREE.MeshBasicMaterial({ color: 0x8c96a6, transparent: true, opacity: .035, depthWrite: false, blending: THREE.AdditiveBlending });
   const I = new THREE.InstancedMesh(new THREE.PlaneGeometry(.01, .65), m, N); I.frustumCulled = false; const drops = []; for (let i = 0; i < N; i++) drops.push({ x: rnd(-6, 14), y: rnd(-30, 14), z: -rnd(.7, 30), v: rnd(8, 11) });
   scene.add(I); CITY.rain = { I, drops };
 }
@@ -96,16 +96,16 @@ function rain() {
 function build() {
   sky();
   // the hotel across the avenue: brick, its windows a few dozen lives
-  const near = facade(26, 44, { wall: '#4a302a', brick: true, lit: .3, ledge: true });
-  scene.add(new THREE.Mesh(mergeGeometries([tower(-78, -14, -66, -40, STREET, 26, near), tower(-70, -22, -62, -46, 26, 31, near)]), new THREE.MeshStandardMaterial({ map: near.t, emissiveMap: near.te, emissive: 0xffffff, emissiveIntensity: 1.3, roughness: .9 })));
+  const near = facade(26, 44, { wall: '#3a2622', brick: true, lit: .16, ledge: true });
+  scene.add(new THREE.Mesh(mergeGeometries([tower(-78, -14, -66, -40, STREET, 26, near), tower(-70, -22, -62, -46, 26, 31, near)]), new THREE.MeshStandardMaterial({ map: near.t, emissiveMap: near.te, emissive: 0xffffff, emissiveIntensity: 1.0, roughness: .9 })));
   const wood = new THREE.MeshStandardMaterial({ color: 0x2a1d16, roughness: .9 }), wt = new THREE.Group(), tank = new THREE.Mesh(new THREE.CylinderGeometry(3.4, 3.4, 6, 18), wood); tank.position.y = 8; wt.add(tank);
   const cap = new THREE.Mesh(new THREE.ConeGeometry(3.7, 2.6, 18), wood); cap.position.y = 12.3; wt.add(cap); for (const [a, b] of [[-2, -2], [2, -2], [-2, 2], [2, 2]]) { const leg = new THREE.Mesh(new THREE.BoxGeometry(.3, 5, .3), wood); leg.position.set(a, 2.5, b); wt.add(leg); }
   wt.position.set(-50, 31, -52); scene.add(wt);
-  CITY.signs = [neon('HOTEL', -16, 4, -39.4, 18, '#ff3b7a', true), neon('ARGYLE', -46, 22, -39.4, 16, '#59e8ff'), neon('LIQUORS', -60, -10, -39.4, 9, '#ff5a2a'), neon('CHECKS CASHED', -36, -40, -39.4, 14, '#ffd84a'), neon('DINER', -50, -80, -39.4, 9, '#59ffa6')];
+  CITY.signs = [neon('HOTEL', -16, 4, -39.4, 18, '#ff3b7a', true), neon('LIQUORS', -48, -70, -39.4, 9, '#59e8ff')];
   // a hundred and thirty towers out to two and a half kilometres, stepped back the way the zoning law made them
-  const sets = [[facade(32, 48, { wall: '#2a2a2e', lit: .22 }), []], [facade(32, 48, { wall: '#3b3130', lit: .28, brick: true }), []], [facade(32, 48, { wall: '#14181e', lit: .4 }), []]], beacons = [];
-  for (let i = 0; i < 140; i++) {
-    const a = rnd(-1.25, 1.25), r = i < 22 ? rnd(110, 300) : rnd(260, 2400), cx = Math.sin(a) * r, cz = -Math.cos(a) * r - 40;
+  const sets = [[facade(32, 48, { wall: '#232327', lit: .1 }), []], [facade(32, 48, { wall: '#2e2624', lit: .13, brick: true }), []], [facade(32, 48, { wall: '#121519', lit: .16 }), []]], beacons = [];
+  for (let i = 0; i < 80; i++) {
+    const a = rnd(-1.25, 1.25), r = i < 8 ? rnd(160, 320) : rnd(340, 2400), cx = Math.sin(a) * r, cz = -Math.cos(a) * r - 40;
     if ((cx > -90 && cx < 40 && cz > -110) || Math.abs(cx - 66) < 18 || Math.abs(cx + 156) < 18 || Math.abs(cz + 424) < 16) continue;
     const w = rnd(18, 46), d = rnd(18, 46); let top = rnd(-75, 30); if (Math.random() < .16) top = rnd(50, 200); if (Math.random() < .04) top = rnd(220, 330);
     const S = pick(sets), F = S[0]; let y0 = STREET, tw = w, td = d; const tiers = 1 + (top > 20 ? (Math.random() * 3 | 0) : 0);
@@ -114,11 +114,11 @@ function build() {
     else if (top > 30) beacons.push([cx, top + 1.5, cz]);
     if (r < 900 && Math.random() < .3) { const tk = new THREE.CylinderGeometry(2.6, 2.6, 5, 10); tk.translate(cx + rnd(-4, 4), top + 2.5, cz + rnd(-4, 4)); S[1].push(tk); }
   }
-  for (const [F, gs] of sets) if (gs.length) scene.add(new THREE.Mesh(mergeGeometries(gs), new THREE.MeshStandardMaterial({ map: F.t, emissiveMap: F.te, emissive: 0xffffff, emissiveIntensity: 1.5, roughness: .85 })));
+  for (const [F, gs] of sets) if (gs.length) scene.add(new THREE.Mesh(mergeGeometries(gs), new THREE.MeshStandardMaterial({ map: F.t, emissiveMap: F.te, emissive: 0xffffff, emissiveIntensity: 1.0, roughness: .85 })));
   const BI = new THREE.InstancedMesh(new THREE.PlaneGeometry(7, 7), new THREE.MeshBasicMaterial({ map: dot(), color: 0xff1a10, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }), beacons.length);
   BI.userData.p = beacons; BI.userData.ph = beacons.map(() => Math.random()); BI.frustumCulled = false; scene.add(BI); CITY.beaconI = BI;
-  const far = facade(40, 60, { wall: '#16141a', lit: .18 }), fg = [];
-  for (let i = 0; i < 90; i++) { const a = rnd(-1.4, 1.4), r = rnd(2700, 3300), w = rnd(30, 90), h = rnd(-40, 120), p = new THREE.PlaneGeometry(w, h - STREET), uv = p.attributes.uv, ox = Math.random();
+  const far = facade(40, 60, { wall: '#16141a', lit: .08 }), fg = [];
+  for (let i = 0; i < 50; i++) { const a = rnd(-1.4, 1.4), r = rnd(2700, 3300), w = rnd(30, 90), h = rnd(-40, 120), p = new THREE.PlaneGeometry(w, h - STREET), uv = p.attributes.uv, ox = Math.random();
     for (let k = 0; k < 4; k++) uv.setXY(k, ox + uv.getX(k) * w / (far.cols * far.cw), uv.getY(k) * (h - STREET) / (far.rows * far.ch)); p.rotateY(-a); p.translate(Math.sin(a) * r, (h + STREET) / 2, -Math.cos(a) * r); fg.push(p); }
   scene.add(new THREE.Mesh(mergeGeometries(fg), new THREE.MeshBasicMaterial({ map: far.te })));
   traffic(); rain();

@@ -45,6 +45,8 @@ objects, the live migration).
 After the beta: photos in trade · the bow · birds, dragons' clips and more human clips · VR hand-walking, hand models, filters in the
 headset · NPC voices.
 
+- **P2 · look** COLD BORE at `/sniper` (14 Nov 2026; live without a check, as asked): play it on the screen and in the Quest 3 (it has only been run in software rendering and an emulated headset: the frame rate, how the rifle sits in the hands, the eye behind the scope); its name (COLD BORE is a working name); realistic people, cars, a helicopter and boats to replace the ones made in code (no free realistic ones were reachable; Mixamo needs the owner's Adobe account); `tests/sniper.cjs` was last run in full before the real assets went in.
+
 ## CI, checks and tools
 
 CI runs only on pull requests and by hand (the workflow has no push trigger), so `main` itself is checked only when someone starts it.

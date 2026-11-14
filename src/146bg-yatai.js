@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {ONLINE, pos} from './003b-systems.js';
 import {SAY} from './003d-say.js';
-import {MAPG, SYS, TILE} from './006-map-pre.js';
+import {MAPG, MODS, SYS, TILE} from './006-map-pre.js';
 { const M=SHARED.METRO, C=M&&M.CART;
   if(C){ const T=TILE, K=2.6/2.4, U=34.7, cooks=new Map(), g=new THREE.Group(); MAPG.down.add(g);
     // the cart's own metres (x across, y up, z from the counter back to the cook) to the platform's
@@ -23,4 +23,5 @@ import {MAPG, SYS, TILE} from './006-map-pre.js';
       k.seats.forEach(s=>{ s.s.visible=false; }); for(const c of Array.isArray(d.cs)?d.cs:[]){ if(!Array.isArray(c)||!c[1])continue; const S=k.seats[c[0]|0]; if(!S)continue; S.s.visible=true; put(S.s,(d.seats&&+d.seats[c[0]|0])||0,.55,-1.2); S.body.material.color.setHex(c[1]===2?0x4a7a4a:c[5]<35?0x9a3a2a:0x6a5a48); }
       k.bowls.forEach(b=>{ b.b.visible=false; }); (Array.isArray(d.bowls)?d.bowls:[]).slice(0,8).forEach((q,i)=>{ const B=k.bowls[i]; if(!Array.isArray(q))return; B.b.visible=true; put(B.b,+q[0]||0,(+q[1]||.9)+.03,+q[2]||0); B.soup.visible=q[3]===1||q[3]===2; B.b.material.color.setHex(q[3]===3?0x9a9484:0xf1ede2); });
       if(d.say&&d.say.text&&near()){ const line=String(d.say.who||'').toUpperCase().slice(0,24)+': '+String(d.say.text).slice(0,180); if(line!==k.said){ k.said=line; SAY('AT THE RAMEN CART · '+line,'#ffb070'); } } };
+    MODS.yatai={feed:m=>ONLINE.hear.yt(m),cooks,at};
     SYS.add('life',()=>{ const now=performance.now(); for(const k of cooks.values())if(k.grp.visible&&now-k.t>3000)k.grp.visible=false; },'146bg-yatai'); } }

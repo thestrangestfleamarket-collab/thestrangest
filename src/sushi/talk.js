@@ -9,6 +9,7 @@ const MOODS = ['tired but friendly', 'a little tipsy and talkative', 'quiet and 
 const STYLES = ['speaks in short, dry sentences', 'talks fast and laughs at their own jokes', 'is formal and careful with words', 'speaks slowly, with long pauses', 'is blunt and a little loud', 'is warm and asks questions back'];
 const STORIES = ['Your boss shouted at you in front of everyone today.', 'You just missed the last train and are in no hurry now.', 'Your daughter passed her entrance exam this morning.', 'You lost money at pachinko an hour ago.', 'You are meeting someone later and are nervous about it.', 'You have had a cold all week and want something hot.', 'You got paid today.', 'You have been walking in the rain for an hour to clear your head.'];
 const QUIRKS = ['You have eaten at this cart for years.', 'This is your first time at this cart.', 'You compare every ramen to your mother\'s.', 'You are soaked from the rain and grateful for the steam.', 'You love talking about baseball.', 'You hum along to whatever is on the radio.', 'You are saving up for a new stereo.', 'You notice small details about how the cook works.'];
+const VOICES = { m: ['orion', 'perseus', 'orpheus', 'helios', 'zeus', 'arcas', 'angus'], f: ['luna', 'stella', 'hera', 'asteria', 'athena'] }, CREATURE_VOICE = { robot: ['arcas', 0.94], gnome: ['angus', 1.1], mariachi: ['orpheus', 1], pirate: ['zeus', 0.95], goblinmage: ['perseus', 1.12], dragonborn: ['zeus', 0.88] };
 const CANNED = {
   order: ['Evening. {order}, please.', 'One {order}. It smells great tonight.', '{order} for me, thanks. How are you doing tonight?'],
   impatient: ['Is mine coming along?', 'Sorry, I do have a train to catch.', 'Getting hungry over here.'],
@@ -24,9 +25,9 @@ export function buildTalk() {
   G.talk = talk;
   const persona = (c) => {
     const k = c.p.cast && CAST.find((x) => x.id === c.p.cast);
-    if (k) return { g: 'm', name: k.name, age: '', job: `a ${k.kind} (${k.job}), out of the bar for a late bowl`, mood: pick(MOODS), quirk: k.personality, style: k.voice, story: `Hobby: ${k.hobby}.`, pitch: c.p.pitch || 1 };
+    if (k) return { g: 'm', name: k.name, age: '', job: `a ${k.kind} (${k.job}), out of the bar for a late bowl`, mood: pick(MOODS), quirk: k.personality, style: k.voice, story: `Hobby: ${k.hobby}.`, speaker: (CREATURE_VOICE[c.p.cast] || ['orion', 1])[0], pitch: (CREATURE_VOICE[c.p.cast] || ['orion', 1])[1] };
     const g = (c.p.style || '').startsWith('Female') ? 'f' : 'm';
-    return { g, name: pick(NAMES[g]), age: 22 + ((Math.random() * 44) | 0), job: pick(JOBS), mood: pick(MOODS), quirk: pick(QUIRKS), style: pick(STYLES), story: pick(STORIES), pitch: (g === 'f' ? 1.1 : 0.9) + Math.random() * 0.12 };
+    return { g, name: pick(NAMES[g]), age: 22 + ((Math.random() * 44) | 0), job: pick(JOBS), mood: pick(MOODS), quirk: pick(QUIRKS), style: pick(STYLES), story: pick(STORIES), speaker: pick(VOICES[g]), pitch: 0.95 + Math.random() * 0.1 };
   };
   const orderText = (o) => `${o.recipe.name.toLowerCase()} ramen${o.firm ? ', noodles firm' : ''}${o.no ? `, no ${o.no}` : ''}${o.tops.chashu === 3 ? ', extra chashu' : ''}${o.drink ? `, and a ${o.drink}` : ''}`;
   const voiceOf = (c) => c.voice || (c.voice = { ...persona(c), history: [], busy: false });
@@ -36,7 +37,7 @@ export function buildTalk() {
     if (G.muteVoices) return; const v = voiceOf(c); c.attn = Math.max(c.attn || 0, 2 + text.length * 0.07);
     if (talk.tts !== false && G.audio.ctx) {
       try {
-        const r = await fetch('/sushi/say', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) }); talk.diag.say = r.ok ? 'ok' : String(r.status);
+        const r = await fetch('/sushi/say', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, speaker: v.speaker }) }); talk.diag.say = r.ok ? 'ok' : String(r.status);
         if (r.ok && (r.headers.get('content-type') || '').startsWith('audio')) {
           const ac = G.audio.ctx, buf = await ac.decodeAudioData(await r.arrayBuffer()), src = ac.createBufferSource(), pan = ac.createPanner(), g = ac.createGain();
           src.buffer = buf; src.playbackRate.value = v.pitch; pan.panningModel = 'HRTF'; pan.refDistance = 1.4; pan.positionX.value = SEATS[c.seat]; pan.positionY.value = 1.4; pan.positionZ.value = -1.1; g.gain.value = 1.8;

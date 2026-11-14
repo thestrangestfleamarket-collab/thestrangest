@@ -45,7 +45,7 @@ function findCand(h) {
   let best = null, bd = 1e9;
   for (const it of G.items) {
     if (it.locked || it.dead || (it.held && it.held === h)) continue;
-    const d = it.worldCenter(_v).distanceTo(h.pos) - it.radius, sc = d - (it.kind === 'food' ? 0 : 0.035); // bowls and tools win over loose food
+    const d = it.worldCenter(_v).distanceTo(h.pos) - it.radius, sc = d - (it.kind === 'bowl' || it.tool ? 0.035 : 0); // a bowl or a tool wins over loose food; a pork roll does not win over its own slices
     if (d < 0.055 && sc < bd) { best = it; bd = sc; }
   }
   if (best) return best;

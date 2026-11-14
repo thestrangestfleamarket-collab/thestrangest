@@ -92,22 +92,30 @@ export function buildTalk(scene) {
       else if (document.activeElement === box && (e.code === 'Enter' || e.code === 'Escape')) { if (e.code === 'Enter') talk.cookSays(box.value); box.blur(); box.style.display = 'none'; }
     });
   }
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition; let rec = null, listening = false;
-  talk.canListen = !!SR;
-  const listen = (on) => {
-    if (!SR || on === listening) return; listening = on;
-    try {
-      if (on) { rec = new SR(); rec.lang = 'en-US'; rec.interimResults = false; rec.onresult = (e) => talk.cookSays(e.results[0][0].transcript); rec.onerror = () => { }; rec.start(); G.audio.play('click'); }
-      else rec?.stop();
-    } catch (e) { listening = false; }
+  // your voice is always on: the browser's recognition where there is one, else the mic is cut at each pause and written down by the site (POST /holmes/hear, a login's)
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition; let active = false, rec = null, stream = null;
+  const heard = (text) => { text = String(text || '').trim(); if (!text) return; const m = /\bguide( mode)? (on|off)\b/i.exec(text); if (m) { G.debug?.guide?.set(m[2].toLowerCase() === 'on'); return; } talk.cookSays(text); };
+  talk.heard = heard; talk.canListen = !!(SR || (navigator.mediaDevices && window.MediaRecorder));
+  talk.listen = (on) => {
+    if (on === active) return; active = on;
+    if (!on) { try { rec?.stop(); } catch (e) { /* not running */ } stream?.getTracks().forEach((x) => x.stop()); return; }
+    if (SR) { const go = () => { if (!active) return; rec = new SR(); rec.lang = 'en-US'; rec.continuous = true; rec.interimResults = false; rec.onresult = (e) => { for (let i = e.resultIndex; i < e.results.length; i++) if (e.results[i].isFinal) heard(e.results[i][0].transcript); }; rec.onerror = (e) => { if (e.error === 'not-allowed' || e.error === 'service-not-allowed') active = false; }; rec.onend = () => setTimeout(go, 300); try { rec.start(); } catch (e) { /* already started */ } }; go(); return; }
+    if (!(navigator.mediaDevices && window.MediaRecorder)) { active = false; return; }
+    navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }).then((st) => {
+      stream = st; const ac = G.audio.ctx || new AudioContext(), an = ac.createAnalyser(); an.fftSize = 512; ac.createMediaStreamSource(st).connect(an);
+      const buf = new Float32Array(512); let mr = null, parts = [], loud = 0, quiet = 0, t0 = 0, floor = 0.01;
+      const loop = () => {
+        if (!active) return; an.getFloatTimeDomainData(buf); let s2 = 0; for (let i = 0; i < 512; i++) s2 += buf[i] * buf[i]; const rms = Math.sqrt(s2 / 512), now = performance.now();
+        if (!mr) { floor += (Math.min(rms, 0.05) - floor) * 0.02; if (!window.speechSynthesis?.speaking && rms > Math.max(0.03, floor * 3.5)) { if (++loud > 4) { parts = []; const m = (mr = new MediaRecorder(st)); m.ondataavailable = (e) => parts.push(e.data);
+              m.onstop = async () => { const blob = new Blob(parts, { type: m.mimeType }); if (blob.size < 3000) return; try { const r = await fetch('/holmes/hear', { method: 'POST', body: blob }); if (r.ok) heard((await r.json()).text); else if (r.status === 401 || r.status === 403) active = false; } catch (e) { /* offline */ } };
+              m.start(); t0 = now; quiet = 0; } } else loud = 0; }
+        else { quiet = rms < Math.max(0.02, floor * 2) ? quiet + 1 : 0; if (quiet > 45 || now - t0 > 8000) { const m = mr; mr = null; loud = 0; try { m.stop(); } catch (e) { /* stopped */ } } }
+        setTimeout(loop, 20); }; loop();
+    }).catch(() => { active = false; });
   };
-  addEventListener('keydown', (e) => { if (e.code === 'KeyV' && G.mode === 'desktop' && e.target.tagName !== 'INPUT') listen(true); });
-  addEventListener('keyup', (e) => { if (e.code === 'KeyV') listen(false); });
 
   talk.update = (dt) => {
     for (let i = talk.bubbles.length - 1; i >= 0; i--) { const b = talk.bubbles[i]; b.life -= dt; b.s.material.opacity = clamp(b.life * 3, 0, 1); if (b.life <= 0 || !G.game.customers.includes(b.c)) { b.s.removeFromParent(); b.s.material.map.dispose(); b.s.material.dispose(); talk.bubbles.splice(i, 1); } }
-    const ses = G.renderer.xr.getSession?.();
-    if (ses && SR) { let held = false; for (const src of ses.inputSources) if (src.gamepad?.buttons[4]?.pressed) held = true; listen(held); }
   };
   return talk;
 }

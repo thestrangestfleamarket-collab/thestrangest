@@ -36,11 +36,11 @@ export function buildLife(scene, city, cart) {
 
   // ---- rain: splash rings on wet ground + drips off the canopy
   const ringG = new THREE.RingGeometry(0.75, 1, 18).rotateX(-Math.PI / 2), rings = [];
-  for (let i = 0; i < 70; i++) { const r = nop(new THREE.Mesh(ringG, new THREE.MeshBasicMaterial({ color: 0xbfd0ff, transparent: true, opacity: 0, depthWrite: false }))); r.userData.t = Math.random(); r.renderOrder = -3; root.add(r); rings.push(r); }
+  for (let i = 0; i < 16; i++) { const r = nop(new THREE.Mesh(ringG, new THREE.MeshBasicMaterial({ color: 0xbfd0ff, transparent: true, opacity: 0, depthWrite: false }))); r.userData.t = Math.random(); r.renderOrder = -3; root.add(r); rings.push(r); }
   const place = (r) => { let x, z; do { x = (Math.random() - 0.5) * 16; z = -13 + Math.random() * 15; } while (Math.abs(x) < 1.8 && z > -1.85 && z < 2.2); r.position.set(x, z < -3.2 && z > -11.3 ? -0.112 : 0.006, z); r.userData.s = 0.03 + Math.random() * 0.05; };
   rings.forEach(place);
   const dripG = new THREE.SphereGeometry(0.006, 6, 5).scale(1, 2.6, 1), dripM = new THREE.MeshBasicMaterial({ color: 0xcfe0ff, transparent: true, opacity: 0.7 }), drips = [];
-  for (let i = 0; i < 16; i++) { const d = nop(new THREE.Mesh(dripG, dripM)); d.userData = { v: 0, wait: Math.random() * 3, nopick: true }; root.add(d); drips.push(d); }
+  for (let i = 0; i < 8; i++) { const d = nop(new THREE.Mesh(dripG, dripM)); d.userData = { v: 0, wait: Math.random() * 3, nopick: true }; root.add(d); drips.push(d); }
   const edge = (d) => { const s = Math.random(); if (s < 0.5) d.position.set((Math.random() - 0.5) * 3.4, 2.62, -1.82); else d.position.set((Math.random() - 0.5) * 3.4, 2.62, 2.12); d.userData.v = 0; d.userData.wait = Math.random() * 2.5; d.visible = false; };
   drips.forEach(edge);
   ups.push((dt) => {

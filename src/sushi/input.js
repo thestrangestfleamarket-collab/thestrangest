@@ -2,14 +2,15 @@
 import * as THREE from 'three';
 import { G, V3, Q, UP, BOUNDS, mat, clamp } from './ctx.js';
 import * as T from './tex.js';
+import { Hand } from '../cantina/hands.js';
 
-const _v = new V3(), _v2 = new V3(), _q = new Q(), _q2 = new Q(), _e = new THREE.Euler();
+const _v = new V3(), _v2 = new V3(), _q = new Q(), _q2 = new Q(), _e = new THREE.Euler(), _sh = new V3(), _el = new V3(), _po = new V3();
 
 function makeHand(i, xr) {
   const marker = new THREE.Sprite(new THREE.SpriteMaterial({ map: T.glowTex(), color: 0xffd9a0, transparent: true, opacity: 0.4, depthTest: false, blending: THREE.AdditiveBlending }));
   marker.visible = false; marker.renderOrder = 40; marker.userData.nopick = true; G.scene.add(marker);
   return { i, xr, pos: new V3(), quat: new Q(), tip: new V3(), vel: new V3(), prev: new V3(), active: false, grip: false, use: false, _g: false, _u: false, gripDown: false, gripUp: false, useDown: false,
-    held: null, cand: null, latch: new Set(), marker, relPos: new V3(), relQ: new Q(), tiltA: 0, chopT: 0, source: null, aim: null,
+    vs: new V3(), held: null, cand: null, latch: new Set(), marker, relPos: new V3(), relQ: new Q(), tiltA: 0, chopT: 0, source: null, aim: null,
     pulse(v = 0.5, ms = 30) { try { this.source?.gamepad?.hapticActuators?.[0]?.pulse(v, ms); } catch (e) { /* no haptics */ } } };
 }
 
@@ -37,7 +38,7 @@ function release(h) {
     if (d < t.r && p.y > tp.y - 0.12 && p.y < tp.y + 0.32 && d - (t.prio || 0) * 0.05 < bd) { best = t; bd = d - (t.prio || 0) * 0.05; }
   }
   if (best) { best.receive(it); return; }
-  it.drop(_v2.copy(h.vel).clampLength(0, 2.5));
+  it.drop(h.xr ? _v2.copy(h.vs).multiplyScalar(1.15).clampLength(0, 16) : _v2.set(0, 0, 0)); // the hand's real speed: thrown hard, it goes far
 }
 
 function findCand(h) {
@@ -54,7 +55,7 @@ function findCand(h) {
 
 function stepHand(h, dt) {
   h.gripDown = h.grip && !h._g; h.gripUp = !h.grip && h._g; h.useDown = h.use && !h._u; h._g = h.grip; h._u = h.use;
-  if (dt > 0) { h.vel.copy(h.pos).sub(h.prev).divideScalar(dt); } h.prev.copy(h.pos);
+  if (dt > 0) { h.vel.copy(h.pos).sub(h.prev).divideScalar(dt); h.vs.lerp(h.vel, 0.4); } h.prev.copy(h.pos);
   if (!h.active) { h.marker.visible = false; if (h.held) release(h); return; }
 
   // ---- buttons
@@ -110,20 +111,10 @@ export function buildInput(renderer, rig, camera, dom) {
     ctrl.addEventListener('selectend', () => { if (h.source?.hand) h.grip = false; else h.use = false; });
     ctrl.addEventListener('squeezestart', () => { h.grip = true; });
     ctrl.addEventListener('squeezeend', () => { h.grip = false; });
-    // simple glove model on the grip
-    const g = new THREE.Group(); grip.add(g); h.glove = g;
-    const sph = new THREE.SphereGeometry(1, 16, 12), side = i === 0 ? 1 : -1;
-    const palm = new THREE.Mesh(sph, skin); palm.scale.set(0.041, 0.016, 0.05); palm.position.set(0, 0, 0.012); g.add(palm);
-    const wrist = new THREE.Mesh(new THREE.CylinderGeometry(0.027, 0.03, 0.07, 14), mat({ color: 0xe8e4da, roughness: 0.9 })); wrist.rotation.x = Math.PI / 2; wrist.scale.z = 0.7; wrist.position.z = 0.085; g.add(wrist);
-    h.fingers = [];
-    for (let f = 0; f < 4; f++) {
-      const fg = new THREE.Group(); fg.position.set(-0.027 + f * 0.018, 0, -0.03); fg.rotation.y = (1.5 - f) * 0.07; g.add(fg);
-      const len = [0.062, 0.07, 0.066, 0.052][side > 0 ? f : 3 - f];
-      const m = new THREE.Mesh(new THREE.CapsuleGeometry(0.0082, len, 4, 10), skin); m.rotation.x = Math.PI / 2; m.position.z = -len / 2 - 0.006; fg.add(m); h.fingers.push(fg);
-    }
-    const th = new THREE.Mesh(new THREE.CapsuleGeometry(0.0095, 0.042, 4, 10), skin); th.position.set(side * 0.04, -0.004, -0.012); th.rotation.set(Math.PI / 2, 0, side * 0.75); g.add(th); h.thumb = th;
-    g.traverse((o) => { o.castShadow = true; o.userData.nopick = true; });
-    h.jointMeshes = new Map();
+    // a skinned hand for either side (the WebXR generic hand, as in the cantina) and a sleeved arm back to the shoulder
+    h.models = { L: new Hand('L'), R: new Hand('R') }; for (const k in h.models) { h.models[k].root.visible = false; h.models[k].root.traverse((o) => { o.userData.nopick = true; }); G.scene.add(h.models[k].root); }
+    const sleeve = mat({ color: 0xd8d4c8 }), seg = () => { const m = new THREE.Mesh(new THREE.CylinderGeometry(0.036, 0.046, 1, 10), sleeve); m.castShadow = true; m.userData.nopick = true; m.visible = false; G.scene.add(m); return m; };
+    h.arm = { up: seg(), fore: seg() };
     return h;
   });
   G.hands = [...xrHands, desk.hand];
@@ -183,16 +174,28 @@ export function buildInput(renderer, rig, camera, dom) {
     for (const h of xrHands) {
       const src = h.source, isHand = !!src?.hand;
       h.active = !!src && (h.gripSpace.visible || h.handSpace.visible || h.ctrl.visible);
-      if (!h.active) { stepHand(h, dt); continue; }
+      if (!h.active) { h.models.L.root.visible = h.models.R.root.visible = h.arm.up.visible = h.arm.fore.visible = false; stepHand(h, dt); continue; }
       const space = h.gripSpace.visible ? h.gripSpace : h.ctrl;
       space.getWorldPosition(h.pos); (h.ctrl.visible ? h.ctrl : space).getWorldQuaternion(h.quat); // position from the grip, orientation from the pointing ray
-      h.glove.visible = !isHand;
       if (isHand) {
         const J = h.handSpace.joints || {}, it = J['index-finger-tip'], tt = J['thumb-tip'];
         if (it && tt) { it.getWorldPosition(h.tip); tt.getWorldPosition(_v2); h.pos.copy(h.tip).add(_v2).multiplyScalar(0.5); }
-        for (const name in J) if (!h.jointMeshes.has(name)) { const m = new THREE.Mesh(new THREE.SphereGeometry(0.008, 8, 6), skin); m.userData.nopick = true; m.castShadow = true; J[name].add(m); h.jointMeshes.set(name, m); }
       } else h.tip.set(0, 0, -0.08).applyQuaternion(h.quat).add(h.pos);
-      const curl = h.grip ? 1.3 : h.use ? 0.5 : 0.15; h.fingers.forEach((f) => (f.rotation.x += (-curl - f.rotation.x) * Math.min(1, dt * 18)));
+      { // the hand's model follows the wrist; its fingers curl by your own fingers (tracked) or by the grip and trigger
+        const sd = src.handedness === 'left' ? 'L' : 'R', M = h.models[sd]; h.models[sd === 'L' ? 'R' : 'L'].root.visible = false; M.root.visible = true;
+        const J = isHand ? h.handSpace.joints || {} : null, wj = J && J.wrist;
+        if (wj) { wj.getWorldPosition(M.root.position); wj.getWorldQuaternion(M.root.quaternion);
+          M.curl = ['thumb', 'index', 'middle', 'ring', 'pinky'].map((f) => { const tip = J[f === 'thumb' ? 'thumb-tip' : f + '-finger-tip'], base = J[f === 'thumb' ? 'thumb-metacarpal' : f + '-finger-phalanx-proximal']; if (!tip || !base) return 0.1; return clamp((0.085 - tip.getWorldPosition(_v).distanceTo(base.getWorldPosition(_v2))) / 0.05, 0, 1); });
+        } else { M.root.quaternion.copy(h.quat).multiply(_q2.setFromAxisAngle(_v.set(0, 0, 1), sd === 'R' ? -1.35 : 1.35)); M.root.position.copy(_v.set(0, -0.015, 0.09).applyQuaternion(h.quat)).add(h.pos); const gr = h.grip ? 1 : 0.14; M.curl = [h.grip || h.use ? 0.7 : 0.2, h.use ? 1 : h.grip ? 0.75 : 0.12, gr, gr, gr]; }
+        M.update(dt);
+        // shoulder guessed from the head; elbow by the two-bone rule, hanging down and out
+        const side = sd === 'R' ? 1 : -1, W = M.root.position; camera.getWorldPosition(_v); camera.getWorldDirection(_v2); const yaw = Math.atan2(-_v2.x, -_v2.z);
+        const S = _sh.set(side * 0.2, -0.24, 0.04).applyAxisAngle(UP, yaw).add(_v), A = 0.31, B = 0.28, dir = _el.copy(W).sub(S), d = clamp(dir.length(), 0.08, A + B - 0.005); dir.normalize();
+        const x = (A * A - B * B + d * d) / (2 * d), hh = Math.sqrt(Math.max(0, A * A - x * x)), pole = _po.set(side * 0.55, -1, 0.35).applyAxisAngle(UP, yaw); pole.addScaledVector(dir, -pole.dot(dir)).normalize();
+        const E = _el.copy(S).addScaledVector(dir, x).addScaledVector(pole, hh);
+        const put = (m, a, b2) => { m.visible = true; m.position.copy(a).add(b2).multiplyScalar(0.5); _v2.copy(b2).sub(a); m.scale.set(1, _v2.length(), 1); m.quaternion.setFromUnitVectors(UP, _v2.normalize()); };
+        put(h.arm.up, E, S); put(h.arm.fore, W, E);
+      }
       stepHand(h, dt);
     }
     // thumbstick locomotion

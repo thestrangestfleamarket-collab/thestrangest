@@ -74,7 +74,7 @@ export function buildCart(scene, city) {
   for (let i = 0; i < 4; i++) {
     const t = norenT.clone(); t.repeat.set(0.25, 1); t.offset.set((3 - i) * 0.25, 0); t.needsUpdate = true;
     const n = mesh(new THREE.PlaneGeometry(0.69, 0.5, 8, 8), mat({ map: t, roughness: 0.95, side: THREE.DoubleSide }), -1.065 + i * 0.71, 2.28, -1.5, cart); n.rotation.y = Math.PI;
-    C.noren.push({ mesh: n, base: n.geometry.attributes.position.array.slice(), ph: i * 1.7 });
+    n.userData.keep = true; C.noren.push({ mesh: n, base: n.geometry.attributes.position.array.slice(), ph: i * 1.7 });
   }
   const lanternT = T.canvasTex(256, 256, (g, w, h) => {
     const gr = g.createLinearGradient(0, 0, w, 0); gr.addColorStop(0, '#b01a10'); gr.addColorStop(0.5, '#ff4a2a'); gr.addColorStop(1, '#b01a10'); g.fillStyle = gr; g.fillRect(0, 0, w, h);
@@ -83,15 +83,15 @@ export function buildCart(scene, city) {
     for (const x of [64, 192]) { g.fillText('ラ', x, 86); g.fillText('メ', x, 164); g.fillText('ン', x, 240); }
   });
   T.dirty(lanternT, 8, { stains: 12, drips: 10, soot: 1 });
-  const lanternM = new THREE.MeshStandardMaterial({ map: lanternT, emissiveMap: lanternT, emissive: 0xffffff, emissiveIntensity: 0.25, roughness: 0.8 });
+  const lanternM = mat({ map: lanternT, emissiveMap: lanternT, emissive: 0xffffff, emissiveIntensity: 0.25, roughness: 0.8 });
   C.lanternM = lanternM; C.lanternHalos = []; C.lanternLights = [];
   C.lanterns = [];
   for (const x of [-1.52, 1.52]) {
-    const pv = new THREE.Group(); pv.position.set(x, 2.55, -1.5); cart.add(pv); C.lanterns.push(pv); cyl(0.004, 0.004, 0.3, black, 0, 0.1, 0, pv, 4);
+    const pv = new THREE.Group(); pv.position.set(x, 2.55, -1.5); pv.userData.dyn = true; cart.add(pv); C.lanterns.push(pv); cyl(0.004, 0.004, 0.3, black, 0, 0.1, 0, pv, 4);
     const l = mesh(new THREE.SphereGeometry(0.17, 20, 14), lanternM, 0, -0.38, 0, pv); l.scale.y = 1.35; l.castShadow = false;
     cyl(0.09, 0.09, 0.04, black, 0, -0.15, 0, pv, 12); cyl(0.09, 0.09, 0.04, black, 0, -0.61, 0, pv, 12); cyl(0.004, 0.004, 0.15, black, 0, -0.07, 0, pv, 4);
     C.lanternHalos.push(halo(0xff5a30, 1.5, 0, -0.38, 0, pv, 0.1));
-    const pl = new THREE.PointLight(0xff5a30, 0, 5, 1.8); pl.position.set(0, -0.4, -0.12); pv.add(pl); C.lanternLights.push(pl);
+    if (x < 0) { const pl = new THREE.PointLight(0xff5a30, 0, 7, 1.6); pl.position.set(1.5, -0.4, -0.2); pv.add(pl); C.lanternLights.push(pl); }
   }
   const signT = T.neonTex('ラーメン', '#ff3d2a', { sub: 'RAMEN  夜鳴きそば', fs: 110, panel: '#1a0a08' });
   C.signM = new THREE.MeshBasicMaterial({ map: signT, toneMapped: false, color: new THREE.Color(0.25, 0.25, 0.25) });
@@ -104,12 +104,12 @@ export function buildCart(scene, city) {
   const bulbM = new THREE.MeshBasicMaterial({ color: new THREE.Color(3.2, 2.5, 1.5), toneMapped: false });
   C.bulbs = [];
   [[-0.55, -0.25, true], [0.6, 0.1, false], [0, -1.05, false]].forEach(([x, z, sh], i) => {
-    const pv = new THREE.Group(); pv.position.set(x, 2.62, z); cart.add(pv); C.bulbs.push(pv);
+    const pv = new THREE.Group(); pv.position.set(x, 2.62, z); pv.userData.dyn = true; cart.add(pv); C.bulbs.push(pv);
     cyl(0.003, 0.003, 0.2, black, 0, -0.11, 0, pv, 4); cyl(0.016, 0.02, 0.04, black, 0, -0.21, 0, pv, 8);
     const b = new THREE.Mesh(new THREE.SphereGeometry(0.03, 12, 10), bulbM); b.position.set(0, -0.255, 0); pv.add(b); b.userData.nopick = true;
     halo(0xffc070, 0.26, 0, -0.255, 0, pv, 0.3);
     const l = new THREE.PointLight(0xffb878, i === 2 ? 1.1 : 1.7, 6, 1.8); l.position.set(0, -0.28, 0); pv.add(l);
-    if (sh) { l.castShadow = true; l.shadow.mapSize.set(1024, 1024); l.shadow.bias = -0.002; l.shadow.radius = 4; l.shadow.camera.near = 0.08; l.shadow.camera.far = 6; }
+    if (sh) { const sl = new THREE.SpotLight(0xffb878, 16, 5, 1.2, 0.7, 1.7); sl.position.set(0, -0.3, 0); sl.target.position.set(0.15, -2.4, 0.05); pv.add(sl, sl.target); sl.castShadow = true; sl.shadow.mapSize.set(512, 512); sl.shadow.bias = -0.002; sl.shadow.camera.near = 0.1; sl.shadow.camera.far = 5; l.intensity = 0.6; }
   });
 
   // stools
@@ -147,7 +147,7 @@ export function buildCart(scene, city) {
     cyl(d.r, d.r, 0.006, steel, d.x, 0.863, d.z, cart, 32);
     mesh(new THREE.TorusGeometry(d.r, 0.006, 6, 32), steel, d.x, p.rimY, d.z, cart).rotation.x = Math.PI / 2;
     for (const s of [-1, 1]) mesh(new THREE.TorusGeometry(0.03, 0.006, 6, 12, Math.PI), steel, d.x, p.rimY - 0.04, d.z + s * (d.r + 0.005), cart).rotation.set(0, Math.PI / 2, s > 0 ? 0 : 0);
-    p.liqM = new THREE.MeshPhysicalMaterial({ color: d.color, map: d.type ? brothMap : null, roughness: 0.05, clearcoat: 1, transparent: true, opacity: d.type === 'tonkotsu' ? 1 : 0.9 });
+    p.liqM = mat({ color: d.color, map: d.type ? brothMap : null, roughness: 0.05, clearcoat: 1, transparent: true, opacity: d.type === 'tonkotsu' ? 1 : 0.9 });
     p.liq = mesh(new THREE.CircleGeometry(d.r - 0.004, 32).rotateX(-Math.PI / 2), p.liqM, d.x, p.liqY, d.z, cart); p.liq.castShadow = false;
     if (d.type) { // pork bones / chicken + aromatics peeking through the broth
       const bm = mat({ color: d.type === 'tonkotsu' ? 0xe8e0d0 : 0xd8b070, roughness: 0.6 });
@@ -157,11 +157,11 @@ export function buildCart(scene, city) {
     // bubbles
     p.bubbles = []; for (let k = 0; k < 10; k++) { const b = new THREE.Mesh(new THREE.RingGeometry(0.006, 0.009, 10).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 })); b.visible = false; b.userData = { t: Math.random(), nopick: true }; cart.add(b); p.bubbles.push(b); }
     // knob on the wing face toward the cook
-    const kb = new THREE.Group(); kb.position.set(-0.695, 0.7, d.z); cart.add(kb);
+    const kb = new THREE.Group(); kb.position.set(-0.695, 0.7, d.z); kb.userData.dyn = true; cart.add(kb);
     const km = cyl(0.03, 0.034, 0.03, black, 0, 0, 0, kb, 16); km.rotation.z = -Math.PI / 2; km.position.x = 0.015;
     const mark = box(0.004, 0.05, 0.008, mat({ color: 0xf0f0f0 }), 0.032, 0, 0, kb);
     const lt = mesh(new THREE.PlaneGeometry(0.16, 0.035), new THREE.MeshBasicMaterial({ map: T.labelTex(d.label, { w: 256, h: 56, fs: 26, bg: '#1a1a1c', fg: '#e8e0c8' }) }), -0.699, 0.76, d.z, cart); lt.rotation.y = Math.PI / 2; lt.castShadow = false;
-    const led = new THREE.Mesh(new THREE.SphereGeometry(0.008, 8, 6), new THREE.MeshBasicMaterial({ color: 0x401010 })); led.position.set(-0.697, 0.7, d.z - 0.06); cart.add(led);
+    const led = new THREE.Mesh(new THREE.SphereGeometry(0.008, 8, 6), new THREE.MeshBasicMaterial({ color: 0x401010 })); led.position.set(-0.697, 0.7, d.z - 0.06); led.userData.keep = true; cart.add(led);
     p.setOn = (on) => { p.on = on; kb.rotation.x = on ? Math.PI / 2 : 0; led.material.color.set(on ? new THREE.Color(3, 0.4, 0.1) : new THREE.Color(0x401010)); led.material.toneMapped = !on; p.flames.forEach((f) => (f.visible = on)); G.audio.play(on ? 'ignite' : 'click'); };
     km.userData.button = kb.userData.button = mark.userData.button = { getPos: () => _bp.set(-0.67, 0.7, d.z), r: 0.045, press: () => p.setOn(!p.on), name: `${d.id} burner knob` };
     G.buttons.push(km.userData.button);
@@ -206,7 +206,7 @@ export function buildCart(scene, city) {
     const x = -0.64 + i * 0.15, z = -0.45, v = { x, z, r: 0.052, rimY: 1.02, liqY: 0.99, type: k, heat: 1 };
     cyl(0.055, 0.048, 0.12, mat({ color: [0x4a2a18, 0x8a5a2a, 0xd8d0c0][i], roughness: 0.3 }), x, 0.96, z, cart, 20, true).material.side = THREE.DoubleSide;
     cyl(0.048, 0.048, 0.005, black, x, 0.905, z, cart, 20);
-    mesh(new THREE.CircleGeometry(0.05, 20).rotateX(-Math.PI / 2), new THREE.MeshPhysicalMaterial({ color: TARE[k].color, roughness: 0.08, clearcoat: 1 }), x, v.liqY, z, cart).castShadow = false;
+    mesh(new THREE.CircleGeometry(0.05, 20).rotateX(-Math.PI / 2), mat({ color: TARE[k].color, roughness: 0.08, clearcoat: 1 }), x, v.liqY, z, cart).castShadow = false;
     const lb = mesh(new THREE.PlaneGeometry(0.085, 0.04), new THREE.MeshBasicMaterial({ map: T.labelTex([`${TARE[k].jp} ${TARE[k].label}`], { w: 256, h: 120, fs: 50 }), color: 0xbbbbbb }), x, 0.96, z + 0.056, cart); lb.castShadow = false;
     const l = new Ladle('tare', k, v); placeTool(l, new V3(x, v.liqY - 0.004, z - 0.01), new V3(x + 0.02, 1.1, z + 0.12));
     return v;
@@ -225,7 +225,7 @@ export function buildCart(scene, city) {
       const f = new Food(k); const o = f.obj; f.remove(); // borrow the mesh only
       o.userData.item = null; o.position.set(x + ((n % 2) - 0.5) * 0.04 + (k === 'nori' ? 0 : 0), 0.912 + Math.floor(n / 2) * 0.012 + (k === 'egg' ? 0 : 0), z + ((n % 3) - 1) * 0.028);
       o.rotation.y = n * 1.3; if (k === 'nori') { o.position.set(x, 0.912 + n * 0.0025, z); o.rotation.y = 0.1 * n; }
-      cart.add(o); b.pieces.push(o);
+      o.userData.dyn = true; cart.add(o); b.pieces.push(o);
     }
     b.refresh = () => {
       b.pieces.forEach((p, n) => (p.visible = b.stock > n * (k === 'nori' || k === 'menma' || k === 'corn' ? 3 : 1)));
@@ -275,7 +275,7 @@ export function buildCart(scene, city) {
     const g = new THREE.Group(); g.position.set(0.935, 0.9, 0.68); cart.add(g);
     const cm = mat({ color: 0x1c4a8a, roughness: 0.4 });
     box(0.36, 0.012, 0.24, cm, 0, 0.006, 0, g); for (const [x, z, w, d] of [[0, 0.115, 0.36, 0.014], [0, -0.115, 0.36, 0.014], [0.173, 0, 0.014, 0.24], [-0.173, 0, 0.014, 0.24]]) box(w, 0.16, d, cm, x, 0.08, z, g);
-    const ice = mesh(new THREE.BoxGeometry(0.33, 0.1, 0.21), new THREE.MeshPhysicalMaterial({ color: 0xdff2ff, roughness: 0.25, transmission: 0.3, thickness: 0.05 }), 0, 0.065, 0, g);
+    const ice = mesh(new THREE.BoxGeometry(0.33, 0.1, 0.21), mat({ color: 0xdff2ff, roughness: 0.25, transparent: true, opacity: 0.86 }), 0, 0.065, 0, g);
     ['beer', 'cola'].forEach((d, j) => {
       const grp = new THREE.Group(); g.add(grp);
       for (let n = 0; n < 3; n++) { const b = new Drink(d); const o = b.obj; b.remove(); o.userData.item = null; o.position.set(-0.11 + n * 0.11, 0.06, (j - 0.5) * 0.11); o.rotation.z = (n - 1) * 0.08; grp.add(o); }
@@ -324,14 +324,14 @@ export function buildCart(scene, city) {
   box(0.36, 0.2, 0.08, black, 0, 0, -0.04, reg);
   C.led = T.panelTex(512, 256, () => { });
   mesh(new THREE.PlaneGeometry(0.33, 0.165), new THREE.MeshBasicMaterial({ map: C.led, toneMapped: false }), 0, 0, 0.002, reg).castShadow = false;
-  const sw = new THREE.Group(); sw.position.set(0, -0.2, 0); reg.add(sw);
+  const sw = new THREE.Group(); sw.position.set(0, -0.2, 0); sw.userData.dyn = true; reg.add(sw);
   box(0.16, 0.12, 0.05, mat({ color: 0x8a8d90, metalness: 0.8, roughness: 0.4 }), 0, 0, -0.025, sw);
   const lever = cyl(0.012, 0.012, 0.07, mat({ color: 0xd02020, roughness: 0.3 }), 0, 0, 0.03, sw, 10); lever.rotation.x = Math.PI / 2 - 0.6;
   const swl = mesh(new THREE.PlaneGeometry(0.15, 0.035), new THREE.MeshBasicMaterial({ map: T.labelTex(['営業 OPEN / CLOSE'], { w: 384, h: 90, fs: 36, bg: '#111', fg: '#ffd060' }) }), 0, 0.085, 0.001, sw);
   C.setOpen = (on) => {
     C.open = on; lever.rotation.x = Math.PI / 2 + (on ? 0.6 : -0.6);
     C.signM.color.setScalar(on ? 1.7 : 0.25); C.signHalo.material.opacity = on ? 0.45 : 0; lanternM.emissiveIntensity = on ? 2.4 : 0.25;
-    C.lanternHalos.forEach((h) => (h.material.opacity = on ? 0.55 : 0.08)); C.lanternLights.forEach((l) => (l.intensity = on ? 2.2 : 0));
+    C.lanternHalos.forEach((h) => (h.material.opacity = on ? 0.55 : 0.08)); C.lanternLights.forEach((l) => (l.intensity = on ? 3.6 : 0));
     G.audio.play('click');
   };
   const swb = { getPos: () => sw.getWorldPosition(_bp3), r: 0.06, press: () => G.game.toggleOpen(), name: 'OPEN / CLOSE switch' };
@@ -350,7 +350,7 @@ export function buildCart(scene, city) {
   });
   mesh(new THREE.PlaneGeometry(0.45, 0.225), mat({ map: bbT, roughness: 0.5, metalness: 0.3 }), 0, 0, 0.001, bb).castShadow = false;
   for (const sx of [-0.152, 0.152]) { mesh(new THREE.TorusGeometry(0.074, 0.008, 8, 28), steel, sx, -0.02, 0.006, bb); const cone = mesh(new THREE.ConeGeometry(0.07, 0.035, 24, 1, true), mat({ color: 0x0c0c0e, roughness: 0.9, side: THREE.DoubleSide }), sx, -0.02, -0.012, bb); cone.rotation.x = -Math.PI / 2; mesh(new THREE.SphereGeometry(0.02, 12, 8), mat({ color: 0x2a2a2e, roughness: 0.5 }), sx, -0.02, -0.022, bb); }
-  box(0.11, 0.07, 0.012, new THREE.MeshPhysicalMaterial({ color: 0x1a1410, roughness: 0.1, transparent: true, opacity: 0.6 }), 0, -0.012, 0.008, bb); for (const kx of [-0.04, 0.0, 0.04, 0.08]) box(0.03, 0.014, 0.02, black, kx, -0.075, 0.012, bb); for (const kx of [0.12, 0.17]) cyl(0.012, 0.012, 0.02, steel, kx, 0.09, 0.012, bb, 10).rotation.x = Math.PI / 2;
+  box(0.11, 0.07, 0.012, mat({ color: 0x1a1410, roughness: 0.1, transparent: true, opacity: 0.6 }), 0, -0.012, 0.008, bb); for (const kx of [-0.04, 0.0, 0.04, 0.08]) box(0.03, 0.014, 0.02, black, kx, -0.075, 0.012, bb); for (const kx of [0.12, 0.17]) cyl(0.012, 0.012, 0.02, steel, kx, 0.09, 0.012, bb, 10).rotation.x = Math.PI / 2;
   const hb = mesh(new THREE.TorusGeometry(0.2, 0.008, 6, 20, Math.PI), black, 0, 0.11, -0.055, bb); hb.scale.y = 0.3;
   const mkBtn = (x, color, name, press) => {
     const b = cyl(0.022, 0.022, 0.02, mat({ color, roughness: 0.3 }), x, 0.13, -0.055, bb, 14);

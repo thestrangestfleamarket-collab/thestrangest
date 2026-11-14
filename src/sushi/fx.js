@@ -1,6 +1,6 @@
 // steam, drops and the slip of paper that says how a bowl went
 import * as THREE from 'three';
-import { G, V3 } from './ctx.js';
+import { G, V3, mat } from './ctx.js';
 import * as T from './tex.js';
 
 export function buildFx(scene) {
@@ -12,8 +12,8 @@ export function buildFx(scene) {
     s.visible = false; s.userData = { life: 0, nopick: true }; root.add(s); steam.push(s);
   }
   const drops = [], ND = 48, dg = new THREE.SphereGeometry(0.006, 6, 5);
-  for (let i = 0; i < ND; i++) { const d = new THREE.Mesh(dg, new THREE.MeshStandardMaterial({ roughness: 0.1 })); d.visible = false; d.userData = { v: new V3(), life: 0, nopick: true }; root.add(d); drops.push(d); }
-  const pops = [];
+  for (let i = 0; i < ND; i++) { const d = new THREE.Mesh(dg, mat({ roughness: 0.1 })); d.visible = false; d.userData = { v: new V3(), life: 0, nopick: true }; root.add(d); drops.push(d); }
+  const pops = [], splats = [];
   let si = 0, di = 0;
   const fx = {
     steam(p, k = 1) {
@@ -32,7 +32,12 @@ export function buildFx(scene) {
       const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, depthTest: false })); s.renderOrder = 50; s.userData.nopick = true;
       s.scale.set(0.36, 0.225, 1); s.position.copy(pos); root.add(s); pops.push({ s, life: 6.5 });
     },
+    splat(p, color, r = 0.08, yolk) { // what a broken egg or a spilt bowl leaves where it hit
+      const m = new THREE.Mesh(new THREE.CircleGeometry(r, 12).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: new THREE.Color(color).multiplyScalar(0.45), transparent: true, opacity: 0.85, depthWrite: false })); m.position.set(p.x, Math.max(0.006, p.y + 0.004), p.z); m.scale.set(0.7 + Math.random() * 0.8, 1, 0.7 + Math.random() * 0.8); m.rotation.y = Math.random() * 6; m.userData.nopick = true; root.add(m); splats.push({ m, life: 50 });
+      if (yolk) { const y = new THREE.Mesh(new THREE.SphereGeometry(r * 0.38, 8, 6), new THREE.MeshBasicMaterial({ color: new THREE.Color(yolk).multiplyScalar(0.6) })); y.scale.y = 0.35; y.position.set(p.x + 0.01, m.position.y + 0.004, p.z); y.userData.nopick = true; root.add(y); splats.push({ m: y, life: 50 }); }
+    },
     update(dt) {
+      for (let i = splats.length - 1; i >= 0; i--) { const s = splats[i]; s.life -= dt; if (s.life <= 0) { s.m.removeFromParent(); splats.splice(i, 1); } }
       for (const s of steam) if (s.visible) {
         const u = s.userData; u.life -= dt * 0.55; if (u.life <= 0) { s.visible = false; continue; }
         s.position.y += dt * 0.22; s.position.x += u.vx * dt; s.scale.addScalar(dt * 0.11); s.material.rotation = u.r + u.life;

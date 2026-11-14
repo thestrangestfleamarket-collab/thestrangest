@@ -100,7 +100,7 @@ export function buildGame(scene) {
   function spawn(seat) {
     const p = makePerson((Math.random() * 1e6) | 0), side = Math.random() < 0.5 ? -1 : 1, x = SEATS[seat];
     p.root.position.set(side * 14, 0, -2.35); G.peopleRoot.add(p.root);
-    p.root.traverse((o) => { o.userData.nopick = true; });
+    p.root.traverse((o) => { o.userData.nopick = true; if (o.isMesh) o.castShadow = true; });
     const prog = clamp((game.clock - START) / (END - START), 0, 1);
     const c = { p, seat, side, state: 'walk', path: [new V3(x, 0, -2.3), new V3(x, 0, -1.55)], t: 0, order: null, maxPatience: (lerp(170, 125, prog) + rand(0, 35)) * game.cfg().pat, patience: 0, gotDrink: false, bowl: null, bottle: null, result: null };
     c.patience = c.maxPatience;
@@ -171,7 +171,7 @@ export function buildGame(scene) {
     scene.add(s); game.summary = s; G.audio.play('done');
   }
 
-  const _d = new V3();
+  const _d = new V3(), _eye = new V3();
   game.update = (dt, t) => {
     if ((game.state === 'open' || game.state === 'closing') && !(game.night === 1 && game.served + game.lost === 0 && game.state === 'open')) game.clock += dt * MIN_PER_SEC;
     if (game.state === 'open' && game.clock >= END) { game.state = 'closing'; C.setOpen(false); }
@@ -187,8 +187,9 @@ export function buildGame(scene) {
 
     game.seats.forEach((s, i) => { if (s.dirty && (s.dirty.dead || s.dirty.held || s.dirty.obj.position.distanceTo(C.seatSpots[i]) > 0.3)) s.dirty = null; });
 
+    const eye = G.camera.getWorldPosition(_eye);
     for (const c of [...game.customers]) {
-      const p = c.p; p.update(dt, t);
+      const p = c.p; p.look = c.state === 'waiting' || c.state === 'sitting' ? (Math.sin(t * 0.45 + c.seat * 2.1) > -0.5 ? eye : null) : c.state === 'eating' && c.voice && c.voice.busy ? eye : null; p.update(dt, t);
       if (c.state === 'walk' || c.state === 'leaving') {
         p.pose = 'walk'; const wp = c.path[0]; _d.copy(wp).sub(p.root.position); const d = _d.length();
         if (d < 0.06) { c.path.shift(); if (!c.path.length) { if (c.state === 'walk') { c.state = 'sitting'; c.t = 0; p.pose = 'sit'; p.root.position.set(SEATS[c.seat], 0, -1.2); } else { p.root.removeFromParent(); game.customers.splice(game.customers.indexOf(c), 1); } } }

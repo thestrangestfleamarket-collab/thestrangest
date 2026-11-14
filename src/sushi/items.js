@@ -45,14 +45,14 @@ function shared() {
   S = {
     steel,
     steelDS: Object.assign(steel.clone(), { side: THREE.DoubleSide }),
-    wire: new THREE.MeshStandardMaterial({ map: meshT, alphaTest: 0.4, side: THREE.DoubleSide, metalness: 0.9, roughness: 0.35, color: 0xd8dade }),
+    wire: mat({ map: meshT, alphaTest: 0.4, side: THREE.DoubleSide, metalness: 0.9, roughness: 0.35, color: 0xd8dade }),
     handle: mat({ color: 0x2a1a10, roughness: 0.6 }),
-    ceramic: new THREE.MeshPhysicalMaterial({ color: 0xf1ede2, roughness: 0.18, clearcoat: 0.6, clearcoatRoughness: 0.15, side: THREE.DoubleSide }),
-    band: new THREE.MeshPhysicalMaterial({ map: T.bowlTex(), roughness: 0.2, clearcoat: 0.6 }),
+    ceramic: mat({ color: 0xf1ede2, roughness: 0.18, clearcoat: 0.6, clearcoatRoughness: 0.15, side: THREE.DoubleSide }),
+    band: mat({ map: T.bowlTex(), roughness: 0.2, clearcoat: 0.6 }),
     bowlGeo: new THREE.LatheGeometry([[0, 0], [0.042, 0], [0.045, 0.012], [0.06, 0.03], [0.085, 0.06], [0.103, 0.085], [0.106, 0.088], [0.1, 0.085], [0.082, 0.058], [0.057, 0.03], [0.04, 0.016], [0, 0.014]].map(([x, y]) => new THREE.Vector2(x, y)), 40),
     bandGeo: new THREE.CylinderGeometry(0.1042, 0.0885, 0.024, 40, 1, true),
     disc: new THREE.CircleGeometry(1, 36).rotateX(-Math.PI / 2),
-    nest: new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, true), 640, 0.0025, 5, true),
+    nest: new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, true), 260, 0.0026, 4, true),
     noodleCooked: mat({ color: 0xf0d58a, roughness: 0.45 }), noodleRaw: mat({ color: 0xeadfb8, roughness: 0.9 }),
     brothMap: T.brothTex('b'),
     chashuTop: mat({ map: T.swirlTex('chashu'), roughness: 0.5 }), chashuSide: mat({ color: 0x7a4a2e, roughness: 0.5 }),
@@ -65,8 +65,8 @@ function shared() {
     menmaGeo: scatter(new THREE.BoxGeometry(0.045, 0.004, 0.011), 5, 0.01, 0.008, 5, false),
     sliceGeo: new THREE.CylinderGeometry(0.037, 0.037, 0.007, 20), narutoGeo: new THREE.CylinderGeometry(0.021, 0.021, 0.005, 12),
     eggGeo: new THREE.SphereGeometry(0.024, 16, 10, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2).scale(1, 0.75, 1.3),
-    glassBrown: new THREE.MeshPhysicalMaterial({ color: 0x4a2408, roughness: 0.08, transmission: 0.5, thickness: 0.02, metalness: 0 }),
-    glassDark: new THREE.MeshPhysicalMaterial({ color: 0x1a0c06, roughness: 0.06, transmission: 0.35, thickness: 0.02 }),
+    glassBrown: mat({ color: 0x4a2408, roughness: 0.08, transparent: true, opacity: 0.86, metalness: 0 }),
+    glassDark: mat({ color: 0x1a0c06, roughness: 0.06, transparent: true, opacity: 0.86 }),
     bottleGeo: new THREE.LatheGeometry([[0, 0], [0.03, 0], [0.031, 0.13], [0.026, 0.16], [0.013, 0.2], [0.012, 0.235], [0.014, 0.24], [0, 0.24]].map(([x, y]) => new THREE.Vector2(x, y)), 18),
   };
   return S;
@@ -101,6 +101,7 @@ export class Item {
   upright() { const e = new THREE.Euler().setFromQuaternion(this.obj.quaternion, 'YXZ'); this.obj.quaternion.setFromEuler(new THREE.Euler(0, e.y, 0)); }
   onGrab() { } onRelease() { return false; } onHeld() { } update() { } onRemove() { } onLand() { G.audio.play('place'); }
   onGround() { this.grounded = 0; }
+  onImpact() { return false; }
   hint() { return ''; }
 }
 
@@ -141,7 +142,7 @@ export class Bowl extends Item {
     const s = shared(), g = new THREE.Group();
     M(s.bowlGeo, s.ceramic, g); M(s.bandGeo, s.band, g, 0, 0.0735, 0);
     super('bowl', g, { radius: 0.11, cy: 0.05, lift: 0.07, name: 'ramen bowl' });
-    this.liqMat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, map: s.brothMap, roughness: 0.06, clearcoat: 1, clearcoatRoughness: 0.05, transparent: true, opacity: 0.95 });
+    this.liqMat = mat({ color: 0xffffff, map: s.brothMap, roughness: 0.06, clearcoat: 1, clearcoatRoughness: 0.05, transparent: true, opacity: 0.95 });
     this.liq = M(s.disc, this.liqMat, g); this.liq.castShadow = false; this.liq.visible = false;
     this.nest = M(s.nest, s.noodleCooked, g); this.nest.visible = false;
     this.tops = new THREE.Group(); g.add(this.tops);
@@ -186,7 +187,9 @@ export class Bowl extends Item {
     if (this.temp > 0) { this.temp = Math.max(0, this.temp - dt / 110); if (this.temp > 0.45 && !this.dirty && Math.random() < dt * 5) G.fx.steam(_v.copy(this.obj.position).setY(this.obj.position.y + 0.08), 0.5); }
     if (this.held && !this.empty && !this.dirty && this.tilt() > 1.25) this.spill();
   }
-  onGround() { G.audio.play('break'); G.fx.drops(this.obj.position, 0xf1ede2, 12); this.remove(); }
+  shatter() { if (!this.empty) G.fx.splat(this.obj.position, this.liqMat.color.getHex(), 0.2); shatter(this, 0xf1ede2, 9); }
+  onImpact(sp) { if (sp > 3.2 && !this.locked) { this.shatter(); return true; } return false; }
+  onGround() { this.shatter(); }
   onLand() { G.audio.play('clink'); }
   hint() { return this.dirty ? 'dirty bowl → bus tub (right)' : this.empty ? 'empty bowl → set on the mat' : 'ramen → serve on a customer placemat'; }
 }
@@ -201,6 +204,7 @@ export class Food extends Item {
     if (type === 'noodle') this.noodle = true; else this.topping = type;
     this.servings = servings;
   }
+  onImpact(sp) { if (this.topping === 'egg' && sp > 2.4) { G.fx.splat(this.obj.position, 0xf4efe2, 0.06, 0xf0a020); G.audio.play('splash'); this.remove(); return true; } return false; }
   hint() { return this.noodle ? 'noodles → drop into a basket in the boiling pot' : `${this.name} → drop on a bowl (or back in its bin)`; }
 }
 
@@ -223,6 +227,7 @@ export class Raw extends Item {
     this.center.set(d.len / 2, 0, 0); this.aim.copy(this.center); this.raw = type; this.def = d; this.left = d.n; this.body = body; this.board = null;
   }
   onGrab() { if (this.board) { this.board.item = null; this.board = null; } }
+  onImpact(sp) { if (this.raw === 'egg' && sp > 2.2) { G.fx.splat(this.obj.position, 0xf4efe2, 0.085, 0xf0a020); shatter(this, 0xc89860, 4); return true; } return false; }
   slice() {
     const d = this.def, b = this.board; this.left--;
     this.body.scale.x = Math.max(0.02, this.left / d.n);
@@ -250,16 +255,29 @@ export class Drink extends Item {
     this.drink = type;
   }
   onLand() { G.audio.play('bottle'); }
-  onGround() { G.audio.play('break'); this.remove(); }
+  onImpact(sp) { if (sp > 3.4 && !this.locked) { G.fx.splat(this.obj.position, this.drink === 'beer' ? 0xc89030 : 0x2a1408, 0.18); shatter(this, this.drink === 'beer' ? 0x4a2408 : 0x1a0c06, 8); return true; } return false; }
   hint() { return `${this.name} → set at the customer who ordered it`; }
+}
+
+// what is left of a broken thing: small pieces that fall and scatter, swept away after a while
+class Debris extends Item {
+  constructor(color) { const g = new THREE.Group(); M(new THREE.BoxGeometry(0.026 + Math.random() * 0.02, 0.006, 0.018 + Math.random() * 0.02), mat({ color }), g); super('debris', g, { radius: 0 }); this.locked = true; this.life = 9; }
+  update(dt) { this.life -= dt; if (this.life <= 0) this.remove(); }
+  onGround() { } onLand() { }
+}
+function shatter(it, color, n) {
+  const p = it.obj.position, v = it.vel; G.audio.play('break');
+  for (let i = 0; i < n; i++) { const d = new Debris(color); d.obj.position.set(p.x + rand(-0.05, 0.05), p.y + 0.03 + rand(0, 0.05), p.z + rand(-0.05, 0.05)); d.obj.rotation.set(rand(6), rand(6), rand(6)); d.drop(_v2.set(v.x * 0.4 + rand(-1.6, 1.6), Math.abs(v.y) * 0.3 + rand(0.5, 2.2), v.z * 0.4 + rand(-1.6, 1.6)).clone()); }
+  it.remove();
 }
 
 // ------------------------------------------------------------------ tools
 export class Tool extends Item {
   constructor(kind, obj, o) { super(kind, obj, o); this.tool = true; this.home = { pos: new V3(), quat: new Q() }; this.homing = false; this.atHome = true; this.useMode = 'tilt'; this.armed = true; }
   setHome(pos, quat) { this.home.pos.copy(pos); this.home.quat.copy(quat); this.obj.position.copy(pos); this.obj.quaternion.copy(quat); this.atHome = true; this.homing = false; this.onHome(); }
-  onGrab() { this.atHome = false; this.homing = false; }
-  onRelease() { this.homing = true; return true; }
+  onGrab() { this.atHome = false; this.homing = false; this.thrown = false; }
+  onRelease(h) { if (PH.ready && h && h.xr && h.vs.length() > 1.7) { this.thrown = true; this.back = 2.6; if (this.setFilled && this.filled) { this.setFilled(false); G.fx.drops(this.obj.position, 0xc99a3c, 8); } return false; } this.homing = true; return true; } // let go gently it goes home; thrown, it flies and lies where it lands a while
+  onGround() { }
   onHome() { }
   point(local, out) { return out.copy(local).applyQuaternion(this.obj.quaternion).add(this.obj.position); }
   update(dt) {
@@ -267,6 +285,7 @@ export class Tool extends Item {
       const k = Math.min(1, dt * 9); this.obj.position.lerp(this.home.pos, k); this.obj.quaternion.slerp(this.home.quat, k);
       if (this.obj.position.distanceTo(this.home.pos) < 0.006) { this.obj.position.copy(this.home.pos); this.obj.quaternion.copy(this.home.quat); this.homing = false; this.atHome = true; this.onHome(); G.audio.play('clink'); }
     }
+    if (this.thrown && !this.free && !this.held) { this.back -= dt; if (this.back <= 0) { this.thrown = false; PH.drop(this); this.homing = true; } }
     this.tick(dt);
   }
   tick() { }
@@ -278,7 +297,7 @@ function ladleMesh(L, r, liquidColor) {
   M(new THREE.CylinderGeometry(big ? 0.011 : 0.0075, big ? 0.012 : 0.008, big ? 0.13 : 0.09, 10).rotateX(Math.PI / 2), s.handle, g, 0, 0, 0.0);
   M(new THREE.CylinderGeometry(0.004, 0.004, r * 0.9, 6), s.steel, g, 0, -r * 0.3, -L);
   const cup = M(new THREE.SphereGeometry(r, 18, 10, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), s.steelDS, g, 0, -r * 0.2, -L - r * 0.9);
-  const liq = M(new THREE.CircleGeometry(r * 0.95, 18).rotateX(-Math.PI / 2), new THREE.MeshPhysicalMaterial({ color: liquidColor, roughness: 0.08, clearcoat: 1 }), g, 0, -r * 0.28, -L - r * 0.9); liq.castShadow = false;
+  const liq = M(new THREE.CircleGeometry(r * 0.95, 18).rotateX(-Math.PI / 2), mat({ color: liquidColor, roughness: 0.08, clearcoat: 1 }), g, 0, -r * 0.28, -L - r * 0.9); liq.castShadow = false;
   return { g, liq, cup: new V3(0, -r * 0.3, -L - r * 0.9) };
 }
 

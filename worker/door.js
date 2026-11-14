@@ -12,8 +12,10 @@ import { BOWLS } from "./lanes.js";
 import { FLYBOT } from "./flybot.js";
 import { HOLMES } from "./holmes.js";
 import { CANTINA } from "./cantina.js";
+import { SUSHI } from "./sushi.js";
 import { HIDE } from "./hide.js";
 import { ZOMBIE } from "./zombie.js";
+import { GUESTS } from "./guests.js";
 import LIVESDATA from "../data/lives.json";
 import ITEMDATA from "../data/items.json";
 import WORLD from "../data/world.json";
@@ -26,8 +28,9 @@ const SECROOMS = WORLD.sections.ids.flat().map(i => "s-" + String(i).toLowerCase
 const APPF = /^\/(app\.webmanifest|icon-(192|512)\.png)$/;   // the installable app's manifest and icon: to anyone
 const EDMAP = /^\/edmap\/t\d{1,2}_\d{1,2}\.jpg$/;
 const SCAREA = /^\/scare-assets\/[a-z0-9_-]+\.glb$/;   // VESPER WARD's models: to anyone
+const SNIPA = /^\/sniper-assets\/(sky|tex|m|snd|p)\/[A-Za-z0-9_-]+\.(glb|json|mp3|jpg|png)$/, SNIPT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg", jpg: "image/jpeg", png: "image/png" };   // COLD BORE's skies, surfaces, models and sounds: to anyone
 const JAMA = /^\/jam-assets\/[a-z0-9_-]+\.(glb|json|mp3)$/, JAMT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg" };   // STADIUM JAM's avatars, hands and samples: to anyone
-const GOLFA = /^\/(golf|duel|cantina|hide|zombie)-assets\/(?!.*\.\.)[A-Za-z0-9_.\/-]+\.(jpg|json|txt|glb|mp3|hdr)$/;   // HALCYON GREENS' pictures and models, AR DUEL's pictures, THE CANTINA's models and pictures, DEAD END's pictures, models and sounds, EYES DOWN's pictures and models: to anyone
+const GOLFA = /^\/(golf|duel|cantina|hide|zombie|sushi|guests)-assets\/(?!.*\.\.)[A-Za-z0-9_.\/-]+\.(jpg|json|txt|glb|mp3|hdr|fbx|webp)$/;   // HALCYON GREENS' pictures and models, AR DUEL's pictures, THE CANTINA's models and pictures, DEAD END's pictures, models and sounds, EYES DOWN's pictures and models: to anyone
 const BOOK = /^\/book\/(\d{1,6})\.txt$/, FILM = /^\/film\/([A-Za-z0-9_.-]{1,80})\/([A-Za-z0-9_.-]{1,120}\.mp4)$/, IA = /^\/ia\/([A-Za-z0-9_.-]{1,80})\.jpg$/, YT = /^\/yt\/([A-Za-z0-9_-]{11})\.jpg$/, BLANK = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYGD4DwABBAEAHnOcQAAAAABJRU5ErkJggg==";
 const SKYJD = () => { const d = new Date(); return Date.UTC(1985, d.getUTCMonth(), d.getUTCDate()) / 864e5 + 2440587.5; },   // the sky's year is 1985 (src/134b DN.YEAR): that year's comets
    SBDB = "https://ssd-api.jpl.nasa.gov/sbdb_query.api?", SWPC = "https://services.swpc.noaa.gov/";
@@ -83,6 +86,17 @@ export default {
     if ((request.method === "GET" || request.method === "HEAD") && JAMA.test(p)) {
       const r = await env.ASSETS.fetch(new Request(url.origin + p)); if (!r.ok) return new Response("not found", { status: 404 });
       const out = new Response(r.body, r); out.headers.set("content-type", JAMT[p.split(".").pop()]); out.headers.set("cache-control", "public, max-age=86400"); out.headers.set("x-robots-tag", "noindex"); return out; }
+    // COLD BORE (src/sniper/): its own page at /sniper, to anyone with the link; its skies, surfaces, models and sounds under /sniper-assets/
+    if ((request.method === "GET" || request.method === "HEAD") && p === "/sniper") return page(env, url, "/sniper", request, "no-cache");
+    if ((request.method === "GET" || request.method === "HEAD") && SNIPA.test(p)) {
+      const r = await env.ASSETS.fetch(new Request(url.origin + p)); if (!r.ok) return new Response("not found", { status: 404 });
+      const out = new Response(r.body, r); out.headers.set("content-type", SNIPT[p.split(".").pop()]); out.headers.set("cache-control", "public, max-age=86400"); out.headers.set("x-robots-tag", "noindex"); return out; }
+    // EDGE OF 88 (src/edge/): the plank over the city, its own page at /edge, also /game, to anyone with the link
+    if ((request.method === "GET" || request.method === "HEAD") && (p === "/edge" || p === "/game")) return page(env, url, "/edge", request, "no-cache");
+    if (p === "/edge/" || p === "/game/") return Response.redirect(url.origin + "/edge" + url.search, 301);
+    // HULL DOWN (src/tank/): the tank's turret, its own page at /tank, also /hull, to anyone with the link
+    if ((request.method === "GET" || request.method === "HEAD") && (p === "/tank" || p === "/hull")) return page(env, url, "/tank", request, "no-cache");
+    if (p === "/tank/" || p === "/hull/") return Response.redirect(url.origin + "/tank" + url.search, 301);
     // BREACHLINE (src/shoot/): its own page at /shoot, to anyone with the link
     if ((request.method === "GET" || request.method === "HEAD") && p === "/shoot") return page(env, url, "/shoot", request, "no-cache");
     // HALCYON GREENS (src/golf/): its own page at /golf, to anyone with the link; its pictures under /golf-assets/
@@ -109,6 +123,12 @@ export default {
     // EYES DOWN (src/zombie/): its own page at /zombie (also /eyes), to anyone with the link; its pictures and models under /zombie-assets/; the visitors' mind (POST /zombie/mind) and the night reached (POST /zombie/save) only to a login
     if ((request.method === "GET" || request.method === "HEAD") && (p === "/zombie" || p === "/eyes")) return page(env, url, "/zombie", request, "no-cache");
     if (p === "/zombie/" || p === "/eyes/") return Response.redirect(url.origin + "/zombie" + url.search, 301);
+    // THE GUEST LIST (src/guests/): its own page at /guests (also /party), to anyone with the link; its pictures, models and people under /guests-assets/; each guest's mind (POST /guests/mind) and voice (POST /guests/voice) only to a login
+    if ((request.method === "GET" || request.method === "HEAD") && (p === "/guests" || p === "/party")) return page(env, url, "/guests", request, "no-cache");
+    if (p === "/guests/" || p === "/party/") return Response.redirect(url.origin + "/guests" + url.search, 301);
+    // YATAI '86 (src/sushi/): its own page at /sushi, to anyone with the link; its people under /sushi-assets/; the customers' voices (POST /sushi/talk) only to a login
+    if ((request.method === "GET" || request.method === "HEAD") && p === "/sushi") return page(env, url, "/sushi", request, "no-cache");
+    if (p === "/sushi/") return Response.redirect(url.origin + "/sushi" + url.search, 301);
     // THE CANTINA (src/cantina/): its own page at /cantina, to anyone with the link; its models and pictures under /cantina-assets/
     if ((request.method === "GET" || request.method === "HEAD") && p === "/cantina") return page(env, url, "/cantina", request, "no-cache");
     if ((request.method === "GET" || request.method === "HEAD") && GOLFA.test(p)) {
@@ -187,16 +207,37 @@ export default {
         return json({ ok: await postOf(env).putFile(sh[1], word(request.headers.get("content-type") || "application/octet-stream", 60), buf), size: buf.byteLength }); }
       return new Response("not found", { status: 404 }); }
     // THE SPECKLED BAND hears you (src/holmes/, where the browser cannot): a recording written down by Workers AI's Whisper; a login only
-    if (request.method === "POST" && p === "/holmes/hear") { if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
+    if (request.method === "POST" && (p === "/holmes/hear" || p === "/guests/hear")) { if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401); if (!env.AI) return json({ why: "the website has no AI binding yet" }); if (tooMany("hear:" + id, 12)) return json({ why: "too much at once, wait a minute" }, 429);
       const buf = await request.arrayBuffer(); if (!buf.byteLength || buf.byteLength > 2 << 20) return json({ why: "too long, say it shorter" }, 400);
       try { const r = await env.AI.run("@cf/openai/whisper", { audio: [...new Uint8Array(buf)] }); return json({ text: String((r && r.text) || "").trim().slice(0, 400) }); } catch (e) { return json({ why: "it could not be made out" }); } }
-    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art" || p === "/orchard" || p === "/bot" || p === "/holmes" || p === "/cantina/talk" || p === "/hide/mind" || p === "/zombie/mind" || p === "/zombie/save")) {
+    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art" || p === "/orchard" || p === "/bot" || p === "/holmes" || p === "/cantina/talk" || p === "/sushi/talk" || p === "/sushi/say" || p === "/sushi/report" || p === "/hide/mind" || p === "/zombie/mind" || p === "/zombie/save" || p === "/guests/mind" || p === "/guests/voice")) {
       if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401);
       let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
       // a player's flying bot asks its mind (worker/flybot.js): the answer to say aloud; its memory and the day's count are the player's, in Home
       // a regular of THE CANTINA answers a visitor (worker/cantina.js); what the two have said is the visitor's, kept beside their bot's, and the day's count is one for the whole bar
+      // a bug report from inside YATAI '86: a picture, what was said (written down here) and the game's state, into the owners' queue beside the market's reports
+      if (p === "/sushi/report") { if (!UUID.test(id)) return json({ why: "login" }, 401); if (tooMany("rep:" + id, 6)) return json({ why: "too many at once, wait a minute" }, 429);
+        const jpg = typeof body.jpg === "string" && body.jpg.startsWith("data:image/jpeg;base64,") && body.jpg.length < 900000 ? body.jpg : "", audio = typeof body.audio === "string" && body.audio.length < 700000 && /^[A-Za-z0-9+/=]*$/.test(body.audio) ? body.audio : "";
+        let said = ""; if (audio && env.AI) { try { const r = await env.AI.run("@cf/openai/whisper", { audio: [...Uint8Array.from(atob(audio), ch => ch.charCodeAt(0))] }); said = String((r && r.text) || "").trim().slice(0, 600); } catch (e) { } }
+        let ctx = {}; try { const c = JSON.stringify(body.context || {}); if (c.length < 4000) ctx = JSON.parse(c); } catch (e) { }
+        const rid = crypto.randomUUID(), h = { ...svc(env), "content-type": "application/json", Prefer: "return=minimal" };
+        const r1 = await fetch(env.SUPABASE_URL + "/rest/v1/bug_reports", { method: "POST", headers: h, body: JSON.stringify({ id: rid, player: id, body: "[YATAI '86] " + (said || "(no words heard)"), context: { game: "sushi", ...ctx, ...(audio ? { audio: "data:" + (word(body.mime, 40) || "audio/webm") + ";base64," + audio } : {}) }, shots: jpg ? 1 : 0 }) }).catch(() => null);
+        if (r1 && r1.ok && jpg) await fetch(env.SUPABASE_URL + "/rest/v1/bug_shots", { method: "POST", headers: h, body: JSON.stringify({ report: rid, player: id, jpg }) }).catch(() => null);
+        return json({ ok: !!(r1 && r1.ok), said }); }
+      // a patron's line said aloud (Workers AI, the AI binding): the page plays it from their seat
+      if (p === "/sushi/say") { if (!env.AI) return json({ why: "the website has no AI binding yet" }, 501); if (tooMany("say:" + id, 30)) return json({ why: "too much at once, wait a minute" }, 429);
+        const text = word(body.text, 240); if (!text) return json({ why: "nothing to say" }, 400);
+        try { const r = await env.AI.run("@cf/myshell-ai/melotts", { prompt: text, lang: "en" }), a = r && r.audio; if (typeof a !== "string" || !a) return json({ why: "no voice came" }, 502);
+          return new Response(Uint8Array.from(atob(a), ch => ch.charCodeAt(0)), { headers: { "content-type": "audio/mpeg", "cache-control": "no-store" } }); } catch (e) { return json({ why: "the voice could not be made" }, 502); } }
+      // a customer at YATAI '86's cart says a line (worker/sushi.js); the day's count is the player's, in Home
+      if (p === "/sushi/talk") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
+        if (tooMany("sushi:" + id, 20)) return json({ why: "too much at once, wait a minute" }, 429);
+        const H = homeOf(env), k = id + "~sushi", day = new Date().toISOString().slice(0, 10), D = (await H.botGet(k)) || {}, max = (+env.BOT_DAILY || FLYBOT.DAY) * 2;
+        if (D.day === day && D.n >= max) return json({ why: "the cart has talked enough for one day; come back tomorrow" });
+        const out = await SUSHI.ask(env, body); if (out.say) await H.botPut(k, { day, n: D.day === day ? D.n + 1 : 1 });
+        return json(out); }
       if (p === "/cantina/talk") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
         const c = word(body.who, 24); if (!CANTINA.has(c)) return json({ why: "nobody by that name here" }, 400);
         if (tooMany("bot:" + id, 12)) return json({ why: "too much at once, wait a minute" }, 429);
@@ -216,6 +257,12 @@ export default {
       if (p === "/zombie/mind") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
         if (tooMany("zombie:" + id, 40)) return json({ why: "too much at once, wait a minute" }, 429);
         const H = homeOf(env); return json(await ZOMBIE.think(env, { get: () => H.botGet("zombie:" + id), put: v => H.botPut("zombie:" + id, v) }, body)); }
+      // THE GUEST LIST's guests think (worker/guests.js): one guest's line and intent from what they have seen; the day's count is the player's, in Home. Their voices are Workers AI's
+      if (p === "/guests/mind") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
+        if (tooMany("guests:" + id, 150)) return json({ why: "too much at once, wait a minute" }, 429);
+        const H = homeOf(env); return json(await GUESTS.think(env, { get: () => H.botGet("guests:" + id), put: v => H.botPut("guests:" + id, v) }, body)); }
+      if (p === "/guests/voice") { if (!env.AI) return json({ why: "the website has no AI binding yet" }); if (tooMany("guestvoice:" + id, 90)) return json({ why: "too much at once, wait a minute" }, 429);
+        try { const r = await GUESTS.voice(env, body); if (!r || !r.ok) return json({ why: "no voice" }); return new Response(r.body, { headers: { "content-type": "audio/mpeg", "cache-control": "private, max-age=3600" } }); } catch (e) { return json({ why: "no voice" }); } }
       if (p === "/zombie/save") { const H = homeOf(env); return json(await ZOMBIE.save({ get: () => H.botGet("zombie-night:" + id), put: v => H.botPut("zombie-night:" + id, v) }, body)); }
       // Holmes has left the book (worker/holmes.js): what happens, who answers, where the story stands; the day's count is the player's, in Home
       if (p === "/holmes") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });

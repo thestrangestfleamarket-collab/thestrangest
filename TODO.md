@@ -29,6 +29,7 @@ Risk is noted only when it isn't low.
 ## For the owner
 - [x] **The real clock and sky back** (owner, 14 Nov 2026: "lets remoev the 8 times ot day, do a real click go back to the blue, clouds, real nigth") · P1 · S · code + look. [done: worktree-agent-a3dd808517cecfa90, 14 Nov]
 - **P2 · pick** THE CANTINA (13 Nov 2026): its name (THE CANTINA is a working name); whether the old lounge (still reached by GO TO) goes to the archive now that THE BAR's door opens THE CANTINA; which octopus (THE MARKET's drummer is in; Polyfork's is the other); anyone to cut from or add to the regulars.
+- **P2 · look** THE GUEST LIST at `/party` in a Quest 3 on the live site (14 Nov 2026): it has only been run in an emulated headset; how the hands land a blow, whether the microphone is heard, the frame rate with twenty guests and three shadow lamps, how dark it is.
 - **P2 · look** THE CANTINA in a headset on the live site: how the hands sit on the controllers, how dark each look is, the frame rate with every regular in the room.
 
 **To try on the live site** (one sitting; each line is in its area below):
@@ -44,6 +45,9 @@ tree crowns (A–F) and trees by distance · the castle's torches · the jets fo
 objects, the live migration).
 After the beta: photos in trade · the bow · birds, dragons' clips and more human clips · VR hand-walking, hand models, filters in the
 headset · NPC voices.
+
+- **P2 · look** COLD BORE at `/sniper` (14 Nov 2026; live without a check, as asked): play it on the screen and in the Quest 3 (it has only been run in software rendering and an emulated headset: the frame rate, how the rifle sits in the hands, the eye behind the scope); its name (COLD BORE is a working name); boats still made in code; every car is the one model (a VW Corrado) in five paints and the helicopter is a gunship, until better free ones are found; a hit person falls by being tipped over (the library has no falling motion); `tests/sniper.cjs` was last run in full before the real assets went in.
+- **P2 · look** EDGE OF 88 at `/edge` and HULL DOWN at `/tank` (14 Nov 2026): play both on the screen and in the Quest 3 (run only in software rendering and an emulated headset: the frame rate, the seat's height in the turret, the turret turning you in the headset); Hull Down is new, built on his kit: its look, its four waves, its name's addresses (`/tank`, `/hull`); whether either goes in the holodeck's list.
 
 ## CI, checks and tools
 
@@ -192,7 +196,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [ ] **The instruments, seen and heard live** · look. The 10 Nov feel and fuller recordings (and the recorded guitar): does it still sound like MIDI?
 - [x] **The piano's 88-key panel** (owner, 11 Nov 2026) · P2 · S · code. [done 11 Nov] A display under the book, lighting with the piece (book-only).
 - [x] **The instruments, the rest** · P3 · S · code. The bar's piano and kit playable in place; a bandstand for the park guitar. [done 11 Nov]
-- [ ] **Companion drone NPC**: mockup done, waiting on "go" · pick.
+- [x] **The companion drone, seen live** (owner, 9 Nov 2026) · look. Built 14 Nov on PIP (`src/111dd-flybot.js`, `src/111de-companion.js`, `tests/flybot.cjs`): his yes on the look and on merging PIP and the drone. [merged 14 Nov]
 - [ ] **THE SPECKLED BAND at `/holmes`** (owner, 13 Nov 2026) · look. Built 13 Nov (`src/holmes/`, `worker/holmes.js`, `tests/holmes.cjs`). Needs the `ANTHROPIC_API_KEY` secret on the worker and one real play with Claude answering (only a stand-in so far); his yes on the look, the daily limit (`HOLMES_DAILY`, 200) and whether it joins the holodeck. Speech in a browser with no recognition of its own (the Quest's) needs an `AI` binding in `wrangler.jsonc` (left out: `wrangler dev` then wants a Cloudflare token, which stops the site check); until then you type there. [taking: claude/holmes-page, 13 Nov]
 - [ ] **PIP the flying bot** (owner, 11 Nov 2026) · look. Built 11 Nov (`src/111dd-flybot.js`, `worker/flybot.js`, `tests/flybot.cjs`). Needs the `ANTHROPIC_API_KEY` secret on the worker; his yes on the look, the name and the daily limit (`BOT_DAILY`, 150). Model: Haiku 5.5 (owner, 12 Nov).
 - [x] **Your AI double** (owner, 9 Nov 2026; done 9 Nov) · P2 · M · code. `src/162gb-twin.js`, `worker/twin.js`, `tests/twin.cjs`. Removed 10 Nov 2026 with all the bots.

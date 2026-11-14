@@ -1,9 +1,11 @@
-// the street in 1986: wet road, fronts and neon, the moon, lamps and haze, traffic, passers-by, rain
+// the street in 1986: wet road and paving in photographed surfaces, fronts and neon, the moon, lamps and haze, traffic, parked cars and the things left on the pavement (real models), passers-by, rain
 import * as THREE from 'three';
 import { G, mat, mesh, box, cyl, rand, pick, mergeStatic } from './ctx.js';
 import * as T from './tex.js';
 import { makePerson } from './avatars.js';
 import { makeStreet } from './street.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 export const FOG = 0x15122a;
 export const MOON_DIR = new THREE.Vector3(-0.955, 0.27, -0.1).normalize();
@@ -58,18 +60,16 @@ export function buildCity(scene) {
 
   // ---------- ground ----------
   const L = 150;
-  const mSide = mat({ map: T.paverTex([L / 2.4, 2.4]), roughness: 0.42, metalness: 0.05, envMapIntensity: 0.6 });
-  T.dirty(mSide.map, 21, { cracks: 16, gum: 110, stains: 44, patch: 6 });
-  mSide.normalMap = T.normalOf(mSide.map, 2.5);
+  const real = (n, size, o, fb) => T.worldUV(mat({ map: T.photo(n, fb), ...o }), size); // a photographed surface at its true size
+  const paver = () => T.dirty(T.paverTex(), 21, { cracks: 16, gum: 110, stains: 44, patch: 6 });
+  const mSide = real('paving', 1.8, { color: 0x8a8a94 }, paver), mKerb = real('concrete_dirty', 3, { color: 0x8c8c90 });
   const nearWalk = mesh(new THREE.PlaneGeometry(L, 5.8), mSide, 0, 0, -0.3, city); nearWalk.rotation.x = -Math.PI / 2; nearWalk.castShadow = false;
-  box(L, 0.12, 0.18, mat({ color: 0x55555a, roughness: 0.6 }), 0, -0.06, -3.29, city);
-  const mStreet = mat({ map: T.asphaltTex([L / 5, 1.6]), alphaMap: T.puddleTex([L / 9, 0.9], 9, 246, 168), transparent: true, roughness: 0.28, metalness: 0.0, envMapIntensity: 1.2, color: 0xd0d0dc });
-  T.dirty(mStreet.map, 22, { cracks: 14, patch: 12, stains: 30 });
-  mStreet.normalMap = T.normalOf(mStreet.map, 3); mStreet.normalScale.set(0.7, 0.7);
+  box(L, 0.12, 0.18, mKerb, 0, -0.06, -3.29, city);
+  const mStreet = real('asphalt', 3, { alphaMap: T.puddleTex([L / 9, 0.9], 9, 246, 168), transparent: true, color: 0x70707c }, () => T.dirty(T.asphaltTex(), 22, { cracks: 14, patch: 12, stains: 30 })); // dark with the rain
   const street = mesh(new THREE.PlaneGeometry(L, 8), mStreet, 0, -0.12, -7.3, city); street.rotation.x = -Math.PI / 2; street.castShadow = false; street.renderOrder = -5;
-  const mFarWalk = mat({ map: T.paverTex([L / 2.4, 1]), alphaMap: T.puddleTex([L / 7, 0.4], 12, 250, 195), transparent: true, roughness: 0.4 });
+  const mFarWalk = real('paving', 1.8, { alphaMap: T.puddleTex([L / 7, 0.4], 12, 250, 195), transparent: true, color: 0x8a8a94 }, paver);
   const farWalk = mesh(new THREE.PlaneGeometry(L, 2.4), mFarWalk, 0, 0, -12.5, city); farWalk.rotation.x = -Math.PI / 2; farWalk.castShadow = false; farWalk.renderOrder = -5;
-  box(L, 0.12, 0.18, mat({ color: 0x55555a, roughness: 0.6 }), 0, -0.06, -11.31, city);
+  box(L, 0.12, 0.18, mKerb, 0, -0.06, -11.31, city);
   const mPaint = mat({ color: 0xb9b6a8, roughness: 0.5, transparent: true, opacity: 0.8 });
   for (let x = -L / 2; x < L / 2; x += 6) { const p = mesh(new THREE.PlaneGeometry(2.6, 0.14), mPaint, x, -0.114, -7.3, city); p.rotation.x = -Math.PI / 2; p.castShadow = false; p.renderOrder = -4; }
   for (let i = 0; i < 9; i++) { const p = mesh(new THREE.PlaneGeometry(0.5, 7.2), mPaint, 11.5 + i * 0.95, -0.113, -7.3, city); p.rotation.x = -Math.PI / 2; p.castShadow = false; p.renderOrder = -4; }
@@ -99,7 +99,9 @@ export function buildCity(scene) {
   };
   const SHOPSIGN = { izakaya: ['居酒屋', '#ffa030'], books: ['書店', '#f0e8d0'], records: ['レコード', '#ff7a2a'], pharmacy: ['薬局', '#39f08a'], tv: ['電気店', '#22d8ff'], kissa: ['喫茶', '#ff7a2a'], grocer: ['八百屋', '#ffd21f'], game: ['ゲーム', '#8aff3d'], liquor: ['酒屋', '#ffe9a8'], camera: ['カメラ', '#e8f0ff'] }, shopSigns = {};
   const signFor = (type) => { if (!shopSigns[type]) { const [t, c] = SHOPSIGN[type], tex = T.dirty(T.neonTex(t, c, {}), 70 + t.length, { stains: 14, drips: 5 }); const m = new THREE.MeshBasicMaterial({ map: tex, toneMapped: false, side: THREE.DoubleSide, color: new THREE.Color(1.1, 1.1, 1.1) }); m.userData = { aspect: tex.image.width / tex.image.height, color: c, vertical: false }; shopSigns[type] = m; } return shopSigns[type]; };
-  const fronts = makeStreet(scene, city, glow, R, { body: mBody, glowMap, signMats, signFor, addSign: (...a) => addSign(...a) });
+  const placed = {}, prop = (kind, p, ry = 0, s = 1, c = 0xffffff) => (placed[kind] ||= []).push([p, ry, s, c]); // a real model to stand at p (they come after the street is up)
+  const fronts = makeStreet(scene, city, glow, R, { body: mBody, glowMap, signMats, signFor, addSign: (...a) => addSign(...a), prop });
+  const mirrors = [fronts.glassM];
   let si = 0; const farB = [];
   const row = (z, dir, x0, x1, hMin, hMax) => {
     let x = x0;
@@ -129,14 +131,13 @@ export function buildCity(scene) {
   // near side (behind the cart)
   row(2.9, -1, -50, -6, 7, 17); row(2.9, -1, 7, 50, 7, 17);
   {
-    const mWall = mat({ map: T.tileWallTex([7, 5]), roughness: 0.55 });
-    T.dirty(mWall.map, 23, { drips: 46, stains: 34, soot: 1, missing: 22, cracks: 4 });
-    mWall.normalMap = T.normalOf(mWall.map, 3);
+    const mWall = real('tile_brown', 2.1, { color: 0xb0aaa4 }, () => T.dirty(T.tileWallTex(), 23, { drips: 46, stains: 34, soot: 1, missing: 22, cracks: 4 }));
     [[-0.9, 1.5, 0], [-0.2, 1.42, 1], [1.4, 1.75, 2], [-5.6, 1.5, 3], [5.3, 1.55, 4], [5.95, 1.5, 0]].forEach(([x, y, k]) => { const pm = mesh(new THREE.PlaneGeometry(0.52, 0.78), mat({ map: T.posterTex(k), roughness: 0.85 }), x, y, 2.972, city); pm.rotation.set(0, Math.PI, (k - 2) * 0.012); pm.castShadow = false; });
     box(13.2, 15, 10, mBody, 0.5, 7.4, 8.0, city);
     const wall = mesh(new THREE.PlaneGeometry(13.2, 6), mWall, 0.5, 3, 2.98, city); wall.rotation.y = Math.PI;
     fronts.building(-6.1, 13.2, 15, 2.98, -1, 97, { y0: 6, noShops: true, noBody: true });
-    const sh = mesh(new THREE.PlaneGeometry(3.2, 2.7), mat({ map: T.dirty(T.shutterTex(), 24, { rust: 34, drips: 26, scratches: 70, graffiti: 1, stains: 14 }), roughness: 0.4, metalness: 0.6 }), 2.6, 1.35, 2.95, city); sh.rotation.y = Math.PI;
+    const shIm = T.photoImg('shutter'), shT = shIm ? T.dirty(T.canvasTex(512, 512, (g, w, h) => { for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) g.drawImage(shIm, i * 320, j * 380, 320, 380); g.globalAlpha = 0.45; g.fillStyle = '#7a1612'; g.font = `bold 120px ${T.JP}`; g.textAlign = 'center'; g.fillText('山田商店', w / 2, 290); g.globalAlpha = 1; }), 24, { drips: 22, graffiti: 1, stains: 12 }) : T.dirty(T.shutterTex(), 24, { rust: 34, drips: 26, scratches: 70, graffiti: 1, stains: 14 }); // the photographed shutter with the shop's name painted on
+    const sh = mesh(new THREE.PlaneGeometry(3.2, 2.7), mat({ map: shT, color: 0xb8b8b8 }), 2.6, 1.35, 2.95, city); sh.rotation.y = Math.PI;
     // door with lantern sign
     box(1.0, 2.1, 0.06, mat({ color: 0x2a1a10, roughness: 0.6 }), -4.6, 1.05, 2.95, city);
     const ds = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 1.3), new THREE.MeshBasicMaterial({ map: T.neonTex('スナック', '#b56bff', { vertical: true, fs: 80 }), toneMapped: false }));
@@ -152,7 +153,7 @@ export function buildCity(scene) {
       for (let i = 0; i < 24; i++) { d.position.set(-0.36 + (i % 8) * 0.103, 0.9 + Math.floor(i / 8) * 0.3 + 0.06, -0.045); d.rotation.y = r2() * 6; d.updateMatrix(); cans.setMatrixAt(i, d.matrix); cans.setColorAt(i, new THREE.Color(cc[(r2() * cc.length) | 0])); }
       vm.add(cans);
       for (let j = 0; j < 3; j++) { box(0.88, 0.02, 0.07, shell, 0, 0.895 + j * 0.3, -0.04, vm); for (let i = 0; i < 8; i++) box(0.05, 0.022, 0.02, new THREE.MeshBasicMaterial({ color: r2() < 0.2 ? 0x5a1010 : new THREE.Color(0.2, 1.4, 0.5) }), -0.36 + i * 0.103, 0.87 + j * 0.3, 0.004, vm); }
-      const pane = box(0.88, 1.0, 0.008, mat({ color: 0x223038, roughness: 0.05, transparent: true, opacity: 0.2, envMapIntensity: 2 }), 0, 1.27, 0.008, vm); pane.castShadow = false;
+      const paneM = mat({ color: 0x223038, transparent: true, opacity: 0.2, combine: THREE.AddOperation, reflectivity: 0.35 }); mirrors.push(paneM); const pane = box(0.88, 1.0, 0.008, paneM, 0, 1.27, 0.008, vm); pane.castShadow = false;
       box(0.2, 0.3, 0.03, dark, 0.3, 0.52, 0.01, vm); box(0.05, 0.012, 0.035, mat({ color: 0x8a8d90, metalness: 0.9, roughness: 0.3 }), 0.3, 0.6, 0.012, vm); box(0.08, 0.05, 0.035, mat({ color: 0x8a8d90, metalness: 0.9, roughness: 0.3 }), 0.3, 0.45, 0.012, vm);
       box(0.56, 0.2, 0.12, dark, -0.12, 0.25, -0.03, vm); const flap = box(0.5, 0.15, 0.01, mat({ color: 0x2a2a2e, roughness: 0.2, transparent: true, opacity: 0.6 }), -0.12, 0.26, 0.03, vm); flap.rotation.x = 0.25;
       const banner = mesh(new THREE.PlaneGeometry(0.86, 0.12), new THREE.MeshBasicMaterial({ map: T.labelTex(['つめた〜い  COLD DRINKS 100円'], { w: 512, h: 72, fs: 34, bg: '#b8201c', fg: '#fff' }), color: 0xbbbbbb }), 0, 0.79, 0.012, vm); banner.castShadow = false;
@@ -162,14 +163,14 @@ export function buildCity(scene) {
     // pipes, AC, crates
     const mPipe = mat({ color: 0x5a5d60, roughness: 0.5, metalness: 0.6 });
     cyl(0.05, 0.05, 6, mPipe, 0.6, 3, 2.9, city, 8); cyl(0.035, 0.035, 6, mPipe, 0.75, 3, 2.9, city, 8);
-    box(0.8, 0.55, 0.3, mat({ color: 0xa8a8a0, roughness: 0.6 }), -0.6, 2.9, 2.8, city);
-    const mCrate = mat({ color: 0xc8a020, roughness: 0.7 });
-    box(0.5, 0.3, 0.36, mCrate, 4.9, 0.15, 2.6, city); box(0.5, 0.3, 0.36, mat({ color: 0x1c5a8a, roughness: 0.7 }), 4.9, 0.45, 2.62, city).rotation.y = 0.2;
+    prop('ac', new THREE.Vector3(-0.6, 2.62, 2.76), Math.PI);
+    prop('crate', new THREE.Vector3(4.9, 0, 2.6), 0); prop('crate', new THREE.Vector3(4.9, 0.25, 2.62), 0.2, 1, 0x8ab0ff); prop('crate', new THREE.Vector3(5.5, 0, 2.55), -0.15, 1, 0xff8a7a);
+    prop('bin', new THREE.Vector3(-3.15, 0, 2.5), 1); prop('bag', new THREE.Vector3(4.15, 0, 2.6), 2); prop('bag', new THREE.Vector3(3.75, 0, 2.5), 4, 0.8); prop('box', new THREE.Vector3(1.6, 0, 2.6), 0.4); prop('box', new THREE.Vector3(1.62, 0.34, 2.62), 1.1, 0.8);
+    prop('ubox', new THREE.Vector3(-13.6, 0, -2.75), Math.PI); prop('ubox', new THREE.Vector3(21.5, 0, -12.9), 0);
   }
 
   // ---------- street furniture ----------
-  const mPole = mat({ color: 0x4a4c50, roughness: 0.55, metalness: 0.5 });
-  const mConc = mat({ color: 0x6a6862, roughness: 0.9 });
+  const mPole = real('rust', 1.2, { color: 0x6c7076 }), mConc = real('concrete', 2.7, { color: 0xa09e96 }); // painted steel gone to rust, cast concrete
   const coneG = new THREE.ConeGeometry(3.4, 6.2, 24, 1, true); coneG.translate(0, -3.1, 0);
   const coneT = T.canvasTex(4, 128, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, 'rgba(255,255,255,0.9)'); gr.addColorStop(0.5, 'rgba(255,255,255,0.22)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, w, h); });
   const lamp = (x, z, dir, real) => {
@@ -217,7 +218,7 @@ export function buildCity(scene) {
   const part = (P) => { const u = b64(P.p, Int16Array), n = b64(P.n, Int8Array), c = b64(P.c, Uint8Array), pos = new Float32Array(u.length), nor = new Float32Array(u.length), col = new Float32Array(u.length);
     for (let i = 0; i < u.length; i++) { pos[i] = u[i] * P.s[i % 3] + P.o[i % 3]; nor[i] = n[i] / 127; col[i] = Math.pow(c[i] / 255, 2.2); } // as THE MARKET reads the kit (150p-cars): signed steps from an origin
     const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.BufferAttribute(nor, 3)); g.setAttribute('color', new THREE.BufferAttribute(col, 3)); g.setIndex(new THREE.BufferAttribute(b64(P.i, Uint16Array), 1)); return g; };
-  const carM = mat({ vertexColors: true, side: THREE.DoubleSide }), carGlass = mat({ color: 0x0c1218, transparent: true, opacity: 0.62 });
+  const carM = mat({ vertexColors: true, side: THREE.DoubleSide }), carGlass = mat({ color: 0x0c1218, transparent: true, opacity: 0.62, combine: THREE.AddOperation, reflectivity: 0.4 }); mirrors.push(carGlass);
   const mkCar = (D, lit) => {
     const c = new THREE.Group(), inner = new THREE.Group(); inner.rotation.y = (D.wheels[0][2] >= 0 ? 1 : -1) * Math.PI / 2; c.add(inner); // the front wheels say which end is the front; ours drive along +x
     for (const P of D.body) { const m = new THREE.Mesh(part(P), carM); m.castShadow = true; inner.add(m); }
@@ -236,8 +237,18 @@ export function buildCity(scene) {
   fetch('/sushi-assets/cars.json').then((r) => r.json()).then((d) => {
     const K = d.cars, pickM = (...n) => K[n.find((x) => K[x])] || Object.values(K)[0];
     [['station-wagon-70s'], ['taxi-coupe', 'taxi-pod'], ['wedge-coupe-80s', 'muscle-car-60s']].forEach((n, i) => { const c = mkCar(pickM(...n), true), dir = i % 2 ? -1 : 1; c.position.set(-60 + i * 40, -0.12, dir > 0 ? -9.3 : -5.3); c.rotation.y = dir > 0 ? 0 : Math.PI; cars.push({ c, dir, v: 8 + Math.random() * 4 }); });
-    [['camper-van'], ['muscle-car-60s']].forEach((n, i) => { const c = mkCar(pickM(...n), false); c.position.set(i ? 15 : -9.5, -0.12, -10.25); c.rotation.y = i ? Math.PI : 0; }); // parked for the night at the far kerb
   }).catch((e) => console.warn('cars did not load', e));
+  // parked for the night at the far kerb: a real car (nander's VW Corrado, CC0), one in its own red, one in black
+  const gltf = new GLTFLoader(), tl2 = new THREE.TextureLoader(), A = '/sushi-assets/';
+  gltf.load(A + 'm/car.glb', (d) => { let src; d.scene.traverse((o) => { if (o.isMesh) src = o; }); if (!src) return; const black = tl2.load(A + 'tex/car_3.jpg'); black.colorSpace = THREE.SRGBColorSpace; black.flipY = false;
+    [[-9.5, 0, src.material.map], [15, Math.PI, black]].forEach(([x, ry, map]) => { const c = new THREE.Mesh(src.geometry, mat({ map, side: THREE.DoubleSide })); c.position.set(x, -0.12, -10.25); c.rotation.y = ry; c.castShadow = true; c.userData.nopick = true; city.add(c); }); }, undefined, (e) => console.warn('the parked car did not load', e));
+  // ---------- things left on the pavement: real models (Poly Haven, CC0), each kind one draw ----------
+  const KINDS = { bin: ['metal_trash_can', /can$/], binRust: ['metal_trash_can', /rust$/], box: ['cardboard_box_01'], plant: ['potted_plant_02'], succ: ['potted_plant_04'], bag: ['trashbag'], crate: ['plastic_crate_02'], ubox: ['utility_box_01'], ac: ['exterior_aircon_unit', /unit_01$/] }, files = {};
+  const stand = (kind, d) => { const list = placed[kind], [, only] = KINDS[kind], by = new Map(), bb = new THREE.Box3(), m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), v = new THREE.Vector3(), col = new THREE.Color();
+    d.scene.updateMatrixWorld(true); d.scene.traverse((o) => { if (!o.isMesh || !o.material.map || (only && !only.test(o.material.name))) return; const g = new THREE.BufferGeometry(); for (const k of ['position', 'normal', 'uv']) g.setAttribute(k, o.geometry.attributes[k]); g.setIndex(o.geometry.index); const g2 = g.clone().applyMatrix4(o.matrixWorld); g2.computeBoundingBox(); bb.union(g2.boundingBox); const k = o.material.map.uuid; if (!by.has(k)) by.set(k, { map: o.material.map, gs: [] }); by.get(k).gs.push(g2); });
+    bb.getCenter(v); for (const { map, gs } of by.values()) { const geo = mergeGeometries(gs).translate(-v.x, -bb.min.y, -v.z), im = new THREE.InstancedMesh(geo, mat({ map, side: THREE.DoubleSide }), list.length);
+      list.forEach(([p, ry, s, c], i) => { im.setMatrixAt(i, m4.compose(p, q.setFromEuler(e.set(0, ry, 0)), v.set(s, s, s))); im.setColorAt(i, col.set(c)); }); im.frustumCulled = false; im.userData.nopick = true; city.add(im); } };
+  queueMicrotask(() => { for (const kind in placed) { const f = KINDS[kind][0]; (files[f] ||= new Promise((res) => gltf.load(A + 'm/' + f + '.glb', res, undefined, () => res(null)))).then((d) => { if (d) stand(kind, d); }); } });
   ups.push((dt) => cars.forEach((k) => { k.c.position.x += k.dir * k.v * dt; if (Math.abs(k.c.position.x) > 62) { k.c.position.x = -62 * k.dir; k.v = 7 + Math.random() * 6; } }));
 
   const CARTEYE = new THREE.Vector3(0, 1.6, 0.2);
@@ -280,5 +291,7 @@ export function buildCity(scene) {
     }
     farB.length = 0; renderer.setRenderTarget(keepT); renderer.setClearColor(cc, ca);
   };
-  return { group: city, glow, update(dt, t) { for (const u of ups) u(dt, t); }, halo, rain, cars, glowMap, bakeFar };
+  // the street as the glass sees it: one small picture all round from the middle of the road, worn by every pane
+  const reflect = (renderer, sc) => { const rt = new THREE.WebGLCubeRenderTarget(128, { type: THREE.HalfFloatType, generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter }), cam = new THREE.CubeCamera(0.3, 300, rt); cam.position.set(0, 2.4, -7.5); cam.update(renderer, sc); for (const m of mirrors) { m.envMap = rt.texture; m.needsUpdate = true; } };
+  return { group: city, glow, update(dt, t) { for (const u of ups) u(dt, t); }, halo, rain, cars, glowMap, bakeFar, reflect };
 }

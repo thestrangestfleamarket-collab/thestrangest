@@ -1,4 +1,4 @@
-// the street's buildings as real things: fronts of piers, bands and recessed rooms behind glass, and ground-floor shops you can see into, each a stocked room; shuttered ones too
+// the street's buildings as real things: fronts of piers, bands and recessed rooms behind glass that mirrors the street, in photographed brick, plaster and tile, and ground-floor shops you can see into, each a stocked room; shuttered ones too
 import * as THREE from 'three';
 import { mat, mergeStatic } from './ctx.js';
 import * as T from './tex.js';
@@ -26,14 +26,24 @@ export function makeStreet(scene, city, glow, R, o) {
   const litM = new THREE.MeshBasicMaterial({ vertexColors: true }), roomM = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide });
   const wallT = T.canvasTex(256, 256, (g, w, h) => { g.fillStyle = '#b4b0a8'; g.fillRect(0, 0, w, h); const r = T.rng(5); for (let i = 0; i < 2600; i++) { g.globalAlpha = 0.08; g.fillStyle = r() > 0.5 ? '#000' : '#fff'; g.fillRect(r() * w, r() * h, 1 + r() * 3, 1 + r() * 3); } g.globalAlpha = 1; });
   T.dirty(wallT, 61, { drips: 26, stains: 20, cracks: 3 });
-  const frameM = mat({ map: wallT, roughness: 0.86 }); frameM.normalMap = T.normalOf(wallT, 2);
-  const glassM = mat({ color: 0x1a2630, roughness: 0.06, metalness: 0, transparent: true, opacity: 0.26, envMapIntensity: 2.2, depthWrite: false });
+  const real = (n, size) => T.worldUV(mat({ map: T.photo(n, () => wallT) }), size);
+  // a wall's picture, the metres one tile of it covers, how bright the building wears it
+  const WALLM = [['brick_red', 2.2, 1], ['brick_orange', 1.5, 0.8], ['brick_brown', 1.0, 0.75], ['brick_dark', 1.9, 1.3], ['brick_painted', 1.8, 0.75], ['plaster', 2.4, 0.9], ['plaster_worn', 3, 0.95], ['concrete', 2.7, 0.9], ['tile_brown', 2.1, 1], ['tile_white', 1.27, 0.62]].map(([n, size, k]) => ({ m: real(n, size), k }));
+  const trimM = real('concrete_dirty', 3), SHUTM = [real('shutter', 2), real('shutter', 2), real('shutter_rust', 1.8)];
+  // glass: see-through, a film of street dirt lit by the lamps, and the street mirrored in it (the picture comes from city.reflect), stronger at a glancing angle
+  const dirtT = (() => { const im = T.photoImg('plaster'); if (!im) return null; const t = T.canvasTex(128, 256, (g, w, h) => { g.drawImage(im, 0, 0, 160, 512, 0, 0, w, h); const d = g.getImageData(0, 0, w, h), a = d.data; for (let i = 0; i < a.length; i += 4) { const l = (a[i] + a[i + 1] + a[i + 2]) / 765, y = ((i / 4 / w) | 0) / h; a[i] = 150; a[i + 1] = 148; a[i + 2] = 136; a[i + 3] = Math.min(255, 10 + Math.max(0, 0.56 - l) * 380 + Math.pow(Math.abs(y - 0.5) * 2, 6) * 90); } g.putImageData(d, 0, 0); }); t.wrapS = t.wrapT = THREE.RepeatWrapping; return t; })();
+  const glassM = mat({ color: 0xffffff, map: dirtT || undefined, transparent: true, opacity: dirtT ? 0.5 : 0.1, depthWrite: false, reflectivity: 0.9 });
+  glassM.onBeforeCompile = (s) => { s.fragmentShader = s.fragmentShader.replace('#include <envmap_fragment>', `#ifdef USE_ENVMAP
+  { vec3 ec = textureCube(envMap, envMapRotation * reflect(normalize(vWorldPosition - cameraPosition), transformNormalByInverseViewMatrix(normal, viewMatrix))).rgb; float fr = mix(0.22, 1.0, pow(1.0 - abs(dot(normalize(vViewPosition), normal)), 3.0));
+    vec3 add = ec * fr * reflectivity; float a0 = diffuseColor.a, a = clamp(a0 + dot(add, vec3(0.4)), 0.02, 1.0);
+    outgoingLight = (outgoingLight * a0 + add) / a; diffuseColor.a = a; }
+#endif`); }; glassM.customProgramCacheKey = () => 'glass';
   const spillM = (c) => new THREE.MeshBasicMaterial({ map: o.glowMap, color: c, transparent: true, opacity: 0.2, blending: THREE.AdditiveBlending, depthWrite: false });
   const pk = (a) => a[(R() * a.length) | 0], rr = (a, b) => a + R() * (b - a);
   const col = (hex, k = 1, j = 0.12) => new THREE.Color(hex).multiplyScalar(k * (1 - j / 2 + R() * j));
   const seats = []; let bikes = 0;
 
-  const WALLS = [0x8a8478, 0x6e6a64, 0x8c7a66, 0x5e646a, 0x7a6e60, 0x9a948a, 0x66605a, 0x74807a];
+  const WALLS = [0xffffff, 0xe8e2da, 0xdcdce4, 0xf0e8dc, 0xd0d0d0];
   const LIGHTS = [[1, 0.78, 0.5], [1, 0.9, 0.72], [0.8, 0.92, 1], [1, 0.84, 0.6], [0.7, 0.85, 1], [1, 0.72, 0.42]];
   const BOOKS = [0x7a2a22, 0x1c3a5e, 0x2a5a3a, 0x8a6a2a, 0xb8b0a0, 0x3a2a4a, 0x5a1c2a, 0xc8a040, 0x2a2a2e, 0x9a4a2a];
   const SLEEVES = [0xc82a3a, 0x2a6ac8, 0xe8c020, 0x111114, 0xe8e0d0, 0x8a2ac8, 0x2aa86a, 0xf08a2a, 0xd84a8a];
@@ -48,8 +58,8 @@ export function makeStreet(scene, city, glow, R, o) {
     for (const k of [g, gl]) { k.position.set(dir > 0 ? x : x + w, 0, z); k.rotation.y = dir > 0 ? 0 : Math.PI; }
     city.add(g); city.add(gl);
     const W = (lx, ly, lz) => new THREE.Vector3(dir > 0 ? x + lx : x + w - lx, ly, z + dir * lz);
-    const frame = new Bag(box, frameM, 1500), rooms = new Bag(roomGeo, roomM, 420), props = new Bag(boxLit, litM, 3600), glass = new Bag(box, glassM, 520), cy = new Bag(cylLit, litM, 900), oc = new Bag(cyl, frameM, 160);
-    const wall = pk(WALLS), trim = 0x2a2c30, y0 = opt.y0 ?? 3.3, near = opt.near;
+    const wm = WALLM[(si * 7 + ((R() * 3) | 0)) % WALLM.length], frame = new Bag(box, wm.m, 700), trm = new Bag(box, trimM, 1500), shut = new Bag(box, SHUTM[si % SHUTM.length], 12), rooms = new Bag(roomGeo, roomM, 420), props = new Bag(boxLit, litM, 3600), glass = new Bag(box, glassM, 520), cy = new Bag(cylLit, litM, 900), oc = new Bag(cyl, trimM, 160);
+    const face = dir > 0 ? 0 : Math.PI, wall = new THREE.Color(pk(WALLS)).multiplyScalar(wm.k), trim = 0x2a2c30, y0 = opt.y0 ?? 3.3, near = opt.near;
     if (!opt.noBody) { const b = new THREE.Mesh(box, o.body); b.scale.set(w - 0.02, h, 7); b.position.set(w / 2, h / 2 - 0.05, -4.7 - 3.5); b.castShadow = true; g.add(b); }
 
     // ---- upper floors: piers and bands with the windows left open between them, a room behind each
@@ -62,9 +72,9 @@ export function makeStreet(scene, city, glow, R, o) {
       const tint = tv ? [0.45, 0.6, 1.1] : R() < 0.75 ? light : pk(LIGHTS), depth = rr(1.3, 2.4);
       rooms.add(cx, cyy, -0.3, ww, wh, depth, lit ? new THREE.Color(tint[0] * b, tint[1] * b, tint[2] * b) : new THREE.Color(0.012, 0.014, 0.02));
       glass.add(cx, cyy, -0.2, ww, wh, 0.012);
-      frame.add(cx, cyy, -0.2, 0.045, wh, 0.05, trim); frame.add(cx, wy + wh * 0.62, -0.2, ww, 0.04, 0.05, trim);
-      frame.add(cx, wy - 0.03, 0.07, ww + 0.12, 0.06, 0.2, col(wall, 0.8));
-      if (R() < 0.14) { frame.add(cx + ww * 0.1, wy - 0.42, 0.26, 0.72, 0.5, 0.34, col(0x9a9c98, 1, 0.2)); frame.add(cx + ww * 0.1, wy - 0.7, 0.2, 0.6, 0.04, 0.4, trim); }
+      trm.add(cx, cyy, -0.2, 0.045, wh, 0.05, trim); trm.add(cx, wy + wh * 0.62, -0.2, ww, 0.04, 0.05, trim);
+      trm.add(cx, wy - 0.03, 0.07, ww + 0.12, 0.06, 0.2, col(0xa8a69c, 1, 0.1));
+      if (R() < 0.14) { if (near) o.prop('ac', W(cx + ww * 0.1, wy - 0.68, 0.24), face, 0.95); else trm.add(cx + ww * 0.1, wy - 0.42, 0.26, 0.72, 0.5, 0.34, col(0x9a9c98, 1, 0.2)); trm.add(cx + ww * 0.1, wy - 0.7, 0.2, 0.6, 0.04, 0.4, trim); }
       if (lit) {
         const k = b * 0.9;
         if (R() < 0.7) { const cw = ww * rr(0.18, 0.42), side = R() < 0.5 ? -1 : 1, fc = col(pk([0xd8c8a8, 0xb8c0c8, 0xc8a890, 0xa8b89a]), k); props.add(cx + side * (ww - cw) / 2, cyy, -0.36, cw, wh, 0.03, fc); if (R() < 0.4) props.add(cx - side * (ww - cw * 0.6) / 2, cyy, -0.36, cw * 0.6, wh, 0.03, fc); }
@@ -73,11 +83,11 @@ export function makeStreet(scene, city, glow, R, o) {
         if (tv) props.add(cx, wy + 0.45, -depth * 0.8, 0.5, 0.38, 0.05, new THREE.Color(0.7, 1.0, 1.9));
       } else if (R() < 0.45) props.add(cx, cyy, -0.36, ww, wh, 0.03, col(pk([0x2a2c30, 0x3a342c, 0x20262c]), 0.5)); // blinds down
     }
-    frame.add(w / 2, top + 0.02, -2.4, w, 0.24, 4.7, col(0x3a3a3c, 1, 0.1)); frame.add(w / 2, y0 - 0.14, -2.4, w - 0.3, 0.2, 4.6, col(0x3a3a3c));
+    trm.add(w / 2, top + 0.02, -2.4, w, 0.24, 4.7, col(0x6a6a6c, 1, 0.1)); trm.add(w / 2, y0 - 0.14, -2.4, w - 0.3, 0.2, 4.6, col(0x6a6a6c));
     for (const sx of [0.06, w - 0.06]) frame.add(sx, (y0 + top) / 2, -2.5, 0.12, top - y0, 4.4, col(wall, 0.8));
     // roof: parapet, a water tank, an aerial
-    if (h > 8) { const tx = rr(1.2, w - 1.2); oc.add(tx, top + 1.9, -3.5, 1.5, 1.6, 1.5, col(0x5a5c60)); for (const sx of [-0.5, 0.5]) frame.add(tx + sx, top + 0.6, -3.5, 0.08, 1.0, 0.08, 0x2a2a2a); }
-    frame.add(rr(0.6, w - 0.6), top + 1.4, -2.2, 0.04, 2.6, 0.04, 0x1a1a1c);
+    if (h > 8) { const tx = rr(1.2, w - 1.2); oc.add(tx, top + 1.9, -3.5, 1.5, 1.6, 1.5, col(0x9a9c9e)); for (const sx of [-0.5, 0.5]) trm.add(tx + sx, top + 0.6, -3.5, 0.08, 1.0, 0.08, 0x2a2a2a); }
+    trm.add(rr(0.6, w - 0.6), top + 1.4, -2.2, 0.04, 2.6, 0.04, 0x1a1a1c);
 
     // ---- street level
     if (!opt.noShops) {
@@ -88,10 +98,10 @@ export function makeStreet(scene, city, glow, R, o) {
     }
 
     function shutter(x0, bw) {
-      const sc = pk([0x6a7074, 0x5a6266, 0x74706a, 0x4e565c]);
-      for (let k = 0; k < 15; k++) frame.add(x0 + bw / 2, 0.1 + k * 0.18, -0.06 - (k % 2) * 0.03, bw - 0.3, 0.17, 0.05, col(sc, 1, 0.16));
-      frame.add(x0 + bw / 2, 0.05, -0.02, bw - 0.26, 0.1, 0.1, 0x2a2c30); frame.add(x0 + bw * 0.5, 1.15, -0.02, 0.26, 0.05, 0.03, 0x1a1a1c);
-      if (R() < 0.5) frame.add(x0 + 0.5, 1.5, 0.02, 0.26, 0.36, 0.1, col(0x7a2a22, 1, 0.2)); // post box
+      shut.add(x0 + bw / 2, 1.4, -0.07, bw - 0.3, 2.62, 0.05, col(pk([0xffffff, 0xd8d0c0, 0xc0c8d0, 0xa8b0a8]), 1, 0.16)); // a rolled steel shutter, its slats in the picture
+      trm.add(x0 + bw / 2, 0.05, -0.02, bw - 0.26, 0.1, 0.1, 0x2a2c30); trm.add(x0 + bw * 0.5, 1.15, -0.02, 0.26, 0.05, 0.03, 0x1a1a1c);
+      if (R() < 0.5) trm.add(x0 + 0.5, 1.5, 0.02, 0.26, 0.36, 0.1, col(0x9a2a22, 1, 0.2)); // post box
+      if (near && R() < 0.5) { const bx = x0 + rr(0.5, bw - 0.5); o.prop('bag', W(bx, 0, 0.35), R() * 6); if (R() < 0.5) o.prop('bag', W(bx + 0.42, 0, 0.3), R() * 6, 0.85); if (R() < 0.4) o.prop('box', W(bx - 0.5, 0, 0.3), R() * 6); } // tomorrow's collection
     }
 
     function shop(x0, bw, open, seed) {
@@ -109,15 +119,15 @@ export function makeStreet(scene, city, glow, R, o) {
       // the front: a low wall, panes between posts, a door standing open
       const doorR = R() < 0.5, dw = 0.92, dx = doorR ? xb - dw / 2 - 0.05 : xa + dw / 2 + 0.05, gx0 = doorR ? xa : xa + dw + 0.1, gx1 = doorR ? xb - dw - 0.1 : xb, openFront = type === 'grocer';
       if (!openFront) {
-        frame.add((gx0 + gx1) / 2, 0.24, -0.04, gx1 - gx0, 0.48, 0.16, col(pk([0x4a5a5a, 0x5a4a3a, 0x3a4450, 0x6a6258]), 1, 0.1));
+        trm.add((gx0 + gx1) / 2, 0.24, -0.04, gx1 - gx0, 0.48, 0.16, col(pk([0x4a5a5a, 0x5a4a3a, 0x3a4450, 0x6a6258]), 1, 0.1));
         glass.add((gx0 + gx1) / 2, 1.6, -0.04, gx1 - gx0, 2.24, 0.012);
-        const nm = Math.max(1, Math.round((gx1 - gx0) / 1.1)); for (let k = 0; k <= nm; k++) frame.add(gx0 + (gx1 - gx0) * k / nm, 1.6, -0.04, 0.05, 2.24, 0.07, trim);
-        frame.add((gx0 + gx1) / 2, 0.5, -0.04, gx1 - gx0, 0.05, 0.08, trim); frame.add((gx0 + gx1) / 2, 2.2, -0.04, gx1 - gx0, 0.04, 0.07, trim);
+        const nm = Math.max(1, Math.round((gx1 - gx0) / 1.1)); for (let k = 0; k <= nm; k++) trm.add(gx0 + (gx1 - gx0) * k / nm, 1.6, -0.04, 0.05, 2.24, 0.07, trim);
+        trm.add((gx0 + gx1) / 2, 0.5, -0.04, gx1 - gx0, 0.05, 0.08, trim); trm.add((gx0 + gx1) / 2, 2.2, -0.04, gx1 - gx0, 0.04, 0.07, trim);
         const sl = doorR ? -1 : 1; // sliding door, pushed half back behind the pane
-        for (const ox of [-dw / 2, dw / 2]) frame.add(dx + sl * dw * 0.55 + ox, 1.36, -0.11, 0.05, 2.7, 0.04, trim);
-        for (const oy of [0.06, 1.0, 2.68]) frame.add(dx + sl * dw * 0.55, oy, -0.11, dw, 0.06, 0.04, trim);
+        for (const ox of [-dw / 2, dw / 2]) trm.add(dx + sl * dw * 0.55 + ox, 1.36, -0.11, 0.05, 2.7, 0.04, trim);
+        for (const oy of [0.06, 1.0, 2.68]) trm.add(dx + sl * dw * 0.55, oy, -0.11, dw, 0.06, 0.04, trim);
         glass.add(dx + sl * dw * 0.55, 1.85, -0.11, dw - 0.08, 1.64, 0.01);
-        frame.add(dx, 0.02, 0.1, dw + 0.2, 0.04, 0.5, col(0x3a342c, 1, 0.2)); // worn mat on the step
+        trm.add(dx, 0.02, 0.1, dw + 0.2, 0.04, 0.5, col(0x3a342c, 1, 0.2)); // worn mat on the step
       }
       const shelf = (xs, xe, zc, kind, face = 1) => { // boards on a wall with things stood along them
         const len = Math.abs(xe - xs); if (len < 0.4) return;
@@ -146,7 +156,7 @@ export function makeStreet(scene, city, glow, R, o) {
         for (let k = 0; k < 4; k++) { const sz = -D * 0.28 - k * 0.52; if (sz < -D + 0.5) break; stool(side + sgn * 0.5, sz); if (near && Math.abs(x + w / 2) < 22 && R() < 0.6) seats.push({ p: W(side + sgn * 0.5, 0, sz + 0.04), ry: (dir > 0 ? 0 : Math.PI) + (sgn > 0 ? -Math.PI / 2 : Math.PI / 2) }); for (let b2 = 0; b2 < 2; b2++) cy.add(side + rr(-0.15, 0.15), 1.1, sz + rr(-0.2, 0.2), 0.07, 0.12, 0.07, lc(pk([0xd8d8d0, 0x5a2a0c, 0xe8e0c8]))); }
         for (let k = 0; k < 14; k++) cy.add(side - sgn * 0.12, 1.16, -D * 0.25 - k * 0.14, 0.07, 0.24, 0.07, lc(pk(GLASSB), 1.1));
         if (type === 'kissa') for (const tz of [-D * 0.3, -D * 0.68]) { const tx = side + sgn * 1.5; if (Math.abs(tx - xm) > iw / 2 - 0.4) continue; cy.add(tx, 0.7, tz, 0.7, 0.04, 0.7, lc(0x4a2e1c)); cy.add(tx, 0.35, tz, 0.06, 0.7, 0.06, lc(0x2a2a2a)); for (const cz of [-0.5, 0.5]) { props.add(tx, 0.44, tz + cz, 0.38, 0.05, 0.38, lc(0x6a1c1c)); props.add(tx, 0.7, tz + cz * 1.35, 0.38, 0.5, 0.04, lc(0x6a1c1c)); for (const lx of [-0.16, 0.16]) props.add(tx + lx, 0.22, tz + cz, 0.03, 0.44, 0.03, lc(0x2a2a2a)); } cy.add(tx, 2.2, tz, 0.22, 0.16, 0.22, new THREE.Color(2.2, 1.4, 0.6)); cy.add(tx, 2.5, tz, 0.012, 0.5, 0.012, lc(0x1a1a1a)); }
-        if (type === 'izakaya') { for (let k = 0; k < 3; k++) frame.add(dx - 0.3 + k * 0.3, 2.42, 0.04, 0.28, 0.5, 0.012, col(pk([0x8f1712, 0x1c2c5a, 0x8f1712])), 0, rr(-0.06, 0.06)); cy.add(dx + (doorR ? -0.7 : 0.7), 1.75, 0.22, 0.3, 0.44, 0.3, new THREE.Color(2.4, 0.5, 0.2)); cy.add(dx + (doorR ? -0.7 : 0.7), 2.0, 0.22, 0.16, 0.05, 0.16, col(0x111111)); }
+        if (type === 'izakaya') { for (let k = 0; k < 3; k++) trm.add(dx - 0.3 + k * 0.3, 2.42, 0.04, 0.28, 0.5, 0.012, col(pk([0x8f1712, 0x1c2c5a, 0x8f1712])), 0, rr(-0.06, 0.06)); cy.add(dx + (doorR ? -0.7 : 0.7), 1.75, 0.22, 0.3, 0.44, 0.3, new THREE.Color(2.4, 0.5, 0.2)); cy.add(dx + (doorR ? -0.7 : 0.7), 2.0, 0.22, 0.16, 0.05, 0.16, col(0x111111)); }
       } else if (type === 'grocer') { shelf(xa + 0.1, xb - 0.1, -D + 0.2, 'cans'); for (let k = 0; k < Math.floor(iw / 0.62); k++) for (const zz of [0.45, -0.35, -1.1]) { const cx2 = xa + 0.36 + k * 0.62, pc = pk(PRODUCE); props.add(cx2, 0.42 + (zz > 0 ? -0.1 : 0.1), zz, 0.56, 0.08, 0.42, lc(0x8a6a3a), 0, 0.22); for (const ez of [-0.2, 0.2]) props.add(cx2, 0.5 + (zz > 0 ? -0.1 : 0.1), zz + ez, 0.56, 0.14, 0.02, lc(0x8a6a3a), 0, 0.22); for (let q = 0; q < 14; q++) cy.add(cx2 - 0.22 + (q % 5) * 0.11, 0.52 + (zz > 0 ? -0.1 : 0.1) + Math.floor(q / 10) * 0.07, zz - 0.14 + (Math.floor(q / 5) % 2) * 0.14, 0.1, 0.085, 0.1, zz > 0 ? col(pc, 0.3) : lc(pc)); props.add(cx2, 0.17, zz, 0.5, 0.34, 0.36, lc(0x9a7a14, 0.8)); } counter(xb - 0.5, -D * 0.7, 1.2, true); }
       else if (type === 'liquor') { shelf(xa + 0.1, xb - 0.1, -D + 0.2, 'bottles'); for (const sx of [xa + 0.22, xb - 0.22]) for (const sy of [0.35, 0.85, 1.35, 1.85]) { props.add(sx, sy, -D * 0.5, 0.3, 0.03, D * 0.6, lc(0x7a5a3a, 0.9)); for (let q = 0; q < Math.floor(D * 0.6 / 0.1); q++) { const bh = rr(0.22, 0.32); cy.add(sx, sy + 0.015 + bh / 2, -D * 0.2 - q * 0.1, 0.075, bh, 0.075, lc(pk(GLASSB), 1.1)); } }
         for (let k = 0; k < 3; k++) for (let j = 0; j < 2 + (k % 2); j++) props.add(xm - 0.5 + k * 0.5, 0.16 + j * 0.31, -D * 0.5, 0.44, 0.3, 0.34, lc(pk([0x9a7a14, 0x1c5a8a, 0x8a2a1c]))); for (const bx of [xm - 0.6, xm + 0.6]) { cy.add(bx, 0.3, -D * 0.82, 0.5, 0.6, 0.5, lc(0xc8b890)); cy.add(bx, 0.3, -D * 0.82, 0.52, 0.06, 0.52, lc(0x3a2a1a)); } counter(doorR ? xa + 0.6 : xb - 0.6, -0.9, 1.0, true); }
@@ -154,9 +164,10 @@ export function makeStreet(scene, city, glow, R, o) {
       else if (type === 'game') { for (let k = 0; k < Math.floor((D - 0.6) / 0.8); k++) for (const sgn of [-1, 1]) { const cx2 = sgn < 0 ? xa + 0.45 : xb - 0.45, cz = -0.6 - k * 0.8, sc2 = pk(SCREENS), cc = pk([0x1a1a22, 0x2a1a3a, 0x1a2a3a, 0x3a1a1a]); props.add(cx2, 0.85, cz, 0.74, 1.7, 0.66, col(cc, 0.5)); props.add(cx2 - sgn * 0.38, 1.25, cz, 0.02, 0.44, 0.46, new THREE.Color(sc2[0] * 1.3, sc2[1] * 1.3, sc2[2] * 1.3)); props.add(cx2 - sgn * 0.38, 1.62, cz, 0.03, 0.14, 0.6, new THREE.Color(2, 1.6, 0.4)); props.add(cx2 - sgn * 0.5, 0.92, cz, 0.3, 0.05, 0.56, col(cc, 0.8)); stool(cx2 - sgn * 0.85, cz); } }
       // light spilling out onto the pavement, and the things people leave by a shop door
       const sp = new THREE.Mesh(new THREE.PlaneGeometry(bw * 1.5, 4.6), spillM(new THREE.Color(L[0] * B, L[1] * B, L[2] * B))); sp.rotation.x = -Math.PI / 2; sp.position.set(x0 + bw / 2, 0.011, 1.7); sp.userData.nopick = true; sp.renderOrder = -1; g.add(sp);
-      if (R() < 0.7) { const px = doorR ? xa + rr(0.2, 0.5) : xb - rr(0.2, 0.5); oc.add(px, 0.17, 0.42, 0.3, 0.34, 0.3, col(pk([0x7a4a2e, 0x4a4a4e, 0x2a4a6a]), 1, 0.2)); oc.add(px, 0.58, 0.42, 0.44, 0.5, 0.44, col(pk([0x2a5a24, 0x3a6a2a, 0x1c4a24]))); oc.add(px + 0.1, 0.8, 0.46, 0.26, 0.4, 0.26, col(0x2a5a24)); }
-      if (R() < 0.5) { const ax = xm + rr(-0.5, 0.5), ac = col(pk([0xd8d0b8, 0x1c2c4a, 0x8a1c1c])), ay = rr(-0.3, 0.3); frame.add(ax, 0.45, 0.9, 0.5, 0.9, 0.03, ac, ay, 0.2); frame.add(ax, 0.45, 1.12, 0.5, 0.9, 0.03, ac, ay, -0.2); }
-      if (R() < 0.45) for (let k = 0; k < 2 + ((R() * 2) | 0); k++) frame.add(doorR ? xa + 0.3 : xb - 0.3, 0.16 + k * 0.31, 0.75, 0.42, 0.3, 0.32, col(pk([0x9a7a14, 0x1c5a8a, 0x8a2a1c]), 1, 0.2), rr(-0.2, 0.2));
+      if (R() < 0.7) { const px = doorR ? xa + rr(0.2, 0.5) : xb - rr(0.2, 0.5); if (near) { if (R() < 0.6) o.prop('plant', W(px, 0, 0.42), R() * 6, rr(0.9, 1.2)); else for (let k = 0; k < 3; k++) o.prop('succ', W(px + (k - 1) * 0.36, 0, 0.36 + (k % 2) * 0.1), R() * 6, rr(1.7, 2.3)); } else { oc.add(px, 0.17, 0.42, 0.3, 0.34, 0.3, col(pk([0x7a4a2e, 0x4a4a4e, 0x2a4a6a]), 1, 0.2)); oc.add(px, 0.58, 0.42, 0.44, 0.5, 0.44, col(pk([0x2a5a24, 0x3a6a2a, 0x1c4a24]))); oc.add(px + 0.1, 0.8, 0.46, 0.26, 0.4, 0.26, col(0x2a5a24)); } }
+      if (R() < 0.5) { const ax = xm + rr(-0.5, 0.5), ac = col(pk([0xd8d0b8, 0x1c2c4a, 0x8a1c1c])), ay = rr(-0.3, 0.3); trm.add(ax, 0.45, 0.9, 0.5, 0.9, 0.03, ac, ay, 0.2); trm.add(ax, 0.45, 1.12, 0.5, 0.9, 0.03, ac, ay, -0.2); }
+      if (R() < 0.45) for (let k = 0; k < 2 + ((R() * 2) | 0); k++) { const cx2 = doorR ? xa + 0.3 : xb - 0.3, cc = col(pk([0x9a7a14, 0x1c5a8a, 0x8a2a1c]), 1, 0.2), cr = rr(-0.2, 0.2); if (!near) trm.add(cx2, 0.16 + k * 0.31, 0.75, 0.42, 0.3, 0.32, cc, cr); else if (type === 'liquor' || type === 'izakaya' || type === 'grocer' || type === 'kissa') o.prop('crate', W(cx2, k * 0.25, 0.75), face + cr, 1, pk([0xffffff, 0x8ab0ff, 0xff8a7a])); else o.prop('box', W(cx2, k * 0.34, 0.75), face + cr, 1); } // empties stacked for the brewery, cartons for the rest
+      if (near && (type === 'izakaya' || type === 'kissa' || type === 'grocer') && R() < 0.7) o.prop(R() < 0.5 ? 'bin' : 'binRust', W(doorR ? xa - 0.02 : xb + 0.02, 0, 0.5), R() * 6);
       if (R() < 0.4 && bikes++ < 3) bike(xm + rr(-0.8, 0.8), 1.25 + rr(0, 0.3), rr(-0.25, 0.25) + Math.PI / 2);
     }
     function bike(lx, lz, ry) {
@@ -167,8 +178,8 @@ export function makeStreet(scene, city, glow, R, o) {
       const bk = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.2, 0.26), mat({ color: 0x3a3a3a, roughness: 0.6, metalness: 0.5, wireframe: false })); bk.position.set(0.56, 0.86, 0); b.add(bk);
       b.position.set(lx, 0, lz); b.rotation.set(0, ry, 0); b.rotateX(0.13); mergeStatic(b); b.traverse((c) => { c.userData.nopick = true; }); g.add(b);
     }
-    frame.done(g, !!near); glass.done(g); oc.done(g, !!near); rooms.done(gl); props.done(gl); cy.done(gl);
+    frame.done(g, !!near); trm.done(g, !!near); shut.done(g); glass.done(g); oc.done(g, !!near); rooms.done(gl); props.done(gl); cy.done(gl);
     return { top, g, gl };
   }
-  return { building, seats };
+  return { building, seats, glassM };
 }

@@ -112,7 +112,6 @@ subprocess.run(['node', 'tools/sushi.cjs'], check=True)   # YATAI '86 (src/sushi
 subprocess.run(['node', 'tools/scare.cjs'], check=True)   # VESPER WARD (src/scare/): its own page, dist/scare.html, and its models, dist/scare-assets/
 subprocess.run(['node', 'tools/hide.cjs'], check=True)   # DEAD END (src/hide/): its own page, dist/hide.html, and its pictures, models and sounds, dist/hide-assets/
 subprocess.run(['node', 'tools/zombie.cjs'], check=True)   # EYES DOWN (src/zombie/): its own page, dist/zombie.html, and its pictures and models, dist/zombie-assets/
-subprocess.run(['node', 'tools/guests.cjs'], check=True)   # THE GUEST LIST (src/guests/): its own page, dist/guests.html, and its pictures, models and people, dist/guests-assets/
 subprocess.run(['node', 'tools/jam.cjs'], check=True)   # STADIUM JAM (src/jam/): its own page, dist/jam.html, and its avatars, hands and samples, dist/jam-assets/
 subprocess.run(['node', 'tools/sniper.cjs'], check=True)   # COLD BORE (src/sniper/): its own page, dist/sniper.html, and its skies, surfaces, models and sounds, dist/sniper-assets/
 subprocess.run(['node', 'tools/edge.cjs'], check=True)   # EDGE OF 88 (src/edge/) and HULL DOWN (src/tank/): their own pages, dist/edge.html, dist/tank.html

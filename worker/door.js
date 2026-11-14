@@ -15,7 +15,6 @@ import { CANTINA } from "./cantina.js";
 import { SUSHI } from "./sushi.js";
 import { HIDE } from "./hide.js";
 import { ZOMBIE } from "./zombie.js";
-import { GUESTS } from "./guests.js";
 import LIVESDATA from "../data/lives.json";
 import ITEMDATA from "../data/items.json";
 import WORLD from "../data/world.json";
@@ -30,7 +29,7 @@ const EDMAP = /^\/edmap\/t\d{1,2}_\d{1,2}\.jpg$/;
 const SCAREA = /^\/scare-assets\/[a-z0-9_-]+\.glb$/;   // VESPER WARD's models: to anyone
 const SNIPA = /^\/sniper-assets\/(sky|tex|m|snd|p)\/[A-Za-z0-9_-]+\.(glb|json|mp3|jpg|png)$/, SNIPT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg", jpg: "image/jpeg", png: "image/png" };   // COLD BORE's skies, surfaces, models and sounds: to anyone
 const JAMA = /^\/jam-assets\/[a-z0-9_-]+\.(glb|json|mp3)$/, JAMT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg" };   // STADIUM JAM's avatars, hands and samples: to anyone
-const GOLFA = /^\/(golf|duel|cantina|hide|zombie|sushi|guests)-assets\/(?!.*\.\.)[A-Za-z0-9_.\/-]+\.(jpg|json|txt|glb|mp3|hdr|fbx|webp)$/;   // HALCYON GREENS' pictures and models, AR DUEL's pictures, THE CANTINA's models and pictures, DEAD END's pictures, models and sounds, EYES DOWN's pictures and models: to anyone
+const GOLFA = /^\/(golf|duel|cantina|hide|zombie|sushi)-assets\/(?!.*\.\.)[A-Za-z0-9_.\/-]+\.(jpg|json|txt|glb|mp3|hdr|fbx|webp)$/;   // HALCYON GREENS' pictures and models, AR DUEL's pictures, THE CANTINA's models and pictures, DEAD END's pictures, models and sounds, EYES DOWN's pictures and models: to anyone
 const BOOK = /^\/book\/(\d{1,6})\.txt$/, FILM = /^\/film\/([A-Za-z0-9_.-]{1,80})\/([A-Za-z0-9_.-]{1,120}\.mp4)$/, IA = /^\/ia\/([A-Za-z0-9_.-]{1,80})\.jpg$/, YT = /^\/yt\/([A-Za-z0-9_-]{11})\.jpg$/, BLANK = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYGD4DwABBAEAHnOcQAAAAABJRU5ErkJggg==";
 const SKYJD = () => { const d = new Date(); return Date.UTC(1985, d.getUTCMonth(), d.getUTCDate()) / 864e5 + 2440587.5; },   // the sky's year is 1985 (src/134b DN.YEAR): that year's comets
    SBDB = "https://ssd-api.jpl.nasa.gov/sbdb_query.api?", SWPC = "https://services.swpc.noaa.gov/";
@@ -123,9 +122,6 @@ export default {
     // EYES DOWN (src/zombie/): its own page at /zombie (also /eyes), to anyone with the link; its pictures and models under /zombie-assets/; the visitors' mind (POST /zombie/mind) and the night reached (POST /zombie/save) only to a login
     if ((request.method === "GET" || request.method === "HEAD") && (p === "/zombie" || p === "/eyes")) return page(env, url, "/zombie", request, "no-cache");
     if (p === "/zombie/" || p === "/eyes/") return Response.redirect(url.origin + "/zombie" + url.search, 301);
-    // THE GUEST LIST (src/guests/): its own page at /guests (also /party), to anyone with the link; its pictures, models and people under /guests-assets/; each guest's mind (POST /guests/mind), voice (POST /guests/voice) and the ear (POST /guests/hear) to anyone on the page, counted by address
-    if ((request.method === "GET" || request.method === "HEAD") && (p === "/guests" || p === "/party")) return page(env, url, "/guests", request, "no-cache");
-    if (p === "/guests/" || p === "/party/") return Response.redirect(url.origin + "/guests" + url.search, 301);
     // YATAI '86 (src/sushi/): its own page at /sushi, to anyone with the link; its people under /sushi-assets/; the customers' voices (POST /sushi/talk) only to a login
     if ((request.method === "GET" || request.method === "HEAD") && p === "/sushi") return page(env, url, "/sushi", request, "no-cache");
     if (p === "/sushi/") return Response.redirect(url.origin + "/sushi" + url.search, 301);
@@ -207,15 +203,6 @@ export default {
         return json({ ok: await postOf(env).putFile(sh[1], word(request.headers.get("content-type") || "application/octet-stream", 60), buf), size: buf.byteLength }); }
       return new Response("not found", { status: 404 }); }
     // THE SPECKLED BAND hears you (src/holmes/, where the browser cannot): a recording written down by Workers AI's Whisper; a login only
-    if (request.method === "POST" && (p === "/guests/mind" || p === "/guests/voice" || p === "/guests/hear")) { if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
-      const id = "ip:" + (request.headers.get("CF-Connecting-IP") || "local");
-      if (p === "/guests/hear") { if (!env.AI) return json({ why: "the website has no AI binding yet" }); if (tooMany("guesthear:" + id, 30)) return json({ why: "too much at once, wait a minute" }, 429); const buf = await request.arrayBuffer(); if (!buf.byteLength || buf.byteLength > 2 << 20) return json({ why: "too long, say it shorter" }, 400);
-        try { const r = await env.AI.run("@cf/openai/whisper", { audio: [...new Uint8Array(buf)] }); return json({ text: String((r && r.text) || "").trim().slice(0, 400) }); } catch (e) { return json({ why: "it could not be made out" }); } }
-      let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
-      if (p === "/guests/mind") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" }); if (tooMany("guests:" + id, 150)) return json({ why: "too much at once, wait a minute" }, 429);
-        const H = homeOf(env); return json(await GUESTS.think(env, { get: () => H.botGet("guests:" + id), put: v => H.botPut("guests:" + id, v) }, body)); }
-      if (!env.AI) return json({ why: "the website has no AI binding yet" }); if (tooMany("guestvoice:" + id, 90)) return json({ why: "too much at once, wait a minute" }, 429);
-      try { const r = await GUESTS.voice(env, body); if (!r || !r.ok) return json({ why: "no voice" }); return new Response(r.body, { headers: { "content-type": "audio/mpeg", "cache-control": "private, max-age=3600" } }); } catch (e) { return json({ why: "no voice" }); } }
     if (request.method === "POST" && p === "/holmes/hear") { if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401); if (!env.AI) return json({ why: "the website has no AI binding yet" }); if (tooMany("hear:" + id, 12)) return json({ why: "too much at once, wait a minute" }, 429);
       const buf = await request.arrayBuffer(); if (!buf.byteLength || buf.byteLength > 2 << 20) return json({ why: "too long, say it shorter" }, 400);
@@ -241,7 +228,7 @@ export default {
         const SPK = ["orion", "perseus", "orpheus", "helios", "zeus", "arcas", "angus", "luna", "stella", "hera", "asteria", "athena"], spk = SPK.includes(body.speaker) ? body.speaker : "orion";
         if (env.ELEVENLABS_API_KEY) { const EL = { orion: "CwhRBWXzGAHq8TQ4Fs17", perseus: "iP95p4xoKVk53GoZ742B", orpheus: "bIHbv24MWmeRgasZH58o", arcas: "cjVigY5qzO86Huf0OWal", zeus: "4vNbGJTjRuBObQgnJZio", angus: "IKne3meq5aSn9XLyUdCD", helios: "CwhRBWXzGAHq8TQ4Fs17", asteria: "cgSgspJ2msm6clMCkdW9", luna: "rwDJofyi5zcfK5WOmfb4", stella: "xd8j2LFPw16XKmJ5qeBK", hera: "VmWxtEYGgb6QIzh7Bnik", athena: "KHDywVwjZ97ShJLe4NCr" }; // ElevenLabs, once the owner has put his key on the worker: the same people, its voices
           try { const v = await fetch("https://api.elevenlabs.io/v1/text-to-speech/" + EL[spk] + "?output_format=mp3_44100_64", { method: "POST", headers: { "xi-api-key": env.ELEVENLABS_API_KEY, "content-type": "application/json" }, body: JSON.stringify({ text, model_id: "eleven_flash_v2_5" }) }); if (v.ok) return new Response(v.body, { headers: { "content-type": "audio/mpeg", "cache-control": "no-store", "x-voice": "eleven" } }); } catch (e) { } }
-        try { const v = await env.AI.run("@cf/deepgram/aura-1", { text, speaker: spk, encoding: "mp3" }, { returnRawResponse: true }); if (v && v.ok) return new Response(v.body, { headers: { "content-type": "audio/mpeg", "cache-control": "no-store" } }); } catch (e) { } // a natural voice of their own, as THE GUEST LIST's guests have; the plain one below if it fails
+        try { const v = await env.AI.run("@cf/deepgram/aura-1", { text, speaker: spk, encoding: "mp3" }, { returnRawResponse: true }); if (v && v.ok) return new Response(v.body, { headers: { "content-type": "audio/mpeg", "cache-control": "no-store" } }); } catch (e) { } // a natural voice of their own; the plain one below if it fails
         try { const r = await env.AI.run("@cf/myshell-ai/melotts", { prompt: text, lang: "en" }), a = r && r.audio; if (typeof a !== "string" || !a) return json({ why: "no voice came" }, 502);
           return new Response(Uint8Array.from(atob(a), ch => ch.charCodeAt(0)), { headers: { "content-type": "audio/mpeg", "cache-control": "no-store", "x-voice": "plain" } }); } catch (e) { return json({ why: "the voice could not be made" }, 502); } }
       // a customer at YATAI '86's cart says a line (worker/sushi.js); the day's count is the player's, in Home

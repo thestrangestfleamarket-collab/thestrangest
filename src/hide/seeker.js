@@ -5,23 +5,25 @@ import { PL } from './player.js';
 import { A } from './sound.js';
 import { SPOTS } from './spots.js';
 
-const CELL = .2, X0 = -8.8, Z0 = 6.2, NX = 88, NZ = Math.ceil((WORLD.LEN + 6.4) / CELL), PATIENCE = 260, EYE = 2.0, MON = grp(G.MON, G.SOLID);
+const CELL = .2, X0 = -8.8, Z0 = 6.2, NX = 88, NZ = Math.ceil((WORLD.LEN + 6.4) / CELL), PATIENCE = 260, EYE = 1.72, MON = grp(G.MON, G.SOLID);
 const SK = { g: new THREE.Group(), pos: new THREE.Vector3(0, 0, 6), yaw: Math.PI, state: 'wait', mode: 'local', aware: 0, asked: -9, patience: PATIENCE, cfg: { patience: PATIENCE, sense: 1, mask: 1 }, habits: {}, t: 0, thoughts: [], log: [], clues: [], searched: {}, messSeen: {}, used: new Set(), plan: null, queue: [], path: [], pending: false, feinted: false, fails: 0,
   eye: new THREE.Vector3(), look: new THREE.Vector3(0, 1, 0), lookTo: new THREE.Vector3(0, 1, -5), lightOn: true, crouch: 0, st: 0, lastSeen: new THREE.Vector3(), lost: 0, urgent: false, cn: 0, stuck: 0, reflex: 0, why: '' };
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _d = new THREE.Vector3(), pts = [];
+const arms = [], EYES = [.031, 1.752, .1], STRIDE = 1.02; let jaw = null;   // its walk covers 1.02 m a second at its own pace: the clip is run at the speed it moves, so its feet do not slide
 let body, col, ctl, mixer, acts = {}, cur = null, light, headBone = null, spine = [], nav = null, stepAcc = 0, growlT = 8, lightPos = new THREE.Vector3();
 const _lean = new THREE.Vector3(), now = () => CLOCK.t, spotAt = id => WORLD.GEO[id];
 const nearSpot = (x, z, max = 2.6) => { let b = null, bd = max; for (const s of SPOTS) { const g = spotAt(s.id), d = Math.hypot(g.look[0] - x, g.look[2] - z); if (d < bd) { bd = d; b = s.id; } } return b; };
 
 function init() {
-  const src = MODELS.brute.scene, bx = new THREE.Box3().setFromObject(src), k = 2.25 / (bx.max.y - bx.min.y); src.scale.setScalar(k); src.position.y = -bx.min.y * k; SK.g.add(src); scene.add(SK.g); SK.g.visible = false;
-  src.traverse(o => { if (o.isMesh) { o.castShadow = true; o.frustumCulled = false; o.material.roughness = .62; o.material.metalness = 0; o.material.color.multiplyScalar(.55); } if (o.isBone && /Spine1?$/.test(o.name)) spine.push(o); if (o.isBone && /Head$/.test(o.name) && !headBone) headBone = o;
- });
-  mixer = new THREE.AnimationMixer(src); for (const c of MODELS.brute.animations) { const t = c.tracks.find(t => /Hips\.position$/.test(t.name)); if (t) for (let i = 0; i < t.values.length; i += 3) { t.values[i] = t.values[0]; t.values[i + 2] = t.values[2]; } acts[c.name] = mixer.clipAction(c); }
-  for (const n of ['attack', 'rage', 'slam', 'taunt']) if (acts[n]) { acts[n].setLoop(THREE.LoopOnce); acts[n].clampWhenFinished = true; }
+  // a thin pale figure, a little taller than you: it does not stride, it comes on smoothly, and its eyes are two red points
+  const src = MODELS.pale.scene, bx = new THREE.Box3().setFromObject(src), k = 1.92 / (bx.max.y - bx.min.y); src.scale.setScalar(k); src.position.y = -bx.min.y * k; SK.g.add(src); scene.add(SK.g); SK.g.visible = false;
+  src.traverse(o => { if (o.isMesh) { o.castShadow = true; o.frustumCulled = false; o.material.roughness = .55; o.material.metalness = 0; o.material.color.set(0xb4b6b0); } if (o.isBone) { if (o.name === 'chest_013') spine.push(o); if (o.name === 'head_062') headBone = o; if (o.name === 'jaw_065') jaw = o; if (o.name === 'L_arm_015' || o.name === 'R_arm_039') arms.push(o); } });
+  mixer = new THREE.AnimationMixer(src); const C = MODELS.pale.animations[0], idle = mixer.clipAction(THREE.AnimationUtils.subclip(C, 'idle', 0, 125, 30)), wk = mixer.clipAction(THREE.AnimationUtils.subclip(C, 'walk', 172, 211, 30)); for (const n of ['idle', 'rage', 'slam', 'attack', 'taunt']) acts[n] = idle; acts.walk = acts.run = wk; idle.play(); cur = idle; mixer.update(0);
+  const red = new THREE.MeshBasicMaterial({ color: 0xff1a0a, toneMapped: false, fog: false }), hc = document.createElement('canvas'); hc.width = hc.height = 64; { const g = hc.getContext('2d'), r = g.createRadialGradient(32, 32, 0, 32, 32, 32); r.addColorStop(0, 'rgba(255,60,30,1)'); r.addColorStop(.25, 'rgba(255,20,10,.45)'); r.addColorStop(1, 'rgba(255,0,0,0)'); g.fillStyle = r; g.fillRect(0, 0, 64, 64); }
+  const ht = new THREE.CanvasTexture(hc); for (const sx of [-1, 1]) { const e = new THREE.Mesh(new THREE.SphereGeometry(.011, 8, 6), red); const h = new THREE.Sprite(new THREE.SpriteMaterial({ map: ht, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, fog: false, opacity: .8 })); h.scale.setScalar(.15); e.add(h); SK.g.updateMatrixWorld(true); const hw = headBone.getWorldPosition(new THREE.Vector3()), ws = headBone.getWorldScale(new THREE.Vector3()); e.position.copy(headBone.worldToLocal(new THREE.Vector3(sx * EYES[0], EYES[1], hw.z + EYES[2]))); e.scale.set(1 / ws.x, 1 / ws.y, 1 / ws.z); headBone.add(e); SK.eyeDots = (SK.eyeDots || []).concat(e); }
   body = P.world.createRigidBody(RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(0, 0, 6)); col = P.world.createCollider(RAPIER.ColliderDesc.capsule(.6, .38).setTranslation(0, 1.0, 0).setCollisionGroups(MON), body); SK.body = body;
   ctl = P.world.createCharacterController(.03); ctl.enableAutostep(.3, .1, true); ctl.enableSnapToGround(.3); ctl.setApplyImpulsesToDynamicBodies(true); ctl.setCharacterMass(170);
-  light = new THREE.SpotLight(0xf2efe6, 0, 17, .4, .55, 1.7); light.castShadow = true; light.shadow.mapSize.setScalar(LOW ? 512 : 1024); light.shadow.camera.near = .25; light.shadow.camera.far = 17; light.shadow.bias = -.002; light.shadow.normalBias = .03; scene.add(light, light.target);
+  light = new THREE.SpotLight(0xff4a34, 0, 15, .42, .6, 1.7); light.castShadow = true; light.shadow.mapSize.setScalar(LOW ? 512 : 1024); light.shadow.camera.near = .25; light.shadow.camera.far = 17; light.shadow.bias = -.002; light.shadow.normalBias = .03; scene.add(light, light.target);
   WORLD.torch = { on: false, at: new THREE.Vector3() };
   buildNav();
 }
@@ -104,7 +106,7 @@ function walk(dt, speed) { const w = SK.path[0]; if (!w) return true; for (const
   if (SK.stuck > 1.1) { SK.stuck = 0; SK.wd = 99; if (++SK.blocks > 3) { SK.path.length = 0; return true; } const bx = SK.pos.x + dx / d * .6, bz = SK.pos.z + dz / d * .6, [ci, cj] = cellOf(bx, bz);
     for (let b = cj - 1; b <= cj + 1; b++) for (let a = ci - 1; a <= ci + 1; a++) if (a >= 0 && b >= 0 && a < NX && b < NZ) shut[b * NX + a] = now() + 9; const g = SK.goal; SK.path = pathTo(g[0], g[1]); return false; }
   stepAcc += mv; if (stepAcc > (speed > 2 ? 1.25 : .92)) { stepAcc = 0; SK.stepped = true; A.at(['heavy1', 'heavy2'], { x: SK.pos.x, y: .1, z: SK.pos.z }, speed > 2 ? 1.1 : .7, speed > 2 ? 1.15 : 1); }
-  if (cur) cur.timeScale = cur === acts.run ? speed / 3.2 : speed / 1.15; return false; }
+  if (cur === acts.walk) cur.timeScale = speed / STRIDE; return false; }
 const los = (from, x, y, z) => { _d.set(x - from.x, y - from.y, z - from.z); const d = _d.length(); if (d < .05) return true; _d.multiplyScalar(1 / d); const h = ray(from, _d, d, SIGHT); if (h && h.t < d - .06) return false; _b.set(x, y, z); return !WORLD.cloth.blocks(from, _b); };
 
 function sense(dt, searching) { const t = now(), fx = Math.sin(SK.yaw), fz = Math.cos(SK.yaw), listening = SK.state === 'listen' || (SK.state === 'toy' && SK.st > 1.6 && SK.st < 5.2);
@@ -126,7 +128,7 @@ function sense(dt, searching) { const t = now(), fx = Math.sin(SK.yaw), fz = Mat
 
 function update(dt) { if (SK.state === 'wait' || SK.state === 'gone' || SK.state === 'caught' && SK.st > 4) return; SK.st += dt; const S = SK.state, hunting = ['think', 'goto', 'inspect', 'listen', 'toy'].includes(S); let searching = false;
   if (hunting) { SK.t += dt; SK.patience -= dt; }
-  if (S === 'goto') { play('walk'); const p = SK.plan, done = walk(dt, p && (p.type === 'leave' || p.type === 'feint') ? 1.5 : 1.25); if (SK.reflex <= 0) SK.lookTo.set(SK.pos.x + Math.sin(SK.yaw) * 5 + Math.sin(SK.st * 1.1) * 1.6, .7, SK.pos.z + Math.cos(SK.yaw) * 5);
+  if (S === 'goto') { play('walk'); const p = SK.plan, done = walk(dt, p && (p.type === 'leave' || p.type === 'feint') ? 1.2 : .95); if (SK.reflex <= 0) SK.lookTo.set(SK.pos.x + Math.sin(SK.yaw) * 5 + Math.sin(SK.st * 1.1) * 1.6, .7, SK.pos.z + Math.cos(SK.yaw) * 5);
     if (SK.urgent && now() - SK.asked > 2.5 && p && p.type !== 'leave' && p.type !== 'feint') { SK.urgent = false; SK.queue.length = 0; ask(true); }
     if (done) { if (!p) setState('think'); else if (p.type === 'search') setState('inspect'); else if (p.type === 'toy') setState('toy'); else if (p.type === 'point') { if (p.fix) { WORLD.setPower(true); SK.log.push({ did: 'went to the breaker box and put the lamps back on', found: 'nobody there now' }); } SK.plan = null; if (SK.pos.z > -3 && !SK.t) setState('think'); else { SK.plan = { type: 'listen', dur: 2.5 }; setState('listen'); } } else if (p.type === 'feint') setState('feint'); else if (p.type === 'leave') { setState('gone'); SK.g.visible = false; light.intensity = 0; WORLD.torch.on = false; WORLD.gate.to = 0; return; } } }
   else if (S === 'think') { play('idle'); if (SK.reflex <= 0) SK.lookTo.set(SK.pos.x + Math.sin(SK.yaw + Math.sin(SK.st * .9) * 1.1) * 5, .8, SK.pos.z + Math.cos(SK.yaw + Math.sin(SK.st * .9) * 1.1) * 5);
@@ -150,7 +152,7 @@ function update(dt) { if (SK.state === 'wait' || SK.state === 'gone' || SK.state
   else if (S === 'listen') { play('idle'); SK.lightOn = SK.st < .4; if (SK.urgent && SK.st > 1) { SK.urgent = false; SK.lightOn = true; SK.plan = null; setState('think'); ask(true); } else if (SK.st > (SK.plan ? SK.plan.dur : 4)) { SK.lightOn = true; SK.log.push({ did: 'stood dark and listened', found: 'nothing new' }); SK.plan = null; setState('think'); } }
   else if (S === 'feint') { SK.lightOn = false; SK.g.visible = false; WORLD.gate.to = SK.st < 1 ? 0 : WORLD.gate.to; if (SK.st > 10) { SK.g.visible = true; SK.lightOn = true; WORLD.gate.to = 1; SK.log.push({ did: 'pretended to leave, came back quietly', found: 'you are back at the gate' }); buildNav(); SK.plan = { type: 'point', x: 0, z: -2 }; SK.path = pathTo(0, -2); setState('goto'); SK.t += .01; } }
   else if (S === 'spotted') { play('rage', .15); SK.lookTo.copy(PL.head); let dy = Math.atan2(PL.pos.x - SK.pos.x, PL.pos.z - SK.pos.z) - SK.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); SK.yaw += clamp(dy, -dt * 5, dt * 5); if (SK.st > 1.25) { setState('chase'); SK.lost = 0; SK.repath = 0; SK.best = 99; SK.near = 0; } }
-  else if (S === 'chase') { play('run', .2); if (SK.vis > 0) SK.lookTo.copy(PL.head); else SK.lookTo.set(SK.lastSeen.x, SK.lastSeen.y + .9, SK.lastSeen.z); SK.reflex = 0; SK.repath -= dt; if (SK.repath <= 0) { SK.repath = .35; SK.blocks = 0; SK.path = pathTo(SK.lastSeen.x, SK.lastSeen.z); } walk(dt, 3.3); SK.lost = SK.vis > 0 ? 0 : SK.lost + dt; SK.aware = Math.max(SK.aware, SK.vis > 0 ? 1 : 0);
+  else if (S === 'chase') { play('run', .2); if (SK.vis > 0) SK.lookTo.copy(PL.head); else SK.lookTo.set(SK.lastSeen.x, SK.lastSeen.y + .9, SK.lastSeen.z); SK.reflex = 0; SK.repath -= dt; if (SK.repath <= 0) { SK.repath = .35; SK.blocks = 0; SK.path = pathTo(SK.lastSeen.x, SK.lastSeen.z); } walk(dt, 2.5); SK.lost = SK.vis > 0 ? 0 : SK.lost + dt; SK.aware = Math.max(SK.aware, SK.vis > 0 ? 1 : 0);
     const pd = Math.hypot(PL.pos.x - SK.pos.x, PL.pos.z - SK.pos.z); SK.near = pd < SK.best - .05 ? (SK.best = pd, 0) : (SK.near || 0) + dt;   // it reaches in for you where its body cannot follow
     if ((pd < 1.7 && (SK.vis > 0 || SK.lost < 1.2) || (pd < 2.7 && SK.near > 1 && PL.pos.distanceTo(SK.lastSeen) < .7)) && Math.abs(PL.pos.y - SK.pos.y) < 1.9) grab();
     else if ((SK.lost > 4 && SK.st > 2) || SK.near > 9) { SK.aware = .3; clue('glimpse', SK.lastSeen.x, SK.lastSeen.z, 3, 'it ran this way, then you lost it'); SK.log.push({ did: 'chased it', found: 'lost sight of it near ' + (nearSpot(SK.lastSeen.x, SK.lastSeen.z, 4) || 'open ground') }); SK.plan = null; SK.urgent = true; setState('think'); } }
@@ -163,11 +165,11 @@ function update(dt) { if (SK.state === 'wait' || SK.state === 'gone' || SK.state
 
   /* the body, its eyes, its light */
   if (S === 'caught' && SK.scare) return face(dt);
-  SK.g.position.copy(SK.pos); SK.g.rotation.y = SK.yaw; mixer.update(dt); for (const b of spine) b.rotation.x += SK.crouch * .42;
+  SK.g.position.copy(SK.pos); SK.g.rotation.y = SK.yaw; if (cur === acts.walk && SK.state !== 'goto' && SK.state !== 'chase') play('idle'); mixer.update(dt); for (const b of spine) b.rotation.x += SK.crouch * .42;
   SK.look.lerp(SK.lookTo, 1 - Math.exp(-dt * (S === 'chase' ? 9 : 4.5))); const p = SK.plan, g = S === 'inspect' && p && p.thorough && SK.st > .7 ? (p.eye || spotAt(p.spot).eye) : null, fx = Math.sin(SK.yaw), fz = Math.cos(SK.yaw);
   _a.set(SK.pos.x + fx * .45 - fz * .25, 1.45 - SK.crouch * .55, SK.pos.z + fz * .45 + fx * .25); if (g) _a.set(g[0], g[1], g[2]); light.position.lerp(_a, 1 - Math.exp(-dt * 5)); light.target.position.copy(SK.look);
   SK.eye.set(SK.pos.x + fx * .15, EYE - SK.crouch * .9, SK.pos.z + fz * .15); if (g) SK.eye.copy(light.position);
-  const on = SK.lightOn && SK.g.visible ? 1 : 0; light.intensity = lerp(light.intensity, on * 110, 1 - Math.exp(-dt * 12)); WORLD.torch.on = !!on; WORLD.torch.at.copy(light.position).lerp(SK.look, .3);
+  const on = SK.lightOn && SK.g.visible ? 1 : 0; light.intensity = lerp(light.intensity, on * 60, 1 - Math.exp(-dt * 12)); WORLD.torch.on = !!on; WORLD.torch.at.copy(light.position).lerp(SK.look, .3);
   WORLD.rain.uniforms.torch.value.copy(light.position).lerp(SK.look, .35).setY(on ? 1.6 : -50);
   if (SK.g.visible && S !== 'feint') sense(dt, searching);
 }

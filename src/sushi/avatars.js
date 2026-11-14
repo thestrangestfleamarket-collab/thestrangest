@@ -24,7 +24,7 @@ export async function loadAvatars(onProgress = () => { }) {
     const manager = new THREE.LoadingManager(); manager.onError = () => { };
     manager.setURLModifier((u) => (/\.tga$/i.test(u) ? 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==' : u));
     const fbxLoader = new FBXLoader(manager), texLoader = new THREE.TextureLoader();
-    const tex = async (url, srgb) => { const t = await texLoader.loadAsync(url), c = document.createElement('canvas'); c.width = c.height = 512; c.getContext('2d').drawImage(t.image, 0, 0, 512, 512); t.dispose(); const s = new THREE.CanvasTexture(c); s.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace; s.anisotropy = 4; return s; };
+    const tex = async (url, srgb) => { const t = await texLoader.loadAsync(url), c = document.createElement('canvas'); c.width = c.height = 256; c.getContext('2d').drawImage(t.image, 0, 0, 256, 256); t.dispose(); const s = new THREE.CanvasTexture(c); s.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace; s.anisotropy = 4; return s; };
     // hair cards: the colour is spread under the clear parts, or every thin strand filters to black
     const hairTex = async (url) => { const t = await texLoader.loadAsync(url), c = document.createElement('canvas'); c.width = c.height = 512; const x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(t.image, 0, 0, 512, 512); t.dispose(); const d = x.getImageData(0, 0, 512, 512).data; let r = 0, g = 0, b = 0, n = 0;
       for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 200) { r += d[i]; g += d[i + 1]; b += d[i + 2]; n++; } n ||= 1; r /= n; g /= n; b /= n;

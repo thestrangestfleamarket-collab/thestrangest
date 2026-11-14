@@ -1,4 +1,4 @@
-// the cart's and the street's pictures, all drawn on canvases; ageing them (dirty), relief from a picture (normalOf)
+// the cart's and the street's pictures: photographed surfaces (photo, data/sushi/tex) laid by the metre (worldUV, metreUV), the rest drawn on canvases; ageing those (dirty)
 import * as THREE from 'three';
 
 export const JP = "'Noto Sans JP','Noto Sans CJK JP','Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic','Meiryo','IPAGothic','IPAPGothic',sans-serif";
@@ -24,6 +24,50 @@ export function canvasTex(w, h, draw, o = {}) {
   if (o.repeat) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(o.repeat[0], o.repeat[1]); }
   t.userData.canvas = c; t.userData.ctx = g; t.userData.blit = () => { sg.clearRect(0, 0, sc.width, sc.height); sg.drawImage(c, 0, 0, sc.width, sc.height); t.needsUpdate = true; }; t.userData.blit();
   return t;
+}
+
+// photographed surfaces (CC0, tools/sushi-assets.py), asked for before the street is built; a drawn picture stands in for one that has not come
+const PHOTOS = ['brick_red', 'brick_orange', 'brick_brown', 'brick_dark', 'brick_painted', 'plaster', 'plaster_worn', 'concrete', 'concrete_dirty', 'asphalt', 'paving', 'shutter', 'shutter_rust', 'corrugated', 'rust', 'wood', 'wood_dark', 'wood_light', 'tile_brown', 'tile_white'];
+const PIMG = {}, PTEX = {};
+export function loadPhotos(base = '/sushi-assets/tex/', ms = 9000) {
+  return Promise.all(PHOTOS.map((n) => new Promise((res) => { const im = new Image(); im.onload = () => { PIMG[n] = im; const t = PTEX[n]; if (t && t.image !== im) { t.dispose(); t.image = im; t.needsUpdate = true; } res(); }; im.onerror = res; im.src = base + n + '.jpg'; setTimeout(res, ms); })));
+}
+export const photoImg = (name) => PIMG[name];
+export function photo(name, fallback) { // one texture a file, shared by every material that wears it
+  if (PTEX[name]) return PTEX[name];
+  const t = new THREE.Texture(PIMG[name] || (fallback ? fallback().image : canvasTex(8, 8, (g) => { g.fillStyle = '#666'; g.fillRect(0, 0, 8, 8); }).image));
+  t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4; t.needsUpdate = true; return (PTEX[name] = t);
+}
+// the picture laid by the metre from where a thing stands (size = metres a tile), so scaled and instanced boxes all wear it at its true size
+export function worldUV(m, size = 1) {
+  const k = (1 / size).toFixed(4);
+  m.onBeforeCompile = (s) => { s.vertexShader = s.vertexShader.replace('#include <uv_vertex>', `#include <uv_vertex>
+#ifdef USE_MAP
+  { vec4 wp = vec4(position, 1.0); vec3 wn = normal;
+  #ifdef USE_INSTANCING
+    wp = instanceMatrix * wp; wn = mat3(instanceMatrix) * wn;
+  #endif
+    wp = modelMatrix * wp; wn = abs(normalize(mat3(modelMatrix) * wn));
+    vMapUv = (wn.y > 0.7 ? wp.xz : wn.x > wn.z ? wp.zy : wp.xy) * ${k}; }
+#endif`); };
+  m.customProgramCacheKey = () => 'wuv' + k; return m;
+}
+// the same for still boxes and planes under root whose material says userData.metres: written into their own uv, the grain along the longer side
+export function metreUV(root) {
+  const sc = new THREE.Vector3(), e = new THREE.Vector3();
+  root.updateWorldMatrix(true, true);
+  root.traverse((m) => {
+    const s = m.isMesh && !m.isInstancedMesh && !Array.isArray(m.material) && m.material.userData.metres, g = m.geometry;
+    if (!s || g.userData.muv || !/^(Box|Plane)Geometry$/.test(g.type)) return; g.userData.muv = 1;
+    sc.setFromMatrixScale(m.matrixWorld); g.computeBoundingBox(); g.boundingBox.getSize(e).multiply(sc);
+    const p = g.attributes.position, n = g.attributes.normal, uv = g.attributes.uv, h = (m.id * 0.37) % 1;
+    for (let i = 0; i < p.count; i++) {
+      const P = [p.getX(i) * sc.x, p.getY(i) * sc.y, p.getZ(i) * sc.z], N = [Math.abs(n.getX(i)), Math.abs(n.getY(i)), Math.abs(n.getZ(i))], k = N[1] > N[0] && N[1] > N[2] ? 1 : N[0] > N[2] ? 0 : 2;
+      let a = (k + 1) % 3, b = (k + 2) % 3; if (e.getComponent(a) < e.getComponent(b)) [a, b] = [b, a];
+      uv.setXY(i, P[a] / s + h, P[b] / s + h * 3);
+    }
+    uv.needsUpdate = true;
+  });
 }
 
 function speckle(g, w, h, n, r, cols, R, aMin = 0.1, aMax = 0.5) {
@@ -366,7 +410,8 @@ export function posterTex(kind) {
 
 // Age an existing canvas texture in place: stains, drips, scratches, cracks, rust, patches, soot.
 export function dirty(tex, seed = 1, o = {}) {
-  const c = tex.userData.canvas, g = tex.userData.ctx, w = c.width, h = c.height, R = rng(seed * 977 + 13);
+  const c = tex.userData.canvas; if (!c) return tex; // a photograph is already aged
+  const g = tex.userData.ctx, w = c.width, h = c.height, R = rng(seed * 977 + 13);
   const blob = (x, y, r, col, a) => { const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, col); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.globalAlpha = a; g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2); };
   for (let i = 0; i < (o.patch || 0); i++) { g.globalAlpha = 0.25 + R() * 0.3; g.fillStyle = R() > 0.5 ? '#0c0c0e' : '#3a3a3e'; g.fillRect(R() * w, R() * h, 30 + R() * 120, 20 + R() * 90); }
   for (let i = 0; i < (o.stains || 0); i++) { const x = R() * w, y = R() * h, r = 12 + R() * 70; g.save(); g.translate(x, y); g.scale(1 + R(), 0.5 + R() * 0.6); g.rotate(R() * 3); blob(0, 0, r, R() > 0.25 ? 'rgba(10,8,6,1)' : 'rgba(90,60,30,1)', 0.12 + R() * 0.3); g.restore(); }

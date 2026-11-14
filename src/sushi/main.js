@@ -17,6 +17,7 @@ import { buildGuide } from './guide.js';
 import { buildMenu } from './menu.js';
 import { buildReport } from './report.js';
 import { PH } from './physics.js';
+import * as T from './tex.js';
 
 const params = new URLSearchParams(location.search);
 const canvas = document.getElementById('c');
@@ -39,9 +40,11 @@ G.audio = new GameAudio();
 
 const $ = (id) => document.getElementById(id), menu = $('menu'), hud = $('hud'), vrBtn = $('vr'), deskBtn = $('desk');
 if (!params.has('desktop')) deskBtn.style.display = 'none';
+const photos = T.loadPhotos();
 { const l = vrBtn.textContent; await loadAvatars((f) => { vrBtn.textContent = `Loading… ${Math.round(f * 100)}%`; }); vrBtn.textContent = l; }
 try { await PH.init(); } catch (e) { console.warn('physics engine unavailable, simple falling instead', e); }
 
+await photos;
 buildFx(scene);
 const city = buildCity(scene);
 const cart = buildCart(scene, city);
@@ -52,6 +55,7 @@ const life = buildLife(scene, city, cart);
 const talk = buildTalk(scene);
 const grit = buildGrit(scene, city, cart);
 const guide = buildGuide(scene, cart);
+T.metreUV(cart.group);
 G.baked = mergeStatic(cart.group) + mergeStatic(city.group);
 
 // on a screen: the scene is drawn small, then enlarged with ordered dither and a short palette, as that console's output looked
@@ -120,7 +124,7 @@ function frame(now) {
   const dt = clamp((now - last) / 1000, 0, 0.05); last = now;
   if (G.mode === 'menu' && !renderer.xr.isPresenting && !G.manualCam) { const a = G.t * 0.05; camera.position.set(2.9 + Math.sin(a) * 0.9, 1.75, -5.4 + Math.cos(a) * 0.4); rig.position.set(0, 0, 0); camera.lookAt(0, 1.6, -0.4); }
   if (!G.frozen) tick(dt);
-  if (frames === 2) city.bakeFar(renderer);
+  if (frames === 2) { city.bakeFar(renderer); city.reflect(renderer, scene); }
   govern(dt); frames++;
   render();
   if (G.afterRender) { const f = G.afterRender; G.afterRender = null; f(); }

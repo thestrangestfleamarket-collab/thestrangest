@@ -16,9 +16,9 @@ export function buildCart(scene, city) {
   const cart = new THREE.Group(); scene.add(cart); G.pickRoot.add(cart);
   const C = { group: cart, pots: [], bins: {}, board: null, open: false, ups: [], knobs: [] };
   G.cart = C;
-  const wood = mat({ map: T.woodTex('#5a3a22', '#24140a', [2, 1]), roughness: 0.62 });
-  const woodDark = mat({ map: T.woodTex('#3a2414', '#150c06', [2, 1], 5), roughness: 0.7 });
-  const woodLight = mat({ map: T.woodTex('#8f7350', '#54391f', [1, 1], 9), roughness: 0.6 });
+  const wood = mat({ map: T.photo('wood', () => T.woodTex('#5a3a22', '#24140a')), color: 0xc8b8a8, userData: { metres: 1.5 } }); // photographed planks, laid by the metre (T.metreUV)
+  const woodDark = mat({ map: T.photo('wood_dark', () => T.woodTex('#3a2414', '#150c06', [1, 1], 5)), color: 0xa89888, userData: { metres: 1.6 } });
+  const woodLight = mat({ map: T.photo('wood_light', () => T.woodTex('#8f7350', '#54391f', [1, 1], 9)), color: 0xc0b0a0, userData: { metres: 1.3 } });
   T.dirty(wood.map, 2, { stains: 26, drips: 12, scratches: 60, rings: 4 }); T.dirty(woodDark.map, 3, { stains: 18, scratches: 40, drips: 8 }); T.dirty(woodLight.map, 4, { stains: 30, rings: 16, scratches: 90 });
   for (const m of [wood, woodDark, woodLight]) { m.normalMap = T.normalOf(m.map, 1.6); m.normalScale.set(0.6, 0.6); }
   const steel = mat({ map: T.steelTex([2, 2]), color: 0xcfd2d6, metalness: 0.55, roughness: 0.34, envMapIntensity: 1.6 });
@@ -48,7 +48,7 @@ export function buildCart(scene, city) {
   // a pitched roof of weathered sheet in two tiers, high enough to stand tall under
   const tileT = T.canvasTex(256, 256, (g, w, h) => { for (let x = 0; x < w; x += 16) { const gr = g.createLinearGradient(x, 0, x + 16, 0); gr.addColorStop(0, '#4a4d52'); gr.addColorStop(0.5, '#8a8e94'); gr.addColorStop(1, '#3a3d42'); g.fillStyle = gr; g.fillRect(x, 0, 16, h); } }, { repeat: [3, 1] });
   T.dirty(tileT, 12, { rust: 26, drips: 30, stains: 24, patch: 3 });
-  const tileM = mat({ map: tileT, roughness: 0.6, metalness: 0.5, side: THREE.DoubleSide }); tileM.normalMap = T.normalOf(tileT, 3);
+  const tileM = mat({ map: T.photo('corrugated', () => tileT), color: 0x9a9ea4, side: THREE.DoubleSide, userData: { metres: 1.12 } }); tileM.normalMap = T.normalOf(tileT, 3);
   for (const [zc, rx] of [[-0.82, -0.32], [1.12, 0.32]]) { const r = box(3.5, 0.03, 2.12, tileM, 0, 2.97, zc, cart); r.rotation.x = rx; }
   for (const [zc, rx] of [[-0.42, -0.36], [0.72, 0.36]]) { const r = box(2.7, 0.03, 1.25, tileM, 0, 3.42, zc, cart); r.rotation.x = rx; }
   box(2.8, 0.06, 0.1, woodDark, 0, 3.64, 0.15, cart);

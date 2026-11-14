@@ -43,7 +43,7 @@ const jget=f=>count(fetch(BASE+f).then(r=>r.json()));
 const TREES=['island_tree_01','island_tree_02','island_tree_03','tree_small_02','jacaranda_tree','shrub_02'];
 let A0;
 try{
-  const names=['hero','ally','foe','seat','console','display','switchbox','radio','helmet','barn','cars','pipes','sconce','ammobox','rocks','h6','row','h9','shop','cork','flats','white','cottage','villa','mill','works','church','watertower','silos','stacks','mast','pylon','pole','stonewall','lamp','hay','brokenwall','rubble','trabant','lada','van','tractor','truck','busstop','binos','hand_l','hand_r','crag','deadtree','sandbags','hedgehog','wreck','grenade','pistol','soldier','breech'];
+  const names=['hero','ally','foe','seat','console','display','switchbox','radio','helmet','barn','cars','pipes','sconce','ammobox','rocks','h6','row','h9','shop','cork','flats','white','cottage','villa','mill','works','church','watertower','silos','stacks','mast','pylon','pole','stonewall','lamp','hay','brokenwall','rubble','trabant','lada','van','tractor','truck','busstop','binos','hand_l','hand_r','crag','deadtree','sandbags','hedgehog','wreck','grenade','pistol','soldier','breech','mfd','shell','mine','hatch'];
   const[sky,skyS,SKY,TREEJ,MODJ,grass,dry,soil,plate,paint,leather,cards,models]=await Promise.all([
     count(new Promise((ok,no)=>texL.load(BASE+'sky/sky.jpg',ok,null,()=>no(new Error('sky'))))),count(new Promise((ok,no)=>texL.load(BASE+'sky/sky_s.jpg',ok,null,()=>no(new Error('sky'))))),jget('sky/sky.json'),jget('trees.json'),jget('models.json'),
     pbr('leafy_grass',1),tex('sparse_grass_d.jpg',{srgb:1}),pbr('farm_soil',1),pbr('metal_plate',1),pbr('green_metal_rust',1),pbr('fabric_leather_02',1),
@@ -326,9 +326,8 @@ const breech=new T.Group(),breechSlide=new T.Group();
   // the gunner's sight: a hooded screen on an arm, the picture the gun's own camera sends
   const sight=new T.Group();sight.position.set(HX,FLOOR+EYE-.03,HZ-.86);inside.add(sight);
   const box=(w,h,d,m,x,y,z,p)=>{const o=add(new T.BoxGeometry(w,h,d),m,p||sight);o.position.set(x,y,z);return o;};
-  box(.56,.44,.2,dark,0,0,-.11);box(.5,.37,.012,rubberM,0,0,-.006);const scr=add(new T.PlaneGeometry(.46,.345),monitorMat,sight);scr.position.z=.002;
-  box(.58,.03,.16,dark,0,.235,.07);box(.03,.44,.14,dark,-.29,0,.06);box(.03,.44,.14,dark,.29,0,.06);box(.3,.05,.05,pad,0,.2,.15);
-  for(let i=0;i<5;i++){box(.034,.022,.012,olive,-.21+i*.105,-.2,.004);const led=add(new T.CircleGeometry(.004,8),new T.MeshBasicMaterial({color:i===1?new T.Color(.3,2.4,.5):new T.Color(1.6,.9,.2)}),sight);led.position.set(-.21+i*.105,-.183,.012);}
+  const unit=(par,s)=>{const o=M.mfd.clone();o.traverse(m=>{if(m.isMesh){m.material=m.material.clone();m.material.envMapIntensity=.2;if(m.material.name==='ScreenMat'){m.material.map=null;m.material.color.setRGB(.004,.005,.004);}}});o.rotation.z=Math.PI/2;o.scale.setScalar(s);o.position.set(.23*s,0,-.163*s-.004);par.add(o);return o;};
+  unit(sight,2.9);const scr=add(new T.PlaneGeometry(.46,.345),monitorMat,sight);scr.position.z=.002;
   box(.05,.05,.5,steel,.2,.3,-.2).rotation.x=.5;box(.05,.05,.5,steel,-.2,.3,-.2).rotation.x=.5;
   const rc=cnv(640,480),rT=ctex(rc);inside.userData.reticle=()=>{const g=rc.getContext('2d');g.clearRect(0,0,640,480);const col=P.thermal?'rgba(10,20,10,.95)':'rgba(8,8,6,.92)';g.strokeStyle=col;g.fillStyle=col;g.lineWidth=2;
     g.beginPath();g.moveTo(150,240);g.lineTo(296,240);g.moveTo(344,240);g.lineTo(490,240);g.moveTo(320,96);g.lineTo(320,216);g.moveTo(320,264);g.lineTo(320,384);g.stroke();g.beginPath();g.arc(320,240,3,0,7);g.fill();g.lineWidth=1;g.beginPath();g.arc(320,240,24,0,7);g.stroke();
@@ -338,8 +337,7 @@ const breech=new T.Group(),breechSlide=new T.Group();
   add(new T.PlaneGeometry(.46,.345),new T.MeshBasicMaterial({map:rT,transparent:true,toneMapped:false,depthWrite:false}),sight).position.z=.004;
   // the commander's panel on the right: armour, gun, rounds, the plot
   const mfd=new T.Group();mfd.position.set(1.16,FLOOR+EYE-.12,HZ-.62);mfd.rotation.y=-1.02;inside.add(mfd);
-  box(.44,.3,.1,dark,0,0,-.055,mfd);box(.4,.26,.01,rubberM,0,0,-.004,mfd);add(new T.PlaneGeometry(.37,.231),new T.MeshBasicMaterial({map:statT,toneMapped:false,color:0x9a9a9a}),mfd).position.z=.003;
-  for(let i=0;i<4;i++)box(.022,.03,.012,olive,-.205,.09-i*.06,.004,mfd);
+  unit(mfd,2.1);add(new T.PlaneGeometry(.37,.231),new T.MeshBasicMaterial({map:statT,toneMapped:false,color:0x9a9a9a}),mfd).position.z=.003;
   // real kit: the seat, the consoles, the switch box, the radio, a crew helmet, the ready rounds, pipes, the lamp
   const dress=(src,x,y,z,ry,f,s=1)=>{const o=src.clone();o.traverse(m=>{if(m.isMesh){m.material=m.material.clone();m.material.envMapIntensity=.2;if(f)f(m.material);}});o.position.set(x,y,z);o.rotation.y=ry;o.scale.setScalar(s);inside.add(o);return o;};
   dress(M.seat,HX,FLOOR-.02,HZ+.1,Math.PI,m=>{m.color.multiplyScalar(.75);});
@@ -349,9 +347,7 @@ const breech=new T.Group(),breechSlide=new T.Group();
   dress(M.switchbox,1.3,FLOOR+.7,HZ+.75,-Math.PI/2,m=>{m.color.multiplyScalar(.8);m.emissiveMap=m.map;m.emissive=new T.Color(.3,.3,.3);});
   box(.9,.03,.34,olive,.25,FLOOR+.86,1.32,inside);dress(M.radio,.42,FLOOR+.875,1.3,Math.PI,null);dress(M.helmet,-.1,FLOOR+.875,1.3,2.6,null);
   dress(M.ammobox,-.5,FLOOR+.875,1.3,1.2,null,1.6);dress(M.ammobox,-.6,FLOOR,-.55,.3,null,2.2);dress(M.ammobox,-.85,FLOOR,-.8,-.5,null,2.2);
-  {const pr=[[0,0],[.058,0],[.062,.012],[.06,.02],[.06,.5],[.056,.56],[.052,.6]],pj=[[.052,.6],[.058,.61],[.058,.66],[.052,.67],[.05,.82],[.03,.97],[.008,1.04],[0,1.045]];
-   const cg=new T.LatheGeometry(pr.map(p=>new T.Vector2(p[0],p[1])),20).rotateZ(-Math.PI/2),pg=new T.LatheGeometry(pj.map(p=>new T.Vector2(p[0],p[1])),20).rotateZ(-Math.PI/2),pm=new T.MeshStandardMaterial({color:0x1c1f1c,metalness:.6,roughness:.45,envMapIntensity:.5});
-   const n=10,ci=new T.InstancedMesh(cg,brass,n),pi=new T.InstancedMesh(pg,pm,n),dm=new T.Object3D();for(let k=0;k<n;k++){dm.position.set(-1.1,FLOOR+.3+(k>4?.5:0),.18+(k%5)*.19);dm.updateMatrix();ci.setMatrixAt(k,dm.matrix);pi.setMatrixAt(k,dm.matrix);}inside.add(ci,pi);
+  {const sm=M.shell.getObjectByProperty('isMesh',true),n=10,ci=new T.InstancedMesh(sm.geometry.clone().rotateZ(-Math.PI/2).scale(1.2,.82,.82),sm.material,n),dm=new T.Object3D();sm.material.envMapIntensity=.3;for(let k=0;k<n;k++){dm.position.set(-1.1,FLOOR+.3+(k>4?.5:0),.18+(k%5)*.19);dm.updateMatrix();ci.setMatrixAt(k,dm.matrix);}inside.add(ci);
    for(const y of[.2,.7])for(const x of[-1.0,-.45])for(let k=0;k<5;k++){const c=add(new T.TorusGeometry(.068,.008,6,16,Math.PI),steel);c.position.set(x,FLOOR+y+.1,.18+k*.19);c.rotation.y=Math.PI/2;}}
   box(.72,.025,1.1,frame,-.76,FLOOR+.2,.6,inside);box(.72,.025,1.1,frame,-.76,FLOOR+.7,.6,inside);
   dress(M.pipes,-1.08,FLOOR+.95,.2,Math.PI/2,null,.4);const lamp=dress(M.sconce,-.2,CEIL-.01,.2,0,m=>{if(m.emissive)m.emissive.setRGB(.5,.38,.2);});lamp.rotation.x=Math.PI;
@@ -364,7 +360,7 @@ const breech=new T.Group(),breechSlide=new T.Group();
   L.alarm=new T.PointLight(0xff2a14,0,3.5,2);L.alarm.position.set(.6,CEIL-.2,-.7);
   L.day=new T.SpotLight(0xfff0dc,0,6,.5,.7,1.2);L.day.position.set(HX,CEIL+1.2,HZ);L.day.target.position.set(HX-.15,FLOOR,HZ+.2);
   inside.add(L.dome,L.dome.target,L.screen,L.mfd,L.alarm,L.day,L.day.target);
-  L.lid=new T.Group();L.lid.position.set(HX,CEIL+.13,HZ+.35);inside.add(L.lid);add(new T.CylinderGeometry(.35,.35,.04,28).translate(0,0,-.35),dark,L.lid);add(new T.TorusGeometry(.07,.012,8,16).translate(0,-.05,-.35),steel,L.lid);add(new T.CylinderGeometry(.3,.3,.02,28).translate(0,-.03,-.35),pad,L.lid);
+  L.lid=new T.Group();L.lid.position.set(HX,CEIL+.13,HZ+.35);inside.add(L.lid);{const h=M.hatch.clone();h.rotation.x=Math.PI;h.position.set(0,.04,-.35);h.traverse(m=>{if(m.isMesh)m.material.envMapIntensity=.2;});L.lid.add(h);}
   const beacon=add(new T.SphereGeometry(.022,12,8),new T.MeshBasicMaterial({color:0x300a06}));beacon.position.copy(L.alarm.position);L.beacon=beacon;
   inside.traverse(m=>{if(m.isMesh&&!m.material.isMeshBasicMaterial){m.castShadow=true;m.receiveShadow=true;}});
 
@@ -518,7 +514,7 @@ function shell(mine){const m=new T.Mesh(shellGeo,new T.MeshBasicMaterial({color:
 function dropShell(s){scene.remove(s.m);shells.splice(shells.indexOf(s),1);}
 
 // ---------- the enemy ----------
-prep(M.foe,m=>{m.envMapIntensity=.5;m.color.setRGB(.42,.44,.36);});
+prep(M.foe,m=>{m.envMapIntensity=.5;m.color.setRGB(.62,.64,.56);});
 const wreckMats=new Map(),wreckOf=m=>{if(!wreckMats.has(m)){const w=m.clone();w.color.setRGB(.05,.05,.05);w.roughness=1;w.metalness=.1;w.envMapIntensity=.1;w.roughnessMap=w.metalnessMap=null;wreckMats.set(m,w);}return wreckMats.get(m);};
 const foes=[];
 function addFoe(x,z,dx,dz){
@@ -637,7 +633,7 @@ function updateNet(dt){
 // ---------- on foot: the crews that bail out, and what you carry for them (a pistol, grenades, mines for the ground) ----------
 const crews=[],nades=[],mines=[];
 prep(M.soldier,m=>{m.envMapIntensity=.3;});prep(M.pistol,m=>{m.envMapIntensity=.5;});prep(M.grenade,m=>{m.envMapIntensity=.4;m.color.setRGB(.5,.55,.42);});
-const mineGeo=new T.LatheGeometry([[0,0],[.155,0],[.16,.02],[.16,.07],[.13,.09],[.05,.09],[.05,.105],[0,.105]].map(q=>new T.Vector2(q[0],q[1])),28),mineMat=new T.MeshStandardMaterial({map:A0.paint.d,normalMap:A0.paint.n,color:0x6a7350,roughness:.8,metalness:.3,envMapIntensity:.3});
+prep(M.mine,m=>{m.envMapIntensity=.3;});
 const clip=n=>M.soldier.userData.clips.find(c=>c.name===n);
 function addCrew(x,z){
   const g=T.SkeletonUtils.clone(M.soldier);g.traverse(m=>{if(m.isMesh)m.frustumCulled=false;});scene.add(g);
@@ -662,7 +658,7 @@ function updateCrews(dt){
 // the things in your hand when your head is out
 const INV={pistol:8,mags:3,grenade:4,mine:3,reload:0,kick:0};
 const vm=new T.Group();vm.position.set(.2,-.19,-.42);camera.add(vm);vm.visible=false;
-const held={pistol:M.pistol.clone(),grenade:M.grenade.clone(),mine:new T.Mesh(mineGeo,mineMat)};held.pistol.position.set(0,-.085,-.02);held.grenade.position.set(0,-.02,-.04);held.mine.position.set(0,-.05,-.06);held.mine.rotation.x=.5;for(const k in held){held[k].visible=false;vm.add(held[k]);}
+const held={pistol:M.pistol.clone(),grenade:M.grenade.clone(),mine:M.mine.clone()};held.pistol.position.set(0,-.085,-.02);held.grenade.position.set(0,-.02,-.04);held.mine.position.set(0,-.05,-.06);held.mine.rotation.x=.5;for(const k in held){held[k].visible=false;vm.add(held[k]);}
 const vmArm=new T.Mesh(new T.CylinderGeometry(.036,.044,1,12),sleeveMat);camera.add(vmArm);vmArm.visible=false;
 function takeItem(k){if(state!=='play')return;if(P.headIn){setHud('Open the hatch first','Your pistol, grenades and mines are for when your head is out.',2.5);return;}P.item=P.item===k?null:k;view.yaw=P.aimYaw;view.pitch=P.aimPitch;play('switch',.3);syncUi();}
 function useItem(){
@@ -677,7 +673,7 @@ function useItem(){
   syncUi();
 }
 function reloadPistol(){if(INV.reload>0||INV.pistol>=8)return;if(INV.mags<=0){setHud('No pistol magazines left','',2);return;}INV.mags--;INV.reload=1.6;play('latch',.6);play('breech',.3,'dry',1.1,1.8);}
-function layMine(x,z,mine){const m=new T.Mesh(mineGeo,mineMat);m.position.set(x,hAt(x,z)+.01,z);m.castShadow=true;scene.add(m);mines.push({m,x,z,t:3,mine});if(mine&&NET.peer)netSend({t:'mine',o:[x,z]});}
+function layMine(x,z,mine){const m=M.mine.clone();m.position.set(x,hAt(x,z)-.03,z);scene.add(m);mines.push({m,x,z,t:3,mine});if(mine&&NET.peer)netSend({t:'mine',o:[x,z]});}
 function updateCarry(dt){
   INV.kick=Math.max(0,INV.kick-dt*7);if(INV.reload>0){INV.reload-=dt;if(INV.reload<=0){INV.reload=0;INV.pistol=8;}}
   const it=P.item&&P.item!=='bino'?P.item:null,flat=!xrActive&&it;vm.visible=!!flat;vmArm.visible=!!flat;for(const k in held)held[k].visible=false;

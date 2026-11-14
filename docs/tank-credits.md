@@ -9,7 +9,11 @@ Each is at `https://sketchfab.com/3d-models/<id>`.
 | Used for | File | Title, author | Id |
 |---|---|---|---|
 | Your tank; the platoon's and the other player's (its hull, turret and gun only) | `m/hero.glb`, `m/ally.glb` | "Challenger 2 - Shooting Range", Tom Zimmermann (tomm8) | e70234f6d695467499abc56646ab3e66 |
-| The enemy's tank | `m/foe.glb` | "Battle Tank", _Alexandr (a_l_e_x_a_n_d_e_r) | 5fcc302b89414348811eaa1ad4dc435f |
+| The enemy's tank | `m/foe.glb` | "Tank M-84", pinokio21 | 4b1d69b514aa4ff0a3acc41586d6db33 |
+| The gunsight's and the commander's display units | `m/mfd.glb` | "Aircraft instrument/module thingy", LuddePudde | 797da922b1724a2fbdcf5b6379525b49 |
+| The ready rounds | `m/shell.glb` | "120mm Shell", xephoney | 84164b6b1e234cfd9fe88cdb490032c7 |
+| The mines | `m/mine.glb` | "Soviet AT Land Mine", Coozy (GameDevNick) | b087652da1b6446c856494df7804503c |
+| The hatch lid | `m/hatch.glb` | "hatch v.2.0", TadasSadauskas | 8a4568cbe6e34d7390b3307ea8299a5d |
 | The gun's breech, cradle and recoil gear (cut from the whole gun) | `m/breech.glb` | "ZiS-2 57mm anti-tank gun", Sergey Filin | 61e3cb4b62ad48b186596b0cd88fc156 |
 | Gunner's seat | `m/seat.glb` | "Pilot Seat", Pabooklas | 310dca3487884ba690de7ac9e1995763 |
 | Fire control console | `m/console.glb` | "Old Control Panel", Mik Santos (mikelkel2) | b84686130a2442d985c6f36c23d0836d |

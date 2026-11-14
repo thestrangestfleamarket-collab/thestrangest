@@ -238,6 +238,8 @@ export default {
       // a patron's line said aloud (Workers AI, the AI binding): the page plays it from their seat
       if (p === "/sushi/say") { if (!env.AI) return json({ why: "the website has no AI binding yet" }, 501); if (tooMany("say:" + id, 30)) return json({ why: "too much at once, wait a minute" }, 429);
         const text = word(body.text, 240); if (!text) return json({ why: "nothing to say" }, 400);
+        const SPK = ["orion", "perseus", "orpheus", "helios", "zeus", "arcas", "angus", "luna", "stella", "hera", "asteria", "athena"], spk = SPK.includes(body.speaker) ? body.speaker : "orion";
+        try { const v = await env.AI.run("@cf/deepgram/aura-1", { text, speaker: spk, encoding: "mp3" }, { returnRawResponse: true }); if (v && v.ok) return new Response(v.body, { headers: { "content-type": "audio/mpeg", "cache-control": "no-store" } }); } catch (e) { } // a natural voice of their own, as THE GUEST LIST's guests have; the plain one below if it fails
         try { const r = await env.AI.run("@cf/myshell-ai/melotts", { prompt: text, lang: "en" }), a = r && r.audio; if (typeof a !== "string" || !a) return json({ why: "no voice came" }, 502);
           return new Response(Uint8Array.from(atob(a), ch => ch.charCodeAt(0)), { headers: { "content-type": "audio/mpeg", "cache-control": "no-store" } }); } catch (e) { return json({ why: "the voice could not be made" }, 502); } }
       // a customer at YATAI '86's cart says a line (worker/sushi.js); the day's count is the player's, in Home

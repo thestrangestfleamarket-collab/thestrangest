@@ -13,8 +13,9 @@ const GEO = {   // where the thing stands to look (at), what it looks at (look),
   locker: { at: [.5, -25.1], look: [2.2, 1, -25], eye: [1.5, 1.6, -25.2] }, tarp: { at: [-.9, -27.7], look: [-2.15, .4, -26.5], eye: [-2.15, .45, -27.5] },
   plywood: { at: [.7, -27], look: [2.25, .4, -27], eye: [2.25, .5, -25.72] }, crates: { at: [-.3, -28.6], look: [-2.25, .5, -28.6], eye: [-2.25, 1.4, -27.8] },
   trashbags: { at: [.4, -29], look: [2.25, .4, -29.1], eye: [2.15, 1.55, -28.5] }, dumpster2: { at: [.75, -30.6], look: [1.95, .5, -30.6], eye: [1.55, 1.75, -30.6] },
+  manhole: { at: [-.9, -9.45], look: [-2.05, -.8, -9.45], eye: [-2.05, .9, -9.45] }, undercar: { at: [-.55, -19.2], look: [1.15, .2, -19.2], eye: [.05, .3, -19.2] }, fridge: { at: [-.6, -25.1], look: [-2.2, .8, -25.1], eye: [-1.65, 1.45, -25.25] }, pipe: { at: [-.2, -32.3], look: [1.6, .45, -32.65], eye: [.45, .45, -32.65] },
   shutter: { at: [-1.5, -31.2], look: [-3.7, .4, -31.2], eye: [-2.97, .45, -31.2] }, mattress: { at: [0, -32.5], look: [0, .4, -33.6], eye: [-1.2, .6, -33.62] } };
-const WORLD = { W, LEN, GEO, cloth: null, puddles: [], lamps: [], blocked: [[-2.6, -1.3, -21.85, -18.45]], updaters: [], gate: null, rain: null, lit: null, wallLamp: null };
+const WORLD = { W, LEN, GEO, cloth: null, puddles: [], lamps: [], blocked: [[-2.6, -1.3, -21.85, -18.45], [-2.6, -1.6, -9.9, -9]], updaters: [], gate: null, rain: null, lit: null, wallLamp: null };
 
 function canvasTex(w, h, draw, o = {}) { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; if (o.rep) { t.wrapS = t.wrapT = THREE.RepeatWrapping; } t.anisotropy = 4; return t; }
 const speck = (g, w, h, n, col, a, s = 2) => { for (let i = 0; i < n; i++) { g.fillStyle = col; g.globalAlpha = Math.random() * a; g.fillRect(Math.random() * w, Math.random() * h, 1 + Math.random() * s, 1 + Math.random() * s); } g.globalAlpha = 1; };
@@ -30,7 +31,7 @@ function build() {
     for (let i = 0; i < 12; i++) { const r = 20 + Math.random() * 60, x = Math.random() * w, y = Math.random() * h, gr = g.createRadialGradient(x, y, 2, x, y, r); gr.addColorStop(0, 'rgba(60,40,15,.55)'); gr.addColorStop(1, 'rgba(60,40,15,0)'); g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2); } }, { rep: 1 }) }); ticking.userData.tile = 1;
 
   /* the ground: one sheet of wet asphalt, cut where the cellar steps go down */
-  stat(4.1, 2, LEN + 12.2, .55, -1, -LEN / 2 + 5.9, asphalt); stat(1.1, 2, 28.6, -2.05, -1, -4.3, asphalt); stat(1.1, 2, 12.6, -2.05, -1, -27.9, asphalt);
+  stat(4.1, 2, LEN + 12.2, .55, -1, -LEN / 2 + 5.9, asphalt); stat(1.1, 2, 19.05, -2.05, -1, .475, asphalt); stat(1.1, 2, 8.75, -2.05, -1, -14.225, asphalt); stat(.15, 2, .8, -2.525, -1, -9.45, asphalt); stat(.15, 2, .8, -1.575, -1, -9.45, asphalt); stat(.8, .1, .8, -2.05, -1.4, -9.45, conc); stat(1.1, 2, 12.6, -2.05, -1, -27.9, asphalt);
   stat(12, .16, 3.2, 0, .08, 1.9, conc, { ghost: true });   // the pavement outside the gate
   for (let i = 0; i < 5; i++) { const h = 1.3 - (i + 1) * 1.3 / 6; stat(1.1, h, .3, -2.05, -1.3 + h / 2, -18.75 - i * .3, conc, { ghost: true }); }   // steps to see, a slope to walk
   stat(1.1, .2, 2.22, -2.05, -.731, -19.44, null, { rx: -.626 });
@@ -152,7 +153,7 @@ function build() {
   const pallet = (x, y, z, o) => { const g = new THREE.Group(), sh = []; const add = (w, h, d, px, py, pz) => { const m = boxMesh(w, h, d, wood); m.position.set(px, py, pz); g.add(m); sh.push(sBox(w, h, d, px, py, pz)); };   // slats with gaps: you can be seen between them
     for (let i = 0; i < 6; i++) add(1.2, .022, .1, 0, .061, -.575 + i * .23); for (const px of [-.55, 0, .55]) add(.09, .1, 1.25, px, 0, 0); for (const pz of [-.575, 0, .575]) add(1.2, .022, .1, 0, -.061, pz);
     return dyn(g, sh, { x, y, z, mass: 17, kind: 'wood', spot: 'pallets', name: 'a pallet', fr: 1.1, asleep: true, ...o }); };
-  pallet(-2.18, .6, -11.5, { ry: Math.PI / 2, rx: 1.0 }); pallet(-2.17, .6, -12.75, { ry: Math.PI / 2 + .03, rx: 1.02 }); pallet(-1.2, .075, -10.3, { ry: .3 });
+  pallet(-2.18, .6, -11.5, { ry: Math.PI / 2, rx: 1.0 }); pallet(-2.17, .6, -12.75, { ry: Math.PI / 2 + .03, rx: 1.02 }); pallet(-.85, .075, -10.6, { ry: .3 });
 
   WORLD.cloth = makeCloth(16, 15, 2.1, 1.95, -2.5, -13.9, carpet);
   stat(1.5, .05, .6, -1.7, .025, -15.45, card, { ghost: true, noShadow: true });
@@ -160,8 +161,14 @@ function build() {
   { const g = model('sofa_02', { long: 2.05 }), s = g.userData.size, deep = Math.min(s.x, s.z), inner = g.children[0]; if (s.x > s.z) inner.rotation.y = Math.PI / 2;   // long side along the alley, its back to the wall
     dyn(g, [sBox(deep * .95, .42, 2, 0, .21, 0), sBox(.22, s.y - .42, 2, -deep / 2 + .13, .42 + (s.y - .42) / 2, 0)], { x: -1.5, y: .01, z: -16.9, ry: .06, mass: 48, kind: 'soft', spot: 'sofa', name: 'the sofa', fr: 1.1, ld: 1, ad: 2, asleep: true }); }
 
-  { const g = model('covered_car', { long: 4.3 }), s = g.userData.size, inner = g.children[0]; if (s.x > s.z) inner.rotation.y = Math.PI / 2; g.position.set(1.15, 0, -19.15); scene.add(g); const wd = Math.min(s.x, s.z);
-    stat(wd * .92, s.y * .6, 4.15, 1.15, s.y * .3, -19.15, null, { kind: 'soft' }); stat(wd * .8, s.y * .4, 2.2, 1.15, s.y * .8, -19.3, null, { kind: 'soft' }); }
+  { // a car burnt to its shell and left on blocks: bare, rusted, no glass, room to lie flat beneath it
+    const cx = 1.15, cz = -19.15, burnt = mat('rusty_metal_02', { tile: 1.1, metal: true, color: 0x3d3632, rough: 1 }), M = { kind: 'metal' }; burnt.envMapIntensity = .3;
+    stat(1.7, .09, 4.2, cx, .565, cz, burnt, M); for (const s of [-1, 1]) { stat(.05, .5, 4.2, cx + s * .825, .86, cz, burnt, M); stat(1.7, .5, .05, cx, .86, cz + s * 2.075, burnt, M); }
+    stat(1.7, .04, 1.25, cx, 1.12, cz + 1.47, burnt, M); stat(1.7, .04, .85, cx, 1.12, cz - 1.67, burnt, M); stat(1.56, .04, 1.9, cx, 1.66, cz - .3, burnt, M);
+    for (const [dx, dz] of [[-.77, .83], [.77, .83], [-.77, -.2], [.77, -.2], [-.77, -1.22], [.77, -1.22]]) stat(.05, .54, .05, cx + dx, 1.39, cz + dz, burnt, M); for (const dz of [.45, -.6]) stat(1.3, .5, .12, cx, .87, cz + dz, dark, { ghost: true });
+    for (const [dx, dz] of [[-.6, 1.45], [.6, 1.45], [-.6, -1.45], [.6, -1.45]]) stat(.3, .52, .42, cx + dx, .26, cz + dz, conc);
+    const ash = new THREE.Mesh(new THREE.CircleGeometry(2.3, 24), new THREE.MeshStandardMaterial({ color: 0x020202, roughness: 1, transparent: true, opacity: .7, depthWrite: false })); ash.rotation.x = -Math.PI / 2; ash.scale.set(.62, 1.1, 1); ash.position.set(cx, .007, cz); ash.renderOrder = 1; scene.add(ash);
+    for (const [x, z, rz] of [[.05, -21.6, 1.57], [1.9, -16.75, .25]]) { const g = model('rusted_wheel_rim_01', { long: .42, mid: true }); dyn(g, [sCyl(.2, .2)], { x, y: .22, z, rz, mass: 9, kind: 'metal', spot: 'undercar', name: 'a wheel rim', fr: .8, asleep: true }); } }
 
   for (const [x, z, n] of [[1.45, -22.3, 5], [1.5, -23.0, 4]]) for (let i = 0; i < n; i++) { const g = model('old_tyre', { long: .66, mid: true }), s = g.userData.size, inner = g.children[0]; if (s.y > s.x * .9) inner.rotation.x = Math.PI / 2; else if (s.y > s.z * .9) inner.rotation.z = Math.PI / 2;
     dyn(g, [sCyl(.32, .2)], { x: x + rnd(-.02, .02), y: .11 + i * .205, z: z + rnd(-.02, .02), ry: rnd(6), mass: 8, kind: 'rubber', spot: 'tyres', name: 'a tyre', fr: 1.2, re: .2, ld: .4, asleep: true }); }
@@ -180,9 +187,20 @@ function build() {
   for (const [x, y, z] of [[1.35, 0, -28.75], [1.3, 0, -29.3], [1.85, 0, -28.6], [1.6, .42, -29.0], [2.3, 0, -28.55], [1.1, 0, -29.75]]) prop('trashbag', { h: rnd(.5, .68), x, y: y + .02, z, ry: rnd(6), mass: 3.5, kind: 'soft', spot: 'trashbags', name: 'a trash bag', ball: .28, ld: 1.5, ad: 3, fr: 1.2, asleep: true });
   { const g = boxMesh(1.9, 1.35, .2, ticking); dyn(g, [sBox(1.9, 1.35, .2)], { x: 0, y: .66, z: -33.52, rx: -.42, mass: 15, kind: 'soft', spot: 'mattress', name: 'the mattress', fr: 1.3, ld: .8, ad: 2, asleep: true }); }
 
+  { // the sewer manhole by the left wall: an iron cover over a shaft
+    const g = model('water_manhole_cover', { long: 1.12 }), h = Math.max(.03, g.userData.size.y); dyn(g, [sCyl(.55, h, 0, h / 2, 0)], { x: -2.05, y: .01, z: -9.45, mass: 28, kind: 'lid', spot: 'manhole', name: 'the manhole cover', fr: .9, ld: .6, ad: 1.5 }).kick = true;
+    for (const [w, d, x, z] of [[1, .1, -2.05, -9], [1, .1, -2.05, -9.9], [.1, .8, -2.5, -9.45], [.1, .8, -1.6, -9.45]]) stat(w, .012, d, x, .004, z, conc, { ghost: true, noShadow: true });
+    for (let i = 0; i < 4; i++) stat(.28, .03, .03, -2.44, -.25 - i * .3, -9.45, iron, { ghost: true }); }
+  { // an old refrigerator dumped against the left wall
+    const z = -25.1, enamel = new THREE.MeshStandardMaterial({ roughness: .55, map: canvasTex(256, 512, (g, w, h) => { g.fillStyle = '#b9b6aa'; g.fillRect(0, 0, w, h); for (let i = 0; i < 40; i++) { const x = Math.random() * w, y = Math.random() * h, l = 30 + Math.random() * 160; const gr = g.createLinearGradient(0, y, 0, y + l); gr.addColorStop(0, 'rgba(110,60,25,.55)'); gr.addColorStop(1, 'rgba(110,60,25,0)'); g.fillStyle = gr; g.fillRect(x, y, 2 + Math.random() * 7, l); } speck(g, w, h, 2500, '#3a2a18', .35, 3); g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(0, h - 60, w, 60); }) }); enamel.userData.tile = 1.7; const M = { kind: 'metal' };
+    stat(.04, 1.7, .7, -2.55, .85, z, enamel, M); stat(.62, 1.7, .04, -2.24, .85, z + .33, enamel, M); stat(.62, 1.7, .04, -2.24, .85, z - .33, enamel, M); stat(.62, .04, .7, -2.24, 1.68, z, enamel, M); stat(.62, .03, .7, -2.24, .015, z, enamel, M);
+    lid('fridge', -1.905, .88, z + .33, [0, -1, 0], 0, 1.7, .05, 1.6, .66, 0, 0, -.33, enamel, 12); const hd = boxMesh(.03, .3, .03, iron); hd.position.set(.045, .15, -.58); P.lids.fridge.T.o.add(hd); }
+  { // a length of concrete drain pipe by the end wall, its far end against the bricks
+    for (let i = 0; i < 10; i++) { const a = i / 10 * Math.PI * 2; stat(1.8, .07, .34, 1.6, .46 + Math.cos(a) * .465, -32.65 + Math.sin(a) * .465, conc, { rx: a }); } }
+
   /* loose rubbish that gives you away if you kick it */
   const glass = new THREE.MeshStandardMaterial({ color: 0x1d3a22, roughness: .1, metalness: 0, transparent: true, opacity: .8 });
-  for (const [x, z] of [[.5, -4.4], [-1.9, -9.6], [.2, -13], [-.8, -19.5], [.9, -24], [-.3, -27.2], [-1.4, -31.6], [1, -32.8]]) { const g = new THREE.Group(), b = new THREE.Mesh(new THREE.CylinderGeometry(.033, .033, .18, 10), glass), nk = new THREE.Mesh(new THREE.CylinderGeometry(.013, .028, .1, 8), glass); nk.position.y = .14; g.add(b, nk); b.castShadow = true; g.rotation.z = Math.PI / 2;
+  for (const [x, z] of [[.5, -4.4], [-1.1, -8.8], [.2, -13], [-.8, -19.5], [.9, -24], [-.3, -27.2], [-1.4, -31.6], [.1, -31.4]]) { const g = new THREE.Group(), b = new THREE.Mesh(new THREE.CylinderGeometry(.033, .033, .18, 10), glass), nk = new THREE.Mesh(new THREE.CylinderGeometry(.013, .028, .1, 8), glass); nk.position.y = .14; g.add(b, nk); b.castShadow = true; g.rotation.z = Math.PI / 2;
     dyn(g, [sCyl(.033, .26, 0, .03, 0)], { x, y: .04, z, ry: rnd(6), rz: Math.PI / 2, mass: .45, kind: 'glass', name: 'a bottle', fr: .4, ad: .25, ld: .15, ccd: true, asleep: true }); }
   for (const [x, z] of [[-1.7, -4], [1.9, -15.9]]) prop('cement_bag', { long: .7, x, y: .01, z, ry: rnd(6), mass: 25, kind: 'soft', name: 'a cement bag', fr: 1.3, ld: 2, ad: 4, asleep: true });
   prop('industrial_pastic_container', { long: .62, x: -1.9, y: .01, z: -2.3, ry: .4, mass: 2.5, kind: 'card', name: 'a tub', asleep: true });

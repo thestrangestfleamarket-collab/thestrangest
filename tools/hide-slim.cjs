@@ -1,6 +1,6 @@
 // thins THE ALLEY's heavier models for a headset: node tools/hide-slim.cjs (after tools/hide-assets.py)  ->  data/hide/m/*.glb rewritten with fewer triangles
 const fs = require('fs'), { MeshoptSimplifier: S } = require('meshoptimizer');
-const MAX = { metal_trash_can: 3500, cardboard_box_01: 2500, exterior_aircon_unit: 5000, covered_car: 8000, industrial_pastic_container: 3500, wooden_crate_02: 2500, trashbag: 2000, security_light: 2000, industrial_wall_lamp: 2500, utility_box_01: 2500 };
+const MAX = { metal_trash_can: 3500, cardboard_box_01: 2500, exterior_aircon_unit: 5000, industrial_pastic_container: 3500, wooden_crate_02: 2500, trashbag: 2000, security_light: 2000, industrial_wall_lamp: 2500, utility_box_01: 2500, water_manhole_cover: 2500, rusted_wheel_rim_01: 2200 };
 S.ready.then(() => { for (const [name, max] of Object.entries(MAX)) { const f = 'data/hide/m/' + name + '.glb', b = fs.readFileSync(f), jl = b.readUInt32LE(12), G = JSON.parse(b.slice(20, 20 + jl)); let bin = b.slice(28 + jl);
   const prims = G.meshes.flatMap(m => m.primitives).filter(p => p.indices != null), total = prims.reduce((n, p) => n + G.accessors[p.indices].count / 3, 0); if (total <= max) continue;
   const done = new Map(); let out = 0;

@@ -5,8 +5,8 @@ from PIL import Image
 API, OUT = 'https://api.polyhaven.com/files/', 'data/hide/'
 TEX = ['red_brick_03', 'dark_brick_wall', 'asphalt_02', 'green_metal_rust', 'rusty_metal_02', 'corrugated_iron_02', 'weathered_planks', 'dirty_carpet', 'hessian_230', 'dirty_concrete']
 MODELS = {'metal_trash_can': 512, 'trashbag': 512, 'cardboard_box_01': 1024, 'old_tyre': 512, 'Barrel_01': 512, 'barrel_03': 512, 'exterior_aircon_unit': 512,
-          'utility_box_01': 512, 'industrial_wall_lamp': 256, 'rollershutter_door': 1024, 'covered_car': 1024, 'sofa_02': 1024,
-          'industrial_pastic_container': 512, 'cement_bag': 512, 'wooden_crate_02': 512, 'security_light': 256}
+          'utility_box_01': 512, 'industrial_wall_lamp': 256, 'rollershutter_door': 1024, 'sofa_02': 1024,
+          'industrial_pastic_container': 512, 'cement_bag': 512, 'wooden_crate_02': 512, 'security_light': 256, 'water_manhole_cover': 512, 'rusted_wheel_rim_01': 512}
 
 def get(url):
     return urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'asset-fetch'}), timeout=120).read()

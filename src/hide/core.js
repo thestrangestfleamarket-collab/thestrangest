@@ -26,7 +26,7 @@ async function initPhysics() { await RAPIER.init({}); P.world = new RAPIER.World
 
 const TEX = {}, MODELS = {}, texL = new THREE.TextureLoader();
 const TEXN = ['red_brick_03', 'dark_brick_wall', 'asphalt_02', 'green_metal_rust', 'rusty_metal_02', 'corrugated_iron_02', 'weathered_planks', 'dirty_carpet', 'hessian_230', 'dirty_concrete'];
-const MODN = ['metal_trash_can', 'trashbag', 'cardboard_box_01', 'old_tyre', 'barrel_01', 'barrel_03', 'exterior_aircon_unit', 'utility_box_01', 'industrial_wall_lamp', 'rollershutter_door', 'covered_car', 'sofa_02', 'industrial_pastic_container', 'cement_bag', 'wooden_crate_02', 'security_light', 'brute'];
+const MODN = ['metal_trash_can', 'trashbag', 'cardboard_box_01', 'old_tyre', 'barrel_01', 'barrel_03', 'exterior_aircon_unit', 'utility_box_01', 'industrial_wall_lamp', 'rollershutter_door', 'sofa_02', 'industrial_pastic_container', 'cement_bag', 'wooden_crate_02', 'security_light', 'water_manhole_cover', 'rusted_wheel_rim_01', 'brute'];
 // what shiny things reflect is the alley itself, pictured once from its middle with its own lamps lit
 function reflect() { const pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(scene, 0, .1, 70, { position: new THREE.Vector3(0, 1.6, -11) }).texture; scene.environmentIntensity = .28; pm.dispose(); }
 async function loadAssets(onp) {

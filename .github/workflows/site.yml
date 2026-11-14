@@ -70,6 +70,7 @@ jobs:
           k holmes  'src/holmes/|data/holmes/|worker/holmes|tools/holmes|tests/holmes\.cjs'
           k jam     'src/jam/|data/jam/|tools/jam\.cjs|tests/jam\.cjs'
           k shoot   'src/shoot/|tools/shoot\.cjs|tests/shoot\.cjs'
+          k sniper  'src/sniper/|data/sniper/|tools/sniper|tests/sniper\.cjs'
           k duel    'src/duel/|data/duel/|tools/duel\.cjs|tests/duel\.cjs'
           k laser   'src/laser/|worker/laser|tools/laser\.cjs|tests/laser\.cjs'
           k vrbody  'src/162c|src/111b|vrbody\.cjs'
@@ -278,6 +279,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' cantina')
         run: node tests/cantina.cjs dist/cantina.html
+      - name: Cold Bore (the sniper's contracts at /sniper; the card against the flight, each contract, the rifle by hand in an emulated Quest 3)
+        timeout-minutes: 25
+        if: contains(steps.f.outputs.run, ' sniper')
+        run: node tests/sniper.cjs dist/sniper.html
       - name: Breachline (the duel at /shoot; a practice round, a kill, and the guns in an emulated Quest 3)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' shoot')

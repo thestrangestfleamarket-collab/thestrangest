@@ -67,7 +67,7 @@ function drawWatch() { const g = watch.g; g.clearRect(0, 0, 256, 256); g.fillSty
 function drawBoard(title, lines, foot) { const g = board.g, W = 1024, H = 660; g.clearRect(0, 0, W, H); g.fillStyle = 'rgba(6,6,8,.92)'; g.fillRect(0, 0, W, H); g.strokeStyle = 'rgba(255,220,180,.25)'; g.strokeRect(14, 14, W - 28, H - 28);
   g.textAlign = 'center'; g.fillStyle = '#efe5d2'; g.font = '400 64px Georgia,serif'; g.fillText(title, W / 2, 110); g.font = '400 28px Georgia,serif'; g.fillStyle = 'rgba(230,220,200,.85)'; let y = 180; for (const l of lines) y = wrap(g, l, W / 2, y, 880, 38) + 6;
   if (foot) { g.font = '500 24px ui-monospace,monospace'; g.fillStyle = 'rgba(255,200,150,.8)'; g.fillText(foot, W / 2, H - 46); } board.t.needsUpdate = true; }
-function showBoard(on) { board.m.visible = on; if (on) { camera.getWorldPosition(_a); camera.getWorldDirection(_b); _b.y = 0; _b.normalize(); board.m.position.copy(_a).addScaledVector(_b, 1.3); board.m.position.y = _a.y; board.m.lookAt(_a); } }
+function showBoard(on) { board.m.visible = on; if (on) { camera.getWorldPosition(_a); camera.getWorldDirection(_b); board.m.position.copy(_a).addScaledVector(_b, 1.3); board.m.lookAt(_a); } }
 const _a = new THREE.Vector3(), _b = new THREE.Vector3();
 A.onSay = (text, o) => { sub = { text: (o.whisper ? '' : '') + text, t: 2.5 + text.length * .06, who: o.who || 'them' }; };
 
@@ -92,7 +92,7 @@ function physics(dt) { P.world.timestep = dt; P.world.step(eq); eq.drainContactF
 
 /* the night */
 function startNight(n) {
-  G.night = n; const N = NIGHTS[n]; G.chores = [...N.chores]; G.done = {}; G.hold = {}; G.min = 0; G.mode = 'play'; G.hunt = null; G.sleep = null; G.flinches = 0; G.close = 0; G.composure = 100; G.hideMem = null; G.thoughts = []; G.log = []; G.why = ''; G.t = 0; G.cutDone = !N.cut; G.knockDone = !N.knock; G.stayer = null;
+  G.night = n; const N = NIGHTS[n]; G.chores = [...N.chores]; G.done = {}; G.hold = {}; G.min = 0; G.mode = 'play'; G.hunt = null; G.sleep = null; G.flinches = 0; G.close = 0; G.composure = 100; G.hideMem = null; G.thoughts = []; G.log = []; G.why = ''; G.t = 0; G.red = 0; G.cutDone = !N.cut; G.knockDone = !N.knock; G.stayer = null;
   G.phone = { at: rnd(40, 70), ringing: false, rings: 0, call: null, fake: false };
   ROOM.power = true; ROOM.lights.main.on = true; ROOM.lights.bed.on = false; ROOM.tv.on = false; ROOM.tv.msg = ''; ROOM.fridge.open = false; ROOM.bathDoor.shut = false; ROOM.chain = false; ROOM.chainMesh.visible = false; ROOM.chainLoose.visible = true; ROOM.stove.on = false; ROOM.stove.heat = 0; ROOM.closet.want = .18;
   for (const T of P.things) { T.b.setTranslation(T.home.p, true); T.b.setRotation(T.home.q, true); T.b.setLinvel({ x: 0, y: 0, z: 0 }, true); T.b.setAngvel({ x: 0, y: 0, z: 0 }, true); }
@@ -268,7 +268,7 @@ function tick(dt) {
 function draw(dt) {
   const shut = PL.shutK; lid.material.opacity = Math.max(shut, G.mode === 'hunt' && G.hunt && G.hunt.phase === 'search' && PL.covered ? .93 : 0, G.fade || 0); G.red = Math.max(0, G.red - dt * .5); blood.material.opacity = G.red * .6;
   drawHud(); if (renderer.xr.isPresenting) { if ((step++ % 10) === 0) drawWatch(); }
-  if (comp && !renderer.xr.isPresenting) { const h = ray0(); focus = lerp(focus, h, 1 - Math.exp(-dt * 5)); bokeh.uniforms.focus.value = focus; bokeh.uniforms.aperture.value = PL.eyesShut ? .003 : .0006; grain.uniforms.t.value = CLOCK.t; grain.uniforms.amt.value = .045 + (G.mode === 'hunt' ? .05 : 0); comp.render(dt); }
+  if (comp && !renderer.xr.isPresenting) { const h = board.m.visible ? 1.3 : ray0(); focus = lerp(focus, h, 1 - Math.exp(-dt * 5)); bokeh.uniforms.focus.value = focus; bokeh.uniforms.aperture.value = PL.eyesShut ? .003 : .0006; grain.uniforms.t.value = CLOCK.t; grain.uniforms.amt.value = .045 + (G.mode === 'hunt' ? .05 : 0); comp.render(dt); }
   else renderer.render(scene, camera);
 }
 // what you look at, for the lens: through the window you look at the city, not the glass

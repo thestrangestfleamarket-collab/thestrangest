@@ -24,6 +24,27 @@ export function makeStreet(scene, city, glow, R, o) {
     const o2 = new THREE.BufferGeometry(); o2.setAttribute('position', new THREE.Float32BufferAttribute(keep, 3)); o2.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); return o2; })();
   const box = new THREE.BoxGeometry(1, 1, 1), cyl = new THREE.CylinderGeometry(0.5, 0.5, 1, 10);
   const DIM = new THREE.Color(0.52, 0.45, 0.36), litM = new THREE.MeshBasicMaterial({ vertexColors: true, color: DIM }), roomM = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, color: DIM }); // rooms seen from a dark street: dim and warm, never the brightest thing in view
+  // light baked into the rooms' own shading: brighter toward the ceiling lamps, pools of light on floor and ceiling under the tubes, dark where walls meet and where a thing stands on another, a tiled floor (no lamp is spent on a room)
+  const bakeLight = (m, room) => { m.onBeforeCompile = (sh) => {
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vL; varying vec3 vS; varying vec3 vW; varying vec3 vN;').replace('#include <begin_vertex>', `#include <begin_vertex>
+      vL = position${room ? ' + vec3(0.0, 0.0, 0.5)' : ''}; vN = normal;
+      #ifdef USE_INSTANCING
+        vS = vec3(length(instanceMatrix[0].xyz), length(instanceMatrix[1].xyz), length(instanceMatrix[2].xyz)); vW = (modelMatrix * instanceMatrix * vec4(position, 1.0)).xyz;
+      #else
+        vS = vec3(1.0); vW = (modelMatrix * vec4(position, 1.0)).xyz;
+      #endif`);
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vL; varying vec3 vS; varying vec3 vW; varying vec3 vN;').replace('#include <color_fragment>', `#include <color_fragment>
+      { vec3 an = abs(vN); vec2 e = an.y > 0.5 ? (0.5 - abs(vL.xz)) * vS.xz : an.x > 0.5 ? (0.5 - abs(vL.zy)) * vS.zy : (0.5 - abs(vL.xy)) * vS.xy;
+        float edge = min(e.x, e.y), big = step(1.4, max(vS.x, vS.z)) * step(vS.y, 0.2) + step(1.6, vS.y) * step(1.4, max(vS.x, vS.z)), k = 1.0;
+        k *= mix(0.66, 1.0, smoothstep(0.0, mix(0.05, 0.5, clamp(big, 0.0, 1.0)), edge));
+        if (an.y < 0.5) { ${room ? 'k *= mix(0.55, 1.08, smoothstep(-0.5, 0.5, vL.y));' : 'k *= mix(0.66, 1.22, smoothstep(0.0, 2.7, vW.y)); k *= mix(0.62, 1.0, smoothstep(0.0, 0.14, (vL.y + 0.5) * vS.y));'} }
+        else if (big > 0.5) { float pool = exp(-(pow((vL.z - 0.2) * 5.5, 2.0) + pow(vL.x * 2.6, 2.0))) + exp(-(pow((vL.z + 0.22) * 5.5, 2.0) + pow(vL.x * 2.6, 2.0))); k *= (vN.y > 0.0 ? 1.15 : 0.9) + pool * (vN.y > 0.0 ? 1.1 : 0.7);
+          vec2 t = fract(vW.xz / (vN.y > 0.0 ? 0.3 : 0.6)); k *= mix(vN.y > 0.0 ? 0.84 : 0.7, 1.0, step(0.035, t.x) * step(0.035, t.y)); }
+        diffuseColor.rgb *= k; }`); }; m.customProgramCacheKey = () => 'bake' + (room ? 1 : 0); return m; };
+  bakeLight(litM, false); bakeLight(roomM, true);
+  // the shadow a thing throws on the floor it stands on: one soft dark patch each
+  const shadM = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.5, depthWrite: false });
+  shadM.onBeforeCompile = (sh) => { sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec2 vQ;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvQ = position.xz;'); sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec2 vQ;').replace('#include <color_fragment>', '#include <color_fragment>\ndiffuseColor.a *= smoothstep(0.5, 0.28, max(abs(vQ.x), abs(vQ.y)));'); }; shadM.customProgramCacheKey = () => 'shad';
   const wallT = T.canvasTex(256, 256, (g, w, h) => { g.fillStyle = '#b4b0a8'; g.fillRect(0, 0, w, h); const r = T.rng(5); for (let i = 0; i < 2600; i++) { g.globalAlpha = 0.08; g.fillStyle = r() > 0.5 ? '#000' : '#fff'; g.fillRect(r() * w, r() * h, 1 + r() * 3, 1 + r() * 3); } g.globalAlpha = 1; });
   T.dirty(wallT, 61, { drips: 26, stains: 20, cracks: 3 });
   const real = (n, size) => T.worldUV(mat({ map: T.photo(n, () => wallT) }), size);
@@ -58,7 +79,7 @@ export function makeStreet(scene, city, glow, R, o) {
     for (const k of [g, gl]) { k.position.set(dir > 0 ? x : x + w, 0, z); k.rotation.y = dir > 0 ? 0 : Math.PI; }
     city.add(g); city.add(gl);
     const W = (lx, ly, lz) => new THREE.Vector3(dir > 0 ? x + lx : x + w - lx, ly, z + dir * lz);
-    const wm = WALLM[(si * 7 + ((R() * 3) | 0)) % WALLM.length], frame = new Bag(box, wm.m, 700), trm = new Bag(box, trimM, 1500), shut = new Bag(box, SHUTM[si % SHUTM.length], 12), rooms = new Bag(roomGeo, roomM, 420), props = new Bag(boxLit, litM, 3600), glass = new Bag(box, glassM, 520), cy = new Bag(cylLit, litM, 900), oc = new Bag(cyl, trimM, 160);
+    const wm = WALLM[(si * 7 + ((R() * 3) | 0)) % WALLM.length], frame = new Bag(box, wm.m, 700), trm = new Bag(box, trimM, 1500), shut = new Bag(box, SHUTM[si % SHUTM.length], 12), shad = new Bag(box, shadM, 260), rooms = new Bag(roomGeo, roomM, 420), props = new Bag(boxLit, litM, 3600), glass = new Bag(box, glassM, 520), cy = new Bag(cylLit, litM, 900), oc = new Bag(cyl, trimM, 160);
     const face = dir > 0 ? 0 : Math.PI, wall = new THREE.Color(pk(WALLS)).multiplyScalar(wm.k), trim = 0x2a2c30, y0 = opt.y0 ?? 3.3, near = opt.near;
     if (!opt.noBody) { const b = new THREE.Mesh(box, o.body); b.scale.set(w - 0.02, h, 7); b.position.set(w / 2, h / 2 - 0.05, -4.7 - 3.5); b.castShadow = true; g.add(b); }
 
@@ -113,12 +134,15 @@ export function makeStreet(scene, city, glow, R, o) {
       const D = rr(3.2, 4.4), L = { izakaya: [1, 0.72, 0.42], books: [1, 0.9, 0.72], records: [0.9, 0.95, 1], pharmacy: [0.86, 1, 0.9], tv: [0.75, 0.88, 1], kissa: [1, 0.7, 0.4], grocer: [1, 0.92, 0.76], game: [0.55, 0.4, 0.8], liquor: [1, 0.86, 0.6], camera: [0.92, 0.96, 1] }[type];
       const B = type === 'game' ? 0.2 : type === 'kissa' || type === 'izakaya' ? 0.34 : 0.44, lc = (hex, k = 1) => { const c = col(hex, k * B); c.r *= L[0]; c.g *= L[1]; c.b *= L[2]; return c; };
       const xa = x0 + 0.13, xb = x0 + bw - 0.13, iw = xb - xa, xm = (xa + xb) / 2, wallC = pk([0xd8d0c0, 0xc8c0b0, 0xb8b4a8, 0xd0c8b4]), floorC = pk([0x6a5a48, 0x8a8478, 0x4a4a4e, 0x7a6a50]);
-      // the room itself
+      // the room itself; whatever is then stood on its floor throws a soft shadow
+      const add0 = props.add; let floorY = 0.07; props.add = function (px, py, pz, sx, sy, sz, c2, ry2, rx2) { add0.call(props, px, py, pz, sx, sy, sz, c2, ry2, rx2); if (floorY && py - sy / 2 < 0.16 && sy > 0.12 && sx < iw * 0.85 && sz < D * 0.85 && pz < -0.2) shad.add(px, floorY, pz, sx + 0.3, 0.002, sz + 0.3, 0x000000, ry2 || 0); };
       props.add(xm, 0.03, -D / 2, iw, 0.06, D, lc(floorC, 0.8)); props.add(xm, 2.72, -D / 2, iw, 0.06, D, lc(0xd8d4c8, 0.7));
       props.add(xm, 1.37, -D, iw, 2.7, 0.08, lc(wallC)); props.add(xa, 1.37, -D / 2, 0.06, 2.7, D, lc(wallC, 0.85)); props.add(xb, 1.37, -D / 2, 0.06, 2.7, D, lc(wallC, 0.85));
       for (const tz of [-D * 0.3, -D * 0.72]) { props.add(xm, 2.66, tz, Math.min(1.2, iw * 0.5), 0.05, 0.09, new THREE.Color(L[0] * 2.4, L[1] * 2.4, L[2] * 2.4)); props.add(xm, 2.69, tz, Math.min(1.3, iw * 0.55), 0.03, 0.16, lc(0x8a8a84, 0.6)); }
       // the front: a low wall, panes between posts, a door standing open
       const doorR = R() < 0.5, dw = 0.92, dx = doorR ? xb - dw / 2 - 0.05 : xa + dw / 2 + 0.05, gx0 = doorR ? xa : xa + dw + 0.1, gx1 = doorR ? xb - dw - 0.1 : xb, openFront = type === 'grocer';
+      add0.call(props, xm, 0.13, -D + 0.05, iw, 0.14, 0.03, lc(0x4a4038, 0.8)); for (const sx of [xa + 0.04, xb - 0.04]) add0.call(props, sx, 0.13, -D / 2, 0.03, 0.14, D, lc(0x4a4038, 0.8)); // skirting
+      { const bx = doorR ? xa + 0.7 : xb - 0.7; add0.call(props, bx, 1.05, -D + 0.05, 0.86, 2.02, 0.03, lc(0x2a2622, 0.5)); add0.call(props, bx, 2.1, -D + 0.06, 0.98, 0.08, 0.05, lc(0x5a5048)); for (const ox of [-0.46, 0.46]) add0.call(props, bx + ox, 1.05, -D + 0.06, 0.07, 2.1, 0.05, lc(0x5a5048)); } // the way through to the back, dark
       if (!openFront) {
         trm.add((gx0 + gx1) / 2, 0.24, -0.04, gx1 - gx0, 0.48, 0.16, col(pk([0x4a5a5a, 0x5a4a3a, 0x3a4450, 0x6a6258]), 1, 0.1));
         glass.add((gx0 + gx1) / 2, 1.6, -0.04, gx1 - gx0, 2.24, 0.012);
@@ -151,7 +175,7 @@ export function makeStreet(scene, city, glow, R, o) {
       if (type === 'books') { shelf(xa + 0.1, xb - 0.1, -D + 0.2, 'books'); for (const tz of [-D * 0.35, -D * 0.62]) { props.add(xm, 0.4, tz, iw * 0.45, 0.8, 0.6, lc(0x6a4a2e)); for (let k = 0; k < 9; k++) { const n2 = 2 + ((R() * 6) | 0); for (let s2 = 0; s2 < n2; s2++) props.add(xm - iw * 0.18 + (k % 5) * iw * 0.09, 0.82 + s2 * 0.03, tz - 0.14 + Math.floor(k / 5) * 0.28, 0.15, 0.028, 0.21, lc(pk(BOOKS)), rr(-0.2, 0.2)); } } }
       else if (type === 'records') { shelf(xa + 0.1, xb - 0.1, -D + 0.2, 'records'); for (const bx of [xa + iw * 0.3, xa + iw * 0.7]) { props.add(bx, 0.42, -D * 0.5, 0.7, 0.84, D * 0.5, lc(0x4a3a2a)); for (let k = 0; k < 44; k++) props.add(bx + rr(-0.28, 0.28), 1.0, -D * 0.5 + (k / 44 - 0.5) * D * 0.46, 0.31, 0.31, 0.01, lc(pk(SLEEVES)), 0, rr(-0.25, -0.05)); } for (let k = 0; k < 4; k++) props.add(xa + 0.04, rr(1.2, 2.2), -rr(0.6, D - 0.5), 0.02, 0.6, 0.42, lc(pk(SLEEVES))); }
       else if (type === 'pharmacy') { shelf(xa + 0.1, xb - 0.1, -D + 0.2, 'packs'); counter(xm, -D * 0.55, iw * 0.7, false); props.add(xm + iw * 0.2, 1.17, -D * 0.55, 0.34, 0.26, 0.36, lc(0x3a3a40)); for (let k = 0; k < 12; k++) cy.add(xm - iw * 0.3 + k * 0.05, 1.11, -D * 0.5, 0.045, 0.14, 0.045, lc(pk(PACKS))); props.add(xm, 2.2, -D + 0.06, 0.5, 0.16, 0.03, new THREE.Color(0.3, 2.0, 0.7)); props.add(xm, 2.2, -D + 0.06, 0.16, 0.5, 0.03, new THREE.Color(0.3, 2.0, 0.7)); }
-      else if (type === 'tv') { shelf(xa + 0.1, xb - 0.1, -D + 0.25, 'tv'); for (let k = 0; k < 3; k++) { const s2 = 0.5, px = gx0 + 0.4 + k * 0.62; if (px > gx1 - 0.3) break; props.add(px, 0.78, -0.45, s2, s2 * 0.84, 0.4, lc(0x2a2a2e, 0.7)); const sc2 = pk(SCREENS); props.add(px - 0.03, 0.8, -0.24, s2 * 0.68, s2 * 0.58, 0.02, new THREE.Color(...sc2)); props.add(px, 0.25, -0.45, 0.56, 0.5, 0.44, lc(0x4a3a2a)); } counter(xb - 0.5, -D * 0.6, D * 0.4, true); }
+      else if (type === 'tv') { shelf(xa + 0.1, xb - 0.1, -D + 0.25, 'tv'); props.add(xm, 0.28, -0.6, Math.min(iw - 0.3, 3.2), 0.5, 0.7, lc(0x3a342c)); counter(xb - 0.5, -D * 0.6, D * 0.4, true); }
       else if (type === 'izakaya' || type === 'kissa') {
         const side = doorR ? xa + 0.75 : xb - 0.75, sgn = doorR ? 1 : -1; counter(side, -D * 0.55, D * 0.62, true); shelf(side - sgn * 0.62, side - sgn * 0.3, -D + 0.2, 'bottles');
         for (let k = 0; k < 4; k++) { const sz = -D * 0.28 - k * 0.52; if (sz < -D + 0.5) break; stool(side + sgn * 0.5, sz); if (near && Math.abs(x + w / 2) < 22 && R() < 0.6) seats.push({ p: W(side + sgn * 0.5, 0, sz + 0.04), ry: (dir > 0 ? 0 : Math.PI) + (sgn > 0 ? -Math.PI / 2 : Math.PI / 2) }); for (let b2 = 0; b2 < 2; b2++) cy.add(side + rr(-0.15, 0.15), 1.1, sz + rr(-0.2, 0.2), 0.07, 0.12, 0.07, lc(pk([0xd8d8d0, 0x5a2a0c, 0xe8e0c8]))); }
@@ -170,6 +194,7 @@ export function makeStreet(scene, city, glow, R, o) {
       if (R() < 0.45) for (let k = 0; k < 2 + ((R() * 2) | 0); k++) { const cx2 = doorR ? xa + 0.3 : xb - 0.3, cc = col(pk([0x9a7a14, 0x1c5a8a, 0x8a2a1c]), 1, 0.2), cr = rr(-0.2, 0.2); if (!near) trm.add(cx2, 0.16 + k * 0.31, 0.75, 0.42, 0.3, 0.32, cc, cr); else if (type === 'liquor' || type === 'izakaya' || type === 'grocer' || type === 'kissa') o.prop('crate', W(cx2, k * 0.25, 0.75), face + cr, 1, pk([0xffffff, 0x8ab0ff, 0xff8a7a])); else o.prop('box', W(cx2, k * 0.34, 0.75), face + cr, 1); } // empties stacked for the brewery, cartons for the rest
       if (near && (type === 'izakaya' || type === 'kissa' || type === 'grocer') && R() < 0.7) o.prop(R() < 0.5 ? 'bin' : 'binRust', W(doorR ? xa - 0.02 : xb + 0.02, 0, 0.5), R() * 6);
       if (R() < 0.4 && bikes++ < 3) bike(xm + rr(-0.8, 0.8), 1.25 + rr(0, 0.3), rr(-0.25, 0.25) + Math.PI / 2);
+      props.add = add0;
     }
     function bike(lx, lz, ry) {
       const b = new THREE.Group(), fm = mat({ color: pk([0x1a3a5a, 0x7a1c1c, 0x2a2a2e, 0x6a6a2a]), roughness: 0.4, metalness: 0.6 }), tm = mat({ color: 0x0c0c0d, roughness: 0.9 }), tube = (x1, y1, x2, y2, r = 0.014) => { const l = Math.hypot(x2 - x1, y2 - y1), m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, l, 6), fm); m.position.set((x1 + x2) / 2, (y1 + y2) / 2, 0); m.rotation.z = Math.atan2(x2 - x1, y1 - y2) + Math.PI; m.castShadow = true; b.add(m); };
@@ -179,7 +204,7 @@ export function makeStreet(scene, city, glow, R, o) {
       const bk = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.2, 0.26), mat({ color: 0x3a3a3a, roughness: 0.6, metalness: 0.5, wireframe: false })); bk.position.set(0.56, 0.86, 0); b.add(bk);
       b.position.set(lx, 0, lz); b.rotation.set(0, ry, 0); b.rotateX(0.13); mergeStatic(b); b.traverse((c) => { c.userData.nopick = true; }); g.add(b);
     }
-    frame.done(g, !!near); trm.done(g, !!near); shut.done(g); glass.done(g); oc.done(g, !!near); rooms.done(gl); props.done(gl); cy.done(gl);
+    frame.done(g, !!near); trm.done(g, !!near); shut.done(g); glass.done(g); oc.done(g, !!near); rooms.done(gl); props.done(gl); cy.done(gl); shad.done(gl);
     return { top, g, gl };
   }
   return { building, seats, shops, glassM };

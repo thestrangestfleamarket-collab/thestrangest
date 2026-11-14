@@ -287,5 +287,5 @@ export function buildCity(scene) {
   };
   // the street as the glass sees it: one small picture all round from the middle of the road, worn by every pane
   const reflect = (renderer, sc) => { const rt = new THREE.WebGLCubeRenderTarget(128, { type: THREE.HalfFloatType, generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter }), cam = new THREE.CubeCamera(0.3, 300, rt); cam.position.set(0, 2.4, -7.5); cam.update(renderer, sc); for (const m of mirrors) { m.envMap = rt.texture; m.needsUpdate = true; } };
-  return { group: city, glow, update(dt, t) { for (const u of ups) u(dt, t); }, halo, rain, cars, glowMap, bakeFar, reflect };
+  return { group: city, shops: fronts.shops, glow, update(dt, t) { for (const u of ups) u(dt, t); }, halo, rain, cars, glowMap, bakeFar, reflect };
 }

@@ -108,7 +108,7 @@ function makeCreature(C) {
 let stickGeo, stickMat;
 export function makePerson(seed, style) {
   if (!lib.ready) return makeFallback(seed);
-  if (lib.creatures.length && Math.random() < 0.4) return makeCreature(lib.creatures[(Math.random() * lib.creatures.length) | 0]);
+  if (!style && lib.creatures.length && Math.random() < 0.4) return makeCreature(lib.creatures[(Math.random() * lib.creatures.length) | 0]);
   const A = (style && lib.avatars.find((a) => a.name === style)) || lib.avatars[lib.next++ % lib.avatars.length];
   const root = new THREE.Group(), inner = new THREE.Group(); root.add(inner);
   const inst = SkeletonUtils.clone(A.fbx); inner.add(inst);

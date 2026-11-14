@@ -43,6 +43,14 @@
   #talkLog .them b { display: block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #f0a13a; }
   #talkLog .note { align-self: center; font-size: 12px; opacity: .6; }
   #talkForm { display: flex; gap: 8px; }
+  #juke { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(560px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow: auto; box-sizing: border-box; z-index: 9; border: 1px solid rgba(240,161,58,.5); border-radius: 12px; background: rgba(14,9,6,.94); padding: 18px 20px; font: 14px/1.4 system-ui, sans-serif; }
+  #juke header { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  #juke h2 { margin: 0; font: 24px Georgia, serif; font-weight: normal; color: #f0a13a; }
+  #juke h4 { margin: 14px 0 6px; font: 600 12px system-ui, sans-serif; letter-spacing: .14em; color: #f0a13a; }
+  #jukeNow { margin: 6px 0 2px; opacity: .85; }
+  #jukeList button { display: block; width: 100%; text-align: left; margin: 0 0 4px; padding: 7px 12px; font: 14px system-ui, sans-serif; color: #eadfce; border-color: rgba(255,255,255,.18); }
+  #jukeList button.sel { border-color: #f0a13a; }
+  #juke small { display: block; margin-top: 12px; opacity: .6; }
   #talkSay { flex: 1; min-width: 0; padding: 8px 10px; font: inherit; color: #eadfce; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.25); border-radius: 7px; }
 </style>
 </head>
@@ -51,12 +59,12 @@
 <div id="menu" hidden>
   <div class="panel">
     <h1>THE CANTINA</h1>
-    <p class="sub">Tonight: <span id="look"></span>. Take a seat at the long table, or just listen to the band.</p>
+    <p class="sub">Tonight: <span id="look"></span>. Take a seat at the long table, or put a record on the jukebox.</p>
     <div class="row"><button class="go" id="play">Walk in</button><button id="vr" disabled>Enter VR</button></div>
     <div class="row"><button data-style="auto">By the hour</button><button data-style="B">Barrel House</button><button data-style="A">Onyx Room</button><button data-style="C">After Hours</button></div>
     <div class="cols">
-      <div><h3>Keyboard and mouse</h3><div>W A S D walk, Shift run, C zoom</div><div>E sit down, stand up</div><div>T talk to the one you face</div><div>Click: pick up, draw, press a table button</div><div>Wheel: choose a card in your hand</div><div>Right click: play it; F face down; Q toss; R flip</div></div>
-      <div><h3>In VR</h3><div>Left stick walks, right stick turns</div><div>A or X: sit at the nearest free chair, stand</div><div>Grip or pinch a card to pick it up</div><div>Let go to drop or throw; by your other hand to fan</div><div>Trigger points: grab from afar, press buttons</div></div>
+      <div><h3>Keyboard and mouse</h3><div>W A S D walk, Shift run, C zoom</div><div>E sit down, stand up</div><div>T talk to the one you face</div><div>Click: pick up, draw, press a table button, the jukebox</div><div>Wheel: choose a card in your hand</div><div>Right click: play it; F face down; Q toss; R flip</div></div>
+      <div><h3>In VR</h3><div>Left stick walks, right stick turns</div><div>A or X: sit at the nearest free chair, stand</div><div>Grip or pinch a card to pick it up</div><div>Let go to drop or throw; by your other hand to fan</div><div>Trigger points: grab from afar, press buttons; at the jukebox, the next record</div></div>
     </div>
     <div id="status"></div>
   </div>
@@ -67,6 +75,12 @@
   <div id="talkSub"></div>
   <div id="talkLog"></div>
   <form id="talkForm"><input id="talkSay" maxlength="300" autocomplete="off" placeholder="Say something"><button class="go" type="submit">Say</button></form>
+</div>
+<div id="juke" hidden>
+  <header><h2>The jukebox</h2><span><button id="jukeStop" type="button">Stop</button> <button id="jukeClose" type="button">Close</button></span></header>
+  <div id="jukeNow"></div>
+  <div id="jukeList"></div>
+  <small>Recordings of 1905 to 1925 from the Library of Congress National Jukebox, in the public domain.</small>
 </div>
 <div id="fade"></div>
 <script type="module">__CANTINA__</script>

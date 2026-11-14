@@ -7,7 +7,7 @@ import { Hand } from '../cantina/hands.js';
 const _v = new V3(), _v2 = new V3(), _q = new Q(), _q2 = new Q(), _e = new THREE.Euler(), _sh = new V3(), _el = new V3(), _po = new V3();
 
 function makeHand(i, xr) {
-  const marker = new THREE.Sprite(new THREE.SpriteMaterial({ map: T.glowTex(), color: 0xffd9a0, transparent: true, opacity: 0.4, depthTest: false, blending: THREE.AdditiveBlending }));
+  const marker = new THREE.Sprite(new THREE.SpriteMaterial({ map: T.glowTex(), color: 0xffd9a0, transparent: true, opacity: 0.4, depthWrite: false, blending: THREE.AdditiveBlending }));
   marker.visible = false; marker.renderOrder = 40; marker.userData.nopick = true; G.scene.add(marker);
   return { i, xr, pos: new V3(), quat: new Q(), tip: new V3(), vel: new V3(), prev: new V3(), active: false, grip: false, use: false, _g: false, _u: false, gripDown: false, gripUp: false, useDown: false,
     vs: new V3(), held: null, cand: null, latch: new Set(), marker, relPos: new V3(), relQ: new Q(), tiltA: 0, chopT: 0, source: null, aim: null,
@@ -196,6 +196,8 @@ export function buildInput(renderer, rig, camera, dom) {
         const put = (m, a, b2) => { m.visible = true; m.position.copy(a).add(b2).multiplyScalar(0.5); _v2.copy(b2).sub(a); m.scale.set(1, _v2.length(), 1); m.quaternion.setFromUnitVectors(UP, _v2.normalize()); };
         put(h.arm.up, E, S); put(h.arm.fore, W, E);
       }
+      { camera.getWorldPosition(_v); const up = h.pos.y > _v.y - 0.2, sg = Math.abs(h.vel.x) > 0.35 ? Math.sign(h.vel.x) : 0; h.wav = (h.wav || []).filter((t) => G.t - t < 1.3);
+        if (up && sg && sg !== h.wsg) { h.wsg = sg; h.wav.push(G.t); if (h.wav.length >= 3 && G.t - (G.lastWave || -9) > 4) { G.lastWave = G.t; G.game.onWave?.(); } } if (!up) h.wav.length = 0; }
       stepHand(h, dt);
     }
     // thumbstick locomotion
@@ -210,7 +212,7 @@ export function buildInput(renderer, rig, camera, dom) {
           rig.position.x += clamp(_v.x, BOUNDS.minX, BOUNDS.maxX) - _v.x; rig.position.z += clamp(_v.z, BOUNDS.minZ, BOUNDS.maxZ) - _v.z;
         }
       } else {
-        if (Math.abs(ax) > 0.6) { if (!snapLatch) { snapLatch = true; const a = -Math.sign(ax) * Math.PI / 6; camera.getWorldPosition(_v); rig.position.sub(_v).applyAxisAngle(UP, a).add(_v); rig.rotation.y += a; } } else if (Math.abs(ax) < 0.3) snapLatch = false;
+        if (Math.abs(ax) > 0.6) { if (!snapLatch) { snapLatch = true; const a = -Math.sign(ax) * ((G.set ? G.set.turn : 30) * Math.PI / 180); camera.getWorldPosition(_v); rig.position.sub(_v).applyAxisAngle(UP, a).add(_v); rig.rotation.y += a; } } else if (Math.abs(ax) < 0.3) snapLatch = false;
         if (Math.abs(ay) > 0.5 && Math.abs(ax) < 0.4) rig.position.y = clamp(rig.position.y - ay * dt * 0.35, -0.45, 0.45);
       }
     }

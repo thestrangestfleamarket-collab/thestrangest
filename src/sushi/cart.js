@@ -109,7 +109,7 @@ export function buildCart(scene, city) {
     const b = new THREE.Mesh(new THREE.SphereGeometry(0.03, 12, 10), bulbM); b.position.set(0, -0.255, 0); pv.add(b); b.userData.nopick = true;
     halo(0xffc070, 0.26, 0, -0.255, 0, pv, 0.3);
     const l = new THREE.PointLight(0xffb878, i === 2 ? 1.1 : 1.7, 6, 1.8); l.position.set(0, -0.28, 0); pv.add(l);
-    if (sh) { const sl = new THREE.SpotLight(0xffb878, 16, 5, 1.2, 0.7, 1.7); sl.position.set(0, -0.3, 0); sl.target.position.set(0.15, -2.4, 0.05); pv.add(sl, sl.target); sl.castShadow = true; sl.shadow.mapSize.set(512, 512); sl.shadow.bias = -0.002; sl.shadow.camera.near = 0.1; sl.shadow.camera.far = 5; l.intensity = 0.6; }
+    if (sh) { const sl = new THREE.SpotLight(0xffb878, 16, 5, 1.2, 0.7, 1.7); sl.position.set(x, 2.3, z); sl.target.position.set(x + 0.15, 0, z + 0.05); cart.add(sl, sl.target); sl.castShadow = true; sl.shadow.mapSize.set(512, 512); sl.shadow.bias = -0.002; sl.shadow.camera.near = 0.1; sl.shadow.camera.far = 5; l.intensity = 0.6; }
   });
 
   // stools
@@ -293,8 +293,8 @@ export function buildCart(scene, city) {
   }
 
   // ---------------- beam: ticket rail, recipe board ----------------
-  box(2.3, 0.012, 0.012, steel, 0, 1.74, -0.53, cart);
-  for (const x of [-1.1, 1.1]) cyl(0.003, 0.003, 0.82, black, x, 2.15, -0.53, cart, 4);
+  box(2.3, 0.012, 0.012, steel, 0, 1.99, -0.53, cart);
+  for (const x of [-1.1, 1.1]) cyl(0.003, 0.003, 0.58, black, x, 2.28, -0.53, cart, 4);
   const rb = T.canvasTex(2048, 512, (g, w, h) => {
     g.fillStyle = '#efe6cc'; g.fillRect(0, 0, w, h); g.strokeStyle = '#7a1612'; g.lineWidth = 10; g.strokeRect(8, 8, w - 16, h - 16);
     const keys = Object.keys(RECIPES), cw = (w - 40) / 5;
@@ -354,7 +354,7 @@ export function buildCart(scene, city) {
   const hb = mesh(new THREE.TorusGeometry(0.2, 0.008, 6, 20, Math.PI), black, 0, 0.11, -0.055, bb); hb.scale.y = 0.3;
   const mkBtn = (x, color, name, press) => {
     const b = cyl(0.022, 0.022, 0.02, mat({ color, roughness: 0.3 }), x, 0.13, -0.055, bb, 14);
-    const btn = { getPos: () => b.getWorldPosition(new V3()), r: 0.035, press: () => { press(); G.audio.play('click'); b.position.y = 0.123; setTimeout(() => (b.position.y = 0.13), 150); }, name };
+    const btn = { getPos: () => b.getWorldPosition(new V3()), r: 0.06, press: () => { press(); G.audio.play('click'); b.position.y = 0.123; setTimeout(() => (b.position.y = 0.13), 150); }, name };
     b.userData.button = btn; G.buttons.push(btn);
   };
   mkBtn(-0.1, 0xc82020, 'radio power', () => G.audio.setRadio(!G.audio.radioOn));

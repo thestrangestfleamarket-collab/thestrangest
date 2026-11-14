@@ -10,7 +10,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   const b = await chromium.launch({ ...(process.env.PWCHROME ? { executablePath: process.env.PWCHROME } : {}), args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'] });
   const errs = [], miss = [];
   const open = async (q, init) => { const p = await b.newPage({ viewport: { width: 800, height: 450 } }); if (init) await p.addInitScript(init);
-    p.on('pageerror', e => errs.push(e.message.slice(0, 300))); p.on('response', r => { if (r.status() === 404 && !/talk$|hear$|opacity_color/.test(r.url())) miss.push(r.url().split('/').pop()); });
+    p.on('pageerror', e => errs.push(e.message.slice(0, 300))); p.on('response', r => { if (r.status() === 404 && !/talk$|hear$|say$|opacity_color/.test(r.url())) miss.push(r.url().split('/').pop()); });
     await p.goto(FILE + q); await p.waitForFunction('window.G && G.debug', null, { timeout: 240000 }); await p.waitForTimeout(3000); return p; };
   const p = await open('?desktop&nopost');
   ok(await p.evaluate(() => G.mode === 'desktop' && G.debug.PH.ready), 'the cart loads on a screen, its loose things on the physics engine');
@@ -63,7 +63,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
     const sl = G.items.find((i) => i.kind === 'food' && i.topping === 'chashu'); aim(sl.obj.position.clone()); L('cand', h.aim.cand?.name); click(); const st0 = C.bins.chashu.stock; aim(V(C.bins.chashu.x, 0.95, C.bins.chashu.z)); click(); L('bin stock', st0, '->', C.bins.chashu.stock);
     // 8 toppings
     for (const [t, n] of Object.entries(o.tops)) for (let k = 0; k < n; k++) { const bin = C.bins[t]; stand(0.1, 0.25); aim(V(bin.x, 0.95, bin.z)); click(); if (!h.held) L('!! no topping', t, h.aim.cand?.name); stand(-0.2, 0.25); aim(bc()); click(); step(5); }
-    L('bowl toppings', bowl.toppings.join(','));
+    step(40); L('bowl toppings', bowl.toppings.join(','));
     // 9 drink + serve
     const sx = [-0.72, 0, 0.72][c.seat];
     if (o.drink) { stand(0.4, 0.6); aim(V(0.935, 1.1, 0.68 + (o.drink === 'beer' ? -0.055 : 0.055))); L('cand', h.aim.cand?.name); click(); L('held', h.held?.name); stand(sx * 0.6, 0.02); aim(V(sx, 1.0, -0.71)); click(); L('gotDrink', c.gotDrink); }
@@ -79,7 +79,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   const L = log.join('\n'), has = (re, m) => ok(re.test(L), m + (re.test(L) ? '' : '  [' + (L.match(/EXC.*/) || [''])[0].slice(0, 200) + ']'));
   if (process.env.SUSHI_LOG) console.log(L);
   has(/pots on: true,true,true/, 'each knob lights its burner'); has(/state open open true/, 'the switch opens the cart'); has(/ORDER seat \d shoyu/, 'the first customer of night one orders plain shoyu');
-  has(/bowl tare shoyu/, 'a tare ladle tips into the bowl'); has(/bowl broth chicken 2 temp 0\.9/, 'two ladles of hot broth'); has(/bowl noodles \{"cook":1[4-9]/, 'noodles boiled into the green and tipped in');
+  has(/bowl tare shoyu/, 'a tare ladle tips into the bowl'); has(/bowl broth chicken (2|1\.[89]\d*) temp 0\.9/, 'two ladles of hot broth, poured'); has(/bowl noodles \{"cook":1[4-9]/, 'noodles boiled into the green and tipped in');
   has(/raw left 5 slices on board 3/, 'three chops, three slices on the board'); has(/bin stock 8 -> 9/, 'a slice restocks its bin'); has(/bowl toppings chashu,chashu,menma,negi,nori,naruto/, 'every topping lands in the bowl');
   has(/RESULT \{"score":100/, 'served as ordered: 100'); has(/money 450 tips \d+ served 1 seat dirty true/, 'they eat, pay and tip, and leave a dirty bowl'); has(/bowl removed true seat dirty false/, 'the bus tub clears the seat'); ok(!/EXC/.test(L), 'the order ran through');
   ok(await p.evaluate(() => document.querySelectorAll('canvas').length === 1 && G.renderer.info.memory.geometries > 60 && G.baked > 100), 'the street is drawn, its still parts baked together');

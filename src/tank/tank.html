@@ -64,6 +64,7 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
 #fcs{position:absolute;left:50%;bottom:calc(50% - 38vmin);transform:translateX(-50%);font:600 14px var(--mono);color:#7dff9c;white-space:pre;text-shadow:0 0 4px #000}
 #bino{position:fixed;inset:0;pointer-events:none;z-index:3;background:radial-gradient(circle at calc(50% - 21vmin) 50%,rgba(0,0,0,0) 0,rgba(0,0,0,0) 38vmin,rgba(0,0,0,1) 40vmin),radial-gradient(circle at calc(50% + 21vmin) 50%,rgba(0,0,0,0) 0,rgba(0,0,0,0) 38vmin,rgba(0,0,0,1) 40vmin);background-blend-mode:lighten;mix-blend-mode:multiply}
 #bino::after{content:'';position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px;border-radius:50%;background:rgba(10,10,8,.8)}
+#inv{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:4;pointer-events:none;font:600 13px var(--mono);letter-spacing:.08em;color:var(--ink);background:rgba(7,8,6,.6);padding:8px 14px;white-space:pre}
 #dot{position:fixed;left:50%;top:50%;width:4px;height:4px;margin:-2px;border-radius:50%;background:rgba(236,232,220,.7);z-index:3;pointer-events:none}
 #gunmark{position:fixed;width:22px;height:22px;margin:-11px;border:2px solid var(--brass);border-radius:50%;z-index:3;pointer-events:none;box-sizing:border-box}
 #stat{position:fixed;left:max(12px,env(safe-area-inset-left,0px));top:calc(56px + env(safe-area-inset-top,0px));z-index:4;pointer-events:none}
@@ -90,6 +91,7 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
   <span id="fcs"></span>
 </div>
 <div id="bino" hidden></div>
+<div id="inv" hidden></div>
 <div id="dot" hidden></div>
 <div id="gunmark" hidden></div>
 <div id="stat" hidden></div>
@@ -128,8 +130,8 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
     <details>
       <summary>Controls</summary>
       <dl class="controls">
-        <dt>VR</dt><dd>Sit down. Left stick drives, right stick lays the gun. Right hand: trigger fires, grip lases the range, A is the hatch, B zooms the sight, stick click re-centres your seat. Left hand: trigger lases, grip fires smoke, X changes the round, Y is the thermal sight, stick click is the extinguisher. Head out, hold the left grip for the binoculars and bring them to your eyes; left trigger then brings the gun on to what you see.</dd>
-        <dt>Desktop</dt><dd>Click to take the mouse: it lays the gun. W A S D drive. Left click or Space fires. Right click or F is the gunsight, Z its zoom, T thermal. R lases the range. 1 and 2 pick SABOT or HEAT. G fires smoke. X is the extinguisher. H is the hatch. Head out, B is the binoculars: look, then click to bring the gun on to what you see. Stop by the supply truck on the road to rearm and repair.</dd>
+        <dt>VR</dt><dd>Sit down. Left stick drives, right stick lays the gun. Right hand: trigger fires, grip lases the range, A is the hatch, B zooms the sight, stick click re-centres your seat. Left hand: trigger lases, grip fires smoke, X changes the round, Y is the thermal sight, stick click is the extinguisher. Head out, hold the left grip for the binoculars and bring them to your eyes; left trigger then brings the gun on to what you see. Head out, the right grip changes what your right hand holds (pistol, grenade, mine) and the trigger uses it; inside, hold the left trigger for the coaxial gun.</dd>
+        <dt>Desktop</dt><dd>Click to take the mouse: it lays the gun. W A S D drive. Left click or Space fires. Right click or F is the gunsight, Z its zoom, T thermal. R lases the range. 1 and 2 pick SABOT or HEAT. G fires smoke. X is the extinguisher. H is the hatch. Head out, B is the binoculars: look, then click to bring the gun on to what you see. Head out you also carry a pistol (3), grenades (4) and mines for the ground (5): click uses what is in your hand. Inside, hold C for the coaxial gun against men on foot. Stop by the supply truck on the road to rearm and repair.</dd>
         <dt>Phone</dt><dd>Drag to lay the gun. Arrow pad drives. Fire, Sight and Hatch are on the right.</dd>
       </dl>
     </details>

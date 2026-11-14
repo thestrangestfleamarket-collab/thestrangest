@@ -7,7 +7,7 @@ API, OUT, RAW = 'https://api.polyhaven.com/files/', 'data/tank/', 'data/full/tan
 SKY = 'kloppenheim_06_puresky'
 TEX = {'leafy_grass': 1024, 'sparse_grass': 1024, 'farm_soil': 1024, 'green_metal_rust': 1024, 'metal_plate': 1024, 'fabric_leather_02': 512}
 MODELS = {'island_tree_01': 1024, 'island_tree_02': 1024, 'island_tree_03': 1024, 'tree_small_02': 1024, 'jacaranda_tree': 1024, 'shrub_02': 512, 'rock_moss_set_01': 512,
-          'industrial_caged_sconce': 512, 'modular_industrial_pipes_01': 512, 'ammo_box': 512, 'binoculars': 512}
+          'industrial_caged_sconce': 512, 'modular_industrial_pipes_01': 512, 'ammo_box': 512, 'binoculars': 512, 'service_pistol': 512}
 
 def get(url):
     return urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 asset-fetch'}), timeout=300).read()

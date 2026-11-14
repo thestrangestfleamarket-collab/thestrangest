@@ -51,6 +51,7 @@ const LIST = {
   grenade: ['src/gr_m67_vextin', HF + '000-121/05e2a29118c3408eaa574bcec6997aba.glb', { size: 0.09, axis: 'y', tex: 256, plain: 1 }],
   pipes: ['modular_industrial_pipes_01', '', { size: 0, tris: 3000, tex: 256 }], sconce: ['industrial_caged_sconce', '', { size: 0.22, axis: 'y', tris: 3000, tex: 256 }], ammobox: ['ammo_box', '', { size: 0, tex: 256 }],
   binos: ['binoculars', '', { size: 0.19, axis: 'x', tris: 4000, tex: 512 }],
+  pistol: ['service_pistol', '', { keep: '_a$', fwd: '+x', size: 0, tex: 512 }],
   rocks: ['rock_moss_set_01', '', { size: 0, tris: 700, tex: 512 }],
 };
 const NM = '/node_modules/', PAGE = `<script type="importmap">{"imports":{"three":"${NM}three/build/three.module.js","three/addons/":"${NM}three/examples/jsm/"}}</script><script type="module">
@@ -83,7 +84,7 @@ window.prep=async(url,o)=>{await MS.ready;const GL=new GLTFLoader();GL.register(
     for(const ps of[hull,tur,gun])each(ps,g=>g.applyMatrix4(M));T.applyMatrix4(M);each(gun,g=>g.translate(-T.x,-T.y,-T.z));
     if(o.tris)thin([hull,tur,gun].flat(),o.tris);const gN=node('gun',gun);gN.position.copy(T);const tN=node('turret',tur);tN.add(gN);out.add(node('hull',hull),tN);gb=union(gun);const ub=union(tur),hb2=union(hull);
     Object.assign(info,{yaw,pitch,trunnion:T.toArray(),muzzle:[0,0,gb.min.z],turret:[ub.min.toArray(),ub.max.toArray()],hull:[hb2.min.toArray(),hb2.max.toArray()]});tris=o.tris?thin([hull,tur,gun].flat(),o.tris):[hull,tur,gun].flat().reduce((n,p)=>n+p.geo.index.count/3,0);
-  }else{const all=gather(root),b=union(all),sz=b.getSize(V(0,0,0)),ce=b.getCenter(V(0,0,0)),turn={'+x':Math.PI/2,'-x':-Math.PI/2,'+z':Math.PI,'-z':0}[o.fwd||'-z'];
+  }else{const all=gather(root,o.keep?m=>{let p=m;while(p){if(new RegExp(o.keep).test(p.name))return true;p=p.parent;}return false;}:null),b=union(all),sz=b.getSize(V(0,0,0)),ce=b.getCenter(V(0,0,0)),turn={'+x':Math.PI/2,'-x':-Math.PI/2,'+z':Math.PI,'-z':0}[o.fwd||'-z'];
     const along=o.fwd&&o.fwd[1]==='x'?sz.x:o.axis==='x'?sz.x:o.axis==='y'?sz.y:sz.z,s=o.size?o.size/along:1;
     M.makeTranslation(0,-(o.sink||0),0).multiply(new THREE.Matrix4().makeScale(s,s,s)).multiply(new THREE.Matrix4().makeRotationY(turn)).multiply(new THREE.Matrix4().makeTranslation(-ce.x,-b.min.y,-ce.z));
     if(o.kind==='foe'){const isT=m=>{let p=m;while(p){if(o.turret.includes(p.name))return true;p=p.parent;}return false;},hull=gather(root,m=>!isT(m)),tur=gather(root,isT);for(const ps of[hull,tur])each(ps,g=>g.applyMatrix4(M));

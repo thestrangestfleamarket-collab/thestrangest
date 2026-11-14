@@ -24,12 +24,12 @@ const canvas = document.getElementById('c');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
 renderer.setPixelRatio(1); renderer.setSize(innerWidth, innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.78;
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
 renderer.xr.enabled = true; renderer.xr.setReferenceSpaceType('local-floor'); renderer.xr.setFoveation?.(1); renderer.xr.setFramebufferScaleFactor?.(0.9);
 
 const scene = new THREE.Scene();
-scene.fog = new THREE.FogExp2(FOG, 0.024); scene.background = new THREE.Color(0x05040a);
+scene.fog = new THREE.FogExp2(FOG, 0.034); scene.background = new THREE.Color(0x05040a);
 const camera = new THREE.PerspectiveCamera(68, innerWidth / innerHeight, 0.03, 600);
 const rig = new THREE.Group(); rig.position.set(0, 0, 0.3); rig.add(camera); scene.add(rig);
 Object.assign(G, { scene, camera, rig, renderer });

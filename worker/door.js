@@ -125,6 +125,7 @@ export default {
     // YATAI '86 (src/sushi/): its own page at /sushi, to anyone with the link; its people under /sushi-assets/; the customers' voices (POST /sushi/talk) only to a login
     if ((request.method === "GET" || request.method === "HEAD") && p === "/sushi") return page(env, url, "/sushi", request, "no-cache");
     if (p === "/sushi/") return Response.redirect(url.origin + "/sushi" + url.search, 301);
+    if (request.method === "GET" && p === "/sushi/keys") return new Response(JSON.stringify({ claude: !!env.ANTHROPIC_API_KEY, eleven: !!env.ELEVENLABS_API_KEY, ai: !!env.AI }), { headers: { "content-type": "application/json", "cache-control": "no-store" } }); // which of the game's services the worker has been given: yes or no, never a value
     // THE CANTINA (src/cantina/): its own page at /cantina, to anyone with the link; its models and pictures under /cantina-assets/
     if ((request.method === "GET" || request.method === "HEAD") && p === "/cantina") return page(env, url, "/cantina", request, "no-cache");
     if ((request.method === "GET" || request.method === "HEAD") && GOLFA.test(p)) {

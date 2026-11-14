@@ -86,7 +86,7 @@ async function startVR() {
     session.addEventListener('end', () => { G.mode = 'menu'; menu.style.display = 'flex'; });
   } catch (e) { vrBtn.textContent = 'VR failed: ' + e.message; console.error(e); }
 }
-vrBtn.onclick = startVR;
+vrBtn.onclick = async () => { if (await talk.needPrime()) { vrBtn.textContent = 'Allow the microphone…'; const ok = await talk.prime(); vrBtn.textContent = ok ? 'Enter VR' : 'Enter VR (no microphone)'; return; } startVR(); }; // the microphone is asked for on its own press: a prompt cannot be answered inside the headset view
 if (navigator.xr?.isSessionSupported) navigator.xr.isSessionSupported('immersive-vr').then((ok) => { vrBtn.disabled = !ok; vrBtn.textContent = ok ? 'Enter VR' : 'Open this page in a VR headset'; }).catch(() => { vrBtn.textContent = 'VR unavailable'; });
 else vrBtn.textContent = location.protocol === 'https:' || location.hostname === 'localhost' ? 'Open this page in a VR headset' : 'VR needs HTTPS';
 

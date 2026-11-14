@@ -29,6 +29,7 @@ Risk is noted only when it isn't low.
 ## For the owner
 - [x] **The real clock and sky back** (owner, 14 Nov 2026: "lets remoev the 8 times ot day, do a real click go back to the blue, clouds, real nigth") · P1 · S · code + look. [done: worktree-agent-a3dd808517cecfa90, 14 Nov]
 - **P2 · pick** THE CANTINA (13 Nov 2026): its name (THE CANTINA is a working name); whether the old lounge (still reached by GO TO) goes to the archive now that THE BAR's door opens THE CANTINA; which octopus (THE MARKET's drummer is in; Polyfork's is the other); anyone to cut from or add to the regulars.
+- **P2 · look** THE GUEST LIST at `/party` in a Quest 3 on the live site (14 Nov 2026): it has only been run in an emulated headset; how the hands land a blow, whether the microphone is heard, the frame rate with twenty guests and three shadow lamps, how dark it is.
 - **P2 · look** THE CANTINA in a headset on the live site: how the hands sit on the controllers, how dark each look is, the frame rate with every regular in the room.
 
 **To try on the live site** (one sitting; each line is in its area below):
@@ -46,6 +47,7 @@ After the beta: photos in trade · the bow · birds, dragons' clips and more hum
 headset · NPC voices.
 
 - **P2 · look** COLD BORE at `/sniper` (14 Nov 2026; live without a check, as asked): play it on the screen and in the Quest 3 (it has only been run in software rendering and an emulated headset: the frame rate, how the rifle sits in the hands, the eye behind the scope); its name (COLD BORE is a working name); boats still made in code; every car is the one model (a VW Corrado) in five paints and the helicopter is a gunship, until better free ones are found; a hit person falls by being tipped over (the library has no falling motion); `tests/sniper.cjs` was last run in full before the real assets went in.
+- **P2 · look** EDGE OF 88 at `/edge` and HULL DOWN at `/tank` (14 Nov 2026): play both on the screen and in the Quest 3 (run only in software rendering and an emulated headset: the frame rate, the seat's height in the turret, the turret turning you in the headset); Hull Down is new, built on his kit: its look, its four waves, its name's addresses (`/tank`, `/hull`); whether either goes in the holodeck's list.
 
 ## CI, checks and tools
 

@@ -5,7 +5,7 @@ import { PL } from './player.js';
 import { A } from './sound.js';
 import { SPOTS } from './spots.js';
 
-const CELL = .2, X0 = -8.2, Z0 = 7, NX = 82, NZ = 98, NC = NX * NZ, NL = 4, PATIENCE = 260, EYE = 1.72, MON = grp(G.MON, G.SOLID);
+const CELL = .2, X0 = -8.2, Z0 = 7, NX = 82, NZ = 98, NC = NX * NZ, NL = 4, PATIENCE = 400, EYE = 1.72, MON = grp(G.MON, G.SOLID);
 const SK = { g: new THREE.Group(), pos: new THREE.Vector3(0, 0, 6), yaw: Math.PI, state: 'wait', mode: 'local', aware: 0, asked: -9, patience: PATIENCE, cfg: { patience: PATIENCE, sense: 1, mask: 1 }, habits: {}, t: 0, thoughts: [], log: [], clues: [], searched: {}, messSeen: {}, used: new Set(), plan: null, queue: [], path: [], pending: false, feinted: false, fails: 0,
   eye: new THREE.Vector3(), look: new THREE.Vector3(0, 1, 0), lookTo: new THREE.Vector3(0, 1, -5), lightOn: true, crouch: 0, st: 0, lastSeen: new THREE.Vector3(), lost: 0, urgent: false, cn: 0, stuck: 0, reflex: 0, why: '' };
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _d = new THREE.Vector3(), pts = [];
@@ -54,8 +54,9 @@ function record(won, how) { const c = v => Math.round(v * 10) / 10; return { v: 
 function think(t, action) { if (t) { SK.thoughts.push({ at: Math.round(SK.t), text: t, action }); speak(t); } }
 // its thought, aloud, low and slow, quieter the further off it is (where the browser can speak at all)
 function speak(t) { const sp = window.speechSynthesis; if (!sp || !window.SpeechSynthesisUtterance || SK.mute || !SK.g.visible) return; try { const u = new SpeechSynthesisUtterance(t); u.pitch = 0; u.rate = .62; u.volume = clamp(1.25 - SK.pos.distanceTo(PL.pos) / 11, .12, 1); sp.cancel(); sp.speak(u); SK.said = t; } catch (e) {} }
+// a clue it has taken in. You are told when it notices something: a low sound from where it stands, a pulse in your hands
 function clue(kind, x, z, strength, note, y = PL.pos.y) { const t = now(), old = SK.clues.find(c => c.kind === kind && t - c.t < 4 && Math.hypot(c.x - x, c.z - z) < 2.5 && !SK.used.has(c.id));
-  if (old) { old.x = x; old.z = z; old.y = y; old.t = t; old.strength = Math.max(old.strength, strength); if (note) old.note = note; return old; } const c = { id: 'c' + (++SK.cn), kind, x, z, y, strength, note, t }; SK.clues.push(c); if (SK.clues.length > 14) SK.clues.shift(); return c; }
+  if (old) { old.x = x; old.z = z; old.y = y; old.t = t; old.strength = Math.max(old.strength, strength); if (note) old.note = note; return old; } const c = { id: 'c' + (++SK.cn), kind, x, z, y, strength, note, t }; SK.clues.push(c); if (SK.g.visible && kind !== 'scent' && t - (SK.cueT || -9) > 3) { SK.cueT = t; A.at('growl2', { x: SK.pos.x, y: SK.pos.y + 1.5, z: SK.pos.z }, .22 + strength * .1, 1); PL.buzz(.2 + strength * .2, 180); } if (SK.clues.length > 14) SK.clues.shift(); return c; }
 
 /* what has been moved: only what it has come near enough to see, and not what it knocked itself */
 // what is plainly wrong at a place, to eyes that have never seen this house before: it does not know where a chair stood or how a door was left. Only what shows by itself counts
@@ -71,7 +72,7 @@ function observe(urgent) { const t = now(); for (const s of SPOTS) { const g = s
 function localMind(o) { const un = o.spots.filter(s => s.searched < 2), fresh = o.clues.filter(c => c.age < 30).sort((a, b) => b.strength * 3 - b.age * .12 - a.strength * 3 + a.age * .12)[0], say = L => L[Math.floor(Math.random() * L.length)];
   if (fresh && (fresh.strength >= 2 || fresh.kind !== 'noise')) return { action: 'investigate', clue: fresh.id, thorough: true, spot: '', thought: say(['There. ' + (fresh.kind === 'breath' ? 'Warm breath in the cold.' : fresh.kind === 'glimpse' ? 'Something moved.' : 'I heard that.'), 'Close. Very close.']) };
   if (o.patience < 10) return { action: 'leave', spot: '', clue: '', thorough: false, thought: 'Nothing. It is gone, or it is better than me.' };
-  const hab = Object.entries(o.habits || {}).sort((a, b) => b[1] - a[1]).map(h => o.spots.find(s => s.id === h[0])).find(s => s && s.searched < 2); if (hab && o.t < 40 && !SK.habitTried && Math.random() < .6) { SK.habitTried = true; return { action: 'search', spot: hab.id, thorough: true, clue: '', thought: 'It hid here before. They always come back.' }; }
+  const hab = Object.entries(o.habits || {}).sort((a, b) => b[1] - a[1]).map(h => o.spots.find(s => s.id === h[0])).find(s => s && s.searched < 2); if (hab && o.t < 120 && !SK.habitTried && Math.random() < .12) { SK.habitTried = true; return { action: 'search', spot: hab.id, thorough: true, clue: '', thought: 'It hid here before. They always come back.' }; }
   const messy = un.filter(s => s.mess).sort((a, b) => a.dist - b.dist)[0]; if (messy) return { action: 'search', spot: messy.id, thorough: true, clue: '', thought: say(['That was not like that before.', 'Something touched this.']) };
   if (!o.feinted && o.t > 55 && Math.random() < .2) return { action: 'feint', spot: '', clue: '', thorough: false, thought: 'Let it think I have gone.' };
   if (Math.random() < .13 && un.length) { const s = un[Math.floor(Math.random() * un.length)]; return { action: 'toy', spot: s.id, clue: '', thorough: false, thought: say(['I will stand here a while. In the dark.', 'Are you in there? I can wait.']) }; }

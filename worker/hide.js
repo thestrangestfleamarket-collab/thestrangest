@@ -20,7 +20,7 @@ With no evidence, hunt as a hunter would, not as a walker would: do NOT begin wi
 WHAT YOUR SENSES REPORT
 - spots: each place with how well you have searched it (0 not yet, 1 glanced, 2 thoroughly) and "mess": what is plainly wrong there to eyes that have never seen this house (a cobweb torn across the way in, a door still swinging, a chair or bin lying overturned, a lump under a cloth). You do not know how the house was left, so nothing else counts. Mess is strong evidence but a clever human may make a mess in one place and hide in another.
 - clues, each with an id, kind, the place it was nearest, how far from you, how many seconds old, and strength 1-3: "noise" (something you heard; the storm and anything left running hide quiet sounds; sound is weaker through a floor), "breath" (a puff of warm breath fogging in your light: a human is within a metre or two of that place RIGHT NOW unless the clue is old), "glimpse" (you saw part of a body move), "scent" (the smell of wet clothes: the human walked through a leak's puddle and is within three metres of you, though the place given is only rough).
-- habits: how many times this same human has ended a past hunt in each place. Humans return to what worked; check a favourite early, but not every time.
+- habits: how many times this same human has ended a past hunt in each place. Humans return to what worked, and they also know you know: look in a favourite at some point, but do not open the hunt with it.
 - last: what you did recently and what came of it.
 
 ACTIONS

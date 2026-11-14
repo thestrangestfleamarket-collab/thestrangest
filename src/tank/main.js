@@ -157,17 +157,17 @@ const TSCALE=[4.2,5.2,6.4,4.6,1.05,1.5];
   const r=rng(1944),spots=TREES.map(()=>[]);const put=(k,x,z,s)=>{if(Math.hypot(x,z)<30||Math.hypot(x,z)>1700||roadDist(x,z)<9||Math.hypot(x-150,z-300)<150||Math.hypot(x+480,z+640)<95||Math.hypot(x-420,z+560)<70||Math.hypot(x,z)<55)return;spots[k].push([x,z,s*(.75+r()*.5),Math.atan2(SUN.x,SUN.z)+(r()-.5)*1.2+(r()<.5?Math.PI:0)]);};
   for(let cx=-9;cx<=9;cx++)for(let cz=-12;cz<=12;cz++){
     const o=(u,v)=>{const qx=(cx+u)*FW,qz=(cz+v)*FD;return[FCS*qx-FSN*qz,FSN*qx+FCS*qz];},f=field(...o(.5,.5));
-    if(f.kind===3){for(let i=0;i<64;i++){const[x,z]=o(.04+r()*.92,.04+r()*.92);put(r()<.25?4:Math.floor(r()*4),x,z,1.1);}for(let i=0;i<30;i++){const[x,z]=o(r(),r());put(5,x,z,1.2);}}
+    if(f.kind===3){const[mx,mz]=o(.5,.5),n=Math.hypot(mx,mz)<950?34:12;for(let i=0;i<n;i++){const[x,z]=o(.04+r()*.92,.04+r()*.92);put(r()<.25?4:Math.floor(r()*4),x,z,1.1);}for(let i=0;i<n/3;i++){const[x,z]=o(r(),r());put(5,x,z,1.2);}}
     for(const[side,len]of[[0,FW],[1,FD]]){const h=hsh(cx*3.1+side*7.7,cz*5.3+1.9);if(h>.82)continue;const gap=.15+hsh(cx+side,cz*1.7)*.6;
       for(let d=3;d<len-3;d+=7+r()*11){const t=d/len;if(Math.abs(t-gap)<.07)continue;const[x,z]=side?o(0,t):o(t,0);const jx=(r()-.5)*3,jz=(r()-.5)*3;if(r()<.55)put(5,x+jx,z+jz,1);else put(h<.3?Math.floor(r()*4):3,x+jx,z+jz,.9);}}
     if(f.kind<3&&r()<.55){const[x,z]=o(.2+r()*.6,.2+r()*.6);put(r()<.3?4:Math.floor(r()*3),x,z,1.3);}}
-  for(let i=0;i<5200;i++){const a2=r()*6.28,d=1700+Math.pow(r(),1.4)*2600,x=Math.cos(a2)*d,z=Math.sin(a2)*d;if(fbm(x/700+3,z/700+8,2)<.5)continue;spots[Math.floor(r()*4)].push([x,z,2.2+r()*1.6,Math.atan2(SUN.x,SUN.z)+(r()-.5)]);}
-  const dm=new T.Object3D();
+  for(let i=0;i<2600;i++){const a2=r()*6.28,d=1700+Math.pow(r(),1.4)*2600,x=Math.cos(a2)*d,z=Math.sin(a2)*d;if(fbm(x/700+3,z/700+8,2)<.5)continue;spots[Math.floor(r()*4)].push([x,z,2.2+r()*1.6,Math.atan2(SUN.x,SUN.z)+(r()-.5)]);}
+  const dm=new T.Object3D();let n_=0;
   TREES.forEach((n,k)=>{const J=TREEJ[n],S=TSCALE[k],list=spots[k];if(!list.length)return;
     for(let v=0;v<2;v++){const g=new T.PlaneGeometry(J.w*S,J.h*S);g.translate(0,J.h*S/2-.15,0);if(v)g.rotateY(Math.PI/2);
       const mat=new T.MeshStandardMaterial({map:A0.cards[k][v][0],normalMap:A0.cards[k][v][1],alphaTest:.42,side:T.DoubleSide,roughness:.95,envMapIntensity:.5,color:new T.Color(.9,.94,.8),emissive:new T.Color(.2,.22,.15),emissiveMap:A0.cards[k][v][0],normalScale:new T.Vector2(.6,.6)});
       const im=new T.InstancedMesh(g,mat,list.length);list.forEach((t,i)=>{dm.position.set(t[0],hAt(t[0],t[1]),t[1]);dm.rotation.set(0,t[3],0);dm.scale.setScalar(t[2]);dm.updateMatrix();im.setMatrixAt(i,dm.matrix);});
-      im.frustumCulled=false;im.castShadow=true;land.add(im);}});
+      im.frustumCulled=false;im.castShadow=true;land.add(im);}n_+=list.length;});console.log('trees',n_);
 })();
 const prep=(o,f)=>{o.traverse(m=>{if(m.isMesh){m.castShadow=m.receiveShadow=true;if(f)f(m.material,m);}});return o;};
 const solids=[];
@@ -214,7 +214,7 @@ const solids=[];
 const mist=[],farFlash=[];
 (function buildAir(){
   const r=rng(31),mc=FOG.clone().multiplyScalar(.75);
-  for(let i=0;i<34;i++){let bx=0,bz=0,bh=1e9;for(let k=0;k<7;k++){const a=r()*6.28,d=80+r()*650,x=Math.cos(a)*d,z=Math.sin(a)*d,h=hAt(x,z);if(h<bh){bh=h;bx=x;bz=z;}}
+  for(let i=0;i<18;i++){let bx=0,bz=0,bh=1e9;for(let k=0;k<7;k++){const a=r()*6.28,d=80+r()*650,x=Math.cos(a)*d,z=Math.sin(a)*d,h=hAt(x,z);if(h<bh){bh=h;bx=x;bz=z;}}
     const s=new T.Sprite(new T.SpriteMaterial({map:smokeT,color:mc,transparent:true,opacity:.2+r()*.14,depthWrite:false,fog:false}));const sc=110+r()*150;s.scale.set(sc,sc*.34,1);s.position.set(bx,bh+sc*.1,bz);s.userData={x:bx,ph:r()*6,sp:.3+r()*.5};scene.add(s);mist.push(s);}
   for(let i=0;i<7;i++){const a=r()*6.28,d=2200+r()*2200,x=Math.cos(a)*d,z=Math.sin(a)*d,y=h0(x,z);
     for(let k=0;k<7;k++){const s=new T.Sprite(new T.SpriteMaterial({map:smokeT,color:new T.Color(.1,.1,.11).lerp(FOG,.35+k*.07),transparent:true,opacity:.75-k*.07,depthWrite:false,fog:false}));const sc=120+k*70;s.scale.set(sc,sc*1.3,1);s.position.set(x+k*k*9,y+60+k*95,z+k*k*4);scene.add(s);}

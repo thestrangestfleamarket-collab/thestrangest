@@ -14,6 +14,7 @@ catch (e) { ok(false, 'imports: ' + String(e.stdout || '') + String(e.stderr || 
   const bad = []; for (const [f, t] of S) for (const m of t.matchAll(/\bwindow\.([A-Za-z_$][\w$]*)\b(?!\s*=(?!=))/g)) if (def[m[1]] && !def[m[1]].has(f) && !OLD.has(m[1])) bad.push(f + ': window.' + m[1]);
   ok(!bad.length, 'no file reads another file\'s thing through window (import it, or declare it in 003b-systems.js)' + (bad.length ? ': ' + [...new Set(bad)].slice(0, 8).join(', ') : '')); }
 { const R = f => fs.readFileSync(ROOT + f, 'utf8'); ok(/CART:SL\.CART/.test(R('/src/009-down.js')) && /THE RAMEN CART/.test(R('/src/146bf-hollow.js')) && /sushi:'\/sushi'/.test(R('/src/holo/shell.js')) && /microphone/.test(R('/src/holo/shell.js')), 'the ramen cart stands on the subway platform, opens YATAI \'86 in the holodeck\'s shell, and the shell lets it hear you'); }
+{ const R = f => fs.readFileSync(ROOT + f, 'utf8'); ok(/ONLINE\.hear\.yt=/.test(R('/src/146bg-yatai.js')) && /t:'yt'/.test(R('/src/holo/shell.js')) && /m\.t === "yt"/.test(R('/worker/door.js')) && /postMessage\(\{ yatai:/.test(R('/src/sushi/live.js')), 'the ramen cart is seen live from the market: the game tells the shell, the shell the section, the section the platform'); }
 const L = JSON.parse(fs.readFileSync(ROOT + '/data/world.json', 'utf8'));
 ok(L.places.every(p => p.x0 < p.x1), 'every place in the level file has x0 < x1');
 // the asset contract (data/full/contract.json): every baked record has its pieces, every reference between files resolves

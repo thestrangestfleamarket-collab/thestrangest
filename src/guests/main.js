@@ -1,7 +1,7 @@
 // THE GUEST LIST: the night itself. Loads the house and its people, runs the hours from nine to dawn, draws what you can see from where you stand, and shows what you hear, hold and are offered, on a screen or in a headset
 import { MODELS, GR, NAV, THREE, Q, LOW, TEST, clamp, lerp, rnd, pick, dist2, renderer, scene, camera, rig, draw, FX, CLOCK, P, initPhysics, loadAssets, weld, bakeNav, BUILD, height, sees, BUS, USE } from './core.js';
 import { ROOMS, OPEN, DOORS, buildHouse, stepDoors, stepStorm, roomAt, roomName, toggleDoor, STORM } from './house.js';
-import { initLights, stepLights, stepBoxes, stepItems, POWER, LAMPS, ITEMS } from './things.js';
+import { headsetLights, initLights, stepLights, stepBoxes, stepItems, POWER, LAMPS, ITEMS } from './things.js';
 import { furnish, stepDecor, lightFires, DEV, HIDES } from './decor.js';
 import { loadPeople } from './people.js';
 import { CAST } from './cast.js';
@@ -11,7 +11,7 @@ import { SND, bootSound, stepSound } from './sound.js';
 
 const $ = id => document.getElementById(id); document.body.appendChild(renderer.domElement);
 const ADJ = {}; function adj() { for (const o of OPEN) if (o.kind !== 'window' && o.kind !== 'under') { const isX = o.a === 'x', a = roomAt(isX ? o.at - .6 : o.c, isX ? o.c : o.at - .6), b = roomAt(isX ? o.at + .6 : o.c, isX ? o.c : o.at + .6); (ADJ[a] = ADJ[a] || new Set()).add(b); (ADJ[b] = ADJ[b] || new Set()).add(a); } (ADJ.cellar = ADJ.cellar || new Set()).add('stairs'); ADJ.stairs.add('cellar'); }
-function visFrom(room) { const v = new Set([room, 'out', 'terrace', 'garden', 'drive']); for (const a of ADJ[room] || []) { v.add(a); for (const b of ADJ[a] || []) v.add(b); } if (!ROOMS[room]) for (const k in ROOMS) if (!['cellar', 'stairs', 'pantry', 'cloak', 'bath'].includes(k)) v.add(k); return v; }
+function visFrom(room) { const v = new Set([room, 'out', 'terrace', 'garden', 'drive']); for (const a of ADJ[room] || []) { v.add(a); if (!PL.lean) for (const b of ADJ[a] || []) v.add(b); } if (!ROOMS[room]) for (const k in ROOMS) if (!['cellar', 'stairs', 'pantry', 'cloak', 'bath'].includes(k)) v.add(k); return v; }
 
 // WHAT YOU HEAR SAID, with who said it
 const subs = []; let subsDirty = true;
@@ -58,13 +58,14 @@ function hud(dt) { for (const s of subs) s.t -= dt; while (subs.length && subs[0
 let last = 0, vis = new Set(), visT = 0;
 function frame() { const now = performance.now(), dt = Math.min(.05, (now - last) / 1000) || .016; last = now; CLOCK.t += dt; CLOCK.dt = dt;
   if (PL.on || SIM.over) { stepPlayer(dt); stepSim(dt); }
-  const room = PL.viewRoom || YOU.room; visT -= dt; if (visT <= 0) { visT = .2; vis = visFrom(room); for (const [k, g] of BUILD.groups) g.visible = vis.has(k); for (const g of SIM.list) { g.body.o.visible = !g.hiddenIn && (vis.has(g.room) || !ROOMS[g.room]); g.body.blob.visible = g.body.o.visible; } for (const D of DOORS) for (const L of D.leaves) L.hg.visible = vis.has(D.rooms[0]) || vis.has(D.rooms[1]); }
+  const room = PL.viewRoom || YOU.room; visT -= dt; if (visT <= 0) { visT = .2; vis = visFrom(room); for (const [k, g] of BUILD.groups) g.visible = vis.has(k); for (const g of SIM.list) { const b = g.body; b.o.visible = !g.hiddenIn && (vis.has(g.room) || !ROOMS[g.room]); b.blob.visible = b.o.visible; const d = dist2(g.x, g.z, YOU.x, YOU.z); b.cull = !b.o.visible && d > 4 && g.alive; b.far = PL.lean && d > 9; } for (const D of DOORS) for (const L of D.leaves) L.hg.visible = vis.has(D.rooms[0]) || vis.has(D.rooms[1]); }
   stepDoors(dt); stepBoxes(dt); stepItems(dt); stepDecor(dt); stepStorm(dt, far => BUS.say('thunder', far)); stepLights(dt, rig.position.x, rig.position.z, vis, room);
   // the one who went down to the fuses puts the lights back
   const f = SIM.fixer; if (f && !POWER.on && f.alive && dist2(f.x, f.z, 49.1, 17.6) < 1.3 && !f.path) { POWER.on = true; DEV.fuse.lever.rotation.z = 0; BUS.say('sound', 'fuse', 49, 17.6); say(f, 'That has got it.'); SIM.fixer = null; f.next = 3; }
   P.world.step(); stepSound(dt, YOU, SIM); hud(dt); FX.dark = lerp(FX.dark, SIM.over && SIM.over.kind !== 'won' && SIM.t - SIM.over.t > 1 ? .85 : 0, .03); draw(CLOCK.t); window.READY = (window.READY || 0) + 1; }
 
 function begin(vr) { $('ui').hidden = true; $('hud').hidden = false; PL.on = true; bootSound(); SND.voices = $('voices').checked; $('h-keys').textContent = vr ? '' : 'Enter speak · E use · left button: hold and let go to strike · both buttons: both hands · right button throw · G body · Tab list'; if (vr) { if (!initMic()) openEar(); }
+  if (vr) { PL.lean = true; headsetLights(); STORM.light.castShadow = false; renderer.xr.setFramebufferScaleFactor(.85); renderer.xr.setFoveation(1); scene.traverse(o => { if (o.isMesh && !o.isSkinnedMesh && o.parent && o.parent.parent && !o.matrixAutoUpdate === false) { } }); for (const g of BUILD.groups.values()) for (const c of g.children) if (!c.isMesh) c.traverse(m => { if (m.isMesh) m.castShadow = false; }); }
   if (vr) navigator.xr.requestSession('immersive-vr', { optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking'] }).then(s => { renderer.xr.setSession(s); s.addEventListener('end', () => { PL.vr = false; }); }); else if (!TEST) renderer.domElement.requestPointerLock?.();
   note(vr ? 'Nine o\'clock. Twenty guests. They can hear you: say good evening.' : 'Nine o\'clock. Twenty guests.', 8); }
 renderer.domElement.addEventListener('click', () => { if (PL.on && !PL.vr && !PL.saying && !TEST && !document.pointerLockElement) renderer.domElement.requestPointerLock?.(); });

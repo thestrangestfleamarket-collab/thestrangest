@@ -11,21 +11,22 @@ const lampOn = L => L.on && (L.kind !== 'electric' || POWER.on);
 const KEYS = [];
 function initLights() { const n = LOW ? 6 : 9; for (let i = 0; i < n; i++) { const l = new THREE.PointLight(0xffc58a, 0, 9, 2); scene.add(l); POOL.push({ l, lamp: null, k: 0 }); }
   for (let i = 0; i < (LOW ? 0 : 3); i++) { const key = new THREE.SpotLight(0xffd2a0, 0, 15, 1.2, .85, 1.6); key.castShadow = true; key.shadow.mapSize.set(i ? 1024 : 2048, i ? 1024 : 2048); key.shadow.bias = -.0006; key.shadow.normalBias = .035; key.shadow.radius = 4; key.shadow.camera.near = .25; key.shadow.camera.far = 16; scene.add(key, key.target); KEYS.push({ l: key, lamp: null, k: 0 }); } }
+function headsetLights() { KEYS.forEach((K, i) => { if (i) { K.l.visible = false; K.l.castShadow = false; K.off = true; } else K.l.shadow.mapSize.set(1024, 1024); }); POOL.forEach((s, i) => { if (i >= 4) { s.l.visible = false; s.off = true; } }); }
 function litRoom(k) { let n = 0; for (const L of LAMPS) if (L.room === k && lampOn(L)) n += L.kind === 'flame' ? .5 : 1; return n; }
 function aim(K, L) { const r = ROOMS[L.room], l = K.l; if (L.y > (r ? r.y : 0) + 2.4) { l.position.set(L.x, L.y - (L.i > 20 ? .7 : .1), L.z); l.target.position.set(L.x, r ? r.y : 0, L.z); l.angle = 1.25; } else { const cx = r ? r.cx : L.x, cz = r ? r.cz : L.z, dx = cx - L.x, dz = cz - L.z, d = Math.hypot(dx, dz) || 1; l.position.set(L.x + dx / d * .15, L.y + .05, L.z + dz / d * .15); l.target.position.set(L.x + dx / d * 3, (r ? r.y : 0) + .7, L.z + dz / d * 3); l.angle = 1.3; } l.color.copy(L.c); l.distance = L.d + 4; l.target.updateMatrixWorld(); }
 function stepLights(dt, px, pz, vis, room) {
   for (const L of LAMPS) { if (L.glow) L.glow.visible = lampOn(L); if (L.shade) L.shade.material.emissiveIntensity = lampOn(L) ? .9 : 0; }
   const near = LAMPS.filter(L => lampOn(L) && vis.has(L.room) && L.i > 0).map(L => [Math.hypot(L.x - px, L.z - pz) - (L.room === room ? 7 : 0) - L.i * .12, L]).sort((a, b) => a[0] - b[0]).map(a => a[1]);
   // the shadow lamps first: the strongest near ones, one to a room where it can be
-  const want = []; for (const L of near) { if (want.length >= KEYS.length) break; if (L.i < 5 && L.room !== room) continue; if (want.filter(w => w.room === L.room).length >= (L.room === room ? 2 : 1)) continue; want.push(L); }
+  const want = []; for (const L of near) { if (want.length >= KEYS.filter(K => !K.off).length) break; if (L.i < 5 && L.room !== room) continue; if (want.filter(w => w.room === L.room).length >= (L.room === room ? 2 : 1)) continue; want.push(L); }
   for (const K of KEYS) if (K.lamp && !want.includes(K.lamp)) { K.k -= dt * 3; if (K.k <= 0) { K.lamp = null; K.l.intensity = 0; } }
-  for (const L of want) if (!KEYS.some(K => K.lamp === L)) { const K = KEYS.find(K => !K.lamp); if (K) { K.lamp = L; K.k = 0; aim(K, L); } }
+  for (const L of want) if (!KEYS.some(K => K.lamp === L)) { const K = KEYS.find(K => !K.lamp && !K.off); if (K) { K.lamp = L; K.k = 0; aim(K, L); } }
   const flick = L => L.flick ? 1 + L.flick * (Math.sin(CLOCK.t * 11 + L.ph) * .5 + Math.sin(CLOCK.t * 23.7 + L.ph * 2) * .3 + Math.sin(CLOCK.t * 5.3 + L.ph) * .4) : 1;
   for (const K of KEYS) if (K.lamp) { if (want.includes(K.lamp)) K.k = Math.min(1, K.k + dt * 3); K.l.intensity = K.lamp.i * 1.5 * K.k * flick(K.lamp); }
-  const c = near.filter(L => !KEYS.some(K => K.lamp === L && K.k > .5)).slice(0, POOL.length);
+  const c = near.filter(L => !KEYS.some(K => K.lamp === L && K.k > .5)).slice(0, POOL.filter(s => !s.off).length);
   for (const s of POOL) { if (s.lamp && !c.includes(s.lamp)) { s.k -= dt * 4; if (s.k <= 0) { s.lamp = null; s.l.intensity = 0; } } }
-  for (const L of c) if (!POOL.some(s => s.lamp === L)) { const s = POOL.find(s => !s.lamp); if (s) { s.lamp = L; s.k = 0; s.l.position.set(L.x, L.y, L.z); s.l.color.copy(L.c); s.l.distance = L.d; } }
-  for (const s of POOL) if (s.lamp) { if (c.includes(s.lamp)) s.k = Math.min(1, s.k + dt * 4); s.l.intensity = s.lamp.i * s.k * flick(s.lamp) * (LOW ? .5 : .72); }
+  for (const L of c) if (!POOL.some(s => s.lamp === L)) { const s = POOL.find(s => !s.lamp && !s.off); if (s) { s.lamp = L; s.k = 0; s.l.position.set(L.x, L.y, L.z); s.l.color.copy(L.c); s.l.distance = L.d; } }
+  for (const s of POOL) if (s.lamp) { if (c.includes(s.lamp)) s.k = Math.min(1, s.k + dt * 4); s.l.intensity = s.lamp.i * s.k * flick(s.lamp) * (LOW ? .5 : POOL[5] && POOL[5].off ? 1.1 : .72); }
   // a lamp that has a shadow light still glows a little all round (its shade, the ceiling over it)
   for (const k in ROOMS) ROOMS[k].lit = litRoom(k) > 0;
 }
@@ -126,4 +127,4 @@ function put(place, name, x, z, ry = 0, o = {}) { const src = MODELS[name]; if (
   if (o.solid !== false && !(o.y > .3) && hh > .3) { mark(x, z, w / 2 - (o.slim || .04), d / 2 - (o.slim || .04), ry, { dark: hh > 1.5 && Math.min(w, d) > .3 }); if (hh > .35) P.world.createCollider(RAPIER.ColliderDesc.cuboid(w / 2, hh / 2, d / 2).setTranslation(x, g.position.y + hh / 2, z).setRotation(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), ry)).setCollisionGroups(grp(GRP.WORLD, 0xffff))); }
   return g; }
 
-export { blob, blobMat, one, LAMPS, POWER, lamp, lampOn, initLights, stepLights, litRoom, lightSwitch, KINDS, ITEMS, item, wpos, dropItem, stepItems, removeItem, BOXES, chest, cupboard, stock, stepBoxes, put, panel, knob, local, wineglass, rod };
+export { headsetLights, blob, blobMat, one, LAMPS, POWER, lamp, lampOn, initLights, stepLights, litRoom, lightSwitch, KINDS, ITEMS, item, wpos, dropItem, stepItems, removeItem, BOXES, chest, cupboard, stock, stepBoxes, put, panel, knob, local, wineglass, rod };

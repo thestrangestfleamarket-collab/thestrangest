@@ -123,7 +123,7 @@ export default {
     // EYES DOWN (src/zombie/): its own page at /zombie (also /eyes), to anyone with the link; its pictures and models under /zombie-assets/; the visitors' mind (POST /zombie/mind) and the night reached (POST /zombie/save) only to a login
     if ((request.method === "GET" || request.method === "HEAD") && (p === "/zombie" || p === "/eyes")) return page(env, url, "/zombie", request, "no-cache");
     if (p === "/zombie/" || p === "/eyes/") return Response.redirect(url.origin + "/zombie" + url.search, 301);
-    // THE GUEST LIST (src/guests/): its own page at /guests (also /party), to anyone with the link; its pictures, models and people under /guests-assets/; each guest's mind (POST /guests/mind) and voice (POST /guests/voice) only to a login
+    // THE GUEST LIST (src/guests/): its own page at /guests (also /party), to anyone with the link; its pictures, models and people under /guests-assets/; each guest's mind (POST /guests/mind), voice (POST /guests/voice) and the ear (POST /guests/hear) to anyone on the page, counted by address
     if ((request.method === "GET" || request.method === "HEAD") && (p === "/guests" || p === "/party")) return page(env, url, "/guests", request, "no-cache");
     if (p === "/guests/" || p === "/party/") return Response.redirect(url.origin + "/guests" + url.search, 301);
     // YATAI '86 (src/sushi/): its own page at /sushi, to anyone with the link; its people under /sushi-assets/; the customers' voices (POST /sushi/talk) only to a login
@@ -207,11 +207,20 @@ export default {
         return json({ ok: await postOf(env).putFile(sh[1], word(request.headers.get("content-type") || "application/octet-stream", 60), buf), size: buf.byteLength }); }
       return new Response("not found", { status: 404 }); }
     // THE SPECKLED BAND hears you (src/holmes/, where the browser cannot): a recording written down by Workers AI's Whisper; a login only
-    if (request.method === "POST" && (p === "/holmes/hear" || p === "/guests/hear")) { if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
+    if (request.method === "POST" && (p === "/guests/mind" || p === "/guests/voice" || p === "/guests/hear")) { if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
+      const id = "ip:" + (request.headers.get("CF-Connecting-IP") || "local");
+      if (p === "/guests/hear") { if (!env.AI) return json({ why: "the website has no AI binding yet" }); if (tooMany("guesthear:" + id, 30)) return json({ why: "too much at once, wait a minute" }, 429); const buf = await request.arrayBuffer(); if (!buf.byteLength || buf.byteLength > 2 << 20) return json({ why: "too long, say it shorter" }, 400);
+        try { const r = await env.AI.run("@cf/openai/whisper", { audio: [...new Uint8Array(buf)] }); return json({ text: String((r && r.text) || "").trim().slice(0, 400) }); } catch (e) { return json({ why: "it could not be made out" }); } }
+      let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
+      if (p === "/guests/mind") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" }); if (tooMany("guests:" + id, 150)) return json({ why: "too much at once, wait a minute" }, 429);
+        const H = homeOf(env); return json(await GUESTS.think(env, { get: () => H.botGet("guests:" + id), put: v => H.botPut("guests:" + id, v) }, body)); }
+      if (!env.AI) return json({ why: "the website has no AI binding yet" }); if (tooMany("guestvoice:" + id, 90)) return json({ why: "too much at once, wait a minute" }, 429);
+      try { const r = await GUESTS.voice(env, body); if (!r || !r.ok) return json({ why: "no voice" }); return new Response(r.body, { headers: { "content-type": "audio/mpeg", "cache-control": "private, max-age=3600" } }); } catch (e) { return json({ why: "no voice" }); } }
+    if (request.method === "POST" && p === "/holmes/hear") { if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401); if (!env.AI) return json({ why: "the website has no AI binding yet" }); if (tooMany("hear:" + id, 12)) return json({ why: "too much at once, wait a minute" }, 429);
       const buf = await request.arrayBuffer(); if (!buf.byteLength || buf.byteLength > 2 << 20) return json({ why: "too long, say it shorter" }, 400);
       try { const r = await env.AI.run("@cf/openai/whisper", { audio: [...new Uint8Array(buf)] }); return json({ text: String((r && r.text) || "").trim().slice(0, 400) }); } catch (e) { return json({ why: "it could not be made out" }); } }
-    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art" || p === "/orchard" || p === "/bot" || p === "/holmes" || p === "/cantina/talk" || p === "/sushi/talk" || p === "/sushi/say" || p === "/sushi/report" || p === "/hide/mind" || p === "/zombie/mind" || p === "/zombie/save" || p === "/guests/mind" || p === "/guests/voice")) {
+    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art" || p === "/orchard" || p === "/bot" || p === "/holmes" || p === "/cantina/talk" || p === "/sushi/talk" || p === "/sushi/say" || p === "/sushi/report" || p === "/hide/mind" || p === "/zombie/mind" || p === "/zombie/save")) {
       if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401);
       let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
@@ -257,12 +266,6 @@ export default {
       if (p === "/zombie/mind") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
         if (tooMany("zombie:" + id, 40)) return json({ why: "too much at once, wait a minute" }, 429);
         const H = homeOf(env); return json(await ZOMBIE.think(env, { get: () => H.botGet("zombie:" + id), put: v => H.botPut("zombie:" + id, v) }, body)); }
-      // THE GUEST LIST's guests think (worker/guests.js): one guest's line and intent from what they have seen; the day's count is the player's, in Home. Their voices are Workers AI's
-      if (p === "/guests/mind") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
-        if (tooMany("guests:" + id, 150)) return json({ why: "too much at once, wait a minute" }, 429);
-        const H = homeOf(env); return json(await GUESTS.think(env, { get: () => H.botGet("guests:" + id), put: v => H.botPut("guests:" + id, v) }, body)); }
-      if (p === "/guests/voice") { if (!env.AI) return json({ why: "the website has no AI binding yet" }); if (tooMany("guestvoice:" + id, 90)) return json({ why: "too much at once, wait a minute" }, 429);
-        try { const r = await GUESTS.voice(env, body); if (!r || !r.ok) return json({ why: "no voice" }); return new Response(r.body, { headers: { "content-type": "audio/mpeg", "cache-control": "private, max-age=3600" } }); } catch (e) { return json({ why: "no voice" }); } }
       if (p === "/zombie/save") { const H = homeOf(env); return json(await ZOMBIE.save({ get: () => H.botGet("zombie-night:" + id), put: v => H.botPut("zombie-night:" + id, v) }, body)); }
       // Holmes has left the book (worker/holmes.js): what happens, who answers, where the story stands; the day's count is the player's, in Home
       if (p === "/holmes") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });

@@ -3,7 +3,7 @@ import CAST from "../src/cantina/cast.json";
 import { FLYBOT } from "./flybot.js";
 
 const sheet = c => `${c.name}, ${c.kind}. ${c.job}. Usually: ${c.where}. ${c.personality} Ties: ${c.relationships} Hobby: ${c.hobby}. Favourites: ${c.favorites}.`;
-const ROOM = `THE CANTINA is a two-storey bar in The Strangest Flea Market, a strange 1980s New York: a long glowing bar under a loft, a card table in the middle of the hall where visitors sit and play with real cards, velvet booths, a stair, and a stage where the house band plays. Its regulars are creatures, animals and monsters in hats and bow ties. By day it is the Barrel House, in the evening the Onyx Room, late at night After Hours.
+const ROOM = `THE CANTINA is a two-storey bar in The Strangest Flea Market, a strange 1980s New York: a long glowing bar under a loft, a card table in the middle of the hall where visitors sit and play with real cards, velvet booths, a stair, and a jukebox of very old records, the only music in the room. Its regulars are creatures, animals and monsters in hats and bow ties. By day it is the Barrel House, in the evening the Onyx Room, late at night After Hours.
 
 THE REGULARS
 ${CAST.map(sheet).join("\n")}`;

@@ -239,6 +239,7 @@ export class XRControls {
     if (this.cool > 0) return;
     this.cool = 0.7;
     if (hit.type === 'button') g.pressButton(hit.t, hit.which);
+    else if (hit.type === 'jukebox') g.juke.next();
     else if (hit.type === 'seat') g.sit(hit.t, hit.s);
     else if (hit.type === 'stand') g.stand();
   }
@@ -361,6 +362,7 @@ export class XRControls {
       hit = g.pick(this.ray, true);
       if (hit && hit.type === 'card' && hit.dist > 3) hit = null;
       if (hit && hit.type === 'button' && hit.dist > 3) hit = null;
+      if (hit && hit.type === 'jukebox' && hit.dist > 4) hit = null;
       if (hit) {
         laser.visible = true;
         laser.position.copy(st.rayO);

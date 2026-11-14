@@ -122,7 +122,7 @@ export default {
     // THE CANTINA (src/cantina/): its own page at /cantina, to anyone with the link; its models and pictures under /cantina-assets/
     if ((request.method === "GET" || request.method === "HEAD") && p === "/cantina") return page(env, url, "/cantina", request, "no-cache");
     if ((request.method === "GET" || request.method === "HEAD") && GOLFA.test(p)) {
-      const r = await env.ASSETS.fetch(new Request(url.origin + p)); if (!r.ok) return new Response("not found", { status: 404 });
+      const r = await env.ASSETS.fetch(new Request(url.origin + p, request.headers.has("range") ? { headers: { range: request.headers.get("range") } } : {})); if (!r.ok) return new Response("not found", { status: 404 });
       const out = new Response(r.body, r); out.headers.set("cache-control", "public, max-age=86400"); out.headers.set("x-robots-tag", "noindex"); return out; }
     if (request.method === "GET" && p === "/sw.js") {
       if (!(await inside(env, request, dev))) return new Response("not found", { status: 404 });

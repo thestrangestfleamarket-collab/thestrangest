@@ -2,7 +2,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { SPOTS, KINDS } from "../src/hide/spots.js";
 
-const MODEL = "claude-haiku-5-5", DAY = 600, IDS = SPOTS.map(s => s.id), ACTS = ["search", "investigate", "listen", "sweep", "feint", "leave"], CLUES = ["noise", "breath", "glimpse", "prints"];
+const MODEL = "claude-haiku-5-5", DAY = 600, IDS = SPOTS.map(s => s.id), ACTS = ["search", "investigate", "listen", "sweep", "toy", "feint", "leave"], CLUES = ["noise", "breath", "glimpse", "prints", "scent"];
 const clip = (s, n) => String(s ?? "").replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, n);
 const num = (v, lo, hi, d = lo) => Number.isFinite(+v) ? Math.min(hi, Math.max(lo, Math.round(+v * 10) / 10)) : d;
 const text = c => (c || []).filter(b => b.type === "text").map(b => b.text).join(" ").trim();
@@ -18,13 +18,15 @@ A glance takes about 2 seconds, a thorough search about 6, and walking costs abo
 
 WHAT YOUR SENSES REPORT
 - spots: each place with how well you have searched it (0 not yet, 1 glanced, 2 thoroughly) and "mess": anything there that is not as you first saw it (a lid now shut, a can knocked over, boxes shifted, a lump under cloth). Mess is strong evidence but a clever human may make a mess in one place and hide in another.
-- clues, each with an id, kind, the place it was nearest, how far from you, how many seconds old, and strength 1-3: "noise" (something you heard; rain hides quiet sounds), "breath" (a puff of warm breath fogging in your light: a human is within a metre or two of that place RIGHT NOW unless the clue is old), "glimpse" (you saw part of a body move), "prints" (wet footprints, with the direction they lead).
+- clues, each with an id, kind, the place it was nearest, how far from you, how many seconds old, and strength 1-3: "noise" (something you heard; rain hides quiet sounds), "breath" (a puff of warm breath fogging in your light: a human is within a metre or two of that place RIGHT NOW unless the clue is old), "glimpse" (you saw part of a body move), "prints" (wet footprints, with the direction they lead), "scent" (the smell of rain-wet clothes: the human walked through a puddle and is within three metres of you, though the place given is only rough).
+- habits: how many times this same human has ended a past hunt in each place. Humans return to what worked; check a favourite early, but not every time.
 - last: what you did recently and what came of it.
 
 ACTIONS
 - search: go to "spot" and search it; set "thorough" true or false.
 - investigate: go to where clue "clue" came from and search around it thoroughly.
 - listen: stand still and dark for a few seconds; quiet sounds and breathing carry further then. Good when you have nothing, or to tempt the human into moving.
+- toy: go to "spot", drag a hand along it, put your light out and stand over it in silence, rattle it once, and walk on. It finds nothing by itself, but a frightened human gasps, shifts or breathes, and you hear it. Use it on a place you suspect but have not opened.
 - sweep: walk the alley's length slowly with the light, glancing at everything not yet searched.
 - feint: pretend to give up: walk out of the gate, wait, and come back silently. Usable once; humans often move when they think you have gone.
 - leave: give up for good. Only when patience is nearly spent.
@@ -40,15 +42,17 @@ function tidy(b) {
   const spots = (Array.isArray(b.spots) ? b.spots : []).filter(s => s && IDS.includes(s.id)).slice(0, IDS.length).map(s => ({ id: s.id, searched: num(s.searched, 0, 2), dist: num(s.dist, 0, 60), ...(clip(s.mess, 80) ? { mess: clip(s.mess, 80) } : {}) }));
   const clues = (Array.isArray(b.clues) ? b.clues : []).filter(c => c && CLUES.includes(c.kind)).slice(-10).map(c => ({ id: clip(c.id, 6), kind: c.kind, near: IDS.includes(c.near) ? c.near : "open ground", dist: num(c.dist, 0, 60), age: num(c.age, 0, 600), strength: num(c.strength, 1, 3, 1), ...(clip(c.note, 80) ? { note: clip(c.note, 80) } : {}) }));
   const last = (Array.isArray(b.last) ? b.last : []).slice(-6).map(l => ({ did: clip(l && l.did, 60), found: clip(l && l.found, 80) }));
-  return { seconds_hunting: num(b.t, 0, 3600), patience_left: num(b.patience, 0, 600), you_are_near: IDS.includes(b.at) ? b.at : "the gate", feint_used: !!b.feinted, urgent: !!b.urgent, spots, clues, last };
+  return { habits: {}, seconds_hunting: num(b.t, 0, 3600), patience_left: num(b.patience, 0, 600), you_are_near: IDS.includes(b.at) ? b.at : "the gate", feint_used: !!b.feinted, urgent: !!b.urgent, spots, clues, last };
 }
 
 // one thought. store {get, put} keeps {day, n}, this player's thoughts today
 async function think(env, store, body, client) {
+  if (body && IDS.includes(body.remember)) { const M = (await store.get()) || {}; M.spots = [...(Array.isArray(M.spots) ? M.spots : []), body.remember].slice(-12); await store.put(M); return { ok: true }; }   // where a hunt ended: the thing's memory of this player
   const obs = tidy(body || {}); if (!obs.spots.length) return { why: "nothing sensed" };
   const M = (await store.get()) || {}, d = new Date().toISOString().slice(0, 10), max = +env.HIDE_DAILY || DAY;
   if (M.day !== d) { M.day = d; M.n = 0; }
   if (M.n >= max) return { why: "the thing has thought enough for one day; it hunts on instinct now" };
+  for (const s of Array.isArray(M.spots) ? M.spots : []) if (IDS.includes(s)) obs.habits[s] = (obs.habits[s] || 0) + 1;
   client = client || new Anthropic({ apiKey: env.ANTHROPIC_API_KEY, timeout: 9000, maxRetries: 0 });
   let D;
   try {

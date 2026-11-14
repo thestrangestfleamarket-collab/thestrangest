@@ -48,7 +48,9 @@ function build() {
   stat(2 * W + 2 * T, HI, T, 0, HI / 2, -LEN - T / 2, brickA);
   stat(.9, 2.3, T, 3.05, 1.15, -12.8, brickB); stat(.9, 2.3, T, 3.05, 1.15, -14.2, brickB); stat(T, 2.5, 1.6, 3.6, 1.25, -13.5, brickB); stat(1.1, T, 1.6, 3.15, 2.4, -13.5, conc); stat(.9, .1, 1.2, 3.05, -.05, -13.5, conc); door(3.47, 1.03, -13.5, -Math.PI / 2);
   stat(2.1, .2, 3.4, -3.75, -.1, -31.2, conc); stat(T, 2.8, 3.4, -4.8, 1.3, -31.2, conc); stat(2.1, 2.8, T, -3.75, 1.3, -29.6, conc); stat(2.1, 2.8, T, -3.75, 1.3, -32.8, conc); stat(2.1, T, 3.4, -3.75, 2.7, -31.2, conc);
-  stat(.06, 1.75, 1.6, -2.7, 1.625, -31.2, corr); const lip = boxMesh(.09, .07, 1.6, iron); lip.position.set(-2.7, .76, -31.2); scene.add(lip);
+  const shut = stat(.06, 1.75, 1.6, -2.7, 1.625, -31.2, corr), lip = boxMesh(.09, .07, 1.6, iron); lip.position.set(-2.7, .76, -31.2); scene.add(lip);
+  const shutC = P.world.createCollider(RAPIER.ColliderDesc.cuboid(.03, .375, .8).setTranslation(-2.7, .375, -31.2).setCollisionGroups(grp(G.SOLID))); P.byCol.set(shutC.handle, { kind: 'metal', fixed: true }); shutC.setEnabled(false);
+  WORLD.shutter = down => { shutC.setEnabled(down); shut.scale.y = down ? 2.5 / 1.75 : 1; shut.position.y = down ? 1.25 : 1.625; lip.position.y = down ? .04 : .76; };
   // the lit and unlit windows high up, the pipes, the wires: the city goes on above you
   const winT = canvasTex(64, 96, (g, w, h) => { g.fillStyle = '#111'; g.fillRect(0, 0, w, h); const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#e9b96a'); gr.addColorStop(1, '#8a5a22'); g.fillStyle = gr; g.fillRect(5, 5, w - 10, h - 10); g.fillStyle = 'rgba(40,20,5,.55)'; g.fillRect(5, 5, 20, h - 10); g.fillRect(w - 22, 5, 17, h - 10); g.fillStyle = '#111'; g.fillRect(w / 2 - 2, 0, 4, h); g.fillRect(0, h / 2 - 2, w, 4); });
   const winG = new THREE.PlaneGeometry(.95, 1.5), lit = new THREE.MeshStandardMaterial({ color: 0, emissive: 0xffffff, emissiveMap: winT, emissiveIntensity: 1.3 }), unlit = new THREE.MeshStandardMaterial({ color: 0x0a0d12, roughness: .15, metalness: .6 }), wins = [[], []];
@@ -67,7 +69,7 @@ function build() {
   for (const s of [-1, 1]) { const piv = new THREE.Group(); piv.position.set(s * W, 0, 0); scene.add(piv); const pg = new THREE.PlaneGeometry(W, 2.7), uv = pg.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * 22, uv.getY(i) * 23);
     const m = new THREE.Mesh(pg, wireM); m.position.set(-s * W / 2, 1.4, 0); piv.add(m); for (const [w, h, x, y] of [[W, .05, -s * W / 2, .06], [W, .05, -s * W / 2, 2.75], [.05, 2.75, -s * .03, 1.4], [.05, 2.75, -s * (W - .03), 1.4]]) { const b = boxMesh(w, h, .05, iron); b.position.set(x, y, 0); piv.add(b); } gate.leaves.push([piv, s]); }
   WORLD.gate = gate; WORLD.updaters.push(dt => { gate.a += clamp(gate.to - gate.a, -dt * .55, dt * .55); for (const [p, s] of gate.leaves) p.rotation.y = s * gate.a * 1.35; });
-  P.world.createCollider(RAPIER.ColliderDesc.cuboid(W, 3, .05).setTranslation(0, 3, .3).setCollisionGroups(grp(G.SEE, G.PLAYER | G.SOLID)));
+  WORLD.barrier = P.world.createCollider(RAPIER.ColliderDesc.cuboid(W, 3, .05).setTranslation(0, 3, .3).setCollisionGroups(grp(G.SEE, G.PLAYER | G.SOLID)));
 
   /* beyond the gate nothing is real, but it is built and lit like the rest: the house fronts across a street, a street lamp, headlights that pass */
   const glowT = canvasTex(64, 64, (g, w) => { const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(.25, 'rgba(255,255,255,.35)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, w, w); }); WORLD.glowT = glowT;
@@ -94,13 +96,13 @@ function build() {
   let fl = 1, flT = 0, sf = 1, sfT = 3, sw = 0; WORLD.updaters.push(dt => { const dr = WORLD.dread || 0; flT -= dt; if (flT < 0) { flT = Math.random() < .2 + dr * .5 ? rnd(.03, .12) : rnd(.2, 2.6 - dr * 2); fl = Math.random() < .3 + dr * .4 ? rnd(0, .25) : 1; }
     sfT -= dt; if (sfT < 0) { const dip = Math.random() < .12 + dr * .5; sfT = dip ? rnd(.04, .18) : rnd(.6, 5 - dr * 4); sf = dip ? rnd(.15, .6) : 1; }
     sw += dt; const a = Math.sin(sw * 1.9) * .1 + Math.sin(sw * .7) * .05; dl.position.set(W - .3, 2.72, -13.5 + a); dB.position.copy(dl.position); dl.intensity = 34 * fl * (.92 + Math.random() * .08); dB.material.emissiveIntensity = 10 * fl; WORLD.wallLamp = fl;
-    sod.intensity = 150 * sf; bulb.material.emissiveIntensity = 14 * sf; WORLD.sodium = sf; bolt.intensity = (WORLD.flash || 0) * 2.2; sky.intensity = .15 + (WORLD.flash || 0) * .5; });
+    const out = WORLD.night && WORLD.night.lampOut ? 0 : 1; sod.intensity = 150 * sf * out; bulb.material.emissiveIntensity = 14 * sf * out; WORLD.sodium = sf; bolt.intensity = (WORLD.flash || 0) * 2.2; sky.intensity = .15 + (WORLD.flash || 0) * .5; });
   const stL = new THREE.SpotLight(0xd9dde6, 120, 24, .7, .9, 1.8); stL.position.set(3, 6.9, 7.6); stL.target.position.set(-.6, 0, -3); if (!LOW) { stL.castShadow = true; stL.shadow.mapSize.setScalar(512); stL.shadow.camera.near = 1; stL.shadow.camera.far = 24; stL.shadow.bias = -.002; stL.shadow.normalBias = .04; } scene.add(stL, stL.target);
   const bolt = new THREE.DirectionalLight(0xc8d4ff, 0); bolt.position.set(4, 30, -10); bolt.target.position.set(0, 0, -17); scene.add(bolt, bolt.target);
   for (const w of wins[0].filter(w => w[1] < 7).slice(0, LOW ? 1 : 3)) { const s = new THREE.SpotLight(0xf0c078, 14, 11, .85, .9, 1.8), side = Math.sign(w[0]); s.position.set(w[0] - side * .1, w[1], w[2]); s.target.position.set(-side * W, w[1] - 3.2, w[2]); scene.add(s, s.target); }
   WORLD.lamps = [{ x: -.3, z: -8.5, r: 5.2, k: 1, sod: true }, { x: 2, z: -13.5, r: 3.6, k: .7, flick: true }, { x: 0, z: 1.5, r: 5.5, k: .6 }, { x: -2, z: -29.2, r: 3.2, k: .3 }, { x: 2, z: -21.6, r: 3, k: .28 }];
   // how brightly a place on the ground is lit, 0 (black) to 1 (under the lamp): the thing sees you sooner in the light
-  WORLD.lit = (x, z) => { let v = .04; for (const l of WORLD.lamps) v = Math.max(v, l.k * (l.flick ? (WORLD.wallLamp ?? 1) : l.sod ? (WORLD.sodium ?? 1) : 1) * clamp(1 - Math.hypot(x - l.x, z - l.z) / l.r, 0, 1)); return v; };
+  WORLD.lit = (x, z) => { let v = .04; for (const l of WORLD.lamps) v = Math.max(v, l.k * (l.flick ? (WORLD.wallLamp ?? 1) : l.sod ? (WORLD.night && WORLD.night.lampOut ? 0 : WORLD.sodium ?? 1) : 1) * clamp(1 - Math.hypot(x - l.x, z - l.z) / l.r, 0, 1)); return v; };
 
   /* puddles: flat water that throws the lamps back at you, and wets your soles */
   const pm = new THREE.MeshStandardMaterial({ color: 0x06080a, roughness: .03, metalness: 0, transparent: true, opacity: .6, envMapIntensity: 9, depthWrite: false });
@@ -117,14 +119,14 @@ function build() {
   const rain = new THREE.LineSegments(rg, rm); rain.frustumCulled = false; scene.add(rain); WORLD.rain = rm; WORLD.updaters.push(dt => { rm.uniforms.t.value += dt; });
 
   /* ───────── the twenty places ───────── */
-  const lid = (id, hx, hy, hz, axis, a0, open, w, h, d, ox, oy, oz, m, mass) => {   // a hinged leaf on a fixed frame: a dumpster's lid, a locker's door
-    const mesh = boxMesh(w, h, d, m), holder = new THREE.Group(); mesh.position.set(ox, oy, oz); holder.add(mesh);
-    const q0 = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(...axis), a0), Tn = dyn(holder, [sBox(w, h, d, ox, oy, oz)], { x: hx, y: hy, z: hz, mass, kind: 'lid', spot: id, name: 'lid', ad: 1.2 }); Tn.b.setRotation(q0, true); Tn.home.q = { x: q0.x, y: q0.y, z: q0.z, w: q0.w };
+  const lid = (id, hx, hy, hz, axis, a0, open, w, h, d, ox, oy, oz, m, mass, parts) => {   // a hinged leaf on a fixed frame: a dumpster's lid, a locker's door; parts leave a slot to look through
+    const holder = new THREE.Group(), boxes = parts || [[w, h, d, ox, oy, oz]]; for (const b of boxes) { const mesh = boxMesh(b[0], b[1], b[2], m); mesh.position.set(b[3], b[4], b[5]); holder.add(mesh); }
+    const q0 = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(...axis), a0), Tn = dyn(holder, boxes.map(b => sBox(...b)), { x: hx, y: hy, z: hz, mass, kind: 'lid', spot: id, name: 'lid', ad: 1.2 }); Tn.b.setRotation(q0, true); Tn.home.q = { x: q0.x, y: q0.y, z: q0.z, w: q0.w };
     const j = P.world.createImpulseJoint(RAPIER.JointData.revolute({ x: hx, y: hy, z: hz }, { x: 0, y: 0, z: 0 }, { x: axis[0], y: axis[1], z: axis[2] }), P.anchor, Tn.b, true); j.setLimits(0, open + .1);
-    const L = { T: Tn, j, axis, open, was: a0 > .35, want: a0 > .35, a0, home() { L.want = L.was; j.configureMotorPosition(a0, 38, 8.5); Tn.b.wakeUp(); }, set(v) { L.want = v; j.configureMotorPosition(v ? open : 0, 38, 8.5); Tn.b.wakeUp(); }, angle() { const q = Tn.b.rotation(); return 2 * Math.atan2(q.x * axis[0] + q.y * axis[1] + q.z * axis[2], q.w); }, isOpen() { return L.angle() > .35; } };
+    const L = { T: Tn, j, axis, open, was: a0 > .35, want: a0 > .35, a0, locked: false, home() { L.want = L.was; j.configureMotorPosition(a0, 38, 8.5); Tn.b.wakeUp(); }, set(v) { if (L.locked) return false; L.want = v; j.configureMotorPosition(v ? open : 0, 38, 8.5); Tn.b.wakeUp(); return true; }, angle() { const q = Tn.b.rotation(); return 2 * Math.atan2(q.x * axis[0] + q.y * axis[1] + q.z * axis[2], q.w); }, isOpen() { return L.angle() > .35; } };
     j.configureMotorPosition(a0, 38, 8.5); Tn.lid = L; P.lids[id] = L; return L; };
   const dumpster = (id, side, cz, open) => { const cx = side * 1.95, m = green;   // steel, 1.9 long, 1.2 high, hollow; side -1 is the left wall
-    stat(1.15, .06, 1.9, cx, .15, cz, m, { kind: 'metal' }); stat(.04, 1.05, 1.9, cx - side * .555, .675, cz, m, { kind: 'metal' }); stat(.04, 1.05, 1.9, cx + side * .555, .675, cz, m, { kind: 'metal' }); stat(1.15, 1.05, .04, cx, .675, cz + .93, m, { kind: 'metal' }); stat(1.15, 1.05, .04, cx, .675, cz - .93, m, { kind: 'metal' });
+    stat(1.15, .06, 1.9, cx, .15, cz, m, { kind: 'metal' }); stat(.04, .63, 1.9, cx - side * .555, .465, cz, m, { kind: 'metal' }); stat(.04, .38, 1.9, cx - side * .555, 1.01, cz, m, { kind: 'metal' }); stat(.04, 1.05, 1.9, cx + side * .555, .675, cz, m, { kind: 'metal' }); stat(1.15, 1.05, .04, cx, .675, cz + .93, m, { kind: 'metal' }); stat(1.15, 1.05, .04, cx, .675, cz - .93, m, { kind: 'metal' });
     for (const dz of [-.7, .7]) for (const dx of [-.4, .4]) { const wh = new THREE.Mesh(new THREE.CylinderGeometry(.07, .07, .05, 10), dark); wh.rotation.x = Math.PI / 2; wh.position.set(cx + dx, .07, cz + dz); scene.add(wh); }
     for (const dz of [-.96, .96]) { const b = boxMesh(.5, .06, .05, iron); b.position.set(cx, .95, cz + dz); scene.add(b); }
     lid(id, cx + side * .585, 1.215, cz, [0, 0, -side], open ? 1.68 : 0, 1.68, 1.19, .03, 1.94, -side * .595, 0, 0, m, 13); };
@@ -160,7 +162,7 @@ function build() {
   for (const [n, x, z] of [['barrel_01', -1.5, -22.95], ['barrel_03', -1.42, -23.62], ['barrel_01', -1.52, -24.3], ['barrel_03', -2.22, -22.7]]) prop(n, { h: .9, x, y: .01, z, ry: rnd(6), mass: 16, kind: 'drum', spot: 'barrels', name: 'a drum', cyl: .29, fr: .7, asleep: true });
 
   { const x = 2.2, z = -25, m = rust; stat(.04, 1.95, .75, x + .3, .975, z, m, { kind: 'metal' }); stat(.64, 1.95, .04, x, .975, z + .355, m, { kind: 'metal' }); stat(.64, 1.95, .04, x, .975, z - .355, m, { kind: 'metal' }); stat(.64, .04, .75, x, 1.93, z, m, { kind: 'metal' }); stat(.64, .04, .75, x, .02, z, m, { kind: 'metal' });
-    lid('locker', x - .32, .98, z + .34, [0, 1, 0], .45, 1.65, .025, 1.84, .68, 0, 0, -.34, m, 9); }
+    lid('locker', x - .32, .98, z + .34, [0, 1, 0], .45, 1.65, .025, 1.84, .68, 0, 0, -.34, m, 9, [[.025, 1.4, .68, 0, -.22, -.34], [.025, .2, .68, 0, .66, -.34], [.025, .16, .68, 0, .84, -.34]]); }
 
   { const x = -2.15, z = -26.5; stat(.78, .05, 1.7, x, .88, z, wood); for (const [dx, dz] of [[-.33, -.8], [.33, -.8], [-.33, .8], [.33, .8]]) stat(.07, .86, .07, x + dx, .43, z + dz, wood);   // a workbench with a tarp hung to the ground: cloth hides you but does not stop you
     const veil = (w, h, px, pz, ry) => { stat(w, h, .02, px, h / 2, pz, null, { ry, veil: true }); const g = new THREE.PlaneGeometry(w, h, 10, 6), p = g.attributes.position; for (let i = 0; i < p.count; i++) p.setZ(i, Math.sin(p.getX(i) * 9) * .035 * (1 - (p.getY(i) + h / 2) / h * .7)); g.computeVertexNormals();
@@ -178,6 +180,10 @@ function build() {
     dyn(g, [sCyl(.033, .26, 0, .03, 0)], { x, y: .04, z, ry: rnd(6), rz: Math.PI / 2, mass: .45, kind: 'glass', name: 'a bottle', fr: .4, ad: .25, ld: .15, ccd: true, asleep: true }); }
   for (const [x, z] of [[-1.7, -4], [1.9, -15.9]]) prop('cement_bag', { long: .7, x, y: .01, z, ry: rnd(6), mass: 25, kind: 'soft', name: 'a cement bag', fr: 1.3, ld: 2, ad: 4, asleep: true });
   prop('industrial_pastic_container', { long: .62, x: -1.9, y: .01, z: -2.3, ry: .4, mass: 2.5, kind: 'card', name: 'a tub', asleep: true });
+  /* the way out: a key somewhere different each night, and the cellar door at the foot of the steps */
+  { const g = new THREE.Group(), brass = new THREE.MeshStandardMaterial({ color: 0xb08a3a, roughness: .35, metalness: 1 }), ring = new THREE.Mesh(new THREE.TorusGeometry(.022, .006, 6, 14), brass), stem = new THREE.Mesh(new THREE.BoxGeometry(.008, .008, .06), brass), bit = new THREE.Mesh(new THREE.BoxGeometry(.02, .008, .014), brass); ring.rotation.x = Math.PI / 2; stem.position.z = .05; bit.position.set(.012, 0, .074); g.add(ring, stem, bit); g.traverse(o => { o.castShadow = true; });
+    WORLD.key = dyn(g, [sBox(.06, .014, .11, 0, 0, .03)], { x: -1.42, y: 1.0, z: -23.62, mass: .08, kind: 'glass', name: 'the key', fr: .9, ad: 2, ld: .5 }); WORLD.key.isKey = true;
+    WORLD.keySpots = [[-1.42, 1.0, -23.62], [3.1, .05, -13.9], [1.2, .05, -33.3], [-2.1, .95, -26.1], [-4.2, .05, -30.2], [2.0, 1.3, -30.3], [-1.9, .05, -17.9], [.9, .05, -6.2]]; WORLD.door = new THREE.Vector3(-2.05, -.4, -21.5); }
   return WORLD;
 }
 export { WORLD, build };

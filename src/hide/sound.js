@@ -33,7 +33,8 @@ A.scare = () => { if (!A.ctx || A.ctx.state !== 'running') return; const c = A.c
 // far off, a siren that comes and goes
 A.siren = () => { if (!A.ctx || A.ctx.state !== 'running') return; const c = A.ctx, t = c.currentTime, o = c.createOscillator(), g = c.createGain(), f = c.createBiquadFilter(); o.type = 'triangle'; for (let i = 0; i < 9; i++) { o.frequency.setValueAtTime(620, t + i); o.frequency.linearRampToValueAtTime(900, t + i + .5); o.frequency.linearRampToValueAtTime(620, t + i + 1); }
   f.type = 'lowpass'; f.frequency.value = 700; g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.035, t + 3); g.gain.linearRampToValueAtTime(0, t + 9); o.connect(f).connect(g).connect(A.bed); o.start(t); o.stop(t + 9.2); };
-A.start = () => { A.resume(); A.loop('rain', .34); A.loop('city', .16); drone(); };
+A.rain = k => { if (A.loops.rain) A.loops.rain.g.gain.value = .34 * k; A.rainK = k; };
+A.start = () => { A.resume(); A.loop('rain', .34 * (A.rainK || 1)); A.loop('city', .16); drone(); };
 A.frame = () => { if (!A.ctx) return; const l = A.ctx.listener; camera.getWorldPosition(_p); camera.getWorldDirection(_f); _u.set(0, 1, 0).applyQuaternion(camera.getWorldQuaternion(new THREE.Quaternion()));
   if (l.positionX) { l.positionX.value = _p.x; l.positionY.value = _p.y; l.positionZ.value = _p.z; l.forwardX.value = _f.x; l.forwardY.value = _f.y; l.forwardZ.value = _f.z; l.upX.value = _u.x; l.upY.value = _u.y; l.upZ.value = _u.z; } else { l.setPosition(_p.x, _p.y, _p.z); l.setOrientation(_f.x, _f.y, _f.z, _u.x, _u.y, _u.z); } };
 // what each kind of thing sounds like when struck, and how far the noise carries (1 = a shout)

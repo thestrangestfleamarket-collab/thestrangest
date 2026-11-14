@@ -28,8 +28,8 @@ function bar(room, x, z0, z1) { const top = mat('rosewood_veneer1', { tile: 1.5,
   USE.add({ x: x + 1.2, y: 1.2, z: (z0 + z1) / 2, r: 1.5, room, label: () => 'Pour a drink', need: 'glass', act: who => BUS.say('pour', who) }); }
 
 // a screen that shows the news the storm has left of it
-function television(room, x, z, ry) { const G = local(x, z, ry); group(room).add(G); G.position.y = .62; panel(G, flat(0x0b0b0c, { rough: .3 }), -.62, .04, -.03, .62, .78, .02); panel(G, flat(0x0b0b0c), -.2, 0, -.1, .2, .04, .12);
-  const cv = document.createElement('canvas'); cv.width = 256; cv.height = 144; const tx = new THREE.CanvasTexture(cv); tx.colorSpace = THREE.SRGBColorSpace; const scr = new THREE.Mesh(new THREE.PlaneGeometry(1.18, .68), new THREE.MeshBasicMaterial({ map: tx, color: 0x000000 })); scr.position.set(0, .41, .022); G.add(scr);
+function television(room, x, z, ry) { const G = local(x, z, ry); group(room).add(G); G.position.y = .96; panel(G, M.fine, -.42, 0, -.5, .42, .62, 0); panel(G, flat(0x0b0b0c, { rough: .3 }), -.36, .06, 0, .2, .56, .012); panel(G, flat(0x2a2622, { rough: .5 }), .22, .06, 0, .4, .56, .012); knob(G, .31, .46, .02); knob(G, .31, .36, .02);
+  const cv = document.createElement('canvas'); cv.width = 256; cv.height = 144; const tx = new THREE.CanvasTexture(cv); tx.colorSpace = THREE.SRGBColorSpace; const scr = new THREE.Mesh(new THREE.PlaneGeometry(.52, .44), new THREE.MeshBasicMaterial({ map: tx, color: 0x000000 })); scr.position.set(-.08, .31, .02); G.add(scr);
   const L = lamp(room, x + Math.sin(ry) * .5, 1.1, z + Math.cos(ry) * .5, { i: 0, d: 6, c: 0x8fb0ff, glow: false, kind: 'tv', flick: .25 }); L.on = false;
   const T = DEV.tv = { on: false, x, z, room, cv, tx, scr, L, t: 0, n: 0 };
   USE.add({ x, y: 1, z, r: 1.6, room, label: () => T.on ? 'Switch the television off' : 'Switch the television on', act: who => { T.on = !T.on && POWER.on; scr.material.color.set(T.on ? 0xffffff : 0); L.on = T.on; L.i = T.on ? 5 : 0; BUS.say('sound', 'click', x, z); BUS.say('device', 'tv', T.on, who); } }); }
@@ -172,5 +172,6 @@ function furnish() {
     put('out', 'concrete_cat_statue', 23, 22.6, 2, { h: .5 }); for (const [x, z] of [[20, -4.8], [32, -4.8], [16.4, -1], [35.6, -1]]) put('out', 'planter_pot_clay', x, z, 0, { w: .5 }); hide('garden', 26, -13.6, 'in the pond', { safe: .7, pond: 1 }); hide('garden', -12, -27, 'in the dark under the far wall', { safe: .75 });
     spot('terrace', 'smoke', 20, -1.2, N); spot('terrace', 'smoke', 32, -1.2, N); }
 }
+function lightFires() { for (const F of FIRES) F.lamp = lamp(F.place, F.x, .5, F.z, { i: 11, d: 9, c: 0xff8a3a, kind: 'flame', flick: .28, glow: false }); }
 function stepDecor(dt) { stepTV(dt); if (DEV.gram && DEV.gram.on) DEV.gram.pl.rotation.y += dt * 3.4; const B = DEV.bath; if (B) { const to = B.tap.on ? 1 : B.level; if (B.tap.on && B.level < 1) { B.level = Math.min(1, B.level + dt / 40); B.water.visible = true; B.water.position.y = .17 + B.level * .36; } } }
-export { SPOTS, HIDES, TAPS, DEV, furnish, stepDecor };
+export { SPOTS, HIDES, TAPS, DEV, furnish, stepDecor, lightFires };

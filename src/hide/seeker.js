@@ -1,16 +1,16 @@
 // DEAD END's thing: a body that walks, hears, sees by its light, notices what has moved, and asks a mind (Claude through worker/hide.js, or its own instinct when that cannot be reached) where to look next. The mind is given its senses, never your place.
-import { CLOCK, THREE, RAPIER, LOW, G, grp, SIGHT, clamp, lerp, rnd, scene, P, MODELS, ray } from './core.js';
+import { CLOCK, THREE, RAPIER, LOW, G, grp, SIGHT, clamp, lerp, rnd, scene, renderer, P, MODELS, ray } from './core.js';
 import { WORLD } from './world.js';
 import { PL } from './player.js';
 import { A } from './sound.js';
 import { SPOTS } from './spots.js';
 
-const CELL = .2, X0 = -8.8, Z0 = 6.2, NX = 88, NZ = Math.ceil((WORLD.LEN + 6.4) / CELL), PATIENCE = 190, EYE = 2.0, MON = grp(G.MON, G.SOLID);
+const CELL = .2, X0 = -8.8, Z0 = 6.2, NX = 88, NZ = Math.ceil((WORLD.LEN + 6.4) / CELL), PATIENCE = 260, EYE = 2.0, MON = grp(G.MON, G.SOLID);
 const SK = { g: new THREE.Group(), pos: new THREE.Vector3(0, 0, 6), yaw: Math.PI, state: 'wait', mode: 'local', aware: 0, asked: -9, patience: PATIENCE, cfg: { patience: PATIENCE, sense: 1, mask: 1 }, habits: {}, t: 0, thoughts: [], log: [], clues: [], searched: {}, messSeen: {}, used: new Set(), plan: null, queue: [], path: [], pending: false, feinted: false, fails: 0,
   eye: new THREE.Vector3(), look: new THREE.Vector3(0, 1, 0), lookTo: new THREE.Vector3(0, 1, -5), lightOn: true, crouch: 0, st: 0, lastSeen: new THREE.Vector3(), lost: 0, urgent: false, cn: 0, stuck: 0, reflex: 0, why: '' };
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _d = new THREE.Vector3(), pts = [];
 let body, col, ctl, mixer, acts = {}, cur = null, light, headBone = null, spine = [], nav = null, stepAcc = 0, growlT = 8, lightPos = new THREE.Vector3();
-const now = () => CLOCK.t, spotAt = id => WORLD.GEO[id];
+const _lean = new THREE.Vector3(), now = () => CLOCK.t, spotAt = id => WORLD.GEO[id];
 const nearSpot = (x, z, max = 2.6) => { let b = null, bd = max; for (const s of SPOTS) { const g = spotAt(s.id), d = Math.hypot(g.look[0] - x, g.look[2] - z); if (d < bd) { bd = d; b = s.id; } } return b; };
 
 function init() {
@@ -26,20 +26,25 @@ function init() {
   buildNav();
 }
 /* the walkable floor as a grid, found by asking the physics where a body its size fits */
+let shut = new Float32Array(1);
 function buildNav() { const ball = new RAPIER.Ball(.4), g = new Uint8Array(NX * NZ), heavy = c => { const T = P.byCol.get(c.handle); return !T || T.fixed || T.mass > 30 || T.kind === 'drum'; };
   for (let j = 0; j < NZ; j++) for (let i = 0; i < NX; i++) { const x = X0 + (i + .5) * CELL, z = Z0 - (j + .5) * CELL; let bad = WORLD.blocked.some(r => x > r[0] && x < r[1] + .45 && z > r[2] - .45 && z < r[3] + .45);
-    if (!bad) bad = !!P.world.intersectionWithShape({ x, y: .75, z }, { x: 0, y: 0, z: 0, w: 1 }, ball, undefined, MON, undefined, undefined, heavy); g[j * NX + i] = bad ? 1 : 0; } nav = g; }
+    if (!bad) bad = !!P.world.intersectionWithShape({ x, y: .75, z }, { x: 0, y: 0, z: 0, w: 1 }, ball, undefined, MON, undefined, undefined, heavy); g[j * NX + i] = bad ? 1 : 0; } nav = g; shut = new Float32Array(NX * NZ); }
 const cellOf = (x, z) => [clamp(Math.floor((x - X0) / CELL), 0, NX - 1), clamp(Math.floor((Z0 - z) / CELL), 0, NZ - 1)];
 function freeNear(i, j) { if (!nav[j * NX + i]) return [i, j]; for (let r = 1; r < 14; r++) for (let dj = -r; dj <= r; dj++) for (let di = -r; di <= r; di++) { const a = i + di, b = j + dj; if (a >= 0 && b >= 0 && a < NX && b < NZ && !nav[b * NX + a] && Math.max(Math.abs(di), Math.abs(dj)) === r) return [a, b]; } return [i, j]; }
-function pathTo(x, z) { SK.goal = [x, z]; const [si, sj] = freeNear(...cellOf(SK.pos.x, SK.pos.z)), [ti, tj] = freeNear(...cellOf(x, z)), N = NX * NZ, gS = new Float32Array(N).fill(1e9), from = new Int32Array(N).fill(-1), done = new Uint8Array(N), start = sj * NX + si, goal = tj * NX + ti, hk = [], hf = [];
+function pathTo(x, z, open) { SK.goal = [x, z]; const tn = now(), [si, sj] = freeNear(...cellOf(SK.pos.x, SK.pos.z)), [ti, tj] = freeNear(...cellOf(x, z)), N = NX * NZ, gS = new Float32Array(N).fill(1e9), from = new Int32Array(N).fill(-1), done = new Uint8Array(N), start = sj * NX + si, goal = tj * NX + ti, hk = [], hf = [];
   const h = k => Math.hypot(k % NX - ti, Math.floor(k / NX) - tj), push = (k, f) => { let i = hk.length; hk.push(k); hf.push(f); while (i > 0) { const p = (i - 1) >> 1; if (hf[p] <= f) break; hk[i] = hk[p]; hf[i] = hf[p]; i = p; } hk[i] = k; hf[i] = f; },
     pop = () => { const top = hk[0], k = hk.pop(), f = hf.pop(), n = hk.length; if (n) { let i = 0; for (;;) { let c = i * 2 + 1; if (c >= n) break; if (c + 1 < n && hf[c + 1] < hf[c]) c++; if (hf[c] >= f) break; hk[i] = hk[c]; hf[i] = hf[c]; i = c; } hk[i] = k; hf[i] = f; } return top; };
   gS[start] = 0; push(start, h(start)); while (hk.length) { const k = pop(); if (done[k]) continue; done[k] = 1; if (k === goal) break; const ci = k % NX, cj = Math.floor(k / NX);
-    for (let dj = -1; dj <= 1; dj++) for (let di = -1; di <= 1; di++) { if (!di && !dj) continue; const a = ci + di, b = cj + dj; if (a < 0 || b < 0 || a >= NX || b >= NZ) continue; const q = b * NX + a; if (nav[q] || done[q] || (di && dj && (nav[cj * NX + a] || nav[b * NX + ci]))) continue; const c = gS[k] + (di && dj ? 1.414 : 1); if (c < gS[q]) { gS[q] = c; from[q] = k; push(q, c + h(q)); } } }
-  const out = []; let k = goal; if (from[k] < 0 && k !== start) return [[x, z]]; while (k >= 0) { out.push([X0 + (k % NX + .5) * CELL, Z0 - (Math.floor(k / NX) + .5) * CELL]); k = from[k]; } out.reverse(); const thin = out.filter((p, n) => n % 3 === 2 || n === out.length - 1); return thin.length ? thin : [[x, z]]; }
+    for (let dj = -1; dj <= 1; dj++) for (let di = -1; di <= 1; di++) { if (!di && !dj) continue; const a = ci + di, b = cj + dj; if (a < 0 || b < 0 || a >= NX || b >= NZ) continue; const q = b * NX + a; if (nav[q] || done[q] || (!open && shut[q] > tn) || (di && dj && (nav[cj * NX + a] || nav[b * NX + ci]))) continue; const c = gS[k] + (di && dj ? 1.414 : 1); if (c < gS[q]) { gS[q] = c; from[q] = k; push(q, c + h(q)); } } }
+  const out = []; let k = goal; if (from[k] < 0 && k !== start) { if (!open) return pathTo(x, z, true); let best = start, bh = h(start); for (let q = 0; q < N; q++) if (done[q] && h(q) < bh) { bh = h(q); best = q; } k = best; } while (k >= 0) { out.push([X0 + (k % NX + .5) * CELL, Z0 - (Math.floor(k / NX) + .5) * CELL]); k = from[k]; } out.reverse(); const thin = out.filter((p, n) => n % 3 === 2 || n === out.length - 1); return thin.length ? thin : [[SK.pos.x, SK.pos.z]]; }
 
 function play(name, fade = .3) { const a = acts[name]; if (!a || cur === a) return; a.reset().fadeIn(fade).play(); if (cur) cur.fadeOut(fade); cur = a; }
 function setState(s) { SK.state = s; SK.st = 0; }
+// one game, for the log (worker/hide.js keeps it): what it sensed, thought and did, and, now that it is over, where you really were
+function record(won, how) { const c = v => Math.round(v * 10) / 10; return { v: 1, mind: SK.mode, vr: renderer.xr.isPresenting, won: !!won, how, seek: Math.round(SK.t), spot: nearSpot(PL.pos.x, PL.pos.z, 2.2) || '', room: WORLD.roomOf[nearSpot(PL.pos.x, PL.pos.z, 2.2)] || '', pos: [c(PL.pos.x), c(PL.pos.z)], stance: PL.stance, power: !!WORLD.power, key: !!PL.key,
+  prints: PL.prints.length, webs: Object.keys(WORLD.webs || {}).filter(id => WORLD.webs[id].torn && !WORLD.webs[id].byMon), mess: SPOTS.filter(s => messAt(s.id)).map(s => s.id), searched: { ...SK.searched }, habits: { ...SK.habits },
+  clues: SK.clues.slice(-40).map(q => ({ kind: q.kind, near: nearSpot(q.x, q.z, 3.5) || '', ago: Math.round(now() - q.t), s: q.strength, note: (q.note || '').slice(0, 60) })), log: SK.log.slice(-60).map(l => ({ did: String(l.did).slice(0, 70), found: String(l.found || '').slice(0, 70) })), thoughts: SK.thoughts.slice(-40).map(t => ({ at: t.at, a: t.action || '', text: String(t.text).slice(0, 160) })) }; }
 function think(t, action) { if (t) { SK.thoughts.push({ at: Math.round(SK.t), text: t, action }); speak(t); } }
 // its thought, aloud, low and slow, quieter the further off it is (where the browser can speak at all)
 function speak(t) { const sp = window.speechSynthesis; if (!sp || !window.SpeechSynthesisUtterance || SK.mute || !SK.g.visible) return; try { const u = new SpeechSynthesisUtterance(t); u.pitch = 0; u.rate = .62; u.volume = clamp(1.25 - SK.pos.distanceTo(PL.pos) / 11, .12, 1); sp.cancel(); sp.speak(u); SK.said = t; } catch (e) {} }
@@ -66,7 +71,7 @@ function localMind(o) { const un = o.spots.filter(s => s.searched < 2), fresh = 
   if (Math.random() < .13) return { action: 'listen', spot: '', clue: '', thorough: false, thought: 'Quiet. Let it breathe.' };
   const pick = o.spots.filter(s => s.searched < 1).map(s => [s, -s.dist * .16 + Math.random() * 2.2]).sort((a, b) => b[1] - a[1])[0] || un.map(s => [s, -s.dist * .1 + Math.random() * 2]).sort((a, b) => b[1] - a[1])[0];
   if (!pick) return { action: 'leave', spot: '', clue: '', thorough: false, thought: 'I have looked everywhere.' };
-  return { action: 'search', spot: pick[0].id, clue: '', thorough: pick[0].searched === 1 || Math.random() < .5, thought: say(['Somewhere a body fits.', 'Not here yet. Next.', 'It is small and it is afraid.', 'I can wait longer than it can.']) }; }
+  return { action: 'search', spot: pick[0].id, clue: '', thorough: pick[0].searched === 1 || Math.random() < .28, thought: say(['Somewhere a body fits.', 'Not here yet. Next.', 'It is small and it is afraid.', 'I can wait longer than it can.']) }; }
 async function ask(urgent) { if (SK.pending) return; SK.pending = true; SK.asked = now(); const o = observe(urgent), round = SK.round; let D = null;
   if (SK.mode === 'claude') { try { const c = new AbortController(), tm = setTimeout(() => c.abort(), 7000), r = await fetch('/hide/mind', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(o), signal: c.signal }); clearTimeout(tm); const j = await r.json();
       if (j && j.action) { D = j; SK.fails = 0; } else { SK.why = (j && j.why) || 'no answer'; SK.fails++; } } catch (e) { SK.why = 'not reached'; SK.fails++; } if (SK.fails >= 2) SK.mode = 'local'; }
@@ -88,13 +93,16 @@ function grab() { setState('caught'); SK.scare = 0; SK.plan = null; SK.queue.len
 function enter() { SK.round = (SK.round || 0) + 1; SK.g.visible = true; SK.pos.set(0, 0, 4.2); body.setTranslation(SK.pos, true); SK.yaw = Math.PI; SK.t = 0; SK.patience = SK.cfg.patience; SK.aware = 0; SK.lightOn = true; SK.habitTried = false; SK.fixing = false; WORLD.gate.to = 1; A.at('gate', { x: 0, y: 1.2, z: 0 }, 1.1, .8); A.at('growl1', { x: 0, y: 1.6, z: 3 }, .8);
   buildNav(); SK.blocks = 0; SK.plan = { type: 'point', x: 0, z: -2.2 }; SK.path = pathTo(0, -2.2); setState('goto'); play('walk'); }
 function reset() { SK.round = (SK.round || 0) + 1; SK.g.visible = false; SK.pos.set(0, 0, 6); body.setTranslation(SK.pos, true); setState('wait'); Object.assign(SK, { aware: 0, asked: -9, urgent: false, lost: 0, plan: null, pending: false, feinted: false, fails: 0, cn: 0, crouch: 0, lightOn: true, smelt: -9, patience: SK.cfg.patience, t: 0, why: '' }); SK.thoughts.length = SK.log.length = SK.clues.length = SK.queue.length = 0; SK.searched = {}; SK.messSeen = {}; SK.used.clear(); light.intensity = 0; SK.scare = 0; WORLD.gate.to = 0; for (const T of P.things) T.monT = T.plT = 0; }
-function walk(dt, speed) { const w = SK.path[0]; if (!w) return true; for (const k in P.lids) if (k.startsWith('door')) { const L = P.lids[k], t = L.T.b.translation(); if (!L.isOpen() && L.want === false && Math.hypot(t.x - SK.pos.x, t.z - .5 - SK.pos.z) < 1.5) { L.set(true); L.byMon = true; A.at('gate', t, .8, 1.2); A.at('wood', t, .9, .7); } } const dx = w[0] - SK.pos.x, dz = w[1] - SK.pos.z, d = Math.hypot(dx, dz); if (d < .22) { SK.path.shift(); return !SK.path.length; }
+// a door or a locker's leaf never holds it up: it throws room doors wide as it comes, and bats open locker doors shut as it passes
+const notLeaf = c => { const T = P.byCol.get(c.handle); return !(T && T.lid); };
+function walk(dt, speed) { const w = SK.path[0]; if (!w) return true; for (const k in P.lids) { const L = P.lids[k]; if (L.locked) continue; const t = L.T.b.translation(), a = L.angle(); if (k.startsWith('door')) { if (a < 1.15 && Math.hypot(t.x - SK.pos.x, t.z - .5 - SK.pos.z) < 1.5) { L.set(true); L.byMon = true; A.at('gate', t, .8, 1.2); A.at('wood', t, .9, .7); } }
+    else if (k.startsWith('lockers') && a > .55 && SK.state !== 'inspect' && Math.hypot(t.x - SK.pos.x, t.z - SK.pos.z) < 1.15) { L.want = false; L.hold(.22); L.byMon = true; A.at('lid', t, .7, 1.1); } } const dx = w[0] - SK.pos.x, dz = w[1] - SK.pos.z, d = Math.hypot(dx, dz); if (d < .22) { SK.path.shift(); return !SK.path.length; }
   const yaw = Math.atan2(dx, dz); let dy = yaw - SK.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); SK.yaw += clamp(dy, -dt * 4.5, dt * 4.5); const f = Math.max(.15, Math.cos(dy)), s = Math.min(speed * f * dt, d);
-  ctl.computeColliderMovement(col, { x: dx / d * s, y: -.08, z: dz / d * s }, undefined, MON); for (let i = 0; i < ctl.numComputedCollisions(); i++) { const c = ctl.computedCollision(i), T = c && c.collider && P.byCol.get(c.collider.handle); if (T && !T.fixed) T.monT = CLOCK.t; } const m = ctl.computedMovement(), mv = Math.hypot(m.x, m.z); SK.pos.x += m.x; SK.pos.z += m.z; SK.pos.y = Math.max(0, SK.pos.y + m.y); body.setNextKinematicTranslation(SK.pos);
+  ctl.computeColliderMovement(col, { x: dx / d * s, y: -.08, z: dz / d * s }, undefined, MON, notLeaf); for (let i = 0; i < ctl.numComputedCollisions(); i++) { const c = ctl.computedCollision(i), T = c && c.collider && P.byCol.get(c.collider.handle); if (T && !T.fixed) T.monT = CLOCK.t; } const m = ctl.computedMovement(), mv = Math.hypot(m.x, m.z); SK.pos.x += m.x; SK.pos.z += m.z; SK.pos.y = Math.max(0, SK.pos.y + m.y); body.setNextKinematicTranslation(SK.pos);
   // not getting nearer: something it cannot shove is in the way, so that patch of floor is closed and it goes round; three times and it gives the walk up
   if (d < SK.wd - .04) { SK.wd = d; SK.stuck = 0; } else SK.stuck += dt; if (SK.wp !== w) { SK.wp = w; SK.wd = d; SK.stuck = 0; }
   if (SK.stuck > 1.1) { SK.stuck = 0; SK.wd = 99; if (++SK.blocks > 3) { SK.path.length = 0; return true; } const bx = SK.pos.x + dx / d * .6, bz = SK.pos.z + dz / d * .6, [ci, cj] = cellOf(bx, bz);
-    for (let b = cj - 2; b <= cj + 2; b++) for (let a = ci - 2; a <= ci + 2; a++) if (a >= 0 && b >= 0 && a < NX && b < NZ) nav[b * NX + a] = 1; const g = SK.goal; SK.path = pathTo(g[0], g[1]); return false; }
+    for (let b = cj - 1; b <= cj + 1; b++) for (let a = ci - 1; a <= ci + 1; a++) if (a >= 0 && b >= 0 && a < NX && b < NZ) shut[b * NX + a] = now() + 9; const g = SK.goal; SK.path = pathTo(g[0], g[1]); return false; }
   stepAcc += mv; if (stepAcc > (speed > 2 ? 1.25 : .92)) { stepAcc = 0; SK.stepped = true; A.at(['heavy1', 'heavy2'], { x: SK.pos.x, y: .1, z: SK.pos.z }, speed > 2 ? 1.1 : .7, speed > 2 ? 1.15 : 1); }
   if (cur) cur.timeScale = cur === acts.run ? speed / 3.2 : speed / 1.15; return false; }
 const los = (from, x, y, z) => { _d.set(x - from.x, y - from.y, z - from.z); const d = _d.length(); if (d < .05) return true; _d.multiplyScalar(1 / d); const h = ray(from, _d, d, SIGHT); if (h && h.t < d - .06) return false; _b.set(x, y, z); return !WORLD.cloth.blocks(from, _b); };
@@ -106,9 +114,9 @@ function sense(dt, searching) { const t = now(), fx = Math.sin(SK.yaw), fz = Mat
   if (PL.noises.length > 30) PL.noises.splice(0, PL.noises.length - 30);
   if (PL.damp > 0 && SK.pos.distanceTo(PL.pos) < 3.2 && t - (SK.smelt || -9) > 7) { SK.smelt = t; clue('scent', PL.pos.x + rnd(-1.2, 1.2), PL.pos.z + rnd(-1.2, 1.2), 2, 'wet clothes, close'); SK.urgent = true; }
   /* sight */
-  light.getWorldPosition(lightPos); _a.copy(SK.look).sub(lightPos).normalize(); PL.points(pts); let seen = 0, total = 0, lit = false; const n = pts.length / 3;
-  for (let i = 0; i < n; i++) { const x = pts[i * 3], y = pts[i * 3 + 1], z = pts[i * 3 + 2], w = i === 0 ? 1.6 : 1; total += w; _d.set(x - SK.eye.x, y - SK.eye.y, z - SK.eye.z); const d = _d.length(); _d.multiplyScalar(1 / d);
-    const inCone = SK.lightOn && (searching ? d < 4.2 : _d.dot(_a) > .93), front = searching || inCone || _d.x * fx + _d.z * fz > .2, range = inCone ? 13 : 1.5 + 9 * WORLD.lit(x, z); if (!front || d > range) continue; if (los(SK.eye, x, y, z)) { seen += w; lit = lit || inCone; } }
+  light.getWorldPosition(lightPos); _a.copy(SK.look).sub(lightPos).normalize(); PL.points(pts); let seen = 0, total = 0, lit = false; const n = pts.length / 3, pe = searching && SK.state === 'inspect' && SK.plan && SK.plan.thorough && (SK.plan.eye || (spotAt(SK.plan.spot) || {}).eye), E = pe ? _lean.set(pe[0], pe[1], pe[2]) : SK.eye;   // searching properly, it leans in: its eyes are where the place is looked into from
+  for (let i = 0; i < n; i++) { const x = pts[i * 3], y = pts[i * 3 + 1], z = pts[i * 3 + 2], w = i === 0 ? 1.6 : 1; total += w; _d.set(x - E.x, y - E.y, z - E.z); const d = _d.length(); _d.multiplyScalar(1 / d);
+    const inCone = SK.lightOn && (searching ? d < 4.2 : _d.dot(_a) > .93), front = searching || inCone || _d.x * fx + _d.z * fz > .2, range = inCone ? 13 : 1.5 + 9 * WORLD.lit(x, z); if (!front || d > range) continue; if (los(E, x, y, z)) { seen += w; lit = lit || inCone; } }
   const vis = seen / total, pd = SK.eye.distanceTo(PL.head); SK.vis = vis;
   if (vis > 0) { SK.aware += dt * SK.cfg.sense * vis * (lit ? 3.4 : 1.5) * (1 + PL.speed * 1.1) * clamp(1.5 - pd / 8, .12, 1.5) * [1, .8, .6][PL.low || 0]; SK.lastSeen.copy(PL.pos); if (SK.aware > .35 && SK.state !== 'chase') { const c = clue('glimpse', PL.pos.x, PL.pos.z, vis > .4 ? 3 : 2, 'part of a body'); if (t - (c.told || 0) > 5) { c.told = t; SK.urgent = true; } } } else SK.aware = Math.max(0, SK.aware - dt * .3);
   /* breath in the light, wet prints in the light */
@@ -168,5 +176,5 @@ function face(dt) { const k = Math.min(1, (SK.st - .45) / .12), dist = lerp(1.5,
   SK.g.rotation.set((Math.random() - .5) * .05, Math.atan2(-f.x, -f.z) + (Math.random() - .5) * .06, (Math.random() - .5) * .05); SK.g.position.set(PL.head.x + f.x * dist, PL.head.y - 1.95, PL.head.z + f.z * dist); SK.g.updateMatrixWorld(true);
   if (headBone) { headBone.getWorldPosition(_b); SK.g.position.x += PL.head.x + f.x * dist - _b.x; SK.g.position.y += PL.head.y + .04 - _b.y; SK.g.position.z += PL.head.z + f.z * dist - _b.z; SK.g.updateMatrixWorld(true); headBone.getWorldPosition(_b); } else _b.copy(PL.head).addScaledVector(f, dist);
   light.position.set(PL.head.x + f.x * dist * .45, PL.head.y - .45, PL.head.z + f.z * dist * .45); light.target.position.copy(_b); light.intensity = Math.random() < .8 ? 42 : 4; WORLD.torch.on = true; WORLD.torch.at.copy(_b); }
-Object.assign(SK, { init, enter, reset, update, observe, localMind, buildNav, pathTo, messAt, decide });
+Object.assign(SK, { init, enter, reset, update, observe, localMind, buildNav, pathTo, messAt, decide, record });
 export { SK };

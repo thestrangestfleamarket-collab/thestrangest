@@ -19,7 +19,7 @@ const {chromium}=require('playwright'), path=require('path');
   ok(d.tier===1&&d.mine==='apts'&&d.Lx>7&&d.Lx<8&&d.wins===2,'the medium room ('+d.Lx+' by '+d.Ly+' m, two windows)');
   ok(d.here.includes('FISH TANK')&&d.here.includes('RECLINER')&&d.away.includes('TELESCOPE')&&!d.clips.length&&!d.out.length,'it has the tank and the recliner too, all fitting: '+JSON.stringify({away:d.away,clips:d.clips,out:d.out}));
   await pg.evaluate(()=>{ localStorage.clear(); }); d=await open('');
-  ok(d.tier===3&&d.mine==='apts'&&d.Lx>11&&d.away.every(k=>k==='HANGING PLANT')&&!d.clips.length&&['g:sofa','g:red rug','g:round mirror'].every(k=>d.here.includes(k)),'everyone lives in the loft, laid out with its rugs and pictures, nothing hanging from the ceiling ('+d.Lx+' by '+d.Ly+' m; owner, 12 Nov 2026)');
+  ok(d.tier===3&&d.mine==='apts'&&d.Lx>11&&d.away.every(k=>k==='HANGING PLANT')&&!d.clips.length&&['pf:lounge-sofa-c34b3e','pf:dining-table-7af83a','BED','g:red rug','g:round mirror'].every(k=>d.here.includes(k)),'everyone lives in the loft, laid out with its rugs and pictures, a Polyfork sofa, a dining table and the bed (14 Nov 2026), nothing hanging from the ceiling ('+d.Lx+' by '+d.Ly+' m; owner, 12 Nov 2026)');
   { const t=await pg.evaluate(()=>{ const M=__dbg.MAPK.MODS.apts; M.flatState=()=>({tier:0,top:0}); return M.tierOf(); }); ok(t===3,'everyone has the loft for now, whatever size they had (12 Nov 2026)'); }
   const hb=await pg.evaluate(async()=>{ const M=__dbg.MAPK.MODS.apts, B=document.getElementById('homebtn'), at=B.hidden; M.inReal=false; await new Promise(r=>setTimeout(r,1500)); const out=B.hidden; M.inReal=true; return {at,out}; });
   ok(hb.at===true&&hb.out===false,'HOME shows anywhere but in your own flat (owner, 12 Nov 2026)');

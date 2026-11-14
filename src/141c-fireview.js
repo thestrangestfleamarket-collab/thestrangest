@@ -4,7 +4,6 @@ import {BATCH, CLOCK, CULL, FAR3, FARCITY, GPH, pos, ROOMS, SFX, SKY, UI, VIS, V
 import {renderer, RH, scene} from './004-main.js';
 import {BLDK, FADE, MAPG, MISTE, MODS, STORE, SYS, TILE} from './006-map-pre.js';
 import {PEEK} from './008-batch.js';
-import {BLOCKS} from './038zb-blocks.js';
 { const APTS=MODS.apts, F=MODS.firev, T=TILE, KK=BLDK, {X,Z}=SHARED.BOD, Y=SHARED.BOD.Y, {HZ,S}=F, A=APTS.AL, FE=APTS.ESC[0], DU=APTS.DU, DO=APTS.DO, LV=F.lv;
   const ix=x=>x/(T*KK)+SHARED.BOD.OX, iy=z=>z/(T*KK)+SHARED.BOD.OY, cl=v=>Math.max(0,Math.min(1,v)), nk=()=>cl((4-CLOCK.elev())/8);
   const AR=APTS.R, IN=APTS.IN||AR, FY=AR.y0-.24/.907-.006, U=u=>AR.x0+(APTS.EB||AR.x1-AR.x0)-u, V=d=>FY-d, L0=U(FE.ub), L1=U(FE.ua), DX=U(DU);   // the house turned half round your rooms: its front face on their fire-escape wall, your landing level with their floor
@@ -29,9 +28,9 @@ import {BLOCKS} from './038zb-blocks.js';
   const z0=APTS.RZ+S;
   F.build=()=>{ '@fire'; if(F.built)return; const keep=BATCH.items.splice(0), km=BATCH.meshes, kc=BATCH.cast; BATCH.meshes={}; BATCH.cast=true; BATCH.tag=null;
     const WN=APTS.WIN, near=(a,c,r=.55)=>Math.abs(a-c)<r, inW=h=>h>WN.WZ[0]&&h<WN.WZ[1], MHa=(APTS.MH||0)*32.4, inWs=h=>inW(h)||(MHa>0&&inW(h-MHa)), hole=(sd,a,z)=>{ const h=z-HZ; if(h<0||h>S*(APTS.HK||1)||sd==='b')return false; if(sd==='f')return near(a,A.x0+DU)&&h<75||APTS.FWU.some(u=>near(a,A.x0+u,WN.WHW)&&inWs(h)); return WN.SIDE.some(k=>near(a,APTS.sideAt(k),WN.WHW)&&inWs(h)); };   // your floor: open where your rooms' windows and doors are (both doors, the side windows too), so you see in
-    const bm=BATCH.meshes, HB={x0:A.x0-AR.y0+FY,x1:A.x1+AR.y0-FY,y0:A.y0-2*(AR.y0-FY),y1:A.y1}; BLOCKS.make({...HB,z0:0,z1:Math.min(HZ+3*S,APTS.TOP),kind:'A',roof:(x,y)=>{ const r=((Math.sin(Math.floor(x*4)*12.99+Math.floor(y*4)*78.23)*43758.5)%1+1)%1, e=Math.min(x-HB.x0,HB.x1-x,y-HB.y0,HB.y1-y); return e<.25?[118,50,38]:r<.3?[50,50,52]:r>.7?[66,64,62]:[58,57,57]; },paint:(sd,a,z,f)=>hole(sd,a,z)?null:APTS.paint(sd,a,z0+((z-z0)%(3*S)+3*S)%(3*S),f)});   // the whole building, street to roof, so you see it run all the way up and down past the landing
+    const bm=BATCH.meshes, HB=F.HB={x0:A.x0-AR.y0+FY,x1:A.x0+(APTS.EB||A.x1-A.x0)+AR.y0-FY,y0:A.y1-(IN.y1-FY)-(AR.y0-FY),y1:A.y1};   // the house round your rooms exactly, however big they are (owner, 14 Nov 2026: "use original apartment outside shape and fire escape. square building") BLOCKS.make({...HB,z0:0,z1:HZ+3,kind:'A',roof:(x,y)=>{ const r=((Math.sin(Math.floor(x*4)*12.99+Math.floor(y*4)*78.23)*43758.5)%1+1)%1, e=Math.min(x-HB.x0,HB.x1-x,y-HB.y0,HB.y1-y); return e<.25?[118,50,38]:r<.3?[50,50,52]:r>.7?[66,64,62]:[58,57,57]; },paint:(sd,a,z,f)=>hole(sd,a,z)?null:APTS.paint(sd,a,z0+((z-z0)%(3*S)+3*S)%(3*S),f)});   // the whole building, street to roof, so you see it run all the way up and down past the landing
     BATCH.build(APTS.MKA); const house=new Set(Object.values(bm)); BATCH.meshes={};
-    APTS.escape(FE,Array.from({length:Math.min(LV+2,APTS.ST-1)},(_,i)=>i+1),-APTS.RZ,(LV+3)*S);
+    APTS.escape(FE,Array.from({length:Math.min(LV,APTS.ST-1)},(_,i)=>i+1),-APTS.RZ,(LV+1)*S);   // the house stops at your floor: above it your rooms' own brick walls (150a)
     BATCH.build(APTS.MKA); for(const me of house){ me.castShadow=me.receiveShadow=true; G.add(me); } BATCH.cast=kc; for(const me of Object.values(BATCH.meshes||{})){ me.castShadow=me.receiveShadow=true; G.add(me); } BATCH.meshes=km; BATCH.items=keep;
     G.rotation.y=Math.PI; G.position.set(X(AR.x0+(APTS.EB||AR.x1-AR.x0))+X(A.x0),0,Z(FY)+Z(A.y1)); G.updateMatrix(); G.updateMatrixWorld(true);
     // the pots and plants are real: on your landing each one a thing you can pick up, push or knock off; the landings above and below keep theirs in place
@@ -63,9 +62,9 @@ import {BLOCKS} from './038zb-blocks.js';
         const kb=new THREE.Mesh(new THREE.SphereGeometry(mm(.03),12,8),brass); kb.position.set(mm(w/2-.12),mm(1.0),mm(lz+.05)); L.add(kb); return g; };
       const ww=2*APTS.WIN.WHW*.907, wh=(APTS.WIN.WZ[1]-APTS.WIN.WZ[0])/32.4, dh=(94-3)/32.4, WZ0=APTS.WIN.WZ[0];
       for(let lv=1;lv<=Math.min(LV+2,APTS.ST-1);lv++){ const z=APTS.RZ+lv*S;
-        for(const u of APTS.FWU){ const o=window3D(ww,wh,lv===LV); o.position.set(X(A.x0+u),Y(z+WZ0),Z(A.y1)); G.add(o); }
+        if(lv!==LV)for(const u of APTS.FWU){ const o=window3D(ww,wh,false); o.position.set(X(A.x0+u),Y(z+WZ0),Z(A.y1)); G.add(o); }
         if(lv>0&&lv!==LV){ const o=door3D(ww,dh); o.position.set(X(A.x0+DU),Y(z+3),Z(A.y1)); G.add(o); } }
-      { const z=APTS.RZ+LV*S; for(const k of APTS.WIN.SIDE)for(const [x,r] of [[A.x1+AR.y0-FY,Math.PI/2],[A.x0-AR.y0+FY,-Math.PI/2]]){ const o=window3D(ww,wh,true); o.position.set(X(x),Y(z+WZ0),Z(APTS.sideAt(k))); o.rotation.y=r; G.add(o); } } }   // your floor's side windows, framed like the front ones; your own door is your rooms' (150a), and it opens
+      if(0){ const z=APTS.RZ+LV*S; for(const k of APTS.WIN.SIDE)for(const [x,r] of [[A.x1+AR.y0-FY,Math.PI/2],[A.x0-AR.y0+FY,-Math.PI/2]]){ const o=window3D(ww,wh,true); o.position.set(X(x),Y(z+WZ0),Z(APTS.sideAt(k))); o.rotation.y=r; G.add(o); } } }   // your floor's side windows, framed like the front ones; your own door is your rooms' (150a), and it opens
     // the sky round the house: a thick layer of white cumulus below the lowest landing, drifting very slowly (the sky's own clouds as meshes)
     { const cx=(A.x0+A.x1)/2, cy=(A.y0+A.y1)/2, hw=Math.hypot(A.x1-A.x0,A.y1-A.y0)/2+6, top=Y(HZ-S*2.4), C=[];   // clear of the house, so none cuts into it
       for(let i=0;i<72;i++){ const a=Math.random()*6.283, d=hw+4+Math.sqrt(Math.random())*66, W=LW*(8+Math.random()*7), y=top-W*(.8+Math.random()*.5);

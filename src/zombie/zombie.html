@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:,">
+<title>Eyes Down</title>
+<style>
+:root{--bg:#07080b;--ink:#c8c2b4;--dim:#77736a;--rule:#25262a;--phos:#8dffb4;--sodium:#ffb15c;--neon:#ff4f8a;--paper:#ece4d2;
+  --display:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;--util:ui-monospace,"SF Mono",Menlo,Consolas,monospace;color-scheme:dark}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);overflow:hidden;font-family:var(--display)}
+[hidden]{display:none!important}
+canvas{display:block;position:fixed;inset:0;width:100%;height:100%}
+#ui{position:fixed;inset:0;z-index:5;display:flex;align-items:safe flex-end;overflow:auto;padding:max(24px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(40px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  background:radial-gradient(110% 80% at 80% 12%,rgba(255,79,138,.12) 0%,rgba(7,8,11,0) 45%),linear-gradient(0deg,rgba(7,8,11,.97) 0%,rgba(7,8,11,.9) 55%,rgba(7,8,11,.6) 100%)}
+#card{max-width:36rem;margin-left:min(7vw,5rem);display:flex;flex-direction:column;gap:1rem;min-width:0}
+.eyebrow{font:500 .72rem/1 var(--util);letter-spacing:.3em;text-transform:uppercase;color:var(--sodium)}
+h1{font:400 clamp(3rem,11vw,6.2rem)/.86 var(--display);letter-spacing:-.01em;margin:0;color:var(--paper);text-wrap:balance}
+h1 em{font-style:normal;color:var(--neon)}
+p{margin:0;font-size:1.06rem;line-height:1.55;max-width:58ch}
+.btns{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:.3rem}
+button{font:500 .8rem/1 var(--util);letter-spacing:.2em;text-transform:uppercase;padding:1rem 1.4rem;border:1px solid var(--dim);background:transparent;color:var(--paper);cursor:pointer;border-radius:0}
+button.main{background:var(--paper);color:var(--bg);border-color:var(--paper)}
+button:hover:not(:disabled){border-color:var(--sodium)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--sodium);outline-offset:3px}
+button:disabled{opacity:.35;cursor:not-allowed}
+dl{display:grid;grid-template-columns:auto 1fr;gap:.35rem 1.2rem;margin:0;font:400 .78rem/1.45 var(--util);color:var(--dim);border-top:1px solid var(--rule);padding-top:1rem}
+dt{color:var(--ink)}dd{margin:0}
+.small{font:400 .74rem/1.5 var(--util);color:var(--dim)}
+.row{display:flex;flex-wrap:wrap;gap:1rem;align-items:center;font:400 .78rem/1.4 var(--util);color:var(--dim)}
+input[type=text]{font:400 .9rem var(--util);background:transparent;border:1px solid var(--rule);color:var(--paper);padding:.5rem .6rem;width:10rem}
+#note{color:var(--neon);min-height:1.2em}
+#hud{position:fixed;inset:0;z-index:4;pointer-events:none;font:500 15px/1.4 var(--util);color:rgba(255,232,200,.78);text-shadow:0 1px 4px #000}
+#h-time{position:absolute;left:max(18px,env(safe-area-inset-left,0px));bottom:max(18px,env(safe-area-inset-bottom,0px))}
+#h-do{white-space:pre-line;position:absolute;left:max(18px,env(safe-area-inset-left,0px));bottom:calc(max(18px,env(safe-area-inset-bottom,0px)) + 24px);color:rgba(230,230,220,.62)}
+#h-use{position:absolute;left:0;right:0;top:58%;text-align:center;color:rgba(255,255,255,.8)}
+#h-say{position:absolute;left:10%;right:10%;bottom:16%;text-align:center;font:italic 400 22px/1.4 var(--display);color:rgba(255,240,215,.92)}
+#h-say.them{color:rgba(205,225,205,.9)}
+#dot{position:absolute;left:50%;top:50%;width:4px;height:4px;margin:-2px;border-radius:50%;background:rgba(255,255,255,.35)}
+#load{height:2px;background:var(--rule);width:min(100%,22rem)}
+#bar{height:100%;background:var(--sodium);transform:scaleX(0);transform-origin:left;transition:transform .2s}
+@media (prefers-reduced-motion:reduce){#bar{transition:none}}
+</style>
+</head>
+<body>
+<div id="ui"><div id="card">
+  <div class="eyebrow">New York, 1985 · 31st floor · <span id="night">Night 1 of 5</span></div>
+  <h1>Eyes <em>Down</em></h1>
+  <p>It's after eleven. Lock up, eat, watch the news, brush your teeth, go to bed. There are things in your apartment, black and wet with pale eyes, standing where your chores make you look. Live your evening as if they weren't there. They will switch things on, put the lights out and move your things: put it right, as anyone would. When you look away, they crawl closer. If you look one in the eye, it knows you can see it.</p>
+  <div id="load"><div id="bar"></div></div>
+  <div class="btns"><button id="bvr" class="main" disabled>Enter headset</button><button id="bdesk" disabled>Play on screen</button></div>
+  <div class="row"><label>Your name, for the voices <input id="name" type="text" maxlength="20" autocomplete="off"></label><label><input id="voices" type="checkbox"> Voices</label></div>
+  <dl><dt>Headset</dt><dd>Left stick walks, right stick turns. Point and pull the right trigger to use things. Grip picks things up. Left trigger, or both hands over your eyes, shuts them. B stands you up. Your watch has the time and tonight's list.</dd>
+      <dt>Screen</dt><dd>WASD and the mouse. E uses what you look at. Hold the mouse button to carry. Hold Space to shut your eyes. Hold Tab for tonight's list.</dd>
+      <dt>Hunted</dt><dd>The lights die. You have four seconds: shut yourself in the bathroom with your eyes closed, or get under the covers. Not the same place twice.</dd></dl>
+  <div class="small" id="vrnote"></div><div class="small" id="note"></div>
+  <div class="small">Frightening. Play seated or with clear floor around you.</div>
+</div></div>
+<div id="hud" hidden><div id="dot"></div><div id="h-time"></div><div id="h-do"></div><div id="h-use"></div><div id="h-say"></div></div>
+<script type="module">__ZOMBIE__</script>
+</body>
+</html>

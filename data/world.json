@@ -603,15 +603,15 @@
    "id": "bodega",
    "name": "THE BODEGA",
    "kind": "front",
-   "x0": 151.11,
-   "x1": 164.24,
+   "x0": 150.66,
+   "x1": 164.69,
    "y0": -92.4,
    "y1": -77,
    "face": "n",
    "pf": "bodega",
-   "pfk": 1.1,
+   "pfk": 1.32,
    "corner": "w",
-   "note": "Polyfork's corner building (#12), its door a quarter taller than a player (pfk its size), its cut corner and door to the west (owner, 13 Nov 2026)"
+   "note": "Polyfork's corner building (#12), its cut corner and door to the west (owner, 13 Nov 2026); filling its lot, its front wall on the street line so the door shows (owner, 14 Nov 2026: \"the bodega is way too small, cant see front door\")"
   },
   {
    "id": "arcade",

@@ -537,8 +537,9 @@ function hangPose(st){ const H=st.hang,a=2*Math.PI*H.t/24,s=Math.sin(a),P=neutra
   if(H.grip&&st.world){ P.nod=-26*D; gripIK(st,P,H.grip); }   // hands onto the branch's holds
   return P; }
 
-function sitPose(st){ const P=neutral(); P.root=V(0,st.sit.z+2,0); P.bend=-5*D; P.nod=-4*D;
-  for(const n of "LR"){ P[n].th=[88*D,6*D]; P[n].sh=[6*D,4*D]; P[n].foot=4*D; P[n].ua=[22*D,16*D]; P[n].fa=[74*D,6*D]; P[n].fist=0; }
+function sitPose(st){ const S=st.sit, P=neutral(); S.lk=(S.lk||0)+(((S.lean?1:0)-(S.lk||0))*.08); const l=S.lk;   // leaning back eases in and out
+  P.root=V(0,S.z+2,-1.2*l); P.bend=(-5-30*l)*D; P.nod=(-4+16*l)*D;
+  for(const n of "LR"){ P[n].th=[(88-14*l)*D,6*D]; P[n].sh=[(6+50*l)*D,4*D]; P[n].foot=4*D; P[n].ua=[(22-14*l)*D,16*D]; P[n].fa=[(74-30*l)*D,6*D]; P[n].fist=0; }
   return P; }
 
 const RIDEG={bb:[5.6,0.4],crank:3.1,seat:[16.6,-3.6],bar:[19.4,9.6],deck:4.2,sit:4.5};

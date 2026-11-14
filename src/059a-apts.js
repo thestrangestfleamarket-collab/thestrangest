@@ -1,16 +1,16 @@
 // THE APARTMENTS: the brownstone apartment house on the street as one painted block (brick, windows, flower boxes, ivy; the back blank: the halls), its 3D fire escapes with plants, its stoop and the stair head on the roof; YOUR APARTMENT and its hall (stairs, elevator) inside are built off the map when you go in (their own builders).
 import {SHARED, THREE} from './003-shx.js';
-import {BATCH, CLOCK, FAR3, FORAGE, pos, ROOMS, st, UI} from './003b-systems.js';
+import {BATCH, CLOCK, FAR3, FORAGE, pos, ROOMS, st, UI, VIS} from './003b-systems.js';
 import {scene} from './004-main.js';
 import {OWNED} from './005-save.js';
-import {BLDK, FADE, FIX, grab, LEVEL, LOTX, LOTY, MODS, OFFDX, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
+import {BLDK, FADE, FIX, grab, LEVEL, LOTX, LOTY, MAPG, MODS, OFFDX, SOL, STORE, SYS, TILE, TURN, WP} from './006-map-pre.js';
 import {BLOCKS} from './038zb-blocks.js';
 const APTS={EMPTY:true};
 // the flats (owner, 6 Nov 2026: "Free flat at first login"; 8 Nov 2026: "1 large apartment that has any many floors as we need"): a flat number maps to a floor and a side of the one tower, two flats a floor, no top floor
 APTS.PER=Infinity; APTS.flatOf=n=>{ n=Math.floor(+n); if(!(n>0))return {house:0,floor:null,side:0,pent:false}; return {house:0,floor:1+Math.floor((n-1)/2),side:(n-1)%2,pent:false}; };
 APTS.num=OWNED.me&&OWNED.me.apt!=null?String(OWNED.me.apt):null;
 // the four sizes of flat, one a house (owner, 10-11 Nov 2026: small, medium, big, big with a half floor; "start small, buy up"): width and depth in tiles (none: the house's own), where along the house's front its far edge is (eb: so its window and door are the ones outside), what moving in costs, the pieces it starts with (none: all); which one is yours is kept with what you own
-APTS.TIERS=[{n:'A SMALL ROOM',w:5.3,d:4.4,eb:7.6,side:[],price:0,start:['CRT TV','WRITING DESK','TABLE RADIO','ROUND RUG','FLOOR PLANT']},{n:'A MEDIUM ROOM',w:8.5,d:6.1,eb:10.8,side:[],price:2500,start:['CRT TV','WRITING DESK','TABLE RADIO','ROUND RUG','FLOOR PLANT','RECLINER','BOOKSHELF','EARTH GLOBE','FERN STAND','FISH TANK','HANGING PLANT']},{n:'A BIG ROOM',price:8000},{n:'A LOFT',loft:1,hk:1.6,mh:4.375,price:20000}];
+APTS.TIERS=[{n:'A SMALL ROOM',w:5.3,d:4.4,eb:7.6,side:[],price:0,start:['CRT TV','WRITING DESK','TABLE RADIO','ROUND RUG','FLOOR PLANT']},{n:'A MEDIUM ROOM',w:8.5,d:6.1,eb:10.8,side:[],price:2500,start:['CRT TV','WRITING DESK','TABLE RADIO','ROUND RUG','FLOOR PLANT','RECLINER','BOOKSHELF','EARTH GLOBE','FERN STAND','FISH TANK','HANGING PLANT']},{n:'A BIG ROOM',price:8000},{n:'A LOFT',loft:1,hk:1.6,mh:4.375,d:15,price:20000}];
 APTS.flatState=()=>{ let o=null; try{ o=JSON.parse(OWNED.get('flat')||'null'); }catch(e){} return o&&typeof o==='object'?{tier:Math.max(0,Math.floor(+o.tier||0)),top:Math.max(0,Math.floor(+o.top||0))}:null; };
 // (?tier=N for the tests)
 // (owner, 12 Nov 2026: everyone has the biggest flat for now, the loft once it was built; FREE is the size nobody is below)
@@ -36,7 +36,7 @@ async function house(HP,mine,FL,HI){ const APTS0=APTS; { const APTS=mine?APTS0:{
   const tcard=(x,y,z,w,h,kind,seed,k,cross=true)=>{ const p=FLAT?[x,y]:TA.pt(x,y); BLOCKS.card(p[0],p[1],z,w,h,kind,seed,k,cross,!FLAT&&!!(TA.q&1)); };
   const tbox4=(x0,y0,x1,y1)=>{ const r=TA.box(x0,y0,x1,y1), a=X(r.x0), b=X(r.x1), c=Z(r.y0), d=Z(r.y1); return [Math.min(a,b),Math.min(c,d),Math.max(a,b),Math.max(c,d)]; };
   const FWD=13, NF=Math.max(1,Math.round((A.x1-A.x0)/FWD)), OFF=mine&&FL.side?Math.min(NF-1,FL.side)*FWD:0;   // two flats a floor across the front; yours from OFF
-  APTS.A=AW; APTS.AL={...A,x0:A.x0+OFF,x1:A.x0+OFF+FWD}; APTS.T=TA; APTS.H=H; APTS.floors=ST; APTS.DX=m;
+  APTS.A=AW; APTS.WALLC=WALLC; APTS.AL={...A,x0:A.x0+OFF,x1:A.x0+OFF+FWD}; APTS.T=TA; APTS.H=H; APTS.floors=ST; APTS.DX=m;
   const TN=SHARED.BOD.g.hash, vn=BLOCKS.vn, gr=(x,y,k,s=1)=>(vn(x/(5*s),y/(5*s),k)*3+vn(x/(1.7*s),y/(1.7*s),k+2)*2+vn(x*2.3/s,y*2.3/s,k+4))/6;
   const rock=(base,sd,bw=.6,bh=9,mid)=>{ const P=(a,z,f)=>{ const ui=a*24, bc=Math.floor(z/bh), p=ui+(bc&1)*bw*12, bi=Math.floor(p/(bw*24)), fx=p-bi*bw*24, fy=z-bc*bh;
       if(fy<1||fx<1)return sh(base,f*.7); let k=(.9+.16*TN(bi,bc,sd))*(1+.14*(gr(ui/24,z/24,sd+4,1)-.5))*(z<5?.8+.04*z:1); if(fy>=bh-1)k*=1.08; return sh(base,f*k); };
@@ -202,7 +202,7 @@ async function house(HP,mine,FL,HI){ const APTS0=APTS; { const APTS=mine?APTS0:{
     const CD=new THREE.Vector3();
     APTS.relink=G=>G.traverse(o=>{ for(const m of [].concat(o.material||[])){ const k=m&&m.userData&&m.userData.wk; if(k&&WPL[k]&&m.clippingPlanes&&m.clippingPlanes.length&&!m.clippingPlanes.includes(WPL[k]))m.clippingPlanes=[WPL[k]]; } });   // a copied material (a merged piece, a clone) carries a copy of its wall's cut: give it the wall's own, so it drops with the wall (owner, 12 Nov 2026: "windows and doors vanish too")
     const hideFar=()=>{ const F=FAR3; if(F){ if(F.mesh)F.mesh.visible=false; if(F.panels)F.panels.visible=false; if(F.trees)F.trees.visible=false; if(F.FU)F.FU.uMK.value=0; if(F.fog&&scene.fog===F.fog)scene.fog=null; } };
-    APTS.enterReal=async(at,label)=>{ if(FADE.busy)return; await FADE.run(label||'YOUR APARTMENT',async()=>{ if(!PA){ if(window.LOAD)await LOAD('apts','later'); build(); } if(!APTS.NOESC&&MODS.firev&&STORE.offGo)await STORE.offGo(MODS.firev.name); if(AG)AG.visible=true; APTS.inReal=true; hideFar(); if(typeof at==='function')at=at(); if(at){ UI.goTo(at[0],at[1],at[2]); SHARED.heading=at[3]; } else { UI.goTo(X((AR.x0+AR.x1)/2),Z((AR.y0+AR.y1)/2),Yh(0)); SHARED.heading=0; } },{hold:200}); };   // your rooms and their fire escape are one place, built together
+    APTS.enterReal=async(at,label)=>{ if(FADE.busy)return; await FADE.run(label||'YOUR APARTMENT',async()=>{ if(!PA){ if(window.LOAD)await LOAD('apts','later'); build(); } if(MODS.firev&&STORE.offGo)await STORE.offGo(MODS.firev.name); if(AG)AG.visible=true; APTS.inReal=true; hideFar(); if(typeof at==='function')at=at(); if(at){ UI.goTo(at[0],at[1],at[2]); SHARED.heading=at[3]; } else { UI.goTo(X((AR.x0+AR.x1)/2),Z((AR.y0+AR.y1)/2),Yh(0)); SHARED.heading=0; } },{hold:200}); };   // your rooms and their fire escape are one place, built together
     APTS.exitReal=async(label='OUT TO THE STREET')=>{ if(FADE.busy)return; await FADE.run(label,async()=>{ APTS.inReal=false; if(AG)AG.visible=false; const d=XZ(m,A.y1+.9); UI.goTo(d[0],d[1],Yr(1)); SHARED.heading=TA.hd(0); },{hold:200}); };   // the elevator and the stairs down land you at the stoop (the lobby and the other floors are not built)
     APTS.roofGo=async()=>{ if(FADE.busy)return; await FADE.run('UP TO THE ROOF',async()=>{ APTS.inReal=false; if(AG)AG.visible=false; const d=XZ(APTS.BH.cx,APTS.BH.y1+1.2); UI.goTo(d[0],d[1],Yr(TOP)); SHARED.heading=TA.hd(0); },{hold:200}); };   // the stairs up come out of the stair head on the roof
     let hbMade=false; const mkHB=()=>{ if(hbMade||!UI.thing)return; hbMade=true; const hb=(p,name,act)=>{ const o=new THREE.Mesh(new THREE.BoxGeometry(1.3*TILE,2.4*TILE,.5*TILE),new THREE.MeshBasicMaterial({visible:false})); o.position.set(p[0],p[1]+1.2*TILE,p[2]); scene.add(o); UI.thing({name,ghost:1,obj:o,reach:1.4*TILE,near:2.6*TILE,tall:2.4*TILE,act}); };
@@ -214,8 +214,8 @@ async function house(HP,mine,FL,HI){ const APTS0=APTS; { const APTS=mine?APTS0:{
       if(F&&F.out&&Math.abs(u-F.CX)<10&&Math.abs(v-F.WY-1)<4){ await F.out(); return [pos.x,pos.z,SHARED.py]; } return false; };   // a spot saved where the fire escape used to stand: your landing
     const sg0=STORE.stackGround; STORE.stackGround=(x,z)=>APTS.inReal&&inR(x,z)?((APTS.hallY&&APTS.hallY(x,z))??(APTS.loftY&&APTS.loftY(x,z))??Yh(0)):sg0?sg0(x,z):null;   // the hall's stairs step you down and up
     SYS.add('places',()=>{ mkHB(); if(APTS.inReal&&(SHARED.LVL!=='up'||!inR(pos.x,pos.z)&&!(MODS.firev&&MODS.firev.onL&&MODS.firev.onL(pos.x,pos.z)))){ APTS.inReal=false; if(AG)AG.visible=false; }   // left by any way (menu, stairs, a door, a saved spot), not only your own door
-      if(APTS.inReal)hideFar(); if(APTS.ceil)APTS.ceil.visible=APTS.inReal&&!!UI.persp; const hc=APTS.inHall()&&!UI.persp?APTS.CUTH:1e6; APTS.HPL.constant=hc; WPL.Wb.constant=hc;
-      { const c=SHARED.cam, cut=APTS.inReal&&!UI.persp&&!APTS.onEsc&&c, low=Yh(9); if(cut)c.getWorldDirection(CD); const dx=cut?CD.x*Math.sign(X(1)-X(0)):0, dz=cut?CD.z*Math.sign(Z(1)-Z(0)):0;   // seen from above, the walls between you and the eye drop to their skirting (owner, 12 Nov 2026: "walls should vanish when you're inside your apartment")
+      if(APTS.inReal)hideFar(); if(!!APTS.inReal!==!!APTS.hidW){ APTS.hidW=!!APTS.inReal; for(const k in MAPG)VIS.hide(MAPG[k],'apt',APTS.hidW); }   // at home nothing of the street (owner, 14 Nov 2026: "blue sky and clouds outside only") if(APTS.ceil)APTS.ceil.visible=APTS.inReal&&!!UI.persp; const hc=APTS.inHall()&&!UI.persp?APTS.CUTH:1e6; APTS.HPL.constant=hc; WPL.Wb.constant=hc;
+      { const c=SHARED.cam, cut=false, low=Yh(9); if(cut)c.getWorldDirection(CD); const dx=cut?CD.x*Math.sign(X(1)-X(0)):0, dz=cut?CD.z*Math.sign(Z(1)-Z(0)):0;   // walls never drop now; only the see-through circle opens them (owner, 14 Nov 2026: "ony transpareny circle")
         if(cut&&AG&&(APTS.relT=(APTS.relT||0)-1)<0){ APTS.relT=20; APTS.relink(AG); }
         WPL.Ww.constant=dx>.2?low:1e6; WPL.We.constant=dx<-.2?low:1e6; WPL.Wf.constant=dz>.2?low:1e6; if(dz<-.2)WPL.Wb.constant=Math.min(hc,low); } },'059a-aptsky');   // ceiling only in first person; gone when you view the room from outside
     window.ENTERAPT=()=>APTS.enterReal(); window.EXITAPT=()=>APTS.exitReal();

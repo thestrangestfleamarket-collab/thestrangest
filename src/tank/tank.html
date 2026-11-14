@@ -37,6 +37,12 @@ button{font:600 14px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase
 button.primary{background:var(--brass);color:#1a1407;border-color:var(--brass)}
 button:disabled{opacity:.4;cursor:not-allowed}
 button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--brass);outline-offset:3px}
+.tanks{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tanks button{display:grid;gap:6px;text-align:left;padding:12px;text-transform:none;letter-spacing:0;line-height:1.35}
+.tanks b{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--brass)}
+.tanks span{font-weight:400;font-size:12px;color:var(--dim)}
+.tanks button.on{border-color:var(--brass);background:rgba(224,176,74,.12)}
+@media (max-width:560px){.tanks{grid-template-columns:1fr}}
 .note{margin:0;font-size:12px;line-height:1.5;color:var(--dim);min-height:1em}
 .toggle{display:flex;gap:10px;align-items:center;font-size:13px;color:var(--ink);cursor:pointer}
 .toggle input{width:18px;height:18px;accent-color:var(--brass)}
@@ -103,7 +109,7 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
 </div>
 <div id="overlay">
   <div class="card">
-    <p class="eyebrow">One tank · four waves · late light</p>
+    <p class="eyebrow">Three tanks · four waves · one against one when someone joins</p>
     <h1>Hull<br><span>Down</span></h1>
     <p class="lede">You are alone in the turret. Enemy armour is coming over the far ridges. Drive up behind a crest until only your turret shows, lase the range, lay the gun through the sight, and fire first. Two more tanks of your platoon hold the line with you.</p>
     <div class="actions">
@@ -111,6 +117,11 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
       <button id="flatBtn">Play in browser</button>
     </div>
     <p id="vrNote" class="note"></p>
+    <div class="tanks" role="group" aria-label="Your tank">
+      <button data-tank="heavy"><b>Challenger</b><span>Heavy. Thick armour, 40 rounds, steady.</span></button>
+      <button data-tank="light"><b>Scimitar</b><span>Light. Fast and quick to load, thin skin, short reach.</span></button>
+      <button data-tank="hunter"><b>Archer</b><span>Hunter. A long gun that kills at any range. Slow, few rounds.</span></button>
+    </div>
     <label class="toggle" for="levelToggle"><input type="checkbox" id="levelToggle" checked> Keep the hull level in VR (comfort)</label>
     <label class="toggle" for="fxToggle"><input type="checkbox" id="fxToggle" checked> Hit effects (shake, blur, grey-out)</label>
     <p id="best" class="best" hidden></p>

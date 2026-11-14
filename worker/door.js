@@ -3,6 +3,7 @@ import { getServerByName, routePartykitRequest, Server } from "partyserver";
 import { DISH, DISHK } from "./dish.js";
 import { JAM } from "./jam.js";
 import { LASER } from "./laser.js";
+import { TANK } from "./tank.js";
 import { MAPPATCH } from "./mappatch.js";
 import { FOLKSIM } from "./folk.js";
 import { MOBSIM } from "./dunmobs.js";
@@ -93,7 +94,7 @@ export default {
     // EDGE OF 88 (src/edge/): the plank over the city, its own page at /edge, also /game, to anyone with the link
     if ((request.method === "GET" || request.method === "HEAD") && (p === "/edge" || p === "/game")) return page(env, url, "/edge", request, "no-cache");
     if (p === "/edge/" || p === "/game/") return Response.redirect(url.origin + "/edge" + url.search, 301);
-    // HULL DOWN (src/tank/): the tank's turret, its own page at /tank, also /hull, to anyone with the link; its sky, surfaces, models and sounds under /tank-assets/
+    // HULL DOWN (src/tank/): the tank's turret, its own page at /tank, also /hull, to anyone with the link; its sky, surfaces, models and sounds under /tank-assets/; its one public lobby is the Tank Durable Object
     if ((request.method === "GET" || request.method === "HEAD") && (p === "/tank" || p === "/hull")) return page(env, url, "/tank", request, "no-cache");
     if (p === "/tank/" || p === "/hull/") return Response.redirect(url.origin + "/tank" + url.search, 301);
     // BREACHLINE (src/shoot/): its own page at /shoot, to anyone with the link
@@ -186,9 +187,9 @@ export default {
       return skyFeed(sky[1], request); }
     if (p.startsWith("/parties/")) return (await routePartykitRequest(request, env, {
       onBeforeConnect: async (req, { party, name }) => {
-        const room = party === "block" || party === "jam" ? ROOM.test(name) : party === "laser" ? name === "public" : party === "dish" && name === "petri";   // the dish: one for the whole market, the arcade's PETRI; LASER TAG: one public room
+        const room = party === "block" || party === "jam" ? ROOM.test(name) : party === "laser" || party === "tank" ? name === "public" : party === "dish" && name === "petri";   // the dish: one for the whole market, the arcade's PETRI; LASER TAG: one public room
         if (!room || (request.headers.get("Origin") !== url.origin && !dev)) return new Response("not found", { status: 404 });
-        if (party === "laser") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // LASER TAG's room: to anyone with the link, like its page
+        if (party === "laser" || party === "tank") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // LASER TAG's room: to anyone with the link, like its page
         if (party === "jam") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // STADIUM JAM's rooms: to anyone with the link, like its page
         const id = await who(env, request, dev); if (!id) return new Response("login", { status: 401 });
         const r = new Request(req); r.headers.set("x-tsfm-id", id); r.headers.set("x-partykit-room", name); if (dev) r.headers.set("x-tsfm-dev", "1"); return r; },
@@ -1017,6 +1018,23 @@ export class Laser extends Server {
       const st = { slot: LASER.slot(peers.map(q => q.slot)) }; c.setState(st);
       c.send(JSON.stringify({ t: "welcome", id: c.id, slot: st.slot, peers })); return this.broadcast(JSON.stringify({ t: "peer-join", id: c.id, ...st }), [c.id]); }
     if (!c.state) return; const out = LASER.clean(m); if (!out) return;
+    out.id = c.id; this.broadcast(JSON.stringify(out), [c.id]); }
+  onClose(c) { if (c.state) this.broadcast(JSON.stringify({ t: "peer-leave", id: c.id }), [c.id]); }
+  onError(c) { this.onClose(c); }
+}
+
+// HULL DOWN's room: the one public lobby, two players; a second player in turns the battle into one against one, and it passes each tank's pose, shots and hits on to the other (worker/tank.js says what passes)
+export class Tank extends Server {
+  static options = { hibernate: false };
+  peers(not) { const a = []; for (const o of this.getConnections()) if (o.id !== not && o.state) a.push({ id: o.id, ...o.state }); return a; }
+  onMessage(c, raw) {
+    if (typeof raw !== "string" || raw.length > 1024) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
+    const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0 }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 60) return;
+    if (m && m.t === "join") { if (c.state) return; const peers = this.peers(c.id);
+      if (peers.length >= TANK.MAX) { c.send('{"t":"full"}'); return c.close(4002, "full"); }
+      const st = { slot: TANK.slot(peers.map(q => q.slot)) }; c.setState(st);
+      c.send(JSON.stringify({ t: "welcome", id: c.id, slot: st.slot, peers })); return this.broadcast(JSON.stringify({ t: "peer-join", id: c.id, ...st }), [c.id]); }
+    if (!c.state) return; const out = TANK.clean(m); if (!out) return;
     out.id = c.id; this.broadcast(JSON.stringify(out), [c.id]); }
   onClose(c) { if (c.state) this.broadcast(JSON.stringify({ t: "peer-leave", id: c.id }), [c.id]); }
   onError(c) { this.onClose(c); }

@@ -12,6 +12,7 @@ import { BOWLS } from "./lanes.js";
 import { FLYBOT } from "./flybot.js";
 import { HOLMES } from "./holmes.js";
 import { CANTINA } from "./cantina.js";
+import { SUSHI } from "./sushi.js";
 import { HIDE } from "./hide.js";
 import { ZOMBIE } from "./zombie.js";
 import { GUESTS } from "./guests.js";
@@ -27,8 +28,9 @@ const SECROOMS = WORLD.sections.ids.flat().map(i => "s-" + String(i).toLowerCase
 const APPF = /^\/(app\.webmanifest|icon-(192|512)\.png)$/;   // the installable app's manifest and icon: to anyone
 const EDMAP = /^\/edmap\/t\d{1,2}_\d{1,2}\.jpg$/;
 const SCAREA = /^\/scare-assets\/[a-z0-9_-]+\.glb$/;   // VESPER WARD's models: to anyone
+const SNIPA = /^\/sniper-assets\/(sky|tex|m|snd)\/[A-Za-z0-9_-]+\.(glb|json|mp3|jpg|png)$/, SNIPT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg", jpg: "image/jpeg", png: "image/png" };   // COLD BORE's skies, surfaces, models and sounds: to anyone
 const JAMA = /^\/jam-assets\/[a-z0-9_-]+\.(glb|json|mp3)$/, JAMT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg" };   // STADIUM JAM's avatars, hands and samples: to anyone
-const GOLFA = /^\/(golf|duel|cantina|hide|zombie|guests)-assets\/(?!.*\.\.)[A-Za-z0-9_.\/-]+\.(jpg|json|txt|glb|mp3|hdr)$/;   // HALCYON GREENS' pictures and models, AR DUEL's pictures, THE CANTINA's models and pictures, DEAD END's pictures, models and sounds, EYES DOWN's pictures and models: to anyone
+const GOLFA = /^\/(golf|duel|cantina|hide|zombie|sushi|guests)-assets\/(?!.*\.\.)[A-Za-z0-9_.\/-]+\.(jpg|json|txt|glb|mp3|hdr|fbx|webp)$/;   // HALCYON GREENS' pictures and models, AR DUEL's pictures, THE CANTINA's models and pictures, DEAD END's pictures, models and sounds, EYES DOWN's pictures and models: to anyone
 const BOOK = /^\/book\/(\d{1,6})\.txt$/, FILM = /^\/film\/([A-Za-z0-9_.-]{1,80})\/([A-Za-z0-9_.-]{1,120}\.mp4)$/, IA = /^\/ia\/([A-Za-z0-9_.-]{1,80})\.jpg$/, YT = /^\/yt\/([A-Za-z0-9_-]{11})\.jpg$/, BLANK = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYGD4DwABBAEAHnOcQAAAAABJRU5ErkJggg==";
 const SKYJD = () => { const d = new Date(); return Date.UTC(1985, d.getUTCMonth(), d.getUTCDate()) / 864e5 + 2440587.5; },   // the sky's year is 1985 (src/134b DN.YEAR): that year's comets
    SBDB = "https://ssd-api.jpl.nasa.gov/sbdb_query.api?", SWPC = "https://services.swpc.noaa.gov/";
@@ -84,6 +86,11 @@ export default {
     if ((request.method === "GET" || request.method === "HEAD") && JAMA.test(p)) {
       const r = await env.ASSETS.fetch(new Request(url.origin + p)); if (!r.ok) return new Response("not found", { status: 404 });
       const out = new Response(r.body, r); out.headers.set("content-type", JAMT[p.split(".").pop()]); out.headers.set("cache-control", "public, max-age=86400"); out.headers.set("x-robots-tag", "noindex"); return out; }
+    // COLD BORE (src/sniper/): its own page at /sniper, to anyone with the link; its skies, surfaces, models and sounds under /sniper-assets/
+    if ((request.method === "GET" || request.method === "HEAD") && p === "/sniper") return page(env, url, "/sniper", request, "no-cache");
+    if ((request.method === "GET" || request.method === "HEAD") && SNIPA.test(p)) {
+      const r = await env.ASSETS.fetch(new Request(url.origin + p)); if (!r.ok) return new Response("not found", { status: 404 });
+      const out = new Response(r.body, r); out.headers.set("content-type", SNIPT[p.split(".").pop()]); out.headers.set("cache-control", "public, max-age=86400"); out.headers.set("x-robots-tag", "noindex"); return out; }
     // BREACHLINE (src/shoot/): its own page at /shoot, to anyone with the link
     if ((request.method === "GET" || request.method === "HEAD") && p === "/shoot") return page(env, url, "/shoot", request, "no-cache");
     // HALCYON GREENS (src/golf/): its own page at /golf, to anyone with the link; its pictures under /golf-assets/
@@ -98,12 +105,24 @@ export default {
     // DEAD END (src/hide/): its own page at /hide, to anyone with the link; its pictures, models and sounds under /hide-assets/; the thing's mind (POST /hide/mind) only to a login
     if ((request.method === "GET" || request.method === "HEAD") && p === "/hide") return page(env, url, "/hide", request, "no-cache");
     if (p === "/hide/") return Response.redirect(url.origin + "/hide" + url.search, 301);
+    // DEAD END's log (worker/hide.js): every finished game is kept (Supabase hide_games, the service key), from anyone who played; the report only to an owner
+    if (request.method === "POST" && p === "/hide/log") { if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
+      if (tooMany("hlog:" + (request.headers.get("CF-Connecting-IP") || "local"), 8)) return json({ why: "too much at once" }, 429); const k = svc(env); if (!k) return json({ why: "no log yet" });
+      const raw = await request.text(); if (raw.length > 30000) return json({ why: "too long" }, 400); let b; try { b = JSON.parse(raw); } catch (e) { return json({ why: "not a game" }, 400); } if (!b || typeof b !== "object") return json({ why: "not a game" }, 400);
+      const id = await who(env, request, dev).catch(() => null), r = await fetch(env.SUPABASE_URL + "/rest/v1/hide_games", { method: "POST", headers: { ...k, "content-type": "application/json", Prefer: "return=minimal" }, body: JSON.stringify({ player: id && /^[0-9a-f-]{36}$/.test(id) ? id : null, data: HIDE.row(b) }) }).catch(() => null);
+      return json({ ok: !!(r && r.ok) }); }
+    if (request.method === "GET" && p === "/hide/report") { const id = await who(env, request, dev); if (!id) return Response.redirect(url.origin + "/", 302); const ow = await owner(env, id, dev); if (ow !== true) return json({ why: "owners only" }, 403);
+      const r = await fetch(env.SUPABASE_URL + "/rest/v1/hide_games?select=at,data&order=at.desc&limit=2000", { headers: svc(env) }), rows = r.ok ? await r.json() : [], R = HIDE.report(rows);
+      return url.searchParams.get("json") ? json({ ...R.sum, games: R.games }) : new Response(R.html, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } }); }
     // EYES DOWN (src/zombie/): its own page at /zombie (also /eyes), to anyone with the link; its pictures and models under /zombie-assets/; the visitors' mind (POST /zombie/mind) and the night reached (POST /zombie/save) only to a login
     if ((request.method === "GET" || request.method === "HEAD") && (p === "/zombie" || p === "/eyes")) return page(env, url, "/zombie", request, "no-cache");
     if (p === "/zombie/" || p === "/eyes/") return Response.redirect(url.origin + "/zombie" + url.search, 301);
     // THE GUEST LIST (src/guests/): its own page at /guests (also /party), to anyone with the link; its pictures, models and people under /guests-assets/; each guest's mind (POST /guests/mind) and voice (POST /guests/voice) only to a login
     if ((request.method === "GET" || request.method === "HEAD") && (p === "/guests" || p === "/party")) return page(env, url, "/guests", request, "no-cache");
     if (p === "/guests/" || p === "/party/") return Response.redirect(url.origin + "/guests" + url.search, 301);
+    // YATAI '86 (src/sushi/): its own page at /sushi, to anyone with the link; its people under /sushi-assets/; the customers' voices (POST /sushi/talk) only to a login
+    if ((request.method === "GET" || request.method === "HEAD") && p === "/sushi") return page(env, url, "/sushi", request, "no-cache");
+    if (p === "/sushi/") return Response.redirect(url.origin + "/sushi" + url.search, 301);
     // THE CANTINA (src/cantina/): its own page at /cantina, to anyone with the link; its models and pictures under /cantina-assets/
     if ((request.method === "GET" || request.method === "HEAD") && p === "/cantina") return page(env, url, "/cantina", request, "no-cache");
     if ((request.method === "GET" || request.method === "HEAD") && GOLFA.test(p)) {
@@ -186,12 +205,24 @@ export default {
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401); if (!env.AI) return json({ why: "the website has no AI binding yet" }); if (tooMany("hear:" + id, 12)) return json({ why: "too much at once, wait a minute" }, 429);
       const buf = await request.arrayBuffer(); if (!buf.byteLength || buf.byteLength > 2 << 20) return json({ why: "too long, say it shorter" }, 400);
       try { const r = await env.AI.run("@cf/openai/whisper", { audio: [...new Uint8Array(buf)] }); return json({ text: String((r && r.text) || "").trim().slice(0, 400) }); } catch (e) { return json({ why: "it could not be made out" }); } }
-    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art" || p === "/orchard" || p === "/bot" || p === "/holmes" || p === "/cantina/talk" || p === "/hide/mind" || p === "/zombie/mind" || p === "/zombie/save" || p === "/guests/mind" || p === "/guests/voice")) {
+    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art" || p === "/orchard" || p === "/bot" || p === "/holmes" || p === "/cantina/talk" || p === "/sushi/talk" || p === "/sushi/say" || p === "/hide/mind" || p === "/zombie/mind" || p === "/zombie/save" || p === "/guests/mind" || p === "/guests/voice")) {
       if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401);
       let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
       // a player's flying bot asks its mind (worker/flybot.js): the answer to say aloud; its memory and the day's count are the player's, in Home
       // a regular of THE CANTINA answers a visitor (worker/cantina.js); what the two have said is the visitor's, kept beside their bot's, and the day's count is one for the whole bar
+      // a patron's line said aloud (Workers AI, the AI binding): the page plays it from their seat
+      if (p === "/sushi/say") { if (!env.AI) return json({ why: "the website has no AI binding yet" }, 501); if (tooMany("say:" + id, 30)) return json({ why: "too much at once, wait a minute" }, 429);
+        const text = word(body.text, 240); if (!text) return json({ why: "nothing to say" }, 400);
+        try { const r = await env.AI.run("@cf/myshell-ai/melotts", { prompt: text, lang: "en" }), a = r && r.audio; if (typeof a !== "string" || !a) return json({ why: "no voice came" }, 502);
+          return new Response(Uint8Array.from(atob(a), ch => ch.charCodeAt(0)), { headers: { "content-type": "audio/mpeg", "cache-control": "no-store" } }); } catch (e) { return json({ why: "the voice could not be made" }, 502); } }
+      // a customer at YATAI '86's cart says a line (worker/sushi.js); the day's count is the player's, in Home
+      if (p === "/sushi/talk") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
+        if (tooMany("sushi:" + id, 20)) return json({ why: "too much at once, wait a minute" }, 429);
+        const H = homeOf(env), k = id + "~sushi", day = new Date().toISOString().slice(0, 10), D = (await H.botGet(k)) || {}, max = (+env.BOT_DAILY || FLYBOT.DAY) * 2;
+        if (D.day === day && D.n >= max) return json({ why: "the cart has talked enough for one day; come back tomorrow" });
+        const out = await SUSHI.ask(env, body); if (out.say) await H.botPut(k, { day, n: D.day === day ? D.n + 1 : 1 });
+        return json(out); }
       if (p === "/cantina/talk") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
         const c = word(body.who, 24); if (!CANTINA.has(c)) return json({ why: "nobody by that name here" }, 400);
         if (tooMany("bot:" + id, 12)) return json({ why: "too much at once, wait a minute" }, 429);

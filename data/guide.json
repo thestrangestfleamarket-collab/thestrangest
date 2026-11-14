@@ -173,6 +173,18 @@
    ]
   },
   {
+   "id": "drone",
+   "title": "YOUR DRONE",
+   "what": "PIP, the little drone that flies with you.",
+   "steps": [
+    "Double-click PIP for its menu: WHERE IS, HOW DO I, WHAT'S THIS and TIPS.",
+    "Pick a place under WHERE IS and PIP flies ahead of you to it. STOP LEADING ends it.",
+    "If something hits you, PIP zaps it back. It needs a few seconds between zaps.",
+    "When your health is low, PIP patches you up.",
+    "Send it off or call it back with FLYING BOT in the menu's CHAT."
+   ]
+  },
+  {
    "id": "forage",
    "title": "FORAGING",
    "what": "Pick mushrooms and flowers in the park and sell them.",

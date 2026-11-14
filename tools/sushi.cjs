@@ -4,4 +4,5 @@ const js = es.buildSync({ entryPoints: ['src/sushi/main.js'], bundle: true, form
 const html = fs.readFileSync('src/sushi/sushi.html', 'utf8').replace('__SUSHI__', () => js.replace(/<\/script/gi, '<\\/script'));
 fs.mkdirSync('dist', { recursive: true }); fs.writeFileSync('dist/sushi.html', html);
 fs.rmSync('dist/sushi-assets', { recursive: true, force: true }); fs.cpSync('data/sushi', 'dist/sushi-assets', { recursive: true });
+if (!fs.existsSync('dist/cantina-assets/hand')) fs.cpSync('data/cantina/hand', 'dist/cantina-assets/hand', { recursive: true }); // the hands' mesh is the cantina's
 console.log('dist/sushi.html', html.length, 'bytes, dist/sushi-assets/ copied');

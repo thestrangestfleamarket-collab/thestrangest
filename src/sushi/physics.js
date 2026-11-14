@@ -4,6 +4,8 @@ import { G } from './ctx.js';
 
 const PH = { ready: false, world: null, live: new Map() };
 const shape = (it) => {
+  if (it.tool) return [RAPIER.ColliderDesc.cuboid(0.02, 0.02, 0.15).setTranslation(0, 0, -0.14), 0.25];
+  if (it.kind === 'debris') return [RAPIER.ColliderDesc.cuboid(0.013, 0.004, 0.011), 0.008];
   if (it.kind === 'bowl') return [RAPIER.ColliderDesc.cylinder(0.044, 0.1).setTranslation(0, 0.044, 0), 0.35];
   if (it.kind === 'drink') return [RAPIER.ColliderDesc.cylinder(0.12, 0.031).setTranslation(0, 0.12, 0), 0.55];
   if (it.kind === 'raw') return [RAPIER.ColliderDesc.cuboid(it.def.len / 2, it.def.r, it.def.r).setTranslation(it.def.len / 2, 0, 0), 0.4];
@@ -34,7 +36,7 @@ PH.spawn = (it, vel) => {
   PH.world.createCollider(desc.setMass(mass).setFriction(0.7).setRestitution(it.kind === 'food' ? 0.02 : 0.18), b);
   b.setLinvel({ x: vel ? vel.x : 0, y: vel ? vel.y : 0, z: vel ? vel.z : 0 }, true);
   if (vel && vel.lengthSq() > 0.3) b.setAngvel({ x: (Math.random() - 0.5) * 4, y: (Math.random() - 0.5) * 3, z: (Math.random() - 0.5) * 4 }, true);
-  PH.live.set(it, { b, still: 0, vy: 0, hit: 0 });
+  PH.live.set(it, { b, still: 0, pv: { x: 0, y: 0, z: 0 }, hit: 0 });
 };
 PH.drop = (it) => { const e = PH.live.get(it); if (e) { PH.world.removeRigidBody(e.b); PH.live.delete(it); } };
 PH.step = (dt) => {
@@ -47,8 +49,9 @@ PH.step = (dt) => {
     if (!it.free) continue;
     const t = e.b.translation(), r = e.b.rotation(), v = e.b.linvel(), a = e.b.angvel();
     it.obj.position.set(t.x, t.y, t.z); it.obj.quaternion.set(r.x, r.y, r.z, r.w); it.vel.set(v.x, v.y, v.z);
-    e.hit -= dt; if (e.vy < -0.7 && v.y > e.vy + 0.5 && e.hit <= 0) { e.hit = 0.15; if (t.y < 0.12 && e.vy < -2.2 && (it.kind === 'bowl' || it.kind === 'drink')) { it.free = false; PH.drop(it); it.onGround(); continue; } it.onLand(); }
-    e.vy = v.y;
+    e.hit -= dt; const dv = Math.hypot(v.x - e.pv.x, v.y - e.pv.y, v.z - e.pv.z), sp = Math.hypot(e.pv.x, e.pv.y, e.pv.z);
+    if (dv > 1.1 && e.hit <= 0) { e.hit = 0.12; if (it.onImpact(sp) === true) continue; it.onLand(); } // a sudden change of speed is a hit: how hard decides what breaks
+    e.pv.x = v.x; e.pv.y = v.y; e.pv.z = v.z;
     const slow = Math.hypot(v.x, v.y, v.z) < 0.06 && Math.hypot(a.x, a.y, a.z) < 0.4; e.still = slow ? e.still + dt : 0;
     if (t.y < -2) { it.free = false; PH.drop(it); it.remove(); continue; }
     if (e.still > 0.3 || e.b.isSleeping()) {

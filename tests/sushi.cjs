@@ -10,7 +10,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   const b = await chromium.launch({ ...(process.env.PWCHROME ? { executablePath: process.env.PWCHROME } : {}), args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'] });
   const errs = [], miss = [];
   const open = async (q, init) => { const p = await b.newPage({ viewport: { width: 800, height: 450 } }); if (init) await p.addInitScript(init);
-    p.on('pageerror', e => errs.push(e.message.slice(0, 300))); p.on('response', r => { if (r.status() === 404 && !/talk$|opacity_color/.test(r.url())) miss.push(r.url().split('/').pop()); });
+    p.on('pageerror', e => errs.push(e.message.slice(0, 300))); p.on('response', r => { if (r.status() === 404 && !/talk$|hear$|opacity_color/.test(r.url())) miss.push(r.url().split('/').pop()); });
     await p.goto(FILE + q); await p.waitForFunction('window.G && G.debug', null, { timeout: 240000 }); await p.waitForTimeout(3000); return p; };
   const p = await open('?desktop&nopost');
   ok(await p.evaluate(() => G.mode === 'desktop' && G.debug.PH.ready), 'the cart loads on a screen, its loose things on the physics engine');
@@ -82,7 +82,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   has(/bowl tare shoyu/, 'a tare ladle tips into the bowl'); has(/bowl broth chicken 2 temp 0\.9/, 'two ladles of hot broth'); has(/bowl noodles \{"cook":1[4-9]/, 'noodles boiled into the green and tipped in');
   has(/raw left 5 slices on board 3/, 'three chops, three slices on the board'); has(/bin stock 8 -> 9/, 'a slice restocks its bin'); has(/bowl toppings chashu,chashu,menma,negi,nori,naruto/, 'every topping lands in the bowl');
   has(/RESULT \{"score":100/, 'served as ordered: 100'); has(/money 450 tips \d+ served 1 seat dirty true/, 'they eat, pay and tip, and leave a dirty bowl'); has(/bowl removed true seat dirty false/, 'the bus tub clears the seat'); ok(!/EXC/.test(L), 'the order ran through');
-  ok(await p.evaluate(() => document.querySelectorAll('canvas').length === 1 && G.renderer.info.render.triangles > 50000), 'the street is drawn');
+  ok(await p.evaluate(() => document.querySelectorAll('canvas').length === 1 && G.renderer.info.memory.geometries > 60 && G.baked > 100), 'the street is drawn, its still parts baked together');
   if (OUT) await p.screenshot({ path: path.join(OUT, '01-cart.png'), timeout: 120000 }).catch(() => {});
   await p.close();
   // an emulated Quest 3 with controllers

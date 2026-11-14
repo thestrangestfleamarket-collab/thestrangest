@@ -15,15 +15,14 @@ export function rng(seed) {
 }
 
 export function canvasTex(w, h, draw, o = {}) {
-  const c = document.createElement('canvas');
-  c.width = w; c.height = h;
-  const g = c.getContext('2d');
-  draw(g, w, h);
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = o.linear ? THREE.NoColorSpace : THREE.SRGBColorSpace;
-  t.anisotropy = 8;
+  // drawn large, kept small and unfiltered (the PlayStation 2 look); o.keep for things that must stay readable
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const g = c.getContext('2d'); draw(g, w, h);
+  const k = o.keep ? 1 : 0.5, sc = document.createElement('canvas'); sc.width = Math.max(8, Math.round(w * k)); sc.height = Math.max(8, Math.round(h * k));
+  const sg = sc.getContext('2d'), t = new THREE.CanvasTexture(sc);
+  t.colorSpace = o.linear ? THREE.NoColorSpace : THREE.SRGBColorSpace; t.magFilter = THREE.NearestFilter; t.anisotropy = 1;
   if (o.repeat) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(o.repeat[0], o.repeat[1]); }
-  t.userData.canvas = c; t.userData.ctx = g;
+  t.userData.canvas = c; t.userData.ctx = g; t.userData.blit = () => { sg.clearRect(0, 0, sc.width, sc.height); sg.drawImage(c, 0, 0, sc.width, sc.height); t.needsUpdate = true; }; t.userData.blit();
   return t;
 }
 
@@ -330,13 +329,15 @@ export function faceTex(skin, o = {}) {
 
 // Generic text panel that can be redrawn.
 export function panelTex(w, h, draw) {
-  const t = canvasTex(w, h, draw);
-  t.redraw = (fn) => { fn(t.userData.ctx, w, h); t.needsUpdate = true; };
+  const t = canvasTex(w, h, draw, { keep: true });
+  t.redraw = (fn) => { fn(t.userData.ctx, w, h); t.userData.blit(); };
   return t;
 }
 
 // Derive a tangent-space normal map from a canvas texture's luminance (cheap surface relief).
 export function normalOf(tex, strength = 2) {
+  return null; // no relief maps in this look
+
   const src = tex.userData.canvas || tex.image, w = src.width, h = src.height;
   const d = (tex.userData.ctx || src.getContext('2d')).getImageData(0, 0, w, h).data;
   const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d'), out = g.createImageData(w, h);
@@ -380,7 +381,7 @@ export function dirty(tex, seed = 1, o = {}) {
   if (o.fade) { g.globalAlpha = 0.16; g.fillStyle = '#b8a890'; g.fillRect(0, 0, w, h); const gr = g.createLinearGradient(0, h * 0.6, 0, h); gr.addColorStop(0, 'rgba(30,20,14,0)'); gr.addColorStop(1, 'rgba(30,20,14,0.55)'); g.globalAlpha = 1; g.fillStyle = gr; g.fillRect(0, 0, w, h); }
   if (o.yellow) { g.globalAlpha = 0.22; g.fillStyle = '#8a6a20'; g.fillRect(0, 0, w, h); }
   if (o.graffiti) { g.globalAlpha = 0.55; g.strokeStyle = '#111'; g.lineWidth = 5; g.lineCap = 'round'; g.beginPath(); let x = w * 0.15, y = h * 0.8; g.moveTo(x, y); for (let k = 0; k < 16; k++) { x += 12 + R() * 22; y += (R() - 0.5) * 70; g.lineTo(x, Math.min(h - 8, Math.max(h * 0.6, y))); } g.stroke(); }
-  g.globalAlpha = 1; tex.needsUpdate = true; return tex;
+  g.globalAlpha = 1; tex.userData.blit(); return tex;
 }
 
 // Greasy, uneven roughness (smears, fingerprints, wiped arcs) for worktops.

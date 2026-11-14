@@ -20,20 +20,20 @@ export async function loadAvatars(onProgress = () => { }) {
     const manager = new THREE.LoadingManager(); manager.onError = () => { };
     manager.setURLModifier((u) => (/\.tga$/i.test(u) ? 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==' : u));
     const fbxLoader = new FBXLoader(manager), texLoader = new THREE.TextureLoader();
-    const tex = async (url, srgb) => { const t = await texLoader.loadAsync(url); t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace; t.anisotropy = 4; return t; };
+    const tex = async (url, srgb) => { const t = await texLoader.loadAsync(url), c = document.createElement('canvas'); c.width = c.height = 256; c.getContext('2d').drawImage(t.image, 0, 0, 256, 256); t.dispose(); const s = new THREE.CanvasTexture(c); s.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace; s.magFilter = THREE.NearestFilter; return s; };
     const warn = console.warn; console.warn = (...a) => { if (!String(a[0]).includes('FBXLoader')) warn(...a); };
     lib.avatars = await Promise.all(NAMES.map(async (name) => {
       const dir = `${BASE}avatars/${name}/`, g = name.startsWith('Male') ? 'm' : 'f';
-      const [fbx, bc, bn, hc, hn, oc] = await Promise.all([fbxLoader.loadAsync(dir + 'avatar.fbx'), tex(dir + 'body_color.webp', true), tex(dir + 'body_normal.webp'), tex(dir + 'head_color.webp', true), tex(dir + 'head_normal.webp'), tex(dir + 'opacity_color.webp', true).catch(() => null)]);
+      const [fbx, bc, hc, oc] = await Promise.all([fbxLoader.loadAsync(dir + 'avatar.fbx'), tex(dir + 'body_color.webp', true), tex(dir + 'head_color.webp', true), tex(dir + 'opacity_color.webp', true).catch(() => null)]);
       const kill = []; fbx.traverse((o) => { if (o.isLight || o.isCamera) kill.push(o); }); kill.forEach((o) => o.removeFromParent());
       const mats = {
-        body: new THREE.MeshStandardMaterial({ map: bc, normalMap: bn, roughness: 0.82, metalness: 0 }),
-        head: new THREE.MeshStandardMaterial({ map: hc, normalMap: hn, roughness: 0.62, metalness: 0 }),
-        opacity: oc ? new THREE.MeshStandardMaterial({ map: oc, alphaTest: 0.42, side: THREE.DoubleSide, roughness: 0.7, metalness: 0 }) : new THREE.MeshStandardMaterial({ map: hc, normalMap: hn, roughness: 0.62 }),
+        body: mat({ map: bc, roughness: 0.82, metalness: 0 }),
+        head: mat({ map: hc, roughness: 0.62, metalness: 0 }),
+        opacity: oc ? mat({ map: oc, alphaTest: 0.42, side: THREE.DoubleSide, roughness: 0.7, metalness: 0 }) : mat({ map: hc, roughness: 0.62 }),
       };
       let hip = 90;
       fbx.traverse((o) => {
-        if (o.isSkinnedMesh || o.isMesh) { const pick = (m) => mats[Object.keys(mats).find((k) => m.name.toLowerCase().includes(k)) || 'body']; o.material = Array.isArray(o.material) ? o.material.map(pick) : pick(o.material); o.castShadow = true; o.receiveShadow = true; o.frustumCulled = false; }
+        if (o.isSkinnedMesh || o.isMesh) { const pick = (m) => mats[Object.keys(mats).find((k) => m.name.toLowerCase().includes(k)) || 'body']; o.material = Array.isArray(o.material) ? o.material.map(pick) : pick(o.material); o.castShadow = false; o.receiveShadow = false; o.frustumCulled = false; }
         if (o.name === 'Bip01') hip = o.position.y;
       });
       fbx.scale.setScalar(0.01);
@@ -67,7 +67,7 @@ export function makePerson(seed) {
   for (const s of [-1, 1]) { const m = new THREE.Mesh(stickGeo, stickMat); m.position.x = s * 0.006; m.rotation.y = s * 0.04; m.castShadow = true; sticks.add(m); }
   const hand = bones.Bip01_R_Hand, fore = bones.Bip01_R_Forearm, upper = bones.Bip01_R_UpperArm, head = bones.Bip01_Head, spine = bones.Bip01_Spine1;
   const P = {
-    root, sticks, seed, style: A.name, pose: 'stand', cur: null, speed: 1.3, eatT: Math.random() * 3, rocketbox: true,
+    root, sticks, seed, style: A.name, pose: 'stand', cur: null, speed: 1.3, look: null, lookW: 0, lookAt: new THREE.Vector3(), eatT: Math.random() * 3, rocketbox: true,
     update(dt) {
       const seated = this.pose === 'sit' || this.pose === 'eat';
       const want = seated ? (this.cur && this.cur !== 'walk' ? this.cur : ['sit', 'wait', 'look'][(Math.random() * 3) | 0]) : 'walk';
@@ -79,6 +79,13 @@ export function makePerson(seed) {
       mixer.update(dt);
       const k = Math.min(1, dt * 6); inner.position.y += ((seated ? SIT_LIFT : 0) - inner.position.y) * k; inner.position.z += ((seated ? SIT_Z : 0) - inner.position.z) * k;
       sticks.visible = false;
+      this.lookW += ((this.look ? 1 : 0) - this.lookW) * Math.min(1, dt * 3.5); if (this.look) this.lookAt.lerp(this.look, Math.min(1, dt * 6));
+      if (this.lookW > 0.02 && head) { // turn the neck and head toward what they are looking at, as far as a neck goes
+        root.updateMatrixWorld(true); head.getWorldPosition(_b); _a.copy(this.lookAt).sub(_b).applyQuaternion(root.getWorldQuaternion(_pq).invert());
+        const yaw = Math.max(-1.1, Math.min(1.1, Math.atan2(_a.x, _a.z))) * this.lookW, pit = Math.max(-0.45, Math.min(0.45, Math.atan2(_a.y, Math.hypot(_a.x, _a.z)))) * this.lookW, neck = bones.Bip01_Neck;
+        _x.set(0, 1, 0).transformDirection(root.matrixWorld); if (neck) rotWorld(neck, _q.setFromAxisAngle(_x, yaw * 0.35).clone()); rotWorld(head, _q.setFromAxisAngle(_x, yaw * 0.65).clone());
+        _x.set(1, 0, 0).transformDirection(root.matrixWorld); rotWorld(head, _q.setFromAxisAngle(_x, -pit).clone());
+      }
       if (this.pose === 'eat' && hand && fore && upper && head) {
         this.eatT += dt;
         const c = Math.pow((Math.sin(this.eatT * 2.4) + 1) / 2, 1.3); // 0 at the bowl .. 1 at the mouth

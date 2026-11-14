@@ -74,6 +74,7 @@ export function buildTalk() {
   }
 
   async function say(c, kind, situation, facts, cookSaid) {
+    if (c.guest) return; // a tenant from THE MARKET speaks for themself
     const v = voiceOf(c), reply = kind === 'reply', must = reply || kind === 'order' || kind === 'taste' || kind === 'angry';
     if (reply) { v.gen = (v.gen || 0) + 1; c.chatT = Math.max(c.chatT || 0, 30); talk.floorT = G.t + 6; for (const o of G.game.customers) if (o !== c) o.chatT = Math.max(o.chatT || 0, 12); }
     else if (v.busy || (v.until || 0) > G.t || (!must && (now || lane.length || talk.hearing || G.t < (talk.floorT || 0)))) return; // nobody starts small talk while you are speaking or being answered

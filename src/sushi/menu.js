@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { G, V3 } from './ctx.js';
 import * as T from './tex.js';
 
-export function buildMenu(scene, cart, guide, talk, shadowLights) {
+export function buildMenu(scene, cart, guide, talk, shadowLights, report) {
   const m = { open: false }, W = 0.62, H = 0.56, tex = T.panelTex(620, 560, () => { });
   const board = new THREE.Mesh(new THREE.PlaneGeometry(W, H), new THREE.MeshBasicMaterial({ map: tex, color: 0xd8d8d8, side: THREE.DoubleSide })); board.visible = false; board.userData.nopick = true; scene.add(board);
   const S = (G.set = { volume: 1, tts: true, mic: true, shadows: true, turn: 30 });
@@ -14,10 +14,12 @@ export function buildMenu(scene, cart, guide, talk, shadowLights) {
     ['VOLUME', () => Math.round(S.volume * 100) + '%', () => { S.volume = S.volume >= 1.5 ? 0.25 : S.volume + 0.25; if (G.audio.master) G.audio.master.gain.value = S.volume; }],
     ['SPOKEN VOICES', () => (S.tts ? 'ON' : 'OFF'), () => { S.tts = !S.tts; G.muteVoices = !S.tts; if (!S.tts) window.speechSynthesis?.cancel(); }],
     ['MICROPHONE', () => (S.mic ? (talk.mic || 'ON').toUpperCase() : 'OFF'), () => { S.mic = !S.mic; talk.listen(S.mic); }],
+    ['VOICE CHECK', () => `ear ${talk.diag.hear} · mind ${talk.diag.think} · voice ${talk.diag.say}`, () => { }],
     ['SHADOWS', () => (S.shadows ? 'ON' : 'OFF'), () => { S.shadows = !S.shadows; G.quality = S.shadows ? 0 : 1; shadowLights.forEach((l) => (l.castShadow = S.shadows)); }],
     ['SNAP TURN', () => S.turn + '°', () => { S.turn = S.turn === 30 ? 45 : S.turn === 45 ? 90 : 30; }],
     ['MY HEIGHT', () => (G.rig.position.y >= 0 ? '+' : '') + Math.round(G.rig.position.y * 100) + ' cm', () => { G.rig.position.y = G.rig.position.y >= 0.3 ? -0.3 : G.rig.position.y + 0.1; }],
     ['OPEN / CLOSE CART', () => G.game.state.toUpperCase(), () => G.game.toggleOpen()],
+    ['REPORT A BUG (X / A)', () => (report.busy ? 'RECORDING' : 'PICTURE + VOICE'), () => { m.toggle(false); setTimeout(() => report.press(), 400); }],
     ['LEAVE VR', () => '', () => G.renderer.xr.getSession()?.end()],
   ];
   const rh = H / (rows.length + 1.4), far = new V3(0, -99, 0), tmp = new V3();

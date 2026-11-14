@@ -82,6 +82,12 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   has(/bowl tare shoyu/, 'a tare ladle tips into the bowl'); has(/bowl broth chicken (2|1\.[89]\d*) temp 0\.9/, 'two ladles of hot broth, poured'); has(/bowl noodles \{"cook":1[4-9]/, 'noodles boiled into the green and tipped in');
   has(/raw left 5 slices on board 3/, 'three chops, three slices on the board'); has(/bin stock 8 -> 9/, 'a slice restocks its bin'); has(/bowl toppings chashu,chashu,menma,negi,nori,naruto/, 'every topping lands in the bowl');
   has(/RESULT \{"score":100/, 'served as ordered: 100'); has(/money 450 tips \d+ served 1 seat dirty true/, 'they eat, pay and tip, and leave a dirty bowl'); has(/bowl removed true seat dirty false/, 'the bus tub clears the seat'); ok(!/EXC/.test(L), 'the order ran through');
+  const phys = await p.evaluate(() => { const T = G.debug.THREE, C = G.cart, pot = C.pots[2], it = pot.item, hand = { pos: new T.Vector3(), vs: new T.Vector3(), vel: new T.Vector3() }, step = (n) => { for (let i = 0; i < n; i++) G.debug.tick(1 / 60); }, l0 = pot.level;
+    it.held = hand; for (let i = 0; i < 40; i++) { it.obj.position.set(-0.4, 1.3, 0.3); it.obj.quaternion.setFromAxisAngle(new T.Vector3(0, 0, -1), 1.5); step(1); } const spilt = pot.level < l0 - 0.05, off = !pot.on;
+    it.obj.quaternion.identity(); it.obj.position.set(-0.93, 0.95, 0.79); it.held = null; it.drop(); step(120); const back = pot.on && Math.abs(it.obj.position.y - 0.86) < 0.03;
+    G.fx.splat(new T.Vector3(0, 0.9, -0.3), 0xc99a3c, 0.08); const s0 = G.fx.splats.length, rag = C.rag; rag.held = hand; rag.onGrab(); for (let i = 0; i < 120; i++) { hand.pos.set(Math.sin(i * 0.3) * 0.08, 0.93, -0.3); hand.vs.set(0.5, 0, 0); step(1); } rag.held = null; rag.drop();
+    return { props: G.items.filter((x) => x.kind === 'prop').length, spilt, off, back, wiped: G.fx.splats.length < s0 }; });
+  ok(phys.props > 15 && phys.spilt && phys.off && phys.back, 'a pot lifts off its burner, spills when tipped, and heats again set back down'); ok(phys.wiped, 'the rag wipes a spill off the counter');
   ok(await p.evaluate(() => document.querySelectorAll('canvas').length === 1 && G.renderer.info.memory.geometries > 60 && G.baked > 100), 'the street is drawn, its still parts baked together');
   if (OUT) await p.screenshot({ path: path.join(OUT, '01-cart.png'), timeout: 120000 }).catch(() => {});
   await p.close();

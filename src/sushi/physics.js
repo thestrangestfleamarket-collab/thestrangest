@@ -4,6 +4,7 @@ import { G } from './ctx.js';
 
 const PH = { ready: false, world: null, live: new Map() };
 const shape = (it) => {
+  if (it.col) { const c = it.col; return [c.t === 'cyl' ? RAPIER.ColliderDesc.cylinder(c.hh, c.r).setTranslation(0, c.hh, 0) : RAPIER.ColliderDesc.cuboid(c.hx, c.hy, c.hz).setTranslation(0, c.cy ?? c.hy, 0), it.mass || 0.3]; }
   if (it.tool) return [RAPIER.ColliderDesc.cuboid(0.02, 0.02, 0.15).setTranslation(0, 0, -0.14), 0.25];
   if (it.kind === 'debris') return [RAPIER.ColliderDesc.cuboid(0.013, 0.004, 0.011), 0.008];
   if (it.kind === 'bowl') return [RAPIER.ColliderDesc.cylinder(0.044, 0.1).setTranslation(0, 0.044, 0), 0.35];
@@ -24,8 +25,8 @@ PH.init = async () => {
 // the cart's tops and vessels, taken from what the cart registered
 PH.statics = (cart) => {
   for (const s of G.surfaces) { const th = s.y > 0.95 && s.y < 1.01 ? 0.02 : s.y > 0.92 ? 0.014 : 0.42; PH.box((s.minX + s.maxX) / 2, s.y - th, (s.minZ + s.maxZ) / 2, (s.maxX - s.minX) / 2, th, (s.maxZ - s.minZ) / 2); }
-  for (const p of cart.pots) PH.cyl(p.x, (p.baseY + p.rimY) / 2, p.z, (p.rimY - p.baseY) / 2, p.r + 0.005);
-  for (const t of cart.tares) PH.cyl(t.x, 0.96, t.z, 0.06, 0.056);
+  for (const it of G.items) if (it.col && !it.carrier) PH.rest(it);
+  for (const b of cart.burners) PH.cyl(b.x, 0.84, b.z, 0.02, 0.14);
   for (const k in cart.bins) PH.box(cart.bins[k].x, 0.92, cart.bins[k].z, 0.058, 0.02, 0.058);
   PH.box(0, 0.5, -0.6, 1.2, 0.5, 0.03); PH.cyl(0.93, 0.96, -0.36, 0.06, 0.1);
 };
@@ -38,6 +39,8 @@ PH.spawn = (it, vel) => {
   if (vel && vel.lengthSq() > 0.3) b.setAngvel({ x: (Math.random() - 0.5) * 4, y: (Math.random() - 0.5) * 3, z: (Math.random() - 0.5) * 4 }, true);
   PH.live.set(it, { b, still: 0, pv: { x: 0, y: 0, z: 0 }, hit: 0 });
 };
+// standing where it was put: solid to everything else until it is lifted
+PH.rest = (it) => { PH.spawn(it); const e = PH.live.get(it); e.b.setBodyType(RAPIER.RigidBodyType.Fixed, false); it.free = false; };
 PH.drop = (it) => { const e = PH.live.get(it); if (e) { PH.world.removeRigidBody(e.b); PH.live.delete(it); } };
 PH.step = (dt) => {
   for (const [it, e] of PH.live) {
@@ -56,7 +59,7 @@ PH.step = (dt) => {
     if (t.y < -2) { it.free = false; PH.drop(it); it.remove(); continue; }
     if (e.still > 0.3 || e.b.isSleeping()) {
       it.free = false; it.vel.set(0, 0, 0);
-      if (t.y - it.base < 0.1) { PH.drop(it); it.onGround(); continue; }
+      if (!it.col && t.y - it.base < 0.1) { PH.drop(it); it.onGround(); continue; }
       if (it.kind === 'bowl' && it.tilt() > 0.6) it.spill();
       if (it.tilt() < 0.9 || it.kind === 'bowl') it.upright();
       const p = it.obj.position, q = it.obj.quaternion; e.b.setBodyType(RAPIER.RigidBodyType.Fixed, false); e.b.setTranslation({ x: p.x, y: p.y, z: p.z }, false); e.b.setRotation({ x: q.x, y: q.y, z: q.z, w: q.w }, false);

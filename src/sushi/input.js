@@ -45,7 +45,7 @@ function findCand(h) {
   let best = null, bd = 1e9;
   for (const it of G.items) {
     if (it.locked || it.dead || (it.held && it.held === h)) continue;
-    const d = it.worldCenter(_v).distanceTo(h.pos) - it.radius, sc = d - (it.kind === 'bowl' || it.tool ? 0.035 : 0); // a bowl or a tool wins over loose food; a pork roll does not win over its own slices
+    const d = it.worldCenter(_v).distanceTo(h.pos) - it.radius, sc = d - (it.kind === 'bowl' || it.tool ? 0.035 : 0) + (it.kind === 'prop' ? 0.06 : 0); // a bowl or a tool wins over loose food; a pork roll does not win over its own slices
     if (d < 0.055 && sc < bd) { best = it; bd = sc; }
   }
   if (best) return best;
@@ -150,15 +150,16 @@ export function buildInput(renderer, rig, camera, dom) {
     for (const hit of hits) {
       const o = owner(hit.object); if (o.skip) continue; if (o.item && (o.item === h.held || o.item.dead)) continue;
       aim.point = hit.point; aim.dist = hit.distance;
-      if (!h.held) { if (o.button) aim.button = o.button; else if (o.item && !o.item.locked) aim.cand = o.item; else if (o.source && o.source.can()) aim.cand = o.source; }
+      if (!h.held) { if (o.button) aim.button = o.button; else if (o.item && !o.item.locked) { if (o.item.kind === 'prop' && !o.item.pick) aim.prop = o.item; else aim.cand = o.item; } else if (o.source && o.source.can()) aim.cand = o.source; }
       break;
     }
     if (aim.point) h.pos.copy(aim.point); else h.pos.copy(ray.ray.direction).multiplyScalar(0.62).add(ray.ray.origin);
     if (!h.held && !aim.cand && !aim.button && aim.point) { // nearest thing to the aim point
-      let bd = 0.075; for (const it of G.items) { if (it.locked || it.dead) continue; const d = it.worldCenter(_v).distanceTo(h.pos); if (d < Math.max(bd, it.radius * 0.9)) { bd = Math.min(bd, d); aim.cand = it; } }
+      let bd = 0.075; for (const it of G.items) { if (it.locked || it.dead || it.kind === 'prop') continue; const d = it.worldCenter(_v).distanceTo(h.pos); if (d < Math.max(bd, it.radius * 0.9)) { bd = Math.min(bd, d); aim.cand = it; } }
       if (!aim.cand) for (const s of G.sources) if (s.can() && s.pos.distanceTo(h.pos) < s.r + 0.03) { aim.cand = s; break; }
       if (!aim.cand) for (const b of G.buttons) if (b.getPos().distanceTo(h.pos) < b.r + 0.02) { aim.button = b; break; }
     }
+    if (!aim.cand && !aim.button && aim.prop) aim.cand = aim.prop;
     h.aim = aim; h.tip.copy(h.pos); h.quat.setFromAxisAngle(UP, desk.yaw);
     desk.focus += (aim.dist - desk.focus) * Math.min(1, dt * 5);
     stepHand(h, dt);

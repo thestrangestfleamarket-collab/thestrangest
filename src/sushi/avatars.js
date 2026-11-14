@@ -10,6 +10,7 @@ import { mat } from './ctx.js';
 const BASE = '/sushi-assets/';
 const NAMES = ['Male_Adult_02', 'Female_Adult_02', 'Male_Adult_07', 'Female_Adult_09', 'Male_Adult_03', 'Female_Adult_04', 'Male_Adult_08', 'Female_Adult_14', 'Male_Adult_13', 'Female_Adult_11'];
 const CLIPS = ['walk', 'sit', 'look', 'wait'];
+const FIDGETS = ['cough', 'roll', 'scratch', 'face', 'hair', 'yawn', 'relaxed', 'shrug', 'think'], TOPS = ['talk1', 'talk2', 'talk3', 'nod', 'no', 'laugh'], MORE = [...FIDGETS, ...TOPS]; // small seated habits (whole body) and gestures laid over the trunk, arms and head (tools/sushi-anim.cjs)
 const SIT_LIFT = 0.215, SIT_Z = 0.03;
 const lib = { avatars: [], creatures: [], ready: false, next: 0 };
 // the cantina's regulars who have two arms and can sit at a counter: [model, who they are in the cantina's cast, standing height]
@@ -21,6 +22,7 @@ export async function loadAvatars(onProgress = () => { }) {
     const total = NAMES.length + 8; let done = 0; const tick = () => onProgress(++done / total);
     const raw = { m: {}, f: {} };
     await Promise.all(['m', 'f'].flatMap((g) => CLIPS.map(async (c) => { raw[g][c] = await (await fetch(`${BASE}anim/${g}_${c}.json`)).json(); tick(); })));
+    await Promise.all(['m', 'f'].flatMap((g) => MORE.map(async (c) => { try { const r = await fetch(`${BASE}anim/${g}_${c}.json`); if (r.ok) raw[g][c] = await r.json(); } catch (e) { /* they do without it */ } })));
     const manager = new THREE.LoadingManager(); manager.onError = () => { };
     manager.setURLModifier((u) => (/\.tga$/i.test(u) ? 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==' : u));
     const fbxLoader = new FBXLoader(manager), texLoader = new THREE.TextureLoader();
@@ -50,6 +52,7 @@ export async function loadAvatars(onProgress = () => { }) {
       fbx.scale.setScalar(0.01);
       const k = hip / raw[g].walk.rootTrack[1], clips = {};
       for (const c of CLIPS) clips[c] = new THREE.AnimationClip(c, -1, raw[g][c].tracks.map((t) => t.p === 'q' ? new THREE.QuaternionKeyframeTrack(`${t.n}.quaternion`, t.t, t.v) : new THREE.VectorKeyframeTrack(`${t.n}.position`, t.t, t.v.map((v) => v * k))));
+      for (const c of MORE) if (raw[g][c]) clips[c] = new THREE.AnimationClip(c, -1, raw[g][c].tracks.map((t) => new THREE.QuaternionKeyframeTrack(`${t.n}.quaternion`, t.t, t.v)));
       tick();
       return { name, g, fbx, clips };
     }));
@@ -112,15 +115,26 @@ export function makePerson(seed) {
   const bones = {}; inst.traverse((o) => { if (o.isBone) bones[o.name] = o; });
   const mixer = new THREE.AnimationMixer(inst), actions = {};
   for (const c of CLIPS) { actions[c] = mixer.clipAction(A.clips[c]); if (c !== 'walk') actions[c].setLoop(THREE.LoopPingPong, Infinity); }
+  for (const c of MORE) if (A.clips[c]) { actions[c] = mixer.clipAction(A.clips[c]); actions[c].setLoop(c.startsWith('talk') ? THREE.LoopPingPong : THREE.LoopOnce, c.startsWith('talk') ? Infinity : 1); actions[c].clampWhenFinished = true; }
+  let over = null; const habits = FIDGETS.filter((c) => actions[c]), talks = TOPS.filter((c) => c.startsWith('talk') && actions[c]);
+  const lay = (name, hold) => { const a = actions[name]; if (!a || (over && over.name === name)) return; if (over) over.to = 0, olds.push(over); a.reset(); a.setEffectiveWeight(0); a.play(); over = { name, a, w: 0, to: 1, hold, k: TOPS.includes(name) ? 3.2 : 5 }; }, olds = [];
   stickGeo ||= new THREE.CylinderGeometry(0.0028, 0.0018, 0.22, 5).rotateX(Math.PI / 2).translate(0, 0, 0.07);
   stickMat ||= mat({ color: 0xd8c49a, roughness: 0.6 });
   const sticks = new THREE.Group(); sticks.visible = false; root.add(sticks);
   for (const s of [-1, 1]) { const m = new THREE.Mesh(stickGeo, stickMat); m.position.x = s * 0.006; m.rotation.y = s * 0.04; m.castShadow = true; sticks.add(m); }
   const hand = bones.Bip01_R_Hand, fore = bones.Bip01_R_Forearm, upper = bones.Bip01_R_UpperArm, head = bones.Bip01_Head, spine = bones.Bip01_Spine1;
   const P = {
-    root, sticks, seed, style: A.name, pose: 'stand', cur: null, speed: 1.3, look: null, lookW: 0, waveT: 0, lookAt: new THREE.Vector3(), eatT: Math.random() * 3, rocketbox: true,
+    root, sticks, seed, style: A.name, pose: 'stand', cur: null, speed: 1.3, look: null, lookW: 0, waveT: 0, lookAt: new THREE.Vector3(), eatT: Math.random() * 3, rocketbox: true, talkT: 0, habitT: 3 + Math.random() * 8, mood: 0,
+    gesture(name) { if (this.pose === 'sit' || this.pose === 'eat') lay(name, false); }, // 'nod' 'no' 'laugh' 'shrug' 'think': once, over whatever they are doing
     update(dt) {
       const seated = this.pose === 'sit' || this.pose === 'eat';
+      // what is laid over the seated body: hands that talk while they speak, a gesture, or now and then a habit (a cough, a yawn, a hand through the hair)
+      this.talkT = Math.max(0, this.talkT - dt);
+      if (!seated) { if (over) { over.to = 0; olds.push(over); over = null; } }
+      else if (this.talkT > 0) { if (!over || !over.hold) { if (talks.length) lay(talks[(this.mood + ((Math.random() * 2) | 0)) % talks.length], true); } }
+      else { if (over && over.hold) over.to = 0; if (!over && this.pose === 'sit' && (this.habitT -= dt) <= 0) { this.habitT = 7 + Math.random() * 14; if (habits.length) lay(habits[(Math.random() * habits.length) | 0], false); } }
+      if (over) { const d = over.a.getClip().duration; if (!over.hold && over.a.time > d - 0.7) over.to = 0; over.w += (over.to - over.w) * Math.min(1, dt * 4); over.a.setEffectiveWeight(over.w * over.k * (this.pose === 'eat' ? 0.4 : 1)); if (over.to === 0 && over.w < 0.02) { over.a.stop(); over = null; } }
+      for (let i = olds.length - 1; i >= 0; i--) { const o = olds[i]; o.w += (0 - o.w) * Math.min(1, dt * 6); o.a.setEffectiveWeight(o.w * o.k); if (o.w < 0.02 || o === over) { if (o !== over) o.a.stop(); olds.splice(i, 1); } }
       const want = seated ? (this.cur && this.cur !== 'walk' ? this.cur : ['sit', 'wait', 'look'][(Math.random() * 3) | 0]) : 'walk';
       if (want !== this.cur) {
         const a = actions[want]; a.reset(); a.time = Math.random() * a.getClip().duration; a.fadeIn(this.cur ? 0.4 : 0).play();

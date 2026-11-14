@@ -9,7 +9,8 @@ const MOODS = ['tired but friendly', 'a little tipsy and talkative', 'quiet and 
 const STYLES = ['speaks in short, dry sentences', 'talks fast and laughs at their own jokes', 'is formal and careful with words', 'speaks slowly, with long pauses', 'is blunt and a little loud', 'is warm and asks questions back'];
 const STORIES = ['Your boss shouted at you in front of everyone today.', 'You just missed the last train and are in no hurry now.', 'Your daughter passed her entrance exam this morning.', 'You lost money at pachinko an hour ago.', 'You are meeting someone later and are nervous about it.', 'You have had a cold all week and want something hot.', 'You got paid today.', 'You have been walking in the rain for an hour to clear your head.'];
 const QUIRKS = ['You have eaten at this cart for years.', 'This is your first time at this cart.', 'You compare every ramen to your mother\'s.', 'You are soaked from the rain and grateful for the steam.', 'You love talking about baseball.', 'You hum along to whatever is on the radio.', 'You are saving up for a new stereo.', 'You notice small details about how the cook works.'];
-const VOICES = { m: ['orion', 'perseus', 'orpheus', 'helios', 'zeus', 'arcas', 'angus'], f: ['luna', 'stella', 'hera', 'asteria', 'athena'] }, CREATURE_VOICE = { robot: ['arcas', 0.94], gnome: ['angus', 1.1], mariachi: ['orpheus', 1], pirate: ['zeus', 0.95], goblinmage: ['perseus', 1.12], dragonborn: ['zeus', 0.88] };
+const FITS = { Female_Adult_02: ['hera', 0.97, 55, 63], Female_Adult_04: ['asteria', 1.02, 22, 28], Female_Adult_09: ['stella', 0.98, 36, 44], Female_Adult_11: ['luna', 1, 24, 30], Female_Adult_14: ['athena', 1, 30, 38], Male_Adult_02: ['orion', 1, 27, 34], Male_Adult_03: ['zeus', 0.95, 58, 67], Male_Adult_07: ['perseus', 1, 32, 40], Male_Adult_08: ['orpheus', 1.03, 21, 27], Male_Adult_13: ['arcas', 0.96, 46, 55] };
+const VOICES = { m: ['orion', 'perseus'], f: ['luna', 'stella'] }, CREATURE_VOICE = { robot: ['arcas', 0.94], gnome: ['angus', 1.1], mariachi: ['orpheus', 1], pirate: ['zeus', 0.95], goblinmage: ['perseus', 1.12], dragonborn: ['zeus', 0.88] };
 const CANNED = {
   order: ['Evening. {order}, please.', 'One {order}. It smells great tonight.', '{order} for me, thanks. How are you doing tonight?'],
   impatient: ['Is mine coming along?', 'Sorry, I do have a train to catch.', 'Getting hungry over here.'],
@@ -26,31 +27,47 @@ export function buildTalk() {
   const persona = (c) => {
     const k = c.p.cast && CAST.find((x) => x.id === c.p.cast);
     if (k) return { g: 'm', name: k.name, age: '', job: `a ${k.kind} (${k.job}), out of the bar for a late bowl`, mood: pick(MOODS), quirk: k.personality, style: k.voice, story: `Hobby: ${k.hobby}.`, speaker: (CREATURE_VOICE[c.p.cast] || ['orion', 1])[0], pitch: (CREATURE_VOICE[c.p.cast] || ['orion', 1])[1] };
-    const g = (c.p.style || '').startsWith('Female') ? 'f' : 'm';
-    return { g, name: pick(NAMES[g]), age: 22 + ((Math.random() * 44) | 0), job: pick(JOBS), mood: pick(MOODS), quirk: pick(QUIRKS), style: pick(STYLES), story: pick(STORIES), speaker: pick(VOICES[g]), pitch: 0.95 + Math.random() * 0.1 };
+    const g = (c.p.style || '').startsWith('Female') ? 'f' : 'm', fit = FITS[c.p.style] || [pick(VOICES[g]), 1, 24, 60];
+    return { g, name: pick(NAMES[g]), age: fit[2] + ((Math.random() * (fit[3] - fit[2] + 1)) | 0), job: pick(JOBS), mood: pick(MOODS), quirk: pick(QUIRKS), style: pick(STYLES), story: pick(STORIES), speaker: fit[0], pitch: fit[1] };
   };
   const orderText = (o) => `${o.recipe.name.toLowerCase()} ramen${o.firm ? ', noodles firm' : ''}${o.no ? `, no ${o.no}` : ''}${o.tops.chashu === 3 ? ', extra chashu' : ''}${o.drink ? `, and a ${o.drink}` : ''}`;
-  const voiceOf = (c) => c.voice || (c.voice = { ...persona(c), history: [], busy: false });
+  const voiceOf = (c) => c.voice || (c.voice = { ...persona(c), history: [], busy: false, gen: 0 });
 
-  // said aloud from where they sit: the site's voice if it will give one, else the browser's
-  async function speak(c, text) {
-    if (G.muteVoices) return; const v = voiceOf(c); c.attn = Math.max(c.attn || 0, 2 + text.length * 0.07);
+  // said aloud from their own mouth, one voice at a time: the site's voice if it will give one, else the browser's
+  const lane = []; let now = null, room = null;
+  const wet = () => { if (room) return room; const ac = G.audio.ctx, n = (ac.sampleRate * 0.5) | 0, ir = ac.createBuffer(2, n, ac.sampleRate); for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch); let lp = 0; for (let i = 0; i < n; i++) { lp += ((Math.random() * 2 - 1) - lp) * 0.35; d[i] = lp * Math.pow(1 - i / n, 3.2) * (i < 260 ? i / 260 : 1); } } const cv = ac.createConvolver(), g = ac.createGain(); cv.buffer = ir; g.gain.value = 0.5; cv.connect(g); g.connect(G.audio.master); return (room = cv); };
+  const mouth = (c, out) => { let b = c.voice.head; if (b === undefined) { b = null; c.p.root.traverse((o) => { if (!b && o.isBone && /head/i.test(o.name)) b = o; }); c.voice.head = b; } return b ? b.getWorldPosition(out) : out.set(c.p.root.position.x, 1.3, c.p.root.position.z); };
+  const _m = new V3();
+  const stop = () => { if (!now) return; const n = now; now = null; try { n.src.onended = null; n.g.gain.setTargetAtTime(0, G.audio.ctx.currentTime, 0.04); n.src.stop(G.audio.ctx.currentTime + 0.15); } catch (e) { /* ended */ } talk.speaking = 0; };
+  const pump = () => {
+    if (now || !lane.length) return; const it = lane.shift(); if (!G.game.customers.includes(it.c)) return pump();
+    if (!it.buf) { try { const u = new SpeechSynthesisUtterance(it.text), v = it.c.voice, vs = speechSynthesis.getVoices().filter((x) => /^en/i.test(x.lang)), want = v.g === 'f' ? /female|woman|samantha|victoria|karen|zira|susan|aria|jenny/i : /\bmale|\bman\b|daniel|alex|david|mark|fred|guy|james/i; u.voice = vs.find((x) => want.test(x.name)) || null; u.pitch = v.g === 'f' ? 1.15 : 0.7; u.rate = 1.02; u.lang = 'en-US'; now = { c: it.c, tts: true }; u.onend = u.onerror = () => { if (now && now.tts) now = null; pump(); }; speechSynthesis.speak(u); } catch (e) { now = null; } return; }
+    const ac = G.audio.ctx, v = it.c.voice, src = ac.createBufferSource(), pan = ac.createPanner(), g = ac.createGain(), send = ac.createGain(), rate = it.plain ? (v.g === 'f' ? 1.04 : 0.8) : v.pitch;
+    src.buffer = it.buf; src.playbackRate.value = rate; pan.panningModel = 'HRTF'; pan.distanceModel = 'inverse'; pan.refDistance = 1; pan.rolloffFactor = 1.3; mouth(it.c, _m); pan.positionX.value = _m.x; pan.positionY.value = _m.y; pan.positionZ.value = _m.z; g.gain.value = 2.4; send.gain.value = 0.16;
+    src.connect(g); g.connect(pan); pan.connect(G.audio.master); pan.connect(send); send.connect(wet());
+    now = { c: it.c, src, g, pan }; talk.speaking = G.t + it.buf.duration / rate; v.until = talk.speaking; it.c.attn = Math.max(it.c.attn || 0, it.buf.duration / rate + 1.5);
+    src.onended = () => { if (now && now.src === src) { now = null; talk.speaking = 0; } pump(); }; src.start();
+  };
+  talk.voiceTick = () => { if (now && now.pan) { mouth(now.c, _m); const p = now.pan; p.positionX.value = _m.x; p.positionY.value = _m.y; p.positionZ.value = _m.z; } };
+  async function speak(c, text, first) {
+    if (G.muteVoices) return; const v = voiceOf(c), gen = v.gen; c.attn = Math.max(c.attn || 0, 2 + text.length * 0.07); let it = { c, text };
     if (talk.tts !== false && G.audio.ctx) {
       try {
         const r = await fetch('/sushi/say', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, speaker: v.speaker }) }); talk.diag.say = r.ok ? 'ok' : String(r.status);
-        if (r.ok && (r.headers.get('content-type') || '').startsWith('audio')) {
-          const ac = G.audio.ctx, buf = await ac.decodeAudioData(await r.arrayBuffer()), src = ac.createBufferSource(), pan = ac.createPanner(), g = ac.createGain();
-          src.buffer = buf; src.playbackRate.value = v.pitch; pan.panningModel = 'HRTF'; pan.refDistance = 1.4; pan.positionX.value = SEATS[c.seat]; pan.positionY.value = 1.4; pan.positionZ.value = -1.1; g.gain.value = 1.8;
-          src.connect(g); g.connect(pan); pan.connect(G.audio.master); src.start(); talk.tts = true; talk.speaking = G.t + buf.duration / v.pitch; return;
-        }
-        if (r.status !== 429) talk.tts = false;
-      } catch (e) { /* fall through to the browser's voice */ }
+        if (r.ok && (r.headers.get('content-type') || '').startsWith('audio')) { it.plain = r.headers.get('x-voice') === 'plain'; it.buf = await G.audio.ctx.decodeAudioData(await r.arrayBuffer()); talk.tts = true; }
+        else if (r.status !== 429) talk.tts = false;
+      } catch (e) { /* the browser's voice then */ }
     }
-    try { if (!window.speechSynthesis || !speechSynthesis.getVoices().length) { talk.voiceless = true; G.audio.play('voice'); return; } const u = new SpeechSynthesisUtterance(text); u.pitch = Math.max(0.5, Math.min(1.8, v.pitch * (v.g === 'f' ? 1.1 : 0.85))); u.rate = 1.02; u.volume = 1; u.lang = 'en-US'; speechSynthesis.speak(u); } catch (e) { /* this browser has no voice */ }
+    if (gen !== v.gen || !G.game.customers.includes(c)) return;
+    if (!it.buf && (!window.speechSynthesis || !speechSynthesis.getVoices().length)) { talk.voiceless = true; G.audio.play('voice'); return; }
+    if (first) { lane.length = 0; stop(); try { speechSynthesis.cancel(); } catch (e) { /* none */ } now = null; lane.push(it); } else { if (lane.length > 1) return; lane.push(it); }
+    pump();
   }
 
   async function say(c, kind, situation, facts, cookSaid) {
-    const v = voiceOf(c); if (v.busy && kind !== 'reply') return; v.busy = true;
+    const v = voiceOf(c), reply = kind === 'reply', must = reply || kind === 'order' || kind === 'taste' || kind === 'angry';
+    if (reply) { v.gen = (v.gen || 0) + 1; c.chatT = Math.max(c.chatT || 0, 30); } else if (v.busy || (v.until || 0) > G.t || (!must && (now || lane.length))) return;
+    const gen = v.gen; v.busy = true;
     if (cookSaid) v.history.push({ who: 'cook', text: cookSaid });
     let line = null;
     if (talk.live !== false) {
@@ -60,10 +77,11 @@ export function buildTalk() {
         if (j && j.say) { line = j.say; talk.live = true; } else if (!r.ok && r.status !== 429) talk.live = false;
       } catch (e) { talk.live = talk.live || false; }
     }
+    if (gen !== v.gen) return;
     if (!line) { const set = CANNED[kind] || CANNED.reply; line = pick(set).replace('{order}', c.order ? c.order.recipe.name[0] + c.order.recipe.name.slice(1).toLowerCase() + ' ramen' : 'ramen'); }
     v.busy = false; v.history.push({ who: 'me', text: line }); if (v.history.length > 10) v.history.splice(0, 2);
     if (!G.game.customers.includes(c)) return;
-    talk.last = { who: v.name, line }; speak(c, line);
+    talk.last = { who: v.name, line }; speak(c, line, reply);
   }
 
   talk.event = (c, kind, r) => {
@@ -126,6 +144,6 @@ export function buildTalk() {
   talk.attend = (sec = 4) => { for (const c of G.game.customers) c.attn = Math.max(c.attn || 0, sec); };
   talk.seen = (what) => { log.push({ t: G.t, what }); if (log.length > 5) log.shift(); };
   talk.seenText = () => { const r = log.filter((x) => G.t - x.t < 60).map((x) => x.what); return r.length ? 'In the last minute you saw the cook: ' + r.join('; ') + '.' : ''; };
-  talk.update = () => { };
+  talk.update = () => talk.voiceTick();
   return talk;
 }

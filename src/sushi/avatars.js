@@ -25,16 +25,23 @@ export async function loadAvatars(onProgress = () => { }) {
     manager.setURLModifier((u) => (/\.tga$/i.test(u) ? 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==' : u));
     const fbxLoader = new FBXLoader(manager), texLoader = new THREE.TextureLoader();
     const tex = async (url, srgb) => { const t = await texLoader.loadAsync(url), c = document.createElement('canvas'); c.width = c.height = 512; c.getContext('2d').drawImage(t.image, 0, 0, 512, 512); t.dispose(); const s = new THREE.CanvasTexture(c); s.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace; s.anisotropy = 4; return s; };
+    // hair cards: the colour is spread under the clear parts, or every thin strand filters to black
+    const hairTex = async (url) => { const t = await texLoader.loadAsync(url), c = document.createElement('canvas'); c.width = c.height = 512; const x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(t.image, 0, 0, 512, 512); t.dispose(); const d = x.getImageData(0, 0, 512, 512).data; let r = 0, g = 0, b = 0, n = 0;
+      for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 200) { r += d[i]; g += d[i + 1]; b += d[i + 2]; n++; } n ||= 1; r /= n; g /= n; b /= n;
+      for (let i = 0; i < d.length; i += 4) { const a = d[i + 3] / 255; d[i] = d[i] * a + r * (1 - a); d[i + 1] = d[i + 1] * a + g * (1 - a); d[i + 2] = d[i + 2] * a + b * (1 - a); }
+      const s = new THREE.DataTexture(new Uint8Array(d.buffer), 512, 512, THREE.RGBAFormat); s.colorSpace = THREE.SRGBColorSpace; s.flipY = true; s.magFilter = THREE.LinearFilter; s.minFilter = THREE.LinearMipmapLinearFilter; s.generateMipmaps = true; s.wrapS = s.wrapT = THREE.RepeatWrapping; s.needsUpdate = true; return s; };
     const warn = console.warn; console.warn = (...a) => { if (!String(a[0]).includes('FBXLoader')) warn(...a); };
     lib.avatars = await Promise.all(NAMES.map(async (name) => {
       const dir = `${BASE}avatars/${name}/`, g = name.startsWith('Male') ? 'm' : 'f';
-      const [fbx, bc, hc, oc] = await Promise.all([fbxLoader.loadAsync(dir + 'avatar.fbx'), tex(dir + 'body_color.webp', true), tex(dir + 'head_color.webp', true), tex(dir + 'opacity_color.webp', true).catch(() => null)]);
+      const [fbx, bc, hc, oc] = await Promise.all([fbxLoader.loadAsync(dir + 'avatar.fbx'), tex(dir + 'body_color.webp', true), tex(dir + 'head_color.webp', true), hairTex(dir + 'opacity_color.webp').catch(() => null)]);
       const kill = []; fbx.traverse((o) => { if (o.isLight || o.isCamera) kill.push(o); }); kill.forEach((o) => o.removeFromParent());
       const mats = {
         body: mat({ map: bc, roughness: 0.82, metalness: 0 }),
         head: mat({ map: hc, roughness: 0.62, metalness: 0 }),
         opacity: oc ? mat({ map: oc, alphaTest: 0.42, side: THREE.DoubleSide, roughness: 0.7, metalness: 0 }) : mat({ map: hc, roughness: 0.62 }),
       };
+      if (oc) mats.opacity.onBeforeCompile = (sh) => { sh.fragmentShader = sh.fragmentShader.replace('#include <normal_fragment_begin>', '#include <normal_fragment_begin>\n#ifdef DOUBLE_SIDED\n normal *= faceDirection;\n#endif'); }; // a hair card is lit as the scalp under it, whichever face shows
+      if (name === 'Male_Adult_03') mats.opacity.visible = false; // his loose strands are a darker man's
       let hip = 90;
       fbx.traverse((o) => {
         if (o.isSkinnedMesh || o.isMesh) { const pick = (m) => mats[Object.keys(mats).find((k) => m.name.toLowerCase().includes(k)) || 'body']; o.material = Array.isArray(o.material) ? o.material.map(pick) : pick(o.material); o.castShadow = false; o.receiveShadow = false; o.frustumCulled = false; }

@@ -475,9 +475,10 @@ export class Block extends Server {
     catch (e) { console.error("folk alarm", e); }
     await this.ctx.storage.setAlarm(now + (n ? 1000 : 10000)); }   // (set again whatever happened: the walks never stop)
   async onConnect(c, ctx) {
-    const id = ctx.request.headers.get("x-tsfm-id") || ""; if (!id) return c.close(4001, "login");
+    const base = ctx.request.headers.get("x-tsfm-id") || ""; if (!base) return c.close(4001, "login"); let cart = false; try { cart = new URL(ctx.request.url).searchParams.get("cart") === "1"; } catch (e) {}
+    const id = cart ? base + "~cart" : base;   // the ramen cart's cook is a presence of their own, so one tenant can cook in one window and stand at the cart in another
     for (const o of this.getConnections()) if (o.id !== c.id && o.state && o.state.id === id) o.close(4000, "joined again");
-    c.setState({ id, name: "", look: "", at: null }); this.playIn(id); if (ctx.request.headers.get("x-tsfm-dev") === "1") (this.dev || (this.dev = new Set())).add(c.id);
+    c.setState({ id, name: "", look: "", at: null }); if (!cart) this.playIn(id); if (ctx.request.headers.get("x-tsfm-dev") === "1") (this.dev || (this.dev = new Set())).add(c.id);
     const F = await this.folk(), MS = await this.mobs();
     c.send(JSON.stringify({ t: "hi", mv: MS.g ? MS.g.v : "", you: id, all: this.roster().filter(p => p.id !== id), world: { ...(await this.world()), ...this.drops(this.W) }, cars: Object.fromEntries(this.cars || []), folk: FOLKSIM.snap(F), fv: F.g ? F.g.v : "", fc: F.cast ? F.cast.v + ":" + Object.keys(F.cast.keys || {}).length : "" }));
     c.send(JSON.stringify({ t: "puts", all: this.puts() })); c.send(JSON.stringify({ t: "dm", d: MS.dm || null }));

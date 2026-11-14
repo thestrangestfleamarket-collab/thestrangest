@@ -6,8 +6,8 @@ const send=m=>{ if(sock&&sock.readyState===1)sock.send(JSON.stringify(m)); };
 NET.send=m=>send(m);
 const hello=()=>{ send({t:'me',name:CARD.name||'TENANT',look:CARD.look||'w0',dead:0,hp:CARD.hp==null?1:CARD.hp,x:{}}); if(Array.isArray(CARD.at))send({t:'mv',at:CARD.at}); };
 NET.feed=m=>{ if(!m||typeof m!=='object')return;
-  if(m.t==='hi'){ NET.me=m.you||''; NET.others.clear(); for(const p of m.all||[])if(p&&p.id)NET.others.set(p.id,{id:p.id,name:p.name||''}); }
-  else if(m.t==='in'&&m.p&&m.p.id)NET.others.set(m.p.id,{id:m.p.id,name:m.p.name||''});
+  if(m.t==='hi'){ NET.me=m.you||''; NET.others.clear(); for(const p of m.all||[])if(p&&p.id)NET.others.set(p.id,{id:p.id,name:p.name||'',at:Array.isArray(p.at)?p.at:null}); }
+  else if(m.t==='in'&&m.p&&m.p.id)NET.others.set(m.p.id,{id:m.p.id,name:m.p.name||'',at:Array.isArray(m.p.at)?m.p.at:null});
   else if(m.t==='me'&&m.id&&NET.others.has(m.id)){ if(m.name)NET.others.get(m.id).name=m.name; }
   else if(m.t==='out')NET.others.delete(m.id);
   const f=NET.hear[m.t]; if(f)try{ f(m); }catch(e){ console.warn('HOLO net',e); } };

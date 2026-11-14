@@ -741,6 +741,9 @@ export class Block extends Server {
       if (!x) return; if (!o) { if (!x.bye) c.send(JSON.stringify({ t: "rtc", from: to, d: { bye: 1 } })); return; } o.send(JSON.stringify({ t: "rtc", from: s.id, d: x }));
     } else if (m.t === "bu") {   // BOARDED UP (src/holo/boarded.js): one player's game traffic handed to their partner in the same room
       const to = word(m.to, 64), d = m.d; if (!to || to === s.id || !d || typeof d !== "object") return; const o = this.near(s, to, 60); if (o) o.send(JSON.stringify({ t: "bu", from: s.id, d }));
+    } else if (m.t === "yt") {   // the ramen cart (src/sushi/live.js through the holodeck's shell): what its cook is doing, to everyone else in the section, a few times a second
+      const d = m.d, now = Date.now(), ev = d && (d.e || d.g); if (!d || typeof d !== "object" || now - ((ev ? c.ytE : c.ytT) || 0) < (ev ? 40 : 150)) return; const j = JSON.stringify({ t: "yt", from: s.id, d }); if (j.length > 3000) return; if (ev) c.ytE = now; else c.ytT = now;   // (a happening, such as an order, is not held up behind the steady word of the cart's state)
+      for (const o of this.getConnections()) if (o !== c && o.state) o.send(j);
     } else if (m.t === "pm" && s.name) {   // a message to one player in this section (the paper doll's MESSAGE)
       const to = word(m.to, 64), text = word(m.text, 200); if (!to || to === s.id || !text) return;
       if (!this.hand(to, { t: "pm", from: s.id, name: s.name, text })) c.send(JSON.stringify({ t: "pm", op: "gone", from: to }));

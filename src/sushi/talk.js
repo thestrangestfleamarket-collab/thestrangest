@@ -74,6 +74,7 @@ export function buildTalk() {
   }
 
   async function say(c, kind, situation, facts, cookSaid) {
+    if (c.guest) return; // a tenant from THE MARKET speaks for themself
     const v = voiceOf(c), reply = kind === 'reply', must = reply || kind === 'order' || kind === 'taste' || kind === 'angry';
     if (reply) { v.gen = (v.gen || 0) + 1; c.chatT = Math.max(c.chatT || 0, 30); talk.floorT = G.t + 6; for (const o of G.game.customers) if (o !== c) o.chatT = Math.max(o.chatT || 0, 12); }
     else if (v.busy || (v.until || 0) > G.t || (!must && (now || lane.length || talk.hearing || G.t < (talk.floorT || 0)))) return; // nobody starts small talk while you are speaking or being answered
@@ -91,7 +92,7 @@ export function buildTalk() {
     if (!line) { const set = CANNED[kind] || CANNED.reply; line = pick(set).replace('{order}', c.order ? c.order.recipe.name[0] + c.order.recipe.name.slice(1).toLowerCase() + ' ramen' : 'ramen'); }
     v.busy = false; v.history.push({ who: 'me', text: line }); if (v.history.length > 10) v.history.splice(0, 2);
     if (!G.game.customers.includes(c)) return;
-    talk.last = { who: v.name, line }; speak(c, line, reply, { kind, live, think: Math.round(performance.now() - t0) });
+    talk.last = { who: v.name, line, n: (talk.lastN = (talk.lastN || 0) + 1) }; speak(c, line, reply, { kind, live, think: Math.round(performance.now() - t0) });
   }
 
   talk.event = (c, kind, r) => {
@@ -113,6 +114,7 @@ export function buildTalk() {
   };
   talk.cookSays = (text) => {
     text = String(text || '').trim().slice(0, 240); if (!text) return false; talk.attend(6); const c = talk.target(), n = G.game.customers.filter((x) => x.state === 'sitting' || x.state === 'waiting' || x.state === 'eating').length;
+    talk.last = { who: 'THE COOK', line: text, n: (talk.lastN = (talk.lastN || 0) + 1) };
     note({ who: 'COOK', text, to: c ? voiceOf(c).name : n ? 'nobody (looking at no one, ' + n + ' seated)' : 'nobody (no one seated)' });
     if (!c) { if (!n) G.game.callOver?.(); return false; }
     c.p.gesture?.(Math.random() < 0.7 ? 'nod' : 'think');

@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {BATCH, CULL, keys, LEVELS, pos, RAG, ROOMS, SHAD, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {cutWalls, FADE, FIX, grab, LAMPD, LAMPI, lamps, MAPSTAIR, MODS, QS, SECTIONS, SOL, STN, SYS, TILE, ZU} from './006-map-pre.js';
+import {cutWalls, FADE, FIX, grab, LAMPD, LAMPI, lamps, MAPSTAIR, MODS, QS, SECTIONS, SOL, STN, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {OBJ} from './008-batch.js';
 const WATER={drops:[], uH:{value:null}, uWB:{value:new THREE.Vector4()}, uLevel:{value:0}, uGrid:{value:new THREE.Vector2()}, uCK:{value:+(QS0=>QS0.get('ck')||160)(new URLSearchParams(location.search))}, mats:[]};
 WATER.caustic=m=>{ '@later'; m.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,{uH:WATER.uH,uWB:WATER.uWB,uLevel:WATER.uLevel,uGrid:WATER.uGrid,uCK:WATER.uCK});
@@ -282,7 +282,7 @@ const SSUB=(()=>{ const W={};
       B(x0-.22,y0-.34,x0+.06,y0-.06,58,74,[255,92,48,1],{em:1}),B(x1-.06,y0-.34,x1+.22,y0-.06,58,74,[255,92,48,1],{em:1}),
       B(x0+.25,y0+.5,x0+.75,y0+1.0,33,44,st),B(x0+.9,y0+.5,x0+1.4,y0+1.0,33,46,st),B(x1-.75,y0+.45,x1-.2,y0+1.1,33,37,[230,226,214]),
       ...[x0+.45,MID,x1-.45].map(a=>B(a-.16,y0-.78,a+.16,y0-.46,0,20,[150,34,30]))]),'ramen cart');
-    solid(x0,y0-.3,x1,y1,60); blobAt(x0-.3,y0-.8,x1+.3,y1+.3); SL.CART={x:MID,y:(y0+y1)/2,x0,y0,x1,y1}; }
+    solid(x0,y0-.3,x1,y1,60); blobAt(x0-.3,y0-.8,x1+.3,y1+.3); SL.CART={x:MID,y:(y0+y1)/2,x0,y0,x1,y1}; { const v=V(MID,y0-1.5,0); STORE.places.push(['THE DARK ALLEY',v[0],v[2],'down']); } }   // on the map as THE DARK ALLEY: the cart is the way into it
   put(W.signal(XW-.35,-1.4,1),'signal',SZ-32); put(W.signal(XW-.35,LEN+1.4,0),'signal',SZ-32); put(W.signal(.35,LEN+1.4,0),'signal',SZ-32);
   BATCH.build((k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,alphaTest:.5,side:THREE.DoubleSide}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.6}:{})}));
   BATCH.cast=false;

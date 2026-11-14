@@ -71,6 +71,8 @@ jobs:
           k holmes  'src/holmes/|data/holmes/|worker/holmes|tools/holmes|tests/holmes\.cjs'
           k jam     'src/jam/|data/jam/|tools/jam\.cjs|tests/jam\.cjs'
           k shoot   'src/shoot/|tools/shoot\.cjs|tests/shoot\.cjs'
+          k edge    'src/edge/|tools/edge\.cjs|tests/edge\.cjs'
+          k tank    'src/tank/|tools/edge\.cjs|tests/tank\.cjs'
           k sniper  'src/sniper/|data/sniper/|tools/sniper|tests/sniper\.cjs'
           k duel    'src/duel/|data/duel/|tools/duel\.cjs|tests/duel\.cjs'
           k laser   'src/laser/|worker/laser|tools/laser\.cjs|tests/laser\.cjs'
@@ -292,6 +294,14 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' shoot')
         run: node tests/shoot.cjs dist/shoot.html
+      - name: Edge of 88 (the plank at /edge; the lift to floor 88, ten seconds on the X, a fall, then an emulated Quest 3)
+        timeout-minutes: 20
+        if: contains(steps.f.outputs.run, ' edge')
+        run: node tests/edge.cjs dist/edge.html
+      - name: Hull Down (the tank at /tank; a kill through the sight, a hit taken, four waves, then an emulated Quest 3)
+        timeout-minutes: 20
+        if: contains(steps.f.outputs.run, ' tank')
+        run: node tests/tank.cjs dist/tank.html
       - name: AR Duel (the dodge fight at /duel; the bot round, every weapon, two linked pages)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' duel')

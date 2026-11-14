@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Edge of 88</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#06080c;
+  --ink:#f1ece2;
+  --dim:#a39c92;
+  --amber:#ffb24a;
+  --line:rgba(241,236,226,.16);
+  --danger:#ff6142;
+  --display:'Big Shoulders Display','Arial Narrow',Impact,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);overflow:hidden}
+body{font-family:var(--mono);font-size:14px;-webkit-font-smoothing:antialiased}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;background:var(--bg)}
+#overlay{position:fixed;inset:0;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;
+  padding-block:24px calc(24px + env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  background:linear-gradient(to top,rgba(6,8,12,.94) 0%,rgba(6,8,12,.68) 45%,rgba(6,8,12,0) 100%);overflow-y:auto;z-index:5}
+.card{max-width:34rem;display:grid;gap:16px;min-width:0;margin-top:auto}
+.eyebrow{margin:0;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--amber)}
+h1{margin:0;font-family:var(--display);font-weight:900;font-size:clamp(64px,15vw,128px);line-height:.82;letter-spacing:-.01em;text-transform:uppercase;text-wrap:balance}
+h1 span{color:var(--amber)}
+.lede{margin:0;line-height:1.6;color:var(--ink);max-width:62ch}
+.actions{display:flex;flex-wrap:wrap;gap:10px}
+button{font:600 14px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;border-radius:2px;padding:15px 20px;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--ink)}
+button.primary{background:var(--amber);color:#1a1207;border-color:var(--amber)}
+button:disabled{opacity:.4;cursor:not-allowed}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+.note{margin:0;font-size:12px;line-height:1.5;color:var(--dim);min-height:1em}
+.toggle{display:flex;gap:10px;align-items:center;font-size:13px;color:var(--ink);cursor:pointer}
+.toggle input{width:18px;height:18px;accent-color:var(--amber)}
+details{border-top:1px solid var(--line);padding-top:12px}
+summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.controls{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin-top:12px;font-size:12px;line-height:1.5}
+.controls dt{color:var(--amber);letter-spacing:.08em;text-transform:uppercase}
+.controls dd{margin:0;color:var(--ink)}
+.warn{margin:0;font-size:12px;line-height:1.55;color:var(--dim);border-left:2px solid var(--danger);padding-left:12px}
+.cleared{margin:0;font-size:12px;color:var(--dim)}
+#loading{position:fixed;inset:0;display:grid;place-items:center;z-index:6;background:var(--bg);color:var(--dim);font-size:12px;letter-spacing:.16em;text-transform:uppercase}
+#menuBtn{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));left:max(12px,env(safe-area-inset-left,0px));z-index:4;padding:10px 14px;background:rgba(6,8,12,.55);backdrop-filter:blur(4px)}
+#pad{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:4;display:grid;grid-template-columns:repeat(3,58px);grid-template-rows:repeat(2,58px);gap:8px}
+#pad button{padding:0;font-size:20px;background:rgba(6,8,12,.5);backdrop-filter:blur(4px);touch-action:none;user-select:none;-webkit-user-select:none}
+#pad .up{grid-column:2;grid-row:1}#pad .lt{grid-column:1;grid-row:2}#pad .dn{grid-column:2;grid-row:2}#pad .rt{grid-column:3;grid-row:2}
+@media (min-width:900px){#overlay{padding-left:max(56px,env(safe-area-inset-left,0px));padding-block:56px}}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="loading">Building the city…</div>
+<button id="menuBtn" hidden>Menu</button>
+<div id="pad" hidden>
+  <button class="up" data-k="KeyW" aria-label="Walk forward">▲</button>
+  <button class="lt" data-k="KeyA" aria-label="Step left">◀</button>
+  <button class="dn" data-k="KeyS" aria-label="Walk back">▼</button>
+  <button class="rt" data-k="KeyD" aria-label="Step right">▶</button>
+</div>
+<div id="overlay">
+  <div class="card">
+    <p class="eyebrow">Floor 88 · 308 m · no railing</p>
+    <h1>Edge<br>of <span>88</span></h1>
+    <p class="lede">Ride the service elevator to the top floor. The doors open onto one wooden plank, 30 cm wide, sticking out over the city at sunset. Walk to the chalk X at the end and stand on it for ten seconds.</p>
+    <div class="actions">
+      <button id="vrBtn" class="primary" disabled>Checking for VR…</button>
+      <button id="flatBtn">Play in browser</button>
+    </div>
+    <p id="vrNote" class="note"></p>
+    <label class="toggle" for="fallToggle"><input type="checkbox" id="fallToggle" checked> Fall when you step off the plank</label>
+    <label class="toggle" for="fxToggle"><input type="checkbox" id="fxToggle" checked> Fear effects (tunnel vision, blur, heartbeat)</label>
+    <p id="cleared" class="cleared" hidden></p>
+    <details>
+      <summary>Controls</summary>
+      <dl class="controls">
+        <dt>VR</dt><dd>Walk for real (clear about 2 × 6 m), or push the left stick. Right stick turns. Trigger presses elevator buttons.</dd>
+        <dt>Desktop</dt><dd>Drag to look. W A S D or arrow keys to walk. Click the elevator buttons on your right.</dd>
+        <dt>Phone</dt><dd>Drag to look. Arrow pad to walk. Tap the elevator buttons.</dd>
+      </dl>
+    </details>
+    <p class="warn">Convincing heights can cause dizziness, nausea or panic. If you're working on a fear of heights, start at floor 12 and move up. If it gets to be too much, close your eyes and take the headset off.</p>
+  </div>
+</div>
+
+<script>__THREE147__</script>
+<script>__EDGE__</script>
+</body>
+</html>

@@ -90,6 +90,12 @@ export default {
     if ((request.method === "GET" || request.method === "HEAD") && SNIPA.test(p)) {
       const r = await env.ASSETS.fetch(new Request(url.origin + p)); if (!r.ok) return new Response("not found", { status: 404 });
       const out = new Response(r.body, r); out.headers.set("content-type", SNIPT[p.split(".").pop()]); out.headers.set("cache-control", "public, max-age=86400"); out.headers.set("x-robots-tag", "noindex"); return out; }
+    // EDGE OF 88 (src/edge/): the plank over the city, its own page at /edge, also /game, to anyone with the link
+    if ((request.method === "GET" || request.method === "HEAD") && (p === "/edge" || p === "/game")) return page(env, url, "/edge", request, "no-cache");
+    if (p === "/edge/" || p === "/game/") return Response.redirect(url.origin + "/edge" + url.search, 301);
+    // HULL DOWN (src/tank/): the tank's turret, its own page at /tank, also /hull, to anyone with the link
+    if ((request.method === "GET" || request.method === "HEAD") && (p === "/tank" || p === "/hull")) return page(env, url, "/tank", request, "no-cache");
+    if (p === "/tank/" || p === "/hull/") return Response.redirect(url.origin + "/tank" + url.search, 301);
     // BREACHLINE (src/shoot/): its own page at /shoot, to anyone with the link
     if ((request.method === "GET" || request.method === "HEAD") && p === "/shoot") return page(env, url, "/shoot", request, "no-cache");
     // HALCYON GREENS (src/golf/): its own page at /golf, to anyone with the link; its pictures under /golf-assets/

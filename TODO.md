@@ -46,6 +46,7 @@ After the beta: photos in trade · the bow · birds, dragons' clips and more hum
 headset · NPC voices.
 
 - **P2 · look** COLD BORE at `/sniper` (14 Nov 2026; live without a check, as asked): play it on the screen and in the Quest 3 (it has only been run in software rendering and an emulated headset: the frame rate, how the rifle sits in the hands, the eye behind the scope); its name (COLD BORE is a working name); realistic people, cars, a helicopter and boats to replace the ones made in code (no free realistic ones were reachable; Mixamo needs the owner's Adobe account); `tests/sniper.cjs` was last run in full before the real assets went in.
+- **P2 · look** EDGE OF 88 at `/edge` and HULL DOWN at `/tank` (14 Nov 2026): play both on the screen and in the Quest 3 (run only in software rendering and an emulated headset: the frame rate, the seat's height in the turret, the turret turning you in the headset); Hull Down is new, built on his kit: its look, its four waves, its name's addresses (`/tank`, `/hull`); whether either goes in the holodeck's list.
 
 ## CI, checks and tools
 

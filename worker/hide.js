@@ -1,8 +1,8 @@
-// DEAD END'S THING THINKS (src/hide/): the page sends only what the thing's own senses gave it (noises, glimpses, breath in its light, wet prints, things out of place); Claude decides where it looks next. It is never told where the player is.
+// DEAD END'S THING THINKS (src/hide/): the page sends only what the thing's own senses gave it (noises, glimpses, breath in its light, things out of place); Claude decides where it looks next. It is never told where the player is.
 import Anthropic from "@anthropic-ai/sdk";
 import { SPOTS, KINDS } from "../src/hide/spots.js";
 
-const MODEL = "claude-haiku-5-5", DAY = 600, IDS = SPOTS.map(s => s.id), ACTS = ["search", "investigate", "listen", "sweep", "toy", "mimic", "feint", "leave"], CLUES = ["noise", "breath", "glimpse", "prints", "scent"];
+const MODEL = "claude-haiku-5-5", DAY = 600, IDS = SPOTS.map(s => s.id), ACTS = ["search", "investigate", "listen", "sweep", "toy", "mimic", "feint", "leave"], CLUES = ["noise", "breath", "glimpse", "scent"];
 const clip = (s, n) => String(s ?? "").replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, n);
 const num = (v, lo, hi, d = lo) => Number.isFinite(+v) ? Math.min(hi, Math.max(lo, Math.round(+v * 10) / 10)) : d;
 const text = c => (c || []).filter(b => b.type === "text").map(b => b.text).join(" ").trim();
@@ -15,10 +15,11 @@ ${SPOTS.map(s => `- ${s.id} (${s.floor}, ${s.room}, ${s.kind}): ${s.name}. A hum
 HOW A SEARCH WORKS
 ${Object.entries(KINDS).map(([k, v]) => `- ${k}: ${v}.`).join("\n")}
 A glance takes about 2 seconds, a thorough search about 6, and walking costs about a second per 1.5 metres. Your patience is limited (you are told how many seconds remain), so you cannot search everything thoroughly: spend time where the evidence points.
+With no evidence, hunt as a hunter would, not as a walker would: do NOT begin with whatever is nearest the front door. Choose a floor and a room to begin in (a different one each hunt: the attic, the cellar, a bedroom, the kitchen), go there, search that room place by place, then move to the room next to it. A human who knows you always start by the door will never hide there and always hide far away; be unpredictable.
 
 WHAT YOUR SENSES REPORT
 - spots: each place with how well you have searched it (0 not yet, 1 glanced, 2 thoroughly) and "mess": what is plainly wrong there to eyes that have never seen this house (a cobweb torn across the way in, a door still swinging, a chair or bin lying overturned, a lump under a cloth). You do not know how the house was left, so nothing else counts. Mess is strong evidence but a clever human may make a mess in one place and hide in another.
-- clues, each with an id, kind, the place it was nearest, how far from you, how many seconds old, and strength 1-3: "noise" (something you heard; the storm and anything left running hide quiet sounds; sound is weaker through a floor), "breath" (a puff of warm breath fogging in your light: a human is within a metre or two of that place RIGHT NOW unless the clue is old), "glimpse" (you saw part of a body move), "prints" (footprints, wet ones or ones left in the dust of a room nobody has walked in for years, with the direction they lead: the human walked exactly there), "scent" (the smell of wet clothes: the human walked through a leak's puddle and is within three metres of you, though the place given is only rough).
+- clues, each with an id, kind, the place it was nearest, how far from you, how many seconds old, and strength 1-3: "noise" (something you heard; the storm and anything left running hide quiet sounds; sound is weaker through a floor), "breath" (a puff of warm breath fogging in your light: a human is within a metre or two of that place RIGHT NOW unless the clue is old), "glimpse" (you saw part of a body move), "scent" (the smell of wet clothes: the human walked through a leak's puddle and is within three metres of you, though the place given is only rough).
 - habits: how many times this same human has ended a past hunt in each place. Humans return to what worked; check a favourite early, but not every time.
 - last: what you did recently and what came of it.
 

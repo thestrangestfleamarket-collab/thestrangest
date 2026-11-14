@@ -33,13 +33,19 @@ const ARTN = 24, ART = [];
 // what shiny things reflect is the alley itself, pictured once from its middle with its own lamps lit
 function reflect() { const pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(scene, 0, .1, 70, { position: new THREE.Vector3(0, 1.6, -11) }).texture; scene.environmentIntensity = .28; pm.dispose(); }
 async function loadAssets(onp) {
-  let done = 0; const total = TEXN.length * 3 + MODN.length + 1 + ARTN, tick = v => { onp(++done / total); return v; }, L = new GLTFLoader(), aniso = Math.min(2, renderer.capabilities.getMaxAnisotropy());
+  let done = 0; const total = TEXN.length * 3 + MODN.length + 2 + ARTN, tick = v => { onp(++done / total); return v; }, L = new GLTFLoader(), aniso = Math.min(2, renderer.capabilities.getMaxAnisotropy());
   const jobs = [];
   for (const n of TEXN) for (const k of 'dna') jobs.push(texL.loadAsync(ASSET + 'tex/' + n + '_' + k + '.jpg').then(t => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = aniso; if (k === 'd') t.colorSpace = THREE.SRGBColorSpace; (TEX[n] = TEX[n] || {})[k] = t; tick(); }));
   for (let i = 0; i < ARTN; i++) jobs.push(new THREE.ImageLoader().loadAsync(ASSET + 'art/p' + String(i).padStart(2, '0') + '.jpg').then(im => { ART[i] = im; tick(); }));
   for (const n of MODN) jobs.push(L.loadAsync(ASSET + 'm/' + n + '.glb').then(g => { MODELS[n] = g; tick(); }));
   // the sky is a photograph of a real moonlit night (Poly Haven), turned so its moon stands where the moonlight comes from
   jobs.push(texL.loadAsync(ASSET + 'sky.jpg').then(t => { t.mapping = THREE.EquirectangularReflectionMapping; t.colorSpace = THREE.SRGBColorSpace; scene.background = t; scene.backgroundIntensity = .16; scene.backgroundRotation.y = SKYTURN; tick(); }));
+  // THE MARKET's own models (baked points and colours) and paintings, made into ordinary models and pictures
+  jobs.push(fetch(ASSET + 'market.json').then(r => r.json()).then(async j => { const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0)), M = new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: .85 }), col = new THREE.Color();
+    const mk = (n, P, c8, idx) => { const C = new Float32Array(c8.length); for (let i = 0; i < c8.length; i += 3) { col.setRGB(c8[i] / 255, c8[i + 1] / 255, c8[i + 2] / 255, THREE.SRGBColorSpace); C[i] = col.r; C[i + 1] = col.g; C[i + 2] = col.b; } const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(P, 3)); g.setAttribute('color', new THREE.BufferAttribute(C, 3)); if (idx) g.setIndex(new THREE.BufferAttribute(idx, 1)); g.computeVertexNormals(); const s = new THREE.Group(); s.add(new THREE.Mesh(g, M)); MODELS[n] = { scene: s }; };
+    for (const n in j.kit) { const K = j.kit[n], q = new Int16Array(b64(K.p).buffer), P = new Float32Array(q.length); for (let i = 0; i < q.length; i++) P[i] = (q[i] + 32500) * K.sc + K.lo[i % 3]; mk(n, P, b64(K.c), K.i32 ? new Uint32Array(b64(K.i).buffer) : new Uint16Array(b64(K.i).buffer)); }
+    for (const n in j.pf) { const K = j.pf[n], q = new Int16Array(b64(K.p).buffer), P = new Float32Array(q.length), b = K.b; for (let i = 0; i < q.length; i++) { const a = i % 3; P[i] = b[a] + (q[i] + 32768) / 65535 * (b[a + 3] - b[a]); } mk(n, P, b64(K.c)); }
+    await Promise.all(j.art.map((a, i) => new THREE.ImageLoader().loadAsync(a.i).then(im => { ART[ARTN + i] = im; }))); tick(); }));
   await Promise.all(jobs);
 }
 // a surface from Poly Haven's three pictures; rep is metres a tile covers

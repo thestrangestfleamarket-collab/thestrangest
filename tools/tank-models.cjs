@@ -43,9 +43,16 @@ const LIST = {
   tractor: ['src/v_tractor_bevadek', HF + '000-109/1b258bcc01bf4ed0935ef73e80442c30.glb', { size: 3.6, axis: 'z', tex: 512, plain: 1 }],
   truck: ['src/v_ural', HF + '000-143/f953c51a5dbc4a15949f4dcc0905c4e8.glb', { tex: 512, plain: 1 }],
   busstop: ['src/d_bus_vagab', HF + '000-111/ac13a4bade94409fa688f1c4185f126d.glb', { size: 2.7, axis: 'y', tex: 256, plain: 1 }],
+  crag: ['src/rk_valley_gray', HF + '000-126/e6b9729834dc4fdf99a8c932bc3c6a24.glb', { size: 7.7, axis: 'y', tris: 1500, tex: 1024, plain: 1 }],
+  deadtree: ['src/tree_old_evolved', HF + '000-120/3cb4d59eb4844dc4802480e9ee53785e.glb', { size: 9, axis: 'y', tris: 1000, tex: 512, plain: 1 }],
+  sandbags: ['src/sb_pile_finley', HF + '000-063/232b9407f5ad46f68764093f134591f4.glb', { size: 1.6, axis: 'x', tris: 900, tex: 512, plain: 1 }],
+  hedgehog: ['src/ob_hedgehog', HF + '000-096/0e09cbddad864003bc4f10c612bb7284.glb', { size: 1.5, axis: 'y', tris: 1500, tex: 256, plain: 1 }],
+  wreck: ['src/wr_cascavel', HF + '000-004/7ef593b344624e6388eaa44b5551fad7.glb', { size: 5.2, axis: 'z', tris: 8000, tex: 512, plain: 1 }],
+  grenade: ['src/gr_m67_vextin', HF + '000-121/05e2a29118c3408eaa574bcec6997aba.glb', { size: 0.09, axis: 'y', tex: 256, plain: 1 }],
   pipes: ['modular_industrial_pipes_01', '', { size: 0, tris: 3000, tex: 256 }], sconce: ['industrial_caged_sconce', '', { size: 0.22, axis: 'y', tris: 3000, tex: 256 }], ammobox: ['ammo_box', '', { size: 0, tex: 256 }],
   binos: ['binoculars', '', { size: 0.19, axis: 'x', tris: 4000, tex: 512 }],
-  rocks: ['rock_moss_set_01', '', { size: 0, tris: 2500, tex: 512 }],
+  pistol: ['service_pistol', '', { keep: '_a$', fwd: '+x', size: 0, tex: 512 }],
+  rocks: ['rock_moss_set_01', '', { size: 0, tris: 700, tex: 512 }],
 };
 const NM = '/node_modules/', PAGE = `<script type="importmap">{"imports":{"three":"${NM}three/build/three.module.js","three/addons/":"${NM}three/examples/jsm/"}}</script><script type="module">
 import * as THREE from 'three';import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';import {GLTFExporter} from 'three/addons/exporters/GLTFExporter.js';import {mergeGeometries,mergeVertices} from 'three/addons/utils/BufferGeometryUtils.js';import {MeshoptSimplifier as MS} from '${NM}meshoptimizer/meshopt_simplifier.js';
@@ -75,9 +82,9 @@ window.prep=async(url,o)=>{await MS.ready;const GL=new GLTFLoader();GL.register(
     M.makeTranslation(T.x,T.y,T.z).multiply(new THREE.Matrix4().makeRotationX(pitch)).multiply(new THREE.Matrix4().makeTranslation(-T.x,-T.y,-T.z));each(gun,g=>g.applyMatrix4(M));
     const s=3.55/(hb.max.x-hb.min.x),y0=union(hull).min.y;M.makeScale(s,s,s).multiply(new THREE.Matrix4().makeRotationY(Math.PI)).multiply(new THREE.Matrix4().makeTranslation(0,-y0,0));
     for(const ps of[hull,tur,gun])each(ps,g=>g.applyMatrix4(M));T.applyMatrix4(M);each(gun,g=>g.translate(-T.x,-T.y,-T.z));
-    const gN=node('gun',gun);gN.position.copy(T);const tN=node('turret',tur);tN.add(gN);out.add(node('hull',hull),tN);gb=union(gun);const ub=union(tur),hb2=union(hull);
-    Object.assign(info,{yaw,pitch,trunnion:T.toArray(),muzzle:[0,0,gb.min.z],turret:[ub.min.toArray(),ub.max.toArray()],hull:[hb2.min.toArray(),hb2.max.toArray()]});tris=[hull,tur,gun].flat().reduce((n,p)=>n+p.geo.index.count/3,0);
-  }else{const all=gather(root),b=union(all),sz=b.getSize(V(0,0,0)),ce=b.getCenter(V(0,0,0)),turn={'+x':Math.PI/2,'-x':-Math.PI/2,'+z':Math.PI,'-z':0}[o.fwd||'-z'];
+    if(o.tris)thin([hull,tur,gun].flat(),o.tris);const gN=node('gun',gun);gN.position.copy(T);const tN=node('turret',tur);tN.add(gN);out.add(node('hull',hull),tN);gb=union(gun);const ub=union(tur),hb2=union(hull);
+    Object.assign(info,{yaw,pitch,trunnion:T.toArray(),muzzle:[0,0,gb.min.z],turret:[ub.min.toArray(),ub.max.toArray()],hull:[hb2.min.toArray(),hb2.max.toArray()]});tris=o.tris?thin([hull,tur,gun].flat(),o.tris):[hull,tur,gun].flat().reduce((n,p)=>n+p.geo.index.count/3,0);
+  }else{const all=gather(root,o.keep?m=>{let p=m;while(p){if(new RegExp(o.keep).test(p.name))return true;p=p.parent;}return false;}:null),b=union(all),sz=b.getSize(V(0,0,0)),ce=b.getCenter(V(0,0,0)),turn={'+x':Math.PI/2,'-x':-Math.PI/2,'+z':Math.PI,'-z':0}[o.fwd||'-z'];
     const along=o.fwd&&o.fwd[1]==='x'?sz.x:o.axis==='x'?sz.x:o.axis==='y'?sz.y:sz.z,s=o.size?o.size/along:1;
     M.makeTranslation(0,-(o.sink||0),0).multiply(new THREE.Matrix4().makeScale(s,s,s)).multiply(new THREE.Matrix4().makeRotationY(turn)).multiply(new THREE.Matrix4().makeTranslation(-ce.x,-b.min.y,-ce.z));
     if(o.kind==='foe'){const isT=m=>{let p=m;while(p){if(o.turret.includes(p.name))return true;p=p.parent;}return false;},hull=gather(root,m=>!isT(m)),tur=gather(root,isT);for(const ps of[hull,tur])each(ps,g=>g.applyMatrix4(M));

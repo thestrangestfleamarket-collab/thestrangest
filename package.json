@@ -19,6 +19,7 @@
     "satellite.js": "^6.0.2",
     "three": "0.186.1",
     "three-mesh-bvh": "0.8.3",
+    "three147": "npm:three@0.147.0",
     "tweakpane": "4.0.5",
     "wrangler": "^4.42.0"
   },

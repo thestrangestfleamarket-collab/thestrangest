@@ -80,6 +80,13 @@ class Game {
     document.addEventListener('keyup', (e) => { this.keys[e.code] = false; });
   }
 
+  // a head-and-shoulders picture of an avatar for the briefing, drawn once
+  portrait(name) {
+    this.pics = this.pics || {}; if (this.pics[name] || !this.A.p[name]) return this.pics[name];
+    const r = this.renderer, rt = new THREE.WebGLRenderTarget(274, 232), sc = new THREE.Scene(), src = this.A.p[name], o = src.scene.clone(true), cam = new THREE.PerspectiveCamera(24, 274 / 232, 0.1, 10); o.scale.multiplyScalar(src.fit); sc.add(o, new THREE.HemisphereLight(0xffffff, 0x777777, 2.6)); const d = new THREE.DirectionalLight(0xffffff, 2); d.position.set(1, 2, 3); sc.add(d); sc.background = new THREE.Color(0xb9b3a0);
+    o.traverse((m) => { if (m.isSkinnedMesh) m.frustumCulled = false; }); cam.position.set(0.25, 1.6, 1.75); cam.lookAt(0, 1.52, 0); const xr = r.xr.enabled, tg = r.getRenderTarget(); r.xr.enabled = false; r.setRenderTarget(rt); r.render(sc, cam); const px = new Uint8Array(274 * 232 * 4); r.readRenderTargetPixels(rt, 0, 0, 274, 232, px); r.setRenderTarget(tg); r.xr.enabled = xr; rt.dispose();
+    const c = document.createElement('canvas'); c.width = 274; c.height = 232; const g = c.getContext('2d'), im = g.createImageData(274, 232); for (let y = 0; y < 232; y++) im.data.set(px.subarray((231 - y) * 274 * 4, (232 - y) * 274 * 4), y * 274 * 4); g.putImageData(im, 0, 0); return this.pics[name] = c;
+  }
   // ---------- the contract ----------
   eye() { return this.camera.getWorldPosition(new THREE.Vector3()); }
   later(s, fn) { this.timers.push({ t: s, fn, gen: this.gen }); }

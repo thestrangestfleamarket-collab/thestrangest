@@ -893,7 +893,7 @@ function updateVision(dt){
   const tgtE=state==='preview'||out||(P.sight&&!xrActive)?.4:lerp(.85,.6,P.hatch);
   expo=Math.exp(lerp(Math.log(expo),Math.log(tgtE),1-Math.exp(-dt/(P.sight&&!xrActive?.3:1.5))));
   renderer.toneMappingExposure=expo*(1+P.recoil*.25);
-  {const mu=monitorMat.uniforms;mu.gain.value=.5/expo;mu.thermal.value=P.thermal?1:0;mu.snow.value=P.dmg.sight>0?1:0;mu.time.value=time;}
+  {const mu=monitorMat.uniforms;mu.gain.value=1.15/expo;mu.thermal.value=P.thermal?1:0;mu.snow.value=P.dmg.sight>0?1:0;mu.time.value=time;}
   vign.visible=xrActive&&fx&&P.hurt>.01;vign.material.uniforms.amt.value=P.hurt*.8;
   const u=lens.uniforms;u.time.value=time;u.blur.value=fx?P.hurt*.7+P.shake*.12:0;u.ca.value=.004+(fx?P.hurt*.02+dmg*.005:0);u.desat.value=fx?dmg*.35+P.hurt*.3:0;u.vig.value=.28+(fx?P.hurt*.3:0);
   applyFade();

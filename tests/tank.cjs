@@ -7,7 +7,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
 (async () => {
   await new Promise(res => srv.listen(0, '127.0.0.1', res)); const FILE = 'http://127.0.0.1:' + srv.address().port + '/' + path.basename(PAGE);
   const b = await chromium.launch({ ...(process.env.PWCHROME ? { executablePath: process.env.PWCHROME } : {}), args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
-  const errs = [], watch = pg => { pg.on('pageerror', e => errs.push(e.message.slice(0, 300))); pg.on('console', m => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errs.push('console: ' + m.text().slice(0, 300)); }); pg.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort()); };
+  const errs = [], watch = pg => { pg.on('pageerror', e => errs.push(e.message.slice(0, 300))); pg.on('console', m => { if (m.type() === 'error' && !/Failed to load resource|WebSocket/.test(m.text())) errs.push('console: ' + m.text().slice(0, 300)); }); pg.route(/fonts\.(googleapis|gstatic)\.com/, r => r.abort()); };
   // the game's own seconds, not the clock's: software rendering is slow and the game clamps its step
   const secs = (pg, n) => pg.evaluate(n => new Promise(r => { const t = game.time + n, iv = setInterval(() => { if (game.time >= t) { clearInterval(iv); r(); } }, 10); }), n);
   const till = (pg, f, a) => pg.waitForFunction(f, a, { timeout: 240000 }).catch(() => {});

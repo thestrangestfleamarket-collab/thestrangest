@@ -1,5 +1,5 @@
 // EYES DOWN's visitors: black wet slime that takes whatever shape the place it waits in needs, with pale eyes; they move only when you are not looking, they test you, and if you meet their eyes they hunt
-import { THREE, LOW, scene, renderer, camera, P, clamp, lerp, rnd, pick, clear, CLOCK } from './core.js';
+import { THREE, RAPIER, LOW, scene, renderer, camera, P, G, grp, clamp, lerp, rnd, pick, clear, CLOCK } from './core.js';
 import { MarchingCubes } from 'three/addons/objects/MarchingCubes.js';
 import { ROOM, H } from './room.js';
 
@@ -38,12 +38,12 @@ function eyeTex(slot) { const c = document.createElement('canvas'); c.width = 25
   const ir = g.createRadialGradient(64, 64, 2, 64, 64, 20); ir.addColorStop(0, '#3a3a20'); ir.addColorStop(.6, '#6f7346'); ir.addColorStop(1, '#2a2416'); g.fillStyle = ir; g.beginPath(); g.ellipse(64, 64, 11, 20, 0, 0, 7); g.fill();
   g.fillStyle = '#020101'; g.beginPath(); slot ? g.ellipse(64, 64, 2.2, 13, 0, 0, 7) : g.ellipse(64, 64, 5, 9, 0, 0, 7); g.fill();
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; }
-const EYE_M = [false, true].map(sl => { const t = eyeTex(sl); return new THREE.MeshPhysicalMaterial({ map: t, roughness: .12, clearcoat: 1, clearcoatRoughness: .02, emissive: 0xffffff, emissiveMap: t, emissiveIntensity: .07 }); });
+const EYE_M = [false, true].map(sl => { const t = eyeTex(sl); return new THREE.MeshPhysicalMaterial({ map: t, roughness: .12, clearcoat: 1, clearcoatRoughness: .02, emissive: 0xffffff, emissiveMap: t, emissiveIntensity: .16 }); });
 const EYE_G = new THREE.SphereGeometry(1, 20, 14);
 const LID_G = new THREE.TorusGeometry(1, .38, 8, 18);
 const KINDS = ['tall', 'thin', 'wide', 'many', 'small', 'tall'];
 // the box each shape is drawn in: half its size and the height of its middle
-const FIT = { stand: [1.18, 1.13], sit: [.72, .64], crouch: [.5, .45], hang: [.72, H - .66], cling: [.75, .88], under: [.55, .2], ceiling: [.8, H - .3], face: [.42, -.12] };
+const FIT = { crawl: [.85, .42], ceilcrawl: [.85, H - .42], stand: [1.18, 1.13], sit: [.72, .64], crouch: [.5, .45], hang: [.72, H - .66], cling: [.75, .88], under: [.55, .2], ceiling: [.8, H - .3], face: [.42, -.12] };
 
 /* a body: balls of slime placed by pose, merged into one surface by marching cubes */
 function make(id, kind) {
@@ -87,6 +87,14 @@ function shape(C, t) {
     case 'ceiling': {   // flat on the ceiling like a stain with limbs
       for (let i = 0; i < 5; i++) add(Math.cos(i * 1.3) * .25, H - .1, Math.sin(i * 1.3) * .25, .15); const hd = [0, H - .3 + br, .15]; add(hd[0], hd[1], hd[2], .11); head.push(hd);
       for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2; chain([Math.cos(a) * .2, H - .08, Math.sin(a) * .2], [Math.cos(a) * .7, H - .05, Math.sin(a) * .7], 5, .045, .03); } break; }
+    case 'crawl': case 'ceilcrawl': {   // on all fours, long arms reaching ahead, head low and turned up at you; upside down along the ceiling for some
+      const g = C.gait || 0, up = C.pose === 'ceilcrawl', Y = y => up ? H - y : y, P = (x, y, z, r) => add(x, Y(y), z, r), ch = (a, b, n, r0, r1) => chain([a[0], Y(a[1]), a[2]], [b[0], Y(b[1]), b[2]], n, r0, r1);
+      ch([0, .3, -.45], [0, .4, .2], 6, .13 + br, .12); P(0, .32, -.5, .14);
+      const hd = [Math.sin(t * .5) * .03 + tw, .5, .42]; ch([0, .4, .2], hd, 3, .07, .06); P(hd[0], hd[1], hd[2], .1); head.push([hd[0], Y(hd[1]), hd[2]]);
+      for (const sd of [-1, 1]) { const ph = g + (sd > 0 ? Math.PI : 0), fw = Math.sin(ph) * .2, lift = Math.max(0, Math.cos(ph)) * .08, bk = Math.sin(ph + Math.PI) * .18, liftB = Math.max(0, Math.cos(ph + Math.PI)) * .07;
+        const sh0 = [sd * .17, .42, .15], el = [sd * .42, .42 + lift, .3 + fw * .5], hand = [sd * .36, .03 + lift, .62 + fw]; ch(sh0, el, 4, .055, .045); ch(el, hand, 5, .045, .03);
+        const hp = [sd * .13, .32, -.42], kn = [sd * .38, .36 + liftB, -.5 + bk * .5], ft = [sd * .3, .03 + liftB, -.8 + bk]; ch(hp, kn, 4, .06, .05); ch(kn, ft, 5, .05, .035); }
+      break; }
     case 'face': {   // close: just its head and shoulders in front of yours
       add(0, -.35, -.1, .2); add(0, -.15, -.05, .12); const hd = [tw, 0, 0]; add(hd[0], hd[1], hd[2], .12); head.push(hd); break; }
   }
@@ -118,11 +126,11 @@ function setSpot(C, id) {
   if (S.pose === 'stand' || S.pose === 'sit') puddle(C.pos.x, floorAt(C.pos.x, C.pos.z) + .002, C.pos.z, rnd(.18, .32));
   return true;
 }
-function away(C) { C.state = 'away'; C.spot = null; C.root.visible = false; C.test = null; C.approach = null; }
+function away(C) { C.creepIn = undefined; C.state = 'away'; C.spot = null; C.root.visible = false; C.test = null; C.approach = null; }
 
 // redraw the surface; far or unseen ones less often
 function render(C, dt, force) {
-  C.t += dt; const fast = C.vis > 0 || C.state === 'hunt' || C.test === 'approach'; C.upd -= dt; if (!force && C.upd > 0) return; C.upd = fast ? 1 / 30 : 1 / 6;
+  C.t += dt; const fast = C.vis > 0 || C.state === 'hunt' || C.test === 'approach' || C.state === 'creep'; C.upd -= dt; if (!force && C.upd > 0) return; C.upd = fast ? 1 / 30 : 1 / 6;
   const { B, head } = shape(C, C.t), mc = C.mc, F = FIT[C.pose] || FIT.stand, S = F[0] * (C.kind === 'small' && C.pose === 'stand' ? .8 : 1), cy = F[1];
   mc.scale.setScalar(S); mc.position.set(0, cy, 0); mc.reset();
   const sh = mc.material.userData.sh; if (sh) sh.uniforms.zT.value = C.t;
@@ -149,10 +157,11 @@ function update(dt, me) {
   camera.getWorldPosition(head); camera.getWorldDirection(gaze); const eyesShut = me.eyesShut, cone = THEM.contactCone * (renderer.xr.isPresenting ? 1.35 : 1);
   for (const C of THEM.list) {
     if (C.state === 'away') { C.vis = 0; C.contact = Math.max(0, C.contact - dt * 3); continue; }
+    if (C.state === 'creep') creepStep(C, dt, me);
     render(C, dt);
     // eyes follow your head
     for (const e of C.eyes) { e.getWorldPosition(_a); _c.copy(head); e.parent.worldToLocal(_c); e.lookAt(_c); const W = e.userData; W.wide = lerp(W.wide, C.noticed || C.state === 'hunt' ? 1.35 : 1, dt * 8); W.w.scale.setScalar(W.r * W.wide); W.lid.scale.setScalar(W.r * (1.05 + (W.wide - 1) * .2)); }
-    eyesWorld(C, EW); C.root.getWorldPosition(_b); _b.y += C.pose === 'hang' ? 1.7 : C.pose === 'ceiling' ? H - .2 : C.pose === 'under' ? .15 : C.pose === 'face' ? 0 : 1.1;
+    eyesWorld(C, EW); C.root.getWorldPosition(_b); _b.y += C.pose === 'crawl' ? .4 : C.pose === 'ceilcrawl' ? H - .4 : C.pose === 'hang' ? 1.7 : C.pose === 'ceiling' ? H - .2 : C.pose === 'under' ? .15 : C.pose === 'face' ? 0 : 1.1;
     const was = C.vis; C.vis = eyesShut ? 0 : (inView(_b) || EW.some(p => inView(p))) ? 1 : 0;
     if (C.vis && !was) { C.seenT = CLOCK.t; C.glances++; THEM.onEvent && THEM.onEvent('seen', C); }
     if (C.vis) C.lastSeen = CLOCK.t;
@@ -183,7 +192,45 @@ function update(dt, me) {
   const D = THEM.drips; D.d.forEach((d, i) => { if (!d.live) return; d.v += 9.8 * dt; d.p.y -= d.v * dt; const fy = floorAt(d.p.x, d.p.z); if (d.p.y < fy) { d.live = false; puddle(d.p.x, fy + .002, d.p.z, rnd(.015, .04)); THEM.onEvent && THEM.onEvent('drip', d.p); d.p.y = -9; } D.I.setMatrixAt(i, _m.makeTranslation(d.p.x, d.p.y, d.p.z)); }); D.I.instanceMatrix.needsUpdate = true;
   const PU = THEM.pud; PU.list.forEach((p, i) => { if (!p) return; p.t += dt; const s = p.r * Math.min(1, p.t * 6) * (p.t > 90 ? Math.max(0, 1 - (p.t - 90) / 30) : 1); PU.I.setMatrixAt(i, _m.makeScale(s, 1, s).setPosition(p.x, p.y, p.z)); }); PU.I.instanceMatrix.needsUpdate = true;
 }
+/* creeping: while you are not looking it crawls toward you, round the furniture, on the floor or along the ceiling; the moment any of it is in your sight it stops dead, mid-stride */
+const NAV = { x0: 0, z0: 0, s: .2, nx: 35, nz: 25, floor: null, ceil: null };
+function navBuild() {
+  const probe = (x, y, z, r) => !!P.world.intersectionWithShape({ x, y, z }, { x: 0, y: 0, z: 0, w: 1 }, new RAPIER.Ball(r), undefined, grp(G.MON, G.SOLID));
+  NAV.floor = new Uint8Array(NAV.nx * NAV.nz); NAV.ceil = new Uint8Array(NAV.nx * NAV.nz);
+  for (let i = 0; i < NAV.nx; i++) for (let k = 0; k < NAV.nz; k++) { const x = NAV.x0 + (i + .5) * NAV.s, z = NAV.z0 + (k + .5) * NAV.s;
+    NAV.floor[i + k * NAV.nx] = !probe(x, .32, z, .17) && !probe(x, .12, z, .1) ? 1 : 0; NAV.ceil[i + k * NAV.nx] = !probe(x, H - .2, z, .17) ? 1 : 0; }
+}
+const cell = (x, z) => [clamp(Math.floor((x - NAV.x0) / NAV.s), 0, NAV.nx - 1), clamp(Math.floor((z - NAV.z0) / NAV.s), 0, NAV.nz - 1)];
+// the way through free cells from a to b (breadth first; the flat is small), as points
+function navPath(grid, a, b) {
+  const [ai, ak] = cell(a.x, a.z), [bi, bk] = cell(b.x, b.z), n = NAV.nx * NAV.nz, prev = new Int32Array(n).fill(-1), start = ai + ak * NAV.nx; let goal = bi + bk * NAV.nx;
+  const q = [start]; prev[start] = start; let best = start, bd = 1e9;
+  for (let h = 0; h < q.length; h++) { const c = q[h], ci = c % NAV.nx, ck = (c / NAV.nx) | 0, d = Math.hypot(ci - bi, ck - bk); if (d < bd) { bd = d; best = c; } if (c === goal) break;
+    for (const [di, dk] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, 1], [1, -1], [-1, -1]]) { const ni = ci + di, nk = ck + dk; if (ni < 0 || nk < 0 || ni >= NAV.nx || nk >= NAV.nz) continue; const j = ni + nk * NAV.nx; if (prev[j] >= 0 || !grid[j]) continue; if (di && dk && (!grid[ci + nk * NAV.nx] || !grid[ni + ck * NAV.nx])) continue; prev[j] = c; q.push(j); } }
+  const out = []; for (let c = prev[goal] >= 0 ? goal : best; c !== start; c = prev[c]) out.unshift(V(NAV.x0 + (c % NAV.nx + .5) * NAV.s, 0, NAV.z0 + (((c / NAV.nx) | 0) + .5) * NAV.s)); return out;
+}
+// begin a creep: from where it waits, or in from under the front door, the vent or the bathroom
+function creep(C, ceilingOK = true) {
+  const up = ceilingOK && (C.kind === 'thin' || C.kind === 'many') && Math.random() < .6;
+  if (C.state === 'away') { const e = pick([[.75, 4.85], [3.75, 1.3], [5.6, 4.6], [.4, .9]]); C.pos.set(e[0], 0, e[1]); }
+  C.pos.y = 0; C.spot = null; C.state = 'creep'; C.pose = up ? 'ceilcrawl' : 'crawl'; C.root.visible = true; C.path = []; C.repath = 0; C.gait = C.gait || 0; C.creepT = 0; C.close = 0; C.touched = false; C.upd = 0; C.vis = 0;
+}
+function creepStep(C, dt, me) {
+  C.creepT += dt; C.repath -= dt; const grid = C.pose === 'ceilcrawl' ? NAV.ceil : NAV.floor;
+  // where it wants to be: a metre behind you, or at your side
+  _a.copy(gaze).setY(0).normalize(); const want = _c.set(me.pos.x - _a.x * .95, 0, me.pos.z - _a.z * .95);
+  if (C.repath < 0) { C.repath = .5; C.path = navPath(grid, C.pos, want); }
+  if (C.vis) { C.moving = false; return; }
+  const nxt = C.path[0], d0 = Math.hypot(me.pos.x - C.pos.x, me.pos.z - C.pos.z);
+  if (!nxt || d0 < .85) { C.moving = false; C.yaw = Math.atan2(me.pos.x - C.pos.x, me.pos.z - C.pos.z); if (d0 < 1.1) { C.close = (C.close || 0) + dt; if (C.close > 4 && !C.touched) { C.touched = true; THEM.onEvent && THEM.onEvent('touch', C); } } return; }
+  _b.subVectors(nxt, C.pos).setY(0); const d = _b.length(); if (d < .06) { C.path.shift(); return; }
+  const sp = (C.pose === 'ceilcrawl' ? 1.25 : 1.5) * (1 + (C.sus || 0) * .5), st = Math.min(d, sp * dt); C.pos.addScaledVector(_b.normalize(), st); C.gait = (C.gait || 0) + st * 5.5; C.moving = true;
+  let dy = Math.atan2(_b.x, _b.z) - C.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); C.yaw += clamp(dy, -dt * 6, dt * 6);
+  C.root.position.copy(C.pos); C.root.rotation.y = C.yaw;
+  C.scrape = (C.scrape || 0) - dt; if (C.scrape < 0) { C.scrape = rnd(.5, 1.1); THEM.onEvent && THEM.onEvent('scrape', C); }
+}
+
 // the face test: it comes to stand in front of yours
 function approach(C, len = 7) { C.test = 'approach'; C.approach = { t: 0, len }; C.pose = 'face'; C.root.visible = true; C.state = 'test'; C.flinchT = CLOCK.t; C.upd = 0; }
 
-export { THEM, KINDS, build, update, setSpot, away, render, approach, inView, head, gaze };
+export { THEM, KINDS, NAV, build, update, setSpot, away, render, approach, inView, head, gaze, creep, navBuild, navPath };

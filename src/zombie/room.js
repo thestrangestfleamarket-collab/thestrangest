@@ -95,7 +95,7 @@ function kitchen(M) {
   // upper cupboards and the light under them
   stat(.75, 1.5, 0, 2.4, 2.25, .34, cab, { ghost: true }); for (let x = .78; x < 2.4; x += .55) box(.5, .7, .012, M.door, x + .25, 1.875, .347);
   const ul = new THREE.Mesh(new THREE.BoxGeometry(1.4, .02, .04), plain(0xfff0d8, .5, { emissive: 0xffe2b0, ei: 1.2 })); ul.position.set(1.55, 1.49, .25); scene.add(ul); ROOM.lights.under = { m: ul.material, base: 2 };
-  const under = new THREE.PointLight(0xffd9a8, 2.4, 2.6, 2); under.position.set(1.55, 1.4, .35); scene.add(under); ROOM.lights.under.L = under; ROOM.lights.under.I = 2.4;
+  const under = new THREE.PointLight(0xffd9a8, 1.1, 2.2, 2); under.position.set(1.55, 1.4, .35); scene.add(under); ROOM.lights.under.L = under; ROOM.lights.under.I = 1.1;
   // the microwave, kettle, a radio
   const mw = model('vintage_microwave', { h: .3 }); place(mw, .3, .9, 1.25, Math.PI / 2); block(.4, .3, .6, .3, 1.05, 1.25);
   place(model('boombox', { h: .26 }), .25, .9, 1.85, Math.PI / 2); const led = box(.012, .012, .006, plain(0x330000, .5, { emissive: 0xff2200, ei: 0 }), .4, 1.0, 1.85, scene, false); ROOM.radio = { on: false, led: led.material, pos: V(.3, 1.05, 1.85) };
@@ -164,11 +164,11 @@ function living(M) {
   radiator(M, 2.85, 4.35);
   // the light in the middle of the ceiling: a glass globe on a stem
   const lamp = model('modern_ceiling_lamp_01', { h: .5 }); place(lamp, 3.3, H - .5, 2.4); lamp.traverse(o => { if (o.isMesh) o.castShadow = false; });
-  const glow = new THREE.Mesh(new THREE.SphereGeometry(.13, 20, 14), plain(0xfff1d8, .5, { emissive: 0xffd9a0, ei: 1.6 })); glow.position.set(3.3, H - .43, 2.4); glow.scale.setScalar(.75); glow.castShadow = false; scene.add(glow);
-  const main = new THREE.SpotLight(0xffc98f, 110, 0, 1.4, .85, 2); main.position.set(3.3, H - .5, 2.4); main.target.position.set(3.3, 0, 2.4); scene.add(main, main.target);
+  const glow = new THREE.Mesh(new THREE.SphereGeometry(.13, 20, 14), plain(0xfff1d8, .5, { emissive: 0xffd9a0, ei: .9 })); glow.position.set(3.3, H - .43, 2.4); glow.scale.setScalar(.75); glow.castShadow = false; scene.add(glow);
+  const main = new THREE.SpotLight(0xffb873, 70, 0, 1.1, 1, 2); main.position.set(3.3, H - .5, 2.4); main.target.position.set(3.3, 0, 2.4); scene.add(main, main.target);
   main.castShadow = true; main.shadow.mapSize.set(LOW ? 1024 : 2048, LOW ? 1024 : 2048); main.shadow.bias = -.0003; main.shadow.normalBias = .025; main.shadow.camera.near = .2; main.shadow.camera.far = 9; main.shadow.radius = 3;
-  const fill = new THREE.PointLight(0xffc98f, 12, 9, 2); fill.position.set(3.3, H - .25, 2.4); scene.add(fill);
-  ROOM.lights.main = { L: main, I: 110, fill, fI: 12, glow: glow.material, on: true };
+  const fill = new THREE.PointLight(0xffb873, 2.2, 6, 2); fill.position.set(3.3, H - .25, 2.4); scene.add(fill);
+  ROOM.lights.main = { L: main, I: 70, fill, fI: 2.2, glow: glow.material, on: true };
 }
 function pillow(M) { const g = new THREE.SphereGeometry(.22, 20, 12); g.scale(1, .32, 1); const p = g.attributes.position; for (let i = 0; i < p.count; i++) { const x = p.getX(i), z = p.getZ(i); p.setY(i, p.getY(i) * (1 - Math.pow(Math.max(Math.abs(x), Math.abs(z)) / .22, 4) * .6)); } g.computeVertexNormals();
   const m = new THREE.Mesh(g, M.pillow); m.castShadow = m.receiveShadow = true; return m; }
@@ -185,7 +185,7 @@ function bedroom(M) {
   ROOM.alarm = dyn(model('alarm_clock_01', { h: .14 }), [sBox(.1, .14, .1, 0, .07, 0)], { x: 5.5, y: .62, z: .32, mass: .5, kind: 'metal', ry: .3 });
   const dl = model('desk_lamp_arm_01', { h: .48 }); place(dl, 5.75, .6, .22, -.4);
   const bl2 = new THREE.SpotLight(0xffc27a, 0, 5, 1.1, .8, 2); bl2.position.set(5.66, 1.02, .38); bl2.target.position.set(5.9, 0, 1.2); scene.add(bl2, bl2.target); bl2.castShadow = !LOW; bl2.shadow.mapSize.set(512, 512); bl2.shadow.bias = -.0005; bl2.shadow.normalBias = .03;
-  ROOM.lights.bed = { L: bl2, I: 25, on: false };
+  ROOM.lights.bed = { L: bl2, I: 10, on: false };
   use('lamp', 'the bedside lamp', V(5.7, .9, .3), 1.1, () => { ROOM.lights.bed.on = !ROOM.lights.bed.on; ROOM.sfx && ROOM.sfx('click', V(5.7, .9, .3)); return 'lamp'; });
 }
 
@@ -196,7 +196,7 @@ function bathroom(M) {
   ROOM.seats.basin = { pos: V(5.75, 0, 3.85), yaw: 0 };
   const mir = model('ornate_mirror_01', { h: .8 }); place(mir, 5.75, 1.12, 3.06);
   const fl = new THREE.Mesh(new THREE.BoxGeometry(.6, .04, .05), plain(0xf0f8ff, .4, { emissive: 0xe8f6ff, ei: 1.2 })); fl.position.set(5.75, 1.98, 3.1); scene.add(fl);
-  const bl = new THREE.PointLight(0xe6f2ff, 3.5, 3.6, 2); bl.position.set(5.75, 1.9, 3.3); scene.add(bl); ROOM.lights.bath = { L: bl, I: 3.5, m: fl.material, on: true, flick: 0 };
+  const bl = new THREE.PointLight(0xd6f0e6, 1.6, 3.2, 2); bl.position.set(5.75, 1.9, 3.3); scene.add(bl); ROOM.lights.bath = { L: bl, I: 1.6, m: fl.material, on: true, flick: 0 };
   // the reflection: a second picture of the room from behind the glass, only while you are in here
   const rf = new Reflector(new THREE.PlaneGeometry(.42, .62), { textureWidth: LOW ? 256 : 512, textureHeight: LOW ? 384 : 768, color: 0x8a8f8f, clipBias: .003 }); rf.position.set(5.75, 1.52, 3.082); scene.add(rf); ROOM.mirror = { rf, plane: new THREE.Plane(new THREE.Vector3(0, 0, 1), -3.082), w: .42, h: .62, c: V(5.75, 1.52, 3.082) };
   use('basin', 'the basin', V(5.75, .95, 3.4), 1.2, () => 'basin');
@@ -260,18 +260,18 @@ function spots() {
 
 // the window's light: neon from across the avenue through the glass, cold sky glow, and lightning
 function outsideLight() {
-  const pink = new THREE.SpotLight(0xff3f8a, 1300, 0, .13, .6, 2); pink.position.set(-10, 6, -38); pink.target.position.set(4.4, .9, 4.6); scene.add(pink, pink.target);
+  const pink = new THREE.SpotLight(0xff3f8a, 700, 0, .13, .6, 2); pink.position.set(-10, 6, -38); pink.target.position.set(4.4, .9, 4.6); scene.add(pink, pink.target);
   pink.castShadow = true; pink.shadow.mapSize.set(LOW ? 512 : 1024, LOW ? 512 : 1024); pink.shadow.bias = -.0002; pink.shadow.normalBias = .02; pink.shadow.camera.near = 32; pink.shadow.camera.far = 48;
   const cyan = new THREE.SpotLight(0x4fd8ff, 700, 0, .07, .7, 2); cyan.position.set(-10, 6, -38); cyan.target.position.set(5.9, .5, 1.6); cyan.castShadow = true; cyan.shadow.mapSize.set(512, 512); cyan.shadow.camera.near = 32; cyan.shadow.camera.far = 48; cyan.shadow.normalBias = .02; scene.add(cyan, cyan.target);
-  const hemi = new THREE.HemisphereLight(0x5a5068, 0x1c1410, .55); scene.add(hemi);
+  const hemi = new THREE.HemisphereLight(0x3a4458, 0x100c0a, .22); scene.add(hemi);
   const flash = new THREE.DirectionalLight(0xc8d4ff, 0); flash.position.set(-1, 3, -8); flash.target.position.set(3.5, 0, 2.5); scene.add(flash, flash.target);
-  ROOM.lights.out = { pink, cyan, hemi, flash, pI: 1300, cI: 700 };
+  ROOM.lights.out = { pink, cyan, hemi, flash, pI: 700, cI: 350 };
 }
 
 function build() {
   const M = {
     parq: mat('herringbone_parquet', { tile: 1.6, rough: .9, env: .5 }), ktile: mat('interior_tiles', { tile: 1.2, rough: .7, env: .6 }), btile: mat('interior_tiles', { tile: .9, rough: .6, color: 0xd8e2e0 }),
-    wall: mat('plastered_wall_04', { tile: 2.5, color: 0xd8ccb2, ns: .5 }), ceil: mat('painted_plaster_wall', { tile: 2.5, color: 0xcfc6b5, ns: .4 }), panel: mat('dark_paneled_wood', { tile: 2.4, rough: .8, color: 0xc49a72 }),
+    wall: mat('plastered_wall_04', { tile: 2.5, color: 0x9a907c, ns: .5 }), ceil: mat('painted_plaster_wall', { tile: 2.5, color: 0x8a8274, ns: .4 }), panel: mat('dark_paneled_wood', { tile: 2.4, rough: .8, color: 0xc49a72 }),
     trim: plain(0x3a2a1c, .6), wtile: mat('long_white_tiles', { tile: 1.2, rough: .4, env: .8 }), cab: mat('dark_paneled_wood', { tile: 1.6, color: 0x9c7a58 }), door: plain(0x5a4030, .6),
     sill: plain(0xe2dccd, .5), frame: mat('rusty_painted_metal', { tile: 1, color: 0x6f6a5c, rough: .7 }), radiator: mat('rusty_painted_metal', { tile: .6, color: 0xd6cdb4, rough: .6 }),
     rug: mat('poly_wool_herringbone', { tile: .8, color: 0x8a3a2a }), pillow: mat('fabric_pattern_05', { tile: .5 }), blanket: mat('fabric_pattern_05', { tile: .8 }), mattress: plain(0xe7e1d4, .9),
@@ -308,15 +308,15 @@ function update(dt, t) {
   const BD = ROOM.bathDoor, want = BD.shut ? 0 : -1.45; BD.a = lerp(BD.hinge.rotation.y, want, 1 - Math.exp(-dt * 7)); BD.hinge.rotation.y = BD.a; BD.col.setCollisionGroups(grp(G.SOLID, BD.shut && Math.abs(BD.a) < .2 ? G.PLAYER | G.HAND : 0));
   const C = ROOM.closet; if (C.want !== undefined) { C.a = lerp(C.a, C.want, 1 - Math.exp(-dt * 6)); C.hinge.rotation.y = C.a; }
   const L = ROOM.lights, pw = ROOM.power, k = CITY.signs ? CITY.signs[0].k : 1;
-  const m = L.main, on = m.on && pw; m.k = lerp(m.k ?? 1, on ? 1 - (m.dip || 0) : 0, 1 - Math.exp(-dt * 25)); m.L.intensity = m.I * m.k; m.fill.intensity = m.fI * m.k; m.glow.emissiveIntensity = 1.6 * m.k; m.L.visible = m.fill.visible = m.k > .01;
+  const m = L.main, on = m.on && pw; m.k = lerp(m.k ?? 1, on ? 1 - (m.dip || 0) : 0, 1 - Math.exp(-dt * 25)); m.L.intensity = m.I * m.k; m.fill.intensity = m.fI * m.k; m.glow.emissiveIntensity = .9 * m.k; m.L.visible = m.fill.visible = m.k > .01;
   L.under.L.intensity = L.under.I * (pw ? m.k * .5 + .5 : 0) * (m.on ? 1 : .0); L.under.m.emissiveIntensity = pw && m.on ? 1.2 : 0;
   L.bed.L.intensity = L.bed.on && pw ? L.bed.I : 0;
   const B = L.bath; B.flick -= dt; if (B.flick < 0) B.flick = Math.random() < .08 ? rnd(.03, .2) : rnd(1, 6); const bo = B.on && pw && !(B.flick < .2 && Math.random() < .5); B.L.intensity = bo ? B.I : 0; B.m.emissiveIntensity = bo ? 1.2 : .05;
   L.fridge.L.intensity = pw && F.a < -.2 ? L.fridge.I : 0;
-  const O = L.out; O.pink.intensity = O.pI * k; O.cyan.intensity = O.cI * (CITY.signs ? CITY.signs[1].k : 1); O.flash.intensity = CITY.flash * 2.4; O.hemi.intensity = .55 + CITY.flash * .6;
+  const O = L.out; O.pink.intensity = O.pI * k; O.cyan.intensity = O.cI * (CITY.signs ? CITY.signs[1].k : 1); O.flash.intensity = CITY.flash * 2.4; O.hemi.intensity = .22 + CITY.flash * .8;
   ROOM.radio.led.emissiveIntensity = ROOM.radio.on && pw ? 2 : 0; if (ROOM.blender.on && pw) { ROOM.blender.blade.rotation.y += dt * 60; ROOM.blender.g.position.x = 2.28 + Math.sin(t * 90) * .0015; }
   ROOM.tap.stream.visible = ROOM.tap.on; ROOM.coil.emissiveIntensity = lerp(ROOM.coil.emissiveIntensity, ROOM.stove.on && pw ? 2.5 : 0, dt * .6);
-  drawTV(dt); const T = ROOM.tv; L.tv.L.intensity = T.on && pw ? 7 * T.k : 0; L.tv.L.color.setHSL(.6, .4, .7 + T.k * .1);
+  drawTV(dt); const T = ROOM.tv; L.tv.L.intensity = T.on && pw ? 5 * T.k : 0; L.tv.L.color.setHSL(.6, .4, .7 + T.k * .1);
   // the curtain stirs; the mirror draws only when you are near it
   const cp = ROOM.curtain.geometry.attributes.position, base = ROOM.curtainBase; for (let i = 0; i < cp.count; i++) { const x = base[i * 3], y = base[i * 3 + 1]; cp.setZ(i, Math.sin(x * 26) * .035 + Math.sin(t * .8 + x * 3) * .01 * (1 - (y + .875) / 1.75) + (ROOM.curtainPush || 0) * Math.exp(-Math.pow((x - (ROOM.curtainAt || 0)) * 4, 2)) * (1 - (y + .875) / 1.75)); } cp.needsUpdate = true; ROOM.curtain.geometry.computeVertexNormals();
   camera.getWorldPosition(_v); ROOM.mirror.rf.visible = _v.x > 4.9 && _v.z > 2.9;

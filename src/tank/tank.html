@@ -54,9 +54,8 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
 #scope .h1{width:16vmin;height:2px;margin:-1px 0 0 -19vmin}
 #scope .h2{width:16vmin;height:2px;margin:-1px 0 0 3vmin}
 #scope .v1{width:2px;height:16vmin;margin:-19vmin 0 0 -1px}
-#scope .v2{width:2px;height:30vmin;margin:1vmin 0 0 -1px;opacity:.5}
-#scope .t{height:2px;width:5vmin;margin-left:-2.5vmin}
-#scope b{position:absolute;left:calc(50% + 3.4vmin);font:600 12px var(--mono);color:rgba(10,10,8,.9);transform:translateY(-50%)}
+#scope .v2{width:2px;height:16vmin;margin:3vmin 0 0 -1px}
+#fcs{position:absolute;left:50%;bottom:calc(50% - 38vmin);transform:translateX(-50%);font:600 14px var(--mono);color:#7dff9c;white-space:pre;text-shadow:0 0 4px #000}
 #dot{position:fixed;left:50%;top:50%;width:4px;height:4px;margin:-2px;border-radius:50%;background:rgba(236,232,220,.7);z-index:3;pointer-events:none}
 #gunmark{position:fixed;width:22px;height:22px;margin:-11px;border:2px solid var(--brass);border-radius:50%;z-index:3;pointer-events:none;box-sizing:border-box}
 #stat{position:fixed;left:max(12px,env(safe-area-inset-left,0px));top:calc(56px + env(safe-area-inset-top,0px));z-index:4;pointer-events:none}
@@ -80,9 +79,7 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
 <div id="loading">Rolling out…</div>
 <div id="scope" hidden>
   <i class="h1"></i><i class="h2"></i><i class="v1"></i><i class="v2"></i>
-  <i class="t" style="margin-top:calc(3.08vh - 1px)"></i><b style="top:calc(50% + 3.08vh)">2</b>
-  <i class="t" style="margin-top:calc(6.16vh - 1px)"></i><b style="top:calc(50% + 6.16vh)">4</b>
-  <i class="t" style="margin-top:calc(9.24vh - 1px)"></i><b style="top:calc(50% + 9.24vh)">6</b>
+  <span id="fcs"></span>
 </div>
 <div id="dot" hidden></div>
 <div id="gunmark" hidden></div>
@@ -105,7 +102,7 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
   <div class="card">
     <p class="eyebrow">One tank · four waves · late light</p>
     <h1>Hull<br><span>Down</span></h1>
-    <p class="lede">You are alone in the turret. Enemy armour is coming over the far ridges. Drive up behind a crest until only your turret shows, lay the gun through the sight, and fire first. Shells drop with range: aim high on the far ones.</p>
+    <p class="lede">You are alone in the turret. Enemy armour is coming over the far ridges. Drive up behind a crest until only your turret shows, lase the range, lay the gun through the sight, and fire first. Two more tanks of your platoon hold the line with you.</p>
     <div class="actions">
       <button id="vrBtn" class="primary" disabled>Checking for VR…</button>
       <button id="flatBtn">Play in browser</button>
@@ -117,8 +114,8 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
     <details>
       <summary>Controls</summary>
       <dl class="controls">
-        <dt>VR</dt><dd>Sit down. Left stick drives. Right stick turns the turret and raises the gun. Either trigger fires. A or X opens the hatch and lifts you out. Press a stick in to re-centre your seat. The screen in front of you is the gunsight.</dd>
-        <dt>Desktop</dt><dd>Click to take the mouse: it lays the gun. W A S D drive. Left click or Space fires. Right click or F is the gunsight. H is the hatch.</dd>
+        <dt>VR</dt><dd>Sit down. Left stick drives, right stick lays the gun. Right hand: trigger fires, grip lases the range, A is the hatch, B zooms the sight, stick click re-centres your seat. Left hand: trigger lases, grip fires smoke, X changes the round, Y is the thermal sight, stick click is the extinguisher.</dd>
+        <dt>Desktop</dt><dd>Click to take the mouse: it lays the gun. W A S D drive. Left click or Space fires. Right click or F is the gunsight, Z its zoom, T thermal. R lases the range. 1 and 2 pick SABOT or HEAT. G fires smoke. X is the extinguisher. H is the hatch.</dd>
         <dt>Phone</dt><dd>Drag to lay the gun. Arrow pad drives. Fire, Sight and Hatch are on the right.</dd>
       </dl>
     </details>

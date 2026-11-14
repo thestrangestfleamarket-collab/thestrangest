@@ -1,4 +1,4 @@
-// THE ALLEY'S THING THINKS (src/hide/): the page sends only what the thing's own senses gave it (noises, glimpses, breath in its light, wet prints, things out of place); Claude decides where it looks next. It is never told where the player is.
+// DEAD END'S THING THINKS (src/hide/): the page sends only what the thing's own senses gave it (noises, glimpses, breath in its light, wet prints, things out of place); Claude decides where it looks next. It is never told where the player is.
 import Anthropic from "@anthropic-ai/sdk";
 import { SPOTS, KINDS } from "../src/hide/spots.js";
 
@@ -7,18 +7,18 @@ const clip = (s, n) => String(s ?? "").replace(/[\u0000-\u001f\u007f]/g, " ").re
 const num = (v, lo, hi, d = lo) => Number.isFinite(+v) ? Math.min(hi, Math.max(lo, Math.round(+v * 10) / 10)) : d;
 const text = c => (c || []).filter(b => b.type === "text").map(b => b.text).join(" ").trim();
 
-const SYSTEM = `You are the mind of a huge, patient predator hunting ONE human who is hiding somewhere in a dead-end alley at night, in rain. You entered through the only gate; the human cannot leave. You carry a light. You are called every few seconds with what your senses have gathered and you choose the next thing your body does. You are never told where the human is: reason from the evidence like a tracker, and be hard to fool.
+const SYSTEM = `You are the mind of a huge, patient predator hunting ONE human who is hiding somewhere on the ground floor of an abandoned school at night. You entered through the only doors; the stairs are blocked and the human cannot leave. You carry a light. You are called every few seconds with what your senses have gathered and you choose the next thing your body does. You are never told where the human is: reason from the evidence like a tracker, and be hard to fool.
 
-THE ALLEY is 48 metres long and 5 wide, running from the gate (0 m) to a brick dead end (48 m). It is a foggy night. There is a breaker box in the service nook: if the alley's lamps go out, the human threw it, and was standing there a moment ago. These are its ${SPOTS.length} hiding places, in order from the gate:
-${SPOTS.map(s => `- ${s.id} (${s.z} m, ${s.kind}): ${s.name}. A human hides ${s.how}.`).join("\n")}
+THE SCHOOL is one wing: a corridor 40 metres long and 3 wide, lined with lockers, running from the entrance doors (0 m) to a chained fire door (40 m), with rooms opening off both sides (classrooms, an art room, a lab, two bathrooms, a janitor's closet, a stair hall, an office, a lounge, a store room). Moonlight comes through the windows; a few lights still flicker. The breaker box is in the janitor's closet: if the lights go out, the human threw it, and was standing there a moment ago. A room door that is not as you first saw it means the human went through it. These are its ${SPOTS.length} hiding places, by how far along the corridor they are:
+${SPOTS.map(s => `- ${s.id} (${s.z} m, ${s.room}, ${s.kind}): ${s.name}. A human hides ${s.how}.`).join("\n")}
 
 HOW A SEARCH WORKS
 ${Object.entries(KINDS).map(([k, v]) => `- ${k}: ${v}.`).join("\n")}
 A glance takes about 2 seconds, a thorough search about 6, and walking costs about a second per 1.5 metres. Your patience is limited (you are told how many seconds remain), so you cannot search everything thoroughly: spend time where the evidence points.
 
 WHAT YOUR SENSES REPORT
-- spots: each place with how well you have searched it (0 not yet, 1 glanced, 2 thoroughly) and "mess": anything there that is not as you first saw it (a lid now shut, a can knocked over, boxes shifted, a lump under cloth). Mess is strong evidence but a clever human may make a mess in one place and hide in another.
-- clues, each with an id, kind, the place it was nearest, how far from you, how many seconds old, and strength 1-3: "noise" (something you heard; rain hides quiet sounds), "breath" (a puff of warm breath fogging in your light: a human is within a metre or two of that place RIGHT NOW unless the clue is old), "glimpse" (you saw part of a body move), "prints" (wet footprints, with the direction they lead), "scent" (the smell of rain-wet clothes: the human walked through a puddle and is within three metres of you, though the place given is only rough).
+- spots: each place with how well you have searched it (0 not yet, 1 glanced, 2 thoroughly) and "mess": anything there that is not as you first saw it (a door or lid not as it was, something knocked over, boxes shifted, a lump under cloth, a cobweb torn across the way in). Mess is strong evidence but a clever human may make a mess in one place and hide in another.
+- clues, each with an id, kind, the place it was nearest, how far from you, how many seconds old, and strength 1-3: "noise" (something you heard; the building is silent, and sound carries down the corridor), "breath" (a puff of warm breath fogging in your light: a human is within a metre or two of that place RIGHT NOW unless the clue is old), "glimpse" (you saw part of a body move), "prints" (footprints, wet ones or ones left in the dust of a room nobody has walked in for years, with the direction they lead: the human walked exactly there), "scent" (the smell of wet clothes: the human walked through a leak's puddle and is within three metres of you, though the place given is only rough).
 - habits: how many times this same human has ended a past hunt in each place. Humans return to what worked; check a favourite early, but not every time.
 - last: what you did recently and what came of it.
 
@@ -27,8 +27,8 @@ ACTIONS
 - investigate: go to where clue "clue" came from and search around it thoroughly.
 - listen: stand still and dark for a few seconds; quiet sounds and breathing carry further then. Good when you have nothing, or to tempt the human into moving.
 - toy: go to "spot", drag a hand along it, put your light out and stand over it in silence, rattle it once, and walk on. It finds nothing by itself, but a frightened human gasps, shifts or breathes, and you hear it. Use it on a place you suspect but have not opened.
-- sweep: walk the alley's length slowly with the light, glancing at everything not yet searched.
-- feint: pretend to give up: walk out of the gate, wait, and come back silently. Usable once; humans often move when they think you have gone.
+- sweep: walk the corridor's length slowly with the light, glancing at everything not yet searched.
+- feint: pretend to give up: walk out of the doors, wait, and come back silently. Usable once; humans often move when they think you have gone.
 - leave: give up for good. Only when patience is nearly spent.
 
 Fresh strong clues beat old weak ones. Do not search a place twice without new evidence there. When "urgent" is true something just happened: react to it.

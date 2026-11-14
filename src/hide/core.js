@@ -15,26 +15,28 @@ const clamp = (v, a, b) => Math.min(b, Math.max(a, v)), lerp = (a, b, t) => a + 
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.setSize(innerWidth, innerHeight);
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
-renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = .92;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.1;
 renderer.xr.enabled = true; renderer.xr.setReferenceSpaceType('local-floor'); renderer.xr.setFoveation(1);
-const scene = new THREE.Scene(); scene.background = new THREE.Color(0x05070b); const FOGC = new THREE.Color(0x070a10); scene.fog = new THREE.FogExp2(0x070a10, .075);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x05070b); const FOGC = new THREE.Color(0x070a10); scene.fog = new THREE.FogExp2(0x0f141a, .07);
 const camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, .05, 120), rig = new THREE.Group(); rig.add(camera); scene.add(rig);
 addEventListener('resize', () => { if (renderer.xr.isPresenting) return; camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
 
 const CLOCK = { t: 0 };   // the game's own seconds, so a noise's age means the same at any frame rate
-const SKYTURN = -.736, MOON = new THREE.Vector3(.178, .514, .839).normalize(), STATICS = [];   // the moon in the turned sky: 31 degrees up, a little right of the alley's line, over the street
+const SKYTURN = -.736, MOON = new THREE.Vector3(.82, .44, .36).normalize(), STATICS = [];   // the moon in the turned sky: 31 degrees up, a little right of the alley's line, over the street
 const P = { R: RAPIER, world: null, eq: null, anchor: null, things: [], byCol: new Map(), lids: {} };
 async function initPhysics() { await RAPIER.init({}); P.world = new RAPIER.World({ x: 0, y: -9.81, z: 0 }); P.eq = new RAPIER.EventQueue(true); P.anchor = P.world.createRigidBody(RAPIER.RigidBodyDesc.fixed()); }
 
 const TEX = {}, MODELS = {}, texL = new THREE.TextureLoader();
-const TEXN = ['red_brick_03', 'dark_brick_wall', 'asphalt_02', 'green_metal_rust', 'rusty_metal_02', 'corrugated_iron_02', 'weathered_planks', 'dirty_carpet', 'hessian_230', 'dirty_concrete', 'metal_grate_rusty'];
-const MODN = ['metal_trash_can', 'trashbag', 'cardboard_box_01', 'old_tyre', 'barrel_01', 'barrel_03', 'exterior_aircon_unit', 'utility_box_01', 'industrial_wall_lamp', 'rollershutter_door', 'sofa_02', 'industrial_pastic_container', 'cement_bag', 'wooden_crate_02', 'security_light', 'water_manhole_cover', 'rusted_wheel_rim_01', 'power_box_01', 'brute'];
+const TEXN = ['peeling_painted_wall', 'damaged_plaster', 'tiled_floor_001', 'old_wood_floor', 'long_white_tiles', 'blue_metal_plate', 'worn_planks', 'dark_brick_wall', 'asphalt_02', 'green_metal_rust', 'rusty_metal_02', 'dirty_carpet', 'hessian_230', 'dirty_concrete', 'metal_grate_rusty'];
+const MODN = ['schooldesk_01', 'painted_wooden_chair_01', 'plastic_monobloc_chair_01', 'steel_frame_shelves_01', 'wooden_bookshelf_worn', 'painted_wooden_cabinet', 'drawer_cabinet', 'television_01', 'woodentable_01', 'wooden_table_02', 'metal_stool_02', 'wooden_broom', 'chemistry_set', 'hanging_picture_frame_02', 'metal_trash_can', 'trashbag', 'cardboard_box_01', 'sofa_02', 'industrial_pastic_container', 'wooden_crate_02', 'utility_box_01', 'industrial_wall_lamp', 'security_light', 'power_box_01', 'schoolchair_01', 'standing_chalkboard_01', 'mounted_fluorescent_lights', 'wall_clock', 'fire_alarm', 'korean_fire_extinguisher_01', 'metal_office_desk', 'wetfloorsign_01', 'office_notepads', 'clipboard', 'projector_screen', 'vintage_microscope', 'bunsen_burner', 'security_camera_01', 'american_football', 'wheelchair_01', 'ceiling_fan', 'plunger', 'bleach_bottle', 'vintage_microwave', 'marble_bust_01', 'vintage_suitcase', 'medical_box', 'brute'];
+const ARTN = 27, ART = [];
 // what shiny things reflect is the alley itself, pictured once from its middle with its own lamps lit
 function reflect() { const pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(scene, 0, .1, 70, { position: new THREE.Vector3(0, 1.6, -11) }).texture; scene.environmentIntensity = .28; pm.dispose(); }
 async function loadAssets(onp) {
-  let done = 0; const total = TEXN.length * 3 + MODN.length + 1, tick = v => { onp(++done / total); return v; }, L = new GLTFLoader(), aniso = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+  let done = 0; const total = TEXN.length * 3 + MODN.length + 1 + ARTN, tick = v => { onp(++done / total); return v; }, L = new GLTFLoader(), aniso = Math.min(2, renderer.capabilities.getMaxAnisotropy());
   const jobs = [];
   for (const n of TEXN) for (const k of 'dna') jobs.push(texL.loadAsync(ASSET + 'tex/' + n + '_' + k + '.jpg').then(t => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = aniso; if (k === 'd') t.colorSpace = THREE.SRGBColorSpace; (TEX[n] = TEX[n] || {})[k] = t; tick(); }));
+  for (let i = 0; i < ARTN; i++) jobs.push(new THREE.ImageLoader().loadAsync(ASSET + 'art/p' + String(i).padStart(2, '0') + '.jpg').then(im => { ART[i] = im; tick(); }));
   for (const n of MODN) jobs.push(L.loadAsync(ASSET + 'm/' + n + '.glb').then(g => { MODELS[n] = g; tick(); }));
   // the sky is a photograph of a real moonlit night (Poly Haven), turned so its moon stands where the moonlight comes from
   jobs.push(texL.loadAsync(ASSET + 'sky.jpg').then(t => { t.mapping = THREE.EquirectangularReflectionMapping; t.colorSpace = THREE.SRGBColorSpace; scene.background = t; scene.backgroundIntensity = .16; scene.backgroundRotation.y = SKYTURN; tick(); }));
@@ -89,4 +91,5 @@ function model(name, o = {}) {
 const ray = (() => { let r; return (o, d, max, groups = SIGHT, notBody = null) => { r = r || new RAPIER.Ray({ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 1 }); r.origin.x = o.x; r.origin.y = o.y; r.origin.z = o.z; r.dir.x = d.x; r.dir.y = d.y; r.dir.z = d.z;
   const h = P.world.castRay(r, max, true, undefined, groups, undefined, notBody || undefined); return h ? { t: h.timeOfImpact ?? h.toi, col: h.collider } : null; }; })();
 
-export { MOON, mergeStatics, CLOCK, THREE, RAPIER, Q, LOW, ASSET, G, ALL, grp, SIGHT, clamp, lerp, rnd, renderer, scene, camera, rig, P, initPhysics, loadAssets, reflect, TEX, MODELS, mat, wbox, boxMesh, quat, stat, dyn, sBox, sCyl, sBall, model, ray };
+const fuse = gs => mergeGeometries(gs, false);
+export { ART, fuse, MOON, mergeStatics, CLOCK, THREE, RAPIER, Q, LOW, ASSET, G, ALL, grp, SIGHT, clamp, lerp, rnd, renderer, scene, camera, rig, P, initPhysics, loadAssets, reflect, TEX, MODELS, mat, wbox, boxMesh, quat, stat, dyn, sBox, sCyl, sBall, model, ray };

@@ -125,7 +125,7 @@ function build() {
   for (const x of [3.3, 4.05]) { stat(.68, .86, .62, x, .43, -4.92, whiteM, M); const d = new THREE.Mesh(new THREE.CircleGeometry(.2, 20), dark); add(d, x, .45, -5.235); }
   { const h = new THREE.Mesh(new THREE.CylinderGeometry(.28, .28, 1.6, 16), whiteM); h.castShadow = h.receiveShadow = true; add(h, 2.35, .8, -4.95); stat(.5, 1.6, .5, 2.35, .8, -4.95, null, M); spot('heater', [3.3, -6], [1.75, .5, -4.9], [1.8, 1.2, -5.3], 'Utility'); }
   closet('broom', 1.69, -6.2, 1, { wood: true, w: .8, m: whiteM }); spot('broom', [3, -6.2], [1.7, 1, -6.2], [2.25, 1.5, -6.2], 'Utility'); fixed('wooden_broom', { h: 1.4, x: 1.55, z: -5.55 }).rotation.z = .1;
-  chest('hamper', 5.5, -5.4, .7, .95, .75, 1, hess, false); spot('hamper', [4.2, -5.4], [5.5, .35, -5.4], [5, 1.4, -5.4], 'Utility');
+  chest('hamper', 5.45, -5.5, .8, 1.25, .95, 1, hess, false); spot('hamper', [4.1, -5.5], [5.45, .4, -5.5], [4.9, 1.6, -5.5], 'Utility');
   const fUt = fixture('utility', 'utility', 3.7, HI - .1, -5.8, { k: .7, r: 4.5, col: 0xe6efe8 }); plate(4.2, 1.25, -6.89, Math.PI, fUt);
 
   /* the kitchen: counters along the back wall with the sink's cupboard, the stove, the refrigerator, a pantry cupboard, an island with the radio on it; the side door to the yard is locked */
@@ -147,7 +147,7 @@ function build() {
   win('x', 0, -4.6, -2.8); win('x', 0, 2.8, 4.6); win('x', -12, -4.6, -2.8); win('x', -12, 3.4, 4.4, 1.3, 2); win('z', -6, -2, -3.8); win('z', -6, -8, -9.8); win('z', 6, -1.5, -3.3);
   wall('z', -1.3, 0, -12, [dh(-2.6, -3.55), dh(-9, -9.95)], wallB); wall('z', 1.3, 0, -12, [dh(-1.6, -2.55), dh(-10.2, -11.15)], wallB); wall('z', .1, -4, -8.2, [], wallB); wall('x', -4, .1, 1.3, [], wallB); wall('x', -6, -6, -1.3, [], wallB); wall('x', -4.5, 1.3, 6, [dh(3.1, 4.2)], wallB); wall('x', -8, 1.3, 6, [], wallB);
   door('Master', 'z', -1.3, -2.6, -3.55, 1, .3); door('Child', 'z', -1.3, -9, -9.95, 1, 1.2); door('Nursery', 'z', 1.3, -1.6, -2.55, -1, 0); door('Bath', 'z', 1.3, -10.2, -11.15, -1, .6); door('Closet', 'x', -4.5, 3.1, 4.2, 1, .2);
-  chest('blanket', -.95, -11.2, .6, 1.1, .6, -1, woodD, false); spot('blanket', [.3, -11.2], [-.95, .3, -11.2], [-.5, 1.4, -11.2], 'landing');
+  chest('blanket', -.9, -11, .7, 1.7, .7, -1, woodD, false); spot('blanket', [.4, -11], [-.9, .3, -11], [-.4, 1.4, -11], 'landing');
   const fUp = fixture('landing', 'landing', 0, HI - .12, -10, { on: true, k: .7, r: 6.5 }); plate(-1.19, 1.25, -8.5, Math.PI / 2, fUp); { const g = model('modern_ceiling_lamp_01', { long: .42, noShadow: true }); add(g, 0, HI - g.userData.size.y, -10); } { const r = boxMesh(.9, .012, 7, velvet); r.castShadow = false; add(r, -.5, .02, -4.4); }
 
   /* the big bedroom: the bed, a wardrobe you can stand in, curtains, a fan over the bed */
@@ -159,7 +159,7 @@ function build() {
 
   /* the child's room: a small bed, the toy chest, a wardrobe, a play tent, a night light that runs on its battery, a music box */
   bed(-5, -7.2, 1.9, 1, hess); spot('bedC', [-2.8, -7.2], [-5, .15, -7.2], [-3.85, .25, -7.2], 'Child');
-  chest('toy', -5.55, -10.8, .6, 1, .55, -1, card, true); spot('toy', [-4.3, -10.8], [-5.55, .3, -10.8], [-5.1, 1.3, -10.8], 'Child');
+  chest('toy', -5.5, -10.7, .7, 1.5, .7, -1, card, true); spot('toy', [-4.2, -10.7], [-5.5, .3, -10.7], [-5, 1.4, -10.7], 'Child');
   closet('wardrobeC', -2.6, -11.68, 0, { wood: true, w: 1, m: whiteM }); spot('wardrobeC', [-2.6, -10.3], [-2.6, 1, -11.7], [-2.6, 1.5, -11.15], 'Child');
   { const c = new THREE.Mesh(new THREE.ConeGeometry(.85, 1.5, 4, 1, true), new THREE.MeshStandardMaterial({ map: velvet.map, color: 0x8a7a4a, roughness: 1, side: THREE.DoubleSide })); c.castShadow = c.receiveShadow = true; add(c, -2.4, .75, -7.1, Math.PI / 4); for (const [dx, dz, ry] of [[0, -.6, 0], [-.6, 0, 1], [.6, 0, 1]]) stat(ry ? .03 : 1.2, 1.1, ry ? 1.2 : .03, -2.4 + dx, .55, -7.1 + dz, null, { veil: true }); spot('tent', [-3.2, -8.4], [-2.4, .4, -7.1], [-2.4, .5, -7.85], 'Child'); }
   const fNight = fixture('night', 'Child', -5.82, .32, -8.6, { on: true, own: true, k: .22, r: 2.6, col: 0xffb070, size: .035, halo: .5 }); device('switch', 'sw_night', -5.82, .32, -8.6, { fx: fNight }); device('musicbox', 'musicbox', -5.7, .75, -9.6); { const b = boxMesh(.14, .1, .1, velvet); add(b, -5.7, .7, -9.6); stat(.3, .65, .5, -5.75, .325, -9.6, wood, Wd); }
@@ -217,7 +217,7 @@ function build() {
     // cobwebs: in the cellar and the corners nobody dusts. Across the way into a hiding place one tears when a body goes through, and a torn web is something it can read
   { const webT = canvasTex(256, 256, (g) => { g.clearRect(0, 0, 256, 256); g.strokeStyle = 'rgba(225,230,235,.75)'; g.lineWidth = 1; const n = 13, A = i => i / n * Math.PI * 2 + (i % 2) * .08; for (let i = 0; i < n; i++) { g.beginPath(); g.moveTo(128, 128); g.lineTo(128 + Math.cos(A(i)) * 180, 128 + Math.sin(A(i)) * 180); g.stroke(); }
         g.lineWidth = .7; for (let r = 10; r < 175; r += 6 + r * .05) { g.beginPath(); for (let i = 0; i <= n; i++) { const a0 = A(i), a1 = A(i + 1), rr = r * (1 + ((i * 7) % 5) * .012), x0 = 128 + Math.cos(a0) * rr, y0 = 128 + Math.sin(a0) * rr, x1 = 128 + Math.cos(a1) * rr, y1 = 128 + Math.sin(a1) * rr; if (!i) g.moveTo(x0, y0); g.quadraticCurveTo(128 + Math.cos((a0 + a1) / 2) * rr * .9, 128 + Math.sin((a0 + a1) / 2) * rr * .9, x1, y1); } g.stroke(); } });
-      const webM = new THREE.MeshBasicMaterial({ map: webT, transparent: true, opacity: .2, depthWrite: false, side: THREE.DoubleSide, fog: true }), cg = [];
+      const webM = new THREE.MeshLambertMaterial({ map: webT, transparent: true, opacity: .35, depthWrite: false, side: THREE.DoubleSide }), cg = [];
       for (const [x0, x1, z0, z1, lv] of [[-5.9, 5.9, -11.9, -.1, 0], [-5.9, -1.4, -5.9, -.1, 1], [1.4, 5.9, -11.9, -7.1, 1], [-5.9, -1.4, -11.9, -6.1, 2], [1.4, 5.9, -7.9, -4.6, 2]]) for (const [cx, cz, ry] of [[x0, z0, Math.PI / 4], [x1, z0, -Math.PI / 4], [x0, z1, Math.PI * .75], [x1, z1, -Math.PI * .75]]) if (Math.random() < .7) { const sz = rnd(.4, .9), g = new THREE.PlaneGeometry(sz, sz); g.rotateX(rnd(.5, .9)); g.rotateY(ry); g.translate(cx + Math.sin(ry) * sz * .3, LV[lv] + HI - sz * .28, cz + Math.cos(ry) * sz * .3); cg.push(g); }
       const cm = new THREE.Mesh(fuse(cg), webM); cm.renderOrder = 3; scene.add(cm);
       WORLD.webs = {}; for (const id of ['understairs', 'crawl', 'shelves', 'furnace', 'oldwardrobe', 'bench', 'sheets', 'walkin', 'heater', 'curtainD']) { const g = GEO[id]; if (!g) continue; const dx = g.look[0] - g.at[0], dz = g.look[2] - g.at[1], x = g.at[0] + dx * .62, z = g.at[1] + dz * .62, m = new THREE.Mesh(new THREE.PlaneGeometry(1.25, 1.25), webM.clone()); m.material.opacity = .26; m.position.set(x, g.y + .95, z); m.rotation.y = Math.atan2(dx, dz); m.renderOrder = 3; scene.add(m); WORLD.webs[id] = { m, x, z, y: g.y, torn: false, byMon: false }; }

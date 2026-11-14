@@ -23,7 +23,7 @@ export function makeStreet(scene, city, glow, R, o) {
     for (let i = 0; i < p.count; i += 3) { if (n.getZ(i) > 0.5) continue; const v = n.getZ(i) < -0.5 ? 1 : n.getY(i) > 0.5 ? 0.8 : n.getY(i) < -0.5 ? 0.4 : 0.66; for (let k = 0; k < 3; k++) { keep.push(p.getX(i + k), p.getY(i + k), p.getZ(i + k)); col.push(v, v, v); } }
     const o2 = new THREE.BufferGeometry(); o2.setAttribute('position', new THREE.Float32BufferAttribute(keep, 3)); o2.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); return o2; })();
   const box = new THREE.BoxGeometry(1, 1, 1), cyl = new THREE.CylinderGeometry(0.5, 0.5, 1, 10);
-  const litM = new THREE.MeshBasicMaterial({ vertexColors: true }), roomM = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide });
+  const DIM = new THREE.Color(0.52, 0.45, 0.36), litM = new THREE.MeshBasicMaterial({ vertexColors: true, color: DIM }), roomM = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, color: DIM }); // rooms seen from a dark street: dim and warm, never the brightest thing in view
   const wallT = T.canvasTex(256, 256, (g, w, h) => { g.fillStyle = '#b4b0a8'; g.fillRect(0, 0, w, h); const r = T.rng(5); for (let i = 0; i < 2600; i++) { g.globalAlpha = 0.08; g.fillStyle = r() > 0.5 ? '#000' : '#fff'; g.fillRect(r() * w, r() * h, 1 + r() * 3, 1 + r() * 3); } g.globalAlpha = 1; });
   T.dirty(wallT, 61, { drips: 26, stains: 20, cracks: 3 });
   const real = (n, size) => T.worldUV(mat({ map: T.photo(n, () => wallT) }), size);

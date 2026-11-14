@@ -48,7 +48,7 @@ export function buildCity(scene) {
   }
 
   // ---------- lights ----------
-  scene.add(new THREE.HemisphereLight(0x2c3458, 0x100c12, 0.44));
+  scene.add(new THREE.HemisphereLight(0x2c3458, 0x100c12, 0.3));
   const moonL = new THREE.DirectionalLight(0x9db6ff, 0.32);
   moonL.position.copy(MOON_DIR).multiplyScalar(45); moonL.target.position.set(0, 0, -3);
   moonL.castShadow = true; moonL.shadow.mapSize.set(512, 512); moonL.shadow.autoUpdate = false; { let sT = 0; ups.push((dt) => { sT -= dt; if (sT <= 0) { sT = 0.25; moonL.shadow.needsUpdate = true; } }); } moonL.shadow.bias = -0.0006; moonL.shadow.normalBias = 0.03;

@@ -108,8 +108,8 @@ export function buildCart(scene, city) {
     cyl(0.003, 0.003, 0.2, black, 0, -0.11, 0, pv, 4); cyl(0.016, 0.02, 0.04, black, 0, -0.21, 0, pv, 8);
     const b = new THREE.Mesh(new THREE.SphereGeometry(0.03, 12, 10), bulbM); b.position.set(0, -0.255, 0); pv.add(b); b.userData.nopick = true;
     halo(0xffc070, 0.26, 0, -0.255, 0, pv, 0.3);
-    const l = new THREE.PointLight(0xffb878, i === 2 ? 1.1 : 1.7, 6, 1.8); l.position.set(0, -0.28, 0); pv.add(l);
-    if (sh) { const sl = new THREE.SpotLight(0xffb878, 16, 5, 1.2, 0.7, 1.7); sl.position.set(x, 2.3, z); sl.target.position.set(x + 0.15, 0, z + 0.05); cart.add(sl, sl.target); sl.castShadow = true; sl.shadow.mapSize.set(512, 512); sl.shadow.bias = -0.002; sl.shadow.camera.near = 0.1; sl.shadow.camera.far = 5; l.intensity = 0.6; }
+    const l = new THREE.PointLight(0xffb070, i === 2 ? 0.8 : 1.25, 6, 1.8); l.position.set(0, -0.28, 0); pv.add(l);
+    if (sh) { const sl = new THREE.SpotLight(0xffb070, 12, 5, 1.2, 0.7, 1.7); sl.position.set(x, 2.3, z); sl.target.position.set(x + 0.15, 0, z + 0.05); cart.add(sl, sl.target); sl.castShadow = true; sl.shadow.mapSize.set(512, 512); sl.shadow.bias = -0.002; sl.shadow.camera.near = 0.1; sl.shadow.camera.far = 5; l.intensity = 0.6; }
   });
 
   // stools
@@ -334,7 +334,7 @@ export function buildCart(scene, city) {
     ['Knobs (left) light the burners.', 'OPEN switch (right post).', 'The ticket lists every step.', 'Tilt ladles/baskets to pour.', 'Chop on the board, fill bins.', 'Set the bowl on the placemat.', 'Dirty bowls → bus tub.', 'Drop a tool: it returns home.', 'FIRM = yellow zone on dial.'].forEach((l, n) => g.fillText('・' + l, x + 14, 132 + n * 41, cw - 26));
   });
   T.dirty(rb, 9, { stains: 40, rings: 12, drips: 10, yellow: 1, scratches: 30 });
-  const board = mesh(new THREE.PlaneGeometry(1.8, 0.45), new THREE.MeshBasicMaterial({ map: rb, color: 0x9a9a9a }), 0, 2.24, -0.5, cart); board.rotation.x = 0.36; board.castShadow = false;
+  const board = mesh(new THREE.PlaneGeometry(1.8, 0.45), new THREE.MeshBasicMaterial({ map: rb, color: 0x7a7468 }), 0, 2.24, -0.5, cart); board.rotation.x = 0.36; board.castShadow = false;
   const menuT = T.canvasTex(1024, 256, (g, w, h) => {
     g.fillStyle = '#20140c'; g.fillRect(0, 0, w, h); g.textAlign = 'center';
     Object.values(RECIPES).forEach((r, i) => { const x = w * (0.125 + i * 0.25); g.fillStyle = '#f4ead2'; g.font = `bold 58px ${T.JP}`; g.fillText(r.jp, x, 90, 230); g.fillStyle = '#ffb040'; g.font = `bold 52px ${T.JP}`; g.fillText(`${r.price}円`, x, 160); g.fillStyle = '#c8b8a0'; g.font = `bold 30px ${T.JP}`; g.fillText(r.name, x, 210); });

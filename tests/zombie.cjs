@@ -9,9 +9,9 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
 (async () => {
   // the visitors' mind on the website (worker/zombie.js), with a stand-in for Claude
   { const { ZOMBIE } = await import(path.resolve('worker/zombie.js')); let mem = null; const store = { get: async () => mem, put: async v => { mem = v; } }, sent = [];
-    const fake = { messages: { create: async q => { sent.push(q); return { stop_reason: 'end_turn', content: [{ type: 'text', text: JSON.stringify({ thought: 'We think it sees us.', orders: [{ id: 'v0', spot: 'sofa', test: 'approach', say: '' }, { id: 'v9', spot: 'tub', test: 'none', say: '' }, { id: 'v1', spot: 'roof', test: 'bite', say: 'x'.repeat(200) }] }) }] }; } } };
+    const fake = { messages: { create: async q => { sent.push(q); return { stop_reason: 'end_turn', content: [{ type: 'text', text: JSON.stringify({ thought: 'We think it sees us.', orders: [{ id: 'v0', spot: 'sofa', test: 'approach', thing: 'radio', say: '' }, { id: 'v9', spot: 'tub', test: 'none', say: '' }, { id: 'v1', spot: 'roof', test: 'bite', say: 'x'.repeat(200) }] }) }] }; } } };
     const r = await ZOMBIE.think({ ANTHROPIC_API_KEY: 'x' }, store, { night: 2, clock: '11:40 PM', chore: 'news', them: [{ id: 'v0', at: 'tvcorner', suspicion: .4 }, { id: 'v1', at: 'away' }], events: [{ t: 3, what: 'flinched' }], where: 'ignored' }, fake);
-    ok(r.thought && r.orders.length === 2 && r.orders[0].spot === 'sofa' && r.orders[0].test === 'approach' && r.orders[1].spot === '' && r.orders[1].test === 'none' && r.orders[1].say.length <= 60, 'the mind gives each visitor a place and a test, and nothing it may not: ' + JSON.stringify(r.orders));
+    ok(r.thought && r.orders.length === 2 && r.orders[0].spot === 'sofa' && r.orders[0].test === 'approach' && r.orders[0].thing === 'radio' && r.orders[1].spot === '' && r.orders[1].test === 'none' && r.orders[1].say.length <= 60, 'the mind gives each visitor a place and a test, and nothing it may not: ' + JSON.stringify(r.orders));
     ok(!JSON.stringify(sent[0].messages).includes('ignored') && sent[0].model === 'claude-haiku-5-5' && mem.n === 1, 'it is sent only what the visitors saw, by Haiku, and counted');
     mem = { day: new Date().toISOString().slice(0, 10), n: ZOMBIE.DAY }; const r2 = await ZOMBIE.think({ ANTHROPIC_API_KEY: 'x' }, store, { them: [{ id: 'v0' }] }, fake); ok(r2.why && sent.length === 1, 'after the day\'s thoughts it stops asking');
     mem = null; const sv = await ZOMBIE.save(store, { night: 4 }), sv2 = await ZOMBIE.save(store, { night: 9 }); ok(sv.night === 4 && sv2.night === 4, 'the night reached is kept, and only a real night'); }
@@ -19,7 +19,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   const b = await chromium.launch({ ...(process.env.PWCHROME ? { executablePath: process.env.PWCHROME } : {}), args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'] });
   const open = async (init, q = '') => { const pg = await b.newPage({ viewport: { width: 640, height: 400 } }), errs = [], miss = [];
     pg.on('pageerror', e => errs.push(e.message.slice(0, 300))); pg.on('response', r => { if (r.status() >= 400 && r.request().method() === 'GET') miss.push(r.url().split('/').pop()); }); pg.on('console', m => { if (m.type() === 'error' && !/404|Failed to load resource/.test(m.text())) errs.push('console: ' + m.text().slice(0, 300)); });
-    if (init) await pg.addInitScript(init); await pg.goto(FILE + q); await pg.waitForFunction(() => !document.getElementById('bdesk').disabled || document.getElementById('note').textContent, null, { timeout: 420000 }).catch(e => errs.push('load: ' + e.message.slice(0, 200))); return { pg, errs, miss }; };
+    if (init) await pg.addInitScript(init); await pg.goto(FILE + q, { timeout: 180000 }); await pg.waitForFunction(() => !document.getElementById('bdesk').disabled || document.getElementById('note').textContent, null, { timeout: 420000 }).catch(e => errs.push('load: ' + e.message.slice(0, 200))); return { pg, errs, miss }; };
   const t0 = Date.now(), { pg, errs, miss } = await open(), ev = (f, a) => pg.evaluate(f, a); let n = 0;
   const shot = async name => { if (!OUT) return; await ev(() => __zombie.draw(1 / 60)); await pg.screenshot({ path: path.join(OUT, String(++n).padStart(2, '0') + '-' + name + '.png'), timeout: 180000 }); };
   const up = await ev(() => !document.getElementById('bdesk').disabled && !!window.__zombie);
@@ -31,7 +31,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
     const V = (x, y, zz) => new z.THREE.Vector3(x, y, zz);
     window.Z = { z, V,
       // look somewhere: a point, or down at the floor in front
-      look(p) { z.look(p); }, down() { z.PL.pitch = -1.1; },
+      look(p) { z.look(p); }, down() { z.PL.pitch = -1.1; z.PL.jump = true; },
       // the eyes of every visitor that is in, in the world
       eyes() { const out = []; for (const C of z.THEM.list) if (C.state !== 'away') for (const e of C.eyes) out.push({ C, p: e.getWorldPosition(V()) }); return out; },
       // a careful player keeps every eye at least this far from the middle of its sight
@@ -64,18 +64,29 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
     const doChore = id => { const g = go[id]; Z.at(g[0], g[1], g[2]); if (careful) Z.down();
       if (id === 'milk') { Z.use('fridge'); Z.run(1, careful); z.PL.onTake(z.ROOM.milk); Z.use('fridge'); return; }
       if (id === 'coat') { Z.use('closet'); Z.run(1, careful); Z.use('closet'); return; }
-      Z.use(g[3]); if (careful) Z.down(); const c = z.CHORES[id]; if (c.hold) { let k = 0; while (!G.done[id] && k++ < 60 && (G.mode === 'play')) { if (z.PL.seat === null && c.seat) { Z.use(g[3]); } if (careful) { z.PL.pitch = Math.min(z.PL.pitch, -.9); } Z.run(1, careful); } } };
+      Z.use(g[3]); if (careful) Z.down(); const c = z.CHORES[id]; if (c.hold) { let k = 0; while (!G.done[id] && k++ < 60 && (G.mode === 'play')) { if (z.PL.seat === null && c.seat) { Z.use(g[3]); } if (careful) { z.PL.pitch = Math.min(z.PL.pitch, -.9); } runF(1); } } };
+    // anyone puts right what was switched on or opened: walk to it, use it
+    const DEVAT = { tv: [4.0, 3.9, -Math.PI / 2, 'tv'], radio: [1.0, 1.85, Math.PI / 2, 'radio'], blender: [2.28, 1.0, 0, 'blender'], fridge: [.45, 1.25, Math.PI, 'fridge'], tap: [1.85, .95, 0, 'sink'], stove: [1.15, .95, 0, 'stove'], light: [1.35, 4.5, Math.PI, 'switch'], bathlight: [4.6, 4.3, -Math.PI / 2, 'bathlight'], closet: [1.62, 3.7, Math.PI, 'closet'], bathdoor: [4.6, 3.7, -Math.PI / 2, 'bathdoor'] };
+    const fix = () => { for (const id of Object.keys(G.messes)) { const g = DEVAT[id]; if (!g) continue; const back = { x: z.PL.pos.x, z: z.PL.pos.z, seat: z.PL.seat }; Z.at(g[0], g[1], g[2]); Z.down(); Z.use(g[3]); Z.run(.5, careful); if (back.seat) { z.PL.sit(back.seat); } } };
+    const runF = (sec, eyes = false) => { for (let k = 0; k < sec * 2 && (G.mode === 'play' || G.mode === 'sleep'); k++) { if (careful && Object.keys(G.messes).some(id => G.t - G.messes[id].t > 4)) fix(); Z.run(.5, careful, eyes); } };
     for (let guard = 0; guard < 40 && G.mode === 'play'; guard++) { const id = G.chores.find(id => !G.done[id] && !z.CHORES[id].last && id !== 'phone' && id !== 'leave' && (!z.CHORES[id].after || G.done[z.CHORES[id].after]));
-      if (G.phone.ringing) { Z.at(.55, 4.0, Math.PI / 2); Z.down(); Z.use('phone'); Z.run(22, careful); continue; }
+      if (G.phone.ringing) { Z.at(.55, 4.0, Math.PI / 2); Z.down(); Z.use('phone'); runF(22); continue; }
       if (id) { doChore(id); continue; }
-      if (!G.done.phone) { Z.at(2.5, 3.6, 0); Z.down(); Z.run(4, careful); continue; }
+      if (!G.done.phone) { Z.at(2.5, 3.6, 0); Z.down(); runF(4); continue; }
       break; }
     if (G.mode !== 'play') return { mode: G.mode, why: G.why, done: Object.keys(G.done).join(), min: Math.round(G.min) };
     Z.at(1.35, 4.5, Math.PI); Z.use('switch'); Z.at(6.0, 1.9, 0); Z.use('bed'); const slept = G.mode;
-    for (let i = 0; i < 300 && G.mode === 'sleep'; i++) { if (G.sleep.alarm > 0) { Z.down(); Z.use('alarmclock'); } Z.run(.5, careful, careful && !(G.sleep.alarm > 0)); }
+    for (let i = 0; i < 300 && G.mode === 'sleep'; i++) { if (G.sleep.alarm > 0) { Z.down(); Z.use('alarmclock'); } if (careful && Object.keys(G.messes).length) { fix(); Z.at(6.0, 1.9, 0); Z.use('bed'); } Z.run(.5, careful, careful && !(G.sleep.alarm > 0)); }
     if (G.mode === 'play' && G.cur === 'leave') { Z.at(6.0, 2.6, Math.PI); Z.down(); Z.run(1, careful); Z.at(1.0, 4.4, Math.PI); Z.use('chain'); Z.use('front'); }
     return { mode: G.mode, why: G.why, slept, done: Object.keys(G.done).join(), min: Math.round(G.min), flinches: G.flinches, comp: Math.round(G.composure), sus: z.THEM.list.map(C => +C.sus.toFixed(2)).join() }; }, [N, careful]);
   for (const N of [1, 3, 5]) { s = await night(N, true); ok(s.mode === 'won', 'night ' + N + ', played carefully, ends at six with every chore done: ' + JSON.stringify(s)); if (s.mode === 'won') await shot('night' + N).catch(() => {}); }
+  // their tricks: put right, nothing; left running, they notice
+  s = await ev(() => { const z = Z.z, C = z.THEM.list[0]; z.startNight(1); C.active = true; z.setSpot(C, 'corner'); C.dwell = 999; C.testAt = 999; Z.at(3.0, 3.0, 0); Z.down(); z.sim(5, 1 / 30);
+    const r = {}; z.mess(C, 'radio'); r.on = z.ROOM.radio.on; r.spot = C.spot; Z.at(1.0, 1.85, -Math.PI / 2); Z.down(); Z.use('radio'); z.sim(30, 1 / 30); r.fixed = !Object.keys(z.G.messes).length; r.sus1 = +C.sus.toFixed(2);
+    z.mess(C, 'blender'); Z.at(3.0, 3.0, 0); Z.down(); for (let i = 0; i < 30 * 40; i++) z.sim(1, 1 / 30); r.left = Object.keys(z.G.messes).join(); r.sus2 = +C.sus.toFixed(2); r.blender = z.ROOM.blender.on;
+    const T = z.P.things[3], p0 = { ...T.b.translation() }; Z.at(.5, 4.4, Math.PI); z.moveThing(C); z.sim(5, 1 / 30); const p1 = T.b.translation(); r.moved = z.P.things.some(t => { const h = t.home.p, q = t.b.translation(); return Math.hypot(h.x - q.x, h.z - q.z) > .5; }); return r; });
+  ok(s.on && s.fixed && s.sus1 < .1, 'they switch the radio on; you turn it off, as anyone would, and that is the end of it: ' + JSON.stringify(s));
+  ok(s.blender && s.left === 'blender' && s.sus2 > s.sus1 + .3, 'leave the blender running as if you knew who did it, and they notice: ' + JSON.stringify(s)); ok(s.moved, 'they move your things');
   s = await ev(() => { const z = Z.z; z.startNight(2); for (const C of z.THEM.list) if (C.active) { z.setSpot(C, 'sofa'); C.dwell = 999; } Z.at(1.8, 3.4, 0); for (let i = 0; i < 30 * 30 && z.G.mode === 'play'; i++) { const e = Z.eyes()[0]; if (e) Z.look(e.p); z.sim(1, 1 / 30); } return { mode: z.G.mode }; });
   ok(s.mode === 'hunt' || s.mode === 'dead', 'a player who stares at them is hunted: ' + JSON.stringify(s));
   s = await ev(() => { const z = Z.z; z.startNight(1); const C = z.THEM.list[0]; C.active = true; z.setSpot(C, 'sofa'); C.dwell = 999; C.testAt = 999; Z.at(2.6, 2.4, Math.PI); z.sim(20, 1 / 30); const s0 = C.sus; z.PL.yaw += Math.PI * .9; z.sim(4, 1 / 60); return { before: +s0.toFixed(2), after: +C.sus.toFixed(2), flinches: z.G.flinches }; });

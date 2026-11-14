@@ -6,9 +6,41 @@ import { ROOM, H } from './room.js';
 const THEM = { list: [], drips: null, puddles: [], onEvent: null, contactCone: 4.5 * Math.PI / 180 };
 const V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 const _a = V(), _b = V(), _c = V(), _q = new THREE.Quaternion(), _m = new THREE.Matrix4();
-const slime = () => new THREE.MeshPhysicalMaterial({ color: 0x040405, roughness: .1, metalness: 0, clearcoat: 1, clearcoatRoughness: .05, iridescence: .35, iridescenceIOR: 1.6, envMapIntensity: 1.3, specularIntensity: 1 });
-const SCLERA = new THREE.MeshStandardMaterial({ color: 0xe9e4c4, roughness: .25, emissive: 0xd8d2a8, emissiveIntensity: .22 }), PUPIL = new THREE.MeshStandardMaterial({ color: 0x050403, roughness: .1 });
-const EYE_G = new THREE.SphereGeometry(1, 18, 12), PUP_G = new THREE.SphereGeometry(1, 12, 8);
+// their skin: tar-black and wet, but not one colour: veins of dark meat, crusted patches, sores, pores; the detail is worked out on the surface itself, so it costs no pictures
+const NOISE = `float zH(vec3 p){ p = fract(p * .3183099 + .1); p *= 17.; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
+  float zN(vec3 x){ vec3 i = floor(x), f = fract(x); f = f * f * (3. - 2. * f);
+    return mix(mix(mix(zH(i), zH(i + vec3(1,0,0)), f.x), mix(zH(i + vec3(0,1,0)), zH(i + vec3(1,1,0)), f.x), f.y), mix(mix(zH(i + vec3(0,0,1)), zH(i + vec3(1,0,1)), f.x), mix(zH(i + vec3(0,1,1)), zH(i + vec3(1,1,1)), f.x), f.y), f.z); }
+  float zF(vec3 p){ float v = 0., a = .5; for (int i = 0; i < 4; i++){ v += a * zN(p); p = p * 2.07 + 3.1; a *= .5; } return v; }`;
+function skin(o = {}) {
+  const m = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: .4, metalness: 0, clearcoat: .45, clearcoatRoughness: .3, envMapIntensity: 1, specularIntensity: .8, sheen: .2, sheenColor: new THREE.Color(0x1a0808), sheenRoughness: .6 });
+  m.onBeforeCompile = sh => {
+    sh.uniforms.zT = { value: 0 }; m.userData.sh = sh;
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 zW;').replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nzW = (modelMatrix * vec4(transformed, 1.)).xyz;');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 zW; uniform float zT;\n' + NOISE)
+      .replace('#include <color_fragment>', `#include <color_fragment>
+        vec3 q = zW * 7. + vec3(0., zT * .05, 0.); float n = zF(q), vein = pow(1. - abs(zN(zW * 13.) * 2. - 1.), 9.), vein2 = pow(1. - abs(zN(zW * 31. + 5.) * 2. - 1.), 14.), sore = smoothstep(.72, .8, zF(zW * 19. + 9.));
+        vec3 tar = vec3(.012, .01, .011), meat = vec3(.16, .025, .03), crust = vec3(.07, .065, .05), pus = vec3(.25, .22, .09);
+        vec3 c = mix(tar, crust, smoothstep(.6, .8, n) * .45); c = mix(c, meat, vein * .55 + vein2 * .3); c = mix(c, pus, sore * .45);
+        diffuseColor.rgb = c; float zWet = 1. - smoothstep(.5, .72, n) * (1. - vein);`)
+      .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = mix(.65, .24, zWet);')
+      .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+        { float h = zF(zW * 8.) * .8 + zN(zW * 21.) * .15 + vein * .3 - sore * .4; vec3 dpx = dFdx(-vViewPosition), dpy = dFdy(-vViewPosition); float dhx = dFdx(h), dhy = dFdy(h);
+          vec3 r1 = cross(dpy, normal), r2 = cross(normal, dpx); float det = dot(dpx, r1); vec3 g = sign(det) * (dhx * r1 + dhy * r2) * .0045; normal = normalize(abs(det) * normal - g * 55.); }`)
+      .replace('#include <clearcoat_normal_fragment_begin>', '#include <clearcoat_normal_fragment_begin>\nclearcoatNormal = normalize(mix(clearcoatNormal, normal, .6));');
+  };
+  return m;
+}
+const slime = skin;
+// an eye: a wet ball, yellowed and veined, a grey-green iris, the pupil a slot or a hole; the iris faces the ball's +z
+function eyeTex(slot) { const c = document.createElement('canvas'); c.width = 256; c.height = 128; const g = c.getContext('2d');
+  g.fillStyle = '#c9bf96'; g.fillRect(0, 0, 256, 128); const gr = g.createRadialGradient(64, 64, 4, 64, 64, 140); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(120,40,30,.75)'); g.fillStyle = gr; g.fillRect(0, 0, 256, 128);
+  g.strokeStyle = 'rgba(150,20,20,.8)'; for (let i = 0; i < 26; i++) { g.lineWidth = rnd(.5, 1.6); g.beginPath(); let x = rnd(0, 256), y = rnd(0, 128); g.moveTo(x, y); for (let k = 0; k < 6; k++) { const a = Math.atan2(64 - y, 64 - x) + rnd(-1, 1); x += Math.cos(a) * rnd(4, 12); y += Math.sin(a) * rnd(3, 9); g.lineTo(x, y); } g.stroke(); }
+  const ir = g.createRadialGradient(64, 64, 2, 64, 64, 20); ir.addColorStop(0, '#3a3a20'); ir.addColorStop(.6, '#6f7346'); ir.addColorStop(1, '#2a2416'); g.fillStyle = ir; g.beginPath(); g.ellipse(64, 64, 11, 20, 0, 0, 7); g.fill();
+  g.fillStyle = '#020101'; g.beginPath(); slot ? g.ellipse(64, 64, 2.2, 13, 0, 0, 7) : g.ellipse(64, 64, 5, 9, 0, 0, 7); g.fill();
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; }
+const EYE_M = [false, true].map(sl => { const t = eyeTex(sl); return new THREE.MeshPhysicalMaterial({ map: t, roughness: .12, clearcoat: 1, clearcoatRoughness: .02, emissive: 0xffffff, emissiveMap: t, emissiveIntensity: .07 }); });
+const EYE_G = new THREE.SphereGeometry(1, 20, 14);
+const LID_G = new THREE.TorusGeometry(1, .38, 8, 18);
 const KINDS = ['tall', 'thin', 'wide', 'many', 'small', 'tall'];
 // the box each shape is drawn in: half its size and the height of its middle
 const FIT = { stand: [1.18, 1.13], sit: [.72, .64], crouch: [.5, .45], hang: [.72, H - .66], cling: [.75, .88], under: [.55, .2], ceiling: [.8, H - .3], face: [.42, -.12] };
@@ -19,7 +51,8 @@ function make(id, kind) {
   const mc = new MarchingCubes(res, slime(), false, false, 22000); mc.isolation = 80; mc.castShadow = true; mc.receiveShadow = true; mc.frustumCulled = false;
   const root = new THREE.Group(); root.add(mc); root.visible = false; scene.add(root);
   const nEyes = kind === 'many' ? 6 : kind === 'wide' ? 4 : pick([2, 2, 3]), eyes = [];
-  for (let i = 0; i < nEyes; i++) { const e = new THREE.Group(), w = new THREE.Mesh(EYE_G, SCLERA), p = new THREE.Mesh(PUP_G, PUPIL); const r = kind === 'small' ? .02 : rnd(.022, .03); w.scale.setScalar(r); p.scale.set(r * .55, r * .55, r * .3); p.position.z = r * .82; e.add(w, p); e.userData = { r, p, w, wide: 1 }; root.add(e); eyes.push(e); }
+  const lidM = skin(), em = EYE_M[kind === 'many' || kind === 'thin' ? 1 : 0];
+  for (let i = 0; i < nEyes; i++) { const e = new THREE.Group(), w = new THREE.Mesh(EYE_G, em), lid = new THREE.Mesh(LID_G, lidM); const r = kind === 'small' ? .013 : rnd(.014, .02); w.scale.setScalar(r); lid.scale.setScalar(r * 1.05); lid.position.z = r * .55; e.add(w, lid); e.userData = { r, w, lid, wide: 1 }; root.add(e); eyes.push(e); }
   const C = { id, kind, S, mc, root, eyes, pos: V(-50, 0, 0), yaw: 0, spot: null, pose: 'stand', state: 'away', sus: 0, contact: 0, noticed: false, seen: false, seenT: 0, stare: 0, flinchT: -9, lastSeen: -9, upd: 0, t: rnd(100),
     test: null, testT: 0, want: null, wantTest: null, line: '', hideMem: null, huntT: 0, cool: 0, glances: 0, stareSec: 0, flinches: 0, backs: 0, eyeW: [], vis: 0, approach: null, drip: rnd(1) };
   THEM.list.push(C); return C;
@@ -62,14 +95,14 @@ function shape(C, t) {
 
 // where its eyes sit on its head; 'many' has them scattered down its front too
 function eyeSpots(C, head) { const out = [], h = head[0], n = C.eyes.length, r = C.pose === 'face' ? .12 : C.pose === 'under' ? .09 : .11;
-  for (let i = 0; i < n; i++) { if (i < 2 || C.kind !== 'many') { const sx = n === 1 ? 0 : (i % 2 ? 1 : -1) * (i < 2 ? .045 : .07), sy = i < 2 ? .015 : -.035; out.push([h[0] + sx, h[1] + sy, h[2] + r * .88]); } else out.push([h[0] + rnd(-.1, .1) * 0 + (i % 2 ? .08 : -.08), h[1] - .1 - (i - 2) * .12, h[2] + .06]); }
+  for (let i = 0; i < n; i++) { if (i < 2 || C.kind !== 'many') { const sx = n === 1 ? 0 : (i % 2 ? 1 : -1) * (i < 2 ? .045 : .07), sy = i < 2 ? .015 : -.035; out.push([h[0] + sx * .85, h[1] + sy - .01, h[2] + r * .97]); } else out.push([h[0] + rnd(-.1, .1) * 0 + (i % 2 ? .08 : -.08), h[1] - .1 - (i - 2) * .12, h[2] + .06]); }
   return out; }
 
 /* drips: drops fall off them and leave black spots that dry slowly */
 function initDrips() {
-  const N = 60, I = new THREE.InstancedMesh(new THREE.SphereGeometry(.012, 8, 6), slime(), N); I.frustumCulled = false; I.castShadow = false; scene.add(I);
+  const N = 60, I = new THREE.InstancedMesh(new THREE.SphereGeometry(.012, 8, 6), new THREE.MeshPhysicalMaterial({ color: 0x0c0605, roughness: .1, clearcoat: 1 }), N); I.frustumCulled = false; I.castShadow = false; scene.add(I);
   const d = []; for (let i = 0; i < N; i++) { d.push({ p: V(0, -9, 0), v: 0, live: false }); I.setMatrixAt(i, _m.makeTranslation(0, -9, 0)); } THEM.drips = { I, d };
-  const PN = 40, pg = new THREE.CircleGeometry(1, 16); pg.rotateX(-Math.PI / 2); const pm = new THREE.MeshPhysicalMaterial({ color: 0x030304, roughness: .05, clearcoat: 1, transparent: true, opacity: .9, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 });
+  const PN = 40, pg = new THREE.CircleGeometry(1, 16); pg.rotateX(-Math.PI / 2); const pm = new THREE.MeshPhysicalMaterial({ color: 0x0a0504, roughness: .05, clearcoat: 1, transparent: true, opacity: .9, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 });
   const PI = new THREE.InstancedMesh(pg, pm, PN); PI.frustumCulled = false; PI.receiveShadow = true; scene.add(PI); THEM.pud = { I: PI, list: [], n: 0 }; for (let i = 0; i < PN; i++) PI.setMatrixAt(i, _m.makeScale(0, 0, 0));
 }
 function drip(x, y, z) { const D = THEM.drips.d.find(d => !d.live); if (!D) return; D.live = true; D.p.set(x, y, z); D.v = 0; }
@@ -92,6 +125,7 @@ function render(C, dt, force) {
   C.t += dt; const fast = C.vis > 0 || C.state === 'hunt' || C.test === 'approach'; C.upd -= dt; if (!force && C.upd > 0) return; C.upd = fast ? 1 / 30 : 1 / 6;
   const { B, head } = shape(C, C.t), mc = C.mc, F = FIT[C.pose] || FIT.stand, S = F[0] * (C.kind === 'small' && C.pose === 'stand' ? .8 : 1), cy = F[1];
   mc.scale.setScalar(S); mc.position.set(0, cy, 0); mc.reset();
+  const sh = mc.material.userData.sh; if (sh) sh.uniforms.zT.value = C.t;
   for (const [x, y, z, r] of B) { const n = r / (2 * S); mc.addBall(x / (2 * S) + .5, (y - cy) / (2 * S) + .5, z / (2 * S) + .5, 140 * n * n, 60); }
   mc.update();
   const es = eyeSpots(C, head); C.eyes.forEach((e, i) => e.position.set(es[i][0], es[i][1], es[i][2]));
@@ -117,7 +151,7 @@ function update(dt, me) {
     if (C.state === 'away') { C.vis = 0; C.contact = Math.max(0, C.contact - dt * 3); continue; }
     render(C, dt);
     // eyes follow your head
-    for (const e of C.eyes) { e.getWorldPosition(_a); _c.copy(head); e.parent.worldToLocal(_c); e.lookAt(_c); const W = e.userData; W.wide = lerp(W.wide, C.noticed || C.state === 'hunt' ? 1.45 : 1, dt * 8); W.w.scale.setScalar(W.r * W.wide); W.p.scale.set(W.r * .55 / W.wide, W.r * .55 / W.wide, W.r * .3); W.p.position.z = W.r * W.wide * .82; }
+    for (const e of C.eyes) { e.getWorldPosition(_a); _c.copy(head); e.parent.worldToLocal(_c); e.lookAt(_c); const W = e.userData; W.wide = lerp(W.wide, C.noticed || C.state === 'hunt' ? 1.35 : 1, dt * 8); W.w.scale.setScalar(W.r * W.wide); W.lid.scale.setScalar(W.r * (1.05 + (W.wide - 1) * .2)); }
     eyesWorld(C, EW); C.root.getWorldPosition(_b); _b.y += C.pose === 'hang' ? 1.7 : C.pose === 'ceiling' ? H - .2 : C.pose === 'under' ? .15 : C.pose === 'face' ? 0 : 1.1;
     const was = C.vis; C.vis = eyesShut ? 0 : (inView(_b) || EW.some(p => inView(p))) ? 1 : 0;
     if (C.vis && !was) { C.seenT = CLOCK.t; C.glances++; THEM.onEvent && THEM.onEvent('seen', C); }

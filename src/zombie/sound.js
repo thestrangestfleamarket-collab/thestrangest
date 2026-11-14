@@ -20,6 +20,11 @@ A.init = function () {
   this.beds.tv = this.bed(new THREE.Vector3(4.45, .95, 3.9), 0, d => { const bp = this.f('bandpass', 900, 1.4, d), g = this.g(0, bp); this.n(g); this.tvG = g; this.tvSyl = this.o('square', 4.2, this.g(.5, g.gain)); this.tvNoise = this.g(0, d); this.n(this.f('highpass', 1500, .3, this.tvNoise)); });
   this.beds.heart = { g: this.g(0, this.master) };
   this.beds.hum = this.bed(new THREE.Vector3(5.75, 2, 3.2), .03, d => { this.o('sawtooth', 120, this.f('highpass', 800, .7, d)); });
+  // the radio: a station a little off the dial (a chord that changes, a beat, static); the blender; the tap
+  this.beds.radio = this.bed(new THREE.Vector3(.3, 1.05, 1.85), 0, d => { const bp = this.f('bandpass', 1100, .6, d); this.radioO = [0, 1, 2].map(() => this.o('sawtooth', 220, this.g(.05, bp))); this.radioBus = bp; this.n(this.f('highpass', 3000, .5, this.g(.04, d))); });
+  this.beds.blender = this.bed(new THREE.Vector3(2.28, 1.05, .3), 0, d => { this.o('sawtooth', 118, this.f('lowpass', 2400, 1, this.g(.25, d))); this.n(this.f('bandpass', 1800, .8, this.g(.6, d))); this.o('square', 236, this.f('bandpass', 900, 3, this.g(.1, d))); });
+  this.beds.tap = this.bed(new THREE.Vector3(1.85, .9, .15), 0, d => { this.n(this.f('bandpass', 2200, .5, d)); this.n(this.f('lowpass', 500, .7, this.g(.5, d))); });
+  this.chord = 0; this.radioBeat = 0;
   this.tick = 0; this.beat = 0; this.sirenT = rnd(20, 60); this.clank = rnd(30, 90);
 };
 A.g = function (v, d) { const n = this.c.createGain(); n.gain.value = v; if (d) n.connect(d); return n; };
@@ -74,6 +79,12 @@ A.update = function (dt, tense, tvOn, tvK, sleeping) {
   this.clank -= dt; if (this.clank < 0) { this.clank = rnd(40, 120); this.play('clank', new THREE.Vector3(3.3, .5, .15), .8); }
   this.beds.city.g.gain.setTargetAtTime(sleeping ? .06 : .12, t, 1);
 };
+// the things left running
+const CH = [[220, 277, 330], [196, 247, 294], [175, 220, 262], [247, 311, 370]];
+A.devices = function (dt, st) { if (!this.c) return; const t = this.c.currentTime;
+  this.beds.radio.g.gain.setTargetAtTime(st.radio ? .5 : 0, t, .05); this.beds.blender.g.gain.setTargetAtTime(st.blender ? .7 : 0, t, .03); this.beds.tap.g.gain.setTargetAtTime(st.tap ? .35 : 0, t, .08);
+  if (st.radio) { this.chord -= dt; if (this.chord < 0) { this.chord = 2.2; const c = CH[Math.floor(R() * CH.length)]; this.radioO.forEach((o, i) => o.frequency.setTargetAtTime(c[i], t, .03)); }
+    this.radioBeat -= dt; if (this.radioBeat < 0) { this.radioBeat = .27; this.burst(this.radioBus, 'highpass', 6000, .5, .03, .25); if ((this.rb = (this.rb || 0) + 1) % 2) this.thump(this.radioBus, 120, 50, .1, .8); } } };
 A.duck = function (v) { if (this.master) this.master.gain.setTargetAtTime(v, this.c.currentTime, .3); };
 
 /* voices: the browser speaks; a whisper is low, slow and soft */

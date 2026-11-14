@@ -35,7 +35,7 @@ function rainGlass() {
   ROOM.rainRT = { rt, sm, qs, qc }; rt.texture.repeat.set(3.2, 2.4);
   // the normal map reads the picture's first two channels as the surface's tilt
   const m = new THREE.MeshPhysicalMaterial({ color: 0xb8c4d0, transparent: true, opacity: .14, roughness: .02, metalness: 0, normalMap: rt.texture, specularIntensity: 1, envMapIntensity: 1.6, clearcoat: 1, clearcoatRoughness: 0, depthWrite: false });
-  m.normalScale.set(.9, -.9); ROOM.glassM = m; return m;
+  m.normalScale.set(.6, -.6); ROOM.glassM = m; return m;
 }
 function drawRain(t) { const R = ROOM.rainRT; if (!R) return; R.sm.uniforms.t.value = t; const xr = renderer.xr.enabled, old = renderer.getRenderTarget(); renderer.xr.enabled = false; renderer.setRenderTarget(R.rt); renderer.render(R.qs, R.qc); renderer.setRenderTarget(old); renderer.xr.enabled = xr; }
 
@@ -95,10 +95,17 @@ function kitchen(M) {
   // upper cupboards and the light under them
   stat(.75, 1.5, 0, 2.4, 2.25, .34, cab, { ghost: true }); for (let x = .78; x < 2.4; x += .55) box(.5, .7, .012, M.door, x + .25, 1.875, .347);
   const ul = new THREE.Mesh(new THREE.BoxGeometry(1.4, .02, .04), plain(0xfff0d8, .5, { emissive: 0xffe2b0, ei: 1.2 })); ul.position.set(1.55, 1.49, .25); scene.add(ul); ROOM.lights.under = { m: ul.material, base: 2 };
-  const under = new THREE.PointLight(0xffd9a8, 4, 2.6, 2); under.position.set(1.55, 1.4, .35); scene.add(under); ROOM.lights.under.L = under; ROOM.lights.under.I = 4;
+  const under = new THREE.PointLight(0xffd9a8, 2.4, 2.6, 2); under.position.set(1.55, 1.4, .35); scene.add(under); ROOM.lights.under.L = under; ROOM.lights.under.I = 2.4;
   // the microwave, kettle, a radio
   const mw = model('vintage_microwave', { h: .3 }); place(mw, .3, .9, 1.25, Math.PI / 2); block(.4, .3, .6, .3, 1.05, 1.25);
-  place(model('boombox', { h: .26 }), .25, .9, 1.85, Math.PI / 2);
+  place(model('boombox', { h: .26 }), .25, .9, 1.85, Math.PI / 2); const led = box(.012, .012, .006, plain(0x330000, .5, { emissive: 0xff2200, ei: 0 }), .4, 1.0, 1.85, scene, false); ROOM.radio = { on: false, led: led.material, pos: V(.3, 1.05, 1.85) };
+  use('radio', 'the radio', V(.3, 1.0, 1.85), 1.1, () => { ROOM.radio.on = !ROOM.radio.on; ROOM.sfx && ROOM.sfx('click', ROOM.radio.pos); return 'radio'; });
+  // a blender on the counter, its glass jar
+  const bl = new THREE.Group(), base = new THREE.Mesh(new THREE.CylinderGeometry(.07, .085, .14, 18), enamel(0xd9d1bd)); base.position.y = .07; bl.add(base);
+  const jar = new THREE.Mesh(new THREE.CylinderGeometry(.07, .055, .2, 18, 1, true), new THREE.MeshPhysicalMaterial({ color: 0xdfe8ea, transmission: .7, roughness: .08, transparent: true, opacity: .45, side: THREE.DoubleSide })); jar.position.y = .24; bl.add(jar);
+  const lid2 = new THREE.Mesh(new THREE.CylinderGeometry(.073, .073, .02, 18), plain(0x2a2a2a, .5)); lid2.position.y = .35; bl.add(lid2); const blade = new THREE.Mesh(new THREE.BoxGeometry(.09, .004, .015), plain(0x999999, .3, { metal: 1 })); blade.position.y = .16; bl.add(blade);
+  bl.traverse(o => { o.castShadow = true; }); bl.position.set(2.28, .9, .3); scene.add(bl); block(.17, .36, .17, 2.28, 1.08, .3); ROOM.blender = { on: false, blade, g: bl, pos: V(2.28, 1.05, .3) };
+  use('blender', 'the blender', V(2.28, 1.05, .32), 1.1, () => { ROOM.blender.on = !ROOM.blender.on; ROOM.sfx && ROOM.sfx('click', ROOM.blender.pos); return 'blender'; });
   // the refrigerator: enamel, a chrome handle, its own light, the door on a hinge
   const fm = enamel(0xe9e2cf); stat(.02, 0, .02, .07, 1.72, .7, fm); stat(.68, 0, .02, .73, 1.72, .7, fm); stat(.07, 0, .02, .68, .08, .7, fm); stat(.07, 1.66, .02, .68, 1.72, .7, fm); stat(.07, .08, .02, .68, 1.66, .07, fm);
   const inside = plain(0xe8eef0, .5); for (const y of [.55, 1.0, 1.35]) box(.6, .015, .6, new THREE.MeshPhysicalMaterial({ color: 0xffffff, transmission: .6, roughness: .2 }), .375, y, .38, scene, false);
@@ -109,7 +116,10 @@ function kitchen(M) {
   const milk = model('long_life_food', { h: .24 }); ROOM.milk = dyn(milk, [sBox(.11, .24, .11, 0, .12, 0)], { x: .3, y: 1.02, z: .35, mass: 1, kind: 'carton' });
   use('fridge', 'the refrigerator', V(.4, 1, .75), 1.3, () => { ROOM.fridge.open = !ROOM.fridge.open; ROOM.sfx && ROOM.sfx(ROOM.fridge.open ? 'fridgeOpen' : 'fridgeShut', V(.4, 1, .6)); return 'fridge'; });
   use('stove', 'the stove', V(1.15, .95, .45), 1.2, () => { ROOM.stove.on = !ROOM.stove.on; ROOM.sfx && ROOM.sfx('click', ROOM.stove.pos); return 'stove'; });
-  use('sink', 'the sink', V(1.85, .95, .4), 1.2, () => 'sink');
+  const stream = new THREE.Mesh(new THREE.CylinderGeometry(.006, .008, .26, 8), new THREE.MeshPhysicalMaterial({ color: 0xcfe0e8, transmission: .8, roughness: .05, transparent: true, opacity: .55 })); stream.position.set(1.85, .83, .1); stream.visible = false; scene.add(stream);
+  ROOM.tap = { on: false, stream, pos: V(1.85, .9, .15) };
+  use('sink', 'the tap', V(1.85, .95, .4), 1.2, () => { ROOM.tap.on = !ROOM.tap.on; ROOM.sfx && ROOM.sfx('click', ROOM.tap.pos); return 'sink'; });
+  const coil = new THREE.Mesh(new THREE.TorusGeometry(.075, .008, 6, 24), plain(0x222222, .6, { emissive: 0xff3300, ei: 0 })); coil.rotation.x = Math.PI / 2; coil.position.set(1.0, .905, .2); scene.add(coil); ROOM.coil = coil.material;
   // the table, two chairs, a plate and a glass
   const tb = model('round_wooden_table_01', { h: .75 }); place(tb, 1.25, 0, 2.65); block(.9, .75, .9, 1.25, .37, 2.65);
   place(model('dining_chair_02', { h: .95 }), .6, 0, 2.65, Math.PI / 2); block(.45, .48, .45, .6, .24, 2.65); place(model('dining_chair_02', { h: .95 }), 1.9, 0, 2.65, -Math.PI / 2); block(.45, .48, .45, 1.9, .24, 2.65);
@@ -190,6 +200,7 @@ function bathroom(M) {
   // the reflection: a second picture of the room from behind the glass, only while you are in here
   const rf = new Reflector(new THREE.PlaneGeometry(.42, .62), { textureWidth: LOW ? 256 : 512, textureHeight: LOW ? 384 : 768, color: 0x8a8f8f, clipBias: .003 }); rf.position.set(5.75, 1.52, 3.082); scene.add(rf); ROOM.mirror = { rf, plane: new THREE.Plane(new THREE.Vector3(0, 0, 1), -3.082), w: .42, h: .62, c: V(5.75, 1.52, 3.082) };
   use('basin', 'the basin', V(5.75, .95, 3.4), 1.2, () => 'basin');
+  box(.08, .12, .015, plain(0xe9e2cf, .4), 4.98, 1.25, 4.3).rotation.y = Math.PI / 2; use('bathlight', 'the bathroom light', V(4.97, 1.25, 4.3), 1.0, () => { ROOM.lights.bath.on = !ROOM.lights.bath.on; ROOM.sfx && ROOM.sfx('click', V(4.97, 1.25, 4.3)); return 'bathlight'; });
   // the bath, its curtain, the lavatory
   const tub = enamel(0xf4f1e8); stat(6.2, 0, 3.75, 6.98, .1, 4.98, tub); stat(6.2, .1, 3.75, 6.98, .55, 3.82, tub); stat(6.2, .1, 4.91, 6.98, .55, 4.98, tub); stat(6.2, .1, 3.82, 6.27, .55, 4.91, tub); stat(6.91, .1, 3.82, 6.98, .55, 4.91, tub);
   box(.02, .02, 1.25, plain(0xb7bcc0, .3, { metal: 1 }), 6.2, 2.0, 4.36);
@@ -303,12 +314,27 @@ function update(dt, t) {
   const B = L.bath; B.flick -= dt; if (B.flick < 0) B.flick = Math.random() < .08 ? rnd(.03, .2) : rnd(1, 6); const bo = B.on && pw && !(B.flick < .2 && Math.random() < .5); B.L.intensity = bo ? B.I : 0; B.m.emissiveIntensity = bo ? 1.2 : .05;
   L.fridge.L.intensity = pw && F.a < -.2 ? L.fridge.I : 0;
   const O = L.out; O.pink.intensity = O.pI * k; O.cyan.intensity = O.cI * (CITY.signs ? CITY.signs[1].k : 1); O.flash.intensity = CITY.flash * 2.4; O.hemi.intensity = .55 + CITY.flash * .6;
+  ROOM.radio.led.emissiveIntensity = ROOM.radio.on && pw ? 2 : 0; if (ROOM.blender.on && pw) { ROOM.blender.blade.rotation.y += dt * 60; ROOM.blender.g.position.x = 2.28 + Math.sin(t * 90) * .0015; }
+  ROOM.tap.stream.visible = ROOM.tap.on; ROOM.coil.emissiveIntensity = lerp(ROOM.coil.emissiveIntensity, ROOM.stove.on && pw ? 2.5 : 0, dt * .6);
   drawTV(dt); const T = ROOM.tv; L.tv.L.intensity = T.on && pw ? 7 * T.k : 0; L.tv.L.color.setHSL(.6, .4, .7 + T.k * .1);
   // the curtain stirs; the mirror draws only when you are near it
   const cp = ROOM.curtain.geometry.attributes.position, base = ROOM.curtainBase; for (let i = 0; i < cp.count; i++) { const x = base[i * 3], y = base[i * 3 + 1]; cp.setZ(i, Math.sin(x * 26) * .035 + Math.sin(t * .8 + x * 3) * .01 * (1 - (y + .875) / 1.75) + (ROOM.curtainPush || 0) * Math.exp(-Math.pow((x - (ROOM.curtainAt || 0)) * 4, 2)) * (1 - (y + .875) / 1.75)); } cp.needsUpdate = true; ROOM.curtain.geometry.computeVertexNormals();
   camera.getWorldPosition(_v); ROOM.mirror.rf.visible = _v.x > 4.9 && _v.z > 2.9;
   const dp = ROOM.dust.geometry.attributes.position; for (let i = 0; i < dp.count; i++) { dp.setY(i, dp.getY(i) + Math.sin(t * .3 + i) * .0004 - .00008); if (dp.getY(i) < .1) dp.setY(i, 2.5); } dp.needsUpdate = true;
 }
+// everything that can be switched, opened or left running: whether it is wrong now, where it is, and where one of them would stand beside it
+const DEV = {
+  tv: { label: 'the television', is: () => ROOM.tv.on, set: v => { ROOM.tv.on = v; }, at: () => ROOM.tv.pos, spot: 'tvcorner' },
+  radio: { label: 'the radio', is: () => ROOM.radio.on, set: v => { ROOM.radio.on = v; }, at: () => ROOM.radio.pos, spot: 'kitchen' },
+  blender: { label: 'the blender', is: () => ROOM.blender.on, set: v => { ROOM.blender.on = v; }, at: () => ROOM.blender.pos, spot: 'kitchen' },
+  fridge: { label: 'the refrigerator door', is: () => ROOM.fridge.open, set: v => { ROOM.fridge.open = v; }, at: () => V(.4, 1, .6), spot: 'corner' },
+  tap: { label: 'the tap', is: () => ROOM.tap.on, set: v => { ROOM.tap.on = v; }, at: () => ROOM.tap.pos, spot: 'kitchen' },
+  stove: { label: 'the stove', is: () => ROOM.stove.on, set: v => { ROOM.stove.on = v; }, at: () => ROOM.stove.pos, spot: 'fridge' },
+  light: { label: 'the big light', is: () => !ROOM.lights.main.on, set: v => { ROOM.lights.main.on = !v; }, at: () => V(3.3, 2.2, 2.4), spot: 'corner' },
+  bathlight: { label: 'the bathroom light', is: () => !ROOM.lights.bath.on, set: v => { ROOM.lights.bath.on = !v; }, at: () => V(5.75, 2, 3.3), spot: 'tub' },
+  closet: { label: 'the closet door', is: () => ROOM.closet.a > .7, set: v => { ROOM.closet.want = v ? 1.4 : .18; }, at: () => V(1.62, 1.2, 4.2), spot: 'closet' },
+  bathdoor: { label: 'the bathroom door', is: () => ROOM.bathDoor.shut, set: v => { ROOM.bathDoor.shut = v; }, at: () => V(5.05, 1, 3.7), spot: 'mirror' } };
+ROOM.dev = DEV;
 // the nearest thing you could use, from where your hand or eye is, as long as nothing solid is between
 function nearestUse(from, dir) { let best = null, bs = -1; for (const U of ROOM.uses) { if (U.off) continue; _v.subVectors(U.pos, from); const d = _v.length(); if (d > U.r) continue; const a = dir ? _v.normalize().dot(dir) : 1; if (dir && a < .55) continue; const s = a - d * .3; if (s > bs) { bs = s; best = U; } } return best; }
 

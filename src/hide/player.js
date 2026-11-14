@@ -9,6 +9,7 @@ const PL = { pos: new THREE.Vector3(0, 0, -2.6), head: new THREE.Vector3(), fwd:
   noises: [], prints: [], puffs: [], breath: { phase: 0, air: 1, exert: 0, holding: false, want: false }, hands: [], keys: {}, mantle: null, frozen: false, onUse: null, moved: 0 };
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _q = new THREE.Quaternion(), UP = new THREE.Vector3(0, 1, 0);
 const _t1 = new THREE.Vector3(), _t2 = new THREE.Vector3(), _tq = new THREE.Quaternion(); let torch, torchM;
+const notDoor = c => { const T = P.byCol.get(c.handle); return !(T && T.lid && T.lid.mid); };   // a room door swings out of your way (world.js): it never stops you
 let body, col, ctl, puffM, printM, printI = 0; const puffS = [], printS = [];
 
 // a noise the thing might hear: loud 1 carries the alley's length, .1 a couple of metres
@@ -95,7 +96,7 @@ function update(dt) {
   for (const H of PL.hands) if (H.climb && H.on) { climbing = true; want.x += H.last.x - H.pos.x; want.y += H.last.y - H.pos.y; want.z += H.last.z - H.pos.z; }
   if (PL.mantle) { const M = PL.mantle; M.t = Math.min(1, M.t + dt / .6); const e = M.t * M.t * (3 - 2 * M.t); PL.pos.lerpVectors(M.from, M.to, e); PL.pos.y = lerp(lerp(M.from.y, M.top, Math.min(1, M.t * 2)), M.to.y, Math.max(0, M.t * 2 - 1)); PL.vy = 0; if (M.t >= 1) PL.mantle = null; PL.moved = 0; }
   else { if (climbing) PL.vy = 0; else { PL.vy = PL.grounded ? -1 : PL.vy - 9.81 * dt; want.y += PL.vy * dt; }
-    ctl.computeColliderMovement(col, want, undefined, GROUPS); for (let i = 0; i < ctl.numComputedCollisions(); i++) { const c = ctl.computedCollision(i), T = c && c.collider && P.byCol.get(c.collider.handle); if (T && !T.fixed) T.plT = CLOCK.t; } const m = ctl.computedMovement(); const wasAir = !PL.grounded, fell = PL.vy; PL.grounded = ctl.computedGrounded(); if (wasAir && PL.grounded && fell < -5) { PL.noise(PL.pos, clamp(-fell / 8, .4, 1), 'a body landing'); A.at(['heavy1', 'heavy2'], PL.pos, .8, 1.3); } PL.pos.x += m.x; PL.pos.y += m.y; PL.pos.z += m.z; PL.moved = Math.hypot(m.x, m.z);
+    ctl.computeColliderMovement(col, want, undefined, GROUPS, notDoor); for (let i = 0; i < ctl.numComputedCollisions(); i++) { const c = ctl.computedCollision(i), T = c && c.collider && P.byCol.get(c.collider.handle); if (T && !T.fixed) T.plT = CLOCK.t; } const m = ctl.computedMovement(); const wasAir = !PL.grounded, fell = PL.vy; PL.grounded = ctl.computedGrounded(); if (wasAir && PL.grounded && fell < -5) { PL.noise(PL.pos, clamp(-fell / 8, .4, 1), 'a body landing'); A.at(['heavy1', 'heavy2'], PL.pos, .8, 1.3); } PL.pos.x += m.x; PL.pos.y += m.y; PL.pos.z += m.z; PL.moved = Math.hypot(m.x, m.z);
     if (PL.pos.y < -6) PL.pos.set(0, .1, -2.6); }
   body.setNextKinematicTranslation(PL.pos); PL.speed = lerp(PL.speed, PL.moved / Math.max(dt, .001), .25); PL.run = run && PL.speed > 3; PL.low = low;
   rig.position.set(PL.pos.x - cl.x, PL.pos.y + off, PL.pos.z - cl.z); rig.updateMatrixWorld(true); camera.getWorldPosition(PL.head);

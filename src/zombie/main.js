@@ -2,7 +2,7 @@
 import { THREE, Q, LOW, clamp, lerp, rnd, pick, renderer, scene, camera, rig, P, CLOCK, initPhysics, loadAssets, mergeStatics, RAPIER, ray } from './core.js';
 import { CITY, build as buildCity, update as cityUpdate } from './city.js';
 import { ROOM, build as buildRoom, update as roomUpdate } from './room.js';
-import { THEM, build as buildThem, update as themUpdate, setSpot, away, approach, inView, head as HEAD } from './them.js';
+import { THEM, build as buildThem, update as themUpdate, setSpot, away, approach, inView, head as HEAD, creep, navBuild } from './them.js';
 import { PL } from './player.js';
 import { A } from './sound.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
@@ -73,16 +73,16 @@ A.onSay = (text, o) => { sub = { text: (o.whisper ? '' : '') + text, t: 2.5 + te
 
 /* the look on a screen: depth of field that finds what you look at, glow, grain, a little colour fringing; none of it in the headset */
 let comp = null, bokeh = null, grain = null, focus = 2;
-const FILM = { uniforms: { tDiffuse: { value: null }, t: { value: 0 }, amt: { value: .05 }, vig: { value: .9 }, ca: { value: .0016 }, shut: { value: 0 } },
+const FILM = { uniforms: { tDiffuse: { value: null }, t: { value: 0 }, amt: { value: .07 }, vig: { value: 1.5 }, ca: { value: .0016 }, shut: { value: 0 } },
   vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.); }',
   fragmentShader: `uniform sampler2D tDiffuse; uniform float t, amt, vig, ca, shut; varying vec2 vUv;
     float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233)) + t*7.) * 43758.5453); }
     void main(){ vec2 d = vUv - .5; float r2 = dot(d,d); vec2 o = d * ca * (1. + r2*4.);
       vec3 c = vec3(texture2D(tDiffuse, vUv + o).r, texture2D(tDiffuse, vUv).g, texture2D(tDiffuse, vUv - o).b);
-      c *= mix(1., smoothstep(.85, .15, r2 * vig * 1.6), .85); c += (h(vUv) - .5) * amt; gl_FragColor = vec4(c, 1.); }` };
+      c *= mix(1., smoothstep(.85, .1, r2 * vig * 1.6), .92); c = clamp(c, 0., 1.); float l = dot(c, vec3(.299, .587, .114)); c = mix(vec3(l), c, .75); c = max(c - .01, 0.) * 1.04; c = c * c * (3. - 2. * c) * .3 + c * .7; c += (h(vUv) - .5) * amt * (1. - l * .6); gl_FragColor = vec4(c, 1.); }` };
 function post() { if (comp || Q.get('post') === '0') return; comp = new EffectComposer(renderer); comp.addPass(new RenderPass(scene, camera));
   bokeh = new BokehPass(scene, camera, { focus: 2, aperture: .0006, maxblur: .0045 }); comp.addPass(bokeh); const br = bokeh.render.bind(bokeh); bokeh.render = (...a) => { const rf = ROOM.mirror && ROOM.mirror.rf, v = rf && rf.visible; if (rf) rf.visible = false; br(...a); if (rf) rf.visible = v; };
-  comp.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), .16, .4, 1.0)); grain = new ShaderPass(FILM); comp.addPass(grain); comp.addPass(new OutputPass());
+  comp.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), .16, .4, 1.0)); comp.addPass(new OutputPass()); grain = new ShaderPass(FILM); comp.addPass(grain);
   addEventListener('resize', () => comp.setSize(innerWidth, innerHeight)); }
 
 /* physics, and what bumping sounds like */
@@ -173,8 +173,10 @@ function director(dt) {
   const act = THEM.list.filter(C => C.active);
   for (const C of act) {
     if (C.state === 'hunt' || C.test === 'approach') continue;
+    // a creeper gives up after a while, or once you have stood looking at it; it goes while you look away
+    if (C.state === 'creep') { if (C.vis) C.seenFor = (C.seenFor || 0) + dt; if (!C.vis && (C.creepT > 32 || (C.seenFor || 0) > 7)) { away(C); C.seenFor = 0; C.enterAt = G.t + rnd(8, 20); } continue; }
     C.cool -= dt;
-    if (C.state === 'away') { if (G.t > C.enterAt && G.mode === 'play') { const sp = C.want || choose(C); if (sp && !seenNow(ROOM.spots[sp].pos)) { setSpot(C, sp); C.want = null; C.dwell = rnd(18, 40); if (Math.random() < .5) A.play('slither', ROOM.spots[sp].pos, .5); G.log.push({ t: Math.round(G.t), what: 'one came in' }); } } continue; }
+    if (C.state === 'away') { if (G.t > C.enterAt && G.mode === 'play') { const sp = C.want || choose(C); if (!C.want && (C.creepIn ?? (C.creepIn = Math.random() < .4))) { C.creepIn = undefined; creep(C); G.log.push({ t: Math.round(G.t), what: 'one came in crawling' }); continue; } if (sp && !seenNow(ROOM.spots[sp].pos)) { setSpot(C, sp); C.want = null; C.dwell = rnd(18, 40); if (Math.random() < .5) A.play('slither', ROOM.spots[sp].pos, .5); G.log.push({ t: Math.round(G.t), what: 'one came in' }); } } continue; }
     C.dwell -= dt;
     if (C.dwell < 0 || (C.want && C.want !== C.spot)) { const sp = C.want || choose(C); if (sp && sp !== C.spot && !seenNow(C.pos) && !seenNow(ROOM.spots[sp].pos)) { setSpot(C, sp); C.want = null; C.dwell = rnd(18, 40); } }
     // tests
@@ -183,7 +185,7 @@ function director(dt) {
 }
 function choose(C) { const cur = G.cur && CHORES[G.cur]; let opts = cur ? [...cur.spots] : ['corner', 'kitchen']; if (Math.random() < .3) opts = Object.keys(ROOM.spots).filter(s => s !== 'face');
   opts = opts.filter(s => !THEM.list.some(o => o !== C && o.spot === s && o.state !== 'away')); if (G.mode === 'play') opts = opts.filter(s => !['underbed', 'ceilingbed'].includes(s) || G.cur === 'bed'); return opts.length ? pick(opts) : null; }
-function pickTest(C) { const r = Math.random(); if (r < .3) return 'mess'; if (r < .4) return 'move'; if (C.sus > .4 && r < .45) return 'approach'; if (r < .3) return 'drop'; if (r < .5) return 'whisper'; if (r < .62 && G.night >= 2) return 'knock'; if (r < .72 && G.night >= 2 && !G.phone.ringing && !G.phone.call && G.done.phone) return 'ring'; if (r < .8) return 'channel'; return 'approach'; }
+function pickTest(C) { const r = Math.random(); if (r < .22) return 'creep'; if (r < .45) return 'mess'; if (r < .4) return 'move'; if (C.sus > .4 && r < .45) return 'approach'; if (r < .3) return 'drop'; if (r < .5) return 'whisper'; if (r < .62 && G.night >= 2) return 'knock'; if (r < .72 && G.night >= 2 && !G.phone.ringing && !G.phone.call && G.done.phone) return 'ring'; if (r < .8) return 'channel'; return 'approach'; }
 function doTest(C, kind) {
   G.log.push({ t: Math.round(G.t), what: 'a test: ' + kind });
   if (kind === 'approach') { if (C.vis) return; C.pos.copy(PL.head).addScaledVector(PL.fwd, -1.5); approach(C, rnd(5, 8)); A.play('breathe', PL.head, .7); return; }
@@ -191,6 +193,7 @@ function doTest(C, kind) {
   if (kind === 'whisper') { const line = C.line || pick(LINES.them); C.line = ''; A.say(G.name && Math.random() < .4 ? G.name + '.' : line, { whisper: true, pos: C.pos }); C.flinchT = CLOCK.t; return; }
   if (kind === 'knock') { A.play('knock', new THREE.Vector3(.75, 1.2, 5.1), 1); C.flinchT = CLOCK.t; return; }
   if (kind === 'ring') { G.phone.ringing = true; G.phone.rt = 0; G.phone.fake = true; return; }
+  if (kind === 'creep') { if (!C.vis) creep(C); return; }
   if (kind === 'mess') { mess(C, C.thing || null); C.thing = null; return; }
   if (kind === 'move') { moveThing(C); return; }
   if (kind === 'channel') { if (ROOM.tv.on) { ROOM.tv.ch = 2; ROOM.tv.msg = pick(['LOOK AT IT', 'IT SEES YOU', 'EYES DOWN', 'DON\'T']); setTimeout(() => { ROOM.tv.msg = ''; ROOM.tv.ch = 0; }, 1600); C.flinchT = CLOCK.t; } return; }
@@ -219,6 +222,8 @@ THEM.onEvent = (kind, C) => {
   if (kind === 'seen' && C.vis) G.composure -= .5;
   if ((kind === 'contact' || kind === 'suspect') && !G.hunt && (G.mode === 'play' || G.mode === 'sleep')) startHunt(C, kind);
   if (kind === 'drip' && Math.random() < .3) A.play('drip', C, .3);
+  if (kind === 'touch') { A.play('breathe', PL.head, .9); C.flinchT = CLOCK.t; for (const H of PL.hands) { const a = H.src && H.src.gamepad && H.src.gamepad.hapticActuators && H.src.gamepad.hapticActuators[0]; try { a && a.pulse(.6, 300); } catch (e) {} } }
+  if (kind === 'scrape') A.play(Math.random() < .5 ? 'slither' : 'step', C.pos, .3);
   if (kind === 'approachDone') { C.state = 'wait'; C.spot = null; C.dwell = -1; C.pose = 'stand'; C.pos.y = 0; C.upd = 0; if (!C.vis) away(C); }
 };
 function startHunt(C, why) {
@@ -286,7 +291,7 @@ function tick(dt) {
 function draw(dt) {
   const shut = PL.shutK; lid.material.opacity = Math.max(shut, G.mode === 'hunt' && G.hunt && G.hunt.phase === 'search' && PL.covered ? .93 : 0, G.fade || 0); G.red = Math.max(0, G.red - dt * .5); blood.material.opacity = G.red * .6;
   drawHud(); if (renderer.xr.isPresenting) { if ((step++ % 10) === 0) drawWatch(); }
-  if (comp && !renderer.xr.isPresenting) { const h = board.m.visible ? 1.3 : ray0(); focus = lerp(focus, h, 1 - Math.exp(-dt * 5)); bokeh.uniforms.focus.value = focus; bokeh.uniforms.aperture.value = PL.eyesShut ? .003 : .0006; grain.uniforms.t.value = CLOCK.t; grain.uniforms.amt.value = .045 + (G.mode === 'hunt' ? .05 : 0); comp.render(dt); }
+  if (comp && !renderer.xr.isPresenting) { const h = board.m.visible ? 1.3 : ray0(); focus = lerp(focus, h, 1 - Math.exp(-dt * 5)); bokeh.uniforms.focus.value = focus; bokeh.uniforms.aperture.value = PL.eyesShut ? .003 : .0006; grain.uniforms.t.value = CLOCK.t; grain.uniforms.amt.value = .07 + (G.mode === 'hunt' ? .05 : 0); comp.render(dt); }
   else renderer.render(scene, camera);
 }
 // what you look at, for the lens: through the window you look at the city, not the glass
@@ -304,11 +309,11 @@ async function boot() {
   const note = $('note'), bar = $('bar');
   try { await initPhysics(); eq = new RAPIER.EventQueue(true); await loadAssets(p => { bar.style.transform = 'scaleX(' + p + ')'; }); }
   catch (e) { note.textContent = 'It would not load: ' + e.message; return; }
-  buildCity(); buildRoom(); buildThem(); PL.init(); mergeStatics(); ROOM.sfx = (n, p) => A.play(n, p, .8);
+  buildCity(); buildRoom(); buildThem(); PL.init(); mergeStatics(); navBuild(); ROOM.sfx = (n, p) => A.play(n, p, .8);
   // reflections: the room itself, pictured once from its middle with its lights on
-  const pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(scene, .02, .1, 100, { position: new THREE.Vector3(3.3, 1.5, 2.5) }).texture; scene.environmentIntensity = .45; pm.dispose();
+  const pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(scene, .02, .1, 100, { position: new THREE.Vector3(3.3, 1.5, 2.5) }).texture; scene.environmentIntensity = .12; pm.dispose();
   if (!LOW) post(); PL.place(.75, 4.3, Math.PI * .9); renderer.setAnimationLoop(frame);
-  window.__zombie = { G, PL, THEM, ROOM, CITY, P, THREE, A, renderer, scene, camera, rig, startNight, startHunt, die, draw, mess, moveThing, setSpot, away, approach, CHORES, NIGHTS, finish, goToBed, dawn, think, onCard,
+  window.__zombie = { G, PL, THEM, ROOM, CITY, P, THREE, A, renderer, scene, camera, rig, startNight, startHunt, die, draw, mess, moveThing, creep, setSpot, away, approach, CHORES, NIGHTS, finish, goToBed, dawn, think, onCard,
     sim: (n, dt = 1 / 60) => { for (let i = 0; i < n; i++) tick(dt); }, look: (p) => { const d = new THREE.Vector3().subVectors(p, PL.head); PL.yaw = Math.atan2(-d.x, -d.z); PL.pitch = Math.atan2(d.y, Math.hypot(d.x, d.z)); } };
   G.night = await loadProgress(); $('night').textContent = G.night > 1 ? 'Continue: night ' + G.night + ' of 5' : 'Night 1 of 5';
   $('bdesk').disabled = false; $('bdesk').onclick = () => { go(); renderer.domElement.requestPointerLock && renderer.domElement.requestPointerLock(); };

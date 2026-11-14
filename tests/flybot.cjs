@@ -39,12 +39,15 @@ const mem = () => { let v = null; return { get: async () => v && JSON.parse(JSON
       await pg.evaluate(() => { window.__sent = []; ONLINE.send = m => __sent.push(m); window.__spoke = []; window.__asked = [];
         window.speechSynthesis = window.speechSynthesis || {}; try { Object.defineProperty(window, 'speechSynthesis', { value: { speak: u => __spoke.push([u.text, u.volume]), cancel() {}, getVoices: () => [] } }); } catch (e) { speechSynthesis.speak = u => __spoke.push([u.text, u.volume]); }
         const F = window.fetch; window.fetch = (u, o) => String(u) === '/bot' ? (__asked.push(JSON.parse(o.body)), Promise.resolve({ json: async () => ({ say: 'Double-click the bench to sit.' }) })) : F(u, o); });
-      ok(await pg.evaluate(() => !FLYBOTDBG().on && !FLYBOTDBG().bots.length && !!document.querySelector('#dflybot')), 'no bot until you call it; the menu\'s CHAT has FLYING BOT');
+      ok(await pg.evaluate(() => FLYBOTDBG().on && FLYBOTDBG().bots.some(x => x.id === 'me') && !!document.querySelector('#dflybot')), 'every player has the drone from the start; the menu\'s CHAT has FLYING BOT');
       await pg.evaluate(() => document.querySelector('#dflybot').click());
+      await pg.waitForTimeout(300);
+      ok(await pg.evaluate(() => !FLYBOTDBG().on && !FLYBOTDBG().bots.length), 'sent off from the menu, it is gone');
+      await pg.evaluate(() => { __spoke.length = 0; document.querySelector('#dflybot').click(); });
       await pg.waitForTimeout(2500);
       const d = await pg.evaluate(() => { const D = FLYBOTDBG(), B = D.bots[0], P = __dbg.you(), TILE = D.tile; return B && { d: Math.hypot(B.x - P.x, B.z - P.z) / TILE, up: (B.y - SHARED.py) / TILE, say: B.say, key: __dbg.ui().keyOf('ask') }; });
       ok(d && d.d > .3 && d.d < 1.2 && d.up > 1.5 && d.up < 2.2, 'called, it flies beside your head (' + JSON.stringify(d) + ')');
-      ok(d && /Ask me anything/.test(d.say) && d.key === '/' && await pg.evaluate(() => __spoke.length === 1), 'it says hello aloud and how to ask');
+      ok(d && /Double-click me/.test(d.say) && d.key === '/' && await pg.evaluate(() => __spoke.length === 1), 'it says hello aloud and how to ask');
       await pg.evaluate(() => { const D = FLYBOTDBG(); D.me.x += 6 * D.tile; });
       await pg.waitForTimeout(2500);
       const f = await pg.evaluate(() => { const D = FLYBOTDBG(), B = D.bots[0]; return Math.hypot(B.x - D.me.x, B.z - D.me.z) / D.tile; });
@@ -67,6 +70,22 @@ const mem = () => { let v = null; return { get: async () => v && JSON.parse(JSON
       await pg.evaluate(() => ONLINE.feed({ t: 'bot', id: 'a', text: 'Too far to hear.' }));
       await pg.waitForTimeout(300);
       ok(await pg.evaluate(() => __spoke.length === 0), 'a bot 40 tiles away is not heard');
+      // the companion: its menu, leading, guarding, mending
+      await pg.evaluate(() => ONLINE.bot.open());
+      await pg.waitForTimeout(1500);
+      ok(await pg.evaluate(() => TALK.on && document.querySelector('#talkn').textContent === 'PIP'), 'a double click on it opens its menu in the talk window');
+      const w = await pg.evaluate(() => [TALK.vars.pipwhat(), TALK.vars.piptip(), TALK.vars.pipguide()]);
+      ok(w.every(t => typeof t === 'string' && t.length > 10), 'it says what is near, a tip and a guide chapter (' + w.map(t => t.slice(0, 50)).join(' | ') + ')');
+      const dest = await pg.evaluate(() => { TALK.close(); const P = __dbg.you(), T = FLYBOTDBG().tile, p = __dbg.ui().places().find(q => q[3] === 'up' && !q[4] && Math.hypot(q[1] - P.x, q[2] - P.z) > 15 * T); if (!p) return null; TALK.ops.piplead(p[0]); return p; });
+      await pg.waitForTimeout(2500);
+      const l = await pg.evaluate(p => { const D = FLYBOTDBG(), B = D.bots.find(x => x.id === 'me'), P = D.me, ax = p[1] - P.x, az = p[2] - P.z, bx = B.x - P.x, bz = B.z - P.z; return { lead: PIPDBG().lead && PIPDBG().lead.name, ahead: (ax * bx + az * bz) / Math.hypot(ax, az) / D.tile }; }, dest);
+      ok(dest && l.lead === dest[0] && l.ahead > 1.5, 'asked WHERE IS, it flies ahead of you toward the place (' + JSON.stringify(l) + ')');
+      const g = await pg.evaluate(() => { const V = __dbg.VIT, P = __dbg.you(), T = FLYBOTDBG().tile; V.hp = 1; const a = V.hurt(.1, { x: P.x + T, z: P.z }), z = PIPDBG(), b = V.hurt(.1, { x: P.x + T, z: P.z }); return { a, b, zap: z.zapT > 0, beam: z.beam }; });
+      ok(g.a === 2 && g.zap && g.beam && g.b === 1, 'a blow on you is zapped back as a parry, then it needs a few seconds (' + JSON.stringify(g) + ')');
+      await pg.evaluate(() => { __dbg.VIT.hp = .2; });
+      await pg.waitForTimeout(800);
+      const hp = await pg.evaluate(() => __dbg.VIT.hp);
+      ok(hp > .45, 'low on health, it patches you up (' + hp.toFixed(2) + ')');
       await pg.evaluate(() => document.querySelector('#dflybot').click());
       await pg.waitForTimeout(500);
       ok(await pg.evaluate(() => !FLYBOTDBG().bots.some(x => x.id === 'me') && ONLINE.mine.ab() === null), 'sent off from the menu, it is gone');

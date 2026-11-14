@@ -64,6 +64,7 @@ jobs:
           k asylum  'src/asylum/|tools/asylum\.cjs|tests/asylum\.cjs'
           k golf    'src/golf/|data/golf/|tools/golf\.cjs|tests/golf\.cjs'
           k cantina 'src/cantina/|data/cantina/|tools/cantina\.cjs|tests/cantina\.cjs|worker/cantina'
+          k sushi   'src/sushi/|data/sushi/|tools/sushi\.cjs|tests/sushi\.cjs|worker/sushi'
           k scare   'src/scare/|data/scare/|tools/scare\.cjs|tests/scare\.cjs'
           k hide    'src/hide/|data/hide/|worker/hide|tools/hide\.cjs|tests/hide\.cjs'
           k zombie  'src/zombie/|data/zombie/|worker/zombie|tools/zombie|tests/zombie\.cjs'
@@ -283,6 +284,10 @@ jobs:
         timeout-minutes: 25
         if: contains(steps.f.outputs.run, ' sniper')
         run: node tests/sniper.cjs dist/sniper.html
+      - name: Yatai '86 (the ramen cart at /sushi; a whole bowl built by hand, served and paid, then the hands in an emulated Quest 3)
+        timeout-minutes: 20
+        if: contains(steps.f.outputs.run, ' sushi')
+        run: node tests/sushi.cjs dist/sushi.html
       - name: Breachline (the duel at /shoot; a practice round, a kill, and the guns in an emulated Quest 3)
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' shoot')

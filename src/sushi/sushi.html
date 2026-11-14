@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>YATAI '86</title>
+<meta name="robots" content="noindex">
+<style>
+  html,body{margin:0;height:100%;background:#05040a;overflow:hidden;font-family:"Helvetica Neue",Arial,"Noto Sans JP",sans-serif;color:#f4ead2}
+  canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block}
+  #menu{position:fixed;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:5vh 5vw;box-sizing:border-box;background:linear-gradient(180deg,rgba(5,4,10,0) 35%,rgba(5,4,10,.86) 78%)}
+  #menu h1{margin:0;font-size:clamp(34px,6vw,76px);letter-spacing:.04em;color:#ff4a2a;text-shadow:0 0 18px #ff3d2a,0 0 50px rgba(255,61,42,.6)}
+  #menu h2{margin:.2em 0 1em;font-weight:400;font-size:clamp(14px,1.7vw,20px);color:#ffd9a0;max-width:60em}
+  .row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+  button{font:inherit;font-weight:700;font-size:18px;padding:14px 26px;border-radius:6px;border:2px solid #ff4a2a;background:#1a0a08;color:#fff;cursor:pointer}
+  button.primary{background:#ff4a2a;color:#140404}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  #help{margin-top:16px;font-size:13px;line-height:1.55;color:#c8b8a0;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:4px 28px;max-width:1100px}
+  #help b{color:#ffd9a0}
+  #hud{position:fixed;inset:0;pointer-events:none;display:none}
+  #cross{position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-4px;border:1.5px solid rgba(255,255,255,.85);border-radius:50%}
+  #hover{position:absolute;left:50%;top:56%;transform:translateX(-50%);background:rgba(8,6,10,.72);padding:6px 12px;border-radius:4px;font-size:14px;white-space:nowrap}
+  #hover:empty{display:none}
+  #stat{position:absolute;left:14px;top:12px;background:rgba(8,6,10,.6);padding:6px 10px;border-radius:4px;font:700 13px/1.4 "Courier New",monospace;color:#ffb020}
+  #say{position:absolute;left:50%;bottom:16%;transform:translateX(-50%);width:min(560px,80vw);padding:10px 14px;font:600 16px inherit;border-radius:6px;border:2px solid #ff4a2a;background:rgba(10,6,8,.92);color:#fff;display:none;pointer-events:auto;outline:none}
+  #keys{position:absolute;right:14px;bottom:12px;background:rgba(8,6,10,.6);padding:6px 10px;border-radius:4px;font-size:12px;color:#c8b8a0;text-align:right}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="menu">
+  <h1>YATAI ’86</h1>
+  <h2>Midnight ramen cart · downtown, 1986. Light the burners, flip the sign, and cook every bowl by hand — tare, broth, noodles, toppings — exactly as each ticket says.</h2>
+  <div class="row"><button id="vr" class="primary" disabled>Checking for VR…</button><button id="desk">Play on desktop (mouse + keys)</button></div>
+  <div id="help">
+    <div><b>VR · Grip</b> grab &amp; hold (release to drop / tools fly home)</div>
+    <div><b>VR · Trigger</b> press switches, pour / chop assist</div>
+    <div><b>VR · Tilt</b> a ladle or noodle basket over a bowl to pour</div>
+    <div><b>VR · Chop</b> bring the knife down on the board</div>
+    <div><b>VR · Left stick</b> step along the cart · <b>Right stick</b> snap-turn, ↑↓ height</div>
+    <div><b>VR · Hand-tracking</b> pinch to grab, poke switches</div>
+    <div><b>Desktop</b> WASD move · mouse look · LMB grab/release · RMB or E pour/chop</div>
+    <div><b>Talk</b> customers speak (Claude Haiku 5.5). Desktop: T to type, hold V to speak. VR: hold A/X where the browser supports speech input</div>
+  </div>
+</div>
+<div id="hud"><div id="cross"></div><div id="hover"></div><div id="stat"></div><input id="say" maxlength="240" placeholder="Say something to the customer you are looking at… (Enter to send, Esc to cancel)" autocomplete="off"><div id="keys">WASD move · LMB grab / release · RMB or E: pour · chop · T: talk to a customer · V: hold to speak · Esc: free mouse</div></div>
+<script type="module">__SUSHI__</script>
+</body>
+</html>

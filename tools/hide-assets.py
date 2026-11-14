@@ -3,13 +3,8 @@ import io, json, os, struct, sys, urllib.request
 from PIL import Image
 
 API, OUT = 'https://api.polyhaven.com/files/', 'data/hide/'
-TEX = ['peeling_painted_wall', 'damaged_plaster', 'tiled_floor_001', 'old_wood_floor', 'long_white_tiles', 'blue_metal_plate', 'worn_planks', 'dark_brick_wall', 'asphalt_02', 'green_metal_rust', 'rusty_metal_02', 'dirty_carpet', 'hessian_230', 'dirty_concrete', 'metal_grate_rusty']
-MODELS = {'SchoolDesk_01': 512, 'painted_wooden_chair_01': 512, 'plastic_monobloc_chair_01': 256, 'steel_frame_shelves_01': 512, 'wooden_bookshelf_worn': 512, 'painted_wooden_cabinet': 512, 'drawer_cabinet': 512,
-          'Television_01': 512, 'WoodenTable_01': 512, 'wooden_table_02': 512, 'metal_stool_02': 256, 'wooden_broom': 256, 'chemistry_set': 512, 'hanging_picture_frame_02': 256,
-          'SchoolChair_01': 512, 'standing_chalkboard_01': 512, 'mounted_fluorescent_lights': 256, 'wall_clock': 256, 'fire_alarm': 256, 'korean_fire_extinguisher_01': 256, 'metal_office_desk': 512, 'WetFloorSign_01': 256,
-          'office_notepads': 256, 'clipboard': 256, 'projector_screen': 256, 'vintage_microscope': 256, 'bunsen_burner': 256,
-          'security_camera_01': 256, 'american_football': 256, 'wheelchair_01': 512, 'ceiling_fan': 256, 'plunger': 256, 'bleach_bottle': 256, 'vintage_microwave': 256, 'marble_bust_01': 256, 'vintage_suitcase': 256, 'medical_box': 256,
-          'metal_trash_can': 512, 'trashbag': 512, 'cardboard_box_01': 1024, 'sofa_02': 1024, 'industrial_pastic_container': 512, 'wooden_crate_02': 512, 'utility_box_01': 512, 'industrial_wall_lamp': 256, 'security_light': 256, 'power_box_01': 512}
+TEX = ['beige_wall_001', 'ceiling_interior', 'herringbone_parquet', 'wood_floor_worn', 'floor_tiles_06', 'concrete_floor_02', 'concrete_block_wall', 'oak_veneer_01', 'velour_velvet', 'long_white_tiles', 'dirty_carpet', 'hessian_230', 'dark_brick_wall', 'asphalt_02', 'rusty_metal_02', 'metal_grate_rusty']
+MODELS = {'painted_wooden_chair_01': 512, 'steel_frame_shelves_01': 512, 'wooden_bookshelf_worn': 512, 'drawer_cabinet': 512, 'Television_01': 512, 'wooden_broom': 256, 'metal_trash_can': 512, 'trashbag': 512, 'cardboard_box_01': 1024, 'sofa_02': 1024, 'wooden_crate_02': 512, 'power_box_01': 512, 'ceiling_fan': 256, 'vintage_suitcase': 256, 'ArmChair_01': 512, 'CoffeeTable_01': 256, 'ClassicConsole_01': 512, 'ClassicNightstand_01': 256, 'GothicCommode_01': 512, 'dining_table': 512, 'dining_chair_02': 256, 'vintage_grandfather_clock_01': 512, 'modern_ceiling_lamp_01': 256, 'desk_lamp_arm_01': 256, 'electric_stove': 512, 'boombox': 256, 'standing_picture_frame_01': 256, 'ornate_mirror_01': 512, 'rubber_duck_toy': 256, 'metal_tool_chest': 256, 'Rockingchair_01': 512, 'pull_chain_light_socket': 256, 'vintage_flashlight': 256}
 
 def get(url):
     return urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'asset-fetch'}), timeout=120).read()

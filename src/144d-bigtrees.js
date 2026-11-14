@@ -73,17 +73,20 @@ PARK.climbable=[];
     if(WEEDS.addFeet)WEEDS.addFeet([[x,z,rb,2.5*M]]);   // tufts and weeds round its foot and among its roots
     return {k:'BIG'+(o.kind||'A'),x,y,z,top:y+S.h*M,r:30*M,tr,rf:rb,fork:0,v0:0,v1:P.length/3,P:new Float32Array(P),LF:[],lb,sol,fix,climb:!!o.climb}; };
   SYS.onStart(()=>{ const ALL=PARK.big=[], FLS=[]; PARK.bigFar={get count(){ return FLS.reduce((a,f)=>a+f.count,0); }}; PARK.bigLeaves={get count(){ return ALL.reduce((a,it)=>a+(it.near?it.p1-it.p0:0),0); }};
+  const FDN='float fdN(){ return fract(52.9829189*fract(dot(floor(gl_FragCoord.xy),vec2(.06711056,.00583715)))); }\n';
+  const fdNear=(m,U)=>{ m.onBeforeCompile=sh=>{ sh.uniforms.uFd=U; sh.fragmentShader='uniform float uFd;\n'+FDN+sh.fragmentShader.replace('#include <clipping_planes_fragment>','#include <clipping_planes_fragment>\n if(uFd<.999&&fdN()>=uFd)discard;'); }; m.customProgramCacheKey=()=>'btfdn'; return m; };
+  const fdSet=(it,U)=>(r,s,c,g,m)=>{ U.value=it.f; if(m.userData.fd!==it.f){ m.userData.fd=it.f; m.uniformsNeedUpdate=true; } };
   const build=L=>{ if(!L.length)return; const g=new THREE.Group(), puffs=[];   // seen from the whole map, not only once the park is up (owner, 8 Nov 2026: "render entire map")
-    scene.add(g); SYS.every(()=>{ g.visible=SHARED.LVL==='up'; },500,'144d-bigtrees shown on the street level'); const bark=new THREE.MeshLambertMaterial({color:0x6a5040,flatShading:true}), leaf=new THREE.MeshLambertMaterial({color:0xffffff});
-    const i0=ALL.length, items=L.map((o,i)=>{ const n=puffs.length, it=make(o,i0+i,puffs); it.p0=n; it.p1=puffs.length; return it; }); ALL.push(...items); const elf=new THREE.MeshLambertMaterial({vertexColors:true,flatShading:true,side:THREE.DoubleSide});
+    scene.add(g); SYS.every(()=>{ g.visible=SHARED.LVL==='up'; },500,'144d-bigtrees shown on the street level'); const FDU={value:1}, bark=fdNear(new THREE.MeshLambertMaterial({color:0x6a5040,flatShading:true}),FDU), leaf=fdNear(new THREE.MeshLambertMaterial({color:0xffffff}),FDU);
+    const i0=ALL.length, items=L.map((o,i)=>{ const n=puffs.length, it=make(o,i0+i,puffs); it.p0=n; it.p1=puffs.length; return it; }); ALL.push(...items); const elf=fdNear(new THREE.MeshLambertMaterial({vertexColors:true,flatShading:true,side:THREE.DoubleSide}),FDU);
     const PG=new THREE.IcosahedronGeometry(1,1), m4=new THREE.Matrix4(), q=new THREE.Quaternion(), v=new THREE.Vector3(), s=new THREE.Vector3(), c=new THREE.Color(), EU=new THREE.Euler();   // each puff turned its own way: two the same size side by side never share a face
     PEEK.mark(PG,new Uint8Array(PG.attributes.position.count).fill(5));   // seen through round you like the park's other big trees (PEEK)
     // the leaves cast no shadow, only the bark (owner, 9 Nov 2026)
     // each tree whole (its bark, every leaf puff) drawn only near the eye (owner, 8 Nov 2026: "i want to simplify trees bigtime, they shouldnt cost much from far off at all")
-    for(const it of items){ const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(it.P,3)); geo.computeVertexNormals(); { const N=geo.attributes.normal.array, n8=new Int8Array(N.length); for(let i=0;i<N.length;i++)n8[i]=Math.round(N[i]*127); geo.setAttribute('normal',new THREE.BufferAttribute(n8,3,true)); } const me=new THREE.Mesh(geo,bark); me.castShadow=me.receiveShadow=true; g.add(me); it.mesh=me; if(it.climb)PARK.climbable.push(it);
+    for(const it of items){ const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(it.P,3)); geo.computeVertexNormals(); { const N=geo.attributes.normal.array, n8=new Int8Array(N.length); for(let i=0;i<N.length;i++)n8[i]=Math.round(N[i]*127); geo.setAttribute('normal',new THREE.BufferAttribute(n8,3,true)); } const me=new THREE.Mesh(geo,bark); me.castShadow=me.receiveShadow=true; g.add(me); it.mesh=me; it.f=0; if(it.climb)PARK.climbable.push(it);
       const IM=new THREE.InstancedMesh(PG,leaf,it.p1-it.p0); for(let i=it.p0;i<it.p1;i++){ const [x,y,z,r,k]=puffs[i], G=GREEN[k]; IM.setMatrixAt(i-it.p0,m4.compose(v.set(x,y,z),q.setFromEuler(EU.set(i*2.399%6.283,i*1.618%6.283,i*.737%6.283)),s.setScalar(r))); IM.setColorAt(i-it.p0,c.setRGB(G[0],G[1],G[2],THREE.SRGBColorSpace)); }
-      IM.castShadow=false; IM.receiveShadow=true; IM.computeBoundingSphere(); g.add(IM); it.leaves=IM;
-      if(it.leafP){ const lg=new THREE.BufferGeometry(); lg.setAttribute('position',new THREE.BufferAttribute(it.leafP,3)); lg.setAttribute('color',new THREE.BufferAttribute(it.leafC,3)); lg.computeVertexNormals(); PEEK.mark(lg,new Uint8Array(it.leafP.length/3).fill(5)); const lm=new THREE.Mesh(lg,elf); lm.receiveShadow=true; g.add(lm); it.shell=lm; }
+      IM.castShadow=false; IM.receiveShadow=true; IM.computeBoundingSphere(); g.add(IM); it.leaves=IM; for(const o of [me,IM])o.onBeforeRender=fdSet(it,FDU);
+      if(it.leafP){ const lg=new THREE.BufferGeometry(); lg.setAttribute('position',new THREE.BufferAttribute(it.leafP,3)); lg.setAttribute('color',new THREE.BufferAttribute(it.leafC,3)); lg.computeVertexNormals(); PEEK.mark(lg,new Uint8Array(it.leafP.length/3).fill(5)); const lm=new THREE.Mesh(lg,elf); lm.receiveShadow=true; lm.onBeforeRender=fdSet(it,FDU); g.add(lm); it.shell=lm; }
       PEEK.mark(geo,new Uint8Array(it.P.length/3).fill(5)); const B=new THREE.Box3(); geo.computeBoundingBox(); B.copy(geo.boundingBox);
       for(let i=it.p0;i<it.p1;i++){ const [x,y,z,r]=puffs[i]; B.expandByPoint(v.set(x-r,y-r,z-r)); B.expandByPoint(v.set(x+r,y+r,z+r)); } PEEK.box(IM,B.min.x,B.min.y,B.min.z,B.max.x,B.max.y,B.max.z); }
     // from further off, each tree its plain shape: its leaves gathered into a few big blobs (twenty triangles each), its trunk and big branch six-sided tubes; a few hundred triangles a tree, all of them one draw each
@@ -93,18 +96,24 @@ PARK.climbable=[];
       it.f1=FB.length; }
     const FL=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,0),new THREE.MeshLambertMaterial({color:0xffffff,flatShading:true}),FB.length);
     FB.forEach(([x,y,z,r,k],i)=>{ FL.setMatrixAt(i,m4.compose(v.set(x,y,z),q.setFromEuler(EU.set(i*2.399%6.283,i*1.618%6.283,i*.737%6.283)),s.setScalar(r))); FL.setColorAt(i,c.setRGB(.4,.63,.34,THREE.SRGBColorSpace)); });   // one green from far off (the four greens' patches flickered in the dark)
-    const TG=new THREE.CylinderGeometry(.35,1,1,6,1,true).translate(0,.5,0), FT=new THREE.InstancedMesh(TG,bark,items.length*2), UP=new THREE.Vector3(0,1,0), D=new THREE.Vector3();
-    const tubeAt=(i,a,b,r)=>{ D.set(b[0]-a[0],b[1]-a[1],b[2]-a[2]); const L_=D.length(); q.setFromUnitVectors(UP,D.normalize()); FT.setMatrixAt(i,m4.compose(v.set(a[0],a[1],a[2]),q,s.set(r,L_,r))); q.identity(); };
+    const Z0=new THREE.Matrix4().makeScale(0,0,0), TG=new THREE.CylinderGeometry(.35,1,1,6,1,true).translate(0,.5,0), FT=new THREE.InstancedMesh(TG,new THREE.MeshLambertMaterial({color:0x6a5040,flatShading:true}),items.length*2), UP=new THREE.Vector3(0,1,0), D=new THREE.Vector3();
+    const tubeAt=(i,a,b,r)=>{ if(r<=0)return FT.setMatrixAt(i,Z0); D.set(b[0]-a[0],b[1]-a[1],b[2]-a[2]); const L_=D.length(); q.setFromUnitVectors(UP,D.normalize()); FT.setMatrixAt(i,m4.compose(v.set(a[0],a[1],a[2]),q,s.set(r,L_,r))); q.identity(); };
     items.forEach((it,i)=>{ it.T0=[[it.x,it.y-.5*T,it.z],[it.x,it.top,it.z],it.tr*1.15]; const lb=it.lb, b0=lb[0]; let e=0; while(e+1<lb.length&&lb[e+1][0]===lb[e][3]&&lb[e+1][2]===lb[e][5])e++; const be=lb[e];   // (the big branch: its segments come first, end to end)
       it.T1=[[b0[0],b0[1],b0[2]],[be[3],be[4],be[5]],b0[6]]; tubeAt(i*2,...it.T0); tubeAt(i*2+1,...it.T1); });
     for(const M_ of [FL,FT]){ M_.castShadow=M_===FT; M_.receiveShadow=true; M_.frustumCulled=false; M_.userData.pieceCull=1; g.add(M_); } FLS.push(FL);
     // which trees are near: whole within NEAR tiles of the eye (along the ground), their plain shapes away; the rest the other way round
     const NEAR=45*T, Z=new THREE.Matrix4().makeScale(0,0,0); let tk=0;
-    const swap=(it,i,near)=>{ it.near=near; it.mesh.visible=it.leaves.visible=near; if(it.shell)it.shell.visible=near;
+    // a tree crossing NEAR fades over FD seconds (owner, 14 Nov 2026: "fade them in"); settled, only the one is drawn
+    const FD=.5, fading=new Set(); let first=true;
+    const fdOf=(it,i)=>{ const k=1-it.f; for(let j=it.f0;j<it.f1;j++){ const [x,y,z,r]=FB[j]; FL.setMatrixAt(j,k<=0?Z:m4.compose(v.set(x,y,z),q.setFromEuler(EU.set(j*2.399%6.283,j*1.618%6.283,j*.737%6.283)),s.setScalar(r*k))); }
+      tubeAt(i*2,it.T0[0],it.T0[1],it.T0[2]*k); tubeAt(i*2+1,it.T1[0],it.T1[1],it.T1[2]*k); FL.instanceMatrix.needsUpdate=FT.instanceMatrix.needsUpdate=true; };   // its plain shape shrinks away as the whole tree dithers in
+    const swap=(it,i,near)=>{ it.near=near; if(first){ it.f=near?1:0; settle(it,i,near); return; } it.mesh.visible=it.leaves.visible=true; if(it.shell)it.shell.visible=true; fading.add(i); };
+    const settle=(it,i,near)=>{ it.mesh.visible=it.leaves.visible=near; if(it.shell)it.shell.visible=near;
       for(let j=it.f0;j<it.f1;j++){ if(near)FL.setMatrixAt(j,Z); else { const [x,y,z,r]=FB[j]; FL.setMatrixAt(j,m4.compose(v.set(x,y,z),q.setFromEuler(EU.set(j*2.399%6.283,j*1.618%6.283,j*.737%6.283)),s.setScalar(r))); } } FL.instanceMatrix.needsUpdate=true;
       if(near){ FT.setMatrixAt(i*2,Z); FT.setMatrixAt(i*2+1,Z); } else { tubeAt(i*2,...it.T0); tubeAt(i*2+1,...it.T1); } FT.instanceMatrix.needsUpdate=true; };
-    items.forEach((it,i)=>swap(it,i,false));
-    SYS.add('cam',dt=>{ if((tk-=dt||0)>0)return; tk=.25; const cam=SHARED.cam; if(!cam)return; const cx=cam.position.x, cz=cam.position.z, persp=!cam.isOrthographicCamera;
-      items.forEach((it,i)=>{ const N=Math.max(NEAR,it.nr||0), near=persp?Math.hypot(it.x-cx,it.z-cz)<N:Math.hypot(it.x-pos.x,it.z-pos.z)<N; if(near!==it.near)swap(it,i,near); }); },'144d-bigtrees near or far'); };
+    items.forEach((it,i)=>settle(it,i,false));
+    SYS.add('cam',dt=>{ for(const i of fading){ const it=items[i]; it.f=Math.max(0,Math.min(1,it.f+(it.near?1:-1)*(dt||0)/FD)); fdOf(it,i); if(it.f===(it.near?1:0)){ fading.delete(i); settle(it,i,it.near); } }
+      if((tk-=dt||0)>0)return; tk=.25; const cam=SHARED.cam; if(!cam)return; const cx=cam.position.x, cz=cam.position.z, persp=!cam.isOrthographicCamera;
+      items.forEach((it,i)=>{ const N=Math.max(NEAR,it.nr||0), near=persp?Math.hypot(it.x-cx,it.z-cz)<N:Math.hypot(it.x-pos.x,it.z-pos.z)<N; if(near!==it.near)swap(it,i,near); }); first=false; },'144d-bigtrees near or far'); };
     build((LEVEL.bigTrees||[]).filter(o=>o.kind)); PARK.onSmallA=build; if(PARK.smallA)build(PARK.smallA); },'144d-bigtrees');
   window.BIGTREESDBG=()=>({trees:(PARK.big||[]).length,climbable:PARK.climbable.length,puffs:PARK.bigLeaves?PARK.bigLeaves.count:0,near:(PARK.big||[]).filter(t=>t.near).length,farBlobs:PARK.bigFar?PARK.bigFar.count:0,branches:(PARK.big||[]).map(t=>t.lb.length),tris:(PARK.big||[]).reduce((a,t)=>a+t.v1/3,0)}); }

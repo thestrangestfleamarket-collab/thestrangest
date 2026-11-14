@@ -10,7 +10,7 @@ import { mat } from './ctx.js';
 const BASE = '/sushi-assets/';
 const NAMES = ['Male_Adult_02', 'Female_Adult_02', 'Male_Adult_07', 'Female_Adult_09', 'Male_Adult_03', 'Female_Adult_04', 'Male_Adult_08', 'Female_Adult_14', 'Male_Adult_13', 'Female_Adult_11'];
 const CLIPS = ['walk', 'sit', 'look', 'wait'];
-const FIDGETS = ['cough', 'roll', 'scratch', 'face', 'hair', 'yawn', 'relaxed', 'shrug', 'think'], TOPS = ['talk1', 'talk2', 'talk3', 'nod', 'no', 'laugh'], MORE = [...FIDGETS, ...TOPS]; // small seated habits (whole body) and gestures laid over the trunk, arms and head (tools/sushi-anim.cjs)
+const FIDGETS = ['cough', 'roll', 'scratch', 'face', 'hair', 'yawn', 'relaxed', 'shrug', 'think'], TOPS = ['talk1', 'talk2', 'talk3', 'nod', 'no', 'laugh', 'wave'], MORE = [...FIDGETS, ...TOPS, 'stand', 'gaze']; // small seated habits (whole body) and gestures laid over the trunk, arms and head (tools/sushi-anim.cjs)
 const SIT_LIFT = 0.215, SIT_Z = 0.03;
 const lib = { avatars: [], creatures: [], ready: false, next: 0 };
 // the cantina's regulars who have two arms and can sit at a counter: [model, who they are in the cantina's cast, standing height]
@@ -106,16 +106,16 @@ function makeCreature(C) {
 }
 
 let stickGeo, stickMat;
-export function makePerson(seed) {
+export function makePerson(seed, style) {
   if (!lib.ready) return makeFallback(seed);
   if (lib.creatures.length && Math.random() < 0.4) return makeCreature(lib.creatures[(Math.random() * lib.creatures.length) | 0]);
-  const A = lib.avatars[lib.next++ % lib.avatars.length];
+  const A = (style && lib.avatars.find((a) => a.name === style)) || lib.avatars[lib.next++ % lib.avatars.length];
   const root = new THREE.Group(), inner = new THREE.Group(); root.add(inner);
   const inst = SkeletonUtils.clone(A.fbx); inner.add(inst);
   const bones = {}; inst.traverse((o) => { if (o.isBone) bones[o.name] = o; });
   const mixer = new THREE.AnimationMixer(inst), actions = {};
   for (const c of CLIPS) { actions[c] = mixer.clipAction(A.clips[c]); if (c !== 'walk') actions[c].setLoop(THREE.LoopPingPong, Infinity); }
-  for (const c of MORE) if (A.clips[c]) { actions[c] = mixer.clipAction(A.clips[c]); actions[c].setLoop(c.startsWith('talk') ? THREE.LoopPingPong : THREE.LoopOnce, c.startsWith('talk') ? Infinity : 1); actions[c].clampWhenFinished = true; }
+  for (const c of MORE) if (A.clips[c]) { actions[c] = mixer.clipAction(A.clips[c]); actions[c].setLoop(c.startsWith('talk') || c === 'stand' ? THREE.LoopPingPong : THREE.LoopOnce, c.startsWith('talk') || c === 'stand' ? Infinity : 1); actions[c].clampWhenFinished = true; }
   let over = null; const habits = FIDGETS.filter((c) => actions[c]), talks = TOPS.filter((c) => c.startsWith('talk') && actions[c]);
   const lay = (name, hold) => { const a = actions[name]; if (!a || (over && over.name === name)) return; if (over) over.to = 0, olds.push(over); a.reset(); a.setEffectiveWeight(0); a.play(); over = { name, a, w: 0, to: 1, hold, k: TOPS.includes(name) ? 3.2 : 5 }; }, olds = [];
   stickGeo ||= new THREE.CylinderGeometry(0.0028, 0.0018, 0.22, 5).rotateX(Math.PI / 2).translate(0, 0, 0.07);
@@ -125,17 +125,17 @@ export function makePerson(seed) {
   const hand = bones.Bip01_R_Hand, fore = bones.Bip01_R_Forearm, upper = bones.Bip01_R_UpperArm, head = bones.Bip01_Head, spine = bones.Bip01_Spine1;
   const P = {
     root, sticks, seed, style: A.name, pose: 'stand', cur: null, speed: 1.3, look: null, lookW: 0, waveT: 0, lookAt: new THREE.Vector3(), eatT: Math.random() * 3, rocketbox: true, talkT: 0, habitT: 3 + Math.random() * 8, mood: 0,
-    gesture(name) { if (this.pose === 'sit' || this.pose === 'eat') lay(name, false); }, // 'nod' 'no' 'laugh' 'shrug' 'think': once, over whatever they are doing
+    gesture(name) { if (this.pose !== 'walk') lay(name, false); }, // 'nod' 'no' 'laugh' 'shrug' 'think': once, over whatever they are doing
     update(dt) {
       const seated = this.pose === 'sit' || this.pose === 'eat';
       // what is laid over the seated body: hands that talk while they speak, a gesture, or now and then a habit (a cough, a yawn, a hand through the hair)
       this.talkT = Math.max(0, this.talkT - dt);
-      if (!seated) { if (over) { over.to = 0; olds.push(over); over = null; } }
+      if (this.pose === 'walk') { if (over) { over.to = 0; olds.push(over); over = null; } }
       else if (this.talkT > 0) { if (!over || !over.hold) { if (talks.length) lay(talks[(this.mood + ((Math.random() * 2) | 0)) % talks.length], true); } }
-      else { if (over && over.hold) over.to = 0; if (!over && this.pose === 'sit' && (this.habitT -= dt) <= 0) { this.habitT = 7 + Math.random() * 14; if (habits.length) lay(habits[(Math.random() * habits.length) | 0], false); } }
+      else { if (over && over.hold) over.to = 0; if (!over && this.pose !== 'eat' && (this.habitT -= dt) <= 0) { this.habitT = 7 + Math.random() * 14; if (this.pose === 'stand') lay('gaze', false); else if (habits.length) lay(habits[(Math.random() * habits.length) | 0], false); } }
       if (over) { const d = over.a.getClip().duration; if (!over.hold && over.a.time > d - 0.7) over.to = 0; over.w += (over.to - over.w) * Math.min(1, dt * 4); over.a.setEffectiveWeight(over.w * over.k * (this.pose === 'eat' ? 0.4 : 1)); if (over.to === 0 && over.w < 0.02) { over.a.stop(); over = null; } }
       for (let i = olds.length - 1; i >= 0; i--) { const o = olds[i]; o.w += (0 - o.w) * Math.min(1, dt * 6); o.a.setEffectiveWeight(o.w * o.k); if (o.w < 0.02 || o === over) { if (o !== over) o.a.stop(); olds.splice(i, 1); } }
-      const want = seated ? (this.cur && this.cur !== 'walk' ? this.cur : ['sit', 'wait', 'look'][(Math.random() * 3) | 0]) : 'walk';
+      const want = seated ? (this.cur && this.cur !== 'walk' && this.cur !== 'stand' ? this.cur : ['sit', 'wait', 'look'][(Math.random() * 3) | 0]) : this.pose === 'stand' && actions.stand ? 'stand' : 'walk';
       if (want !== this.cur) {
         const a = actions[want]; a.reset(); a.time = Math.random() * a.getClip().duration; a.fadeIn(this.cur ? 0.4 : 0).play();
         if (this.cur) actions[this.cur].fadeOut(0.4); this.cur = want;

@@ -98,11 +98,11 @@ export function buildGame(scene) {
   }
 
   function spawn(seat) {
-    const p = makePerson((Math.random() * 1e6) | 0), side = Math.random() < 0.5 ? -1 : 1, x = SEATS[seat];
-    p.root.position.set(side * 14, 0, -2.35); G.peopleRoot.add(p.root);
+    const nb = Math.random() < 0.75 ? G.block?.take() : null, p = nb ? nb.p : makePerson((Math.random() * 1e6) | 0), x = SEATS[seat], side = nb ? (p.root.position.x < x ? -1 : 1) : Math.random() < 0.5 ? -1 : 1; // most who sit down are the street's own people
+    if (!nb) p.root.position.set(side * 14, 0, -2.35); G.peopleRoot.add(p.root);
     p.root.traverse((o) => { o.userData.nopick = true; if (o.isMesh) o.castShadow = true; });
     const prog = clamp((game.clock - START) / (END - START), 0, 1);
-    const c = { p, seat, side, state: 'walk', path: [new V3(x, 0, -2.3), new V3(x, 0, -1.55)], t: 0, order: null, maxPatience: (lerp(170, 125, prog) + rand(0, 35)) * game.cfg().pat, patience: 0, gotDrink: false, bowl: null, bottle: null, result: null };
+    const c = { p, seat, side, state: 'walk', path: [new V3(x, 0, -2.3), new V3(x, 0, -1.55)], t: 0, order: null, maxPatience: (lerp(170, 125, prog) + rand(0, 35)) * game.cfg().pat, patience: 0, gotDrink: false, bowl: null, bottle: null, result: null, nb };
     c.patience = c.maxPatience;
     game.seats[seat].c = c; game.customers.push(c);
     return c;
@@ -141,7 +141,7 @@ export function buildGame(scene) {
   function leave(c, angry) {
     c.state = 'leaving'; c.p.pose = 'walk'; const x = SEATS[c.seat];
     c.p.root.position.set(x, 0, -1.55);
-    c.path = [new V3(x, 0, -2.3), new V3(c.side * -15, 0, -2.4)];
+    c.path = c.nb ? [new V3(x, 0, -2.5)] : [new V3(x, 0, -2.3), new V3(c.side * -15, 0, -2.4)];
     if (c.ticket) c.ticket.removeFromParent();
     if (c.bottle) c.bottle.remove();
     game.seats[c.seat].c = null;
@@ -198,7 +198,7 @@ export function buildGame(scene) {
       if (c.state === 'waiting' || c.state === 'eating') { c.chatT = (c.chatT ?? rand(14, 30)) - dt; if (c.chatT <= 0 && !(c.voice && c.voice.busy)) { c.chatT = rand(35, 70); G.talk?.event(c, 'chat'); } }
       if (c.state === 'walk' || c.state === 'leaving') {
         p.pose = 'walk'; const wp = c.path[0]; _d.copy(wp).sub(p.root.position); const d = _d.length();
-        if (d < 0.06) { c.path.shift(); if (!c.path.length) { if (c.state === 'walk') { c.state = 'sitting'; c.t = 0; p.pose = 'sit'; p.root.position.set(SEATS[c.seat], 0, -1.2); } else { p.root.removeFromParent(); game.customers.splice(game.customers.indexOf(c), 1); } } }
+        if (d < 0.06) { c.path.shift(); if (!c.path.length) { if (c.state === 'walk') { c.state = 'sitting'; c.t = 0; p.pose = 'sit'; p.root.position.set(SEATS[c.seat], 0, -1.2); } else { if (c.nb) G.block.give(c.nb); else p.root.removeFromParent(); game.customers.splice(game.customers.indexOf(c), 1); } } }
         else { _d.multiplyScalar(Math.min(d, 1.35 * dt) / d); p.root.position.add(_d); const ty = Math.atan2(_d.x, _d.z); let dy = ty - p.root.rotation.y; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); p.root.rotation.y += dy * Math.min(1, dt * 8); }
       } else if (c.state === 'sitting') {
         p.root.rotation.y *= 1 - Math.min(1, dt * 8); c.t += dt;

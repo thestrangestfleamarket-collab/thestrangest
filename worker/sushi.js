@@ -18,7 +18,7 @@ const text = c => (c || []).filter(b => b.type === "text").map(b => b.text).join
 // ask({persona, order, situation, facts, say, history}) gives {say} or {why}; the page keeps what was said (a customer is gone in minutes)
 const ask = async (env, body, client) => {
   const p = body.persona && typeof body.persona === "object" ? body.persona : {}, hist = (Array.isArray(body.history) ? body.history : []).slice(-8);
-  const q = [`[You are ${clip(p.name, 40)}, ${clip(p.age, 3)}, ${clip(p.job, 80)}. Tonight you are ${clip(p.mood, 60)}. ${clip(p.quirk, 160)} ${clip(p.story, 140)} How you talk: ${clip(p.style, 120)}.]`,
+  const q = [`[You are ${clip(p.name, 40)}, ${clip(p.age, 3)}, ${clip(p.job, 140)}. Tonight you are ${clip(p.mood, 60)}. ${clip(p.quirk, 160)} ${clip(p.story, 700)} How you talk: ${clip(p.style, 120)}.]`,
     `[Your order: ${clip(body.order, 200)}.]`, body.facts ? `[${clip(body.facts, 400)}]` : "",
     hist.length ? "[So far:\n" + hist.map(h => `${h && h.who === "cook" ? "Cook" : "You"}: ${clip(h && h.text, 200)}`).join("\n") + "]" : "",
     `[What is happening: ${clip(body.situation, 300)}]`, body.say ? `The cook says: ${clip(body.say, 240)}` : "", "What do you say?"].filter(Boolean).join("\n");

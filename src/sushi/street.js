@@ -41,7 +41,7 @@ export function makeStreet(scene, city, glow, R, o) {
   const spillM = (c) => new THREE.MeshBasicMaterial({ map: o.glowMap, color: c, transparent: true, opacity: 0.2, blending: THREE.AdditiveBlending, depthWrite: false });
   const pk = (a) => a[(R() * a.length) | 0], rr = (a, b) => a + R() * (b - a);
   const col = (hex, k = 1, j = 0.12) => new THREE.Color(hex).multiplyScalar(k * (1 - j / 2 + R() * j));
-  const seats = []; let bikes = 0;
+  const seats = [], shops = []; let bikes = 0;
 
   const WALLS = [0xffffff, 0xe8e2da, 0xdcdce4, 0xf0e8dc, 0xd0d0d0];
   const LIGHTS = [[1, 0.78, 0.5], [1, 0.9, 0.72], [0.8, 0.92, 1], [1, 0.84, 0.6], [0.7, 0.85, 1], [1, 0.72, 0.42]];
@@ -106,6 +106,7 @@ export function makeStreet(scene, city, glow, R, o) {
 
     function shop(x0, bw, open, seed) {
       const KINDS = ['izakaya', 'books', 'liquor', 'pharmacy', 'records', 'kissa', 'grocer', 'tv', 'camera', 'game', 'izakaya', 'liquor'], type = KINDS[(seed * 5 + ((R() * 3) | 0)) % KINDS.length];
+      shops.push({ type, open, p: W(x0 + bw / 2, 0, 0.9) });
       const sm = o.signFor(type), sgH = Math.min(0.46, (bw - 0.6) / sm.userData.aspect);
       if (open || R() < 0.5) o.addSign(sm, ...W(x0 + bw / 2, 3.0, 0.3).toArray(), sgH, dir > 0 ? 0 : Math.PI, open ? 1 : 0.18);
       if (!open) { shutter(x0, bw); return; }
@@ -181,5 +182,5 @@ export function makeStreet(scene, city, glow, R, o) {
     frame.done(g, !!near); trm.done(g, !!near); shut.done(g); glass.done(g); oc.done(g, !!near); rooms.done(gl); props.done(gl); cy.done(gl);
     return { top, g, gl };
   }
-  return { building, seats, glassM };
+  return { building, seats, shops, glassM };
 }

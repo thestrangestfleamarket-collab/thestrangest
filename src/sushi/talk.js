@@ -27,6 +27,7 @@ export function buildTalk() {
   const persona = (c) => {
     const k = c.p.cast && CAST.find((x) => x.id === c.p.cast);
     if (k) return { g: 'm', name: k.name, age: '', job: `a ${k.kind} (${k.job}), out of the bar for a late bowl`, mood: pick(MOODS), quirk: k.personality, style: k.voice, story: `Hobby: ${k.hobby}.`, speaker: (CREATURE_VOICE[c.p.cast] || ['orion', 1])[0], pitch: (CREATURE_VOICE[c.p.cast] || ['orion', 1])[1] };
+    const nb = c.p.cast && c.p.cast.name ? c.p.cast : null; if (nb) { const g = nb.style.startsWith('Female') ? 'f' : 'm', fit = FITS[nb.style]; return { g, name: nb.name, age: nb.age, job: nb.job, mood: pick(MOODS), quirk: nb.quirk, style: pick(STYLES), story: G.block.story(nb), speaker: fit[0], pitch: fit[1] }; }
     const g = (c.p.style || '').startsWith('Female') ? 'f' : 'm', fit = FITS[c.p.style] || [pick(VOICES[g]), 1, 24, 60];
     return { g, name: pick(NAMES[g]), age: fit[2] + ((Math.random() * (fit[3] - fit[2] + 1)) | 0), job: pick(JOBS), mood: pick(MOODS), quirk: pick(QUIRKS), style: pick(STYLES), story: pick(STORIES), speaker: fit[0], pitch: fit[1] };
   };

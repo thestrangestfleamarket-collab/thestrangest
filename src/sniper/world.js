@@ -54,7 +54,7 @@ export class Kit {
       if (!a.pos.length) continue;
       const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(a.pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(a.nor, 3));
       g.setAttribute('uv', new THREE.Float32BufferAttribute(a.uv, 2)); g.setAttribute('color', new THREE.Float32BufferAttribute(a.col, 3)); g.setIndex(a.idx);
-      const m = new THREE.Mesh(g, mats[k]); m.userData.surf = k; m.castShadow = opts.cast !== false && k !== 'glass' && k !== 'water' && k !== 'glow'; m.receiveShadow = true; m.matrixAutoUpdate = false;
+      const m = new THREE.Mesh(g, mats[k]); m.userData.surf = k; m.castShadow = opts.cast !== false && k !== 'glass' && k !== 'water' && k !== 'glow' && k !== 'hull'; m.receiveShadow = true; m.matrixAutoUpdate = false;
       if (group) group.add(m); if (solids && k !== 'glass' && k !== 'water' && k !== 'glow') { g.computeBoundsTree(); solids.push(m); } out.push(m);
     }
     return out;
@@ -118,7 +118,7 @@ export const ENV = {
   day: { az: 232, sunCol: 0xffeed2, sunI: 5.0, env: 0.62, haze: 0.00058, exp: 0.78, lit: 0.04 },
   dusk: { az: 285, sunCol: 0xff8f4a, sunI: 3.6, env: 0.7, haze: 0.00085, exp: 1.0, lit: 1 },
   rain: { az: 200, sunCol: 0xd6dde2, sunI: 0.6, env: 0.95, haze: 0.0024, exp: 0.85, lit: 0.6, rain: true },
-  dawn: { az: 62, sunCol: 0xffb070, sunI: 3.8, env: 0.7, haze: 0.0011, exp: 1.0, lit: 0.45 },
+  dawn: { az: 62, sunCol: 0xffb070, sunI: 3.8, env: 0.7, haze: 0.00062, exp: 1.0, lit: 0.45 },
 };
 
 export class World {
@@ -134,7 +134,7 @@ export class World {
       rock: surface('aerial_rocks_02'), cont: surface('container_side', { props: { metalness: 0.35 } }), iron: surface('corrugated_iron', { props: { metalness: 0.4 } }), ground: surface('aerial_grass_rock'), paintc: surface('painted_concrete'),
       metal: std({ roughness: 0.42, metalness: 0.75 }), paint: std({ roughness: 0.38, metalness: 0.1 }), leaf: std({ roughness: 0.95 }),
       glass: new THREE.MeshStandardMaterial({ color: 0xa8c8d8, roughness: 0.04, metalness: 0.9, transparent: true, opacity: 0.38, depthWrite: false }),
-      water: new THREE.MeshStandardMaterial({ color: 0x1c3a44, roughness: 0.06, metalness: 0.2, normalMap: wn, normalScale: new THREE.Vector2(0.55, 0.55) }), glow: new THREE.MeshBasicMaterial({ vertexColors: true, fog: false }) };
+      hull: new THREE.MeshBasicMaterial({ visible: false }), water: new THREE.MeshStandardMaterial({ color: 0x1c3a44, roughness: 0.06, metalness: 0.2, normalMap: wn, normalScale: new THREE.Vector2(0.55, 0.55) }), glow: new THREE.MeshBasicMaterial({ vertexColors: true, fog: false }) };
     wn.repeat.set(1, 1);
     const U = this.facU = { sky: { value: null }, sunDir: { value: new THREE.Vector3() }, sunCol: { value: new THREE.Color() }, ambSky: { value: new THREE.Color() }, ambGnd: { value: new THREE.Color() }, skyRot: { value: 0 }, lit: { value: 0 } };
     const fac = (wall, tint, frame, cell, win) => new THREE.ShaderMaterial({ vertexShader: FAC_V, fragmentShader: FAC_F, vertexColors: true, fog: true, uniforms: { ...THREE.UniformsLib.fog, ...U, wallD: { value: A.tex[wall].d }, wallN: { value: A.tex[wall].n }, wallTint: { value: new THREE.Color(tint) }, frameCol: { value: new THREE.Color(frame) }, texS: { value: 2.6 }, cell: { value: new THREE.Vector2(cell[0], cell[1]) }, win: { value: new THREE.Vector4(win[0], win[1], win[2], win[3]) } } });
@@ -179,6 +179,10 @@ export class World {
     inst.customDepthMaterial = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking, map, alphaTest: 0.45 }); inst.castShadow = true; inst.receiveShadow = false; inst.userData.own = true;
     spots.forEach(([x, y, z, h], i) => inst.setMatrixAt(i, M4(x, y, z, 0, (i * 2.4) % 6.28, 0, h, h, h))); inst.frustumCulled = false; this.group.add(inst);
   }
+  // every parked car of a place, drawn together paint by paint; one car on its own to drive
+  cars(list) { if (!list) return; const src = A.m.car.getObjectByProperty('isMesh', true); for (let v = 0; v < 5; v++) { const L = list.filter(c => c[4] === v); if (!L.length) continue; const im = new THREE.InstancedMesh(src.geometry, this.carMat(v), L.length); im.userData.shared = true; im.castShadow = true; im.receiveShadow = true; im.frustumCulled = false; L.forEach(([x, y, z, ry], i) => im.setMatrixAt(i, M4(x, y, z, 0, ry, 0))); this.group.add(im); } }
+  carMat(v) { this.carM = this.carM || []; if (!this.carM[v]) { const m = A.m.car.getObjectByProperty('isMesh', true).material.clone(); m.map = A.carTex[v]; m.roughness = 0.3; m.metalness = 0.35; this.carM[v] = m; } return this.carM[v]; }
+  oneCar(v) { const src = A.m.car.getObjectByProperty('isMesh', true), m = new THREE.Mesh(src.geometry, this.carMat(v)); m.userData.shared = true; m.castShadow = true; m.rotation.y = Math.PI / 2; const g = new THREE.Group(); g.add(m); return g; }
   // many of one model from disk, drawn together: list = [x, y, z, turn, size]
   scatter(name, list) {
     const src = A.m[name]; if (!src || !list.length) return; src.updateMatrixWorld(true);
@@ -209,13 +213,8 @@ export class World {
   }
 }
 
-const car = (k, x, y, z, ry, c, van) => { const L = van ? 5.1 : 4.5, H = van ? 0.95 : 0.62, cs = Math.cos(ry), sn = Math.sin(ry), at = (lx, lz) => [x + lx * cs + lz * sn, z - lx * sn + lz * cs], CH = van ? 0.75 : 0.5, cl = van ? L * 0.78 : L * 0.5, co = van ? -0.35 : -0.2;
-  const b = (mat, lx, ly, lz, w, h, d, col) => { const [px, pz] = at(lx, lz); k.box(mat, px, y + ly, pz, w, h, d, { ry, color: col }); };
-  b('paint', 0, 0.3 + H / 2, 0, 1.82, H, L, c); b('paint', 0, 0.3 + H * 0.45, L / 2 - 0.02, 1.7, H * 0.5, 0.12, [0.05, 0.05, 0.05]); b('paint', 0, 0.3 + H * 0.45, -L / 2 + 0.02, 1.7, H * 0.5, 0.12, [0.05, 0.05, 0.05]);
-  b('glass', 0, 0.3 + H + CH / 2, co, 1.6, CH, cl); b('paint', 0, 0.3 + H + CH / 2 - 0.04, co, 1.5, CH - 0.08, cl - 0.2, [0.03, 0.03, 0.035]); b('paint', 0, 0.3 + H + CH + 0.025, co, 1.64, 0.05, cl - 0.25, c);
-  for (const sx of [-1, 1]) for (const sz of [-1, 0, 1]) b('paint', sx * 0.8, 0.3 + H + CH / 2, co + sz * (cl / 2 - 0.08), 0.06, CH, 0.07, c);
-  for (const sx of [-1, 1]) { b('glow', sx * 0.62, 0.3 + H * 0.7, L / 2 + 0.01, 0.3, 0.12, 0.03, [1.1, 1.05, 0.9]); b('glow', sx * 0.62, 0.3 + H * 0.7, -L / 2 - 0.01, 0.3, 0.1, 0.03, [0.7, 0.05, 0.03]); }
-  for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { const [px, pz] = at(sx * 0.86, sz * L * 0.31); k.cyl('paint', px, y + 0.33, pz, 0.33, 0.22, [0.03, 0.03, 0.03], { rz: Math.PI / 2, ry, seg: 14 }); k.cyl('metal', px + sx * 0.06 * cs, y + 0.33, pz - sx * 0.06 * sn, 0.19, 0.12, [0.7, 0.7, 0.72], { rz: Math.PI / 2, ry, seg: 10 }); } };
+// a parked car: one more of the model in its paint, and a hull a round stops at
+const car = (k, x, y, z, ry, c) => { const m = Math.max(c[0], c[1], c[2]), n = Math.min(c[0], c[1], c[2]), v = m < 0.16 ? 3 : m - n < 0.12 ? (m > 0.7 ? 4 : 2) : c[2] > c[0] ? 1 : 0; (k.cars = k.cars || []).push([x, y, z, ry + Math.PI / 2, v]); k.box('hull', x, y + 0.7, z, 1.75, 1.3, 3.9, { ry }); };
 const tree = (k, x, y, z, s, R) => { if (A.card.leaf) { (k.trees = k.trees || []).push([x, y - 0.1, z, 6.5 * s]); return; } k.cyl('wood', x, y + 1.6 * s, z, 0.16 * s, 3.2 * s, [0.45, 0.36, 0.3], { seg: 6 }); const g = 0.25 + R() * 0.15; k.ball('leaf', x, y + 4.2 * s, z, 2.1 * s, [0.16, g + 0.12, 0.12], 0.9); k.ball('leaf', x + 0.9 * s, y + 3.6 * s, z + 0.5 * s, 1.4 * s, [0.14, g + 0.08, 0.1]); k.ball('leaf', x - 0.8 * s, y + 3.7 * s, z - 0.6 * s, 1.5 * s, [0.18, g + 0.15, 0.12]); };
 const lamp = (k, x, y, z, glow, W) => { W.prop('street_lamp_01', x, y, z, 0, 1.35); if (glow) k.ball('glow', x, y + 4.9, z, 0.16, [2.4, 2.0, 1.4]); };
 const nestFloor = (k, y, w = 9, d = 7, mat = 'concrete') => k.box(mat, 0, y - 0.15, 0, w, 0.3, d, { color: [0.9, 0.88, 0.85], tile: 2 });
@@ -252,7 +251,7 @@ const SITES = {
     W.scatter('wooden_picnic_table', [[-3.6, ny, 2.4, 1.57, 0.8], [3.6, ny, 2.6, 1.5, 0.8]]); W.scatter('barrel_01', [[-4.4, ny, -3.2, 0, 1], [4.5, ny, -3.3, 1, 1], [-7, gy, 1.4, 2, 1], [-6.3, gy, 1.8, 3, 1], [10, gy, 3, 1, 1]]); W.scatter('wooden_crate_02', [[4.3, ny, -1.8, 0.2, 1], [4.3, ny + 0.44, -1.8, 0.5, 0.9], [-4.3, ny, -1.9, 1.4, 1], [-7.2, gy, 6.5, 0, 1], [-6.9, gy + 0.44, 6.4, 0.4, 1]]);
     W.scatter('metal_jerrycan_green', [[3.2, ny, -3.3, 0.4, 1], [2.8, ny, -3.4, 1, 1], [-3.5, ny, 3.5, 2, 1]]); W.scatter('old_tyre', plates.flatMap(p => [[p.pos.x - p.r - 1.2, H(p.pos.x, p.pos.z) + 0.3, p.pos.z - 0.3, 0.4, 1.2], [p.pos.x + p.r + 0.9, H(p.pos.x, p.pos.z) + 0.3, p.pos.z - 0.4, -0.3, 1.2]])); W.scatter('propane_tank', [[-7.4, gy, 2.6, 0, 1]]); W.scatter('ammo_box', [[-3.4, ny + 0.6, 2.2, 0.3, 1], [-3.7, ny + 0.6, 2.7, 1.2, 1], [3.5, ny + 0.6, 2.4, 2, 1]]);
     W.trees('fir', spots);
-    k.build(W.mats, G, W.solids);
+    W.cars(k.cars); k.build(W.mats, G, W.solids);
     return { nest: new THREE.Vector3(0, ny, 0), yaw: 0, plates, height: H,
       update(dt) { for (const p of plates) { p.sv += (-p.swing * 60 - p.sv * 1.6) * dt; p.swing += p.sv * dt; p.piv.rotation.x = p.swing; } } };
   },
@@ -300,8 +299,7 @@ const SITES = {
       for (let q = -340; q < 340; q += 9) k.box('paint', q, 0.02, sz, 3.4, 0.02, 0.16, { color: [0.9, 0.9, 0.86] }); for (let q = -330; q < 340; q += 26) for (const s of [-1, 1]) { lamps.push([q, 0.16, sz + s * 7.6, s > 0 ? 0 : Math.PI, 1.35]); if (!clearOf(q + 13, sz + s * 8.6)) tree(k, q + 13, 0.16, sz + s * 8.6, 0.9 + R() * 0.5, R); if (R() < 0.4) bins.push([q + 4, 0.2, sz + s * 8.2, R() * 6, 1]); }
       for (const xs of [-280, -200, -120, -40, 40, 120, 200, 280]) for (const s of [-1, 1]) for (let q = -4; q <= 4; q += 1) k.box('paint', xs + s * 9 , 0.025, sz + q * 1.1, 2.6, 0.02, 0.55, { color: [0.92, 0.92, 0.9] }); }
     W.scatter('street_lamp_01', lamps); W.scatter('metal_trash_can', bins); W.scatter('fire_hydrant', hyd); W.scatter('painted_wooden_bench', benches); W.scatter('cardboard_box_01', boxes);
-    const tk = new Kit(); car(tk, 0, 0, 0, 0, [0.5, 0.5, 0.52]); const tk2 = new Kit(); car(tk2, 0, 0, 0, 0, [0.75, 0.6, 0.1], false); const tk3 = new Kit(); car(tk3, 0, 0, 0, 0, [0.85, 0.85, 0.86], true); const kinds3 = [tk, tk2, tk3].map(q => q.build(W.mats, null, null));
-    traffic.forEach((t, i) => { const g = new THREE.Group(); for (const m of kinds3[i % 3]) { const c = m.clone(); c.userData.shared = true; g.add(c); } g.rotation.y = t.z1 < t.z0 ? 0 : Math.PI; t.g = g; G.add(g); });
+    traffic.forEach((t, i) => { const g = W.oneCar(i % 5); g.rotation.y = t.z1 < t.z0 ? Math.PI : 0; t.g = g; G.add(g); });
     // the tower you shoot from
     k.box('concrete2', 0, NY / 2 - 0.15, 0, 42, NY - 0.3, 42, { tile: 1, cap: 'roof', capColor: [0.85, 0.85, 0.85] });
     for (const [x, z, w, d] of [[0, -20.8, 42, 0.4], [0, 20.8, 42, 0.4], [-20.8, 0, 0.4, 42], [20.8, 0, 0.4, 42]]) k.box('concrete', x, NY + 0.1, z, w, 0.5, d, { color: [0.85, 0.85, 0.85] });
@@ -352,7 +350,7 @@ const SITES = {
       room(k, x, y + 0.11, B.z, (b * 5 + f * 11) % 7); }
     W.flag(B.x + bw / 2 - 2, bh + 0.4, B.z + 6, 6, 0xc23a2a, 2.2); W.flag(B.x - bw / 2 + 2, bh + 0.4, B.z + 6, 6, 0xc23a2a, 2.2);
     for (let i = 0; i < 26; i++) { const along = R() < 0.5, sx = Math.round((R() - 0.5) * 8) * 80 + 40 + (R() < 0.5 ? -5 : 5), q = (R() - 0.5) * 800; if (along) car(k, sx, 0, q - 300, 0, [R() * 0.6, R() * 0.6, R() * 0.6], R() < 0.2); else car(k, q, 0, Math.round(R() * 8 - 7) * 80 + 30 + (R() < 0.5 ? -5 : 5), 1.57, [R() * 0.6, R() * 0.6, R() * 0.6], R() < 0.2); }
-    W.trees('leaf', k.trees || []); k.build(W.mats, G, W.solids);
+    W.trees('leaf', k.trees || []); W.cars(k.cars); k.build(W.mats, G, W.solids);
     return { nest: new THREE.Vector3(0, NY, -17.5), T, wins, tables, plaza: P, terrace: E,
       update(dt) { for (const t of traffic) { t.t = (t.t + dt * t.sp / 810) % 1; t.g.position.set(t.x, 0, t.z0 + (t.z1 - t.z0) * t.t); } } };
   },
@@ -388,14 +386,10 @@ const SITES = {
     // the helipad and the helicopter
     const HX = 96; k.cyl('paint', HX, PY + 0.03, PZ, 7, 0.06, [0.25, 0.27, 0.3], { seg: 28 }); k.cyl('glow', HX, PY + 0.07, PZ, 5.2, 0.02, [0.95, 0.85, 0.3], { seg: 28, open: true });
     k.box('paint', HX, PY + 0.08, PZ, 3.4, 0.03, 0.6, { color: [0.95, 0.95, 0.9] }); k.box('paint', HX - 1.4, PY + 0.08, PZ, 0.6, 0.03, 3.4, { color: [0.95, 0.95, 0.9] }); k.box('paint', HX + 1.4, PY + 0.08, PZ, 0.6, 0.03, 3.4, { color: [0.95, 0.95, 0.9] });
-    const hk = new Kit(); hk.ball('paint', 0, 1.7, 0, 1.25, [0.08, 0.09, 0.1], 0.95, 1, 1.9); hk.ball('glass', 0.0, 1.85, 1.3, 0.95, [1, 1, 1], 0.85, 0.95, 1.1); hk.cyl('paint', 0, 1.9, -3.6, 0.22, 4.6, [0.08, 0.09, 0.1], { rx: Math.PI / 2, top: 0.12 });
-    hk.box('paint', 0, 2.6, -5.7, 0.08, 1.4, 0.6, { color: [0.7, 0.1, 0.1] }); for (const s of [-1, 1]) { hk.box('metal', s * 0.95, 0.12, 0, 0.08, 0.08, 3.4, { color: [0.3, 0.3, 0.3] }); hk.box('metal', s * 0.75, 0.6, 0.8, 0.06, 1, 0.06, { color: [0.3, 0.3, 0.3] }); hk.box('metal', s * 0.75, 0.6, -0.8, 0.06, 1, 0.06, { color: [0.3, 0.3, 0.3] }); }
-    hk.cyl('metal', 0, 3.0, 0, 0.1, 0.5, [0.3, 0.3, 0.3], { seg: 6 });
-    const heli = new THREE.Group(); hk.build(W.mats, heli, null); heli.traverse(o => { o.matrixAutoUpdate = true; }); heli.position.set(HX, PY + 0.06, PZ); heli.rotation.y = -Math.PI / 2; G.add(heli);
-    const rk = new Kit(); rk.box('metal', 0, 0, 0, 10.4, 0.04, 0.3, { color: [0.12, 0.12, 0.12] }); rk.box('metal', 0, 0, 0, 0.3, 0.04, 10.4, { color: [0.12, 0.12, 0.12] });
-    const rotor = rk.build(W.mats, null, null)[0]; rotor.matrixAutoUpdate = true; rotor.position.y = 3.25; heli.add(rotor); W.spin.push({ o: rotor, ax: 'y', w: 24 });
-    const ck = new Kit(); car(ck, 0, 0, 0, 0, [0.02, 0.02, 0.03], true); const suv = () => { const g = new THREE.Group(); ck.build(W.mats, g, null); return g; };
-    const suv1 = suv(), suv2 = (() => { const g = new THREE.Group(); for (const c of suv1.children) { const m = c.clone(); g.add(m); } return g; })(); G.add(suv1, suv2);
+    const heli = A.m.chopper.clone(true); heli.scale.setScalar(1.7); heli.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.userData.shared = true; } }); heli.position.set(HX, PY + 0.14, PZ); heli.rotation.y = Math.PI / 2; G.add(heli);
+    const rotor = heli.getObjectByName('rotor'); W.spin.push({ o: rotor, ax: 'y', w: 24 }, { o: heli.getObjectByName('tail'), ax: 'x', w: 40 }); k.box('hull', HX, PY + 2, PZ, 9, 4, 3.4);
+    const suv1 = W.oneCar(3), suv2 = W.oneCar(3); G.add(suv1, suv2); for (let i = 0; i < 9; i++) car(k, -96 + i * 6 - (i > 4 ? 30 : 0), PY, PZ - 5.6, 1.57, [[0.5, 0.5, 0.5], [0.1, 0.1, 0.1], [0.9, 0.9, 0.9], [0.1, 0.2, 0.6]][i % 4]);
+    for (let i = 0; i < 26; i++) car(k, -330 + i * 26 + R() * 8, 1.8, 22 + (i % 3) * 5, R() < 0.5 ? 0 : 1.57, [R(), R() * 0.5, R() * 0.5]); W.cars(k.cars);
     k.build(W.mats, G, W.solids);
     return { nest: new THREE.Vector3(0, NY + 2.05, -2.2), heli, rotor, suvs: [suv1, suv2], PY, PZ, HX };
   },

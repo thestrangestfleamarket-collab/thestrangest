@@ -50,6 +50,7 @@ const LIST = {
   hedgehog: ['src/ob_hedgehog', HF + '000-096/0e09cbddad864003bc4f10c612bb7284.glb', { size: 1.5, axis: 'y', tris: 1500, tex: 256, plain: 1 }],
   wreck: ['src/wr_cascavel', HF + '000-004/7ef593b344624e6388eaa44b5551fad7.glb', { size: 5.2, axis: 'z', tris: 8000, tex: 512, plain: 1 }],
   grenade: ['src/gr_m67_vextin', HF + '000-121/05e2a29118c3408eaa574bcec6997aba.glb', { size: 0.09, axis: 'y', tex: 256, plain: 1 }],
+  breech: ['src/zis2_gun', HF + '000-008/61e3cb4b62ad48b186596b0cd88fc156.glb', { size: 6.8, axis: 'z', crop: [-.2, .34, .63, 1.22, -.9, .34], tex: 1024 }],
   pipes: ['modular_industrial_pipes_01', '', { size: 0, tris: 3000, tex: 256 }], sconce: ['industrial_caged_sconce', '', { size: 0.22, axis: 'y', tris: 3000, tex: 256 }], ammobox: ['ammo_box', '', { size: 0, tex: 256 }],
   binos: ['binoculars', '', { size: 0.19, axis: 'x', tris: 4000, tex: 512 }],
   pistol: ['service_pistol', '', { keep: '_a$', fwd: '+x', size: 0, tex: 512 }],
@@ -91,7 +92,7 @@ window.prep=async(url,o)=>{await MS.ready;const GL=new GLTFLoader();GL.register(
     if(o.kind==='foe'){const isT=m=>{let p=m;while(p){if(o.turret.includes(p.name))return true;p=p.parent;}return false;},hull=gather(root,m=>!isT(m)),tur=gather(root,isT);for(const ps of[hull,tur])each(ps,g=>g.applyMatrix4(M));
       const ub=union(tur),hb=union(hull),px=(hb.min.x+hb.max.x)/2;let n=0,z=0;each(tur,g=>{const p=g.attributes.position;for(let i=0;i<p.count;i++)if(p.getY(i)<ub.min.y+.35){z+=p.getZ(i);n++;}});const P=V(px,0,z/n);
       for(const ps of[hull,tur])each(ps,g=>g.translate(-P.x,0,-P.z));tris=thin([...hull,...tur],o.tris);out.add(node('hull',hull),node('turret',tur));const u2=union(tur),h2=union(hull);Object.assign(info,{turret:[u2.min.toArray(),u2.max.toArray()],hull:[h2.min.toArray(),h2.max.toArray()]});
-    }else{each(all,g=>g.applyMatrix4(M));tris=thin(all,o.tris);out.add(node('m',all));const b2=union(all);info.box=[b2.min.toArray(),b2.max.toArray()];}}
+    }else{each(all,g=>g.applyMatrix4(M));if(o.crop){const c=o.crop;for(const p of all){const g=p.geo,ps=g.attributes.position,ix=g.index.array,keep=[];for(let i=0;i<ix.length;i+=3){let x=0,y=0,z=0;for(let k=0;k<3;k++){x+=ps.getX(ix[i+k])/3;y+=ps.getY(ix[i+k])/3;z+=ps.getZ(ix[i+k])/3;}if(x>c[0]&&x<c[1]&&y>c[2]&&y<c[3]&&z>c[4]&&z<c[5])keep.push(ix[i],ix[i+1],ix[i+2]);}g.setIndex(keep);}}tris=thin(all,o.tris);out.add(node('m',all));const b2=new THREE.Box3().setFromObject(out);info.box=[b2.min.toArray(),b2.max.toArray()];}}
   if(o.plain)out.traverse(m=>{if(m.isMesh){const a=m.material;a.normalMap=a.roughnessMap=a.metalnessMap=a.aoMap=a.emissiveMap=null;a.metalness=0;a.roughness=.9;}});
   out.traverse(m=>{if(!m.isMesh)return;const a=m.material;for(const k of['map','normalMap','roughnessMap','metalnessMap','aoMap','emissiveMap'])if(a[k])a[k].userData.mimeType=a.transparent||a.alphaTest>0?'image/png':'image/jpeg';});
   const bin=await new GLTFExporter().parseAsync(out,{binary:true,maxTextureSize:o.tex||1024});info.tris=Math.round(tris);const u=new Uint8Array(bin);let s='';for(let i=0;i<u.length;i+=32768)s+=String.fromCharCode.apply(null,u.subarray(i,i+32768));return{info,b64:btoa(s)};};window.ready=1;</script>`;

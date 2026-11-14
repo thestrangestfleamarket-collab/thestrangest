@@ -10,6 +10,7 @@ Each is at `https://sketchfab.com/3d-models/<id>`.
 |---|---|---|---|
 | Your tank; the platoon's and the other player's (its hull, turret and gun only) | `m/hero.glb`, `m/ally.glb` | "Challenger 2 - Shooting Range", Tom Zimmermann (tomm8) | e70234f6d695467499abc56646ab3e66 |
 | The enemy's tank | `m/foe.glb` | "Battle Tank", _Alexandr (a_l_e_x_a_n_d_e_r) | 5fcc302b89414348811eaa1ad4dc435f |
+| The gun's breech, cradle and recoil gear (cut from the whole gun) | `m/breech.glb` | "ZiS-2 57mm anti-tank gun", Sergey Filin | 61e3cb4b62ad48b186596b0cd88fc156 |
 | Gunner's seat | `m/seat.glb` | "Pilot Seat", Pabooklas | 310dca3487884ba690de7ac9e1995763 |
 | Fire control console | `m/console.glb` | "Old Control Panel", Mik Santos (mikelkel2) | b84686130a2442d985c6f36c23d0836d |
 | Display unit | `m/display.glb` | "Medical Console", Oliver Triplett | 89065e109790417191467cfececf2c7c |
@@ -64,4 +65,4 @@ Changes made: cut, loops cross-faded end to start, levelled, encoded as MP3.
 
 ## Made in code
 
-The land and its fields, the ponds, the road, the mines, the turret's shell and frames, the breech and its guard, the sight and commander's screens, the ready rounds, smoke, fire and dust. Libraries: three.js (MIT).
+The land and its fields, the ponds, the road, the mines, the turret's shell and frames, the sight and commander's screens, the ready rounds, smoke, fire and dust. Libraries: three.js (MIT).

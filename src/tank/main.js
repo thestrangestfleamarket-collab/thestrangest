@@ -43,7 +43,7 @@ const jget=f=>count(fetch(BASE+f).then(r=>r.json()));
 const TREES=['island_tree_01','island_tree_02','island_tree_03','tree_small_02','jacaranda_tree','shrub_02'];
 let A0;
 try{
-  const names=['hero','ally','foe','seat','console','display','switchbox','radio','helmet','barn','cars','pipes','sconce','ammobox','rocks','h6','row','h9','shop','cork','flats','white','cottage','villa','mill','works','church','watertower','silos','stacks','mast','pylon','pole','stonewall','lamp','hay','brokenwall','rubble','trabant','lada','van','tractor','truck','busstop','binos','hand_l','hand_r','crag','deadtree','sandbags','hedgehog','wreck','grenade','pistol','soldier'];
+  const names=['hero','ally','foe','seat','console','display','switchbox','radio','helmet','barn','cars','pipes','sconce','ammobox','rocks','h6','row','h9','shop','cork','flats','white','cottage','villa','mill','works','church','watertower','silos','stacks','mast','pylon','pole','stonewall','lamp','hay','brokenwall','rubble','trabant','lada','van','tractor','truck','busstop','binos','hand_l','hand_r','crag','deadtree','sandbags','hedgehog','wreck','grenade','pistol','soldier','breech'];
   const[sky,skyS,SKY,TREEJ,MODJ,grass,dry,soil,plate,paint,leather,cards,models]=await Promise.all([
     count(new Promise((ok,no)=>texL.load(BASE+'sky/sky.jpg',ok,null,()=>no(new Error('sky'))))),count(new Promise((ok,no)=>texL.load(BASE+'sky/sky_s.jpg',ok,null,()=>no(new Error('sky'))))),jget('sky/sky.json'),jget('trees.json'),jget('models.json'),
     pbr('leafy_grass',1),tex('sparse_grass_d.jpg',{srgb:1}),pbr('farm_soil',1),pbr('metal_plate',1),pbr('green_metal_rust',1),pbr('fabric_leather_02',1),
@@ -309,13 +309,8 @@ const breech=new T.Group(),breechSlide=new T.Group();
   {const rv=new T.InstancedMesh(new T.SphereGeometry(.009,6,4),steel,out.length*16),dm=new T.Object3D();let n=0;out.forEach(a=>{for(let k=0;k<16;k++){dm.position.set(a[0]*.975,FLOOR+.06+k*(H-.12)/15,a[1]*.975);dm.updateMatrix();rv.setMatrixAt(n++,dm.matrix);}});inside.add(rv);}
   // the gun's breech, its guard and cradle (they rise and fall with the gun and run back when it fires)
   breech.position.set(TRUN.x,TRUN.y,-1.3);inside.add(breech);breech.add(breechSlide);
-  add(new T.BoxGeometry(.62,.56,.34).translate(0,0,.17),olive,breech);add(new T.CylinderGeometry(.3,.3,.1,32).rotateX(Math.PI/2).translate(0,0,.36),steel,breech);
-  add(new T.CylinderGeometry(.16,.18,.5,32).rotateX(Math.PI/2).translate(0,0,.66),bright,breechSlide);add(new T.CylinderGeometry(.215,.215,.3,32).rotateX(Math.PI/2).translate(0,0,1.02),steel,breechSlide);
-  add(new T.BoxGeometry(.3,.5,.26).translate(0,0,1.02),steel,breechSlide);add(new T.TorusGeometry(.085,.012,10,28).translate(0,0,1.172),brass,breechSlide);add(new T.CircleGeometry(.075,24).translate(0,0,1.171),new T.MeshStandardMaterial({color:0x101112,metalness:.9,roughness:.3}),breechSlide);
-  add(new T.BoxGeometry(.06,.28,.18).translate(.2,0,1.02),dark,breechSlide);add(new T.CylinderGeometry(.016,.016,.22,10).rotateZ(Math.PI/2).translate(.33,.06,1.02),bright,breechSlide);add(new T.SphereGeometry(.028,14,10).translate(.45,.06,1.02),rubberM,breechSlide);
-  for(const sx of[-1,1]){add(new T.TubeGeometry(new T.CatmullRomCurve3([new T.Vector3(sx*.27,.2,.3),new T.Vector3(sx*.29,.22,1.1),new T.Vector3(sx*.29,.16,1.72),new T.Vector3(sx*.29,-.2,1.78),new T.Vector3(sx*.29,-.27,1.1),new T.Vector3(sx*.27,-.25,.3)]),36,.016,8),frame,breech);
-    add(new T.CylinderGeometry(.05,.05,.52,18).rotateX(Math.PI/2).translate(sx*.2,-.33,.56),bright,breech);add(new T.CylinderGeometry(.062,.062,.2,18).rotateX(Math.PI/2).translate(sx*.2,-.33,.4),steel,breech);}
-  add(new T.BoxGeometry(.6,.015,.5).translate(0,-.29,1.5),steel,breech);add(new T.BoxGeometry(.03,.42,.03).translate(0,-.02,1.76),frame,breech);
+  {const bm=M.breech;bm.traverse(m=>{if(m.isMesh){m.material.envMapIntensity=.25;m.material.color.multiplyScalar(.8);}});bm.rotation.y=Math.PI;bm.scale.setScalar(1.25);bm.position.set(.06,-1.15,.42);breechSlide.add(bm);
+   add(new T.BoxGeometry(.7,.62,.1).translate(0,0,.05),dark,breech);}
   // the gunner's sight: a hooded screen on an arm, the picture the gun's own camera sends
   const sight=new T.Group();sight.position.set(HX,FLOOR+EYE-.03,HZ-.86);inside.add(sight);
   const box=(w,h,d,m,x,y,z,p)=>{const o=add(new T.BoxGeometry(w,h,d),m,p||sight);o.position.set(x,y,z);return o;};

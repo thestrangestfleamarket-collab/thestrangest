@@ -34,7 +34,7 @@ export function buildGame(scene) {
       receive: (it) => {
         const c = game.seats[i].c;
         if (it.kind === 'bowl') { it.obj.position.set(x, 1.0, -0.71); it.upright(); serve(c, it); }
-        else { it.obj.position.set(x + 0.19, 1.0, -0.66); it.upright(); it.locked = true; c.bottle = it; if (it.drink === c.order.drink) c.gotDrink = true; else c.wrongDrink = true; G.audio.play('bottle'); drawTicket(c, true); }
+        else { it.obj.position.set(x + 0.19, 1.0, -0.66); it.upright(); it.served = true; c.bottle = it; if (it.drink === c.order.drink) c.gotDrink = true; else c.wrongDrink = true; G.audio.play('bottle'); drawTicket(c, true); }
       },
     });
   });
@@ -130,7 +130,7 @@ export function buildGame(scene) {
   }
 
   function serve(c, bowl) {
-    bowl.locked = true; bowl.served = true; c.bowl = bowl; c.result = evaluate(c, bowl); c.state = 'eating'; c.t = 0; c.p.pose = 'eat';
+    bowl.served = true; c.bowl = bowl; c.result = evaluate(c, bowl); c.state = 'eating'; c.t = 0; c.p.pose = 'eat';
     c.ticket.removeFromParent(); G.audio.play('place');
     const r = c.result;
     G.fx.popup(new V3(SEATS[c.seat] + 0.2, 1.2, -0.6), [`${r.verdict}  ${'★'.repeat(Math.round(r.score / 20))}`, r.pay ? `${yen(r.pay)}${r.tip ? '  + tip ' + yen(r.tip) : ''}` : 'no payment', ...(r.issues.length ? r.issues : ['Exactly as ordered'])], r.score >= 60);
@@ -215,6 +215,11 @@ export function buildGame(scene) {
         if (!c.nudged && c.patience < c.maxPatience * 0.4) { c.nudged = true; G.talk?.event(c, 'impatient'); }
         if (c.patience <= 0) leave(c, true);
       } else if (c.state === 'eating') {
+        const bw = c.bowl, away = bw.dead || bw.held || bw.obj.position.distanceTo(C.seatSpots[c.seat]) > 0.32; // their bowl is theirs only while it is in front of them: take it and they stop, and say so
+        if (away) { c.p.pose = 'sit'; c.gone = (c.gone || 0) + dt; if (!c.took) { c.took = true; c.p.gesture?.('no'); G.talk?.event(c, 'react', bw.dead ? 'smash their bowl while they were still eating' : 'take their bowl away while they were still eating'); }
+          if (bw.dead || c.gone > 16) { if (bw.eaten > 0.6) { game.money += c.result.pay; game.served++; game.scores.push(Math.max(0, c.result.score - 30)); leave(c, false); } else leave(c, true); }
+          continue; }
+        if (c.took) { c.took = false; c.gone = 0; c.p.pose = 'eat'; }
         c.t += dt; const dur = 16; c.bowl.eaten = clamp(c.t / dur, 0, 1); c.bowl.refresh();
         if (Math.random() < dt * 0.5) G.audio.play('slurp');
         if (c.t >= dur) {

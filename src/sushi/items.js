@@ -129,7 +129,7 @@ export function updateItems(dt) {
 export function findBowlUnder(p, r = 0.105) {
   let best = null, bd = 1e9;
   for (const it of G.items) {
-    if (it.kind !== 'bowl' || it.dirty || it.locked) continue;
+    if (it.kind !== 'bowl' || it.dirty || it.served) continue;
     const b = it.obj.position, d = Math.hypot(p.x - b.x, p.z - b.z), dy = p.y - b.y;
     if (d < r && dy > 0.0 && dy < 0.5 && d < bd) { best = it; bd = d; }
   }
@@ -154,7 +154,7 @@ export class Bowl extends Item {
   get empty() { return !this.tare && !this.broth && !this.noodles && !this.toppings.length; }
   level() { return clamp(Math.min(1, this.tareAmt || 0) * 0.12 + this.broth * 0.44, 0, 1) * (1 - this.eaten * 0.85); }
   receive(p, q) { // poured liquid arriving, a little at a time
-    if (this.dirty || this.locked) return;
+    if (this.dirty || this.served) return;
     if (p.kind === 'tare') { if (this.tare && this.tare !== p.type && this.tareAmt > 0.3) this.mixed = true; this.tareAmt = (this.tareAmt || 0) + q; if (!this.tare || this.tareAmt >= 0.5) this.tare = p.type; }
     else { if (this.brothType && this.brothType !== p.type && this.broth > 0.4) this.mixed = true; this.brothType = p.type; this.broth = Math.min(3, this.broth + q); this.temp = Math.max(this.temp, p.heat); this.over = this.broth > 2.6; }
     this.refresh(); if (G.t - (this.pourS || 0) > 0.45) { this.pourS = G.t; G.audio.play('pour'); }
@@ -194,7 +194,7 @@ export class Bowl extends Item {
     if (this.held && !this.empty && !this.dirty && this.tilt() > 1.25) this.spill();
   }
   shatter() { if (!this.empty) G.fx.splat(this.obj.position, this.liqMat.color.getHex(), 0.2); shatter(this, 0xf1ede2, 9); }
-  onImpact(sp) { if (sp > 3.2 && !this.locked) { this.shatter(); return true; } return false; }
+  onImpact(sp) { if (sp > 3.2) { this.shatter(); return true; } return false; }
   onGround() { this.shatter(); }
   onLand() { G.audio.play('clink'); }
   hint() { return this.dirty ? 'dirty bowl → bus tub (right)' : this.empty ? 'empty bowl → set on the mat' : 'ramen → serve on a customer placemat'; }
@@ -270,7 +270,7 @@ export class Drink extends Item {
     this.drink = type;
   }
   onLand() { G.audio.play('bottle'); }
-  onImpact(sp) { if (sp > 3.4 && !this.locked) { G.fx.splat(this.obj.position, this.drink === 'beer' ? 0xc89030 : 0x2a1408, 0.18); shatter(this, this.drink === 'beer' ? 0x4a2408 : 0x1a0c06, 8); return true; } return false; }
+  onImpact(sp) { if (sp > 3.4) { G.fx.splat(this.obj.position, this.drink === 'beer' ? 0xc89030 : 0x2a1408, 0.18); shatter(this, this.drink === 'beer' ? 0x4a2408 : 0x1a0c06, 8); return true; } return false; }
   hint() { return `${this.name} → set at the customer who ordered it`; }
 }
 

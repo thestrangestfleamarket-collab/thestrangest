@@ -151,9 +151,7 @@ export function makePerson(seed, style) {
         _x.set(0, 1, 0).transformDirection(root.matrixWorld); if (neck) rotWorld(neck, _q.setFromAxisAngle(_x, yaw * 0.35).clone()); rotWorld(head, _q.setFromAxisAngle(_x, yaw * 0.65).clone());
         _x.set(1, 0, 0).transformDirection(root.matrixWorld); rotWorld(head, _q.setFromAxisAngle(_x, -pit).clone());
       }
-      if (this.waveT > 0 && this.pose !== 'eat' && hand && fore && upper && head) { // a raised hand, shaken: waving back
-        this.waveT -= dt; root.updateMatrixWorld(true); head.getWorldPosition(_t); _x.set(0.3 + Math.sin(this.waveT * 13) * 0.08, 0.1, 0.16).applyQuaternion(root.getWorldQuaternion(_pq)); _t.add(_x); reach(fore, upper, hand, _t);
-      }
+      if (this.waveT > 0) { this.waveT = 0; if (this.pose !== 'eat' && this.pose !== 'walk') lay('wave', false); } // a wave back is the recorded one, eased in over what they were doing
       if (this.pose === 'eat' && hand && fore && upper && head) {
         this.eatT += dt;
         const c = Math.pow((Math.sin(this.eatT * 2.4) + 1) / 2, 1.3); // 0 at the bowl .. 1 at the mouth

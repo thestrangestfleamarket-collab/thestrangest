@@ -132,7 +132,7 @@ export function buildInput(renderer, rig, camera, dom) {
   window.addEventListener('keyup', (e) => { desk.keys[e.code] = false; if (['KeyE', 'KeyF', 'Space'].includes(e.code)) desk.hand.use = false; });
 
   let recentered = false, snapLatch = false;
-  renderer.xr.addEventListener('sessionstart', () => { recentered = false; });
+  let xrFrames = 0; renderer.xr.addEventListener('sessionstart', () => { recentered = false; xrFrames = 0; rig.position.set(0, 0, 0.3); rig.rotation.set(0, 0, 0); camera.position.set(0, 1.7, 0); camera.quaternion.identity(); }); // the menu's roving view must not be taken for where you stand
 
   function owner(o) { for (let p = o; p; p = p.parent) if (!p.visible) return { skip: true };
     for (let p = o; p; p = p.parent) { if (p.userData.nopick) return { skip: true }; if (p.userData.item) return { item: p.userData.item }; if (p.userData.button) return { button: p.userData.button }; if (p.userData.source) return { source: p.userData.source }; } return {}; }
@@ -171,7 +171,9 @@ export function buildInput(renderer, rig, camera, dom) {
     const session = renderer.xr.getSession();
     desk.hand.active = false;
     camera.getWorldPosition(_v);
-    if (!recentered && camera.position.lengthSq() > 0.0001) { rig.position.x += 0 - _v.x; rig.position.z += 0.3 - _v.z; recentered = true; }
+    if (!recentered && ++xrFrames > 3) { // once the headset's own pose has arrived: stand them in the middle of the cart, facing the counter, wherever they are in their room
+      camera.getWorldDirection(_v2); rig.rotation.y += Math.PI - Math.atan2(_v2.x, _v2.z); rig.updateMatrixWorld(true); camera.getWorldPosition(_v); rig.position.x += 0 - _v.x; rig.position.z += 0.3 - _v.z; recentered = true; }
+    else if (recentered) { rig.updateMatrixWorld(true); camera.getWorldPosition(_v); const m = 0.35; rig.position.x += clamp(_v.x, BOUNDS.minX - m, BOUNDS.maxX + m) - _v.x; rig.position.z += clamp(_v.z, BOUNDS.minZ - m, BOUNDS.maxZ + m) - _v.z; } // never outside the cart, however they walk their room
     for (const h of xrHands) {
       const src = h.source, isHand = !!src?.hand;
       h.active = !!src && (h.gripSpace.visible || h.handSpace.visible || h.ctrl.visible);

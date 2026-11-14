@@ -4,7 +4,7 @@ const T = path.join(__dirname, '..', 'node_modules', 'three147'), min = process.
 const safe = s => s.replace(/<\/script/gi, '<\\/script');
 const lib = f => { const s = fs.readFileSync(path.join(T, f), 'utf8'); return f.startsWith('examples') && min ? es.transformSync(s, { minify: true, legalComments: 'none' }).code : s; };
 const three = ['build/three.min.js', ...['objects/Sky', 'utils/BufferGeometryUtils', 'shaders/CopyShader', 'shaders/LuminosityHighPassShader', 'postprocessing/EffectComposer', 'postprocessing/MaskPass', 'postprocessing/RenderPass', 'postprocessing/ShaderPass', 'postprocessing/UnrealBloomPass'].map(f => 'examples/js/' + f + '.js')]
-  .map(lib).join(';\n'), gltf = lib('examples/js/loaders/GLTFLoader.js');
+  .map(lib).join(';\n'), gltf = lib('examples/js/loaders/GLTFLoader.js') + ';\n' + lib('examples/js/utils/SkeletonUtils.js');
 fs.mkdirSync('dist', { recursive: true });
 for (const [dir, mark] of [['edge', '__EDGE__'], ['tank', '__TANK__']]) {
   const src = fs.readFileSync('src/' + dir + '/main.js', 'utf8'), js = min ? es.transformSync(src, { minify: true, target: 'es2020', charset: 'utf8', legalComments: 'none' }).code : src;

@@ -1,6 +1,6 @@
 // the street in 1986: wet road, fronts and neon, the moon, lamps and haze, traffic, passers-by, rain
 import * as THREE from 'three';
-import { G, mat, mesh, box, cyl, rand, pick } from './ctx.js';
+import { G, mat, mesh, box, cyl, rand, pick, mergeStatic } from './ctx.js';
 import * as T from './tex.js';
 import { makePerson } from './avatars.js';
 import { makeStreet } from './street.js';
@@ -49,10 +49,10 @@ export function buildCity(scene) {
   scene.add(new THREE.HemisphereLight(0x2c3458, 0x100c12, 0.44));
   const moonL = new THREE.DirectionalLight(0x9db6ff, 0.32);
   moonL.position.copy(MOON_DIR).multiplyScalar(45); moonL.target.position.set(0, 0, -3);
-  moonL.castShadow = true; moonL.shadow.mapSize.set(2048, 2048); moonL.shadow.bias = -0.0006; moonL.shadow.normalBias = 0.03;
+  moonL.castShadow = true; moonL.shadow.mapSize.set(512, 512); moonL.shadow.autoUpdate = false; { let sT = 0; ups.push((dt) => { sT -= dt; if (sT <= 0) { sT = 0.25; moonL.shadow.needsUpdate = true; } }); } moonL.shadow.bias = -0.0006; moonL.shadow.normalBias = 0.03;
   Object.assign(moonL.shadow.camera, { left: -16, right: 16, top: 12, bottom: -12, near: 5, far: 90 });
   scene.add(moonL, moonL.target);
-  [[-14, 5, -12.6, 0xff2d8a, 60], [4, 6, -12.6, 0x22d8ff, 60], [20, 5, -12.6, 0xffa030, 50], [-30, 6, -12.6, 0x8a4dff, 50], [-2.2, 1.4, 1.6, 0xbfe0ff, 3]].forEach(([x, y, z, c, i]) => {
+  [[-10, 5, -12.6, 0xff2d8a, 80], [12, 6, -12.6, 0x22d8ff, 80]].forEach(([x, y, z, c, i]) => {
     const l = new THREE.PointLight(c, i, 26, 1.8); l.position.set(x, y, z); scene.add(l);
   });
 
@@ -63,14 +63,14 @@ export function buildCity(scene) {
   mSide.normalMap = T.normalOf(mSide.map, 2.5);
   const nearWalk = mesh(new THREE.PlaneGeometry(L, 5.8), mSide, 0, 0, -0.3, city); nearWalk.rotation.x = -Math.PI / 2; nearWalk.castShadow = false;
   box(L, 0.12, 0.18, mat({ color: 0x55555a, roughness: 0.6 }), 0, -0.06, -3.29, city);
-  const mStreet = new THREE.MeshStandardMaterial({ map: T.asphaltTex([L / 5, 1.6]), alphaMap: T.puddleTex([L / 9, 0.9], 9, 246, 168), transparent: true, roughness: 0.28, metalness: 0.0, envMapIntensity: 1.2, color: 0xd0d0dc });
+  const mStreet = mat({ map: T.asphaltTex([L / 5, 1.6]), alphaMap: T.puddleTex([L / 9, 0.9], 9, 246, 168), transparent: true, roughness: 0.28, metalness: 0.0, envMapIntensity: 1.2, color: 0xd0d0dc });
   T.dirty(mStreet.map, 22, { cracks: 14, patch: 12, stains: 30 });
   mStreet.normalMap = T.normalOf(mStreet.map, 3); mStreet.normalScale.set(0.7, 0.7);
   const street = mesh(new THREE.PlaneGeometry(L, 8), mStreet, 0, -0.12, -7.3, city); street.rotation.x = -Math.PI / 2; street.castShadow = false; street.renderOrder = -5;
-  const mFarWalk = new THREE.MeshStandardMaterial({ map: T.paverTex([L / 2.4, 1]), alphaMap: T.puddleTex([L / 7, 0.4], 12, 250, 195), transparent: true, roughness: 0.4 });
+  const mFarWalk = mat({ map: T.paverTex([L / 2.4, 1]), alphaMap: T.puddleTex([L / 7, 0.4], 12, 250, 195), transparent: true, roughness: 0.4 });
   const farWalk = mesh(new THREE.PlaneGeometry(L, 2.4), mFarWalk, 0, 0, -12.5, city); farWalk.rotation.x = -Math.PI / 2; farWalk.castShadow = false; farWalk.renderOrder = -5;
   box(L, 0.12, 0.18, mat({ color: 0x55555a, roughness: 0.6 }), 0, -0.06, -11.31, city);
-  const mPaint = new THREE.MeshStandardMaterial({ color: 0xb9b6a8, roughness: 0.5, transparent: true, opacity: 0.8 });
+  const mPaint = mat({ color: 0xb9b6a8, roughness: 0.5, transparent: true, opacity: 0.8 });
   for (let x = -L / 2; x < L / 2; x += 6) { const p = mesh(new THREE.PlaneGeometry(2.6, 0.14), mPaint, x, -0.114, -7.3, city); p.rotation.x = -Math.PI / 2; p.castShadow = false; p.renderOrder = -4; }
   for (let i = 0; i < 9; i++) { const p = mesh(new THREE.PlaneGeometry(0.5, 7.2), mPaint, 11.5 + i * 0.95, -0.113, -7.3, city); p.rotation.x = -Math.PI / 2; p.castShadow = false; p.renderOrder = -4; }
 
@@ -94,17 +94,17 @@ export function buildCity(scene) {
     const w = h * m.userData.aspect;
     const s = new THREE.Mesh(new THREE.PlaneGeometry(w, h), m); s.position.set(x, y, z); s.rotation.y = rotY; glow.add(s);
     box(w + 0.15, h + 0.15, 0.12, mBody, x - Math.sin(rotY) * 0.08, y, z - Math.cos(rotY) * 0.08, city).rotation.y = rotY;
-    const hl = halo(m.userData.color, Math.max(w, h) * 2.2, x + Math.sin(rotY) * 0.3, y, z + Math.cos(rotY) * 0.3, glow, 0.3 * k);
-    if (R() < 0.3) flickers.push([s, hl, R()]);
+    const hl = Math.abs(x) < 22 ? halo(m.userData.color, Math.max(w, h) * 2.2, x + Math.sin(rotY) * 0.3, y, z + Math.cos(rotY) * 0.3, glow, 0.3 * k) : null;
+    if (R() < 0.3) { s.userData.keep = true; flickers.push([s, hl, R()]); }
   };
   const SHOPSIGN = { izakaya: ['居酒屋', '#ffa030'], books: ['書店', '#f0e8d0'], records: ['レコード', '#ff7a2a'], pharmacy: ['薬局', '#39f08a'], tv: ['電気店', '#22d8ff'], kissa: ['喫茶', '#ff7a2a'], grocer: ['八百屋', '#ffd21f'], game: ['ゲーム', '#8aff3d'], liquor: ['酒屋', '#ffe9a8'], camera: ['カメラ', '#e8f0ff'] }, shopSigns = {};
   const signFor = (type) => { if (!shopSigns[type]) { const [t, c] = SHOPSIGN[type], tex = T.dirty(T.neonTex(t, c, {}), 70 + t.length, { stains: 14, drips: 5 }); const m = new THREE.MeshBasicMaterial({ map: tex, toneMapped: false, side: THREE.DoubleSide, color: new THREE.Color(1.1, 1.1, 1.1) }); m.userData = { aspect: tex.image.width / tex.image.height, color: c, vertical: false }; shopSigns[type] = m; } return shopSigns[type]; };
   const fronts = makeStreet(scene, city, glow, R, { body: mBody, glowMap, signMats, signFor, addSign: (...a) => addSign(...a) });
-  let si = 0;
+  let si = 0; const farB = [];
   const row = (z, dir, x0, x1, hMin, hMax) => {
     let x = x0;
     while (x < x1) {
-      const w = 6 + R() * 7, h = hMin + R() * (hMax - hMin), b = fronts.building(x, w, h, z, dir, si, { near: Math.abs(x + w / 2) < 38 }), top = b.top;
+      const w = 6 + R() * 7, h = hMin + R() * (hMax - hMin), near = Math.abs(x + w / 2) < 26, b = fronts.building(x, w, h, z, dir, si, { near }), top = b.top; if (!near) farB.push({ g: b.g, gl: b.gl, x, w, top, z, dir });
       if (R() < 0.6) { // a canvas awning on its rods
         const aw = box(w - 0.5, 0.04, 1.0, mat({ color: [0x7a1c1c, 0x1c4a3a, 0x26335e, 0x5e4a1c, 0x6a665a][si % 5], roughness: 0.9 }), x + w / 2, 2.62, z + dir * 0.62, city); aw.rotation.x = dir * 0.26;
         for (const ax of [x + 0.5, x + w - 0.5]) { const r = cyl(0.012, 0.012, 1.05, mBody, ax, 2.56, z + dir * 0.6, city, 5); r.rotation.x = dir * 1.35; }
@@ -125,9 +125,9 @@ export function buildCity(scene) {
       si++; x += w + (R() < 0.15 ? 1.2 : 0);
     }
   };
-  row(-13.7, 1, -76, 76, 7, 25);
+  row(-13.7, 1, -50, 50, 7, 25);
   // near side (behind the cart)
-  row(2.9, -1, -76, -6, 7, 17); row(2.9, -1, 7, 76, 7, 17);
+  row(2.9, -1, -50, -6, 7, 17); row(2.9, -1, 7, 50, 7, 17);
   {
     const mWall = mat({ map: T.tileWallTex([7, 5]), roughness: 0.55 });
     T.dirty(mWall.map, 23, { drips: 46, stains: 34, soot: 1, missing: 22, cracks: 4 });
@@ -148,15 +148,15 @@ export function buildCity(scene) {
       box(1.0, 1.85, 0.62, shell, 0, 0.925, -0.39, vm);
       for (const [bx, by, bwid, bh] of [[-0.47, 0.925, 0.06, 1.85], [0.47, 0.925, 0.06, 1.85], [0, 1.82, 1.0, 0.06], [0, 0.03, 1.0, 0.06], [0, 0.72, 0.9, 0.05]]) box(bwid, bh, 0.1, shell, bx, by, -0.04, vm);
       box(0.88, 1.0, 0.02, new THREE.MeshBasicMaterial({ color: new THREE.Color(1.5, 1.6, 1.7) }), 0, 1.27, -0.075, vm);
-      const cans = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.03, 0.03, 0.115, 10), new THREE.MeshStandardMaterial({ roughness: 0.3, metalness: 0.6, emissive: 0x222222 }), 24), d = new THREE.Object3D(), cc = [0xd02a2a, 0x2a5ad0, 0xe8c020, 0x2aa05a, 0xf08a2a, 0x7a3ad0, 0x161616, 0xf0f0f0], r2 = T.rng(3);
+      const cans = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.03, 0.03, 0.115, 10), mat({ roughness: 0.3, metalness: 0.6, emissive: 0x222222 }), 24), d = new THREE.Object3D(), cc = [0xd02a2a, 0x2a5ad0, 0xe8c020, 0x2aa05a, 0xf08a2a, 0x7a3ad0, 0x161616, 0xf0f0f0], r2 = T.rng(3);
       for (let i = 0; i < 24; i++) { d.position.set(-0.36 + (i % 8) * 0.103, 0.9 + Math.floor(i / 8) * 0.3 + 0.06, -0.045); d.rotation.y = r2() * 6; d.updateMatrix(); cans.setMatrixAt(i, d.matrix); cans.setColorAt(i, new THREE.Color(cc[(r2() * cc.length) | 0])); }
       vm.add(cans);
       for (let j = 0; j < 3; j++) { box(0.88, 0.02, 0.07, shell, 0, 0.895 + j * 0.3, -0.04, vm); for (let i = 0; i < 8; i++) box(0.05, 0.022, 0.02, new THREE.MeshBasicMaterial({ color: r2() < 0.2 ? 0x5a1010 : new THREE.Color(0.2, 1.4, 0.5) }), -0.36 + i * 0.103, 0.87 + j * 0.3, 0.004, vm); }
-      const pane = box(0.88, 1.0, 0.008, new THREE.MeshPhysicalMaterial({ color: 0x223038, roughness: 0.05, transparent: true, opacity: 0.2, envMapIntensity: 2 }), 0, 1.27, 0.008, vm); pane.castShadow = false;
+      const pane = box(0.88, 1.0, 0.008, mat({ color: 0x223038, roughness: 0.05, transparent: true, opacity: 0.2, envMapIntensity: 2 }), 0, 1.27, 0.008, vm); pane.castShadow = false;
       box(0.2, 0.3, 0.03, dark, 0.3, 0.52, 0.01, vm); box(0.05, 0.012, 0.035, mat({ color: 0x8a8d90, metalness: 0.9, roughness: 0.3 }), 0.3, 0.6, 0.012, vm); box(0.08, 0.05, 0.035, mat({ color: 0x8a8d90, metalness: 0.9, roughness: 0.3 }), 0.3, 0.45, 0.012, vm);
-      box(0.56, 0.2, 0.12, dark, -0.12, 0.25, -0.03, vm); const flap = box(0.5, 0.15, 0.01, new THREE.MeshPhysicalMaterial({ color: 0x2a2a2e, roughness: 0.2, transparent: true, opacity: 0.6 }), -0.12, 0.26, 0.03, vm); flap.rotation.x = 0.25;
+      box(0.56, 0.2, 0.12, dark, -0.12, 0.25, -0.03, vm); const flap = box(0.5, 0.15, 0.01, mat({ color: 0x2a2a2e, roughness: 0.2, transparent: true, opacity: 0.6 }), -0.12, 0.26, 0.03, vm); flap.rotation.x = 0.25;
       const banner = mesh(new THREE.PlaneGeometry(0.86, 0.12), new THREE.MeshBasicMaterial({ map: T.labelTex(['つめた〜い  COLD DRINKS 100円'], { w: 512, h: 72, fs: 34, bg: '#b8201c', fg: '#fff' }), color: 0xbbbbbb }), 0, 0.79, 0.012, vm); banner.castShadow = false;
-      vm.traverse((c) => { c.userData.nopick = true; });
+      mergeStatic(vm); vm.traverse((c) => { c.userData.nopick = true; });
     }
     halo(0xcfe8ff, 2.2, -2.2, 1.25, 1.95, city, 0.12);
     // pipes, AC, crates
@@ -181,7 +181,7 @@ export function buildCity(scene) {
     const cone = new THREE.Mesh(coneG, new THREE.MeshBasicMaterial({ map: coneT, color: 0xffa850, transparent: true, opacity: 0.085, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide })); cone.position.set(x, 6.2, z + dir * 1.7); cone.userData.nopick = true; city.add(cone);
     if (real) { const s = new THREE.SpotLight(0xffb060, 120, 18, 0.8, 0.85, 1.9); s.position.set(x, 6.1, z + dir * 1.7); s.target.position.set(x, 0, z + dir * 1.9); scene.add(s, s.target); if (real > 1) { s.castShadow = true; s.shadow.mapSize.set(1024, 1024); s.shadow.bias = -0.001; } }
   };
-  lamp(-7.5, -3.05, -1, 2); lamp(9.5, -3.05, -1, 1);
+  lamp(-7.5, -3.05, -1, 1); lamp(9.5, -3.05, -1, 0);
   for (const x of [-41, -24, 26, 43, 60, -58]) lamp(x, -3.05, -1, 0);
   for (const x of [-49, -32, -15, 1, 18, 35, 52]) lamp(x, -11.5, 1, 0);
   // utility poles + wires
@@ -206,65 +206,79 @@ export function buildCity(scene) {
   ups.push((dt, t) => { const ph = (t % 30) / 30, on = ph < 0.55 ? 0 : ph < 0.62 ? 1 : 2; tl.forEach(([m, h], i) => { m.visible = h.visible = i === on; }); });
 
   // ---------- mirror (wet-street reflections) ----------
+  mergeStatic(glow);
   const mirror = glow.clone(true); mirror.scale.y = -1; mirror.position.y = -0.24;
-  mirror.traverse((o) => { o.renderOrder = -10; o.userData.nopick = true; }); city.add(mirror);
+  { const drop = []; mirror.traverse((o) => { o.renderOrder = -10; o.userData.nopick = true; if (o.isSprite || (o.isMesh && Math.abs(o.position.x) > 32 && o.geometry.attributes.position.count < 30)) drop.push(o); }); drop.forEach((o) => o.removeFromParent()); } city.add(mirror);
 
-  // ---------- cars ----------
+  // ---------- cars: real models (the racing-cars kit, CC0, as THE MARKET parks them), with lights that reach the wet road ----------
   const cars = [];
-  const mGlass = mat({ color: 0x0a0e14, roughness: 0.1, metalness: 0.8 }), mTire = mat({ color: 0x0c0c0d, roughness: 0.9 });
   const beamG = new THREE.ConeGeometry(1.3, 9, 16, 1, true); beamG.rotateZ(Math.PI / 2); beamG.translate(4.5, 0, 0);
-  const mkCar = (color, taxi) => {
-    const c = new THREE.Group(), mp = mat({ color, roughness: 0.28, metalness: 0.55 });
-    box(4.3, 0.55, 1.68, mp, 0, 0.55, 0, c); box(2.3, 0.5, 1.5, mp, -0.25, 1.06, 0, c); box(2.34, 0.36, 1.52, mGlass, -0.25, 1.06, 0, c); box(2.1, 0.36, 1.54, mp, -0.25, 1.06, 0, c).scale.set(0.05, 1, 1);
-    box(4.36, 0.14, 1.72, mat({ color: 0x9a9da0, roughness: 0.25, metalness: 0.9 }), 0, 0.33, 0, c);
-    for (const [x, z] of [[1.35, 0.8], [1.35, -0.8], [-1.35, 0.8], [-1.35, -0.8]]) { const w = cyl(0.31, 0.31, 0.2, mTire, x, 0.31, z, c, 14); w.rotation.x = Math.PI / 2; cyl(0.17, 0.17, 0.21, mat({ color: 0x9a9da0, metalness: 0.9, roughness: 0.3 }), x, 0.31, z, c, 10).rotation.x = Math.PI / 2; }
-    for (const z of [-0.6, 0.6]) {
-      const hl = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.14, 0.3), new THREE.MeshBasicMaterial({ color: new THREE.Color(3, 2.8, 2.2), toneMapped: false })); hl.position.set(2.16, 0.62, z); c.add(hl);
-      halo(0xfff0c8, 2.2, 2.25, 0.62, z, c, 0.8);
-      const tlm = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.12, 0.34), new THREE.MeshBasicMaterial({ color: new THREE.Color(2.2, 0.1, 0.05), toneMapped: false })); tlm.position.set(-2.16, 0.64, z); c.add(tlm);
-      halo(0xff2010, 1.1, -2.25, 0.64, z, c, 0.6);
+  const b64 = (str, Ty) => { const bin = atob(str), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new Ty(u.buffer); };
+  const part = (P) => { const u = b64(P.p, Uint16Array), n = b64(P.n, Int8Array), c = b64(P.c, Uint8Array), pos = new Float32Array(u.length), nor = new Float32Array(u.length), col = new Float32Array(u.length);
+    for (let i = 0; i < u.length; i++) { pos[i] = P.o[i % 3] + (u[i] - 32767.5) * P.s[i % 3]; nor[i] = n[i] / 127; col[i] = Math.pow(c[i] / 255, 2.2); }
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.BufferAttribute(nor, 3)); g.setAttribute('color', new THREE.BufferAttribute(col, 3)); g.setIndex(new THREE.BufferAttribute(b64(P.i, Uint16Array), 1)); return g; };
+  const carM = mat({ vertexColors: true }), carGlass = mat({ color: 0x0c1218, transparent: true, opacity: 0.62 });
+  const mkCar = (D, lit) => {
+    const c = new THREE.Group(), inner = new THREE.Group(); inner.rotation.y = Math.PI / 2; c.add(inner); // the kit's cars face +z; ours drive along +x
+    for (const P of D.body) { const m = new THREE.Mesh(part(P), carM); m.castShadow = true; inner.add(m); }
+    for (const P of D.glass || []) inner.add(new THREE.Mesh(part(P), carGlass));
+    const wg = part(D.wheel[0]); for (const w of D.wheels) { const p = Array.isArray(w) ? w : [w.x, w.y, w.z], m = new THREE.Mesh(wg, carM); m.position.set(p[0], p[1], p[2]); if (p[0] < 0) m.scale.x = -1; inner.add(m); }
+    const hl = D.size[2] / 2, hw = D.size[0] / 2;
+    if (lit) {
+      for (const z of [-hw * 0.62, hw * 0.62]) { const a = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.12, 0.26), new THREE.MeshBasicMaterial({ color: new THREE.Color(3, 2.8, 2.2), toneMapped: false })); a.position.set(hl + 0.01, 0.62, z); c.add(a); halo(0xfff0c8, 1.8, hl + 0.1, 0.62, z, c, 0.7);
+        const t = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.1, 0.3), new THREE.MeshBasicMaterial({ color: new THREE.Color(2.2, 0.1, 0.05), toneMapped: false })); t.position.set(-hl - 0.01, 0.66, z); c.add(t); }
+      halo(0xff2010, 1.2, -hl - 0.1, 0.66, 0, c, 0.5);
+      const beam = new THREE.Mesh(beamG, new THREE.MeshBasicMaterial({ map: coneT, color: 0xfff0d0, transparent: true, opacity: 0.05, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide })); beam.position.set(hl, 0.6, 0); beam.rotation.z = -0.03; c.add(beam);
+      const pool = new THREE.Mesh(new THREE.PlaneGeometry(9, 3.2), new THREE.MeshBasicMaterial({ map: glowMap, color: 0xfff0c8, transparent: true, opacity: 0.3, blending: THREE.AdditiveBlending, depthWrite: false })); pool.rotation.x = -Math.PI / 2; pool.position.set(hl + 3.4, 0.012, 0); c.add(pool);
     }
-    const beam = new THREE.Mesh(beamG, new THREE.MeshBasicMaterial({ map: coneT, color: 0xfff0d0, transparent: true, opacity: 0.05, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide })); beam.position.set(2.1, 0.6, 0); beam.rotation.z = -0.03; c.add(beam);
-    // light pool + streak on the wet road
-    const pool = new THREE.Mesh(new THREE.PlaneGeometry(9, 3.2), new THREE.MeshBasicMaterial({ map: glowMap, color: 0xfff0c8, transparent: true, opacity: 0.32, blending: THREE.AdditiveBlending, depthWrite: false })); pool.rotation.x = -Math.PI / 2; pool.position.set(5.5, 0.012, 0); c.add(pool);
-    const tail = new THREE.Mesh(new THREE.PlaneGeometry(4, 1.8), new THREE.MeshBasicMaterial({ map: glowMap, color: 0xff2010, transparent: true, opacity: 0.22, blending: THREE.AdditiveBlending, depthWrite: false })); tail.rotation.x = -Math.PI / 2; tail.position.set(-3.6, 0.012, 0); c.add(tail);
-    if (taxi) { const r = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.16, 0.2), new THREE.MeshBasicMaterial({ color: new THREE.Color(2, 1.6, 0.4), toneMapped: false })); r.position.set(-0.2, 1.4, 0); c.add(r); }
-    c.traverse((o) => { o.userData.nopick = true; });
-    city.add(c); return c;
+    c.traverse((o) => { o.userData.nopick = true; }); city.add(c); return c;
   };
-  [[0xb8b8b0, 0], [0x8a1818, 0], [0xe8c020, 1], [0x1c2c4a, 0], [0x2a2a2c, 0]].forEach(([col, taxi], i) => {
-    const c = mkCar(col, taxi), dir = i % 2 ? -1 : 1;
-    c.position.set(-70 + i * 31, -0.12, dir > 0 ? -9.3 : -5.3); c.rotation.y = dir > 0 ? 0 : Math.PI;
-    cars.push({ c, dir, v: 8 + R() * 4, wait: 0 });
-  });
-  ups.push((dt) => cars.forEach((k) => { k.c.position.x += k.dir * k.v * dt; if (Math.abs(k.c.position.x) > 78) { k.c.position.x = -78 * k.dir; k.v = 7 + Math.random() * 6; } }));
+  fetch('/sushi-assets/cars.json').then((r) => r.json()).then((d) => {
+    const K = d.cars, pickM = (...n) => K[n.find((x) => K[x])] || Object.values(K)[0];
+    [['station-wagon-70s'], ['taxi-coupe', 'taxi-pod'], ['wedge-coupe-80s', 'muscle-car-60s']].forEach((n, i) => { const c = mkCar(pickM(...n), true), dir = i % 2 ? -1 : 1; c.position.set(-60 + i * 40, -0.12, dir > 0 ? -9.3 : -5.3); c.rotation.y = dir > 0 ? 0 : Math.PI; cars.push({ c, dir, v: 8 + Math.random() * 4 }); });
+    [['camper-van'], ['muscle-car-60s']].forEach((n, i) => { const c = mkCar(pickM(...n), false); c.position.set(i ? 15 : -9.5, -0.12, -10.25); c.rotation.y = i ? Math.PI : 0; }); // parked for the night at the far kerb
+  }).catch((e) => console.warn('cars did not load', e));
+  ups.push((dt) => cars.forEach((k) => { k.c.position.x += k.dir * k.v * dt; if (Math.abs(k.c.position.x) > 62) { k.c.position.x = -62 * k.dir; k.v = 7 + Math.random() * 6; } }));
 
+  const CARTEYE = new THREE.Vector3(0, 1.6, 0.2);
   // ---------- pedestrians ----------
   const peds = [];
-  for (let i = 0; i < 7; i++) {
-    const p = makePerson(500 + i * 7), far = i < 4, dir = i % 2 ? 1 : -1;
+  for (let i = 0; i < 3; i++) {
+    const p = makePerson(500 + i * 7), far = i < 1, dir = i % 2 ? 1 : -1;
     p.root.position.set(-40 + R() * 80, 0, far ? -12 - R() * 1.2 : -2.4 - R() * 0.5); p.root.rotation.y = dir > 0 ? Math.PI / 2 : -Math.PI / 2; p.pose = 'walk';
     p.root.traverse((o) => { o.userData.nopick = true; });
     const v = 1.0 + R() * 0.5; p.speed = v; city.add(p.root); peds.push({ p, dir, v });
   }
-  ups.push((dt, t) => peds.forEach((k) => { k.p.root.position.x += k.dir * k.v * dt; if (Math.abs(k.p.root.position.x) > 45) k.p.root.position.x = -45 * k.dir; k.p.update(dt, t * (k.v / 1.2)); }));
+  ups.push((dt, t) => peds.forEach((k) => { k.p.root.position.x += k.dir * k.v * dt; if (Math.abs(k.p.root.position.x) > 45) k.p.root.position.x = -45 * k.dir; k.p.look = Math.abs(k.p.root.position.x) < 6 && k.p.root.position.z > -4 ? CARTEYE : null; k.p.update(dt, t * (k.v / 1.2)); }));
 
-  fronts.seats.slice(0, 7).forEach((st, i) => { const p = makePerson(900 + i); p.pose = 'sit'; p.root.position.copy(st.p); p.root.rotation.y = st.ry; p.root.traverse((o) => { o.userData.nopick = true; }); city.add(p.root); ups.push((dt, t) => p.update(dt, t)); });
+  fronts.seats.slice(0, 1).forEach((st, i) => { const p = makePerson(900 + i); p.pose = 'sit'; p.root.position.copy(st.p); p.root.rotation.y = st.ry; p.root.traverse((o) => { o.userData.nopick = true; }); city.add(p.root); ups.push((dt, t) => p.update(dt, t)); });
 
   // ---------- rain ----------
-  const nR = 1400, rp = new Float32Array(nR * 6), rs = new Float32Array(nR);
+  const nR = 600, rp = new Float32Array(nR * 6), rs = new Float32Array(nR);
   for (let i = 0; i < nR; i++) {
     let x, z; do { x = (R() - 0.5) * 30; z = -16 + R() * 20; } while (Math.abs(x) < 1.85 && z > -1.9 && z < 2.25);
     const y = R() * 12; rs[i] = 9 + R() * 5;
     rp.set([x, y, z, x + 0.02, y - 0.28, z], i * 6);
   }
   const rg = new THREE.BufferGeometry(); rg.setAttribute('position', new THREE.BufferAttribute(rp, 3));
-  const rain = new THREE.LineSegments(rg, new THREE.LineBasicMaterial({ color: 0xaab8e0, transparent: true, opacity: 0.2, depthWrite: false })); rain.frustumCulled = false; rain.userData.nopick = true; city.add(rain);
+  const rain = new THREE.LineSegments(rg, new THREE.LineBasicMaterial({ color: 0xaab8e0, transparent: true, opacity: 0.13, depthWrite: false })); rain.frustumCulled = false; rain.userData.nopick = true; city.add(rain);
   ups.push((dt) => { for (let i = 0; i < nR; i++) { let y = rp[i * 6 + 1] - rs[i] * dt; if (y < 0) y += 12; rp[i * 6 + 1] = y; rp[i * 6 + 4] = y - 0.28; } rg.attributes.position.needsUpdate = true; });
   // drifting ground mist catching the street light
   const mistM = new THREE.SpriteMaterial({ map: T.smokeTex(), color: 0x6a5a8a, transparent: true, opacity: 0.1, depthWrite: false });
   for (let i = 0; i < 16; i++) { const s = new THREE.Sprite(mistM); s.userData.nopick = true; s.position.set(-36 + R() * 72, 0.8 + R() * 1.8, -4.5 - R() * 6); s.scale.set(9 + R() * 6, 3 + R() * 2, 1); city.add(s); ups.push((dt) => { s.position.x += dt * 0.35; if (s.position.x > 38) s.position.x = -38; }); }
 
-  ups.push((dt, t) => flickers.forEach(([s, h, k], i) => { const on = k < 0.25 ? Math.sin(t * 0.4 + i * 3) > -0.2 && Math.sin(t * 31 + i * 9) + Math.sin(t * 11.3 + i) > -1.0 : Math.sin(t * 23 + i * 9) + Math.sin(t * 7.3 + i) > -1.5; s.visible = on; h.visible = on; }));
-  return { group: city, glow, update(dt, t) { for (const u of ups) u(dt, t); }, halo, rain, cars, glowMap };
+  ups.push((dt, t) => flickers.forEach(([s, h, k], i) => { const on = k < 0.25 ? Math.sin(t * 0.4 + i * 3) > -0.2 && Math.sin(t * 31 + i * 9) + Math.sin(t * 11.3 + i) > -1.0 : Math.sin(t * 23 + i * 9) + Math.sin(t * 7.3 + i) > -1.5; s.visible = on; if (h) h.visible = on; }));
+  // far buildings are drawn once into a picture each and stood up as a card: one draw instead of thousands of boxes
+  const bakeFar = (renderer) => {
+    const bs = new THREE.Scene(); bs.add(new THREE.HemisphereLight(0x7a86b8, 0x2a2430, 0.7)); const dl = new THREE.DirectionalLight(0x9db6ff, 0.5); dl.position.set(-4, 6, 3); bs.add(dl);
+    const keepT = renderer.getRenderTarget(), cc = new THREE.Color(); renderer.getClearColor(cc); const ca = renderer.getClearAlpha();
+    for (const f of farB) {
+      const H = f.top + 5, cam = new THREE.OrthographicCamera(-f.w / 2, f.w / 2, H, 0, 0.1, 40); cam.position.set(f.x + f.w / 2, 0, f.z + f.dir * 10); cam.lookAt(f.x + f.w / 2, 0, f.z);
+      const rt = new THREE.WebGLRenderTarget(320, Math.min(1024, Math.round(320 * H / f.w)), { type: THREE.HalfFloatType }); rt.texture.generateMipmaps = false;
+      bs.add(f.g, f.gl); renderer.setRenderTarget(rt); renderer.setClearColor(0x000000, 0); renderer.clear(); renderer.render(bs, cam); bs.remove(f.g, f.gl);
+      const card = new THREE.Mesh(new THREE.PlaneGeometry(f.w, H), new THREE.MeshBasicMaterial({ map: rt.texture, alphaTest: 0.5, side: THREE.DoubleSide })); card.position.set(f.x + f.w / 2, H / 2, f.z); if (f.dir < 0) card.rotation.y = Math.PI; card.userData.nopick = true; city.add(card);
+    }
+    farB.length = 0; renderer.setRenderTarget(keepT); renderer.setClearColor(cc, ca);
+  };
+  return { group: city, glow, update(dt, t) { for (const u of ups) u(dt, t); }, halo, rain, cars, glowMap, bakeFar };
 }

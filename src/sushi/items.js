@@ -4,7 +4,7 @@ import { G, V3, Q, UP, mat, clamp, lerp, rand } from './ctx.js';
 import * as T from './tex.js';
 import { PH } from './physics.js';
 
-const _v = new V3(), _v2 = new V3(), _vt = new V3(), _q = new Q();
+const _v = new V3(), _v2 = new V3(), _vt = new V3(), _q2 = new V3(), _q = new Q();
 
 export const TOPPINGS = {
   chashu: { label: 'CHASHU', jp: 'チャーシュー' }, egg: { label: 'EGG', jp: '味玉' }, negi: { label: 'NEGI', jp: 'ネギ' },
@@ -45,14 +45,14 @@ function shared() {
   S = {
     steel,
     steelDS: Object.assign(steel.clone(), { side: THREE.DoubleSide }),
-    wire: new THREE.MeshStandardMaterial({ map: meshT, alphaTest: 0.4, side: THREE.DoubleSide, metalness: 0.9, roughness: 0.35, color: 0xd8dade }),
+    wire: mat({ map: meshT, alphaTest: 0.4, side: THREE.DoubleSide, metalness: 0.9, roughness: 0.35, color: 0xd8dade }),
     handle: mat({ color: 0x2a1a10, roughness: 0.6 }),
-    ceramic: new THREE.MeshPhysicalMaterial({ color: 0xf1ede2, roughness: 0.18, clearcoat: 0.6, clearcoatRoughness: 0.15, side: THREE.DoubleSide }),
-    band: new THREE.MeshPhysicalMaterial({ map: T.bowlTex(), roughness: 0.2, clearcoat: 0.6 }),
+    ceramic: mat({ color: 0xf1ede2, roughness: 0.18, clearcoat: 0.6, clearcoatRoughness: 0.15, side: THREE.DoubleSide }),
+    band: mat({ map: T.bowlTex(), roughness: 0.2, clearcoat: 0.6 }),
     bowlGeo: new THREE.LatheGeometry([[0, 0], [0.042, 0], [0.045, 0.012], [0.06, 0.03], [0.085, 0.06], [0.103, 0.085], [0.106, 0.088], [0.1, 0.085], [0.082, 0.058], [0.057, 0.03], [0.04, 0.016], [0, 0.014]].map(([x, y]) => new THREE.Vector2(x, y)), 40),
     bandGeo: new THREE.CylinderGeometry(0.1042, 0.0885, 0.024, 40, 1, true),
     disc: new THREE.CircleGeometry(1, 36).rotateX(-Math.PI / 2),
-    nest: new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, true), 640, 0.0025, 5, true),
+    nest: new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, true), 260, 0.0026, 4, true),
     noodleCooked: mat({ color: 0xf0d58a, roughness: 0.45 }), noodleRaw: mat({ color: 0xeadfb8, roughness: 0.9 }),
     brothMap: T.brothTex('b'),
     chashuTop: mat({ map: T.swirlTex('chashu'), roughness: 0.5 }), chashuSide: mat({ color: 0x7a4a2e, roughness: 0.5 }),
@@ -65,8 +65,8 @@ function shared() {
     menmaGeo: scatter(new THREE.BoxGeometry(0.045, 0.004, 0.011), 5, 0.01, 0.008, 5, false),
     sliceGeo: new THREE.CylinderGeometry(0.037, 0.037, 0.007, 20), narutoGeo: new THREE.CylinderGeometry(0.021, 0.021, 0.005, 12),
     eggGeo: new THREE.SphereGeometry(0.024, 16, 10, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2).scale(1, 0.75, 1.3),
-    glassBrown: new THREE.MeshPhysicalMaterial({ color: 0x4a2408, roughness: 0.08, transmission: 0.5, thickness: 0.02, metalness: 0 }),
-    glassDark: new THREE.MeshPhysicalMaterial({ color: 0x1a0c06, roughness: 0.06, transmission: 0.35, thickness: 0.02 }),
+    glassBrown: mat({ color: 0x4a2408, roughness: 0.08, transparent: true, opacity: 0.86, metalness: 0 }),
+    glassDark: mat({ color: 0x1a0c06, roughness: 0.06, transparent: true, opacity: 0.86 }),
     bottleGeo: new THREE.LatheGeometry([[0, 0], [0.03, 0], [0.031, 0.13], [0.026, 0.16], [0.013, 0.2], [0.012, 0.235], [0.014, 0.24], [0, 0.24]].map(([x, y]) => new THREE.Vector2(x, y)), 18),
   };
   return S;
@@ -101,6 +101,7 @@ export class Item {
   upright() { const e = new THREE.Euler().setFromQuaternion(this.obj.quaternion, 'YXZ'); this.obj.quaternion.setFromEuler(new THREE.Euler(0, e.y, 0)); }
   onGrab() { } onRelease() { return false; } onHeld() { } update() { } onRemove() { } onLand() { G.audio.play('place'); }
   onGround() { this.grounded = 0; }
+  onImpact() { return false; }
   hint() { return ''; }
 }
 
@@ -141,17 +142,23 @@ export class Bowl extends Item {
     const s = shared(), g = new THREE.Group();
     M(s.bowlGeo, s.ceramic, g); M(s.bandGeo, s.band, g, 0, 0.0735, 0);
     super('bowl', g, { radius: 0.11, cy: 0.05, lift: 0.07, name: 'ramen bowl' });
-    this.liqMat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, map: s.brothMap, roughness: 0.06, clearcoat: 1, clearcoatRoughness: 0.05, transparent: true, opacity: 0.95 });
+    this.liqMat = mat({ color: 0xffffff, map: s.brothMap, roughness: 0.06, clearcoat: 1, clearcoatRoughness: 0.05, transparent: true, opacity: 0.95 });
     this.liq = M(s.disc, this.liqMat, g); this.liq.castShadow = false; this.liq.visible = false;
     this.nest = M(s.nest, s.noodleCooked, g); this.nest.visible = false;
     this.tops = new THREE.Group(); g.add(this.tops);
     this.tare = null; this.brothType = null; this.broth = 0; this.noodles = null; this.toppings = []; this.temp = 0; this.dirty = false; this.eaten = 0; this.served = false;
-    this.target = { getPos: () => _v2.copy(this.obj.position).setY(this.obj.position.y + 0.06), r: 0.115, accepts: (it) => it.kind === 'food' && it.topping && !this.dirty && !this.locked && it !== this, receive: (it) => this.addTopping(it) };
+    this.target = { getPos: () => _v2.copy(this.obj.position).setY(this.obj.position.y + 0.06), r: 0.115, accepts: () => false, receive: () => { } }; // nothing snaps in: things fall in
     G.targets.push(this.target);
   }
   onRemove() { const i = G.targets.indexOf(this.target); if (i >= 0) G.targets.splice(i, 1); }
   get empty() { return !this.tare && !this.broth && !this.noodles && !this.toppings.length; }
-  level() { return clamp((this.tare ? 0.12 : 0) + this.broth * 0.44, 0, 1) * (1 - this.eaten * 0.85); }
+  level() { return clamp(Math.min(1, this.tareAmt || 0) * 0.12 + this.broth * 0.44, 0, 1) * (1 - this.eaten * 0.85); }
+  receive(p, q) { // poured liquid arriving, a little at a time
+    if (this.dirty || this.locked) return;
+    if (p.kind === 'tare') { if (this.tare && this.tare !== p.type && this.tareAmt > 0.3) this.mixed = true; this.tareAmt = (this.tareAmt || 0) + q; if (!this.tare || this.tareAmt >= 0.5) this.tare = p.type; }
+    else { if (this.brothType && this.brothType !== p.type && this.broth > 0.4) this.mixed = true; this.brothType = p.type; this.broth = Math.min(3, this.broth + q); this.temp = Math.max(this.temp, p.heat); this.over = this.broth > 2.6; }
+    this.refresh(); if (G.t - (this.pourS || 0) > 0.45) { this.pourS = G.t; G.audio.play('pour'); }
+  }
   liquidY() { return 0.017 + this.level() * 0.05; }
   refresh() {
     const L = this.level(), y = this.liquidY(), r = 0.04 + ((y - 0.016) / 0.069) * 0.058;
@@ -164,7 +171,7 @@ export class Bowl extends Item {
     this.tops.position.y = Math.max(0.02, y + 0.003);
     this.tops.children.forEach((t, i) => { t.visible = this.eaten < (i + 1) / (this.tops.children.length + 1); });
   }
-  addTare(type) { this.tare = this.tare && this.tare !== type ? 'mixed' : type; if (this.tare === 'mixed') this.tare = type, (this.mixed = true); this.refresh(); G.audio.play('pour'); }
+  addTare(type) { this.tareAmt = 1; this.tare = this.tare && this.tare !== type ? 'mixed' : type; if (this.tare === 'mixed') this.tare = type, (this.mixed = true); this.refresh(); G.audio.play('pour'); }
   addBroth(type, heat) {
     if (this.brothType && this.brothType !== type) this.mixed = true;
     this.brothType = type; this.broth = Math.min(3, this.broth + 1); this.temp = Math.max(this.temp, heat); this.over = this.broth > 2; this.refresh(); G.audio.play('pour');
@@ -180,13 +187,15 @@ export class Bowl extends Item {
     else if (type === 'chashu' || type === 'naruto') { o.rotateX(0.18); }
     this.tops.add(o); it.remove(); this.refresh(); G.audio.play('plop');
   }
-  spill() { if (this.empty) return; this.tare = this.brothType = this.noodles = null; this.broth = 0; this.toppings = []; this.tops.clear(); this.temp = 0; this.mixed = this.over = false; this.dirty = true; this.eaten = 0; this.refresh(); G.audio.play('splash'); G.fx.drops(this.obj.position, 0xc99a3c, 14); }
+  spill() { if (this.empty) return; this.tare = this.brothType = this.noodles = null; this.tareAmt = 0; this.broth = 0; this.toppings = []; this.tops.clear(); this.temp = 0; this.mixed = this.over = false; this.dirty = true; this.eaten = 0; this.refresh(); G.audio.play('splash'); G.fx.drops(this.obj.position, 0xc99a3c, 14); }
   makeDirty() { this.dirty = true; this.locked = false; this.eaten = 1; this.tops.clear(); this.refresh(); this.liq.visible = true; this.liq.position.y = 0.019; this.liq.scale.set(0.035, 1, 0.035); }
   update(dt) {
     if (this.temp > 0) { this.temp = Math.max(0, this.temp - dt / 110); if (this.temp > 0.45 && !this.dirty && Math.random() < dt * 5) G.fx.steam(_v.copy(this.obj.position).setY(this.obj.position.y + 0.08), 0.5); }
     if (this.held && !this.empty && !this.dirty && this.tilt() > 1.25) this.spill();
   }
-  onGround() { G.audio.play('break'); G.fx.drops(this.obj.position, 0xf1ede2, 12); this.remove(); }
+  shatter() { if (!this.empty) G.fx.splat(this.obj.position, this.liqMat.color.getHex(), 0.2); shatter(this, 0xf1ede2, 9); }
+  onImpact(sp) { if (sp > 3.2 && !this.locked) { this.shatter(); return true; } return false; }
+  onGround() { this.shatter(); }
   onLand() { G.audio.play('clink'); }
   hint() { return this.dirty ? 'dirty bowl → bus tub (right)' : this.empty ? 'empty bowl → set on the mat' : 'ramen → serve on a customer placemat'; }
 }
@@ -201,6 +210,11 @@ export class Food extends Item {
     if (type === 'noodle') this.noodle = true; else this.topping = type;
     this.servings = servings;
   }
+  update() { // a topping or a clump of cooked noodles that has come down inside a bowl belongs to it
+    if (this.held || this.dead || !(this.topping || this.cooked)) return; const p = this.obj.position, b = findBowlUnder(p, 0.09); if (!b || p.y - b.obj.position.y > 0.1) return;
+    if (this.cooked) { if (!b.noodles) { b.addNoodles(this.cook); this.remove(); } } else b.addTopping(this);
+  }
+  onImpact(sp) { if (this.topping === 'egg' && sp > 2.4) { G.fx.splat(this.obj.position, 0xf4efe2, 0.06, 0xf0a020); G.audio.play('splash'); this.remove(); return true; } return false; }
   hint() { return this.noodle ? 'noodles → drop into a basket in the boiling pot' : `${this.name} → drop on a bowl (or back in its bin)`; }
 }
 
@@ -223,6 +237,7 @@ export class Raw extends Item {
     this.center.set(d.len / 2, 0, 0); this.aim.copy(this.center); this.raw = type; this.def = d; this.left = d.n; this.body = body; this.board = null;
   }
   onGrab() { if (this.board) { this.board.item = null; this.board = null; } }
+  onImpact(sp) { if (this.raw === 'egg' && sp > 2.2) { G.fx.splat(this.obj.position, 0xf4efe2, 0.085, 0xf0a020); shatter(this, 0xc89860, 4); return true; } return false; }
   slice() {
     const d = this.def, b = this.board; this.left--;
     this.body.scale.x = Math.max(0.02, this.left / d.n);
@@ -250,16 +265,29 @@ export class Drink extends Item {
     this.drink = type;
   }
   onLand() { G.audio.play('bottle'); }
-  onGround() { G.audio.play('break'); this.remove(); }
+  onImpact(sp) { if (sp > 3.4 && !this.locked) { G.fx.splat(this.obj.position, this.drink === 'beer' ? 0xc89030 : 0x2a1408, 0.18); shatter(this, this.drink === 'beer' ? 0x4a2408 : 0x1a0c06, 8); return true; } return false; }
   hint() { return `${this.name} → set at the customer who ordered it`; }
+}
+
+// what is left of a broken thing: small pieces that fall and scatter, swept away after a while
+class Debris extends Item {
+  constructor(color) { const g = new THREE.Group(); M(new THREE.BoxGeometry(0.026 + Math.random() * 0.02, 0.006, 0.018 + Math.random() * 0.02), mat({ color }), g); super('debris', g, { radius: 0 }); this.locked = true; this.life = 9; }
+  update(dt) { this.life -= dt; if (this.life <= 0) this.remove(); }
+  onGround() { } onLand() { }
+}
+function shatter(it, color, n) {
+  const p = it.obj.position, v = it.vel; G.audio.play('break'); G.game?.onMess?.(it.kind === 'bowl' ? 'drop a bowl, which smashed' : it.kind === 'drink' ? 'smash a bottle' : 'throw an egg, which burst');
+  for (let i = 0; i < n; i++) { const d = new Debris(color); d.obj.position.set(p.x + rand(-0.05, 0.05), p.y + 0.03 + rand(0, 0.05), p.z + rand(-0.05, 0.05)); d.obj.rotation.set(rand(6), rand(6), rand(6)); d.drop(_v2.set(v.x * 0.4 + rand(-1.6, 1.6), Math.abs(v.y) * 0.3 + rand(0.5, 2.2), v.z * 0.4 + rand(-1.6, 1.6)).clone()); }
+  it.remove();
 }
 
 // ------------------------------------------------------------------ tools
 export class Tool extends Item {
   constructor(kind, obj, o) { super(kind, obj, o); this.tool = true; this.home = { pos: new V3(), quat: new Q() }; this.homing = false; this.atHome = true; this.useMode = 'tilt'; this.armed = true; }
   setHome(pos, quat) { this.home.pos.copy(pos); this.home.quat.copy(quat); this.obj.position.copy(pos); this.obj.quaternion.copy(quat); this.atHome = true; this.homing = false; this.onHome(); }
-  onGrab() { this.atHome = false; this.homing = false; }
-  onRelease() { this.homing = true; return true; }
+  onGrab() { this.atHome = false; this.homing = false; this.thrown = false; }
+  onRelease(h) { if (PH.ready && h && h.xr && h.vs.length() > 1.7) { this.thrown = true; this.back = 2.6; if (this.setFilled && this.filled) { this.setFilled(false); G.fx.drops(this.obj.position, 0xc99a3c, 8); } return false; } this.homing = true; return true; } // let go gently it goes home; thrown, it flies and lies where it lands a while
+  onGround() { }
   onHome() { }
   point(local, out) { return out.copy(local).applyQuaternion(this.obj.quaternion).add(this.obj.position); }
   update(dt) {
@@ -267,6 +295,7 @@ export class Tool extends Item {
       const k = Math.min(1, dt * 9); this.obj.position.lerp(this.home.pos, k); this.obj.quaternion.slerp(this.home.quat, k);
       if (this.obj.position.distanceTo(this.home.pos) < 0.006) { this.obj.position.copy(this.home.pos); this.obj.quaternion.copy(this.home.quat); this.homing = false; this.atHome = true; this.onHome(); G.audio.play('clink'); }
     }
+    if (this.thrown && !this.free && !this.held) { this.back -= dt; if (this.back <= 0) { this.thrown = false; PH.drop(this); this.homing = true; } }
     this.tick(dt);
   }
   tick() { }
@@ -278,37 +307,30 @@ function ladleMesh(L, r, liquidColor) {
   M(new THREE.CylinderGeometry(big ? 0.011 : 0.0075, big ? 0.012 : 0.008, big ? 0.13 : 0.09, 10).rotateX(Math.PI / 2), s.handle, g, 0, 0, 0.0);
   M(new THREE.CylinderGeometry(0.004, 0.004, r * 0.9, 6), s.steel, g, 0, -r * 0.3, -L);
   const cup = M(new THREE.SphereGeometry(r, 18, 10, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), s.steelDS, g, 0, -r * 0.2, -L - r * 0.9);
-  const liq = M(new THREE.CircleGeometry(r * 0.95, 18).rotateX(-Math.PI / 2), new THREE.MeshPhysicalMaterial({ color: liquidColor, roughness: 0.08, clearcoat: 1 }), g, 0, -r * 0.28, -L - r * 0.9); liq.castShadow = false;
+  const liq = M(new THREE.CircleGeometry(r * 0.95, 18).rotateX(-Math.PI / 2), mat({ color: liquidColor, roughness: 0.08, clearcoat: 1 }), g, 0, -r * 0.28, -L - r * 0.9); liq.castShadow = false;
   return { g, liq, cup: new V3(0, -r * 0.3, -L - r * 0.9) };
 }
 
 export class Ladle extends Tool {
-  // mode 'tare' (fixed type, refills from its crock) or 'broth' (fills from whichever pot it is dipped in)
+  // mode 'tare' (fixed type, refills from its crock) or 'broth' (fills from whichever pot it is dipped in); what it holds runs out as it is tipped
   constructor(mode, type, vessel) {
     const big = mode === 'broth', m = ladleMesh(big ? 0.27 : 0.15, big ? 0.045 : 0.021, big ? BROTH[type].color : TARE[type].color);
     super('ladle', m.g, { radius: 0.07, lift: big ? 0.15 : 0.12, aim: m.cup, name: big ? `${BROTH[type].label.toLowerCase()} broth ladle` : `${TARE[type].label.toLowerCase()} tare ladle` });
-    this.mode = mode; this.type = type; this.vessel = vessel; this.liq = m.liq; this.cup = m.cup; this.filled = false; this.heat = 1; this.center.set(0, 0, -0.03);
+    this.mode = mode; this.type = type; this.vessel = vessel; this.liq = m.liq; this.cup = m.cup; this.filled = false; this.vol = 0; this.r = big ? 0.045 : 0.021; this.heat = 1; this.center.set(0, 0, -0.03);
   }
-  setFilled(f, type) { this.filled = f; this.liq.visible = f; if (type) { this.type = type; this.liq.material.color.set(BROTH[type].color); } }
-  onHome() { this.setFilled(true, this.mode === 'broth' ? this.vessel.type : null); this.heat = this.vessel.heat ?? 1; this.armed = true; }
+  setFilled(f, type) { this.filled = f; this.vol = f ? 1 : 0; this.liq.visible = f; this.liq.scale.setScalar(1); if (type) { this.type = type; this.liq.material.color.set(BROTH[type].color); } }
+  onHome() { this.setFilled(true, this.mode === 'broth' ? this.vessel.type : null); this.heat = this.vessel.heat ?? 1; }
   vessels() { return this.mode === 'broth' ? G.cart.pots.filter((p) => p.type) : [this.vessel]; }
   onHeld(dt, h) {
     const c = this.point(this.cup, _v), tilt = this.tilt();
-    if (!h.use && tilt < 0.6) this.armed = true;
-    for (const v of this.vessels()) {
-      if (Math.hypot(c.x - v.x, c.z - v.z) < v.r && c.y < v.rimY + 0.25) {
-        if (!this.filled && (c.y < v.liqY + 0.025 || h.useDown)) { this.setFilled(true, this.mode === 'broth' ? v.type : null); this.heat = v.heat ?? 1; this.armed = false; G.audio.play('plop'); }
-        return; // never pour while over a vessel
-      }
-    }
-    if (!this.filled || !this.armed) return;
-    const bowl = findBowlUnder(c);
-    if (bowl && (tilt > 0.95 || (h.xr && h.useDown))) {
-      if (this.mode === 'tare') bowl.addTare(this.type); else bowl.addBroth(this.type, this.heat);
-      G.fx.drops(c, this.liq.material.color.getHex(), 8); this.setFilled(false); this.armed = false;
-    } else if (!bowl && tilt > 1.8) { this.setFilled(false); this.armed = false; G.audio.play('splash'); G.fx.drops(c, this.liq.material.color.getHex(), 10); }
+    for (const v of this.vessels()) if (Math.hypot(c.x - v.x, c.z - v.z) < v.r && c.y < v.liqY + 0.025) { if (this.vol < 0.98) { this.setFilled(true, this.mode === 'broth' ? v.type : null); this.heat = v.heat ?? 1; G.audio.play('plop'); } return; } // under the surface: full again
+    if (this.vol <= 0 || tilt < 0.8 || dt <= 0) return;
+    const q = Math.min(this.vol, clamp((tilt - 0.8) / 0.7, 0.12, 1) * 1.7 * dt), up = _vt.set(0, 1, 0).applyQuaternion(this.obj.quaternion), hl = Math.hypot(up.x, up.z) || 1; // it runs over the low side of the cup, faster the further it is tipped
+    this.vol -= q; _v2.set(up.x / hl * 0.25 + h.vel.x * 0.4, -0.2, up.z / hl * 0.25 + h.vel.z * 0.4);
+    G.fx.pour(c.addScaledVector(_q2.set(up.x / hl, 0, up.z / hl), this.r * 0.9), _v2, this.liq.material.color.getHex(), q, { kind: this.mode, type: this.type, heat: this.heat });
+    this.liq.scale.setScalar(Math.max(0.3, Math.sqrt(this.vol))); if (this.vol <= 0.002) this.setFilled(false);
   }
-  hint() { return this.filled ? 'hold over a bowl and tilt to pour' : 'empty — dip it back in the pot'; }
+  hint() { return this.filled ? 'hold over a bowl and tip it: it pours' : 'empty: dip it back in the pot'; }
 }
 
 export class Basket extends Tool {
@@ -333,13 +355,11 @@ export class Basket extends Tool {
       if (this.noodles.cook > 9 && this.nest.material !== shared().noodleCooked) this.nest.material = shared().noodleCooked;
     }
   }
-  onHeld(dt, h) {
+  onHeld(dt, h) { // tipped out of the water, the noodles slide out as one clump and fall where they fall
     const c = this.point(this.cup, _v), tilt = this.tilt();
-    if (!h.use && tilt < 0.6) this.armed = true;
-    if (!this.noodles || !this.armed || this.inWater()) return;
-    const bowl = findBowlUnder(c, 0.12);
-    if (bowl && !bowl.noodles && (tilt > 0.95 || (h.xr && h.useDown))) { bowl.addNoodles(this.noodles.cook); this.noodles = null; this.nest.visible = false; this.armed = false; G.fx.drops(c, 0xf0e8c8, 6); }
-    else if (!bowl && tilt > 1.8) { this.noodles = null; this.nest.visible = false; this.armed = false; G.audio.play('splash'); }
+    if (!this.noodles || this.inWater() || tilt < 0.95) return;
+    const f = new Food('noodle'); f.cooked = true; f.cook = this.noodles.cook; f.name = 'cooked noodles'; f.obj.children[0].material = shared().noodleCooked; f.obj.position.copy(c); f.drop(_v2.set(h.vel.x * 0.4, -0.3, h.vel.z * 0.4));
+    this.noodles = null; this.nest.visible = false; G.audio.play('plop');
   }
   hint() { return this.noodles ? `noodles ${doneness(this.noodles.cook).label} — tilt over a bowl with broth` : 'empty basket — drop fresh noodles in it'; }
 }

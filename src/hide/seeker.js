@@ -85,6 +85,9 @@ async function ask(urgent) { if (SK.pending) return; SK.pending = true; SK.asked
       if (j && j.action) { D = j; SK.fails = 0; } else { SK.why = (j && j.why) || 'no answer'; SK.fails++; } } catch (e) { SK.why = 'not reached'; SK.fails++; } if (SK.fails >= 2) SK.mode = 'local'; }
   if (!D) D = localMind(o); SK.pending = false; if (round !== SK.round || !['think', 'goto', 'listen'].includes(SK.state)) return; decide(D); }
 function decide(D) { think(D.thought, D.action); SK.queue.length = 0; let a = D.action;
+  const ic = a === 'investigate' && SK.clues.find(c => c.id === D.clue), dv = ic && ic.kind === 'noise' && WORLD.devices.filter(d => d.on && d.loud && Math.abs(d.pos.y - ic.y) < 2 && Math.hypot(d.pos.x - ic.x, d.pos.z - ic.z) < 3).sort((p, q) => Math.hypot(p.pos.x - ic.x, p.pos.z - ic.z) - Math.hypot(q.pos.x - ic.x, q.pos.z - ic.z))[0];
+  // a thing left running is gone to itself, by the side of it that is open floor, not to whatever hiding place lies nearest through a wall
+  if (dv) { SK.used.add(ic.id); let p = null; for (let k = 0; k < 8 && !p; k++) { const d = { x: Math.sin(k * .785), y: 0, z: Math.cos(k * .785) }; if (!ray(dv.pos, d, 1, HARD)) p = { x: dv.pos.x + d.x * .9, z: dv.pos.z + d.z * .9 }; } p = p || dv.pos; SK.plan = { type: 'point', x: p.x, z: p.z, L: WORLD.levelOf(dv.pos.y - .6) }; start(); return; }
   if (a === 'investigate') { const c = SK.clues.find(c => c.id === D.clue); if (c) { SK.used.add(c.id); const s = nearSpot(c.x, c.z, 2.2, c.y); SK.plan = s ? { type: 'search', spot: s, thorough: true } : { type: 'point', x: c.x, z: c.z, L: lvOf(c.y) }; } else a = 'sweep'; }
   if (a === 'search') { if (D.spot && spotAt(D.spot)) SK.plan = { type: 'search', spot: D.spot, thorough: !!D.thorough }; else a = 'sweep'; }
   if (a === 'feint' && SK.feinted) a = 'listen'; if (a === 'leave' && SK.patience > 45) a = 'sweep';

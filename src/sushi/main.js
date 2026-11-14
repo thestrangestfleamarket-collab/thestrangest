@@ -41,7 +41,6 @@ G.peopleRoot = new THREE.Group(); scene.add(G.peopleRoot);
 G.audio = new GameAudio();
 
 const $ = (id) => document.getElementById(id), menu = $('menu'), hud = $('hud'), vrBtn = $('vr'), deskBtn = $('desk');
-if (!params.has('desktop')) deskBtn.style.display = 'none';
 const photos = T.loadPhotos();
 { const l = vrBtn.textContent; await loadAvatars((f) => { vrBtn.textContent = `Loading… ${Math.round(f * 100)}%`; }); vrBtn.textContent = l; }
 try { await PH.init(); } catch (e) { console.warn('physics engine unavailable, simple falling instead', e); }
@@ -96,7 +95,7 @@ async function startVR() {
 }
 fetch('/sushi/say', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }).then((r) => { if (r.status === 401) $('login').style.display = 'inline-block'; }).catch(() => { }); // the patrons' voices are a login's: say so before the headset goes on
 vrBtn.onclick = async () => { if (await talk.needPrime()) { vrBtn.textContent = 'Allow the microphone…'; const ok = await talk.prime(); vrBtn.textContent = ok ? 'Enter VR' : 'Enter VR (no microphone)'; return; } startVR(); }; // the microphone is asked for on its own press: a prompt cannot be answered inside the headset view
-if (navigator.xr?.isSessionSupported) navigator.xr.isSessionSupported('immersive-vr').then((ok) => { vrBtn.disabled = !ok; vrBtn.textContent = ok ? 'Enter VR' : 'Open this page in a VR headset'; }).catch(() => { vrBtn.textContent = 'VR unavailable'; });
+if (navigator.xr?.isSessionSupported) navigator.xr.isSessionSupported('immersive-vr').then((ok) => { vrBtn.disabled = !ok; vrBtn.textContent = ok ? 'Enter VR' : 'No headset here'; if (!ok) { vrBtn.classList.remove('primary'); deskBtn.classList.add('primary'); } }).catch(() => { vrBtn.textContent = 'VR unavailable'; });
 else vrBtn.textContent = location.protocol === 'https:' || location.hostname === 'localhost' ? 'Open this page in a VR headset' : 'VR needs HTTPS';
 
 // ---------- loop ----------
@@ -137,4 +136,7 @@ renderer.setAnimationLoop(frame);
 
 G.debug = { Items, PH, city, guide, menu: gameMenu, report, tick, frame, render, input, startDesktop, startVR, THREE };
 window.G = G;
+{ const box = $('say'); // on a screen: M the settings board, G the guide, T to type what you say if you would rather not speak it
+  addEventListener('keydown', (e) => { if (G.mode !== 'desktop' || e.repeat) return; if (e.target === box) { if (e.code === 'Enter') { const t = box.value.trim(); box.value = ''; box.style.display = 'none'; box.blur(); if (t) talk.cookSays(t); } else if (e.code === 'Escape') { box.value = ''; box.style.display = 'none'; box.blur(); } return; }
+    if (e.code === 'KeyM') gameMenu.toggle(); else if (e.code === 'KeyG') guide.set(!guide.on); else if (e.code === 'KeyT') { e.preventDefault(); document.exitPointerLock?.(); box.style.display = 'block'; box.focus(); } }); }
 if (params.has('desktop')) startDesktop();

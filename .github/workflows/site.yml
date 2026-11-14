@@ -73,7 +73,7 @@ jobs:
           k shoot   'src/shoot/|tools/shoot\.cjs|tests/shoot\.cjs'
           k edge    'src/edge/|tools/edge\.cjs|tests/edge\.cjs'
           k tank    'src/tank/|data/tank/|tools/edge\.cjs|tools/tank|tests/tank\.cjs'
-          k sniper  'src/sniper/|data/sniper/|tools/sniper|tests/sniper\.cjs'
+          k sniper  'src/sniper/|data/sniper/|worker/sniper|tools/sniper|tests/sniper\.cjs'
           k duel    'src/duel/|data/duel/|tools/duel\.cjs|tests/duel\.cjs'
           k laser   'src/laser/|worker/laser|tools/laser\.cjs|tests/laser\.cjs'
           k vrbody  'src/162c|src/111b|vrbody\.cjs'

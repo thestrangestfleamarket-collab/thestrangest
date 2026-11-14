@@ -1,4 +1,4 @@
-// THE SNIPER CHECK: node tests/sniper.cjs [dist/sniper.html] [folder for screenshots]. COLD BORE loads with its skies, surfaces and models (dist/sniper-assets/), the scope draws its picture, rounds drop and drift as the card says, the range is qualified, each contract is won by its target and lost by a bystander, the counter-sniper shoots back; then in an emulated Quest 3 the rifle is taken from the sandbags on its bipod, fired, its bolt worked and its magazine changed by hand, the board pressed with a pointed controller; no page errors.
+// THE SNIPER CHECK: node tests/sniper.cjs [dist/sniper.html] [folder for screenshots]. COLD BORE loads with its skies, surfaces and models (dist/sniper-assets/), the scope draws its picture, rounds drop and drift as the card says, the range is qualified, each contract is won by its target and lost by a bystander, the counter-sniper shoots back; the duel room's rules hold; then in an emulated Quest 3 the rifle is taken from the sandbags on its bipod, fired, its bolt worked and its magazine changed by hand, the board pressed with a pointed controller; no page errors.
 const { chromium } = require('playwright'), path = require('path'), fs = require('fs');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=sniper::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 const PAGE = path.resolve(process.argv[2] || 'dist/sniper.html'), ROOT = path.dirname(PAGE), OUT = process.argv[3]; if (OUT) fs.mkdirSync(OUT, { recursive: true });
@@ -14,6 +14,9 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   const until = (pg, f, a, ms = 900000) => pg.waitForFunction(f, a, { timeout: ms }).then(() => true).catch(() => false);
   const snap = async (pg, n) => { if (OUT) await pg.screenshot({ path: path.join(OUT, n + '.png') }); };
 
+  // the duel room's rules: only its six kinds of word pass, each kept in bounds
+  { const { SNIPER: S } = await import(require('url').pathToFileURL(path.resolve('worker/sniper.js'))); const p = S.clean({ t: 'pose', p: new Array(12).fill(9e9) }), f = S.clean({ t: 'fire', o: [1, 2, 3], d: [0, 0, -9] });
+    ok(S.MAX === 2 && S.slot([0]) === 1 && S.slot([]) === 0 && p.p[0] === 5000 && f.d[2] === -1 && S.clean({ t: 'hit', k: 'x' }).k === 1 && S.clean({ t: 'go', a: 9, b: -3, in: 1 }).a === 2 && !S.clean({ t: 'eval' }) && !S.clean({ t: 'pose', p: [1] }), 'the duel room seats two and passes only bounded poses, shots, hits and round starts'); }
   const pg = await b.newPage({ viewport: { width: 256, height: 144 } }); pg.setDefaultTimeout(900000); watch(pg);
   const t0 = Date.now(); await pg.goto(FILE); const up = await until(pg, () => window.game && game.time > 0.05 && game.mission && game.up);
   ok(up, 'the page starts with the range built behind its menu (' + ((Date.now() - t0) / 1000).toFixed(0) + ' s)'); if (!up) { console.log(errs.join(' | ')); await b.close(); srv.close(); process.exit(1); }

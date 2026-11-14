@@ -18,7 +18,7 @@ export class Board {
   show(screen, data) { this.screen = screen; if (data) this.data = data; this.hover = -1; this.draw(); }
   say(line) { this.log.push(line); if (this.log.length > 7) this.log.shift(); if (this.screen === 'live') this.draw(); }
   point(px, py) { const i = this.buttons.findIndex(b => px >= b.x && px <= b.x + b.w && py >= b.y && py <= b.y + b.h); if (i !== this.hover) { this.hover = i; this.draw(); } return i; }
-  click() { const b = this.buttons[this.hover]; if (b) { this.g.audio.start(); this.g.audio.play('ui'); b.fn(); } }
+  click() { const b = this.buttons[this.hover]; if (b) { this.g.audio.start(); this.g.audio.play('ui'); b.fn(); } else if (!this.g.vr && this.g.state === 'live') this.g.lock(); }
   // a controller's ray in the world: where it meets the board
   aim(origin, dir) { this.ray.set(origin, dir); const h = this.ray.intersectObject(this.mesh, false)[0]; if (!h || !h.uv) return false; this.point(h.uv.x * W, (1 - h.uv.y) * H); this.dot.visible = true; this.dot.position.set((h.uv.x - 0.5) * 1.3, (h.uv.y - 0.5) * 0.975, 0.002); return true; }
   btn(label, x, y, w, h, fn, o = {}) { const g = this.x, i = this.buttons.length, hot = this.hover === i; this.buttons.push({ x, y, w, h, fn });
@@ -29,11 +29,12 @@ export class Board {
   draw() {
     const g = this.x, G = this.g, d = this.data; this.buttons = []; g.fillStyle = '#0a1116'; g.fillRect(0, 0, W, H); g.fillStyle = '#101b22'; g.fillRect(0, 0, W, 84); g.fillStyle = '#ff6a30'; g.fillRect(0, 84, W, 3);
     g.textBaseline = 'middle'; g.textAlign = 'left'; g.fillStyle = '#e6edf2'; g.font = `900 40px ${FONT}`; g.fillText('COLD BORE', 34, 44); g.fillStyle = '#7f98a6'; g.font = `600 20px ${FONT}`; g.textAlign = 'right';
-    g.fillText({ missions: 'CONTRACTS', brief: 'BRIEFING', live: 'ON THE GLASS', debrief: 'DEBRIEF' }[this.screen], W - 34, 46);
+    if (this.screen !== 'missions') g.fillText({ brief: 'BRIEFING', live: 'ON THE GLASS', debrief: 'DEBRIEF' }[this.screen], W - 34, 46);
     if (this.screen === 'missions') {
       G.missions.forEach((m, i) => { const y = 110 + i * 104, rec = G.save.done[m.id]; this.btn('', 34, y, W - 68, 92, () => G.load(i)); g.textAlign = 'left'; g.fillStyle = '#ff6a30'; g.font = `900 22px ${MONO}`; g.fillText('0' + (i + 1), 58, y + 46);
         g.fillStyle = '#e6edf2'; g.font = `800 30px ${FONT}`; g.fillText(m.name, 110, y + 32); g.fillStyle = '#8fa6b2'; g.font = `500 20px ${FONT}`; g.fillText(m.tag, 110, y + 66);
         if (rec) { this.stars(rec.stars, W - 190, y + 34, 26); g.fillStyle = '#8fa6b2'; g.font = `500 17px ${MONO}`; g.textAlign = 'right'; g.fillText(rec.shots + (rec.shots === 1 ? ' round' : ' rounds'), W - 60, y + 68); } });
+      { const D = G.duel, on = !!D.peer; this.btn(D.label(), 560, 16, 430, 54, () => D.toggle(), { size: 19, primary: on && !D.want }); }
       const S = G.settings, tog = (label, key, x) => this.btn((S[key] ? '[x] ' : '[  ] ') + label, x, 660, 228, 56, () => { S[key] = !S[key]; G.saveAll(); this.draw(); }, { size: 19 });
       tog('Assisted reload', 'assist', 34); tog('Grip toggles', 'toggle', 276); tog('Spotter voice', 'voice', 518); tog('Left-handed', 'lefty', 760);
     } else if (this.screen === 'brief') {
@@ -47,7 +48,11 @@ export class Board {
       g.textAlign = 'left'; g.fillStyle = '#ff6a30'; g.font = `700 19px ${MONO}`; g.fillText(G.mission.def.name, 34, 122); g.fillStyle = '#e6edf2'; g.font = `700 26px ${FONT}`; this.wrap(G.objectiveText || '', 34, 160, W - 68, 34);
       g.fillStyle = '#8fa6b2'; g.font = `700 18px ${MONO}`; g.fillText('SPOTTER', 34, 262); g.font = `500 23px ${FONT}`; this.log.forEach((s, i) => { g.fillStyle = i === this.log.length - 1 ? '#ffe9a0' : '#9fb0ba'; g.fillText(s, 34, 300 + i * 40); });
       g.fillStyle = '#8ff0b0'; g.font = `700 22px ${MONO}`; g.fillText(`ROUNDS LEFT ${Math.max(0, G.mission.def.rounds - G.shots)}`, 34, 610);
-      this.btn('ABORT', 34, 660, 220, 76, () => G.toMissions()); this.btn('RESTART', 274, 660, 220, 76, () => G.load(G.mi));
+      this.btn(G.duel.on ? 'STAND DOWN' : 'ABORT', 34, 660, 220, 76, () => G.toMissions()); if (!G.duel.on) this.btn('RESTART', 274, 660, 220, 76, () => G.load(G.mi));
+    } else if (this.screen === 'debrief' && d.duel) {
+      g.textAlign = 'left'; g.fillStyle = d.win ? '#8ff0b0' : '#ff5a4a'; g.font = `900 52px ${FONT}`; g.fillText(d.win ? 'DUEL WON' : 'DUEL LOST', 34, 150); g.fillStyle = '#e6edf2'; g.font = `600 27px ${FONT}`; this.wrap(d.text, 34, 212, W - 68, 36);
+      g.font = `900 120px ${MONO}`; g.fillText(d.me + ' : ' + d.him, 34, 380); g.font = `600 24px ${MONO}`; g.fillStyle = '#8fa6b2'; g.fillText('Rounds fired  ' + d.shots, 34, 480);
+      this.btn(G.duel.want ? 'WAITING FOR HIM' : 'REMATCH', 34, 660, 300, 76, () => G.duel.rematch(), { primary: !G.duel.want }); this.btn('CONTRACTS', 354, 660, 240, 76, () => { G.duel.on = false; G.duel.phase = 'off'; G.duel.clearRival(); G.toMissions(); });
     } else if (this.screen === 'debrief') {
       g.textAlign = 'left'; g.fillStyle = d.win ? '#8ff0b0' : '#ff5a4a'; g.font = `900 52px ${FONT}`; g.fillText(d.win ? 'CONTRACT COMPLETE' : 'CONTRACT FAILED', 34, 150); g.fillStyle = '#e6edf2'; g.font = `600 27px ${FONT}`; this.wrap(d.text, 34, 212, W - 68, 36);
       if (d.win) this.stars(d.stars, 34, 300, 54); g.font = `600 24px ${MONO}`; g.textAlign = 'left'; const rows = [['Rounds fired', d.shots], ['Hits', d.hits], ['Time', d.time.toFixed(0) + ' s']]; if (d.far) rows.push(['Longest hit', d.far.toFixed(0) + ' m'], ['Flight time', d.tof.toFixed(2) + ' s']); if (d.zone) rows.push(['Placed', d.zone]);

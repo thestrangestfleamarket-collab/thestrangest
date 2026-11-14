@@ -3,6 +3,7 @@ import { getServerByName, routePartykitRequest, Server } from "partyserver";
 import { DISH, DISHK } from "./dish.js";
 import { JAM } from "./jam.js";
 import { LASER } from "./laser.js";
+import { SNIPER } from "./sniper.js";
 import { MAPPATCH } from "./mappatch.js";
 import { FOLKSIM } from "./folk.js";
 import { MOBSIM } from "./dunmobs.js";
@@ -186,9 +187,9 @@ export default {
       return skyFeed(sky[1], request); }
     if (p.startsWith("/parties/")) return (await routePartykitRequest(request, env, {
       onBeforeConnect: async (req, { party, name }) => {
-        const room = party === "block" || party === "jam" ? ROOM.test(name) : party === "laser" ? name === "public" : party === "dish" && name === "petri";   // the dish: one for the whole market, the arcade's PETRI; LASER TAG: one public room
+        const room = party === "block" || party === "jam" ? ROOM.test(name) : party === "laser" || party === "sniper" ? name === "public" : party === "dish" && name === "petri";   // the dish: one for the whole market, the arcade's PETRI; LASER TAG: one public room
         if (!room || (request.headers.get("Origin") !== url.origin && !dev)) return new Response("not found", { status: 404 });
-        if (party === "laser") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // LASER TAG's room: to anyone with the link, like its page
+        if (party === "laser" || party === "sniper") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // LASER TAG's room: to anyone with the link, like its page
         if (party === "jam") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // STADIUM JAM's rooms: to anyone with the link, like its page
         const id = await who(env, request, dev); if (!id) return new Response("login", { status: 401 });
         const r = new Request(req); r.headers.set("x-tsfm-id", id); r.headers.set("x-partykit-room", name); if (dev) r.headers.set("x-tsfm-dev", "1"); return r; },
@@ -1008,9 +1009,10 @@ export class Dish extends Server {
 // LASER TAG's room: the one public game, two players; it gives each a pack (RED, GREEN) and passes poses, pack states, shots and tags on to the other (worker/laser.js says what passes)
 export class Laser extends Server {
   static options = { hibernate: false };
+  rules = LASER;
   peers(not) { const a = []; for (const o of this.getConnections()) if (o.id !== not && o.state) a.push({ id: o.id, ...o.state }); return a; }
   onMessage(c, raw) {
-    if (typeof raw !== "string" || raw.length > 1024) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
+    const LASER = this.rules; if (typeof raw !== "string" || raw.length > 1024) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
     const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0 }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 120) return;
     if (m && m.t === "join") { if (c.state) return; const peers = this.peers(c.id);
       if (peers.length >= LASER.MAX) { c.send('{"t":"full"}'); return c.close(4002, "full"); }
@@ -1021,6 +1023,9 @@ export class Laser extends Server {
   onClose(c) { if (c.state) this.broadcast(JSON.stringify({ t: "peer-leave", id: c.id }), [c.id]); }
   onError(c) { this.onClose(c); }
 }
+
+// COLD BORE's duel room: the one public game, two rifles; the same passing-on as LASER TAG's, by its own rules (worker/sniper.js)
+export class Sniper extends Laser { rules = SNIPER; }
 
 // STADIUM JAM's stage: one per room code, eight players at most; it keeps who plays what and passes each pose and note on to the others (worker/jam.js says what passes)
 export class Jam extends Server {

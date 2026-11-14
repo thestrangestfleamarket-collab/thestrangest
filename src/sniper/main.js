@@ -9,6 +9,7 @@ import { Board } from './ui.js';
 import { MISSIONS } from './missions.js';
 import { AMMO, SOUND, ZERO_ANGLE, step, solve } from './ballistics.js';
 import { A, loadAssets, sky } from './assets.js';
+import { Duel } from './duel.js';
 
 const $ = (id) => document.getElementById(id), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _d = new THREE.Vector3(), _q = new THREE.Quaternion(), _m = new THREE.Matrix4();
 const SUB = 1 / 240;
@@ -30,7 +31,7 @@ class Game {
     this.A = A; this.world = new World(this); this.crowd = new Crowd(this); this.fx = new FX(this); this.rifle = new Rifle(this); this.board = new Board(this);
     this.ray = new THREE.Raycaster(); this.ray.firstHitOnly = true; this.wind = new THREE.Vector3(); this.windDir = new THREE.Vector3(1, 0, 0); this.aim = { yaw: 0, pitch: 0 }; this.keys = {}; this.I = { zoom: 0 }; this.hp = 0;
     this.fadeM = new THREE.Mesh(new THREE.SphereGeometry(0.3, 12, 8), new THREE.MeshBasicMaterial({ color: 0, side: THREE.BackSide, transparent: true, opacity: 0, depthTest: false, depthWrite: false, fog: false, toneMapped: false })); this.fadeM.renderOrder = 999; this.fadeM.frustumCulled = false; this.camera.add(this.fadeM); this.fadeV = 0; this.fadeT = 0; this.red = 0;
-    this.buildNest(); this.buildHands(); this.bind();
+    this.buildNest(); this.buildHands(); this.bind(); this.duel = new Duel(this);
     await this.setup(0, true); $('status').textContent = ''; $('desktop').disabled = false; this.up = true; r.setAnimationLoop((t, frame) => this.frame(t));
   }
   saveAll() { this.audio.voice = this.settings.voice; try { localStorage.setItem('coldbore', JSON.stringify({ settings: this.settings, save: this.save })); } catch (e) { /* no storage */ } }
@@ -94,9 +95,9 @@ class Game {
   say(t) { this.board.say(t); $('spot').textContent = t; this.spotT = 6; this.audio.say(t); }
   fade(v) { this.fadeT = v; return new Promise((res) => { const iv = setInterval(() => { if (Math.abs(this.fadeV - v) < 0.02) { clearInterval(iv); res(); } }, 30); }); }
   async setup(i, quiet) {
-    const def = this.missions[i]; this.mi = i; this.gen++; this.timers = []; this.mission = null; this.live = false; this.crowd.clear(); this.fx.clear(); for (const b of this.bullets) b.dead = true; this.bullets = []; this.audio.quiet(); if (window.speechSynthesis) speechSynthesis.cancel();
+    const def = typeof i === 'object' ? i : this.missions[i]; if (def !== this.duel.def) this.duel.quit(); if (typeof i !== 'object') this.mi = i; this.gen++; this.timers = []; this.mission = null; this.live = false; this.crowd.clear(); this.fx.clear(); for (const b of this.bullets) b.dead = true; this.bullets = []; this.audio.quiet(); if (window.speechSynthesis) speechSynthesis.cancel();
     const tex = await sky(def.env); if (this.skyTex && this.skyTex !== tex) { this.skyTex.bg.dispose(); this.skyTex.env.dispose(); } this.skyTex = tex;
-    const S = this.world.build(def.site, def.env, def.seed), n = S.nest; this.rig.position.copy(n); this.rig.rotation.y = Math.atan2(-(def.look[0] - n.x), -(def.look[2] - n.z)); this.rig.updateMatrixWorld(true);
+    const S = this.world.build(def.site, def.env, def.seed), n = def.nest || S.nest; this.rig.position.copy(n); this.rig.rotation.y = Math.atan2(-(def.look[0] - n.x), -(def.look[2] - n.z)); this.rig.updateMatrixWorld(true);
     this.world.setEnv(def.env, tex, this.rig.rotation.y); this.lookD = Math.hypot(def.look[0] - n.x, def.look[1] - n.y - 1.5, def.look[2] - n.z);
     const a = def.wind.from * Math.PI / 180; this.windDir.set(-Math.sin(a), 0, Math.cos(a)).applyQuaternion(this.rig.quaternion); this.windA = a;
     this.shots = 0; this.hits = 0; this.far = 0; this.tof = 0; this.zone = ''; this.mt = 0; this.hp = def.hp || 0; this.outT = 0; this.board.log = []; this.aim.yaw = 0; this.aim.pitch = -Math.atan2(n.y + 1.5 - def.look[1], Math.hypot(def.look[0] - n.x, def.look[2] - n.z));
@@ -106,7 +107,7 @@ class Game {
   }
   async load(i) { if (this.loading) return; this.loading = true; if (document.pointerLockElement) document.exitPointerLock(); await this.fade(1); await this.setup(i); if (this.vr) this.restAt = 0.3; await new Promise(r => setTimeout(r, 60)); this.fade(0); this.loading = false; }
   begin() { if (this.state !== 'brief') return; this.state = 'live'; this.live = true; this.mt = 0; this.rifle.drawHud(); this.board.show('live'); if (window.speechSynthesis) speechSynthesis.cancel(); if (!this.vr) this.lock(); }
-  toMissions() { this.state = 'board'; this.live = false; this.rifle.drawHud(); if (document.pointerLockElement) document.exitPointerLock(); this.board.show('missions'); }
+  toMissions() { this.duel.quit(); this.duel.connect(); this.state = 'board'; this.live = false; this.rifle.drawHud(); if (document.pointerLockElement) document.exitPointerLock(); this.board.show('missions'); }
   end(win, text) {
     if (this.state !== 'live') return; this.state = 'debrief'; this.live = false; this.rifle.drawHud(); const def = this.mission.def, stars = !win ? 0 : this.shots <= def.par ? 3 : this.shots <= def.par + 2 ? 2 : 1;
     if (win) { const old = this.save.done[def.id]; if (!old || stars > old.stars || (stars === old.stars && this.shots < old.shots)) this.save.done[def.id] = { stars, shots: this.shots }; this.saveAll(); }
@@ -119,7 +120,7 @@ class Game {
   shoot(from, dir, los) {
     this.shots++; const b = { p: [from.x, from.y, from.z], v: [dir.x * AMMO.mv, dir.y * AMMO.mv, dir.z * AMMO.mv], t: 0, from: from.clone(), trace: this.fx.trace(), fi: -1, fd: 0, miss: null };
     const F = this.mission.focus(); let best = 0.06; F.forEach((f, i) => { const to = _a.copy(f).sub(from), d = to.length(), ang = to.normalize().angleTo(los || dir); if (ang < best) { best = ang; b.fi = i; b.fd = d; } });
-    this.fx.tracePoint(b.trace, b.p); this.bullets.push(b); if (this.mission.shot) this.mission.shot(); if (this.board.screen === 'live') this.board.draw();
+    this.fx.tracePoint(b.trace, b.p); this.bullets.push(b); this.duel.fired(from, dir); if (this.mission.shot) this.mission.shot(); if (this.board.screen === 'live') this.board.draw();
   }
   flight(dt) {
     const M = this.mission, W = [this.wind.x, 0, this.wind.z];
@@ -195,7 +196,7 @@ class Game {
       this.camera.rotation.set(this.aim.pitch, this.aim.yaw, 0, 'YXZ'); I.hold = !!(this.keys.ShiftLeft || this.keys.ShiftRight || this.keys.Space); const fov = 70 - 38 * R.ads; if (Math.abs(fov - this.camera.fov) > 0.01) { this.camera.fov = fov; this.camera.updateProjectionMatrix(); }
       if (this.steady) { R.swayT = 0; R.kick = 0; } R.desk(dt, this.camera, this.aim, this.state === 'menu' ? {} : I); I.fire = I.reload = I.lase = I.bolt = false; I.dialX = I.dialY = 0; I.zoom = 0;
     }
-    R.parts(dt); this.board.mesh.visible = xr;
+    R.parts(dt); this.board.mesh.visible = xr; this.duel.tick(dt);
     if (R.holding) { this.beat = (this.beat || 0) - dt; if (this.beat <= 0) { this.beat = R.breath > 6 ? 0.55 : 0.95; this.audio.play('heart', R.breath > 6 ? 1 : 0.5); } }
     for (let i = this.timers.length - 1; i >= 0; i--) { const t = this.timers[i]; t.t -= dt; if (t.t <= 0) { this.timers.splice(i, 1); if (t.gen === this.gen) t.fn(); } }
     if (this.mission) { if (this.state === 'live') this.mt += dt; if (this.state === 'live' || this.state === 'debrief') { this.mission.update(dt); this.crowd.update(dt); } this.flight(dt);

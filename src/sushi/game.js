@@ -228,7 +228,7 @@ export function buildGame(scene) {
 
     // LED register + hints
     const potsOff = C.pots.filter((p) => !p.on).length;
-    G.hint = G.talk && /login|blocked|cannot|no microphone/.test(G.talk.mic || '') && !potsOff && Math.floor(G.t / 4) % 2 ? 'VOICE: ' + G.talk.mic.toUpperCase() : game.state === 'prep' ? (potsOff ? `TURN ON ${potsOff} BURNER KNOB${potsOff > 1 ? 'S' : ''} (LEFT)` : 'FLIP THE OPEN SWITCH (BELOW)') : game.state === 'closed' ? 'FLIP SWITCH: NEXT NIGHT' : game.state === 'closing' ? 'LAST ORDERS' : potsOff ? 'A BURNER IS OFF!' : game.served + game.lost === 0 ? `NIGHT ${game.night}: ${game.cfg().note}` : `SERVED ${game.served}  LOST ${game.lost}`;
+    G.hint = G.reportMsg ? G.reportMsg : G.talk && /login|blocked|cannot|no microphone/.test(G.talk.mic || '') && !potsOff && Math.floor(G.t / 4) % 2 ? 'VOICE: ' + G.talk.mic.toUpperCase() : game.state === 'prep' ? (potsOff ? `TURN ON ${potsOff} BURNER KNOB${potsOff > 1 ? 'S' : ''} (LEFT)` : 'FLIP THE OPEN SWITCH (BELOW)') : game.state === 'closed' ? 'FLIP SWITCH: NEXT NIGHT' : game.state === 'closing' ? 'LAST ORDERS' : potsOff ? 'A BURNER IS OFF!' : game.served + game.lost === 0 ? `NIGHT ${game.night}: ${game.cfg().note}` : `SERVED ${game.served}  LOST ${game.lost}`;
     game.ledT -= dt;
     if (game.ledT <= 0) {
       game.ledT = 0.5;

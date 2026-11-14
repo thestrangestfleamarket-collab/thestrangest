@@ -214,15 +214,15 @@ export function buildCity(scene) {
   const cars = [];
   const beamG = new THREE.ConeGeometry(1.3, 9, 16, 1, true); beamG.rotateZ(Math.PI / 2); beamG.translate(4.5, 0, 0);
   const b64 = (str, Ty) => { const bin = atob(str), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new Ty(u.buffer); };
-  const part = (P) => { const u = b64(P.p, Uint16Array), n = b64(P.n, Int8Array), c = b64(P.c, Uint8Array), pos = new Float32Array(u.length), nor = new Float32Array(u.length), col = new Float32Array(u.length);
-    for (let i = 0; i < u.length; i++) { pos[i] = P.o[i % 3] + (u[i] - 32767.5) * P.s[i % 3]; nor[i] = n[i] / 127; col[i] = Math.pow(c[i] / 255, 2.2); }
+  const part = (P) => { const u = b64(P.p, Int16Array), n = b64(P.n, Int8Array), c = b64(P.c, Uint8Array), pos = new Float32Array(u.length), nor = new Float32Array(u.length), col = new Float32Array(u.length);
+    for (let i = 0; i < u.length; i++) { pos[i] = u[i] * P.s[i % 3] + P.o[i % 3]; nor[i] = n[i] / 127; col[i] = Math.pow(c[i] / 255, 2.2); } // as THE MARKET reads the kit (150p-cars): signed steps from an origin
     const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.BufferAttribute(nor, 3)); g.setAttribute('color', new THREE.BufferAttribute(col, 3)); g.setIndex(new THREE.BufferAttribute(b64(P.i, Uint16Array), 1)); return g; };
-  const carM = mat({ vertexColors: true }), carGlass = mat({ color: 0x0c1218, transparent: true, opacity: 0.62 });
+  const carM = mat({ vertexColors: true, side: THREE.DoubleSide }), carGlass = mat({ color: 0x0c1218, transparent: true, opacity: 0.62 });
   const mkCar = (D, lit) => {
-    const c = new THREE.Group(), inner = new THREE.Group(); inner.rotation.y = Math.PI / 2; c.add(inner); // the kit's cars face +z; ours drive along +x
+    const c = new THREE.Group(), inner = new THREE.Group(); inner.rotation.y = (D.wheels[0][2] >= 0 ? 1 : -1) * Math.PI / 2; c.add(inner); // the front wheels say which end is the front; ours drive along +x
     for (const P of D.body) { const m = new THREE.Mesh(part(P), carM); m.castShadow = true; inner.add(m); }
     for (const P of D.glass || []) inner.add(new THREE.Mesh(part(P), carGlass));
-    const wg = part(D.wheel[0]); for (const w of D.wheels) { const p = Array.isArray(w) ? w : [w.x, w.y, w.z], m = new THREE.Mesh(wg, carM); m.position.set(p[0], p[1], p[2]); if (p[0] < 0) m.scale.x = -1; inner.add(m); }
+    const wgs = D.wheel.map(part); D.wheels.forEach((w, i) => { const o = new THREE.Group(); o.position.set(w[0], w[1], w[2]); if (i === 1 || i === 3) o.rotation.y = Math.PI; for (const g of wgs) o.add(new THREE.Mesh(g, carM)); inner.add(o); });
     const hl = D.size[2] / 2, hw = D.size[0] / 2;
     if (lit) {
       for (const z of [-hw * 0.62, hw * 0.62]) { const a = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.12, 0.26), new THREE.MeshBasicMaterial({ color: new THREE.Color(3, 2.8, 2.2), toneMapped: false })); a.position.set(hl + 0.01, 0.62, z); c.add(a); halo(0xfff0c8, 1.8, hl + 0.1, 0.62, z, c, 0.7);

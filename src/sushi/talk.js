@@ -20,7 +20,7 @@ const CANNED = {
 };
 
 export function buildTalk() {
-  const talk = { live: null, tts: null, mic: 'off' };
+  const talk = { live: null, tts: null, mic: 'off', diag: { hear: '-', think: '-', say: '-' } };
   G.talk = talk;
   const persona = (c) => {
     const k = c.p.cast && CAST.find((x) => x.id === c.p.cast);
@@ -36,7 +36,7 @@ export function buildTalk() {
     if (G.muteVoices) return; const v = voiceOf(c); c.attn = Math.max(c.attn || 0, 2 + text.length * 0.07);
     if (talk.tts !== false && G.audio.ctx) {
       try {
-        const r = await fetch('/sushi/say', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
+        const r = await fetch('/sushi/say', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) }); talk.diag.say = r.ok ? 'ok' : String(r.status);
         if (r.ok && (r.headers.get('content-type') || '').startsWith('audio')) {
           const ac = G.audio.ctx, buf = await ac.decodeAudioData(await r.arrayBuffer()), src = ac.createBufferSource(), pan = ac.createPanner(), g = ac.createGain();
           src.buffer = buf; src.playbackRate.value = v.pitch; pan.panningModel = 'HRTF'; pan.refDistance = 1.4; pan.positionX.value = SEATS[c.seat]; pan.positionY.value = 1.4; pan.positionZ.value = -1.1; g.gain.value = 1.8;
@@ -55,7 +55,7 @@ export function buildTalk() {
     if (talk.live !== false) {
       try {
         const r = await fetch('/sushi/talk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ persona: v, order: c.order ? orderText(c.order) : 'not ordered yet', situation, facts: [facts, talk.seenText()].filter(Boolean).join(' '), say: cookSaid, history: v.history }) });
-        const j = r.ok ? await r.json() : null;
+        const j = r.ok ? await r.json() : null; talk.diag.think = j && j.say ? 'ok' : j && j.why ? j.why.slice(0, 28) : String(r.status);
         if (j && j.say) { line = j.say; talk.live = true; } else if (!r.ok && r.status !== 429) talk.live = false;
       } catch (e) { talk.live = talk.live || false; }
     }
@@ -94,6 +94,7 @@ export function buildTalk() {
   const noise = () => { talk.attend(4); if (G.t - lastNoise < 9) return; const c = talk.target(); if (!c) { G.game.callOver?.(); return; } lastNoise = G.t; speak(c, pick(CANNED.noise)); }; // heard, not understood: they still answer
   let primed = null; const MIC = { audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } };
   talk.needPrime = async () => { if (primed || !navigator.mediaDevices) return false; try { const p = await navigator.permissions.query({ name: 'microphone' }); return p.state !== 'granted'; } catch (e) { return true; } };
+  talk.micStream = () => primed || stream;
   talk.prime = async () => { try { primed = await navigator.mediaDevices.getUserMedia(MIC); talk.mic = 'ready'; return true; } catch (e) { talk.mic = 'blocked: allow the microphone'; return false; } };
   const recorder = () => {
     if (!(navigator.mediaDevices && window.MediaRecorder)) { talk.mic = 'no microphone'; active = false; return; }
@@ -102,8 +103,8 @@ export function buildTalk() {
       const buf = new Float32Array(512); let mr = null, parts = [], loud = 0, quiet = 0, t0 = 0, floor = 0.006;
       const loop = () => {
         if (!active) return; an.getFloatTimeDomainData(buf); let s2 = 0; for (let i = 0; i < 512; i++) s2 += buf[i] * buf[i]; const rms = Math.sqrt(s2 / 512), now = performance.now(), theyTalk = (talk.speaking || 0) > G.t || window.speechSynthesis?.speaking;
-        if (!mr) { floor += (Math.min(rms, 0.04) - floor) * 0.02; if (!theyTalk && rms > Math.max(0.012, floor * 3)) { if (++loud > 3) { parts = []; const m = (mr = new MediaRecorder(st)); m.ondataavailable = (e) => parts.push(e.data); talk.attend(5);
-              m.onstop = async () => { const blob = new Blob(parts, { type: m.mimeType }); talk.sent = (talk.sent || 0) + 1; if (blob.size < 2500) return; try { const r = await fetch('/holmes/hear', { method: 'POST', body: blob }); if (r.ok) { const j = await r.json(); talk.mic = 'listening'; if (j.text) heard(j.text); else noise(); } else { talk.mic = r.status === 401 ? 'needs a login' : r.status === 429 ? 'listening' : 'the site cannot hear'; noise(); } } catch (e) { noise(); } };
+        if (!mr) { floor += (Math.min(rms, 0.04) - floor) * 0.02; if (!theyTalk && !talk.hold && rms > Math.max(0.012, floor * 3)) { if (++loud > 3) { parts = []; const m = (mr = new MediaRecorder(st)); m.ondataavailable = (e) => parts.push(e.data); talk.attend(5);
+              m.onstop = async () => { const blob = new Blob(parts, { type: m.mimeType }); talk.sent = (talk.sent || 0) + 1; if (blob.size < 2500) return; try { const r = await fetch('/holmes/hear', { method: 'POST', body: blob }); if (r.ok) { const j = await r.json(); talk.diag.hear = j.text ? 'ok' : j.why ? j.why.slice(0, 28) : 'no words'; talk.mic = j.why ? 'the site cannot hear' : 'listening'; if (j.text) heard(j.text); else noise(); } else { talk.diag.hear = String(r.status); talk.mic = r.status === 401 ? 'needs a login' : r.status === 429 ? 'listening' : 'the site cannot hear'; noise(); } } catch (e) { noise(); } };
               m.start(); t0 = now; quiet = 0; } } else loud = 0; }
         else { quiet = rms < Math.max(0.009, floor * 1.8) ? quiet + 1 : 0; if (quiet > 40 || now - t0 > 8000) { const m = mr; mr = null; loud = 0; try { m.stop(); } catch (e) { /* stopped */ } } }
         setTimeout(loop, 20); }; loop();

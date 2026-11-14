@@ -15,6 +15,7 @@ import { buildTalk } from './talk.js';
 import { buildGrit } from './grit.js';
 import { buildGuide } from './guide.js';
 import { buildMenu } from './menu.js';
+import { buildReport } from './report.js';
 import { PH } from './physics.js';
 
 const params = new URLSearchParams(location.search);
@@ -86,6 +87,7 @@ async function startVR() {
     session.addEventListener('end', () => { G.mode = 'menu'; menu.style.display = 'flex'; });
   } catch (e) { vrBtn.textContent = 'VR failed: ' + e.message; console.error(e); }
 }
+fetch('/sushi/say', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }).then((r) => { if (r.status === 401) $('login').style.display = 'inline-block'; }).catch(() => { }); // the patrons' voices are a login's: say so before the headset goes on
 vrBtn.onclick = async () => { if (await talk.needPrime()) { vrBtn.textContent = 'Allow the microphone…'; const ok = await talk.prime(); vrBtn.textContent = ok ? 'Enter VR' : 'Enter VR (no microphone)'; return; } startVR(); }; // the microphone is asked for on its own press: a prompt cannot be answered inside the headset view
 if (navigator.xr?.isSessionSupported) navigator.xr.isSessionSupported('immersive-vr').then((ok) => { vrBtn.disabled = !ok; vrBtn.textContent = ok ? 'Enter VR' : 'Open this page in a VR headset'; }).catch(() => { vrBtn.textContent = 'VR unavailable'; });
 else vrBtn.textContent = location.protocol === 'https:' || location.hostname === 'localhost' ? 'Open this page in a VR headset' : 'VR needs HTTPS';
@@ -101,7 +103,7 @@ function tick(dt) {
   life.update(dt, G.t);
   talk.update(dt);
   grit.update(dt, G.t);
-  guide.update(dt, G.t); gameMenu.update(dt);
+  guide.update(dt, G.t); gameMenu.update(dt); report.update(dt);
   G.fx.update(dt);
   G.audio.update(boil, life.env);
 }
@@ -110,9 +112,10 @@ let last = performance.now(), frames = 0, statT = 0;
 let emaMs = 14, slowT = 0; G.quality = params.has('low') ? 1 : 0;
 const shadowLights = []; scene.traverse((o) => { if (o.isLight && o.castShadow) shadowLights.push(o); });
 function applyQuality() { shadowLights.forEach((l) => (l.castShadow = G.quality < 1)); if (G.set) G.set.shadows = G.quality < 1; }
-function govern(dt) { if (frames < 120 || G.frozen || G.quality >= 1) return; emaMs += (dt * 1000 - emaMs) * 0.05; slowT = emaMs > (renderer.xr.isPresenting ? 16 : 30) ? slowT + dt : 0; if (slowT > 3) { G.quality = 1; applyQuality(); } }
+function govern(dt) { if (frames < 120 || G.frozen || G.quality >= 1) return; emaMs += (dt * 1000 - emaMs) * 0.05; G.emaMs = emaMs; slowT = emaMs > (renderer.xr.isPresenting ? 16 : 30) ? slowT + dt : 0; if (slowT > 3) { G.quality = 1; applyQuality(); } }
 if (G.quality) applyQuality();
-const gameMenu = buildMenu(scene, cart, guide, talk, shadowLights);
+const report = buildReport(scene, camera, renderer, talk);
+const gameMenu = buildMenu(scene, cart, guide, talk, shadowLights, report);
 function frame(now) {
   const dt = clamp((now - last) / 1000, 0, 0.05); last = now;
   if (G.mode === 'menu' && !renderer.xr.isPresenting && !G.manualCam) { const a = G.t * 0.05; camera.position.set(2.9 + Math.sin(a) * 0.9, 1.75, -5.4 + Math.cos(a) * 0.4); rig.position.set(0, 0, 0); camera.lookAt(0, 1.6, -0.4); }
@@ -125,6 +128,6 @@ function frame(now) {
 }
 renderer.setAnimationLoop(frame);
 
-G.debug = { Items, PH, city, guide, menu: gameMenu, tick, frame, render, input, startDesktop, startVR, THREE };
+G.debug = { Items, PH, city, guide, menu: gameMenu, report, tick, frame, render, input, startDesktop, startVR, THREE };
 window.G = G;
 if (params.has('desktop')) startDesktop();

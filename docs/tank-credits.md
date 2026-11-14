@@ -8,7 +8,7 @@ Each is at `https://sketchfab.com/3d-models/<id>`.
 
 | Used for | File | Title, author | Id |
 |---|---|---|---|
-| Your tank and the platoon's | `m/hero.glb` | "Challenger 2 - Shooting Range", Tom Zimmermann (tomm8) | e70234f6d695467499abc56646ab3e66 |
+| Your tank; the platoon's and the other player's (its hull, turret and gun only) | `m/hero.glb`, `m/ally.glb` | "Challenger 2 - Shooting Range", Tom Zimmermann (tomm8) | e70234f6d695467499abc56646ab3e66 |
 | The enemy's tank | `m/foe.glb` | "Battle Tank", _Alexandr (a_l_e_x_a_n_d_e_r) | 5fcc302b89414348811eaa1ad4dc435f |
 | Gunner's seat | `m/seat.glb` | "Pilot Seat", Pabooklas | 310dca3487884ba690de7ac9e1995763 |
 | Fire control console | `m/console.glb` | "Old Control Panel", Mik Santos (mikelkel2) | b84686130a2442d985c6f36c23d0836d |
@@ -32,13 +32,26 @@ Each is at `https://sketchfab.com/3d-models/<id>`.
 | Bus stop | `m/busstop.glb` | "Simple Bus Stop", Vagabondare | ac13a4bade94409fa688f1c4185f126d |
 | Broken wall | `m/brokenwall.glb` | "Damaged Wall", Philipp Busse (WoTiger) | 11616746d0ea4bd59a2d9cf9a2b2fdfa |
 | Rubble | `m/rubble.glb` | "Rubble Pile (Game Ready / 2K PBR)", Meerschaum Digital | 0e6f85da3433468db226866bd43a43e7 |
+| Rock crag | `m/crag.glb` | "Valley Gray Cliff", Maksim Batyrev | e6b9729834dc4fdf99a8c932bc3c6a24 |
+| Dead tree and fallen logs | `m/deadtree.glb` | "Old tree", evolveduk | 3cb4d59eb4844dc4802480e9ee53785e |
+| Sandbags | `m/sandbags.glb` | "Sand Bag Pile", Finley Searle | 232b9407f5ad46f68764093f134591f4 |
+| Tank traps | `m/hedgehog.glb` | "Ouriço Theco", LM3D | 0e09cbddad864003bc4f10c612bb7284 |
+| Wrecked armoured car | `m/wreck.glb` | "damaged EE-9 Cascavel tank", Aj Alhejaj | 7ef593b344624e6388eaa44b5551fad7 |
+| Grenade | `m/grenade.glb` | "M67 Fragmentation Grenade", Vextin | 05e2a29118c3408eaa574bcec6997aba |
 | Cars, van, tractor, truck | `m/trabant.glb`, `lada`, `van`, `tractor`, `truck` | "TRABANT - low poly car model", Jasmin Daniel; "Lada 1200", Jorma Rysky; "French delivery van - Low poly model", Daniel Zhabotinsky; "Tractor", selfie 3D scan (bevadek); "Ural 4320", Brout | 0a79e91d3c3447e19c8c0c3339557a0b, 6f05358afac347dcb11a88c32337c236, a350a422d200485ea57778dc42139edc, 1b258bcc01bf4ed0935ef73e80442c30, f953c51a5dbc4a15949f4dcc0905c4e8 |
 
 Changes made: each model turned to face one way, scaled to metres, stood on the ground, joined one mesh a material, some thinned, pictures resized to 1024 px or less as JPEG; the tank's turret and gun turned straight and split so they can move; the enemy's tank and some interior pieces tinted; the town's models keep only their colour pictures.
 
+## MIT
+
+| Used for | File | Source |
+|---|---|---|
+| The enemy's crewmen on foot | `m/soldier.glb` | Microsoft Rocketbox avatar Military_Male_02 with its idle, walk, run and crouch motions, https://github.com/microsoft/Microsoft-Rocketbox (`docs/licences/rocketbox-mit.txt`); its death and hit motions are Quaternius's Universal Animation Library (CC0) fitted to its bones. Built outside the repo's tools (Blender's Python): the built file is kept in `data/tank/m/`. |
+| Your hands | `m/hand_l.glb`, `m/hand_r.glb` | The WebXR generic hand, `@webxr-input-profiles/assets` (as in the cantina and STADIUM JAM) |
+
 ## Poly Haven, CC0
 
-Sky (`kloppenheim_06_puresky`); surfaces (`leafy_grass`, `sparse_grass`, `farm_soil`, `green_metal_rust`, `metal_plate`, `fabric_leather_02`); trees and a shrub drawn into cards (`island_tree_01`, `island_tree_02`, `island_tree_03`, `tree_small_02`, `jacaranda_tree`, `shrub_02`); models (`modular_industrial_pipes_01`, `industrial_caged_sconce`, `ammo_box`, `rock_moss_set_01`).
+Sky (`kloppenheim_06_puresky`); surfaces (`leafy_grass`, `sparse_grass`, `farm_soil`, `green_metal_rust`, `metal_plate`, `fabric_leather_02`); trees and a shrub drawn into cards (`island_tree_01`, `island_tree_02`, `island_tree_03`, `tree_small_02`, `jacaranda_tree`, `shrub_02`); models (`modular_industrial_pipes_01`, `industrial_caged_sconce`, `ammo_box`, `rock_moss_set_01`, `binoculars`, `service_pistol`).
 
 ## Sounds, CC0
 
@@ -51,4 +64,4 @@ Changes made: cut, loops cross-faded end to start, levelled, encoded as MP3.
 
 ## Made in code
 
-The land and its fields, the road, the turret's shell and frames, the breech and its guard, the sight and commander's screens, the ready rounds, smoke, fire and dust. Libraries: three.js (MIT).
+The land and its fields, the ponds, the road, the mines, the turret's shell and frames, the breech and its guard, the sight and commander's screens, the ready rounds, smoke, fire and dust. Libraries: three.js (MIT).

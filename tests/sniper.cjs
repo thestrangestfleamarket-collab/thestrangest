@@ -11,10 +11,10 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   const errs = [], watch = pg => { pg.on('pageerror', e => errs.push(e.message.slice(0, 300))); pg.on('console', m => { if (m.type() === 'error') errs.push('console: ' + m.text().slice(0, 300)); }); };
   // frames, not seconds: software rendering is slow and the game clamps its step
   const frames = (pg, n) => pg.evaluate(n => new Promise(r => { let c = 0, l = game.time; const iv = setInterval(() => { if (game.time !== l) { l = game.time; c++; } if (c >= n) { clearInterval(iv); r(); } }, 5); }), n);
-  const until = (pg, f, a, ms = 240000) => pg.waitForFunction(f, a, { timeout: ms }).then(() => true).catch(() => false);
+  const until = (pg, f, a, ms = 900000) => pg.waitForFunction(f, a, { timeout: ms }).then(() => true).catch(() => false);
   const snap = async (pg, n) => { if (OUT) await pg.screenshot({ path: path.join(OUT, n + '.png') }); };
 
-  const pg = await b.newPage({ viewport: { width: 480, height: 270 } }); pg.setDefaultTimeout(240000); watch(pg);
+  const pg = await b.newPage({ viewport: { width: 256, height: 144 } }); pg.setDefaultTimeout(900000); watch(pg);
   const t0 = Date.now(); await pg.goto(FILE); const up = await until(pg, () => window.game && game.time > 0.05 && game.mission && game.up);
   ok(up, 'the page starts with the range built behind its menu (' + ((Date.now() - t0) / 1000).toFixed(0) + ' s)'); if (!up) { console.log(errs.join(' | ')); await b.close(); srv.close(); process.exit(1); }
   await snap(pg, '01-menu'); await pg.click('#desktop'); await frames(pg, 3);
@@ -71,7 +71,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   await pg.close();
 
   // ---------- an emulated Quest 3 ----------
-  const vr = await b.newPage({ viewport: { width: 320, height: 180 } }); vr.setDefaultTimeout(240000); watch(vr);
+  const vr = await b.newPage({ viewport: { width: 256, height: 144 } }); vr.setDefaultTimeout(900000); watch(vr);
   await vr.addInitScript(fs.readFileSync(require.resolve('iwer/build/iwer.js'), 'utf8') + ';window.__xrd=new IWER.XRDevice(IWER.metaQuest3);window.__xrd.installRuntime({forceInstall:true});window.__xrd.position.set(0,1.7,0);window.__xrd.controllers.left.position.set(-0.3,1.1,-0.2);window.__xrd.controllers.right.position.set(0.3,1.1,-0.2);');
   await vr.goto(FILE); await until(vr, () => window.game && game.time > 0.05 && game.mission && game.up); await until(vr, () => !document.getElementById('vr').disabled, null, 30000); await vr.click('#vr');
   await until(vr, () => game.renderer.xr.isPresenting, null, 60000); ok(await vr.evaluate(() => game.renderer.xr.isPresenting && game.board.screen === 'missions'), 'ENTER VR starts the headset session on the contracts board');

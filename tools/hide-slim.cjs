@@ -1,17 +1,28 @@
-// thins THE ALLEY's heavier models for a headset: node tools/hide-slim.cjs (after tools/hide-assets.py)  ->  data/hide/m/*.glb rewritten with fewer triangles
+// thins DEAD END's heavier models for a headset: node tools/hide-slim.cjs (after tools/hide-assets.py)  ->  data/hide/m/*.glb rewritten with fewer triangles and only the points they still use
 const fs = require('fs'), { MeshoptSimplifier: S } = require('meshoptimizer');
-const MAX = { metal_trash_can: 3500, cardboard_box_01: 2500, exterior_aircon_unit: 5000, industrial_pastic_container: 3500, wooden_crate_02: 2500, trashbag: 2000, security_light: 2000, industrial_wall_lamp: 2500, utility_box_01: 2500, water_manhole_cover: 2500, rusted_wheel_rim_01: 2200, power_box_01: 3000 };
-S.ready.then(() => { for (const [name, max] of Object.entries(MAX)) { const f = 'data/hide/m/' + name + '.glb', b = fs.readFileSync(f), jl = b.readUInt32LE(12), G = JSON.parse(b.slice(20, 20 + jl)); let bin = b.slice(28 + jl);
+const MAX = { schooldesk_01: 1300, painted_wooden_chair_01: 900, plastic_monobloc_chair_01: 900, steel_frame_shelves_01: 2000, wooden_bookshelf_worn: 2500, drawer_cabinet: 2500, metal_stool_02: 1200, wooden_broom: 700, chemistry_set: 4500, hanging_picture_frame_02: 400, metal_trash_can: 3500, cardboard_box_01: 2500, industrial_pastic_container: 3500, wooden_crate_02: 2500, trashbag: 2000, security_light: 2000, industrial_wall_lamp: 2500, utility_box_01: 2500, power_box_01: 3000,
+  schoolchair_01: 1400, standing_chalkboard_01: 1200, mounted_fluorescent_lights: 600, wall_clock: 900, fire_alarm: 800, korean_fire_extinguisher_01: 900, metal_office_desk: 2200, clipboard: 500, projector_screen: 700, vintage_microscope: 1200, bunsen_burner: 1200, security_camera_01: 600, american_football: 900, wheelchair_01: 3000, ceiling_fan: 900, plunger: 600, bleach_bottle: 600, vintage_microwave: 1500, marble_bust_01: 1500, vintage_suitcase: 1800, medical_box: 900 };
+const SIZE = { 5120: 1, 5121: 1, 5122: 2, 5123: 2, 5125: 4, 5126: 4 }, N = { SCALAR: 1, VEC2: 2, VEC3: 3, VEC4: 4, MAT4: 16 };
+S.ready.then(() => { for (const [name, max] of Object.entries(MAX)) { const f = 'data/hide/m/' + name + '.glb'; if (!fs.existsSync(f)) { console.log(name, 'missing'); continue; } const b = fs.readFileSync(f), jl = b.readUInt32LE(12), G = JSON.parse(b.slice(20, 20 + jl)), bin = b.slice(28 + jl);
   const prims = G.meshes.flatMap(m => m.primitives).filter(p => p.indices != null), total = prims.reduce((n, p) => n + G.accessors[p.indices].count / 3, 0); if (total <= max) continue;
+  const parts = [], views = []; let off = 0; const put = (buf, target) => { const pad = (4 - buf.length % 4) % 4; views.push({ buffer: 0, byteOffset: off, byteLength: buf.length, ...(target ? { target } : {}) }); parts.push(buf, Buffer.alloc(pad)); off += buf.length + pad; return views.length - 1; };
+  const raw = a => { const v = G.bufferViews[a.bufferView], el = SIZE[a.componentType] * N[a.type], st = v.byteStride || el, o = (v.byteOffset || 0) + (a.byteOffset || 0); return { el, at: i => bin.slice(o + i * st, o + i * st + el) }; };
   const done = new Map(); let out = 0;
-  for (const p of prims) { const key = p.indices + ':' + p.attributes.POSITION; if (done.has(key)) { p.indices = done.get(key); continue; }
-    const ia = G.accessors[p.indices], iv = G.bufferViews[ia.bufferView], io = (iv.byteOffset || 0) + (ia.byteOffset || 0), idx = new Uint32Array(ia.count);
-    for (let i = 0; i < ia.count; i++) idx[i] = ia.componentType === 5125 ? bin.readUInt32LE(io + i * 4) : ia.componentType === 5123 ? bin.readUInt16LE(io + i * 2) : bin[io + i];
-    const pa = G.accessors[p.attributes.POSITION], pv = G.bufferViews[pa.bufferView], po = (pv.byteOffset || 0) + (pa.byteOffset || 0), st = pv.byteStride || 12, pos = new Float32Array(pa.count * 3);
-    for (let i = 0; i < pa.count; i++) for (let k = 0; k < 3; k++) pos[i * 3 + k] = bin.readFloatLE(po + i * st + k * 4);
-    const [ni] = S.simplify(idx, pos, 3, Math.max(3, Math.floor(ia.count * max / total / 3) * 3), .05), nb = Buffer.from(new Uint32Array(ni).buffer);
-    G.bufferViews.push({ buffer: 0, byteOffset: bin.length, byteLength: nb.length, target: 34963 }); bin = Buffer.concat([bin, nb]);
-    G.accessors.push({ bufferView: G.bufferViews.length - 1, componentType: 5125, count: ni.length, type: 'SCALAR' }); done.set(key, G.accessors.length - 1); p.indices = G.accessors.length - 1; out += ni.length / 3; }
-  G.buffers[0].byteLength = bin.length; let J = Buffer.from(JSON.stringify(G)); J = Buffer.concat([J, Buffer.alloc((4 - J.length % 4) % 4, 32)]);
-  const h = Buffer.alloc(20); h.write('glTF'); h.writeUInt32LE(2, 4); h.writeUInt32LE(28 + J.length + bin.length, 8); h.writeUInt32LE(J.length, 12); h.write('JSON', 16);
-  const bh = Buffer.alloc(8); bh.writeUInt32LE(bin.length, 0); bh.write('BIN\0', 4); fs.writeFileSync(f, Buffer.concat([h, J, bh, bin])); console.log(name, total, '->', out); } });
+  for (const p of prims) { const key = p.indices + ':' + Object.values(p.attributes).join(); if (done.has(key)) { Object.assign(p, done.get(key)); continue; }
+    const ia = G.accessors[p.indices], ir = raw(ia), idx = new Uint32Array(ia.count); for (let i = 0; i < ia.count; i++) { const c = ir.at(i); idx[i] = ia.componentType === 5125 ? c.readUInt32LE(0) : ia.componentType === 5123 ? c.readUInt16LE(0) : c[0]; }
+    const pa = G.accessors[p.attributes.POSITION], pr = raw(pa), pos = new Float32Array(pa.count * 3); for (let i = 0; i < pa.count; i++) { const c = pr.at(i); for (let k = 0; k < 3; k++) pos[i * 3 + k] = c.readFloatLE(k * 4); }
+    const [ni] = S.simplify(idx, pos, 3, Math.max(3, Math.floor(ia.count * max / total / 3) * 3), .05), map = new Map(), keep = []; const nidx = new Uint32Array(ni.length);
+    for (let i = 0; i < ni.length; i++) { let m = map.get(ni[i]); if (m === undefined) { m = keep.length; map.set(ni[i], m); keep.push(ni[i]); } nidx[i] = m; }
+    const small = keep.length < 65536, ib = small ? Buffer.from(Uint16Array.from(nidx).buffer) : Buffer.from(nidx.buffer), np = { indices: G.accessors.length, attributes: {} };
+    G.accessors.push({ bufferView: put(ib, 34963), componentType: small ? 5123 : 5125, count: nidx.length, type: 'SCALAR', _new: 1 });
+    for (const [an, ai] of Object.entries(p.attributes)) { const a = G.accessors[ai], r = raw(a), nb = Buffer.concat(keep.map(i => r.at(i))), na = { bufferView: put(nb, 34962), componentType: a.componentType, count: keep.length, type: a.type, _new: 1 }; if (a.normalized) na.normalized = true;
+      if (an === 'POSITION') { const mn = [1e9, 1e9, 1e9], mx = [-1e9, -1e9, -1e9]; for (const i of keep) for (let k = 0; k < 3; k++) { mn[k] = Math.min(mn[k], pos[i * 3 + k]); mx[k] = Math.max(mx[k], pos[i * 3 + k]); } na.min = mn; na.max = mx; } np.attributes[an] = G.accessors.length; G.accessors.push(na); }
+    done.set(key, np); Object.assign(p, np); out += nidx.length / 3; }
+  // everything the model still points at that is not a new mesh part (its pictures, an untouched part) is carried over as it was
+  const moved = new Map(), carry = vi => { if (!moved.has(vi)) { const v = G.bufferViews[vi], n = put(bin.slice(v.byteOffset || 0, (v.byteOffset || 0) + v.byteLength), v.target); if (v.byteStride) views[n].byteStride = v.byteStride; moved.set(vi, n); } return moved.get(vi); };
+  const used = new Set(); for (const m of G.meshes) for (const p of m.primitives) { if (p.indices != null) used.add(p.indices); Object.values(p.attributes).forEach(a => used.add(a)); }
+  G.accessors.forEach((a, i) => { if (a._new) delete a._new; else if (used.has(i) && a.bufferView != null) a.bufferView = carry(a.bufferView); else if (!used.has(i)) { delete a.bufferView; a.count = 0; } });
+  for (const im of G.images || []) if (im.bufferView != null) im.bufferView = carry(im.bufferView);
+  G.bufferViews = views; const nbin = Buffer.concat(parts); G.buffers = [{ byteLength: nbin.length }]; let J = Buffer.from(JSON.stringify(G)); J = Buffer.concat([J, Buffer.alloc((4 - J.length % 4) % 4, 32)]);
+  const h = Buffer.alloc(20); h.write('glTF'); h.writeUInt32LE(2, 4); h.writeUInt32LE(28 + J.length + nbin.length, 8); h.writeUInt32LE(J.length, 12); h.write('JSON', 16);
+  const bh = Buffer.alloc(8); bh.writeUInt32LE(nbin.length, 0); bh.write('BIN\0', 4); fs.writeFileSync(f, Buffer.concat([h, J, bh, nbin])); console.log(name, total, '->', out, Math.round(b.length / 1024), '->', Math.round((28 + J.length + nbin.length) / 1024), 'KB'); } });

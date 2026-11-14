@@ -228,7 +228,7 @@ function buildGrounds() {
 // THE STORM: wind in bursts, lightning that lights the grounds and comes in at the windows, thunder after by its distance
 const STORM = { next: 6, flash: 0, light: null, moon: null, mask: 0, seq: [] };
 function buildStorm() { const L = new THREE.DirectionalLight(0xb9c8ff, 0); L.position.set(-30, 60, -45); L.castShadow = !LOW; L.shadow.mapSize.set(2048, 2048); const c = L.shadow.camera; c.left = -42; c.right = 42; c.top = 42; c.bottom = -42; c.near = 5; c.far = 160; L.shadow.bias = -.0012; L.shadow.normalBias = .06; L.shadow.autoUpdate = false; L.shadow.needsUpdate = true; L.target.position.set(19, 0, 5); scene.add(L, L.target); STORM.light = L;
-  const hemi = new THREE.HemisphereLight(0x27344a, 0x0a0908, .22); scene.add(hemi); STORM.hemi = hemi; }
+  const hemi = new THREE.HemisphereLight(0x3a4763, 0x18120d, .22); scene.add(hemi); STORM.hemi = hemi; }
 function stepStorm(dt, onThunder) { RAINT.value = CLOCK.t; RAIN.mesh.material.uniforms.c.value.copy(camera.getWorldPosition(new THREE.Vector3()));
   STORM.next -= dt; STORM.mask = Math.max(0, STORM.mask - dt);
   if (STORM.next <= 0) { STORM.next = rnd(9, 26); const far = rnd(.1, 1); STORM.seq = [[0, 1], [.07, .15], [.13, .8], [.2, .1], [.32, .5 * rnd()], [.5, 0]].map(([t, v]) => [CLOCK.t + t, v * (1.2 - far * .5)]); STORM.light.position.set(rnd(-60, 60), 70, rnd(-70, -20)); RAIN.sky.material.uniforms.fp.value.set(rnd(-.8, .8), rnd(-.8, .2)); STORM.light.shadow.needsUpdate = true; setTimeout(() => { STORM.mask = 3.2; onThunder(far); }, far * 2600); }

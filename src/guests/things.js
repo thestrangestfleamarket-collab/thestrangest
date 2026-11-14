@@ -1,5 +1,5 @@
 // THE GUEST LIST's things: the lamps and the pool of lights that follows you, switches and the fuse box, everything you can pick up (weapons, poisons, glasses, food, books), and the furniture that opens (drawers, cupboards, the freezer)
-import { THREE, LOW, clamp, lerp, rnd, pick, scene, CLOCK, P, RAPIER, grp, GRP, MODELS, norm, mat, flat, box, group, mark, height, USE, BUS } from './core.js';
+import { THREE, LOW, clamp, lerp, rnd, pick, scene, CLOCK, P, RAPIER, grp, GRP, MODELS, norm, mat, flat, box, gather, group, mark, height, USE, BUS } from './core.js';
 import { ROOMS, M, roomAt, STORM } from './house.js';
 
 // LAMPS: every source of light in the house; only the nearest few are real lights at once
@@ -7,18 +7,26 @@ const LAMPS = [], POWER = { on: true }, POOL = [];
 function lamp(room, x, y, z, o = {}) { const L = { room, x, y, z, c: new THREE.Color(o.c ?? 0xffc58a), i: o.i ?? 14, d: o.d ?? 9, kind: o.kind || 'electric', on: o.on ?? true, flick: o.flick || 0, k: 0, ph: rnd(10) };
   if (o.glow !== false) { const g = new THREE.Mesh(new THREE.SphereGeometry(o.gr || .05, 10, 8), new THREE.MeshBasicMaterial({ color: L.c.clone().multiplyScalar(2.2) })); g.position.set(x, y, z); group(room).add(g); L.glow = g; } LAMPS.push(L); return L; }
 const lampOn = L => L.on && (L.kind !== 'electric' || POWER.on);
-function initLights() { const n = LOW ? 6 : 11; for (let i = 0; i < n; i++) { const l = new THREE.PointLight(0xffc58a, 0, 9, 1.7); scene.add(l); POOL.push({ l, lamp: null, k: 0 }); }
-  const key = new THREE.SpotLight(0xffd2a0, 0, 16, 1.25, .9, 1.4); key.castShadow = !LOW; key.shadow.mapSize.set(1024, 1024); key.shadow.bias = -.0008; key.shadow.normalBias = .04; key.shadow.camera.near = .5; scene.add(key, key.target); POOL.key = key; }
+// a few fill lights without shadows for what is near, and three lamps that throw real shadows: the brightest near you
+const KEYS = [];
+function initLights() { const n = LOW ? 6 : 9; for (let i = 0; i < n; i++) { const l = new THREE.PointLight(0xffc58a, 0, 9, 2); scene.add(l); POOL.push({ l, lamp: null, k: 0 }); }
+  for (let i = 0; i < (LOW ? 0 : 3); i++) { const key = new THREE.SpotLight(0xffd2a0, 0, 15, 1.2, .85, 1.6); key.castShadow = true; key.shadow.mapSize.set(i ? 1024 : 2048, i ? 1024 : 2048); key.shadow.bias = -.0006; key.shadow.normalBias = .035; key.shadow.radius = 4; key.shadow.camera.near = .25; key.shadow.camera.far = 16; scene.add(key, key.target); KEYS.push({ l: key, lamp: null, k: 0 }); } }
 function litRoom(k) { let n = 0; for (const L of LAMPS) if (L.room === k && lampOn(L)) n += L.kind === 'flame' ? .5 : 1; return n; }
+function aim(K, L) { const r = ROOMS[L.room], l = K.l; if (L.y > (r ? r.y : 0) + 2.4) { l.position.set(L.x, L.y - (L.i > 20 ? .7 : .1), L.z); l.target.position.set(L.x, r ? r.y : 0, L.z); l.angle = 1.25; } else { const cx = r ? r.cx : L.x, cz = r ? r.cz : L.z, dx = cx - L.x, dz = cz - L.z, d = Math.hypot(dx, dz) || 1; l.position.set(L.x + dx / d * .15, L.y + .05, L.z + dz / d * .15); l.target.position.set(L.x + dx / d * 3, (r ? r.y : 0) + .7, L.z + dz / d * 3); l.angle = 1.3; } l.color.copy(L.c); l.distance = L.d + 4; l.target.updateMatrixWorld(); }
 function stepLights(dt, px, pz, vis, room) {
-  for (const L of LAMPS) { if (L.glow) L.glow.visible = lampOn(L); }
-  const c = LAMPS.filter(L => lampOn(L) && vis.has(L.room)).map(L => [Math.hypot(L.x - px, L.z - pz) - (L.room === room ? 6 : 0) - L.i * .1, L]).sort((a, b) => a[0] - b[0]).slice(0, POOL.length).map(a => a[1]);
+  for (const L of LAMPS) { if (L.glow) L.glow.visible = lampOn(L); if (L.shade) L.shade.material.emissiveIntensity = lampOn(L) ? .9 : 0; }
+  const near = LAMPS.filter(L => lampOn(L) && vis.has(L.room) && L.i > 0).map(L => [Math.hypot(L.x - px, L.z - pz) - (L.room === room ? 7 : 0) - L.i * .12, L]).sort((a, b) => a[0] - b[0]).map(a => a[1]);
+  // the shadow lamps first: the strongest near ones, one to a room where it can be
+  const want = []; for (const L of near) { if (want.length >= KEYS.length) break; if (L.i < 5 && L.room !== room) continue; if (want.filter(w => w.room === L.room).length >= (L.room === room ? 2 : 1)) continue; want.push(L); }
+  for (const K of KEYS) if (K.lamp && !want.includes(K.lamp)) { K.k -= dt * 3; if (K.k <= 0) { K.lamp = null; K.l.intensity = 0; } }
+  for (const L of want) if (!KEYS.some(K => K.lamp === L)) { const K = KEYS.find(K => !K.lamp); if (K) { K.lamp = L; K.k = 0; aim(K, L); } }
+  const flick = L => L.flick ? 1 + L.flick * (Math.sin(CLOCK.t * 11 + L.ph) * .5 + Math.sin(CLOCK.t * 23.7 + L.ph * 2) * .3 + Math.sin(CLOCK.t * 5.3 + L.ph) * .4) : 1;
+  for (const K of KEYS) if (K.lamp) { if (want.includes(K.lamp)) K.k = Math.min(1, K.k + dt * 3); K.l.intensity = K.lamp.i * 1.5 * K.k * flick(K.lamp); }
+  const c = near.filter(L => !KEYS.some(K => K.lamp === L && K.k > .5)).slice(0, POOL.length);
   for (const s of POOL) { if (s.lamp && !c.includes(s.lamp)) { s.k -= dt * 4; if (s.k <= 0) { s.lamp = null; s.l.intensity = 0; } } }
   for (const L of c) if (!POOL.some(s => s.lamp === L)) { const s = POOL.find(s => !s.lamp); if (s) { s.lamp = L; s.k = 0; s.l.position.set(L.x, L.y, L.z); s.l.color.copy(L.c); s.l.distance = L.d; } }
-  for (const s of POOL) if (s.lamp) { if (c.includes(s.lamp)) s.k = Math.min(1, s.k + dt * 4); const L = s.lamp, f = L.flick ? 1 + L.flick * (Math.sin(CLOCK.t * 11 + L.ph) * .5 + Math.sin(CLOCK.t * 23.7 + L.ph * 2) * .3 + Math.sin(CLOCK.t * 5.3 + L.ph) * .4) : 1; s.l.intensity = L.i * s.k * f * .5; }
-  // the key light: the room you stand in gets one lamp that throws real shadows
-  const key = POOL.key, r = ROOMS[room], best = r && LAMPS.filter(L => L.room === room && lampOn(L)).sort((a, b) => b.i - a.i)[0];
-  if (best) { key.position.set(best.x, best.y - (best.i > 20 ? .75 : .12), best.z); key.target.position.set(best.x, r.y, best.z); key.color.copy(best.c); key.intensity = lerp(key.intensity, best.i * 1.1, .1); } else key.intensity = lerp(key.intensity, 0, .2);
+  for (const s of POOL) if (s.lamp) { if (c.includes(s.lamp)) s.k = Math.min(1, s.k + dt * 4); s.l.intensity = s.lamp.i * s.k * flick(s.lamp) * (LOW ? .5 : .72); }
+  // a lamp that has a shadow light still glows a little all round (its shade, the ceiling over it)
   for (const k in ROOMS) ROOMS[k].lit = litRoom(k) > 0;
 }
 // a wall switch for a room's electric lamps
@@ -40,6 +48,7 @@ const KINDS = {
   foxglove: { n: 'foxglove leaves', size: .14, poison: { n: 'digitalis', after: [150, 260], looks: 'heart', taste: .08 }, make: () => leafs() }, ratpoison: { n: 'a tin of rat poison', size: .12, poison: { n: 'arsenic', after: [70, 130], looks: 'poison', taste: .2 }, make: () => tin(0x8a1f1f, 'RAT') },
   sleeping: { n: 'sleeping tablets', size: .08, poison: { n: 'a sedative', sleep: 1, after: [45, 80], taste: .05 }, make: () => pill(0x6b4a2a) }, heartpills: { n: 'heart tablets (digoxin)', size: .08, poison: { n: 'digoxin', after: [120, 220], looks: 'heart', taste: .05 }, make: () => pill(0x2a4a6b) },
   bleach: { n: 'a bottle of bleach', size: .26, poison: { n: 'bleach', after: [8, 14], looks: 'poison', taste: .85 }, make: () => jugOf(0xe8e8e0, 0x2a5aa0) }, painkillers: { n: 'aspirin', size: .08, make: () => pill(0xf0f0f0) }, iodine: { n: 'iodine', size: .09, make: () => pill(0x3a1a0a) },
+  pot: { n: 'the coffee pot', m: 'pot_enamel_01', size: .3, pot: 1, big: 1 },
   glass: { n: 'a glass', size: .16, drink: 1, make: () => wineglass() }, towel: { n: 'a towel', size: .4, wipe: 1, make: () => { const g = new THREE.Mesh(new THREE.BoxGeometry(.3, .04, .4), mat('fabric_pattern_07', { tile: .3, color: 0xe8e2d4 })); return g; } },
   apple: { n: 'an apple', m: 'food_apple_01', size: .09, food: 1 }, cake: { n: 'a slice of cake', m: 'carrot_cake', size: .2, food: 1 }, croissant: { n: 'a croissant', m: 'croissant', size: .18, food: 1 }, lemon: { n: 'a lemon', m: 'lemon', size: .09, food: 1 }, bananas: { n: 'bananas', m: 'bananas', one: 0, size: .22, food: 1 },
   book: { n: 'a book', size: .22, read: 1, make: () => { const g = new THREE.Group(), c = new THREE.Mesh(new THREE.BoxGeometry(.15, .035, .22), mat('brown_leather', { tile: .3, color: pick([0x5a1f1f, 0x1f3a2a, 0x2a2a4a, 0x4a3a1a]) })), p = new THREE.Mesh(new THREE.BoxGeometry(.14, .028, .21), flat(0xe8dfc8)); p.position.x = .006; g.add(c, p); return g; } },
@@ -109,9 +118,12 @@ function stepBoxes(dt) { for (const D of BOXES) if (D.open !== D.want) { D.open 
 
 // set a model down: centred on x,z, turned ry; h or w scales it to a known size; it blocks the way unless told not to
 const _b = new THREE.Box3();
+let BLOB = null; function blobMat() { if (BLOB) return BLOB; const c = document.createElement('canvas'); c.width = c.height = 64; const x = c.getContext('2d'), g = x.createRadialGradient(32, 32, 4, 32, 32, 32); g.addColorStop(0, 'rgba(0,0,0,.85)'); g.addColorStop(.55, 'rgba(0,0,0,.5)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); BLOB = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false, opacity: .62, polygonOffset: true, polygonOffsetFactor: -2, fog: false }); BLOB.userData.tile = 1; return BLOB; }
+// the dark that gathers under a thing standing on a floor
+function blob(place, x, y, z, w, d, ry = 0) { const g = new THREE.PlaneGeometry(w, d); g.rotateX(-Math.PI / 2); if (ry) g.rotateY(ry); g.translate(x, y + .006, z); gather(place, blobMat(), g, { noShadow: 1 }); }
 function put(place, name, x, z, ry = 0, o = {}) { const src = MODELS[name]; if (!src) { console.warn('missing model', name); return null; } const g = src.clone(), s0 = src.userData.size, sc = o.h ? o.h / s0.y : o.w ? o.w / s0.x : o.s || 1; g.scale.setScalar(sc); g.position.set(x, (o.y || 0) + (ROOMS[place] ? ROOMS[place].y : 0), z); g.rotation.set(o.rx || 0, ry, o.rz || 0); group(place).add(g);
-  const w = s0.x * sc, d = s0.z * sc, hh = s0.y * sc; g.userData.dim = { w, d, h: hh }; if (o.noShadow) g.traverse(m => { m.castShadow = false; });
+  const w = s0.x * sc, d = s0.z * sc, hh = s0.y * sc; g.userData.dim = { w, d, h: hh }; if (!(o.y > .05) && hh > .25 && place !== 'out') blob(place, x, g.position.y, z, w * 1.5 + .2, d * 1.5 + .2, ry); if (o.noShadow) g.traverse(m => { m.castShadow = false; });
   if (o.solid !== false && !(o.y > .3) && hh > .3) { mark(x, z, w / 2 - (o.slim || .04), d / 2 - (o.slim || .04), ry, { dark: hh > 1.5 && Math.min(w, d) > .3 }); if (hh > .35) P.world.createCollider(RAPIER.ColliderDesc.cuboid(w / 2, hh / 2, d / 2).setTranslation(x, g.position.y + hh / 2, z).setRotation(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), ry)).setCollisionGroups(grp(GRP.WORLD, 0xffff))); }
   return g; }
 
-export { one, LAMPS, POWER, lamp, lampOn, initLights, stepLights, litRoom, lightSwitch, KINDS, ITEMS, item, wpos, dropItem, stepItems, removeItem, BOXES, chest, cupboard, stock, stepBoxes, put, panel, knob, local, wineglass, rod };
+export { blob, blobMat, one, LAMPS, POWER, lamp, lampOn, initLights, stepLights, litRoom, lightSwitch, KINDS, ITEMS, item, wpos, dropItem, stepItems, removeItem, BOXES, chest, cupboard, stock, stepBoxes, put, panel, knob, local, wineglass, rod };

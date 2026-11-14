@@ -1,5 +1,6 @@
 // THE GUEST LIST's bodies: each guest's own model on the shared skeleton, motion-captured clips blended by what they are doing, a head that looks where they look, a face that speaks and blinks, and a real physics body (a ragdoll) for when they fall
 import { THREE, ASSET, clamp, lerp, rnd, pick, scene, CLOCK, P, RAPIER, grp, GRP, gltfL, height, angd } from './core.js';
+import { blobMat } from './things.js';
 
 const PEOPLE = __PEOPLE__, CLIPS = { m: {}, f: {} }, BODIES = {};
 async function loadPeople(keys, onp) { let n = 0; const tick = () => onp(++n / (keys.length + 2));
@@ -14,10 +15,12 @@ const PARTS = [['pelvis', 'Bip01_Pelvis', 'Bip01_Spine2', .13, null], ['chest', 
 
 class Body {
   constructor(key) { const src = BODIES[key]; this.key = key; this.sex = PEOPLE.people[key].sex; this.h = PEOPLE.people[key].height; this.o = src; scene.add(src); this.bones = {}; this.faces = [];
-    src.traverse(m => { if (m.isBone) this.bones[m.name] = m; if (m.isSkinnedMesh || m.isMesh) { m.castShadow = true; m.receiveShadow = true; m.frustumCulled = false; if (m.morphTargetDictionary) this.faces.push(m); if (m.material) { m.material.envMapIntensity = .8; if (m.name === 'hair' || m.material.alphaTest) m.material.alphaToCoverage = true; } } });
+    src.traverse(m => { if (m.isBone) this.bones[m.name] = m; if (m.isSkinnedMesh || m.isMesh) { m.castShadow = true; m.receiveShadow = true; m.frustumCulled = false; if (m.morphTargetDictionary) this.faces.push(m); if (m.material) { m.material.envMapIntensity = .35; if (m.name === 'hair' || m.material.alphaTest) m.material.alphaToCoverage = true; } } });
     this.mixer = new THREE.AnimationMixer(src); this.acts = {}; this.cur = null; this.x = 0; this.z = 0; this.y = 0; this.yaw = 0; this.speed = 0; this.look = null; this.lookK = 0; this.hy = 0; this.hp = 0;
     this.vis = { aa: 0, oh: 0, ee: 0, pp: 0, ff: 0, blink: 0, smile: 0, fear: 0 }; this.mood = { smile: .1, fear: 0 }; this.blinkT = rnd(2, 5); this.talkT = 0; this.talkAmp = 0; this.ph = rnd(10); this.rag = null; this.frozen = false; this.held = null; this.shake = 0; this.lean = 0;
-    for (const w of WALKS) w[1] = PEOPLE.clips[this.sex][w[0]].speed; this.play('idle_neutral_01', 0); }
+    for (const w of WALKS) w[1] = PEOPLE.clips[this.sex][w[0]].speed; this.play('idle_neutral_01', 0);
+    // the dark under their feet
+    this.blob = new THREE.Mesh(new THREE.PlaneGeometry(.95, .95), blobMat()); this.blob.rotation.x = -Math.PI / 2; this.blob.renderOrder = 1; scene.add(this.blob); }
   act(name) { let a = this.acts[name]; if (!a) { const c = CLIPS[this.sex][name]; if (!c) return null; a = this.acts[name] = this.mixer.clipAction(c); } return a; }
   // cross-fade to a clip; once = play through and hold
   play(name, fade = .35, o = {}) { if (this.cur === name && !o.again) { if (o.rate) this.acts[name].timeScale = o.rate; return; } const a = this.act(name); if (!a) return; const old = this.cur && this.acts[this.cur]; a.reset(); a.enabled = true; a.setLoop(o.once ? THREE.LoopOnce : THREE.LoopRepeat, Infinity); a.clampWhenFinished = !!o.once; a.timeScale = o.rate || 1; if (!o.once && !o.start0) a.time = rnd(a.getClip().duration);
@@ -27,7 +30,7 @@ class Body {
   hold(obj, o = {}) { if (this.held) this.held.removeFromParent(); this.held = obj; if (!obj) return; const h = this.bones.Bip01_R_Hand; h.add(obj); const s = 1 / (h.getWorldScale(_v).x || 1); obj.scale.multiplyScalar(s); obj.position.set(o.px ?? .09, o.py ?? -.03, o.pz ?? .02).multiplyScalar(s); obj.rotation.set(o.rx ?? 0, o.ry ?? 0, o.rz ?? -1.57); }
   say(dur) { this.talkT = dur; }
   step(dt) { if (this.frozen) return; if (this.rag) { this.ragStep(dt); return; }
-    this.mixer.update(dt); const o = this.o; o.position.set(this.x, this.y, this.z); o.rotation.y = this.yaw;
+    this.mixer.update(dt); const o = this.o; o.position.set(this.x, this.y, this.z); o.rotation.y = this.yaw; this.blob.position.set(this.x, this.y + .008, this.z); this.blob.visible = o.visible;
     // the head and eyes turn to what holds their attention, as far as a neck allows
     const hd = this.bones.Bip01_Head, nk = this.bones.Bip01_Neck; let ty = 0, tp = 0; if (this.look) { const dx = this.look.x - this.x, dz = this.look.z - this.z, d = Math.hypot(dx, dz); ty = clamp(angd(this.yaw, Math.atan2(dx, dz)), -1.25, 1.25); tp = clamp(Math.atan2((this.look.y ?? 1.6) - (this.y + this.h * .93), d), -.5, .5); if (Math.abs(angd(this.yaw, Math.atan2(dx, dz))) > 2) ty = 0; }
     this.hy = lerp(this.hy, ty, 1 - Math.exp(-dt * 5)); this.hp = lerp(this.hp, tp, 1 - Math.exp(-dt * 5)); const sh = this.shake ? Math.sin(CLOCK.t * 31 + this.ph) * this.shake * .06 : 0;
@@ -53,8 +56,11 @@ class Body {
         const j = lim ? W.createImpulseJoint(RAPIER.JointData.revolute(a1, a2, { x: left.x, y: 0, z: left.z }), pr, rb, true) : W.createImpulseJoint(RAPIER.JointData.spherical(a1, a2), pr, rb, true); if (lim) j.setLimits(lim[0], lim[1]); j.setContactsEnabled(false); R.joints.push(j); }
       if (push) rb.applyImpulse({ x: push.x * rb.mass() * (name === 'chest' || name === 'head' ? 1.2 : .6), y: (push.y || 0) * rb.mass(), z: push.z * rb.mass() * (name === 'chest' || name === 'head' ? 1.2 : .6) }, true); }
     this.rag = R; this.mood.shut = true; this.mood.fear = 0; this.talkT = 0; this.look = null; }
-  ragStep(dt) { const R = this.rag; R.t += dt; let moving = 0; for (const p of R.list) { const t = p.rb.translation(), r = p.rb.rotation(), v = p.rb.linvel(); moving = Math.max(moving, Math.hypot(v.x, v.y, v.z)); _m.compose(_v.set(t.x, t.y, t.z), _q.set(r.x, r.y, r.z, r.w), _v2.set(1, 1, 1)).multiply(p.rel); p.bone.parent.updateWorldMatrix(true, false); _m2.copy(p.bone.parent.matrixWorld).invert().multiply(_m); _m2.decompose(p.bone.position, p.bone.quaternion, _v2); p.bone.updateMatrixWorld(true); }
-    const c = R.parts.pelvis.rb.translation(); this.x = c.x; this.z = c.z; this.ry = c.y; this.face(dt); if (c.y < -9) { R.parts.pelvis.rb.setTranslation({ x: this.x, y: 1, z: this.z }, true); }
+  ragStep(dt) { const R = this.rag; R.t += dt; let moving = 0; const fl = height(this.x, this.z), pc = R.parts.pelvis.rb.translation();
+    // a body does not fly: one thrown out of something it was jammed in is laid back on the floor
+    if (pc.y > fl + 1.7 || pc.y < fl - 1.2 || !Number.isFinite(pc.y)) { const bx = Number.isFinite(pc.x) ? pc.x : this.x, bz = Number.isFinite(pc.z) ? pc.z : this.z; for (const p of R.list) { const t = p.rb.translation(); p.rb.setTranslation({ x: bx + (t.x - pc.x) * .5 || bx, y: height(bx, bz) + .25, z: bz + (t.z - pc.z) * .5 || bz }, true); p.rb.setLinvel({ x: 0, y: 0, z: 0 }, true); p.rb.setAngvel({ x: 0, y: 0, z: 0 }, true); } }
+    for (const p of R.list) { const t = p.rb.translation(), r = p.rb.rotation(), v = p.rb.linvel(), sp = Math.hypot(v.x, v.y, v.z); if (sp > 7) p.rb.setLinvel({ x: v.x * 7 / sp, y: v.y * 7 / sp, z: v.z * 7 / sp }, true); moving = Math.max(moving, Math.min(sp, 7)); _m.compose(_v.set(t.x, t.y, t.z), _q.set(r.x, r.y, r.z, r.w), _v2.set(1, 1, 1)).multiply(p.rel); p.bone.parent.updateWorldMatrix(true, false); _m2.copy(p.bone.parent.matrixWorld).invert().multiply(_m); _m2.decompose(p.bone.position, p.bone.quaternion, _v2); p.bone.updateMatrixWorld(true); }
+    const c = R.parts.pelvis.rb.translation(); this.x = c.x; this.z = c.z; this.ry = c.y; this.blob.position.set(c.x, Math.max(c.y - .25, -3.19) < -1 ? c.y - .12 : .008, c.z); this.blob.scale.setScalar(1.7); this.blob.visible = this.o.visible; this.face(dt); if (c.y < -9) { R.parts.pelvis.rb.setTranslation({ x: this.x, y: 1, z: this.z }, true); }
     // once it lies still the physics lets go of it and the pose stays
     R.still = moving < .06 && !R.handle ? R.still + dt : 0; if (R.still > 1.5 && R.t > 2.5) this.settle(); }
   settle() { const R = this.rag; if (!R) return; for (const j of R.joints) P.world.removeImpulseJoint(j, true); for (const p of R.list) P.world.removeRigidBody(p.rb); if (R.handle) P.world.removeRigidBody(R.handle.rb); this.rag = null; this.frozen = true; this.lying = true; this.o.updateMatrixWorld(true); }
@@ -66,6 +72,6 @@ class Body {
   release() { const R = this.rag; if (!R || !R.handle) return; P.world.removeImpulseJoint(R.handle.j, true); R.joints.splice(R.joints.indexOf(R.handle.j), 1); P.world.removeRigidBody(R.handle.rb); R.handle = null; R.t = 1; }
   // where the fallen body is (its hips), for those who might see it
   where(out = new THREE.Vector3()) { return this.bones.Bip01_Pelvis.getWorldPosition(out); }
-  vanish(v) { this.o.visible = !v; }
+  vanish(v) { this.o.visible = !v; this.blob.visible = !v; }
 }
 export { PEOPLE, CLIPS, loadPeople, Body };

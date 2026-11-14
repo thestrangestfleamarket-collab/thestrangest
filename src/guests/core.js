@@ -9,6 +9,7 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 
 const Q = new URLSearchParams(location.search), LOW = Q.get('q') === 'low', TEST = Q.has('test');
 const ASSET = 'guests-assets/';
@@ -23,18 +24,18 @@ const angd = (a, b) => { let d = (b - a) % (Math.PI * 2); if (d > Math.PI) d -= 
 const renderer = new THREE.WebGLRenderer({ antialias: !LOW, powerPreference: 'high-performance' });
 renderer.setPixelRatio(LOW ? 1 : Math.min(devicePixelRatio, 2)); renderer.setSize(innerWidth, innerHeight);
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = .95;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
 renderer.xr.enabled = true; renderer.xr.setReferenceSpaceType('local-floor'); renderer.xr.setFoveation(.7);
 const scene = new THREE.Scene(); scene.background = new THREE.Color(0x05070b); scene.fog = new THREE.FogExp2(0x0a0d12, .006);
 const camera = new THREE.PerspectiveCamera(68, innerWidth / innerHeight, .06, 400), rig = new THREE.Group(); rig.add(camera); scene.add(rig);
-{ const pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(new RoomEnvironment(), .04).texture; scene.environmentIntensity = .16; pm.dispose(); }
+{ const pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(new RoomEnvironment(), .04).texture; scene.environmentIntensity = .1; pm.dispose(); }
 
 // the screen's lens: glow off the lamps, dark corners, grain (a headset draws plain)
 let composer = null;
 const LENS = { uniforms: { tDiffuse: { value: null }, t: { value: 0 }, dark: { value: 0 }, red: { value: 0 } }, vertexShader: 'varying vec2 v; void main(){ v=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }',
-  fragmentShader: 'uniform sampler2D tDiffuse; uniform float t,dark,red; varying vec2 v; float h(vec2 p){ return fract(sin(dot(p,vec2(12.9898,78.233))+t)*43758.5453); } void main(){ vec2 d=v-.5; float r=dot(d,d); vec3 c=vec3(texture2D(tDiffuse,v+d*r*.004).r,texture2D(tDiffuse,v).g,texture2D(tDiffuse,v-d*r*.004).b); c*=1.-r*(1.05+dark*2.); c+=(h(v*900.)-.5)*.035; c=mix(c,vec3(dot(c,vec3(.3,.5,.2)))*vec3(1.,.25,.2),red*r*2.2); gl_FragColor=vec4(c*(1.-dark),1.); }' };
+  fragmentShader: 'uniform sampler2D tDiffuse; uniform float t,dark,red; varying vec2 v; float h(vec2 p){ return fract(sin(dot(p,vec2(12.9898,78.233))+t)*43758.5453); } void main(){ vec2 d=v-.5; float r=dot(d,d); vec3 c=vec3(texture2D(tDiffuse,v+d*r*.004).r,texture2D(tDiffuse,v).g,texture2D(tDiffuse,v-d*r*.004).b); c*=1.-r*(1.15+dark*2.); float l=dot(c,vec3(.3,.55,.15)); c=mix(vec3(l),c,1.08); c=c*c*(3.-2.*c)*.55+c*.45; c+=(1.-smoothstep(0.,.35,l))*vec3(-.004,.0,.008); c=max(c-.006,0.); c+=(h(v*900.)-.5)*.03; c=mix(c,vec3(dot(c,vec3(.3,.5,.2)))*vec3(1.,.25,.2),red*r*2.2); gl_FragColor=vec4(c*(1.-dark),1.); }' };
 let lens = null;
-if (!LOW) { composer = new EffectComposer(renderer); composer.addPass(new RenderPass(scene, camera)); composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), .22, .6, .9)); composer.addPass(new OutputPass()); lens = new ShaderPass(LENS); composer.addPass(lens); }
+if (!LOW) { composer = new EffectComposer(renderer); composer.addPass(new RenderPass(scene, camera)); if (Q.get('ao') !== '0') { const ao = new GTAOPass(scene, camera, innerWidth, innerHeight); ao.updateGtaoMaterial({ radius: .45, distanceExponent: 1.4, thickness: 1.2, scale: 1.25, samples: 12 }); ao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 5, rings: 2, samples: 12 }); composer.addPass(ao); } composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), .22, .6, .9)); composer.addPass(new OutputPass()); lens = new ShaderPass(LENS); composer.addPass(lens); }
 addEventListener('resize', () => { if (renderer.xr.isPresenting) return; camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); if (composer) composer.setSize(innerWidth, innerHeight); });
 const FX = { dark: 0, red: 0 };
 function draw(t) { if (composer && !renderer.xr.isPresenting) { lens.uniforms.t.value = t % 10; lens.uniforms.dark.value = FX.dark; lens.uniforms.red.value = FX.red; composer.render(); } else renderer.render(scene, camera); }

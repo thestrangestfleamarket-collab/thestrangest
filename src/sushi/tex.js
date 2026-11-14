@@ -15,10 +15,10 @@ export function rng(seed) {
 }
 
 export function canvasTex(w, h, draw, o = {}) {
-  // drawn large, kept small and unfiltered (the PlayStation 2 look); o.keep for things that must stay readable
+  // o.lo: a surface is drawn large and kept small (the PlayStation 2's texel size); writing is kept whole
   const c = document.createElement('canvas'); c.width = w; c.height = h;
   const g = c.getContext('2d'); draw(g, w, h);
-  const k = 1, sc = document.createElement('canvas'); sc.width = Math.max(8, Math.round(w * k)); sc.height = Math.max(8, Math.round(h * k));
+  const k = o.lo || 1, sc = document.createElement('canvas'); sc.width = Math.max(8, Math.round(w * k)); sc.height = Math.max(8, Math.round(h * k));
   const sg = sc.getContext('2d'), t = new THREE.CanvasTexture(sc);
   t.colorSpace = o.linear ? THREE.NoColorSpace : THREE.SRGBColorSpace; t.anisotropy = 4;
   if (o.repeat) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(o.repeat[0], o.repeat[1]); }
@@ -26,16 +26,19 @@ export function canvasTex(w, h, draw, o = {}) {
   return t;
 }
 
+const loTex = (lo, w, h, draw, o = {}) => canvasTex(w, h, draw, { ...o, lo });
+
 // photographed surfaces (CC0, tools/sushi-assets.py), asked for before the street is built; a drawn picture stands in for one that has not come
 const PHOTOS = ['brick_red', 'brick_orange', 'brick_brown', 'brick_dark', 'brick_painted', 'plaster', 'plaster_worn', 'concrete', 'concrete_dirty', 'asphalt', 'paving', 'shutter', 'shutter_rust', 'corrugated', 'rust', 'wood', 'wood_dark', 'wood_light', 'tile_brown', 'tile_white'];
 const PIMG = {}, PTEX = {};
 export function loadPhotos(base = '/sushi-assets/tex/', ms = 9000) {
-  return Promise.all(PHOTOS.map((n) => new Promise((res) => { const im = new Image(); im.onload = () => { PIMG[n] = im; const t = PTEX[n]; if (t && t.image !== im) { t.dispose(); t.image = im; t.needsUpdate = true; } res(); }; im.onerror = res; im.src = base + n + '.jpg'; setTimeout(res, ms); })));
+  return Promise.all(PHOTOS.map((n) => new Promise((res) => { const im = new Image(); im.onload = () => { PIMG[n] = im; const t = PTEX[n]; if (t) { t.dispose(); t.image = small(im); t.needsUpdate = true; } res(); }; im.onerror = res; im.src = base + n + '.jpg'; setTimeout(res, ms); })));
 }
+const small = (im, n = 128) => { const c = document.createElement('canvas'); c.width = c.height = n; c.getContext('2d').drawImage(im, 0, 0, n, n); return c; }; // a photograph at the PlayStation 2's size
 export const photoImg = (name) => PIMG[name];
 export function photo(name, fallback) { // one texture a file, shared by every material that wears it
   if (PTEX[name]) return PTEX[name];
-  const t = new THREE.Texture(PIMG[name] || (fallback ? fallback().image : canvasTex(8, 8, (g) => { g.fillStyle = '#666'; g.fillRect(0, 0, 8, 8); }).image));
+  const t = new THREE.Texture(PIMG[name] ? small(PIMG[name]) : (fallback ? fallback().image : canvasTex(8, 8, (g) => { g.fillStyle = '#666'; g.fillRect(0, 0, 8, 8); }).image));
   t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4; t.needsUpdate = true; return (PTEX[name] = t);
 }
 // the picture laid by the metre from where a thing stands (size = metres a tile), so scaled and instanced boxes all wear it at its true size
@@ -81,7 +84,7 @@ function speckle(g, w, h, n, r, cols, R, aMin = 0.1, aMax = 0.5) {
 }
 
 export function woodTex(base = '#5a3a22', dark = '#2c1a0e', repeat = [1, 1], seed = 3) {
-  return canvasTex(512, 512, (g, w, h) => {
+  return loTex(0.25, 512, 512, (g, w, h) => {
     const R = rng(seed);
     g.fillStyle = base; g.fillRect(0, 0, w, h);
     for (let i = 0; i < 260; i++) {
@@ -101,7 +104,7 @@ export function woodTex(base = '#5a3a22', dark = '#2c1a0e', repeat = [1, 1], see
 }
 
 export function steelTex(repeat = [1, 1]) {
-  return canvasTex(256, 256, (g, w, h) => {
+  return loTex(0.5, 256, 256, (g, w, h) => {
     const R = rng(11);
     g.fillStyle = '#b9bcc0'; g.fillRect(0, 0, w, h);
     for (let i = 0; i < 900; i++) {
@@ -114,7 +117,7 @@ export function steelTex(repeat = [1, 1]) {
 }
 
 export function asphaltTex(repeat) {
-  return canvasTex(512, 512, (g, w, h) => {
+  return loTex(0.25, 512, 512, (g, w, h) => {
     const R = rng(5);
     g.fillStyle = '#16161a'; g.fillRect(0, 0, w, h);
     speckle(g, w, h, 9000, 2.2, ['#2b2b31', '#0b0b0d', '#3a3a40', '#1d1d22'], R, 0.2, 0.8);
@@ -130,7 +133,7 @@ export function asphaltTex(repeat) {
 
 // alpha map: darker = more see-through = puddle (mirror shows through)
 export function puddleTex(repeat, seed = 9, dry = 225, wet = 120) {
-  return canvasTex(512, 512, (g, w, h) => {
+  return loTex(0.25, 512, 512, (g, w, h) => {
     const R = rng(seed);
     g.fillStyle = `rgb(${dry},${dry},${dry})`; g.fillRect(0, 0, w, h);
     for (let i = 0; i < 26; i++) {
@@ -146,7 +149,7 @@ export function puddleTex(repeat, seed = 9, dry = 225, wet = 120) {
 }
 
 export function paverTex(repeat) {
-  return canvasTex(512, 512, (g, w, h) => {
+  return loTex(0.25, 512, 512, (g, w, h) => {
     const R = rng(21);
     g.fillStyle = '#1c1c20'; g.fillRect(0, 0, w, h);
     const n = 8, s = w / n;
@@ -160,7 +163,7 @@ export function paverTex(repeat) {
 }
 
 export function tileWallTex(repeat) {
-  return canvasTex(512, 512, (g, w, h) => {
+  return loTex(0.25, 512, 512, (g, w, h) => {
     const R = rng(33);
     g.fillStyle = '#2a2622'; g.fillRect(0, 0, w, h);
     const bw = 64, bh = 24;
@@ -177,7 +180,7 @@ export function tileWallTex(repeat) {
 }
 
 export function shutterTex() {
-  return canvasTex(512, 512, (g, w, h) => {
+  return loTex(0.25, 512, 512, (g, w, h) => {
     const R = rng(8);
     for (let y = 0; y < h; y += 16) {
       const gr = g.createLinearGradient(0, y, 0, y + 16);
@@ -226,8 +229,8 @@ export function facadeTex(seed, cols = 9, rows = 16) {
     });
   };
   return {
-    map: canvasTex(W, H, (g) => layout(g, false)),
-    emissive: canvasTex(W, H, (g) => layout(g, true)),
+    map: loTex(0.5, W, H, (g) => layout(g, false)),
+    emissive: loTex(0.5, W, H, (g) => layout(g, true)),
   };
 }
 
@@ -341,7 +344,7 @@ export function swirlTex(kind) {
 }
 
 export function brothTex(kind) {
-  return canvasTex(256, 256, (g, w, h) => {
+  return loTex(0.5, 256, 256, (g, w, h) => {
     const R = rng(kind.length * 7);
     g.fillStyle = '#fff'; g.fillRect(0, 0, w, h);
     for (let i = 0; i < 130; i++) { // fat droplets
@@ -353,7 +356,7 @@ export function brothTex(kind) {
 }
 
 export function faceTex(skin, o = {}) {
-  return canvasTex(256, 128, (g, w, h) => {
+  return loTex(0.5, 256, 128, (g, w, h) => {
     g.fillStyle = skin; g.fillRect(0, 0, w, h);
     const cx = 64;
     // cheeks
@@ -431,7 +434,7 @@ export function dirty(tex, seed = 1, o = {}) {
 
 // Greasy, uneven roughness (smears, fingerprints, wiped arcs) for worktops.
 export function smudgeTex(repeat = [1, 1], seed = 4) {
-  return canvasTex(512, 512, (g, w, h) => {
+  return loTex(0.25, 512, 512, (g, w, h) => {
     const R = rng(seed); g.fillStyle = '#9a9a9a'; g.fillRect(0, 0, w, h);
     for (let i = 0; i < 90; i++) { g.globalAlpha = 0.25 + R() * 0.4; g.strokeStyle = R() > 0.5 ? '#3c3c3c' : '#e6e6e6'; g.lineWidth = 8 + R() * 40; g.lineCap = 'round'; g.beginPath(); const x = R() * w, y = R() * h; g.arc(x, y, 30 + R() * 160, R() * 6, R() * 6 + 0.4 + R() * 1.2); g.stroke(); }
     for (let i = 0; i < 400; i++) { g.globalAlpha = 0.3; g.fillStyle = R() > 0.5 ? '#222' : '#fff'; g.beginPath(); g.ellipse(R() * w, R() * h, 2 + R() * 7, 2 + R() * 5, R() * 3, 0, 7); g.fill(); }

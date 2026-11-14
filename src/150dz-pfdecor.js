@@ -2,6 +2,7 @@
 import {THREE} from './003-shx.js';
 import {WE} from './003b-systems.js';
 import {MODS, SYS, TILE} from './006-map-pre.js';
+import {KIT} from './068-kit.js';
 import {ROOMK} from './150a-bedroom.js';
 const PFDECOR={ready:false,loading:false};
 { // the piece, its price, its footprint (x0,z0,x1,z1) and height in metres, from the world editor's catalog (data/weplace.json)
@@ -10,17 +11,29 @@ const PFDECOR={ready:false,loading:false};
     ['table-lamp-e25998',70,-0.098,-0.088,0.098,0.107,0.451],['table-candle-lantern-a7b5af',30,-0.065,-0.065,0.065,0.065,0.25],['bubbler-jukebox-ff71f2',900,-0.463,-0.295,0.463,0.295,1.5],
     ['fern-plant-1559b8',45,-0.51,-0.487,0.481,0.487,0.725],['potted-autumn-mums-08db8c',40,-0.159,-0.187,0.194,0.175,0.617],['ti-plant-a7ad06',50,-0.318,-0.065,0.211,0.354,2.18],['taro-plant-8c0493',55,-0.664,-0.559,0.625,0.396,1.04],['cazuela-pot-79f0ee',35,-0.186,-0.186,0.186,0.186,0.212]];
   const SMALL=new Set(['table-lamp-e25998','table-candle-lantern-a7b5af','cazuela-pot-79f0ee','potted-autumn-mums-08db8c']);   // set on a table or a shelf, not stood on the floor
+  const SEAT=/sofa|chair|stool|bench/, LAMP={'table-lamp-e25998':[.34,2.4,5],'b:floorlamp':[1.5,3.2,7],'b:tablelamp':[.36,2.4,5]};   // what you sit on (once its model has come: its seat is found from it), and the lamps: the bulb's height, its brightness, its reach (metres)
+  // Polyfork's pieces from the bookstore's set (data/bookstore.json, metres): a floor lamp, a library lamp, a big wool rug, a tall potted plant, a cast-iron radiator; footprint and height as above
+  const BPICK=[['floorlamp',90,'FLOOR LAMP',-.18,-.18,.18,.18,1.74],['tablelamp',60,'LIBRARY LAMP',0,0,0,0,.45],['rug2',140,'WOOL RUG',0,0,0,0,0],['plant',60,'TALL PLANT',-.3,-.3,.3,.3,1.5],['radiator',80,'RADIATOR',-.3,-.04,.3,.05,.68]], BJ=__LAZY__("data/bookstore.json"), BG={};
+  // a lamp's bulb behind its shade: it glows when the lamp is on and lights the room round it (warm, no shadow of its own: cheap)
+  const bulb=(G,k,M)=>{ const L0=LAMP[k]; if(!L0)return; const b=new THREE.Mesh(new THREE.SphereGeometry(.05,10,8),new THREE.MeshLambertMaterial({color:0xffe6c0,emissive:0xffb466,emissiveIntensity:.03})); b.position.y=L0[0]; b.userData.shade=1; b.castShadow=false; G.add(b);
+    const L=new THREE.PointLight(0xffb070,0,L0[2]*M,1.6); L.userData.i0=L0[1]; L.userData.lamp=1; L.userData.pool=true; L.position.y=L0[0]+.04; G.add(L); };
   const M=TILE/.84, MAT=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.62,metalness:.04}), BY={};
   const nameOf=k=>k.replace(/-[0-9a-f]{6}$/,'').replace(/-/g,' ').toUpperCase();
   const meshOf=k=>{ const g=WE.pfGeo&&WE.pfGeo(k); if(!g)return null; const m=new THREE.Mesh(g,MAT); m.scale.setScalar(1/M); m.castShadow=m.receiveShadow=true; return m; };
   // its models, once: the catalog's categories that hold the pieces; then every piece already in your flat gets its model
   PFDECOR.load=()=>{ if(PFDECOR.ready||PFDECOR.loading||!WE.pfLoad)return; PFDECOR.loading=true;
-    Promise.all(PICK.map(p=>WE.pfLoad(p[0]).catch(()=>null))).then(()=>{ PFDECOR.ready=true; PFDECOR.loading=false; fill(); }); };
-  const fill=()=>{ const A=ROOMK.api; if(!A)return; for(const [k] of PICK){ const D=A.R.kinds['pf:'+k]; if(!D)continue; if(!D.tpl.children.length){ const m=meshOf(k); if(m)D.tpl.add(m); else D.bad=true; } D.off=!!D.bad;
-      for(const un of A.units())if(un.kind==='pf:'+k&&!un.obj.children.length&&D.tpl.children[0]){ un.obj.add(D.tpl.children[0].clone()); if(un.st)un.st.fb=null; } } if(MODS.roomed&&MODS.roomed.on&&MODS.roomed.panel)MODS.roomed.panel(); };
-  ROOMK.parts.push(ctx=>{ '@apts'; const {R}=ctx;
-    for(const [k,price,x0,z0,x1,z1,h] of PICK){ const id='pf:'+k; if(R.kinds[id])continue; const G=new THREE.Group(), m=PFDECOR.ready?meshOf(k):null; if(m)G.add(m);
-      R.kinds[id]={kind:id,name:nameOf(k),loose:false,m:0,wire:null,sol:SMALL.has(k)?[]:[[x0,z0,x1,z1,h]],shf:[],tpl:G,game:'pf',dept:'g:polyfork',deptName:'POLYFORK',price,off:!m}; } });   // (off sale until its model has come)
+    Promise.all([...PICK.map(p=>WE.pfLoad(p[0]).catch(()=>null)),BJ().then(D=>{ for(const [k] of BPICK)if(D[k])BG[k]=KIT.decode(D[k]); }).catch(()=>null)]).then(()=>{ PFDECOR.ready=true; PFDECOR.loading=false; fill(); }); };
+  const meshB=k=>{ const g=BG[k]; if(!g)return null; const m=new THREE.Mesh(g,MAT); m.castShadow=k!=='rug2'; m.receiveShadow=true; return m; };
+  const KEYS=()=>[...PICK.map(p=>[p[0],meshOf]),...BPICK.map(p=>['b:'+p[0],k=>meshB(k.slice(2))])];
+  const fill=()=>{ const A=ROOMK.api; if(!A)return; for(const [k,mk] of KEYS()){ const D=A.R.kinds['pf:'+k]; if(!D)continue; const isM=q=>q.isMesh&&!q.userData.shade;
+      if(!D.tpl.children.some(isM)){ const m=mk(k); if(m)D.tpl.add(m); else D.bad=true; } D.off=!!D.bad; const tm=D.tpl.children.find(isM); if(tm&&SEAT.test(k))D.wire='sit';
+      for(const un of A.units())if(un.kind==='pf:'+k&&tm&&!un.obj.children.some(isM)){ un.obj.add(tm.clone()); if(un.st)un.st.fb=null; if(A.blob)A.blob(un); if(D.wire==='sit'&&!un.wire){ un.wire='sit'; if(A.wire)A.wire(un); } } }   // a piece that waited for its model: its contact shadow, and a seat to sit on
+    if(MODS.roomed&&MODS.roomed.on&&MODS.roomed.panel)MODS.roomed.panel(); };
+  ROOMK.parts.push(ctx=>{ '@apts'; const {R}=ctx, CM=ctx.M;
+    for(const [k,price,x0,z0,x1,z1,h] of PICK){ const id='pf:'+k; if(R.kinds[id])continue; const G=new THREE.Group(), m=PFDECOR.ready?meshOf(k):null; if(m)G.add(m); bulb(G,k,CM);
+      R.kinds[id]={kind:id,name:nameOf(k),loose:false,m:0,wire:LAMP[k]?'lamp':m&&SEAT.test(k)?'sit':null,sol:SMALL.has(k)?[]:[[x0,z0,x1,z1,h]],shf:[],tpl:G,game:'pf',dept:'g:polyfork',deptName:'POLYFORK',price,off:!m}; }   // (off sale until its model has come)
+    for(const [k,price,name,x0,z0,x1,z1,h] of BPICK){ const id='pf:b:'+k; if(R.kinds[id])continue; const G=new THREE.Group(), m=PFDECOR.ready?meshB(k):null; if(m)G.add(m); bulb(G,'b:'+k,CM);
+      R.kinds[id]={kind:id,name,loose:false,m:0,wire:LAMP['b:'+k]?'lamp':null,sol:h&&x1>x0?[[x0,z0,x1,z1,h]]:[],shf:[],tpl:G,game:'pf',dept:'g:polyfork',deptName:'POLYFORK',price,off:!m,mount:k==='radiator'?null:undefined}; } });
   ROOMK.built.push(A=>{ '@apts'; if(PFDECOR.ready)fill(); });
   // fetched when DECORATE opens, or at once when your flat has a piece waiting for its model
   SYS.every(()=>{ const A=ROOMK.api; if(!A||PFDECOR.ready||PFDECOR.loading)return; if((MODS.roomed&&MODS.roomed.on)||A.units().some(u=>u.kind&&u.kind.startsWith('pf:')))PFDECOR.load(); },500,'150dz-pfdecor');

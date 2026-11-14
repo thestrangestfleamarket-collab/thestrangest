@@ -1,4 +1,4 @@
-// YOUR FLAT'S FLATAIR (owner, 13 Nov 2026: "just do a black void for exterior no outside world other than clouds and sky through the windows that brings in realistic lighting, time of day, etc. (needs to be super atmospheric in the apartment with lighting, shadows, air, etc) go all out"): a black bowl under the horizon round your rooms (the sky and clouds above it), the real sun's shafts through each window, and dust turning slowly in the air.
+// YOUR FLAT'S FLATAIR (owner, 13 Nov 2026: "just do a black void for exterior no outside world other than clouds and sky through the windows that brings in realistic lighting, time of day, etc. (needs to be super atmospheric in the apartment with lighting, shadows, air, etc) go all out"): the real sun's shafts through each window, and dust turning slowly in the air.
 import {SHARED, THREE} from './003-shx.js';
 import {CLOCK, UI} from './003b-systems.js';
 import {MODS, SYS} from './006-map-pre.js';
@@ -12,10 +12,6 @@ const FLATAIR={on:false,shafts:[],motes:null,bowl:null};
       gl_FragColor=vec4(uC*uOp*e*f,1.); }`;
   ROOMK.built.push(A=>{ '@apts'; const R=A.R, apt=R.apt; if(!apt)return;
     for(const s of FLATAIR.shafts)s.m.removeFromParent(); FLATAIR.shafts=[]; if(FLATAIR.motes)FLATAIR.motes.removeFromParent(); if(FLATAIR.bowl)FLATAIR.bowl.removeFromParent();
-    // the void: the lower half of a sphere, black and fogless, its rim at a standing eye's height: from above and through the glass, nothing but black under the sky
-    { const g=new THREE.SphereGeometry(60,32,12,0,Math.PI*2,Math.PI/2,Math.PI/2), m=new THREE.MeshBasicMaterial({color:0x000000,side:THREE.BackSide,fog:false});
-      const b=new THREE.Mesh(g,m); b.position.set(A.Lx/2,1.5,A.Ly/2); b.frustumCulled=false; b.raycast=()=>{}; b.userData.keep=b.userData.soft=b.userData.noMerge=1; b.renderOrder=-3; apt.add(b); FLATAIR.bowl=b;
-      const fl=new THREE.Mesh(new THREE.CircleGeometry(60,32).rotateX(-Math.PI/2),m); fl.position.set(0,-1.8,0); fl.raycast=()=>{}; fl.userData.noMerge=1; b.add(fl); }   // and a black floor just under yours: the street's ground far below never shows
     // a shaft for every window: its opening swept along the sun's light into the room, brightest at the glass
     for(const W of R.wins||[]){ const g=W.g; g.updateWorldMatrix(true,false); C.set(A.Lx/2,1.2,A.Ly/2); apt.localToWorld(C); g.worldToLocal(C); const inw=C.z>=0?1:-1;
       const U={uD:{value:new V3()},uW:{value:W.w*.96},uZ0:{value:W.z0},uZ1:{value:W.z1},uL:{value:5},uC:{value:new THREE.Color(1,.92,.78)},uOp:{value:0},uT:{value:0}};
@@ -32,7 +28,7 @@ const FLATAIR={on:false,shafts:[],motes:null,bowl:null};
         fragmentShader:`uniform float uK; varying float vA; void main(){ vec2 c=gl_PointCoord-.5; float d=1.-smoothstep(.2,.5,length(c)); gl_FragColor=vec4(vec3(1.,.96,.9)*uK*vA*d,1.); }`});
       const pts=new THREE.Points(g,m); pts.frustumCulled=false; pts.raycast=()=>{}; pts.userData.keep=pts.userData.soft=1; pts.renderOrder=6; apt.add(pts); FLATAIR.motes={pts,U}; FLATAIR.motesU=U; }
   });
-  SYS.add('places',dt=>{ const APTS=MODS.apts, inn=!!(APTS&&APTS.inReal); FLATAIR.on=inn; if(FLATAIR.bowl)FLATAIR.bowl.visible=inn; if(FLATAIR.motes)FLATAIR.motes.pts.visible=inn;
+  SYS.add('places',dt=>{ const APTS=MODS.apts, inn=!!(APTS&&APTS.inReal); FLATAIR.on=inn;  if(FLATAIR.motes)FLATAIR.motes.pts.visible=inn;
     if(!inn){ for(const s of FLATAIR.shafts)s.m.visible=false; return; }
     const t=performance.now()/1000, e=CLOCK.elev(), day=cl((e+2)/10,0,1), low=1-cl((e-4)/30,0,1), iso=!UI.persp, sun=CLOCK.sun, WPL=APTS.WPL||{};
     if(sun&&sun.target){ D.copy(sun.target.getWorldPosition(C)).sub(sun.getWorldPosition(new V3())).normalize(); } else D.set(0,-1,0);   // the sun's light, travelling

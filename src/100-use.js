@@ -16,8 +16,8 @@ Object.assign(USE,{seat:null}); window.USE=USE;
   const look=TR=>{ '@later'; const b=new THREE.Box3(), F=[]; for(const t of TR){ for(let k=0;k<9;k+=3)b.expandByPoint(v.set(t[k],t[k+1],t[k+2]));
       const ux=t[3]-t[0], uy=t[4]-t[1], uz=t[5]-t[2], wx=t[6]-t[0], wy=t[7]-t[1], wz=t[8]-t[2], nx=uy*wz-uz*wy, ny=uz*wx-ux*wz, nz=ux*wy-uy*wx, l=Math.hypot(nx,ny,nz); if(!(l>1e-9))continue;
       F.push({A:l/2,nx:nx/l,ny:ny/l,nz:nz/l,cx:(t[0]+t[3]+t[6])/3,cy:(t[1]+t[4]+t[7])/3,cz:(t[2]+t[5]+t[8])/3,t}); } return {b,F}; };
-  const seatOf=TR=>{ '@later'; const {b,F}=look(TR), y0=b.min.y, q=.04*T, bins={}; for(const f of F)if(Math.abs(f.ny)>.8){ const h=f.cy-y0; if(h>.15*T&&h<1.6*T){ const k=Math.round(f.cy/q); bins[k]=(bins[k]||0)+f.A; } }
-    let bk=null, ba=0; for(const k in bins)if(bins[k]>ba){ ba=bins[k]; bk=+k; } if(bk==null)return null;
+  const seatOf=TR=>{ '@later'; const {b,F}=look(TR), y0=b.min.y, q=.04*T, bins={}, mx=(b.min.x+b.max.x)/2, mz=(b.min.z+b.max.z)/2, wx=.3*(b.max.x-b.min.x), wz=.3*(b.max.z-b.min.z); for(const f of F)if(Math.abs(f.ny)>.8&&Math.abs(f.cx-mx)<wx&&Math.abs(f.cz-mz)<wz){ const h=f.cy-y0; if(h>.15*T&&h<1.6*T){ const k=Math.round(f.cy/q); bins[k]=(bins[k]||0)+f.A; } }
+    let bk=null, ba=0; for(const k in bins)ba=Math.max(ba,bins[k]); for(const k in bins)if(bins[k]>=.5*ba&&(bk==null||+k>bk))bk=+k; if(bk==null)return null;   // the seat: the highest broad surface in the middle (a cushion over its base, never the arms or the back's top), so you sit on it, not sunk in it (owner, 14 Nov 2026: "sitting in chair hides legs")
     const S=new THREE.Box3(); let sy=0, sw=0; for(const f of F)if(Math.abs(f.ny)>.8&&Math.round(f.cy/q)===bk){ for(let k=0;k<9;k+=3)S.expandByPoint(v.set(f.t[k],f.t[k+1],f.t[k+2])); sy+=f.cy*f.A; sw+=f.A; }
     const cx=(S.min.x+S.max.x)/2, cz=(S.min.z+S.max.z)/2; let bx=0, bz=0, bw=0; for(const f of F)if(f.cy>sy/sw+.3*T){ bx+=f.cx*f.A; bz+=f.cz*f.A; bw+=f.A; }
     let fx=0, fz=0; if(bw){ fx=cx-bx/bw; fz=cz-bz/bw; const l=Math.hypot(fx,fz); if(l>.05*T){ fx/=l; fz/=l; } else fx=fz=0; }
@@ -30,11 +30,12 @@ Object.assign(USE,{seat:null}); window.USE=USE;
   USE.stand=()=>stand(true);
   USE.sitAt=(x,z,y,hd,more)=>{ '@later'; SFX.play('creak',{vol:.5,vary:.3,delay:.4}); const g=SHARED.groundY(x,z);   // sit at a point: a chair's top, a train's seat (more: what carries the seat)
     USE.seat={back:pos.clone(),x,z,...more}; pos.x=x; pos.z=z; SHARED.target=null; SHARED.heading=hd; st.sit={z:Math.max(2,(y-g)/(ZU*W3.SZ*(W3.BH||1)))}; st.target=0; st.w=0; MOTION.play('sitDown'); st.mv=st.mvw=0; };   // (no stride carried onto the seat: it slid you off a bench, owner 9 Nov 2026)
-  const sitOn=(se,th)=>{ let [x,z]=near(se.S,.4*T), fx=se.fx, fz=se.fz;
+  const sitOn=(se,th)=>{ if(USE.seat&&st.sit&&USE.seat.se===se){ st.sit.lean=st.sit.lean?0:1; SFX.play('creak',{vol:.4,vary:.3}); return; }   // in it already: lean back, or sit up again (owner, 14 Nov 2026: "once you sit you should be able to lean back")
+    let [x,z]=near(se.S,.4*T), fx=se.fx, fz=se.fz;
     if(se.mid){ const S=se.S, wx=S.max.x-S.min.x, wz=S.max.z-S.min.z;   // a back down the middle: sit on your side of it, facing out
       if(wx<wz){ fx=pos.x<se.mid[0]?-1:1; x=se.mid[0]+fx*wx/4; } else { fz=pos.z<se.mid[1]?-1:1; z=se.mid[1]+fz*wz/4; } }
     else if(!fx&&!fz){ fx=pos.x-x; fz=pos.z-z; const l=Math.hypot(fx,fz)||1; fx/=l; fz/=l; }
-    USE.sitAt(x-fx*.06*T,z-fz*.06*T,se.y,Math.atan2(fx,fz)); };
+    USE.sitAt(x-fx*.06*T,z-fz*.06*T,se.y,Math.atan2(fx,fz),{se}); };
   const lightsOf=b=>{ const e=.8*T; return LITE.recs.filter(L=>{ const p=L.position; return p.x>b.min.x-e&&p.x<b.max.x+e&&p.y>b.min.y-e&&p.y<b.max.y+e&&p.z>b.min.z-e&&p.z<b.max.z+e; }); };
   const tint=(o,c,which)=>{ for(const p of o.parts){ if(!which(p))continue; const g=p.me.geometry, C=g.attributes.aCol; for(let i=0;i<18;i++)C.array[p.v0*3+i]=c[i%3]; C.needsUpdate=true; } };
   const glows=p=>p.e||p.me.material.isMeshBasicMaterial;

@@ -27,6 +27,7 @@ Risk is noted only when it isn't low.
    Section B, the shop insides with their windows, the moves.
 
 ## For the owner
+- [x] **The real clock and sky back** (owner, 14 Nov 2026: "lets remoev the 8 times ot day, do a real click go back to the blue, clouds, real nigth") · P1 · S · code + look. [done: worktree-agent-a3dd808517cecfa90, 14 Nov]
 - **P2 · pick** THE CANTINA (13 Nov 2026): its name (THE CANTINA is a working name); whether the old lounge (still reached by GO TO) goes to the archive now that THE BAR's door opens THE CANTINA; which octopus (THE MARKET's drummer is in; Polyfork's is the other); anyone to cut from or add to the regulars.
 - **P2 · look** THE CANTINA in a headset on the live site: how the hands sit on the controllers, how dark each look is, the frame rate with every regular in the room.
 
@@ -203,11 +204,14 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [ ] **Climbing the puff trees; placing them** · P3 · pick.
 - [ ] **Ragdolls for today's bodies** · P3 · L · pick + code. Owner, 7 Nov ("go with your recommendations"): knock-overs stay dormant until
   today's cast's bodies get a ragdoll; `tests/physx.cjs` checks them again then. When they come: stand up where they fell, not where they were.
+- [x] **THE BIG CAT furry, by a pole down Market St** (owner, 14 Nov 2026) · P2 · S · code + look. Done: worktree-agent-a4e3f10d0a6cacb08, 14 Nov.
 
 ## Apartments
+- [x] **Flat: realism pass** (owner, 14 Nov 2026: "make apartment super cozy and realistic", "Add depth and nuane to the floor and walls"; done 14 Nov) · P2 · L · code. Boards, plaster, brick and trim with relief; laid out again with Polyfork's pieces; lamps that light. Still to come: a real kitchen model (Polyfork has none; the catalog's boxy fridge, sink and stove stand in), soft goods with cloth. Waits for his look and yes.
 - [x] **GRAPHICS HIGH the rich picture: soft shadows, 720 lines, contact shade** (owner, 14 Nov 2026; done 14 Nov) · P2 · M · code. Frame cost on a real machine not measured yet. Waits for his look and yes.
 - [x] **Every sound in the SOUND menu; footsteps lowest, ambience off by default** (owner, 14 Nov 2026; done 14 Nov) · P2 · S · code. Waits for his look and yes.
 - [x] **Market St re-laid, the lofts into the clouds, the corner bodega, the bath house's ♨** (owner, 13 Nov 2026; done 13 Nov) · P2 · L · code. Waits for his look and yes.
+- [x] **The bodega bigger, its door in sight** (owner, 14 Nov 2026: "the bodega is way too small, cant see front door"; done 14 Nov) · P2 · S · code. Waits for his look and yes.
 - [ ] **The four apartment houses on West St** (owner, 10–11 Nov 2026, `mockups/apartments.html` option B) · P2 · L · code. West St's road back from Market St for four lots; four house blocks, each its own brick (walk-up, brownstone, pre-war, cast-iron loft); the Tower goes. [taking: claude/trusting-fermat-sybm7o, 11 Nov]
 - [ ] **Four sizes of flat, buy up** (owner, 11 Nov 2026: "Start small, buy up", "Comes along") · P2 · L · code. Small, medium, big, big with a half floor; everyone starts in No. 1 and buys up; the layout comes along, what no longer fits goes to PUT AWAY. [taking: claude/trusting-fermat-sybm7o, 11 Nov]
 - [ ] **The loft: No. 4's big room with a half floor** (owner, 12 Nov 2026, a photo: "match this layout exactly") · P2 · L · code. Double height, a mezzanine with a library wall, stair, beams, brick; DECORATE changes floors, walls, colours and lights there too. [taking: claude/keen-turing-39a42r, 12 Nov]
@@ -237,6 +241,7 @@ steps go in one window, after the checks run on `main`, and end with the owner t
 - [x] **Vehicle editor follow-ups** · P3 · S · look. Done 10 Nov: a resized car or kart drives at its size, the traffic's models have their parts, the horse is in (colours and size), the train shows before you go down, the horse's COAT picker.
 
 - [x] **The vehicles, the owner's list** (12 Nov 2026) · look + code. Done 12 Nov: every item built. Follow-ups for the owner: the hospital has no inside; the rovers are not solid; dropped things are left to their own timer.
+- [x] **The kei vans in their own colours, roaming at their own paces and styles** (owner, 14 Nov 2026: "the small vans should be in dif colors and drive around ferely"; done 14 Nov) · P2 · M · code. Waits for his look and yes.
 - [ ] **Jets follow-ups** · P3 · S · pick. Fires and ice are worked out on each player's page (where a stream lands matches, how a fire
   spreads may not); characters burn and freeze but do not run from the fire.
 - [ ] **The physics extras (#512) never tried in a real game** · P3 · M · look + check. The bar's dartboard (beside its darts 301 game:

@@ -4,11 +4,13 @@ import { G } from './ctx.js';
 import { SEATS } from './cart.js';
 import { makePerson } from './avatars.js';
 import * as T from './tex.js';
+import { NET } from '../holo/net.js';
+import { cartLink } from '../holo/cartlink.js';
 
 const TILE = 1.13, K = 2.6 / 2.4; // the market's tile, and its cart's tiles to this cart's metre (146bg-yatai.js)
 export function buildLive() {
   const live = { watchers: new Map(), last: null }; G.live = live;
-  if (window.parent === window && !new URLSearchParams(location.search).has('live')) { live.update = () => { }; return live; }
+  const framed = window.parent !== window; let link = null; // inside the holodeck's shell the shell carries the word; on its own page, to a login, this page joins the section itself
   const r2 = (v) => Math.round(v * 100) / 100, V = (p) => [r2(p.x), r2(p.y), r2(p.z)], _a = new THREE.Vector3(), _b = new THREE.Vector3(); let t = 0, said = 0;
   const snap = () => { const g = G.game, C = G.cart, cam = G.camera.getWorldPosition(_a), dir = G.camera.getWorldDirection(_b);
     const hands = (G.hands || []).filter((h) => h.active !== false).slice(0, 2).map((h) => [...V(h.pos), h.held ? String(h.held.name || h.held.kind).slice(0, 24) : '']);
@@ -23,16 +25,20 @@ export function buildLive() {
       const id = String(o[0]); seen.add(id); let w = live.watchers.get(id); if (w && w.seated) continue; if (!w) { const p = makePerson((Math.random() * 1e6) | 0, 'Male_Adult_08'); p.pose = 'stand'; p.root.traverse((q) => { q.userData.nopick = true; }); p.root.add(tag(o[1])); p.root.position.set(x, 0, z); (G.peopleRoot || G.scene).add(p.root); w = { p, to: new THREE.Vector3(x, 0, z), name: o[1] }; live.watchers.set(id, w); } w.to.set(x, 0, z); }
     for (const [id, w] of live.watchers) if (!seen.has(id) && !w.seated) { w.p.root.removeFromParent(); live.watchers.delete(id); } };
   // a tenant who takes a stool at the market's cart is a customer here: walked to a seat, given an order, served, and told how it went
-  live.tell = (o) => { try { window.parent.postMessage({ yataiEvt: o }, location.origin); } catch (e) { /* alone */ } };
+  live.tell = (o) => { if (link) link.evt(o); else if (framed) try { window.parent.postMessage({ yataiEvt: o }, location.origin); } catch (e) { /* alone */ } };
   live.ordered = (c) => { const o = c.order; live.tell({ ord: { to: c.guest, seat: c.seat, text: `${o.recipe.name} ramen${o.firm ? ', noodles firm' : ''}${o.no ? ', no ' + o.no : ''}${o.drink ? ', and a ' + o.drink : ''}`, price: o.price || 0 } }); };
   live.stood = (id) => { const w = live.watchers.get(id); if (w) w.seated = null; };
   live.evt = (e) => { const id = e && String(e.from || ''); if (!id) return;
     if (e.sit) { let w = live.watchers.get(id); if (w && w.seated) return; if (!w) { const p = makePerson((Math.random() * 1e6) | 0, 'Male_Adult_08'); p.root.traverse((q) => { q.userData.nopick = true; }); p.root.add(tag(e.name)); p.root.position.set(-3, 0, -2.6); w = { p, to: new THREE.Vector3(-3, 0, -2.6), name: e.name }; live.watchers.set(id, w); }
       const c = G.game.guest({ id, name: String(e.name || 'TENANT').slice(0, 20), p: w.p }); if (c) { w.seated = c; live.tell({ ok: { to: id, seat: c.seat } }); } else live.tell({ no: { to: id, why: G.game.state === 'open' ? 'every stool is taken' : 'the cart is not open' } }); }
     else if (e.stand) G.game.guestLeaves(id); };
-  addEventListener('message', (e) => { if (e.origin !== location.origin || !e.data || !e.data.market) return; if (e.data.market.evt) live.evt(e.data.market.evt); else live.market(e.data.market); });
+  const take = (m) => { if (m.evt) live.evt(m.evt); else live.market(m); };
+  if (framed) addEventListener('message', (e) => { if (e.origin === location.origin && e.data && e.data.market) take(e.data.market); });
+  // on its own page: the cook stands behind the platform's cart of the home section (009-down.js: its place there), as THE COOK
+  live.join = () => { if (framed || link || !/^https?:$/.test(location.protocol)) return; let card = null; try { card = JSON.parse(sessionStorage.getItem('holo') || 'null'); } catch (e) { /* none */ }
+    NET.card = card && card.room ? card : { room: 's-a', name: 'THE COOK', look: 'w0', hp: 1, at: [79.83, 22.04, -3.77, 0, 'down', ''], back: '/' }; NET.query = { cart: '1' }; link = cartLink(NET, take); NET.connect(); };
   live.update = (dt) => {
     for (const w of live.watchers.values()) { if (w.seated) continue; const pos = w.p.root.position, d = pos.distanceTo(w.to); if (d > 0.08) { _a.copy(w.to).sub(pos).multiplyScalar(Math.min(d, 1.4 * dt) / d); pos.add(_a); w.p.root.rotation.y = Math.atan2(_a.x, _a.z); w.p.pose = 'walk'; } else { w.p.pose = 'stand'; w.p.root.rotation.y = Math.atan2(-pos.x, -0.6 - pos.z); } w.p.look = G.camera.getWorldPosition(_b); w.p.update(dt, G.t); }
-    if ((t += dt) < 0.25) return; t = 0; live.last = snap(); try { window.parent.postMessage({ yatai: live.last }, location.origin); } catch (e) { /* alone */ } };
+    if ((t += dt) < 0.25) return; t = 0; live.last = snap(); if (link) { if (NET.on) link.state(live.last); } else if (framed) try { window.parent.postMessage({ yatai: live.last }, location.origin); } catch (e) { /* alone */ } };
   return live;
 }

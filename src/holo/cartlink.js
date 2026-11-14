@@ -20,4 +20,4 @@ export function cartLink(NET,tell){
         if(d.sdp.type==='offer'){ const tr=pc.getTransceivers()[0], mm=await getMic(); if(tr){ tr.direction='sendrecv'; if(mm)tr.sender.replaceTrack(mm.getAudioTracks()[0]).catch(()=>{}); } const a=await pc.createAnswer(); await pc.setLocalDescription(a); rtc(id,{sdp:pc.localDescription.toJSON()}); } }
       else if(d.c){ const P=peers.get(id); if(P)await P.pc.addIceCandidate(d.c).catch(()=>{}); } }catch(e){ console.warn('HOLO voice',e); } };
   setInterval(()=>{ const me=NET.card.at; if(!NET.on||!Array.isArray(me))return; for(const o of NET.others.values()){ const near=o.at&&String(o.at[4]||'')===String(me[4]||'')&&Math.hypot(o.at[0]-me[0],o.at[1]-me[1])<24; if(near&&!peers.has(o.id)&&NET.me&&NET.me<o.id)link(o.id,true).catch(()=>{}); else if(!near&&peers.has(o.id))cut(o.id,true); } for(const id of [...peers.keys()])if(!NET.others.has(id))cut(id,false); },2000);
-  return {state:d=>NET.send({t:'yt',d}),evt:e=>NET.send({t:'yt',d:{e}})}; }
+  return {state:d=>NET.send({t:'yt',d}),evt:e=>NET.send({t:'yt',d:{e}}),items:i=>NET.send({t:'yt',d:{i}})}; }

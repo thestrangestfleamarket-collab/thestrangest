@@ -5,6 +5,6 @@ const PAGES={vr:'/vr',wave:'/wave',golf:'/golf',scare:'/scare',shoot:'/shoot',du
 if(!url)NET.back();
 else{ const fr=document.createElement('iframe'); fr.src=location.protocol==='file:'?'.'+(g==='vr'?'/asylum':url)+'.html':url; fr.allow='xr-spatial-tracking; fullscreen; autoplay; gamepad; microphone'; document.body.prepend(fr); fr.focus(); NET.connect(); }
 if(g==='sushi'){ NET.query={cart:'1'}; const L=cartLink(NET,m=>{ const fr=document.querySelector('iframe'); if(fr&&fr.contentWindow)try{ fr.contentWindow.postMessage({market:m},location.origin); }catch(e){} });
-  addEventListener('message',e=>{ if(e.origin!==location.origin||!e.data)return; if(e.data.yatai)L.state(e.data.yatai); else if(e.data.yataiEvt)L.evt(e.data.yataiEvt); }); }
+  addEventListener('message',e=>{ if(e.origin!==location.origin||!e.data)return; if(e.data.yatai)L.state(e.data.yatai); else if(e.data.yataiEvt)L.evt(e.data.yataiEvt); else if(e.data.yataiItems)L.items(e.data.yataiItems); }); }
 document.getElementById('leave').onclick=()=>NET.back();
 window.HOLONET=NET;

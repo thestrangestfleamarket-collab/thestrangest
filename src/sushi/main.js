@@ -1,7 +1,7 @@
 // YATAI '86, the night ramen cart at /sushi (a headset game): the renderer in a PlayStation 2 look, the loop, the way in
 import * as THREE from 'three';
 import { G, clamp, mergeStatic } from './ctx.js';
-import { buildCity, FOG } from './city.js';
+import { buildStation, FOG } from './station.js';
 import { buildCart } from './cart.js';
 import { buildFx } from './fx.js';
 import { buildGame } from './game.js';
@@ -25,12 +25,12 @@ const canvas = document.getElementById('c');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
 renderer.setPixelRatio(1); renderer.setSize(innerWidth, innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.78;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.12;
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
 renderer.xr.enabled = true; renderer.xr.setReferenceSpaceType('local-floor'); renderer.xr.setFoveation?.(1); renderer.xr.setFramebufferScaleFactor?.(0.9);
 
 const scene = new THREE.Scene();
-scene.fog = new THREE.FogExp2(FOG, 0.034); scene.background = new THREE.Color(0x05040a);
+scene.fog = new THREE.FogExp2(FOG, 0.022); scene.background = new THREE.Color(0x050706);
 const camera = new THREE.PerspectiveCamera(68, innerWidth / innerHeight, 0.03, 600);
 const rig = new THREE.Group(); rig.position.set(0, 0, 0.3); rig.add(camera); scene.add(rig);
 Object.assign(G, { scene, camera, rig, renderer });
@@ -47,7 +47,7 @@ try { await PH.init(); } catch (e) { console.warn('physics engine unavailable, s
 
 await photos;
 buildFx(scene);
-const city = buildCity(scene);
+const city = buildStation(scene);
 const cart = buildCart(scene, city);
 if (PH.ready) PH.statics(cart);
 const game = buildGame(scene);

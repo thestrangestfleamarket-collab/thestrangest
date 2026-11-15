@@ -1,68 +1,116 @@
-// the cart and THE MARKET, live both ways: when this page runs inside the holodeck's shell, what the cook is doing (head, hands, what is held, the burners, the bowls, who sits where, what is said) goes to the shell four times a second and from there to everyone in the section; and whoever in the market is standing by its cart is seen standing in the alley
+// the cart and THE MARKET, live both ways: when this page runs inside the holodeck's shell, what the cook is doing (head, hands and fingers, what is held, the burners, the bowls, who sits where, what is said) goes to the shell four times a second and from there to everyone in the section; whoever in the market is standing or sitting by its cart is seen there as their own figure, heard from where they are, and orders from the menu; and every other cook in the section works a cart of their own along the alley
 import * as THREE from 'three';
-import { G } from './ctx.js';
-import { SEATS } from './cart.js';
-import { makePerson } from './avatars.js';
+import { G, mergeStatic } from './ctx.js';
+import { SEATS, RECIPES, DRINKS as DRINK_PRICE } from './cart.js';
+import { makePerson, avatarsReady } from './avatars.js';
 import * as T from './tex.js';
 import { NET } from '../holo/net.js';
 import { cartLink } from '../holo/cartlink.js';
-import { buildMirror } from './mirror.js';
+import { buildMirror, geoKey, matDesc } from './mirror.js';
+import { Bowl, Food, Raw, Drink, toppingMesh, TOPPINGS, RAW } from './items.js';
 import { tenantFigure } from './tenant.js';
 
+// the fingers as a headset player's (162cb): each digit's three bends and its spread, between the rig's open hand and its fist (001-rig FREST, FFIST)
+const FREST = [[10, 15, 10, 0], [10, 18, 10, -0.18], [12, 22, 12, -0.06], [14, 25, 13, 0.08], [16, 28, 14, 0.22]], FFIST = [[35, 40, 30, 0], [85, 100, 60, 0], [88, 100, 60, 0], [90, 100, 60, 0.02], [92, 100, 60, 0.05]], DEG = Math.PI / 180;
+const fingers = (c) => { const f = []; for (let i = 0; i < 5; i++) { const k = Math.max(0, Math.min(1, +c[i] || 0)); for (let j = 0; j < 4; j++) f.push(Math.round((j < 3 ? DEG : 1) * (FREST[i][j] + (FFIST[i][j] - FREST[i][j]) * k) * 100) / 100); } return f; };
+const DRINKS = [['beer', 'BEER'], ['cola', 'COLA']];
+
 export function buildLive() {
-  const live = { watchers: new Map(), last: null }; G.live = live;
+  const live = { watchers: new Map(), last: null, cooks: new Map(), voices: new Map(), slot: -1, sx: 0 }; G.live = live;
   const mirror = buildMirror(); let t2 = 0, seenT = -9;
   const framed = window.parent !== window; let link = null; // inside the holodeck's shell the shell carries the word; on its own page, to a login, this page joins the section itself
   const r2 = (v) => Math.round(v * 100) / 100, V = (p) => [r2(p.x), r2(p.y), r2(p.z)], _a = new THREE.Vector3(), _b = new THREE.Vector3(); let t = 0, said = 0;
-  // the cook's whole body for THE MARKET (its headset body's own word, 162cb): where the head is over the cart, which way the body faces, and the head and wrists seen from that body (its forward +z, the wrists from the eyes, metres)
+  // the cook's whole body for THE MARKET (its headset body's own word, 162cb): where the head is over the cart, which way the body faces, and the head, wrists and fingers seen from that body (its forward +z, the wrists from the eyes, metres)
   const r3 = (v) => Math.round(v * 1000) / 1000, QY = new THREE.Quaternion(), QI = new THREE.Quaternion(), QH = new THREE.Quaternion(), QW = new THREE.Quaternion(), FLIP = new THREE.Quaternion(0, 1, 0, 0), UP = new THREE.Vector3(0, 1, 0), _e = new THREE.Vector3(), _w = new THREE.Vector3(); let byaw = null, t3 = 0;
   const body = () => { const cam = G.camera; cam.getWorldPosition(_e); cam.getWorldQuaternion(QH); cam.getWorldDirection(_b); const yaw = Math.atan2(_b.x, _b.z); if (byaw == null) byaw = yaw; const df = Math.atan2(Math.sin(yaw - byaw), Math.cos(yaw - byaw)); if (Math.abs(df) > 0.5) byaw += df - Math.sign(df) * 0.5;
     QY.setFromAxisAngle(UP, byaw); QI.copy(QY).invert(); QH.premultiply(QI).multiply(FLIP); const o = { p: [r2(_e.x), r2(_e.z)], y: r2(byaw), h: [r3(QH.x), r3(QH.y), r3(QH.z), r3(QH.w)], L: 0, R: 0 };
-    for (const h of G.hands || []) { if (h.models) { for (const k in h.models) { const root = h.models[k].root; if (!root.visible) continue; root.getWorldPosition(_w).sub(_e).applyQuaternion(QI); root.getWorldQuaternion(QW).premultiply(QI); o[k] = [r3(_w.x), r3(_w.y), r3(_w.z), r3(QW.x), r3(QW.y), r3(QW.z), r3(QW.w)]; } }
-      else if (G.mode === 'desktop' && h.held) { _w.copy(h.pos).sub(_e).applyQuaternion(QI); o.R = [r3(_w.x), r3(_w.y), r3(_w.z), 0, 1, 0, 0]; } }
+    for (const h of G.hands || []) { if (h.models && (h.models.L.root.visible || h.models.R.root.visible)) { for (const k in h.models) { const M = h.models[k], root = M.root; if (!root.visible) continue; root.getWorldPosition(_w).sub(_e).applyQuaternion(QI); root.getWorldQuaternion(QW).premultiply(QI); o[k] = [r3(_w.x), r3(_w.y), r3(_w.z), r3(QW.x), r3(QW.y), r3(QW.z), r3(QW.w), ...fingers(M.curl || [0.15, 0.1, 0.1, 0.1, 0.1])]; } }
+      else if (G.mode === 'desktop' && h.held) { _w.copy(h.pos).sub(_e).applyQuaternion(QI); o.R = [r3(_w.x), r3(_w.y), r3(_w.z), 0, 1, 0, 0, ...fingers([0.7, 0.85, 0.9, 0.9, 0.9])]; } }
     return o; };
+  const side = (h, i) => (h.models ? (h.models.L.root.visible ? 'L' : 'R') : i ? 'L' : 'R');
   const snap = () => { const g = G.game, C = G.cart, cam = G.camera.getWorldPosition(_a), dir = G.camera.getWorldDirection(_b);
-    const hands = (G.hands || []).filter((h) => h.active !== false).slice(0, 2).map((h) => [...V(h.pos), h.held ? String(h.held.name || h.held.kind).slice(0, 24) : '']);
+    const hands = (G.hands || []).filter((h) => h.active !== false).slice(0, 2).map((h, i) => [...V(h.pos), h.held ? String(h.held.name || h.held.kind).slice(0, 24) : '', side(h, i)]);
     const cs = g.customers.map((c) => [c.seat, c.state === 'walk' || c.state === 'leaving' ? 0 : c.state === 'eating' ? 2 : 1, String(c.name || (c.voice && c.voice.name) || (c.nb && c.nb.def.name) || '').slice(0, 20), r2(c.p.root.position.x), r2(c.p.root.position.z), c.maxPatience ? Math.round(100 * c.patience / c.maxPatience) : 100, c.guest || '']);
     const bowls = G.items.filter((i) => i.kind === 'bowl' && !i.dead).slice(0, 8).map((b) => [...V(b.obj.position), b.dirty ? 3 : b.served ? 2 : b.empty ? 0 : 1]);
     const last = G.talk && G.talk.last, say = last && last.n !== said ? { who: String(last.who).slice(0, 24), text: String(last.line).slice(0, 180) } : null; if (say) said = last.n;
     return { o: g.state === 'open' || g.state === 'closing' ? 1 : 0, n: g.night, m: g.money + g.tips, sv: g.served, b: C.burners.map((q) => (q.on ? 1 : 0)), l: C.pots.map((p) => r2(p.level ?? 1)), h: [...V(cam), r2(Math.atan2(dir.x, dir.z))], hands, cs, bowls, say, seats: SEATS }; };
   // the market's people by the cart: each a figure standing in the alley where they stand there, with their name over them
   const tag = (name) => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: T.labelTex([String(name || 'TENANT').toUpperCase().slice(0, 18)], { w: 512, h: 96, fs: 56, bg: 'rgba(8,10,14,0.75)', fg: '#7dffa4' }), depthWrite: false })); s.scale.set(0.8, 0.15, 1); s.position.y = 2.0; s.userData.nopick = true; return s; };
-  live.market = (m) => { if (!m || !Array.isArray(m.others)) return; if (m.others.length) seenT = G.t; const seen = new Set();
+  live.market = (m) => { if (!m || !Array.isArray(m.others)) return; if (m.others.length || (Array.isArray(m.cooks) && m.cooks.length)) seenT = G.t; const seen = new Set();
+    if (m.slot != null) { live.slot = m.slot | 0; live.sx = +m.sx || 0; } if (Array.isArray(m.cooks)) along(m.cooks);
     for (const o of m.others.slice(0, 6)) { if (!Array.isArray(o)) continue; let x = +o[2] || 0, z = +o[3] || 0; if (Math.abs(x) > 11 || z < -4.6 || z > 1.4) continue; if (Math.abs(x) < 1.7 && z > -2.0) z = -2.1; // nobody stands inside the cart
       const id = String(o[0]); seen.add(id); let w = live.watchers.get(id); if (w && w.seated) continue; if (!w) { const p = makePerson((Math.random() * 1e6) | 0, 'suburban_resident'); p.pose = 'stand'; p.root.traverse((q) => { q.userData.nopick = true; }); p.root.add(tag(o[1])); p.root.position.set(x, 0, z); (G.peopleRoot || G.scene).add(p.root); w = { p, to: new THREE.Vector3(x, 0, z), name: o[1], yaw: 0 }; live.watchers.set(id, w); } w.to.set(x, 0, z); if (o[4] != null) w.yaw = +o[4] || 0; if (!w.av) { if (figs.has(id)) wear(id); else if (G.t - (w.askT ?? -99) > 8) { w.askT = G.t; ask(id); } } }
     for (const [id, w] of live.watchers) if (!seen.has(id) && !w.seated) { w.p.root.removeFromParent(); if (w.av) w.av.dispose(); live.watchers.delete(id); } };
-  // a tenant's own figure (their market page sends it when asked, in pieces) and its pose, ten times a second: drawn in place of the stand-in while they stand in the alley
+  // a tenant's own figure (their market page sends it when asked, in pieces) and its pose, ten times a second: drawn in place of the stand-in while they stand in the alley or sit at the cart
   const ask = (id) => { if (link) link.ask(id); else if (framed) try { window.parent.postMessage({ yataiAsk: id }, location.origin); } catch (e) { /* alone */ } };
   const parts = new Map();
   live.fig = (f) => { const a = f && f.a, id = f && String(f.from || ''); if (!a || !id || typeof a.d !== 'string' || !(a.n > 0) || a.n > 200 || !(a.i >= 0) || a.i >= a.n) return; let P = parts.get(id); if (!P || P.k !== a.k) parts.set(id, P = { k: a.k, n: a.n, d: [], c: 0 }); if (P.d[a.i] == null) { P.d[a.i] = a.d; P.c++; } P.t = G.t; const w0 = live.watchers.get(id); if (w0) w0.askT = G.t; if (P.c < P.n) return; parts.delete(id);
     let D = null; try { D = JSON.parse(P.d.join('')); } catch (e) { return; } figs.set(id, { k: P.k, D }); wear(id); };
   const figs = new Map(), wear = (id) => { const w = live.watchers.get(id), f = figs.get(id); if (!w || !f || (w.av && w.av.key === f.k)) return; if (w.av) w.av.dispose();
     try { w.av = tenantFigure(f.D, f.D.mi === -1 ? -1 : 1); } catch (e) { console.warn('the tenant figure', e); figs.delete(id); return; } w.av.key = f.k; (G.peopleRoot || G.scene).add(w.av.root); w.av.root.position.copy(w.to); w.av.root.rotation.y = w.yaw; };
-  live.pose = (f) => { const b = f && f.b, w = b && live.watchers.get(String(f.from || '')); if (!w || !w.av || !Array.isArray(b.m)) return; if (!w.av.key.startsWith(String(b.k) + ':')) { if (G.t - (w.askT ?? -99) > 3) { w.askT = G.t; w.av.dispose(); w.av = null; figs.delete(String(f.from)); ask(String(f.from)); } return; } w.av.pose(b.m); };
-  // a tenant who takes a stool at the market's cart is a customer here: walked to a seat, given an order, served, and told how it went
+  live.pose = (f) => { const b = f && f.b, w = b && live.watchers.get(String(f.from || '')); if (!w || !w.av || !Array.isArray(b.m)) return; if (!w.av.key.startsWith(String(b.k) + ':')) { if (G.t - (w.askT ?? -99) > 3) { w.askT = G.t; w.av.dispose(); w.av = null; figs.delete(String(f.from)); ask(String(f.from)); } return; } w.av.pose(b.m, b.x); };
+  // a tenant who takes a stool at the market's cart is a customer here: walked to a seat, shown the menu, given what they chose, served, and told how it went
   live.tell = (o) => { if (link) link.evt(o); else if (framed) try { window.parent.postMessage({ yataiEvt: o }, location.origin); } catch (e) { /* alone */ } };
-  live.ordered = (c) => { const o = c.order; live.tell({ ord: { to: c.guest, seat: c.seat, text: `${o.recipe.name} ramen${o.firm ? ', noodles firm' : ''}${o.no ? ', no ' + o.no : ''}${o.drink ? ', and a ' + o.drink : ''}`, price: o.price || 0 } }); };
+  live.menu = () => { const cfg = G.game.cfg(); return { r: cfg.menu.map((k) => [k, RECIPES[k].name, RECIPES[k].price]), d: cfg.drinks ? DRINKS.map(([k, n]) => [k, n, DRINK_PRICE[k] ?? null]) : [], mods: !!cfg.mods }; };
+  live.ordered = (c) => { const o = c.order; live.tell({ ord: { to: c.guest, seat: c.seat, text: `${o.recipe.name} ramen${o.firm ? ', noodles firm' : ''}${o.no ? ', no ' + o.no : ''}${o.drink ? ', and a ' + o.drink : ''}`, price: o.price || 0, chose: c.want ? 1 : 0 } }); };
   live.stood = (id) => { const w = live.watchers.get(id); if (w) w.seated = null; };
   live.evt = (e) => { const id = e && String(e.from || ''); if (!id) return;
-    if (e.sit) { let w = live.watchers.get(id); if (w && w.seated) return; if (!w) { const p = makePerson((Math.random() * 1e6) | 0, 'suburban_resident'); p.root.traverse((q) => { q.userData.nopick = true; }); p.root.add(tag(e.name)); p.root.position.set(-3, 0, -2.6); w = { p, to: new THREE.Vector3(-3, 0, -2.6), name: e.name }; live.watchers.set(id, w); }
-      const c = G.game.guest({ id, name: String(e.name || 'TENANT').slice(0, 20), p: w.p }); if (c) { w.seated = c; live.tell({ ok: { to: id, seat: c.seat } }); } else live.tell({ no: { to: id, why: G.game.state === 'open' ? 'every stool is taken' : 'the cart is not open' } }); }
+    if (e.sit) { let w = live.watchers.get(id); if (w && w.seated) return; if (!w) { const p = makePerson((Math.random() * 1e6) | 0, 'suburban_resident'); p.root.traverse((q) => { q.userData.nopick = true; }); p.root.add(tag(e.name)); p.root.position.set(-3, 0, -2.6); w = { p, to: new THREE.Vector3(-3, 0, -2.6), name: e.name, yaw: 0 }; live.watchers.set(id, w); }
+      const c = G.game.guest({ id, name: String(e.name || 'TENANT').slice(0, 20), p: w.p }); if (c) { w.seated = c; live.tell({ ok: { to: id, seat: c.seat, menu: live.menu() } }); } else live.tell({ no: { to: id, why: G.game.state === 'open' ? 'every stool is taken' : 'the cart is not open' } }); }
+    else if (e.pick) { const c = G.game.customers.find((x) => x.guest === id && !x.order && x.state !== 'leaving'), p = e.pick; if (!c || !p || typeof p !== 'object') return; const cfg = G.game.cfg(), key = cfg.menu.includes(p.k) ? p.k : null, d = cfg.drinks && DRINKS.some((q) => q[0] === p.d) ? p.d : null; c.want = key ? { key, drink: d } : null; }
     else if (e.stand) G.game.guestLeaves(id); };
-  const take = (m) => { if (m.evt) live.evt(m.evt); else if (m.fig) live.fig(m.fig); else if (m.pose) live.pose(m.pose); else live.market(m); };
+  // a tenant's voice (and their game's sound with it) from where their figure is, fading with distance
+  live.voice = (v) => { const id = v && String(v.from || ''); if (!id) return; const o = live.voices.get(id); if (o) { try { o.src.disconnect(); o.pan.disconnect(); } catch (e) { /* gone */ } if (o.el) o.el.muted = false; live.voices.delete(id); }
+    if (v.stream) live.voices.set(id, { stream: v.stream, el: v.el || null, src: null, pan: null }); };
+  const hear = () => { const ac = G.audio && G.audio.ctx; if (!ac || !G.audio.ready) return;
+    for (const [id, o] of live.voices) { if (!o.src) { try { o.src = ac.createMediaStreamSource(o.stream); o.pan = ac.createPanner(); o.pan.panningModel = 'HRTF'; o.pan.distanceModel = 'inverse'; o.pan.refDistance = 1.2; o.pan.rolloffFactor = 1.1; o.src.connect(o.pan); o.pan.connect(G.audio.master); if (o.el) o.el.muted = true; } catch (e) { console.warn('a tenant voice', e); live.voices.delete(id); continue; } }   // (the stream stays on its muted element: the browser only runs a call's sound so)
+      const w = live.watchers.get(id), r = w ? (w.real && w.av ? w.av.root : w.p.root) : null; if (r) r.getWorldPosition(_a); else _a.set(0, 0, -3); o.at = [r2(_a.x), r2(_a.z)]; o.pan.positionX.value = _a.x; o.pan.positionY.value = 1.45; o.pan.positionZ.value = _a.z; } };
+
+  // ---- every other cook in the section: their cart along the alley, its things where they have them, and the carving chef that is them
+  const lib = { g: new Map(), m: new Map(), box: new Map(), made: false, t: -9 };
+  const learn = (root) => root && root.traverse((o) => { if (!o.isMesh || o.isSkinnedMesh || !o.geometry || !o.geometry.attributes.position) return; const k = geoKey(o.geometry); if (k && !lib.g.has(k)) lib.g.set(k, o.geometry); for (const m of [].concat(o.material)) if (m) { const d = JSON.stringify(matDesc(m)); if (!lib.m.has(d)) lib.m.set(d, m); } });
+  const study = () => { if (G.t - lib.t < 3) return; lib.t = G.t; learn(G.itemRoot); for (const it of G.items) learn(it.obj); for (const h of G.hands || []) if (h.arm) for (const k in h.arm) learn(h.arm[k]);
+    if (!lib.made) { lib.made = true; const made = []; try { for (const k in TOPPINGS) { made.push(new Food(k)); learn(toppingMesh(k)); } made.push(new Food('noodle')); for (const k in RAW) made.push(new Raw(k)); for (const d of ['beer', 'cola', 'sake', 'tea', 'water']) { try { made.push(new Drink(d)); } catch (e) { /* not a drink here */ } } made.push(new Bowl()); } catch (e) { /* what could be made */ } for (const it of made) { learn(it.obj); it.remove(); } } };
+  const matOf = (d) => { const k = JSON.stringify(d); let m = lib.m.get(k); if (!m) { m = new THREE.MeshLambertMaterial({ color: Array.isArray(d) ? d[0] : 0xffffff, transparent: !!(d[2] & 2), opacity: d[3] == null ? 1 : d[3] }); lib.m.set(k, m); } return m; };
+  const boxOf = (s) => { const k = s.join(); let g = lib.box.get(k); if (!g) lib.box.set(k, g = new THREE.BoxGeometry(s[0] || 0.001, s[1] || 0.001, s[2] || 0.001)); return g; };
+  let tmpl = null; const cartCopy = () => { if (!tmpl) { tmpl = new THREE.Group(); const isItem = (o) => { for (let q = o; q; q = q.parent) if (q === G.itemRoot || (q.userData && q.userData.item)) return true; return false; }; G.cart.group.updateWorldMatrix(true, true); const inv = new THREE.Matrix4().copy(G.cart.group.matrixWorld).invert();
+      G.cart.group.traverse((o) => { if (!o.isMesh || o.isSkinnedMesh || !o.visible || isItem(o) || o.userData.nobake) return; for (let q = o; q; q = q.parent) if (!q.visible) return; const m = new THREE.Mesh(o.geometry, o.material); new THREE.Matrix4().multiplyMatrices(inv, o.matrixWorld).decompose(m.position, m.quaternion, m.scale); m.castShadow = o.castShadow; tmpl.add(m); });
+      G.cart.group.matrixWorld.decompose(tmpl.position, tmpl.quaternion, tmpl.scale); mergeStatic(tmpl); tmpl.traverse((o) => { o.userData.nopick = true; }); } return tmpl.clone(); };
+  const neighbour = (id) => { let N = live.cooks.get(id); if (N) return N; N = { id, grp: new THREE.Group(), things: new Map(), x: 0, t: G.t, P: null, d: null, eye: new THREE.Vector3(0, 1.6, 0.6), yaw: Math.PI, hands: {} }; N.grp.name = 'cook-' + id; N.grp.add(cartCopy()); G.scene.add(N.grp); live.cooks.set(id, N); return N; };
+  const drop = (N) => { N.grp.removeFromParent(); if (N.P) N.P.root.removeFromParent(); live.cooks.delete(N.id); };
+  const along = (L) => { const ids = new Set(); for (const c of L) { if (!Array.isArray(c)) continue; const id = String(c[0]); ids.add(id); const N = neighbour(id); N.x = (+c[2] || 0) - live.sx; N.t = G.t; N.grp.position.x = N.x; } for (const N of [...live.cooks.values()]) if (!ids.has(N.id) && G.t - N.t > 6) drop(N); };
+  live.cook = (f) => { const d = f && f.d, id = f && String(f.from || ''); if (!d || !id) return; const N = neighbour(id); N.t = G.t; N.d = d; if (Array.isArray(d.h)) { N.eye.set(+d.h[0] || 0, +d.h[1] || 1.6, +d.h[2] || 0); N.yaw = +d.h[3] || 0; }
+    N.hands = {}; for (const h of Array.isArray(d.hands) ? d.hands : []) if (Array.isArray(h) && (h[4] === 'L' || h[4] === 'R')) N.hands[h[4]] = new THREE.Vector3(+h[0] || 0, +h[1] || 0, +h[2] || 0); };
+  live.cookItems = (f) => { const i = f && f.i, id = f && String(f.from || ''); if (!i || !id) return; const N = neighbour(id); N.t = G.t; study();
+    const thing = (k) => { let o = N.things.get(k); if (!o) { o = new THREE.Group(); o.visible = false; N.things.set(k, o); N.grp.add(o); } return o; };
+    if (Array.isArray(i.ids)) { const ids = new Set(i.ids.map(String)); for (const [k, o] of N.things) if (!ids.has(k)) { o.removeFromParent(); N.things.delete(k); } }
+    for (const l of Array.isArray(i.l) ? i.l : []) { if (!Array.isArray(l) || !Array.isArray(l[1])) continue; const o = thing(String(l[0])); o.clear();
+      for (const p of l[1].slice(0, 40)) { if (!Array.isArray(p) || !Array.isArray(p[1]) || !Array.isArray(p[2])) continue; const g = lib.g.get(String(p[0])) || (Array.isArray(p[3]) ? boxOf(p[3]) : null); if (!g) continue; const multi = Array.isArray(p[1][0]), m = new THREE.Mesh(g, multi && g.groups.length ? p[1].map(matOf) : matOf(multi ? p[1][0] : p[1])), q = p[2]; m.position.set(+q[0] || 0, +q[1] || 0, +q[2] || 0); m.quaternion.set(+q[3] || 0, +q[4] || 0, +q[5] || 0, q[6] == null ? 1 : +q[6]).normalize(); m.scale.set(+q[7] || 1, +q[8] || 1, +q[9] || 1); m.userData.nopick = true; o.add(m); } o.userData.look = 1; }
+    for (const s of Array.isArray(i.s) ? i.s : []) { if (!Array.isArray(s)) continue; const o = thing(String(s[0])), U = o.userData; U.p = new THREE.Vector3(+s[1] || 0, +s[2] || 0, +s[3] || 0); U.q = new THREE.Quaternion(+s[4] || 0, +s[5] || 0, +s[6] || 0, s[7] == null ? 1 : +s[7]).normalize(); if (!U.at) { U.at = 1; o.position.copy(U.p); o.quaternion.copy(U.q); } o.scale.set(+s[8] || 1, +s[9] || 1, +s[10] || 1); } };
+  const _f = new THREE.Vector3();
+  const neighbours = (dt) => { for (const N of [...live.cooks.values()]) { if (G.t - N.t > 8) { drop(N); continue; } const k = Math.min(1, dt * 14);
+      for (const o of N.things.values()) { const U = o.userData; if (!U.p) continue; o.visible = !!U.look; o.position.lerp(U.p, k); o.quaternion.slerp(U.q, k); }
+      if (!N.d) continue; if (!N.P && avatarsReady()) { const P = makePerson(0, 'carving_chef'); if (P.polyfork) { P.pose = 'stand'; P.root.traverse((o) => { o.userData.nopick = true; if (o.isMesh) o.castShadow = true; }); P.hands = { L: null, R: null }; N.grp.add(P.root); N.P = P; N.tL = new THREE.Vector3(); N.tR = new THREE.Vector3(); } }
+      const P = N.P; if (!P) continue; const fx = Math.sin(N.yaw), fz = Math.cos(N.yaw), s = THREE.MathUtils.clamp(N.eye.y / 1.58, 0.85, 1.2); _f.set(N.eye.x - fx * 0.13 * s, 0, N.eye.z - fz * 0.13 * s); P.root.position.lerp(_f, k); P.root.rotation.y += Math.atan2(Math.sin(N.yaw - P.root.rotation.y), Math.cos(N.yaw - P.root.rotation.y)) * k; P.root.scale.setScalar(s);
+      for (const sd of ['L', 'R']) { const h = N.hands[sd], tg = sd === 'L' ? N.tL : N.tR; if (h) { tg.lerp(_a.copy(h).add(N.grp.position), P.hands[sd] ? k : 1); P.hands[sd] = tg; } else P.hands[sd] = null; }   // (its arms reach where their hands are, in the alley's own place)
+      P.update(dt, G.t); } };
+
+  const take = (m) => { if (m.evt) live.evt(m.evt); else if (m.fig) live.fig(m.fig); else if (m.pose) live.pose(m.pose); else if (m.cook) live.cook(m.cook); else if (m.cookItems) live.cookItems(m.cookItems); else if (m.voice) live.voice(m.voice); else live.market(m); };
   if (framed) addEventListener('message', (e) => { if (e.origin === location.origin && e.data && e.data.market) take(e.data.market); });
   // on its own page: the cook stands behind the platform's cart of the home section (009-down.js: its place there), as THE COOK
   live.join = () => { if (framed || link || !/^https?:$/.test(location.protocol)) return; let card = null; try { card = JSON.parse(sessionStorage.getItem('holo') || 'null'); } catch (e) { /* none */ }
     NET.card = card && card.room ? card : { room: 's-a', name: 'THE COOK', look: 'w0', hp: 1, at: [0, 0, 0, 0, 'up', 'alley'], back: '/' }; NET.query = { cart: '1' }; link = cartLink(NET, take); NET.connect(); };
-  live.body = body;
-  live.status = () => (framed ? 'LINKED THROUGH THE HOLODECK' : !link ? (/^https?:$/.test(location.protocol) ? 'NOT LINKED (LOG IN)' : 'NOT LINKED') : !NET.on ? 'CONNECTING…' : 'LINKED · ' + live.watchers.size + ' IN THE ALLEY');
-  live.net = () => ({ on: NET.on, me: NET.me, others: [...NET.others.values()].map((o) => [o.id, !!o.cp]) });
+  live.body = body; live.take = take;
+  live.status = () => (framed ? 'LINKED THROUGH THE HOLODECK' : !link ? (/^https?:$/.test(location.protocol) ? 'NOT LINKED (LOG IN)' : 'NOT LINKED') : !NET.on ? 'CONNECTING…' : 'LINKED · ' + live.watchers.size + ' IN THE ALLEY' + (live.cooks.size ? ' · ' + live.cooks.size + ' MORE CART' + (live.cooks.size > 1 ? 'S' : '') : ''));
+  live.net = () => ({ on: NET.on, me: NET.me, slot: link ? link.slot() : live.slot, others: [...NET.others.values()].map((o) => [o.id, !!o.cp]) });
+  const _seat = new THREE.Vector3();
   live.update = (dt) => {
-    for (const w of live.watchers.values()) { const real = !!(w.av && w.av.posed() && !w.seated); if (w.real !== real) { w.real = real; w.p.root.traverse((o) => { if (o.isMesh) o.visible = !real; }); }   // the real figure stands in for the stand-in (its name stays over it)
-      if (w.av) { w.av.root.visible = real; if (real) { const k = Math.min(1, dt * 8), r = w.av.root; r.position.lerp(w.to, k); r.rotation.y += Math.atan2(Math.sin(w.yaw - r.rotation.y), Math.cos(w.yaw - r.rotation.y)) * k; w.av.update(dt); } } }
+    for (const w of live.watchers.values()) { const real = !!(w.av && w.av.posed()); if (w.real !== real) { w.real = real; w.p.root.traverse((o) => { if (o.isMesh) o.visible = !real; }); }   // the real figure stands in for the stand-in (its name stays over it; seated, the stand-in still eats from the bowl, unseen)
+      if (w.av) { w.av.root.visible = real; if (real) { const c = w.seated, at = c && c.state !== 'walk' && c.state !== 'leaving' ? _seat.set(SEATS[c.seat], 0, -1.16) : w.to, yaw = at === w.to ? w.yaw : 0, k = Math.min(1, dt * 8), r = w.av.root; r.position.lerp(at, k); r.rotation.y += Math.atan2(Math.sin(yaw - r.rotation.y), Math.cos(yaw - r.rotation.y)) * k; w.av.update(dt); } } }
     for (const w of live.watchers.values()) { if (w.seated) continue; const pos = w.p.root.position, d = pos.distanceTo(w.to); if (d > 0.08) { _a.copy(w.to).sub(pos).multiplyScalar(Math.min(d, 1.4 * dt) / d); pos.add(_a); w.p.root.rotation.y = Math.atan2(_a.x, _a.z); w.p.pose = 'walk'; } else { w.p.pose = 'stand'; w.p.root.rotation.y = Math.atan2(-pos.x, -0.6 - pos.z); } w.p.look = G.camera.getWorldPosition(_b); w.p.update(dt, G.t); }
+    hear(); neighbours(dt);
     if ((t3 += dt) >= 0.1 && G.t - seenT < 4) { t3 = 0; const d = body(); if (link) { if (NET.on) link.body(d); } else if (framed) try { window.parent.postMessage({ yataiBody: d }, location.origin); } catch (e) { /* alone */ } }
-    if ((t2 += dt) >= 0.12 && G.t - seenT < 4) { t2 = 0; const d = mirror.frame(); if (link) { if (NET.on) link.items(d); } else if (framed) try { window.parent.postMessage({ yataiItems: d }, location.origin); } catch (e) { /* alone */ } }   // the things themselves, while anyone is in the market's alley to see them
+    if ((t2 += dt) >= 0.12 && G.t - seenT < 4) { t2 = 0; const d = mirror.frame(); if (link) { if (NET.on) link.items(d); } else if (framed) try { window.parent.postMessage({ yataiItems: d }, location.origin); } catch (e) { /* alone */ } }   // the things themselves, while anyone is in the market's alley (or at a cart beside yours) to see them
     if ((t += dt) < 0.25) return; t = 0; live.last = snap(); if (link) { if (NET.on) link.state(live.last); } else if (framed) try { window.parent.postMessage({ yatai: live.last }, location.origin); } catch (e) { /* alone */ } };
   return live;
 }

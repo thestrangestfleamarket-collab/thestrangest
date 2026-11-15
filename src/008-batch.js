@@ -97,7 +97,7 @@ BATCH.build=(make)=>{ const it=BATCH.items; if(!it.length)return; const AW=2048;
       A.set(s.subarray(r*w*4,r*w*4+4),ln(r+1,0)); A.set(s.subarray((r+1)*w*4-4,(r+1)*w*4),ln(r+1,w+1)); } };
   for(const o of ip){ put(AD,o.cv,o.ax,o.ay); if(o.ecv)put(ED,o.ecv,o.ax,o.ay); }
   atlas.getContext('2d').putImageData(AD,0,0); if(eat)eat.getContext('2d').putImageData(ED,0,0);
-  const tex=c=>{ const t=new THREE.CanvasTexture(c); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; return t; };
+  const tex=c=>{ const t=new THREE.CanvasTexture(c); t.magFilter=t.minFilter=THREE.NearestFilter; t.generateMipmaps=false; t.colorSpace=THREE.SRGBColorSpace; t.onUpdate=BATCH.dropPic; return t; };
   const map=tex(atlas), emap=eat?tex(eat):null;
   const kinds={}; for(const o of ip)(kinds[o.kind]||(kinds[o.kind]=[])).push(o);
   // (BATCH.tile: a kind's faces cut by map tile, a mesh each, so the far ones go unseen and undrawn; opted into by a queue's tile)
@@ -111,6 +111,11 @@ BATCH.build=(make)=>{ const it=BATCH.items; if(!it.length)return; const AW=2048;
     const mat=make(k,map,emap); BATCH.tintable(mat); const me=new THREE.Mesh(geo,mat); PEEK.batch(me,L); me.userData.objOf=L.map(o=>o.obj); L.forEach((o,n)=>{ if(o.obj)o.obj.parts.push({me,v0:n*6,e:!!o.ecv}); }); me.receiveShadow=true; me.castShadow=!!BATCH.cast; scene.add(me); (BATCH.meshes||(BATCH.meshes={}))[p?pk+'~'+p:pk]=me; } }
   BATCH.stats={faces:it.length,pages:AHs.length,atlas:AHs.map(h=>AW+'x'+h).join(','),split:Object.keys(KS).filter(k=>new Set(KS[k].map(i=>PGS[i])).size>1)}; (BATCH.log||(BATCH.log=[])).push(BATCH.stats); BATCH.items=[]; };
 
+// an atlas is painted once: once the card has it (and the start's lamp grid has read it) the page's copy is let go; ?freepics=0 keeps them
+{ const Q=[]; let go=false; BATCH.freeOn=QS.get('freepics')!=='0'; BATCH.freed=0;
+  const drop=t=>{ const c=t.image; if(!c||!c.getContext||c.width<2)return; BATCH.freed+=c.width*c.height*4; c.width=c.height=1; SHARED.freedPics=true; };
+  BATCH.dropPic=t=>{ t.onUpdate=null; if(!BATCH.freeOn)return; if(go)drop(t); else Q.push(t); };
+  SYS.add('start',()=>{ go=true; for(const t of Q.splice(0))drop(t); },'008-batch pictures'); }
 BATCH.tintable=m=>{ const prev=m.onBeforeCompile; m.onBeforeCompile=(sh,r)=>{ if(prev)prev(sh,r);
     sh.vertexShader='attribute vec3 aCol; attribute float aOp; varying vec3 vCol; varying float vOp;\n'+sh.vertexShader.replace('void main() {','void main() { vCol=aCol; vOp=aOp;');
     sh.fragmentShader='varying vec3 vCol; varying float vOp;\n'+sh.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>

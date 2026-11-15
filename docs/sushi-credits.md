@@ -1,9 +1,10 @@
 # YATAI '86 credits
 
 - People and their motion (`data/sushi/cast.json`, from `node tools/sushi-cast.cjs`): Polyfork, https://polyfork.dev, its licence (use in games, no reselling the files).
-- Everything else (the cart, the street, the food, the pictures, the sounds) is made in the page's own code.
+- Everything else (the cart, the street, the food, the pictures, the sounds) is made in the page's own code, but for what is listed below.
 
-The boombox's stations past the first three are SomaFM's public streams (somafm.com, listener-supported): Underground 80s, Left Coast 70s, Secret Agent.
+The boombox's stations are real ones streamed live, each by its own public stream: WBGO 88.3 (Newark), WWOZ 90.7 (New Orleans), WNYC 93.9 and WQXR 105.9 (New York), and SomaFM's Seven Inch Soul, Secret Agent and Underground 80s (somafm.com, listener-supported). Its cassette (when no station will play) is made in the page.
+The cart's television also plays THE LATE MOVIE and CLASSIC TV (`data/sushi/films.json`): public-domain films and 1950s-60s television (Sherlock Holmes 1954, The Lucy Show, Tales of Tomorrow, You Bet Your Life, Cavalcade of Stars), from the Internet Archive.
 - The street's and the cart's surfaces and the things left on the pavement: Poly Haven, CC0 (`tools/sushi-assets.py`; colour pictures only, made 512 or 256 px JPEG; the models thinned with `tools/hide-slim.cjs`, their pictures 256 px):
 
 | What | File | Author, source | Licence |
@@ -36,6 +37,9 @@ The boombox's stations past the first three are SomaFM's public streams (somafm.
 | Plastic Crate 02 | `data/sushi/m/plastic_crate_02.glb` | Fabi_G, https://polyhaven.com/a/plastic_crate_02 | CC0 |
 | Utility Box 01 | `data/sushi/m/utility_box_01.glb` | James Ray Cock, https://polyhaven.com/a/utility_box_01 | CC0 |
 | Exterior Aircon Unit | `data/sushi/m/exterior_aircon_unit.glb` | Monsta3D, https://polyhaven.com/a/exterior_aircon_unit | CC0 |
+| Television 01 (the cart's set, the shop window's) | `data/sushi/m/television_01.glb` | Gabriel Radić, https://polyhaven.com/a/Television_01 | CC0 |
+| Television 02 (the shop window's) | `data/sushi/m/television_02.glb` | Benny Weimer, https://polyhaven.com/a/television_02 | CC0 |
+| Boombox | `data/sushi/m/boombox.glb` | Thomas Paul Mouilleron, https://polyhaven.com/a/boombox | CC0 |
 | The parked car (a VW Corrado, red and black) | `data/sushi/m/car.glb`, `data/sushi/tex/car_3.jpg` | nander, https://opengameart.org/content/car-vw-corradon (as COLD BORE made it, `tools/sniper-vehicles.py`) | CC0 |
 | Cash Register 01 (the till on the back counter) | `data/sushi/m/cashregister_01.glb` | Joe Seabuhr, https://polyhaven.com/a/CashRegister_01 | CC0 |
 

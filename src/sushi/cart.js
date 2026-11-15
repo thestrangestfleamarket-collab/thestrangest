@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import { G, V3, Q, mat, mesh, box, cyl, quatLook, clamp, mergeStatic } from './ctx.js';
 import * as T from './tex.js';
+import { glb } from './tv.js';
 import { Bowl, Food, Raw, Drink, Ladle, Basket, Knife, Prop, Vessel, Sticks, Rag, TOPPINGS, TARE, BROTH, RAW, doneness } from './items.js';
 
 export const SEATS = [-0.72, 0, 0.72];
@@ -400,26 +401,14 @@ export function buildCart(scene, city) {
   // ---------------- boombox (left post) ----------------
   const bb = new THREE.Group(); bb.position.set(-1.0, 1.42, -0.46); bb.rotation.y = 0.75; cart.add(bb);
   box(0.5, 0.02, 0.16, woodDark, 0, -0.13, -0.02, bb);
-  box(0.46, 0.24, 0.11, mat({ color: 0x9a9da2, metalness: 0.7, roughness: 0.35 }), 0, 0, -0.055, bb);
-  const bbT = T.canvasTex(512, 256, (g, w, h) => {
-    g.fillStyle = '#17181a'; g.fillRect(0, 0, w, h);
-    for (const x of [100, 412]) { g.fillStyle = '#0a0a0b'; g.beginPath(); g.arc(x, 150, 82, 0, 7); g.fill(); g.strokeStyle = '#8a8d90'; g.lineWidth = 6; g.stroke(); g.strokeStyle = '#2a2b2e'; g.lineWidth = 2; for (let r = 10; r < 80; r += 9) { g.beginPath(); g.arc(x, 150, r, 0, 7); g.stroke(); } g.fillStyle = '#3a3b3e'; g.beginPath(); g.arc(x, 150, 22, 0, 7); g.fill(); }
-    g.fillStyle = '#26282c'; g.fillRect(196, 96, 120, 76); g.fillStyle = '#4a3a2a'; g.fillRect(208, 108, 96, 40); g.fillStyle = '#111'; g.beginPath(); g.arc(232, 128, 12, 0, 7); g.arc(280, 128, 12, 0, 7); g.fill();
-    g.fillStyle = '#e8d9a0'; g.fillRect(150, 22, 212, 30); g.fillStyle = '#c8201c'; g.fillRect(240, 22, 3, 30); g.fillStyle = '#111'; g.font = 'bold 13px monospace'; g.fillText('FM 76  80  84  88  90  MHz', 158, 42);
-    g.fillStyle = '#c8cacc'; g.font = 'bold 18px sans-serif'; g.fillText('STEREO RADIO CASSETTE', 152, 204);
-  });
-  mesh(new THREE.PlaneGeometry(0.45, 0.225), mat({ map: bbT, roughness: 0.5, metalness: 0.3 }), 0, 0, 0.001, bb).castShadow = false;
-  for (const sx of [-0.152, 0.152]) { mesh(new THREE.TorusGeometry(0.074, 0.008, 8, 28), steel, sx, -0.02, 0.006, bb); const cone = mesh(new THREE.ConeGeometry(0.07, 0.035, 24, 1, true), mat({ color: 0x0c0c0e, roughness: 0.9, side: THREE.DoubleSide }), sx, -0.02, -0.012, bb); cone.rotation.x = -Math.PI / 2; mesh(new THREE.SphereGeometry(0.02, 12, 8), mat({ color: 0x2a2a2e, roughness: 0.5 }), sx, -0.02, -0.022, bb); }
-  box(0.11, 0.07, 0.012, mat({ color: 0x1a1410, roughness: 0.1, transparent: true, opacity: 0.6 }), 0, -0.012, 0.008, bb); for (const kx of [-0.04, 0.0, 0.04, 0.08]) box(0.03, 0.014, 0.02, black, kx, -0.075, 0.012, bb); for (const kx of [0.12, 0.17]) cyl(0.012, 0.012, 0.02, steel, kx, 0.09, 0.012, bb, 10).rotation.x = Math.PI / 2;
-  const hb = mesh(new THREE.TorusGeometry(0.2, 0.008, 6, 20, Math.PI), black, 0, 0.11, -0.055, bb); hb.scale.y = 0.3;
+  glb('boombox', 0xb4b4b4).then((m) => { const o = m.clone(); o.scale.setScalar(0.635); o.position.set(0, -0.12, -0.02); bb.add(o); C.radio = o; }).catch(() => box(0.46, 0.17, 0.11, mat({ color: 0x9a9da2, metalness: 0.7, roughness: 0.35 }), 0, -0.035, -0.01, bb));   // Poly Haven's boombox, 46 cm across
   const mkBtn = (x, color, name, press) => {
-    const b = cyl(0.022, 0.022, 0.02, mat({ color, roughness: 0.3 }), x, 0.13, -0.055, bb, 14);
-    const btn = { getPos: () => b.getWorldPosition(new V3()), r: 0.06, press: () => { press(); G.audio.play('click'); b.position.y = 0.123; setTimeout(() => (b.position.y = 0.13), 150); }, name };
+    const b = cyl(0.016, 0.016, 0.016, mat({ color, roughness: 0.3 }), x, 0.056, -0.01, bb, 14);
+    const btn = { getPos: () => b.getWorldPosition(new V3()), r: 0.06, press: () => { press(); G.audio.play('click'); b.position.y = 0.05; setTimeout(() => (b.position.y = 0.056), 150); }, name };
     b.userData.button = btn; G.buttons.push(btn);
   };
-  mkBtn(-0.1, 0xc82020, 'radio power', () => G.audio.setRadio(!G.audio.radioOn));
-  mkBtn(0.0, 0x2a2a2e, 'radio tune', () => G.audio.tune());
-  cyl(0.004, 0.004, 0.4, steel, 0.2, 0.3, -0.08, bb, 4).rotation.z = -0.3;
+  mkBtn(0.13, 0xc82020, 'radio power', () => G.audio.setRadio(!G.audio.radioOn));
+  mkBtn(0.18, 0x2a2a2e, 'radio tune', () => G.audio.tune());
 
   { // the work lights' switch, on the right post
     C.lights = []; C.bulbs.forEach((pv) => pv.traverse((o) => { if (o.isLight || o.isSprite || (o.isMesh && o.material === bulbM)) C.lights.push(o); })); cart.traverse((o) => { if (o.isSpotLight) C.lights.push(o); });

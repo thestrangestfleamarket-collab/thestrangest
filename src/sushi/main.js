@@ -17,6 +17,7 @@ import { buildGuide } from './guide.js';
 import { buildMenu } from './menu.js';
 import { buildReport } from './report.js';
 import { buildTV } from './tv.js';
+import { buildLive } from './live.js';
 import { PH } from './physics.js';
 import * as T from './tex.js';
 
@@ -40,7 +41,6 @@ G.peopleRoot = new THREE.Group(); scene.add(G.peopleRoot);
 G.audio = new GameAudio();
 
 const $ = (id) => document.getElementById(id), menu = $('menu'), hud = $('hud'), vrBtn = $('vr'), deskBtn = $('desk');
-if (!params.has('desktop')) deskBtn.style.display = 'none';
 const photos = T.loadPhotos();
 { const l = vrBtn.textContent; await loadAvatars((f) => { vrBtn.textContent = `Loading… ${Math.round(f * 100)}%`; }); vrBtn.textContent = l; }
 try { await PH.init(); } catch (e) { console.warn('physics engine unavailable, simple falling instead', e); }
@@ -58,7 +58,7 @@ const grit = buildGrit(scene, city, cart);
 const guide = buildGuide(scene, cart);
 T.metreUV(cart.group);
 G.baked = mergeStatic(cart.group) + mergeStatic(city.group);
-const tv = buildTV(scene, city.shops);
+const tv = buildTV(scene, city.shops), live = buildLive();
 
 // on a screen: the scene is drawn small, then enlarged with ordered dither and a short palette, as that console's output looked
 const LOWH = 540; let lowRT = null;
@@ -93,9 +93,9 @@ async function startVR() {
     session.addEventListener('end', () => { G.mode = 'menu'; menu.style.display = 'flex'; });
   } catch (e) { vrBtn.textContent = 'VR failed: ' + e.message; console.error(e); }
 }
-fetch('/sushi/say', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }).then((r) => { if (r.status === 401) $('login').style.display = 'inline-block'; }).catch(() => { }); // the patrons' voices are a login's: say so before the headset goes on
+fetch('/sushi/say', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }).then((r) => { if (r.status === 401) $('login').style.display = 'inline-block'; else G.live?.join(); }).catch(() => { }); // the patrons' voices are a login's: say so before the headset goes on
 vrBtn.onclick = async () => { if (await talk.needPrime()) { vrBtn.textContent = 'Allow the microphone…'; const ok = await talk.prime(); vrBtn.textContent = ok ? 'Enter VR' : 'Enter VR (no microphone)'; return; } startVR(); }; // the microphone is asked for on its own press: a prompt cannot be answered inside the headset view
-if (navigator.xr?.isSessionSupported) navigator.xr.isSessionSupported('immersive-vr').then((ok) => { vrBtn.disabled = !ok; vrBtn.textContent = ok ? 'Enter VR' : 'Open this page in a VR headset'; }).catch(() => { vrBtn.textContent = 'VR unavailable'; });
+if (navigator.xr?.isSessionSupported) navigator.xr.isSessionSupported('immersive-vr').then((ok) => { vrBtn.disabled = !ok; vrBtn.textContent = ok ? 'Enter VR' : 'No headset here'; if (!ok) { vrBtn.classList.remove('primary'); deskBtn.classList.add('primary'); } }).catch(() => { vrBtn.textContent = 'VR unavailable'; });
 else vrBtn.textContent = location.protocol === 'https:' || location.hostname === 'localhost' ? 'Open this page in a VR headset' : 'VR needs HTTPS';
 
 // ---------- loop ----------
@@ -107,7 +107,7 @@ function tick(dt) {
   game.update(dt, G.t);
   city.update(dt, G.t);
   life.update(dt, G.t);
-  talk.update(dt); tv.update(dt);
+  talk.update(dt); tv.update(dt); live.update(dt);
   grit.update(dt, G.t);
   guide.update(dt, G.t); gameMenu.update(dt); report.update(dt);
   G.fx.update(dt);
@@ -136,4 +136,7 @@ renderer.setAnimationLoop(frame);
 
 G.debug = { Items, PH, city, guide, menu: gameMenu, report, tick, frame, render, input, startDesktop, startVR, THREE };
 window.G = G;
+{ const box = $('say'); // on a screen: M the settings board, G the guide, T to type what you say if you would rather not speak it
+  addEventListener('keydown', (e) => { if (G.mode !== 'desktop' || e.repeat) return; if (e.target === box) { if (e.code === 'Enter') { const t = box.value.trim(); box.value = ''; box.style.display = 'none'; box.blur(); if (t) talk.cookSays(t); } else if (e.code === 'Escape') { box.value = ''; box.style.display = 'none'; box.blur(); } return; }
+    if (e.code === 'KeyM') gameMenu.toggle(); else if (e.code === 'KeyG') guide.set(!guide.on); else if (e.code === 'KeyT') { e.preventDefault(); document.exitPointerLock?.(); box.style.display = 'block'; box.focus(); } }); }
 if (params.has('desktop')) startDesktop();

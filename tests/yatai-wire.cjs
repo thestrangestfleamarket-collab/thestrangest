@@ -1,0 +1,23 @@
+// THE RAMEN CART OVER THE REAL SERVER: node tests/yatai-wire.cjs (after a full build). One login, two windows on the website's own worker (wrangler dev): YATAI '86 at /sushi and THE MARKET in THE DARK ALLEY. The cook must see the tenant standing in the alley, and the tenant must see the cook's cart and things, through the section's room (worker/door.js, t 'yt'). Without a Cloudflare token, WIRE_CONFIG=<a copy of wrangler.jsonc without its "ai" line>.
+const { chromium } = require('playwright'), { spawn } = require('child_process');
+const PORT = 8797, BASE = 'http://127.0.0.1:' + PORT; let bad = 0; const ok = (c, m) => { console.log((c ? 'ok   ' : 'FAIL ') + m); if (!c) bad++; };
+(async () => {
+  const w = spawn('npx', ['wrangler', 'dev', ...(process.env.WIRE_CONFIG ? ['--config', process.env.WIRE_CONFIG] : []), '--port', String(PORT), '--ip', '127.0.0.1', '--var', 'DEV_AUTH:1', '--show-interactive-dev-session=false', '--persist-to', require('fs').mkdtempSync(require('path').join(require('os').tmpdir(), 'wire-'))], { stdio: ['ignore', 'pipe', 'pipe'], detached: true, env: { ...process.env, WRANGLER_SEND_METRICS: 'false' } });
+  const stop = () => { try { process.kill(-w.pid, 'SIGKILL'); } catch (e) { try { w.kill('SIGKILL'); } catch (_) {} } }; let log = ''; w.stdout.on('data', (d) => log += d); w.stderr.on('data', (d) => log += d);
+  let up = false; for (let i = 0; i < 120 && !up; i++) { await new Promise((r) => setTimeout(r, 1000)); up = await fetch(BASE + '/').then((r) => r.ok).catch(() => false); } if (!up) { console.log('FAIL: the worker never started\n' + log); stop(); process.exit(1); }
+  const b = await chromium.launch({ ...(process.env.PWCHROME ? { executablePath: process.env.PWCHROME } : {}), args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'] });
+  const cx = await b.newContext({ viewport: { width: 900, height: 600 } }); await cx.addCookies([{ name: 'tsfm-pass', value: 'dev:wire-check', url: BASE }]); const errs = [];
+  try {
+    const a = await cx.newPage(); a.on('pageerror', (e) => errs.push('cart: ' + e.message.slice(0, 200))); await a.goto(BASE + '/sushi?desktop'); await a.waitForFunction('window.G && G.live && G.mirror && G.items && G.items.length > 10', null, { timeout: 300000 });
+    const m = await cx.newPage(); m.on('pageerror', (e) => errs.push('market: ' + e.message.slice(0, 200))); await m.goto(BASE + '/?fresh=1&hour=21'); await m.waitForFunction(() => window.__started, null, { timeout: 600000 }); await m.waitForTimeout(3000);
+    await m.evaluate(() => __dbg.UI.goPlace('THE DARK ALLEY')); await m.waitForFunction(() => __dbg.MAPK.MODS.yatai.inside() && __dbg.MAPK.MODS.yatai.lamp() > 0, null, { timeout: 300000, polling: 500 });
+    const seen = await a.waitForFunction(() => G.live.watchers.size > 0, null, { timeout: 90000, polling: 500 }).then(() => true, () => false);
+    ok(seen, 'the cook at /sushi sees the tenant who is standing in THE MARKET\'s alley' + (seen ? '' : ' (' + JSON.stringify(await a.evaluate(() => ({ on: !!(G.live.net && G.live.net().on), others: G.live.net ? G.live.net().others : null }))) + ')'));
+    const got = await m.waitForFunction(() => __dbg.MAPK.MODS.yatai.real().things > 20, null, { timeout: 90000, polling: 500 }).then(() => true, () => false), real = await m.evaluate(() => __dbg.MAPK.MODS.yatai.real());
+    ok(got && real.miss === 0, 'the tenant in the alley sees the cook\'s own cart and things: ' + JSON.stringify(real));
+    const ck = await m.waitForFunction(() => { const c = __dbg.MAPK.MODS.yatai.cook(); return c && c.vr && c.p; }, null, { timeout: 60000, polling: 500 }).then(() => true, () => false), cook = await m.evaluate(() => { const Y = __dbg.MAPK.MODS.yatai, c = Y.cook(), a = Y.at(0, 0, 0.6); return c && c.p ? { ...c, d: Math.hypot(c.p[0] - a[0], c.p[1] - a[2]) } : c; });
+    ok(ck && cook.d < 3, 'the cook is one whole body behind the counter, its head and arms the cook\'s own (as a headset tenant\'s): ' + JSON.stringify(cook));
+    if (process.argv[2]) { await m.evaluate(() => { const Y = __dbg.MAPK.MODS.yatai, v = Y.at(0.5, 0, -3.2), c = Y.at(0, 0, 0.3); __dbg.UI.goTo(v[0], v[2], 0, Math.atan2(c[0] - v[0], c[2] - v[2])); __dbg.UI.setView('first'); }); await m.waitForTimeout(8000); await m.screenshot({ path: process.argv[2] + '/wire-market.png', timeout: 240000 }); }
+    ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
+  } catch (e) { ok(false, 'the check ran: ' + String(e.message || e).slice(0, 300)); }
+  await b.close(); stop(); console.log(bad ? bad + ' FAILED' : 'the ramen cart works over the real server'); process.exit(bad ? 1 : 0); })();

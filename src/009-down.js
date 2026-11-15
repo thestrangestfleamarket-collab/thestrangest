@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {BATCH, CULL, keys, LEVELS, pos, RAG, ROOMS, SHAD, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {cutWalls, FADE, FIX, grab, LAMPD, LAMPI, lamps, MAPSTAIR, MODS, QS, SECTIONS, SOL, STN, SYS, TILE, ZU} from './006-map-pre.js';
+import {cutWalls, FADE, FIX, grab, LAMPD, LAMPI, lamps, MAPSTAIR, MODS, QS, SECTIONS, SOL, STN, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {OBJ} from './008-batch.js';
 const WATER={drops:[], uH:{value:null}, uWB:{value:new THREE.Vector4()}, uLevel:{value:0}, uGrid:{value:new THREE.Vector2()}, uCK:{value:+(QS0=>QS0.get('ck')||160)(new URLSearchParams(location.search))}, mats:[]};
 WATER.caustic=m=>{ '@later'; m.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,{uH:WATER.uH,uWB:WATER.uWB,uLevel:WATER.uLevel,uGrid:WATER.uGrid,uCK:WATER.uCK});
@@ -274,15 +274,7 @@ const SSUB=(()=>{ const W={};
   SL.BENCH.forEach((y,i)=>{ put(benchBoxes(MID,y,3.2,i+1),'bench'); solid(MID-.75,y,MID+.75,y+3.2,36); blobAt(MID-.75,y,MID+.75,y+3.2); });
   SL.BINS.forEach(y=>solid(MID-.28,y-.28,MID+.28,y+.28,32));
   const MX=SL.EX0-.95, MY=.06; put(W.mach(MX,MY),'passport machine'); solid(MX,MY,MX+.56,MY+.7,46); blobAt(MX,MY,MX+.56,MY+.7);
-  { // the ramen cart on the platform (owner, 14 Nov 2026): YATAI '86 is worked from here (146bf)
-    const x0=MID-1.3, x1=MID+1.3, y0=22.3, y1=23.9, wd=[112,70,40], wl=[168,118,70], dk=[52,34,22], rf=[122,38,30], st=[150,154,160], B=(a,b,c,d,z0,z1,col,o)=>({x0:a,y0:b,x1:c,y1:d,z0,z1,c:col,top:()=>sh(col,1.12),fi:()=>sh(col,.66),fj:()=>sh(col,.84),...o});
-    put(prop([B(x0,y0,x1,y1,0,30,wd,{foot:1}),B(x0-.12,y0-.3,x1+.12,y0,26,33,wl),B(x0,y0,x1,y1,30,33,wl),
-      ...[[x0,y0],[x1-.1,y0],[x0,y1-.1],[x1-.1,y1-.1]].map(([a,b])=>B(a,b,a+.1,b+.1,33,88,dk)),
-      B(x0-.3,y0-.45,x1+.3,y1+.3,88,93,rf),B(x0+.15,y0-.1,x1-.15,y1,93,99,rf),B(x0-.02,y0-.06,x1+.02,y0-.02,74,88,[176,30,26]),
-      B(x0-.22,y0-.34,x0+.06,y0-.06,58,74,[255,92,48,1],{em:1}),B(x1-.06,y0-.34,x1+.22,y0-.06,58,74,[255,92,48,1],{em:1}),
-      B(x0+.25,y0+.5,x0+.75,y0+1.0,33,44,st),B(x0+.9,y0+.5,x0+1.4,y0+1.0,33,46,st),B(x1-.75,y0+.45,x1-.2,y0+1.1,33,37,[230,226,214]),
-      ...[x0+.45,MID,x1-.45].map(a=>B(a-.16,y0-.78,a+.16,y0-.46,0,20,[150,34,30]))]),'ramen cart');
-    solid(x0,y0-.3,x1,y1,60); blobAt(x0-.3,y0-.8,x1+.3,y1+.3); SL.CART={x:MID,y:(y0+y1)/2,x0,y0,x1,y1}; }
+  STORE.places.push(['THE DARK ALLEY',0,0,'up','off']);   // on the map's list from the start; the alley itself is off the map (146bg)
   put(W.signal(XW-.35,-1.4,1),'signal',SZ-32); put(W.signal(XW-.35,LEN+1.4,0),'signal',SZ-32); put(W.signal(.35,LEN+1.4,0),'signal',SZ-32);
   BATCH.build((k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,alphaTest:.5,side:THREE.DoubleSide}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.6}:{})}));
   BATCH.cast=false;
@@ -315,7 +307,7 @@ const SSUB=(()=>{ const W={};
     cutWalls.push({pl:PT,nx:0,nz:0,foot:Y(SZ+40),always:true,me:null}); }
   { const P=[[-1,-SL.ED-2],[XW+1,LEN+1]]; const Q=P.map(([x,y])=>V(x,y,0)); BOUND={x0:Math.min(...Q.map(q=>q[0])),x1:Math.max(...Q.map(q=>q[0])),z0:Math.min(...Q.map(q=>q[2])),z1:Math.max(...Q.map(q=>q[2]))}; }
   const TX=(wx,wz)=>SL.MY0-SHARED.BOD.MY(wz), TY=(wx,wz)=>SHARED.BOD.MX(wx)-XS0, at=(x,y)=>{ const p=V(x,y,0); return {x:p[0],z:p[2]}; }, box=(x0,y0,x1,y1)=>{ const a=at(x0,y0), b=at(x1,y1); return {x0:Math.min(a.x,b.x),x1:Math.max(a.x,b.x),z0:Math.min(a.z,b.z),z1:Math.max(a.z,b.z)}; };
-  const M=window.METRO=SHARED.METRO={V,Y,TX,TY,at,DY:Y(SZ),XC,ZB,SL,MACH:{x:MX+.28,y:MY+.35},CART:SL.CART};
+  const M=window.METRO=SHARED.METRO={V,Y,TX,TY,at,DY:Y(SZ),XC,ZB,SL,MACH:{x:MX+.28,y:MY+.35}};
   LEVELS.of.station={name:'THE SUBWAY STATION',label:()=>M.label?M.label():'THE SUBWAY STATION',floor:'down',base:true,groups:['down'],ceil:Y(SZ+H2)};
   const inSta=(tx,ty)=>tx>-1&&tx<XW+1&&ty>-SL.ED-1&&ty<LEN+1;
   M.more=[]; M.inside=(x,z)=>{ const tx=TX(x,z), ty=TY(x,z); return inSta(tx,ty)||M.more.some(m=>m.inside(x,z)); };

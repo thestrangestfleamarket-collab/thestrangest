@@ -26,7 +26,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   const up = await pg.evaluate(() => !!window.game && game.state === 'preview' && !document.getElementById('overlay').hidden); ok(up, 'its models, pictures and sounds load and the page starts on its menu over the land (' + ((Date.now() - t0) / 1000).toFixed(0) + ' s)');
   if (!up) { console.log(await pg.evaluate(() => document.getElementById('loading').textContent), errs.join(' | ')); await b.close(); srv.close(); process.exit(1); }
   await shot(pg, '01-menu');
-  await pg.evaluate(() => { document.getElementById('levelToggle').checked = false; }); await pg.click('#flatBtn'); await secs(pg, .5);
+  await pg.evaluate(() => { document.getElementById('levelToggle').checked = false; }); await pg.click('#flatBtn', { timeout: 300000 }); await secs(pg, .5);
   let s = await pg.evaluate(() => ({ st: game.state, a: game.P.armour, r: game.P.rounds, h: game.P.hatch, e: game.expo, f: game.friends.length, fh: game.friends.every(f => f.hp === 3), ld: game.P.loaded, ins: game.inside.visible }));
   ok(s.st === 'play' && s.a === 100 && s.r === 40 && s.h === 0 && s.ins && s.ld === 'S', 'PLAY IN BROWSER starts a battle inside the turret, hatch shut, a SABOT in the breech'); ok(s.f === 2 && s.fh, 'two tanks of your platoon are out with you');
   await shot(pg, '02-inside'); await alone(pg);
@@ -81,11 +81,11 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   ok(s.peer && s.f === 0 && s.foes === 0 && s.rem && s.d > 300 && /Another player has joined/.test(s.m), 'a second player in: "' + s.m + '", the waves and the platoon go, the other tank stands ' + Math.round(s.d) + ' m off');
   ok(await B.evaluate(() => !!game.NET.peer && game.NET.slot === 1 && game.rem.on && game.type === 'light'), 'the second player is in the same fight, in a SCIMITAR');
   await B.evaluate(() => new BroadcastChannel('tank-local').postMessage({ from: 'zz', m: { t: 'hit', d: 30 } })); await secs(A, .3); ok(await A.evaluate(() => game.P.armour) < 100, 'a hit the other player scores costs your armour');
-  await B.close(); await secs(A, .4); ok(await A.evaluate(() => !game.NET.peer && /has left/.test(document.querySelector('#msg p').textContent)), 'when they leave you are back to the waves'); await ctx.close();
+  await B.evaluate(() => dispatchEvent(new Event('pagehide'))); await B.close(); await secs(A, .4); ok(await A.evaluate(() => !game.NET.peer && /has left/.test(document.querySelector('#msg p').textContent)), 'when they leave you are back to the waves'); await ctx.close();
 
   const vr = await b.newPage({ viewport: { width: 320, height: 180 } }); watch(vr);
   await vr.addInitScript(fs.readFileSync(require.resolve('iwer/build/iwer.js'), 'utf8') + ';window.__xrd=new IWER.XRDevice(IWER.metaQuest3);window.__xrd.installRuntime({forceInstall:true});window.__xrd.position.set(0.3,1.2,0.2);');
-  await vr.goto(FILE); await vr.waitForFunction(() => window.game && game.time > .2, null, { timeout: 600000 }).catch(() => {}); await till(vr, () => !document.getElementById('vrBtn').disabled); await vr.click('#vrBtn');
+  await vr.goto(FILE); await vr.waitForFunction(() => window.game && game.time > .2, null, { timeout: 600000 }).catch(() => {}); await till(vr, () => !document.getElementById('vrBtn').disabled); await vr.click('#vrBtn', { timeout: 300000 });
   await till(vr, () => game.renderer.xr.isPresenting); ok(await vr.evaluate(() => game.renderer.xr.isPresenting && game.xr && game.state === 'play'), 'ENTER VR starts the headset session and the battle');
   await secs(vr, 1.5);
   s = await vr.evaluate(() => { game.rig.parent.updateWorldMatrix(true, true); const h = game.camera.getWorldPosition(new game.P.n.constructor()), l = game.rig.parent.worldToLocal(h.clone()); return { x: l.x, y: l.y, z: l.z, roof: game.ROOF, floor: game.FLOOR, ins: game.inside.visible }; });

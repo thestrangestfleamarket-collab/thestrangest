@@ -272,7 +272,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `146bb-dm.js` | 18.4 | top level | DM (162b) | 003: SHARED; 003b: BUGS pos; 003d: SAY; 006: MODS SYS TILE; 087: CREATS |
 | `146bf-hollow.js` | 1.4 | top level |  | 003b: ONLINE; 003d: SAY; 006: STORE |
 | `146bg-headset.js` | 0.6 | top level |  | 003b: FORAGE INV; 006: STORE SYS |
-| `146bg-yatai.js` | 13.8 | top level |  | 003: SHARED THREE; 003b: INV ONLINE ROOMS pos; 003d: SAY; 004: scene; 006: MAPSTAIR MODS STORE SYS TILE; 038zc: IKIT |
+| `146bg-yatai.js` | 14.1 | top level |  | 003: SHARED THREE; 003b: INV ONLINE ROOMS pos; 003d: SAY; 004: scene; 006: MAPSTAIR MODS STORE SYS TILE; 038zc: IKIT |
 | `146c-equip.js` | 22.6 | top level |  | 003: SHARED THREE; 003b: EQUIP FLOW FORAGE ITEMS LOOKS VIT VR W3; 003d: SAY; 004: OutputPass ShaderPass; 005: OWNED; 006: SYS; 072b: GARB; 111a: BODIES; 111c: AVATAR |
 | `146d-gear.js` | 3.2 | top level |  | 003: SHARED THREE; 003b: EQUIP FORAGE INSPECT ITEMS LITE ONLINE pos; 003d: SAY; 006: SYS TILE; 101: GEMS |
 | `146e-golems.js` | 3.4 | top level | GOLEMS (146mb 146zn) | 003: SHARED THREE; 003b: INV PAWNL RIDE SFX VIS VIT pos; 003d: SAY; 004: scene; 006: MODS SYS TILE; 101: GEMS |

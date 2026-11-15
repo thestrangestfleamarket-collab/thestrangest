@@ -13,6 +13,13 @@ export function buildLive() {
   const mirror = buildMirror(); let t2 = 0, seenT = -9;
   const framed = window.parent !== window; let link = null; // inside the holodeck's shell the shell carries the word; on its own page, to a login, this page joins the section itself
   const r2 = (v) => Math.round(v * 100) / 100, V = (p) => [r2(p.x), r2(p.y), r2(p.z)], _a = new THREE.Vector3(), _b = new THREE.Vector3(); let t = 0, said = 0;
+  // the cook's whole body for THE MARKET (its headset body's own word, 162cb): where the head is over the cart, which way the body faces, and the head and wrists seen from that body (its forward +z, the wrists from the eyes, metres)
+  const r3 = (v) => Math.round(v * 1000) / 1000, QY = new THREE.Quaternion(), QI = new THREE.Quaternion(), QH = new THREE.Quaternion(), QW = new THREE.Quaternion(), FLIP = new THREE.Quaternion(0, 1, 0, 0), UP = new THREE.Vector3(0, 1, 0), _e = new THREE.Vector3(), _w = new THREE.Vector3(); let byaw = null, t3 = 0;
+  const body = () => { const cam = G.camera; cam.getWorldPosition(_e); cam.getWorldQuaternion(QH); cam.getWorldDirection(_b); const yaw = Math.atan2(_b.x, _b.z); if (byaw == null) byaw = yaw; const df = Math.atan2(Math.sin(yaw - byaw), Math.cos(yaw - byaw)); if (Math.abs(df) > 0.5) byaw += df - Math.sign(df) * 0.5;
+    QY.setFromAxisAngle(UP, byaw); QI.copy(QY).invert(); QH.premultiply(QI).multiply(FLIP); const o = { p: [r2(_e.x), r2(_e.z)], y: r2(byaw), h: [r3(QH.x), r3(QH.y), r3(QH.z), r3(QH.w)], L: 0, R: 0 };
+    for (const h of G.hands || []) { if (h.models) { for (const k in h.models) { const root = h.models[k].root; if (!root.visible) continue; root.getWorldPosition(_w).sub(_e).applyQuaternion(QI); root.getWorldQuaternion(QW).premultiply(QI); o[k] = [r3(_w.x), r3(_w.y), r3(_w.z), r3(QW.x), r3(QW.y), r3(QW.z), r3(QW.w)]; } }
+      else if (G.mode === 'desktop' && h.held) { _w.copy(h.pos).sub(_e).applyQuaternion(QI); o.R = [r3(_w.x), r3(_w.y), r3(_w.z), 0, 1, 0, 0]; } }
+    return o; };
   const snap = () => { const g = G.game, C = G.cart, cam = G.camera.getWorldPosition(_a), dir = G.camera.getWorldDirection(_b);
     const hands = (G.hands || []).filter((h) => h.active !== false).slice(0, 2).map((h) => [...V(h.pos), h.held ? String(h.held.name || h.held.kind).slice(0, 24) : '']);
     const cs = g.customers.map((c) => [c.seat, c.state === 'walk' || c.state === 'leaving' ? 0 : c.state === 'eating' ? 2 : 1, String(c.name || (c.voice && c.voice.name) || (c.nb && c.nb.def.name) || '').slice(0, 20), r2(c.p.root.position.x), r2(c.p.root.position.z), c.maxPatience ? Math.round(100 * c.patience / c.maxPatience) : 100, c.guest || '']);
@@ -38,9 +45,11 @@ export function buildLive() {
   // on its own page: the cook stands behind the platform's cart of the home section (009-down.js: its place there), as THE COOK
   live.join = () => { if (framed || link || !/^https?:$/.test(location.protocol)) return; let card = null; try { card = JSON.parse(sessionStorage.getItem('holo') || 'null'); } catch (e) { /* none */ }
     NET.card = card && card.room ? card : { room: 's-a', name: 'THE COOK', look: 'w0', hp: 1, at: [0, 0, 0, 0, 'up', 'alley'], back: '/' }; NET.query = { cart: '1' }; link = cartLink(NET, take); NET.connect(); };
+  live.body = body;
   live.net = () => ({ on: NET.on, me: NET.me, others: [...NET.others.values()].map((o) => [o.id, !!o.cp]) });
   live.update = (dt) => {
     for (const w of live.watchers.values()) { if (w.seated) continue; const pos = w.p.root.position, d = pos.distanceTo(w.to); if (d > 0.08) { _a.copy(w.to).sub(pos).multiplyScalar(Math.min(d, 1.4 * dt) / d); pos.add(_a); w.p.root.rotation.y = Math.atan2(_a.x, _a.z); w.p.pose = 'walk'; } else { w.p.pose = 'stand'; w.p.root.rotation.y = Math.atan2(-pos.x, -0.6 - pos.z); } w.p.look = G.camera.getWorldPosition(_b); w.p.update(dt, G.t); }
+    if ((t3 += dt) >= 0.1 && G.t - seenT < 4) { t3 = 0; const d = body(); if (link) { if (NET.on) link.body(d); } else if (framed) try { window.parent.postMessage({ yataiBody: d }, location.origin); } catch (e) { /* alone */ } }
     if ((t2 += dt) >= 0.12 && G.t - seenT < 4) { t2 = 0; const d = mirror.frame(); if (link) { if (NET.on) link.items(d); } else if (framed) try { window.parent.postMessage({ yataiItems: d }, location.origin); } catch (e) { /* alone */ } }   // the things themselves, while anyone is in the market's alley to see them
     if ((t += dt) < 0.25) return; t = 0; live.last = snap(); if (link) { if (NET.on) link.state(live.last); } else if (framed) try { window.parent.postMessage({ yatai: live.last }, location.origin); } catch (e) { /* alone */ } };
   return live;

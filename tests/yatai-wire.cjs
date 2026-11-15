@@ -15,6 +15,9 @@ const PORT = 8797, BASE = 'http://127.0.0.1:' + PORT; let bad = 0; const ok = (c
     ok(seen, 'the cook at /sushi sees the tenant who is standing in THE MARKET\'s alley' + (seen ? '' : ' (' + JSON.stringify(await a.evaluate(() => ({ on: !!(G.live.net && G.live.net().on), others: G.live.net ? G.live.net().others : null }))) + ')'));
     const got = await m.waitForFunction(() => __dbg.MAPK.MODS.yatai.real().things > 20, null, { timeout: 90000, polling: 500 }).then(() => true, () => false), real = await m.evaluate(() => __dbg.MAPK.MODS.yatai.real());
     ok(got && real.miss === 0, 'the tenant in the alley sees the cook\'s own cart and things: ' + JSON.stringify(real));
+    const ck = await m.waitForFunction(() => { const c = __dbg.MAPK.MODS.yatai.cook(); return c && c.vr && c.p; }, null, { timeout: 60000, polling: 500 }).then(() => true, () => false), cook = await m.evaluate(() => { const Y = __dbg.MAPK.MODS.yatai, c = Y.cook(), a = Y.at(0, 0, 0.6); return c && c.p ? { ...c, d: Math.hypot(c.p[0] - a[0], c.p[1] - a[2]) } : c; });
+    ok(ck && cook.d < 3, 'the cook is one whole body behind the counter, its head and arms the cook\'s own (as a headset tenant\'s): ' + JSON.stringify(cook));
+    if (process.argv[2]) { await m.evaluate(() => { const Y = __dbg.MAPK.MODS.yatai, v = Y.at(0.5, 0, -3.2), c = Y.at(0, 0, 0.3); __dbg.UI.goTo(v[0], v[2], 0, Math.atan2(c[0] - v[0], c[2] - v[2])); __dbg.UI.setView('first'); }); await m.waitForTimeout(8000); await m.screenshot({ path: process.argv[2] + '/wire-market.png', timeout: 240000 }); }
     ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   } catch (e) { ok(false, 'the check ran: ' + String(e.message || e).slice(0, 300)); }
   await b.close(); stop(); console.log(bad ? bad + ' FAILED' : 'the ramen cart works over the real server'); process.exit(bad ? 1 : 0); })();

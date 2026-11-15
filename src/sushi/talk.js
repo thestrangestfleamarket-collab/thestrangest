@@ -1,7 +1,6 @@
-// the patrons' voices: every one a person (or creature) Claude Haiku speaks for (POST /sushi/talk), said aloud (POST /sushi/say, else the browser's voice); no words are shown. Your own voice is always on; they hear you, see you wave, and speak first sometimes
+// the patrons' voices: every one a person Claude Haiku speaks for (POST /sushi/talk), said aloud (POST /sushi/say, else the browser's voice); no words are shown. Your own voice is always on; they hear you, see you wave, and speak first sometimes
 import { G, V3, pick } from './ctx.js';
 import { SEATS } from './cart.js';
-import CAST from '../cantina/cast.json';
 import { PF } from './pf.js';
 
 const NAMES = { m: ['Tony', 'Mr. Goldberg', 'Eddie', 'Hector', 'Big Mike', 'Old Pete', 'Vinnie', 'Mr. Chen', 'Ray', 'Jimmy'], f: ['Linda', 'Mrs. Rivera', 'Gloria', 'Pat', 'Ms. Washington', 'Debbie', 'Aunt Ruth', 'Yolanda', 'Kim', 'Barbara'] };
@@ -11,7 +10,7 @@ const STYLES = ['speaks in short, dry sentences', 'talks fast and laughs at thei
 const STORIES = ['Your boss chewed you out in front of everyone today.', 'You just missed your train and the next one is a long wait.', 'You got good news today and want to tell someone.', 'Your landlord is raising the rent again.', 'The Mets lost and you had money on it.', 'You are meeting someone later and you are nervous.', 'You have been on your feet since six this morning.', 'You found twenty dollars on the sidewalk this morning.', 'Your kid sister is getting married on Saturday.', 'You just moved to the city and everything is new.'];
 const QUIRKS = ['You have eaten at this cart for years.', 'This is your first time at the cart; you never had ramen before.', 'You compare everything to the hot dogs upstairs.', 'You always ask what is on the radio.', 'You think the subway was better ten years ago.', 'You talk with your hands.', 'You are superstitious about which seat you take.', 'You are counting your change carefully tonight.'];
 const FITS = PF; // each person's voice and age (pf.js)
-const VOICES = { m: ['orion', 'perseus'], f: ['luna', 'stella'] }, CREATURE_VOICE = { robot: ['arcas', 0.94], gnome: ['angus', 1.1], mariachi: ['orpheus', 1], pirate: ['zeus', 0.95], goblinmage: ['perseus', 1.12], dragonborn: ['zeus', 0.88] };
+const VOICES = { m: ['orion', 'perseus'], f: ['luna', 'stella'] };
 const CANNED = {
   order: ['Evening. {order}, please.', 'One {order}. It smells great tonight.', '{order} for me, thanks. How are you doing tonight?'],
   impatient: ['Is mine coming along?', 'Sorry, I do have a train to catch.', 'Getting hungry over here.'],
@@ -26,8 +25,6 @@ export function buildTalk() {
   const talk = { live: null, tts: null, mic: 'off', diag: { hear: '-', think: '-', say: '-' } };
   G.talk = talk;
   const persona = (c) => {
-    const k = c.p.cast && CAST.find((x) => x.id === c.p.cast);
-    if (k) return { g: 'm', name: k.name, age: '', job: `a ${k.kind} (${k.job}), out of the bar for a late bowl`, mood: pick(MOODS), quirk: k.personality, style: k.voice, story: `Hobby: ${k.hobby}.`, speaker: (CREATURE_VOICE[c.p.cast] || ['orion', 1])[0], pitch: (CREATURE_VOICE[c.p.cast] || ['orion', 1])[1] };
     const nb = c.p.cast && c.p.cast.name ? c.p.cast : null; if (nb) { const fit = FITS[nb.style] || ['m', 'orion', 1], g = fit[0]; return { g, name: nb.name, age: nb.age, job: nb.job, mood: pick(MOODS), quirk: nb.quirk, style: pick(STYLES), story: G.block.story(nb), speaker: fit[1], pitch: fit[2] }; }
     const g = c.p.sex || 'm', fit = FITS[c.p.style] || [g, pick(VOICES[g]), 1, 24, 60, ''];
     return { g, name: pick(NAMES[g]), age: fit[3] + ((Math.random() * (fit[4] - fit[3] + 1)) | 0), job: fit[5] || pick(JOBS), mood: pick(MOODS), quirk: pick(QUIRKS), style: pick(STYLES), story: pick(STORIES), speaker: fit[1], pitch: fit[2] };

@@ -39,16 +39,16 @@ export function buildGame(scene) {
     });
   });
 
-  function makeOrder() {
-    const cfg = game.cfg(), key = pick(cfg.menu), r = RECIPES[key], tops = { ...r.tops }, mods = [];
+  function makeOrder(want) { // want: what a tenant of THE MARKET chose from the menu (live.js)
+    const cfg = game.cfg(), key = want && cfg.menu.includes(want.key) ? want.key : pick(cfg.menu), r = RECIPES[key], tops = { ...r.tops }, mods = [];
     let price = r.price, firm = false, no = null;
-    if (cfg.mods) {
+    if (cfg.mods && !want) {
       if (Math.random() < 0.25) { firm = true; mods.push('NOODLES: FIRM (katame)'); }
       if (Math.random() < 0.2) { no = pick(Object.keys(tops).filter((k) => k !== 'chashu')); delete tops[no]; mods.push(`NO ${TOPPINGS[no].label}`); }
       if (Math.random() < 0.16) { tops.chashu = 3; price += 100; mods.push('+ EXTRA CHASHU (x3)'); }
       else if (Math.random() < 0.12) { tops.egg = (tops.egg || 0) + 1; price += 80; mods.push(`+ EXTRA EGG (x${tops.egg})`); }
     }
-    const d = Math.random(); const drink = !cfg.drinks ? null : d < 0.24 ? 'beer' : d < 0.36 ? 'cola' : null;
+    const d = Math.random(); const drink = !cfg.drinks ? null : want ? want.drink || null : d < 0.24 ? 'beer' : d < 0.36 ? 'cola' : null;
     return { key, recipe: r, tops, mods, firm, no, drink, price, no_: 0, num: game.ticketNo++ };
   }
 
@@ -205,8 +205,8 @@ export function buildGame(scene) {
         else { _d.multiplyScalar(Math.min(d, 1.35 * dt) / d); p.root.position.add(_d); const ty = Math.atan2(_d.x, _d.z); let dy = ty - p.root.rotation.y; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); p.root.rotation.y += dy * Math.min(1, dt * 8); }
       } else if (c.state === 'sitting') {
         p.root.rotation.y *= 1 - Math.min(1, dt * 8); c.t += dt;
-        if (c.t > 1.6) {
-          c.state = 'waiting'; c.order = makeOrder(); if (c.guest) G.live?.ordered(c);
+        if (c.t > 1.6 && (!c.guest || c.want !== undefined || c.t > 40)) { // a tenant has a while to choose
+          c.state = 'waiting'; c.order = makeOrder(c.want); if (c.guest) G.live?.ordered(c);
           c.ticketT = T.panelTex(400, 620, () => { });
           c.ticket = new THREE.Mesh(new THREE.PlaneGeometry(0.2, 0.31), new THREE.MeshBasicMaterial({ map: c.ticketT, color: 0xc4c4c4, side: THREE.DoubleSide }));
           c.ticket.position.set(SEATS[c.seat], 1.825, -0.525); c.ticket.rotation.z = rand(-0.04, 0.04); c.ticket.userData.nopick = true; scene.add(c.ticket);

@@ -28,7 +28,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
     const aim = (pt) => { const c = V(G.rig.position.x, 1.62, G.rig.position.z), d = pt.clone().sub(c); G.desk.yaw = Math.atan2(-d.x, -d.z); G.desk.pitch = Math.atan2(d.y, Math.hypot(d.x, d.z)); step(3); };
     const click = () => { h.grip = true; step(2); h.grip = false; step(2); };
     const use = (sec = 0.7) => { h.use = true; step(Math.round(sec * 60)); h.use = false; step(25); };
-    const C = G.cart, game = G.game;
+    const C = G.cart, game = G.game; { const pay = G.till.pay; G.till.pay = (c, d, t, k) => pay(c, d, t, k || ['b10']); } // a ten, so change has to be made
     try {
     // 1 burners
     stand(-0.2, 0.4);
@@ -76,12 +76,12 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
     L('state', c.state, 'RESULT', JSON.stringify(c.result));
     step(60 * 19); L('paying', c.state, JSON.stringify({ due: c.pay && c.pay.due, tender: c.pay && c.pay.tender, owed: c.pay && c.pay.owed, kinds: c.pay && c.pay.kinds }));
     // 10 paid in cash: ring the register open behind you, the money into its drawer, the change from it laid by their seat
-    const TL = G.till, front = () => stand(sx * 0.6, 0.05), back = () => stand(0.2, 1.0);
+    const TL = G.till, front = () => stand(sx * 0.6, 0.05), back = () => stand(0.2, 1.0); // a held bill follows the hand over a few frames: each put-down waits for it to arrive
     back(); aim(TL.regPos.clone()); L('aim reg', h.aim.button?.name); click(); step(30); L('drawer open', TL.open);
-    for (const it of c.pay.items.filter((i) => !i.dead)) { front(); aim(it.obj.position.clone()); click(); const got = h.held && h.held.kind; back(); aim(TL.drawerPos.clone()); click(); step(3); L('deposit', got, it.dead); }
-    for (const k of TL.coins(c.pay.owed) || []) { back(); aim(TL.slotPos(k).clone()); click(); const got = h.held && h.held.money; front(); aim(TL.spot(c.seat).clone()); click(); step(3); L('change', k, got); }
+    for (const it of c.pay.items.filter((i) => !i.dead)) { front(); aim(it.obj.position.clone()); click(); const got = h.held && h.held.kind; back(); aim(TL.drawerPos.clone()); step(20); click(); step(3); L('deposit', got, it.dead); }
+    for (const k of TL.coins(c.pay.owed) || []) { back(); aim(TL.slotPos(k).clone()); click(); const got = h.held && h.held.money; front(); aim(TL.spot(c.seat).clone()); step(20); click(); step(3); L('change', k, got); }
     step(60 * 5); L('paid', c.state, 'rung', c.pay.rung, 'till', TL.total() - TL.float);
-    for (const it of G.items.filter((i) => i.kind === 'cash' && i.tipOf === c)) { front(); aim(it.obj.position.clone()); click(); back(); aim(TL.drawerPos.clone()); click(); step(3); }
+    for (const it of G.items.filter((i) => i.kind === 'cash' && i.tipOf === c)) { front(); aim(it.obj.position.clone()); click(); back(); aim(TL.drawerPos.clone()); step(20); click(); step(3); }
     L('money', game.money, 'tips', game.tips, 'served', game.served, 'seat dirty', !!game.seats[c.seat].dirty, 'bowl dirty', bowl.dirty);
     front(); aim(bowl.obj.position.clone().setY(1.04)); click(); L('held', h.held?.kind); stand(0.4, 0.7); aim(V(0.935, 0.98, 0.91)); click(); step(5); L('bowl removed', bowl.dead, 'seat dirty', !!game.seats[c.seat].dirty);
     L('items', G.items.length, 'customers', game.customers.map((c) => c.state));

@@ -58,9 +58,10 @@ export function buildTill(scene, C) {
   const SL = { b1: [-0.13, 0.085], b5: [-0.03, 0.085], b10: [0.07, 0.085], b20: [0.17, 0.085], c25: [-0.13, 0.18], c10: [-0.03, 0.18], c1: [0.07, 0.18] };
   const slotPos = (k) => loc(SL[k][0], 0.1, SL[k][1] + OPEN);
   till.slotPos = slotPos;
+  const srcs = {}; // pointing at a pile takes from that pile, never from the next cup
   for (const k of KINDS) {
     const pos = slotPos(k);
-    G.sources.push({ pos, r: MONEY[k].bill ? 0.03 : 0.022, name: `${MONEY[k].name} from the drawer`, till: k, can: () => till.open && till.slots[k] > 0, take: () => { till.slots[k]--; G.audio.play(MONEY[k].bill ? 'grab' : 'clink'); return new Cash(k, pos.x, pos.y, pos.z, Math.PI / 2); } });
+    G.sources.push(srcs[k] = { pos, r: MONEY[k].bill ? 0.025 : 0.018, name: `${MONEY[k].name} from the drawer`, till: k, can: () => till.open && till.slots[k] > 0, take: () => { till.slots[k]--; G.audio.play(MONEY[k].bill ? 'grab' : 'clink'); return new Cash(k, pos.x, pos.y, pos.z, Math.PI / 2); } });
   }
   const drawerPos = loc(-0.03, 0.08, 0.1 + OPEN);
   till.drawerPos = drawerPos;
@@ -70,7 +71,7 @@ export function buildTill(scene, C) {
   const fill = (dr) => { const P = pics(), m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler();
     for (const k of KINDS) { const d = MONEY[k], [x, z] = SL[k], geo = d.bill ? new THREE.BoxGeometry(0.156 / S, 0.0012 / S, 0.0663 / S) : new THREE.CylinderGeometry(d.r / S, d.r / S, d.h / S, 16), im = new THREE.InstancedMesh(geo, d.bill ? P[k][2] : P[k][1], 8);
       for (let i = 0; i < 8; i++) { e.set(0, d.bill ? Math.PI / 2 + (i % 3 - 1) * 0.03 : i * 1.7, 0); q.setFromEuler(e); m4.compose(new V3(x + (d.bill ? (i % 2) * 0.004 : Math.cos(i * 2.4) * 0.018), (d.bill ? 0.052 : 0.046) + i * (d.bill ? 0.0022 : 0.0014) / S, z + (d.bill ? -0.075 : Math.sin(i * 2.4) * 0.018)), q, new V3(1, 1, 1)); im.setMatrixAt(i, m4); }
-      im.count = 0; im.castShadow = false; im.userData.nobake = true; dr.add(im); piles[k] = im; }
+      im.count = 0; im.castShadow = false; im.userData.nobake = true; im.userData.source = srcs[k]; dr.add(im); piles[k] = im; }
     till.show(); };
   till.total = () => KINDS.reduce((s, k) => s + till.slots[k] * MONEY[k].v, 0);
   till.reset = () => { Object.assign(till.slots, { b20: 0, b10: 1, b5: 3, b1: 10, c25: 12, c10: 10, c1: 15 }); till.float = till.total(); till.show(); }; // the night's float, as the bank gave it

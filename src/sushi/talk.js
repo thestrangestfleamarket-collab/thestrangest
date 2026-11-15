@@ -1,4 +1,4 @@
-// the patrons' voices: every one a person Claude Haiku speaks for (POST /sushi/talk), said aloud (POST /sushi/say, else the browser's voice); no words are shown. Your own voice is always on; they hear you, see you wave, and speak first sometimes
+// the patrons' voices: every one a person Claude Haiku speaks for (POST /sushi/talk), said aloud (POST /sushi/say, else the browser's voice); no words are shown. Your own voice is always on; they hear you, see you wave, and speak first sometimes; so do the people passing in the alley; and they say so when the cook hurts them (react.js)
 import { G, V3, pick } from './ctx.js';
 import { SEATS } from './cart.js';
 import { PF } from './pf.js';
@@ -19,6 +19,8 @@ const CANNED = {
   reply: ['Ha. If you say so.', 'Is that right?', 'Sure, sure.'], wave: ['Evening! Busy night?', 'Hey there. How are you doing?', 'Ah, hello!'],
   react: ['Whoa. Everything all right back there?', 'Careful!', 'Ha. Butterfingers.'], chat: ['This rain will not quit. How is your night going?', 'Long day. This is the best part of it.', 'Smells wonderful tonight.', 'You been here long tonight?'],
   noise: ['Sorry? I cannot hear you over the rain.', 'Hm? Say that again?', 'What was that?'],
+  hurt: ['Hey! What is wrong with you?', 'Ow! You hit me!', 'Are you out of your mind?'], police: ['Hey! Police. Step back from that counter, now.', 'I saw that. What is going on here?'],
+  hail: ['Evening!', 'Hey there! Busy night?', 'How you doing?'], hello: ['Hey, chef! Evening!', 'Smells good tonight!', 'Look who is open!'], snub: ['Forget it.', 'Not tonight.'],
 };
 
 export function buildTalk() {
@@ -35,7 +37,8 @@ export function buildTalk() {
   const note = (o) => { book.push({ at: Date.now(), gt: +G.t.toFixed(1), seats: G.game ? G.game.customers.filter((c) => c.state !== 'walk' && c.state !== 'leaving').length : 0, ...o }); if (book.length > 60) book.shift(); };
   const flush = () => { if (!book.length) return; const lines = book.splice(0, book.length); fetch('/sushi/log', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sid: SID, lines }), keepalive: true }).catch(() => { }); };
   talk.note = note; talk.flush = flush; talk.book = book; addEventListener('pagehide', flush);
-  const voiceOf = (c) => c.voice || (c.voice = { ...persona(c), history: [], busy: false, gen: 0 });
+  const voiceOf = (c) => c.voice || (c.voice = c.p.cast && c.p.cast.name ? (c.p.vox ||= { ...persona(c), history: [], busy: false, gen: 0 }) : { ...persona(c), history: [], busy: false, gen: 0 }); // a regular is one voice, at the counter or passing
+  const here = (c) => (c.here ? c.here() : G.game.customers.includes(c));
 
   // said aloud from their own mouth, one voice at a time: the site's voice if it will give one, else the browser's
   const lane = []; let now = null, room = null;
@@ -44,7 +47,7 @@ export function buildTalk() {
   const _m = new V3();
   const stop = () => { if (!now) return; const n = now; now = null; try { n.src.onended = null; n.g.gain.setTargetAtTime(0, G.audio.ctx.currentTime, 0.04); n.src.stop(G.audio.ctx.currentTime + 0.15); } catch (e) { /* ended */ } talk.speaking = 0; };
   const pump = () => {
-    if (now || !lane.length) return; const it = lane.shift(); if (!G.game.customers.includes(it.c)) return pump();
+    if (now || !lane.length) return; const it = lane.shift(); if (!here(it.c)) return pump();
     if (!it.buf) { try { const u = new SpeechSynthesisUtterance(it.text), v = it.c.voice, vs = speechSynthesis.getVoices().filter((x) => /^en/i.test(x.lang)), want = v.g === 'f' ? /female|woman|samantha|victoria|karen|zira|susan|aria|jenny/i : /\bmale|\bman\b|daniel|alex|david|mark|fred|guy|james/i; u.voice = vs.find((x) => want.test(x.name)) || null; u.pitch = v.g === 'f' ? 1.15 : 0.7; u.rate = 1.02; u.lang = 'en-US'; it.c.p.talkT = 1 + it.text.length * 0.06; note({ who: it.c.voice.name, kind: it.kind, text: it.text, live: !!it.live, voice: 'browser', thinkMs: it.think }); now = { c: it.c, tts: true }; u.onend = u.onerror = () => { if (now && now.tts) now = null; pump(); }; speechSynthesis.speak(u); } catch (e) { now = null; } return; }
     const ac = G.audio.ctx, v = it.c.voice, src = ac.createBufferSource(), pan = ac.createPanner(), g = ac.createGain(), send = ac.createGain(), rate = it.plain ? (v.g === 'f' ? 1.04 : 0.8) : v.pitch;
     src.buffer = it.buf; src.playbackRate.value = rate; pan.panningModel = 'HRTF'; pan.distanceModel = 'inverse'; pan.refDistance = 1; pan.rolloffFactor = 1.3; mouth(it.c, _m); pan.positionX.value = _m.x; pan.positionY.value = _m.y; pan.positionZ.value = _m.z; g.gain.value = 2.4; send.gain.value = 0.16;
@@ -64,7 +67,7 @@ export function buildTalk() {
       } catch (e) { /* the browser's voice then */ }
     }
     it.voiceMs = Math.round(performance.now() - t0);
-    if (gen !== v.gen || !G.game.customers.includes(c)) { note({ who: v.name, kind: it.kind, text, dropped: gen !== v.gen ? 'superseded by a newer answer' : 'they had left' }); return; }
+    if (gen !== v.gen || !here(c)) { note({ who: v.name, kind: it.kind, text, dropped: gen !== v.gen ? 'superseded by a newer answer' : 'they had left' }); return; }
     if (!it.buf && (!window.speechSynthesis || !speechSynthesis.getVoices().length)) { talk.voiceless = true; G.audio.play('voice'); return; }
     if (first) { lane.length = 0; if (now && now.c !== c) { note({ who: now.c.voice.name, cut: 'stopped so ' + v.name + ' could answer the cook' }); stop(); try { speechSynthesis.cancel(); } catch (e) { /* none */ } now = null; } lane.push(it); } // an answer to you takes the floor from anyone else, but nobody talks over their own sentence
     else { if (lane.length > 1) { note({ who: v.name, kind: it.kind, text, dropped: 'too many waiting to speak' }); return; } lane.push(it); }
@@ -73,7 +76,8 @@ export function buildTalk() {
 
   async function say(c, kind, situation, facts, cookSaid) {
     if (c.guest) return; // a tenant from THE MARKET speaks for themself
-    const v = voiceOf(c), reply = kind === 'reply', must = reply || kind === 'order' || kind === 'taste' || kind === 'angry';
+    const v = voiceOf(c), reply = kind === 'reply' || kind === 'hurt' || kind === 'police', must = reply || kind === 'order' || kind === 'taste' || kind === 'angry';
+    if (c.p.cast && c.p.cast.name) v.story = G.block.story(c.p.cast);
     if (reply) { v.gen = (v.gen || 0) + 1; c.chatT = Math.max(c.chatT || 0, 30); talk.floorT = G.t + 6; for (const o of G.game.customers) if (o !== c) o.chatT = Math.max(o.chatT || 0, 12); }
     else if (v.busy || (v.until || 0) > G.t || (!must && (now || lane.length || talk.hearing || G.t < (talk.floorT || 0)))) return; // nobody starts small talk while you are speaking or being answered
     const gen = v.gen, t0 = performance.now(); v.busy = true; let live = false;
@@ -81,7 +85,7 @@ export function buildTalk() {
     let line = null;
     if (talk.live !== false) {
       try {
-        const r = await fetch('/sushi/talk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ persona: v, order: c.order ? orderText(c.order) : 'not ordered yet', situation, facts: [facts, talk.seenText()].filter(Boolean).join(' '), say: cookSaid, history: v.history }) });
+        const r = await fetch('/sushi/talk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ persona: v, order: c.order ? orderText(c.order) : c.passer ? 'nothing: you are passing through the alley, not at the counter' : 'not ordered yet', situation, facts: [facts, talk.seenText()].filter(Boolean).join(' '), say: cookSaid, history: v.history }) });
         const j = r.ok ? await r.json() : null; talk.diag.think = j && j.say ? 'ok' : j && j.why ? j.why.slice(0, 28) : String(r.status);
         if (j && j.say) { line = j.say; talk.live = true; live = true; } else if (!r.ok && r.status !== 429) talk.live = false;
       } catch (e) { talk.live = talk.live || false; }
@@ -89,7 +93,7 @@ export function buildTalk() {
     if (gen !== v.gen) { note({ who: v.name, kind, text: line || '', dropped: 'the cook spoke again before this was said' }); return; }
     if (!line) { const set = CANNED[kind] || CANNED.reply; line = pick(set).replace('{order}', c.order ? c.order.recipe.name[0] + c.order.recipe.name.slice(1).toLowerCase() + ' ramen' : 'ramen'); }
     v.busy = false; v.history.push({ who: 'me', text: line }); if (v.history.length > 10) v.history.splice(0, 2);
-    if (!G.game.customers.includes(c)) return;
+    if (!here(c)) return;
     talk.last = { who: v.name, line, n: (talk.lastN = (talk.lastN || 0) + 1) }; speak(c, line, reply, { kind, live, think: Math.round(performance.now() - t0) });
   }
 
@@ -101,6 +105,12 @@ export function buildTalk() {
     else if (kind === 'wave') say(c, 'wave', 'The cook just caught your eye and waved at you from behind the counter. You wave back and say something.', c.result ? 'You have your food.' : 'You are still waiting for your food.');
     else if (kind === 'react') { c.p.gesture?.(Math.random() < 0.5 ? 'laugh' : 'no'); say(c, 'react', `Right in front of you, the cook just ${r}. You react out loud.`, ''); }
     else if (kind === 'chat') say(c, 'chat', c.state === 'eating' ? 'You are eating and want to talk: ask the cook a question or tell them something, about the food, your day, the weather, the radio or the neighbourhood.' : 'You are waiting and want to talk: ask the cook a question (how they are doing, how long they have had the cart, anything this person would ask) or tell them about your day.', c.result ? `Your bowl scored ${c.result.score}/100.` : 'Your bowl has not arrived yet.');
+    else if (kind === 'saw') { c.p.gesture?.('no'); say(c, 'react', `Right in front of you, the cook just ${r}. You react out loud, shocked${/knife|ground/.test(r) ? ' and frightened' : ''}.`, ''); }
+    else if (kind === 'hurt') say(c, 'hurt', `The cook at the ramen cart just ${r.you}. React out loud this moment, as a real person would: ${r.level >= 2 ? 'shocked, hurt, and angry or frightened' : r.level ? 'startled and annoyed' : 'surprised'}. Say plainly what they just did.`, [c.passer ? 'You were walking through the alley, not at the counter.' : '', r.leave ? 'You are getting up and leaving without paying, and you are not coming back tonight.' : '', r.cop ? 'You are a police officer in uniform, on duty.' : ''].filter(Boolean).join(' '));
+    else if (kind === 'police') say(c, 'police', r ? `You are the police officer who walks this block. You hurried over to the ramen cart because the cook just ${r}. Speak to the cook firmly, as a New York cop would: tell them to stop and ask what happened.` : 'You are the police officer who walks this block, and the cook at the ramen cart just attacked you. Speak to the cook firmly, as a New York cop would.', 'You are standing at the cart, in uniform.');
+    else if (kind === 'hail') say(c, 'hail', 'You are walking through the alley past the ramen cart, and the cook behind its counter just waved at you. You wave back and call out something short and friendly.', 'You are not at the counter.');
+    else if (kind === 'hello') say(c, 'hello', 'You are walking through the alley past the ramen cart, and you know its cook. Call out a short greeting as you pass.', 'You are not at the counter.');
+    else if (kind === 'snub') say(c, 'snub', 'You are walking through the alley past the ramen cart. The cook is trying to get your attention, but you are angry with them after what they did to you earlier. Say something short and cold.', 'You are not at the counter.');
     else if (kind === 'angry') say(c, 'angry', 'You waited far too long, never got your food, and are getting up to leave.', `You waited about ${waited} seconds and were never served.`);
   };
   // who you are speaking to: the only one at the counter; or, of several, the one you are looking at
@@ -114,6 +124,9 @@ export function buildTalk() {
     text = String(text || '').trim().slice(0, 240); if (!text) return false; talk.attend(6); const c = talk.target(), n = G.game.customers.filter((x) => x.state === 'sitting' || x.state === 'waiting' || x.state === 'eating').length;
     talk.last = { who: 'THE COOK', line: text, n: (talk.lastN = (talk.lastN || 0) + 1) };
     note({ who: 'COOK', text, to: c ? voiceOf(c).name : n ? 'nobody (looking at no one, ' + n + ' seated)' : 'nobody (no one seated)' });
+    { const cam = G.camera.getWorldPosition(new V3()), dir = G.camera.getWorldDirection(new V3()), pb = G.block?.addressed?.(cam, dir), cd = c ? new V3(SEATS[c.seat], 1.3, -1.15).sub(cam).normalize().dot(dir) : 0;
+      if (pb && pb.k > Math.max(cd, 0.9)) { const h = pb.h, sp = h.spk; G.block.greet(h, { kind: 'reply', t: 5, w: Math.random() < 0.35 ? 0.4 : null }); note({ who: 'COOK', text, to: voiceOf(sp).name + ' (passing)' });
+        say(sp, 'reply', G.block.mad[h.def.id] ? 'You are walking through the alley past the ramen cart, and the cook, who wronged you earlier tonight, just spoke to you. Answer coldly and briefly.' : 'You are walking through the alley past the ramen cart, and the cook behind its counter just spoke to you. Answer briefly; you may stop to chat or say you will come over for a bowl.', 'You are not at the counter.', text); return true; } }
     if (!c) { if (!n) G.game.callOver?.(); return false; }
     c.p.gesture?.(Math.random() < 0.7 ? 'nod' : 'think');
     say(c, 'reply', c.state === 'eating' ? 'You are eating your ramen at the counter and the cook is talking to you. Answer, and keep the conversation going.' : 'You are sitting at the counter waiting for your ramen and the cook is talking to you. Answer, and keep the conversation going.', c.result ? `Your bowl scored ${c.result.score}/100.${c.result.issues.length ? ' Problems: ' + c.result.issues.join('; ') + '.' : ''}` : 'Your bowl has not arrived yet.', text);

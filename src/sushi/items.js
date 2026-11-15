@@ -97,7 +97,7 @@ export class Item {
   worldCenter(out) { return out.copy(this.center).applyQuaternion(this.obj.quaternion).add(this.obj.position); }
   tilt() { return _vt.copy(UP).applyQuaternion(this.obj.quaternion).angleTo(UP); }
   remove() { if (this.dead) return; this.dead = true; if (PH.ready) PH.drop(this); if (this.held) this.held.held = null; this.held = null; this.obj.removeFromParent(); const i = G.items.indexOf(this); if (i >= 0) G.items.splice(i, 1); this.onRemove(); }
-  drop(vel) { this.free = true; this.grounded = -1; if (vel) this.vel.copy(vel); else this.vel.set(0, 0, 0); if (PH.ready) PH.spawn(this, vel); }
+  drop(vel, ang) { this.free = true; this.grounded = -1; if (vel) this.vel.copy(vel); else this.vel.set(0, 0, 0); if (PH.ready) PH.spawn(this, vel, ang); }
   upright() { const e = new THREE.Euler().setFromQuaternion(this.obj.quaternion, 'YXZ'); this.obj.quaternion.setFromEuler(new THREE.Euler(0, e.y, 0)); }
   onGrab() { } onRelease() { return false; } onHeld() { } update() { } onRemove() { } onLand() { G.audio.play('place'); }
   onGround() { this.grounded = 0; }
@@ -421,6 +421,7 @@ export class Vessel extends Prop {
     super(obj, o); this.v = v; this.h = o.h; this.takes = { r: v.r, h: o.h }; v.level = 1; v.item = this; const pos = obj.position, lo = o.lo ?? 0.15;
     Object.defineProperties(v, { x: { get: () => pos.x }, z: { get: () => pos.z }, baseY: { get: () => pos.y }, tipped: { get: () => this.tilt() > 0.45 }, rimY: { get: () => (v.tipped ? -9 : pos.y + o.h) }, liqY: { get: () => (v.tipped || v.level <= 0.03 ? -9 : pos.y + o.h * (lo + (o.hi ?? 0.8) * v.level - lo * v.level)) } });
     this.liq = o.liq; this.liq0 = o.liq.position.y; this.lo = lo; this.hi = o.hi ?? 0.8; this.tools = [];
+    if ('hot' in v) this.handles = [1, -1].map((sd) => new V3(0, o.h - 0.04, sd * (v.r + 0.03))); // a pot is taken by one of its two side handles
   }
   receive(p, q) { const v = this.v; v.level = Math.min(1, v.level + q * (this.fill || 0.05)); if (v.heat !== undefined && p.heat !== undefined) v.heat = Math.max(0.15, v.heat - q * 0.03); if (G.t - (this.ps || 0) > 0.45) { this.ps = G.t; G.audio.play('pour'); } }
   moved(dx, dy, dz) { for (const t of this.tools) { if (t.dead) continue; t.home.pos.x += dx; t.home.pos.y += dy; t.home.pos.z += dz; if (t.atHome && !t.held) { t.obj.position.x += dx; t.obj.position.y += dy; t.obj.position.z += dz; } } }

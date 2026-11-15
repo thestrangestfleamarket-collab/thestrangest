@@ -1,8 +1,8 @@
-// every sound of the night, made in the browser: rain, wind, traffic, the pots, the tools, the boombox's three stations
+// every sound of the night, made in the browser (rain, wind, traffic, the pots, the tools), and the boombox: real stations off the air, its own tape when none will play
 import { G } from './ctx.js';
 
 export class GameAudio {
-  constructor() { this.ctx = null; this.ready = false; this.radioOn = false; this.station = 0; this.step = 0; this.nextT = 0; }
+  constructor() { this.ctx = null; this.ready = false; this.radioOn = false; this.station = 0; this.tape = false; this.bad = new Set(); this.step = 0; this.nextT = 0; }
 
   init() {
     if (this.ready) return;
@@ -29,7 +29,7 @@ export class GameAudio {
     const bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1200; bp.Q.value = 0.25;
     const pan = c.createPanner(); pan.panningModel = 'HRTF'; pan.refDistance = 1.6; pan.rolloffFactor = 0.6;
     pan.positionX.value = -1.0; pan.positionY.value = 1.45; pan.positionZ.value = -0.5;
-    this.radioGain.connect(bp); bp.connect(pan); pan.connect(this.master);
+    this.radioGain.connect(bp); bp.connect(pan); pan.connect(this.master); this.radioPan = pan;
     this.ready = true;
     if (c.state === 'suspended') c.resume();
   }
@@ -88,14 +88,22 @@ export class GameAudio {
     }
   }
 
-  setRadio(on) { this.radioOn = on; if (this.ready) { this.radioGain.gain.value = on && !this.live() ? 1.6 : 0; this.nextT = this.ctx.currentTime + 0.05; this.step = 0; if (on) this.burst(3000, 0.25, { vol: 0.2, dest: this.radioGain }); } this.stream(); }
-  // stations past the cart's own three are real ones off the air (SomaFM, listener-supported, free to stream)
-  live() { return this.station >= 3 ? REAL[this.station - 3] : null; }
+  // the boombox: a real station streamed through its little speaker; if none will play (no network), the cassette in it
+  setRadio(on) { this.radioOn = on; if (this.ready && on) this.burst(3000, 0.25, { vol: 0.2, dest: this.radioGain }); this.stream(); }
+  get stations() { return REAL.length; }
+  live() { return this.tape ? null : REAL[this.station % REAL.length]; }
+  label() { return !this.radioOn ? 'OFF' : this.tape ? 'TAPE' : (REAL[this.station].fm ? 'FM ' + REAL[this.station].fm + ' ' : '') + REAL[this.station].name; }
   stream() {
-    const L = this.radioOn ? this.live() : null; if (!L) { if (this.el) { this.el.pause(); this.el.removeAttribute('src'); } return; }
-    const el = (this.el ||= new Audio()); el.preload = 'none'; el.src = L.url; el.volume = 0.5; el.play().catch(() => { this.station = 0; this.radioGain.gain.value = this.radioOn ? 1.6 : 0; });
+    clearTimeout(this.wait); const L = this.radioOn ? this.live() : null;
+    if (this.ready) { this.radioGain.gain.value = this.radioOn && !L ? 1.6 : 0; this.nextT = this.ctx.currentTime + 0.05; this.step = 0; }
+    if (!L) { if (this.el) { this.el.pause(); this.el.removeAttribute('src'); this.el.load(); } return; }
+    const el = this.el || (this.el = Object.assign(new Audio(), { crossOrigin: 'anonymous', preload: 'none' }));
+    if (this.ready && !this.elGain) { try { const c = this.ctx, src = c.createMediaElementSource(el), hp = c.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 110; this.elGain = c.createGain(); this.elGain.gain.value = 0.8; src.connect(hp); hp.connect(this.elGain); this.elGain.connect(this.radioPan); } catch (e) { this.elGain = null; } }   // from the boombox itself, not the room
+    const fail = () => { if (this.el !== el || !this.radioOn || this.live() !== L || el.src !== L.url) return; this.bad.add(L.url); const next = REAL.findIndex((r, i) => i > this.station && !this.bad.has(r.url)), any = next >= 0 ? next : REAL.findIndex((r) => !this.bad.has(r.url)); if (any >= 0 && any !== this.station) this.station = any; else this.tape = true; this.stream(); };
+    el.onerror = fail; this.wait = setTimeout(() => { if (el.readyState < 2 && !(el.currentTime > 0)) fail(); }, 25000);
+    if (el.src !== L.url) el.src = L.url; el.play().catch((e) => { if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') fail(); });
   }
-  tune() { this.station = (this.station + 1) % (3 + REAL.length); this.step = 0; if (this.ready && this.radioOn) { this.radioGain.gain.value = this.live() ? 0 : 1.6; this.burst(2000, 0.3, { vol: 0.35, to: 5000, dest: this.live() ? this.master : this.radioGain }); } this.stream(); }
+  tune() { this.station = (this.station + 1) % REAL.length; this.tape = false; this.bad.delete(REAL[this.station].url); this.step = 0; if (this.ready && this.radioOn) this.burst(2000, 0.3, { vol: 0.25, to: 5000, dest: this.master }); this.stream(); }
 
   update(boil, env) {
     if (!this.ready) return;
@@ -113,9 +121,9 @@ export class GameAudio {
       l.forwardX.value = f.x; l.forwardY.value = f.y; l.forwardZ.value = f.z;
       l.upX.value = 0; l.upY.value = 1; l.upZ.value = 0;
     }
-    if (this.el && !this.el.paused) { const d = Math.hypot(_p.x + 1.0, _p.z + 0.46); this.el.volume = Math.max(0.05, Math.min(1, 0.55 / Math.max(0.6, d))) * Math.min(1, this.master.gain.value); }
+    if (this.el && !this.elGain && !this.el.paused) { const d = Math.hypot(_p.x + 1.0, _p.z + 0.46); this.el.volume = Math.max(0.05, Math.min(1, 0.55 / Math.max(0.6, d))) * Math.min(1, this.master.gain.value); }
     if (!this.radioOn || this.live()) return;
-    const S = STATIONS[this.station], spb = 60 / S.bpm / 4;
+    const S = STATIONS[this.station % STATIONS.length], spb = 60 / S.bpm / 4;
     while (this.nextT < c.currentTime + 0.12) { this.seq(S, this.step, this.nextT - c.currentTime, spb); this.step++; this.nextT += spb; }
   }
 
@@ -133,8 +141,17 @@ export class GameAudio {
   }
 }
 
-// Original loops in the spirit of the era (city-pop, synthwave, slow jam).
-export const REAL = [{ name: 'SomaFM Underground 80s', fm: '88.5', url: 'https://ice1.somafm.com/u80s-128-mp3' }, { name: 'SomaFM Left Coast 70s', fm: '91.3', url: 'https://ice1.somafm.com/seventies-128-mp3' }, { name: 'SomaFM Secret Agent', fm: '94.9', url: 'https://ice1.somafm.com/secretagent-128-mp3' }];
+// the dial: real stations streaming live (https, open to any page): New York's own on their FM numbers, then SomaFM's (listener-supported)
+export const REAL = [
+  { name: 'WBGO Jazz', fm: '88.3', url: 'https://ais-sa8.cdnstream1.com/3629_128.mp3' },
+  { name: 'WWOZ New Orleans', fm: '90.7', url: 'https://wwoz-sc.streamguys1.com/wwoz-hi.mp3' },
+  { name: 'WNYC News', fm: '93.9', url: 'https://fm939.wnyc.org/wnycfm-web' },
+  { name: 'WQXR Classical', fm: '105.9', url: 'https://stream.wqxr.org/wqxr-web' },
+  { name: 'SomaFM Seven Inch Soul', url: 'https://ice1.somafm.com/7soul-128-mp3' },
+  { name: 'SomaFM Secret Agent', url: 'https://ice1.somafm.com/secretagent-128-mp3' },
+  { name: 'SomaFM Underground 80s', url: 'https://ice1.somafm.com/u80s-128-mp3' },
+];
+// the cassette: original loops in the spirit of the era (city-pop, synthwave, slow jam), played when no station will
 const STATIONS = [
   { bpm: 108, pad: 'triangle', lead: 'square', stab: 10, kick: [0, 6, 8], snare: [4, 12], bass: [0, null, 0, null, 12, null, 0, 7, 0, null, 0, null, 10, null, 12, null],
     chords: [[65, 69, 72, 76], [64, 67, 71, 74], [62, 65, 69, 72], [67, 71, 74, 77]], arp: [0, null, 2, 3, null, 2, 4, null, 3, null, 2, null, 1, null, 2, null] },

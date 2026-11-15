@@ -162,7 +162,9 @@ export function buildGame(scene) {
   let lastReact = -9;
   const seated = () => game.customers.filter((c) => c.state === 'waiting' || c.state === 'eating' || c.state === 'sitting');
   game.callOver = () => { if (game.state === 'open') game.spawnT = Math.min(game.spawnT, 1.5); };
-  game.onWave = () => { G.talk?.seen('wave at the customers'); G.talk?.attend(5); const cs = seated(); if (!cs.length) return game.callOver(); cs.forEach((c) => { c.p.waveT = 1.9; }); const c = cs.find((x) => x.order) || null; if (c && G.t - lastReact > 6) { lastReact = G.t; G.talk?.event(c, 'wave'); } };
+  game.onWave = () => { G.block?.waved?.(); G.talk?.seen('wave at the customers'); G.talk?.attend(5); const cs = seated(); if (!cs.length) return game.callOver(); cs.forEach((c) => { c.p.waveT = 1.9; }); const c = cs.find((x) => x.order) || null; if (c && G.t - lastReact > 6) { lastReact = G.t; G.talk?.event(c, 'wave'); } };
+  // hurt or frightened at the counter (react.js): up and gone, nothing paid
+  game.flee = (c) => { if (c.state === 'leaving') return; game.lost++; game.scores.push(0); if (c.state === 'walk') { c.state = 'leaving'; game.seats[c.seat].c = null; c.path = c.nb || c.guest ? [new V3(c.p.root.position.x, 0, -2.5)] : [new V3(c.side * -15, 0, -2.4)]; return; } leave(c, false); };
   game.onMess = (what) => { G.talk?.seen(what); G.talk?.attend(4); const c = seated().find((x) => x.order); if (c && G.t - lastReact > 9) { lastReact = G.t; G.talk?.event(c, 'react', what); } };
   game.rating = () => (game.scores.length ? game.scores.reduce((a, b) => a + b, 0) / game.scores.length / 20 : 0);
   game.forceSpawn = () => { const i = game.seats.findIndex((s) => !s.c && !s.dirty); return i >= 0 ? spawn(i) : null; };
@@ -200,7 +202,7 @@ export function buildGame(scene) {
       const p = c.p; c.attn = Math.max(0, (c.attn || 0) - dt); p.look = c.attn > 0 || (c.voice && c.voice.busy) ? eye : c.state === 'waiting' || c.state === 'sitting' ? (Math.sin(t * 0.45 + c.seat * 2.1) > -0.5 ? eye : null) : null; p.update(dt, t);
       if (c.state === 'waiting' || c.state === 'eating') { c.chatT = (c.chatT ?? rand(14, 30)) - dt; if (c.chatT <= 0 && !(c.voice && c.voice.busy)) { c.chatT = rand(35, 70); G.talk?.event(c, 'chat'); } }
       if (c.state === 'walk' || c.state === 'leaving') {
-        p.pose = 'walk'; const wp = c.path[0]; _d.copy(wp).sub(p.root.position); const d = _d.length();
+        if (p.reeling?.()) continue; p.pose = 'walk'; const wp = c.path[0]; _d.copy(wp).sub(p.root.position); const d = _d.length();
         if (d < 0.06) { c.path.shift(); if (!c.path.length) { if (c.state === 'walk') { c.state = 'sitting'; c.t = 0; p.pose = 'sit'; p.root.position.set(SEATS[c.seat], 0, -1.2); } else { if (c.nb) G.block.give(c.nb); else if (c.guest) { p.pose = 'stand'; G.live?.stood(c.guest); } else p.root.removeFromParent(); game.customers.splice(game.customers.indexOf(c), 1); } } }
         else { _d.multiplyScalar(Math.min(d, 1.35 * dt) / d); p.root.position.add(_d); const ty = Math.atan2(_d.x, _d.z); let dy = ty - p.root.rotation.y; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); p.root.rotation.y += dy * Math.min(1, dt * 8); }
       } else if (c.state === 'sitting') {

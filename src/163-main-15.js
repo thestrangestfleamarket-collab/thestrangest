@@ -1,6 +1,6 @@
 // THE START: every system's init, the first ground patches, where you stand, and __started.
 import {SHARED, THREE} from './003-shx.js';
-import {AMB, BATCH, CLIP, CLOCK, CULL, DRONE, ED, FAR3, GHOSTS, GPH, INTERIORS, keys, LAND, LINES, LITE, LOOKS, NPCS, PARK, PERFX, pos, RAG, ROOMS, SFX, SNDED, st, UI, VIT, W3, WEEDS, WHERE} from './003b-systems.js';
+import {AMB, BATCH, BUGS, CLIP, CLOCK, CULL, DRONE, ED, FAR3, GHOSTS, GPH, INTERIORS, keys, LAND, LINES, LITE, LOOKS, NPCS, PARK, PERFX, pos, RAG, ROOMS, SFX, SNDED, st, UI, VIT, W3, WEEDS, WHERE} from './003b-systems.js';
 import {PPU, renderer, resize, scene} from './004-main.js';
 import {SAVE} from './005-save.js';
 import {applyTime, AWAY, CASTLE, cutWalls, FIX, FREE, lamps, LAY, MAPG, MAPSTAIR, MODS, QS, RING, SECTIONS, SOL, START, STORE, SYS, TILE} from './006-map-pre.js';
@@ -26,3 +26,4 @@ SYS.run('start'); LOAD('later'); window.__scene=scene; window.__rigst=()=>st; wi
   await warm(); if(!FREE){ renderer.clippingPlanes=PL; renderer.setRenderTarget(SHARED.composer.readBuffer); renderer.render(new THREE.Scene(),SHARED.cam); await warm(); renderer.clippingPlanes=[]; } START.bar('READY',1);
   window.WARMMS=Math.round(performance.now()-t0); }
 resize(); applyTime(0); requestAnimationFrame(frame); START.reveal();
+setTimeout(()=>{ try{ localStorage.removeItem('start-open'); }catch(e){} if(SHARED.liteAfterCrash&&window.BUGS&&BUGS.err)BUGS.err('the last start did not finish: the lighter picture is on'); },10000);

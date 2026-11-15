@@ -14,3 +14,5 @@ Everything the page loads is CC0 (public domain) except the thing's body, which 
 Changes made: pictures resized to 1024 px or less and re-encoded as JPEG (`tools/hide-assets.py`, `tools/hide-art.py`), heavier models thinned (`tools/hide-slim.cjs`), sounds trimmed, levelled and in places pitched down (listed in `docs/hide-sounds.md`); the thing's skin greyed, its eyes lit red, its own walk cycle cut from its animation.
 
 Libraries: three.js (MIT), Rapier (Apache 2.0). The walls, stairs, doors, windows, wardrobes, cupboards, beds, bath, curtains, lamps' light, rain, lightning, dust and the sounds of the television, radio, fans and music box are made in code.
+
+The thing's voice: ElevenLabs, the library voice "Lord Nyx - Deep, Demonic Villain" (`data/hide/snd/demon01`–`12.mp3`, made 14 Nov 2026).

@@ -55,9 +55,9 @@ function mat(name, o = {}) {
   m.userData.tile = o.tile || 2; if (o.env !== undefined) m.envMapIntensity = o.env; return m;
 }
 // a box whose pictures keep their real size whatever the box's
-function wbox(w, h, d, tile = 2) {
-  const g = new THREE.BoxGeometry(w, h, d), uv = g.attributes.uv, S = [[d, h], [d, h], [w, d], [w, d], [w, h], [w, h]];
-  for (let f = 0; f < 6; f++) for (let i = 0; i < 4; i++) { const k = f * 4 + i; uv.setXY(k, uv.getX(k) * S[f][0] / tile, uv.getY(k) * S[f][1] / tile); }
+function wbox(w, h, d, tile = 2, at) {
+  const g = new THREE.BoxGeometry(w, h, d), uv = g.attributes.uv, S = [[d, h], [d, h], [w, d], [w, d], [w, h], [w, h]], O = at ? [[at[2] - d / 2, at[1] - h / 2], [at[2] - d / 2, at[1] - h / 2], [at[0] - w / 2, at[2] - d / 2], [at[0] - w / 2, at[2] - d / 2], [at[0] - w / 2, at[1] - h / 2], [at[0] - w / 2, at[1] - h / 2]] : null;
+  for (let f = 0; f < 6; f++) for (let i = 0; i < 4; i++) { const k = f * 4 + i; uv.setXY(k, (uv.getX(k) * S[f][0] + (O ? O[f][0] : 0)) / tile, (uv.getY(k) * S[f][1] + (O ? O[f][1] : 0)) / tile); }
   return g;
 }
 const boxMesh = (w, h, d, m) => { const o = new THREE.Mesh(wbox(w, h, d, m.userData.tile || 2), m); o.castShadow = o.receiveShadow = true; return o; };
@@ -66,7 +66,7 @@ const quat = (ry = 0, rx = 0, rz = 0) => new THREE.Quaternion().setFromEuler(new
 // something fixed: a box you see and cannot pass
 function stat(w, h, d, x, y, z, m, o = {}) {
   const q = quat(o.ry, o.rx, o.rz); let mesh = null;
-  if (m) { mesh = boxMesh(w, h, d, m); mesh.position.set(x, y, z); mesh.quaternion.copy(q); if (o.noShadow) mesh.castShadow = false; (o.parent || scene).add(mesh); if (!o.parent && !o.keep) STATICS.push(mesh); }
+  if (m) { mesh = boxMesh(w, h, d, m); if (m.userData.world && !o.ry && !o.rx && !o.rz) { mesh.geometry.dispose(); mesh.geometry = wbox(w, h, d, m.userData.tile || 2, [x, y, z]); } mesh.position.set(x, y, z); mesh.quaternion.copy(q); if (o.noShadow) mesh.castShadow = false; (o.parent || scene).add(mesh); if (!o.parent && !o.keep) STATICS.push(mesh); }
   if (!o.ghost) { const c = P.world.createCollider(RAPIER.ColliderDesc.cuboid(w / 2, h / 2, d / 2).setTranslation(x, y, z).setRotation(q).setFriction(.9).setCollisionGroups(grp(o.see ? G.SEE : o.veil ? G.VEIL : G.SOLID, o.veil ? 0x8000 : ALL)));
     P.byCol.set(c.handle, { kind: o.kind || 'stone', fixed: true }); }
   return mesh;

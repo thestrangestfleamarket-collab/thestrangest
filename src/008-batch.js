@@ -111,10 +111,11 @@ BATCH.build=(make)=>{ const it=BATCH.items; if(!it.length)return; const AW=2048;
     const mat=make(k,map,emap); BATCH.tintable(mat); const me=new THREE.Mesh(geo,mat); PEEK.batch(me,L); me.userData.objOf=L.map(o=>o.obj); L.forEach((o,n)=>{ if(o.obj)o.obj.parts.push({me,v0:n*6,e:!!o.ecv}); }); me.receiveShadow=true; me.castShadow=!!BATCH.cast; scene.add(me); (BATCH.meshes||(BATCH.meshes={}))[p?pk+'~'+p:pk]=me; } }
   BATCH.stats={faces:it.length,pages:AHs.length,atlas:AHs.map(h=>AW+'x'+h).join(','),split:Object.keys(KS).filter(k=>new Set(KS[k].map(i=>PGS[i])).size>1)}; (BATCH.log||(BATCH.log=[])).push(BATCH.stats); BATCH.items=[]; };
 
-// an atlas is painted once: once the card has it (and the start's lamp grid has read it) the page's copy is let go; ?freepics=0 keeps them
+// an atlas is painted once: once the card has it (and the start's lamp grid has read it) the page keeps only a PNG of it (userData.png, which the stow paints back from); ?freepics=0 keeps them
 { const Q=[]; let go=false; BATCH.freeOn=QS.get('freepics')!=='0'; BATCH.freed=0;
-  const drop=t=>{ const c=t.image; if(!c||!c.getContext||c.width<2)return; BATCH.freed+=c.width*c.height*4; c.width=c.height=1; SHARED.freedPics=true; };
-  BATCH.dropPic=t=>{ t.onUpdate=null; if(!BATCH.freeOn)return; if(go)drop(t); else Q.push(t); };
+  const drop=t=>{ const c=t.image, u=t.userData; if(!c||!c.getContext||c.width<2)return; if(u.png){ c.width=c.height=1; return; } if(u.packing)return; u.packing=true;
+    c.toBlob(b=>{ u.packing=false; if(!b||c.width<2)return; u.png=b; u.pw=c.width; u.ph=c.height; BATCH.freed+=c.width*c.height*4; c.width=c.height=1; SHARED.freedPics=true; },'image/png'); };
+  BATCH.dropPic=t=>{ if(!BATCH.freeOn)return; if(go)drop(t); else Q.push(t); };
   SYS.add('start',()=>{ go=true; for(const t of Q.splice(0))drop(t); },'008-batch pictures'); }
 BATCH.tintable=m=>{ const prev=m.onBeforeCompile; m.onBeforeCompile=(sh,r)=>{ if(prev)prev(sh,r);
     sh.vertexShader='attribute vec3 aCol; attribute float aOp; varying vec3 vCol; varying float vOp;\n'+sh.vertexShader.replace('void main() {','void main() { vCol=aCol; vOp=aOp;');

@@ -1,4 +1,4 @@
-// YATAI '86 CHECK: node tests/sushi.cjs [dist/sushi.html] [folder for screenshots]. The cart loads with its people, the burners light, the sign opens, a customer orders, a whole bowl is built by hand through the same hand code a player uses (tare, broth, noodles, a roll sliced, toppings), served and paid, the dirty bowl cleared; a customer struck with a ladle and a passer-by hit by a thrown bowl react and the street remembers, and a passer-by waves back at the cook; then in an emulated Quest 3 a knob is touched, a bowl is taken, a ladle poured by the wrist and a log chopped; no page errors.
+// YATAI '86 CHECK: node tests/sushi.cjs [dist/sushi.html] [folder for screenshots]. The cart loads with its people, the burners light, the sign opens, a customer orders, a whole bowl is built by hand through the same hand code a player uses (tare, broth, noodles, a roll sliced, toppings), served and paid, the dirty bowl cleared; a customer struck with a ladle and a passer-by hit by a thrown bowl react and the street remembers, and a passer-by waves back at the cook; then in an emulated Quest 3 a knob is touched, a bowl is taken, a ladle poured by the wrist and a log chopped, a held pot stops on the counter, a held bowl shoves a shaker aside and a throw lands where it was aimed; no page errors.
 const { chromium } = require('playwright'), path = require('path'), fs = require('fs');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=sushi::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
 const PAGE = path.resolve(process.argv[2] || 'dist/sushi.html'), ROOT = path.dirname(PAGE), OUT = process.argv[3]; if (OUT) fs.mkdirSync(OUT, { recursive: true });
@@ -119,7 +119,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   await p.close();
   // an emulated Quest 3 with controllers
   const iwer = fs.readFileSync(require.resolve('iwer/build/iwer.js'), 'utf8') + ';window.__xrd=new IWER.XRDevice(IWER.metaQuest3);window.__xrd.installRuntime({forceInstall:true});';
-  const v = await open('?nopost', iwer);
+  const v = await open('?nopost', iwer); if (OUT) await v.exposeFunction('__shot', (n) => v.screenshot({ path: path.join(OUT, n + '.png'), timeout: 120000 }).catch(() => {}));
   const vr = await v.evaluate(async () => {
     const T3 = G.debug.THREE, V = (x, y, z) => new T3.Vector3(x, y, z), Q = T3.Quaternion, xr = window.__xrd, out = {}; G.renderer.shadowMap.enabled = false;
     const frames = n => new Promise(res => { const t0 = G.t, iv = setInterval(() => { if (G.t - t0 >= n * 0.049) { clearInterval(iv); res(); } }, 50); });
@@ -133,11 +133,38 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
     const roll = new Q().setFromAxisAngle(V(0, 0, 1), 1.4); put('right', bowl.obj.position.clone().add(V(0, 0.22, 0)).sub(tl.cup.clone().applyQuaternion(roll)), roll); await frames(4); out.tare = bowl.tare; ctl('right').updateButtonValue('squeeze', 0); await frames(20); out.home = tl.atHome && tl.filled;
     const C = G.cart, raw = new G.debug.Items.Raw('naruto'); G.targets.find(t => t.accepts(raw)).receive(raw); put('right', C.knife.obj.position.clone(), new Q()); await frames(3); ctl('right').updateButtonValue('squeeze', 1); await frames(3);
     const up = V(C.board.x - 0.05, C.board.y + 0.2, C.board.z).sub(C.knife.blade), dn = V(C.board.x - 0.05, C.board.y + 0.03, C.board.z).sub(C.knife.blade); for (let i = 0; i < 3; i++) { put('right', up); await frames(2); put('right', dn); await frames(2); } out.left = raw.left;
+    ctl('right').updateButtonValue('squeeze', 0); await frames(10);
+    { // a held pot is a body: pushed into the counter it stays on top of it, the hand stays on its handle and a ghost shows where the real hand is
+      const pot = G.cart.pots[2], it = pot.item, hd = it.handles.map(l => l.clone().applyQuaternion(it.obj.quaternion).add(it.obj.position)).sort((a, b) => a.z - b.z)[0], L = H('left'); bowl.remove();
+      put('left', hd, new Q()); await frames(3); ctl('left').updateButtonValue('squeeze', 1); await frames(3); const took = L.held === it;
+      const off = hd.clone().sub(it.obj.position), over = V(-0.05, 0.9, -0.33); put('left', over.clone().add(off).setY(1.25)); await frames(4);
+      let low = 9; for (const y of [0.98, 0.9, 0.82, 0.76, 0.76, 0.76]) { put('left', over.clone().add(off).setY(y + off.y)); await frames(2); low = Math.min(low, it.obj.position.y); }
+      out.pot = { took, low: +low.toFixed(3), ghost: L.gs === 1 && L.ga > 0.1 && L.ghosts.L.root.visible, gap: +L.ghosts.L.root.position.distanceTo(L.models.L.root.position).toFixed(3) };
+      if (window.__shot) { const q0 = xr.quaternion.clone(); xr.quaternion.set(-0.38, 0, 0, 0.925); await frames(2); await window.__shot('02-held-pot'); xr.quaternion.copy(q0); await frames(2); }
+      put('left', over.clone().add(off).setY(1.05)); await frames(4); put('left', hd.clone().setY(hd.y + 0.02)); await frames(4); ctl('left').updateButtonValue('squeeze', 0); await frames(12); out.pot.back = pot.on || !G.cart.burners[2].on; }
+    { // a held bowl shoves a loose shaker along the counter instead of passing through it
+      put('right', V(0.93, 1.06, -0.36), new Q()); await frames(3); ctl('right').updateButtonValue('squeeze', 1); await frames(3); const R = H('right'), bw = R.held;
+      const sh = G.items.find(i => i.name === 'shichimi shaker'); sh.obj.position.set(-0.2, 0.9, -0.28); sh.obj.quaternion.identity(); await frames(3); const s0 = sh.obj.position.clone(), off = V(0.93, 1.06, -0.36).sub(bw.obj.position);
+      for (let x = -0.45; x <= 0.0; x += 0.03) { put('right', V(x, 0.905, -0.28).add(off)); await frames(1); }
+      await frames(10); const d = sh.obj.position.clone().sub(s0), bx = bw.obj.position;
+      out.shove = { bowl: bw && bw.kind, moved: +d.x.toFixed(3), apart: +Math.hypot(sh.obj.position.x - bx.x, sh.obj.position.z - bx.z).toFixed(3), up: sh.obj.position.y > 0.85 };
+      put('right', V(0.4, 1.1, -0.3)); await frames(4); ctl('right').updateButtonValue('squeeze', 0); await frames(10); }
+    { // a throw: the controller swings at a known speed and lets go; the thing lands where that swing aims it
+      const R = H('right'), raw = new G.debug.Items.Raw('naruto'), p0 = V(0.05, 1.1, 0.2), vel = V(0.2, 0.6, 1.2), ses = G.renderer.xr.getSession(); put('right', p0, new Q()); await frames(3);
+      raw.obj.position.copy(R.pos).sub(raw.center); await frames(1); ctl('right').updateButtonValue('squeeze', 1); await frames(3); const took = R.held === raw;
+      const rel = raw.worldCenter(V(0, 0, 0)).sub(R.pos); let t0 = null, n = 0, at = null, land = null;
+      await new Promise(res => { const f = () => { if (t0 === null) t0 = G.t; const t = G.t - t0; n++; if (n <= 12) put('right', p0.clone().addScaledVector(vel, t)); if (n === 9) ctl('right').updateButtonValue('squeeze', 0);
+        if (!raw.held && !at && n > 9) at = raw.worldCenter(V(0, 0, 0)); if (at && !land && raw.worldCenter(V(0, 0, 0)).y < 0.15) land = raw.worldCenter(V(0, 0, 0)); if (land || raw.dead || n > 120) return res(); ses.requestAnimationFrame(f); }; ses.requestAnimationFrame(f); });
+      let aim = null; if (at) { const vy = vel.y - 9.81 * 0.05, h = at.y - 0.15, T = (vy + Math.sqrt(vy * vy + 2 * 9.81 * h)) / 9.81; aim = V(at.x + vel.x * T, 0.15, at.z + vel.z * T); }
+      out.toss = { took, flew: land && at ? +Math.hypot(land.x - at.x, land.z - at.z).toFixed(2) : 0, miss: land && aim ? +Math.hypot(land.x - aim.x, land.z - aim.z).toFixed(3) : 9 }; }
     const x0 = G.rig.position.x; ctl('left').updateAxis('thumbstick', 'x-axis', 1); await frames(6); ctl('left').updateAxis('thumbstick', 'x-axis', 0); out.moved = G.rig.position.x > x0 + 0.05;
     return out; });
   ok(vr.presenting && vr.hands, 'in the headset: a session with both controllers'); ok(vr.knob, 'a controller tip turns a burner knob'); ok(vr.took === 'bowl' && vr.rest, 'grip takes a bowl from the stack; let go, it comes to rest on the counter');
   ok(vr.cook.on && vr.cook.L < 0.05 && vr.cook.R < 0.05 && !vr.cook.sleeves, 'in the headset you are the carving chef: its arms reach your own wrists (' + JSON.stringify(vr.cook) + ')');
   ok(vr.tare === 'shoyu' && vr.home, 'a roll of the wrist pours the tare; the ladle flies home and refills'); ok(vr.left === 7, 'the knife chops by its own motion (' + vr.left + ' of 10 left)'); ok(vr.moved, 'the left stick steps along the cart');
+  ok(vr.pot.took && vr.pot.low > 0.885 && vr.pot.ghost && vr.pot.gap > 0.08 && vr.pot.back, 'a pot taken by its handle and pushed down into the counter stays on top of it; a faint ghost shows the real hand (' + JSON.stringify(vr.pot) + ')');
+  ok(vr.shove.bowl === 'bowl' && vr.shove.moved > 0.08 && vr.shove.apart > 0.1 && vr.shove.up, 'a held bowl shoves a loose shaker aside instead of passing through it (' + JSON.stringify(vr.shove) + ')');
+  ok(vr.toss.took && vr.toss.flew > 0.4 && vr.toss.miss < 0.2, 'a throw lands where the swing aimed it (' + JSON.stringify(vr.toss) + ')');
   ok(!miss.length, 'nothing missing' + (miss.length ? ': ' + [...new Set(miss)].slice(0, 6).join(', ') : '')); ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close(); srv.close(); console.log(fails.length ? fails.length + ' FAILED' : 'YATAI \'86 passes'); process.exit(fails.length ? 1 : 0);
 })();

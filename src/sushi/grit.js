@@ -59,5 +59,5 @@ export function buildGrit(scene, city, cart) {
   const lights = cart.bulbs.map((pv) => pv.children.find((c) => c.isPointLight)); const base = lights.map((l, i) => l.intensity * [1, 0.72, 0.9][i]); lights.forEach((l, i) => { l.intensity = base[i]; l.color.offsetHSL((i - 1) * 0.012, 0, 0); });
   let brown = 0, next = 9;
   mergeStatic(root); nop(root);
-  return { root, update(dt, t) { next -= dt; if (next <= 0) { brown = 0.5 + Math.random() * 1.2; next = 12 + Math.random() * 30; } if (brown > 0) { brown -= dt; lights[1].intensity = base[1] * (0.25 + 0.6 * Math.abs(Math.sin(t * 37) * Math.sin(t * 11.3))); } else lights[1].intensity = base[1] * (0.96 + 0.04 * Math.sin(t * 50)); } };
+  return { root, update() { lights[1].intensity = base[1]; } };
 }

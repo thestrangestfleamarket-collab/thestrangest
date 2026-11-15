@@ -14,6 +14,10 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
     await p.goto(FILE + q); await p.waitForFunction('window.G && G.debug', null, { timeout: 240000 }); await p.waitForTimeout(3000); return p; };
   const p = await open('?desktop&nopost');
   ok(await p.evaluate(() => G.mode === 'desktop' && G.debug.PH.ready), 'the cart loads on a screen, its loose things on the physics engine');
+  { const f = await p.evaluate(() => { const L = []; G.scene.traverse((o) => { if (o.isLight) L.push(o); }); let worst = 0, who = ''; const was = L.map((l) => l.intensity); G.frozen = true;
+      for (let i = 0; i < 60; i++) { G.debug.tick(1 / 20); L.forEach((l, j) => { const a = was[j], b = l.intensity, d = Math.abs(b - a) / Math.max(0.05, a, b); if (d > worst) { worst = d; who = l.type + ' ' + (l.color && l.color.getHexString()); } was[j] = b; }); }
+      G.frozen = false; return { worst: +worst.toFixed(3), who, easy: !!(G.set && G.set.easy), fill: G.city ? null : null }; });
+    ok(f.worst < 0.05 && f.easy, 'easy on the eyes: on from the start, and no light flickers (largest change between frames ' + f.worst + (f.who ? ', ' + f.who : '') + ')'); }
   ok(await p.evaluate(() => G.game.customers.length === 0 && G.cart.pots.length === 3 && Object.keys(G.cart.bins).length === 7), 'three pots, seven bins, nobody yet');
   const log = await p.evaluate(async () => {
     const log = []; const L = (...a) => log.push(a.join(' '));

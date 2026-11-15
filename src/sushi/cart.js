@@ -33,9 +33,9 @@ export function buildCart(scene, city) {
   box(2.3, 0.02, 0.42, steel, 0, 0.89, -0.35, cart); surf(-1.15, 1.15, -0.56, -0.14, 0.9);
   box(2.44, 0.04, 0.36, woodLight, 0, 0.98, -0.71, cart); surf(-1.22, 1.22, -0.89, -0.53, 1.0); // customer ledge
   box(2.4, 0.9, 0.04, woodDark, 0, 0.51, -0.57, cart);                    // front panel
-  box(2.3, 0.1, 0.02, steel, 0, 0.95, -0.545, cart);                      // backsplash lip
+  box(2.3, 0.094, 0.02, steel, 0, 0.947, -0.519, cart);                   // backsplash lip, just clear of the ledge (no two faces in one place)
   box(0.45, 0.8, 1.15, wood, -0.925, 0.4, 0.425, cart); box(0.47, 0.02, 1.17, steel, -0.925, 0.81, 0.425, cart); surf(-1.15, -0.7, -0.15, 1.0, 0.82); // stove wing
-  box(0.45, 0.88, 1.15, wood, 0.925, 0.44, 0.425, cart); box(0.47, 0.02, 1.17, woodLight, 0.925, 0.89, 0.425, cart); surf(0.7, 1.15, -0.15, 1.0, 0.9); // prep wing
+  box(0.45, 0.88, 1.15, wood, 0.925, 0.44, 0.425, cart); box(0.47, 0.02, 1.149, woodLight, 0.925, 0.89, 0.4355, cart); surf(0.7, 1.15, -0.15, 1.0, 0.9); // prep wing, meeting the steel top edge to edge
   box(1.4, 0.03, 1.95, mat({ color: 0x1a1a1c, roughness: 0.8 }), 0, 0.015, 0.75, cart).castShadow = false; // rubber floor mat
   // posts, roof
   for (const [x, z] of [[-1.16, -0.56], [1.16, -0.56], [-1.16, 1.78], [1.16, 1.78]]) box(0.08, 2.62, 0.08, woodDark, x, 1.31, z, cart);
@@ -352,8 +352,9 @@ export function buildCart(scene, city) {
   const swl = mesh(new THREE.PlaneGeometry(0.15, 0.035), new THREE.MeshBasicMaterial({ map: T.labelTex(['営業 OPEN / CLOSE'], { w: 384, h: 90, fs: 36, bg: '#111', fg: '#ffd060' }) }), 0, 0.085, 0.001, sw);
   C.setOpen = (on) => {
     C.open = on; lever.rotation.x = Math.PI / 2 + (on ? 0.6 : -0.6);
-    C.signM.color.setScalar(on ? 1.7 : 0.25); C.signHalo.material.opacity = on ? 0.45 : 0; lanternM.emissiveIntensity = on ? 2.4 : 0.25;
-    C.lanternHalos.forEach((h) => (h.material.opacity = on ? 0.55 : 0.08)); C.lanternLights.forEach((l) => (l.intensity = on ? 3.6 : 0));
+    const e = G.set && G.set.easy ? 0.6 : 1;   // easy on the eyes: the bright points burn lower
+    C.signM.color.setScalar(on ? 1.7 * e : 0.25); C.signHalo.material.opacity = on ? 0.45 * e : 0; lanternM.emissiveIntensity = on ? 2.4 * e : 0.25;
+    C.lanternHalos.forEach((h) => (h.material.opacity = on ? 0.55 * e : 0.08)); C.lanternLights.forEach((l) => (l.intensity = on ? 3.6 : 0));
     G.audio.play('click');
   };
   const swb = { getPos: () => sw.getWorldPosition(_bp3), r: 0.06, press: () => G.game.toggleOpen(), name: 'OPEN / CLOSE switch' };
@@ -393,7 +394,7 @@ export function buildCart(scene, city) {
   // ---------------- per-frame ----------------
   C.update = (dt, t) => {
     let boil = 0;
-    for (const bn of C.burners) if (bn.on) bn.flames.forEach((f, i) => { f.scale.y = 0.8 + Math.sin(t * 30 + i * 2.1) * 0.25; });
+    for (const bn of C.burners) if (bn.on) bn.flames.forEach((f, i) => { f.scale.y = 0.9 + Math.sin(t * 2.2 + i * 2.1) * 0.08; });
     for (const p of C.pots) {
       p.heat = clamp(p.heat + (p.on ? dt / 14 : -dt / 90), 0.15, 1); p.hot = p.heat > 0.9;
       const k = clamp((p.heat - 0.6) / 0.4, 0, 1); boil += k * (p.type ? 0.5 : 1);

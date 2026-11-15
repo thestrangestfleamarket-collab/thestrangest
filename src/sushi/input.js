@@ -197,7 +197,7 @@ export function buildInput(renderer, rig, camera, dom) {
         const x = (A * A - B * B + d * d) / (2 * d), hh = Math.sqrt(Math.max(0, A * A - x * x)), pole = _po.set(side * 0.55, -1, 0.35).applyAxisAngle(UP, yaw); pole.addScaledVector(dir, -pole.dot(dir)).normalize();
         const E = _el.copy(S).addScaledVector(dir, x).addScaledVector(pole, hh);
         const put = (m, a, b2) => { m.visible = true; m.position.copy(a).add(b2).multiplyScalar(0.5); _v2.copy(b2).sub(a); m.scale.set(1, _v2.length(), 1); m.quaternion.setFromUnitVectors(UP, _v2.normalize()); };
-        put(h.arm.up, E, S); put(h.arm.fore, W, E);
+        if (G.cook && G.cook.on) h.arm.up.visible = h.arm.fore.visible = false; else { put(h.arm.up, E, S); put(h.arm.fore, W, E); }   // the chef's own arms reach your hands (cook.js)
       }
       { camera.getWorldPosition(_v); const up = h.pos.y > _v.y - 0.2, sg = Math.abs(h.vel.x) > 0.35 ? Math.sign(h.vel.x) : 0; h.wav = (h.wav || []).filter((t) => G.t - t < 1.3);
         if (up && sg && sg !== h.wsg) { h.wsg = sg; h.wav.push(G.t); if (h.wav.length >= 3 && G.t - (G.lastWave || -9) > 4) { G.lastWave = G.t; G.game.onWave?.(); } } if (!up) h.wav.length = 0; }

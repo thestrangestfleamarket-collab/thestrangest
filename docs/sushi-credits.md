@@ -41,5 +41,8 @@ The cart's television also plays THE LATE MOVIE and CLASSIC TV (`data/sushi/film
 | Television 02 (the shop window's) | `data/sushi/m/television_02.glb` | Benny Weimer, https://polyhaven.com/a/television_02 | CC0 |
 | Boombox | `data/sushi/m/boombox.glb` | Thomas Paul Mouilleron, https://polyhaven.com/a/boombox | CC0 |
 | The parked car (a VW Corrado, red and black) | `data/sushi/m/car.glb`, `data/sushi/tex/car_3.jpg` | nander, https://opengameart.org/content/car-vw-corradon (as COLD BORE made it, `tools/sniper-vehicles.py`) | CC0 |
+| Cash Register 01 (the till on the back counter) | `data/sushi/m/cashregister_01.glb` | Joe Seabuhr, https://polyhaven.com/a/CashRegister_01 | CC0 |
+
+- The till's money (`data/sushi/money/`): United States government pictures, public domain. The $5, $10 and $20 (their 1985 designs) and the $1's back: the Bureau of Engraving and Printing's, https://www.uscurrency.gov (`tools/sushi-assets.py money`; its specimen pictures, faintly overprinted SPECIMEN). The $1's front and the quarter, dime and penny: Bureau of Engraving and Printing and United States Mint pictures from Wikimedia Commons.
 
 - Everything else (the cart's and the street's shapes, the food, the signs, the sounds) is made in the page's own code.

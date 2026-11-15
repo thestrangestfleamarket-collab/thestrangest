@@ -1,6 +1,7 @@
 // the patrons' voices: every one a person Claude Haiku speaks for (POST /sushi/talk), said aloud (POST /sushi/say, else the browser's voice); no words are shown. Your own voice is always on; they hear you, see you wave, and speak first sometimes; so do the people passing in the alley; and they say so when the cook hurts them (react.js)
 import { G, V3, pick } from './ctx.js';
-import { SEATS } from './cart.js';
+import { SEATS, RECIPES, DRINKS } from './cart.js';
+import { usd } from './till.js';
 import { PF } from './pf.js';
 
 const NAMES = { m: ['Tony', 'Mr. Goldberg', 'Eddie', 'Hector', 'Big Mike', 'Old Pete', 'Vinnie', 'Mr. Chen', 'Ray', 'Jimmy'], f: ['Linda', 'Mrs. Rivera', 'Gloria', 'Pat', 'Ms. Washington', 'Debbie', 'Aunt Ruth', 'Yolanda', 'Kim', 'Barbara'] };
@@ -19,6 +20,9 @@ const CANNED = {
   reply: ['Ha. If you say so.', 'Is that right?', 'Sure, sure.'], wave: ['Evening! Busy night?', 'Hey there. How are you doing?', 'Ah, hello!'],
   react: ['Whoa. Everything all right back there?', 'Careful!', 'Ha. Butterfingers.'], chat: ['This rain will not quit. How is your night going?', 'Long day. This is the best part of it.', 'Smells wonderful tonight.', 'You been here long tonight?'],
   noise: ['Sorry? I cannot hear you over the rain.', 'Hm? Say that again?', 'What was that?'],
+  pay: ['Here you go.', 'That should cover it.', 'There you are, pal.'], thanks: ['Thanks. Good night.', 'Appreciate it. See you around.', 'Thanks, take it easy.'],
+  short: ['Hey, I think you shorted me on the change.', 'Hold on, that is not the right change.'], shorted: ['Forget it. Good night.'], over: ['Whoa, you gave me too much. Here.', 'That is too much change, friend.'],
+  waitchange: ['Uh, my change?', 'Could I get my change?'],
   hurt: ['Hey! What is wrong with you?', 'Ow! You hit me!', 'Are you out of your mind?'], police: ['Hey! Police. Step back from that counter, now.', 'I saw that. What is going on here?'],
   hail: ['Evening!', 'Hey there! Busy night?', 'How you doing?'], hello: ['Hey, chef! Evening!', 'Smells good tonight!', 'Look who is open!'], snub: ['Forget it.', 'Not tonight.'],
 };
@@ -31,6 +35,7 @@ export function buildTalk() {
     const g = c.p.sex || 'm', fit = FITS[c.p.style] || [g, pick(VOICES[g]), 1, 24, 60, ''];
     return { g, name: pick(NAMES[g]), age: fit[3] + ((Math.random() * (fit[4] - fit[3] + 1)) | 0), job: fit[5] || pick(JOBS), mood: pick(MOODS), quirk: pick(QUIRKS), style: pick(STYLES), story: pick(STORIES), speaker: fit[1], pitch: fit[2] };
   };
+  const menuText = () => { const g = G.game; if (!g) return ''; const on = g.cfg().menu.map((k) => `${RECIPES[k].name.toLowerCase()} ramen ${usd(RECIPES[k].price)}`); return `The board, cash only: ${on.join(', ')}${g.cfg().drinks ? `, beer ${usd(DRINKS.beer)}, cola ${usd(DRINKS.cola)}` : ''}.`; };
   const orderText = (o) => `${o.recipe.name.toLowerCase()} ramen${o.firm ? ', noodles firm' : ''}${o.no ? `, no ${o.no}` : ''}${o.tops.chashu === 3 ? ', extra chashu' : ''}${o.drink ? `, and a ${o.drink}` : ''}`;
   // everything said and heard, with how long it took and what went wrong, sent to the site in batches (POST /sushi/log) so a night's talk can be read back
   const SID = Math.random().toString(36).slice(2, 10) + Date.now().toString(36), book = []; let bookT = 0;
@@ -76,7 +81,7 @@ export function buildTalk() {
 
   async function say(c, kind, situation, facts, cookSaid) {
     if (c.guest) return; // a tenant from THE MARKET speaks for themself
-    const v = voiceOf(c), reply = kind === 'reply' || kind === 'hurt' || kind === 'police', must = reply || kind === 'order' || kind === 'taste' || kind === 'angry';
+    const v = voiceOf(c), reply = kind === 'reply' || kind === 'hurt' || kind === 'police', must = reply || kind === 'order' || kind === 'taste' || kind === 'angry' || kind === 'pay' || kind === 'short' || kind === 'over' || kind === 'thanks';
     if (c.p.cast && c.p.cast.name) v.story = G.block.story(c.p.cast);
     if (reply) { v.gen = (v.gen || 0) + 1; c.chatT = Math.max(c.chatT || 0, 30); talk.floorT = G.t + 6; for (const o of G.game.customers) if (o !== c) o.chatT = Math.max(o.chatT || 0, 12); }
     else if (v.busy || (v.until || 0) > G.t || (!must && (now || lane.length || talk.hearing || G.t < (talk.floorT || 0)))) return; // nobody starts small talk while you are speaking or being answered
@@ -99,12 +104,18 @@ export function buildTalk() {
 
   talk.event = (c, kind, r) => {
     const waited = c.order ? Math.round(c.maxPatience - c.patience) : 0;
-    if (kind === 'order') say(c, 'order', 'You just ducked out of the rain and sat down at the cart in the alley. Greet the cook and say what you want; you may ask how their night is going.', 'You have not been served yet.');
+    if (kind === 'order') say(c, 'order', 'You just ducked out of the rain and sat down at the cart in the alley. Greet the cook and say what you want; you may ask how their night is going.', `You have not been served yet. ${menuText()}`);
     else if (kind === 'impatient') say(c, 'impatient', 'You have been waiting a while and your bowl has not arrived.', `You have waited about ${waited} seconds. Nothing has been served to you yet.`);
     else if (kind === 'taste') { c.p.gesture?.(r.score >= 80 ? 'nod' : r.score >= 50 ? 'shrug' : 'no'); say(c, r.score >= 80 ? 'good' : r.score >= 50 ? 'ok' : 'bad', 'The cook just set your bowl in front of you and you took your first taste. Say what you think of it.', `Quality ${r.score}/100. ${r.issues.length ? 'Problems with the bowl: ' + r.issues.join('; ') + '.' : 'It is exactly what you ordered, hot and well made.'} ${r.pay ? `You will pay${r.tip ? ' and leave a tip' : ', no tip'}.` : 'It is so wrong you refuse to pay.'}`); }
     else if (kind === 'wave') say(c, 'wave', 'The cook just caught your eye and waved at you from behind the counter. You wave back and say something.', c.result ? 'You have your food.' : 'You are still waiting for your food.');
     else if (kind === 'react') { c.p.gesture?.(Math.random() < 0.5 ? 'laugh' : 'no'); say(c, 'react', `Right in front of you, the cook just ${r}. You react out loud.`, ''); }
     else if (kind === 'chat') say(c, 'chat', c.state === 'eating' ? 'You are eating and want to talk: ask the cook a question or tell them something, about the food, your day, the weather, the radio or the neighbourhood.' : 'You are waiting and want to talk: ask the cook a question (how they are doing, how long they have had the cart, anything this person would ask) or tell them about your day.', c.result ? `Your bowl scored ${c.result.score}/100.` : 'Your bowl has not arrived yet.');
+    else if (kind === 'pay') say(c, 'pay', 'You finished your ramen and are paying the cook in cash. Say something short as you hand it over.', r);
+    else if (kind === 'thanks') say(c, 'thanks', 'You have paid and are getting up to leave the cart. Say goodbye.', r);
+    else if (kind === 'short') { c.p.gesture?.('no'); say(c, 'short', 'You counted the change the cook laid on the counter and it is short. Tell them, plainly.', r); }
+    else if (kind === 'shorted') say(c, 'shorted', 'You are giving up on getting the rest of your change and leaving, annoyed.', r);
+    else if (kind === 'over') say(c, 'over', 'You counted your change and the cook gave you too much. You hand the extra back.', r);
+    else if (kind === 'waitchange') say(c, 'waitchange', 'You paid and are still waiting for your change. Ask for it.', r);
     else if (kind === 'saw') { c.p.gesture?.('no'); say(c, 'react', `Right in front of you, the cook just ${r}. You react out loud, shocked${/knife|ground/.test(r) ? ' and frightened' : ''}.`, ''); }
     else if (kind === 'hurt') say(c, 'hurt', `The cook at the ramen cart just ${r.you}. React out loud this moment, as a real person would: ${r.level >= 2 ? 'shocked, hurt, and angry or frightened' : r.level ? 'startled and annoyed' : 'surprised'}. Say plainly what they just did.`, [c.passer ? 'You were walking through the alley, not at the counter.' : '', r.leave ? 'You are getting up and leaving without paying, and you are not coming back tonight.' : '', r.cop ? 'You are a police officer in uniform, on duty.' : ''].filter(Boolean).join(' '));
     else if (kind === 'police') say(c, 'police', r ? `You are the police officer who walks this block. You hurried over to the ramen cart because the cook just ${r}. Speak to the cook firmly, as a New York cop would: tell them to stop and ask what happened.` : 'You are the police officer who walks this block, and the cook at the ramen cart just attacked you. Speak to the cook firmly, as a New York cop would.', 'You are standing at the cart, in uniform.');
@@ -115,21 +126,21 @@ export function buildTalk() {
   };
   // who you are speaking to: the only one at the counter; or, of several, the one you are looking at
   talk.target = () => {
-    const cs = G.game.customers.filter((c) => c.state === 'sitting' || c.state === 'waiting' || c.state === 'eating'); if (!cs.length) return null; if (cs.length === 1) return cs[0];
+    const cs = G.game.customers.filter((c) => c.state === 'sitting' || c.state === 'waiting' || c.state === 'eating' || c.state === 'paying'); if (!cs.length) return null; if (cs.length === 1) return cs[0];
     const cam = G.camera.getWorldPosition(new V3()), dir = G.camera.getWorldDirection(new V3()); let best = null, bd = 0.86;
     for (const c of cs) { const d = new V3(SEATS[c.seat], 1.3, -1.15).sub(cam).normalize().dot(dir); if (d > bd) { bd = d; best = c; } }
     return best;
   };
   talk.cookSays = (text) => {
-    text = String(text || '').trim().slice(0, 240); if (!text) return false; talk.attend(6); const c = talk.target(), n = G.game.customers.filter((x) => x.state === 'sitting' || x.state === 'waiting' || x.state === 'eating').length;
+    text = String(text || '').trim().slice(0, 240); if (!text) return false; talk.attend(6); const c = talk.target(), n = G.game.customers.filter((x) => x.state === 'sitting' || x.state === 'waiting' || x.state === 'eating' || x.state === 'paying').length;
     talk.last = { who: 'THE COOK', line: text, n: (talk.lastN = (talk.lastN || 0) + 1) };
     note({ who: 'COOK', text, to: c ? voiceOf(c).name : n ? 'nobody (looking at no one, ' + n + ' seated)' : 'nobody (no one seated)' });
     { const cam = G.camera.getWorldPosition(new V3()), dir = G.camera.getWorldDirection(new V3()), pb = G.block?.addressed?.(cam, dir), cd = c ? new V3(SEATS[c.seat], 1.3, -1.15).sub(cam).normalize().dot(dir) : 0;
       if (pb && pb.k > Math.max(cd, 0.9)) { const h = pb.h, sp = h.spk; G.block.greet(h, { kind: 'reply', t: 5, w: Math.random() < 0.35 ? 0.4 : null }); note({ who: 'COOK', text, to: voiceOf(sp).name + ' (passing)' });
         say(sp, 'reply', G.block.mad[h.def.id] ? 'You are walking through the alley past the ramen cart, and the cook, who wronged you earlier tonight, just spoke to you. Answer coldly and briefly.' : 'You are walking through the alley past the ramen cart, and the cook behind its counter just spoke to you. Answer briefly; you may stop to chat or say you will come over for a bowl.', 'You are not at the counter.', text); return true; } }
     if (!c) { if (!n) G.game.callOver?.(); return false; }
-    c.p.gesture?.(Math.random() < 0.7 ? 'nod' : 'think');
-    say(c, 'reply', c.state === 'eating' ? 'You are eating your ramen at the counter and the cook is talking to you. Answer, and keep the conversation going.' : 'You are sitting at the counter waiting for your ramen and the cook is talking to you. Answer, and keep the conversation going.', c.result ? `Your bowl scored ${c.result.score}/100.${c.result.issues.length ? ' Problems: ' + c.result.issues.join('; ') + '.' : ''}` : 'Your bowl has not arrived yet.', text);
+    c.p.gesture?.(Math.random() < 0.7 ? 'nod' : 'think'); const out = G.game.toldOut?.(c, text) || '';
+    say(c, 'reply', c.state === 'eating' ? 'You are eating your ramen at the counter and the cook is talking to you. Answer, and keep the conversation going.' : 'You are sitting at the counter waiting for your ramen and the cook is talking to you. Answer, and keep the conversation going.', (c.result ? `Your bowl scored ${c.result.score}/100.${c.result.issues.length ? ' Problems: ' + c.result.issues.join('; ') + '.' : ''}` : 'Your bowl has not arrived yet.') + (out ? ' ' + out : '') + (c.pay ? ` You are paying: your bill is ${usd(c.pay.due)}, you handed over ${usd(c.pay.tender)}${c.pay.owed ? `, and are owed ${usd(c.pay.owed)} change` : ''}.` : ''), text);
     return true;
   };
 

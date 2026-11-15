@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import { G } from './ctx.js';
 import { Bowl, Food, Raw, Drink, toppingMesh, TOPPINGS, RAW } from './items.js';
+import { Cash, KINDS } from './till.js';
 
 const _v = new THREE.Vector3(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(), _m = new THREE.Matrix4(), _i = new THREE.Matrix4(), _n = new THREE.Vector3();
 const r3 = (v) => Math.round(v * 1000) / 1000, r4 = (v) => Math.round(v * 1e4) / 1e4;
@@ -60,7 +61,7 @@ export function buildMirror() {
       for (let i = 0; i < P.count; i++) { p[i * 3] = P.getX(i); p[i * 3 + 1] = P.getY(i); p[i * 3 + 2] = P.getZ(i); if (N) { n[i * 3] = Math.round(N.getX(i) * 127); n[i * 3 + 1] = Math.round(N.getY(i) * 127); n[i * 3 + 2] = Math.round(N.getZ(i) * 127); } else n[i * 3 + 1] = 127; if (U) { uv[i * 2] = U.getX(i); uv[i * 2 + 1] = U.getY(i); } }
       const e = { p: b64(p), n: b64(n), uv: b64(uv) }; if (ix) { const a = new Uint16Array(ix.count); for (let i = 0; i < ix.count; i++) a[i] = ix.getX(i); if (P.count < 65536) e.i = b64(a); } if (C) { const c = new Uint8Array(P.count * 3); for (let i = 0; i < P.count; i++) { c[i * 3] = C.getX(i) * 255; c[i * 3 + 1] = C.getY(i) * 255; c[i * 3 + 2] = C.getZ(i) * 255; } e.c = b64(c); } if (g.groups.length) e.g = g.groups.map((q) => [q.start, q.count, q.materialIndex]); lib[k] = e; };
     const all = (o) => o.traverse((q) => { if (q.isMesh && !q.isSkinnedMesh && q.geometry && q.geometry.attributes.position) { keep(q.geometry); for (const m of Array.isArray(q.material) ? q.material : [q.material]) if (m && m.map) pic(m.map); } });
-    const made = []; for (const k in TOPPINGS) { made.push(new Food(k)); all(toppingMesh(k)); } made.push(new Food('noodle')); for (const k in RAW) made.push(new Raw(k)); for (const d of ['beer', 'cola', 'sake', 'tea', 'water']) { try { made.push(new Drink(d)); } catch (e) { /* not a drink here */ } } made.push(new Bowl());
+    const made = []; for (const k in TOPPINGS) { made.push(new Food(k)); all(toppingMesh(k)); } made.push(new Food('noodle')); for (const k in RAW) made.push(new Raw(k)); for (const d of ['beer', 'cola', 'sake', 'tea', 'water']) { try { made.push(new Drink(d)); } catch (e) { /* not a drink here */ } } made.push(new Bowl()); for (const k of KINDS) made.push(new Cash(k));
     all(G.itemRoot); for (const it of G.items) all(it.obj); for (const h of G.hands || []) if (h.arm) for (const k in h.arm) all(h.arm[k]); for (const it of made) it.remove();
     // the hands, open and closed, as they stand skinned
     const hand = G.hands && G.hands.find((h) => h.models); if (hand) for (const side in hand.models) { const H = hand.models[side]; for (let t = 0; t < 200 && !H.rig; t++) await new Promise((r) => setTimeout(r, 50)); if (!H.rig) continue;

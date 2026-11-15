@@ -1,7 +1,7 @@
 // the cart and THE MARKET, live both ways: when this page runs inside the holodeck's shell, what the cook is doing (head, hands and fingers, what is held, the burners, the bowls, who sits where, what is said) goes to the shell four times a second and from there to everyone in the section; whoever in the market is standing or sitting by its cart is seen there as their own figure, heard from where they are, and orders from the menu; and every other cook in the section works a cart of their own along the alley
 import * as THREE from 'three';
 import { G, mergeStatic } from './ctx.js';
-import { SEATS, RECIPES } from './cart.js';
+import { SEATS, RECIPES, DRINKS as DRINK_PRICE } from './cart.js';
 import { makePerson, avatarsReady } from './avatars.js';
 import * as T from './tex.js';
 import { NET } from '../holo/net.js';
@@ -51,7 +51,7 @@ export function buildLive() {
   live.pose = (f) => { const b = f && f.b, w = b && live.watchers.get(String(f.from || '')); if (!w || !w.av || !Array.isArray(b.m)) return; if (!w.av.key.startsWith(String(b.k) + ':')) { if (G.t - (w.askT ?? -99) > 3) { w.askT = G.t; w.av.dispose(); w.av = null; figs.delete(String(f.from)); ask(String(f.from)); } return; } w.av.pose(b.m, b.x); };
   // a tenant who takes a stool at the market's cart is a customer here: walked to a seat, shown the menu, given what they chose, served, and told how it went
   live.tell = (o) => { if (link) link.evt(o); else if (framed) try { window.parent.postMessage({ yataiEvt: o }, location.origin); } catch (e) { /* alone */ } };
-  live.menu = () => { const cfg = G.game.cfg(), dp = G.game.drinkPrice; return { r: cfg.menu.map((k) => [k, RECIPES[k].name, RECIPES[k].price]), d: cfg.drinks ? DRINKS.map(([k, n]) => [k, n, dp ? dp(k) : null]) : [], mods: !!cfg.mods }; };
+  live.menu = () => { const cfg = G.game.cfg(); return { r: cfg.menu.map((k) => [k, RECIPES[k].name, RECIPES[k].price]), d: cfg.drinks ? DRINKS.map(([k, n]) => [k, n, DRINK_PRICE[k] ?? null]) : [], mods: !!cfg.mods }; };
   live.ordered = (c) => { const o = c.order; live.tell({ ord: { to: c.guest, seat: c.seat, text: `${o.recipe.name} ramen${o.firm ? ', noodles firm' : ''}${o.no ? ', no ' + o.no : ''}${o.drink ? ', and a ' + o.drink : ''}`, price: o.price || 0, chose: c.want ? 1 : 0 } }); };
   live.stood = (id) => { const w = live.watchers.get(id); if (w) w.seated = null; };
   live.evt = (e) => { const id = e && String(e.from || ''); if (!id) return;

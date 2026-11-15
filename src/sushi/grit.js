@@ -35,8 +35,8 @@ export function buildGrit(scene, city, cart) {
   const paper = box(0.3, 0.012, 0.21, mat({ map: T.dirty(T.canvasTex(256, 180, (g) => { g.fillStyle = '#cfc8b4'; g.fillRect(0, 0, 256, 180); g.fillStyle = '#222'; g.font = `bold 34px ${T.JP}`; g.fillText('夕刊スポーツ', 12, 40); for (let y = 60; y < 170; y += 9) g.fillRect(10, y, 100 + ((y * 7) % 130), 3); g.fillRect(150, 60, 96, 70); }), 9, { stains: 8, yellow: 1 }), roughness: 0.9 }), 1.05, 1.008, -0.76, root); paper.rotation.y = 0.35;
 
   // hand-brushed price strips taped to the cart's front, none of them straight
-  ['醤油 四五〇円', '塩 四五〇円', '味噌 五〇〇円', '豚骨 五五〇円', 'ビール 三〇〇円'].forEach((s, i) => {
-    const t = T.canvasTex(96, 384, (g, w, h) => { g.fillStyle = '#d8ceb0'; g.fillRect(0, 0, w, h); g.fillStyle = '#16120e'; g.font = `bold 50px ${T.JP}`; g.textAlign = 'center'; [...s.replace(' ', '')].forEach((c, k) => { g.globalAlpha = 0.8 + ((k * 7) % 3) * 0.07; g.fillText(c, w / 2 + ((k * 13) % 7) - 3, 52 + k * 54); }); g.globalAlpha = 1; g.fillStyle = '#a01c1c'; g.fillRect(0, 0, w, 10); });
+  ['SHOYU $4.50', 'SHIO $4.50', 'MISO $5.00', 'TONKOTSU $5.50', 'BEER $1.50'].forEach((s, i) => {
+    const t = T.canvasTex(96, 384, (g, w, h) => { g.fillStyle = '#d8ceb0'; g.fillRect(0, 0, w, h); g.fillStyle = '#16120e'; g.font = `bold 46px ${T.JP}`; g.textAlign = 'center'; g.save(); g.translate(w / 2 + 14, h / 2 + 4); g.rotate(Math.PI / 2); g.fillText(s, 0, 0, h - 30); g.restore(); g.fillStyle = '#a01c1c'; g.fillRect(0, 0, w, 10); });
     T.dirty(t, 40 + i, { stains: 10, drips: 4, yellow: 1 });
     const m = mesh(new THREE.PlaneGeometry(0.11, 0.44), mat({ map: t, roughness: 0.95, side: THREE.DoubleSide }), -0.9 + i * 0.42 + (R() - 0.5) * 0.06, 0.62 + (R() - 0.5) * 0.06, -0.595, root); m.rotation.set(0, Math.PI, (R() - 0.5) * 0.14); m.castShadow = false;
   });

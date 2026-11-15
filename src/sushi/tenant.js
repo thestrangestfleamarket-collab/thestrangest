@@ -29,6 +29,6 @@ export function tenantFigure(D, mirror = 1) {
     update(dt) { if (!got) return; const k = Math.min(1, dt * 12); for (let i = 0; i < np; i++) { const a = cur[i].elements, b = want[i].elements, o = PM.value[i].elements; for (let j = 0; j < 16; j++) o[j] = a[j] += (b[j] - a[j]) * k; }
       for (const H of held) if (H.on) { const a = H.cur.elements, b = H.want.elements; for (let j = 0; j < 16; j++) a[j] += (b[j] - a[j]) * k; H.m.matrix.copy(H.cur); H.m.matrixWorldNeedsUpdate = true; } },
     held: () => held.filter((H) => H.on).length,
-    posed: () => got,
+    posed: () => got, hipY: () => want[0].elements[13],
     dispose() { root.removeFromParent(); g.dispose(); mat.dispose(); for (const H of held) { H.m.geometry.dispose(); H.m.material.dispose(); } } };
 }

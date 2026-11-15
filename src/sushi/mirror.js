@@ -1,4 +1,4 @@
-// THE CART AS IT IS, FOR THE MARKET: every loose thing on the cart (and the cook's hands and sleeves) is told as its place and the meshes it is made of, each mesh named by a number worked from its own points, so THE MARKET's alley can draw the very same meshes (baked out of this page into data/yatai.json by tools/yatai-bake.cjs) where the cook has them
+// THE CART AS IT IS, FOR THE MARKET: every loose thing on the cart is told as its place and the meshes it is made of, each mesh named by a number worked from its own points, so THE MARKET's alley can draw the very same meshes (baked out of this page into data/yatai.json by tools/yatai-bake.cjs) where the cook has them
 import * as THREE from 'three';
 import { G } from './ctx.js';
 import { Bowl, Food, Raw, Drink, toppingMesh, TOPPINGS, RAW } from './items.js';
@@ -25,12 +25,10 @@ const place = (o) => { o.matrixWorld.decompose(_v, _q, _s); return [r3(_v.x), r3
 
 export function buildMirror() {
   const mirror = {}; G.mirror = mirror; let seq = 0, turn = 0; const sent = new Map();
-  // everything to tell: [id, its root, a look given outright (the hands: a skinned mesh, baked curled and open)]
+  // everything to tell: [id, its root] (the cook's own body, head and arms go as the market's headset body does: live.js)
   const rag = () => { for (const it of G.items) if (it.kind === 'rag') it.obj.traverse((o) => { if (o.geometry && !o.geometry.userData.mk) o.geometry.userData.mk = 'rag'; }); };   // the cloth moves point by point: it is one mesh by name
   const things = () => { const L = []; rag();
     for (const it of G.items) if (!it.dead && it.obj && it.obj.parent) L.push([it.mid || (it.mid = (++seq).toString(36)), it.obj]);
-    (G.hands || []).forEach((h, i) => { if (!h.models) return; for (const k in h.models) { const r = h.models[k].root; if (r.visible) L.push(['h' + i + k, r, [['hand' + k + (h.held || h.grip ? 1 : 0), [0xe0b08c, '', 0], [0, 0, 0, 0, 0, 0, 1, 1, 1, 1]]]]); }
-      if (h.arm) for (const k in h.arm) if (h.arm[k].visible) L.push(['a' + i + k, h.arm[k]]); });
     return L; };
   // one message of at most about 9 KB: who exists, where each thing that moved is, and the looks that changed (the rest in turn, so a newcomer has it all in a few seconds)
   mirror.frame = () => { const L = things(), ids = L.map((t) => t[0]), s = [], l = []; let size = ids.length * 5, n = 0; for (const id of [...sent.keys()]) if (!ids.includes(id)) sent.delete(id);

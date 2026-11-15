@@ -1,5 +1,5 @@
 // DEAD END's house: a family's two-storey house and its basement in a storm at night. A hall and an enclosed stair, a living room, dining room, study, kitchen and utility room; four rooms and a bathroom upstairs; a furnace, shelves and a crawlspace below. Every lamp is a lamp you can switch, every door swings, and every place a body fits is listed in spots.js
-import { ART as PICS, fuse, wbox, mergeStatics, THREE, RAPIER, LOW, G, grp, clamp, lerp, rnd, scene, P, mat, boxMesh, stat as stat0, dyn as dyn0, sBox, sCyl, sBall, model } from './core.js';
+import { ART as PICS, fuse, wbox, mergeStatics, THREE, RAPIER, LOW, G, grp, clamp, lerp, rnd, scene, P, mat, boxMesh, stat as stat0, dyn as dyn0, sBox, sCyl, sBall, model, TEX } from './core.js';
 import { makeCloth } from './cloth.js';
 
 const W = .55, LEN = 12, HI = 2.6, PITCH = 2.9, CUT = 3.65, ADD = 1.5, RX = 6 + ADD, T = .2, LV = [-PITCH, 0, PITCH, 2 * PITCH];
@@ -38,7 +38,7 @@ function build() {
   const boards0 = mat('wood_floor_worn', { tile: 2, color: 0x6f675c });
   /* the slabs: the basement's floor, the ground floor with the hole the cellar stair goes down through, the upper floor with the stairwell, and the roof's underside. A slab is the ceiling of the room below it */
   const slab = (top, hole, m = ceilM) => { const a = -6.2, b = 6.2, f = .2, k = -12.2, pc = (x0, x1, z0, z1) => { if (x1 - x0 > .01 && z0 - z1 > .01) statW(x1 - x0, .3, z0 - z1, (x0 + x1) / 2, top - .15, (z0 + z1) / 2, m); }; if (!hole) return pc(a, b, f, k); const [x0, x1, z0, z1] = hole; pc(a, x0, f, k); pc(x1, b, f, k); pc(x0, x1, f, z0); pc(x0, x1, z1, k); };
-  slab(LV[0], null, conc); slab(LV[1], [.2, 1.2, -4.4, -8.6]); slab(LV[2], [.2, 1.2, -4, -8.2]); slab(LV[3], [.2, 1.2, -4, -8.2], boards0); slab(LV[3] + PITCH, null, boards0); stat0(5, .3, 7.4, 0, -.15, 3.9, conc); stat0(60, .1, 60, 0, -.2, -6, asphalt, { ghost: true, noShadow: true });
+  slab(LV[0], null, conc); slab(LV[1], [.2, 1.2, -4.4, -8.6]); slab(LV[2], [.2, 1.2, -4, -8.2]); slab(LV[3], [.2, 1.2, -4, -8.2], boards0); slab(LV[3] + PITCH, null, boards0); stat0(5, .3, 7.4, 0, -.15, 3.9, conc);
   const fl = (x0, x1, z0, z1, m) => stat(x1 - x0, .03, z0 - z1, (x0 + x1) / 2, .012, (z0 + z1) / 2, m, { ghost: true, noShadow: true });
 
   /* walls: a run along z in the plane x = c ('z'), or along x in the plane z = c ('x'), with holes for doors and windows */
@@ -309,6 +309,21 @@ function build() {
   mk('guitar', -1.9, .05, -7.2, { long: 1, mass: 2, rx: Math.PI / 2, name: 'a guitar' }); mk('violin', 2, .05, -1.5, { long: .6, mass: .6, rx: Math.PI / 2, name: 'a violin' }); mk('trumpet', -2.8, .05, -3.6, { long: .5, mass: 1, kind: 'metal', name: 'a trumpet' }); mk('lectern', 3.4, 0, -9.9, { h: 1.3, mass: 9, name: 'a lectern', asleep: true }); mk('bistrotable', -1.6, 0, -5, { h: .75, mass: 8, name: 'a small table', asleep: true }); for (const [x, z, ry] of [[-2.3, -5, 1.57], [-.95, -5.1, -1.6]]) mk('bistrochair', x, 0, z, { h: .88, mass: 4, ry, name: 'a chair', asleep: true });
   for (const [x, z] of [[-5.9, -8.2], [1.9, -11.2]]) mk('chair', x, 0, z, { h: .93, mass: 4, ry: rnd(6), name: 'a chair', asleep: true }); mk('armchair', -6.6, 0, -6.6, { h: .9, mass: 16, ry: 1.2, kind: 'soft', name: 'an armchair', asleep: true });
   RAW = false;
+
+  /* ───────── outside: a lawn, a path to the street, a stone wall, street lamps, parked cars, the neighbours' houses, a fence and trees right up to the windows. Nobody walks there; it is what the storm shows you through the glass ───────── */
+  { RAW = true; Y = 0; const grass = mat('leafy_grass', { tile: 3, color: 0x7f8f78 }); grass.userData.world = true; stat0(130, .1, 130, 0, -.1, -6, grass, { ghost: true, noShadow: true }); stat0(100, .06, 7.5, 0, -.04, 17.6, asphalt, { ghost: true, noShadow: true }); stat0(100, .08, 1.5, 0, -.03, 13.1, conc, { ghost: true, noShadow: true }); stat0(1.5, .08, 5, 0, -.03, 9.9, conc, { ghost: true, noShadow: true });
+    const out = (n, x, z, ry, o) => { const g = model('out_' + n, o); g.position.set(x, 0, z); g.rotation.y = ry; scene.add(g); return g; };
+    for (let x = -31.2; x <= 31.3; x += 2.6) if (Math.abs(x) > 1.6) out('stonewall', x, 12.1, 0, { long: 2.66 });
+    out('lamp', 8, 13, 0, { h: 6.4 }); out('lamp', -17, 13, 0, { h: 6.4 }); halo(0xffc592, 2.6, -17, 6.1, 13, .5); halo(0xffc592, 2.2, 8, 6.1, 13, .45); out('lada', -5.5, 16.2, Math.PI / 2, { long: 4 }); out('trabant', 13, 19.2, -1.45, { long: 3.5 });
+    for (const [n, x, z, ry, lit] of [['cottage', -15, 31, Math.PI, 1], ['villa', 5, 32, Math.PI, 0], ['h6', 23, 31, Math.PI, 1], ['white', -33, 30, Math.PI, 0], ['cottage', -27, -6, Math.PI / 2, 0], ['h6', 29, -14, -Math.PI / 2, 1]]) { const g = out(n, x, z, ry, { h: 7.5 }), sz = g.userData.size; if (lit) halo(0xffb060, 1.5, x + (Math.abs(x) > 26 && z < 20 ? -Math.sign(x) * (Math.max(sz.x, sz.z) / 2 + .2) : 1.2), 2.2, z < 20 ? z + 1 : z - Math.min(sz.x, sz.z) / 2 - .2, .4); }
+    for (const [x, z, ry] of [[-10.2, -4.6, .4], [10.4, -9.3, 2.2], [-2.2, -15.2, 4]]) { const g = out('deadtree', x, z, ry, { h: 7 }); g.traverse(m => { if (m.isMesh) { m.material = m.material.clone(); m.material.side = THREE.DoubleSide; m.material.alphaTest = .4; } }); }
+    stat0(38, 1.7, .08, 0, .85, -24, woodD, { ghost: true }); for (const sx of [-1, 1]) stat0(.08, 1.7, 36, sx * 19, .85, -6, woodD, { ghost: true });
+    // trees and shrubs: two crossed cards each, all of one kind one mesh
+    const CARD = { island_tree_01: [4.91, 5.13], tree_small_02: [4.38, 4.65], jacaranda_tree: [24.9, 19.9], shrub_02: [6.7, 2.6] }, by = {}, card = (n, x, z, k = 1) => { const [w, h] = CARD[n], ry = rnd(3.14); for (const a of [0, Math.PI / 2]) { const g = new THREE.PlaneGeometry(w * k, h * k); g.translate(0, h * k / 2 - .05, 0); g.rotateY(ry + a); g.translate(x, 0, z); (by[n] = by[n] || []).push(g); } };
+    card('jacaranda_tree', -11, 7, .5); card('jacaranda_tree', 16, -21, .55); for (const [x, z] of [[11, 5], [-12, -16], [4, -19], [-20, 2], [21, -4], [-6, -22], [14, -28], [-18, -27], [-24, 18], [26, 10]]) card('island_tree_01', x, z, rnd(1.2, 1.7)); for (const [x, z] of [[-10.5, -9], [10.8, -3], [9.5, -17], [-9, -19], [0, -18], [18, 8], [-22, -12]]) card('tree_small_02', x, z, rnd(1.1, 1.5));
+    for (const [x, z] of [[-8.7, -2], [-8.7, -7.5], [8.7, -6], [8.8, -10.5], [-3.5, -13.3], [4, -13.4], [-4.8, 1.1], [4.8, 1.1], [-12, 11], [14, 11]]) card('shrub_02', x, z, rnd(.4, .55));
+    for (const n in by) { const m = new THREE.Mesh(fuse(by[n]), new THREE.MeshLambertMaterial({ map: TEX.cards[n], alphaTest: .45, side: THREE.DoubleSide, color: 0x8f998c })); m.castShadow = true; scene.add(m); }
+    RAW = false; }
   Y = 0;
 
   /* what frames the windows and what hangs on the walls: the family's pictures (the Met's open-access portraits and paintings), aged a little, all on one sheet */

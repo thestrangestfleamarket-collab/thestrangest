@@ -16,3 +16,5 @@ Changes made: pictures resized to 1024 px or less and re-encoded as JPEG (`tools
 Libraries: three.js (MIT), Rapier (Apache 2.0). The walls, stairs, doors, windows, wardrobes, cupboards, beds, bath, curtains, lamps' light, rain, lightning, dust and the sounds of the television, radio, fans and music box are made in code.
 
 The thing's voice: ElevenLabs, the library voice "Lord Nyx - Deep, Demonic Villain" (`data/hide/snd/demon01`–`12.mp3`, made 14 Nov 2026).
+
+Outside the windows: HULL DOWN's houses, stone wall, street lamp, cars, dead tree, tree cards and grass (`data/tank/`): their makers are credited in `docs/tank-credits.md`.

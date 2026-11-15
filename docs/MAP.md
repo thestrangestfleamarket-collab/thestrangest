@@ -161,7 +161,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `108-game-play-3-guitar-2-tunes.js` | 11.1 | top level | GTBOOK (109 146zob), GTCHORD (146zob), GTDAMP (109), GTEV (109), GTLH (109), GTS (109), GTSONG (109), GTSTRUM (109), GTTUNE (109), gtCompile (146zob), gtNext (109), gtPosAt (109), gtSet (109) | 106: GT |
 | `109-game-play-3-guitar-3-hands.js` | 13.8 | top level |  | 003b: GTRH SND; 073: P; 106: CAST GT GTA GTPHYS GTWR GTYP PLAY221 PLAYA gtAudio gtHz gtMute gtPlay; 108: GTBOOK GTDAMP GTEV GTLH GTS GTSONG GTSTRUM GTTUNE gtNext gtPosAt gtSet |
 | `110-musician.js` | 6.5 | top level | MUSGEO (111d 117a), figureMesh (111d 117a), musBody (111d 117a), musScale (111a 111d 117a), sheetView (111a), spreadPose (111a) | 003: SHARED THREE; 003b: MUS SKY UI W3; 004: PPU renderer scene; 006: MAPG STORE ZU |
-| `111a-bodies.js` | 45.8 | top level | BODIES (111ab 111c 111cb 111d 111e 111ec 111ei 111fb 111fd 111g 146a 146c 146ia 146ja 146zb 146zca 146zob 146zp 146zr 146zs 150pa 150pbb 150pbc 151h 159d 162cb) | 003: SHARED THREE; 003a: B64 I16 U16; 003b: ARCH CHARS LOOKS NPCS RAG VIS VIT W3 WINDOWS pos st; 004: PPU; 005: SAVE; 006: ASTEP MAPG MODS SYS TILE; 076: HOMES ROAM stfree; 110: musScale sheetView spreadPose |
+| `111a-bodies.js` | 45.8 | top level | BODIES (111ab 111c 111cb 111d 111e 111ec 111ei 111fb 111fd 111g 146a 146bg 146c 146ia 146ja 146zb 146zca 146zob 146zp 146zr 146zs 150pa 150pbb 150pbc 151h 159d 162cb) | 003: SHARED THREE; 003a: B64 I16 U16; 003b: ARCH CHARS LOOKS NPCS RAG VIS VIT W3 WINDOWS pos st; 004: PPU; 005: SAVE; 006: ASTEP MAPG MODS SYS TILE; 076: HOMES ROAM stfree; 110: musScale sheetView spreadPose |
 | `111ab-knight.js` | 0.4 | top level |  | 111a: BODIES |
 | `111b-hands.js` | 13.0 | top level | HANDS (111c 146zoa 146zp 146zr 146zs 162c 162cb) | 003: SHARED THREE; 003a: B64 I16 U16; 003b: W3; 004: renderer; 006: SYS TILE |
 | `111c-avatar.js` | 53.3 | top level | AVATAR (111cb 111da 140ba 146c 150pbb 150pbc 159d 162c 162g) | 003: THREE; 003a: B64 I16 U16; 003b: LOOKS ONLINE WIELD st; 005: OWNED; 006: SYS; 111a: BODIES; 111b: HANDS |
@@ -272,7 +272,7 @@ Places built with `await grab(name, async()=>{...})` are one function each, ofte
 | `146bb-dm.js` | 18.4 | top level | DM (162b) | 003: SHARED; 003b: BUGS pos; 003d: SAY; 006: MODS SYS TILE; 087: CREATS |
 | `146bf-hollow.js` | 1.4 | top level |  | 003b: ONLINE; 003d: SAY; 006: STORE |
 | `146bg-headset.js` | 0.6 | top level |  | 003b: FORAGE INV; 006: STORE SYS |
-| `146bg-yatai.js` | 14.1 | top level |  | 003: SHARED THREE; 003b: INV ONLINE ROOMS pos; 003d: SAY; 004: scene; 006: MAPSTAIR MODS STORE SYS TILE; 038zc: IKIT |
+| `146bg-yatai.js` | 14.6 | top level |  | 003: SHARED THREE; 003b: INV ONLINE ROOMS pos; 003d: SAY; 004: scene; 006: MAPSTAIR MODS STORE SYS TILE; 038zc: IKIT; 111a: BODIES |
 | `146c-equip.js` | 22.6 | top level |  | 003: SHARED THREE; 003b: EQUIP FLOW FORAGE ITEMS LOOKS VIT VR W3; 003d: SAY; 004: OutputPass ShaderPass; 005: OWNED; 006: SYS; 072b: GARB; 111a: BODIES; 111c: AVATAR |
 | `146d-gear.js` | 3.2 | top level |  | 003: SHARED THREE; 003b: EQUIP FORAGE INSPECT ITEMS LITE ONLINE pos; 003d: SAY; 006: SYS TILE; 101: GEMS |
 | `146e-golems.js` | 3.4 | top level | GOLEMS (146mb 146zn) | 003: SHARED THREE; 003b: INV PAWNL RIDE SFX VIS VIT pos; 003d: SAY; 004: scene; 006: MODS SYS TILE; 101: GEMS |

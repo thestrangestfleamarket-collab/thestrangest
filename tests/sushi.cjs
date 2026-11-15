@@ -104,6 +104,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
     const frames = n => new Promise(res => { const t0 = G.t, iv = setInterval(() => { if (G.t - t0 >= n * 0.049) { clearInterval(iv); res(); } }, 50); });
     const ctl = h => xr.controllers[h], put = (h, w, q) => { const l = w.clone(); G.rig.worldToLocal(l); ctl(h).position.set(l.x, l.y, l.z); if (q) ctl(h).quaternion.set(q.x, q.y, q.z, q.w); }, H = h => G.hands.find(x => x.source && x.source.handedness === h);
     await G.debug.startVR(); await frames(6); out.presenting = G.renderer.xr.isPresenting; out.hands = !!(H('left') && H('right'));
+    put('right', V(0.22, 1.12, -0.05), new Q()); put('left', V(-0.22, 1.12, -0.05), new Q()); await frames(5); { const P = G.cook && G.cook.P, d = (s) => { const h = H(s === 'R' ? 'right' : 'left'); return P && h ? P.bones.find((b) => b.name === 'hand' + s).getWorldPosition(V(0, 0, 0)).distanceTo(h.models[s].root.position) : 9; }; out.cook = { on: !!(G.cook && G.cook.on), L: +d('L').toFixed(3), R: +d('R').toFixed(3), sleeves: H('right').arm.up.visible }; }
     const pot = G.cart.pots[0]; put('left', V(-0.6, 0.7, pot.z), new Q().setFromAxisAngle(V(0, 1, 0), Math.PI / 2)); await frames(3); put('left', V(-0.588, 0.7, pot.z)); await frames(3); out.knob = pot.on;
     put('right', V(0.93, 1.06, -0.36), new Q()); await frames(3); ctl('right').updateButtonValue('squeeze', 1); await frames(3); out.took = H('right').held && H('right').held.kind;
     put('right', V(-0.3, 1.0, -0.26)); await frames(4); ctl('right').updateButtonValue('squeeze', 0); await frames(24); const bowl = G.items.find(i => i.kind === 'bowl'); out.rest = !bowl.free && Math.abs(bowl.obj.position.y - 0.9) < 0.02;
@@ -114,6 +115,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
     const x0 = G.rig.position.x; ctl('left').updateAxis('thumbstick', 'x-axis', 1); await frames(6); ctl('left').updateAxis('thumbstick', 'x-axis', 0); out.moved = G.rig.position.x > x0 + 0.05;
     return out; });
   ok(vr.presenting && vr.hands, 'in the headset: a session with both controllers'); ok(vr.knob, 'a controller tip turns a burner knob'); ok(vr.took === 'bowl' && vr.rest, 'grip takes a bowl from the stack; let go, it comes to rest on the counter');
+  ok(vr.cook.on && vr.cook.L < 0.05 && vr.cook.R < 0.05 && !vr.cook.sleeves, 'in the headset you are the carving chef: its arms reach your own wrists (' + JSON.stringify(vr.cook) + ')');
   ok(vr.tare === 'shoyu' && vr.home, 'a roll of the wrist pours the tare; the ladle flies home and refills'); ok(vr.left === 7, 'the knife chops by its own motion (' + vr.left + ' of 10 left)'); ok(vr.moved, 'the left stick steps along the cart');
   ok(!miss.length, 'nothing missing' + (miss.length ? ': ' + [...new Set(miss)].slice(0, 6).join(', ') : '')); ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   await b.close(); srv.close(); console.log(fails.length ? fails.length + ' FAILED' : 'YATAI \'86 passes'); process.exit(fails.length ? 1 : 0);

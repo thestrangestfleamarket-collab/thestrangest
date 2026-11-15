@@ -9,7 +9,8 @@ import { buildInput } from './input.js';
 import { updateItems } from './items.js';
 import * as Items from './items.js';
 import { GameAudio } from './audio.js';
-import { loadAvatars } from './avatars.js';
+import { loadAvatars, makePerson } from './avatars.js';
+import { PF } from './pf.js';
 import { buildLife } from './life.js';
 import { buildTalk } from './talk.js';
 import { buildGrit } from './grit.js';
@@ -18,6 +19,7 @@ import { buildMenu } from './menu.js';
 import { buildReport } from './report.js';
 import { buildTV } from './tv.js';
 import { buildLive } from './live.js';
+import { buildCook } from './cook.js';
 import { PH } from './physics.js';
 import * as T from './tex.js';
 
@@ -58,7 +60,7 @@ const grit = buildGrit(scene, city, cart);
 const guide = buildGuide(scene, cart);
 T.metreUV(cart.group);
 G.baked = mergeStatic(cart.group) + mergeStatic(city.group);
-const tv = buildTV(scene, city.shops), live = buildLive();
+const tv = buildTV(scene, city.shops), live = buildLive(), cook = buildCook();
 
 // on a screen: the scene is drawn small, then enlarged with ordered dither and a short palette, as that console's output looked
 const LOWH = 540; let lowRT = null;
@@ -107,7 +109,7 @@ function tick(dt) {
   game.update(dt, G.t);
   city.update(dt, G.t);
   life.update(dt, G.t);
-  talk.update(dt); tv.update(dt); live.update(dt);
+  talk.update(dt); tv.update(dt); live.update(dt); cook.update(dt);
   grit.update(dt, G.t);
   guide.update(dt, G.t); gameMenu.update(dt); report.update(dt);
   G.fx.update(dt);
@@ -134,7 +136,7 @@ function frame(now) {
 }
 renderer.setAnimationLoop(frame);
 
-G.debug = { Items, PH, city, guide, menu: gameMenu, report, tick, frame, render, input, startDesktop, startVR, THREE };
+G.debug = { Items, PH, person: makePerson, PF, city, guide, menu: gameMenu, report, tick, frame, render, input, startDesktop, startVR, THREE };
 window.G = G;
 { const box = $('say'); // on a screen: M the settings board, G the guide, T to type what you say if you would rather not speak it
   addEventListener('keydown', (e) => { if (G.mode !== 'desktop' || e.repeat) return; if (e.target === box) { if (e.code === 'Enter') { const t = box.value.trim(); box.value = ''; box.style.display = 'none'; box.blur(); if (t) talk.cookSays(t); } else if (e.code === 'Escape') { box.value = ''; box.style.display = 'none'; box.blur(); } return; }

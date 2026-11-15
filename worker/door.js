@@ -108,9 +108,17 @@ export default {
     // AR DUEL (src/duel/): its own page at /duel, to anyone with the link; its pictures under /duel-assets/
     if ((request.method === "GET" || request.method === "HEAD") && p === "/duel") return page(env, url, "/duel", request, "no-cache");
     if (p === "/duel/") return Response.redirect(url.origin + "/duel" + url.search, 301);
-    // DEAD END (src/hide/): its own page at /hide, to anyone with the link; its pictures, models and sounds under /hide-assets/; the thing's mind (POST /hide/mind) only to a login
+    // DEAD END (src/hide/): its own page at /hide, to anyone with the link; its pictures, models and sounds under /hide-assets/; the thing's mind and voice (POST /hide/mind, /hide/say) to anyone who plays
     if ((request.method === "GET" || request.method === "HEAD") && p === "/hide") return page(env, url, "/hide", request, "no-cache");
     if (p === "/hide/") return Response.redirect(url.origin + "/hide" + url.search, 301);
+    // DEAD END's thing thinks and speaks, for anyone who plays (owner, 14 Nov 2026): the mind (POST /hide/mind, Claude Haiku: where it looks next and what it says) and its voice (POST /hide/say, ElevenLabs: a line in a demon's voice). The day's count is the login's, or the address's for a visitor
+    if (request.method === "GET" && p === "/hide/keys") return new Response(JSON.stringify({ claude: !!env.ANTHROPIC_API_KEY, eleven: !!env.ELEVENLABS_API_KEY }), { headers: { "content-type": "application/json", "cache-control": "no-store" } });
+    if (request.method === "POST" && (p === "/hide/mind" || p === "/hide/say")) { if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
+      const id = await who(env, request, dev).catch(() => null), key = id || "ip:" + (request.headers.get("CF-Connecting-IP") || "?"); let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
+      if (p === "/hide/say") { const text = HIDE.line(body.text); if (!text) return json({ why: "nothing to say" }, 400); if (!env.ELEVENLABS_API_KEY) return json({ why: "the website has no ELEVENLABS_API_KEY secret yet" }, 501); if (tooMany("hidesay:" + key, 12)) return json({ why: "too much at once, wait a minute" }, 429);
+        try { const v = await fetch("https://api.elevenlabs.io/v1/text-to-speech/" + HIDE.VOICE + "?output_format=mp3_44100_64", { method: "POST", headers: { "xi-api-key": env.ELEVENLABS_API_KEY, "content-type": "application/json" }, body: JSON.stringify({ text, model_id: "eleven_flash_v2_5", voice_settings: { stability: .35, similarity_boost: .8, speed: .85 } }) }); if (v.ok) return new Response(v.body, { headers: { "content-type": "audio/mpeg", "cache-control": "no-store" } }); return json({ why: "the voice said " + v.status }, 502); } catch (e) { return json({ why: "the voice could not be reached" }, 502); } }
+      if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" }); if (tooMany("hide:" + key, 40)) return json({ why: "too much at once, wait a minute" }, 429);
+      const H = homeOf(env), out = await HIDE.think(env, { get: () => H.botGet("hide:" + key), put: v => H.botPut("hide:" + key, v) }, body); if (id && out && out.why === "nothing sensed") { const n = await H.nameGet(id).catch(() => ""); if (n) out.name = n; } return json(out); }
     // DEAD END's log (worker/hide.js): every finished game is kept (Supabase hide_games, the service key), from anyone who played; the report only to an owner
     if (request.method === "POST" && p === "/hide/log") { if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       if (tooMany("hlog:" + (request.headers.get("CF-Connecting-IP") || "local"), 8)) return json({ why: "too much at once" }, 429); const k = svc(env); if (!k) return json({ why: "no log yet" });
@@ -209,7 +217,7 @@ export default {
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401); if (!env.AI) return json({ why: "the website has no AI binding yet" }); if (tooMany("hear:" + id, 12)) return json({ why: "too much at once, wait a minute" }, 429);
       const buf = await request.arrayBuffer(); if (!buf.byteLength || buf.byteLength > 2 << 20) return json({ why: "too long, say it shorter" }, 400);
       try { const r = await env.AI.run("@cf/openai/whisper", { audio: [...new Uint8Array(buf)] }); return json({ text: String((r && r.text) || "").trim().slice(0, 400) }); } catch (e) { return json({ why: "it could not be made out" }); } }
-    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art" || p === "/orchard" || p === "/bot" || p === "/holmes" || p === "/cantina/talk" || p === "/sushi/talk" || p === "/sushi/say" || p === "/sushi/report" || p === "/sushi/log" || p === "/hide/mind" || p === "/zombie/mind" || p === "/zombie/save")) {
+    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art" || p === "/orchard" || p === "/bot" || p === "/holmes" || p === "/cantina/talk" || p === "/sushi/talk" || p === "/sushi/say" || p === "/sushi/report" || p === "/sushi/log" || p === "/zombie/mind" || p === "/zombie/save")) {
       if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401);
       let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
@@ -254,10 +262,6 @@ export default {
       if (p === "/bot") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
         if (tooMany("bot:" + id, 12)) return json({ why: "too much at once, wait a minute" }, 429);
         const H = homeOf(env); return json(await BOTMIND.ask(env, { get: () => H.botGet(id), put: v => H.botPut(id, v) }, { say: body.say, state: body.state, name: await H.nameGet(id) })); }
-      // DEAD END's thing thinks (worker/hide.js): where it looks next, from what its senses gave it; the day's count is the player's, in Home
-      if (p === "/hide/mind") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
-        if (tooMany("hide:" + id, 40)) return json({ why: "too much at once, wait a minute" }, 429);
-        const H = homeOf(env); return json(await HIDE.think(env, { get: () => H.botGet("hide:" + id), put: v => H.botPut("hide:" + id, v) }, body)); }
       // EYES DOWN's visitors think (worker/zombie.js): where each waits next and how it tests; the day's count and the night reached are the player's, in Home
       if (p === "/zombie/mind") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
         if (tooMany("zombie:" + id, 40)) return json({ why: "too much at once, wait a minute" }, 429);

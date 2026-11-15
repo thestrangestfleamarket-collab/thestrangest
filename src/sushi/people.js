@@ -1,4 +1,4 @@
-// plain made figures, used only if the Rocketbox people fail to load
+// plain made figures, used only if the Polyfork people fail to load
 import * as THREE from 'three';
 import { mat, lerp } from './ctx.js';
 import { faceTex, rng } from './tex.js';

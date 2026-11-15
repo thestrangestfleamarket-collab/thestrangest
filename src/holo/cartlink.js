@@ -1,5 +1,5 @@
 // THE RAMEN CART'S LINK TO THE SECTION (the holodeck's shell and YATAI '86 on its own page both use it): what the cook is doing and what happens to a seated tenant go out; who stands by the cart and who sits down at it come in (tell); and the market's voice runs between them
-export function cartLink(NET,tell){ let FR=null, mvT=0, bodyT=0;
+export function cartLink(NET,tell){ let FR=null, mvT=0, bodyT=0; NET.card.look='b:carving_chef';   // the cook is the carving chef in the market (146bg)
   NET.hear.mv=m=>{ const o=m.id&&NET.others.get(m.id); if(o&&Array.isArray(m.at))o.at=m.at; };
   NET.hear.yt=m=>{ const o=m.from&&NET.others.get(m.from), g=m.d&&m.d.g; if(!g)return;
     if(Array.isArray(g.p)){ if(o){ o.cp=[+g.p[0]||0,+g.p[1]||0]; o.cpT=Date.now(); } if(Array.isArray(g.f)&&g.f.length>=6&&g.f.every(v=>isFinite(+v)))FR=g.f.map(Number); const w=g.w, c=NET.card.at; if(Date.now()-bodyT>2000&&Array.isArray(w)&&(!Array.isArray(c)||c[0]!==w[0]||c[1]!==w[1]||c[5]!==w[5])){ NET.card.at=w.slice(0,6); NET.send({t:'mv',at:NET.card.at}); } return; }   // someone in the market's alley: where they stand by the cart, and where the cart's cook stands in the section

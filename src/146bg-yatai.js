@@ -5,9 +5,12 @@ import {SAY} from './003d-say.js';
 import {scene} from './004-main.js';
 import {MAPSTAIR, MODS, STORE, SYS, TILE} from './006-map-pre.js';
 import {IKIT} from './038zc-ikit.js';
+import {BODIES} from './111a-bodies.js';
 { const T=TILE, MW=TILE/.84, W=16, D=8, CU=8, CV=4.6, OX=()=>SHARED.BOD.XS(-3900), OZ=()=>SHARED.BOD.ZS(0), say=(t,c)=>SAY(t,c||'#ffb070');
   const frame=()=>{ const o=[OX(),OZ()]; return IKIT.frame({x0:0,y0:0,x1:1,y1:1},(x,y)=>[o[0]+x*W*MW,o[1]+y*D*MW]); };
-  const cooks=new Map(), mine={cook:'',seat:-1,price:0}, Y={G:null,F:null,live:null}, YD=__LAZY__("data/yatai.json"); let tellT=0;
+  const cooks=new Map(), mine={cook:'',seat:-1,price:0}, Y={G:null,F:null,live:null}, YD=__LAZY__("data/yatai.json"), DINER=__LAZY__("data/cast/diner.json"); let tellT=0;
+  // the cook's body: Polyfork's carving chef (the cart's link sends its look, b:carving_chef)
+  const chef=async()=>{ if(BODIES.by.carving_chef)return; const D=await DINER(); if(!BODIES.by.carving_chef){ BODIES.by.carving_chef=BODIES.rebakedBody(D,'carving_chef',{label:'THE COOK'}); if(ONLINE.refig)ONLINE.refig('b:carving_chef'); } };
   // the real cart: the game's own meshes, pictures and materials, made as they are asked for
   const RL={D:null,G:null,sx:1,tex:new Map(),mat:new Map(),geo:new Map(),obj:new Map(),box:new Map()};
   const dec=(t,T)=>{ const b=atob(t), u=new Uint8Array(b.length); for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i); return new T(u.buffer); };
@@ -61,11 +64,11 @@ import {IKIT} from './038zc-ikit.js';
     { const p=F.pw(3.7,.5), l=new THREE.PointLight(0xff3020,1.4,9*MW,1.6); l.position.set(p[0],2.7*MW,p[1]); Y.G.add(l); const q=F.pw(12.2,D-.5), l2=new THREE.PointLight(0xffb060,1.5,9*MW,1.6); l2.position.set(q[0],2.4*MW,q[1]); Y.G.add(l2); }
     Y.G.add(new THREE.HemisphereLight(0x8a9cc8,0x23252c,1.5)); cooks.clear(); K.flush(); if(RL.D)realCart(); };
   const reg=()=>{ if(ROOMS.off.alley)return true; if(!SHARED.BOD||!SHARED.BOD.XS)return false; const F=frame(), sp=F.pw(W-2,D/2), a=F.pw(-3,-1), b=F.pw(W+3,D+1), S=MAPSTAIR;
-    ROOMS.off.alley={name:'THE DARK ALLEY',box:{x0:Math.min(a[0],b[0]),z0:Math.min(a[1],b[1]),x1:Math.max(a[0],b[0]),z1:Math.max(a[1],b[1]),y0:-1,y1:9*MW},noCeil:true,need:()=>Promise.all([LOAD('later'),YD().then(d=>{ RL.D=d; })]),
+    ROOMS.off.alley={name:'THE DARK ALLEY',box:{x0:Math.min(a[0],b[0]),z0:Math.min(a[1],b[1]),x1:Math.max(a[0],b[0]),z1:Math.max(a[1],b[1]),y0:-1,y1:9*MW},noCeil:true,need:()=>Promise.all([LOAD('later'),chef(),YD().then(d=>{ RL.D=d; })]),
       build:()=>{ const P=ROOMS.part(Y.G=Object.assign(new THREE.Group(),{name:'alley-in'}),furnish); scene.add(Y.G); return P; },unbuild:()=>{ unreal(); if(Y.G)Y.G.removeFromParent(); Y.G=null; Y.lamp=null; cooks.clear(); mine.seat=-1; },
       spawn:[sp[0],sp[1],0,F.hd(-1,0)],out:[SHARED.BOD.XS((S.x0+S.x1)/2),SHARED.BOD.ZS(S.y1+1.2),0,0]};
     if(ROOMS.reset)ROOMS.reset(); return true; };
   { let done=false; SYS.add('life',dt=>{ if(!done)done=reg(); const now=performance.now(); for(const k of cooks.values())if(k.grp.visible&&now-k.t>3000)k.grp.visible=false; glide(dt||0);
       if(inside()&&Y.F&&(tellT-=dt||0)<=0){ tellT=.5; const F=Y.F, o=F.pw(0,0), u=((pos.x-o[0])*F.eu[0]+(pos.z-o[1])*F.eu[1])/MW, v=((pos.x-o[0])*F.ev[0]+(pos.z-o[1])*F.ev[1])/MW, c=F.pw(CU,CV+1.0), o0=F.pw(CU,CV+.55);   // where you stand, in the cart's own metres, and where its cook stands in the section
         ONLINE.send({t:'yt',d:{g:{p:[+((u-CU)*RL.sx).toFixed(2),+(v-CV-.55).toFixed(2)],w:[+c[0].toFixed(2),+c[1].toFixed(2),0,+F.hd(0,-1).toFixed(2),'up','alley'],f:[+o0[0].toFixed(2),+o0[1].toFixed(2),+(F.eu[0]*RL.sx*MW).toFixed(4),+(F.eu[1]*RL.sx*MW).toFixed(4),+(F.ev[0]*MW).toFixed(4),+(F.ev[1]*MW).toFixed(4)]}}}); } },'146bg-yatai'); }
-  MODS.yatai={cook:()=>{ for(const o of ONLINE.others.values())if(String(o.id).endsWith('~cart'))return {vr:!!(o.vr&&o.vr.g),p:o.p?[o.p.x,o.p.z]:null,why:o.why||''}; return null; },real:()=>{ let n=0, m=0, miss=0; for(const o of RL.obj.values()){ if(o.visible)n++; m+=o.children.length; } for(const g of RL.geo.values())if(!g)miss++; return {cart:RL.G?RL.G.children.filter(o=>o.userData.own).length:0,things:n,meshes:m,miss}; },lamp:()=>Y.lamp?Y.lamp.intensity:0,feed:m=>ONLINE.hear.yt(m),cooks,at,mine,me:()=>ONLINE.me,money:()=>INV.money(),inside,enter:()=>ROOMS.enter('alley')}; }
+  MODS.yatai={cook:()=>{ for(const o of ONLINE.others.values())if(String(o.id).endsWith('~cart'))return {vr:!!(o.vr&&o.vr.g),p:o.p?[o.p.x,o.p.z]:null,why:o.why||'',look:o.look||'',chef:!!(o.fig&&o.fig.body&&o.fig.body.key==='carving_chef')}; return null; },real:()=>{ let n=0, m=0, miss=0; for(const o of RL.obj.values()){ if(o.visible)n++; m+=o.children.length; } for(const g of RL.geo.values())if(!g)miss++; return {cart:RL.G?RL.G.children.filter(o=>o.userData.own).length:0,things:n,meshes:m,miss}; },lamp:()=>Y.lamp?Y.lamp.intensity:0,feed:m=>ONLINE.hear.yt(m),cooks,at,mine,me:()=>ONLINE.me,money:()=>INV.money(),inside,enter:()=>ROOMS.enter('alley')}; }

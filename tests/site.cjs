@@ -6,7 +6,9 @@ const {chromium}=require('playwright'), {spawn}=require('child_process');
 const PORT=8799, BASE='http://127.0.0.1:'+PORT;
 let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
 (async()=>{
-  const w=spawn('npx',['wrangler','dev','--port',String(PORT),'--ip','127.0.0.1','--var','DEV_AUTH:1','--show-interactive-dev-session=false','--persist-to',require('fs').mkdtempSync(require('path').join(require('os').tmpdir(),'site-'))],{stdio:['ignore','pipe','pipe'],detached:true,env:{...process.env,WRANGLER_SEND_METRICS:'false'}});
+  // the AI binding is always remote under wrangler dev and needs a Cloudflare token the check does not have: the worker starts from a copy of the config without it (nothing here uses it)
+  const CFG=require('path').join(__dirname,'..','.site-wrangler.jsonc'); require('fs').writeFileSync(CFG,require('fs').readFileSync(require('path').join(__dirname,'..','wrangler.jsonc'),'utf8').replace(/^\s*"ai"\s*:\s*\{[^}]*\},?\s*$/m,'')); process.on('exit',()=>{ try{ require('fs').unlinkSync(CFG); }catch(e){} });
+  const w=spawn('npx',['wrangler','dev','-c',CFG,'--port',String(PORT),'--ip','127.0.0.1','--var','DEV_AUTH:1','--show-interactive-dev-session=false','--persist-to',require('fs').mkdtempSync(require('path').join(require('os').tmpdir(),'site-'))],{stdio:['ignore','pipe','pipe'],detached:true,env:{...process.env,WRANGLER_SEND_METRICS:'false'}});
   const stop=()=>{ try{ process.kill(-w.pid,'SIGKILL'); }catch(e){ try{ w.kill('SIGKILL'); }catch(_){} } };   // the worker's whole group: wrangler leaves workerd on the port otherwise, and the next test on it talks to this one
   let log=''; w.stdout.on('data',d=>log+=d); w.stderr.on('data',d=>log+=d);
   let up=false; for(let i=0;i<120&&!up;i++){ await new Promise(r=>setTimeout(r,1000)); up=await fetch(BASE+'/').then(r=>r.ok).catch(()=>false); }

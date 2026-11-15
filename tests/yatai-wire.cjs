@@ -26,7 +26,7 @@ const PORT = +process.env.WIRE_PORT || 8797, BASE = 'http://127.0.0.1:' + PORT; 
     const snd = await m.waitForFunction(() => { const v = __dbg.MAPK.MODS.yatai.sound(); return v && v.mixed; }, null, { timeout: 60000, polling: 500 }).then(() => true, () => false);
     ok(snd, 'THE MARKET sends the cook its own game sound (a guitar, steps) with the tenant\'s voice: ' + JSON.stringify(await m.evaluate(() => __dbg.MAPK.MODS.yatai.sound())));
     // the cook's fingers reach the market as a headset player's do
-    await a.evaluate(() => { const h = G.hands[0]; h.held = G.items.find((i) => i.kind === 'bowl') || G.items[0]; window.__keep = setInterval(() => { if (!h.held) h.held = G.items.find((i) => i.kind === 'bowl'); }, 200); });
+    await a.evaluate(() => { const h = G.hands[0], V = new G.debug.THREE.Vector3(), eye = G.camera.getWorldPosition(new G.debug.THREE.Vector3()), near = () => G.items.filter((i) => i.obj && !i.dead).sort((x, y) => x.obj.getWorldPosition(V).distanceTo(eye) - y.obj.getWorldPosition(V).distanceTo(eye))[0]; h.held = near(); window.__keep = setInterval(() => { if (!h.held) h.held = near(); }, 200); });   // (the nearest thing: a hand holds what is within reach)
     const fg = await m.waitForFunction(() => { const c = __dbg.MAPK.MODS.yatai.cook(); return c && c.fingers && c.fg; }, null, { timeout: 60000, polling: 500 }).then(() => true, () => false);
     ok(fg, 'the cook\'s fingers reach THE MARKET with their hands (as a headset player\'s): ' + JSON.stringify(await m.evaluate(() => __dbg.MAPK.MODS.yatai.cook())));
     await a.evaluate(() => { clearInterval(window.__keep); G.hands[0].held = null; });

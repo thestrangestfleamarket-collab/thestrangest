@@ -617,7 +617,7 @@ export class Block extends Server {
       this.broadcast(JSON.stringify({ t: "rag", id: s.id, o: [num(m.o[0], -1e5, 1e5), num(m.o[1], -1e5, 1e5)], hd: num(m.hd, -20, 20), b }), [c.id]);
     } else if (m.t === "vr") {   // a headset player's own head, hands and fingers (162cb), to everyone else in the section
       const arr = (a, n) => Array.isArray(a) && a.length ? a.slice(0, n).map(x => num(x, -9, 9)) : 0;
-      this.broadcast(JSON.stringify(m.off ? { t: "vr", id: s.id, off: 1 } : { t: "vr", id: s.id, h: arr(m.h, 4), L: arr(m.L, 27), R: arr(m.R, 27) }), [c.id]);
+      this.broadcast(JSON.stringify(m.off ? { t: "vr", id: s.id, off: 1 } : { t: "vr", id: s.id, h: arr(m.h, 4), L: arr(m.L, 27), R: arr(m.R, 27), ...(typeof m.eh === "number" ? { eh: num(m.eh, 0, 3) } : {}) }), [c.id]);
     } else if (m.t === "ragoff") {
       this.broadcast(JSON.stringify({ t: "ragoff", id: s.id }), [c.id]);
     } else if (m.t === "grab" || m.t === "drop" || m.t === "toss" || m.t === "free") {

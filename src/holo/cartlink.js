@@ -39,4 +39,4 @@ export function cartLink(NET,tell){ let FR=null, mvT=0, bodyT=0, slot=-1, since=
     // the cook's body: under the head, facing as the body faces, in the section's own place (the alley's frame came from who stands in it, for the first cart: yours stands along from it), then the head, wrists and fingers as a headset player's (162cb)
     body:b=>{ if(!FR||!NET.on||!b||!Array.isArray(b.p)||slot<0)return; const now=Date.now(), s=Math.sin(b.y), c=Math.cos(b.y), x=b.p[0]+off(); bodyT=now;
       if(now-mvT>200){ mvT=now; NET.card.at=[+(FR[0]+FR[2]*x+FR[4]*b.p[1]).toFixed(2),+(FR[1]+FR[3]*x+FR[5]*b.p[1]).toFixed(2),0,+Math.atan2(FR[2]*s+FR[4]*c,FR[3]*s+FR[5]*c).toFixed(2),'up','alley']; NET.send({t:'mv',at:NET.card.at}); }
-      NET.send({t:'vr',h:b.h,L:b.L,R:b.R}); }}; }
+      NET.send({t:'vr',h:b.h,L:b.L,R:b.R,...(isFinite(+b.eh)?{eh:+b.eh}:{})}); }}; }

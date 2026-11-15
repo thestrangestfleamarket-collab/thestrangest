@@ -54,7 +54,7 @@ const VRB={};
     for(const S of 'LR'){ const G=g[S]; if(!G){ s[S]=null; continue; } let C=s[S]; if(!C){ C=s[S]={d:G.d.slice(),q:G.q.slice(),f:G.f?G.f.slice():null}; continue; }
       for(let i=0;i<3;i++)C.d[i]+=(G.d[i]-C.d[i])*a; QA.fromArray(C.q).slerp(QB.fromArray(G.q),a).toArray(C.q);
       if(G.f){ if(!C.f)C.f=G.f.slice(); else for(let i=0;i<20;i++)C.f[i]+=(G.f[i]-C.f[i])*a; } else C.f=null; }
-    return s; };
+    s.eh=g.eh; return s; };
   const fgOf=(st,S,f)=>{ const F=st.vrfg||(st.vrfg={L:[0,1,2,3,4].map(()=>[0,0,0,0]),R:[0,1,2,3,4].map(()=>[0,0,0,0])}); for(let i=0;i<5;i++)for(let k=0;k<4;k++)F[S][i][k]=f[i*4+k]; return F[S]; };
   BODIES.track=(PM,body,d)=>{ if(!body.binv)return; const P=PM.value, st=PM.hands, R=prep(body,st), W=R.W, RQ=R.RQ, D=d.raw?d:smooth(d);
     for(let i=1;i<9;i++)W[i].multiplyMatrices(P[i],R.restM[i]);
@@ -64,7 +64,7 @@ const VRB={};
     E.copy(EYE).applyQuaternion(QA).multiplyScalar(k).add(O2); if(D.e)VRB.eye=[...DV.subVectors(D.e,E).applyQuaternion(QB.copy(QA).invert()).multiplyScalar(1/k).toArray()];   // (your real eye from where the avatar's is, in its head's frame, metres: for the checks)
     let fg=null;
     for(const S of 'LR'){ const H=D[S]; if(!H)continue; const ids=ARM[S], h=ids[2];
-      if(H.m)TG.copy(H.m); else TG.fromArray(H.d).multiplyScalar(k).add(E); IK.reach(W,ids,TG,PO.copy(POLE[S]).transformDirection(P[1])); IK.untwist(W,ids,1);
+      if(H.m)TG.copy(H.m); else { TG.fromArray(H.d).multiplyScalar(k).add(E); if(D.eh!=null)TG.y=(D.eh+H.d[1])*k; }   // (eh: the sender's real eye height, metres: their hands at their real height, though the avatar is taller or shorter: the ramen cart's cook) IK.reach(W,ids,TG,PO.copy(POLE[S]).transformDirection(P[1])); IK.untwist(W,ids,1);
       if(R.X[S]){ O2.setFromMatrixPosition(W[h]); W[h].compose(O2,QB.fromArray(H.q).multiply(R.X[S]).multiply(RQ[h]),KS); IK.untwist(W,ids,2); }
       if(st&&H.f){ fg=fg||{L:null,R:null}; fg[S]=fgOf(st,S,H.f); } }
     for(let i=1;i<9;i++)P[i].multiplyMatrices(W[i],body.binv[i]);
@@ -85,6 +85,6 @@ const VRB={};
   /* ---------- another player in a headset ---------- */
   const unwire=a=>Array.isArray(a)&&a.length>=7?{d:a.slice(0,3).map(Number),q:a.slice(3,7).map(Number),f:a.length>=27?a.slice(7,27).map(Number):null}:null;
   ONLINE.hear.vr=m=>{ const o=m.id&&ONLINE.others.get(m.id); if(!o)return; if(m.off){ o.vr=null; return; } if(!Array.isArray(m.h)||m.h.length<4)return;
-    const g={h:m.h.slice(0,4).map(Number),L:unwire(m.L),R:unwire(m.R)}; if(!g.h.every(isFinite))return; const v=o.vr||(o.vr={}); v.g=g; v.t=performance.now(); };
+    const g={h:m.h.slice(0,4).map(Number),L:unwire(m.L),R:unwire(m.R),eh:isFinite(+m.eh)&&m.eh!=null?+m.eh:null}; if(!g.h.every(isFinite))return; const v=o.vr||(o.vr={}); v.g=g; v.t=performance.now(); };
   VRB.capture=()=>{ const M=BODIES.mine(); return M&&VR.on?capture(M):null; };
   window.VRB=VRB; }

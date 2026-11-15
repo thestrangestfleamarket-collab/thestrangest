@@ -66,6 +66,15 @@ ONLINE.hear.puts=m=>{ if(m.all){ for(const k in ONLINE.puts){ const H=ONLINE.put
 
   /* ---------- their bodies: one built body per look (the Walker in clothes, shod or barefoot, or a body of its own), shared by everyone wearing it ---------- */
   const BUILT=new Map();
+  // your own figure as the others build it (the ramen cart's cook draws it: 146bg): its mesh, its scale in world units, and its bones' matrices posed as you stand now
+  let SELF=null; ONLINE.self=()=>{ '@later'; const k=lookKey(), b=built(k); if(!b)return null; if(SELF&&SELF.k===k)return SELF;
+    if(SELF&&SELF.me){ for(const m of [SELF.me.material,SELF.me.customDistanceMaterial,SELF.me.customDepthMaterial])if(m)m.dispose(); }
+    const g=new THREE.Group(); let S;
+    if(b.body){ const M=BODIES.mesh(b.body); S={k,kind:'b',me:M.me,PM:M.PM,body:b.body}; musScale(g,1); }
+    else{ const FM=figureMesh(b.PCS,'online'); S={k,kind:'w',me:FM.me,PM:FM.PM,FM,PCS:b.PCS}; musScale(g,b.bh||1); }
+    S.scale=[g.scale.x,g.scale.y,g.scale.z];
+    S.pose=()=>{ const B=W3.lastB; if(!B)return null; if(S.kind==='b')BODIES.pose(B,S.PM,S.body,st); else S.PCS.forEach((pc,i)=>S.FM.set(i,R.frameOf(pc.on||pc.n,B))); return S.PM.value; };
+    return SELF=S; };
   ONLINE.refig=pre=>{ for(const o of ONLINE.others.values())if(String(o.look||'').startsWith(pre))o.key=''; };   // their bodies built again (a body whose data came after they were first drawn: the avatar)
   // a dyed shirt or trousers: one material a colour, shared by everyone dyed it
   const dyeMat=h=>{ const M=R.MATS, n='dye'+h; if(!M.includes(n)){ M.push(n); const c=new THREE.Color(h); W3.ramp.push([1,.9,.7,.42].map(q=>c.clone().multiplyScalar(q))); } return M.indexOf(n); };

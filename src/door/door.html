@@ -41,7 +41,7 @@ const post=(path,body,token)=>fetch(path,{method:'POST',headers:{'content-type':
 
 async function enter(){ const c=await sb(), {data}=await c.auth.getSession(), s=data&&data.session; if(!s){ S.step='login'; return; }
   S.step='opening'; draw(); const j=await post('/enter',{},s.access_token);
-  if(j.ok){ document.cookie='tsfm-pass='+s.access_token+'; path=/; max-age=3600; secure; samesite=strict'; c.auth.stopAutoRefresh(); location.replace('/'); return new Promise(()=>{}); }
+  if(j.ok){ document.cookie='tsfm-pass='+s.access_token+'; path=/; max-age=3600; secure; samesite=strict'; c.auth.stopAutoRefresh(); const bk=new URLSearchParams(location.search).get('back')||''; location.replace(/^\/[a-z][a-z0-9-]{0,30}$/.test(bk)?bk:'/'); return new Promise(()=>{}); }
   if(j.why==='code'){ S.step='nocode'; return; }
   if(j.why==='login'){ await c.auth.signOut(); S.step='login'; S.err=tx('again'); return; }
   S.step='title'; S.err=j.why||'the market is closed right now'; }

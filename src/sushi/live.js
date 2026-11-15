@@ -46,6 +46,7 @@ export function buildLive() {
   live.join = () => { if (framed || link || !/^https?:$/.test(location.protocol)) return; let card = null; try { card = JSON.parse(sessionStorage.getItem('holo') || 'null'); } catch (e) { /* none */ }
     NET.card = card && card.room ? card : { room: 's-a', name: 'THE COOK', look: 'w0', hp: 1, at: [0, 0, 0, 0, 'up', 'alley'], back: '/' }; NET.query = { cart: '1' }; link = cartLink(NET, take); NET.connect(); };
   live.body = body;
+  live.status = () => (framed ? 'LINKED THROUGH THE HOLODECK' : !link ? (/^https?:$/.test(location.protocol) ? 'NOT LINKED (LOG IN)' : 'NOT LINKED') : !NET.on ? 'CONNECTING…' : 'LINKED · ' + live.watchers.size + ' IN THE ALLEY');
   live.net = () => ({ on: NET.on, me: NET.me, others: [...NET.others.values()].map((o) => [o.id, !!o.cp]) });
   live.update = (dt) => {
     for (const w of live.watchers.values()) { if (w.seated) continue; const pos = w.p.root.position, d = pos.distanceTo(w.to); if (d > 0.08) { _a.copy(w.to).sub(pos).multiplyScalar(Math.min(d, 1.4 * dt) / d); pos.add(_a); w.p.root.rotation.y = Math.atan2(_a.x, _a.z); w.p.pose = 'walk'; } else { w.p.pose = 'stand'; w.p.root.rotation.y = Math.atan2(-pos.x, -0.6 - pos.z); } w.p.look = G.camera.getWorldPosition(_b); w.p.update(dt, G.t); }

@@ -12,6 +12,7 @@ const PORT = 8797, BASE = 'http://127.0.0.1:' + PORT; let bad = 0; const ok = (c
     const m = await cx.newPage(); m.on('pageerror', (e) => errs.push('market: ' + e.message.slice(0, 200))); await m.goto(BASE + '/?fresh=1&hour=21'); await m.waitForFunction(() => window.__started, null, { timeout: 600000 }); await m.waitForTimeout(3000);
     await m.evaluate(() => __dbg.UI.goPlace('THE DARK ALLEY')); await m.waitForFunction(() => __dbg.MAPK.MODS.yatai.inside() && __dbg.MAPK.MODS.yatai.lamp() > 0, null, { timeout: 300000, polling: 500 });
     const seen = await a.waitForFunction(() => G.live.watchers.size > 0, null, { timeout: 90000, polling: 500 }).then(() => true, () => false);
+    const st = await a.evaluate(() => G.live.status()); ok(/^LINKED · [1-9]/.test(st), '/sushi says it is linked to THE MARKET and counts who is in the alley: ' + st);
     ok(seen, 'the cook at /sushi sees the tenant who is standing in THE MARKET\'s alley' + (seen ? '' : ' (' + JSON.stringify(await a.evaluate(() => ({ on: !!(G.live.net && G.live.net().on), others: G.live.net ? G.live.net().others : null }))) + ')'));
     const got = await m.waitForFunction(() => __dbg.MAPK.MODS.yatai.real().things > 20, null, { timeout: 90000, polling: 500 }).then(() => true, () => false), real = await m.evaluate(() => __dbg.MAPK.MODS.yatai.real());
     ok(got && real.miss === 0, 'the tenant in the alley sees the cook\'s own cart and things: ' + JSON.stringify(real));

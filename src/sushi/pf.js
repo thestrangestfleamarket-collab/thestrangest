@@ -59,9 +59,15 @@ const sample = (c, t, loop, i, q, p) => { const f = loop ? (((t / c.dur) % 1) + 
   if (p) { const C = (a * NB + i) * 3, E = (b * NB + i) * 3; p.set(c.P[C], c.P[C + 1], c.P[C + 2]); vb.set(c.P[E], c.P[E + 1], c.P[E + 2]); p.lerp(vb, x); } };
 const geoOf = (key) => { if (GEO[key]) return GEO[key]; const b = D.bodies[key], Q = i16(b.pos), n = Q.length / 3, P = new Float32Array(Q.length); for (let i = 0; i < Q.length; i++) P[i] = (Q[i] + 32500) * b.sc + b.lo[i % 3];
   const BN = b64(b.bone), BW = b64(b.w), si = new Uint16Array(n * 4), sw = new Float32Array(n * 4); for (let v = 0; v < n; v++) { si[v * 4] = BN[v * 2]; si[v * 4 + 1] = BN[v * 2 + 1]; sw[v * 4] = BW[v] / 255; sw[v * 4 + 1] = 1 - BW[v] / 255; }
-  // what a body was modelled holding (a pie, a case, a clipboard) is left out: the hand's own triangles stay, those bound to it far past the wrist go
-  const HL = BONES.indexOf('handL'), HR = BONES.indexOf('handR'), far = (v) => { const h = BN[v * 2]; if ((h !== HL && h !== HR) || BW[v] < 128) return false; const o = b.origin[h]; return Math.hypot(P[v * 3] - o[0], P[v * 3 + 1] - o[1], P[v * 3 + 2] - o[2]) > HAND; };
-  const T0 = u16(b.tri), keep = []; for (let i = 0; i < T0.length; i += 3) if (!far(T0[i]) && !far(T0[i + 1]) && !far(T0[i + 2])) keep.push(T0[i], T0[i + 1], T0[i + 2]);
+  // what a body was modelled holding (a pie, a knife, plans, a cup, a tool) is left out: the mesh in pieces that touch; a piece held rigid by one forearm or hand that sits past the wrist or off the arm's line goes (a hand, a glove or a cuff bends with the wrist or lies along the arm, and stays)
+  const ARMB = { [BONES.indexOf('forearmL')]: 'L', [BONES.indexOf('handL')]: 'L', [BONES.indexOf('forearmR')]: 'R', [BONES.indexOf('handR')]: 'R' }, T0 = u16(b.tri), up = new Int32Array(n), weld = new Map(), id = (v) => { const k = Math.round(P[v * 3] * 500) + ',' + Math.round(P[v * 3 + 1] * 500) + ',' + Math.round(P[v * 3 + 2] * 500); let i = weld.get(k); if (i == null) weld.set(k, i = v); return i; };
+  for (let v = 0; v < n; v++) up[v] = v; const top = (v) => { while (up[v] !== v) v = up[v] = up[up[v]]; return v; };
+  for (let i = 0; i < T0.length; i += 3) { const a = top(id(T0[i])); for (const v of [T0[i + 1], T0[i + 2]]) { const c = top(id(v)); if (c !== a) up[c] = a; } }
+  const piece = new Map(); for (let v = 0; v < n; v++) { const r = top(id(v)); let q = piece.get(r); if (!q) piece.set(r, q = { bone: BN[v * 2], rigid: true, c: [0, 0, 0], k: 0 }); if (BN[v * 2] !== q.bone || BW[v] < 250) q.rigid = false; for (let a = 0; a < 3; a++) q.c[a] += P[v * 3 + a]; q.k++; }
+  const AX = {}; for (const s of ['L', 'R']) { const S = b.origin[BONES.indexOf('upperArm' + s)], W = b.origin[BONES.indexOf('hand' + s)], d = [W[0] - S[0], W[1] - S[1], W[2] - S[2]], l = Math.hypot(...d); AX[s] = { S, d: d.map((x) => x / l), l }; }
+  for (const q of piece.values()) { const s = ARMB[q.bone]; q.drop = false; if (!s || !q.rigid) continue; const A = AX[s], c = q.c.map((x) => x / q.k - 0), r = [c[0] - A.S[0], c[1] - A.S[1], c[2] - A.S[2]], t = r[0] * A.d[0] + r[1] * A.d[1] + r[2] * A.d[2], off = Math.hypot(r[0] - A.d[0] * t, r[1] - A.d[1] * t, r[2] - A.d[2] * t); q.drop = t > A.l - 0.02 || off > 0.1; }
+  const held = (v) => piece.get(top(id(v))).drop;
+  const keep = []; for (let i = 0; i < T0.length; i += 3) if (!held(T0[i])) keep.push(T0[i], T0[i + 1], T0[i + 2]);
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(P, 3)); g.setAttribute('color', new THREE.BufferAttribute(lin(b64(b.vcol), Q.length), 3)); g.setAttribute('skinIndex', new THREE.BufferAttribute(si, 4)); g.setAttribute('skinWeight', new THREE.BufferAttribute(sw, 4)); g.setIndex(new THREE.BufferAttribute(new Uint16Array(keep), 1)); g.computeVertexNormals();
   // the face: the nose is the head's foremost point; the eyes sit above it, either side
   const O = b.origin; let face = null; { let zm = -9, ny = 0; for (let v = 0; v < n; v++) if (BN[v * 2] === HEAD && BW[v] > 200 && Math.abs(P[v * 3]) < 0.03 && P[v * 3 + 1] < O[HEAD][1] + 0.2 && P[v * 3 + 2] > zm) { zm = P[v * 3 + 2]; ny = P[v * 3 + 1]; }
@@ -72,7 +78,7 @@ const ER = 0.015; let EYE = null;
 const eyeball = () => { EYE ||= { white: mat({ color: 0xf2efe6 }), iris: mat({ color: 0x4a3a2a }), pupil: new THREE.MeshBasicMaterial({ color: 0x0a0806 }), wg: new THREE.SphereGeometry(ER, 10, 8), ig: new THREE.CircleGeometry(ER * 0.56, 12), pg: new THREE.CircleGeometry(ER * 0.27, 10), lg: new THREE.SphereGeometry(ER * 1.09, 10, 6, 0, Math.PI * 2, 0, Math.PI * 0.5), lid: mat({ color: 0xd9a98a }) };
   const g = new THREE.Group(); g.add(new THREE.Mesh(EYE.wg, EYE.white)); const ir = new THREE.Mesh(EYE.ig, EYE.iris); ir.position.z = ER * 0.86; g.add(ir); const pu = new THREE.Mesh(EYE.pg, EYE.pupil); pu.position.z = ER * 0.875; g.add(pu); return g; };
 const GEST = { nod: 'Agree', no: 'Head shake', laugh: 'Laughing', shrug: 'Arms folded', think: 'Arms folded' }, UPPER = ['torso', 'head', 'upperArmL', 'forearmL', 'handL', 'upperArmR', 'forearmR', 'handR'];
-const SEAT = 0.79, HAND = 0.14; // where a hip sits on the cart's stools
+const SEAT = 0.79; // where a hip sits on the cart's stools
 
 // a person: P.root to place and turn; P.pose 'walk' | 'stand' | 'sit' | 'eat'; P.look a point to look at or null; P.talkT seconds of talking hands; P.gesture(name); P.waveT > 0 waves
 export function pfPerson(key, sticks) {

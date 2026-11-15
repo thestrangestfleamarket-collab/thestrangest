@@ -20,6 +20,7 @@ import { buildReport } from './report.js';
 import { buildTV } from './tv.js';
 import { buildLive } from './live.js';
 import { buildCook } from './cook.js';
+import { NET } from '../holo/net.js';
 import { PH } from './physics.js';
 import * as T from './tex.js';
 
@@ -96,7 +97,7 @@ async function startVR() {
     session.addEventListener('end', () => { G.mode = 'menu'; menu.style.display = 'flex'; });
   } catch (e) { vrBtn.textContent = 'VR failed: ' + e.message; console.error(e); }
 }
-fetch('/sushi/say', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }).then((r) => { if (r.status === 401) $('login').style.display = 'inline-block'; else G.live?.join(); }).catch(() => { }); // the patrons' voices are a login's: say so before the headset goes on
+NET.tok().then(() => fetch('/sushi/say', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })).then((r) => { if (r.status === 401) $('login').style.display = 'inline-block'; else G.live?.join(); }).catch(() => { }); // the patrons' voices are a login's: say so before the headset goes on
 vrBtn.onclick = async () => { if (await talk.needPrime()) { vrBtn.textContent = 'Allow the microphone…'; const ok = await talk.prime(); vrBtn.textContent = ok ? 'Enter VR' : 'Enter VR (no microphone)'; return; } startVR(); }; // the microphone is asked for on its own press: a prompt cannot be answered inside the headset view
 if (navigator.xr?.isSessionSupported) navigator.xr.isSessionSupported('immersive-vr').then((ok) => { vrBtn.disabled = !ok; vrBtn.textContent = ok ? 'Enter VR' : 'No headset here'; if (!ok) { vrBtn.classList.remove('primary'); deskBtn.classList.add('primary'); } }).catch(() => { vrBtn.textContent = 'VR unavailable'; });
 else vrBtn.textContent = location.protocol === 'https:' || location.hostname === 'localhost' ? 'Open this page in a VR headset' : 'VR needs HTTPS';
@@ -126,6 +127,9 @@ function govern(dt) { if (frames < 120 || G.frozen || G.quality >= 1) return; em
 if (G.quality) applyQuality();
 const report = buildReport(scene, camera, renderer, talk);
 const gameMenu = buildMenu(scene, cart, guide, talk, shadowLights, report);
+// on a screen: whether the cart is linked to THE MARKET, and who is in its alley (the settings board says the same in the headset)
+{ const tag = document.createElement('div'); tag.style.cssText = 'position:fixed;top:10px;right:12px;font:600 13px ui-monospace,monospace;color:#ffd9a0;background:rgba(10,10,14,.7);padding:6px 10px;border-radius:6px;pointer-events:none;z-index:5'; document.body.appendChild(tag);
+  setInterval(() => { const s = live.status(); tag.textContent = 'THE MARKET: ' + s; tag.style.display = G.mode === 'desktop' ? 'block' : 'none'; }, 1000); }
 // easy on the eyes (the settings board, on unless turned off): more fill light, the bright points and their halos lower, thin rain, a dim television, less edge blur in the headset
 G.eyes = (on) => { const e = on ? 0.6 : 1; city.fill.intensity = on ? 1.6 : 1.15; city.glow.traverse((s) => { if (s.isSprite) { s.userData.op ??= s.material.opacity; s.material.opacity = s.userData.op * (on ? 0.55 : 1); } }); if (city.rain) city.rain.material.opacity = on ? 0.05 : 0.12;
   if (cart.open) { cart.signM.color.setScalar(1.7 * e); cart.signHalo.material.opacity = 0.45 * e; cart.lanternM.emissiveIntensity = 2.4 * e; cart.lanternHalos.forEach((h) => (h.material.opacity = 0.55 * e)); }

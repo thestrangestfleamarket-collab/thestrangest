@@ -45,7 +45,7 @@ export function buildFx(scene) {
       if (!src) return; let c = chains.get(src); if (!c) chains.set(src, (c = { list: [], lip: new V3(), t: 0, r, color })); c.lip.copy(p); c.t = G.t; c.r = r; c.color = color; c.list.unshift(d); if (c.list.length > SP) c.list.length = SP; d.userData.chain = c; d.scale.setScalar(0.001);
     },
     wipe(p, r) { let n = 0; for (let i = splats.length - 1; i >= 0; i--) { const s = splats[i]; if (Math.hypot(s.m.position.x - p.x, s.m.position.z - p.z) < r && Math.abs(s.m.position.y - p.y) < 0.08) { s.m.material.opacity -= 0.12; if (s.m.material.opacity <= 0.05) { s.m.removeFromParent(); splats.splice(i, 1); } n++; } } return n; },
-    splats,
+    splats, liq: drops,
     popupOld(pos, lines, good) {
       const t = T.canvasTex(512, 320, (g, w, h) => {
         g.fillStyle = 'rgba(250,246,232,0.96)'; g.fillRect(0, 0, w, h); g.strokeStyle = good ? '#1c7a3a' : '#a01c1c'; g.lineWidth = 10; g.strokeRect(5, 5, w - 10, h - 10);

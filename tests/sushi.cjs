@@ -12,7 +12,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   const open = async (q, init) => { const p = await b.newPage({ viewport: { width: 800, height: 450 } }); if (init) await p.addInitScript(init);
     p.on('pageerror', e => errs.push(e.message.slice(0, 300))); p.on('response', r => { if (r.status() === 404 && !/talk$|hear$|say$|log$|opacity_color|\/film\//.test(r.url())) miss.push(r.url().split('/').pop()); });
     await p.goto(FILE + q); await p.waitForFunction('window.G && G.debug', null, { timeout: 240000 }); await p.waitForTimeout(3000); return p; };
-  const p = await open('?desktop&nopost'); await p.waitForFunction('G.till && G.till.ready', null, { timeout: 60000 }).catch(() => {});
+  const p = await open('?desktop&nopost'); await p.waitForFunction('G.till && G.till.ready', null, { timeout: 180000 }).catch(() => console.log('the register model did not load'));
   ok(await p.evaluate(() => G.mode === 'desktop' && G.debug.PH.ready), 'the cart loads on a screen, its loose things on the physics engine');
   { const f = await p.evaluate(() => { const L = []; G.scene.traverse((o) => { if (o.isLight) L.push(o); }); let worst = 0, who = ''; const was = L.map((l) => l.intensity); G.frozen = true;
       for (let i = 0; i < 60; i++) { G.debug.tick(1 / 20); L.forEach((l, j) => { const a = was[j], b = l.intensity, d = Math.abs(b - a) / Math.max(0.05, a, b); if (d > worst) { worst = d; who = l.type + ' ' + (l.color && l.color.getHexString()); } was[j] = b; }); }

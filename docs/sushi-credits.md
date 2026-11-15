@@ -37,5 +37,8 @@ The boombox's stations past the first three are SomaFM's public streams (somafm.
 | Utility Box 01 | `data/sushi/m/utility_box_01.glb` | James Ray Cock, https://polyhaven.com/a/utility_box_01 | CC0 |
 | Exterior Aircon Unit | `data/sushi/m/exterior_aircon_unit.glb` | Monsta3D, https://polyhaven.com/a/exterior_aircon_unit | CC0 |
 | The parked car (a VW Corrado, red and black) | `data/sushi/m/car.glb`, `data/sushi/tex/car_3.jpg` | nander, https://opengameart.org/content/car-vw-corradon (as COLD BORE made it, `tools/sniper-vehicles.py`) | CC0 |
+| Cash Register 01 (the till on the back counter) | `data/sushi/m/cashregister_01.glb` | Joe Seabuhr, https://polyhaven.com/a/CashRegister_01 | CC0 |
+
+- The till's money (`data/sushi/money/`): United States government pictures, public domain. The $5, $10 and $20 (their 1985 designs) and the $1's back: the Bureau of Engraving and Printing's, https://www.uscurrency.gov (`tools/sushi-assets.py money`; its specimen pictures, faintly overprinted SPECIMEN). The $1's front and the quarter, dime and penny: Bureau of Engraving and Printing and United States Mint pictures from Wikimedia Commons.
 
 - Everything else (the cart's and the street's shapes, the food, the signs, the sounds) is made in the page's own code.

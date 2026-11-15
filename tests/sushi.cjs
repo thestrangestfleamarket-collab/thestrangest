@@ -10,9 +10,9 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   const b = await chromium.launch({ ...(process.env.PWCHROME ? { executablePath: process.env.PWCHROME } : {}), args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'] });
   const errs = [], miss = [];
   const open = async (q, init) => { const p = await b.newPage({ viewport: { width: 800, height: 450 } }); if (init) await p.addInitScript(init);
-    p.on('pageerror', e => errs.push(e.message.slice(0, 300))); p.on('response', r => { if (r.status() === 404 && !/talk$|hear$|say$|opacity_color|\/film\//.test(r.url())) miss.push(r.url().split('/').pop()); });
+    p.on('pageerror', e => errs.push(e.message.slice(0, 300))); p.on('response', r => { if (r.status() === 404 && !/talk$|hear$|say$|log$|opacity_color|\/film\//.test(r.url())) miss.push(r.url().split('/').pop()); });
     await p.goto(FILE + q); await p.waitForFunction('window.G && G.debug', null, { timeout: 240000 }); await p.waitForTimeout(3000); return p; };
-  const p = await open('?desktop&nopost');
+  const p = await open('?desktop&nopost'); await p.waitForFunction('G.till && G.till.ready', null, { timeout: 60000 }).catch(() => {});
   ok(await p.evaluate(() => G.mode === 'desktop' && G.debug.PH.ready), 'the cart loads on a screen, its loose things on the physics engine');
   { const f = await p.evaluate(() => { const L = []; G.scene.traverse((o) => { if (o.isLight) L.push(o); }); let worst = 0, who = ''; const was = L.map((l) => l.intensity); G.frozen = true;
       for (let i = 0; i < 60; i++) { G.debug.tick(1 / 20); L.forEach((l, j) => { const a = was[j], b = l.intensity, d = Math.abs(b - a) / Math.max(0.05, a, b); if (d > worst) { worst = d; who = l.type + ' ' + (l.color && l.color.getHexString()); } was[j] = b; }); }
@@ -74,8 +74,16 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
     stand(-0.2, 0.25); aim(bc()); L('cand', h.aim.cand?.name); click(); L('held', h.held?.kind);
     stand(sx * 0.6, 0.02); aim(V(sx, 1.0, -0.71)); click(); step(5);
     L('state', c.state, 'RESULT', JSON.stringify(c.result));
-    step(60 * 17); L('money', game.money, 'tips', game.tips, 'served', game.served, 'seat dirty', !!game.seats[c.seat].dirty, 'bowl dirty', bowl.dirty);
-    aim(bowl.obj.position.clone().setY(1.04)); click(); L('held', h.held?.kind); stand(0.4, 0.7); aim(V(0.935, 0.98, 0.91)); click(); step(5); L('bowl removed', bowl.dead, 'seat dirty', !!game.seats[c.seat].dirty);
+    step(60 * 19); L('paying', c.state, JSON.stringify({ due: c.pay && c.pay.due, tender: c.pay && c.pay.tender, owed: c.pay && c.pay.owed, kinds: c.pay && c.pay.kinds }));
+    // 10 paid in cash: ring the register open behind you, the money into its drawer, the change from it laid by their seat
+    const TL = G.till, front = () => stand(sx * 0.6, 0.05), back = () => stand(0.2, 1.0);
+    back(); aim(TL.regPos.clone()); L('aim reg', h.aim.button?.name); click(); step(30); L('drawer open', TL.open);
+    for (const it of c.pay.items.filter((i) => !i.dead)) { front(); aim(it.obj.position.clone()); click(); const got = h.held && h.held.kind; back(); aim(TL.drawerPos.clone()); click(); step(3); L('deposit', got, it.dead); }
+    for (const k of TL.coins(c.pay.owed) || []) { back(); aim(TL.slotPos(k).clone()); click(); const got = h.held && h.held.money; front(); aim(TL.spot(c.seat).clone()); click(); step(3); L('change', k, got); }
+    step(60 * 5); L('paid', c.state, 'rung', c.pay.rung, 'till', TL.total() - TL.float);
+    for (const it of G.items.filter((i) => i.kind === 'cash' && i.tipOf === c)) { front(); aim(it.obj.position.clone()); click(); back(); aim(TL.drawerPos.clone()); click(); step(3); }
+    L('money', game.money, 'tips', game.tips, 'served', game.served, 'seat dirty', !!game.seats[c.seat].dirty, 'bowl dirty', bowl.dirty);
+    front(); aim(bowl.obj.position.clone().setY(1.04)); click(); L('held', h.held?.kind); stand(0.4, 0.7); aim(V(0.935, 0.98, 0.91)); click(); step(5); L('bowl removed', bowl.dead, 'seat dirty', !!game.seats[c.seat].dirty);
     L('items', G.items.length, 'customers', game.customers.map((c) => c.state));
     } catch (e) { L('EXC', e.stack); }
     return log;
@@ -85,10 +93,21 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   has(/pots on: true,true,true/, 'each knob lights its burner'); has(/state open open true/, 'the switch opens the cart'); has(/ORDER seat \d shoyu/, 'the first customer of night one orders plain shoyu');
   has(/bowl tare shoyu/, 'a tare ladle tips into the bowl'); has(/bowl broth chicken (2|1\.[89]\d*) temp 0\.9/, 'two ladles of hot broth, poured'); has(/bowl noodles \{"cook":1[4-9]/, 'noodles boiled into the green and tipped in');
   has(/raw left 5 slices on board 3/, 'three chops, three slices on the board'); has(/bin stock 8 -> 9/, 'a slice restocks its bin'); has(/bowl toppings chashu,chashu,menma,negi,nori,naruto/, 'every topping lands in the bowl');
-  has(/RESULT \{"score":100/, 'served as ordered: 100'); has(/money 450 tips \d+ served 1 seat dirty true/, 'they eat, pay and tip, and leave a dirty bowl'); has(/bowl removed true seat dirty false/, 'the bus tub clears the seat'); ok(!/EXC/.test(L), 'the order ran through');
-  const phys = await p.evaluate(() => { const T = G.debug.THREE, C = G.cart, pot = C.pots[2], it = pot.item, hand = { pos: new T.Vector3(), vs: new T.Vector3(), vel: new T.Vector3() }, step = (n) => { for (let i = 0; i < n; i++) G.debug.tick(1 / 60); }, l0 = pot.level;
+  has(/RESULT \{"score":100/, 'served as ordered: 100'); has(/paid leaving rung true till [1-9]/, 'they pay in cash: the money into the register, the right change back by their seat, and they go');
+  has(/money 450 tips [1-9]\d* served 1 seat dirty true/, 'the sale rung up and the tip left on the ledge goes in the till; a dirty bowl left'); has(/bowl removed true seat dirty false/, 'the bus tub clears the seat'); ok(!/EXC/.test(L), 'the order ran through');
+  const chg = await p.evaluate(() => { // a ten for a $5.25 bill: four dollars laid back is short and they say so; three quarters more and they thank you and go
+    const step = (n) => { for (let i = 0; i < n; i++) G.debug.tick(1 / 30); }, game = G.game, TL = G.till; let c = game.forceSpawn(); if (!c) return { none: true }; for (let i = 0; i < 400 && c.state !== 'waiting'; i++) step(1);
+    if (c.ticket) c.ticket.removeFromParent(); c.result = { score: 90, issues: [], pay: 525, tip: 0 }; game.scores.push(90); const m0 = game.money; TL.pay(c, 525, 0, ['b10']); step(60);
+    const r = { owed: c.pay.owed, laid: c.pay.items.length }; TL.toggle(true); for (const it of [...c.pay.items]) TL.deposit(it);
+    const give = (k) => { const it = G.sources.find((s) => s.till === k).take(); G.targets.find((t) => t.accepts(it) && t.getPos().distanceTo(TL.spot(c.seat)) < 0.01).receive(it); };
+    for (let i = 0; i < 4; i++) give('b1'); step(30 * 5); r.short = !!c.pay.shorted && c.state === 'paying';
+    for (let i = 0; i < 3; i++) give('c25'); step(30 * 4); r.gone = c.state === 'leaving'; r.rung = game.money - m0; r.change = TL.coins(475).join(','); return r; });
+  ok(chg.owed === 475 && chg.laid === 1 && chg.short && chg.gone && chg.rung === 525, 'a ten for $5.25: short change is called out, the right change and they go, the sale rung up (' + JSON.stringify(chg) + ')');
+  const stk = await p.evaluate(() => { const C = G.cart, a = C.avail(), n0 = C.stock.noodles, src = G.sources.find((s) => s.name === 'fresh noodle portion'); C.stock.noodles = 0; C.showStock(); const can = src.can(), sold = !C.canMake('shoyu'); C.stock.noodles = n0; C.showStock(); return { a, can, sold }; });
+  ok(stk.a.noodles === 4 && stk.a.broth.chicken >= 2 && !stk.can && stk.sold, 'night one is stocked for its four customers and a quarter more (one bowl made); out of noodles, the box is empty and shoyu is sold out (' + JSON.stringify(stk.a).slice(0, 160) + ')');
+  const phys = await p.evaluate(() => { const T = G.debug.THREE, C = G.cart, pot = C.pots[1], it = pot.item, hand = { pos: new T.Vector3(), vs: new T.Vector3(), vel: new T.Vector3() }, step = (n) => { for (let i = 0; i < n; i++) G.debug.tick(1 / 60); }, l0 = pot.level;
     it.held = hand; for (let i = 0; i < 40; i++) { it.obj.position.set(-0.4, 1.3, 0.3); it.obj.quaternion.setFromAxisAngle(new T.Vector3(0, 0, -1), 1.5); step(1); } const spilt = pot.level < l0 - 0.05, off = !pot.on;
-    it.obj.quaternion.identity(); it.obj.position.set(-0.93, 0.95, 0.79); it.held = null; it.drop(); step(120); const back = pot.on && Math.abs(it.obj.position.y - 0.86) < 0.03;
+    it.obj.quaternion.identity(); it.obj.position.set(-0.93, 0.95, 0.42); it.held = null; it.drop(); step(120); const back = pot.on && Math.abs(it.obj.position.y - 0.86) < 0.03;
     G.fx.splat(new T.Vector3(0, 0.9, -0.3), 0xc99a3c, 0.08); const s0 = G.fx.splats.length, rag = C.rag; rag.held = hand; rag.onGrab(); for (let i = 0; i < 120; i++) { hand.pos.set(Math.sin(i * 0.3) * 0.08, 0.93, -0.3); hand.vs.set(0.5, 0, 0); step(1); } rag.held = null; rag.drop();
     return { props: G.items.filter((x) => x.kind === 'prop').length, spilt, off, back, wiped: G.fx.splats.length < s0 }; });
   ok(phys.props > 15 && phys.spilt && phys.off && phys.back, 'a pot lifts off its burner, spills when tipped, and heats again set back down'); ok(phys.wiped, 'the rag wipes a spill off the counter');

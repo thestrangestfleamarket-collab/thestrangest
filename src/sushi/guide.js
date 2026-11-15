@@ -1,13 +1,14 @@
-// GUIDE MODE: while it is on, a card says the next thing to do for the customer who has waited longest and an arrow hangs over the thing to touch, in the right order, the whole night
+// GUIDE MODE: while it is on, a card says the next thing to do for the customer who has waited longest and an arrow hangs over the thing to touch, in the right order, the whole night; under it, always, what is left of tonight's stock
 import * as THREE from 'three';
 import { G, V3 } from './ctx.js';
 import * as T from './tex.js';
 import { TOPPINGS, TARE, BROTH } from './items.js';
+import { SEATS, RECIPES } from './cart.js';
 
 export function buildGuide(scene, C) {
   const g = { on: true }, nop = (o) => { o.userData.nopick = true; return o; };
-  const tex = T.panelTex(640, 300, () => { });
-  const card = nop(new THREE.Mesh(new THREE.PlaneGeometry(0.46, 0.216), new THREE.MeshBasicMaterial({ map: tex, color: 0xd0d0d0 }))); card.position.set(-0.9, 1.86, -0.42); card.rotation.y = 0.55; scene.add(card);
+  const tex = T.panelTex(640, 460, () => { });
+  const card = nop(new THREE.Mesh(new THREE.PlaneGeometry(0.46, 0.331), new THREE.MeshBasicMaterial({ map: tex, color: 0xd0d0d0 }))); card.position.set(-0.9, 1.86, -0.42); card.rotation.y = 0.55; scene.add(card);
   const am = new THREE.MeshBasicMaterial({ color: new THREE.Color(0.3, 1.6, 0.5), toneMapped: false, transparent: true, opacity: 0.9 });
   const arrow = nop(new THREE.Mesh(new THREE.ConeGeometry(0.028, 0.075, 4), am)); arrow.rotation.x = Math.PI; arrow.renderOrder = 60; scene.add(arrow);
   const ring = nop(new THREE.Mesh(new THREE.RingGeometry(0.05, 0.062, 20).rotateX(-Math.PI / 2), am)); ring.renderOrder = 60; scene.add(ring);
@@ -21,9 +22,13 @@ export function buildGuide(scene, C) {
   function step() {
     const game = G.game, off = C.pots.filter((p) => !p.on);
     if (off.length) return ['Turn a burner knob', `${off.length} to light — stove, on your left`, new V3(-0.67, 0.78, off[0].z)];
-    if (game.state === 'prep' || game.state === 'closed') return ['Flip the OPEN switch', 'Right post, under the till', G.buttons.find((b) => b.name.startsWith('OPEN')).getPos().clone().add(new V3(0, 0.08, 0))];
+    if (game.state === 'prep' || game.state === 'closed') return ['Flip the OPEN switch', 'Right post, under the clock', G.buttons.find((b) => b.name.startsWith('OPEN')).getPos().clone().add(new V3(0, 0.08, 0))];
+    const money = G.till && G.till.step(held); if (money) return money;
     const c = game.customers.filter((x) => x.state === 'waiting').sort((a, b) => a.patience / a.maxPatience - b.patience / b.maxPatience)[0];
+    if (c) { const out = game.outFor(c); if (out) return [`Tell seat ${c.seat + 1}: we're out of ${out.dish ? c.order.recipe.name.toLowerCase() : [...out.tops.map((t) => TOPPINGS[t].label.toLowerCase()), out.drink].filter(Boolean).join(' and ')}`, 'Say it to them (T to type)', new V3(SEATS[c.seat], 1.62, -1.15)]; }
     if (!c) {
+      const tip = G.till && G.till.loose()[0]; if (tip) return ['Collect the money on the ledge', 'Into the register', tip.obj.position.clone().setY(1.08)];
+      if (game.soldOut && game.state === 'open') return ['Sold out for tonight', 'Flip the OPEN switch to close', G.buttons.find((b) => b.name.startsWith('OPEN')).getPos().clone().add(new V3(0, 0.08, 0))];
       const di = game.seats.findIndex((s) => s.dirty);
       if (di >= 0) { const b = game.seats[di].dirty; return b.held ? ['Drop it in the bus tub', 'Right wing, at the back', tub] : ['Clear the dirty bowl', `Seat ${di + 1}`, b.obj.position.clone().setY(1.14)]; }
       return [game.state === 'closing' ? 'Last orders are out' : 'Wait for a customer', game.customers.length ? 'Someone is on their way' : 'A quiet minute', null];
@@ -52,15 +57,21 @@ export function buildGuide(scene, C) {
     return bowl.held ? [`Serve seat ${c.seat + 1}`, 'Set it on their placemat', C.seatSpots[c.seat].clone().setY(1.2)] : ['Pick up the bowl and serve it', `Seat ${c.seat + 1}`, bp];
   }
 
-  let last = null, acc = 0, cur = null;
+  let last = null, acc = 0, cur = null, stock = [];
+  const stockRows = () => { const a = C.avail(), m = G.game.cfg(), tares = [...new Set(m.menu.map((k) => RECIPES[k].tare))], broths = [...new Set(m.menu.map((k) => RECIPES[k].broth))];
+    return [[['NOODLES', a.noodles], ...broths.map((b) => [BROTH[b].label, a.broth[b]]), ...tares.map((k) => [TARE[k].label + ' TARE', a.tare[k]])],
+      Object.keys(TOPPINGS).filter((t) => m.menu.some((k) => RECIPES[k].tops[t])).map((t) => [TOPPINGS[t].label, a.tops[t]]),
+      m.drinks ? [['BEER', a.drinks.beer], ['COLA', a.drinks.cola]] : []].filter((r) => r.length); };
   g.update = (dt, t) => {
-    acc += dt; if (acc > 0.2) { acc = 0; try { cur = g.on ? step() : ['GUIDE MODE is off', 'Press the green button to turn it on', null]; } catch (e) { cur = null; } }
-    const key = cur ? cur[0] + '|' + cur[1] : '';
+    acc += dt; if (acc > 0.2) { acc = 0; try { cur = g.on ? step() : ['GUIDE MODE is off', 'Press the green button to turn it on', null]; } catch (e) { cur = null; } try { stock = stockRows(); } catch (e) { stock = []; } }
+    const key = (cur ? cur[0] + '|' + cur[1] : '') + JSON.stringify(stock);
     if (key !== last) { last = key; G.guideText = g.on && cur ? `${cur[0]} — ${cur[1]}` : '';
       tex.redraw((c2, w, h) => { c2.fillStyle = g.on ? '#10241a' : '#241010'; c2.fillRect(0, 0, w, h); c2.strokeStyle = g.on ? '#40e080' : '#a04040'; c2.lineWidth = 10; c2.strokeRect(5, 5, w - 10, h - 10);
         c2.fillStyle = g.on ? '#40e080' : '#e08080'; c2.font = `bold 34px ${T.MONO}`; c2.textAlign = 'left'; c2.fillText('GUIDE', 26, 52);
+        c2.fillStyle = '#0c140f'; c2.fillRect(10, 300, w - 20, h - 310); c2.fillStyle = '#7fbf98'; c2.font = `bold 24px ${T.MONO}`; c2.fillText("TONIGHT'S STOCK", 26, 328);
+        { let y = 360; c2.font = `bold 25px ${T.MONO}`; for (const row of stock) { let x = 26; for (const [t, n] of row) { const s2 = `${t} ${n}  `, tw = c2.measureText(s2).width; if (x + tw > w - 16) { x = 26; y += 29; } c2.fillStyle = n > 0 ? '#e8f0e0' : '#ff7a6a'; c2.fillText(s2, x, y); x += tw; } y += 29; } }
         if (!cur) return; c2.fillStyle = '#ffffff'; c2.font = `bold 50px ${T.JP}`; const words = cur[0].split(' '); let line = '', y = 124; for (const wd of words) { if (c2.measureText(line + wd).width > w - 52) { c2.fillText(line, 26, y); line = ''; y += 58; } line += wd + ' '; } c2.fillText(line, 26, y);
-        c2.fillStyle = '#b8e8c8'; c2.font = `bold 34px ${T.JP}`; c2.fillText(cur[1], 26, Math.min(h - 28, y + 62), w - 52); }); }
+        c2.fillStyle = '#b8e8c8'; c2.font = `bold 34px ${T.JP}`; c2.fillText(cur[1], 26, Math.min(300 - 28, y + 62), w - 52); }); }
     const p = g.on && cur ? cur[2] : null; arrow.visible = ring.visible = !!p;
     if (p) { arrow.position.set(p.x, p.y + 0.05 + Math.sin(t * 5) * 0.02, p.z); arrow.rotation.y = t * 2; ring.position.set(p.x, p.y - 0.04, p.z); const s = 1 + Math.sin(t * 5) * 0.15; ring.scale.set(s, 1, s); }
   };

@@ -324,7 +324,7 @@ export class Ladle extends Tool {
     this.mode = mode; this.type = type; this.vessel = vessel; this.liq = m.liq; this.cup = m.cup; this.filled = false; this.vol = 0; this.r = big ? 0.045 : 0.021; this.heat = 1; this.center.set(0, 0, -0.03);
   }
   setFilled(f, type) { this.filled = f; this.vol = f ? 1 : 0; this.liq.visible = f; this.liq.scale.setScalar(1); if (type) { this.type = type; this.liq.material.color.set(BROTH[type].color); } }
-  onHome() { if ((this.vessel.level ?? 1) <= 0.03) return; this.setFilled(true, this.mode === 'broth' ? this.vessel.type : null); this.heat = this.vessel.heat ?? 1; }
+  onHome() { if ((this.vessel.level ?? 1) <= 0.03) return; if (this.vessel.level !== undefined && this.vol < 0.98) this.vessel.level = Math.max(0, this.vessel.level - (1 - this.vol) * (this.vessel.sip || 0.02)); this.setFilled(true, this.mode === 'broth' ? this.vessel.type : null); this.heat = this.vessel.heat ?? 1; }
   vessels() { return this.mode === 'broth' ? G.cart.pots.filter((p) => p.type) : [this.vessel]; }
   onHeld(dt, h) {
     const c = this.point(this.cup, _v), tilt = this.tilt();

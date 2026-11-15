@@ -19,7 +19,7 @@ export function buildTV(scene, shops) {
   const drawSnow = () => { const im = sg.createImageData(64, 48); for (let i = 0; i < 64 * 48; i++) { const v = (Math.random() * 200) | 0; im.data[i * 4] = im.data[i * 4 + 1] = v; im.data[i * 4 + 2] = v + 14; im.data[i * 4 + 3] = 255; } sg.putImageData(im, 0, 0); snow.needsUpdate = true; }; drawSnow();
   // a tube: one picture off the air, shown on every set tuned to it
   const tube = (ch, loud) => { const v = document.createElement('video'); v.playsInline = true; v.preload = 'none'; v.muted = !loud; v.loop = false; const tex = new THREE.VideoTexture(v); tex.colorSpace = THREE.SRGBColorSpace;
-    const t = { v, tex, ch, src: '', dead: false, on: true, sets: [], m: new THREE.MeshBasicMaterial({ map: snow, color: new THREE.Color(1.35, 1.35, 1.45), toneMapped: false }), chk: 0 };
+    const t = { v, tex, ch, src: '', dead: false, on: true, sets: [], m: new THREE.MeshBasicMaterial({ map: snow, color: new THREE.Color(0.05, 0.05, 0.053), toneMapped: false }), chk: 0 };
     v.addEventListener('error', () => { t.dead = true; }); v.addEventListener('ended', () => tune(t)); return t; };
   const tune = (t) => { if (!t.on) { t.v.pause(); return; } const { s, off: o } = at(CH[t.ch % CH.length]), u = '/film/' + s.id + '/' + s.file; if (u !== t.src) { t.src = u; t.dead = false; t.v.src = u; t.flash = 0.5; } try { if (Math.abs(t.v.currentTime - o) > 4) t.v.currentTime = o; } catch (e) { /* not ready */ } const p = t.v.play(); if (p && p.catch) p.catch(() => { }); };
   // a set: the model, scaled to its width, and the picture on its glass

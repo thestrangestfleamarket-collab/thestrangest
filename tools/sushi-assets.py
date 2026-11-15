@@ -10,6 +10,7 @@ TEX = {'brick_red': ('brick_wall_001', 512), 'brick_orange': ('large_red_bricks'
        'wood': ('weathered_brown_planks', 512), 'wood_dark': ('dark_wooden_planks', 512), 'wood_light': ('hinoki_planks', 512), 'tile_brown': ('rectangular_facade_tiles_02', 512), 'tile_white': ('long_white_tiles', 512)}
 MODELS = {'metal_trash_can': 256, 'cardboard_box_01': 256, 'potted_plant_02': 256, 'potted_plant_04': 256, 'trashbag': 256, 'plastic_crate_02': 256, 'utility_box_01': 256, 'exterior_aircon_unit': 256, 'Television_01': 512, 'television_02': 512, 'boombox': 512}
 SLIM = {'metal_trash_can': 500, 'cardboard_box_01': 200, 'potted_plant_02': 900, 'potted_plant_04': 700, 'trashbag': 300, 'plastic_crate_02': 900, 'utility_box_01': 300, 'exterior_aircon_unit': 700, 'television_01': 1400, 'television_02': 1600, 'boombox': 2500}
+MODELS['CashRegister_01'] = 512; SLIM['cashregister_01'] = 4000   # the till on the back counter (its drawer is drawn open in the model)
 
 def get(url):
     return urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 asset-fetch'}), timeout=180).read()
@@ -64,4 +65,8 @@ for s, z in MODELS.items():
 if not only or 'car' in only:   # the parked car is COLD BORE's (nander's VW Corrado, CC0), in its own red and, at 256 px, its black paint
     shutil.copyfile('data/sniper/m/car.glb', OUT + 'm/car.glb')
     for n in (3,): Image.open('data/sniper/tex/car_%d.jpg' % n).resize((256, 256), Image.LANCZOS).save(OUT + 'tex/car_%d.jpg' % n, quality=82, optimize=True)
+if not only or 'money' in only:   # the till's money: the 1985 designs of the $5, $10, $20 and the $1's back, US government pictures (public domain) from uscurrency.gov; the $1's front and the coins are kept as they are in data/sushi/money
+    os.makedirs(OUT + 'money', exist_ok=True); U = 'https://www.uscurrency.gov/sites/default/files/denominations/'
+    for name, f in {'b1b': '1_1963-present-back', 'b5': '5_1993-2000-front_0', 'b5b': '5_1993-2000-back_0', 'b10': '10_1990-2000-front_0', 'b10b': '10_1990-2000-back_0', 'b20': '20_1990-1998-front_0', 'b20b': '20_1990-1998-back-ver2_0'}.items():
+        Image.open(io.BytesIO(get(U + f + '.jpg'))).convert('RGB').resize((320, 136), Image.LANCZOS).save(OUT + 'money/' + name + '.jpg', quality=88); print(name, f, flush=True)
 print("then: node tools/hide-slim.cjs data/sushi/m '" + json.dumps(SLIM) + "'")

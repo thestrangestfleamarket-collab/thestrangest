@@ -1,11 +1,12 @@
-// the yatai itself: its frame, stove and pots, crocks, bins, board, shelves, switches, the ticket rail and the till
+// the yatai itself: its frame, stove and pots, crocks, bins, board, shelves, switches, the ticket rail, and tonight's stock (what runs out is gone for the night)
 import * as THREE from 'three';
-import { G, V3, Q, mat, mesh, box, cyl, quatLook, clamp } from './ctx.js';
+import { G, V3, Q, mat, mesh, box, cyl, quatLook, clamp, mergeStatic } from './ctx.js';
 import * as T from './tex.js';
 import { glb } from './tv.js';
 import { Bowl, Food, Raw, Drink, Ladle, Basket, Knife, Prop, Vessel, Sticks, Rag, TOPPINGS, TARE, BROTH, RAW, doneness } from './items.js';
 
 export const SEATS = [-0.72, 0, 0.72];
+// prices in cents, 1985 dollars
 export const RECIPES = {
   shoyu: { name: 'SHOYU', jp: '醤油ラーメン', price: 450, broth: 'chicken', tare: 'shoyu', tops: { chashu: 2, menma: 1, negi: 1, nori: 1, naruto: 1 } },
   shio: { name: 'SHIO', jp: '塩ラーメン', price: 450, broth: 'chicken', tare: 'shio', tops: { chashu: 2, menma: 1, negi: 1, egg: 1 } },
@@ -13,9 +14,13 @@ export const RECIPES = {
   tonkotsu: { name: 'TONKOTSU', jp: '豚骨ラーメン', price: 550, broth: 'tonkotsu', tare: 'shio', tops: { chashu: 2, egg: 1, negi: 1, nori: 1 } },
 };
 
+const usd = (c) => '$' + (c / 100).toFixed(2);
+export const DRINKS = { beer: 150, cola: 75 };
+export const BOWL_BROTH = 0.044, BOWL_TARE = 0.05; // a pot's or crock's level that one bowl takes (two ladles of broth, one of tare)
+export const YIELD = { chashu: 8, naruto: 10, negi: 12, egg: 2 }; // servings in one roll, log, stalk or egg
 export function buildCart(scene, city) {
   const cart = new THREE.Group(); scene.add(cart); G.pickRoot.add(cart);
-  const C = { group: cart, pots: [], bins: {}, board: null, open: false, ups: [], knobs: [] };
+  const C = { group: cart, pots: [], bins: {}, board: null, open: false, ups: [], knobs: [], shown: { noodles: [], raw: {}, drinks: {} }, stock: { noodles: 0, kettle: 0, jar: { shoyu: 0, shio: 0, miso: 0 }, drinks: { beer: 0, cola: 0 }, raw: { chashu: 0, naruto: 0, negi: 0, egg: 0 } } };
   G.cart = C;
   const wood = mat({ map: T.photo('wood', () => T.woodTex('#5a3a22', '#24140a')), color: 0xc8b8a8, userData: { metres: 1.5 } }); // photographed planks, laid by the metre (T.metreUV)
   const woodDark = mat({ map: T.photo('wood_dark', () => T.woodTex('#3a2414', '#150c06', [1, 1], 5)), color: 0xa89888, userData: { metres: 1.6 } });
@@ -129,8 +134,7 @@ export function buildCart(scene, city) {
   { const bk = new THREE.Group(); cart.add(bk);
     box(1.36, 0.86, 0.34, wood, 0, 0.43, 1.62, bk); box(1.4, 0.03, 0.38, woodLight, 0, 0.885, 1.62, bk); surf(-0.7, 0.7, 1.43, 1.81, 0.9);
     for (const dx of [-0.34, 0.34]) { box(0.6, 0.7, 0.02, woodDark, dx, 0.44, 1.445, bk); cyl(0.012, 0.012, 0.03, steel, dx + (dx < 0 ? 0.22 : -0.22), 0.5, 1.43, bk, 8).rotation.x = Math.PI / 2; }
-    for (let i = 0; i < 5; i++) { const b = new Bowl(); const o = b.obj; b.remove(); o.userData.item = null; o.position.set(0.05, 0.9 + i * 0.022, 1.66); o.rotation.y = i * 1.3; bk.add(o); }
-    box(0.34, 0.2, 0.26, mat({ map: woodLight.map, roughness: 0.9 }), -0.08, 1.0, 1.66, bk).rotation.y = 0.15;
+    for (let i = 0; i < 5; i++) { const b = new Bowl(); const o = b.obj; b.remove(); o.userData.item = null; o.position.set(-0.2, 0.9 + i * 0.022, 1.64); o.rotation.y = i * 1.3; bk.add(o); }
     box(1.4, 0.03, 0.22, woodLight, 0, 1.62, 1.72, bk); for (const sx of [-0.66, 0.66]) box(0.03, 0.74, 0.2, woodDark, sx, 1.26, 1.72, bk);
     bk.traverse((o) => { o.userData.nopick = true; }); }
   surf(-0.7, 0.7, 1.61, 1.83, 1.635);
@@ -138,10 +142,10 @@ export function buildCart(scene, city) {
     const tg = new THREE.Group(); tg.position.set(-0.45, 0.9, 1.64); cyl(0.13, 0.12, 0.2, mat({ color: 0xe8e4d8, roughness: 0.35 }), 0, 0.1, 0, tg, 20); cyl(0.125, 0.13, 0.05, mat({ color: 0x8a1c1c, roughness: 0.4 }), 0, 0.225, 0, tg, 20); cyl(0.02, 0.02, 0.03, black, 0, 0.26, 0, tg, 8);
     new Prop(tg, { name: 'rice tub', col: { t: 'cyl', hh: 0.125, r: 0.13 }, mass: 3, radius: 0.13 });
     const kg = new THREE.Group(); kg.position.set(0.5, 0.9, 1.66); cyl(0.09, 0.11, 0.17, steel, 0, 0.085, 0, kg, 16); const sp = cyl(0.012, 0.02, 0.12, steel, 0.1, 0.12, 0, kg, 8); sp.rotation.z = -0.9; mesh(new THREE.TorusGeometry(0.07, 0.008, 6, 14, Math.PI), black, 0, 0.18, 0, kg);
-    C.kettle = new Prop(kg, { name: 'stock kettle', col: { t: 'cyl', hh: 0.09, r: 0.11 }, mass: 2.5, radius: 0.11, top: 0.15, pour: { color: 0xc9a868, pay: { kind: 'stock', type: 'stock', heat: 0.6 }, r: 0.007, rate: 2.2, lip: 0.14 } });
+    C.kettle = new Prop(kg, { name: 'stock kettle', col: { t: 'cyl', hh: 0.09, r: 0.11 }, mass: 2.5, radius: 0.11, top: 0.15, pour: { color: 0xc9a868, pay: { kind: 'stock', type: 'stock', heat: 0.6 }, r: 0.007, rate: 2.2, lip: 0.14, can: (q) => C.stock.kettle > 0 && ((C.stock.kettle -= q * 0.03), true) } });
     Object.keys(TARE).forEach((k, i) => { const g = new THREE.Group(); g.position.set(-0.56 + i * 0.16, 1.635, 1.72); cyl(0.04, 0.04, 0.15, mat({ color: TARE[k].color, roughness: 0.15, transparent: true, opacity: 0.92 }), 0, 0.075, 0, g, 12); cyl(0.03, 0.03, 0.02, black, 0, 0.16, 0, g, 10);
       const lb = mesh(new THREE.PlaneGeometry(0.06, 0.04), new THREE.MeshBasicMaterial({ map: T.labelTex([TARE[k].label], { w: 256, h: 120, fs: 56 }), color: 0xbbbbbb }), 0, 0.08, 0.041, g); lb.castShadow = false; g.rotation.y = Math.PI;
-      new Prop(g, { name: `${TARE[k].label.toLowerCase()} tare jar`, col: { t: 'cyl', hh: 0.085, r: 0.041 }, mass: 0.9, radius: 0.05, top: 0.17, fragile: TARE[k].color, pour: { color: TARE[k].color, pay: { kind: 'tare', type: k, heat: 1 }, r: 0.004, rate: 1.1 } }); });
+      new Prop(g, { name: `${TARE[k].label.toLowerCase()} tare jar`, col: { t: 'cyl', hh: 0.085, r: 0.041 }, mass: 0.9, radius: 0.05, top: 0.17, fragile: TARE[k].color, pour: { color: TARE[k].color, pay: { kind: 'tare', type: k, heat: 1 }, r: 0.004, rate: 1.1, can: (q) => C.stock.jar[k] > 0 && ((C.stock.jar[k] -= q * 0.25), true) } }); });
     for (let i = 3; i < 9; i++) { const hh = 0.07 + (i % 3) * 0.02, col = [0x5a2a0c, 0xb8c8c0, 0x8a5a14, 0x2a3a24][i % 4], g = new THREE.Group(); g.position.set(-0.56 + i * 0.14, 1.635, 1.72); cyl(0.045, 0.045, hh * 2, mat({ color: col, roughness: 0.2 }), 0, hh, 0, g, 10); new Prop(g, { name: 'jar', col: { t: 'cyl', hh, r: 0.046 }, mass: 0.7, radius: 0.05, fragile: col }); }
     C.rag = new Rag(0.72, 0.935, -0.42);
   }
@@ -272,6 +276,11 @@ export function buildCart(scene, city) {
 
   // ---------------- sources: bowls, noodles, raw, drinks ----------------
   const srcMesh = (m, src) => m.traverse((o) => { o.userData.source = src; });
+  // what is left on a tray or in the box is drawn as it is: the pieces still there, baked into one draw again whenever the count changes
+  const shelf = (pieces, src) => { const g = pieces[0].parent, tr = { n: -1, cur: null }; pieces.forEach((o) => o.removeFromParent());
+    tr.show = (n) => { n = Math.min(n, pieces.length); if (n === tr.n) return; tr.n = n; if (tr.cur) { tr.cur.removeFromParent(); tr.cur.traverse((o) => o.geometry?.dispose()); }
+      const h = new THREE.Group(); h.userData.dyn = true; pieces.slice(0, n).forEach((o) => h.add(o.clone())); g.add(h); mergeStatic(h); srcMesh(h, src); tr.cur = h; };
+    return tr; };
   { // bowl stack
     const g = new THREE.Group(); g.position.set(0.93, 0.9, -0.36); cart.add(g);
     for (let i = 0; i < 6; i++) { const b = new Bowl(); const o = b.obj; b.remove(); o.userData.item = null; o.position.set(0, i * 0.022, 0); o.rotation.y = i; g.add(o); }
@@ -281,18 +290,18 @@ export function buildCart(scene, city) {
   { // noodle box
     const g = new THREE.Group(); g.position.set(-0.93, 0.9, -0.36); cart.add(g);
     box(0.3, 0.012, 0.24, woodLight, 0, 0.006, 0, g); for (const [x, z, w, d] of [[0, 0.115, 0.3, 0.012], [0, -0.115, 0.3, 0.012], [0.145, 0, 0.012, 0.24], [-0.145, 0, 0.012, 0.24]]) box(w, 0.05, d, woodLight, x, 0.025, z, g);
-    for (let i = 0; i < 6; i++) { const f = new Food('noodle'); const o = f.obj; f.remove(); o.userData.item = null; o.position.set(((i % 3) - 1) * 0.092, 0.012, (Math.floor(i / 3) - 0.5) * 0.105); o.scale.setScalar(0.72); o.rotation.y = i * 2; g.add(o); }
-    const src = { pos: new V3(-0.93, 0.95, -0.36), r: 0.14, name: 'fresh noodle portion', can: () => true, take: () => new Food('noodle') };
-    G.sources.push(src); srcMesh(g, src);
+    for (let i = 0; i < 6; i++) { const f = new Food('noodle'); const o = f.obj; f.remove(); o.userData.item = null; o.userData.dyn = true; o.position.set(((i % 3) - 1) * 0.092, 0.012, (Math.floor(i / 3) - 0.5) * 0.105); o.scale.setScalar(0.72); o.rotation.y = i * 2; g.add(o); C.shown.noodles.push(o); }
+    const src = { pos: new V3(-0.93, 0.95, -0.36), r: 0.14, name: 'fresh noodle portion', can: () => C.stock.noodles > 0, take: () => { C.stock.noodles--; C.showStock(); return new Food('noodle'); } };
+    G.sources.push(src); srcMesh(g, src); C.shown.noodles = shelf(C.shown.noodles, src);
   }
   Object.keys(RAW).forEach((k, i) => {
     const z = -0.02 + i * 0.165, g = new THREE.Group(); g.position.set(0.925, 0.9, z); cart.add(g);
     box(0.34, 0.012, 0.14, steel, 0, 0.006, 0, g); for (const zz of [-0.07, 0.07]) box(0.34, 0.03, 0.006, steel, 0, 0.018, zz, g);
     const cnt = k === 'egg' ? 5 : k === 'negi' ? 3 : 2;
-    for (let n = 0; n < cnt; n++) { const r = new Raw(k); const o = r.obj; r.remove(); o.userData.item = null; if (k === 'egg') o.position.set(-0.15 + n * 0.062, 0.036, 0); else o.position.set(-RAW[k].len / 2, 0.012 + RAW[k].r, (n - (cnt - 1) / 2) * (k === 'negi' ? 0.035 : RAW[k].r * 2.1)); g.add(o); }
+    C.shown.raw[k] = []; for (let n = 0; n < cnt; n++) { const r = new Raw(k); const o = r.obj; r.remove(); o.userData.item = null; o.userData.dyn = true; C.shown.raw[k].push(o); if (k === 'egg') o.position.set(-0.15 + n * 0.062, 0.036, 0); else o.position.set(-RAW[k].len / 2, 0.012 + RAW[k].r, (n - (cnt - 1) / 2) * (k === 'negi' ? 0.035 : RAW[k].r * 2.1)); g.add(o); }
     const lm = mesh(new THREE.PlaneGeometry(0.1, 0.03), new THREE.MeshBasicMaterial({ map: T.labelTex([RAW[k].name.toUpperCase()], { w: 320, h: 96, fs: 36 }), color: 0xcccccc }), -0.226, 0.03, 0, g); lm.rotation.y = -Math.PI / 2; lm.castShadow = false;
-    const src = { pos: new V3(0.925, 0.95, z), r: 0.085, name: RAW[k].name, can: () => true, take: () => new Raw(k) };
-    G.sources.push(src); srcMesh(g, src);
+    const src = { pos: new V3(0.925, 0.95, z), r: 0.085, name: RAW[k].name, can: () => C.stock.raw[k] > 0, take: () => { C.stock.raw[k]--; C.showStock(); return new Raw(k); } };
+    G.sources.push(src); srcMesh(g, src); C.shown.raw[k] = shelf(C.shown.raw[k], src);
   });
   { // ice cooler with drinks
     const g = new THREE.Group(); g.position.set(0.935, 0.9, 0.68); cart.add(g);
@@ -301,11 +310,32 @@ export function buildCart(scene, city) {
     const ice = mesh(new THREE.BoxGeometry(0.33, 0.1, 0.21), mat({ color: 0xdff2ff, roughness: 0.25, transparent: true, opacity: 0.86 }), 0, 0.065, 0, g);
     ['beer', 'cola'].forEach((d, j) => {
       const grp = new THREE.Group(); g.add(grp);
-      for (let n = 0; n < 3; n++) { const b = new Drink(d); const o = b.obj; b.remove(); o.userData.item = null; o.position.set(-0.11 + n * 0.11, 0.06, (j - 0.5) * 0.11); o.rotation.z = (n - 1) * 0.08; grp.add(o); }
-      const src = { pos: new V3(0.935, 1.14, 0.68 + (j - 0.5) * 0.11), r: 0.075, name: d, can: () => true, take: () => { G.audio.play('bottle'); return new Drink(d); } };
-      G.sources.push(src); srcMesh(grp, src);
+      C.shown.drinks[d] = []; for (let n = 0; n < 3; n++) { const b = new Drink(d); const o = b.obj; b.remove(); o.userData.item = null; o.userData.dyn = true; C.shown.drinks[d].push(o); o.position.set(-0.11 + n * 0.11, 0.06, (j - 0.5) * 0.11); o.rotation.z = (n - 1) * 0.08; grp.add(o); }
+      const src = { pos: new V3(0.935, 1.14, 0.68 + (j - 0.5) * 0.11), r: 0.075, name: d, can: () => C.stock.drinks[d] > 0, take: () => { C.stock.drinks[d]--; C.showStock(); G.audio.play('bottle'); return new Drink(d); } };
+      G.sources.push(src); srcMesh(grp, src); C.shown.drinks[d] = shelf(C.shown.drinks[d], src);
     });
   }
+  // ---------------- tonight's stock ----------------
+  C.showStock = () => { const s = C.stock; C.shown.noodles.show(s.noodles); for (const k in C.shown.raw) C.shown.raw[k].show(s.raw[k]); for (const d in C.shown.drinks) C.shown.drinks[d].show(s.drinks[d]); C.menuDraw?.(); };
+  // P: { noodles, beer, cola, tops: {t: servings}, broth: {type: bowls}, brothSpare, tare: {type: bowls}, tareSpare: {type: bowls} }; the pots and crocks hold the night's bowls, the kettle and jars the quarter more
+  C.restock = (P) => {
+    const s = C.stock; s.noodles = P.noodles; s.drinks.beer = P.beer; s.drinks.cola = P.cola;
+    for (const k in C.bins) { const b = C.bins[k], need = P.tops[k] || 0, cap = { chashu: 8, egg: 4, negi: 8, naruto: 8 }[k]; if (cap !== undefined) { b.stock = Math.min(need, cap); s.raw[k] = Math.ceil((need - b.stock) / YIELD[k]); } else b.stock = need; b.refresh(); }
+    for (const p of C.pots) if (p.type) p.level = Math.min(1, 0.035 + (P.broth[p.type] || 0) * BOWL_BROTH);
+    s.kettle = P.brothSpare * BOWL_BROTH;
+    for (const v of C.tares) { v.level = Math.min(1, 0.035 + (P.tare[v.type] || 0) * BOWL_TARE); s.jar[v.type] = (P.tareSpare[v.type] || 0) * BOWL_TARE; }
+    C.showStock();
+  };
+  // what is left for tonight, counted in bowls and servings (what is already out on the counter included)
+  C.avail = () => {
+    const s = C.stock, a = { noodles: s.noodles + G.items.filter((i) => i.noodle && !i.dead).length + C.baskets.filter((b) => b.noodles).length, broth: {}, tare: {}, tops: {}, drinks: { ...s.drinks } };
+    const spare = Math.floor(s.kettle / BOWL_BROTH + 0.01);
+    for (const p of C.pots) if (p.type) a.broth[p.type] = Math.max(0, Math.floor((p.level - 0.03) / BOWL_BROTH + 0.01)) + spare;
+    for (const v of C.tares) a.tare[v.type] = Math.max(0, Math.floor((v.level - 0.03) / BOWL_TARE + 0.01)) + Math.floor(s.jar[v.type] / BOWL_TARE + 0.01);
+    for (const k in C.bins) a.tops[k] = C.bins[k].stock + (s.raw[k] || 0) * (YIELD[k] || 0) + G.items.filter((i) => !i.dead && ((i.kind === 'food' && i.topping === k) || (i.kind === 'raw' && i.raw === k))).reduce((n, i) => n + (i.kind === 'raw' ? i.left * (k === 'egg' ? 2 : i.def.per) : i.servings || 1), 0);
+    return a;
+  };
+  C.canMake = (key, a = C.avail()) => { const r = RECIPES[key]; return a.noodles > 0 && a.broth[r.broth] > 0 && a.tare[r.tare] > 0; };
   { // bus tub
     const g = new THREE.Group(); g.position.set(0.935, 0.9, 0.91); cart.add(g);
     const tm = mat({ color: 0x55585c, roughness: 0.6 });
@@ -323,7 +353,7 @@ export function buildCart(scene, city) {
     const keys = Object.keys(RECIPES), cw = (w - 40) / 5;
     keys.forEach((k, i) => {
       const r = RECIPES[k], x = 20 + i * cw;
-      g.fillStyle = '#7a1612'; g.fillRect(x + 8, 22, cw - 16, 70); g.fillStyle = '#fff'; g.textAlign = 'center'; g.font = `bold 46px ${T.JP}`; g.fillText(`${r.name}  ¥${r.price}`, x + cw / 2, 72);
+      g.fillStyle = '#7a1612'; g.fillRect(x + 8, 22, cw - 16, 70); g.fillStyle = '#fff'; g.textAlign = 'center'; g.font = `bold 46px ${T.JP}`; g.fillText(`${r.name}  ${usd(r.price)}`, x + cw / 2, 72);
       g.fillStyle = '#1b1b1b'; g.textAlign = 'left'; g.font = `bold 34px ${T.JP}`;
       const lines = [`1 TARE:  ${TARE[r.tare].label} ${TARE[r.tare].jp}`, `2 BROTH: ${BROTH[r.broth].label} x2`, `3 NOODLES (green zone)`, '4 TOPPINGS:'];
       lines.forEach((l, n) => g.fillText(l, x + 18, 140 + n * 46, cw - 30));
@@ -332,14 +362,21 @@ export function buildCart(scene, city) {
     });
     const x = 20 + 4 * cw; g.fillStyle = '#12406a'; g.fillRect(x + 8, 22, cw - 16, 70); g.fillStyle = '#fff'; g.textAlign = 'center'; g.font = `bold 44px ${T.JP}`; g.fillText('HOW IT WORKS', x + cw / 2, 72);
     g.fillStyle = '#1b1b1b'; g.textAlign = 'left'; g.font = `bold 29px ${T.JP}`;
-    ['Knobs (left) light the burners.', 'OPEN switch (right post).', 'The ticket lists every step.', 'Tilt ladles/baskets to pour.', 'Chop on the board, fill bins.', 'Set the bowl on the placemat.', 'Dirty bowls → bus tub.', 'Drop a tool: it returns home.', 'FIRM = yellow zone on dial.'].forEach((l, n) => g.fillText('・' + l, x + 14, 132 + n * 41, cw - 26));
+    ['Knobs (left) light the burners.', 'OPEN switch (right post).', 'The ticket lists every step.', 'Tilt ladles/baskets to pour.', 'Chop on the board, fill bins.', 'Set the bowl on the placemat.', 'Dirty bowls → bus tub.', 'Drop a tool: it returns home.', 'FIRM = yellow zone on dial.', 'Cash only: the till is behind you.'].forEach((l, n) => g.fillText('・' + l, x + 14, 130 + n * 37, cw - 26));
   });
   T.dirty(rb, 9, { stains: 40, rings: 12, drips: 10, yellow: 1, scratches: 30 });
   const board = mesh(new THREE.PlaneGeometry(1.8, 0.45), new THREE.MeshBasicMaterial({ map: rb, color: 0x7a7468 }), 0, 2.24, -0.5, cart); board.rotation.x = 0.36; board.castShadow = false;
-  const menuT = T.canvasTex(1024, 256, (g, w, h) => {
-    g.fillStyle = '#20140c'; g.fillRect(0, 0, w, h); g.textAlign = 'center';
-    Object.values(RECIPES).forEach((r, i) => { const x = w * (0.125 + i * 0.25); g.fillStyle = '#f4ead2'; g.font = `bold 58px ${T.JP}`; g.fillText(r.jp, x, 90, 230); g.fillStyle = '#ffb040'; g.font = `bold 52px ${T.JP}`; g.fillText(`${r.price}円`, x, 160); g.fillStyle = '#c8b8a0'; g.font = `bold 30px ${T.JP}`; g.fillText(r.name, x, 210); });
-  });
+  const menuT = T.panelTex(1024, 256, () => { }); let menuKey = '';
+  C.menuDraw = () => { // the customers' side: tonight's bowls and their prices; what has run out is marked
+    const on = G.game ? G.game.cfg().menu : Object.keys(RECIPES), a = C.avail(), st = Object.keys(RECIPES).map((k) => (!on.includes(k) ? 0 : C.canMake(k, a) ? 1 : 2)), dr = G.game && G.game.cfg().drinks ? [a.drinks.beer > 0, a.drinks.cola > 0] : null, key = st.join('') + JSON.stringify(dr);
+    if (key === menuKey) return; menuKey = key;
+    menuT.redraw((g, w, h) => {
+      g.fillStyle = '#20140c'; g.fillRect(0, 0, w, h); g.textAlign = 'center';
+      Object.values(RECIPES).forEach((r, i) => { const x = w * (0.125 + i * 0.25); g.globalAlpha = st[i] === 1 ? 1 : 0.35; g.fillStyle = '#f4ead2'; g.font = `bold 46px ${T.JP}`; g.fillText(r.jp, x, 62, 230); g.fillStyle = '#c8b8a0'; g.font = `bold 30px ${T.JP}`; g.fillText(r.name + ' RAMEN', x, 104, 236); g.fillStyle = '#ffb040'; g.font = `bold 56px ${T.JP}`; g.fillText(usd(r.price), x, 172); g.globalAlpha = 1;
+        if (st[i] === 2) { g.save(); g.translate(x, 120); g.rotate(-0.22); g.strokeStyle = '#d8281c'; g.lineWidth = 6; g.strokeRect(-104, -30, 208, 60); g.fillStyle = '#e8301e'; g.font = `bold 44px ${T.JP}`; g.fillText('SOLD OUT', 0, 16); g.restore(); } });
+      g.fillStyle = '#e8dcc0'; g.font = `bold 26px ${T.JP}`; g.fillText(`CASH ONLY${dr ? `  ·  BEER ${usd(DRINKS.beer)}${dr[0] ? '' : ' (OUT)'}  ·  COLA ${usd(DRINKS.cola)}${dr[1] ? '' : ' (OUT)'}` : ''}`, w / 2, 232, w - 30);
+    });
+  };
   const menu = mesh(new THREE.PlaneGeometry(1.8, 0.45), mat({ map: menuT, roughness: 0.8 }), 0, 2.24, -0.52, cart); menu.rotation.set(0.2, Math.PI, 0); menu.rotation.order = 'YXZ'; menu.rotation.x = -0.3;
 
   // ---------------- register LED + open switch (right post) ----------------

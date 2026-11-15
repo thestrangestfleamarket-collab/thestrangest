@@ -26,10 +26,10 @@ export function buildAlley(scene) {
   // back doors, each under its caged bulb; the bar's has a red sign and is the brightest thing in the alley
   const doorM = flat(0x2a2c30), bulbM = new THREE.MeshBasicMaterial({ color: new THREE.Color(2.6, 2.0, 1.2), toneMapped: false });
   const door = (x, z, s, col, lightK, name) => { box(1.0, 2.1, 0.08, flat(col), x, 1.05, z + s * 0.04, city); box(1.2, 0.12, 0.2, conc, x, 2.2, z + s * 0.06, city).castShadow = false; box(1.3, 0.16, 0.7, conc, x, 0.08, z + s * 0.35, city); const b = mesh(new THREE.SphereGeometry(0.06, 8, 6), bulbM, x, 2.55, z + s * 0.3, city); b.castShadow = false; box(0.04, 0.04, 0.3, iron, x, 2.62, z + s * 0.15, city).castShadow = false; halo(0xffc070, 1.1, x, 2.55, z + s * 0.32, glow, 0.28);
-    if (lightK) { const p = new THREE.PointLight(0xffb060, lightK, 11, 1.6); p.position.set(x, 2.45, z + s * 0.5); scene.add(p); if (name === 'flicker') ups.push((dt, t) => { p.intensity = lightK * (Math.sin(t * 31) > 0.86 || Math.sin(t * 2.3) > 0.93 ? 0.15 : 1); }); } };
-  door(-6.5, FZ, 1, 0x3a2a22, 6, 'bar'); door(11, FZ, 1, 0x2a3440, 5, 'flicker'); door(-15, NZ, -1, 0x30362e, 0); door(13.5, NZ, -1, 0x3a3a3e, 4.5, 'kitchen');
+    if (lightK) { const p = new THREE.PointLight(0xffb060, lightK, 11, 1.6); p.position.set(x, 2.45, z + s * 0.5); scene.add(p); } };
+  door(-6.5, FZ, 1, 0x3a2a22, 6, 'bar'); door(11, FZ, 1, 0x2a3440, 5, 'lamp'); door(-15, NZ, -1, 0x30362e, 0); door(13.5, NZ, -1, 0x3a3a3e, 4.5, 'kitchen');
   const neon = T.neonTex ? T.neonTex('BAR', '#ff3a2a', { w: 256, h: 128 }) : null; if (neon) { const nm = mesh(new THREE.PlaneGeometry(1.3, 0.65), new THREE.MeshBasicMaterial({ map: neon.map || neon, transparent: true, toneMapped: false, color: new THREE.Color(1.5, 1.5, 1.5) }), -6.5, 3.3, FZ + 0.12, city); nm.castShadow = false; } halo(0xff3a2a, 3.2, -6.5, 3.3, FZ + 0.5, glow, 0.3);
-  { const p = new THREE.PointLight(0xff3020, 4, 11, 1.6); p.position.set(-6.5, 3.2, FZ + 0.9); scene.add(p); ups.push((dt, t) => { p.intensity = 4 * (Math.sin(t * 47) > 0.97 ? 0.5 : 1); }); }
+  { const p = new THREE.PointLight(0xff3020, 4, 11, 1.6); p.position.set(-6.5, 3.2, FZ + 0.9); scene.add(p); }
   box(3.2, 2.7, 0.08, shutM, 4, 1.4, NZ - 0.04, city); box(3.2, 2.7, 0.08, shutM, -20, 1.4, FZ + 0.04, city); // loading doors, rolled down
   // dumpsters, pallets, the dead end's fence and the wall behind it
   const dumpster = (x, z, ry) => { const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = ry; city.add(g); box(1.9, 1.05, 1.0, dump, 0, 0.65, 0, g); box(1.96, 0.06, 1.06, flat(0x15171a), 0, 1.2, 0, g).rotation.x = -0.12; for (const sx of [-0.8, 0.8]) box(0.12, 0.12, 0.9, iron, sx, 0.06, 0, g); box(0.5, 0.06, 0.06, iron, 0, 0.9, 0.53, g); };
@@ -43,7 +43,7 @@ export function buildAlley(scene) {
   const lights = [0, 1].map((i) => { const g = new THREE.Group(); city.add(g); g.userData.dyn = true; for (const dz of [-0.6, 0.6]) { const s = halo(i ? 0xff2a1a : 0xfff0c0, i ? 0.7 : 1.6, 0, 0.7, dz, g, 0.9); } g.position.set(E0 + 9, 0, i ? 30 : -30); return g; }); let carT = 4;
   ups.push((dt) => { carT -= dt; if (carT <= 0) { carT = 5 + Math.random() * 11; lights[0].position.z = -34; lights[1].position.z = -34 - 4.2; lights[0].userData.v = lights[1].userData.v = 11 + Math.random() * 5; } for (const g of lights) { if (g.userData.v) { g.position.z += g.userData.v * dt; if (g.position.z > 40) g.userData.v = 0; } } });
   // the sky between the roofs, and the moon's cold light down the brick
-  scene.add(new THREE.HemisphereLight(0x55649a, 0x221e26, 1.15)); { const d = new THREE.DirectionalLight(0x8aa4e8, 0.75); d.position.set(-6, 22, 5); d.target.position.set(0, 0, -1); scene.add(d, d.target); }
+  const fill = new THREE.HemisphereLight(0x55649a, 0x221e26, 1.15); scene.add(fill); { const d = new THREE.DirectionalLight(0x8aa4e8, 0.75); d.position.set(-6, 22, 5); d.target.position.set(0, 0, -1); scene.add(d, d.target); }
   // rain down the slot of sky
   const nR = 420, rp = new Float32Array(nR * 6), rs = new Float32Array(nR); for (let i = 0; i < nR; i++) { let x, z; do { x = (R() - 0.5) * 34; z = FZ + 0.2 + R() * (NZ - FZ - 0.4); } while (Math.abs(x) < 1.85 && z > -1.9 && z < 2.25); const y = R() * 12; rs[i] = 9 + R() * 5; rp.set([x, y, z, x + 0.02, y - 0.28, z], i * 6); }
   const rg = new THREE.BufferGeometry(); rg.setAttribute('position', new THREE.BufferAttribute(rp, 3)); const rain = new THREE.LineSegments(rg, new THREE.LineBasicMaterial({ color: 0xaab8e0, transparent: true, opacity: 0.12, depthWrite: false })); rain.frustumCulled = false; rain.userData.nopick = true; rain.userData.dyn = true; city.add(rain);
@@ -56,5 +56,5 @@ export function buildAlley(scene) {
   // where the block's people stop: the bar's back door, the kitchen door, the stage door, the corner by the street, the stoop, the fence
   const P = (x, z) => new THREE.Vector3(x, 0, z), shops = [{ type: 'bar', open: true, p: P(-6.5, FZ + 1.2) }, { type: 'kitchen', open: true, p: P(13.5, NZ - 1.2) }, { type: 'stage', open: true, p: P(11, FZ + 1.2) }, { type: 'corner', open: true, p: P(E0 - 2.5, -3.6) }, { type: 'stoop', open: true, p: P(-15, NZ - 1.3) }, { type: 'fence', open: true, p: P(W0 + 6, -2.8) }];
   const block = buildBlock(city, shops, { near: -2.6, far: -4.2, split: -3.4, end: E0 + 4, dead: true }); ups.push((dt, t) => block.update(dt, t));
-  return { group: city, shops, glow, alley: true, vent: new THREE.Vector3(3.2, -0.05, FZ + 0.9), update(dt, t) { for (const u of ups) u(dt, t); }, halo, rain, cars: [], glowMap, bakeFar() { }, reflect() { } };
+  return { group: city, shops, glow, fill, alley: true, vent: new THREE.Vector3(3.2, -0.05, FZ + 0.9), update(dt, t) { for (const u of ups) u(dt, t); }, halo, rain, cars: [], glowMap, bakeFar() { }, reflect() { } };
 }

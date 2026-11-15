@@ -7,8 +7,9 @@ import { REAL } from './audio.js';
 export function buildMenu(scene, cart, guide, talk, shadowLights, report) {
   const m = { open: false }, W = 0.62, H = 0.56, tex = T.panelTex(620, 560, () => { });
   const board = new THREE.Mesh(new THREE.PlaneGeometry(W, H), new THREE.MeshBasicMaterial({ map: tex, color: 0xd8d8d8, side: THREE.DoubleSide })); board.visible = false; board.userData.nopick = true; scene.add(board);
-  const S = (G.set = { volume: 1, tts: true, mic: true, shadows: true, turn: 30 });
+  const S = (G.set = { volume: 1, tts: true, mic: true, shadows: true, turn: 30, easy: (() => { try { return localStorage.getItem('yatai-easy') !== '0'; } catch (e) { return true; } })() });
   const rows = [
+    ['EASY ON THE EYES', () => (S.easy ? 'ON' : 'OFF'), () => { S.easy = !S.easy; try { localStorage.setItem('yatai-easy', S.easy ? '1' : '0'); } catch (e) { /* not kept */ } G.eyes?.(S.easy); }],
     ['GUIDE MODE', () => (guide.on ? 'ON' : 'OFF'), () => guide.set(!guide.on)],
     ['RADIO', () => (G.audio.radioOn ? 'ON' : 'OFF'), () => G.audio.setRadio(!G.audio.radioOn)],
     ['STATION', () => 'FM ' + (['76.1', '80.0', '84.7'][G.audio.station] || REAL[G.audio.station - 3].fm + ' ' + REAL[G.audio.station - 3].name.toUpperCase()), () => { if (!G.audio.radioOn) G.audio.setRadio(true); G.audio.tune(); }],

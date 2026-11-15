@@ -30,7 +30,7 @@ renderer.setPixelRatio(1); renderer.setSize(innerWidth, innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
-renderer.xr.enabled = true; renderer.xr.setReferenceSpaceType('local-floor'); renderer.xr.setFoveation?.(1); renderer.xr.setFramebufferScaleFactor?.(0.9);
+renderer.xr.enabled = true; renderer.xr.setReferenceSpaceType('local-floor'); renderer.xr.setFoveation?.(0.5); renderer.xr.setFramebufferScaleFactor?.(1);   // the whole picture sharp, the edges blurred only a little: easier on the eyes
 
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(FOG, 0.022); scene.background = new THREE.Color(0x05060c);
@@ -91,7 +91,8 @@ async function startVR() {
   try {
     const session = await navigator.xr.requestSession('immersive-vr', { optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking'] });
     rig.position.set(0, 0, 0.3); rig.rotation.set(0, 0, 0); camera.position.set(0, 0, 0); camera.rotation.set(0, 0, 0);
-    await renderer.xr.setSession(session); G.mode = 'vr'; menu.style.display = 'none'; hud.style.display = 'none';
+    await renderer.xr.setSession(session); G.mode = 'vr'; renderer.xr.setFoveation?.(G.set && G.set.easy ? 0.25 : 0.5);
+    if (session.updateTargetFrameRate && session.supportedFrameRates) { const r = [...session.supportedFrameRates].filter((x) => x <= 90); if (r.length) session.updateTargetFrameRate(Math.max(...r)).catch(() => { }); }   // 90 a second where the headset can menu.style.display = 'none'; hud.style.display = 'none';
     session.addEventListener('end', () => { G.mode = 'menu'; menu.style.display = 'flex'; });
   } catch (e) { vrBtn.textContent = 'VR failed: ' + e.message; console.error(e); }
 }
@@ -120,10 +121,16 @@ let last = performance.now(), frames = 0, statT = 0;
 let emaMs = 14, slowT = 0; G.quality = params.has('low') ? 1 : 0;
 const shadowLights = []; scene.traverse((o) => { if (o.isLight && o.castShadow) shadowLights.push(o); });
 function applyQuality() { shadowLights.forEach((l) => (l.castShadow = G.quality < 1)); if (G.set) G.set.shadows = G.quality < 1; }
-function govern(dt) { if (frames < 120 || G.frozen || G.quality >= 1) return; emaMs += (dt * 1000 - emaMs) * 0.05; G.emaMs = emaMs; slowT = emaMs > (renderer.xr.isPresenting ? 16 : 30) ? slowT + dt : 0; if (slowT > 3) { G.quality = 1; applyQuality(); } }
+function govern(dt) { if (frames < 120 || G.frozen || G.quality >= 1) return; emaMs += (dt * 1000 - emaMs) * 0.05; G.emaMs = emaMs; const ses = renderer.xr.isPresenting && renderer.xr.getSession(), hz = (ses && ses.frameRate) || 72; slowT = emaMs > (ses ? 1150 / hz : 30) ? slowT + dt : 0;
+  if (slowT > 3) { slowT = 0; if (ses && hz > 72 && ses.updateTargetFrameRate) ses.updateTargetFrameRate(72).catch(() => { }); else { G.quality = 1; applyQuality(); } } }   // too slow: first back to 72 a second, then the shadows go
 if (G.quality) applyQuality();
 const report = buildReport(scene, camera, renderer, talk);
 const gameMenu = buildMenu(scene, cart, guide, talk, shadowLights, report);
+// easy on the eyes (the settings board, on unless turned off): more fill light, the bright points and their halos lower, thin rain, a dim television, less edge blur in the headset
+G.eyes = (on) => { const e = on ? 0.6 : 1; city.fill.intensity = on ? 1.6 : 1.15; city.glow.traverse((s) => { if (s.isSprite) { s.userData.op ??= s.material.opacity; s.material.opacity = s.userData.op * (on ? 0.55 : 1); } }); if (city.rain) city.rain.material.opacity = on ? 0.05 : 0.12;
+  if (cart.open) { cart.signM.color.setScalar(1.7 * e); cart.signHalo.material.opacity = 0.45 * e; cart.lanternM.emissiveIntensity = 2.4 * e; cart.lanternHalos.forEach((h) => (h.material.opacity = 0.55 * e)); }
+  if (renderer.xr.isPresenting) renderer.xr.setFoveation?.(on ? 0.25 : 0.5); };
+G.eyes(G.set.easy);
 function frame(now) {
   const dt = clamp((now - last) / 1000, 0, 0.05); last = now;
   if (G.mode === 'menu' && !renderer.xr.isPresenting && !G.manualCam) { const a = G.t * 0.05; camera.position.set(2.9 + Math.sin(a) * 0.9, 1.75, -5.4 + Math.cos(a) * 0.4); rig.position.set(0, 0, 0); camera.lookAt(0, 1.6, -0.4); }

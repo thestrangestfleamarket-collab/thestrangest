@@ -42,10 +42,10 @@ export function buildTV(scene, shops) {
     if (!started) { if (!G.audio?.ctx || !G.mode) return; started = true; // sound from the set itself, once the page may make sound
       try { const ac = G.audio.ctx, src = ac.createMediaElementSource(mine.v), g = (mine.gain = ac.createGain()), pan = ac.createPanner(); g.gain.value = mine.vol; pan.panningModel = 'HRTF'; pan.refDistance = 0.8; pan.rolloffFactor = 1.2; pan.positionX.value = 0.98; pan.positionY.value = 2.05; pan.positionZ.value = -0.4; src.connect(g); g.connect(pan); pan.connect(G.audio.master); } catch (e) { /* silent set */ }
       tubes.forEach(tune); }
-    if ((snowT -= dt) <= 0) { snowT = 0.09; drawSnow(); }
-    for (const t of tubes) { t.flash = Math.max(0, (t.flash || 0) - dt); const live = t.on && !t.dead && t.v.readyState >= 2 && t.flash <= 0, want = !t.on ? null : live ? t.tex : snow; if (t.m.map !== want) { t.m.map = want; t.m.color.setRGB(want ? 1.35 : 0.02, want ? 1.35 : 0.02, want ? 1.45 : 0.03); t.m.needsUpdate = true; }
+    if ((snowT -= dt) <= 0) { snowT = 1.5; drawSnow(); }   // a still, dim snow that changes slowly: nothing flashes
+    for (const t of tubes) { t.flash = Math.max(0, (t.flash || 0) - dt); const live = t.on && !t.dead && t.v.readyState >= 2 && t.flash <= 0, want = !t.on ? null : live ? t.tex : snow; if (t.m.map !== want) { t.m.map = want; t.m.needsUpdate = true; } { const easy = G.set && G.set.easy, k = !want ? 0.02 : want === snow ? (easy ? 0.05 : 0.45) : easy ? 0.95 : 1.35; t.m.color.setRGB(k, k, k * 1.07); }   // easy on the eyes: no static to speak of, a picture no brighter than the room
       if (t.on && (t.chk -= dt) <= 0) { t.chk = 6; if (t.dead) { t.src = ''; } tune(t); } }
-    glow.intensity = mine.on ? 0.32 + Math.sin(G.t * 23) * 0.05 + Math.sin(G.t * 7.3) * 0.08 : 0;
+    glow.intensity = mine.on ? 0.32 : 0;
   };
   G.tv = tv; return tv;
 }

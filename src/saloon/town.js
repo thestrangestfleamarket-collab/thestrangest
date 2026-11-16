@@ -5,7 +5,7 @@ import { R } from './room.js';
 import { BASE, pbr, model } from './kit.js';
 
 // the street's frame: its origin is the saloon's doorway on the front wall, +z runs into the saloon, +x along the street
-const FRAME = R.E != null ? { x: R.E, z: R.door.z, ry: -Math.PI / 2, half: (R.L + R.B) / 2, deep: R.E + R.W, win: [-2.25, 2.25], winW: 2.3 } : { x: 0, z: -R.L, ry: 0, half: R.W, deep: R.L + R.B, win: [-4.4, 4.4], winW: 2.4 };
+const FRAME = R.sideDoor ? { x: R.E, z: R.door.z, ry: -Math.PI / 2, half: (R.L + R.B) / 2, deep: R.E + R.W, win: [-2.25, 2.25], winW: 2.3 } : { x: 0, z: -R.L, ry: 0, half: R.W, deep: R.L + R.B, win: [-4.4, 4.4], winW: 2.4 };
 const ST = { walk: 2.6, wide: 18, low: -0.3, far: 60 }, SZ = -ST.walk - ST.wide - ST.walk;   // the boardwalks' depth, the street's width, its level under the boardwalks, how far you may go; the far row's fronts
 const MOON = new THREE.Vector3(-0.42, 0.5, -0.76).normalize();   // toward the moon, in the street's frame
 const rnd = (() => { let s = 4711; return () => ((s = (s * 16807) % 2147483647) / 2147483647); })(), rr = (a, b) => a + rnd() * (b - a);
@@ -326,9 +326,9 @@ export function buildTown(scene, room) {
     update(dt, t) {
       const rig = G.rig; G.camera.getWorldPosition(camP); const p = toStreet(camP.x, camP.z), isIn = p.z > 0.02 && Math.abs(p.x) < HW + 0.3; wasIn = isIn;
       if (G.mode === 'desktop' || G.mode === 'vr') {
-        if (isIn) { const nx = clamp(camP.x, inside.minX, FRAME.ry ? 1e4 : inside.maxX), nz = clamp(camP.z, FRAME.ry ? inside.minZ : -1e4, inside.maxZ); rig.position.x += nx - camP.x; rig.position.z += nz - camP.z; }
-        else { const d = Math.hypot(p.x, p.z + 11); if (d > ST.far) { const k = (d - ST.far) / d * Math.min(1, dt * 8), w = toWorld(p.x * (1 - k), (p.z + 11) * (1 - k) - 11); rig.position.x += w.x - camP.x; rig.position.z += w.z - camP.z; } }
-        footY += (groundAt(p.x, p.z) - footY) * Math.min(1, dt * 9); rig.position.y = Math.abs(footY) < 1e-3 ? 0 : footY;
+        if (isIn || (G.room && G.room.state.lv !== 0)) footY = rig.position.y;   // inside, the room's own floors carry you (room.js)
+        else { const d = Math.hypot(p.x, p.z + 11); if (d > ST.far) { const k = (d - ST.far) / d * Math.min(1, dt * 8), w = toWorld(p.x * (1 - k), (p.z + 11) * (1 - k) - 11); rig.position.x += w.x - camP.x; rig.position.z += w.z - camP.z; }
+        footY += (groundAt(p.x, p.z) - footY) * Math.min(1, dt * 9); rig.position.y = Math.abs(footY) < 1e-3 ? 0 : footY; }
       }
       // from inside, the street is drawn only while a window or the doorway is before your eyes
       if (isIn) { G.camera.getWorldDirection(fwd); let see = false; for (const h of holesW) { _v.copy(h).sub(camP); const d = _v.length(); if (d < 2.6 || _v.dot(fwd) / d > 0.2) { see = true; break; } } T.visible = see; } else T.visible = true;

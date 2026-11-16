@@ -11,6 +11,7 @@ TEX = {'brick_red': ('brick_wall_001', 512), 'brick_orange': ('large_red_bricks'
 MODELS = {'metal_trash_can': 256, 'cardboard_box_01': 256, 'potted_plant_02': 256, 'potted_plant_04': 256, 'trashbag': 256, 'plastic_crate_02': 256, 'utility_box_01': 256, 'exterior_aircon_unit': 256, 'Television_01': 512, 'television_02': 512, 'boombox': 512}
 SLIM = {'metal_trash_can': 500, 'cardboard_box_01': 200, 'potted_plant_02': 900, 'potted_plant_04': 700, 'trashbag': 300, 'plastic_crate_02': 900, 'utility_box_01': 300, 'exterior_aircon_unit': 700, 'television_01': 1400, 'television_02': 1600, 'boombox': 2500}
 MODELS['CashRegister_01'] = 512; SLIM['cashregister_01'] = 4000   # the till on the back counter (its drawer is drawn open in the model)
+MODELS.update({'hanging_industrial_lamp': 256, 'wooden_cutting_board': 256, 'food_ginger_01': 128}); SLIM.update({'hanging_industrial_lamp': 600, 'wooden_cutting_board': 500, 'food_ginger_01': 300})   # the work lights' enamel shades, the board, a knob of ginger by it
 
 def get(url):
     return urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 asset-fetch'}), timeout=180).read()

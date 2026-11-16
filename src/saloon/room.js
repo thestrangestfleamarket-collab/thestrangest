@@ -12,9 +12,9 @@ export const R = { W: 6, E: 6, L: 10, B: 1.7, H: 6.2, UP: 3.1, DN: -2.6, barX: 3
 
 export function buildRoom(scene) {
   const g = new THREE.Group(), dyn = new THREE.Group(); scene.add(g, dyn);
-  const solids = [], seats = [], lamps = [];
+  const solids = [], seats = [], lamps = [], loose = [], panes = [], hinges = [];
   const solid = (x0, x1, z0, z1, h = 3) => { solids.push({ x0, x1, z0, z1 }); if (PH.ready) PH.box((x0 + x1) / 2, h / 2, (z0 + z1) / 2, (x1 - x0) / 2, h / 2, (z1 - z0) / 2); };
-  const top = (x0, x1, z0, z1, y, th = 0.03) => { G.surfaces.push({ minX: x0, maxX: x1, minZ: z0, maxZ: z1, y }); if (PH.ready) PH.box((x0 + x1) / 2, y - th, (z0 + z1) / 2, (x1 - x0) / 2, th, (z1 - z0) / 2); };
+  const top = (x0, x1, z0, z1, y, th = 0.03) => { const s = { minX: x0, maxX: x1, minZ: z0, maxZ: z1, y }; G.surfaces.push(s); return { s, c: PH.ready && PH.box((x0 + x1) / 2, y - th, (z0 + z1) / 2, (x1 - x0) / 2, th, (z1 - z0) / 2) }; };
   const { W, L, B, H, UP, DN } = R, LX = 2 * W, LZ = L + B, CZ = (B - L) / 2, S = R.stair, WL = R.well, CE = R.cellar, BD = R.bed, GZ = R.gal.z, GX = R.gal.x;
   const floorM = pbr('floor', { tile: 2.2, rough: 1, env: 0.1, color: 0x8f867c }), wallM = pbr('wall', { tile: 2.4, color: 0x8a7c6c }), paperM = pbr('paper', { tile: 1.6, color: 0x857c68 }), darkM = pbr('dark', { tile: 1.8, color: 0x6a6058 }), walnut = pbr('walnut', { tile: 1.2, color: 0x4a3a30, rough: 0.85, env: 0.2 }), plank = pbr('planks', { tile: 1.6, color: 0xa89c8c }), stone = pbr('plaster', { tile: 1.8, color: 0x6a6258, rough: 1 }), earth = pbr('dirt', { tile: 2, color: 0x5a5046 });
   const deck = (x0, x1, z0, z1, y, m = floorM, th = 0.16) => { const s = slab(x1 - x0, th, z1 - z0, m, (x0 + x1) / 2, y - th / 2, (z0 + z1) / 2, g); if (PH.ready && y !== 0) PH.box((x0 + x1) / 2, y - th / 2, (z0 + z1) / 2, (x1 - x0) / 2, th / 2, (z1 - z0) / 2); return s; };
@@ -29,19 +29,19 @@ export function buildRoom(scene) {
   { const lz = (z) => -(z - CZ); wall(LZ, -W - 0.06, CZ, Math.PI / 2, [[lz(B), lz(BD.door[1])], [lz(BD.door[0]), lz(-L)]]); slab(0.1, UP, BD.door[1] - BD.door[0], paperM, -W - 0.06, UP / 2, (BD.door[0] + BD.door[1]) / 2, g); slab(0.1, H - UP - 2.1, BD.door[1] - BD.door[0], paperM, -W - 0.06, UP + 2.1 + (H - UP - 2.1) / 2, (BD.door[0] + BD.door[1]) / 2, g); }
   { // the street wall: the batwing doorway, a tall window either side, shuttered windows above
     const fw = wall(LX, 0, -L - 0.06, 0, [[-W, -5.6], [-3.2, -0.95], [0.95, 3.2], [5.6, W]]), pane = new THREE.MeshStandardMaterial({ color: 0x1a2028, roughness: 0.25, transparent: true, opacity: 0.22, envMapIntensity: 0.6 });
-    for (const s of [-1, 1]) { const x = s * 4.4; slab(2.4, 0.9, 0.12, wallM, x, 0.45, 0, fw); slab(2.4, H - 3.0, 0.1, paperM, x, 3.0 + (H - 3.0) / 2, 0, fw); const gl = slab(2.4, 2.1, 0.012, pane, x, 1.95, 0, fw); gl.castShadow = false; gl.userData.keep = true;
+    for (const s of [-1, 1]) { const x = s * 4.4; slab(2.4, 0.9, 0.12, wallM, x, 0.45, 0, fw); slab(2.4, H - 3.0, 0.1, paperM, x, 3.0 + (H - 3.0) / 2, 0, fw); const gl = slab(2.4, 2.1, 0.012, pane, x, 1.95, 0, fw); gl.castShadow = false; gl.userData.keep = true; panes.push({ m: gl, x, y: 1.95, z: -L - 0.06, w: 2.4, h: 2.1, ax: 'z', name: 'window' });
       for (const dx of [-1.2, -0.4, 0.4, 1.2]) slab(0.06, 2.1, 0.08, walnut, x + dx, 1.95, 0, fw); for (const dy of [0.9, 1.95, 3.0]) slab(2.46, 0.06, 0.1, walnut, x, dy, 0, fw); slab(2.6, 0.05, 0.22, walnut, x, 0.88, 0.05, fw);
       slab(1.1, 1.5, 0.05, darkM, x, UP + 1.6, 0.06, fw); for (let k = 0; k < 9; k++) slab(1.0, 0.03, 0.07, walnut, x, UP + 0.95 + k * 0.16, 0.07, fw); }
     slab(1.9, H - 2.5, 0.1, paperM, 0, 2.5 + (H - 2.5) / 2, 0, fw); slab(2.1, 0.12, 0.2, walnut, 0, 2.5, 0, fw); for (const s of [-1, 1]) slab(0.12, 2.5, 0.2, walnut, s * 0.98, 1.25, 0, fw);
-    for (const s of [-1, 1]) { const d = slab(0.82, 1.0, 0.035, plank, s * 0.52, 1.05, 0.14, fw); d.rotation.y = -s * 0.4; } }
+    for (const s of [-1, 1]) { const hg = new THREE.Group(); hg.userData.keep = true; hg.position.set(s * 0.93, 1.05, 0.02); fw.add(hg); const d = slab(0.82, 1.0, 0.035, plank, -s * 0.41, 0, 0, hg); d.userData.keep = true; hinges.push({ g: hg, swing: true, s, a: 0, v: 0, x: s * 0.52, z: -L }); } }
   solid(W, W + 1, -L, B); solid(-W - 1, -W, -L, B); solid(-W, W, B, B + 1); solid(-W, -0.95, -L - 0.3, -L); solid(0.95, W, -L - 0.3, -L);
   // ---- the roof: boards on heavy beams
   slab(LX, 0.12, LZ, darkM, 0, H + 0.06, CZ, g); for (let x = -W + 1.5; x < W; x += 3) slab(0.24, 0.3, LZ, darkM, x, H - 0.15, CZ, g); slab(LX, 0.3, 0.24, darkM, 0, H - 0.15, -5.4, g);
 
   // ---- the bar and the back bar (barwood.js)
-  const X = R.barX, bz = R.backZ, { shelves, mirror } = buildBarWood(g, top, solid);
+  const X = R.barX, bz = R.backZ, { shelves, mirror, cupboards } = buildBarWood(g, top, solid);
   model('mantel_clock_01', -1.5, R.backY, bz + 0.34, Math.PI, { h: 0.3 }, g);
-  for (let i = 0; i < 7; i++) { const x = -2.55 + i * 0.85; model('wooden_stool_01', x, 0, R.stoolZ, i * 1.3, { h: 0.76 }, g); seats.push({ x, z: R.stoolZ, ry: 0, y: 0, kind: 'stool', at: 'bar', i, who: null }); solids.push({ x0: x - 0.17, x1: x + 0.17, z0: R.stoolZ - 0.17, z1: R.stoolZ + 0.17, low: true }); }
+  for (let i = 0; i < 7; i++) { const x = -2.55 + i * 0.85; const st = { x, z: R.stoolZ, ry: 0, y: 0, kind: 'stool', at: 'bar', i, who: null }; seats.push(st); loose.push({ kind: 'stool', model: 'wooden_stool_01', x, y: 0, z: R.stoolZ, ry: i * 1.3, h: 0.76, seat: st }); }
 
   // ---- the balcony: a floor on joists round the bar's wall and the piano's wall, posts with braces under its edge, a railing, doors to the rooms
   const post = (x, z, y0 = 0, h = H) => { slab(0.18, h, 0.18, walnut, x, y0 + h / 2, z, g); solids.push({ x0: x - 0.11, x1: x + 0.11, z0: z - 0.11, z1: z + 0.11 }); for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { if (Math.abs(x + dx) > W - 0.2 || z + dz > B - 0.2 || z + dz < -L + 0.2) continue; const b = slab(0.1, 0.75, 0.1, walnut, x + dx * 0.25, UP - 0.48, z + dz * 0.25, g); b.rotation.z = -dx * 0.75; b.rotation.x = dz * 0.75; } };
@@ -51,7 +51,7 @@ export function buildRoom(scene) {
   for (const [x, z] of [[-4.9, GZ], [-1.7, GZ], [GX, GZ], [GX, -4.7], [GX, -7.4], [GX, -L + 0.12]]) post(x, z);
   const rail = (x0, z0, x1, z1, y = UP) => { const len = Math.hypot(x1 - x0, z1 - z0), ry = Math.atan2(-(z1 - z0), x1 - x0), cx = (x0 + x1) / 2, cz = (z0 + z1) / 2; const hr = slab(len, 0.06, 0.09, walnut, cx, y + 0.98, cz, g); hr.rotation.y = ry; const br = slab(len, 0.05, 0.06, walnut, cx, y + 0.12, cz, g); br.rotation.y = ry; for (let k = 0.5; k < len / 0.22; k++) { const t = k * 0.22 / len; slab(0.035, 0.82, 0.035, walnut, x0 + (x1 - x0) * t, y + 0.55, z0 + (z1 - z0) * t, g); } };
   rail(S.x1, GZ, GX, GZ); rail(GX, GZ, GX, -L + 0.1);
-  const door = (x, z, ry, y = UP, open = 0) => { const d = new THREE.Group(); d.position.set(x, y, z); d.rotation.y = ry; g.add(d); slab(1.02, 2.14, 0.07, walnut, 0, 1.07, 0, d); const leaf = new THREE.Group(); leaf.position.set(-0.44, 0, 0.03); leaf.rotation.y = open; d.add(leaf); slab(0.88, 2.04, 0.045, darkM, 0.44, 1.02, 0, leaf); for (const [py, ph] of [[0.55, 0.7], [1.5, 0.8]]) slab(0.6, ph, 0.012, plank, 0.44, py, 0.026, leaf); const k = new THREE.Mesh(new THREE.SphereGeometry(0.028, 10, 8), brass()); k.position.set(0.8, 1.0, 0.05); leaf.add(k); };
+  const door = (x, z, ry, y = UP, open = 0) => { const d = new THREE.Group(); d.position.set(x, y, z); d.rotation.y = ry; g.add(d); slab(1.02, 2.14, 0.07, walnut, 0, 1.07, 0, d); const leaf = new THREE.Group(); leaf.position.set(-0.44, 0, 0.03); leaf.rotation.y = open; d.add(leaf); if (open) { leaf.userData.keep = true; hinges.push({ g: leaf, a: open, to: open, open, name: 'the bedroom door', knob: [0.8, 1.0, 0.05] }); } slab(0.88, 2.04, 0.045, darkM, 0.44, 1.02, 0, leaf); for (const [py, ph] of [[0.55, 0.7], [1.5, 0.8]]) slab(0.6, ph, 0.012, plank, 0.44, py, 0.026, leaf); const k = new THREE.Mesh(new THREE.SphereGeometry(0.028, 10, 8), brass()); k.position.set(0.8, 1.0, 0.05); leaf.add(k); };
   door(W - 0.01, -4.6, -Math.PI / 2); door(W - 0.01, -8.2, -Math.PI / 2); door(1.6, B - 0.01, Math.PI); door(-3.4, B - 0.01, Math.PI);
   model('painted_wooden_bench', W - 0.45, UP, -6.4, -Math.PI / 2, { w: 1.6 }, g);
   for (const [x, y, z, ry, w] of [[W - 0.04, UP + 1.7, -2.9, -Math.PI / 2, 0.5], [-1.0, UP + 1.7, B - 0.04, Math.PI, 0.6], [W - 0.04, 2.2, -5.4, -Math.PI / 2, 0.9], [-W + 0.04, UP + 1.6, -5.0, Math.PI / 2, 0.8]]) model('fancy_picture_frame_01', x, y - 0.3, z, ry, { w }, g);
@@ -88,8 +88,8 @@ export function buildRoom(scene) {
 
   // ---- three tables and their chairs (the fourth place is the pool table's)
   const tables = [];
-  const table = (x, z, name, n = 4) => { model('round_wooden_table_01', x, 0, z, 0, { h: 0.76 }, g); top(x - 0.38, x + 0.38, z - 0.38, z + 0.38, 0.76); if (PH.ready) PH.cyl(x, 0.38, z, 0.36, 0.1); solids.push({ x0: x - 0.42, x1: x + 0.42, z0: z - 0.42, z1: z + 0.42 }); const t = { x, z, name, seats: [] }; tables.push(t);
-    for (let k = 0; k < n; k++) { const a = k * Math.PI * 2 / n + 0.6, cx = x + Math.sin(a) * 0.78, cz = z + Math.cos(a) * 0.78; model('painted_wooden_chair_02', cx, 0, cz, a + Math.PI + (k * 0.37 % 0.5 - 0.25), { h: 0.88 }, g).traverse((o) => { if (o.isMesh) o.material.color.set(0x7a6450); }); const s = { x: cx, z: cz, ry: a + Math.PI, y: -0.33, kind: 'chair', at: name, who: null }; seats.push(s); t.seats.push(s); } return t; };
+  const table = (x, z, name, n = 4) => { const t = { x, z, name, seats: [], obj: model('round_wooden_table_01', x, 0, z, 0, { h: 0.76 }, dyn), top: top(x - 0.38, x + 0.38, z - 0.38, z + 0.38, 0.76), cyl: PH.ready && PH.cyl(x, 0.38, z, 0.36, 0.1), solid: { x0: x - 0.42, x1: x + 0.42, z0: z - 0.42, z1: z + 0.42 } }; solids.push(t.solid); tables.push(t);
+    for (let k = 0; k < n; k++) { const a = k * Math.PI * 2 / n + 0.6, cx = x + Math.sin(a) * 0.78, cz = z + Math.cos(a) * 0.78; const s = { x: cx, z: cz, ry: a + Math.PI, y: -0.33, kind: 'chair', at: name, who: null }; seats.push(s); t.seats.push(s); loose.push({ kind: 'chair', model: 'painted_wooden_chair_02', x: cx, y: 0, z: cz, ry: a + Math.PI + (k * 0.37 % 0.5 - 0.25), h: 0.88, seat: s, tint: 0x7a6450 }); } return t; };
   table(-1.7, -3.9, 'left'); table(1.5, -4.6, 'middle'); table(R.poker.x, R.poker.z, 'poker'); table(4.6, -4.9, 'stage', 3);
   { const felt = new THREE.Mesh(new THREE.CircleGeometry(0.46, 28).rotateX(-Math.PI / 2), plain(0x1c3a26, { rough: 1, env: 0.05 })); felt.position.set(R.poker.x, 0.765, R.poker.z); felt.receiveShadow = true; g.add(felt); }
 
@@ -99,7 +99,7 @@ export function buildRoom(scene) {
     for (let i = 0; i < 36; i++) { if ([1, 2, 4, 5, 6].includes(i % 7)) slab(0.016, 0.02, 0.09, plain(0x0c0a0a), -0.675 + i * 0.0385, 0.775, 0.385, pn); }
     for (const s of [-1, 1]) slab(0.06, 0.72, 0.06, eb, s * 0.7, 0.36, 0.52, pn); slab(1.5, 0.04, 0.38, eb, 0, 1.27, 0, pn);
     model('wooden_stool_01', P.x - 0.55, 0, P.z, 0, { h: 0.5 }, g); model('brass_candleholders', P.x + 0.2, 1.29, P.z, 0, { h: 0.3 }, g); solid(P.x - 0.1, W, P.z - 0.8, P.z + 0.8, 1.3); }
-  model('rockingchair_01', 5.2, 0, -9.0, -2.3, { h: 1.0 }, g); seats.push({ x: 5.2, z: -9.0, ry: -2.3, y: -0.3, kind: 'chair', at: 'stove', who: null });
+  { const s = { x: 5.2, z: -9.0, ry: -2.3, y: -0.3, kind: 'chair', at: 'stove', who: null }; seats.push(s); loose.push({ kind: 'chair', model: 'rockingchair_01', x: 5.2, y: 0, z: -9.0, ry: -2.3, h: 1.0, seat: s }); }
   for (const [x, z] of [[-2.9, -1.75], [2.9, -1.75], [R.poker.x + 0.9, R.poker.z + 0.9]]) model('brass_pot_01', x, 0, z, 0, { h: 0.2 }, g);
 
   // ---- light: nothing shines but the lamps: the great wheel hung from the roof on its pole, lanterns over the bar and under the balcony, one on the landing, one in the bedroom, one in the cellar; the moon through the street windows (town.js)
@@ -144,7 +144,8 @@ export function buildRoom(scene) {
     rig.position.x += p.x - ox; rig.position.z += p.z - oz; state.y += (ty - state.y) * Math.min(1, dt * 12); rig.position.y = Math.abs(state.y) < 1e-3 ? 0 : state.y;
     for (const o of lamps) if (o.lv !== undefined && o.on) { const near = Math.round(state.lv) === o.lv || (o.lv === 1 && state.lv > 0) || (o.lv === -1 && state.lv < 0); o.l.intensity = near ? o.k : 0; o.s.visible = near; }
     return state; }
-  return { group: g, mirror, dyn, solids, seats, tables, lamps, spots, shelves, hemi, fire, state, walk,
+  if (mirror) panes.push({ m: mirror, x: mirror.position.x, y: mirror.position.y, z: mirror.position.z, w: 2.0, h: 1.56, ax: 'z', name: 'mirror' });
+  return { group: g, mirror, dyn, solids, seats, tables, lamps, spots, shelves, hemi, fire, state, walk, loose, panes, hinges, cupboards,
     keepOut(rig, camera) { walk(rig, camera); },
     update() { },
     lampOut(o) { o.on = false; o.l.intensity = 0; if (o.up) o.up.intensity = 0; o.s.visible = false; },

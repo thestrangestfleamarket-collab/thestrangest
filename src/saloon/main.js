@@ -21,6 +21,7 @@ import { buildGuns } from './guns.js';
 import { buildPool } from './pool.js';
 import { buildDarts } from './darts.js';
 import { buildPosters } from './posters.js';
+import { buildFurn } from './furn.js';
 
 const params = new URLSearchParams(location.search), $ = (id) => document.getElementById(id);
 const canvas = $('c'), menu = $('menu'), hud = $('hud'), vrBtn = $('vr'), deskBtn = $('desk');
@@ -55,6 +56,7 @@ const guns = (G.guns = buildGuns(scene, room));
 const pool = (G.pool = buildPool(scene, room));
 const darts = (G.darts = buildDarts(scene, room));
 const posters = (G.posters = buildPosters(scene, room));
+const furn = (G.furn = buildFurn(scene, room));
 const look = (G.look = buildLook(scene, room, renderer, camera));
 cheap(scene); cheap(G.itemRoot, true);
 const inspect = (G.inspect = buildInspect(scene, room, look, renderer, camera));
@@ -87,7 +89,7 @@ function tick(dt) {
   input.update(dt); room.walk(rig, camera, dt);
   updateItems(dt);
   room.update(dt, G.t); look.update(dt, G.t); bar.update(dt, G.t); folk.update(dt, G.t); story.update(dt, G.t); talk.update(dt);
-  guns.update(dt, G.t); pool.update(dt, G.t); darts.update(dt, G.t); posters.update(dt, G.t);
+  guns.update(dt, G.t); pool.update(dt, G.t); darts.update(dt, G.t); posters.update(dt, G.t); furn.update(dt);
   for (const f of G.updaters) f(dt, G.t);
   if ((G.t * 2 | 0) !== cheapT) { cheapT = G.t * 2 | 0; cheap(G.itemRoot, true); cheap(G.peopleRoot); }
   G.fx.update(dt);
@@ -105,7 +107,7 @@ function frame(now) {
 }
 renderer.setAnimationLoop(frame);
 
-G.debug = { PH, PF, room, bar, folk, story, talk, guns, pool, darts, posters, look, tick, frame, input, startDesktop, startVR, THREE };
+G.debug = { PH, PF, room, bar, folk, story, talk, guns, pool, darts, posters, furn, look, tick, frame, input, startDesktop, startVR, THREE };
 window.G = G;
 { const box = $('say'); // on a screen: T to type what you say if you would rather not speak it
   addEventListener('keydown', (e) => { if (G.mode !== 'desktop' || e.repeat) return; if (e.target === box) { if (e.code === 'Enter') { const t = box.value.trim(); box.value = ''; box.style.display = 'none'; box.blur(); if (t) talk.youSay(t); } else if (e.code === 'Escape') { box.value = ''; box.style.display = 'none'; box.blur(); } return; }

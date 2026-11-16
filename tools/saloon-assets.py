@@ -6,12 +6,14 @@ exec('def get(' + open('tools/sushi-assets.py').read().split('def get(')[1].spli
 API, OUT = 'https://api.polyhaven.com/files/', 'data/saloon/'
 # our name: (Poly Haven's, colour pixels)
 TEX = {'floor': ('old_wood_floor', 1024), 'wall': ('wood_plank_wall', 1024), 'planks': ('weathered_brown_planks', 1024), 'dark': ('dark_wooden_planks', 1024), 'walnut': ('european_walnut_veneer_04', 512),
-       'paper': ('decrepit_wallpaper', 1024), 'velvet': ('velour_velvet', 512), 'leather': ('brown_leather', 512), 'dirt': ('dirt', 1024), 'rust': ('rusty_metal_02', 512), 'plate': ('metal_plate', 512), 'plaster': ('worn_plaster_wall', 512), 'siding': ('weathered_plank_siding', 1024)}
+       'paper': ('decrepit_wallpaper', 1024), 'velvet': ('velour_velvet', 512), 'leather': ('brown_leather', 512), 'dirt': ('dirt', 1024), 'rust': ('rusty_metal_02', 512), 'plate': ('metal_plate', 512), 'plaster': ('worn_plaster_wall', 512), 'siding': ('weathered_plank_siding', 1024),
+       'sand': ('dry_ground_rocks', 1024), 'rock': ('rock_boulder_dry', 512), 'peel': ('weathered_peeling_timber', 1024)}
 # Poly Haven's: (picture pixels, triangles after slimming)
 MODELS = {'round_wooden_table_01': (512, 1400), 'WoodenTable_02': (512, 1500), 'WoodenChair_01': (512, 1100), 'wooden_stool_01': (512, 800), 'lantern_chandelier_01': (512, 2600), 'vintage_oil_lamp': (512, 1300),
           'Lantern_01': (512, 1500), 'wine_barrel_01': (512, 1100), 'wooden_crate_01': (512, 700), 'dartboard': (1024, 1200), 'ornate_mirror_01': (512, 2400), 'fancy_picture_frame_01': (512, 938),
           'hanging_picture_frame_01': (512, 800), 'vintage_grandfather_clock_01': (512, 3000), 'CashRegister_01': (512, 4000), 'wooden_bucket_01': (512, 700), 'brass_candleholders': (512, 1500), 'jug_01': (512, 800),
-          'barrel_stove': (512, 2000), 'Rockingchair_01': (512, 2000), 'painted_wooden_bench': (512, 630), 'brass_pot_01': (256, 700), 'mantel_clock_01': (512, 1500), 'wooden_display_shelves_01': (512, 1500), 'hatchet': (256, 600), 'painted_wooden_chair_02': (512, 1246), 'painted_wooden_table': (512, 600), 'wooden_candlestick': (256, 500), 'wooden_lantern_01': (512, 1200), 'hanging_picture_frame_02': (512, 900), 'wooden_barrels_01': (512, 2500), 'vintage_cabinet_01': (512, 3500), 'jug_01': (512, 800), 'brass_vase_03': (256, 600), 'wooden_broom': (256, 600), 'vintage_suitcase': (512, 900), 'wooden_ladder': (256, 500)}
+          'barrel_stove': (512, 2000), 'Rockingchair_01': (512, 2000), 'painted_wooden_bench': (512, 630), 'brass_pot_01': (256, 700), 'mantel_clock_01': (512, 1500), 'wooden_display_shelves_01': (512, 1500), 'hatchet': (256, 600), 'painted_wooden_chair_02': (512, 1246), 'painted_wooden_table': (512, 600), 'wooden_candlestick': (256, 500), 'wooden_lantern_01': (512, 1200), 'hanging_picture_frame_02': (512, 900), 'wooden_barrels_01': (512, 2500), 'vintage_cabinet_01': (512, 3500), 'jug_01': (512, 800), 'brass_vase_03': (256, 600), 'wooden_broom': (256, 600), 'vintage_suitcase': (512, 900), 'wooden_ladder': (256, 500),
+          'namaqualand_boulder_02': (512, 500), 'namaqualand_boulder_05': (512, 500), 'dead_tree_trunk': (512, 1200), 'tree_stump_01': (512, 500)}
 
 def small(data, size, grey=False):
     im = Image.open(io.BytesIO(data)).convert('L' if grey else 'RGB')

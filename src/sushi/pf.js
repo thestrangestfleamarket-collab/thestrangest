@@ -84,7 +84,7 @@ const LIMBS = { head: [0.06, 70, 0.7], torso: [3, 28, 0.5], upperArm: [0.35, 35,
 const STEP_J = 0.8, FALL_J = 4, FALL_HEAD_J = 3; // a push (N s) the feet answer with a step back; one they cannot hold
 const sm = (x) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x)); let SPOT = null; const ray = new THREE.Raycaster();
 
-// a person: P.root to place and turn; P.pose 'walk' | 'stand' | 'sit' | 'eat'; P.look a point to look at or null; P.talkT seconds of talking hands; P.gesture(name); P.waveT > 0 waves; P.hit(dir, at, f) a blow; P.duck(); P.down() while knocked down; P.stain(at, color, r)
+// a person: P.root to place and turn; P.pose 'walk' | 'stand' | 'sit' | 'eat'; P.look a point to look at or null; P.talkT seconds of talking hands; P.gesture(name); P.waveT > 0 waves; P.push(bone, impulse, at) a blow on a limb (P.hit(dir, at, f) the same by strength); P.duck(); P.down() while knocked down; P.stain(at, color, r)
 export function pfPerson(key, sticks) {
   const b = D.bodies[key], [sex] = PF[key] || ['m'], clips = CL[sex], SK = D.skel[sex], ks = b.hipY / SK.hipY, { g: geo, face } = geoOf(key);
   const root = new THREE.Group(), inner = new THREE.Group(), body = new THREE.Group(); root.add(inner); inner.add(body);

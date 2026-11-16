@@ -106,7 +106,7 @@ PH.step = (dt) => {
     const t = e.b.translation(), r = e.b.rotation(), v = e.b.linvel(), a = e.b.angvel();
     it.obj.position.set(t.x, t.y, t.z); it.obj.quaternion.set(r.x, r.y, r.z, r.w); it.vel.set(v.x, v.y, v.z);
     e.hit -= dt; e.soft -= dt; const dv = Math.hypot(v.x - e.pv.x, v.y - e.pv.y, v.z - e.pv.z), sp = Math.hypot(e.pv.x, e.pv.y, e.pv.z);
-    if (PH.feel.size) feel(it, e, dv);
+    if (PH.feel.size && !e.b.isSleeping()) feel(it, e, dv);
     if (dv > 1.1 && e.hit <= 0) { e.hit = 0.12; if (e.soft > 0) { e.pv.x = v.x; e.pv.y = v.y; e.pv.z = v.z; continue; } if (it.onImpact(sp) === true) continue; it.onLand(); } // a sudden change of speed is a hit: how hard decides what breaks (a person is soft: nothing breaks on them)
     e.pv.x = v.x; e.pv.y = v.y; e.pv.z = v.z;
     const slow = Math.hypot(v.x, v.y, v.z) < 0.06 && Math.hypot(a.x, a.y, a.z) < 0.4; e.still = slow ? e.still + dt : 0;

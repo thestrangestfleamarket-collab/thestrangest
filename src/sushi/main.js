@@ -21,11 +21,14 @@ import { buildTV } from './tv.js';
 import { buildTank } from './tank.js';
 import { buildLive } from './live.js';
 import { buildCook } from './cook.js';
+import { buildShare } from './share.js';
+import { buildGuest } from './guest.js';
 import { NET } from '../holo/net.js';
 import { PH } from './physics.js';
 import * as T from './tex.js';
 
 const params = new URLSearchParams(location.search);
+G.guest = params.has('guest');   // a tenant of THE MARKET walking the alley as themselves (guest.js), not the cook
 const canvas = document.getElementById('c');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
 renderer.setPixelRatio(1); renderer.setSize(innerWidth, innerHeight);
@@ -63,6 +66,8 @@ const guide = buildGuide(scene, cart);
 T.metreUV(cart.group);
 G.baked = mergeStatic(cart.group) + mergeStatic(city.group);
 const tank = buildTank(scene), tv = buildTV(scene, city.shops), live = buildLive(), cook = buildCook();
+if (G.guest) G.buttons.length = 0;   // (the cart's knobs, switch and boards are the cook's)
+const share = buildShare(live), guest = G.guest ? buildGuest(live) : null;
 
 // on a screen: the scene is drawn small, then enlarged with ordered dither and a short palette, as that console's output looked
 const LOWH = 540; let lowRT = null;
@@ -85,8 +90,8 @@ function render() {
 addEventListener('resize', () => { if (renderer.xr.isPresenting) return; camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); sizeLow(); });
 
 // ---------- the way in ----------
-function begin() { G.audio.init(); if (!G.audio.radioOn) G.audio.setRadio(true); talk.listen(true); }
-function startDesktop() { begin(); G.mode = 'desktop'; menu.style.display = 'none'; hud.style.display = 'block'; rig.position.set(0, 0, 0.3); }
+function begin() { G.audio.init(); if (!G.audio.radioOn) G.audio.setRadio(true); if (G.guest) { if (guide.on) guide.set(false); } else talk.listen(true); }
+function startDesktop() { begin(); G.mode = 'desktop'; menu.style.display = 'none'; hud.style.display = 'block'; rig.position.set(0, 0, 0.3); if (guest) guest.start(); }
 deskBtn.onclick = startDesktop;
 async function startVR() {
   begin();
@@ -106,13 +111,13 @@ else vrBtn.textContent = location.protocol === 'https:' || location.hostname ===
 // ---------- loop ----------
 function tick(dt) {
   G.t += dt;
-  input.update(dt);
+  input.update(dt); if (guest) guest.update(dt);
   updateItems(dt);
   const boil = cart.update(dt, G.t);
   game.update(dt, G.t);
   city.update(dt, G.t);
   life.update(dt, G.t);
-  talk.update(dt); tv.update(dt); tank.update(dt); live.update(dt); cook.update(dt);
+  talk.update(dt); tv.update(dt); tank.update(dt); live.update(dt); share.update(dt); if (!guest) cook.update(dt);
   grit.update(dt, G.t);
   guide.update(dt, G.t); gameMenu.update(dt); report.update(dt);
   G.fx.update(dt);
@@ -148,7 +153,8 @@ function frame(now) {
 }
 renderer.setAnimationLoop(frame);
 
-G.debug = { Items, PH, person: makePerson, PF, city, guide, menu: gameMenu, report, tick, frame, render, input, startDesktop, startVR, THREE };
+G.debug = { Items, PH, person: makePerson, PF, city, guide, menu: gameMenu, report, tick, frame, render, input, startDesktop, startVR, THREE, share, guest };
+if (G.guest) { menu.querySelector('h2').textContent = 'THE DARK ALLEY, as yourself: walk up to the ramen cart, take a stool, order a bowl and pay for it. The cook, the customers and everyone passing are the same people every page in the alley sees.'; $('help').innerHTML = '<div><b>Browser</b> WASD walk · mouse look · V first / third person · E sit at a stool or get up · click the menu to order · M settings</div><div><b>VR</b> left stick walk · right stick turn · trigger by a stool to sit · step away to get up · poke the menu to order</div><div><b>Back</b> walk out at the street end, or LEAVE, to THE MARKET</div>'; $('keys').textContent = 'WASD walk · V view · E sit / get up · click: order · M settings · Esc: free mouse'; deskBtn.textContent = 'Walk the alley in this browser'; }
 window.G = G;
 { const box = $('say'); // on a screen: M the settings board, G the guide, T to type what you say if you would rather not speak it
   addEventListener('keydown', (e) => { if (G.mode !== 'desktop' || e.repeat) return; if (e.target === box) { if (e.code === 'Enter') { const t = box.value.trim(); box.value = ''; box.style.display = 'none'; box.blur(); if (t) talk.cookSays(t); } else if (e.code === 'Escape') { box.value = ''; box.style.display = 'none'; box.blur(); } return; }

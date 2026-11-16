@@ -12,6 +12,7 @@ export function buildReact(block) {
     const out = [];
     for (const c of G.game?.customers || []) if (!c.guest && c.p.hit && c.p.root.parent) out.push({ p: c.p, c, h: c.nb || null });
     for (const h of block.people) if (!h.taken && !h.hidden && h.p.root.visible && h.p.hit) out.push({ p: h.p, c: null, h });
+    for (const z of G.infected?.list || []) if (z.p.root.parent && z.p.root.visible && z.p.hit) out.push({ p: z.p, c: null, h: null, z });   // the turned (infected.js): their own way of taking a blow
     for (const b of out) { const [hip, hd] = bones(b.p); b.hip = hip.getWorldPosition(new V3()); b.neck = hd.getWorldPosition(new V3()); b.head = b.neck.clone().setY(b.neck.y + 0.1); }
     return out;
   };
@@ -30,7 +31,7 @@ export function buildReact(block) {
 
   // a blow lands: the body first, then the person
   const blow = (b, kind, part, dir, at, J, it, thrown, bone) => {
-    const p = b.p; if (G.t - (p.hitT || -9) < 0.35) return; p.hitT = G.t; const f = J / FALL_J;
+    if (b.z) return; const p = b.p; if (G.t - (p.hitT || -9) < 0.35) return; p.hitT = G.t; const f = J / FALL_J;
     p.push(bone || (part === 'head' ? 'head' : 'torso'), dir.clone().setLength(J), at);
     if (it && (kind === 'food' || (it.liq && it.liq.visible))) { p.stain(at, colourOf(it), kind === 'food' ? 0.045 : 0.07); if (it.kind === 'bowl' && !it.empty) it.spill?.(); }
     const down = p.down(), level = kind === 'tap' ? 0 : kind === 'food' || kind === 'splash' ? 1 : kind === 'cut' || down || f >= 1 ? 3 : f >= 0.4 || kind === 'scald' ? 2 : 1;
@@ -57,6 +58,7 @@ export function buildReact(block) {
     const hits = R.limbs ? R.limbs.update(dt, list) : []; if (!list.length) return;
     // what really met them, and how hard
     for (const s of hits) { const b = s.rec.x, it = s.it, head = s.seg.name === 'head' || (s.seg.mid && s.at.y > b.neck.y), part = head ? 'head' : 'body', bone = s.seg.mid ? (head ? 'head' : 'torso') : s.seg.name;
+      if (b.z) { if (!(it && it.weapon && s.src === 'held')) G.infected?.blow(b.z, s); continue; }   // (a blade's cut is judged by weapons.js)
       let kind;
       if (s.src === 'hand') kind = s.J < TAP_J ? 'tap' : 'punch';
       else if (s.src === 'held') kind = it.useMode === 'chop' && s.sp >= 0.5 ? 'cut' : s.J < TAP_J ? 'tap' : 'thing';
@@ -67,7 +69,7 @@ export function buildReact(block) {
     // what flies at them: they duck if they see it coming
     for (const it of G.items) {
       if (!it.free || it.held || it.dead || it.kind === 'debris') continue; const sp = it.vel.length(); if (sp < 1.4) continue; const c = it.worldCenter(_c); it.ducked ||= new Set();
-      for (const b of list) if (!it.ducked.has(b.p)) { _h.copy(b.head).sub(c); const al = _h.dot(it.vel) / sp; if (al > 0 && al / sp < 0.4 && _t.copy(it.vel).multiplyScalar(al / sp).sub(_h).length() < 0.35) { it.ducked.add(b.p); if (Math.random() < 0.45) b.p.duck(); } }
+      for (const b of list) if (!b.z && !it.ducked.has(b.p)) { _h.copy(b.head).sub(c); const al = _h.dot(it.vel) / sp; if (al > 0 && al / sp < 0.4 && _t.copy(it.vel).multiplyScalar(al / sp).sub(_h).length() < 0.35) { it.ducked.add(b.p); if (Math.random() < 0.45) b.p.duck(); } }
     }
     // soup and broth: drops that reach someone's real space wet them, mark them, and (hot) burn
     const L = G.fx && G.fx.liq; if (L && R.limbs) for (const d of L) { if (!d.visible) continue; const u = d.userData, at = R.limbs.at(d.position, 0.01); if (!at) continue;

@@ -213,6 +213,8 @@ export function buildGame(scene) {
   game.onMess = (what) => { G.talk?.seen(what); G.talk?.attend(4); const c = seated().find((x) => x.order); if (c && G.t - lastReact > 9) { lastReact = G.t; G.talk?.event(c, 'react', what); } };
   game.rating = () => (game.scores.length ? game.scores.reduce((a, b) => a + b, 0) / game.scores.length / 20 : 0);
   game.serving = () => !game.hold && K.phase !== 'dawn';   // the village comes to eat by day and at dusk, the frightened in the night (game.hold: another system keeps them away)
+  // one of them is no longer a customer (outbreak.js: collapsed at the counter): off the seat, their ticket gone, their body left where it is
+  game.take = (c) => { const i = game.customers.indexOf(c); if (i < 0) return null; game.customers.splice(i, 1); if (game.seats[c.seat].c === c) game.seats[c.seat].c = null; if (c.ticket) c.ticket.removeFromParent(); if (c.bottle) c.bottle.remove(); c.state = 'gone'; return c.p; };
   game.forceSpawn = () => { const i = game.seats.findIndex((s) => !s.c && !s.dirty); return i >= 0 ? spawn(i) : null; };
 
   function showSummary() {

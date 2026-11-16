@@ -7,6 +7,7 @@ const ITEM = 0x0004ffff, HELD_TOOL = 0x00020009; // loose things meet everything
 PH.LIMB = 0x00080016; PH.HAND = 0x0010000c; PH.HAND_PEOPLE = 0x00100008; // a person's limbs meet loose and held things and the cook's hands; a headset hand meets loose things and people, the screen's hand only people
 const _p = new V3(), _d = new V3(), _r = new Q(), _e = new Q();
 const shape = (it) => {
+  if (it.shape) return it.shape();   // (a weapon's own: weapons.js)
   if (it.col) { const c = it.col; return [c.t === 'cyl' ? RAPIER.ColliderDesc.cylinder(c.hh, c.r).setTranslation(0, c.hh, 0) : RAPIER.ColliderDesc.cuboid(c.hx, c.hy, c.hz).setTranslation(0, c.cy ?? c.hy, 0), it.mass || 0.3]; }
   if (it.tool) return [RAPIER.ColliderDesc.cuboid(0.02, 0.02, 0.15).setTranslation(0, 0, -0.14), 0.25];
   if (it.kind === 'debris') return [RAPIER.ColliderDesc.cuboid(0.013, 0.004, 0.011), 0.008];
@@ -56,7 +57,7 @@ PH.hold = (it) => {
   const p = it.obj.position, q = it.obj.quaternion, [desc, mass] = it.tool ? toolEnd(it) : shape(it);
   const b = PH.world.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(p.x, p.y, p.z).setRotation({ x: q.x, y: q.y, z: q.z, w: q.w }).setGravityScale(0).setCcdEnabled(true).setCanSleep(false));
   const c = PH.world.createCollider(desc.setMass(mass).setFriction(0.6).setRestitution(0.02).setCollisionGroups(0), b);
-  PH.grip.set(it, { b, c, tp: p.clone(), tq: q.clone(), off: new V3(), sep: 0, touch: false, bump: 0, want: it.tool ? HELD_TOOL : ITEM, ghost: 0.4 }); // it meets nothing until it has come clear of what it was taken out of (no pop)
+  PH.grip.set(it, { b, c, tp: p.clone(), tq: q.clone(), off: new V3(), sep: 0, touch: false, bump: 0, want: it.grp ?? (it.tool ? HELD_TOOL : ITEM), ghost: 0.4 }); // it meets nothing until it has come clear of what it was taken out of (no pop)
 };
 PH.unhold = (it) => { const g = PH.grip.get(it); if (g) { PH.world.removeRigidBody(g.b); PH.grip.delete(it); } };
 PH.aim = (it, p, q) => { const g = PH.grip.get(it); if (!g) return false; g.tp.copy(p); g.tq.copy(q); return true; };

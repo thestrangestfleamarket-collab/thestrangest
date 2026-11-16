@@ -31,7 +31,7 @@ export function buildLimbs() {
     const add = (name, from, to, rad, half, off, soft, mid, cut = 0) => { const b = kin({ x: 0, y: -50, z: 0 }, { x: 0, y: 0, z: 0, w: 1 }); const d = (half > 0 ? RAPIER.ColliderDesc.capsule(half, rad) : RAPIER.ColliderDesc.ball(rad)).setCollisionGroups(PH.LIMB).setFriction(0.6).setRestitution(0.3);
       if (soft) d.setActiveHooks(RAPIER.ActiveHooks.FILTER_CONTACT_PAIRS); const c = W.createCollider(d, b), s = { name, from, to, off, b, c, mid, cut, A: new V3(), B: new V3(), r: rad }; PH.feel.set(c.handle, { rec: r, seg: s, soft }); r.segs.push(s); };
     if (tier === 1) { r.hi = ix('head'); const hy = P.bones[0].position.y; add('torso', 0, r.hi, 0.2, Math.max(0.3, (O[r.hi].y - hy + 0.1 + Math.min(0.5, hy - 0.36)) / 2), null, false, true); }
-    else for (const [name, a, b, rad, off, cut = 0] of SEGS) { const i = ix(a), j = b ? ix(b) : -1; if (i < 0 || (b && j < 0)) continue;
+    else for (const [name, a, b, rad, off, cut = 0] of SEGS) { const i = ix(a), j = b ? ix(b) : -1; if (i < 0 || (b && j < 0) || (P.lost && P.lost.has(a))) continue;   // (what was cut off is gone from them)
       const o = Array.isArray(off) ? new V3(...off) : off ? O[i].clone().sub(O[ix('forearm' + off)]).setLength(0.07) : new V3(); add(name, i, j, rad, j >= 0 ? Math.max(0.01, O[j].distanceTo(O[i]) - cut) / 2 : 0, o, /^(hand|forearm)/.test(name), false, cut); }
     r.bn = P.bones; pose(r);
   };
@@ -70,6 +70,7 @@ export function buildLimbs() {
     for (const h of G.hands || []) { placeHand(h, dt); const k = hands.get(h); if (k.c.isEnabled()) { const it = h.held && !h.held.dead && !PH.grip.get(h.held) ? h.held : null; fromHand(h, k.c, k.near, it ? it.mass || 0.3 : 0, it, out); } else k.near.clear(); }
     L.touches += out.length; return out;
   };
+  L.refresh = (p) => { const r = recs.get(p); if (r) drop(r); };   // (made again next step: after a part is cut off)
   // a point (a drop of soup) inside someone's real space: which of them, and which piece
   L.at = (pt, rad) => { for (const r of recs.values()) for (const s of r.segs) { const d = s.to < 0 && !s.mid ? pt.distanceTo(s.A) : segDist(pt, s.A, s.B); if (d < s.r + rad) return { rec: r, seg: s }; } return null; };
   return L;

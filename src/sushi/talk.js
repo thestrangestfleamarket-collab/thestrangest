@@ -155,7 +155,7 @@ export function buildTalk() {
 
   async function say(c, kind, situation, facts, cookSaid) {
     if (c.guest) return; // a tenant from THE MARKET speaks for themself
-    const v = voiceOf(c), reply = kind === 'reply' || kind === 'hurt' || kind === 'police', must = reply || kind === 'order' || kind === 'taste' || kind === 'angry' || kind === 'pay' || kind === 'short' || kind === 'over' || kind === 'thanks' || kind === 'greet2';
+    const v = voiceOf(c), reply = kind === 'reply' || kind === 'hurt' || kind === 'police', must = reply || kind === 'order' || kind === 'taste' || kind === 'angry' || kind === 'pay' || kind === 'short' || kind === 'over' || kind === 'thanks' || kind === 'greet2' || kind === 'cry';
     if (c.p.cast && c.p.cast.name) v.story = G.block.story(c.p.cast);
     if (reply) { v.gen = (v.gen || 0) + 1; c.chatT = Math.max(c.chatT || 0, 30); talk.floorT = G.t + 6; for (const o of G.game.customers) if (o !== c) o.chatT = Math.max(o.chatT || 0, 12); }
     else if (v.busy || (v.until || 0) > G.t || (!must && (D.cur || D.q.some((x) => x.prio >= 4) || cookBusy() || G.t < (talk.floorT || 0)))) return; // nobody starts small talk while you are speaking or being answered
@@ -197,6 +197,7 @@ export function buildTalk() {
     else if (kind === 'hello') say(c, 'hello', 'You are walking along the village street past the ramen stall, and you know its cook. Call out a short greeting as you pass.', 'You are not at the counter.');
     else if (kind === 'story') { CANNED.story = [r.line]; say(c, 'story', r.prompt + ' Say it in a sentence or two.', 'You are not at the counter.'); }
     else if (kind === 'snub') say(c, 'snub', 'You are walking along the village street past the ramen stall. The cook is trying to get your attention, but you are angry with them after what they did to you earlier. Say something short and cold.', 'You are not at the counter.');
+    else if (kind === 'cry') { CANNED.cry = r.lines; say(c, 'cry', r.situation, r.facts || ''); }   // the night's own words (outbreak.js): what someone cries out, as they would
     else if (kind === 'angry') say(c, 'angry', 'You waited far too long, never got your food, and are getting up to leave.', `You waited about ${waited} seconds and were never served.`);
   };
   // who you are speaking to: the only one at the counter; or, of several, the one you are looking at

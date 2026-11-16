@@ -35,5 +35,6 @@
 | Wooden Cutting Board | `data/sushi/m/wooden_cutting_board.glb` | Kuutti Siitonen, https://polyhaven.com/a/wooden_cutting_board | CC0 |
 | Food Ginger 01 | `data/sushi/m/food_ginger_01.glb` | Oliver Harries, https://polyhaven.com/a/food_ginger_01 | CC0 |
 
+- RAMEN's night (`tools/ramen-arms.py`): Poly Haven, CC0: the katana (`antique_katana_01`), the woodcutter's axe (`wooden_axe`), the barricade's crates (`wooden_crate_01`) and barrel (`wine_barrel_01`). The other period arms (cleaver, sickle, tanto, wakizashi, naginata, yari, bamboo spear, staff, kunai, shuriken, yumi and arrows, tanegashima, kusarigama), the paper lantern, the brazier and the fire-watch tower are made in `src/sushi/weapons.js` and `arsenal.js` from the photographed woods and steel.
 - The recorded sounds (`data/sushi/snd/`): OpenGameArt, CC0, listed in `docs/sushi-sounds.md`.
 - Everything else (the cart's and the street's shapes, the food, the signs, the other sounds) is made in the page's own code.

@@ -73,7 +73,7 @@ export function buildFolk(scene, room) {
     // drinking it: a sip every few seconds, the glass to the mouth and back
     const gl = p.glass; if (gl.dead) { p.glass = null; return; }
     p.sipT -= dt;
-    if (gl.inHand && p.sipT < -1.7) { G.itemRoot.add(gl.obj); gl.obj.position.copy(gl.homeP); gl.obj.quaternion.identity(); gl.inHand = false; gl.vol = Math.max(0, gl.vol - (gl.shape === 'shot' ? 0.5 : 0.22)); gl.refresh(); p.sipT = gl.shape === 'shot' ? rand(5, 9) : rand(4, 8);
+    if (gl.inHand && p.sipT < -1.7) { G.itemRoot.add(gl.obj); gl.obj.position.copy(gl.homeP); gl.obj.quaternion.identity(); gl.inHand = false; gl.vol = Math.max(0, gl.vol - (gl.cut === 'shot' ? 0.5 : 0.22)); gl.refresh(); p.sipT = gl.cut === 'shot' ? rand(5, 9) : rand(4, 8);
       if (gl.vol <= 0.05) { gl.empty(true); const w = DRINKS[p.S.drink]; p.drunk += p.S.drink === 'sarsaparilla' ? 0 : p.S.drink === 'beer' ? 0.6 : 1; releaseGlass(p); p.t = 0; p.said = 1; ev('drank', { id: p.id, drunk: p.drunk, holds: p.S.holds, cents: w[1] }); } }
     else if (!gl.inHand && p.sipT <= 0) { p.P.gesture('Drinking'); const hb = p.P.bones.find((b) => b.name === 'handR'); if (hb) { gl.inHand = true; hb.add(gl.obj); gl.obj.position.set(0, -0.02, 0.06); gl.obj.quaternion.identity(); p.sipT = 0; } else p.sipT = -1.7; }
   }

@@ -14,7 +14,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
     o.loaded = G.mode === 'desktop' && G.debug.PH.ready && !!G.castReady; o.stock = G.bar.stock();
     G.cardT = 0.01; step(2); G.story.bell(); o.open = W.phase === 'open';
     let n = 0; while (!ev.some((e) => e.startsWith('order:')) && n++ < 3000) step(1); const who = G.folk.people.find((q) => q.want); o.order = who && who.id + ' ' + who.want + ' ' + who.state;
-    const gl = G.bar.glasses.find((g) => g.shape === 'mug'), tap = G.buttons.find((q) => q.name === 'the beer tap'), x = who.root.position.x;
+    const gl = G.bar.glasses.find((g) => g.cut === 'mug'), tap = G.buttons.find((q) => q.name === 'the beer tap'), x = who.root.position.x;
     gl.obj.position.set(0.75, 0.92, 1.05); tap.press(); n = 0; while (gl.vol + gl.head < 0.97 && n++ < 400) step(1); tap.press(); o.froth = +gl.head.toFixed(2); o.frothy = !G.bar.judge(gl, 'beer').ok; step(150); o.settled = G.bar.judge(gl, 'beer').ok;
     gl.obj.position.set(x, 1.06, -0.72); step(60); o.served = ev.includes('served:' + who.id) && gl.owner === who; o.due = who.due;
     if (who.due > 0) { let d = who.due; for (const c of [100, 25, 10, 5]) while (d >= c) { new G.bar.Coin(c).obj.position.set(x, 1.06, -0.68); d -= c; } step(40); } o.changed = !(who.due > 0);

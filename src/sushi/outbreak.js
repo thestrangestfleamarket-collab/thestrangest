@@ -195,6 +195,7 @@ export function buildOutbreak(scene) {
     const want0 = sides.front.down && !sides.front.broke ? 0 : sides.front.broke ? -0.35 : -1.42; shutA += (want0 - shutA) * Math.min(1, dt * 4); sh.rotation.x = shutA; sh.rotation.z = sides.front.broke ? 0.12 : 0; if (!sides.front.down) sides.front.bar = 0;
     for (const k of ['left', 'right', 'back']) sides[k].bar = 0; for (const it of props) { if (it.dead) continue; if (it.held) it.side = null; else { const z = it.free ? null : zoneOf(it.obj.position); if (z && it.side !== z) { it.side = z; if (it.bar <= 0) it.bar = it.barMax * 0.6; } else if (!z) it.side = null; if (it.side && it.bar > 0) sides[it.side].bar += it.bar; } }
     if (lead() && (O.stage === 'winddown' || O.stage === 'end')) { const al = I.alive().filter((z) => !z.leave && !z.inside), over = al.length - (O.stage === 'end' ? 0 : want()); if (over > 0) al.sort((a, b) => b.p.root.position.length() - a.p.root.position.length()).slice(0, over).forEach((z) => (z.leave = true)); }   // fewer and slower: the rest drift off
+    if (O.first && G.game?.summary && G.game.summary.visible) G.game.summary.visible = false;   // (once they rise, the day's takings are no matter: the board is put away)
     I.update(dt); I.sweep(); W.update(dt); AR.update(dt); gore.update(dt); updShelter(dt); updTroop(dt);
     // how you are: the edges and the world darken with hurt and ease back; a heartbeat when low
     if (!me.dead && G.t - me.hurtT > 8 && me.hp < 100) me.hp = Math.min(100, me.hp + dt * 1.5);

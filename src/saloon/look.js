@@ -65,9 +65,10 @@ export function buildLook(scene, room, renderer, camera) {
     for (let i = 0; i < 3; i++) { const sk = new THREE.Mesh(new THREE.SphereGeometry(0.32, 10, 8), pbr('leather', { tile: 0.6, color: 0x8a7a5a, rough: 1 })); sk.scale.set(1, 0.55, 0.7); sk.position.set(5.2 + i * 0.5, 0.17 + (i === 1 ? 0.3 : 0), 1.2 - (i === 1 ? 0 : 0.05)); sk.castShadow = true; g.add(sk); } }
 
   // ---- the room seen in its own glass and brass: one look round from the middle, kept (taken again when the lamps change)
-  const cubeRT = new THREE.WebGLCubeRenderTarget(256, { type: THREE.HalfFloatType }), cube = new THREE.CubeCamera(0.1, 60, cubeRT); cube.position.set(0, 1.7, -3.2); scene.add(cube);
+  const moonS = g.children.find((o) => o.isSprite && o.scale.x > 5) || null;
+  const cubeRT = new THREE.WebGLCubeRenderTarget(512, { type: THREE.HalfFloatType }), cube = new THREE.CubeCamera(0.1, 60, cubeRT); cube.position.set(0, 1.7, -3.2); scene.add(cube);
   const pm = new THREE.PMREMGenerator(renderer); let envRT = null;
-  const reflect = () => { const was = scene.environment; scene.environment = null; g.visible = true; cube.update(renderer, scene); const rt = pm.fromCubemap(cubeRT.texture); scene.environment = rt.texture; scene.environmentIntensity = 1; if (envRT) envRT.dispose(); envRT = rt; if (room.mirror) { room.mirror.material.envMap = cubeRT.texture; room.mirror.material.needsUpdate = true; } void was; };
+  const reflect = () => { const was = scene.environment, mv = moonS ? moonS.visible : 0; if (moonS) moonS.visible = false; scene.environment = null; cube.update(renderer, scene); if (moonS) moonS.visible = mv; const rt = pm.fromCubemap(cubeRT.texture); scene.environment = rt.texture; scene.environmentIntensity = 1; if (envRT) envRT.dispose(); envRT = rt; if (room.mirror) { room.mirror.material.envMap = cubeRT.texture; room.mirror.material.needsUpdate = true; } void was; };
 
   // ---- on a screen: the picture darkened at its edges, pulled warm, with grain (a headset gets the room as it is)
   let rt = null; const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ depthTest: false, depthWrite: false, uniforms: { tD: { value: null }, t: { value: 0 }, hurt: { value: 0 } }, vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',

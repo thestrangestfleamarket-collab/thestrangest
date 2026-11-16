@@ -19,7 +19,7 @@ export function buildFolk(scene, room) {
 
   function make(id) {
     const S = PEOPLE[id]; if (!S || by[id] || !G.castReady) return by[id] || null;
-    const P = pfPerson(S.body, new THREE.Group()); P.root.traverse((o) => { o.userData.nopick = true; if (o.isMesh) o.castShadow = true; if (o.isSkinnedMesh) o.material = skinM; }); P.root.visible = false; G.peopleRoot.add(P.root);
+    const P = pfPerson(S.body, new THREE.Group()); P.root.traverse((o) => { o.userData.nopick = true; if (o.isMesh) o.castShadow = true; if (o.isSkinnedMesh) o.material = skinM; else if (o.isMesh && o.material.color && o.material.color.getHex() === 0xf2efe6) o.material.color.set(0x7c776c); }); P.root.visible = false; G.peopleRoot.add(P.root);
     const blob = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.9).rotateX(-Math.PI / 2), blobM); blob.position.y = 0.012; blob.userData.nopick = true; P.root.add(blob);
     const p = { id, S,  name: S.name, P, root: P.root, alive: true, here: false, hidden: false, state: 'out', seat: null, spot: null, tgt: null, plan: [], act: null, t: 0, drunk: 0, hp: 100, want: null, wait: 0, glass: null, rounds: 0, trust: 0, armed: false, gun: null, drawn: false, foe: null, aimT: 0, sipT: 0, house: false, cut: false, said: 0, dead: 0, fled: false };
     people.push(p); by[id] = p; return p;
@@ -74,7 +74,7 @@ export function buildFolk(scene, room) {
     const gl = p.glass; if (gl.dead) { p.glass = null; return; }
     p.sipT -= dt;
     if (gl.inHand && p.sipT < -1.7) { G.itemRoot.add(gl.obj); gl.obj.position.copy(gl.homeP); gl.obj.quaternion.identity(); gl.inHand = false; gl.vol = Math.max(0, gl.vol - (gl.shape === 'shot' ? 0.5 : 0.22)); gl.refresh(); p.sipT = gl.shape === 'shot' ? rand(5, 9) : rand(4, 8);
-      if (gl.vol <= 0.05) { gl.empty(); const w = DRINKS[p.S.drink]; p.drunk += p.S.drink === 'sarsaparilla' ? 0 : p.S.drink === 'beer' ? 0.6 : 1; releaseGlass(p); p.t = 0; p.said = 1; ev('drank', { id: p.id, drunk: p.drunk, holds: p.S.holds, cents: w[1] }); } }
+      if (gl.vol <= 0.05) { gl.empty(true); const w = DRINKS[p.S.drink]; p.drunk += p.S.drink === 'sarsaparilla' ? 0 : p.S.drink === 'beer' ? 0.6 : 1; releaseGlass(p); p.t = 0; p.said = 1; ev('drank', { id: p.id, drunk: p.drunk, holds: p.S.holds, cents: w[1] }); } }
     else if (!gl.inHand && p.sipT <= 0) { p.P.gesture('Drinking'); const hb = p.P.bones.find((b) => b.name === 'handR'); if (hb) { gl.inHand = true; hb.add(gl.obj); gl.obj.position.set(0, -0.02, 0.06); gl.obj.quaternion.identity(); p.sipT = 0; } else p.sipT = -1.7; }
   }
   // they put down what they have; if it is more than the price they wait for their change to be laid on the bar
@@ -116,6 +116,7 @@ export function buildFolk(scene, room) {
 
   folk.update = (dt) => {
     const cam = G.camera.getWorldPosition(_v);
+    for (const it of G.items) { if (!it.free || it.dead || it.kind === 'bit' || it.kind === 'debris' || it.vel.lengthSq() < 4 || it.struck > G.t) continue; const ip = it.worldCenter(_a); for (const p of people) { if (!p.here || !p.alive) continue; const b = p.root.position, top = p.state === 'sit' ? 1.38 : 1.74; if (ip.y < b.y + 0.3 || ip.y > b.y + top || Math.hypot(ip.x - b.x, ip.z - b.z) > 0.26) continue; it.struck = G.t + 1; const sp = it.vel.length(), hard = sp * (it.mass || 0.1); p.P.hit(_b.copy(it.vel).normalize(), ip.clone(), Math.min(1, 0.3 + hard * 0.35)); G.audio.play('hit'); if (it.vol > 0.05) { p.P.stain(ip.clone(), 0x4a3010, 0.07); it.empty?.(false); } ev('struck', { id: p.id, with: it.name, hard }); it.vel.multiplyScalar(-0.2); if (it.onImpact?.(sp) !== true) it.drop(it.vel.clone()); break; } }
     for (const p of people) {
       if (!p.here) continue;
       if (!p.alive) { if (p.dead < 1.5) { p.dead += dt; p.P.update(dt); } continue; }   // the dead lie where they fell
@@ -124,7 +125,7 @@ export function buildFolk(scene, room) {
         const pos = p.root.position; _d.set(p.tgt.x - pos.x, 0, p.tgt.z - pos.z); const d = _d.length();
         if (d < 0.12) arrived(p);
         else { const sp = (p.run ? 2.6 : 1.15) * (1 - Math.min(0.35, p.drunk * 0.03)); _d.multiplyScalar(Math.min(d, sp * dt) / d); pos.add(_d);
-          if (d > 0.6) for (const s of room.solids) { if (s.step || (s.low && p.seat && Math.abs(s.x0 + 0.17 - p.seat.x) < 0.05)) continue; const cx = clamp(pos.x, s.x0, s.x1), cz = clamp(pos.z, s.z0, s.z1), dx = pos.x - cx, dz = pos.z - cz, dd = Math.hypot(dx, dz); if (dd < 0.26 && dd > 1e-5) { pos.x += dx / dd * (0.26 - dd) + dz / dd * 0.012; pos.z += dz / dd * (0.26 - dd) - dx / dd * 0.012; } }
+          if (d > 0.45) for (const s of room.solids) { if (s.step || (s.low && p.seat && Math.abs(s.x0 + 0.17 - p.seat.x) < 0.05)) continue; const cx = clamp(pos.x, s.x0, s.x1), cz = clamp(pos.z, s.z0, s.z1), dx = pos.x - cx, dz = pos.z - cz, dd = Math.hypot(dx, dz); if (dd < 0.26 && dd > 1e-5) { const tx = dz / dd, tz = -dx / dd, sg = tx * (p.tgt.x - pos.x) + tz * (p.tgt.z - pos.z) >= 0 ? 1 : -1; pos.x += dx / dd * (0.26 - dd) + sg * tx * sp * dt * 0.85; pos.z += dz / dd * (0.26 - dd) + sg * tz * sp * dt * 0.85; } }   // round what is in the way, on the side nearer where they are going
           const ty = Math.atan2(_d.x, _d.z); let dy = ty - p.root.rotation.y; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); p.root.rotation.y += dy * Math.min(1, dt * 8); p.P.pose = 'walk'; p.P.speed = sp;
           if (p.drunk > p.S.holds * 0.7) p.root.rotation.y += Math.sin(G.t * 2.3 + p.t) * 0.02; }
       } else if (p.drawn && p.foe) gunLife(p, dt);

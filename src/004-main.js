@@ -8,6 +8,10 @@ import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
 import {Reflector} from 'three/addons/objects/Reflector.js';
 
+// only what can be seen pays for its place: three walks a hidden branch's matrices every frame though nothing of it is drawn; it is skipped, and caught up (_stale) when shown; ?hidmat=1 walks them as before
+if(new URLSearchParams(location.search).get('hidmat')!=='1')THREE.Object3D.prototype.updateMatrixWorld=function(force){ if(this.matrixAutoUpdate)this.updateMatrix(); if(this._stale){ this._stale=false; force=true; }
+  if(this.matrixWorldNeedsUpdate||force){ if(this.matrixWorldAutoUpdate===true){ if(this.parent===null)this.matrixWorld.copy(this.matrix); else this.matrixWorld.multiplyMatrices(this.parent.matrixWorld,this.matrix); } this.matrixWorldNeedsUpdate=false; force=true; }
+  const ch=this.children; for(let i=0,l=ch.length;i<l;i++){ const c=ch[i]; if(!c.visible){ if(force)c._stale=true; continue; } c.updateMatrixWorld(force); } };
 const stage=document.getElementById('stage'), statEl=document.getElementById('stat');
 // the lighter picture (kept on this device; ?lite=1 or 0 sets it): no shadows and the graphics card left to the browser's choice, for a machine that keeps losing the picture
 // a start that never finished (the tab crashed while building) turns the lighter picture on for the next: 'start-open' is set now and cleared once the game has run ten seconds, or when the page is closed or reloaded

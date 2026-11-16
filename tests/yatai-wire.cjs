@@ -62,7 +62,7 @@ const shot = (j, name) => { if (out && j) fs.writeFileSync(path.join(out, name),
     // LEAVE: back to THE MARKET, and what was paid comes out of their money
     await m.click('#leave'); const back = await m.waitForFunction(() => window.__started, null, { timeout: 600000 }).then(() => true, () => false);
     await m.waitForTimeout(4000); const settled = await m.evaluate(() => { try { return JSON.parse(sessionStorage.getItem('holo')).yatai; } catch (e) { return null; } });
-    ok(back && /\/\?fresh=1&hour=21$/.test(m.url()) && (!pd.paid || (settled && settled.settled)), 'LEAVE takes the guest back to THE MARKET, where their bowl is paid for: ' + JSON.stringify({ url: m.url(), settled }));
+    ok(back && /\/\?fresh=1&hour=21$/.test(m.url()) && (!pd.paid || (settled && settled.settled)), 'LEAVE takes the guest back to THE MARKET, where their bowl is paid for: ' + JSON.stringify({ url: m.url(), paid: settled && settled.paid, settled: settled && settled.settled }));
     ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
   } catch (e) { ok(false, 'the check ran: ' + String(e.message || e).slice(0, 300)); }
   await b.close(); stop(); console.log(bad ? bad + ' FAILED' : 'THE DARK ALLEY is one game over the real server'); process.exit(bad ? 1 : 0); })();

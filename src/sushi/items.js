@@ -89,6 +89,8 @@ function shared() {
     eggGeo: new THREE.SphereGeometry(0.024, 16, 10, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2).scale(1, 0.75, 1.3), yolkGeo: new THREE.SphereGeometry(0.0125, 14, 5, 0, Math.PI * 2, 0, Math.PI / 2).scale(1, 0.28, 1.25),
     glassBrown: mat({ color: 0x4a2408, roughness: 0.08, transparent: true, opacity: 0.86, metalness: 0 }),
     glassDark: mat({ color: 0x1a0c06, roughness: 0.06, transparent: true, opacity: 0.86 }),
+    tokkuriGeo: new THREE.LatheGeometry([[0, 0], [0.028, 0], [0.04, 0.03], [0.045, 0.08], [0.038, 0.13], [0.018, 0.17], [0.013, 0.195], [0.017, 0.205], [0, 0.205]].map(([x, y]) => new THREE.Vector2(x, y)), 16),
+    teapotGeo: new THREE.LatheGeometry([[0, 0], [0.04, 0], [0.055, 0.03], [0.058, 0.07], [0.045, 0.11], [0.02, 0.125], [0, 0.13]].map(([x, y]) => new THREE.Vector2(x, y)), 16),
     bottleGeo: new THREE.LatheGeometry([[0, 0], [0.03, 0], [0.031, 0.13], [0.026, 0.16], [0.013, 0.2], [0.012, 0.235], [0.014, 0.24], [0, 0.24]].map(([x, y]) => new THREE.Vector2(x, y)), 18),
   };
   return S;
@@ -282,18 +284,16 @@ export class Raw extends Item {
   hint() { return this.board ? 'on the board — chop it with the knife' : `${this.name} → put on the cutting board`; }
 }
 
-export class Drink extends Item {
+export class Drink extends Item { // a tokkuri of warm sake, or a clay pot of tea: glazed earthenware, a cloth tied at the neck
   constructor(type) {
-    const s = shared(), g = new THREE.Group();
-    M(s.bottleGeo, type === 'beer' ? s.glassBrown : s.glassDark, g);
-    const lt = T.labelTex(type === 'beer' ? ['麒 BEER', 'ビール'] : ['COLA', 'コーラ'], { bg: type === 'beer' ? '#f1e3b0' : '#c8201c', fg: type === 'beer' ? '#7a1c12' : '#fff', w: 256, h: 128, fs: 44 });
-    lt.wrapS = THREE.RepeatWrapping; lt.repeat.x = 2;
-    M(new THREE.CylinderGeometry(0.0315, 0.0315, 0.06, 18, 1, true), mat({ map: lt, roughness: 0.6 }), g, 0, 0.075, 0);
-    M(new THREE.CylinderGeometry(0.0145, 0.0145, 0.008, 12), mat({ color: type === 'beer' ? 0xd8b030 : 0xc8c8c8, metalness: 0.8, roughness: 0.3 }), g, 0, 0.242, 0);
-    super('drink', g, { radius: 0.06, cy: 0.12, lift: 0.05, name: type === 'beer' ? 'beer' : 'cola' });
-    this.drink = type;
+    const s = shared(), g = new THREE.Group(), sake = type === 'sake';
+    const body = sake ? s.tokkuriGeo : s.teapotGeo, glaze = T.canvasTex(128, 128, (c, w, h) => { c.fillStyle = sake ? '#e8e2d2' : '#6a4a2e'; c.fillRect(0, 0, w, h); c.fillStyle = sake ? '#2a3a6a' : '#3a2414'; c.font = `bold 46px ${T.JP}`; c.textAlign = 'center'; c.fillText(sake ? '酒' : '茶', w / 4, h * 0.62); c.fillText(sake ? '酒' : '茶', (w * 3) / 4, h * 0.62); c.fillRect(0, h * 0.12, w, 4); });
+    M(body, T.surface(mat({ map: glaze }), { grime: 0.2, bomb: 0 }), g);
+    M(new THREE.CylinderGeometry(0.016, 0.016, 0.012, 10), mat({ color: sake ? 0x8a2a1c : 0x2a1a10 }), g, 0, sake ? 0.205 : 0.13, 0);
+    super('drink', g, { radius: 0.06, cy: sake ? 0.1 : 0.07, lift: 0.05, name: sake ? 'sake' : 'tea' });
+    this.drink = type; this.mat = 'ceramic';
   }
-  onImpact(sp) { if (sp > 3.4) { G.fx.splat(this.obj.position, this.drink === 'beer' ? 0xc89030 : 0x2a1408, 0.18); shatter(this, this.drink === 'beer' ? 0x4a2408 : 0x1a0c06, 8); return true; } return false; }
+  onImpact(sp) { if (sp > 3.4) { G.fx.splat(this.obj.position, this.drink === 'sake' ? 0xd8d0b0 : 0x6a4a18, 0.18); shatter(this, this.drink === 'sake' ? 0xe8e2d2 : 0x6a4a2e, 8); return true; } return false; }
   hint() { return `${this.name} → set at the customer who ordered it`; }
 }
 
@@ -304,7 +304,7 @@ class Debris extends Item {
   onGround() { } onLand() { }
 }
 function shatter(it, color, n) {
-  const p = it.obj.position, v = it.vel, m = matOf(it); G.audio.play(m === 'glass' ? 'shatter' : m === 'metal' ? 'clank' : 'crash', p); G.game?.onMess?.(it.kind === 'bowl' ? 'drop a bowl, which smashed' : it.kind === 'drink' ? 'smash a bottle' : 'throw an egg, which burst');
+  const p = it.obj.position, v = it.vel, m = matOf(it); G.audio.play(m === 'glass' ? 'shatter' : m === 'metal' ? 'clank' : 'crash', p); G.game?.onMess?.(it.kind === 'bowl' ? 'drop a bowl, which smashed' : it.kind === 'drink' ? 'smash a flask' : 'throw an egg, which burst');
   for (let i = 0; i < n; i++) { const d = new Debris(color, m); d.obj.position.set(p.x + rand(-0.05, 0.05), p.y + 0.03 + rand(0, 0.05), p.z + rand(-0.05, 0.05)); d.obj.rotation.set(rand(6), rand(6), rand(6)); d.drop(_v2.set(v.x * 0.4 + rand(-1.6, 1.6), Math.abs(v.y) * 0.3 + rand(0.5, 2.2), v.z * 0.4 + rand(-1.6, 1.6)).clone()); }
   it.remove();
 }
@@ -355,7 +355,7 @@ export class Ladle extends Tool {
     for (const v of this.vessels()) if (Math.hypot(c.x - v.x, c.z - v.z) < v.r && c.y < v.liqY + 0.025) { if (this.vol < 0.98 && (v.level ?? 1) > 0.03) { if (v.level !== undefined) v.level = Math.max(0, v.level - (1 - this.vol) * (v.sip || 0.02)); this.setFilled(true, this.mode === 'broth' ? v.type : null); this.heat = v.heat ?? 1; G.audio.play('plop', c, 0.5); } return; } // under the surface: full again
     if (this.vol <= 0 || tilt < 0.8 || dt <= 0) return;
     const q = Math.min(this.vol, clamp((tilt - 0.8) / 0.7, 0.12, 1) * 1.7 * dt), up = _vt.set(0, 1, 0).applyQuaternion(this.obj.quaternion), hl = Math.hypot(up.x, up.z) || 1; // it runs over the low side of the cup, faster the further it is tipped
-    this.vol -= q; _v2.set(up.x / hl * 0.25 + h.vel.x * 0.4, -0.2, up.z / hl * 0.25 + h.vel.z * 0.4);
+    const st = 0.4 * (1 - 0.6 * (G.game?.skill || 0)); this.vol -= q; _v2.set(up.x / hl * 0.25 + h.vel.x * st, -0.2, up.z / hl * 0.25 + h.vel.z * st);   // a practised hand pours steadier
     G.fx.pour(c.addScaledVector(_q2.set(up.x / hl, 0, up.z / hl), this.r * 0.9), _v2, this.liq.material.color.getHex(), q, { kind: this.mode, type: this.type, heat: this.heat }, this, this.r * 0.2);
     this.liq.scale.setScalar(Math.max(0.3, Math.sqrt(this.vol))); if (this.vol <= 0.002) this.setFilled(false);
   }
@@ -381,7 +381,7 @@ export class Basket extends Tool {
   tick(dt) {
     const wet = this.inWater(); if (this.wet && !wet && this.noodles) G.audio.play('drain', this.point(this.cup, _v2), 0.7); this.wet = wet; // lifted out, the water runs off the noodles through the mesh
     if (this.noodles && this.pot.hot && wet) {
-      this.noodles.cook += dt;
+      this.noodles.cook += dt * (1 + 0.35 * (G.game?.skill || 0));   // a practised cook's noodles, pulled thinner, cook quicker
       if (this.noodles.cook > 9 && this.nest.material !== shared().noodleCooked) this.nest.material = shared().noodleCooked;
     }
   }
@@ -452,6 +452,8 @@ export class Vessel extends Prop {
   moved(dx, dy, dz) { for (const t of this.tools) { if (t.dead) continue; t.home.pos.x += dx; t.home.pos.y += dy; t.home.pos.z += dz; if (t.atHome && !t.held) { t.obj.position.x += dx; t.obj.position.y += dy; t.obj.position.z += dz; } } }
   tick(dt) {
     const v = this.v, t = this.tilt(); this.liq.visible = v.level > 0.03; this.liq.position.y = this.h * (this.lo + (this.hi - this.lo) * v.level);
+    const W = this.liq.userData.water; if (W && dt > 0) { const p = this.obj.position, lp = (this.lp ||= p.clone()), lv = (this.lv ||= new V3()), vx = (p.x - lp.x) / dt, vz = (p.z - lp.z) / dt, ax = (vx - lv.x) / dt, az = (vz - lv.z) / dt; lv.set(vx, 0, vz); lp.copy(p); const dtilt = t - (this.lt ?? t); this.lt = t;   // carried, knocked or tipped: the liquid lags and sloshes
+      if (Math.abs(ax) + Math.abs(az) > 0.5 && Math.abs(ax) + Math.abs(az) < 400) W.slosh(-ax * 0.0006, -az * 0.0006); if (Math.abs(dtilt) > 0.004) { const up = _vt.set(0, 1, 0).applyQuaternion(this.obj.quaternion); W.slosh(up.x * dtilt * 0.6, up.z * dtilt * 0.6); } W.update(dt); }
     if (t > 0.95 && v.level > 0.03 && dt > 0) { const up = _vt.set(0, 1, 0).applyQuaternion(this.obj.quaternion), hl = Math.hypot(up.x, up.z) || 1, q = clamp((t - 0.9) / 0.6, 0.2, 1) * dt, lip = _v.set(0, this.h, 0).applyQuaternion(this.obj.quaternion).add(this.obj.position).addScaledVector(_q2.set(up.x / hl, 0, up.z / hl), v.r * 0.9);
       v.level = Math.max(0, v.level - q * (this.drain || 0.35)); for (let i = 0; i < 2; i++) G.fx.pour(lip, _v2.set(up.x / hl * (0.4 + i * 0.2), -0.1, up.z / hl * (0.4 + i * 0.2)), this.liq.material.color.getHex(), q * 2, this.pay, this, v.r * 0.22);
       if (G.t - (this.ms || 0) > 6) { this.ms = G.t; G.game?.onMess?.('tip a pot over, the soup running everywhere'); } }

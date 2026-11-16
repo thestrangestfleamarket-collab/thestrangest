@@ -1,4 +1,4 @@
-// THE SLOW TURN, the director of RAMEN's one day and night: normal at first; then small signs (a cough at the counter, a far bell and shouting, a runner with news of a sickness); then plain ones (fewer people, doors shut, a dog barks and goes quiet) and a regular collapses at the counter and rises wrong; panic, the numbers grow, groups at the barricades, the worst of it, then fewer and slower while help is announced, and at dawn the domain's samurai come with torches. The cart is your fort (its shutters, crates, a barrel, a door, all bodies they push through); villagers shelter with you (fed, they stay calm and help hold; panicked, they are loud); you can die. One page in the alley runs it (share.js), the rest follow
+// THE SLOW TURN, the director of RAMEN's one day and night (on the run's clock, clock.js; the day's story, story.js, says the news): normal at first; then small signs (a cough at the counter, a far bell and shouting, a runner with news of a sickness); then plain ones (fewer people, doors shut, a dog barks and goes quiet) and a regular collapses at the counter and rises wrong; panic, the numbers grow, groups at the barricades, the worst of it, then fewer and slower while help is announced, and at dawn the domain's samurai come with torches. The cart is your fort (its shutters, crates, a barrel, a door, all bodies they push through); villagers shelter with you (fed, they stay calm and help hold; panicked, they are loud); you can die. One page in the alley runs it (share.js), the rest follow
 import * as THREE from 'three';
 import { G, V3, Q, clamp, rand, pick, mat } from './ctx.js';
 import { Prop } from './items.js';
@@ -14,23 +14,13 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 
 // the run's stages (the owner's, 16 Nov 2026) over the whole of one run, 0..1
 export const STAGES = [['normal', 0], ['signs', 0.2], ['obvious', 0.3], ['ramp', 0.4], ['harder', 0.5], ['hardest', 0.6], ['winddown', 0.7], ['end', 0.9]];
-const RUN = 2400; // seconds a run lasts on the stand-in clock (?fast: twenty times quicker)
 const stageAt = (f) => { let s = STAGES[0][0]; for (const [n, a] of STAGES) if (f >= a) s = n; return s; };
 const local = (f, s) => { const i = STAGES.findIndex((x) => x[0] === s), a = STAGES[i][1], b = i + 1 < STAGES.length ? STAGES[i + 1][1] : 1; return clamp((f - a) / (b - a), 0, 1); };
-// a stand-in for the run's clock until the real one (clock.js) is there: the same shape, frac 0..1, the stage, stage events; it gives way the moment G.clock is another's
-function standIn() {
-  const q = new URLSearchParams(location.search), C = { stub: true, t: 0, frac: 0, stage: 'normal', phase: 'day', speed: q.has('fast') ? 20 : 1, fns: {} };
-  C.on = (n, fn) => { (C.fns[n] ||= []).push(fn); return C; };
-  C.set = (f) => { C.t = clamp(f, 0, 1) * RUN; C.tick(0); };
-  C.tick = (dt) => { C.t = Math.min(RUN, C.t + dt * C.speed); C.frac = C.t / RUN; const s = stageAt(C.frac); C.phase = C.frac < 0.25 ? 'day' : C.frac < 0.35 ? 'dusk' : C.frac < 0.9 ? 'night' : 'dawn'; if (s !== C.stage) { C.stage = s; for (const f of C.fns['stage:' + s] || []) f(); } };
-  return C;
-}
 const SIDES = ['front', 'left', 'right', 'back'];
 // where each side's barricade stands: [x0, z0, x1, z1]
 const ZONE = { left: [-1.85, -0.62, -1.17, 1.88], right: [1.17, -0.62, 1.85, 1.88], back: [-1.25, 1.84, 1.25, 2.5] };
 
 export function buildOutbreak(scene) {
-  if (!G.clock) G.clock = standIn();
   const gore = buildGore(scene), I = buildInfected(), W = buildWeapons(), AR = buildArsenal(scene);
   W.kinds = { kunai: Thrown, shuriken: Thrown, boshuriken: Thrown, ya: Thrown, yumi: Bow, teppo: Gun, kusarigama: Kusari };
   const O = { stop: false, pace: 1, shelter: [], guests: new Map(), noises: [], events: [], fired: new Set(), lit: () => !!(G.cart && G.cart.open) && !(G.arsenal && G.arsenal.smoke > 0), log: [], dead: false, won: false, stage: 'normal', f: 0 };
@@ -116,7 +106,7 @@ export function buildOutbreak(scene) {
   // ---------- villagers: who is out on the street, who shelters with you, who is caught
   const B = () => G.block;
   O.street = () => { const out = []; if (!B() || O.f < 0.3) return out; for (const h of B().people) if (!h.taken && !h.hidden && h.p.root.visible) out.push(h.prey ||= { h, x: () => h.p.root.position.x, z: () => h.p.root.position.z, y: () => 1.5, dead: false, grabbed() { h.held = 1; }, bite: (z) => caught(h) }); return out; };
-  const caught = (h) => { if (h.taken) return; h.taken = true; h.prey.dead = true; const p = h.p; p.fall?.(p.root.position.clone().sub(camAt()).setY(0)); p.stay = true; O.note(`${h.def.name.split(' ')[0]} was caught in the street`); setTimeout(() => { if (!O.won) I.turn(p, { rise: 0, from: 'street' }); }, rand(7000, 12000) / (clk().speed || 1)); };
+  const caught = (h) => { if (h.taken) return; h.taken = true; h.turned = true; h.prey.dead = true; const p = h.p; p.fall?.(p.root.position.clone().sub(camAt()).setY(0)); p.stay = true; O.note(`${h.def.name.split(' ')[0]} was caught in the street`); setTimeout(() => { if (!O.won) I.turn(p, { rise: 0, from: 'street' }); }, rand(7000, 12000) / (clk().speed || 1)); };
   // one comes running to the cart: in behind the counter, and stays
   const shelter = (h) => { if (!h || h.taken || O.shelter.length >= 3) return null; h.taken = true; h.hidden = false; const p = h.p, i = O.shelter.length, x = [-0.38, 0.38, 0][i];
     const s = { h, p, calm: 0.5, eat: 0, dead: false, bitten: 0, cart: true, x: () => p.root.position.x, z: () => p.root.position.z, y: () => 1.1, grabbed() { s.calm = 0; }, bite: (z) => { if (s.bitten) return; s.bitten = G.t; O.note(`${h.def.name.split(' ')[0]} was bitten`); } };
@@ -126,7 +116,7 @@ export function buildOutbreak(scene) {
     return s; };
   const helpers = () => Math.min(2, O.shelter.filter((s) => !s.dead && !s.bitten && s.calm > 0.5).length);
   const updShelter = (dt) => { for (const s of O.shelter) { if (s.dead) continue; const p = s.p;
-      if (s.bitten && G.t - s.bitten > 20 / (clk().speed > 1 ? 4 : 1)) { s.dead = true; p.pose = 'stand'; const z = I.turn(p, { rise: 1.5, from: 'shelter' }); if (z) { z.inside = true; O.note(`${s.h.def.name.split(' ')[0]} turned, inside the cart`); } continue; }
+      if (s.bitten && G.t - s.bitten > 20 / (clk().speed > 1 ? 4 : 1)) { s.dead = true; s.h.turned = true; p.pose = 'stand'; const z = I.turn(p, { rise: 1.5, from: 'shelter' }); if (z) { z.inside = true; O.note(`${s.h.def.name.split(' ')[0]} turned, inside the cart`); } continue; }
       if (s.eat > 0) { s.eat -= dt; if (s.eat <= 0) { p.pose = 'sit'; s.bowl?.makeDirty?.(); } }
       s.calm = Math.max(0, s.calm - dt / 140 * (I.alive().length ? 1.5 : 0.5)); p.look = camAt().clone();
       if (s.calm < 0.3 && (s.cry = (s.cry || 6) - dt) <= 0) { s.cry = rand(6, 11); O.noise(p.root.position, 0.7); O.sound('shout', p.root.position.clone().setY(1.2)); }
@@ -143,11 +133,11 @@ export function buildOutbreak(scene) {
   const DO = {
     cough: () => { O.cough = true; const c = G.game?.customers.find((x) => x.state === 'waiting' || x.state === 'eating' || x.state === 'sitting'); if (c) mark(c.p); },
     alarm: () => { O.sound('alarm', at(-60, 8, -40)); O.sound('shout', at(-45, 2, -30)); O.note('a fire bell rang far off, and shouting'); },
-    runner: () => { runner(['The next village, they say a sickness came in the night. People are not themselves.', 'Have you heard? There is a sickness over the hill. Bar your doors tonight!'], 'You are running through the village at dusk with bad news: the next village has a strange sickness, people there have gone wrong. Call it out to the ramen cook as you hurry past.'); O.note('a runner brought news of a sickness in the next village'); },
+    runner: () => { if (G.story) { O.sound('shout', at(-14, 1.6, -2.6)); O.note('news of a sickness on the coast road'); return; } runner(['The next village, they say a sickness came in the night. People are not themselves.', 'Have you heard? There is a sickness over the hill. Bar your doors tonight!'], 'You are running through the village at dusk with bad news: the next village has a strange sickness, people there have gone wrong. Call it out to the ramen cook as you hurry past.'); O.note('a runner brought news of a sickness in the next village'); },
     fewer: () => { for (const h of free()) if (Math.random() < 0.5) { h.hidden = true; h.p.root.visible = false; h.step = 'inside'; h.t = 9999; } },
     doors: () => { for (let i = 0; i < 4; i++) setTimeout(() => O.sound('door', at(rand(-14, 14), 1, pick([-5.4, 3.2]))), i * rand(900, 1700)); O.note('doors shut up and down the street'); },
     dog: () => { const p = at(-12, 0.4, -4.5); O.sound('bark', p); setTimeout(() => O.sound('bark', p), 3000); setTimeout(() => O.sound('yelp', p), 6500); O.note('a dog barked, and went quiet'); },
-    stack: () => { O.barricade(); O.stop = true; const l = new Lantern(); l.obj.position.set(0.45, 1.645, 1.72); if (PH.ready) PH.rest(l); },
+    stack: () => { O.barricade(); O.stop = true; if (G.game) G.game.hold = true; const l = new Lantern(); l.obj.position.set(0.45, 1.645, 1.72); if (PH.ready) PH.rest(l); },
     bow: () => { const b = W.make('yumi', at(0.05, 0.93, 1.58), new Q().setFromEuler(new THREE.Euler(0, 0, Math.PI / 2))); O.note('a hunter running by left his bow and quiver at the cart'); },
     straw: () => { AR.straw(); AR.straw(); O.note('straw soaked in the water barrel, by the brazier'); },
     shinobi: () => { for (let i = 0; i < 4; i++) W.make('shuriken', at(0.8 + (i % 2) * 0.16, 0.905, 0.05 + (i >> 1) * 0.16)); for (let i = 0; i < 3; i++) W.make('boshuriken', at(1.0, 0.905, 0.42 + i * 0.05), new Q().setFromEuler(new THREE.Euler(0, Math.PI / 2, 0))); W.make('kunai', at(0.86, 0.91, 0.62), new Q().setFromEuler(new THREE.Euler(0, Math.PI / 2, 0))); O.note('a stranger in black dropped a pouch of shuriken and a kunai on the counter and ran on'); },
@@ -155,17 +145,17 @@ export function buildOutbreak(scene) {
     teppo: () => { W.make('teppo', at(0.35, 0.96, 1.64), new Q().setFromEuler(new THREE.Euler(0, Math.PI / 2, 0))); O.note('a fallen foot soldier\'s matchlock, loaded, its match still lit'); },
     naginata: () => { W.make('naginata', at(0, 0.95, 1.72), new Q().setFromEuler(new THREE.Euler(0, Math.PI / 2, Math.PI / 2))); O.note('a naginata laid over the back of the cart'); },
     collapse: () => { const cs = (G.game?.customers || []).filter((c) => c.state === 'waiting' || c.state === 'eating' || c.state === 'sitting'); let p, from = null; const c = cs.find((x) => x.p.cough) || cs[0];
-      if (c) { p = G.game.take(c); from = c; } else { const h = someone(); if (h) { h.taken = true; p = h.p; } else p = makePerson((Math.random() * 1e6) | 0); p.root.position.set(rand(-0.6, 0.6), 0, -1.35); G.peopleRoot.add(p.root); }
-      p.pose = 'stand'; p.root.position.y = 0; const z = I.turn(p, { rise: 6 / Math.sqrt(clk().speed || 1), from: 'counter', dir: new V3(rand(-0.4, 0.4), 0, -1) }); O.first = z; O.sound('crash', p.root.position.clone().setY(0.9)); O.stop = true;
+      if (c) { p = G.game.take(c); from = c; if (c.nb) { c.nb.taken = true; c.nb.turned = true; } } else { const h = someone(); if (h) { h.taken = true; h.turned = true; p = h.p; } else p = makePerson((Math.random() * 1e6) | 0); p.root.position.set(rand(-0.6, 0.6), 0, -1.35); G.peopleRoot.add(p.root); }
+      p.pose = 'stand'; p.root.position.y = 0; const z = I.turn(p, { rise: 6 / Math.sqrt(clk().speed || 1), from: 'counter', dir: new V3(rand(-0.4, 0.4), 0, -1) }); O.first = z; O.sound('crash', p.root.position.clone().setY(0.9)); O.stop = true; if (G.game) G.game.hold = true;
       for (const o of G.game?.customers || []) if (o !== from) G.game.flee?.(o); O.note('a regular collapsed at the counter'); },
     panic: () => { for (const h of free()) { if (Math.random() < 0.45) { h.hidden = true; h.p.root.visible = false; h.t = 9999; h.step = 'inside'; } else B().scare(h); } O.sound('shout', at(4, 1.6, -3)); O.note('panic in the street'); },
     sickle: () => { toss('kama', at(-3, 1.4, -2.4), at(0.2, 1.05, -0.45)); O.note('a farmer running past threw his sickle onto the counter'); },
     axe: () => { W.make('axe', at(1.42, 0.62, 1.25), new Q().setFromEuler(new THREE.Euler(0, -Math.PI / 2, 0.2))); O.sound('door', at(1.4, 0.6, 1.2)); O.note('a woodcutter\'s axe left on the woodpile'); },
     spears: () => { toss('takeyari', at(-4, 1.6, 3.5), at(0, 1.0, 1.6)); setTimeout(() => toss('bo', at(4, 1.6, 3.5), at(0.3, 1.0, 1.62)), 900); O.note('a bamboo spear and a staff were thrown over to the cart'); },
     shelter: () => { const h = free().sort((a, b) => a.p.root.position.length() - b.p.root.position.length())[0]; if (h) shelter(h); },
-    ronin: () => { const p = makePerson((Math.random() * 1e6) | 0); p.root.position.set(0.1, 0, -1.5); G.peopleRoot.add(p.root); p.stay = true; p.fall?.(new V3(0, 0, -1)); G.gore.pool(p.root.position, 0.5); O.ronin = p; W.make('katana', at(-0.2, 0.935, -0.42), new Q().setFromEuler(new THREE.Euler(0, Math.PI / 2, Math.PI / 2))); W.make('wakizashi', at(0.35, 0.935, -0.36), new Q().setFromEuler(new THREE.Euler(0, Math.PI / 2, Math.PI / 2))); W.make('tanto', at(0.62, 0.935, -0.42), new Q().setFromEuler(new THREE.Euler(0, Math.PI / 2, Math.PI / 2)));
+    ronin: () => { const hr = B()?.by?.hayato, p = hr && !hr.taken ? (hr.taken = hr.turned = true, hr.hidden = false, hr.p) : makePerson((Math.random() * 1e6) | 0); p.root.visible = true; if (!p.root.parent) G.peopleRoot.add(p.root); p.root.position.set(0.1, 0, -1.5); p.stay = true; p.fall?.(new V3(0, 0, -1)); G.gore.pool(p.root.position, 0.5); O.ronin = p; W.make('katana', at(-0.2, 0.935, -0.42), new Q().setFromEuler(new THREE.Euler(0, Math.PI / 2, Math.PI / 2))); W.make('wakizashi', at(0.35, 0.935, -0.36), new Q().setFromEuler(new THREE.Euler(0, Math.PI / 2, Math.PI / 2))); W.make('tanto', at(0.62, 0.935, -0.42), new Q().setFromEuler(new THREE.Euler(0, Math.PI / 2, Math.PI / 2)));
       cry(p, 'You are a masterless samurai, bitten and dying, who fought your way to the ramen cart. Tell the cook to take your sword.', ['Take it... my sword. Use it well.']); O.note('a ronin fell at the counter; his katana lay on it'); setTimeout(() => { if (!O.won && p.root.parent) { p.stay = false; I.turn(p, { rise: 0, from: 'ronin' }); } }, 40000 / (clk().speed || 1)); },
-    messenger: () => { runner(['The lord\'s men are coming! Hold on till first light!', 'Samurai from the castle, at dawn! Hold out!'], 'You are a messenger from the domain\'s castle running through the village in the night. Shout that the lord\'s samurai are coming at first light and to hold out.', 1); O.sound('temple', at(30, 10, -30)); O.note('a messenger and the temple bell: help comes at dawn'); },
+    messenger: () => { if (G.story) { O.sound('temple', at(30, 10, -30)); O.note('the temple bell: help comes at dawn'); return; } runner(['The lord\'s men are coming! Hold on till first light!', 'Samurai from the castle, at dawn! Hold out!'], 'You are a messenger from the domain\'s castle running through the village in the night. Shout that the lord\'s samurai are coming at first light and to hold out.', 1); O.sound('temple', at(30, 10, -30)); O.note('a messenger and the temple bell: help comes at dawn'); },
     yari: () => { W.make('yari', at(0, 0.93, 1.62), new Q().setFromEuler(new THREE.Euler(0, Math.PI / 2, Math.PI / 2))); O.note('a yari leaned against the back of the cart'); },
     gather: () => { for (const s of O.shelter) s.calm = Math.max(s.calm, 0.7); const h = free()[0]; if (h) shelter(h); },
     rescue: () => { column(); O.note('the domain\'s samurai came with torches'); },
@@ -196,7 +186,7 @@ export function buildOutbreak(scene) {
     fetch('/sushi/mind', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ stage: O.stage, them: al.map((z) => ({ id: z.id, side: z.side || 'street', d: +Math.hypot(z.p.root.position.x, z.p.root.position.z).toFixed(1), legs: z.legs, arms: z.arm.L + z.arm.R })), bars: Object.fromEntries(SIDES.map((k) => [k, Math.round(sides[k].bar)])), faces, hurt: 1 - me.hp / 100, lit: O.lit(), shelter: O.shelter.length }) })
       .then((r) => (r.ok ? r.json() : (mindOff = true, null))).then((j) => { if (j && j.focus) I.mind = { focus: j.focus, t: G.t, hold: j.hold || [] }; }).catch(() => { mindOff = true; }); };
   O.update = (dt) => {
-    if (dt <= 0) return; if (lead()) { guestPrey(); if (O.f >= 0.4 && O.f < 0.9 && (mindT -= dt) <= 0) { mindT = 8; askMind(); } } const C = clk(); if (C.stub && G.mode !== 'menu' && !O.dead && !O.won) C.tick(dt);
+    if (dt <= 0) return; if (lead()) { guestPrey(); if (O.f >= 0.4 && O.f < 0.9 && (mindT -= dt) <= 0) { mindT = 8; askMind(); } } const C = clk();
     O.f = C.frac || 0; O.stage = C.stage || stageAt(O.f); O.pace = O.stage === 'winddown' ? 0.7 : O.stage === 'end' ? 0.5 : 1;
     if (lead() && !O.quiet) { for (const [s, k, what] of BEATS) { const id = s + ':' + what + ':' + k; if (O.fired.has(id)) continue; const i = STAGES.findIndex((x) => x[0] === s); if (O.f > STAGES[i][1] + k * ((STAGES[i + 1]?.[1] ?? 1) - STAGES[i][1]) - 1e-9) { O.fired.add(id); DO[what]?.(); } } if (O.f >= 0.4 && O.f < 0.9) grow(dt); }
     if (O.cough && G.game) for (const c of G.game.customers) if (!c.p.cough && c.state === 'sitting' && O.stage === 'signs' && !O.coughed) { O.coughed = true; mark(c.p); }
@@ -223,7 +213,7 @@ export function buildOutbreak(scene) {
   O.guestHits = (from, list) => { for (const e of Array.isArray(list) ? list : []) { const z = I.list.find((y) => y.id === (e[0] | 0)); if (!z || z.dead) continue; const seg = String(e[2] || 'torso'), at = z.p.root.position.clone().setY(seg === 'head' ? 1.6 : 1.2), dir = z.p.root.position.clone().sub(camAt()).setY(0).normalize(); I.cut(z, { seg, at, dir, sp: 4, J: 6, cut: 0, crush: 1, pierce: 0, dmg: clamp(+e[1] || 0, 0, 40), sever: null }); } };
   // a guest's own staff: a click strikes the nearest of them in front, within reach; a dead guest only watches
   if (G.guest) addEventListener('mousedown', (e) => { if (e.button !== 0 || me.dead || G.mode !== 'desktop') return; const P = G.guestRole?.at || camAt(), yaw = G.guestRole?.yaw ?? 0; let best = null, bd = 1.9; for (const z of I.list) { if (z.dead) continue; const d = z.p.root.position.distanceTo(P), dx = (z.p.root.position.x - P.x) / (d || 1), dz = (z.p.root.position.z - P.z) / (d || 1); if (d < bd && dx * -Math.sin(yaw) + dz * -Math.cos(yaw) > 0.3) { bd = d; best = z; } } if (best) { O.hits.push([best.id, 22, Math.random() < 0.3 ? 'head' : 'torso']); G.audio?.play('set', best.p.root.position); } });
-  O.follow = (o) => { if (!o || lead()) return; if (G.clock.stub) G.clock.set(+o.s || 0);
+  O.follow = (o) => { if (!o || lead()) return; 
     const seen = new Set(); for (const e of Array.isArray(o.z) ? o.z : []) { const id = e[0]; seen.add(id); let d = drawn.get(id); if (!d) { const p = makePerson(id, String(e[1] || '') || undefined); d = { p, z: I.turn(p, { at: at(+e[2], 0, +e[3]) }) }; d.z.remote = true; drawn.set(id, d); }
       const P = d.p.root.position; P.lerp(at(+e[2], 0, +e[3]), 0.35); d.p.root.rotation.y = +e[4] || 0; d.z.st = ST[e[5] | 0]; if (e[5] === 5 && !d.z.dead) I.kill(d.z, 'cut down'); for (const n of String(e[6] || '').split(',')) if (n && !d.p.lost?.has(n)) d.p.sever?.(n); }
     for (const [id, d] of drawn) if (!seen.has(id)) { d.p.root.removeFromParent(); I.list.splice(I.list.indexOf(d.z), 1); drawn.delete(id); }

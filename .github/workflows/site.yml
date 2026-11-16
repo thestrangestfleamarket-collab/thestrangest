@@ -288,10 +288,10 @@ jobs:
         timeout-minutes: 25
         if: contains(steps.f.outputs.run, ' sniper')
         run: node tests/sniper.cjs dist/sniper.html
-      - name: Yatai '86 (the ramen cart at /sushi; a whole bowl built by hand, served and paid, then the hands in an emulated Quest 3)
+      - name: RAMEN (the ramen stall at /ramen; a whole bowl built by hand, served and paid, then the hands in an emulated Quest 3)
         timeout-minutes: 20
         if: contains(steps.f.outputs.run, ' sushi')
-        run: node tests/sushi.cjs dist/sushi.html
+        run: node tests/sushi.cjs dist/ramen.html
       - name: The Last Chance (the saloon at /saloon; an order poured, served and paid with change, a secret told, pool and darts played out)
         timeout-minutes: 20
         if: contains(steps.f.outputs.run, ' saloon')

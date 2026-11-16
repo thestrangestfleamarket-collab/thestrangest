@@ -38,7 +38,7 @@ export function buildReact(block) {
     const name = nameOf(b), you = words(kind, part, it, thrown, down), they = them(you, name);
     R.log.push({ t: +G.t.toFixed(2), who: name, kind, part, bone: bone || part, level, J: +J.toFixed(2), down, seated: !!(b.c && (b.c.state === 'waiting' || b.c.state === 'eating' || b.c.state === 'sitting')) }); if (R.log.length > 20) R.log.shift();
     if (level) G.talk?.seen?.(they);
-    const reg = b.h, cop = reg && reg.def.id === 'denise';
+    const reg = b.h, cop = reg && reg.def.id === G.block.cop;
     if (reg && level) block.mad[reg.def.id] = { you, them: they };
     let leave = false;
     if (b.c) { const c = b.c; c.hurt = (c.hurt || 0) + (level ? 1 : 0); c.attn = 6; leave = level >= 2 || c.hurt >= 2; if (!leave && level) { c.patience *= 0.6; if (c.result) c.result.tip = 0; } G.talk?.event(c, 'hurt', { you, level, leave, cop }); if (leave) G.game?.flee?.(c); }
@@ -47,7 +47,7 @@ export function buildReact(block) {
     if (level) for (const o of bodies()) { if (o.p === p || o.p.root.position.distanceTo(p.root.position) > 7) continue;
       if (o.h && !block.mad[o.h.def.id] && !block.told[o.h.def.id]) block.told[o.h.def.id] = { from: 'you saw it yourself:', them: they };
       if (o.c) { o.c.attn = 5; if (level >= 3 && !o.c.fled) { o.c.fled = true; G.talk?.event(o.c, 'saw', they); G.game?.flee?.(o.c); } else if (level >= 2 && Math.random() < 0.6) G.talk?.event(o.c, 'saw', they); }
-      else if (o.h && level >= 2 && o.h.def.id !== 'denise' && Math.random() < 0.6) { o.p.gesture?.('no'); block.scare(o.h); } }
+      else if (o.h && level >= 2 && o.h.def.id !== G.block.cop && Math.random() < 0.6) { o.p.gesture?.('no'); block.scare(o.h); } }
     if (level >= 2) block.police(p.root.position, cop ? null : they);
   };
   R.blow = blow;

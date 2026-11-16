@@ -1,25 +1,27 @@
-// the customers, their orders and tickets, how a bowl is judged and paid for in cash, the night's clock, its nights and their stock
+// the customers, their orders and tickets, how a bowl is judged and paid for in coin, the day's service on the run's clock (clock.js) and the day's stock
 import * as THREE from 'three';
 import { G, V3, rand, pick, clamp, lerp } from './ctx.js';
 import * as T from './tex.js';
 import { makePerson } from './avatars.js';
 import { SEATS, RECIPES, DRINKS } from './cart.js';
 import { TOPPINGS, TARE, BROTH, doneness } from './items.js';
-import { buildTill, usd } from './till.js';
+import { buildTill, mon } from './till.js';
 
-const START = 21 * 60, END = 25 * 60, MIN_PER_SEC = 0.5;
-// The menu grows one idea per night so nothing has to be explained up front.
-const NIGHTS = [
+// The menu grows one idea at a time through the day so nothing has to be explained up front.
+const STAGES = [
   { menu: ['shoyu'], mods: false, drinks: false, max: 1, pat: 1.7, guests: 4, note: 'SHOYU ONLY - TAKE YOUR TIME', next: 'shio + miso ramen, and drinks' },
   { menu: ['shoyu', 'shio', 'miso'], mods: false, drinks: true, max: 2, pat: 1.35, guests: 7, note: '+ SHIO, MISO, DRINKS', next: 'tonkotsu broth and special requests' },
   { menu: ['shoyu', 'shio', 'miso', 'tonkotsu'], mods: true, drinks: true, max: 3, pat: 1.15, guests: 10, note: '+ TONKOTSU, SPECIAL REQUESTS', next: 'a busier counter' },
   { menu: ['shoyu', 'shio', 'miso', 'tonkotsu'], mods: true, drinks: true, max: 3, pat: 1.0, guests: 12, note: 'FULL MENU, FULL HOUSE', next: 'more of the same, faster' },
 ];
-const D_BEER = 0.24, D_COLA = 0.12, X_CHASHU = 0.16, X_EGG = 0.12 * 0.84; // how often a customer asks for each
+STAGES.push({ menu: ['nokori', 'shoyu'], mods: false, drinks: true, night: true, max: 2, pat: 1.6, guests: 0, note: 'FEED THE FRIGHTENED: NOKORI AND TEA', next: '' });   // the night: who comes is frightened and hungry, and the stall feeds them what is left
+const AT = [0.03, 0.09, 0.16];   // how far into the run each next idea comes
+const DAY = { menu: STAGES[3].menu, mods: true, drinks: true, guests: 24 };   // what the whole day's service is stocked for
+const D_SAKE = 0.24, D_TEA = 0.12, X_CHASHU = 0.16, X_EGG = 0.12 * 0.84; // how often a customer asks for each
 // a night's stock: what its expected customers need, and a quarter more so nothing is wasted (the pots and crocks hold the night's bowls, the kettle and jars the quarter)
 export function stockPlan(cfg) {
   const E = cfg.guests, M = cfg.menu, avg = (f) => M.reduce((n, k) => n + f(RECIPES[k]), 0) / M.length, up = (x) => Math.ceil(x * 1.25 - 1e-9);
-  const P = { noodles: up(E), beer: cfg.drinks ? up(E * D_BEER) : 0, cola: cfg.drinks ? up(E * D_COLA) : 0, tops: {}, broth: {}, tare: {}, tareSpare: {} };
+  const P = { noodles: up(E), sake: cfg.drinks ? up(E * D_SAKE) : 0, tea: cfg.drinks ? up(E * D_TEA) : 0, tops: {}, broth: {}, tare: {}, tareSpare: {} };
   for (const t of Object.keys(TOPPINGS)) P.tops[t] = up(E * (avg((r) => r.tops[t] || 0) + (cfg.mods ? (t === 'chashu' ? X_CHASHU : t === 'egg' ? X_EGG : 0) : 0)));
   for (const b of Object.keys(BROTH)) P.broth[b] = Math.ceil(E * avg((r) => (r.broth === b ? 1 : 0)) - 1e-9);
   P.brothSpare = Math.ceil(E * 0.25);
@@ -30,14 +32,21 @@ export function stockPlan(cfg) {
 export function buildGame(scene) {
   const C = G.cart;
   const game = {
-    state: 'prep', night: 1, clock: START, money: 0, tips: 0, served: 0, lost: 0, scores: [], customers: [], seats: SEATS.map(() => ({ c: null, dirty: null })),
+    state: 'prep', skill: 0, money: 0, tips: 0, served: 0, lost: 0, scores: [], customers: [], seats: SEATS.map(() => ({ c: null, dirty: null })),
     spawnT: 4, ticketNo: 1, ledT: 0, summary: null, paused: false,
   };
-  game.cfg = () => NIGHTS[Math.min(game.night, NIGHTS.length) - 1];
+  const K = G.clock;
+  game.stage = () => (K.phase === 'night' || K.phase === 'dawn' ? 4 : K.phase !== 'day' ? 3 : AT.filter((a) => K.frac >= a).length);
+  game.cfg = () => STAGES[game.stage()];
+  game.prog = () => (K.phase === 'day' ? K.pfrac : 1);
   G.game = game;
   const till = buildTill(scene, C);
-  game.restock = () => { C.restock(stockPlan(game.cfg())); till.reset(); };
+  game.restock = () => { C.restock(stockPlan(DAY)); till.reset(); };
   game.restock();
+  // the morning again (a run begun over): the takings, the stock and the counter as they were before the first bowl
+  game.newDay = () => { for (const c of [...game.customers]) { if (c.ticket) c.ticket.removeFromParent(); if (c.nb) G.block?.give(c.nb); else if (!c.guest) c.p.root.removeFromParent(); } game.customers.length = 0; game.seats.forEach((s) => { s.c = null; s.dirty = null; });
+    game.money = game.tips = game.served = game.lost = 0; game.skill = 0; game.scores = []; game.ticketNo = 1; if (game.summary) { game.summary.removeFromParent(); game.summary = null; } game.state = 'prep'; C.setOpen(false); game.restock(); };
+  K.on('reset', game.newDay);
 
   // seat drop targets
   SEATS.forEach((x, i) => {
@@ -59,10 +68,10 @@ export function buildGame(scene) {
     if (cfg.mods && !w) {
       if (Math.random() < 0.25) { firm = true; mods.push('NOODLES: FIRM (katame)'); }
       if (Math.random() < 0.2) { no = pick(Object.keys(tops).filter((k) => k !== 'chashu')); delete tops[no]; mods.push(`NO ${TOPPINGS[no].label}`); }
-      if (Math.random() < 0.16) { tops.chashu = 3; price += 100; mods.push('+ EXTRA CHASHU (x3)'); }
-      else if (Math.random() < 0.12) { tops.egg = (tops.egg || 0) + 1; price += 75; mods.push(`+ EXTRA EGG (x${tops.egg})`); }
+      if (Math.random() < 0.16) { tops.chashu = 3; price += 8; mods.push('+ EXTRA CHASHU (x3)'); }
+      else if (Math.random() < 0.12) { tops.egg = (tops.egg || 0) + 1; price += 4; mods.push(`+ EXTRA EGG (x${tops.egg})`); }
     }
-    const d = Math.random(); const drink = !cfg.drinks ? null : w ? w.drink || null : d < D_BEER ? 'beer' : d < D_BEER + D_COLA ? 'cola' : null;
+    const d = Math.random(); const drink = !cfg.drinks ? null : w ? w.drink || null : cfg.night ? (d < 0.5 ? 'tea' : null) : d < D_SAKE ? 'sake' : d < D_SAKE + D_TEA ? 'tea' : null;
     return { key, recipe: r, tops, mods, firm, no, drink, price, no_: 0, num: game.ticketNo++ };
   }
 
@@ -79,7 +88,7 @@ export function buildGame(scene) {
     L.push({ t: o.firm ? 'NOODLES FIRM (yellow)' : 'NOODLES (green zone)', ok: dn === want, bad: !!dn && dn !== want, mod: o.firm });
     for (const [t, n] of Object.entries(o.tops)) L.push({ t: `${TOPPINGS[t].label}${n > 1 ? ' x' + n : ''}`, ok: (have[t] || 0) >= n, part: have[t] && have[t] < n ? `${have[t]}/${n}` : '', bad: (have[t] || 0) > n, mod: n !== (r.tops[t] || 0), ind: true });
     if (o.no) L.push({ t: `NO ${TOPPINGS[o.no].label}`, ok: false, bad: !!have[o.no], mod: true, ind: true, ban: true });
-    if (o.drink) L.push({ t: o.drink.toUpperCase() + ' (cooler)', ok: c.gotDrink, mod: false, drink: true });
+    if (o.drink) L.push({ t: o.drink.toUpperCase() + ' (water tub)', ok: c.gotDrink, mod: false, drink: true });
     return L;
   }
 
@@ -91,7 +100,7 @@ export function buildGame(scene) {
       g.fillStyle = '#ece4cc'; g.fillRect(0, 0, w, h);
       { const R = T.rng(o.num * 7 + 3); for (let i = 0; i < 5; i++) { const x = R() * w, y = R() * h, r = 14 + R() * 46, gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(150,110,50,0.28)'); gr.addColorStop(1, 'rgba(150,110,50,0)'); g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2); } g.strokeStyle = 'rgba(90,80,60,0.25)'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(0, h * (0.3 + R() * 0.4)); g.lineTo(w, h * (0.3 + R() * 0.4)); g.stroke(); }
       g.fillStyle = '#1b1b1b'; g.textAlign = 'left'; g.font = `bold 30px ${T.MONO}`; g.fillText(`#${String(o.num).padStart(2, '0')}  SEAT ${c.seat + 1}`, 14, 38);
-      g.textAlign = 'right'; g.fillText(usd(o.price + (o.drink ? DRINKS[o.drink] : 0)), w - 14, 38); g.textAlign = 'left';
+      g.textAlign = 'right'; g.fillText(mon(o.price + (o.drink ? DRINKS[o.drink] : 0)), w - 14, 38); g.textAlign = 'left';
       g.fillRect(10, 50, w - 20, 3);
       g.fillStyle = '#a01c1c'; g.font = `bold 60px ${T.JP}`; g.fillText(o.recipe.name, 14, 112, w - 150);
       g.fillStyle = '#1b1b1b'; g.font = `bold 28px ${T.JP}`; g.textAlign = 'right'; g.fillText(o.recipe.jp, w - 14, 108); g.textAlign = 'left';
@@ -115,7 +124,7 @@ export function buildGame(scene) {
     const nb = guest ? null : Math.random() < 0.75 ? G.block?.take() : null, p = guest ? guest.p : nb ? nb.p : makePerson((Math.random() * 1e6) | 0), x = SEATS[seat], side = nb ? (p.root.position.x < x ? -1 : 1) : Math.random() < 0.5 ? -1 : 1; // most who sit down are the street's own people
     if (!nb && !guest) p.root.position.set(side * 14, 0, -2.35); G.peopleRoot.add(p.root);
     p.root.traverse((o) => { o.userData.nopick = true; if (o.isMesh) o.castShadow = true; });
-    const prog = clamp((game.clock - START) / (END - START), 0, 1);
+    const prog = game.prog();
     const c = { p, seat, side, state: 'walk', path: [new V3(x, 0, -2.3), new V3(x, 0, -1.55)], t: 0, order: null, maxPatience: (lerp(170, 125, prog) + rand(0, 35)) * game.cfg().pat, patience: 0, gotDrink: false, bowl: null, bottle: null, result: null, nb, guest: guest ? guest.id : null, name: guest ? guest.name : null };
     c.patience = c.maxPatience;
     game.seats[seat].c = c; game.customers.push(c);
@@ -139,15 +148,15 @@ export function buildGame(scene) {
     for (const [t, n] of Object.entries(have)) { const ex = n - (o.tops[t] || 0); if (ex > 0) { const banned = !(t in o.tops) && o.mods.some((m) => m === `NO ${TOPPINGS[t].label}`); s -= (banned ? 14 : 4) * ex; issues.push(banned ? `Said NO ${TOPPINGS[t].label.toLowerCase()}!` : `Extra ${TOPPINGS[t].label.toLowerCase()}`); } }
     s = clamp(s, 0, 100);
     const pf = c.patience / c.maxPatience, pays = s >= 35;
-    const tip = pays ? Math.round((o.price * 0.2 * clamp((s - 55) / 45, 0, 1) * clamp(pf * 1.6, 0.2, 1)) / 25) * 25 : 0;
+    const tip = pays ? Math.round(o.price * 0.25 * clamp((s - 55) / 45, 0, 1) * clamp(pf * 1.6, 0.2, 1)) : 0;
     return { score: s, issues, pay: pays ? o.price : 0, tip, verdict: s >= 95 ? 'うまい! PERFECT' : s >= 80 ? 'Delicious' : s >= 60 ? 'Pretty good' : s >= 35 ? 'Hmm…' : 'Refused to pay' };
   }
 
   function serve(c, bowl) {
-    bowl.served = true; c.bowl = bowl; c.result = evaluate(c, bowl); c.state = 'eating'; c.t = 0; c.p.pose = 'eat';
+    bowl.served = true; c.bowl = bowl; c.result = evaluate(c, bowl); game.skill = Math.min(1, game.skill + (c.result.score >= 80 ? 0.07 : c.result.score >= 60 ? 0.03 : 0)); c.state = 'eating'; c.t = 0; c.p.pose = 'eat';
     c.ticket.removeFromParent(); G.audio.play('place');
     const r = c.result;
-    G.fx.popup(new V3(SEATS[c.seat] + 0.2, 1.2, -0.6), [`${r.verdict}  ${'★'.repeat(Math.round(r.score / 20))}`, r.pay ? `${usd(r.pay)}${r.tip ? '  + tip ' + usd(r.tip) : ''}` : 'no payment', ...(r.issues.length ? r.issues : ['Exactly as ordered'])], r.score >= 60);
+    G.fx.popup(new V3(SEATS[c.seat] + 0.2, 1.2, -0.6), [`${r.verdict}  ${'★'.repeat(Math.round(r.score / 20))}`, r.pay ? `${mon(r.pay)}${r.tip ? '  + tip ' + mon(r.tip) : ''}` : 'no payment', ...(r.issues.length ? r.issues : ['Exactly as ordered'])], r.score >= 60);
     if (r.score < 35) G.audio.play('bad');
     G.talk?.event(c, 'taste', r); if (c.guest) G.live?.tell({ r: { to: c.guest, score: r.score, pay: r.pay, verdict: r.verdict, issues: r.issues.slice(0, 3) } });
   }
@@ -190,11 +199,10 @@ export function buildGame(scene) {
   game.guestLeaves = (id) => { const c = game.customers.find((x) => x.guest === id && x.state !== 'leaving'); if (c) leave(c, false); };
   game.toggleOpen = () => {
     if (game.state === 'prep' || game.state === 'closed') {
-      if (game.state === 'closed') { game.night++; game.clock = START; game.money = game.tips = game.served = game.lost = 0; game.scores = []; game.restock(); } // the takings banked, a fresh float and the next night's stock
       if (game.summary) { game.summary.removeFromParent(); game.summary = null; }
-      game.state = 'open'; game.spawnT = 3; C.setOpen(true);
+      game.state = 'open'; game.spawnT = 3; C.setOpen(true); K.start();
     } else if (game.state === 'open') { game.state = 'closing'; C.setOpen(false); }
-    else if (game.state === 'closing' && game.clock < END) { game.state = 'open'; C.setOpen(true); }
+    else if (game.state === 'closing' && game.serving()) { game.state = 'open'; C.setOpen(true); }
   };
   let lastReact = -9;
   const seated = () => game.customers.filter((c) => c.state === 'waiting' || c.state === 'eating' || c.state === 'sitting');
@@ -204,19 +212,20 @@ export function buildGame(scene) {
   game.flee = (c) => { if (c.state === 'leaving') return; game.lost++; game.scores.push(0); if (c.state === 'walk') { c.state = 'leaving'; game.seats[c.seat].c = null; c.path = c.nb || c.guest ? [new V3(c.p.root.position.x, 0, -2.5)] : [new V3(c.side * -15, 0, -2.4)]; return; } leave(c, false); };
   game.onMess = (what) => { G.talk?.seen(what); G.talk?.attend(4); const c = seated().find((x) => x.order); if (c && G.t - lastReact > 9) { lastReact = G.t; G.talk?.event(c, 'react', what); } };
   game.rating = () => (game.scores.length ? game.scores.reduce((a, b) => a + b, 0) / game.scores.length / 20 : 0);
-  // one of them is no longer a customer (outbreak.js: collapsed at the counter, fled the night): off the seat, their ticket gone, their body left where it is
+  game.serving = () => !game.hold && K.phase !== 'dawn';   // the village comes to eat by day and at dusk, the frightened in the night (game.hold: another system keeps them away)
+  // one of them is no longer a customer (outbreak.js: collapsed at the counter): off the seat, their ticket gone, their body left where it is
   game.take = (c) => { const i = game.customers.indexOf(c); if (i < 0) return null; game.customers.splice(i, 1); if (game.seats[c.seat].c === c) game.seats[c.seat].c = null; if (c.ticket) c.ticket.removeFromParent(); if (c.bottle) c.bottle.remove(); c.state = 'gone'; return c.p; };
   game.forceSpawn = () => { const i = game.seats.findIndex((s) => !s.c && !s.dirty); return i >= 0 ? spawn(i) : null; };
 
   function showSummary() {
     const t = T.canvasTex(768, 640, (g, w, h) => {
       g.fillStyle = 'rgba(246,241,226,0.97)'; g.fillRect(0, 0, w, h); g.strokeStyle = '#7a1612'; g.lineWidth = 12; g.strokeRect(6, 6, w - 12, h - 12);
-      g.fillStyle = '#7a1612'; g.textAlign = 'center'; g.font = `bold 64px ${T.JP}`; g.fillText(`閉店  NIGHT ${game.night} CLOSED`, w / 2, 90, w - 40);
+      g.fillStyle = '#7a1612'; g.textAlign = 'center'; g.font = `bold 64px ${T.JP}`; g.fillText(`閉店  THE DAY'S SERVICE`, w / 2, 90, w - 40);
       g.fillStyle = '#1b1b1b'; g.font = `bold 44px ${T.MONO}`; g.textAlign = 'left';
-      const inTill = till.total() - till.float, os = inTill - game.money - game.tips, a = C.avail(), left = [['noodles', a.noodles], ...Object.entries(a.tops).map(([k, n]) => [TOPPINGS[k].label.toLowerCase(), n]), ['beer', a.drinks.beer], ['cola', a.drinks.cola]].filter((x) => x[1] > 0).map((x) => `${x[1]} ${x[0]}`).join(', ');
-      [['Bowls served', game.served], ['Walked out', game.lost], ['Sales rung up', usd(game.money)], ['Tips', usd(game.tips)], ['In the till', usd(inTill)], ['Till over / short', (os > 0 ? '+' : os < 0 ? '-' : '') + usd(Math.abs(os))], ['Rating', '★'.repeat(Math.round(game.rating())) + ` ${game.rating().toFixed(1)}`]].forEach(([k, v], i) => { g.fillText(k, 60, 168 + i * 50); g.textAlign = 'right'; g.fillText(String(v), w - 60, 168 + i * 50); g.textAlign = 'left'; });
+      const inTill = till.total() - till.float, os = inTill - game.money - game.tips, a = C.avail(), left = [['noodles', a.noodles], ...Object.entries(a.tops).map(([k, n]) => [TOPPINGS[k].label.toLowerCase(), n]), ['sake', a.drinks.sake], ['tea', a.drinks.tea]].filter((x) => x[1] > 0).map((x) => `${x[1]} ${x[0]}`).join(', ');
+      [['Bowls served', game.served], ['Walked out', game.lost], ['Sales rung up', mon(game.money)], ['Tips', mon(game.tips)], ['In the till', mon(inTill)], ['Till over / short', (os > 0 ? '+' : os < 0 ? '-' : '') + mon(Math.abs(os))], ['Rating', '★'.repeat(Math.round(game.rating())) + ` ${game.rating().toFixed(1)}`]].forEach(([k, v], i) => { g.fillText(k, 60, 168 + i * 50); g.textAlign = 'right'; g.fillText(String(v), w - 60, 168 + i * 50); g.textAlign = 'left'; });
       g.font = `bold 24px ${T.JP}`; g.fillStyle = '#5a4a3a'; g.fillText(`Left over: ${left || 'nothing'}`, 60, 510, w - 120);
-      g.fillStyle = '#12406a'; g.textAlign = 'center'; g.font = `bold 36px ${T.JP}`; g.fillText(`Tomorrow adds: ${game.cfg().next}`, w / 2, h - 84, w - 40); g.fillText('Flip the OPEN switch to start the next night', w / 2, h - 40, w - 40);
+      g.fillStyle = '#12406a'; g.textAlign = 'center'; g.font = `bold 36px ${T.JP}`; g.fillText('The village has gone indoors.', w / 2, h - 84, w - 40); g.fillText('Keep the lanterns lit until morning.', w / 2, h - 40, w - 40);
     });
     const s = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.5), new THREE.MeshBasicMaterial({ map: t, toneMapped: false, color: 0xdddddd })); s.position.set(0, 1.38, -0.5); s.rotation.x = -0.15; s.userData.nopick = true;
     scene.add(s); game.summary = s; G.audio.play('done');
@@ -224,14 +233,13 @@ export function buildGame(scene) {
 
   const _d = new V3(), _eye = new V3();
   game.update = (dt, t) => {
-    if ((game.state === 'open' || game.state === 'closing') && !(game.night === 1 && game.served + game.lost === 0 && game.state === 'open')) game.clock += dt * MIN_PER_SEC;
-    if (game.state === 'open' && game.clock >= END) { game.state = 'closing'; C.setOpen(false); }
-    if (game.state === 'open') {
+    if (game.state === 'open' && !game.serving() && !game.customers.length) { game.state = 'closing'; C.setOpen(false); }
+    if (game.state === 'open' && game.serving()) {
       game.spawnT -= dt;
       if (game.spawnT <= 0) {
         const free = game.seats.map((s, i) => (!s.c && !s.dirty ? i : -1)).filter((i) => i >= 0);
-        const prog = clamp((game.clock - START) / (END - START), 0, 1);
-        if (free.length && !game.soldOut && !G.outbreak?.stop && game.customers.filter((c) => c.state !== 'leaving').length < game.cfg().max) { spawn(pick(free)); game.spawnT = lerp(26, 13, prog) + rand(0, 10); } else game.spawnT = 3;
+        const prog = game.prog(), dusk = K.phase === 'dusk';
+        if (free.length && !game.soldOut && game.customers.filter((c) => c.state !== 'leaving').length < (dusk ? 1 : game.cfg().max)) { spawn(pick(free)); game.spawnT = (lerp(26, 13, prog) + rand(0, 10)) * (dusk ? 2.5 : 1); } else game.spawnT = 3;
       }
     }
     if (game.state === 'closing' && !game.customers.length) { game.state = 'closed'; showSummary(); }
@@ -258,7 +266,7 @@ export function buildGame(scene) {
           drawTicket(c, true); c.drawT = 0; G.audio.play('bell'); G.talk ? G.talk.event(c, 'order') : G.audio.play('voice');
         }
       } else if (c.state === 'waiting') {
-        if (!(game.night === 1 && game.served + game.lost === 0)) c.patience -= dt; // the very first bowl is off the clock
+        if (game.served + game.lost > 0) c.patience -= dt; // the very first bowl is off the clock
         c.drawT += dt; if (c.drawT > 0.35) { c.drawT = 0; drawTicket(c); }
         if (!c.nudged && c.patience < c.maxPatience * 0.4) { c.nudged = true; G.talk?.event(c, 'impatient'); }
         if (c.patience <= 0) leave(c, true);
@@ -282,18 +290,17 @@ export function buildGame(scene) {
 
     // LED register + hints
     const potsOff = C.pots.filter((p) => !p.on).length;
-    G.hint = G.reportMsg ? G.reportMsg : G.talk && /login|blocked|cannot|no microphone/.test(G.talk.mic || '') && !potsOff && Math.floor(G.t / 4) % 2 ? 'VOICE: ' + G.talk.mic.toUpperCase() : game.state === 'prep' ? (potsOff ? `TURN ON ${potsOff} BURNER KNOB${potsOff > 1 ? 'S' : ''} (LEFT)` : 'FLIP THE OPEN SWITCH (BELOW)') : game.state === 'closed' ? 'FLIP SWITCH: NEXT NIGHT' : game.state === 'closing' ? 'LAST ORDERS' : game.soldOut ? 'SOLD OUT: FLIP THE SWITCH TO CLOSE' : potsOff ? 'A BURNER IS OFF!' : game.served + game.lost === 0 ? `NIGHT ${game.night}: ${game.cfg().note}` : `SERVED ${game.served}  LOST ${game.lost}`;
+    G.hint = G.reportMsg ? G.reportMsg : G.talk && /login|blocked|cannot|no microphone/.test(G.talk.mic || '') && !potsOff && Math.floor(G.t / 4) % 2 ? 'VOICE: ' + G.talk.mic.toUpperCase() : game.state === 'prep' ? (potsOff ? `LIGHT ${potsOff} BRAZIER${potsOff > 1 ? 'S' : ''} (LEFT)` : 'HANG THE NOREN: OPEN (RIGHT POST)') : game.state === 'closed' ? (K.phase === 'dawn' ? 'DAWN' : 'THE DAY IS DONE') : game.state === 'closing' ? 'LAST ORDERS' : game.soldOut ? 'SOLD OUT: TAKE IN THE NOREN' : potsOff ? 'A BRAZIER HAS GONE OUT!' : game.served + game.lost === 0 ? game.cfg().note : `SERVED ${game.served}  LOST ${game.lost}`;
     game.ledT -= dt;
     if (game.ledT <= 0) {
       game.ledT = 0.5;
-      const m = Math.floor(game.clock) % (24 * 60), hh = Math.floor(m / 60), h12 = ((hh + 11) % 12) + 1, mm = String(m % 60).padStart(2, '0');
-      C.led.redraw((g, w, h) => {
-        g.fillStyle = '#0a0202'; g.fillRect(0, 0, w, h); g.shadowColor = '#ff2a10'; g.shadowBlur = 14; g.fillStyle = '#ff3a1c'; g.textAlign = 'left';
-        g.font = `bold 74px ${T.MONO}`; g.fillText(`${h12}:${mm}${hh >= 12 && hh < 24 ? 'PM' : 'AM'}`, 18, 78);
-        g.textAlign = 'right'; g.font = `bold 40px ${T.MONO}`; g.fillStyle = C.open ? '#3aff6a' : '#ff3a1c'; g.shadowColor = g.fillStyle; g.fillText(C.open ? 'OPEN' : 'CLOSED', w - 16, 70);
-        g.textAlign = 'left'; g.fillStyle = '#ffb020'; g.shadowColor = '#ffb020'; g.font = `bold 58px ${T.MONO}`; g.fillText(usd(till.total() - till.float), 18, 150);
-        g.textAlign = 'right'; g.font = `bold 44px ${T.MONO}`; g.fillText(game.scores.length ? `★${game.rating().toFixed(1)}` : `NIGHT ${game.night}`, w - 16, 148);
-        g.textAlign = 'left'; g.fillStyle = '#ffe9a8'; g.shadowColor = '#ffe9a8'; g.shadowBlur = 8; g.font = `bold 30px ${T.MONO}`; g.fillText(G.hint, 18, 220, w - 30);
+      C.led.redraw((g, w, h) => { // the cook's slate on the right post, chalked: the hour, open or not, the day's takings, the hint
+        g.fillStyle = '#1c1a16'; g.fillRect(0, 0, w, h); g.strokeStyle = '#5a4026'; g.lineWidth = 14; g.strokeRect(0, 0, w, h); g.fillStyle = '#e8e2d0'; g.textAlign = 'left';
+        g.font = `bold 50px ${T.JP}`; g.fillText(`${K.phase === 'day' || K.phase === 'dusk' ? '' : '夜 '}HOUR OF THE ${K.eto()}`, 18, 66, w - 190);
+        g.textAlign = 'right'; g.font = `bold 40px ${T.JP}`; g.fillStyle = C.open ? '#9ad890' : '#d89080'; g.fillText(C.open ? 'OPEN 営業' : 'CLOSED', w - 16, 66);
+        g.textAlign = 'left'; g.fillStyle = '#f0d8a0'; g.font = `bold 54px ${T.JP}`; g.fillText(mon(till.total() - till.float), 18, 146);
+        g.textAlign = 'right'; g.font = `bold 42px ${T.JP}`; g.fillText(game.scores.length ? `★${game.rating().toFixed(1)}` : K.phase.toUpperCase(), w - 16, 144);
+        g.textAlign = 'left'; g.fillStyle = '#e8e2d0'; g.font = `bold 30px ${T.JP}`; g.fillText(G.hint, 18, 220, w - 30);
       });
     }
   };

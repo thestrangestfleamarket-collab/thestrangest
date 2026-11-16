@@ -21,14 +21,14 @@ export function buildGuide(scene, C) {
 
   function step() {
     const game = G.game, off = C.pots.filter((p) => !p.on);
-    if (off.length) return ['Turn a burner knob', `${off.length} to light — stove, on your left`, new V3(-0.67, 0.78, off[0].z)];
-    if (game.state === 'prep' || game.state === 'closed') return ['Flip the OPEN switch', 'Right post, under the clock', G.buttons.find((b) => b.name.startsWith('OPEN')).getPos().clone().add(new V3(0, 0.08, 0))];
+    if (off.length) return ['Open a brazier vent', `${off.length} to wake — the braziers, on your left`, new V3(-0.67, 0.78, off[0].z)];
+    if (game.state === 'prep' || game.state === 'closed') return ['Hang the noren: open', 'The peg on the right post, under the slate', G.buttons.find((b) => b.name.startsWith('OPEN')).getPos().clone().add(new V3(0, 0.08, 0))];
     const money = G.till && G.till.step(held); if (money) return money;
     const c = game.customers.filter((x) => x.state === 'waiting').sort((a, b) => a.patience / a.maxPatience - b.patience / b.maxPatience)[0];
     if (c) { const out = game.outFor(c); if (out) return [`Tell seat ${c.seat + 1}: we're out of ${out.dish ? c.order.recipe.name.toLowerCase() : [...out.tops.map((t) => TOPPINGS[t].label.toLowerCase()), out.drink].filter(Boolean).join(' and ')}`, 'Say it to them (T to type)', new V3(SEATS[c.seat], 1.62, -1.15)]; }
     if (!c) {
       const tip = G.till && G.till.loose()[0]; if (tip) return ['Collect the money on the ledge', 'Into the register', tip.obj.position.clone().setY(1.08)];
-      if (game.soldOut && game.state === 'open') return ['Sold out for tonight', 'Flip the OPEN switch to close', G.buttons.find((b) => b.name.startsWith('OPEN')).getPos().clone().add(new V3(0, 0.08, 0))];
+      if (game.soldOut && game.state === 'open') return ['Sold out for tonight', 'Take in the noren to close', G.buttons.find((b) => b.name.startsWith('OPEN')).getPos().clone().add(new V3(0, 0.08, 0))];
       const di = game.seats.findIndex((s) => s.dirty);
       if (di >= 0) { const b = game.seats[di].dirty; return b.held ? ['Drop it in the bus tub', 'Right wing, at the back', tub] : ['Clear the dirty bowl', `Seat ${di + 1}`, b.obj.position.clone().setY(1.14)]; }
       return [game.state === 'closing' ? 'Last orders are out' : 'Wait for a customer', game.customers.length ? 'Someone is on their way' : 'A quiet minute', null];
@@ -53,7 +53,7 @@ export function buildGuide(scene, C) {
       const B = C.board; if (B.item && B.item.raw === t) return C.knife.held ? [`Chop the ${L}`, 'Bring the blade down on it', new V3(B.x - 0.05, 1.14, B.z)] : ['Pick up the knife', 'Right of the board', C.knife.obj.position.clone().setY(1.02)];
       return held((x) => x.raw === t) ? ['Set it on the cutting board', '', new V3(B.x, 1.08, B.z)] : [`Out of ${L}: take one to slice`, 'Trays on the right wing', new V3(0.925, 1.08, -0.02 + ri * 0.165)];
     }
-    if (o.drink && !c.gotDrink) return held((x) => x.drink === o.drink) ? [`Set the ${o.drink} by seat ${c.seat + 1}`, '', C.seatSpots[c.seat].clone().setY(1.2)] : [`Take a ${o.drink} from the cooler`, 'Right wing, at the back', new V3(0.935, 1.28, 0.68 + (o.drink === 'beer' ? -0.055 : 0.055))];
+    if (o.drink && !c.gotDrink) return held((x) => x.drink === o.drink) ? [`Set the ${o.drink} by seat ${c.seat + 1}`, '', C.seatSpots[c.seat].clone().setY(1.2)] : [`Take a ${o.drink} from the water tub`, 'Right wing, at the back', new V3(0.935, 1.28, 0.68 + (o.drink === 'sake' ? -0.055 : 0.055))];
     return bowl.held ? [`Serve seat ${c.seat + 1}`, 'Set it on their placemat', C.seatSpots[c.seat].clone().setY(1.2)] : ['Pick up the bowl and serve it', `Seat ${c.seat + 1}`, bp];
   }
 
@@ -61,14 +61,14 @@ export function buildGuide(scene, C) {
   const stockRows = () => { const a = C.avail(), m = G.game.cfg(), tares = [...new Set(m.menu.map((k) => RECIPES[k].tare))], broths = [...new Set(m.menu.map((k) => RECIPES[k].broth))];
     return [[['NOODLES', a.noodles], ...broths.map((b) => [BROTH[b].label, a.broth[b]]), ...tares.map((k) => [TARE[k].label + ' TARE', a.tare[k]])],
       Object.keys(TOPPINGS).filter((t) => m.menu.some((k) => RECIPES[k].tops[t])).map((t) => [TOPPINGS[t].label, a.tops[t]]),
-      m.drinks ? [['BEER', a.drinks.beer], ['COLA', a.drinks.cola]] : []].filter((r) => r.length); };
+      m.drinks ? [['SAKE', a.drinks.sake], ['TEA', a.drinks.tea]] : []].filter((r) => r.length); };
   g.update = (dt, t) => {
     acc += dt; if (acc > 0.2) { acc = 0; try { cur = g.on ? step() : ['GUIDE MODE is off', 'Press the green button to turn it on', null]; } catch (e) { cur = null; } try { stock = stockRows(); } catch (e) { stock = []; } }
     const key = (cur ? cur[0] + '|' + cur[1] : '') + JSON.stringify(stock);
     if (key !== last) { last = key; G.guideText = g.on && cur ? `${cur[0]} — ${cur[1]}` : '';
       tex.redraw((c2, w, h) => { c2.fillStyle = g.on ? '#10241a' : '#241010'; c2.fillRect(0, 0, w, h); c2.strokeStyle = g.on ? '#40e080' : '#a04040'; c2.lineWidth = 10; c2.strokeRect(5, 5, w - 10, h - 10);
         c2.fillStyle = g.on ? '#40e080' : '#e08080'; c2.font = `bold 34px ${T.MONO}`; c2.textAlign = 'left'; c2.fillText('GUIDE', 26, 52);
-        c2.fillStyle = '#0c140f'; c2.fillRect(10, 300, w - 20, h - 310); c2.fillStyle = '#7fbf98'; c2.font = `bold 24px ${T.MONO}`; c2.fillText("TONIGHT'S STOCK", 26, 328);
+        c2.fillStyle = '#0c140f'; c2.fillRect(10, 300, w - 20, h - 310); c2.fillStyle = '#7fbf98'; c2.font = `bold 24px ${T.MONO}`; c2.fillText("TODAY'S STOCK", 26, 328);
         { let y = 360; c2.font = `bold 25px ${T.MONO}`; for (const row of stock) { let x = 26; for (const [t, n] of row) { const s2 = `${t} ${n}  `, tw = c2.measureText(s2).width; if (x + tw > w - 16) { x = 26; y += 29; } c2.fillStyle = n > 0 ? '#e8f0e0' : '#ff7a6a'; c2.fillText(s2, x, y); x += tw; } y += 29; } }
         if (!cur) return; c2.fillStyle = '#ffffff'; c2.font = `bold 50px ${T.JP}`; const words = cur[0].split(' '); let line = '', y = 124; for (const wd of words) { if (c2.measureText(line + wd).width > w - 52) { c2.fillText(line, 26, y); line = ''; y += 58; } line += wd + ' '; } c2.fillText(line, 26, y);
         c2.fillStyle = '#b8e8c8'; c2.font = `bold 34px ${T.JP}`; c2.fillText(cur[1], 26, Math.min(300 - 28, y + 62), w - 52); }); }

@@ -1,12 +1,16 @@
-// a tenant of THE MARKET as they really are: their own figure (a Walker of rigid pieces, or a body on 15 bones) sent once by their market page (146bg), drawn here and moved by their bones' matrices ten times a second, with what they hold (a guitar) where their hands have it
+// a tenant of THE MARKET as they really are, in period dress: their own figure (a Walker of rigid pieces, or a body on 15 bones) sent once by their market page (146bg), drawn here and moved by their bones' matrices ten times a second, with what they hold (a guitar) where their hands have it
 import * as THREE from 'three';
+import { dye } from './pf.js';
 
 const dec = (s, T) => { const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return new T(u.buffer); };
 
+// their own body and face, but dressed for the village (owner, 16 Nov 2026): what they wear dyed to indigo work clothes, skin and hair kept
+const DRESSED = [0x1c2440, 0x3a4a6a, 0xc8c0a8], _k = new THREE.Color();
+const period = (u) => { const f = new Float32Array(u.length); for (let i = 0; i < u.length; i += 3) { _k.setRGB(u[i] / 255, u[i + 1] / 255, u[i + 2] / 255, THREE.SRGBColorSpace); f[i] = _k.r; f[i + 1] = _k.g; f[i + 2] = _k.b; } dye(f, DRESSED); for (let i = 0; i < u.length; i += 3) { _k.setRGB(f[i], f[i + 1], f[i + 2]); const c = _k.getRGB({}, THREE.SRGBColorSpace); u[i] = c.r * 255; u[i + 1] = c.g * 255; u[i + 2] = c.b * 255; } return u; };
 // D: {kind 'w' | 'b', np matrices, n points, lo, hi, s scale to metres, p points, c colours, b piece or bones, i index, x held things [{n, lo, hi, p, c, i}]}; mirror: -1 when the market's alley runs the other way round
 export function tenantFigure(D, mirror = 1) {
   const n = D.n, q = dec(D.p, Uint16Array), P = new Float32Array(n * 3); for (let i = 0; i < n * 3; i++) { const a = i % 3; P[i] = D.lo[a] + (q[i] / 65535) * (D.hi[a] - D.lo[a]); }
-  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(P, 3)); g.setAttribute('color', new THREE.BufferAttribute(dec(D.c, Uint8Array), 3, true));
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(P, 3)); g.setAttribute('color', new THREE.BufferAttribute(period(dec(D.c, Uint8Array)), 3, true));
   const B = dec(D.b, Uint8Array);
   if (D.kind === 'w') g.setAttribute('pidx', new THREE.BufferAttribute(Float32Array.from(B), 1));
   else { const bi = new Float32Array(n * 2), bw = new Float32Array(n); for (let i = 0; i < n; i++) { bi[i * 2] = B[i * 3]; bi[i * 2 + 1] = B[i * 3 + 1]; bw[i] = B[i * 3 + 2] / 255; } g.setAttribute('bi', new THREE.BufferAttribute(bi, 2)); g.setAttribute('bw', new THREE.BufferAttribute(bw, 1)); }

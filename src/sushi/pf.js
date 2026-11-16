@@ -5,43 +5,33 @@ import { mat } from './ctx.js';
 // who can be at the cart: [sex, voice, pitch, youngest, oldest, what they do] (the voice names are worker/door.js's /sushi/say)
 export const PF = {
   carving_chef: ['m', 'zeus', 0.96, 45, 60, 'the cook'],
-  // the block's regulars (block.js)
-  fruitseller: ['m', 'zeus', 0.95, 58, 67, ''],
-  passenger: ['f', 'hera', 0.97, 55, 63, ''],
-  doorman: ['m', 'arcas', 0.96, 46, 55, ''],
-  station_master: ['f', 'stella', 0.98, 36, 44, ''],
-  salaryman_commuter: ['m', 'perseus', 1, 32, 40, ''],
-  standing_worker_on_a_call: ['m', 'orpheus', 1.03, 21, 27, ''],
-  diner_waitress: ['f', 'asteria', 1.02, 22, 28, ''],
-  room_attendant: ['f', 'luna', 1, 24, 30, ''],
-  barista: ['m', 'orion', 1, 27, 34, ''],
-  cocktail_server: ['f', 'athena', 1, 30, 38, ''],
-  // whoever else comes by for a bowl
-  commuter: ['m', 'perseus', 1, 30, 50, 'an accountant in Midtown, on the late train home'],
-  tour_guide: ['m', 'orion', 1, 28, 45, 'a guide for the bus tours round Manhattan'],
-  construction_worker: ['m', 'angus', 0.96, 25, 50, 'an ironworker on a tower going up on Broadway'],
-  site_manager: ['m', 'arcas', 0.96, 40, 58, 'the foreman on a building site two blocks down'],
-  firefighter: ['m', 'zeus', 0.98, 28, 50, 'a firefighter at the engine company on West 67th'],
-  trucker: ['m', 'angus', 0.94, 35, 60, 'a truck driver who just brought a load into the city'],
-  delivery_courier: ['m', 'orpheus', 1.04, 19, 28, 'a bicycle messenger who runs papers across Midtown'],
-  valet_attendant: ['f', 'luna', 1.02, 20, 30, 'a parking valet at the hotel on Central Park South'],
-  suburban_resident: ['m', 'perseus', 0.98, 35, 55, 'a schoolteacher from Jersey in the city for a show'],
-  parent_chaperone: ['f', 'stella', 0.98, 35, 50, 'a mother in town with her family for the weekend'],
-  seated_office_worker: ['m', 'orion', 1, 25, 45, 'a clerk at an insurance company, working late'],
-  tradesman: ['m', 'arcas', 0.95, 40, 60, 'a plumber coming off an emergency call'],
-  graffiti_artist: ['m', 'orpheus', 1.05, 17, 24, 'a kid from the Bronx who paints subway cars'],
-  doctor: ['m', 'zeus', 0.97, 35, 60, 'a resident doctor at Roosevelt Hospital, off a double shift'],
-  paramedic: ['m', 'perseus', 1.02, 25, 40, 'an EMS paramedic between calls'],
-  lounge_crooner: ['m', 'helios', 1, 30, 45, 'an Elvis impersonator who sings at weddings'],
-  bellhop: ['m', 'orpheus', 1.04, 18, 25, 'a bellhop at the hotel round the corner'],
-  student_in_a_hoodie: ['f', 'luna', 1.03, 18, 23, 'a student at Juilliard, up the road at Lincoln Center'],
-  cafe_customer: ['f', 'stella', 1, 25, 40, 'a secretary at an ad agency on Madison Avenue'],
-  spectator: ['f', 'asteria', 1.02, 20, 35, 'just out of a Knicks game at the Garden'],
-  grandmother_in_a_rebozo: ['f', 'hera', 0.95, 60, 75, 'a grandmother on her way home from the night shift cleaning offices'],
-  flight_attendant: ['f', 'athena', 1, 25, 40, 'a flight attendant with Pan Am, in from a long flight'],
-  school_teacher: ['m', 'arcas', 0.97, 35, 55, 'a teacher at a public school on the Upper West Side'],
+  // the village's people, in the dress of the 1860s: Polyfork's Japanese villagers as they are, and the nearest of its other bodies with their clothes dyed to period colours (DRESS below)
+  hanga_roa_fisherman: ['m', 'zeus', 0.95, 48, 58, 'a fishmonger who carries the morning catch up from the coast in two baskets on a pole'],
+  townswoman_medieval_japan: ['f', 'hera', 0.98, 30, 50, 'a townswoman who keeps a shop on the street'],
+  male_villager: ['m', 'arcas', 0.96, 50, 65, 'a potter with a kiln behind his house'],
+  farmer_medieval_japan: ['m', 'angus', 0.96, 30, 50, 'a rice farmer in from the paddies east of the village'],
+  buddhist_monk: ['m', 'orion', 0.94, 45, 65, 'a monk from the temple up behind the shrine'],
+  townswoman_frontier_town: ['f', 'asteria', 1.03, 20, 28, 'a geisha of the teahouse on the street'],
+  samurai_warrior: ['m', 'perseus', 0.97, 28, 40, 'a ronin, a masterless samurai, two swords at his belt'],
+  ashigaru_foot_soldier: ['m', 'helios', 0.98, 25, 45, 'a foot soldier of the domain on his way through'],
+  village_child: ['m', 'orpheus', 1.18, 8, 11, 'a village boy sent out for a bowl'],
+  grandmother_in_a_rebozo: ['f', 'luna', 0.95, 62, 75, 'an old woman who has lived on this street all her life'],
+  farmer_cozy_farm: ['m', 'angus', 0.97, 35, 55, 'a peddler of needles, combs and medicines on the road between villages'],
+  village_gardener: ['m', 'arcas', 0.96, 30, 55, 'a woodcutter down from the hills with a load of firewood'],
+  daimyo_lord: ['m', 'zeus', 0.95, 40, 55, ''],
 };
-export const CUSTOMERS = Object.keys(PF).filter((k) => PF[k][5] && k !== 'carving_chef');
+// the dye for a body that came in later clothes: its cloth (everything that is not skin or hair) recoloured by shade into a period palette: [dark, middle, light]
+export const DRESS = {
+  carving_chef: [0x1c2440, 0x2c3a62, 0xd8d0bc], hanga_roa_fisherman: [0x2a2a30, 0x3a4a6a, 0xc8bca0], male_villager: [0x2e2620, 0x5a4a38, 0xb8a888],
+  townswoman_frontier_town: [0x2a1424, 0x6a2a4a, 0xd8b8c0], grandmother_in_a_rebozo: [0x24202a, 0x4a4238, 0x9a8a70], farmer_cozy_farm: [0x2a2418, 0x5a5038, 0xa89870],
+  village_gardener: [0x2a2a22, 0x4a5a3a, 0xa8a080], village_child: [0x1c2440, 0x3a4a72, 0xc8c0a8],
+};
+const _h = {}, _c = new THREE.Color();
+export function dye(C, pal) { if (!pal) return C; const P = pal.map((x) => new THREE.Color(x));
+  for (let i = 0; i < C.length; i += 3) { _c.setRGB(C[i], C[i + 1], C[i + 2]); _c.getHSL(_h); const skin = _h.h > 0.015 && _h.h < 0.12 && _h.s > 0.2 && _h.s < 0.8 && _h.l > 0.08 && _h.l < 0.75, hair = _h.l < 0.035;
+    if (skin || hair) continue; const k = Math.min(1, _h.l / 0.45), c = k < 0.5 ? P[0].clone().lerp(P[1], k * 2) : P[1].clone().lerp(P[2], (k - 0.5) * 2); C[i] = c.r; C[i + 1] = c.g; C[i + 2] = c.b; }
+  return C; }
+export const CUSTOMERS = Object.keys(PF).filter((k) => PF[k][5] && k !== 'carving_chef' && k !== 'village_child');
 
 const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0)), i16 = (s) => new Int16Array(b64(s).buffer), u16 = (s) => new Uint16Array(b64(s).buffer);
 const lin = (C, n) => { const out = new Float32Array(n), c = new THREE.Color(); for (let i = 0; i < n; i += 3) { c.setRGB(C[i] / 255, C[i + 1] / 255, C[i + 2] / 255, THREE.SRGBColorSpace); out[i] = c.r; out[i + 1] = c.g; out[i + 2] = c.b; } return out; };
@@ -68,7 +58,7 @@ const geoOf = (key) => { if (GEO[key]) return GEO[key]; const b = D.bodies[key],
   for (const q of piece.values()) { const s = ARMB[q.bone]; q.drop = false; if (!s || !q.rigid) continue; const A = AX[s], c = q.c.map((x) => x / q.k - 0), r = [c[0] - A.S[0], c[1] - A.S[1], c[2] - A.S[2]], t = r[0] * A.d[0] + r[1] * A.d[1] + r[2] * A.d[2], off = Math.hypot(r[0] - A.d[0] * t, r[1] - A.d[1] * t, r[2] - A.d[2] * t); q.drop = t > A.l - 0.02 || off > 0.1; }
   const held = (v) => piece.get(top(id(v))).drop;
   const keep = []; for (let i = 0; i < T0.length; i += 3) if (!held(T0[i])) keep.push(T0[i], T0[i + 1], T0[i + 2]);
-  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(P, 3)); g.setAttribute('color', new THREE.BufferAttribute(lin(b64(b.vcol), Q.length), 3)); g.setAttribute('skinIndex', new THREE.BufferAttribute(si, 4)); g.setAttribute('skinWeight', new THREE.BufferAttribute(sw, 4)); g.setIndex(new THREE.BufferAttribute(new Uint16Array(keep), 1)); g.computeVertexNormals();
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(P, 3)); g.setAttribute('color', new THREE.BufferAttribute(dye(lin(b64(b.vcol), Q.length), DRESS[key]), 3)); g.setAttribute('skinIndex', new THREE.BufferAttribute(si, 4)); g.setAttribute('skinWeight', new THREE.BufferAttribute(sw, 4)); g.setIndex(new THREE.BufferAttribute(new Uint16Array(keep), 1)); g.computeVertexNormals();
   // the face: the nose is the head's foremost point; the eyes sit above it, either side
   const O = b.origin; let face = null; { let zm = -9, ny = 0; for (let v = 0; v < n; v++) if (BN[v * 2] === HEAD && BW[v] > 200 && Math.abs(P[v * 3]) < 0.03 && P[v * 3 + 1] < O[HEAD][1] + 0.2 && P[v * 3 + 2] > zm) { zm = P[v * 3 + 2]; ny = P[v * 3 + 1]; }
     const zs = []; for (let v = 0; v < n; v++) if (BN[v * 2] === HEAD && BW[v] > 200 && Math.abs(P[v * 3]) > 0.025 && Math.abs(P[v * 3]) < 0.07 && Math.abs(P[v * 3 + 1] - ny - 0.04) < 0.05) zs.push(P[v * 3 + 2]); zs.sort((a, c) => c - a); if (zs.length) face = [0.036, ny + 0.042, zs[0] - 0.006]; }

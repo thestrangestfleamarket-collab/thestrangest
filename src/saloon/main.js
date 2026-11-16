@@ -25,11 +25,11 @@ const params = new URLSearchParams(location.search), $ = (id) => document.getEle
 const canvas = $('c'), menu = $('menu'), hud = $('hud'), vrBtn = $('vr'), deskBtn = $('desk');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
 renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2)); renderer.setSize(innerWidth, innerHeight);
-renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.9;
+renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.95;
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.xr.enabled = true; renderer.xr.setReferenceSpaceType('local-floor'); renderer.xr.setFoveation?.(0.4);
 
-const scene = new THREE.Scene(); scene.background = new THREE.Color(0x05060a); scene.fog = new THREE.FogExp2(0x140c07, 0.045);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x05060a); scene.fog = new THREE.FogExp2(0x0e0c0a, 0.05);
 const camera = new THREE.PerspectiveCamera(68, innerWidth / innerHeight, 0.03, 120);
 const rig = new THREE.Group(); rig.position.set(0, 0, 0.3); rig.add(camera); scene.add(rig);
 Object.assign(G, { scene, camera, rig, renderer, params });
@@ -92,7 +92,7 @@ function tick(dt) {
 let last = performance.now(), frames = 0, statT = 0, ema = 14, slow = 0;
 function frame(now) {
   const dt = clamp((now - last) / 1000, 0, 0.05); last = now;
-  if (G.mode === 'menu' && !renderer.xr.isPresenting && !G.manualCam) { const a = G.t * 0.04; rig.position.set(0, 0, 0); camera.position.set(Math.sin(a) * 2.2, 1.9, -6.4 + Math.cos(a) * 1.2); camera.lookAt(0, 1.4, 0.6); }
+  if (G.mode === 'menu' && !renderer.xr.isPresenting && !G.manualCam) { const a = G.t * 0.04; rig.position.set(0, 0, 0); camera.position.set(7.5 + Math.sin(a) * 1.2, 1.7, -3.6 + Math.cos(a) * 0.8); camera.lookAt(-1, 1.3, -0.4); }
   if (!G.frozen) tick(dt);
   if (frames++ > 120 && (G.quality || 0) < shadowLights.length && !G.frozen) { ema += (dt * 1000 - ema) * 0.05; const ses = renderer.xr.isPresenting && renderer.xr.getSession(), hz = (ses && ses.frameRate) || 72; slow = ema > (ses ? 1150 / hz : 34) ? slow + dt : 0; if (slow > 3) { slow = 0; shadowLights[shadowLights.length - 1 - (G.quality || 0)].castShadow = false; G.quality = (G.quality || 0) + 1; } }   // frames running long: the lamps stop throwing shadows one at a time, the moon's first
   look.render();

@@ -52,7 +52,7 @@ export function buildFolk(scene, room) {
     if (a[0] === 'leave') { p.here = false; p.root.visible = false; p.state = 'out'; holster(p); ev('left', { id: p.id }); return; }
     if (a[0] === 'hide') { p.here = false; p.hidden = true; p.root.visible = false; p.state = 'out'; ev('hid', { id: p.id }); return; }
     if (p.seat) { p.state = 'sit'; p.P.pose = 'sit'; p.root.position.set(p.seat.x, p.seat.y, p.seat.z); p.root.rotation.y = p.seat.ry; }
-    else { p.state = 'stand'; p.P.pose = 'stand'; if (a[0] === 'bar') p.root.rotation.y = 0; else if (a[2] !== undefined || a[0] === 'stand') face(p, a[0] === 'stand' && a[1] === 'piano' ? R.piano.x - 1 : 0, a[0] === 'stand' && a[1] === 'piano' ? R.piano.z - 0.6 : -5); }
+    else { p.state = 'stand'; p.P.pose = 'stand'; if (a[0] === 'bar') p.root.rotation.y = 0; else if (a[2] !== undefined || a[0] === 'stand') face(p, a[1] === 'piano' ? p.root.position.x : a[1] === 'door' ? 2 : 2, a[1] === 'piano' ? R.piano.z - 1 : a[1] === 'board' ? 9 : -2.4); }
     ev('at', { id: p.id, act: a });
   }
   const face = (p, x, z) => { p.root.rotation.y = Math.atan2(x - p.root.position.x, z - p.root.position.z); };

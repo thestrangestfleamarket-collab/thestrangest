@@ -7,7 +7,7 @@ import { DRINKS } from './cast.js';
 import { R } from './room.js';
 import { plain, brass, canvasTex, model, tube, slab, pbr, glow } from './kit.js';
 
-const glassM = (c, o = 0.42) => new THREE.MeshStandardMaterial({ color: c, transparent: true, opacity: o, roughness: 0.05, metalness: 0, envMapIntensity: 2.2 });
+const glassM = (c, o = 0.42) => new THREE.MeshStandardMaterial({ color: c, transparent: true, opacity: o, roughness: 0.18, metalness: 0, envMapIntensity: 0.9 });
 const lathe = (pts, seg = 18) => new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), seg);
 const GEO = {}, geo = (k, f) => (GEO[k] ||= f()), MAT = {}, matOf = (k, f) => (MAT[k] ||= f());
 const _v = new V3(), _w = new V3();

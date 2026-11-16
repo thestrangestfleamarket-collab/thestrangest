@@ -5,7 +5,7 @@ import { pbr, plain, brass, slab, tube, model } from './kit.js';
 
 export function buildBarWood(g, top, solid) {
   const X = R.barX, by = R.barY, z0 = R.barZ0, z1 = R.barZ1, B = R.B, bz = R.backZ, W = R.W;
-  const wal = pbr('walnut', { tile: 1.1, color: 0x5a3828, rough: 0.42, env: 0.9 }), dk = pbr('walnut', { tile: 0.9, color: 0x33201a, rough: 0.5, env: 0.7 }), pan = pbr('planks', { tile: 1.2, color: 0x6a4a36, rough: 0.7 }), br = brass();
+  const wal = pbr('walnut', { tile: 1.1, color: 0x4c3a2e, rough: 0.82, env: 0.22 }), dk = pbr('walnut', { tile: 0.9, color: 0x2e221c, rough: 0.9, env: 0.15 }), pan = pbr('planks', { tile: 1.2, color: 0x5e5044, rough: 0.95 }), br = brass();
   const rod = (len, r, m, x, y, z, ax = 'x') => { const t = tube(r, r, len, m, x, y, z, g, 10); if (ax === 'x') t.rotation.z = Math.PI / 2; else if (ax === 'z') t.rotation.x = Math.PI / 2; return t; };
 
   // ---- the counter
@@ -24,8 +24,8 @@ export function buildBarWood(g, top, solid) {
   slab(2 * X, 0.035, z1 - z0 - 0.12, pan, 0, 0.622, (z0 + z1) / 2 + 0.06, g); for (let x = -X + 0.8; x < X; x += 1.6) slab(0.04, 0.6, z1 - z0 - 0.14, dk, x, 0.3, (z0 + z1) / 2 + 0.06, g);
   rod(2 * X, 0.006, br, 0, by + 0.006, z1 + 0.06);
   top(-X - 0.17, X + 0.17, z0 - 0.14, z1 + 0.08, by); top(-X, X, z0 + 0.15, z1, 0.64, 0.02);
-  solid(-X - 0.1, X + 0.1, z0 - 0.05, z1, by); solid(-W, -X - 0.1, z0 + 0.1, z1 - 0.1, by);
-  slab(W - X - 0.1, by - 0.055, 0.1, dk, -(W + X + 0.1) / 2, (by - 0.055) / 2, (z0 + z1) / 2, g); slab(W - X - 0.1, 0.055, 0.42, wal, -(W + X + 0.1) / 2, by - 0.0275, (z0 + z1) / 2, g);
+  solid(-X - 0.1, X + 0.1, z0 - 0.05, z1, by); solid(-X - 0.16, -X - 0.02, z1, B, by);   // the far end returns to the wall; the near end is the way out
+  slab(0.1, by - 0.055, B - z1, dk, -X - 0.09, (by - 0.055) / 2, (z1 + B) / 2, g); slab(0.42, 0.055, B - z1, wal, -X - 0.09, by - 0.0275, (z1 + B) / 2, g); top(-X - 0.3, -X + 0.12, z1, B, by);
 
   // ---- the back bar's cupboards: doors with brass knobs, and the opening the cash drawer runs in (bar.js)
   const D = B - bz, cy = R.backY;
@@ -41,7 +41,7 @@ export function buildBarWood(g, top, solid) {
   for (const sx of [-1, 1]) for (const y of [1.42, 1.86, 2.3]) { slab(1.84, 0.03, 0.25, wal, sx * 2.165, y - 0.015, B - 0.16, g); rod(1.84, 0.012, wal, sx * 2.165, y - 0.015, B - 0.285); slab(1.84, 0.012, 0.012, br, sx * 2.165, y + 0.02, B - 0.275, g); top(sx * 2.165 - 0.92, sx * 2.165 + 0.92, B - 0.28, B - 0.04, y, 0.015); shelves.push({ x0: sx * 2.165 - 0.84, x1: sx * 2.165 + 0.84, y, z: B - 0.15 }); }
   slab(2 * X + 0.36, 0.16, 0.42, wal, 0, topY + 0.08, B - 0.2, g); slab(2 * X + 0.44, 0.05, 0.48, dk, 0, topY + 0.185, B - 0.22, g); for (let x = -X; x <= X; x += 0.14) slab(0.07, 0.06, 0.05, dk, x, topY - 0.03, B - 0.41, g);
   // the mirror: silvered glass that shows the room (look.js gives it the room's own picture), a moulded frame, an arch and a carved crest over it
-  const mir = new THREE.Mesh(new THREE.PlaneGeometry(2.0, 1.56), new THREE.MeshStandardMaterial({ color: 0xb8b4a8, metalness: 1, roughness: 0.07, envMapIntensity: 1.25 })); mir.position.set(0, cy + 1.2, B - 0.06); mir.rotation.y = Math.PI; mir.userData.keep = true; g.add(mir);
+  const mir = new THREE.Mesh(new THREE.PlaneGeometry(2.0, 1.56), new THREE.MeshStandardMaterial({ color: 0x77746a, metalness: 1, roughness: 0.2, envMapIntensity: 0.9 })); mir.position.set(0, cy + 1.2, B - 0.06); mir.rotation.y = Math.PI; mir.userData.keep = true; g.add(mir);
   for (const s of [-1, 1]) { slab(0.09, 1.7, 0.06, wal, s * 1.045, cy + 1.2, B - 0.07, g); slab(0.03, 1.6, 0.03, br, s * 0.995, cy + 1.2, B - 0.085, g); }
   slab(2.18, 0.09, 0.06, wal, 0, cy + 0.375, B - 0.07, g); slab(2.18, 0.09, 0.06, wal, 0, cy + 2.025, B - 0.07, g); slab(2.0, 0.03, 0.03, br, 0, cy + 0.42, B - 0.085, g); slab(2.0, 0.03, 0.03, br, 0, cy + 1.98, B - 0.085, g);
   const arch = new THREE.Mesh(new THREE.TorusGeometry(1.09, 0.05, 8, 24, Math.PI), wal); arch.scale.y = 0.34; arch.position.set(0, cy + 2.07, B - 0.07); arch.castShadow = true; g.add(arch);

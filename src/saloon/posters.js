@@ -7,7 +7,7 @@ import { pbr, slab, canvasTex } from './kit.js';
 const BILLS = { cole: ['COLE MADDOX', '$500', 'for the ROBBERY of the TUCSON STAGE and the MURDER of its guard', 'Thirty-four years. Dark. A scar at the left brow.'], pike: ['JOHN "JACK" PIKE', '$750', 'for the MURDER of ELI GARRETT and of THOMAS BELL', 'Forty-one years. A gambler. Carries a .41 Colt.'] };
 
 export function buildPosters(scene, room) {
-  const g = new THREE.Group(); g.position.set(R.board.x - 0.02, 1.62, R.board.z); g.rotation.y = -Math.PI / 2; scene.add(g);
+  const g = new THREE.Group(); g.position.set(R.board.x, 1.62, R.board.z); g.rotation.y = R.board.ry; scene.add(g);
   slab(1.9, 1.25, 0.03, pbr('planks', { tile: 0.9, color: 0x6a5846 }), 0, 0, 0, g); for (const s of [-1, 1]) { slab(1.98, 0.06, 0.05, pbr('walnut', { tile: 0.5, color: 0x4a3020 }), 0, s * 0.64, 0.005, g); slab(0.06, 1.3, 0.05, pbr('walnut', { tile: 0.5, color: 0x4a3020 }), s * 0.97, 0, 0.005, g); }
   const faces = {}, bills = {}; let made = false;
   // his face, from his own body: stood in a plain light, looked at once, kept as a brown print

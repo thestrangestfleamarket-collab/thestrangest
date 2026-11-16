@@ -14,7 +14,7 @@ export async function loadKit(onProgress = () => { }) {
   let n = 0; const all = TEX.length + MODELS.length, tick = (v) => { onProgress(++n / all); return v; };
   await Promise.all([
     ...TEX.map((k) => Promise.all([one(`${BASE}tex/${k}_c.jpg`, true), one(`${BASE}tex/${k}_n.jpg`), one(`${BASE}tex/${k}_r.jpg`)]).then((s) => { sets[k] = s; }).then(tick)),
-    ...MODELS.map((k) => GL.loadAsync(`${BASE}m/${k}.glb`).then((d) => { d.scene.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; o.material.envMapIntensity = 0.7; } }); models[k] = d.scene; }).catch((e) => console.warn('no model', k, e)).then(tick)),
+    ...MODELS.map((k) => GL.loadAsync(`${BASE}m/${k}.glb`).then((d) => { d.scene.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; o.material.envMapIntensity = 0.2; if (o.material.roughness < 0.8) o.material.roughness = Math.min(1, o.material.roughness + 0.35); } }); models[k] = d.scene; }).catch((e) => console.warn('no model', k, e)).then(tick)),
   ]);
 }
 
@@ -22,11 +22,11 @@ export async function loadKit(onProgress = () => { }) {
 const made = new Map();
 export function pbr(name, o = {}) {
   const k = name + '|' + JSON.stringify(o); if (made.has(k)) return made.get(k);
-  const [c, n, r] = sets[name] || [], m = new THREE.MeshStandardMaterial({ map: c || null, normalMap: n || null, roughnessMap: r || null, color: o.color ?? 0xffffff, roughness: o.rough ?? 1, metalness: o.metal ?? 0, envMapIntensity: o.env ?? 0.6, side: o.side ?? THREE.FrontSide });
+  const [c, n, r] = sets[name] || [], m = new THREE.MeshStandardMaterial({ map: c || null, normalMap: n || null, roughnessMap: r || null, color: o.color ?? 0xffffff, roughness: o.rough ?? 1, metalness: o.metal ?? 0, envMapIntensity: o.env ?? 0.2, side: o.side ?? THREE.FrontSide });
   if (n) m.normalScale.setScalar(o.bump ?? 1); m.userData.tile = o.tile ?? 1; made.set(k, m); return m;
 }
-export const plain = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: o.rough ?? 0.6, metalness: o.metal ?? 0, envMapIntensity: o.env ?? 0.8, transparent: !!o.opacity, opacity: o.opacity ?? 1, emissive: o.glow ?? 0, emissiveIntensity: o.glowK ?? 1, side: o.side ?? THREE.FrontSide });
-export const brass = () => plain(0xb08a3a, { rough: 0.32, metal: 1, env: 1.2 });
+export const plain = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: o.rough ?? 0.85, metalness: o.metal ?? 0, envMapIntensity: o.env ?? 0.25, transparent: !!o.opacity, opacity: o.opacity ?? 1, emissive: o.glow ?? 0, emissiveIntensity: o.glowK ?? 1, side: o.side ?? THREE.FrontSide });
+export const brass = () => plain(0x6e5a30, { rough: 0.62, metal: 1, env: 0.55 });   // old brass, handled dull
 
 // a box whose picture is laid by the metre on every face (material.userData.tile metres a tile)
 export function slab(w, h, d, material, x = 0, y = 0, z = 0, parent, turn) {

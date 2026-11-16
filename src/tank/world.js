@@ -62,7 +62,7 @@ const WORLD=(()=>{
   const KIND={barn:'b5',h6:'b6',row:'b8',h9:'b6',shop:'b6',cork:'b6',flats:'b10',white:'b6',cottage:'b5',villa:'b6',mill:'b14',works:'b10',church:'b12',silos:'b8',watertower:'t3',stacks:'t5',mast:'t3',pylon:'t3',
     pole:'p1',lamp:'p1',dead:'p1',busstop:'l1',hay:'l1',log:'l1',ammobox:'l1',trabant:'c1',lada:'c1',van:'c1',tractor:'c2',truck:'c2',stonewall:'w1',brokenwall:'w1',bags:'w1',rockS:'r1',rockB:'R3',crag:'s9',hog:'s9',wreck:'s9',cars:'s9',rubble:'s9'};
   const moving=[],fires=[];
-  for(const t of ITEMS){const k=KIND[t.name]||'s9';t.cls=k[0];t.hp=+k.slice(1);t.h=t.so?t.so[0].h:1.5;t.id=ITEMS.indexOf(t);t.y=hAt(t[0],t[1]);if(t.keep)t.cls='s';if(t.so)for(const o of t.so)o.soft='plwc'.includes(t.cls)||t.cls==='r';}
+  for(const t of ITEMS){const k=KIND[t.name]||'s9';t.cls=k[0];t.hp=+k.slice(1);t.h=t.so?t.so[0].h:1.5;t.id=ITEMS.indexOf(t);t.y=hAt(t[0],t[1]);if(t.keep)t.cls='s';if(t.so)for(const o of t.so)o.soft='plwc'.includes(t.cls)||t.cls==='r'&&t[3]<1.1;}
   // one thing's drawn instances, set from where it is, how it is turned and tipped, and how tall it still stands
   function setItem(t,x,y,z,ry,tipAx,tip,sy=1,sink=0){
     dm.position.set(x,y+(t[4]||0)-sink,z);q1.setFromAxisAngle(UP,ry);if(tip){v1.set(Math.cos(tipAx),0,Math.sin(tipAx));dm.quaternion.setFromAxisAngle(v1,tip).multiply(q1);}else dm.quaternion.copy(q1);
@@ -123,7 +123,7 @@ const WORLD=(()=>{
     explode(s.p.x,s.p.y,s.p.z,big,false,true);hitItem(t,big?3:1.5,v2.x,v2.z,s.p.x,s.p.y,s.p.z);return big||!(t.cls==='p'||t.cls==='w');};
   // ---- trees: felled by a blast, a shell or a tank; blown apart by a direct hit
   const TG=new Map(),tkey=(x,z)=>((x/24|0)+64)*256+((z/24|0)+64),falling=[];
-  for(const t of TREEL){const k=tkey(t[0]+1536,t[1]+1536);(TG.get(k)||TG.set(k,[]).get(k)).push(t);t.small=t.k===5||t.h<4.5;}
+  for(const t of TREEL){const k=tkey(t[0]+1536,t[1]+1536);(TG.get(k)||TG.set(k,[]).get(k)).push(t);t.small=t.k===5||t.h<5;t.big=t.h>36;}
   function treesNear(x,z,r,fn){const a=(x+1536-r)/24|0,b=(x+1536+r)/24|0,c=(z+1536-r)/24|0,d=(z+1536+r)/24|0;for(let i=a;i<=b;i++)for(let j=c;j<=d;j++){const l=TG.get((i+64)*256+(j+64));if(l)for(const t of l)if(!t.dead){const dx=t[0]-x,dz=t[1]-z;if(dx*dx+dz*dz<r*r)fn(t,Math.sqrt(dx*dx+dz*dz));}}}
   function setTree(t,ax,an,sc=1){dm.position.set(t[0],hAt(t[0],t[1]),t[1]);q1.setFromAxisAngle(UP,t[3]);if(an){v1.set(Math.cos(ax),0,Math.sin(ax));dm.quaternion.setFromAxisAngle(v1,an).multiply(q1);}else dm.quaternion.copy(q1);dm.scale.setScalar(t[2]*sc);dm.updateMatrix();for(let i=0;i<t.im.length;i+=2){t.im[i].setMatrixAt(t.im[i+1],dm.matrix);t.im[i].instanceMatrix.needsUpdate=true;}}
   function fell(t,dx,dz,burn,flat){if(t.dead)return;t.dead=1;const l=Math.hypot(dx,dz)||1;t.fx=dx/l;t.fz=dz/l;t.ax=Math.atan2(-t.fx,t.fz);t.an=0;t.w=flat?2.5:.5;falling.push(t);
@@ -132,17 +132,17 @@ const WORLD=(()=>{
   function shatter(t){if(t.dead)return;t.dead=2;setTree(t,0,0,.0001);const y=hAt(t[0],t[1]);burst('wood',t[0],y+t.h*.3,t[1],t.small?5:14,8,.3,Math.min(1.6,t.h*.14));for(let i=0;i<6;i++)puff(t[0],y+t.h*(.3+Math.random()*.5),t[1],{c:[.2,.27,.12],s0:2,s1:t.h*.9,life:2.2,vx:(Math.random()-.5)*6,vz:(Math.random()-.5)*6,vy:2+Math.random()*3,op:.7});}
   function updateTrees(dt){for(let k=falling.length-1;k>=0;k--){const t=falling[k];t.w+=dt*2.4*Math.sin(t.an+.2);t.an+=t.w*dt;if(t.an>=1.48){t.an=1.48;falling.splice(k,1);if(!t.small){dustUp(t[0]+t.fx*t.h*.5,hAt(t[0],t[1])+.5,t[1]+t.fz*t.h*.5,3,3);stamp(t[0]+t.fx*t.h*.5,t[1]+t.fz*t.h*.5,t.h*.45,0,0,1,Math.atan2(t.fz,t.fx),.3);if(!W.quiet)play('thump',clamp(.5/(1+distTo(t[0],t[1])/40),0,.5),'out',0,.7);}}setTree(t,t.ax,t.an);}}
   // a shell flying through the trees: SABOT goes through and brings one down, HEAT bursts on the trunk
-  W.shellTree=s=>{let hit=null;treesNear(s.p.x,s.p.z,2.2,(t,d)=>{if(!hit&&d<.5+t[2]*.35&&s.p.y<hAt(t[0],t[1])+t.h*.8)hit=t;});if(!hit)return false;
-    if(s.kind==='H'){shatter(hit);explode(s.p.x,s.p.y,s.p.z,true,false);return true;}fell(hit,s.v.x,s.v.z,false);burst('wood',s.p.x,s.p.y,s.p.z,5,6,.15,.5);return false;};
+  W.shellTree=s=>{let hit=null;treesNear(s.p.x,s.p.z,2.2,(t,d)=>{if(!hit&&d<.5+t[2]*.35&&s.p.y<hAt(t[0],t[1])+t.h*.8&&s.pt!==t)hit=t;});if(!hit)return false;
+    if(s.kind==='H'){if(hit.big&&!hit.hurt){hit.hurt=1;burst('wood',s.p.x,s.p.y,s.p.z,12,8,.3,1);}else shatter(hit);explode(s.p.x,s.p.y,s.p.z,true,false);return true;}if(hit.big){s.pt=hit;burst('wood',s.p.x,s.p.y,s.p.z,5,6,.15,.5);return false;}fell(hit,s.v.x,s.v.z,false);burst('wood',s.p.x,s.p.y,s.p.z,5,6,.15,.5);return false;};
   // a tank among the trees: hedges and saplings go flat under it, a grown tree comes down if you hit it at speed, and stops you if you do not
-  W.tankTrees=(x,z,yaw,v,mine)=>{let block=false;if(Math.abs(v)<.3)return false;treesNear(x,z,2.6,t=>{const s=v<0?-1:1;if(t.small||Math.abs(v)>3.2){fell(t,-Math.sin(yaw)*s,-Math.cos(yaw)*s,false,t.small);if(mine&&!t.small){P.v*=.55;P.shake=Math.max(P.shake,.5);haptic(.5,90);play('thump',.6);}}else block=true;});return block;};
+  W.tankTrees=(x,z,yaw,v,mine)=>{let block=false;if(Math.abs(v)<.3)return false;treesNear(x,z,2.6,t=>{const s=v<0?-1:1;if(t.big){block=true;return;}if(t.small||Math.abs(v)>3.2){fell(t,-Math.sin(yaw)*s,-Math.cos(yaw)*s,false,t.small);if(mine&&!t.small){P.v*=.55;P.shake=Math.max(P.shake,.5);haptic(.5,90);play('thump',.6);}}else block=true;});return block;};
   // ---- what a blast does around it
   // every explosion comes here: a crater or a splash, the burn, the trees, the things
   W.scar=(x,y,z,big,dirt)=>{
     if(!W.on)return;const g=hAt(x,z),low=y-g<2.2,wet=wetAt(x,z);
     if(low){if(wet)splash(x,z,big);else if(dirt)crater(x,z,big?3.4:2.1);else stamp(x,z,big?7:3.5,.85,0,.3);
       if(!wet&&dirt)burst('stone',x,g+.3,z,big?8:4,big?9:6,.12,.4);}
-    const R=big?13:6;treesNear(x,z,R,(t,d)=>{if(d<(big?4:2.2))shatter(t);else if(d<R*(.55+.45*hsh(t[0],t[1])))fell(t,t[0]-x,t[1]-z,d<R*.5);});
+    const R=big?13:6;treesNear(x,z,R,(t,d)=>{if(t.big){if(big&&d<3){if(t.hurt)shatter(t);else t.hurt=1;}return;}if(d<(big?4:2.2))shatter(t);else if(d<R*(.55+.45*hsh(t[0],t[1])))fell(t,t[0]-x,t[1]-z,d<R*.5);});
     for(const o of solids.slice()){const t=o.it;if(!t||t.gone)continue;const d=Math.hypot(o.x-x,o.z-z)-o.r;if(d>R)continue;const dx=(o.x-x)/(d+o.r+.01),dz=(o.z-z)/(d+o.r+.01),k=1-Math.max(0,d)/R;
       if(t.cls==='b'||t.cls==='t'||t.cls==='R'){if(d<1.5&&big&&dirt)hitItem(t,1,dx,dz,o.x-dx*o.r,g+1.5,o.z-dz*o.r);}else if(k>.35||'lc'.includes(t.cls))hitItem(t,k*(big?1.6:.9),dx,dz,o.x,g+1,o.z);}
     for(const kind in DEB)for(const d of DEB[kind].live)if(d.rest){const dx=d.x-x,dz=d.z-z,l=Math.hypot(dx,dz);if(l<R*.7){d.rest=false;const v=(1-l/R)*(big?11:6);d.vx=dx/(l+.1)*v;d.vz=dz/(l+.1)*v;d.vy=v*.8;d.sp=(Math.random()-.5)*12;deb.push(d);}}
@@ -155,7 +155,7 @@ const WORLD=(()=>{
     W.quiet=true;craters.length=0;bowl.count=0;sq.length=eq.length=0;gsClean=false;W.rings.length=0;fires.length=0;moving.length=0;falling.length=0;deb.length=0;for(const k in DEB){DEB[k].im.count=0;DEB[k].n=0;DEB[k].live.length=0;}decal.count=0;dcI=0;decOf.length=0;
     for(const t of ITEMS){if(!t.gone&&!t.body&&!t.burnt&&t.hp===+(KIND[t.name]||'s9').slice(1))continue;t.gone=false;t.body=null;t.fall=null;t.burnt=0;t.hp=+(KIND[t.name]||'s9').slice(1);if(t.x0!=null){t[0]=t.x0;t[1]=t.z0;}t.y=hAt(t[0],t[1]);setItem(t,t[0],t.y,t[1],t[2],0,0);tint(t,1);
       if(t.so0&&!t.so){t.so=t.so0;for(const o of t.so){o.h=o.h0;if(solids.indexOf(o)<0)solids.push(o);}}else if(t.so)for(const o of t.so)o.h=o.h0;}
-    for(const t of TREEL)if(t.dead){t.dead=0;setTree(t,0,0);for(let i=0;i<t.im.length;i+=2){t.im[i].setColorAt(t.im[i+1],_c.setScalar(1));t.im[i].instanceColor.needsUpdate=true;}}
+    for(const t of TREEL)if(t.dead||t.hurt){t.dead=0;t.hurt=0;setTree(t,0,0);for(let i=0;i<t.im.length;i+=2){t.im[i].setColorAt(t.im[i+1],_c.setScalar(1));t.im[i].instanceColor.needsUpdate=true;}}
     W.quiet=false;};
   for(const t of ITEMS){t.x0=t[0];t.z0=t[1];t.so0=t.so;if(t.so)for(const o of t.so)o.h0=o.h;}
   W.items=ITEMS;W.trees=TREEL;W.hitItem=hitItem;W.fell=null;W.debris=DEB;W.moving=moving;W.fires=fires;W.falling=falling;

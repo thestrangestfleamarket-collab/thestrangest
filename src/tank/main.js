@@ -133,7 +133,7 @@ function h0(x,z){let h=hRaw(x,z);const pd=pondAt(x,z);if(pd){const d=Math.hypot(
 function roadDist(x,z){let m=1e9;for(let i=0;i<ROAD.length-1;i++){const a=ROAD[i],b=ROAD[i+1],dx=b[0]-a[0],dz=b[1]-a[1],t=clamp(((x-a[0])*dx+(z-a[1])*dz)/(dx*dx+dz*dz),0,1);m=Math.min(m,Math.hypot(x-a[0]-dx*t,z-a[1]-dz*t));}return m;}
 const PONDS=[[-70,-190,34,0],[235,-125,28,0],[-300,-70,40,0],[335,-300,30,0],[95,-345,26,0],[-175,175,32,0],[300,130,30,0]];
 function pondAt(x,z){for(const p of PONDS)if(Math.hypot(x-p[0],z-p[1])<p[2]*1.7)return p;return null;}
-function hRaw(x,z){const r=Math.hypot(x,z);const rd=Math.abs(fbm(x/1100+5.5,z/1100+1.5,3)-.5)*2;return 80*(fbm(x/560+3.1,z/560+7.7,4)-.46)+16*(fbm(x/140+1.3,z/140+4.2,3)-.44)+.5*(vn(x/14,z/14)-.5)+smooth(clamp((r-800)/2600,0,1))*(40+330*Math.pow(1-rd,2.2)*(.35+fbm(x/2300,z/2300,2)));}
+function hRaw(x,z){const r=Math.hypot(x,z);const rd=Math.abs(fbm(x/1100+5.5,z/1100+1.5,3)-.5)*2;return 120*(fbm(x/560+3.1,z/560+7.7,4)-.46)+26*(fbm(x/140+1.3,z/140+4.2,3)-.44)+.5*(vn(x/14,z/14)-.5)+smooth(clamp((r-800)/2600,0,1))*(40+330*Math.pow(1-rd,2.2)*(.35+fbm(x/2300,z/2300,2)));}
 for(const s of SITES)s[4]=hRaw(s[0],s[1]);for(const q of PONDS)q[3]=hRaw(q[0],q[1])-1.2;
 const GN=170,GS=10,G0=-850,HG=new Float32Array((GN+1)*(GN+1));
 for(let j=0;j<=GN;j++)for(let i=0;i<=GN;i++)HG[j*(GN+1)+i]=h0(G0+i*GS,G0+j*GS);
@@ -149,11 +149,11 @@ const openAt=(x,z,m)=>roadDist(x,z)>m&&Math.hypot(x-150,z-300)>160+m&&Math.hypot
 // something in every field: clumps of bush, stands of trees, rock piles, great rocks, crags, fallen and dead trees, debris
 const FEAT={bush:[],tree:[],rockS:[],rockB:[],crag:[],log:[],dead:[],bags:[],hog:[],wreck:[]};
 (function(){const r=rng(4711);for(let cx=-6;cx<=6;cx++)for(let cz=-8;cz<=8;cz++){const n=4+Math.floor(r()*4);for(let i=0;i<n;i++){const qx=(cx+r())*FW,qz=(cz+r())*FD,x=FCS*qx-FSN*qz,z=FSN*qx+FCS*qz,t=r();if(Math.hypot(x,z)>980)continue;
-    if(t<.3){if(openAt(x,z,5))for(let k=0;k<6+r()*5;k++)FEAT.bush.push([x+(r()-.5)*13,z+(r()-.5)*13]);}
-    else if(t<.5){if(openAt(x,z,8))for(let k=0;k<3+r()*4;k++)FEAT.tree.push([x+(r()-.5)*26,z+(r()-.5)*26]);}
+    if(t<.26){if(openAt(x,z,5))for(let k=0;k<9+r()*7;k++)FEAT.bush.push([x+(r()-.5)*12,z+(r()-.5)*12]);}
+    else if(t<.52){if(openAt(x,z,8)){FEAT.tree.push([x,z,1]);for(let k=0;k<8+r()*9;k++)FEAT.tree.push([x+(r()-.5)*30,z+(r()-.5)*30,0]);}}
     else if(!openAt(x,z,14))continue;
-    else if(t<.66)for(let k=0;k<2+r()*2;k++)FEAT.rockS.push([x+(r()-.5)*9,z+(r()-.5)*9,r()*6.28,.7+r()*1.1]);
-    else if(t<.76)FEAT.rockB.push([x,z,r()*6.28,3+r()*4]);else if(t<.85)FEAT.crag.push([x,z,r()*6.28,1.1+r()*1.5]);else if(t<.91)FEAT.log.push([x,z,r()*6.28,.8+r()*.5]);else if(t<.95)FEAT.dead.push([x,z,r()*6.28,.9+r()*.6]);
+    else if(t<.66){FEAT.rockB.push([x,z,r()*6.28,3.5+r()*4]);for(let k=0;k<5+r()*5;k++)FEAT.rockS.push([x+(r()-.5)*16,z+(r()-.5)*16,r()*6.28,.8+r()*1.6]);}
+    else if(t<.76){FEAT.rockB.push([x,z,r()*6.28,5+r()*4.5]);FEAT.rockB.push([x+8+r()*6,z+(r()-.5)*14,r()*6.28,3+r()*4]);}else if(t<.87){const cs=1.4+r()*2.6;FEAT.crag.push([x,z,r()*6.28,cs]);if(r()<.6)FEAT.crag.push([x+cs*5,z+(r()-.5)*cs*4,r()*6.28,cs*(.5+r()*.4)]);}else if(t<.92)FEAT.log.push([x,z,r()*6.28,.8+r()*.5]);else if(t<.95)FEAT.dead.push([x,z,r()*6.28,.9+r()*.6]);
     else if(t<.975)FEAT.bags.push([x,z,r()*6.28]);else if(t<.99)FEAT.hog.push([x,z,r()*6.28]);else FEAT.wreck.push([x,z,r()*6.28]);}}})();
 const landMat=new T.MeshLambertMaterial({map:A0.grass.d,normalMap:A0.grass.n,normalScale:new T.Vector2(1.6,1.6),vertexColors:true});A0.grass.n.repeat.set(1,1);
 landMat.onBeforeCompile=s=>{s.uniforms.tDry={value:A0.dry};s.uniforms.tSoil={value:A0.soil.d};s.uniforms.uT=landMat.userData.uT={value:0};s.uniforms.tShade=landMat.userData.tShade={value:null};s.uniforms.tGS=landMat.userData.tGS={value:null};s.uniforms.uShadeM=landMat.userData.uShadeM={value:new T.Matrix4()};const seg=(a,b)=>`rd=min(rd,sdS(wp,vec2(${a[0]}.,${a[1]}.),vec2(${b[0]}.,${b[1]}.)));`;
@@ -184,16 +184,16 @@ landMat.onBeforeCompile=s=>{s.uniforms.tDry={value:A0.dry};s.uniforms.tSoil={val
 })();
 // trees and hedges: each a pair of crossed cards drawn from the real tree
 const solids=[],ITEMS=[],TREEL=[];
-const TSCALE=[4.2,5.2,6.4,4.6,1.05,1.5];
+const TSCALE=[4.9,6,7.4,5.3,1.2,1.7];
 (function buildTrees(){
-  const r=rng(1944),spots=TREES.map(()=>[]);const put=(k,x,z,s)=>{if(Math.hypot(x,z)<30||Math.hypot(x,z)>1700||roadDist(x,z)<9||Math.hypot(x-150,z-300)<150||Math.hypot(x+480,z+640)<95||Math.hypot(x-420,z+560)<70||Math.hypot(x,z)<55||pondAt(x,z)&&Math.hypot(x-pondAt(x,z)[0],z-pondAt(x,z)[1])<pondAt(x,z)[2]*1.05)return;spots[k].push([x,z,s*(.75+r()*.5),Math.atan2(SUN.x,SUN.z)+(r()-.5)*1.2+(r()<.5?Math.PI:0)]);};
+  const r=rng(1944),spots=TREES.map(()=>[]);const put=(k,x,z,s)=>{if(Math.hypot(x,z)<30||Math.hypot(x,z)>1700||roadDist(x,z)<9||Math.hypot(x-150,z-300)<150||Math.hypot(x+480,z+640)<95||Math.hypot(x-420,z+560)<70||Math.hypot(x,z)<55||pondAt(x,z)&&Math.hypot(x-pondAt(x,z)[0],z-pondAt(x,z)[1])<pondAt(x,z)[2]*1.05)return;spots[k].push([x,z,s*(.75+r()*.5)*(k<4&&r()<.12?1.6:1),Math.atan2(SUN.x,SUN.z)+(r()-.5)*1.2+(r()<.5?Math.PI:0)]);};
   for(let cx=-9;cx<=9;cx++)for(let cz=-12;cz<=12;cz++){
     const o=(u,v)=>{const qx=(cx+u)*FW,qz=(cz+v)*FD;return[FCS*qx-FSN*qz,FSN*qx+FCS*qz];},f=field(...o(.5,.5));
     if(f.kind===3){const[mx,mz]=o(.5,.5),n=Math.hypot(mx,mz)<950?34:12;for(let i=0;i<n;i++){const[x,z]=o(.04+r()*.92,.04+r()*.92);put(r()<.25?4:Math.floor(r()*4),x,z,1.1);}for(let i=0;i<n/3;i++){const[x,z]=o(r(),r());put(5,x,z,1.2);}}
     for(const[side,len]of[[0,FW],[1,FD]]){const h=hsh(cx*3.1+side*7.7,cz*5.3+1.9);if(h>.82)continue;const gap=.15+hsh(cx+side,cz*1.7)*.6;
       for(let d=3;d<len-3;d+=7+r()*11){const t=d/len;if(Math.abs(t-gap)<.07)continue;const[x,z]=side?o(0,t):o(t,0);const jx=(r()-.5)*3,jz=(r()-.5)*3;if(r()<.55)put(5,x+jx,z+jz,1);else put(h<.3?Math.floor(r()*4):3,x+jx,z+jz,.9);}}
     if(f.kind<3&&r()<.55){const[x,z]=o(.2+r()*.6,.2+r()*.6);put(r()<.3?4:Math.floor(r()*3),x,z,1.3);}}
-  for(const[x,z]of FEAT.bush)put(5,x,z,1.25);for(const[x,z]of FEAT.tree)put(r()<.2?4:Math.floor(r()*4),x,z,1.15);
+  for(const[x,z]of FEAT.bush)put(5,x,z,1.25);for(const[x,z,big]of FEAT.tree)put(big?0:r()<.2?4:Math.floor(r()*4),x,z,big?1.9:1.15);
   for(const q of PONDS)for(let i=0;i<26;i++){const a=r()*6.28,d=q[2]*(1.08+r()*.5);put(r()<.75?5:3,q[0]+Math.cos(a)*d,q[1]+Math.sin(a)*d,r()<.75?1.3:1);}
   for(let i=0;i<1500;i++){const a2=r()*6.28,d=1700+Math.pow(r(),1.4)*2600,x=Math.cos(a2)*d,z=Math.sin(a2)*d;if(fbm(x/700+3,z/700+8,2)<.5)continue;spots[Math.floor(r()*4)].push([x,z,2.2+r()*1.6,Math.atan2(SUN.x,SUN.z)+(r()-.5)]);}
   const dm=new T.Object3D();let n_=0;

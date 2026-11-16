@@ -1,7 +1,7 @@
-// YATAI '86 CHECK: node tests/sushi.cjs [dist/sushi.html] [folder for screenshots]. The cart loads with its people, the burners light, the sign opens, a customer orders, a whole bowl is built by hand through the same hand code a player uses (tare, broth, noodles, a roll sliced, toppings), served and paid, the dirty bowl cleared; a customer struck with a ladle and a passer-by hit by a thrown bowl react and the street remembers, and a passer-by waves back at the cook; then in an emulated Quest 3 a knob is touched, a bowl is taken, a ladle poured by the wrist and a log chopped, a held pot stops on the counter, a held bowl shoves a shaker aside and a throw lands where it was aimed; no page errors.
+// RAMEN CHECK: node tests/sushi.cjs [dist/ramen.html] [folder for screenshots]. The cart loads with its people, the burners light, the sign opens, a customer orders, a whole bowl is built by hand through the same hand code a player uses (tare, broth, noodles, a roll sliced, toppings), served and paid, the dirty bowl cleared; a customer struck with a ladle and a passer-by hit by a thrown bowl react and the street remembers, and a passer-by waves back at the cook; then in an emulated Quest 3 a knob is touched, a bowl is taken, a ladle poured by the wrist and a log chopped, a held pot stops on the counter, a held bowl shoves a shaker aside and a throw lands where it was aimed; no page errors.
 const { chromium } = require('playwright'), path = require('path'), fs = require('fs');
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log((process.env.GITHUB_ACTIONS ? '::error title=sushi::' : 'FAIL ') + m); } else console.log('ok   ' + m); };
-const PAGE = path.resolve(process.argv[2] || 'dist/sushi.html'), ROOT = path.dirname(PAGE), OUT = process.argv[3]; if (OUT) fs.mkdirSync(OUT, { recursive: true });
+const PAGE = path.resolve(process.argv[2] || 'dist/ramen.html'), ROOT = path.dirname(PAGE), OUT = process.argv[3]; if (OUT) fs.mkdirSync(OUT, { recursive: true });
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.json': 'application/json', '.webp': 'image/webp', '.fbx': 'application/octet-stream' };
 const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, decodeURIComponent(q.url.split('?')[0])); if (!f.startsWith(ROOT) || q.method !== 'GET') { r.writeHead(404); return r.end(); }
   fs.readFile(f, (e, d) => { if (e) { r.writeHead(404); return r.end(); } r.writeHead(200, { 'content-type': TYPES[path.extname(f)] || 'application/octet-stream' }); r.end(d); }); });
@@ -10,7 +10,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   const b = await chromium.launch({ ...(process.env.PWCHROME ? { executablePath: process.env.PWCHROME } : {}), args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'] });
   const errs = [], miss = [];
   const open = async (q, init) => { const p = await b.newPage({ viewport: { width: 800, height: 450 } }); if (init) await p.addInitScript(init);
-    p.on('pageerror', e => errs.push(e.message.slice(0, 300))); p.on('response', r => { if (r.status() === 404 && !/talk$|hear$|say$|log$|opacity_color|\/film\//.test(r.url())) miss.push(r.url().split('/').pop()); });
+    p.on('pageerror', e => errs.push(e.message.slice(0, 300))); p.on('response', r => { if (r.status() === 404 && !/talk$|hear$|say$|log$|mind$|opacity_color|\/film\//.test(r.url())) miss.push(r.url().split('/').pop()); });
     await p.goto(FILE + q); await p.waitForFunction('window.G && G.debug', null, { timeout: 240000 }); await p.waitForTimeout(3000); return p; };
   const p = await open('?desktop&nopost'); await p.waitForFunction('G.till && G.till.ready', null, { timeout: 180000 }).catch(() => console.log('the register model did not load'));
   ok(await p.evaluate(() => G.mode === 'desktop' && G.debug.PH.ready), 'the cart loads on a screen, its loose things on the physics engine');
@@ -27,7 +27,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
       const heard = []; const shot = A.shot; A.shot = function (n, ...r) { heard.push(n); return shot.call(this, n, ...r); };
       const bowl = new G.debug.Items.Bowl(), ladle = G.items.find((i) => i.kind === 'ladle'); A.play('grab', bowl); bowl.remove(); A.hit(ladle, 2.5); A.play('chop', new V(0.3, 0.93, -0.26)); A.shot = shot;
       return { loaded: A.loaded, missing: A.missing || 0, far, behind, over, heard, beds: !!(A.bedOn && A.edges && A.edges.length === 4 && A.street), live: A.emit.size }; });
-    ok(a.loaded === 31 && !a.missing && a.beds, `the recorded sounds load (${a.loaded} of 31) and the rain, its runoff at the roof's edges and the street are going (${a.live} sources live)`);
+    ok(a.loaded === 31 && !a.missing && !a.beds, `the recorded sounds load (${a.loaded} of 31), and on a dry day in the village no rain or traffic plays (${a.live} sources live)`);
     ok(a.far.every((o, i) => !i || (o.g < a.far[i - 1].g && o.f < a.far[i - 1].f && o.s >= a.far[i - 1].s)), 'a sound grows quieter, duller and more of the alley with distance ' + JSON.stringify(a.far));
     ok(a.behind.f < 1500 && a.over.f > 5000, `behind the counter it is muffled (${a.behind.f} Hz), over it not (${a.over.f} Hz)`);
     ok(/^ceramic/.test(a.heard[0]) && /^(metal|clank)/.test(a.heard[1]) && /^chop/.test(a.heard[2]), 'a bowl is taken up as ceramic, a ladle knocks as metal, the knife chops on the board ' + a.heard.join(','));
@@ -42,7 +42,7 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
     const aim = (pt) => { const c = V(G.rig.position.x, 1.62, G.rig.position.z), d = pt.clone().sub(c); G.desk.yaw = Math.atan2(-d.x, -d.z); G.desk.pitch = Math.atan2(d.y, Math.hypot(d.x, d.z)); step(3); };
     const click = () => { h.grip = true; step(2); h.grip = false; step(2); };
     const use = (sec = 0.7) => { h.use = true; step(Math.round(sec * 60)); h.use = false; step(25); };
-    const C = G.cart, game = G.game; { const pay = G.till.pay; G.till.pay = (c, d, t, k) => pay(c, d, t, k || ['b10']); } // a ten, so change has to be made
+    const C = G.cart, game = G.game; { const pay = G.till.pay; G.till.pay = (c, d, t, k) => pay(c, d, t, k || ['c4', 'c4', 'c4', 'c4', 'c4']); } // five four-mon pieces, so change has to be made
     try {
     // 1 burners
     stand(-0.2, 0.4);
@@ -102,23 +102,23 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
     } catch (e) { L('EXC', e.stack); }
     return log;
   });
-  const L = log.join('\n'), has = (re, m) => ok(re.test(L), m + (re.test(L) ? '' : '  [' + (L.match(/EXC.*/) || [''])[0].slice(0, 200) + ']'));
+  const L = log.join('\n'); if (process.env.LOG) console.log(L); const has = (re, m) => ok(re.test(L), m + (re.test(L) ? '' : '  [' + (L.match(/EXC.*/) || [''])[0].slice(0, 200) + ']'));
   if (process.env.SUSHI_LOG) console.log(L);
   has(/pots on: true,true,true/, 'each knob lights its burner'); has(/state open open true/, 'the switch opens the cart'); has(/ORDER seat \d shoyu/, 'the first customer of night one orders plain shoyu');
   has(/bowl tare shoyu/, 'a tare ladle tips into the bowl'); has(/bowl broth chicken (2|1\.[89]\d*) temp 0\.9/, 'two ladles of hot broth, poured'); has(/bowl noodles \{"cook":1[4-9]/, 'noodles boiled into the green and tipped in');
   has(/raw left 5 slices on board 3/, 'three chops, three slices on the board'); has(/bin stock 8 -> 9/, 'a slice restocks its bin'); has(/bowl toppings chashu,chashu,menma,negi,nori,naruto/, 'every topping lands in the bowl');
-  has(/RESULT \{"score":100/, 'served as ordered: 100'); has(/paid leaving rung true till [1-9]/, 'they pay in cash: the money into the register, the right change back by their seat, and they go' + (/paid leaving rung true till [1-9]/.test(L) ? '' : ' (' + ((L.match(/paid .*/) || [''])[0]).slice(0, 120) + ')'));
-  has(/money 450 tips [1-9]\d* served 1 seat dirty true/, 'the sale rung up and the tip left on the ledge goes in the till; a dirty bowl left'); has(/bowl removed true seat dirty false/, 'the bus tub clears the seat'); ok(!/EXC/.test(L), 'the order ran through');
-  const chg = await p.evaluate(() => { // a ten for a $5.25 bill: four dollars laid back is short and they say so; three quarters more and they thank you and go
+  has(/RESULT \{"score":100/, 'served as ordered: 100'); has(/paid leaving rung true till [1-9]/, 'they pay in coin: the coins into the coin box, the right change back by their seat, and they go' + (/paid leaving rung true till [1-9]/.test(L) ? '' : ' (' + ((L.match(/paid .*/) || [''])[0]).slice(0, 120) + ')'));
+  has(/money 16 tips [1-9]\d* served 1 seat dirty true/, 'the sale rung up and the tip left on the ledge goes in the till; a dirty bowl left'); has(/bowl removed true seat dirty false/, 'the bus tub clears the seat'); ok(!/EXC/.test(L), 'the order ran through');
+  const chg = await p.evaluate(() => { // six four-mon pieces for a 21-mon bill: two mon laid back is short and they say so; one more and they thank you and go
     const step = (n) => { for (let i = 0; i < n; i++) G.debug.tick(1 / 30); }, game = G.game, TL = G.till; let c = game.forceSpawn(); if (!c) return { none: true }; for (let i = 0; i < 400 && c.state !== 'waiting'; i++) step(1);
-    if (c.ticket) c.ticket.removeFromParent(); c.result = { score: 90, issues: [], pay: 525, tip: 0 }; game.scores.push(90); const m0 = game.money; TL.pay(c, 525, 0, ['b10']); step(60);
+    if (c.ticket) c.ticket.removeFromParent(); c.result = { score: 90, issues: [], pay: 21, tip: 0 }; game.scores.push(90); const m0 = game.money; TL.pay(c, 21, 0, ['c4', 'c4', 'c4', 'c4', 'c4', 'c4']); step(60);
     const r = { owed: c.pay.owed, laid: c.pay.items.length }; TL.toggle(true); for (const it of [...c.pay.items]) TL.deposit(it);
     const give = (k) => { const it = G.sources.find((s) => s.till === k).take(); G.targets.find((t) => t.accepts(it) && t.getPos().distanceTo(TL.spot(c.seat)) < 0.01).receive(it); };
-    for (let i = 0; i < 4; i++) give('b1'); step(30 * 5); r.short = !!c.pay.shorted && c.state === 'paying';
-    for (let i = 0; i < 3; i++) give('c25'); step(30 * 4); r.gone = c.state === 'leaving'; r.rung = game.money - m0; r.change = TL.coins(475).join(','); return r; });
-  ok(chg.owed === 475 && chg.laid === 1 && chg.short && chg.gone && chg.rung === 525, 'a ten for $5.25: short change is called out, the right change and they go, the sale rung up (' + JSON.stringify(chg) + ')');
+    for (let i = 0; i < 2; i++) give('c1'); step(30 * 5); r.short = !!c.pay.shorted && c.state === 'paying';
+    give('c1'); step(30 * 4); r.gone = c.state === 'leaving'; r.rung = game.money - m0; r.change = TL.coins(3).join(','); return r; });
+  ok(chg.owed === 3 && chg.laid === 6 && chg.short && chg.gone && chg.rung === 21, 'six four-mon pieces for 21 mon: short change is called out, the right change and they go, the sale rung up (' + JSON.stringify(chg) + ')');
   const stk = await p.evaluate(() => { const C = G.cart, a = C.avail(), n0 = C.stock.noodles, src = G.sources.find((s) => s.name === 'fresh noodle portion'); C.stock.noodles = 0; C.showStock(); const can = src.can(), sold = !C.canMake('shoyu'); C.stock.noodles = n0; C.showStock(); return { a, can, sold }; });
-  ok(stk.a.noodles === 4 && stk.a.broth.chicken >= 2 && !stk.can && stk.sold, 'night one is stocked for its four customers and a quarter more (one bowl made); out of noodles, the box is empty and shoyu is sold out (' + JSON.stringify(stk.a).slice(0, 160) + ')');
+  ok(stk.a.noodles === 29 && stk.a.broth.chicken >= 2 && !stk.can && stk.sold, 'the day is stocked for its twenty-four customers and a quarter more (one bowl made); out of noodles, the box is empty and shoyu is sold out (' + JSON.stringify(stk.a).slice(0, 160) + ')');
   const phys = await p.evaluate(() => { const T = G.debug.THREE, C = G.cart, pot = C.pots[1], it = pot.item, hand = { pos: new T.Vector3(), vs: new T.Vector3(), vel: new T.Vector3() }, step = (n) => { for (let i = 0; i < n; i++) G.debug.tick(1 / 60); }, l0 = pot.level;
     it.held = hand; for (let i = 0; i < 40; i++) { it.obj.position.set(-0.4, 1.3, 0.3); it.obj.quaternion.setFromAxisAngle(new T.Vector3(0, 0, -1), 1.5); step(1); } const spilt = pot.level < l0 - 0.05, off = !pot.on;
     it.obj.quaternion.identity(); it.obj.position.set(-0.93, 0.95, 0.42); it.held = null; it.drop(); step(120); const back = pot.on && Math.abs(it.obj.position.y - 0.86) < 0.03;
@@ -131,8 +131,8 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
     G.talk.live = false; G.talk.tts = false; if (game.state !== 'open') game.toggleOpen(); const c = game.customers.find((x) => x.state === 'waiting' || x.state === 'eating') || game.forceSpawn(); let g = 0; while (c.state !== 'waiting' && c.state !== 'eating' && g++ < 2400) step(1);
     const torso = (P) => P.bones.find((b) => b.name === 'torso').quaternion.clone(), H = c.p.bones.find((b) => b.name === 'head').getWorldPosition(V(0, 0, 0)), q0 = torso(c.p), h = G.hands[0], ladle = G.items.find((i) => i.kind === 'ladle'), n0 = G.react.log.length;
     h.active = true; h.held = ladle; for (let i = 0; i < 12; i++) { const at = H.clone().add(V(0.04, 0, 0.4 - i * 0.05)); h.pos.copy(at); h.vs.set(0, 0, -3); ladle.obj.position.copy(at).sub(ladle.center.clone().applyQuaternion(ladle.obj.quaternion)); step(1); out.lean = Math.max(out.lean || 0, q0.angleTo(torso(c.p))); }
-    h.active = false; h.held = null; for (let i = 0; i < 20; i++) { step(1); out.lean = Math.max(out.lean, q0.angleTo(torso(c.p))); } const e = G.react.log[n0]; out.cust = { seated: e && e.seated, kind: e && e.kind, gone: c.state === 'leaving', said: G.talk.last && G.talk.last.who, cop: !!B.by.denise.cop || B.by.denise.taken, lean: +out.lean.toFixed(3) };
-    game.spawnT = 999; const free = () => B.people.find((x) => !x.taken && x.def.id !== 'denise' && !B.mad[x.def.id]), park = (x, at) => { x.hidden = false; x.lead = null; x.crew.length = 0; x.chat = null; x.greet = null; x.step = 'stand'; x.t = 60; x.p.root.position.copy(at); for (const o of B.people) if (o !== x && !o.taken && Math.abs(o.p.root.position.x) < 30) o.p.root.position.x += 40; }; // alone in the alley, so nothing else is in the way
+    h.active = false; h.held = null; for (let i = 0; i < 20; i++) { step(1); out.lean = Math.max(out.lean, q0.angleTo(torso(c.p))); } const e = G.react.log[n0]; out.cust = { seated: e && e.seated, kind: e && e.kind, gone: c.state === 'leaving', said: G.talk.last && G.talk.last.who, cop: !!B.by[B.cop].cop || B.by[B.cop].taken, lean: +out.lean.toFixed(3) };
+    game.spawnT = 999; const free = () => B.people.find((x) => !x.taken && x.def.id !== G.block.cop && !B.mad[x.def.id]), park = (x, at) => { x.hidden = false; x.lead = null; x.crew.length = 0; x.chat = null; x.greet = null; x.step = 'stand'; x.t = 60; x.p.root.position.copy(at); for (const o of B.people) if (o !== x && !o.taken && Math.abs(o.p.root.position.x) < 30) o.p.root.position.x += 40; }; // alone in the alley, so nothing else is in the way
     out.cust.J = e && e.J; out.cust.limbs = G.react.limbs ? G.react.limbs.active : 0;
     const pb = free(); park(pb, V(1.2, 0, -2.6)); pb.p.root.rotation.y = Math.PI; step(5); const ch = pb.p.bones.find((b) => b.name === 'torso').getWorldPosition(V(0, 0, 0)), throwAt = (y, v) => { const bw = new G.debug.Items.Bowl(); bw.obj.position.set(ch.x, y, ch.z + 1); bw.drop(V(0, 0.3, -v)); return bw; };
     // a bowl thrown at the chest: it bounces off them (never through), and they take it as hard as it landed
@@ -157,15 +157,30 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   ok(hurt.pass.who && !hurt.pass.seated && hurt.pass.J >= 3 && hurt.pass.down && hurt.pass.up && hurt.pass.mad && hurt.pass.notBack, 'a bowl thrown hard at the head knocks them down, they get up, and will not come to the cart tonight (' + JSON.stringify(hurt.pass) + ')');
   ok(hurt.touch.kind === 'tap' && hurt.touch.J < 0.9 && !hurt.touch.level && !hurt.touch.reel && !hurt.touch.mad, 'a slow hand on someone\'s chest is only a touch: nobody is knocked about (' + JSON.stringify(hurt.touch) + ')');
   ok(hurt.wave.greet && hurt.wave.waving && hurt.wave.said && hurt.wave.faces, 'a passer-by turns to a wave from the cook, waves back and says something (' + JSON.stringify(hurt.wave) + ')');
-  ok(await p.evaluate(() => !!G.debug.city.alley && !!G.debug.city.rain && G.debug.city.shops.length >= 5), 'the cart stands in the alley, in the rain, with its back doors');
-  const tvc = await p.evaluate(() => { const t = G.tv, b = (n) => G.buttons.find((x) => x.name === n), c0 = t.ch.ch; b('TV channel').press(); const c1 = t.ch.ch; b('TV power').press(); const off = !t.on; b('TV power').press(); for (let i = 0; i < 10; i++) G.debug.tick(1 / 30); return { sets: t.tubes.reduce((a, q) => a + q.sets.length, 0), changed: c0 !== c1, off, on: t.on, chans: t.channels.length }; });
-  ok(tvc.sets >= 1 && (tvc.changed || tvc.chans === 1) && tvc.off && tvc.on && tvc.chans >= 1, 'the cart has a television: its knobs change the channel and switch it off and on');
-  const tk = await p.evaluate(async () => { for (let i = 0; i < 100 && !G.tank.ready; i++) await new Promise((r) => setTimeout(r, 200)); const a = G.tank.fish.g.position.clone(); for (let i = 0; i < 30; i++) G.debug.tick(1 / 30); return { ready: G.tank.ready, fish: G.tank.fish.g ? G.tank.fish.g.children.length : 0, moved: G.tank.fish.g.position.distanceTo(a) > 0.005 }; });
-  ok(tk.ready && tk.fish === 1 && tk.moved, 'the cart has a small fish tank with one koi swimming (' + JSON.stringify(tk) + ')');
-  const tvv = await p.evaluate(() => { const m = G.tv.mine, b = G.buttons.find((x) => x.name === 'TV volume'), c = G.tv.channels.find((q) => q.name === 'CREATURE FEATURE'), v = []; const v0 = m.vol; for (let i = 0; i < 4; i++) { b.press(); v.push(m.vol); } while (m.vol !== v0) b.press(); return { v, movie: !!c && c.shows.some((s) => /NIGHT OF THE LIVING DEAD/.test(s.title)) }; });
-  ok(tvv.movie && tvv.v.join() === '0.6,0.9,0,0.3', 'the cart\'s TV has NIGHT OF THE LIVING DEAD on the creature feature, and its volume knob steps up to 0.9 then off (' + tvv.v.join() + ')');
-  const rtv = await p.evaluate(async () => { for (let i = 0; i < 100 && !(G.tv.models >= 1 && G.cart.radio); i++) await new Promise((r) => setTimeout(r, 200)); const names = G.tv.channels.map((c) => c.name), a = G.audio, was = a.label(); a.setRadio(true); const l0 = a.label(); a.tune(); const l1 = a.label(); return { films: names.includes('CREATURE FEATURE') && G.tv.channels[0].shows.every((x) => /^\/sushi-assets\/film\/notld-\d\.mp4$/.test(x.src)), models: G.tv.models + !!G.cart.radio, n: a.stations, l0, l1, was }; });
-  ok(rtv.films && rtv.models >= 2 && rtv.n >= 4 && rtv.n <= 8 && rtv.l0 !== rtv.l1 && /WBGO|WWOZ|WNYC|WQXR|SomaFM|TAPE/.test(rtv.l0 + rtv.l1), 'the TV and boombox are real models, the TV plays the creature feature from our own small copy, the radio tunes real stations (' + rtv.l0 + ' > ' + rtv.l1 + ')');
+  ok(await p.evaluate(() => !!G.debug.city.alley && !G.debug.city.rain && G.debug.city.shops.length >= 5 && G.debug.city.lamps.length >= 6), 'the stall stands in the village street, a dry day, with its doors and lanterns');
+  { // nothing after the 1860s in the scene: no television, radio, boombox, car, register, bills, electric lamps or bottles of cola
+    const ana = await p.evaluate(() => { const bad = []; G.scene.traverse((o) => { const n = (o.name || '') + ' ' + ((o.material && o.material.name) || ''); if (/television|boombox|radio|car_|corrado|cashregister|register|propane|bulb|neon/i.test(n)) bad.push(n.trim()); });
+      const names = [...G.buttons.map((b) => b.name), ...G.sources.map((s) => s.name), ...G.items.map((i) => i.name)].filter((n) => /\bTV\b|television|radio|register|bill|dollar|beer|cola|LIGHTS switch|burner knob/i.test(n));
+      return { bad: bad.slice(0, 6), names: names.slice(0, 6), tv: !!G.tv, radio: G.audio.stations, cars: G.debug.city.cars.length, drinks: Object.keys(G.cart.stock.drinks) }; });
+    ok(!ana.bad.length && !ana.names.length && !ana.tv && !ana.radio && !ana.cars && ana.drinks.join() === 'sake,tea', 'no anachronisms: no television, radio, cars, register, bills or electric lamps; the drinks are sake and tea (' + JSON.stringify(ana) + ')'); }
+  const tk = await p.evaluate(async () => { const K = G.tank; for (let i = 0; i < 100 && !K.ready; i++) await new Promise((r) => setTimeout(r, 200)); const y0 = K.fish.y, h0 = K.hunger, n0 = K.fed;
+    const src = G.sources.find((s) => s.name.startsWith('fish food')), pinch = src.take(), tgt = G.targets.find((t) => t.accepts(pinch) && t.getPos().distanceTo(K.fish.g.position) < 1); tgt.receive(pinch); const dropped = K.flakes.length;
+    let top = y0; for (let i = 0; i < 30 * 25 && K.flakes.length; i++) { G.debug.tick(1 / 30); top = Math.max(top, K.fish.y); }
+    return { ready: K.ready, fish: K.fish.g ? K.fish.g.children.length : 0, dropped, rose: +(top - y0).toFixed(3), ate: K.fed - n0, fed: K.hunger < h0, state: K.state() }; });
+  ok(tk.ready && tk.fish === 1 && tk.dropped > 0 && tk.rose > 0.02 && tk.ate > 0 && tk.fed, 'the goldfish basin: a pinch of food dropped on the water floats and sinks, the fish rises to it and eats, and is fed (' + JSON.stringify(tk) + ')');
+  const clk = await p.evaluate(() => { const K = G.clock, seen = [], st = []; const u1 = K.on('night', () => seen.push('night')), u2 = K.on('stage:ramp', () => st.push('ramp')); const was = [K.frac, K.running, K.speed];
+    K.running = true; K.speed = 600; for (let i = 0; i < 200 && K.phase !== 'night'; i++) G.debug.tick(1 / 20); K.speed = 1; for (let i = 0; i < 100; i++) G.debug.tick(1 / 20); const r = { phase: K.phase, stage: K.stage, hour: +K.hour.toFixed(1), dark: K.light, seen, st, lit: G.cart.lampK, closed: G.game.state !== 'open' };
+    K.speed = was[2]; K.reset(); u1(); u2(); return r; });
+  ok(clk.phase === 'night' && clk.seen.length === 1 && clk.st.length === 1 && clk.dark === 0 && clk.lit > 0.2, 'the run\'s clock runs the day into the night (fast): G.clock.on fires, the lanterns are lit, it is dark (' + JSON.stringify(clk) + ')');
+  const liq = await p.evaluate(() => { const T3 = G.debug.THREE, K = G.tank, W = K.water, step = (n) => { for (let i = 0; i < n; i++) G.debug.tick(1 / 60); }, out = {};
+    const it = new G.debug.Items.Food('negi'); it.obj.position.set(K.fish.g.position.x * 0 + -1.45, 1.25, 1.25); it.drop(); let peak = 0, at = -1; for (let i = 0; i < 90; i++) { step(1); if (W.peak > peak) { peak = W.peak; at = i; } }
+    const e1 = W.E; step(60 * 10); out.drop = { peak: +peak.toFixed(5), at, fade: W.E < e1 * 0.3, steps: W.steps };
+    const pot = G.cart.pots[1], P = pot.water, hand = { pos: new T3.Vector3(), vs: new T3.Vector3(), vel: new T3.Vector3() }; pot.item.held = hand; let sl = 0;
+    for (let i = 0; i < 30; i++) { pot.item.obj.position.set(-0.93 + i * 0.01, 1.0, 0.42); pot.item.obj.quaternion.setFromAxisAngle(new T3.Vector3(0, 0, 1), Math.min(0.4, i * 0.03)); step(1); sl = Math.max(sl, P.peak); }
+    pot.item.obj.quaternion.identity(); pot.item.obj.position.set(-0.93, 0.95, 0.42); pot.item.held = null; pot.item.drop(); step(60); out.slosh = +sl.toFixed(5); return out; });
+  ok(liq.drop.peak > 0.001 && liq.drop.fade && liq.slosh > 0.0005, 'live liquids: a thing dropped in the goldfish basin rings its water and the rings die away; a pot carried and tipped sloshes (' + JSON.stringify(liq) + ')');
+  const sto = await p.evaluate(() => { const K = G.clock, S = G.story; K.go('signs'); for (let i = 0; i < 20 * 12; i++) G.debug.tick(1 / 20); const r = { notes: S.notes.slice(), talking: G.block.people.some((h) => h.greet && h.greet.kind === 'story') || !!(G.talk.last && G.talk.last.line) }; K.reset(); return r; });
+  ok(sto.notes.length >= 1 && /Jinbei/.test(sto.notes[0]), 'the story: at the first signs a villager brings the news and the cook\'s book keeps it (' + JSON.stringify(sto) + ')');
   ok(await p.evaluate(() => document.querySelectorAll('canvas').length === 1 && G.renderer.info.memory.geometries > 60 && G.baked > 100), 'the street is drawn, its still parts baked together');
   { // the conversation director, offline: the site's mind and voice are fakes; one floor, the cook's turn ends only when they have stopped, the cook cuts in, stale lines drop
     const d = await p.evaluate(async () => {
@@ -209,6 +224,88 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
     ok(d.stale.quiet && d.stale.chatGone && d.stale.superseded, 'nobody speaks while the cook does, small talk whose moment has passed is dropped, and so is an answer the cook has moved past (' + JSON.stringify(d.stale) + ')'); }
   if (OUT) await p.screenshot({ path: path.join(OUT, '01-cart.png'), timeout: 120000 }).catch(() => {});
   await p.close();
+  { // RAMEN's night (outbreak.js), on the run's clock: a normal day, the signs, the first to rise, a cut that takes a head and a touch that does nothing, a flat blow, a parry, a noise that draws them, a death, and dawn with its score
+    const o = await open('?desktop&nopost'); if (OUT) await o.exposeFunction('__shot', (n) => o.screenshot({ path: path.join(OUT, n + '.png'), timeout: 120000 }).catch(() => {}));
+    const r = await o.evaluate(async () => {
+      const T3 = G.debug.THREE, V = (x, y, z) => new T3.Vector3(x, y, z), I = G.infected, W = G.weapons, O = G.outbreak, out = {};
+      const frames = n => new Promise(res => { const t0 = G.t, iv = setInterval(() => { if (G.t - t0 >= n * 0.049) { clearInterval(iv); res(); } }, 30); });
+      G.game.toggleOpen(); G.game.forceSpawn(); await frames(30);
+      G.clock.follow(0.1); await frames(10); out.day = { inf: I.list.length, ev: O.events.length, stage: G.clock.stage };
+      G.clock.follow(0.29); await frames(10); out.signs = { ev: O.events.map(e => e.what), inf: I.list.length, stage: G.clock.stage };
+      G.clock.follow(0.343); await frames(10); out.rise = { st: O.first && O.first.st, near: O.first ? +O.first.p.root.position.length().toFixed(2) : 9, stop: O.stop, bars: Object.values(O.sides).map(s => Math.round(s.bar)) };
+      for (let i = 0; i < 160 && O.first && O.first.st === 'rise'; i++) await frames(1); out.rise.after = O.first && O.first.st;
+      if (window.__shot) { G.desk.yaw = 0; G.desk.pitch = -0.15; await frames(4); await window.__shot('10-first-risen'); }
+      I.kill(O.first); O.quiet = true; for (const k of Object.keys(O.sides)) O.sides[k].bar = 0; G.clock.follow(0.5); O.quiet = true;
+      const still = (x) => { const z = I.spawn(V(x, 0, -1.05)); z.p.root.rotation.y = 0; z.think = 1e9; z.path = null; z.st = 'stand'; return z; };
+      const cl = W.list.find(w => w.wk === 'cleaver'); G.debug.input.grab(G.desk.hand, cl); const zA = still(0); await frames(20);
+      const neck = (z) => G.react.limbs.recs.get(z.p).segs.find(s => s.name === 'torso').B.clone();
+      const stroke = async (z, roll, sp) => { const n0 = neck(z), t0 = G.t, q = new T3.Quaternion().setFromAxisAngle(V(0, 0, 1), roll), c0 = W.log.length; cl.drive = (w) => { w.obj.position.set(n0.x - 0.45 + (G.t - t0) * sp, n0.y, n0.z + 0.22); w.obj.quaternion.copy(q); };
+        for (let i = 0; i < 80 && (G.t - t0) * sp < 0.9; i++) await frames(1); cl.drive = null; await frames(2); return { hits: W.log.slice(c0), lost: [...z.p.lost], dead: !!z.dead }; };
+      out.touch = await stroke(zA, Math.PI / 2, 0.8); await frames(20); out.flat = await stroke(zA, 0, 5); await frames(25); out.edge = await stroke(zA, Math.PI / 2, 5);
+      await frames(30); const hd = G.gore.pieces.find(p => p.it.name === 'a head'); out.head = hd ? { free: hd.it.free, y: +hd.it.obj.position.y.toFixed(2), body: !!G.debug.PH.live.get(hd.it) } : null; out.blood = G.gore.n;
+      if (window.__shot) { G.desk.pitch = -0.45; await frames(6); await window.__shot('11-severed'); }
+      const zB = still(0.05); await frames(20); const n0 = neck(zB), kt = W.make('katana', V(n0.x - 0.05, n0.y - 0.3, n0.z + 0.08), new T3.Quaternion().setFromEuler(new T3.Euler(Math.PI / 2, 0, 0))); kt.guard = true; const p0 = W.parries;
+      out.parry = await stroke(zB, Math.PI / 2, 5); out.parry.n = W.parries - p0; kt.guard = false; kt.remove(); I.kill(zB);
+      // a noise far down the street draws one that cannot see you in the dark
+      G.cart.setOpen(false); const zn = I.spawn(V(8, 0, -3.2)); await frames(10); const x0 = zn.p.root.position.x; O.noise(V(-6, 0.5, -3.2), 1); await frames(60); out.noise = { x0: +x0.toFixed(2), x1: +zn.p.root.position.x.toFixed(2), heard: !!zn.heard }; I.kill(zn);
+      // one inside the cart: grabs and bites until you die, and the night says so
+      const zi = I.spawn(V(0.3, 0, 1.0)); zi.inside = true; G.rig.position.set(0, 0, 0.4); const hp = [];
+      for (let i = 0; i < 400 && !O.dead; i++) { await frames(1); if (i % 20 === 0) hp.push(Math.round(O.me.hp)); } await frames(70);
+      out.death = { dead: O.dead, bites: I.bites, hp, card: document.body.innerText.includes('BEGIN AGAIN') && document.body.innerText.includes('THE NIGHT TOOK YOU') };
+      return out; });
+    ok(r.day.inf === 0 && r.day.ev === 0 && r.day.stage === 'normal', 'RAMEN: the day is normal, no signs and none of them (' + JSON.stringify(r.day) + ')');
+    ok(r.signs.stage === 'signs' && r.signs.inf === 0 && r.signs.ev.some(e => /bell/.test(e)) && r.signs.ev.some(e => /sickness/.test(e)), 'RAMEN: late in the day the signs come, a far bell and a runner with news of a sickness, and none of them yet (' + JSON.stringify(r.signs) + ')');
+    ok(r.rise.st === 'rise' && r.rise.near < 2 && r.rise.stop && r.rise.after === 'walk' && r.rise.bars.some(b => b > 0), 'RAMEN: at the turn a regular collapses at the counter, close to you, and rises wrong; the cart stops serving and its sides are barricaded (' + JSON.stringify(r.rise) + ')');
+    ok(!r.touch.hits.length && !r.touch.lost.length && !r.touch.dead, 'RAMEN: a slow touch of the cleaver does nothing (' + JSON.stringify(r.touch) + ')');
+    ok(r.flat.hits.length && r.flat.hits[0].cut < 0.3 && !r.flat.lost.length && !r.flat.dead, 'RAMEN: the flat of the blade only knocks: nothing cut off (' + JSON.stringify(r.flat.hits[0]) + ')');
+    ok(r.edge.lost.includes('head') && r.edge.dead && r.head && r.head.body && r.blood > 0, 'RAMEN: the cleaver\'s edge leading through a neck takes the head off; it falls as a body of its own, and there is blood (' + JSON.stringify([r.edge.hits.slice(-1)[0], r.head, r.blood]) + ')');
+    ok(r.parry.n >= 1 && !r.parry.hits.filter(h => h.seg).length && !r.parry.lost.length, 'RAMEN: a blade held across parries the stroke: it never reaches them (' + JSON.stringify(r.parry) + ')');
+    ok(r.noise.heard && r.noise.x1 < r.noise.x0 - 0.8, 'RAMEN: in the dark, a loud noise down the street draws them to it (' + JSON.stringify(r.noise) + ')');
+    ok(r.death.dead && r.death.bites >= 3 && r.death.card, 'RAMEN: bitten enough, you die; a quiet card and BEGIN AGAIN (' + JSON.stringify(r.death) + ')');
+    await o.close(); }
+  { // the period arms: a shuriken thrown spins and sticks, and is taken up again; the matchlock fires once, clicks empty, is reloaded by its four steps, and its bang draws them from far down the street
+    const o = await open('?desktop&nopost'); if (OUT) await o.exposeFunction('__shot', (n) => o.screenshot({ path: path.join(OUT, n + '.png'), timeout: 120000 }).catch(() => {}));
+    const r = await o.evaluate(async () => { const frames = n => new Promise(res => { const t0 = G.t, iv = setInterval(() => { if (G.t - t0 >= n * 0.049) { clearInterval(iv); res(); } }, 30); });
+const T3 = G.debug.THREE, V = (x, y, z) => new T3.Vector3(x, y, z), I = G.infected, W = G.weapons, O = G.outbreak, out = {}, inp = G.debug.input, h = G.desk.hand;
+G.clock.follow(0.5); O.quiet = true; for (const k of Object.keys(O.sides)) O.sides[k].bar = 0;
+const still = (x, z = -1.05) => { const q = I.spawn(V(x, 0, z)); q.p.root.rotation.y = 0; q.think = 1e9; q.path = null; q.st = 'stand'; return q; };
+const za = still(0.2, -1.3); await frames(20);
+// a shuriken thrown from the hand at the one by the counter: it spins in flight and sticks
+const sh = W.make('shuriken', V(0.2, 0.95, -0.3)); await frames(2); inp.grab(h, sh); await frames(2);
+G.rig.position.set(0.2, 0, -0.02); const tgt = G.react.limbs.recs.get(za.p).segs.find(s => s.name === 'torso'), aimP = tgt.A.clone().lerp(tgt.B, 0.6);
+const cam = G.camera.getWorldPosition(V(0, 0, 0)); const d = aimP.clone().sub(cam); G.desk.yaw = Math.atan2(-d.x, -d.z); G.desk.pitch = Math.atan2(d.y, Math.hypot(d.x, d.z)); await frames(2);
+let spun = 0, flew = false, tries = 0; const path = [];
+for (; tries < 3 && !sh.stuckT; tries++) { if (tries) { sh.stuck = null; sh.v = null; inp.grab(h, sh); await frames(3); } const q0 = sh.obj.quaternion.clone(); h.grip = true; await frames(8); h.grip = false; flew = false;
+for (let i = 0; i < 30; i++) { await frames(1); if (sh.v) { flew = true; path.push(sh.obj.position.toArray().map(v => +v.toFixed(2))); spun = Math.max(spun, sh.obj.quaternion.angleTo(q0)); } if (sh.stuck || (!sh.v && flew)) break; } }
+out.tries = tries; out.path = path.slice(-4);
+out.shuriken = { flew, spun: +spun.toFixed(2), stuck: !!sh.stuck, any: !!sh.stuckT, tries: out.tries, path: out.path, bone: sh.stuck && sh.stuck.bone && sh.stuck.bone.name, log: W.log.slice(-1) };
+await frames(4); if (window.__shot) await window.__shot('13-shuriken');
+// taken up again
+const hp = sh.obj.position.clone(); inp.grab(h, sh); await frames(2); out.again = h.held === sh && !sh.stuck; sh.wantDrop = true; await frames(2);
+// the matchlock: fires once, clicks empty, a real reload, fires again; and its bang draws one far down the street
+const gun = W.make('teppo', V(0.3, 1.0, -0.3)); await frames(2); inp.grab(h, gun); await frames(2);
+G.cart.setOpen(false); const zf = I.spawn(V(-12, 0, -3.5)); zf.think = 0; await frames(10); const fx0 = zf.p.root.position.x;
+const s0 = gun.shots; h.grip = true; await frames(2); h.grip = false; await frames(10); const one = gun.shots - s0, loaded1 = gun.loaded;
+h.grip = true; await frames(2); h.grip = false; await frames(10); const after = gun.shots - s0, clicks = gun.clicks;
+G.desk.keys.KeyR = true; for (let i = 0; i < 260 && !gun.loaded; i++) await frames(1); G.desk.keys.KeyR = false; const reloaded = gun.loaded;
+await frames(40); out.gun = { one, loaded1, after, clicks, reloaded, drawn: { x0: +fx0.toFixed(2), x1: +zf.p.root.position.x.toFixed(2), heard: !!zf.heard } };
+gun.wantDrop = true; await frames(3);
+// a lantern thrown hard breaks and burns
+const ln = G.items.find(i => i.lantern) || null; out.lantern = !!ln;
+return out;
+    });
+    ok(r.shuriken.flew && r.shuriken.spun > 0.5 && (r.shuriken.stuck || r.shuriken.any) && r.again, 'RAMEN: a shuriken thrown from the hand spins in flight, sticks where it strikes, and can be taken up again (' + JSON.stringify(r.shuriken) + ')');
+    ok(r.gun.one === 1 && !r.gun.loaded1 && r.gun.after === 1 && r.gun.clicks >= 1 && r.gun.reloaded, 'RAMEN: the tanegashima fires once, then only clicks until it is reloaded, powder, ball, ram and pan (' + JSON.stringify(r.gun) + ')');
+    ok(r.gun.drawn.heard && r.gun.drawn.x1 > r.gun.drawn.x0 + 0.8, 'RAMEN: the matchlock\'s bang draws one of them from far down the street (' + JSON.stringify(r.gun.drawn) + ')');
+    await o.close(); }
+  { // dawn: the samurai come, and the run ends with its score
+    const o = await open('?desktop&nopost'); if (OUT) await o.exposeFunction('__shot', (n) => o.screenshot({ path: path.join(OUT, n + '.png'), timeout: 120000 }).catch(() => {}));
+    const r = await o.evaluate(async () => { const frames = n => new Promise(res => { const t0 = G.t, iv = setInterval(() => { if (G.t - t0 >= n * 0.049) { clearInterval(iv); res(); } }, 30); });
+      G.clock.follow(0.89); await frames(10); const n = G.infected.alive().length; G.clock.follow(0.902); await frames(80); const troop = !!G.outbreak.torch;
+      if (window.__shot) { G.desk.yaw = Math.PI / 2 + 0.3; G.desk.pitch = -0.1; await frames(4); await window.__shot('12-dawn'); }
+      G.clock.follow(0.97); await frames(10); return { n, troop, won: G.outbreak.won, card: document.body.innerText.includes('DAWN') && /lived to see the dawn/.test(document.body.innerText), text: document.body.innerText.split('\n').filter(l => /lived|put down/.test(l)) }; });
+    ok(r.troop && r.won && r.card, 'RAMEN: at dawn the domain\'s samurai come with torches and the run ends with its score (' + JSON.stringify(r) + ')');
+    await o.close(); }
   // an emulated Quest 3 with controllers
   const iwer = fs.readFileSync(require.resolve('iwer/build/iwer.js'), 'utf8') + ';window.__xrd=new IWER.XRDevice(IWER.metaQuest3);window.__xrd.installRuntime({forceInstall:true});';
   const v = await open('?nopost', iwer); if (OUT) await v.exposeFunction('__shot', (n) => v.screenshot({ path: path.join(OUT, n + '.png'), timeout: 120000 }).catch(() => {}));
@@ -259,6 +356,23 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   ok(vr.pot.took && vr.pot.low > 0.885 && vr.pot.ghost && vr.pot.gap > 0.08 && vr.pot.back, 'a pot taken by its handle and pushed down into the counter stays on top of it; a faint ghost shows the real hand (' + JSON.stringify(vr.pot) + ')');
   ok(vr.shove.bowl === 'bowl' && vr.shove.moved > 0.08 && vr.shove.apart > 0.08 && vr.shove.up, 'a held bowl shoves a loose shaker aside instead of passing through it (' + JSON.stringify(vr.shove) + ')');
   ok(vr.toss.took && vr.toss.flew > 0.4 && vr.toss.miss < 0.2, 'a throw lands where the swing aimed it (' + JSON.stringify(vr.toss) + ')');
+  { // RAMEN in the headset: a katana taken up in the right hand, steadied by the left on its grip, swung with both across one of them at the counter: it cuts
+    const k = await v.evaluate(async () => {
+      const T3 = G.debug.THREE, V = (x, y, z) => new T3.Vector3(x, y, z), Q = T3.Quaternion, xr = window.__xrd, I = G.infected, W = G.weapons;
+      const frames = n => new Promise(res => { const t0 = G.t, iv = setInterval(() => { if (G.t - t0 >= n * 0.049) { clearInterval(iv); res(); } }, 50); });
+      const rq = () => G.rig.getWorldQuaternion(new Q()).invert(), ctl = h => xr.controllers[h], H = h => G.hands.find(x => x.source && x.source.handedness === h);
+      const put = (h, w, q) => { const l = w.clone(); G.rig.worldToLocal(l); ctl(h).position.set(l.x, l.y, l.z); if (q) { const ql = rq().multiply(q); ctl(h).quaternion.set(ql.x, ql.y, ql.z, ql.w); } };
+      G.clock.follow(0.5); G.outbreak.quiet = true; for (const s of Object.values(G.outbreak.sides)) s.bar = 0;
+      const kt = W.make('katana', V(0.1, 1.15, -0.25), new Q()); await frames(3);
+      const z = I.spawn(V(0, 0, -1.02)); z.p.root.rotation.y = 0; z.think = 1e9; z.path = null; z.st = 'stand'; await frames(20);
+      const n0 = G.react.limbs.recs.get(z.p).segs.find(s => s.name === 'torso').B.clone(), edge = new Q().setFromAxisAngle(V(0, 0, 1), Math.PI / 2);
+      put('right', V(0.1, 1.15, -0.25), edge); await frames(3); ctl('right').updateButtonValue('squeeze', 1); await frames(3); const took = H('right').held === kt;
+      put('left', V(0.1, 1.15, -0.25).add(V(0, 0, 0.14)), edge); await frames(3); ctl('left').updateButtonValue('squeeze', 1); await frames(3); const two = !!(kt.supp && kt.two);
+      const zr = n0.z + 0.6, c0 = W.log.length; put('right', V(-0.75, n0.y, zr), edge); put('left', V(-0.75, n0.y, zr + 0.15), edge); await frames(10);
+      for (let i = 0; i <= 10; i++) { const x = -0.75 + i * 0.15; put('right', V(x, n0.y, zr), edge); put('left', V(x, n0.y, zr + 0.15), edge); await frames(1); }
+      await frames(6); ctl('right').updateButtonValue('squeeze', 0); ctl('left').updateButtonValue('squeeze', 0); await frames(4);
+      return { took, two, hits: W.log.slice(c0), lost: [...z.p.lost], dead: !!z.dead }; });
+    ok(k.took && k.two && k.hits.some(h => h.cut > 0.5) && (k.lost.length || k.dead), 'RAMEN in the headset: a katana held in both hands and swung across one of them at the counter cuts (' + JSON.stringify(k) + ')'); }
   ok(!miss.length, 'nothing missing' + (miss.length ? ': ' + [...new Set(miss)].slice(0, 6).join(', ') : '')); ok(!errs.length, 'no page errors' + (errs.length ? ': ' + errs.slice(0, 3).join(' | ') : ''));
-  await b.close(); srv.close(); console.log(fails.length ? fails.length + ' FAILED' : 'YATAI \'86 passes'); process.exit(fails.length ? 1 : 0);
+  await b.close(); srv.close(); console.log(fails.length ? fails.length + ' FAILED' : 'RAMEN passes'); process.exit(fails.length ? 1 : 0);
 })();

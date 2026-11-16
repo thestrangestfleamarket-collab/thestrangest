@@ -4,7 +4,7 @@ import { G, BOUNDS, clamp } from './ctx.js';
 import { SEATS, RECIPES } from './cart.js';
 import { tenantFigure } from './tenant.js';
 import { makePerson } from './avatars.js';
-import { usd } from './till.js';
+import { mon as usd } from './till.js';
 import * as T from './tex.js';
 
 const SEATZ = -1.16, STOOLZ = -1.62, START = [1.4, -3.2], MOUTH = 25.2, WALK = 1.45;   // where a guest sits and stands to sit; where they come in; the street's end
@@ -23,7 +23,7 @@ export function buildGuest(live) {
   // their own figure, posed from what THE MARKET baked (standing, a walk of eight steps, sitting), else a stand-in
   const fig = Y.fig && Y.fig.D ? (() => { try { return JSON.parse(Y.fig.D); } catch (e) { return null; } })() : null, clips = Y.clips || null;
   let av = null; try { if (fig) { av = tenantFigure(fig, 1); av.key = Y.fig.k; } } catch (e) { console.warn('the guest figure', e); av = null; }
-  const stand = av ? null : makePerson(7, 'suburban_resident'); if (stand) stand.root.traverse((o) => { o.userData.nopick = true; });
+  const stand = av ? null : makePerson(7, 'townswoman_medieval_japan'); if (stand) stand.root.traverse((o) => { o.userData.nopick = true; });
   const body = av ? av.root : stand.root; (G.peopleRoot || G.scene).add(body); body.position.copy(me.at);
   const poseK = Y.fig && Y.fig.k ? String(Y.fig.k).slice(0, String(Y.fig.k).lastIndexOf(':')) : '';
   const frame = (L, f) => { const n = L.length, a = Math.floor(f) % n, b = (a + 1) % n, x = f - Math.floor(f), A = L[a], B = L[b], o = new Array(A.length); for (let i = 0; i < A.length; i++) o[i] = A[i] + (B[i] - A[i]) * x; return o; };

@@ -1,4 +1,4 @@
-// THE DARK ALLEY: a place off the map (GO TO it from the map), and only its door: going in leaves THE MARKET for YATAI '86's own alley as a guest (/holo?g=sushi&as=guest, src/sushi/guest.js), where the cart, its cook, the customers and everyone passing are the same on every page; you are there as your own figure (sent with you: its mesh, and its standing, walking and sitting posed here by your rig), and come back here at the alley's mouth, what you paid at the cart taken from your money
+// RAMEN: a place off the map (GO TO it from the map), and only its door: going in leaves THE MARKET for RAMEN's own village street as a guest (/holo?g=ramen&as=guest, src/sushi/guest.js), where the cart, its cook, the customers and everyone passing are the same on every page; you are there as your own figure (sent with you: its mesh, and its standing, walking and sitting posed here by your rig), and come back here at the alley's mouth, what you paid at the cart taken from your money
 import {SHARED} from './003-shx.js';
 import {INV, ONLINE, pos, WHERE} from './003b-systems.js';
 import {SAY} from './003d-say.js';
@@ -25,11 +25,11 @@ import {BODIES} from './111a-bodies.js';
   // what goes with you: who you are and your figure, the alley's frame, where the cook stands, your money; and you are saved standing at the alley's mouth, where THE MARKET starts you again
   const card=()=>{ const F=frame(), sx=F.eu[0]*F.ev[1]-F.eu[1]*F.ev[0]<0?-1:1, o0=F.pw(CU,CV+.55), c=F.pw(CU,CV+1.0), f=[+o0[0].toFixed(2),+o0[1].toFixed(2),+(F.eu[0]*sx*MW).toFixed(4),+(F.eu[1]*sx*MW).toFixed(4),+(F.ev[0]*MW).toFixed(4),+(F.ev[1]*MW).toFixed(4)];
     const at=[+(f[0]+f[2]*START[0]+f[4]*START[1]).toFixed(2),+(f[1]+f[3]*START[0]+f[5]*START[1]).toFixed(2),0,0,'up','alley'];
-    let fig=null, cl=null; try{ fig=pack(); cl=clips(); }catch(e){ console.warn('THE DARK ALLEY: your figure',e); }
+    let fig=null, cl=null; try{ fig=pack(); cl=clips(); }catch(e){ console.warn('RAMEN: your figure',e); }
     return {at,yatai:{f,w:[+c[0].toFixed(2),+c[1].toFixed(2),0,+F.hd(0,-1).toFixed(2),'up','alley'],fig,clips:cl,cash:INV.money(),paid:0}}; };
   const mouth=()=>{ const S=MAPSTAIR; return [SHARED.BOD.XS((S.x0+S.x1)/2),SHARED.BOD.ZS(S.y1+1.2)]; };
-  const go=async()=>{ await LOAD('later'); const C=card(), m=mouth(); pos.x=m[0]; pos.z=m[1]; SHARED.py=0; SHARED.floor='up'; if(WHERE.save)WHERE.save(true); STORE.holo.go({name:'THE DARK ALLEY',page:'/holo?g=sushi&as=guest',card:C}); };
-  const P=STORE.places.find(p=>p[0]==='THE DARK ALLEY'); if(P)P[6]=go;
+  const go=async()=>{ await LOAD('later'); const C=card(), m=mouth(); pos.x=m[0]; pos.z=m[1]; SHARED.py=0; SHARED.floor='up'; if(WHERE.save)WHERE.save(true); STORE.holo.go({name:'RAMEN',page:'/holo?g=ramen&as=guest',card:C}); };
+  const P=STORE.places.find(p=>p[0]==='RAMEN'); if(P)P[6]=go;
   // back from the alley: what you paid for your bowls there comes out of your money, once
   const settle=()=>{ let h=null; try{ h=JSON.parse(sessionStorage.getItem('holo')||'null'); }catch(e){} const y=h&&h.yatai; if(!y||!(y.paid>0)||y.settled)return; setTimeout(()=>{ const n=Math.min(Math.round(y.paid),INV.money()); if(n>0)INV.pay(n); if(INV.save)INV.save(); y.settled=1; try{ sessionStorage.setItem('holo',JSON.stringify(h)); }catch(e){} SAY('YOU PAID $'+n+' AT THE RAMEN CART.','#ffb070'); },1500); }; SYS.onStart(settle,'146bg-yatai paid');
   MODS.yatai={go,card,pack,clips,frame,mouth,settle}; }

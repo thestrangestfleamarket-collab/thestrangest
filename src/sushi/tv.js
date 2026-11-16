@@ -1,11 +1,10 @@
-// the television sets: a 1980s portable on its shelf by the cart's front right post that you work by its knobs, and the TV shop's window of sets across the street, all on THE MARKET's channels (data/tv.json) and the cart's own, the late movie and classic TV (data/sushi/films.json), from the Internet Archive through /film; the sets are Poly Haven's models
+// the television sets: a 1980s portable on its shelf by the cart's front right post that you work by its knobs, and the TV shop's window of sets across the street, playing the cart's late movie (data/sushi/films.json; for now Night of the Living Dead, a small copy of our own in data/sushi/film/); the sets are Poly Haven's models
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { G, mat, mesh, box, cyl, mergeStatic } from './ctx.js';
-import TVD from '../../data/tv.json';
 import FILMS from '../../data/sushi/films.json';
 
-const CH = [...TVD.channels, ...FILMS.channels].filter((c) => !c.live && c.shows.length && c.shows[0].file);
+const CH = FILMS.channels.filter((c) => c.shows.length && (c.shows[0].src || c.shows[0].file));   // for now (owner, 16 Nov 2026) only Night of the Living Dead, a small copy of our own
 const at = (c) => { let t = (Date.now() / 1000) % c.shows.reduce((a, s) => a + s.len, 0); for (const s of c.shows) { if (t < s.len) return { s, off: t }; t -= s.len; } return { s: c.shows[0], off: 0 }; }; // what is on now: every set on a channel shows the same moment
 // a model off the shelf, once per file, in the game's one cheap material; every copy shares it
 const gl = new GLTFLoader(), got = {};
@@ -21,7 +20,7 @@ export function buildTV(scene, shops) {
   const tube = (ch, loud) => { const v = document.createElement('video'); v.playsInline = true; v.preload = 'none'; v.muted = !loud; v.loop = false; const tex = new THREE.VideoTexture(v); tex.colorSpace = THREE.SRGBColorSpace;
     const t = { v, tex, ch, src: '', dead: false, on: true, sets: [], m: new THREE.MeshBasicMaterial({ map: snow, color: new THREE.Color(0.05, 0.05, 0.053), toneMapped: false }), chk: 0 };
     v.addEventListener('error', () => { t.dead = true; }); v.addEventListener('ended', () => tune(t)); return t; };
-  const tune = (t) => { if (!t.on) { t.v.pause(); return; } const { s, off: o } = at(CH[t.ch % CH.length]), u = '/film/' + s.id + '/' + s.file; if (u !== t.src) { t.src = u; t.dead = false; t.v.src = u; t.flash = 0.5; } try { if (Math.abs(t.v.currentTime - o) > 4) t.v.currentTime = o; } catch (e) { /* not ready */ } const p = t.v.play(); if (p && p.catch) p.catch(() => { }); };
+  const tune = (t) => { if (!t.on) { t.v.pause(); return; } const { s, off: o } = at(CH[t.ch % CH.length]), u = s.src || '/film/' + s.id + '/' + s.file; if (u !== t.src) { t.src = u; t.dead = false; t.v.src = u; t.flash = 0.5; } try { if (Math.abs(t.v.currentTime - o) > 4) t.v.currentTime = o; } catch (e) { /* not ready */ } const p = t.v.play(); if (p && p.catch) p.catch(() => { }); };
   // a set: the model, scaled to its width, and the picture on its glass
   const set = (file, w, t, x, y, z, ry) => { const M = SETS[file], k = w / M.w, g = new THREE.Group(), body = new THREE.Group(); body.scale.setScalar(k); g.add(body);
     const scr = mesh(new THREE.PlaneGeometry(M.sw, M.sh), t.m, M.sx, M.sy, M.sz, body); scr.userData.keep = true; scr.castShadow = false; t.sets.push(scr);

@@ -186,7 +186,7 @@ export function buildGame(scene) {
     c.ticketKey = null; drawTicket(c, true);
     return `The cook told you they are out of ${said.join(' and ')}. You say that is fine, you will go without.`;
   };
-  game.guest = (g) => { if (game.state !== 'open') return null; const i = game.seats.findIndex((s) => !s.c && !s.dirty); return i < 0 ? null : spawn(i, g); };
+  game.guest = (g) => { if (game.state !== 'open') return null; const free = (s) => s && !s.c && !s.dirty, i = free(game.seats[g.seat]) ? g.seat : game.seats.findIndex(free); return i < 0 ? null : spawn(i, g); };   // (the stool they chose, if it is free)
   game.guestLeaves = (id) => { const c = game.customers.find((x) => x.guest === id && x.state !== 'leaving'); if (c) leave(c, false); };
   game.toggleOpen = () => {
     if (game.state === 'prep' || game.state === 'closed') {

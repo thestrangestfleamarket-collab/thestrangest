@@ -22,7 +22,7 @@ await grab('arcade',async()=>{ const {X,Z,faceTex,bq,C}=SHARED.BOD, Y=SHARED.BOD
   HOLO.hide=()=>{ hp.hidden=true; };
   // a program is a page of its own (src/holo/): running one leaves the market's page for it, so nothing of the market stays loaded; the page keeps you in your room with the server and brings you back here
   HOLO.url=P=>location.protocol==='file:'?'.'+P.page.replace(/^(\/[a-z]+)/,'$1.html'):P.page;
-  HOLO.go=P=>{ try{ sessionStorage.setItem('holo',JSON.stringify({...(ONLINE.card?ONLINE.card():{}),back:location.pathname+location.search,game:P.name})); }catch(e){} (HOLO.nav||(u=>location.assign(u)))(HOLO.url(P)); };
+  HOLO.go=P=>{ try{ sessionStorage.setItem('holo',JSON.stringify({...(ONLINE.card?ONLINE.card():{}),back:location.pathname+location.search,game:P.name,...(P.card||{})})); }catch(e){} (HOLO.nav||(u=>location.assign(u)))(HOLO.url(P)); };
   HOLO.start=P=>{ '@later'; if(!P||!P.page||!HOLO.hall&&!HOLO.worn)return; const c=P.cost||0; if(!INV.afford(c))return say('THE HOLODECK TAKES $'+c+' FOR THIS PROGRAM.','#c8a090'); INV.pay(c); HOLO.hide(); HOLO.go(P); };
 
   const box4=(x0,y0,x1,y1)=>{ const a=X(x0), b=X(x1), c=Z(y0), d=Z(y1); return [Math.min(a,b),Math.min(c,d),Math.max(a,b),Math.max(c,d)]; };

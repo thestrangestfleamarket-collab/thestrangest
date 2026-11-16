@@ -19,7 +19,7 @@ export function buildFolk(scene, room) {
 
   function make(id) {
     const S = PEOPLE[id]; if (!S || by[id] || !G.castReady) return by[id] || null;
-    const P = pfPerson(S.body, new THREE.Group()); P.root.traverse((o) => { o.userData.nopick = true; if (o.isMesh) o.castShadow = true; if (o.isSkinnedMesh) o.material = skinM; else if (o.isMesh && o.material.color && o.material.color.getHex() === 0xf2efe6) o.material.color.set(0x7c776c); }); P.root.visible = false; G.peopleRoot.add(P.root);
+    const P = pfPerson(S.body, new THREE.Group()); P.root.traverse((o) => { o.userData.nopick = true; if (o.isMesh) o.castShadow = true; if (o.isMesh && !o.isSkinnedMesh) o.userData.rich = true; if (o.isMesh && o.material.color && o.material.color.getHex() === 0xf2efe6) o.material.color.set(0x7c776c); }); P.root.visible = false; G.peopleRoot.add(P.root);
     const blob = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.9).rotateX(-Math.PI / 2), blobM); blob.position.y = 0.012; blob.userData.nopick = true; P.root.add(blob);
     const p = { id, S,  name: S.name, P, root: P.root, alive: true, here: false, hidden: false, state: 'out', seat: null, spot: null, tgt: null, plan: [], act: null, t: 0, drunk: 0, hp: 100, want: null, wait: 0, glass: null, rounds: 0, trust: 0, armed: false, gun: null, drawn: false, foe: null, aimT: 0, sipT: 0, house: false, cut: false, said: 0, dead: 0, fled: false };
     people.push(p); by[id] = p; return p;

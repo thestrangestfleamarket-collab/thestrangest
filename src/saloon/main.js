@@ -9,7 +9,7 @@ import { PF, loadCast } from '../sushi/pf.js';
 import { NET } from '../holo/net.js';
 import { SaloonAudio } from './audio.js';
 import { BODIES } from './cast.js';
-import { loadKit, BASE } from './kit.js';
+import { loadKit, BASE, cheap } from './kit.js';
 import { buildRoom } from './room.js';
 import { buildLook } from './look.js';
 import { buildInspect } from './inspect.js';
@@ -25,10 +25,10 @@ import { buildPosters } from './posters.js';
 const params = new URLSearchParams(location.search), $ = (id) => document.getElementById(id);
 const canvas = $('c'), menu = $('menu'), hud = $('hud'), vrBtn = $('vr'), deskBtn = $('desk');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2)); renderer.setSize(innerWidth, innerHeight);
-renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.95;
-renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.xr.enabled = true; renderer.xr.setReferenceSpaceType('local-floor'); renderer.xr.setFoveation?.(0.4);
+renderer.setPixelRatio(1); renderer.setSize(innerWidth, innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
+renderer.xr.enabled = true; renderer.xr.setReferenceSpaceType('local-floor'); renderer.xr.setFoveation?.(0.5); renderer.xr.setFramebufferScaleFactor?.(1);
 
 const scene = new THREE.Scene(); scene.background = new THREE.Color(0x05060a); scene.fog = new THREE.FogExp2(0x0e0c0a, 0.05);
 const camera = new THREE.PerspectiveCamera(68, innerWidth / innerHeight, 0.03, 120);
@@ -56,6 +56,7 @@ const pool = (G.pool = buildPool(scene, room));
 const darts = (G.darts = buildDarts(scene, room));
 const posters = (G.posters = buildPosters(scene, room));
 const look = (G.look = buildLook(scene, room, renderer, camera));
+cheap(scene); cheap(G.itemRoot, true);
 const inspect = (G.inspect = buildInspect(scene, room, look, renderer, camera));
 const shadowLights = []; scene.traverse((o) => { if (o.isLight && o.castShadow) shadowLights.push(o); });
 
@@ -83,15 +84,16 @@ else vrBtn.textContent = location.protocol === 'https:' || location.hostname ===
 // ---------- loop ----------
 function tick(dt) {
   G.t += dt;
-  input.update(dt); room.keepOut(rig, camera);
+  input.update(dt); room.walk(rig, camera, dt);
   updateItems(dt);
   room.update(dt, G.t); look.update(dt, G.t); bar.update(dt, G.t); folk.update(dt, G.t); story.update(dt, G.t); talk.update(dt);
   guns.update(dt, G.t); pool.update(dt, G.t); darts.update(dt, G.t); posters.update(dt, G.t);
   for (const f of G.updaters) f(dt, G.t);
+  if ((G.t * 2 | 0) !== cheapT) { cheapT = G.t * 2 | 0; cheap(G.itemRoot, true); cheap(G.peopleRoot); }
   G.fx.update(dt);
   G.audio.update(dt, folk.crowd());
 }
-let last = performance.now(), frames = 0, statT = 0, ema = 14, slow = 0;
+let cheapT = -1, last = performance.now(), frames = 0, statT = 0, ema = 14, slow = 0;
 function frame(now) {
   const dt = clamp((now - last) / 1000, 0, 0.05); last = now;
   if (G.mode === 'menu' && !renderer.xr.isPresenting && !G.manualCam) { const a = G.t * 0.04; rig.position.set(0, 0, 0); camera.position.set(7.5 + Math.sin(a) * 1.2, 1.7, -3.6 + Math.cos(a) * 0.8); camera.lookAt(-1, 1.3, -0.4); }

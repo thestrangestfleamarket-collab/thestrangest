@@ -131,11 +131,53 @@ const srv = require('http').createServer((q, r) => { const f = path.join(ROOT, d
   ok(await p.evaluate(() => !!G.debug.city.alley && !!G.debug.city.rain && G.debug.city.shops.length >= 5), 'the cart stands in the alley, in the rain, with its back doors');
   const tvc = await p.evaluate(() => { const t = G.tv, b = (n) => G.buttons.find((x) => x.name === n), c0 = t.ch.ch; b('TV channel').press(); const c1 = t.ch.ch; b('TV power').press(); const off = !t.on; b('TV power').press(); for (let i = 0; i < 10; i++) G.debug.tick(1 / 30); return { sets: t.tubes.reduce((a, q) => a + q.sets.length, 0), changed: c0 !== c1, off, on: t.on, chans: t.channels.length }; });
   ok(tvc.sets >= 1 && (tvc.changed || tvc.chans === 1) && tvc.off && tvc.on && tvc.chans >= 1, 'the cart has a television: its knobs change the channel and switch it off and on');
+  const tk = await p.evaluate(async () => { for (let i = 0; i < 100 && !G.tank.ready; i++) await new Promise((r) => setTimeout(r, 200)); const a = G.tank.fish.g.position.clone(); for (let i = 0; i < 30; i++) G.debug.tick(1 / 30); return { ready: G.tank.ready, fish: G.tank.fish.g ? G.tank.fish.g.children.length : 0, moved: G.tank.fish.g.position.distanceTo(a) > 0.005 }; });
+  ok(tk.ready && tk.fish === 1 && tk.moved, 'the cart has a small fish tank with one koi swimming (' + JSON.stringify(tk) + ')');
   const tvv = await p.evaluate(() => { const m = G.tv.mine, b = G.buttons.find((x) => x.name === 'TV volume'), c = G.tv.channels.find((q) => q.name === 'CREATURE FEATURE'), v = []; const v0 = m.vol; for (let i = 0; i < 4; i++) { b.press(); v.push(m.vol); } while (m.vol !== v0) b.press(); return { v, movie: !!c && c.shows.some((s) => /NIGHT OF THE LIVING DEAD/.test(s.title)) }; });
   ok(tvv.movie && tvv.v.join() === '0.6,0.9,0,0.3', 'the cart\'s TV has NIGHT OF THE LIVING DEAD on the creature feature, and its volume knob steps up to 0.9 then off (' + tvv.v.join() + ')');
   const rtv = await p.evaluate(async () => { for (let i = 0; i < 100 && !(G.tv.models >= 1 && G.cart.radio); i++) await new Promise((r) => setTimeout(r, 200)); const names = G.tv.channels.map((c) => c.name), a = G.audio, was = a.label(); a.setRadio(true); const l0 = a.label(); a.tune(); const l1 = a.label(); return { films: names.includes('CREATURE FEATURE') && G.tv.channels[0].shows.every((x) => /^\/sushi-assets\/film\/notld-\d\.mp4$/.test(x.src)), models: G.tv.models + !!G.cart.radio, n: a.stations, l0, l1, was }; });
   ok(rtv.films && rtv.models >= 2 && rtv.n >= 4 && rtv.n <= 8 && rtv.l0 !== rtv.l1 && /WBGO|WWOZ|WNYC|WQXR|SomaFM|TAPE/.test(rtv.l0 + rtv.l1), 'the TV and boombox are real models, the TV plays the creature feature from our own small copy, the radio tunes real stations (' + rtv.l0 + ' > ' + rtv.l1 + ')');
   ok(await p.evaluate(() => document.querySelectorAll('canvas').length === 1 && G.renderer.info.memory.geometries > 60 && G.baked > 100), 'the street is drawn, its still parts baked together');
+  { // the conversation director, offline: the site's mind and voice are fakes; one floor, the cook's turn ends only when they have stopped, the cook cuts in, stale lines drop
+    const d = await p.evaluate(async () => {
+      const T = G.talk, D = T.D, out = {}, wait = (ms) => new Promise((r) => setTimeout(r, ms)), real = window.fetch, fz = G.frozen; G.frozen = true; if (!G.audio.ctx) G.audio.init(); await G.audio.ctx.resume?.(); G.muteVoices = false; T.tts = null;
+      window.fetch = async (u, o) => { u = String(u);
+        if (/\/sushi\/say$/.test(u)) { const text = JSON.parse(o.body).text, secs = Math.max(0.5, (text.match(/[\w']+/g) || []).length * 0.3), n = Math.round(secs * 24000), per = 2400; let i = 0;
+          const body = new ReadableStream({ async pull(c) { if (i >= n) return c.close(); await new Promise((r) => setTimeout(r, 30)); const k = Math.min(per, n - i), b = new Int16Array(k); for (let j = 0; j < k; j++) b[j] = Math.round(Math.sin((i + j) * 0.05) * 3000); i += k; c.enqueue(new Uint8Array(b.buffer)); } });
+          await new Promise((r) => setTimeout(r, 120)); return new Response(body, { headers: { 'content-type': 'audio/pcm', 'x-rate': '24000', 'x-voice': 'eleven-ny' } }); }
+        if (/\/sushi\/talk$/.test(u)) { await new Promise((r) => setTimeout(r, 300)); return new Response(JSON.stringify({ say: 'Yeah, long night, pal.' }), { headers: { 'content-type': 'application/json' } }); }
+        if (/\/sushi\/log$|\/holmes\/hear$/.test(u)) return new Response('{}', { headers: { 'content-type': 'application/json' } });
+        return real(u, o); };
+      const T3 = G.debug.THREE, who = (n) => { const c = { p: { root: new T3.Object3D(), sex: 'm', style: '-', talkT: 0, gesture() {} }, here: () => true }; G.scene.add(c.p.root); c.p.root.position.set(n - 1, 1.2, -1.2); return c; };
+      const A = who(0), B = who(1), C = who(2), idle = async (ms = 8000) => { const t0 = performance.now(); while ((D.cur || D.q.length) && performance.now() - t0 < ms) await wait(50); };
+      D.cookEnd = -9; D.cookOn = false; T.EP.text = ''; const s0 = T.spoken.length;
+      // three people with something to say at once: one at a time, a breath between them
+      T.queue(A, 'Evening. One shoyu, please, and a cola.', { kind: 'order' }); T.queue(B, 'This rain won’t quit, huh?', { kind: 'order' }); T.queue(C, 'Smells good tonight.', { kind: 'order' });
+      await idle(); const L = T.spoken.slice(s0); let over = 0, gap = 9; for (let i = 1; i < L.length; i++) { over = Math.max(over, (L[i - 1].t1 || 1e9) - L[i].t0); gap = Math.min(gap, L[i].t0 - L[i - 1].t1); }
+      out.floor = { n: L.length, over: +over.toFixed(3), gap: +gap.toFixed(2) };
+      // the cook's words are held until a real pause, longer after a trailing "and", and the pieces of one turn are joined
+      const was = T.cookSays, got = []; T.cookSays = (text) => { got.push({ text, at: performance.now() }); return true; };
+      T.cookVoice(true); await wait(200); T.cookVoice(true); T.cookVoice(false); const t1 = performance.now(); T.heard('so I was thinking and'); await wait(1000); const early = got.length; await wait(1000);
+      out.trail = { early, got: got.length, ms: got.length ? Math.round(got[0].at - t1) : -1 };
+      got.length = 0; T.cookVoice(true); await wait(150); T.cookVoice(false); const t2 = performance.now(); T.heard('the broth is'); await wait(300); T.cookVoice(true); await wait(200); T.cookVoice(false); T.heard('almost ready.'); const mid = got.length; await wait(1300);
+      out.join = { mid, n: got.length, text: got[0] && got[0].text, ms: got.length ? Math.round(got[0].at - t2) : -1 }; T.cookSays = was;
+      // a long line stops when the cook starts talking, and is remembered only as far as it got; a short one is let finish
+      const h = { who: 'me', text: 'Listen, I been comin’ here three years now and I gotta tell ya, this is the best bowl on the whole West Side, no kiddin’.' };
+      D.cookEnd = -9; const it = T.queue(A, h.text, { kind: 'reply', h }); for (let i = 0; i < 80 && D.cur !== it; i++) await wait(50); await wait(900);
+      const tb = performance.now(); T.cookVoice(true); const cutNow = D.cur !== it; await wait(250); T.cookVoice(false);
+      out.barge = { playing: !!it.playing, stopped: cutNow && D.cur === null, ms: Math.round(performance.now() - tb), cut: !!(it.log && it.log.cut), kept: h.text };
+      await idle(); const sh = T.queue(B, 'Yeah, sure.', { kind: 'reply' }); for (let i = 0; i < 80 && D.cur !== sh; i++) await wait(50); T.cookVoice(true); await wait(100); out.barge.short = D.cur === sh; T.cookVoice(false); await idle();
+      // nobody starts while the cook is talking; small talk that waits too long is dropped, and an answer the cook has moved past is dropped
+      T.cookVoice(true); T.queue(C, 'You been here long tonight?', { kind: 'chat' }); const held = []; for (let i = 0; i < 27; i++) { await wait(200); T.cookVoice(true); held.push(!!D.cur); } T.cookVoice(false); await wait(400);
+      const r1 = T.queue(B, 'Nah, it’s fine.', { kind: 'reply' }); B.voice.gen++; await wait(600);
+      const drops = T.book.filter((x) => x.dropped).map((x) => x.who + ': ' + x.dropped);
+      out.stale = { quiet: !held.some(Boolean), chatGone: !T.spoken.slice(-3).some((x) => x.kind === 'chat') && drops.some((x) => /moment passed/.test(x)), superseded: !r1.playing && drops.some((x) => /superseded/.test(x)) };
+      await idle(); window.fetch = real; G.frozen = fz; for (const c of [A, B, C]) G.scene.remove(c.p.root); return out; });
+    ok(d.floor.n === 3 && d.floor.over <= 0.01 && d.floor.gap >= 0.25, 'the director gives one floor: three people with something to say speak one after another, a breath between (' + JSON.stringify(d.floor) + ')');
+    ok(d.trail.early === 0 && d.trail.got === 1 && d.trail.ms >= 1300, 'the cook\'s turn is not answered before it ends: after a trailing "and" it waits for a longer pause (' + JSON.stringify(d.trail) + ')');
+    ok(d.join.mid === 0 && d.join.n === 1 && /broth is almost ready/.test(d.join.text || ''), 'two pieces of one turn, a short pause between, are joined and answered once (' + JSON.stringify(d.join) + ')');
+    ok(d.barge.playing && d.barge.stopped && d.barge.cut && / —$/.test(d.barge.kept) && d.barge.short, 'when the cook cuts in a long line stops at once and is remembered only as far as it got; a short one is let finish (' + JSON.stringify(d.barge) + ')');
+    ok(d.stale.quiet && d.stale.chatGone && d.stale.superseded, 'nobody speaks while the cook does, small talk whose moment has passed is dropped, and so is an answer the cook has moved past (' + JSON.stringify(d.stale) + ')'); }
   if (OUT) await p.screenshot({ path: path.join(OUT, '01-cart.png'), timeout: 120000 }).catch(() => {});
   await p.close();
   // an emulated Quest 3 with controllers

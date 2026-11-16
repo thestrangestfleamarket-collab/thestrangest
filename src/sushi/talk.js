@@ -15,16 +15,16 @@ const VOICES = { m: ['orion', 'perseus'], f: ['luna', 'stella'] };
 const CANNED = {
   order: ['Evening. {order}, please.', 'One {order}. It smells great tonight.', '{order} for me, thanks. How are you doing tonight?'],
   impatient: ['Is mine coming along?', 'Sorry, I do have a train to catch.', 'Getting hungry over here.'],
-  good: ['Ahh. That hits the spot.', 'Perfect. Just what I needed.', 'This is why I come here.'], ok: ['Not bad. Thanks.', 'Mm. It will do.'],
-  bad: ['Hm. This is not quite what I ordered.', 'Something is off with this bowl.'], angry: ['Forget it. I cannot wait any longer.'],
-  reply: ['Ha. If you say so.', 'Is that right?', 'Sure, sure.'], wave: ['Evening! Busy night?', 'Hey there. How are you doing?', 'Ah, hello!'],
-  react: ['Whoa. Everything all right back there?', 'Careful!', 'Ha. Butterfingers.'], chat: ['This rain will not quit. How is your night going?', 'Long day. This is the best part of it.', 'Smells wonderful tonight.', 'You been here long tonight?'],
-  noise: ['Sorry? I cannot hear you over the rain.', 'Hm? Say that again?', 'What was that?'],
+  good: ['Ahh. That hits the spot.', 'Perfect. Just what I needed.', 'This is why I come here.'], ok: ['Not bad. Thanks.', 'Mm. It’ll do.'],
+  bad: ['Hm. This ain’t what I ordered.', 'Something is off with this bowl.'], angry: ['Forget it. I can’t wait no more.'],
+  reply: ['Ha. If you say so.', 'Is that right?', 'Sure, sure.'], wave: ['Evening! Busy night?', 'Hey. How ya doin’?', 'Ah, hello!'],
+  react: ['Whoa. Everything all right back there?', 'Careful!', 'Ha. Butterfingers.'], chat: ['This rain won’t quit, huh?', 'Long day. This is the best part of it.', 'Smells wonderful tonight.', 'You been here long tonight?'],
+  noise: ['Sorry? Can’t hear ya over the rain.', 'Hm? Say that again?', 'What was that?'],
   pay: ['Here you go.', 'That should cover it.', 'There you are, pal.'], thanks: ['Thanks. Good night.', 'Appreciate it. See you around.', 'Thanks, take it easy.'],
-  short: ['Hey, I think you shorted me on the change.', 'Hold on, that is not the right change.'], shorted: ['Forget it. Good night.'], over: ['Whoa, you gave me too much. Here.', 'That is too much change, friend.'],
+  short: ['Hey, I think you shorted me on the change.', 'Hold on, that ain’t right.'], shorted: ['Forget it. Good night.'], over: ['Whoa, you gave me too much. Here.', 'That’s too much, pal.'],
   waitchange: ['Uh, my change?', 'Could I get my change?'],
-  hurt: ['Hey! What is wrong with you?', 'Ow! You hit me!', 'Are you out of your mind?'], police: ['Hey! Police. Step back from that counter, now.', 'I saw that. What is going on here?'],
-  hail: ['Evening!', 'Hey there! Busy night?', 'How you doing?'], hello: ['Hey, chef! Evening!', 'Smells good tonight!', 'Look who is open!'], snub: ['Forget it.', 'Not tonight.'],
+  hurt: ['Hey! What’s wrong with you?', 'Ow! You hit me!', 'Are you out of your mind?'], police: ['Hey! Police. Step back from that counter, now.', 'I saw that. What’s goin’ on here?'],
+  greet2: ['Evening.', 'Hey.', 'How ya doin’.'], hail: ['Evening!', 'Hey there! Busy night?', 'How you doing?'], hello: ['Hey, chef! Evening!', 'Smells good tonight!', 'Look who’s open!'], snub: ['Forget it.', 'Not tonight.'],
 };
 
 export function buildTalk() {
@@ -39,67 +39,141 @@ export function buildTalk() {
   const orderText = (o) => `${o.recipe.name.toLowerCase()} ramen${o.firm ? ', noodles firm' : ''}${o.no ? `, no ${o.no}` : ''}${o.tops.chashu === 3 ? ', extra chashu' : ''}${o.drink ? `, and a ${o.drink}` : ''}`;
   // everything said and heard, with how long it took and what went wrong, sent to the site in batches (POST /sushi/log) so a night's talk can be read back
   const SID = Math.random().toString(36).slice(2, 10) + Date.now().toString(36), book = []; let bookT = 0;
-  const note = (o) => { book.push({ at: Date.now(), gt: +G.t.toFixed(1), seats: G.game ? G.game.customers.filter((c) => c.state !== 'walk' && c.state !== 'leaving').length : 0, ...o }); if (book.length > 60) book.shift(); };
+  const note = (o) => { book.push({ at: Date.now(), gt: +G.t.toFixed(1), seats: G.game ? G.game.customers.filter((c) => c.state !== 'walk' && c.state !== 'leaving').length : 0, ...o }); if (book.length > 60) book.shift(); return book[book.length - 1]; };
   const flush = () => { if (!book.length) return; const lines = book.splice(0, book.length); fetch('/sushi/log', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sid: SID, lines }), keepalive: true }).catch(() => { }); };
   talk.note = note; talk.flush = flush; talk.book = book; addEventListener('pagehide', flush);
   const voiceOf = (c) => c.voice || (c.voice = c.p.cast && c.p.cast.name ? (c.p.vox ||= { ...persona(c), history: [], busy: false, gen: 0 }) : { ...persona(c), history: [], busy: false, gen: 0 }); // a regular is one voice, at the counter or passing
   const here = (c) => (c.here ? c.here() : G.game.customers.includes(c));
 
-  // said aloud from their own mouth, one voice at a time: the site's voice if it will give one, else the browser's
-  const lane = []; let now = null, room = null;
+  // ---- one floor (owner, 16 Nov 2026: "its hard for the convo to flow because of all the stops starts and talking over"): every line goes through this director, which lets one person speak at a time, never over the cook
+  const PRIO = { hurt: 5, police: 5, reply: 4, ack: 4, noise: 4, order: 3, good: 3, ok: 3, bad: 3, angry: 3, pay: 3, thanks: 3, short: 3, shorted: 3, over: 3, waitchange: 3, impatient: 2, greet2: 2 }, AGE = [0, 5, 10, 20, 8, 6]; // seconds a line may wait for the floor before its moment has passed
+  const D = { q: [], cur: null, lastEnd: -9, gap: 0.4, cookAt: -9, cookOn: false, cookEnd: -9, lastWho: null, echo: 0.6, tm: 0, bus: null, outAn: null, outBuf: null };
+  const nowS = () => performance.now() / 1000;
+  talk.D = D; talk.clockS = nowS;
+  let room = null;
   const wet = () => { if (room) return room; const ac = G.audio.ctx, n = (ac.sampleRate * 0.5) | 0, ir = ac.createBuffer(2, n, ac.sampleRate); for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch); let lp = 0; for (let i = 0; i < n; i++) { lp += ((Math.random() * 2 - 1) - lp) * 0.35; d[i] = lp * Math.pow(1 - i / n, 3.2) * (i < 260 ? i / 260 : 1); } } const cv = ac.createConvolver(), g = ac.createGain(); cv.buffer = ir; g.gain.value = 0.5; cv.connect(g); g.connect(G.audio.master); return (room = cv); };
+  const bus = () => { if (D.bus) return D.bus; const ac = G.audio.ctx, b = ac.createGain(), send = ac.createGain(), an = ac.createAnalyser(); an.fftSize = 512; send.gain.value = 0.16; b.connect(G.audio.master); b.connect(send); send.connect(wet()); b.connect(an); D.outAn = an; D.outBuf = new Float32Array(512); return (D.bus = b); };
+  talk.outLevel = () => { if (!D.outAn || !D.cur) return 0; D.outAn.getFloatTimeDomainData(D.outBuf); let s = 0; for (let i = 0; i < 512; i++) s += D.outBuf[i] * D.outBuf[i]; return Math.sqrt(s / 512); };
   const mouth = (c, out) => { let b = c.voice.head; if (b === undefined) { b = null; c.p.root.traverse((o) => { if (!b && o.isBone && /head/i.test(o.name)) b = o; }); c.voice.head = b; } return b ? b.getWorldPosition(out) : out.set(c.p.root.position.x, 1.3, c.p.root.position.z); };
   const _m = new V3();
-  const stop = () => { if (!now) return; const n = now; now = null; try { n.src.onended = null; n.g.gain.setTargetAtTime(0, G.audio.ctx.currentTime, 0.04); n.src.stop(G.audio.ctx.currentTime + 0.15); } catch (e) { /* ended */ } talk.speaking = 0; };
-  const pump = () => {
-    if (now || !lane.length) return; const it = lane.shift(); if (!here(it.c)) return pump();
-    if (!it.buf) { try { const u = new SpeechSynthesisUtterance(it.text), v = it.c.voice, vs = speechSynthesis.getVoices().filter((x) => /^en/i.test(x.lang)), want = v.g === 'f' ? /female|woman|samantha|victoria|karen|zira|susan|aria|jenny/i : /\bmale|\bman\b|daniel|alex|david|mark|fred|guy|james/i; u.voice = vs.find((x) => want.test(x.name)) || null; u.pitch = v.g === 'f' ? 1.15 : 0.7; u.rate = 1.02; u.lang = 'en-US'; it.c.p.talkT = 1 + it.text.length * 0.06; note({ who: it.c.voice.name, kind: it.kind, text: it.text, live: !!it.live, voice: 'browser', thinkMs: it.think }); now = { c: it.c, tts: true }; u.onend = u.onerror = () => { if (now && now.tts) now = null; pump(); }; speechSynthesis.speak(u); } catch (e) { now = null; } return; }
-    const ac = G.audio.ctx, v = it.c.voice, src = ac.createBufferSource(), pan = ac.createPanner(), g = ac.createGain(), send = ac.createGain(), rate = it.plain ? (v.g === 'f' ? 1.04 : 0.8) : /^eleven/.test(it.voice || '') ? 1 : v.pitch;   // a real voice is played as recorded
-    src.buffer = it.buf; src.playbackRate.value = rate; pan.panningModel = 'HRTF'; pan.distanceModel = 'inverse'; pan.refDistance = 1; pan.rolloffFactor = 1.3; mouth(it.c, _m); pan.positionX.value = _m.x; pan.positionY.value = _m.y; pan.positionZ.value = _m.z; g.gain.value = 2.4; send.gain.value = 0.16;
-    src.connect(g); g.connect(pan); pan.connect(G.audio.master); pan.connect(send); send.connect(wet());
-    note({ who: v.name, kind: it.kind, text: it.text, live: !!it.live, voice: it.plain ? 'plain' : it.voice, thinkMs: it.think, voiceMs: it.voiceMs, secs: +(it.buf.duration / rate).toFixed(1) });
-    it.c.p.talkT = it.buf.duration / rate; now = { c: it.c, src, g, pan }; talk.speaking = G.t + it.buf.duration / rate; v.until = talk.speaking; it.c.attn = Math.max(it.c.attn || 0, it.buf.duration / rate + 1.5);
-    src.onended = () => { if (now && now.src === src) { now = null; talk.speaking = 0; } pump(); }; src.start();
+  const words = (s) => (String(s).match(/[\w']+/g) || []).length;
+  const later = (s) => { clearTimeout(D.tm); D.tm = setTimeout(pump, Math.max(15, s * 1000)); };
+  const cookBusy = (it) => D.cookOn || (!(it && it.prio >= 5) && (EP.text || EP.pend || talk.hearing));
+
+  // the voice is fetched the moment the words exist; ElevenLabs' comes as a stream of raw samples, played as it arrives
+  const voice = (it) => {
+    const v = it.v, t0 = performance.now(); it.chunks = []; it.got = 0;
+    if (talk.tts === false || !G.audio.ctx) { it.tts = true; it.ready = true; return; }
+    fetch('/sushi/say', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: it.text, speaker: v.speaker, pin: v.pin }) }).then(async (r) => {
+      talk.diag.say = r.ok ? 'ok' : String(r.status); const ct = r.headers.get('content-type') || '', xv = r.headers.get('x-voice') || 'aura';
+      if (!r.ok || !ct.startsWith('audio')) { if (!r.ok && r.status !== 429) talk.tts = false; throw 0; }
+      talk.tts = true; it.voice = xv; it.plain = xv === 'plain'; if (!v.pin && /^eleven/.test(xv)) v.pin = xv === 'eleven-ny' ? 'ny' : 'stock'; // one voice for the night
+      const ac = G.audio.ctx;
+      if (ct.startsWith('audio/pcm') && r.body) {
+        const rate = +r.headers.get('x-rate') || 24000, rd = r.body.getReader(); it.reader = rd; let carry = null;
+        for (;;) { const { done, value } = await rd.read(); if (done || it.dead) break; let b = value; if (carry) { const m = new Uint8Array(carry.length + b.length); m.set(carry); m.set(b, carry.length); b = m; carry = null; }
+          if (b.length & 1) { carry = b.slice(b.length - 1); b = b.subarray(0, b.length - 1); } const n = b.length >> 1; if (!n) continue; const dv = new DataView(b.buffer, b.byteOffset, b.length), ab = ac.createBuffer(1, n, rate), d = ab.getChannelData(0);
+          for (let i = 0; i < n; i++) d[i] = dv.getInt16(i * 2, true) / 32768; it.chunks.push(ab); it.got += n / rate;
+          if (!it.ready && it.got >= 0.25) { it.ready = true; it.firstMs = Math.round(performance.now() - t0); pump(); } if (it.playing) feed(it); }
+        it.done = true;
+      } else { it.buf = await ac.decodeAudioData(await r.arrayBuffer()); it.chunks.push(it.buf); it.got = it.buf.duration; it.done = true; }
+      it.voiceMs = Math.round(performance.now() - t0); if (!it.ready) { it.ready = true; it.firstMs = it.voiceMs; } if (it.playing) feed(it); pump();
+    }).catch(() => { if (it.dead) return; it.done = true; it.voiceMs = Math.round(performance.now() - t0); if (!it.got) it.tts = true; it.ready = true; if (it.playing) feed(it); pump(); });
   };
-  talk.voiceTick = () => { if (now && now.pan) { mouth(now.c, _m); const p = now.pan; p.positionX.value = _m.x; p.positionY.value = _m.y; p.positionZ.value = _m.z; } };
-  async function speak(c, text, first, meta) {
-    if (G.muteVoices) return; const v = voiceOf(c), gen = v.gen, t0 = performance.now(); c.attn = Math.max(c.attn || 0, 2 + text.length * 0.07); let it = { c, text, kind: meta && meta.kind, live: meta && meta.live, think: meta && meta.think };
-    if (talk.tts !== false && G.audio.ctx) {
-      try {
-        const r = await fetch('/sushi/say', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, speaker: v.speaker }) }); talk.diag.say = r.ok ? 'ok' : String(r.status);
-        if (r.ok && (r.headers.get('content-type') || '').startsWith('audio')) { it.plain = r.headers.get('x-voice') === 'plain'; it.voice = r.headers.get('x-voice') || 'aura'; it.buf = await G.audio.ctx.decodeAudioData(await r.arrayBuffer()); talk.tts = true; }
-        else if (r.status !== 429) talk.tts = false;
-      } catch (e) { /* the browser's voice then */ }
+  const feed = (it) => {
+    if (it.dead) return; const ac = G.audio.ctx; while (it.fed < it.chunks.length) { const ab = it.chunks[it.fed++], s = ac.createBufferSource(); s.buffer = ab; s.playbackRate.value = it.rate; s.connect(it.g); if (it.at < ac.currentTime + 0.01) it.at = ac.currentTime + 0.02; s.start(it.at); it.at += ab.duration / it.rate; it.srcs.push(s); }
+    if (it.done) { clearTimeout(it.endT); it.endT = setTimeout(() => end(it), Math.max(0, (it.at - ac.currentTime) * 1000 + 30)); }
+    const left = Math.max(0, it.at - ac.currentTime) + (it.done ? 0 : 0.6); it.estEnd = nowS() + left; it.c.p.talkT = left; it.v.until = G.t + left;
+  };
+  const enqueue = (c, text, meta = {}) => {
+    if (G.muteVoices || !here(c)) return null; const v = voiceOf(c), kind = meta.kind || 'reply', it = { c, v, text, kind, prio: meta.prio || PRIO[kind] || 1, born: nowS(), gen: v.gen, live: meta.live, think: meta.think, h: meta.h, ack: meta.ack, fed: 0, srcs: [] };
+    if (it.prio <= 2 && D.q.filter((x) => x.prio <= 2).length >= 1) { note({ who: v.name, kind, text, dropped: 'too many waiting to speak' }); return null; }
+    c.attn = Math.max(c.attn || 0, 2 + text.length * 0.07);
+    if (meta.buf) { it.chunks = [meta.buf]; it.got = meta.buf.duration; it.ready = it.done = true; it.voice = 'bank'; } else voice(it);
+    D.q.push(it); pump(); return it;
+  };
+  talk.queue = enqueue; talk.spoken = [];
+  const drop = (it, why) => { it.dead = true; try { it.reader?.cancel(); } catch (e) { /* closed */ } if (why) note({ who: it.v.name, kind: it.kind, text: it.text, dropped: why }); };
+  function pump() {
+    if (D.cur) return; const t = nowS();
+    D.q = D.q.filter((it) => { if (!here(it.c)) { drop(it, 'they had left'); return false; } if (it.prio === 4 && it.gen !== it.v.gen) { drop(it, 'superseded by a newer answer'); return false; } if (t - it.born > AGE[it.prio]) { drop(it, 'the moment passed'); return false; } return true; });
+    if (!D.q.length) return;
+    if (cookBusy(D.q.find((x) => x.prio >= 5))) return later(0.1);
+    D.q.sort((a, b) => b.prio - a.prio || a.born - b.born); let it = null;
+    for (const x of D.q) { if (x.ready) { it = x; break; } if (x.prio >= 4) break; } // nobody jumps ahead of an answer still on its way
+    if (!it) return later(0.25);
+    const open = D.cookEnd > D.lastEnd ? D.cookEnd + (it.prio >= 4 ? 0.2 : 0.6) : D.lastEnd + (D.lastWho === it.c ? 0.15 : D.gap); // a breath between turns: short after the cook, shorter for the same voice going on
+    if (t < open) return later(open - t);
+    D.q.splice(D.q.indexOf(it), 1); start(it);
+  }
+  const start = (it) => {
+    const c = it.c, v = it.v; D.cur = it; it.playing = true; it.t0 = nowS(); talk.spoken.push(it.log = { who: v.name, kind: it.kind, t0: it.t0 }); if (talk.spoken.length > 40) talk.spoken.shift();
+    const base = { who: v.name, kind: it.kind, text: it.text, live: !!it.live, thinkMs: it.think, voiceMs: it.voiceMs, firstMs: it.firstMs, waitMs: Math.round((it.t0 - it.born) * 1000), ...(it.prio >= 4 && D.cookEnd > D.lastEnd ? { gapMs: Math.round((it.t0 - D.cookEnd) * 1000) } : {}) };
+    if (it.tts || !it.chunks.length) {
+      if (!window.speechSynthesis || !speechSynthesis.getVoices().length) { talk.voiceless = true; G.audio.play?.('voice'); note({ ...base, voice: 'none' }); return end(it); }
+      try { const u = new SpeechSynthesisUtterance(it.text), vs = speechSynthesis.getVoices().filter((x) => /^en/i.test(x.lang)), want = v.g === 'f' ? /female|woman|samantha|victoria|karen|zira|susan|aria|jenny/i : /\bmale|\bman\b|daniel|alex|david|mark|fred|guy|james/i; u.voice = vs.find((x) => want.test(x.name)) || null; u.pitch = v.g === 'f' ? 1.15 : 0.7; u.rate = 1.02; u.lang = 'en-US';
+        const est = 0.5 + it.text.length * 0.06; c.p.talkT = est; it.estEnd = nowS() + est; it.utt = u; note({ ...base, voice: 'browser' }); u.onend = u.onerror = () => end(it); speechSynthesis.speak(u); } catch (e) { end(it); }
+      return;
     }
-    it.voiceMs = Math.round(performance.now() - t0);
-    if (gen !== v.gen || !here(c)) { note({ who: v.name, kind: it.kind, text, dropped: gen !== v.gen ? 'superseded by a newer answer' : 'they had left' }); return; }
-    if (!it.buf && (!window.speechSynthesis || !speechSynthesis.getVoices().length)) { talk.voiceless = true; G.audio.play('voice'); return; }
-    if (first) { lane.length = 0; if (now && now.c !== c) { note({ who: now.c.voice.name, cut: 'stopped so ' + v.name + ' could answer the cook' }); stop(); try { speechSynthesis.cancel(); } catch (e) { /* none */ } now = null; } lane.push(it); } // an answer to you takes the floor from anyone else, but nobody talks over their own sentence
-    else { if (lane.length > 1) { note({ who: v.name, kind: it.kind, text, dropped: 'too many waiting to speak' }); return; } lane.push(it); }
+    const ac = G.audio.ctx, pan = ac.createPanner(), g = ac.createGain(); it.rate = it.plain ? (v.g === 'f' ? 1.04 : 0.8) : /^eleven|^bank/.test(it.voice || '') ? 1 : v.pitch; // a real voice is played as recorded
+    pan.panningModel = 'HRTF'; pan.distanceModel = 'inverse'; pan.refDistance = 1; pan.rolloffFactor = 1.3; mouth(c, _m); pan.positionX.value = _m.x; pan.positionY.value = _m.y; pan.positionZ.value = _m.z; g.gain.value = 2.4; g.connect(pan); pan.connect(bus());
+    it.g = g; it.pan = pan; it.at = ac.currentTime + 0.03; it.row = note({ ...base, voice: it.plain ? 'plain' : it.voice, secs: it.done ? +(it.got / it.rate).toFixed(1) : undefined });
+    feed(it); c.attn = Math.max(c.attn || 0, (it.estEnd - nowS()) + 1.5);
+  };
+  function end(it) {
+    if (D.cur !== it) return;
+    D.cur = null; D.lastWho = it.c; D.lastText = it.text; D.lastEnd = nowS(); D.gap = 0.3 + Math.random() * 0.4; if (it.log) it.log.t1 = D.lastEnd; if (it.row) it.row.secs = +(D.lastEnd - it.t0).toFixed(1); it.c.p.talkT = Math.min(it.c.p.talkT || 0, 0.2); it.v.until = 0; clearTimeout(it.endT);
+    if (!it.ack && it.voice && /^eleven/.test(it.voice)) setTimeout(() => bank(it.v), 400);
     pump();
   }
+  // the cook began to speak: a short line, or one nearly done, is finished; anything longer stops with a quick fade, and what was never said is not remembered as said
+  const barge = () => {
+    D.q = D.q.filter((x) => { if (x.prio <= 2) { drop(x, 'the cook spoke'); return false; } return true; });
+    const it = D.cur; if (!it || it.prio >= 5) return; const left = (it.estEnd || 0) - nowS();
+    if (left < 0.6 || words(it.text) <= 3) return;
+    const said = Math.max(0, Math.min(1, (nowS() - it.t0) / Math.max(0.5, nowS() - it.t0 + left))), cutAt = Math.round(it.text.length * said), keep = it.text.slice(0, cutAt).replace(/\s+\S*$/, '');
+    if (it.h) it.h.text = keep ? keep + ' —' : '—'; note({ who: it.v.name, kind: it.kind, cut: 'the cook spoke, ' + Math.round(said * 100) + '% said' }); if (it.log) it.log.cut = true;
+    try { if (it.utt) speechSynthesis.cancel(); else { const ac = G.audio.ctx; it.g.gain.setTargetAtTime(0, ac.currentTime, 0.04); for (const s of it.srcs) s.stop(ac.currentTime + 0.2); } } catch (e) { /* ended */ }
+    drop(it); it.done = true; clearTimeout(it.endT); it.estEnd = nowS(); end(it);
+  };
+  talk.barge = barge;
+  talk.cookVoice = (on) => { if (!on) { D.cookOn = false; return; } D.cookAt = nowS(); if (!D.cookOn) { D.cookOn = true; if (D.cur) barge(); } };
+  talk.voiceTick = () => { const it = D.cur; if (it && it.pan) { mouth(it.c, _m); const p = it.pan; p.positionX.value = _m.x; p.positionY.value = _m.y; p.positionZ.value = _m.z; } if (D.cookOn && nowS() - D.cookAt > 1.2) D.cookOn = false; if (it && nowS() > (it.estEnd || it.t0 + 8) + 3) end(it); if (!D.cur && D.q.length) pump(); }; // a stalled voice never holds the floor
+
+  // a small bank of "mm-hm"s in each voice, made once in a quiet moment, so a slow thought can be bridged now and then
+  const BANK = new Map(), ACKS = ['Mm-hm.', 'Yeah.', 'Okay.', 'Uh-huh.'];
+  const bank = (v) => {
+    const key = v.speaker + (v.pin || ''); if (!v.speaker || BANK.has(key) || talk.tts === false || !G.audio.ctx || D.q.length) return; const got = []; BANK.set(key, got);
+    const phr = ACKS.slice().sort(() => Math.random() - 0.5).slice(0, 2);
+    (async () => { for (const text of phr) { try { const r = await fetch('/sushi/say', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, speaker: v.speaker, pin: v.pin }) }); if (!r.ok) return;
+      const ct = r.headers.get('content-type') || '', ab = await r.arrayBuffer(), ac = G.audio.ctx;
+      if (ct.startsWith('audio/pcm')) { const rate = +r.headers.get('x-rate') || 24000, n = ab.byteLength >> 1, dv = new DataView(ab), b = ac.createBuffer(1, n, rate), d = b.getChannelData(0); for (let i = 0; i < n; i++) d[i] = dv.getInt16(i * 2, true) / 32768; got.push({ text, buf: b }); }
+      else if (ct.startsWith('audio')) got.push({ text, buf: await ac.decodeAudioData(ab) }); } catch (e) { return; } } })();
+  };
+  const ackFor = (v) => { const b = BANK.get(v.speaker + (v.pin || '')); return b && b.length ? b[(Math.random() * b.length) | 0] : null; };
+  talk.bank = BANK;
 
   async function say(c, kind, situation, facts, cookSaid) {
     if (c.guest) return; // a tenant from THE MARKET speaks for themself
-    const v = voiceOf(c), reply = kind === 'reply' || kind === 'hurt' || kind === 'police', must = reply || kind === 'order' || kind === 'taste' || kind === 'angry' || kind === 'pay' || kind === 'short' || kind === 'over' || kind === 'thanks';
+    const v = voiceOf(c), reply = kind === 'reply' || kind === 'hurt' || kind === 'police', must = reply || kind === 'order' || kind === 'taste' || kind === 'angry' || kind === 'pay' || kind === 'short' || kind === 'over' || kind === 'thanks' || kind === 'greet2';
     if (c.p.cast && c.p.cast.name) v.story = G.block.story(c.p.cast);
     if (reply) { v.gen = (v.gen || 0) + 1; c.chatT = Math.max(c.chatT || 0, 30); talk.floorT = G.t + 6; for (const o of G.game.customers) if (o !== c) o.chatT = Math.max(o.chatT || 0, 12); }
-    else if (v.busy || (v.until || 0) > G.t || (!must && (now || lane.length || talk.hearing || G.t < (talk.floorT || 0)))) return; // nobody starts small talk while you are speaking or being answered
-    const gen = v.gen, t0 = performance.now(); v.busy = true; let live = false;
+    else if (v.busy || (v.until || 0) > G.t || (!must && (D.cur || D.q.some((x) => x.prio >= 4) || cookBusy() || G.t < (talk.floorT || 0)))) return; // nobody starts small talk while you are speaking or being answered
+    const gen = v.gen, t0 = performance.now(); v.busy = true; let live = false, line = null;
     if (cookSaid) v.history.push({ who: 'cook', text: cookSaid });
-    let line = null;
+    if (kind === 'reply' && cookSaid) setTimeout(() => { const a = ackFor(v); if (line === null && gen === v.gen && a && !D.cur && G.t - (v.ackT ?? -99) > 20 && Math.random() < 0.45) { v.ackT = G.t; enqueue(c, a.text, { kind: 'ack', buf: a.buf }); } }, 700); // a slow thought is bridged by a small sound, now and then
     if (talk.live !== false) {
       try {
-        const r = await fetch('/sushi/talk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ persona: v, order: c.order ? orderText(c.order) : c.passer ? 'nothing: you are passing through the alley, not at the counter' : 'not ordered yet', situation, facts: [facts, talk.seenText()].filter(Boolean).join(' '), say: cookSaid, history: v.history }) });
+        const r = await fetch('/sushi/talk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ persona: { name: v.name, age: v.age, job: v.job, mood: v.mood, quirk: v.quirk, story: v.story, style: v.style }, order: c.order ? orderText(c.order) : c.passer ? 'nothing: you are passing through the alley, not at the counter' : 'not ordered yet', situation, facts: [facts, talk.seenText()].filter(Boolean).join(' '), say: cookSaid, history: v.history }) });
         const j = r.ok ? await r.json() : null; talk.diag.think = j && j.say ? 'ok' : j && j.why ? j.why.slice(0, 28) : String(r.status);
         if (j && j.say) { line = j.say; talk.live = true; live = true; } else if (!r.ok && r.status !== 429) talk.live = false;
       } catch (e) { talk.live = talk.live || false; }
     }
-    if (gen !== v.gen) { note({ who: v.name, kind, text: line || '', dropped: 'the cook spoke again before this was said' }); return; }
+    if (gen !== v.gen) { v.busy = false; note({ who: v.name, kind, text: line || '', dropped: 'the cook spoke again before this was said' }); return; }
     if (!line) { const set = CANNED[kind] || CANNED.reply; line = pick(set).replace('{order}', c.order ? c.order.recipe.name[0] + c.order.recipe.name.slice(1).toLowerCase() + ' ramen' : 'ramen'); }
-    v.busy = false; v.history.push({ who: 'me', text: line }); if (v.history.length > 10) v.history.splice(0, 2);
+    const h = { who: 'me', text: line }; v.busy = false; v.history.push(h); if (v.history.length > 10) v.history.splice(0, 2);
     if (!here(c)) return;
-    talk.last = { who: v.name, line, n: (talk.lastN = (talk.lastN || 0) + 1) }; speak(c, line, reply, { kind, live, think: Math.round(performance.now() - t0) });
+    talk.last = { who: v.name, line, n: (talk.lastN = (talk.lastN || 0) + 1) }; enqueue(c, line, { kind, live, h, think: Math.round(performance.now() - t0) });
   }
 
   talk.event = (c, kind, r) => {
@@ -126,18 +200,22 @@ export function buildTalk() {
   };
   // who you are speaking to: the only one at the counter; or, of several, the one you are looking at
   talk.target = () => {
-    const cs = G.game.customers.filter((c) => c.state === 'sitting' || c.state === 'waiting' || c.state === 'eating' || c.state === 'paying'); if (!cs.length) return null; if (cs.length === 1) return cs[0];
+    if (!G.game) return null; const cs = G.game.customers.filter((c) => c.state === 'sitting' || c.state === 'waiting' || c.state === 'eating' || c.state === 'paying'); if (!cs.length) return null; if (cs.length === 1) return cs[0];
     const cam = G.camera.getWorldPosition(new V3()), dir = G.camera.getWorldDirection(new V3()); let best = null, bd = 0.86;
     for (const c of cs) { const d = new V3(SEATS[c.seat], 1.3, -1.15).sub(cam).normalize().dot(dir); if (d > bd) { bd = d; best = c; } }
     return best;
   };
-  talk.cookSays = (text) => {
-    text = String(text || '').trim().slice(0, 240); if (!text) return false; talk.attend(6); const c = talk.target(), n = G.game.customers.filter((x) => x.state === 'sitting' || x.state === 'waiting' || x.state === 'eating' || x.state === 'paying').length;
+  const GREET = /^\W*(hi|hey|hello|evening|good (evening|night)|welcome|yo|how (are|is|'s)|what'?s up|howdy)\b|\b(everybody|everyone|folks|you guys|y'all)\b/i;
+  talk.cookSays = (text, at) => {
+    text = String(text || '').trim().slice(0, 240); if (!text || !G.game) return false; D.cookEnd = at ?? nowS(); talk.attend(6); const seated = G.game.customers.filter((x) => x.state === 'sitting' || x.state === 'waiting' || x.state === 'eating' || x.state === 'paying'), n = seated.length; let c = talk.target();
     talk.last = { who: 'THE COOK', line: text, n: (talk.lastN = (talk.lastN || 0) + 1) };
     note({ who: 'COOK', text, to: c ? voiceOf(c).name : n ? 'nobody (looking at no one, ' + n + ' seated)' : 'nobody (no one seated)' });
     { const cam = G.camera.getWorldPosition(new V3()), dir = G.camera.getWorldDirection(new V3()), pb = G.block?.addressed?.(cam, dir), cd = c ? new V3(SEATS[c.seat], 1.3, -1.15).sub(cam).normalize().dot(dir) : 0;
       if (pb && pb.k > Math.max(cd, 0.9)) { const h = pb.h, sp = h.spk; G.block.greet(h, { kind: 'reply', t: 5, w: Math.random() < 0.35 ? 0.4 : null }); note({ who: 'COOK', text, to: voiceOf(sp).name + ' (passing)' });
         say(sp, 'reply', G.block.mad[h.def.id] ? 'You are walking through the alley past the ramen cart, and the cook, who wronged you earlier tonight, just spoke to you. Answer coldly and briefly.' : 'You are walking through the alley past the ramen cart, and the cook behind its counter just spoke to you. Answer briefly; you may stop to chat or say you will come over for a bowl.', 'You are not at the counter.', text); return true; } }
+    if (!c && n > 1 && GREET.test(text)) { // a greeting to the whole counter: one answers, and maybe another a moment after, never both at once
+      const [a, b] = seated.slice().sort(() => Math.random() - 0.5); c = a;
+      if (b && Math.random() < 0.5) setTimeout(() => { if (here(b)) say(b, 'greet2', 'The cook just greeted everyone at the counter and someone else already answered. Add a word or two of your own, or a short hello.', ''); }, 1200 + Math.random() * 1500); }
     if (!c) { if (!n) G.game.callOver?.(); return false; }
     c.p.gesture?.(Math.random() < 0.7 ? 'nod' : 'think'); const out = G.game.toldOut?.(c, text) || '';
     say(c, 'reply', c.state === 'eating' ? 'You are eating your ramen at the counter and the cook is talking to you. Answer, and keep the conversation going.' : 'You are sitting at the counter waiting for your ramen and the cook is talking to you. Answer, and keep the conversation going.', (c.result ? `Your bowl scored ${c.result.score}/100.${c.result.issues.length ? ' Problems: ' + c.result.issues.join('; ') + '.' : ''}` : 'Your bowl has not arrived yet.') + (out ? ' ' + out : '') + (c.pay ? ` You are paying: your bill is ${usd(c.pay.due)}, you handed over ${usd(c.pay.tender)}${c.pay.owed ? `, and are owed ${usd(c.pay.owed)} change` : ''}.` : ''), text);
@@ -145,10 +223,21 @@ export function buildTalk() {
   };
 
   // ---- your voice, always on: the browser's recognition where it works, else each phrase is recorded and written down by the site (POST /holmes/hear)
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition; let active = false, rec = null, stream = null, lastNoise = -9;
-  const heard = (text) => { text = String(text || '').trim(); if (!text) return; if (/guide( mode)? (on|off)/i.test(text) && text.length < 24) { G.debug?.guide?.set(/ on/i.test(text)); return; } if (/^\W*(open |show |close )?(the )?(menu|settings)\W*$/i.test(text)) { G.debug?.menu?.toggle(); return; } talk.cookSays(text); };
+  // a turn ends when you have really stopped: words are held until you have been quiet a moment, longer after a trailing "and" or "um", and the pieces of one turn are joined
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition; let active = false, rec = null, stream = null, lastNoise = -99;
+  const EP = { text: '', pend: 0, tm: 0, first: 0 }, TRAIL = /(\b(and|but|so|or|um+|uh+|er|erm|because|cause|like|the|a|an|to|of|with|if|then|well|my|your)|,)\W*$/i;
+  talk.EP = EP;
+  const endpoint = () => {
+    clearTimeout(EP.tm); if (!EP.text) return; const t = nowS(), need = TRAIL.test(EP.text) ? 1.4 : 0.75, quiet = t - D.cookAt;
+    if ((D.cookOn || talk.hearing || EP.pend || quiet < need) && t - EP.first < 12) { EP.tm = setTimeout(endpoint, Math.max(60, (need - quiet) * 1000)); return; }
+    const text = EP.text; EP.text = ''; EP.first = 0; talk.cookSays(text, D.cookAt); pump();
+  };
+  const echoOf = (s) => { const w = String(s).toLowerCase().match(/[\w']+/g) || [], said = D.cur ? D.cur.text : nowS() - D.lastEnd < 1.5 ? D.lastText || '' : ''; if (!w.length || !said) return false; const l = said.toLowerCase(); return w.filter((x) => l.includes(x)).length / w.length > 0.7; }; // the patron's own words come back through the microphone
+  const heard = (text) => { text = String(text || '').trim(); if (!text) return; if (/guide( mode)? (on|off)/i.test(text) && text.length < 24) { G.debug?.guide?.set(/ on/i.test(text)); return; } if (/^\W*(open |show |close )?(the )?(menu|settings)\W*$/i.test(text)) { G.debug?.menu?.toggle(); return; }
+    if (echoOf(text)) { note({ who: 'COOK', heard: text, problem: 'their own voice, heard back' }); return; }
+    if (nowS() - D.cookAt > 4) D.cookAt = nowS(); EP.text = (EP.text ? EP.text + ' ' : '') + text; EP.text = EP.text.slice(-240); EP.first ||= nowS(); endpoint(); };
   talk.heard = heard;
-  const noise = () => { talk.attend(4); if (G.t - lastNoise < 9) return; const c = talk.target(); if (!c) { G.game.callOver?.(); return; } lastNoise = G.t; speak(c, pick(CANNED.noise)); }; // heard, not understood: they still answer
+  const noise = () => { talk.attend(4); if (G.t - lastNoise < 20) return; const c = talk.target(); if (!c) return; lastNoise = G.t; enqueue(c, pick(CANNED.noise), { kind: 'noise' }); }; // heard, not understood: they ask, now and then
   let primed = null; const MIC = { audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } };
   talk.needPrime = async () => { if (primed || !navigator.mediaDevices) return false; try { const p = await navigator.permissions.query({ name: 'microphone' }); return p.state !== 'granted'; } catch (e) { return true; } };
   talk.micStream = () => primed || stream;
@@ -159,11 +248,14 @@ export function buildTalk() {
       stream = st; talk.mic = 'listening'; const ac = G.audio.ctx || new AudioContext(), an = ac.createAnalyser(); an.fftSize = 512; ac.createMediaStreamSource(st).connect(an);
       const buf = new Float32Array(512); let mr = null, parts = [], loud = 0, quiet = 0, t0 = 0, floor = 0.006;
       const loop = () => {
-        if (!active) return; an.getFloatTimeDomainData(buf); let s2 = 0; for (let i = 0; i < 512; i++) s2 += buf[i] * buf[i]; const rms = Math.sqrt(s2 / 512), now = performance.now(), theyTalk = (talk.speaking || 0) > G.t || window.speechSynthesis?.speaking;
-        if (!mr) { floor += (Math.min(rms, 0.04) - floor) * 0.02; if (!theyTalk && !talk.hold && rms > Math.max(0.012, floor * 3)) { if (++loud > 3) { parts = []; const m = (mr = new MediaRecorder(st)); m.ondataavailable = (e) => parts.push(e.data); talk.attend(5); talk.hearing = true;
-              m.onstop = async () => { talk.hearing = false; const blob = new Blob(parts, { type: m.mimeType }), secs = (performance.now() - t0) / 1000; talk.sent = (talk.sent || 0) + 1; if (blob.size < 2500) return; try { const r = await fetch('/holmes/hear', { method: 'POST', body: blob }); if (r.ok) { const j = await r.json(); talk.diag.hear = j.text ? 'ok' : j.why ? j.why.slice(0, 28) : 'no words'; talk.mic = j.why ? 'the site cannot hear' : 'listening'; if (j.text && !(secs < 2.2 && /^\W*(thank you|thanks for watching|you|bye|okay|oh|hmm|so|uh|the)\W*$/i.test(j.text))) heard(j.text); else { note({ who: 'COOK', heard: j.text || '', problem: j.text ? 'taken for noise' : (j.why || 'no words'), secs: +secs.toFixed(1) }); noise(); } } else { note({ who: 'COOK', problem: 'hearing failed ' + r.status }); talk.diag.hear = String(r.status); talk.mic = r.status === 401 ? 'needs a login' : r.status === 429 ? 'listening' : 'the site cannot hear'; noise(); } } catch (e) { noise(); } };
+        if (!active) return; an.getFloatTimeDomainData(buf); let s2 = 0; for (let i = 0; i < 512; i++) s2 += buf[i] * buf[i]; const rms = Math.sqrt(s2 / 512), now = performance.now(), theyTalk = !!D.cur || window.speechSynthesis?.speaking, out = theyTalk ? talk.outLevel() : 0;
+        if (!mr) { const th = Math.max(0.012, floor * 3), bth = Math.max(0.025, floor * 5, out * D.echo * 2.5); // over a patron's voice it takes more, and longer, to be you and not their echo
+          if (!theyTalk) floor += (Math.min(rms, 0.04) - floor) * 0.02; else if (out > 0.01 && rms < bth) D.echo += (Math.min(4, rms / out) - D.echo) * 0.005;
+          if (!talk.hold && rms > (theyTalk ? bth : th)) { if (++loud > (theyTalk ? 8 : 3)) { parts = []; const m = (mr = new MediaRecorder(st)); m.ondataavailable = (e) => parts.push(e.data); talk.attend(5); talk.hearing = true; talk.cookVoice(true);
+              m.onstop = async () => { talk.hearing = false; const blob = new Blob(parts, { type: m.mimeType }), secs = (performance.now() - t0) / 1000; talk.sent = (talk.sent || 0) + 1; if (blob.size < 2500) return endpoint(); EP.pend++;
+                try { const r = await fetch('/holmes/hear', { method: 'POST', body: blob }); EP.pend--; if (r.ok) { const j = await r.json(); talk.diag.hear = j.text ? 'ok' : j.why ? j.why.slice(0, 28) : 'no words'; talk.mic = j.why ? 'the site cannot hear' : 'listening'; if (j.text && !(secs < 2.2 && /^\W*(thank you|thanks for watching|you|bye|oh|hmm|so|uh|the)\W*$/i.test(j.text))) heard(j.text); else { note({ who: 'COOK', heard: j.text || '', problem: j.text ? 'taken for noise' : (j.why || 'no words'), secs: +secs.toFixed(1) }); if (!j.text && secs > 1.5) noise(); } } else { note({ who: 'COOK', problem: 'hearing failed ' + r.status }); talk.diag.hear = String(r.status); talk.mic = r.status === 401 ? 'needs a login' : r.status === 429 ? 'listening' : 'the site cannot hear'; noise(); } } catch (e) { EP.pend = Math.max(0, EP.pend - 1); noise(); } endpoint(); };
               m.start(); t0 = now; quiet = 0; } } else loud = 0; }
-        else { quiet = rms < Math.max(0.009, floor * 1.8) ? quiet + 1 : 0; if (quiet > 60 || now - t0 > 9000) { const m = mr; mr = null; loud = 0; try { m.stop(); } catch (e) { /* stopped */ } } }
+        else { const q = rms < Math.max(0.009, floor * 1.8); quiet = q ? quiet + 1 : 0; if (!q) D.cookAt = nowS(); if (quiet === 10) talk.cookVoice(false); if (quiet > 35 || now - t0 > 9000) { const m = mr; mr = null; loud = 0; talk.cookVoice(false); try { m.stop(); } catch (e) { /* stopped */ } } }
         setTimeout(loop, 20); }; loop();
     }).catch(() => { talk.mic = 'blocked: allow the microphone'; active = false; });
   };
@@ -172,14 +264,14 @@ export function buildTalk() {
     if (!on) { talk.mic = 'off'; try { rec?.stop(); } catch (e) { /* not running */ } rec = null; if (stream && stream !== primed) stream.getTracks().forEach((x) => x.stop()); stream = null; return; }
     if (!SR || /OculusBrowser|Quest|Pico|Wolvic|VR/i.test(navigator.userAgent)) return recorder(); // a headset's browser names a recogniser it does not have
     let errs = 0, began = false; setTimeout(() => { if (active && !began && errs < 2) { errs = 2; try { rec?.abort(); } catch (e) { /* gone */ } rec = null; recorder(); } }, 3000);
-    const go = () => { if (!active || errs >= 2) return; rec = new SR(); rec.lang = 'en-US'; rec.continuous = true; rec.interimResults = false; talk.mic = 'listening'; rec.onstart = () => { began = true; };
-      rec.onspeechstart = () => talk.attend(5);
-      rec.onresult = (e) => { errs = 0; for (let i = e.resultIndex; i < e.results.length; i++) if (e.results[i].isFinal) heard(e.results[i][0].transcript); };
+    const go = () => { if (!active || errs >= 2) return; rec = new SR(); rec.lang = 'en-US'; rec.continuous = true; rec.interimResults = true; talk.mic = 'listening'; rec.onstart = () => { began = true; };
+      rec.onspeechstart = () => talk.attend(5); rec.onspeechend = () => talk.cookVoice(false);
+      rec.onresult = (e) => { errs = 0; for (let i = e.resultIndex; i < e.results.length; i++) { const tx = e.results[i][0].transcript; if (e.results[i].isFinal) { D.cookAt = nowS(); D.cookOn = false; heard(tx); } else if (!echoOf(tx)) { if (words(tx) >= 2) talk.cookVoice(true); else D.cookAt = nowS(); } } };
       rec.onerror = (e) => { if (e.error !== 'no-speech' && e.error !== 'aborted') { errs++; if (errs >= 2 || e.error === 'not-allowed' || e.error === 'service-not-allowed') { errs = 2; rec = null; recorder(); } } }; // a headset browser may name a recogniser it does not have: record instead
       rec.onend = () => setTimeout(go, 300); try { rec.start(); } catch (e) { /* already started */ } }; go();
   };
   const log = [];
-  talk.attend = (sec = 4) => { for (const c of G.game.customers) c.attn = Math.max(c.attn || 0, sec); };
+  talk.attend = (sec = 4) => { for (const c of G.game?.customers || []) c.attn = Math.max(c.attn || 0, sec); };
   talk.seen = (what) => { log.push({ t: G.t, what }); if (log.length > 5) log.shift(); };
   talk.seenText = () => { const r = log.filter((x) => G.t - x.t < 60).map((x) => x.what); return r.length ? 'In the last minute you saw the cook: ' + r.join('; ') + '.' : ''; };
   talk.update = (dt) => { talk.voiceTick(); if ((bookT += dt || 0) > 8) { bookT = 0; flush(); } };

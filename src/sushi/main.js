@@ -18,6 +18,7 @@ import { buildGuide } from './guide.js';
 import { buildMenu } from './menu.js';
 import { buildReport } from './report.js';
 import { buildTV } from './tv.js';
+import { buildTank } from './tank.js';
 import { buildLive } from './live.js';
 import { buildCook } from './cook.js';
 import { buildShare } from './share.js';
@@ -64,7 +65,7 @@ const grit = buildGrit(scene, city, cart);
 const guide = buildGuide(scene, cart);
 T.metreUV(cart.group);
 G.baked = mergeStatic(cart.group) + mergeStatic(city.group);
-const tv = buildTV(scene, city.shops), live = buildLive(), cook = buildCook();
+const tank = buildTank(scene), tv = buildTV(scene, city.shops), live = buildLive(), cook = buildCook();
 if (G.guest) G.buttons.length = 0;   // (the cart's knobs, switch and boards are the cook's)
 const share = buildShare(live), guest = G.guest ? buildGuest(live) : null;
 
@@ -116,7 +117,7 @@ function tick(dt) {
   game.update(dt, G.t);
   city.update(dt, G.t);
   life.update(dt, G.t);
-  talk.update(dt); tv.update(dt); live.update(dt); share.update(dt); if (!guest) cook.update(dt);
+  talk.update(dt); tv.update(dt); tank.update(dt); live.update(dt); share.update(dt); if (!guest) cook.update(dt);
   grit.update(dt, G.t);
   guide.update(dt, G.t); gameMenu.update(dt); report.update(dt);
   G.fx.update(dt);

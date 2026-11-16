@@ -140,7 +140,7 @@ function updateToaster(dt) {
       let k = 0;
       for (const it of C.items) if (it.state === 'slot') {
         it.cook = Math.min(2, it.cook + 1); C.refresh(it); it.quietT = 3.5; it.cool = 0.8; it.hotT = HOT_T;
-        C.free(it, new V3(t.ejectFrom.x + k * 0.75, t.ejectFrom.y, t.ejectFrom.z + (k % 2 ? 0.5 : -0.5)), new V3((Math.random() - 0.5) * 1.2, 7.6, 3.1 + Math.random() * 0.6));
+        C.free(it, new V3(t.ejectFrom.x + k * 0.75, t.ejectFrom.y, t.ejectFrom.z + (k % 2 ? 0.5 : -0.5)), new V3((Math.random() - 0.5) * 0.6, 6.4, 2.7 + Math.random() * 0.3));   // up and just forward: it lands within a step of the toaster's front
         it.body.angularVelocity.set(Math.random() * 8, Math.random() * 8, Math.random() * 8); k++;
       }
       if (k) { MC.say('Pop! ' + (k > 1 ? k + ' crumbs fly' : 'A ' + C.name(C.items.find(i => i.cool > 0.7 && i.type === 'crumb') || { type: 'crumb', cook: 1 }) + ' flies') + ' onto the counter.', 3); MC.emit('pop', k); }

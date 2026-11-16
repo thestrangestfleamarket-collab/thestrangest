@@ -22,7 +22,7 @@ MC.emit = (n, a) => { (hs[n] || []).forEach(f => f(a)); };
 
 // persistence (options + save)
 function load(k, d) { try { return Object.assign(d, JSON.parse(localStorage.getItem(k) || '{}')); } catch (e) { return d; } }
-MC.opt = load('mc_opt', { keys: null, gripToggle: false, climbAssist: false, climbSens: 1, vrOneHand: false, pace: 'standard', uiScale: 1, plainFont: false, bigCross: false, cues: true, shake: 1, flash: 'full', captions: 'left', quality: 2, turn: 'snap30', vigLevel: 2, vrHeight: true, vignette: true, volume: 0.8, sens: 1, invertY: false, music: true, bob: true });
+MC.opt = load('mc_opt', { keys: null, gripToggle: false, climbAssist: false, climbSens: 1, vrOneHand: false, pace: 'standard', uiScale: 1, plainFont: false, bigCross: false, cues: true, shake: 1, flash: 'full', captions: 'float', quality: 2, turn: 'snap30', vigLevel: 2, vrHeight: true, vignette: true, volume: 0.8, sens: 1, invertY: false, music: true, bob: true });
 MC.save = load('mc_save', { tips: 0, stars: {}, upgrades: {}, regulars: {}, daily: {}, longBest: 0, hints: {} });
 MC.persist = () => { try { localStorage.setItem('mc_opt', JSON.stringify(MC.opt)); localStorage.setItem('mc_save', JSON.stringify(MC.save)); } catch (e) {} };
 // repair damaged saves: any field that should be an object but is not becomes empty
@@ -34,6 +34,7 @@ MC.KEYDEF = { fwd: 'KeyW', back: 'KeyS', left: 'KeyA', right: 'KeyD', hop: 'Spac
 MC.opt.keys = Object.assign({}, MC.KEYDEF, MC.opt.keys || {});
 // respect the system 'reduce motion' setting the first time the game runs
 try { if (!localStorage.getItem('mc_opt') && matchMedia('(prefers-reduced-motion: reduce)').matches) Object.assign(MC.opt, { shake: 0, flash: 'dim', bob: false }); } catch (e) {}
+if (!MC.opt.capFloat) { if (MC.opt.captions === 'left') MC.opt.captions = 'float'; MC.opt.capFloat = 1; }   // the note left the wrist for a floating card (players asked)
 if (MC.params.has('q')) MC.opt.quality = +MC.params.get('q');
 
 // renderer

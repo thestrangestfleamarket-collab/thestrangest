@@ -91,7 +91,7 @@ PF.build = function (k, o = {}) {
   g.setAttribute('position', new THREE.BufferAttribute(D.p.slice(), 3)); g.setIndex(new THREE.BufferAttribute(D.i.slice(), 1));
   if (D.j) { g.setAttribute('skinIndex', new THREE.Uint8BufferAttribute(D.j.slice(), 4)); g.setAttribute('skinWeight', new THREE.BufferAttribute(D.w.slice(), 4, true)); }
   paint(D, o.colors, g); g.computeVertexNormals(); if (o.smooth) smooth(g);
-  const mo = Object.assign({ vertexColors: true, roughness: 0.42, metalness: 0, clearcoat: 0.55, clearcoatRoughness: 0.3, envMapIntensity: 1.6 }, o.mat || {});
+  const mo = Object.assign({ vertexColors: true, roughness: 0.55, metalness: 0, clearcoat: 0.3, clearcoatRoughness: 0.4, envMapIntensity: 1 }, o.mat || {});
   const mat = new THREE.MeshPhysicalMaterial(mo);
   if (o.glow) {
     g.setAttribute('glow', new THREE.BufferAttribute(mask(D, o.glow), 1)); mat.userData.glow = { value: 1 };

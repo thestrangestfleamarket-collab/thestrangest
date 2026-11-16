@@ -23,7 +23,7 @@ G.addNoise = function (n, pos, o) {
   if (pos && n > 2) G.lastNoisePos = pos.clone ? pos.clone() : pos;
   if (G.mode !== 'play' || n <= 0) return;
   if (MC.events.mask > 0) n *= 0.12;
-  if (G.noise < 50 && G.noise + n >= 50 && !G.warned50) { G.warned50 = true; MC.say('Shh! The diner candle is flaring. Much louder and someone will come to look.', 3); }
+  if (G.noise < 50 && G.noise + n >= 50 && !G.warned50) { G.warned50 = true; MC.say('Shh! The bar candle is flaring. Much louder and someone will come to look.', 3); }
   if (G.noise < 25) G.warned50 = false;   // thunder is rolling: nobody can hear you
   G.noise = Math.min(100, G.noise + n * (G.cfg.noiseMul || 1)); if (!(o && o.steady)) G.quietT = 1.5; MC.emit('noise', n);   // steady sources (the phone) let the meter drain between bursts
   if (G.noise >= 100) { if (MC.events.start('snacker', { investigate: true })) { G.noise = 40; MC.say('Too loud! Someone is getting up to check…', 4); } else { G.noise = 99; G.investigate = true; } }
@@ -59,6 +59,7 @@ G.potential = function (cfg) { G.pickSpecial(cfg); let sum = 0; for (const s of 
 G.countOf = cfg => Math.round(cfg.count * ((cfg.mods || []).indexOf('rush') >= 0 ? 1.3 : 1)) + (cfg.vip ? 1 : 0);
 G.start = function (cfg) {
   MC.clock.reset();
+  if (!cfg.long && !cfg.walls) { cfg.len = Math.round(cfg.len * 1.4); cfg.walls = 1; }   // the larder is a trip through the wall: the same guests over a longer night
   G.cfg = cfg;
   if (cfg.daily) { const S = MC.save, e = S.daily[cfg.daily]; if (!e) { S.daily[cfg.daily] = { first: { tips: 0, stars: 0, pending: true }, best: null }; MC.persist(); } else if (!e.best && e.tips != null) S.daily[cfg.daily] = { first: e, best: e }; }   // the first try is locked the moment it starts MC.events.reset();
   G.pickSpecial(cfg);
@@ -77,14 +78,14 @@ G.start = function (cfg) {
   if (W.st.egg) { const ei = C.eggInter = { min: new V3(0, -99, 0), max: new V3(0, -98, 0), hint: h => C.egg ? 'shove the egg' : null, use: h => C.pushEgg() }; MC.inter.push(ei); } else C.eggInter = null;
   for (const p of W.pins) MC.inter.push({ min: p.head.clone().addScalar(-0.3), max: p.head.clone().addScalar(0.3), hint: h => !G.has('floss') ? null : !PL.floss ? 'tie floss to this pushpin' : PL.floss === p ? 'untie the floss' : 'string the floss line here', use: h => PL.pinUse(p) });
   MC.applyMods && MC.applyMods(cfg);
-  MC.say(cfg.intro || 'The humans are asleep. The diner is open.', 5); MC.emit('night:start', cfg);
+  MC.say(cfg.intro || 'The house is asleep. The pub in the walls is open.', 5); MC.emit('night:start', cfg);
 };
 
 // ---------- customers ----------
 function arrive(s, seat) {
   const R = MC.REGULARS[s.reg], rec = RECIPES[s.recipe], mem = MC.save.regulars[s.reg] || (MC.save.regulars[s.reg] = { n: 0 });
   const bug = MC.makeBug(R.spec); bug.base = seat.cust.y; bug.root.position.set(seat.cust.x, seat.cust.y - 2.4, seat.cust.z); W.group.add(bug.root); bug.hop = 0.5; MC.emit('furAdded');
-  const maxPat = (70 + 35 * rec.parts.length) * R.pat * (G.cfg.patMul || 1) * (MC.opt.pace === 'standard' ? 1 : 1.6);   // Pace: Relaxed / No walk-outs give everyone more time
+  const maxPat = (115 + 50 * rec.parts.length) * R.pat * (G.cfg.patMul || 1) * (MC.opt.pace === 'standard' ? 1 : 1.6);   // Pace: Relaxed / No walk-outs give everyone more time
   const o = { reg: s.reg, R, recipe: s.recipe, rec, parts: rec.parts.slice(), plated: [], pat: maxPat, maxPat, vip: !!s.vip, state: 'wait', seat, bug, eatT: 0, mem };
   seat.order = o; G.orders.push(o); S.chirp(seat.cust); G.arrivalT = 5; G.arrivalAt = seat.cust;
   MC.say((s.vip ? '★ VIP ★ ' : '') + R.name + ' the ' + R.kind + ' wants ' + rec.name + '. “' + (mem.n ? R.back : R.hi) + '”', 5); MC.emit('order', o);

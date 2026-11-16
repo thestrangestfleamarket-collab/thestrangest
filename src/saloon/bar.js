@@ -7,29 +7,51 @@ import { DRINKS } from './cast.js';
 import { R } from './room.js';
 import { plain, brass, canvasTex, model, tube, slab, pbr, glow } from './kit.js';
 
-const glassM = (c, o = 0.42) => new THREE.MeshStandardMaterial({ color: c, transparent: true, opacity: o, roughness: 0.18, metalness: 0, envMapIntensity: 0.9 });
+const glassM = (c, o = 0.42) => new THREE.MeshStandardMaterial({ color: c, transparent: true, opacity: o, roughness: 0.05, metalness: 0, envMapIntensity: 1.6 });
 const lathe = (pts, seg = 18) => new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), seg);
 const GEO = {}, geo = (k, f) => (GEO[k] ||= f()), MAT = {}, matOf = (k, f) => (MAT[k] ||= f());
 const _v = new V3(), _w = new V3();
 // on a screen a bottle or a glass tips by the trigger, as the ramen cart's ladles do; in the headset by your wrist
 const deskTilt = (C) => { Object.defineProperty(C.prototype, 'tool', { get() { return G.mode === 'desktop'; }, set() { } }); C.prototype.useMode = 'tilt'; };
 
-const LABEL = { whiskey: ['OLD', 'CROW', 'KENTUCKY BOURBON', '#d8c9a0', '#2a1608'], rye: ['PURE OLD', 'RYE', 'MONONGAHELA', '#cdb880', '#4a1408'], gin: ['OLD TOM', 'GIN', 'LONDON DRY', '#c9d0c4', '#143024'], brandy: ['COGNAC', 'BRANDY', 'V.S.O.P.', '#1c140e', '#c8a050'], sarsaparilla: ['SARSA-', 'PARILLA', 'ROOT TONIC', '#9a3622', '#ead8b8'] };
-const BODY = { whiskey: [0x2a1804, 0.82], rye: [0x341c04, 0.82], gin: [0x3a4a42, 0.5], brandy: [0x0c140a, 0.92], sarsaparilla: [0x1a0c06, 0.92] };
-const labelT = (type) => matOf('lab' + type, () => { const L = LABEL[type]; return new THREE.MeshStandardMaterial({ roughness: 0.9, map: canvasTex(256, 128, (x, w, h) => { x.fillStyle = L[3]; x.fillRect(0, 0, w, h); for (let i = 0; i < 500; i++) { x.fillStyle = `rgba(60,40,20,${Math.random() * 0.12})`; x.fillRect(Math.random() * w, Math.random() * h, 1 + Math.random() * 3, 1 + Math.random() * 2); }
-  x.strokeStyle = L[4]; x.lineWidth = 3; x.strokeRect(7, 7, w - 14, h - 14); x.lineWidth = 1; x.strokeRect(12, 12, w - 24, h - 24); x.fillStyle = L[4]; x.textAlign = 'center'; x.font = 'bold 28px Georgia'; x.fillText(L[0], w / 2, 46); x.font = 'bold 36px Georgia'; x.fillText(L[1], w / 2, 84); x.font = 'italic 14px Georgia'; x.fillText(L[2], w / 2, 108); x.fillStyle = 'rgba(40,24,10,.25)'; x.fillRect(0, h - 16, w, 16); }) }); });
+// five houses' bottles, each its own shape of glass and its own printed paper: [what is printed], paper, ink, a second ink
+const LABEL = { whiskey: [['STRAIGHT', 'OLD CROW', 'KENTUCKY BOURBON WHISKEY', 'Distilled & Bottled by W. A. GAINES & Co. Frankfort', '100 PROOF'], '#d9c79a', '#2a1608', '#7a1a10'], rye: [['PURE OLD', 'MONONGAHELA', 'RYE WHISKEY', 'A. OVERHOLT & Co. Broad Ford, Penna.', 'AGED 6 YEARS'], '#cdb67c', '#33190a', '#1c3a2a'],
+  gin: [['FINEST', 'OLD TOM', 'LONDON DRY GIN', 'Imported by BOORD & SON, Tooley St.', 'CAT & BARREL'], '#d6d8c8', '#12301f', '#8a6a1c'], brandy: [['VIEUX', 'COGNAC', 'FINE CHAMPAGNE', 'J. HENNESSY & Cie. Mis en bouteille 1868', 'V.S.O.P.'], '#1b130c', '#c9a455', '#e6d6a8'], sarsaparilla: [['DR. TOWNSEND\'S', 'SARSAPARILLA', 'COMPOUND EXTRACT', 'The Wonder & Blessing of the Age. Albany, N.Y.', 'ONE DOLLAR'], '#b5452c', '#f1e2c0', '#2a1408'] };
+const BODY = { whiskey: [0x5a3410, 0.62], rye: [0x4a3a14, 0.6], gin: [0x9fb8ae, 0.3], brandy: [0x16260f, 0.82], sarsaparilla: [0x6e5a3e, 1] };
+const FORM = {
+  whiskey: { pts: [[0, 0.005], [0.03, 0.002], [0.038, 0.008], [0.0395, 0.02], [0.0395, 0.168], [0.036, 0.188], [0.022, 0.216], [0.0148, 0.24], [0.0138, 0.284], [0.0172, 0.288], [0.0172, 0.3], [0.012, 0.303]], top: 0.303, r: 0.0395, ly: 0.098, lh: 0.1, liq: 0.17 },
+  rye: { pts: [[0, 0.005], [0.028, 0.002], [0.035, 0.008], [0.036, 0.02], [0.036, 0.19], [0.03, 0.214], [0.017, 0.238], [0.0135, 0.26], [0.013, 0.312], [0.0165, 0.316], [0.0165, 0.327], [0.0115, 0.33]], top: 0.33, r: 0.036, ly: 0.11, lh: 0.11, liq: 0.19 },
+  gin: { pts: [[0, 0.004], [0.027, 0.002], [0.0325, 0.006], [0.0335, 0.018], [0.0335, 0.225], [0.03, 0.243], [0.018, 0.262], [0.0145, 0.275], [0.0145, 0.318], [0.0185, 0.322], [0.0185, 0.333], [0.0125, 0.336]], top: 0.336, r: 0.0335, ly: 0.12, lh: 0.12, liq: 0.225 },
+  brandy: { pts: [[0, 0.006], [0.036, 0.002], [0.046, 0.01], [0.0475, 0.03], [0.0475, 0.115], [0.043, 0.145], [0.028, 0.19], [0.016, 0.222], [0.0138, 0.245], [0.0135, 0.283], [0.0175, 0.287], [0.0175, 0.297], [0.012, 0.3]], top: 0.3, r: 0.0475, ly: 0.072, lh: 0.08, liq: 0.12 },
+  sarsaparilla: { pts: [[0, 0.004], [0.031, 0.002], [0.0365, 0.008], [0.037, 0.02], [0.037, 0.175], [0.034, 0.19], [0.022, 0.205], [0.019, 0.215], [0.019, 0.245], [0.0225, 0.248], [0.0225, 0.262], [0.014, 0.265]], top: 0.265, r: 0.037, ly: 0.1, lh: 0.105, liq: 0.17 },
+};
+const bottleGeo = (t) => geo('bottle' + t, () => lathe(FORM[t].pts, 24)), labelGeo = (t) => geo('label' + t, () => new THREE.CylinderGeometry(FORM[t].r + 0.0006, FORM[t].r + 0.0006, FORM[t].lh, 24, 1, true, -1.35, 2.7)), corkGeo = (t) => geo('cork' + t, () => new THREE.CylinderGeometry(0.0118, 0.0096, 0.032, 10).translate(0, FORM[t].top + 0.01, 0));
+const glassOf = (t) => matOf('bg' + t, () => (t === 'sarsaparilla' ? new THREE.MeshStandardMaterial({ color: BODY[t][0], roughness: 0.55, envMapIntensity: 0.5 }) : new THREE.MeshStandardMaterial({ color: BODY[t][0], transparent: true, opacity: BODY[t][1], roughness: 0.07, metalness: 0, envMapIntensity: 1.5 })));
+const corkM = () => matOf('cork', () => new THREE.MeshStandardMaterial({ color: 0x9a7848, roughness: 0.95 }));
+// a printed label: aged paper, a double rule with cornerpieces, the house's line arched over the name, a ribbon, the small print, a medallion either side
+const labelT = (type) => matOf('lab' + type, () => { const [T, paper, ink, ink2] = LABEL[type]; const tex = canvasTex(512, 256, (x, w, h) => {
+    x.fillStyle = paper; x.fillRect(0, 0, w, h); const gr = x.createRadialGradient(w / 2, h / 2, 40, w / 2, h / 2, 300); gr.addColorStop(0, 'rgba(255,240,200,.12)'); gr.addColorStop(1, 'rgba(60,35,10,.35)'); x.fillStyle = gr; x.fillRect(0, 0, w, h);
+    for (let i = 0; i < 1400; i++) { x.fillStyle = `rgba(70,45,20,${Math.random() * 0.1})`; x.fillRect(Math.random() * w, Math.random() * h, 1 + Math.random() * 3, 1 + Math.random() * 2); } for (let i = 0; i < 7; i++) { const cx = Math.random() * w, cy = Math.random() * h, r = 8 + Math.random() * 26, g2 = x.createRadialGradient(cx, cy, 0, cx, cy, r); g2.addColorStop(0, 'rgba(90,55,20,.22)'); g2.addColorStop(1, 'rgba(90,55,20,0)'); x.fillStyle = g2; x.fillRect(cx - r, cy - r, 2 * r, 2 * r); }
+    x.strokeStyle = ink; x.lineWidth = 6; x.strokeRect(10, 10, w - 20, h - 20); x.lineWidth = 1.5; x.strokeRect(19, 19, w - 38, h - 38); x.strokeStyle = ink2; x.lineWidth = 2; x.strokeRect(24, 24, w - 48, h - 48);
+    x.fillStyle = ink; for (const [cx, cy] of [[24, 24], [w - 24, 24], [24, h - 24], [w - 24, h - 24]]) { x.beginPath(); x.arc(cx, cy, 13, 0, 7); x.fill(); x.fillStyle = paper; x.beginPath(); x.arc(cx, cy, 6, 0, 7); x.fill(); x.fillStyle = ink; }
+    for (const mx of [62, w - 62]) { x.strokeStyle = ink2; x.lineWidth = 3; x.beginPath(); x.arc(mx, 128, 27, 0, 7); x.stroke(); x.lineWidth = 1; x.beginPath(); x.arc(mx, 128, 21, 0, 7); x.stroke(); x.fillStyle = ink2; x.beginPath(); for (let k = 0; k < 10; k++) { const a = k * Math.PI / 5 - Math.PI / 2, r = k % 2 ? 6 : 15; x.lineTo(mx + Math.cos(a) * r, 128 + Math.sin(a) * r); } x.fill(); }
+    x.fillStyle = ink; x.textAlign = 'center'; x.textBaseline = 'middle'; x.font = 'bold 20px Georgia, serif'; const top = T[0].split(''); top.forEach((ch, i) => { const a = (i - (top.length - 1) / 2) * 0.075; x.save(); x.translate(w / 2 + Math.sin(a) * 300, 352 - Math.cos(a) * 300); x.rotate(a); x.fillText(ch, 0, 0); x.restore(); });
+    x.font = `bold ${T[1].length > 9 ? 44 : 58}px Georgia, serif`; x.fillStyle = 'rgba(0,0,0,.25)'; x.fillText(T[1], w / 2 + 2, 104); x.fillStyle = ink; x.fillText(T[1], w / 2, 102);
+    x.fillStyle = ink2; x.beginPath(); x.moveTo(108, 138); x.lineTo(w - 108, 138); x.lineTo(w - 96, 152); x.lineTo(w - 108, 166); x.lineTo(108, 166); x.lineTo(96, 152); x.closePath(); x.fill(); x.fillStyle = paper; x.font = 'bold 17px Georgia, serif'; x.fillText(T[2], w / 2, 153);
+    x.fillStyle = ink; x.font = 'italic 13px Georgia, serif'; x.fillText(T[3], w / 2, 188); x.font = 'bold 19px Georgia, serif'; x.fillText('— ' + T[4] + ' —', w / 2, 214);
+    x.globalAlpha = 0.5; x.strokeStyle = ink; x.lineWidth = 1; for (let i = 0; i < 3; i++) { x.beginPath(); x.moveTo(170, 230 + i * 3); x.bezierCurveTo(220, 222 + i * 4, 290, 240 - i * 3, 342, 228 + i * 2); x.stroke(); } x.globalAlpha = 1; }); tex.anisotropy = 8; return new THREE.MeshStandardMaterial({ map: tex, roughness: 0.92, envMapIntensity: 0.2 }); });
 
 export class Bottle extends Prop {
   constructor(type, level = 1) {
-    const g = new THREE.Group(), D = DRINKS[type], [bc, bo] = BODY[type];
-    const body = new THREE.Mesh(geo('bottle', () => lathe([[0, 0.004], [0.03, 0.002], [0.037, 0.008], [0.038, 0.02], [0.038, 0.165], [0.034, 0.185], [0.022, 0.215], [0.0145, 0.24], [0.0135, 0.285], [0.017, 0.29], [0.017, 0.302], [0.012, 0.305]])), matOf('bg' + type, () => glassM(bc, bo))); body.castShadow = true; g.add(body);
-    const liq = new THREE.Mesh(geo('bliq', () => new THREE.CylinderGeometry(0.0345, 0.0345, 0.17, 14).translate(0, 0.095, 0)), matOf('liq' + type, () => plain(new THREE.Color(D[3]).multiplyScalar(0.3), { rough: 0.2 }))); liq.scale.y = level; g.add(liq);
-    const lab = new THREE.Mesh(geo('label', () => new THREE.CylinderGeometry(0.0386, 0.0386, 0.08, 18, 1, true, -1.25, 2.5)), labelT(type)); lab.position.y = 0.1; g.add(lab);
-    const cork = new THREE.Mesh(geo('cork', () => new THREE.CylinderGeometry(0.0115, 0.0095, 0.03, 10).translate(0, 0.315, 0)), matOf('cork', () => plain(0xa07a4a, { rough: 0.95 }))); g.add(cork);
-    super(g, { col: { t: 'cyl', hh: 0.152, r: 0.038 }, mass: 0.95, fragile: bc, top: 0.305, name: D[0], radius: 0.075, cy: 0.14, lift: 0.04, pour: { color: D[3], pay: { type }, r: 0.0045, rate: 1.25, lip: 0.012, can: (q) => { if (this.corked || this.level <= 0) return false; this.level = Math.max(0, this.level - q * 0.04); liq.scale.y = Math.max(0.01, this.level); liq.visible = this.level > 0.01; if (G.t - (this.pt || 0) > 0.14) { this.pt = G.t; G.audio.play('pour'); } return true; } } });
-    this.kind = 'bottle'; this.drink = type; this.level = level; this.corked = true; this.cork = cork; this.handles = [new V3(0, 0.11, 0)];
+    const g = new THREE.Group(), D = DRINKS[type], Fm = FORM[type];
+    const liq = new THREE.Mesh(geo('bliq' + type, () => new THREE.CylinderGeometry(Fm.r - 0.0045, Fm.r - 0.0045, Fm.liq, 16).translate(0, Fm.liq / 2 + 0.012, 0)), matOf('liq' + type, () => new THREE.MeshStandardMaterial({ color: new THREE.Color(D[3]).multiplyScalar(0.55), roughness: 0.15, envMapIntensity: 0.6 }))); liq.scale.y = level; liq.visible = type !== 'sarsaparilla'; liq.renderOrder = 1; g.add(liq);
+    const body = new THREE.Mesh(bottleGeo(type), glassOf(type)); body.castShadow = true; body.renderOrder = 2; g.add(body);
+    const lab = new THREE.Mesh(labelGeo(type), labelT(type)); lab.position.y = Fm.ly; lab.renderOrder = 3; g.add(lab);
+    const cork = new THREE.Mesh(corkGeo(type), corkM()); g.add(cork);
+    super(g, { col: { t: 'cyl', hh: Fm.top / 2, r: Fm.r }, mass: 0.95, fragile: BODY[type][0], top: Fm.top, name: D[0], radius: 0.075, cy: 0.14, lift: 0.04, pour: { color: D[3], pay: { type }, r: 0.0045, rate: 1.25, lip: 0.012, can: (q) => { if (this.corked || this.level <= 0) return false; this.level = Math.max(0, this.level - q * 0.04); liq.scale.y = Math.max(0.01, this.level); liq.visible = type !== 'sarsaparilla' && this.level > 0.01; if (G.t - (this.pt || 0) > 0.14) { this.pt = G.t; G.audio.play('pour'); } return true; } } });
+    this.kind = 'bottle'; this.drink = type; this.level = level; this.corked = true; this.cork = cork; this.form = Fm; this.handles = [new V3(0, 0.11, 0)];
   }
-  onGrab() { if (this.corked) { this.corked = false; G.audio.play('cork'); const c = new Loose(this.cork.geometry.clone().translate(0, -0.315, 0), this.cork.material, 'a cork', 0.012, 0.004); this.cork.getWorldPosition(c.obj.position); c.obj.position.y += 0.32; this.cork.visible = false; c.drop(new V3(rand(-0.4, 0.4), 1.4, rand(-0.4, 0.4))); } }
+  onGrab() { if (this.corked) { this.corked = false; G.audio.play('cork'); const c = new Loose(this.cork.geometry.clone().translate(0, -this.form.top - 0.01, 0), this.cork.material, 'a cork', 0.012, 0.004); this.cork.getWorldPosition(c.obj.position); c.obj.position.y += this.form.top + 0.02; this.cork.visible = false; c.drop(new V3(rand(-0.4, 0.4), 1.4, rand(-0.4, 0.4))); } }
   hint() { return this.level <= 0.01 ? `${this.name}: empty` : `${this.name} (${Math.round(this.level * 100)}%): tip it over a glass`; }
 }
 deskTilt(Bottle);
@@ -39,7 +61,7 @@ class Loose extends Item { constructor(g0, m, name, r, mass) { const g = new THR
 const SHAPE = { shot: { r: 0.0255, h: 0.064, in: 0.0205, fill: 0.9, mass: 0.14, sip: 0.5, pts: [[0, 0], [0.0205, 0], [0.0215, 0.004], [0.0265, 0.064], [0.0245, 0.064], [0.0195, 0.016], [0, 0.016]] }, mug: { r: 0.044, h: 0.14, in: 0.0375, fill: 0.46, mass: 0.5, sip: 0.2, pts: [[0, 0], [0.044, 0], [0.045, 0.006], [0.043, 0.14], [0.0385, 0.14], [0.0375, 0.014], [0, 0.014]] } };
 export class Glass extends Prop {
   constructor(shape) {
-    const S = SHAPE[shape], g = new THREE.Group(), gm = glassM(0x8a9692, 0.16);
+    const S = SHAPE[shape], g = new THREE.Group(), gm = glassM(0xc4d0cc, 0.2);
     const b = new THREE.Mesh(geo('g' + shape, () => lathe(S.pts, 20)), gm); b.castShadow = true; g.add(b);
     if (shape === 'mug') g.add(new THREE.Mesh(geo('mhandle', () => new THREE.TorusGeometry(0.034, 0.0075, 6, 14, Math.PI).rotateZ(-Math.PI / 2).translate(0.043, 0.072, 0)), gm));
     const liq = new THREE.Mesh(geo('l' + shape, () => new THREE.CylinderGeometry(S.in, S.in * (shape === 'shot' ? 0.82 : 1), 1, 14).translate(0, 0.5, 0)), plain(0xffffff)); liq.position.y = S.pts[5][1]; liq.visible = false; g.add(liq);
@@ -55,7 +77,7 @@ export class Glass extends Prop {
   refresh() { const w = this.what(), v = this.vol, H = this.S.h - this.S.pts[5][1] - 0.004; this.liq.visible = v > 0.02; if (this.foam) this.foam.visible = false; if (!this.liq.visible) return; this.liq.scale.y = H * v; this.liq.material = Glass.liqM(w); if (this.foam && this.head > 0.01) { this.foam.visible = true; this.foam.position.y = this.S.pts[5][1] + H * v; this.foam.scale.y = H * this.head; } }
   static liqM(w) { return matOf('gl' + w, () => plain(DRINKS[w] ? DRINKS[w][3] : 0x8a6a3a, { rough: 0.12, opacity: w === 'gin' ? 0.5 : 0.92 })); }
   empty(used) { this.vol = 0; this.head = 0; this.mix = {}; this.refresh(); if (used) this.soil(true); }
-  soil(on) { this.dirty = on; this.gm.color.set(on ? 0x8a8068 : 0x8a9692); this.gm.opacity = on ? 0.4 : 0.16; this.gm.roughness = on ? 0.5 : 0.05; this.name = (on ? 'dirty ' : '') + (this.shape === 'shot' ? 'shot glass' : 'beer mug'); }
+  soil(on) { this.dirty = on; this.gm.color.set(on ? 0x9a9078 : 0xc4d0cc); this.gm.opacity = on ? 0.42 : 0.2; this.gm.roughness = on ? 0.55 : 0.05; this.name = (on ? 'dirty ' : '') + (this.shape === 'shot' ? 'shot glass' : 'beer mug'); }
   tick(dt) {
     if (this.head > 0 && !this.owner) { const d = Math.min(this.head, dt * 0.03); this.head -= d; this.vol = Math.min(1, this.vol + d * 0.25); if (this.foam) this.refresh(); }   // the head settles
     if (this.vol > 0.02 && (this.held || this.free) && this.tilt() > 1.45) { G.fx.drops(this.worldCenter(_v), Glass.liqM(this.what()).color.getHex(), 7); G.audio.play('splash'); G.bar.wet += this.vol * 0.3; this.empty(false); }
@@ -100,10 +122,16 @@ export function buildBar(scene, room) {
   // ---- bottles: the working row on the back counter (opened, part used), the stock on the shelves (corked, full)
   ['whiskey', 'rye', 'gin', 'brandy', 'sarsaparilla'].forEach((t, i) => bar.bottles.push(put(new Bottle(t, 0.45 + (i * 37 % 50) / 100), -1.95 + i * 0.15, cy, bz + 0.2 + (i % 2) * 0.05, 2.6 + i)));
   const ROW = [['whiskey', 'whiskey', 'whiskey', 'rye', 'rye', 'whiskey', 'brandy', 'whiskey'], ['rye', 'whiskey', 'gin', 'gin', 'whiskey', 'brandy', 'rye'], ['brandy', 'gin', 'sarsaparilla', 'sarsaparilla', 'whiskey', 'rye']];
-  room.shelves.forEach((s, si) => { const row = ROW[[1.42, 1.86, 2.3].indexOf(s.y)] || ROW[0], n = row.length, sp = (s.x1 - s.x0) / n; row.forEach((t, k) => { if ((k + si) % 7 === 6) return; bar.bottles.push(put(new Bottle(t), s.x0 + sp * (k + 0.5) + ((k * 13 + si * 7) % 5 - 2) * 0.006, s.y, s.z + ((k + si) % 3 - 1) * 0.02, Math.PI + ((k * 31 + si * 17) % 9 - 4) * 0.12)); }); });
+  // the shelves' stock is drawn as one thing (a draw for the glass, one for the corks, one a label kind) and a bottle becomes a real one only when you take it down
+  { const slots = []; room.shelves.forEach((s, si) => { const row = ROW[[1.42, 1.86, 2.3].indexOf(s.y)] || ROW[0], n = row.length, sp = (s.x1 - s.x0) / n; row.forEach((t, k) => { if ((k + si) % 7 === 6) return; slots.push({ t, x: s.x0 + sp * (k + 0.5) + ((k * 13 + si * 7) % 5 - 2) * 0.006, y: s.y, z: s.z + ((k + si) % 3 - 1) * 0.02, ry: Math.PI + ((k * 31 + si * 17) % 9 - 4) * 0.12, on: true }); }); });
+    const M4 = new THREE.Matrix4(), Q4 = new THREE.Quaternion(), S1 = new THREE.Vector3(1, 1, 1), S0 = new THREE.Vector3(0, 0, 0), P4 = new V3(), UPY = new V3(0, 1, 0), col = new THREE.Color();
+    const inst = (g0, m, list, dy = 0) => { const im = new THREE.InstancedMesh(g0, m, list.length); list.forEach((sl, i) => { im.setMatrixAt(i, M4.compose(P4.set(sl.x, sl.y + dy, sl.z), Q4.setFromAxisAngle(UPY, sl.ry), S1)); (sl.im ||= []).push([im, i, dy]); }); im.castShadow = false; im.frustumCulled = false; G.pickRoot.add(im); return im; };
+    for (const t of Object.keys(LABEL)) { const Ls = slots.filter((sl) => sl.t === t); if (!Ls.length) continue; const b = inst(bottleGeo(t), glassOf(t), Ls); b.renderOrder = 2; inst(corkGeo(t), corkM(), Ls); inst(labelGeo(t), labelT(t), Ls, FORM[t].ly).renderOrder = 3; }
+    for (const sl of slots) { const pos = new V3(sl.x, sl.y + 0.14, sl.z); G.sources.push({ pos, r: 0.06, name: DRINKS[sl.t][0], can: () => sl.on, take: () => { sl.on = false; for (const [im, i, dy] of sl.im) { im.setMatrixAt(i, M4.compose(P4.set(sl.x, sl.y + dy, sl.z), Q4.identity(), S0)); im.instanceMatrix.needsUpdate = true; } const b = new Bottle(sl.t); bar.bottles.push(b); return b; } }); }
+    bar.shelf = slots; }
 
   // ---- glasses: a fixed stock, stood mouth-down on a cloth; a used one must be washed before it goes out again
-  { const cloth = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.36).rotateX(-Math.PI / 2), plain(0x8a8272, { rough: 1 })); cloth.position.set(-0.55, cy + 0.003, bz + 0.36); cloth.receiveShadow = true; scene.add(cloth);
+  { const cloth = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.36).rotateX(-Math.PI / 2), plain(0x5e584c, { rough: 1, env: 0.05 })); cloth.renderOrder = -1; cloth.position.set(-0.55, cy + 0.003, bz + 0.36); cloth.receiveShadow = true; scene.add(cloth);
     for (let i = 0; i < 12; i++) bar.glasses.push(put(new Glass('shot'), -0.82 + (i % 6) * 0.068, cy, bz + 0.27 + ((i / 6) | 0) * 0.075));
     for (let i = 0; i < 6; i++) bar.glasses.push(put(new Glass('mug'), -0.36 + (i % 3) * 0.105, cy, bz + 0.26 + ((i / 3) | 0) * 0.11, 0.6)); }
 
@@ -160,6 +188,6 @@ export function buildBar(scene, room) {
   bar.sweep = () => { let n = 0; for (const it of [...G.items]) if (it.kind === 'coin' && !it.dead && !it.held) { if (it.paid) { n += it.cents; bar.taken += it.cents; } bar.till += it.cents; const w = bar.drawer.wells[it.cents]; w.n++; w.redraw(); it.remove(); } return n; };   // the night's end: what lies on the bar goes in the drawer
   bar.restock = () => { for (const gl of bar.glasses) if (!gl.dead && !gl.held) { gl.owner = null; gl.locked = false; if (gl.vol > 0 || gl.dirty) gl.empty(true); } bar.wet = 0; };
   bar.update = (dt) => { for (let i = bar.glasses.length - 1; i >= 0; i--) if (bar.glasses[i].dead) bar.glasses.splice(i, 1); for (let i = bar.bottles.length - 1; i >= 0; i--) if (bar.bottles[i].dead) bar.bottles.splice(i, 1); bar.wet = Math.max(0, bar.wet - dt * 0.002); };
-  bar.stock = () => { const o = {}; for (const b of bar.bottles) o[b.drink] = (o[b.drink] || 0) + b.level; o.beer = bar.keg.tapped ? bar.keg.level / 60 : 0; o.shots = bar.glasses.filter((g) => g.shape === 'shot').length; o.mugs = bar.glasses.filter((g) => g.shape === 'mug').length; return o; };
+  bar.stock = () => { const o = {}; for (const b of bar.bottles) o[b.drink] = (o[b.drink] || 0) + b.level; for (const sl of bar.shelf) if (sl.on) o[sl.t] = (o[sl.t] || 0) + 1; o.beer = bar.keg.tapped ? bar.keg.level / 60 : 0; o.shots = bar.glasses.filter((g) => g.shape === 'shot').length; o.mugs = bar.glasses.filter((g) => g.shape === 'mug').length; return o; };
   return bar;
 }

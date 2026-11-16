@@ -52,7 +52,7 @@ function cushion(b0, n0, b1, n1, tile) {
 function buildTable(g) {
   const st = new THREE.Group(); g.add(st);
   const walnut = pbr('walnut', { tile: 1.2, color: 0x5c3a2a, rough: 0.5, env: 0.8 }), cloth = pbr('velvet', { tile: 0.5, color: 0x1f5a34 }).clone(), leather = pbr('leather', { tile: 0.3, color: 0x4a2c1a, side: THREE.DoubleSide }), br = plain(0xb08a3a, { rough: 0.34, metal: 0.8, env: 1.3 }), ivory = plain(0xe8dcc0, { rough: 0.35 });
-  cloth.map = null; cloth.color.set(0x1b6a38);   // the velvet's weave without its red
+  cloth.map = null; cloth.color.set(0x123f25); cloth.roughness = 1; cloth.envMapIntensity = 0.05;   // the velvet's weave without its red
   const ix = HX + CUSH, iz = HZ + CUSH, ox = ix + RAIL, oz = iz + RAIL, top = BED + 0.04;
   const rail = new THREE.Shape([new THREE.Vector2(-ox, -oz), new THREE.Vector2(ox, -oz), new THREE.Vector2(ox, oz), new THREE.Vector2(-ox, oz)]); rail.holes.push(new THREE.Path(outline(ix, iz, true)));
   flat(rail, BED - 0.03, 0.07, walnut, st);

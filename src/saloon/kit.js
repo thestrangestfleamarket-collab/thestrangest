@@ -13,20 +13,22 @@ const one = (url, srgb) => TL.loadAsync(url).then((t) => { t.wrapS = t.wrapT = T
 export async function loadKit(onProgress = () => { }) {
   let n = 0; const all = TEX.length + MODELS.length, tick = (v) => { onProgress(++n / all); return v; };
   await Promise.all([
-    ...TEX.map((k) => Promise.all([one(`${BASE}tex/${k}_c.jpg`, true), one(`${BASE}tex/${k}_n.jpg`), one(`${BASE}tex/${k}_r.jpg`)]).then((s) => { sets[k] = s; }).then(tick)),
-    ...MODELS.map((k) => GL.loadAsync(`${BASE}m/${k}.glb`).then((d) => { d.scene.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; o.material.envMapIntensity = 0.2; if (o.material.roughness < 0.8) o.material.roughness = Math.min(1, o.material.roughness + 0.35); } }); models[k] = d.scene; }).catch((e) => console.warn('no model', k, e)).then(tick)),
+    ...TEX.map((k) => Promise.all([one(`${BASE}tex/${k}_c.jpg`, true), one(`${BASE}tex/${k}_n.jpg`), one(`${BASE}tex/${k}_r.jpg`)]).then((t) => { sets[k] = t; }).then(tick)),
+    ...MODELS.map((k) => GL.loadAsync(`${BASE}m/${k}.glb`).then((d) => { d.scene.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; o.material.envMapIntensity = 0.45; if (o.material.transmission > 0) { o.material.transmission = 0; o.material.transparent = true; o.material.opacity = 0.3; } } }); models[k] = d.scene; }).catch((e) => console.warn('no model', k, e)).then(tick)),
   ]);
 }
 
 // a surface by name: tile metres across, a tint, how rough and how much metal
 const made = new Map();
+// the real thing, drawn small (owner, 16 Nov 2026: "extreme realism, then lowered render quality to 480i"): colour, relief and sheen from the photograph, the room's own reflections
 export function pbr(name, o = {}) {
   const k = name + '|' + JSON.stringify(o); if (made.has(k)) return made.get(k);
-  const [c, n, r] = sets[name] || [], m = new THREE.MeshStandardMaterial({ map: c || null, normalMap: n || null, roughnessMap: r || null, color: o.color ?? 0xffffff, roughness: o.rough ?? 1, metalness: o.metal ?? 0, envMapIntensity: o.env ?? 0.2, side: o.side ?? THREE.FrontSide });
-  if (n) m.normalScale.setScalar(o.bump ?? 1); m.userData.tile = o.tile ?? 1; made.set(k, m); return m;
+  const [c, n, r] = sets[name] || [], m = new THREE.MeshStandardMaterial({ map: c || null, normalMap: n || null, roughnessMap: r || null, color: o.color ?? 0xffffff, roughness: o.rough ?? 1, metalness: o.metal ?? 0, envMapIntensity: o.env ?? 0.35, side: o.side ?? THREE.FrontSide });
+  if (n) m.normalScale.setScalar(o.bump ?? 1.2); m.userData.tile = o.tile ?? 1; made.set(k, m); return m;
 }
-export const plain = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: o.rough ?? 0.85, metalness: o.metal ?? 0, envMapIntensity: o.env ?? 0.25, transparent: !!o.opacity, opacity: o.opacity ?? 1, emissive: o.glow ?? 0, emissiveIntensity: o.glowK ?? 1, side: o.side ?? THREE.FrontSide });
-export const brass = () => plain(0x6e5a30, { rough: 0.62, metal: 1, env: 0.55 });   // old brass, handled dull
+export const plain = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: o.rough ?? 0.8, metalness: o.metal ?? 0, envMapIntensity: o.env ?? 0.4, transparent: !!o.opacity, opacity: o.opacity ?? 1, emissive: o.glow ?? 0, emissiveIntensity: o.glowK ?? 1, side: o.side ?? THREE.FrontSide });
+export const brass = () => (made.get('brass') || made.set('brass', new THREE.MeshStandardMaterial({ color: 0x8a6c34, roughness: 0.42, metalness: 1, envMapIntensity: 1.1 })).get('brass'));   // old brass: worn bright where hands go
+export function cheap(root, small) { if (small) root.traverse((o) => { if (o.isMesh) o.castShadow = false; }); }   // loose things throw no shadow (a draw saved each)
 
 // a box whose picture is laid by the metre on every face (material.userData.tile metres a tile)
 export function slab(w, h, d, material, x = 0, y = 0, z = 0, parent, turn) {

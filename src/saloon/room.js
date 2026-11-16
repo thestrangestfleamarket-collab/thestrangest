@@ -103,18 +103,19 @@ export function buildRoom(scene) {
   for (const [x, z] of [[-2.9, -1.75], [2.9, -1.75], [R.poker.x + 0.9, R.poker.z + 0.9]]) model('brass_pot_01', x, 0, z, 0, { h: 0.2 }, g);
 
   // ---- light: nothing shines but the lamps: the great wheel hung from the roof on its pole, lanterns over the bar and under the balcony, one on the landing, one in the bedroom, one in the cellar; the moon through the street windows (town.js)
-  const hemi = new THREE.HemisphereLight(0xcfc4b4, 0x1c1814, 0.26); scene.add(hemi);
+  const hemi = new THREE.HemisphereLight(0xbfae98, 0x120e0a, 0.09);   // only what the lamps throw back off wood; the rest is the room's own reflections scene.add(hemi);
   const halo = (x, y, z, c, sc = 0.5) => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow(), color: c, transparent: true, opacity: 0.3, depthWrite: false, blending: THREE.AdditiveBlending })); s.scale.setScalar(sc * 0.6); s.position.set(x, y, z); s.userData.nopick = true; dyn.add(s); return s; };
-  const lamp = (x, y, z, k, d, c = 0xffc898, lv) => { const l = new THREE.PointLight(c, k, d, 2); l.position.set(x, y, z); scene.add(l); const o = { l, s: halo(x, y, z, c), k, on: true, x, y, z, lv }; lamps.push(o); return o; };
-  const iron = plain(0x14110e, { metal: 0.7, rough: 0.6 }), chim = new THREE.MeshStandardMaterial({ color: 0xffe2b0, emissive: 0xffb060, emissiveIntensity: 1.1, transparent: true, opacity: 0.85, roughness: 0.2 });
+  const lamp = (x, y, z, k, d, c = 0xffb46e, lv) => { const l = new THREE.PointLight(c, k, d, 2); l.position.set(x, y, z); if (lv === undefined) { l.castShadow = true; l.shadow.mapSize.set(512, 512); l.shadow.bias = -0.004; l.shadow.camera.near = 0.15; l.shadow.camera.far = d; } scene.add(l); const o = { l, s: halo(x, y, z, c), k, on: true, x, y, z, lv }; lamps.push(o); return o; };
+  const iron = plain(0x14110e, { metal: 0.7, rough: 0.6 }), chim = new THREE.MeshStandardMaterial({ color: 0xffe2b0, emissive: 0xffa040, emissiveIntensity: 3.5, transparent: true, opacity: 0.9, roughness: 0.2 });
   { const x = 0, z = -5.4, y = 3.75, rr = 1.25, w = new THREE.Group(); w.position.set(x, y, z); g.add(w);
     const rim = new THREE.Mesh(new THREE.TorusGeometry(rr, 0.05, 8, 36).rotateX(Math.PI / 2), walnut); rim.castShadow = true; w.add(rim); tube(0.1, 0.1, 0.16, walnut, 0, 0, 0, w, 10); tube(0.045, 0.045, H - y, walnut, 0, (H - y) / 2, 0, w, 8);
     for (let k = 0; k < 4; k++) { const a = k * Math.PI / 4, sp = slab(2 * rr, 0.045, 0.06, walnut, 0, 0, 0, w); sp.rotation.y = -a; }
     for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4 + 0.2, lx = Math.cos(a) * rr, lz = Math.sin(a) * rr; tube(0.09, 0.07, 0.035, brass(), lx, 0.07, lz, w, 10); const c = tube(0.03, 0.04, 0.14, chim, lx, 0.16, lz, w, 8); c.castShadow = false; c.userData.keep = true; }
-    const l = new THREE.SpotLight(0xffc896, 260, 13, 1.3, 0.95, 1.6); l.position.set(x, y + 0.1, z); l.target.position.set(x, 0, z); l.castShadow = true; l.shadow.mapSize.set(1024, 1024); l.shadow.bias = -0.0015; l.shadow.radius = 4; l.shadow.camera.near = 0.6; l.shadow.camera.far = 9; scene.add(l, l.target);
-    lamps.push({ l, s: halo(x, y + 0.16, z, 0xffb060, 2.2), k: 260, on: true, x, y: y + 0.16, z, wheel: true }); }
+    const up = new THREE.PointLight(0xffb46e, 22, 9, 2); up.position.set(x, y + 0.5, z); scene.add(up);   // what the eight flames throw sideways and up, that the spot below cannot
+    const l = new THREE.SpotLight(0xffb878, 300, 13, 1.25, 0.9, 1.8); l.position.set(x, y + 0.1, z); l.target.position.set(x, 0, z); l.castShadow = true; l.shadow.mapSize.set(1024, 1024); l.shadow.bias = -0.0015; l.shadow.radius = 4; l.shadow.camera.near = 0.6; l.shadow.camera.far = 9; scene.add(l, l.target);
+    lamps.push({ l, up, s: halo(x, y + 0.16, z, 0xffb060, 1.4), k: 300, on: true, x, y: y + 0.16, z, wheel: true }); }
   for (const x of [-2.6, 2.6]) { model('vintage_oil_lamp', x, R.backY, bz + 0.25, 0, { h: 0.38 }, g); halo(x, R.backY + 0.3, bz + 0.25, 0xffb060, 0.4); }
-  const hang = (x, y, z, k, d, lv) => { model('lantern_01', x, y - 0.15, z, 0, { h: 0.42 }, g); tube(0.006, 0.006, 0.35, iron, x, y + 0.42, z, g, 4); return lamp(x, y, z, k, d, 0xffc898, lv); };
+  const hang = (x, y, z, k, d, lv) => { model('lantern_01', x, y - 0.15, z, 0, { h: 0.42 }, g); tube(0.006, 0.006, 0.35, iron, x, y + 0.42, z, g, 4); return lamp(x, y, z, k, d, 0xffb46e, lv); };
   hang(-1.7, 2.4, 0.25, 13, 7); hang(1.7, 2.4, 0.25, 13, 7);
   const fire = hang(4.7, 2.35, -6.2, 8, 6);
   model('lantern_01', 2.2, UP + 2.15, -0.4, 0, { h: 0.42 }, g); halo(2.2, UP + 2.3, -0.4, 0xffc898, 0.5); hang(BD.x0 + 2.0, UP + 2.2, -0.6, 7, 5.5, 1); hang(-3.0, DN + 2.0, -8.2, 8, 6.5, -1);

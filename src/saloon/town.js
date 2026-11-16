@@ -19,7 +19,7 @@ function land(x, z) {
 }
 
 // ---- what the outside is made of: the photographed surfaces, greyed, lit by the moon and the street's few lamps only (no room lamps, no room reflections), thinned by the night's air
-const HZ = { c: { value: new THREE.Color(0.024, 0.034, 0.06) }, k: { value: new THREE.Vector2(0.0009, 1.2) }, amb: { value: new THREE.Color(0.12, 0.15, 0.22) } };
+const HZ = { c: { value: new THREE.Color(0.024, 0.034, 0.06) }, k: { value: new THREE.Vector2(0.0015, 1.2) }, amb: { value: new THREE.Color(0.12, 0.15, 0.22) } };
 const LB = THREE.ShaderChunk.lights_fragment_begin.replace(/NUM_SPOT_LIGHTS/g, '0').replace(/NUM_HEMI_LIGHTS/g, '0');
 function out(m, sat = 0.55) {
   m.fog = false; m.envMapIntensity = 0; m.vertexColors = true; m.metalness = Math.min(m.metalness, 0.2); if (m.roughness < 0.85) m.roughness = 0.9;
@@ -73,7 +73,7 @@ export function buildTown(scene, room) {
   const HW = FRAME.half, DEEP = FRAME.deep;
 
   const M = { siding: surf('siding', 2.2, { sat: 0.4, lift: 2 }), boards: surf('planks', 1.8, { sat: 0.4, lift: 1.5 }), dark: surf('dark', 1.8, { sat: 0.4, lift: 1.3 }), plaster: surf('plaster', 2.6, { sat: 0.5 }), paint: surf('peel', 1.6, { sat: 0.25 }), ground: surf('sand', 4, { sat: 0.7, lift: 1.1, bump: 2 }), rock: surf('rock', 16, { sat: 0.5 }), iron: surf('rust', 1, { sat: 0.3 }),
-    prop: out(new THREE.MeshStandardMaterial({ roughness: 1, metalness: 0 }), 0.6),
+    prop: out(new THREE.MeshStandardMaterial({ roughness: 1, metalness: 0 }), 0.35),
     glass: out(new THREE.MeshStandardMaterial({ color: 0x0b0e12, roughness: 0.85, metalness: 0 })), pane: out(new THREE.MeshStandardMaterial({ color: 0x20262c, roughness: 0.9, transparent: true, opacity: 0.3, depthWrite: false })),
     lit: new THREE.MeshBasicMaterial({ vertexColors: true, fog: false }), signs: null };
   M.pane.userData.nocast = M.lit.userData.nocast = true;
@@ -267,8 +267,8 @@ export function buildTown(scene, room) {
     s.setAttribute('color', new THREE.BufferAttribute(sc, 3)); s.computeVertexNormals(); const st = new THREE.Mesh(s, M.ground); st.receiveShadow = true; T.add(st); }
 
   // ---- the mesas and buttes on the horizon, built: a skirt of fallen rock, cliffs cut in flutes and ledges, a flat cap
-  { const C = chunk(T), mesa = (cx, cz, rad, ht, long, turn, seed) => { const N2 = 30, lv = [[2.1, 0], [1.6, 0.16], [1.18, 0.38], [1.1, 0.42], [1.04, 0.7], [0.99, 0.72], [0.95, 1], [0.95, 1], [0, 1]], pos = [], uv = [], col = [], idx = [], nz2 = (a, k) => 1 + 0.22 * Math.sin(a * 2 + seed) + 0.12 * Math.sin(a * 5 + seed * 2.3) + (k > 1 && k < 8 ? 0.05 * Math.sin(a * 17 + seed + k) + 0.03 * Math.sin(a * 31 + k * 2) : 0);
-      for (let k = 0; k < lv.length; k++) for (let i = 0; i <= N2; i++) { const a = i / N2 * Math.PI * 2, r = rad * lv[k][0] * nz2(a, k), lx = Math.cos(a) * r * long, lz = Math.sin(a) * r; pos.push(cx + lx * Math.cos(turn) - lz * Math.sin(turn), -9 + ht * lv[k][1] * (k > 5 ? 1 + 0.03 * Math.sin(a * 3 + seed) : 1), cz + lx * Math.sin(turn) + lz * Math.cos(turn)); uv.push(a * rad / 16, ht * lv[k][1] / 16); const c = k < 2 ? 0.72 : k % 2 ? 0.5 : 0.62; col.push(c, c * 0.95, c * 0.9); }
+  { const C = chunk(T), mesa = (cx, cz, rad, ht, long, turn, seed) => { const N2 = 44, lv = [[2.4, 0], [1.55, 0.2], [1.13, 0.33], [1.09, 0.36], [1.03, 0.66], [1.0, 0.68], [0.975, 1], [0.975, 1], [0, 1]], pos = [], uv = [], col = [], idx = [], nz2 = (a, k) => 1 + 0.22 * Math.sin(a * 2 + seed) + 0.12 * Math.sin(a * 5 + seed * 2.3) + (k > 1 && k < 8 ? 0.06 * Math.sin(a * 13 + seed) + 0.035 * Math.sin(a * 29 + seed * 1.7) + 0.012 * Math.sin(a * 7 + k) : 0);
+      for (let k = 0; k < lv.length; k++) for (let i = 0; i <= N2; i++) { const a = i / N2 * Math.PI * 2, r = rad * lv[k][0] * nz2(a, k), lx = Math.cos(a) * r * long, lz = Math.sin(a) * r; pos.push(cx + lx * Math.cos(turn) - lz * Math.sin(turn), -9 + ht * lv[k][1] * (k > 5 ? 1 + 0.03 * Math.sin(a * 3 + seed) : 1), cz + lx * Math.sin(turn) + lz * Math.cos(turn)); uv.push(a * rad / 16, ht * lv[k][1] / 16); const c = (k < 2 ? 0.5 : k % 2 ? 0.34 : 0.42) * (0.9 + 0.2 * Math.sin(a * 9 + k + seed)); col.push(c, c * 0.95, c * 0.9); }
       for (let k = 0; k < lv.length - 1; k++) { if (k === 6) continue; for (let i = 0; i < N2; i++) { const a = k * (N2 + 1) + i, b = a + N2 + 1; idx.push(a, b, a + 1, a + 1, b, b + 1); } }
       const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); g.setIndex(idx); g.computeVertexNormals(); C.add(M.rock, g, 0, 0, 0, { flat: 1 }); g.dispose(); };
     for (const [a, dist, rad, ht, long] of [[200, 330, 60, 72, 2.2], [232, 420, 26, 95, 1], [246, 390, 12, 80, 1], [275, 520, 95, 110, 2.6], [305, 360, 34, 64, 1.4], [330, 470, 16, 100, 1], [352, 430, 70, 84, 1.8], [25, 380, 44, 70, 1.6], [58, 520, 110, 120, 2.4], [88, 340, 20, 88, 1], [102, 360, 11, 70, 1], [128, 450, 80, 90, 2], [160, 400, 30, 76, 1.2], [182, 560, 120, 130, 2]]) { const t = a * Math.PI / 180; mesa(Math.sin(t) * dist, -Math.cos(t) * dist - 10, rad, ht, long, rr(0, 3), a); }
@@ -306,7 +306,7 @@ export function buildTown(scene, room) {
 
   // ---- Polyfork's frontier things (data/saloon/town.json): the wagons, horses, lamps and poles as three meshes along the street, the cactus and sage as one each
   fetch(`${BASE}town.json`).then((r) => r.json()).then((D) => {
-    const geo = {}, mk = (k) => { if (geo[k]) return geo[k]; const d = D.props[k]; if (!d) return null; const bin = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0)), q = new Int16Array(bin(d.p).buffer), c = bin(d.c), P = new Float32Array(q.length), Cc = new Float32Array(q.length); for (let i = 0; i < q.length; i++) { const a = i % 3; P[i] = d.b[a] + (q[i] + 32768) / 65535 * (d.b[a + 3] - d.b[a]); Cc[i] = Math.pow(c[i] / 255, 2.2) * 0.5; }
+    const geo = {}, mk = (k) => { if (geo[k]) return geo[k]; const d = D.props[k]; if (!d) return null; const bin = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0)), q = new Int16Array(bin(d.p).buffer), c = bin(d.c), P = new Float32Array(q.length), Cc = new Float32Array(q.length); for (let i = 0; i < q.length; i++) { const a = i % 3; P[i] = d.b[a] + (q[i] + 32768) / 65535 * (d.b[a + 3] - d.b[a]); Cc[i] = Math.pow(c[i] / 255, 2.2) * 0.36; }
       const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(P, 3)); g.setAttribute('color', new THREE.BufferAttribute(Cc, 3)); g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(q.length / 3 * 2), 2)); g.computeVertexNormals(); return (geo[k] = g); };
     const C3 = [chunk(T), chunk(T), chunk(T)]; for (const p of props) { const g = mk(p.name); if (g) C3[p.x < -11 ? 0 : p.x < 13 ? 1 : 2].add(M.prop, g, p.x, p.y ?? (open(p.x, p.z, 0) ? land(p.x, p.z) : Math.abs(p.z + ST.walk / 2) < ST.walk / 2 || Math.abs(p.z - SZ - ST.walk / 2) < ST.walk / 2 ? 0 : ST.low), p.z, { ry: p.ry, s: p.s, flat: 1 }); }
     for (const c of C3) rows.push(c.done());

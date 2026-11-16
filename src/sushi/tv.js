@@ -47,7 +47,7 @@ export function buildTV(scene, shops) {
   let started = false, snowT = 0;
   tv.update = (dt) => {
     if (!started) { if (!G.audio?.ctx || !G.mode) return; started = true; // sound from the set itself, once the page may make sound
-      try { const ac = G.audio.ctx, src = ac.createMediaElementSource(mine.v), g = (mine.gain = ac.createGain()), pan = ac.createPanner(); g.gain.value = mine.vol; pan.panningModel = 'HRTF'; pan.refDistance = 0.8; pan.rolloffFactor = 1.2; S.g.updateMatrixWorld(true); const sp = S.body.localToWorld(new THREE.Vector3(S.M.sx, S.M.sy, S.M.sz)); pan.positionX.value = sp.x; pan.positionY.value = sp.y; pan.positionZ.value = sp.z; src.connect(g); g.connect(pan); pan.connect(G.audio.master); } catch (e) { /* silent set */ }
+      try { const ac = G.audio.ctx, src = ac.createMediaElementSource(mine.v), g = (mine.gain = ac.createGain()), sp = G.audio.spatial('tv'); g.gain.value = mine.vol; S.g.updateMatrixWorld(true); sp.at = S.body.localToWorld(new THREE.Vector3(S.M.sx, S.M.sy, S.M.sz)); src.connect(g); g.connect(sp.input); } catch (e) { /* silent set */ }
       tubes.forEach(tune); }
     if ((snowT -= dt) <= 0) { snowT = 1.5; drawSnow(); }   // a still, dim snow that changes slowly: nothing flashes
     for (const t of tubes) { t.flash = Math.max(0, (t.flash || 0) - dt); const live = t.on && !t.dead && t.v.readyState >= 2 && t.flash <= 0, want = !t.on ? null : live ? t.tex : snow; if (t.m.map !== want) { t.m.map = want; t.m.needsUpdate = true; } { const easy = G.set && G.set.easy, k = !want ? 0.02 : want === snow ? (easy ? 0.05 : 0.45) : easy ? 0.95 : 1.35; t.m.color.setRGB(k, k, k * 1.07); }   // easy on the eyes: no static to speak of, a picture no brighter than the room

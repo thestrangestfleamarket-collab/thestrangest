@@ -115,8 +115,8 @@ export function buildTalk() {
         const est = 0.5 + it.text.length * 0.06; c.p.talkT = est; it.estEnd = nowS() + est; it.utt = u; note({ ...base, voice: 'browser' }); u.onend = u.onerror = () => end(it); speechSynthesis.speak(u); } catch (e) { end(it); }
       return;
     }
-    const ac = G.audio.ctx, pan = ac.createPanner(), g = ac.createGain(); it.rate = it.plain ? (v.g === 'f' ? 1.04 : 0.8) : /^eleven|^bank/.test(it.voice || '') ? 1 : v.pitch; // a real voice is played as recorded
-    pan.panningModel = 'HRTF'; pan.distanceModel = 'inverse'; pan.refDistance = 1; pan.rolloffFactor = 1.3; mouth(c, _m); pan.positionX.value = _m.x; pan.positionY.value = _m.y; pan.positionZ.value = _m.z; g.gain.value = 2.4; g.connect(pan); pan.connect(bus());
+    const ac = G.audio.ctx, sp = G.audio.spatial('voice', null, { out: bus(), alive: () => D.cur === it }), pan = sp.pan, g = ac.createGain(); it.rate = it.plain ? (v.g === 'f' ? 1.04 : 0.8) : /^eleven|^bank/.test(it.voice || '') ? 1 : v.pitch; // a real voice is played as recorded
+    mouth(c, _m); pan.positionX.value = _m.x; pan.positionY.value = _m.y; pan.positionZ.value = _m.z; g.gain.value = 2.4; g.connect(sp.input); // through the cart's one chain (audio.js spatial): distance, air, the alley's brick
     it.g = g; it.pan = pan; it.at = ac.currentTime + 0.03; it.row = note({ ...base, voice: it.plain ? 'plain' : it.voice, secs: it.done ? +(it.got / it.rate).toFixed(1) : undefined });
     feed(it); c.attn = Math.max(c.attn || 0, (it.estEnd - nowS()) + 1.5);
   };

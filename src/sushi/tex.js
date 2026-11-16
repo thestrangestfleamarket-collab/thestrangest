@@ -1,5 +1,61 @@
-// the cart's and the street's pictures: photographed surfaces (photo, data/sushi/tex) laid by the metre (worldUV, metreUV), the rest drawn on canvases; ageing those (dirty)
+// the cart's and the street's pictures: photographed surfaces (photo, data/sushi/tex) laid by the metre (worldUV, metreUV) and worn without repeating (surface), liquids with a sheen (liquid), the rest drawn on canvases; ageing those (dirty)
 import * as THREE from 'three';
+
+// one clock for every surface that moves (broth); cart.js moves it
+export const SURF = { time: { value: 0 }, lamp: { value: new THREE.Vector3(0, 2.36, -0.3) } };
+const NOISE = `varying vec3 vSurfW;
+float sH(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float sN(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f); return mix(mix(sH(i), sH(i + vec2(1.0, 0.0)), f.x), mix(sH(i + vec2(0.0, 1.0)), sH(i + vec2(1.0, 1.0)), f.x), f.y); }`;
+const WPOS = `#include <project_vertex>
+{ vec4 sw = vec4(transformed, 1.0);
+#ifdef USE_INSTANCING
+  sw = instanceMatrix * sw;
+#endif
+  vSurfW = (modelMatrix * sw).xyz; }`;
+// the shared material for every big surface (owner, 16 Nov 2026: "not just repeat patterns"): its picture is read twice, each patch shifted by its own random amount and the two blended by a smooth noise, so no tile repeats; a second, broad scale of light and dark; grime that gathers low down and in patches; on a counter, a polish where hands go (worn). Two reads of the picture and a few sums a pixel: cheap enough for the headset
+export function surface(m, o = {}) {
+  const P = { bomb: o.bomb ?? (m.map && m.map.wrapS === THREE.RepeatWrapping ? 1 : 0), vary: o.vary ?? 0.22, grime: o.grime ?? 0.3, low: o.low ?? 0, band: o.band ?? 0.5, worn: o.worn ?? 0, scale: o.scale ?? 1 }, f = (v) => (+v).toFixed(3);
+  const prev = m.onBeforeCompile, key = prev && m.customProgramCacheKey ? m.customProgramCacheKey() : '';
+  m.onBeforeCompile = (s, r) => {
+    if (prev) prev.call(m, s, r);
+    s.vertexShader = s.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vSurfW;').replace('#include <project_vertex>', WPOS);
+    s.fragmentShader = s.fragmentShader.replace('#include <common>', '#include <common>\n' + NOISE + `
+vec4 sBomb(sampler2D t, vec2 uv) {
+  vec2 dx = dFdx(uv), dy = dFdy(uv); float k = sN(uv * 0.43 + 3.1) * 5.0, i = floor(k), fr = fract(k);
+  vec2 oa = vec2(sH(vec2(i, 1.7)), sH(vec2(i, 9.1))), ob = vec2(sH(vec2(i + 1.0, 1.7)), sH(vec2(i + 1.0, 9.1)));
+  vec4 a = textureGrad(t, uv + oa, dx, dy), b = textureGrad(t, uv + ob, dx, dy);
+  return mix(a, b, smoothstep(0.35, 0.65, fr + 0.15 * dot(a.rgb - b.rgb, vec3(1.0))));
+}`).replace('#include <map_fragment>', `#ifdef USE_MAP
+  diffuseColor *= ${P.bomb ? 'sBomb(map, vMapUv)' : 'texture2D(map, vMapUv)'};
+#endif
+  { vec3 w = vSurfW * ${f(P.scale)}; float v = sN(w.xz * 0.9 + w.y * 0.7) * 0.6 + sN(w.xz * 3.7 + w.yx * 2.9) * 0.4;
+    diffuseColor.rgb *= 1.0 + ${f(P.vary)} * (v - 0.5) * 2.0;
+    float g = smoothstep(0.55, 0.85, sN(w.xz * 1.6 + w.zy * 1.3 + 11.0)) * 0.7 + (1.0 - smoothstep(${f(P.low)}, ${f(P.low + P.band)}, vSurfW.y)) * 0.8;
+    diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.46, 0.4, 0.33), clamp(g, 0.0, 1.0) * ${f(P.grime)});
+    ${P.worn ? `float p = smoothstep(0.35, 0.8, sN(w.xz * 2.3 + 5.0)); diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(1.18, 1.1, 0.95) + vec3(0.025, 0.016, 0.0), p * ${f(P.worn)});` : ''} }`);
+  };
+  const k = key + 'surf' + Object.values(P).map(f).join(',');
+  m.customProgramCacheKey = () => k; m.userData.surface = P; m.needsUpdate = true; return m;
+}
+// a liquid's top: the fat on it drifting in two layers, and the lamp's sheen on it, gently moving (stir: how hard it boils)
+export function liquid(m, o = {}) {
+  const U = { stir: { value: o.stir ?? 0.2 }, sheen: { value: o.sheen ?? 0.5 } };
+  m.onBeforeCompile = (s) => {
+    Object.assign(s.uniforms, { uTime: SURF.time, uLamp: SURF.lamp, uStir: U.stir, uSheen: U.sheen });
+    s.vertexShader = s.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vSurfW;').replace('#include <project_vertex>', WPOS);
+    s.fragmentShader = s.fragmentShader.replace('#include <common>', '#include <common>\n' + NOISE + '\nuniform float uTime, uStir, uSheen; uniform vec3 uLamp;')
+      .replace('#include <map_fragment>', `#ifdef USE_MAP
+  { float t = uTime * (0.4 + uStir); vec4 a = texture2D(map, vMapUv + vec2(t * 0.011, t * 0.007)), b = texture2D(map, vMapUv * 1.63 + vec2(-t * 0.008, t * 0.012)); diffuseColor *= mix(a, b, 0.5); }
+#endif`)
+      .replace('#include <opaque_fragment>', `{ vec2 q = vSurfW.xz * 38.0; float t = uTime * (0.6 + 2.2 * uStir), a = 0.03 + 0.09 * uStir;
+    vec3 N = normalize(vec3(sin(q.x + t) * a + sin(q.y * 1.3 - t * 0.8) * a * 0.7, 1.0, cos(q.y + t * 1.1) * a + sin(q.x * 0.7 + t * 0.6) * a * 0.6));
+    vec3 V = normalize(cameraPosition - vSurfW), L = normalize(uLamp - vSurfW); float sp = pow(max(dot(reflect(-L, N), V), 0.0), 48.0);
+    float fat = 0.6 + 0.4 * sN(vSurfW.xz * 90.0 + t * 0.2);
+    outgoingLight += uSheen * sp * fat * vec3(1.0, 0.84, 0.6) + uSheen * 0.05 * pow(1.0 - max(V.y, 0.0), 3.0) * vec3(0.9, 0.8, 0.65); }
+#include <opaque_fragment>`);
+  };
+  m.customProgramCacheKey = () => 'liquid'; m.userData.liquid = U; return m;
+}
 
 export const JP = "'Noto Sans JP','Noto Sans CJK JP','Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic','Meiryo','IPAGothic','IPAPGothic',sans-serif";
 export const MONO = "'Courier New',Courier,monospace";
@@ -29,7 +85,7 @@ export function canvasTex(w, h, draw, o = {}) {
 const loTex = (lo, w, h, draw, o = {}) => canvasTex(w, h, draw, { ...o, lo });
 
 // photographed surfaces (CC0, tools/sushi-assets.py), asked for before the street is built; a drawn picture stands in for one that has not come
-const PHOTOS = ['brick_red', 'brick_orange', 'brick_brown', 'brick_dark', 'brick_painted', 'plaster', 'plaster_worn', 'concrete', 'concrete_dirty', 'asphalt', 'paving', 'shutter', 'shutter_rust', 'corrugated', 'rust', 'wood', 'wood_dark', 'wood_light', 'tile_brown', 'tile_white'];
+const PHOTOS = ['brick_red', 'brick_orange', 'brick_brown', 'brick_dark', 'brick_painted', 'plaster', 'plaster_worn', 'concrete', 'concrete_dirty', 'asphalt', 'paving', 'shutter', 'shutter_rust', 'corrugated', 'rust', 'wood', 'wood_dark', 'wood_light', 'tile_brown', 'tile_white', 'wood_counter', 'cloth'];
 const PIMG = {}, PTEX = {};
 export function loadPhotos(base = '/sushi-assets/tex/', ms = 9000) {
   return Promise.all(PHOTOS.map((n) => new Promise((res) => { const im = new Image(); im.onload = () => { PIMG[n] = im; const t = PTEX[n]; if (t) { t.dispose(); t.image = small(im); t.needsUpdate = true; } res(); }; im.onerror = res; im.src = base + n + '.jpg'; setTimeout(res, ms); })));
@@ -39,7 +95,7 @@ export const photoImg = (name) => PIMG[name];
 export function photo(name, fallback) { // one texture a file, shared by every material that wears it
   if (PTEX[name]) return PTEX[name];
   const t = new THREE.Texture(PIMG[name] ? small(PIMG[name]) : (fallback ? fallback().image : canvasTex(8, 8, (g) => { g.fillStyle = '#666'; g.fillRect(0, 0, 8, 8); }).image));
-  t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4; t.needsUpdate = true; return (PTEX[name] = t);
+  t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4; t.needsUpdate = true; t.userData.photo = name; return (PTEX[name] = t);
 }
 // the picture laid by the metre from where a thing stands (size = metres a tile), so scaled and instanced boxes all wear it at its true size
 export function worldUV(m, size = 1) {
@@ -61,7 +117,7 @@ export function metreUV(root) {
   root.updateWorldMatrix(true, true);
   root.traverse((m) => {
     const s = m.isMesh && !m.isInstancedMesh && !Array.isArray(m.material) && m.material.userData.metres, g = m.geometry;
-    if (!s || g.userData.muv || !/^(Box|Plane)Geometry$/.test(g.type)) return; g.userData.muv = 1;
+    if (!s || g.userData.muv || !/^(Box|Plane|RoundedBox)Geometry$/.test(g.type)) return; g.userData.muv = 1;
     sc.setFromMatrixScale(m.matrixWorld); g.computeBoundingBox(); g.boundingBox.getSize(e).multiply(sc);
     const p = g.attributes.position, n = g.attributes.normal, uv = g.attributes.uv, h = (m.id * 0.37) % 1;
     for (let i = 0; i < p.count; i++) {
@@ -280,6 +336,39 @@ export function smokeTex() {
   });
 }
 
+// steam: a soft, torn wisp, taller than wide, fading at every edge
+export function wispTex() {
+  return canvasTex(64, 128, (g, w, h) => {
+    const R = rng(91);
+    for (let i = 0; i < 22; i++) {
+      const t = i / 21, x = w / 2 + Math.sin(t * 5.2 + 0.6) * 9 + (R() - 0.5) * 8, y = h * (0.88 - t * 0.76), r = 9 + Math.sin(t * Math.PI) * 13 + R() * 5;
+      const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, `rgba(255,255,255,${0.16 * Math.sin(t * Math.PI + 0.2)})`); gr.addColorStop(1, 'rgba(255,255,255,0)');
+      g.fillStyle = gr; g.fillRect(0, 0, w, h);
+    }
+  });
+}
+// toppings' own grain: nori's pressed fibres, menma's long fibres
+export function noriTex() {
+  return canvasTex(64, 64, (g, w, h) => {
+    const R = rng(17); g.fillStyle = '#16231a'; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 500; i++) { g.globalAlpha = 0.25; g.fillStyle = ['#0a120c', '#24382a', '#2c3a22', '#060a08'][(R() * 4) | 0]; g.fillRect(R() * w, R() * h, 1 + R() * 5, 1); }
+    g.globalAlpha = 0.18; g.fillStyle = '#3a4c3a'; for (let x = 0; x < w; x += 8) g.fillRect(x, 0, 1, h); g.globalAlpha = 1;
+  });
+}
+export function menmaTex() {
+  return canvasTex(64, 32, (g, w, h) => {
+    const R = rng(23); g.fillStyle = '#b8894a'; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 60; i++) { g.globalAlpha = 0.2 + R() * 0.2; g.fillStyle = R() > 0.5 ? '#7a5426' : '#d8b070'; g.fillRect(0, R() * h, w, 0.6 + R() * 1.2); }
+    g.globalAlpha = 1;
+  });
+}
+export function chashuSideTex() {
+  return canvasTex(64, 16, (g, w, h) => {
+    const R = rng(29); const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#5a2e18'); gr.addColorStop(0.5, '#8a5434'); gr.addColorStop(1, '#4a2412'); g.fillStyle = gr; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 30; i++) { g.globalAlpha = 0.35; g.fillStyle = '#e8d4b8'; g.fillRect(R() * w, R() * h, 3 + R() * 10, 1 + R()); } g.globalAlpha = 1;
+  });
+}
+
 export function skyTex() {
   return canvasTex(64, 512, (g, w, h) => {
     const gr = g.createLinearGradient(0, 0, 0, h);
@@ -333,12 +422,13 @@ export function swirlTex(kind) {
       g.shadowBlur = 0; g.globalAlpha = 1;
       const gr = g.createRadialGradient(64, 64, 46, 64, 64, 64); gr.addColorStop(0, 'rgba(70,36,20,0)'); gr.addColorStop(0.75, 'rgba(70,36,20,0.85)'); gr.addColorStop(1, '#3a1d10'); g.fillStyle = gr; g.fillRect(0, 0, w, h);
     } else if (kind === 'egg') {
-      g.fillStyle = '#f6efe2'; g.fillRect(0, 0, w, h);
-      const gr = g.createRadialGradient(64, 64, 4, 64, 64, 34);
-      gr.addColorStop(0, '#f08a1a'); gr.addColorStop(0.75, '#f6a52a'); gr.addColorStop(1, '#f4c56b');
-      g.fillStyle = gr; g.beginPath(); g.arc(64, 64, 33, 0, 7); g.fill();
-      g.fillStyle = 'rgba(255,255,255,0.5)'; g.beginPath(); g.ellipse(54, 54, 9, 5, -0.6, 0, 7); g.fill();
-      g.strokeStyle = '#b98850'; g.lineWidth = 8; g.beginPath(); g.arc(64, 64, 61, 0, 7); g.stroke();
+      // a marinated egg cut in half: the soy's brown soaked a little way into the white, a firm rim of yolk and a jammy middle, a little off centre as real ones sit
+      const ring = g.createRadialGradient(64, 64, 40, 64, 64, 64); ring.addColorStop(0, '#f4ecdc'); ring.addColorStop(0.62, '#e8d2ac'); ring.addColorStop(1, '#a8743c'); g.fillStyle = ring; g.fillRect(0, 0, w, h);
+      for (let i = 0; i < 160; i++) { g.globalAlpha = 0.06; g.fillStyle = R() > 0.5 ? '#fff' : '#c8a878'; g.beginPath(); g.arc(R() * w, R() * h, 1 + R() * 3, 0, 7); g.fill(); } g.globalAlpha = 1;
+      const cx = 61, cy = 66, gr = g.createRadialGradient(cx, cy, 2, cx, cy, 33);
+      gr.addColorStop(0, '#c8500c'); gr.addColorStop(0.45, '#e4741a'); gr.addColorStop(0.8, '#f2a234'); gr.addColorStop(1, '#f6c766');
+      g.fillStyle = gr; g.beginPath(); g.ellipse(cx, cy, 33, 31, 0.3, 0, 7); g.fill();
+      g.fillStyle = 'rgba(255,240,200,0.35)'; g.beginPath(); g.ellipse(cx - 9, cy - 10, 10, 4, -0.6, 0, 7); g.fill();
     }
   });
 }

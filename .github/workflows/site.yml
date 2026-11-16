@@ -77,6 +77,7 @@ jobs:
           k sniper  'src/sniper/|data/sniper/|tools/sniper|tests/sniper\.cjs'
           k duel    'src/duel/|data/duel/|tools/duel\.cjs|tests/duel\.cjs'
           k laser   'src/laser/|worker/laser|tools/laser\.cjs|tests/laser\.cjs'
+          k fleet   'src/space/|data/space/|worker/space|tools/space|tests/fleet\.cjs'
           k vrbody  'src/162c|src/111b|vrbody\.cjs'
           k riders  'src/117a|src/009c|riders\.cjs'
           k loopmap 'src/159c|src/009b|loopmap\.cjs'
@@ -316,6 +317,10 @@ jobs:
         timeout-minutes: 15
         if: contains(steps.f.outputs.run, ' laser')
         run: node tests/laser.cjs dist/laser.html
+      - name: Space Fleet (the fleet battle at /space; the rules, the bot, two linked headsets' pages, an emulated Quest 3)
+        timeout-minutes: 15
+        if: contains(steps.f.outputs.run, ' fleet')
+        run: node tests/fleet.cjs dist/space.html
       - name: The headset (VR on an emulated Quest 3)
         timeout-minutes: 45
         if: contains(steps.f.outputs.run, ' vr')

@@ -204,7 +204,8 @@ export function buildOutbreak(scene) {
     // the shutters swing to where they are set
     const want0 = sides.front.down && !sides.front.broke ? 0 : sides.front.broke ? -0.35 : -1.42; shutA += (want0 - shutA) * Math.min(1, dt * 4); sh.rotation.x = shutA; sh.rotation.z = sides.front.broke ? 0.12 : 0; if (!sides.front.down) sides.front.bar = 0;
     for (const k of ['left', 'right', 'back']) sides[k].bar = 0; for (const it of props) { if (it.dead) continue; if (it.held) it.side = null; else { const z = it.free ? null : zoneOf(it.obj.position); if (z && it.side !== z) { it.side = z; if (it.bar <= 0) it.bar = it.barMax * 0.6; } else if (!z) it.side = null; if (it.side && it.bar > 0) sides[it.side].bar += it.bar; } }
-    I.update(dt); W.update(dt); AR.update(dt); gore.update(dt); updShelter(dt); updTroop(dt);
+    if (lead() && (O.stage === 'winddown' || O.stage === 'end')) { const al = I.alive().filter((z) => !z.leave && !z.inside), over = al.length - (O.stage === 'end' ? 0 : want()); if (over > 0) al.sort((a, b) => b.p.root.position.length() - a.p.root.position.length()).slice(0, over).forEach((z) => (z.leave = true)); }   // fewer and slower: the rest drift off
+    I.update(dt); I.sweep(); W.update(dt); AR.update(dt); gore.update(dt); updShelter(dt); updTroop(dt);
     // how you are: the edges and the world darken with hurt and ease back; a heartbeat when low
     if (!me.dead && G.t - me.hurtT > 8 && me.hp < 100) me.hp = Math.min(100, me.hp + dt * 1.5);
     const hurt = me.dead ? (G.guest ? 0.45 : 1) : clamp((100 - me.hp) / 100 + Math.max(0, 1 - (G.t - me.hurtT) / 1.2) * 0.25, 0, 1); shown += (hurt - shown) * Math.min(1, dt * 2.5);

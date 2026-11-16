@@ -57,6 +57,7 @@ export function buildInfected() {
       if (z.burn > 0) { z.burn -= dt; z.hp -= 14 * dt; if (z.hp <= 0) { I.kill(z, 'burnt'); continue; } }
       if (z.st === 'rise') { if (z.t > z.riseAt) { p.stay = false; if (z.t > z.riseAt + 1.9) { z.st = 'walk'; z.t = 0; o.sound?.('groan', P); } } p.update(dt, t); continue; }
       if ((z.groan -= dt) <= 0) { z.groan = rand(4, 9); o.sound?.('groan', P); }
+      if (z.leave && !z.inside) { if (Math.abs(P.x) > 17) { z.gone = true; continue; } if (!z.path || !z.path.length || z.st !== 'walk') { z.st = 'walk'; z.prey = null; z.side = null; z.path = route(P, new V3(Math.sign(P.x || 1) * 18, 0, -2.8)); } z.think = 1; }   // (drifting off as the night wanes)
       // think: who, or what was heard, or wander toward the light
       if ((z.think -= dt) <= 0) { z.think = 0.3 + Math.random() * 0.2;
         let best = null, bd = 1e9; for (const q of all) { if (!sees(z, q, lit) && !(z.prey === q && G.t - (z.seenT || 0) < 3)) continue; const d = Math.hypot(q.x() - P.x, q.z() - P.z) + (q === z.prey ? -0.8 : 0); if (d < bd) { bd = d; best = q; } }
@@ -96,6 +97,7 @@ export function buildInfected() {
   };
 
   // a blow that is not a blade's (a fist, a thrown thing, a staff): it knocks them about and, hard on the head, can stop them
+  I.sweep = () => { for (let i = I.list.length - 1; i >= 0; i--) if (I.list[i].gone) { I.list[i].p.root.removeFromParent(); I.list.splice(i, 1); } };
   I.blow = (z, s) => { if (z.dead) return; const p = z.p, J = s.J || 0, seg = s.seg.mid ? (s.at.y > 1.45 ? 'head' : 'torso') : s.seg.name; if (G.t - (p.hitT || -9) < 0.25) return; p.hitT = G.t;
     p.push?.(seg, s.dir.clone().setLength(J * 0.8), s.at); if (z.st === 'grab' || z.st === 'push') { z.st = 'walk'; z.t = 0; z.cool = 1; }
     if (seg === 'head' && J > 2.2) { z.head -= J * 7; G.gore?.spray(s.at, s.dir, J / 8); if (z.head <= 0) I.kill(z, 'struck down', s.dir); } else if (J > 3) z.hp -= J * 2; if (z.hp <= 0) I.kill(z, 'struck down', s.dir); };

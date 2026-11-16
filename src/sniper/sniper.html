@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:,">
+<title>Cold Bore</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; color: #e6edf2; }
+  canvas { display: block; }
+  #menu { position: fixed; inset: 0; display: flex; background: radial-gradient(ellipse at center, rgba(3,8,12,0.45), rgba(0,0,0,0.88)); overflow-y: auto; z-index: 5; }
+  .card { width: min(700px, 100% - 32px); margin: auto; padding: 28px 30px; background: rgba(8,14,19,0.9); border: 1px solid #1d3a46; border-radius: 14px; box-shadow: 0 20px 80px #000; }
+  h1 { margin: 0; font-size: 46px; letter-spacing: 0.14em; font-weight: 900; } h1 span { color: #ff6a30; }
+  .tag { color: #7f98a6; margin: 4px 0 20px; letter-spacing: 0.05em; }
+  button { font: inherit; color: inherit; background: #12222b; border: 1px solid #2a4e5c; border-radius: 9px; padding: 13px 16px; cursor: pointer; }
+  button:hover:not(:disabled) { background: #1a3440; border-color: #5fb8cc; } button:disabled { opacity: 0.45; cursor: default; }
+  button.primary { background: #ff6a30; border-color: #ff8a58; color: #140700; font-weight: 800; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; } .row > * { flex: 1 1 150px; }
+  #status { color: #9fd8e6; min-height: 1.3em; margin-top: 12px; font-size: 14px; }
+  details { margin-top: 16px; color: #9fb0ba; font-size: 13.5px; } summary { cursor: pointer; color: #5fb8cc; letter-spacing: 0.1em; text-transform: uppercase; font-size: 12px; }
+  table { border-collapse: collapse; width: 100%; margin-top: 8px; } td { padding: 4px 8px 4px 0; vertical-align: top; border-bottom: 1px solid #14242c; } td:first-child { color: #e6edf2; white-space: nowrap; }
+  #board { display: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(92vw, 122vh); height: auto; border-radius: 12px; box-shadow: 0 20px 80px #000; z-index: 4; cursor: pointer; }
+  body.play #board { display: block; } body.locked #board { display: none; }
+  #hud { display: none; position: fixed; inset: 0; pointer-events: none; text-shadow: 0 1px 6px #000; z-index: 3; } body.locked #hud { display: block; }
+  #obj { position: absolute; left: 24px; top: 18px; font-size: 17px; font-weight: 700; max-width: 60vw; }
+  #spot { position: absolute; left: 50%; bottom: 17%; transform: translateX(-50%); font-size: 21px; font-weight: 700; color: #ffe9a0; text-align: center; }
+  #ammo { position: absolute; right: 26px; bottom: 22px; text-align: right; } #ammo b { font-size: 34px; } #ammo span { display: block; font-size: 15px; color: #ffb040; font-family: ui-monospace, Menlo, Consolas, monospace; } #ammo small { color: #9fb0ba; font-size: 13px; }
+  #keys { position: absolute; left: 24px; bottom: 20px; font-size: 12.5px; color: #9fb0ba; line-height: 1.5; }
+</style>
+</head>
+<body>
+<div id="hud"><div id="obj"></div><div id="spot"></div><div id="ammo"></div>
+  <div id="keys">Right mouse: scope · Wheel: zoom · W S: elevation · A D: windage · E: range · Shift: hold breath · R: reload · Esc: board</div></div>
+<div id="menu"><div class="card">
+  <h1>COLD <span>BORE</span></h1>
+  <div class="tag">Five contracts for one rifle · VR or screen</div>
+  <div class="row"><button id="vr" class="primary" disabled>Checking for headset…</button><button id="desktop" disabled>Play on this screen</button></div>
+  <div id="status"></div>
+  <details open><summary>In the headset</summary><table>
+    <tr><td>Grip</td><td>Take the rifle by its pistol grip. It waits on the sandbags in front of you. Let go on the bipod and it stays there.</td></tr>
+    <tr><td>Bipod</td><td>Set the bipod's feet on the sandbags: the rifle steadies and pivots there. Bring your eye to the scope, about a hand's width behind it.</td></tr>
+    <tr><td>Trigger</td><td>Fire. On the other hand: hold your breath (a few seconds of calm). Pointing at the board: press its buttons.</td></tr>
+    <tr><td>Bolt</td><td>After each shot grip the bolt knob with a free hand, pull it back and push it home. Or press A / X on the rifle hand.</td></tr>
+    <tr><td>Magazine</td><td>B / Y on the rifle hand drops it. Grip a fresh one from the tins on the sandbags and push it into the well, then work the bolt.</td></tr>
+    <tr><td>Sticks</td><td>Rifle hand: up and down turns the elevation turret, left and right the windage, a tenth of a mil a click. Other hand: zoom, 5x to 25x.</td></tr>
+    <tr><td>A / X, other hand</td><td>Laser rangefinder: the range shows in the scope and on the card by it, with the elevation to dial.</td></tr>
+  </table></details>
+  <details><summary>On a screen</summary><table>
+    <tr><td>Mouse</td><td>Aim. Right button (or Q) brings up the scope, left fires, wheel zooms.</td></tr>
+    <tr><td>W S / A D</td><td>Elevation / windage turrets (the arrows too)</td></tr>
+    <tr><td>E · Shift · R</td><td>Rangefinder · hold breath · reload</td></tr>
+  </table></details>
+  <details><summary>How a shot works</summary><div style="margin-top:8px;line-height:1.5">The round drops and drifts as a real one does. Range the target, dial the UP from the card on the rifle, then read the wind: the card gives the hold for each metre a second of crosswind, and the reticle's marks are one mil apart. Far targets take over a second to reach: lead a walking man. Your spotter calls each miss in mils.</div></details>
+</div></div>
+<script type="module">__SNIPER__</script>
+</body>
+</html>

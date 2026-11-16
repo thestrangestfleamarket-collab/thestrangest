@@ -2,7 +2,7 @@
 import {SHARED, THREE} from './003-shx.js';
 import {BATCH, CULL, keys, LEVELS, pos, RAG, ROOMS, SHAD, UI} from './003b-systems.js';
 import {scene} from './004-main.js';
-import {cutWalls, FADE, FIX, grab, LAMPD, LAMPI, lamps, MAPSTAIR, MODS, QS, SECTIONS, SOL, STN, SYS, TILE, ZU} from './006-map-pre.js';
+import {cutWalls, FADE, FIX, grab, LAMPD, LAMPI, lamps, MAPSTAIR, MODS, QS, SECTIONS, SOL, STN, STORE, SYS, TILE, ZU} from './006-map-pre.js';
 import {OBJ} from './008-batch.js';
 const WATER={drops:[], uH:{value:null}, uWB:{value:new THREE.Vector4()}, uLevel:{value:0}, uGrid:{value:new THREE.Vector2()}, uCK:{value:+(QS0=>QS0.get('ck')||160)(new URLSearchParams(location.search))}, mats:[]};
 WATER.caustic=m=>{ '@later'; m.onBeforeCompile=sh=>{ Object.assign(sh.uniforms,{uH:WATER.uH,uWB:WATER.uWB,uLevel:WATER.uLevel,uGrid:WATER.uGrid,uCK:WATER.uCK});
@@ -274,6 +274,7 @@ const SSUB=(()=>{ const W={};
   SL.BENCH.forEach((y,i)=>{ put(benchBoxes(MID,y,3.2,i+1),'bench'); solid(MID-.75,y,MID+.75,y+3.2,36); blobAt(MID-.75,y,MID+.75,y+3.2); });
   SL.BINS.forEach(y=>solid(MID-.28,y-.28,MID+.28,y+.28,32));
   const MX=SL.EX0-.95, MY=.06; put(W.mach(MX,MY),'passport machine'); solid(MX,MY,MX+.56,MY+.7,46); blobAt(MX,MY,MX+.56,MY+.7);
+  STORE.places.push(['THE DARK ALLEY',0,0,'up','off']);   // on the map's list from the start; the alley itself is off the map (146bg)
   put(W.signal(XW-.35,-1.4,1),'signal',SZ-32); put(W.signal(XW-.35,LEN+1.4,0),'signal',SZ-32); put(W.signal(.35,LEN+1.4,0),'signal',SZ-32);
   BATCH.build((k,map,emap)=>k==='B'?new THREE.MeshBasicMaterial({map,alphaTest:.5,side:THREE.DoubleSide}):new THREE.MeshLambertMaterial({map,alphaTest:.5,side:THREE.DoubleSide,...(emap?{emissiveMap:emap,emissive:0xffffff,emissiveIntensity:1.6}:{})}));
   BATCH.cast=false;

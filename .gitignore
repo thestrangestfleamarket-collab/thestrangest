@@ -16,3 +16,5 @@ data/full/cmu/
 data/full/copies/img/
 !src/door/icon-*.png
 !data/full/sfx/shared/
+data/full/tank/
+.site-wrangler.jsonc

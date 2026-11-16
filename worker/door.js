@@ -3,6 +3,7 @@ import { getServerByName, routePartykitRequest, Server } from "partyserver";
 import { DISH, DISHK } from "./dish.js";
 import { JAM } from "./jam.js";
 import { LASER } from "./laser.js";
+import { TANK } from "./tank.js";
 import { MAPPATCH } from "./mappatch.js";
 import { FOLKSIM } from "./folk.js";
 import { MOBSIM } from "./dunmobs.js";
@@ -12,6 +13,7 @@ import { BOWLS } from "./lanes.js";
 import { FLYBOT } from "./flybot.js";
 import { HOLMES } from "./holmes.js";
 import { CANTINA } from "./cantina.js";
+import { SUSHI } from "./sushi.js";
 import { HIDE } from "./hide.js";
 import { ZOMBIE } from "./zombie.js";
 import LIVESDATA from "../data/lives.json";
@@ -26,8 +28,9 @@ const SECROOMS = WORLD.sections.ids.flat().map(i => "s-" + String(i).toLowerCase
 const APPF = /^\/(app\.webmanifest|icon-(192|512)\.png)$/;   // the installable app's manifest and icon: to anyone
 const EDMAP = /^\/edmap\/t\d{1,2}_\d{1,2}\.jpg$/;
 const SCAREA = /^\/scare-assets\/[a-z0-9_-]+\.glb$/;   // VESPER WARD's models: to anyone
+const SNIPA = /^\/sniper-assets\/(sky|tex|m|snd|p)\/[A-Za-z0-9_-]+\.(glb|json|mp3|jpg|webp)$/, SNIPT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg", jpg: "image/jpeg", webp: "image/webp" };   // COLD BORE's skies, surfaces, models and sounds: to anyone
 const JAMA = /^\/jam-assets\/[a-z0-9_-]+\.(glb|json|mp3)$/, JAMT = { glb: "model/gltf-binary", json: "application/json", mp3: "audio/mpeg" };   // STADIUM JAM's avatars, hands and samples: to anyone
-const GOLFA = /^\/(golf|duel|cantina|hide|zombie)-assets\/(?!.*\.\.)[A-Za-z0-9_.\/-]+\.(jpg|json|txt|glb|mp3|hdr)$/;   // HALCYON GREENS' pictures and models, AR DUEL's pictures, THE CANTINA's models and pictures, DEAD END's pictures, models and sounds, EYES DOWN's pictures and models: to anyone
+const GOLFA = /^\/(golf|duel|cantina|hide|zombie|sushi|tank)-assets\/(?!.*\.\.)[A-Za-z0-9_.\/-]+\.(jpg|json|txt|glb|mp3|hdr|fbx|webp)$/;   // HALCYON GREENS' pictures and models, AR DUEL's pictures, THE CANTINA's models and pictures, DEAD END's pictures, models and sounds, EYES DOWN's pictures and models, HULL DOWN's sky, surfaces, models and sounds: to anyone
 const BOOK = /^\/book\/(\d{1,6})\.txt$/, FILM = /^\/film\/([A-Za-z0-9_.-]{1,80})\/([A-Za-z0-9_.-]{1,120}\.mp4)$/, IA = /^\/ia\/([A-Za-z0-9_.-]{1,80})\.jpg$/, YT = /^\/yt\/([A-Za-z0-9_-]{11})\.jpg$/, BLANK = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYGD4DwABBAEAHnOcQAAAAABJRU5ErkJggg==";
 const SKYJD = () => { const d = new Date(); return Date.UTC(1985, d.getUTCMonth(), d.getUTCDate()) / 864e5 + 2440587.5; },   // the sky's year is 1985 (src/134b DN.YEAR): that year's comets
    SBDB = "https://ssd-api.jpl.nasa.gov/sbdb_query.api?", SWPC = "https://services.swpc.noaa.gov/";
@@ -83,6 +86,17 @@ export default {
     if ((request.method === "GET" || request.method === "HEAD") && JAMA.test(p)) {
       const r = await env.ASSETS.fetch(new Request(url.origin + p)); if (!r.ok) return new Response("not found", { status: 404 });
       const out = new Response(r.body, r); out.headers.set("content-type", JAMT[p.split(".").pop()]); out.headers.set("cache-control", "public, max-age=86400"); out.headers.set("x-robots-tag", "noindex"); return out; }
+    // COLD BORE (src/sniper/): its own page at /sniper, to anyone with the link; its skies, surfaces, models and sounds under /sniper-assets/
+    if ((request.method === "GET" || request.method === "HEAD") && p === "/sniper") return page(env, url, "/sniper", request, "no-cache");
+    if ((request.method === "GET" || request.method === "HEAD") && SNIPA.test(p)) {
+      const r = await env.ASSETS.fetch(new Request(url.origin + p)); if (!r.ok) return new Response("not found", { status: 404 });
+      const out = new Response(r.body, r); out.headers.set("content-type", SNIPT[p.split(".").pop()]); out.headers.set("cache-control", "public, max-age=86400"); out.headers.set("x-robots-tag", "noindex"); return out; }
+    // EDGE OF 88 (src/edge/): the plank over the city, its own page at /edge, also /game, to anyone with the link
+    if ((request.method === "GET" || request.method === "HEAD") && (p === "/edge" || p === "/game")) return page(env, url, "/edge", request, "no-cache");
+    if (p === "/edge/" || p === "/game/") return Response.redirect(url.origin + "/edge" + url.search, 301);
+    // HULL DOWN (src/tank/): the tank's turret, its own page at /tank, also /hull, to anyone with the link; its sky, surfaces, models and sounds under /tank-assets/; its one public lobby is the Tank Durable Object
+    if ((request.method === "GET" || request.method === "HEAD") && (p === "/tank" || p === "/hull")) return page(env, url, "/tank", request, "no-cache");
+    if (p === "/tank/" || p === "/hull/") return Response.redirect(url.origin + "/tank" + url.search, 301);
     // BREACHLINE (src/shoot/): its own page at /shoot, to anyone with the link
     if ((request.method === "GET" || request.method === "HEAD") && p === "/shoot") return page(env, url, "/shoot", request, "no-cache");
     // HALCYON GREENS (src/golf/): its own page at /golf, to anyone with the link; its pictures under /golf-assets/
@@ -94,9 +108,17 @@ export default {
     // AR DUEL (src/duel/): its own page at /duel, to anyone with the link; its pictures under /duel-assets/
     if ((request.method === "GET" || request.method === "HEAD") && p === "/duel") return page(env, url, "/duel", request, "no-cache");
     if (p === "/duel/") return Response.redirect(url.origin + "/duel" + url.search, 301);
-    // DEAD END (src/hide/): its own page at /hide, to anyone with the link; its pictures, models and sounds under /hide-assets/; the thing's mind (POST /hide/mind) only to a login
+    // DEAD END (src/hide/): its own page at /hide, to anyone with the link; its pictures, models and sounds under /hide-assets/; the thing's mind and voice (POST /hide/mind, /hide/say) to anyone who plays
     if ((request.method === "GET" || request.method === "HEAD") && p === "/hide") return page(env, url, "/hide", request, "no-cache");
     if (p === "/hide/") return Response.redirect(url.origin + "/hide" + url.search, 301);
+    // DEAD END's thing thinks and speaks, for anyone who plays (owner, 14 Nov 2026): the mind (POST /hide/mind, Claude Haiku: where it looks next and what it says) and its voice (POST /hide/say, ElevenLabs: a line in a demon's voice). The day's count is the login's, or the address's for a visitor
+    if (request.method === "GET" && p === "/hide/keys") return new Response(JSON.stringify({ claude: !!env.ANTHROPIC_API_KEY, eleven: !!env.ELEVENLABS_API_KEY }), { headers: { "content-type": "application/json", "cache-control": "no-store" } });
+    if (request.method === "POST" && (p === "/hide/mind" || p === "/hide/say")) { if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
+      const id = await who(env, request, dev).catch(() => null), key = id || "ip:" + (request.headers.get("CF-Connecting-IP") || "?"); let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
+      if (p === "/hide/say") { const text = HIDE.line(body.text); if (!text) return json({ why: "nothing to say" }, 400); if (!env.ELEVENLABS_API_KEY) return json({ why: "the website has no ELEVENLABS_API_KEY secret yet" }, 501); if (tooMany("hidesay:" + key, 12)) return json({ why: "too much at once, wait a minute" }, 429);
+        try { const v = await fetch("https://api.elevenlabs.io/v1/text-to-speech/" + HIDE.VOICE + "?output_format=mp3_44100_64", { method: "POST", headers: { "xi-api-key": env.ELEVENLABS_API_KEY, "content-type": "application/json" }, body: JSON.stringify({ text, model_id: "eleven_flash_v2_5", voice_settings: { stability: .35, similarity_boost: .8, speed: .85 } }) }); if (v.ok) return new Response(v.body, { headers: { "content-type": "audio/mpeg", "cache-control": "no-store" } }); return json({ why: "the voice said " + v.status }, 502); } catch (e) { return json({ why: "the voice could not be reached" }, 502); } }
+      if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" }); if (tooMany("hide:" + key, 40)) return json({ why: "too much at once, wait a minute" }, 429);
+      const H = homeOf(env), out = await HIDE.think(env, { get: () => H.botGet("hide:" + key), put: v => H.botPut("hide:" + key, v) }, body); if (id && out && out.why === "nothing sensed") { const n = await H.nameGet(id).catch(() => ""); if (n) out.name = n; } return json(out); }
     // DEAD END's log (worker/hide.js): every finished game is kept (Supabase hide_games, the service key), from anyone who played; the report only to an owner
     if (request.method === "POST" && p === "/hide/log") { if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       if (tooMany("hlog:" + (request.headers.get("CF-Connecting-IP") || "local"), 8)) return json({ why: "too much at once" }, 429); const k = svc(env); if (!k) return json({ why: "no log yet" });
@@ -109,6 +131,10 @@ export default {
     // EYES DOWN (src/zombie/): its own page at /zombie (also /eyes), to anyone with the link; its pictures and models under /zombie-assets/; the visitors' mind (POST /zombie/mind) and the night reached (POST /zombie/save) only to a login
     if ((request.method === "GET" || request.method === "HEAD") && (p === "/zombie" || p === "/eyes")) return page(env, url, "/zombie", request, "no-cache");
     if (p === "/zombie/" || p === "/eyes/") return Response.redirect(url.origin + "/zombie" + url.search, 301);
+    // YATAI '86 (src/sushi/): its own page at /sushi, to anyone with the link; its people under /sushi-assets/; the customers' voices (POST /sushi/talk) only to a login
+    if ((request.method === "GET" || request.method === "HEAD") && p === "/sushi") return page(env, url, "/sushi", request, "no-cache");
+    if (p === "/sushi/") return Response.redirect(url.origin + "/sushi" + url.search, 301);
+    if (request.method === "GET" && p === "/sushi/keys") return new Response(JSON.stringify({ claude: !!env.ANTHROPIC_API_KEY, eleven: !!env.ELEVENLABS_API_KEY, ai: !!env.AI }), { headers: { "content-type": "application/json", "cache-control": "no-store" } }); // which of the game's services the worker has been given: yes or no, never a value
     // THE CANTINA (src/cantina/): its own page at /cantina, to anyone with the link; its models and pictures under /cantina-assets/
     if ((request.method === "GET" || request.method === "HEAD") && p === "/cantina") return page(env, url, "/cantina", request, "no-cache");
     if ((request.method === "GET" || request.method === "HEAD") && GOLFA.test(p)) {
@@ -169,9 +195,9 @@ export default {
       return skyFeed(sky[1], request); }
     if (p.startsWith("/parties/")) return (await routePartykitRequest(request, env, {
       onBeforeConnect: async (req, { party, name }) => {
-        const room = party === "block" || party === "jam" ? ROOM.test(name) : party === "laser" ? name === "public" : party === "dish" && name === "petri";   // the dish: one for the whole market, the arcade's PETRI; LASER TAG: one public room
+        const room = party === "block" || party === "jam" ? ROOM.test(name) : party === "laser" || party === "tank" ? name === "public" : party === "dish" && name === "petri";   // the dish: one for the whole market, the arcade's PETRI; LASER TAG: one public room
         if (!room || (request.headers.get("Origin") !== url.origin && !dev)) return new Response("not found", { status: 404 });
-        if (party === "laser") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // LASER TAG's room: to anyone with the link, like its page
+        if (party === "laser" || party === "tank") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // LASER TAG's room: to anyone with the link, like its page
         if (party === "jam") { const r = new Request(req); r.headers.set("x-partykit-room", name); return r; }   // STADIUM JAM's rooms: to anyone with the link, like its page
         const id = await who(env, request, dev); if (!id) return new Response("login", { status: 401 });
         const r = new Request(req); r.headers.set("x-tsfm-id", id); r.headers.set("x-partykit-room", name); if (dev) r.headers.set("x-tsfm-dev", "1"); return r; },
@@ -191,12 +217,40 @@ export default {
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401); if (!env.AI) return json({ why: "the website has no AI binding yet" }); if (tooMany("hear:" + id, 12)) return json({ why: "too much at once, wait a minute" }, 429);
       const buf = await request.arrayBuffer(); if (!buf.byteLength || buf.byteLength > 2 << 20) return json({ why: "too long, say it shorter" }, 400);
       try { const r = await env.AI.run("@cf/openai/whisper", { audio: [...new Uint8Array(buf)] }); return json({ text: String((r && r.text) || "").trim().slice(0, 400) }); } catch (e) { return json({ why: "it could not be made out" }); } }
-    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art" || p === "/orchard" || p === "/bot" || p === "/holmes" || p === "/cantina/talk" || p === "/hide/mind" || p === "/zombie/mind" || p === "/zombie/save")) {
+    if (request.method === "POST" && (p === "/post" || p === "/admin" || p === "/home" || p === "/owned" || p === "/name" || p === "/scores" || p === "/art" || p === "/orchard" || p === "/bot" || p === "/holmes" || p === "/cantina/talk" || p === "/sushi/talk" || p === "/sushi/say" || p === "/sushi/report" || p === "/sushi/log" || p === "/zombie/mind" || p === "/zombie/save")) {
       if (request.headers.get("Origin") !== url.origin && !(dev && !request.headers.get("Origin"))) return json({ why: "not from the game's page" }, 403);
       const id = await who(env, request, dev); if (!id) return json({ why: "login" }, 401);
       let body; try { body = await request.json(); } catch (e) { body = {}; } if (!body || typeof body !== "object") body = {};
       // a player's flying bot asks its mind (worker/flybot.js): the answer to say aloud; its memory and the day's count are the player's, in Home
       // a regular of THE CANTINA answers a visitor (worker/cantina.js); what the two have said is the visitor's, kept beside their bot's, and the day's count is one for the whole bar
+      // a bug report from inside YATAI '86: a picture, what was said (written down here) and the game's state, into the owners' queue beside the market's reports
+      if (p === "/sushi/log") { if (!UUID.test(id)) return json({ why: "login" }, 401); if (tooMany("slog:" + id, 20)) return json({ why: "too much at once" }, 429); if (!env.SUPABASE_SERVICE_KEY) return json({ why: "no service key" }, 501); // YATAI '86: everything said at the cart, kept for the owner to read back (Supabase sushi_talk)
+        const lines = (Array.isArray(body.lines) ? body.lines : []).slice(0, 60).map(l => { const o = {}; for (const k of ["at", "gt", "seats", "who", "to", "kind", "text", "heard", "live", "voice", "thinkMs", "voiceMs", "secs", "dropped", "cut", "problem"]) { const x = l && l[k]; if (typeof x === "string") o[k] = word(x, 260); else if (typeof x === "number" || typeof x === "boolean") o[k] = x; } return o; }); if (!lines.length) return json({ ok: true });
+        const r = await fetch(env.SUPABASE_URL + "/rest/v1/sushi_talk", { method: "POST", headers: { ...svc(env), "content-type": "application/json", Prefer: "return=minimal" }, body: JSON.stringify({ player: id, sid: word(body.sid, 40), lines }) }).catch(() => null); return json(r && r.ok ? { ok: true } : { why: "not kept" }, r && r.ok ? 200 : 502); }
+      if (p === "/sushi/report") { if (!UUID.test(id)) return json({ why: "login" }, 401); if (tooMany("rep:" + id, 6)) return json({ why: "too many at once, wait a minute" }, 429);
+        const jpg = typeof body.jpg === "string" && body.jpg.startsWith("data:image/jpeg;base64,") && body.jpg.length < 900000 ? body.jpg : "", audio = typeof body.audio === "string" && body.audio.length < 700000 && /^[A-Za-z0-9+/=]*$/.test(body.audio) ? body.audio : "";
+        let said = ""; if (audio && env.AI) { try { const r = await env.AI.run("@cf/openai/whisper", { audio: [...Uint8Array.from(atob(audio), ch => ch.charCodeAt(0))] }); said = String((r && r.text) || "").trim().slice(0, 600); } catch (e) { } }
+        let ctx = {}; try { const c = JSON.stringify(body.context || {}); if (c.length < 4000) ctx = JSON.parse(c); } catch (e) { }
+        const rid = crypto.randomUUID(), h = { ...svc(env), "content-type": "application/json", Prefer: "return=minimal" };
+        const r1 = await fetch(env.SUPABASE_URL + "/rest/v1/bug_reports", { method: "POST", headers: h, body: JSON.stringify({ id: rid, player: id, body: "[YATAI '86] " + (said || "(no words heard)"), context: { game: "sushi", ...ctx, ...(audio ? { audio: "data:" + (word(body.mime, 40) || "audio/webm") + ";base64," + audio } : {}) }, shots: jpg ? 1 : 0 }) }).catch(() => null);
+        if (r1 && r1.ok && jpg) await fetch(env.SUPABASE_URL + "/rest/v1/bug_shots", { method: "POST", headers: h, body: JSON.stringify({ report: rid, player: id, jpg }) }).catch(() => null);
+        return json({ ok: !!(r1 && r1.ok), said }); }
+      // a patron's line said aloud (Workers AI, the AI binding): the page plays it from their seat
+      if (p === "/sushi/say") { if (!env.AI && !env.ELEVENLABS_API_KEY) return json({ why: "the website has no AI binding yet" }, 501); if (tooMany("say:" + id, 30)) return json({ why: "too much at once, wait a minute" }, 429);
+        const text = word(body.text, 240); if (!text) return json({ why: "nothing to say" }, 400);
+        const SPK = ["orion", "perseus", "orpheus", "helios", "zeus", "arcas", "angus", "luna", "stella", "hera", "asteria", "athena"], spk = SPK.includes(body.speaker) ? body.speaker : "orion";
+        if (env.ELEVENLABS_API_KEY) { const EL = { orion: "CwhRBWXzGAHq8TQ4Fs17", perseus: "iP95p4xoKVk53GoZ742B", orpheus: "bIHbv24MWmeRgasZH58o", arcas: "cjVigY5qzO86Huf0OWal", zeus: "4vNbGJTjRuBObQgnJZio", angus: "IKne3meq5aSn9XLyUdCD", helios: "CwhRBWXzGAHq8TQ4Fs17", asteria: "cgSgspJ2msm6clMCkdW9", luna: "rwDJofyi5zcfK5WOmfb4", stella: "xd8j2LFPw16XKmJ5qeBK", hera: "VmWxtEYGgb6QIzh7Bnik", athena: "KHDywVwjZ97ShJLe4NCr" }; // ElevenLabs, once the owner has put his key on the worker: the same people, its voices
+          try { const v = await fetch("https://api.elevenlabs.io/v1/text-to-speech/" + EL[spk] + "?output_format=mp3_44100_64", { method: "POST", headers: { "xi-api-key": env.ELEVENLABS_API_KEY, "content-type": "application/json" }, body: JSON.stringify({ text, model_id: "eleven_flash_v2_5" }) }); if (v.ok) return new Response(v.body, { headers: { "content-type": "audio/mpeg", "cache-control": "no-store", "x-voice": "eleven" } }); } catch (e) { } }
+        try { const v = await env.AI.run("@cf/deepgram/aura-1", { text, speaker: spk, encoding: "mp3" }, { returnRawResponse: true }); if (v && v.ok) return new Response(v.body, { headers: { "content-type": "audio/mpeg", "cache-control": "no-store" } }); } catch (e) { } // a natural voice of their own; the plain one below if it fails
+        try { const r = await env.AI.run("@cf/myshell-ai/melotts", { prompt: text, lang: "en" }), a = r && r.audio; if (typeof a !== "string" || !a) return json({ why: "no voice came" }, 502);
+          return new Response(Uint8Array.from(atob(a), ch => ch.charCodeAt(0)), { headers: { "content-type": "audio/mpeg", "cache-control": "no-store", "x-voice": "plain" } }); } catch (e) { return json({ why: "the voice could not be made" }, 502); } }
+      // a customer at YATAI '86's cart says a line (worker/sushi.js); the day's count is the player's, in Home
+      if (p === "/sushi/talk") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
+        if (tooMany("sushi:" + id, 20)) return json({ why: "too much at once, wait a minute" }, 429);
+        const H = homeOf(env), k = id + "~sushi", day = new Date().toISOString().slice(0, 10), D = (await H.botGet(k)) || {}, max = (+env.BOT_DAILY || FLYBOT.DAY) * 2;
+        if (D.day === day && D.n >= max) return json({ why: "the cart has talked enough for one day; come back tomorrow" });
+        const out = await SUSHI.ask(env, body); if (out.say) await H.botPut(k, { day, n: D.day === day ? D.n + 1 : 1 });
+        return json(out); }
       if (p === "/cantina/talk") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
         const c = word(body.who, 24); if (!CANTINA.has(c)) return json({ why: "nobody by that name here" }, 400);
         if (tooMany("bot:" + id, 12)) return json({ why: "too much at once, wait a minute" }, 429);
@@ -208,10 +262,6 @@ export default {
       if (p === "/bot") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
         if (tooMany("bot:" + id, 12)) return json({ why: "too much at once, wait a minute" }, 429);
         const H = homeOf(env); return json(await BOTMIND.ask(env, { get: () => H.botGet(id), put: v => H.botPut(id, v) }, { say: body.say, state: body.state, name: await H.nameGet(id) })); }
-      // DEAD END's thing thinks (worker/hide.js): where it looks next, from what its senses gave it; the day's count is the player's, in Home
-      if (p === "/hide/mind") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
-        if (tooMany("hide:" + id, 40)) return json({ why: "too much at once, wait a minute" }, 429);
-        const H = homeOf(env); return json(await HIDE.think(env, { get: () => H.botGet("hide:" + id), put: v => H.botPut("hide:" + id, v) }, body)); }
       // EYES DOWN's visitors think (worker/zombie.js): where each waits next and how it tests; the day's count and the night reached are the player's, in Home
       if (p === "/zombie/mind") { if (!env.ANTHROPIC_API_KEY) return json({ why: "the website has no ANTHROPIC_API_KEY secret yet" });
         if (tooMany("zombie:" + id, 40)) return json({ why: "too much at once, wait a minute" }, 429);
@@ -429,9 +479,10 @@ export class Block extends Server {
     catch (e) { console.error("folk alarm", e); }
     await this.ctx.storage.setAlarm(now + (n ? 1000 : 10000)); }   // (set again whatever happened: the walks never stop)
   async onConnect(c, ctx) {
-    const id = ctx.request.headers.get("x-tsfm-id") || ""; if (!id) return c.close(4001, "login");
+    const base = ctx.request.headers.get("x-tsfm-id") || ""; if (!base) return c.close(4001, "login"); let cart = false; try { cart = new URL(ctx.request.url).searchParams.get("cart") === "1"; } catch (e) {}
+    const id = cart ? base + "~cart" : base;   // the ramen cart's cook is a presence of their own, so one tenant can cook in one window and stand at the cart in another
     for (const o of this.getConnections()) if (o.id !== c.id && o.state && o.state.id === id) o.close(4000, "joined again");
-    c.setState({ id, name: "", look: "", at: null }); this.playIn(id); if (ctx.request.headers.get("x-tsfm-dev") === "1") (this.dev || (this.dev = new Set())).add(c.id);
+    c.setState({ id, name: "", look: "", at: null }); if (!cart) this.playIn(id); if (ctx.request.headers.get("x-tsfm-dev") === "1") (this.dev || (this.dev = new Set())).add(c.id);
     const F = await this.folk(), MS = await this.mobs();
     c.send(JSON.stringify({ t: "hi", mv: MS.g ? MS.g.v : "", you: id, all: this.roster().filter(p => p.id !== id), world: { ...(await this.world()), ...this.drops(this.W) }, cars: Object.fromEntries(this.cars || []), folk: FOLKSIM.snap(F), fv: F.g ? F.g.v : "", fc: F.cast ? F.cast.v + ":" + Object.keys(F.cast.keys || {}).length : "" }));
     c.send(JSON.stringify({ t: "puts", all: this.puts() })); c.send(JSON.stringify({ t: "dm", d: MS.dm || null }));
@@ -542,7 +593,7 @@ export class Block extends Server {
   near(s, to, r) { if (!s.at) return null; for (const o of this.getConnections()) if (o.state && o.state.id === to) { const a = o.state.at;
       return a && a[4] === s.at[4] && a[5] === s.at[5] && Math.hypot(a[0] - s.at[0], a[1] - s.at[1]) < r ? o : null; } return null; }
   onMessage(c, raw) {
-    const s = c.state; if (!s || typeof raw !== "string" || raw.length > (raw.startsWith('{"t":"folk"') ? 400000 : raw.startsWith('{"t":"mobgrid"') || raw.startsWith('{"t":"dmset"') ? 200000 : raw.startsWith('{"t":"rtc"') ? 12000 : 2500)) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
+    const s = c.state; if (!s || typeof raw !== "string" || raw.length > (raw.startsWith('{"t":"folk"') ? 400000 : raw.startsWith('{"t":"mobgrid"') || raw.startsWith('{"t":"dmset"') ? 200000 : raw.startsWith('{"t":"rtc"') || raw.startsWith('{"t":"yt"') ? 12000 : 2500)) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
     const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0, at: {} }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 60) return;
     const gap = { bu: 25, hit: 90, grab: 200, drop: 200, toss: 200, free: 200, parried: 250, say: 400, aim: 120, swing: 150, kite: 200, sky: 200, skyw: 100, ride: 300, car: 300, curse: 1500, puff: 800, drone: 3000, ps: 150, fish: 200, craft: 150, world: 120, puts: 1000, lives: 3000, met: 1000, tr: 100, gtr: 25, ins: 20, jug: 200, mobgrid: 3000, dmset: 3000, breakout: 5000, mobhit: 60, mobpar: 200, vr: 60, tv: 200, body: 1000, st: 150, jet: 150, zap: 120, arm: 40, mobtame: 1000, tame: 500, bowl: 80 }[m.t]; if (gap) { if (now - (rl.at[m.t] || 0) < gap) return; rl.at[m.t] = now; }
     if (m.t === "bye") { this.onClose(c); c.setState({ ...s, id: "" }); try { c.close(1000, "bye"); } catch (e) {} return; }   // leaving: out for everyone now, not when the socket times out
@@ -695,6 +746,11 @@ export class Block extends Server {
       if (!x) return; if (!o) { if (!x.bye) c.send(JSON.stringify({ t: "rtc", from: to, d: { bye: 1 } })); return; } o.send(JSON.stringify({ t: "rtc", from: s.id, d: x }));
     } else if (m.t === "bu") {   // BOARDED UP (src/holo/boarded.js): one player's game traffic handed to their partner in the same room
       const to = word(m.to, 64), d = m.d; if (!to || to === s.id || !d || typeof d !== "object") return; const o = this.near(s, to, 60); if (o) o.send(JSON.stringify({ t: "bu", from: s.id, d }));
+    } else if (m.t === "yt") {   // the ramen cart (src/sushi/live.js through the holodeck's shell): what its cook is doing, to everyone else in the section, a few times a second
+      if (m.d && (m.d.a || m.d.b && !Array.isArray(m.d.b)) && typeof (m.d.a || m.d.b) === "object") { const now = Date.now(), lane = m.d.a ? "a" : "b"; if (lane === "b" && now - (c.ytB || 0) < 60) return; const j = JSON.stringify({ t: "yt", from: s.id, d: lane === "a" ? { a: m.d.a } : { b: m.d.b } }); if (j.length > 12000) return; if (lane === "b") c.ytB = now; for (const o of this.getConnections()) if (o !== c && o.state && String(o.state.id || "").endsWith("~cart")) o.send(j); return; }   // a tenant's own figure (a) and its pose (b), to the ramen carts' cooks only (a cart's own state has its burners as b, a list: that goes to everyone)
+      if (m.d && m.d.i && typeof m.d.i === "object") { const now = Date.now(); if (now - (c.ytI || 0) < 90) return; const j = JSON.stringify({ t: "yt", from: s.id, d: { i: m.d.i } }); if (j.length > 12000) return; c.ytI = now; for (const o of this.getConnections()) if (o !== c && o.state && o.state.at && o.state.at[5] === "alley") o.send(j); return; }   // the cart's things themselves, only to who is in the alley
+      const d = m.d, now = Date.now(), ev = d && (d.e || d.g && !d.g.p); if (!d || typeof d !== "object" || now - ((ev ? c.ytE : c.ytT) || 0) < (ev ? 40 : 150)) return; const j = JSON.stringify({ t: "yt", from: s.id, d }); if (j.length > 3000) return; if (ev) c.ytE = now; else c.ytT = now;   // (a happening, such as an order or a tenant sitting down, is not held up behind the steady word of the cart's state or of where a tenant stands)
+      for (const o of this.getConnections()) if (o !== c && o.state) o.send(j);
     } else if (m.t === "pm" && s.name) {   // a message to one player in this section (the paper doll's MESSAGE)
       const to = word(m.to, 64), text = word(m.text, 200); if (!to || to === s.id || !text) return;
       if (!this.hand(to, { t: "pm", from: s.id, name: s.name, text })) c.send(JSON.stringify({ t: "pm", op: "gone", from: to }));
@@ -975,6 +1031,23 @@ export class Laser extends Server {
       const st = { slot: LASER.slot(peers.map(q => q.slot)) }; c.setState(st);
       c.send(JSON.stringify({ t: "welcome", id: c.id, slot: st.slot, peers })); return this.broadcast(JSON.stringify({ t: "peer-join", id: c.id, ...st }), [c.id]); }
     if (!c.state) return; const out = LASER.clean(m); if (!out) return;
+    out.id = c.id; this.broadcast(JSON.stringify(out), [c.id]); }
+  onClose(c) { if (c.state) this.broadcast(JSON.stringify({ t: "peer-leave", id: c.id }), [c.id]); }
+  onError(c) { this.onClose(c); }
+}
+
+// HULL DOWN's room: the one public lobby, two players; a second player in turns the battle into one against one, and it passes each tank's pose, shots and hits on to the other (worker/tank.js says what passes)
+export class Tank extends Server {
+  static options = { hibernate: false };
+  peers(not) { const a = []; for (const o of this.getConnections()) if (o.id !== not && o.state) a.push({ id: o.id, ...o.state }); return a; }
+  onMessage(c, raw) {
+    if (typeof raw !== "string" || raw.length > 1024) return; let m; try { m = JSON.parse(raw); } catch (e) { return; }
+    const now = Date.now(), rl = c.rl || (c.rl = { t: now, n: 0 }); if (now - rl.t > 1000) { rl.t = now; rl.n = 0; } if (++rl.n > 60) return;
+    if (m && m.t === "join") { if (c.state) return; const peers = this.peers(c.id);
+      if (peers.length >= TANK.MAX) { c.send('{"t":"full"}'); return c.close(4002, "full"); }
+      const st = { slot: TANK.slot(peers.map(q => q.slot)) }; c.setState(st);
+      c.send(JSON.stringify({ t: "welcome", id: c.id, slot: st.slot, peers })); return this.broadcast(JSON.stringify({ t: "peer-join", id: c.id, ...st }), [c.id]); }
+    if (!c.state) return; const out = TANK.clean(m); if (!out) return;
     out.id = c.id; this.broadcast(JSON.stringify(out), [c.id]); }
   onClose(c) { if (c.state) this.broadcast(JSON.stringify({ t: "peer-leave", id: c.id }), [c.id]); }
   onError(c) { this.onClose(c); }

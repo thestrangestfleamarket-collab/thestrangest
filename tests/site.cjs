@@ -6,7 +6,9 @@ const {chromium}=require('playwright'), {spawn}=require('child_process');
 const PORT=8799, BASE='http://127.0.0.1:'+PORT;
 let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
 (async()=>{
-  const w=spawn('npx',['wrangler','dev','--port',String(PORT),'--ip','127.0.0.1','--var','DEV_AUTH:1','--show-interactive-dev-session=false','--persist-to',require('fs').mkdtempSync(require('path').join(require('os').tmpdir(),'site-'))],{stdio:['ignore','pipe','pipe'],detached:true,env:{...process.env,WRANGLER_SEND_METRICS:'false'}});
+  // the AI binding is always remote under wrangler dev and needs a Cloudflare token the check does not have: the worker starts from a copy of the config without it (nothing here uses it)
+  const CFG=require('path').join(__dirname,'..','.site-wrangler.jsonc'); require('fs').writeFileSync(CFG,require('fs').readFileSync(require('path').join(__dirname,'..','wrangler.jsonc'),'utf8').replace(/^\s*"ai"\s*:\s*\{[^}]*\},?\s*$/m,'')); process.on('exit',()=>{ try{ require('fs').unlinkSync(CFG); }catch(e){} });
+  const w=spawn('npx',['wrangler','dev','-c',CFG,'--port',String(PORT),'--ip','127.0.0.1','--var','DEV_AUTH:1','--show-interactive-dev-session=false','--persist-to',require('fs').mkdtempSync(require('path').join(require('os').tmpdir(),'site-'))],{stdio:['ignore','pipe','pipe'],detached:true,env:{...process.env,WRANGLER_SEND_METRICS:'false'}});
   const stop=()=>{ try{ process.kill(-w.pid,'SIGKILL'); }catch(e){ try{ w.kill('SIGKILL'); }catch(_){} } };   // the worker's whole group: wrangler leaves workerd on the port otherwise, and the next test on it talks to this one
   let log=''; w.stdout.on('data',d=>log+=d); w.stderr.on('data',d=>log+=d);
   let up=false; for(let i=0;i<120&&!up;i++){ await new Promise(r=>setTimeout(r,1000)); up=await fetch(BASE+'/').then(r=>r.ok).catch(()=>false); }
@@ -29,6 +31,9 @@ let bad=0; const ok=(c,m)=>{ console.log((c?'ok   ':'FAIL ')+m); if(!c)bad++; };
     ok(T==='welcome,peer-join,note,peer-leave'&&b.got[0]&&b.got[0].slot===1&&b.got[0].peers.length===1&&n.pad===15&&n.v===1&&!('x' in n),'a STADIUM JAM room seats two, passes a note on cut to its rules, and says who left: '+T); }
   { const r=await fetch(BASE+'/scare'); ok(r.status===200&&/Vesper Ward/.test(await r.text()),'/scare (VESPER WARD) is handed to anyone, no login');
     const a=await fetch(BASE+'/scare-assets/pale.glb'); ok(a.status===200&&/gltf/.test(a.headers.get('content-type')||''),'and its models under /scare-assets/'); }
+  { const r=await fetch(BASE+'/sniper'), a=await fetch(BASE+'/sniper-assets/sky/sky.json'); ok(r.status===200&&/Cold Bore/.test(await r.text())&&a.status===200,'/sniper (COLD BORE) and its assets are handed to anyone, no login'); }
+  { const r=await fetch(BASE+'/edge'), g=await fetch(BASE+'/game'), t=await fetch(BASE+'/tank'); ok(r.status===200&&/Edge of 88/.test(await r.text())&&g.status===200&&t.status===200&&/Hull Down/.test(await t.text()),'/edge (EDGE OF 88, also /game) and /tank (HULL DOWN) are handed to anyone, no login');
+    const a=await fetch(BASE+'/tank-assets/m/hero.glb'), k=await fetch(BASE+'/tank-assets/sky/sky.json'); ok(a.status===200&&k.status===200,'and HULL DOWN\'s models and sky under /tank-assets/'); }
   { const r=await fetch(BASE+'/shoot'); ok(r.status===200&&/Breachline/.test(await r.text()),'/shoot (BREACHLINE) is handed to anyone, no login'); }
   { const r=await fetch(BASE+'/golf'); ok(r.status===200&&/Halcyon Greens/.test(await r.text()),'/golf (HALCYON GREENS) is handed to anyone, no login');
     const a=await fetch(BASE+'/golf-assets/sky/dusk_4k.jpg'), h=await fetch(BASE+'/golf-assets/sky/dusk_1k.hdr.txt'), m=await fetch(BASE+'/golf-assets/models/fern_02/fern_02.json'), x=await fetch(BASE+'/golf-assets/../g/market.html');

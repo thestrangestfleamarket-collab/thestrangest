@@ -8,9 +8,17 @@ import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
 import {Reflector} from 'three/addons/objects/Reflector.js';
 
+// only what can be seen pays for its place: three walks a hidden branch's matrices every frame though nothing of it is drawn; it is skipped, and caught up (_stale) when shown; ?hidmat=1 walks them as before
+if(new URLSearchParams(location.search).get('hidmat')!=='1')THREE.Object3D.prototype.updateMatrixWorld=function(force){ if(this.matrixAutoUpdate)this.updateMatrix(); if(this._stale){ this._stale=false; force=true; }
+  if(this.matrixWorldNeedsUpdate||force){ if(this.matrixWorldAutoUpdate===true){ if(this.parent===null)this.matrixWorld.copy(this.matrix); else this.matrixWorld.multiplyMatrices(this.parent.matrixWorld,this.matrix); } this.matrixWorldNeedsUpdate=false; force=true; }
+  const ch=this.children; for(let i=0,l=ch.length;i<l;i++){ const c=ch[i]; if(!c.visible){ if(force)c._stale=true; continue; } c.updateMatrixWorld(force); } };
 const stage=document.getElementById('stage'), statEl=document.getElementById('stat');
 // the lighter picture (kept on this device; ?lite=1 or 0 sets it): no shadows and the graphics card left to the browser's choice, for a machine that keeps losing the picture
-const LIGHTER=(()=>{ try{ const q=new URLSearchParams(location.search).get('lite'); if(q==='1'||q==='0')localStorage.setItem('lite-picture',q); return localStorage.getItem('lite-picture')==='1'; }catch(e){ return false; } })(); SHARED.lite=LIGHTER;
+// a start that never finished (the tab crashed while building) turns the lighter picture on for the next: 'start-open' is set now and cleared once the game has run ten seconds, or when the page is closed or reloaded
+const LIGHTER=(()=>{ try{ const q=new URLSearchParams(location.search).get('lite'); if(q==='1'||q==='0')localStorage.setItem('lite-picture',q);
+    if(q==null&&localStorage.getItem('start-open')==='1'&&localStorage.getItem('lite-picture')!=='1'){ localStorage.setItem('lite-picture','1'); SHARED.liteAfterCrash=true; }
+    localStorage.setItem('start-open','1'); addEventListener('pagehide',()=>{ try{ localStorage.removeItem('start-open'); }catch(e){} });
+    return localStorage.getItem('lite-picture')==='1'; }catch(e){ return false; } })(); SHARED.lite=LIGHTER;
 const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:LIGHTER?'default':'high-performance',alpha:true}); renderer.setClearAlpha(1); renderer.info.autoReset=false;
 renderer.setPixelRatio(1); renderer.localClippingEnabled=true; renderer.shadowMap.autoUpdate=false; renderer.shadowMap.enabled=!LIGHTER; renderer.shadowMap.type=THREE.BasicShadowMap;
 stage.appendChild(renderer.domElement);
@@ -22,7 +30,7 @@ stage.appendChild(renderer.domElement);
     d.querySelector('[data-r]').onclick=()=>location.reload(); d.querySelector('[data-l]').onclick=()=>{ try{ localStorage.setItem('lite-picture','1'); }catch(e){} location.reload(); };
     try{ const g=renderer.getContext(), x=g.getExtension('WEBGL_debug_renderer_info'); if(window.BUGS&&BUGS.err)BUGS.err('the picture kept getting lost ('+n+' times'+(LIGHTER?', lighter picture':'')+'): '+(x?g.getParameter(x.UNMASKED_RENDERER_WEBGL):'?')); }catch(e){} };
   renderer.domElement.addEventListener('webglcontextlost',e=>{ e.preventDefault(); const now=performance.now(); if(now-t0>120000)n=0; if(!n)t0=now; n++; if(!up){ box().style.display='grid'; clearTimeout(tm); if(n>=3)giveUp(); else tm=setTimeout(giveUp,15000); } });
-  renderer.domElement.addEventListener('webglcontextrestored',()=>{ clearTimeout(tm); renderer.shadowMap.needsUpdate=true; if(up)return; const d=document.getElementById('ctxlost'); if(d)d.style.display='none'; }); }
+  renderer.domElement.addEventListener('webglcontextrestored',()=>{ clearTimeout(tm); if(SHARED.freedPics){ location.reload(); return; } renderer.shadowMap.needsUpdate=true; if(up)return; const d=document.getElementById('ctxlost'); if(d)d.style.display='none'; }); }
 const scene=new THREE.Scene();
 SHARED.composer=null;
 const PPU=30;

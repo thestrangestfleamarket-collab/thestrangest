@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Hull Down</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#070806;
+  --ink:#ece8dc;
+  --dim:#a09a8c;
+  --brass:#e0b04a;
+  --line:rgba(236,232,220,.16);
+  --danger:#ff5a3c;
+  --display:'Big Shoulders Display','Arial Narrow',Impact,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);overflow:hidden}
+body{font-family:var(--mono);font-size:14px;-webkit-font-smoothing:antialiased}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;background:var(--bg)}
+#overlay{position:fixed;inset:0;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;
+  padding-block:24px calc(24px + env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  background:linear-gradient(to top,rgba(7,8,6,.94) 0%,rgba(7,8,6,.7) 45%,rgba(7,8,6,0) 100%);overflow-y:auto;z-index:8}
+.card{max-width:34rem;display:grid;gap:16px;min-width:0;margin-top:auto}
+.eyebrow{margin:0;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--brass)}
+h1{margin:0;font-family:var(--display);font-weight:900;font-size:clamp(64px,15vw,128px);line-height:.82;letter-spacing:-.01em;text-transform:uppercase;text-wrap:balance}
+h1 span{color:var(--brass)}
+.lede{margin:0;line-height:1.6;color:var(--ink);max-width:62ch}
+.actions{display:flex;flex-wrap:wrap;gap:10px}
+button{font:600 14px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;border-radius:2px;padding:15px 20px;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--ink)}
+button.primary{background:var(--brass);color:#1a1407;border-color:var(--brass)}
+button:disabled{opacity:.4;cursor:not-allowed}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--brass);outline-offset:3px}
+.tanks{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tanks button{display:grid;gap:6px;text-align:left;padding:12px;text-transform:none;letter-spacing:0;line-height:1.35}
+.tanks b{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--brass)}
+.tanks span{font-weight:400;font-size:12px;color:var(--dim)}
+.tanks button.on{border-color:var(--brass);background:rgba(224,176,74,.12)}
+@media (max-width:560px){.tanks{grid-template-columns:1fr}}
+.note{margin:0;font-size:12px;line-height:1.5;color:var(--dim);min-height:1em}
+.toggle{display:flex;gap:10px;align-items:center;font-size:13px;color:var(--ink);cursor:pointer}
+.toggle input{width:18px;height:18px;accent-color:var(--brass)}
+details{border-top:1px solid var(--line);padding-top:12px}
+summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.controls{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin-top:12px;font-size:12px;line-height:1.5}
+.controls dt{color:var(--brass);letter-spacing:.08em;text-transform:uppercase}
+.controls dd{margin:0;color:var(--ink)}
+.warn{margin:0;font-size:12px;line-height:1.55;color:var(--dim);border-left:2px solid var(--danger);padding-left:12px}
+.best{margin:0;font-size:12px;color:var(--dim)}
+#loading{position:fixed;inset:0;display:grid;place-items:center;z-index:9;background:var(--bg);color:var(--dim);font-size:12px;letter-spacing:.16em;text-transform:uppercase}
+#fade{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;z-index:6}
+#scope{position:fixed;inset:0;pointer-events:none;z-index:3;background:radial-gradient(circle at 50% 50%,rgba(0,0,0,0) 0,rgba(0,0,0,0) 46vmin,rgba(0,0,0,.96) 48vmin)}
+#scope i{position:absolute;left:50%;top:50%;background:rgba(10,10,8,.85)}
+#scope .h1{width:16vmin;height:2px;margin:-1px 0 0 -19vmin}
+#scope .h2{width:16vmin;height:2px;margin:-1px 0 0 3vmin}
+#scope .v1{width:2px;height:16vmin;margin:-19vmin 0 0 -1px}
+#scope .v2{width:2px;height:16vmin;margin:3vmin 0 0 -1px}
+#fcs{position:absolute;left:50%;bottom:calc(50% - 38vmin);transform:translateX(-50%);font:600 14px var(--mono);color:#7dff9c;white-space:pre;text-shadow:0 0 4px #000}
+#bino{position:fixed;inset:0;pointer-events:none;z-index:3;background:radial-gradient(circle at calc(50% - 21vmin) 50%,rgba(0,0,0,0) 0,rgba(0,0,0,0) 38vmin,rgba(0,0,0,1) 40vmin),radial-gradient(circle at calc(50% + 21vmin) 50%,rgba(0,0,0,0) 0,rgba(0,0,0,0) 38vmin,rgba(0,0,0,1) 40vmin);background-blend-mode:lighten;mix-blend-mode:multiply}
+#bino::after{content:'';position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px;border-radius:50%;background:rgba(10,10,8,.8)}
+#inv{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:4;pointer-events:none;font:600 13px var(--mono);letter-spacing:.08em;color:var(--ink);background:rgba(7,8,6,.6);padding:8px 14px;white-space:pre}
+#dot{position:fixed;left:50%;top:50%;width:4px;height:4px;margin:-2px;border-radius:50%;background:rgba(236,232,220,.7);z-index:3;pointer-events:none}
+#gunmark{position:fixed;width:22px;height:22px;margin:-11px;border:2px solid var(--brass);border-radius:50%;z-index:3;pointer-events:none;box-sizing:border-box}
+#stat{position:fixed;left:max(12px,env(safe-area-inset-left,0px));top:calc(56px + env(safe-area-inset-top,0px));z-index:4;pointer-events:none}
+#stat canvas{display:block;width:min(240px,46vw);height:auto}
+#msg{position:fixed;left:50%;top:16%;transform:translateX(-50%);z-index:4;pointer-events:none;text-align:center;background:rgba(7,8,6,.72);padding:12px 20px;max-width:min(92vw,40rem);box-sizing:border-box}
+#msg p{margin:0;font-size:17px;font-weight:600}
+#msg small{display:block;margin-top:6px;font-size:13px;color:var(--brass)}
+#menuBtn{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));left:max(12px,env(safe-area-inset-left,0px));z-index:5;padding:10px 14px;background:rgba(7,8,6,.55);backdrop-filter:blur(4px)}
+#pad{position:fixed;left:max(16px,env(safe-area-inset-left,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:5;display:grid;grid-template-columns:repeat(3,56px);grid-template-rows:repeat(2,56px);gap:8px}
+#pad button,#acts button{padding:0;background:rgba(7,8,6,.5);backdrop-filter:blur(4px);touch-action:none;user-select:none;-webkit-user-select:none}
+#pad button{font-size:20px}
+#pad .up{grid-column:2;grid-row:1}#pad .lt{grid-column:1;grid-row:2}#pad .dn{grid-column:2;grid-row:2}#pad .rt{grid-column:3;grid-row:2}
+#acts{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:5;display:grid;gap:8px;justify-items:end}
+#acts button{width:84px;height:48px;font-size:12px}
+#acts #fireBtn{width:84px;height:84px;border-radius:50%;border-color:var(--danger);color:var(--danger);font-size:14px}
+@media (min-width:900px){#overlay{padding-left:max(56px,env(safe-area-inset-left,0px));padding-block:56px}}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="loading">Rolling out…</div>
+<div id="scope" hidden>
+  <i class="h1"></i><i class="h2"></i><i class="v1"></i><i class="v2"></i>
+  <span id="fcs"></span>
+</div>
+<div id="bino" hidden></div>
+<div id="inv" hidden></div>
+<div id="dot" hidden></div>
+<div id="gunmark" hidden></div>
+<div id="stat" hidden></div>
+<div id="msg" hidden><p></p><small></small></div>
+<div id="fade"></div>
+<button id="menuBtn" hidden>Menu</button>
+<div id="pad" hidden>
+  <button class="up" data-k="KeyW" aria-label="Drive forward">▲</button>
+  <button class="lt" data-k="KeyA" aria-label="Steer left">◀</button>
+  <button class="dn" data-k="KeyS" aria-label="Reverse">▼</button>
+  <button class="rt" data-k="KeyD" aria-label="Steer right">▶</button>
+</div>
+<div id="acts" hidden>
+  <button id="hatchBtn">Hatch</button>
+  <button id="sightBtn">Sight</button>
+  <button id="fireBtn">Fire</button>
+</div>
+<div id="overlay">
+  <div class="card">
+    <p class="eyebrow">Three tanks · four waves · one against one when someone joins</p>
+    <h1>Hull<br><span>Down</span></h1>
+    <p class="lede">You are alone in the turret. Enemy armour is coming over the far ridges. Drive up behind a crest until only your turret shows, lase the range, lay the gun through the sight, and fire first. Two more tanks of your platoon hold the line with you.</p>
+    <div class="actions">
+      <button id="vrBtn" class="primary" disabled>Checking for VR…</button>
+      <button id="flatBtn">Play in browser</button>
+    </div>
+    <p id="vrNote" class="note"></p>
+    <div class="tanks" role="group" aria-label="Your tank">
+      <button data-tank="heavy"><b>Challenger</b><span>Heavy. Thick armour, 40 rounds, steady.</span></button>
+      <button data-tank="light"><b>Scimitar</b><span>Light. Fast and quick to load, thin skin, short reach.</span></button>
+      <button data-tank="hunter"><b>Archer</b><span>Hunter. A long gun that kills at any range. Slow, few rounds.</span></button>
+    </div>
+    <label class="toggle" for="levelToggle"><input type="checkbox" id="levelToggle" checked> Keep the hull level in VR (comfort)</label>
+    <label class="toggle" for="lowToggle"><input type="checkbox" id="lowToggle" checked> 480 lines: a small picture stretched, so it runs smooth</label>
+    <label class="toggle" for="fxToggle"><input type="checkbox" id="fxToggle" checked> Hit effects (shake, blur, grey-out)</label>
+    <p id="best" class="best" hidden></p>
+    <details>
+      <summary>Controls</summary>
+      <dl class="controls">
+        <dt>VR</dt><dd>Sit down. Left stick drives, right stick lays the gun. Right hand: trigger fires, grip lases the range, A is the hatch, B zooms the sight, stick click re-centres your seat. Left hand: trigger lases, grip fires smoke, X changes the round, Y is the thermal sight, stick click is the extinguisher. Head out, hold the left grip for the binoculars and bring them to your eyes; left trigger then brings the gun on to what you see. Head out, the right grip changes what your right hand holds (pistol, grenade, mine) and the trigger uses it; inside, hold the left trigger for the coaxial gun.</dd>
+        <dt>Desktop</dt><dd>Click to take the mouse: it lays the gun. W A S D drive. Left click or Space fires. Right click or F is the gunsight, Z its zoom, T thermal. R lases the range. 1 and 2 pick SABOT or HEAT. G fires smoke. X is the extinguisher. H is the hatch. Head out, B is the binoculars: look, then click to bring the gun on to what you see. Head out you also carry a pistol (3), grenades (4) and mines for the ground (5): click uses what is in your hand. Inside, hold C for the coaxial gun against men on foot. Stop by the supply truck on the road to rearm and repair.</dd>
+        <dt>Phone</dt><dd>Drag to lay the gun. Arrow pad drives. Fire, Sight and Hatch are on the right.</dd>
+      </dl>
+    </details>
+    <p class="warn">In a headset the turret turns the world around you. If it gets uncomfortable, stop the turret, close your eyes and take the headset off.</p>
+  </div>
+</div>
+
+<script>__THREE147__</script>
+<script>__TANK__</script>
+</body>
+</html>

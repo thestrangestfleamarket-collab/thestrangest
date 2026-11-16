@@ -4,4 +4,14 @@ const js = es.buildSync({ entryPoints: ['src/hide/main.js'], bundle: true, forma
 const html = fs.readFileSync('src/hide/hide.html', 'utf8').replace('__HIDE__', () => js.replace(/<\/script/gi, '<\\/script'));
 fs.mkdirSync('dist', { recursive: true }); fs.writeFileSync('dist/hide.html', html);
 fs.rmSync('dist/hide-assets', { recursive: true, force: true }); fs.cpSync('data/hide', 'dist/hide-assets', { recursive: true }); fs.copyFileSync('data/scare/pale.glb', 'dist/hide-assets/m/pale.glb');
+// the world outside the windows: HULL DOWN's houses, wall, lamp, cars, tree and tree cards and its grass (data/tank/, credits in docs/tank-credits.md)
+for (const n of ['cottage', 'villa', 'h6', 'white', 'stonewall', 'lamp', 'lada', 'trabant', 'deadtree']) fs.copyFileSync('data/tank/m/' + n + '.glb', 'dist/hide-assets/m/out_' + n + '.glb');
+for (const k of 'dna') fs.copyFileSync('data/tank/tex/leafy_grass_' + k + '.jpg', 'dist/hide-assets/tex/leafy_grass_' + k + '.jpg');
+for (const n of ['island_tree_01', 'tree_small_02', 'jacaranda_tree', 'shrub_02']) fs.copyFileSync('data/tank/tex/' + n + '_0_d.webp', 'dist/hide-assets/tex/card_' + n + '.webp');
+// THE MARKET's own furniture, plants, things and paintings (data/bookstore.json, bar.json, pfplants.json, pfitems.json, art.json), only the ones the house uses
+{ const J = f => JSON.parse(fs.readFileSync('data/' + f + '.json', 'utf8')), out = { kit: {}, pf: {}, art: [] }, pick = (src, names, pre) => { for (const n of names) { if (!src[n]) throw new Error('hide: no market model ' + n); out.kit[pre + n] = src[n]; } };
+  pick(J('bookstore'), ['tubchair', 'armchair', 'floorlamp', 'tablelamp', 'rug2', 'radiator', 'clock', 'plant', 'globe', 'sidetable', 'blanket', 'bookstack', 'book', 'lectern', 'bistrochair', 'bistrotable'], 'mk_');
+  pick(J('bar'), ['stool', 'jukebox', 'pooltable', 'whiskey', 'martini', 'pianobench', 'chair'], 'mk_');
+  for (const [f, names] of [['pfplants', ['floor', 'olive', 'fern', 'flower', 'herb', 'shrub', 'cactus', 'crate', 'lantern', 'wcan']], ['pfitems', ['guitar', 'harp', 'piano', 'violin', 'flute', 'trumpet', 'drum_snare', 'cooler_l', 'g_bread', 'f_cake', 'd_coffee', 'd_wine', 'g_soda', 'v_pumpkin', 'phone_home', 'radio_scanner', 'mus_guidebook']]]) { const d = J(f); for (const n of names) { const k = d.map[n]; if (!k || !d.m[k]) throw new Error('hide: no market thing ' + n); out.pf['mk_' + n] = d.m[k]; } }
+  out.art = J('art').map(a => ({ w: a.w, h: a.h, i: a.i })); fs.writeFileSync('dist/hide-assets/market.json', JSON.stringify(out)); }
 console.log('dist/hide.html', html.length, 'bytes, dist/hide-assets/ copied');

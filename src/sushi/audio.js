@@ -49,9 +49,8 @@ export class GameAudio {
     const len = c.sampleRate * 2, b = c.createBuffer(1, len, c.sampleRate), d = b.getChannelData(0);
     for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
     this.noise = b;
-    // the city's low hum, and the wind (made here); the rest of the bed is recorded and set going as it arrives
-    this.loopNoise(160, 0.8, 0.035, 'lowpass');
-    this.windGain = this.loopNoise(420, 0.5, 0.0, 'bandpass');
+    // the wind (made here); the rest of the bed is recorded and set going as it arrives
+    this.windGain = this.loopNoise(220, 0.5, 0.0, 'lowpass');   // (no city hum in an 1860s village, and a low breeze, not a hiss that reads as rain)
     this.trainGain = this.loopNoise(95, 0.7, 0.0, 'lowpass');
     this.bed = c.createGain(); this.bed.gain.value = 0.2; const bl = c.createBiquadFilter(); bl.type = 'lowpass'; bl.frequency.value = 7000; this.bed.connect(bl); bl.connect(this.master);
     // the boombox: its little speaker, from where it stands
@@ -217,7 +216,7 @@ export class GameAudio {
     if (!this.ready) return;
     const c = this.ctx, now = c.currentTime, dt = Math.min(0.1, now - (this.lastT ?? now)); this.lastT = now;
     if (env) {
-      this.windGain.gain.value = 0.015 + env.wind * 0.05; this.windGain.filter.frequency.value = 300 + env.wind * 380;
+      this.windGain.gain.value = env.wind * env.wind * 0.03; this.windGain.filter.frequency.value = 160 + env.wind * 160;
       this.trainGain.gain.value = env.train * 0.5; if (env.train > 0.25 && Math.random() < 0.09) this.tone(70, 0.06, { vol: 0.12 * env.train, type: 'square' }); // wheel clack
     }
     const L = G.camera, l = c.listener;

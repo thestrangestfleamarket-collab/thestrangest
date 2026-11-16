@@ -37,7 +37,7 @@ renderer.setPixelRatio(1); renderer.setSize(innerWidth, innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
-renderer.xr.enabled = true; renderer.xr.setReferenceSpaceType('local-floor'); renderer.xr.setFoveation?.(0.5); renderer.xr.setFramebufferScaleFactor?.(1);   // the whole picture sharp, the edges blurred only a little: easier on the eyes
+renderer.xr.enabled = true; renderer.xr.setReferenceSpaceType('local-floor'); renderer.xr.setFoveation?.(0.5); renderer.xr.setFramebufferScaleFactor?.(0.5);   // the whole picture sharp, the edges blurred only a little: easier on the eyes
 
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(FOG, 0.022); scene.background = new THREE.Color(0x05060c);
@@ -75,7 +75,7 @@ const share = buildShare(live), guest = G.guest ? buildGuest(live) : null;
 const outbreak = buildOutbreak(scene);   // the night it turns: the director, the turned, what you fight with, blood
 
 // on a screen: the scene is drawn small, then enlarged with ordered dither and a short palette, as that console's output looked
-const LOWH = 540; let lowRT = null;
+const LOWH = 270; let lowRT = null;   // half the old 540 (owner, 16 Nov 2026: half the resolution, to save the machine)
 const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ depthTest: false, depthWrite: false, uniforms: { tD: { value: null }, res: { value: new THREE.Vector2(512, LOWH) } },
   vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
   fragmentShader: `uniform sampler2D tD; uniform vec2 res; varying vec2 vUv;
@@ -110,6 +110,7 @@ async function startVR() {
 }
 NET.tok().then(() => fetch('/sushi/say', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })).then((r) => { if (r.status === 401) $('login').style.display = 'inline-block'; else G.live?.join(); }).catch(() => { }); // the patrons' voices are a login's: say so before the headset goes on
 vrBtn.onclick = async () => { if (await talk.needPrime()) { vrBtn.textContent = 'Allow the microphone…'; const ok = await talk.prime(); vrBtn.textContent = ok ? 'Enter VR' : 'Enter VR (no microphone)'; return; } startVR(); }; // the microphone is asked for on its own press: a prompt cannot be answered inside the headset view
+window.G_STARTED = true;
 if (navigator.xr?.isSessionSupported) navigator.xr.isSessionSupported('immersive-vr').then((ok) => { vrBtn.disabled = !ok; vrBtn.textContent = ok ? 'Enter VR' : 'No headset here'; if (!ok) { vrBtn.classList.remove('primary'); deskBtn.classList.add('primary'); } }).catch(() => { vrBtn.textContent = 'VR unavailable'; });
 else vrBtn.textContent = location.protocol === 'https:' || location.hostname === 'localhost' ? 'Open this page in a VR headset' : 'VR needs HTTPS';
 

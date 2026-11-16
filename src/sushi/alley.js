@@ -13,7 +13,7 @@ const C3 = (h) => new THREE.Color(h);
 // the sky at each moment: [hour, zenith, horizon, fog, sun colour, sun, hemisphere sky, hemisphere ground, fill]
 const SKY = [[6, 0x5a6a92, 0xe0a070, 0x9a8a88, 0xffb070, 0.9, 0x8a94b8, 0x3a3028, 0.7], [10, 0x5e8ed0, 0xc8d8e4, 0xb8c4cc, 0xfff2dc, 2.4, 0xbcd0ec, 0x6a5a40, 1.05], [16.5, 0x6a94cc, 0xd8d8d0, 0xbcc4c4, 0xffe8c8, 2.1, 0xc0cce0, 0x6a5a40, 1.0],
   [18.2, 0x4a5a8a, 0xf08848, 0xb08070, 0xff8a40, 1.1, 0x9a88a8, 0x4a3828, 0.8], [19, 0x1c2244, 0x8a4a48, 0x4a3a48, 0xd06040, 0.25, 0x4a4a78, 0x201818, 0.5], [19.6, 0x070a18, 0x18203a, 0x0c1020, 0x000000, 0, 0x2a3a6a, 0x0a0a10, 0.38],
-  [28.8, 0x070a18, 0x18203a, 0x0c1020, 0x000000, 0, 0x2a3a6a, 0x0a0a10, 0.38], [29.6, 0x2a3460, 0xb06a5a, 0x5a4a58, 0xff9a60, 0.4, 0x6a6a90, 0x2a2420, 0.55], [30.5, 0x5a6a9a, 0xe8a878, 0x9a8c8c, 0xffb878, 1.0, 0x9aa0c0, 0x3a3028, 0.75]];
+  [28.8, 0x070a18, 0x18203a, 0x0c1020, 0x000000, 0, 0x2a3a6a, 0x0a0a10, 0.38], [29.05, 0x10163a, 0x4a3a5e, 0x1e1c2e, 0xc07050, 0, 0x3a4272, 0x16141c, 0.45], [29.6, 0x2a3460, 0xb06a5a, 0x5a4a58, 0xff9a60, 0.4, 0x6a6a90, 0x2a2420, 0.55], [30.5, 0x5a6a9a, 0xe8a878, 0x9a8c8c, 0xffb878, 1.0, 0x9aa0c0, 0x3a3028, 0.75]];
 
 export function buildAlley(scene) {
   const city = new THREE.Group(); scene.add(city); const glow = new THREE.Group(); city.add(glow); const ups = [], R = T.rng(1862);
@@ -127,7 +127,10 @@ export function buildAlley(scene) {
   const look = (h) => { let i = SKY.findIndex((k) => k[0] > h); if (i < 0) i = SKY.length - 1; if (i === 0) i = 1; const a = SKY[i - 1], b = SKY[i], f = clamp((h - a[0]) / (b[0] - a[0]), 0, 1); const v = (j) => a[j] + (b[j] - a[j]) * f, c = (j, out) => out.set(a[j]).lerp(tmp2.set(b[j]), f);
     return { zen: c(1, zen), hor: c(2, hor), fog: c(3, fogC), sunC: c(4, sc), sun: v(5), hs: c(6, new THREE.Color()), hg: c(7, new THREE.Color()), fill: v(8) }; };
   const paint = () => { const K = G.clock, h = K ? K.hour : 11, L = look(h), dark = 1 - (K ? K.light : 1);
-    const p = skyG.attributes.position; for (let i = 0; i < p.count; i++) { const y = p.getY(i) / 400, k = clamp(y * 2.2, 0, 1); tmp.copy(L.hor).lerp(L.zen, Math.sqrt(k)); if (y < 0) tmp.copy(L.hor).multiplyScalar(0.6); skyC.set([tmp.r, tmp.g, tmp.b], i * 3); } skyG.attributes.color.needsUpdate = true;
+    const dawn = h > 28.7 && h < 31.5 ? clamp(1 - Math.abs(h - 30.1) / 1.4, 0, 1) : 0;   // the first light: a pale glow low in the east (+x, where the sun comes up) before the sun is up
+    const p = skyG.attributes.position; for (let i = 0; i < p.count; i++) { const y = p.getY(i) / 400, k = clamp(y * 2.2, 0, 1); tmp.copy(L.hor).lerp(L.zen, Math.sqrt(k)); if (y < 0) tmp.copy(L.hor).multiplyScalar(0.6);
+      if (dawn > 0) { const x = p.getX(i), e = Math.max(0, x / (Math.hypot(x, p.getZ(i)) || 1)); const gl = dawn * e * e * (1 - Math.sqrt(k)) * 0.85; if (gl > 0) tmp.lerp(tmp2.set(0xf2c08a), gl); }
+      skyC.set([tmp.r, tmp.g, tmp.b], i * 3); } skyG.attributes.color.needsUpdate = true;
     if (scene.fog) scene.fog.color.copy(L.fog); scene.background = L.fog.clone(); if (scene.fog) scene.fog.density = 0.009 + dark * 0.014;
     const a = ((h - 6) / 12) * Math.PI, sy = Math.sin(a), sx = Math.cos(a); sun.position.set(sx * 30, Math.max(2, sy * 32), -14); sun.target.position.set(0, 0, 0); sun.color.copy(L.sunC); sun.intensity = sy > 0 ? L.sun : 0;
     sunDisc.position.set(sx * 360, sy * 360, -170); sunDisc.visible = sy > -0.05; sunDisc.material.color.copy(L.sunC).lerp(tmp2.set(0xffffff), 0.4);
@@ -136,7 +139,7 @@ export function buildAlley(scene) {
     fill.color.copy(L.hs); fill.groundColor.copy(L.hg); fill.intensity = L.fill * (S.easy ? 1.25 : 1); };
   paint();
   ups.push((dt) => {
-    const K = G.clock, want = K && (K.hour >= 17.8 && K.hour < 29.8) ? 1 : 0;   // the lamps are lit as the sun goes and put out when it is up again
+    const K = G.clock, hr = K ? K.hour : 11, want = hr >= 17.8 && hr < 29 ? 1 : hr >= 29 && hr < 30.2 ? clamp((30.2 - hr) / 1.2, 0, 1) : 0;   // the lamps are lit as the sun goes, and burn down one by one through the dawn
     lit += clamp(want - lit, -dt / 4, dt / 4); const e = S.easy ? 0.6 : 1;
     for (const m of lampMats) m.emissiveIntensity = lit * 1.6 * e; lampHalos.opacity = lit * 0.32 * e; lampLights.forEach((l) => (l.intensity = lit * 3.2));
     if (G.cart && G.cart.lamps) G.cart.lamps(lit);
